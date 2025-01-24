@@ -8,21 +8,18 @@ let bytestream_to_potential_coefficients (serialized: t_Slice u8) =
     if true
     then
       let _:Prims.unit =
-        match Core.Slice.impl__len #u8 serialized, mk_usize 24 <: (usize & usize) with
+        match Core.Slice.impl__len #u8 serialized, sz 24 <: (usize & usize) with
         | left_val, right_val -> Hax_lib.v_assert (left_val =. right_val <: bool)
       in
       ()
   in
-  let serialized_extended:t_Array u8 (mk_usize 32) =
-    Rust_primitives.Hax.repeat (mk_u8 0) (mk_usize 32)
-  in
-  let serialized_extended:t_Array u8 (mk_usize 32) =
+  let serialized_extended:t_Array u8 (sz 32) = Rust_primitives.Hax.repeat 0uy (sz 32) in
+  let serialized_extended:t_Array u8 (sz 32) =
     Rust_primitives.Hax.Monomorphized_update_at.update_at_range_to serialized_extended
-      ({ Core.Ops.Range.f_end = mk_usize 24 } <: Core.Ops.Range.t_RangeTo usize)
+      ({ Core.Ops.Range.f_end = sz 24 } <: Core.Ops.Range.t_RangeTo usize)
       (Core.Slice.impl__copy_from_slice #u8
-          (serialized_extended.[ { Core.Ops.Range.f_end = mk_usize 24 }
-              <:
-              Core.Ops.Range.t_RangeTo usize ]
+          (serialized_extended.[ { Core.Ops.Range.f_end = sz 24 } <: Core.Ops.Range.t_RangeTo usize
+            ]
             <:
             t_Slice u8)
           serialized
@@ -34,24 +31,14 @@ let bytestream_to_potential_coefficients (serialized: t_Slice u8) =
   in
   let coefficients:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
     Libcrux_intrinsics.Avx2_extract.mm256_permutevar8x32_epi32 coefficients
-      (Libcrux_intrinsics.Avx2_extract.mm256_set_epi32 (mk_i32 0)
-          (mk_i32 5)
-          (mk_i32 4)
-          (mk_i32 3)
-          (mk_i32 0)
-          (mk_i32 2)
-          (mk_i32 1)
-          (mk_i32 0)
+      (Libcrux_intrinsics.Avx2_extract.mm256_set_epi32 0l 5l 4l 3l 0l 2l 1l 0l
         <:
         Libcrux_intrinsics.Avx2_extract.t_Vec256)
   in
   let coefficients:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
     Libcrux_intrinsics.Avx2_extract.mm256_shuffle_epi8 coefficients
-      (Libcrux_intrinsics.Avx2_extract.mm256_set_epi8 (mk_i8 (-1)) (mk_i8 11) (mk_i8 10) (mk_i8 9)
-          (mk_i8 (-1)) (mk_i8 8) (mk_i8 7) (mk_i8 6) (mk_i8 (-1)) (mk_i8 5) (mk_i8 4) (mk_i8 3)
-          (mk_i8 (-1)) (mk_i8 2) (mk_i8 1) (mk_i8 0) (mk_i8 (-1)) (mk_i8 11) (mk_i8 10) (mk_i8 9)
-          (mk_i8 (-1)) (mk_i8 8) (mk_i8 7) (mk_i8 6) (mk_i8 (-1)) (mk_i8 5) (mk_i8 4) (mk_i8 3)
-          (mk_i8 (-1)) (mk_i8 2) (mk_i8 1) (mk_i8 0)
+      (Libcrux_intrinsics.Avx2_extract.mm256_set_epi8 (-1y) 11y 10y 9y (-1y) 8y 7y 6y (-1y) 5y 4y 3y
+          (-1y) 2y 1y 0y (-1y) 11y 10y 9y (-1y) 8y 7y 6y (-1y) 5y 4y 3y (-1y) 2y 1y 0y
         <:
         Libcrux_intrinsics.Avx2_extract.t_Vec256)
   in
@@ -77,9 +64,9 @@ let sample (input: t_Slice u8) (output: t_Slice i32) =
         <:
         u8)
   in
-  let good_lower_half:i32 = good &. mk_i32 15 in
-  let good_upper_half:i32 = good >>! mk_i32 4 in
-  let lower_shuffles:t_Array u8 (mk_usize 16) =
+  let good_lower_half:i32 = good &. 15l in
+  let good_upper_half:i32 = good >>! 4l in
+  let lower_shuffles:t_Array u8 (sz 16) =
     Libcrux_ml_dsa.Simd.Avx2.Rejection_sample.Shuffle_table.v_SHUFFLE_TABLE.[ cast (good_lower_half
           <:
           i32)
@@ -97,12 +84,12 @@ let sample (input: t_Slice u8) (output: t_Slice i32) =
   in
   let output:t_Slice i32 =
     Rust_primitives.Hax.Monomorphized_update_at.update_at_range output
-      ({ Core.Ops.Range.f_start = mk_usize 0; Core.Ops.Range.f_end = mk_usize 4 }
+      ({ Core.Ops.Range.f_start = sz 0; Core.Ops.Range.f_end = sz 4 }
         <:
         Core.Ops.Range.t_Range usize)
       (Libcrux_intrinsics.Avx2_extract.mm_storeu_si128_i32 (output.[ {
-                Core.Ops.Range.f_start = mk_usize 0;
-                Core.Ops.Range.f_end = mk_usize 4
+                Core.Ops.Range.f_start = sz 0;
+                Core.Ops.Range.f_end = sz 4
               }
               <:
               Core.Ops.Range.t_Range usize ]
@@ -113,7 +100,7 @@ let sample (input: t_Slice u8) (output: t_Slice i32) =
         t_Slice i32)
   in
   let sampled_count:usize = cast (Core.Num.impl__i32__count_ones good_lower_half <: u32) <: usize in
-  let upper_shuffles:t_Array u8 (mk_usize 16) =
+  let upper_shuffles:t_Array u8 (sz 16) =
     Libcrux_ml_dsa.Simd.Avx2.Rejection_sample.Shuffle_table.v_SHUFFLE_TABLE.[ cast (good_upper_half
           <:
           i32)
@@ -124,7 +111,7 @@ let sample (input: t_Slice u8) (output: t_Slice i32) =
     Libcrux_intrinsics.Avx2_extract.mm_loadu_si128 (upper_shuffles <: t_Slice u8)
   in
   let upper_coefficients:Libcrux_intrinsics.Avx2_extract.t_Vec128 =
-    Libcrux_intrinsics.Avx2_extract.mm256_extracti128_si256 (mk_i32 1) potential_coefficients
+    Libcrux_intrinsics.Avx2_extract.mm256_extracti128_si256 1l potential_coefficients
   in
   let upper_coefficients:Libcrux_intrinsics.Avx2_extract.t_Vec128 =
     Libcrux_intrinsics.Avx2_extract.mm_shuffle_epi8 upper_coefficients upper_shuffles
@@ -133,13 +120,13 @@ let sample (input: t_Slice u8) (output: t_Slice i32) =
     Rust_primitives.Hax.Monomorphized_update_at.update_at_range output
       ({
           Core.Ops.Range.f_start = sampled_count;
-          Core.Ops.Range.f_end = sampled_count +! mk_usize 4 <: usize
+          Core.Ops.Range.f_end = sampled_count +! sz 4 <: usize
         }
         <:
         Core.Ops.Range.t_Range usize)
       (Libcrux_intrinsics.Avx2_extract.mm_storeu_si128_i32 (output.[ {
                 Core.Ops.Range.f_start = sampled_count;
-                Core.Ops.Range.f_end = sampled_count +! mk_usize 4 <: usize
+                Core.Ops.Range.f_end = sampled_count +! sz 4 <: usize
               }
               <:
               Core.Ops.Range.t_Range usize ]

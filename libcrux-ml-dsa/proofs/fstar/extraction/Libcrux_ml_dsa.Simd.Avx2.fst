@@ -390,7 +390,7 @@ let impl: Libcrux_ml_dsa.Simd.Traits.t_Operations Libcrux_ml_dsa.Simd.Avx2.Vecto
     =
     (fun (randomness: t_Slice u8) (out: t_Slice i32) ->
         let tmp0, out1:(t_Slice i32 & usize) =
-          Libcrux_ml_dsa.Simd.Avx2.Rejection_sample.Less_than_eta.sample (mk_usize 2) randomness out
+          Libcrux_ml_dsa.Simd.Avx2.Rejection_sample.Less_than_eta.sample (sz 2) randomness out
         in
         let out:t_Slice i32 = tmp0 in
         let hax_temp_output:usize = out1 in
@@ -405,7 +405,7 @@ let impl: Libcrux_ml_dsa.Simd.Traits.t_Operations Libcrux_ml_dsa.Simd.Avx2.Vecto
     =
     (fun (randomness: t_Slice u8) (out: t_Slice i32) ->
         let tmp0, out1:(t_Slice i32 & usize) =
-          Libcrux_ml_dsa.Simd.Avx2.Rejection_sample.Less_than_eta.sample (mk_usize 4) randomness out
+          Libcrux_ml_dsa.Simd.Avx2.Rejection_sample.Less_than_eta.sample (sz 4) randomness out
         in
         let out:t_Slice i32 = tmp0 in
         let hax_temp_output:usize = out1 in
@@ -660,35 +660,35 @@ let impl: Libcrux_ml_dsa.Simd.Traits.t_Operations Libcrux_ml_dsa.Simd.Avx2.Vecto
         out);
     f_ntt_pre
     =
-    (fun (simd_units: t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32)) -> true);
+    (fun (simd_units: t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (sz 32)) -> true);
     f_ntt_post
     =
     (fun
-        (simd_units: t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32))
-        (out: t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32))
+        (simd_units: t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (sz 32))
+        (out: t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (sz 32))
         ->
         true);
     f_ntt
     =
-    (fun (simd_units: t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32)) ->
-        let simd_units:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32) =
+    (fun (simd_units: t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (sz 32)) ->
+        let simd_units:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (sz 32) =
           Libcrux_ml_dsa.Simd.Avx2.Ntt.ntt simd_units
         in
         simd_units);
     f_invert_ntt_montgomery_pre
     =
-    (fun (simd_units: t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32)) -> true);
+    (fun (simd_units: t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (sz 32)) -> true);
     f_invert_ntt_montgomery_post
     =
     (fun
-        (simd_units: t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32))
-        (out: t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32))
+        (simd_units: t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (sz 32))
+        (out: t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (sz 32))
         ->
         true);
     f_invert_ntt_montgomery
     =
-    fun (simd_units: t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32)) ->
-      let simd_units:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32) =
+    fun (simd_units: t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (sz 32)) ->
+      let simd_units:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (sz 32) =
         Libcrux_ml_dsa.Simd.Avx2.Invntt.invert_ntt_montgomery simd_units
       in
       simd_units

@@ -33,5 +33,5 @@ val derive_message_representative
       (domain_separation_context:
           Core.Option.t_Option Libcrux_ml_dsa.Pre_hash.t_DomainSeparationContext)
       (message: t_Slice u8)
-      (message_representative: t_Array u8 (mk_usize 64))
-    : Prims.Pure (t_Array u8 (mk_usize 64)) Prims.l_True (fun _ -> Prims.l_True)
+      (message_representative: t_Array u8 (sz 64))
+    : Prims.Pure (t_Array u8 (sz 64)) Prims.l_True (fun _ -> Prims.l_True)

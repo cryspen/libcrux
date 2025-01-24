@@ -11,7 +11,7 @@ let _ =
 
 type t_PolynomialRingElement
   (v_SIMDUnit: Type0) {| i1: Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit |}
-  = { f_simd_units:t_Array v_SIMDUnit (mk_usize 32) }
+  = { f_simd_units:t_Array v_SIMDUnit (sz 32) }
 
 [@@ FStar.Tactics.Typeclasses.tcinstance]
 val impl_1
@@ -27,23 +27,23 @@ val impl_2
       {| i2: Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit |}
     : Core.Marker.t_Copy (t_PolynomialRingElement v_SIMDUnit)
 
-val impl__from_i32_array
-      (#v_SIMDUnit: Type0)
-      {| i1: Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit |}
-      (array: t_Slice i32)
-      (result: t_PolynomialRingElement v_SIMDUnit)
-    : Prims.Pure (t_PolynomialRingElement v_SIMDUnit) Prims.l_True (fun _ -> Prims.l_True)
-
 val impl__zero:
     #v_SIMDUnit: Type0 ->
     {| i1: Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit |} ->
     Prims.unit
   -> Prims.Pure (t_PolynomialRingElement v_SIMDUnit) Prims.l_True (fun _ -> Prims.l_True)
 
-val impl__add
+val impl__to_i32_array
       (#v_SIMDUnit: Type0)
       {| i1: Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit |}
-      (self rhs: t_PolynomialRingElement v_SIMDUnit)
+      (self: t_PolynomialRingElement v_SIMDUnit)
+    : Prims.Pure (t_Array i32 (sz 256)) Prims.l_True (fun _ -> Prims.l_True)
+
+val impl__from_i32_array
+      (#v_SIMDUnit: Type0)
+      {| i1: Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit |}
+      (array: t_Slice i32)
+      (result: t_PolynomialRingElement v_SIMDUnit)
     : Prims.Pure (t_PolynomialRingElement v_SIMDUnit) Prims.l_True (fun _ -> Prims.l_True)
 
 val impl__infinity_norm_exceeds
@@ -53,14 +53,14 @@ val impl__infinity_norm_exceeds
       (bound: i32)
     : Prims.Pure bool Prims.l_True (fun _ -> Prims.l_True)
 
-val impl__subtract
+val impl__add
       (#v_SIMDUnit: Type0)
       {| i1: Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit |}
       (self rhs: t_PolynomialRingElement v_SIMDUnit)
     : Prims.Pure (t_PolynomialRingElement v_SIMDUnit) Prims.l_True (fun _ -> Prims.l_True)
 
-val impl__to_i32_array
+val impl__subtract
       (#v_SIMDUnit: Type0)
       {| i1: Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit |}
-      (self: t_PolynomialRingElement v_SIMDUnit)
-    : Prims.Pure (t_Array i32 (mk_usize 256)) Prims.l_True (fun _ -> Prims.l_True)
+      (self rhs: t_PolynomialRingElement v_SIMDUnit)
+    : Prims.Pure (t_PolynomialRingElement v_SIMDUnit) Prims.l_True (fun _ -> Prims.l_True)

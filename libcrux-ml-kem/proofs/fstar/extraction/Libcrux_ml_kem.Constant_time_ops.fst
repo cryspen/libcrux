@@ -7,11 +7,9 @@ let inz (value: u8) =
   let v__orig_value:u8 = value in
   let value:u16 = cast (value <: u8) <: u16 in
   let result:u8 =
-    cast ((Core.Num.impl__u16__wrapping_add (~.value <: u16) (mk_u16 1) <: u16) >>! mk_i32 8 <: u16)
-    <:
-    u8
+    cast ((Core.Num.impl__u16__wrapping_add (~.value <: u16) 1us <: u16) >>! 8l <: u16) <: u8
   in
-  let res:u8 = result &. mk_u8 1 in
+  let res:u8 = result &. 1uy in
   let _:Prims.unit =
     if v v__orig_value = 0
     then
@@ -50,9 +48,9 @@ let inz (value: u8) =
 let is_non_zero (value: u8) = Core.Hint.black_box #u8 (inz value <: u8)
 
 let compare (lhs rhs: t_Slice u8) =
-  let (r: u8):u8 = mk_u8 0 in
+  let (r: u8):u8 = 0uy in
   let r:u8 =
-    Rust_primitives.Hax.Folds.fold_range (mk_usize 0)
+    Rust_primitives.Hax.Folds.fold_range (sz 0)
       (Core.Slice.impl__len #u8 lhs <: usize)
       (fun r i ->
           let r:u8 = r in
@@ -104,24 +102,21 @@ let compare (lhs rhs: t_Slice u8) =
   in
   is_non_zero r
 
-let compare_ciphertexts_in_constant_time (lhs rhs: t_Slice u8) =
-  Core.Hint.black_box #u8 (compare lhs rhs <: u8)
-
 #push-options "--ifuel 0 --z3rlimit 50"
 
 let select_ct (lhs rhs: t_Slice u8) (selector: u8) =
-  let mask:u8 = Core.Num.impl__u8__wrapping_sub (is_non_zero selector <: u8) (mk_u8 1) in
+  let mask:u8 = Core.Num.impl__u8__wrapping_sub (is_non_zero selector <: u8) 1uy in
   let _:Prims.unit =
     assert (if selector = (mk_u8 0) then mask = ones else mask = zero);
     lognot_lemma mask;
     assert (if selector = (mk_u8 0) then ~.mask = zero else ~.mask = ones)
   in
-  let out:t_Array u8 (mk_usize 32) = Rust_primitives.Hax.repeat (mk_u8 0) (mk_usize 32) in
-  let out:t_Array u8 (mk_usize 32) =
-    Rust_primitives.Hax.Folds.fold_range (mk_usize 0)
+  let out:t_Array u8 (sz 32) = Rust_primitives.Hax.repeat 0uy (sz 32) in
+  let out:t_Array u8 (sz 32) =
+    Rust_primitives.Hax.Folds.fold_range (sz 0)
       Libcrux_ml_kem.Constants.v_SHARED_SECRET_SIZE
       (fun out i ->
-          let out:t_Array u8 (mk_usize 32) = out in
+          let out:t_Array u8 (sz 32) = out in
           let i:usize = i in
           v i <= v Libcrux_ml_kem.Constants.v_SHARED_SECRET_SIZE /\
           (forall j.
@@ -132,7 +127,7 @@ let select_ct (lhs rhs: t_Slice u8) (selector: u8) =
           (forall j. j >= v i ==> Seq.index out j == (mk_u8 0)))
       out
       (fun out i ->
-          let out:t_Array u8 (mk_usize 32) = out in
+          let out:t_Array u8 (sz 32) = out in
           let i:usize = i in
           let _:Prims.unit = assert ((out.[ i ] <: u8) = (mk_u8 0)) in
           let outi:u8 =
@@ -183,7 +178,7 @@ let select_ct (lhs rhs: t_Slice u8) (selector: u8) =
                     (rhs.[ i ] <: u8));
                 assert (outi = (rhs.[ i ] <: u8)))
           in
-          let out:t_Array u8 (mk_usize 32) =
+          let out:t_Array u8 (sz 32) =
             Rust_primitives.Hax.Monomorphized_update_at.update_at_usize out i outi
           in
           out)
@@ -193,9 +188,11 @@ let select_ct (lhs rhs: t_Slice u8) (selector: u8) =
 
 #pop-options
 
+let compare_ciphertexts_in_constant_time (lhs rhs: t_Slice u8) =
+  Core.Hint.black_box #u8 (compare lhs rhs <: u8)
+
 let select_shared_secret_in_constant_time (lhs rhs: t_Slice u8) (selector: u8) =
-  Core.Hint.black_box #(t_Array u8 (mk_usize 32))
-    (select_ct lhs rhs selector <: t_Array u8 (mk_usize 32))
+  Core.Hint.black_box #(t_Array u8 (sz 32)) (select_ct lhs rhs selector <: t_Array u8 (sz 32))
 
 let compare_ciphertexts_select_shared_secret_in_constant_time (lhs_c rhs_c lhs_s rhs_s: t_Slice u8) =
   let selector:u8 = compare_ciphertexts_in_constant_time lhs_c rhs_c in

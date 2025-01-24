@@ -3,7 +3,7 @@ module Libcrux_ml_dsa.Simd.Portable.Vector_type
 open Core
 open FStar.Mul
 
-type t_Coefficients = { f_values:t_Array i32 (mk_usize 8) }
+type t_Coefficients = { f_values:t_Array i32 (sz 8) }
 
 [@@ FStar.Tactics.Typeclasses.tcinstance]
 val impl:Core.Clone.t_Clone t_Coefficients

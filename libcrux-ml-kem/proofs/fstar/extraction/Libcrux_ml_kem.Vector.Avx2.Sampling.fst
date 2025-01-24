@@ -15,7 +15,7 @@ let rejection_sample (input: t_Slice u8) (output: t_Slice i16) =
   let compare_with_field_modulus:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
     Libcrux_intrinsics.Avx2_extract.mm256_cmpgt_epi16 field_modulus potential_coefficients
   in
-  let good:t_Array u8 (mk_usize 2) =
+  let good:t_Array u8 (sz 2) =
     Libcrux_ml_kem.Vector.Avx2.Serialize.serialize_1_ compare_with_field_modulus
   in
   let _:Prims.unit =
@@ -31,9 +31,8 @@ let rejection_sample (input: t_Slice u8) (output: t_Slice i16) =
               (cast (Core.Num.impl__u8__count_ones good.[ sz 0 ]) <: usize) +! sz 8
             }))
   in
-  let lower_shuffles:t_Array u8 (mk_usize 16) =
-    Libcrux_ml_kem.Vector.Rej_sample_table.v_REJECTION_SAMPLE_SHUFFLE_TABLE.[ cast (good.[ mk_usize
-            0 ]
+  let lower_shuffles:t_Array u8 (sz 16) =
+    Libcrux_ml_kem.Vector.Rej_sample_table.v_REJECTION_SAMPLE_SHUFFLE_TABLE.[ cast (good.[ sz 0 ]
           <:
           u8)
       <:
@@ -52,11 +51,10 @@ let rejection_sample (input: t_Slice u8) (output: t_Slice i16) =
     Libcrux_intrinsics.Avx2_extract.mm_storeu_si128 output lower_coefficients
   in
   let sampled_count:usize =
-    cast (Core.Num.impl__u8__count_ones (good.[ mk_usize 0 ] <: u8) <: u32) <: usize
+    cast (Core.Num.impl__u8__count_ones (good.[ sz 0 ] <: u8) <: u32) <: usize
   in
-  let upper_shuffles:t_Array u8 (mk_usize 16) =
-    Libcrux_ml_kem.Vector.Rej_sample_table.v_REJECTION_SAMPLE_SHUFFLE_TABLE.[ cast (good.[ mk_usize
-            1 ]
+  let upper_shuffles:t_Array u8 (sz 16) =
+    Libcrux_ml_kem.Vector.Rej_sample_table.v_REJECTION_SAMPLE_SHUFFLE_TABLE.[ cast (good.[ sz 1 ]
           <:
           u8)
       <:
@@ -66,7 +64,7 @@ let rejection_sample (input: t_Slice u8) (output: t_Slice i16) =
     Libcrux_intrinsics.Avx2_extract.mm_loadu_si128 (upper_shuffles <: t_Slice u8)
   in
   let upper_coefficients:Libcrux_intrinsics.Avx2_extract.t_Vec128 =
-    Libcrux_intrinsics.Avx2_extract.mm256_extracti128_si256 (mk_i32 1) potential_coefficients
+    Libcrux_intrinsics.Avx2_extract.mm256_extracti128_si256 1l potential_coefficients
   in
   let upper_coefficients:Libcrux_intrinsics.Avx2_extract.t_Vec128 =
     Libcrux_intrinsics.Avx2_extract.mm_shuffle_epi8 upper_coefficients upper_shuffles
@@ -75,13 +73,13 @@ let rejection_sample (input: t_Slice u8) (output: t_Slice i16) =
     Rust_primitives.Hax.Monomorphized_update_at.update_at_range output
       ({
           Core.Ops.Range.f_start = sampled_count;
-          Core.Ops.Range.f_end = sampled_count +! mk_usize 8 <: usize
+          Core.Ops.Range.f_end = sampled_count +! sz 8 <: usize
         }
         <:
         Core.Ops.Range.t_Range usize)
       (Libcrux_intrinsics.Avx2_extract.mm_storeu_si128 (output.[ {
                 Core.Ops.Range.f_start = sampled_count;
-                Core.Ops.Range.f_end = sampled_count +! mk_usize 8 <: usize
+                Core.Ops.Range.f_end = sampled_count +! sz 8 <: usize
               }
               <:
               Core.Ops.Range.t_Range usize ]
@@ -92,8 +90,7 @@ let rejection_sample (input: t_Slice u8) (output: t_Slice i16) =
         t_Slice i16)
   in
   let hax_temp_output:usize =
-    sampled_count +!
-    (cast (Core.Num.impl__u8__count_ones (good.[ mk_usize 1 ] <: u8) <: u32) <: usize)
+    sampled_count +! (cast (Core.Num.impl__u8__count_ones (good.[ sz 1 ] <: u8) <: u32) <: usize)
   in
   output, hax_temp_output <: (t_Slice i16 & usize)
 

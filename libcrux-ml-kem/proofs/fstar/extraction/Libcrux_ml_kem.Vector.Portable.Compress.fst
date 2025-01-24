@@ -5,26 +5,10 @@ open FStar.Mul
 
 #push-options "--z3rlimit 200 --ext context_pruning"
 
-let compress_ciphertext_coefficient (coefficient_bits: u8) (fe: u16) =
-  let compressed:u64 = (cast (fe <: u16) <: u64) <<! coefficient_bits in
-  let compressed:u64 = compressed +! mk_u64 1664 in
-  let compressed:u64 = compressed *! mk_u64 10321340 in
-  let compressed:u64 = compressed >>! mk_i32 35 in
-  cast (Libcrux_ml_kem.Vector.Portable.Arithmetic.get_n_least_significant_bits coefficient_bits
-        (cast (compressed <: u64) <: u32)
-      <:
-      u32)
-  <:
-  i16
-
-#pop-options
-
-#push-options "--z3rlimit 200 --ext context_pruning"
-
 let compress_message_coefficient (fe: u16) =
-  let (shifted: i16):i16 = mk_i16 1664 -! (cast (fe <: u16) <: i16) in
+  let (shifted: i16):i16 = 1664s -! (cast (fe <: u16) <: i16) in
   let _:Prims.unit = assert (v shifted == 1664 - v fe) in
-  let mask:i16 = shifted >>! mk_i32 15 in
+  let mask:i16 = shifted >>! 15l in
   let _:Prims.unit =
     assert (v mask = v shifted / pow2 15);
     assert (if v shifted < 0 then mask = ones else mask = zero)
@@ -41,13 +25,13 @@ let compress_message_coefficient (fe: u16) =
     assert (v shifted >= 0 ==> v shifted_to_positive = v shifted);
     assert (shifted_to_positive >=. mk_i16 0)
   in
-  let shifted_positive_in_range:i16 = shifted_to_positive -! mk_i16 832 in
+  let shifted_positive_in_range:i16 = shifted_to_positive -! 832s in
   let _:Prims.unit =
     assert (1664 - v fe >= 0 ==> v shifted_positive_in_range == 832 - v fe);
     assert (1664 - v fe < 0 ==> v shifted_positive_in_range == - 2497 + v fe)
   in
-  let r0:i16 = shifted_positive_in_range >>! mk_i32 15 in
-  let (r1: i16):i16 = r0 &. mk_i16 1 in
+  let r0:i16 = shifted_positive_in_range >>! 15l in
+  let (r1: i16):i16 = r0 &. 1s in
   let res:u8 = cast (r1 <: i16) <: u8 in
   let _:Prims.unit =
     assert (v r0 = v shifted_positive_in_range / pow2 15);
@@ -63,77 +47,21 @@ let compress_message_coefficient (fe: u16) =
 
 #pop-options
 
-#push-options "--fuel 0 --ifuel 0 --z3rlimit 2000"
+#push-options "--z3rlimit 200 --ext context_pruning"
 
-let compress
-      (v_COEFFICIENT_BITS: i32)
-      (a: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
-     =
-  let _:Prims.unit =
-    assert (v (cast (v_COEFFICIENT_BITS) <: u8) == v v_COEFFICIENT_BITS);
-    assert (v (cast (v_COEFFICIENT_BITS) <: u32) == v v_COEFFICIENT_BITS);
-    assert (v (cast (Libcrux_ml_kem.Vector.Traits.v_FIELD_MODULUS) <: u16) == 3329)
-  in
-  let _:Prims.unit =
-    assert (forall (i: nat).
-          i < 16 ==>
-          (cast (a.f_elements.[ sz i ]) <: u16) <.
-          (cast (Libcrux_ml_kem.Vector.Traits.v_FIELD_MODULUS) <: u16))
-  in
-  let a:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
-    Rust_primitives.Hax.Folds.fold_range (mk_usize 0)
-      Libcrux_ml_kem.Vector.Traits.v_FIELD_ELEMENTS_IN_VECTOR
-      (fun a i ->
-          let a:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector = a in
-          let i:usize = i in
-          (v i < 16 ==>
-            (forall (j: nat).
-                (j >= v i /\ j < 16) ==>
-                v (cast (a.f_elements.[ sz j ]) <: u16) <
-                v (cast (Libcrux_ml_kem.Vector.Traits.v_FIELD_MODULUS) <: u16))) /\
-          (forall (j: nat).
-              j < v i ==>
-              v (a.f_elements.[ sz j ] <: i16) >= 0 /\
-              v (a.f_elements.[ sz j ] <: i16) < pow2 (v (cast (v_COEFFICIENT_BITS) <: u32))))
-      a
-      (fun a i ->
-          let a:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector = a in
-          let i:usize = i in
-          let a:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
-            {
-              a with
-              Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements
-              =
-              Rust_primitives.Hax.Monomorphized_update_at.update_at_usize a
-                  .Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements
-                i
-                (compress_ciphertext_coefficient (cast (v_COEFFICIENT_BITS <: i32) <: u8)
-                    (cast (a.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ i ] <: i16)
-                      <:
-                      u16)
-                  <:
-                  i16)
-            }
-            <:
-            Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
-          in
-          let _:Prims.unit =
-            assert (v (a.f_elements.[ i ] <: i16) >= 0 /\
-                v (a.f_elements.[ i ] <: i16) < pow2 (v (cast (v_COEFFICIENT_BITS) <: u32)))
-          in
-          a)
-  in
-  let _:Prims.unit =
-    assert (forall (i: nat).
-          i < 16 ==>
-          v (a.f_elements.[ sz i ] <: i16) >= 0 /\
-          v (a.f_elements.[ sz i ] <: i16) < pow2 (v v_COEFFICIENT_BITS))
-  in
-  a
+let compress_ciphertext_coefficient (coefficient_bits: u8) (fe: u16) =
+  let compressed:u64 = (cast (fe <: u16) <: u64) <<! coefficient_bits in
+  let compressed:u64 = compressed +! 1664uL in
+  let compressed:u64 = compressed *! 10321340uL in
+  let compressed:u64 = compressed >>! 35l in
+  cast (Libcrux_ml_kem.Vector.Portable.Arithmetic.get_n_least_significant_bits coefficient_bits
+        (cast (compressed <: u64) <: u32)
+      <:
+      u32)
+  <:
+  i16
 
 #pop-options
-
-#push-options "--fuel 0 --ifuel 0 --z3rlimit 2000"
 
 let compress_message_coefficient_range_helper (fe: u16) : Lemma
   (requires fe <. (cast (Libcrux_ml_kem.Vector.Traits.v_FIELD_MODULUS) <: u16))
@@ -141,6 +69,8 @@ let compress_message_coefficient_range_helper (fe: u16) : Lemma
     v (cast (compress_message_coefficient fe) <: i16) < 2) =
   assert (v (cast (compress_message_coefficient fe) <: i16) >= 0 /\
     v (cast (compress_message_coefficient fe) <: i16) < 2)
+
+#push-options "--fuel 0 --ifuel 0 --z3rlimit 2000"
 
 let compress_1_ (a: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) =
   let _:Prims.unit =
@@ -150,7 +80,7 @@ let compress_1_ (a: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
           (cast (Libcrux_ml_kem.Vector.Traits.v_FIELD_MODULUS) <: u16))
   in
   let a:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
-    Rust_primitives.Hax.Folds.fold_range (mk_usize 0)
+    Rust_primitives.Hax.Folds.fold_range (sz 0)
       Libcrux_ml_kem.Vector.Traits.v_FIELD_ELEMENTS_IN_VECTOR
       (fun a i ->
           let a:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector = a in
@@ -205,6 +135,76 @@ let compress_1_ (a: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
 
 #pop-options
 
+#push-options "--fuel 0 --ifuel 0 --z3rlimit 2000"
+
+let compress
+      (v_COEFFICIENT_BITS: i32)
+      (a: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
+     =
+  let _:Prims.unit =
+    assert (v (cast (v_COEFFICIENT_BITS) <: u8) == v v_COEFFICIENT_BITS);
+    assert (v (cast (v_COEFFICIENT_BITS) <: u32) == v v_COEFFICIENT_BITS);
+    assert (v (cast (Libcrux_ml_kem.Vector.Traits.v_FIELD_MODULUS) <: u16) == 3329)
+  in
+  let _:Prims.unit =
+    assert (forall (i: nat).
+          i < 16 ==>
+          (cast (a.f_elements.[ sz i ]) <: u16) <.
+          (cast (Libcrux_ml_kem.Vector.Traits.v_FIELD_MODULUS) <: u16))
+  in
+  let a:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
+    Rust_primitives.Hax.Folds.fold_range (sz 0)
+      Libcrux_ml_kem.Vector.Traits.v_FIELD_ELEMENTS_IN_VECTOR
+      (fun a i ->
+          let a:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector = a in
+          let i:usize = i in
+          (v i < 16 ==>
+            (forall (j: nat).
+                (j >= v i /\ j < 16) ==>
+                v (cast (a.f_elements.[ sz j ]) <: u16) <
+                v (cast (Libcrux_ml_kem.Vector.Traits.v_FIELD_MODULUS) <: u16))) /\
+          (forall (j: nat).
+              j < v i ==>
+              v (a.f_elements.[ sz j ] <: i16) >= 0 /\
+              v (a.f_elements.[ sz j ] <: i16) < pow2 (v (cast (v_COEFFICIENT_BITS) <: u32))))
+      a
+      (fun a i ->
+          let a:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector = a in
+          let i:usize = i in
+          let a:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
+            {
+              a with
+              Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements
+              =
+              Rust_primitives.Hax.Monomorphized_update_at.update_at_usize a
+                  .Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements
+                i
+                (compress_ciphertext_coefficient (cast (v_COEFFICIENT_BITS <: i32) <: u8)
+                    (cast (a.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ i ] <: i16)
+                      <:
+                      u16)
+                  <:
+                  i16)
+            }
+            <:
+            Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
+          in
+          let _:Prims.unit =
+            assert (v (a.f_elements.[ i ] <: i16) >= 0 /\
+                v (a.f_elements.[ i ] <: i16) < pow2 (v (cast (v_COEFFICIENT_BITS) <: u32)))
+          in
+          a)
+  in
+  let _:Prims.unit =
+    assert (forall (i: nat).
+          i < 16 ==>
+          v (a.f_elements.[ sz i ] <: i16) >= 0 /\
+          v (a.f_elements.[ sz i ] <: i16) < pow2 (v v_COEFFICIENT_BITS))
+  in
+  a
+
+#pop-options
+
 #push-options "--z3rlimit 300 --ext context_pruning"
 
 let decompress_ciphertext_coefficient
@@ -219,7 +219,7 @@ let decompress_ciphertext_coefficient
     assert_norm (pow2 11 == 2048)
   in
   let a:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
-    Rust_primitives.Hax.Folds.fold_range (mk_usize 0)
+    Rust_primitives.Hax.Folds.fold_range (sz 0)
       Libcrux_ml_kem.Vector.Traits.v_FIELD_ELEMENTS_IN_VECTOR
       (fun a i ->
           let a:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector = a in
@@ -257,14 +257,14 @@ let decompress_ciphertext_coefficient
                 v (decompressed <<! mk_i32 1) + v (mk_i32 1 <<! v_COEFFICIENT_BITS))
           in
           let decompressed:i32 =
-            (decompressed <<! mk_i32 1 <: i32) +! (mk_i32 1 <<! v_COEFFICIENT_BITS <: i32)
+            (decompressed <<! 1l <: i32) +! (1l <<! v_COEFFICIENT_BITS <: i32)
           in
           let _:Prims.unit =
             assert (v (v_COEFFICIENT_BITS +! mk_i32 1) == v v_COEFFICIENT_BITS + 1);
             assert (v (decompressed >>! (v_COEFFICIENT_BITS +! mk_i32 1 <: i32)) ==
                 v decompressed / pow2 (v v_COEFFICIENT_BITS + 1))
           in
-          let decompressed:i32 = decompressed >>! (v_COEFFICIENT_BITS +! mk_i32 1 <: i32) in
+          let decompressed:i32 = decompressed >>! (v_COEFFICIENT_BITS +! 1l <: i32) in
           let _:Prims.unit =
             assert (v decompressed < v Libcrux_ml_kem.Vector.Traits.v_FIELD_MODULUS);
             assert (v (cast decompressed <: i16) < v Libcrux_ml_kem.Vector.Traits.v_FIELD_MODULUS)

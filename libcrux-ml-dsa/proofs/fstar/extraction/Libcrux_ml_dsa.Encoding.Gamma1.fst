@@ -9,65 +9,6 @@ let _ =
   let open Libcrux_ml_dsa.Simd.Traits in
   ()
 
-let deserialize
-      (#v_SIMDUnit: Type0)
-      (#[FStar.Tactics.Typeclasses.tcresolve ()]
-          i1:
-          Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit)
-      (gamma1_exponent: usize)
-      (serialized: t_Slice u8)
-      (result: Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
-     =
-  let result:Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit =
-    Rust_primitives.Hax.Folds.fold_range (mk_usize 0)
-      (Core.Slice.impl__len #v_SIMDUnit
-          (result.Libcrux_ml_dsa.Polynomial.f_simd_units <: t_Slice v_SIMDUnit)
-        <:
-        usize)
-      (fun result temp_1_ ->
-          let result:Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit = result in
-          let _:usize = temp_1_ in
-          true)
-      result
-      (fun result i ->
-          let result:Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit = result in
-          let i:usize = i in
-          {
-            result with
-            Libcrux_ml_dsa.Polynomial.f_simd_units
-            =
-            Rust_primitives.Hax.Monomorphized_update_at.update_at_usize result
-                .Libcrux_ml_dsa.Polynomial.f_simd_units
-              i
-              (Libcrux_ml_dsa.Simd.Traits.f_gamma1_deserialize #v_SIMDUnit
-                  #FStar.Tactics.Typeclasses.solve
-                  (serialized.[ {
-                        Core.Ops.Range.f_start
-                        =
-                        i *! (gamma1_exponent +! mk_usize 1 <: usize) <: usize;
-                        Core.Ops.Range.f_end
-                        =
-                        (i +! mk_usize 1 <: usize) *! (gamma1_exponent +! mk_usize 1 <: usize)
-                        <:
-                        usize
-                      }
-                      <:
-                      Core.Ops.Range.t_Range usize ]
-                    <:
-                    t_Slice u8)
-                  (result.Libcrux_ml_dsa.Polynomial.f_simd_units.[ i ] <: v_SIMDUnit)
-                  gamma1_exponent
-                <:
-                v_SIMDUnit)
-            <:
-            t_Array v_SIMDUnit (mk_usize 32)
-          }
-          <:
-          Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
-  in
-  let _:Prims.unit = () <: Prims.unit in
-  result
-
 let serialize
       (#v_SIMDUnit: Type0)
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
@@ -91,10 +32,10 @@ let serialize
           let i, simd_unit:(usize & v_SIMDUnit) = temp_1_ in
           Rust_primitives.Hax.Monomorphized_update_at.update_at_range serialized
             ({
-                Core.Ops.Range.f_start = i *! (gamma1_exponent +! mk_usize 1 <: usize) <: usize;
+                Core.Ops.Range.f_start = i *! (gamma1_exponent +! sz 1 <: usize) <: usize;
                 Core.Ops.Range.f_end
                 =
-                (i +! mk_usize 1 <: usize) *! (gamma1_exponent +! mk_usize 1 <: usize) <: usize
+                (i +! sz 1 <: usize) *! (gamma1_exponent +! sz 1 <: usize) <: usize
               }
               <:
               Core.Ops.Range.t_Range usize)
@@ -102,14 +43,10 @@ let serialize
                 #FStar.Tactics.Typeclasses.solve
                 simd_unit
                 (serialized.[ {
-                      Core.Ops.Range.f_start
-                      =
-                      i *! (gamma1_exponent +! mk_usize 1 <: usize) <: usize;
+                      Core.Ops.Range.f_start = i *! (gamma1_exponent +! sz 1 <: usize) <: usize;
                       Core.Ops.Range.f_end
                       =
-                      (i +! mk_usize 1 <: usize) *! (gamma1_exponent +! mk_usize 1 <: usize)
-                      <:
-                      usize
+                      (i +! sz 1 <: usize) *! (gamma1_exponent +! sz 1 <: usize) <: usize
                     }
                     <:
                     Core.Ops.Range.t_Range usize ]
@@ -123,3 +60,58 @@ let serialize
   in
   let _:Prims.unit = () <: Prims.unit in
   serialized
+
+let deserialize
+      (#v_SIMDUnit: Type0)
+      (#[FStar.Tactics.Typeclasses.tcresolve ()]
+          i1:
+          Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit)
+      (gamma1_exponent: usize)
+      (serialized: t_Slice u8)
+      (result: Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
+     =
+  let result:Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit =
+    Rust_primitives.Hax.Folds.fold_range (sz 0)
+      (Core.Slice.impl__len #v_SIMDUnit
+          (result.Libcrux_ml_dsa.Polynomial.f_simd_units <: t_Slice v_SIMDUnit)
+        <:
+        usize)
+      (fun result temp_1_ ->
+          let result:Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit = result in
+          let _:usize = temp_1_ in
+          true)
+      result
+      (fun result i ->
+          let result:Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit = result in
+          let i:usize = i in
+          {
+            result with
+            Libcrux_ml_dsa.Polynomial.f_simd_units
+            =
+            Rust_primitives.Hax.Monomorphized_update_at.update_at_usize result
+                .Libcrux_ml_dsa.Polynomial.f_simd_units
+              i
+              (Libcrux_ml_dsa.Simd.Traits.f_gamma1_deserialize #v_SIMDUnit
+                  #FStar.Tactics.Typeclasses.solve
+                  (serialized.[ {
+                        Core.Ops.Range.f_start = i *! (gamma1_exponent +! sz 1 <: usize) <: usize;
+                        Core.Ops.Range.f_end
+                        =
+                        (i +! sz 1 <: usize) *! (gamma1_exponent +! sz 1 <: usize) <: usize
+                      }
+                      <:
+                      Core.Ops.Range.t_Range usize ]
+                    <:
+                    t_Slice u8)
+                  (result.Libcrux_ml_dsa.Polynomial.f_simd_units.[ i ] <: v_SIMDUnit)
+                  gamma1_exponent
+                <:
+                v_SIMDUnit)
+            <:
+            t_Array v_SIMDUnit (sz 32)
+          }
+          <:
+          Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
+  in
+  let _:Prims.unit = () <: Prims.unit in
+  result
