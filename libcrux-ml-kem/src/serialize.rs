@@ -11,20 +11,20 @@ use crate::{
 #[hax_lib::fstar::before(
     interface,
     r#"[@@ "opaque_to_smt"]
-let coefficients_field_modulus_range (#v_Vector: Type0)
-      {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
-      (re: Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) =
-    forall (i:nat). i < 16 ==> field_modulus_range (Seq.index re.f_coefficients i)"#
-)]
-#[hax_lib::fstar::before(
-    interface,
-    r#"[@@ "opaque_to_smt"]
 let field_modulus_range (#v_Vector: Type0)
         {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
         (a: v_Vector) =
     let coef = Libcrux_ml_kem.Vector.Traits.f_to_i16_array a in
     forall (i:nat). i < 16 ==> v (Seq.index coef i) > -(v $FIELD_MODULUS) /\
         v (Seq.index coef i) < v $FIELD_MODULUS"#
+)]
+#[hax_lib::fstar::before(
+    interface,
+    r#"[@@ "opaque_to_smt"]
+let coefficients_field_modulus_range (#v_Vector: Type0)
+      {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
+      (re: Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) =
+    forall (i:nat). i < 16 ==> field_modulus_range (Seq.index re.f_coefficients i)"#
 )]
 #[hax_lib::fstar::verification_status(panic_free)]
 #[hax_lib::requires(fstar!(r#"field_modulus_range $a"#))]
@@ -275,8 +275,7 @@ pub(super) fn compress_then_serialize_ring_element_u<
     hax_lib::fstar!(
         r#"assert (
         (v (cast $COMPRESSION_FACTOR <: u32) == 10) \/
-        (v (cast $COMPRESSION_FACTOR <: u32) == 11));
-        Rust_primitives.Integers.mk_int_equiv_lemma #usize_inttype (v $COMPRESSION_FACTOR)"#
+        (v (cast $COMPRESSION_FACTOR <: u32) == 11))"#
     );
     match COMPRESSION_FACTOR as u32 {
         10 => compress_then_serialize_10(re),
@@ -361,8 +360,7 @@ pub(super) fn compress_then_serialize_ring_element_v<
     hax_lib::fstar!(
         r#"assert (
         (v (cast $COMPRESSION_FACTOR <: u32) == 4) \/
-        (v (cast $COMPRESSION_FACTOR <: u32) == 5));
-        Rust_primitives.Integers.mk_int_equiv_lemma #usize_inttype (v $COMPRESSION_FACTOR)"#
+        (v (cast $COMPRESSION_FACTOR <: u32) == 5))"#
     );
     match COMPRESSION_FACTOR as u32 {
         4 => compress_then_serialize_4(re, out),

@@ -109,7 +109,7 @@ fn deserialize_12(a: &[u8]) -> PortableVector {
 #[hax_lib::fstar::after(r#"#pop-options"#)]
 #[hax_lib::attributes]
 impl Operations for PortableVector {
-    #[ensures(|out| fstar!(r#"impl.f_repr out == Seq.create 16 0s"#))]
+    #[ensures(|out| fstar!(r#"impl.f_repr out == Seq.create 16 (mk_i16 0)"#))]
     fn ZERO() -> Self {
         zero()
     }
@@ -180,13 +180,13 @@ impl Operations for PortableVector {
     }
 
     #[requires(SHIFT_BY >= 0 && SHIFT_BY < 16)]
-    #[ensures(|out| fstar!(r#"(v_SHIFT_BY >=. 0l /\ v_SHIFT_BY <. 16l) ==> impl.f_repr out == Spec.Utils.map_array (fun x -> x >>! ${SHIFT_BY}) (impl.f_repr $v)"#))]
+    #[ensures(|out| fstar!(r#"(v_SHIFT_BY >=. (mk_i32 0) /\ v_SHIFT_BY <. (mk_i32 16)) ==> impl.f_repr out == Spec.Utils.map_array (fun x -> x >>! ${SHIFT_BY}) (impl.f_repr $v)"#))]
     fn shift_right<const SHIFT_BY: i32>(v: Self) -> Self {
         shift_right::<{ SHIFT_BY }>(v)
     }
 
     #[requires(fstar!(r#"Spec.Utils.is_i16b_array (pow2 12 - 1) (impl.f_repr $v)"#))]
-    #[ensures(|out| fstar!(r#"impl.f_repr out == Spec.Utils.map_array (fun x -> if x >=. 3329s then x -! 3329s else x) (impl.f_repr $v)"#))]
+    #[ensures(|out| fstar!(r#"impl.f_repr out == Spec.Utils.map_array (fun x -> if x >=. (mk_i16 3329) then x -! (mk_i16 3329) else x) (impl.f_repr $v)"#))]
     fn cond_subtract_3329(v: Self) -> Self {
         cond_subtract_3329(v)
     }

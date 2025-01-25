@@ -26,6 +26,7 @@ members = [
     "poly1305",
     "chacha20poly1305",
     "rsa",
+    "blake2",
 ]
 
 [workspace.package]
@@ -87,7 +88,7 @@ log = { version = "0.4", optional = true }
 # WASM API
 wasm-bindgen = { version = "0.2.87", optional = true }
 getrandom = { version = "0.2", features = ["js"], optional = true }
-hax-lib = { version = "0.1.0-alpha.1", git = "https://github.com/hacspec/hax/" }
+hax-lib = { version = "0.1.0", git = "https://github.com/hacspec/hax/" }
 
 [dev-dependencies]
 libcrux = { path = ".", features = ["rand", "tests"] }

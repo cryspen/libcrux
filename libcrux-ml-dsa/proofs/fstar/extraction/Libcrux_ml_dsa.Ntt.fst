@@ -9,27 +9,6 @@ let _ =
   let open Libcrux_ml_dsa.Simd.Traits in
   ()
 
-let invert_ntt_montgomery
-      (#v_SIMDUnit: Type0)
-      (#[FStar.Tactics.Typeclasses.tcresolve ()]
-          i1:
-          Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit)
-      (re: Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
-     =
-  let re:Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit =
-    {
-      re with
-      Libcrux_ml_dsa.Polynomial.f_simd_units
-      =
-      Libcrux_ml_dsa.Simd.Traits.f_invert_ntt_montgomery #v_SIMDUnit
-        #FStar.Tactics.Typeclasses.solve
-        re.Libcrux_ml_dsa.Polynomial.f_simd_units
-    }
-    <:
-    Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit
-  in
-  re
-
 let ntt
       (#v_SIMDUnit: Type0)
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
@@ -51,6 +30,27 @@ let ntt
   in
   re
 
+let invert_ntt_montgomery
+      (#v_SIMDUnit: Type0)
+      (#[FStar.Tactics.Typeclasses.tcresolve ()]
+          i1:
+          Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit)
+      (re: Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
+     =
+  let re:Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit =
+    {
+      re with
+      Libcrux_ml_dsa.Polynomial.f_simd_units
+      =
+      Libcrux_ml_dsa.Simd.Traits.f_invert_ntt_montgomery #v_SIMDUnit
+        #FStar.Tactics.Typeclasses.solve
+        re.Libcrux_ml_dsa.Polynomial.f_simd_units
+    }
+    <:
+    Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit
+  in
+  re
+
 let ntt_multiply_montgomery
       (#v_SIMDUnit: Type0)
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
@@ -59,7 +59,7 @@ let ntt_multiply_montgomery
       (lhs rhs: Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
      =
   let lhs:Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit =
-    Rust_primitives.Hax.Folds.fold_range (sz 0)
+    Rust_primitives.Hax.Folds.fold_range (mk_usize 0)
       (Core.Slice.impl__len #v_SIMDUnit
           (lhs.Libcrux_ml_dsa.Polynomial.f_simd_units <: t_Slice v_SIMDUnit)
         <:
@@ -86,7 +86,7 @@ let ntt_multiply_montgomery
                 <:
                 v_SIMDUnit)
             <:
-            t_Array v_SIMDUnit (sz 32)
+            t_Array v_SIMDUnit (mk_usize 32)
           }
           <:
           Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)

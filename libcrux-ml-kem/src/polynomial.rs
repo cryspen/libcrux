@@ -31,32 +31,20 @@ pub(crate) const VECTORS_IN_RING_ELEMENT: usize =
     hax,
     hax_lib::fstar::after(
         interface,
-        "let to_spec_matrix_t (#r:Spec.MLKEM.rank) (#v_Vector: Type0)
-    {| i2: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
-    (m:t_Array (t_Array (t_PolynomialRingElement v_Vector) r) r) : Spec.MLKEM.matrix r =
-    createi r (fun i -> to_spec_vector_t #r #v_Vector (m.[i]))"
-    )
-)]
-#[cfg_attr(
-    hax,
-    hax_lib::fstar::after(
-        interface,
-        "let to_spec_vector_t (#r:Spec.MLKEM.rank) (#v_Vector: Type0)
-    {| i2: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
-    (m:t_Array (t_PolynomialRingElement v_Vector) r) : Spec.MLKEM.vector r =
-    createi r (fun i -> to_spec_poly_t #v_Vector (m.[i]))"
-    )
-)]
-#[cfg_attr(
-    hax,
-    hax_lib::fstar::after(
-        interface,
         "let to_spec_poly_t (#v_Vector: Type0)
     {| i2: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
     (p: t_PolynomialRingElement v_Vector) : Spec.MLKEM.polynomial =
     createi (sz 256) (fun i -> Spec.MLKEM.Math.to_spec_fe 
                                 (Seq.index (i2._super_12682756204189288427.f_repr 
-                                    (Seq.index p.f_coefficients (v i / 16))) (v i % 16)))"
+                                    (Seq.index p.f_coefficients (v i / 16))) (v i % 16)))
+let to_spec_vector_t (#r:Spec.MLKEM.rank) (#v_Vector: Type0)
+    {| i2: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
+    (m:t_Array (t_PolynomialRingElement v_Vector) r) : Spec.MLKEM.vector r =
+    createi r (fun i -> to_spec_poly_t #v_Vector (m.[i]))
+let to_spec_matrix_t (#r:Spec.MLKEM.rank) (#v_Vector: Type0)
+    {| i2: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
+    (m:t_Array (t_Array (t_PolynomialRingElement v_Vector) r) r) : Spec.MLKEM.matrix r =
+    createi r (fun i -> to_spec_vector_t #r #v_Vector (m.[i]))"
     )
 )]
 // XXX: We don't want to copy this. But for eurydice we have to have this.

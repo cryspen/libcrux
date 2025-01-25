@@ -9,26 +9,12 @@ let _ =
   let open Libcrux_ml_kem.Vector.Traits in
   ()
 
-val ntt_layer_int_vec_step
-      (#v_Vector: Type0)
-      {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
-      (a b: v_Vector)
-      (zeta_r: i16)
-    : Prims.Pure (v_Vector & v_Vector)
-      (requires
-        Spec.Utils.is_i16b 1664 zeta_r /\
-        (let t = Libcrux_ml_kem.Vector.Traits.montgomery_multiply_fe b zeta_r in
-          (forall i.
-              i < 16 ==>
-              Spec.Utils.is_intb (pow2 15 - 1)
-                (v (Seq.index (Libcrux_ml_kem.Vector.Traits.f_to_i16_array a) i) -
-                  v (Seq.index (Libcrux_ml_kem.Vector.Traits.f_to_i16_array t) i))) /\
-          (forall i.
-              i < 16 ==>
-              Spec.Utils.is_intb (pow2 15 - 1)
-                (v (Seq.index (Libcrux_ml_kem.Vector.Traits.f_to_i16_array a) i) +
-                  v (Seq.index (Libcrux_ml_kem.Vector.Traits.f_to_i16_array t) i)))))
-      (fun _ -> Prims.l_True)
+[@@ "opaque_to_smt"]
+   let ntt_re_range_2 (#v_Vector: Type0)
+         {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
+         (re: Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) =
+       forall (i:nat). i < 16 ==> Spec.Utils.is_i16b_array_opaque (11207+5*3328)
+            (Libcrux_ml_kem.Vector.Traits.f_to_i16_array (re.f_coefficients.[ sz i ]))
 
 [@@ "opaque_to_smt"]
     let ntt_re_range_1 (#v_Vector: Type0)
@@ -36,13 +22,6 @@ val ntt_layer_int_vec_step
             (re: Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) =
         forall (i:nat). i < 16 ==> Spec.Utils.is_i16b_array_opaque (11207+6*3328)
                 (Libcrux_ml_kem.Vector.Traits.f_to_i16_array (re.f_coefficients.[ sz i ]))
-
-[@@ "opaque_to_smt"]
-   let ntt_re_range_2 (#v_Vector: Type0)
-         {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
-         (re: Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) =
-       forall (i:nat). i < 16 ==> Spec.Utils.is_i16b_array_opaque (11207+5*3328)
-            (Libcrux_ml_kem.Vector.Traits.f_to_i16_array (re.f_coefficients.[ sz i ]))
 
 val ntt_at_layer_1_
       (#v_Vector: Type0)
@@ -106,6 +85,27 @@ val ntt_at_layer_3_
           in
           ntt_re_range_3 re_future /\ v zeta_i_future == 31)
 
+val ntt_layer_int_vec_step
+      (#v_Vector: Type0)
+      {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
+      (a b: v_Vector)
+      (zeta_r: i16)
+    : Prims.Pure (v_Vector & v_Vector)
+      (requires
+        Spec.Utils.is_i16b 1664 zeta_r /\
+        (let t = Libcrux_ml_kem.Vector.Traits.montgomery_multiply_fe b zeta_r in
+          (forall i.
+              i < 16 ==>
+              Spec.Utils.is_intb (pow2 15 - 1)
+                (v (Seq.index (Libcrux_ml_kem.Vector.Traits.f_to_i16_array a) i) -
+                  v (Seq.index (Libcrux_ml_kem.Vector.Traits.f_to_i16_array t) i))) /\
+          (forall i.
+              i < 16 ==>
+              Spec.Utils.is_intb (pow2 15 - 1)
+                (v (Seq.index (Libcrux_ml_kem.Vector.Traits.f_to_i16_array a) i) +
+                  v (Seq.index (Libcrux_ml_kem.Vector.Traits.f_to_i16_array t) i)))))
+      (fun _ -> Prims.l_True)
+
 val ntt_at_layer_4_plus
       (#v_Vector: Type0)
       {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
@@ -133,8 +133,8 @@ val ntt_at_layer_4_plus
         (re_0 re_1: v_Vector) =
     (forall i. i < 16 ==>
       Spec.Utils.is_intb (pow2 15 - 1)
-      (v (Seq.index (Libcrux_ml_kem.Vector.Traits.f_to_i16_array re_1) i) * v (-1600s))) /\
-    (let t = Libcrux_ml_kem.Vector.Traits.f_multiply_by_constant re_1 (-1600s) in
+      (v (Seq.index (Libcrux_ml_kem.Vector.Traits.f_to_i16_array re_1) i) * v ((mk_i16 (-1600))))) /\
+    (let t = Libcrux_ml_kem.Vector.Traits.f_multiply_by_constant re_1 ((mk_i16 (-1600))) in
     (forall i. i < 16 ==> 
       Spec.Utils.is_intb (pow2 15 - 1) 
         (v (Seq.index (Libcrux_ml_kem.Vector.Traits.f_to_i16_array re_0) i) - 

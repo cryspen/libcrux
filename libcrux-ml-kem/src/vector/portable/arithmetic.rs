@@ -30,8 +30,8 @@ pub(crate) fn get_n_least_significant_bits(n: u8, value: u32) -> u32 {
         "calc (==) {
     v res;
     (==) { }
-    v (logand value ((1ul <<! n) -! 1ul));
-    (==) {mk_int_equiv_lemma #u32_inttype 1} 
+    v (logand value (((mk_u32 1) <<! n) -! (mk_u32 1)));
+    (==) {} 
     v (logand value (((mk_int 1) <<! n) -! (mk_int 1)));
     (==) { }
     v (logand value (mk_int ((1 * pow2 (v n)) % pow2 32) -! (mk_int 1)));
@@ -146,7 +146,7 @@ pub fn bitwise_and_with_constant(mut vec: PortableVector, c: i16) -> PortableVec
 
 #[inline(always)]
 #[hax_lib::requires(SHIFT_BY >= 0 && SHIFT_BY < 16)]
-#[hax_lib::ensures(|result| fstar!(r#"(v_SHIFT_BY >=. 0l /\ v_SHIFT_BY <. 16l) ==> 
+#[hax_lib::ensures(|result| fstar!(r#"(v_SHIFT_BY >=. (mk_i32 0) /\ v_SHIFT_BY <. (mk_i32 16)) ==> 
         ${result}.f_elements == Spec.Utils.map_array (fun x -> x >>! ${SHIFT_BY}) (${vec}.f_elements)"#))]
 pub fn shift_right<const SHIFT_BY: i32>(mut vec: PortableVector) -> PortableVector {
     let _vec0 = vec;
@@ -173,7 +173,7 @@ pub fn shift_right<const SHIFT_BY: i32>(mut vec: PortableVector) -> PortableVect
 #[hax_lib::fstar::options("--z3rlimit 300")]
 #[hax_lib::requires(fstar!(r#"Spec.Utils.is_i16b_array (pow2 12 - 1) ${vec}.f_elements"#))]
 #[hax_lib::ensures(|result| fstar!(r#"${result}.f_elements == Spec.Utils.map_array 
-                (fun x -> if x >=. 3329s then x -! 3329s else x) (${vec}.f_elements)"#))]
+                (fun x -> if x >=. (mk_i16 3329) then x -! (mk_i16 3329) else x) (${vec}.f_elements)"#))]
 pub fn cond_subtract_3329(mut vec: PortableVector) -> PortableVector {
     let _vec0 = vec;
     for i in 0..FIELD_ELEMENTS_IN_VECTOR {
@@ -182,7 +182,7 @@ pub fn cond_subtract_3329(mut vec: PortableVector) -> PortableVector {
                 r#"
               (forall j. j < v i ==> Seq.index ${vec}.f_elements j == 
                                      (let x = Seq.index ${_vec0}.f_elements j in
-                                      if x >=. 3329s then x -! 3329s else x)) /\
+                                      if x >=. (mk_i16 3329) then x -! (mk_i16 3329) else x)) /\
               (forall j. j >= v i ==> Seq.index ${vec}.f_elements j == Seq.index ${_vec0}.f_elements j)"#
             )
         });
@@ -192,7 +192,7 @@ pub fn cond_subtract_3329(mut vec: PortableVector) -> PortableVector {
     }
     hax_lib::fstar!(
         r#"Seq.lemma_eq_intro ${vec}.f_elements (Spec.Utils.map_array 
-                            (fun x -> if x >=. 3329s then x -! 3329s else x) ${_vec0}.f_elements)"#
+                            (fun x -> if x >=. (mk_i16 3329) then x -! (mk_i16 3329) else x) ${_vec0}.f_elements)"#
     );
     vec
 }
