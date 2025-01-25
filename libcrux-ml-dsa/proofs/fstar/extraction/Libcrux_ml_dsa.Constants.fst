@@ -23,19 +23,19 @@ let impl_1 = impl_1'
 let beta (ones_in_verifier_challenge: usize) (eta: t_Eta) =
   let (eta_val: usize):usize =
     match eta <: t_Eta with
-    | Eta_Two  -> sz 2
-    | Eta_Four  -> sz 4
+    | Eta_Two  -> mk_usize 2
+    | Eta_Four  -> mk_usize 4
   in
   cast (ones_in_verifier_challenge *! eta_val <: usize) <: i32
 
 let error_ring_element_size (bits_per_error_coefficient: usize) =
-  (bits_per_error_coefficient *! v_COEFFICIENTS_IN_RING_ELEMENT <: usize) /! sz 8
+  (bits_per_error_coefficient *! v_COEFFICIENTS_IN_RING_ELEMENT <: usize) /! mk_usize 8
 
 let gamma1_ring_element_size (bits_per_gamma1_coefficient: usize) =
-  (bits_per_gamma1_coefficient *! v_COEFFICIENTS_IN_RING_ELEMENT <: usize) /! sz 8
+  (bits_per_gamma1_coefficient *! v_COEFFICIENTS_IN_RING_ELEMENT <: usize) /! mk_usize 8
 
 let commitment_ring_element_size (bits_per_commitment_coefficient: usize) =
-  (bits_per_commitment_coefficient *! v_COEFFICIENTS_IN_RING_ELEMENT <: usize) /! sz 8
+  (bits_per_commitment_coefficient *! v_COEFFICIENTS_IN_RING_ELEMENT <: usize) /! mk_usize 8
 
 let commitment_vector_size (bits_per_commitment_coefficient rows_in_a: usize) =
   (commitment_ring_element_size bits_per_commitment_coefficient <: usize) *! rows_in_a
@@ -55,7 +55,7 @@ let verification_key_size (rows_in_a: usize) =
       (v_FIELD_MODULUS_MINUS_ONE_BIT_LENGTH -! v_BITS_IN_LOWER_PART_OF_T <: usize)
       <:
       usize) /!
-    sz 8
+    mk_usize 8
     <:
     usize)
 

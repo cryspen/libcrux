@@ -58,7 +58,7 @@ let keypair_from_private_key
 let generate_keypair
       (v_K v_CPA_PRIVATE_KEY_SIZE v_PRIVATE_KEY_SIZE v_PUBLIC_KEY_SIZE v_BYTES_PER_RING_ELEMENT v_ETA1 v_ETA1_RANDOMNESS_SIZE:
           usize)
-      (randomness: t_Array u8 (sz 64))
+      (randomness: t_Array u8 (mk_usize 64))
       (out:
           Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemKeyPairUnpacked v_K
             Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
@@ -79,7 +79,7 @@ let encapsulate
       (public_key:
           Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemPublicKeyUnpacked v_K
             Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
-      (randomness: t_Array u8 (sz 32))
+      (randomness: t_Array u8 (mk_usize 32))
      =
   Libcrux_ml_kem.Ind_cca.Unpacked.encapsulate v_K v_CIPHERTEXT_SIZE v_PUBLIC_KEY_SIZE
     v_T_AS_NTT_ENCODED_SIZE v_C1_SIZE v_C2_SIZE v_VECTOR_U_COMPRESSION_FACTOR

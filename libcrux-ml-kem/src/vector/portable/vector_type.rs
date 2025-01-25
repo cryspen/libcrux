@@ -10,7 +10,7 @@ pub struct PortableVector {
 }
 
 #[inline(always)]
-#[hax_lib::ensures(|result| fstar!(r#"${result}.f_elements == Seq.create 16 0s"#))]
+#[hax_lib::ensures(|result| fstar!(r#"${result}.f_elements == Seq.create 16 (mk_i16 0)"#))]
 pub fn zero() -> PortableVector {
     PortableVector {
         elements: [0i16; FIELD_ELEMENTS_IN_VECTOR],

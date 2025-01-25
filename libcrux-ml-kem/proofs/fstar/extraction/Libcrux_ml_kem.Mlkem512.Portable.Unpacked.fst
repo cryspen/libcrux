@@ -12,28 +12,28 @@ let _ =
   ()
 
 let init_key_pair (_: Prims.unit) =
-  Core.Default.f_default #(Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemKeyPairUnpacked (sz 2)
+  Core.Default.f_default #(Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemKeyPairUnpacked (mk_usize 2)
         Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
     #FStar.Tactics.Typeclasses.solve
     ()
 
 let init_public_key (_: Prims.unit) =
-  Core.Default.f_default #(Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemPublicKeyUnpacked (sz 2)
+  Core.Default.f_default #(Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemPublicKeyUnpacked (mk_usize 2)
         Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
     #FStar.Tactics.Typeclasses.solve
     ()
 
 let serialized_public_key
       (public_key:
-          Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemPublicKeyUnpacked (sz 2)
+          Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemPublicKeyUnpacked (mk_usize 2)
             Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
-      (serialized: Libcrux_ml_kem.Types.t_MlKemPublicKey (sz 800))
+      (serialized: Libcrux_ml_kem.Types.t_MlKemPublicKey (mk_usize 800))
      =
-  let serialized:Libcrux_ml_kem.Types.t_MlKemPublicKey (sz 800) =
-    Libcrux_ml_kem.Ind_cca.Unpacked.impl_3__serialized_mut (sz 2)
+  let serialized:Libcrux_ml_kem.Types.t_MlKemPublicKey (mk_usize 800) =
+    Libcrux_ml_kem.Ind_cca.Unpacked.impl_3__serialized_mut (mk_usize 2)
       #Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
-      (sz 768)
-      (sz 800)
+      (mk_usize 768)
+      (mk_usize 800)
       public_key
       serialized
   in
@@ -41,30 +41,30 @@ let serialized_public_key
 
 let key_pair_serialized_private_key
       (key_pair:
-          Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemKeyPairUnpacked (sz 2)
+          Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemKeyPairUnpacked (mk_usize 2)
             Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
      =
-  Libcrux_ml_kem.Ind_cca.Unpacked.impl_4__serialized_private_key (sz 2)
+  Libcrux_ml_kem.Ind_cca.Unpacked.impl_4__serialized_private_key (mk_usize 2)
     #Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
-    (sz 768)
-    (sz 1632)
-    (sz 800)
-    (sz 768)
+    (mk_usize 768)
+    (mk_usize 1632)
+    (mk_usize 800)
+    (mk_usize 768)
     key_pair
 
 let key_pair_serialized_private_key_mut
       (key_pair:
-          Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemKeyPairUnpacked (sz 2)
+          Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemKeyPairUnpacked (mk_usize 2)
             Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
-      (serialized: Libcrux_ml_kem.Types.t_MlKemPrivateKey (sz 1632))
+      (serialized: Libcrux_ml_kem.Types.t_MlKemPrivateKey (mk_usize 1632))
      =
-  let serialized:Libcrux_ml_kem.Types.t_MlKemPrivateKey (sz 1632) =
-    Libcrux_ml_kem.Ind_cca.Unpacked.impl_4__serialized_private_key_mut (sz 2)
+  let serialized:Libcrux_ml_kem.Types.t_MlKemPrivateKey (mk_usize 1632) =
+    Libcrux_ml_kem.Ind_cca.Unpacked.impl_4__serialized_private_key_mut (mk_usize 2)
       #Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
-      (sz 768)
-      (sz 1632)
-      (sz 800)
-      (sz 768)
+      (mk_usize 768)
+      (mk_usize 1632)
+      (mk_usize 800)
+      (mk_usize 768)
       key_pair
       serialized
   in
@@ -72,15 +72,15 @@ let key_pair_serialized_private_key_mut
 
 let key_pair_serialized_public_key_mut
       (key_pair:
-          Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemKeyPairUnpacked (sz 2)
+          Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemKeyPairUnpacked (mk_usize 2)
             Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
-      (serialized: Libcrux_ml_kem.Types.t_MlKemPublicKey (sz 800))
+      (serialized: Libcrux_ml_kem.Types.t_MlKemPublicKey (mk_usize 800))
      =
-  let serialized:Libcrux_ml_kem.Types.t_MlKemPublicKey (sz 800) =
-    Libcrux_ml_kem.Ind_cca.Unpacked.impl_4__serialized_public_key_mut (sz 2)
+  let serialized:Libcrux_ml_kem.Types.t_MlKemPublicKey (mk_usize 800) =
+    Libcrux_ml_kem.Ind_cca.Unpacked.impl_4__serialized_public_key_mut (mk_usize 2)
       #Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
-      (sz 768)
-      (sz 800)
+      (mk_usize 768)
+      (mk_usize 800)
       key_pair
       serialized
   in
@@ -88,80 +88,80 @@ let key_pair_serialized_public_key_mut
 
 let key_pair_serialized_public_key
       (key_pair:
-          Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemKeyPairUnpacked (sz 2)
+          Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemKeyPairUnpacked (mk_usize 2)
             Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
      =
-  Libcrux_ml_kem.Ind_cca.Unpacked.impl_4__serialized_public_key (sz 2)
+  Libcrux_ml_kem.Ind_cca.Unpacked.impl_4__serialized_public_key (mk_usize 2)
     #Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
-    (sz 768)
-    (sz 800)
+    (mk_usize 768)
+    (mk_usize 800)
     key_pair
 
 let key_pair_from_private_mut
-      (private_key: Libcrux_ml_kem.Types.t_MlKemPrivateKey (sz 1632))
+      (private_key: Libcrux_ml_kem.Types.t_MlKemPrivateKey (mk_usize 1632))
       (key_pair:
-          Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemKeyPairUnpacked (sz 2)
+          Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemKeyPairUnpacked (mk_usize 2)
             Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
      =
-  let key_pair:Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemKeyPairUnpacked (sz 2)
+  let key_pair:Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemKeyPairUnpacked (mk_usize 2)
     Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
-    Libcrux_ml_kem.Ind_cca.Instantiations.Portable.Unpacked.keypair_from_private_key (sz 2)
-      (sz 1632)
-      (sz 768)
-      (sz 800)
-      (sz 768)
-      (sz 768)
+    Libcrux_ml_kem.Ind_cca.Instantiations.Portable.Unpacked.keypair_from_private_key (mk_usize 2)
+      (mk_usize 1632)
+      (mk_usize 768)
+      (mk_usize 800)
+      (mk_usize 768)
+      (mk_usize 768)
       private_key
       key_pair
   in
   key_pair
 
 let unpacked_public_key
-      (public_key: Libcrux_ml_kem.Types.t_MlKemPublicKey (sz 800))
+      (public_key: Libcrux_ml_kem.Types.t_MlKemPublicKey (mk_usize 800))
       (unpacked_public_key:
-          Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemPublicKeyUnpacked (sz 2)
+          Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemPublicKeyUnpacked (mk_usize 2)
             Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
      =
-  let unpacked_public_key:Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemPublicKeyUnpacked (sz 2)
+  let unpacked_public_key:Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemPublicKeyUnpacked (mk_usize 2)
     Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
-    Libcrux_ml_kem.Ind_cca.Instantiations.Portable.Unpacked.unpack_public_key (sz 2)
-      (sz 768)
-      (sz 768)
-      (sz 800)
+    Libcrux_ml_kem.Ind_cca.Instantiations.Portable.Unpacked.unpack_public_key (mk_usize 2)
+      (mk_usize 768)
+      (mk_usize 768)
+      (mk_usize 800)
       public_key
       unpacked_public_key
   in
   unpacked_public_key
 
 let generate_key_pair_mut
-      (randomness: t_Array u8 (sz 64))
+      (randomness: t_Array u8 (mk_usize 64))
       (key_pair:
-          Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemKeyPairUnpacked (sz 2)
+          Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemKeyPairUnpacked (mk_usize 2)
             Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
      =
-  let key_pair:Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemKeyPairUnpacked (sz 2)
+  let key_pair:Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemKeyPairUnpacked (mk_usize 2)
     Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
-    Libcrux_ml_kem.Ind_cca.Instantiations.Portable.Unpacked.generate_keypair (sz 2)
-      (sz 768)
-      (sz 1632)
-      (sz 800)
-      (sz 768)
-      (sz 3)
-      (sz 192)
+    Libcrux_ml_kem.Ind_cca.Instantiations.Portable.Unpacked.generate_keypair (mk_usize 2)
+      (mk_usize 768)
+      (mk_usize 1632)
+      (mk_usize 800)
+      (mk_usize 768)
+      (mk_usize 3)
+      (mk_usize 192)
       randomness
       key_pair
   in
   key_pair
 
-let generate_key_pair (randomness: t_Array u8 (sz 64)) =
-  let key_pair:Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemKeyPairUnpacked (sz 2)
+let generate_key_pair (randomness: t_Array u8 (mk_usize 64)) =
+  let key_pair:Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemKeyPairUnpacked (mk_usize 2)
     Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
-    Core.Default.f_default #(Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemKeyPairUnpacked (sz 2)
+    Core.Default.f_default #(Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemKeyPairUnpacked (mk_usize 2)
           Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
       #FStar.Tactics.Typeclasses.solve
       ()
   in
-  let key_pair:Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemKeyPairUnpacked (sz 2)
+  let key_pair:Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemKeyPairUnpacked (mk_usize 2)
     Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
     generate_key_pair_mut randomness key_pair
   in
@@ -169,20 +169,21 @@ let generate_key_pair (randomness: t_Array u8 (sz 64)) =
 
 let encapsulate
       (public_key:
-          Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemPublicKeyUnpacked (sz 2)
+          Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemPublicKeyUnpacked (mk_usize 2)
             Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
-      (randomness: t_Array u8 (sz 32))
+      (randomness: t_Array u8 (mk_usize 32))
      =
-  Libcrux_ml_kem.Ind_cca.Instantiations.Portable.Unpacked.encapsulate (sz 2) (sz 768) (sz 800)
-    (sz 768) (sz 640) (sz 128) (sz 10) (sz 4) (sz 320) (sz 3) (sz 192) (sz 2) (sz 128) public_key
-    randomness
+  Libcrux_ml_kem.Ind_cca.Instantiations.Portable.Unpacked.encapsulate (mk_usize 2) (mk_usize 768)
+    (mk_usize 800) (mk_usize 768) (mk_usize 640) (mk_usize 128) (mk_usize 10) (mk_usize 4)
+    (mk_usize 320) (mk_usize 3) (mk_usize 192) (mk_usize 2) (mk_usize 128) public_key randomness
 
 let decapsulate
       (private_key:
-          Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemKeyPairUnpacked (sz 2)
+          Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemKeyPairUnpacked (mk_usize 2)
             Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
-      (ciphertext: Libcrux_ml_kem.Types.t_MlKemCiphertext (sz 768))
+      (ciphertext: Libcrux_ml_kem.Types.t_MlKemCiphertext (mk_usize 768))
      =
-  Libcrux_ml_kem.Ind_cca.Instantiations.Portable.Unpacked.decapsulate (sz 2) (sz 1632) (sz 768)
-    (sz 800) (sz 768) (sz 768) (sz 640) (sz 128) (sz 10) (sz 4) (sz 320) (sz 3) (sz 192) (sz 2)
-    (sz 128) (sz 800) private_key ciphertext
+  Libcrux_ml_kem.Ind_cca.Instantiations.Portable.Unpacked.decapsulate (mk_usize 2) (mk_usize 1632)
+    (mk_usize 768) (mk_usize 800) (mk_usize 768) (mk_usize 768) (mk_usize 640) (mk_usize 128)
+    (mk_usize 10) (mk_usize 4) (mk_usize 320) (mk_usize 3) (mk_usize 192) (mk_usize 2)
+    (mk_usize 128) (mk_usize 800) private_key ciphertext

@@ -32,7 +32,7 @@ let generate_key_pair
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
           i11:
           Libcrux_ml_dsa.Hash_functions.Shake256.t_XofX4 v_Shake256X4)
-      (randomness: t_Array u8 (sz 32))
+      (randomness: t_Array u8 (mk_usize 32))
       (signing_key verification_key: t_Slice u8)
      =
   let _:Prims.unit =
@@ -56,7 +56,9 @@ let generate_key_pair
       in
       ()
   in
-  let seed_expanded:t_Array u8 (sz 128) = Rust_primitives.Hax.repeat 0uy (sz 128) in
+  let seed_expanded:t_Array u8 (mk_usize 128) =
+    Rust_primitives.Hax.repeat (mk_u8 0) (mk_usize 128)
+  in
   let shake:v_Shake256Xof =
     Libcrux_ml_dsa.Hash_functions.Shake256.f_init #v_Shake256Xof #FStar.Tactics.Typeclasses.solve ()
   in
@@ -81,14 +83,14 @@ let generate_key_pair
         <:
         t_Slice u8)
   in
-  let tmp0, tmp1:(v_Shake256Xof & t_Array u8 (sz 128)) =
+  let tmp0, tmp1:(v_Shake256Xof & t_Array u8 (mk_usize 128)) =
     Libcrux_ml_dsa.Hash_functions.Shake256.f_squeeze #v_Shake256Xof
       #FStar.Tactics.Typeclasses.solve
       shake
       seed_expanded
   in
   let shake:v_Shake256Xof = tmp0 in
-  let seed_expanded:t_Array u8 (sz 128) = tmp1 in
+  let seed_expanded:t_Array u8 (mk_usize 128) = tmp1 in
   let _:Prims.unit = () in
   let _:Prims.unit = () in
   let seed_for_a, seed_expanded:(t_Slice u8 & t_Slice u8) =
@@ -101,13 +103,15 @@ let generate_key_pair
       seed_expanded
       Libcrux_ml_dsa.Constants.v_SEED_FOR_ERROR_VECTORS_SIZE
   in
-  let a_as_ntt:t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) (sz 16) =
+  let a_as_ntt:t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) (mk_usize 16)
+  =
     Rust_primitives.Hax.repeat (Libcrux_ml_dsa.Polynomial.impl__zero #v_SIMDUnit ()
         <:
         Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
-      (sz 16)
+      (mk_usize 16)
   in
-  let a_as_ntt:t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) (sz 16) =
+  let a_as_ntt:t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) (mk_usize 16)
+  =
     Libcrux_ml_dsa.Samplex4.f_matrix_flat #v_Sampler
       #FStar.Tactics.Typeclasses.solve
       #v_SIMDUnit
@@ -115,36 +119,36 @@ let generate_key_pair
       seed_for_a
       a_as_ntt
   in
-  let s1_s2:t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) (sz 8) =
+  let s1_s2:t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) (mk_usize 8) =
     Rust_primitives.Hax.repeat (Libcrux_ml_dsa.Polynomial.impl__zero #v_SIMDUnit ()
         <:
         Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
-      (sz 8)
+      (mk_usize 8)
   in
-  let s1_s2:t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) (sz 8) =
+  let s1_s2:t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) (mk_usize 8) =
     Libcrux_ml_dsa.Samplex4.sample_s1_and_s2 #v_SIMDUnit
       #v_Shake256X4
       Libcrux_ml_dsa.Constants.Ml_dsa_44_.v_ETA
       seed_for_error_vectors
       s1_s2
   in
-  let t0:t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) (sz 4) =
+  let t0:t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) (mk_usize 4) =
     Rust_primitives.Hax.repeat (Libcrux_ml_dsa.Polynomial.impl__zero #v_SIMDUnit ()
         <:
         Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
-      (sz 4)
+      (mk_usize 4)
   in
-  let s1_ntt:t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) (sz 4) =
+  let s1_ntt:t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) (mk_usize 4) =
     Rust_primitives.Hax.repeat (Libcrux_ml_dsa.Polynomial.impl__zero #v_SIMDUnit ()
         <:
         Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
-      (sz 4)
+      (mk_usize 4)
   in
-  let s1_ntt:t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) (sz 4) =
+  let s1_ntt:t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) (mk_usize 4) =
     Core.Slice.impl__copy_from_slice #(Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
       s1_ntt
       (s1_s2.[ {
-            Core.Ops.Range.f_start = sz 0;
+            Core.Ops.Range.f_start = mk_usize 0;
             Core.Ops.Range.f_end = Libcrux_ml_dsa.Constants.Ml_dsa_44_.v_COLUMNS_IN_A
           }
           <:
@@ -152,21 +156,23 @@ let generate_key_pair
         <:
         t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit))
   in
-  let s1_ntt:t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) (sz 4) =
-    Rust_primitives.Hax.Folds.fold_range (sz 0)
+  let s1_ntt:t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) (mk_usize 4) =
+    Rust_primitives.Hax.Folds.fold_range (mk_usize 0)
       (Core.Slice.impl__len #(Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
           (s1_ntt <: t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit))
         <:
         usize)
       (fun s1_ntt temp_1_ ->
-          let s1_ntt:t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) (sz 4) =
+          let s1_ntt:t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
+            (mk_usize 4) =
             s1_ntt
           in
           let _:usize = temp_1_ in
           true)
       s1_ntt
       (fun s1_ntt i ->
-          let s1_ntt:t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) (sz 4) =
+          let s1_ntt:t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
+            (mk_usize 4) =
             s1_ntt
           in
           let i:usize = i in
@@ -177,9 +183,9 @@ let generate_key_pair
               <:
               Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
           <:
-          t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) (sz 4))
+          t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) (mk_usize 4))
   in
-  let t0:t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) (sz 4) =
+  let t0:t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) (mk_usize 4) =
     Libcrux_ml_dsa.Matrix.compute_as1_plus_s2 #v_SIMDUnit
       Libcrux_ml_dsa.Constants.Ml_dsa_44_.v_ROWS_IN_A
       Libcrux_ml_dsa.Constants.Ml_dsa_44_.v_COLUMNS_IN_A
@@ -189,18 +195,23 @@ let generate_key_pair
       t0
   in
   let _:Prims.unit = () in
-  let t1:t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) (sz 4) =
+  let t1:t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) (mk_usize 4) =
     Rust_primitives.Hax.repeat (Libcrux_ml_dsa.Polynomial.impl__zero #v_SIMDUnit ()
         <:
         Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
-      (sz 4)
+      (mk_usize 4)
   in
-  let tmp0, tmp1:(t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) (sz 4) &
-    t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) (sz 4)) =
+  let tmp0, tmp1:(t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
+      (mk_usize 4) &
+    t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) (mk_usize 4)) =
     Libcrux_ml_dsa.Arithmetic.power2round_vector #v_SIMDUnit t0 t1
   in
-  let t0:t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) (sz 4) = tmp0 in
-  let t1:t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) (sz 4) = tmp1 in
+  let t0:t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) (mk_usize 4) =
+    tmp0
+  in
+  let t1:t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) (mk_usize 4) =
+    tmp1
+  in
   let _:Prims.unit = () in
   let verification_key:t_Slice u8 =
     Libcrux_ml_dsa.Encoding.Verification_key.generate_serialized #v_SIMDUnit
@@ -238,8 +249,8 @@ let sign_internal
       (signing_key message: t_Slice u8)
       (domain_separation_context:
           Core.Option.t_Option Libcrux_ml_dsa.Pre_hash.t_DomainSeparationContext)
-      (randomness: t_Array u8 (sz 32))
-      (signature: t_Array u8 (sz 2420))
+      (randomness: t_Array u8 (mk_usize 32))
+      (signature: t_Array u8 (mk_usize 2420))
      =
   let seed_for_a, remaining_serialized:(t_Slice u8 & t_Slice u8) =
     Core.Slice.impl__split_at #u8 signing_key Libcrux_ml_dsa.Constants.v_SEED_FOR_A_SIZE
@@ -264,48 +275,54 @@ let sign_internal
       remaining_serialized
       (v_ERROR_RING_ELEMENT_SIZE *! Libcrux_ml_dsa.Constants.Ml_dsa_44_.v_ROWS_IN_A <: usize)
   in
-  let s1_as_ntt:t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) (sz 4) =
+  let s1_as_ntt:t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) (mk_usize 4)
+  =
     Rust_primitives.Hax.repeat (Libcrux_ml_dsa.Polynomial.impl__zero #v_SIMDUnit ()
         <:
         Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
-      (sz 4)
+      (mk_usize 4)
   in
-  let s2_as_ntt:t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) (sz 4) =
+  let s2_as_ntt:t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) (mk_usize 4)
+  =
     Rust_primitives.Hax.repeat (Libcrux_ml_dsa.Polynomial.impl__zero #v_SIMDUnit ()
         <:
         Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
-      (sz 4)
+      (mk_usize 4)
   in
-  let t0_as_ntt:t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) (sz 4) =
+  let t0_as_ntt:t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) (mk_usize 4)
+  =
     Rust_primitives.Hax.repeat (Libcrux_ml_dsa.Polynomial.impl__zero #v_SIMDUnit ()
         <:
         Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
-      (sz 4)
+      (mk_usize 4)
   in
-  let s1_as_ntt:t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) (sz 4) =
+  let s1_as_ntt:t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) (mk_usize 4)
+  =
     Libcrux_ml_dsa.Encoding.Error.deserialize_to_vector_then_ntt #v_SIMDUnit
       Libcrux_ml_dsa.Constants.Ml_dsa_44_.v_ETA
       v_ERROR_RING_ELEMENT_SIZE
       s1_serialized
       s1_as_ntt
   in
-  let s2_as_ntt:t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) (sz 4) =
+  let s2_as_ntt:t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) (mk_usize 4)
+  =
     Libcrux_ml_dsa.Encoding.Error.deserialize_to_vector_then_ntt #v_SIMDUnit
       Libcrux_ml_dsa.Constants.Ml_dsa_44_.v_ETA
       v_ERROR_RING_ELEMENT_SIZE
       s2_serialized
       s2_as_ntt
   in
-  let t0_as_ntt:t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) (sz 4) =
+  let t0_as_ntt:t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) (mk_usize 4)
+  =
     Libcrux_ml_dsa.Encoding.T0.deserialize_to_vector_then_ntt #v_SIMDUnit t0_serialized t0_as_ntt
   in
-  let matrix:t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) (sz 16) =
+  let matrix:t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) (mk_usize 16) =
     Rust_primitives.Hax.repeat (Libcrux_ml_dsa.Polynomial.impl__zero #v_SIMDUnit ()
         <:
         Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
-      (sz 16)
+      (mk_usize 16)
   in
-  let matrix:t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) (sz 16) =
+  let matrix:t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) (mk_usize 16) =
     Libcrux_ml_dsa.Samplex4.f_matrix_flat #v_Sampler
       #FStar.Tactics.Typeclasses.solve
       #v_SIMDUnit
@@ -313,15 +330,17 @@ let sign_internal
       seed_for_a
       matrix
   in
-  let message_representative:t_Array u8 (sz 64) = Rust_primitives.Hax.repeat 0uy (sz 64) in
-  let message_representative:t_Array u8 (sz 64) =
+  let message_representative:t_Array u8 (mk_usize 64) =
+    Rust_primitives.Hax.repeat (mk_u8 0) (mk_usize 64)
+  in
+  let message_representative:t_Array u8 (mk_usize 64) =
     Libcrux_ml_dsa.Ml_dsa_generic.derive_message_representative #v_Shake256Xof
       verification_key_hash
       domain_separation_context
       message
       message_representative
   in
-  let mask_seed:t_Array u8 (sz 64) = Rust_primitives.Hax.repeat 0uy (sz 64) in
+  let mask_seed:t_Array u8 (mk_usize 64) = Rust_primitives.Hax.repeat (mk_u8 0) (mk_usize 64) in
   let shake:v_Shake256Xof =
     Libcrux_ml_dsa.Hash_functions.Shake256.f_init #v_Shake256Xof #FStar.Tactics.Typeclasses.solve ()
   in
@@ -343,84 +362,88 @@ let sign_internal
       shake
       (message_representative <: t_Slice u8)
   in
-  let tmp0, tmp1:(v_Shake256Xof & t_Array u8 (sz 64)) =
+  let tmp0, tmp1:(v_Shake256Xof & t_Array u8 (mk_usize 64)) =
     Libcrux_ml_dsa.Hash_functions.Shake256.f_squeeze #v_Shake256Xof
       #FStar.Tactics.Typeclasses.solve
       shake
       mask_seed
   in
   let shake:v_Shake256Xof = tmp0 in
-  let mask_seed:t_Array u8 (sz 64) = tmp1 in
+  let mask_seed:t_Array u8 (mk_usize 64) = tmp1 in
   let _:Prims.unit = () in
   let _:Prims.unit = () in
-  let (domain_separator_for_mask: u16):u16 = 0us in
-  let attempt:usize = sz 0 in
-  let commitment_hash:Core.Option.t_Option (t_Array u8 (sz 32)) =
-    Core.Option.Option_None <: Core.Option.t_Option (t_Array u8 (sz 32))
+  let (domain_separator_for_mask: u16):u16 = mk_u16 0 in
+  let attempt:usize = mk_usize 0 in
+  let commitment_hash:Core.Option.t_Option (t_Array u8 (mk_usize 32)) =
+    Core.Option.Option_None <: Core.Option.t_Option (t_Array u8 (mk_usize 32))
   in
   let signer_response:Core.Option.t_Option
-  (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) (sz 4)) =
+  (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) (mk_usize 4)) =
     Core.Option.Option_None
     <:
     Core.Option.t_Option
-    (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) (sz 4))
+    (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) (mk_usize 4))
   in
-  let hint:Core.Option.t_Option (t_Array (t_Array i32 (sz 256)) (sz 4)) =
-    Core.Option.Option_None <: Core.Option.t_Option (t_Array (t_Array i32 (sz 256)) (sz 4))
+  let hint:Core.Option.t_Option (t_Array (t_Array i32 (mk_usize 256)) (mk_usize 4)) =
+    Core.Option.Option_None
+    <:
+    Core.Option.t_Option (t_Array (t_Array i32 (mk_usize 256)) (mk_usize 4))
   in
   let attempt, commitment_hash, domain_separator_for_mask, hint, signer_response:(usize &
-    Core.Option.t_Option (t_Array u8 (sz 32)) &
+    Core.Option.t_Option (t_Array u8 (mk_usize 32)) &
     u16 &
-    Core.Option.t_Option (t_Array (t_Array i32 (sz 256)) (sz 4)) &
+    Core.Option.t_Option (t_Array (t_Array i32 (mk_usize 256)) (mk_usize 4)) &
     Core.Option.t_Option
-    (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) (sz 4))) =
+    (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) (mk_usize 4))) =
     Rust_primitives.f_while_loop (fun temp_0_ ->
           let attempt, commitment_hash, domain_separator_for_mask, hint, signer_response:(usize &
-            Core.Option.t_Option (t_Array u8 (sz 32)) &
+            Core.Option.t_Option (t_Array u8 (mk_usize 32)) &
             u16 &
-            Core.Option.t_Option (t_Array (t_Array i32 (sz 256)) (sz 4)) &
+            Core.Option.t_Option (t_Array (t_Array i32 (mk_usize 256)) (mk_usize 4)) &
             Core.Option.t_Option
-            (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) (sz 4))) =
+            (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) (mk_usize 4))) =
             temp_0_
           in
           attempt <. Libcrux_ml_dsa.Constants.v_REJECTION_SAMPLE_BOUND_SIGN <: bool)
       (attempt, commitment_hash, domain_separator_for_mask, hint, signer_response
         <:
-        (usize & Core.Option.t_Option (t_Array u8 (sz 32)) & u16 &
-          Core.Option.t_Option (t_Array (t_Array i32 (sz 256)) (sz 4)) &
+        (usize & Core.Option.t_Option (t_Array u8 (mk_usize 32)) & u16 &
+          Core.Option.t_Option (t_Array (t_Array i32 (mk_usize 256)) (mk_usize 4)) &
           Core.Option.t_Option
-          (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) (sz 4))))
+          (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) (mk_usize 4))))
       (fun temp_0_ ->
           let attempt, commitment_hash, domain_separator_for_mask, hint, signer_response:(usize &
-            Core.Option.t_Option (t_Array u8 (sz 32)) &
+            Core.Option.t_Option (t_Array u8 (mk_usize 32)) &
             u16 &
-            Core.Option.t_Option (t_Array (t_Array i32 (sz 256)) (sz 4)) &
+            Core.Option.t_Option (t_Array (t_Array i32 (mk_usize 256)) (mk_usize 4)) &
             Core.Option.t_Option
-            (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) (sz 4))) =
+            (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) (mk_usize 4))) =
             temp_0_
           in
-          let attempt:usize = attempt +! sz 1 in
-          let mask:t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) (sz 4) =
+          let attempt:usize = attempt +! mk_usize 1 in
+          let mask:t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
+            (mk_usize 4) =
             Rust_primitives.Hax.repeat (Libcrux_ml_dsa.Polynomial.impl__zero #v_SIMDUnit ()
                 <:
                 Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
-              (sz 4)
+              (mk_usize 4)
           in
-          let w0:t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) (sz 4) =
+          let w0:t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) (mk_usize 4)
+          =
             Rust_primitives.Hax.repeat (Libcrux_ml_dsa.Polynomial.impl__zero #v_SIMDUnit ()
                 <:
                 Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
-              (sz 4)
+              (mk_usize 4)
           in
           let commitment:t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
-            (sz 4) =
+            (mk_usize 4) =
             Rust_primitives.Hax.repeat (Libcrux_ml_dsa.Polynomial.impl__zero #v_SIMDUnit ()
                 <:
                 Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
-              (sz 4)
+              (mk_usize 4)
           in
           let tmp0, tmp1:(u16 &
-            t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) (sz 4)) =
+            t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) (mk_usize 4)) =
             Libcrux_ml_dsa.Sample.sample_mask_vector #v_SIMDUnit
               #v_Shake256
               #v_Shake256X4
@@ -431,27 +454,28 @@ let sign_internal
               mask
           in
           let domain_separator_for_mask:u16 = tmp0 in
-          let mask:t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) (sz 4) =
+          let mask:t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
+            (mk_usize 4) =
             tmp1
           in
           let _:Prims.unit = () in
-          let a_x_mask:t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) (sz 4)
-          =
+          let a_x_mask:t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
+            (mk_usize 4) =
             Rust_primitives.Hax.repeat (Libcrux_ml_dsa.Polynomial.impl__zero #v_SIMDUnit ()
                 <:
                 Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
-              (sz 4)
+              (mk_usize 4)
           in
-          let mask_ntt:t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) (sz 4)
-          =
+          let mask_ntt:t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
+            (mk_usize 4) =
             Core.Clone.f_clone #(t_Array
-                  (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) (sz 4))
+                  (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) (mk_usize 4))
               #FStar.Tactics.Typeclasses.solve
               mask
           in
-          let mask_ntt:t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) (sz 4)
-          =
-            Rust_primitives.Hax.Folds.fold_range (sz 0)
+          let mask_ntt:t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
+            (mk_usize 4) =
+            Rust_primitives.Hax.Folds.fold_range (mk_usize 0)
               (Core.Slice.impl__len #(Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
                   (mask_ntt
                     <:
@@ -460,7 +484,7 @@ let sign_internal
                 usize)
               (fun mask_ntt temp_1_ ->
                   let mask_ntt:t_Array
-                    (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) (sz 4) =
+                    (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) (mk_usize 4) =
                     mask_ntt
                   in
                   let _:usize = temp_1_ in
@@ -468,7 +492,7 @@ let sign_internal
               mask_ntt
               (fun mask_ntt i ->
                   let mask_ntt:t_Array
-                    (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) (sz 4) =
+                    (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) (mk_usize 4) =
                     mask_ntt
                   in
                   let i:usize = i in
@@ -481,10 +505,11 @@ let sign_internal
                       <:
                       Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
                   <:
-                  t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) (sz 4))
+                  t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
+                    (mk_usize 4))
           in
-          let a_x_mask:t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) (sz 4)
-          =
+          let a_x_mask:t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
+            (mk_usize 4) =
             Libcrux_ml_dsa.Matrix.compute_matrix_x_mask #v_SIMDUnit
               Libcrux_ml_dsa.Constants.Ml_dsa_44_.v_ROWS_IN_A
               Libcrux_ml_dsa.Constants.Ml_dsa_44_.v_COLUMNS_IN_A
@@ -493,8 +518,8 @@ let sign_internal
               a_x_mask
           in
           let tmp0, tmp1:(t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
-              (sz 4) &
-            t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) (sz 4)) =
+              (mk_usize 4) &
+            t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) (mk_usize 4)) =
             Libcrux_ml_dsa.Arithmetic.decompose_vector #v_SIMDUnit
               Libcrux_ml_dsa.Constants.Ml_dsa_44_.v_ROWS_IN_A
               Libcrux_ml_dsa.Constants.Ml_dsa_44_.v_GAMMA2
@@ -502,20 +527,23 @@ let sign_internal
               w0
               commitment
           in
-          let w0:t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) (sz 4) =
+          let w0:t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) (mk_usize 4)
+          =
             tmp0
           in
           let commitment:t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
-            (sz 4) =
+            (mk_usize 4) =
             tmp1
           in
           let _:Prims.unit = () in
           let _:Prims.unit = () in
-          let commitment_hash_candidate:t_Array u8 (sz 32) =
-            Rust_primitives.Hax.repeat 0uy (sz 32)
+          let commitment_hash_candidate:t_Array u8 (mk_usize 32) =
+            Rust_primitives.Hax.repeat (mk_u8 0) (mk_usize 32)
           in
-          let commitment_serialized:t_Array u8 (sz 768) = Rust_primitives.Hax.repeat 0uy (sz 768) in
-          let commitment_serialized:t_Array u8 (sz 768) =
+          let commitment_serialized:t_Array u8 (mk_usize 768) =
+            Rust_primitives.Hax.repeat (mk_u8 0) (mk_usize 768)
+          in
+          let commitment_serialized:t_Array u8 (mk_usize 768) =
             Libcrux_ml_dsa.Encoding.Commitment.serialize_vector #v_SIMDUnit
               v_COMMITMENT_RING_ELEMENT_SIZE
               (commitment <: t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit))
@@ -538,14 +566,14 @@ let sign_internal
               shake
               (commitment_serialized <: t_Slice u8)
           in
-          let tmp0, tmp1:(v_Shake256Xof & t_Array u8 (sz 32)) =
+          let tmp0, tmp1:(v_Shake256Xof & t_Array u8 (mk_usize 32)) =
             Libcrux_ml_dsa.Hash_functions.Shake256.f_squeeze #v_Shake256Xof
               #FStar.Tactics.Typeclasses.solve
               shake
               commitment_hash_candidate
           in
           let shake:v_Shake256Xof = tmp0 in
-          let commitment_hash_candidate:t_Array u8 (sz 32) = tmp1 in
+          let commitment_hash_candidate:t_Array u8 (mk_usize 32) = tmp1 in
           let _:Prims.unit = () in
           let _:Prims.unit = () in
           let verifier_challenge:Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit =
@@ -562,32 +590,33 @@ let sign_internal
             Libcrux_ml_dsa.Ntt.ntt #v_SIMDUnit verifier_challenge
           in
           let challenge_times_s1:t_Array
-            (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) (sz 4) =
+            (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) (mk_usize 4) =
             Core.Clone.f_clone #(t_Array
-                  (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) (sz 4))
+                  (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) (mk_usize 4))
               #FStar.Tactics.Typeclasses.solve
               s1_as_ntt
           in
           let challenge_times_s2:t_Array
-            (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) (sz 4) =
+            (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) (mk_usize 4) =
             Core.Clone.f_clone #(t_Array
-                  (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) (sz 4))
+                  (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) (mk_usize 4))
               #FStar.Tactics.Typeclasses.solve
               s2_as_ntt
           in
           let challenge_times_s1:t_Array
-            (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) (sz 4) =
+            (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) (mk_usize 4) =
             Libcrux_ml_dsa.Matrix.vector_times_ring_element #v_SIMDUnit
               challenge_times_s1
               verifier_challenge
           in
           let challenge_times_s2:t_Array
-            (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) (sz 4) =
+            (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) (mk_usize 4) =
             Libcrux_ml_dsa.Matrix.vector_times_ring_element #v_SIMDUnit
               challenge_times_s2
               verifier_challenge
           in
-          let mask:t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) (sz 4) =
+          let mask:t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
+            (mk_usize 4) =
             Libcrux_ml_dsa.Matrix.add_vectors #v_SIMDUnit
               Libcrux_ml_dsa.Constants.Ml_dsa_44_.v_COLUMNS_IN_A
               mask
@@ -595,7 +624,8 @@ let sign_internal
                 <:
                 t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit))
           in
-          let w0:t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) (sz 4) =
+          let w0:t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) (mk_usize 4)
+          =
             Libcrux_ml_dsa.Matrix.subtract_vectors #v_SIMDUnit
               Libcrux_ml_dsa.Constants.Ml_dsa_44_.v_ROWS_IN_A
               w0
@@ -606,16 +636,16 @@ let sign_internal
           if
             Libcrux_ml_dsa.Arithmetic.vector_infinity_norm_exceeds #v_SIMDUnit
               (mask <: t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit))
-              ((1l <<! Libcrux_ml_dsa.Constants.Ml_dsa_44_.v_GAMMA1_EXPONENT <: i32) -! v_BETA
+              ((mk_i32 1 <<! Libcrux_ml_dsa.Constants.Ml_dsa_44_.v_GAMMA1_EXPONENT <: i32) -! v_BETA
                 <:
                 i32)
           then
             attempt, commitment_hash, domain_separator_for_mask, hint, signer_response
             <:
-            (usize & Core.Option.t_Option (t_Array u8 (sz 32)) & u16 &
-              Core.Option.t_Option (t_Array (t_Array i32 (sz 256)) (sz 4)) &
+            (usize & Core.Option.t_Option (t_Array u8 (mk_usize 32)) & u16 &
+              Core.Option.t_Option (t_Array (t_Array i32 (mk_usize 256)) (mk_usize 4)) &
               Core.Option.t_Option
-              (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) (sz 4)))
+              (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) (mk_usize 4)))
           else
             if
               Libcrux_ml_dsa.Arithmetic.vector_infinity_norm_exceeds #v_SIMDUnit
@@ -624,20 +654,21 @@ let sign_internal
             then
               attempt, commitment_hash, domain_separator_for_mask, hint, signer_response
               <:
-              (usize & Core.Option.t_Option (t_Array u8 (sz 32)) & u16 &
-                Core.Option.t_Option (t_Array (t_Array i32 (sz 256)) (sz 4)) &
+              (usize & Core.Option.t_Option (t_Array u8 (mk_usize 32)) & u16 &
+                Core.Option.t_Option (t_Array (t_Array i32 (mk_usize 256)) (mk_usize 4)) &
                 Core.Option.t_Option
-                (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) (sz 4)))
+                (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) (mk_usize 4)
+                ))
             else
               let challenge_times_t0:t_Array
-                (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) (sz 4) =
+                (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) (mk_usize 4) =
                 Core.Clone.f_clone #(t_Array
-                      (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) (sz 4))
+                      (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) (mk_usize 4))
                   #FStar.Tactics.Typeclasses.solve
                   t0_as_ntt
               in
               let challenge_times_t0:t_Array
-                (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) (sz 4) =
+                (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) (mk_usize 4) =
                 Libcrux_ml_dsa.Matrix.vector_times_ring_element #v_SIMDUnit
                   challenge_times_t0
                   verifier_challenge
@@ -651,13 +682,14 @@ let sign_internal
               then
                 attempt, commitment_hash, domain_separator_for_mask, hint, signer_response
                 <:
-                (usize & Core.Option.t_Option (t_Array u8 (sz 32)) & u16 &
-                  Core.Option.t_Option (t_Array (t_Array i32 (sz 256)) (sz 4)) &
+                (usize & Core.Option.t_Option (t_Array u8 (mk_usize 32)) & u16 &
+                  Core.Option.t_Option (t_Array (t_Array i32 (mk_usize 256)) (mk_usize 4)) &
                   Core.Option.t_Option
-                  (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) (sz 4)))
+                  (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
+                      (mk_usize 4)))
               else
-                let w0:t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) (sz 4)
-                =
+                let w0:t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
+                  (mk_usize 4) =
                   Libcrux_ml_dsa.Matrix.add_vectors #v_SIMDUnit
                     Libcrux_ml_dsa.Constants.Ml_dsa_44_.v_ROWS_IN_A
                     w0
@@ -665,13 +697,13 @@ let sign_internal
                       <:
                       t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit))
                 in
-                let hint_candidate:t_Array (t_Array i32 (sz 256)) (sz 4) =
-                  Rust_primitives.Hax.repeat (Rust_primitives.Hax.repeat 0l (sz 256)
+                let hint_candidate:t_Array (t_Array i32 (mk_usize 256)) (mk_usize 4) =
+                  Rust_primitives.Hax.repeat (Rust_primitives.Hax.repeat (mk_i32 0) (mk_usize 256)
                       <:
-                      t_Array i32 (sz 256))
-                    (sz 4)
+                      t_Array i32 (mk_usize 256))
+                    (mk_usize 4)
                 in
-                let tmp0, out:(t_Array (t_Array i32 (sz 256)) (sz 4) & usize) =
+                let tmp0, out:(t_Array (t_Array i32 (mk_usize 256)) (mk_usize 4) & usize) =
                   Libcrux_ml_dsa.Arithmetic.make_hint #v_SIMDUnit
                     (w0 <: t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit))
                     (commitment
@@ -680,67 +712,71 @@ let sign_internal
                     Libcrux_ml_dsa.Constants.Ml_dsa_44_.v_GAMMA2
                     hint_candidate
                 in
-                let hint_candidate:t_Array (t_Array i32 (sz 256)) (sz 4) = tmp0 in
+                let hint_candidate:t_Array (t_Array i32 (mk_usize 256)) (mk_usize 4) = tmp0 in
                 let ones_in_hint:usize = out in
                 if ones_in_hint >. Libcrux_ml_dsa.Constants.Ml_dsa_44_.v_MAX_ONES_IN_HINT
                 then
                   attempt, commitment_hash, domain_separator_for_mask, hint, signer_response
                   <:
-                  (usize & Core.Option.t_Option (t_Array u8 (sz 32)) & u16 &
-                    Core.Option.t_Option (t_Array (t_Array i32 (sz 256)) (sz 4)) &
+                  (usize & Core.Option.t_Option (t_Array u8 (mk_usize 32)) & u16 &
+                    Core.Option.t_Option (t_Array (t_Array i32 (mk_usize 256)) (mk_usize 4)) &
                     Core.Option.t_Option
-                    (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) (sz 4)))
+                    (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
+                        (mk_usize 4)))
                 else
                   let attempt:usize = Libcrux_ml_dsa.Constants.v_REJECTION_SAMPLE_BOUND_SIGN in
-                  let commitment_hash:Core.Option.t_Option (t_Array u8 (sz 32)) =
+                  let commitment_hash:Core.Option.t_Option (t_Array u8 (mk_usize 32)) =
                     Core.Option.Option_Some commitment_hash_candidate
                     <:
-                    Core.Option.t_Option (t_Array u8 (sz 32))
+                    Core.Option.t_Option (t_Array u8 (mk_usize 32))
                   in
                   let signer_response:Core.Option.t_Option
-                  (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) (sz 4)) =
+                  (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
+                      (mk_usize 4)) =
                     Core.Option.Option_Some mask
                     <:
                     Core.Option.t_Option
-                    (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) (sz 4))
+                    (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
+                        (mk_usize 4))
                   in
-                  let hint:Core.Option.t_Option (t_Array (t_Array i32 (sz 256)) (sz 4)) =
+                  let hint:Core.Option.t_Option (t_Array (t_Array i32 (mk_usize 256)) (mk_usize 4))
+                  =
                     Core.Option.Option_Some hint_candidate
                     <:
-                    Core.Option.t_Option (t_Array (t_Array i32 (sz 256)) (sz 4))
+                    Core.Option.t_Option (t_Array (t_Array i32 (mk_usize 256)) (mk_usize 4))
                   in
                   attempt, commitment_hash, domain_separator_for_mask, hint, signer_response
                   <:
-                  (usize & Core.Option.t_Option (t_Array u8 (sz 32)) & u16 &
-                    Core.Option.t_Option (t_Array (t_Array i32 (sz 256)) (sz 4)) &
+                  (usize & Core.Option.t_Option (t_Array u8 (mk_usize 32)) & u16 &
+                    Core.Option.t_Option (t_Array (t_Array i32 (mk_usize 256)) (mk_usize 4)) &
                     Core.Option.t_Option
-                    (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) (sz 4)))
-      )
+                    (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
+                        (mk_usize 4))))
   in
-  match commitment_hash <: Core.Option.t_Option (t_Array u8 (sz 32)) with
+  match commitment_hash <: Core.Option.t_Option (t_Array u8 (mk_usize 32)) with
   | Core.Option.Option_Some commitment_hash ->
-    let commitment_hash:t_Array u8 (sz 32) = commitment_hash in
+    let commitment_hash:t_Array u8 (mk_usize 32) = commitment_hash in
     (match
         signer_response
         <:
         Core.Option.t_Option
-        (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) (sz 4))
+        (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) (mk_usize 4))
       with
       | Core.Option.Option_Some signer_response ->
         let signer_response:t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
-          (sz 4) =
+          (mk_usize 4) =
           signer_response
         in
-        (match hint <: Core.Option.t_Option (t_Array (t_Array i32 (sz 256)) (sz 4)) with
+        (match hint <: Core.Option.t_Option (t_Array (t_Array i32 (mk_usize 256)) (mk_usize 4)) with
           | Core.Option.Option_Some hint ->
-            let hint:t_Array (t_Array i32 (sz 256)) (sz 4) = hint in
-            let signature:t_Array u8 (sz 2420) =
+            let hint:t_Array (t_Array i32 (mk_usize 256)) (mk_usize 4) = hint in
+            let signature:t_Array u8 (mk_usize 2420) =
               Libcrux_ml_dsa.Encoding.Signature.serialize #v_SIMDUnit
                 (commitment_hash <: t_Slice u8)
                 (signer_response
                   <:
                   t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit))
-                (hint <: t_Slice (t_Array i32 (sz 256)))
+                (hint <: t_Slice (t_Array i32 (mk_usize 256)))
                 Libcrux_ml_dsa.Constants.Ml_dsa_44_.v_COMMITMENT_HASH_SIZE
                 Libcrux_ml_dsa.Constants.Ml_dsa_44_.v_COLUMNS_IN_A
                 Libcrux_ml_dsa.Constants.Ml_dsa_44_.v_ROWS_IN_A
@@ -755,7 +791,7 @@ let sign_internal
             in
             signature, hax_temp_output
             <:
-            (t_Array u8 (sz 2420) &
+            (t_Array u8 (mk_usize 2420) &
               Core.Result.t_Result Prims.unit Libcrux_ml_dsa.Types.t_SigningError)
           | Core.Option.Option_None  ->
             signature,
@@ -766,7 +802,7 @@ let sign_internal
               <:
               Core.Result.t_Result Prims.unit Libcrux_ml_dsa.Types.t_SigningError)
             <:
-            (t_Array u8 (sz 2420) &
+            (t_Array u8 (mk_usize 2420) &
               Core.Result.t_Result Prims.unit Libcrux_ml_dsa.Types.t_SigningError))
       | Core.Option.Option_None  ->
         signature,
@@ -777,8 +813,8 @@ let sign_internal
           <:
           Core.Result.t_Result Prims.unit Libcrux_ml_dsa.Types.t_SigningError)
         <:
-        (t_Array u8 (sz 2420) & Core.Result.t_Result Prims.unit Libcrux_ml_dsa.Types.t_SigningError)
-    )
+        (t_Array u8 (mk_usize 2420) &
+          Core.Result.t_Result Prims.unit Libcrux_ml_dsa.Types.t_SigningError))
   | Core.Option.Option_None  ->
     signature,
     (Core.Result.Result_Err
@@ -788,7 +824,8 @@ let sign_internal
       <:
       Core.Result.t_Result Prims.unit Libcrux_ml_dsa.Types.t_SigningError)
     <:
-    (t_Array u8 (sz 2420) & Core.Result.t_Result Prims.unit Libcrux_ml_dsa.Types.t_SigningError)
+    (t_Array u8 (mk_usize 2420) &
+      Core.Result.t_Result Prims.unit Libcrux_ml_dsa.Types.t_SigningError)
 
 let verify_internal
       (#v_SIMDUnit #v_Sampler #v_Shake128X4 #v_Shake256 #v_Shake256Xof: Type0)
@@ -805,45 +842,49 @@ let verify_internal
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
           i9:
           Libcrux_ml_dsa.Hash_functions.Shake256.t_Xof v_Shake256Xof)
-      (verification_key: t_Array u8 (sz 1312))
+      (verification_key: t_Array u8 (mk_usize 1312))
       (message: t_Slice u8)
       (domain_separation_context:
           Core.Option.t_Option Libcrux_ml_dsa.Pre_hash.t_DomainSeparationContext)
-      (signature_serialized: t_Array u8 (sz 2420))
+      (signature_serialized: t_Array u8 (mk_usize 2420))
      =
   let seed_for_a, t1_serialized:(t_Slice u8 & t_Slice u8) =
     Core.Slice.impl__split_at #u8
       (verification_key <: t_Slice u8)
       Libcrux_ml_dsa.Constants.v_SEED_FOR_A_SIZE
   in
-  let t1:t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) (sz 4) =
+  let t1:t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) (mk_usize 4) =
     Rust_primitives.Hax.repeat (Libcrux_ml_dsa.Polynomial.impl__zero #v_SIMDUnit ()
         <:
         Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
-      (sz 4)
+      (mk_usize 4)
   in
-  let t1:t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) (sz 4) =
+  let t1:t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) (mk_usize 4) =
     Libcrux_ml_dsa.Encoding.Verification_key.deserialize #v_SIMDUnit
       Libcrux_ml_dsa.Constants.Ml_dsa_44_.v_ROWS_IN_A
       v_VERIFICATION_KEY_SIZE
       t1_serialized
       t1
   in
-  let deserialized_commitment_hash:t_Array u8 (sz 32) = Rust_primitives.Hax.repeat 0uy (sz 32) in
+  let deserialized_commitment_hash:t_Array u8 (mk_usize 32) =
+    Rust_primitives.Hax.repeat (mk_u8 0) (mk_usize 32)
+  in
   let deserialized_signer_response:t_Array
-    (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) (sz 4) =
+    (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) (mk_usize 4) =
     Rust_primitives.Hax.repeat (Libcrux_ml_dsa.Polynomial.impl__zero #v_SIMDUnit ()
         <:
         Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
-      (sz 4)
+      (mk_usize 4)
   in
-  let deserialized_hint:t_Array (t_Array i32 (sz 256)) (sz 4) =
-    Rust_primitives.Hax.repeat (Rust_primitives.Hax.repeat 0l (sz 256) <: t_Array i32 (sz 256))
-      (sz 4)
+  let deserialized_hint:t_Array (t_Array i32 (mk_usize 256)) (mk_usize 4) =
+    Rust_primitives.Hax.repeat (Rust_primitives.Hax.repeat (mk_i32 0) (mk_usize 256)
+        <:
+        t_Array i32 (mk_usize 256))
+      (mk_usize 4)
   in
-  let tmp0, tmp1, tmp2, out:(t_Array u8 (sz 32) &
-    t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) (sz 4) &
-    t_Array (t_Array i32 (sz 256)) (sz 4) &
+  let tmp0, tmp1, tmp2, out:(t_Array u8 (mk_usize 32) &
+    t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) (mk_usize 4) &
+    t_Array (t_Array i32 (mk_usize 256)) (mk_usize 4) &
     Core.Result.t_Result Prims.unit Libcrux_ml_dsa.Types.t_VerificationError) =
     Libcrux_ml_dsa.Encoding.Signature.deserialize #v_SIMDUnit
       Libcrux_ml_dsa.Constants.Ml_dsa_44_.v_COLUMNS_IN_A
@@ -854,12 +895,12 @@ let verify_internal
       (signature_serialized <: t_Slice u8) deserialized_commitment_hash deserialized_signer_response
       deserialized_hint
   in
-  let deserialized_commitment_hash:t_Array u8 (sz 32) = tmp0 in
+  let deserialized_commitment_hash:t_Array u8 (mk_usize 32) = tmp0 in
   let deserialized_signer_response:t_Array
-    (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) (sz 4) =
+    (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) (mk_usize 4) =
     tmp1
   in
-  let deserialized_hint:t_Array (t_Array i32 (sz 256)) (sz 4) = tmp2 in
+  let deserialized_hint:t_Array (t_Array i32 (mk_usize 256)) (mk_usize 4) = tmp2 in
   match out <: Core.Result.t_Result Prims.unit Libcrux_ml_dsa.Types.t_VerificationError with
   | Core.Result.Result_Ok _ ->
     let _:Prims.unit = () <: Prims.unit in
@@ -868,7 +909,9 @@ let verify_internal
         (deserialized_signer_response
           <:
           t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit))
-        ((2l <<! Libcrux_ml_dsa.Constants.Ml_dsa_44_.v_GAMMA1_EXPONENT <: i32) -! v_BETA <: i32)
+        ((mk_i32 2 <<! Libcrux_ml_dsa.Constants.Ml_dsa_44_.v_GAMMA1_EXPONENT <: i32) -! v_BETA
+          <:
+          i32)
     then
       Core.Result.Result_Err
       (Libcrux_ml_dsa.Types.VerificationError_SignerResponseExceedsBoundError
@@ -877,13 +920,15 @@ let verify_internal
       <:
       Core.Result.t_Result Prims.unit Libcrux_ml_dsa.Types.t_VerificationError
     else
-      let matrix:t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) (sz 16) =
+      let matrix:t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
+        (mk_usize 16) =
         Rust_primitives.Hax.repeat (Libcrux_ml_dsa.Polynomial.impl__zero #v_SIMDUnit ()
             <:
             Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
-          (sz 16)
+          (mk_usize 16)
       in
-      let matrix:t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) (sz 16) =
+      let matrix:t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
+        (mk_usize 16) =
         Libcrux_ml_dsa.Samplex4.f_matrix_flat #v_Sampler
           #FStar.Tactics.Typeclasses.solve
           #v_SIMDUnit
@@ -891,16 +936,20 @@ let verify_internal
           seed_for_a
           matrix
       in
-      let verification_key_hash:t_Array u8 (sz 64) = Rust_primitives.Hax.repeat 0uy (sz 64) in
-      let verification_key_hash:t_Array u8 (sz 64) =
+      let verification_key_hash:t_Array u8 (mk_usize 64) =
+        Rust_primitives.Hax.repeat (mk_u8 0) (mk_usize 64)
+      in
+      let verification_key_hash:t_Array u8 (mk_usize 64) =
         Libcrux_ml_dsa.Hash_functions.Shake256.f_shake256 #v_Shake256
           #FStar.Tactics.Typeclasses.solve
-          (sz 64)
+          (mk_usize 64)
           (verification_key <: t_Slice u8)
           verification_key_hash
       in
-      let message_representative:t_Array u8 (sz 64) = Rust_primitives.Hax.repeat 0uy (sz 64) in
-      let message_representative:t_Array u8 (sz 64) =
+      let message_representative:t_Array u8 (mk_usize 64) =
+        Rust_primitives.Hax.repeat (mk_u8 0) (mk_usize 64)
+      in
+      let message_representative:t_Array u8 (mk_usize 64) =
         Libcrux_ml_dsa.Ml_dsa_generic.derive_message_representative #v_Shake256Xof
           (verification_key_hash <: t_Slice u8)
           domain_separation_context
@@ -921,8 +970,8 @@ let verify_internal
         Libcrux_ml_dsa.Ntt.ntt #v_SIMDUnit verifier_challenge
       in
       let deserialized_signer_response:t_Array
-        (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) (sz 4) =
-        Rust_primitives.Hax.Folds.fold_range (sz 0)
+        (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) (mk_usize 4) =
+        Rust_primitives.Hax.Folds.fold_range (mk_usize 0)
           (Core.Slice.impl__len #(Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
               (deserialized_signer_response
                 <:
@@ -931,7 +980,7 @@ let verify_internal
             usize)
           (fun deserialized_signer_response temp_1_ ->
               let deserialized_signer_response:t_Array
-                (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) (sz 4) =
+                (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) (mk_usize 4) =
                 deserialized_signer_response
               in
               let _:usize = temp_1_ in
@@ -939,7 +988,7 @@ let verify_internal
           deserialized_signer_response
           (fun deserialized_signer_response i ->
               let deserialized_signer_response:t_Array
-                (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) (sz 4) =
+                (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) (mk_usize 4) =
                 deserialized_signer_response
               in
               let i:usize = i in
@@ -952,9 +1001,9 @@ let verify_internal
                   <:
                   Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
               <:
-              t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) (sz 4))
+              t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) (mk_usize 4))
       in
-      let t1:t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) (sz 4) =
+      let t1:t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) (mk_usize 4) =
         Libcrux_ml_dsa.Matrix.compute_w_approx #v_SIMDUnit
           Libcrux_ml_dsa.Constants.Ml_dsa_44_.v_ROWS_IN_A
           Libcrux_ml_dsa.Constants.Ml_dsa_44_.v_COLUMNS_IN_A
@@ -965,15 +1014,19 @@ let verify_internal
           verifier_challenge
           t1
       in
-      let recomputed_commitment_hash:t_Array u8 (sz 32) = Rust_primitives.Hax.repeat 0uy (sz 32) in
-      let t1:t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) (sz 4) =
+      let recomputed_commitment_hash:t_Array u8 (mk_usize 32) =
+        Rust_primitives.Hax.repeat (mk_u8 0) (mk_usize 32)
+      in
+      let t1:t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) (mk_usize 4) =
         Libcrux_ml_dsa.Arithmetic.use_hint #v_SIMDUnit
           Libcrux_ml_dsa.Constants.Ml_dsa_44_.v_GAMMA2
-          (deserialized_hint <: t_Slice (t_Array i32 (sz 256)))
+          (deserialized_hint <: t_Slice (t_Array i32 (mk_usize 256)))
           t1
       in
-      let commitment_serialized:t_Array u8 (sz 768) = Rust_primitives.Hax.repeat 0uy (sz 768) in
-      let commitment_serialized:t_Array u8 (sz 768) =
+      let commitment_serialized:t_Array u8 (mk_usize 768) =
+        Rust_primitives.Hax.repeat (mk_u8 0) (mk_usize 768)
+      in
+      let commitment_serialized:t_Array u8 (mk_usize 768) =
         Libcrux_ml_dsa.Encoding.Commitment.serialize_vector #v_SIMDUnit
           v_COMMITMENT_RING_ELEMENT_SIZE
           (t1 <: t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit))
@@ -996,14 +1049,14 @@ let verify_internal
           shake
           (commitment_serialized <: t_Slice u8)
       in
-      let tmp0, tmp1:(v_Shake256Xof & t_Array u8 (sz 32)) =
+      let tmp0, tmp1:(v_Shake256Xof & t_Array u8 (mk_usize 32)) =
         Libcrux_ml_dsa.Hash_functions.Shake256.f_squeeze #v_Shake256Xof
           #FStar.Tactics.Typeclasses.solve
           shake
           recomputed_commitment_hash
       in
       let shake:v_Shake256Xof = tmp0 in
-      let recomputed_commitment_hash:t_Array u8 (sz 32) = tmp1 in
+      let recomputed_commitment_hash:t_Array u8 (mk_usize 32) = tmp1 in
       let _:Prims.unit = () in
       let _:Prims.unit = () in
       if deserialized_commitment_hash =. recomputed_commitment_hash
@@ -1047,8 +1100,8 @@ let sign_pre_hashed_mut
           Libcrux_ml_dsa.Hash_functions.Shake256.t_XofX4 v_Shake256X4)
       (#[FStar.Tactics.Typeclasses.tcresolve ()] i15: Libcrux_ml_dsa.Pre_hash.t_PreHash v_PH)
       (signing_key message context pre_hash_buffer: t_Slice u8)
-      (randomness: t_Array u8 (sz 32))
-      (signature: t_Array u8 (sz 2420))
+      (randomness: t_Array u8 (mk_usize 32))
+      (signature: t_Array u8 (mk_usize 2420))
      =
   if (Core.Slice.impl__len #u8 context <: usize) >. Libcrux_ml_dsa.Constants.v_CONTEXT_MAX_LEN
   then
@@ -1059,7 +1112,7 @@ let sign_pre_hashed_mut
       <:
       Core.Result.t_Result Prims.unit Libcrux_ml_dsa.Types.t_SigningError)
     <:
-    (t_Slice u8 & t_Array u8 (sz 2420) &
+    (t_Slice u8 & t_Array u8 (mk_usize 2420) &
       Core.Result.t_Result Prims.unit Libcrux_ml_dsa.Types.t_SigningError)
   else
     let pre_hash_buffer:t_Slice u8 =
@@ -1074,16 +1127,16 @@ let sign_pre_hashed_mut
         (Core.Option.Option_Some
           (Libcrux_ml_dsa.Pre_hash.f_oid #v_PH #FStar.Tactics.Typeclasses.solve ()
             <:
-            t_Array u8 (sz 11))
+            t_Array u8 (mk_usize 11))
           <:
-          Core.Option.t_Option (t_Array u8 (sz 11)))
+          Core.Option.t_Option (t_Array u8 (mk_usize 11)))
       <:
       Core.Result.t_Result Libcrux_ml_dsa.Pre_hash.t_DomainSeparationContext
         Libcrux_ml_dsa.Pre_hash.t_DomainSeparationError
     with
     | Core.Result.Result_Ok dsc ->
       let domain_separation_context:Libcrux_ml_dsa.Pre_hash.t_DomainSeparationContext = dsc in
-      let tmp0, out:(t_Array u8 (sz 2420) &
+      let tmp0, out:(t_Array u8 (mk_usize 2420) &
         Core.Result.t_Result Prims.unit Libcrux_ml_dsa.Types.t_SigningError) =
         sign_internal #v_SIMDUnit #v_Sampler #v_Shake128X4 #v_Shake256 #v_Shake256Xof #v_Shake256X4
           signing_key pre_hash_buffer
@@ -1092,13 +1145,13 @@ let sign_pre_hashed_mut
             Core.Option.t_Option Libcrux_ml_dsa.Pre_hash.t_DomainSeparationContext) randomness
           signature
       in
-      let signature:t_Array u8 (sz 2420) = tmp0 in
+      let signature:t_Array u8 (mk_usize 2420) = tmp0 in
       let hax_temp_output:Core.Result.t_Result Prims.unit Libcrux_ml_dsa.Types.t_SigningError =
         out
       in
       pre_hash_buffer, signature, hax_temp_output
       <:
-      (t_Slice u8 & t_Array u8 (sz 2420) &
+      (t_Slice u8 & t_Array u8 (mk_usize 2420) &
         Core.Result.t_Result Prims.unit Libcrux_ml_dsa.Types.t_SigningError)
     | Core.Result.Result_Err _ ->
       pre_hash_buffer,
@@ -1110,7 +1163,7 @@ let sign_pre_hashed_mut
         <:
         Core.Result.t_Result Prims.unit Libcrux_ml_dsa.Types.t_SigningError)
       <:
-      (t_Slice u8 & t_Array u8 (sz 2420) &
+      (t_Slice u8 & t_Array u8 (mk_usize 2420) &
         Core.Result.t_Result Prims.unit Libcrux_ml_dsa.Types.t_SigningError)
 
 let sign_pre_hashed
@@ -1137,41 +1190,41 @@ let sign_pre_hashed
           Libcrux_ml_dsa.Hash_functions.Shake256.t_XofX4 v_Shake256X4)
       (#[FStar.Tactics.Typeclasses.tcresolve ()] i15: Libcrux_ml_dsa.Pre_hash.t_PreHash v_PH)
       (signing_key message context pre_hash_buffer: t_Slice u8)
-      (randomness: t_Array u8 (sz 32))
+      (randomness: t_Array u8 (mk_usize 32))
      =
-  let signature:Libcrux_ml_dsa.Types.t_MLDSASignature (sz 2420) =
-    Libcrux_ml_dsa.Types.impl_4__zero (sz 2420) ()
+  let signature:Libcrux_ml_dsa.Types.t_MLDSASignature (mk_usize 2420) =
+    Libcrux_ml_dsa.Types.impl_4__zero (mk_usize 2420) ()
   in
-  let tmp0, tmp1, out:(t_Slice u8 & t_Array u8 (sz 2420) &
+  let tmp0, tmp1, out:(t_Slice u8 & t_Array u8 (mk_usize 2420) &
     Core.Result.t_Result Prims.unit Libcrux_ml_dsa.Types.t_SigningError) =
     sign_pre_hashed_mut #v_SIMDUnit #v_Sampler #v_Shake128 #v_Shake128X4 #v_Shake256 #v_Shake256Xof
       #v_Shake256X4 #v_PH signing_key message context pre_hash_buffer randomness
       signature.Libcrux_ml_dsa.Types.f_value
   in
   let pre_hash_buffer:t_Slice u8 = tmp0 in
-  let signature:Libcrux_ml_dsa.Types.t_MLDSASignature (sz 2420) =
+  let signature:Libcrux_ml_dsa.Types.t_MLDSASignature (mk_usize 2420) =
     { signature with Libcrux_ml_dsa.Types.f_value = tmp1 }
     <:
-    Libcrux_ml_dsa.Types.t_MLDSASignature (sz 2420)
+    Libcrux_ml_dsa.Types.t_MLDSASignature (mk_usize 2420)
   in
-  let hax_temp_output:Core.Result.t_Result (Libcrux_ml_dsa.Types.t_MLDSASignature (sz 2420))
+  let hax_temp_output:Core.Result.t_Result (Libcrux_ml_dsa.Types.t_MLDSASignature (mk_usize 2420))
     Libcrux_ml_dsa.Types.t_SigningError =
     match out <: Core.Result.t_Result Prims.unit Libcrux_ml_dsa.Types.t_SigningError with
     | Core.Result.Result_Ok _ ->
       Core.Result.Result_Ok signature
       <:
-      Core.Result.t_Result (Libcrux_ml_dsa.Types.t_MLDSASignature (sz 2420))
+      Core.Result.t_Result (Libcrux_ml_dsa.Types.t_MLDSASignature (mk_usize 2420))
         Libcrux_ml_dsa.Types.t_SigningError
     | Core.Result.Result_Err e ->
       Core.Result.Result_Err e
       <:
-      Core.Result.t_Result (Libcrux_ml_dsa.Types.t_MLDSASignature (sz 2420))
+      Core.Result.t_Result (Libcrux_ml_dsa.Types.t_MLDSASignature (mk_usize 2420))
         Libcrux_ml_dsa.Types.t_SigningError
   in
   pre_hash_buffer, hax_temp_output
   <:
   (t_Slice u8 &
-    Core.Result.t_Result (Libcrux_ml_dsa.Types.t_MLDSASignature (sz 2420))
+    Core.Result.t_Result (Libcrux_ml_dsa.Types.t_MLDSASignature (mk_usize 2420))
       Libcrux_ml_dsa.Types.t_SigningError)
 
 let sign_mut
@@ -1193,19 +1246,19 @@ let sign_mut
           i11:
           Libcrux_ml_dsa.Hash_functions.Shake256.t_XofX4 v_Shake256X4)
       (signing_key message context: t_Slice u8)
-      (randomness: t_Array u8 (sz 32))
-      (signature: t_Array u8 (sz 2420))
+      (randomness: t_Array u8 (mk_usize 32))
+      (signature: t_Array u8 (mk_usize 2420))
      =
   match
     Libcrux_ml_dsa.Pre_hash.impl_1__new context
-      (Core.Option.Option_None <: Core.Option.t_Option (t_Array u8 (sz 11)))
+      (Core.Option.Option_None <: Core.Option.t_Option (t_Array u8 (mk_usize 11)))
     <:
     Core.Result.t_Result Libcrux_ml_dsa.Pre_hash.t_DomainSeparationContext
       Libcrux_ml_dsa.Pre_hash.t_DomainSeparationError
   with
   | Core.Result.Result_Ok dsc ->
     let domain_separation_context:Libcrux_ml_dsa.Pre_hash.t_DomainSeparationContext = dsc in
-    let tmp0, out:(t_Array u8 (sz 2420) &
+    let tmp0, out:(t_Array u8 (mk_usize 2420) &
       Core.Result.t_Result Prims.unit Libcrux_ml_dsa.Types.t_SigningError) =
       sign_internal #v_SIMDUnit #v_Sampler #v_Shake128X4 #v_Shake256 #v_Shake256Xof #v_Shake256X4
         signing_key message
@@ -1214,11 +1267,12 @@ let sign_mut
           Core.Option.t_Option Libcrux_ml_dsa.Pre_hash.t_DomainSeparationContext) randomness
         signature
     in
-    let signature:t_Array u8 (sz 2420) = tmp0 in
+    let signature:t_Array u8 (mk_usize 2420) = tmp0 in
     let hax_temp_output:Core.Result.t_Result Prims.unit Libcrux_ml_dsa.Types.t_SigningError = out in
     signature, hax_temp_output
     <:
-    (t_Array u8 (sz 2420) & Core.Result.t_Result Prims.unit Libcrux_ml_dsa.Types.t_SigningError)
+    (t_Array u8 (mk_usize 2420) &
+      Core.Result.t_Result Prims.unit Libcrux_ml_dsa.Types.t_SigningError)
   | Core.Result.Result_Err _ ->
     signature,
     (Core.Result.Result_Err
@@ -1226,7 +1280,8 @@ let sign_mut
       <:
       Core.Result.t_Result Prims.unit Libcrux_ml_dsa.Types.t_SigningError)
     <:
-    (t_Array u8 (sz 2420) & Core.Result.t_Result Prims.unit Libcrux_ml_dsa.Types.t_SigningError)
+    (t_Array u8 (mk_usize 2420) &
+      Core.Result.t_Result Prims.unit Libcrux_ml_dsa.Types.t_SigningError)
 
 let sign
       (#v_SIMDUnit #v_Sampler #v_Shake128X4 #v_Shake256 #v_Shake256Xof #v_Shake256X4: Type0)
@@ -1247,31 +1302,31 @@ let sign
           i11:
           Libcrux_ml_dsa.Hash_functions.Shake256.t_XofX4 v_Shake256X4)
       (signing_key message context: t_Slice u8)
-      (randomness: t_Array u8 (sz 32))
+      (randomness: t_Array u8 (mk_usize 32))
      =
-  let signature:Libcrux_ml_dsa.Types.t_MLDSASignature (sz 2420) =
-    Libcrux_ml_dsa.Types.impl_4__zero (sz 2420) ()
+  let signature:Libcrux_ml_dsa.Types.t_MLDSASignature (mk_usize 2420) =
+    Libcrux_ml_dsa.Types.impl_4__zero (mk_usize 2420) ()
   in
-  let tmp0, out:(t_Array u8 (sz 2420) &
+  let tmp0, out:(t_Array u8 (mk_usize 2420) &
     Core.Result.t_Result Prims.unit Libcrux_ml_dsa.Types.t_SigningError) =
     sign_mut #v_SIMDUnit #v_Sampler #v_Shake128X4 #v_Shake256 #v_Shake256Xof #v_Shake256X4
       signing_key message context randomness signature.Libcrux_ml_dsa.Types.f_value
   in
-  let signature:Libcrux_ml_dsa.Types.t_MLDSASignature (sz 2420) =
+  let signature:Libcrux_ml_dsa.Types.t_MLDSASignature (mk_usize 2420) =
     { signature with Libcrux_ml_dsa.Types.f_value = tmp0 }
     <:
-    Libcrux_ml_dsa.Types.t_MLDSASignature (sz 2420)
+    Libcrux_ml_dsa.Types.t_MLDSASignature (mk_usize 2420)
   in
   match out <: Core.Result.t_Result Prims.unit Libcrux_ml_dsa.Types.t_SigningError with
   | Core.Result.Result_Ok _ ->
     Core.Result.Result_Ok signature
     <:
-    Core.Result.t_Result (Libcrux_ml_dsa.Types.t_MLDSASignature (sz 2420))
+    Core.Result.t_Result (Libcrux_ml_dsa.Types.t_MLDSASignature (mk_usize 2420))
       Libcrux_ml_dsa.Types.t_SigningError
   | Core.Result.Result_Err e ->
     Core.Result.Result_Err e
     <:
-    Core.Result.t_Result (Libcrux_ml_dsa.Types.t_MLDSASignature (sz 2420))
+    Core.Result.t_Result (Libcrux_ml_dsa.Types.t_MLDSASignature (mk_usize 2420))
       Libcrux_ml_dsa.Types.t_SigningError
 
 let verify
@@ -1289,13 +1344,13 @@ let verify
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
           i9:
           Libcrux_ml_dsa.Hash_functions.Shake256.t_Xof v_Shake256Xof)
-      (verification_key_serialized: t_Array u8 (sz 1312))
+      (verification_key_serialized: t_Array u8 (mk_usize 1312))
       (message context: t_Slice u8)
-      (signature_serialized: t_Array u8 (sz 2420))
+      (signature_serialized: t_Array u8 (mk_usize 2420))
      =
   match
     Libcrux_ml_dsa.Pre_hash.impl_1__new context
-      (Core.Option.Option_None <: Core.Option.t_Option (t_Array u8 (sz 11)))
+      (Core.Option.Option_None <: Core.Option.t_Option (t_Array u8 (mk_usize 11)))
     <:
     Core.Result.t_Result Libcrux_ml_dsa.Pre_hash.t_DomainSeparationContext
       Libcrux_ml_dsa.Pre_hash.t_DomainSeparationError
@@ -1340,9 +1395,9 @@ let verify_pre_hashed
           i12:
           Libcrux_ml_dsa.Hash_functions.Shake256.t_Xof v_Shake256Xof)
       (#[FStar.Tactics.Typeclasses.tcresolve ()] i13: Libcrux_ml_dsa.Pre_hash.t_PreHash v_PH)
-      (verification_key_serialized: t_Array u8 (sz 1312))
+      (verification_key_serialized: t_Array u8 (mk_usize 1312))
       (message context pre_hash_buffer: t_Slice u8)
-      (signature_serialized: t_Array u8 (sz 2420))
+      (signature_serialized: t_Array u8 (mk_usize 2420))
      =
   let pre_hash_buffer:t_Slice u8 =
     Libcrux_ml_dsa.Pre_hash.f_hash #v_PH
@@ -1356,9 +1411,9 @@ let verify_pre_hashed
       (Core.Option.Option_Some
         (Libcrux_ml_dsa.Pre_hash.f_oid #v_PH #FStar.Tactics.Typeclasses.solve ()
           <:
-          t_Array u8 (sz 11))
+          t_Array u8 (mk_usize 11))
         <:
-        Core.Option.t_Option (t_Array u8 (sz 11)))
+        Core.Option.t_Option (t_Array u8 (mk_usize 11)))
     <:
     Core.Result.t_Result Libcrux_ml_dsa.Pre_hash.t_DomainSeparationContext
       Libcrux_ml_dsa.Pre_hash.t_DomainSeparationError
