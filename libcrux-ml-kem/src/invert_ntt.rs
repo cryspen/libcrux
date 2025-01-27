@@ -168,9 +168,7 @@ pub(crate) fn invert_ntt_at_layer_3<Vector: Operations>(
     (forall i. i < 16 ==>
         Spec.Utils.is_intb (pow2 15 - 1)
         (v (Seq.index (Libcrux_ml_kem.Vector.Traits.f_to_i16_array $a) i) +
-        v (Seq.index (Libcrux_ml_kem.Vector.Traits.f_to_i16_array $b) i))) /\
-    Spec.Utils.is_i16b_array_opaque 28296 (Libcrux_ml_kem.Vector.Traits.f_to_i16_array
-        (Libcrux_ml_kem.Vector.Traits.f_add $a $b))"#))]
+        v (Seq.index (Libcrux_ml_kem.Vector.Traits.f_to_i16_array $b) i)))"#))]
 pub(crate) fn inv_ntt_layer_int_vec_step_reduce<Vector: Operations>(
     mut a: Vector,
     mut b: Vector,
