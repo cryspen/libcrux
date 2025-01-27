@@ -433,7 +433,7 @@ let add_error_reduce_helper_2 (#v_Vector: Type0)
     reveal_opaque (`%Spec.Utils.is_i16b_array_opaque) Spec.Utils.is_i16b_array_opaque;
     reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.add_post) Libcrux_ml_kem.Vector.Traits.add_post;
     assert (forall (i:nat). i < 16 ==>
-        Spec.Utils.is_i16b_ array_opaque 28296 (Libcrux_ml_kem.Vector.Traits.f_to_i16_array
+        Spec.Utils.is_i16b_array_opaque 28296 (Libcrux_ml_kem.Vector.Traits.f_to_i16_array
         (Libcrux_ml_kem.Vector.Traits.f_add coefficient_normal_form myself.[ sz i ])))
 
 #pop-options
