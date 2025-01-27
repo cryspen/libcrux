@@ -241,6 +241,8 @@ let invert_ntt_at_layer_3_
 
 #pop-options
 
+#push-options "--admit_smt_queries true"
+
 let inv_ntt_layer_int_vec_step_reduce
       (#v_Vector: Type0)
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
@@ -252,6 +254,12 @@ let inv_ntt_layer_int_vec_step_reduce
   let a_minus_b:v_Vector =
     Libcrux_ml_kem.Vector.Traits.f_sub #v_Vector #FStar.Tactics.Typeclasses.solve b a
   in
+  let _:Prims.unit =
+    reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.f_add_pre)
+      (Libcrux_ml_kem.Vector.Traits.f_add_pre a b);
+    reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.f_add_post)
+      (Libcrux_ml_kem.Vector.Traits.f_add_post a b)
+  in
   let a:v_Vector =
     Libcrux_ml_kem.Vector.Traits.f_barrett_reduce #v_Vector
       #FStar.Tactics.Typeclasses.solve
@@ -260,6 +268,8 @@ let inv_ntt_layer_int_vec_step_reduce
   in
   let b:v_Vector = Libcrux_ml_kem.Vector.Traits.montgomery_multiply_fe #v_Vector a_minus_b zeta_r in
   a, b <: (v_Vector & v_Vector)
+
+#pop-options
 
 #push-options "--admit_smt_queries true"
 

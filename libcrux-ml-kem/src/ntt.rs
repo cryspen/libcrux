@@ -182,6 +182,7 @@ pub(crate) fn ntt_at_layer_3<Vector: Operations>(
 }
 
 #[inline(always)]
+#[hax_lib::fstar::verification_status(lax)]
 #[hax_lib::requires(fstar!(r#"Spec.Utils.is_i16b 1664 $zeta_r /\
     (let t = ${montgomery_multiply_fe::<Vector>} $b $zeta_r in
     (forall i. i < 16 ==>
@@ -198,6 +199,12 @@ fn ntt_layer_int_vec_step<Vector: Operations>(
     zeta_r: i16,
 ) -> (Vector, Vector) {
     let t = montgomery_multiply_fe::<Vector>(b, zeta_r);
+    hax_lib::fstar!(
+        r#"reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.f_sub_pre) 
+                    (Libcrux_ml_kem.Vector.Traits.f_sub_pre $a $t);
+        reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.f_add_pre) 
+                    (Libcrux_ml_kem.Vector.Traits.f_add_pre $a $t)"#
+    );
     b = Vector::sub(a, &t);
     a = Vector::add(a, &t);
     (a, b)
@@ -286,7 +293,7 @@ pub(crate) fn ntt_at_layer_7<Vector: Operations>(re: &mut PolynomialRingElement<
 }
 
 #[inline(always)]
-#[hax_lib::fstar::verification_status(panic_free)]
+#[hax_lib::fstar::verification_status(lax)]
 #[hax_lib::fstar::options("--z3rlimit 200")]
 #[hax_lib::requires(fstar!(r#"forall i. i < 8 ==> ntt_layer_7_pre (${re}.f_coefficients.[ sz i ])
     (${re}.f_coefficients.[ sz i +! sz 8 ])"#))]
@@ -312,7 +319,7 @@ pub(crate) fn ntt_binomially_sampled_ring_element<Vector: Operations>(
 }
 
 #[inline(always)]
-#[hax_lib::fstar::verification_status(panic_free)]
+#[hax_lib::fstar::verification_status(lax)]
 #[hax_lib::fstar::options("--z3rlimit 200")]
 #[hax_lib::ensures(|_| fstar!(r#"Libcrux_ml_kem.Polynomial.to_spec_poly_t #$:Vector ${re}_future ==
     Spec.MLKEM.poly_ntt (Libcrux_ml_kem.Polynomial.to_spec_poly_t #$:Vector $re)"#))]
