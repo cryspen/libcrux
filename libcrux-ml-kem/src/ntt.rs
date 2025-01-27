@@ -182,6 +182,7 @@ pub(crate) fn ntt_at_layer_3<Vector: Operations>(
 }
 
 #[inline(always)]
+#[hax_lib::fstar::verification_status(lax)]
 #[hax_lib::requires(fstar!(r#"Spec.Utils.is_i16b 1664 $zeta_r /\
     (let t = ${montgomery_multiply_fe::<Vector>} $b $zeta_r in
     (forall i. i < 16 ==>

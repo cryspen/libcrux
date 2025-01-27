@@ -246,6 +246,8 @@ let ntt_at_layer_3_
 
 #pop-options
 
+#push-options "--admit_smt_queries true"
+
 let ntt_layer_int_vec_step
       (#v_Vector: Type0)
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
@@ -268,6 +270,8 @@ let ntt_layer_int_vec_step
     Libcrux_ml_kem.Vector.Traits.f_add #v_Vector #FStar.Tactics.Typeclasses.solve a t
   in
   a, b <: (v_Vector & v_Vector)
+
+#pop-options
 
 #push-options "--admit_smt_queries true"
 

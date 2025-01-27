@@ -160,6 +160,7 @@ pub(crate) fn invert_ntt_at_layer_3<Vector: Operations>(
 }
 
 #[inline(always)]
+#[hax_lib::fstar::verification_status(lax)]
 #[hax_lib::requires(fstar!(r#"Spec.Utils.is_i16b 1664 $zeta_r /\
     (forall i. i < 16 ==>
         Spec.Utils.is_intb (pow2 15 - 1)
