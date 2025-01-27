@@ -83,28 +83,20 @@ val impl_1
       {| i2: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
     : Core.Marker.t_Copy (t_PolynomialRingElement v_Vector)
 
-val add_error_reduce
-      (#v_Vector: Type0)
-      {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
-      (myself error: t_PolynomialRingElement v_Vector)
-    : Prims.Pure (t_PolynomialRingElement v_Vector)
-      (requires
-        forall (i: nat).
-          i < 16 ==>
-          Spec.Utils.is_i16b_array_opaque (28296 - 3328)
-            (Libcrux_ml_kem.Vector.Traits.f_to_i16_array error.f_coefficients.[ sz i ]))
-      (fun _ -> Prims.l_True)
+val v_ZERO:
+    #v_Vector: Type0 ->
+    {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |} ->
+    Prims.unit
+  -> Prims.Pure (t_PolynomialRingElement v_Vector) Prims.l_True (fun _ -> Prims.l_True)
 
 val from_i16_array
       (#v_Vector: Type0)
       {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
-      (self error: t_PolynomialRingElement v_Vector)
+      (a: t_Slice i16)
     : Prims.Pure (t_PolynomialRingElement v_Vector)
       (requires
-        forall (i: nat).
-          i < 16 ==>
-          Spec.Utils.is_i16b_array_opaque (28296 - 3328)
-            (Libcrux_ml_kem.Vector.Traits.f_to_i16_array error.f_coefficients.[ sz i ]))
+        (v_VECTORS_IN_RING_ELEMENT *! mk_usize 16 <: usize) <=.
+        (Core.Slice.impl__len #i16 a <: usize))
       (fun _ -> Prims.l_True)
 
 /// Given two polynomial ring elements `lhs` and `rhs`, compute the pointwise
@@ -113,58 +105,21 @@ val add_to_ring_element
       (#v_Vector: Type0)
       (v_K: usize)
       {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
-      (myself message result: t_PolynomialRingElement v_Vector)
-    : Prims.Pure (t_PolynomialRingElement v_Vector)
-      (requires
-        (forall (i: nat).
-            i < 16 ==>
-            Libcrux_ml_kem.Vector.Traits.f_add_opaque_pre myself.f_coefficients.[ sz i ]
-              message.f_coefficients.[ sz i ] /\
-            Spec.Utils.is_i16b_array_opaque (28296 - 3328)
-              (Libcrux_ml_kem.Vector.Traits.f_to_i16_array (Libcrux_ml_kem.Vector.Traits.f_add_opaque
-                      myself.f_coefficients.[ sz i ]
-                      message.f_coefficients.[ sz i ]))))
-      (fun _ -> Prims.l_True)
-
-val impl_2__add_message_error_reduce
-      (#v_Vector: Type0)
-      {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
-      (self message result: t_PolynomialRingElement v_Vector)
-    : Prims.Pure (t_PolynomialRingElement v_Vector)
-      (requires
-        (forall (i: nat).
-            i < 16 ==>
-            Libcrux_ml_kem.Vector.Traits.f_add_opaque_pre self.f_coefficients.[ sz i ]
-              message.f_coefficients.[ sz i ] /\
-            Spec.Utils.is_i16b_array_opaque (28296 - 3328)
-              (Libcrux_ml_kem.Vector.Traits.f_to_i16_array (Libcrux_ml_kem.Vector.Traits.f_add_opaque
-                      self.f_coefficients.[ sz i ]
-                      message.f_coefficients.[ sz i ]))))
-      (fun _ -> Prims.l_True)
-
-val add_standard_error_reduce
-      (#v_Vector: Type0)
-      {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
-      (myself error: t_PolynomialRingElement v_Vector)
+      (myself rhs: t_PolynomialRingElement v_Vector)
     : Prims.Pure (t_PolynomialRingElement v_Vector)
       (requires
         forall (i: nat).
-          i < 16 ==>
-          Spec.Utils.is_i16b_array_opaque (28296 - 3328)
-            (Libcrux_ml_kem.Vector.Traits.f_to_i16_array error.f_coefficients.[ sz i ]))
-      (fun _ -> Prims.l_True)
-
-val impl_2__add_standard_error_reduce
-      (#v_Vector: Type0)
-      {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
-      (self error: t_PolynomialRingElement v_Vector)
-    : Prims.Pure (t_PolynomialRingElement v_Vector)
-      (requires
-        forall (i: nat).
-          i < 16 ==>
-          Spec.Utils.is_i16b_array_opaque (28296 - 3328)
-            (Libcrux_ml_kem.Vector.Traits.f_to_i16_array error.f_coefficients.[ sz i ]))
-      (fun _ -> Prims.l_True)
+          i < v (Core.Slice.impl__len myself.f_coefficients) ==>
+          Libcrux_ml_kem.Vector.Traits.f_add_pre myself.f_coefficients.[ sz i ]
+            rhs.f_coefficients.[ sz i ])
+      (ensures
+        fun myself_future ->
+          let myself_future:t_PolynomialRingElement v_Vector = myself_future in
+          forall (i: nat).
+            i < v (Core.Slice.impl__len myself.f_coefficients) ==>
+            Libcrux_ml_kem.Vector.Traits.f_add_post myself.f_coefficients.[ sz i ]
+              rhs.f_coefficients.[ sz i ]
+              myself_future.f_coefficients.[ sz i ])
 
 val poly_barrett_reduce
       (#v_Vector: Type0)
@@ -176,18 +131,6 @@ val poly_barrett_reduce
           i < v v_VECTORS_IN_RING_ELEMENT ==>
           Spec.Utils.is_i16b_array_opaque 28296
             (Libcrux_ml_kem.Vector.Traits.f_to_i16_array myself.f_coefficients.[ sz i ]))
-      (fun _ -> Prims.l_True)
-
-val impl_2__poly_barrett_reduce
-      (#v_Vector: Type0)
-      {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
-      (self: t_PolynomialRingElement v_Vector)
-    : Prims.Pure (t_PolynomialRingElement v_Vector)
-      (requires
-        forall (i: nat).
-          i < v v_VECTORS_IN_RING_ELEMENT ==>
-          Spec.Utils.is_i16b_array_opaque 28296
-            (Libcrux_ml_kem.Vector.Traits.f_to_i16_array self.f_coefficients.[ sz i ]))
       (fun _ -> Prims.l_True)
 
 val subtract_reduce
@@ -205,26 +148,42 @@ val subtract_reduce
 val add_message_error_reduce
       (#v_Vector: Type0)
       {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
-      (self b: t_PolynomialRingElement v_Vector)
+      (myself message result: t_PolynomialRingElement v_Vector)
     : Prims.Pure (t_PolynomialRingElement v_Vector)
       (requires
-        forall (i: nat).
-          i < 16 ==>
-          Spec.Utils.is_i16b_array_opaque (28296 - 3328)
-            (Libcrux_ml_kem.Vector.Traits.f_to_i16_array self.f_coefficients.[ sz i ]))
+        (forall (i: nat).
+            i < 16 ==>
+            Libcrux_ml_kem.Vector.Traits.f_add_pre myself.f_coefficients.[ sz i ]
+              message.f_coefficients.[ sz i ] /\
+            Spec.Utils.is_i16b_array_opaque (28296 - 3328)
+              (Libcrux_ml_kem.Vector.Traits.f_to_i16_array (Libcrux_ml_kem.Vector.Traits.f_add myself
+                        .f_coefficients.[ sz i ]
+                      message.f_coefficients.[ sz i ]))))
       (fun _ -> Prims.l_True)
 
 val add_error_reduce
       (#v_Vector: Type0)
       {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
       (myself error: t_PolynomialRingElement v_Vector)
-    : Prims.Pure (t_PolynomialRingElement v_Vector) Prims.l_True (fun _ -> Prims.l_True)
+    : Prims.Pure (t_PolynomialRingElement v_Vector)
+      (requires
+        forall (i: nat).
+          i < 16 ==>
+          Spec.Utils.is_i16b_array_opaque (28296 - 3328)
+            (Libcrux_ml_kem.Vector.Traits.f_to_i16_array error.f_coefficients.[ sz i ]))
+      (fun _ -> Prims.l_True)
 
 val add_standard_error_reduce
       (#v_Vector: Type0)
       {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
       (myself error: t_PolynomialRingElement v_Vector)
-    : Prims.Pure (t_PolynomialRingElement v_Vector) Prims.l_True (fun _ -> Prims.l_True)
+    : Prims.Pure (t_PolynomialRingElement v_Vector)
+      (requires
+        forall (i: nat).
+          i < 16 ==>
+          Spec.Utils.is_i16b_array_opaque (28296 - 3328)
+            (Libcrux_ml_kem.Vector.Traits.f_to_i16_array error.f_coefficients.[ sz i ]))
+      (fun _ -> Prims.l_True)
 
 /// Given two `KyberPolynomialRingElement`s in their NTT representations,
 /// compute their product. Given two polynomials in the NTT domain `f^` and `ĵ`,
@@ -260,41 +219,21 @@ val ntt_multiply
             (Libcrux_ml_kem.Vector.Traits.f_to_i16_array rhs.f_coefficients.[ sz i ]))
       (fun _ -> Prims.l_True)
 
-val impl_2__ntt_multiply
-      (#v_Vector: Type0)
-      {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
-      (self rhs: t_PolynomialRingElement v_Vector)
-    : Prims.Pure (t_PolynomialRingElement v_Vector)
-      (requires
-        forall (i: nat).
-          i < v v_VECTORS_IN_RING_ELEMENT ==>
-          Spec.Utils.is_i16b_array_opaque 3328
-            (Libcrux_ml_kem.Vector.Traits.f_to_i16_array self.f_coefficients.[ sz i ]) /\
-          Spec.Utils.is_i16b_array_opaque 3328
-            (Libcrux_ml_kem.Vector.Traits.f_to_i16_array rhs.f_coefficients.[ sz i ]))
-      (fun _ -> Prims.l_True)
+val impl_2__ZERO:
+    #v_Vector: Type0 ->
+    {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |} ->
+    Prims.unit
+  -> Prims.Pure (t_PolynomialRingElement v_Vector) Prims.l_True (fun _ -> Prims.l_True)
 
-/// Given two polynomial ring elements `lhs` and `rhs`, compute the pointwise
-/// sum of their constituent coefficients.
-val add_to_ring_element
+val impl_2__from_i16_array
       (#v_Vector: Type0)
-      (v_K: usize)
       {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
-      (myself rhs: t_PolynomialRingElement v_Vector)
+      (a: t_Slice i16)
     : Prims.Pure (t_PolynomialRingElement v_Vector)
       (requires
-        forall (i: nat).
-          i < v (Core.Slice.impl__len myself.f_coefficients) ==>
-          Libcrux_ml_kem.Vector.Traits.f_add_opaque_pre myself.f_coefficients.[ sz i ]
-            rhs.f_coefficients.[ sz i ])
-      (ensures
-        fun myself_future ->
-          let myself_future:t_PolynomialRingElement v_Vector = myself_future in
-          forall (i: nat).
-            i < v (Core.Slice.impl__len myself.f_coefficients) ==>
-            Libcrux_ml_kem.Vector.Traits.f_add_opaque_post myself.f_coefficients.[ sz i ]
-              rhs.f_coefficients.[ sz i ]
-              myself_future.f_coefficients.[ sz i ])
+        (v_VECTORS_IN_RING_ELEMENT *! mk_usize 16 <: usize) <=.
+        (Core.Slice.impl__len #i16 a <: usize))
+      (fun _ -> Prims.l_True)
 
 /// Given two polynomial ring elements `lhs` and `rhs`, compute the pointwise
 /// sum of their constituent coefficients.
@@ -307,6 +246,84 @@ val impl_2__add_to_ring_element
       (requires
         forall (i: nat).
           i < v (Core.Slice.impl__len self.f_coefficients) ==>
-          Libcrux_ml_kem.Vector.Traits.f_add_opaque_pre self.f_coefficients.[ sz i ]
+          Libcrux_ml_kem.Vector.Traits.f_add_pre self.f_coefficients.[ sz i ]
             rhs.f_coefficients.[ sz i ])
+      (fun _ -> Prims.l_True)
+
+val impl_2__poly_barrett_reduce
+      (#v_Vector: Type0)
+      {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
+      (self: t_PolynomialRingElement v_Vector)
+    : Prims.Pure (t_PolynomialRingElement v_Vector)
+      (requires
+        forall (i: nat).
+          i < v v_VECTORS_IN_RING_ELEMENT ==>
+          Spec.Utils.is_i16b_array_opaque 28296
+            (Libcrux_ml_kem.Vector.Traits.f_to_i16_array self.f_coefficients.[ sz i ]))
+      (fun _ -> Prims.l_True)
+
+val impl_2__subtract_reduce
+      (#v_Vector: Type0)
+      {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
+      (self b: t_PolynomialRingElement v_Vector)
+    : Prims.Pure (t_PolynomialRingElement v_Vector)
+      (requires
+        forall (i: nat).
+          i < 16 ==>
+          Spec.Utils.is_i16b_array_opaque (28296 - 3328)
+            (Libcrux_ml_kem.Vector.Traits.f_to_i16_array self.f_coefficients.[ sz i ]))
+      (fun _ -> Prims.l_True)
+
+val impl_2__add_message_error_reduce
+      (#v_Vector: Type0)
+      {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
+      (self message result: t_PolynomialRingElement v_Vector)
+    : Prims.Pure (t_PolynomialRingElement v_Vector)
+      (requires
+        (forall (i: nat).
+            i < 16 ==>
+            Libcrux_ml_kem.Vector.Traits.f_add_pre self.f_coefficients.[ sz i ]
+              message.f_coefficients.[ sz i ] /\
+            Spec.Utils.is_i16b_array_opaque (28296 - 3328)
+              (Libcrux_ml_kem.Vector.Traits.f_to_i16_array (Libcrux_ml_kem.Vector.Traits.f_add self
+                        .f_coefficients.[ sz i ]
+                      message.f_coefficients.[ sz i ]))))
+      (fun _ -> Prims.l_True)
+
+val impl_2__add_error_reduce
+      (#v_Vector: Type0)
+      {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
+      (self error: t_PolynomialRingElement v_Vector)
+    : Prims.Pure (t_PolynomialRingElement v_Vector)
+      (requires
+        forall (i: nat).
+          i < 16 ==>
+          Spec.Utils.is_i16b_array_opaque (28296 - 3328)
+            (Libcrux_ml_kem.Vector.Traits.f_to_i16_array error.f_coefficients.[ sz i ]))
+      (fun _ -> Prims.l_True)
+
+val impl_2__add_standard_error_reduce
+      (#v_Vector: Type0)
+      {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
+      (self error: t_PolynomialRingElement v_Vector)
+    : Prims.Pure (t_PolynomialRingElement v_Vector)
+      (requires
+        forall (i: nat).
+          i < 16 ==>
+          Spec.Utils.is_i16b_array_opaque (28296 - 3328)
+            (Libcrux_ml_kem.Vector.Traits.f_to_i16_array error.f_coefficients.[ sz i ]))
+      (fun _ -> Prims.l_True)
+
+val impl_2__ntt_multiply
+      (#v_Vector: Type0)
+      {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
+      (self rhs: t_PolynomialRingElement v_Vector)
+    : Prims.Pure (t_PolynomialRingElement v_Vector)
+      (requires
+        forall (i: nat).
+          i < v v_VECTORS_IN_RING_ELEMENT ==>
+          Spec.Utils.is_i16b_array_opaque 3328
+            (Libcrux_ml_kem.Vector.Traits.f_to_i16_array self.f_coefficients.[ sz i ]) /\
+          Spec.Utils.is_i16b_array_opaque 3328
+            (Libcrux_ml_kem.Vector.Traits.f_to_i16_array rhs.f_coefficients.[ sz i ]))
       (fun _ -> Prims.l_True)

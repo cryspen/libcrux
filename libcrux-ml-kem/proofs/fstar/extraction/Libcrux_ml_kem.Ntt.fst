@@ -255,6 +255,12 @@ let ntt_layer_int_vec_step
       (zeta_r: i16)
      =
   let t:v_Vector = Libcrux_ml_kem.Vector.Traits.montgomery_multiply_fe #v_Vector b zeta_r in
+  let _:Prims.unit =
+    reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.f_sub_pre)
+      (Libcrux_ml_kem.Vector.Traits.f_sub_pre a t);
+    reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.f_add_pre)
+      (Libcrux_ml_kem.Vector.Traits.f_add_pre a t)
+  in
   let b:v_Vector =
     Libcrux_ml_kem.Vector.Traits.f_sub #v_Vector #FStar.Tactics.Typeclasses.solve a t
   in
@@ -422,9 +428,9 @@ let ntt_at_layer_7_
 
 #pop-options
 
-#push-options "--z3rlimit 200"
-
 #push-options "--admit_smt_queries true"
+
+#push-options "--z3rlimit 200"
 
 let ntt_binomially_sampled_ring_element
       (#v_Vector: Type0)
@@ -495,9 +501,9 @@ let ntt_binomially_sampled_ring_element
 
 #pop-options
 
-#push-options "--z3rlimit 200"
-
 #push-options "--admit_smt_queries true"
+
+#push-options "--z3rlimit 200"
 
 let ntt_vector_u
       (v_VECTOR_U_COMPRESSION_FACTOR: usize)

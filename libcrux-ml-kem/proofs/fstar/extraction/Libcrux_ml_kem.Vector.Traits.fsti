@@ -25,24 +25,24 @@ class t_Repr (v_Self: Type0) = {
 }
 
 [@@ "opaque_to_smt"]
-let add_opaque_pre (lhs rhs: t_Array i16 (sz 16)) =
-    forall i. i < 16 ==>
-        Spec.Utils.is_intb (pow2 15 - 1) (v (Seq.index lhs i) + v (Seq.index rhs i))
-
-[@@ "opaque_to_smt"]
-let add_opaque_post (lhs rhs result: t_Array i16 (sz 16)) =
-    forall i. i < 16 ==>
-        (v (Seq.index result i) == v (Seq.index lhs i) + v (Seq.index rhs i))
-
-[@@ "opaque_to_smt"]
-let sub_opaque_pre (lhs rhs: t_Array i16 (sz 16)) =
+let sub_pre (lhs rhs: t_Array i16 (sz 16)) =
     forall i. i < 16 ==>
         Spec.Utils.is_intb (pow2 15 - 1) (v (Seq.index lhs i) - v (Seq.index rhs i))
 
 [@@ "opaque_to_smt"]
-let sub_opaque_post (lhs rhs result: t_Array i16 (sz 16)) =
+let sub_post (lhs rhs result: t_Array i16 (sz 16)) =
     forall i. i < 16 ==>
         (v (Seq.index result i) == v (Seq.index lhs i) - v (Seq.index rhs i))
+
+[@@ "opaque_to_smt"]
+let add_pre (lhs rhs: t_Array i16 (sz 16)) =
+    forall i. i < 16 ==>
+        Spec.Utils.is_intb (pow2 15 - 1) (v (Seq.index lhs i) + v (Seq.index rhs i))
+
+[@@ "opaque_to_smt"]
+let add_post (lhs rhs result: t_Array i16 (sz 16)) =
+    forall i. i < 16 ==>
+        (v (Seq.index result i) == v (Seq.index lhs i) + v (Seq.index rhs i))
 
 class t_Operations (v_Self: Type0) = {
   [@@@ FStar.Tactics.Typeclasses.no_method]_super_13011033735201511749:Core.Marker.t_Copy v_Self;
@@ -74,54 +74,16 @@ class t_Operations (v_Self: Type0) = {
     -> Prims.Pure (t_Array i16 (mk_usize 16))
         (f_to_i16_array_pre x0)
         (fun result -> f_to_i16_array_post x0 result);
-  f_add_pre:lhs: v_Self -> rhs: v_Self
-    -> pred:
-      Type0
-        { (forall i.
-              i < 16 ==>
-              Spec.Utils.is_intb (pow2 15 - 1)
-                (v (Seq.index (f_repr lhs) i) + v (Seq.index (f_repr rhs) i))) ==>
-          pred };
+  f_add_pre:lhs: v_Self -> rhs: v_Self -> pred: Type0{add_pre (f_repr lhs) (f_repr rhs) ==> pred};
   f_add_post:lhs: v_Self -> rhs: v_Self -> result: v_Self
-    -> pred:
-      Type0
-        { pred ==>
-          (forall i.
-              i < 16 ==>
-              (v (Seq.index (f_repr result) i) ==
-                v (Seq.index (f_repr lhs) i) + v (Seq.index (f_repr rhs) i))) };
+    -> pred: Type0{pred ==> add_post (f_repr lhs) (f_repr rhs) (f_repr result)};
   f_add:x0: v_Self -> x1: v_Self
     -> Prims.Pure v_Self (f_add_pre x0 x1) (fun result -> f_add_post x0 x1 result);
-  f_add_opaque_pre:lhs: v_Self -> rhs: v_Self
-    -> pred: Type0{add_opaque_pre (f_repr lhs) (f_repr rhs) ==> pred};
-  f_add_opaque_post:lhs: v_Self -> rhs: v_Self -> result: v_Self
-    -> pred: Type0{pred ==> add_opaque_post (f_repr lhs) (f_repr rhs) (f_repr result)};
-  f_add_opaque:x0: v_Self -> x1: v_Self
-    -> Prims.Pure v_Self (f_add_opaque_pre x0 x1) (fun result -> f_add_opaque_post x0 x1 result);
-  f_sub_pre:lhs: v_Self -> rhs: v_Self
-    -> pred:
-      Type0
-        { (forall i.
-              i < 16 ==>
-              Spec.Utils.is_intb (pow2 15 - 1)
-                (v (Seq.index (f_repr lhs) i) - v (Seq.index (f_repr rhs) i))) ==>
-          pred };
+  f_sub_pre:lhs: v_Self -> rhs: v_Self -> pred: Type0{sub_pre (f_repr lhs) (f_repr rhs) ==> pred};
   f_sub_post:lhs: v_Self -> rhs: v_Self -> result: v_Self
-    -> pred:
-      Type0
-        { pred ==>
-          (forall i.
-              i < 16 ==>
-              (v (Seq.index (f_repr result) i) ==
-                v (Seq.index (f_repr lhs) i) - v (Seq.index (f_repr rhs) i))) };
+    -> pred: Type0{pred ==> sub_post (f_repr lhs) (f_repr rhs) (f_repr result)};
   f_sub:x0: v_Self -> x1: v_Self
     -> Prims.Pure v_Self (f_sub_pre x0 x1) (fun result -> f_sub_post x0 x1 result);
-  f_sub_opaque_pre:lhs: v_Self -> rhs: v_Self
-    -> pred: Type0{sub_opaque_pre (f_repr lhs) (f_repr rhs) ==> pred};
-  f_sub_opaque_post:lhs: v_Self -> rhs: v_Self -> result: v_Self
-    -> pred: Type0{pred ==> sub_opaque_post (f_repr lhs) (f_repr rhs) (f_repr result)};
-  f_sub_opaque:x0: v_Self -> x1: v_Self
-    -> Prims.Pure v_Self (f_sub_opaque_pre x0 x1) (fun result -> f_sub_opaque_post x0 x1 result);
   f_multiply_by_constant_pre:vec: v_Self -> c: i16
     -> pred:
       Type0

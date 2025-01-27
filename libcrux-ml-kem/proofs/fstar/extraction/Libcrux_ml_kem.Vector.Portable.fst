@@ -123,10 +123,7 @@ Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
         (lhs: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
         (rhs: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
         ->
-        forall i.
-          i < 16 ==>
-          Spec.Utils.is_intb (pow2 15 - 1)
-            (v (Seq.index lhs.f_elements i) + v (Seq.index rhs.f_elements i)));
+        Libcrux_ml_kem.Vector.Traits.add_pre lhs.f_elements rhs.f_elements);
     f_add_post
     =
     (fun
@@ -134,44 +131,18 @@ Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
         (rhs: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
         (result: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
         ->
-        forall i.
-          i < 16 ==>
-          (v (Seq.index result.f_elements i) ==
-            v (Seq.index lhs.f_elements i) + v (Seq.index rhs.f_elements i)));
+        Libcrux_ml_kem.Vector.Traits.add_post lhs.f_elements rhs.f_elements result.f_elements);
     f_add
     =
     (fun
         (lhs: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
         (rhs: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
         ->
-        Libcrux_ml_kem.Vector.Portable.Arithmetic.add lhs rhs);
-    f_add_opaque_pre
-    =
-    (fun
-        (lhs: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
-        (rhs: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
-        ->
-        Libcrux_ml_kem.Vector.Traits.add_opaque_pre lhs.f_elements rhs.f_elements);
-    f_add_opaque_post
-    =
-    (fun
-        (lhs: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
-        (rhs: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
-        (result: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
-        ->
-        Libcrux_ml_kem.Vector.Traits.add_opaque_post lhs.f_elements rhs.f_elements result.f_elements
-    );
-    f_add_opaque
-    =
-    (fun
-        (lhs: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
-        (rhs: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
-        ->
         let _:Prims.unit =
-          reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.add_opaque_pre)
-            Libcrux_ml_kem.Vector.Traits.add_opaque_pre;
-          reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.add_opaque_post)
-            Libcrux_ml_kem.Vector.Traits.add_opaque_post
+          reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.add_pre)
+            Libcrux_ml_kem.Vector.Traits.add_pre;
+          reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.add_post)
+            Libcrux_ml_kem.Vector.Traits.add_post
         in
         Libcrux_ml_kem.Vector.Portable.Arithmetic.add lhs rhs);
     f_sub_pre
@@ -180,10 +151,7 @@ Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
         (lhs: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
         (rhs: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
         ->
-        forall i.
-          i < 16 ==>
-          Spec.Utils.is_intb (pow2 15 - 1)
-            (v (Seq.index lhs.f_elements i) - v (Seq.index rhs.f_elements i)));
+        Libcrux_ml_kem.Vector.Traits.sub_pre lhs.f_elements rhs.f_elements);
     f_sub_post
     =
     (fun
@@ -191,44 +159,18 @@ Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
         (rhs: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
         (result: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
         ->
-        forall i.
-          i < 16 ==>
-          (v (Seq.index result.f_elements i) ==
-            v (Seq.index lhs.f_elements i) - v (Seq.index rhs.f_elements i)));
+        Libcrux_ml_kem.Vector.Traits.sub_post lhs.f_elements rhs.f_elements result.f_elements);
     f_sub
     =
     (fun
         (lhs: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
         (rhs: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
         ->
-        Libcrux_ml_kem.Vector.Portable.Arithmetic.sub lhs rhs);
-    f_sub_opaque_pre
-    =
-    (fun
-        (lhs: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
-        (rhs: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
-        ->
-        Libcrux_ml_kem.Vector.Traits.sub_opaque_pre lhs.f_elements rhs.f_elements);
-    f_sub_opaque_post
-    =
-    (fun
-        (lhs: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
-        (rhs: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
-        (result: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
-        ->
-        Libcrux_ml_kem.Vector.Traits.sub_opaque_post lhs.f_elements rhs.f_elements result.f_elements
-    );
-    f_sub_opaque
-    =
-    (fun
-        (lhs: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
-        (rhs: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
-        ->
         let _:Prims.unit =
-          reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.sub_opaque_pre)
-            Libcrux_ml_kem.Vector.Traits.sub_opaque_pre;
-          reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.sub_opaque_post)
-            Libcrux_ml_kem.Vector.Traits.sub_opaque_post
+          reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.sub_pre)
+            Libcrux_ml_kem.Vector.Traits.sub_pre;
+          reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.sub_post)
+            Libcrux_ml_kem.Vector.Traits.sub_post
         in
         Libcrux_ml_kem.Vector.Portable.Arithmetic.sub lhs rhs);
     f_multiply_by_constant_pre
