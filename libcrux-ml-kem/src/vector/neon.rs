@@ -45,15 +45,7 @@ impl Operations for SIMD128Vector {
         add(lhs, rhs)
     }
 
-    fn add_opaque(lhs: Self, rhs: &Self) -> Self {
-        add(lhs, rhs)
-    }
-
     fn sub(lhs: Self, rhs: &Self) -> Self {
-        sub(lhs, rhs)
-    }
-
-    fn sub_opaque(lhs: Self, rhs: &Self) -> Self {
         sub(lhs, rhs)
     }
 

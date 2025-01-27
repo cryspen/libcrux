@@ -76,9 +76,9 @@ fn from_i16_array<Vector: Operations>(a: &[i16]) -> PolynomialRingElement<Vector
 /// sum of their constituent coefficients.
 #[inline(always)]
 #[hax_lib::requires(fstar!(r#"forall (i:nat). i < v (Core.Slice.impl__len ${myself}.f_coefficients) ==>
-    Libcrux_ml_kem.Vector.Traits.f_add_opaque_pre ${myself}.f_coefficients.[ sz i ] ${rhs}.f_coefficients.[ sz i ]"#))]
+    Libcrux_ml_kem.Vector.Traits.f_add_pre ${myself}.f_coefficients.[ sz i ] ${rhs}.f_coefficients.[ sz i ]"#))]
 #[hax_lib::ensures(|result| fstar!(r#"forall (i:nat). i < v (Core.Slice.impl__len ${myself}.f_coefficients) ==>
-    Libcrux_ml_kem.Vector.Traits.f_add_opaque_post ${myself}.f_coefficients.[ sz i ] ${rhs}.f_coefficients.[ sz i ] ${myself}_future.f_coefficients.[ sz i ]"#))]
+    Libcrux_ml_kem.Vector.Traits.f_add_post ${myself}.f_coefficients.[ sz i ] ${rhs}.f_coefficients.[ sz i ] ${myself}_future.f_coefficients.[ sz i ]"#))]
 fn add_to_ring_element<Vector: Operations, const K: usize>(
     myself: &mut PolynomialRingElement<Vector>,
     rhs: &PolynomialRingElement<Vector>,
@@ -90,12 +90,12 @@ fn add_to_ring_element<Vector: Operations, const K: usize>(
                 r#"(v $i < v (Core.Slice.impl__len myself.f_coefficients) ==>
                 (forall (j:nat). (j >= v $i /\ j < v (Core.Slice.impl__len myself.f_coefficients)) ==>
                     myself.f_coefficients.[ sz j ] == ${_myself}.[ sz j ] /\
-                    Libcrux_ml_kem.Vector.Traits.f_add_opaque_pre myself.f_coefficients.[ sz j ] ${rhs}.f_coefficients.[ sz j ])) /\
+                    Libcrux_ml_kem.Vector.Traits.f_add_pre myself.f_coefficients.[ sz j ] ${rhs}.f_coefficients.[ sz j ])) /\
             (forall (j:nat). j < v $i ==>
-                Libcrux_ml_kem.Vector.Traits.f_add_opaque_post ${_myself}.[ sz j ] ${rhs}.f_coefficients.[ sz j ] myself.f_coefficients.[ sz j ])"#
+                Libcrux_ml_kem.Vector.Traits.f_add_post ${_myself}.[ sz j ] ${rhs}.f_coefficients.[ sz j ] myself.f_coefficients.[ sz j ])"#
             )
         });
-        myself.coefficients[i] = Vector::add_opaque(myself.coefficients[i], &rhs.coefficients[i]);
+        myself.coefficients[i] = Vector::add(myself.coefficients[i], &rhs.coefficients[i]);
     }
 }
 
@@ -128,10 +128,10 @@ let subtract_reduce_helper_1 (#v_Vector: Type0)
         Spec.Utils.is_intb (pow2 15 - 1)
         (v (Seq.index (Libcrux_ml_kem.Vector.Traits.f_to_i16_array myself.[ sz i ]) j) -
             v (Seq.index (Libcrux_ml_kem.Vector.Traits.f_to_i16_array coefficient_normal_form) j)))))
-    (ensures (forall (i:nat). i < 16 ==> Libcrux_ml_kem.Vector.Traits.f_sub_opaque_pre myself.[ sz i ] coefficient_normal_form))
+    (ensures (forall (i:nat). i < 16 ==> Libcrux_ml_kem.Vector.Traits.f_sub_pre myself.[ sz i ] coefficient_normal_form))
     =
     reveal_opaque (`%Spec.Utils.is_i16b_array_opaque) Spec.Utils.is_i16b_array_opaque;
-    reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.sub_opaque_pre) Libcrux_ml_kem.Vector.Traits.sub_opaque_pre;
+    reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.sub_pre) Libcrux_ml_kem.Vector.Traits.sub_pre;
     assert_norm (pow2 15 == 32768)
 
 #pop-options
@@ -143,19 +143,19 @@ let subtract_reduce_helper_2 (#v_Vector: Type0)
     (myself: t_Array v_Vector (sz 16))
     (coefficient_normal_form: v_Vector) : Lemma
     (requires (forall (i:nat). i < 16 ==> 
-      Libcrux_ml_kem.Vector.Traits.f_sub_opaque_pre myself.[ sz i ] coefficient_normal_form /\
+      Libcrux_ml_kem.Vector.Traits.f_sub_pre myself.[ sz i ] coefficient_normal_form /\
       (forall j. j < 16 ==> Spec.Utils.is_intb 28296
         (v (Seq.index (Libcrux_ml_kem.Vector.Traits.f_to_i16_array myself.[ sz i ]) j) -
             v (Seq.index (Libcrux_ml_kem.Vector.Traits.f_to_i16_array coefficient_normal_form) j)))))
     (ensures (forall (i:nat). i < 16 ==>
         Spec.Utils.is_i16b_array_opaque 28296 (Libcrux_ml_kem.Vector.Traits.f_to_i16_array
-        (Libcrux_ml_kem.Vector.Traits.f_sub_opaque myself.[ sz i ] coefficient_normal_form))))
+        (Libcrux_ml_kem.Vector.Traits.f_sub myself.[ sz i ] coefficient_normal_form))))
     =
     reveal_opaque (`%Spec.Utils.is_i16b_array_opaque) Spec.Utils.is_i16b_array_opaque;
-    reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.sub_opaque_post) Libcrux_ml_kem.Vector.Traits.sub_opaque_post;
+    reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.sub_post) Libcrux_ml_kem.Vector.Traits.sub_post;
     assert (forall (i:nat). i < 16 ==>
         Spec.Utils.is_i16b_array_opaque 28296 (Libcrux_ml_kem.Vector.Traits.f_to_i16_array
-        (Libcrux_ml_kem.Vector.Traits.f_sub_opaque myself.[ sz i ] coefficient_normal_form)))
+        (Libcrux_ml_kem.Vector.Traits.f_sub myself.[ sz i ] coefficient_normal_form)))
 
 #pop-options
 
@@ -168,9 +168,9 @@ let subtract_reduce_helper (#v_Vector: Type0)
         (Libcrux_ml_kem.Vector.Traits.f_to_i16_array myself.[ sz i ])) /\
         Spec.Utils.is_i16b_array_opaque 3328
         (Libcrux_ml_kem.Vector.Traits.f_to_i16_array coefficient_normal_form))
-    (ensures (forall (i:nat). i < 16 ==> Libcrux_ml_kem.Vector.Traits.f_sub_opaque_pre myself.[ sz i ] coefficient_normal_form /\
+    (ensures (forall (i:nat). i < 16 ==> Libcrux_ml_kem.Vector.Traits.f_sub_pre myself.[ sz i ] coefficient_normal_form /\
         Spec.Utils.is_i16b_array_opaque 28296 (Libcrux_ml_kem.Vector.Traits.f_to_i16_array
-        (Libcrux_ml_kem.Vector.Traits.f_sub_opaque myself.[ sz i ] coefficient_normal_form))))
+        (Libcrux_ml_kem.Vector.Traits.f_sub myself.[ sz i ] coefficient_normal_form))))
     =
     reveal_opaque (`%Spec.Utils.is_i16b_array_opaque) Spec.Utils.is_i16b_array_opaque;
     assert_norm (pow2 15 == 32768);
@@ -200,7 +200,7 @@ fn subtract_reduce<Vector: Operations>(
             r#"subtract_reduce_helper ${myself}.f_coefficients $coefficient_normal_form"#
         );
         b.coefficients[i] =
-            Vector::barrett_reduce(Vector::sub_opaque(myself.coefficients[i], &coefficient_normal_form));
+            Vector::barrett_reduce(Vector::sub(myself.coefficients[i], &coefficient_normal_form));
     }
     b
 }
@@ -214,19 +214,19 @@ r#"let add_message_error_reduce_helper (#v_Vector: Type0)
           (Libcrux_ml_kem.Vector.Traits.f_to_i16_array result) /\
         Spec.Utils.is_i16b_array_opaque 3328
           (Libcrux_ml_kem.Vector.Traits.f_to_i16_array coefficient_normal_form)))
-    (ensures (Libcrux_ml_kem.Vector.Traits.f_add_opaque_pre coefficient_normal_form result /\
+    (ensures (Libcrux_ml_kem.Vector.Traits.f_add_pre coefficient_normal_form result /\
         Spec.Utils.is_i16b_array_opaque 28296 (Libcrux_ml_kem.Vector.Traits.f_to_i16_array
-          (Libcrux_ml_kem.Vector.Traits.f_add_opaque coefficient_normal_form result))))
+          (Libcrux_ml_kem.Vector.Traits.f_add coefficient_normal_form result))))
     =
     reveal_opaque (`%Spec.Utils.is_i16b_array_opaque) Spec.Utils.is_i16b_array_opaque;
-    reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.add_opaque_pre) Libcrux_ml_kem.Vector.Traits.add_opaque_pre;
-    reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.add_opaque_post) Libcrux_ml_kem.Vector.Traits.add_opaque_post;
+    reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.add_pre) Libcrux_ml_kem.Vector.Traits.add_pre;
+    reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.add_post) Libcrux_ml_kem.Vector.Traits.add_post;
     assert_norm (pow2 15 == 32768)"#
 )]
 #[hax_lib::requires(fstar!(r#"(forall (i:nat). i < 16 ==>
-    Libcrux_ml_kem.Vector.Traits.f_add_opaque_pre ${myself}.f_coefficients.[ sz i ] ${message}.f_coefficients.[ sz i ] /\
+    Libcrux_ml_kem.Vector.Traits.f_add_pre ${myself}.f_coefficients.[ sz i ] ${message}.f_coefficients.[ sz i ] /\
     Spec.Utils.is_i16b_array_opaque (28296 - 3328) (Libcrux_ml_kem.Vector.Traits.f_to_i16_array
-        (Libcrux_ml_kem.Vector.Traits.f_add_opaque ${myself}.f_coefficients.[ sz i ] ${message}.f_coefficients.[ sz i ])))"#))]
+        (Libcrux_ml_kem.Vector.Traits.f_add ${myself}.f_coefficients.[ sz i ] ${message}.f_coefficients.[ sz i ])))"#))]
 fn add_message_error_reduce<Vector: Operations>(
     myself: &PolynomialRingElement<Vector>,
     message: &PolynomialRingElement<Vector>,
@@ -252,9 +252,9 @@ fn add_message_error_reduce<Vector: Operations>(
         // ));
         // ```
 
-        let tmp = Vector::add_opaque(myself.coefficients[i], &message.coefficients[i]);
+        let tmp = Vector::add(myself.coefficients[i], &message.coefficients[i]);
         hax_lib::fstar!(r#"add_message_error_reduce_helper $tmp $coefficient_normal_form"#);
-        let tmp = Vector::add_opaque(coefficient_normal_form, &tmp);
+        let tmp = Vector::add(coefficient_normal_form, &tmp);
         result.coefficients[i] = Vector::barrett_reduce(tmp);
     }
     result
@@ -271,10 +271,10 @@ let add_error_reduce_helper_1 (#v_Vector: Type0)
         Spec.Utils.is_intb (pow2 15 - 1)
         (v (Seq.index (Libcrux_ml_kem.Vector.Traits.f_to_i16_array coefficient_normal_form) j) +
             v (Seq.index (Libcrux_ml_kem.Vector.Traits.f_to_i16_array myself.[ sz i ]) j)))))
-    (ensures (forall (i:nat). i < 16 ==> Libcrux_ml_kem.Vector.Traits.f_add_opaque_pre coefficient_normal_form myself.[ sz i ]))
+    (ensures (forall (i:nat). i < 16 ==> Libcrux_ml_kem.Vector.Traits.f_add_pre coefficient_normal_form myself.[ sz i ]))
     =
     reveal_opaque (`%Spec.Utils.is_i16b_array_opaque) Spec.Utils.is_i16b_array_opaque;
-    reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.add_opaque_pre) Libcrux_ml_kem.Vector.Traits.add_opaque_pre;
+    reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.add_pre) Libcrux_ml_kem.Vector.Traits.add_pre;
     assert_norm (pow2 15 == 32768)
 
 #pop-options
@@ -286,19 +286,19 @@ let add_error_reduce_helper_2 (#v_Vector: Type0)
     (myself: t_Array v_Vector (sz 16))
     (coefficient_normal_form: v_Vector) : Lemma
     (requires (forall (i:nat). i < 16 ==> 
-      Libcrux_ml_kem.Vector.Traits.f_add_opaque_pre coefficient_normal_form myself.[ sz i ] /\
+      Libcrux_ml_kem.Vector.Traits.f_add_pre coefficient_normal_form myself.[ sz i ] /\
       (forall j. j < 16 ==> Spec.Utils.is_intb 28296
         (v (Seq.index (Libcrux_ml_kem.Vector.Traits.f_to_i16_array coefficient_normal_form) j) +
             v (Seq.index (Libcrux_ml_kem.Vector.Traits.f_to_i16_array myself.[ sz i ]) j)))))
     (ensures (forall (i:nat). i < 16 ==>
         Spec.Utils.is_i16b_array_opaque 28296 (Libcrux_ml_kem.Vector.Traits.f_to_i16_array
-        (Libcrux_ml_kem.Vector.Traits.f_add_opaque coefficient_normal_form myself.[ sz i ]))))
+        (Libcrux_ml_kem.Vector.Traits.f_add coefficient_normal_form myself.[ sz i ]))))
     =
     reveal_opaque (`%Spec.Utils.is_i16b_array_opaque) Spec.Utils.is_i16b_array_opaque;
-    reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.add_opaque_post) Libcrux_ml_kem.Vector.Traits.add_opaque_post;
+    reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.add_post) Libcrux_ml_kem.Vector.Traits.add_post;
     assert (forall (i:nat). i < 16 ==>
         Spec.Utils.is_i16b_ array_opaque 28296 (Libcrux_ml_kem.Vector.Traits.f_to_i16_array
-        (Libcrux_ml_kem.Vector.Traits.f_add_opaque coefficient_normal_form myself.[ sz i ])))
+        (Libcrux_ml_kem.Vector.Traits.f_add coefficient_normal_form myself.[ sz i ])))
 
 #pop-options
 
@@ -311,9 +311,9 @@ let add_error_reduce_helper (#v_Vector: Type0)
         (Libcrux_ml_kem.Vector.Traits.f_to_i16_array myself.[ sz i ])) /\
         Spec.Utils.is_i16b_array_opaque 3328
         (Libcrux_ml_kem.Vector.Traits.f_to_i16_array coefficient_normal_form))
-    (ensures (forall (i:nat). i < 16 ==> Libcrux_ml_kem.Vector.Traits.f_add_opaque_pre coefficient_normal_form myself.[ sz i ] /\
+    (ensures (forall (i:nat). i < 16 ==> Libcrux_ml_kem.Vector.Traits.f_add_pre coefficient_normal_form myself.[ sz i ] /\
         Spec.Utils.is_i16b_array_opaque 28296 (Libcrux_ml_kem.Vector.Traits.f_to_i16_array
-        (Libcrux_ml_kem.Vector.Traits.f_add_opaque coefficient_normal_form myself.[ sz i ]))))
+        (Libcrux_ml_kem.Vector.Traits.f_add coefficient_normal_form myself.[ sz i ]))))
     =
     reveal_opaque (`%Spec.Utils.is_i16b_array_opaque) Spec.Utils.is_i16b_array_opaque;
     assert_norm (pow2 15 == 32768);
@@ -344,7 +344,7 @@ fn add_error_reduce<Vector: Operations>(
             r#"add_error_reduce_helper ${error}.f_coefficients $coefficient_normal_form"#
         );
         myself.coefficients[j] =
-            Vector::barrett_reduce(Vector::add_opaque(coefficient_normal_form, &error.coefficients[j]));
+            Vector::barrett_reduce(Vector::add(coefficient_normal_form, &error.coefficients[j]));
     }
 }
 
@@ -364,7 +364,7 @@ fn add_standard_error_reduce<Vector: Operations>(
             r#"add_error_reduce_helper ${error}.f_coefficients $coefficient_normal_form"#
         );
         myself.coefficients[j] =
-            Vector::barrett_reduce(Vector::add_opaque(coefficient_normal_form, &error.coefficients[j]));
+            Vector::barrett_reduce(Vector::add(coefficient_normal_form, &error.coefficients[j]));
     }
 }
 
@@ -454,7 +454,7 @@ impl<Vector: Operations> PolynomialRingElement<Vector> {
     /// sum of their constituent coefficients.
     #[inline(always)]
     #[hax_lib::requires(fstar!(r#"forall (i:nat). i < v (Core.Slice.impl__len self.f_coefficients) ==>
-        Libcrux_ml_kem.Vector.Traits.f_add_opaque_pre self.f_coefficients.[ sz i ] ${rhs}.f_coefficients.[ sz i ]"#))]
+        Libcrux_ml_kem.Vector.Traits.f_add_pre self.f_coefficients.[ sz i ] ${rhs}.f_coefficients.[ sz i ]"#))]
     pub(crate) fn add_to_ring_element<const K: usize>(&mut self, rhs: &Self) {
         add_to_ring_element::<Vector, K>(self, rhs);
     }
@@ -476,9 +476,9 @@ impl<Vector: Operations> PolynomialRingElement<Vector> {
 
     #[inline(always)]
     #[requires(fstar!(r#"(forall (i:nat). i < 16 ==>
-        Libcrux_ml_kem.Vector.Traits.f_add_opaque_pre self.f_coefficients.[ sz i ] ${message}.f_coefficients.[ sz i ] /\
+        Libcrux_ml_kem.Vector.Traits.f_add_pre self.f_coefficients.[ sz i ] ${message}.f_coefficients.[ sz i ] /\
         Spec.Utils.is_i16b_array_opaque (28296 - 3328) (Libcrux_ml_kem.Vector.Traits.f_to_i16_array
-            (Libcrux_ml_kem.Vector.Traits.f_add_opaque self.f_coefficients.[ sz i ] ${message}.f_coefficients.[ sz i ])))"#))]
+            (Libcrux_ml_kem.Vector.Traits.f_add self.f_coefficients.[ sz i ] ${message}.f_coefficients.[ sz i ])))"#))]
     pub(crate) fn add_message_error_reduce(&self, message: &Self, result: Self) -> Self {
         add_message_error_reduce(self, message, result)
     }

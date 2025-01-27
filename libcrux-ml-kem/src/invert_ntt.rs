@@ -169,7 +169,7 @@ pub(crate) fn invert_ntt_at_layer_3<Vector: Operations>(
         Spec.Utils.is_intb (pow2 15 - 1)
         (v (Seq.index (Libcrux_ml_kem.Vector.Traits.f_to_i16_array $a) i) +
         v (Seq.index (Libcrux_ml_kem.Vector.Traits.f_to_i16_array $b) i))) /\
-    Spec.Utils.is_i16b_array 28296 (Libcrux_ml_kem.Vector.Traits.f_to_i16_array
+    Spec.Utils.is_i16b_array_opaque 28296 (Libcrux_ml_kem.Vector.Traits.f_to_i16_array
         (Libcrux_ml_kem.Vector.Traits.f_add $a $b))"#))]
 pub(crate) fn inv_ntt_layer_int_vec_step_reduce<Vector: Operations>(
     mut a: Vector,
@@ -178,10 +178,10 @@ pub(crate) fn inv_ntt_layer_int_vec_step_reduce<Vector: Operations>(
 ) -> (Vector, Vector) {
     let a_minus_b = Vector::sub(b, &a);
     hax_lib::fstar!(
-        r#"reveal_opaque (`%Spec.Utils.is_i16b_array_opaque) 
-                    (Spec.Utils.is_i16b_array_opaque 28296 
-                    (Libcrux_ml_kem.Vector.Traits.f_to_i16_array
-                        (Libcrux_ml_kem.Vector.Traits.f_add #$:Vector $a $b)))"#
+        r#"reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.f_add_pre) 
+                    (Libcrux_ml_kem.Vector.Traits.f_add_pre $a $b);
+        reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.f_add_post) 
+                    (Libcrux_ml_kem.Vector.Traits.f_add_post $a $b)"#
     );
     a = Vector::barrett_reduce(Vector::add(a, &b));
     b = montgomery_multiply_fe::<Vector>(a_minus_b, zeta_r);

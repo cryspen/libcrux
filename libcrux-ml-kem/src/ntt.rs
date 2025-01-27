@@ -198,6 +198,12 @@ fn ntt_layer_int_vec_step<Vector: Operations>(
     zeta_r: i16,
 ) -> (Vector, Vector) {
     let t = montgomery_multiply_fe::<Vector>(b, zeta_r);
+    hax_lib::fstar!(
+        r#"reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.f_sub_pre) 
+                    (Libcrux_ml_kem.Vector.Traits.f_sub_pre $a $t);
+        reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.f_add_pre) 
+                    (Libcrux_ml_kem.Vector.Traits.f_add_pre $a $t)"#
+    );
     b = Vector::sub(a, &t);
     a = Vector::add(a, &t);
     (a, b)

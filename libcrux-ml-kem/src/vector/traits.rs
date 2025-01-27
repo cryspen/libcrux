@@ -17,23 +17,23 @@ pub trait Repr: Copy + Clone {
 #[hax_lib::attributes]
 #[hax_lib::fstar::before(interface,
 r#"[@@ "opaque_to_smt"]
-let sub_opaque_pre (lhs rhs: t_Array i16 (sz 16)) =
+let sub_pre (lhs rhs: t_Array i16 (sz 16)) =
     forall i. i < 16 ==>
         Spec.Utils.is_intb (pow2 15 - 1) (v (Seq.index lhs i) - v (Seq.index rhs i))
 
 [@@ "opaque_to_smt"]
-let sub_opaque_post (lhs rhs result: t_Array i16 (sz 16)) =
+let sub_post (lhs rhs result: t_Array i16 (sz 16)) =
     forall i. i < 16 ==>
         (v (Seq.index result i) == v (Seq.index lhs i) - v (Seq.index rhs i))"#
 )]
 #[hax_lib::fstar::before(interface,
 r#"[@@ "opaque_to_smt"]
-let add_opaque_pre (lhs rhs: t_Array i16 (sz 16)) =
+let add_pre (lhs rhs: t_Array i16 (sz 16)) =
     forall i. i < 16 ==>
         Spec.Utils.is_intb (pow2 15 - 1) (v (Seq.index lhs i) + v (Seq.index rhs i))
 
 [@@ "opaque_to_smt"]
-let add_opaque_post (lhs rhs result: t_Array i16 (sz 16)) =
+let add_post (lhs rhs result: t_Array i16 (sz 16)) =
     forall i. i < 16 ==>
         (v (Seq.index result i) == v (Seq.index lhs i) + v (Seq.index rhs i))"#
 )]
@@ -52,27 +52,13 @@ pub trait Operations: Copy + Clone + Repr {
     fn to_i16_array(x: Self) -> [i16; 16];
 
     // Basic arithmetic
-    #[requires(fstar!(r#"forall i. i < 16 ==> 
-        Spec.Utils.is_intb (pow2 15 - 1) (v (Seq.index (f_repr ${lhs}) i) + v (Seq.index (f_repr ${rhs}) i))"#))]
-    #[ensures(|result| fstar!(r#"forall i. i < 16 ==> 
-        (v (Seq.index (f_repr ${result}) i) == 
-         v (Seq.index (f_repr ${lhs}) i) + v (Seq.index (f_repr ${rhs}) i))"#))]
+    #[requires(fstar!(r#"add_pre (f_repr ${lhs}) (f_repr ${rhs})"#))]
+    #[ensures(|result| fstar!(r#"add_post (f_repr ${lhs}) (f_repr ${rhs}) (f_repr ${result})"#))]
     fn add(lhs: Self, rhs: &Self) -> Self;
 
-    #[requires(fstar!(r#"add_opaque_pre (f_repr ${lhs}) (f_repr ${rhs})"#))]
-    #[ensures(|result| fstar!(r#"add_opaque_post (f_repr ${lhs}) (f_repr ${rhs}) (f_repr ${result})"#))]
-    fn add_opaque(lhs: Self, rhs: &Self) -> Self;
-
-    #[requires(fstar!(r#"forall i. i < 16 ==> 
-        Spec.Utils.is_intb (pow2 15 - 1) (v (Seq.index (f_repr ${lhs}) i) - v (Seq.index (f_repr ${rhs}) i))"#))]
-    #[ensures(|result| fstar!(r#"forall i. i < 16 ==> 
-        (v (Seq.index (f_repr ${result}) i) == 
-         v (Seq.index (f_repr ${lhs}) i) - v (Seq.index (f_repr ${rhs}) i))"#))]
+    #[requires(fstar!(r#"sub_pre (f_repr ${lhs}) (f_repr ${rhs})"#))]
+    #[ensures(|result| fstar!(r#"sub_post (f_repr ${lhs}) (f_repr ${rhs}) (f_repr ${result})"#))]
     fn sub(lhs: Self, rhs: &Self) -> Self;
-
-    #[requires(fstar!(r#"sub_opaque_pre (f_repr ${lhs}) (f_repr ${rhs})"#))]
-    #[ensures(|result| fstar!(r#"sub_opaque_post (f_repr ${lhs}) (f_repr ${rhs}) (f_repr ${result})"#))]
-    fn sub_opaque(lhs: Self, rhs: &Self) -> Self;
 
     #[requires(fstar!(r#"forall i. i < 16 ==> 
         Spec.Utils.is_intb (pow2 15 - 1) (v (Seq.index (f_repr ${vec}) i) * v c)"#))]
