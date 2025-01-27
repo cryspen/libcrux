@@ -82,9 +82,6 @@ jobs:
 
   mlkem-verify:
     runs-on: self-hosted
-    needs:
-      - mlkem-extract
-      - mlkem-diff
 
     steps:
       - uses: actions/checkout@v4
