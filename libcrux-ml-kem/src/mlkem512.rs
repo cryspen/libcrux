@@ -659,3 +659,201 @@ pub(crate) mod kyber {
         >(private_key, ciphertext)
     }
 }
+
+/// Incremental API.
+///
+/// **NOTE:** This is a non-standard API. Use with caution!
+pub mod incremental {
+    use self::incremental::types::{Ciphertext1, Ciphertext2, Error, State};
+    pub use self::incremental::types::{EncapsState, PublicKey1, PublicKey2};
+
+    use super::*;
+    extern crate alloc;
+    use alloc::boxed::Box;
+    use ind_cca::incremental::{self, types::Keys};
+
+    /// Get the size of the second public key in bytes.
+    pub const fn pk2_len() -> usize {
+        RANK_512 * 16 * 32
+    }
+
+    /// The size of the key pair in bytes.
+    pub const fn key_pair_len() -> usize {
+        // Because const generics are too limited, we compute it here from scratch.
+
+        // PK1
+        64
+        // PK2
+        + RANK_512 * 16 * 32
+        // SK
+        + RANK_512 * 16 * 32 + 32
+        // Matrix
+        + RANK_512 * RANK_512 * 16 * 32
+    }
+
+    /// The size of the encaps state in bytes.
+    pub const fn encaps_state_len() -> usize {
+        // Because const generics are too limited, we compute it here from scratch.
+
+        // shared secret
+        SHARED_SECRET_SIZE
+        // r_as_ntt
+        + RANK_512 * 16 * 32
+        // error2
+        + 16 * 32
+        // randomness
+        + 32
+    }
+
+    /// Generate a new key pair for incremental encapsulation.
+    pub fn generate_key_pair(randomness: [u8; KEY_GENERATION_SEED_SIZE]) -> Box<dyn Keys> {
+        incremental::multiplexing::generate_keypair::<
+            RANK_512,
+            CPA_PKE_SECRET_KEY_SIZE_512,
+            SECRET_KEY_SIZE_512,
+            CPA_PKE_PUBLIC_KEY_SIZE_512,
+            RANKED_BYTES_PER_RING_ELEMENT_512,
+            ETA1,
+            ETA1_RANDOMNESS_SIZE,
+        >(randomness)
+    }
+
+    /// Generate a key pair and write it into `key_pair`.
+    ///
+    /// `key_pair.len()` must be of size `key_pair_len()`.
+    pub fn generate_key_pair_bytes(
+        randomness: [u8; KEY_GENERATION_SEED_SIZE],
+        key_pair: &mut [u8],
+    ) {
+        incremental::multiplexing::generate_keypair_serialized::<
+            RANK_512,
+            CPA_PKE_SECRET_KEY_SIZE_512,
+            SECRET_KEY_SIZE_512,
+            CPA_PKE_PUBLIC_KEY_SIZE_512,
+            RANKED_BYTES_PER_RING_ELEMENT_512,
+            ETA1,
+            ETA1_RANDOMNESS_SIZE,
+        >(randomness, key_pair)
+    }
+
+    /// Encapsulate the first part of the ciphertext.
+    pub fn encapsulate1(
+        public_key_part: &PublicKey1,
+        randomness: [u8; SHARED_SECRET_SIZE],
+    ) -> (Ciphertext1<C1_SIZE_512>, Box<dyn State>) {
+        incremental::multiplexing::encapsulate1::<
+            RANK_512,
+            CPA_PKE_CIPHERTEXT_SIZE_512,
+            C1_SIZE_512,
+            VECTOR_U_COMPRESSION_FACTOR_512,
+            C1_BLOCK_SIZE_512,
+            ETA1,
+            ETA1_RANDOMNESS_SIZE,
+            ETA2,
+            ETA2_RANDOMNESS_SIZE,
+        >(public_key_part, randomness)
+    }
+
+    /// Encapsulate the first part of the ciphertext.
+    pub fn encapsulate1_serialized(
+        public_key_part: &PublicKey1,
+        randomness: [u8; SHARED_SECRET_SIZE],
+        state: &mut [u8],
+    ) -> Ciphertext1<C1_SIZE_512> {
+        incremental::multiplexing::encapsulate1_serialized::<
+            RANK_512,
+            CPA_PKE_CIPHERTEXT_SIZE_512,
+            C1_SIZE_512,
+            VECTOR_U_COMPRESSION_FACTOR_512,
+            C1_BLOCK_SIZE_512,
+            ETA1,
+            ETA1_RANDOMNESS_SIZE,
+            ETA2,
+            ETA2_RANDOMNESS_SIZE,
+        >(public_key_part, randomness, state)
+    }
+
+    /// Encapsulate the second part of the ciphertext.
+    ///
+    /// The second part of the public key is passed in as byte slice.
+    /// [`Error::InvalidInputLength`] is returned if `public_key_part` is too
+    /// short.
+    pub fn encapsulate2(
+        state: &dyn State,
+        public_key_part: &[u8],
+    ) -> Result<Ciphertext2<C2_SIZE_512>, Error> {
+        incremental::multiplexing::encapsulate2::<
+            RANK_512,
+            C2_SIZE_512,
+            VECTOR_V_COMPRESSION_FACTOR_512,
+        >(state, public_key_part)
+    }
+
+    /// Encapsulate the second part of the ciphertext.
+    ///
+    /// The second part of the public key is passed in as byte slice.
+    /// [`Error::InvalidInputLength`] is returned if `public_key_part` is too
+    /// short.
+    pub fn encapsulate2_serialized(
+        state: &[u8],
+        public_key_part: &[u8],
+    ) -> Result<Ciphertext2<C2_SIZE_512>, Error> {
+        incremental::multiplexing::encapsulate2_serialized::<
+            RANK_512,
+            C2_SIZE_512,
+            VECTOR_V_COMPRESSION_FACTOR_512,
+        >(state, public_key_part)
+    }
+
+    /// Decapsulate incremental ciphertexts.
+    pub fn decapsulate(
+        private_key: &dyn Keys,
+        ciphertext1: &Ciphertext1<C1_SIZE_512>,
+        ciphertext2: &Ciphertext2<C2_SIZE_512>,
+    ) -> MlKemSharedSecret {
+        incremental::multiplexing::decapsulate::<
+            RANK_512,
+            SECRET_KEY_SIZE_512,
+            CPA_PKE_SECRET_KEY_SIZE_512,
+            CPA_PKE_PUBLIC_KEY_SIZE_512,
+            CPA_PKE_CIPHERTEXT_SIZE_512,
+            T_AS_NTT_ENCODED_SIZE_512,
+            C1_SIZE_512,
+            C2_SIZE_512,
+            VECTOR_U_COMPRESSION_FACTOR_512,
+            VECTOR_V_COMPRESSION_FACTOR_512,
+            C1_BLOCK_SIZE_512,
+            ETA1,
+            ETA1_RANDOMNESS_SIZE,
+            ETA2,
+            ETA2_RANDOMNESS_SIZE,
+            IMPLICIT_REJECTION_HASH_INPUT_SIZE,
+        >(private_key, ciphertext1, ciphertext2)
+    }
+
+    /// Decapsulate incremental ciphertexts.
+    pub fn decapsulate_incremental_key(
+        private_key: &[u8],
+        ciphertext1: &Ciphertext1<C1_SIZE_512>,
+        ciphertext2: &Ciphertext2<C2_SIZE_512>,
+    ) -> MlKemSharedSecret {
+        incremental::multiplexing::decapsulate_incremental_key::<
+            RANK_512,
+            SECRET_KEY_SIZE_512,
+            CPA_PKE_SECRET_KEY_SIZE_512,
+            CPA_PKE_PUBLIC_KEY_SIZE_512,
+            CPA_PKE_CIPHERTEXT_SIZE_512,
+            T_AS_NTT_ENCODED_SIZE_512,
+            C1_SIZE_512,
+            C2_SIZE_512,
+            VECTOR_U_COMPRESSION_FACTOR_512,
+            VECTOR_V_COMPRESSION_FACTOR_512,
+            C1_BLOCK_SIZE_512,
+            ETA1,
+            ETA1_RANDOMNESS_SIZE,
+            ETA2,
+            ETA2_RANDOMNESS_SIZE,
+            IMPLICIT_REJECTION_HASH_INPUT_SIZE,
+        >(private_key, ciphertext1, ciphertext2)
+    }
+}
