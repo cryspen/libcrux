@@ -87,7 +87,7 @@ rand = { version = "0.8" }
 log = { version = "0.4", optional = true }
 # WASM API
 wasm-bindgen = { version = "0.2.87", optional = true }
-getrandom = { version = "0.2", features = ["js"], optional = true }
+getrandom = { version = "0.3", features = ["js"], optional = true }
 hax-lib = { version = "0.1.0", git = "https://github.com/hacspec/hax/" }
 
 [dev-dependencies]
@@ -105,7 +105,7 @@ wycheproof = "0.6.0"
 
 [target.'cfg(target_arch = "wasm32")'.dev-dependencies]
 wasm-bindgen-test = "0.3"
-getrandom = { version = "0.2", features = ["js"] }
+getrandom = { version = "0.3", features = ["js"] }
 
 [features]
 default = ["std"]
