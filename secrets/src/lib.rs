@@ -9,33 +9,11 @@ pub mod array;
 pub mod util;
 pub mod zeroize;
 
-/// The secret variants
-///
-/// These are more costly for now and MUST NOT be used in regular builds.
-#[cfg(not(feature = "public"))]
-mod secret {
-    mod sequences;
-    pub use sequences::*;
+mod sequences;
+pub use sequences::*;
 
-    mod integers;
-    pub use integers::*;
-}
-#[cfg(not(feature = "public"))]
-pub use secret::*;
-
-/// The public versions
-///
-/// Enabled with the `public` feature.
-#[cfg(feature = "public")]
-mod public {
-    mod sequences;
-    pub use sequences::*;
-
-    mod integers;
-    pub use integers::*;
-}
-#[cfg(feature = "public")]
-pub use public::*;
+mod integers;
+pub use integers::*;
 
 #[cfg(test)]
 mod tests {

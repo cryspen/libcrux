@@ -1,10 +1,6 @@
 use std::ops::{Index, Range};
 
-use crate::{
-    array::*,
-    traits::{Classify, Declassify},
-    ClassifyRef, Scalar, Secret,
-};
+use crate::{array::*, traits::Classify, ClassifyRef, Scalar};
 
 /// Trait bound for secret array elements.
 pub trait SecretArrayElement: ArrayElement + Scalar + Classify + ClassifyRef {}
