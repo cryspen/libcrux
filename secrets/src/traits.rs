@@ -1,4 +1,4 @@
-use crate::sequences::array::SecretArray;
+use crate::{array::SecretArray, Secret};
 
 pub trait Classify {
     type Classified;
@@ -20,6 +20,7 @@ pub trait Declassify {
     fn declassify_slice(&self) -> &Self::Declassified;
 }
 
+/// Zero memory before dropping it
 pub trait Zeroize {
     fn zeroize(&mut self);
 }
@@ -54,8 +55,14 @@ where
 pub trait EncodeOps<T, const N: usize> {
     fn to_le_bytes(&self) -> SecretArray<u8, N>;
     fn to_be_bytes(&self) -> SecretArray<u8, N>;
+
     fn from_le_bytes(x: SecretArray<u8, N>) -> Self;
     fn from_be_bytes(x: SecretArray<u8, N>) -> Self;
+
+    /// The try from variant panics if the input doesn't have the correct size.
+    fn try_from_le_bytes(x: &[Secret<u8>]) -> Self;
+    /// The try from variant panics if the input doesn't have the correct size.
+    fn try_from_be_bytes(x: &[Secret<u8>]) -> Self;
 }
 
 /*

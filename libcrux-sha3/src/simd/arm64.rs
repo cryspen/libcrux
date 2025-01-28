@@ -77,8 +77,8 @@ pub(crate) fn load_block<const RATE: usize>(s: &mut [[uint64x2_t; 5]; 5], blocks
         let i = (RATE / 8 - 1) / 5;
         let j = (RATE / 8 - 1) % 5;
         let mut u = [U64(0); 2];
-        u[0] = U64::from_le_bytes(blocks[0][RATE - 8..RATE].try_into().unwrap());
-        u[1] = U64::from_le_bytes(blocks[1][RATE - 8..RATE].try_into().unwrap());
+        u[0] = U64::try_from_le_bytes(&blocks[0][RATE - 8..RATE]);
+        u[1] = U64::try_from_le_bytes(&blocks[1][RATE - 8..RATE]);
         let uvec = _vld1q_u64(u.declassify());
         s[i][j] = _veorq_u64(s[i][j], uvec);
     }

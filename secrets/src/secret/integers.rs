@@ -1,4 +1,4 @@
-use crate::{sequences::array::SecretArray, traits::*};
+use crate::{array::SecretArray, traits::*};
 use core::ops::*;
 
 /// A secret type `T`.
@@ -55,6 +55,7 @@ impl<T: Scalar> From<T> for Secret<T> {
 }
 
 impl<T: Scalar + Clone> Clone for Secret<T> {
+    #[inline(always)]
     fn clone(&self) -> Self {
         Secret(self.0.clone())
     }
@@ -67,6 +68,8 @@ where
     T::Output: Scalar,
 {
     type Output = Secret<T::Output>;
+
+    #[inline(always)]
     fn add(self, rhs: V) -> Self::Output {
         self.declassify().add(rhs.into().declassify()).classify()
     }
@@ -77,6 +80,8 @@ where
     T::Output: Scalar,
 {
     type Output = Secret<T::Output>;
+
+    #[inline(always)]
     fn sub(self, rhs: V) -> Self::Output {
         self.declassify().sub(rhs.into().declassify()).into()
     }
@@ -87,6 +92,8 @@ where
     T::Output: Scalar,
 {
     type Output = Secret<T::Output>;
+
+    #[inline(always)]
     fn mul(self, rhs: V) -> Self::Output {
         self.declassify().mul(rhs.into().declassify()).into()
     }
@@ -97,6 +104,8 @@ where
     T::Output: Scalar,
 {
     type Output = Secret<T::Output>;
+
+    #[inline(always)]
     fn bitxor(self, rhs: V) -> Self::Output {
         self.declassify().bitxor(rhs.into().declassify()).into()
     }
@@ -107,6 +116,7 @@ where
     T::Output: Scalar,
     T::Output: Into<T>,
 {
+    #[inline(always)]
     fn bitxor_assign(&mut self, rhs: V) {
         let r = self.declassify().bitxor(rhs.into().declassify()).into();
         *self = r.classify();
@@ -118,6 +128,8 @@ where
     T::Output: Scalar,
 {
     type Output = Secret<T::Output>;
+
+    #[inline(always)]
     fn bitor(self, rhs: V) -> Self::Output {
         self.declassify().bitor(rhs.into().declassify()).into()
     }
@@ -127,6 +139,7 @@ impl<T: BitOr + Copy + Scalar, V: Into<Secret<T>>> BitOrAssign<V> for Secret<T>
 where
     T::Output: Into<T>,
 {
+    #[inline(always)]
     fn bitor_assign(&mut self, rhs: V) {
         let r = self.declassify().bitor(rhs.into().declassify()).into();
         *self = r.classify();
@@ -138,6 +151,8 @@ where
     T::Output: Scalar,
 {
     type Output = Secret<T::Output>;
+
+    #[inline(always)]
     fn bitand(self, rhs: V) -> Self::Output {
         self.declassify().bitand(rhs.into().declassify()).into()
     }
@@ -147,6 +162,7 @@ impl<T: BitAnd + Copy + Scalar, V: Into<Secret<T>>> BitAndAssign<V> for Secret<T
 where
     T::Output: Into<T>,
 {
+    #[inline(always)]
     fn bitand_assign(&mut self, rhs: V) {
         let r = self.declassify().bitand(rhs.into().declassify()).into();
         *self = r.classify();
@@ -158,6 +174,8 @@ where
     T::Output: Scalar,
 {
     type Output = Secret<T::Output>;
+
+    #[inline(always)]
     fn not(self) -> Self::Output {
         self.declassify().not().into()
     }
@@ -168,6 +186,8 @@ where
     T::Output: Scalar,
 {
     type Output = Secret<T::Output>;
+
+    #[inline(always)]
     fn shl(self, rhs: U) -> Self::Output {
         (self.declassify().shl(rhs)).into()
     }
@@ -178,6 +198,8 @@ where
     T::Output: Scalar,
 {
     type Output = Secret<T::Output>;
+
+    #[inline(always)]
     fn shr(self, rhs: U) -> Self::Output {
         (self.declassify().shr(rhs)).into()
     }
@@ -197,6 +219,7 @@ pub type U128 = Secret<u128>;
 macro_rules! impl_new {
     ($name:ident, $t:ty, $st:ty) => {
         #[allow(non_snake_case)]
+        #[inline(always)]
         pub const fn $name(v: $t) -> $st {
             Secret(v)
         }
@@ -260,6 +283,14 @@ impl EncodeOps<U8, 4> for U32 {
     fn from_be_bytes(x: SecretArray<u8, 4>) -> Self {
         u32::from_be_bytes(x.declassify()).classify()
     }
+
+    fn try_from_le_bytes(x: &[Secret<u8>]) -> Self {
+        todo!()
+    }
+
+    fn try_from_be_bytes(x: &[Secret<u8>]) -> Self {
+        todo!()
+    }
 }
 
 impl IntOps for Secret<u64> {
@@ -314,5 +345,15 @@ impl EncodeOps<U8, 8> for U64 {
     #[inline(always)]
     fn from_be_bytes(x: SecretArray<u8, 8>) -> Self {
         u64::from_be_bytes(x.declassify()).classify()
+    }
+
+    fn try_from_le_bytes(x: &[Secret<u8>]) -> Self {
+        let x: &[u8] = unsafe { core::mem::transmute(x) };
+        u64::from_le_bytes(x.try_into().unwrap()).classify()
+    }
+
+    fn try_from_be_bytes(x: &[Secret<u8>]) -> Self {
+        let x: &[u8] = unsafe { core::mem::transmute(x) };
+        u64::from_be_bytes(x.try_into().unwrap()).classify()
     }
 }

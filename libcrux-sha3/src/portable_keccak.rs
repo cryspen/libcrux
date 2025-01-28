@@ -43,7 +43,7 @@ fn _veorq_n_u64(a: U64, c: U64) -> U64 {
 pub(crate) fn load_block<const RATE: usize>(s: &mut [[U64; 5]; 5], blocks: [&[U8]; 1]) {
     debug_assert!(RATE <= blocks[0].len() && RATE % 8 == 0);
     for i in 0..RATE / 8 {
-        s[i / 5][i % 5] ^= U64::from_le_bytes(blocks[0][8 * i..8 * i + 8].try_into().unwrap());
+        s[i / 5][i % 5] ^= U64::try_from_le_bytes(&blocks[0][8 * i..8 * i + 8]);
     }
 }
 
