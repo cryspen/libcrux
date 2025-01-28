@@ -1,5 +1,6 @@
 use libcrux_ml_kem::{MlKemCiphertext, MlKemPrivateKey};
 
+use libcrux_secrets::AsSecret;
 use libcrux_sha3::shake256;
 use rand::{rngs::OsRng, thread_rng, RngCore};
 
@@ -212,7 +213,7 @@ fn compute_implicit_rejection_shared_secret<const CLEN: usize, const LEN: usize>
     let mut to_hash = secret_key[MlKemPrivateKey::<LEN>::len() - SHARED_SECRET_SIZE..].to_vec();
     to_hash.extend_from_slice(ciphertext.as_ref());
 
-    shake256(&to_hash)
+    shake256((&to_hash).as_secret())
 }
 
 macro_rules! impl_modified_secret_key {

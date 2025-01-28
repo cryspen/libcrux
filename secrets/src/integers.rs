@@ -285,11 +285,13 @@ impl EncodeOps<U8, 4> for U32 {
     }
 
     fn try_from_le_bytes(x: &[Secret<u8>]) -> Self {
-        todo!()
+        let x: &[u8] = unsafe { core::mem::transmute(x) };
+        u32::from_le_bytes(x.try_into().unwrap()).classify()
     }
 
     fn try_from_be_bytes(x: &[Secret<u8>]) -> Self {
-        todo!()
+        let x: &[u8] = unsafe { core::mem::transmute(x) };
+        u32::from_be_bytes(x.try_into().unwrap()).classify()
     }
 }
 

@@ -8,6 +8,7 @@ pub use traits::*;
 pub mod array;
 pub mod util;
 pub mod zeroize;
+pub mod ct;
 
 mod sequences;
 pub use sequences::*;

@@ -8,6 +8,8 @@
 // them to be properly abstracted in F*. We would like hax to do this automatically.
 // Related Issue: https://github.com/hacspec/hax/issues/616
 
+use libcrux_secrets::{AsSecret, AsSecretRef};
+
 use crate::constants::{G_DIGEST_SIZE, H_DIGEST_SIZE};
 
 /// The SHA3 block size.
@@ -89,7 +91,7 @@ pub(crate) mod portable {
     #[inline(always)]
     fn G(input: &[u8]) -> [u8; G_DIGEST_SIZE] {
         let mut digest = [0u8; G_DIGEST_SIZE];
-        portable::sha512(&mut digest, input);
+        portable::sha512(&mut digest, input.as_secret());
         digest
     }
 
@@ -99,7 +101,7 @@ pub(crate) mod portable {
     #[inline(always)]
     fn H(input: &[u8]) -> [u8; H_DIGEST_SIZE] {
         let mut digest = [0u8; H_DIGEST_SIZE];
-        portable::sha256(&mut digest, input);
+        portable::sha256(&mut digest, input.as_secret());
         digest
     }
 
@@ -110,7 +112,7 @@ pub(crate) mod portable {
     #[inline(always)]
     fn PRF<const LEN: usize>(input: &[u8]) -> [u8; LEN] {
         let mut digest = [0u8; LEN];
-        portable::shake256(&mut digest, input);
+        portable::shake256(&mut digest, input.as_secret());
         digest
     }
 
@@ -124,7 +126,7 @@ pub(crate) mod portable {
 
         let mut out = [[0u8; LEN]; K];
         for i in 0..K {
-            portable::shake256(&mut out[i], &input[i]);
+            portable::shake256(&mut out[i], (&input[i]).as_secret());
         }
         out
     }
@@ -135,7 +137,7 @@ pub(crate) mod portable {
 
         let mut shake128_state = [incremental::shake128_init(); K];
         for i in 0..K {
-            incremental::shake128_absorb_final(&mut shake128_state[i], &input[i]);
+            incremental::shake128_absorb_final(&mut shake128_state[i], (&input[i]).as_secret());
         }
         PortableHash { shake128_state }
     }
@@ -498,7 +500,7 @@ pub(crate) mod neon {
     #[inline(always)]
     fn G(input: &[u8]) -> [u8; G_DIGEST_SIZE] {
         let mut digest = [0u8; G_DIGEST_SIZE];
-        libcrux_sha3::neon::sha512(&mut digest, input);
+        libcrux_sha3::neon::sha512(&mut digest, input.as_secret());
         digest
     }
 
@@ -508,7 +510,7 @@ pub(crate) mod neon {
     #[inline(always)]
     fn H(input: &[u8]) -> [u8; H_DIGEST_SIZE] {
         let mut digest = [0u8; H_DIGEST_SIZE];
-        libcrux_sha3::neon::sha256(&mut digest, input);
+        libcrux_sha3::neon::sha256(&mut digest, input.as_secret());
         digest
     }
 
@@ -520,7 +522,12 @@ pub(crate) mod neon {
     fn PRF<const LEN: usize>(input: &[u8]) -> [u8; LEN] {
         let mut digest = [0u8; LEN];
         let mut dummy = [0u8; LEN];
-        x2::shake256(input, input, &mut digest, &mut dummy);
+        x2::shake256(
+            input.as_secret(),
+            input.as_secret(),
+            &mut digest,
+            &mut dummy,
+        );
         digest
     }
 
@@ -538,20 +545,45 @@ pub(crate) mod neon {
         let mut out3 = [0u8; LEN];
         match K as u8 {
             2 => {
-                x2::shake256(&input[0], &input[1], &mut out0, &mut out1);
+                x2::shake256(
+                    (&input[0]).as_secret(),
+                    (&input[1]).as_secret(),
+                    &mut out0,
+                    &mut out1,
+                );
                 out[0] = out0;
                 out[1] = out1;
             }
             3 => {
-                x2::shake256(&input[0], &input[1], &mut out0, &mut out1);
-                x2::shake256(&input[2], &input[2], &mut out2, &mut out3);
+                x2::shake256(
+                    (&input[0]).as_secret(),
+                    (&input[1]).as_secret(),
+                    &mut out0,
+                    &mut out1,
+                );
+                x2::shake256(
+                    (&input[2]).as_secret(),
+                    (&input[2]).as_secret(),
+                    &mut out2,
+                    &mut out3,
+                );
                 out[0] = out0;
                 out[1] = out1;
                 out[2] = out2;
             }
             4 => {
-                x2::shake256(&input[0], &input[1], &mut out0, &mut out1);
-                x2::shake256(&input[2], &input[3], &mut out2, &mut out3);
+                x2::shake256(
+                    (&input[0]).as_secret(),
+                    (&input[1]).as_secret(),
+                    &mut out0,
+                    &mut out1,
+                );
+                x2::shake256(
+                    (&input[2]).as_secret(),
+                    (&input[3]).as_secret(),
+                    &mut out2,
+                    &mut out3,
+                );
                 out[0] = out0;
                 out[1] = out1;
                 out[2] = out2;
@@ -568,15 +600,35 @@ pub(crate) mod neon {
         let mut state = [x2::incremental::init(), x2::incremental::init()];
         match K as u8 {
             2 => {
-                x2::incremental::shake128_absorb_final(&mut state[0], &input[0], &input[1]);
+                x2::incremental::shake128_absorb_final(
+                    &mut state[0],
+                    (&input[0]).as_secret(),
+                    (&input[1]).as_secret(),
+                );
             }
             3 => {
-                x2::incremental::shake128_absorb_final(&mut state[0], &input[0], &input[1]);
-                x2::incremental::shake128_absorb_final(&mut state[1], &input[2], &input[2]);
+                x2::incremental::shake128_absorb_final(
+                    &mut state[0],
+                    (&input[0]).as_secret(),
+                    (&input[1]).as_secret(),
+                );
+                x2::incremental::shake128_absorb_final(
+                    &mut state[1],
+                    (&input[2]).as_secret(),
+                    (&input[2]).as_secret(),
+                );
             }
             4 => {
-                x2::incremental::shake128_absorb_final(&mut state[0], &input[0], &input[1]);
-                x2::incremental::shake128_absorb_final(&mut state[1], &input[2], &input[3]);
+                x2::incremental::shake128_absorb_final(
+                    &mut state[0],
+                    (&input[0]).as_secret(),
+                    (&input[1]).as_secret(),
+                );
+                x2::incremental::shake128_absorb_final(
+                    &mut state[1],
+                    (&input[2]).as_secret(),
+                    (&input[3]).as_secret(),
+                );
             }
             _ => unreachable!("This function can only called be called with N = 2, 3, 4"),
         }
