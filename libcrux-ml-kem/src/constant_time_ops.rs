@@ -23,9 +23,9 @@ fn inz(value: u8) -> u8 {
         assert($value == zero);
         lognot_lemma $value;
         assert((~.$value +. (mk_u16 1)) == zero);
-        assert((Core.Num.impl__u16__wrapping_add (~.$value <: u16) (mk_u16 1) <: u16) == zero);
+        assert(($u16::wrapping_add (~.$value <: u16) (mk_u16 1) <: u16) == zero);
         logor_lemma $value zero;
-        assert(($value |. (Core.Num.impl__u16__wrapping_add (~.$value <: u16) (mk_u16 1) <: u16) <: u16) == $value);
+        assert(($value |. ($u16::wrapping_add (~.$value <: u16) (mk_u16 1) <: u16) <: u16) == $value);
         assert (v $result == v (($value >>! (mk_i32 8))));
         assert ((v $value / pow2 8) == 0);
         assert ($result == (mk_u8 0));
@@ -40,7 +40,7 @@ fn inz(value: u8) -> u8 {
         assert ((v (~.$value) + 1) = (pow2 16 - pow2 8) + (pow2 8 - v $value));
         assert ((v (~.$value) + 1) = (pow2 8 - 1) * pow2 8 + (pow2 8 - v $value));
         assert ((v (~.$value) + 1)/pow2 8 = (pow2 8 - 1));
-        assert (v ((Core.Num.impl__u16__wrapping_add (~.$value <: u16) (mk_u16 1) <: u16) >>! (mk_i32 8)) = pow2 8 - 1);
+        assert (v (($u16::wrapping_add (~.$value <: u16) (mk_u16 1) <: u16) >>! (mk_i32 8)) = pow2 8 - 1);
         assert ($result = ones);
         logand_lemma (mk_u8 1) $result;
         assert ($res = (mk_u8 1)))"#

@@ -34,12 +34,12 @@ pub(crate) fn rejection_sample(input: &[u8], output: &mut [i16]) -> usize {
     hax_lib::fstar!(
         r#"assert (v (cast (${good}.[ sz 0 ] <: u8) <: usize) < 256);
         assert (v (cast (${good}.[ sz 1 ] <: u8) <: usize) < 256);
-        // We need to provide a definition or post-condition for Core.Num.impl__u8__count_ones
-        assume (v (cast (Core.Num.impl__u8__count_ones ${good}.[ sz 0 ]) <: usize) <= 8);
-        assume (v (cast (Core.Num.impl__u8__count_ones ${good}.[ sz 1 ]) <: usize) <= 8);
+        // We need to provide a definition or post-condition for ${u8::count_ones}
+        assume (v (cast (${u8::count_ones} ${good}.[ sz 0 ]) <: usize) <= 8);
+        assume (v (cast (${u8::count_ones} ${good}.[ sz 1 ]) <: usize) <= 8);
         assume (Core.Ops.Index.f_index_pre output ({
-                    Core.Ops.Range.f_start = cast (Core.Num.impl__u8__count_ones ${good}.[ sz 0 ]) <: usize;
-                    Core.Ops.Range.f_end = (cast (Core.Num.impl__u8__count_ones ${good}.[ sz 0 ]) <: usize) +! sz 8 }))"#
+                    Core.Ops.Range.f_start = cast (${u8::count_ones} ${good}.[ sz 0 ]) <: usize;
+                    Core.Ops.Range.f_end = (cast (${u8::count_ones} ${good}.[ sz 0 ]) <: usize) +! sz 8 }))"#
     );
 
     // Each bit (and its corresponding position) represents an element we

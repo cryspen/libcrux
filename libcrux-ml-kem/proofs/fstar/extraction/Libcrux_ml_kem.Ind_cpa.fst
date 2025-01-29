@@ -636,21 +636,27 @@ let generate_keypair_unpacked
       Spec.MLKEM.ind_cpa_generate_keypair_unpacked v_K key_generation_seed
     in
     assert (valid ==>
-        ((Libcrux_ml_kem.Polynomial.to_spec_vector_t #v_K #v_Vector public_key.f_t_as_ntt) ==
-          t_as_ntt) /\ (public_key.f_seed_for_A == seed_for_A) /\
-        (Libcrux_ml_kem.Polynomial.to_spec_matrix_t #v_K #v_Vector public_key.f_A == matrix_A_as_ntt
-        ) /\
-        ((Libcrux_ml_kem.Polynomial.to_spec_vector_t #v_K #v_Vector private_key.f_secret_as_ntt) ==
+        ((Libcrux_ml_kem.Polynomial.to_spec_vector_t #v_K
+              #v_Vector
+              public_key.Libcrux_ml_kem.Ind_cpa.Unpacked.f_t_as_ntt) ==
+          t_as_ntt) /\ (public_key.Libcrux_ml_kem.Ind_cpa.Unpacked.f_seed_for_A == seed_for_A) /\
+        (Libcrux_ml_kem.Polynomial.to_spec_matrix_t #v_K
+            #v_Vector
+            public_key.Libcrux_ml_kem.Ind_cpa.Unpacked.f_A ==
+          matrix_A_as_ntt) /\
+        ((Libcrux_ml_kem.Polynomial.to_spec_vector_t #v_K
+              #v_Vector
+              private_key.Libcrux_ml_kem.Ind_cpa.Unpacked.f_secret_as_ntt) ==
           secret_as_ntt));
     assert ((forall (i: nat).
             i < v v_K ==>
             Libcrux_ml_kem.Serialize.coefficients_field_modulus_range (Seq.index private_key
-                    .f_secret_as_ntt
+                    .Libcrux_ml_kem.Ind_cpa.Unpacked.f_secret_as_ntt
                   i)) /\
         (forall (i: nat).
             i < v v_K ==>
             Libcrux_ml_kem.Serialize.coefficients_field_modulus_range (Seq.index public_key
-                    .f_t_as_ntt
+                    .Libcrux_ml_kem.Ind_cpa.Unpacked.f_t_as_ntt
                   i)))
   in
   private_key, public_key

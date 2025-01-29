@@ -64,19 +64,25 @@ val unpack_public_key
           let unpacked_public_key_future:t_MlKemPublicKeyUnpacked v_K v_Vector =
             unpacked_public_key_future
           in
+          let unpacked_public_key_future:t_MlKemPublicKeyUnpacked v_K v_Vector =
+            unpacked_public_key_future
+          in
           let public_key_hash, (seed, (deserialized_pk, (matrix_A, valid))) =
             Spec.MLKEM.ind_cca_unpack_public_key v_K public_key.f_value
           in
           (valid ==>
             Libcrux_ml_kem.Polynomial.to_spec_matrix_t #v_K
               #v_Vector
-              unpacked_public_key_future.f_ind_cpa_public_key.f_A ==
+              unpacked_public_key_future.f_ind_cpa_public_key.Libcrux_ml_kem.Ind_cpa.Unpacked.f_A ==
             matrix_A) /\
           Libcrux_ml_kem.Polynomial.to_spec_vector_t #v_K
             #v_Vector
-            unpacked_public_key_future.f_ind_cpa_public_key.f_t_as_ntt ==
-          deserialized_pk /\ unpacked_public_key_future.f_ind_cpa_public_key.f_seed_for_A == seed /\
-          unpacked_public_key_future.f_public_key_hash == public_key_hash)
+            unpacked_public_key_future.f_ind_cpa_public_key
+              .Libcrux_ml_kem.Ind_cpa.Unpacked.f_t_as_ntt ==
+          deserialized_pk /\
+          unpacked_public_key_future.f_ind_cpa_public_key
+            .Libcrux_ml_kem.Ind_cpa.Unpacked.f_seed_for_A ==
+          seed /\ unpacked_public_key_future.f_public_key_hash == public_key_hash)
 
 /// Get the serialized public key.
 val impl_3__serialized_mut
@@ -88,26 +94,28 @@ val impl_3__serialized_mut
       (serialized: Libcrux_ml_kem.Types.t_MlKemPublicKey v_PUBLIC_KEY_SIZE)
     : Prims.Pure (Libcrux_ml_kem.Types.t_MlKemPublicKey v_PUBLIC_KEY_SIZE)
       (requires
-        Spec.MLKEM.is_rank v_K /\
-        v_RANKED_BYTES_PER_RING_ELEMENT == Spec.MLKEM.v_RANKED_BYTES_PER_RING_ELEMENT v_K /\
-        v_PUBLIC_KEY_SIZE == Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE v_K /\
-        (forall (i: nat).
-            i < v v_K ==>
-            Libcrux_ml_kem.Serialize.coefficients_field_modulus_range (Seq.index self
-                    .f_ind_cpa_public_key
-                    .f_t_as_ntt
-                  i)))
+        (let self___ = self in
+          Spec.MLKEM.is_rank v_K /\
+          v_RANKED_BYTES_PER_RING_ELEMENT == Spec.MLKEM.v_RANKED_BYTES_PER_RING_ELEMENT v_K /\
+          v_PUBLIC_KEY_SIZE == Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE v_K /\
+          (forall (i: nat).
+              i < v v_K ==>
+              Libcrux_ml_kem.Serialize.coefficients_field_modulus_range (Seq.index self___
+                      .f_ind_cpa_public_key
+                      .Libcrux_ml_kem.Ind_cpa.Unpacked.f_t_as_ntt
+                    i))))
       (ensures
         fun serialized_future ->
           let serialized_future:Libcrux_ml_kem.Types.t_MlKemPublicKey v_PUBLIC_KEY_SIZE =
             serialized_future
           in
+          let self___ = self in
           serialized_future.f_value ==
           Seq.append (Spec.MLKEM.vector_encode_12 #v_K
                 (Libcrux_ml_kem.Polynomial.to_spec_vector_t #v_K
                     #v_Vector
-                    self.f_ind_cpa_public_key.f_t_as_ntt))
-            self.f_ind_cpa_public_key.f_seed_for_A)
+                    self___.f_ind_cpa_public_key.Libcrux_ml_kem.Ind_cpa.Unpacked.f_t_as_ntt))
+            self___.f_ind_cpa_public_key.Libcrux_ml_kem.Ind_cpa.Unpacked.f_seed_for_A)
 
 /// Get the serialized public key.
 val impl_3__serialized
@@ -118,24 +126,26 @@ val impl_3__serialized
       (self: t_MlKemPublicKeyUnpacked v_K v_Vector)
     : Prims.Pure (Libcrux_ml_kem.Types.t_MlKemPublicKey v_PUBLIC_KEY_SIZE)
       (requires
-        Spec.MLKEM.is_rank v_K /\
-        v_RANKED_BYTES_PER_RING_ELEMENT == Spec.MLKEM.v_RANKED_BYTES_PER_RING_ELEMENT v_K /\
-        v_PUBLIC_KEY_SIZE == Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE v_K /\
-        (forall (i: nat).
-            i < v v_K ==>
-            Libcrux_ml_kem.Serialize.coefficients_field_modulus_range (Seq.index self
-                    .f_ind_cpa_public_key
-                    .f_t_as_ntt
-                  i)))
+        (let self___ = self in
+          Spec.MLKEM.is_rank v_K /\
+          v_RANKED_BYTES_PER_RING_ELEMENT == Spec.MLKEM.v_RANKED_BYTES_PER_RING_ELEMENT v_K /\
+          v_PUBLIC_KEY_SIZE == Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE v_K /\
+          (forall (i: nat).
+              i < v v_K ==>
+              Libcrux_ml_kem.Serialize.coefficients_field_modulus_range (Seq.index self___
+                      .f_ind_cpa_public_key
+                      .Libcrux_ml_kem.Ind_cpa.Unpacked.f_t_as_ntt
+                    i))))
       (ensures
         fun res ->
           let res:Libcrux_ml_kem.Types.t_MlKemPublicKey v_PUBLIC_KEY_SIZE = res in
-          res.f_value ==
+          let self___ = self in
+          res.Libcrux_ml_kem.Types.f_value ==
           Seq.append (Spec.MLKEM.vector_encode_12 #v_K
                 (Libcrux_ml_kem.Polynomial.to_spec_vector_t #v_K
                     #v_Vector
-                    self.f_ind_cpa_public_key.f_t_as_ntt))
-            self.f_ind_cpa_public_key.f_seed_for_A)
+                    self___.f_ind_cpa_public_key.Libcrux_ml_kem.Ind_cpa.Unpacked.f_t_as_ntt))
+            self___.f_ind_cpa_public_key.Libcrux_ml_kem.Ind_cpa.Unpacked.f_seed_for_A)
 
 [@@ FStar.Tactics.Typeclasses.tcinstance]
 val impl
@@ -187,26 +197,30 @@ val impl_4__serialized_public_key_mut
       (serialized: Libcrux_ml_kem.Types.t_MlKemPublicKey v_PUBLIC_KEY_SIZE)
     : Prims.Pure (Libcrux_ml_kem.Types.t_MlKemPublicKey v_PUBLIC_KEY_SIZE)
       (requires
-        Spec.MLKEM.is_rank v_K /\
-        v_RANKED_BYTES_PER_RING_ELEMENT == Spec.MLKEM.v_RANKED_BYTES_PER_RING_ELEMENT v_K /\
-        v_PUBLIC_KEY_SIZE == Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE v_K /\
-        (forall (i: nat).
-            i < v v_K ==>
-            Libcrux_ml_kem.Serialize.coefficients_field_modulus_range (Seq.index self.f_public_key
-                    .f_ind_cpa_public_key
-                    .f_t_as_ntt
-                  i)))
+        (let self___ = self in
+          Spec.MLKEM.is_rank v_K /\
+          v_RANKED_BYTES_PER_RING_ELEMENT == Spec.MLKEM.v_RANKED_BYTES_PER_RING_ELEMENT v_K /\
+          v_PUBLIC_KEY_SIZE == Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE v_K /\
+          (forall (i: nat).
+              i < v v_K ==>
+              Libcrux_ml_kem.Serialize.coefficients_field_modulus_range (Seq.index self___
+                      .f_public_key
+                      .f_ind_cpa_public_key
+                      .Libcrux_ml_kem.Ind_cpa.Unpacked.f_t_as_ntt
+                    i))))
       (ensures
         fun serialized_future ->
           let serialized_future:Libcrux_ml_kem.Types.t_MlKemPublicKey v_PUBLIC_KEY_SIZE =
             serialized_future
           in
+          let self___ = self in
           serialized_future.f_value ==
           Seq.append (Spec.MLKEM.vector_encode_12 #v_K
                 (Libcrux_ml_kem.Polynomial.to_spec_vector_t #v_K
                     #v_Vector
-                    self.f_public_key.f_ind_cpa_public_key.f_t_as_ntt))
-            self.f_public_key.f_ind_cpa_public_key.f_seed_for_A)
+                    self___.f_public_key.f_ind_cpa_public_key
+                      .Libcrux_ml_kem.Ind_cpa.Unpacked.f_t_as_ntt))
+            self___.f_public_key.f_ind_cpa_public_key.Libcrux_ml_kem.Ind_cpa.Unpacked.f_seed_for_A)
 
 /// Get the serialized public key.
 val impl_4__serialized_public_key
@@ -217,24 +231,28 @@ val impl_4__serialized_public_key
       (self: t_MlKemKeyPairUnpacked v_K v_Vector)
     : Prims.Pure (Libcrux_ml_kem.Types.t_MlKemPublicKey v_PUBLIC_KEY_SIZE)
       (requires
-        Spec.MLKEM.is_rank v_K /\
-        v_RANKED_BYTES_PER_RING_ELEMENT == Spec.MLKEM.v_RANKED_BYTES_PER_RING_ELEMENT v_K /\
-        v_PUBLIC_KEY_SIZE == Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE v_K /\
-        (forall (i: nat).
-            i < v v_K ==>
-            Libcrux_ml_kem.Serialize.coefficients_field_modulus_range (Seq.index self.f_public_key
-                    .f_ind_cpa_public_key
-                    .f_t_as_ntt
-                  i)))
+        (let self___ = self in
+          Spec.MLKEM.is_rank v_K /\
+          v_RANKED_BYTES_PER_RING_ELEMENT == Spec.MLKEM.v_RANKED_BYTES_PER_RING_ELEMENT v_K /\
+          v_PUBLIC_KEY_SIZE == Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE v_K /\
+          (forall (i: nat).
+              i < v v_K ==>
+              Libcrux_ml_kem.Serialize.coefficients_field_modulus_range (Seq.index self___
+                      .f_public_key
+                      .f_ind_cpa_public_key
+                      .Libcrux_ml_kem.Ind_cpa.Unpacked.f_t_as_ntt
+                    i))))
       (ensures
         fun res ->
           let res:Libcrux_ml_kem.Types.t_MlKemPublicKey v_PUBLIC_KEY_SIZE = res in
+          let self___ = self in
           res.f_value ==
           Seq.append (Spec.MLKEM.vector_encode_12 #v_K
                 (Libcrux_ml_kem.Polynomial.to_spec_vector_t #v_K
                     #v_Vector
-                    self.f_public_key.f_ind_cpa_public_key.f_t_as_ntt))
-            self.f_public_key.f_ind_cpa_public_key.f_seed_for_A)
+                    self___.f_public_key.f_ind_cpa_public_key
+                      .Libcrux_ml_kem.Ind_cpa.Unpacked.f_t_as_ntt))
+            self___.f_public_key.f_ind_cpa_public_key.Libcrux_ml_kem.Ind_cpa.Unpacked.f_seed_for_A)
 
 /// Get the serialized private key.
 val impl_4__serialized_private_key_mut
@@ -383,10 +401,10 @@ val encapsulate
               public_key.f_public_key_hash
               (Libcrux_ml_kem.Polynomial.to_spec_vector_t #v_K
                   #v_Vector
-                  public_key.f_ind_cpa_public_key.f_t_as_ntt)
+                  public_key.f_ind_cpa_public_key.Libcrux_ml_kem.Ind_cpa.Unpacked.f_t_as_ntt)
               (Libcrux_ml_kem.Polynomial.to_spec_matrix_t #v_K
                   #v_Vector
-                  public_key.f_ind_cpa_public_key.f_A)
+                  public_key.f_ind_cpa_public_key.Libcrux_ml_kem.Ind_cpa.Unpacked.f_A)
               randomness
           in
           ciphertext_result.f_value == ciphertext /\ shared_secret_array == shared_secret)
@@ -418,13 +436,15 @@ val decapsulate
           Spec.MLKEM.ind_cca_unpack_decapsulate v_K
             key_pair.f_public_key.f_public_key_hash
             key_pair.f_private_key.f_implicit_rejection_value
-            ciphertext.f_value
+            ciphertext.Libcrux_ml_kem.Types.f_value
             (Libcrux_ml_kem.Polynomial.to_spec_vector_t #v_K
                 #v_Vector
-                key_pair.f_private_key.f_ind_cpa_private_key.f_secret_as_ntt)
+                key_pair.f_private_key.f_ind_cpa_private_key
+                  .Libcrux_ml_kem.Ind_cpa.Unpacked.f_secret_as_ntt)
             (Libcrux_ml_kem.Polynomial.to_spec_vector_t #v_K
                 #v_Vector
-                key_pair.f_public_key.f_ind_cpa_public_key.f_t_as_ntt)
+                key_pair.f_public_key.f_ind_cpa_public_key
+                  .Libcrux_ml_kem.Ind_cpa.Unpacked.f_t_as_ntt)
             (Libcrux_ml_kem.Polynomial.to_spec_matrix_t #v_K
                 #v_Vector
-                key_pair.f_public_key.f_ind_cpa_public_key.f_A))
+                key_pair.f_public_key.f_ind_cpa_public_key.Libcrux_ml_kem.Ind_cpa.Unpacked.f_A))
