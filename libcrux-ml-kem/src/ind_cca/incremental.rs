@@ -11,7 +11,7 @@ use crate::{
     ind_cpa::{self, unpacked::IndCpaPrivateKeyUnpacked},
     matrix::sample_matrix_A,
     mlkem::impl_incr_platform,
-    polynomial::{vec_len_bytes, PolynomialRingElement, VECTORS_IN_RING_ELEMENT},
+    polynomial::{vec_len_bytes, PolynomialRingElement},
     utils::into_padded_array,
     variant, SHARED_SECRET_SIZE,
 };
@@ -28,7 +28,14 @@ pub(crate) use types::*;
 // Platform instantiations
 
 #[cfg(feature = "simd256")]
-pub(crate) mod avx2;
+pub(crate) mod avx2 {
+    use super::*;
+
+    impl_incr_platform!(
+        crate::vector::SIMD256Vector,
+        crate::hash_functions::avx2::Simd256Hash
+    );
+}
 #[cfg(feature = "simd128")]
 pub(crate) mod neon {
     use super::*;

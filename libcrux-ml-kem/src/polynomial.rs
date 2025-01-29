@@ -73,6 +73,7 @@ fn from_i16_array<Vector: Operations>(a: &[i16]) -> PolynomialRingElement<Vector
     result
 }
 
+#[allow(dead_code)]
 #[inline(always)]
 #[hax_lib::requires(VECTORS_IN_RING_ELEMENT * 16 <= out.len())]
 fn to_i16_array<Vector: Operations>(re: PolynomialRingElement<Vector>, out: &mut [i16]) {
@@ -319,6 +320,7 @@ impl<Vector: Operations> PolynomialRingElement<Vector> {
         from_i16_array(a)
     }
 
+    #[allow(dead_code)]
     #[inline(always)]
     #[requires(VECTORS_IN_RING_ELEMENT * 16 <= out.len())]
     pub(crate) fn to_i16_array(self, out: &mut [i16]) {

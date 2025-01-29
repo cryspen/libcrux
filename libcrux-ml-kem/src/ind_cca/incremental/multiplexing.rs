@@ -2,12 +2,13 @@ use super::*;
 
 #[cfg(feature = "simd256")]
 use avx2::{
-    as_avx2_keypair, as_avx2_state, decapsulate as decapsulate_avx2,
+    as_keypair as as_avx2_keypair, as_state as as_avx2_state, decapsulate as decapsulate_avx2,
     decapsulate_incremental_key as decapsulate_incremental_key_avx2,
     encapsulate1 as encapsulate1_avx2, encapsulate1_serialized as encapsulate1_serialized_avx2,
     encapsulate2 as encapsulate2_avx2, encapsulate2_serialized as encapsulate2_serialized_avx2,
     generate_keypair as generate_keypair_avx2,
     generate_keypair_serialized as generate_keypair_serialized_avx2,
+    validate_pk as validate_pk_avx2,
 };
 
 #[cfg(feature = "simd128")]
@@ -40,6 +41,7 @@ use portable::{
     encapsulate2 as encapsulate2_neon, encapsulate2_serialized as encapsulate2_serialized_neon,
     generate_keypair as generate_keypair_neon,
     generate_keypair_serialized as generate_keypair_serialized_neon,
+    validate_pk as validate_pk_neon,
 };
 
 /// Functions in this module require an allocator to use [`Box`].

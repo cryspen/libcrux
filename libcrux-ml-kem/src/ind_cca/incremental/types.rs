@@ -1,5 +1,4 @@
 use core::array::from_fn;
-use std::eprint;
 
 use ind_cpa::unpacked::IndCpaPublicKeyUnpacked;
 
@@ -112,7 +111,7 @@ impl<const LEN: usize> PublicKey2<LEN> {
     }
 
     /// Deserialize the public key.
-    pub fn deserialize<const K: usize, Vector: Operations>(
+    pub(crate) fn deserialize<const K: usize, Vector: Operations>(
         &self,
     ) -> [PolynomialRingElement<Vector>; K] {
         deserialize_vector(&self.t_as_ntt)
