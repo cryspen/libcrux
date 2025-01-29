@@ -141,9 +141,9 @@ macro_rules! impl_consistency_incremental {
             let key_gen_randomness = random_array();
 
             // Generate key pair.
-            let key_pair = generate_key_pair(key_gen_randomness);
+            let key_pair = alloc::generate_key_pair(key_gen_randomness);
             let mut key_pair_bytes = vec![0u8; key_pair_len()];
-            generate_key_pair_bytes(key_gen_randomness, &mut key_pair_bytes);
+            generate_key_pair(key_gen_randomness, &mut key_pair_bytes);
 
             // Get pk1 and pk2 to send out.
             let mut pk1_bytes = [0u8; 64];
@@ -160,20 +160,21 @@ macro_rules! impl_consistency_incremental {
             let encaps_randomness = random_array();
             let (ct1, ct2, shared_secret) = {
                 let pk1 = PublicKey1::try_from(&pk1_bytes as &[u8]).unwrap();
-                let (ct1, state) = encapsulate1(&pk1, encaps_randomness);
+                let (ct1, state) = alloc::encapsulate1(&pk1, encaps_randomness);
 
                 // encaps1 with serialized state
                 let mut serialized_state = vec![0u8; encaps_state_len()];
-                let ct12 = encapsulate1_serialized(&pk1, encaps_randomness, &mut serialized_state);
+                let ct12 =
+                    encapsulate1(&pk1_bytes, encaps_randomness, &mut serialized_state).unwrap();
                 assert_eq!(ct1.value, ct12.value);
 
                 // ... and then to pk2.
                 // pk2 is passed in as bytes because the deserializaiton is runtime
                 // platform dependent.
-                let ct2 = encapsulate2(state.as_ref(), &pk2_bytes).unwrap();
+                let ct2 = alloc::encapsulate2(state.as_ref(), &pk2_bytes).unwrap();
 
                 // encaps2 with serialized state
-                let ct22 = encapsulate2_serialized(&serialized_state, &pk2_bytes).unwrap();
+                let ct22 = encapsulate2(&serialized_state, &pk2_bytes).unwrap();
                 assert_eq!(ct2.value, ct22.value);
 
                 let mut shared_secret = [0u8; 32];
@@ -182,9 +183,10 @@ macro_rules! impl_consistency_incremental {
             };
 
             // The initiator decapsulates the two ciphertexts.
-            let shared_secret_decaps = decapsulate(key_pair.as_ref(), &ct1, &ct2);
+            let shared_secret_decaps = alloc::decapsulate(key_pair.as_ref(), &ct1, &ct2);
 
-            let shared_secret_decaps2 = decapsulate_incremental_key(&key_pair_bytes, &ct1, &ct2);
+            let shared_secret_decaps2 =
+                decapsulate_incremental_key(&key_pair_bytes, &ct1, &ct2).unwrap();
 
             // Check the shared secret.
             assert_eq!(shared_secret_decaps, shared_secret);

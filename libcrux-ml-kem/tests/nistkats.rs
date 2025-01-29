@@ -151,7 +151,7 @@ macro_rules! impl_kats {
 
             for kat in nist_kats {
                 let key_pair = generate_key_pair(kat.key_generation_seed);
-                let incremental_key_pair = incremental::generate_key_pair(kat.key_generation_seed);
+                let incremental_key_pair = incremental::alloc::generate_key_pair(kat.key_generation_seed);
 
                 assert!(validate_public_key(key_pair.public_key()));
 
@@ -179,12 +179,12 @@ macro_rules! impl_kats {
 
                 let (ct1, ct2, incremental_shared_secret) = {
                     let pk1 = incremental::PublicKey1::try_from(&pk1_bytes as &[u8]).unwrap();
-                    let (ct1, state) = incremental::encapsulate1(&pk1,  kat.encapsulation_seed);
+                    let (ct1, state) = incremental::alloc::encapsulate1(&pk1,  kat.encapsulation_seed);
 
                     // ... and then to pk2.
                     // pk2 is passed in as bytes because the deserializaiton is runtime
                     // platform dependent.
-                    let ct2 = incremental::encapsulate2(state.as_ref(), &pk2_bytes).unwrap();
+                    let ct2 = incremental::alloc::encapsulate2(state.as_ref(), &pk2_bytes).unwrap();
 
                     let mut shared_secret = [0u8; 32];
                     shared_secret.copy_from_slice(state.shared_secret());
@@ -199,7 +199,7 @@ macro_rules! impl_kats {
                 assert_eq!(shared_secret_from_decapsulate, shared_secret.as_ref(), "lhs: shared secret computed via decapsulation, rhs: shared secret computed via encapsulation");
 
 
-                let incremental_shared_secret_decaps = incremental::decapsulate(incremental_key_pair.as_ref(), &ct1, &ct2);
+                let incremental_shared_secret_decaps = incremental::alloc::decapsulate(incremental_key_pair.as_ref(), &ct1, &ct2);
                 assert_eq!(incremental_shared_secret, shared_secret.as_ref());
                 assert_eq!(incremental_shared_secret_decaps, shared_secret.as_ref());
             }

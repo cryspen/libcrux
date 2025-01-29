@@ -1,47 +1,21 @@
-//! Incremental API.
-//!
-//! **WARNING:** This API is not standard compliant and may lead to insecure
-//! usage. Use at your own risk.
-use core::any::Any;
+use super::*;
+type Vector = crate::vector::portable::PortableVector;
+type Hash<const K: usize> = crate::hash_functions::portable::PortableHash<K>;
 
-use crate::{
-    hash_functions::Hash,
-    ind_cca::unpacked::MlKemPrivateKeyUnpacked,
-    ind_cpa::{self, unpacked::IndCpaPrivateKeyUnpacked},
-    matrix::sample_matrix_A,
-    polynomial::{vec_len_bytes, PolynomialRingElement},
-    utils::into_padded_array,
-    variant, SHARED_SECRET_SIZE,
-};
-
-use super::{
-    unpacked::{encaps_prepare, MlKemKeyPairUnpacked, MlKemPublicKeyUnpacked},
-    MlKemSharedSecret, Operations, KEY_GENERATION_SEED_SIZE,
-};
-
-/// Key and state types.
-pub mod types;
-pub(crate) use types::*;
-
-// Platform instantiations
-
-#[cfg(feature = "simd256")]
-pub(crate) mod avx2;
-#[cfg(feature = "simd128")]
-pub(crate) mod neon;
-pub(crate) mod portable;
-
-/// Multiplexing incremental API.
+/// Downcast [`Keys`] to a portable [`MlKemKeyPairUnpacked`].
 ///
-/// Note that this requires alloc support and is not `no_std` compatible
-pub(crate) mod multiplexing;
+/// **PANICS** is the cast fails
+pub(super) fn as_portable_keypair<const K: usize>(k: &dyn Any) -> &MlKemKeyPairUnpacked<K, Vector> {
+    k.downcast_ref().unwrap()
+}
 
-/// Generate a key pair for incremental encapsulation.
+/// Downcast [`State`] to a portable [`EncapsState`].
 ///
-/// This generates a regular unpacked key pair [`MlKemKeyPairUnpacked`].
-/// The two parts of the public key can be extracted with [`pk1`] and [`pk2`].
-///
-/// To [`decapsulate`], the entire key pair is used again.
+/// **PANICS** is the cast fails
+pub(super) fn as_portable_state<const K: usize>(s: &dyn Any) -> &EncapsState<K, Vector> {
+    s.downcast_ref().unwrap()
+}
+
 pub(crate) fn generate_keypair<
     const K: usize,
     const CPA_PRIVATE_KEY_SIZE: usize,
@@ -50,14 +24,10 @@ pub(crate) fn generate_keypair<
     const BYTES_PER_RING_ELEMENT: usize,
     const ETA1: usize,
     const ETA1_RANDOMNESS_SIZE: usize,
-    Vector: Operations,
-    Hasher: Hash<K>,
 >(
     randomness: [u8; KEY_GENERATION_SEED_SIZE],
 ) -> MlKemKeyPairUnpacked<K, Vector> {
-    // Generate unpacked key pair.
-    let mut kp = MlKemKeyPairUnpacked::new();
-    super::unpacked::generate_keypair::<
+    super::generate_keypair::<
         K,
         CPA_PRIVATE_KEY_SIZE,
         PRIVATE_KEY_SIZE,
@@ -66,19 +36,10 @@ pub(crate) fn generate_keypair<
         ETA1,
         ETA1_RANDOMNESS_SIZE,
         Vector,
-        Hasher,
-        variant::MlKem,
-    >(randomness, &mut kp);
-
-    kp
+        Hash<K>,
+    >(randomness)
 }
 
-/// Generate a key pair for incremental encapsulation.
-///
-/// This generates a regular unpacked key pair [`MlKemKeyPairUnpacked`] and writes
-/// it into the `key_pair` output bytes.
-///
-/// The public keys can be extracted from the bytes TODO.
 pub(crate) fn generate_keypair_serialized<
     const K: usize,
     const CPA_PRIVATE_KEY_SIZE: usize,
@@ -87,15 +48,11 @@ pub(crate) fn generate_keypair_serialized<
     const BYTES_PER_RING_ELEMENT: usize,
     const ETA1: usize,
     const ETA1_RANDOMNESS_SIZE: usize,
-    Vector: Operations,
-    Hasher: Hash<K>,
 >(
     randomness: [u8; KEY_GENERATION_SEED_SIZE],
     key_pair: &mut [u8],
 ) {
-    // Generate unpacked key pair.
-    let mut kp = MlKemKeyPairUnpacked::new();
-    super::unpacked::generate_keypair::<
+    super::generate_keypair_serialized::<
         K,
         CPA_PRIVATE_KEY_SIZE,
         PRIVATE_KEY_SIZE,
@@ -104,44 +61,8 @@ pub(crate) fn generate_keypair_serialized<
         ETA1,
         ETA1_RANDOMNESS_SIZE,
         Vector,
-        Hasher,
-        variant::MlKem,
-    >(randomness, &mut kp);
-
-    let kp = KeyPair::from(kp);
-    kp.to_bytes(key_pair);
-}
-
-pub(crate) fn generate_incremental_keypair<
-    const K: usize,
-    const CPA_PRIVATE_KEY_SIZE: usize,
-    const PRIVATE_KEY_SIZE: usize,
-    const PUBLIC_KEY_SIZE: usize,
-    const BYTES_PER_RING_ELEMENT: usize,
-    const ETA1: usize,
-    const ETA1_RANDOMNESS_SIZE: usize,
-    Vector: Operations,
-    Hasher: Hash<K>,
->(
-    randomness: [u8; KEY_GENERATION_SEED_SIZE],
-) -> KeyPair<K, Vector> {
-    // Generate unpacked key pair.
-    let mut kp = MlKemKeyPairUnpacked::new();
-    super::unpacked::generate_keypair::<
-        K,
-        CPA_PRIVATE_KEY_SIZE,
-        PRIVATE_KEY_SIZE,
-        PUBLIC_KEY_SIZE,
-        BYTES_PER_RING_ELEMENT,
-        ETA1,
-        ETA1_RANDOMNESS_SIZE,
-        Vector,
-        Hasher,
-        variant::MlKem,
-    >(randomness, &mut kp);
-
-    // Convert and return
-    KeyPair::from(kp)
+        Hash<K>,
+    >(randomness, key_pair)
 }
 
 pub(crate) fn encapsulate1<
@@ -154,26 +75,13 @@ pub(crate) fn encapsulate1<
     const ETA1_RANDOMNESS_SIZE: usize,
     const ETA2: usize,
     const ETA2_RANDOMNESS_SIZE: usize,
-    Vector: Operations,
-    Hasher: Hash<K>,
 >(
     public_key_part: &PublicKey1,
     randomness: [u8; SHARED_SECRET_SIZE],
 ) -> (Ciphertext1<C1_SIZE>, EncapsState<K, Vector>) {
-    let hashed = encaps_prepare::<K, Hasher>(&randomness, &public_key_part.hash);
-    let (shared_secret, pseudorandomness) = hashed.split_at(SHARED_SECRET_SIZE);
-
-    // Rebuild the matrix A from the seed
-    let mut matrix = [[PolynomialRingElement::<Vector>::ZERO(); K]; K];
-    sample_matrix_A::<K, Vector, Hasher>(
-        &mut matrix,
-        into_padded_array(&public_key_part.seed),
-        false,
-    );
-
-    let mut ciphertext = [0u8; C1_SIZE];
-    let (r_as_ntt, error2) = ind_cpa::encrypt_c1::<
+    super::encapsulate1::<
         K,
+        CIPHERTEXT_SIZE,
         C1_SIZE,
         VECTOR_U_COMPRESSION_FACTOR,
         VECTOR_U_BLOCK_LEN,
@@ -182,16 +90,8 @@ pub(crate) fn encapsulate1<
         ETA2,
         ETA2_RANDOMNESS_SIZE,
         Vector,
-        Hasher,
-    >(&pseudorandomness, &matrix, &mut ciphertext);
-
-    let state = EncapsState {
-        randomness,
-        shared_secret: shared_secret.try_into().unwrap(),
-        r_as_ntt,
-        error2,
-    };
-    (Ciphertext1 { value: ciphertext }, state)
+        Hash<K>,
+    >(public_key_part, randomness)
 }
 
 pub(crate) fn encapsulate1_serialized<
@@ -204,14 +104,12 @@ pub(crate) fn encapsulate1_serialized<
     const ETA1_RANDOMNESS_SIZE: usize,
     const ETA2: usize,
     const ETA2_RANDOMNESS_SIZE: usize,
-    Vector: Operations,
-    Hasher: Hash<K>,
 >(
     public_key_part: &PublicKey1,
     randomness: [u8; SHARED_SECRET_SIZE],
     state: &mut [u8],
 ) -> Result<Ciphertext1<C1_SIZE>, Error> {
-    let (ct1, encaps_state) = encapsulate1::<
+    super::encapsulate1_serialized::<
         K,
         CIPHERTEXT_SIZE,
         C1_SIZE,
@@ -222,54 +120,33 @@ pub(crate) fn encapsulate1_serialized<
         ETA2,
         ETA2_RANDOMNESS_SIZE,
         Vector,
-        Hasher,
-    >(public_key_part, randomness);
-
-    // Write out the state
-    encaps_state.to_bytes(state)?;
-
-    // Return the ciphertext
-    Ok(ct1)
+        Hash<K>,
+    >(public_key_part, randomness, state)
 }
 
 pub(crate) fn encapsulate2<
     const K: usize,
     const C2_SIZE: usize,
     const VECTOR_V_COMPRESSION_FACTOR: usize,
-    Vector: Operations,
 >(
     state: &EncapsState<K, Vector>,
     public_key_part: &PublicKey2<K, Vector>,
 ) -> Ciphertext2<C2_SIZE> {
-    let mut ciphertext = [0u8; C2_SIZE];
-    ind_cpa::encrypt_c2::<K, VECTOR_V_COMPRESSION_FACTOR, C2_SIZE, Vector>(
-        &public_key_part.t_as_ntt,
-        &state.r_as_ntt,
-        &state.error2,
-        state.randomness,
-        &mut ciphertext,
-    );
-
-    Ciphertext2 { value: ciphertext }
+    super::encapsulate2::<K, C2_SIZE, VECTOR_V_COMPRESSION_FACTOR, Vector>(state, public_key_part)
 }
 
 pub(crate) fn encapsulate2_serialized<
     const K: usize,
     const C2_SIZE: usize,
     const VECTOR_V_COMPRESSION_FACTOR: usize,
-    Vector: Operations,
 >(
     state: &[u8],
     public_key_part: &PublicKey2<K, Vector>,
 ) -> Result<Ciphertext2<C2_SIZE>, Error> {
-    let state = EncapsState::from_bytes(state)?;
-
-    Ok(encapsulate2::<
-        K,
-        C2_SIZE,
-        VECTOR_V_COMPRESSION_FACTOR,
-        Vector,
-    >(&state, public_key_part))
+    super::encapsulate2_serialized::<K, C2_SIZE, VECTOR_V_COMPRESSION_FACTOR, Vector>(
+        state,
+        public_key_part,
+    )
 }
 
 pub(crate) fn decapsulate<
@@ -289,17 +166,12 @@ pub(crate) fn decapsulate<
     const ETA2: usize,
     const ETA2_RANDOMNESS_SIZE: usize,
     const IMPLICIT_REJECTION_HASH_INPUT_SIZE: usize,
-    Vector: Operations,
-    Hasher: Hash<K>,
 >(
     private_key: &MlKemKeyPairUnpacked<K, Vector>,
     ciphertext1: &Ciphertext1<C1_SIZE>,
     ciphertext2: &Ciphertext2<C2_SIZE>,
 ) -> MlKemSharedSecret {
-    let mut ciphertext = [0u8; CIPHERTEXT_SIZE];
-    ciphertext[..C1_SIZE].copy_from_slice(&ciphertext1.value);
-    ciphertext[C1_SIZE..].copy_from_slice(&ciphertext2.value);
-    crate::ind_cca::unpacked::decapsulate::<
+    super::decapsulate::<
         K,
         SECRET_KEY_SIZE,
         CPA_SECRET_KEY_SIZE,
@@ -317,8 +189,8 @@ pub(crate) fn decapsulate<
         ETA2_RANDOMNESS_SIZE,
         IMPLICIT_REJECTION_HASH_INPUT_SIZE,
         Vector,
-        Hasher,
-    >(private_key, &ciphertext.into())
+        Hash<K>,
+    >(private_key, ciphertext1, ciphertext2)
 }
 
 pub(crate) fn decapsulate_incremental_key<
@@ -338,21 +210,12 @@ pub(crate) fn decapsulate_incremental_key<
     const ETA2: usize,
     const ETA2_RANDOMNESS_SIZE: usize,
     const IMPLICIT_REJECTION_HASH_INPUT_SIZE: usize,
-    Vector: Operations,
-    Hasher: Hash<K>,
 >(
-    key: &[u8],
+    private_key: &[u8],
     ciphertext1: &Ciphertext1<C1_SIZE>,
     ciphertext2: &Ciphertext2<C2_SIZE>,
 ) -> Result<MlKemSharedSecret, Error> {
-    // Build an unpacked key pair from the input bytes.
-    let key_pair: KeyPair<K, Vector> = KeyPair::from_bytes(key)?;
-
-    let mut ciphertext = [0u8; CIPHERTEXT_SIZE];
-    ciphertext[..C1_SIZE].copy_from_slice(&ciphertext1.value);
-    ciphertext[C1_SIZE..].copy_from_slice(&ciphertext2.value);
-
-    Ok(crate::ind_cca::unpacked::decapsulate::<
+    super::decapsulate_incremental_key::<
         K,
         SECRET_KEY_SIZE,
         CPA_SECRET_KEY_SIZE,
@@ -370,6 +233,6 @@ pub(crate) fn decapsulate_incremental_key<
         ETA2_RANDOMNESS_SIZE,
         IMPLICIT_REJECTION_HASH_INPUT_SIZE,
         Vector,
-        Hasher,
-    >(&key_pair.into(), &ciphertext.into()))
+        Hash<K>,
+    >(private_key, ciphertext1, ciphertext2)
 }
