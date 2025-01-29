@@ -642,7 +642,7 @@ pub(crate) mod unpacked {
             .private_key
             .ind_cpa_private_key
             .secret_as_ntt
-            .copy_from_slice(&ind_cpa::deserialize_secret_key::<K, Vector>(
+            .copy_from_slice(&ind_cpa::deserialize_vector::<K, Vector>(
                 ind_cpa_secret_key,
             ));
         ind_cpa::build_unpacked_public_key_mut::<K, T_AS_NTT_ENCODED_SIZE, Vector, PortableHash<K>>(

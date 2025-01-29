@@ -653,9 +653,9 @@ pub(crate) mod kyber {
 ///
 /// **NOTE:** This is a non-standard API. Use with caution!
 pub mod incremental {
-    use crate::mlkem::impl_key_size;
+    use crate::mlkem::impl_incr_key_size;
 
-    impl_key_size!();
+    impl_incr_key_size!();
 }
 
 #[cfg(test)]

@@ -172,7 +172,7 @@ macro_rules! impl_kats {
 
                 // Incremental encapsulate
                 let mut pk1_bytes = [0u8; 64];
-                incremental_key_pair.pk1_bytes(&mut pk1_bytes);
+                incremental_key_pair.pk1_bytes(&mut pk1_bytes).unwrap();
 
                 let mut pk2_bytes = [0u8; incremental::pk2_len()];
                 incremental_key_pair.pk2_bytes(&mut pk2_bytes);
@@ -180,6 +180,8 @@ macro_rules! impl_kats {
                 let (ct1, ct2, incremental_shared_secret) = {
                     let pk1 = incremental::PublicKey1::try_from(&pk1_bytes as &[u8]).unwrap();
                     let (ct1, state) = incremental::alloc::encapsulate1(&pk1,  kat.encapsulation_seed);
+
+                    assert!(incremental::validate_pk(&pk1, &pk2_bytes).is_ok());
 
                     // ... and then to pk2.
                     // pk2 is passed in as bytes because the deserializaiton is runtime

@@ -12,29 +12,29 @@ use avx2::{
 
 #[cfg(feature = "simd128")]
 use neon::{
-    as_neon_keypair, as_neon_state, decapsulate as decapsulate_neon,
+    as_keypair as as_neon_keypair, as_state as as_neon_state, decapsulate as decapsulate_neon,
     decapsulate_incremental_key as decapsulate_incremental_key_neon,
     encapsulate1 as encapsulate1_neon, encapsulate1_serialized as encapsulate1_serialized_neon,
     encapsulate2 as encapsulate2_neon, encapsulate2_serialized as encapsulate2_serialized_neon,
     generate_keypair as generate_keypair_neon,
     generate_keypair_serialized as generate_keypair_serialized_neon,
+    validate_pk as validate_pk_neon,
 };
 
 #[cfg(not(feature = "simd256"))]
 use portable::{
-    as_portable_keypair as as_avx2_keypair, as_portable_state as as_avx2_state,
-    decapsulate as decapsulate_avx2,
+    as_keypair as as_avx2_keypair, as_state as as_avx2_state, decapsulate as decapsulate_avx2,
     decapsulate_incremental_key as decapsulate_incremental_key_avx2,
     encapsulate1 as encapsulate1_avx2, encapsulate1_serialized as encapsulate1_serialized_avx2,
     encapsulate2 as encapsulate2_avx2, encapsulate2_serialized as encapsulate2_serialized_avx2,
     generate_keypair as generate_keypair_avx2,
     generate_keypair_serialized as generate_keypair_serialized_avx2,
+    validate_pk as validate_pk_avx2,
 };
 
 #[cfg(not(feature = "simd128"))]
 use portable::{
-    as_portable_keypair as as_neon_keypair, as_portable_state as as_neon_state,
-    decapsulate as decapsulate_neon,
+    as_keypair as as_neon_keypair, as_state as as_neon_state, decapsulate as decapsulate_neon,
     decapsulate_incremental_key as decapsulate_incremental_key_neon,
     encapsulate1 as encapsulate1_neon, encapsulate1_serialized as encapsulate1_serialized_neon,
     encapsulate2 as encapsulate2_neon, encapsulate2_serialized as encapsulate2_serialized_neon,
@@ -154,6 +154,7 @@ pub(crate) mod alloc {
 
     pub(crate) fn encapsulate2<
         const K: usize,
+        const PK2_LEN: usize,
         const C2_SIZE: usize,
         const VECTOR_V_COMPRESSION_FACTOR: usize,
     >(
@@ -163,16 +164,27 @@ pub(crate) mod alloc {
         if libcrux_platform::simd256_support() {
             let state = as_avx2_state(state.as_any());
             let pk2 = PublicKey2::try_from(public_key_part)?;
-            Ok(encapsulate2_avx2::<K, C2_SIZE, VECTOR_V_COMPRESSION_FACTOR>(state, &pk2))
+            Ok(encapsulate2_avx2::<
+                K,
+                PK2_LEN,
+                C2_SIZE,
+                VECTOR_V_COMPRESSION_FACTOR,
+            >(state, &pk2))
         } else if libcrux_platform::simd128_support() {
             let state = as_neon_state(state.as_any());
             let pk2 = PublicKey2::try_from(public_key_part)?;
-            Ok(encapsulate2_neon::<K, C2_SIZE, VECTOR_V_COMPRESSION_FACTOR>(state, &pk2))
+            Ok(encapsulate2_neon::<
+                K,
+                PK2_LEN,
+                C2_SIZE,
+                VECTOR_V_COMPRESSION_FACTOR,
+            >(state, &pk2))
         } else {
-            let state = portable::as_portable_state(state.as_any());
+            let state = portable::as_state(state.as_any());
             let pk2 = PublicKey2::try_from(public_key_part)?;
             Ok(portable::encapsulate2::<
                 K,
+                PK2_LEN,
                 C2_SIZE,
                 VECTOR_V_COMPRESSION_FACTOR,
             >(state, &pk2))
@@ -242,7 +254,7 @@ pub(crate) mod alloc {
                 IMPLICIT_REJECTION_HASH_INPUT_SIZE,
             >(private_key, ciphertext1, ciphertext2)
         } else {
-            let private_key = portable::as_portable_keypair(private_key.as_any());
+            let private_key = portable::as_keypair(private_key.as_any());
             portable::decapsulate::<
                 K,
                 SECRET_KEY_SIZE,
@@ -267,6 +279,7 @@ pub(crate) mod alloc {
 
 pub(crate) fn generate_keypair<
     const K: usize,
+    const PK2_LEN: usize,
     const CPA_PRIVATE_KEY_SIZE: usize,
     const PRIVATE_KEY_SIZE: usize,
     const PUBLIC_KEY_SIZE: usize,
@@ -280,6 +293,7 @@ pub(crate) fn generate_keypair<
     if libcrux_platform::simd256_support() {
         generate_keypair_serialized_avx2::<
             K,
+            PK2_LEN,
             CPA_PRIVATE_KEY_SIZE,
             PRIVATE_KEY_SIZE,
             PUBLIC_KEY_SIZE,
@@ -290,6 +304,7 @@ pub(crate) fn generate_keypair<
     } else if libcrux_platform::simd128_support() {
         generate_keypair_serialized_neon::<
             K,
+            PK2_LEN,
             CPA_PRIVATE_KEY_SIZE,
             PRIVATE_KEY_SIZE,
             PUBLIC_KEY_SIZE,
@@ -300,6 +315,7 @@ pub(crate) fn generate_keypair<
     } else {
         portable::generate_keypair_serialized::<
             K,
+            PK2_LEN,
             CPA_PRIVATE_KEY_SIZE,
             PRIVATE_KEY_SIZE,
             PUBLIC_KEY_SIZE,
@@ -307,6 +323,19 @@ pub(crate) fn generate_keypair<
             ETA1,
             ETA1_RANDOMNESS_SIZE,
         >(randomness, key_pair)
+    }
+}
+
+pub(crate) fn validate_pk<const K: usize, const PK_LEN: usize>(
+    pk1: &PublicKey1,
+    pk2: &[u8],
+) -> Result<(), Error> {
+    if libcrux_platform::simd256_support() {
+        validate_pk_avx2::<K, PK_LEN>(pk1, pk2)
+    } else if libcrux_platform::simd128_support() {
+        validate_pk_neon::<K, PK_LEN>(pk1, pk2)
+    } else {
+        portable::validate_pk::<K, PK_LEN>(pk1, pk2)
     }
 }
 
@@ -366,6 +395,7 @@ pub(crate) fn encapsulate1<
 
 pub(crate) fn encapsulate2<
     const K: usize,
+    const PK2_LEN: usize,
     const C2_SIZE: usize,
     const VECTOR_V_COMPRESSION_FACTOR: usize,
 >(
@@ -374,18 +404,25 @@ pub(crate) fn encapsulate2<
 ) -> Result<Ciphertext2<C2_SIZE>, Error> {
     if libcrux_platform::simd256_support() {
         let pk2 = PublicKey2::try_from(public_key_part)?;
-        encapsulate2_serialized_avx2::<K, C2_SIZE, VECTOR_V_COMPRESSION_FACTOR>(state, &pk2)
+        encapsulate2_serialized_avx2::<K, PK2_LEN, C2_SIZE, VECTOR_V_COMPRESSION_FACTOR>(
+            state, &pk2,
+        )
     } else if libcrux_platform::simd128_support() {
         let pk2 = PublicKey2::try_from(public_key_part)?;
-        encapsulate2_serialized_neon::<K, C2_SIZE, VECTOR_V_COMPRESSION_FACTOR>(state, &pk2)
+        encapsulate2_serialized_neon::<K, PK2_LEN, C2_SIZE, VECTOR_V_COMPRESSION_FACTOR>(
+            state, &pk2,
+        )
     } else {
         let pk2 = PublicKey2::try_from(public_key_part)?;
-        portable::encapsulate2_serialized::<K, C2_SIZE, VECTOR_V_COMPRESSION_FACTOR>(state, &pk2)
+        portable::encapsulate2_serialized::<K, PK2_LEN, C2_SIZE, VECTOR_V_COMPRESSION_FACTOR>(
+            state, &pk2,
+        )
     }
 }
 
 pub(crate) fn decapsulate<
     const K: usize,
+    const PK2_LEN: usize,
     const SECRET_KEY_SIZE: usize,
     const CPA_SECRET_KEY_SIZE: usize,
     const PUBLIC_KEY_SIZE: usize,
@@ -409,6 +446,7 @@ pub(crate) fn decapsulate<
     if libcrux_platform::simd256_support() {
         decapsulate_incremental_key_avx2::<
             K,
+            PK2_LEN,
             SECRET_KEY_SIZE,
             CPA_SECRET_KEY_SIZE,
             PUBLIC_KEY_SIZE,
@@ -428,6 +466,7 @@ pub(crate) fn decapsulate<
     } else if libcrux_platform::simd128_support() {
         decapsulate_incremental_key_neon::<
             K,
+            PK2_LEN,
             SECRET_KEY_SIZE,
             CPA_SECRET_KEY_SIZE,
             PUBLIC_KEY_SIZE,
@@ -447,6 +486,7 @@ pub(crate) fn decapsulate<
     } else {
         portable::decapsulate_incremental_key::<
             K,
+            PK2_LEN,
             SECRET_KEY_SIZE,
             CPA_SECRET_KEY_SIZE,
             PUBLIC_KEY_SIZE,

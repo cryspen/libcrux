@@ -147,7 +147,7 @@ macro_rules! impl_consistency_incremental {
 
             // Get pk1 and pk2 to send out.
             let mut pk1_bytes = [0u8; 64];
-            key_pair.pk1_bytes(&mut pk1_bytes);
+            key_pair.pk1_bytes(&mut pk1_bytes).unwrap();
 
             let mut pk2_bytes = [0u8; pk2_len()];
             key_pair.pk2_bytes(&mut pk2_bytes);
@@ -168,6 +168,9 @@ macro_rules! impl_consistency_incremental {
                 let ct12 =
                     encapsulate1(&pk1_bytes, encaps_randomness, &mut serialized_state).unwrap();
                 assert_eq!(ct1.value, ct12.value);
+
+                // Check the public key for consistency.
+                assert!(validate_pk(&pk1, &pk2_bytes).is_ok());
 
                 // ... and then to pk2.
                 // pk2 is passed in as bytes because the deserializaiton is runtime

@@ -1,10 +1,12 @@
 use core::array::from_fn;
+use std::eprint;
 
 use ind_cpa::unpacked::IndCpaPublicKeyUnpacked;
 
 use super::*;
 use crate::{
     ind_cca::unpacked::MlKemKeyPairUnpacked,
+    ind_cpa::{deserialize_vector, serialize_vector},
     polynomial::{vec_from_bytes, vec_to_bytes},
 };
 
@@ -16,6 +18,9 @@ pub enum Error {
 
     /// Invalid output byte length
     InvalidOutputLength,
+
+    /// The public key is not consistent.
+    InvalidPublicKey,
 }
 
 /// Incremental trait for unpacked key pairs.
@@ -24,9 +29,7 @@ pub trait IncrementalKeyPair {
     /// Get the [`PublicKey1`] from this key pair as bytes.
     ///
     /// The output `bytes` have to be at least 64 bytes long.
-    ///
-    /// **PANICS:** if the output `bytes` are too short.
-    fn pk1_bytes(&self, bytes: &mut [u8]);
+    fn pk1_bytes(&self, bytes: &mut [u8]) -> Result<(), Error>;
 
     /// Get the [`PublicKey2`] from this key pair as bytes.
     ///
@@ -37,15 +40,20 @@ pub trait IncrementalKeyPair {
 }
 
 impl<const K: usize, Vector: Operations> IncrementalKeyPair for MlKemKeyPairUnpacked<K, Vector> {
-    fn pk1_bytes(&self, bytes: &mut [u8]) {
+    fn pk1_bytes(&self, bytes: &mut [u8]) -> Result<(), Error> {
+        debug_assert!(bytes.len() >= 64);
+        if bytes.len() < 64 {
+            return Err(Error::InvalidOutputLength);
+        }
+
         bytes[0..32].copy_from_slice(&self.public_key().ind_cpa_public_key.seed_for_A);
         bytes[32..64].copy_from_slice(&self.public_key().public_key_hash);
+
+        Ok(())
     }
 
-    #[allow(unsafe_code)]
-    #[hax_lib::requires(bytes.len() >= K * 16 * 32)]
     fn pk2_bytes(&self, bytes: &mut [u8]) {
-        vec_to_bytes(&self.public_key.ind_cpa_public_key.t_as_ntt, bytes);
+        serialize_vector(&self.public_key.ind_cpa_public_key.t_as_ntt, bytes);
     }
 }
 
@@ -90,15 +98,24 @@ impl From<&[u8; 64]> for PublicKey1 {
 }
 
 /// The incremental public key that allows generating [`Ciphertext2`].
+///
+/// This public key is serialized to safe bytes on the wire.
 #[repr(transparent)]
-pub struct PublicKey2<const K: usize, Vector: Operations> {
-    pub(super) t_as_ntt: [PolynomialRingElement<Vector>; K],
+pub struct PublicKey2<const LEN: usize> {
+    pub(super) t_as_ntt: [u8; LEN],
 }
 
-impl<const K: usize, Vector: Operations> PublicKey2<K, Vector> {
+impl<const LEN: usize> PublicKey2<LEN> {
     /// Get the size of the second public key in bytes.
     pub const fn len() -> usize {
-        vec_len_bytes::<K, Vector>()
+        LEN
+    }
+
+    /// Deserialize the public key.
+    pub fn deserialize<const K: usize, Vector: Operations>(
+        &self,
+    ) -> [PolynomialRingElement<Vector>; K] {
+        deserialize_vector(&self.t_as_ntt)
     }
 }
 
@@ -236,42 +253,43 @@ impl<const K: usize, Vector: Operations> From<&MlKemPublicKeyUnpacked<K, Vector>
 }
 
 /// Convert [`MlKemPublicKeyUnpacked`] to a [`PublicKey2`].
-impl<const K: usize, Vector: Operations> From<&MlKemPublicKeyUnpacked<K, Vector>>
-    for PublicKey2<K, Vector>
+impl<const K: usize, const LEN: usize, Vector: Operations> From<&MlKemPublicKeyUnpacked<K, Vector>>
+    for PublicKey2<LEN>
 {
     fn from(pk: &MlKemPublicKeyUnpacked<K, Vector>) -> Self {
-        Self {
-            t_as_ntt: pk.ind_cpa_public_key.t_as_ntt,
-        }
+        let mut out = Self {
+            t_as_ntt: [0u8; LEN],
+        };
+        serialize_vector(&pk.ind_cpa_public_key.t_as_ntt, &mut out.t_as_ntt);
+        out
     }
 }
 
 /// Convert a byte slice `&[u8]` to a [`PublicKey2`].
-impl<const K: usize, Vector: Operations> TryFrom<&[u8]> for PublicKey2<K, Vector> {
+impl<const LEN: usize> TryFrom<&[u8]> for PublicKey2<LEN> {
     type Error = Error;
 
     fn try_from(value: &[u8]) -> Result<Self, Self::Error> {
-        if value.len() < K * 15 * 32 {
+        if value.len() < LEN {
             return Err(Error::InvalidInputLength);
         }
 
-        let mut t_as_ntt = from_fn(|_| PolynomialRingElement::<Vector>::ZERO());
-        vec_from_bytes(value, &mut t_as_ntt);
-
+        let mut t_as_ntt = [0u8; LEN];
+        t_as_ntt.copy_from_slice(&value[0..LEN]);
         Ok(Self { t_as_ntt })
     }
 }
 
 // The key pair struct that we (de)serialize.
-pub struct KeyPair<const K: usize, Vector: Operations> {
+pub struct KeyPair<const K: usize, const PK2_LEN: usize, Vector: Operations> {
     pk1: PublicKey1,
-    pk2: PublicKey2<K, Vector>,
+    pk2: PublicKey2<PK2_LEN>,
     sk: MlKemPrivateKeyUnpacked<K, Vector>,
     matrix: [[PolynomialRingElement<Vector>; K]; K],
 }
 
-impl<const K: usize, Vector: Operations> From<MlKemKeyPairUnpacked<K, Vector>>
-    for KeyPair<K, Vector>
+impl<const K: usize, const PK2_LEN: usize, Vector: Operations> From<MlKemKeyPairUnpacked<K, Vector>>
+    for KeyPair<K, PK2_LEN, Vector>
 {
     fn from(kp: MlKemKeyPairUnpacked<K, Vector>) -> Self {
         KeyPair {
@@ -283,15 +301,15 @@ impl<const K: usize, Vector: Operations> From<MlKemKeyPairUnpacked<K, Vector>>
     }
 }
 
-impl<const K: usize, Vector: Operations> From<KeyPair<K, Vector>>
+impl<const K: usize, const PK2_LEN: usize, Vector: Operations> From<KeyPair<K, PK2_LEN, Vector>>
     for MlKemKeyPairUnpacked<K, Vector>
 {
-    fn from(value: KeyPair<K, Vector>) -> Self {
+    fn from(value: KeyPair<K, PK2_LEN, Vector>) -> Self {
         MlKemKeyPairUnpacked {
             private_key: value.sk,
             public_key: MlKemPublicKeyUnpacked {
                 ind_cpa_public_key: IndCpaPublicKeyUnpacked {
-                    t_as_ntt: value.pk2.t_as_ntt,
+                    t_as_ntt: deserialize_vector(&value.pk2.t_as_ntt),
                     seed_for_A: value.pk1.seed,
                     A: value.matrix,
                 },
@@ -301,21 +319,34 @@ impl<const K: usize, Vector: Operations> From<KeyPair<K, Vector>>
     }
 }
 
-impl<const K: usize, Vector: Operations> KeyPair<K, Vector> {
+impl<const K: usize, const PK2_LEN: usize, Vector: Operations> KeyPair<K, PK2_LEN, Vector> {
     /// Get [`PublicKey1`] as bytes.
-    pub fn pk1_bytes(&self, pk1: &mut [u8]) {
+    pub fn pk1_bytes(&self, pk1: &mut [u8]) -> Result<(), Error> {
+        debug_assert!(pk1.len() >= PublicKey1::len());
+        if pk1.len() < PublicKey1::len() {
+            return Err(Error::InvalidOutputLength);
+        }
+
         pk1[0..32].copy_from_slice(&self.pk1.seed);
         pk1[32..64].copy_from_slice(&self.pk1.hash);
+
+        Ok(())
     }
 
     /// Get [`PublicKey2`] as bytes.
-    pub fn pk2_bytes(&self, pk2: &mut [u8]) {
-        vec_to_bytes(&self.pk2.t_as_ntt, pk2);
+    pub fn pk2_bytes(&self, pk2: &mut [u8]) -> Result<(), Error> {
+        if pk2.len() < PK2_LEN {
+            return Err(Error::InvalidOutputLength);
+        }
+
+        pk2[0..PK2_LEN].copy_from_slice(&self.pk2.t_as_ntt);
+
+        Ok(())
     }
 
     /// The byte size of this key pair.
     pub fn num_bytes() -> usize {
-        PublicKey1::len() + PublicKey2::<K, Vector>::len()
+        PublicKey1::len() + PublicKey2::<PK2_LEN>::len()
         // sk length
         + vec_len_bytes::<K, Vector>() + 32
         // matrix length
@@ -325,8 +356,11 @@ impl<const K: usize, Vector: Operations> KeyPair<K, Vector> {
     /// Write this key pair into the `key` bytes.
     ///
     /// `key` must be at least of length `num_bytes()`
-    pub fn to_bytes(self, key: &mut [u8]) {
+    pub fn to_bytes(self, key: &mut [u8]) -> Result<(), Error> {
         debug_assert!(key.len() >= Self::num_bytes());
+        if key.len() < Self::num_bytes() {
+            return Err(Error::InvalidInputLength);
+        }
 
         let mut offset = 0;
 
@@ -342,8 +376,7 @@ impl<const K: usize, Vector: Operations> KeyPair<K, Vector> {
         write(key, &self.pk1.hash, &mut offset);
 
         // PK2
-        vec_to_bytes(&self.pk2.t_as_ntt, &mut key[offset..]);
-        offset += vec_len_bytes::<K, Vector>();
+        write(key, &self.pk2.t_as_ntt, &mut offset);
 
         // SK
         vec_to_bytes(
@@ -358,6 +391,8 @@ impl<const K: usize, Vector: Operations> KeyPair<K, Vector> {
             vec_to_bytes(&self.matrix[i], &mut key[offset..]);
             offset += vec_len_bytes::<K, Vector>();
         }
+
+        Ok(())
     }
 
     /// Read a key pair from the `key` bytes.
@@ -370,12 +405,12 @@ impl<const K: usize, Vector: Operations> KeyPair<K, Vector> {
         }
 
         // PK1
-        let pk1 = PublicKey1::try_from(key).unwrap();
+        let pk1 = PublicKey1::try_from(key)?;
         let mut offset = PublicKey1::len();
 
         // PK2
-        let pk2 = PublicKey2::try_from(&key[offset..]).unwrap();
-        offset += PublicKey2::<K, Vector>::len();
+        let pk2 = PublicKey2::try_from(&key[offset..])?;
+        offset += PublicKey2::<PK2_LEN>::len();
 
         // SK
         let implicit_rejection_value = [0u8; 32];

@@ -42,6 +42,7 @@ pub(crate) fn generate_keypair<
 
 pub(crate) fn generate_keypair_serialized<
     const K: usize,
+    const PK2_LEN: usize,
     const CPA_PRIVATE_KEY_SIZE: usize,
     const PRIVATE_KEY_SIZE: usize,
     const PUBLIC_KEY_SIZE: usize,
@@ -52,12 +53,13 @@ pub(crate) fn generate_keypair_serialized<
     randomness: [u8; KEY_GENERATION_SEED_SIZE],
     key_pair: &mut [u8],
 ) -> Result<(), Error> {
-    if key_pair.len() < KeyPair::<K, Vector>::num_bytes() {
+    if key_pair.len() < KeyPair::<K, PK2_LEN, Vector>::num_bytes() {
         return Err(Error::InvalidOutputLength);
     }
 
     Ok(super::generate_keypair_serialized::<
         K,
+        PK2_LEN,
         CPA_PRIVATE_KEY_SIZE,
         PRIVATE_KEY_SIZE,
         PUBLIC_KEY_SIZE,
@@ -130,24 +132,29 @@ pub(crate) fn encapsulate1_serialized<
 
 pub(crate) fn encapsulate2<
     const K: usize,
+    const PK2_LEN: usize,
     const C2_SIZE: usize,
     const VECTOR_V_COMPRESSION_FACTOR: usize,
 >(
     state: &EncapsState<K, Vector>,
-    public_key_part: &PublicKey2<K, Vector>,
+    public_key_part: &PublicKey2<PK2_LEN>,
 ) -> Ciphertext2<C2_SIZE> {
-    super::encapsulate2::<K, C2_SIZE, VECTOR_V_COMPRESSION_FACTOR, Vector>(state, public_key_part)
+    super::encapsulate2::<K, PK2_LEN, C2_SIZE, VECTOR_V_COMPRESSION_FACTOR, Vector>(
+        state,
+        public_key_part,
+    )
 }
 
 pub(crate) fn encapsulate2_serialized<
     const K: usize,
+    const PK2_LEN: usize,
     const C2_SIZE: usize,
     const VECTOR_V_COMPRESSION_FACTOR: usize,
 >(
     state: &[u8],
-    public_key_part: &PublicKey2<K, Vector>,
+    public_key_part: &PublicKey2<PK2_LEN>,
 ) -> Result<Ciphertext2<C2_SIZE>, Error> {
-    super::encapsulate2_serialized::<K, C2_SIZE, VECTOR_V_COMPRESSION_FACTOR, Vector>(
+    super::encapsulate2_serialized::<K, PK2_LEN, C2_SIZE, VECTOR_V_COMPRESSION_FACTOR, Vector>(
         state,
         public_key_part,
     )
@@ -199,6 +206,7 @@ pub(crate) fn decapsulate<
 
 pub(crate) fn decapsulate_incremental_key<
     const K: usize,
+    const PK2_LEN: usize,
     const SECRET_KEY_SIZE: usize,
     const CPA_SECRET_KEY_SIZE: usize,
     const PUBLIC_KEY_SIZE: usize,
@@ -221,6 +229,7 @@ pub(crate) fn decapsulate_incremental_key<
 ) -> Result<MlKemSharedSecret, Error> {
     super::decapsulate_incremental_key::<
         K,
+        PK2_LEN,
         SECRET_KEY_SIZE,
         CPA_SECRET_KEY_SIZE,
         PUBLIC_KEY_SIZE,

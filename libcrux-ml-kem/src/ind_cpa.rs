@@ -135,7 +135,7 @@ pub(crate) fn serialize_public_key_mut<
     seed_for_a: &[u8],
     serialized: &mut [u8; PUBLIC_KEY_SIZE],
 ) {
-    serialize_secret_key::<K, Vector>(t_as_ntt, &mut serialized[0..RANKED_BYTES_PER_RING_ELEMENT]);
+    serialize_vector::<K, Vector>(t_as_ntt, &mut serialized[0..RANKED_BYTES_PER_RING_ELEMENT]);
 
     serialized[RANKED_BYTES_PER_RING_ELEMENT..].copy_from_slice(seed_for_a);
     hax_lib::fstar!(
@@ -156,7 +156,7 @@ pub(crate) fn serialize_public_key_mut<
     fstar!(r#"$res == Spec.MLKEM.vector_encode_12 #$K
                     (Libcrux_ml_kem.Polynomial.to_spec_vector_t #$K #$:Vector $key)"#)
 )]
-pub(crate) fn serialize_secret_key<const K: usize, Vector: Operations>(
+pub(crate) fn serialize_vector<const K: usize, Vector: Operations>(
     key: &[PolynomialRingElement<Vector>; K],
     out: &mut [u8],
 ) {
@@ -634,7 +634,7 @@ pub(crate) fn serialize_unpacked_secret_key<
 
     // sk := Encode_12(sˆ mod^{+}q)
     let mut secret_key_serialized = [0u8; PRIVATE_KEY_SIZE];
-    serialize_secret_key(&private_key.secret_as_ntt, &mut secret_key_serialized);
+    serialize_vector(&private_key.secret_as_ntt, &mut secret_key_serialized);
 
     (secret_key_serialized, public_key_serialized)
 }
@@ -1096,7 +1096,7 @@ fn deserialize_then_decompress_u<
     fstar!(r#"Libcrux_ml_kem.Polynomial.to_spec_vector_t #$K #$:Vector $res ==
          Spec.MLKEM.vector_decode_12 #$K $secret_key"#)
 )]
-pub(crate) fn deserialize_secret_key<const K: usize, Vector: Operations>(
+pub(crate) fn deserialize_vector<const K: usize, Vector: Operations>(
     secret_key: &[u8],
 ) -> [PolynomialRingElement<Vector>; K] {
     hax_lib::fstar!(r#"assert_norm (Spec.MLKEM.polynomial_d 12 == Spec.MLKEM.polynomial)"#);
@@ -1208,7 +1208,7 @@ pub(crate) fn decrypt<
 ) -> [u8; SHARED_SECRET_SIZE] {
     hax_lib::fstar!(r#"reveal_opaque (`%Spec.MLKEM.ind_cpa_decrypt) Spec.MLKEM.ind_cpa_decrypt"#);
     // sˆ := Decode_12(sk)
-    let secret_as_ntt = deserialize_secret_key::<K, Vector>(secret_key);
+    let secret_as_ntt = deserialize_vector::<K, Vector>(secret_key);
     let secret_key_unpacked = IndCpaPrivateKeyUnpacked { secret_as_ntt };
 
     decrypt_unpacked::<
