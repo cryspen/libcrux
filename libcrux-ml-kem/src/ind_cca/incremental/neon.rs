@@ -51,8 +51,12 @@ pub(crate) fn generate_keypair_serialized<
 >(
     randomness: [u8; KEY_GENERATION_SEED_SIZE],
     key_pair: &mut [u8],
-) {
-    super::generate_keypair_serialized::<
+) -> Result<(), Error> {
+    if key_pair.len() < KeyPair::<K, Vector>::num_bytes() {
+        return Err(Error::InvalidOutputLength);
+    }
+
+    Ok(super::generate_keypair_serialized::<
         K,
         CPA_PRIVATE_KEY_SIZE,
         PRIVATE_KEY_SIZE,
@@ -62,7 +66,7 @@ pub(crate) fn generate_keypair_serialized<
         ETA1_RANDOMNESS_SIZE,
         Vector,
         Hash,
-    >(randomness, key_pair)
+    >(randomness, key_pair))
 }
 
 pub(crate) fn encapsulate1<

@@ -33,9 +33,9 @@ macro_rules! impl_key_size {
             // Because const generics are too limited, we compute it here from scratch.
 
             // PK1
-            64
+            pk1_len()
             // PK2
-            + RANK * 16 * 32
+            + pk2_len()
             // SK
             + RANK * 16 * 32 + 32
             // Matrix
@@ -139,7 +139,7 @@ macro_rules! impl_key_size {
         /// Generate a key pair and write it into `key_pair`.
         ///
         /// `key_pair.len()` must be of size `key_pair_len()`.
-        pub fn generate_key_pair(randomness: [u8; KEY_GENERATION_SEED_SIZE], key_pair: &mut [u8]) {
+        pub fn generate_key_pair(randomness: [u8; KEY_GENERATION_SEED_SIZE], key_pair: &mut [u8]) -> Result<(), Error> {
             multiplexing::generate_keypair::<
                 RANK,
                 CPA_PKE_SECRET_KEY_SIZE,

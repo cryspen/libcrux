@@ -276,7 +276,7 @@ pub(crate) fn generate_keypair<
 >(
     randomness: [u8; KEY_GENERATION_SEED_SIZE],
     key_pair: &mut [u8],
-) {
+) -> Result<(), Error> {
     if libcrux_platform::simd256_support() {
         generate_keypair_serialized_avx2::<
             K,

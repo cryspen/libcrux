@@ -142,8 +142,8 @@ macro_rules! impl_consistency_incremental {
 
             // Generate key pair.
             let key_pair = alloc::generate_key_pair(key_gen_randomness);
-            let mut key_pair_bytes = vec![0u8; key_pair_len()];
-            generate_key_pair(key_gen_randomness, &mut key_pair_bytes);
+            let mut key_pair_bytes = [0u8; key_pair_len()];
+            generate_key_pair(key_gen_randomness, &mut key_pair_bytes).unwrap();
 
             // Get pk1 and pk2 to send out.
             let mut pk1_bytes = [0u8; 64];
@@ -161,9 +161,10 @@ macro_rules! impl_consistency_incremental {
             let (ct1, ct2, shared_secret) = {
                 let pk1 = PublicKey1::try_from(&pk1_bytes as &[u8]).unwrap();
                 let (ct1, state) = alloc::encapsulate1(&pk1, encaps_randomness);
+                debug_assert_eq!(ct1.value.len(), Ciphertext1::len());
 
                 // encaps1 with serialized state
-                let mut serialized_state = vec![0u8; encaps_state_len()];
+                let mut serialized_state = [0u8; encaps_state_len()];
                 let ct12 =
                     encapsulate1(&pk1_bytes, encaps_randomness, &mut serialized_state).unwrap();
                 assert_eq!(ct1.value, ct12.value);
@@ -172,6 +173,7 @@ macro_rules! impl_consistency_incremental {
                 // pk2 is passed in as bytes because the deserializaiton is runtime
                 // platform dependent.
                 let ct2 = alloc::encapsulate2(state.as_ref(), &pk2_bytes).unwrap();
+                debug_assert_eq!(ct2.value.len(), Ciphertext2::len());
 
                 // encaps2 with serialized state
                 let ct22 = encapsulate2(&serialized_state, &pk2_bytes).unwrap();
