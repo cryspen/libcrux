@@ -15,6 +15,10 @@ on:
       hax_rev:
         description: "The hax revision you want this job to use"
         default: "main"
+      skip_diff:
+        description: "Skip diff jobs"
+        default: false
+        type: boolean
   merge_group:
 
 env:
@@ -59,6 +63,7 @@ jobs:
           path: ~/fstar-extraction-mlkem
 
       - name: = Diff Extraction
+        if: ${{ github.event.inputs.skip_diff != 'false' }}
         run: |
           diff -r libcrux-ml-kem/proofs/fstar/extraction/ \
             ~/fstar-extraction-mlkem/fstar/extraction/
@@ -114,6 +119,7 @@ jobs:
           path: ~/fstar-extraction-mldsa
 
       - name: = Diff Extraction
+        if: ${{ github.event.inputs.skip_diff != 'false' }}
         run: |
           diff -r libcrux-ml-dsa/proofs/fstar/extraction/ \
             ~/fstar-extraction-mldsa/fstar/extraction/
