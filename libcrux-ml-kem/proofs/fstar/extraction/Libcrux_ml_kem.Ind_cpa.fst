@@ -266,8 +266,8 @@ let sample_ring_element_cbd
   let error_1_:t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K =
     Core.Array.from_fn #(Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
       v_K
-      (fun v__i ->
-          let v__i:usize = v__i in
+      (fun e_i ->
+          let e_i:usize = e_i in
           Libcrux_ml_kem.Polynomial.impl_2__ZERO #v_Vector ()
           <:
           Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
@@ -275,14 +275,14 @@ let sample_ring_element_cbd
   let prf_inputs:t_Array (t_Array u8 (mk_usize 33)) v_K =
     Rust_primitives.Hax.repeat prf_input v_K
   in
-  let v__domain_separator_init:u8 = domain_separator in
+  let e_domain_separator_init:u8 = domain_separator in
   let tmp0, out:(t_Array (t_Array u8 (mk_usize 33)) v_K & u8) =
     Libcrux_ml_kem.Utils.prf_input_inc v_K prf_inputs domain_separator
   in
   let prf_inputs:t_Array (t_Array u8 (mk_usize 33)) v_K = tmp0 in
   let domain_separator:u8 = out in
   let _:Prims.unit =
-    sample_ring_element_cbd_helper_1 v_K prf_inputs prf_input v__domain_separator_init
+    sample_ring_element_cbd_helper_1 v_K prf_inputs prf_input e_domain_separator_init
   in
   let (prf_outputs: t_Array (t_Array u8 v_ETA2_RANDOMNESS_SIZE) v_K):t_Array
     (t_Array u8 v_ETA2_RANDOMNESS_SIZE) v_K =
@@ -328,7 +328,7 @@ let sample_ring_element_cbd
       #v_Vector
       error_1_
       prf_input
-      v__domain_separator_init
+      e_domain_separator_init
   in
   error_1_, domain_separator
   <:
@@ -407,14 +407,14 @@ let sample_vector_cbd_then_ntt
   let prf_inputs:t_Array (t_Array u8 (mk_usize 33)) v_K =
     Rust_primitives.Hax.repeat prf_input v_K
   in
-  let v__domain_separator_init:u8 = domain_separator in
+  let e_domain_separator_init:u8 = domain_separator in
   let tmp0, out:(t_Array (t_Array u8 (mk_usize 33)) v_K & u8) =
     Libcrux_ml_kem.Utils.prf_input_inc v_K prf_inputs domain_separator
   in
   let prf_inputs:t_Array (t_Array u8 (mk_usize 33)) v_K = tmp0 in
   let domain_separator:u8 = out in
   let _:Prims.unit =
-    sample_vector_cbd_then_ntt_helper_1 v_K prf_inputs prf_input v__domain_separator_init
+    sample_vector_cbd_then_ntt_helper_1 v_K prf_inputs prf_input e_domain_separator_init
   in
   let (prf_outputs: t_Array (t_Array u8 v_ETA_RANDOMNESS_SIZE) v_K):t_Array
     (t_Array u8 v_ETA_RANDOMNESS_SIZE) v_K =
@@ -469,7 +469,7 @@ let sample_vector_cbd_then_ntt
       #v_Vector
       re_as_ntt
       prf_input
-      v__domain_separator_init
+      e_domain_separator_init
   in
   let hax_temp_output:u8 = domain_separator in
   re_as_ntt, hax_temp_output
@@ -493,8 +493,8 @@ let sample_vector_cbd_then_ntt_out
   let re_as_ntt:t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K =
     Core.Array.from_fn #(Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
       v_K
-      (fun v__i ->
-          let v__i:usize = v__i in
+      (fun e_i ->
+          let e_i:usize = e_i in
           Libcrux_ml_kem.Polynomial.impl_2__ZERO #v_Vector ()
           <:
           Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
@@ -602,11 +602,11 @@ let generate_keypair_unpacked
   let public_key:Libcrux_ml_kem.Ind_cpa.Unpacked.t_IndCpaPublicKeyUnpacked v_K v_Vector =
     {
       public_key with
-      Libcrux_ml_kem.Ind_cpa.Unpacked.f_t_as_ntt
+      Libcrux_ml_kem.Ind_cpa.Unpacked.f_tt_as_ntt
       =
       Libcrux_ml_kem.Matrix.compute_As_plus_e v_K
         #v_Vector
-        public_key.Libcrux_ml_kem.Ind_cpa.Unpacked.f_t_as_ntt
+        public_key.Libcrux_ml_kem.Ind_cpa.Unpacked.f_tt_as_ntt
         public_key.Libcrux_ml_kem.Ind_cpa.Unpacked.f_A
         private_key.Libcrux_ml_kem.Ind_cpa.Unpacked.f_secret_as_ntt
         error_as_ntt
@@ -636,21 +636,27 @@ let generate_keypair_unpacked
       Spec.MLKEM.ind_cpa_generate_keypair_unpacked v_K key_generation_seed
     in
     assert (valid ==>
-        ((Libcrux_ml_kem.Polynomial.to_spec_vector_t #v_K #v_Vector public_key.f_t_as_ntt) ==
-          t_as_ntt) /\ (public_key.f_seed_for_A == seed_for_A) /\
-        (Libcrux_ml_kem.Polynomial.to_spec_matrix_t #v_K #v_Vector public_key.f_A == matrix_A_as_ntt
-        ) /\
-        ((Libcrux_ml_kem.Polynomial.to_spec_vector_t #v_K #v_Vector private_key.f_secret_as_ntt) ==
+        ((Libcrux_ml_kem.Polynomial.to_spec_vector_t #v_K
+              #v_Vector
+              public_key.Libcrux_ml_kem.Ind_cpa.Unpacked.f_tt_as_ntt) ==
+          t_as_ntt) /\ (public_key.Libcrux_ml_kem.Ind_cpa.Unpacked.f_seed_for_A == seed_for_A) /\
+        (Libcrux_ml_kem.Polynomial.to_spec_matrix_t #v_K
+            #v_Vector
+            public_key.Libcrux_ml_kem.Ind_cpa.Unpacked.f_A ==
+          matrix_A_as_ntt) /\
+        ((Libcrux_ml_kem.Polynomial.to_spec_vector_t #v_K
+              #v_Vector
+              private_key.Libcrux_ml_kem.Ind_cpa.Unpacked.f_secret_as_ntt) ==
           secret_as_ntt));
     assert ((forall (i: nat).
             i < v v_K ==>
             Libcrux_ml_kem.Serialize.coefficients_field_modulus_range (Seq.index private_key
-                    .f_secret_as_ntt
+                    .Libcrux_ml_kem.Ind_cpa.Unpacked.f_secret_as_ntt
                   i)) /\
         (forall (i: nat).
             i < v v_K ==>
             Libcrux_ml_kem.Serialize.coefficients_field_modulus_range (Seq.index public_key
-                    .f_t_as_ntt
+                    .Libcrux_ml_kem.Ind_cpa.Unpacked.f_tt_as_ntt
                   i)))
   in
   private_key, public_key
@@ -676,7 +682,7 @@ let serialize_unpacked_secret_key
       v_RANKED_BYTES_PER_RING_ELEMENT
       v_PUBLIC_KEY_SIZE
       #v_Vector
-      public_key.Libcrux_ml_kem.Ind_cpa.Unpacked.f_t_as_ntt
+      public_key.Libcrux_ml_kem.Ind_cpa.Unpacked.f_tt_as_ntt
       (public_key.Libcrux_ml_kem.Ind_cpa.Unpacked.f_seed_for_A <: t_Slice u8)
   in
   let secret_key_serialized:t_Array u8 v_PRIVATE_KEY_SIZE =
@@ -917,7 +923,7 @@ let encrypt_unpacked
   let v:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector =
     Libcrux_ml_kem.Matrix.compute_ring_element_v v_K
       #v_Vector
-      public_key.Libcrux_ml_kem.Ind_cpa.Unpacked.f_t_as_ntt
+      public_key.Libcrux_ml_kem.Ind_cpa.Unpacked.f_tt_as_ntt
       r_as_ntt
       error_2_
       message_as_ring_element
@@ -988,7 +994,7 @@ let build_unpacked_public_key_mut
   let unpacked_public_key:Libcrux_ml_kem.Ind_cpa.Unpacked.t_IndCpaPublicKeyUnpacked v_K v_Vector =
     {
       unpacked_public_key with
-      Libcrux_ml_kem.Ind_cpa.Unpacked.f_t_as_ntt
+      Libcrux_ml_kem.Ind_cpa.Unpacked.f_tt_as_ntt
       =
       Libcrux_ml_kem.Serialize.deserialize_ring_elements_reduced v_K
         #v_Vector
@@ -997,7 +1003,7 @@ let build_unpacked_public_key_mut
             Core.Ops.Range.t_RangeTo usize ]
           <:
           t_Slice u8)
-        unpacked_public_key.Libcrux_ml_kem.Ind_cpa.Unpacked.f_t_as_ntt
+        unpacked_public_key.Libcrux_ml_kem.Ind_cpa.Unpacked.f_tt_as_ntt
     }
     <:
     Libcrux_ml_kem.Ind_cpa.Unpacked.t_IndCpaPublicKeyUnpacked v_K v_Vector

@@ -297,6 +297,44 @@ let serialize_5_ (vector: Libcrux_intrinsics.Avx2_extract.t_Vec256) =
       <:
       Core.Result.t_Result (t_Array u8 (mk_usize 10)) Core.Array.t_TryFromSliceError)
 
+let deserialize_5_ (bytes: t_Slice u8) =
+  let coefficients:Libcrux_intrinsics.Avx2_extract.t_Vec128 =
+    Libcrux_intrinsics.Avx2_extract.mm_set_epi8 (bytes.[ mk_usize 9 ] <: u8)
+      (bytes.[ mk_usize 8 ] <: u8) (bytes.[ mk_usize 8 ] <: u8) (bytes.[ mk_usize 7 ] <: u8)
+      (bytes.[ mk_usize 7 ] <: u8) (bytes.[ mk_usize 6 ] <: u8) (bytes.[ mk_usize 6 ] <: u8)
+      (bytes.[ mk_usize 5 ] <: u8) (bytes.[ mk_usize 4 ] <: u8) (bytes.[ mk_usize 3 ] <: u8)
+      (bytes.[ mk_usize 3 ] <: u8) (bytes.[ mk_usize 2 ] <: u8) (bytes.[ mk_usize 2 ] <: u8)
+      (bytes.[ mk_usize 1 ] <: u8) (bytes.[ mk_usize 1 ] <: u8) (bytes.[ mk_usize 0 ] <: u8)
+  in
+  let coefficients_loaded:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+    mm256_si256_from_two_si128 coefficients coefficients
+  in
+  let coefficients:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+    Libcrux_intrinsics.Avx2_extract.mm256_shuffle_epi8 coefficients_loaded
+      (Libcrux_intrinsics.Avx2_extract.mm256_set_epi8 (mk_i8 15) (mk_i8 14) (mk_i8 15) (mk_i8 14)
+          (mk_i8 13) (mk_i8 12) (mk_i8 13) (mk_i8 12) (mk_i8 11) (mk_i8 10) (mk_i8 11) (mk_i8 10)
+          (mk_i8 9) (mk_i8 8) (mk_i8 9) (mk_i8 8) (mk_i8 7) (mk_i8 6) (mk_i8 7) (mk_i8 6) (mk_i8 5)
+          (mk_i8 4) (mk_i8 5) (mk_i8 4) (mk_i8 3) (mk_i8 2) (mk_i8 3) (mk_i8 2) (mk_i8 1) (mk_i8 0)
+          (mk_i8 1) (mk_i8 0)
+        <:
+        Libcrux_intrinsics.Avx2_extract.t_Vec256)
+  in
+  let coefficients:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+    Libcrux_intrinsics.Avx2_extract.mm256_mullo_epi16 coefficients
+      (Libcrux_intrinsics.Avx2_extract.mm256_set_epi16 (mk_i16 1 <<! mk_i32 0 <: i16)
+          (mk_i16 1 <<! mk_i32 5 <: i16) (mk_i16 1 <<! mk_i32 2 <: i16)
+          (mk_i16 1 <<! mk_i32 7 <: i16) (mk_i16 1 <<! mk_i32 4 <: i16)
+          (mk_i16 1 <<! mk_i32 9 <: i16) (mk_i16 1 <<! mk_i32 6 <: i16)
+          (mk_i16 1 <<! mk_i32 11 <: i16) (mk_i16 1 <<! mk_i32 0 <: i16)
+          (mk_i16 1 <<! mk_i32 5 <: i16) (mk_i16 1 <<! mk_i32 2 <: i16)
+          (mk_i16 1 <<! mk_i32 7 <: i16) (mk_i16 1 <<! mk_i32 4 <: i16)
+          (mk_i16 1 <<! mk_i32 9 <: i16) (mk_i16 1 <<! mk_i32 6 <: i16)
+          (mk_i16 1 <<! mk_i32 11 <: i16)
+        <:
+        Libcrux_intrinsics.Avx2_extract.t_Vec256)
+  in
+  Libcrux_intrinsics.Avx2_extract.mm256_srli_epi16 (mk_i32 11) coefficients
+
 #push-options "--ext context_pruning --split_queries always"
 
 let serialize_10___serialize_10_vec (vector: Libcrux_intrinsics.Avx2_extract.t_Vec256) =
@@ -405,6 +443,85 @@ let serialize_10_ (vector: Libcrux_intrinsics.Avx2_extract.t_Vec256) =
       Core.Result.t_Result (t_Array u8 (mk_usize 20)) Core.Array.t_TryFromSliceError)
 
 #pop-options
+
+[@@"opaque_to_smt"]
+
+let deserialize_10___deserialize_10_vec
+      (lower_coefficients0 upper_coefficients0: Libcrux_intrinsics.Avx2_extract.t_Vec128)
+     =
+  let lower_coefficients:Libcrux_intrinsics.Avx2_extract.t_Vec128 =
+    Libcrux_intrinsics.Avx2_extract.mm_shuffle_epi8 lower_coefficients0
+      (Libcrux_intrinsics.Avx2_extract.mm_set_epi8 (mk_u8 9) (mk_u8 8) (mk_u8 8) (mk_u8 7) (mk_u8 7)
+          (mk_u8 6) (mk_u8 6) (mk_u8 5) (mk_u8 4) (mk_u8 3) (mk_u8 3) (mk_u8 2) (mk_u8 2) (mk_u8 1)
+          (mk_u8 1) (mk_u8 0)
+        <:
+        Libcrux_intrinsics.Avx2_extract.t_Vec128)
+  in
+  let upper_coefficients:Libcrux_intrinsics.Avx2_extract.t_Vec128 =
+    Libcrux_intrinsics.Avx2_extract.mm_shuffle_epi8 upper_coefficients0
+      (Libcrux_intrinsics.Avx2_extract.mm_set_epi8 (mk_u8 15) (mk_u8 14) (mk_u8 14) (mk_u8 13)
+          (mk_u8 13) (mk_u8 12) (mk_u8 12) (mk_u8 11) (mk_u8 10) (mk_u8 9) (mk_u8 9) (mk_u8 8)
+          (mk_u8 8) (mk_u8 7) (mk_u8 7) (mk_u8 6)
+        <:
+        Libcrux_intrinsics.Avx2_extract.t_Vec128)
+  in
+  let coefficients:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+    mm256_si256_from_two_si128 lower_coefficients upper_coefficients
+  in
+  let coefficients:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+    Libcrux_intrinsics.Avx2_extract.mm256_mullo_epi16 coefficients
+      (Libcrux_intrinsics.Avx2_extract.mm256_set_epi16 (mk_i16 1 <<! mk_i32 0 <: i16)
+          (mk_i16 1 <<! mk_i32 2 <: i16) (mk_i16 1 <<! mk_i32 4 <: i16)
+          (mk_i16 1 <<! mk_i32 6 <: i16) (mk_i16 1 <<! mk_i32 0 <: i16)
+          (mk_i16 1 <<! mk_i32 2 <: i16) (mk_i16 1 <<! mk_i32 4 <: i16)
+          (mk_i16 1 <<! mk_i32 6 <: i16) (mk_i16 1 <<! mk_i32 0 <: i16)
+          (mk_i16 1 <<! mk_i32 2 <: i16) (mk_i16 1 <<! mk_i32 4 <: i16)
+          (mk_i16 1 <<! mk_i32 6 <: i16) (mk_i16 1 <<! mk_i32 0 <: i16)
+          (mk_i16 1 <<! mk_i32 2 <: i16) (mk_i16 1 <<! mk_i32 4 <: i16)
+          (mk_i16 1 <<! mk_i32 6 <: i16)
+        <:
+        Libcrux_intrinsics.Avx2_extract.t_Vec256)
+  in
+  let coefficients:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+    Libcrux_intrinsics.Avx2_extract.mm256_srli_epi16 (mk_i32 6) coefficients
+  in
+  let coefficients:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+    Libcrux_intrinsics.Avx2_extract.mm256_and_si256 coefficients
+      (Libcrux_intrinsics.Avx2_extract.mm256_set1_epi16 ((mk_i16 1 <<! mk_i32 10 <: i16) -! mk_i16 1
+            <:
+            i16)
+        <:
+        Libcrux_intrinsics.Avx2_extract.t_Vec256)
+  in
+  let _:Prims.unit =
+    assert_norm (BitVec.Utils.forall256 (fun i ->
+              coefficients i =
+              (if i % 16 < 10
+                then
+                  let j = (i / 16) * 10 + i % 16 in
+                  if i < 128 then lower_coefficients0 j else upper_coefficients0 (j - 32)
+                else 0)))
+  in
+  coefficients
+
+let deserialize_10_ (bytes: t_Slice u8) =
+  let lower_coefficients:t_Slice u8 =
+    bytes.[ { Core.Ops.Range.f_start = mk_usize 0; Core.Ops.Range.f_end = mk_usize 16 }
+      <:
+      Core.Ops.Range.t_Range usize ]
+  in
+  let upper_coefficients:t_Slice u8 =
+    bytes.[ { Core.Ops.Range.f_start = mk_usize 4; Core.Ops.Range.f_end = mk_usize 20 }
+      <:
+      Core.Ops.Range.t_Range usize ]
+  in
+  deserialize_10___deserialize_10_vec (Libcrux_intrinsics.Avx2_extract.mm_loadu_si128 lower_coefficients
+
+      <:
+      Libcrux_intrinsics.Avx2_extract.t_Vec128)
+    (Libcrux_intrinsics.Avx2_extract.mm_loadu_si128 upper_coefficients
+      <:
+      Libcrux_intrinsics.Avx2_extract.t_Vec128)
 
 #push-options "--admit_smt_queries true"
 
@@ -549,123 +666,6 @@ let serialize_12_ (vector: Libcrux_intrinsics.Avx2_extract.t_Vec256) =
       Core.Result.t_Result (t_Array u8 (mk_usize 24)) Core.Array.t_TryFromSliceError)
 
 #pop-options
-
-let deserialize_5_ (bytes: t_Slice u8) =
-  let coefficients:Libcrux_intrinsics.Avx2_extract.t_Vec128 =
-    Libcrux_intrinsics.Avx2_extract.mm_set_epi8 (bytes.[ mk_usize 9 ] <: u8)
-      (bytes.[ mk_usize 8 ] <: u8) (bytes.[ mk_usize 8 ] <: u8) (bytes.[ mk_usize 7 ] <: u8)
-      (bytes.[ mk_usize 7 ] <: u8) (bytes.[ mk_usize 6 ] <: u8) (bytes.[ mk_usize 6 ] <: u8)
-      (bytes.[ mk_usize 5 ] <: u8) (bytes.[ mk_usize 4 ] <: u8) (bytes.[ mk_usize 3 ] <: u8)
-      (bytes.[ mk_usize 3 ] <: u8) (bytes.[ mk_usize 2 ] <: u8) (bytes.[ mk_usize 2 ] <: u8)
-      (bytes.[ mk_usize 1 ] <: u8) (bytes.[ mk_usize 1 ] <: u8) (bytes.[ mk_usize 0 ] <: u8)
-  in
-  let coefficients_loaded:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
-    mm256_si256_from_two_si128 coefficients coefficients
-  in
-  let coefficients:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
-    Libcrux_intrinsics.Avx2_extract.mm256_shuffle_epi8 coefficients_loaded
-      (Libcrux_intrinsics.Avx2_extract.mm256_set_epi8 (mk_i8 15) (mk_i8 14) (mk_i8 15) (mk_i8 14)
-          (mk_i8 13) (mk_i8 12) (mk_i8 13) (mk_i8 12) (mk_i8 11) (mk_i8 10) (mk_i8 11) (mk_i8 10)
-          (mk_i8 9) (mk_i8 8) (mk_i8 9) (mk_i8 8) (mk_i8 7) (mk_i8 6) (mk_i8 7) (mk_i8 6) (mk_i8 5)
-          (mk_i8 4) (mk_i8 5) (mk_i8 4) (mk_i8 3) (mk_i8 2) (mk_i8 3) (mk_i8 2) (mk_i8 1) (mk_i8 0)
-          (mk_i8 1) (mk_i8 0)
-        <:
-        Libcrux_intrinsics.Avx2_extract.t_Vec256)
-  in
-  let coefficients:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
-    Libcrux_intrinsics.Avx2_extract.mm256_mullo_epi16 coefficients
-      (Libcrux_intrinsics.Avx2_extract.mm256_set_epi16 (mk_i16 1 <<! mk_i32 0 <: i16)
-          (mk_i16 1 <<! mk_i32 5 <: i16) (mk_i16 1 <<! mk_i32 2 <: i16)
-          (mk_i16 1 <<! mk_i32 7 <: i16) (mk_i16 1 <<! mk_i32 4 <: i16)
-          (mk_i16 1 <<! mk_i32 9 <: i16) (mk_i16 1 <<! mk_i32 6 <: i16)
-          (mk_i16 1 <<! mk_i32 11 <: i16) (mk_i16 1 <<! mk_i32 0 <: i16)
-          (mk_i16 1 <<! mk_i32 5 <: i16) (mk_i16 1 <<! mk_i32 2 <: i16)
-          (mk_i16 1 <<! mk_i32 7 <: i16) (mk_i16 1 <<! mk_i32 4 <: i16)
-          (mk_i16 1 <<! mk_i32 9 <: i16) (mk_i16 1 <<! mk_i32 6 <: i16)
-          (mk_i16 1 <<! mk_i32 11 <: i16)
-        <:
-        Libcrux_intrinsics.Avx2_extract.t_Vec256)
-  in
-  Libcrux_intrinsics.Avx2_extract.mm256_srli_epi16 (mk_i32 11) coefficients
-
-[@@"opaque_to_smt"]
-
-let deserialize_10___deserialize_10_vec
-      (lower_coefficients0 upper_coefficients0: Libcrux_intrinsics.Avx2_extract.t_Vec128)
-     =
-  let lower_coefficients:Libcrux_intrinsics.Avx2_extract.t_Vec128 =
-    Libcrux_intrinsics.Avx2_extract.mm_shuffle_epi8 lower_coefficients0
-      (Libcrux_intrinsics.Avx2_extract.mm_set_epi8 (mk_u8 9) (mk_u8 8) (mk_u8 8) (mk_u8 7) (mk_u8 7)
-          (mk_u8 6) (mk_u8 6) (mk_u8 5) (mk_u8 4) (mk_u8 3) (mk_u8 3) (mk_u8 2) (mk_u8 2) (mk_u8 1)
-          (mk_u8 1) (mk_u8 0)
-        <:
-        Libcrux_intrinsics.Avx2_extract.t_Vec128)
-  in
-  let upper_coefficients:Libcrux_intrinsics.Avx2_extract.t_Vec128 =
-    Libcrux_intrinsics.Avx2_extract.mm_shuffle_epi8 upper_coefficients0
-      (Libcrux_intrinsics.Avx2_extract.mm_set_epi8 (mk_u8 15) (mk_u8 14) (mk_u8 14) (mk_u8 13)
-          (mk_u8 13) (mk_u8 12) (mk_u8 12) (mk_u8 11) (mk_u8 10) (mk_u8 9) (mk_u8 9) (mk_u8 8)
-          (mk_u8 8) (mk_u8 7) (mk_u8 7) (mk_u8 6)
-        <:
-        Libcrux_intrinsics.Avx2_extract.t_Vec128)
-  in
-  let coefficients:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
-    mm256_si256_from_two_si128 lower_coefficients upper_coefficients
-  in
-  let coefficients:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
-    Libcrux_intrinsics.Avx2_extract.mm256_mullo_epi16 coefficients
-      (Libcrux_intrinsics.Avx2_extract.mm256_set_epi16 (mk_i16 1 <<! mk_i32 0 <: i16)
-          (mk_i16 1 <<! mk_i32 2 <: i16) (mk_i16 1 <<! mk_i32 4 <: i16)
-          (mk_i16 1 <<! mk_i32 6 <: i16) (mk_i16 1 <<! mk_i32 0 <: i16)
-          (mk_i16 1 <<! mk_i32 2 <: i16) (mk_i16 1 <<! mk_i32 4 <: i16)
-          (mk_i16 1 <<! mk_i32 6 <: i16) (mk_i16 1 <<! mk_i32 0 <: i16)
-          (mk_i16 1 <<! mk_i32 2 <: i16) (mk_i16 1 <<! mk_i32 4 <: i16)
-          (mk_i16 1 <<! mk_i32 6 <: i16) (mk_i16 1 <<! mk_i32 0 <: i16)
-          (mk_i16 1 <<! mk_i32 2 <: i16) (mk_i16 1 <<! mk_i32 4 <: i16)
-          (mk_i16 1 <<! mk_i32 6 <: i16)
-        <:
-        Libcrux_intrinsics.Avx2_extract.t_Vec256)
-  in
-  let coefficients:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
-    Libcrux_intrinsics.Avx2_extract.mm256_srli_epi16 (mk_i32 6) coefficients
-  in
-  let coefficients:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
-    Libcrux_intrinsics.Avx2_extract.mm256_and_si256 coefficients
-      (Libcrux_intrinsics.Avx2_extract.mm256_set1_epi16 ((mk_i16 1 <<! mk_i32 10 <: i16) -! mk_i16 1
-            <:
-            i16)
-        <:
-        Libcrux_intrinsics.Avx2_extract.t_Vec256)
-  in
-  let _:Prims.unit =
-    assert_norm (BitVec.Utils.forall256 (fun i ->
-              coefficients i =
-              (if i % 16 < 10
-                then
-                  let j = (i / 16) * 10 + i % 16 in
-                  if i < 128 then lower_coefficients0 j else upper_coefficients0 (j - 32)
-                else 0)))
-  in
-  coefficients
-
-let deserialize_10_ (bytes: t_Slice u8) =
-  let lower_coefficients:t_Slice u8 =
-    bytes.[ { Core.Ops.Range.f_start = mk_usize 0; Core.Ops.Range.f_end = mk_usize 16 }
-      <:
-      Core.Ops.Range.t_Range usize ]
-  in
-  let upper_coefficients:t_Slice u8 =
-    bytes.[ { Core.Ops.Range.f_start = mk_usize 4; Core.Ops.Range.f_end = mk_usize 20 }
-      <:
-      Core.Ops.Range.t_Range usize ]
-  in
-  deserialize_10___deserialize_10_vec (Libcrux_intrinsics.Avx2_extract.mm_loadu_si128 lower_coefficients
-
-      <:
-      Libcrux_intrinsics.Avx2_extract.t_Vec128)
-    (Libcrux_intrinsics.Avx2_extract.mm_loadu_si128 upper_coefficients
-      <:
-      Libcrux_intrinsics.Avx2_extract.t_Vec128)
 
 [@@"opaque_to_smt"]
 

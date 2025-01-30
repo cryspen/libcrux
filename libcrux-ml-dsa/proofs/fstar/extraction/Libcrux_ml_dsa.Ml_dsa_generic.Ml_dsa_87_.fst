@@ -395,7 +395,7 @@ let sign_internal
     Core.Option.t_Option (t_Array (t_Array i32 (mk_usize 256)) (mk_usize 8)) &
     Core.Option.t_Option
     (t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) (mk_usize 7))) =
-    Rust_primitives.f_while_loop (fun temp_0_ ->
+    Rust_primitives.Hax.while_loop (fun temp_0_ ->
           let attempt, commitment_hash, domain_separator_for_mask, hint, signer_response:(usize &
             Core.Option.t_Option (t_Array u8 (mk_usize 64)) &
             u16 &
@@ -1018,7 +1018,7 @@ let verify_internal
         Rust_primitives.Hax.repeat (mk_u8 0) (mk_usize 64)
       in
       let t1:t_Array (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) (mk_usize 8) =
-        Libcrux_ml_dsa.Arithmetic.use_hint #v_SIMDUnit
+        Libcrux_ml_dsa.Arithmetic.uuse_hint #v_SIMDUnit
           Libcrux_ml_dsa.Constants.Ml_dsa_87_.v_GAMMA2
           (deserialized_hint <: t_Slice (t_Array i32 (mk_usize 256)))
           t1

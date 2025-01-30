@@ -16,28 +16,28 @@ let serialize_1_ (v: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) =
     FStar.Pervasives.assert_norm (Prims.eq2 (List.Tot.length list) 8);
     Rust_primitives.Hax.array_of_list 8 list
   in
-  let shift:u8 = Libcrux_intrinsics.Arm64_extract.v__vld1q_s16 (shifter <: t_Slice i16) in
+  let shift:u8 = Libcrux_intrinsics.Arm64_extract.e_vld1q_s16 (shifter <: t_Slice i16) in
   let low:u8 =
-    Libcrux_intrinsics.Arm64_extract.v__vshlq_s16 v.Libcrux_ml_kem.Vector.Neon.Vector_type.f_low
+    Libcrux_intrinsics.Arm64_extract.e_vshlq_s16 v.Libcrux_ml_kem.Vector.Neon.Vector_type.f_low
       shift
   in
   let high:u8 =
-    Libcrux_intrinsics.Arm64_extract.v__vshlq_s16 v.Libcrux_ml_kem.Vector.Neon.Vector_type.f_high
+    Libcrux_intrinsics.Arm64_extract.e_vshlq_s16 v.Libcrux_ml_kem.Vector.Neon.Vector_type.f_high
       shift
   in
-  let low:i16 = Libcrux_intrinsics.Arm64_extract.v__vaddvq_s16 low in
-  let high:i16 = Libcrux_intrinsics.Arm64_extract.v__vaddvq_s16 high in
+  let low:i16 = Libcrux_intrinsics.Arm64_extract.e_vaddvq_s16 low in
+  let high:i16 = Libcrux_intrinsics.Arm64_extract.e_vaddvq_s16 high in
   let list = [cast (low <: i16) <: u8; cast (high <: i16) <: u8] in
   FStar.Pervasives.assert_norm (Prims.eq2 (List.Tot.length list) 2);
   Rust_primitives.Hax.array_of_list 2 list
 
 let deserialize_1_ (a: t_Slice u8) =
-  let one:u8 = Libcrux_intrinsics.Arm64_extract.v__vdupq_n_s16 (mk_i16 1) in
+  let one:u8 = Libcrux_intrinsics.Arm64_extract.e_vdupq_n_s16 (mk_i16 1) in
   let low:u8 =
-    Libcrux_intrinsics.Arm64_extract.v__vdupq_n_s16 (cast (a.[ mk_usize 0 ] <: u8) <: i16)
+    Libcrux_intrinsics.Arm64_extract.e_vdupq_n_s16 (cast (a.[ mk_usize 0 ] <: u8) <: i16)
   in
   let high:u8 =
-    Libcrux_intrinsics.Arm64_extract.v__vdupq_n_s16 (cast (a.[ mk_usize 1 ] <: u8) <: i16)
+    Libcrux_intrinsics.Arm64_extract.e_vdupq_n_s16 (cast (a.[ mk_usize 1 ] <: u8) <: i16)
   in
   let (shifter: t_Array i16 (mk_usize 8)):t_Array i16 (mk_usize 8) =
     let list =
@@ -55,16 +55,16 @@ let deserialize_1_ (a: t_Slice u8) =
     FStar.Pervasives.assert_norm (Prims.eq2 (List.Tot.length list) 8);
     Rust_primitives.Hax.array_of_list 8 list
   in
-  let shift:u8 = Libcrux_intrinsics.Arm64_extract.v__vld1q_s16 (shifter <: t_Slice i16) in
-  let low:u8 = Libcrux_intrinsics.Arm64_extract.v__vshlq_s16 low shift in
-  let high:u8 = Libcrux_intrinsics.Arm64_extract.v__vshlq_s16 high shift in
+  let shift:u8 = Libcrux_intrinsics.Arm64_extract.e_vld1q_s16 (shifter <: t_Slice i16) in
+  let low:u8 = Libcrux_intrinsics.Arm64_extract.e_vshlq_s16 low shift in
+  let high:u8 = Libcrux_intrinsics.Arm64_extract.e_vshlq_s16 high shift in
   {
     Libcrux_ml_kem.Vector.Neon.Vector_type.f_low
     =
-    Libcrux_intrinsics.Arm64_extract.v__vandq_s16 low one;
+    Libcrux_intrinsics.Arm64_extract.e_vandq_s16 low one;
     Libcrux_ml_kem.Vector.Neon.Vector_type.f_high
     =
-    Libcrux_intrinsics.Arm64_extract.v__vandq_s16 high one
+    Libcrux_intrinsics.Arm64_extract.e_vandq_s16 high one
   }
   <:
   Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector
@@ -75,23 +75,23 @@ let serialize_4_ (v: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) =
     FStar.Pervasives.assert_norm (Prims.eq2 (List.Tot.length list) 8);
     Rust_primitives.Hax.array_of_list 8 list
   in
-  let shift:u8 = Libcrux_intrinsics.Arm64_extract.v__vld1q_s16 (shifter <: t_Slice i16) in
+  let shift:u8 = Libcrux_intrinsics.Arm64_extract.e_vld1q_s16 (shifter <: t_Slice i16) in
   let lowt:u8 =
-    Libcrux_intrinsics.Arm64_extract.v__vshlq_u16 (Libcrux_intrinsics.Arm64_extract.v__vreinterpretq_u16_s16
+    Libcrux_intrinsics.Arm64_extract.e_vshlq_u16 (Libcrux_intrinsics.Arm64_extract.e_vreinterpretq_u16_s16
           v.Libcrux_ml_kem.Vector.Neon.Vector_type.f_low
         <:
         u8)
       shift
   in
   let hight:u8 =
-    Libcrux_intrinsics.Arm64_extract.v__vshlq_u16 (Libcrux_intrinsics.Arm64_extract.v__vreinterpretq_u16_s16
+    Libcrux_intrinsics.Arm64_extract.e_vshlq_u16 (Libcrux_intrinsics.Arm64_extract.e_vreinterpretq_u16_s16
           v.Libcrux_ml_kem.Vector.Neon.Vector_type.f_high
         <:
         u8)
       shift
   in
   let sum0:u64 =
-    cast (Libcrux_intrinsics.Arm64_extract.v__vaddv_u16 (Libcrux_intrinsics.Arm64_extract.v__vget_low_u16
+    cast (Libcrux_intrinsics.Arm64_extract.e_vaddv_u16 (Libcrux_intrinsics.Arm64_extract.e_vget_low_u16
               lowt
             <:
             u8)
@@ -101,7 +101,7 @@ let serialize_4_ (v: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) =
     u64
   in
   let sum1:u64 =
-    cast (Libcrux_intrinsics.Arm64_extract.v__vaddv_u16 (Libcrux_intrinsics.Arm64_extract.v__vget_high_u16
+    cast (Libcrux_intrinsics.Arm64_extract.e_vaddv_u16 (Libcrux_intrinsics.Arm64_extract.e_vget_high_u16
               lowt
             <:
             u8)
@@ -111,7 +111,7 @@ let serialize_4_ (v: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) =
     u64
   in
   let sum2:u64 =
-    cast (Libcrux_intrinsics.Arm64_extract.v__vaddv_u16 (Libcrux_intrinsics.Arm64_extract.v__vget_low_u16
+    cast (Libcrux_intrinsics.Arm64_extract.e_vaddv_u16 (Libcrux_intrinsics.Arm64_extract.e_vget_low_u16
               hight
             <:
             u8)
@@ -121,7 +121,7 @@ let serialize_4_ (v: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) =
     u64
   in
   let sum3:u64 =
-    cast (Libcrux_intrinsics.Arm64_extract.v__vaddv_u16 (Libcrux_intrinsics.Arm64_extract.v__vget_high_u16
+    cast (Libcrux_intrinsics.Arm64_extract.e_vaddv_u16 (Libcrux_intrinsics.Arm64_extract.e_vget_high_u16
               hight
             <:
             u8)
@@ -134,7 +134,7 @@ let serialize_4_ (v: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) =
     ((sum0 |. (sum1 <<! mk_i32 16 <: u64) <: u64) |. (sum2 <<! mk_i32 32 <: u64) <: u64) |.
     (sum3 <<! mk_i32 48 <: u64)
   in
-  Core.Num.impl__u64__to_le_bytes sum
+  Core.Num.impl_u64__to_le_bytes sum
 
 let deserialize_4_ (v: t_Slice u8) =
   let input:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
@@ -150,7 +150,7 @@ let deserialize_4_ (v: t_Slice u8) =
   {
     Libcrux_ml_kem.Vector.Neon.Vector_type.f_low
     =
-    Libcrux_intrinsics.Arm64_extract.v__vld1q_s16 (input_i16s.[ {
+    Libcrux_intrinsics.Arm64_extract.e_vld1q_s16 (input_i16s.[ {
             Core.Ops.Range.f_start = mk_usize 0;
             Core.Ops.Range.f_end = mk_usize 8
           }
@@ -160,7 +160,7 @@ let deserialize_4_ (v: t_Slice u8) =
         t_Slice i16);
     Libcrux_ml_kem.Vector.Neon.Vector_type.f_high
     =
-    Libcrux_intrinsics.Arm64_extract.v__vld1q_s16 (input_i16s.[ {
+    Libcrux_intrinsics.Arm64_extract.e_vld1q_s16 (input_i16s.[ {
             Core.Ops.Range.f_start = mk_usize 8;
             Core.Ops.Range.f_end = mk_usize 16
           }
@@ -197,7 +197,7 @@ let deserialize_5_ (v: t_Slice u8) =
   {
     Libcrux_ml_kem.Vector.Neon.Vector_type.f_low
     =
-    Libcrux_intrinsics.Arm64_extract.v__vld1q_s16 (array.[ {
+    Libcrux_intrinsics.Arm64_extract.e_vld1q_s16 (array.[ {
             Core.Ops.Range.f_start = mk_usize 0;
             Core.Ops.Range.f_end = mk_usize 8
           }
@@ -207,7 +207,7 @@ let deserialize_5_ (v: t_Slice u8) =
         t_Slice i16);
     Libcrux_ml_kem.Vector.Neon.Vector_type.f_high
     =
-    Libcrux_intrinsics.Arm64_extract.v__vld1q_s16 (array.[ {
+    Libcrux_intrinsics.Arm64_extract.e_vld1q_s16 (array.[ {
             Core.Ops.Range.f_start = mk_usize 8;
             Core.Ops.Range.f_end = mk_usize 16
           }
@@ -221,72 +221,72 @@ let deserialize_5_ (v: t_Slice u8) =
 
 let serialize_10_ (v: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) =
   let low0:u8 =
-    Libcrux_intrinsics.Arm64_extract.v__vreinterpretq_s32_s16 (Libcrux_intrinsics.Arm64_extract.v__vtrn1q_s16
+    Libcrux_intrinsics.Arm64_extract.e_vreinterpretq_s32_s16 (Libcrux_intrinsics.Arm64_extract.e_vtrn1q_s16
           v.Libcrux_ml_kem.Vector.Neon.Vector_type.f_low
           v.Libcrux_ml_kem.Vector.Neon.Vector_type.f_low
         <:
         u8)
   in
   let low1:u8 =
-    Libcrux_intrinsics.Arm64_extract.v__vreinterpretq_s32_s16 (Libcrux_intrinsics.Arm64_extract.v__vtrn2q_s16
+    Libcrux_intrinsics.Arm64_extract.e_vreinterpretq_s32_s16 (Libcrux_intrinsics.Arm64_extract.e_vtrn2q_s16
           v.Libcrux_ml_kem.Vector.Neon.Vector_type.f_low
           v.Libcrux_ml_kem.Vector.Neon.Vector_type.f_low
         <:
         u8)
   in
-  let mixt:u8 = Libcrux_intrinsics.Arm64_extract.v__vsliq_n_s32 (mk_i32 10) low0 low1 in
+  let mixt:u8 = Libcrux_intrinsics.Arm64_extract.e_vsliq_n_s32 (mk_i32 10) low0 low1 in
   let low0:u8 =
-    Libcrux_intrinsics.Arm64_extract.v__vreinterpretq_s64_s32 (Libcrux_intrinsics.Arm64_extract.v__vtrn1q_s32
+    Libcrux_intrinsics.Arm64_extract.e_vreinterpretq_s64_s32 (Libcrux_intrinsics.Arm64_extract.e_vtrn1q_s32
           mixt
           mixt
         <:
         u8)
   in
   let low1:u8 =
-    Libcrux_intrinsics.Arm64_extract.v__vreinterpretq_s64_s32 (Libcrux_intrinsics.Arm64_extract.v__vtrn2q_s32
+    Libcrux_intrinsics.Arm64_extract.e_vreinterpretq_s64_s32 (Libcrux_intrinsics.Arm64_extract.e_vtrn2q_s32
           mixt
           mixt
         <:
         u8)
   in
-  let low_mix:u8 = Libcrux_intrinsics.Arm64_extract.v__vsliq_n_s64 (mk_i32 20) low0 low1 in
+  let low_mix:u8 = Libcrux_intrinsics.Arm64_extract.e_vsliq_n_s64 (mk_i32 20) low0 low1 in
   let high0:u8 =
-    Libcrux_intrinsics.Arm64_extract.v__vreinterpretq_s32_s16 (Libcrux_intrinsics.Arm64_extract.v__vtrn1q_s16
+    Libcrux_intrinsics.Arm64_extract.e_vreinterpretq_s32_s16 (Libcrux_intrinsics.Arm64_extract.e_vtrn1q_s16
           v.Libcrux_ml_kem.Vector.Neon.Vector_type.f_high
           v.Libcrux_ml_kem.Vector.Neon.Vector_type.f_high
         <:
         u8)
   in
   let high1:u8 =
-    Libcrux_intrinsics.Arm64_extract.v__vreinterpretq_s32_s16 (Libcrux_intrinsics.Arm64_extract.v__vtrn2q_s16
+    Libcrux_intrinsics.Arm64_extract.e_vreinterpretq_s32_s16 (Libcrux_intrinsics.Arm64_extract.e_vtrn2q_s16
           v.Libcrux_ml_kem.Vector.Neon.Vector_type.f_high
           v.Libcrux_ml_kem.Vector.Neon.Vector_type.f_high
         <:
         u8)
   in
-  let mixt:u8 = Libcrux_intrinsics.Arm64_extract.v__vsliq_n_s32 (mk_i32 10) high0 high1 in
+  let mixt:u8 = Libcrux_intrinsics.Arm64_extract.e_vsliq_n_s32 (mk_i32 10) high0 high1 in
   let high0:u8 =
-    Libcrux_intrinsics.Arm64_extract.v__vreinterpretq_s64_s32 (Libcrux_intrinsics.Arm64_extract.v__vtrn1q_s32
+    Libcrux_intrinsics.Arm64_extract.e_vreinterpretq_s64_s32 (Libcrux_intrinsics.Arm64_extract.e_vtrn1q_s32
           mixt
           mixt
         <:
         u8)
   in
   let high1:u8 =
-    Libcrux_intrinsics.Arm64_extract.v__vreinterpretq_s64_s32 (Libcrux_intrinsics.Arm64_extract.v__vtrn2q_s32
+    Libcrux_intrinsics.Arm64_extract.e_vreinterpretq_s64_s32 (Libcrux_intrinsics.Arm64_extract.e_vtrn2q_s32
           mixt
           mixt
         <:
         u8)
   in
-  let high_mix:u8 = Libcrux_intrinsics.Arm64_extract.v__vsliq_n_s64 (mk_i32 20) high0 high1 in
+  let high_mix:u8 = Libcrux_intrinsics.Arm64_extract.e_vsliq_n_s64 (mk_i32 20) high0 high1 in
   let result32:t_Array u8 (mk_usize 32) = Rust_primitives.Hax.repeat (mk_u8 0) (mk_usize 32) in
   let result32:t_Array u8 (mk_usize 32) =
     Rust_primitives.Hax.Monomorphized_update_at.update_at_range result32
       ({ Core.Ops.Range.f_start = mk_usize 0; Core.Ops.Range.f_end = mk_usize 16 }
         <:
         Core.Ops.Range.t_Range usize)
-      (Libcrux_intrinsics.Arm64_extract.v__vst1q_u8 (result32.[ {
+      (Libcrux_intrinsics.Arm64_extract.e_vst1q_u8 (result32.[ {
                 Core.Ops.Range.f_start = mk_usize 0;
                 Core.Ops.Range.f_end = mk_usize 16
               }
@@ -294,7 +294,7 @@ let serialize_10_ (v: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) =
               Core.Ops.Range.t_Range usize ]
             <:
             t_Slice u8)
-          (Libcrux_intrinsics.Arm64_extract.v__vreinterpretq_u8_s64 low_mix <: u8)
+          (Libcrux_intrinsics.Arm64_extract.e_vreinterpretq_u8_s64 low_mix <: u8)
         <:
         t_Slice u8)
   in
@@ -303,7 +303,7 @@ let serialize_10_ (v: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) =
       ({ Core.Ops.Range.f_start = mk_usize 16; Core.Ops.Range.f_end = mk_usize 32 }
         <:
         Core.Ops.Range.t_Range usize)
-      (Libcrux_intrinsics.Arm64_extract.v__vst1q_u8 (result32.[ {
+      (Libcrux_intrinsics.Arm64_extract.e_vst1q_u8 (result32.[ {
                 Core.Ops.Range.f_start = mk_usize 16;
                 Core.Ops.Range.f_end = mk_usize 32
               }
@@ -311,7 +311,7 @@ let serialize_10_ (v: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) =
               Core.Ops.Range.t_Range usize ]
             <:
             t_Slice u8)
-          (Libcrux_intrinsics.Arm64_extract.v__vreinterpretq_u8_s64 high_mix <: u8)
+          (Libcrux_intrinsics.Arm64_extract.e_vreinterpretq_u8_s64 high_mix <: u8)
         <:
         t_Slice u8)
   in
@@ -408,7 +408,7 @@ let deserialize_10_ (v: t_Slice u8) =
   {
     Libcrux_ml_kem.Vector.Neon.Vector_type.f_low
     =
-    Libcrux_intrinsics.Arm64_extract.v__vld1q_s16 (array.[ {
+    Libcrux_intrinsics.Arm64_extract.e_vld1q_s16 (array.[ {
             Core.Ops.Range.f_start = mk_usize 0;
             Core.Ops.Range.f_end = mk_usize 8
           }
@@ -418,7 +418,7 @@ let deserialize_10_ (v: t_Slice u8) =
         t_Slice i16);
     Libcrux_ml_kem.Vector.Neon.Vector_type.f_high
     =
-    Libcrux_intrinsics.Arm64_extract.v__vld1q_s16 (array.[ {
+    Libcrux_intrinsics.Arm64_extract.e_vld1q_s16 (array.[ {
             Core.Ops.Range.f_start = mk_usize 8;
             Core.Ops.Range.f_end = mk_usize 16
           }
@@ -455,7 +455,7 @@ let deserialize_11_ (v: t_Slice u8) =
   {
     Libcrux_ml_kem.Vector.Neon.Vector_type.f_low
     =
-    Libcrux_intrinsics.Arm64_extract.v__vld1q_s16 (array.[ {
+    Libcrux_intrinsics.Arm64_extract.e_vld1q_s16 (array.[ {
             Core.Ops.Range.f_start = mk_usize 0;
             Core.Ops.Range.f_end = mk_usize 8
           }
@@ -465,7 +465,7 @@ let deserialize_11_ (v: t_Slice u8) =
         t_Slice i16);
     Libcrux_ml_kem.Vector.Neon.Vector_type.f_high
     =
-    Libcrux_intrinsics.Arm64_extract.v__vld1q_s16 (array.[ {
+    Libcrux_intrinsics.Arm64_extract.e_vld1q_s16 (array.[ {
             Core.Ops.Range.f_start = mk_usize 8;
             Core.Ops.Range.f_end = mk_usize 16
           }
@@ -479,72 +479,72 @@ let deserialize_11_ (v: t_Slice u8) =
 
 let serialize_12_ (v: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) =
   let low0:u8 =
-    Libcrux_intrinsics.Arm64_extract.v__vreinterpretq_s32_s16 (Libcrux_intrinsics.Arm64_extract.v__vtrn1q_s16
+    Libcrux_intrinsics.Arm64_extract.e_vreinterpretq_s32_s16 (Libcrux_intrinsics.Arm64_extract.e_vtrn1q_s16
           v.Libcrux_ml_kem.Vector.Neon.Vector_type.f_low
           v.Libcrux_ml_kem.Vector.Neon.Vector_type.f_low
         <:
         u8)
   in
   let low1:u8 =
-    Libcrux_intrinsics.Arm64_extract.v__vreinterpretq_s32_s16 (Libcrux_intrinsics.Arm64_extract.v__vtrn2q_s16
+    Libcrux_intrinsics.Arm64_extract.e_vreinterpretq_s32_s16 (Libcrux_intrinsics.Arm64_extract.e_vtrn2q_s16
           v.Libcrux_ml_kem.Vector.Neon.Vector_type.f_low
           v.Libcrux_ml_kem.Vector.Neon.Vector_type.f_low
         <:
         u8)
   in
-  let mixt:u8 = Libcrux_intrinsics.Arm64_extract.v__vsliq_n_s32 (mk_i32 12) low0 low1 in
+  let mixt:u8 = Libcrux_intrinsics.Arm64_extract.e_vsliq_n_s32 (mk_i32 12) low0 low1 in
   let low0:u8 =
-    Libcrux_intrinsics.Arm64_extract.v__vreinterpretq_s64_s32 (Libcrux_intrinsics.Arm64_extract.v__vtrn1q_s32
+    Libcrux_intrinsics.Arm64_extract.e_vreinterpretq_s64_s32 (Libcrux_intrinsics.Arm64_extract.e_vtrn1q_s32
           mixt
           mixt
         <:
         u8)
   in
   let low1:u8 =
-    Libcrux_intrinsics.Arm64_extract.v__vreinterpretq_s64_s32 (Libcrux_intrinsics.Arm64_extract.v__vtrn2q_s32
+    Libcrux_intrinsics.Arm64_extract.e_vreinterpretq_s64_s32 (Libcrux_intrinsics.Arm64_extract.e_vtrn2q_s32
           mixt
           mixt
         <:
         u8)
   in
-  let low_mix:u8 = Libcrux_intrinsics.Arm64_extract.v__vsliq_n_s64 (mk_i32 24) low0 low1 in
+  let low_mix:u8 = Libcrux_intrinsics.Arm64_extract.e_vsliq_n_s64 (mk_i32 24) low0 low1 in
   let high0:u8 =
-    Libcrux_intrinsics.Arm64_extract.v__vreinterpretq_s32_s16 (Libcrux_intrinsics.Arm64_extract.v__vtrn1q_s16
+    Libcrux_intrinsics.Arm64_extract.e_vreinterpretq_s32_s16 (Libcrux_intrinsics.Arm64_extract.e_vtrn1q_s16
           v.Libcrux_ml_kem.Vector.Neon.Vector_type.f_high
           v.Libcrux_ml_kem.Vector.Neon.Vector_type.f_high
         <:
         u8)
   in
   let high1:u8 =
-    Libcrux_intrinsics.Arm64_extract.v__vreinterpretq_s32_s16 (Libcrux_intrinsics.Arm64_extract.v__vtrn2q_s16
+    Libcrux_intrinsics.Arm64_extract.e_vreinterpretq_s32_s16 (Libcrux_intrinsics.Arm64_extract.e_vtrn2q_s16
           v.Libcrux_ml_kem.Vector.Neon.Vector_type.f_high
           v.Libcrux_ml_kem.Vector.Neon.Vector_type.f_high
         <:
         u8)
   in
-  let mixt:u8 = Libcrux_intrinsics.Arm64_extract.v__vsliq_n_s32 (mk_i32 12) high0 high1 in
+  let mixt:u8 = Libcrux_intrinsics.Arm64_extract.e_vsliq_n_s32 (mk_i32 12) high0 high1 in
   let high0:u8 =
-    Libcrux_intrinsics.Arm64_extract.v__vreinterpretq_s64_s32 (Libcrux_intrinsics.Arm64_extract.v__vtrn1q_s32
+    Libcrux_intrinsics.Arm64_extract.e_vreinterpretq_s64_s32 (Libcrux_intrinsics.Arm64_extract.e_vtrn1q_s32
           mixt
           mixt
         <:
         u8)
   in
   let high1:u8 =
-    Libcrux_intrinsics.Arm64_extract.v__vreinterpretq_s64_s32 (Libcrux_intrinsics.Arm64_extract.v__vtrn2q_s32
+    Libcrux_intrinsics.Arm64_extract.e_vreinterpretq_s64_s32 (Libcrux_intrinsics.Arm64_extract.e_vtrn2q_s32
           mixt
           mixt
         <:
         u8)
   in
-  let high_mix:u8 = Libcrux_intrinsics.Arm64_extract.v__vsliq_n_s64 (mk_i32 24) high0 high1 in
+  let high_mix:u8 = Libcrux_intrinsics.Arm64_extract.e_vsliq_n_s64 (mk_i32 24) high0 high1 in
   let result32:t_Array u8 (mk_usize 32) = Rust_primitives.Hax.repeat (mk_u8 0) (mk_usize 32) in
   let result32:t_Array u8 (mk_usize 32) =
     Rust_primitives.Hax.Monomorphized_update_at.update_at_range result32
       ({ Core.Ops.Range.f_start = mk_usize 0; Core.Ops.Range.f_end = mk_usize 16 }
         <:
         Core.Ops.Range.t_Range usize)
-      (Libcrux_intrinsics.Arm64_extract.v__vst1q_u8 (result32.[ {
+      (Libcrux_intrinsics.Arm64_extract.e_vst1q_u8 (result32.[ {
                 Core.Ops.Range.f_start = mk_usize 0;
                 Core.Ops.Range.f_end = mk_usize 16
               }
@@ -552,7 +552,7 @@ let serialize_12_ (v: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) =
               Core.Ops.Range.t_Range usize ]
             <:
             t_Slice u8)
-          (Libcrux_intrinsics.Arm64_extract.v__vreinterpretq_u8_s64 low_mix <: u8)
+          (Libcrux_intrinsics.Arm64_extract.e_vreinterpretq_u8_s64 low_mix <: u8)
         <:
         t_Slice u8)
   in
@@ -561,7 +561,7 @@ let serialize_12_ (v: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) =
       ({ Core.Ops.Range.f_start = mk_usize 16; Core.Ops.Range.f_end = mk_usize 32 }
         <:
         Core.Ops.Range.t_Range usize)
-      (Libcrux_intrinsics.Arm64_extract.v__vst1q_u8 (result32.[ {
+      (Libcrux_intrinsics.Arm64_extract.e_vst1q_u8 (result32.[ {
                 Core.Ops.Range.f_start = mk_usize 16;
                 Core.Ops.Range.f_end = mk_usize 32
               }
@@ -569,7 +569,7 @@ let serialize_12_ (v: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) =
               Core.Ops.Range.t_Range usize ]
             <:
             t_Slice u8)
-          (Libcrux_intrinsics.Arm64_extract.v__vreinterpretq_u8_s64 high_mix <: u8)
+          (Libcrux_intrinsics.Arm64_extract.e_vreinterpretq_u8_s64 high_mix <: u8)
         <:
         t_Slice u8)
   in
@@ -663,7 +663,7 @@ let deserialize_12_ (v: t_Slice u8) =
     FStar.Pervasives.assert_norm (Prims.eq2 (List.Tot.length list) 16);
     Rust_primitives.Hax.array_of_list 16 list
   in
-  let index_vec:u8 = Libcrux_intrinsics.Arm64_extract.v__vld1q_u8 (indexes <: t_Slice u8) in
+  let index_vec:u8 = Libcrux_intrinsics.Arm64_extract.e_vld1q_u8 (indexes <: t_Slice u8) in
   let (shifts: t_Array i16 (mk_usize 8)):t_Array i16 (mk_usize 8) =
     let list =
       [mk_i16 0; mk_i16 (-4); mk_i16 0; mk_i16 (-4); mk_i16 0; mk_i16 (-4); mk_i16 0; mk_i16 (-4)]
@@ -671,8 +671,8 @@ let deserialize_12_ (v: t_Slice u8) =
     FStar.Pervasives.assert_norm (Prims.eq2 (List.Tot.length list) 8);
     Rust_primitives.Hax.array_of_list 8 list
   in
-  let shift_vec:u8 = Libcrux_intrinsics.Arm64_extract.v__vld1q_s16 (shifts <: t_Slice i16) in
-  let mask12:u8 = Libcrux_intrinsics.Arm64_extract.v__vdupq_n_u16 (mk_u16 4095) in
+  let shift_vec:u8 = Libcrux_intrinsics.Arm64_extract.e_vld1q_s16 (shifts <: t_Slice i16) in
+  let mask12:u8 = Libcrux_intrinsics.Arm64_extract.e_vdupq_n_u16 (mk_u16 4095) in
   let input0:t_Array u8 (mk_usize 16) = Rust_primitives.Hax.repeat (mk_u8 0) (mk_usize 16) in
   let input0:t_Array u8 (mk_usize 16) =
     Rust_primitives.Hax.Monomorphized_update_at.update_at_range input0
@@ -693,7 +693,7 @@ let deserialize_12_ (v: t_Slice u8) =
         <:
         t_Slice u8)
   in
-  let input_vec0:u8 = Libcrux_intrinsics.Arm64_extract.v__vld1q_u8 (input0 <: t_Slice u8) in
+  let input_vec0:u8 = Libcrux_intrinsics.Arm64_extract.e_vld1q_u8 (input0 <: t_Slice u8) in
   let input1:t_Array u8 (mk_usize 16) = Rust_primitives.Hax.repeat (mk_u8 0) (mk_usize 16) in
   let input1:t_Array u8 (mk_usize 16) =
     Rust_primitives.Hax.Monomorphized_update_at.update_at_range input1
@@ -714,32 +714,32 @@ let deserialize_12_ (v: t_Slice u8) =
         <:
         t_Slice u8)
   in
-  let input_vec1:u8 = Libcrux_intrinsics.Arm64_extract.v__vld1q_u8 (input1 <: t_Slice u8) in
+  let input_vec1:u8 = Libcrux_intrinsics.Arm64_extract.e_vld1q_u8 (input1 <: t_Slice u8) in
   let moved0:u8 =
-    Libcrux_intrinsics.Arm64_extract.v__vreinterpretq_u16_u8 (Libcrux_intrinsics.Arm64_extract.v__vqtbl1q_u8
+    Libcrux_intrinsics.Arm64_extract.e_vreinterpretq_u16_u8 (Libcrux_intrinsics.Arm64_extract.e_vqtbl1q_u8
           input_vec0
           index_vec
         <:
         u8)
   in
-  let shifted0:u8 = Libcrux_intrinsics.Arm64_extract.v__vshlq_u16 moved0 shift_vec in
+  let shifted0:u8 = Libcrux_intrinsics.Arm64_extract.e_vshlq_u16 moved0 shift_vec in
   let low:u8 =
-    Libcrux_intrinsics.Arm64_extract.v__vreinterpretq_s16_u16 (Libcrux_intrinsics.Arm64_extract.v__vandq_u16
+    Libcrux_intrinsics.Arm64_extract.e_vreinterpretq_s16_u16 (Libcrux_intrinsics.Arm64_extract.e_vandq_u16
           shifted0
           mask12
         <:
         u8)
   in
   let moved1:u8 =
-    Libcrux_intrinsics.Arm64_extract.v__vreinterpretq_u16_u8 (Libcrux_intrinsics.Arm64_extract.v__vqtbl1q_u8
+    Libcrux_intrinsics.Arm64_extract.e_vreinterpretq_u16_u8 (Libcrux_intrinsics.Arm64_extract.e_vqtbl1q_u8
           input_vec1
           index_vec
         <:
         u8)
   in
-  let shifted1:u8 = Libcrux_intrinsics.Arm64_extract.v__vshlq_u16 moved1 shift_vec in
+  let shifted1:u8 = Libcrux_intrinsics.Arm64_extract.e_vshlq_u16 moved1 shift_vec in
   let high:u8 =
-    Libcrux_intrinsics.Arm64_extract.v__vreinterpretq_s16_u16 (Libcrux_intrinsics.Arm64_extract.v__vandq_u16
+    Libcrux_intrinsics.Arm64_extract.e_vreinterpretq_s16_u16 (Libcrux_intrinsics.Arm64_extract.e_vandq_u16
           shifted1
           mask12
         <:

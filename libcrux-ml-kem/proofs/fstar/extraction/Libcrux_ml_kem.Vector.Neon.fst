@@ -191,10 +191,10 @@ Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector =
     =
     (fun (v_SHIFT_BY: i32) (v: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) ->
         Libcrux_ml_kem.Vector.Neon.Arithmetic.shift_right v_SHIFT_BY v);
-    f_cond_subtract_3329_pre
+    f_cond_subtract_3329__pre
     =
     (fun (v: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) -> true);
-    f_cond_subtract_3329_post
+    f_cond_subtract_3329__post
     =
     (fun
         (v: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector)
@@ -232,8 +232,8 @@ Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector =
     =
     (fun (v: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) (c: i16) ->
         Libcrux_ml_kem.Vector.Neon.Arithmetic.montgomery_multiply_by_constant v c);
-    f_compress_1_pre = (fun (v: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) -> true);
-    f_compress_1_post
+    f_compress_1__pre = (fun (v: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) -> true);
+    f_compress_1__post
     =
     (fun
         (v: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector)
@@ -436,8 +436,8 @@ Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector =
         (zeta4: i16)
         ->
         Libcrux_ml_kem.Vector.Neon.Ntt.ntt_multiply lhs rhs zeta1 zeta2 zeta3 zeta4);
-    f_serialize_1_pre = (fun (a: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) -> true);
-    f_serialize_1_post
+    f_serialize_1__pre = (fun (a: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) -> true);
+    f_serialize_1__post
     =
     (fun
         (a: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector)
@@ -448,15 +448,15 @@ Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector =
     =
     (fun (a: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) ->
         Libcrux_ml_kem.Vector.Neon.Serialize.serialize_1_ a);
-    f_deserialize_1_pre = (fun (a: t_Slice u8) -> true);
-    f_deserialize_1_post
+    f_deserialize_1__pre = (fun (a: t_Slice u8) -> true);
+    f_deserialize_1__post
     =
     (fun (a: t_Slice u8) (out: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) -> true);
     f_deserialize_1_
     =
     (fun (a: t_Slice u8) -> Libcrux_ml_kem.Vector.Neon.Serialize.deserialize_1_ a);
-    f_serialize_4_pre = (fun (a: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) -> true);
-    f_serialize_4_post
+    f_serialize_4__pre = (fun (a: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) -> true);
+    f_serialize_4__post
     =
     (fun
         (a: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector)
@@ -467,15 +467,15 @@ Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector =
     =
     (fun (a: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) ->
         Libcrux_ml_kem.Vector.Neon.Serialize.serialize_4_ a);
-    f_deserialize_4_pre = (fun (a: t_Slice u8) -> true);
-    f_deserialize_4_post
+    f_deserialize_4__pre = (fun (a: t_Slice u8) -> true);
+    f_deserialize_4__post
     =
     (fun (a: t_Slice u8) (out: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) -> true);
     f_deserialize_4_
     =
     (fun (a: t_Slice u8) -> Libcrux_ml_kem.Vector.Neon.Serialize.deserialize_4_ a);
-    f_serialize_5_pre = (fun (a: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) -> true);
-    f_serialize_5_post
+    f_serialize_5__pre = (fun (a: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) -> true);
+    f_serialize_5__post
     =
     (fun
         (a: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector)
@@ -486,15 +486,15 @@ Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector =
     =
     (fun (a: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) ->
         Libcrux_ml_kem.Vector.Neon.Serialize.serialize_5_ a);
-    f_deserialize_5_pre = (fun (a: t_Slice u8) -> true);
-    f_deserialize_5_post
+    f_deserialize_5__pre = (fun (a: t_Slice u8) -> true);
+    f_deserialize_5__post
     =
     (fun (a: t_Slice u8) (out: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) -> true);
     f_deserialize_5_
     =
     (fun (a: t_Slice u8) -> Libcrux_ml_kem.Vector.Neon.Serialize.deserialize_5_ a);
-    f_serialize_10_pre = (fun (a: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) -> true);
-    f_serialize_10_post
+    f_serialize_10__pre = (fun (a: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) -> true);
+    f_serialize_10__post
     =
     (fun
         (a: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector)
@@ -505,15 +505,15 @@ Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector =
     =
     (fun (a: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) ->
         Libcrux_ml_kem.Vector.Neon.Serialize.serialize_10_ a);
-    f_deserialize_10_pre = (fun (a: t_Slice u8) -> true);
-    f_deserialize_10_post
+    f_deserialize_10__pre = (fun (a: t_Slice u8) -> true);
+    f_deserialize_10__post
     =
     (fun (a: t_Slice u8) (out: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) -> true);
     f_deserialize_10_
     =
     (fun (a: t_Slice u8) -> Libcrux_ml_kem.Vector.Neon.Serialize.deserialize_10_ a);
-    f_serialize_11_pre = (fun (a: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) -> true);
-    f_serialize_11_post
+    f_serialize_11__pre = (fun (a: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) -> true);
+    f_serialize_11__post
     =
     (fun
         (a: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector)
@@ -524,15 +524,15 @@ Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector =
     =
     (fun (a: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) ->
         Libcrux_ml_kem.Vector.Neon.Serialize.serialize_11_ a);
-    f_deserialize_11_pre = (fun (a: t_Slice u8) -> true);
-    f_deserialize_11_post
+    f_deserialize_11__pre = (fun (a: t_Slice u8) -> true);
+    f_deserialize_11__post
     =
     (fun (a: t_Slice u8) (out: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) -> true);
     f_deserialize_11_
     =
     (fun (a: t_Slice u8) -> Libcrux_ml_kem.Vector.Neon.Serialize.deserialize_11_ a);
-    f_serialize_12_pre = (fun (a: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) -> true);
-    f_serialize_12_post
+    f_serialize_12__pre = (fun (a: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) -> true);
+    f_serialize_12__post
     =
     (fun
         (a: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector)
@@ -543,8 +543,8 @@ Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector =
     =
     (fun (a: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) ->
         Libcrux_ml_kem.Vector.Neon.Serialize.serialize_12_ a);
-    f_deserialize_12_pre = (fun (a: t_Slice u8) -> true);
-    f_deserialize_12_post
+    f_deserialize_12__pre = (fun (a: t_Slice u8) -> true);
+    f_deserialize_12__post
     =
     (fun (a: t_Slice u8) (out: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) -> true);
     f_deserialize_12_

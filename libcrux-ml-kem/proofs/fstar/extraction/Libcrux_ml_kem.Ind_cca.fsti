@@ -97,7 +97,7 @@ val validate_private_key
       (#v_Hasher: Type0)
       {| i1: Libcrux_ml_kem.Hash_functions.t_Hash v_Hasher v_K |}
       (private_key: Libcrux_ml_kem.Types.t_MlKemPrivateKey v_SECRET_KEY_SIZE)
-      (v__ciphertext: Libcrux_ml_kem.Types.t_MlKemCiphertext v_CIPHERTEXT_SIZE)
+      (e_ciphertext: Libcrux_ml_kem.Types.t_MlKemCiphertext v_CIPHERTEXT_SIZE)
     : Prims.Pure bool
       (requires
         Spec.MLKEM.is_rank v_K /\ v_SECRET_KEY_SIZE == Spec.MLKEM.v_CCA_PRIVATE_KEY_SIZE v_K /\

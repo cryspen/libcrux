@@ -109,7 +109,7 @@ let sample (v_ETA: usize) (input: t_Slice u8) (output: t_Slice i32) =
         <:
         t_Slice i32)
   in
-  let sampled_count:usize = cast (Core.Num.impl__i32__count_ones good_lower_half <: u32) <: usize in
+  let sampled_count:usize = cast (Core.Num.impl_i32__count_ones good_lower_half <: u32) <: usize in
   let upper_shuffles:t_Array u8 (mk_usize 16) =
     Libcrux_ml_dsa.Simd.Avx2.Rejection_sample.Shuffle_table.v_SHUFFLE_TABLE.[ cast (good_upper_half
           <:
@@ -147,6 +147,6 @@ let sample (v_ETA: usize) (input: t_Slice u8) (output: t_Slice i32) =
         t_Slice i32)
   in
   let hax_temp_output:usize =
-    sampled_count +! (cast (Core.Num.impl__i32__count_ones good_upper_half <: u32) <: usize)
+    sampled_count +! (cast (Core.Num.impl_i32__count_ones good_upper_half <: u32) <: usize)
   in
   output, hax_temp_output <: (t_Slice i32 & usize)

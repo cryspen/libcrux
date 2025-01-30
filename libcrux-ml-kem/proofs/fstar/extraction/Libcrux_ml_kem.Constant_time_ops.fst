@@ -4,23 +4,23 @@ open Core
 open FStar.Mul
 
 let inz (value: u8) =
-  let v__orig_value:u8 = value in
+  let e_orig_value:u8 = value in
   let value:u16 = cast (value <: u8) <: u16 in
   let result:u8 =
-    cast ((Core.Num.impl__u16__wrapping_add (~.value <: u16) (mk_u16 1) <: u16) >>! mk_i32 8 <: u16)
+    cast ((Core.Num.impl_u16__wrapping_add (~.value <: u16) (mk_u16 1) <: u16) >>! mk_i32 8 <: u16)
     <:
     u8
   in
   let res:u8 = result &. mk_u8 1 in
   let _:Prims.unit =
-    if v v__orig_value = 0
+    if v e_orig_value = 0
     then
       (assert (value == zero);
         lognot_lemma value;
         assert ((~.value +. (mk_u16 1)) == zero);
-        assert ((Core.Num.impl__u16__wrapping_add (~.value <: u16) (mk_u16 1) <: u16) == zero);
+        assert ((Core.Num.impl_u16__wrapping_add (~.value <: u16) (mk_u16 1) <: u16) == zero);
         logor_lemma value zero;
-        assert ((value |. (Core.Num.impl__u16__wrapping_add (~.value <: u16) (mk_u16 1) <: u16)
+        assert ((value |. (Core.Num.impl_u16__wrapping_add (~.value <: u16) (mk_u16 1) <: u16)
               <:
               u16) ==
             value);
@@ -38,7 +38,7 @@ let inz (value: u8) =
         assert ((v (~.value) + 1) = (pow2 16 - pow2 8) + (pow2 8 - v value));
         assert ((v (~.value) + 1) = (pow2 8 - 1) * pow2 8 + (pow2 8 - v value));
         assert ((v (~.value) + 1) / pow2 8 = (pow2 8 - 1));
-        assert (v ((Core.Num.impl__u16__wrapping_add (~.value <: u16) (mk_u16 1) <: u16) >>!
+        assert (v ((Core.Num.impl_u16__wrapping_add (~.value <: u16) (mk_u16 1) <: u16) >>!
                 (mk_i32 8)) =
             pow2 8 - 1);
         assert (result = ones);
@@ -107,7 +107,7 @@ let compare (lhs rhs: t_Slice u8) =
 #push-options "--ifuel 0 --z3rlimit 50"
 
 let select_ct (lhs rhs: t_Slice u8) (selector: u8) =
-  let mask:u8 = Core.Num.impl__u8__wrapping_sub (is_non_zero selector <: u8) (mk_u8 1) in
+  let mask:u8 = Core.Num.impl_u8__wrapping_sub (is_non_zero selector <: u8) (mk_u8 1) in
   let _:Prims.unit =
     assert (if selector = (mk_u8 0) then mask = ones else mask = zero);
     lognot_lemma mask;
