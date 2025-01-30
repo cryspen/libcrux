@@ -240,24 +240,42 @@ let montgomery_multiply_fe_by_fer (fe fer: i32) =
 
 #pop-options
 
+#push-options "--z3rlimit 150"
+
 let montgomery_multiply_by_constant
       (simd_unit: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients)
       (c: i32)
      =
+  let v__simd_unit0:Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients =
+    Core.Clone.f_clone #Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients
+      #FStar.Tactics.Typeclasses.solve
+      simd_unit
+  in
   let simd_unit:Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients =
     Rust_primitives.Hax.Folds.fold_range (mk_usize 0)
       (Core.Slice.impl__len #i32
           (simd_unit.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values <: t_Slice i32)
         <:
         usize)
-      (fun simd_unit temp_1_ ->
+      (fun simd_unit i ->
           let simd_unit:Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients = simd_unit in
-          let _:usize = temp_1_ in
-          true)
+          let i:usize = i in
+          (forall j.
+              j < v i ==>
+              (let vecj = Seq.index simd_unit.f_values j in
+                (Spec.Utils.is_i32b 8380416 vecj /\
+                  v vecj % 8380417 ==
+                  (v (Seq.index v__simd_unit0.f_values j) * v c * 8265825) % 8380417))) /\
+          (forall j.
+              j >= v i ==> (Seq.index simd_unit.f_values j) == (Seq.index v__simd_unit0.f_values j))
+      )
       simd_unit
       (fun simd_unit i ->
           let simd_unit:Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients = simd_unit in
           let i:usize = i in
+          let _:Prims.unit =
+            Spec.Utils.lemma_mul_i32b (pow2 31) (4190208) simd_unit.f_values.[ i ] c
+          in
           {
             simd_unit with
             Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values
@@ -276,29 +294,46 @@ let montgomery_multiply_by_constant
                     i64)
                 <:
                 i32)
-            <:
-            t_Array i32 (mk_usize 8)
           }
           <:
           Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients)
   in
   simd_unit
 
+#pop-options
+
+#push-options "--z3rlimit 150"
+
 let montgomery_multiply (lhs rhs: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients) =
+  let v__lhs0:Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients =
+    Core.Clone.f_clone #Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients
+      #FStar.Tactics.Typeclasses.solve
+      lhs
+  in
   let lhs:Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients =
     Rust_primitives.Hax.Folds.fold_range (mk_usize 0)
       (Core.Slice.impl__len #i32
           (lhs.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values <: t_Slice i32)
         <:
         usize)
-      (fun lhs temp_1_ ->
+      (fun lhs i ->
           let lhs:Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients = lhs in
-          let _:usize = temp_1_ in
-          true)
+          let i:usize = i in
+          (forall j.
+              j < v i ==>
+              (let vecj = Seq.index lhs.f_values j in
+                (Spec.Utils.is_i32b 8380416 vecj /\
+                  v vecj % 8380417 ==
+                  (v (Seq.index v__lhs0.f_values j) * v (Seq.index rhs.f_values j) * 8265825) %
+                  8380417))) /\
+          (forall j. j >= v i ==> (Seq.index lhs.f_values j) == (Seq.index v__lhs0.f_values j)))
       lhs
       (fun lhs i ->
           let lhs:Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients = lhs in
           let i:usize = i in
+          let _:Prims.unit =
+            Spec.Utils.lemma_mul_i32b (pow2 31) (4190208) lhs.f_values.[ i ] rhs.f_values.[ i ]
+          in
           {
             lhs with
             Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values
@@ -319,13 +354,13 @@ let montgomery_multiply (lhs rhs: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coe
                     i64)
                 <:
                 i32)
-            <:
-            t_Array i32 (mk_usize 8)
           }
           <:
           Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients)
   in
   lhs
+
+#pop-options
 
 let power2round_element (t: i32) =
   let _:Prims.unit =

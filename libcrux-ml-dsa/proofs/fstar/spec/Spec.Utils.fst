@@ -37,6 +37,8 @@ let is_intb (l:nat) (x:int) = (x <= l) && (x >= -l)
 let is_i32b (l:nat) (x:i32) = is_intb l (v x)
 let is_i64b (l:nat) (x:i64) = is_intb l (v x)
 
+let is_i32b_array (l:nat) (x:t_Slice i32) = forall i. i < Seq.length x ==> is_i32b l (Seq.index x i)
+
 #push-options "--z3rlimit 200"
 val lemma_mul_i32b (b1 b2: nat) (n1 n2: i32) 
     : Lemma (requires (is_i32b b1 n1 /\ is_i32b b2 n2 /\ b1 * b2 < pow2 63))

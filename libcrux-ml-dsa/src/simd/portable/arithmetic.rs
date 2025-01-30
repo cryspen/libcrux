@@ -192,15 +192,54 @@ pub(crate) fn montgomery_multiply_fe_by_fer(
 }
 
 #[inline(always)]
+#[hax_lib::fstar::options("--z3rlimit 150")]
+#[hax_lib::requires(fstar!(r#"Spec.Utils.is_i32b 4190208 $c"#))]
+#[hax_lib::ensures(|result| fstar!(r#"
+Spec.Utils.is_i32b_array 8380416 ${simd_unit}_future.f_values /\
+(forall i. i < 8 ==> 
+    (v (Seq.index ${simd_unit}_future.f_values i) % 8380417 == 
+       (v (Seq.index ${simd_unit}.f_values i) * v $c * 8265825) % 8380417))"#))]
 pub(crate) fn montgomery_multiply_by_constant(simd_unit: &mut Coefficients, c: i32) {
+    let _simd_unit0 = simd_unit.clone();
     for i in 0..simd_unit.values.len() {
+        hax_lib::loop_invariant!(|i: usize| {
+            fstar!(
+                r#"
+              (forall j. j < v $i ==>
+	      	  (let vecj = Seq.index ${simd_unit}.f_values j in
+		       (Spec.Utils.is_i32b 8380416 vecj /\
+                v vecj % 8380417 == (v (Seq.index ${_simd_unit0}.f_values j) * v $c * 8265825) % 8380417))) /\
+              (forall j. j >= v $i ==> (Seq.index ${simd_unit}.f_values j) == (Seq.index ${_simd_unit0}.f_values j))"#
+            )
+        });
+        hax_lib::fstar!(r#"Spec.Utils.lemma_mul_i32b (pow2 31) (4190208) ${simd_unit}.f_values.[ $i ] $c"#);
         simd_unit.values[i] = montgomery_reduce_element((simd_unit.values[i] as i64) * (c as i64))
     }
 }
 
 #[inline(always)]
+#[hax_lib::fstar::options("--z3rlimit 150")]
+#[hax_lib::requires(fstar!(r#"forall i. i < 8 ==> Spec.Utils.is_i32b 4190208
+    (Seq.index ${rhs}.f_values i)"#))]
+#[hax_lib::ensures(|result| fstar!(r#"
+Spec.Utils.is_i32b_array 8380416 ${lhs}_future.f_values /\
+(forall i. i < 8 ==> 
+    (v (Seq.index ${lhs}_future.f_values i) % 8380417 == 
+       (v (Seq.index ${lhs}.f_values i) * v (Seq.index ${rhs}.f_values i) * 8265825) % 8380417))"#))]
 pub(crate) fn montgomery_multiply(lhs: &mut Coefficients, rhs: &Coefficients) {
+    let _lhs0 = lhs.clone();
     for i in 0..lhs.values.len() {
+        hax_lib::loop_invariant!(|i: usize| {
+            fstar!(
+                r#"
+              (forall j. j < v $i ==>
+	      	  (let vecj = Seq.index ${lhs}.f_values j in
+		       (Spec.Utils.is_i32b 8380416 vecj /\
+                v vecj % 8380417 == (v (Seq.index ${_lhs0}.f_values j) * v (Seq.index ${rhs}.f_values j) * 8265825) % 8380417))) /\
+              (forall j. j >= v $i ==> (Seq.index ${lhs}.f_values j) == (Seq.index ${_lhs0}.f_values j))"#
+            )
+        });
+        hax_lib::fstar!(r#"Spec.Utils.lemma_mul_i32b (pow2 31) (4190208) ${lhs}.f_values.[ $i ] ${rhs}.f_values.[ $i ]"#);
         lhs.values[i] = montgomery_reduce_element((lhs.values[i] as i64) * (rhs.values[i] as i64))
     }
 }

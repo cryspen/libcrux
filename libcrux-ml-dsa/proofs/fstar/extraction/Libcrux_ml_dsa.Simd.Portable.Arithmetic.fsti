@@ -72,13 +72,29 @@ val montgomery_multiply_by_constant
       (simd_unit: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients)
       (c: i32)
     : Prims.Pure Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients
-      Prims.l_True
-      (fun _ -> Prims.l_True)
+      (requires Spec.Utils.is_i32b 4190208 c)
+      (ensures
+        fun simd_unit_future ->
+          let simd_unit_future:Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients =
+            simd_unit_future
+          in
+          Spec.Utils.is_i32b_array 8380416 simd_unit_future.f_values /\
+          (forall i.
+              i < 8 ==>
+              (v (Seq.index simd_unit_future.f_values i) % 8380417 ==
+                (v (Seq.index simd_unit.f_values i) * v c * 8265825) % 8380417)))
 
 val montgomery_multiply (lhs rhs: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients)
     : Prims.Pure Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients
-      Prims.l_True
-      (fun _ -> Prims.l_True)
+      (requires forall i. i < 8 ==> Spec.Utils.is_i32b 4190208 (Seq.index rhs.f_values i))
+      (ensures
+        fun lhs_future ->
+          let lhs_future:Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients = lhs_future in
+          Spec.Utils.is_i32b_array 8380416 lhs_future.f_values /\
+          (forall i.
+              i < 8 ==>
+              (v (Seq.index lhs_future.f_values i) % 8380417 ==
+                (v (Seq.index lhs.f_values i) * v (Seq.index rhs.f_values i) * 8265825) % 8380417)))
 
 val power2round_element (t: i32) : Prims.Pure (i32 & i32) Prims.l_True (fun _ -> Prims.l_True)
 
