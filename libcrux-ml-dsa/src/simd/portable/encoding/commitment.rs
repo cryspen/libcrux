@@ -49,7 +49,7 @@ Seq.length ${serialized_future} == Seq.length ${serialized} /\
  forall (i: nat {i < 8 * 4}). inp i == out i)
 ")
 })]
-pub fn serialize_4(simd_unit: &Coefficients, serialized: &mut [u8]) {
+fn serialize_4(simd_unit: &Coefficients, serialized: &mut [u8]) {
     // The commitment has coefficients in [0,15] => each coefficient occupies
     // 4 bits.
     cloop! {
@@ -60,8 +60,10 @@ pub fn serialize_4(simd_unit: &Coefficients, serialized: &mut [u8]) {
               let out = bit_vec_of_int_t_array #U8 #(mk_usize 4) $serialized 8 in
               forall (n: nat {n < v i * 8}). out n == inp n
             )")});
+
             let r0 = encode_4(coefficients);
             serialized[i] = r0;
+
             hax_lib::fstar!(r"
                 let inp = bit_vec_of_int_t_array #I32 #(mk_usize 8) ${simd_unit.values} 4 in
                 let out = bit_vec_of_int_t_array #U8  #(mk_usize 4) $serialized 8 in
@@ -106,10 +108,12 @@ pub fn serialize_6(simd_unit: &Coefficients, serialized: &mut [u8]) {
               (forall (n: nat {n < v i * 24}). out n == inp n))"
             )
         });
+
         let (r0, r1, r2) = encode_6(coefficients);
         serialized[3 * i] = r0;
         serialized[3 * i + 1] = r1;
         serialized[3 * i + 2] = r2;
+
         hax_lib::fstar!(
             r"
             let inp = bit_vec_of_int_t_array #I32 #(mk_usize 8) ${simd_unit.values} 6 in
@@ -149,7 +153,7 @@ let d = Seq.length ${serialized} in
    forall (i: nat {i < 8 * d}). inp i == out i))
 ")
 })]
-pub fn serialize(simd_unit: &Coefficients, serialized: &mut [u8]) {
+pub(in crate::simd::portable) fn serialize(simd_unit: &Coefficients, serialized: &mut [u8]) {
     match serialized.len() as u8 {
         4 => serialize_4(simd_unit, serialized),
         6 => serialize_6(simd_unit, serialized),
