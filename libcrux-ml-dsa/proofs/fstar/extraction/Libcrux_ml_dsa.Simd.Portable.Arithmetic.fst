@@ -140,21 +140,105 @@ let get_n_least_significant_bits (n: u8) (value: u64) =
 
 #pop-options
 
+#push-options "--z3rlimit 500 --split_queries always"
+
 let montgomery_reduce_element (value: i64) =
   let t:u64 =
     (get_n_least_significant_bits v_MONTGOMERY_SHIFT (cast (value <: i64) <: u64) <: u64) *!
     Libcrux_ml_dsa.Simd.Traits.v_INVERSE_OF_MODULUS_MOD_MONTGOMERY_R
   in
+  let _:Prims.unit = assert (v t == (v value % pow2 32) * 58728449) in
   let k:i32 = cast (get_n_least_significant_bits v_MONTGOMERY_SHIFT t <: u64) <: i32 in
+  let _:Prims.unit =
+    assert (v k == v t @% pow2 32);
+    assert (v (cast (k <: i32) <: i64) == v k);
+    assert (v (cast (k <: i32) <: i64) < pow2 31);
+    assert (v (cast (k <: i32) <: i64) >= - pow2 31);
+    assert (v (cast (Libcrux_ml_dsa.Simd.Traits.v_FIELD_MODULUS <: i32) <: i64) == 8380417)
+  in
   let k_times_modulus:i64 =
     (cast (k <: i32) <: i64) *! (cast (Libcrux_ml_dsa.Simd.Traits.v_FIELD_MODULUS <: i32) <: i64)
   in
+  let _:Prims.unit =
+    Spec.Utils.lemma_mul_i32b (pow2 31) (8380417) k Libcrux_ml_dsa.Simd.Traits.v_FIELD_MODULUS;
+    assert (Spec.Utils.is_i64b (pow2 31 * 8380417) k_times_modulus)
+  in
   let c:i32 = cast (k_times_modulus >>! v_MONTGOMERY_SHIFT <: i64) <: i32 in
+  let _:Prims.unit =
+    assert (v k_times_modulus < pow2 63);
+    assert (v k_times_modulus / pow2 32 < pow2 31);
+    assert (v c == (v k_times_modulus / pow2 32) @% pow2 32);
+    assert (v c == v k_times_modulus / pow2 32);
+    assert (Spec.Utils.is_i32b 4190209 c)
+  in
   let value_high:i32 = cast (value >>! v_MONTGOMERY_SHIFT <: i64) <: i32 in
-  value_high -! c
+  let _:Prims.unit =
+    assert (v value < pow2 63);
+    assert (v value / pow2 32 < pow2 31);
+    assert (v value_high == (v value / pow2 32) @% pow2 32);
+    Spec.Utils.lemma_div_at_percent (v value) (pow2 32);
+    assert (v value_high == (v value / pow2 32));
+    assert (Spec.Utils.is_i64b (8380416 * 8380416) value ==> Spec.Utils.is_i32b 8265825 value_high);
+    assert (Spec.Utils.is_i32b 8380416 value_high)
+  in
+  let res:i32 = value_high -! c in
+  let _:Prims.unit =
+    assert (Spec.Utils.is_i32b (8380416 + 4190209) res);
+    assert (Spec.Utils.is_i64b (8380416 * pow2 31) value ==> Spec.Utils.is_i32b 58728448 res)
+  in
+  let _:Prims.unit =
+    calc ( == ) {
+      v k_times_modulus % pow2 32;
+      ( == ) { assert (v k_times_modulus == v k * 8380417) }
+      (v k * 8380417) % pow2 32;
+      ( == ) { assert (v k = ((v value % pow2 32) * 58728449) @% pow2 32) }
+      ((((v value % pow2 32) * 58728449) @% pow2 32) * 8380417) % pow2 32;
+      ( == ) { Math.Lemmas.lemma_mod_sub ((((v value % pow2 32) * 58728449) % pow2 32) * 8380417)
+        (pow2 32)
+        8380417 }
+      ((((v value % pow2 32) * 58728449) % pow2 32) * 8380417) % pow2 32;
+      ( == ) { Math.Lemmas.lemma_mod_mul_distr_l ((v value % pow2 32) * 58728449) 8380417 (pow2 32) }
+      ((((v value % pow2 32) * 58728449) * 8380417) % pow2 32);
+      ( == ) { Math.Lemmas.lemma_mod_mul_distr_r (v value % pow2 32) (58728449 * 8380417) (pow2 32) }
+      ((v value % pow2 32) % pow2 32);
+      ( == ) { Math.Lemmas.lemma_mod_sub (v value) (pow2 32) 1 }
+      (v value) % pow2 32;
+    };
+    Math.Lemmas.modulo_add (pow2 32) (- (v k_times_modulus)) (v value) (v k_times_modulus);
+    assert ((v value - v k_times_modulus) % pow2 32 == 0)
+  in
+  let _:Prims.unit =
+    calc ( == ) {
+      v res % 8380417;
+      ( == ) { assert (v res == v value_high - v c) }
+      (v value / pow2 32 - v k_times_modulus / pow2 32) % 8380417;
+      ( == ) { Math.Lemmas.lemma_div_exact (v value - v k_times_modulus) (pow2 32) }
+      ((v value - v k_times_modulus) / pow2 32) % 8380417;
+      ( == ) { assert ((pow2 32 * 8265825) % 8380417 == 1) }
+      (((v value - v k_times_modulus) / pow2 32) * ((pow2 32 * 8265825) % 8380417)) % 8380417;
+      ( == ) { Math.Lemmas.lemma_mod_mul_distr_r ((v value - v k_times_modulus) / pow2 32)
+        (pow2 32 * 8265825)
+        8380417 }
+      (((v value - v k_times_modulus) / pow2 32) * pow2 32 * 8265825) % 8380417;
+      ( == ) { Math.Lemmas.lemma_div_exact (v value - v k_times_modulus) (pow2 32) }
+      ((v value - v k_times_modulus) * 8265825) % 8380417;
+      ( == ) { assert (v k_times_modulus == (v k @% pow2 32) * 8380417) }
+      ((v value * 8265825) - ((v k @% pow2 32) * 8380417 * 8265825)) % 8380417;
+      ( == ) { Math.Lemmas.lemma_mod_sub (v value * 8265825) 8380417 ((v k @% pow2 32) * 8265825) }
+      (v value * 8265825) % 8380417;
+    }
+  in
+  res
+
+#pop-options
+
+#push-options "--z3rlimit 300"
 
 let montgomery_multiply_fe_by_fer (fe fer: i32) =
+  let _:Prims.unit = Spec.Utils.lemma_mul_i32b (pow2 31) (4190208) fe fer in
   montgomery_reduce_element ((cast (fe <: i32) <: i64) *! (cast (fer <: i32) <: i64) <: i64)
+
+#pop-options
 
 let montgomery_multiply_by_constant
       (simd_unit: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients)

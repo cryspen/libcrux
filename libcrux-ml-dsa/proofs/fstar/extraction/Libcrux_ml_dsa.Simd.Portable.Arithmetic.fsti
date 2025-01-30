@@ -49,10 +49,24 @@ val get_n_least_significant_bits (n: u8) (value: u64)
           let result:u64 = result in
           v result == v value % pow2 (v n))
 
-val montgomery_reduce_element (value: i64) : Prims.Pure i32 Prims.l_True (fun _ -> Prims.l_True)
+val montgomery_reduce_element (value: i64)
+    : Prims.Pure i32
+      (requires Spec.Utils.is_i64b (8380416 * pow2 32) value)
+      (ensures
+        fun result ->
+          let result:i32 = result in
+          Spec.Utils.is_i32b (8380416 + 4190209) result /\
+          (Spec.Utils.is_i64b (8380416 * pow2 31) value ==> Spec.Utils.is_i32b 8380416 result) /\
+          v result % 8380417 == (v value * 8265825) % 8380417)
 
 val montgomery_multiply_fe_by_fer (fe fer: i32)
-    : Prims.Pure i32 Prims.l_True (fun _ -> Prims.l_True)
+    : Prims.Pure i32
+      (requires Spec.Utils.is_i32b 4190208 fer)
+      (ensures
+        fun result ->
+          let result:i32 = result in
+          Spec.Utils.is_i32b 8380416 result /\
+          v result % 8380417 == (v fe * v fer * 8265825) % 8380417)
 
 val montgomery_multiply_by_constant
       (simd_unit: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients)
