@@ -200,7 +200,7 @@ let sample_from_xof
   let done, out, sampled_coefficients, xof_state:(bool & t_Array (t_Array i16 (mk_usize 272)) v_K &
     t_Array usize v_K &
     v_Hasher) =
-    Rust_primitives.f_while_loop (fun temp_0_ ->
+    Rust_primitives.Hax.while_loop (fun temp_0_ ->
           let done, out, sampled_coefficients, xof_state:(bool &
             t_Array (t_Array i16 (mk_usize 272)) v_K &
             t_Array usize v_K &
@@ -304,7 +304,7 @@ let sample_from_binomial_distribution_2_
           in
           let coin_toss_outcomes:u32 = even_bits +! odd_bits in
           Rust_primitives.Hax.Folds.fold_range_step_by (mk_u32 0)
-            Core.Num.impl__u32__BITS
+            Core.Num.impl_u32__BITS
             (mk_usize 4)
             (fun sampled_i16s temp_1_ ->
                 let sampled_i16s:t_Array i16 (mk_usize 256) = sampled_i16s in
