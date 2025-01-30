@@ -61,8 +61,7 @@ fn serialize_4(simd_unit: &Coefficients, serialized: &mut [u8]) {
               forall (n: nat {n < v i * 8}). out n == inp n
             )")});
 
-            let r0 = encode_4(coefficients);
-            serialized[i] = r0;
+            serialized[i] = encode_4(coefficients);
 
             hax_lib::fstar!(r"
                 let inp = bit_vec_of_int_t_array #I32 #(mk_usize 8) ${simd_unit.values} 4 in

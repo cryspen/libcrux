@@ -44,9 +44,10 @@ let serialize_4_
       (fun serialized temp_1_ ->
           let serialized:t_Slice u8 = serialized in
           let i, coefficients:(usize & t_Slice i32) = temp_1_ in
-          let r0:u8 = encode_4_ coefficients in
           let serialized:t_Slice u8 =
-            Rust_primitives.Hax.Monomorphized_update_at.update_at_usize serialized i r0
+            Rust_primitives.Hax.Monomorphized_update_at.update_at_usize serialized
+              i
+              (encode_4_ coefficients <: u8)
           in
           let _:Prims.unit =
             let inp =
