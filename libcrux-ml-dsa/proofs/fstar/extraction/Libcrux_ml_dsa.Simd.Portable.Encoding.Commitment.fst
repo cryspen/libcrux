@@ -3,7 +3,7 @@ module Libcrux_ml_dsa.Simd.Portable.Encoding.Commitment
 open Core
 open FStar.Mul
 
-#set-options "--fuel 0 --ifuel 1 --z3rlimit 300 --z3version 4.13.3 --ext context_pruning"
+#set-options "--fuel 0 --ifuel 1 --z3rlimit 300 --ext context_pruning"
 
 let encode_4_ (coefficients: t_Slice i32) =
   let coefficient0:u8 = cast (coefficients.[ mk_usize 0 ] <: i32) <: u8 in

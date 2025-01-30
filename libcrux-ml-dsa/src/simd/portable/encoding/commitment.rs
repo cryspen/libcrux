@@ -3,7 +3,7 @@ use crate::{helper::cloop, simd::portable::vector_type::Coefficients};
 #[inline(always)]
 #[hax_lib::fstar::before(
     r#"
-#set-options "--fuel 0 --ifuel 1 --z3rlimit 300 --z3version 4.13.3 --ext context_pruning"
+#set-options "--fuel 0 --ifuel 1 --z3rlimit 300"
 "#
 )]
 #[hax_lib::requires(fstar!(r"Seq.length ${coefficients} == 2 /\ (forall i. bounded (Seq.index ${coefficients} i) 4)"))]
