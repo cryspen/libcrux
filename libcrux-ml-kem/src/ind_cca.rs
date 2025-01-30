@@ -33,6 +33,10 @@ pub(crate) mod multiplexing;
 /// To use these, runtime checks must be performed before calling them.
 pub(crate) mod instantiations;
 
+/// This module implements an incremental API for ML-KEM.
+#[cfg(not(eurydice))]
+pub(crate) mod incremental;
+
 /// Serialize the secret key.
 
 #[inline(always)]
@@ -125,7 +129,7 @@ fn serialize_kem_secret_key<const K: usize, const SERIALIZED_KEY_LEN: usize, Has
 #[hax_lib::requires(fstar!(r#"Spec.MLKEM.is_rank $K /\
     $RANKED_BYTES_PER_RING_ELEMENT == Spec.MLKEM.v_RANKED_BYTES_PER_RING_ELEMENT $K /\
     $PUBLIC_KEY_SIZE == Spec.MLKEM.v_CCA_PUBLIC_KEY_SIZE $K"#))]
-fn validate_public_key<
+pub(crate) fn validate_public_key<
     const K: usize,
     const RANKED_BYTES_PER_RING_ELEMENT: usize,
     const PUBLIC_KEY_SIZE: usize,
@@ -155,7 +159,7 @@ fn validate_public_key<
 #[hax_lib::requires(fstar!(r#"Spec.MLKEM.is_rank $K /\
     $SECRET_KEY_SIZE == Spec.MLKEM.v_CCA_PRIVATE_KEY_SIZE $K /\
     $CIPHERTEXT_SIZE == Spec.MLKEM.v_CPA_CIPHERTEXT_SIZE $K"#))]
-fn validate_private_key<
+pub(crate) fn validate_private_key<
     const K: usize,
     const SECRET_KEY_SIZE: usize,
     const CIPHERTEXT_SIZE: usize,
@@ -174,7 +178,11 @@ fn validate_private_key<
 #[hax_lib::fstar::options("--z3rlimit 300")]
 #[hax_lib::requires(fstar!(r#"Spec.MLKEM.is_rank $K /\
     $SECRET_KEY_SIZE == Spec.MLKEM.v_CCA_PRIVATE_KEY_SIZE $K"#))]
-fn validate_private_key_only<const K: usize, const SECRET_KEY_SIZE: usize, Hasher: Hash<K>>(
+pub(crate) fn validate_private_key_only<
+    const K: usize,
+    const SECRET_KEY_SIZE: usize,
+    Hasher: Hash<K>,
+>(
     private_key: &MlKemPrivateKey<SECRET_KEY_SIZE>,
 ) -> bool {
     // Eurydice can't access values directly on the types. We need to go to the
@@ -202,7 +210,7 @@ fn validate_private_key_only<const K: usize, const SECRET_KEY_SIZE: usize, Hashe
 #[hax_lib::ensures(|result| fstar!(r#"let (expected, valid) = Spec.MLKEM.ind_cca_generate_keypair $K $randomness in
                                     valid ==> (${result}.f_sk.f_value, ${result}.f_pk.f_value) == expected"#))]
 #[inline(always)]
-fn generate_keypair<
+pub(crate) fn generate_keypair<
     const K: usize,
     const CPA_PRIVATE_KEY_SIZE: usize,
     const PRIVATE_KEY_SIZE: usize,
@@ -259,7 +267,7 @@ fn generate_keypair<
 #[hax_lib::ensures(|result| fstar!(r#"let (expected, valid) = Spec.MLKEM.ind_cca_encapsulate $K ${public_key}.f_value $randomness in
                                     valid ==> (${result}._1.f_value, ${result}._2) == expected"#))]
 #[inline(always)]
-fn encapsulate<
+pub(crate) fn encapsulate<
     const K: usize,
     const CIPHERTEXT_SIZE: usize,
     const PUBLIC_KEY_SIZE: usize,
@@ -282,8 +290,10 @@ fn encapsulate<
 ) -> (MlKemCiphertext<CIPHERTEXT_SIZE>, MlKemSharedSecret) {
     let randomness = Scheme::entropy_preprocess::<K, Hasher>(&randomness);
     let mut to_hash: [u8; 2 * H_DIGEST_SIZE] = into_padded_array(&randomness);
+
     hax_lib::fstar!(r#"eq_intro (Seq.slice $to_hash 0 32) $randomness"#);
     to_hash[H_DIGEST_SIZE..].copy_from_slice(&Hasher::H(public_key.as_slice()));
+
     hax_lib::fstar!(
         "assert (Seq.slice to_hash 0 (v $H_DIGEST_SIZE) == $randomness);
         lemma_slice_append $to_hash $randomness (Spec.Utils.v_H ${public_key}.f_value);
@@ -639,7 +649,7 @@ pub(crate) mod unpacked {
             .private_key
             .ind_cpa_private_key
             .secret_as_ntt
-            .copy_from_slice(&ind_cpa::deserialize_secret_key::<K, Vector>(
+            .copy_from_slice(&ind_cpa::deserialize_vector::<K, Vector>(
                 ind_cpa_secret_key,
             ));
         ind_cpa::build_unpacked_public_key_mut::<K, T_AS_NTT_ENCODED_SIZE, Vector, PortableHash<K>>(
@@ -996,18 +1006,7 @@ pub(crate) mod unpacked {
         public_key: &MlKemPublicKeyUnpacked<K, Vector>,
         randomness: [u8; SHARED_SECRET_SIZE],
     ) -> (MlKemCiphertext<CIPHERTEXT_SIZE>, MlKemSharedSecret) {
-        hax_lib::fstar!(
-            "Lib.Sequence.eq_intro #u8 #32 (Seq.slice (
-            Libcrux_ml_kem.Utils.into_padded_array (sz 64) $randomness) 0 32) $randomness"
-        );
-        let mut to_hash: [u8; 2 * H_DIGEST_SIZE] = into_padded_array(&randomness);
-        to_hash[H_DIGEST_SIZE..].copy_from_slice(&public_key.public_key_hash);
-        hax_lib::fstar!(
-            "Lib.Sequence.eq_intro #u8 #64 $to_hash (
-            concat $randomness ${public_key}.f_public_key_hash)"
-        );
-
-        let hashed = Hasher::G(&to_hash);
+        let hashed = encaps_prepare::<K, Hasher>(&randomness, &public_key.public_key_hash);
         let (shared_secret, pseudorandomness) = hashed.split_at(SHARED_SECRET_SIZE);
 
         let ciphertext = ind_cpa::encrypt_unpacked::<
@@ -1029,6 +1028,24 @@ pub(crate) mod unpacked {
         let mut shared_secret_array = [0u8; SHARED_SECRET_SIZE];
         shared_secret_array.copy_from_slice(shared_secret);
         (MlKemCiphertext::from(ciphertext), shared_secret_array)
+    }
+
+    pub(crate) fn encaps_prepare<const K: usize, Hasher: Hash<K>>(
+        randomness: &[u8],
+        pk_hash: &[u8],
+    ) -> [u8; 64] {
+        hax_lib::fstar!(
+            "Lib.Sequence.eq_intro #u8 #32 (Seq.slice (
+            Libcrux_ml_kem.Utils.into_padded_array (sz 64) $randomness) 0 32) $randomness"
+        );
+        let mut to_hash: [u8; 2 * H_DIGEST_SIZE] = into_padded_array(randomness);
+        to_hash[H_DIGEST_SIZE..].copy_from_slice(pk_hash);
+        hax_lib::fstar!(
+            "Lib.Sequence.eq_intro #u8 #64 $to_hash (
+            concat $randomness ${public_key}.f_public_key_hash)"
+        );
+
+        Hasher::G(&to_hash)
     }
 
     // Decapsulate with Unpacked Private Key
