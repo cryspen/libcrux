@@ -3,11 +3,24 @@ use libcrux_hacl_rs::prelude::*;
 use libcrux_traits::Digest;
 
 /// The different Sha2 algorithms.
+#[derive(Clone, Copy, Debug)]
 pub enum Algorithm {
     Sha224,
     Sha256,
     Sha384,
     Sha512,
+}
+
+impl Algorithm {
+    // The length of the digest by algorithm.
+    pub const fn hash_len(&self) -> usize {
+        match self {
+            Algorithm::Sha224 => SHA224_LENGTH,
+            Algorithm::Sha256 => SHA256_LENGTH,
+            Algorithm::Sha384 => SHA384_LENGTH,
+            Algorithm::Sha512 => SHA512_LENGTH,
+        }
+    }
 }
 
 impl Algorithm {

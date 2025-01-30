@@ -33,7 +33,7 @@ pub enum DigestAlgorithm {
 
 impl DigestAlgorithm {
     // using u8 so it can be safely coerced into any uint type
-    fn hash_len(&self) -> u8 {
+    const fn hash_len(&self) -> u8 {
         match self {
             DigestAlgorithm::Sha2_256 => 32,
             DigestAlgorithm::Sha2_384 => 48,

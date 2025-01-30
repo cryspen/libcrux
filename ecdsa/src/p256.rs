@@ -1,10 +1,12 @@
 //! ECDSA on P-256
 
 use libcrux_p256::{
-    compressed_to_raw, ecdsa_sign_p256_sha2, ecdsa_verif_p256_sha2, uncompressed_to_raw,
+    compressed_to_raw, ecdsa_sign_p256_sha2, ecdsa_sign_p256_sha384, ecdsa_sign_p256_sha512,
+    ecdsa_verif_p256_sha2, ecdsa_verif_p256_sha384, ecdsa_verif_p256_sha512, uncompressed_to_raw,
     validate_private_key, validate_public_key,
 };
-use rand::{CryptoRng, RngCore};
+
+use crate::DigestAlgorithm;
 
 use super::Error;
 
@@ -15,9 +17,13 @@ pub struct Signature {
     s: [u8; 32],
 }
 
+/// An ECDSA P-256 nonce
+pub struct Nonce([u8; 32]);
+
 /// An ECDSA P-256 private key
 pub struct PrivateKey([u8; 32]);
 
+/// An ECDSA P-256 public key
 #[derive(Debug)]
 pub struct PublicKey(pub [u8; 64]);
 
@@ -44,9 +50,11 @@ mod conversions {
         }
     }
 
-    impl From<&[u8; 32]> for PrivateKey {
-        fn from(value: &[u8; 32]) -> Self {
-            Self(*value)
+    impl TryFrom<&[u8; 32]> for PrivateKey {
+        type Error = Error;
+
+        fn try_from(value: &[u8; 32]) -> Result<Self, Self::Error> {
+            validate_private_key_slice(value)
         }
     }
 
@@ -54,7 +62,7 @@ mod conversions {
         type Error = Error;
 
         fn try_from(value: &[u8]) -> Result<Self, Self::Error> {
-            Ok(Self(value.try_into().map_err(|_| Error::InvalidScalar)?))
+            validate_private_key_slice(value)
         }
     }
 
@@ -70,9 +78,11 @@ mod conversions {
         }
     }
 
-    impl From<&[u8; 64]> for PublicKey {
-        fn from(value: &[u8; 64]) -> Self {
-            Self(*value)
+    impl TryFrom<&[u8; 64]> for PublicKey {
+        type Error = Error;
+
+        fn try_from(value: &[u8; 64]) -> Result<Self, Self::Error> {
+            validate_pk(value)
         }
     }
 
@@ -80,7 +90,7 @@ mod conversions {
         type Error = Error;
 
         fn try_from(value: &[u8]) -> Result<Self, Self::Error> {
-            Ok(Self(value.try_into().map_err(|_| Error::InvalidPoint)?))
+            validate_pk(value)
         }
     }
 
@@ -131,8 +141,8 @@ pub fn compressed_to_coordinates(point: &[u8]) -> Result<[u8; 64], Error> {
 /// concatenation of `X` and `Y`.
 ///
 /// Returns [`Error::InvalidPoint`] if the `point` is not valid.
-pub fn validate_point(point: impl AsRef<[u8; 64]>) -> Result<(), Error> {
-    if validate_public_key(point.as_ref()) {
+pub fn validate_point(point: &[u8]) -> Result<(), Error> {
+    if validate_public_key(point) {
         Ok(())
     } else {
         Err(Error::InvalidPoint)
@@ -162,8 +172,8 @@ fn validate_scalar_(scalar: &[u8; 32]) -> Result<(), Error> {
     }
 }
 
-/// Validate a P256 secret key (scalar).
-fn validate_scalar_slice(scalar: &[u8]) -> Result<PrivateKey, Error> {
+/// Validate a P256 secret key or  nonce (scalar).
+fn validate_scalar_slice(scalar: &[u8]) -> Result<[u8; 32], Error> {
     if scalar.is_empty() {
         return Err(Error::InvalidScalar);
     }
@@ -175,42 +185,104 @@ fn validate_scalar_slice(scalar: &[u8]) -> Result<PrivateKey, Error> {
         private[31 - i] = scalar[scalar.len() - 1 - i];
     }
 
-    validate_scalar_(&private).map(|_| PrivateKey(private))
+    validate_scalar_(&private).map(|_| private)
+}
+
+fn validate_private_key_slice(scalar: &[u8]) -> Result<PrivateKey, Error> {
+    validate_scalar_slice(scalar).map(|a| PrivateKey(a))
 }
 
 /// Prepare the nonce for EcDSA and validate the key
-fn ecdsa_p256_sign_prep(
-    private_key: &[u8],
-    rng: &mut (impl CryptoRng + RngCore),
-) -> Result<(PrivateKey, [u8; 32]), Error> {
-    let private_key = validate_scalar_slice(private_key).map_err(|_| Error::SigningError)?;
+#[cfg(feature = "rand")]
+pub mod rand {
+    use crate::RAND_LIMIT;
 
-    let mut nonce = [0u8; 32];
-    loop {
-        rng.try_fill_bytes(&mut nonce)
-            .map_err(|_| Error::SigningError)?;
+    use super::*;
+    use ::rand::{CryptoRng, RngCore};
 
-        // Make sure it's a valid nonce.
-        if validate_scalar_slice(&nonce).is_ok() {
-            break;
+    /// Generate a random scalar for ECDSA.
+    ///
+    /// This can be a raw nonce or a private key.
+    ///
+    /// Use [`Nonce::random`] or [`PrivateKey::random`] to generate a nonce or
+    /// a private key instead.
+    pub fn random_scalar(rng: &mut (impl CryptoRng + RngCore)) -> Result<[u8; 32], Error> {
+        let mut value = [0u8; 32];
+        for _ in 0..RAND_LIMIT {
+            rng.try_fill_bytes(&mut value)
+                .map_err(|_| Error::RandError)?;
+
+            // Make sure it's a valid nonce.
+            if validate_scalar_slice(&value).is_ok() {
+                return Ok(value);
+            }
+        }
+        Err(Error::RandError)
+    }
+
+    impl Nonce {
+        /// Generate a random nonce for ECDSA.
+        pub fn random(rng: &mut (impl CryptoRng + RngCore)) -> Result<Self, Error> {
+            random_scalar(rng).map(|s| Self(s))
         }
     }
 
-    Ok((private_key, nonce))
+    impl PrivateKey {
+        /// Generate a random [`PrivateKey`] for ECDSA.
+        pub fn random(rng: &mut (impl CryptoRng + RngCore)) -> Result<Self, Error> {
+            random_scalar(rng).map(|s| Self(s))
+        }
+    }
+
+    /// Sign the `payload` with the `private_key`.
+    pub fn sign(
+        hash: DigestAlgorithm,
+        payload: &[u8],
+        private_key: &PrivateKey,
+        rng: &mut (impl CryptoRng + RngCore),
+    ) -> Result<Signature, Error> {
+        let nonce = Nonce(random_scalar(rng)?);
+
+        super::_sign(hash, payload, private_key, &nonce)
+    }
 }
 
-/// Sign the `payload` with the `private_key`.
+/// Sign the `payload` with the `private_key` and `nonce`.
+///
+/// Returns an error if the `nonce` or `private_key` are invalid.
 pub fn sign(
+    hash: DigestAlgorithm,
     payload: &[u8],
-    private_key: &[u8],
-    rng: &mut (impl CryptoRng + RngCore),
+    private_key: &PrivateKey,
+    nonce: &Nonce,
 ) -> Result<Signature, Error> {
-    let (private_key, nonce) = ecdsa_p256_sign_prep(private_key, rng)?;
+    _sign(hash, payload, private_key, nonce)
+}
 
+/// Internal sign
+fn _sign(
+    hash: DigestAlgorithm,
+    payload: &[u8],
+    private_key: &PrivateKey,
+    nonce: &Nonce,
+) -> Result<Signature, Error> {
     let mut signature = [0u8; 64];
     let len = u32_len(payload)?;
 
-    if !ecdsa_sign_p256_sha2(&mut signature, len, payload, private_key.as_ref(), &nonce) {
+    let success = match hash {
+        DigestAlgorithm::Sha256 => {
+            ecdsa_sign_p256_sha2(&mut signature, len, payload, private_key.as_ref(), &nonce.0)
+        }
+        DigestAlgorithm::Sha384 => {
+            ecdsa_sign_p256_sha384(&mut signature, len, payload, private_key.as_ref(), &nonce.0)
+        }
+        DigestAlgorithm::Sha512 => {
+            ecdsa_sign_p256_sha512(&mut signature, len, payload, private_key.as_ref(), &nonce.0)
+        }
+        libcrux_sha2::Algorithm::Sha224 => return Err(Error::UnsupportedHash),
+    };
+
+    if !success {
         return Err(Error::SigningError);
     }
 
@@ -233,7 +305,7 @@ fn u32_len(bytes: &[u8]) -> Result<u32, Error> {
 }
 
 /// Prepare the public key for EcDSA
-fn ecdsa_p256_verify_prep(public_key: &[u8]) -> Result<[u8; 64], Error> {
+fn validate_pk(public_key: &[u8]) -> Result<PublicKey, Error> {
     if public_key.is_empty() {
         return Err(Error::SigningError);
     }
@@ -251,17 +323,35 @@ fn ecdsa_p256_verify_prep(public_key: &[u8]) -> Result<[u8; 64], Error> {
         }
     };
 
-    validate_point(PublicKey(pk)).map(|()| pk)
+    let pk = PublicKey(pk);
+    validate_point(&pk.0).map(|_| pk)
 }
 
 /// Verify the `payload` and `signature` with the `public_key`.
 ///
 /// Return `()` or [`Error::InvalidSignature`].
-pub fn verify(payload: &[u8], signature: &Signature, public_key: &PublicKey) -> Result<(), Error> {
-    let pk = ecdsa_p256_verify_prep(public_key.as_ref())?;
+pub fn verify(
+    hash: DigestAlgorithm,
+    payload: &[u8],
+    signature: &Signature,
+    public_key: &PublicKey,
+) -> Result<(), Error> {
     let len = u32_len(payload)?;
 
-    if ecdsa_verif_p256_sha2(len, payload, &pk, &signature.r, &signature.s) {
+    let success = match hash {
+        libcrux_sha2::Algorithm::Sha256 => {
+            ecdsa_verif_p256_sha2(len, payload, &public_key.0, &signature.r, &signature.s)
+        }
+        libcrux_sha2::Algorithm::Sha384 => {
+            ecdsa_verif_p256_sha384(len, payload, &public_key.0, &signature.r, &signature.s)
+        }
+        libcrux_sha2::Algorithm::Sha512 => {
+            ecdsa_verif_p256_sha512(len, payload, &public_key.0, &signature.r, &signature.s)
+        }
+        libcrux_sha2::Algorithm::Sha224 => return Err(Error::UnsupportedHash),
+    };
+
+    if success {
         Ok(())
     } else {
         Err(Error::InvalidSignature)

@@ -1,5 +1,5 @@
 [package]
-name = "librux-ecdsa"
+name = "libcrux-ecdsa"
 description = "Formally verified ECDSA signature library"
 
 version.workspace = true
@@ -12,4 +12,13 @@ readme.workspace = true
 
 [dependencies]
 libcrux-p256 = { version = "=0.0.2-beta.2", path = "../p256" }
-rand = { version = "0.8" }
+libcrux-sha2 = { version = "=0.0.2-beta.2", path = "../sha2" }
+rand = { version = "0.8", optional = true }
+
+[features]
+default = ["rand"]
+rand = ["dep:rand"]
+
+[dev-dependencies]
+serde = { version = "1.0.217", features = ["derive"] }
+serde_json = "1.0.138"

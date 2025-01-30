@@ -18,4 +18,12 @@ pub enum Error {
     NoUnCompressedPoint,
     SigningError,
     InvalidSignature,
+    RandError,
+    UnsupportedHash,
 }
+
+/// The hash algorithm used for signing or verifying.
+pub type DigestAlgorithm = libcrux_sha2::Algorithm;
+
+/// The number of iteration for rejection sampling.
+pub(crate) const RAND_LIMIT: usize = 100;
