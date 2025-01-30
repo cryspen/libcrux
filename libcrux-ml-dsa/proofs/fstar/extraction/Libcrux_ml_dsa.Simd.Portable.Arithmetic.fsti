@@ -3,20 +3,51 @@ module Libcrux_ml_dsa.Simd.Portable.Arithmetic
 open Core
 open FStar.Mul
 
+let _ =
+  (* This module has implicit dependencies, here we make them explicit. *)
+  (* The implicit dependencies arise from typeclasses instances. *)
+  let open Libcrux_ml_dsa.Simd.Portable.Vector_type in
+  ()
+
 let v_MONTGOMERY_SHIFT: u8 = mk_u8 32
 
 val add (lhs rhs: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients)
     : Prims.Pure Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients
-      Prims.l_True
-      (fun _ -> Prims.l_True)
+      (requires
+        forall i.
+          i < 8 ==>
+          Spec.Utils.is_intb (pow2 31 - 1)
+            (v (Seq.index lhs.f_values i) + v (Seq.index rhs.f_values i)))
+      (ensures
+        fun lhs_future ->
+          let lhs_future:Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients = lhs_future in
+          forall i.
+            i < 8 ==>
+            (v (Seq.index lhs_future.f_values i) ==
+              v (Seq.index lhs.f_values i) + v (Seq.index rhs.f_values i)))
 
 val subtract (lhs rhs: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients)
     : Prims.Pure Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients
-      Prims.l_True
-      (fun _ -> Prims.l_True)
+      (requires
+        forall i.
+          i < 8 ==>
+          Spec.Utils.is_intb (pow2 31 - 1)
+            (v (Seq.index lhs.f_values i) - v (Seq.index rhs.f_values i)))
+      (ensures
+        fun lhs_future ->
+          let lhs_future:Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients = lhs_future in
+          forall i.
+            i < 8 ==>
+            (v (Seq.index lhs_future.f_values i) ==
+              v (Seq.index lhs.f_values i) - v (Seq.index rhs.f_values i)))
 
 val get_n_least_significant_bits (n: u8) (value: u64)
-    : Prims.Pure u64 Prims.l_True (fun _ -> Prims.l_True)
+    : Prims.Pure u64
+      (requires n <=. mk_u8 32)
+      (ensures
+        fun result ->
+          let result:u64 = result in
+          v result == v value % pow2 (v n))
 
 val montgomery_reduce_element (value: i64) : Prims.Pure i32 Prims.l_True (fun _ -> Prims.l_True)
 

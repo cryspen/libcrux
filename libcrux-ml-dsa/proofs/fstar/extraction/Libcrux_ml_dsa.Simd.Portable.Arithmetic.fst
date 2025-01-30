@@ -3,76 +3,142 @@ module Libcrux_ml_dsa.Simd.Portable.Arithmetic
 open Core
 open FStar.Mul
 
+let _ =
+  (* This module has implicit dependencies, here we make them explicit. *)
+  (* The implicit dependencies arise from typeclasses instances. *)
+  let open Libcrux_ml_dsa.Simd.Portable.Vector_type in
+  ()
+
+#push-options "--z3rlimit 150"
+
 let add (lhs rhs: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients) =
+  let v__lhs0:Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients =
+    Core.Clone.f_clone #Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients
+      #FStar.Tactics.Typeclasses.solve
+      lhs
+  in
   let lhs:Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients =
     Rust_primitives.Hax.Folds.fold_range (mk_usize 0)
       (Core.Slice.impl__len #i32
           (lhs.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values <: t_Slice i32)
         <:
         usize)
-      (fun lhs temp_1_ ->
+      (fun lhs i ->
           let lhs:Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients = lhs in
-          let _:usize = temp_1_ in
-          true)
+          let i:usize = i in
+          (forall j.
+              j < v i ==>
+              (Seq.index lhs.f_values j) ==
+              (Seq.index v__lhs0.f_values j) +! (Seq.index rhs.f_values j)) /\
+          (forall j. j >= v i ==> (Seq.index lhs.f_values j) == (Seq.index v__lhs0.f_values j)))
       lhs
       (fun lhs i ->
           let lhs:Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients = lhs in
           let i:usize = i in
-          {
-            lhs with
-            Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values
-            =
-            Rust_primitives.Hax.Monomorphized_update_at.update_at_usize lhs
-                .Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values
-              i
-              ((lhs.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values.[ i ] <: i32) +!
-                (rhs.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values.[ i ] <: i32)
-                <:
-                i32)
+          let lhs:Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients =
+            {
+              lhs with
+              Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values
+              =
+              Rust_primitives.Hax.Monomorphized_update_at.update_at_usize lhs
+                  .Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values
+                i
+                ((lhs.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values.[ i ] <: i32) +!
+                  (rhs.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values.[ i ] <: i32)
+                  <:
+                  i32)
+            }
             <:
-            t_Array i32 (mk_usize 8)
-          }
-          <:
-          Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients)
+            Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients
+          in
+          lhs)
+  in
+  let _:Prims.unit =
+    assert (forall i.
+          v (Seq.index lhs.f_values i) ==
+          v (Seq.index v__lhs0.f_values i) + v (Seq.index rhs.f_values i))
   in
   lhs
+
+#pop-options
+
+#push-options "--z3rlimit 150"
 
 let subtract (lhs rhs: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients) =
+  let v__lhs0:Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients =
+    Core.Clone.f_clone #Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients
+      #FStar.Tactics.Typeclasses.solve
+      lhs
+  in
   let lhs:Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients =
     Rust_primitives.Hax.Folds.fold_range (mk_usize 0)
       (Core.Slice.impl__len #i32
           (lhs.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values <: t_Slice i32)
         <:
         usize)
-      (fun lhs temp_1_ ->
+      (fun lhs i ->
           let lhs:Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients = lhs in
-          let _:usize = temp_1_ in
-          true)
+          let i:usize = i in
+          (forall j.
+              j < v i ==>
+              (Seq.index lhs.f_values j) ==
+              (Seq.index v__lhs0.f_values j) -! (Seq.index rhs.f_values j)) /\
+          (forall j. j >= v i ==> (Seq.index lhs.f_values j) == (Seq.index v__lhs0.f_values j)))
       lhs
       (fun lhs i ->
           let lhs:Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients = lhs in
           let i:usize = i in
-          {
-            lhs with
-            Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values
-            =
-            Rust_primitives.Hax.Monomorphized_update_at.update_at_usize lhs
-                .Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values
-              i
-              ((lhs.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values.[ i ] <: i32) -!
-                (rhs.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values.[ i ] <: i32)
-                <:
-                i32)
+          let lhs:Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients =
+            {
+              lhs with
+              Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values
+              =
+              Rust_primitives.Hax.Monomorphized_update_at.update_at_usize lhs
+                  .Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values
+                i
+                ((lhs.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values.[ i ] <: i32) -!
+                  (rhs.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values.[ i ] <: i32)
+                  <:
+                  i32)
+            }
             <:
-            t_Array i32 (mk_usize 8)
-          }
-          <:
-          Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients)
+            Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients
+          in
+          lhs)
+  in
+  let _:Prims.unit =
+    assert (forall i.
+          v (Seq.index lhs.f_values i) ==
+          v (Seq.index v__lhs0.f_values i) - v (Seq.index rhs.f_values i))
   in
   lhs
 
+#pop-options
+
+#push-options "--z3rlimit 150 --split_queries always"
+
 let get_n_least_significant_bits (n: u8) (value: u64) =
-  value &. ((mk_u64 1 <<! n <: u64) -! mk_u64 1 <: u64)
+  let res:u64 = value &. ((mk_u64 1 <<! n <: u64) -! mk_u64 1 <: u64) in
+  let _:Prims.unit =
+    calc ( == ) {
+      v res;
+      ( == ) { () }
+      v (logand value (((mk_u64 1) <<! n) -! (mk_u64 1)));
+      ( == ) { () }
+      v (logand value (((mk_int 1) <<! n) -! (mk_int 1)));
+      ( == ) { () }
+      v (logand value (mk_int ((1 * pow2 (v n)) % pow2 64) -! (mk_int 1)));
+      ( == ) { (Math.Lemmas.small_mod (pow2 (v n)) (pow2 64);
+        Math.Lemmas.pow2_lt_compat 64 (v n)) }
+      v (logand value ((mk_int (pow2 (v n))) -! (mk_int 1)));
+      ( == ) { (Math.Lemmas.pow2_lt_compat 64 (v n);
+        logand_mask_lemma value (v n)) }
+      v value % (pow2 (v n));
+    }
+  in
+  res
+
+#pop-options
 
 let montgomery_reduce_element (value: i64) =
   let t:u64 =

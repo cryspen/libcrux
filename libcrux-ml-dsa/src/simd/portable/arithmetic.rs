@@ -9,22 +9,79 @@ use crate::{
 pub(crate) const MONTGOMERY_SHIFT: u8 = 32;
 
 #[inline(always)]
+#[hax_lib::fstar::options("--z3rlimit 150")]
+#[hax_lib::requires(fstar!(r#"forall i. i < 8 ==> 
+    Spec.Utils.is_intb (pow2 31 - 1) (v (Seq.index ${lhs}.f_values i) + v (Seq.index ${rhs}.f_values i))"#))]
+#[hax_lib::ensures(|result| fstar!(r#"forall i. i < 8 ==>
+    (v (Seq.index ${lhs}_future.f_values i) == 
+     v (Seq.index ${lhs}.f_values i) + v (Seq.index ${rhs}.f_values i))"#))]
 pub fn add(lhs: &mut Coefficients, rhs: &Coefficients) {
+    let _lhs0 = lhs.clone();
     for i in 0..lhs.values.len() {
+        hax_lib::loop_invariant!(|i: usize| {
+            fstar!(
+                r#"
+              (forall j. j < v i ==> (Seq.index ${lhs}.f_values j) == 
+                                     (Seq.index ${_lhs0}.f_values j) +! (Seq.index ${rhs}.f_values j)) /\
+              (forall j. j >= v i ==> (Seq.index ${lhs}.f_values j) == (Seq.index ${_lhs0}.f_values j))"#
+            )
+        });
         lhs.values[i] += rhs.values[i];
     }
+    hax_lib::fstar!(
+        "assert (forall i. v (Seq.index ${lhs}.f_values i) ==
+    			          v (Seq.index ${_lhs0}.f_values i) + v (Seq.index ${rhs}.f_values i))"
+    )
 }
 
 #[inline(always)]
+#[hax_lib::fstar::options("--z3rlimit 150")]
+#[hax_lib::requires(fstar!(r#"forall i. i < 8 ==> 
+    Spec.Utils.is_intb (pow2 31 - 1) (v (Seq.index ${lhs}.f_values i) - v (Seq.index ${rhs}.f_values i))"#))]
+#[hax_lib::ensures(|result| fstar!(r#"forall i. i < 8 ==>
+    (v (Seq.index ${lhs}_future.f_values i) == 
+     v (Seq.index ${lhs}.f_values i) - v (Seq.index ${rhs}.f_values i))"#))]
 pub fn subtract(lhs: &mut Coefficients, rhs: &Coefficients) {
+    let _lhs0 = lhs.clone();
     for i in 0..lhs.values.len() {
+        hax_lib::loop_invariant!(|i: usize| {
+            fstar!(
+                r#"
+              (forall j. j < v i ==> (Seq.index ${lhs}.f_values j) == 
+                                     (Seq.index ${_lhs0}.f_values j) -! (Seq.index ${rhs}.f_values j)) /\
+              (forall j. j >= v i ==> (Seq.index ${lhs}.f_values j) == (Seq.index ${_lhs0}.f_values j))"#
+            )
+        });
         lhs.values[i] -= rhs.values[i];
     }
+    hax_lib::fstar!(
+        "assert (forall i. v (Seq.index ${lhs}.f_values i) ==
+    			          v (Seq.index ${_lhs0}.f_values i) - v (Seq.index ${rhs}.f_values i))"
+    )
 }
 
 #[inline(always)]
+#[hax_lib::fstar::options("--z3rlimit 150 --split_queries always")]
+#[hax_lib::requires(n <= 32)]
+#[hax_lib::ensures(|result| fstar!(r#"v result == v value % pow2(v n)"#))]
 pub(crate) fn get_n_least_significant_bits(n: u8, value: u64) -> u64 {
-    value & ((1 << n) - 1)
+    let res = value & ((1 << n) - 1);
+    hax_lib::fstar!(
+        "calc (==) {
+    v res;
+    (==) { }
+    v (logand value (((mk_u64 1) <<! n) -! (mk_u64 1)));
+    (==) {} 
+    v (logand value (((mk_int 1) <<! n) -! (mk_int 1)));
+    (==) { }
+    v (logand value (mk_int ((1 * pow2 (v n)) % pow2 64) -! (mk_int 1)));
+    (==) {Math.Lemmas.small_mod (pow2 (v n)) (pow2 64); Math.Lemmas.pow2_lt_compat 64 (v n)}
+    v (logand value ((mk_int (pow2 (v n))) -! (mk_int 1)));
+    (==) {Math.Lemmas.pow2_lt_compat 64 (v n); logand_mask_lemma value (v n)}
+    v value % (pow2 (v n));
+    }"
+    );
+    res
 }
 
 #[inline(always)]
