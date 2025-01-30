@@ -49,10 +49,8 @@ macro_rules! impl_incr_key_size {
         pub const fn encaps_state_len() -> usize {
             // Because const generics are too limited, we compute it here from scratch.
 
-            // shared secret
-            SHARED_SECRET_SIZE
             // r_as_ntt
-            + RANK * 16 * 32
+            RANK * 16 * 32
             // error2
             + 16 * 32
             // randomness
@@ -86,7 +84,7 @@ macro_rules! impl_incr_key_size {
             pub fn encapsulate1(
                 public_key_part: &PublicKey1,
                 randomness: [u8; SHARED_SECRET_SIZE],
-            ) -> (Ciphertext1, Box<dyn State>) {
+            ) -> (Ciphertext1, Box<dyn State>, [u8; SHARED_SECRET_SIZE]) {
                 multiplexing::alloc::encapsulate1::<
                     RANK,
                     CPA_PKE_CIPHERTEXT_SIZE,
@@ -171,6 +169,7 @@ macro_rules! impl_incr_key_size {
             pk1: &[u8],
             randomness: [u8; SHARED_SECRET_SIZE],
             state: &mut [u8],
+            shared_secret: &mut [u8],
         ) -> Result<Ciphertext1, Error> {
             let public_key_part = PublicKey1::try_from(&pk1 as &[u8])?;
 
@@ -184,7 +183,7 @@ macro_rules! impl_incr_key_size {
                 ETA1_RANDOMNESS_SIZE,
                 ETA2,
                 ETA2_RANDOMNESS_SIZE,
-            >(&public_key_part, randomness, state)
+            >(&public_key_part, randomness, state, shared_secret)
         }
 
         /// Encapsulate the second part of the ciphertext.
@@ -318,7 +317,11 @@ macro_rules! impl_incr_platform {
         >(
             public_key_part: &PublicKey1,
             randomness: [u8; SHARED_SECRET_SIZE],
-        ) -> (Ciphertext1<C1_SIZE>, EncapsState<K, $vector>) {
+        ) -> (
+            Ciphertext1<C1_SIZE>,
+            EncapsState<K, $vector>,
+            [u8; SHARED_SECRET_SIZE],
+        ) {
             super::encapsulate1::<
                 K,
                 CIPHERTEXT_SIZE,
@@ -348,6 +351,7 @@ macro_rules! impl_incr_platform {
             public_key_part: &PublicKey1,
             randomness: [u8; SHARED_SECRET_SIZE],
             state: &mut [u8],
+            shared_secret: &mut [u8],
         ) -> Result<Ciphertext1<C1_SIZE>, Error> {
             super::encapsulate1_serialized::<
                 K,
@@ -361,7 +365,7 @@ macro_rules! impl_incr_platform {
                 ETA2_RANDOMNESS_SIZE,
                 $vector,
                 $hash,
-            >(public_key_part, randomness, state)
+            >(public_key_part, randomness, state, shared_secret)
         }
 
         pub(crate) fn encapsulate2<

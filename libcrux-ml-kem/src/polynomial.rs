@@ -83,7 +83,7 @@ fn to_i16_array<Vector: Operations>(re: PolynomialRingElement<Vector>, out: &mut
 }
 
 #[inline(always)]
-#[hax_lib::requires(VECTORS_IN_RING_ELEMENT * 16 *2 <= a.len())]
+#[hax_lib::requires(VECTORS_IN_RING_ELEMENT * 16 *2 <= bytes.len())]
 fn from_bytes<Vector: Operations>(bytes: &[u8]) -> PolynomialRingElement<Vector> {
     let mut result = ZERO();
     for i in 0..VECTORS_IN_RING_ELEMENT {
@@ -328,7 +328,7 @@ impl<Vector: Operations> PolynomialRingElement<Vector> {
     }
 
     #[inline(always)]
-    #[requires(VECTORS_IN_RING_ELEMENT * 16 * 2 <= a.len())]
+    #[requires(VECTORS_IN_RING_ELEMENT * 16 * 2 <= bytes.len())]
     pub(crate) fn from_bytes(bytes: &[u8]) -> Self {
         from_bytes(bytes)
     }

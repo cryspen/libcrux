@@ -183,7 +183,7 @@ pub(crate) fn encapsulate1<
 >(
     pk1: &PublicKey1,
     randomness: [u8; SHARED_SECRET_SIZE],
-) -> (Ciphertext1<C1_SIZE>, EncapsState<K, Vector>) {
+) -> (Ciphertext1<C1_SIZE>, EncapsState<K, Vector>, [u8; 32]) {
     let hashed = encaps_prepare::<K, Hasher>(&randomness, &pk1.hash);
     let (shared_secret, pseudorandomness) = hashed.split_at(SHARED_SECRET_SIZE);
 
@@ -207,11 +207,14 @@ pub(crate) fn encapsulate1<
 
     let state = EncapsState {
         randomness,
-        shared_secret: shared_secret.try_into().unwrap(),
         r_as_ntt,
         error2,
     };
-    (Ciphertext1 { value: ciphertext }, state)
+    (
+        Ciphertext1 { value: ciphertext },
+        state,
+        shared_secret.try_into().unwrap(),
+    )
 }
 
 pub(crate) fn encapsulate1_serialized<
@@ -230,8 +233,14 @@ pub(crate) fn encapsulate1_serialized<
     pk1: &PublicKey1,
     randomness: [u8; SHARED_SECRET_SIZE],
     state: &mut [u8],
+    shared_secret: &mut [u8],
 ) -> Result<Ciphertext1<C1_SIZE>, Error> {
-    let (ct1, encaps_state) = encapsulate1::<
+    debug_assert!(shared_secret.len() >= SHARED_SECRET_SIZE);
+    if shared_secret.len() < SHARED_SECRET_SIZE {
+        return Err(Error::InvalidOutputLength);
+    }
+
+    let (ct1, encaps_state, ss) = encapsulate1::<
         K,
         CIPHERTEXT_SIZE,
         C1_SIZE,
@@ -247,6 +256,7 @@ pub(crate) fn encapsulate1_serialized<
 
     // Write out the state
     encaps_state.to_bytes(state)?;
+    shared_secret[..SHARED_SECRET_SIZE].copy_from_slice(&ss);
 
     // Return the ciphertext
     Ok(ct1)

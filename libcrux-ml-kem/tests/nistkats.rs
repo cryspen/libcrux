@@ -179,7 +179,7 @@ macro_rules! impl_kats {
 
                 let (ct1, ct2, incremental_shared_secret) = {
                     let pk1 = incremental::PublicKey1::try_from(&pk1_bytes as &[u8]).unwrap();
-                    let (ct1, state) = incremental::alloc::encapsulate1(&pk1,  kat.encapsulation_seed);
+                    let (ct1, state, ss) = incremental::alloc::encapsulate1(&pk1,  kat.encapsulation_seed);
 
                     assert!(incremental::validate_pk(&pk1, &pk2_bytes).is_ok());
 
@@ -188,9 +188,7 @@ macro_rules! impl_kats {
                     // platform dependent.
                     let ct2 = incremental::alloc::encapsulate2(state.as_ref(), &pk2_bytes).unwrap();
 
-                    let mut shared_secret = [0u8; 32];
-                    shared_secret.copy_from_slice(state.shared_secret());
-                    (ct1, ct2, shared_secret)
+                    (ct1, ct2, ss)
                 };
 
                 // Decapsulate

@@ -156,7 +156,6 @@ impl<const LEN: usize> Ciphertext2<LEN> {
 
 /// The incremental state for encapsulate.
 pub struct EncapsState<const K: usize, Vector: Operations> {
-    pub(super) shared_secret: MlKemSharedSecret,
     pub(super) r_as_ntt: [PolynomialRingElement<Vector>; K],
     pub(super) error2: PolynomialRingElement<Vector>,
     pub(super) randomness: [u8; 32],
@@ -165,29 +164,25 @@ pub struct EncapsState<const K: usize, Vector: Operations> {
 impl<const K: usize, Vector: Operations> EncapsState<K, Vector> {
     /// Get the number of bytes, required for the state.
     pub const fn num_bytes() -> usize {
-        SHARED_SECRET_SIZE
-            + vec_len_bytes::<K, Vector>()
-            + PolynomialRingElement::<Vector>::num_bytes()
-            + 32
+        vec_len_bytes::<K, Vector>() + PolynomialRingElement::<Vector>::num_bytes() + 32
     }
 
+    #[allow(dead_code)]
     /// Get the state as bytes
-    pub fn to_bytes(self, out: &mut [u8]) -> Result<(), Error> {
-        debug_assert!(out.len() >= Self::num_bytes());
-        if out.len() < Self::num_bytes() {
+    pub fn to_bytes(self, state: &mut [u8]) -> Result<(), Error> {
+        debug_assert!(state.len() >= Self::num_bytes());
+        if state.len() < Self::num_bytes() {
             return Err(Error::InvalidOutputLength);
         }
 
-        out[..SHARED_SECRET_SIZE].copy_from_slice(&self.shared_secret);
-        let mut offset = SHARED_SECRET_SIZE;
-
-        vec_to_bytes(&self.r_as_ntt, &mut out[offset..]);
+        let mut offset = 0;
+        vec_to_bytes(&self.r_as_ntt, &mut state[offset..]);
         offset += vec_len_bytes::<K, Vector>();
 
-        self.error2.to_bytes(&mut out[offset..]);
+        self.error2.to_bytes(&mut state[offset..]);
         offset += PolynomialRingElement::<Vector>::num_bytes();
 
-        out[offset..offset + 32].copy_from_slice(&self.randomness);
+        state[offset..offset + 32].copy_from_slice(&self.randomness);
 
         Ok(())
     }
@@ -199,10 +194,7 @@ impl<const K: usize, Vector: Operations> EncapsState<K, Vector> {
             return Err(Error::InvalidInputLength);
         }
 
-        let mut shared_secret = [0u8; SHARED_SECRET_SIZE];
-        shared_secret.copy_from_slice(&bytes[..SHARED_SECRET_SIZE]);
-        let mut offset = SHARED_SECRET_SIZE;
-
+        let mut offset = 0;
         let mut r_as_ntt = from_fn(|_| PolynomialRingElement::<Vector>::ZERO());
         vec_from_bytes(&bytes[offset..], &mut r_as_ntt);
         offset += vec_len_bytes::<K, Vector>();
@@ -214,7 +206,6 @@ impl<const K: usize, Vector: Operations> EncapsState<K, Vector> {
         randomness.copy_from_slice(&bytes[offset..offset + 32]);
 
         Ok(Self {
-            shared_secret,
             r_as_ntt,
             error2,
             randomness,
@@ -225,17 +216,11 @@ impl<const K: usize, Vector: Operations> EncapsState<K, Vector> {
 /// Trait container for multiplexing over platform dependent [`EncapsState`].
 pub trait State {
     fn as_any(&self) -> &dyn Any;
-
-    /// Get the shared secret.
-    fn shared_secret(&self) -> &[u8];
 }
+
 impl<const K: usize, Vector: Operations + 'static> State for EncapsState<K, Vector> {
     fn as_any(&self) -> &dyn Any {
         self
-    }
-
-    fn shared_secret(&self) -> &[u8] {
-        &self.shared_secret
     }
 }
 

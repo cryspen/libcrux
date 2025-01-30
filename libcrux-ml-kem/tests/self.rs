@@ -160,13 +160,19 @@ macro_rules! impl_consistency_incremental {
             let encaps_randomness = random_array();
             let (ct1, ct2, shared_secret) = {
                 let pk1 = PublicKey1::try_from(&pk1_bytes as &[u8]).unwrap();
-                let (ct1, state) = alloc::encapsulate1(&pk1, encaps_randomness);
+                let (ct1, state, dyn_ss) = alloc::encapsulate1(&pk1, encaps_randomness);
                 debug_assert_eq!(ct1.value.len(), Ciphertext1::len());
 
                 // encaps1 with serialized state
                 let mut serialized_state = [0u8; encaps_state_len()];
-                let ct12 =
-                    encapsulate1(&pk1_bytes, encaps_randomness, &mut serialized_state).unwrap();
+                let mut shared_secret_serialized = [0u8; SHARED_SECRET_SIZE];
+                let ct12 = encapsulate1(
+                    &pk1_bytes,
+                    encaps_randomness,
+                    &mut serialized_state,
+                    &mut shared_secret_serialized,
+                )
+                .unwrap();
                 assert_eq!(ct1.value, ct12.value);
 
                 // Check the public key for consistency.
@@ -182,9 +188,8 @@ macro_rules! impl_consistency_incremental {
                 let ct22 = encapsulate2(&serialized_state, &pk2_bytes).unwrap();
                 assert_eq!(ct2.value, ct22.value);
 
-                let mut shared_secret = [0u8; 32];
-                shared_secret.copy_from_slice(state.shared_secret());
-                (ct1, ct2, shared_secret)
+                assert_eq!(dyn_ss, shared_secret_serialized);
+                (ct1, ct2, dyn_ss)
             };
 
             // The initiator decapsulates the two ciphertexts.

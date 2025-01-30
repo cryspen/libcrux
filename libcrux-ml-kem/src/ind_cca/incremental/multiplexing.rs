@@ -111,9 +111,13 @@ pub(crate) mod alloc {
     >(
         public_key_part: &PublicKey1,
         randomness: [u8; SHARED_SECRET_SIZE],
-    ) -> (Ciphertext1<C1_SIZE>, Box<dyn State>) {
+    ) -> (
+        Ciphertext1<C1_SIZE>,
+        Box<dyn State>,
+        [u8; SHARED_SECRET_SIZE],
+    ) {
         if libcrux_platform::simd256_support() {
-            let (c, s) = encapsulate1_avx2::<
+            let (c, s, ss) = encapsulate1_avx2::<
                 K,
                 CIPHERTEXT_SIZE,
                 C1_SIZE,
@@ -124,9 +128,9 @@ pub(crate) mod alloc {
                 ETA2,
                 ETA2_RANDOMNESS_SIZE,
             >(public_key_part, randomness);
-            (c, Box::new(s))
+            (c, Box::new(s), ss)
         } else if libcrux_platform::simd128_support() {
-            let (c, s) = encapsulate1_neon::<
+            let (c, s, ss) = encapsulate1_neon::<
                 K,
                 CIPHERTEXT_SIZE,
                 C1_SIZE,
@@ -137,9 +141,9 @@ pub(crate) mod alloc {
                 ETA2,
                 ETA2_RANDOMNESS_SIZE,
             >(public_key_part, randomness);
-            (c, Box::new(s))
+            (c, Box::new(s), ss)
         } else {
-            let (c, s) = portable::encapsulate1::<
+            let (c, s, ss) = portable::encapsulate1::<
                 K,
                 CIPHERTEXT_SIZE,
                 C1_SIZE,
@@ -150,7 +154,7 @@ pub(crate) mod alloc {
                 ETA2,
                 ETA2_RANDOMNESS_SIZE,
             >(public_key_part, randomness);
-            (c, Box::new(s))
+            (c, Box::new(s), ss)
         }
     }
 
@@ -355,6 +359,7 @@ pub(crate) fn encapsulate1<
     public_key_part: &PublicKey1,
     randomness: [u8; SHARED_SECRET_SIZE],
     state: &mut [u8],
+    shared_secret: &mut [u8],
 ) -> Result<Ciphertext1<C1_SIZE>, Error> {
     if libcrux_platform::simd256_support() {
         encapsulate1_serialized_avx2::<
@@ -367,7 +372,7 @@ pub(crate) fn encapsulate1<
             ETA1_RANDOMNESS_SIZE,
             ETA2,
             ETA2_RANDOMNESS_SIZE,
-        >(public_key_part, randomness, state)
+        >(public_key_part, randomness, state, shared_secret)
     } else if libcrux_platform::simd128_support() {
         encapsulate1_serialized_neon::<
             K,
@@ -379,7 +384,7 @@ pub(crate) fn encapsulate1<
             ETA1_RANDOMNESS_SIZE,
             ETA2,
             ETA2_RANDOMNESS_SIZE,
-        >(public_key_part, randomness, state)
+        >(public_key_part, randomness, state, shared_secret)
     } else {
         portable::encapsulate1_serialized::<
             K,
@@ -391,7 +396,7 @@ pub(crate) fn encapsulate1<
             ETA1_RANDOMNESS_SIZE,
             ETA2,
             ETA2_RANDOMNESS_SIZE,
-        >(public_key_part, randomness, state)
+        >(public_key_part, randomness, state, shared_secret)
     }
 }
 
