@@ -658,6 +658,7 @@ pub(crate) mod kyber {
 /// Incremental API.
 ///
 /// **NOTE:** This is a non-standard API. Use with caution!
+#[cfg(not(eurydice))]
 pub mod incremental {
     use crate::mlkem::impl_incr_key_size;
 

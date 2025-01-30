@@ -192,6 +192,8 @@ pub trait Operations: Copy + Clone {
     fn ZERO() -> Self;
     fn from_i16_array(array: &[i16]) -> Self;
     fn to_i16_array(x: Self) -> [i16; 16];
+    fn from_bytes(array: &[u8]) -> Self;
+    fn to_bytes(x: Self, bytes: &mut [u8]);
     fn add(lhs: Self, rhs: &Self) -> Self;
     fn sub(lhs: Self, rhs: &Self) -> Self;
     fn multiply_by_constant(v: Self, c: i16) -> Self;
