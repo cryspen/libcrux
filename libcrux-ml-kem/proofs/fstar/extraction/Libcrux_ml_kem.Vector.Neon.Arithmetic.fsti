@@ -33,7 +33,7 @@ val cond_subtract_3329_ (v: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vect
       Prims.l_True
       (fun _ -> Prims.l_True)
 
-let v_BARRETT_MULTIPLIER: i16 = 20159s
+let v_BARRETT_MULTIPLIER: i16 = mk_i16 20159
 
 val barrett_reduce_int16x8_t (v: u8) : Prims.Pure u8 Prims.l_True (fun _ -> Prims.l_True)
 

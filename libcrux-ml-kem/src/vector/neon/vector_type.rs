@@ -46,7 +46,7 @@ pub(crate) fn from_bytes(array: &[u8]) -> SIMD128Vector {
 #[allow(non_snake_case)]
 #[inline(always)]
 #[hax_lib::fstar::verification_status(panic_free)]
-#[hax_lib::ensures(|result| fstar!("repr result == Seq.create 16 0s"))]
+#[hax_lib::ensures(|result| fstar!("repr result == Seq.create 16 (mk_i16 0)"))]
 pub(crate) fn ZERO() -> SIMD128Vector {
     SIMD128Vector {
         low: _vdupq_n_s16(0),

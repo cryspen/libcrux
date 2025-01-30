@@ -11,7 +11,7 @@ let _ =
   let open Libcrux_ml_dsa.Simd.Traits in
   ()
 
-let matrix_flat__inner
+let f_matrix_flat__inner
       (#v_SIMDUnit: Type0)
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
           i1:
@@ -69,7 +69,7 @@ let impl: Libcrux_ml_dsa.Samplex4.t_X4Sampler t_AVX2Sampler =
       (matrix: t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit))
       ->
       let matrix:t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) =
-        matrix_flat__inner #v_SIMDUnit columns seed matrix
+        f_matrix_flat__inner #v_SIMDUnit columns seed matrix
       in
       matrix
   }

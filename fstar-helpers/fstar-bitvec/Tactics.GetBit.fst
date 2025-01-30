@@ -15,9 +15,6 @@ open Tactics.Pow2
 open BitVecEq
 open Tactics.Seq
 
-
-let norm_machine_int () = Tactics.MachineInts.(transform norm_machine_int_term)
-
 /// Does one round of computation
 let compute_one_round (): Tac _ =
    norm [ iota; zeta; reify_
@@ -31,7 +28,6 @@ let compute_one_round (): Tac _ =
           ]
         ; primops; unmeta];
    trace "compute_one_round: norm_pow2"        norm_pow2;
-   trace "compute_one_round: norm_machine_int" norm_machine_int;
    trace "compute_one_round: norm_index"       norm_index
 
 /// Normalizes up to `get_bit`
@@ -57,10 +53,12 @@ let prove_bit_vector_equality'' (): Tac unit =
     print ("Ask SMT: " ^ term_to_string (cur_goal ()));
     focus smt_sync
   ))
+
 let prove_bit_vector_equality' (): Tac unit =
   if lax_on ()
   then iterAll tadmit
   else prove_bit_vector_equality'' ()
+
 let prove_bit_vector_equality (): Tac unit = 
   set_rlimit 100;
   with_compat_pre_core 0 prove_bit_vector_equality'

@@ -13,7 +13,7 @@ let _ =
 
 type t_AVX2Sampler = | AVX2Sampler : t_AVX2Sampler
 
-val matrix_flat__inner
+val f_matrix_flat__inner
       (#v_SIMDUnit: Type0)
       {| i1: Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit |}
       (columns: usize)

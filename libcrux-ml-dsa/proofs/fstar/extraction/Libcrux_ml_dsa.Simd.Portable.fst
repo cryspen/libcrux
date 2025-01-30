@@ -274,7 +274,7 @@ Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients =
         let hint:Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients = tmp0 in
         let hax_temp_output:usize = out1 in
         hint, hax_temp_output <: (Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients & usize));
-    f_use_hint_pre
+    f_uuse_hint_pre
     =
     (fun
         (gamma2: i32)
@@ -282,7 +282,7 @@ Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients =
         (hint: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients)
         ->
         true);
-    f_use_hint_post
+    f_uuse_hint_post
     =
     (fun
         (gamma2: i32)
@@ -291,7 +291,7 @@ Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients =
         (out: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients)
         ->
         true);
-    f_use_hint
+    f_uuse_hint
     =
     (fun
         (gamma2: i32)
@@ -299,7 +299,7 @@ Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients =
         (hint: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients)
         ->
         let hint:Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients =
-          Libcrux_ml_dsa.Simd.Portable.Arithmetic.use_hint gamma2 simd_unit hint
+          Libcrux_ml_dsa.Simd.Portable.Arithmetic.uuse_hint gamma2 simd_unit hint
         in
         hint);
     f_rejection_sample_less_than_field_modulus_pre
@@ -318,10 +318,10 @@ Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients =
         let out:t_Slice i32 = tmp0 in
         let hax_temp_output:usize = out1 in
         out, hax_temp_output <: (t_Slice i32 & usize));
-    f_rejection_sample_less_than_eta_equals_2_pre
+    f_rejection_sample_less_than_eta_equals_2__pre
     =
     (fun (randomness: t_Slice u8) (out: t_Slice i32) -> true);
-    f_rejection_sample_less_than_eta_equals_2_post
+    f_rejection_sample_less_than_eta_equals_2__post
     =
     (fun (randomness: t_Slice u8) (out: t_Slice i32) (out2: (t_Slice i32 & usize)) -> true);
     f_rejection_sample_less_than_eta_equals_2_
@@ -334,10 +334,10 @@ Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients =
         let out:t_Slice i32 = tmp0 in
         let hax_temp_output:usize = out1 in
         out, hax_temp_output <: (t_Slice i32 & usize));
-    f_rejection_sample_less_than_eta_equals_4_pre
+    f_rejection_sample_less_than_eta_equals_4__pre
     =
     (fun (randomness: t_Slice u8) (out: t_Slice i32) -> true);
-    f_rejection_sample_less_than_eta_equals_4_post
+    f_rejection_sample_less_than_eta_equals_4__post
     =
     (fun (randomness: t_Slice u8) (out: t_Slice i32) (out2: (t_Slice i32 & usize)) -> true);
     f_rejection_sample_less_than_eta_equals_4_
@@ -563,37 +563,46 @@ Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients =
         out);
     f_ntt_pre
     =
-    (fun (simd_units: t_Array Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients (sz 32)) ->
+    (fun
+        (simd_units: t_Array Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients (mk_usize 32))
+        ->
         true);
     f_ntt_post
     =
     (fun
-        (simd_units: t_Array Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients (sz 32))
-        (out: t_Array Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients (sz 32))
+        (simd_units: t_Array Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients (mk_usize 32))
+        (out: t_Array Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients (mk_usize 32))
         ->
         true);
     f_ntt
     =
-    (fun (simd_units: t_Array Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients (sz 32)) ->
-        let simd_units:t_Array Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients (sz 32) =
+    (fun
+        (simd_units: t_Array Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients (mk_usize 32))
+        ->
+        let simd_units:t_Array Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients (mk_usize 32)
+        =
           Libcrux_ml_dsa.Simd.Portable.Ntt.ntt simd_units
         in
         simd_units);
     f_invert_ntt_montgomery_pre
     =
-    (fun (simd_units: t_Array Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients (sz 32)) ->
+    (fun
+        (simd_units: t_Array Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients (mk_usize 32))
+        ->
         true);
     f_invert_ntt_montgomery_post
     =
     (fun
-        (simd_units: t_Array Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients (sz 32))
-        (out: t_Array Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients (sz 32))
+        (simd_units: t_Array Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients (mk_usize 32))
+        (out: t_Array Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients (mk_usize 32))
         ->
         true);
     f_invert_ntt_montgomery
     =
-    fun (simd_units: t_Array Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients (sz 32)) ->
-      let simd_units:t_Array Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients (sz 32) =
+    fun
+      (simd_units: t_Array Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients (mk_usize 32))
+      ->
+      let simd_units:t_Array Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients (mk_usize 32) =
         Libcrux_ml_dsa.Simd.Portable.Invntt.invert_ntt_montgomery simd_units
       in
       simd_units

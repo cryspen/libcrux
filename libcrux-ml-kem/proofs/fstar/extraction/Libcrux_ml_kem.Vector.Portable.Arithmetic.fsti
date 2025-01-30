@@ -3,16 +3,16 @@ module Libcrux_ml_kem.Vector.Portable.Arithmetic
 open Core
 open FStar.Mul
 
-let v_MONTGOMERY_SHIFT: u8 = 16uy
+let v_MONTGOMERY_SHIFT: u8 = mk_u8 16
 
-let v_MONTGOMERY_R: i32 = 1l <<! v_MONTGOMERY_SHIFT
+let v_MONTGOMERY_R: i32 = mk_i32 1 <<! v_MONTGOMERY_SHIFT
 
 /// This is calculated as ⌊(BARRETT_R / FIELD_MODULUS) + 1/2⌋
-let v_BARRETT_MULTIPLIER: i32 = 20159l
+let v_BARRETT_MULTIPLIER: i32 = mk_i32 20159
 
 val get_n_least_significant_bits (n: u8) (value: u32)
     : Prims.Pure u32
-      (requires n <=. 16uy)
+      (requires n <=. mk_u8 16)
       (ensures
         fun result ->
           let result:u32 = result in
@@ -71,11 +71,11 @@ val bitwise_and_with_constant
 
 val shift_right (v_SHIFT_BY: i32) (vec: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
     : Prims.Pure Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
-      (requires v_SHIFT_BY >=. 0l && v_SHIFT_BY <. 16l)
+      (requires v_SHIFT_BY >=. mk_i32 0 && v_SHIFT_BY <. mk_i32 16)
       (ensures
         fun result ->
           let result:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector = result in
-          (v_SHIFT_BY >=. 0l /\ v_SHIFT_BY <. 16l) ==>
+          (v_SHIFT_BY >=. (mk_i32 0) /\ v_SHIFT_BY <. (mk_i32 16)) ==>
           result.f_elements == Spec.Utils.map_array (fun x -> x >>! v_SHIFT_BY) (vec.f_elements))
 
 /// Note: This function is not secret independent
@@ -87,7 +87,8 @@ val cond_subtract_3329_ (vec: Libcrux_ml_kem.Vector.Portable.Vector_type.t_Porta
         fun result ->
           let result:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector = result in
           result.f_elements ==
-          Spec.Utils.map_array (fun x -> if x >=. 3329s then x -! 3329s else x) (vec.f_elements))
+          Spec.Utils.map_array (fun x -> if x >=. (mk_i16 3329) then x -! (mk_i16 3329) else x)
+            (vec.f_elements))
 
 /// Signed Barrett Reduction
 /// Given an input `value`, `barrett_reduce` outputs a representative `result`

@@ -9,21 +9,30 @@ let _ =
   let open Libcrux_ml_kem.Vector.Traits in
   ()
 
-let v_ZETAS_TIMES_MONTGOMERY_R: t_Array i16 (sz 128) =
+let v_ZETAS_TIMES_MONTGOMERY_R: t_Array i16 (mk_usize 128) =
   let _:Prims.unit = assert_norm (pow2 16 == 65536) in
   let list =
     [
-      (-1044s); (-758s); (-359s); (-1517s); 1493s; 1422s; 287s; 202s; (-171s); 622s; 1577s; 182s;
-      962s; (-1202s); (-1474s); 1468s; 573s; (-1325s); 264s; 383s; (-829s); 1458s; (-1602s); (-130s);
-      (-681s); 1017s; 732s; 608s; (-1542s); 411s; (-205s); (-1571s); 1223s; 652s; (-552s); 1015s;
-      (-1293s); 1491s; (-282s); (-1544s); 516s; (-8s); (-320s); (-666s); (-1618s); (-1162s); 126s;
-      1469s; (-853s); (-90s); (-271s); 830s; 107s; (-1421s); (-247s); (-951s); (-398s); 961s;
-      (-1508s); (-725s); 448s; (-1065s); 677s; (-1275s); (-1103s); 430s; 555s; 843s; (-1251s); 871s;
-      1550s; 105s; 422s; 587s; 177s; (-235s); (-291s); (-460s); 1574s; 1653s; (-246s); 778s; 1159s;
-      (-147s); (-777s); 1483s; (-602s); 1119s; (-1590s); 644s; (-872s); 349s; 418s; 329s; (-156s);
-      (-75s); 817s; 1097s; 603s; 610s; 1322s; (-1285s); (-1465s); 384s; (-1215s); (-136s); 1218s;
-      (-1335s); (-874s); 220s; (-1187s); (-1659s); (-1185s); (-1530s); (-1278s); 794s; (-1510s);
-      (-854s); (-870s); 478s; (-108s); (-308s); 996s; 991s; 958s; (-1460s); 1522s; 1628s
+      mk_i16 (-1044); mk_i16 (-758); mk_i16 (-359); mk_i16 (-1517); mk_i16 1493; mk_i16 1422;
+      mk_i16 287; mk_i16 202; mk_i16 (-171); mk_i16 622; mk_i16 1577; mk_i16 182; mk_i16 962;
+      mk_i16 (-1202); mk_i16 (-1474); mk_i16 1468; mk_i16 573; mk_i16 (-1325); mk_i16 264;
+      mk_i16 383; mk_i16 (-829); mk_i16 1458; mk_i16 (-1602); mk_i16 (-130); mk_i16 (-681);
+      mk_i16 1017; mk_i16 732; mk_i16 608; mk_i16 (-1542); mk_i16 411; mk_i16 (-205); mk_i16 (-1571);
+      mk_i16 1223; mk_i16 652; mk_i16 (-552); mk_i16 1015; mk_i16 (-1293); mk_i16 1491;
+      mk_i16 (-282); mk_i16 (-1544); mk_i16 516; mk_i16 (-8); mk_i16 (-320); mk_i16 (-666);
+      mk_i16 (-1618); mk_i16 (-1162); mk_i16 126; mk_i16 1469; mk_i16 (-853); mk_i16 (-90);
+      mk_i16 (-271); mk_i16 830; mk_i16 107; mk_i16 (-1421); mk_i16 (-247); mk_i16 (-951);
+      mk_i16 (-398); mk_i16 961; mk_i16 (-1508); mk_i16 (-725); mk_i16 448; mk_i16 (-1065);
+      mk_i16 677; mk_i16 (-1275); mk_i16 (-1103); mk_i16 430; mk_i16 555; mk_i16 843; mk_i16 (-1251);
+      mk_i16 871; mk_i16 1550; mk_i16 105; mk_i16 422; mk_i16 587; mk_i16 177; mk_i16 (-235);
+      mk_i16 (-291); mk_i16 (-460); mk_i16 1574; mk_i16 1653; mk_i16 (-246); mk_i16 778; mk_i16 1159;
+      mk_i16 (-147); mk_i16 (-777); mk_i16 1483; mk_i16 (-602); mk_i16 1119; mk_i16 (-1590);
+      mk_i16 644; mk_i16 (-872); mk_i16 349; mk_i16 418; mk_i16 329; mk_i16 (-156); mk_i16 (-75);
+      mk_i16 817; mk_i16 1097; mk_i16 603; mk_i16 610; mk_i16 1322; mk_i16 (-1285); mk_i16 (-1465);
+      mk_i16 384; mk_i16 (-1215); mk_i16 (-136); mk_i16 1218; mk_i16 (-1335); mk_i16 (-874);
+      mk_i16 220; mk_i16 (-1187); mk_i16 (-1659); mk_i16 (-1185); mk_i16 (-1530); mk_i16 (-1278);
+      mk_i16 794; mk_i16 (-1510); mk_i16 (-854); mk_i16 (-870); mk_i16 478; mk_i16 (-108);
+      mk_i16 (-308); mk_i16 996; mk_i16 991; mk_i16 958; mk_i16 (-1460); mk_i16 1522; mk_i16 1628
     ]
   in
   FStar.Pervasives.assert_norm (Prims.eq2 (List.Tot.length list) 128);
@@ -31,7 +40,7 @@ let v_ZETAS_TIMES_MONTGOMERY_R: t_Array i16 (sz 128) =
 
 val zeta (i: usize)
     : Prims.Pure i16
-      (requires i <. sz 128)
+      (requires i <. mk_usize 128)
       (ensures
         fun result ->
           let result:i16 = result in
@@ -43,7 +52,7 @@ let v_VECTORS_IN_RING_ELEMENT: usize =
 
 type t_PolynomialRingElement
   (v_Vector: Type0) {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
-  = { f_coefficients:t_Array v_Vector (sz 16) }
+  = { f_coefficients:t_Array v_Vector (mk_usize 16) }
 
 let to_spec_poly_t (#v_Vector: Type0)
     {| i2: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
@@ -86,7 +95,8 @@ val from_i16_array
       (a: t_Slice i16)
     : Prims.Pure (t_PolynomialRingElement v_Vector)
       (requires
-        (v_VECTORS_IN_RING_ELEMENT *! sz 16 <: usize) <=. (Core.Slice.impl__len #i16 a <: usize))
+        (v_VECTORS_IN_RING_ELEMENT *! mk_usize 16 <: usize) <=.
+        (Core.Slice.impl__len #i16 a <: usize))
       (fun _ -> Prims.l_True)
 
 /// Given two polynomial ring elements `lhs` and `rhs`, compute the pointwise
@@ -211,5 +221,6 @@ val impl_2__from_i16_array
       (a: t_Slice i16)
     : Prims.Pure (t_PolynomialRingElement v_Vector)
       (requires
-        (v_VECTORS_IN_RING_ELEMENT *! sz 16 <: usize) <=. (Core.Slice.impl__len #i16 a <: usize))
+        (v_VECTORS_IN_RING_ELEMENT *! mk_usize 16 <: usize) <=.
+        (Core.Slice.impl__len #i16 a <: usize))
       (fun _ -> Prims.l_True)

@@ -9,17 +9,17 @@ val t_Shake128x4:eqtype
 val init_absorb (input0 input1 input2 input3: t_Slice u8)
     : Prims.Pure t_Shake128x4 Prims.l_True (fun _ -> Prims.l_True)
 
-val squeeze_first_five_blocks (state: t_Shake128x4) (out0 out1 out2 out3: t_Array u8 (sz 840))
+val squeeze_first_five_blocks (state: t_Shake128x4) (out0 out1 out2 out3: t_Array u8 (mk_usize 840))
     : Prims.Pure
-      (t_Shake128x4 & t_Array u8 (sz 840) & t_Array u8 (sz 840) & t_Array u8 (sz 840) &
-        t_Array u8 (sz 840)) Prims.l_True (fun _ -> Prims.l_True)
+      (t_Shake128x4 & t_Array u8 (mk_usize 840) & t_Array u8 (mk_usize 840) &
+        t_Array u8 (mk_usize 840) &
+        t_Array u8 (mk_usize 840)) Prims.l_True (fun _ -> Prims.l_True)
 
 val squeeze_next_block (state: t_Shake128x4)
     : Prims.Pure
       (t_Shake128x4 &
-        (t_Array u8 (sz 168) & t_Array u8 (sz 168) & t_Array u8 (sz 168) & t_Array u8 (sz 168)))
-      Prims.l_True
-      (fun _ -> Prims.l_True)
+        (t_Array u8 (mk_usize 168) & t_Array u8 (mk_usize 168) & t_Array u8 (mk_usize 168) &
+          t_Array u8 (mk_usize 168))) Prims.l_True (fun _ -> Prims.l_True)
 
 [@@ FStar.Tactics.Typeclasses.tcinstance]
 val impl:Libcrux_ml_dsa.Hash_functions.Shake128.t_XofX4 t_Shake128x4
@@ -33,16 +33,14 @@ val init_absorb_x4 (input0 input1 input2 input3: t_Slice u8)
 val squeeze_first_block_x4 (state: t_Shake256x4)
     : Prims.Pure
       (t_Shake256x4 &
-        (t_Array u8 (sz 136) & t_Array u8 (sz 136) & t_Array u8 (sz 136) & t_Array u8 (sz 136)))
-      Prims.l_True
-      (fun _ -> Prims.l_True)
+        (t_Array u8 (mk_usize 136) & t_Array u8 (mk_usize 136) & t_Array u8 (mk_usize 136) &
+          t_Array u8 (mk_usize 136))) Prims.l_True (fun _ -> Prims.l_True)
 
 val squeeze_next_block_x4 (state: t_Shake256x4)
     : Prims.Pure
       (t_Shake256x4 &
-        (t_Array u8 (sz 136) & t_Array u8 (sz 136) & t_Array u8 (sz 136) & t_Array u8 (sz 136)))
-      Prims.l_True
-      (fun _ -> Prims.l_True)
+        (t_Array u8 (mk_usize 136) & t_Array u8 (mk_usize 136) & t_Array u8 (mk_usize 136) &
+          t_Array u8 (mk_usize 136))) Prims.l_True (fun _ -> Prims.l_True)
 
 val shake256_x4
       (v_OUT_LEN: usize)

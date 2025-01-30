@@ -22,7 +22,7 @@ let mm256_srli_epi64 (shift: i32 {v shift >= 0 /\ v shift <= 64}) (vec: bit_vec 
 
 let mm256_castsi256_si128 (vec: bit_vec 256): bit_vec 128
   = mk_bv (fun i -> vec i)
-let mm256_extracti128_si256 (control: i32{control == 1l}) (vec: bit_vec 256): bit_vec 128
+let mm256_extracti128_si256 (control: i32{control == mk_i32 1}) (vec: bit_vec 256): bit_vec 128
   = mk_bv (fun i -> vec (i + 128))
 
 let mm256_si256_from_two_si128 (lower upper: bit_vec 128): bit_vec 256
@@ -86,7 +86,7 @@ let mm256_and_si256 (x y: bit_vec 256): bit_vec 256
   = mk_bv (fun i -> if y i = 0 then 0 else x i)
   
 let mm256_set1_epi16 (constant: i16)
-  (#[Tactics.exact (match unify_app (quote constant) (quote (fun n -> ((1s <<! Int32.int_to_t n <: i16) -! 1s <: i16))) [] with
+  (#[Tactics.exact (match unify_app (quote constant) (quote (fun n -> (((mk_i16 1) <<! mk_i32 n <: i16) -! (mk_i16 1) <: i16))) [] with
      | Some [x] -> `(mm256_set1_epi16_pow2_minus_one (`#x))
      | _ -> (quote (mm256_set1_epi16_no_semantics constant))
   )]result: bit_vec 256)
@@ -173,26 +173,26 @@ open FStar.Tactics.V2
 let mm256_mullo_epi16
     (a count: bit_vec 256) 
     (#[(
-      if match unify_app (quote count) (quote (fun x -> mm256_set_epi16 (1s <<! 8l <: i16) (x <<! 9l <: i16)
-                                                               (1s <<! 10l <: i16) (1s <<! 11l <: i16) (1s <<! 12l <: i16) (1s <<! 13l <: i16)
-                                                               (1s <<! 14l <: i16) (-32768s) (1s <<! 8l <: i16) (1s <<! 9l <: i16) (1s <<! 10l <: i16)
-                                                               (1s <<! 11l <: i16) (1s <<! 12l <: i16) (1s <<! 13l <: i16) (1s <<! 14l <: i16) (-32768s))) [] with
-         | Some [x] -> unquote x = 1s
+      if match unify_app (quote count) (quote (fun x -> mm256_set_epi16 ((mk_i16 1) <<! (mk_i32 8) <: i16) (x <<! (mk_i32 9) <: i16)
+                                                               ((mk_i16 1) <<! (mk_i32 10) <: i16) ((mk_i16 1) <<! (mk_i32 11) <: i16) ((mk_i16 1) <<! (mk_i32 12) <: i16) ((mk_i16 1) <<! (mk_i32 13) <: i16)
+                                                               ((mk_i16 1) <<! (mk_i32 14) <: i16) (mk_i16 (-32768)) ((mk_i16 1) <<! (mk_i32 8) <: i16) ((mk_i16 1) <<! (mk_i32 9) <: i16) ((mk_i16 1) <<! (mk_i32 10) <: i16)
+                                                               ((mk_i16 1) <<! (mk_i32 11) <: i16) ((mk_i16 1) <<! (mk_i32 12) <: i16) ((mk_i16 1) <<! (mk_i32 13) <: i16) ((mk_i16 1) <<! (mk_i32 14) <: i16) (mk_i16 (-32768)))) [] with
+         | Some [x] -> unquote x = (mk_i16 1)
          | _ -> false
       then Tactics.exact (quote (mm256_mullo_epi16_specialized1 a))
-      else if match unify_app (quote count) (quote (fun x -> mm256_set_epi16 (1s <<! 0l <: i16) (x <<! 4l <: i16)
-                                                               (1s <<! 0l <: i16) (1s <<! 4l <: i16) (1s <<! 0l <: i16) (1s <<! 4l <: i16) (1s <<! 0l <: i16)
-                                                               (1s <<! 4l <: i16) (1s <<! 0l <: i16) (1s <<! 4l <: i16) (1s <<! 0l <: i16) (1s <<! 4l <: i16)
-                                                               (1s <<! 0l <: i16) (1s <<! 4l <: i16) (1s <<! 0l <: i16) (1s <<! 4l <: i16))) [] with
-              | Some [x] -> unquote x = 1s
+      else if match unify_app (quote count) (quote (fun x -> mm256_set_epi16 ((mk_i16 1) <<! (mk_i32 0) <: i16) (x <<! (mk_i32 4) <: i16)
+                                                               ((mk_i16 1) <<! (mk_i32 0) <: i16) ((mk_i16 1) <<! (mk_i32 4) <: i16) ((mk_i16 1) <<! (mk_i32 0) <: i16) ((mk_i16 1) <<! (mk_i32 4) <: i16) ((mk_i16 1) <<! (mk_i32 0) <: i16)
+                                                               ((mk_i16 1) <<! (mk_i32 4) <: i16) ((mk_i16 1) <<! (mk_i32 0) <: i16) ((mk_i16 1) <<! (mk_i32 4) <: i16) ((mk_i16 1) <<! (mk_i32 0) <: i16) ((mk_i16 1) <<! (mk_i32 4) <: i16)
+                                                               ((mk_i16 1) <<! (mk_i32 0) <: i16) ((mk_i16 1) <<! (mk_i32 4) <: i16) ((mk_i16 1) <<! (mk_i32 0) <: i16) ((mk_i16 1) <<! (mk_i32 4) <: i16))) [] with
+              | Some [x] -> unquote x = (mk_i16 1)
               | _ -> false
            then Tactics.exact (quote (mm256_mullo_epi16_specialized2 a))
            else 
-             if match unify_app (quote count) (quote (fun x -> mm256_set_epi16 (1s <<! 0l <: i16) (x <<! 2l <: i16)
-                                                               (1s <<! 4l <: i16) (1s <<! 6l <: i16) (1s <<! 0l <: i16) (1s <<! 2l <: i16) (1s <<! 4l <: i16)
-                                                               (1s <<! 6l <: i16) (1s <<! 0l <: i16) (1s <<! 2l <: i16) (1s <<! 4l <: i16) (1s <<! 6l <: i16)
-                                                               (1s <<! 0l <: i16) (1s <<! 2l <: i16) (1s <<! 4l <: i16) (1s <<! 6l <: i16))) [] with
-                | Some [x] -> unquote x = 1s
+             if match unify_app (quote count) (quote (fun x -> mm256_set_epi16 ((mk_i16 1) <<! (mk_i32 0) <: i16) (x <<! (mk_i32 2) <: i16)
+                                                               ((mk_i16 1) <<! (mk_i32 4) <: i16) ((mk_i16 1) <<! (mk_i32 6) <: i16) ((mk_i16 1) <<! (mk_i32 0) <: i16) ((mk_i16 1) <<! (mk_i32 2) <: i16) ((mk_i16 1) <<! (mk_i32 4) <: i16)
+                                                               ((mk_i16 1) <<! (mk_i32 6) <: i16) ((mk_i16 1) <<! (mk_i32 0) <: i16) ((mk_i16 1) <<! (mk_i32 2) <: i16) ((mk_i16 1) <<! (mk_i32 4) <: i16) ((mk_i16 1) <<! (mk_i32 6) <: i16)
+                                                               ((mk_i16 1) <<! (mk_i32 0) <: i16) ((mk_i16 1) <<! (mk_i32 2) <: i16) ((mk_i16 1) <<! (mk_i32 4) <: i16) ((mk_i16 1) <<! (mk_i32 6) <: i16))) [] with
+                | Some [x] -> unquote x = (mk_i16 1)
                 | _ -> false
              then Tactics.exact (quote (mm256_mullo_epi16_specialized3 a))
              else 
@@ -201,22 +201,22 @@ let mm256_mullo_epi16
 
 let madd_rhs (n: nat {n < 16}) = 
   mm256_set_epi16 
-    (1s <<! Int32.int_to_t n <: i16) 
-    1s 
-    (1s <<! Int32.int_to_t n <: i16) 
-    1s
-    (1s <<! Int32.int_to_t n <: i16) 
-    1s 
-    (1s <<! Int32.int_to_t n <: i16)
-    1s 
-    (1s <<! Int32.int_to_t n <: i16) 
-    1s 
-    (1s <<! Int32.int_to_t n <: i16) 
-    1s
-    (1s <<! Int32.int_to_t n <: i16) 
-    1s 
-    (1s <<! Int32.int_to_t n <: i16) 
-    1s
+    ((mk_i16 1) <<! mk_i32 n <: i16) 
+    (mk_i16 1) 
+    ((mk_i16 1) <<! mk_i32 n <: i16) 
+    (mk_i16 1)
+    ((mk_i16 1) <<! mk_i32 n <: i16) 
+    (mk_i16 1) 
+    ((mk_i16 1) <<! mk_i32 n <: i16)
+    (mk_i16 1) 
+    ((mk_i16 1) <<! mk_i32 n <: i16) 
+    (mk_i16 1) 
+    ((mk_i16 1) <<! mk_i32 n <: i16) 
+    (mk_i16 1)
+    ((mk_i16 1) <<! mk_i32 n <: i16) 
+    (mk_i16 1) 
+    ((mk_i16 1) <<! mk_i32 n <: i16) 
+    (mk_i16 1)
 
 val mm256_madd_epi16_no_semantic: bit_vec 256 -> bit_vec 256 -> bit_vec 256
 
@@ -273,8 +273,8 @@ let mm_shuffle_epi8
     let t = match unify_app (quote y) 
       (quote (fun x0 x1 x2 x3 x4 x5 x6 x7 x8 x9 x10 x11 x12 x13 x14 x15 -> 
         mm_set_epi8
-          (UInt8.uint_to_t x0 ) (UInt8.uint_to_t x1 ) (UInt8.uint_to_t x2 ) (UInt8.uint_to_t x3 ) (UInt8.uint_to_t x4 ) (UInt8.uint_to_t x5 ) (UInt8.uint_to_t x6 ) (UInt8.uint_to_t x7 )
-          (UInt8.uint_to_t x8 ) (UInt8.uint_to_t x9 ) (UInt8.uint_to_t x10) (UInt8.uint_to_t x11) (UInt8.uint_to_t x12) (UInt8.uint_to_t x13) (UInt8.uint_to_t x14) (UInt8.uint_to_t x15))) [] with
+          (mk_u8 x0 ) (mk_u8 x1 ) (mk_u8 x2 ) (mk_u8 x3 ) (mk_u8 x4 ) (mk_u8 x5 ) (mk_u8 x6 ) (mk_u8 x7 )
+          (mk_u8 x8 ) (mk_u8 x9 ) (mk_u8 x10) (mk_u8 x11) (mk_u8 x12) (mk_u8 x13) (mk_u8 x14) (mk_u8 x15))) [] with
     | Some [x0;x1;x2;x3;x4;x5;x6;x7;x8;x9;x10;x11;x12;x13;x14;x15] ->
       `(mm_shuffle_epi8_u8 (`@x)
                               (mk_list_16
@@ -301,10 +301,10 @@ let mm256_shuffle_epi8
     let t = match unify_app (quote y) 
       (quote (fun x0 x1 x2 x3 x4 x5 x6 x7 x8 x9 x10 x11 x12 x13 x14 x15 x16 x17 x18 x19 x20 x21 x22 x23 x24 x25 x26 x27 x28 x29 x30 x31 -> 
         mm256_set_epi8
-          (Int8.int_to_t x0 ) (Int8.int_to_t x1 ) (Int8.int_to_t x2 ) (Int8.int_to_t x3 ) (Int8.int_to_t x4 ) (Int8.int_to_t x5 ) (Int8.int_to_t x6 ) (Int8.int_to_t x7 )
-          (Int8.int_to_t x8 ) (Int8.int_to_t x9 ) (Int8.int_to_t x10) (Int8.int_to_t x11) (Int8.int_to_t x12) (Int8.int_to_t x13) (Int8.int_to_t x14) (Int8.int_to_t x15)
-          (Int8.int_to_t x16) (Int8.int_to_t x17) (Int8.int_to_t x18) (Int8.int_to_t x19) (Int8.int_to_t x20) (Int8.int_to_t x21) (Int8.int_to_t x22) (Int8.int_to_t x23)
-          (Int8.int_to_t x24) (Int8.int_to_t x25) (Int8.int_to_t x26) (Int8.int_to_t x27) (Int8.int_to_t x28) (Int8.int_to_t x29) (Int8.int_to_t x30) (Int8.int_to_t x31))) [] with
+          (mk_i8 x0 ) (mk_i8 x1 ) (mk_i8 x2 ) (mk_i8 x3 ) (mk_i8 x4 ) (mk_i8 x5 ) (mk_i8 x6 ) (mk_i8 x7 )
+          (mk_i8 x8 ) (mk_i8 x9 ) (mk_i8 x10) (mk_i8 x11) (mk_i8 x12) (mk_i8 x13) (mk_i8 x14) (mk_i8 x15)
+          (mk_i8 x16) (mk_i8 x17) (mk_i8 x18) (mk_i8 x19) (mk_i8 x20) (mk_i8 x21) (mk_i8 x22) (mk_i8 x23)
+          (mk_i8 x24) (mk_i8 x25) (mk_i8 x26) (mk_i8 x27) (mk_i8 x28) (mk_i8 x29) (mk_i8 x30) (mk_i8 x31))) [] with
     | Some [x0;x1;x2;x3;x4;x5;x6;x7;x8;x9;x10;x11;x12;x13;x14;x15;x16;x17;x18;x19;x20;x21;x22;x23;x24;x25;x26;x27;x28;x29;x30;x31] ->
       `(mm256_shuffle_epi8_i8 (`@x)
                               (mk_list_32
@@ -331,8 +331,8 @@ let mm256_permutevar8x32_epi32
     let t = match unify_app (quote y) 
       (quote (fun x0 x1 x2 x3 x4 x5 x6 x7 -> 
         mm256_set_epi32
-          (Int32.int_to_t x0) (Int32.int_to_t x1) (Int32.int_to_t x2) (Int32.int_to_t x3) 
-          (Int32.int_to_t x4) (Int32.int_to_t x5) (Int32.int_to_t x6) (Int32.int_to_t x7))) [] with
+          (mk_i32 x0) (mk_i32 x1) (mk_i32 x2) (mk_i32 x3) 
+          (mk_i32 x4) (mk_i32 x5) (mk_i32 x6) (mk_i32 x7))) [] with
     | Some [x0;x1;x2;x3;x4;x5;x6;x7] ->
       `(mm256_permutevar8x32_epi32_i32 (`@x)
                               (mk_list_8 (`#x0 ) (`#x1 ) (`#x2 ) (`#x3 ) (`#x4 ) (`#x5 ) (`#x6 ) (`#x7 )))
@@ -354,8 +354,8 @@ let mm256_sllv_epi32
     let t = match unify_app (quote y) 
       (quote (fun x0 x1 x2 x3 x4 x5 x6 x7 -> 
         mm256_set_epi32
-          (Int32.int_to_t x0) (Int32.int_to_t x1) (Int32.int_to_t x2) (Int32.int_to_t x3) 
-          (Int32.int_to_t x4) (Int32.int_to_t x5) (Int32.int_to_t x6) (Int32.int_to_t x7))) [] with
+          (mk_i32 x0) (mk_i32 x1) (mk_i32 x2) (mk_i32 x3) 
+          (mk_i32 x4) (mk_i32 x5) (mk_i32 x6) (mk_i32 x7))) [] with
     | Some [x0;x1;x2;x3;x4;x5;x6;x7] ->
       `(mm256_sllv_epi32_i32 (`@x)
                               (mk_list_8 (`#x0 ) (`#x1 ) (`#x2 ) (`#x3 ) (`#x4 ) (`#x5 ) (`#x6 ) (`#x7 )))
@@ -421,5 +421,5 @@ let tassert (x: bool): Tac unit
 private let example: bit_vec 256 = mk_bv (fun i -> if i % 16 = 15 then 1 else 0)
 
 private let x = bv_to_string example
-private let y = bv_to_string (mm256_srli_epi16 15l example)
+private let y = bv_to_string (mm256_srli_epi16 (mk_i32 15) example)
 

@@ -9,13 +9,13 @@
     slice.len() <= LEN
 ))]
 #[cfg_attr(hax, hax_lib::ensures(|result|
-    fstar!(r#"$result == Seq.append $slice (Seq.create (v $LEN - v (${slice.len()})) 0uy)"#)))]
+    fstar!(r#"$result == Seq.append $slice (Seq.create (v $LEN - v (${slice.len()})) (mk_u8 0))"#)))]
 pub(crate) fn into_padded_array<const LEN: usize>(slice: &[u8]) -> [u8; LEN] {
     let mut out = [0u8; LEN];
     out[0..slice.len()].copy_from_slice(slice);
     hax_lib::fstar!(r#"assert (Seq.slice out 0 (Seq.length slice) == slice)"#);
     hax_lib::fstar!(
-        r#"assert (Seq.slice out (Seq.length slice) (v v_LEN) == Seq.slice (Seq.create (v v_LEN) 0uy) (Seq.length slice) (v v_LEN))"#
+        r#"assert (Seq.slice out (Seq.length slice) (v v_LEN) == Seq.slice (Seq.create (v v_LEN) (mk_u8 0)) (Seq.length slice) (v v_LEN))"#
     );
     hax_lib::fstar!(
         "assert (forall i. i < Seq.length slice ==> Seq.index out i == Seq.index slice i)"
@@ -24,7 +24,7 @@ pub(crate) fn into_padded_array<const LEN: usize>(slice: &[u8]) -> [u8; LEN] {
         r#"assert (forall i. (i >= Seq.length slice && i < v v_LEN) ==> Seq.index out i == Seq.index (Seq.slice out (Seq.length slice) (v v_LEN)) (i - Seq.length slice))"#
     );
     hax_lib::fstar!(
-        "Seq.lemma_eq_intro out (Seq.append slice (Seq.create (v v_LEN - Seq.length slice) 0uy))"
+        "Seq.lemma_eq_intro out (Seq.append slice (Seq.create (v v_LEN - Seq.length slice) (mk_u8 0)))"
     );
     out
 }

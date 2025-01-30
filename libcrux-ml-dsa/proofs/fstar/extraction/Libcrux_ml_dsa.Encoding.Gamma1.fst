@@ -32,10 +32,10 @@ let serialize
           let i, simd_unit:(usize & v_SIMDUnit) = temp_1_ in
           Rust_primitives.Hax.Monomorphized_update_at.update_at_range serialized
             ({
-                Core.Ops.Range.f_start = i *! (gamma1_exponent +! sz 1 <: usize) <: usize;
+                Core.Ops.Range.f_start = i *! (gamma1_exponent +! mk_usize 1 <: usize) <: usize;
                 Core.Ops.Range.f_end
                 =
-                (i +! sz 1 <: usize) *! (gamma1_exponent +! sz 1 <: usize) <: usize
+                (i +! mk_usize 1 <: usize) *! (gamma1_exponent +! mk_usize 1 <: usize) <: usize
               }
               <:
               Core.Ops.Range.t_Range usize)
@@ -43,10 +43,14 @@ let serialize
                 #FStar.Tactics.Typeclasses.solve
                 simd_unit
                 (serialized.[ {
-                      Core.Ops.Range.f_start = i *! (gamma1_exponent +! sz 1 <: usize) <: usize;
+                      Core.Ops.Range.f_start
+                      =
+                      i *! (gamma1_exponent +! mk_usize 1 <: usize) <: usize;
                       Core.Ops.Range.f_end
                       =
-                      (i +! sz 1 <: usize) *! (gamma1_exponent +! sz 1 <: usize) <: usize
+                      (i +! mk_usize 1 <: usize) *! (gamma1_exponent +! mk_usize 1 <: usize)
+                      <:
+                      usize
                     }
                     <:
                     Core.Ops.Range.t_Range usize ]
@@ -71,7 +75,7 @@ let deserialize
       (result: Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
      =
   let result:Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit =
-    Rust_primitives.Hax.Folds.fold_range (sz 0)
+    Rust_primitives.Hax.Folds.fold_range (mk_usize 0)
       (Core.Slice.impl__len #v_SIMDUnit
           (result.Libcrux_ml_dsa.Polynomial.f_simd_units <: t_Slice v_SIMDUnit)
         <:
@@ -94,10 +98,14 @@ let deserialize
               (Libcrux_ml_dsa.Simd.Traits.f_gamma1_deserialize #v_SIMDUnit
                   #FStar.Tactics.Typeclasses.solve
                   (serialized.[ {
-                        Core.Ops.Range.f_start = i *! (gamma1_exponent +! sz 1 <: usize) <: usize;
+                        Core.Ops.Range.f_start
+                        =
+                        i *! (gamma1_exponent +! mk_usize 1 <: usize) <: usize;
                         Core.Ops.Range.f_end
                         =
-                        (i +! sz 1 <: usize) *! (gamma1_exponent +! sz 1 <: usize) <: usize
+                        (i +! mk_usize 1 <: usize) *! (gamma1_exponent +! mk_usize 1 <: usize)
+                        <:
+                        usize
                       }
                       <:
                       Core.Ops.Range.t_Range usize ]
@@ -108,7 +116,7 @@ let deserialize
                 <:
                 v_SIMDUnit)
             <:
-            t_Array v_SIMDUnit (sz 32)
+            t_Array v_SIMDUnit (mk_usize 32)
           }
           <:
           Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)

@@ -65,7 +65,7 @@ val keypair_from_private_key
 val generate_keypair_avx2
       (v_K v_CPA_PRIVATE_KEY_SIZE v_PRIVATE_KEY_SIZE v_PUBLIC_KEY_SIZE v_BYTES_PER_RING_ELEMENT v_ETA1 v_ETA1_RANDOMNESS_SIZE:
           usize)
-      (randomness: t_Array u8 (sz 64))
+      (randomness: t_Array u8 (mk_usize 64))
       (out:
           Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemKeyPairUnpacked v_K
             Libcrux_ml_kem.Vector.Avx2.t_SIMD256Vector)
@@ -83,7 +83,7 @@ val generate_keypair_avx2
 val generate_keypair
       (v_K v_CPA_PRIVATE_KEY_SIZE v_PRIVATE_KEY_SIZE v_PUBLIC_KEY_SIZE v_BYTES_PER_RING_ELEMENT v_ETA1 v_ETA1_RANDOMNESS_SIZE:
           usize)
-      (randomness: t_Array u8 (sz 64))
+      (randomness: t_Array u8 (mk_usize 64))
       (out:
           Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemKeyPairUnpacked v_K
             Libcrux_ml_kem.Vector.Avx2.t_SIMD256Vector)
@@ -103,8 +103,9 @@ val encapsulate_avx2
       (public_key:
           Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemPublicKeyUnpacked v_K
             Libcrux_ml_kem.Vector.Avx2.t_SIMD256Vector)
-      (randomness: t_Array u8 (sz 32))
-    : Prims.Pure (Libcrux_ml_kem.Types.t_MlKemCiphertext v_CIPHERTEXT_SIZE & t_Array u8 (sz 32))
+      (randomness: t_Array u8 (mk_usize 32))
+    : Prims.Pure
+      (Libcrux_ml_kem.Types.t_MlKemCiphertext v_CIPHERTEXT_SIZE & t_Array u8 (mk_usize 32))
       (requires
         Spec.MLKEM.is_rank v_K /\ v_ETA1 == Spec.MLKEM.v_ETA1 v_K /\
         v_ETA1_RANDOMNESS_SIZE == Spec.MLKEM.v_ETA1_RANDOMNESS_SIZE v_K /\
@@ -124,8 +125,9 @@ val encapsulate
       (public_key:
           Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemPublicKeyUnpacked v_K
             Libcrux_ml_kem.Vector.Avx2.t_SIMD256Vector)
-      (randomness: t_Array u8 (sz 32))
-    : Prims.Pure (Libcrux_ml_kem.Types.t_MlKemCiphertext v_CIPHERTEXT_SIZE & t_Array u8 (sz 32))
+      (randomness: t_Array u8 (mk_usize 32))
+    : Prims.Pure
+      (Libcrux_ml_kem.Types.t_MlKemCiphertext v_CIPHERTEXT_SIZE & t_Array u8 (mk_usize 32))
       (requires
         Spec.MLKEM.is_rank v_K /\ v_ETA1 == Spec.MLKEM.v_ETA1 v_K /\
         v_ETA1_RANDOMNESS_SIZE == Spec.MLKEM.v_ETA1_RANDOMNESS_SIZE v_K /\
@@ -145,7 +147,7 @@ val decapsulate_avx2
           Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemKeyPairUnpacked v_K
             Libcrux_ml_kem.Vector.Avx2.t_SIMD256Vector)
       (ciphertext: Libcrux_ml_kem.Types.t_MlKemCiphertext v_CIPHERTEXT_SIZE)
-    : Prims.Pure (t_Array u8 (sz 32))
+    : Prims.Pure (t_Array u8 (mk_usize 32))
       (requires
         Spec.MLKEM.is_rank v_K /\ v_ETA1 == Spec.MLKEM.v_ETA1 v_K /\
         v_ETA1_RANDOMNESS_SIZE == Spec.MLKEM.v_ETA1_RANDOMNESS_SIZE v_K /\
@@ -167,7 +169,7 @@ val decapsulate
           Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemKeyPairUnpacked v_K
             Libcrux_ml_kem.Vector.Avx2.t_SIMD256Vector)
       (ciphertext: Libcrux_ml_kem.Types.t_MlKemCiphertext v_CIPHERTEXT_SIZE)
-    : Prims.Pure (t_Array u8 (sz 32))
+    : Prims.Pure (t_Array u8 (mk_usize 32))
       (requires
         Spec.MLKEM.is_rank v_K /\ v_ETA1 == Spec.MLKEM.v_ETA1 v_K /\
         v_ETA1_RANDOMNESS_SIZE == Spec.MLKEM.v_ETA1_RANDOMNESS_SIZE v_K /\

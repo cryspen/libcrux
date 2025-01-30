@@ -14,7 +14,7 @@ let impl (v_SIZE: usize) : Core.Default.t_Default (t_MlKemCiphertext v_SIZE) =
     f_default
     =
     fun (_: Prims.unit) ->
-      { f_value = Rust_primitives.Hax.repeat 0uy v_SIZE } <: t_MlKemCiphertext v_SIZE
+      { f_value = Rust_primitives.Hax.repeat (mk_u8 0) v_SIZE } <: t_MlKemCiphertext v_SIZE
   }
 
 [@@ FStar.Tactics.Typeclasses.tcinstance]
@@ -23,7 +23,7 @@ let impl_4 (v_SIZE: usize) : Core.Convert.t_AsRef (t_MlKemCiphertext v_SIZE) (t_
     f_as_ref_pre = (fun (self: t_MlKemCiphertext v_SIZE) -> true);
     f_as_ref_post
     =
-    (fun (self___: t_MlKemCiphertext v_SIZE) (result: t_Slice u8) -> result = self___.f_value);
+    (fun (self_: t_MlKemCiphertext v_SIZE) (result: t_Slice u8) -> result = self_.f_value);
     f_as_ref = fun (self: t_MlKemCiphertext v_SIZE) -> self.f_value <: t_Slice u8
   }
 
@@ -114,7 +114,7 @@ let impl_7 (v_SIZE: usize) : Core.Default.t_Default (t_MlKemPrivateKey v_SIZE) =
     f_default
     =
     fun (_: Prims.unit) ->
-      { f_value = Rust_primitives.Hax.repeat 0uy v_SIZE } <: t_MlKemPrivateKey v_SIZE
+      { f_value = Rust_primitives.Hax.repeat (mk_u8 0) v_SIZE } <: t_MlKemPrivateKey v_SIZE
   }
 
 [@@ FStar.Tactics.Typeclasses.tcinstance]
@@ -123,7 +123,7 @@ let impl_11 (v_SIZE: usize) : Core.Convert.t_AsRef (t_MlKemPrivateKey v_SIZE) (t
     f_as_ref_pre = (fun (self: t_MlKemPrivateKey v_SIZE) -> true);
     f_as_ref_post
     =
-    (fun (self___: t_MlKemPrivateKey v_SIZE) (result: t_Slice u8) -> result = self___.f_value);
+    (fun (self_: t_MlKemPrivateKey v_SIZE) (result: t_Slice u8) -> result = self_.f_value);
     f_as_ref = fun (self: t_MlKemPrivateKey v_SIZE) -> self.f_value <: t_Slice u8
   }
 
@@ -214,7 +214,7 @@ let impl_14 (v_SIZE: usize) : Core.Default.t_Default (t_MlKemPublicKey v_SIZE) =
     f_default
     =
     fun (_: Prims.unit) ->
-      { f_value = Rust_primitives.Hax.repeat 0uy v_SIZE } <: t_MlKemPublicKey v_SIZE
+      { f_value = Rust_primitives.Hax.repeat (mk_u8 0) v_SIZE } <: t_MlKemPublicKey v_SIZE
   }
 
 [@@ FStar.Tactics.Typeclasses.tcinstance]
@@ -223,7 +223,7 @@ let impl_18 (v_SIZE: usize) : Core.Convert.t_AsRef (t_MlKemPublicKey v_SIZE) (t_
     f_as_ref_pre = (fun (self: t_MlKemPublicKey v_SIZE) -> true);
     f_as_ref_post
     =
-    (fun (self___: t_MlKemPublicKey v_SIZE) (result: t_Slice u8) -> result = self___.f_value);
+    (fun (self_: t_MlKemPublicKey v_SIZE) (result: t_Slice u8) -> result = self_.f_value);
     f_as_ref = fun (self: t_MlKemPublicKey v_SIZE) -> self.f_value <: t_Slice u8
   }
 

@@ -18,7 +18,10 @@ let impl: Libcrux_ml_kem.Vector.Traits.t_Repr Libcrux_ml_kem.Vector.Neon.Vector_
     f_repr_pre = (fun (x: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) -> true);
     f_repr_post
     =
-    (fun (x: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) (out: t_Array i16 (sz 16)) ->
+    (fun
+        (x: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector)
+        (out: t_Array i16 (mk_usize 16))
+        ->
         true);
     f_repr
     =
@@ -27,38 +30,38 @@ let impl: Libcrux_ml_kem.Vector.Traits.t_Repr Libcrux_ml_kem.Vector.Neon.Vector_
   }
 
 let rej_sample (a: t_Slice u8) (result: t_Slice i16) =
-  let sampled:usize = sz 0 in
+  let sampled:usize = mk_usize 0 in
   let result, sampled:(t_Slice i16 & usize) =
     Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Slice.Iter.t_Chunks
             u8)
           #FStar.Tactics.Typeclasses.solve
-          (Core.Slice.impl__chunks #u8 a (sz 3) <: Core.Slice.Iter.t_Chunks u8)
+          (Core.Slice.impl__chunks #u8 a (mk_usize 3) <: Core.Slice.Iter.t_Chunks u8)
         <:
         Core.Slice.Iter.t_Chunks u8)
       (result, sampled <: (t_Slice i16 & usize))
       (fun temp_0_ bytes ->
           let result, sampled:(t_Slice i16 & usize) = temp_0_ in
           let bytes:t_Slice u8 = bytes in
-          let b1:i16 = cast (bytes.[ sz 0 ] <: u8) <: i16 in
-          let b2:i16 = cast (bytes.[ sz 1 ] <: u8) <: i16 in
-          let b3:i16 = cast (bytes.[ sz 2 ] <: u8) <: i16 in
-          let d1:i16 = ((b2 &. 15s <: i16) <<! 8l <: i16) |. b1 in
-          let d2:i16 = (b3 <<! 4l <: i16) |. (b2 >>! 4l <: i16) in
+          let b1:i16 = cast (bytes.[ mk_usize 0 ] <: u8) <: i16 in
+          let b2:i16 = cast (bytes.[ mk_usize 1 ] <: u8) <: i16 in
+          let b3:i16 = cast (bytes.[ mk_usize 2 ] <: u8) <: i16 in
+          let d1:i16 = ((b2 &. mk_i16 15 <: i16) <<! mk_i32 8 <: i16) |. b1 in
+          let d2:i16 = (b3 <<! mk_i32 4 <: i16) |. (b2 >>! mk_i32 4 <: i16) in
           let result, sampled:(t_Slice i16 & usize) =
-            if d1 <. Libcrux_ml_kem.Vector.Traits.v_FIELD_MODULUS && sampled <. sz 16
+            if d1 <. Libcrux_ml_kem.Vector.Traits.v_FIELD_MODULUS && sampled <. mk_usize 16
             then
               let result:t_Slice i16 =
                 Rust_primitives.Hax.Monomorphized_update_at.update_at_usize result sampled d1
               in
-              result, sampled +! sz 1 <: (t_Slice i16 & usize)
+              result, sampled +! mk_usize 1 <: (t_Slice i16 & usize)
             else result, sampled <: (t_Slice i16 & usize)
           in
-          if d2 <. Libcrux_ml_kem.Vector.Traits.v_FIELD_MODULUS && sampled <. sz 16
+          if d2 <. Libcrux_ml_kem.Vector.Traits.v_FIELD_MODULUS && sampled <. mk_usize 16
           then
             let result:t_Slice i16 =
               Rust_primitives.Hax.Monomorphized_update_at.update_at_usize result sampled d2
             in
-            result, sampled +! sz 1 <: (t_Slice i16 & usize)
+            result, sampled +! mk_usize 1 <: (t_Slice i16 & usize)
           else result, sampled <: (t_Slice i16 & usize))
   in
   let hax_temp_output:usize = sampled in
@@ -75,11 +78,11 @@ Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector =
     f_ZERO_post
     =
     (fun (_: Prims.unit) (out: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) ->
-        impl.f_repr out == Seq.create 16 0s);
+        impl.f_repr out == Seq.create 16 (mk_i16 0));
     f_ZERO = (fun (_: Prims.unit) -> Libcrux_ml_kem.Vector.Neon.Vector_type.v_ZERO ());
     f_from_i16_array_pre
     =
-    (fun (array: t_Slice i16) -> (Core.Slice.impl__len #i16 array <: usize) =. sz 16);
+    (fun (array: t_Slice i16) -> (Core.Slice.impl__len #i16 array <: usize) =. mk_usize 16);
     f_from_i16_array_post
     =
     (fun (array: t_Slice i16) (out: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) ->
@@ -90,7 +93,10 @@ Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector =
     f_to_i16_array_pre = (fun (x: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) -> true);
     f_to_i16_array_post
     =
-    (fun (x: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) (out: t_Array i16 (sz 16)) ->
+    (fun
+        (x: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector)
+        (out: t_Array i16 (mk_usize 16))
+        ->
         out == impl.f_repr x);
     f_to_i16_array
     =
@@ -185,10 +191,10 @@ Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector =
     =
     (fun (v_SHIFT_BY: i32) (v: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) ->
         Libcrux_ml_kem.Vector.Neon.Arithmetic.shift_right v_SHIFT_BY v);
-    f_cond_subtract_3329_pre
+    f_cond_subtract_3329__pre
     =
     (fun (v: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) -> true);
-    f_cond_subtract_3329_post
+    f_cond_subtract_3329__post
     =
     (fun
         (v: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector)
@@ -226,8 +232,8 @@ Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector =
     =
     (fun (v: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) (c: i16) ->
         Libcrux_ml_kem.Vector.Neon.Arithmetic.montgomery_multiply_by_constant v c);
-    f_compress_1_pre = (fun (v: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) -> true);
-    f_compress_1_post
+    f_compress_1__pre = (fun (v: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) -> true);
+    f_compress_1__post
     =
     (fun
         (v: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector)
@@ -430,97 +436,115 @@ Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector =
         (zeta4: i16)
         ->
         Libcrux_ml_kem.Vector.Neon.Ntt.ntt_multiply lhs rhs zeta1 zeta2 zeta3 zeta4);
-    f_serialize_1_pre = (fun (a: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) -> true);
-    f_serialize_1_post
+    f_serialize_1__pre = (fun (a: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) -> true);
+    f_serialize_1__post
     =
-    (fun (a: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) (out: t_Array u8 (sz 2)) ->
+    (fun
+        (a: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector)
+        (out: t_Array u8 (mk_usize 2))
+        ->
         true);
     f_serialize_1_
     =
     (fun (a: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) ->
         Libcrux_ml_kem.Vector.Neon.Serialize.serialize_1_ a);
-    f_deserialize_1_pre = (fun (a: t_Slice u8) -> true);
-    f_deserialize_1_post
+    f_deserialize_1__pre = (fun (a: t_Slice u8) -> true);
+    f_deserialize_1__post
     =
     (fun (a: t_Slice u8) (out: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) -> true);
     f_deserialize_1_
     =
     (fun (a: t_Slice u8) -> Libcrux_ml_kem.Vector.Neon.Serialize.deserialize_1_ a);
-    f_serialize_4_pre = (fun (a: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) -> true);
-    f_serialize_4_post
+    f_serialize_4__pre = (fun (a: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) -> true);
+    f_serialize_4__post
     =
-    (fun (a: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) (out: t_Array u8 (sz 8)) ->
+    (fun
+        (a: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector)
+        (out: t_Array u8 (mk_usize 8))
+        ->
         true);
     f_serialize_4_
     =
     (fun (a: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) ->
         Libcrux_ml_kem.Vector.Neon.Serialize.serialize_4_ a);
-    f_deserialize_4_pre = (fun (a: t_Slice u8) -> true);
-    f_deserialize_4_post
+    f_deserialize_4__pre = (fun (a: t_Slice u8) -> true);
+    f_deserialize_4__post
     =
     (fun (a: t_Slice u8) (out: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) -> true);
     f_deserialize_4_
     =
     (fun (a: t_Slice u8) -> Libcrux_ml_kem.Vector.Neon.Serialize.deserialize_4_ a);
-    f_serialize_5_pre = (fun (a: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) -> true);
-    f_serialize_5_post
+    f_serialize_5__pre = (fun (a: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) -> true);
+    f_serialize_5__post
     =
-    (fun (a: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) (out: t_Array u8 (sz 10)) ->
+    (fun
+        (a: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector)
+        (out: t_Array u8 (mk_usize 10))
+        ->
         true);
     f_serialize_5_
     =
     (fun (a: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) ->
         Libcrux_ml_kem.Vector.Neon.Serialize.serialize_5_ a);
-    f_deserialize_5_pre = (fun (a: t_Slice u8) -> true);
-    f_deserialize_5_post
+    f_deserialize_5__pre = (fun (a: t_Slice u8) -> true);
+    f_deserialize_5__post
     =
     (fun (a: t_Slice u8) (out: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) -> true);
     f_deserialize_5_
     =
     (fun (a: t_Slice u8) -> Libcrux_ml_kem.Vector.Neon.Serialize.deserialize_5_ a);
-    f_serialize_10_pre = (fun (a: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) -> true);
-    f_serialize_10_post
+    f_serialize_10__pre = (fun (a: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) -> true);
+    f_serialize_10__post
     =
-    (fun (a: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) (out: t_Array u8 (sz 20)) ->
+    (fun
+        (a: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector)
+        (out: t_Array u8 (mk_usize 20))
+        ->
         true);
     f_serialize_10_
     =
     (fun (a: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) ->
         Libcrux_ml_kem.Vector.Neon.Serialize.serialize_10_ a);
-    f_deserialize_10_pre = (fun (a: t_Slice u8) -> true);
-    f_deserialize_10_post
+    f_deserialize_10__pre = (fun (a: t_Slice u8) -> true);
+    f_deserialize_10__post
     =
     (fun (a: t_Slice u8) (out: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) -> true);
     f_deserialize_10_
     =
     (fun (a: t_Slice u8) -> Libcrux_ml_kem.Vector.Neon.Serialize.deserialize_10_ a);
-    f_serialize_11_pre = (fun (a: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) -> true);
-    f_serialize_11_post
+    f_serialize_11__pre = (fun (a: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) -> true);
+    f_serialize_11__post
     =
-    (fun (a: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) (out: t_Array u8 (sz 22)) ->
+    (fun
+        (a: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector)
+        (out: t_Array u8 (mk_usize 22))
+        ->
         true);
     f_serialize_11_
     =
     (fun (a: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) ->
         Libcrux_ml_kem.Vector.Neon.Serialize.serialize_11_ a);
-    f_deserialize_11_pre = (fun (a: t_Slice u8) -> true);
-    f_deserialize_11_post
+    f_deserialize_11__pre = (fun (a: t_Slice u8) -> true);
+    f_deserialize_11__post
     =
     (fun (a: t_Slice u8) (out: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) -> true);
     f_deserialize_11_
     =
     (fun (a: t_Slice u8) -> Libcrux_ml_kem.Vector.Neon.Serialize.deserialize_11_ a);
-    f_serialize_12_pre = (fun (a: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) -> true);
-    f_serialize_12_post
+    f_serialize_12__pre = (fun (a: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) -> true);
+    f_serialize_12__post
     =
-    (fun (a: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) (out: t_Array u8 (sz 24)) ->
+    (fun
+        (a: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector)
+        (out: t_Array u8 (mk_usize 24))
+        ->
         true);
     f_serialize_12_
     =
     (fun (a: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) ->
         Libcrux_ml_kem.Vector.Neon.Serialize.serialize_12_ a);
-    f_deserialize_12_pre = (fun (a: t_Slice u8) -> true);
-    f_deserialize_12_post
+    f_deserialize_12__pre = (fun (a: t_Slice u8) -> true);
+    f_deserialize_12__post
     =
     (fun (a: t_Slice u8) (out: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) -> true);
     f_deserialize_12_

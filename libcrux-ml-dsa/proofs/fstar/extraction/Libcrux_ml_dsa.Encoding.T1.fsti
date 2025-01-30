@@ -9,7 +9,7 @@ let _ =
   let open Libcrux_ml_dsa.Simd.Traits in
   ()
 
-let serialize__OUTPUT_BYTES_PER_SIMD_UNIT: usize = sz 10
+let serialize__v_OUTPUT_BYTES_PER_SIMD_UNIT: usize = mk_usize 10
 
 val serialize
       (#v_SIMDUnit: Type0)
@@ -18,7 +18,7 @@ val serialize
       (serialized: t_Slice u8)
     : Prims.Pure (t_Slice u8) Prims.l_True (fun _ -> Prims.l_True)
 
-let deserialize__WINDOW: usize = sz 10
+let deserialize__v_WINDOW: usize = mk_usize 10
 
 val deserialize
       (#v_SIMDUnit: Type0)

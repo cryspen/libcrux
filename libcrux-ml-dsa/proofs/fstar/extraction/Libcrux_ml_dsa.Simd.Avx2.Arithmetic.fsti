@@ -47,5 +47,5 @@ val compute_hint
       Prims.l_True
       (fun _ -> Prims.l_True)
 
-val use_hint (gamma2: i32) (r hint: Libcrux_intrinsics.Avx2_extract.t_Vec256)
+val uuse_hint (gamma2: i32) (r hint: Libcrux_intrinsics.Avx2_extract.t_Vec256)
     : Prims.Pure Libcrux_intrinsics.Avx2_extract.t_Vec256 Prims.l_True (fun _ -> Prims.l_True)

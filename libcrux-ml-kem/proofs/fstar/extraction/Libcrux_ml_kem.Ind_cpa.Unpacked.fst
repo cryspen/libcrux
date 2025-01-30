@@ -68,13 +68,13 @@ let impl_1
     =
     fun (_: Prims.unit) ->
       {
-        f_t_as_ntt
+        f_tt_as_ntt
         =
         Rust_primitives.Hax.repeat (Libcrux_ml_kem.Polynomial.impl_2__ZERO #v_Vector ()
             <:
             Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
           v_K;
-        f_seed_for_A = Rust_primitives.Hax.repeat 0uy (sz 32);
+        f_seed_for_A = Rust_primitives.Hax.repeat (mk_u8 0) (mk_usize 32);
         f_A
         =
         Rust_primitives.Hax.repeat (Rust_primitives.Hax.repeat (Libcrux_ml_kem.Polynomial.impl_2__ZERO

@@ -59,7 +59,7 @@ let ntt_multiply_montgomery
       (lhs rhs: Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
      =
   let lhs:Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit =
-    Rust_primitives.Hax.Folds.fold_range (sz 0)
+    Rust_primitives.Hax.Folds.fold_range (mk_usize 0)
       (Core.Slice.impl__len #v_SIMDUnit
           (lhs.Libcrux_ml_dsa.Polynomial.f_simd_units <: t_Slice v_SIMDUnit)
         <:
@@ -86,7 +86,7 @@ let ntt_multiply_montgomery
                 <:
                 v_SIMDUnit)
             <:
-            t_Array v_SIMDUnit (sz 32)
+            t_Array v_SIMDUnit (mk_usize 32)
           }
           <:
           Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)

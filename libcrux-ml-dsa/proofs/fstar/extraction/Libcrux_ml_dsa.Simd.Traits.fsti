@@ -3,14 +3,14 @@ module Libcrux_ml_dsa.Simd.Traits
 open Core
 open FStar.Mul
 
-let v_COEFFICIENTS_IN_SIMD_UNIT: usize = sz 8
+let v_COEFFICIENTS_IN_SIMD_UNIT: usize = mk_usize 8
 
 let v_SIMD_UNITS_IN_RING_ELEMENT: usize =
   Libcrux_ml_dsa.Constants.v_COEFFICIENTS_IN_RING_ELEMENT /! v_COEFFICIENTS_IN_SIMD_UNIT
 
-let v_FIELD_MODULUS: i32 = 8380417l
+let v_FIELD_MODULUS: i32 = mk_i32 8380417
 
-let v_INVERSE_OF_MODULUS_MOD_MONTGOMERY_R: u64 = 58728449uL
+let v_INVERSE_OF_MODULUS_MOD_MONTGOMERY_R: u64 = mk_u64 58728449
 
 class t_Operations (v_Self: Type0) = {
   [@@@ FStar.Tactics.Typeclasses.no_method]_super_13011033735201511749:Core.Marker.t_Copy v_Self;
@@ -56,10 +56,10 @@ class t_Operations (v_Self: Type0) = {
     -> Prims.Pure (v_Self & usize)
         (f_compute_hint_pre x0 x1 x2 x3)
         (fun result -> f_compute_hint_post x0 x1 x2 x3 result);
-  f_use_hint_pre:i32 -> v_Self -> v_Self -> Type0;
-  f_use_hint_post:i32 -> v_Self -> v_Self -> v_Self -> Type0;
-  f_use_hint:x0: i32 -> x1: v_Self -> x2: v_Self
-    -> Prims.Pure v_Self (f_use_hint_pre x0 x1 x2) (fun result -> f_use_hint_post x0 x1 x2 result);
+  f_uuse_hint_pre:i32 -> v_Self -> v_Self -> Type0;
+  f_uuse_hint_post:i32 -> v_Self -> v_Self -> v_Self -> Type0;
+  f_uuse_hint:x0: i32 -> x1: v_Self -> x2: v_Self
+    -> Prims.Pure v_Self (f_uuse_hint_pre x0 x1 x2) (fun result -> f_uuse_hint_post x0 x1 x2 result);
   f_montgomery_multiply_pre:v_Self -> v_Self -> Type0;
   f_montgomery_multiply_post:v_Self -> v_Self -> v_Self -> Type0;
   f_montgomery_multiply:x0: v_Self -> x1: v_Self
@@ -85,20 +85,20 @@ class t_Operations (v_Self: Type0) = {
     -> Prims.Pure (t_Slice i32 & usize)
         (f_rejection_sample_less_than_field_modulus_pre x0 x1)
         (fun result -> f_rejection_sample_less_than_field_modulus_post x0 x1 result);
-  f_rejection_sample_less_than_eta_equals_2_pre:t_Slice u8 -> t_Slice i32 -> Type0;
-  f_rejection_sample_less_than_eta_equals_2_post:t_Slice u8 -> t_Slice i32 -> (t_Slice i32 & usize)
+  f_rejection_sample_less_than_eta_equals_2__pre:t_Slice u8 -> t_Slice i32 -> Type0;
+  f_rejection_sample_less_than_eta_equals_2__post:t_Slice u8 -> t_Slice i32 -> (t_Slice i32 & usize)
     -> Type0;
   f_rejection_sample_less_than_eta_equals_2_:x0: t_Slice u8 -> x1: t_Slice i32
     -> Prims.Pure (t_Slice i32 & usize)
-        (f_rejection_sample_less_than_eta_equals_2_pre x0 x1)
-        (fun result -> f_rejection_sample_less_than_eta_equals_2_post x0 x1 result);
-  f_rejection_sample_less_than_eta_equals_4_pre:t_Slice u8 -> t_Slice i32 -> Type0;
-  f_rejection_sample_less_than_eta_equals_4_post:t_Slice u8 -> t_Slice i32 -> (t_Slice i32 & usize)
+        (f_rejection_sample_less_than_eta_equals_2__pre x0 x1)
+        (fun result -> f_rejection_sample_less_than_eta_equals_2__post x0 x1 result);
+  f_rejection_sample_less_than_eta_equals_4__pre:t_Slice u8 -> t_Slice i32 -> Type0;
+  f_rejection_sample_less_than_eta_equals_4__post:t_Slice u8 -> t_Slice i32 -> (t_Slice i32 & usize)
     -> Type0;
   f_rejection_sample_less_than_eta_equals_4_:x0: t_Slice u8 -> x1: t_Slice i32
     -> Prims.Pure (t_Slice i32 & usize)
-        (f_rejection_sample_less_than_eta_equals_4_pre x0 x1)
-        (fun result -> f_rejection_sample_less_than_eta_equals_4_post x0 x1 result);
+        (f_rejection_sample_less_than_eta_equals_4__pre x0 x1)
+        (fun result -> f_rejection_sample_less_than_eta_equals_4__post x0 x1 result);
   f_gamma1_serialize_pre:v_Self -> t_Slice u8 -> usize -> Type0;
   f_gamma1_serialize_post:v_Self -> t_Slice u8 -> usize -> t_Slice u8 -> Type0;
   f_gamma1_serialize:x0: v_Self -> x1: t_Slice u8 -> x2: usize
@@ -154,14 +154,14 @@ class t_Operations (v_Self: Type0) = {
     -> Prims.Pure v_Self
         (f_t1_deserialize_pre x0 x1)
         (fun result -> f_t1_deserialize_post x0 x1 result);
-  f_ntt_pre:t_Array v_Self (sz 32) -> Type0;
-  f_ntt_post:t_Array v_Self (sz 32) -> t_Array v_Self (sz 32) -> Type0;
-  f_ntt:x0: t_Array v_Self (sz 32)
-    -> Prims.Pure (t_Array v_Self (sz 32)) (f_ntt_pre x0) (fun result -> f_ntt_post x0 result);
-  f_invert_ntt_montgomery_pre:t_Array v_Self (sz 32) -> Type0;
-  f_invert_ntt_montgomery_post:t_Array v_Self (sz 32) -> t_Array v_Self (sz 32) -> Type0;
-  f_invert_ntt_montgomery:x0: t_Array v_Self (sz 32)
-    -> Prims.Pure (t_Array v_Self (sz 32))
+  f_ntt_pre:t_Array v_Self (mk_usize 32) -> Type0;
+  f_ntt_post:t_Array v_Self (mk_usize 32) -> t_Array v_Self (mk_usize 32) -> Type0;
+  f_ntt:x0: t_Array v_Self (mk_usize 32)
+    -> Prims.Pure (t_Array v_Self (mk_usize 32)) (f_ntt_pre x0) (fun result -> f_ntt_post x0 result);
+  f_invert_ntt_montgomery_pre:t_Array v_Self (mk_usize 32) -> Type0;
+  f_invert_ntt_montgomery_post:t_Array v_Self (mk_usize 32) -> t_Array v_Self (mk_usize 32) -> Type0;
+  f_invert_ntt_montgomery:x0: t_Array v_Self (mk_usize 32)
+    -> Prims.Pure (t_Array v_Self (mk_usize 32))
         (f_invert_ntt_montgomery_pre x0)
         (fun result -> f_invert_ntt_montgomery_post x0 result)
 }

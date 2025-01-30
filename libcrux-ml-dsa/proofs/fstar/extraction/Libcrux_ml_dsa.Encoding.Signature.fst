@@ -16,12 +16,12 @@ let serialize
           Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit)
       (commitment_hash: t_Slice u8)
       (signer_response: t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit))
-      (hint: t_Slice (t_Array i32 (sz 256)))
+      (hint: t_Slice (t_Array i32 (mk_usize 256)))
       (commitment_hash_size columns_in_a rows_in_a gamma1_exponent gamma1_ring_element_size max_ones_in_hint:
           usize)
       (signature: t_Slice u8)
      =
-  let offset:usize = sz 0 in
+  let offset:usize = mk_usize 0 in
   let signature:t_Slice u8 =
     Rust_primitives.Hax.Monomorphized_update_at.update_at_range signature
       ({
@@ -45,7 +45,7 @@ let serialize
   in
   let offset:usize = offset +! commitment_hash_size in
   let offset, signature:(usize & t_Slice u8) =
-    Rust_primitives.Hax.Folds.fold_range (sz 0)
+    Rust_primitives.Hax.Folds.fold_range (mk_usize 0)
       columns_in_a
       (fun temp_0_ temp_1_ ->
           let offset, signature:(usize & t_Slice u8) = temp_0_ in
@@ -82,9 +82,9 @@ let serialize
           let offset:usize = offset +! gamma1_ring_element_size in
           offset, signature <: (usize & t_Slice u8))
   in
-  let true_hints_seen:usize = sz 0 in
+  let true_hints_seen:usize = mk_usize 0 in
   let signature, true_hints_seen:(t_Slice u8 & usize) =
-    Rust_primitives.Hax.Folds.fold_range (sz 0)
+    Rust_primitives.Hax.Folds.fold_range (mk_usize 0)
       rows_in_a
       (fun temp_0_ temp_1_ ->
           let signature, true_hints_seen:(t_Slice u8 & usize) = temp_0_ in
@@ -95,7 +95,7 @@ let serialize
           let signature, true_hints_seen:(t_Slice u8 & usize) = temp_0_ in
           let i:usize = i in
           let signature, true_hints_seen:(t_Slice u8 & usize) =
-            Rust_primitives.Hax.Folds.fold_range (sz 0)
+            Rust_primitives.Hax.Folds.fold_range (mk_usize 0)
               (Core.Slice.impl__len #i32 (hint.[ i ] <: t_Slice i32) <: usize)
               (fun temp_0_ temp_1_ ->
                   let signature, true_hints_seen:(t_Slice u8 & usize) = temp_0_ in
@@ -105,14 +105,14 @@ let serialize
               (fun temp_0_ j ->
                   let signature, true_hints_seen:(t_Slice u8 & usize) = temp_0_ in
                   let j:usize = j in
-                  if ((hint.[ i ] <: t_Array i32 (sz 256)).[ j ] <: i32) =. 1l <: bool
+                  if ((hint.[ i ] <: t_Array i32 (mk_usize 256)).[ j ] <: i32) =. mk_i32 1 <: bool
                   then
                     let signature:t_Slice u8 =
                       Rust_primitives.Hax.Monomorphized_update_at.update_at_usize signature
                         (offset +! true_hints_seen <: usize)
                         (cast (j <: usize) <: u8)
                     in
-                    let true_hints_seen:usize = true_hints_seen +! sz 1 in
+                    let true_hints_seen:usize = true_hints_seen +! mk_usize 1 in
                     signature, true_hints_seen <: (t_Slice u8 & usize)
                   else signature, true_hints_seen <: (t_Slice u8 & usize))
           in
@@ -125,17 +125,17 @@ let serialize
   in
   signature
 
-let set_hint (out_hint: t_Slice (t_Array i32 (sz 256))) (i j: usize) =
-  let out_hint:t_Slice (t_Array i32 (sz 256)) =
+let set_hint (out_hint: t_Slice (t_Array i32 (mk_usize 256))) (i j: usize) =
+  let out_hint:t_Slice (t_Array i32 (mk_usize 256)) =
     Rust_primitives.Hax.Monomorphized_update_at.update_at_usize out_hint
       i
       (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (out_hint.[ i ]
             <:
-            t_Array i32 (sz 256))
+            t_Array i32 (mk_usize 256))
           j
-          1l
+          (mk_i32 1)
         <:
-        t_Array i32 (sz 256))
+        t_Array i32 (mk_usize 256))
   in
   out_hint
 
@@ -148,7 +148,7 @@ let deserialize
           usize)
       (serialized out_commitment_hash: t_Slice u8)
       (out_signer_response: t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit))
-      (out_hint: t_Slice (t_Array i32 (sz 256)))
+      (out_hint: t_Slice (t_Array i32 (mk_usize 256)))
      =
   let _:Prims.unit =
     if true
@@ -163,12 +163,12 @@ let deserialize
   in
   let out_commitment_hash:t_Slice u8 =
     Rust_primitives.Hax.Monomorphized_update_at.update_at_range out_commitment_hash
-      ({ Core.Ops.Range.f_start = sz 0; Core.Ops.Range.f_end = commitment_hash_size }
+      ({ Core.Ops.Range.f_start = mk_usize 0; Core.Ops.Range.f_end = commitment_hash_size }
         <:
         Core.Ops.Range.t_Range usize)
       (Core.Slice.impl__copy_from_slice #u8
           (out_commitment_hash.[ {
-                Core.Ops.Range.f_start = sz 0;
+                Core.Ops.Range.f_start = mk_usize 0;
                 Core.Ops.Range.f_end = commitment_hash_size
               }
               <:
@@ -185,7 +185,7 @@ let deserialize
       (gamma1_ring_element_size *! columns_in_a <: usize)
   in
   let out_signer_response:t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) =
-    Rust_primitives.Hax.Folds.fold_range (sz 0)
+    Rust_primitives.Hax.Folds.fold_range (mk_usize 0)
       columns_in_a
       (fun out_signer_response temp_1_ ->
           let out_signer_response:t_Slice
@@ -209,7 +209,7 @@ let deserialize
                       Core.Ops.Range.f_start = i *! gamma1_ring_element_size <: usize;
                       Core.Ops.Range.f_end
                       =
-                      (i +! sz 1 <: usize) *! gamma1_ring_element_size <: usize
+                      (i +! mk_usize 1 <: usize) *! gamma1_ring_element_size <: usize
                     }
                     <:
                     Core.Ops.Range.t_Range usize ]
@@ -223,19 +223,19 @@ let deserialize
           <:
           t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit))
   in
-  let previous_true_hints_seen:usize = sz 0 in
+  let previous_true_hints_seen:usize = mk_usize 0 in
   match
-    Rust_primitives.Hax.Folds.fold_range_return (sz 0)
+    Rust_primitives.Hax.Folds.fold_range_return (mk_usize 0)
       rows_in_a
       (fun temp_0_ temp_1_ ->
-          let out_hint, previous_true_hints_seen:(t_Slice (t_Array i32 (sz 256)) & usize) =
+          let out_hint, previous_true_hints_seen:(t_Slice (t_Array i32 (mk_usize 256)) & usize) =
             temp_0_
           in
           let _:usize = temp_1_ in
           true)
-      (out_hint, previous_true_hints_seen <: (t_Slice (t_Array i32 (sz 256)) & usize))
+      (out_hint, previous_true_hints_seen <: (t_Slice (t_Array i32 (mk_usize 256)) & usize))
       (fun temp_0_ i ->
-          let out_hint, previous_true_hints_seen:(t_Slice (t_Array i32 (sz 256)) & usize) =
+          let out_hint, previous_true_hints_seen:(t_Slice (t_Array i32 (mk_usize 256)) & usize) =
             temp_0_
           in
           let i:usize = i in
@@ -259,39 +259,39 @@ let deserialize
                   Core.Result.t_Result Prims.unit Libcrux_ml_dsa.Types.t_VerificationError)
                 <:
                 (t_Slice u8 & t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) &
-                  t_Slice (t_Array i32 (sz 256)) &
+                  t_Slice (t_Array i32 (mk_usize 256)) &
                   Core.Result.t_Result Prims.unit Libcrux_ml_dsa.Types.t_VerificationError))
               <:
               Core.Ops.Control_flow.t_ControlFlow
                 (t_Slice u8 & t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) &
-                  t_Slice (t_Array i32 (sz 256)) &
+                  t_Slice (t_Array i32 (mk_usize 256)) &
                   Core.Result.t_Result Prims.unit Libcrux_ml_dsa.Types.t_VerificationError)
-                (Prims.unit & (t_Slice (t_Array i32 (sz 256)) & usize)))
+                (Prims.unit & (t_Slice (t_Array i32 (mk_usize 256)) & usize)))
             <:
             Core.Ops.Control_flow.t_ControlFlow
               (Core.Ops.Control_flow.t_ControlFlow
                   (t_Slice u8 &
                     t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) &
-                    t_Slice (t_Array i32 (sz 256)) &
+                    t_Slice (t_Array i32 (mk_usize 256)) &
                     Core.Result.t_Result Prims.unit Libcrux_ml_dsa.Types.t_VerificationError)
-                  (Prims.unit & (t_Slice (t_Array i32 (sz 256)) & usize)))
-              (t_Slice (t_Array i32 (sz 256)) & usize)
+                  (Prims.unit & (t_Slice (t_Array i32 (mk_usize 256)) & usize)))
+              (t_Slice (t_Array i32 (mk_usize 256)) & usize)
           else
             match
               Rust_primitives.Hax.Folds.fold_range_return previous_true_hints_seen
                 current_true_hints_seen
                 (fun out_hint temp_1_ ->
-                    let out_hint:t_Slice (t_Array i32 (sz 256)) = out_hint in
+                    let out_hint:t_Slice (t_Array i32 (mk_usize 256)) = out_hint in
                     let _:usize = temp_1_ in
                     true)
                 out_hint
                 (fun out_hint j ->
-                    let out_hint:t_Slice (t_Array i32 (sz 256)) = out_hint in
+                    let out_hint:t_Slice (t_Array i32 (mk_usize 256)) = out_hint in
                     let j:usize = j in
                     if
                       (j >. previous_true_hints_seen <: bool) &&
                       ((hint_serialized.[ j ] <: u8) <=.
-                        (hint_serialized.[ j -! sz 1 <: usize ] <: u8)
+                        (hint_serialized.[ j -! mk_usize 1 <: usize ] <: u8)
                         <:
                         bool)
                     then
@@ -310,47 +310,47 @@ let deserialize
                           <:
                           (t_Slice u8 &
                             t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) &
-                            t_Slice (t_Array i32 (sz 256)) &
+                            t_Slice (t_Array i32 (mk_usize 256)) &
                             Core.Result.t_Result Prims.unit Libcrux_ml_dsa.Types.t_VerificationError
                           ))
                         <:
                         Core.Ops.Control_flow.t_ControlFlow
                           (t_Slice u8 &
                             t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) &
-                            t_Slice (t_Array i32 (sz 256)) &
+                            t_Slice (t_Array i32 (mk_usize 256)) &
                             Core.Result.t_Result Prims.unit Libcrux_ml_dsa.Types.t_VerificationError
-                          ) (Prims.unit & t_Slice (t_Array i32 (sz 256))))
+                          ) (Prims.unit & t_Slice (t_Array i32 (mk_usize 256))))
                       <:
                       Core.Ops.Control_flow.t_ControlFlow
                         (Core.Ops.Control_flow.t_ControlFlow
                             (t_Slice u8 &
                               t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) &
-                              t_Slice (t_Array i32 (sz 256)) &
+                              t_Slice (t_Array i32 (mk_usize 256)) &
                               Core.Result.t_Result Prims.unit
                                 Libcrux_ml_dsa.Types.t_VerificationError)
-                            (Prims.unit & t_Slice (t_Array i32 (sz 256))))
-                        (t_Slice (t_Array i32 (sz 256)))
+                            (Prims.unit & t_Slice (t_Array i32 (mk_usize 256))))
+                        (t_Slice (t_Array i32 (mk_usize 256)))
                     else
                       Core.Ops.Control_flow.ControlFlow_Continue
                       (set_hint out_hint i (cast (hint_serialized.[ j ] <: u8) <: usize)
                         <:
-                        t_Slice (t_Array i32 (sz 256)))
+                        t_Slice (t_Array i32 (mk_usize 256)))
                       <:
                       Core.Ops.Control_flow.t_ControlFlow
                         (Core.Ops.Control_flow.t_ControlFlow
                             (t_Slice u8 &
                               t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) &
-                              t_Slice (t_Array i32 (sz 256)) &
+                              t_Slice (t_Array i32 (mk_usize 256)) &
                               Core.Result.t_Result Prims.unit
                                 Libcrux_ml_dsa.Types.t_VerificationError)
-                            (Prims.unit & t_Slice (t_Array i32 (sz 256))))
-                        (t_Slice (t_Array i32 (sz 256))))
+                            (Prims.unit & t_Slice (t_Array i32 (mk_usize 256))))
+                        (t_Slice (t_Array i32 (mk_usize 256))))
               <:
               Core.Ops.Control_flow.t_ControlFlow
                 (t_Slice u8 & t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) &
-                  t_Slice (t_Array i32 (sz 256)) &
+                  t_Slice (t_Array i32 (mk_usize 256)) &
                   Core.Result.t_Result Prims.unit Libcrux_ml_dsa.Types.t_VerificationError)
-                (t_Slice (t_Array i32 (sz 256)))
+                (t_Slice (t_Array i32 (mk_usize 256)))
             with
             | Core.Ops.Control_flow.ControlFlow_Break ret ->
               Core.Ops.Control_flow.ControlFlow_Break
@@ -359,37 +359,37 @@ let deserialize
                 Core.Ops.Control_flow.t_ControlFlow
                   (t_Slice u8 &
                     t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) &
-                    t_Slice (t_Array i32 (sz 256)) &
+                    t_Slice (t_Array i32 (mk_usize 256)) &
                     Core.Result.t_Result Prims.unit Libcrux_ml_dsa.Types.t_VerificationError)
-                  (Prims.unit & (t_Slice (t_Array i32 (sz 256)) & usize)))
+                  (Prims.unit & (t_Slice (t_Array i32 (mk_usize 256)) & usize)))
               <:
               Core.Ops.Control_flow.t_ControlFlow
                 (Core.Ops.Control_flow.t_ControlFlow
                     (t_Slice u8 &
                       t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) &
-                      t_Slice (t_Array i32 (sz 256)) &
+                      t_Slice (t_Array i32 (mk_usize 256)) &
                       Core.Result.t_Result Prims.unit Libcrux_ml_dsa.Types.t_VerificationError)
-                    (Prims.unit & (t_Slice (t_Array i32 (sz 256)) & usize)))
-                (t_Slice (t_Array i32 (sz 256)) & usize)
+                    (Prims.unit & (t_Slice (t_Array i32 (mk_usize 256)) & usize)))
+                (t_Slice (t_Array i32 (mk_usize 256)) & usize)
             | Core.Ops.Control_flow.ControlFlow_Continue out_hint ->
               let previous_true_hints_seen:usize = current_true_hints_seen in
               Core.Ops.Control_flow.ControlFlow_Continue
-              (out_hint, previous_true_hints_seen <: (t_Slice (t_Array i32 (sz 256)) & usize))
+              (out_hint, previous_true_hints_seen <: (t_Slice (t_Array i32 (mk_usize 256)) & usize))
               <:
               Core.Ops.Control_flow.t_ControlFlow
                 (Core.Ops.Control_flow.t_ControlFlow
                     (t_Slice u8 &
                       t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) &
-                      t_Slice (t_Array i32 (sz 256)) &
+                      t_Slice (t_Array i32 (mk_usize 256)) &
                       Core.Result.t_Result Prims.unit Libcrux_ml_dsa.Types.t_VerificationError)
-                    (Prims.unit & (t_Slice (t_Array i32 (sz 256)) & usize)))
-                (t_Slice (t_Array i32 (sz 256)) & usize))
+                    (Prims.unit & (t_Slice (t_Array i32 (mk_usize 256)) & usize)))
+                (t_Slice (t_Array i32 (mk_usize 256)) & usize))
     <:
     Core.Ops.Control_flow.t_ControlFlow
       (t_Slice u8 & t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) &
-        t_Slice (t_Array i32 (sz 256)) &
+        t_Slice (t_Array i32 (mk_usize 256)) &
         Core.Result.t_Result Prims.unit Libcrux_ml_dsa.Types.t_VerificationError)
-      (t_Slice (t_Array i32 (sz 256)) & usize)
+      (t_Slice (t_Array i32 (mk_usize 256)) & usize)
   with
   | Core.Ops.Control_flow.ControlFlow_Break ret -> ret
   | Core.Ops.Control_flow.ControlFlow_Continue (out_hint, previous_true_hints_seen) ->
@@ -404,7 +404,7 @@ let deserialize
         (fun temp_0_ j ->
             let _:Prims.unit = temp_0_ in
             let j:usize = j in
-            if (hint_serialized.[ j ] <: u8) <>. 0uy <: bool
+            if (hint_serialized.[ j ] <: u8) <>. mk_u8 0 <: bool
             then
               Core.Ops.Control_flow.ControlFlow_Break
               (Core.Ops.Control_flow.ControlFlow_Break
@@ -420,13 +420,13 @@ let deserialize
                   <:
                   (t_Slice u8 &
                     t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) &
-                    t_Slice (t_Array i32 (sz 256)) &
+                    t_Slice (t_Array i32 (mk_usize 256)) &
                     Core.Result.t_Result Prims.unit Libcrux_ml_dsa.Types.t_VerificationError))
                 <:
                 Core.Ops.Control_flow.t_ControlFlow
                   (t_Slice u8 &
                     t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) &
-                    t_Slice (t_Array i32 (sz 256)) &
+                    t_Slice (t_Array i32 (mk_usize 256)) &
                     Core.Result.t_Result Prims.unit Libcrux_ml_dsa.Types.t_VerificationError)
                   (Prims.unit & Prims.unit))
               <:
@@ -434,7 +434,7 @@ let deserialize
                 (Core.Ops.Control_flow.t_ControlFlow
                     (t_Slice u8 &
                       t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) &
-                      t_Slice (t_Array i32 (sz 256)) &
+                      t_Slice (t_Array i32 (mk_usize 256)) &
                       Core.Result.t_Result Prims.unit Libcrux_ml_dsa.Types.t_VerificationError)
                     (Prims.unit & Prims.unit)) Prims.unit
             else
@@ -444,13 +444,13 @@ let deserialize
                 (Core.Ops.Control_flow.t_ControlFlow
                     (t_Slice u8 &
                       t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) &
-                      t_Slice (t_Array i32 (sz 256)) &
+                      t_Slice (t_Array i32 (mk_usize 256)) &
                       Core.Result.t_Result Prims.unit Libcrux_ml_dsa.Types.t_VerificationError)
                     (Prims.unit & Prims.unit)) Prims.unit)
       <:
       Core.Ops.Control_flow.t_ControlFlow
         (t_Slice u8 & t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) &
-          t_Slice (t_Array i32 (sz 256)) &
+          t_Slice (t_Array i32 (mk_usize 256)) &
           Core.Result.t_Result Prims.unit Libcrux_ml_dsa.Types.t_VerificationError) Prims.unit
     with
     | Core.Ops.Control_flow.ControlFlow_Break ret -> ret
@@ -463,5 +463,5 @@ let deserialize
       out_commitment_hash, out_signer_response, out_hint, hax_temp_output
       <:
       (t_Slice u8 & t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) &
-        t_Slice (t_Array i32 (sz 256)) &
+        t_Slice (t_Array i32 (mk_usize 256)) &
         Core.Result.t_Result Prims.unit Libcrux_ml_dsa.Types.t_VerificationError)
