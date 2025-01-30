@@ -487,13 +487,14 @@ pub(crate) mod unpacked {
         $PUBLIC_KEY_SIZE == Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE $K /\
         $T_AS_NTT_ENCODED_SIZE == Spec.MLKEM.v_T_AS_NTT_ENCODED_SIZE $K"#)
     )]
-    #[hax_lib::ensures(|result|
-        fstar!(r#"let (public_key_hash, (seed, (deserialized_pk, (matrix_A, valid)))) =
+    #[hax_lib::ensures(|result| {
+        let unpacked_public_key_future = future(unpacked_public_key);
+        {fstar!(r#"let (public_key_hash, (seed, (deserialized_pk, (matrix_A, valid)))) =
             Spec.MLKEM.ind_cca_unpack_public_key $K ${public_key}.f_value in (valid ==>
-            Libcrux_ml_kem.Polynomial.to_spec_matrix_t #$K #$:Vector ${unpacked_public_key}_future.f_ind_cpa_public_key.f_A == matrix_A) /\
-        Libcrux_ml_kem.Polynomial.to_spec_vector_t #$K #$:Vector ${unpacked_public_key}_future.f_ind_cpa_public_key.f_t_as_ntt == deserialized_pk /\
-        ${unpacked_public_key}_future.f_ind_cpa_public_key.f_seed_for_A == seed /\
-        ${unpacked_public_key}_future.f_public_key_hash == public_key_hash"#))
+            Libcrux_ml_kem.Polynomial.to_spec_matrix_t #$K #$:Vector ${unpacked_public_key_future.ind_cpa_public_key.A} == matrix_A) /\
+        Libcrux_ml_kem.Polynomial.to_spec_vector_t #$K #$:Vector ${unpacked_public_key_future.ind_cpa_public_key.t_as_ntt} == deserialized_pk /\
+        ${unpacked_public_key_future.ind_cpa_public_key.seed_for_A} == seed /\
+        ${unpacked_public_key_future.public_key_hash} == public_key_hash"#)}})
     ]
     #[inline(always)]
     pub(crate) fn unpack_public_key<
@@ -531,18 +532,20 @@ pub(crate) mod unpacked {
     impl<const K: usize, Vector: Operations> MlKemPublicKeyUnpacked<K, Vector> {
         /// Get the serialized public key.
         #[inline(always)]
-        #[requires(fstar!(r#"Spec.MLKEM.is_rank $K /\
+        #[requires(fstar!(r#"let ${self_} = self in
+        Spec.MLKEM.is_rank $K /\
             $RANKED_BYTES_PER_RING_ELEMENT == Spec.MLKEM.v_RANKED_BYTES_PER_RING_ELEMENT $K /\
             $PUBLIC_KEY_SIZE == Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE $K /\
             (forall (i:nat). i < v $K ==>
                 Libcrux_ml_kem.Serialize.coefficients_field_modulus_range (Seq.index 
-                    self.f_ind_cpa_public_key.f_t_as_ntt i))"#))]
+                    ${self_.ind_cpa_public_key.t_as_ntt} i))"#))]
         #[ensures(|_|
-            fstar!(r#"${serialized}_future.f_value == 
+            fstar!(r#"let ${self_} = self in            
+            ${serialized}_future.f_value == 
                 Seq.append (Spec.MLKEM.vector_encode_12 #$K
                     (Libcrux_ml_kem.Polynomial.to_spec_vector_t #$K #$:Vector
-                        self.f_ind_cpa_public_key.f_t_as_ntt))
-                self.f_ind_cpa_public_key.f_seed_for_A)"#)
+                        ${self_.ind_cpa_public_key.t_as_ntt}))
+                ${self_.ind_cpa_public_key.seed_for_A})"#)
         )]
         pub fn serialized_mut<
             const RANKED_BYTES_PER_RING_ELEMENT: usize,
@@ -560,17 +563,19 @@ pub(crate) mod unpacked {
 
         /// Get the serialized public key.
         #[inline(always)]
-        #[requires(fstar!(r#"Spec.MLKEM.is_rank $K /\
+        #[requires(fstar!(r#"let ${self_} = self in
+        Spec.MLKEM.is_rank $K /\
             $RANKED_BYTES_PER_RING_ELEMENT == Spec.MLKEM.v_RANKED_BYTES_PER_RING_ELEMENT $K /\
             $PUBLIC_KEY_SIZE == Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE $K /\
             (forall (i:nat). i < v $K ==>
                 Libcrux_ml_kem.Serialize.coefficients_field_modulus_range (Seq.index
-                    self.f_ind_cpa_public_key.f_t_as_ntt i))"#))]
+                    ${self_.ind_cpa_public_key.t_as_ntt} i))"#))]
         #[ensures(|res|
-            fstar!(r#"${res}.f_value == Seq.append (Spec.MLKEM.vector_encode_12 #$K
+            fstar!(r#"let ${self_} = self in
+            ${res.value} == Seq.append (Spec.MLKEM.vector_encode_12 #$K
                             (Libcrux_ml_kem.Polynomial.to_spec_vector_t #$K #$:Vector
-                                self.f_ind_cpa_public_key.f_t_as_ntt))
-                        self.f_ind_cpa_public_key.f_seed_for_A)"#)
+                                ${self_.ind_cpa_public_key.t_as_ntt}))
+                        ${self_.ind_cpa_public_key.seed_for_A})"#)
         )]
         pub fn serialized<
             const RANKED_BYTES_PER_RING_ELEMENT: usize,
@@ -696,18 +701,20 @@ pub(crate) mod unpacked {
 
         /// Get the serialized public key.
         #[inline(always)]
-        #[requires(fstar!(r#"Spec.MLKEM.is_rank $K /\
+        #[requires(fstar!(r#"let ${self_} = self in
+        Spec.MLKEM.is_rank $K /\
             $RANKED_BYTES_PER_RING_ELEMENT == Spec.MLKEM.v_RANKED_BYTES_PER_RING_ELEMENT $K /\
             $PUBLIC_KEY_SIZE == Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE $K /\
             (forall (i:nat). i < v $K ==>
                 Libcrux_ml_kem.Serialize.coefficients_field_modulus_range (Seq.index 
-                    self.f_public_key.f_ind_cpa_public_key.f_t_as_ntt i))"#))]
+                    ${self_.public_key.ind_cpa_public_key.t_as_ntt} i))"#))]
         #[ensures(|_|
-            fstar!(r#"${serialized}_future.f_value == 
+            fstar!(r#"let ${self_} = self in
+            ${serialized}_future.f_value == 
                 Seq.append (Spec.MLKEM.vector_encode_12 #$K
                     (Libcrux_ml_kem.Polynomial.to_spec_vector_t #$K #$:Vector
-                        self.f_public_key.f_ind_cpa_public_key.f_t_as_ntt))
-                self.f_public_key.f_ind_cpa_public_key.f_seed_for_A)"#)
+                        ${self_.public_key.ind_cpa_public_key.t_as_ntt}))
+                ${self_.public_key.ind_cpa_public_key.seed_for_A})"#)
         )]
         pub fn serialized_public_key_mut<
             const RANKED_BYTES_PER_RING_ELEMENT: usize,
@@ -722,17 +729,19 @@ pub(crate) mod unpacked {
 
         /// Get the serialized public key.
         #[inline(always)]
-        #[requires(fstar!(r#"Spec.MLKEM.is_rank $K /\
+        #[requires(fstar!(r#"let ${self_} = self in
+        Spec.MLKEM.is_rank $K /\
             $RANKED_BYTES_PER_RING_ELEMENT == Spec.MLKEM.v_RANKED_BYTES_PER_RING_ELEMENT $K /\
             $PUBLIC_KEY_SIZE == Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE $K /\
             (forall (i:nat). i < v $K ==>
                 Libcrux_ml_kem.Serialize.coefficients_field_modulus_range (Seq.index
-                    self.f_public_key.f_ind_cpa_public_key.f_t_as_ntt i))"#))]
+                    ${self_.public_key.ind_cpa_public_key.t_as_ntt} i))"#))]
         #[ensures(|res|
-            fstar!(r#"${res}.f_value == Seq.append (Spec.MLKEM.vector_encode_12 #$K
+            fstar!(r#"let ${self_} = self in
+            ${res}.f_value == Seq.append (Spec.MLKEM.vector_encode_12 #$K
                             (Libcrux_ml_kem.Polynomial.to_spec_vector_t #$K #$:Vector
-                                self.f_public_key.f_ind_cpa_public_key.f_t_as_ntt))
-                        self.f_public_key.f_ind_cpa_public_key.f_seed_for_A)"#)
+                                ${self_.public_key.ind_cpa_public_key.t_as_ntt}))
+                        ${self_.public_key.ind_cpa_public_key.seed_for_A})"#)
         )]
         pub fn serialized_public_key<
             const RANKED_BYTES_PER_RING_ELEMENT: usize,
@@ -961,8 +970,8 @@ pub(crate) mod unpacked {
     #[hax_lib::ensures(|(ciphertext_result, shared_secret_array)|
         fstar!(r#"let (ciphertext, shared_secret) =
             Spec.MLKEM.ind_cca_unpack_encapsulate $K ${public_key}.f_public_key_hash
-            (Libcrux_ml_kem.Polynomial.to_spec_vector_t #$K #$:Vector ${public_key}.f_ind_cpa_public_key.f_t_as_ntt)
-            (Libcrux_ml_kem.Polynomial.to_spec_matrix_t #$K #$:Vector ${public_key}.f_ind_cpa_public_key.f_A)
+            (Libcrux_ml_kem.Polynomial.to_spec_vector_t #$K #$:Vector ${public_key.ind_cpa_public_key.t_as_ntt})
+            (Libcrux_ml_kem.Polynomial.to_spec_matrix_t #$K #$:Vector ${public_key.ind_cpa_public_key.A})
             $randomness in
         ${ciphertext_result}.f_value == ciphertext /\
         $shared_secret_array == shared_secret"#))
@@ -1039,12 +1048,12 @@ pub(crate) mod unpacked {
         $IMPLICIT_REJECTION_HASH_INPUT_SIZE == Spec.MLKEM.v_IMPLICIT_REJECTION_HASH_INPUT_SIZE $K"#))]
     #[hax_lib::ensures(|result|
         fstar!(r#"$result ==
-            Spec.MLKEM.ind_cca_unpack_decapsulate $K ${key_pair}.f_public_key.f_public_key_hash
-            ${key_pair}.f_private_key.f_implicit_rejection_value
-            ${ciphertext}.f_value
-            (Libcrux_ml_kem.Polynomial.to_spec_vector_t #$K #$:Vector ${key_pair}.f_private_key.f_ind_cpa_private_key.f_secret_as_ntt)
-            (Libcrux_ml_kem.Polynomial.to_spec_vector_t #$K #$:Vector ${key_pair}.f_public_key.f_ind_cpa_public_key.f_t_as_ntt)
-            (Libcrux_ml_kem.Polynomial.to_spec_matrix_t #$K #$:Vector ${key_pair}.f_public_key.f_ind_cpa_public_key.f_A)"#))
+            Spec.MLKEM.ind_cca_unpack_decapsulate $K ${key_pair.public_key.public_key_hash}
+            ${key_pair.private_key.implicit_rejection_value}
+            ${ciphertext.value}
+            (Libcrux_ml_kem.Polynomial.to_spec_vector_t #$K #$:Vector ${key_pair.private_key.ind_cpa_private_key.secret_as_ntt})
+            (Libcrux_ml_kem.Polynomial.to_spec_vector_t #$K #$:Vector ${key_pair.public_key.ind_cpa_public_key.t_as_ntt})
+            (Libcrux_ml_kem.Polynomial.to_spec_matrix_t #$K #$:Vector ${key_pair.public_key.ind_cpa_public_key.A})"#))
     ]
     pub(crate) fn decapsulate<
         const K: usize,

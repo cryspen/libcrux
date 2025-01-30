@@ -13,7 +13,7 @@ macro_rules! impl_generic_struct {
 
         #[hax_lib::attributes]
         impl<const SIZE: usize> AsRef<[u8]> for $name<SIZE> {
-            #[ensures(|result| fstar!(r#"$result = self___.f_value"#))]
+            #[ensures(|result| fstar!(r#"$result = ${self_}.f_value"#))]
             fn as_ref(&self) -> &[u8] {
                 &self.value
             }
