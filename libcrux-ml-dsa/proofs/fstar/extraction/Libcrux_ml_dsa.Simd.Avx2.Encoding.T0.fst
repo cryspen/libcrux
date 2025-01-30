@@ -12,75 +12,6 @@ let change_interval (simd_unit: Libcrux_intrinsics.Avx2_extract.t_Vec256) =
   in
   Libcrux_intrinsics.Avx2_extract.mm256_sub_epi32 interval_end simd_unit
 
-let deserialize (serialized: t_Slice u8) (out: Libcrux_intrinsics.Avx2_extract.t_Vec256) =
-  let _:Prims.unit =
-    if true
-    then
-      let _:Prims.unit =
-        match Core.Slice.impl__len #u8 serialized, mk_usize 13 <: (usize & usize) with
-        | left_val, right_val -> Hax_lib.v_assert (left_val =. right_val <: bool)
-      in
-      ()
-  in
-  let serialized_extended:t_Array u8 (mk_usize 16) =
-    Rust_primitives.Hax.repeat (mk_u8 0) (mk_usize 16)
-  in
-  let serialized_extended:t_Array u8 (mk_usize 16) =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_range serialized_extended
-      ({ Core.Ops.Range.f_start = mk_usize 0; Core.Ops.Range.f_end = mk_usize 13 }
-        <:
-        Core.Ops.Range.t_Range usize)
-      (Core.Slice.impl__copy_from_slice #u8
-          (serialized_extended.[ {
-                Core.Ops.Range.f_start = mk_usize 0;
-                Core.Ops.Range.f_end = mk_usize 13
-              }
-              <:
-              Core.Ops.Range.t_Range usize ]
-            <:
-            t_Slice u8)
-          serialized
-        <:
-        t_Slice u8)
-  in
-  let serialized:Libcrux_intrinsics.Avx2_extract.t_Vec128 =
-    Libcrux_intrinsics.Avx2_extract.mm_loadu_si128 (serialized_extended <: t_Slice u8)
-  in
-  let serialized:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
-    Libcrux_intrinsics.Avx2_extract.mm256_set_m128i serialized serialized
-  in
-  let coefficients:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
-    Libcrux_intrinsics.Avx2_extract.mm256_shuffle_epi8 serialized
-      (Libcrux_intrinsics.Avx2_extract.mm256_set_epi8 (mk_i8 (-1)) (mk_i8 (-1)) (mk_i8 12)
-          (mk_i8 11) (mk_i8 (-1)) (mk_i8 11) (mk_i8 10) (mk_i8 9) (mk_i8 (-1)) (mk_i8 (-1))
-          (mk_i8 9) (mk_i8 8) (mk_i8 (-1)) (mk_i8 8) (mk_i8 7) (mk_i8 6) (mk_i8 (-1)) (mk_i8 6)
-          (mk_i8 5) (mk_i8 4) (mk_i8 (-1)) (mk_i8 (-1)) (mk_i8 4) (mk_i8 3) (mk_i8 (-1)) (mk_i8 3)
-          (mk_i8 2) (mk_i8 1) (mk_i8 (-1)) (mk_i8 (-1)) (mk_i8 1) (mk_i8 0)
-        <:
-        Libcrux_intrinsics.Avx2_extract.t_Vec256)
-  in
-  let coefficients:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
-    Libcrux_intrinsics.Avx2_extract.mm256_srlv_epi32 coefficients
-      (Libcrux_intrinsics.Avx2_extract.mm256_set_epi32 (mk_i32 3)
-          (mk_i32 6)
-          (mk_i32 1)
-          (mk_i32 4)
-          (mk_i32 7)
-          (mk_i32 2)
-          (mk_i32 5)
-          (mk_i32 0)
-        <:
-        Libcrux_intrinsics.Avx2_extract.t_Vec256)
-  in
-  let coefficients:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
-    Libcrux_intrinsics.Avx2_extract.mm256_and_si256 coefficients
-      (Libcrux_intrinsics.Avx2_extract.mm256_set1_epi32 deserialize__COEFFICIENT_MASK
-        <:
-        Libcrux_intrinsics.Avx2_extract.t_Vec256)
-  in
-  let out:Libcrux_intrinsics.Avx2_extract.t_Vec256 = change_interval coefficients in
-  out
-
 let serialize (simd_unit: Libcrux_intrinsics.Avx2_extract.t_Vec256) (out: t_Slice u8) =
   let serialized:t_Array u8 (mk_usize 16) = Rust_primitives.Hax.repeat (mk_u8 0) (mk_usize 16) in
   let simd_unit:Libcrux_intrinsics.Avx2_extract.t_Vec256 = change_interval simd_unit in
@@ -159,4 +90,73 @@ let serialize (simd_unit: Libcrux_intrinsics.Avx2_extract.t_Vec256) (out: t_Slic
         <:
         t_Slice u8)
   in
+  out
+
+let deserialize (serialized: t_Slice u8) (out: Libcrux_intrinsics.Avx2_extract.t_Vec256) =
+  let _:Prims.unit =
+    if true
+    then
+      let _:Prims.unit =
+        match Core.Slice.impl__len #u8 serialized, mk_usize 13 <: (usize & usize) with
+        | left_val, right_val -> Hax_lib.v_assert (left_val =. right_val <: bool)
+      in
+      ()
+  in
+  let serialized_extended:t_Array u8 (mk_usize 16) =
+    Rust_primitives.Hax.repeat (mk_u8 0) (mk_usize 16)
+  in
+  let serialized_extended:t_Array u8 (mk_usize 16) =
+    Rust_primitives.Hax.Monomorphized_update_at.update_at_range serialized_extended
+      ({ Core.Ops.Range.f_start = mk_usize 0; Core.Ops.Range.f_end = mk_usize 13 }
+        <:
+        Core.Ops.Range.t_Range usize)
+      (Core.Slice.impl__copy_from_slice #u8
+          (serialized_extended.[ {
+                Core.Ops.Range.f_start = mk_usize 0;
+                Core.Ops.Range.f_end = mk_usize 13
+              }
+              <:
+              Core.Ops.Range.t_Range usize ]
+            <:
+            t_Slice u8)
+          serialized
+        <:
+        t_Slice u8)
+  in
+  let serialized:Libcrux_intrinsics.Avx2_extract.t_Vec128 =
+    Libcrux_intrinsics.Avx2_extract.mm_loadu_si128 (serialized_extended <: t_Slice u8)
+  in
+  let serialized:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+    Libcrux_intrinsics.Avx2_extract.mm256_set_m128i serialized serialized
+  in
+  let coefficients:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+    Libcrux_intrinsics.Avx2_extract.mm256_shuffle_epi8 serialized
+      (Libcrux_intrinsics.Avx2_extract.mm256_set_epi8 (mk_i8 (-1)) (mk_i8 (-1)) (mk_i8 12)
+          (mk_i8 11) (mk_i8 (-1)) (mk_i8 11) (mk_i8 10) (mk_i8 9) (mk_i8 (-1)) (mk_i8 (-1))
+          (mk_i8 9) (mk_i8 8) (mk_i8 (-1)) (mk_i8 8) (mk_i8 7) (mk_i8 6) (mk_i8 (-1)) (mk_i8 6)
+          (mk_i8 5) (mk_i8 4) (mk_i8 (-1)) (mk_i8 (-1)) (mk_i8 4) (mk_i8 3) (mk_i8 (-1)) (mk_i8 3)
+          (mk_i8 2) (mk_i8 1) (mk_i8 (-1)) (mk_i8 (-1)) (mk_i8 1) (mk_i8 0)
+        <:
+        Libcrux_intrinsics.Avx2_extract.t_Vec256)
+  in
+  let coefficients:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+    Libcrux_intrinsics.Avx2_extract.mm256_srlv_epi32 coefficients
+      (Libcrux_intrinsics.Avx2_extract.mm256_set_epi32 (mk_i32 3)
+          (mk_i32 6)
+          (mk_i32 1)
+          (mk_i32 4)
+          (mk_i32 7)
+          (mk_i32 2)
+          (mk_i32 5)
+          (mk_i32 0)
+        <:
+        Libcrux_intrinsics.Avx2_extract.t_Vec256)
+  in
+  let coefficients:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+    Libcrux_intrinsics.Avx2_extract.mm256_and_si256 coefficients
+      (Libcrux_intrinsics.Avx2_extract.mm256_set1_epi32 deserialize__COEFFICIENT_MASK
+        <:
+        Libcrux_intrinsics.Avx2_extract.t_Vec256)
+  in
+  let out:Libcrux_intrinsics.Avx2_extract.t_Vec256 = change_interval coefficients in
   out

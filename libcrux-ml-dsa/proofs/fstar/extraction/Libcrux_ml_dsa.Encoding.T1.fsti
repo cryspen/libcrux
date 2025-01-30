@@ -9,9 +9,16 @@ let _ =
   let open Libcrux_ml_dsa.Simd.Traits in
   ()
 
-let deserialize__WINDOW: usize = mk_usize 10
-
 let serialize__OUTPUT_BYTES_PER_SIMD_UNIT: usize = mk_usize 10
+
+val serialize
+      (#v_SIMDUnit: Type0)
+      {| i1: Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit |}
+      (re: Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
+      (serialized: t_Slice u8)
+    : Prims.Pure (t_Slice u8) Prims.l_True (fun _ -> Prims.l_True)
+
+let deserialize__WINDOW: usize = mk_usize 10
 
 val deserialize
       (#v_SIMDUnit: Type0)
@@ -21,10 +28,3 @@ val deserialize
     : Prims.Pure (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
       Prims.l_True
       (fun _ -> Prims.l_True)
-
-val serialize
-      (#v_SIMDUnit: Type0)
-      {| i1: Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit |}
-      (re: Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
-      (serialized: t_Slice u8)
-    : Prims.Pure (t_Slice u8) Prims.l_True (fun _ -> Prims.l_True)

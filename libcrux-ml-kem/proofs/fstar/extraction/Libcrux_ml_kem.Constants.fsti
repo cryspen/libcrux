@@ -15,13 +15,13 @@ let v_BITS_PER_RING_ELEMENT: usize = v_COEFFICIENTS_IN_RING_ELEMENT *! mk_usize 
 /// Bytes required per (uncompressed) ring element
 let v_BYTES_PER_RING_ELEMENT: usize = v_BITS_PER_RING_ELEMENT /! mk_usize 8
 
-let v_CPA_PKE_KEY_GENERATION_SEED_SIZE: usize = mk_usize 32
+/// The size of an ML-KEM shared secret.
+let v_SHARED_SECRET_SIZE: usize = mk_usize 32
 
-/// SHA3 512 digest size
-let v_G_DIGEST_SIZE: usize = mk_usize 64
+let v_CPA_PKE_KEY_GENERATION_SEED_SIZE: usize = mk_usize 32
 
 /// SHA3 256 digest size
 let v_H_DIGEST_SIZE: usize = mk_usize 32
 
-/// The size of an ML-KEM shared secret.
-let v_SHARED_SECRET_SIZE: usize = mk_usize 32
+/// SHA3 512 digest size
+let v_G_DIGEST_SIZE: usize = mk_usize 64

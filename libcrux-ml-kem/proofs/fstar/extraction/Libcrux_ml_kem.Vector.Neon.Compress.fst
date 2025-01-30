@@ -3,6 +3,69 @@ module Libcrux_ml_kem.Vector.Neon.Compress
 open Core
 open FStar.Mul
 
+let compress_1_ (v: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) =
+  let half:u8 = Libcrux_intrinsics.Arm64_extract.v__vdupq_n_s16 (mk_i16 1664) in
+  let quarter:u8 = Libcrux_intrinsics.Arm64_extract.v__vdupq_n_s16 (mk_i16 832) in
+  let shifted:u8 =
+    Libcrux_intrinsics.Arm64_extract.v__vsubq_s16 half
+      v.Libcrux_ml_kem.Vector.Neon.Vector_type.f_low
+  in
+  let mask:u8 = Libcrux_intrinsics.Arm64_extract.v__vshrq_n_s16 (mk_i32 15) shifted in
+  let shifted_to_positive:u8 = Libcrux_intrinsics.Arm64_extract.v__veorq_s16 mask shifted in
+  let shifted_positive_in_range:u8 =
+    Libcrux_intrinsics.Arm64_extract.v__vsubq_s16 shifted_to_positive quarter
+  in
+  let v:Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector =
+    {
+      v with
+      Libcrux_ml_kem.Vector.Neon.Vector_type.f_low
+      =
+      Libcrux_intrinsics.Arm64_extract.v__vreinterpretq_s16_u16 (Libcrux_intrinsics.Arm64_extract.v__vshrq_n_u16
+            (mk_i32 15)
+            (Libcrux_intrinsics.Arm64_extract.v__vreinterpretq_u16_s16 shifted_positive_in_range
+              <:
+              u8)
+          <:
+          u8)
+    }
+    <:
+    Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector
+  in
+  let shifted:u8 =
+    Libcrux_intrinsics.Arm64_extract.v__vsubq_s16 half
+      v.Libcrux_ml_kem.Vector.Neon.Vector_type.f_high
+  in
+  let mask:u8 = Libcrux_intrinsics.Arm64_extract.v__vshrq_n_s16 (mk_i32 15) shifted in
+  let shifted_to_positive:u8 = Libcrux_intrinsics.Arm64_extract.v__veorq_s16 mask shifted in
+  let shifted_positive_in_range:u8 =
+    Libcrux_intrinsics.Arm64_extract.v__vsubq_s16 shifted_to_positive quarter
+  in
+  let v:Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector =
+    {
+      v with
+      Libcrux_ml_kem.Vector.Neon.Vector_type.f_high
+      =
+      Libcrux_intrinsics.Arm64_extract.v__vreinterpretq_s16_u16 (Libcrux_intrinsics.Arm64_extract.v__vshrq_n_u16
+            (mk_i32 15)
+            (Libcrux_intrinsics.Arm64_extract.v__vreinterpretq_u16_s16 shifted_positive_in_range
+              <:
+              u8)
+          <:
+          u8)
+    }
+    <:
+    Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector
+  in
+  v
+
+let mask_n_least_significant_bits (coefficient_bits: i16) =
+  match coefficient_bits <: i16 with
+  | Rust_primitives.Integers.MkInt 4 -> mk_i16 15
+  | Rust_primitives.Integers.MkInt 5 -> mk_i16 31
+  | Rust_primitives.Integers.MkInt 10 -> mk_i16 1023
+  | Rust_primitives.Integers.MkInt 11 -> mk_i16 2047
+  | x -> (mk_i16 1 <<! x <: i16) -! mk_i16 1
+
 let compress_int32x4_t (v_COEFFICIENT_BITS: i32) (v: u8) =
   let half:u8 = Libcrux_intrinsics.Arm64_extract.v__vdupq_n_u32 (mk_u32 1664) in
   let compressed:u8 = Libcrux_intrinsics.Arm64_extract.v__vshlq_n_u32 v_COEFFICIENT_BITS v in
@@ -15,14 +78,6 @@ let compress_int32x4_t (v_COEFFICIENT_BITS: i32) (v: u8) =
         u8)
   in
   Libcrux_intrinsics.Arm64_extract.v__vshrq_n_u32 (mk_i32 4) compressed
-
-let mask_n_least_significant_bits (coefficient_bits: i16) =
-  match coefficient_bits <: i16 with
-  | Rust_primitives.Integers.MkInt 4 -> mk_i16 15
-  | Rust_primitives.Integers.MkInt 5 -> mk_i16 31
-  | Rust_primitives.Integers.MkInt 10 -> mk_i16 1023
-  | Rust_primitives.Integers.MkInt 11 -> mk_i16 2047
-  | x -> (mk_i16 1 <<! x <: i16) -! mk_i16 1
 
 let compress (v_COEFFICIENT_BITS: i32) (v: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) =
   let mask:u8 =
@@ -97,61 +152,6 @@ let compress (v_COEFFICIENT_BITS: i32) (v: Libcrux_ml_kem.Vector.Neon.Vector_typ
       Libcrux_ml_kem.Vector.Neon.Vector_type.f_high
       =
       Libcrux_intrinsics.Arm64_extract.v__vandq_s16 high mask
-    }
-    <:
-    Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector
-  in
-  v
-
-let compress_1_ (v: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) =
-  let half:u8 = Libcrux_intrinsics.Arm64_extract.v__vdupq_n_s16 (mk_i16 1664) in
-  let quarter:u8 = Libcrux_intrinsics.Arm64_extract.v__vdupq_n_s16 (mk_i16 832) in
-  let shifted:u8 =
-    Libcrux_intrinsics.Arm64_extract.v__vsubq_s16 half
-      v.Libcrux_ml_kem.Vector.Neon.Vector_type.f_low
-  in
-  let mask:u8 = Libcrux_intrinsics.Arm64_extract.v__vshrq_n_s16 (mk_i32 15) shifted in
-  let shifted_to_positive:u8 = Libcrux_intrinsics.Arm64_extract.v__veorq_s16 mask shifted in
-  let shifted_positive_in_range:u8 =
-    Libcrux_intrinsics.Arm64_extract.v__vsubq_s16 shifted_to_positive quarter
-  in
-  let v:Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector =
-    {
-      v with
-      Libcrux_ml_kem.Vector.Neon.Vector_type.f_low
-      =
-      Libcrux_intrinsics.Arm64_extract.v__vreinterpretq_s16_u16 (Libcrux_intrinsics.Arm64_extract.v__vshrq_n_u16
-            (mk_i32 15)
-            (Libcrux_intrinsics.Arm64_extract.v__vreinterpretq_u16_s16 shifted_positive_in_range
-              <:
-              u8)
-          <:
-          u8)
-    }
-    <:
-    Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector
-  in
-  let shifted:u8 =
-    Libcrux_intrinsics.Arm64_extract.v__vsubq_s16 half
-      v.Libcrux_ml_kem.Vector.Neon.Vector_type.f_high
-  in
-  let mask:u8 = Libcrux_intrinsics.Arm64_extract.v__vshrq_n_s16 (mk_i32 15) shifted in
-  let shifted_to_positive:u8 = Libcrux_intrinsics.Arm64_extract.v__veorq_s16 mask shifted in
-  let shifted_positive_in_range:u8 =
-    Libcrux_intrinsics.Arm64_extract.v__vsubq_s16 shifted_to_positive quarter
-  in
-  let v:Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector =
-    {
-      v with
-      Libcrux_ml_kem.Vector.Neon.Vector_type.f_high
-      =
-      Libcrux_intrinsics.Arm64_extract.v__vreinterpretq_s16_u16 (Libcrux_intrinsics.Arm64_extract.v__vshrq_n_u16
-            (mk_i32 15)
-            (Libcrux_intrinsics.Arm64_extract.v__vreinterpretq_u16_s16 shifted_positive_in_range
-              <:
-              u8)
-          <:
-          u8)
     }
     <:
     Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector

@@ -10,6 +10,25 @@ let _ =
   let open Libcrux_ml_kem.Vector.Traits in
   ()
 
+[@@ FStar.Tactics.Typeclasses.tcinstance]
+let impl: Libcrux_ml_kem.Vector.Traits.t_Repr Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector =
+  {
+    _super_13011033735201511749 = FStar.Tactics.Typeclasses.solve;
+    _super_9529721400157967266 = FStar.Tactics.Typeclasses.solve;
+    f_repr_pre = (fun (x: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) -> true);
+    f_repr_post
+    =
+    (fun
+        (x: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector)
+        (out: t_Array i16 (mk_usize 16))
+        ->
+        true);
+    f_repr
+    =
+    fun (x: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) ->
+      Libcrux_ml_kem.Vector.Neon.Vector_type.to_i16_array x
+  }
+
 let rej_sample (a: t_Slice u8) (result: t_Slice i16) =
   let sampled:usize = mk_usize 0 in
   let result, sampled:(t_Slice i16 & usize) =
@@ -47,25 +66,6 @@ let rej_sample (a: t_Slice u8) (result: t_Slice i16) =
   in
   let hax_temp_output:usize = sampled in
   result, hax_temp_output <: (t_Slice i16 & usize)
-
-[@@ FStar.Tactics.Typeclasses.tcinstance]
-let impl: Libcrux_ml_kem.Vector.Traits.t_Repr Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector =
-  {
-    _super_13011033735201511749 = FStar.Tactics.Typeclasses.solve;
-    _super_9529721400157967266 = FStar.Tactics.Typeclasses.solve;
-    f_repr_pre = (fun (x: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) -> true);
-    f_repr_post
-    =
-    (fun
-        (x: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector)
-        (out: t_Array i16 (mk_usize 16))
-        ->
-        true);
-    f_repr
-    =
-    fun (x: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) ->
-      Libcrux_ml_kem.Vector.Neon.Vector_type.to_i16_array x
-  }
 
 [@@ FStar.Tactics.Typeclasses.tcinstance]
 let impl_1: Libcrux_ml_kem.Vector.Traits.t_Operations

@@ -9,63 +9,6 @@ let _ =
   let open Libcrux_ml_dsa.Simd.Traits in
   ()
 
-let deserialize
-      (#v_SIMDUnit: Type0)
-      (#[FStar.Tactics.Typeclasses.tcresolve ()]
-          i1:
-          Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit)
-      (rows_in_a verification_key_size: usize)
-      (serialized: t_Slice u8)
-      (t1: t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit))
-     =
-  let _:Prims.unit =
-    if true
-    then
-      let _:Prims.unit =
-        Hax_lib.v_assert ((Core.Slice.impl__len #u8 serialized <: usize) =.
-            (verification_key_size -! Libcrux_ml_dsa.Constants.v_SEED_FOR_A_SIZE <: usize)
-            <:
-            bool)
-      in
-      ()
-  in
-  let t1:t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) =
-    Rust_primitives.Hax.Folds.fold_range (mk_usize 0)
-      rows_in_a
-      (fun t1 temp_1_ ->
-          let t1:t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) = t1 in
-          let _:usize = temp_1_ in
-          true)
-      t1
-      (fun t1 i ->
-          let t1:t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) = t1 in
-          let i:usize = i in
-          Rust_primitives.Hax.Monomorphized_update_at.update_at_usize t1
-            i
-            (Libcrux_ml_dsa.Encoding.T1.deserialize #v_SIMDUnit
-                (serialized.[ {
-                      Core.Ops.Range.f_start
-                      =
-                      i *! Libcrux_ml_dsa.Constants.v_RING_ELEMENT_OF_T1S_SIZE <: usize;
-                      Core.Ops.Range.f_end
-                      =
-                      (i +! mk_usize 1 <: usize) *!
-                      Libcrux_ml_dsa.Constants.v_RING_ELEMENT_OF_T1S_SIZE
-                      <:
-                      usize
-                    }
-                    <:
-                    Core.Ops.Range.t_Range usize ]
-                  <:
-                  t_Slice u8)
-                (t1.[ i ] <: Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
-              <:
-              Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
-          <:
-          t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit))
-  in
-  t1
-
 let generate_serialized
       (#v_SIMDUnit: Type0)
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
@@ -141,3 +84,60 @@ let generate_serialized
           verification_key_serialized)
   in
   verification_key_serialized
+
+let deserialize
+      (#v_SIMDUnit: Type0)
+      (#[FStar.Tactics.Typeclasses.tcresolve ()]
+          i1:
+          Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit)
+      (rows_in_a verification_key_size: usize)
+      (serialized: t_Slice u8)
+      (t1: t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit))
+     =
+  let _:Prims.unit =
+    if true
+    then
+      let _:Prims.unit =
+        Hax_lib.v_assert ((Core.Slice.impl__len #u8 serialized <: usize) =.
+            (verification_key_size -! Libcrux_ml_dsa.Constants.v_SEED_FOR_A_SIZE <: usize)
+            <:
+            bool)
+      in
+      ()
+  in
+  let t1:t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) =
+    Rust_primitives.Hax.Folds.fold_range (mk_usize 0)
+      rows_in_a
+      (fun t1 temp_1_ ->
+          let t1:t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) = t1 in
+          let _:usize = temp_1_ in
+          true)
+      t1
+      (fun t1 i ->
+          let t1:t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) = t1 in
+          let i:usize = i in
+          Rust_primitives.Hax.Monomorphized_update_at.update_at_usize t1
+            i
+            (Libcrux_ml_dsa.Encoding.T1.deserialize #v_SIMDUnit
+                (serialized.[ {
+                      Core.Ops.Range.f_start
+                      =
+                      i *! Libcrux_ml_dsa.Constants.v_RING_ELEMENT_OF_T1S_SIZE <: usize;
+                      Core.Ops.Range.f_end
+                      =
+                      (i +! mk_usize 1 <: usize) *!
+                      Libcrux_ml_dsa.Constants.v_RING_ELEMENT_OF_T1S_SIZE
+                      <:
+                      usize
+                    }
+                    <:
+                    Core.Ops.Range.t_Range usize ]
+                  <:
+                  t_Slice u8)
+                (t1.[ i ] <: Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
+              <:
+              Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
+          <:
+          t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit))
+  in
+  t1

@@ -3,6 +3,72 @@ module Libcrux_ml_kem.Vector.Avx2.Ntt
 open Core
 open FStar.Mul
 
+let ntt_layer_1_step
+      (vector: Libcrux_intrinsics.Avx2_extract.t_Vec256)
+      (zeta0 zeta1 zeta2 zeta3: i16)
+     =
+  let zetas:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+    Libcrux_intrinsics.Avx2_extract.mm256_set_epi16 (Core.Ops.Arith.Neg.neg zeta3 <: i16)
+      (Core.Ops.Arith.Neg.neg zeta3 <: i16) zeta3 zeta3 (Core.Ops.Arith.Neg.neg zeta2 <: i16)
+      (Core.Ops.Arith.Neg.neg zeta2 <: i16) zeta2 zeta2 (Core.Ops.Arith.Neg.neg zeta1 <: i16)
+      (Core.Ops.Arith.Neg.neg zeta1 <: i16) zeta1 zeta1 (Core.Ops.Arith.Neg.neg zeta0 <: i16)
+      (Core.Ops.Arith.Neg.neg zeta0 <: i16) zeta0 zeta0
+  in
+  let rhs:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+    Libcrux_intrinsics.Avx2_extract.mm256_shuffle_epi32 (mk_i32 245) vector
+  in
+  let rhs:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+    Libcrux_ml_kem.Vector.Avx2.Arithmetic.montgomery_multiply_by_constants rhs zetas
+  in
+  let lhs:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+    Libcrux_intrinsics.Avx2_extract.mm256_shuffle_epi32 (mk_i32 160) vector
+  in
+  Libcrux_intrinsics.Avx2_extract.mm256_add_epi16 lhs rhs
+
+let ntt_layer_2_step (vector: Libcrux_intrinsics.Avx2_extract.t_Vec256) (zeta0 zeta1: i16) =
+  let zetas:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+    Libcrux_intrinsics.Avx2_extract.mm256_set_epi16 (Core.Ops.Arith.Neg.neg zeta1 <: i16)
+      (Core.Ops.Arith.Neg.neg zeta1 <: i16) (Core.Ops.Arith.Neg.neg zeta1 <: i16)
+      (Core.Ops.Arith.Neg.neg zeta1 <: i16) zeta1 zeta1 zeta1 zeta1
+      (Core.Ops.Arith.Neg.neg zeta0 <: i16) (Core.Ops.Arith.Neg.neg zeta0 <: i16)
+      (Core.Ops.Arith.Neg.neg zeta0 <: i16) (Core.Ops.Arith.Neg.neg zeta0 <: i16) zeta0 zeta0 zeta0
+      zeta0
+  in
+  let rhs:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+    Libcrux_intrinsics.Avx2_extract.mm256_shuffle_epi32 (mk_i32 238) vector
+  in
+  let rhs:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+    Libcrux_ml_kem.Vector.Avx2.Arithmetic.montgomery_multiply_by_constants rhs zetas
+  in
+  let lhs:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+    Libcrux_intrinsics.Avx2_extract.mm256_shuffle_epi32 (mk_i32 68) vector
+  in
+  Libcrux_intrinsics.Avx2_extract.mm256_add_epi16 lhs rhs
+
+let ntt_layer_3_step (vector: Libcrux_intrinsics.Avx2_extract.t_Vec256) (zeta: i16) =
+  let rhs:Libcrux_intrinsics.Avx2_extract.t_Vec128 =
+    Libcrux_intrinsics.Avx2_extract.mm256_extracti128_si256 (mk_i32 1) vector
+  in
+  let rhs:Libcrux_intrinsics.Avx2_extract.t_Vec128 =
+    Libcrux_ml_kem.Vector.Avx2.Arithmetic.montgomery_multiply_m128i_by_constants rhs
+      (Libcrux_intrinsics.Avx2_extract.mm_set1_epi16 zeta
+        <:
+        Libcrux_intrinsics.Avx2_extract.t_Vec128)
+  in
+  let lhs:Libcrux_intrinsics.Avx2_extract.t_Vec128 =
+    Libcrux_intrinsics.Avx2_extract.mm256_castsi256_si128 vector
+  in
+  let lower_coefficients:Libcrux_intrinsics.Avx2_extract.t_Vec128 =
+    Libcrux_intrinsics.Avx2_extract.mm_add_epi16 lhs rhs
+  in
+  let upper_coefficients:Libcrux_intrinsics.Avx2_extract.t_Vec128 =
+    Libcrux_intrinsics.Avx2_extract.mm_sub_epi16 lhs rhs
+  in
+  let combined:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+    Libcrux_intrinsics.Avx2_extract.mm256_castsi128_si256 lower_coefficients
+  in
+  Libcrux_intrinsics.Avx2_extract.mm256_inserti128_si256 (mk_i32 1) combined upper_coefficients
+
 #push-options "--admit_smt_queries true"
 
 let inv_ntt_layer_1_step
@@ -85,72 +151,6 @@ let inv_ntt_layer_3_step (vector: Libcrux_intrinsics.Avx2_extract.t_Vec256) (zet
       (Libcrux_intrinsics.Avx2_extract.mm_set1_epi16 zeta
         <:
         Libcrux_intrinsics.Avx2_extract.t_Vec128)
-  in
-  let combined:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
-    Libcrux_intrinsics.Avx2_extract.mm256_castsi128_si256 lower_coefficients
-  in
-  Libcrux_intrinsics.Avx2_extract.mm256_inserti128_si256 (mk_i32 1) combined upper_coefficients
-
-let ntt_layer_1_step
-      (vector: Libcrux_intrinsics.Avx2_extract.t_Vec256)
-      (zeta0 zeta1 zeta2 zeta3: i16)
-     =
-  let zetas:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
-    Libcrux_intrinsics.Avx2_extract.mm256_set_epi16 (Core.Ops.Arith.Neg.neg zeta3 <: i16)
-      (Core.Ops.Arith.Neg.neg zeta3 <: i16) zeta3 zeta3 (Core.Ops.Arith.Neg.neg zeta2 <: i16)
-      (Core.Ops.Arith.Neg.neg zeta2 <: i16) zeta2 zeta2 (Core.Ops.Arith.Neg.neg zeta1 <: i16)
-      (Core.Ops.Arith.Neg.neg zeta1 <: i16) zeta1 zeta1 (Core.Ops.Arith.Neg.neg zeta0 <: i16)
-      (Core.Ops.Arith.Neg.neg zeta0 <: i16) zeta0 zeta0
-  in
-  let rhs:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
-    Libcrux_intrinsics.Avx2_extract.mm256_shuffle_epi32 (mk_i32 245) vector
-  in
-  let rhs:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
-    Libcrux_ml_kem.Vector.Avx2.Arithmetic.montgomery_multiply_by_constants rhs zetas
-  in
-  let lhs:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
-    Libcrux_intrinsics.Avx2_extract.mm256_shuffle_epi32 (mk_i32 160) vector
-  in
-  Libcrux_intrinsics.Avx2_extract.mm256_add_epi16 lhs rhs
-
-let ntt_layer_2_step (vector: Libcrux_intrinsics.Avx2_extract.t_Vec256) (zeta0 zeta1: i16) =
-  let zetas:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
-    Libcrux_intrinsics.Avx2_extract.mm256_set_epi16 (Core.Ops.Arith.Neg.neg zeta1 <: i16)
-      (Core.Ops.Arith.Neg.neg zeta1 <: i16) (Core.Ops.Arith.Neg.neg zeta1 <: i16)
-      (Core.Ops.Arith.Neg.neg zeta1 <: i16) zeta1 zeta1 zeta1 zeta1
-      (Core.Ops.Arith.Neg.neg zeta0 <: i16) (Core.Ops.Arith.Neg.neg zeta0 <: i16)
-      (Core.Ops.Arith.Neg.neg zeta0 <: i16) (Core.Ops.Arith.Neg.neg zeta0 <: i16) zeta0 zeta0 zeta0
-      zeta0
-  in
-  let rhs:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
-    Libcrux_intrinsics.Avx2_extract.mm256_shuffle_epi32 (mk_i32 238) vector
-  in
-  let rhs:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
-    Libcrux_ml_kem.Vector.Avx2.Arithmetic.montgomery_multiply_by_constants rhs zetas
-  in
-  let lhs:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
-    Libcrux_intrinsics.Avx2_extract.mm256_shuffle_epi32 (mk_i32 68) vector
-  in
-  Libcrux_intrinsics.Avx2_extract.mm256_add_epi16 lhs rhs
-
-let ntt_layer_3_step (vector: Libcrux_intrinsics.Avx2_extract.t_Vec256) (zeta: i16) =
-  let rhs:Libcrux_intrinsics.Avx2_extract.t_Vec128 =
-    Libcrux_intrinsics.Avx2_extract.mm256_extracti128_si256 (mk_i32 1) vector
-  in
-  let rhs:Libcrux_intrinsics.Avx2_extract.t_Vec128 =
-    Libcrux_ml_kem.Vector.Avx2.Arithmetic.montgomery_multiply_m128i_by_constants rhs
-      (Libcrux_intrinsics.Avx2_extract.mm_set1_epi16 zeta
-        <:
-        Libcrux_intrinsics.Avx2_extract.t_Vec128)
-  in
-  let lhs:Libcrux_intrinsics.Avx2_extract.t_Vec128 =
-    Libcrux_intrinsics.Avx2_extract.mm256_castsi256_si128 vector
-  in
-  let lower_coefficients:Libcrux_intrinsics.Avx2_extract.t_Vec128 =
-    Libcrux_intrinsics.Avx2_extract.mm_add_epi16 lhs rhs
-  in
-  let upper_coefficients:Libcrux_intrinsics.Avx2_extract.t_Vec128 =
-    Libcrux_intrinsics.Avx2_extract.mm_sub_epi16 lhs rhs
   in
   let combined:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
     Libcrux_intrinsics.Avx2_extract.mm256_castsi128_si256 lower_coefficients

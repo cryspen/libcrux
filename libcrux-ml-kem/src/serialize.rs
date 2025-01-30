@@ -11,20 +11,20 @@ use crate::{
 #[hax_lib::fstar::before(
     interface,
     r#"[@@ "opaque_to_smt"]
-let coefficients_field_modulus_range (#v_Vector: Type0)
-      {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
-      (re: Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) =
-    forall (i:nat). i < 16 ==> field_modulus_range (Seq.index re.f_coefficients i)"#
-)]
-#[hax_lib::fstar::before(
-    interface,
-    r#"[@@ "opaque_to_smt"]
 let field_modulus_range (#v_Vector: Type0)
         {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
         (a: v_Vector) =
     let coef = Libcrux_ml_kem.Vector.Traits.f_to_i16_array a in
     forall (i:nat). i < 16 ==> v (Seq.index coef i) > -(v $FIELD_MODULUS) /\
         v (Seq.index coef i) < v $FIELD_MODULUS"#
+)]
+#[hax_lib::fstar::before(
+    interface,
+    r#"[@@ "opaque_to_smt"]
+let coefficients_field_modulus_range (#v_Vector: Type0)
+      {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
+      (re: Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) =
+    forall (i:nat). i < 16 ==> field_modulus_range (Seq.index re.f_coefficients i)"#
 )]
 #[hax_lib::fstar::verification_status(panic_free)]
 #[hax_lib::requires(fstar!(r#"field_modulus_range $a"#))]

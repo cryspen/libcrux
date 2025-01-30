@@ -3,6 +3,10 @@ module Libcrux_ml_dsa.Hash_functions.Shake128
 open Core
 open FStar.Mul
 
+let v_BLOCK_SIZE: usize = mk_usize 168
+
+let v_FIVE_BLOCKS_SIZE: usize = v_BLOCK_SIZE *! mk_usize 5
+
 class t_Xof (v_Self: Type0) = {
   f_shake128_pre:t_Slice u8 -> t_Slice u8 -> Type0;
   f_shake128_post:t_Slice u8 -> t_Slice u8 -> t_Slice u8 -> Type0;
@@ -61,7 +65,3 @@ class t_XofX4 (v_Self: Type0) = {
         (f_squeeze_next_block_pre x0)
         (fun result -> f_squeeze_next_block_post x0 result)
 }
-
-let v_BLOCK_SIZE: usize = mk_usize 168
-
-let v_FIVE_BLOCKS_SIZE: usize = v_BLOCK_SIZE *! mk_usize 5

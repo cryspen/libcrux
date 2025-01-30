@@ -8,12 +8,6 @@ val t_Simd128Hash': eqtype
 
 let t_Simd128Hash = t_Simd128Hash'
 
-[@@ FStar.Tactics.Typeclasses.tcinstance]
-assume
-val impl': v_K: usize -> Libcrux_ml_kem.Hash_functions.t_Hash t_Simd128Hash v_K
-
-let impl (v_K: usize) = impl' v_K
-
 assume
 val v_G': input: t_Slice u8
   -> Prims.Pure (t_Array u8 (mk_usize 64))
@@ -79,3 +73,9 @@ val shake128_squeeze_next_block': v_K: usize -> st: t_Simd128Hash
       (fun _ -> Prims.l_True)
 
 let shake128_squeeze_next_block (v_K: usize) = shake128_squeeze_next_block' v_K
+
+[@@ FStar.Tactics.Typeclasses.tcinstance]
+assume
+val impl': v_K: usize -> Libcrux_ml_kem.Hash_functions.t_Hash t_Simd128Hash v_K
+
+let impl (v_K: usize) = impl' v_K

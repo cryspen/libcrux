@@ -3,17 +3,17 @@ module Libcrux_ml_kem.Vector.Traits
 open Core
 open FStar.Mul
 
-let v_BARRETT_SHIFT: i32 = mk_i32 26
-
-let v_BARRETT_R: i32 = mk_i32 1 <<! v_BARRETT_SHIFT
-
-let v_FIELD_ELEMENTS_IN_VECTOR: usize = mk_usize 16
+let v_MONTGOMERY_R_SQUARED_MOD_FIELD_MODULUS: i16 = mk_i16 1353
 
 let v_FIELD_MODULUS: i16 = mk_i16 3329
 
+let v_FIELD_ELEMENTS_IN_VECTOR: usize = mk_usize 16
+
 let v_INVERSE_OF_MODULUS_MOD_MONTGOMERY_R: u32 = mk_u32 62209
 
-let v_MONTGOMERY_R_SQUARED_MOD_FIELD_MODULUS: i16 = mk_i16 1353
+let v_BARRETT_SHIFT: i32 = mk_i32 26
+
+let v_BARRETT_R: i32 = mk_i32 1 <<! v_BARRETT_SHIFT
 
 class t_Repr (v_Self: Type0) = {
   [@@@ FStar.Tactics.Typeclasses.no_method]_super_13011033735201511749:Core.Marker.t_Copy v_Self;
@@ -415,14 +415,6 @@ class t_Operations (v_Self: Type0) = {
         (fun result -> f_rej_sample_post x0 x1 result)
 }
 
-val decompress_1_ (#v_T: Type0) {| i1: t_Operations v_T |} (vec: v_T)
-    : Prims.Pure v_T
-      (requires
-        forall i.
-          let x = Seq.index (i1._super_12682756204189288427.f_repr vec) i in
-          (x == mk_i16 0 \/ x == mk_i16 1))
-      (fun _ -> Prims.l_True)
-
 val montgomery_multiply_fe (#v_T: Type0) {| i1: t_Operations v_T |} (v: v_T) (fer: i16)
     : Prims.Pure v_T (requires Spec.Utils.is_i16b 1664 fer) (fun _ -> Prims.l_True)
 
@@ -439,3 +431,11 @@ val to_unsigned_representative (#v_T: Type0) {| i1: t_Operations v_T |} (a: v_T)
             (let x = Seq.index (i1._super_12682756204189288427.f_repr a) i in
               let y = Seq.index (i1._super_12682756204189288427.f_repr result) i in
               (v y >= 0 /\ v y <= 3328 /\ (v y % 3329 == v x % 3329))))
+
+val decompress_1_ (#v_T: Type0) {| i1: t_Operations v_T |} (vec: v_T)
+    : Prims.Pure v_T
+      (requires
+        forall i.
+          let x = Seq.index (i1._super_12682756204189288427.f_repr vec) i in
+          (x == mk_i16 0 \/ x == mk_i16 1))
+      (fun _ -> Prims.l_True)

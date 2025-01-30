@@ -8,9 +8,6 @@ open FStar.Mul
 /// All other functions don\'t actually use any members.
 val t_Simd256Hash:eqtype
 
-[@@ FStar.Tactics.Typeclasses.tcinstance]
-val impl (v_K: usize) : Libcrux_ml_kem.Hash_functions.t_Hash t_Simd256Hash v_K
-
 val v_G (input: t_Slice u8)
     : Prims.Pure (t_Array u8 (mk_usize 64))
       Prims.l_True
@@ -55,3 +52,6 @@ val shake128_squeeze_next_block (v_K: usize) (st: t_Simd256Hash)
     : Prims.Pure (t_Simd256Hash & t_Array (t_Array u8 (mk_usize 168)) v_K)
       Prims.l_True
       (fun _ -> Prims.l_True)
+
+[@@ FStar.Tactics.Typeclasses.tcinstance]
+val impl (v_K: usize) : Libcrux_ml_kem.Hash_functions.t_Hash t_Simd256Hash v_K

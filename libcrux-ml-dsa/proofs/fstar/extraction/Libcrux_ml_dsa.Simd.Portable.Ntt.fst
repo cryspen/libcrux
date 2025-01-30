@@ -157,6 +157,314 @@ let simd_unit_ntt_at_layer_0_
   in
   simd_unit
 
+let simd_unit_ntt_at_layer_1_
+      (simd_unit: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients)
+      (zeta1 zeta2: i32)
+     =
+  let t:i32 =
+    Libcrux_ml_dsa.Simd.Portable.Arithmetic.montgomery_multiply_fe_by_fer (simd_unit
+          .Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values.[ mk_usize 2 ]
+        <:
+        i32)
+      zeta1
+  in
+  let simd_unit:Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients =
+    {
+      simd_unit with
+      Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values
+      =
+      Rust_primitives.Hax.Monomorphized_update_at.update_at_usize simd_unit
+          .Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values
+        (mk_usize 2)
+        ((simd_unit.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values.[ mk_usize 0 ] <: i32) -! t
+          <:
+          i32)
+    }
+    <:
+    Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients
+  in
+  let simd_unit:Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients =
+    {
+      simd_unit with
+      Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values
+      =
+      Rust_primitives.Hax.Monomorphized_update_at.update_at_usize simd_unit
+          .Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values
+        (mk_usize 0)
+        ((simd_unit.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values.[ mk_usize 0 ] <: i32) +! t
+          <:
+          i32)
+    }
+    <:
+    Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients
+  in
+  let t:i32 =
+    Libcrux_ml_dsa.Simd.Portable.Arithmetic.montgomery_multiply_fe_by_fer (simd_unit
+          .Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values.[ mk_usize 3 ]
+        <:
+        i32)
+      zeta1
+  in
+  let simd_unit:Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients =
+    {
+      simd_unit with
+      Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values
+      =
+      Rust_primitives.Hax.Monomorphized_update_at.update_at_usize simd_unit
+          .Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values
+        (mk_usize 3)
+        ((simd_unit.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values.[ mk_usize 1 ] <: i32) -! t
+          <:
+          i32)
+    }
+    <:
+    Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients
+  in
+  let simd_unit:Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients =
+    {
+      simd_unit with
+      Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values
+      =
+      Rust_primitives.Hax.Monomorphized_update_at.update_at_usize simd_unit
+          .Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values
+        (mk_usize 1)
+        ((simd_unit.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values.[ mk_usize 1 ] <: i32) +! t
+          <:
+          i32)
+    }
+    <:
+    Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients
+  in
+  let t:i32 =
+    Libcrux_ml_dsa.Simd.Portable.Arithmetic.montgomery_multiply_fe_by_fer (simd_unit
+          .Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values.[ mk_usize 6 ]
+        <:
+        i32)
+      zeta2
+  in
+  let simd_unit:Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients =
+    {
+      simd_unit with
+      Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values
+      =
+      Rust_primitives.Hax.Monomorphized_update_at.update_at_usize simd_unit
+          .Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values
+        (mk_usize 6)
+        ((simd_unit.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values.[ mk_usize 4 ] <: i32) -! t
+          <:
+          i32)
+    }
+    <:
+    Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients
+  in
+  let simd_unit:Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients =
+    {
+      simd_unit with
+      Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values
+      =
+      Rust_primitives.Hax.Monomorphized_update_at.update_at_usize simd_unit
+          .Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values
+        (mk_usize 4)
+        ((simd_unit.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values.[ mk_usize 4 ] <: i32) +! t
+          <:
+          i32)
+    }
+    <:
+    Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients
+  in
+  let t:i32 =
+    Libcrux_ml_dsa.Simd.Portable.Arithmetic.montgomery_multiply_fe_by_fer (simd_unit
+          .Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values.[ mk_usize 7 ]
+        <:
+        i32)
+      zeta2
+  in
+  let simd_unit:Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients =
+    {
+      simd_unit with
+      Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values
+      =
+      Rust_primitives.Hax.Monomorphized_update_at.update_at_usize simd_unit
+          .Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values
+        (mk_usize 7)
+        ((simd_unit.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values.[ mk_usize 5 ] <: i32) -! t
+          <:
+          i32)
+    }
+    <:
+    Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients
+  in
+  let simd_unit:Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients =
+    {
+      simd_unit with
+      Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values
+      =
+      Rust_primitives.Hax.Monomorphized_update_at.update_at_usize simd_unit
+          .Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values
+        (mk_usize 5)
+        ((simd_unit.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values.[ mk_usize 5 ] <: i32) +! t
+          <:
+          i32)
+    }
+    <:
+    Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients
+  in
+  simd_unit
+
+let simd_unit_ntt_at_layer_2_
+      (simd_unit: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients)
+      (zeta: i32)
+     =
+  let t:i32 =
+    Libcrux_ml_dsa.Simd.Portable.Arithmetic.montgomery_multiply_fe_by_fer (simd_unit
+          .Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values.[ mk_usize 4 ]
+        <:
+        i32)
+      zeta
+  in
+  let simd_unit:Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients =
+    {
+      simd_unit with
+      Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values
+      =
+      Rust_primitives.Hax.Monomorphized_update_at.update_at_usize simd_unit
+          .Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values
+        (mk_usize 4)
+        ((simd_unit.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values.[ mk_usize 0 ] <: i32) -! t
+          <:
+          i32)
+    }
+    <:
+    Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients
+  in
+  let simd_unit:Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients =
+    {
+      simd_unit with
+      Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values
+      =
+      Rust_primitives.Hax.Monomorphized_update_at.update_at_usize simd_unit
+          .Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values
+        (mk_usize 0)
+        ((simd_unit.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values.[ mk_usize 0 ] <: i32) +! t
+          <:
+          i32)
+    }
+    <:
+    Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients
+  in
+  let t:i32 =
+    Libcrux_ml_dsa.Simd.Portable.Arithmetic.montgomery_multiply_fe_by_fer (simd_unit
+          .Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values.[ mk_usize 5 ]
+        <:
+        i32)
+      zeta
+  in
+  let simd_unit:Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients =
+    {
+      simd_unit with
+      Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values
+      =
+      Rust_primitives.Hax.Monomorphized_update_at.update_at_usize simd_unit
+          .Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values
+        (mk_usize 5)
+        ((simd_unit.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values.[ mk_usize 1 ] <: i32) -! t
+          <:
+          i32)
+    }
+    <:
+    Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients
+  in
+  let simd_unit:Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients =
+    {
+      simd_unit with
+      Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values
+      =
+      Rust_primitives.Hax.Monomorphized_update_at.update_at_usize simd_unit
+          .Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values
+        (mk_usize 1)
+        ((simd_unit.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values.[ mk_usize 1 ] <: i32) +! t
+          <:
+          i32)
+    }
+    <:
+    Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients
+  in
+  let t:i32 =
+    Libcrux_ml_dsa.Simd.Portable.Arithmetic.montgomery_multiply_fe_by_fer (simd_unit
+          .Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values.[ mk_usize 6 ]
+        <:
+        i32)
+      zeta
+  in
+  let simd_unit:Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients =
+    {
+      simd_unit with
+      Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values
+      =
+      Rust_primitives.Hax.Monomorphized_update_at.update_at_usize simd_unit
+          .Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values
+        (mk_usize 6)
+        ((simd_unit.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values.[ mk_usize 2 ] <: i32) -! t
+          <:
+          i32)
+    }
+    <:
+    Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients
+  in
+  let simd_unit:Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients =
+    {
+      simd_unit with
+      Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values
+      =
+      Rust_primitives.Hax.Monomorphized_update_at.update_at_usize simd_unit
+          .Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values
+        (mk_usize 2)
+        ((simd_unit.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values.[ mk_usize 2 ] <: i32) +! t
+          <:
+          i32)
+    }
+    <:
+    Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients
+  in
+  let t:i32 =
+    Libcrux_ml_dsa.Simd.Portable.Arithmetic.montgomery_multiply_fe_by_fer (simd_unit
+          .Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values.[ mk_usize 7 ]
+        <:
+        i32)
+      zeta
+  in
+  let simd_unit:Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients =
+    {
+      simd_unit with
+      Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values
+      =
+      Rust_primitives.Hax.Monomorphized_update_at.update_at_usize simd_unit
+          .Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values
+        (mk_usize 7)
+        ((simd_unit.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values.[ mk_usize 3 ] <: i32) -! t
+          <:
+          i32)
+    }
+    <:
+    Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients
+  in
+  let simd_unit:Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients =
+    {
+      simd_unit with
+      Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values
+      =
+      Rust_primitives.Hax.Monomorphized_update_at.update_at_usize simd_unit
+          .Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values
+        (mk_usize 3)
+        ((simd_unit.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values.[ mk_usize 3 ] <: i32) +! t
+          <:
+          i32)
+    }
+    <:
+    Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients
+  in
+  simd_unit
+
 let ntt_at_layer_0___round
       (re: t_Array Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients (mk_usize 32))
       (index: usize)
@@ -438,160 +746,6 @@ let ntt_at_layer_0_
   in
   re
 
-let simd_unit_ntt_at_layer_1_
-      (simd_unit: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients)
-      (zeta1 zeta2: i32)
-     =
-  let t:i32 =
-    Libcrux_ml_dsa.Simd.Portable.Arithmetic.montgomery_multiply_fe_by_fer (simd_unit
-          .Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values.[ mk_usize 2 ]
-        <:
-        i32)
-      zeta1
-  in
-  let simd_unit:Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients =
-    {
-      simd_unit with
-      Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values
-      =
-      Rust_primitives.Hax.Monomorphized_update_at.update_at_usize simd_unit
-          .Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values
-        (mk_usize 2)
-        ((simd_unit.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values.[ mk_usize 0 ] <: i32) -! t
-          <:
-          i32)
-    }
-    <:
-    Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients
-  in
-  let simd_unit:Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients =
-    {
-      simd_unit with
-      Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values
-      =
-      Rust_primitives.Hax.Monomorphized_update_at.update_at_usize simd_unit
-          .Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values
-        (mk_usize 0)
-        ((simd_unit.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values.[ mk_usize 0 ] <: i32) +! t
-          <:
-          i32)
-    }
-    <:
-    Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients
-  in
-  let t:i32 =
-    Libcrux_ml_dsa.Simd.Portable.Arithmetic.montgomery_multiply_fe_by_fer (simd_unit
-          .Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values.[ mk_usize 3 ]
-        <:
-        i32)
-      zeta1
-  in
-  let simd_unit:Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients =
-    {
-      simd_unit with
-      Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values
-      =
-      Rust_primitives.Hax.Monomorphized_update_at.update_at_usize simd_unit
-          .Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values
-        (mk_usize 3)
-        ((simd_unit.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values.[ mk_usize 1 ] <: i32) -! t
-          <:
-          i32)
-    }
-    <:
-    Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients
-  in
-  let simd_unit:Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients =
-    {
-      simd_unit with
-      Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values
-      =
-      Rust_primitives.Hax.Monomorphized_update_at.update_at_usize simd_unit
-          .Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values
-        (mk_usize 1)
-        ((simd_unit.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values.[ mk_usize 1 ] <: i32) +! t
-          <:
-          i32)
-    }
-    <:
-    Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients
-  in
-  let t:i32 =
-    Libcrux_ml_dsa.Simd.Portable.Arithmetic.montgomery_multiply_fe_by_fer (simd_unit
-          .Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values.[ mk_usize 6 ]
-        <:
-        i32)
-      zeta2
-  in
-  let simd_unit:Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients =
-    {
-      simd_unit with
-      Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values
-      =
-      Rust_primitives.Hax.Monomorphized_update_at.update_at_usize simd_unit
-          .Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values
-        (mk_usize 6)
-        ((simd_unit.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values.[ mk_usize 4 ] <: i32) -! t
-          <:
-          i32)
-    }
-    <:
-    Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients
-  in
-  let simd_unit:Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients =
-    {
-      simd_unit with
-      Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values
-      =
-      Rust_primitives.Hax.Monomorphized_update_at.update_at_usize simd_unit
-          .Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values
-        (mk_usize 4)
-        ((simd_unit.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values.[ mk_usize 4 ] <: i32) +! t
-          <:
-          i32)
-    }
-    <:
-    Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients
-  in
-  let t:i32 =
-    Libcrux_ml_dsa.Simd.Portable.Arithmetic.montgomery_multiply_fe_by_fer (simd_unit
-          .Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values.[ mk_usize 7 ]
-        <:
-        i32)
-      zeta2
-  in
-  let simd_unit:Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients =
-    {
-      simd_unit with
-      Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values
-      =
-      Rust_primitives.Hax.Monomorphized_update_at.update_at_usize simd_unit
-          .Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values
-        (mk_usize 7)
-        ((simd_unit.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values.[ mk_usize 5 ] <: i32) -! t
-          <:
-          i32)
-    }
-    <:
-    Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients
-  in
-  let simd_unit:Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients =
-    {
-      simd_unit with
-      Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values
-      =
-      Rust_primitives.Hax.Monomorphized_update_at.update_at_usize simd_unit
-          .Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values
-        (mk_usize 5)
-        ((simd_unit.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values.[ mk_usize 5 ] <: i32) +! t
-          <:
-          i32)
-    }
-    <:
-    Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients
-  in
-  simd_unit
-
 let ntt_at_layer_1___round
       (re: t_Array Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients (mk_usize 32))
       (index: usize)
@@ -710,160 +864,6 @@ let ntt_at_layer_1_
     ntt_at_layer_1___round re (mk_usize 31) (mk_i32 (-3628969)) (mk_i32 3839961)
   in
   re
-
-let simd_unit_ntt_at_layer_2_
-      (simd_unit: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients)
-      (zeta: i32)
-     =
-  let t:i32 =
-    Libcrux_ml_dsa.Simd.Portable.Arithmetic.montgomery_multiply_fe_by_fer (simd_unit
-          .Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values.[ mk_usize 4 ]
-        <:
-        i32)
-      zeta
-  in
-  let simd_unit:Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients =
-    {
-      simd_unit with
-      Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values
-      =
-      Rust_primitives.Hax.Monomorphized_update_at.update_at_usize simd_unit
-          .Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values
-        (mk_usize 4)
-        ((simd_unit.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values.[ mk_usize 0 ] <: i32) -! t
-          <:
-          i32)
-    }
-    <:
-    Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients
-  in
-  let simd_unit:Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients =
-    {
-      simd_unit with
-      Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values
-      =
-      Rust_primitives.Hax.Monomorphized_update_at.update_at_usize simd_unit
-          .Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values
-        (mk_usize 0)
-        ((simd_unit.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values.[ mk_usize 0 ] <: i32) +! t
-          <:
-          i32)
-    }
-    <:
-    Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients
-  in
-  let t:i32 =
-    Libcrux_ml_dsa.Simd.Portable.Arithmetic.montgomery_multiply_fe_by_fer (simd_unit
-          .Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values.[ mk_usize 5 ]
-        <:
-        i32)
-      zeta
-  in
-  let simd_unit:Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients =
-    {
-      simd_unit with
-      Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values
-      =
-      Rust_primitives.Hax.Monomorphized_update_at.update_at_usize simd_unit
-          .Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values
-        (mk_usize 5)
-        ((simd_unit.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values.[ mk_usize 1 ] <: i32) -! t
-          <:
-          i32)
-    }
-    <:
-    Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients
-  in
-  let simd_unit:Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients =
-    {
-      simd_unit with
-      Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values
-      =
-      Rust_primitives.Hax.Monomorphized_update_at.update_at_usize simd_unit
-          .Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values
-        (mk_usize 1)
-        ((simd_unit.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values.[ mk_usize 1 ] <: i32) +! t
-          <:
-          i32)
-    }
-    <:
-    Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients
-  in
-  let t:i32 =
-    Libcrux_ml_dsa.Simd.Portable.Arithmetic.montgomery_multiply_fe_by_fer (simd_unit
-          .Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values.[ mk_usize 6 ]
-        <:
-        i32)
-      zeta
-  in
-  let simd_unit:Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients =
-    {
-      simd_unit with
-      Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values
-      =
-      Rust_primitives.Hax.Monomorphized_update_at.update_at_usize simd_unit
-          .Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values
-        (mk_usize 6)
-        ((simd_unit.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values.[ mk_usize 2 ] <: i32) -! t
-          <:
-          i32)
-    }
-    <:
-    Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients
-  in
-  let simd_unit:Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients =
-    {
-      simd_unit with
-      Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values
-      =
-      Rust_primitives.Hax.Monomorphized_update_at.update_at_usize simd_unit
-          .Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values
-        (mk_usize 2)
-        ((simd_unit.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values.[ mk_usize 2 ] <: i32) +! t
-          <:
-          i32)
-    }
-    <:
-    Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients
-  in
-  let t:i32 =
-    Libcrux_ml_dsa.Simd.Portable.Arithmetic.montgomery_multiply_fe_by_fer (simd_unit
-          .Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values.[ mk_usize 7 ]
-        <:
-        i32)
-      zeta
-  in
-  let simd_unit:Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients =
-    {
-      simd_unit with
-      Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values
-      =
-      Rust_primitives.Hax.Monomorphized_update_at.update_at_usize simd_unit
-          .Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values
-        (mk_usize 7)
-        ((simd_unit.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values.[ mk_usize 3 ] <: i32) -! t
-          <:
-          i32)
-    }
-    <:
-    Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients
-  in
-  let simd_unit:Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients =
-    {
-      simd_unit with
-      Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values
-      =
-      Rust_primitives.Hax.Monomorphized_update_at.update_at_usize simd_unit
-          .Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values
-        (mk_usize 3)
-        ((simd_unit.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values.[ mk_usize 3 ] <: i32) +! t
-          <:
-          i32)
-    }
-    <:
-    Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients
-  in
-  simd_unit
 
 let ntt_at_layer_2___round
       (re: t_Array Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients (mk_usize 32))

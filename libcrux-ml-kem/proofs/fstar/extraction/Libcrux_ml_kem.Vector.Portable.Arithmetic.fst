@@ -28,6 +28,263 @@ let get_n_least_significant_bits (n: u8) (value: u32) =
 
 #pop-options
 
+#push-options "--z3rlimit 150"
+
+let add (lhs rhs: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) =
+  let v__lhs0:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector = lhs in
+  let lhs:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
+    Rust_primitives.Hax.Folds.fold_range (mk_usize 0)
+      Libcrux_ml_kem.Vector.Traits.v_FIELD_ELEMENTS_IN_VECTOR
+      (fun lhs i ->
+          let lhs:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector = lhs in
+          let i:usize = i in
+          (forall j.
+              j < v i ==>
+              (Seq.index lhs.f_elements j) ==
+              (Seq.index v__lhs0.f_elements j) +! (Seq.index rhs.f_elements j)) /\
+          (forall j. j >= v i ==> (Seq.index lhs.f_elements j) == (Seq.index v__lhs0.f_elements j)))
+      lhs
+      (fun lhs i ->
+          let lhs:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector = lhs in
+          let i:usize = i in
+          let lhs:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
+            {
+              lhs with
+              Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements
+              =
+              Rust_primitives.Hax.Monomorphized_update_at.update_at_usize lhs
+                  .Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements
+                i
+                ((lhs.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ i ] <: i16) +!
+                  (rhs.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ i ] <: i16)
+                  <:
+                  i16)
+            }
+            <:
+            Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
+          in
+          lhs)
+  in
+  let _:Prims.unit =
+    assert (forall i.
+          v (Seq.index lhs.f_elements i) ==
+          v (Seq.index v__lhs0.f_elements i) + v (Seq.index rhs.f_elements i))
+  in
+  lhs
+
+#pop-options
+
+let sub (lhs rhs: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) =
+  let v__lhs0:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector = lhs in
+  let lhs:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
+    Rust_primitives.Hax.Folds.fold_range (mk_usize 0)
+      Libcrux_ml_kem.Vector.Traits.v_FIELD_ELEMENTS_IN_VECTOR
+      (fun lhs i ->
+          let lhs:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector = lhs in
+          let i:usize = i in
+          (forall j.
+              j < v i ==>
+              (Seq.index lhs.f_elements j) ==
+              (Seq.index v__lhs0.f_elements j) -! (Seq.index rhs.f_elements j)) /\
+          (forall j. j >= v i ==> (Seq.index lhs.f_elements j) == (Seq.index v__lhs0.f_elements j)))
+      lhs
+      (fun lhs i ->
+          let lhs:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector = lhs in
+          let i:usize = i in
+          let lhs:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
+            {
+              lhs with
+              Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements
+              =
+              Rust_primitives.Hax.Monomorphized_update_at.update_at_usize lhs
+                  .Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements
+                i
+                ((lhs.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ i ] <: i16) -!
+                  (rhs.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ i ] <: i16)
+                  <:
+                  i16)
+            }
+            <:
+            Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
+          in
+          lhs)
+  in
+  let _:Prims.unit =
+    assert (forall i.
+          v (Seq.index lhs.f_elements i) ==
+          v (Seq.index v__lhs0.f_elements i) - v (Seq.index rhs.f_elements i))
+  in
+  lhs
+
+let multiply_by_constant (vec: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) (c: i16) =
+  let v__vec0:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector = vec in
+  let vec:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
+    Rust_primitives.Hax.Folds.fold_range (mk_usize 0)
+      Libcrux_ml_kem.Vector.Traits.v_FIELD_ELEMENTS_IN_VECTOR
+      (fun vec i ->
+          let vec:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector = vec in
+          let i:usize = i in
+          (forall j.
+              j < v i ==> (Seq.index vec.f_elements j) == (Seq.index v__vec0.f_elements j) *! c) /\
+          (forall j. j >= v i ==> (Seq.index vec.f_elements j) == (Seq.index v__vec0.f_elements j)))
+      vec
+      (fun vec i ->
+          let vec:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector = vec in
+          let i:usize = i in
+          let vec:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
+            {
+              vec with
+              Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements
+              =
+              Rust_primitives.Hax.Monomorphized_update_at.update_at_usize vec
+                  .Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements
+                i
+                ((vec.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ i ] <: i16) *! c
+                  <:
+                  i16)
+            }
+            <:
+            Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
+          in
+          vec)
+  in
+  let _:Prims.unit =
+    assert (forall i. v (Seq.index vec.f_elements i) == v (Seq.index v__vec0.f_elements i) * v c)
+  in
+  vec
+
+let bitwise_and_with_constant
+      (vec: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
+      (c: i16)
+     =
+  let v__vec0:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector = vec in
+  let vec:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
+    Rust_primitives.Hax.Folds.fold_range (mk_usize 0)
+      Libcrux_ml_kem.Vector.Traits.v_FIELD_ELEMENTS_IN_VECTOR
+      (fun vec i ->
+          let vec:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector = vec in
+          let i:usize = i in
+          (forall j. j < v i ==> Seq.index vec.f_elements j == (Seq.index v__vec0.f_elements j &. c)
+          ) /\ (forall j. j >= v i ==> Seq.index vec.f_elements j == Seq.index v__vec0.f_elements j)
+      )
+      vec
+      (fun vec i ->
+          let vec:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector = vec in
+          let i:usize = i in
+          let vec:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
+            {
+              vec with
+              Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements
+              =
+              Rust_primitives.Hax.Monomorphized_update_at.update_at_usize vec
+                  .Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements
+                i
+                ((vec.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ i ] <: i16) &. c
+                  <:
+                  i16)
+            }
+            <:
+            Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
+          in
+          vec)
+  in
+  let _:Prims.unit =
+    Seq.lemma_eq_intro vec.f_elements (Spec.Utils.map_array (fun x -> x &. c) v__vec0.f_elements)
+  in
+  vec
+
+let shift_right (v_SHIFT_BY: i32) (vec: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) =
+  let v__vec0:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector = vec in
+  let vec:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
+    Rust_primitives.Hax.Folds.fold_range (mk_usize 0)
+      Libcrux_ml_kem.Vector.Traits.v_FIELD_ELEMENTS_IN_VECTOR
+      (fun vec i ->
+          let vec:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector = vec in
+          let i:usize = i in
+          (forall j.
+              j < v i ==>
+              Seq.index vec.f_elements j == (Seq.index v__vec0.f_elements j >>! v_SHIFT_BY)) /\
+          (forall j. j >= v i ==> Seq.index vec.f_elements j == Seq.index v__vec0.f_elements j))
+      vec
+      (fun vec i ->
+          let vec:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector = vec in
+          let i:usize = i in
+          let vec:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
+            {
+              vec with
+              Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements
+              =
+              Rust_primitives.Hax.Monomorphized_update_at.update_at_usize vec
+                  .Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements
+                i
+                ((vec.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ i ] <: i16) >>!
+                  v_SHIFT_BY
+                  <:
+                  i16)
+            }
+            <:
+            Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
+          in
+          vec)
+  in
+  let _:Prims.unit =
+    Seq.lemma_eq_intro vec.f_elements
+      (Spec.Utils.map_array (fun x -> x >>! v_SHIFT_BY) v__vec0.f_elements)
+  in
+  vec
+
+#push-options "--z3rlimit 300"
+
+let cond_subtract_3329_ (vec: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) =
+  let v__vec0:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector = vec in
+  let vec:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
+    Rust_primitives.Hax.Folds.fold_range (mk_usize 0)
+      Libcrux_ml_kem.Vector.Traits.v_FIELD_ELEMENTS_IN_VECTOR
+      (fun vec i ->
+          let vec:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector = vec in
+          let i:usize = i in
+          (forall j.
+              j < v i ==>
+              Seq.index vec.f_elements j ==
+              (let x = Seq.index v__vec0.f_elements j in
+                if x >=. (mk_i16 3329) then x -! (mk_i16 3329) else x)) /\
+          (forall j. j >= v i ==> Seq.index vec.f_elements j == Seq.index v__vec0.f_elements j))
+      vec
+      (fun vec i ->
+          let vec:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector = vec in
+          let i:usize = i in
+          if
+            (vec.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ i ] <: i16) >=. mk_i16 3329
+            <:
+            bool
+          then
+            {
+              vec with
+              Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements
+              =
+              Rust_primitives.Hax.Monomorphized_update_at.update_at_usize vec
+                  .Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements
+                i
+                ((vec.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ i ] <: i16) -!
+                  mk_i16 3329
+                  <:
+                  i16)
+              <:
+              t_Array i16 (mk_usize 16)
+            }
+            <:
+            Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
+          else vec)
+  in
+  let _:Prims.unit =
+    Seq.lemma_eq_intro vec.f_elements
+      (Spec.Utils.map_array (fun x -> if x >=. (mk_i16 3329) then x -! (mk_i16 3329) else x)
+          v__vec0.f_elements)
+  in
+  vec
+
+#pop-options
+
 #push-options "--z3rlimit 150 --ext context_pruning"
 
 let barrett_reduce_element (value: i16) =
@@ -62,6 +319,60 @@ let barrett_reduce_element (value: i16) =
     }
   in
   result
+
+#pop-options
+
+#push-options "--z3rlimit 150"
+
+let barrett_reduce (vec: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) =
+  let v__vec0:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector = vec in
+  let vec:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
+    Rust_primitives.Hax.Folds.fold_range (mk_usize 0)
+      Libcrux_ml_kem.Vector.Traits.v_FIELD_ELEMENTS_IN_VECTOR
+      (fun vec i ->
+          let vec:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector = vec in
+          let i:usize = i in
+          (forall j.
+              j < v i ==>
+              (Spec.Utils.is_i16b 3328 (Seq.index vec.f_elements j) /\
+                v (Seq.index vec.f_elements j) % 3329 == (v (Seq.index v__vec0.f_elements j) % 3329)
+              )) /\
+          (forall j.
+              j >= v i ==>
+              (Seq.index vec.f_elements j == Seq.index v__vec0.f_elements j /\
+                Spec.Utils.is_i16b 28296 (Seq.index vec.f_elements j))))
+      vec
+      (fun vec i ->
+          let vec:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector = vec in
+          let i:usize = i in
+          let vi:i16 =
+            barrett_reduce_element (vec.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ i ]
+                <:
+                i16)
+          in
+          let vec:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
+            {
+              vec with
+              Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements
+              =
+              Rust_primitives.Hax.Monomorphized_update_at.update_at_usize vec
+                  .Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements
+                i
+                vi
+            }
+            <:
+            Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
+          in
+          let _:Prims.unit =
+            assert (v (mk_int #usize_inttype (v i + 1)) == v i + 1);
+            assert (forall j. j < v i ==> Spec.Utils.is_i16b 3328 (Seq.index vec.f_elements j));
+            assert (Spec.Utils.is_i16b 3328 vi);
+            assert (Spec.Utils.is_i16b 3328 (Seq.index vec.f_elements (v i)));
+            assert (forall j. j < v i + 1 ==> Spec.Utils.is_i16b 3328 (Seq.index vec.f_elements j))
+          in
+          vec)
+  in
+  vec
 
 #pop-options
 
@@ -172,198 +483,6 @@ let montgomery_multiply_fe_by_fer (fe fer: i16) =
 
 #push-options "--z3rlimit 150"
 
-let add (lhs rhs: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) =
-  let v__lhs0:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector = lhs in
-  let lhs:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
-    Rust_primitives.Hax.Folds.fold_range (mk_usize 0)
-      Libcrux_ml_kem.Vector.Traits.v_FIELD_ELEMENTS_IN_VECTOR
-      (fun lhs i ->
-          let lhs:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector = lhs in
-          let i:usize = i in
-          (forall j.
-              j < v i ==>
-              (Seq.index lhs.f_elements j) ==
-              (Seq.index v__lhs0.f_elements j) +! (Seq.index rhs.f_elements j)) /\
-          (forall j. j >= v i ==> (Seq.index lhs.f_elements j) == (Seq.index v__lhs0.f_elements j)))
-      lhs
-      (fun lhs i ->
-          let lhs:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector = lhs in
-          let i:usize = i in
-          let lhs:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
-            {
-              lhs with
-              Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements
-              =
-              Rust_primitives.Hax.Monomorphized_update_at.update_at_usize lhs
-                  .Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements
-                i
-                ((lhs.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ i ] <: i16) +!
-                  (rhs.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ i ] <: i16)
-                  <:
-                  i16)
-            }
-            <:
-            Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
-          in
-          lhs)
-  in
-  let _:Prims.unit =
-    assert (forall i.
-          v (Seq.index lhs.f_elements i) ==
-          v (Seq.index v__lhs0.f_elements i) + v (Seq.index rhs.f_elements i))
-  in
-  lhs
-
-#pop-options
-
-#push-options "--z3rlimit 150"
-
-let barrett_reduce (vec: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) =
-  let v__vec0:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector = vec in
-  let vec:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
-    Rust_primitives.Hax.Folds.fold_range (mk_usize 0)
-      Libcrux_ml_kem.Vector.Traits.v_FIELD_ELEMENTS_IN_VECTOR
-      (fun vec i ->
-          let vec:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector = vec in
-          let i:usize = i in
-          (forall j.
-              j < v i ==>
-              (Spec.Utils.is_i16b 3328 (Seq.index vec.f_elements j) /\
-                v (Seq.index vec.f_elements j) % 3329 == (v (Seq.index v__vec0.f_elements j) % 3329)
-              )) /\
-          (forall j.
-              j >= v i ==>
-              (Seq.index vec.f_elements j == Seq.index v__vec0.f_elements j /\
-                Spec.Utils.is_i16b 28296 (Seq.index vec.f_elements j))))
-      vec
-      (fun vec i ->
-          let vec:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector = vec in
-          let i:usize = i in
-          let vi:i16 =
-            barrett_reduce_element (vec.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ i ]
-                <:
-                i16)
-          in
-          let vec:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
-            {
-              vec with
-              Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements
-              =
-              Rust_primitives.Hax.Monomorphized_update_at.update_at_usize vec
-                  .Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements
-                i
-                vi
-            }
-            <:
-            Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
-          in
-          let _:Prims.unit =
-            assert (v (mk_int #usize_inttype (v i + 1)) == v i + 1);
-            assert (forall j. j < v i ==> Spec.Utils.is_i16b 3328 (Seq.index vec.f_elements j));
-            assert (Spec.Utils.is_i16b 3328 vi);
-            assert (Spec.Utils.is_i16b 3328 (Seq.index vec.f_elements (v i)));
-            assert (forall j. j < v i + 1 ==> Spec.Utils.is_i16b 3328 (Seq.index vec.f_elements j))
-          in
-          vec)
-  in
-  vec
-
-#pop-options
-
-let bitwise_and_with_constant
-      (vec: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
-      (c: i16)
-     =
-  let v__vec0:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector = vec in
-  let vec:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
-    Rust_primitives.Hax.Folds.fold_range (mk_usize 0)
-      Libcrux_ml_kem.Vector.Traits.v_FIELD_ELEMENTS_IN_VECTOR
-      (fun vec i ->
-          let vec:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector = vec in
-          let i:usize = i in
-          (forall j. j < v i ==> Seq.index vec.f_elements j == (Seq.index v__vec0.f_elements j &. c)
-          ) /\ (forall j. j >= v i ==> Seq.index vec.f_elements j == Seq.index v__vec0.f_elements j)
-      )
-      vec
-      (fun vec i ->
-          let vec:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector = vec in
-          let i:usize = i in
-          let vec:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
-            {
-              vec with
-              Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements
-              =
-              Rust_primitives.Hax.Monomorphized_update_at.update_at_usize vec
-                  .Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements
-                i
-                ((vec.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ i ] <: i16) &. c
-                  <:
-                  i16)
-            }
-            <:
-            Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
-          in
-          vec)
-  in
-  let _:Prims.unit =
-    Seq.lemma_eq_intro vec.f_elements (Spec.Utils.map_array (fun x -> x &. c) v__vec0.f_elements)
-  in
-  vec
-
-#push-options "--z3rlimit 300"
-
-let cond_subtract_3329_ (vec: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) =
-  let v__vec0:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector = vec in
-  let vec:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
-    Rust_primitives.Hax.Folds.fold_range (mk_usize 0)
-      Libcrux_ml_kem.Vector.Traits.v_FIELD_ELEMENTS_IN_VECTOR
-      (fun vec i ->
-          let vec:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector = vec in
-          let i:usize = i in
-          (forall j.
-              j < v i ==>
-              Seq.index vec.f_elements j ==
-              (let x = Seq.index v__vec0.f_elements j in
-                if x >=. (mk_i16 3329) then x -! (mk_i16 3329) else x)) /\
-          (forall j. j >= v i ==> Seq.index vec.f_elements j == Seq.index v__vec0.f_elements j))
-      vec
-      (fun vec i ->
-          let vec:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector = vec in
-          let i:usize = i in
-          if
-            (vec.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ i ] <: i16) >=. mk_i16 3329
-            <:
-            bool
-          then
-            {
-              vec with
-              Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements
-              =
-              Rust_primitives.Hax.Monomorphized_update_at.update_at_usize vec
-                  .Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements
-                i
-                ((vec.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ i ] <: i16) -!
-                  mk_i16 3329
-                  <:
-                  i16)
-              <:
-              t_Array i16 (mk_usize 16)
-            }
-            <:
-            Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
-          else vec)
-  in
-  let _:Prims.unit =
-    Seq.lemma_eq_intro vec.f_elements
-      (Spec.Utils.map_array (fun x -> if x >=. (mk_i16 3329) then x -! (mk_i16 3329) else x)
-          v__vec0.f_elements)
-  in
-  vec
-
-#pop-options
-
-#push-options "--z3rlimit 150"
-
 let montgomery_multiply_by_constant
       (vec: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
       (c: i16)
@@ -408,122 +527,3 @@ let montgomery_multiply_by_constant
   vec
 
 #pop-options
-
-let multiply_by_constant (vec: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) (c: i16) =
-  let v__vec0:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector = vec in
-  let vec:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
-    Rust_primitives.Hax.Folds.fold_range (mk_usize 0)
-      Libcrux_ml_kem.Vector.Traits.v_FIELD_ELEMENTS_IN_VECTOR
-      (fun vec i ->
-          let vec:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector = vec in
-          let i:usize = i in
-          (forall j.
-              j < v i ==> (Seq.index vec.f_elements j) == (Seq.index v__vec0.f_elements j) *! c) /\
-          (forall j. j >= v i ==> (Seq.index vec.f_elements j) == (Seq.index v__vec0.f_elements j)))
-      vec
-      (fun vec i ->
-          let vec:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector = vec in
-          let i:usize = i in
-          let vec:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
-            {
-              vec with
-              Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements
-              =
-              Rust_primitives.Hax.Monomorphized_update_at.update_at_usize vec
-                  .Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements
-                i
-                ((vec.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ i ] <: i16) *! c
-                  <:
-                  i16)
-            }
-            <:
-            Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
-          in
-          vec)
-  in
-  let _:Prims.unit =
-    assert (forall i. v (Seq.index vec.f_elements i) == v (Seq.index v__vec0.f_elements i) * v c)
-  in
-  vec
-
-let shift_right (v_SHIFT_BY: i32) (vec: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) =
-  let v__vec0:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector = vec in
-  let vec:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
-    Rust_primitives.Hax.Folds.fold_range (mk_usize 0)
-      Libcrux_ml_kem.Vector.Traits.v_FIELD_ELEMENTS_IN_VECTOR
-      (fun vec i ->
-          let vec:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector = vec in
-          let i:usize = i in
-          (forall j.
-              j < v i ==>
-              Seq.index vec.f_elements j == (Seq.index v__vec0.f_elements j >>! v_SHIFT_BY)) /\
-          (forall j. j >= v i ==> Seq.index vec.f_elements j == Seq.index v__vec0.f_elements j))
-      vec
-      (fun vec i ->
-          let vec:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector = vec in
-          let i:usize = i in
-          let vec:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
-            {
-              vec with
-              Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements
-              =
-              Rust_primitives.Hax.Monomorphized_update_at.update_at_usize vec
-                  .Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements
-                i
-                ((vec.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ i ] <: i16) >>!
-                  v_SHIFT_BY
-                  <:
-                  i16)
-            }
-            <:
-            Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
-          in
-          vec)
-  in
-  let _:Prims.unit =
-    Seq.lemma_eq_intro vec.f_elements
-      (Spec.Utils.map_array (fun x -> x >>! v_SHIFT_BY) v__vec0.f_elements)
-  in
-  vec
-
-let sub (lhs rhs: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) =
-  let v__lhs0:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector = lhs in
-  let lhs:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
-    Rust_primitives.Hax.Folds.fold_range (mk_usize 0)
-      Libcrux_ml_kem.Vector.Traits.v_FIELD_ELEMENTS_IN_VECTOR
-      (fun lhs i ->
-          let lhs:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector = lhs in
-          let i:usize = i in
-          (forall j.
-              j < v i ==>
-              (Seq.index lhs.f_elements j) ==
-              (Seq.index v__lhs0.f_elements j) -! (Seq.index rhs.f_elements j)) /\
-          (forall j. j >= v i ==> (Seq.index lhs.f_elements j) == (Seq.index v__lhs0.f_elements j)))
-      lhs
-      (fun lhs i ->
-          let lhs:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector = lhs in
-          let i:usize = i in
-          let lhs:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
-            {
-              lhs with
-              Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements
-              =
-              Rust_primitives.Hax.Monomorphized_update_at.update_at_usize lhs
-                  .Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements
-                i
-                ((lhs.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ i ] <: i16) -!
-                  (rhs.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ i ] <: i16)
-                  <:
-                  i16)
-            }
-            <:
-            Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
-          in
-          lhs)
-  in
-  let _:Prims.unit =
-    assert (forall i.
-          v (Seq.index lhs.f_elements i) ==
-          v (Seq.index v__lhs0.f_elements i) - v (Seq.index rhs.f_elements i))
-  in
-  lhs

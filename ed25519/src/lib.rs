@@ -1,10 +1,10 @@
 #![no_std]
 
-pub mod hacl {
+mod hacl {
     //! This module contains generated hacl code.
 
-    pub mod ed25519;
-    pub mod ed25519_precomptable;
+    pub(crate) mod ed25519;
+    pub(crate) mod ed25519_precomptable;
 }
 
 mod impl_hacl;

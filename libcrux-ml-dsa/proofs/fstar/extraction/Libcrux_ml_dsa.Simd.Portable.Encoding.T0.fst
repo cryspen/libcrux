@@ -7,6 +7,160 @@ let change_t0_interval (t0: i32) =
   (mk_i32 1 <<! (Libcrux_ml_dsa.Constants.v_BITS_IN_LOWER_PART_OF_T -! mk_usize 1 <: usize) <: i32) -!
   t0
 
+let serialize
+      (simd_unit: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients)
+      (serialized: t_Slice u8)
+     =
+  let _:Prims.unit =
+    if true
+    then
+      let _:Prims.unit =
+        Hax_lib.v_assert ((Core.Slice.impl__len #u8 serialized <: usize) =. mk_usize 13 <: bool)
+      in
+      ()
+  in
+  let coefficient0:i32 =
+    change_t0_interval (simd_unit.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values.[ mk_usize 0 ]
+        <:
+        i32)
+  in
+  let coefficient1:i32 =
+    change_t0_interval (simd_unit.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values.[ mk_usize 1 ]
+        <:
+        i32)
+  in
+  let coefficient2:i32 =
+    change_t0_interval (simd_unit.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values.[ mk_usize 2 ]
+        <:
+        i32)
+  in
+  let coefficient3:i32 =
+    change_t0_interval (simd_unit.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values.[ mk_usize 3 ]
+        <:
+        i32)
+  in
+  let coefficient4:i32 =
+    change_t0_interval (simd_unit.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values.[ mk_usize 4 ]
+        <:
+        i32)
+  in
+  let coefficient5:i32 =
+    change_t0_interval (simd_unit.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values.[ mk_usize 5 ]
+        <:
+        i32)
+  in
+  let coefficient6:i32 =
+    change_t0_interval (simd_unit.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values.[ mk_usize 6 ]
+        <:
+        i32)
+  in
+  let coefficient7:i32 =
+    change_t0_interval (simd_unit.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values.[ mk_usize 7 ]
+        <:
+        i32)
+  in
+  let serialized:t_Slice u8 =
+    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize serialized
+      (mk_usize 0)
+      (cast (coefficient0 <: i32) <: u8)
+  in
+  let serialized:t_Slice u8 =
+    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize serialized
+      (mk_usize 1)
+      (cast (coefficient0 >>! mk_i32 8 <: i32) <: u8)
+  in
+  let serialized:t_Slice u8 =
+    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize serialized
+      (mk_usize 1)
+      ((serialized.[ mk_usize 1 ] <: u8) |. (cast (coefficient1 <<! mk_i32 5 <: i32) <: u8) <: u8)
+  in
+  let serialized:t_Slice u8 =
+    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize serialized
+      (mk_usize 2)
+      (cast (coefficient1 >>! mk_i32 3 <: i32) <: u8)
+  in
+  let serialized:t_Slice u8 =
+    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize serialized
+      (mk_usize 3)
+      (cast (coefficient1 >>! mk_i32 11 <: i32) <: u8)
+  in
+  let serialized:t_Slice u8 =
+    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize serialized
+      (mk_usize 3)
+      ((serialized.[ mk_usize 3 ] <: u8) |. (cast (coefficient2 <<! mk_i32 2 <: i32) <: u8) <: u8)
+  in
+  let serialized:t_Slice u8 =
+    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize serialized
+      (mk_usize 4)
+      (cast (coefficient2 >>! mk_i32 6 <: i32) <: u8)
+  in
+  let serialized:t_Slice u8 =
+    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize serialized
+      (mk_usize 4)
+      ((serialized.[ mk_usize 4 ] <: u8) |. (cast (coefficient3 <<! mk_i32 7 <: i32) <: u8) <: u8)
+  in
+  let serialized:t_Slice u8 =
+    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize serialized
+      (mk_usize 5)
+      (cast (coefficient3 >>! mk_i32 1 <: i32) <: u8)
+  in
+  let serialized:t_Slice u8 =
+    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize serialized
+      (mk_usize 6)
+      (cast (coefficient3 >>! mk_i32 9 <: i32) <: u8)
+  in
+  let serialized:t_Slice u8 =
+    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize serialized
+      (mk_usize 6)
+      ((serialized.[ mk_usize 6 ] <: u8) |. (cast (coefficient4 <<! mk_i32 4 <: i32) <: u8) <: u8)
+  in
+  let serialized:t_Slice u8 =
+    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize serialized
+      (mk_usize 7)
+      (cast (coefficient4 >>! mk_i32 4 <: i32) <: u8)
+  in
+  let serialized:t_Slice u8 =
+    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize serialized
+      (mk_usize 8)
+      (cast (coefficient4 >>! mk_i32 12 <: i32) <: u8)
+  in
+  let serialized:t_Slice u8 =
+    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize serialized
+      (mk_usize 8)
+      ((serialized.[ mk_usize 8 ] <: u8) |. (cast (coefficient5 <<! mk_i32 1 <: i32) <: u8) <: u8)
+  in
+  let serialized:t_Slice u8 =
+    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize serialized
+      (mk_usize 9)
+      (cast (coefficient5 >>! mk_i32 7 <: i32) <: u8)
+  in
+  let serialized:t_Slice u8 =
+    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize serialized
+      (mk_usize 9)
+      ((serialized.[ mk_usize 9 ] <: u8) |. (cast (coefficient6 <<! mk_i32 6 <: i32) <: u8) <: u8)
+  in
+  let serialized:t_Slice u8 =
+    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize serialized
+      (mk_usize 10)
+      (cast (coefficient6 >>! mk_i32 2 <: i32) <: u8)
+  in
+  let serialized:t_Slice u8 =
+    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize serialized
+      (mk_usize 11)
+      (cast (coefficient6 >>! mk_i32 10 <: i32) <: u8)
+  in
+  let serialized:t_Slice u8 =
+    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize serialized
+      (mk_usize 11)
+      ((serialized.[ mk_usize 11 ] <: u8) |. (cast (coefficient7 <<! mk_i32 3 <: i32) <: u8) <: u8)
+  in
+  let serialized:t_Slice u8 =
+    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize serialized
+      (mk_usize 12)
+      (cast (coefficient7 >>! mk_i32 5 <: i32) <: u8)
+  in
+  serialized
+
 let deserialize
       (serialized: t_Slice u8)
       (simd_unit: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients)
@@ -165,157 +319,3 @@ let deserialize
     Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients
   in
   simd_unit
-
-let serialize
-      (simd_unit: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients)
-      (serialized: t_Slice u8)
-     =
-  let _:Prims.unit =
-    if true
-    then
-      let _:Prims.unit =
-        Hax_lib.v_assert ((Core.Slice.impl__len #u8 serialized <: usize) =. mk_usize 13 <: bool)
-      in
-      ()
-  in
-  let coefficient0:i32 =
-    change_t0_interval (simd_unit.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values.[ mk_usize 0 ]
-        <:
-        i32)
-  in
-  let coefficient1:i32 =
-    change_t0_interval (simd_unit.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values.[ mk_usize 1 ]
-        <:
-        i32)
-  in
-  let coefficient2:i32 =
-    change_t0_interval (simd_unit.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values.[ mk_usize 2 ]
-        <:
-        i32)
-  in
-  let coefficient3:i32 =
-    change_t0_interval (simd_unit.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values.[ mk_usize 3 ]
-        <:
-        i32)
-  in
-  let coefficient4:i32 =
-    change_t0_interval (simd_unit.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values.[ mk_usize 4 ]
-        <:
-        i32)
-  in
-  let coefficient5:i32 =
-    change_t0_interval (simd_unit.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values.[ mk_usize 5 ]
-        <:
-        i32)
-  in
-  let coefficient6:i32 =
-    change_t0_interval (simd_unit.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values.[ mk_usize 6 ]
-        <:
-        i32)
-  in
-  let coefficient7:i32 =
-    change_t0_interval (simd_unit.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values.[ mk_usize 7 ]
-        <:
-        i32)
-  in
-  let serialized:t_Slice u8 =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize serialized
-      (mk_usize 0)
-      (cast (coefficient0 <: i32) <: u8)
-  in
-  let serialized:t_Slice u8 =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize serialized
-      (mk_usize 1)
-      (cast (coefficient0 >>! mk_i32 8 <: i32) <: u8)
-  in
-  let serialized:t_Slice u8 =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize serialized
-      (mk_usize 1)
-      ((serialized.[ mk_usize 1 ] <: u8) |. (cast (coefficient1 <<! mk_i32 5 <: i32) <: u8) <: u8)
-  in
-  let serialized:t_Slice u8 =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize serialized
-      (mk_usize 2)
-      (cast (coefficient1 >>! mk_i32 3 <: i32) <: u8)
-  in
-  let serialized:t_Slice u8 =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize serialized
-      (mk_usize 3)
-      (cast (coefficient1 >>! mk_i32 11 <: i32) <: u8)
-  in
-  let serialized:t_Slice u8 =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize serialized
-      (mk_usize 3)
-      ((serialized.[ mk_usize 3 ] <: u8) |. (cast (coefficient2 <<! mk_i32 2 <: i32) <: u8) <: u8)
-  in
-  let serialized:t_Slice u8 =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize serialized
-      (mk_usize 4)
-      (cast (coefficient2 >>! mk_i32 6 <: i32) <: u8)
-  in
-  let serialized:t_Slice u8 =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize serialized
-      (mk_usize 4)
-      ((serialized.[ mk_usize 4 ] <: u8) |. (cast (coefficient3 <<! mk_i32 7 <: i32) <: u8) <: u8)
-  in
-  let serialized:t_Slice u8 =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize serialized
-      (mk_usize 5)
-      (cast (coefficient3 >>! mk_i32 1 <: i32) <: u8)
-  in
-  let serialized:t_Slice u8 =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize serialized
-      (mk_usize 6)
-      (cast (coefficient3 >>! mk_i32 9 <: i32) <: u8)
-  in
-  let serialized:t_Slice u8 =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize serialized
-      (mk_usize 6)
-      ((serialized.[ mk_usize 6 ] <: u8) |. (cast (coefficient4 <<! mk_i32 4 <: i32) <: u8) <: u8)
-  in
-  let serialized:t_Slice u8 =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize serialized
-      (mk_usize 7)
-      (cast (coefficient4 >>! mk_i32 4 <: i32) <: u8)
-  in
-  let serialized:t_Slice u8 =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize serialized
-      (mk_usize 8)
-      (cast (coefficient4 >>! mk_i32 12 <: i32) <: u8)
-  in
-  let serialized:t_Slice u8 =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize serialized
-      (mk_usize 8)
-      ((serialized.[ mk_usize 8 ] <: u8) |. (cast (coefficient5 <<! mk_i32 1 <: i32) <: u8) <: u8)
-  in
-  let serialized:t_Slice u8 =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize serialized
-      (mk_usize 9)
-      (cast (coefficient5 >>! mk_i32 7 <: i32) <: u8)
-  in
-  let serialized:t_Slice u8 =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize serialized
-      (mk_usize 9)
-      ((serialized.[ mk_usize 9 ] <: u8) |. (cast (coefficient6 <<! mk_i32 6 <: i32) <: u8) <: u8)
-  in
-  let serialized:t_Slice u8 =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize serialized
-      (mk_usize 10)
-      (cast (coefficient6 >>! mk_i32 2 <: i32) <: u8)
-  in
-  let serialized:t_Slice u8 =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize serialized
-      (mk_usize 11)
-      (cast (coefficient6 >>! mk_i32 10 <: i32) <: u8)
-  in
-  let serialized:t_Slice u8 =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize serialized
-      (mk_usize 11)
-      ((serialized.[ mk_usize 11 ] <: u8) |. (cast (coefficient7 <<! mk_i32 3 <: i32) <: u8) <: u8)
-  in
-  let serialized:t_Slice u8 =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize serialized
-      (mk_usize 12)
-      (cast (coefficient7 >>! mk_i32 5 <: i32) <: u8)
-  in
-  serialized

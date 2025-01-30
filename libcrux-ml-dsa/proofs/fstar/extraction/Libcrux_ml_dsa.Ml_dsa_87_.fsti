@@ -26,6 +26,20 @@ val sign
       (Core.Result.t_Result (Libcrux_ml_dsa.Types.t_MLDSASignature (mk_usize 4627))
           Libcrux_ml_dsa.Types.t_SigningError) Prims.l_True (fun _ -> Prims.l_True)
 
+/// Verify an ML-DSA-87 Signature
+/// The parameter `context` is used for domain separation
+/// and is a byte string of length at most 255 bytes. It
+/// may also be empty.
+/// Returns `Ok` when the `signature` is valid for the `message` and
+/// `verification_key`, and a [`VerificationError`] otherwise.
+val verify
+      (verification_key: Libcrux_ml_dsa.Types.t_MLDSAVerificationKey (mk_usize 2592))
+      (message context: t_Slice u8)
+      (signature: Libcrux_ml_dsa.Types.t_MLDSASignature (mk_usize 4627))
+    : Prims.Pure (Core.Result.t_Result Prims.unit Libcrux_ml_dsa.Types.t_VerificationError)
+      Prims.l_True
+      (fun _ -> Prims.l_True)
+
 /// Sign with HashML-DSA 87, with a SHAKE128 pre-hashing
 /// Sign a digest of `message` derived using `pre_hash` with the
 /// ML-DSA `signing_key`.
@@ -40,20 +54,6 @@ val sign_pre_hashed_shake128
     : Prims.Pure
       (Core.Result.t_Result (Libcrux_ml_dsa.Types.t_MLDSASignature (mk_usize 4627))
           Libcrux_ml_dsa.Types.t_SigningError) Prims.l_True (fun _ -> Prims.l_True)
-
-/// Verify an ML-DSA-87 Signature
-/// The parameter `context` is used for domain separation
-/// and is a byte string of length at most 255 bytes. It
-/// may also be empty.
-/// Returns `Ok` when the `signature` is valid for the `message` and
-/// `verification_key`, and a [`VerificationError`] otherwise.
-val verify
-      (verification_key: Libcrux_ml_dsa.Types.t_MLDSAVerificationKey (mk_usize 2592))
-      (message context: t_Slice u8)
-      (signature: Libcrux_ml_dsa.Types.t_MLDSASignature (mk_usize 4627))
-    : Prims.Pure (Core.Result.t_Result Prims.unit Libcrux_ml_dsa.Types.t_VerificationError)
-      Prims.l_True
-      (fun _ -> Prims.l_True)
 
 /// Verify a HashML-DSA-87 Signature, with a SHAKE128 pre-hashing
 /// The parameter `context` is used for domain separation

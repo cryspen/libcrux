@@ -32,14 +32,6 @@ val compare (lhs rhs: t_Slice u8)
           let result:u8 = result in
           (lhs == rhs ==> result == (mk_u8 0)) /\ (lhs =!= rhs ==> result == (mk_u8 1)))
 
-val compare_ciphertexts_in_constant_time (lhs rhs: t_Slice u8)
-    : Prims.Pure u8
-      (requires (Core.Slice.impl__len #u8 lhs <: usize) =. (Core.Slice.impl__len #u8 rhs <: usize))
-      (ensures
-        fun result ->
-          let result:u8 = result in
-          (lhs == rhs ==> result == (mk_u8 0)) /\ (lhs =!= rhs ==> result == (mk_u8 1)))
-
 /// If `selector` is not zero, return the bytes in `rhs`; return the bytes in
 /// `lhs` otherwise.
 val select_ct (lhs rhs: t_Slice u8) (selector: u8)
@@ -51,6 +43,14 @@ val select_ct (lhs rhs: t_Slice u8) (selector: u8)
         fun result ->
           let result:t_Array u8 (mk_usize 32) = result in
           (selector == (mk_u8 0) ==> result == lhs) /\ (selector =!= (mk_u8 0) ==> result == rhs))
+
+val compare_ciphertexts_in_constant_time (lhs rhs: t_Slice u8)
+    : Prims.Pure u8
+      (requires (Core.Slice.impl__len #u8 lhs <: usize) =. (Core.Slice.impl__len #u8 rhs <: usize))
+      (ensures
+        fun result ->
+          let result:u8 = result in
+          (lhs == rhs ==> result == (mk_u8 0)) /\ (lhs =!= rhs ==> result == (mk_u8 1)))
 
 val select_shared_secret_in_constant_time (lhs rhs: t_Slice u8) (selector: u8)
     : Prims.Pure (t_Array u8 (mk_usize 32))

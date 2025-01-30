@@ -9,27 +9,7 @@ let _ =
   let open Libcrux_ml_dsa.Hash_functions.Shake128 in
   ()
 
-/// Binds the context string to an optional pre-hash OID identifying
-/// the hash function or XOF used for pre-hashing.
-type t_DomainSeparationContext = {
-  f_context:t_Slice u8;
-  f_pre_hash_oid:Core.Option.t_Option (t_Array u8 (mk_usize 11))
-}
-
-/// Returns the context, guaranteed to be at most 255 bytes long.
-val impl_1__context (self: t_DomainSeparationContext)
-    : Prims.Pure (t_Slice u8) Prims.l_True (fun _ -> Prims.l_True)
-
-/// Returns the pre-hash OID, if any.
-val impl_1__pre_hash_oid (self: t_DomainSeparationContext)
-    : Prims.Pure (Core.Option.t_Option (t_Array u8 (mk_usize 11)))
-      Prims.l_True
-      (fun _ -> Prims.l_True)
-
-type t_DomainSeparationError = | DomainSeparationError_ContextTooLongError : t_DomainSeparationError
-
-val t_DomainSeparationError_cast_to_repr (x: t_DomainSeparationError)
-    : Prims.Pure isize Prims.l_True (fun _ -> Prims.l_True)
+let v_PRE_HASH_OID_LEN: usize = mk_usize 11
 
 class t_PreHash (v_Self: Type0) = {
   f_oid_pre:Prims.unit -> Type0;
@@ -63,8 +43,6 @@ class t_PreHash (v_Self: Type0) = {
 /// digest length 256 bytes.
 type t_SHAKE128_PH = | SHAKE128_PH : t_SHAKE128_PH
 
-let v_PRE_HASH_OID_LEN: usize = mk_usize 11
-
 let v_SHAKE128_OID: t_Array u8 (mk_usize 11) =
   let list =
     [
@@ -76,13 +54,19 @@ let v_SHAKE128_OID: t_Array u8 (mk_usize 11) =
   Rust_primitives.Hax.array_of_list 11 list
 
 [@@ FStar.Tactics.Typeclasses.tcinstance]
-val impl_2:Core.Convert.t_From Libcrux_ml_dsa.Types.t_SigningError t_DomainSeparationError
-
-[@@ FStar.Tactics.Typeclasses.tcinstance]
-val impl_3:Core.Convert.t_From Libcrux_ml_dsa.Types.t_VerificationError t_DomainSeparationError
-
-[@@ FStar.Tactics.Typeclasses.tcinstance]
 val impl:t_PreHash t_SHAKE128_PH
+
+/// Binds the context string to an optional pre-hash OID identifying
+/// the hash function or XOF used for pre-hashing.
+type t_DomainSeparationContext = {
+  f_context:t_Slice u8;
+  f_pre_hash_oid:Core.Option.t_Option (t_Array u8 (mk_usize 11))
+}
+
+type t_DomainSeparationError = | DomainSeparationError_ContextTooLongError : t_DomainSeparationError
+
+val t_DomainSeparationError_cast_to_repr (x: t_DomainSeparationError)
+    : Prims.Pure isize Prims.l_True (fun _ -> Prims.l_True)
 
 /// `context` must be at most 255 bytes long.
 val impl_1__new
@@ -91,3 +75,19 @@ val impl_1__new
     : Prims.Pure (Core.Result.t_Result t_DomainSeparationContext t_DomainSeparationError)
       Prims.l_True
       (fun _ -> Prims.l_True)
+
+/// Returns the context, guaranteed to be at most 255 bytes long.
+val impl_1__context (self: t_DomainSeparationContext)
+    : Prims.Pure (t_Slice u8) Prims.l_True (fun _ -> Prims.l_True)
+
+/// Returns the pre-hash OID, if any.
+val impl_1__pre_hash_oid (self: t_DomainSeparationContext)
+    : Prims.Pure (Core.Option.t_Option (t_Array u8 (mk_usize 11)))
+      Prims.l_True
+      (fun _ -> Prims.l_True)
+
+[@@ FStar.Tactics.Typeclasses.tcinstance]
+val impl_2:Core.Convert.t_From Libcrux_ml_dsa.Types.t_SigningError t_DomainSeparationError
+
+[@@ FStar.Tactics.Typeclasses.tcinstance]
+val impl_3:Core.Convert.t_From Libcrux_ml_dsa.Types.t_VerificationError t_DomainSeparationError

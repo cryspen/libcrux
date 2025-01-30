@@ -26,6 +26,39 @@ let mulhi_mm256_epi32 (lhs rhs: Libcrux_intrinsics.Avx2_extract.t_Vec256) =
       <:
       Libcrux_intrinsics.Avx2_extract.t_Vec256)
 
+let compress_message_coefficient (vector: Libcrux_intrinsics.Avx2_extract.t_Vec256) =
+  let field_modulus_halved:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+    Libcrux_intrinsics.Avx2_extract.mm256_set1_epi16 ((Libcrux_ml_kem.Vector.Traits.v_FIELD_MODULUS -!
+          mk_i16 1
+          <:
+          i16) /!
+        mk_i16 2
+        <:
+        i16)
+  in
+  let field_modulus_quartered:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+    Libcrux_intrinsics.Avx2_extract.mm256_set1_epi16 ((Libcrux_ml_kem.Vector.Traits.v_FIELD_MODULUS -!
+          mk_i16 1
+          <:
+          i16) /!
+        mk_i16 4
+        <:
+        i16)
+  in
+  let shifted:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+    Libcrux_intrinsics.Avx2_extract.mm256_sub_epi16 field_modulus_halved vector
+  in
+  let mask:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+    Libcrux_intrinsics.Avx2_extract.mm256_srai_epi16 (mk_i32 15) shifted
+  in
+  let shifted_to_positive:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+    Libcrux_intrinsics.Avx2_extract.mm256_xor_si256 mask shifted
+  in
+  let shifted_to_positive_in_range:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+    Libcrux_intrinsics.Avx2_extract.mm256_sub_epi16 shifted_to_positive field_modulus_quartered
+  in
+  Libcrux_intrinsics.Avx2_extract.mm256_srli_epi16 (mk_i32 15) shifted_to_positive_in_range
+
 let compress_ciphertext_coefficient
       (v_COEFFICIENT_BITS: i32)
       (vector: Libcrux_intrinsics.Avx2_extract.t_Vec256)
@@ -98,39 +131,6 @@ let compress_ciphertext_coefficient
     Libcrux_intrinsics.Avx2_extract.mm256_packs_epi32 compressed_low compressed_high
   in
   Libcrux_intrinsics.Avx2_extract.mm256_permute4x64_epi64 (mk_i32 216) compressed
-
-let compress_message_coefficient (vector: Libcrux_intrinsics.Avx2_extract.t_Vec256) =
-  let field_modulus_halved:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
-    Libcrux_intrinsics.Avx2_extract.mm256_set1_epi16 ((Libcrux_ml_kem.Vector.Traits.v_FIELD_MODULUS -!
-          mk_i16 1
-          <:
-          i16) /!
-        mk_i16 2
-        <:
-        i16)
-  in
-  let field_modulus_quartered:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
-    Libcrux_intrinsics.Avx2_extract.mm256_set1_epi16 ((Libcrux_ml_kem.Vector.Traits.v_FIELD_MODULUS -!
-          mk_i16 1
-          <:
-          i16) /!
-        mk_i16 4
-        <:
-        i16)
-  in
-  let shifted:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
-    Libcrux_intrinsics.Avx2_extract.mm256_sub_epi16 field_modulus_halved vector
-  in
-  let mask:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
-    Libcrux_intrinsics.Avx2_extract.mm256_srai_epi16 (mk_i32 15) shifted
-  in
-  let shifted_to_positive:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
-    Libcrux_intrinsics.Avx2_extract.mm256_xor_si256 mask shifted
-  in
-  let shifted_to_positive_in_range:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
-    Libcrux_intrinsics.Avx2_extract.mm256_sub_epi16 shifted_to_positive field_modulus_quartered
-  in
-  Libcrux_intrinsics.Avx2_extract.mm256_srli_epi16 (mk_i32 15) shifted_to_positive_in_range
 
 let decompress_ciphertext_coefficient
       (v_COEFFICIENT_BITS: i32)
