@@ -19,16 +19,16 @@ let serialize_when_gamma1_is_2_pow_17_
           let serialized:t_Slice u8 = serialized in
           let i, coefficients:(usize & t_Slice i32) = temp_1_ in
           let coefficient0:i32 =
-            serialize_when_gamma1_is_2_pow_17___GAMMA1 -! (coefficients.[ mk_usize 0 ] <: i32)
+            serialize_when_gamma1_is_2_pow_17___v_GAMMA1 -! (coefficients.[ mk_usize 0 ] <: i32)
           in
           let coefficient1:i32 =
-            serialize_when_gamma1_is_2_pow_17___GAMMA1 -! (coefficients.[ mk_usize 1 ] <: i32)
+            serialize_when_gamma1_is_2_pow_17___v_GAMMA1 -! (coefficients.[ mk_usize 1 ] <: i32)
           in
           let coefficient2:i32 =
-            serialize_when_gamma1_is_2_pow_17___GAMMA1 -! (coefficients.[ mk_usize 2 ] <: i32)
+            serialize_when_gamma1_is_2_pow_17___v_GAMMA1 -! (coefficients.[ mk_usize 2 ] <: i32)
           in
           let coefficient3:i32 =
-            serialize_when_gamma1_is_2_pow_17___GAMMA1 -! (coefficients.[ mk_usize 3 ] <: i32)
+            serialize_when_gamma1_is_2_pow_17___v_GAMMA1 -! (coefficients.[ mk_usize 3 ] <: i32)
           in
           let serialized:t_Slice u8 =
             Rust_primitives.Hax.Monomorphized_update_at.update_at_usize serialized
@@ -119,10 +119,10 @@ let serialize_when_gamma1_is_2_pow_19_
           let serialized:t_Slice u8 = serialized in
           let i, coefficients:(usize & t_Slice i32) = temp_1_ in
           let coefficient0:i32 =
-            serialize_when_gamma1_is_2_pow_19___GAMMA1 -! (coefficients.[ mk_usize 0 ] <: i32)
+            serialize_when_gamma1_is_2_pow_19___v_GAMMA1 -! (coefficients.[ mk_usize 0 ] <: i32)
           in
           let coefficient1:i32 =
-            serialize_when_gamma1_is_2_pow_19___GAMMA1 -! (coefficients.[ mk_usize 1 ] <: i32)
+            serialize_when_gamma1_is_2_pow_19___v_GAMMA1 -! (coefficients.[ mk_usize 1 ] <: i32)
           in
           let serialized:t_Slice u8 =
             Rust_primitives.Hax.Monomorphized_update_at.update_at_usize serialized
@@ -205,7 +205,7 @@ let deserialize_when_gamma1_is_2_pow_17_
             coefficient0 |. ((cast (bytes.[ mk_usize 2 ] <: u8) <: i32) <<! mk_i32 16 <: i32)
           in
           let coefficient0:i32 =
-            coefficient0 &. deserialize_when_gamma1_is_2_pow_17___GAMMA1_TIMES_2_BITMASK
+            coefficient0 &. deserialize_when_gamma1_is_2_pow_17___v_GAMMA1_TIMES_2_BITMASK
           in
           let coefficient1:i32 = (cast (bytes.[ mk_usize 2 ] <: u8) <: i32) >>! mk_i32 2 in
           let coefficient1:i32 =
@@ -215,7 +215,7 @@ let deserialize_when_gamma1_is_2_pow_17_
             coefficient1 |. ((cast (bytes.[ mk_usize 4 ] <: u8) <: i32) <<! mk_i32 14 <: i32)
           in
           let coefficient1:i32 =
-            coefficient1 &. deserialize_when_gamma1_is_2_pow_17___GAMMA1_TIMES_2_BITMASK
+            coefficient1 &. deserialize_when_gamma1_is_2_pow_17___v_GAMMA1_TIMES_2_BITMASK
           in
           let coefficient2:i32 = (cast (bytes.[ mk_usize 4 ] <: u8) <: i32) >>! mk_i32 4 in
           let coefficient2:i32 =
@@ -225,7 +225,7 @@ let deserialize_when_gamma1_is_2_pow_17_
             coefficient2 |. ((cast (bytes.[ mk_usize 6 ] <: u8) <: i32) <<! mk_i32 12 <: i32)
           in
           let coefficient2:i32 =
-            coefficient2 &. deserialize_when_gamma1_is_2_pow_17___GAMMA1_TIMES_2_BITMASK
+            coefficient2 &. deserialize_when_gamma1_is_2_pow_17___v_GAMMA1_TIMES_2_BITMASK
           in
           let coefficient3:i32 = (cast (bytes.[ mk_usize 6 ] <: u8) <: i32) >>! mk_i32 6 in
           let coefficient3:i32 =
@@ -235,7 +235,7 @@ let deserialize_when_gamma1_is_2_pow_17_
             coefficient3 |. ((cast (bytes.[ mk_usize 8 ] <: u8) <: i32) <<! mk_i32 10 <: i32)
           in
           let coefficient3:i32 =
-            coefficient3 &. deserialize_when_gamma1_is_2_pow_17___GAMMA1_TIMES_2_BITMASK
+            coefficient3 &. deserialize_when_gamma1_is_2_pow_17___v_GAMMA1_TIMES_2_BITMASK
           in
           let simd_unit:Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients =
             {
@@ -245,7 +245,7 @@ let deserialize_when_gamma1_is_2_pow_17_
               Rust_primitives.Hax.Monomorphized_update_at.update_at_usize simd_unit
                   .Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values
                 (mk_usize 4 *! i <: usize)
-                (deserialize_when_gamma1_is_2_pow_17___GAMMA1 -! coefficient0 <: i32)
+                (deserialize_when_gamma1_is_2_pow_17___v_GAMMA1 -! coefficient0 <: i32)
             }
             <:
             Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients
@@ -258,7 +258,7 @@ let deserialize_when_gamma1_is_2_pow_17_
               Rust_primitives.Hax.Monomorphized_update_at.update_at_usize simd_unit
                   .Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values
                 ((mk_usize 4 *! i <: usize) +! mk_usize 1 <: usize)
-                (deserialize_when_gamma1_is_2_pow_17___GAMMA1 -! coefficient1 <: i32)
+                (deserialize_when_gamma1_is_2_pow_17___v_GAMMA1 -! coefficient1 <: i32)
             }
             <:
             Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients
@@ -271,7 +271,7 @@ let deserialize_when_gamma1_is_2_pow_17_
               Rust_primitives.Hax.Monomorphized_update_at.update_at_usize simd_unit
                   .Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values
                 ((mk_usize 4 *! i <: usize) +! mk_usize 2 <: usize)
-                (deserialize_when_gamma1_is_2_pow_17___GAMMA1 -! coefficient2 <: i32)
+                (deserialize_when_gamma1_is_2_pow_17___v_GAMMA1 -! coefficient2 <: i32)
             }
             <:
             Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients
@@ -284,7 +284,7 @@ let deserialize_when_gamma1_is_2_pow_17_
               Rust_primitives.Hax.Monomorphized_update_at.update_at_usize simd_unit
                   .Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values
                 ((mk_usize 4 *! i <: usize) +! mk_usize 3 <: usize)
-                (deserialize_when_gamma1_is_2_pow_17___GAMMA1 -! coefficient3 <: i32)
+                (deserialize_when_gamma1_is_2_pow_17___v_GAMMA1 -! coefficient3 <: i32)
             }
             <:
             Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients
@@ -324,7 +324,7 @@ let deserialize_when_gamma1_is_2_pow_19_
             coefficient0 |. ((cast (bytes.[ mk_usize 2 ] <: u8) <: i32) <<! mk_i32 16 <: i32)
           in
           let coefficient0:i32 =
-            coefficient0 &. deserialize_when_gamma1_is_2_pow_19___GAMMA1_TIMES_2_BITMASK
+            coefficient0 &. deserialize_when_gamma1_is_2_pow_19___v_GAMMA1_TIMES_2_BITMASK
           in
           let coefficient1:i32 = (cast (bytes.[ mk_usize 2 ] <: u8) <: i32) >>! mk_i32 4 in
           let coefficient1:i32 =
@@ -341,7 +341,7 @@ let deserialize_when_gamma1_is_2_pow_19_
               Rust_primitives.Hax.Monomorphized_update_at.update_at_usize simd_unit
                   .Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values
                 (mk_usize 2 *! i <: usize)
-                (deserialize_when_gamma1_is_2_pow_19___GAMMA1 -! coefficient0 <: i32)
+                (deserialize_when_gamma1_is_2_pow_19___v_GAMMA1 -! coefficient0 <: i32)
             }
             <:
             Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients
@@ -354,7 +354,7 @@ let deserialize_when_gamma1_is_2_pow_19_
               Rust_primitives.Hax.Monomorphized_update_at.update_at_usize simd_unit
                   .Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values
                 ((mk_usize 2 *! i <: usize) +! mk_usize 1 <: usize)
-                (deserialize_when_gamma1_is_2_pow_19___GAMMA1 -! coefficient1 <: i32)
+                (deserialize_when_gamma1_is_2_pow_19___v_GAMMA1 -! coefficient1 <: i32)
             }
             <:
             Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients

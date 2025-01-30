@@ -70,7 +70,7 @@ val compute_hint
 
 val decompose_element (gamma2 r: i32) : Prims.Pure (i32 & i32) Prims.l_True (fun _ -> Prims.l_True)
 
-val use_one_hint (gamma2 r hint: i32) : Prims.Pure i32 Prims.l_True (fun _ -> Prims.l_True)
+val uuse_one_hint (gamma2 r hint: i32) : Prims.Pure i32 Prims.l_True (fun _ -> Prims.l_True)
 
 val decompose
       (gamma2: i32)
@@ -81,7 +81,9 @@ val decompose
       Prims.l_True
       (fun _ -> Prims.l_True)
 
-val use_hint (gamma2: i32) (simd_unit hint: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients)
+val uuse_hint
+      (gamma2: i32)
+      (simd_unit hint: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients)
     : Prims.Pure Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients
       Prims.l_True
       (fun _ -> Prims.l_True)

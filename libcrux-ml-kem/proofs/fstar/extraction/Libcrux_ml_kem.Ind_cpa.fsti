@@ -223,7 +223,7 @@ val generate_keypair_unpacked
           (valid ==>
             (Libcrux_ml_kem.Polynomial.to_spec_vector_t #v_K
                 #v_Vector
-                public_key_future.Libcrux_ml_kem.Ind_cpa.Unpacked.f_t_as_ntt ==
+                public_key_future.Libcrux_ml_kem.Ind_cpa.Unpacked.f_tt_as_ntt ==
               t_as_ntt) /\ (public_key_future.f_seed_for_A == seed_for_A) /\
             (Libcrux_ml_kem.Polynomial.to_spec_matrix_t #v_K #v_Vector public_key_future.f_A ==
               matrix_A_as_ntt) /\
@@ -239,7 +239,7 @@ val generate_keypair_unpacked
           (forall (i: nat).
               i < v v_K ==>
               Libcrux_ml_kem.Serialize.coefficients_field_modulus_range (Seq.index public_key_future
-                      .Libcrux_ml_kem.Ind_cpa.Unpacked.f_t_as_ntt
+                      .Libcrux_ml_kem.Ind_cpa.Unpacked.f_tt_as_ntt
                     i)))
 
 /// Serialize the secret key from the unpacked key pair generation.
@@ -362,7 +362,7 @@ val encrypt_unpacked
             randomness
             (Libcrux_ml_kem.Polynomial.to_spec_vector_t #v_K
                 #v_Vector
-                public_key.Libcrux_ml_kem.Ind_cpa.Unpacked.f_t_as_ntt)
+                public_key.Libcrux_ml_kem.Ind_cpa.Unpacked.f_tt_as_ntt)
             (Libcrux_ml_kem.Polynomial.to_spec_matrix_t #v_K
                 #v_Vector
                 public_key.Libcrux_ml_kem.Ind_cpa.Unpacked.f_A))
@@ -393,7 +393,7 @@ val build_unpacked_public_key_mut
           let matrix_A_as_ntt, valid = Spec.MLKEM.sample_matrix_A_ntt #v_K seed_for_A in
           (Libcrux_ml_kem.Polynomial.to_spec_vector_t #v_K
               #v_Vector
-              unpacked_public_key_future.Libcrux_ml_kem.Ind_cpa.Unpacked.f_t_as_ntt ==
+              unpacked_public_key_future.Libcrux_ml_kem.Ind_cpa.Unpacked.f_tt_as_ntt ==
             t_as_ntt /\ valid ==>
             Libcrux_ml_kem.Polynomial.to_spec_matrix_t #v_K
               #v_Vector
@@ -420,7 +420,7 @@ val build_unpacked_public_key
           let matrix_A_as_ntt, valid = Spec.MLKEM.sample_matrix_A_ntt #v_K seed_for_A in
           (Libcrux_ml_kem.Polynomial.to_spec_vector_t #v_K
               #v_Vector
-              result.Libcrux_ml_kem.Ind_cpa.Unpacked.f_t_as_ntt ==
+              result.Libcrux_ml_kem.Ind_cpa.Unpacked.f_tt_as_ntt ==
             t_as_ntt /\ valid ==>
             Libcrux_ml_kem.Polynomial.to_spec_matrix_t #v_K
               #v_Vector

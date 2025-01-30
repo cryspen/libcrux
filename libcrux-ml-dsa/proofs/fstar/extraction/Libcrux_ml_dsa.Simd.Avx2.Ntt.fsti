@@ -11,7 +11,7 @@ val butterfly_2_
       Prims.l_True
       (fun _ -> Prims.l_True)
 
-let butterfly_2___SHUFFLE: i32 = mk_i32 216
+let butterfly_2___v_SHUFFLE: i32 = mk_i32 216
 
 val butterfly_4_
       (re: t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32))
@@ -54,10 +54,10 @@ val ntt_at_layer_7_and_6___mul
       Prims.l_True
       (fun _ -> Prims.l_True)
 
-let ntt_at_layer_7_and_6___STEP_BY_7_: usize =
+let ntt_at_layer_7_and_6___v_STEP_BY_7_: usize =
   mk_usize 2 *! Libcrux_ml_dsa.Simd.Traits.v_COEFFICIENTS_IN_SIMD_UNIT
 
-let ntt_at_layer_7_and_6___STEP_BY_6_: usize =
+let ntt_at_layer_7_and_6___v_STEP_BY_6_: usize =
   (mk_usize 1 <<! mk_i32 6 <: usize) /! Libcrux_ml_dsa.Simd.Traits.v_COEFFICIENTS_IN_SIMD_UNIT
 
 /// This is equivalent to the pqclean 0 and 1
@@ -85,20 +85,20 @@ val ntt_at_layer_5_to_3_ (re: t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec
       Prims.l_True
       (fun _ -> Prims.l_True)
 
-let ntt_at_layer_5_to_3___STEP: usize = mk_usize 1 <<! mk_i32 5
+let ntt_at_layer_5_to_3___v_STEP: usize = mk_usize 1 <<! mk_i32 5
 
-let ntt_at_layer_5_to_3___STEP_BY: usize =
-  ntt_at_layer_5_to_3___STEP /! Libcrux_ml_dsa.Simd.Traits.v_COEFFICIENTS_IN_SIMD_UNIT
+let ntt_at_layer_5_to_3___v_STEP_BY: usize =
+  ntt_at_layer_5_to_3___v_STEP /! Libcrux_ml_dsa.Simd.Traits.v_COEFFICIENTS_IN_SIMD_UNIT
 
-let ntt_at_layer_5_to_3___STEP_1: usize = mk_usize 1 <<! mk_i32 4
+let ntt_at_layer_5_to_3___v_STEP_1: usize = mk_usize 1 <<! mk_i32 4
 
-let ntt_at_layer_5_to_3___STEP_BY_1: usize =
-  ntt_at_layer_5_to_3___STEP_1 /! Libcrux_ml_dsa.Simd.Traits.v_COEFFICIENTS_IN_SIMD_UNIT
+let ntt_at_layer_5_to_3___v_STEP_BY_1: usize =
+  ntt_at_layer_5_to_3___v_STEP_1 /! Libcrux_ml_dsa.Simd.Traits.v_COEFFICIENTS_IN_SIMD_UNIT
 
-let ntt_at_layer_5_to_3___STEP_2: usize = mk_usize 1 <<! mk_i32 3
+let ntt_at_layer_5_to_3___v_STEP_2: usize = mk_usize 1 <<! mk_i32 3
 
-let ntt_at_layer_5_to_3___STEP_BY_2: usize =
-  ntt_at_layer_5_to_3___STEP_2 /! Libcrux_ml_dsa.Simd.Traits.v_COEFFICIENTS_IN_SIMD_UNIT
+let ntt_at_layer_5_to_3___v_STEP_BY_2: usize =
+  ntt_at_layer_5_to_3___v_STEP_2 /! Libcrux_ml_dsa.Simd.Traits.v_COEFFICIENTS_IN_SIMD_UNIT
 
 val ntt__avx2_ntt (re: t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32))
     : Prims.Pure (t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32))
