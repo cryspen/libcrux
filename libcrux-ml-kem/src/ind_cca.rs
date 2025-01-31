@@ -1042,7 +1042,7 @@ pub(crate) mod unpacked {
         to_hash[H_DIGEST_SIZE..].copy_from_slice(pk_hash);
         hax_lib::fstar!(
             "Lib.Sequence.eq_intro #u8 #64 $to_hash (
-            concat $randomness ${public_key}.f_public_key_hash)"
+            concat $randomness $pk_hash)"
         );
 
         Hasher::G(&to_hash)

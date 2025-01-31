@@ -261,7 +261,7 @@ let keys_from_private_key
               v_Vector)
             key_pair.f_private_key.f_ind_cpa_private_key
               .Libcrux_ml_kem.Ind_cpa.Unpacked.f_secret_as_ntt
-            (Libcrux_ml_kem.Ind_cpa.deserialize_secret_key v_K #v_Vector ind_cpa_secret_key
+            (Libcrux_ml_kem.Ind_cpa.deserialize_vector v_K #v_Vector ind_cpa_secret_key
               <:
               t_Slice (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector))
         }
@@ -836,6 +836,44 @@ let generate_keypair
 
 #pop-options
 
+let encaps_prepare
+      (v_K: usize)
+      (#v_Hasher: Type0)
+      (#[FStar.Tactics.Typeclasses.tcresolve ()]
+          i1:
+          Libcrux_ml_kem.Hash_functions.t_Hash v_Hasher v_K)
+      (randomness pk_hash: t_Slice u8)
+     =
+  let _:Prims.unit =
+    Lib.Sequence.eq_intro #u8
+      #32
+      (Seq.slice (Libcrux_ml_kem.Utils.into_padded_array (sz 64) randomness) 0 32)
+      randomness
+  in
+  let (to_hash: t_Array u8 (mk_usize 64)):t_Array u8 (mk_usize 64) =
+    Libcrux_ml_kem.Utils.into_padded_array (mk_usize 64) randomness
+  in
+  let to_hash:t_Array u8 (mk_usize 64) =
+    Rust_primitives.Hax.Monomorphized_update_at.update_at_range_from to_hash
+      ({ Core.Ops.Range.f_start = Libcrux_ml_kem.Constants.v_H_DIGEST_SIZE }
+        <:
+        Core.Ops.Range.t_RangeFrom usize)
+      (Core.Slice.impl__copy_from_slice #u8
+          (to_hash.[ { Core.Ops.Range.f_start = Libcrux_ml_kem.Constants.v_H_DIGEST_SIZE }
+              <:
+              Core.Ops.Range.t_RangeFrom usize ]
+            <:
+            t_Slice u8)
+          pk_hash
+        <:
+        t_Slice u8)
+  in
+  let _:Prims.unit = Lib.Sequence.eq_intro #u8 #64 to_hash (concat randomness pk_hash) in
+  Libcrux_ml_kem.Hash_functions.f_G #v_Hasher
+    #v_K
+    #FStar.Tactics.Typeclasses.solve
+    (to_hash <: t_Slice u8)
+
 let encapsulate
       (v_K v_CIPHERTEXT_SIZE v_PUBLIC_KEY_SIZE v_T_AS_NTT_ENCODED_SIZE v_C1_SIZE v_C2_SIZE v_VECTOR_U_COMPRESSION_FACTOR v_VECTOR_V_COMPRESSION_FACTOR v_VECTOR_U_BLOCK_LEN v_ETA1 v_ETA1_RANDOMNESS_SIZE v_ETA2 v_ETA2_RANDOMNESS_SIZE:
           usize)
@@ -849,38 +887,11 @@ let encapsulate
       (public_key: t_MlKemPublicKeyUnpacked v_K v_Vector)
       (randomness: t_Array u8 (mk_usize 32))
      =
-  let _:Prims.unit =
-    Lib.Sequence.eq_intro #u8
-      #32
-      (Seq.slice (Libcrux_ml_kem.Utils.into_padded_array (sz 64) randomness) 0 32)
-      randomness
-  in
-  let (to_hash: t_Array u8 (mk_usize 64)):t_Array u8 (mk_usize 64) =
-    Libcrux_ml_kem.Utils.into_padded_array (mk_usize 64) (randomness <: t_Slice u8)
-  in
-  let to_hash:t_Array u8 (mk_usize 64) =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_range_from to_hash
-      ({ Core.Ops.Range.f_start = Libcrux_ml_kem.Constants.v_H_DIGEST_SIZE }
-        <:
-        Core.Ops.Range.t_RangeFrom usize)
-      (Core.Slice.impl__copy_from_slice #u8
-          (to_hash.[ { Core.Ops.Range.f_start = Libcrux_ml_kem.Constants.v_H_DIGEST_SIZE }
-              <:
-              Core.Ops.Range.t_RangeFrom usize ]
-            <:
-            t_Slice u8)
-          (public_key.f_public_key_hash <: t_Slice u8)
-        <:
-        t_Slice u8)
-  in
-  let _:Prims.unit =
-    Lib.Sequence.eq_intro #u8 #64 to_hash (concat randomness public_key.f_public_key_hash)
-  in
   let hashed:t_Array u8 (mk_usize 64) =
-    Libcrux_ml_kem.Hash_functions.f_G #v_Hasher
-      #v_K
-      #FStar.Tactics.Typeclasses.solve
-      (to_hash <: t_Slice u8)
+    encaps_prepare v_K
+      #v_Hasher
+      (randomness <: t_Slice u8)
+      (public_key.f_public_key_hash <: t_Slice u8)
   in
   let shared_secret, pseudorandomness:(t_Slice u8 & t_Slice u8) =
     Core.Slice.impl__split_at #u8

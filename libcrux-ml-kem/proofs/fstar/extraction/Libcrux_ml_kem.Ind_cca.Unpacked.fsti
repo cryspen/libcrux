@@ -369,6 +369,13 @@ val generate_keypair
           m_A /\ out_future.f_public_key.f_public_key_hash == public_key_hash /\
           out_future.f_private_key.f_implicit_rejection_value == implicit_rejection_value)
 
+val encaps_prepare
+      (v_K: usize)
+      (#v_Hasher: Type0)
+      {| i1: Libcrux_ml_kem.Hash_functions.t_Hash v_Hasher v_K |}
+      (randomness pk_hash: t_Slice u8)
+    : Prims.Pure (t_Array u8 (mk_usize 64)) Prims.l_True (fun _ -> Prims.l_True)
+
 val encapsulate
       (v_K v_CIPHERTEXT_SIZE v_PUBLIC_KEY_SIZE v_T_AS_NTT_ENCODED_SIZE v_C1_SIZE v_C2_SIZE v_VECTOR_U_COMPRESSION_FACTOR v_VECTOR_V_COMPRESSION_FACTOR v_VECTOR_U_BLOCK_LEN v_ETA1 v_ETA1_RANDOMNESS_SIZE v_ETA2 v_ETA2_RANDOMNESS_SIZE:
           usize)
