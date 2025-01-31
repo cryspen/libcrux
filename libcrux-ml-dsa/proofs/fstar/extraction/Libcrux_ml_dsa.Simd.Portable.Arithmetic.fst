@@ -183,7 +183,7 @@ let power2round_element (t: i32) =
     then
       let _:Prims.unit =
         Hax_lib.v_assert ((t >.
-              (Core.Ops.Arith.Neg.neg Libcrux_ml_dsa.Simd.Traits.v_FIELD_MODULUS <: i32)
+              (Core.Ops.Arith.f_neg Libcrux_ml_dsa.Simd.Traits.v_FIELD_MODULUS <: i32)
               <:
               bool) &&
             (t <. Libcrux_ml_dsa.Simd.Traits.v_FIELD_MODULUS <: bool))
@@ -294,7 +294,7 @@ let infinity_norm_exceeds
             then
               let _:Prims.unit =
                 Hax_lib.v_assert ((coefficient >.
-                      (Core.Ops.Arith.Neg.neg Libcrux_ml_dsa.Simd.Traits.v_FIELD_MODULUS <: i32)
+                      (Core.Ops.Arith.f_neg Libcrux_ml_dsa.Simd.Traits.v_FIELD_MODULUS <: i32)
                       <:
                       bool) &&
                     (coefficient <. Libcrux_ml_dsa.Simd.Traits.v_FIELD_MODULUS <: bool))
@@ -355,8 +355,8 @@ let shift_left_then_reduce
 
 let compute_one_hint (low high gamma2: i32) =
   if
-    low >. gamma2 || low <. (Core.Ops.Arith.Neg.neg gamma2 <: i32) ||
-    low =. (Core.Ops.Arith.Neg.neg gamma2 <: i32) && high <>. mk_i32 0
+    low >. gamma2 || low <. (Core.Ops.Arith.f_neg gamma2 <: i32) ||
+    low =. (Core.Ops.Arith.f_neg gamma2 <: i32) && high <>. mk_i32 0
   then mk_i32 1
   else mk_i32 0
 
@@ -421,7 +421,7 @@ let decompose_element (gamma2 r: i32) =
     then
       let _:Prims.unit =
         Hax_lib.v_assert ((r >.
-              (Core.Ops.Arith.Neg.neg Libcrux_ml_dsa.Simd.Traits.v_FIELD_MODULUS <: i32)
+              (Core.Ops.Arith.f_neg Libcrux_ml_dsa.Simd.Traits.v_FIELD_MODULUS <: i32)
               <:
               bool) &&
             (r <. Libcrux_ml_dsa.Simd.Traits.v_FIELD_MODULUS <: bool))
@@ -468,7 +468,7 @@ let decompose_element (gamma2 r: i32) =
   in
   r0, r1 <: (i32 & i32)
 
-let use_one_hint (gamma2 r hint: i32) =
+let uuse_one_hint (gamma2 r hint: i32) =
   let r0, r1:(i32 & i32) = decompose_element gamma2 r in
   if hint =. mk_i32 0
   then r1
@@ -554,7 +554,10 @@ let decompose
   (Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients &
     Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients)
 
-let use_hint (gamma2: i32) (simd_unit hint: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients) =
+let uuse_hint
+      (gamma2: i32)
+      (simd_unit hint: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients)
+     =
   let hint:Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients =
     Rust_primitives.Hax.Folds.fold_range (mk_usize 0)
       (Core.Slice.impl__len #i32
@@ -576,7 +579,7 @@ let use_hint (gamma2: i32) (simd_unit hint: Libcrux_ml_dsa.Simd.Portable.Vector_
             Rust_primitives.Hax.Monomorphized_update_at.update_at_usize hint
                 .Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values
               i
-              (use_one_hint gamma2
+              (uuse_one_hint gamma2
                   (simd_unit.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values.[ i ] <: i32)
                   (hint.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values.[ i ] <: i32)
                 <:

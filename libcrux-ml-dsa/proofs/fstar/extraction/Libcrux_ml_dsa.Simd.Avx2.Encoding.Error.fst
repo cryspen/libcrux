@@ -7,7 +7,7 @@ let serialize_when_eta_is_2_ (simd_unit: Libcrux_intrinsics.Avx2_extract.t_Vec25
   let serialized:t_Array u8 (mk_usize 16) = Rust_primitives.Hax.repeat (mk_u8 0) (mk_usize 16) in
   let simd_unit_shifted:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
     Libcrux_intrinsics.Avx2_extract.mm256_sub_epi32 (Libcrux_intrinsics.Avx2_extract.mm256_set1_epi32
-          serialize_when_eta_is_2___ETA
+          serialize_when_eta_is_2___v_ETA
         <:
         Libcrux_intrinsics.Avx2_extract.t_Vec256)
       simd_unit
@@ -104,7 +104,7 @@ let serialize_when_eta_is_4_ (simd_unit: Libcrux_intrinsics.Avx2_extract.t_Vec25
   let serialized:t_Array u8 (mk_usize 16) = Rust_primitives.Hax.repeat (mk_u8 0) (mk_usize 16) in
   let simd_unit_shifted:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
     Libcrux_intrinsics.Avx2_extract.mm256_sub_epi32 (Libcrux_intrinsics.Avx2_extract.mm256_set1_epi32
-          serialize_when_eta_is_4___ETA
+          serialize_when_eta_is_4___v_ETA
         <:
         Libcrux_intrinsics.Avx2_extract.t_Vec256)
       simd_unit
@@ -228,7 +228,7 @@ let deserialize_to_unsigned_when_eta_is_2_ (bytes: t_Slice u8) =
         Libcrux_intrinsics.Avx2_extract.t_Vec256)
   in
   Libcrux_intrinsics.Avx2_extract.mm256_and_si256 coefficients
-    (Libcrux_intrinsics.Avx2_extract.mm256_set1_epi32 deserialize_to_unsigned_when_eta_is_2___COEFFICIENT_MASK
+    (Libcrux_intrinsics.Avx2_extract.mm256_set1_epi32 deserialize_to_unsigned_when_eta_is_2___v_COEFFICIENT_MASK
 
       <:
       Libcrux_intrinsics.Avx2_extract.t_Vec256)
@@ -266,7 +266,7 @@ let deserialize_to_unsigned_when_eta_is_4_ (bytes: t_Slice u8) =
         Libcrux_intrinsics.Avx2_extract.t_Vec256)
   in
   Libcrux_intrinsics.Avx2_extract.mm256_and_si256 coefficients
-    (Libcrux_intrinsics.Avx2_extract.mm256_set1_epi32 deserialize_to_unsigned_when_eta_is_4___COEFFICIENT_MASK
+    (Libcrux_intrinsics.Avx2_extract.mm256_set1_epi32 deserialize_to_unsigned_when_eta_is_4___v_COEFFICIENT_MASK
 
       <:
       Libcrux_intrinsics.Avx2_extract.t_Vec256)

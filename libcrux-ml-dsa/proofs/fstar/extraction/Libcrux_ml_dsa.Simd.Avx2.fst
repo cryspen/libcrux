@@ -350,7 +350,7 @@ let impl_1: Libcrux_ml_dsa.Simd.Traits.t_Operations Libcrux_ml_dsa.Simd.Avx2.Vec
         in
         let hax_temp_output:usize = out1 in
         hint, hax_temp_output <: (Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 & usize));
-    f_use_hint_pre
+    f_uuse_hint_pre
     =
     (fun
         (gamma2: i32)
@@ -358,7 +358,7 @@ let impl_1: Libcrux_ml_dsa.Simd.Traits.t_Operations Libcrux_ml_dsa.Simd.Avx2.Vec
         (hint: Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256)
         ->
         true);
-    f_use_hint_post
+    f_uuse_hint_post
     =
     (fun
         (gamma2: i32)
@@ -367,7 +367,7 @@ let impl_1: Libcrux_ml_dsa.Simd.Traits.t_Operations Libcrux_ml_dsa.Simd.Avx2.Vec
         (out: Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256)
         ->
         true);
-    f_use_hint
+    f_uuse_hint
     =
     (fun
         (gamma2: i32)
@@ -379,7 +379,7 @@ let impl_1: Libcrux_ml_dsa.Simd.Traits.t_Operations Libcrux_ml_dsa.Simd.Avx2.Vec
             hint with
             Libcrux_ml_dsa.Simd.Avx2.Vector_type.f_value
             =
-            Libcrux_ml_dsa.Simd.Avx2.Arithmetic.use_hint gamma2
+            Libcrux_ml_dsa.Simd.Avx2.Arithmetic.uuse_hint gamma2
               simd_unit.Libcrux_ml_dsa.Simd.Avx2.Vector_type.f_value
               hint.Libcrux_ml_dsa.Simd.Avx2.Vector_type.f_value
           }
@@ -402,10 +402,10 @@ let impl_1: Libcrux_ml_dsa.Simd.Traits.t_Operations Libcrux_ml_dsa.Simd.Avx2.Vec
         let out:t_Slice i32 = tmp0 in
         let hax_temp_output:usize = out1 in
         out, hax_temp_output <: (t_Slice i32 & usize));
-    f_rejection_sample_less_than_eta_equals_2_pre
+    f_rejection_sample_less_than_eta_equals_2__pre
     =
     (fun (randomness: t_Slice u8) (out: t_Slice i32) -> true);
-    f_rejection_sample_less_than_eta_equals_2_post
+    f_rejection_sample_less_than_eta_equals_2__post
     =
     (fun (randomness: t_Slice u8) (out: t_Slice i32) (out2: (t_Slice i32 & usize)) -> true);
     f_rejection_sample_less_than_eta_equals_2_
@@ -417,10 +417,10 @@ let impl_1: Libcrux_ml_dsa.Simd.Traits.t_Operations Libcrux_ml_dsa.Simd.Avx2.Vec
         let out:t_Slice i32 = tmp0 in
         let hax_temp_output:usize = out1 in
         out, hax_temp_output <: (t_Slice i32 & usize));
-    f_rejection_sample_less_than_eta_equals_4_pre
+    f_rejection_sample_less_than_eta_equals_4__pre
     =
     (fun (randomness: t_Slice u8) (out: t_Slice i32) -> true);
-    f_rejection_sample_less_than_eta_equals_4_post
+    f_rejection_sample_less_than_eta_equals_4__post
     =
     (fun (randomness: t_Slice u8) (out: t_Slice i32) (out2: (t_Slice i32 & usize)) -> true);
     f_rejection_sample_less_than_eta_equals_4_

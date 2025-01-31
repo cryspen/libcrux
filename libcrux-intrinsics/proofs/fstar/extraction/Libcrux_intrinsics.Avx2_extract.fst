@@ -3,11 +3,6 @@ module Libcrux_intrinsics.Avx2_extract
 open Core
 open FStar.Mul
 
-assume
-val mm256_movemask_ps': a: u8 -> Prims.Pure i32 Prims.l_True (fun _ -> Prims.l_True)
-
-let mm256_movemask_ps = mm256_movemask_ps'
-
 [@@ FStar.Tactics.Typeclasses.tcinstance]
 assume
 val impl': Core.Clone.t_Clone t_Vec256
@@ -230,6 +225,11 @@ assume
 val mm256_castsi256_ps': a: t_Vec256 -> Prims.Pure u8 Prims.l_True (fun _ -> Prims.l_True)
 
 let mm256_castsi256_ps = mm256_castsi256_ps'
+
+assume
+val mm256_movemask_ps': a: u8 -> Prims.Pure i32 Prims.l_True (fun _ -> Prims.l_True)
+
+let mm256_movemask_ps = mm256_movemask_ps'
 
 assume
 val mm_mulhi_epi16': lhs: t_Vec128 -> rhs: t_Vec128

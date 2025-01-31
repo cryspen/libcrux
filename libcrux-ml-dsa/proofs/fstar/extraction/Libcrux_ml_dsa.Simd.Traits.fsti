@@ -12,30 +12,211 @@ let v_FIELD_MODULUS: i32 = mk_i32 8380417
 
 let v_INVERSE_OF_MODULUS_MOD_MONTGOMERY_R: u64 = mk_u64 58728449
 
+class t_Repr (v_Self: Type0) = {
+  [@@@ FStar.Tactics.Typeclasses.no_method]_super_13011033735201511749:Core.Marker.t_Copy v_Self;
+  [@@@ FStar.Tactics.Typeclasses.no_method]_super_9529721400157967266:Core.Clone.t_Clone v_Self;
+  f_repr_pre:self_: v_Self -> pred: Type0{true ==> pred};
+  f_repr_post:v_Self -> t_Array i32 (mk_usize 8) -> Type0;
+  f_repr:x0: v_Self
+    -> Prims.Pure (t_Array i32 (mk_usize 8)) (f_repr_pre x0) (fun result -> f_repr_post x0 result)
+}
+
+val int_in_i32_range (i: Hax_lib.Int.t_Int) : Prims.Pure bool Prims.l_True (fun _ -> Prims.l_True)
+
 class t_Operations (v_Self: Type0) = {
   [@@@ FStar.Tactics.Typeclasses.no_method]_super_13011033735201511749:Core.Marker.t_Copy v_Self;
   [@@@ FStar.Tactics.Typeclasses.no_method]_super_9529721400157967266:Core.Clone.t_Clone v_Self;
+  [@@@ FStar.Tactics.Typeclasses.no_method]_super_6182285156695963586:t_Repr v_Self;
   f_zero_pre:Prims.unit -> Type0;
-  f_zero_post:Prims.unit -> v_Self -> Type0;
+  f_zero_post:x: Prims.unit -> result: v_Self
+    -> pred:
+      Type0
+        { pred ==>
+          (let _:Prims.unit = x in
+            (f_repr #v_Self #FStar.Tactics.Typeclasses.solve result <: t_Array i32 (mk_usize 8)) =.
+            (Rust_primitives.Hax.repeat (mk_i32 0) (mk_usize 8) <: t_Array i32 (mk_usize 8))) };
   f_zero:x0: Prims.unit -> Prims.Pure v_Self (f_zero_pre x0) (fun result -> f_zero_post x0 result);
-  f_from_coefficient_array_pre:t_Slice i32 -> v_Self -> Type0;
-  f_from_coefficient_array_post:t_Slice i32 -> v_Self -> v_Self -> Type0;
+  f_from_coefficient_array_pre:array: t_Slice i32 -> out: v_Self
+    -> pred:
+      Type0{(Core.Slice.impl__len #i32 array <: usize) =. v_COEFFICIENTS_IN_SIMD_UNIT ==> pred};
+  f_from_coefficient_array_post:array: t_Slice i32 -> out: v_Self -> out_future: v_Self
+    -> pred:
+      Type0
+        { pred ==>
+          (f_repr #v_Self #FStar.Tactics.Typeclasses.solve out_future <: t_Array i32 (mk_usize 8)) =.
+          array };
   f_from_coefficient_array:x0: t_Slice i32 -> x1: v_Self
     -> Prims.Pure v_Self
         (f_from_coefficient_array_pre x0 x1)
         (fun result -> f_from_coefficient_array_post x0 x1 result);
-  f_to_coefficient_array_pre:v_Self -> t_Slice i32 -> Type0;
-  f_to_coefficient_array_post:v_Self -> t_Slice i32 -> t_Slice i32 -> Type0;
+  f_to_coefficient_array_pre:value: v_Self -> out: t_Slice i32
+    -> pred: Type0{(Core.Slice.impl__len #i32 out <: usize) =. v_COEFFICIENTS_IN_SIMD_UNIT ==> pred};
+  f_to_coefficient_array_post:value: v_Self -> out: t_Slice i32 -> out_future: t_Slice i32
+    -> pred:
+      Type0
+        { pred ==>
+          out_future =.
+          (f_repr #v_Self #FStar.Tactics.Typeclasses.solve value <: t_Array i32 (mk_usize 8)) };
   f_to_coefficient_array:x0: v_Self -> x1: t_Slice i32
     -> Prims.Pure (t_Slice i32)
         (f_to_coefficient_array_pre x0 x1)
         (fun result -> f_to_coefficient_array_post x0 x1 result);
-  f_add_pre:v_Self -> v_Self -> Type0;
-  f_add_post:v_Self -> v_Self -> v_Self -> Type0;
+  f_add_pre:lhs: v_Self -> rhs: v_Self
+    -> pred:
+      Type0
+        { Hax_lib.v_forall #usize
+            (fun i ->
+                let i:usize = i in
+                Hax_lib.implies (i <. v_COEFFICIENTS_IN_SIMD_UNIT <: bool)
+                  (fun temp_0_ ->
+                      let _:Prims.unit = temp_0_ in
+                      int_in_i32_range ((Rust_primitives.Hax.Int.from_machine ((f_repr #v_Self
+                                    #FStar.Tactics.Typeclasses.solve
+                                    lhs
+                                  <:
+                                  t_Array i32 (mk_usize 8)).[ i ]
+                                <:
+                                i32)
+                            <:
+                            Hax_lib.Int.t_Int) +
+                          (Rust_primitives.Hax.Int.from_machine ((f_repr #v_Self
+                                    #FStar.Tactics.Typeclasses.solve
+                                    rhs
+                                  <:
+                                  t_Array i32 (mk_usize 8)).[ i ]
+                                <:
+                                i32)
+                            <:
+                            Hax_lib.Int.t_Int)
+                          <:
+                          Hax_lib.Int.t_Int)
+                      <:
+                      bool)
+                <:
+                bool) ==>
+          pred };
+  f_add_post:lhs: v_Self -> rhs: v_Self -> lhs_future: v_Self
+    -> pred:
+      Type0
+        { pred ==>
+          Hax_lib.v_forall #usize
+            (fun i ->
+                let i:usize = i in
+                Hax_lib.implies (i <. v_COEFFICIENTS_IN_SIMD_UNIT <: bool)
+                  (fun temp_0_ ->
+                      let _:Prims.unit = temp_0_ in
+                      (Rust_primitives.Hax.Int.from_machine ((f_repr #v_Self
+                                #FStar.Tactics.Typeclasses.solve
+                                lhs_future
+                              <:
+                              t_Array i32 (mk_usize 8)).[ i ]
+                            <:
+                            i32)
+                        <:
+                        Hax_lib.Int.t_Int) =
+                      ((Rust_primitives.Hax.Int.from_machine ((f_repr #v_Self
+                                  #FStar.Tactics.Typeclasses.solve
+                                  lhs
+                                <:
+                                t_Array i32 (mk_usize 8)).[ i ]
+                              <:
+                              i32)
+                          <:
+                          Hax_lib.Int.t_Int) +
+                        (Rust_primitives.Hax.Int.from_machine ((f_repr #v_Self
+                                  #FStar.Tactics.Typeclasses.solve
+                                  rhs
+                                <:
+                                t_Array i32 (mk_usize 8)).[ i ]
+                              <:
+                              i32)
+                          <:
+                          Hax_lib.Int.t_Int)
+                        <:
+                        Hax_lib.Int.t_Int)
+                      <:
+                      bool)
+                <:
+                bool) };
   f_add:x0: v_Self -> x1: v_Self
     -> Prims.Pure v_Self (f_add_pre x0 x1) (fun result -> f_add_post x0 x1 result);
-  f_subtract_pre:v_Self -> v_Self -> Type0;
-  f_subtract_post:v_Self -> v_Self -> v_Self -> Type0;
+  f_subtract_pre:lhs: v_Self -> rhs: v_Self
+    -> pred:
+      Type0
+        { Hax_lib.v_forall #usize
+            (fun i ->
+                let i:usize = i in
+                Hax_lib.implies (i <. v_COEFFICIENTS_IN_SIMD_UNIT <: bool)
+                  (fun temp_0_ ->
+                      let _:Prims.unit = temp_0_ in
+                      int_in_i32_range ((Rust_primitives.Hax.Int.from_machine ((f_repr #v_Self
+                                    #FStar.Tactics.Typeclasses.solve
+                                    lhs
+                                  <:
+                                  t_Array i32 (mk_usize 8)).[ i ]
+                                <:
+                                i32)
+                            <:
+                            Hax_lib.Int.t_Int) -
+                          (Rust_primitives.Hax.Int.from_machine ((f_repr #v_Self
+                                    #FStar.Tactics.Typeclasses.solve
+                                    rhs
+                                  <:
+                                  t_Array i32 (mk_usize 8)).[ i ]
+                                <:
+                                i32)
+                            <:
+                            Hax_lib.Int.t_Int)
+                          <:
+                          Hax_lib.Int.t_Int)
+                      <:
+                      bool)
+                <:
+                bool) ==>
+          pred };
+  f_subtract_post:lhs: v_Self -> rhs: v_Self -> lhs_future: v_Self
+    -> pred:
+      Type0
+        { pred ==>
+          Hax_lib.v_forall #usize
+            (fun i ->
+                let i:usize = i in
+                Hax_lib.implies (i <. v_COEFFICIENTS_IN_SIMD_UNIT <: bool)
+                  (fun temp_0_ ->
+                      let _:Prims.unit = temp_0_ in
+                      (Rust_primitives.Hax.Int.from_machine ((f_repr #v_Self
+                                #FStar.Tactics.Typeclasses.solve
+                                lhs_future
+                              <:
+                              t_Array i32 (mk_usize 8)).[ i ]
+                            <:
+                            i32)
+                        <:
+                        Hax_lib.Int.t_Int) =
+                      ((Rust_primitives.Hax.Int.from_machine ((f_repr #v_Self
+                                  #FStar.Tactics.Typeclasses.solve
+                                  lhs
+                                <:
+                                t_Array i32 (mk_usize 8)).[ i ]
+                              <:
+                              i32)
+                          <:
+                          Hax_lib.Int.t_Int) -
+                        (Rust_primitives.Hax.Int.from_machine ((f_repr #v_Self
+                                  #FStar.Tactics.Typeclasses.solve
+                                  rhs
+                                <:
+                                t_Array i32 (mk_usize 8)).[ i ]
+                              <:
+                              i32)
+                          <:
+                          Hax_lib.Int.t_Int)
+                        <:
+                        Hax_lib.Int.t_Int)
+                      <:
+                      bool)
+                <:
+                bool) };
   f_subtract:x0: v_Self -> x1: v_Self
     -> Prims.Pure v_Self (f_subtract_pre x0 x1) (fun result -> f_subtract_post x0 x1 result);
   f_infinity_norm_exceeds_pre:v_Self -> i32 -> Type0;
@@ -56,10 +237,10 @@ class t_Operations (v_Self: Type0) = {
     -> Prims.Pure (v_Self & usize)
         (f_compute_hint_pre x0 x1 x2 x3)
         (fun result -> f_compute_hint_post x0 x1 x2 x3 result);
-  f_use_hint_pre:i32 -> v_Self -> v_Self -> Type0;
-  f_use_hint_post:i32 -> v_Self -> v_Self -> v_Self -> Type0;
-  f_use_hint:x0: i32 -> x1: v_Self -> x2: v_Self
-    -> Prims.Pure v_Self (f_use_hint_pre x0 x1 x2) (fun result -> f_use_hint_post x0 x1 x2 result);
+  f_uuse_hint_pre:i32 -> v_Self -> v_Self -> Type0;
+  f_uuse_hint_post:i32 -> v_Self -> v_Self -> v_Self -> Type0;
+  f_uuse_hint:x0: i32 -> x1: v_Self -> x2: v_Self
+    -> Prims.Pure v_Self (f_uuse_hint_pre x0 x1 x2) (fun result -> f_uuse_hint_post x0 x1 x2 result);
   f_montgomery_multiply_pre:v_Self -> v_Self -> Type0;
   f_montgomery_multiply_post:v_Self -> v_Self -> v_Self -> Type0;
   f_montgomery_multiply:x0: v_Self -> x1: v_Self
@@ -85,20 +266,20 @@ class t_Operations (v_Self: Type0) = {
     -> Prims.Pure (t_Slice i32 & usize)
         (f_rejection_sample_less_than_field_modulus_pre x0 x1)
         (fun result -> f_rejection_sample_less_than_field_modulus_post x0 x1 result);
-  f_rejection_sample_less_than_eta_equals_2_pre:t_Slice u8 -> t_Slice i32 -> Type0;
-  f_rejection_sample_less_than_eta_equals_2_post:t_Slice u8 -> t_Slice i32 -> (t_Slice i32 & usize)
+  f_rejection_sample_less_than_eta_equals_2__pre:t_Slice u8 -> t_Slice i32 -> Type0;
+  f_rejection_sample_less_than_eta_equals_2__post:t_Slice u8 -> t_Slice i32 -> (t_Slice i32 & usize)
     -> Type0;
   f_rejection_sample_less_than_eta_equals_2_:x0: t_Slice u8 -> x1: t_Slice i32
     -> Prims.Pure (t_Slice i32 & usize)
-        (f_rejection_sample_less_than_eta_equals_2_pre x0 x1)
-        (fun result -> f_rejection_sample_less_than_eta_equals_2_post x0 x1 result);
-  f_rejection_sample_less_than_eta_equals_4_pre:t_Slice u8 -> t_Slice i32 -> Type0;
-  f_rejection_sample_less_than_eta_equals_4_post:t_Slice u8 -> t_Slice i32 -> (t_Slice i32 & usize)
+        (f_rejection_sample_less_than_eta_equals_2__pre x0 x1)
+        (fun result -> f_rejection_sample_less_than_eta_equals_2__post x0 x1 result);
+  f_rejection_sample_less_than_eta_equals_4__pre:t_Slice u8 -> t_Slice i32 -> Type0;
+  f_rejection_sample_less_than_eta_equals_4__post:t_Slice u8 -> t_Slice i32 -> (t_Slice i32 & usize)
     -> Type0;
   f_rejection_sample_less_than_eta_equals_4_:x0: t_Slice u8 -> x1: t_Slice i32
     -> Prims.Pure (t_Slice i32 & usize)
-        (f_rejection_sample_less_than_eta_equals_4_pre x0 x1)
-        (fun result -> f_rejection_sample_less_than_eta_equals_4_post x0 x1 result);
+        (f_rejection_sample_less_than_eta_equals_4__pre x0 x1)
+        (fun result -> f_rejection_sample_less_than_eta_equals_4__post x0 x1 result);
   f_gamma1_serialize_pre:v_Self -> t_Slice u8 -> usize -> Type0;
   f_gamma1_serialize_post:v_Self -> t_Slice u8 -> usize -> t_Slice u8 -> Type0;
   f_gamma1_serialize:x0: v_Self -> x1: t_Slice u8 -> x2: usize
