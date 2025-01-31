@@ -1,6 +1,9 @@
 # ML-KEM Verification Status
 
-This file keeps track of the current verification status of the modules in the ML-KEM implementation.
+This file keeps track of the precise verification status of the modules in the ML-KEM implementation.
+Note that if a module A depends on module B, A's current verification status depends on the pre- and post-conditions of B.
+Hence, if the annotations in B are modified, then A may go from being verified to unverified until these changes are propagated to A.
+Consequently, the status noted here is the current snapshot of the verification, with the eventual goal of every cell turning to "yes".
 
 Lax Checking means that the module translates to typed code in F* which passes the F* lax checker.
 Runtime Safety means that the module has been proved to be free of panics, that it obeys all the preconditions
@@ -23,17 +26,17 @@ functions in the modules still need some proofs in that category.
 |          | multiplexing      | yes          | yes            | yes          |    
 |          | mlkem*            | yes          | yes            | needs proofs |    
 |          | invert_ntt        | yes          | yes            | needs proofs |    
-|          | ntt               | yes          | yes            | needs proofs |    
-|          | matrix            | yes          | needs proofs   | needs proofs |    
+|          | polynomial        | yes          | yes            | needs proofs |  
+|          | ntt               | yes          | needs proofs   | needs proofs |     
 |          | sampling          | yes          | needs proofs   | needs proofs |    
-|          | polynomial        | yes          | needs proofs   | needs proofs |    
 |          | serialize         | yes          | needs proofs   | needs proofs |    
-| 	   |                   |              |                |              |
+|          | matrix            | yes          | needs proofs   | needs proofs |   
+| 	       |                   |              |                |              |
 | _Portable_ | arithmetic        | yes          | yes            | yes          |
 |          | ntt               | yes          | yes            | yes          |
 |          | compress          | yes          | yes            | yes          |
 |          | serialize         | yes          | yes            | yes          |
-|          | sampling          | yes          | needs proofs   | needs proofs |
+|          | sampling          | yes          | yes            | needs proofs |
 |          |                   |              |                |              |
 | _Avx2_     | arithmetic        | yes          | yes            | yes          |
 |          | ntt               | yes          | yes            | yes          |

@@ -2255,6 +2255,18 @@ libcrux_ml_kem_polynomial_ntt_multiply_ef_79(
 }
 
 /**
+A monomorphic instance of libcrux_ml_kem.polynomial.add_vector
+with types libcrux_ml_kem_vector_avx2_SIMD256Vector
+with const generics
+
+*/
+KRML_ATTRIBUTE_TARGET("avx2")
+static KRML_MUSTINLINE __m256i
+libcrux_ml_kem_polynomial_add_vector_79(__m256i lhs, __m256i *rhs) {
+  return libcrux_ml_kem_vector_avx2_add_9a(lhs, rhs);
+}
+
+/**
  Given two polynomial ring elements `lhs` and `rhs`, compute the pointwise
  sum of their constituent coefficients.
 */
@@ -2268,13 +2280,15 @@ KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE void libcrux_ml_kem_polynomial_add_to_ring_element_ab(
     libcrux_ml_kem_polynomial_PolynomialRingElement_f6 *myself,
     libcrux_ml_kem_polynomial_PolynomialRingElement_f6 *rhs) {
+  __m256i _myself[16U];
+  memcpy(_myself, myself->coefficients, (size_t)16U * sizeof(__m256i));
   for (size_t i = (size_t)0U;
        i < Eurydice_slice_len(Eurydice_array_to_slice(
                                   (size_t)16U, myself->coefficients, __m256i),
                               __m256i);
        i++) {
     size_t i0 = i;
-    myself->coefficients[i0] = libcrux_ml_kem_vector_avx2_add_9a(
+    myself->coefficients[i0] = libcrux_ml_kem_polynomial_add_vector_79(
         myself->coefficients[i0], &rhs->coefficients[i0]);
   }
 }
@@ -2437,6 +2451,18 @@ static KRML_MUSTINLINE void libcrux_ml_kem_invert_ntt_invert_ntt_montgomery_ab(
 }
 
 /**
+A monomorphic instance of libcrux_ml_kem.polynomial.sub_vector
+with types libcrux_ml_kem_vector_avx2_SIMD256Vector
+with const generics
+
+*/
+KRML_ATTRIBUTE_TARGET("avx2")
+static KRML_MUSTINLINE __m256i
+libcrux_ml_kem_polynomial_sub_vector_79(__m256i lhs, __m256i *rhs) {
+  return libcrux_ml_kem_vector_avx2_sub_9a(lhs, rhs);
+}
+
+/**
 A monomorphic instance of libcrux_ml_kem.polynomial.subtract_reduce
 with types libcrux_ml_kem_vector_avx2_SIMD256Vector
 with const generics
@@ -2454,8 +2480,8 @@ libcrux_ml_kem_polynomial_subtract_reduce_79(
         libcrux_ml_kem_vector_avx2_montgomery_multiply_by_constant_9a(
             b.coefficients[i0], (int16_t)1441);
     b.coefficients[i0] = libcrux_ml_kem_vector_avx2_barrett_reduce_9a(
-        libcrux_ml_kem_vector_avx2_sub_9a(myself->coefficients[i0],
-                                          &coefficient_normal_form));
+        libcrux_ml_kem_polynomial_sub_vector_79(myself->coefficients[i0],
+                                                &coefficient_normal_form));
   }
   return b;
 }
@@ -3813,8 +3839,8 @@ static KRML_MUSTINLINE void libcrux_ml_kem_polynomial_add_error_reduce_79(
         libcrux_ml_kem_vector_avx2_montgomery_multiply_by_constant_9a(
             myself->coefficients[j], (int16_t)1441);
     myself->coefficients[j] = libcrux_ml_kem_vector_avx2_barrett_reduce_9a(
-        libcrux_ml_kem_vector_avx2_add_9a(coefficient_normal_form,
-                                          &error->coefficients[j]));
+        libcrux_ml_kem_polynomial_add_vector_79(coefficient_normal_form,
+                                                &error->coefficients[j]));
   }
 }
 
@@ -3943,10 +3969,10 @@ libcrux_ml_kem_polynomial_add_message_error_reduce_79(
     __m256i coefficient_normal_form =
         libcrux_ml_kem_vector_avx2_montgomery_multiply_by_constant_9a(
             result.coefficients[i0], (int16_t)1441);
-    __m256i tmp = libcrux_ml_kem_vector_avx2_add_9a(myself->coefficients[i0],
-                                                    &message->coefficients[i0]);
+    __m256i tmp = libcrux_ml_kem_polynomial_add_vector_79(
+        myself->coefficients[i0], &message->coefficients[i0]);
     __m256i tmp0 =
-        libcrux_ml_kem_vector_avx2_add_9a(coefficient_normal_form, &tmp);
+        libcrux_ml_kem_polynomial_add_vector_79(coefficient_normal_form, &tmp);
     result.coefficients[i0] =
         libcrux_ml_kem_vector_avx2_barrett_reduce_9a(tmp0);
   }
@@ -5101,8 +5127,8 @@ libcrux_ml_kem_polynomial_add_standard_error_reduce_79(
         libcrux_ml_kem_vector_traits_to_standard_domain_79(
             myself->coefficients[j]);
     myself->coefficients[j] = libcrux_ml_kem_vector_avx2_barrett_reduce_9a(
-        libcrux_ml_kem_vector_avx2_add_9a(coefficient_normal_form,
-                                          &error->coefficients[j]));
+        libcrux_ml_kem_polynomial_add_vector_79(coefficient_normal_form,
+                                                &error->coefficients[j]));
   }
 }
 
