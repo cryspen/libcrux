@@ -4,14 +4,16 @@
  * SPDX-License-Identifier: MIT or Apache-2.0
  *
  * This code was generated with the following revisions:
- * Charon: db4e045d4597d06d854ce7a2c10e8dcfda6ecd25
- * Eurydice: 75eae2e2534a16f5ba5430e6ee5c69d8a46f3bea
- * Karamel: 3823e3d82fa0b271d799b61c59ffb4742ddc1e65
- * F*: b0961063393215ca65927f017720cb365a193833-dirty
- * Libcrux: 834b7f51701fa4e8695a784c138ed230f49f0c4e
+ * Charon: 30cab88265206f4fa849736e704983e39a404d96
+ * Eurydice: e1ef8138cb02de6d110aa5d2d2ad6c2d07c3a6b4
+ * Karamel: e098c05f84f94f665d40f86afbfde281e4fdd523
+ * F*: ef93b7d15a315f3eb0864cb7bb93074582524e2a
+ * Libcrux: 59fcb15a95eb34a4e4776aa96505d2ea078c0d5c
  */
 
 #include "libcrux_sha3_neon.h"
+
+#include "libcrux_sha3_internal.h"
 
 /**
  A portable SHA3 224 implementation.
