@@ -171,7 +171,7 @@ let deserialize (bytes: t_Slice u8) (out: Libcrux_intrinsics.Avx2_extract.t_Vec2
   in
   let out:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
     Libcrux_intrinsics.Avx2_extract.mm256_and_si256 coefficients
-      (Libcrux_intrinsics.Avx2_extract.mm256_set1_epi32 deserialize__COEFFICIENT_MASK
+      (Libcrux_intrinsics.Avx2_extract.mm256_set1_epi32 deserialize__v_COEFFICIENT_MASK
         <:
         Libcrux_intrinsics.Avx2_extract.t_Vec256)
   in

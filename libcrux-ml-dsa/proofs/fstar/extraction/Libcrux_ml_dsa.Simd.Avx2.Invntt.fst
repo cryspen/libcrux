@@ -726,7 +726,7 @@ let invert_ntt_montgomery__inv_inner
                     <:
                     Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256)
                     .Libcrux_ml_dsa.Simd.Avx2.Vector_type.f_value
-                  invert_ntt_montgomery__inv_inner__FACTOR
+                  invert_ntt_montgomery__inv_inner__v_FACTOR
                 <:
                 Libcrux_intrinsics.Avx2_extract.t_Vec256
               }
