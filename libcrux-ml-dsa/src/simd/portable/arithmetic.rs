@@ -93,9 +93,7 @@ pub(crate) fn get_n_least_significant_bits(n: u8, value: u64) -> u64 {
 pub(crate) fn montgomery_reduce_element(value: i64) -> FieldElementTimesMontgomeryR {
     let t = get_n_least_significant_bits(MONTGOMERY_SHIFT, value as u64)
         * INVERSE_OF_MODULUS_MOD_MONTGOMERY_R;
-    hax_lib::fstar!(
-        r#"assert (v $t == (v $value % pow2 32) * 58728449)"#
-    );
+    hax_lib::fstar!(r#"assert (v $t == (v $value % pow2 32) * 58728449)"#);
     let k = get_n_least_significant_bits(MONTGOMERY_SHIFT, t) as i32;
     hax_lib::fstar!(
         r#"assert (v $k == v $t @% pow2 32);
@@ -212,7 +210,9 @@ pub(crate) fn montgomery_multiply_by_constant(simd_unit: &mut Coefficients, c: i
               (forall j. j >= v $i ==> (Seq.index ${simd_unit}.f_values j) == (Seq.index ${_simd_unit0}.f_values j))"#
             )
         });
-        hax_lib::fstar!(r#"Spec.Utils.lemma_mul_i32b (pow2 31) (4190208) ${simd_unit}.f_values.[ $i ] $c"#);
+        hax_lib::fstar!(
+            r#"Spec.Utils.lemma_mul_i32b (pow2 31) (4190208) ${simd_unit}.f_values.[ $i ] $c"#
+        );
         simd_unit.values[i] = montgomery_reduce_element((simd_unit.values[i] as i64) * (c as i64))
     }
 }
@@ -239,7 +239,9 @@ pub(crate) fn montgomery_multiply(lhs: &mut Coefficients, rhs: &Coefficients) {
               (forall j. j >= v $i ==> (Seq.index ${lhs}.f_values j) == (Seq.index ${_lhs0}.f_values j))"#
             )
         });
-        hax_lib::fstar!(r#"Spec.Utils.lemma_mul_i32b (pow2 31) (4190208) ${lhs}.f_values.[ $i ] ${rhs}.f_values.[ $i ]"#);
+        hax_lib::fstar!(
+            r#"Spec.Utils.lemma_mul_i32b (pow2 31) (4190208) ${lhs}.f_values.[ $i ] ${rhs}.f_values.[ $i ]"#
+        );
         lhs.values[i] = montgomery_reduce_element((lhs.values[i] as i64) * (rhs.values[i] as i64))
     }
 }
