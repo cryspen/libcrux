@@ -140,6 +140,7 @@ macro_rules! impl_incr_key_size {
         /// Generate a key pair and write it into `key_pair`.
         ///
         /// `key_pair.len()` must be of size `key_pair_len()`.
+        /// The function returns an error if this is not the case.
         pub fn generate_key_pair(randomness: [u8; KEY_GENERATION_SEED_SIZE], key_pair: &mut [u8]) -> Result<(), Error> {
             multiplexing::generate_keypair::<
                 RANK,
