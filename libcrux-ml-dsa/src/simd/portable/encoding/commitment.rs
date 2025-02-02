@@ -102,7 +102,7 @@ pub fn serialize_6(simd_unit: &Coefficients, serialized: &mut [u8]) {
     // The commitment has coefficients in [0,43] => each coefficient occupies
     // 6 bits.
 
-    cloop!(
+    cloop! {
         for (i, coefficients) in simd_unit.values.chunks_exact(4).enumerate() {
             hax_lib::loop_invariant!(|i: usize| {
                 fstar!(
@@ -145,7 +145,7 @@ pub fn serialize_6(simd_unit: &Coefficients, serialized: &mut [u8]) {
         "
             );
         }
-    );
+    }
     ()
 }
 
