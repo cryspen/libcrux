@@ -3,23 +3,31 @@ module Libcrux_ml_dsa.Simd.Portable.Encoding.Commitment
 open Core
 open FStar.Mul
 
-#set-options "--fuel 0 --ifuel 1 --z3rlimit 300 --ext context_pruning"
+#set-options "--fuel 0 --ifuel 1 --z3rlimit 300"
 
 let encode_4_ (coefficients: t_Slice i32) =
   let coefficient0:u8 = cast (coefficients.[ mk_usize 0 ] <: i32) <: u8 in
   let coefficient1:u8 = cast (coefficients.[ mk_usize 1 ] <: i32) <: u8 in
   (coefficient1 <<! mk_i32 4 <: u8) |. coefficient0
 
-let encode_6_ (coefficients: t_Slice i32) =
+let encode_6_ (coefficients: t_Slice i32) (bytes: t_Slice u8) =
   let coefficient0:u8 = cast (coefficients.[ mk_usize 0 ] <: i32) <: u8 in
   let coefficient1:u8 = cast (coefficients.[ mk_usize 1 ] <: i32) <: u8 in
   let coefficient2:u8 = cast (coefficients.[ mk_usize 2 ] <: i32) <: u8 in
   let coefficient3:u8 = cast (coefficients.[ mk_usize 3 ] <: i32) <: u8 in
-  (coefficient1 <<! mk_i32 6 <: u8) |. coefficient0,
-  (coefficient2 <<! mk_i32 4 <: u8) |. (coefficient1 >>! mk_i32 2 <: u8),
-  (coefficient3 <<! mk_i32 2 <: u8) |. (coefficient2 >>! mk_i32 4 <: u8)
-  <:
-  (u8 & u8 & u8)
+  let byte0:u8 = (coefficient1 <<! mk_i32 6 <: u8) |. coefficient0 in
+  let byte1:u8 = (coefficient2 <<! mk_i32 4 <: u8) |. (coefficient1 >>! mk_i32 2 <: u8) in
+  let byte2:u8 = (coefficient3 <<! mk_i32 2 <: u8) |. (coefficient2 >>! mk_i32 4 <: u8) in
+  let bytes:t_Slice u8 =
+    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize bytes (mk_usize 0) byte0
+  in
+  let bytes:t_Slice u8 =
+    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize bytes (mk_usize 1) byte1
+  in
+  let bytes:t_Slice u8 =
+    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize bytes (mk_usize 2) byte2
+  in
+  bytes
 
 let serialize_4_
       (simd_unit: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients)
@@ -104,21 +112,32 @@ let serialize_6_
       (fun serialized temp_1_ ->
           let serialized:t_Slice u8 = serialized in
           let i, coefficients:(usize & t_Slice i32) = temp_1_ in
-          let r0, r1, r2:(u8 & u8 & u8) = encode_6_ coefficients in
-          let serialized:t_Slice u8 =
-            Rust_primitives.Hax.Monomorphized_update_at.update_at_usize serialized
-              (mk_usize 3 *! i <: usize)
-              r0
+          let (e_old_serialized: t_Array u8 (mk_usize 6)):t_Array u8 (mk_usize 6) =
+            Core.Array.from_fn #u8
+              (mk_usize 6)
+              (fun i ->
+                  let i:usize = i in
+                  serialized.[ i ] <: u8)
           in
           let serialized:t_Slice u8 =
-            Rust_primitives.Hax.Monomorphized_update_at.update_at_usize serialized
-              ((mk_usize 3 *! i <: usize) +! mk_usize 1 <: usize)
-              r1
-          in
-          let serialized:t_Slice u8 =
-            Rust_primitives.Hax.Monomorphized_update_at.update_at_usize serialized
-              ((mk_usize 3 *! i <: usize) +! mk_usize 2 <: usize)
-              r2
+            Rust_primitives.Hax.Monomorphized_update_at.update_at_range serialized
+              ({
+                  Core.Ops.Range.f_start = mk_usize 3 *! i <: usize;
+                  Core.Ops.Range.f_end = (mk_usize 3 *! i <: usize) +! mk_usize 3 <: usize
+                }
+                <:
+                Core.Ops.Range.t_Range usize)
+              (encode_6_ coefficients
+                  (serialized.[ {
+                        Core.Ops.Range.f_start = mk_usize 3 *! i <: usize;
+                        Core.Ops.Range.f_end = (mk_usize 3 *! i <: usize) +! mk_usize 3 <: usize
+                      }
+                      <:
+                      Core.Ops.Range.t_Range usize ]
+                    <:
+                    t_Slice u8)
+                <:
+                t_Slice u8)
           in
           let _:Prims.unit =
             let inp =
@@ -145,7 +164,17 @@ let serialize_6_
                 bit_vec_of_int_t_array #I32 #(mk_usize 4) coefficients 6 n;
                 ( == ) { () }
                 out (v i * 24 + n);
-              })
+              });
+            assert (forall (n: nat{n >= 24 * v i /\ n < 24 * v i + 24}).
+                  inp (24 * v i + (n - 24 * v i)) == out (24 * v i + (n - 24 * v i)));
+            assert (forall (n: nat{n >= 24 * v i /\ n < 24 * v i + 24}). inp n == out n);
+            assert (forall (n: nat{n < v i * 24}). n / 8 < 3 * v i);
+            assert (forall (j: nat{j < 3 * v i}).
+                  Seq.index serialized j == Seq.index (Seq.slice serialized 0 (3 * v i)) j);
+            assert (forall (j: nat{j < 3 * v i}).
+                  Seq.index e_old_serialized j ==
+                  Seq.index (Seq.slice e_old_serialized 0 (3 * v i)) j);
+            assert (forall (n: nat{n < 24 * (v i + 1)}). inp n == out n)
           in
           serialized)
   in
