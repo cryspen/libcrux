@@ -101,25 +101,27 @@ Seq.length ${serialized_future} == Seq.length ${serialized} /\
 pub fn serialize_6(simd_unit: &Coefficients, serialized: &mut [u8]) {
     // The commitment has coefficients in [0,43] => each coefficient occupies
     // 6 bits.
-    for (i, coefficients) in simd_unit.values.chunks_exact(4).enumerate() {
-        hax_lib::loop_invariant!(|i: usize| {
-            fstar!(
-                r"
+
+    cloop!(
+        for (i, coefficients) in simd_unit.values.chunks_exact(4).enumerate() {
+            hax_lib::loop_invariant!(|i: usize| {
+                fstar!(
+                    r"
             Seq.length $serialized == 6 /\ (
               let inp = bit_vec_of_int_t_array #I32 #(mk_usize 8) ${simd_unit.values} 6 in
               let out = bit_vec_of_int_t_array #U8 #(mk_usize 6) $serialized 8 in
               (forall (n: nat {n < v i * 24}). out n == inp n))"
-            )
-        });
+                )
+            });
 
-        // TODO: use ghost state here to avoid copying
-        // See: https://github.com/cryspen/libcrux/issues/783
-        let mut _old_serialized: [u8; 6] = core::array::from_fn(|i| serialized[i]);
+            // TODO: use ghost state here to avoid copying
+            // See: https://github.com/cryspen/libcrux/issues/783
+            let mut _old_serialized: [u8; 6] = core::array::from_fn(|i| serialized[i]);
 
-        encode_6(coefficients, &mut serialized[3 * i..3 * i + 3]);
+            encode_6(coefficients, &mut serialized[3 * i..3 * i + 3]);
 
-        hax_lib::fstar!(
-            r"
+            hax_lib::fstar!(
+                r"
             let inp = bit_vec_of_int_t_array #I32 #(mk_usize 8) ${simd_unit.values} 6 in
             let out = bit_vec_of_int_t_array #U8  #(mk_usize 6) $serialized 8 in
             introduce forall (n:nat{n < 24}). inp (v i * 24 + n) == out (v i * 24 + n)
@@ -141,8 +143,9 @@ pub fn serialize_6(simd_unit: &Coefficients, serialized: &mut [u8]) {
            assert (forall (j:nat{j < 3 * v i}). Seq.index ${_old_serialized} j == Seq.index (Seq.slice ${_old_serialized} 0 (3 * v i)) j);
            assert (forall (n:nat{n < 24 * (v i + 1)}). inp n == out n))
         "
-        );
-    }
+            );
+        }
+    );
     ()
 }
 
