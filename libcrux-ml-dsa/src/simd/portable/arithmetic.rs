@@ -16,6 +16,7 @@ pub(crate) const MONTGOMERY_SHIFT: u8 = 32;
     (v (Seq.index ${lhs}_future.f_values i) == 
      v (Seq.index ${lhs}.f_values i) + v (Seq.index ${rhs}.f_values i))"#))]
 pub fn add(lhs: &mut Coefficients, rhs: &Coefficients) {
+    #[cfg(hax)]
     let _lhs0 = lhs.clone();
     for i in 0..lhs.values.len() {
         hax_lib::loop_invariant!(|i: usize| {
@@ -42,6 +43,7 @@ pub fn add(lhs: &mut Coefficients, rhs: &Coefficients) {
     (v (Seq.index ${lhs}_future.f_values i) == 
      v (Seq.index ${lhs}.f_values i) - v (Seq.index ${rhs}.f_values i))"#))]
 pub fn subtract(lhs: &mut Coefficients, rhs: &Coefficients) {
+    #[cfg(hax)]
     let _lhs0 = lhs.clone();
     for i in 0..lhs.values.len() {
         hax_lib::loop_invariant!(|i: usize| {
@@ -198,6 +200,7 @@ Spec.Utils.is_i32b_array 8380416 ${simd_unit}_future.f_values /\
     (v (Seq.index ${simd_unit}_future.f_values i) % 8380417 == 
        (v (Seq.index ${simd_unit}.f_values i) * v $c * 8265825) % 8380417))"#))]
 pub(crate) fn montgomery_multiply_by_constant(simd_unit: &mut Coefficients, c: i32) {
+    #[cfg(hax)]
     let _simd_unit0 = simd_unit.clone();
     for i in 0..simd_unit.values.len() {
         hax_lib::loop_invariant!(|i: usize| {
@@ -227,6 +230,7 @@ Spec.Utils.is_i32b_array 8380416 ${lhs}_future.f_values /\
     (v (Seq.index ${lhs}_future.f_values i) % 8380417 == 
        (v (Seq.index ${lhs}.f_values i) * v (Seq.index ${rhs}.f_values i) * 8265825) % 8380417))"#))]
 pub(crate) fn montgomery_multiply(lhs: &mut Coefficients, rhs: &Coefficients) {
+    #[cfg(hax)]
     let _lhs0 = lhs.clone();
     for i in 0..lhs.values.len() {
         hax_lib::loop_invariant!(|i: usize| {

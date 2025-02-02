@@ -12,7 +12,7 @@ let _ =
 #push-options "--z3rlimit 150"
 
 let add (lhs rhs: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients) =
-  let v__lhs0:Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients =
+  let e_lhs0:Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients =
     Core.Clone.f_clone #Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients
       #FStar.Tactics.Typeclasses.solve
       lhs
@@ -29,8 +29,8 @@ let add (lhs rhs: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients) =
           (forall j.
               j < v i ==>
               (Seq.index lhs.f_values j) ==
-              (Seq.index v__lhs0.f_values j) +! (Seq.index rhs.f_values j)) /\
-          (forall j. j >= v i ==> (Seq.index lhs.f_values j) == (Seq.index v__lhs0.f_values j)))
+              (Seq.index e_lhs0.f_values j) +! (Seq.index rhs.f_values j)) /\
+          (forall j. j >= v i ==> (Seq.index lhs.f_values j) == (Seq.index e_lhs0.f_values j)))
       lhs
       (fun lhs i ->
           let lhs:Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients = lhs in
@@ -56,7 +56,7 @@ let add (lhs rhs: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients) =
   let _:Prims.unit =
     assert (forall i.
           v (Seq.index lhs.f_values i) ==
-          v (Seq.index v__lhs0.f_values i) + v (Seq.index rhs.f_values i))
+          v (Seq.index e_lhs0.f_values i) + v (Seq.index rhs.f_values i))
   in
   lhs
 
@@ -65,7 +65,7 @@ let add (lhs rhs: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients) =
 #push-options "--z3rlimit 150"
 
 let subtract (lhs rhs: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients) =
-  let v__lhs0:Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients =
+  let e_lhs0:Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients =
     Core.Clone.f_clone #Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients
       #FStar.Tactics.Typeclasses.solve
       lhs
@@ -82,8 +82,8 @@ let subtract (lhs rhs: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients) 
           (forall j.
               j < v i ==>
               (Seq.index lhs.f_values j) ==
-              (Seq.index v__lhs0.f_values j) -! (Seq.index rhs.f_values j)) /\
-          (forall j. j >= v i ==> (Seq.index lhs.f_values j) == (Seq.index v__lhs0.f_values j)))
+              (Seq.index e_lhs0.f_values j) -! (Seq.index rhs.f_values j)) /\
+          (forall j. j >= v i ==> (Seq.index lhs.f_values j) == (Seq.index e_lhs0.f_values j)))
       lhs
       (fun lhs i ->
           let lhs:Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients = lhs in
@@ -109,7 +109,7 @@ let subtract (lhs rhs: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients) 
   let _:Prims.unit =
     assert (forall i.
           v (Seq.index lhs.f_values i) ==
-          v (Seq.index v__lhs0.f_values i) - v (Seq.index rhs.f_values i))
+          v (Seq.index e_lhs0.f_values i) - v (Seq.index rhs.f_values i))
   in
   lhs
 
@@ -246,7 +246,7 @@ let montgomery_multiply_by_constant
       (simd_unit: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients)
       (c: i32)
      =
-  let v__simd_unit0:Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients =
+  let e_simd_unit0:Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients =
     Core.Clone.f_clone #Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients
       #FStar.Tactics.Typeclasses.solve
       simd_unit
@@ -265,10 +265,9 @@ let montgomery_multiply_by_constant
               (let vecj = Seq.index simd_unit.f_values j in
                 (Spec.Utils.is_i32b 8380416 vecj /\
                   v vecj % 8380417 ==
-                  (v (Seq.index v__simd_unit0.f_values j) * v c * 8265825) % 8380417))) /\
+                  (v (Seq.index e_simd_unit0.f_values j) * v c * 8265825) % 8380417))) /\
           (forall j.
-              j >= v i ==> (Seq.index simd_unit.f_values j) == (Seq.index v__simd_unit0.f_values j))
-      )
+              j >= v i ==> (Seq.index simd_unit.f_values j) == (Seq.index e_simd_unit0.f_values j)))
       simd_unit
       (fun simd_unit i ->
           let simd_unit:Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients = simd_unit in
@@ -305,7 +304,7 @@ let montgomery_multiply_by_constant
 #push-options "--z3rlimit 150"
 
 let montgomery_multiply (lhs rhs: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients) =
-  let v__lhs0:Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients =
+  let e_lhs0:Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients =
     Core.Clone.f_clone #Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients
       #FStar.Tactics.Typeclasses.solve
       lhs
@@ -324,9 +323,9 @@ let montgomery_multiply (lhs rhs: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coe
               (let vecj = Seq.index lhs.f_values j in
                 (Spec.Utils.is_i32b 8380416 vecj /\
                   v vecj % 8380417 ==
-                  (v (Seq.index v__lhs0.f_values j) * v (Seq.index rhs.f_values j) * 8265825) %
+                  (v (Seq.index e_lhs0.f_values j) * v (Seq.index rhs.f_values j) * 8265825) %
                   8380417))) /\
-          (forall j. j >= v i ==> (Seq.index lhs.f_values j) == (Seq.index v__lhs0.f_values j)))
+          (forall j. j >= v i ==> (Seq.index lhs.f_values j) == (Seq.index e_lhs0.f_values j)))
       lhs
       (fun lhs i ->
           let lhs:Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients = lhs in
