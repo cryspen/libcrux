@@ -116,6 +116,7 @@ pub fn serialize_6(simd_unit: &Coefficients, serialized: &mut [u8]) {
 
             // TODO: use ghost state here to avoid copying
             // See: https://github.com/cryspen/libcrux/issues/783
+            #[cfg(hax)]
             let mut _old_serialized: [u8; 6] = core::array::from_fn(|i| serialized[i]);
 
             encode_6(coefficients, &mut serialized[3 * i..3 * i + 3]);
