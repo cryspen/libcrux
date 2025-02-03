@@ -1,6 +1,6 @@
 use crate::{
     constants::{Eta, Gamma2},
-    simd::traits::{Repr, Operations, SIMD_UNITS_IN_RING_ELEMENT},
+    simd::traits::{Operations, Repr, SIMD_UNITS_IN_RING_ELEMENT},
 };
 
 mod arithmetic;
