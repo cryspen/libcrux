@@ -511,6 +511,7 @@ pub mod neon {
     pub mod x2 {
         #[cfg(feature = "simd128")]
         use super::*;
+        use libcrux_secrets::*;
 
         /// Run SHAKE256 on both inputs in parallel.
         ///
@@ -893,15 +894,16 @@ pub mod avx2 {
         use crate::generic_keccak::keccak;
         #[cfg(feature = "simd256")]
         use libcrux_intrinsics::avx2::*;
+        use libcrux_secrets::*;
 
         /// Perform 4 SHAKE256 operations in parallel
         #[allow(unused_variables, clippy::too_many_arguments)] // TODO: decide if we want to fall back here
         #[inline(always)]
         pub fn shake256(
-            input0: &[u8],
-            input1: &[u8],
-            input2: &[u8],
-            input3: &[u8],
+            input0: &[U8],
+            input1: &[U8],
+            input2: &[U8],
+            input3: &[U8],
             out0: &mut [u8],
             out1: &mut [u8],
             out2: &mut [u8],
@@ -934,7 +936,7 @@ pub mod avx2 {
         /// **PANICS** when `N` is not 2, 3, or 4.
         #[allow(unused_variables, non_snake_case)]
         #[inline(always)]
-        fn _shake256xN<const LEN: usize, const N: usize>(input: &[[u8; 33]; N]) -> [[u8; LEN]; N] {
+        fn _shake256xN<const LEN: usize, const N: usize>(input: &[[U8; 33]; N]) -> [[u8; LEN]; N] {
             debug_assert!(N == 2 || N == 3 || N == 4);
             let mut out = [[0u8; LEN]; N];
 
@@ -1000,6 +1002,7 @@ pub mod avx2 {
             use crate::generic_keccak::{squeeze_first_block, squeeze_first_five_blocks};
             #[cfg(feature = "simd256")]
             use libcrux_intrinsics::avx2::*;
+            use libcrux_secrets::*;
 
             /// The Keccak state for the incremental API.
             #[cfg(feature = "simd256")]
@@ -1050,10 +1053,10 @@ pub mod avx2 {
             #[allow(unused_variables)] // TODO: decide if we want to fall back here
             pub fn shake128_absorb_final(
                 s: &mut KeccakState,
-                data0: &[u8],
-                data1: &[u8],
-                data2: &[u8],
-                data3: &[u8],
+                data0: &[U8],
+                data1: &[U8],
+                data2: &[U8],
+                data3: &[U8],
             ) {
                 #[cfg(not(feature = "simd256"))]
                 unimplemented!();
@@ -1088,10 +1091,10 @@ pub mod avx2 {
             #[allow(unused_variables)] // TODO: decide if we want to fall back here
             pub fn shake256_absorb_final(
                 s: &mut KeccakState,
-                data0: &[u8],
-                data1: &[u8],
-                data2: &[u8],
-                data3: &[u8],
+                data0: &[U8],
+                data1: &[U8],
+                data2: &[U8],
+                data3: &[U8],
             ) {
                 #[cfg(not(feature = "simd256"))]
                 unimplemented!();
@@ -1137,7 +1140,7 @@ pub mod avx2 {
             /// **PANICS** when `N` is not 2, 3, or 4.
             #[inline(always)]
             #[allow(unused_variables, non_snake_case)]
-            fn _shake128_absorb_finalxN<const N: usize>(input: [[u8; 34]; N]) -> KeccakState {
+            fn _shake128_absorb_finalxN<const N: usize>(input: [[U8; 34]; N]) -> KeccakState {
                 debug_assert!(N == 2 || N == 3 || N == 4);
                 let mut state = init();
 

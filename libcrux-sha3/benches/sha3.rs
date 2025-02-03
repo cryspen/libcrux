@@ -70,6 +70,8 @@ impl_comp!(Sha3_256, Algorithm::Sha256, sha256);
 impl_comp!(Sha3_384, Algorithm::Sha384, sha384);
 impl_comp!(Sha3_512, Algorithm::Sha512, sha512);
 
+use libcrux_secrets::*;
+
 #[cfg(all(feature = "simd256", target_arch = "x86_64"))]
 fn shake256(c: &mut Criterion) {
     let mut group = c.benchmark_group("shake256");
@@ -89,10 +91,10 @@ fn shake256(c: &mut Criterion) {
                 let mut digest2 = [0u8; 128];
                 let mut digest3 = [0u8; 128];
                 avx2::x4::shake256(
-                    &payload0,
-                    &payload1,
-                    &payload2,
-                    &payload3,
+                    &payload0.as_secret(),
+                    &payload1.as_secret(),
+                    &payload2.as_secret(),
+                    &payload3.as_secret(),
                     &mut digest0,
                     &mut digest1,
                     &mut digest2,

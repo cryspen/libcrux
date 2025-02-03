@@ -40,14 +40,24 @@ impl Scalar for i32 {}
 impl Scalar for i64 {}
 impl Scalar for i128 {}
 
-#[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
+#[cfg(target_arch = "x86")]
 impl Scalar for core::arch::x86::__m128i {}
 
-#[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
+#[cfg(target_arch = "x86")]
 impl Scalar for core::arch::x86::__m256i {}
 
-#[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
+#[cfg(target_arch = "x86")]
 impl Scalar for core::arch::x86::__m256 {}
+
+#[cfg(target_arch = "x86_64")]
+impl Scalar for core::arch::x86_64::__m128i {}
+
+#[cfg(target_arch = "x86_64")]
+impl Scalar for core::arch::x86_64::__m256i {}
+
+#[cfg(target_arch = "x86_64")]
+impl Scalar for core::arch::x86_64::__m256 {}
+
 
 #[cfg(target_arch = "aarch64")]
 impl Scalar for core::arch::aarch64::int8x16_t {}
