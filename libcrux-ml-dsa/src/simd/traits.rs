@@ -1,5 +1,5 @@
 use crate::constants::{Eta, Gamma2};
-use hax_lib::int::*;
+use hax_lib::int::Abstraction;
 
 // Each field element occupies 32 bits and the size of a simd_unit is 256 bits.
 pub(crate) const COEFFICIENTS_IN_SIMD_UNIT: usize = 8;
@@ -19,14 +19,39 @@ pub(crate) type FieldElementTimesMontgomeryR = i32;
 
 type SIMDContent = [i32; COEFFICIENTS_IN_SIMD_UNIT];
 
-#[hax_lib::attributes]
+#[hax_lib::attributes] 
 pub(crate) trait Repr: Copy + Clone {
     #[requires(true)]
     fn repr(&self) -> SIMDContent;
 }
 
-fn int_in_i32_range(i:hax_lib::int::Int) -> bool {
+#[cfg(hax)]
+fn int_is_i32(i:hax_lib::int::Int) -> bool {
     i <= i32::MAX.lift() && i >= i32::MIN.lift()
+}
+
+#[cfg(hax)]
+fn add_pre(lhs:&SIMDContent, rhs:&SIMDContent) -> bool {
+    hax_lib::forall(|i:usize| hax_lib::implies(i < COEFFICIENTS_IN_SIMD_UNIT, 
+                        || int_is_i32 (lhs[i].lift() + rhs[i].lift())))
+}
+
+#[cfg(hax)]
+fn add_post(lhs:&SIMDContent, rhs:&SIMDContent, future_lhs:&SIMDContent) -> bool {
+    hax_lib::forall(|i:usize| hax_lib::implies(i < COEFFICIENTS_IN_SIMD_UNIT, 
+        || future_lhs[i].lift() == (lhs[i].lift() + rhs[i].lift())))
+}
+
+#[cfg(hax)]
+fn sub_pre(lhs:&SIMDContent, rhs:&SIMDContent) -> bool {
+    hax_lib::forall(|i:usize| hax_lib::implies(i < COEFFICIENTS_IN_SIMD_UNIT, 
+                        || int_is_i32 (lhs[i].lift() - rhs[i].lift())))
+}
+
+#[cfg(hax)]
+fn sub_post(lhs:&SIMDContent, rhs:&SIMDContent, future_lhs:&SIMDContent) -> bool {
+    hax_lib::forall(|i:usize| hax_lib::implies(i < COEFFICIENTS_IN_SIMD_UNIT, 
+        || future_lhs[i].lift() == (lhs[i].lift() - rhs[i].lift())))
 }
 
 #[cfg(not(eurydice))]
@@ -44,12 +69,12 @@ pub(crate) trait Operations: Copy + Clone + Repr {
     fn to_coefficient_array(value: &Self, out: &mut [i32]);
 
     // Arithmetic
-    #[hax_lib::requires(hax_lib::forall(|i:usize| hax_lib::implies(i < COEFFICIENTS_IN_SIMD_UNIT, || int_in_i32_range (lhs.repr()[i].lift() + rhs.repr()[i].lift()))))]
-    #[hax_lib::ensures(|_| hax_lib::forall(|i:usize| hax_lib::implies(i < COEFFICIENTS_IN_SIMD_UNIT, || future(lhs).repr()[i].lift() == (lhs.repr()[i].lift() + rhs.repr()[i].lift()))))]
+    #[hax_lib::requires(add_pre(&lhs.repr(), &rhs.repr()))]
+    #[hax_lib::ensures(|_| add_post(&lhs.repr(), &rhs.repr(), &future(lhs).repr()))]
     fn add(lhs: &mut Self, rhs: &Self);
     
-    #[hax_lib::requires(hax_lib::forall(|i:usize| hax_lib::implies(i < COEFFICIENTS_IN_SIMD_UNIT, || int_in_i32_range (lhs.repr()[i].lift() - rhs.repr()[i].lift()))))]
-    #[hax_lib::ensures(|_| hax_lib::forall(|i:usize| hax_lib::implies(i < COEFFICIENTS_IN_SIMD_UNIT, || future(lhs).repr()[i].lift() == (lhs.repr()[i].lift() - rhs.repr()[i].lift()))))]
+    #[hax_lib::requires(sub_pre(&lhs.repr(), &rhs.repr()))]
+    #[hax_lib::ensures(|_| sub_post(&lhs.repr(), &rhs.repr(), &future(lhs).repr()))]
     fn subtract(lhs: &mut Self, rhs: &Self);
     
     fn infinity_norm_exceeds(simd_unit: &Self, bound: i32) -> bool;
@@ -85,6 +110,8 @@ pub(crate) trait Operations: Copy + Clone + Repr {
     fn gamma1_deserialize(serialized: &[u8], out: &mut Self, gamma1_exponent: usize);
 
     // Commitment
+    #[hax_lib::requires(serialized.len() == 4 || serialized.len() == 6)]
+    #[hax_lib::ensures(|_| future(serialized).len() == serialized.len())]
     fn commitment_serialize(simd_unit: &Self, serialized: &mut [u8]);
 
     // Error
