@@ -4,11 +4,11 @@
  * SPDX-License-Identifier: MIT or Apache-2.0
  *
  * This code was generated with the following revisions:
- * Charon: 45f5a34f336e35c6cc2253bc90cbdb8d812cefa9
- * Eurydice: e2db6e88adc9995ca9d3dedf7fa9bc4095e9ca20
- * Karamel: a02d57fc0ae585928e35464e9d806760aeccd5aa
+ * Charon: db4e045d4597d06d854ce7a2c10e8dcfda6ecd25
+ * Eurydice: 75eae2e2534a16f5ba5430e6ee5c69d8a46f3bea
+ * Karamel: 3823e3d82fa0b271d799b61c59ffb4742ddc1e65
  * F*: 7cd06c5562fc47ec14cd35c38034d5558a5ff762
- * Libcrux: f1f0865263c63f9a45f660a5c1758b4f21fffbb3
+ * Libcrux: ac490f4fa97006f016a8681535d863589b7cc168
  */
 
 #ifndef __libcrux_core_H
@@ -111,10 +111,10 @@ static inline uint8_t *libcrux_ml_dsa_types_as_ref_66_97(
   return self->value;
 }
 
-#define libcrux_ml_dsa_types_MalformedHintError 0
-#define libcrux_ml_dsa_types_SignerResponseExceedsBoundError 1
-#define libcrux_ml_dsa_types_CommitmentHashesDontMatchError 2
-#define libcrux_ml_dsa_types_VerificationContextTooLongError 3
+#define libcrux_ml_dsa_types_VerificationError_MalformedHintError 0
+#define libcrux_ml_dsa_types_VerificationError_SignerResponseExceedsBoundError 1
+#define libcrux_ml_dsa_types_VerificationError_CommitmentHashesDontMatchError 2
+#define libcrux_ml_dsa_types_VerificationError_VerificationContextTooLongError 3
 
 typedef uint8_t libcrux_ml_dsa_types_VerificationError;
 
@@ -153,8 +153,8 @@ static inline uint8_t *libcrux_ml_dsa_types_as_ref_9b_09(
   return self->value;
 }
 
-#define libcrux_ml_dsa_types_RejectionSamplingError 0
-#define libcrux_ml_dsa_types_ContextTooLongError 1
+#define libcrux_ml_dsa_types_SigningError_RejectionSamplingError 0
+#define libcrux_ml_dsa_types_SigningError_ContextTooLongError 1
 
 typedef uint8_t libcrux_ml_dsa_types_SigningError;
 
