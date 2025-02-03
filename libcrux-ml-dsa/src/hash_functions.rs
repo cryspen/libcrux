@@ -426,7 +426,8 @@ pub(crate) mod simd256 {
 
     use super::{shake128, shake256};
     use libcrux_sha3::avx2::x4;
-
+    use libcrux_secrets::*;
+    
     /// AVX2 SHAKE 128 state
     ///
     /// This only implements the XofX4 API. For the single Xof, the portable
@@ -440,7 +441,7 @@ pub(crate) mod simd256 {
     #[inline(always)]
     fn init_absorb(input0: &[u8], input1: &[u8], input2: &[u8], input3: &[u8]) -> Shake128x4 {
         let mut state = x4::incremental::init();
-        x4::incremental::shake128_absorb_final(&mut state, input0, input1, input2, input3);
+        x4::incremental::shake128_absorb_final(&mut state, input0.as_secret(), input1.as_secret(), input2.as_secret(), input3.as_secret());
         Shake128x4 { state }
     }
 
@@ -524,13 +525,13 @@ pub(crate) mod simd256 {
 
     #[inline(always)]
     fn shake256<const OUTPUT_LENGTH: usize>(input: &[u8], out: &mut [u8; OUTPUT_LENGTH]) {
-        libcrux_sha3::portable::shake256(out, input);
+        libcrux_sha3::portable::shake256(out, input.as_secret());
     }
 
     #[inline(always)]
     fn init_absorb_final_shake256(input: &[u8]) -> Shake256 {
         let mut state = libcrux_sha3::portable::incremental::shake256_init();
-        libcrux_sha3::portable::incremental::shake256_absorb_final(&mut state, input);
+        libcrux_sha3::portable::incremental::shake256_absorb_final(&mut state, input.as_secret());
 
         Shake256 { state }
     }
@@ -586,7 +587,7 @@ pub(crate) mod simd256 {
     #[inline(always)]
     fn init_absorb_x4(input0: &[u8], input1: &[u8], input2: &[u8], input3: &[u8]) -> Shake256x4 {
         let mut state = x4::incremental::init();
-        x4::incremental::shake256_absorb_final(&mut state, input0, input1, input2, input3);
+        x4::incremental::shake256_absorb_final(&mut state, input0.as_secret(), input1.as_secret(), input2.as_secret(), input3.as_secret());
         Shake256x4 { state }
     }
 
@@ -649,7 +650,7 @@ pub(crate) mod simd256 {
         out2: &mut [u8; OUT_LEN],
         out3: &mut [u8; OUT_LEN],
     ) {
-        x4::shake256(input0, input1, input2, input3, out0, out1, out2, out3);
+        x4::shake256(input0.as_secret(), input1.as_secret(), input2.as_secret(), input3.as_secret(), out0, out1, out2, out3);
     }
 
     impl shake256::XofX4 for Shake256x4 {

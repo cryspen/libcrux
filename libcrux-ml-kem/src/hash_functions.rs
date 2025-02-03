@@ -234,6 +234,7 @@ pub(crate) mod avx2 {
         avx2::x4::{self, incremental::KeccakState},
         portable,
     };
+    use libcrux_secrets::*;
 
     /// The state.
     ///
@@ -250,7 +251,7 @@ pub(crate) mod avx2 {
     #[inline(always)]
     fn G(input: &[u8]) -> [u8; G_DIGEST_SIZE] {
         let mut digest = [0u8; G_DIGEST_SIZE];
-        portable::sha512(&mut digest, input);
+        portable::sha512(&mut digest, input.as_secret());
         digest
     }
 
@@ -260,7 +261,7 @@ pub(crate) mod avx2 {
     #[inline(always)]
     fn H(input: &[u8]) -> [u8; H_DIGEST_SIZE] {
         let mut digest = [0u8; H_DIGEST_SIZE];
-        portable::sha256(&mut digest, input);
+        portable::sha256(&mut digest, input.as_secret());
         digest
     }
 
@@ -271,7 +272,7 @@ pub(crate) mod avx2 {
     #[inline(always)]
     fn PRF<const LEN: usize>(input: &[u8]) -> [u8; LEN] {
         let mut digest = [0u8; LEN];
-        portable::shake256(&mut digest, input);
+        portable::shake256(&mut digest, input.as_secret());
         digest
     }
 
@@ -291,16 +292,16 @@ pub(crate) mod avx2 {
         match K as u8 {
             2 => {
                 x4::shake256(
-                    &input[0], &input[1], &input[0], &input[0], &mut out0, &mut out1, &mut out2,
-                    &mut out3,
+                    (&input[0]).as_secret(), (&input[1]).as_secret(), (&input[0]).as_secret(), (&input[0]).as_secret(), 
+                    &mut out0, &mut out1, &mut out2, &mut out3,
                 );
                 out[0] = out0;
                 out[1] = out1;
             }
             3 => {
                 x4::shake256(
-                    &input[0], &input[1], &input[2], &input[0], &mut out0, &mut out1, &mut out2,
-                    &mut out3,
+                    (&input[0]).as_secret(), (&input[1]).as_secret(), (&input[2]).as_secret(), (&input[0]).as_secret(), 
+                    &mut out0, &mut out1, &mut out2, &mut out3,
                 );
                 out[0] = out0;
                 out[1] = out1;
@@ -308,8 +309,8 @@ pub(crate) mod avx2 {
             }
             4 => {
                 x4::shake256(
-                    &input[0], &input[1], &input[2], &input[3], &mut out0, &mut out1, &mut out2,
-                    &mut out3,
+                    (&input[0]).as_secret(), (&input[1]).as_secret(), (&input[2]).as_secret(), (&input[0]).as_secret(), 
+                     &mut out0, &mut out1, &mut out2, &mut out3,
                 );
                 out[0] = out0;
                 out[1] = out1;
@@ -329,17 +330,17 @@ pub(crate) mod avx2 {
         match K as u8 {
             2 => {
                 x4::incremental::shake128_absorb_final(
-                    &mut state, &input[0], &input[1], &input[0], &input[0],
+                    &mut state, (&input[0]).as_secret(), (&input[1]).as_secret(), (&input[0]).as_secret(), (&input[0]).as_secret()
                 );
             }
             3 => {
                 x4::incremental::shake128_absorb_final(
-                    &mut state, &input[0], &input[1], &input[2], &input[0],
+                    &mut state, (&input[0]).as_secret(), (&input[1]).as_secret(), (&input[2]).as_secret(), (&input[0]).as_secret()
                 );
             }
             4 => {
                 x4::incremental::shake128_absorb_final(
-                    &mut state, &input[0], &input[1], &input[2], &input[3],
+                    &mut state, (&input[0]).as_secret(), (&input[1]).as_secret(), (&input[2]).as_secret(), (&input[3]).as_secret()
                 );
             }
             _ => unreachable!("This function must only be called with N = 2, 3, 4"),
