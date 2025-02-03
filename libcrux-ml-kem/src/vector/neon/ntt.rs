@@ -1,6 +1,7 @@
 use super::arithmetic::*;
 use super::vector_type::*;
 use libcrux_intrinsics::arm64::*;
+use libcrux_secrets::*;
 
 #[inline(always)]
 pub(crate) fn ntt_layer_1_step(
@@ -16,7 +17,7 @@ pub(crate) fn ntt_layer_1_step(
     // a = simd::Vector::add(a, &t);
 
     let zetas = [zeta1, zeta1, zeta3, zeta3, zeta2, zeta2, zeta4, zeta4];
-    let zeta = _vld1q_s16(&zetas);
+    let zeta = _vld1q_s16((&zetas).as_secret());
     let dup_a = _vreinterpretq_s16_s32(_vtrn1q_s32(
         _vreinterpretq_s32_s16(v.low),
         _vreinterpretq_s32_s16(v.high),
@@ -48,7 +49,7 @@ pub(crate) fn ntt_layer_2_step(mut v: SIMD128Vector, zeta1: i16, zeta2: i16) -> 
     // a = simd::Vector::add(a, &t);
 
     let zetas = [zeta1, zeta1, zeta1, zeta1, zeta2, zeta2, zeta2, zeta2];
-    let zeta = _vld1q_s16(&zetas);
+    let zeta = _vld1q_s16((&zetas).as_secret());
     let dup_a = _vreinterpretq_s16_s64(_vtrn1q_s64(
         _vreinterpretq_s64_s16(v.low),
         _vreinterpretq_s64_s16(v.high),
@@ -79,7 +80,7 @@ pub(crate) fn ntt_layer_3_step(mut v: SIMD128Vector, zeta: i16) -> SIMD128Vector
     // b = simd::Vector::sub(a, &t);
     // a = simd::Vector::add(a, &t);
 
-    let zeta = _vdupq_n_s16(zeta);
+    let zeta = _vdupq_n_s16(zeta.classify());
     let t = montgomery_multiply_int16x8_t(v.high, zeta);
     v.high = _vsubq_s16(v.low, t);
     v.low = _vaddq_s16(v.low, t);
@@ -101,7 +102,7 @@ pub(crate) fn inv_ntt_layer_1_step(
     //(a, b)
 
     let zetas = [zeta1, zeta1, zeta3, zeta3, zeta2, zeta2, zeta4, zeta4];
-    let zeta = _vld1q_s16(&zetas);
+    let zeta = _vld1q_s16((&zetas).as_secret());
 
     let a = _vreinterpretq_s16_s32(_vtrn1q_s32(
         _vreinterpretq_s32_s16(v.low),
@@ -137,7 +138,7 @@ pub(crate) fn inv_ntt_layer_2_step(mut v: SIMD128Vector, zeta1: i16, zeta2: i16)
     //(a, b)
 
     let zetas = [zeta1, zeta1, zeta1, zeta1, zeta2, zeta2, zeta2, zeta2];
-    let zeta = _vld1q_s16(&zetas);
+    let zeta = _vld1q_s16((&zetas).as_secret());
 
     let a = _vreinterpretq_s16_s64(_vtrn1q_s64(
         _vreinterpretq_s64_s16(v.low),
@@ -171,7 +172,7 @@ pub(crate) fn inv_ntt_layer_3_step(mut v: SIMD128Vector, zeta: i16) -> SIMD128Ve
     //b = simd::Vector::montgomery_multiply_fe_by_fer(a_minus_b, zeta_r);
     //(a, b)
 
-    let zeta = _vdupq_n_s16(zeta);
+    let zeta = _vdupq_n_s16(zeta.classify());
     let b_minus_a = _vsubq_s16(v.high, v.low);
     v.low = _vaddq_s16(v.low, v.high);
     v.high = montgomery_multiply_int16x8_t(b_minus_a, zeta);
@@ -196,7 +197,7 @@ pub(crate) fn ntt_multiply(
     //from_i16_array(crate::simd::portable::to_i16_array(mulp))
 
     let zetas: [i16; 8] = [zeta1, zeta3, -zeta1, -zeta3, zeta2, zeta4, -zeta2, -zeta4];
-    let zeta = _vld1q_s16(&zetas);
+    let zeta = _vld1q_s16((&zetas).as_secret());
 
     let a0 = _vtrn1q_s16(lhs.low, lhs.high); // a0, a8, a2, a10, ...
     let a1 = _vtrn2q_s16(lhs.low, lhs.high); // a1, a9, a3, a11, ...
@@ -233,7 +234,7 @@ pub(crate) fn ntt_multiply(
     let high1 = _vreinterpretq_s16_s32(_vtrn2q_s32(low0, high0)); // 8,9,12,13,10,11,14,15
 
     let indexes: [u8; 16] = [0, 1, 2, 3, 8, 9, 10, 11, 4, 5, 6, 7, 12, 13, 14, 15];
-    let index = _vld1q_u8(&indexes);
+    let index = _vld1q_u8((&indexes).as_secret());
     let low2 = _vreinterpretq_s16_u8(_vqtbl1q_u8(_vreinterpretq_u8_s16(low1), index));
     let high2 = _vreinterpretq_s16_u8(_vqtbl1q_u8(_vreinterpretq_u8_s16(high1), index));
 

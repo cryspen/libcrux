@@ -1,25 +1,26 @@
 use super::*;
 use crate::vector::portable::PortableVector;
 use libcrux_intrinsics::arm64::*;
+use libcrux_secrets::*;
 
 #[inline(always)]
 pub(crate) fn serialize_1(v: SIMD128Vector) -> [u8; 2] {
     let shifter: [i16; 8] = [0, 1, 2, 3, 4, 5, 6, 7];
-    let shift = _vld1q_s16(&shifter);
+    let shift = _vld1q_s16((&shifter).as_secret());
     let low = _vshlq_s16(v.low, shift);
     let high = _vshlq_s16(v.high, shift);
     let low = _vaddvq_s16(low);
     let high = _vaddvq_s16(high);
-    [low as u8, high as u8]
+    [low.declassify() as u8, high.declassify() as u8]
 }
 
 #[inline(always)]
 pub(crate) fn deserialize_1(a: &[u8]) -> SIMD128Vector {
-    let one = _vdupq_n_s16(1);
-    let low = _vdupq_n_s16(a[0] as i16);
-    let high = _vdupq_n_s16(a[1] as i16);
+    let one = _vdupq_n_s16(1.classify());
+    let low = _vdupq_n_s16((a[0] as i16).classify());
+    let high = _vdupq_n_s16((a[1] as i16).classify());
     let shifter: [i16; 8] = [0, 0xff, -2, -3, -4, -5, -6, -7];
-    let shift = _vld1q_s16(&shifter);
+    let shift = _vld1q_s16((&shifter).as_secret());
     let low = _vshlq_s16(low, shift);
     let high = _vshlq_s16(high, shift);
     SIMD128Vector {
@@ -31,13 +32,13 @@ pub(crate) fn deserialize_1(a: &[u8]) -> SIMD128Vector {
 #[inline(always)]
 pub(crate) fn serialize_4(v: SIMD128Vector) -> [u8; 8] {
     let shifter: [i16; 8] = [0, 4, 8, 12, 0, 4, 8, 12];
-    let shift = _vld1q_s16(&shifter);
+    let shift = _vld1q_s16((&shifter).as_secret());
     let lowt = _vshlq_u16(_vreinterpretq_u16_s16(v.low), shift);
     let hight = _vshlq_u16(_vreinterpretq_u16_s16(v.high), shift);
-    let sum0 = _vaddv_u16(_vget_low_u16(lowt)) as u64;
-    let sum1 = _vaddv_u16(_vget_high_u16(lowt)) as u64;
-    let sum2 = _vaddv_u16(_vget_low_u16(hight)) as u64;
-    let sum3 = _vaddv_u16(_vget_high_u16(hight)) as u64;
+    let sum0 = _vaddv_u16(_vget_low_u16(lowt)).declassify() as u64;
+    let sum1 = _vaddv_u16(_vget_high_u16(lowt)).declassify() as u64;
+    let sum2 = _vaddv_u16(_vget_low_u16(hight)).declassify() as u64;
+    let sum3 = _vaddv_u16(_vget_high_u16(hight)).declassify() as u64;
     let sum = sum0 | (sum1 << 16) | (sum2 << 32) | (sum3 << 48);
     sum.to_le_bytes()
 }
@@ -47,8 +48,8 @@ pub(crate) fn deserialize_4(v: &[u8]) -> SIMD128Vector {
     let input = PortableVector::deserialize_4(v);
     let input_i16s = PortableVector::to_i16_array(input);
     SIMD128Vector {
-        low: _vld1q_s16(&input_i16s[0..8]),
-        high: _vld1q_s16(&input_i16s[8..16]),
+        low: _vld1q_s16((&input_i16s[0..8]).as_secret()),
+        high: _vld1q_s16((&input_i16s[8..16]).as_secret()),
     }
 }
 
@@ -64,8 +65,8 @@ pub(crate) fn deserialize_5(v: &[u8]) -> SIMD128Vector {
     let output = PortableVector::deserialize_5(v);
     let array = PortableVector::to_i16_array(output);
     SIMD128Vector {
-        low: _vld1q_s16(&array[0..8]),
-        high: _vld1q_s16(&array[8..16]),
+        low: _vld1q_s16((&array[0..8]).as_secret()),
+        high: _vld1q_s16((&array[8..16]).as_secret()),
     }
 }
 
@@ -103,8 +104,8 @@ pub(crate) fn deserialize_10(v: &[u8]) -> SIMD128Vector {
     let output = PortableVector::deserialize_10(v);
     let array = PortableVector::to_i16_array(output);
     SIMD128Vector {
-        low: _vld1q_s16(&array[0..8]),
-        high: _vld1q_s16(&array[8..16]),
+        low: _vld1q_s16((&array[0..8]).as_secret()),
+        high: _vld1q_s16((&array[8..16]).as_secret()),
     }
 }
 
@@ -120,8 +121,8 @@ pub(crate) fn deserialize_11(v: &[u8]) -> SIMD128Vector {
     let output = PortableVector::deserialize_11(v);
     let array = PortableVector::to_i16_array(output);
     SIMD128Vector {
-        low: _vld1q_s16(&array[0..8]),
-        high: _vld1q_s16(&array[8..16]),
+        low: _vld1q_s16((&array[0..8]).as_secret()),
+        high: _vld1q_s16((&array[8..16]).as_secret()),
     }
 }
 
@@ -157,18 +158,18 @@ pub(crate) fn serialize_12(v: SIMD128Vector) -> [u8; 24] {
 #[inline(always)]
 pub(crate) fn deserialize_12(v: &[u8]) -> SIMD128Vector {
     let indexes: [u8; 16] = [0, 1, 1, 2, 3, 4, 4, 5, 6, 7, 7, 8, 9, 10, 10, 11];
-    let index_vec = _vld1q_u8(&indexes);
+    let index_vec = _vld1q_u8((&indexes).as_secret());
     let shifts: [i16; 8] = [0, -4, 0, -4, 0, -4, 0, -4];
-    let shift_vec = _vld1q_s16(&shifts);
-    let mask12 = _vdupq_n_u16(0xfff);
+    let shift_vec = _vld1q_s16((&shifts).as_secret());
+    let mask12 = _vdupq_n_u16(0xfff.classify());
 
     let mut input0 = [0u8; 16];
     input0[0..12].copy_from_slice(&v[0..12]);
-    let input_vec0 = _vld1q_u8(&input0);
+    let input_vec0 = _vld1q_u8((&input0).as_secret());
 
     let mut input1 = [0u8; 16];
     input1[0..12].copy_from_slice(&v[12..24]);
-    let input_vec1 = _vld1q_u8(&input1);
+    let input_vec1 = _vld1q_u8((&input1).as_secret());
 
     let moved0 = _vreinterpretq_u16_u8(_vqtbl1q_u8(input_vec0, index_vec));
     let shifted0 = _vshlq_u16(moved0, shift_vec);

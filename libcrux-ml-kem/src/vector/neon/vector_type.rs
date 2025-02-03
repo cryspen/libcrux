@@ -1,4 +1,5 @@
 use libcrux_intrinsics::arm64::*;
+use libcrux_secrets::{AsSecret, Classify};
 #[derive(Clone, Copy)]
 #[hax_lib::fstar::after(interface, "val repr (x:t_SIMD128Vector) : t_Array i16 (sz 16)")]
 #[hax_lib::fstar::after("let repr (x:t_SIMD128Vector) = admit()")]
@@ -22,8 +23,8 @@ pub(crate) fn to_i16_array(v: SIMD128Vector) -> [i16; 16] {
 #[hax_lib::ensures(|result| fstar!("repr ${result} == $array"))]
 pub(crate) fn from_i16_array(array: &[i16]) -> SIMD128Vector {
     SIMD128Vector {
-        low: _vld1q_s16(&array[0..8]),
-        high: _vld1q_s16(&array[8..16]),
+        low: _vld1q_s16((&array[0..8]).as_secret()),
+        high: _vld1q_s16((&array[8..16]).as_secret()),
     }
 }
 
@@ -33,7 +34,7 @@ pub(crate) fn from_i16_array(array: &[i16]) -> SIMD128Vector {
 #[hax_lib::ensures(|result| fstar!("repr result == Seq.create 16 (mk_i16 0)"))]
 pub(crate) fn ZERO() -> SIMD128Vector {
     SIMD128Vector {
-        low: _vdupq_n_s16(0),
-        high: _vdupq_n_s16(0),
+        low: _vdupq_n_s16(0.classify()),
+        high: _vdupq_n_s16(0.classify()),
     }
 }

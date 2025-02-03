@@ -83,6 +83,8 @@ pub use libcrux_ml_kem::{
     mlkem768::validate_public_key as ml_kem768_validate_public_key,
 };
 
+use libcrux_secrets::*;
+
 /// KEM Algorithms
 ///
 /// This includes named elliptic curves or dedicated KEM algorithms like ML-KEM.
@@ -718,7 +720,7 @@ impl Ss {
                 input.extend_from_slice(ss_x.as_ref());
                 input.extend_from_slice(ct_x.0.as_ref());
                 input.extend_from_slice(pk_x.0.as_ref());
-                sha3::sha256(&input).to_vec()
+                sha3::sha256((&input).as_secret()).to_vec()
             }
             #[cfg(feature = "kyber")]
             Ss::X25519Kyber768Draft00(kk, xk) => {

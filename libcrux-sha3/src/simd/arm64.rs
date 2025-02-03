@@ -59,7 +59,7 @@ fn _vbcaxq_u64(a: uint64x2_t, b: uint64x2_t, c: uint64x2_t) -> uint64x2_t {
 
 #[inline(always)]
 fn _veorq_n_u64(a: uint64x2_t, c: U64) -> uint64x2_t {
-    let c = _vdupq_n_u64(c.declassify());
+    let c = _vdupq_n_u64(c);
     _veorq_u64(a, c)
 }
 
@@ -67,8 +67,8 @@ fn _veorq_n_u64(a: uint64x2_t, c: U64) -> uint64x2_t {
 pub(crate) fn load_block<const RATE: usize>(s: &mut [[uint64x2_t; 5]; 5], blocks: [&[U8]; 2]) {
     debug_assert!(RATE <= blocks[0].len() && RATE % 8 == 0);
     for i in 0..RATE / 16 {
-        let v0 = _vld1q_bytes_u64(blocks[0][16 * i..16 * (i + 1)].declassify());
-        let v1 = _vld1q_bytes_u64(blocks[1][16 * i..16 * (i + 1)].declassify());
+        let v0 = _vld1q_bytes_u64(&blocks[0][16 * i..16 * (i + 1)]);
+        let v1 = _vld1q_bytes_u64(&blocks[1][16 * i..16 * (i + 1)]);
         s[(2 * i) / 5][(2 * i) % 5] = _veorq_u64(s[(2 * i) / 5][(2 * i) % 5], _vtrn1q_u64(v0, v1));
         s[(2 * i + 1) / 5][(2 * i + 1) % 5] =
             _veorq_u64(s[(2 * i + 1) / 5][(2 * i + 1) % 5], _vtrn2q_u64(v0, v1));
@@ -79,7 +79,7 @@ pub(crate) fn load_block<const RATE: usize>(s: &mut [[uint64x2_t; 5]; 5], blocks
         let mut u = [U64(0); 2];
         u[0] = U64::try_from_le_bytes(&blocks[0][RATE - 8..RATE]);
         u[1] = U64::try_from_le_bytes(&blocks[1][RATE - 8..RATE]);
-        let uvec = _vld1q_u64(u.declassify());
+        let uvec = _vld1q_u64(&u);
         s[i][j] = _veorq_u64(s[i][j], uvec);
     }
 }
@@ -141,7 +141,7 @@ fn split_at_mut_2(out: [&mut [u8]; 2], mid: usize) -> ([&mut [u8]; 2], [&mut [u8
 impl KeccakItem<2> for uint64x2_t {
     #[inline(always)]
     fn zero() -> Self {
-        _vdupq_n_u64(0)
+        _vdupq_n_u64(U64(0))
     }
     #[inline(always)]
     fn xor5(a: Self, b: Self, c: Self, d: Self, e: Self) -> Self {

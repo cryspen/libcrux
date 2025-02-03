@@ -40,6 +40,58 @@ impl Scalar for i32 {}
 impl Scalar for i64 {}
 impl Scalar for i128 {}
 
+#[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
+impl Scalar for core::arch::x86::__m128i {}
+
+#[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
+impl Scalar for core::arch::x86::__m256i {}
+
+#[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
+impl Scalar for core::arch::x86::__m256 {}
+
+#[cfg(target_arch = "aarch64")]
+impl Scalar for core::arch::aarch64::int8x16_t {}
+
+#[cfg(target_arch = "aarch64")]
+impl Scalar for core::arch::aarch64::int16x8_t {}
+
+#[cfg(target_arch = "aarch64")]
+impl Scalar for core::arch::aarch64::int32x4_t {}
+
+#[cfg(target_arch = "aarch64")]
+impl Scalar for core::arch::aarch64::int64x2_t {}
+
+#[cfg(target_arch = "aarch64")]
+impl Scalar for core::arch::aarch64::int16x4_t {}
+
+#[cfg(target_arch = "aarch64")]
+impl Scalar for core::arch::aarch64::int32x2_t {}
+
+#[cfg(target_arch = "aarch64")]
+impl Scalar for core::arch::aarch64::int64x1_t {}
+
+#[cfg(target_arch = "aarch64")]
+impl Scalar for core::arch::aarch64::uint8x16_t {}
+
+#[cfg(target_arch = "aarch64")]
+impl Scalar for core::arch::aarch64::uint16x8_t {}
+
+#[cfg(target_arch = "aarch64")]
+impl Scalar for core::arch::aarch64::uint32x4_t {}
+
+#[cfg(target_arch = "aarch64")]
+impl Scalar for core::arch::aarch64::uint64x2_t {}
+
+#[cfg(target_arch = "aarch64")]
+impl Scalar for core::arch::aarch64::uint16x4_t {}
+
+#[cfg(target_arch = "aarch64")]
+impl Scalar for core::arch::aarch64::uint32x2_t {}
+
+#[cfg(target_arch = "aarch64")]
+impl Scalar for core::arch::aarch64::uint64x1_t {}
+
+
 pub trait IntOps
 where
     Self: Sized,

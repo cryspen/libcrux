@@ -3,9 +3,11 @@ pub use core::arch::x86::*;
 #[cfg(target_arch = "x86_64")]
 pub use core::arch::x86_64::*;
 
-pub type Vec256 = __m256i;
-pub type Vec128 = __m128i;
-pub type Vec256Float = __m256;
+use libcrux_secrets::*;
+
+pub type Vec256 = Secret<__m256i>;
+pub type Vec128 = Secret<__m128i>;
+pub type Vec256Float = Secret<__m256>;
 
 #[inline(always)]
 pub fn mm256_storeu_si256_u8(output: &mut [u8], vector: Vec256) {
@@ -53,23 +55,23 @@ pub fn mm_storeu_bytes_si128(output: &mut [u8], vector: Vec128) {
 }
 
 #[inline(always)]
-pub fn mm_loadu_si128(input: &[u8]) -> Vec128 {
+pub fn mm_loadu_si128(input: &[U8]) -> Vec128 {
     debug_assert_eq!(input.len(), 16);
     unsafe { _mm_loadu_si128(input.as_ptr() as *const Vec128) }
 }
 
 #[inline(always)]
-pub fn mm256_loadu_si256_u8(input: &[u8]) -> Vec256 {
+pub fn mm256_loadu_si256_u8(input: &[U8]) -> Vec256 {
     debug_assert_eq!(input.len(), 32);
     unsafe { _mm256_loadu_si256(input.as_ptr() as *const Vec256) }
 }
 #[inline(always)]
-pub fn mm256_loadu_si256_i16(input: &[i16]) -> Vec256 {
+pub fn mm256_loadu_si256_i16(input: &[I16]) -> Vec256 {
     debug_assert_eq!(input.len(), 16);
     unsafe { _mm256_loadu_si256(input.as_ptr() as *const Vec256) }
 }
 #[inline(always)]
-pub fn mm256_loadu_si256_i32(input: &[i32]) -> Vec256 {
+pub fn mm256_loadu_si256_i32(input: &[I32]) -> Vec256 {
     debug_assert_eq!(input.len(), 8);
     unsafe { _mm256_loadu_si256(input.as_ptr() as *const Vec256) }
 }
@@ -85,79 +87,79 @@ pub fn mm256_set_m128i(hi: Vec128, lo: Vec128) -> Vec256 {
 
 #[inline(always)]
 pub fn mm_set_epi8(
-    byte15: u8,
-    byte14: u8,
-    byte13: u8,
-    byte12: u8,
-    byte11: u8,
-    byte10: u8,
-    byte9: u8,
-    byte8: u8,
-    byte7: u8,
-    byte6: u8,
-    byte5: u8,
-    byte4: u8,
-    byte3: u8,
-    byte2: u8,
-    byte1: u8,
-    byte0: u8,
+    byte15: U8,
+    byte14: U8,
+    byte13: U8,
+    byte12: U8,
+    byte11: U8,
+    byte10: U8,
+    byte9: U8,
+    byte8: U8,
+    byte7: U8,
+    byte6: U8,
+    byte5: U8,
+    byte4: U8,
+    byte3: U8,
+    byte2: U8,
+    byte1: U8,
+    byte0: U8,
 ) -> Vec128 {
     unsafe {
         _mm_set_epi8(
-            byte15 as i8,
-            byte14 as i8,
-            byte13 as i8,
-            byte12 as i8,
-            byte11 as i8,
-            byte10 as i8,
-            byte9 as i8,
-            byte8 as i8,
-            byte7 as i8,
-            byte6 as i8,
-            byte5 as i8,
-            byte4 as i8,
-            byte3 as i8,
-            byte2 as i8,
-            byte1 as i8,
-            byte0 as i8,
+            byte15 as I8,
+            byte14 as I8,
+            byte13 as I8,
+            byte12 as I8,
+            byte11 as I8,
+            byte10 as I8,
+            byte9 as I8,
+            byte8 as I8,
+            byte7 as I8,
+            byte6 as I8,
+            byte5 as I8,
+            byte4 as I8,
+            byte3 as I8,
+            byte2 as I8,
+            byte1 as I8,
+            byte0 as I8,
         )
     }
 }
 
 #[inline(always)]
 pub fn mm256_set_epi8(
-    byte31: i8,
-    byte30: i8,
-    byte29: i8,
-    byte28: i8,
-    byte27: i8,
-    byte26: i8,
-    byte25: i8,
-    byte24: i8,
-    byte23: i8,
-    byte22: i8,
-    byte21: i8,
-    byte20: i8,
-    byte19: i8,
-    byte18: i8,
-    byte17: i8,
-    byte16: i8,
-    byte15: i8,
-    byte14: i8,
-    byte13: i8,
-    byte12: i8,
-    byte11: i8,
-    byte10: i8,
-    byte9: i8,
-    byte8: i8,
-    byte7: i8,
-    byte6: i8,
-    byte5: i8,
-    byte4: i8,
-    byte3: i8,
-    byte2: i8,
-    byte1: i8,
-    byte0: i8,
+    byte31: I8,
+    byte30: I8,
+    byte29: I8,
+    byte28: I8,
+    byte27: I8,
+    byte26: I8,
+    byte25: I8,
+    byte24: I8,
+    byte23: I8,
+    byte22: I8,
+    byte21: I8,
+    byte20: I8,
+    byte19: I8,
+    byte18: I8,
+    byte17: I8,
+    byte16: I8,
+    byte15: I8,
+    byte14: I8,
+    byte13: I8,
+    byte12: I8,
+    byte11: I8,
+    byte10: I8,
+    byte9: I8,
+    byte8: I8,
+    byte7: I8,
+    byte6: I8,
+    byte5: I8,
+    byte4: I8,
+    byte3: I8,
+    byte2: I8,
+    byte1: I8,
+    byte0: I8,
 ) -> Vec256 {
     unsafe {
         _mm256_set_epi8(
@@ -169,27 +171,27 @@ pub fn mm256_set_epi8(
 }
 
 #[inline(always)]
-pub fn mm256_set1_epi16(constant: i16) -> Vec256 {
+pub fn mm256_set1_epi16(constant: I16) -> Vec256 {
     unsafe { _mm256_set1_epi16(constant) }
 }
 #[inline(always)]
 pub fn mm256_set_epi16(
-    input15: i16,
-    input14: i16,
-    input13: i16,
-    input12: i16,
-    input11: i16,
-    input10: i16,
-    input9: i16,
-    input8: i16,
-    input7: i16,
-    input6: i16,
-    input5: i16,
-    input4: i16,
-    input3: i16,
-    input2: i16,
-    input1: i16,
-    input0: i16,
+    input15: I16,
+    input14: I16,
+    input13: I16,
+    input12: I16,
+    input11: I16,
+    input10: I16,
+    input9: I16,
+    input8: I16,
+    input7: I16,
+    input6: I16,
+    input5: I16,
+    input4: I16,
+    input3: I16,
+    input2: I16,
+    input1: I16,
+    input0: I16,
 ) -> Vec256 {
     unsafe {
         _mm256_set_epi16(
@@ -200,29 +202,29 @@ pub fn mm256_set_epi16(
 }
 
 #[inline(always)]
-pub fn mm_set1_epi16(constant: i16) -> Vec128 {
+pub fn mm_set1_epi16(constant: I16) -> Vec128 {
     unsafe { _mm_set1_epi16(constant) }
 }
 
 #[inline(always)]
-pub fn mm256_set1_epi32(constant: i32) -> Vec256 {
+pub fn mm256_set1_epi32(constant: I32) -> Vec256 {
     unsafe { _mm256_set1_epi32(constant) }
 }
 
 #[inline(always)]
-pub fn mm_set_epi32(input3: i32, input2: i32, input1: i32, input0: i32) -> Vec128 {
+pub fn mm_set_epi32(input3: I32, input2: I32, input1: I32, input0: I32) -> Vec128 {
     unsafe { _mm_set_epi32(input3, input2, input1, input0) }
 }
 #[inline(always)]
 pub fn mm256_set_epi32(
-    input7: i32,
-    input6: i32,
-    input5: i32,
-    input4: i32,
-    input3: i32,
-    input2: i32,
-    input1: i32,
-    input0: i32,
+    input7: I32,
+    input6: I32,
+    input5: I32,
+    input4: I32,
+    input3: I32,
+    input2: I32,
+    input1: I32,
+    input0: I32,
 ) -> Vec256 {
     unsafe {
         _mm256_set_epi32(
