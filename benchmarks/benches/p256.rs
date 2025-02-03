@@ -1,7 +1,5 @@
 use criterion::{criterion_group, criterion_main, BatchSize, Criterion};
 
-use rand_core::OsRng;
-
 fn derive(c: &mut Criterion) {
     // Comparing libcrux performance for different payload sizes and other implementations.
     let mut group = c.benchmark_group("P256 derive");
@@ -9,10 +7,13 @@ fn derive(c: &mut Criterion) {
     group.bench_function("libcrux", |b| {
         b.iter_batched(
             || {
+                use rand_core::{OsRng, TryRngCore};
+                let mut os_rng = OsRng;
+                let mut rng = os_rng.unwrap_mut();
                 let (_, pk1) =
-                    libcrux_ecdh::key_gen(libcrux_ecdh::Algorithm::P256, &mut OsRng).unwrap();
+                    libcrux_ecdh::key_gen(libcrux_ecdh::Algorithm::P256, &mut rng).unwrap();
                 let (sk2, _) =
-                    libcrux_ecdh::key_gen(libcrux_ecdh::Algorithm::P256, &mut OsRng).unwrap();
+                    libcrux_ecdh::key_gen(libcrux_ecdh::Algorithm::P256, &mut rng).unwrap();
                 (pk1, sk2)
             },
             |(pk1, sk2)| {
@@ -51,6 +52,9 @@ fn derive(c: &mut Criterion) {
     group.bench_function("RustCrypto", |b| {
         use p256::{ecdh::EphemeralSecret, PublicKey};
 
+        // Using older version of `rand_core` traits as required by `p256`
+        use rand_core_old::OsRng;
+
         b.iter_batched(
             || {
                 let sk1 = EphemeralSecret::random(&mut OsRng);
@@ -69,12 +73,15 @@ fn derive(c: &mut Criterion) {
 fn secret_to_public(c: &mut Criterion) {
     // Comparing libcrux performance for different payload sizes and other implementations.
     let mut group = c.benchmark_group("P256 secret to public");
+    use rand_core::{OsRng, TryRngCore};
+    let mut os_rng = OsRng;
+    let mut rng = os_rng.unwrap_mut();
 
     group.bench_function("libcrux", |b| {
         b.iter_batched(
             || {
                 let (sk, _) =
-                    libcrux_ecdh::key_gen(libcrux_ecdh::Algorithm::P256, &mut OsRng).unwrap();
+                    libcrux_ecdh::key_gen(libcrux_ecdh::Algorithm::P256, &mut rng).unwrap();
                 sk
             },
             |sk| {
@@ -105,6 +112,9 @@ fn secret_to_public(c: &mut Criterion) {
 
     group.bench_function("RustCrypto", |b| {
         use p256::{ecdh::EphemeralSecret, PublicKey};
+
+        // Using older version of `rand_core` traits as required by `p256`
+        use rand_core_old::OsRng;
 
         b.iter_batched(
             || {
