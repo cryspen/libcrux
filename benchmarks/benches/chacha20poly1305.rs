@@ -5,7 +5,6 @@ use libcrux::{digest, drbg};
 use libcrux_chacha20poly1305::*;
 
 use benchmarks::util::*;
-use rand_core::OsRng;
 use ring::aead::UnboundKey;
 
 fn randbuf<const LEN: usize>(drbg: &mut drbg::Drbg) -> Result<[u8; LEN], drbg::Error> {
@@ -74,11 +73,13 @@ fn comparisons_encrypt(c: &mut Criterion) {
             BenchmarkId::new("RustCrypto", fmt(*payload_size)),
             payload_size,
             |b, payload_size| {
+                use rand_core_old::OsRng;
                 b.iter_batched(
                     || {
-                        let key = chacha20poly1305::ChaCha20Poly1305::generate_key(&mut OsRng);
+                        let mut rng = OsRng;
+                        let key = chacha20poly1305::ChaCha20Poly1305::generate_key(&mut rng);
                         let cipher = chacha20poly1305::ChaCha20Poly1305::new(&key);
-                        let nonce = chacha20poly1305::ChaCha20Poly1305::generate_nonce(&mut OsRng); // 96-bits; unique per message
+                        let nonce = chacha20poly1305::ChaCha20Poly1305::generate_nonce(&mut rng); // 96-bits; unique per message
                         let aad = randombytes(1_000);
                         let data = randombytes(*payload_size);
                         (data, cipher, nonce, aad)
@@ -200,6 +201,8 @@ fn comparisons_decrypt(c: &mut Criterion) {
             BenchmarkId::new("RustCrypto", fmt(*payload_size)),
             payload_size,
             |b, payload_size| {
+                // Using older version of traits as required by library
+                use rand_core_old::OsRng;
                 b.iter_batched(
                     || {
                         let key = chacha20poly1305::ChaCha20Poly1305::generate_key(&mut OsRng);
