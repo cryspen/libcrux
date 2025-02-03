@@ -361,6 +361,8 @@ let montgomery_multiply (lhs rhs: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coe
 
 #pop-options
 
+#push-options "--admit_smt_queries true"
+
 let power2round_element (t: i32) =
   let _:Prims.unit =
     if true
@@ -388,6 +390,10 @@ let power2round_element (t: i32) =
   in
   let t0:i32 = t -! (t1 <<! Libcrux_ml_dsa.Constants.v_BITS_IN_LOWER_PART_OF_T <: i32) in
   t0, t1 <: (i32 & i32)
+
+#pop-options
+
+#push-options "--admit_smt_queries true"
 
 let power2round (t0 t1: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients) =
   let t0, t1:(Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients &
@@ -453,6 +459,10 @@ let power2round (t0 t1: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients)
   (Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients &
     Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients)
 
+#pop-options
+
+#push-options "--admit_smt_queries true"
+
 let infinity_norm_exceeds
       (simd_unit: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients)
       (bound: i32)
@@ -492,9 +502,17 @@ let infinity_norm_exceeds
   in
   result
 
+#pop-options
+
+#push-options "--admit_smt_queries true"
+
 let reduce_element (fe: i32) =
   let quotient:i32 = (fe +! (mk_i32 1 <<! mk_i32 22 <: i32) <: i32) >>! mk_i32 23 in
   fe -! (quotient *! Libcrux_ml_dsa.Simd.Traits.v_FIELD_MODULUS <: i32)
+
+#pop-options
+
+#push-options "--admit_smt_queries true"
 
 let shift_left_then_reduce
       (v_SHIFT_BY: i32)
@@ -537,12 +555,20 @@ let shift_left_then_reduce
   in
   simd_unit
 
+#pop-options
+
+#push-options "--admit_smt_queries true"
+
 let compute_one_hint (low high gamma2: i32) =
   if
     low >. gamma2 || low <. (Core.Ops.Arith.f_neg gamma2 <: i32) ||
     low =. (Core.Ops.Arith.f_neg gamma2 <: i32) && high <>. mk_i32 0
   then mk_i32 1
   else mk_i32 0
+
+#pop-options
+
+#push-options "--admit_smt_queries true"
 
 let compute_hint
       (low high: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients)
@@ -599,6 +625,10 @@ let compute_hint
   let hax_temp_output:usize = one_hints_count in
   hint, hax_temp_output <: (Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients & usize)
 
+#pop-options
+
+#push-options "--admit_smt_queries true"
+
 let decompose_element (gamma2 r: i32) =
   let _:Prims.unit =
     if true
@@ -652,6 +682,10 @@ let decompose_element (gamma2 r: i32) =
   in
   r0, r1 <: (i32 & i32)
 
+#pop-options
+
+#push-options "--admit_smt_queries true"
+
 let uuse_one_hint (gamma2 r hint: i32) =
   let r0, r1:(i32 & i32) = decompose_element gamma2 r in
   if hint =. mk_i32 0
@@ -669,6 +703,10 @@ let uuse_one_hint (gamma2 r hint: i32) =
 
           <:
           Rust_primitives.Hax.t_Never)
+
+#pop-options
+
+#push-options "--admit_smt_queries true"
 
 let decompose
       (gamma2: i32)
@@ -738,6 +776,10 @@ let decompose
   (Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients &
     Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients)
 
+#pop-options
+
+#push-options "--admit_smt_queries true"
+
 let uuse_hint
       (gamma2: i32)
       (simd_unit hint: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients)
@@ -775,3 +817,5 @@ let uuse_hint
           Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients)
   in
   hint
+
+#pop-options

@@ -258,6 +258,7 @@ pub(crate) fn montgomery_multiply(lhs: &mut Coefficients, rhs: &Coefficients) {
 //
 // We assume the input t is in the signed representative range and convert it
 // to the standard unsigned range.
+#[hax_lib::fstar::verification_status(lax)]
 #[inline(always)]
 fn power2round_element(t: i32) -> (i32, i32) {
     // Hax issue: https://github.com/hacspec/hax/issues/1082
@@ -277,6 +278,7 @@ fn power2round_element(t: i32) -> (i32, i32) {
     (t0, t1)
 }
 
+#[hax_lib::fstar::verification_status(lax)]
 #[inline(always)]
 pub(super) fn power2round(t0: &mut Coefficients, t1: &mut Coefficients) {
     for i in 0..t0.values.len() {
@@ -286,6 +288,7 @@ pub(super) fn power2round(t0: &mut Coefficients, t1: &mut Coefficients) {
 
 // TODO: Revisit this function when doing the range analysis and testing
 // additional KATs.
+#[hax_lib::fstar::verification_status(lax)]
 #[inline(always)]
 pub(super) fn infinity_norm_exceeds(simd_unit: &Coefficients, bound: i32) -> bool {
     let mut result = false;
@@ -313,6 +316,7 @@ pub(super) fn infinity_norm_exceeds(simd_unit: &Coefficients, bound: i32) -> boo
     result
 }
 
+#[hax_lib::fstar::verification_status(lax)]
 #[inline(always)]
 fn reduce_element(fe: FieldElement) -> FieldElement {
     let quotient = (fe + (1 << 22)) >> 23;
@@ -320,6 +324,7 @@ fn reduce_element(fe: FieldElement) -> FieldElement {
     fe - (quotient * FIELD_MODULUS)
 }
 
+#[hax_lib::fstar::verification_status(lax)]
 #[inline(always)]
 pub(super) fn shift_left_then_reduce<const SHIFT_BY: i32>(simd_unit: &mut Coefficients) {
     for i in 0..simd_unit.values.len() {
@@ -327,6 +332,7 @@ pub(super) fn shift_left_then_reduce<const SHIFT_BY: i32>(simd_unit: &mut Coeffi
     }
 }
 
+#[hax_lib::fstar::verification_status(lax)]
 #[inline(always)]
 fn compute_one_hint(low: i32, high: i32, gamma2: i32) -> i32 {
     if (low > gamma2) || (low < -gamma2) || (low == -gamma2 && high != 0) {
@@ -336,6 +342,7 @@ fn compute_one_hint(low: i32, high: i32, gamma2: i32) -> i32 {
     }
 }
 
+#[hax_lib::fstar::verification_status(lax)]
 #[inline(always)]
 pub(super) fn compute_hint(
     low: &Coefficients,
@@ -367,6 +374,7 @@ pub(super) fn compute_hint(
 // - α/2 ≤ r₀ < 0.
 //
 // Note that 0 ≤ r₁ < (q-1)/α.
+#[hax_lib::fstar::verification_status(lax)]
 #[inline(always)]
 fn decompose_element(gamma2: Gamma2, r: i32) -> (i32, i32) {
     debug_assert!(r > -FIELD_MODULUS && r < FIELD_MODULUS);
@@ -411,6 +419,7 @@ fn decompose_element(gamma2: Gamma2, r: i32) -> (i32, i32) {
     (r0, r1)
 }
 
+#[hax_lib::fstar::verification_status(lax)]
 #[inline(always)]
 pub(crate) fn use_one_hint(gamma2: Gamma2, r: i32, hint: i32) -> i32 {
     let (r0, r1) = decompose_element(gamma2, r);
@@ -446,6 +455,7 @@ pub(crate) fn use_one_hint(gamma2: Gamma2, r: i32, hint: i32) -> i32 {
     }
 }
 
+#[hax_lib::fstar::verification_status(lax)]
 #[inline(always)]
 pub fn decompose(
     gamma2: Gamma2,
@@ -458,6 +468,7 @@ pub fn decompose(
     }
 }
 
+#[hax_lib::fstar::verification_status(lax)]
 #[inline(always)]
 pub fn use_hint(gamma2: Gamma2, simd_unit: &Coefficients, hint: &mut Coefficients) {
     for i in 0..hint.values.len() {
