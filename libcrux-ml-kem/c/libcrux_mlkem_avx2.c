@@ -4,11 +4,11 @@
  * SPDX-License-Identifier: MIT or Apache-2.0
  *
  * This code was generated with the following revisions:
- * Charon: 45f5a34f336e35c6cc2253bc90cbdb8d812cefa9
- * Eurydice: e2db6e88adc9995ca9d3dedf7fa9bc4095e9ca20
- * Karamel: a02d57fc0ae585928e35464e9d806760aeccd5aa
+ * Charon: db4e045d4597d06d854ce7a2c10e8dcfda6ecd25
+ * Eurydice: 75eae2e2534a16f5ba5430e6ee5c69d8a46f3bea
+ * Karamel: 3823e3d82fa0b271d799b61c59ffb4742ddc1e65
  * F*: 7cd06c5562fc47ec14cd35c38034d5558a5ff762
- * Libcrux: 3ef33e0e7acecb3a0e0fec43e44a9e7ac766c01d
+ * Libcrux: d7312a4f9c52625c8df67f20051237208cc6d7cd
  */
 
 #include "internal/libcrux_mlkem_avx2.h"
@@ -3486,8 +3486,7 @@ compute_ring_element_v_ab(
                       ntt_multiply_ef_79(&t_as_ntt[i0], &r_as_ntt[i0]);
                   add_to_ring_element_ef_ab(&result, &product););
   invert_ntt_montgomery_ab(&result);
-  result = add_message_error_reduce_ef_79(error_2, message, result);
-  return result;
+  return add_message_error_reduce_ef_79(error_2, message, result);
 }
 
 /**
@@ -4630,8 +4629,7 @@ compute_message_ab(
                       ntt_multiply_ef_79(&secret_as_ntt[i0], &u_as_ntt[i0]);
                   add_to_ring_element_ef_ab(&result, &product););
   invert_ntt_montgomery_ab(&result);
-  result = subtract_reduce_ef_79(v, result);
-  return result;
+  return subtract_reduce_ef_79(v, result);
 }
 
 /**
@@ -6275,8 +6273,7 @@ compute_ring_element_v_42(
                       ntt_multiply_ef_79(&t_as_ntt[i0], &r_as_ntt[i0]);
                   add_to_ring_element_ef_42(&result, &product););
   invert_ntt_montgomery_42(&result);
-  result = add_message_error_reduce_ef_79(error_2, message, result);
-  return result;
+  return add_message_error_reduce_ef_79(error_2, message, result);
 }
 
 /**
@@ -6742,8 +6739,7 @@ compute_message_42(
                       ntt_multiply_ef_79(&secret_as_ntt[i0], &u_as_ntt[i0]);
                   add_to_ring_element_ef_42(&result, &product););
   invert_ntt_montgomery_42(&result);
-  result = subtract_reduce_ef_79(v, result);
-  return result;
+  return subtract_reduce_ef_79(v, result);
 }
 
 /**
@@ -8376,8 +8372,7 @@ compute_ring_element_v_89(
                       ntt_multiply_ef_79(&t_as_ntt[i0], &r_as_ntt[i0]);
                   add_to_ring_element_ef_89(&result, &product););
   invert_ntt_montgomery_89(&result);
-  result = add_message_error_reduce_ef_79(error_2, message, result);
-  return result;
+  return add_message_error_reduce_ef_79(error_2, message, result);
 }
 
 /**
@@ -8775,8 +8770,7 @@ compute_message_89(
                       ntt_multiply_ef_79(&secret_as_ntt[i0], &u_as_ntt[i0]);
                   add_to_ring_element_ef_89(&result, &product););
   invert_ntt_montgomery_89(&result);
-  result = subtract_reduce_ef_79(v, result);
-  return result;
+  return subtract_reduce_ef_79(v, result);
 }
 
 /**
