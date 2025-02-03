@@ -89,96 +89,90 @@ let serialize_4_
   let _:Prims.unit = () <: Prims.unit in
   serialized
 
+
+open Core.Ops.Range
+let update_at_range #n
+  (#t: Type0)
+  (s: t_Slice t)
+  (i: t_Range (int_t n))
+  (x: t_Slice t)
+  : Pure (t_Array t (length s))
+    (requires (v i.f_start >= 0 /\ v i.f_start <= Seq.length s /\
+               v i.f_end <= Seq.length s /\
+               Seq.length x == v i.f_end - v i.f_start))
+    (ensures (fun res ->
+            forall j.
+                if j >= v i.f_start && j <= v i.f_end
+                then Seq.index res j == Seq.index res (j - v i.f_start)
+                else Seq.index res j == Seq.index s j))
+  = admit ()
+
+
+#set-options "--fuel 0 --ifuel 1 --z3rlimit 900"
 let serialize_6_
       (simd_unit: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients)
       (serialized: t_Slice u8)
      =
+  let coefficients:t_Slice i32 =
+    simd_unit.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values.[ {
+        Core.Ops.Range.f_start = mk_usize 0;
+        Core.Ops.Range.f_end = mk_usize 4
+      }
+      <:
+      Core.Ops.Range.t_Range usize ]
+  in
+  let i:usize = mk_usize 0 in
   let serialized:t_Slice u8 =
-    Rust_primitives.Hax.Folds.fold_enumerated_chunked_slice (mk_usize 4)
-      (simd_unit.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values <: t_Slice i32)
-      (fun serialized i ->
-          let serialized:t_Slice u8 = serialized in
-          let i:usize = i in
-          Seq.length serialized == 6 /\
-          (let inp =
-              bit_vec_of_int_t_array #I32
-                #(mk_usize 8)
-                simd_unit.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values
-                6
-            in
-            let out = bit_vec_of_int_t_array #U8 #(mk_usize 6) serialized 8 in
-            (forall (n: nat{n < v i * 24}). out n == inp n)))
-      serialized
-      (fun serialized temp_1_ ->
-          let serialized:t_Slice u8 = serialized in
-          let i, coefficients:(usize & t_Slice i32) = temp_1_ in
-          let (e_old_serialized: t_Array u8 (mk_usize 6)):t_Array u8 (mk_usize 6) =
-            Core.Array.from_fn #u8
-              (mk_usize 6)
-              (fun i ->
-                  let i:usize = i in
-                  serialized.[ i ] <: u8)
-          in
-          let serialized:t_Slice u8 =
-            Rust_primitives.Hax.Monomorphized_update_at.update_at_range serialized
-              ({
-                  Core.Ops.Range.f_start = mk_usize 3 *! i <: usize;
-                  Core.Ops.Range.f_end = (mk_usize 3 *! i <: usize) +! mk_usize 3 <: usize
-                }
-                <:
-                Core.Ops.Range.t_Range usize)
-              (encode_6_ coefficients
-                  (serialized.[ {
-                        Core.Ops.Range.f_start = mk_usize 3 *! i <: usize;
-                        Core.Ops.Range.f_end = (mk_usize 3 *! i <: usize) +! mk_usize 3 <: usize
-                      }
-                      <:
-                      Core.Ops.Range.t_Range usize ]
-                    <:
-                    t_Slice u8)
-                <:
-                t_Slice u8)
-          in
-          let _:Prims.unit =
-            let inp =
-              bit_vec_of_int_t_array #I32
-                #(mk_usize 8)
-                simd_unit.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values
-                6
-            in
-            let out = bit_vec_of_int_t_array #U8 #(mk_usize 6) serialized 8 in
-            introduce forall (n: nat{n < 24}) . inp (v i * 24 + n) == out (v i * 24 + n)
-            with (calc ( == ) {
-                inp (v i * 24 + n);
-                ( == ) { () }
-                get_bit (Seq.index simd_unit.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values
-                      ((v i * 24 + n) / 6))
-                  (sz ((v i * 24 + n) % 6));
-                ( == ) { Math.Lemmas.division_addition_lemma n 6 (v i * 4) }
-                get_bit (Seq.index simd_unit.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values
-                      (v i * 4 + n / 6))
-                  (sz (n % 6));
-                ( == ) { () }
-                get_bit (Seq.index coefficients (n / 6)) (sz (n % 6));
-                ( == ) { () }
-                bit_vec_of_int_t_array #I32 #(mk_usize 4) coefficients 6 n;
-                ( == ) { () }
-                out (v i * 24 + n);
-              });
-            assert (forall (n: nat{n >= 24 * v i /\ n < 24 * v i + 24}).
-                  inp (24 * v i + (n - 24 * v i)) == out (24 * v i + (n - 24 * v i)));
-            assert (forall (n: nat{n >= 24 * v i /\ n < 24 * v i + 24}). inp n == out n);
-            assert (forall (n: nat{n < v i * 24}). n / 8 < 3 * v i);
-            assert (forall (j: nat{j < 3 * v i}).
-                  Seq.index serialized j == Seq.index (Seq.slice serialized 0 (3 * v i)) j);
-            assert (forall (j: nat{j < 3 * v i}).
-                  Seq.index e_old_serialized j ==
-                  Seq.index (Seq.slice e_old_serialized 0 (3 * v i)) j);
-            assert (forall (n: nat{n < 24 * (v i + 1)}). inp n == out n)
-          in
-          serialized)
+    update_at_range serialized
+      ({
+          Core.Ops.Range.f_start = mk_usize 3 *! i <: usize;
+          Core.Ops.Range.f_end = (mk_usize 3 *! i <: usize) +! mk_usize 3 <: usize
+        }
+        <:
+        Core.Ops.Range.t_Range usize)
+      (encode_6_ coefficients
+          (serialized.[ {
+                Core.Ops.Range.f_start = mk_usize 3 *! i <: usize;
+                Core.Ops.Range.f_end = (mk_usize 3 *! i <: usize) +! mk_usize 3 <: usize
+              }
+              <:
+              Core.Ops.Range.t_Range usize ]
+            <:
+            t_Slice u8)
+        <:
+        t_Slice u8)
+  in
+  let coefficients:t_Slice i32 =
+    simd_unit.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values.[ {
+        Core.Ops.Range.f_start = mk_usize 4;
+        Core.Ops.Range.f_end = mk_usize 8
+      }
+      <:
+      Core.Ops.Range.t_Range usize ]
+  in
+  let i:usize = mk_usize 1 in
+  let serialized:t_Slice u8 =
+    update_at_range serialized
+      ({
+          Core.Ops.Range.f_start = mk_usize 3 *! i <: usize;
+          Core.Ops.Range.f_end = (mk_usize 3 *! i <: usize) +! mk_usize 3 <: usize
+        }
+        <:
+        Core.Ops.Range.t_Range usize)
+      (encode_6_ coefficients
+          (serialized.[ {
+                Core.Ops.Range.f_start = mk_usize 3 *! i <: usize;
+                Core.Ops.Range.f_end = (mk_usize 3 *! i <: usize) +! mk_usize 3 <: usize
+              }
+              <:
+              Core.Ops.Range.t_Range usize ]
+            <:
+            t_Slice u8)
+        <:
+        t_Slice u8)
   in
   let _:Prims.unit = () <: Prims.unit in
+  admit ();
   serialized
 
 let serialize

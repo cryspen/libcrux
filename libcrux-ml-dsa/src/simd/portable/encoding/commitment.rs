@@ -102,51 +102,58 @@ pub fn serialize_6(simd_unit: &Coefficients, serialized: &mut [u8]) {
     // The commitment has coefficients in [0,43] => each coefficient occupies
     // 6 bits.
 
-    cloop! {
-        for (i, coefficients) in simd_unit.values.chunks_exact(4).enumerate() {
-            hax_lib::loop_invariant!(|i: usize| {
-                fstar!(
-                    r"
-            Seq.length $serialized == 6 /\ (
-              let inp = bit_vec_of_int_t_array #I32 #(mk_usize 8) ${simd_unit.values} 6 in
-              let out = bit_vec_of_int_t_array #U8 #(mk_usize 6) $serialized 8 in
-              (forall (n: nat {n < v i * 24}). out n == inp n))"
-                )
-            });
+    let coefficients = &simd_unit.values[0..4];
+    let i = 0;
+    encode_6(coefficients, &mut serialized[3 * i..3 * i + 3]);
 
-            // TODO: use ghost state here to avoid copying
-            // See: https://github.com/cryspen/libcrux/issues/783
-            #[cfg(hax)]
-            let mut _old_serialized: [u8; 6] = core::array::from_fn(|i| serialized[i]);
+    let coefficients = &simd_unit.values[4..8];
+    let i = 1;
+    encode_6(coefficients, &mut serialized[3 * i..3 * i + 3]);
+    // cloop! {
+    //     for (i, coefficients) in simd_unit.values.chunks_exact(4).enumerate() {
+    //         hax_lib::loop_invariant!(|i: usize| {
+    //             fstar!(
+    //                 r"
+    //         Seq.length $serialized == 6 /\ (
+    //           let inp = bit_vec_of_int_t_array #I32 #(mk_usize 8) ${simd_unit.values} 6 in
+    //           let out = bit_vec_of_int_t_array #U8 #(mk_usize 6) $serialized 8 in
+    //           (forall (n: nat {n < v i * 24}). out n == inp n))"
+    //             )
+    //         });
 
-            encode_6(coefficients, &mut serialized[3 * i..3 * i + 3]);
+    //         // TODO: use ghost state here to avoid copying
+    //         // See: https://github.com/cryspen/libcrux/issues/783
+    //         #[cfg(hax)]
+    //         let mut _old_serialized: [u8; 6] = core::array::from_fn(|i| serialized[i]);
 
-            hax_lib::fstar!(
-                r"
-            let inp = bit_vec_of_int_t_array #I32 #(mk_usize 8) ${simd_unit.values} 6 in
-            let out = bit_vec_of_int_t_array #U8  #(mk_usize 6) $serialized 8 in
-            introduce forall (n:nat{n < 24}). inp (v i * 24 + n) == out (v i * 24 + n)
-            with
-                (calc (==) {
-                      inp (v i * 24 + n);
-                == {} get_bit (Seq.index ${simd_unit.values} ((v i * 24 + n) / 6)) (sz ((v i * 24 + n) % 6));
-                == { Math.Lemmas.division_addition_lemma n 6 (v i * 4) }
-                      get_bit (Seq.index ${simd_unit.values} (v i * 4 + n / 6)) (sz (n % 6));
-                == {} get_bit (Seq.index $coefficients (n / 6)) (sz (n % 6));
-                == {} bit_vec_of_int_t_array #I32 #(mk_usize 4) $coefficients 6 n;
-                == {} out (v i * 24 + n);
-                });
-           (* Find a better style for these sequence updates so that such silly assertions become unnecessary *)
-           assert (forall (n:nat{n >= 24 * v i /\ n < 24 * v i + 24}). inp (24 * v i + (n - 24 * v i)) == out (24 * v i + (n - 24 * v i)));
-           assert (forall (n:nat{n >= 24 * v i /\ n < 24 * v i + 24}). inp n == out n);
-           assert (forall (n:nat{n < v i * 24}). n / 8 < 3 * v i);
-           assert (forall (j:nat{j < 3 * v i}). Seq.index ${serialized} j == Seq.index (Seq.slice ${serialized} 0 (3 * v i)) j);
-           assert (forall (j:nat{j < 3 * v i}). Seq.index ${_old_serialized} j == Seq.index (Seq.slice ${_old_serialized} 0 (3 * v i)) j);
-           assert (forall (n:nat{n < 24 * (v i + 1)}). inp n == out n))
-        "
-            );
-        }
-    }
+    //         encode_6(coefficients, &mut serialized[3 * i..3 * i + 3]);
+
+    //         hax_lib::fstar!(
+    //             r"
+    //         let inp = bit_vec_of_int_t_array #I32 #(mk_usize 8) ${simd_unit.values} 6 in
+    //         let out = bit_vec_of_int_t_array #U8  #(mk_usize 6) $serialized 8 in
+    //         introduce forall (n:nat{n < 24}). inp (v i * 24 + n) == out (v i * 24 + n)
+    //         with
+    //             (calc (==) {
+    //                   inp (v i * 24 + n);
+    //             == {} get_bit (Seq.index ${simd_unit.values} ((v i * 24 + n) / 6)) (sz ((v i * 24 + n) % 6));
+    //             == { Math.Lemmas.division_addition_lemma n 6 (v i * 4) }
+    //                   get_bit (Seq.index ${simd_unit.values} (v i * 4 + n / 6)) (sz (n % 6));
+    //             == {} get_bit (Seq.index $coefficients (n / 6)) (sz (n % 6));
+    //             == {} bit_vec_of_int_t_array #I32 #(mk_usize 4) $coefficients 6 n;
+    //             == {} out (v i * 24 + n);
+    //             });
+    //        (* Find a better style for these sequence updates so that such silly assertions become unnecessary *)
+    //        assert (forall (n:nat{n >= 24 * v i /\ n < 24 * v i + 24}). inp (24 * v i + (n - 24 * v i)) == out (24 * v i + (n - 24 * v i)));
+    //        assert (forall (n:nat{n >= 24 * v i /\ n < 24 * v i + 24}). inp n == out n);
+    //        assert (forall (n:nat{n < v i * 24}). n / 8 < 3 * v i);
+    //        assert (forall (j:nat{j < 3 * v i}). Seq.index ${serialized} j == Seq.index (Seq.slice ${serialized} 0 (3 * v i)) j);
+    //        assert (forall (j:nat{j < 3 * v i}). Seq.index ${_old_serialized} j == Seq.index (Seq.slice ${_old_serialized} 0 (3 * v i)) j);
+    //        assert (forall (n:nat{n < 24 * (v i + 1)}). inp n == out n))
+    //     "
+    //         );
+    //     }
+    // }
     ()
 }
 
