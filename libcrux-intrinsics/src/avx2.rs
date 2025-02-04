@@ -86,7 +86,7 @@ pub fn mm256_set_m128i(hi: Vec128, lo: Vec128) -> Vec256 {
 }
 
 #[inline(always)]
-pub fn mm_set_epi8<T:Into<U8>>(
+pub fn mm_set_epi8<T: Into<U8>>(
     byte15: T,
     byte14: T,
     byte13: T,
@@ -122,12 +122,13 @@ pub fn mm_set_epi8<T:Into<U8>>(
             byte2.into().declassify() as i8,
             byte1.into().declassify() as i8,
             byte0.into().declassify() as i8,
-        ).classify()
+        )
+        .classify()
     }
 }
 
 #[inline(always)]
-pub fn mm256_set_epi8<T:Into<I8>>(
+pub fn mm256_set_epi8<T: Into<I8>>(
     byte31: T,
     byte30: T,
     byte29: T,
@@ -163,24 +164,49 @@ pub fn mm256_set_epi8<T:Into<I8>>(
 ) -> Vec256 {
     unsafe {
         _mm256_set_epi8(
-            byte31.into().declassify(), byte30.into().declassify(), byte29.into().declassify(), byte28.into().declassify(), 
-            byte27.into().declassify(), byte26.into().declassify(), byte25.into().declassify(), byte24.into().declassify(), 
-            byte23.into().declassify(), byte22.into().declassify(), byte21.into().declassify(), byte20.into().declassify(), 
-            byte19.into().declassify(), byte18.into().declassify(), byte17.into().declassify(), byte16.into().declassify(), 
-            byte15.into().declassify(), byte14.into().declassify(), byte13.into().declassify(), byte12.into().declassify(), 
-            byte11.into().declassify(), byte10.into().declassify(), byte9.into().declassify(), byte8.into().declassify(), 
-            byte7.into().declassify(), byte6.into().declassify(), byte5.into().declassify(), byte4.into().declassify(), 
-            byte3.into().declassify(), byte2.into().declassify(), byte1.into().declassify(), byte0.into().declassify(),
-        ).classify()
+            byte31.into().declassify(),
+            byte30.into().declassify(),
+            byte29.into().declassify(),
+            byte28.into().declassify(),
+            byte27.into().declassify(),
+            byte26.into().declassify(),
+            byte25.into().declassify(),
+            byte24.into().declassify(),
+            byte23.into().declassify(),
+            byte22.into().declassify(),
+            byte21.into().declassify(),
+            byte20.into().declassify(),
+            byte19.into().declassify(),
+            byte18.into().declassify(),
+            byte17.into().declassify(),
+            byte16.into().declassify(),
+            byte15.into().declassify(),
+            byte14.into().declassify(),
+            byte13.into().declassify(),
+            byte12.into().declassify(),
+            byte11.into().declassify(),
+            byte10.into().declassify(),
+            byte9.into().declassify(),
+            byte8.into().declassify(),
+            byte7.into().declassify(),
+            byte6.into().declassify(),
+            byte5.into().declassify(),
+            byte4.into().declassify(),
+            byte3.into().declassify(),
+            byte2.into().declassify(),
+            byte1.into().declassify(),
+            byte0.into().declassify(),
+        )
+        .classify()
     }
 }
 
 #[inline(always)]
-pub fn mm256_set1_epi16<T:Into<I16>>(constant: T) -> Vec256 {
+pub fn mm256_set1_epi16<T: Into<I16>>(constant: T) -> Vec256 {
     unsafe { _mm256_set1_epi16(constant.into().declassify()).classify() }
 }
 #[inline(always)]
-pub fn mm256_set_epi16<T:Into<I16>>(
+pub fn mm256_set_epi16<T: Into<I16>>(
     input15: T,
     input14: T,
     input13: T,
@@ -200,30 +226,51 @@ pub fn mm256_set_epi16<T:Into<I16>>(
 ) -> Vec256 {
     unsafe {
         _mm256_set_epi16(
-            input15.into().declassify(), input14.into().declassify(), input13.into().declassify(), input12.into().declassify(), 
-            input11.into().declassify(), input10.into().declassify(), input9.into().declassify(), input8.into().declassify(), 
-            input7.into().declassify(), input6.into().declassify(), input5.into().declassify(), input4.into().declassify(), 
-            input3.into().declassify(), input2.into().declassify(), input1.into().declassify(), input0.into().declassify(),
-        ).classify()
+            input15.into().declassify(),
+            input14.into().declassify(),
+            input13.into().declassify(),
+            input12.into().declassify(),
+            input11.into().declassify(),
+            input10.into().declassify(),
+            input9.into().declassify(),
+            input8.into().declassify(),
+            input7.into().declassify(),
+            input6.into().declassify(),
+            input5.into().declassify(),
+            input4.into().declassify(),
+            input3.into().declassify(),
+            input2.into().declassify(),
+            input1.into().declassify(),
+            input0.into().declassify(),
+        )
+        .classify()
     }
 }
 
 #[inline(always)]
-pub fn mm_set1_epi16<T:Into<I16>>(constant: T) -> Vec128 {
+pub fn mm_set1_epi16<T: Into<I16>>(constant: T) -> Vec128 {
     unsafe { _mm_set1_epi16(constant.into().declassify()).classify() }
 }
 
 #[inline(always)]
-pub fn mm256_set1_epi32<T:Into<I32>>(constant: T) -> Vec256 {
+pub fn mm256_set1_epi32<T: Into<I32>>(constant: T) -> Vec256 {
     unsafe { _mm256_set1_epi32(constant.into().declassify()).classify() }
 }
 
 #[inline(always)]
-pub fn mm_set_epi32<T:Into<I32>>(input3: T, input2: T, input1: T, input0: T) -> Vec128 {
-    unsafe { _mm_set_epi32(input3.into().declassify(), input2.into().declassify(), input1.into().declassify(), input0.into().declassify()).classify() }
+pub fn mm_set_epi32<T: Into<I32>>(input3: T, input2: T, input1: T, input0: T) -> Vec128 {
+    unsafe {
+        _mm_set_epi32(
+            input3.into().declassify(),
+            input2.into().declassify(),
+            input1.into().declassify(),
+            input0.into().declassify(),
+        )
+        .classify()
+    }
 }
 #[inline(always)]
-pub fn mm256_set_epi32<T:Into<I32>>(
+pub fn mm256_set_epi32<T: Into<I32>>(
     input7: T,
     input6: T,
     input5: T,
@@ -235,9 +282,16 @@ pub fn mm256_set_epi32<T:Into<I32>>(
 ) -> Vec256 {
     unsafe {
         _mm256_set_epi32(
-            input7.into().declassify(), input6.into().declassify(), input5.into().declassify(), input4.into().declassify(), 
-            input3.into().declassify(), input2.into().declassify(), input1.into().declassify(), input0.into().declassify(),
-        ).classify()
+            input7.into().declassify(),
+            input6.into().declassify(),
+            input5.into().declassify(),
+            input4.into().declassify(),
+            input3.into().declassify(),
+            input2.into().declassify(),
+            input1.into().declassify(),
+            input0.into().declassify(),
+        )
+        .classify()
     }
 }
 
@@ -489,13 +543,15 @@ pub fn mm256_packs_epi32(lhs: Vec256, rhs: Vec256) -> Vec256 {
 #[inline(always)]
 pub fn mm256_extracti128_si256<const CONTROL: i32>(vector: Vec256) -> Vec128 {
     debug_assert!(CONTROL == 0 || CONTROL == 1);
-    unsafe { _mm256_extracti128_si256(vector.declassify(), CONTROL).classify()}
+    unsafe { _mm256_extracti128_si256(vector.declassify(), CONTROL).classify() }
 }
 
 #[inline(always)]
 pub fn mm256_inserti128_si256<const CONTROL: i32>(vector: Vec256, vector_i128: Vec128) -> Vec256 {
     debug_assert!(CONTROL == 0 || CONTROL == 1);
-    unsafe { _mm256_inserti128_si256(vector.declassify(), vector_i128.declassify(), CONTROL).classify() }
+    unsafe {
+        _mm256_inserti128_si256(vector.declassify(), vector_i128.declassify(), CONTROL).classify()
+    }
 }
 
 #[inline(always)]
@@ -519,7 +575,8 @@ pub fn vec256_blendv_epi32(a: Vec256, b: Vec256, mask: Vec256) -> Vec256 {
             _mm256_castsi256_ps(a.declassify()),
             _mm256_castsi256_ps(b.declassify()),
             _mm256_castsi256_ps(mask.declassify()),
-        )).classify()
+        ))
+        .classify()
     }
 }
 
@@ -568,13 +625,20 @@ pub fn mm256_andnot_si256(a: Vec256, b: Vec256) -> Vec256 {
 }
 
 #[inline(always)]
-pub fn mm256_set1_epi64x<T:Into<I64>>(a: T) -> Vec256 {
+pub fn mm256_set1_epi64x<T: Into<I64>>(a: T) -> Vec256 {
     unsafe { _mm256_set1_epi64x(a.into().declassify()).classify() }
 }
 #[inline(always)]
-pub fn mm256_set_epi64x<T:Into<I64>>(input3: T, input2: T, input1: T, input0: T) -> Vec256 {
-    unsafe { _mm256_set_epi64x(input3.into().declassify(), input2.into().declassify(), 
-                              input1.into().declassify(), input0.into().declassify()).classify() }
+pub fn mm256_set_epi64x<T: Into<I64>>(input3: T, input2: T, input1: T, input0: T) -> Vec256 {
+    unsafe {
+        _mm256_set_epi64x(
+            input3.into().declassify(),
+            input2.into().declassify(),
+            input1.into().declassify(),
+            input0.into().declassify(),
+        )
+        .classify()
+    }
 }
 
 #[inline(always)]

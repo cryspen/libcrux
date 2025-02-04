@@ -6,9 +6,9 @@ pub use traits::*;
 
 // Generally useful modules.
 pub mod array;
+pub mod ct;
 pub mod util;
 pub mod zeroize;
-pub mod ct;
 
 mod sequences;
 pub use sequences::*;

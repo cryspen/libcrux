@@ -66,7 +66,10 @@ let bits_packed' = BitVec.Intrinsics.mm_movemask_epi8_bv msbs in
     // significant bit from each element and collate them into two bytes.
     let bits_packed = mm_movemask_epi8(msbs);
 
-    let result = [bits_packed.declassify() as u8, (bits_packed.declassify() >> 8) as u8];
+    let result = [
+        bits_packed.declassify() as u8,
+        (bits_packed.declassify() >> 8) as u8,
+    ];
 
     hax_lib::fstar!(
         r#"

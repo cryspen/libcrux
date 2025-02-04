@@ -13,7 +13,6 @@ pub type _uint32x4_t = Secret<uint32x4_t>;
 pub type _uint64x2_t = Secret<uint64x2_t>;
 pub type _uint16x8_t = Secret<uint16x8_t>;
 
-
 #[inline(always)]
 pub fn _vdupq_n_s16(i: I16) -> _int16x8_t {
     unsafe { vdupq_n_s16(i.declassify()).classify() }

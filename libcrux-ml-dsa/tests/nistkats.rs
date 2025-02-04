@@ -3,8 +3,8 @@ use serde_json;
 
 use hex;
 
-use std::{fs::File, io::BufReader, path::Path};
 use libcrux_secrets::*;
+use std::{fs::File, io::BufReader, path::Path};
 
 #[derive(Debug, Deserialize)]
 struct MlDsaNISTKAT {
@@ -51,7 +51,8 @@ macro_rules! impl_nist_known_answer_tests {
                     "verification_key_hash != kat.sha3_256_hash_of_verification_key"
                 );
 
-                let signing_key_hash = libcrux_sha3::sha256(key_pair.signing_key.as_ref().as_secret());
+                let signing_key_hash =
+                    libcrux_sha3::sha256(key_pair.signing_key.as_ref().as_secret());
                 assert_eq!(
                     signing_key_hash, kat.sha3_256_hash_of_signing_key,
                     "signing_key_hash != kat.sha3_256_hash_of_signing_key"
@@ -94,7 +95,8 @@ macro_rules! impl_nist_known_answer_tests {
                     "verification_key_hash != kat.sha3_256_hash_of_verification_key"
                 );
 
-                let signing_key_hash = libcrux_sha3::sha256(key_pair.signing_key.as_ref().as_secret());
+                let signing_key_hash =
+                    libcrux_sha3::sha256(key_pair.signing_key.as_ref().as_secret());
                 assert_eq!(
                     signing_key_hash, kat.sha3_256_hash_of_signing_key,
                     "signing_key_hash != kat.sha3_256_hash_of_signing_key"

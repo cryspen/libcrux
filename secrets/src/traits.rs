@@ -58,7 +58,6 @@ impl Scalar for core::arch::x86_64::__m256i {}
 #[cfg(target_arch = "x86_64")]
 impl Scalar for core::arch::x86_64::__m256 {}
 
-
 #[cfg(target_arch = "aarch64")]
 impl Scalar for core::arch::aarch64::int8x16_t {}
 
@@ -100,7 +99,6 @@ impl Scalar for core::arch::aarch64::uint32x2_t {}
 
 #[cfg(target_arch = "aarch64")]
 impl Scalar for core::arch::aarch64::uint64x1_t {}
-
 
 pub trait IntOps
 where

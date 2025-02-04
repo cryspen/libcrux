@@ -1,6 +1,5 @@
 #![allow(non_snake_case)]
 
-
 /// Abstraction and platform multiplexing for SHAKE 256
 pub(crate) mod shake256 {
     pub(crate) const BLOCK_SIZE: usize = 136;
@@ -64,7 +63,7 @@ pub(crate) mod shake256 {
 
 /// Abstraction and platform multiplexing for SHAKE 128
 pub(crate) mod shake128 {
-    
+
     pub(crate) const BLOCK_SIZE: usize = 168;
     pub(crate) const FIVE_BLOCKS_SIZE: usize = BLOCK_SIZE * 5;
 
@@ -97,11 +96,11 @@ pub(crate) mod shake128 {
 /// A portable implementation of [`shake128::Xof`] and [`shake256::Xof`].
 pub(crate) mod portable {
     use super::{shake128, shake256};
+    use libcrux_secrets::*;
     use libcrux_sha3::portable::{
         incremental::{self, Xof},
         KeccakState,
     };
-    use libcrux_secrets::*;
 
     /// Portable SHAKE 128 x4 state.
     ///
@@ -425,9 +424,9 @@ pub(crate) mod portable {
 pub(crate) mod simd256 {
 
     use super::{shake128, shake256};
-    use libcrux_sha3::avx2::x4;
     use libcrux_secrets::*;
-    
+    use libcrux_sha3::avx2::x4;
+
     /// AVX2 SHAKE 128 state
     ///
     /// This only implements the XofX4 API. For the single Xof, the portable
@@ -441,7 +440,13 @@ pub(crate) mod simd256 {
     #[inline(always)]
     fn init_absorb(input0: &[u8], input1: &[u8], input2: &[u8], input3: &[u8]) -> Shake128x4 {
         let mut state = x4::incremental::init();
-        x4::incremental::shake128_absorb_final(&mut state, input0.as_secret(), input1.as_secret(), input2.as_secret(), input3.as_secret());
+        x4::incremental::shake128_absorb_final(
+            &mut state,
+            input0.as_secret(),
+            input1.as_secret(),
+            input2.as_secret(),
+            input3.as_secret(),
+        );
         Shake128x4 { state }
     }
 
@@ -587,7 +592,13 @@ pub(crate) mod simd256 {
     #[inline(always)]
     fn init_absorb_x4(input0: &[u8], input1: &[u8], input2: &[u8], input3: &[u8]) -> Shake256x4 {
         let mut state = x4::incremental::init();
-        x4::incremental::shake256_absorb_final(&mut state, input0.as_secret(), input1.as_secret(), input2.as_secret(), input3.as_secret());
+        x4::incremental::shake256_absorb_final(
+            &mut state,
+            input0.as_secret(),
+            input1.as_secret(),
+            input2.as_secret(),
+            input3.as_secret(),
+        );
         Shake256x4 { state }
     }
 
@@ -650,7 +661,16 @@ pub(crate) mod simd256 {
         out2: &mut [u8; OUT_LEN],
         out3: &mut [u8; OUT_LEN],
     ) {
-        x4::shake256(input0.as_secret(), input1.as_secret(), input2.as_secret(), input3.as_secret(), out0, out1, out2, out3);
+        x4::shake256(
+            input0.as_secret(),
+            input1.as_secret(),
+            input2.as_secret(),
+            input3.as_secret(),
+            out0,
+            out1,
+            out2,
+            out3,
+        );
     }
 
     impl shake256::XofX4 for Shake256x4 {
@@ -704,8 +724,8 @@ pub(crate) mod simd256 {
 pub(crate) mod neon {
 
     use super::{shake128, shake256};
-    use libcrux_sha3::neon::x2;
     use libcrux_secrets::*;
+    use libcrux_sha3::neon::x2;
 
     #[cfg_attr(hax, hax_lib::opaque)]
     pub(crate) type KeccakState = x2::incremental::KeccakState;
@@ -718,8 +738,16 @@ pub(crate) mod neon {
     /// Init the state and absorb 4 blocks in parallel.
     fn init_absorb(input0: &[u8], input1: &[u8], input2: &[u8], input3: &[u8]) -> Shake128x4 {
         let mut state = [x2::incremental::init(), x2::incremental::init()];
-        x2::incremental::shake128_absorb_final(&mut state[0], input0.as_secret(), input1.as_secret());
-        x2::incremental::shake128_absorb_final(&mut state[1], input2.as_secret(), input3.as_secret());
+        x2::incremental::shake128_absorb_final(
+            &mut state[0],
+            input0.as_secret(),
+            input1.as_secret(),
+        );
+        x2::incremental::shake128_absorb_final(
+            &mut state[1],
+            input2.as_secret(),
+            input3.as_secret(),
+        );
         Shake128x4 { state }
     }
 
@@ -788,8 +816,16 @@ pub(crate) mod neon {
 
     fn init_absorb_x4(input0: &[u8], input1: &[u8], input2: &[u8], input3: &[u8]) -> Shake256x4 {
         let mut state = [x2::incremental::init(), x2::incremental::init()];
-        x2::incremental::shake256_absorb_final(&mut state[0], input0.as_secret(), input1.as_secret());
-        x2::incremental::shake256_absorb_final(&mut state[1], input2.as_secret(), input3.as_secret());
+        x2::incremental::shake256_absorb_final(
+            &mut state[0],
+            input0.as_secret(),
+            input1.as_secret(),
+        );
+        x2::incremental::shake256_absorb_final(
+            &mut state[1],
+            input2.as_secret(),
+            input3.as_secret(),
+        );
         Shake256x4 { state }
     }
 
