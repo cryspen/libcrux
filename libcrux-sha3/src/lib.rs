@@ -511,7 +511,6 @@ pub mod neon {
     pub mod x2 {
         #[cfg(feature = "simd128")]
         use super::*;
-        use libcrux_secrets::*;
 
         /// Run SHAKE256 on both inputs in parallel.
         ///

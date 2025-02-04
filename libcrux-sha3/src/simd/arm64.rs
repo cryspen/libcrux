@@ -1,5 +1,5 @@
 use libcrux_intrinsics::arm64::*;
-use libcrux_secrets::{Declassify, EncodeOps, U64, U8};
+use libcrux_secrets::{EncodeOps, U64, U8};
 
 use crate::traits::internal::KeccakItem;
 

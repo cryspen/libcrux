@@ -1,7 +1,6 @@
 use super::vector_type::*;
 use crate::vector::FIELD_MODULUS;
 use libcrux_intrinsics::arm64::*;
-use libcrux_secrets::Classify;
 
 #[inline(always)]
 pub(crate) fn compress_1(mut v: SIMD128Vector) -> SIMD128Vector {
@@ -96,8 +95,8 @@ pub(crate) fn compress<const COEFFICIENT_BITS: i32>(mut v: SIMD128Vector) -> SIM
 
 #[inline(always)]
 fn decompress_uint32x4_t<const COEFFICIENT_BITS: i32>(v: _uint32x4_t) -> _uint32x4_t {
-    let coeff = _vdupq_n_u32((1 << (COEFFICIENT_BITS - 1)));
-    let decompressed = _vmulq_n_u32(v, (FIELD_MODULUS as u32));
+    let coeff = _vdupq_n_u32(1 << (COEFFICIENT_BITS - 1));
+    let decompressed = _vmulq_n_u32(v, FIELD_MODULUS as u32);
     let decompressed = _vaddq_u32(decompressed, coeff);
     let decompressed = _vshrq_n_u32::<COEFFICIENT_BITS>(decompressed);
 

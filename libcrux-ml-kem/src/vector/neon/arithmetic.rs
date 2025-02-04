@@ -1,7 +1,6 @@
 use super::vector_type::*;
 use crate::vector::{traits::INVERSE_OF_MODULUS_MOD_MONTGOMERY_R, FIELD_MODULUS};
 use libcrux_intrinsics::arm64::*;
-use libcrux_secrets::*;
 
 #[inline(always)]
 pub(crate) fn add(mut lhs: SIMD128Vector, rhs: &SIMD128Vector) -> SIMD128Vector {
@@ -70,7 +69,7 @@ pub(crate) fn barrett_reduce_int16x8_t(v: _int16x8_t) -> _int16x8_t {
     // let result = value - (quotient * FIELD_MODULUS);
 
     let adder = _vdupq_n_s16(1024);
-    let vec = _vqdmulhq_n_s16(v, (BARRETT_MULTIPLIER as i16));
+    let vec = _vqdmulhq_n_s16(v, BARRETT_MULTIPLIER as i16);
     let vec = _vaddq_s16(vec, adder);
     let quotient = _vshrq_n_s16::<11>(vec);
     let sub = _vmulq_n_s16(quotient, FIELD_MODULUS);
@@ -102,9 +101,9 @@ pub(crate) fn montgomery_reduce_int16x8_t(low: _int16x8_t, high: _int16x8_t) -> 
 
     let k = _vreinterpretq_s16_u16(_vmulq_n_u16(
         _vreinterpretq_u16_s16(low),
-        (INVERSE_OF_MODULUS_MOD_MONTGOMERY_R as u16),
+        INVERSE_OF_MODULUS_MOD_MONTGOMERY_R as u16,
     ));
-    let c = _vshrq_n_s16::<1>(_vqdmulhq_n_s16(k, (FIELD_MODULUS as i16)));
+    let c = _vshrq_n_s16::<1>(_vqdmulhq_n_s16(k, FIELD_MODULUS as i16));
     _vsubq_s16(high, c)
 }
 

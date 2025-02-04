@@ -1,5 +1,6 @@
 use libcrux_intrinsics::arm64::*;
-use libcrux_secrets::{AsSecret, Classify};
+use libcrux_secrets::AsSecret;
+
 #[derive(Clone, Copy)]
 #[hax_lib::fstar::after(interface, "val repr (x:t_SIMD128Vector) : t_Array i16 (sz 16)")]
 #[hax_lib::fstar::after("let repr (x:t_SIMD128Vector) = admit()")]
