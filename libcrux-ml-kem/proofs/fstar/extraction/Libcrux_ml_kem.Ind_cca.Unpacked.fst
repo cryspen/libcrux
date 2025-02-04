@@ -52,7 +52,7 @@ let unpack_public_key
       =
       {
         unpacked_public_key.f_ind_cpa_public_key with
-        Libcrux_ml_kem.Ind_cpa.Unpacked.f_t_as_ntt
+        Libcrux_ml_kem.Ind_cpa.Unpacked.f_tt_as_ntt
         =
         Libcrux_ml_kem.Serialize.deserialize_ring_elements_reduced v_K
           #v_Vector
@@ -63,7 +63,7 @@ let unpack_public_key
               Core.Ops.Range.t_RangeTo usize ]
             <:
             t_Slice u8)
-          unpacked_public_key.f_ind_cpa_public_key.Libcrux_ml_kem.Ind_cpa.Unpacked.f_t_as_ntt
+          unpacked_public_key.f_ind_cpa_public_key.Libcrux_ml_kem.Ind_cpa.Unpacked.f_tt_as_ntt
       }
       <:
       Libcrux_ml_kem.Ind_cpa.Unpacked.t_IndCpaPublicKeyUnpacked v_K v_Vector
@@ -168,7 +168,7 @@ let impl_3__serialized_mut
         v_RANKED_BYTES_PER_RING_ELEMENT
         v_PUBLIC_KEY_SIZE
         #v_Vector
-        self.f_ind_cpa_public_key.Libcrux_ml_kem.Ind_cpa.Unpacked.f_t_as_ntt
+        self.f_ind_cpa_public_key.Libcrux_ml_kem.Ind_cpa.Unpacked.f_tt_as_ntt
         (self.f_ind_cpa_public_key.Libcrux_ml_kem.Ind_cpa.Unpacked.f_seed_for_A <: t_Slice u8)
         serialized.Libcrux_ml_kem.Types.f_value
     }
@@ -193,7 +193,7 @@ let impl_3__serialized
         v_RANKED_BYTES_PER_RING_ELEMENT
         v_PUBLIC_KEY_SIZE
         #v_Vector
-        self.f_ind_cpa_public_key.Libcrux_ml_kem.Ind_cpa.Unpacked.f_t_as_ntt
+        self.f_ind_cpa_public_key.Libcrux_ml_kem.Ind_cpa.Unpacked.f_tt_as_ntt
         (self.f_ind_cpa_public_key.Libcrux_ml_kem.Ind_cpa.Unpacked.f_seed_for_A <: t_Slice u8)
       <:
       t_Array u8 v_PUBLIC_KEY_SIZE)
@@ -575,12 +575,12 @@ let transpose_a
   let v_A:t_Array (t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K) v_K =
     Core.Array.from_fn #(t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K)
       v_K
-      (fun v__i ->
-          let v__i:usize = v__i in
+      (fun e_i ->
+          let e_i:usize = e_i in
           Core.Array.from_fn #(Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
             v_K
-            (fun v__j ->
-                let v__j:usize = v__j in
+            (fun e_j ->
+                let e_j:usize = e_j in
                 Libcrux_ml_kem.Polynomial.impl_2__ZERO #v_Vector ()
                 <:
                 Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
@@ -607,7 +607,7 @@ let transpose_a
             v_A
           in
           let i:usize = i in
-          let v__a_i:t_Array
+          let e_a_i:t_Array
             (t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K) v_K =
             v_A
           in
@@ -619,7 +619,7 @@ let transpose_a
                   v_A
                 in
                 let j:usize = j in
-                (forall (k: nat). k < v i ==> Seq.index v_A k == Seq.index v__a_i k) /\
+                (forall (k: nat). k < v i ==> Seq.index v_A k == Seq.index e_a_i k) /\
                 (forall (k: nat).
                     k < v j ==>
                     Seq.index (Seq.index v_A (v i)) k == Seq.index (Seq.index ind_cpa_a k) (v i)))
@@ -783,7 +783,7 @@ let generate_keypair
       v_BYTES_PER_RING_ELEMENT
       v_PUBLIC_KEY_SIZE
       #v_Vector
-      out.f_public_key.f_ind_cpa_public_key.Libcrux_ml_kem.Ind_cpa.Unpacked.f_t_as_ntt
+      out.f_public_key.f_ind_cpa_public_key.Libcrux_ml_kem.Ind_cpa.Unpacked.f_tt_as_ntt
       (out.f_public_key.f_ind_cpa_public_key.Libcrux_ml_kem.Ind_cpa.Unpacked.f_seed_for_A
         <:
         t_Slice u8)

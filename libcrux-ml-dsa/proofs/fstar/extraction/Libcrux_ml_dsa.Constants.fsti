@@ -48,9 +48,9 @@ type t_Eta =
   | Eta_Two : t_Eta
   | Eta_Four : t_Eta
 
-let discriminant_Eta_Two: isize = mk_isize 2
+let anon_const_Eta_Two__anon_const_0: isize = mk_isize 2
 
-let discriminant_Eta_Four: isize = mk_isize 4
+let anon_const_Eta_Four__anon_const_0: isize = mk_isize 4
 
 val t_Eta_cast_to_repr (x: t_Eta) : Prims.Pure isize Prims.l_True (fun _ -> Prims.l_True)
 

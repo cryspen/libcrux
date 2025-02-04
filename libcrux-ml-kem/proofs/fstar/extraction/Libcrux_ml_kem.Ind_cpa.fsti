@@ -213,11 +213,17 @@ val generate_keypair_unpacked
             Libcrux_ml_kem.Ind_cpa.Unpacked.t_IndCpaPublicKeyUnpacked v_K v_Vector) =
             temp_0_
           in
+          let public_key_future:Libcrux_ml_kem.Ind_cpa.Unpacked.t_IndCpaPublicKeyUnpacked v_K
+            v_Vector =
+            public_key_future
+          in
           let (((t_as_ntt, seed_for_A), matrix_A_as_ntt), secret_as_ntt), valid =
             Spec.MLKEM.ind_cpa_generate_keypair_unpacked v_K key_generation_seed
           in
           (valid ==>
-            (Libcrux_ml_kem.Polynomial.to_spec_vector_t #v_K #v_Vector public_key_future.f_t_as_ntt ==
+            (Libcrux_ml_kem.Polynomial.to_spec_vector_t #v_K
+                #v_Vector
+                public_key_future.Libcrux_ml_kem.Ind_cpa.Unpacked.f_tt_as_ntt ==
               t_as_ntt) /\ (public_key_future.f_seed_for_A == seed_for_A) /\
             (Libcrux_ml_kem.Polynomial.to_spec_matrix_t #v_K #v_Vector public_key_future.f_A ==
               matrix_A_as_ntt) /\
@@ -233,7 +239,7 @@ val generate_keypair_unpacked
           (forall (i: nat).
               i < v v_K ==>
               Libcrux_ml_kem.Serialize.coefficients_field_modulus_range (Seq.index public_key_future
-                      .f_t_as_ntt
+                      .Libcrux_ml_kem.Ind_cpa.Unpacked.f_tt_as_ntt
                     i)))
 
 /// Serialize the secret key from the unpacked key pair generation.
@@ -354,8 +360,12 @@ val encrypt_unpacked
           Spec.MLKEM.ind_cpa_encrypt_unpacked v_K
             message
             randomness
-            (Libcrux_ml_kem.Polynomial.to_spec_vector_t #v_K #v_Vector public_key.f_t_as_ntt)
-            (Libcrux_ml_kem.Polynomial.to_spec_matrix_t #v_K #v_Vector public_key.f_A))
+            (Libcrux_ml_kem.Polynomial.to_spec_vector_t #v_K
+                #v_Vector
+                public_key.Libcrux_ml_kem.Ind_cpa.Unpacked.f_tt_as_ntt)
+            (Libcrux_ml_kem.Polynomial.to_spec_matrix_t #v_K
+                #v_Vector
+                public_key.Libcrux_ml_kem.Ind_cpa.Unpacked.f_A))
 
 val build_unpacked_public_key_mut
       (v_K v_T_AS_NTT_ENCODED_SIZE: usize)
@@ -374,14 +384,20 @@ val build_unpacked_public_key_mut
             v_K v_Vector =
             unpacked_public_key_future
           in
+          let unpacked_public_key_future:Libcrux_ml_kem.Ind_cpa.Unpacked.t_IndCpaPublicKeyUnpacked
+            v_K v_Vector =
+            unpacked_public_key_future
+          in
           let t_as_ntt_bytes, seed_for_A = split public_key v_T_AS_NTT_ENCODED_SIZE in
           let t_as_ntt = Spec.MLKEM.vector_decode_12 #v_K t_as_ntt_bytes in
           let matrix_A_as_ntt, valid = Spec.MLKEM.sample_matrix_A_ntt #v_K seed_for_A in
           (Libcrux_ml_kem.Polynomial.to_spec_vector_t #v_K
               #v_Vector
-              unpacked_public_key_future.f_t_as_ntt ==
+              unpacked_public_key_future.Libcrux_ml_kem.Ind_cpa.Unpacked.f_tt_as_ntt ==
             t_as_ntt /\ valid ==>
-            Libcrux_ml_kem.Polynomial.to_spec_matrix_t #v_K #v_Vector unpacked_public_key_future.f_A ==
+            Libcrux_ml_kem.Polynomial.to_spec_matrix_t #v_K
+              #v_Vector
+              unpacked_public_key_future.Libcrux_ml_kem.Ind_cpa.Unpacked.f_A ==
             Spec.MLKEM.matrix_transpose matrix_A_as_ntt))
 
 val build_unpacked_public_key
@@ -402,9 +418,13 @@ val build_unpacked_public_key
           let t_as_ntt_bytes, seed_for_A = split public_key v_T_AS_NTT_ENCODED_SIZE in
           let t_as_ntt = Spec.MLKEM.vector_decode_12 #v_K t_as_ntt_bytes in
           let matrix_A_as_ntt, valid = Spec.MLKEM.sample_matrix_A_ntt #v_K seed_for_A in
-          (Libcrux_ml_kem.Polynomial.to_spec_vector_t #v_K #v_Vector result.f_t_as_ntt == t_as_ntt /\
-            valid ==>
-            Libcrux_ml_kem.Polynomial.to_spec_matrix_t #v_K #v_Vector result.f_A ==
+          (Libcrux_ml_kem.Polynomial.to_spec_vector_t #v_K
+              #v_Vector
+              result.Libcrux_ml_kem.Ind_cpa.Unpacked.f_tt_as_ntt ==
+            t_as_ntt /\ valid ==>
+            Libcrux_ml_kem.Polynomial.to_spec_matrix_t #v_K
+              #v_Vector
+              result.Libcrux_ml_kem.Ind_cpa.Unpacked.f_A ==
             Spec.MLKEM.matrix_transpose matrix_A_as_ntt))
 
 val encrypt
