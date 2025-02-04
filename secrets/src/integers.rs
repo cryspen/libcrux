@@ -229,6 +229,10 @@ impl_new!(U8, u8, U8);
 impl_new!(U16, u16, U16);
 impl_new!(U32, u32, U32);
 impl_new!(U64, u64, U64);
+impl_new!(I8, i8, I8);
+impl_new!(I16, i16, I16);
+impl_new!(I32, i32, I32);
+impl_new!(I64, i64, I64);
 
 impl IntOps for Secret<u32> {
     #[inline(always)]

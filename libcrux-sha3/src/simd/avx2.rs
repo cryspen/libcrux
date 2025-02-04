@@ -34,9 +34,9 @@ fn _vbcaxq_u64(a: Vec256, b: Vec256, c: Vec256) -> Vec256 {
 }
 
 #[inline(always)]
-fn _veorq_n_u64(a: Vec256, c: u64) -> Vec256 {
+fn _veorq_n_u64(a: Vec256, c: U64) -> Vec256 {
     // Casting here is required, doesn't change the value.
-    let c = mm256_set1_epi64x((c as i64).classify());
+    let c = mm256_set1_epi64x(c.declassify() as i64);
     mm256_xor_si256(a, c)
 }
 
@@ -192,7 +192,7 @@ fn split_at_mut_4(out: [&mut [u8]; 4], mid: usize) -> ([&mut [u8]; 4], [&mut [u8
 impl KeccakItem<4> for Vec256 {
     #[inline(always)]
     fn zero() -> Self {
-        mm256_set1_epi64x(0.classify())
+        mm256_set1_epi64x(0)
     }
     #[inline(always)]
     fn xor5(a: Self, b: Self, c: Self, d: Self, e: Self) -> Self {
@@ -212,7 +212,7 @@ impl KeccakItem<4> for Vec256 {
     }
     #[inline(always)]
     fn xor_constant(a: Self, c: U64) -> Self {
-        _veorq_n_u64(a, c.declassify())
+        _veorq_n_u64(a, c)
     }
     #[inline(always)]
     fn xor(a: Self, b: Self) -> Self {
