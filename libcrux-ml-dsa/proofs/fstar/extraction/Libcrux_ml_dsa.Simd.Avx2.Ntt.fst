@@ -584,7 +584,7 @@ let ntt_at_layer_7_and_6_ (re: t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Ve
     ntt_at_layer_7_and_6___mul re
       (mk_usize 0)
       zeta7
-      ntt_at_layer_7_and_6___STEP_BY_7_
+      ntt_at_layer_7_and_6___v_STEP_BY_7_
       field_modulus
       inverse_of_modulus_mod_montgomery_r
   in
@@ -592,7 +592,7 @@ let ntt_at_layer_7_and_6_ (re: t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Ve
     ntt_at_layer_7_and_6___mul re
       (mk_usize 0 +! mk_usize 1 <: usize)
       zeta7
-      ntt_at_layer_7_and_6___STEP_BY_7_
+      ntt_at_layer_7_and_6___v_STEP_BY_7_
       field_modulus
       inverse_of_modulus_mod_montgomery_r
   in
@@ -600,7 +600,7 @@ let ntt_at_layer_7_and_6_ (re: t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Ve
     ntt_at_layer_7_and_6___mul re
       (mk_usize 0 +! mk_usize 2 <: usize)
       zeta7
-      ntt_at_layer_7_and_6___STEP_BY_7_
+      ntt_at_layer_7_and_6___v_STEP_BY_7_
       field_modulus
       inverse_of_modulus_mod_montgomery_r
   in
@@ -608,7 +608,7 @@ let ntt_at_layer_7_and_6_ (re: t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Ve
     ntt_at_layer_7_and_6___mul re
       (mk_usize 0 +! mk_usize 3 <: usize)
       zeta7
-      ntt_at_layer_7_and_6___STEP_BY_7_
+      ntt_at_layer_7_and_6___v_STEP_BY_7_
       field_modulus
       inverse_of_modulus_mod_montgomery_r
   in
@@ -617,7 +617,7 @@ let ntt_at_layer_7_and_6_ (re: t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Ve
     ntt_at_layer_7_and_6___mul re
       (mk_usize 8)
       zeta7
-      ntt_at_layer_7_and_6___STEP_BY_7_
+      ntt_at_layer_7_and_6___v_STEP_BY_7_
       field_modulus
       inverse_of_modulus_mod_montgomery_r
   in
@@ -625,7 +625,7 @@ let ntt_at_layer_7_and_6_ (re: t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Ve
     ntt_at_layer_7_and_6___mul re
       (mk_usize 8 +! mk_usize 1 <: usize)
       zeta7
-      ntt_at_layer_7_and_6___STEP_BY_7_
+      ntt_at_layer_7_and_6___v_STEP_BY_7_
       field_modulus
       inverse_of_modulus_mod_montgomery_r
   in
@@ -633,7 +633,7 @@ let ntt_at_layer_7_and_6_ (re: t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Ve
     ntt_at_layer_7_and_6___mul re
       (mk_usize 8 +! mk_usize 2 <: usize)
       zeta7
-      ntt_at_layer_7_and_6___STEP_BY_7_
+      ntt_at_layer_7_and_6___v_STEP_BY_7_
       field_modulus
       inverse_of_modulus_mod_montgomery_r
   in
@@ -641,7 +641,7 @@ let ntt_at_layer_7_and_6_ (re: t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Ve
     ntt_at_layer_7_and_6___mul re
       (mk_usize 8 +! mk_usize 3 <: usize)
       zeta7
-      ntt_at_layer_7_and_6___STEP_BY_7_
+      ntt_at_layer_7_and_6___v_STEP_BY_7_
       field_modulus
       inverse_of_modulus_mod_montgomery_r
   in
@@ -650,7 +650,7 @@ let ntt_at_layer_7_and_6_ (re: t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Ve
     ntt_at_layer_7_and_6___mul re
       (mk_usize 0)
       zeta60
-      ntt_at_layer_7_and_6___STEP_BY_6_
+      ntt_at_layer_7_and_6___v_STEP_BY_6_
       field_modulus
       inverse_of_modulus_mod_montgomery_r
   in
@@ -658,7 +658,7 @@ let ntt_at_layer_7_and_6_ (re: t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Ve
     ntt_at_layer_7_and_6___mul re
       (mk_usize 0 +! mk_usize 1 <: usize)
       zeta60
-      ntt_at_layer_7_and_6___STEP_BY_6_
+      ntt_at_layer_7_and_6___v_STEP_BY_6_
       field_modulus
       inverse_of_modulus_mod_montgomery_r
   in
@@ -666,7 +666,7 @@ let ntt_at_layer_7_and_6_ (re: t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Ve
     ntt_at_layer_7_and_6___mul re
       (mk_usize 0 +! mk_usize 2 <: usize)
       zeta60
-      ntt_at_layer_7_and_6___STEP_BY_6_
+      ntt_at_layer_7_and_6___v_STEP_BY_6_
       field_modulus
       inverse_of_modulus_mod_montgomery_r
   in
@@ -674,7 +674,7 @@ let ntt_at_layer_7_and_6_ (re: t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Ve
     ntt_at_layer_7_and_6___mul re
       (mk_usize 0 +! mk_usize 3 <: usize)
       zeta60
-      ntt_at_layer_7_and_6___STEP_BY_6_
+      ntt_at_layer_7_and_6___v_STEP_BY_6_
       field_modulus
       inverse_of_modulus_mod_montgomery_r
   in
@@ -683,7 +683,7 @@ let ntt_at_layer_7_and_6_ (re: t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Ve
     ntt_at_layer_7_and_6___mul re
       (mk_usize 16)
       zeta61
-      ntt_at_layer_7_and_6___STEP_BY_6_
+      ntt_at_layer_7_and_6___v_STEP_BY_6_
       field_modulus
       inverse_of_modulus_mod_montgomery_r
   in
@@ -691,7 +691,7 @@ let ntt_at_layer_7_and_6_ (re: t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Ve
     ntt_at_layer_7_and_6___mul re
       (mk_usize 16 +! mk_usize 1 <: usize)
       zeta61
-      ntt_at_layer_7_and_6___STEP_BY_6_
+      ntt_at_layer_7_and_6___v_STEP_BY_6_
       field_modulus
       inverse_of_modulus_mod_montgomery_r
   in
@@ -699,7 +699,7 @@ let ntt_at_layer_7_and_6_ (re: t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Ve
     ntt_at_layer_7_and_6___mul re
       (mk_usize 16 +! mk_usize 2 <: usize)
       zeta61
-      ntt_at_layer_7_and_6___STEP_BY_6_
+      ntt_at_layer_7_and_6___v_STEP_BY_6_
       field_modulus
       inverse_of_modulus_mod_montgomery_r
   in
@@ -707,7 +707,7 @@ let ntt_at_layer_7_and_6_ (re: t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Ve
     ntt_at_layer_7_and_6___mul re
       (mk_usize 16 +! mk_usize 3 <: usize)
       zeta61
-      ntt_at_layer_7_and_6___STEP_BY_6_
+      ntt_at_layer_7_and_6___v_STEP_BY_6_
       field_modulus
       inverse_of_modulus_mod_montgomery_r
   in
@@ -716,7 +716,7 @@ let ntt_at_layer_7_and_6_ (re: t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Ve
     ntt_at_layer_7_and_6___mul re
       (mk_usize 4)
       zeta7
-      ntt_at_layer_7_and_6___STEP_BY_7_
+      ntt_at_layer_7_and_6___v_STEP_BY_7_
       field_modulus
       inverse_of_modulus_mod_montgomery_r
   in
@@ -724,7 +724,7 @@ let ntt_at_layer_7_and_6_ (re: t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Ve
     ntt_at_layer_7_and_6___mul re
       (mk_usize 4 +! mk_usize 1 <: usize)
       zeta7
-      ntt_at_layer_7_and_6___STEP_BY_7_
+      ntt_at_layer_7_and_6___v_STEP_BY_7_
       field_modulus
       inverse_of_modulus_mod_montgomery_r
   in
@@ -732,7 +732,7 @@ let ntt_at_layer_7_and_6_ (re: t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Ve
     ntt_at_layer_7_and_6___mul re
       (mk_usize 4 +! mk_usize 2 <: usize)
       zeta7
-      ntt_at_layer_7_and_6___STEP_BY_7_
+      ntt_at_layer_7_and_6___v_STEP_BY_7_
       field_modulus
       inverse_of_modulus_mod_montgomery_r
   in
@@ -740,7 +740,7 @@ let ntt_at_layer_7_and_6_ (re: t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Ve
     ntt_at_layer_7_and_6___mul re
       (mk_usize 4 +! mk_usize 3 <: usize)
       zeta7
-      ntt_at_layer_7_and_6___STEP_BY_7_
+      ntt_at_layer_7_and_6___v_STEP_BY_7_
       field_modulus
       inverse_of_modulus_mod_montgomery_r
   in
@@ -749,7 +749,7 @@ let ntt_at_layer_7_and_6_ (re: t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Ve
     ntt_at_layer_7_and_6___mul re
       (mk_usize 12)
       zeta7
-      ntt_at_layer_7_and_6___STEP_BY_7_
+      ntt_at_layer_7_and_6___v_STEP_BY_7_
       field_modulus
       inverse_of_modulus_mod_montgomery_r
   in
@@ -757,7 +757,7 @@ let ntt_at_layer_7_and_6_ (re: t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Ve
     ntt_at_layer_7_and_6___mul re
       (mk_usize 12 +! mk_usize 1 <: usize)
       zeta7
-      ntt_at_layer_7_and_6___STEP_BY_7_
+      ntt_at_layer_7_and_6___v_STEP_BY_7_
       field_modulus
       inverse_of_modulus_mod_montgomery_r
   in
@@ -765,7 +765,7 @@ let ntt_at_layer_7_and_6_ (re: t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Ve
     ntt_at_layer_7_and_6___mul re
       (mk_usize 12 +! mk_usize 2 <: usize)
       zeta7
-      ntt_at_layer_7_and_6___STEP_BY_7_
+      ntt_at_layer_7_and_6___v_STEP_BY_7_
       field_modulus
       inverse_of_modulus_mod_montgomery_r
   in
@@ -773,7 +773,7 @@ let ntt_at_layer_7_and_6_ (re: t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Ve
     ntt_at_layer_7_and_6___mul re
       (mk_usize 12 +! mk_usize 3 <: usize)
       zeta7
-      ntt_at_layer_7_and_6___STEP_BY_7_
+      ntt_at_layer_7_and_6___v_STEP_BY_7_
       field_modulus
       inverse_of_modulus_mod_montgomery_r
   in
@@ -782,7 +782,7 @@ let ntt_at_layer_7_and_6_ (re: t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Ve
     ntt_at_layer_7_and_6___mul re
       (mk_usize 4)
       zeta60
-      ntt_at_layer_7_and_6___STEP_BY_6_
+      ntt_at_layer_7_and_6___v_STEP_BY_6_
       field_modulus
       inverse_of_modulus_mod_montgomery_r
   in
@@ -790,7 +790,7 @@ let ntt_at_layer_7_and_6_ (re: t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Ve
     ntt_at_layer_7_and_6___mul re
       (mk_usize 4 +! mk_usize 1 <: usize)
       zeta60
-      ntt_at_layer_7_and_6___STEP_BY_6_
+      ntt_at_layer_7_and_6___v_STEP_BY_6_
       field_modulus
       inverse_of_modulus_mod_montgomery_r
   in
@@ -798,7 +798,7 @@ let ntt_at_layer_7_and_6_ (re: t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Ve
     ntt_at_layer_7_and_6___mul re
       (mk_usize 4 +! mk_usize 2 <: usize)
       zeta60
-      ntt_at_layer_7_and_6___STEP_BY_6_
+      ntt_at_layer_7_and_6___v_STEP_BY_6_
       field_modulus
       inverse_of_modulus_mod_montgomery_r
   in
@@ -806,7 +806,7 @@ let ntt_at_layer_7_and_6_ (re: t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Ve
     ntt_at_layer_7_and_6___mul re
       (mk_usize 4 +! mk_usize 3 <: usize)
       zeta60
-      ntt_at_layer_7_and_6___STEP_BY_6_
+      ntt_at_layer_7_and_6___v_STEP_BY_6_
       field_modulus
       inverse_of_modulus_mod_montgomery_r
   in
@@ -815,7 +815,7 @@ let ntt_at_layer_7_and_6_ (re: t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Ve
     ntt_at_layer_7_and_6___mul re
       (mk_usize 20)
       zeta61
-      ntt_at_layer_7_and_6___STEP_BY_6_
+      ntt_at_layer_7_and_6___v_STEP_BY_6_
       field_modulus
       inverse_of_modulus_mod_montgomery_r
   in
@@ -823,7 +823,7 @@ let ntt_at_layer_7_and_6_ (re: t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Ve
     ntt_at_layer_7_and_6___mul re
       (mk_usize 20 +! mk_usize 1 <: usize)
       zeta61
-      ntt_at_layer_7_and_6___STEP_BY_6_
+      ntt_at_layer_7_and_6___v_STEP_BY_6_
       field_modulus
       inverse_of_modulus_mod_montgomery_r
   in
@@ -831,7 +831,7 @@ let ntt_at_layer_7_and_6_ (re: t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Ve
     ntt_at_layer_7_and_6___mul re
       (mk_usize 20 +! mk_usize 2 <: usize)
       zeta61
-      ntt_at_layer_7_and_6___STEP_BY_6_
+      ntt_at_layer_7_and_6___v_STEP_BY_6_
       field_modulus
       inverse_of_modulus_mod_montgomery_r
   in
@@ -839,7 +839,7 @@ let ntt_at_layer_7_and_6_ (re: t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Ve
     ntt_at_layer_7_and_6___mul re
       (mk_usize 20 +! mk_usize 3 <: usize)
       zeta61
-      ntt_at_layer_7_and_6___STEP_BY_6_
+      ntt_at_layer_7_and_6___v_STEP_BY_6_
       field_modulus
       inverse_of_modulus_mod_montgomery_r
   in

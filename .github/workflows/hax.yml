@@ -15,6 +15,10 @@ on:
       hax_rev:
         description: "The hax revision you want this job to use"
         default: "main"
+      skip_diff:
+        description: "Skip diff jobs"
+        default: false
+        type: boolean
   merge_group:
 
 env:
@@ -33,7 +37,7 @@ jobs:
       - uses: hacspec/hax-actions@main
         with:
           hax_reference: ${{ github.event.inputs.hax_rev || 'main' }}
-          fstar: v2024.12.03
+          fstar: v2025.01.17
 
       - name: 🏃 Extract ML-KEM crate
         working-directory: libcrux-ml-kem
@@ -59,6 +63,7 @@ jobs:
           path: ~/fstar-extraction-mlkem
 
       - name: = Diff Extraction
+        if: ${{ github.event.inputs.skip_diff != 'false' }}
         run: |
           diff -r libcrux-ml-kem/proofs/fstar/extraction/ \
             ~/fstar-extraction-mlkem/fstar/extraction/
@@ -74,7 +79,7 @@ jobs:
       - uses: hacspec/hax-actions@main
         with:
           hax_reference: ${{ github.event.inputs.hax_rev || 'main' }}
-          fstar: v2024.12.03
+          fstar: v2025.01.17
 
       - name: 🏃 Lax ML-KEM crate
         working-directory: libcrux-ml-kem
@@ -88,7 +93,7 @@ jobs:
       - uses: hacspec/hax-actions@main
         with:
           hax_reference: ${{ github.event.inputs.hax_rev || 'main' }}
-          fstar: v2024.12.03
+          fstar: v2025.01.17
 
       - name: 🏃 Extract ML-DSA crate
         working-directory: libcrux-ml-dsa
@@ -114,6 +119,7 @@ jobs:
           path: ~/fstar-extraction-mldsa
 
       - name: = Diff Extraction
+        if: ${{ github.event.inputs.skip_diff != 'false' }}
         run: |
           diff -r libcrux-ml-dsa/proofs/fstar/extraction/ \
             ~/fstar-extraction-mldsa/fstar/extraction/
@@ -129,7 +135,7 @@ jobs:
       - uses: hacspec/hax-actions@main
         with:
           hax_reference: ${{ github.event.inputs.hax_rev || 'main' }}
-          fstar: v2024.12.03
+          fstar: v2025.01.17
 
       - name: 🏃 Lax ML-DSA crate
         working-directory: libcrux-ml-dsa

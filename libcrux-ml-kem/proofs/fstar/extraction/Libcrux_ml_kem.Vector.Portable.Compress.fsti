@@ -44,7 +44,7 @@ val compress_ciphertext_coefficient (coefficient_bits: u8) (fe: u16)
           let result:i16 = result in
           result >=. mk_i16 0 &&
           result <.
-          (Core.Num.impl__i16__pow (mk_i16 2) (cast (coefficient_bits <: u8) <: u32) <: i16))
+          (Core.Num.impl_i16__pow (mk_i16 2) (cast (coefficient_bits <: u8) <: u32) <: i16))
 
 val compress_1_ (a: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
     : Prims.Pure Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
