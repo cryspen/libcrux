@@ -3,7 +3,7 @@
 //! This crate implements a protocol for establishing and mutually
 //! registering a PQ-PSK between an initiator and a responder.
 
-#![warn(missing_docs)]
+#![deny(missing_docs)]
 
 #[derive(Debug)]
 /// PSQ Errors.
@@ -38,7 +38,7 @@ type Psk = [u8; PSK_LENGTH];
 pub mod cred;
 pub mod psk_registration;
 
-pub mod psq_traits;
-pub mod psq_impls;
 #[cfg(feature = "classic-mceliece")]
 pub mod psq_classic_mceliece;
+pub mod psq_impls;
+pub mod psq_traits;

@@ -1,3 +1,13 @@
+//! PSQ implementation backed by `libcrux`.
+//!
+//! This module implements PSQ using the following underlying KEMs:
+//! * `MLKem768`, a lattice-based post-quantum KEM, as specified in FIPS 203 (Draft)
+//! * `XWingKemDraft02`, a hybrid post-quantum KEM combining X25519 and ML-KEM 768
+//! * `X25519`, an elliptic-curve Diffie-Hellman based KEM. This
+//!   implementation is available with feature `non-pq` and using this
+//!   KEM *does not provide post-quantum security*. We include it for
+//!   testing and benchmarking.
+
 use crate::psq_traits::*;
 
 macro_rules! libcrux_impl {
@@ -14,6 +24,7 @@ macro_rules! libcrux_impl {
     };
 }
 
+#[cfg(feature = "non-pq")]
 libcrux_impl!(
     X25519,
     "An elliptic-curve Diffie-Hellman based KEM (Does not provide post-quantum security)"
@@ -27,18 +38,19 @@ libcrux_impl!(
     "A hybrid post-quantum KEM combining X25519 and ML-KEM 768"
 );
 
-/// A PSQ public key
-pub struct LibcruxPSQPublicKey(libcrux_kem::PublicKey);
+/// Wrapper around `libcrux_kem` encapsulation keys
+pub struct LibcruxPSQEncapsKey(libcrux_kem::PublicKey);
 
-impl Encode for LibcruxPSQPublicKey {
+impl Encode for LibcruxPSQEncapsKey {
     fn encode(&self) -> Vec<u8> {
         self.0.encode()
     }
 }
 
-/// A PSQ private key
-pub struct LibcruxPSQPrivateKey(libcrux_kem::PrivateKey);
+/// Wrapper around `libcrux_kem` decapsulation keys.
+pub struct LibcruxPSQDecapsKey(libcrux_kem::PrivateKey);
 
+/// Wrapper around `libcrux_kem` ciphertexts.
 pub struct LibcruxPSQCiphertext(libcrux_kem::Ct);
 
 impl Encode for LibcruxPSQCiphertext {
@@ -47,6 +59,7 @@ impl Encode for LibcruxPSQCiphertext {
     }
 }
 
+/// Wrapper around `libcrux_kem` shared secrets.
 pub struct LibcruxPSQSharedSecret(libcrux_kem::Ss);
 
 impl Encode for LibcruxPSQSharedSecret {
@@ -59,17 +72,17 @@ trait LibcruxKEM: private::Seal {
     fn algorithm() -> libcrux_kem::Algorithm;
 }
 
-impl<T> crate::psq_traits::InnerKEM<'_> for T
+impl<T> crate::psq_traits::KEM<'_> for T
 where
     T: LibcruxKEM,
 {
     type Ciphertext = LibcruxPSQCiphertext;
-    type PublicKey = LibcruxPSQPublicKey;
-    type PrivateKey = LibcruxPSQPrivateKey;
+    type EncapsulationKey = LibcruxPSQEncapsKey;
+    type DecapsulationKey = LibcruxPSQDecapsKey;
     type SharedSecret = LibcruxPSQSharedSecret;
 
     fn encapsulate(
-        ek: &Self::PublicKey,
+        ek: &Self::EncapsulationKey,
         rng: &mut (impl rand::CryptoRng + rand::Rng),
     ) -> Result<(Self::SharedSecret, Self::Ciphertext), crate::Error> {
         let (ss, enc) = ek.0.encapsulate(rng)?;
@@ -77,7 +90,7 @@ where
     }
 
     fn decapsulate(
-        dk: &Self::PrivateKey,
+        dk: &Self::DecapsulationKey,
         ctxt: &Self::Ciphertext,
     ) -> Result<Self::SharedSecret, crate::Error> {
         let ss = ctxt.0.decapsulate(&dk.0)?;
@@ -86,19 +99,19 @@ where
 }
 
 impl<T: LibcruxKEM> crate::psq_traits::PSQ<'_> for T {
-    type KEM = Self;
+    type InnerKEM = Self;
 
     fn generate_key_pair(
         rng: &mut (impl rand::CryptoRng + rand::Rng),
     ) -> Result<
         (
-            <Self::KEM as InnerKEM<'_>>::PrivateKey,
-            <Self::KEM as InnerKEM<'_>>::PublicKey,
+            <Self::InnerKEM as KEM<'_>>::DecapsulationKey,
+            <Self::InnerKEM as KEM<'_>>::EncapsulationKey,
         ),
         crate::Error,
     > {
         let (sk, pk) = libcrux_kem::key_gen(Self::algorithm(), rng)?;
-        Ok((LibcruxPSQPrivateKey(sk), LibcruxPSQPublicKey(pk)))
+        Ok((LibcruxPSQDecapsKey(sk), LibcruxPSQEncapsKey(pk)))
     }
 }
 
@@ -114,14 +127,15 @@ mod tests {
                 let mut rng = rand::thread_rng();
                 let (sk, pk) = $alg::generate_key_pair(&mut rng).unwrap();
                 let sctx = b"test context";
-                let (psk_initiator, message) = $alg::gen_pq_psk(&pk, sctx, &mut rng).unwrap();
+                let (psk_initiator, message) = $alg::encapsulate_psq(&pk, sctx, &mut rng).unwrap();
 
-                let psk_responder = $alg::derive_pq_psk(&sk, &pk, &message, sctx).unwrap();
+                let psk_responder = $alg::decapsulate_psq(&sk, &pk, &message, sctx).unwrap();
                 assert_eq!(psk_initiator, psk_responder);
             }
         };
     }
 
+    #[cfg(feature = "non-pq")]
     libcrux_test!(X25519);
     libcrux_test!(MlKem768);
     libcrux_test!(XWingKemDraft02);

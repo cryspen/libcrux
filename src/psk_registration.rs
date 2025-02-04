@@ -26,7 +26,7 @@ struct AeadMac {
 }
 
 /// The Initiator's message to the responder.
-pub struct InitiatorMsg<'t, T: InnerKEM<'t>> {
+pub struct InitiatorMsg<'t, T: KEM<'t>> {
     encapsulation: Ciphertext<'t, T>,
     aead_mac: AeadMac,
 }
@@ -59,11 +59,11 @@ impl Initiator {
     pub fn send_initial_message<'t, C: Credential, T: PSQ<'t>>(
         sctx: &[u8],
         psk_ttl: Duration,
-        pqpk_responder: &<T::KEM as InnerKEM<'t>>::PublicKey,
+        pqpk_responder: &<T::InnerKEM as KEM<'t>>::EncapsulationKey,
         signing_key: &C::SigningKey,
         rng: &mut (impl CryptoRng + Rng),
-    ) -> Result<(Self, InitiatorMsg<'t, T::KEM>), Error> {
-        let (k_pq, enc_pq) = T::gen_pq_psk(pqpk_responder, sctx, rng)?;
+    ) -> Result<(Self, InitiatorMsg<'t, T::InnerKEM>), Error> {
+        let (k_pq, enc_pq) = T::encapsulate_psq(pqpk_responder, sctx, rng)?;
         let (initiator_iv, initiator_key, _receiver_iv, _receiver_key) = derive_cipherstate(&k_pq)?;
 
         let now = SystemTime::now();
@@ -73,7 +73,7 @@ impl Initiator {
 
         let ts_ttl = serialize_ts_ttl(&ts, &psk_ttl);
 
-        let (signature, verification_key) = C::sign(signing_key, &enc_pq.serialize())?;
+        let (signature, verification_key) = C::sign(signing_key, &enc_pq.encode())?;
         let signature_bytes = C::serialize_signature(&signature);
         let vk_bytes = C::serialize_verification_key(&verification_key);
 
@@ -155,11 +155,11 @@ impl Responder {
         psk_handle: &[u8],
         psk_ttl: Duration,
         sctxt: &[u8],
-        pqpk: &<T::KEM as InnerKEM<'t>>::PublicKey,
-        pqsk: &<T::KEM as InnerKEM<'t>>::PrivateKey,
-        initiator_message: &InitiatorMsg<'t, T::KEM>,
+        pqpk: &<T::InnerKEM as KEM<'t>>::EncapsulationKey,
+        pqsk: &<T::InnerKEM as KEM<'t>>::DecapsulationKey,
+        initiator_message: &InitiatorMsg<'t, T::InnerKEM>,
     ) -> Result<(RegisteredPsk, ResponderMsg), Error> {
-        let k_pq = T::derive_pq_psk(pqsk, pqpk, &initiator_message.encapsulation, sctxt)?;
+        let k_pq = T::decapsulate_psq(pqsk, pqpk, &initiator_message.encapsulation, sctxt)?;
         let (initiator_iv, initiator_key, responder_iv, responder_key) = derive_cipherstate(&k_pq)?;
 
         let msg_bytes = libcrux::aead::decrypt_detached(
@@ -177,7 +177,7 @@ impl Responder {
         if C::verify(
             &verification_key,
             &signature,
-            &initiator_message.encapsulation.serialize(),
+            &initiator_message.encapsulation.encode(),
         )
         .is_err()
         {

@@ -30,6 +30,9 @@ criterion = "0.5"
 
 [features]
 classic-mceliece = ["dep:classic-mceliece-rust"]
+non-pq = [] # DO NOT USE: This feature enables implementations backed
+            # by non-post-quantum KEMs and should only be used for
+            # testing purposes and benchmark baselines.
 
 [[bench]]
 name = "psq"
