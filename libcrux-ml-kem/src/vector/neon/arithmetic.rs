@@ -19,14 +19,14 @@ pub(crate) fn sub(mut lhs: SIMD128Vector, rhs: &SIMD128Vector) -> SIMD128Vector 
 
 #[inline(always)]
 pub(crate) fn multiply_by_constant(mut v: SIMD128Vector, c: i16) -> SIMD128Vector {
-    v.low = _vmulq_n_s16(v.low, c.classify());
-    v.high = _vmulq_n_s16(v.high, c.classify());
+    v.low = _vmulq_n_s16(v.low, c);
+    v.high = _vmulq_n_s16(v.high, c);
     v
 }
 
 #[inline(always)]
 pub(crate) fn bitwise_and_with_constant(mut v: SIMD128Vector, c: i16) -> SIMD128Vector {
-    let c = _vdupq_n_s16(c.classify());
+    let c = _vdupq_n_s16(c);
     v.low = _vandq_s16(v.low, c);
     v.high = _vandq_s16(v.high, c);
     v
@@ -50,7 +50,7 @@ pub(crate) fn shift_right<const SHIFT_BY: i32>(mut v: SIMD128Vector) -> SIMD128V
 
 #[inline(always)]
 pub(crate) fn cond_subtract_3329(mut v: SIMD128Vector) -> SIMD128Vector {
-    let c = _vdupq_n_s16(3329.classify());
+    let c = _vdupq_n_s16(3329);
     let m0 = _vcgeq_s16(v.low, c);
     let m1 = _vcgeq_s16(v.high, c);
     let c0 = _vandq_s16(c, _vreinterpretq_s16_u16(m0));
@@ -69,11 +69,11 @@ pub(crate) fn barrett_reduce_int16x8_t(v: _int16x8_t) -> _int16x8_t {
     // let quotient = (t >> BARRETT_SHIFT) as i16;
     // let result = value - (quotient * FIELD_MODULUS);
 
-    let adder = _vdupq_n_s16(1024.classify());
-    let vec = _vqdmulhq_n_s16(v, (BARRETT_MULTIPLIER as i16).classify());
+    let adder = _vdupq_n_s16(1024);
+    let vec = _vqdmulhq_n_s16(v, (BARRETT_MULTIPLIER as i16));
     let vec = _vaddq_s16(vec, adder);
     let quotient = _vshrq_n_s16::<11>(vec);
-    let sub = _vmulq_n_s16(quotient, FIELD_MODULUS.classify());
+    let sub = _vmulq_n_s16(quotient, FIELD_MODULUS);
     _vsubq_s16(v, sub)
 }
 
@@ -102,9 +102,9 @@ pub(crate) fn montgomery_reduce_int16x8_t(low: _int16x8_t, high: _int16x8_t) -> 
 
     let k = _vreinterpretq_s16_u16(_vmulq_n_u16(
         _vreinterpretq_u16_s16(low),
-        (INVERSE_OF_MODULUS_MOD_MONTGOMERY_R as u16).classify(),
+        (INVERSE_OF_MODULUS_MOD_MONTGOMERY_R as u16),
     ));
-    let c = _vshrq_n_s16::<1>(_vqdmulhq_n_s16(k, (FIELD_MODULUS as i16).classify()));
+    let c = _vshrq_n_s16::<1>(_vqdmulhq_n_s16(k, (FIELD_MODULUS as i16)));
     _vsubq_s16(high, c)
 }
 
@@ -118,8 +118,8 @@ pub(crate) fn montgomery_multiply_by_constant_int16x8_t(v: _int16x8_t, c: i16) -
     // let value_high = (value >> MONTGOMERY_SHIFT) as i16;
     // value_high - c
 
-    let v_low = _vmulq_n_s16(v, c.classify());
-    let v_high = _vshrq_n_s16::<1>(_vqdmulhq_n_s16(v, c.classify()));
+    let v_low = _vmulq_n_s16(v, c);
+    let v_high = _vshrq_n_s16::<1>(_vqdmulhq_n_s16(v, c));
     montgomery_reduce_int16x8_t(v_low, v_high)
 }
 

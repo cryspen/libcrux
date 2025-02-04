@@ -34,7 +34,7 @@ pub(crate) fn from_i16_array(array: &[i16]) -> SIMD128Vector {
 #[hax_lib::ensures(|result| fstar!("repr result == Seq.create 16 (mk_i16 0)"))]
 pub(crate) fn ZERO() -> SIMD128Vector {
     SIMD128Vector {
-        low: _vdupq_n_s16(0.classify()),
-        high: _vdupq_n_s16(0.classify()),
+        low: _vdupq_n_s16(0),
+        high: _vdupq_n_s16(0),
     }
 }

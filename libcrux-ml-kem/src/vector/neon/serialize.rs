@@ -16,9 +16,9 @@ pub(crate) fn serialize_1(v: SIMD128Vector) -> [u8; 2] {
 
 #[inline(always)]
 pub(crate) fn deserialize_1(a: &[u8]) -> SIMD128Vector {
-    let one = _vdupq_n_s16(1.classify());
-    let low = _vdupq_n_s16((a[0] as i16).classify());
-    let high = _vdupq_n_s16((a[1] as i16).classify());
+    let one = _vdupq_n_s16(1);
+    let low = _vdupq_n_s16((a[0] as i16));
+    let high = _vdupq_n_s16((a[1] as i16));
     let shifter: [i16; 8] = [0, 0xff, -2, -3, -4, -5, -6, -7];
     let shift = _vld1q_s16((&shifter).as_secret());
     let low = _vshlq_s16(low, shift);
@@ -161,7 +161,7 @@ pub(crate) fn deserialize_12(v: &[u8]) -> SIMD128Vector {
     let index_vec = _vld1q_u8((&indexes).as_secret());
     let shifts: [i16; 8] = [0, -4, 0, -4, 0, -4, 0, -4];
     let shift_vec = _vld1q_s16((&shifts).as_secret());
-    let mask12 = _vdupq_n_u16(0xfff.classify());
+    let mask12 = _vdupq_n_u16(0xfff);
 
     let mut input0 = [0u8; 16];
     input0[0..12].copy_from_slice(&v[0..12]);

@@ -14,13 +14,13 @@ pub type _uint64x2_t = Secret<uint64x2_t>;
 pub type _uint16x8_t = Secret<uint16x8_t>;
 
 #[inline(always)]
-pub fn _vdupq_n_s16(i: I16) -> _int16x8_t {
-    unsafe { vdupq_n_s16(i.declassify()).classify() }
+pub fn _vdupq_n_s16<T: Into<I16>>(i: T) -> _int16x8_t {
+    unsafe { vdupq_n_s16(i.into().declassify()).classify() }
 }
 
 #[inline(always)]
-pub fn _vdupq_n_u64(i: U64) -> _uint64x2_t {
-    unsafe { vdupq_n_u64(i.declassify()).classify() }
+pub fn _vdupq_n_u64<T: Into<U64>>(i: T) -> _uint64x2_t {
+    unsafe { vdupq_n_u64(i.into().declassify()).classify() }
 }
 
 #[inline(always)]
@@ -64,13 +64,13 @@ pub fn _vsubq_s16(lhs: _int16x8_t, rhs: _int16x8_t) -> _int16x8_t {
 }
 
 #[inline(always)]
-pub fn _vmulq_n_s16(v: _int16x8_t, c: I16) -> _int16x8_t {
-    unsafe { vmulq_n_s16(v.declassify(), c.declassify()).classify() }
+pub fn _vmulq_n_s16<T: Into<I16>>(v: _int16x8_t, c: T) -> _int16x8_t {
+    unsafe { vmulq_n_s16(v.declassify(), c.into().declassify()).classify() }
 }
 
 #[inline(always)]
-pub fn _vmulq_n_u16(v: _uint16x8_t, c: U16) -> _uint16x8_t {
-    unsafe { vmulq_n_u16(v.declassify(), c.declassify()).classify() }
+pub fn _vmulq_n_u16<T: Into<U16>>(v: _uint16x8_t, c: T) -> _uint16x8_t {
+    unsafe { vmulq_n_u16(v.declassify(), c.into().declassify()).classify() }
 }
 
 #[inline(always)]
@@ -103,8 +103,8 @@ pub fn _vshlq_n_u32<const SHIFT_BY: i32>(v: _uint32x4_t) -> _uint32x4_t {
     unsafe { vshlq_n_u32::<SHIFT_BY>(v.declassify()).classify() }
 }
 #[inline(always)]
-pub fn _vqdmulhq_n_s16(k: _int16x8_t, b: I16) -> _int16x8_t {
-    unsafe { vqdmulhq_n_s16(k.declassify(), b.declassify()).classify() }
+pub fn _vqdmulhq_n_s16<T: Into<I16>>(k: _int16x8_t, b: T) -> _int16x8_t {
+    unsafe { vqdmulhq_n_s16(k.declassify(), b.into().declassify()).classify() }
 }
 #[inline(always)]
 pub fn _vqdmulhq_s16(v: _int16x8_t, c: _int16x8_t) -> _int16x8_t {
@@ -148,8 +148,8 @@ pub fn _veorq_u64(mask: _uint64x2_t, shifted: _uint64x2_t) -> _uint64x2_t {
 }
 
 #[inline(always)]
-pub fn _vdupq_n_u32(value: U32) -> _uint32x4_t {
-    unsafe { vdupq_n_u32(value.declassify()).classify() }
+pub fn _vdupq_n_u32<T: Into<U32>>(value: T) -> _uint32x4_t {
+    unsafe { vdupq_n_u32(value.into().declassify()).classify() }
 }
 #[inline(always)]
 pub fn _vaddq_u32(compressed: _uint32x4_t, half: _uint32x4_t) -> _uint32x4_t {
@@ -160,8 +160,8 @@ pub fn _vreinterpretq_s32_u32(compressed: _uint32x4_t) -> _int32x4_t {
     unsafe { vreinterpretq_s32_u32(compressed.declassify()).classify() }
 }
 #[inline(always)]
-pub fn _vqdmulhq_n_s32(a: _int32x4_t, b: I32) -> _int32x4_t {
-    unsafe { vqdmulhq_n_s32(a.declassify(), b.declassify()).classify() }
+pub fn _vqdmulhq_n_s32<T: Into<I32>>(a: _int32x4_t, b: T) -> _int32x4_t {
+    unsafe { vqdmulhq_n_s32(a.declassify(), b.into().declassify()).classify() }
 }
 
 #[inline(always)]
@@ -194,8 +194,8 @@ pub fn _vtrn2q_s16(a: _int16x8_t, b: _int16x8_t) -> _int16x8_t {
     unsafe { vtrn2q_s16(a.declassify(), b.declassify()).classify() }
 }
 #[inline(always)]
-pub fn _vmulq_n_u32(a: _uint32x4_t, b: U32) -> _uint32x4_t {
-    unsafe { vmulq_n_u32(a.declassify(), b.declassify()).classify() }
+pub fn _vmulq_n_u32<T: Into<U32>>(a: _uint32x4_t, b: T) -> _uint32x4_t {
+    unsafe { vmulq_n_u32(a.declassify(), b.into().declassify()).classify() }
 }
 
 #[inline(always)]
@@ -332,8 +332,8 @@ pub fn _vst1q_u8(out: &mut [u8], v: _uint8x16_t) {
     unsafe { vst1q_u8(out.as_mut_ptr(), v.declassify()) }
 }
 #[inline(always)]
-pub fn _vdupq_n_u16(value: U16) -> _uint16x8_t {
-    unsafe { vdupq_n_u16(value.declassify()).classify() }
+pub fn _vdupq_n_u16<T: Into<U16>>(value: T) -> _uint16x8_t {
+    unsafe { vdupq_n_u16(value.into().declassify()).classify() }
 }
 #[inline(always)]
 pub fn _vandq_u16(a: _uint16x8_t, b: _uint16x8_t) -> _uint16x8_t {

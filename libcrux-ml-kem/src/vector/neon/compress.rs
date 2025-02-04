@@ -12,8 +12,8 @@ pub(crate) fn compress_1(mut v: SIMD128Vector) -> SIMD128Vector {
     // let shifted_positive_in_range = shifted_to_positive - 832;
     // ((shifted_positive_in_range >> 15) & 1) as u8
 
-    let half = _vdupq_n_s16(1664.classify());
-    let quarter = _vdupq_n_s16(832.classify());
+    let half = _vdupq_n_s16(1664);
+    let quarter = _vdupq_n_s16(832);
 
     let shifted = _vsubq_s16(half, v.low);
     let mask = _vshrq_n_s16::<15>(shifted);
@@ -53,12 +53,12 @@ fn compress_int32x4_t<const COEFFICIENT_BITS: i32>(v: _uint32x4_t) -> _uint32x4_
     // compressed *= 10_321_340;
     // compressed >>= 35;
     // get_n_least_significant_bits(coefficient_bits, compressed as u32) as FieldElement
-    let half = _vdupq_n_u32(1664.classify());
+    let half = _vdupq_n_u32(1664);
     let compressed = _vshlq_n_u32::<COEFFICIENT_BITS>(v);
     let compressed = _vaddq_u32(compressed, half);
     let compressed = _vreinterpretq_u32_s32(_vqdmulhq_n_s32(
         _vreinterpretq_s32_u32(compressed),
-        10_321_340.classify(),
+        10_321_340,
     ));
     let compressed = _vshrq_n_u32::<4>(compressed);
     compressed
@@ -73,8 +73,8 @@ pub(crate) fn compress<const COEFFICIENT_BITS: i32>(mut v: SIMD128Vector) -> SIM
     // compressed >>= 35;
     // get_n_least_significant_bits(coefficient_bits, compressed as u32) as FieldElement
 
-    let mask = _vdupq_n_s16(mask_n_least_significant_bits(COEFFICIENT_BITS as i16).classify());
-    let mask16 = _vdupq_n_u32(0xffff.classify());
+    let mask = _vdupq_n_s16(mask_n_least_significant_bits(COEFFICIENT_BITS as i16));
+    let mask16 = _vdupq_n_u32(0xffff);
 
     let low0 = _vandq_u32(_vreinterpretq_u32_s16(v.low), mask16); //a0, a2, a4, a6
     let low1 = _vshrq_n_u32::<16>(_vreinterpretq_u32_s16(v.low)); //a1, a3, a5, a7
@@ -96,8 +96,8 @@ pub(crate) fn compress<const COEFFICIENT_BITS: i32>(mut v: SIMD128Vector) -> SIM
 
 #[inline(always)]
 fn decompress_uint32x4_t<const COEFFICIENT_BITS: i32>(v: _uint32x4_t) -> _uint32x4_t {
-    let coeff = _vdupq_n_u32((1 << (COEFFICIENT_BITS - 1)).classify());
-    let decompressed = _vmulq_n_u32(v, (FIELD_MODULUS as u32).classify());
+    let coeff = _vdupq_n_u32((1 << (COEFFICIENT_BITS - 1)));
+    let decompressed = _vmulq_n_u32(v, (FIELD_MODULUS as u32));
     let decompressed = _vaddq_u32(decompressed, coeff);
     let decompressed = _vshrq_n_u32::<COEFFICIENT_BITS>(decompressed);
 
@@ -108,7 +108,7 @@ fn decompress_uint32x4_t<const COEFFICIENT_BITS: i32>(v: _uint32x4_t) -> _uint32
 pub(crate) fn decompress_ciphertext_coefficient<const COEFFICIENT_BITS: i32>(
     mut v: SIMD128Vector,
 ) -> SIMD128Vector {
-    let mask16 = _vdupq_n_u32(0xffff.classify());
+    let mask16 = _vdupq_n_u32(0xffff);
     let low0 = _vandq_u32(_vreinterpretq_u32_s16(v.low), mask16);
     let low1 = _vshrq_n_u32::<16>(_vreinterpretq_u32_s16(v.low));
     let high0 = _vandq_u32(_vreinterpretq_u32_s16(v.high), mask16);
