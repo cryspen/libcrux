@@ -172,7 +172,7 @@ fn validate_scalar_(scalar: &[u8; 32]) -> Result<(), Error> {
     }
 }
 
-/// Validate a P256 secret key or  nonce (scalar).
+/// Validate a P256 secret key or nonce (scalar).
 fn validate_scalar_slice(scalar: &[u8]) -> Result<[u8; 32], Error> {
     if scalar.is_empty() {
         return Err(Error::InvalidScalar);

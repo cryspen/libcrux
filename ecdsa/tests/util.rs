@@ -7,8 +7,6 @@ pub use std::io::{prelude::*, BufReader};
 
 use std::num::ParseIntError;
 
-// use evercrypt::aead::Nonce;
-
 pub(crate) trait ReadFromFile {
     fn from_file<T: DeserializeOwned>(file: &'static str) -> T {
         let file = match File::open(file) {
