@@ -87,7 +87,7 @@ fn self_test_rsa_pss() {
         &salt,
         &mut signature[..],
     )
-    .expect_err("expected singing with wrong length to fail");
+    .expect_err("expected signing with wrong length to fail");
     assert_eq!(err, Error::InvalidSignatureLength);
 
     // test the variable length key parsing fails if length is wrong

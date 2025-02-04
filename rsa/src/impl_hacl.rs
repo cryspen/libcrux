@@ -202,6 +202,7 @@ impl_rsapss!(sign_8192, verify_8192, 8192, 1024);
 /// - the secret key is invalid
 /// - the length of `msg` exceeds `u32::MAX`
 /// - `salt_len` exceeds `u32::MAX - alg.hash_len() - 8`
+/// - the length of `sig` does not match the length of `sk`
 pub fn sign(
     alg: crate::DigestAlgorithm,
     sk: &VarLenPrivateKey<'_>,
@@ -241,9 +242,9 @@ pub fn verify(
 /// Returns `Ok(())` on success.
 ///
 /// Returns an error in any of the following cases:
-/// - the secret key is invalid
-/// - the length of `msg` exceeds `u32::MAX`
-/// - `salt_len` exceeds `u32::MAX - alg.hash_len() - 8`
+/// - `Error::SigningFailed`: the secret key is invalid
+/// - `Error::MessageTooLarge`: the length of `msg` exceeds `u32::MAX`
+/// - `Error::SaltTooLarge`: `salt_len` exceeds `u32::MAX - alg.hash_len() - 8`
 ///
 /// Ensures that the preconditions to hacl functions hold:
 ///
