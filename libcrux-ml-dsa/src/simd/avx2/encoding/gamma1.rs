@@ -1,4 +1,5 @@
 use libcrux_intrinsics::avx2::*;
+use libcrux_secrets::*;
 
 #[inline(always)]
 fn serialize_when_gamma1_is_2_pow_17(simd_unit: &Vec256, out: &mut [u8]) {
@@ -76,8 +77,8 @@ fn deserialize_when_gamma1_is_2_pow_17(serialized: &[u8], out: &mut Vec256) {
     const GAMMA1: i32 = 1 << 17;
     const GAMMA1_TIMES_2_MASK: i32 = (GAMMA1 << 1) - 1;
 
-    let serialized_lower = mm_loadu_si128(&serialized[0..16]);
-    let serialized_upper = mm_loadu_si128(&serialized[2..18]);
+    let serialized_lower = mm_loadu_si128((&serialized[0..16]).as_secret());
+    let serialized_upper = mm_loadu_si128((&serialized[2..18]).as_secret());
 
     let serialized = mm256_set_m128i(serialized_upper, serialized_lower);
 
@@ -106,8 +107,8 @@ fn deserialize_when_gamma1_is_2_pow_19(serialized: &[u8], out: &mut Vec256) {
     const GAMMA1: i32 = 1 << 19;
     const GAMMA1_TIMES_2_MASK: i32 = (GAMMA1 << 1) - 1;
 
-    let serialized_lower = mm_loadu_si128(&serialized[0..16]);
-    let serialized_upper = mm_loadu_si128(&serialized[4..20]);
+    let serialized_lower = mm_loadu_si128((&serialized[0..16]).as_secret());
+    let serialized_upper = mm_loadu_si128((&serialized[4..20]).as_secret());
 
     let serialized = mm256_set_m128i(serialized_upper, serialized_lower);
 

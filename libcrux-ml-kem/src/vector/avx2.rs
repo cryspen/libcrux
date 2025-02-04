@@ -1,4 +1,6 @@
 use super::traits::Operations;
+use libcrux_secrets::*;
+
 pub(crate) use libcrux_intrinsics::avx2::*;
 
 mod arithmetic;
@@ -38,7 +40,7 @@ fn vec_to_i16_array(v: SIMD256Vector) -> [i16; 16] {
 #[hax_lib::ensures(|result| fstar!(r#"repr ${result} == ${array}"#))]
 fn vec_from_i16_array(array: &[i16]) -> SIMD256Vector {
     SIMD256Vector {
-        elements: mm256_loadu_si256_i16(array),
+        elements: mm256_loadu_si256_i16(array.as_secret()),
     }
 }
 

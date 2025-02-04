@@ -3,6 +3,7 @@ use super::{
     serialize::{deserialize_12, serialize_1},
     *,
 };
+use libcrux_secrets::*;
 
 #[inline(always)]
 #[hax_lib::fstar::verification_status(lax)]
@@ -54,7 +55,7 @@ pub(crate) fn rejection_sample(input: &[u8], output: &mut [i16]) -> usize {
     let lower_shuffles = REJECTION_SAMPLE_SHUFFLE_TABLE[good[0] as usize];
 
     // Shuffle the lower 8 16-bits accordingly ...
-    let lower_shuffles = mm_loadu_si128(&lower_shuffles);
+    let lower_shuffles = mm_loadu_si128((&lower_shuffles).as_secret());
     let lower_coefficients = mm256_castsi256_si128(potential_coefficients);
     let lower_coefficients = mm_shuffle_epi8(lower_coefficients, lower_shuffles);
 
@@ -67,7 +68,7 @@ pub(crate) fn rejection_sample(input: &[u8], output: &mut [i16]) -> usize {
 
     // Do the same for |goood[1]|
     let upper_shuffles = REJECTION_SAMPLE_SHUFFLE_TABLE[good[1] as usize];
-    let upper_shuffles = mm_loadu_si128(&upper_shuffles);
+    let upper_shuffles = mm_loadu_si128((&upper_shuffles).as_secret());
     let upper_coefficients = mm256_extracti128_si256::<1>(potential_coefficients);
     let upper_coefficients = mm_shuffle_epi8(upper_coefficients, upper_shuffles);
 

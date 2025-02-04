@@ -4,6 +4,7 @@ use crate::{
 };
 
 use libcrux_intrinsics::avx2::*;
+use libcrux_secrets::Declassify;
 
 use super::Gamma2;
 
@@ -107,7 +108,7 @@ pub(super) fn infinity_norm_exceeds(simd_unit: &Vec256, bound: i32) -> bool {
     // If every lane of |result| is 0, all coefficients are <= bound - 1
     let result = mm256_testz_si256(compare_with_bound, compare_with_bound);
 
-    result != 1
+    result.declassify() != 1
 }
 
 #[inline(always)]
@@ -200,7 +201,7 @@ pub(super) fn compute_hint(low: &Vec256, high: &Vec256, gamma2: i32, hint: &mut 
     let hints_mask = mm256_movemask_ps(mm256_castsi256_ps(*hint));
     *hint = mm256_and_si256(*hint, mm256_set1_epi32(0x1));
 
-    hints_mask.count_ones() as usize
+    hints_mask.declassify().count_ones() as usize
 }
 
 #[inline(always)]

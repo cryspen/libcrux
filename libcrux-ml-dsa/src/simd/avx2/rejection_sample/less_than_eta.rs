@@ -1,6 +1,7 @@
 use crate::simd::avx2::{encoding, rejection_sample::shuffle_table::SHUFFLE_TABLE, Eta};
 
 use libcrux_intrinsics::avx2::*;
+use libcrux_secrets::*;
 
 // TODO: This code seems to slow the implementation down, but stabilizes
 // benchmarks. Revisit this once the other functions are vectorized.
@@ -41,7 +42,7 @@ pub(crate) fn sample<const ETA: usize>(input: &[u8], output: &mut [i32]) -> usiz
     // Since every bit in each lane is either 0 or all 1s, we only need one bit
     // from each lane to tell us what coefficients to keep and what to throw-away.
     // Combine all the bits (there are 8) into one byte.
-    let good = mm256_movemask_ps(mm256_castsi256_ps(compare_with_interval_boundary));
+    let good = mm256_movemask_ps(mm256_castsi256_ps(compare_with_interval_boundary)).declassify();
 
     let good_lower_half = good & 0x0F;
     let good_upper_half = good >> 4;
@@ -65,7 +66,7 @@ pub(crate) fn sample<const ETA: usize>(input: &[u8], output: &mut [i32]) -> usiz
     let lower_shuffles = SHUFFLE_TABLE[good_lower_half as usize];
 
     // Shuffle the lower 4 32-bits accordingly ...
-    let lower_shuffles = mm_loadu_si128(&lower_shuffles);
+    let lower_shuffles = mm_loadu_si128((&lower_shuffles).as_secret());
     let lower_coefficients = mm256_castsi256_si128(shifted);
     let lower_coefficients = mm_shuffle_epi8(lower_coefficients, lower_shuffles);
 
@@ -78,7 +79,7 @@ pub(crate) fn sample<const ETA: usize>(input: &[u8], output: &mut [i32]) -> usiz
 
     // Do the same for |good_upper_half|
     let upper_shuffles = SHUFFLE_TABLE[good_upper_half as usize];
-    let upper_shuffles = mm_loadu_si128(&upper_shuffles);
+    let upper_shuffles = mm_loadu_si128((&upper_shuffles).as_secret());
     let upper_coefficients = mm256_extracti128_si256::<1>(shifted);
     let upper_coefficients = mm_shuffle_epi8(upper_coefficients, upper_shuffles);
 

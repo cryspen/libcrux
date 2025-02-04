@@ -1,4 +1,5 @@
 use libcrux_intrinsics::avx2::*;
+use libcrux_secrets::*;
 
 #[inline(always)]
 pub(crate) fn serialize(simd_unit: &Vec256, out: &mut [u8]) {
@@ -38,7 +39,7 @@ pub(crate) fn deserialize(bytes: &[u8], out: &mut Vec256) {
     let mut bytes_extended = [0u8; 16];
     bytes_extended[0..10].copy_from_slice(bytes);
 
-    let bytes_loaded = mm_loadu_si128(&bytes_extended);
+    let bytes_loaded = mm_loadu_si128((&bytes_extended).as_secret());
     let bytes_loaded = mm256_set_m128i(bytes_loaded, bytes_loaded);
 
     // XXX: re-use out

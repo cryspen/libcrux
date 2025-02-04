@@ -1,3 +1,5 @@
+use libcrux_secrets::AsSecret;
+
 /// The vector type
 #[derive(Clone, Copy)]
 #[repr(transparent)]
@@ -17,7 +19,7 @@ pub(crate) fn zero() -> Vec256 {
 
 /// Create a coefficient from an `i32` array
 pub(crate) fn from_coefficient_array(coefficient_array: &[i32], out: &mut Vec256) {
-    out.value = libcrux_intrinsics::avx2::mm256_loadu_si256_i32(coefficient_array)
+    out.value = libcrux_intrinsics::avx2::mm256_loadu_si256_i32(coefficient_array.as_secret())
 }
 
 /// Write out the coefficient to an `i32` array

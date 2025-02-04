@@ -1,5 +1,8 @@
+use libcrux_secrets::{AsSecret, Declassify};
+
 use super::*;
 use crate::vector::portable::PortableVector;
+use libcrux_secrets::*;
 
 #[inline(always)]
 #[hax_lib::fstar::options("--ext context_pruning --compat_pre_core 0")]
@@ -63,7 +66,7 @@ let bits_packed' = BitVec.Intrinsics.mm_movemask_epi8_bv msbs in
     // significant bit from each element and collate them into two bytes.
     let bits_packed = mm_movemask_epi8(msbs);
 
-    let result = [bits_packed as u8, (bits_packed >> 8) as u8];
+    let result = [bits_packed.declassify() as u8, (bits_packed.declassify() >> 8) as u8];
 
     hax_lib::fstar!(
         r#"
@@ -662,8 +665,8 @@ assert_norm(BitVec.Utils.forall256 (fun i ->
     let lower_coefficients = &bytes[0..16];
     let upper_coefficients = &bytes[4..20];
     deserialize_10_vec(
-        mm_loadu_si128(lower_coefficients),
-        mm_loadu_si128(upper_coefficients),
+        mm_loadu_si128(lower_coefficients.as_secret()),
+        mm_loadu_si128(upper_coefficients.as_secret()),
     )
 }
 
@@ -681,7 +684,7 @@ pub(crate) fn serialize_11(vector: Vec256) -> [u8; 22] {
 pub(crate) fn deserialize_11(bytes: &[u8]) -> Vec256 {
     let output = PortableVector::deserialize_11(bytes);
     let array = PortableVector::to_i16_array(output);
-    mm256_loadu_si256_i16(&array)
+    mm256_loadu_si256_i16((&array).as_secret())
 }
 
 #[inline(always)]
@@ -797,7 +800,7 @@ assert_norm(BitVec.Utils.forall256 (fun i ->
         );
         coefficients
     }
-    let lower_coefficients = mm_loadu_si128(&bytes[0..16]);
-    let upper_coefficients = mm_loadu_si128(&bytes[8..24]);
+    let lower_coefficients = mm_loadu_si128((&bytes[0..16]).as_secret());
+    let upper_coefficients = mm_loadu_si128((&bytes[8..24]).as_secret());
     deserialize_12_vec(lower_coefficients, upper_coefficients)
 }

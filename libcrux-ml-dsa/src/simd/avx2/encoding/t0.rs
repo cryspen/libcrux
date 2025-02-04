@@ -1,4 +1,5 @@
 use libcrux_intrinsics::avx2::*;
+use libcrux_secrets::*;
 
 use crate::constants::BITS_IN_LOWER_PART_OF_T;
 
@@ -46,7 +47,7 @@ pub(crate) fn deserialize(serialized: &[u8], out: &mut Vec256) {
     let mut serialized_extended = [0u8; 16];
     serialized_extended[0..13].copy_from_slice(serialized);
 
-    let serialized = mm_loadu_si128(&serialized_extended);
+    let serialized = mm_loadu_si128((&serialized_extended).as_secret());
     let serialized = mm256_set_m128i(serialized, serialized);
 
     // XXX: re-use out variable
