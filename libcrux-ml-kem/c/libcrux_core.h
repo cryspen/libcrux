@@ -5,10 +5,10 @@
  *
  * This code was generated with the following revisions:
  * Charon: 30cab88265206f4fa849736e704983e39a404d96
- * Eurydice: e1ef8138cb02de6d110aa5d2d2ad6c2d07c3a6b4
- * Karamel: e098c05f84f94f665d40f86afbfde281e4fdd523
+ * Eurydice: c56c8e9064adf185d0b238410ad26c7cacad5ea9
+ * Karamel: 9d54cd127aa59cc88e399a0247b4091d1819909b
  * F*: ef93b7d15a315f3eb0864cb7bb93074582524e2a
- * Libcrux: 59fcb15a95eb34a4e4776aa96505d2ea078c0d5c
+ * Libcrux: 62dc8d63df5a2c0d0008ef12cf7d98d7c53a8feb
  */
 
 #ifndef __libcrux_core_H

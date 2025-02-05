@@ -5,10 +5,10 @@
  *
  * This code was generated with the following revisions:
  * Charon: 30cab88265206f4fa849736e704983e39a404d96
- * Eurydice: e1ef8138cb02de6d110aa5d2d2ad6c2d07c3a6b4
- * Karamel: e098c05f84f94f665d40f86afbfde281e4fdd523
+ * Eurydice: c56c8e9064adf185d0b238410ad26c7cacad5ea9
+ * Karamel: 9d54cd127aa59cc88e399a0247b4091d1819909b
  * F*: ef93b7d15a315f3eb0864cb7bb93074582524e2a
- * Libcrux: 59fcb15a95eb34a4e4776aa96505d2ea078c0d5c
+ * Libcrux: 62dc8d63df5a2c0d0008ef12cf7d98d7c53a8feb
  */
 
 #include "internal/libcrux_mlkem_portable.h"
@@ -856,22 +856,8 @@ const uint8_t
 KRML_MUSTINLINE libcrux_ml_kem_vector_portable_vector_type_PortableVector
 libcrux_ml_kem_vector_portable_vector_type_zero(void) {
   libcrux_ml_kem_vector_portable_vector_type_PortableVector lit;
-  lit.elements[0U] = (int16_t)0;
-  lit.elements[1U] = (int16_t)0;
-  lit.elements[2U] = (int16_t)0;
-  lit.elements[3U] = (int16_t)0;
-  lit.elements[4U] = (int16_t)0;
-  lit.elements[5U] = (int16_t)0;
-  lit.elements[6U] = (int16_t)0;
-  lit.elements[7U] = (int16_t)0;
-  lit.elements[8U] = (int16_t)0;
-  lit.elements[9U] = (int16_t)0;
-  lit.elements[10U] = (int16_t)0;
-  lit.elements[11U] = (int16_t)0;
-  lit.elements[12U] = (int16_t)0;
-  lit.elements[13U] = (int16_t)0;
-  lit.elements[14U] = (int16_t)0;
-  lit.elements[15U] = (int16_t)0;
+  int16_t repeat_expression[16U] = {0U};
+  memcpy(lit.elements, repeat_expression, (size_t)16U * sizeof(int16_t));
   return lit;
 }
 
@@ -2373,22 +2359,14 @@ with const generics
 */
 static libcrux_ml_kem_polynomial_PolynomialRingElement_1d ZERO_ef_96(void) {
   libcrux_ml_kem_polynomial_PolynomialRingElement_1d lit;
-  lit.coefficients[0U] = libcrux_ml_kem_vector_portable_ZERO_2c();
-  lit.coefficients[1U] = libcrux_ml_kem_vector_portable_ZERO_2c();
-  lit.coefficients[2U] = libcrux_ml_kem_vector_portable_ZERO_2c();
-  lit.coefficients[3U] = libcrux_ml_kem_vector_portable_ZERO_2c();
-  lit.coefficients[4U] = libcrux_ml_kem_vector_portable_ZERO_2c();
-  lit.coefficients[5U] = libcrux_ml_kem_vector_portable_ZERO_2c();
-  lit.coefficients[6U] = libcrux_ml_kem_vector_portable_ZERO_2c();
-  lit.coefficients[7U] = libcrux_ml_kem_vector_portable_ZERO_2c();
-  lit.coefficients[8U] = libcrux_ml_kem_vector_portable_ZERO_2c();
-  lit.coefficients[9U] = libcrux_ml_kem_vector_portable_ZERO_2c();
-  lit.coefficients[10U] = libcrux_ml_kem_vector_portable_ZERO_2c();
-  lit.coefficients[11U] = libcrux_ml_kem_vector_portable_ZERO_2c();
-  lit.coefficients[12U] = libcrux_ml_kem_vector_portable_ZERO_2c();
-  lit.coefficients[13U] = libcrux_ml_kem_vector_portable_ZERO_2c();
-  lit.coefficients[14U] = libcrux_ml_kem_vector_portable_ZERO_2c();
-  lit.coefficients[15U] = libcrux_ml_kem_vector_portable_ZERO_2c();
+  libcrux_ml_kem_vector_portable_vector_type_PortableVector
+      repeat_expression[16U];
+  KRML_MAYBE_FOR16(
+      i, (size_t)0U, (size_t)16U, (size_t)1U,
+      repeat_expression[i] = libcrux_ml_kem_vector_portable_ZERO_2c(););
+  memcpy(lit.coefficients, repeat_expression,
+         (size_t)16U *
+             sizeof(libcrux_ml_kem_vector_portable_vector_type_PortableVector));
   return lit;
 }
 
@@ -2750,10 +2728,12 @@ with const generics
 */
 static IndCpaPrivateKeyUnpacked_af default_1a_d0(void) {
   IndCpaPrivateKeyUnpacked_af lit;
-  lit.secret_as_ntt[0U] = ZERO_ef_96();
-  lit.secret_as_ntt[1U] = ZERO_ef_96();
-  lit.secret_as_ntt[2U] = ZERO_ef_96();
-  lit.secret_as_ntt[3U] = ZERO_ef_96();
+  libcrux_ml_kem_polynomial_PolynomialRingElement_1d repeat_expression[4U];
+  KRML_MAYBE_FOR4(i, (size_t)0U, (size_t)4U, (size_t)1U,
+                  repeat_expression[i] = ZERO_ef_96(););
+  memcpy(
+      lit.secret_as_ntt, repeat_expression,
+      (size_t)4U * sizeof(libcrux_ml_kem_polynomial_PolynomialRingElement_1d));
   return lit;
 }
 
@@ -2790,22 +2770,18 @@ static IndCpaPublicKeyUnpacked_af default_8d_d0(void) {
       lit.t_as_ntt, uu____0,
       (size_t)4U * sizeof(libcrux_ml_kem_polynomial_PolynomialRingElement_1d));
   memcpy(lit.seed_for_A, uu____1, (size_t)32U * sizeof(uint8_t));
-  lit.A[0U][0U] = ZERO_ef_96();
-  lit.A[0U][1U] = ZERO_ef_96();
-  lit.A[0U][2U] = ZERO_ef_96();
-  lit.A[0U][3U] = ZERO_ef_96();
-  lit.A[1U][0U] = ZERO_ef_96();
-  lit.A[1U][1U] = ZERO_ef_96();
-  lit.A[1U][2U] = ZERO_ef_96();
-  lit.A[1U][3U] = ZERO_ef_96();
-  lit.A[2U][0U] = ZERO_ef_96();
-  lit.A[2U][1U] = ZERO_ef_96();
-  lit.A[2U][2U] = ZERO_ef_96();
-  lit.A[2U][3U] = ZERO_ef_96();
-  lit.A[3U][0U] = ZERO_ef_96();
-  lit.A[3U][1U] = ZERO_ef_96();
-  lit.A[3U][2U] = ZERO_ef_96();
-  lit.A[3U][3U] = ZERO_ef_96();
+  libcrux_ml_kem_polynomial_PolynomialRingElement_1d repeat_expression0[4U][4U];
+  KRML_MAYBE_FOR4(
+      i0, (size_t)0U, (size_t)4U, (size_t)1U,
+      libcrux_ml_kem_polynomial_PolynomialRingElement_1d repeat_expression[4U];
+      KRML_MAYBE_FOR4(i, (size_t)0U, (size_t)4U, (size_t)1U,
+                      repeat_expression[i] = ZERO_ef_96(););
+      memcpy(repeat_expression0[i0], repeat_expression,
+             (size_t)4U *
+                 sizeof(libcrux_ml_kem_polynomial_PolynomialRingElement_1d)););
+  memcpy(lit.A, repeat_expression0,
+         (size_t)4U *
+             sizeof(libcrux_ml_kem_polynomial_PolynomialRingElement_1d[4U]));
   return lit;
 }
 
@@ -3133,22 +3109,14 @@ with const generics
 */
 static libcrux_ml_kem_polynomial_PolynomialRingElement_1d ZERO_96(void) {
   libcrux_ml_kem_polynomial_PolynomialRingElement_1d lit;
-  lit.coefficients[0U] = libcrux_ml_kem_vector_portable_ZERO_2c();
-  lit.coefficients[1U] = libcrux_ml_kem_vector_portable_ZERO_2c();
-  lit.coefficients[2U] = libcrux_ml_kem_vector_portable_ZERO_2c();
-  lit.coefficients[3U] = libcrux_ml_kem_vector_portable_ZERO_2c();
-  lit.coefficients[4U] = libcrux_ml_kem_vector_portable_ZERO_2c();
-  lit.coefficients[5U] = libcrux_ml_kem_vector_portable_ZERO_2c();
-  lit.coefficients[6U] = libcrux_ml_kem_vector_portable_ZERO_2c();
-  lit.coefficients[7U] = libcrux_ml_kem_vector_portable_ZERO_2c();
-  lit.coefficients[8U] = libcrux_ml_kem_vector_portable_ZERO_2c();
-  lit.coefficients[9U] = libcrux_ml_kem_vector_portable_ZERO_2c();
-  lit.coefficients[10U] = libcrux_ml_kem_vector_portable_ZERO_2c();
-  lit.coefficients[11U] = libcrux_ml_kem_vector_portable_ZERO_2c();
-  lit.coefficients[12U] = libcrux_ml_kem_vector_portable_ZERO_2c();
-  lit.coefficients[13U] = libcrux_ml_kem_vector_portable_ZERO_2c();
-  lit.coefficients[14U] = libcrux_ml_kem_vector_portable_ZERO_2c();
-  lit.coefficients[15U] = libcrux_ml_kem_vector_portable_ZERO_2c();
+  libcrux_ml_kem_vector_portable_vector_type_PortableVector
+      repeat_expression[16U];
+  KRML_MAYBE_FOR16(
+      i, (size_t)0U, (size_t)16U, (size_t)1U,
+      repeat_expression[i] = libcrux_ml_kem_vector_portable_ZERO_2c(););
+  memcpy(lit.coefficients, repeat_expression,
+         (size_t)16U *
+             sizeof(libcrux_ml_kem_vector_portable_vector_type_PortableVector));
   return lit;
 }
 
@@ -6113,8 +6081,12 @@ with const generics
 */
 static IndCpaPrivateKeyUnpacked_d4 default_1a_a0(void) {
   IndCpaPrivateKeyUnpacked_d4 lit;
-  lit.secret_as_ntt[0U] = ZERO_ef_96();
-  lit.secret_as_ntt[1U] = ZERO_ef_96();
+  libcrux_ml_kem_polynomial_PolynomialRingElement_1d repeat_expression[2U];
+  KRML_MAYBE_FOR2(i, (size_t)0U, (size_t)2U, (size_t)1U,
+                  repeat_expression[i] = ZERO_ef_96(););
+  memcpy(
+      lit.secret_as_ntt, repeat_expression,
+      (size_t)2U * sizeof(libcrux_ml_kem_polynomial_PolynomialRingElement_1d));
   return lit;
 }
 
@@ -6151,10 +6123,18 @@ static IndCpaPublicKeyUnpacked_d4 default_8d_a0(void) {
       lit.t_as_ntt, uu____0,
       (size_t)2U * sizeof(libcrux_ml_kem_polynomial_PolynomialRingElement_1d));
   memcpy(lit.seed_for_A, uu____1, (size_t)32U * sizeof(uint8_t));
-  lit.A[0U][0U] = ZERO_ef_96();
-  lit.A[0U][1U] = ZERO_ef_96();
-  lit.A[1U][0U] = ZERO_ef_96();
-  lit.A[1U][1U] = ZERO_ef_96();
+  libcrux_ml_kem_polynomial_PolynomialRingElement_1d repeat_expression0[2U][2U];
+  KRML_MAYBE_FOR2(
+      i0, (size_t)0U, (size_t)2U, (size_t)1U,
+      libcrux_ml_kem_polynomial_PolynomialRingElement_1d repeat_expression[2U];
+      KRML_MAYBE_FOR2(i, (size_t)0U, (size_t)2U, (size_t)1U,
+                      repeat_expression[i] = ZERO_ef_96(););
+      memcpy(repeat_expression0[i0], repeat_expression,
+             (size_t)2U *
+                 sizeof(libcrux_ml_kem_polynomial_PolynomialRingElement_1d)););
+  memcpy(lit.A, repeat_expression0,
+         (size_t)2U *
+             sizeof(libcrux_ml_kem_polynomial_PolynomialRingElement_1d[2U]));
   return lit;
 }
 
@@ -8196,9 +8176,12 @@ with const generics
 */
 static IndCpaPrivateKeyUnpacked_a0 default_1a_1b(void) {
   IndCpaPrivateKeyUnpacked_a0 lit;
-  lit.secret_as_ntt[0U] = ZERO_ef_96();
-  lit.secret_as_ntt[1U] = ZERO_ef_96();
-  lit.secret_as_ntt[2U] = ZERO_ef_96();
+  libcrux_ml_kem_polynomial_PolynomialRingElement_1d repeat_expression[3U];
+  KRML_MAYBE_FOR3(i, (size_t)0U, (size_t)3U, (size_t)1U,
+                  repeat_expression[i] = ZERO_ef_96(););
+  memcpy(
+      lit.secret_as_ntt, repeat_expression,
+      (size_t)3U * sizeof(libcrux_ml_kem_polynomial_PolynomialRingElement_1d));
   return lit;
 }
 
@@ -8235,15 +8218,18 @@ static IndCpaPublicKeyUnpacked_a0 default_8d_1b(void) {
       lit.t_as_ntt, uu____0,
       (size_t)3U * sizeof(libcrux_ml_kem_polynomial_PolynomialRingElement_1d));
   memcpy(lit.seed_for_A, uu____1, (size_t)32U * sizeof(uint8_t));
-  lit.A[0U][0U] = ZERO_ef_96();
-  lit.A[0U][1U] = ZERO_ef_96();
-  lit.A[0U][2U] = ZERO_ef_96();
-  lit.A[1U][0U] = ZERO_ef_96();
-  lit.A[1U][1U] = ZERO_ef_96();
-  lit.A[1U][2U] = ZERO_ef_96();
-  lit.A[2U][0U] = ZERO_ef_96();
-  lit.A[2U][1U] = ZERO_ef_96();
-  lit.A[2U][2U] = ZERO_ef_96();
+  libcrux_ml_kem_polynomial_PolynomialRingElement_1d repeat_expression0[3U][3U];
+  KRML_MAYBE_FOR3(
+      i0, (size_t)0U, (size_t)3U, (size_t)1U,
+      libcrux_ml_kem_polynomial_PolynomialRingElement_1d repeat_expression[3U];
+      KRML_MAYBE_FOR3(i, (size_t)0U, (size_t)3U, (size_t)1U,
+                      repeat_expression[i] = ZERO_ef_96(););
+      memcpy(repeat_expression0[i0], repeat_expression,
+             (size_t)3U *
+                 sizeof(libcrux_ml_kem_polynomial_PolynomialRingElement_1d)););
+  memcpy(lit.A, repeat_expression0,
+         (size_t)3U *
+             sizeof(libcrux_ml_kem_polynomial_PolynomialRingElement_1d[3U]));
   return lit;
 }
 
