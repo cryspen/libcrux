@@ -223,11 +223,11 @@ Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
     =
     (fun (v_SHIFT_BY: i32) (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) ->
         Libcrux_ml_kem.Vector.Portable.Arithmetic.shift_right v_SHIFT_BY v);
-    f_cond_subtract_3329_pre
+    f_cond_subtract_3329__pre
     =
     (fun (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) ->
         Spec.Utils.is_i16b_array (pow2 12 - 1) (impl.f_repr v));
-    f_cond_subtract_3329_post
+    f_cond_subtract_3329__post
     =
     (fun
         (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
@@ -277,12 +277,12 @@ Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
           reveal_opaque (`%Spec.Utils.is_i16b_array_opaque) Spec.Utils.is_i16b_array_opaque
         in
         Libcrux_ml_kem.Vector.Portable.Arithmetic.montgomery_multiply_by_constant v r);
-    f_compress_1_pre
+    f_compress_1__pre
     =
     (fun (a: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) ->
         forall (i: nat).
           i < 16 ==> v (Seq.index (impl.f_repr a) i) >= 0 /\ v (Seq.index (impl.f_repr a) i) < 3329);
-    f_compress_1_post
+    f_compress_1__post
     =
     (fun
         (a: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
@@ -540,11 +540,11 @@ Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
           reveal_opaque (`%Spec.Utils.is_i16b_array_opaque) Spec.Utils.is_i16b_array_opaque
         in
         Libcrux_ml_kem.Vector.Portable.Ntt.ntt_multiply lhs rhs zeta0 zeta1 zeta2 zeta3);
-    f_serialize_1_pre
+    f_serialize_1__pre
     =
     (fun (a: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) ->
         Spec.MLKEM.serialize_pre 1 (impl.f_repr a));
-    f_serialize_1_post
+    f_serialize_1__post
     =
     (fun
         (a: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
@@ -555,19 +555,19 @@ Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
     f_serialize_1_
     =
     (fun (a: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) -> serialize_1_ a);
-    f_deserialize_1_pre
+    f_deserialize_1__pre
     =
     (fun (a: t_Slice u8) -> (Core.Slice.impl__len #u8 a <: usize) =. mk_usize 2);
-    f_deserialize_1_post
+    f_deserialize_1__post
     =
     (fun (a: t_Slice u8) (out: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) ->
         sz (Seq.length a) =. sz 2 ==> Spec.MLKEM.deserialize_post 1 a (impl.f_repr out));
     f_deserialize_1_ = (fun (a: t_Slice u8) -> deserialize_1_ a);
-    f_serialize_4_pre
+    f_serialize_4__pre
     =
     (fun (a: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) ->
         Spec.MLKEM.serialize_pre 4 (impl.f_repr a));
-    f_serialize_4_post
+    f_serialize_4__post
     =
     (fun
         (a: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
@@ -578,18 +578,18 @@ Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
     f_serialize_4_
     =
     (fun (a: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) -> serialize_4_ a);
-    f_deserialize_4_pre
+    f_deserialize_4__pre
     =
     (fun (a: t_Slice u8) -> (Core.Slice.impl__len #u8 a <: usize) =. mk_usize 8);
-    f_deserialize_4_post
+    f_deserialize_4__post
     =
     (fun (a: t_Slice u8) (out: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) ->
         sz (Seq.length a) =. sz 8 ==> Spec.MLKEM.deserialize_post 4 a (impl.f_repr out));
     f_deserialize_4_ = (fun (a: t_Slice u8) -> deserialize_4_ a);
-    f_serialize_5_pre
+    f_serialize_5__pre
     =
     (fun (a: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) -> true);
-    f_serialize_5_post
+    f_serialize_5__post
     =
     (fun
         (a: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
@@ -599,18 +599,18 @@ Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
     f_serialize_5_
     =
     (fun (a: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) -> serialize_5_ a);
-    f_deserialize_5_pre
+    f_deserialize_5__pre
     =
     (fun (a: t_Slice u8) -> (Core.Slice.impl__len #u8 a <: usize) =. mk_usize 10);
-    f_deserialize_5_post
+    f_deserialize_5__post
     =
     (fun (a: t_Slice u8) (out: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) -> true);
     f_deserialize_5_ = (fun (a: t_Slice u8) -> deserialize_5_ a);
-    f_serialize_10_pre
+    f_serialize_10__pre
     =
     (fun (a: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) ->
         Spec.MLKEM.serialize_pre 10 (impl.f_repr a));
-    f_serialize_10_post
+    f_serialize_10__post
     =
     (fun
         (a: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
@@ -621,18 +621,18 @@ Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
     f_serialize_10_
     =
     (fun (a: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) -> serialize_10_ a);
-    f_deserialize_10_pre
+    f_deserialize_10__pre
     =
     (fun (a: t_Slice u8) -> (Core.Slice.impl__len #u8 a <: usize) =. mk_usize 20);
-    f_deserialize_10_post
+    f_deserialize_10__post
     =
     (fun (a: t_Slice u8) (out: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) ->
         sz (Seq.length a) =. sz 20 ==> Spec.MLKEM.deserialize_post 10 a (impl.f_repr out));
     f_deserialize_10_ = (fun (a: t_Slice u8) -> deserialize_10_ a);
-    f_serialize_11_pre
+    f_serialize_11__pre
     =
     (fun (a: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) -> true);
-    f_serialize_11_post
+    f_serialize_11__post
     =
     (fun
         (a: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
@@ -642,18 +642,18 @@ Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
     f_serialize_11_
     =
     (fun (a: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) -> serialize_11_ a);
-    f_deserialize_11_pre
+    f_deserialize_11__pre
     =
     (fun (a: t_Slice u8) -> (Core.Slice.impl__len #u8 a <: usize) =. mk_usize 22);
-    f_deserialize_11_post
+    f_deserialize_11__post
     =
     (fun (a: t_Slice u8) (out: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) -> true);
     f_deserialize_11_ = (fun (a: t_Slice u8) -> deserialize_11_ a);
-    f_serialize_12_pre
+    f_serialize_12__pre
     =
     (fun (a: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) ->
         Spec.MLKEM.serialize_pre 12 (impl.f_repr a));
-    f_serialize_12_post
+    f_serialize_12__post
     =
     (fun
         (a: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
@@ -664,10 +664,10 @@ Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
     f_serialize_12_
     =
     (fun (a: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) -> serialize_12_ a);
-    f_deserialize_12_pre
+    f_deserialize_12__pre
     =
     (fun (a: t_Slice u8) -> (Core.Slice.impl__len #u8 a <: usize) =. mk_usize 24);
-    f_deserialize_12_post
+    f_deserialize_12__post
     =
     (fun (a: t_Slice u8) (out: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) ->
         sz (Seq.length a) =. sz 24 ==> Spec.MLKEM.deserialize_post 12 a (impl.f_repr out));

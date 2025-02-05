@@ -28,7 +28,7 @@ val ntt_at_layer_1_
       {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
       (zeta_i: usize)
       (re: Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
-      (v__initial_coefficient_bound: usize)
+      (e_initial_coefficient_bound: usize)
     : Prims.Pure (usize & Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
       (requires v zeta_i == 63 /\ ntt_re_range_2 re)
       (ensures
@@ -51,7 +51,7 @@ val ntt_at_layer_2_
       {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
       (zeta_i: usize)
       (re: Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
-      (v__initial_coefficient_bound: usize)
+      (e_initial_coefficient_bound: usize)
     : Prims.Pure (usize & Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
       (requires v zeta_i == 31 /\ ntt_re_range_3 re)
       (ensures
@@ -74,7 +74,7 @@ val ntt_at_layer_3_
       {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
       (zeta_i: usize)
       (re: Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
-      (v__initial_coefficient_bound: usize)
+      (e_initial_coefficient_bound: usize)
     : Prims.Pure (usize & Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
       (requires v zeta_i == 15 /\ ntt_re_range_4 re)
       (ensures
@@ -111,7 +111,7 @@ val ntt_at_layer_4_plus
       {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
       (zeta_i: usize)
       (re: Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
-      (layer v__initial_coefficient_bound: usize)
+      (layer e_initial_coefficient_bound: usize)
     : Prims.Pure (usize & Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
       (requires
         v layer >= 4 /\ v layer <= 7 /\

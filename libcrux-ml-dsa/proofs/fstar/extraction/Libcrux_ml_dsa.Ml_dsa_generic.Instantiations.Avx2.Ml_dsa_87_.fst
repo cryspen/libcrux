@@ -17,7 +17,7 @@ let _ =
   let open Libcrux_ml_dsa.Simd.Traits in
   ()
 
-let generate_key_pair___inner
+let generate_key_pair__e_inner
       (randomness: t_Array u8 (mk_usize 32))
       (signing_key verification_key: t_Slice u8)
      =
@@ -42,14 +42,14 @@ let generate_key_pair
       (signing_key verification_key: t_Slice u8)
      =
   let tmp0, tmp1:(t_Slice u8 & t_Slice u8) =
-    generate_key_pair___inner randomness signing_key verification_key
+    generate_key_pair__e_inner randomness signing_key verification_key
   in
   let signing_key:t_Slice u8 = tmp0 in
   let verification_key:t_Slice u8 = tmp1 in
   let _:Prims.unit = () in
   signing_key, verification_key <: (t_Slice u8 & t_Slice u8)
 
-let sign___inner
+let sign__e_inner
       (signing_key: t_Array u8 (mk_usize 4896))
       (message context: t_Slice u8)
       (randomness: t_Array u8 (mk_usize 32))
@@ -65,9 +65,9 @@ let sign
       (signing_key: t_Array u8 (mk_usize 4896))
       (message context: t_Slice u8)
       (randomness: t_Array u8 (mk_usize 32))
-     = sign___inner signing_key message context randomness
+     = sign__e_inner signing_key message context randomness
 
-let sign_mut___inner
+let sign_mut__e_inner
       (signing_key: t_Array u8 (mk_usize 4896))
       (message context: t_Slice u8)
       (randomness: t_Array u8 (mk_usize 32))
@@ -97,7 +97,7 @@ let sign_mut
      =
   let tmp0, out:(t_Array u8 (mk_usize 4627) &
     Core.Result.t_Result Prims.unit Libcrux_ml_dsa.Types.t_SigningError) =
-    sign_mut___inner signing_key message context randomness signature
+    sign_mut__e_inner signing_key message context randomness signature
   in
   let signature:t_Array u8 (mk_usize 4627) = tmp0 in
   let hax_temp_output:Core.Result.t_Result Prims.unit Libcrux_ml_dsa.Types.t_SigningError = out in
@@ -105,7 +105,7 @@ let sign_mut
   <:
   (t_Array u8 (mk_usize 4627) & Core.Result.t_Result Prims.unit Libcrux_ml_dsa.Types.t_SigningError)
 
-let sign_pre_hashed_shake128___inner
+let sign_pre_hashed_shake128__e_inner
       (signing_key: t_Array u8 (mk_usize 4896))
       (message context pre_hash_buffer: t_Slice u8)
       (randomness: t_Array u8 (mk_usize 32))
@@ -140,7 +140,7 @@ let sign_pre_hashed_shake128
   let tmp0, out:(t_Slice u8 &
     Core.Result.t_Result (Libcrux_ml_dsa.Types.t_MLDSASignature (mk_usize 4627))
       Libcrux_ml_dsa.Types.t_SigningError) =
-    sign_pre_hashed_shake128___inner signing_key message context pre_hash_buffer randomness
+    sign_pre_hashed_shake128__e_inner signing_key message context pre_hash_buffer randomness
   in
   let pre_hash_buffer:t_Slice u8 = tmp0 in
   let hax_temp_output:Core.Result.t_Result (Libcrux_ml_dsa.Types.t_MLDSASignature (mk_usize 4627))
@@ -153,7 +153,7 @@ let sign_pre_hashed_shake128
     Core.Result.t_Result (Libcrux_ml_dsa.Types.t_MLDSASignature (mk_usize 4627))
       Libcrux_ml_dsa.Types.t_SigningError)
 
-let verify___inner
+let verify__e_inner
       (verification_key: t_Array u8 (mk_usize 2592))
       (message context: t_Slice u8)
       (signature: t_Array u8 (mk_usize 4627))
@@ -172,9 +172,9 @@ let verify
       (verification_key: t_Array u8 (mk_usize 2592))
       (message context: t_Slice u8)
       (signature: t_Array u8 (mk_usize 4627))
-     = verify___inner verification_key message context signature
+     = verify__e_inner verification_key message context signature
 
-let verify_pre_hashed_shake128___inner
+let verify_pre_hashed_shake128__e_inner
       (verification_key: t_Array u8 (mk_usize 2592))
       (message context pre_hash_buffer: t_Slice u8)
       (signature: t_Array u8 (mk_usize 4627))
@@ -203,7 +203,7 @@ let verify_pre_hashed_shake128
      =
   let tmp0, out:(t_Slice u8 &
     Core.Result.t_Result Prims.unit Libcrux_ml_dsa.Types.t_VerificationError) =
-    verify_pre_hashed_shake128___inner verification_key message context pre_hash_buffer signature
+    verify_pre_hashed_shake128__e_inner verification_key message context pre_hash_buffer signature
   in
   let pre_hash_buffer:t_Slice u8 = tmp0 in
   let hax_temp_output:Core.Result.t_Result Prims.unit Libcrux_ml_dsa.Types.t_VerificationError =

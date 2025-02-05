@@ -21,7 +21,7 @@ let invert_ntt_at_layer_1_
      =
   let _:Prims.unit = reveal_opaque (`%invert_ntt_re_range_1) (invert_ntt_re_range_1 #v_Vector) in
   let _:Prims.unit = reveal_opaque (`%invert_ntt_re_range_2) (invert_ntt_re_range_2 #v_Vector) in
-  let v__zeta_i_init:usize = zeta_i in
+  let e_zeta_i_init:usize = zeta_i in
   let re, zeta_i:(Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector & usize) =
     Rust_primitives.Hax.Folds.fold_range (mk_usize 0)
       (mk_usize 16)
@@ -30,7 +30,7 @@ let invert_ntt_at_layer_1_
             temp_0_
           in
           let round:usize = round in
-          v zeta_i == v v__zeta_i_init - v round * 4 /\
+          v zeta_i == v e_zeta_i_init - v round * 4 /\
           (v round < 16 ==>
             (forall (i: nat).
                 (i >= v round /\ i < 16) ==>
@@ -100,7 +100,7 @@ let invert_ntt_at_layer_2_
       (re: Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
      =
   let _:Prims.unit = reveal_opaque (`%invert_ntt_re_range_2) (invert_ntt_re_range_2 #v_Vector) in
-  let v__zeta_i_init:usize = zeta_i in
+  let e_zeta_i_init:usize = zeta_i in
   let re, zeta_i:(Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector & usize) =
     Rust_primitives.Hax.Folds.fold_range (mk_usize 0)
       (mk_usize 16)
@@ -109,7 +109,7 @@ let invert_ntt_at_layer_2_
             temp_0_
           in
           let round:usize = round in
-          v zeta_i == v v__zeta_i_init - v round * 2 /\
+          v zeta_i == v e_zeta_i_init - v round * 2 /\
           (v round < 16 ==>
             (forall (i: nat).
                 (i >= v round /\ i < 16) ==>
@@ -177,7 +177,7 @@ let invert_ntt_at_layer_3_
       (re: Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
      =
   let _:Prims.unit = reveal_opaque (`%invert_ntt_re_range_2) (invert_ntt_re_range_2 #v_Vector) in
-  let v__zeta_i_init:usize = zeta_i in
+  let e_zeta_i_init:usize = zeta_i in
   let re, zeta_i:(Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector & usize) =
     Rust_primitives.Hax.Folds.fold_range (mk_usize 0)
       (mk_usize 16)
@@ -186,7 +186,7 @@ let invert_ntt_at_layer_3_
             temp_0_
           in
           let round:usize = round in
-          v zeta_i == v v__zeta_i_init - v round /\
+          v zeta_i == v e_zeta_i_init - v round /\
           (v round < 16 ==>
             (forall (i: nat).
                 (i >= v round /\ i < 16) ==>

@@ -8,11 +8,11 @@ let ntt_layer_1_step
       (zeta0 zeta1 zeta2 zeta3: i16)
      =
   let zetas:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
-    Libcrux_intrinsics.Avx2_extract.mm256_set_epi16 (Core.Ops.Arith.Neg.neg zeta3 <: i16)
-      (Core.Ops.Arith.Neg.neg zeta3 <: i16) zeta3 zeta3 (Core.Ops.Arith.Neg.neg zeta2 <: i16)
-      (Core.Ops.Arith.Neg.neg zeta2 <: i16) zeta2 zeta2 (Core.Ops.Arith.Neg.neg zeta1 <: i16)
-      (Core.Ops.Arith.Neg.neg zeta1 <: i16) zeta1 zeta1 (Core.Ops.Arith.Neg.neg zeta0 <: i16)
-      (Core.Ops.Arith.Neg.neg zeta0 <: i16) zeta0 zeta0
+    Libcrux_intrinsics.Avx2_extract.mm256_set_epi16 (Core.Ops.Arith.f_neg zeta3 <: i16)
+      (Core.Ops.Arith.f_neg zeta3 <: i16) zeta3 zeta3 (Core.Ops.Arith.f_neg zeta2 <: i16)
+      (Core.Ops.Arith.f_neg zeta2 <: i16) zeta2 zeta2 (Core.Ops.Arith.f_neg zeta1 <: i16)
+      (Core.Ops.Arith.f_neg zeta1 <: i16) zeta1 zeta1 (Core.Ops.Arith.f_neg zeta0 <: i16)
+      (Core.Ops.Arith.f_neg zeta0 <: i16) zeta0 zeta0
   in
   let rhs:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
     Libcrux_intrinsics.Avx2_extract.mm256_shuffle_epi32 (mk_i32 245) vector
@@ -27,11 +27,11 @@ let ntt_layer_1_step
 
 let ntt_layer_2_step (vector: Libcrux_intrinsics.Avx2_extract.t_Vec256) (zeta0 zeta1: i16) =
   let zetas:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
-    Libcrux_intrinsics.Avx2_extract.mm256_set_epi16 (Core.Ops.Arith.Neg.neg zeta1 <: i16)
-      (Core.Ops.Arith.Neg.neg zeta1 <: i16) (Core.Ops.Arith.Neg.neg zeta1 <: i16)
-      (Core.Ops.Arith.Neg.neg zeta1 <: i16) zeta1 zeta1 zeta1 zeta1
-      (Core.Ops.Arith.Neg.neg zeta0 <: i16) (Core.Ops.Arith.Neg.neg zeta0 <: i16)
-      (Core.Ops.Arith.Neg.neg zeta0 <: i16) (Core.Ops.Arith.Neg.neg zeta0 <: i16) zeta0 zeta0 zeta0
+    Libcrux_intrinsics.Avx2_extract.mm256_set_epi16 (Core.Ops.Arith.f_neg zeta1 <: i16)
+      (Core.Ops.Arith.f_neg zeta1 <: i16) (Core.Ops.Arith.f_neg zeta1 <: i16)
+      (Core.Ops.Arith.f_neg zeta1 <: i16) zeta1 zeta1 zeta1 zeta1
+      (Core.Ops.Arith.f_neg zeta0 <: i16) (Core.Ops.Arith.f_neg zeta0 <: i16)
+      (Core.Ops.Arith.f_neg zeta0 <: i16) (Core.Ops.Arith.f_neg zeta0 <: i16) zeta0 zeta0 zeta0
       zeta0
   in
   let rhs:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
@@ -214,17 +214,17 @@ let ntt_multiply (lhs rhs: Libcrux_intrinsics.Avx2_extract.t_Vec256) (zeta0 zeta
   in
   let right:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
     Libcrux_intrinsics.Avx2_extract.mm256_mullo_epi32 right
-      (Libcrux_intrinsics.Avx2_extract.mm256_set_epi32 (Core.Ops.Arith.Neg.neg (cast (zeta3 <: i16)
+      (Libcrux_intrinsics.Avx2_extract.mm256_set_epi32 (Core.Ops.Arith.f_neg (cast (zeta3 <: i16)
                 <:
                 i32)
             <:
             i32)
           (cast (zeta3 <: i16) <: i32)
-          (Core.Ops.Arith.Neg.neg (cast (zeta2 <: i16) <: i32) <: i32)
+          (Core.Ops.Arith.f_neg (cast (zeta2 <: i16) <: i32) <: i32)
           (cast (zeta2 <: i16) <: i32)
-          (Core.Ops.Arith.Neg.neg (cast (zeta1 <: i16) <: i32) <: i32)
+          (Core.Ops.Arith.f_neg (cast (zeta1 <: i16) <: i32) <: i32)
           (cast (zeta1 <: i16) <: i32)
-          (Core.Ops.Arith.Neg.neg (cast (zeta0 <: i16) <: i32) <: i32)
+          (Core.Ops.Arith.f_neg (cast (zeta0 <: i16) <: i32) <: i32)
           (cast (zeta0 <: i16) <: i32)
         <:
         Libcrux_intrinsics.Avx2_extract.t_Vec256)

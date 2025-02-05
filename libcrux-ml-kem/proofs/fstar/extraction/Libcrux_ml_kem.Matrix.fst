@@ -243,8 +243,8 @@ let compute_vector_u
   let result:t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K =
     Core.Array.from_fn #(Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
       v_K
-      (fun v__i ->
-          let v__i:usize = v__i in
+      (fun e_i ->
+          let e_i:usize = e_i in
           Libcrux_ml_kem.Polynomial.impl_2__ZERO #v_Vector ()
           <:
           Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)

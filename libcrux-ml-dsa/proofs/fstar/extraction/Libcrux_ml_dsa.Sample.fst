@@ -236,7 +236,7 @@ let sample_up_to_four_ring_elements_flat
     usize &
     v_Shake128 &
     t_Slice (t_Array i32 (mk_usize 263))) =
-    Rust_primitives.f_while_loop (fun temp_0_ ->
+    Rust_primitives.Hax.while_loop (fun temp_0_ ->
           let done0, done1, done2, done3, sampled0, sampled1, sampled2, sampled3, state, tmp_stack:(bool &
             bool &
             bool &
@@ -689,7 +689,7 @@ let sample_four_error_ring_elements
     usize &
     usize &
     v_Shake256) =
-    Rust_primitives.f_while_loop (fun temp_0_ ->
+    Rust_primitives.Hax.while_loop (fun temp_0_ ->
           let done0, done1, done2, done3, out, sampled0, sampled1, sampled2, sampled3, state:(bool &
             bool &
             bool &
@@ -1199,7 +1199,7 @@ let sample_challenge_ring_element
   let state:v_Shake256 = tmp0 in
   let randomness:t_Array u8 (mk_usize 136) = out in
   let signs:u64 =
-    Core.Num.impl__u64__from_le_bytes (Core.Result.impl__unwrap #(t_Array u8 (mk_usize 8))
+    Core.Num.impl_u64__from_le_bytes (Core.Result.impl__unwrap #(t_Array u8 (mk_usize 8))
           #Core.Array.t_TryFromSliceError
           (Core.Convert.f_try_into #(t_Slice u8)
               #(t_Array u8 (mk_usize 8))
@@ -1237,7 +1237,7 @@ let sample_challenge_ring_element
   let done:bool = out in
   let done, out_index, result, signs, state:(bool & usize & t_Array i32 (mk_usize 256) & u64 &
     v_Shake256) =
-    Rust_primitives.f_while_loop (fun temp_0_ ->
+    Rust_primitives.Hax.while_loop (fun temp_0_ ->
           let done, out_index, result, signs, state:(bool & usize & t_Array i32 (mk_usize 256) & u64 &
             v_Shake256) =
             temp_0_

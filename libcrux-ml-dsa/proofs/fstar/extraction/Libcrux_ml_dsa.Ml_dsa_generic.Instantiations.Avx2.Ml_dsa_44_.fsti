@@ -18,7 +18,7 @@ let _ =
   ()
 
 /// Key Generation.
-val generate_key_pair___inner
+val generate_key_pair__e_inner
       (randomness: t_Array u8 (mk_usize 32))
       (signing_key verification_key: t_Slice u8)
     : Prims.Pure (t_Slice u8 & t_Slice u8) Prims.l_True (fun _ -> Prims.l_True)
@@ -28,7 +28,7 @@ val generate_key_pair
       (signing_key verification_key: t_Slice u8)
     : Prims.Pure (t_Slice u8 & t_Slice u8) Prims.l_True (fun _ -> Prims.l_True)
 
-val sign___inner
+val sign__e_inner
       (signing_key: t_Array u8 (mk_usize 2560))
       (message context: t_Slice u8)
       (randomness: t_Array u8 (mk_usize 32))
@@ -45,7 +45,7 @@ val sign
       (Core.Result.t_Result (Libcrux_ml_dsa.Types.t_MLDSASignature (mk_usize 2420))
           Libcrux_ml_dsa.Types.t_SigningError) Prims.l_True (fun _ -> Prims.l_True)
 
-val sign_mut___inner
+val sign_mut__e_inner
       (signing_key: t_Array u8 (mk_usize 2560))
       (message context: t_Slice u8)
       (randomness: t_Array u8 (mk_usize 32))
@@ -68,7 +68,7 @@ val sign_mut
       Prims.l_True
       (fun _ -> Prims.l_True)
 
-val sign_pre_hashed_shake128___inner
+val sign_pre_hashed_shake128__e_inner
       (signing_key: t_Array u8 (mk_usize 2560))
       (message context pre_hash_buffer: t_Slice u8)
       (randomness: t_Array u8 (mk_usize 32))
@@ -87,7 +87,7 @@ val sign_pre_hashed_shake128
         Core.Result.t_Result (Libcrux_ml_dsa.Types.t_MLDSASignature (mk_usize 2420))
           Libcrux_ml_dsa.Types.t_SigningError) Prims.l_True (fun _ -> Prims.l_True)
 
-val verify___inner
+val verify__e_inner
       (verification_key: t_Array u8 (mk_usize 1312))
       (message context: t_Slice u8)
       (signature: t_Array u8 (mk_usize 2420))
@@ -104,7 +104,7 @@ val verify
       Prims.l_True
       (fun _ -> Prims.l_True)
 
-val verify_pre_hashed_shake128___inner
+val verify_pre_hashed_shake128__e_inner
       (verification_key: t_Array u8 (mk_usize 1312))
       (message context pre_hash_buffer: t_Slice u8)
       (signature: t_Array u8 (mk_usize 2420))

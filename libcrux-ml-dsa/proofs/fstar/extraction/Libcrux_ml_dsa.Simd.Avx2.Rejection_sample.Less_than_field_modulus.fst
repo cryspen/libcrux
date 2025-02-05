@@ -56,7 +56,7 @@ let bytestream_to_potential_coefficients (serialized: t_Slice u8) =
         Libcrux_intrinsics.Avx2_extract.t_Vec256)
   in
   Libcrux_intrinsics.Avx2_extract.mm256_and_si256 coefficients
-    (Libcrux_intrinsics.Avx2_extract.mm256_set1_epi32 bytestream_to_potential_coefficients__COEFFICIENT_MASK
+    (Libcrux_intrinsics.Avx2_extract.mm256_set1_epi32 bytestream_to_potential_coefficients__v_COEFFICIENT_MASK
 
       <:
       Libcrux_intrinsics.Avx2_extract.t_Vec256)
@@ -112,7 +112,7 @@ let sample (input: t_Slice u8) (output: t_Slice i32) =
         <:
         t_Slice i32)
   in
-  let sampled_count:usize = cast (Core.Num.impl__i32__count_ones good_lower_half <: u32) <: usize in
+  let sampled_count:usize = cast (Core.Num.impl_i32__count_ones good_lower_half <: u32) <: usize in
   let upper_shuffles:t_Array u8 (mk_usize 16) =
     Libcrux_ml_dsa.Simd.Avx2.Rejection_sample.Shuffle_table.v_SHUFFLE_TABLE.[ cast (good_upper_half
           <:
@@ -150,6 +150,6 @@ let sample (input: t_Slice u8) (output: t_Slice i32) =
         t_Slice i32)
   in
   let hax_temp_output:usize =
-    sampled_count +! (cast (Core.Num.impl__i32__count_ones good_upper_half <: u32) <: usize)
+    sampled_count +! (cast (Core.Num.impl_i32__count_ones good_upper_half <: u32) <: usize)
   in
   output, hax_temp_output <: (t_Slice i32 & usize)

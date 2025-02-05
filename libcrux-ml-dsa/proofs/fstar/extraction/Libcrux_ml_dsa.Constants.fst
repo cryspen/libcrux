@@ -5,8 +5,8 @@ open FStar.Mul
 
 let t_Eta_cast_to_repr (x: t_Eta) =
   match x <: t_Eta with
-  | Eta_Two  -> discriminant_Eta_Two
-  | Eta_Four  -> discriminant_Eta_Four
+  | Eta_Two  -> anon_const_Eta_Two__anon_const_0
+  | Eta_Four  -> anon_const_Eta_Four__anon_const_0
 
 [@@ FStar.Tactics.Typeclasses.tcinstance]
 assume

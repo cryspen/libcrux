@@ -31,10 +31,10 @@ let serialize
           let i, simd_unit:(usize & v_SIMDUnit) = temp_1_ in
           Rust_primitives.Hax.Monomorphized_update_at.update_at_range serialized
             ({
-                Core.Ops.Range.f_start = i *! serialize__OUTPUT_BYTES_PER_SIMD_UNIT <: usize;
+                Core.Ops.Range.f_start = i *! serialize__v_OUTPUT_BYTES_PER_SIMD_UNIT <: usize;
                 Core.Ops.Range.f_end
                 =
-                (i +! mk_usize 1 <: usize) *! serialize__OUTPUT_BYTES_PER_SIMD_UNIT <: usize
+                (i +! mk_usize 1 <: usize) *! serialize__v_OUTPUT_BYTES_PER_SIMD_UNIT <: usize
               }
               <:
               Core.Ops.Range.t_Range usize)
@@ -42,10 +42,10 @@ let serialize
                 #FStar.Tactics.Typeclasses.solve
                 simd_unit
                 (serialized.[ {
-                      Core.Ops.Range.f_start = i *! serialize__OUTPUT_BYTES_PER_SIMD_UNIT <: usize;
+                      Core.Ops.Range.f_start = i *! serialize__v_OUTPUT_BYTES_PER_SIMD_UNIT <: usize;
                       Core.Ops.Range.f_end
                       =
-                      (i +! mk_usize 1 <: usize) *! serialize__OUTPUT_BYTES_PER_SIMD_UNIT <: usize
+                      (i +! mk_usize 1 <: usize) *! serialize__v_OUTPUT_BYTES_PER_SIMD_UNIT <: usize
                     }
                     <:
                     Core.Ops.Range.t_Range usize ]
@@ -90,10 +90,10 @@ let deserialize
               (Libcrux_ml_dsa.Simd.Traits.f_t1_deserialize #v_SIMDUnit
                   #FStar.Tactics.Typeclasses.solve
                   (serialized.[ {
-                        Core.Ops.Range.f_start = i *! deserialize__WINDOW <: usize;
+                        Core.Ops.Range.f_start = i *! deserialize__v_WINDOW <: usize;
                         Core.Ops.Range.f_end
                         =
-                        (i +! mk_usize 1 <: usize) *! deserialize__WINDOW <: usize
+                        (i +! mk_usize 1 <: usize) *! deserialize__v_WINDOW <: usize
                       }
                       <:
                       Core.Ops.Range.t_Range usize ]
