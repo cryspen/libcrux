@@ -10,8 +10,9 @@ val serialize
       (serialized: t_Slice u8)
     : Prims.Pure (t_Slice u8) Prims.l_True (fun _ -> Prims.l_True)
 
-let deserialize__BITS_IN_LOWER_PART_OF_T_MASK: i32 =
-  (1l <<! (cast (Libcrux_ml_dsa.Constants.v_BITS_IN_LOWER_PART_OF_T <: usize) <: i32) <: i32) -! 1l
+let deserialize__v_BITS_IN_LOWER_PART_OF_T_MASK: i32 =
+  (mk_i32 1 <<! (cast (Libcrux_ml_dsa.Constants.v_BITS_IN_LOWER_PART_OF_T <: usize) <: i32) <: i32) -!
+  mk_i32 1
 
 val deserialize
       (serialized: t_Slice u8)

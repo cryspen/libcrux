@@ -4,18 +4,18 @@ open Core
 open FStar.Mul
 
 let butterfly_2_
-      (re: t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (sz 32))
+      (re: t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32))
       (index: usize)
       (zeta_a0 zeta_a1 zeta_a2 zeta_a3 zeta_b0 zeta_b1 zeta_b2 zeta_b3: i32)
      =
   let a:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
-    Libcrux_intrinsics.Avx2_extract.mm256_shuffle_epi32 216l
+    Libcrux_intrinsics.Avx2_extract.mm256_shuffle_epi32 (mk_i32 216)
       (re.[ index ] <: Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256)
         .Libcrux_ml_dsa.Simd.Avx2.Vector_type.f_value
   in
   let b:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
-    Libcrux_intrinsics.Avx2_extract.mm256_shuffle_epi32 216l
-      (re.[ index +! sz 1 <: usize ] <: Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256)
+    Libcrux_intrinsics.Avx2_extract.mm256_shuffle_epi32 (mk_i32 216)
+      (re.[ index +! mk_usize 1 <: usize ] <: Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256)
         .Libcrux_ml_dsa.Simd.Avx2.Vector_type.f_value
   in
   let summands:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
@@ -49,26 +49,26 @@ let butterfly_2_
   let b_terms_shuffled:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
     Libcrux_intrinsics.Avx2_extract.mm256_unpackhi_epi64 add_terms sub_terms
   in
-  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (sz 32) =
+  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32) =
     Rust_primitives.Hax.Monomorphized_update_at.update_at_usize re
       index
       ({
           Libcrux_ml_dsa.Simd.Avx2.Vector_type.f_value
           =
-          Libcrux_intrinsics.Avx2_extract.mm256_shuffle_epi32 216l a_terms_shuffled
+          Libcrux_intrinsics.Avx2_extract.mm256_shuffle_epi32 (mk_i32 216) a_terms_shuffled
           <:
           Libcrux_intrinsics.Avx2_extract.t_Vec256
         }
         <:
         Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256)
   in
-  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (sz 32) =
+  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32) =
     Rust_primitives.Hax.Monomorphized_update_at.update_at_usize re
-      (index +! sz 1 <: usize)
+      (index +! mk_usize 1 <: usize)
       ({
           Libcrux_ml_dsa.Simd.Avx2.Vector_type.f_value
           =
-          Libcrux_intrinsics.Avx2_extract.mm256_shuffle_epi32 216l b_terms_shuffled
+          Libcrux_intrinsics.Avx2_extract.mm256_shuffle_epi32 (mk_i32 216) b_terms_shuffled
           <:
           Libcrux_intrinsics.Avx2_extract.t_Vec256
         }
@@ -78,7 +78,7 @@ let butterfly_2_
   re
 
 let butterfly_4_
-      (re: t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (sz 32))
+      (re: t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32))
       (index: usize)
       (zeta_a0 zeta_a1 zeta_b0 zeta_b1: i32)
      =
@@ -87,7 +87,7 @@ let butterfly_4_
         <:
         Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256)
         .Libcrux_ml_dsa.Simd.Avx2.Vector_type.f_value
-      (re.[ index +! sz 1 <: usize ] <: Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256)
+      (re.[ index +! mk_usize 1 <: usize ] <: Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256)
         .Libcrux_ml_dsa.Simd.Avx2.Vector_type.f_value
   in
   let zeta_products:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
@@ -95,7 +95,7 @@ let butterfly_4_
         <:
         Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256)
         .Libcrux_ml_dsa.Simd.Avx2.Vector_type.f_value
-      (re.[ index +! sz 1 <: usize ] <: Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256)
+      (re.[ index +! mk_usize 1 <: usize ] <: Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256)
         .Libcrux_ml_dsa.Simd.Avx2.Vector_type.f_value
   in
   let zetas:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
@@ -117,7 +117,7 @@ let butterfly_4_
   let add_terms:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
     Libcrux_intrinsics.Avx2_extract.mm256_add_epi32 summands zeta_products
   in
-  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (sz 32) =
+  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32) =
     Rust_primitives.Hax.Monomorphized_update_at.update_at_usize re
       index
       ({
@@ -130,9 +130,9 @@ let butterfly_4_
         <:
         Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256)
   in
-  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (sz 32) =
+  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32) =
     Rust_primitives.Hax.Monomorphized_update_at.update_at_usize re
-      (index +! sz 1 <: usize)
+      (index +! mk_usize 1 <: usize)
       ({
           Libcrux_ml_dsa.Simd.Avx2.Vector_type.f_value
           =
@@ -146,13 +146,13 @@ let butterfly_4_
   re
 
 let butterfly_8_
-      (re: t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (sz 32))
+      (re: t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32))
       (index: usize)
       (zeta0 zeta1: i32)
      =
   let summands:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
     Libcrux_intrinsics.Avx2_extract.mm256_set_m128i (Libcrux_intrinsics.Avx2_extract.mm256_castsi256_si128
-          (re.[ index +! sz 1 <: usize ] <: Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256)
+          (re.[ index +! mk_usize 1 <: usize ] <: Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256)
             .Libcrux_ml_dsa.Simd.Avx2.Vector_type.f_value
         <:
         Libcrux_intrinsics.Avx2_extract.t_Vec128)
@@ -164,8 +164,8 @@ let butterfly_8_
         Libcrux_intrinsics.Avx2_extract.t_Vec128)
   in
   let zeta_products:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
-    Libcrux_intrinsics.Avx2_extract.mm256_permute2x128_si256 19l
-      (re.[ index +! sz 1 <: usize ] <: Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256)
+    Libcrux_intrinsics.Avx2_extract.mm256_permute2x128_si256 (mk_i32 19)
+      (re.[ index +! mk_usize 1 <: usize ] <: Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256)
         .Libcrux_ml_dsa.Simd.Avx2.Vector_type.f_value
       (re.[ index ] <: Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256)
         .Libcrux_ml_dsa.Simd.Avx2.Vector_type.f_value
@@ -182,7 +182,7 @@ let butterfly_8_
   let add_terms:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
     Libcrux_intrinsics.Avx2_extract.mm256_add_epi32 summands zeta_products
   in
-  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (sz 32) =
+  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32) =
     Rust_primitives.Hax.Monomorphized_update_at.update_at_usize re
       index
       ({
@@ -201,13 +201,13 @@ let butterfly_8_
         <:
         Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256)
   in
-  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (sz 32) =
+  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32) =
     Rust_primitives.Hax.Monomorphized_update_at.update_at_usize re
-      (index +! sz 1 <: usize)
+      (index +! mk_usize 1 <: usize)
       ({
           Libcrux_ml_dsa.Simd.Avx2.Vector_type.f_value
           =
-          Libcrux_intrinsics.Avx2_extract.mm256_permute2x128_si256 19l sub_terms add_terms
+          Libcrux_intrinsics.Avx2_extract.mm256_permute2x128_si256 (mk_i32 19) sub_terms add_terms
           <:
           Libcrux_intrinsics.Avx2_extract.t_Vec256
         }
@@ -216,176 +216,260 @@ let butterfly_8_
   in
   re
 
-let ntt_at_layer_0_ (re: t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (sz 32)) =
-  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (sz 32) =
-    butterfly_2_ re (sz 0) 2091667l 3407706l 2316500l 3817976l (-3342478l) 2244091l (-2446433l)
-      (-3562462l)
+let ntt_at_layer_0_ (re: t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32)) =
+  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32) =
+    butterfly_2_ re (mk_usize 0) (mk_i32 2091667) (mk_i32 3407706) (mk_i32 2316500) (mk_i32 3817976)
+      (mk_i32 (-3342478)) (mk_i32 2244091) (mk_i32 (-2446433)) (mk_i32 (-3562462))
   in
-  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (sz 32) =
-    butterfly_2_ re (sz 2) 266997l 2434439l (-1235728l) 3513181l (-3520352l) (-3759364l) (-1197226l)
-      (-3193378l)
+  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32) =
+    butterfly_2_ re (mk_usize 2) (mk_i32 266997) (mk_i32 2434439) (mk_i32 (-1235728))
+      (mk_i32 3513181) (mk_i32 (-3520352)) (mk_i32 (-3759364)) (mk_i32 (-1197226))
+      (mk_i32 (-3193378))
   in
-  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (sz 32) =
-    butterfly_2_ re (sz 4) 900702l 1859098l 909542l 819034l 495491l (-1613174l) (-43260l) (-522500l)
+  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32) =
+    butterfly_2_ re (mk_usize 4) (mk_i32 900702) (mk_i32 1859098) (mk_i32 909542) (mk_i32 819034)
+      (mk_i32 495491) (mk_i32 (-1613174)) (mk_i32 (-43260)) (mk_i32 (-522500))
   in
-  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (sz 32) =
-    butterfly_2_ re (sz 6) (-655327l) (-3122442l) 2031748l 3207046l (-3556995l) (-525098l)
-      (-768622l) (-3595838l)
+  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32) =
+    butterfly_2_ re (mk_usize 6) (mk_i32 (-655327)) (mk_i32 (-3122442)) (mk_i32 2031748)
+      (mk_i32 3207046) (mk_i32 (-3556995)) (mk_i32 (-525098)) (mk_i32 (-768622)) (mk_i32 (-3595838))
   in
-  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (sz 32) =
-    butterfly_2_ re (sz 8) 342297l 286988l (-2437823l) 4108315l 3437287l (-3342277l) 1735879l
-      203044l
+  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32) =
+    butterfly_2_ re (mk_usize 8) (mk_i32 342297) (mk_i32 286988) (mk_i32 (-2437823))
+      (mk_i32 4108315) (mk_i32 3437287) (mk_i32 (-3342277)) (mk_i32 1735879) (mk_i32 203044)
   in
-  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (sz 32) =
-    butterfly_2_ re (sz 10) 2842341l 2691481l (-2590150l) 1265009l 4055324l 1247620l 2486353l
-      1595974l
+  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32) =
+    butterfly_2_ re (mk_usize 10) (mk_i32 2842341) (mk_i32 2691481) (mk_i32 (-2590150))
+      (mk_i32 1265009) (mk_i32 4055324) (mk_i32 1247620) (mk_i32 2486353) (mk_i32 1595974)
   in
-  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (sz 32) =
-    butterfly_2_ re (sz 12) (-3767016l) 1250494l 2635921l (-3548272l) (-2994039l) 1869119l 1903435l
-      (-1050970l)
+  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32) =
+    butterfly_2_ re (mk_usize 12) (mk_i32 (-3767016)) (mk_i32 1250494) (mk_i32 2635921)
+      (mk_i32 (-3548272)) (mk_i32 (-2994039)) (mk_i32 1869119) (mk_i32 1903435) (mk_i32 (-1050970))
   in
-  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (sz 32) =
-    butterfly_2_ re (sz 14) (-1333058l) 1237275l (-3318210l) (-1430225l) (-451100l) 1312455l
-      3306115l (-1962642l)
+  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32) =
+    butterfly_2_ re (mk_usize 14) (mk_i32 (-1333058)) (mk_i32 1237275) (mk_i32 (-3318210))
+      (mk_i32 (-1430225)) (mk_i32 (-451100)) (mk_i32 1312455) (mk_i32 3306115) (mk_i32 (-1962642))
   in
-  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (sz 32) =
-    butterfly_2_ re (sz 16) (-1279661l) 1917081l (-2546312l) (-1374803l) 1500165l 777191l 2235880l
-      3406031l
+  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32) =
+    butterfly_2_ re (mk_usize 16) (mk_i32 (-1279661)) (mk_i32 1917081) (mk_i32 (-2546312))
+      (mk_i32 (-1374803)) (mk_i32 1500165) (mk_i32 777191) (mk_i32 2235880) (mk_i32 3406031)
   in
-  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (sz 32) =
-    butterfly_2_ re (sz 18) (-542412l) (-2831860l) (-1671176l) (-1846953l) (-2584293l) (-3724270l)
-      594136l (-3776993l)
+  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32) =
+    butterfly_2_ re (mk_usize 18) (mk_i32 (-542412)) (mk_i32 (-2831860)) (mk_i32 (-1671176))
+      (mk_i32 (-1846953)) (mk_i32 (-2584293)) (mk_i32 (-3724270)) (mk_i32 594136)
+      (mk_i32 (-3776993))
   in
-  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (sz 32) =
-    butterfly_2_ re (sz 20) (-2013608l) 2432395l 2454455l (-164721l) 1957272l 3369112l 185531l
-      (-1207385l)
+  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32) =
+    butterfly_2_ re (mk_usize 20) (mk_i32 (-2013608)) (mk_i32 2432395) (mk_i32 2454455)
+      (mk_i32 (-164721)) (mk_i32 1957272) (mk_i32 3369112) (mk_i32 185531) (mk_i32 (-1207385))
   in
-  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (sz 32) =
-    butterfly_2_ re (sz 22) (-3183426l) 162844l 1616392l 3014001l 810149l 1652634l (-3694233l)
-      (-1799107l)
+  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32) =
+    butterfly_2_ re (mk_usize 22) (mk_i32 (-3183426)) (mk_i32 162844) (mk_i32 1616392)
+      (mk_i32 3014001) (mk_i32 810149) (mk_i32 1652634) (mk_i32 (-3694233)) (mk_i32 (-1799107))
   in
-  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (sz 32) =
-    butterfly_2_ re (sz 24) (-3038916l) 3523897l 3866901l 269760l 2213111l (-975884l) 1717735l
-      472078l
+  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32) =
+    butterfly_2_ re (mk_usize 24) (mk_i32 (-3038916)) (mk_i32 3523897) (mk_i32 3866901)
+      (mk_i32 269760) (mk_i32 2213111) (mk_i32 (-975884)) (mk_i32 1717735) (mk_i32 472078)
   in
-  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (sz 32) =
-    butterfly_2_ re (sz 26) (-426683l) 1723600l (-1803090l) 1910376l (-1667432l) (-1104333l)
-      (-260646l) (-3833893l)
+  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32) =
+    butterfly_2_ re (mk_usize 26) (mk_i32 (-426683)) (mk_i32 1723600) (mk_i32 (-1803090))
+      (mk_i32 1910376) (mk_i32 (-1667432)) (mk_i32 (-1104333)) (mk_i32 (-260646))
+      (mk_i32 (-3833893))
   in
-  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (sz 32) =
-    butterfly_2_ re (sz 28) (-2939036l) (-2235985l) (-420899l) (-2286327l) 183443l (-976891l)
-      1612842l (-3545687l)
+  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32) =
+    butterfly_2_ re (mk_usize 28) (mk_i32 (-2939036)) (mk_i32 (-2235985)) (mk_i32 (-420899))
+      (mk_i32 (-2286327)) (mk_i32 183443) (mk_i32 (-976891)) (mk_i32 1612842) (mk_i32 (-3545687))
   in
-  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (sz 32) =
-    butterfly_2_ re (sz 30) (-554416l) 3919660l (-48306l) (-1362209l) 3937738l 1400424l (-846154l)
-      1976782l
-  in
-  re
-
-let ntt_at_layer_1_ (re: t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (sz 32)) =
-  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (sz 32) =
-    butterfly_4_ re (sz 0) (-3930395l) (-1528703l) (-3677745l) (-3041255l)
-  in
-  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (sz 32) =
-    butterfly_4_ re (sz 2) (-1452451l) 3475950l 2176455l (-1585221l)
-  in
-  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (sz 32) =
-    butterfly_4_ re (sz 4) (-1257611l) 1939314l (-4083598l) (-1000202l)
-  in
-  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (sz 32) =
-    butterfly_4_ re (sz 6) (-3190144l) (-3157330l) (-3632928l) 126922l
-  in
-  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (sz 32) =
-    butterfly_4_ re (sz 8) 3412210l (-983419l) 2147896l 2715295l
-  in
-  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (sz 32) =
-    butterfly_4_ re (sz 10) (-2967645l) (-3693493l) (-411027l) (-2477047l)
-  in
-  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (sz 32) =
-    butterfly_4_ re (sz 12) (-671102l) (-1228525l) (-22981l) (-1308169l)
-  in
-  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (sz 32) =
-    butterfly_4_ re (sz 14) (-381987l) 1349076l 1852771l (-1430430l)
-  in
-  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (sz 32) =
-    butterfly_4_ re (sz 16) (-3343383l) 264944l 508951l 3097992l
-  in
-  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (sz 32) =
-    butterfly_4_ re (sz 18) 44288l (-1100098l) 904516l 3958618l
-  in
-  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (sz 32) =
-    butterfly_4_ re (sz 20) (-3724342l) (-8578l) 1653064l (-3249728l)
-  in
-  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (sz 32) =
-    butterfly_4_ re (sz 22) 2389356l (-210977l) 759969l (-1316856l)
-  in
-  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (sz 32) =
-    butterfly_4_ re (sz 24) 189548l (-3553272l) 3159746l (-1851402l)
-  in
-  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (sz 32) =
-    butterfly_4_ re (sz 26) (-2409325l) (-177440l) 1315589l 1341330l
-  in
-  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (sz 32) =
-    butterfly_4_ re (sz 28) 1285669l (-1584928l) (-812732l) (-1439742l)
-  in
-  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (sz 32) =
-    butterfly_4_ re (sz 30) (-3019102l) (-3881060l) (-3628969l) 3839961l
+  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32) =
+    butterfly_2_ re (mk_usize 30) (mk_i32 (-554416)) (mk_i32 3919660) (mk_i32 (-48306))
+      (mk_i32 (-1362209)) (mk_i32 3937738) (mk_i32 1400424) (mk_i32 (-846154)) (mk_i32 1976782)
   in
   re
 
-let ntt_at_layer_2_ (re: t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (sz 32)) =
-  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (sz 32) =
-    butterfly_8_ re (sz 0) 2706023l 95776l
+let ntt_at_layer_1_ (re: t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32)) =
+  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32) =
+    butterfly_4_ re
+      (mk_usize 0)
+      (mk_i32 (-3930395))
+      (mk_i32 (-1528703))
+      (mk_i32 (-3677745))
+      (mk_i32 (-3041255))
   in
-  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (sz 32) =
-    butterfly_8_ re (sz 2) 3077325l 3530437l
+  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32) =
+    butterfly_4_ re
+      (mk_usize 2)
+      (mk_i32 (-1452451))
+      (mk_i32 3475950)
+      (mk_i32 2176455)
+      (mk_i32 (-1585221))
   in
-  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (sz 32) =
-    butterfly_8_ re (sz 4) (-1661693l) (-3592148l)
+  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32) =
+    butterfly_4_ re
+      (mk_usize 4)
+      (mk_i32 (-1257611))
+      (mk_i32 1939314)
+      (mk_i32 (-4083598))
+      (mk_i32 (-1000202))
   in
-  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (sz 32) =
-    butterfly_8_ re (sz 6) (-2537516l) 3915439l
+  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32) =
+    butterfly_4_ re
+      (mk_usize 6)
+      (mk_i32 (-3190144))
+      (mk_i32 (-3157330))
+      (mk_i32 (-3632928))
+      (mk_i32 126922)
   in
-  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (sz 32) =
-    butterfly_8_ re (sz 8) (-3861115l) (-3043716l)
+  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32) =
+    butterfly_4_ re
+      (mk_usize 8)
+      (mk_i32 3412210)
+      (mk_i32 (-983419))
+      (mk_i32 2147896)
+      (mk_i32 2715295)
   in
-  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (sz 32) =
-    butterfly_8_ re (sz 10) 3574422l (-2867647l)
+  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32) =
+    butterfly_4_ re
+      (mk_usize 10)
+      (mk_i32 (-2967645))
+      (mk_i32 (-3693493))
+      (mk_i32 (-411027))
+      (mk_i32 (-2477047))
   in
-  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (sz 32) =
-    butterfly_8_ re (sz 12) 3539968l (-300467l)
+  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32) =
+    butterfly_4_ re
+      (mk_usize 12)
+      (mk_i32 (-671102))
+      (mk_i32 (-1228525))
+      (mk_i32 (-22981))
+      (mk_i32 (-1308169))
   in
-  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (sz 32) =
-    butterfly_8_ re (sz 14) 2348700l (-539299l)
+  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32) =
+    butterfly_4_ re
+      (mk_usize 14)
+      (mk_i32 (-381987))
+      (mk_i32 1349076)
+      (mk_i32 1852771)
+      (mk_i32 (-1430430))
   in
-  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (sz 32) =
-    butterfly_8_ re (sz 16) (-1699267l) (-1643818l)
+  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32) =
+    butterfly_4_ re
+      (mk_usize 16)
+      (mk_i32 (-3343383))
+      (mk_i32 264944)
+      (mk_i32 508951)
+      (mk_i32 3097992)
   in
-  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (sz 32) =
-    butterfly_8_ re (sz 18) 3505694l (-3821735l)
+  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32) =
+    butterfly_4_ re
+      (mk_usize 18)
+      (mk_i32 44288)
+      (mk_i32 (-1100098))
+      (mk_i32 904516)
+      (mk_i32 3958618)
   in
-  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (sz 32) =
-    butterfly_8_ re (sz 20) 3507263l (-2140649l)
+  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32) =
+    butterfly_4_ re
+      (mk_usize 20)
+      (mk_i32 (-3724342))
+      (mk_i32 (-8578))
+      (mk_i32 1653064)
+      (mk_i32 (-3249728))
   in
-  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (sz 32) =
-    butterfly_8_ re (sz 22) (-1600420l) 3699596l
+  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32) =
+    butterfly_4_ re
+      (mk_usize 22)
+      (mk_i32 2389356)
+      (mk_i32 (-210977))
+      (mk_i32 759969)
+      (mk_i32 (-1316856))
   in
-  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (sz 32) =
-    butterfly_8_ re (sz 24) 811944l 531354l
+  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32) =
+    butterfly_4_ re
+      (mk_usize 24)
+      (mk_i32 189548)
+      (mk_i32 (-3553272))
+      (mk_i32 3159746)
+      (mk_i32 (-1851402))
   in
-  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (sz 32) =
-    butterfly_8_ re (sz 26) 954230l 3881043l
+  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32) =
+    butterfly_4_ re
+      (mk_usize 26)
+      (mk_i32 (-2409325))
+      (mk_i32 (-177440))
+      (mk_i32 1315589)
+      (mk_i32 1341330)
   in
-  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (sz 32) =
-    butterfly_8_ re (sz 28) 3900724l (-2556880l)
+  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32) =
+    butterfly_4_ re
+      (mk_usize 28)
+      (mk_i32 1285669)
+      (mk_i32 (-1584928))
+      (mk_i32 (-812732))
+      (mk_i32 (-1439742))
   in
-  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (sz 32) =
-    butterfly_8_ re (sz 30) 2071892l (-2797779l)
+  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32) =
+    butterfly_4_ re
+      (mk_usize 30)
+      (mk_i32 (-3019102))
+      (mk_i32 (-3881060))
+      (mk_i32 (-3628969))
+      (mk_i32 3839961)
+  in
+  re
+
+let ntt_at_layer_2_ (re: t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32)) =
+  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32) =
+    butterfly_8_ re (mk_usize 0) (mk_i32 2706023) (mk_i32 95776)
+  in
+  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32) =
+    butterfly_8_ re (mk_usize 2) (mk_i32 3077325) (mk_i32 3530437)
+  in
+  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32) =
+    butterfly_8_ re (mk_usize 4) (mk_i32 (-1661693)) (mk_i32 (-3592148))
+  in
+  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32) =
+    butterfly_8_ re (mk_usize 6) (mk_i32 (-2537516)) (mk_i32 3915439)
+  in
+  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32) =
+    butterfly_8_ re (mk_usize 8) (mk_i32 (-3861115)) (mk_i32 (-3043716))
+  in
+  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32) =
+    butterfly_8_ re (mk_usize 10) (mk_i32 3574422) (mk_i32 (-2867647))
+  in
+  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32) =
+    butterfly_8_ re (mk_usize 12) (mk_i32 3539968) (mk_i32 (-300467))
+  in
+  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32) =
+    butterfly_8_ re (mk_usize 14) (mk_i32 2348700) (mk_i32 (-539299))
+  in
+  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32) =
+    butterfly_8_ re (mk_usize 16) (mk_i32 (-1699267)) (mk_i32 (-1643818))
+  in
+  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32) =
+    butterfly_8_ re (mk_usize 18) (mk_i32 3505694) (mk_i32 (-3821735))
+  in
+  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32) =
+    butterfly_8_ re (mk_usize 20) (mk_i32 3507263) (mk_i32 (-2140649))
+  in
+  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32) =
+    butterfly_8_ re (mk_usize 22) (mk_i32 (-1600420)) (mk_i32 3699596)
+  in
+  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32) =
+    butterfly_8_ re (mk_usize 24) (mk_i32 811944) (mk_i32 531354)
+  in
+  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32) =
+    butterfly_8_ re (mk_usize 26) (mk_i32 954230) (mk_i32 3881043)
+  in
+  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32) =
+    butterfly_8_ re (mk_usize 28) (mk_i32 3900724) (mk_i32 (-2556880))
+  in
+  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32) =
+    butterfly_8_ re (mk_usize 30) (mk_i32 2071892) (mk_i32 (-2797779))
   in
   re
 
 let ntt_at_layer_7_and_6___mul
-      (re: t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (sz 32))
+      (re: t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32))
       (index: usize)
       (zeta: Libcrux_intrinsics.Avx2_extract.t_Vec256)
       (step_by: usize)
@@ -400,12 +484,12 @@ let ntt_at_layer_7_and_6___mul
   in
   let prod13:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
     Libcrux_intrinsics.Avx2_extract.mm256_mul_epi32 (Libcrux_intrinsics.Avx2_extract.mm256_shuffle_epi32
-          245l
+          (mk_i32 245)
           (re.[ index +! step_by <: usize ] <: Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256)
             .Libcrux_ml_dsa.Simd.Avx2.Vector_type.f_value
         <:
         Libcrux_intrinsics.Avx2_extract.t_Vec256)
-      (Libcrux_intrinsics.Avx2_extract.mm256_shuffle_epi32 245l zeta
+      (Libcrux_intrinsics.Avx2_extract.mm256_shuffle_epi32 (mk_i32 245) zeta
         <:
         Libcrux_intrinsics.Avx2_extract.t_Vec256)
   in
@@ -428,17 +512,17 @@ let ntt_at_layer_7_and_6___mul
     Libcrux_intrinsics.Avx2_extract.mm256_sub_epi32 prod13 c13
   in
   let res02_shifted:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
-    Libcrux_intrinsics.Avx2_extract.mm256_shuffle_epi32 245l res02
+    Libcrux_intrinsics.Avx2_extract.mm256_shuffle_epi32 (mk_i32 245) res02
   in
   let t:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
-    Libcrux_intrinsics.Avx2_extract.mm256_blend_epi32 170l res02_shifted res13
+    Libcrux_intrinsics.Avx2_extract.mm256_blend_epi32 (mk_i32 170) res02_shifted res13
   in
-  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (sz 32) =
+  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32) =
     Rust_primitives.Hax.Monomorphized_update_at.update_at_usize re
       (index +! step_by <: usize)
       (re.[ index ] <: Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256)
   in
-  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (sz 32) =
+  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32) =
     Rust_primitives.Hax.Monomorphized_update_at.update_at_usize re
       (index +! step_by <: usize)
       ({
@@ -456,7 +540,7 @@ let ntt_at_layer_7_and_6___mul
         <:
         Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256)
   in
-  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (sz 32) =
+  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32) =
     Rust_primitives.Hax.Monomorphized_update_at.update_at_usize re
       index
       ({
@@ -476,7 +560,7 @@ let ntt_at_layer_7_and_6___mul
   in
   re
 
-let ntt_at_layer_7_and_6_ (re: t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (sz 32)) =
+let ntt_at_layer_7_and_6_ (re: t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32)) =
   let field_modulus:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
     Libcrux_intrinsics.Avx2_extract.mm256_set1_epi32 Libcrux_ml_dsa.Simd.Traits.v_FIELD_MODULUS
   in
@@ -488,274 +572,274 @@ let ntt_at_layer_7_and_6_ (re: t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Ve
         i32)
   in
   let zeta7:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
-    Libcrux_intrinsics.Avx2_extract.mm256_set1_epi32 25847l
+    Libcrux_intrinsics.Avx2_extract.mm256_set1_epi32 (mk_i32 25847)
   in
   let zeta60:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
-    Libcrux_intrinsics.Avx2_extract.mm256_set1_epi32 (-2608894l)
+    Libcrux_intrinsics.Avx2_extract.mm256_set1_epi32 (mk_i32 (-2608894))
   in
   let zeta61:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
-    Libcrux_intrinsics.Avx2_extract.mm256_set1_epi32 (-518909l)
+    Libcrux_intrinsics.Avx2_extract.mm256_set1_epi32 (mk_i32 (-518909))
   in
-  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (sz 32) =
+  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32) =
     ntt_at_layer_7_and_6___mul re
-      (sz 0)
+      (mk_usize 0)
       zeta7
-      ntt_at_layer_7_and_6___STEP_BY_7_
+      ntt_at_layer_7_and_6___v_STEP_BY_7_
       field_modulus
       inverse_of_modulus_mod_montgomery_r
   in
-  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (sz 32) =
+  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32) =
     ntt_at_layer_7_and_6___mul re
-      (sz 0 +! sz 1 <: usize)
+      (mk_usize 0 +! mk_usize 1 <: usize)
       zeta7
-      ntt_at_layer_7_and_6___STEP_BY_7_
+      ntt_at_layer_7_and_6___v_STEP_BY_7_
       field_modulus
       inverse_of_modulus_mod_montgomery_r
   in
-  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (sz 32) =
+  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32) =
     ntt_at_layer_7_and_6___mul re
-      (sz 0 +! sz 2 <: usize)
+      (mk_usize 0 +! mk_usize 2 <: usize)
       zeta7
-      ntt_at_layer_7_and_6___STEP_BY_7_
+      ntt_at_layer_7_and_6___v_STEP_BY_7_
       field_modulus
       inverse_of_modulus_mod_montgomery_r
   in
-  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (sz 32) =
+  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32) =
     ntt_at_layer_7_and_6___mul re
-      (sz 0 +! sz 3 <: usize)
+      (mk_usize 0 +! mk_usize 3 <: usize)
       zeta7
-      ntt_at_layer_7_and_6___STEP_BY_7_
+      ntt_at_layer_7_and_6___v_STEP_BY_7_
       field_modulus
       inverse_of_modulus_mod_montgomery_r
   in
   let _:Prims.unit = () in
-  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (sz 32) =
+  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32) =
     ntt_at_layer_7_and_6___mul re
-      (sz 8)
+      (mk_usize 8)
       zeta7
-      ntt_at_layer_7_and_6___STEP_BY_7_
+      ntt_at_layer_7_and_6___v_STEP_BY_7_
       field_modulus
       inverse_of_modulus_mod_montgomery_r
   in
-  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (sz 32) =
+  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32) =
     ntt_at_layer_7_and_6___mul re
-      (sz 8 +! sz 1 <: usize)
+      (mk_usize 8 +! mk_usize 1 <: usize)
       zeta7
-      ntt_at_layer_7_and_6___STEP_BY_7_
+      ntt_at_layer_7_and_6___v_STEP_BY_7_
       field_modulus
       inverse_of_modulus_mod_montgomery_r
   in
-  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (sz 32) =
+  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32) =
     ntt_at_layer_7_and_6___mul re
-      (sz 8 +! sz 2 <: usize)
+      (mk_usize 8 +! mk_usize 2 <: usize)
       zeta7
-      ntt_at_layer_7_and_6___STEP_BY_7_
+      ntt_at_layer_7_and_6___v_STEP_BY_7_
       field_modulus
       inverse_of_modulus_mod_montgomery_r
   in
-  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (sz 32) =
+  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32) =
     ntt_at_layer_7_and_6___mul re
-      (sz 8 +! sz 3 <: usize)
+      (mk_usize 8 +! mk_usize 3 <: usize)
       zeta7
-      ntt_at_layer_7_and_6___STEP_BY_7_
+      ntt_at_layer_7_and_6___v_STEP_BY_7_
       field_modulus
       inverse_of_modulus_mod_montgomery_r
   in
   let _:Prims.unit = () in
-  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (sz 32) =
+  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32) =
     ntt_at_layer_7_and_6___mul re
-      (sz 0)
+      (mk_usize 0)
       zeta60
-      ntt_at_layer_7_and_6___STEP_BY_6_
+      ntt_at_layer_7_and_6___v_STEP_BY_6_
       field_modulus
       inverse_of_modulus_mod_montgomery_r
   in
-  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (sz 32) =
+  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32) =
     ntt_at_layer_7_and_6___mul re
-      (sz 0 +! sz 1 <: usize)
+      (mk_usize 0 +! mk_usize 1 <: usize)
       zeta60
-      ntt_at_layer_7_and_6___STEP_BY_6_
+      ntt_at_layer_7_and_6___v_STEP_BY_6_
       field_modulus
       inverse_of_modulus_mod_montgomery_r
   in
-  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (sz 32) =
+  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32) =
     ntt_at_layer_7_and_6___mul re
-      (sz 0 +! sz 2 <: usize)
+      (mk_usize 0 +! mk_usize 2 <: usize)
       zeta60
-      ntt_at_layer_7_and_6___STEP_BY_6_
+      ntt_at_layer_7_and_6___v_STEP_BY_6_
       field_modulus
       inverse_of_modulus_mod_montgomery_r
   in
-  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (sz 32) =
+  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32) =
     ntt_at_layer_7_and_6___mul re
-      (sz 0 +! sz 3 <: usize)
+      (mk_usize 0 +! mk_usize 3 <: usize)
       zeta60
-      ntt_at_layer_7_and_6___STEP_BY_6_
+      ntt_at_layer_7_and_6___v_STEP_BY_6_
       field_modulus
       inverse_of_modulus_mod_montgomery_r
   in
   let _:Prims.unit = () in
-  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (sz 32) =
+  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32) =
     ntt_at_layer_7_and_6___mul re
-      (sz 16)
+      (mk_usize 16)
       zeta61
-      ntt_at_layer_7_and_6___STEP_BY_6_
+      ntt_at_layer_7_and_6___v_STEP_BY_6_
       field_modulus
       inverse_of_modulus_mod_montgomery_r
   in
-  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (sz 32) =
+  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32) =
     ntt_at_layer_7_and_6___mul re
-      (sz 16 +! sz 1 <: usize)
+      (mk_usize 16 +! mk_usize 1 <: usize)
       zeta61
-      ntt_at_layer_7_and_6___STEP_BY_6_
+      ntt_at_layer_7_and_6___v_STEP_BY_6_
       field_modulus
       inverse_of_modulus_mod_montgomery_r
   in
-  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (sz 32) =
+  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32) =
     ntt_at_layer_7_and_6___mul re
-      (sz 16 +! sz 2 <: usize)
+      (mk_usize 16 +! mk_usize 2 <: usize)
       zeta61
-      ntt_at_layer_7_and_6___STEP_BY_6_
+      ntt_at_layer_7_and_6___v_STEP_BY_6_
       field_modulus
       inverse_of_modulus_mod_montgomery_r
   in
-  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (sz 32) =
+  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32) =
     ntt_at_layer_7_and_6___mul re
-      (sz 16 +! sz 3 <: usize)
+      (mk_usize 16 +! mk_usize 3 <: usize)
       zeta61
-      ntt_at_layer_7_and_6___STEP_BY_6_
+      ntt_at_layer_7_and_6___v_STEP_BY_6_
       field_modulus
       inverse_of_modulus_mod_montgomery_r
   in
   let _:Prims.unit = () in
-  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (sz 32) =
+  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32) =
     ntt_at_layer_7_and_6___mul re
-      (sz 4)
+      (mk_usize 4)
       zeta7
-      ntt_at_layer_7_and_6___STEP_BY_7_
+      ntt_at_layer_7_and_6___v_STEP_BY_7_
       field_modulus
       inverse_of_modulus_mod_montgomery_r
   in
-  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (sz 32) =
+  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32) =
     ntt_at_layer_7_and_6___mul re
-      (sz 4 +! sz 1 <: usize)
+      (mk_usize 4 +! mk_usize 1 <: usize)
       zeta7
-      ntt_at_layer_7_and_6___STEP_BY_7_
+      ntt_at_layer_7_and_6___v_STEP_BY_7_
       field_modulus
       inverse_of_modulus_mod_montgomery_r
   in
-  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (sz 32) =
+  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32) =
     ntt_at_layer_7_and_6___mul re
-      (sz 4 +! sz 2 <: usize)
+      (mk_usize 4 +! mk_usize 2 <: usize)
       zeta7
-      ntt_at_layer_7_and_6___STEP_BY_7_
+      ntt_at_layer_7_and_6___v_STEP_BY_7_
       field_modulus
       inverse_of_modulus_mod_montgomery_r
   in
-  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (sz 32) =
+  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32) =
     ntt_at_layer_7_and_6___mul re
-      (sz 4 +! sz 3 <: usize)
+      (mk_usize 4 +! mk_usize 3 <: usize)
       zeta7
-      ntt_at_layer_7_and_6___STEP_BY_7_
+      ntt_at_layer_7_and_6___v_STEP_BY_7_
       field_modulus
       inverse_of_modulus_mod_montgomery_r
   in
   let _:Prims.unit = () in
-  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (sz 32) =
+  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32) =
     ntt_at_layer_7_and_6___mul re
-      (sz 12)
+      (mk_usize 12)
       zeta7
-      ntt_at_layer_7_and_6___STEP_BY_7_
+      ntt_at_layer_7_and_6___v_STEP_BY_7_
       field_modulus
       inverse_of_modulus_mod_montgomery_r
   in
-  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (sz 32) =
+  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32) =
     ntt_at_layer_7_and_6___mul re
-      (sz 12 +! sz 1 <: usize)
+      (mk_usize 12 +! mk_usize 1 <: usize)
       zeta7
-      ntt_at_layer_7_and_6___STEP_BY_7_
+      ntt_at_layer_7_and_6___v_STEP_BY_7_
       field_modulus
       inverse_of_modulus_mod_montgomery_r
   in
-  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (sz 32) =
+  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32) =
     ntt_at_layer_7_and_6___mul re
-      (sz 12 +! sz 2 <: usize)
+      (mk_usize 12 +! mk_usize 2 <: usize)
       zeta7
-      ntt_at_layer_7_and_6___STEP_BY_7_
+      ntt_at_layer_7_and_6___v_STEP_BY_7_
       field_modulus
       inverse_of_modulus_mod_montgomery_r
   in
-  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (sz 32) =
+  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32) =
     ntt_at_layer_7_and_6___mul re
-      (sz 12 +! sz 3 <: usize)
+      (mk_usize 12 +! mk_usize 3 <: usize)
       zeta7
-      ntt_at_layer_7_and_6___STEP_BY_7_
+      ntt_at_layer_7_and_6___v_STEP_BY_7_
       field_modulus
       inverse_of_modulus_mod_montgomery_r
   in
   let _:Prims.unit = () in
-  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (sz 32) =
+  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32) =
     ntt_at_layer_7_and_6___mul re
-      (sz 4)
+      (mk_usize 4)
       zeta60
-      ntt_at_layer_7_and_6___STEP_BY_6_
+      ntt_at_layer_7_and_6___v_STEP_BY_6_
       field_modulus
       inverse_of_modulus_mod_montgomery_r
   in
-  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (sz 32) =
+  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32) =
     ntt_at_layer_7_and_6___mul re
-      (sz 4 +! sz 1 <: usize)
+      (mk_usize 4 +! mk_usize 1 <: usize)
       zeta60
-      ntt_at_layer_7_and_6___STEP_BY_6_
+      ntt_at_layer_7_and_6___v_STEP_BY_6_
       field_modulus
       inverse_of_modulus_mod_montgomery_r
   in
-  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (sz 32) =
+  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32) =
     ntt_at_layer_7_and_6___mul re
-      (sz 4 +! sz 2 <: usize)
+      (mk_usize 4 +! mk_usize 2 <: usize)
       zeta60
-      ntt_at_layer_7_and_6___STEP_BY_6_
+      ntt_at_layer_7_and_6___v_STEP_BY_6_
       field_modulus
       inverse_of_modulus_mod_montgomery_r
   in
-  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (sz 32) =
+  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32) =
     ntt_at_layer_7_and_6___mul re
-      (sz 4 +! sz 3 <: usize)
+      (mk_usize 4 +! mk_usize 3 <: usize)
       zeta60
-      ntt_at_layer_7_and_6___STEP_BY_6_
+      ntt_at_layer_7_and_6___v_STEP_BY_6_
       field_modulus
       inverse_of_modulus_mod_montgomery_r
   in
   let _:Prims.unit = () in
-  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (sz 32) =
+  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32) =
     ntt_at_layer_7_and_6___mul re
-      (sz 20)
+      (mk_usize 20)
       zeta61
-      ntt_at_layer_7_and_6___STEP_BY_6_
+      ntt_at_layer_7_and_6___v_STEP_BY_6_
       field_modulus
       inverse_of_modulus_mod_montgomery_r
   in
-  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (sz 32) =
+  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32) =
     ntt_at_layer_7_and_6___mul re
-      (sz 20 +! sz 1 <: usize)
+      (mk_usize 20 +! mk_usize 1 <: usize)
       zeta61
-      ntt_at_layer_7_and_6___STEP_BY_6_
+      ntt_at_layer_7_and_6___v_STEP_BY_6_
       field_modulus
       inverse_of_modulus_mod_montgomery_r
   in
-  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (sz 32) =
+  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32) =
     ntt_at_layer_7_and_6___mul re
-      (sz 20 +! sz 2 <: usize)
+      (mk_usize 20 +! mk_usize 2 <: usize)
       zeta61
-      ntt_at_layer_7_and_6___STEP_BY_6_
+      ntt_at_layer_7_and_6___v_STEP_BY_6_
       field_modulus
       inverse_of_modulus_mod_montgomery_r
   in
-  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (sz 32) =
+  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32) =
     ntt_at_layer_7_and_6___mul re
-      (sz 20 +! sz 3 <: usize)
+      (mk_usize 20 +! mk_usize 3 <: usize)
       zeta61
-      ntt_at_layer_7_and_6___STEP_BY_6_
+      ntt_at_layer_7_and_6___v_STEP_BY_6_
       field_modulus
       inverse_of_modulus_mod_montgomery_r
   in
@@ -764,7 +848,7 @@ let ntt_at_layer_7_and_6_ (re: t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Ve
 
 let ntt_at_layer_5_to_3___round
       (v_STEP v_STEP_BY: usize)
-      (re: t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (sz 32))
+      (re: t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32))
       (index: usize)
       (zeta: i32)
      =
@@ -772,21 +856,21 @@ let ntt_at_layer_5_to_3___round
     Libcrux_intrinsics.Avx2_extract.mm256_set1_epi32 zeta
   in
   let offset:usize =
-    ((index *! v_STEP <: usize) *! sz 2 <: usize) /!
+    ((index *! v_STEP <: usize) *! mk_usize 2 <: usize) /!
     Libcrux_ml_dsa.Simd.Traits.v_COEFFICIENTS_IN_SIMD_UNIT
   in
-  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (sz 32) =
+  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32) =
     Rust_primitives.Hax.Folds.fold_range offset
       (offset +! v_STEP_BY <: usize)
       (fun re temp_1_ ->
-          let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (sz 32) = re in
+          let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32) = re in
           let _:usize = temp_1_ in
           true)
       re
       (fun re j ->
-          let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (sz 32) = re in
+          let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32) = re in
           let j:usize = j in
-          let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (sz 32) =
+          let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32) =
             Rust_primitives.Hax.Monomorphized_update_at.update_at_usize re
               (j +! v_STEP_BY <: usize)
               ({
@@ -814,7 +898,7 @@ let ntt_at_layer_5_to_3___round
               (re.[ j +! v_STEP_BY <: usize ] <: Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256)
                 .Libcrux_ml_dsa.Simd.Avx2.Vector_type.f_value
           in
-          let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (sz 32) =
+          let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32) =
             Rust_primitives.Hax.Monomorphized_update_at.update_at_usize re
               j
               ({
@@ -833,7 +917,7 @@ let ntt_at_layer_5_to_3___round
                 <:
                 Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256)
           in
-          let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (sz 32) =
+          let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32) =
             Rust_primitives.Hax.Monomorphized_update_at.update_at_usize re
               (j +! v_STEP_BY <: usize)
               ({ Libcrux_ml_dsa.Simd.Avx2.Vector_type.f_value = tmp }
@@ -844,105 +928,109 @@ let ntt_at_layer_5_to_3___round
   in
   re
 
-let ntt_at_layer_5_to_3_ (re: t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (sz 32)) =
-  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (sz 32) =
-    ntt_at_layer_5_to_3___round (sz 32) (sz 4) re (sz 0) 237124l
+let ntt_at_layer_5_to_3_ (re: t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32)) =
+  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32) =
+    ntt_at_layer_5_to_3___round (mk_usize 32) (mk_usize 4) re (mk_usize 0) (mk_i32 237124)
   in
-  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (sz 32) =
-    ntt_at_layer_5_to_3___round (sz 32) (sz 4) re (sz 1) (-777960l)
+  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32) =
+    ntt_at_layer_5_to_3___round (mk_usize 32) (mk_usize 4) re (mk_usize 1) (mk_i32 (-777960))
   in
-  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (sz 32) =
-    ntt_at_layer_5_to_3___round (sz 32) (sz 4) re (sz 2) (-876248l)
+  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32) =
+    ntt_at_layer_5_to_3___round (mk_usize 32) (mk_usize 4) re (mk_usize 2) (mk_i32 (-876248))
   in
-  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (sz 32) =
-    ntt_at_layer_5_to_3___round (sz 32) (sz 4) re (sz 3) 466468l
-  in
-  let _:Prims.unit = () in
-  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (sz 32) =
-    ntt_at_layer_5_to_3___round (sz 16) (sz 2) re (sz 0) 1826347l
-  in
-  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (sz 32) =
-    ntt_at_layer_5_to_3___round (sz 16) (sz 2) re (sz 1) 2353451l
-  in
-  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (sz 32) =
-    ntt_at_layer_5_to_3___round (sz 16) (sz 2) re (sz 2) (-359251l)
-  in
-  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (sz 32) =
-    ntt_at_layer_5_to_3___round (sz 16) (sz 2) re (sz 3) (-2091905l)
-  in
-  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (sz 32) =
-    ntt_at_layer_5_to_3___round (sz 16) (sz 2) re (sz 4) 3119733l
-  in
-  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (sz 32) =
-    ntt_at_layer_5_to_3___round (sz 16) (sz 2) re (sz 5) (-2884855l)
-  in
-  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (sz 32) =
-    ntt_at_layer_5_to_3___round (sz 16) (sz 2) re (sz 6) 3111497l
-  in
-  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (sz 32) =
-    ntt_at_layer_5_to_3___round (sz 16) (sz 2) re (sz 7) 2680103l
+  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32) =
+    ntt_at_layer_5_to_3___round (mk_usize 32) (mk_usize 4) re (mk_usize 3) (mk_i32 466468)
   in
   let _:Prims.unit = () in
-  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (sz 32) =
-    ntt_at_layer_5_to_3___round (sz 8) (sz 1) re (sz 0) 2725464l
+  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32) =
+    ntt_at_layer_5_to_3___round (mk_usize 16) (mk_usize 2) re (mk_usize 0) (mk_i32 1826347)
   in
-  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (sz 32) =
-    ntt_at_layer_5_to_3___round (sz 8) (sz 1) re (sz 1) 1024112l
+  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32) =
+    ntt_at_layer_5_to_3___round (mk_usize 16) (mk_usize 2) re (mk_usize 1) (mk_i32 2353451)
   in
-  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (sz 32) =
-    ntt_at_layer_5_to_3___round (sz 8) (sz 1) re (sz 2) (-1079900l)
+  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32) =
+    ntt_at_layer_5_to_3___round (mk_usize 16) (mk_usize 2) re (mk_usize 2) (mk_i32 (-359251))
   in
-  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (sz 32) =
-    ntt_at_layer_5_to_3___round (sz 8) (sz 1) re (sz 3) 3585928l
+  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32) =
+    ntt_at_layer_5_to_3___round (mk_usize 16) (mk_usize 2) re (mk_usize 3) (mk_i32 (-2091905))
   in
-  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (sz 32) =
-    ntt_at_layer_5_to_3___round (sz 8) (sz 1) re (sz 4) (-549488l)
+  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32) =
+    ntt_at_layer_5_to_3___round (mk_usize 16) (mk_usize 2) re (mk_usize 4) (mk_i32 3119733)
   in
-  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (sz 32) =
-    ntt_at_layer_5_to_3___round (sz 8) (sz 1) re (sz 5) (-1119584l)
+  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32) =
+    ntt_at_layer_5_to_3___round (mk_usize 16) (mk_usize 2) re (mk_usize 5) (mk_i32 (-2884855))
   in
-  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (sz 32) =
-    ntt_at_layer_5_to_3___round (sz 8) (sz 1) re (sz 6) 2619752l
+  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32) =
+    ntt_at_layer_5_to_3___round (mk_usize 16) (mk_usize 2) re (mk_usize 6) (mk_i32 3111497)
   in
-  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (sz 32) =
-    ntt_at_layer_5_to_3___round (sz 8) (sz 1) re (sz 7) (-2108549l)
+  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32) =
+    ntt_at_layer_5_to_3___round (mk_usize 16) (mk_usize 2) re (mk_usize 7) (mk_i32 2680103)
   in
-  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (sz 32) =
-    ntt_at_layer_5_to_3___round (sz 8) (sz 1) re (sz 8) (-2118186l)
+  let _:Prims.unit = () in
+  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32) =
+    ntt_at_layer_5_to_3___round (mk_usize 8) (mk_usize 1) re (mk_usize 0) (mk_i32 2725464)
   in
-  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (sz 32) =
-    ntt_at_layer_5_to_3___round (sz 8) (sz 1) re (sz 9) (-3859737l)
+  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32) =
+    ntt_at_layer_5_to_3___round (mk_usize 8) (mk_usize 1) re (mk_usize 1) (mk_i32 1024112)
   in
-  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (sz 32) =
-    ntt_at_layer_5_to_3___round (sz 8) (sz 1) re (sz 10) (-1399561l)
+  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32) =
+    ntt_at_layer_5_to_3___round (mk_usize 8) (mk_usize 1) re (mk_usize 2) (mk_i32 (-1079900))
   in
-  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (sz 32) =
-    ntt_at_layer_5_to_3___round (sz 8) (sz 1) re (sz 11) (-3277672l)
+  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32) =
+    ntt_at_layer_5_to_3___round (mk_usize 8) (mk_usize 1) re (mk_usize 3) (mk_i32 3585928)
   in
-  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (sz 32) =
-    ntt_at_layer_5_to_3___round (sz 8) (sz 1) re (sz 12) 1757237l
+  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32) =
+    ntt_at_layer_5_to_3___round (mk_usize 8) (mk_usize 1) re (mk_usize 4) (mk_i32 (-549488))
   in
-  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (sz 32) =
-    ntt_at_layer_5_to_3___round (sz 8) (sz 1) re (sz 13) (-19422l)
+  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32) =
+    ntt_at_layer_5_to_3___round (mk_usize 8) (mk_usize 1) re (mk_usize 5) (mk_i32 (-1119584))
   in
-  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (sz 32) =
-    ntt_at_layer_5_to_3___round (sz 8) (sz 1) re (sz 14) 4010497l
+  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32) =
+    ntt_at_layer_5_to_3___round (mk_usize 8) (mk_usize 1) re (mk_usize 6) (mk_i32 2619752)
   in
-  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (sz 32) =
-    ntt_at_layer_5_to_3___round (sz 8) (sz 1) re (sz 15) 280005l
+  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32) =
+    ntt_at_layer_5_to_3___round (mk_usize 8) (mk_usize 1) re (mk_usize 7) (mk_i32 (-2108549))
+  in
+  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32) =
+    ntt_at_layer_5_to_3___round (mk_usize 8) (mk_usize 1) re (mk_usize 8) (mk_i32 (-2118186))
+  in
+  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32) =
+    ntt_at_layer_5_to_3___round (mk_usize 8) (mk_usize 1) re (mk_usize 9) (mk_i32 (-3859737))
+  in
+  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32) =
+    ntt_at_layer_5_to_3___round (mk_usize 8) (mk_usize 1) re (mk_usize 10) (mk_i32 (-1399561))
+  in
+  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32) =
+    ntt_at_layer_5_to_3___round (mk_usize 8) (mk_usize 1) re (mk_usize 11) (mk_i32 (-3277672))
+  in
+  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32) =
+    ntt_at_layer_5_to_3___round (mk_usize 8) (mk_usize 1) re (mk_usize 12) (mk_i32 1757237)
+  in
+  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32) =
+    ntt_at_layer_5_to_3___round (mk_usize 8) (mk_usize 1) re (mk_usize 13) (mk_i32 (-19422))
+  in
+  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32) =
+    ntt_at_layer_5_to_3___round (mk_usize 8) (mk_usize 1) re (mk_usize 14) (mk_i32 4010497)
+  in
+  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32) =
+    ntt_at_layer_5_to_3___round (mk_usize 8) (mk_usize 1) re (mk_usize 15) (mk_i32 280005)
   in
   let _:Prims.unit = () in
   let _:Prims.unit = () <: Prims.unit in
   re
 
-let ntt__avx2_ntt (re: t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (sz 32)) =
-  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (sz 32) = ntt_at_layer_7_and_6_ re in
-  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (sz 32) = ntt_at_layer_5_to_3_ re in
-  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (sz 32) = ntt_at_layer_2_ re in
-  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (sz 32) = ntt_at_layer_1_ re in
-  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (sz 32) = ntt_at_layer_0_ re in
+let ntt__avx2_ntt (re: t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32)) =
+  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32) =
+    ntt_at_layer_7_and_6_ re
+  in
+  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32) =
+    ntt_at_layer_5_to_3_ re
+  in
+  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32) = ntt_at_layer_2_ re in
+  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32) = ntt_at_layer_1_ re in
+  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32) = ntt_at_layer_0_ re in
   re
 
-let ntt (re: t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (sz 32)) =
-  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (sz 32) = ntt__avx2_ntt re in
+let ntt (re: t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32)) =
+  let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32) = ntt__avx2_ntt re in
   re

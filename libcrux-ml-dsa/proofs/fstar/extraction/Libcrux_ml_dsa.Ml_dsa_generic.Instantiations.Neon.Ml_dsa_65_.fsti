@@ -19,55 +19,58 @@ let _ =
 
 /// Generate key pair.
 val generate_key_pair
-      (randomness: t_Array u8 (sz 32))
-      (signing_key: t_Array u8 (sz 4032))
-      (verification_key: t_Array u8 (sz 1952))
-    : Prims.Pure (t_Array u8 (sz 4032) & t_Array u8 (sz 1952)) Prims.l_True (fun _ -> Prims.l_True)
+      (randomness: t_Array u8 (mk_usize 32))
+      (signing_key: t_Array u8 (mk_usize 4032))
+      (verification_key: t_Array u8 (mk_usize 1952))
+    : Prims.Pure (t_Array u8 (mk_usize 4032) & t_Array u8 (mk_usize 1952))
+      Prims.l_True
+      (fun _ -> Prims.l_True)
 
 /// Sign.
 val sign
-      (signing_key: t_Array u8 (sz 4032))
+      (signing_key: t_Array u8 (mk_usize 4032))
       (message context: t_Slice u8)
-      (randomness: t_Array u8 (sz 32))
+      (randomness: t_Array u8 (mk_usize 32))
     : Prims.Pure
-      (Core.Result.t_Result (Libcrux_ml_dsa.Types.t_MLDSASignature (sz 3309))
+      (Core.Result.t_Result (Libcrux_ml_dsa.Types.t_MLDSASignature (mk_usize 3309))
           Libcrux_ml_dsa.Types.t_SigningError) Prims.l_True (fun _ -> Prims.l_True)
 
 /// Sign.
 val sign_mut
-      (signing_key: t_Array u8 (sz 4032))
+      (signing_key: t_Array u8 (mk_usize 4032))
       (message context: t_Slice u8)
-      (randomness: t_Array u8 (sz 32))
-      (signature: t_Array u8 (sz 3309))
+      (randomness: t_Array u8 (mk_usize 32))
+      (signature: t_Array u8 (mk_usize 3309))
     : Prims.Pure
-      (t_Array u8 (sz 3309) & Core.Result.t_Result Prims.unit Libcrux_ml_dsa.Types.t_SigningError)
+      (t_Array u8 (mk_usize 3309) &
+        Core.Result.t_Result Prims.unit Libcrux_ml_dsa.Types.t_SigningError)
       Prims.l_True
       (fun _ -> Prims.l_True)
 
 /// Sign (pre-hashed).
 val sign_pre_hashed_shake128
-      (signing_key: t_Array u8 (sz 4032))
+      (signing_key: t_Array u8 (mk_usize 4032))
       (message context pre_hash_buffer: t_Slice u8)
-      (randomness: t_Array u8 (sz 32))
+      (randomness: t_Array u8 (mk_usize 32))
     : Prims.Pure
       (t_Slice u8 &
-        Core.Result.t_Result (Libcrux_ml_dsa.Types.t_MLDSASignature (sz 3309))
+        Core.Result.t_Result (Libcrux_ml_dsa.Types.t_MLDSASignature (mk_usize 3309))
           Libcrux_ml_dsa.Types.t_SigningError) Prims.l_True (fun _ -> Prims.l_True)
 
 /// Verify.
 val verify
-      (verification_key: t_Array u8 (sz 1952))
+      (verification_key: t_Array u8 (mk_usize 1952))
       (message context: t_Slice u8)
-      (signature: t_Array u8 (sz 3309))
+      (signature: t_Array u8 (mk_usize 3309))
     : Prims.Pure (Core.Result.t_Result Prims.unit Libcrux_ml_dsa.Types.t_VerificationError)
       Prims.l_True
       (fun _ -> Prims.l_True)
 
 /// Verify (pre-hashed with SHAKE-128).
 val verify_pre_hashed_shake128
-      (verification_key: t_Array u8 (sz 1952))
+      (verification_key: t_Array u8 (mk_usize 1952))
       (message context pre_hash_buffer: t_Slice u8)
-      (signature: t_Array u8 (sz 3309))
+      (signature: t_Array u8 (mk_usize 3309))
     : Prims.Pure
       (t_Slice u8 & Core.Result.t_Result Prims.unit Libcrux_ml_dsa.Types.t_VerificationError)
       Prims.l_True

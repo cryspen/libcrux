@@ -11,7 +11,7 @@ let _ =
 
 type t_PolynomialRingElement
   (v_SIMDUnit: Type0) {| i1: Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit |}
-  = { f_simd_units:t_Array v_SIMDUnit (sz 32) }
+  = { f_simd_units:t_Array v_SIMDUnit (mk_usize 32) }
 
 [@@ FStar.Tactics.Typeclasses.tcinstance]
 val impl_1
@@ -37,7 +37,7 @@ val impl__to_i32_array
       (#v_SIMDUnit: Type0)
       {| i1: Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit |}
       (self: t_PolynomialRingElement v_SIMDUnit)
-    : Prims.Pure (t_Array i32 (sz 256)) Prims.l_True (fun _ -> Prims.l_True)
+    : Prims.Pure (t_Array i32 (mk_usize 256)) Prims.l_True (fun _ -> Prims.l_True)
 
 val impl__from_i32_array
       (#v_SIMDUnit: Type0)

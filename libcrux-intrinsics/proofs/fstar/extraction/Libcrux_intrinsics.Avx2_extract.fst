@@ -3,11 +3,6 @@ module Libcrux_intrinsics.Avx2_extract
 open Core
 open FStar.Mul
 
-assume
-val mm256_movemask_ps': a: u8 -> Prims.Pure i32 Prims.l_True (fun _ -> Prims.l_True)
-
-let mm256_movemask_ps = mm256_movemask_ps'
-
 [@@ FStar.Tactics.Typeclasses.tcinstance]
 assume
 val impl': Core.Clone.t_Clone t_Vec256
@@ -232,6 +227,11 @@ val mm256_castsi256_ps': a: t_Vec256 -> Prims.Pure u8 Prims.l_True (fun _ -> Pri
 let mm256_castsi256_ps = mm256_castsi256_ps'
 
 assume
+val mm256_movemask_ps': a: u8 -> Prims.Pure i32 Prims.l_True (fun _ -> Prims.l_True)
+
+let mm256_movemask_ps = mm256_movemask_ps'
+
+assume
 val mm_mulhi_epi16': lhs: t_Vec128 -> rhs: t_Vec128
   -> Prims.Pure t_Vec128
       Prims.l_True
@@ -239,7 +239,8 @@ val mm_mulhi_epi16': lhs: t_Vec128 -> rhs: t_Vec128
         fun result ->
           let result:t_Vec128 = result in
           vec128_as_i16x8 result ==
-          Spec.Utils.map2 (fun x y -> cast (((cast x <: i32) *. (cast y <: i32)) >>! 16l) <: i16)
+          Spec.Utils.map2 (fun x y ->
+                cast (((cast x <: i32) *. (cast y <: i32)) >>! (mk_i32 16)) <: i16)
             (vec128_as_i16x8 lhs)
             (vec128_as_i16x8 rhs))
 
@@ -259,7 +260,8 @@ val mm256_mulhi_epi16': lhs: t_Vec256 -> rhs: t_Vec256
         fun result ->
           let result:t_Vec256 = result in
           vec256_as_i16x16 result ==
-          Spec.Utils.map2 (fun x y -> cast (((cast x <: i32) *. (cast y <: i32)) >>! 16l) <: i16)
+          Spec.Utils.map2 (fun x y ->
+                cast (((cast x <: i32) *. (cast y <: i32)) >>! (mk_i32 16)) <: i16)
             (vec256_as_i16x16 lhs)
             (vec256_as_i16x16 rhs))
 
@@ -298,7 +300,7 @@ let mm256_xor_si256 = mm256_xor_si256'
 assume
 val mm256_srai_epi16': v_SHIFT_BY: i32 -> vector: t_Vec256
   -> Prims.Pure t_Vec256
-      (requires v_SHIFT_BY >=. 0l && v_SHIFT_BY <. 16l)
+      (requires v_SHIFT_BY >=. mk_i32 0 && v_SHIFT_BY <. mk_i32 16)
       (ensures
         fun result ->
           let result:t_Vec256 = result in

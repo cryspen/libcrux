@@ -11,8 +11,8 @@ let _ =
 
 let chunk_size (eta: Libcrux_ml_dsa.Constants.t_Eta) =
   match eta <: Libcrux_ml_dsa.Constants.t_Eta with
-  | Libcrux_ml_dsa.Constants.Eta_Two  -> sz 3
-  | Libcrux_ml_dsa.Constants.Eta_Four  -> sz 4
+  | Libcrux_ml_dsa.Constants.Eta_Two  -> mk_usize 3
+  | Libcrux_ml_dsa.Constants.Eta_Four  -> mk_usize 4
 
 let serialize
       (#v_SIMDUnit: Type0)
@@ -39,7 +39,9 @@ let serialize
           Rust_primitives.Hax.Monomorphized_update_at.update_at_range serialized
             ({
                 Core.Ops.Range.f_start = i *! output_bytes_per_simd_unit <: usize;
-                Core.Ops.Range.f_end = (i +! sz 1 <: usize) *! output_bytes_per_simd_unit <: usize
+                Core.Ops.Range.f_end
+                =
+                (i +! mk_usize 1 <: usize) *! output_bytes_per_simd_unit <: usize
               }
               <:
               Core.Ops.Range.t_Range usize)
@@ -51,7 +53,7 @@ let serialize
                       Core.Ops.Range.f_start = i *! output_bytes_per_simd_unit <: usize;
                       Core.Ops.Range.f_end
                       =
-                      (i +! sz 1 <: usize) *! output_bytes_per_simd_unit <: usize
+                      (i +! mk_usize 1 <: usize) *! output_bytes_per_simd_unit <: usize
                     }
                     <:
                     Core.Ops.Range.t_Range usize ]
@@ -75,7 +77,7 @@ let deserialize
      =
   let chunk_size:usize = chunk_size eta in
   let result:Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit =
-    Rust_primitives.Hax.Folds.fold_range (sz 0)
+    Rust_primitives.Hax.Folds.fold_range (mk_usize 0)
       (Core.Slice.impl__len #v_SIMDUnit
           (result.Libcrux_ml_dsa.Polynomial.f_simd_units <: t_Slice v_SIMDUnit)
         <:
@@ -100,7 +102,7 @@ let deserialize
                   eta
                   (serialized.[ {
                         Core.Ops.Range.f_start = i *! chunk_size <: usize;
-                        Core.Ops.Range.f_end = (i +! sz 1 <: usize) *! chunk_size <: usize
+                        Core.Ops.Range.f_end = (i +! mk_usize 1 <: usize) *! chunk_size <: usize
                       }
                       <:
                       Core.Ops.Range.t_Range usize ]
@@ -110,7 +112,7 @@ let deserialize
                 <:
                 v_SIMDUnit)
             <:
-            t_Array v_SIMDUnit (sz 32)
+            t_Array v_SIMDUnit (mk_usize 32)
           }
           <:
           Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)

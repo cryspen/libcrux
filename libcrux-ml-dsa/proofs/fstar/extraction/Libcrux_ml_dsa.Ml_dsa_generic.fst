@@ -18,14 +18,15 @@ let derive_message_representative
       (domain_separation_context:
           Core.Option.t_Option Libcrux_ml_dsa.Pre_hash.t_DomainSeparationContext)
       (message: t_Slice u8)
-      (message_representative: t_Array u8 (sz 64))
+      (message_representative: t_Array u8 (mk_usize 64))
      =
   let _:Prims.unit =
     if true
     then
       let _:Prims.unit =
-        Hax_lib.v_assert ((Core.Slice.impl__len #u8 verification_key_hash <: usize) =. sz 64 <: bool
-          )
+        Hax_lib.v_assert ((Core.Slice.impl__len #u8 verification_key_hash <: usize) =. mk_usize 64
+            <:
+            bool)
       in
       ()
   in
@@ -51,10 +52,10 @@ let derive_message_representative
           shake
           ((let list =
                 [
-                  cast (Core.Option.impl__is_some #(t_Array u8 (sz 11))
+                  cast (Core.Option.impl__is_some #(t_Array u8 (mk_usize 11))
                         (Libcrux_ml_dsa.Pre_hash.impl_1__pre_hash_oid domain_separation_context
                           <:
-                          Core.Option.t_Option (t_Array u8 (sz 11)))
+                          Core.Option.t_Option (t_Array u8 (mk_usize 11)))
                       <:
                       bool)
                   <:
@@ -96,7 +97,7 @@ let derive_message_representative
       (match
           Libcrux_ml_dsa.Pre_hash.impl_1__pre_hash_oid domain_separation_context
           <:
-          Core.Option.t_Option (t_Array u8 (sz 11))
+          Core.Option.t_Option (t_Array u8 (mk_usize 11))
         with
         | Core.Option.Option_Some pre_hash_oid ->
           Libcrux_ml_dsa.Hash_functions.Shake256.f_absorb #v_Shake256Xof
@@ -112,13 +113,13 @@ let derive_message_representative
       shake
       message
   in
-  let tmp0, tmp1:(v_Shake256Xof & t_Array u8 (sz 64)) =
+  let tmp0, tmp1:(v_Shake256Xof & t_Array u8 (mk_usize 64)) =
     Libcrux_ml_dsa.Hash_functions.Shake256.f_squeeze #v_Shake256Xof
       #FStar.Tactics.Typeclasses.solve
       shake
       message_representative
   in
   let shake:v_Shake256Xof = tmp0 in
-  let message_representative:t_Array u8 (sz 64) = tmp1 in
+  let message_representative:t_Array u8 (mk_usize 64) = tmp1 in
   let _:Prims.unit = () in
   message_representative

@@ -84,7 +84,7 @@ val sample_ring_element_cbd
       (#v_Vector #v_Hasher: Type0)
       {| i2: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
       {| i3: Libcrux_ml_kem.Hash_functions.t_Hash v_Hasher v_K |}
-      (prf_input: t_Array u8 (sz 33))
+      (prf_input: t_Array u8 (mk_usize 33))
       (domain_separator: u8)
     : Prims.Pure (t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K & u8)
       (requires
@@ -109,7 +109,7 @@ val sample_vector_cbd_then_ntt
       {| i2: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
       {| i3: Libcrux_ml_kem.Hash_functions.t_Hash v_Hasher v_K |}
       (re_as_ntt: t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K)
-      (prf_input: t_Array u8 (sz 33))
+      (prf_input: t_Array u8 (mk_usize 33))
       (domain_separator: u8)
     : Prims.Pure (t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K & u8)
       (requires
@@ -138,7 +138,7 @@ val sample_vector_cbd_then_ntt_out
       (#v_Vector #v_Hasher: Type0)
       {| i2: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
       {| i3: Libcrux_ml_kem.Hash_functions.t_Hash v_Hasher v_K |}
-      (prf_input: t_Array u8 (sz 33))
+      (prf_input: t_Array u8 (mk_usize 33))
       (domain_separator: u8)
     : Prims.Pure (t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K & u8)
       (requires
@@ -213,11 +213,17 @@ val generate_keypair_unpacked
             Libcrux_ml_kem.Ind_cpa.Unpacked.t_IndCpaPublicKeyUnpacked v_K v_Vector) =
             temp_0_
           in
+          let public_key_future:Libcrux_ml_kem.Ind_cpa.Unpacked.t_IndCpaPublicKeyUnpacked v_K
+            v_Vector =
+            public_key_future
+          in
           let (((t_as_ntt, seed_for_A), matrix_A_as_ntt), secret_as_ntt), valid =
             Spec.MLKEM.ind_cpa_generate_keypair_unpacked v_K key_generation_seed
           in
           (valid ==>
-            (Libcrux_ml_kem.Polynomial.to_spec_vector_t #v_K #v_Vector public_key_future.f_t_as_ntt ==
+            (Libcrux_ml_kem.Polynomial.to_spec_vector_t #v_K
+                #v_Vector
+                public_key_future.Libcrux_ml_kem.Ind_cpa.Unpacked.f_tt_as_ntt ==
               t_as_ntt) /\ (public_key_future.f_seed_for_A == seed_for_A) /\
             (Libcrux_ml_kem.Polynomial.to_spec_matrix_t #v_K #v_Vector public_key_future.f_A ==
               matrix_A_as_ntt) /\
@@ -233,7 +239,7 @@ val generate_keypair_unpacked
           (forall (i: nat).
               i < v v_K ==>
               Libcrux_ml_kem.Serialize.coefficients_field_modulus_range (Seq.index public_key_future
-                      .f_t_as_ntt
+                      .Libcrux_ml_kem.Ind_cpa.Unpacked.f_tt_as_ntt
                     i)))
 
 /// Serialize the secret key from the unpacked key pair generation.
@@ -333,7 +339,7 @@ val encrypt_unpacked
       {| i2: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
       {| i3: Libcrux_ml_kem.Hash_functions.t_Hash v_Hasher v_K |}
       (public_key: Libcrux_ml_kem.Ind_cpa.Unpacked.t_IndCpaPublicKeyUnpacked v_K v_Vector)
-      (message: t_Array u8 (sz 32))
+      (message: t_Array u8 (mk_usize 32))
       (randomness: t_Slice u8)
     : Prims.Pure (t_Array u8 v_CIPHERTEXT_SIZE)
       (requires
@@ -354,8 +360,12 @@ val encrypt_unpacked
           Spec.MLKEM.ind_cpa_encrypt_unpacked v_K
             message
             randomness
-            (Libcrux_ml_kem.Polynomial.to_spec_vector_t #v_K #v_Vector public_key.f_t_as_ntt)
-            (Libcrux_ml_kem.Polynomial.to_spec_matrix_t #v_K #v_Vector public_key.f_A))
+            (Libcrux_ml_kem.Polynomial.to_spec_vector_t #v_K
+                #v_Vector
+                public_key.Libcrux_ml_kem.Ind_cpa.Unpacked.f_tt_as_ntt)
+            (Libcrux_ml_kem.Polynomial.to_spec_matrix_t #v_K
+                #v_Vector
+                public_key.Libcrux_ml_kem.Ind_cpa.Unpacked.f_A))
 
 val build_unpacked_public_key_mut
       (v_K v_T_AS_NTT_ENCODED_SIZE: usize)
@@ -374,14 +384,20 @@ val build_unpacked_public_key_mut
             v_K v_Vector =
             unpacked_public_key_future
           in
+          let unpacked_public_key_future:Libcrux_ml_kem.Ind_cpa.Unpacked.t_IndCpaPublicKeyUnpacked
+            v_K v_Vector =
+            unpacked_public_key_future
+          in
           let t_as_ntt_bytes, seed_for_A = split public_key v_T_AS_NTT_ENCODED_SIZE in
           let t_as_ntt = Spec.MLKEM.vector_decode_12 #v_K t_as_ntt_bytes in
           let matrix_A_as_ntt, valid = Spec.MLKEM.sample_matrix_A_ntt #v_K seed_for_A in
           (Libcrux_ml_kem.Polynomial.to_spec_vector_t #v_K
               #v_Vector
-              unpacked_public_key_future.f_t_as_ntt ==
+              unpacked_public_key_future.Libcrux_ml_kem.Ind_cpa.Unpacked.f_tt_as_ntt ==
             t_as_ntt /\ valid ==>
-            Libcrux_ml_kem.Polynomial.to_spec_matrix_t #v_K #v_Vector unpacked_public_key_future.f_A ==
+            Libcrux_ml_kem.Polynomial.to_spec_matrix_t #v_K
+              #v_Vector
+              unpacked_public_key_future.Libcrux_ml_kem.Ind_cpa.Unpacked.f_A ==
             Spec.MLKEM.matrix_transpose matrix_A_as_ntt))
 
 val build_unpacked_public_key
@@ -402,9 +418,13 @@ val build_unpacked_public_key
           let t_as_ntt_bytes, seed_for_A = split public_key v_T_AS_NTT_ENCODED_SIZE in
           let t_as_ntt = Spec.MLKEM.vector_decode_12 #v_K t_as_ntt_bytes in
           let matrix_A_as_ntt, valid = Spec.MLKEM.sample_matrix_A_ntt #v_K seed_for_A in
-          (Libcrux_ml_kem.Polynomial.to_spec_vector_t #v_K #v_Vector result.f_t_as_ntt == t_as_ntt /\
-            valid ==>
-            Libcrux_ml_kem.Polynomial.to_spec_matrix_t #v_K #v_Vector result.f_A ==
+          (Libcrux_ml_kem.Polynomial.to_spec_vector_t #v_K
+              #v_Vector
+              result.Libcrux_ml_kem.Ind_cpa.Unpacked.f_tt_as_ntt ==
+            t_as_ntt /\ valid ==>
+            Libcrux_ml_kem.Polynomial.to_spec_matrix_t #v_K
+              #v_Vector
+              result.Libcrux_ml_kem.Ind_cpa.Unpacked.f_A ==
             Spec.MLKEM.matrix_transpose matrix_A_as_ntt))
 
 val encrypt
@@ -414,7 +434,7 @@ val encrypt
       {| i2: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
       {| i3: Libcrux_ml_kem.Hash_functions.t_Hash v_Hasher v_K |}
       (public_key: t_Slice u8)
-      (message: t_Array u8 (sz 32))
+      (message: t_Array u8 (mk_usize 32))
       (randomness: t_Slice u8)
     : Prims.Pure (t_Array u8 v_CIPHERTEXT_SIZE)
       (requires
@@ -496,7 +516,7 @@ val decrypt_unpacked
       {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
       (secret_key: Libcrux_ml_kem.Ind_cpa.Unpacked.t_IndCpaPrivateKeyUnpacked v_K v_Vector)
       (ciphertext: t_Array u8 v_CIPHERTEXT_SIZE)
-    : Prims.Pure (t_Array u8 (sz 32))
+    : Prims.Pure (t_Array u8 (mk_usize 32))
       (requires
         Spec.MLKEM.is_rank v_K /\ v_CIPHERTEXT_SIZE == Spec.MLKEM.v_CPA_CIPHERTEXT_SIZE v_K /\
         v_U_COMPRESSION_FACTOR == Spec.MLKEM.v_VECTOR_U_COMPRESSION_FACTOR v_K /\
@@ -504,7 +524,7 @@ val decrypt_unpacked
         v_VECTOR_U_ENCODED_SIZE == Spec.MLKEM.v_C1_SIZE v_K)
       (ensures
         fun result ->
-          let result:t_Array u8 (sz 32) = result in
+          let result:t_Array u8 (mk_usize 32) = result in
           result ==
           Spec.MLKEM.ind_cpa_decrypt_unpacked v_K
             ciphertext
@@ -517,7 +537,7 @@ val decrypt
       {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
       (secret_key: t_Slice u8)
       (ciphertext: t_Array u8 v_CIPHERTEXT_SIZE)
-    : Prims.Pure (t_Array u8 (sz 32))
+    : Prims.Pure (t_Array u8 (mk_usize 32))
       (requires
         Spec.MLKEM.is_rank v_K /\ length secret_key == Spec.MLKEM.v_CPA_PRIVATE_KEY_SIZE v_K /\
         v_CIPHERTEXT_SIZE == Spec.MLKEM.v_CPA_CIPHERTEXT_SIZE v_K /\
@@ -526,5 +546,5 @@ val decrypt
         v_V_COMPRESSION_FACTOR == Spec.MLKEM.v_VECTOR_V_COMPRESSION_FACTOR v_K)
       (ensures
         fun result ->
-          let result:t_Array u8 (sz 32) = result in
+          let result:t_Array u8 (mk_usize 32) = result in
           result == Spec.MLKEM.ind_cpa_decrypt v_K secret_key ciphertext)
