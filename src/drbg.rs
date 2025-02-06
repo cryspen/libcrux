@@ -4,7 +4,7 @@
 
 use crate::hacl::drbg;
 // re-export here for convenience
-pub use rand::{CryptoRng, RngCore};
+pub use rand::{CryptoRng, RngCore, TryRngCore};
 
 use crate::std::{fmt, vec, vec::Vec};
 
@@ -16,6 +16,8 @@ pub enum Error {
     UnsupportedAlgorithm,
     /// Unable to generate the requested randomness.
     UnableToGenerate,
+    /// Not enough randomness available, e.g. to initialize or reseed
+    InsufficientRandomness,
 }
 
 impl fmt::Display for Error {
@@ -44,7 +46,9 @@ impl Drbg {
     #[cfg(feature = "rand")]
     pub fn new(alg: super::digest::Algorithm) -> Result<Self, Error> {
         let mut entropy = [0u8; 16];
-        rand::rngs::OsRng.fill_bytes(&mut entropy);
+        rand::rngs::OsRng
+            .try_fill_bytes(&mut entropy)
+            .map_err(|_| Error::InsufficientRandomness)?;
         Self::personalized(alg, &entropy, &[], "os seeded libcrux")
     }
 
@@ -88,7 +92,9 @@ impl Drbg {
     fn auto_reseed(&mut self) -> Result<(), Error> {
         if self.ctr > 512 {
             let mut entropy = [0u8; 16];
-            rand::rngs::OsRng.fill_bytes(&mut entropy);
+            rand::rngs::OsRng
+                .try_fill_bytes(&mut entropy)
+                .map_err(|_| Error::InsufficientRandomness)?;
             self.reseed(&entropy, b"reseed")?;
             self.ctr = 0;
         } else {
