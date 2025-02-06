@@ -16,8 +16,8 @@ pub enum Error {
     UnsupportedAlgorithm,
     /// Unable to generate the requested randomness.
     UnableToGenerate,
-    /// Not enough randomness available, e.g. to initialize or reseed
-    InsufficientRandomness,
+    /// Not enough OS randomness available, e.g. to initialize or reseed
+    InsufficientOSRandomness,
 }
 
 impl fmt::Display for Error {
@@ -48,7 +48,7 @@ impl Drbg {
         let mut entropy = [0u8; 16];
         rand::rngs::OsRng
             .try_fill_bytes(&mut entropy)
-            .map_err(|_| Error::InsufficientRandomness)?;
+            .map_err(|_| Error::InsufficientOSRandomness)?;
         Self::personalized(alg, &entropy, &[], "os seeded libcrux")
     }
 
@@ -94,7 +94,7 @@ impl Drbg {
             let mut entropy = [0u8; 16];
             rand::rngs::OsRng
                 .try_fill_bytes(&mut entropy)
-                .map_err(|_| Error::InsufficientRandomness)?;
+                .map_err(|_| Error::InsufficientOSRandomness)?;
             self.reseed(&entropy, b"reseed")?;
             self.ctr = 0;
         } else {
