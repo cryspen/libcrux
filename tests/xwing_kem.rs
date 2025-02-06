@@ -16,7 +16,7 @@ use libcrux::{
 
 #[cfg(not(target_arch = "wasm32"))]
 use libcrux::drbg;
-use rand::{CryptoRng, Error};
+use rand::CryptoRng;
 #[cfg(target_arch = "wasm32")]
 use rand_core::OsRng;
 use rand_core::RngCore;
