@@ -18,7 +18,7 @@ libcrux-hacl = { version = "=0.0.2-beta.2", path = "../sys/hacl" }
 libcrux-curve25519 = { version = "=0.0.2-beta.2", path = "../curve25519" }
 
 [dev-dependencies]
-rand_core = { version = "0.6" }
+rand_core = { version = "0.9" }
 hex = { version = "0.4.3", features = ["serde"] }
 serde_json = { version = "1.0" }
 serde = { version = "1.0", features = ["derive"] }

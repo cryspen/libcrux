@@ -19,7 +19,7 @@ rand = { version = "0.9" }
 libcrux = { path = "../", features = ["rand", "tests"] }
 libcrux-kem = { path = "../libcrux-kem", features = ["tests"] }
 libcrux-ml-kem = { path = "../libcrux-ml-kem" }
-rand_core = { version = "0.6" }
+rand_core = { version = "0.9" }
 # Benchmarking "RustCrypto"
 chacha20poly1305 = "0.10"
 sha2 = "0.10"
