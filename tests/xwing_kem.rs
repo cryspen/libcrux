@@ -251,11 +251,6 @@ impl RngCore for DeterministicRng {
     fn fill_bytes(&mut self, dest: &mut [u8]) {
         self.fill_with_data(dest);
     }
-
-    fn try_fill_bytes(&mut self, dest: &mut [u8]) -> Result<(), Error> {
-        self.fill_with_data(dest);
-        Ok(())
-    }
 }
 
 impl CryptoRng for DeterministicRng {}

@@ -193,10 +193,6 @@ impl RngCore for Drbg {
     fn fill_bytes(&mut self, dest: &mut [u8]) {
         self.generate(dest).unwrap()
     }
-
-    fn try_fill_bytes(&mut self, dest: &mut [u8]) -> Result<(), rand::Error> {
-        self.generate(dest).map_err(rand::Error::new)
-    }
 }
 
 impl CryptoRng for Drbg {}
