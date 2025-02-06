@@ -52,7 +52,7 @@ pub enum Algorithm {
 
 pub(crate) mod x25519_internal {
     use alloc::format;
-    use rand::{CryptoRng, Rng};
+    use rand::{CryptoRng, Rng, TryRngCore};
 
     use super::Error;
 
@@ -257,7 +257,7 @@ pub mod curve25519 {
 
 pub(crate) mod p256_internal {
     use alloc::format;
-    use rand::{CryptoRng, Rng};
+    use rand::{CryptoRng, Rng, TryRngCore};
 
     // P256 we only have in HACL
     use crate::hacl::p256;
