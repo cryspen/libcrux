@@ -446,7 +446,7 @@ pub fn SetupBaseS(
                     .map_err(|_| HpkeError::EncapError)?,
             );
             let ek_x = libcrux_ecdh::X25519PrivateKey(
-                randomness[..32]
+                randomness[32..64]
                     .try_into()
                     .map_err(|_| HpkeError::EncapError)?,
             );
