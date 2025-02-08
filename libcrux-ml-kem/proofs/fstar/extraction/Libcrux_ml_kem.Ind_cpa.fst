@@ -107,8 +107,11 @@ let serialize_vector
               key) ==
         Libcrux_ml_kem.Polynomial.to_spec_vector_t #v_K #v_Vector key);
     reveal_opaque (`%Spec.MLKEM.vector_encode_12) (Spec.MLKEM.vector_encode_12 #v_K);
-    (Spec.MLKEM.vector_encode_12 #v_K
-        (Libcrux_ml_kem.Polynomial.to_spec_vector_t #v_K #v_Vector key))
+    Lib.Sequence.eq_intro #u8
+      #(v (Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE v_K))
+      out
+      (Spec.MLKEM.vector_encode_12 #v_K
+          (Libcrux_ml_kem.Polynomial.to_spec_vector_t #v_K #v_Vector key))
   in
   out
 
