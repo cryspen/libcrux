@@ -82,6 +82,7 @@ class extractAction(argparse.Action):
             "-libcrux_ml_kem::hash_functions::portable::*",
             "-libcrux_ml_kem::hash_functions::avx2::*",
             "-libcrux_ml_kem::hash_functions::neon::*",
+            "-libcrux_ml_kem::ind_cca::incremental::**",
             "+:libcrux_ml_kem::hash_functions::*::*",
         ]
         include_str = " ".join(includes)

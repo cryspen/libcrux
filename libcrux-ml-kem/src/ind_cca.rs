@@ -1030,6 +1030,8 @@ pub(crate) mod unpacked {
         (MlKemCiphertext::from(ciphertext), shared_secret_array)
     }
 
+    #[hax_lib::requires(randomness.len() == 32 && pk_hash.len() == 32)]
+    #[hax_lib::ensures(|result| fstar!("result == Spec.Utils.v_G (concat randomness pk_hash)"))]
     pub(crate) fn encaps_prepare<const K: usize, Hasher: Hash<K>>(
         randomness: &[u8],
         pk_hash: &[u8],

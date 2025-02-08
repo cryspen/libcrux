@@ -374,7 +374,14 @@ val encaps_prepare
       (#v_Hasher: Type0)
       {| i1: Libcrux_ml_kem.Hash_functions.t_Hash v_Hasher v_K |}
       (randomness pk_hash: t_Slice u8)
-    : Prims.Pure (t_Array u8 (mk_usize 64)) Prims.l_True (fun _ -> Prims.l_True)
+    : Prims.Pure (t_Array u8 (mk_usize 64))
+      (requires
+        (Core.Slice.impl__len #u8 randomness <: usize) =. mk_usize 32 &&
+        (Core.Slice.impl__len #u8 pk_hash <: usize) =. mk_usize 32)
+      (ensures
+        fun result ->
+          let result:t_Array u8 (mk_usize 64) = result in
+          result == Spec.Utils.v_G (concat randomness pk_hash))
 
 val encapsulate
       (v_K v_CIPHERTEXT_SIZE v_PUBLIC_KEY_SIZE v_T_AS_NTT_ENCODED_SIZE v_C1_SIZE v_C2_SIZE v_VECTOR_U_COMPRESSION_FACTOR v_VECTOR_V_COMPRESSION_FACTOR v_VECTOR_U_BLOCK_LEN v_ETA1 v_ETA1_RANDOMNESS_SIZE v_ETA2 v_ETA2_RANDOMNESS_SIZE:
