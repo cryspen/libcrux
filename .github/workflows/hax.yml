@@ -37,7 +37,7 @@ jobs:
       - uses: hacspec/hax-actions@main
         with:
           hax_reference: ${{ github.event.inputs.hax_rev || 'main' }}
-          fstar: v2024.12.03
+          fstar: v2025.01.17
 
       - name: 🏃 Extract ML-KEM crate
         working-directory: libcrux-ml-kem
@@ -79,7 +79,7 @@ jobs:
       - uses: hacspec/hax-actions@main
         with:
           hax_reference: ${{ github.event.inputs.hax_rev || 'main' }}
-          fstar: v2024.12.03
+          fstar: v2025.01.17
 
       - name: 🏃 Lax ML-KEM crate
         working-directory: libcrux-ml-kem
@@ -93,7 +93,7 @@ jobs:
       - uses: hacspec/hax-actions@main
         with:
           hax_reference: ${{ github.event.inputs.hax_rev || 'main' }}
-          fstar: v2024.12.03
+          fstar: v2025.01.17
 
       - name: 🏃 Extract ML-DSA crate
         working-directory: libcrux-ml-dsa
@@ -135,7 +135,7 @@ jobs:
       - uses: hacspec/hax-actions@main
         with:
           hax_reference: ${{ github.event.inputs.hax_rev || 'main' }}
-          fstar: v2024.12.03
+          fstar: v2025.01.17
 
       - name: 🏃 Lax ML-DSA crate
         working-directory: libcrux-ml-dsa

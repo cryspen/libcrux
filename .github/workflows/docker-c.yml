@@ -1,0 +1,212 @@
+name: Rebuild C Docker image
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches: ['main']
+    paths: ['.docker/c/**']
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}-c
+  VERSION_TAG: unstable
+
+jobs:
+  build-and-push-image:
+    runs-on: ubuntu-latest
+
+    # We need write access to packages
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Log in to the Container registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push Docker image
+        id: push
+        uses: docker/build-push-action@v6
+        with:
+          context: .docker/c/
+          push: true
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.VERSION_TAG }}
+    outputs:
+      image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.VERSION_TAG }}
+  extract:
+    needs: [build-and-push-image]
+    runs-on: ubuntu-latest
+    container:
+      image: ${{ needs.build-and-push-image.outputs.image }}
+    defaults:
+      run:
+        working-directory: libcrux-ml-kem
+        shell: bash
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Extract C
+        run: |
+          ./c.sh
+
+      - name: Upload C extraction
+        uses: actions/upload-artifact@v4
+        with:
+          name: c-extraction
+          path: libcrux-ml-kem/c
+          include-hidden-files: true
+          if-no-files-found: error
+  extract-header-only-ml-kem:
+    needs: [build-and-push-image]
+    runs-on: ubuntu-latest
+    container:
+      image: ${{ needs.build-and-push-image.outputs.image }}
+    defaults:
+      run:
+        working-directory: libcrux-ml-kem
+        shell: bash
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Extract C (header only)
+        run: |
+          ./boring.sh --no-clean
+
+      - name: Upload header only C extraction
+        uses: actions/upload-artifact@v4
+        with:
+          name: header-only-c-extraction-ml-kem
+          path: libcrux-ml-kem/cg/
+          include-hidden-files: true
+          if-no-files-found: error
+  extract-header-only-ml-dsa:
+    needs: [build-and-push-image]
+    runs-on: ubuntu-latest
+    container:
+      image: ${{ needs.build-and-push-image.outputs.image }}
+    defaults:
+      run:
+        working-directory: libcrux-ml-dsa
+        shell: bash
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Extract C (header only)
+        run: |
+          ./boring.sh --no-clean
+
+      - name: Upload header only C extraction
+        uses: actions/upload-artifact@v4
+        with:
+          name: header-only-c-extraction-ml-dsa
+          path: libcrux-ml-dsa/cg/
+          include-hidden-files: true
+          if-no-files-found: error
+  test-build:
+    needs: [extract]
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - macos-latest
+          - ubuntu-latest
+          - windows-latest
+
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: c-extraction
+          
+      - name: 🔨 Build
+        run: |
+          LIBCRUX_BENCHMARKS=1 cmake -B build
+          cmake --build build
+
+      - name: 🏃🏻‍♀️ Test
+        run: ./build/Debug/ml_kem_test
+        if: ${{ matrix.os == 'windows-latest' }}
+
+      - name: 🏃🏻‍♀️ Test
+        run: ./build/ml_kem_test
+        if: ${{ matrix.os != 'windows-latest' }}
+
+      - name: 🔨 Build Release
+        run: |
+          rm -rf build
+          LIBCRUX_BENCHMARKS=1 cmake -B build -DCMAKE_BUILD_TYPE=Release
+          cmake --build build --config Release
+        if: ${{ matrix.os != 'windows-latest' }}
+  test-build-header-only-ml-kem:
+    needs: [extract-header-only-ml-kem]
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - macos-latest
+          - ubuntu-latest
+          - windows-latest
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: header-only-c-extraction-ml-kem
+
+      - name: 🔨 Build
+        run: |
+          cmake -B build
+          cmake --build build
+      # FIXME: Benchmark build for cg on Windows CI is not working right now.
+
+      - name: 🏃🏻‍♀️ Test
+        run: ./build/ml_kem_test
+        if: ${{ matrix.os != 'windows-latest' }}
+
+      - name: 🏃🏻‍♀️ Test
+        run: ./build/Debug/ml_kem_test
+        if: ${{ matrix.os == 'windows-latest' }}
+
+  test-build-header-only-ml-dsa:
+    needs: [extract-header-only-ml-dsa]
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - macos-latest
+          - ubuntu-latest
+          - windows-latest
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: header-only-c-extraction-ml-dsa
+
+      - name: 🔨 Build
+        run: |
+          cmake -B build
+          cmake --build build
+
+      - name: 🏃🏻‍♀️ Test
+        run: ./build/ml_dsa_test
+        if: ${{ matrix.os != 'windows-latest' }}
+
+      - name: 🏃🏻‍♀️ Test
+        run: ./build/Debug/ml_dsa_test
+        if: ${{ matrix.os == 'windows-latest' }}
+

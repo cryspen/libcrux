@@ -20,7 +20,7 @@ libcrux-sha3 = { version = "0.0.2-beta.2", path = "../libcrux-sha3" }
 libcrux-intrinsics = { version = "0.0.2-beta.2", path = "../libcrux-intrinsics" }
 libcrux-platform = { version = "0.0.2-beta.2", path = "../sys/platform" }
 libcrux-macros = { version = "0.0.2-beta.2", path = "../macros" }
-hax-lib = { version = "0.1.0", git = "https://github.com/hacspec/hax/" }
+hax-lib = { version = "0.1.0", git = "https://github.com/hacspec/hax/"}
 
 [dev-dependencies]
 rand = { version = "0.8" }
