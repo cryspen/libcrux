@@ -240,6 +240,8 @@ let from_bytes (array: t_Slice u8) =
   <:
   t_SIMD256Vector
 
+#push-options "--admit_smt_queries true"
+
 let to_bytes (x: t_SIMD256Vector) (bytes: t_Slice u8) =
   let bytes:t_Slice u8 =
     Rust_primitives.Hax.Monomorphized_update_at.update_at_range bytes
@@ -259,6 +261,8 @@ let to_bytes (x: t_SIMD256Vector) (bytes: t_Slice u8) =
         t_Slice u8)
   in
   bytes
+
+#pop-options
 
 [@@ FStar.Tactics.Typeclasses.tcinstance]
 let impl_3: Libcrux_ml_kem.Vector.Traits.t_Operations t_SIMD256Vector =

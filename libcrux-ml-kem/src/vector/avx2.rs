@@ -577,6 +577,7 @@ pub(super) fn from_bytes(array: &[u8]) -> SIMD256Vector {
 }
 
 #[inline(always)]
+#[hax_lib::fstar::verification_status(lax)]
 #[hax_lib::requires(bytes.len() >= 32)]
 pub(super) fn to_bytes(x: SIMD256Vector, bytes: &mut [u8]) {
     mm256_storeu_si256_u8(&mut bytes[0..32], x.elements)

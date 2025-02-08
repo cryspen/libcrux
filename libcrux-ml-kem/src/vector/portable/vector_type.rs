@@ -45,7 +45,9 @@ pub(super) fn from_bytes(array: &[u8]) -> PortableVector {
 #[inline(always)]
 #[hax_lib::requires(bytes.len() >= 32)]
 pub(super) fn to_bytes(x: PortableVector, bytes: &mut [u8]) {
+    let _bytes_len = bytes.len();
     for i in 0..FIELD_ELEMENTS_IN_VECTOR {
+        hax_lib::loop_invariant!(|_i:usize| bytes.len() == _bytes_len);
         bytes[2 * i] = (x.elements[i] >> 8) as u8;
         bytes[2 * i + 1] = x.elements[i] as u8;
     }

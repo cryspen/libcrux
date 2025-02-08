@@ -119,42 +119,44 @@ let to_i16_array
       (re: t_PolynomialRingElement v_Vector)
       (out: t_Slice i16)
      =
+  let e_out_len:usize = Core.Slice.impl__len #i16 out in
   let out:t_Slice i16 =
     Rust_primitives.Hax.Folds.fold_range (mk_usize 0)
       (Core.Slice.impl__len #v_Vector (re.f_coefficients <: t_Slice v_Vector) <: usize)
-      (fun out temp_1_ ->
+      (fun out e_i ->
           let out:t_Slice i16 = out in
-          let _:usize = temp_1_ in
-          true)
+          let e_i:usize = e_i in
+          (Core.Slice.impl__len #i16 out <: usize) =. e_out_len <: bool)
       out
       (fun out i ->
           let out:t_Slice i16 = out in
           let i:usize = i in
-          Rust_primitives.Hax.Monomorphized_update_at.update_at_range out
-            ({
-                Core.Ops.Range.f_start = i *! mk_usize 16 <: usize;
-                Core.Ops.Range.f_end = (i +! mk_usize 1 <: usize) *! mk_usize 16 <: usize
-              }
-              <:
-              Core.Ops.Range.t_Range usize)
-            (Core.Slice.impl__copy_from_slice #i16
-                (out.[ {
-                      Core.Ops.Range.f_start = i *! mk_usize 16 <: usize;
-                      Core.Ops.Range.f_end = (i +! mk_usize 1 <: usize) *! mk_usize 16 <: usize
-                    }
+          let out:t_Slice i16 =
+            Rust_primitives.Hax.Monomorphized_update_at.update_at_range out
+              ({
+                  Core.Ops.Range.f_start = i *! mk_usize 16 <: usize;
+                  Core.Ops.Range.f_end = (i +! mk_usize 1 <: usize) *! mk_usize 16 <: usize
+                }
+                <:
+                Core.Ops.Range.t_Range usize)
+              (Core.Slice.impl__copy_from_slice #i16
+                  (out.[ {
+                        Core.Ops.Range.f_start = i *! mk_usize 16 <: usize;
+                        Core.Ops.Range.f_end = (i +! mk_usize 1 <: usize) *! mk_usize 16 <: usize
+                      }
+                      <:
+                      Core.Ops.Range.t_Range usize ]
                     <:
-                    Core.Ops.Range.t_Range usize ]
-                  <:
-                  t_Slice i16)
-                (Libcrux_ml_kem.Vector.Traits.f_to_i16_array #v_Vector
-                    #FStar.Tactics.Typeclasses.solve
-                    (re.f_coefficients.[ i ] <: v_Vector)
-                  <:
-                  t_Slice i16)
-              <:
-              t_Slice i16)
-          <:
-          t_Slice i16)
+                    t_Slice i16)
+                  (Libcrux_ml_kem.Vector.Traits.f_to_i16_array #v_Vector
+                      #FStar.Tactics.Typeclasses.solve
+                      (re.f_coefficients.[ i ] <: v_Vector)
+                    <:
+                    t_Slice i16)
+                <:
+                t_Slice i16)
+          in
+          out)
   in
   out
 
@@ -203,6 +205,8 @@ let from_bytes
   in
   result
 
+#push-options "--admit_smt_queries true"
+
 let to_bytes
       (#v_Vector: Type0)
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
@@ -211,41 +215,45 @@ let to_bytes
       (re: t_PolynomialRingElement v_Vector)
       (out: t_Slice u8)
      =
+  let e_out_len:usize = Core.Slice.impl__len #u8 out in
   let out:t_Slice u8 =
     Rust_primitives.Hax.Folds.fold_range (mk_usize 0)
       (Core.Slice.impl__len #v_Vector (re.f_coefficients <: t_Slice v_Vector) <: usize)
-      (fun out temp_1_ ->
+      (fun out e_i ->
           let out:t_Slice u8 = out in
-          let _:usize = temp_1_ in
-          true)
+          let e_i:usize = e_i in
+          (Core.Slice.impl__len #u8 out <: usize) =. e_out_len <: bool)
       out
       (fun out i ->
           let out:t_Slice u8 = out in
           let i:usize = i in
-          Rust_primitives.Hax.Monomorphized_update_at.update_at_range out
-            ({
-                Core.Ops.Range.f_start = i *! mk_usize 32 <: usize;
-                Core.Ops.Range.f_end = (i +! mk_usize 1 <: usize) *! mk_usize 32 <: usize
-              }
-              <:
-              Core.Ops.Range.t_Range usize)
-            (Libcrux_ml_kem.Vector.Traits.f_to_bytes #v_Vector
-                #FStar.Tactics.Typeclasses.solve
-                (re.f_coefficients.[ i ] <: v_Vector)
-                (out.[ {
-                      Core.Ops.Range.f_start = i *! mk_usize 32 <: usize;
-                      Core.Ops.Range.f_end = (i +! mk_usize 1 <: usize) *! mk_usize 32 <: usize
-                    }
+          let out:t_Slice u8 =
+            Rust_primitives.Hax.Monomorphized_update_at.update_at_range out
+              ({
+                  Core.Ops.Range.f_start = i *! mk_usize 32 <: usize;
+                  Core.Ops.Range.f_end = (i +! mk_usize 1 <: usize) *! mk_usize 32 <: usize
+                }
+                <:
+                Core.Ops.Range.t_Range usize)
+              (Libcrux_ml_kem.Vector.Traits.f_to_bytes #v_Vector
+                  #FStar.Tactics.Typeclasses.solve
+                  (re.f_coefficients.[ i ] <: v_Vector)
+                  (out.[ {
+                        Core.Ops.Range.f_start = i *! mk_usize 32 <: usize;
+                        Core.Ops.Range.f_end = (i +! mk_usize 1 <: usize) *! mk_usize 32 <: usize
+                      }
+                      <:
+                      Core.Ops.Range.t_Range usize ]
                     <:
-                    Core.Ops.Range.t_Range usize ]
-                  <:
-                  t_Slice u8)
-              <:
-              t_Slice u8)
-          <:
-          t_Slice u8)
+                    t_Slice u8)
+                <:
+                t_Slice u8)
+          in
+          out)
   in
   out
+
+#pop-options
 
 #push-options "--admit_smt_queries true"
 
@@ -624,23 +632,6 @@ let impl_2__ZERO
   <:
   t_PolynomialRingElement v_Vector
 
-let impl_2__num_bytes
-      (#v_Vector: Type0)
-      (#[FStar.Tactics.Typeclasses.tcresolve ()]
-          i1:
-          Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector)
-      (_: Prims.unit)
-     = v_VECTORS_IN_RING_ELEMENT *! mk_usize 32
-
-let vec_len_bytes
-      (v_K: usize)
-      (#v_Vector: Type0)
-      (#[FStar.Tactics.Typeclasses.tcresolve ()]
-          i1:
-          Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector)
-      (_: Prims.unit)
-     = v_K *! (impl_2__num_bytes #v_Vector () <: usize)
-
 let impl_2__add_to_ring_element
       (#v_Vector: Type0)
       (v_K: usize)
@@ -706,6 +697,23 @@ let impl_2__ntt_multiply
       (self rhs: t_PolynomialRingElement v_Vector)
      = ntt_multiply #v_Vector self rhs
 
+let impl_2__num_bytes
+      (#v_Vector: Type0)
+      (#[FStar.Tactics.Typeclasses.tcresolve ()]
+          i1:
+          Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector)
+      (_: Prims.unit)
+     = v_VECTORS_IN_RING_ELEMENT *! mk_usize 32
+
+let vec_len_bytes
+      (v_K: usize)
+      (#v_Vector: Type0)
+      (#[FStar.Tactics.Typeclasses.tcresolve ()]
+          i1:
+          Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector)
+      (_: Prims.unit)
+     = v_K *! (impl_2__num_bytes #v_Vector () <: usize)
+
 let impl_2__from_i16_array
       (#v_Vector: Type0)
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
@@ -741,30 +749,34 @@ let vec_from_bytes
       (bytes: t_Slice u8)
       (out: t_Slice (t_PolynomialRingElement v_Vector))
      =
+  let e_out_len:usize = Core.Slice.impl__len #(t_PolynomialRingElement v_Vector) out in
   let re_bytes:usize = impl_2__num_bytes #v_Vector () in
   let out:t_Slice (t_PolynomialRingElement v_Vector) =
     Rust_primitives.Hax.Folds.fold_range (mk_usize 0)
       (Core.Slice.impl__len #(t_PolynomialRingElement v_Vector) out <: usize)
-      (fun out temp_1_ ->
+      (fun out e_i ->
           let out:t_Slice (t_PolynomialRingElement v_Vector) = out in
-          let _:usize = temp_1_ in
-          true)
+          let e_i:usize = e_i in
+          (Core.Slice.impl__len #(t_PolynomialRingElement v_Vector) out <: usize) =. e_out_len
+          <:
+          bool)
       out
       (fun out i ->
           let out:t_Slice (t_PolynomialRingElement v_Vector) = out in
           let i:usize = i in
-          Rust_primitives.Hax.Monomorphized_update_at.update_at_usize out
-            i
-            (impl_2__from_bytes #v_Vector
-                (bytes.[ { Core.Ops.Range.f_start = i *! re_bytes <: usize }
+          let out:t_Slice (t_PolynomialRingElement v_Vector) =
+            Rust_primitives.Hax.Monomorphized_update_at.update_at_usize out
+              i
+              (impl_2__from_bytes #v_Vector
+                  (bytes.[ { Core.Ops.Range.f_start = i *! re_bytes <: usize }
+                      <:
+                      Core.Ops.Range.t_RangeFrom usize ]
                     <:
-                    Core.Ops.Range.t_RangeFrom usize ]
-                  <:
-                  t_Slice u8)
-              <:
-              t_PolynomialRingElement v_Vector)
-          <:
-          t_Slice (t_PolynomialRingElement v_Vector))
+                    t_Slice u8)
+                <:
+                t_PolynomialRingElement v_Vector)
+          in
+          out)
   in
   out
 
@@ -787,31 +799,34 @@ let vec_to_bytes
       (re: t_Slice (t_PolynomialRingElement v_Vector))
       (out: t_Slice u8)
      =
+  let e_out_len:usize = Core.Slice.impl__len #u8 out in
   let re_bytes:usize = impl_2__num_bytes #v_Vector () in
   let out:t_Slice u8 =
     Rust_primitives.Hax.Folds.fold_range (mk_usize 0)
       (Core.Slice.impl__len #(t_PolynomialRingElement v_Vector) re <: usize)
-      (fun out temp_1_ ->
+      (fun out e_i ->
           let out:t_Slice u8 = out in
-          let _:usize = temp_1_ in
-          true)
+          let e_i:usize = e_i in
+          (Core.Slice.impl__len #u8 out <: usize) =. e_out_len <: bool)
       out
       (fun out i ->
           let out:t_Slice u8 = out in
           let i:usize = i in
-          Rust_primitives.Hax.Monomorphized_update_at.update_at_range_from out
-            ({ Core.Ops.Range.f_start = i *! re_bytes <: usize } <: Core.Ops.Range.t_RangeFrom usize
-            )
-            (impl_2__to_bytes #v_Vector
-                (re.[ i ] <: t_PolynomialRingElement v_Vector)
-                (out.[ { Core.Ops.Range.f_start = i *! re_bytes <: usize }
+          let out:t_Slice u8 =
+            Rust_primitives.Hax.Monomorphized_update_at.update_at_range_from out
+              ({ Core.Ops.Range.f_start = i *! re_bytes <: usize }
+                <:
+                Core.Ops.Range.t_RangeFrom usize)
+              (impl_2__to_bytes #v_Vector
+                  (re.[ i ] <: t_PolynomialRingElement v_Vector)
+                  (out.[ { Core.Ops.Range.f_start = i *! re_bytes <: usize }
+                      <:
+                      Core.Ops.Range.t_RangeFrom usize ]
                     <:
-                    Core.Ops.Range.t_RangeFrom usize ]
-                  <:
-                  t_Slice u8)
-              <:
-              t_Slice u8)
-          <:
-          t_Slice u8)
+                    t_Slice u8)
+                <:
+                t_Slice u8)
+          in
+          out)
   in
   out

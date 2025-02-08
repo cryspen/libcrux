@@ -65,13 +65,14 @@ let from_bytes (array: t_Slice u8) =
   { f_elements = elements } <: t_PortableVector
 
 let to_bytes (x: t_PortableVector) (bytes: t_Slice u8) =
+  let e_bytes_len:usize = Core.Slice.impl__len #u8 bytes in
   let bytes:t_Slice u8 =
     Rust_primitives.Hax.Folds.fold_range (mk_usize 0)
       Libcrux_ml_kem.Vector.Traits.v_FIELD_ELEMENTS_IN_VECTOR
-      (fun bytes temp_1_ ->
+      (fun bytes e_i ->
           let bytes:t_Slice u8 = bytes in
-          let _:usize = temp_1_ in
-          true)
+          let e_i:usize = e_i in
+          (Core.Slice.impl__len #u8 bytes <: usize) =. e_bytes_len <: bool)
       bytes
       (fun bytes i ->
           let bytes:t_Slice u8 = bytes in
