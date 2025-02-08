@@ -263,7 +263,7 @@ let validate_private_key
           i1:
           Libcrux_ml_kem.Hash_functions.t_Hash v_Hasher v_K)
       (private_key: Libcrux_ml_kem.Types.t_MlKemPrivateKey v_SECRET_KEY_SIZE)
-      (v__ciphertext: Libcrux_ml_kem.Types.t_MlKemCiphertext v_CIPHERTEXT_SIZE)
+      (e_ciphertext: Libcrux_ml_kem.Types.t_MlKemCiphertext v_CIPHERTEXT_SIZE)
      = validate_private_key_only v_K v_SECRET_KEY_SIZE #v_Hasher private_key
 
 #pop-options

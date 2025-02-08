@@ -35,7 +35,7 @@ val serialized_public_key
           i < 2 ==>
           Libcrux_ml_kem.Serialize.coefficients_field_modulus_range (Seq.index public_key
                   .Libcrux_ml_kem.Ind_cca.Unpacked.f_ind_cpa_public_key
-                  .Libcrux_ml_kem.Ind_cpa.Unpacked.f_t_as_ntt
+                  .Libcrux_ml_kem.Ind_cpa.Unpacked.f_tt_as_ntt
                 i))
       (fun _ -> Prims.l_True)
 
@@ -71,7 +71,7 @@ val key_pair_serialized_public_key_mut
           Libcrux_ml_kem.Serialize.coefficients_field_modulus_range (Seq.index key_pair
                   .Libcrux_ml_kem.Ind_cca.Unpacked.f_public_key
                   .Libcrux_ml_kem.Ind_cca.Unpacked.f_ind_cpa_public_key
-                  .Libcrux_ml_kem.Ind_cpa.Unpacked.f_t_as_ntt
+                  .Libcrux_ml_kem.Ind_cpa.Unpacked.f_tt_as_ntt
                 i))
       (fun _ -> Prims.l_True)
 
@@ -87,7 +87,7 @@ val key_pair_serialized_public_key
           Libcrux_ml_kem.Serialize.coefficients_field_modulus_range (Seq.index key_pair
                   .Libcrux_ml_kem.Ind_cca.Unpacked.f_public_key
                   .Libcrux_ml_kem.Ind_cca.Unpacked.f_ind_cpa_public_key
-                  .Libcrux_ml_kem.Ind_cpa.Unpacked.f_t_as_ntt
+                  .Libcrux_ml_kem.Ind_cpa.Unpacked.f_tt_as_ntt
                 i))
       (fun _ -> Prims.l_True)
 

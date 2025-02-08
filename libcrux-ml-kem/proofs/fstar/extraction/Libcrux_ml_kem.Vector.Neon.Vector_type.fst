@@ -24,7 +24,7 @@ let to_i16_array (v: t_SIMD128Vector) =
       ({ Core.Ops.Range.f_start = mk_usize 0; Core.Ops.Range.f_end = mk_usize 8 }
         <:
         Core.Ops.Range.t_Range usize)
-      (Libcrux_intrinsics.Arm64_extract.v__vst1q_s16 (out.[ {
+      (Libcrux_intrinsics.Arm64_extract.e_vst1q_s16 (out.[ {
                 Core.Ops.Range.f_start = mk_usize 0;
                 Core.Ops.Range.f_end = mk_usize 8
               }
@@ -41,7 +41,7 @@ let to_i16_array (v: t_SIMD128Vector) =
       ({ Core.Ops.Range.f_start = mk_usize 8; Core.Ops.Range.f_end = mk_usize 16 }
         <:
         Core.Ops.Range.t_Range usize)
-      (Libcrux_intrinsics.Arm64_extract.v__vst1q_s16 (out.[ {
+      (Libcrux_intrinsics.Arm64_extract.e_vst1q_s16 (out.[ {
                 Core.Ops.Range.f_start = mk_usize 8;
                 Core.Ops.Range.f_end = mk_usize 16
               }
@@ -62,7 +62,7 @@ let from_i16_array (array: t_Slice i16) =
     {
       f_low
       =
-      Libcrux_intrinsics.Arm64_extract.v__vld1q_s16 (array.[ {
+      Libcrux_intrinsics.Arm64_extract.e_vld1q_s16 (array.[ {
               Core.Ops.Range.f_start = mk_usize 0;
               Core.Ops.Range.f_end = mk_usize 8
             }
@@ -72,7 +72,7 @@ let from_i16_array (array: t_Slice i16) =
           t_Slice i16);
       f_high
       =
-      Libcrux_intrinsics.Arm64_extract.v__vld1q_s16 (array.[ {
+      Libcrux_intrinsics.Arm64_extract.e_vld1q_s16 (array.[ {
               Core.Ops.Range.f_start = mk_usize 8;
               Core.Ops.Range.f_end = mk_usize 16
             }
@@ -90,8 +90,8 @@ let from_i16_array (array: t_Slice i16) =
 let v_ZERO (_: Prims.unit) =
   let result:t_SIMD128Vector =
     {
-      f_low = Libcrux_intrinsics.Arm64_extract.v__vdupq_n_s16 (mk_i16 0);
-      f_high = Libcrux_intrinsics.Arm64_extract.v__vdupq_n_s16 (mk_i16 0)
+      f_low = Libcrux_intrinsics.Arm64_extract.e_vdupq_n_s16 (mk_i16 0);
+      f_high = Libcrux_intrinsics.Arm64_extract.e_vdupq_n_s16 (mk_i16 0)
     }
     <:
     t_SIMD128Vector

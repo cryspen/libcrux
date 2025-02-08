@@ -53,7 +53,7 @@ class t_Hash (v_Self: Type0) (v_K: usize) = {
     -> Prims.Pure v_Self
         (f_shake128_init_absorb_final_pre x0)
         (fun result -> f_shake128_init_absorb_final_post x0 result);
-  f_shake128_squeeze_first_three_blocks_pre:self___: v_Self -> pred: Type0{true ==> pred};
+  f_shake128_squeeze_first_three_blocks_pre:self_: v_Self -> pred: Type0{true ==> pred};
   f_shake128_squeeze_first_three_blocks_post:
       v_Self ->
       (v_Self & t_Array (t_Array u8 (mk_usize 504)) v_K)
@@ -62,7 +62,7 @@ class t_Hash (v_Self: Type0) (v_K: usize) = {
     -> Prims.Pure (v_Self & t_Array (t_Array u8 (mk_usize 504)) v_K)
         (f_shake128_squeeze_first_three_blocks_pre x0)
         (fun result -> f_shake128_squeeze_first_three_blocks_post x0 result);
-  f_shake128_squeeze_next_block_pre:self___: v_Self -> pred: Type0{true ==> pred};
+  f_shake128_squeeze_next_block_pre:self_: v_Self -> pred: Type0{true ==> pred};
   f_shake128_squeeze_next_block_post:v_Self -> (v_Self & t_Array (t_Array u8 (mk_usize 168)) v_K)
     -> Type0;
   f_shake128_squeeze_next_block:x0: v_Self

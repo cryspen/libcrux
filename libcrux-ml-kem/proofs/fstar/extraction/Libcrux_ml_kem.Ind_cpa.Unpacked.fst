@@ -68,7 +68,7 @@ let impl_1
     =
     fun (_: Prims.unit) ->
       {
-        f_t_as_ntt
+        f_tt_as_ntt
         =
         Rust_primitives.Hax.repeat (Libcrux_ml_kem.Polynomial.impl_2__ZERO #v_Vector ()
             <:
