@@ -1,9 +1,10 @@
 use super::*;
 
+#[cfg(all(feature = "simd256", feature = "alloc"))]
+use avx2::{as_keypair as as_avx2_keypair, as_state as as_avx2_state};
 #[cfg(feature = "simd256")]
 use avx2::{
-    as_keypair as as_avx2_keypair, as_state as as_avx2_state, decapsulate as decapsulate_avx2,
-    decapsulate_compressed_key as decapsulate_compressed_key_avx2,
+    decapsulate as decapsulate_avx2, decapsulate_compressed_key as decapsulate_compressed_key_avx2,
     decapsulate_incremental_key as decapsulate_incremental_key_avx2,
     encapsulate1 as encapsulate1_avx2, encapsulate1_serialized as encapsulate1_serialized_avx2,
     encapsulate2 as encapsulate2_avx2, encapsulate2_serialized as encapsulate2_serialized_avx2,
@@ -15,8 +16,7 @@ use avx2::{
 
 #[cfg(feature = "simd128")]
 use neon::{
-    as_keypair as as_neon_keypair, as_state as as_neon_state, decapsulate as decapsulate_neon,
-    decapsulate_compressed_key as decapsulate_compressed_key_neon,
+    decapsulate as decapsulate_neon, decapsulate_compressed_key as decapsulate_compressed_key_neon,
     decapsulate_incremental_key as decapsulate_incremental_key_neon,
     encapsulate1 as encapsulate1_neon, encapsulate1_serialized as encapsulate1_serialized_neon,
     encapsulate2 as encapsulate2_neon, encapsulate2_serialized as encapsulate2_serialized_neon,
@@ -25,11 +25,14 @@ use neon::{
     generate_keypair_serialized as generate_keypair_serialized_neon,
     validate_pk as validate_pk_neon, validate_pk_bytes as validate_pk_bytes_neon,
 };
+#[cfg(all(feature = "simd128", feature = "alloc"))]
+use portable::{as_keypair as as_neon_keypair, as_state as as_neon_state};
 
+#[cfg(all(not(feature = "simd256"), feature = "alloc"))]
+use portable::{as_keypair as as_avx2_keypair, as_state as as_avx2_state};
 #[cfg(not(feature = "simd256"))]
 use portable::{
-    as_keypair as as_avx2_keypair, as_state as as_avx2_state, decapsulate as decapsulate_avx2,
-    decapsulate_compressed_key as decapsulate_compressed_key_avx2,
+    decapsulate as decapsulate_avx2, decapsulate_compressed_key as decapsulate_compressed_key_avx2,
     decapsulate_incremental_key as decapsulate_incremental_key_avx2,
     encapsulate1 as encapsulate1_avx2, encapsulate1_serialized as encapsulate1_serialized_avx2,
     encapsulate2 as encapsulate2_avx2, encapsulate2_serialized as encapsulate2_serialized_avx2,
@@ -39,10 +42,11 @@ use portable::{
     validate_pk as validate_pk_avx2, validate_pk_bytes as validate_pk_bytes_avx2,
 };
 
+#[cfg(all(not(feature = "simd128"), feature = "alloc"))]
+use portable::{as_keypair as as_neon_keypair, as_state as as_neon_state};
 #[cfg(not(feature = "simd128"))]
 use portable::{
-    as_keypair as as_neon_keypair, as_state as as_neon_state, decapsulate as decapsulate_neon,
-    decapsulate_compressed_key as decapsulate_compressed_key_neon,
+    decapsulate as decapsulate_neon, decapsulate_compressed_key as decapsulate_compressed_key_neon,
     decapsulate_incremental_key as decapsulate_incremental_key_neon,
     encapsulate1 as encapsulate1_neon, encapsulate1_serialized as encapsulate1_serialized_neon,
     encapsulate2 as encapsulate2_neon, encapsulate2_serialized as encapsulate2_serialized_neon,

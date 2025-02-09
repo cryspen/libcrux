@@ -151,6 +151,7 @@ macro_rules! impl_kats {
 
             for kat in nist_kats {
                 let key_pair = generate_key_pair(kat.key_generation_seed);
+                #[cfg(feature = "alloc")]
                 let incremental_key_pair = incremental::alloc::generate_key_pair(kat.key_generation_seed);
 
                 assert!(validate_public_key(key_pair.public_key()));
@@ -169,28 +170,6 @@ macro_rules! impl_kats {
                 assert_eq!(ciphertext_hash, kat.sha3_256_hash_of_ciphertext, "lhs: computed ciphertext hash, rhs: hash from akt");
                 assert_eq!(shared_secret.as_ref(), kat.shared_secret, "lhs: computed shared secret from encapsulate, rhs: shared secret from kat");
 
-
-                // Incremental encapsulate
-                let mut pk1_bytes = [0u8; 64];
-                incremental_key_pair.pk1_bytes(&mut pk1_bytes).unwrap();
-
-                let mut pk2_bytes = [0u8; incremental::pk2_len()];
-                incremental_key_pair.pk2_bytes(&mut pk2_bytes);
-
-                let (ct1, ct2, incremental_shared_secret) = {
-                    let pk1 = incremental::PublicKey1::try_from(&pk1_bytes as &[u8]).unwrap();
-                    let (ct1, state, ss) = incremental::alloc::encapsulate1(&pk1,  kat.encapsulation_seed);
-
-                    assert!(incremental::validate_pk(&pk1, &pk2_bytes).is_ok());
-
-                    // ... and then to pk2.
-                    // pk2 is passed in as bytes because the deserializaiton is runtime
-                    // platform dependent.
-                    let ct2 = incremental::alloc::encapsulate2(state.as_ref(), &pk2_bytes).unwrap();
-
-                    (ct1, ct2, ss)
-                };
-
                 // Decapsulate
                 assert!(validate_private_key(key_pair.private_key(), &ciphertext));
 
@@ -198,10 +177,33 @@ macro_rules! impl_kats {
                 decapsulate(key_pair.private_key(), &ciphertext);
                 assert_eq!(shared_secret_from_decapsulate, shared_secret.as_ref(), "lhs: shared secret computed via decapsulation, rhs: shared secret computed via encapsulation");
 
+                // Incremental encapsulate
+                #[cfg(feature = "alloc")]
+                {
+                    let mut pk1_bytes = [0u8; 64];
+                    incremental_key_pair.pk1_bytes(&mut pk1_bytes).unwrap();
 
-                let incremental_shared_secret_decaps = incremental::alloc::decapsulate(incremental_key_pair.as_ref(), &ct1, &ct2);
-                assert_eq!(incremental_shared_secret, shared_secret.as_ref());
-                assert_eq!(incremental_shared_secret_decaps, shared_secret.as_ref());
+                    let mut pk2_bytes = [0u8; incremental::pk2_len()];
+                    incremental_key_pair.pk2_bytes(&mut pk2_bytes);
+
+                    let (ct1, ct2, incremental_shared_secret) = {
+                        let pk1 = incremental::PublicKey1::try_from(&pk1_bytes as &[u8]).unwrap();
+                        let (ct1, state, ss) = incremental::alloc::encapsulate1(&pk1,  kat.encapsulation_seed);
+
+                        assert!(incremental::validate_pk(&pk1, &pk2_bytes).is_ok());
+
+                        // ... and then to pk2.
+                        // pk2 is passed in as bytes because the deserializaiton is runtime
+                        // platform dependent.
+                        let ct2 = incremental::alloc::encapsulate2(state.as_ref(), &pk2_bytes).unwrap();
+
+                        (ct1, ct2, ss)
+                    };
+
+                    let incremental_shared_secret_decaps = incremental::alloc::decapsulate(incremental_key_pair.as_ref(), &ct1, &ct2);
+                    assert_eq!(incremental_shared_secret, shared_secret.as_ref());
+                    assert_eq!(incremental_shared_secret_decaps, shared_secret.as_ref());
+                }
             }
         }
     };

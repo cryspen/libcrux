@@ -134,6 +134,7 @@ macro_rules! impl_consistency_unpacked {
 macro_rules! impl_consistency_incremental {
     ($name:ident, $modp:path) => {
         #[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+        #[cfg(feature = "alloc")]
         #[test]
         fn $name() {
             use $modp::{incremental::*, portable::unpacked};

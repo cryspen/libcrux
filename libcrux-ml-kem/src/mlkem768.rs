@@ -655,6 +655,8 @@ pub(crate) mod kyber {
 ///
 /// ## Serialized keys
 /// ```
+/// #[cfg(feature = "rand")]
+/// {
 /// use libcrux_ml_kem::mlkem768::incremental::*;
 ///
 /// // USE ONLY CRYPTOGRAPHICALLY SECURE RANDOMNESS OR `generate`
@@ -686,10 +688,13 @@ pub(crate) mod kyber {
 /// let shared_secret = decapsulate_incremental_key(key_pair.as_ref(), &ct1, &ct2).unwrap();
 ///
 /// assert_eq!(shared_secret, encaps_shared_secret);
+/// }
 /// ```
 ///
 /// ## Compressed keys and randomness
 /// ```
+/// #[cfg(feature = "rand")]
+/// {
 /// use libcrux_ml_kem::mlkem768::incremental::*;
 ///
 /// // Use a n RNG that is safe to use for cryptography.
@@ -722,6 +727,7 @@ pub(crate) mod kyber {
 /// let shared_secret = decapsulate_compressed_key(key_pair.sk(), &ct1, &ct2);
 ///
 /// assert_eq!(shared_secret, encaps_shared_secret);
+/// }
 /// ```
 #[cfg(not(eurydice))]
 pub mod incremental {
