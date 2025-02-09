@@ -207,7 +207,7 @@ impl<const K: usize, Vector: Operations> EncapsState<K, Vector> {
     }
 
     /// Build a state from bytes
-    pub fn from_bytes(bytes: &[u8]) -> Result<Self, Error> {
+    pub fn try_from_bytes(bytes: &[u8]) -> Result<Self, Error> {
         debug_assert!(bytes.len() >= Self::num_bytes());
         if bytes.len() < Self::num_bytes() {
             return Err(Error::InvalidInputLength);
@@ -229,6 +229,12 @@ impl<const K: usize, Vector: Operations> EncapsState<K, Vector> {
             error2,
             randomness,
         })
+    }
+
+    /// Build a state from bytes
+    pub fn from_bytes<const STATE_LEN: usize>(bytes: &[u8; STATE_LEN]) -> Self {
+        // Unwrapping here is safe because we know it's the correct size.
+        Self::try_from_bytes(bytes).unwrap()
     }
 }
 
@@ -269,6 +275,15 @@ impl<const LEN: usize> TryFrom<&[u8]> for PublicKey2<LEN> {
         let mut t_as_ntt = [0u8; LEN];
         t_as_ntt.copy_from_slice(&value[0..LEN]);
         Ok(Self { t_as_ntt })
+    }
+}
+
+/// Convert bytes `&[u8; LEN]` to a [`PublicKey2`].
+impl<const LEN: usize> From<&[u8; LEN]> for PublicKey2<LEN> {
+    fn from(value: &[u8; LEN]) -> Self {
+        let mut t_as_ntt = [0u8; LEN];
+        t_as_ntt.copy_from_slice(&value[0..LEN]);
+        Self { t_as_ntt }
     }
 }
 

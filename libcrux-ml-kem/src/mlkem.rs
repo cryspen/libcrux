@@ -186,13 +186,17 @@ macro_rules! impl_incr_key_size {
             }
 
             /// Get the PK1 bytes from the serialized key pair bytes
-            pub fn pk1(&self) -> &[u8] {
-                &self.value[0..pk1_len()]
+            pub fn pk1(&self) -> &[u8; pk1_len()] {
+                // The unwrap here is ok because that's exactly what we take
+                // and we know that `self.value` is long enough.
+                <&[u8; pk1_len()]>::try_from(&self.value[0..pk1_len()]).unwrap()
             }
 
             /// Get the PK2 bytes from the serialized key pair bytes
-            pub fn pk2(&self) -> &[u8] {
-                &self.value[pk1_len()..pk1_len() + pk2_len()]
+            pub fn pk2(&self) -> &[u8; pk2_len()] {
+                // The unwrap here is ok because that's exactly what we take
+                // and we know that `self.value` is long enough.
+                <&[u8; pk2_len()]>::try_from(&self.value[pk1_len()..pk1_len() + pk2_len()]).unwrap()
             }
         }
 
@@ -253,17 +257,23 @@ macro_rules! impl_incr_key_size {
             }
 
             /// Get the PK1 bytes from the serialized key pair bytes
-            pub fn pk1(&self) -> &[u8] {
-                &self.value[0..pk1_len()]
+            pub fn pk1(&self) -> &[u8; pk1_len()] {
+                // The unwrap here is ok because that's exactly what we take
+                // and we know that `self.value` is long enough.
+                <&[u8; pk1_len()]>::try_from(&self.value[0..pk1_len()]).unwrap()
             }
 
             /// Get the PK2 bytes from the serialized key pair bytes
-            pub fn pk2(&self) -> &[u8] {
-                &self.value[pk1_len()..pk1_len() + pk2_len()]
+            pub fn pk2(&self) -> &[u8; pk2_len()] {
+                // The unwrap here is ok because that's exactly what we take
+                // and we know that `self.value` is long enough.
+                <&[u8; pk2_len()]>::try_from(&self.value[pk1_len()..pk1_len() + pk2_len()]).unwrap()
             }
 
             /// Get the serialized private for decapsulation.
             pub fn sk(&self) -> &[u8; SECRET_KEY_SIZE] {
+                // unwrap is safe here because
+                // self.value.len() == SECRET_KEY_SIZE - pk1_len() - pk2_len()
                 <&[u8; SECRET_KEY_SIZE]>::try_from(&self.value[pk1_len() + pk2_len()..]).unwrap()
             }
         }
@@ -386,8 +396,8 @@ macro_rules! impl_incr_key_size {
         /// The second part of the public key is passed in as byte slice.
         /// [`Error::InvalidInputLength`] is returned if `public_key_part` is too
         /// short.
-        pub fn encapsulate2(state: &[u8], public_key_part: &[u8]) -> Result<Ciphertext2, Error> {
-            multiplexing::encapsulate2::<RANK, RANKED_BYTES_PER_RING_ELEMENT, C2_SIZE, VECTOR_V_COMPRESSION_FACTOR>(state, public_key_part)
+        pub fn encapsulate2(state: &[u8; encaps_state_len()], public_key_part: &[u8; pk2_len()]) -> Ciphertext2 {
+            multiplexing::encapsulate2::<RANK, RANKED_BYTES_PER_RING_ELEMENT, C2_SIZE, VECTOR_V_COMPRESSION_FACTOR, {encaps_state_len()}>(state, public_key_part)
         }
 
         /// Decapsulate incremental ciphertexts.
@@ -422,7 +432,7 @@ macro_rules! impl_incr_key_size {
             private_key: &[u8; SECRET_KEY_SIZE],
             ciphertext1: &Ciphertext1,
             ciphertext2: &Ciphertext2,
-        ) -> Result<MlKemSharedSecret, Error> {
+        ) -> MlKemSharedSecret {
             multiplexing::decapsulate_compressed::<
                 RANK,
                 RANKED_BYTES_PER_RING_ELEMENT,
@@ -649,15 +659,17 @@ macro_rules! impl_incr_platform {
             const PK2_LEN: usize,
             const C2_SIZE: usize,
             const VECTOR_V_COMPRESSION_FACTOR: usize,
+            const STATE_LEN: usize,
         >(
-            state: &[u8],
+            state: &[u8; STATE_LEN],
             public_key_part: &PublicKey2<PK2_LEN>,
-        ) -> Result<Ciphertext2<C2_SIZE>, Error> {
+        ) -> Ciphertext2<C2_SIZE> {
             super::encapsulate2_serialized::<
                 K,
                 PK2_LEN,
                 C2_SIZE,
                 VECTOR_V_COMPRESSION_FACTOR,
+                STATE_LEN,
                 $vector,
             >(state, public_key_part)
         }
@@ -774,7 +786,7 @@ macro_rules! impl_incr_platform {
             private_key: &[u8; SECRET_KEY_SIZE],
             ciphertext1: &Ciphertext1<C1_SIZE>,
             ciphertext2: &Ciphertext2<C2_SIZE>,
-        ) -> Result<MlKemSharedSecret, Error> {
+        ) -> MlKemSharedSecret {
             super::decapsulate_compressed_key::<
                 K,
                 PK2_LEN,

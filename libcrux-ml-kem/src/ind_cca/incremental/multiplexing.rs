@@ -478,25 +478,30 @@ pub(crate) fn encapsulate2<
     const PK2_LEN: usize,
     const C2_SIZE: usize,
     const VECTOR_V_COMPRESSION_FACTOR: usize,
+    const STATE_LEN: usize,
 >(
-    state: &[u8],
-    public_key_part: &[u8],
-) -> Result<Ciphertext2<C2_SIZE>, Error> {
+    state: &[u8; STATE_LEN],
+    public_key_part: &[u8; PK2_LEN],
+) -> Ciphertext2<C2_SIZE> {
     if libcrux_platform::simd256_support() {
-        let pk2 = PublicKey2::try_from(public_key_part)?;
-        encapsulate2_serialized_avx2::<K, PK2_LEN, C2_SIZE, VECTOR_V_COMPRESSION_FACTOR>(
+        let pk2 = PublicKey2::from(public_key_part);
+        encapsulate2_serialized_avx2::<K, PK2_LEN, C2_SIZE, VECTOR_V_COMPRESSION_FACTOR, STATE_LEN>(
             state, &pk2,
         )
     } else if libcrux_platform::simd128_support() {
-        let pk2 = PublicKey2::try_from(public_key_part)?;
-        encapsulate2_serialized_neon::<K, PK2_LEN, C2_SIZE, VECTOR_V_COMPRESSION_FACTOR>(
+        let pk2 = PublicKey2::from(public_key_part);
+        encapsulate2_serialized_neon::<K, PK2_LEN, C2_SIZE, VECTOR_V_COMPRESSION_FACTOR, STATE_LEN>(
             state, &pk2,
         )
     } else {
-        let pk2 = PublicKey2::try_from(public_key_part)?;
-        portable::encapsulate2_serialized::<K, PK2_LEN, C2_SIZE, VECTOR_V_COMPRESSION_FACTOR>(
-            state, &pk2,
-        )
+        let pk2 = PublicKey2::from(public_key_part);
+        portable::encapsulate2_serialized::<
+            K,
+            PK2_LEN,
+            C2_SIZE,
+            VECTOR_V_COMPRESSION_FACTOR,
+            STATE_LEN,
+        >(state, &pk2)
     }
 }
 
@@ -608,7 +613,7 @@ pub(crate) fn decapsulate_compressed<
     private_key: &[u8; SECRET_KEY_SIZE],
     ciphertext1: &Ciphertext1<C1_SIZE>,
     ciphertext2: &Ciphertext2<C2_SIZE>,
-) -> Result<MlKemSharedSecret, Error> {
+) -> MlKemSharedSecret {
     if libcrux_platform::simd256_support() {
         decapsulate_compressed_key_avx2::<
             K,

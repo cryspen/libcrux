@@ -160,8 +160,8 @@ macro_rules! impl_consistency_incremental {
             assert_eq!(pk1_bytes, pk1(&key_pair_bytes));
             assert_eq!(pk2_bytes, pk2(&key_pair_bytes));
             // Same for the compressed key pair
-            assert_eq!(pk1_bytes, key_pair_bytes_compressed.pk1());
-            assert_eq!(pk2_bytes, key_pair_bytes_compressed.pk2());
+            assert_eq!(&pk1_bytes, key_pair_bytes_compressed.pk1());
+            assert_eq!(&pk2_bytes, key_pair_bytes_compressed.pk2());
 
             // The other party encapsulates to pk1 ...
             let encaps_randomness = random_array();
@@ -192,7 +192,7 @@ macro_rules! impl_consistency_incremental {
                 debug_assert_eq!(ct2.value.len(), Ciphertext2::len());
 
                 // encaps2 with serialized state
-                let ct22 = encapsulate2(&serialized_state, &pk2_bytes).unwrap();
+                let ct22 = encapsulate2(&serialized_state, &pk2_bytes);
                 assert_eq!(ct2.value, ct22.value);
 
                 assert_eq!(dyn_ss, shared_secret_serialized);
@@ -207,7 +207,7 @@ macro_rules! impl_consistency_incremental {
                 decapsulate_incremental_key(&key_pair_bytes, &ct1, &ct2).unwrap();
             // Compressed, serialized key
             let sk = key_pair_bytes_compressed.sk();
-            let shared_secret_decaps3 = decapsulate_compressed_key(sk, &ct1, &ct2).unwrap();
+            let shared_secret_decaps3 = decapsulate_compressed_key(sk, &ct1, &ct2);
 
             // Check the shared secret.
             assert_eq!(shared_secret_decaps, shared_secret);

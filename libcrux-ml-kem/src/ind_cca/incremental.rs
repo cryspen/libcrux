@@ -345,20 +345,18 @@ pub(crate) fn encapsulate2_serialized<
     const PK2_LEN: usize,
     const C2_SIZE: usize,
     const VECTOR_V_COMPRESSION_FACTOR: usize,
+    const STATE_LEN: usize,
     Vector: Operations,
 >(
-    state: &[u8],
+    state: &[u8; STATE_LEN],
     public_key_part: &PublicKey2<PK2_LEN>,
-) -> Result<Ciphertext2<C2_SIZE>, Error> {
-    let state = EncapsState::from_bytes(state)?;
+) -> Ciphertext2<C2_SIZE> {
+    let state = EncapsState::from_bytes(state);
 
-    Ok(encapsulate2::<
-        K,
-        PK2_LEN,
-        C2_SIZE,
-        VECTOR_V_COMPRESSION_FACTOR,
-        Vector,
-    >(&state, public_key_part))
+    encapsulate2::<K, PK2_LEN, C2_SIZE, VECTOR_V_COMPRESSION_FACTOR, Vector>(
+        &state,
+        public_key_part,
+    )
 }
 
 pub(crate) fn decapsulate<
@@ -488,12 +486,12 @@ pub(crate) fn decapsulate_compressed_key<
     private_key: &[u8; SECRET_KEY_SIZE],
     ciphertext1: &Ciphertext1<C1_SIZE>,
     ciphertext2: &Ciphertext2<C2_SIZE>,
-) -> Result<MlKemSharedSecret, Error> {
+) -> MlKemSharedSecret {
     let mut ciphertext = [0u8; CIPHERTEXT_SIZE];
     ciphertext[..C1_SIZE].copy_from_slice(&ciphertext1.value);
     ciphertext[C1_SIZE..].copy_from_slice(&ciphertext2.value);
 
-    Ok(crate::ind_cca::decapsulate::<
+    crate::ind_cca::decapsulate::<
         K,
         SECRET_KEY_SIZE,
         CPA_SECRET_KEY_SIZE,
@@ -513,5 +511,5 @@ pub(crate) fn decapsulate_compressed_key<
         Vector,
         Hasher,
         variant::MlKem,
-    >(&private_key.into(), &ciphertext.into()))
+    >(&private_key.into(), &ciphertext.into())
 }
