@@ -26,7 +26,7 @@ use neon::{
     validate_pk as validate_pk_neon, validate_pk_bytes as validate_pk_bytes_neon,
 };
 #[cfg(all(feature = "simd128", feature = "alloc"))]
-use portable::{as_keypair as as_neon_keypair, as_state as as_neon_state};
+use neon::{as_keypair as as_neon_keypair, as_state as as_neon_state};
 
 #[cfg(all(not(feature = "simd256"), feature = "alloc"))]
 use portable::{as_keypair as as_avx2_keypair, as_state as as_avx2_state};
