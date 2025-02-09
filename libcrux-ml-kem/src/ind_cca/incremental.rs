@@ -1,9 +1,7 @@
-//! Incremental API.
+//! # Incremental API.
 //!
 //! **WARNING:** This API is not standard compliant and may lead to insecure
 //! usage. Use at your own risk.
-use core::any::Any;
-
 use crate::{
     constants::BITS_PER_RING_ELEMENT,
     hash_functions::Hash,
@@ -276,14 +274,42 @@ pub(crate) fn validate_pk<const K: usize, const PK_LEN: usize, Hasher: Hash<K>>(
     pk1: &PublicKey1,
     pk2: &[u8],
 ) -> Result<(), Error> {
+    let pk2_len = K * BITS_PER_RING_ELEMENT / 8;
+    if pk2.len() != pk2_len {
+        return Err(Error::InvalidInputLength);
+    }
+
+    validate_pk_parts::<K, PK_LEN, Hasher>(&pk1.seed, &pk1.hash, pk2)
+}
+
+/// Check that the pk1 and pk2 parts are consistent.
+pub(crate) fn validate_pk_bytes<const K: usize, const PK_LEN: usize, Hasher: Hash<K>>(
+    pk1: &[u8],
+    pk2: &[u8],
+) -> Result<(), Error> {
+    let pk2_len = K * BITS_PER_RING_ELEMENT / 8;
+    if pk1.len() != 64 || pk2.len() != pk2_len {
+        return Err(Error::InvalidInputLength);
+    }
+
+    validate_pk_parts::<K, PK_LEN, Hasher>(&pk1[0..32], &pk1[32..], pk2)
+}
+
+fn validate_pk_parts<const K: usize, const PK_LEN: usize, Hasher: Hash<K>>(
+    pk1_seed: &[u8],
+    pk1_hash: &[u8],
+    pk2: &[u8],
+) -> Result<(), Error> {
     // Build the full public key: t || 𝜌
     let mut pk = [0u8; PK_LEN];
     let pk2_len = K * BITS_PER_RING_ELEMENT / 8;
+    debug_assert!(pk2_len == pk2.len());
+
     pk[0..pk2_len].copy_from_slice(&pk2);
-    pk[pk2_len..].copy_from_slice(&pk1.seed);
+    pk[pk2_len..].copy_from_slice(&pk1_seed);
 
     let hash = Hasher::H(&pk);
-    if hash != pk1.hash {
+    if hash != pk1_hash {
         return Err(Error::InvalidPublicKey);
     }
 

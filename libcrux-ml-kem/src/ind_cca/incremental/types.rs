@@ -4,8 +4,8 @@ use ind_cpa::unpacked::IndCpaPublicKeyUnpacked;
 
 use super::*;
 use crate::{
-    ind_cca::{serialize_kem_secret_key_mut, unpacked::MlKemKeyPairUnpacked},
-    ind_cpa::{deserialize_vector, serialize_public_key_mut, serialize_vector},
+    ind_cca::unpacked::MlKemKeyPairUnpacked,
+    ind_cpa::{deserialize_vector, serialize_vector},
     polynomial::{vec_from_bytes, vec_to_bytes},
 };
 
@@ -20,6 +20,9 @@ pub enum Error {
 
     /// The public key is not consistent.
     InvalidPublicKey,
+
+    /// Insufficient randomness.
+    InsufficientRandomness,
 }
 
 /// Incremental trait for unpacked key pairs.
@@ -118,13 +121,30 @@ impl<const LEN: usize> PublicKey2<LEN> {
     }
 }
 
-/// Trait container for multiplexing over platform dependent [`MlKemKeyPairUnpacked`].
-pub trait Keys: IncrementalKeyPair {
-    fn as_any(&self) -> &dyn Any;
-}
-impl<const K: usize, Vector: Operations + 'static> Keys for MlKemKeyPairUnpacked<K, Vector> {
-    fn as_any(&self) -> &dyn Any {
-        self
+#[cfg(feature = "alloc")]
+pub(crate) mod alloc {
+    use super::*;
+    use core::any::Any;
+
+    /// Trait container for multiplexing over platform dependent [`MlKemKeyPairUnpacked`].
+    pub trait Keys: IncrementalKeyPair {
+        fn as_any(&self) -> &dyn Any;
+    }
+    impl<const K: usize, Vector: Operations + 'static> Keys for MlKemKeyPairUnpacked<K, Vector> {
+        fn as_any(&self) -> &dyn Any {
+            self
+        }
+    }
+
+    /// Trait container for multiplexing over platform dependent [`EncapsState`].
+    pub trait State {
+        fn as_any(&self) -> &dyn Any;
+    }
+
+    impl<const K: usize, Vector: Operations + 'static> State for EncapsState<K, Vector> {
+        fn as_any(&self) -> &dyn Any {
+            self
+        }
     }
 }
 
@@ -209,17 +229,6 @@ impl<const K: usize, Vector: Operations> EncapsState<K, Vector> {
             error2,
             randomness,
         })
-    }
-}
-
-/// Trait container for multiplexing over platform dependent [`EncapsState`].
-pub trait State {
-    fn as_any(&self) -> &dyn Any;
-}
-
-impl<const K: usize, Vector: Operations + 'static> State for EncapsState<K, Vector> {
-    fn as_any(&self) -> &dyn Any {
-        self
     }
 }
 

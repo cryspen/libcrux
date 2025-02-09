@@ -649,9 +649,80 @@ pub(crate) mod kyber {
     }
 }
 
-/// Incremental API.
+/// # Incremental API.
 ///
 /// **NOTE:** This is a non-standard API. Use with caution!
+///
+/// ## Serialized keys
+/// ```
+/// use libcrux_ml_kem::mlkem768::incremental::*;
+///
+/// // USE ONLY CRYPTOGRAPHICALLY SECURE RANDOMNESS OR `generate`
+/// let randomness = [0x13; 64];
+/// let key_pair = KeyPairBytes::from_seed(randomness);
+///
+/// // Get pk1 and pk2 to send to the other party.
+/// let pk1 = key_pair.pk1();
+/// let pk2 = key_pair.pk2();
+///
+/// // On the receiver, encapsulate to the public keys.
+/// // Check the public key for consistency.
+/// assert!(validate_pk_bytes(pk1, pk2).is_ok());
+///
+/// let mut encaps_state = [0u8; encaps_state_len()];
+/// let mut encaps_shared_secret = [0u8; shared_secret_size()];
+/// let randomness = [0xAF; 32];
+/// let ct1 = encapsulate1(
+///     &pk1,
+///     randomness,
+///     &mut encaps_state,
+///     &mut encaps_shared_secret,
+/// )
+/// .unwrap();
+///
+/// let ct2 = encapsulate2(&encaps_state, &pk2).unwrap();
+///
+/// // Decapsulate the shared secret after receiving ct1 and ct2.
+/// let shared_secret = decapsulate_incremental_key(key_pair.as_ref(), &ct1, &ct2).unwrap();
+///
+/// assert_eq!(shared_secret, encaps_shared_secret);
+/// ```
+///
+/// ## Compressed keys and randomness
+/// ```
+/// use libcrux_ml_kem::mlkem768::incremental::*;
+///
+/// // Use a n RNG that is safe to use for cryptography.
+/// // THIS ONE IS NOT!
+/// let mut rng = ::rand::rngs::OsRng;
+///
+/// let key_pair = KeyPairCompressedBytes::generate(&mut rng);
+///
+/// // Get pk1 and pk2 to send to the other party.
+/// let pk1 = key_pair.pk1();
+/// let pk2 = key_pair.pk2();
+///
+/// // On the receiver, encapsulate to the public keys.
+/// // Check the public key for consistency.
+/// assert!(validate_pk_bytes(pk1, pk2).is_ok());
+///
+/// let mut encaps_state = [0u8; encaps_state_len()];
+/// let mut encaps_shared_secret = [0u8; shared_secret_size()];
+/// let ct1 = rand::encapsulate1(
+///     &pk1,
+///     &mut rng,
+///     &mut encaps_state,
+///     &mut encaps_shared_secret,
+/// )
+/// .unwrap();
+///
+/// let ct2 = encapsulate2(&encaps_state, &pk2).unwrap();
+///
+/// // Decapsulate the shared secret after receiving ct1 and ct2.
+/// let shared_secret = decapsulate_compressed_key(key_pair.sk(), &ct1, &ct2).unwrap();
+///
+/// assert_eq!(shared_secret, encaps_shared_secret);
+/// ```
 #[cfg(not(eurydice))]
 pub mod incremental {
     use crate::mlkem::impl_incr_key_size;

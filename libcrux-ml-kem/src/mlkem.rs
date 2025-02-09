@@ -6,11 +6,11 @@ macro_rules! impl_incr_key_size {
     () => {
         use crate::ind_cca::incremental::multiplexing;
 
-        use self::incremental::types::{self, Error, State};
+        use self::incremental::types::{self, Error};
         pub use self::incremental::types::{PublicKey1, PublicKey2};
 
         use super::*;
-        use ind_cca::incremental::{self, types::Keys};
+        use ind_cca::incremental;
 
         /// Ciphertext 1
         pub type Ciphertext1 = types::Ciphertext1<C1_SIZE>;
@@ -63,6 +63,11 @@ macro_rules! impl_incr_key_size {
             + 32
         }
 
+        /// The size of the shared secret.
+        pub const fn shared_secret_size() -> usize {
+            SHARED_SECRET_SIZE
+        }
+
         /// Functions in this module require an allocator to use [`Box`].
         ///
         /// Instead of serializing keys and state, the functions in this module return
@@ -70,7 +75,7 @@ macro_rules! impl_incr_key_size {
         #[cfg(feature = "alloc")]
         pub mod alloc {
             use super::*;
-
+            use super::incremental::types::alloc::{State, Keys};
             use ::alloc::boxed::Box;
 
             /// Generate a new key pair for incremental encapsulation.
@@ -307,6 +312,14 @@ macro_rules! impl_incr_key_size {
             multiplexing::validate_pk::<RANK,  CPA_PKE_PUBLIC_KEY_SIZE>(pk1, pk2)
         }
 
+        /// Validate that the two parts `pk1` and `pk2` are consistent.
+        pub fn validate_pk_bytes(
+            pk1: &[u8],
+            pk2: &[u8],
+        ) -> Result<(), Error> {
+            multiplexing::validate_pk_bytes::<RANK,  CPA_PKE_PUBLIC_KEY_SIZE>(pk1, pk2)
+        }
+
         /// Encapsulate the first part of the ciphertext.
         ///
         /// Returns an [`Error`] if the provided input or output don't have
@@ -330,6 +343,42 @@ macro_rules! impl_incr_key_size {
                 ETA2,
                 ETA2_RANDOMNESS_SIZE,
             >(&public_key_part, randomness, state, shared_secret)
+        }
+
+        /// Encapsulate the first part of the ciphertext.
+        ///
+        /// Returns an [`Error`] if the provided input or output don't have
+        /// the appropriate sizes.
+        #[cfg(feature = "rand")]
+        pub mod rand {
+            use super::*;
+
+            /// Encapsulate the first part of the ciphertext.
+            ///
+            /// Returns an [`Error`] if the provided input or output don't have
+            /// the appropriate sizes.
+            pub fn encapsulate1(
+                pk1: &[u8],
+                rng: &mut (impl RngCore + CryptoRng),
+                state: &mut [u8],
+                shared_secret: &mut [u8],
+            ) -> Result<Ciphertext1, Error> {
+                let public_key_part = PublicKey1::try_from(&pk1 as &[u8])?;
+                let mut randomness = [0u8; SHARED_SECRET_SIZE];
+                rng.try_fill_bytes(&mut randomness).map_err(|_| Error::InsufficientRandomness)?;
+
+                multiplexing::encapsulate1::<
+                    RANK,
+                    CPA_PKE_CIPHERTEXT_SIZE,
+                    C1_SIZE,
+                    VECTOR_U_COMPRESSION_FACTOR,
+                    C1_BLOCK_SIZE,
+                    ETA1,
+                    ETA1_RANDOMNESS_SIZE,
+                    ETA2,
+                    ETA2_RANDOMNESS_SIZE,
+                >(&public_key_part, randomness, state, shared_secret)
+            }
         }
 
         /// Encapsulate the second part of the ciphertext.
@@ -403,14 +452,18 @@ macro_rules! impl_incr_platform {
         /// Downcast [`Keys`] to a platform dependent [`MlKemKeyPairUnpacked`].
         ///
         /// **PANICS** is the cast fails
-        pub(super) fn as_keypair<const K: usize>(k: &dyn Any) -> &MlKemKeyPairUnpacked<K, $vector> {
+        #[cfg(feature = "alloc")]
+        pub(super) fn as_keypair<const K: usize>(
+            k: &dyn core::any::Any,
+        ) -> &MlKemKeyPairUnpacked<K, $vector> {
             k.downcast_ref().unwrap()
         }
 
         /// Downcast [`State`] to a  platform dependent [`EncapsState`].
         ///
         /// **PANICS** is the cast fails
-        pub(super) fn as_state<const K: usize>(s: &dyn Any) -> &EncapsState<K, $vector> {
+        #[cfg(feature = "alloc")]
+        pub(super) fn as_state<const K: usize>(s: &dyn core::any::Any) -> &EncapsState<K, $vector> {
             s.downcast_ref().unwrap()
         }
 
@@ -503,6 +556,13 @@ macro_rules! impl_incr_platform {
             pk2: &[u8],
         ) -> Result<(), Error> {
             super::validate_pk::<K, PK_LEN, $hash>(pk1, pk2)
+        }
+
+        pub(crate) fn validate_pk_bytes<const K: usize, const PK_LEN: usize>(
+            pk1: &[u8],
+            pk2: &[u8],
+        ) -> Result<(), Error> {
+            super::validate_pk_bytes::<K, PK_LEN, $hash>(pk1, pk2)
         }
 
         pub(crate) fn encapsulate1<

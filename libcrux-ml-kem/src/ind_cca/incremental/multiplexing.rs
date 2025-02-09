@@ -10,7 +10,7 @@ use avx2::{
     generate_keypair as generate_keypair_avx2,
     generate_keypair_compressed as generate_keypair_compressed_avx2,
     generate_keypair_serialized as generate_keypair_serialized_avx2,
-    validate_pk as validate_pk_avx2,
+    validate_pk as validate_pk_avx2, validate_pk_bytes as validate_pk_bytes_avx2,
 };
 
 #[cfg(feature = "simd128")]
@@ -23,7 +23,7 @@ use neon::{
     generate_keypair as generate_keypair_neon,
     generate_keypair_compressed as generate_keypair_compressed_neon,
     generate_keypair_serialized as generate_keypair_serialized_neon,
-    validate_pk as validate_pk_neon,
+    validate_pk as validate_pk_neon, validate_pk_bytes as validate_pk_bytes_neon,
 };
 
 #[cfg(not(feature = "simd256"))]
@@ -36,7 +36,7 @@ use portable::{
     generate_keypair as generate_keypair_avx2,
     generate_keypair_compressed as generate_keypair_compressed_avx2,
     generate_keypair_serialized as generate_keypair_serialized_avx2,
-    validate_pk as validate_pk_avx2,
+    validate_pk as validate_pk_avx2, validate_pk_bytes as validate_pk_bytes_avx2,
 };
 
 #[cfg(not(feature = "simd128"))]
@@ -58,7 +58,7 @@ use portable::{
 #[cfg(feature = "alloc")]
 pub(crate) mod alloc {
     use super::*;
-
+    use crate::ind_cca::incremental::types::alloc::{Keys, State};
     use ::alloc::boxed::Box;
 
     pub(crate) fn generate_keypair<
@@ -402,6 +402,19 @@ pub(crate) fn validate_pk<const K: usize, const PK_LEN: usize>(
         validate_pk_neon::<K, PK_LEN>(pk1, pk2)
     } else {
         portable::validate_pk::<K, PK_LEN>(pk1, pk2)
+    }
+}
+
+pub(crate) fn validate_pk_bytes<const K: usize, const PK_LEN: usize>(
+    pk1: &[u8],
+    pk2: &[u8],
+) -> Result<(), Error> {
+    if libcrux_platform::simd256_support() {
+        validate_pk_bytes_avx2::<K, PK_LEN>(pk1, pk2)
+    } else if libcrux_platform::simd128_support() {
+        validate_pk_bytes_neon::<K, PK_LEN>(pk1, pk2)
+    } else {
+        portable::validate_pk_bytes::<K, PK_LEN>(pk1, pk2)
     }
 }
 
