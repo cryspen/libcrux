@@ -6,7 +6,6 @@ export DEBIAN_FRONTEND=noninteractive
 
 apt-get -y update
 apt-get install -y \
-    nodejs \
     build-essential \
     opam \
     jq \

@@ -5,10 +5,10 @@
  *
  * This code was generated with the following revisions:
  * Charon: db4e045d4597d06d854ce7a2c10e8dcfda6ecd25
- * Eurydice: 83ab5654d49df0603797bf510475d52d67ca24d8
+ * Eurydice: 75eae2e2534a16f5ba5430e6ee5c69d8a46f3bea
  * Karamel: 3823e3d82fa0b271d799b61c59ffb4742ddc1e65
- * F*: b0961063393215ca65927f017720cb365a193833-dirty
- * Libcrux: 31e77d0e773e3d025ffeb024f3f4742d9a2b2eec
+ * F*: 7cd06c5562fc47ec14cd35c38034d5558a5ff762
+ * Libcrux: 5c7517ad29733fa58f7764538c6c66db534763a6
  */
 
 #ifndef __libcrux_mldsa65_portable_H
@@ -1666,59 +1666,88 @@ static inline void libcrux_ml_dsa_simd_portable_gamma1_deserialize_e9(
                                                            gamma1_exponent);
 }
 
+static KRML_MUSTINLINE uint8_t
+libcrux_ml_dsa_simd_portable_encoding_commitment_encode_4(
+    Eurydice_slice coefficients) {
+  uint8_t coefficient0 = (uint8_t)Eurydice_slice_index(coefficients, (size_t)0U,
+                                                       int32_t, int32_t *);
+  uint8_t coefficient1 = (uint8_t)Eurydice_slice_index(coefficients, (size_t)1U,
+                                                       int32_t, int32_t *);
+  return (uint32_t)coefficient1 << 4U | (uint32_t)coefficient0;
+}
+
+static KRML_MUSTINLINE void
+libcrux_ml_dsa_simd_portable_encoding_commitment_serialize_4(
+    libcrux_ml_dsa_simd_portable_vector_type_Coefficients *simd_unit,
+    Eurydice_slice serialized) {
+  for (size_t i = (size_t)0U;
+       i < Eurydice_slice_len(
+               Eurydice_array_to_slice((size_t)8U, simd_unit->values, int32_t),
+               int32_t) /
+               (size_t)2U;
+       i++) {
+    size_t i0 = i;
+    Eurydice_slice coefficients =
+        Eurydice_array_to_subslice2(simd_unit->values, i0 * (size_t)2U,
+                                    i0 * (size_t)2U + (size_t)2U, int32_t);
+    Eurydice_slice_index(serialized, i0, uint8_t, uint8_t *) =
+        libcrux_ml_dsa_simd_portable_encoding_commitment_encode_4(coefficients);
+  }
+}
+
+static KRML_MUSTINLINE void
+libcrux_ml_dsa_simd_portable_encoding_commitment_encode_6(
+    Eurydice_slice coefficients, Eurydice_slice bytes) {
+  uint8_t coefficient0 = (uint8_t)Eurydice_slice_index(coefficients, (size_t)0U,
+                                                       int32_t, int32_t *);
+  uint8_t coefficient1 = (uint8_t)Eurydice_slice_index(coefficients, (size_t)1U,
+                                                       int32_t, int32_t *);
+  uint8_t coefficient2 = (uint8_t)Eurydice_slice_index(coefficients, (size_t)2U,
+                                                       int32_t, int32_t *);
+  uint8_t coefficient3 = (uint8_t)Eurydice_slice_index(coefficients, (size_t)3U,
+                                                       int32_t, int32_t *);
+  uint8_t byte0 = (uint32_t)coefficient1 << 6U | (uint32_t)coefficient0;
+  uint8_t byte1 = (uint32_t)coefficient2 << 4U | (uint32_t)coefficient1 >> 2U;
+  uint8_t byte2 = (uint32_t)coefficient3 << 2U | (uint32_t)coefficient2 >> 4U;
+  Eurydice_slice_index(bytes, (size_t)0U, uint8_t, uint8_t *) = byte0;
+  Eurydice_slice_index(bytes, (size_t)1U, uint8_t, uint8_t *) = byte1;
+  Eurydice_slice_index(bytes, (size_t)2U, uint8_t, uint8_t *) = byte2;
+}
+
+static KRML_MUSTINLINE void
+libcrux_ml_dsa_simd_portable_encoding_commitment_serialize_6(
+    libcrux_ml_dsa_simd_portable_vector_type_Coefficients *simd_unit,
+    Eurydice_slice serialized) {
+  for (size_t i = (size_t)0U;
+       i < Eurydice_slice_len(
+               Eurydice_array_to_slice((size_t)8U, simd_unit->values, int32_t),
+               int32_t) /
+               (size_t)4U;
+       i++) {
+    size_t i0 = i;
+    Eurydice_slice coefficients =
+        Eurydice_array_to_subslice2(simd_unit->values, i0 * (size_t)4U,
+                                    i0 * (size_t)4U + (size_t)4U, int32_t);
+    libcrux_ml_dsa_simd_portable_encoding_commitment_encode_6(
+        coefficients,
+        Eurydice_slice_subslice2(serialized, (size_t)3U * i0,
+                                 (size_t)3U * i0 + (size_t)3U, uint8_t));
+  }
+}
+
 static KRML_MUSTINLINE void
 libcrux_ml_dsa_simd_portable_encoding_commitment_serialize(
     libcrux_ml_dsa_simd_portable_vector_type_Coefficients *simd_unit,
     Eurydice_slice serialized) {
   switch ((uint8_t)Eurydice_slice_len(serialized, uint8_t)) {
     case 4U: {
-      for (size_t i = (size_t)0U;
-           i < Eurydice_slice_len(Eurydice_array_to_slice(
-                                      (size_t)8U, simd_unit->values, int32_t),
-                                  int32_t) /
-                   (size_t)2U;
-           i++) {
-        size_t i0 = i;
-        Eurydice_slice coefficients =
-            Eurydice_array_to_subslice2(simd_unit->values, i0 * (size_t)2U,
-                                        i0 * (size_t)2U + (size_t)2U, int32_t);
-        uint8_t coefficient0 = (uint8_t)Eurydice_slice_index(
-            coefficients, (size_t)0U, int32_t, int32_t *);
-        uint8_t coefficient1 = (uint8_t)Eurydice_slice_index(
-            coefficients, (size_t)1U, int32_t, int32_t *);
-        Eurydice_slice_index(serialized, i0, uint8_t, uint8_t *) =
-            (uint32_t)coefficient1 << 4U | (uint32_t)coefficient0;
-      }
+      libcrux_ml_dsa_simd_portable_encoding_commitment_serialize_4(simd_unit,
+                                                                   serialized);
       break;
     }
     case 6U: {
-      for (size_t i = (size_t)0U;
-           i < Eurydice_slice_len(Eurydice_array_to_slice(
-                                      (size_t)8U, simd_unit->values, int32_t),
-                                  int32_t) /
-                   (size_t)4U;
-           i++) {
-        size_t i0 = i;
-        Eurydice_slice coefficients =
-            Eurydice_array_to_subslice2(simd_unit->values, i0 * (size_t)4U,
-                                        i0 * (size_t)4U + (size_t)4U, int32_t);
-        uint8_t coefficient0 = (uint8_t)Eurydice_slice_index(
-            coefficients, (size_t)0U, int32_t, int32_t *);
-        uint8_t coefficient1 = (uint8_t)Eurydice_slice_index(
-            coefficients, (size_t)1U, int32_t, int32_t *);
-        uint8_t coefficient2 = (uint8_t)Eurydice_slice_index(
-            coefficients, (size_t)2U, int32_t, int32_t *);
-        uint8_t coefficient3 = (uint8_t)Eurydice_slice_index(
-            coefficients, (size_t)3U, int32_t, int32_t *);
-        Eurydice_slice_index(serialized, (size_t)3U * i0, uint8_t, uint8_t *) =
-            (uint32_t)coefficient1 << 6U | (uint32_t)coefficient0;
-        Eurydice_slice_index(serialized, (size_t)3U * i0 + (size_t)1U, uint8_t,
-                             uint8_t *) =
-            (uint32_t)coefficient2 << 4U | (uint32_t)coefficient1 >> 2U;
-        Eurydice_slice_index(serialized, (size_t)3U * i0 + (size_t)2U, uint8_t,
-                             uint8_t *) =
-            (uint32_t)coefficient3 << 2U | (uint32_t)coefficient2 >> 4U;
-      }
+      libcrux_ml_dsa_simd_portable_encoding_commitment_serialize_6(simd_unit,
+                                                                   serialized);
       break;
     }
     default: {

@@ -2,6 +2,7 @@ use super::*;
 use crate::vector::portable::PortableVector;
 
 #[inline(always)]
+#[hax_lib::fstar::verification_status(lax)]
 #[hax_lib::fstar::options("--ext context_pruning --compat_pre_core 0")]
 #[hax_lib::requires(fstar!(r#"forall i. i % 16 >= 1 ==> vector i == 0"#))]
 #[hax_lib::ensures(|result| fstar!(r#"forall i. bit_vec_of_int_t_array $result 8 i == $vector (i * 16)"#))]

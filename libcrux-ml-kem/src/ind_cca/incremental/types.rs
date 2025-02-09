@@ -20,6 +20,9 @@ pub enum Error {
 
     /// The public key is not consistent.
     InvalidPublicKey,
+
+    /// Insufficient randomness.
+    InsufficientRandomness,
 }
 
 /// Incremental trait for unpacked key pairs.
@@ -118,13 +121,30 @@ impl<const LEN: usize> PublicKey2<LEN> {
     }
 }
 
-/// Trait container for multiplexing over platform dependent [`MlKemKeyPairUnpacked`].
-pub trait Keys: IncrementalKeyPair {
-    fn as_any(&self) -> &dyn Any;
-}
-impl<const K: usize, Vector: Operations + 'static> Keys for MlKemKeyPairUnpacked<K, Vector> {
-    fn as_any(&self) -> &dyn Any {
-        self
+#[cfg(feature = "alloc")]
+pub(crate) mod alloc {
+    use super::*;
+    use core::any::Any;
+
+    /// Trait container for multiplexing over platform dependent [`MlKemKeyPairUnpacked`].
+    pub trait Keys: IncrementalKeyPair {
+        fn as_any(&self) -> &dyn Any;
+    }
+    impl<const K: usize, Vector: Operations + 'static> Keys for MlKemKeyPairUnpacked<K, Vector> {
+        fn as_any(&self) -> &dyn Any {
+            self
+        }
+    }
+
+    /// Trait container for multiplexing over platform dependent [`EncapsState`].
+    pub trait State {
+        fn as_any(&self) -> &dyn Any;
+    }
+
+    impl<const K: usize, Vector: Operations + 'static> State for EncapsState<K, Vector> {
+        fn as_any(&self) -> &dyn Any {
+            self
+        }
     }
 }
 
@@ -167,7 +187,6 @@ impl<const K: usize, Vector: Operations> EncapsState<K, Vector> {
         vec_len_bytes::<K, Vector>() + PolynomialRingElement::<Vector>::num_bytes() + 32
     }
 
-    #[allow(dead_code)]
     /// Get the state as bytes
     pub fn to_bytes(self, state: &mut [u8]) -> Result<(), Error> {
         debug_assert!(state.len() >= Self::num_bytes());
@@ -188,7 +207,7 @@ impl<const K: usize, Vector: Operations> EncapsState<K, Vector> {
     }
 
     /// Build a state from bytes
-    pub fn from_bytes(bytes: &[u8]) -> Result<Self, Error> {
+    pub fn try_from_bytes(bytes: &[u8]) -> Result<Self, Error> {
         debug_assert!(bytes.len() >= Self::num_bytes());
         if bytes.len() < Self::num_bytes() {
             return Err(Error::InvalidInputLength);
@@ -211,16 +230,11 @@ impl<const K: usize, Vector: Operations> EncapsState<K, Vector> {
             randomness,
         })
     }
-}
 
-/// Trait container for multiplexing over platform dependent [`EncapsState`].
-pub trait State {
-    fn as_any(&self) -> &dyn Any;
-}
-
-impl<const K: usize, Vector: Operations + 'static> State for EncapsState<K, Vector> {
-    fn as_any(&self) -> &dyn Any {
-        self
+    /// Build a state from bytes
+    pub fn from_bytes<const STATE_LEN: usize>(bytes: &[u8; STATE_LEN]) -> Self {
+        // Unwrapping here is safe because we know it's the correct size.
+        Self::try_from_bytes(bytes).unwrap()
     }
 }
 
@@ -264,6 +278,15 @@ impl<const LEN: usize> TryFrom<&[u8]> for PublicKey2<LEN> {
     }
 }
 
+/// Convert bytes `&[u8; LEN]` to a [`PublicKey2`].
+impl<const LEN: usize> From<&[u8; LEN]> for PublicKey2<LEN> {
+    fn from(value: &[u8; LEN]) -> Self {
+        let mut t_as_ntt = [0u8; LEN];
+        t_as_ntt.copy_from_slice(&value[0..LEN]);
+        Self { t_as_ntt }
+    }
+}
+
 // The key pair struct that we (de)serialize.
 pub struct KeyPair<const K: usize, const PK2_LEN: usize, Vector: Operations> {
     pk1: PublicKey1,
@@ -303,6 +326,14 @@ impl<const K: usize, const PK2_LEN: usize, Vector: Operations> From<KeyPair<K, P
     }
 }
 
+/// Write `value` into `out` at `offset`.
+#[inline(always)]
+fn write(out: &mut [u8], value: &[u8], offset: &mut usize) {
+    let new_offset = *offset + value.len();
+    out[*offset..new_offset].copy_from_slice(value);
+    *offset = new_offset;
+}
+
 impl<const K: usize, const PK2_LEN: usize, Vector: Operations> KeyPair<K, PK2_LEN, Vector> {
     /// Get [`PublicKey1`] as bytes.
     pub fn pk1_bytes(&self, pk1: &mut [u8]) -> Result<(), Error> {
@@ -329,7 +360,7 @@ impl<const K: usize, const PK2_LEN: usize, Vector: Operations> KeyPair<K, PK2_LE
     }
 
     /// The byte size of this key pair.
-    pub fn num_bytes() -> usize {
+    pub const fn num_bytes() -> usize {
         PublicKey1::len() + PublicKey2::<PK2_LEN>::len()
         // sk length
         + vec_len_bytes::<K, Vector>() + 32
@@ -340,27 +371,14 @@ impl<const K: usize, const PK2_LEN: usize, Vector: Operations> KeyPair<K, PK2_LE
     /// Write this key pair into the `key` bytes.
     ///
     /// `key` must be at least of length `num_bytes()`
-    pub fn to_bytes(self, key: &mut [u8]) -> Result<(), Error> {
+    pub fn to_bytes(&self, key: &mut [u8]) -> Result<(), Error> {
         debug_assert!(key.len() >= Self::num_bytes());
         if key.len() < Self::num_bytes() {
             return Err(Error::InvalidInputLength);
         }
 
         let mut offset = 0;
-
-        #[inline(always)]
-        fn write(out: &mut [u8], value: &[u8], offset: &mut usize) {
-            let new_offset = *offset + value.len();
-            out[*offset..new_offset].copy_from_slice(value);
-            *offset = new_offset;
-        }
-
-        // PK1
-        write(key, &self.pk1.seed, &mut offset);
-        write(key, &self.pk1.hash, &mut offset);
-
-        // PK2
-        write(key, &self.pk2.t_as_ntt, &mut offset);
+        self.write_pks(key, &mut offset);
 
         // SK
         vec_to_bytes(
@@ -377,6 +395,44 @@ impl<const K: usize, const PK2_LEN: usize, Vector: Operations> KeyPair<K, PK2_LE
         }
 
         Ok(())
+    }
+
+    fn write_pks(&self, key: &mut [u8], offset: &mut usize) {
+        // PK1
+        write(key, &self.pk1.seed, offset);
+        write(key, &self.pk1.hash, offset);
+
+        // PK2
+        write(key, &self.pk2.t_as_ntt, offset);
+    }
+
+    /// Write this key pair into the `key` bytes.
+    /// It compresses the private key.
+    ///
+    /// `key` must be at least of length pk1 + pk2 + secret key size
+    pub fn to_bytes_compressed<const KEY_SIZE: usize, const VEC_SIZE: usize>(
+        &self,
+        key: &mut [u8; KEY_SIZE],
+    ) {
+        let mut offset = 0;
+        self.write_pks(key, &mut offset);
+
+        // Write the private key.
+        // This is a manual version of serialize_kem_secret_key_mut that skips
+        // the hash.
+        // dk | ek | H(ek) | z
+        serialize_vector(
+            &self.sk.ind_cpa_private_key.secret_as_ntt,
+            &mut key[offset..],
+        );
+        offset += VEC_SIZE;
+
+        // ek = t | ⍴
+        write(key, &self.pk2.t_as_ntt, &mut offset);
+        write(key, &self.pk1.seed, &mut offset);
+
+        write(key, &self.pk1.hash, &mut offset);
+        write(key, &self.sk.implicit_rejection_value, &mut offset);
     }
 
     /// Read a key pair from the `key` bytes.

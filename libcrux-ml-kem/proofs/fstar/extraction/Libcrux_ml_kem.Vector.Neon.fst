@@ -102,6 +102,32 @@ Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector =
     =
     (fun (x: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) ->
         Libcrux_ml_kem.Vector.Neon.Vector_type.to_i16_array x);
+    f_from_bytes_pre
+    =
+    (fun (array: t_Slice u8) -> (Core.Slice.impl__len #u8 array <: usize) >=. mk_usize 32);
+    f_from_bytes_post
+    =
+    (fun (array: t_Slice u8) (out: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) -> true);
+    f_from_bytes
+    =
+    (fun (array: t_Slice u8) -> Libcrux_ml_kem.Vector.Neon.Vector_type.from_bytes array);
+    f_to_bytes_pre
+    =
+    (fun (x: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) (bytes: t_Slice u8) ->
+        (Core.Slice.impl__len #u8 bytes <: usize) >=. mk_usize 32);
+    f_to_bytes_post
+    =
+    (fun
+        (x: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector)
+        (bytes: t_Slice u8)
+        (out: t_Slice u8)
+        ->
+        true);
+    f_to_bytes
+    =
+    (fun (x: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) (bytes: t_Slice u8) ->
+        let bytes:t_Slice u8 = Libcrux_ml_kem.Vector.Neon.Vector_type.to_bytes x bytes in
+        bytes);
     f_add_pre
     =
     (fun

@@ -141,9 +141,13 @@ macro_rules! impl_consistency_incremental {
             let key_gen_randomness = random_array();
 
             // Generate key pair.
+            // Alloc (platform dependent keys)
             let key_pair = alloc::generate_key_pair(key_gen_randomness);
+            // Serialized keys
             let mut key_pair_bytes = [0u8; key_pair_len()];
             generate_key_pair(key_gen_randomness, &mut key_pair_bytes).unwrap();
+            // Compressed, serialized keys
+            let key_pair_bytes_compressed = KeyPairCompressedBytes::from_seed(key_gen_randomness);
 
             // Get pk1 and pk2 to send out.
             let mut pk1_bytes = [0u8; 64];
@@ -153,8 +157,11 @@ macro_rules! impl_consistency_incremental {
             key_pair.pk2_bytes(&mut pk2_bytes);
 
             // Check that the keys are the same
-            assert_eq!(pk1_bytes, &key_pair_bytes[0..64]);
-            assert_eq!(pk2_bytes, &key_pair_bytes[64..64 + pk2_len()]);
+            assert_eq!(pk1_bytes, pk1(&key_pair_bytes));
+            assert_eq!(pk2_bytes, pk2(&key_pair_bytes));
+            // Same for the compressed key pair
+            assert_eq!(&pk1_bytes, key_pair_bytes_compressed.pk1());
+            assert_eq!(&pk2_bytes, key_pair_bytes_compressed.pk2());
 
             // The other party encapsulates to pk1 ...
             let encaps_randomness = random_array();
@@ -185,7 +192,7 @@ macro_rules! impl_consistency_incremental {
                 debug_assert_eq!(ct2.value.len(), Ciphertext2::len());
 
                 // encaps2 with serialized state
-                let ct22 = encapsulate2(&serialized_state, &pk2_bytes).unwrap();
+                let ct22 = encapsulate2(&serialized_state, &pk2_bytes);
                 assert_eq!(ct2.value, ct22.value);
 
                 assert_eq!(dyn_ss, shared_secret_serialized);
@@ -193,14 +200,19 @@ macro_rules! impl_consistency_incremental {
             };
 
             // The initiator decapsulates the two ciphertexts.
+            // Alloc (platform dependent keys)
             let shared_secret_decaps = alloc::decapsulate(key_pair.as_ref(), &ct1, &ct2);
-
+            // Serialized key
             let shared_secret_decaps2 =
                 decapsulate_incremental_key(&key_pair_bytes, &ct1, &ct2).unwrap();
+            // Compressed, serialized key
+            let sk = key_pair_bytes_compressed.sk();
+            let shared_secret_decaps3 = decapsulate_compressed_key(sk, &ct1, &ct2);
 
             // Check the shared secret.
             assert_eq!(shared_secret_decaps, shared_secret);
             assert_eq!(shared_secret_decaps2, shared_secret);
+            assert_eq!(shared_secret_decaps3, shared_secret);
 
             // Compute comparison shared secrets and ciphertexts with the other APIs
             let key_pair = unpacked::generate_key_pair(key_gen_randomness);

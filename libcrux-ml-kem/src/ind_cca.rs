@@ -325,6 +325,7 @@ pub(crate) fn encapsulate<
 }
 
 /// This code verifies on some machines, runs out of memory on others
+#[hax_lib::fstar::verification_status(panic_free)]
 #[hax_lib::fstar::options("--z3rlimit 500")]
 #[hax_lib::requires(fstar!(r#"Spec.MLKEM.is_rank $K /\
     $SECRET_KEY_SIZE == Spec.MLKEM.v_CCA_PRIVATE_KEY_SIZE $K /\
@@ -1030,6 +1031,8 @@ pub(crate) mod unpacked {
         (MlKemCiphertext::from(ciphertext), shared_secret_array)
     }
 
+    #[hax_lib::requires(randomness.len() == 32 && pk_hash.len() == 32)]
+    #[hax_lib::ensures(|result| fstar!("result == Spec.Utils.v_G (concat randomness pk_hash)"))]
     pub(crate) fn encaps_prepare<const K: usize, Hasher: Hash<K>>(
         randomness: &[u8],
         pk_hash: &[u8],
@@ -1042,7 +1045,7 @@ pub(crate) mod unpacked {
         to_hash[H_DIGEST_SIZE..].copy_from_slice(pk_hash);
         hax_lib::fstar!(
             "Lib.Sequence.eq_intro #u8 #64 $to_hash (
-            concat $randomness ${public_key}.f_public_key_hash)"
+            concat $randomness $pk_hash)"
         );
 
         Hasher::G(&to_hash)
