@@ -31,7 +31,10 @@ pub(crate) mod avx2 {
 
     impl_incr_platform!(
         crate::vector::SIMD256Vector,
-        crate::hash_functions::avx2::Simd256Hash
+        crate::hash_functions::avx2::Simd256Hash,
+        unsafe,
+        #[cfg_attr(not(hax), target_feature(enable = "avx2"))],
+        #[allow(unsafe_code)]
     );
 }
 #[cfg(feature = "simd128")]

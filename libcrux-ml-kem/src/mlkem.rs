@@ -459,7 +459,7 @@ macro_rules! impl_incr_key_size {
 pub(crate) use impl_incr_key_size;
 
 macro_rules! impl_incr_platform {
-    ($vector:path, $hash:path) => {
+    ($vector:path, $hash:path $(, $unsafe:ident)? $(, #[$meta:meta])*) => {
         /// Downcast [`Keys`] to a platform dependent [`MlKemKeyPairUnpacked`].
         ///
         /// **PANICS** is the cast fails
@@ -478,7 +478,8 @@ macro_rules! impl_incr_platform {
             s.downcast_ref().unwrap()
         }
 
-        pub(crate) fn generate_keypair<
+        $(#[$meta])*
+        pub(crate) $($unsafe)? fn generate_keypair<
             const K: usize,
             const CPA_PRIVATE_KEY_SIZE: usize,
             const PRIVATE_KEY_SIZE: usize,
@@ -502,7 +503,8 @@ macro_rules! impl_incr_platform {
             >(randomness)
         }
 
-        pub(crate) fn generate_keypair_serialized<
+        $(#[$meta])*
+        pub(crate) $($unsafe)? fn generate_keypair_serialized<
             const K: usize,
             const PK2_LEN: usize,
             const CPA_PRIVATE_KEY_SIZE: usize,
@@ -533,7 +535,8 @@ macro_rules! impl_incr_platform {
             >(randomness, key_pair)
         }
 
-        pub(crate) fn generate_keypair_compressed<
+        $(#[$meta])*
+        pub(crate) $($unsafe)? fn generate_keypair_compressed<
             const K: usize,
             const PK2_LEN: usize,
             const CPA_PRIVATE_KEY_SIZE: usize,
@@ -562,21 +565,24 @@ macro_rules! impl_incr_platform {
             >(randomness, key_pair)
         }
 
-        pub(crate) fn validate_pk<const K: usize, const PK_LEN: usize>(
+        $(#[$meta])*
+        pub(crate) $($unsafe)? fn validate_pk<const K: usize, const PK_LEN: usize>(
             pk1: &PublicKey1,
             pk2: &[u8],
         ) -> Result<(), Error> {
             super::validate_pk::<K, PK_LEN, $hash>(pk1, pk2)
         }
 
-        pub(crate) fn validate_pk_bytes<const K: usize, const PK_LEN: usize>(
+        $(#[$meta])*
+        pub(crate) $($unsafe)? fn validate_pk_bytes<const K: usize, const PK_LEN: usize>(
             pk1: &[u8],
             pk2: &[u8],
         ) -> Result<(), Error> {
             super::validate_pk_bytes::<K, PK_LEN, $hash>(pk1, pk2)
         }
 
-        pub(crate) fn encapsulate1<
+        $(#[$meta])*
+        pub(crate) $($unsafe)? fn encapsulate1<
             const K: usize,
             const CIPHERTEXT_SIZE: usize,
             const C1_SIZE: usize,
@@ -609,7 +615,8 @@ macro_rules! impl_incr_platform {
             >(public_key_part, randomness)
         }
 
-        pub(crate) fn encapsulate1_serialized<
+        $(#[$meta])*
+        pub(crate) $($unsafe)? fn encapsulate1_serialized<
             const K: usize,
             const CIPHERTEXT_SIZE: usize,
             const C1_SIZE: usize,
@@ -640,7 +647,8 @@ macro_rules! impl_incr_platform {
             >(public_key_part, randomness, state, shared_secret)
         }
 
-        pub(crate) fn encapsulate2<
+        $(#[$meta])*
+        pub(crate) $($unsafe)? fn encapsulate2<
             const K: usize,
             const PK2_LEN: usize,
             const C2_SIZE: usize,
@@ -655,7 +663,8 @@ macro_rules! impl_incr_platform {
             )
         }
 
-        pub(crate) fn encapsulate2_serialized<
+        $(#[$meta])*
+        pub(crate) $($unsafe)? fn encapsulate2_serialized<
             const K: usize,
             const PK2_LEN: usize,
             const C2_SIZE: usize,
@@ -675,7 +684,8 @@ macro_rules! impl_incr_platform {
             >(state, public_key_part)
         }
 
-        pub(crate) fn decapsulate<
+        $(#[$meta])*
+        pub(crate) $($unsafe)? fn decapsulate<
             const K: usize,
             const SECRET_KEY_SIZE: usize,
             const CPA_SECRET_KEY_SIZE: usize,
@@ -719,7 +729,8 @@ macro_rules! impl_incr_platform {
             >(private_key, ciphertext1, ciphertext2)
         }
 
-        pub(crate) fn decapsulate_incremental_key<
+        $(#[$meta])*
+        pub(crate) $($unsafe)? fn decapsulate_incremental_key<
             const K: usize,
             const PK2_LEN: usize,
             const SECRET_KEY_SIZE: usize,
@@ -765,7 +776,8 @@ macro_rules! impl_incr_platform {
             >(private_key, ciphertext1, ciphertext2)
         }
 
-        pub(crate) fn decapsulate_compressed_key<
+        $(#[$meta])*
+        pub(crate) $($unsafe)? fn decapsulate_compressed_key<
             const K: usize,
             const PK2_LEN: usize,
             const SECRET_KEY_SIZE: usize,
