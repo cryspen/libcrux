@@ -4,8 +4,8 @@ use ind_cpa::unpacked::IndCpaPublicKeyUnpacked;
 
 use super::*;
 use crate::{
-    ind_cca::unpacked::MlKemKeyPairUnpacked,
-    ind_cpa::{deserialize_vector, serialize_vector},
+    ind_cca::{serialize_kem_secret_key_mut, unpacked::MlKemKeyPairUnpacked},
+    ind_cpa::{deserialize_vector, serialize_public_key_mut, serialize_vector},
     polynomial::{vec_from_bytes, vec_to_bytes},
 };
 
@@ -167,7 +167,6 @@ impl<const K: usize, Vector: Operations> EncapsState<K, Vector> {
         vec_len_bytes::<K, Vector>() + PolynomialRingElement::<Vector>::num_bytes() + 32
     }
 
-    #[allow(dead_code)]
     /// Get the state as bytes
     pub fn to_bytes(self, state: &mut [u8]) -> Result<(), Error> {
         debug_assert!(state.len() >= Self::num_bytes());
@@ -303,6 +302,14 @@ impl<const K: usize, const PK2_LEN: usize, Vector: Operations> From<KeyPair<K, P
     }
 }
 
+/// Write `value` into `out` at `offset`.
+#[inline(always)]
+fn write(out: &mut [u8], value: &[u8], offset: &mut usize) {
+    let new_offset = *offset + value.len();
+    out[*offset..new_offset].copy_from_slice(value);
+    *offset = new_offset;
+}
+
 impl<const K: usize, const PK2_LEN: usize, Vector: Operations> KeyPair<K, PK2_LEN, Vector> {
     /// Get [`PublicKey1`] as bytes.
     pub fn pk1_bytes(&self, pk1: &mut [u8]) -> Result<(), Error> {
@@ -329,7 +336,7 @@ impl<const K: usize, const PK2_LEN: usize, Vector: Operations> KeyPair<K, PK2_LE
     }
 
     /// The byte size of this key pair.
-    pub fn num_bytes() -> usize {
+    pub const fn num_bytes() -> usize {
         PublicKey1::len() + PublicKey2::<PK2_LEN>::len()
         // sk length
         + vec_len_bytes::<K, Vector>() + 32
@@ -340,27 +347,14 @@ impl<const K: usize, const PK2_LEN: usize, Vector: Operations> KeyPair<K, PK2_LE
     /// Write this key pair into the `key` bytes.
     ///
     /// `key` must be at least of length `num_bytes()`
-    pub fn to_bytes(self, key: &mut [u8]) -> Result<(), Error> {
+    pub fn to_bytes(&self, key: &mut [u8]) -> Result<(), Error> {
         debug_assert!(key.len() >= Self::num_bytes());
         if key.len() < Self::num_bytes() {
             return Err(Error::InvalidInputLength);
         }
 
         let mut offset = 0;
-
-        #[inline(always)]
-        fn write(out: &mut [u8], value: &[u8], offset: &mut usize) {
-            let new_offset = *offset + value.len();
-            out[*offset..new_offset].copy_from_slice(value);
-            *offset = new_offset;
-        }
-
-        // PK1
-        write(key, &self.pk1.seed, &mut offset);
-        write(key, &self.pk1.hash, &mut offset);
-
-        // PK2
-        write(key, &self.pk2.t_as_ntt, &mut offset);
+        self.write_pks(key, &mut offset);
 
         // SK
         vec_to_bytes(
@@ -377,6 +371,44 @@ impl<const K: usize, const PK2_LEN: usize, Vector: Operations> KeyPair<K, PK2_LE
         }
 
         Ok(())
+    }
+
+    fn write_pks(&self, key: &mut [u8], offset: &mut usize) {
+        // PK1
+        write(key, &self.pk1.seed, offset);
+        write(key, &self.pk1.hash, offset);
+
+        // PK2
+        write(key, &self.pk2.t_as_ntt, offset);
+    }
+
+    /// Write this key pair into the `key` bytes.
+    /// It compresses the private key.
+    ///
+    /// `key` must be at least of length pk1 + pk2 + secret key size
+    pub fn to_bytes_compressed<const KEY_SIZE: usize, const VEC_SIZE: usize>(
+        &self,
+        key: &mut [u8; KEY_SIZE],
+    ) {
+        let mut offset = 0;
+        self.write_pks(key, &mut offset);
+
+        // Write the private key.
+        // This is a manual version of serialize_kem_secret_key_mut that skips
+        // the hash.
+        // dk | ek | H(ek) | z
+        serialize_vector(
+            &self.sk.ind_cpa_private_key.secret_as_ntt,
+            &mut key[offset..],
+        );
+        offset += VEC_SIZE;
+
+        // ek = t | ⍴
+        write(key, &self.pk2.t_as_ntt, &mut offset);
+        write(key, &self.pk1.seed, &mut offset);
+
+        write(key, &self.pk1.hash, &mut offset);
+        write(key, &self.sk.implicit_rejection_value, &mut offset);
     }
 
     /// Read a key pair from the `key` bytes.

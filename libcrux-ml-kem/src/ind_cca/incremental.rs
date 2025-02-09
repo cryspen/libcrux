@@ -98,6 +98,47 @@ pub(crate) fn generate_keypair<
 
 /// Generate a key pair for incremental encapsulation.
 ///
+/// This generates a regular key pair and writes
+/// it into the `key_pair` output bytes.
+///
+/// The public keys can be extracted from the bytes.
+pub(crate) fn generate_keypair_compressed<
+    const K: usize,
+    const PK2_LEN: usize,
+    const CPA_PRIVATE_KEY_SIZE: usize,
+    const PRIVATE_KEY_SIZE: usize,
+    const PUBLIC_KEY_SIZE: usize,
+    const BYTES_PER_RING_ELEMENT: usize,
+    const ETA1: usize,
+    const ETA1_RANDOMNESS_SIZE: usize,
+    const KEYPAIR_LEN: usize,
+    Vector: Operations,
+    Hasher: Hash<K>,
+>(
+    randomness: [u8; KEY_GENERATION_SEED_SIZE],
+    key_pair: &mut [u8; KEYPAIR_LEN],
+) {
+    // Generate unpacked key pair.
+    let mut kp = MlKemKeyPairUnpacked::new();
+    super::unpacked::generate_keypair::<
+        K,
+        CPA_PRIVATE_KEY_SIZE,
+        PRIVATE_KEY_SIZE,
+        PUBLIC_KEY_SIZE,
+        BYTES_PER_RING_ELEMENT,
+        ETA1,
+        ETA1_RANDOMNESS_SIZE,
+        Vector,
+        Hasher,
+        variant::MlKem,
+    >(randomness, &mut kp);
+
+    let kp = KeyPair::<K, PK2_LEN, Vector>::from(kp);
+    kp.to_bytes_compressed::<KEYPAIR_LEN, CPA_PRIVATE_KEY_SIZE>(key_pair);
+}
+
+/// Generate a key pair for incremental encapsulation.
+///
 /// This generates a regular unpacked key pair [`MlKemKeyPairUnpacked`] and writes
 /// it into the `key_pair` output bytes.
 ///
@@ -135,38 +176,6 @@ pub(crate) fn generate_keypair_serialized<
     let kp = KeyPair::<K, PK2_LEN, Vector>::from(kp);
     kp.to_bytes(key_pair)
 }
-
-// pub(crate) fn generate_incremental_keypair<
-//     const K: usize,
-//     const CPA_PRIVATE_KEY_SIZE: usize,
-//     const PRIVATE_KEY_SIZE: usize,
-//     const PUBLIC_KEY_SIZE: usize,
-//     const BYTES_PER_RING_ELEMENT: usize,
-//     const ETA1: usize,
-//     const ETA1_RANDOMNESS_SIZE: usize,
-//     Vector: Operations,
-//     Hasher: Hash<K>,
-// >(
-//     randomness: [u8; KEY_GENERATION_SEED_SIZE],
-// ) -> KeyPair<K, Vector> {
-//     // Generate unpacked key pair.
-//     let mut kp = MlKemKeyPairUnpacked::new();
-//     super::unpacked::generate_keypair::<
-//         K,
-//         CPA_PRIVATE_KEY_SIZE,
-//         PRIVATE_KEY_SIZE,
-//         PUBLIC_KEY_SIZE,
-//         BYTES_PER_RING_ELEMENT,
-//         ETA1,
-//         ETA1_RANDOMNESS_SIZE,
-//         Vector,
-//         Hasher,
-//         variant::MlKem,
-//     >(randomness, &mut kp);
-
-//     // Convert and return
-//     KeyPair::from(kp)
-// }
 
 pub(crate) fn encapsulate1<
     const K: usize,
@@ -427,4 +436,56 @@ pub(crate) fn decapsulate_incremental_key<
         Vector,
         Hasher,
     >(&key_pair.into(), &ciphertext.into()))
+}
+
+pub(crate) fn decapsulate_compressed_key<
+    const K: usize,
+    const PK2_LEN: usize,
+    const SECRET_KEY_SIZE: usize,
+    const CPA_SECRET_KEY_SIZE: usize,
+    const PUBLIC_KEY_SIZE: usize,
+    const CIPHERTEXT_SIZE: usize,
+    const T_AS_NTT_ENCODED_SIZE: usize,
+    const C1_SIZE: usize,
+    const C2_SIZE: usize,
+    const VECTOR_U_COMPRESSION_FACTOR: usize,
+    const VECTOR_V_COMPRESSION_FACTOR: usize,
+    const C1_BLOCK_SIZE: usize,
+    const ETA1: usize,
+    const ETA1_RANDOMNESS_SIZE: usize,
+    const ETA2: usize,
+    const ETA2_RANDOMNESS_SIZE: usize,
+    const IMPLICIT_REJECTION_HASH_INPUT_SIZE: usize,
+    Vector: Operations,
+    Hasher: Hash<K>,
+>(
+    private_key: &[u8; SECRET_KEY_SIZE],
+    ciphertext1: &Ciphertext1<C1_SIZE>,
+    ciphertext2: &Ciphertext2<C2_SIZE>,
+) -> Result<MlKemSharedSecret, Error> {
+    let mut ciphertext = [0u8; CIPHERTEXT_SIZE];
+    ciphertext[..C1_SIZE].copy_from_slice(&ciphertext1.value);
+    ciphertext[C1_SIZE..].copy_from_slice(&ciphertext2.value);
+
+    Ok(crate::ind_cca::decapsulate::<
+        K,
+        SECRET_KEY_SIZE,
+        CPA_SECRET_KEY_SIZE,
+        PUBLIC_KEY_SIZE,
+        CIPHERTEXT_SIZE,
+        T_AS_NTT_ENCODED_SIZE,
+        C1_SIZE,
+        C2_SIZE,
+        VECTOR_U_COMPRESSION_FACTOR,
+        VECTOR_V_COMPRESSION_FACTOR,
+        C1_BLOCK_SIZE,
+        ETA1,
+        ETA1_RANDOMNESS_SIZE,
+        ETA2,
+        ETA2_RANDOMNESS_SIZE,
+        IMPLICIT_REJECTION_HASH_INPUT_SIZE,
+        Vector,
+        Hasher,
+        variant::MlKem,
+    >(&private_key.into(), &ciphertext.into()))
 }

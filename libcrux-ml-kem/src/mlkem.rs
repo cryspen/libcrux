@@ -25,11 +25,11 @@ macro_rules! impl_incr_key_size {
 
         /// Get the size of the second public key in bytes.
         pub const fn pk2_len() -> usize {
-            // 1184
-            // 3 * 16 * 32 = 1536
-            // uncompressed: RANK * 16 * 32
             RANKED_BYTES_PER_RING_ELEMENT
         }
+
+        /// The size of a compressed key pair in bytes.
+        pub const KEYPAIR_LEN: usize = pk1_len() + pk2_len() + SECRET_KEY_SIZE;
 
         /// The size of the key pair in bytes.
         pub const fn key_pair_len() -> usize {
@@ -43,6 +43,12 @@ macro_rules! impl_incr_key_size {
             + RANK * 16 * 32 + 32
             // Matrix
             + RANK * RANK * 16 * 32
+        }
+
+
+        /// The size of the compressed key pair in bytes.
+        pub const fn key_pair_compressed_len() -> usize {
+            KEYPAIR_LEN
         }
 
         /// The size of the encaps state in bytes.
@@ -137,7 +143,62 @@ macro_rules! impl_incr_key_size {
             }
         }
 
+        /// An encoded, incremental key pair.
+        pub struct KeyPairBytes {
+            value: [u8; key_pair_len()]
+        }
+
+        #[cfg(all(not(eurydice), feature = "rand"))]
+        use ::rand::{CryptoRng, RngCore};
+
+        impl KeyPairBytes {
+            /// Generate a new key pair.
+            /// This uses unpacked keys and does not compress the keys.
+            pub fn from_seed(randomness: [u8; KEY_GENERATION_SEED_SIZE]) -> Self {
+                let mut out = Self {
+                    value: [0u8; key_pair_len()]
+                };
+                generate_key_pair(randomness, &mut out.value).unwrap();
+                out
+            }
+
+            /// Generate a new key pair.
+            /// This uses unpacked keys and does not compress the keys.
+            #[cfg(all(not(eurydice), feature = "rand"))]
+            pub fn generate(rng: &mut (impl RngCore + CryptoRng)) -> Self {
+                let mut randomness = [0u8; KEY_GENERATION_SEED_SIZE];
+                rng.fill_bytes(&mut randomness);
+                let mut out = Self {
+                    value: [0u8; key_pair_len()]
+                };
+                generate_key_pair(randomness, &mut out.value).unwrap();
+                out
+            }
+
+            /// Get the raw bytes.
+            pub fn to_bytes(self) -> [u8; key_pair_len()] {
+                self.value
+            }
+
+            /// Get the PK1 bytes from the serialized key pair bytes
+            pub fn pk1(&self) -> &[u8] {
+                &self.value[0..pk1_len()]
+            }
+
+            /// Get the PK2 bytes from the serialized key pair bytes
+            pub fn pk2(&self) -> &[u8] {
+                &self.value[pk1_len()..pk1_len() + pk2_len()]
+            }
+        }
+
+        impl AsRef<[u8]> for KeyPairBytes {
+            fn as_ref(&self) -> &[u8] {
+                &self.value
+            }
+        }
+
         /// Generate a key pair and write it into `key_pair`.
+        /// This uses unpacked keys and does not compress the keys.
         ///
         /// `key_pair.len()` must be of size `key_pair_len()`.
         pub fn generate_key_pair(randomness: [u8; KEY_GENERATION_SEED_SIZE], key_pair: &mut [u8]) -> Result<(), Error> {
@@ -151,6 +212,91 @@ macro_rules! impl_incr_key_size {
                 ETA1,
                 ETA1_RANDOMNESS_SIZE,
             >(randomness, key_pair)
+        }
+        /// An encoded, compressed, incremental key pair.
+        pub struct KeyPairCompressedBytes {
+            value: [u8; key_pair_compressed_len()]
+        }
+
+        impl KeyPairCompressedBytes {
+            /// Generate a new key pair.
+            /// This uses unpacked keys and does not compress the keys.
+            pub fn from_seed(randomness: [u8; KEY_GENERATION_SEED_SIZE]) -> Self {
+                let mut out = Self {
+                    value: [0u8; key_pair_compressed_len()]
+                };
+                generate_key_pair_compressed(randomness, &mut out.value);
+                out
+            }
+
+            /// Generate a new key pair.
+            /// This uses unpacked keys and does not compress the keys.
+            #[cfg(all(not(eurydice), feature = "rand"))]
+            pub fn generate(rng: &mut (impl RngCore + CryptoRng)) -> Self {
+                let mut randomness = [0u8; KEY_GENERATION_SEED_SIZE];
+                rng.fill_bytes(&mut randomness);
+                let mut out = Self {
+                    value: [0u8; key_pair_compressed_len()]
+                };
+                generate_key_pair_compressed(randomness, &mut out.value);
+                out
+            }
+
+            /// Get the raw bytes.
+            pub fn to_bytes(self) -> [u8; key_pair_compressed_len()] {
+                self.value
+            }
+
+            /// Get the PK1 bytes from the serialized key pair bytes
+            pub fn pk1(&self) -> &[u8] {
+                &self.value[0..pk1_len()]
+            }
+
+            /// Get the PK2 bytes from the serialized key pair bytes
+            pub fn pk2(&self) -> &[u8] {
+                &self.value[pk1_len()..pk1_len() + pk2_len()]
+            }
+
+            /// Get the serialized private for decapsulation.
+            pub fn sk(&self) -> &[u8; SECRET_KEY_SIZE] {
+                <&[u8; SECRET_KEY_SIZE]>::try_from(&self.value[pk1_len() + pk2_len()..]).unwrap()
+            }
+        }
+
+        impl AsRef<[u8]> for KeyPairCompressedBytes {
+            fn as_ref(&self) -> &[u8] {
+                &self.value
+            }
+        }
+
+        /// Generate a key pair and write it into `key_pair`.
+        /// This compresses the keys.
+        pub fn generate_key_pair_compressed(randomness: [u8; KEY_GENERATION_SEED_SIZE], key_pair: &mut [u8; KEYPAIR_LEN]) {
+            multiplexing::generate_keypair_compressed::<
+                RANK,
+                RANKED_BYTES_PER_RING_ELEMENT,
+                CPA_PKE_SECRET_KEY_SIZE,
+                SECRET_KEY_SIZE,
+                CPA_PKE_PUBLIC_KEY_SIZE,
+                RANKED_BYTES_PER_RING_ELEMENT,
+                ETA1,
+                ETA1_RANDOMNESS_SIZE,
+                KEYPAIR_LEN,
+            >(randomness, key_pair)
+        }
+
+        /// Get the PK1 bytes from the serialized key pair bytes
+        pub fn pk1(
+            keypair: &[u8; key_pair_len()],
+        ) -> &[u8] {
+            &keypair[0..pk1_len()]
+        }
+
+        /// Get the PK2 bytes from the serialized key pair bytes
+        pub fn pk2(
+            keypair: &[u8; key_pair_len()],
+        ) -> &[u8] {
+            &keypair[pk1_len()..pk1_len() + pk2_len()]
         }
 
         /// Validate that the two parts `pk1` and `pk2` are consistent.
@@ -222,6 +368,32 @@ macro_rules! impl_incr_key_size {
             >(private_key, ciphertext1, ciphertext2)
         }
 
+        /// Decapsulate incremental ciphertexts.
+        pub fn decapsulate_compressed_key(
+            private_key: &[u8; SECRET_KEY_SIZE],
+            ciphertext1: &Ciphertext1,
+            ciphertext2: &Ciphertext2,
+        ) -> Result<MlKemSharedSecret, Error> {
+            multiplexing::decapsulate_compressed::<
+                RANK,
+                RANKED_BYTES_PER_RING_ELEMENT,
+                SECRET_KEY_SIZE,
+                CPA_PKE_SECRET_KEY_SIZE,
+                CPA_PKE_PUBLIC_KEY_SIZE,
+                CPA_PKE_CIPHERTEXT_SIZE,
+                T_AS_NTT_ENCODED_SIZE,
+                C1_SIZE,
+                C2_SIZE,
+                VECTOR_U_COMPRESSION_FACTOR,
+                VECTOR_V_COMPRESSION_FACTOR,
+                C1_BLOCK_SIZE,
+                ETA1,
+                ETA1_RANDOMNESS_SIZE,
+                ETA2,
+                ETA2_RANDOMNESS_SIZE,
+                IMPLICIT_REJECTION_HASH_INPUT_SIZE,
+            >(private_key, ciphertext1, ciphertext2)
+        }
     };
 }
 pub(crate) use impl_incr_key_size;
@@ -292,6 +464,35 @@ macro_rules! impl_incr_platform {
                 BYTES_PER_RING_ELEMENT,
                 ETA1,
                 ETA1_RANDOMNESS_SIZE,
+                $vector,
+                $hash,
+            >(randomness, key_pair)
+        }
+
+        pub(crate) fn generate_keypair_compressed<
+            const K: usize,
+            const PK2_LEN: usize,
+            const CPA_PRIVATE_KEY_SIZE: usize,
+            const PRIVATE_KEY_SIZE: usize,
+            const PUBLIC_KEY_SIZE: usize,
+            const BYTES_PER_RING_ELEMENT: usize,
+            const ETA1: usize,
+            const ETA1_RANDOMNESS_SIZE: usize,
+            const KEYPAIR_LEN: usize,
+        >(
+            randomness: [u8; KEY_GENERATION_SEED_SIZE],
+            key_pair: &mut [u8; KEYPAIR_LEN],
+        ) {
+            super::generate_keypair_compressed::<
+                K,
+                PK2_LEN,
+                CPA_PRIVATE_KEY_SIZE,
+                PRIVATE_KEY_SIZE,
+                PUBLIC_KEY_SIZE,
+                BYTES_PER_RING_ELEMENT,
+                ETA1,
+                ETA1_RANDOMNESS_SIZE,
+                KEYPAIR_LEN,
                 $vector,
                 $hash,
             >(randomness, key_pair)
@@ -469,6 +670,52 @@ macro_rules! impl_incr_platform {
             ciphertext2: &Ciphertext2<C2_SIZE>,
         ) -> Result<MlKemSharedSecret, Error> {
             super::decapsulate_incremental_key::<
+                K,
+                PK2_LEN,
+                SECRET_KEY_SIZE,
+                CPA_SECRET_KEY_SIZE,
+                PUBLIC_KEY_SIZE,
+                CIPHERTEXT_SIZE,
+                T_AS_NTT_ENCODED_SIZE,
+                C1_SIZE,
+                C2_SIZE,
+                VECTOR_U_COMPRESSION_FACTOR,
+                VECTOR_V_COMPRESSION_FACTOR,
+                C1_BLOCK_SIZE,
+                ETA1,
+                ETA1_RANDOMNESS_SIZE,
+                ETA2,
+                ETA2_RANDOMNESS_SIZE,
+                IMPLICIT_REJECTION_HASH_INPUT_SIZE,
+                $vector,
+                $hash,
+            >(private_key, ciphertext1, ciphertext2)
+        }
+
+        pub(crate) fn decapsulate_compressed_key<
+            const K: usize,
+            const PK2_LEN: usize,
+            const SECRET_KEY_SIZE: usize,
+            const CPA_SECRET_KEY_SIZE: usize,
+            const PUBLIC_KEY_SIZE: usize,
+            const CIPHERTEXT_SIZE: usize,
+            const T_AS_NTT_ENCODED_SIZE: usize,
+            const C1_SIZE: usize,
+            const C2_SIZE: usize,
+            const VECTOR_U_COMPRESSION_FACTOR: usize,
+            const VECTOR_V_COMPRESSION_FACTOR: usize,
+            const C1_BLOCK_SIZE: usize,
+            const ETA1: usize,
+            const ETA1_RANDOMNESS_SIZE: usize,
+            const ETA2: usize,
+            const ETA2_RANDOMNESS_SIZE: usize,
+            const IMPLICIT_REJECTION_HASH_INPUT_SIZE: usize,
+        >(
+            private_key: &[u8; SECRET_KEY_SIZE],
+            ciphertext1: &Ciphertext1<C1_SIZE>,
+            ciphertext2: &Ciphertext2<C2_SIZE>,
+        ) -> Result<MlKemSharedSecret, Error> {
+            super::decapsulate_compressed_key::<
                 K,
                 PK2_LEN,
                 SECRET_KEY_SIZE,
