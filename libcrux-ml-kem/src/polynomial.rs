@@ -420,8 +420,6 @@ mod tests {
     #[cfg(feature = "simd128")]
     #[test]
     fn encoding_neon() {
-        use std::eprintln;
-
         use crate::vector::{Operations, SIMD128Vector};
 
         type RingElement = PolynomialRingElement<SIMD128Vector>;
@@ -431,7 +429,6 @@ mod tests {
 
         let mut bytes = [0u8; RingElement::num_bytes()];
         re.to_bytes(&mut bytes);
-        eprintln!("bytes: {:x?}", bytes);
 
         let re_decoded = RingElement::from_bytes(&bytes);
 
