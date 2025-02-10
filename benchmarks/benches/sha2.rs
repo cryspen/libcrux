@@ -6,7 +6,7 @@ use libcrux::digest::{self, *};
 use benchmarks::util::*;
 
 macro_rules! impl_comp {
-    ($fun:ident, $libcrux:expr, $ring:expr, $rust_crypto:ty, $openssl:expr) => {
+    ($fun:ident, $libcrux_hacl:expr,$libcrux_hacl_rs:expr, $ring:expr, $rust_crypto:ty, $openssl:expr) => {
         // Comparing libcrux performance for different payload sizes and other implementations.
         fn $fun(c: &mut Criterion) {
             const PAYLOAD_SIZES: [usize; 5] = [100, 1024, 2048, 4096, 8192];
@@ -17,13 +17,27 @@ macro_rules! impl_comp {
                 group.throughput(Throughput::Bytes(*payload_size as u64));
 
                 group.bench_with_input(
-                    BenchmarkId::new("libcrux", fmt(*payload_size)),
+                    BenchmarkId::new("libcrux(hacl)", fmt(*payload_size)),
                     payload_size,
                     |b, payload_size| {
                         b.iter_batched(
                             || randombytes(*payload_size),
                             |payload| {
-                                let _d = digest::hash($libcrux, &payload);
+                                let _d = digest::hash($libcrux_hacl, &payload);
+                            },
+                            BatchSize::SmallInput,
+                        )
+                    },
+                );
+
+                group.bench_with_input(
+                    BenchmarkId::new("libcrux(hacl-rs)", fmt(*payload_size)),
+                    payload_size,
+                    |b, payload_size| {
+                        b.iter_batched(
+                            || randombytes(*payload_size),
+                            |payload| {
+                                let _d = $libcrux_hacl_rs(&payload);
                             },
                             BatchSize::SmallInput,
                         )
@@ -88,6 +102,7 @@ macro_rules! impl_comp {
 impl_comp!(
     Sha2_224,
     Algorithm::Sha224,
+    libcrux_sha2::sha224,
     None,
     sha2::Sha224,
     MessageDigest::sha224()
@@ -95,6 +110,7 @@ impl_comp!(
 impl_comp!(
     Sha2_256,
     Algorithm::Sha256,
+    libcrux_sha2::sha256,
     Some(&ring::digest::SHA256),
     sha2::Sha256,
     MessageDigest::sha256()
@@ -102,6 +118,7 @@ impl_comp!(
 impl_comp!(
     Sha2_384,
     Algorithm::Sha384,
+    libcrux_sha2::sha384,
     Some(&ring::digest::SHA384),
     sha2::Sha384,
     MessageDigest::sha384()
@@ -109,6 +126,7 @@ impl_comp!(
 impl_comp!(
     Sha2_512,
     Algorithm::Sha512,
+    libcrux_sha2::sha512,
     Some(&ring::digest::SHA512),
     sha2::Sha512,
     MessageDigest::sha512()
