@@ -435,7 +435,7 @@ let make_hint
   let hax_temp_output:usize = true_hints in
   hint, hax_temp_output <: (t_Slice (t_Array i32 (mk_usize 256)) & usize)
 
-let uuse_hint
+let use_hint
       (#v_SIMDUnit: Type0)
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
           i1:
@@ -493,7 +493,7 @@ let uuse_hint
                     Rust_primitives.Hax.Monomorphized_update_at.update_at_usize tmp
                         .Libcrux_ml_dsa.Polynomial.f_simd_units
                       j
-                      (Libcrux_ml_dsa.Simd.Traits.f_uuse_hint #v_SIMDUnit
+                      (Libcrux_ml_dsa.Simd.Traits.f_use_hint #v_SIMDUnit
                           #FStar.Tactics.Typeclasses.solve
                           gamma2
                           ((re_vector.[ i ]

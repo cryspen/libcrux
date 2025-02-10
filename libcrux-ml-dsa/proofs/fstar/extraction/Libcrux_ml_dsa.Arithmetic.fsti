@@ -55,7 +55,7 @@ val make_hint
       (hint: t_Slice (t_Array i32 (mk_usize 256)))
     : Prims.Pure (t_Slice (t_Array i32 (mk_usize 256)) & usize) Prims.l_True (fun _ -> Prims.l_True)
 
-val uuse_hint
+val use_hint
       (#v_SIMDUnit: Type0)
       {| i1: Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit |}
       (gamma2: i32)
