@@ -8,6 +8,11 @@ on:
   workflow_dispatch:
   merge_group:
 
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}-c
+  VERSION_TAG: latest
+
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
@@ -28,12 +33,14 @@ jobs:
     outputs:
       # only run if files in `.docker/c/` unchanged
       should-run: ${{ steps.changes.outputs.docker-c == 'false' }}
+      image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.VERSION_TAG }}
 
   extract:
     needs: [setup]
     if: ${{ needs.setup.outputs.should-run == 'true' }}
     runs-on: ubuntu-latest
-    container: franziskus/libcrux-c:latest
+    container:
+      image: ${{ needs.setup.outputs.image }}
     defaults:
       run:
         working-directory: libcrux-ml-kem
@@ -57,7 +64,8 @@ jobs:
     needs: [setup]
     if: ${{ needs.setup.outputs.should-run == 'true' }}
     runs-on: ubuntu-latest
-    container: franziskus/libcrux-c:latest
+    container:
+      image: ${{ needs.setup.outputs.image }}
     defaults:
       run:
         working-directory: libcrux-ml-kem
@@ -82,7 +90,8 @@ jobs:
     needs: [setup]
     if: ${{ needs.setup.outputs.should-run == 'true' }}
     runs-on: ubuntu-latest
-    container: franziskus/libcrux-c:latest
+    container:
+      image: ${{ needs.setup.outputs.image }}
     defaults:
       run:
         working-directory: libcrux-ml-dsa
