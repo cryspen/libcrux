@@ -39,6 +39,6 @@ pub mod cred;
 pub mod psk_registration;
 
 #[cfg(feature = "classic-mceliece")]
-pub mod psq_classic_mceliece;
-pub mod psq_impls;
-pub mod psq_traits;
+pub mod classic_mceliece;
+pub mod impls;
+pub mod traits;
