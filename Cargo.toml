@@ -26,6 +26,8 @@ members = [
     "poly1305",
     "chacha20poly1305",
     "rsa",
+    "ecdsa",
+    "p256",
     "blake2",
 ]
 

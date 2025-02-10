@@ -1,0 +1,21 @@
+[package]
+name = "libcrux-p256"
+description = "Formally verified P-256 implementation"
+
+version.workspace = true
+authors.workspace = true
+license.workspace = true
+homepage.workspace = true
+edition.workspace = true
+repository.workspace = true
+readme.workspace = true
+
+[dependencies]
+libcrux-macros = { version = "=0.0.2-beta.2", path = "../macros" }
+libcrux-hacl-rs = { version = "=0.0.2-beta.2", path = "../hacl-rs" }
+libcrux-sha2 = { version = "=0.0.2-beta.2", path = "../sha2", features = [
+    "expose-hacl",
+] }
+
+[features]
+expose-hacl = []
