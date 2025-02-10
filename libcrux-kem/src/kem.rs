@@ -36,7 +36,7 @@ extern crate alloc;
 
 use alloc::{vec, vec::Vec};
 
-use rand::{CryptoRng, Rng};
+use rand::{CryptoRng, Rng, TryRngCore};
 
 use libcrux_ecdh::{p256_derive, x25519_derive};
 use libcrux_ecdh::{
