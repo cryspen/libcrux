@@ -5,8 +5,14 @@ use crate::Error;
 pub struct Signature<const LEN: usize>([u8; LEN]);
 
 impl<const LEN: usize> Signature<LEN> {
+    /// Create a new empty signature object.
     pub fn new() -> Self {
         Self([0u8; LEN])
+    }
+
+    /// Get the raw bytes.
+    pub fn into_raw(self) -> [u8; LEN] {
+        self.0
     }
 }
 
