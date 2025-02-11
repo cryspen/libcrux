@@ -4,17 +4,20 @@
  * SPDX-License-Identifier: MIT or Apache-2.0
  *
  * This code was generated with the following revisions:
- * Charon: db4e045d4597d06d854ce7a2c10e8dcfda6ecd25
- * Eurydice: 75eae2e2534a16f5ba5430e6ee5c69d8a46f3bea
- * Karamel: 3823e3d82fa0b271d799b61c59ffb4742ddc1e65
- * F*: 7cd06c5562fc47ec14cd35c38034d5558a5ff762
- * Libcrux: d7312a4f9c52625c8df67f20051237208cc6d7cd
+ * Charon: 30cab88265206f4fa849736e704983e39a404d96
+ * Eurydice: b8ea420ccde8db516ced5db9c097d77fa558fb94
+ * Karamel: 97a06e07e7e423df192c40d5a88bf6c85fd4d278
+ * F*: b0961063393215ca65927f017720cb365a193833-dirty
+ * Libcrux: 15b22d1beea1cc7052b8a68b653b012241724664
  */
 
 #include "internal/libcrux_mlkem_portable.h"
 
 #include "internal/libcrux_core.h"
 #include "internal/libcrux_sha3_internal.h"
+#include "libcrux_core.h"
+#include "libcrux_sha3.h"
+#include "libcrux_sha3_internal.h"
 
 KRML_MUSTINLINE void libcrux_ml_kem_hash_functions_portable_G(
     Eurydice_slice input, uint8_t ret[64U]) {
@@ -2312,46 +2315,16 @@ KRML_MUSTINLINE size_t libcrux_ml_kem_vector_portable_sampling_rej_sample(
                                                uint8_t, uint8_t *);
     int16_t d1 = (b2 & (int16_t)15) << 8U | b1;
     int16_t d2 = b3 << 4U | b2 >> 4U;
-    bool uu____0;
-    int16_t uu____1;
-    bool uu____2;
-    size_t uu____3;
-    int16_t uu____4;
-    size_t uu____5;
-    int16_t uu____6;
     if (d1 < LIBCRUX_ML_KEM_VECTOR_TRAITS_FIELD_MODULUS) {
       if (sampled < (size_t)16U) {
         Eurydice_slice_index(result, sampled, int16_t, int16_t *) = d1;
         sampled++;
-        uu____1 = d2;
-        uu____6 = LIBCRUX_ML_KEM_VECTOR_TRAITS_FIELD_MODULUS;
-        uu____0 = uu____1 < uu____6;
-        if (uu____0) {
-          uu____3 = sampled;
-          uu____2 = uu____3 < (size_t)16U;
-          if (uu____2) {
-            uu____4 = d2;
-            uu____5 = sampled;
-            Eurydice_slice_index(result, uu____5, int16_t, int16_t *) = uu____4;
-            sampled++;
-            continue;
-          }
-        }
-        continue;
       }
     }
-    uu____1 = d2;
-    uu____6 = LIBCRUX_ML_KEM_VECTOR_TRAITS_FIELD_MODULUS;
-    uu____0 = uu____1 < uu____6;
-    if (uu____0) {
-      uu____3 = sampled;
-      uu____2 = uu____3 < (size_t)16U;
-      if (uu____2) {
-        uu____4 = d2;
-        uu____5 = sampled;
-        Eurydice_slice_index(result, uu____5, int16_t, int16_t *) = uu____4;
+    if (d2 < LIBCRUX_ML_KEM_VECTOR_TRAITS_FIELD_MODULUS) {
+      if (sampled < (size_t)16U) {
+        Eurydice_slice_index(result, sampled, int16_t, int16_t *) = d2;
         sampled++;
-        continue;
       }
     }
   }

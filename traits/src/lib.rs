@@ -3,7 +3,7 @@
 /// A Hash algorithm returning hashes of length `HASH_LEN`.
 pub trait Digest<const HASH_LEN: usize> {
     /// Writes the digest for the given input byte slice, into `digest` in immediate mode.
-    fn hash(digest: &mut [u8; HASH_LEN], payload: &[u8]);
+    fn hash(digest: &mut [u8], payload: &[u8]);
 
     /// Add the `payload` to the digest.
     fn update(&mut self, payload: &[u8]);
