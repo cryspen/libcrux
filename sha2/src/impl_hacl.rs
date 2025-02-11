@@ -2,6 +2,41 @@ use super::*;
 use libcrux_hacl_rs::prelude::*;
 use libcrux_traits::Digest;
 
+/// The different Sha2 algorithms.
+#[derive(Clone, Copy, Debug)]
+pub enum Algorithm {
+    Sha224,
+    Sha256,
+    Sha384,
+    Sha512,
+}
+
+impl Algorithm {
+    // The length of the digest by algorithm.
+    pub const fn hash_len(&self) -> usize {
+        match self {
+            Algorithm::Sha224 => SHA224_LENGTH,
+            Algorithm::Sha256 => SHA256_LENGTH,
+            Algorithm::Sha384 => SHA384_LENGTH,
+            Algorithm::Sha512 => SHA512_LENGTH,
+        }
+    }
+}
+
+impl Algorithm {
+    /// Sha2
+    ///
+    /// Write the Sha2 hash of `payload` into `digest`.
+    pub fn hash(&self, payload: &[u8], digest: &mut [u8]) {
+        match self {
+            Algorithm::Sha224 => Sha224::hash(digest, payload),
+            Algorithm::Sha256 => Sha256::hash(digest, payload),
+            Algorithm::Sha384 => Sha384::hash(digest, payload),
+            Algorithm::Sha512 => Sha512::hash(digest, payload),
+        }
+    }
+}
+
 /// SHA2 224
 /// Will panic if `payload` is longer than `u32::MAX` to ensure that hacl-rs can
 /// process it.
@@ -63,7 +98,8 @@ macro_rules! impl_hash {
             /// Will panic if `payload` is longer than `u32::MAX` to ensure that hacl-rs can
             /// process it.
             #[inline(always)]
-            fn hash(digest: &mut [u8; $digest_size], payload: &[u8]) {
+            fn hash(digest: &mut [u8], payload: &[u8]) {
+                debug_assert!(digest.len() == $digest_size);
                 let payload_len = payload.len().try_into().unwrap();
                 $hash(digest, payload, payload_len)
             }

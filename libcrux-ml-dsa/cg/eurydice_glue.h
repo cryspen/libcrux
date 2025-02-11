@@ -20,6 +20,14 @@ extern "C" {
 #include "karamel/endianness.h"
 #include "karamel/target.h"
 
+#define EURYDICE_ASSERT(test, msg)                                            \
+  do {                                                                        \
+    if (!(test)) {                                                            \
+      fprintf(stderr, "assertion \"%s\" failed: file \"%s\", line %d\n", msg, \
+              __FILE__, __LINE__);                                            \
+    }                                                                         \
+  } while (0)
+
 // SLICES, ARRAYS, ETC.
 
 // The MSVC C++ compiler does not support compound literals.
