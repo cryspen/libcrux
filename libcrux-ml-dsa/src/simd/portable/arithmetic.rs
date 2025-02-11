@@ -390,8 +390,14 @@ pub(super) fn shift_left_then_reduce<const SHIFT_BY: i32>(simd_unit: &mut Coeffi
     }
 }
 
-#[hax_lib::fstar::verification_status(lax)]
 #[inline(always)]
+#[hax_lib::requires(fstar!(r#"v $gamma2 == v $GAMMA2_V261_888 \/ v $gamma2 == v $GAMMA2_V95_232"#))]
+#[hax_lib::ensures(|result| fstar!(r#"if
+    v $low > v $gamma2 || v $low < -(v $gamma2) || (v $low = -(v $gamma2) && v $high <> 0)
+    then
+        v $result = 1
+    else
+        v $result = 0"#))]
 fn compute_one_hint(low: i32, high: i32, gamma2: i32) -> i32 {
     if (low > gamma2) || (low < -gamma2) || (low == -gamma2 && high != 0) {
         1
@@ -400,8 +406,47 @@ fn compute_one_hint(low: i32, high: i32, gamma2: i32) -> i32 {
     }
 }
 
-#[hax_lib::fstar::verification_status(lax)]
+#[cfg_attr(hax, hax_lib::fstar::before(interface,
+r#"let hint_counter (hint:t_Array i32 (mk_usize 8)) (i:nat{i < 8}) (s:nat) : Tot (nat) =
+  s + v (cast hint.[sz i] <: usize)"#
+))]
+#[cfg_attr(hax, hax_lib::fstar::before(
+r#"val hint_counter_loop:
+  hint_1:t_Array i32 (mk_usize 8)
+  -> hint_2:t_Array i32 (mk_usize 8)
+  -> n:nat{n < 8} ->
+  Lemma
+   (requires
+      forall (i:nat). i < n ==> hint_1.[mk_usize i] == hint_2.[mk_usize i])
+    (ensures
+      Lib.LoopCombinators.repeati n (hint_counter hint_1) 0 ==
+        Lib.LoopCombinators.repeati n (hint_counter hint_2) 0)
+
+let rec hint_counter_loop hint_1 hint_2 n =
+  if n = 0 then begin
+    Lib.LoopCombinators.eq_repeati0 n (hint_counter hint_1) 0;
+    Lib.LoopCombinators.eq_repeati0 n (hint_counter hint_2) 0;
+    () end
+  else begin
+    hint_counter_loop hint_1 hint_2 (n - 1);
+    Lib.LoopCombinators.unfold_repeati n (hint_counter hint_1) 0 (n - 1);
+    Lib.LoopCombinators.unfold_repeati n (hint_counter hint_2) 0 (n - 1);
+    () end"#
+))]
 #[inline(always)]
+#[hax_lib::requires(fstar!(r#"v $gamma2 == v $GAMMA2_V261_888 \/ v $gamma2 == v $GAMMA2_V95_232"#))]
+#[hax_lib::ensures(|result| fstar!(r#"
+    (forall i. i < 8 ==> (let r = v (Seq.index ${hint}_future.f_values i) in
+        let l = v (Seq.index ${low}.f_values i) in
+        let h = v (Seq.index ${high}.f_values i) in
+        if l > v $gamma2 || l < -(v $gamma2) || 
+        (l = -(v $gamma2) && h <> 0)
+        then
+            r = 1
+        else
+            r = 0)) /\
+    v $result == Lib.LoopCombinators.repeati 8 (hint_counter ${hint}_future.f_values) 0"#
+))]
 pub(super) fn compute_hint(
     low: &Coefficients,
     high: &Coefficients,
@@ -410,8 +455,32 @@ pub(super) fn compute_hint(
 ) -> usize {
     let mut one_hints_count = 0;
 
+    hax_lib::fstar!(
+        r#"Lib.LoopCombinators.eq_repeati0 0 (hint_counter ${hint}.f_values) 0"#
+    );
     for i in 0..hint.values.len() {
+        hax_lib::loop_invariant!(|i: usize| {
+            fstar!(r#"
+                v $i >= 0 /\ v $i <= 8 /\
+                (forall j. j < v i ==> (let r = v (Seq.index ${hint}.f_values j) in
+                    let l = v (Seq.index ${low}.f_values j) in
+                    let h = v (Seq.index ${high}.f_values j) in
+                    if l > v $gamma2 || l < -(v $gamma2) || 
+                    (l = -(v $gamma2) && h <> 0)
+                    then
+                        r = 1
+                    else
+                        r = 0)) /\
+                v $one_hints_count <= v $i /\
+                v $one_hints_count == Lib.LoopCombinators.repeati (v $i) (hint_counter ${hint}.f_values) 0"#
+            )
+        });
+        let _hint_values = hint.values;
         hint.values[i] = compute_one_hint(low.values[i], high.values[i], gamma2);
+        hax_lib::fstar!(
+            r#"hint_counter_loop ${hint}.f_values $_hint_values (v i);
+            Lib.LoopCombinators.unfold_repeati (v $i + 1) (hint_counter ${hint}.f_values) 0 (v $i)"#
+        );
         one_hints_count += hint.values[i] as usize;
     }
 

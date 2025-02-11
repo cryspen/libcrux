@@ -595,8 +595,6 @@ let shift_left_then_reduce
   in
   simd_unit
 
-#push-options "--admit_smt_queries true"
-
 let compute_one_hint (low high gamma2: i32) =
   if
     low >. gamma2 || low <. (Core.Ops.Arith.Neg.neg gamma2 <: i32) ||
@@ -604,9 +602,27 @@ let compute_one_hint (low high gamma2: i32) =
   then mk_i32 1
   else mk_i32 0
 
-#pop-options
+val hint_counter_loop:
+  hint_1:t_Array i32 (mk_usize 8)
+  -> hint_2:t_Array i32 (mk_usize 8)
+  -> n:nat{n < 8} ->
+  Lemma
+   (requires
+      forall (i:nat). i < n ==> hint_1.[mk_usize i] == hint_2.[mk_usize i])
+    (ensures
+      Lib.LoopCombinators.repeati n (hint_counter hint_1) 0 ==
+        Lib.LoopCombinators.repeati n (hint_counter hint_2) 0)
 
-#push-options "--admit_smt_queries true"
+let rec hint_counter_loop hint_1 hint_2 n =
+  if n = 0 then begin
+    Lib.LoopCombinators.eq_repeati0 n (hint_counter hint_1) 0;
+    Lib.LoopCombinators.eq_repeati0 n (hint_counter hint_2) 0;
+    () end
+  else begin
+    hint_counter_loop hint_1 hint_2 (n - 1);
+    Lib.LoopCombinators.unfold_repeati n (hint_counter hint_1) 0 (n - 1);
+    Lib.LoopCombinators.unfold_repeati n (hint_counter hint_2) 0 (n - 1);
+    () end
 
 let compute_hint
       (low high: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients)
@@ -614,19 +630,29 @@ let compute_hint
       (hint: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients)
      =
   let one_hints_count:usize = mk_usize 0 in
+  let _:Prims.unit = Lib.LoopCombinators.eq_repeati0 0 (hint_counter hint.f_values) 0 in
   let hint, one_hints_count:(Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients & usize) =
     Rust_primitives.Hax.Folds.fold_range (mk_usize 0)
       (Core.Slice.impl__len #i32
           (hint.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values <: t_Slice i32)
         <:
         usize)
-      (fun temp_0_ temp_1_ ->
+      (fun temp_0_ i ->
           let hint, one_hints_count:(Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients & usize
           ) =
             temp_0_
           in
-          let _:usize = temp_1_ in
-          true)
+          let i:usize = i in
+          v i >= 0 /\ v i <= 8 /\
+          (forall j.
+              j < v i ==>
+              (let r = v (Seq.index hint.f_values j) in
+                let l = v (Seq.index low.f_values j) in
+                let h = v (Seq.index high.f_values j) in
+                if l > v gamma2 || l < - (v gamma2) || (l = - (v gamma2) && h <> 0)
+                then r = 1
+                else r = 0)) /\ v one_hints_count <= v i /\
+          v one_hints_count == Lib.LoopCombinators.repeati (v i) (hint_counter hint.f_values) 0)
       (hint, one_hints_count <: (Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients & usize))
       (fun temp_0_ i ->
           let hint, one_hints_count:(Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients & usize
@@ -634,6 +660,9 @@ let compute_hint
             temp_0_
           in
           let i:usize = i in
+          let v__hint_values:t_Array i32 (mk_usize 8) =
+            hint.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values
+          in
           let hint:Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients =
             {
               hint with
@@ -653,6 +682,10 @@ let compute_hint
             <:
             Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients
           in
+          let _:Prims.unit =
+            hint_counter_loop hint.f_values v__hint_values (v i);
+            Lib.LoopCombinators.unfold_repeati (v i + 1) (hint_counter hint.f_values) 0 (v i)
+          in
           let one_hints_count:usize =
             one_hints_count +!
             (cast (hint.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values.[ i ] <: i32) <: usize)
@@ -662,8 +695,6 @@ let compute_hint
   in
   let hax_temp_output:usize = one_hints_count in
   hint, hax_temp_output <: (Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients & usize)
-
-#pop-options
 
 #push-options "--admit_smt_queries true"
 

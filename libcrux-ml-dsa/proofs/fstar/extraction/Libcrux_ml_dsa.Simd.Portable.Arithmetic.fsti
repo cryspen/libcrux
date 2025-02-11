@@ -172,15 +172,44 @@ val shift_left_then_reduce
               let fe_2 = Seq.index simd_unit_future.f_values i in
               Spec.Utils.is_i32b 8380416 fe_2 /\ v fe_2 % 8380417 == v fe_1 % 8380417))
 
-val compute_one_hint (low high gamma2: i32) : Prims.Pure i32 Prims.l_True (fun _ -> Prims.l_True)
+val compute_one_hint (low high gamma2: i32)
+    : Prims.Pure i32
+      (requires
+        v gamma2 == v Libcrux_ml_dsa.Constants.v_GAMMA2_V261_888_ \/
+        v gamma2 == v Libcrux_ml_dsa.Constants.v_GAMMA2_V95_232_)
+      (ensures
+        fun result ->
+          let result:i32 = result in
+          if v low > v gamma2 || v low < - (v gamma2) || (v low = - (v gamma2) && v high <> 0)
+          then v result = 1
+          else v result = 0)
+
+let hint_counter (hint:t_Array i32 (mk_usize 8)) (i:nat{i < 8}) (s:nat) : Tot (nat) =
+  s + v (cast hint.[sz i] <: usize)
 
 val compute_hint
       (low high: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients)
       (gamma2: i32)
       (hint: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients)
     : Prims.Pure (Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients & usize)
-      Prims.l_True
-      (fun _ -> Prims.l_True)
+      (requires
+        v gamma2 == v Libcrux_ml_dsa.Constants.v_GAMMA2_V261_888_ \/
+        v gamma2 == v Libcrux_ml_dsa.Constants.v_GAMMA2_V95_232_)
+      (ensures
+        fun temp_0_ ->
+          let hint_future, result:(Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients & usize)
+          =
+            temp_0_
+          in
+          (forall i.
+              i < 8 ==>
+              (let r = v (Seq.index hint_future.f_values i) in
+                let l = v (Seq.index low.f_values i) in
+                let h = v (Seq.index high.f_values i) in
+                if l > v gamma2 || l < - (v gamma2) || (l = - (v gamma2) && h <> 0)
+                then r = 1
+                else r = 0)) /\
+          v result == Lib.LoopCombinators.repeati 8 (hint_counter hint_future.f_values) 0)
 
 val decompose_element (gamma2 r: i32)
     : Prims.Pure (i32 & i32)
