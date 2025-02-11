@@ -1,5 +1,5 @@
 use crate::constants::{Eta, Gamma2};
-use hax_lib::int::Abstraction;
+use hax_lib::*;
 
 // Each field element occupies 32 bits and the size of a simd_unit is 256 bits.
 pub(crate) const COEFFICIENTS_IN_SIMD_UNIT: usize = 8;
@@ -26,12 +26,12 @@ pub(crate) trait Repr: Copy + Clone {
 }
 
 #[cfg(hax)]
-fn int_is_i32(i: hax_lib::int::Int) -> bool {
+fn int_is_i32(i: hax_lib::Int) -> bool {
     i <= i32::MAX.lift() && i >= i32::MIN.lift()
 }
 
 #[cfg(hax)]
-fn add_pre(lhs: &SIMDContent, rhs: &SIMDContent) -> bool {
+fn add_pre(lhs: &SIMDContent, rhs: &SIMDContent) -> Prop {
     hax_lib::forall(|i: usize| {
         hax_lib::implies(i < COEFFICIENTS_IN_SIMD_UNIT, || {
             int_is_i32(lhs[i].lift() + rhs[i].lift())
@@ -40,7 +40,7 @@ fn add_pre(lhs: &SIMDContent, rhs: &SIMDContent) -> bool {
 }
 
 #[cfg(hax)]
-fn add_post(lhs: &SIMDContent, rhs: &SIMDContent, future_lhs: &SIMDContent) -> bool {
+fn add_post(lhs: &SIMDContent, rhs: &SIMDContent, future_lhs: &SIMDContent) -> Prop {
     hax_lib::forall(|i: usize| {
         hax_lib::implies(i < COEFFICIENTS_IN_SIMD_UNIT, || {
             future_lhs[i].lift() == (lhs[i].lift() + rhs[i].lift())
@@ -49,7 +49,7 @@ fn add_post(lhs: &SIMDContent, rhs: &SIMDContent, future_lhs: &SIMDContent) -> b
 }
 
 #[cfg(hax)]
-fn sub_pre(lhs: &SIMDContent, rhs: &SIMDContent) -> bool {
+fn sub_pre(lhs: &SIMDContent, rhs: &SIMDContent) -> Prop {
     hax_lib::forall(|i: usize| {
         hax_lib::implies(i < COEFFICIENTS_IN_SIMD_UNIT, || {
             int_is_i32(lhs[i].lift() - rhs[i].lift())
@@ -58,7 +58,7 @@ fn sub_pre(lhs: &SIMDContent, rhs: &SIMDContent) -> bool {
 }
 
 #[cfg(hax)]
-fn sub_post(lhs: &SIMDContent, rhs: &SIMDContent, future_lhs: &SIMDContent) -> bool {
+fn sub_post(lhs: &SIMDContent, rhs: &SIMDContent, future_lhs: &SIMDContent) -> Prop {
     hax_lib::forall(|i: usize| {
         hax_lib::implies(i < COEFFICIENTS_IN_SIMD_UNIT, || {
             future_lhs[i].lift() == (lhs[i].lift() - rhs[i].lift())

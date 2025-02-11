@@ -3,6 +3,13 @@ module Libcrux_ml_dsa.Simd.Traits
 open Core
 open FStar.Mul
 
+let _ =
+  (* This module has implicit dependencies, here we make them explicit. *)
+  (* The implicit dependencies arise from typeclasses instances. *)
+  let open Hax_lib.Abstraction in
+  let open Hax_lib.Prop in
+  ()
+
 let v_COEFFICIENTS_IN_SIMD_UNIT: usize = mk_usize 8
 
 let v_SIMD_UNITS_IN_RING_ELEMENT: usize =
@@ -15,7 +22,14 @@ let v_INVERSE_OF_MODULUS_MOD_MONTGOMERY_R: u64 = mk_u64 58728449
 class t_Repr (v_Self: Type0) = {
   [@@@ FStar.Tactics.Typeclasses.no_method]_super_13011033735201511749:Core.Marker.t_Copy v_Self;
   [@@@ FStar.Tactics.Typeclasses.no_method]_super_9529721400157967266:Core.Clone.t_Clone v_Self;
-  f_repr_pre:self_: v_Self -> pred: Type0{true ==> pred};
+  f_repr_pre:x: Prims.unit
+    -> pred:
+      Type0
+        { (let _:Prims.unit = x in
+            Rust_primitives.Hax.failure "(AST import) Fatal error: something we considered as impossible occurred! [1mPlease report this by submitting an issue on GitHub![0m\nDetails: [import_thir:literal] got an error literal: this means the Rust compiler or Hax's frontend probably reported errors above."
+              "{ Types.attributes = [];\n  contents =\n  Types.Literal {\n    lit =\n    { Types.node =\n      (Types.Err Types.ErrorGuaranteed {todo = \"ErrorGuaranteed(())\"});\n      span =\n      { Types.filename =\n        (Types.Real (Types.LocalPath \"libcrux-ml-dsa/src/lib.rs\"));\n        hi = { Types.col = \"0\"; line = \"1\" };\n        lo = { Types.col = \"0\"; line = \"1\" } }\n      };\n    neg = false};\n  hir_id = None;\n  span =\n  { Types.filename =\n    (Types.Real (Types.LocalPath \"libcrux-ml-dsa/src/simd/traits.rs\"));\n    hi = { Types.col = \"22\"; line = \"22\" };\n    lo = { Types.col = \"0\"; line = \"22\" } };\n  ty = { Types.id = 0; value = Types.Never } }"
+            ) ==>
+          pred };
   f_repr_post:v_Self -> t_Array i32 (mk_usize 8) -> Type0;
   f_repr:x0: v_Self
     -> Prims.Pure (t_Array i32 (mk_usize 8)) (f_repr_pre x0) (fun result -> f_repr_post x0 result)
@@ -24,51 +38,67 @@ class t_Repr (v_Self: Type0) = {
 val int_is_i32 (i: Hax_lib.Int.t_Int) : Prims.Pure bool Prims.l_True (fun _ -> Prims.l_True)
 
 val add_pre (lhs rhs: t_Array i32 (mk_usize 8))
-    : Prims.Pure bool Prims.l_True (fun _ -> Prims.l_True)
+    : Prims.Pure Hax_lib.Prop.t_Prop Prims.l_True (fun _ -> Prims.l_True)
 
 val add_post (lhs rhs future_lhs: t_Array i32 (mk_usize 8))
-    : Prims.Pure bool Prims.l_True (fun _ -> Prims.l_True)
+    : Prims.Pure Hax_lib.Prop.t_Prop Prims.l_True (fun _ -> Prims.l_True)
 
 val sub_pre (lhs rhs: t_Array i32 (mk_usize 8))
-    : Prims.Pure bool Prims.l_True (fun _ -> Prims.l_True)
+    : Prims.Pure Hax_lib.Prop.t_Prop Prims.l_True (fun _ -> Prims.l_True)
 
 val sub_post (lhs rhs future_lhs: t_Array i32 (mk_usize 8))
-    : Prims.Pure bool Prims.l_True (fun _ -> Prims.l_True)
+    : Prims.Pure Hax_lib.Prop.t_Prop Prims.l_True (fun _ -> Prims.l_True)
 
 class t_Operations (v_Self: Type0) = {
   [@@@ FStar.Tactics.Typeclasses.no_method]_super_13011033735201511749:Core.Marker.t_Copy v_Self;
   [@@@ FStar.Tactics.Typeclasses.no_method]_super_9529721400157967266:Core.Clone.t_Clone v_Self;
   [@@@ FStar.Tactics.Typeclasses.no_method]_super_6182285156695963586:t_Repr v_Self;
   f_zero_pre:Prims.unit -> Type0;
-  f_zero_post:x: Prims.unit -> result: v_Self
+  f_zero_post:x: Prims.unit
     -> pred:
       Type0
         { pred ==>
           (let _:Prims.unit = x in
-            (f_repr #v_Self #FStar.Tactics.Typeclasses.solve result <: t_Array i32 (mk_usize 8)) =.
-            (Rust_primitives.Hax.repeat (mk_i32 0) (mk_usize 8) <: t_Array i32 (mk_usize 8))) };
+            Rust_primitives.Hax.failure "(AST import) Fatal error: something we considered as impossible occurred! [1mPlease report this by submitting an issue on GitHub![0m\nDetails: [import_thir:literal] got an error literal: this means the Rust compiler or Hax's frontend probably reported errors above."
+              "{ Types.attributes = [];\n  contents =\n  Types.Literal {\n    lit =\n    { Types.node =\n      (Types.Err Types.ErrorGuaranteed {todo = \"ErrorGuaranteed(())\"});\n      span =\n      { Types.filename =\n        (Types.Real (Types.LocalPath \"libcrux-ml-dsa/src/lib.rs\"));\n        hi = { Types.col = \"0\"; line = \"1\" };\n        lo = { Types.col = \"0\"; line = \"1\" } }\n      };\n    neg = false};\n  hir_id = None;\n  span =\n  { Types.filename =\n    (Types.Real (Types.LocalPath \"libcrux-ml-dsa/src/simd/traits.rs\"));\n    hi = { Types.col = \"22\"; line = \"70\" };\n    lo = { Types.col = \"0\"; line = \"70\" } };\n  ty = { Types.id = 0; value = Types.Never } }"
+            ) };
   f_zero:x0: Prims.unit -> Prims.Pure v_Self (f_zero_pre x0) (fun result -> f_zero_post x0 result);
-  f_from_coefficient_array_pre:array: t_Slice i32 -> out: v_Self
+  f_from_coefficient_array_pre:x: Prims.unit
     -> pred:
-      Type0{(Core.Slice.impl__len #i32 array <: usize) =. v_COEFFICIENTS_IN_SIMD_UNIT ==> pred};
-  f_from_coefficient_array_post:array: t_Slice i32 -> out: v_Self -> out_future: v_Self
+      Type0
+        { (let _:Prims.unit = x in
+            Rust_primitives.Hax.failure "(AST import) Fatal error: something we considered as impossible occurred! [1mPlease report this by submitting an issue on GitHub![0m\nDetails: [import_thir:literal] got an error literal: this means the Rust compiler or Hax's frontend probably reported errors above."
+              "{ Types.attributes = [];\n  contents =\n  Types.Literal {\n    lit =\n    { Types.node =\n      (Types.Err Types.ErrorGuaranteed {todo = \"ErrorGuaranteed(())\"});\n      span =\n      { Types.filename =\n        (Types.Real (Types.LocalPath \"libcrux-ml-dsa/src/lib.rs\"));\n        hi = { Types.col = \"0\"; line = \"1\" };\n        lo = { Types.col = \"0\"; line = \"1\" } }\n      };\n    neg = false};\n  hir_id = None;\n  span =\n  { Types.filename =\n    (Types.Real (Types.LocalPath \"libcrux-ml-dsa/src/simd/traits.rs\"));\n    hi = { Types.col = \"22\"; line = \"70\" };\n    lo = { Types.col = \"0\"; line = \"70\" } };\n  ty = { Types.id = 0; value = Types.Never } }"
+            ) ==>
+          pred };
+  f_from_coefficient_array_post:x: Prims.unit
     -> pred:
       Type0
         { pred ==>
-          (f_repr #v_Self #FStar.Tactics.Typeclasses.solve out_future <: t_Array i32 (mk_usize 8)) =.
-          array };
+          (let _:Prims.unit = x in
+            Rust_primitives.Hax.failure "(AST import) Fatal error: something we considered as impossible occurred! [1mPlease report this by submitting an issue on GitHub![0m\nDetails: [import_thir:literal] got an error literal: this means the Rust compiler or Hax's frontend probably reported errors above."
+              "{ Types.attributes = [];\n  contents =\n  Types.Literal {\n    lit =\n    { Types.node =\n      (Types.Err Types.ErrorGuaranteed {todo = \"ErrorGuaranteed(())\"});\n      span =\n      { Types.filename =\n        (Types.Real (Types.LocalPath \"libcrux-ml-dsa/src/lib.rs\"));\n        hi = { Types.col = \"0\"; line = \"1\" };\n        lo = { Types.col = \"0\"; line = \"1\" } }\n      };\n    neg = false};\n  hir_id = None;\n  span =\n  { Types.filename =\n    (Types.Real (Types.LocalPath \"libcrux-ml-dsa/src/simd/traits.rs\"));\n    hi = { Types.col = \"22\"; line = \"70\" };\n    lo = { Types.col = \"0\"; line = \"70\" } };\n  ty = { Types.id = 0; value = Types.Never } }"
+            ) };
   f_from_coefficient_array:x0: t_Slice i32 -> x1: v_Self
     -> Prims.Pure v_Self
         (f_from_coefficient_array_pre x0 x1)
         (fun result -> f_from_coefficient_array_post x0 x1 result);
-  f_to_coefficient_array_pre:value: v_Self -> out: t_Slice i32
-    -> pred: Type0{(Core.Slice.impl__len #i32 out <: usize) =. v_COEFFICIENTS_IN_SIMD_UNIT ==> pred};
-  f_to_coefficient_array_post:value: v_Self -> out: t_Slice i32 -> out_future: t_Slice i32
+  f_to_coefficient_array_pre:x: Prims.unit
+    -> pred:
+      Type0
+        { (let _:Prims.unit = x in
+            Rust_primitives.Hax.failure "(AST import) Fatal error: something we considered as impossible occurred! [1mPlease report this by submitting an issue on GitHub![0m\nDetails: [import_thir:literal] got an error literal: this means the Rust compiler or Hax's frontend probably reported errors above."
+              "{ Types.attributes = [];\n  contents =\n  Types.Literal {\n    lit =\n    { Types.node =\n      (Types.Err Types.ErrorGuaranteed {todo = \"ErrorGuaranteed(())\"});\n      span =\n      { Types.filename =\n        (Types.Real (Types.LocalPath \"libcrux-ml-dsa/src/lib.rs\"));\n        hi = { Types.col = \"0\"; line = \"1\" };\n        lo = { Types.col = \"0\"; line = \"1\" } }\n      };\n    neg = false};\n  hir_id = None;\n  span =\n  { Types.filename =\n    (Types.Real (Types.LocalPath \"libcrux-ml-dsa/src/simd/traits.rs\"));\n    hi = { Types.col = \"22\"; line = \"70\" };\n    lo = { Types.col = \"0\"; line = \"70\" } };\n  ty = { Types.id = 0; value = Types.Never } }"
+            ) ==>
+          pred };
+  f_to_coefficient_array_post:x: Prims.unit
     -> pred:
       Type0
         { pred ==>
-          out_future =.
-          (f_repr #v_Self #FStar.Tactics.Typeclasses.solve value <: t_Array i32 (mk_usize 8)) };
+          (let _:Prims.unit = x in
+            Rust_primitives.Hax.failure "(AST import) Fatal error: something we considered as impossible occurred! [1mPlease report this by submitting an issue on GitHub![0m\nDetails: [import_thir:literal] got an error literal: this means the Rust compiler or Hax's frontend probably reported errors above."
+              "{ Types.attributes = [];\n  contents =\n  Types.Literal {\n    lit =\n    { Types.node =\n      (Types.Err Types.ErrorGuaranteed {todo = \"ErrorGuaranteed(())\"});\n      span =\n      { Types.filename =\n        (Types.Real (Types.LocalPath \"libcrux-ml-dsa/src/lib.rs\"));\n        hi = { Types.col = \"0\"; line = \"1\" };\n        lo = { Types.col = \"0\"; line = \"1\" } }\n      };\n    neg = false};\n  hir_id = None;\n  span =\n  { Types.filename =\n    (Types.Real (Types.LocalPath \"libcrux-ml-dsa/src/simd/traits.rs\"));\n    hi = { Types.col = \"22\"; line = \"70\" };\n    lo = { Types.col = \"0\"; line = \"70\" } };\n  ty = { Types.id = 0; value = Types.Never } }"
+            ) };
   f_to_coefficient_array:x0: v_Self -> x1: t_Slice i32
     -> Prims.Pure (t_Slice i32)
         (f_to_coefficient_array_pre x0 x1)
@@ -178,21 +208,22 @@ class t_Operations (v_Self: Type0) = {
     -> Prims.Pure v_Self
         (f_gamma1_deserialize_pre x0 x1 x2)
         (fun result -> f_gamma1_deserialize_post x0 x1 x2 result);
-  f_commitment_serialize_pre:simd_unit: v_Self -> serialized: t_Slice u8
+  f_commitment_serialize_pre:x: Prims.unit
     -> pred:
       Type0
-        { (Core.Slice.impl__len #u8 serialized <: usize) =. mk_usize 4 ||
-          (Core.Slice.impl__len #u8 serialized <: usize) =. mk_usize 6 ==>
+        { (let _:Prims.unit = x in
+            Rust_primitives.Hax.failure "(AST import) Fatal error: something we considered as impossible occurred! [1mPlease report this by submitting an issue on GitHub![0m\nDetails: [import_thir:literal] got an error literal: this means the Rust compiler or Hax's frontend probably reported errors above."
+              "{ Types.attributes = [];\n  contents =\n  Types.Literal {\n    lit =\n    { Types.node =\n      (Types.Err Types.ErrorGuaranteed {todo = \"ErrorGuaranteed(())\"});\n      span =\n      { Types.filename =\n        (Types.Real (Types.LocalPath \"libcrux-ml-dsa/src/lib.rs\"));\n        hi = { Types.col = \"0\"; line = \"1\" };\n        lo = { Types.col = \"0\"; line = \"1\" } }\n      };\n    neg = false};\n  hir_id = None;\n  span =\n  { Types.filename =\n    (Types.Real (Types.LocalPath \"libcrux-ml-dsa/src/simd/traits.rs\"));\n    hi = { Types.col = \"22\"; line = \"70\" };\n    lo = { Types.col = \"0\"; line = \"70\" } };\n  ty = { Types.id = 0; value = Types.Never } }"
+            ) ==>
           pred };
-  f_commitment_serialize_post:
-      simd_unit: v_Self ->
-      serialized: t_Slice u8 ->
-      serialized_future: t_Slice u8
+  f_commitment_serialize_post:x: Prims.unit
     -> pred:
       Type0
         { pred ==>
-          (Core.Slice.impl__len #u8 serialized_future <: usize) =.
-          (Core.Slice.impl__len #u8 serialized <: usize) };
+          (let _:Prims.unit = x in
+            Rust_primitives.Hax.failure "(AST import) Fatal error: something we considered as impossible occurred! [1mPlease report this by submitting an issue on GitHub![0m\nDetails: [import_thir:literal] got an error literal: this means the Rust compiler or Hax's frontend probably reported errors above."
+              "{ Types.attributes = [];\n  contents =\n  Types.Literal {\n    lit =\n    { Types.node =\n      (Types.Err Types.ErrorGuaranteed {todo = \"ErrorGuaranteed(())\"});\n      span =\n      { Types.filename =\n        (Types.Real (Types.LocalPath \"libcrux-ml-dsa/src/lib.rs\"));\n        hi = { Types.col = \"0\"; line = \"1\" };\n        lo = { Types.col = \"0\"; line = \"1\" } }\n      };\n    neg = false};\n  hir_id = None;\n  span =\n  { Types.filename =\n    (Types.Real (Types.LocalPath \"libcrux-ml-dsa/src/simd/traits.rs\"));\n    hi = { Types.col = \"22\"; line = \"70\" };\n    lo = { Types.col = \"0\"; line = \"70\" } };\n  ty = { Types.id = 0; value = Types.Never } }"
+            ) };
   f_commitment_serialize:x0: v_Self -> x1: t_Slice u8
     -> Prims.Pure (t_Slice u8)
         (f_commitment_serialize_pre x0 x1)
