@@ -51,4 +51,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Retag and push Docker image
         id: push
-        run: docker pull ${{ needs.setup.outputs.source_image }} && docker tag ${{ needs.setup.outputs.source_image }} ${{ needs.setup.outputs.target_image }} && docker push ${{ needs.setup.outputs.target_image }}
+        run: |
+            docker pull ${{ needs.setup.outputs.source_image }}
+            docker tag ${{ needs.setup.outputs.source_image }} ${{ needs.setup.outputs.target_image }}
+            docker push ${{ needs.setup.outputs.target_image }}
