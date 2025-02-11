@@ -17,6 +17,7 @@ rand = { version = "0.8" }
 
 [dev-dependencies]
 libcrux = { path = "../", features = ["rand", "tests"] }
+libcrux-chacha20poly1305 = { path = "../chacha20poly1305" }
 libcrux-kem = { path = "../libcrux-kem", features = ["tests"] }
 libcrux-ml-kem = { path = "../libcrux-ml-kem" }
 rand_core = { version = "0.6" }

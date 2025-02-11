@@ -1,10 +1,17 @@
 use chacha20poly1305::{AeadCore, AeadInPlace, KeyInit};
 use criterion::{criterion_group, criterion_main, BatchSize, BenchmarkId, Criterion, Throughput};
-use libcrux::{aead::*, digest, drbg};
+use libcrux::{digest, drbg};
+
+use libcrux_chacha20poly1305::*;
 
 use benchmarks::util::*;
 use rand_core::OsRng;
 use ring::aead::UnboundKey;
+
+fn randbuf<const LEN: usize>(drbg: &mut drbg::Drbg) -> Result<[u8; LEN], drbg::Error> {
+    let mut buf = [0; LEN];
+    drbg.generate(&mut buf).map(|_| buf)
+}
 
 // Comparing libcrux performance for different payload sizes and other implementations.
 fn comparisons_encrypt(c: &mut Criterion) {
@@ -22,14 +29,15 @@ fn comparisons_encrypt(c: &mut Criterion) {
             |b, payload_size| {
                 b.iter_batched(
                     || {
-                        let key = Key::generate(Algorithm::Chacha20Poly1305, &mut drbg);
-                        let nonce = Iv::generate(&mut drbg);
-                        let data = randombytes(*payload_size);
+                        let key = randbuf(&mut drbg).unwrap();
+                        let nonce = randbuf(&mut drbg).unwrap();
+                        let ptxt = randombytes(*payload_size);
+                        let ctxt = vec![0; *payload_size];
                         let aad = randombytes(1_000);
-                        (data, nonce, aad, key)
+                        (ptxt, ctxt, nonce, aad, key)
                     },
-                    |(mut data, nonce, aad, key)| {
-                        let _tag = encrypt(&key, &mut data, nonce, &aad);
+                    |(ptxt, mut ctxt, nonce, aad, key)| {
+                        let _tag = encrypt(&key, &ptxt, &mut ctxt, &aad, &nonce);
                     },
                     BatchSize::SmallInput,
                 )
@@ -129,16 +137,24 @@ fn comparisons_decrypt(c: &mut Criterion) {
             |b, payload_size| {
                 b.iter_batched(
                     || {
-                        let key = Key::generate(Algorithm::Chacha20Poly1305, &mut drbg);
-                        let nonce_enc = Iv::generate(&mut drbg);
-                        let nonce = Iv(nonce_enc.0);
-                        let mut data = randombytes(*payload_size);
+                        let key = randbuf(&mut drbg).unwrap();
+                        let nonce_enc = randbuf(&mut drbg).unwrap();
+                        let nonce = nonce_enc;
+                        let ptxt = randombytes(*payload_size);
+                        let mut ctxt = vec![0; *payload_size + TAG_LEN];
                         let aad = randombytes(1_000);
 
-                        let tag = encrypt(&key, &mut data, nonce_enc, &aad).unwrap();
-                        (key, nonce, data, tag, aad)
+                        let ctxt_len = ctxt.len();
+
+                        let (ctxt_got, _tag) =
+                            encrypt(&key, &ptxt, &mut ctxt, &aad, &nonce).unwrap();
+                        assert_eq!(ctxt_len, ctxt_got.len());
+
+                        (key, nonce, ptxt, ctxt, aad)
                     },
-                    |(key, nonce, mut data, tag, aad)| decrypt(&key, &mut data, nonce, &aad, &tag),
+                    |(key, nonce, mut ptxt, ctxt, aad)| {
+                        decrypt(&key, &mut ptxt, &ctxt, &aad, &nonce).unwrap();
+                    },
                     BatchSize::SmallInput,
                 )
             },
