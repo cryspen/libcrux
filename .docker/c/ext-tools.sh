@@ -4,10 +4,6 @@ set -v -e -x
 
 source $HOME/.profile
 
-KRML_REV=97a06e07e7e423df192c40d5a88bf6c85fd4d278
-EURYDICE_REV=b8ea420ccde8db516ced5db9c097d77fa558fb94
-CHARON_REV=30cab88265206f4fa849736e704983e39a404d96
-
 curl -L https://github.com/AeneasVerif/charon/archive/$CHARON_REV.zip \
     --output charon.zip
 unzip charon.zip
