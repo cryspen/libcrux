@@ -31,7 +31,13 @@ jobs:
 
   report-status-tests:
     runs-on: ubuntu-latest
-    needs: [diff, diff-header-only-ml-dsa, diff-header-only-ml-kem, build, build-header-only-ml-dsa, build-header-only-ml-kem]
+    needs:
+      - diff
+      - diff-header-only-ml-dsa
+      - diff-header-only-ml-kem
+      - build
+      - build-header-only-ml-dsa
+      - build-header-only-ml-kem
     steps:
       - name: Report status
         run: echo "All tests completed successfully"
