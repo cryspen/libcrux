@@ -729,7 +729,7 @@ pub(crate) mod kyber {
 /// assert_eq!(shared_secret, encaps_shared_secret);
 /// }
 /// ```
-#[cfg(not(eurydice))]
+#[cfg(all(not(eurydice), feature = "incremental"))]
 pub mod incremental {
     use crate::mlkem::impl_incr_key_size;
 

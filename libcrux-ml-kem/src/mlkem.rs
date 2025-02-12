@@ -1,4 +1,8 @@
+#![cfg(feature = "incremental")]
+
 //! Top level entry points for ML-KEM
+//! 
+//! For now this is only used for the incremental API.
 
 // This should be replaced with a nicer proc macro later.
 

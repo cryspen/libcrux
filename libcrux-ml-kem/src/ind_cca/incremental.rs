@@ -1,3 +1,5 @@
+#![cfg(feature = "incremental")]
+
 //! # Incremental API.
 //!
 //! **WARNING:** This API is not standard compliant and may lead to insecure

@@ -107,6 +107,7 @@ fn to_bytes<Vector: Operations>(re: PolynomialRingElement<Vector>, out: &mut [u8
 
 /// Get the bytes of the vector of ring elements in `re` and write them to `out`.
 #[inline(always)]
+#[allow(dead_code)]
 #[hax_lib::requires(re.len() <= 4 && VECTORS_IN_RING_ELEMENT * 16 * 2 * re.len() <= out.len())]
 pub(crate) fn vec_to_bytes<Vector: Operations>(
     re: &[PolynomialRingElement<Vector>],
@@ -122,6 +123,7 @@ pub(crate) fn vec_to_bytes<Vector: Operations>(
 
 /// Build a vector of ring elements from `bytes`.
 #[inline(always)]
+#[allow(dead_code)]
 #[hax_lib::requires(out.len() <= 4 && VECTORS_IN_RING_ELEMENT * 16 * 2 * out.len() <= bytes.len())]
 pub(crate) fn vec_from_bytes<Vector: Operations>(
     bytes: &[u8],
@@ -137,6 +139,7 @@ pub(crate) fn vec_from_bytes<Vector: Operations>(
 
 /// The length of a vector of ring elements in bytes
 #[hax_lib::requires(K <= 4)]
+#[allow(dead_code)]
 pub(crate) const fn vec_len_bytes<const K: usize, Vector: Operations>() -> usize {
     K * PolynomialRingElement::<Vector>::num_bytes()
 }
@@ -321,6 +324,7 @@ impl<Vector: Operations> PolynomialRingElement<Vector> {
 
     /// Size of a ring element in bytes.
     #[inline(always)]
+    #[allow(dead_code)]
     #[ensures(|result| result == 512 )]
     pub(crate) const fn num_bytes() -> usize {
         VECTORS_IN_RING_ELEMENT * 32
@@ -340,12 +344,14 @@ impl<Vector: Operations> PolynomialRingElement<Vector> {
     }
 
     #[inline(always)]
+    #[allow(dead_code)]
     #[requires(VECTORS_IN_RING_ELEMENT * 16 * 2 <= bytes.len())]
     pub(crate) fn from_bytes(bytes: &[u8]) -> Self {
         from_bytes(bytes)
     }
 
     #[inline(always)]
+    #[allow(dead_code)]
     #[requires(VECTORS_IN_RING_ELEMENT * 16 * 2 <= out.len())]
     pub(crate) fn to_bytes(self, out: &mut [u8]) {
         to_bytes(self, out)

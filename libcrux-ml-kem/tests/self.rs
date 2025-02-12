@@ -131,6 +131,7 @@ macro_rules! impl_consistency_unpacked {
     };
 }
 
+#[cfg(feature = "incremental")]
 macro_rules! impl_consistency_incremental {
     ($name:ident, $modp:path) => {
         #[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
@@ -239,13 +240,13 @@ macro_rules! impl_consistency_incremental {
     };
 }
 
-#[cfg(all(feature = "mlkem512"))]
+#[cfg(all(feature = "mlkem512", feature = "incremental"))]
 impl_consistency_incremental!(consistency_incremental_512, libcrux_ml_kem::mlkem512);
 
-#[cfg(all(feature = "mlkem768"))]
+#[cfg(all(feature = "mlkem768", feature = "incremental"))]
 impl_consistency_incremental!(consistency_incremental_768, libcrux_ml_kem::mlkem768);
 
-#[cfg(all(feature = "mlkem1024"))]
+#[cfg(all(feature = "mlkem1024", feature = "incremental"))]
 impl_consistency_incremental!(consistency_incremental_1024, libcrux_ml_kem::mlkem1024);
 
 fn modify_ciphertext<const LEN: usize>(ciphertext: MlKemCiphertext<LEN>) -> MlKemCiphertext<LEN> {

@@ -151,7 +151,7 @@ macro_rules! impl_kats {
 
             for kat in nist_kats {
                 let key_pair = generate_key_pair(kat.key_generation_seed);
-                #[cfg(feature = "alloc")]
+                #[cfg(all(feature = "alloc", feature = "incremental"))]
                 let incremental_key_pair = incremental::alloc::generate_key_pair(kat.key_generation_seed);
 
                 assert!(validate_public_key(key_pair.public_key()));
@@ -178,7 +178,7 @@ macro_rules! impl_kats {
                 assert_eq!(shared_secret_from_decapsulate, shared_secret.as_ref(), "lhs: shared secret computed via decapsulation, rhs: shared secret computed via encapsulation");
 
                 // Incremental encapsulate
-                #[cfg(feature = "alloc")]
+                #[cfg(all(feature = "alloc", feature = "incremental"))]
                 {
                     let mut pk1_bytes = [0u8; 64];
                     incremental_key_pair.pk1_bytes(&mut pk1_bytes).unwrap();

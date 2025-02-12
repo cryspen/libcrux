@@ -53,6 +53,9 @@ rand = ["dep:rand"]
 std = ["alloc"]
 alloc = []
 
+# Incremental encapsulation API
+incremental = []
+
 [dev-dependencies]
 rand = { version = "0.8" }
 serde_json = { version = "1.0" }
