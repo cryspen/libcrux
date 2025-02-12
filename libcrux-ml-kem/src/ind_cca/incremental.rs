@@ -68,6 +68,7 @@ pub(crate) mod multiplexing;
 /// The two parts of the public key can be extracted with [`pk1`] and [`pk2`].
 ///
 /// To [`decapsulate`], the entire key pair is used again.
+#[inline(always)]
 pub(crate) fn generate_keypair<
     const K: usize,
     const CPA_PRIVATE_KEY_SIZE: usize,
@@ -105,6 +106,7 @@ pub(crate) fn generate_keypair<
 /// it into the `key_pair` output bytes.
 ///
 /// The public keys can be extracted from the bytes.
+#[inline(always)]
 pub(crate) fn generate_keypair_compressed<
     const K: usize,
     const PK2_LEN: usize,
@@ -146,6 +148,7 @@ pub(crate) fn generate_keypair_compressed<
 /// it into the `key_pair` output bytes.
 ///
 /// The public keys can be extracted from the bytes TODO.
+#[inline(always)]
 pub(crate) fn generate_keypair_serialized<
     const K: usize,
     const PK2_LEN: usize,
@@ -180,6 +183,7 @@ pub(crate) fn generate_keypair_serialized<
     kp.to_bytes(key_pair)
 }
 
+#[inline(always)]
 pub(crate) fn encapsulate1<
     const K: usize,
     const CIPHERTEXT_SIZE: usize,
@@ -229,6 +233,7 @@ pub(crate) fn encapsulate1<
     )
 }
 
+#[inline(always)]
 pub(crate) fn encapsulate1_serialized<
     const K: usize,
     const CIPHERTEXT_SIZE: usize,
@@ -275,6 +280,7 @@ pub(crate) fn encapsulate1_serialized<
 }
 
 /// Check that the pk1 and pk2 parts are consistent.
+#[inline(always)]
 pub(crate) fn validate_pk<const K: usize, const PK_LEN: usize, Hasher: Hash<K>>(
     pk1: &PublicKey1,
     pk2: &[u8],
@@ -288,6 +294,7 @@ pub(crate) fn validate_pk<const K: usize, const PK_LEN: usize, Hasher: Hash<K>>(
 }
 
 /// Check that the pk1 and pk2 parts are consistent.
+#[inline(always)]
 pub(crate) fn validate_pk_bytes<const K: usize, const PK_LEN: usize, Hasher: Hash<K>>(
     pk1: &[u8],
     pk2: &[u8],
@@ -300,6 +307,7 @@ pub(crate) fn validate_pk_bytes<const K: usize, const PK_LEN: usize, Hasher: Has
     validate_pk_parts::<K, PK_LEN, Hasher>(&pk1[0..32], &pk1[32..], pk2)
 }
 
+#[inline(always)]
 fn validate_pk_parts<const K: usize, const PK_LEN: usize, Hasher: Hash<K>>(
     pk1_seed: &[u8],
     pk1_hash: &[u8],
@@ -321,6 +329,7 @@ fn validate_pk_parts<const K: usize, const PK_LEN: usize, Hasher: Hash<K>>(
     Ok(())
 }
 
+#[inline(always)]
 pub(crate) fn encapsulate2<
     const K: usize,
     const PK2_LEN: usize,
@@ -345,6 +354,7 @@ pub(crate) fn encapsulate2<
     Ciphertext2 { value: ciphertext }
 }
 
+#[inline(always)]
 pub(crate) fn encapsulate2_serialized<
     const K: usize,
     const PK2_LEN: usize,
@@ -364,6 +374,7 @@ pub(crate) fn encapsulate2_serialized<
     )
 }
 
+#[inline(always)]
 pub(crate) fn decapsulate<
     const K: usize,
     const SECRET_KEY_SIZE: usize,
@@ -413,6 +424,7 @@ pub(crate) fn decapsulate<
     >(private_key, &ciphertext.into())
 }
 
+#[inline(always)]
 pub(crate) fn decapsulate_incremental_key<
     const K: usize,
     const PK2_LEN: usize,
@@ -467,6 +479,7 @@ pub(crate) fn decapsulate_incremental_key<
     >(&key_pair.into(), &ciphertext.into()))
 }
 
+#[inline(always)]
 pub(crate) fn decapsulate_compressed_key<
     const K: usize,
     const PK2_LEN: usize,

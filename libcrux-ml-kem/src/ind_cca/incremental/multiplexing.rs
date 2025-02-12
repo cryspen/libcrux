@@ -66,6 +66,7 @@ pub(crate) mod alloc {
     use crate::ind_cca::incremental::types::alloc::{Keys, State};
     use ::alloc::boxed::Box;
 
+    #[inline(always)]
     pub(crate) fn generate_keypair<
         const K: usize,
         const CPA_PRIVATE_KEY_SIZE: usize,
@@ -115,6 +116,7 @@ pub(crate) mod alloc {
         }
     }
 
+    #[inline(always)]
     pub(crate) fn encapsulate1<
         const K: usize,
         const CIPHERTEXT_SIZE: usize,
@@ -179,6 +181,7 @@ pub(crate) mod alloc {
         }
     }
 
+    #[inline(always)]
     pub(crate) fn encapsulate2<
         const K: usize,
         const PK2_LEN: usize,
@@ -220,6 +223,7 @@ pub(crate) mod alloc {
         }
     }
 
+    #[inline(always)]
     pub(crate) fn decapsulate<
         const K: usize,
         const SECRET_KEY_SIZE: usize,
@@ -311,6 +315,7 @@ pub(crate) mod alloc {
     }
 }
 
+#[inline(always)]
 pub(crate) fn generate_keypair<
     const K: usize,
     const PK2_LEN: usize,
@@ -364,6 +369,7 @@ pub(crate) fn generate_keypair<
     }
 }
 
+#[inline(always)]
 pub(crate) fn generate_keypair_compressed<
     const K: usize,
     const PK2_LEN: usize,
@@ -421,6 +427,7 @@ pub(crate) fn generate_keypair_compressed<
     }
 }
 
+#[inline(always)]
 pub(crate) fn validate_pk<const K: usize, const PK_LEN: usize>(
     pk1: &PublicKey1,
     pk2: &[u8],
@@ -438,6 +445,7 @@ pub(crate) fn validate_pk<const K: usize, const PK_LEN: usize>(
     }
 }
 
+#[inline(always)]
 pub(crate) fn validate_pk_bytes<const K: usize, const PK_LEN: usize>(
     pk1: &[u8],
     pk2: &[u8],
@@ -455,6 +463,7 @@ pub(crate) fn validate_pk_bytes<const K: usize, const PK_LEN: usize>(
     }
 }
 
+#[inline(always)]
 pub(crate) fn encapsulate1<
     const K: usize,
     const CIPHERTEXT_SIZE: usize,
@@ -514,6 +523,7 @@ pub(crate) fn encapsulate1<
     }
 }
 
+#[inline(always)]
 pub(crate) fn encapsulate2<
     const K: usize,
     const PK2_LEN: usize,
@@ -555,6 +565,7 @@ pub(crate) fn encapsulate2<
     }
 }
 
+#[inline(always)]
 pub(crate) fn decapsulate<
     const K: usize,
     const PK2_LEN: usize,
@@ -645,6 +656,7 @@ pub(crate) fn decapsulate<
     }
 }
 
+#[inline(always)]
 pub(crate) fn decapsulate_compressed<
     const K: usize,
     const PK2_LEN: usize,
