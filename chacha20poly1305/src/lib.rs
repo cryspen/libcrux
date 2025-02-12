@@ -1,7 +1,5 @@
 #![no_std]
 
-extern crate alloc;
-
 /// The length of ChaCha20-Poly1305 keys.
 pub const KEY_LEN: usize = 32;
 
@@ -29,7 +27,7 @@ pub enum AeadError {
     InvalidCiphertext,
 }
 
-impl alloc::fmt::Display for AeadError {
+impl core::fmt::Display for AeadError {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         let msg = match self {
             AeadError::PlaintextTooLarge => {
@@ -66,7 +64,7 @@ pub enum MacError {
     InvalidMacTag,
 }
 
-impl alloc::fmt::Display for MacError {
+impl core::fmt::Display for MacError {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         let msg = match self {
             MacError::MessageTooLarge => {
