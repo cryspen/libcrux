@@ -82,7 +82,7 @@ fn wycheproof() {
             assert_eq!(testGroup.r#type, "AeadTest");
             assert_eq!(testGroup.keySize, 256);
 
-            let invalid_iv = if testGroup.ivSize != 96 { true } else { false };
+            let invalid_iv = testGroup.ivSize != 96;
 
             for test in testGroup.tests.iter() {
                 let valid = test.result.eq("valid");
@@ -102,7 +102,7 @@ fn wycheproof() {
                 let key = <&[u8; 32]>::try_from(&test.key[..]).unwrap();
 
                 let mut ctxt = msg.clone();
-                let tag = match libcrux_chacha20poly1305::encrypt(key, &msg, &mut ctxt, &aad, nonce)
+                let tag = match libcrux_chacha20poly1305::encrypt(key, msg, &mut ctxt, aad, nonce)
                 {
                     Ok((_v, t)) => t,
                     Err(_) => {
@@ -118,7 +118,7 @@ fn wycheproof() {
                 assert_eq!(ctxt, exp_cipher.as_slice());
 
                 let mut decrypted = vec![0; msg.len()];
-                match libcrux_chacha20poly1305::decrypt(&key, &mut decrypted, &ctxt, &aad, nonce) {
+                match libcrux_chacha20poly1305::decrypt(key, &mut decrypted, &ctxt, aad, nonce) {
                     Ok(m) => {
                         assert_eq!(m, msg);
                         assert_eq!(&decrypted, msg);
