@@ -17,6 +17,7 @@ rand = { version = "0.8" }
 
 [dev-dependencies]
 libcrux = { path = "../", features = ["rand", "tests"] }
+libcrux-chacha20poly1305 = { path = "../chacha20poly1305" }
 libcrux-ecdh = { path = "../libcrux-ecdh" }
 libcrux-kem = { path = "../libcrux-kem", features = ["tests"] }
 libcrux-ml-kem = { path = "../libcrux-ml-kem" }
@@ -71,7 +72,7 @@ name = "p256"
 harness = false
 
 [[bench]]
-name = "aead"
+name = "chacha20poly1305"
 harness = false
 
 [[bench]]
