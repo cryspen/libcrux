@@ -1,6 +1,9 @@
+use serde::{Deserialize, Serialize};
+use serde_json::Value;
+
 use libcrux_rsa::{
     sign, sign_2048, verify, verify_2048, DigestAlgorithm, Error, PrivateKey, PublicKey,
-    VarLenPrivateKey,
+    VarLenPrivateKey, VarLenPublicKey,
 };
 
 const MODULUS: [u8; 256] = [
@@ -170,4 +173,147 @@ fn wycheproof_single_test() {
     ];
     verify_2048(DigestAlgorithm::Sha2_256, &pk, &msg, 32, &signature)
         .expect("Error verifying signature");
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+#[allow(non_snake_case)]
+struct RsaPssTestVector {
+    algorithm: String,
+    generatorVersion: String,
+    numberOfTests: usize,
+    notes: Option<Value>, // text notes (might not be present), keys correspond to flags
+    header: Vec<Value>,   // not used
+    testGroups: Vec<TestGroup>,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+#[allow(non_snake_case)]
+struct TestGroup {
+    e: String,
+    r#type: String,
+    mgf: String,
+    mgfSha: String,
+    #[serde(with = "hex::serde")]
+    n: Vec<u8>,
+    keysize: usize,
+    sLen: usize,
+    sha: String,
+    tests: Vec<Test>,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+#[allow(non_snake_case)]
+struct Test {
+    tcId: usize,
+    comment: String,
+    #[serde(with = "hex::serde")]
+    msg: Vec<u8>,
+    #[serde(with = "hex::serde")]
+    sig: Vec<u8>,
+    result: String,
+    flags: Vec<String>,
+}
+
+pub use serde::{self, de::DeserializeOwned};
+pub use std::fs::File;
+pub use std::io::BufReader;
+pub(crate) trait ReadFromFile {
+    fn from_file<T: DeserializeOwned>(file_str: &'static str) -> T {
+        let file = match File::open(file_str) {
+            Ok(f) => f,
+            Err(_) => panic!("Couldn't open file {file_str}."),
+        };
+        let reader = BufReader::new(file);
+        match serde_json::from_reader(reader) {
+            Ok(r) => r,
+            Err(e) => {
+                println!("{:?}", e);
+                panic!("Error reading file {file_str}.")
+            }
+        }
+    }
+}
+
+impl ReadFromFile for RsaPssTestVector {}
+
+#[allow(non_snake_case)]
+#[test]
+fn test_wycheproof() {
+    run(RsaPssTestVector::from_file(
+        "../tests/wycheproof/rsa_pss_2048_sha256_mgf1_0_test.json",
+    ));
+    run(RsaPssTestVector::from_file(
+        "../tests/wycheproof/rsa_pss_2048_sha256_mgf1_32_test.json",
+    ));
+    run(RsaPssTestVector::from_file(
+        "../tests/wycheproof/rsa_pss_3072_sha256_mgf1_32_test.json",
+    ));
+    run(RsaPssTestVector::from_file(
+        "../tests/wycheproof/rsa_pss_4096_sha256_mgf1_32_test.json",
+    ));
+    run(RsaPssTestVector::from_file(
+        "../tests/wycheproof/rsa_pss_4096_sha512_mgf1_32_test.json",
+    ));
+
+    const N2048: usize = 2048 / 8;
+    const N3072: usize = 3072 / 8;
+    const N4096: usize = 4096 / 8;
+
+    fn run(tests: RsaPssTestVector) {
+        assert_eq!(tests.algorithm, "RSASSA-PSS");
+
+        let num_tests = tests.numberOfTests;
+        let mut tests_run = 0;
+
+        for test_group in tests.testGroups.iter() {
+            assert_eq!(test_group.e, "010001");
+            assert_eq!(test_group.r#type, "RsassaPssVerify");
+            assert_eq!(test_group.mgf, "MGF1");
+            assert_eq!(test_group.sha, test_group.mgfSha);
+
+            let salt_len = test_group.sLen;
+            let mut n = test_group.n.as_slice();
+
+            assert!(salt_len < u32::MAX as usize);
+            let salt_len = salt_len as u32;
+
+            // strip leading 0s in n
+            let first_non_zero = n.iter().position(|&x| x != 0).unwrap();
+            for _ in 0..first_non_zero {
+                n = &n[1..];
+            }
+            let pk = VarLenPublicKey::try_from(n).unwrap();
+
+            let hash_algorithm = match test_group.sha.as_str() {
+                "SHA-256" => DigestAlgorithm::Sha2_256,
+                "SHA-384" => DigestAlgorithm::Sha2_384,
+                "SHA-512" => DigestAlgorithm::Sha2_512,
+                _ => panic!("Unknown hash algorithm {}", test_group.sha),
+            };
+            for test in test_group.tests.iter() {
+                println!("Test {:?}: {:?}", test.tcId, test.comment);
+
+                let valid = test.result.eq("valid") || test.result.eq("acceptable");
+                let msg = &test.msg;
+                let signature = &test.sig;
+
+                let result = libcrux_rsa::verify_varlen(
+                    hash_algorithm,
+                    &pk,
+                    msg,
+                    salt_len,
+                    signature.as_slice(),
+                );
+                if valid {
+                    assert!(result.is_ok());
+                } else {
+                    assert!(result.is_err());
+                }
+                tests_run += 1;
+            }
+        }
+        // Check that we ran all tests.
+        println!("Ran {} out of {} tests.", tests_run, num_tests);
+        assert_eq!(num_tests, tests_run);
+    }
 }
