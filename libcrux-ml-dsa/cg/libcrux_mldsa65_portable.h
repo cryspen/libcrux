@@ -4,11 +4,11 @@
  * SPDX-License-Identifier: MIT or Apache-2.0
  *
  * This code was generated with the following revisions:
- * Charon: db4e045d4597d06d854ce7a2c10e8dcfda6ecd25
- * Eurydice: 75eae2e2534a16f5ba5430e6ee5c69d8a46f3bea
- * Karamel: 3823e3d82fa0b271d799b61c59ffb4742ddc1e65
- * F*: 7cd06c5562fc47ec14cd35c38034d5558a5ff762
- * Libcrux: 5c7517ad29733fa58f7764538c6c66db534763a6
+ * Charon: 30cab88265206f4fa849736e704983e39a404d96
+ * Eurydice: b8ea420ccde8db516ced5db9c097d77fa558fb94
+ * Karamel: 97a06e07e7e423df192c40d5a88bf6c85fd4d278
+ * F*: b0961063393215ca65927f017720cb365a193833-dirty
+ * Libcrux: 15b22d1beea1cc7052b8a68b653b012241724664
  */
 
 #ifndef __libcrux_mldsa65_portable_H
@@ -736,16 +736,11 @@ static KRML_MUSTINLINE bool libcrux_ml_dsa_sample_inside_out_shuffle(
         result[sample_at] =
             (int32_t)1 - (int32_t)2 * (int32_t)(signs[0U] & 1ULL);
         signs[0U] = signs[0U] >> 1U;
-        size_t uu____0 = out_index[0U];
-        done = uu____0 == Eurydice_slice_len(Eurydice_array_to_slice(
-                                                 (size_t)256U, result, int32_t),
-                                             int32_t);
-      } else {
-        size_t uu____1 = out_index[0U];
-        done = uu____1 == Eurydice_slice_len(Eurydice_array_to_slice(
-                                                 (size_t)256U, result, int32_t),
-                                             int32_t);
       }
+      size_t uu____0 = out_index[0U];
+      done = uu____0 == Eurydice_slice_len(Eurydice_array_to_slice(
+                                               (size_t)256U, result, int32_t),
+                                           int32_t);
     }
   }
   return done;
@@ -917,6 +912,7 @@ libcrux_ml_dsa_simd_portable_arithmetic_infinity_norm_exceeds(
     } else {
       size_t i = uu____0.f0;
       int32_t coefficient = simd_unit->values[i];
+      EURYDICE_ASSERT(!false, "panic!");
       int32_t sign = coefficient >> 31U;
       int32_t normalized = coefficient - (sign & (int32_t)2 * coefficient);
       bool uu____1;
@@ -949,6 +945,7 @@ typedef struct int32_t_x2_s {
 static KRML_MUSTINLINE int32_t_x2
 libcrux_ml_dsa_simd_portable_arithmetic_decompose_element(int32_t gamma2,
                                                           int32_t r) {
+  EURYDICE_ASSERT(!false, "panic!");
   int32_t r0 = r + (r >> 31U & LIBCRUX_ML_DSA_SIMD_TRAITS_FIELD_MODULUS);
   int32_t ceil_of_r_by_128 = (r0 + (int32_t)127) >> 7U;
   int32_t r1;
@@ -1019,18 +1016,21 @@ static KRML_MUSTINLINE int32_t
 libcrux_ml_dsa_simd_portable_arithmetic_compute_one_hint(int32_t low,
                                                          int32_t high,
                                                          int32_t gamma2) {
-  if (!(low > gamma2)) {
-    if (!(low < -gamma2)) {
-      if (low == -gamma2) {
-        if (!(high != (int32_t)0)) {
-          return (int32_t)0;
-        }
-      } else {
-        return (int32_t)0;
-      }
+  int32_t uu____0;
+  if (low > gamma2) {
+    uu____0 = (int32_t)1;
+  } else if (low < -gamma2) {
+    uu____0 = (int32_t)1;
+  } else if (low == -gamma2) {
+    if (high != (int32_t)0) {
+      uu____0 = (int32_t)1;
+    } else {
+      uu____0 = (int32_t)0;
     }
+  } else {
+    uu____0 = (int32_t)0;
   }
-  return (int32_t)1;
+  return uu____0;
 }
 
 static KRML_MUSTINLINE size_t
@@ -1200,6 +1200,7 @@ libcrux_ml_dsa_simd_portable_arithmetic_reduce_element(int32_t fe) {
 
 static KRML_MUSTINLINE int32_t_x2
 libcrux_ml_dsa_simd_portable_arithmetic_power2round_element(int32_t t) {
+  EURYDICE_ASSERT(!false, "panic!");
   int32_t t2 = t + (t >> 31U & LIBCRUX_ML_DSA_SIMD_TRAITS_FIELD_MODULUS);
   int32_t t1 =
       (t2 - (int32_t)1 +
@@ -7143,11 +7144,7 @@ libcrux_ml_dsa_ml_dsa_generic_ml_dsa_65_sign_internal_5a(
       memcpy(signer_response, signer_response1,
              (size_t)5U *
                  sizeof(libcrux_ml_dsa_polynomial_PolynomialRingElement_e8));
-      if (hint0.tag == None) {
-        uu____8 = (CLITERAL(Result_53){
-            .tag = Err,
-            .f0 = libcrux_ml_dsa_types_SigningError_RejectionSamplingError});
-      } else {
+      if (!(hint0.tag == None)) {
         int32_t hint1[6U][256U];
         memcpy(hint1, hint0.f0, (size_t)6U * sizeof(int32_t[256U]));
         int32_t hint[6U][256U];
@@ -7167,6 +7164,9 @@ libcrux_ml_dsa_ml_dsa_generic_ml_dsa_65_sign_internal_5a(
             Eurydice_array_to_slice((size_t)3309U, signature, uint8_t));
         return (CLITERAL(Result_53){.tag = Ok});
       }
+      uu____8 = (CLITERAL(Result_53){
+          .tag = Err,
+          .f0 = libcrux_ml_dsa_types_SigningError_RejectionSamplingError});
     }
   }
   return uu____8;
@@ -7567,33 +7567,31 @@ libcrux_ml_dsa_encoding_signature_deserialize_5b(
     if (uu____3.tag == None) {
       for (size_t i = previous_true_hints_seen; i < max_ones_in_hint; i++) {
         size_t j = i;
-        if (Eurydice_slice_index(hint_serialized, j, uint8_t, uint8_t *) !=
-            0U) {
-          uu____2 = (CLITERAL(Result_41){
-              .tag = Err,
-              .f0 = libcrux_ml_dsa_types_VerificationError_MalformedHintError});
-          break;
+        if (!(Eurydice_slice_index(hint_serialized, j, uint8_t, uint8_t *) !=
+              0U)) {
+          continue;
         }
+        uu____2 = (CLITERAL(Result_41){
+            .tag = Err,
+            .f0 = libcrux_ml_dsa_types_VerificationError_MalformedHintError});
+        break;
       }
       return (CLITERAL(Result_41){.tag = Ok});
     } else {
-      size_t i0 = uu____3.f0;
+      size_t i = uu____3.f0;
       size_t current_true_hints_seen = (size_t)Eurydice_slice_index(
-          hint_serialized, max_ones_in_hint + i0, uint8_t, uint8_t *);
+          hint_serialized, max_ones_in_hint + i, uint8_t, uint8_t *);
+      libcrux_ml_dsa_types_VerificationError uu____4;
       if (current_true_hints_seen < previous_true_hints_seen) {
-        uu____2 = (CLITERAL(Result_41){
-            .tag = Err,
-            .f0 = libcrux_ml_dsa_types_VerificationError_MalformedHintError});
-        break;
+        uu____4 = libcrux_ml_dsa_types_VerificationError_MalformedHintError;
+        uu____2 = (CLITERAL(Result_41){.tag = Err, .f0 = uu____4});
       } else if (previous_true_hints_seen > max_ones_in_hint) {
-        uu____2 = (CLITERAL(Result_41){
-            .tag = Err,
-            .f0 = libcrux_ml_dsa_types_VerificationError_MalformedHintError});
-        break;
+        uu____4 = libcrux_ml_dsa_types_VerificationError_MalformedHintError;
+        uu____2 = (CLITERAL(Result_41){.tag = Err, .f0 = uu____4});
       } else {
-        for (size_t i = previous_true_hints_seen; i < current_true_hints_seen;
-             i++) {
-          size_t j = i;
+        for (size_t i0 = previous_true_hints_seen; i0 < current_true_hints_seen;
+             i0++) {
+          size_t j = i0;
           if (j > previous_true_hints_seen) {
             if (Eurydice_slice_index(hint_serialized, j, uint8_t, uint8_t *) <=
                 Eurydice_slice_index(hint_serialized, j - (size_t)1U, uint8_t,
@@ -7602,22 +7600,17 @@ libcrux_ml_dsa_encoding_signature_deserialize_5b(
                   .tag = Err,
                   .f0 =
                       libcrux_ml_dsa_types_VerificationError_MalformedHintError});
-              break;
-            } else {
-              libcrux_ml_dsa_encoding_signature_set_hint(
-                  out_hint, i0,
-                  (size_t)Eurydice_slice_index(hint_serialized, j, uint8_t,
-                                               uint8_t *));
             }
-          } else {
-            libcrux_ml_dsa_encoding_signature_set_hint(
-                out_hint, i0,
-                (size_t)Eurydice_slice_index(hint_serialized, j, uint8_t,
-                                             uint8_t *));
           }
+          libcrux_ml_dsa_encoding_signature_set_hint(
+              out_hint, i,
+              (size_t)Eurydice_slice_index(hint_serialized, j, uint8_t,
+                                           uint8_t *));
         }
         previous_true_hints_seen = current_true_hints_seen;
+        continue;
       }
+      break;
     }
   }
   return uu____2;

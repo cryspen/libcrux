@@ -8,14 +8,62 @@ on:
   workflow_dispatch:
   merge_group:
 
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}-c
+  VERSION_TAG: latest
+
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
-  extract:
+  setup:
     runs-on: ubuntu-latest
-    container: franziskus/libcrux-c:latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: changes
+        with:
+          filters: |
+            docker-c:
+              - ".docker/c/**"
+        # If one of the above files is changed,
+        # `steps.changes.outputs.docker-c` = 'true'.
+    outputs:
+      # only run if files in `.docker/c/` unchanged
+      should-run: ${{ steps.changes.outputs.docker-c == 'false' }}
+      image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.VERSION_TAG }}
+
+  report-status-tests:
+    runs-on: ubuntu-latest
+    needs:
+      - diff
+      - diff-header-only-ml-dsa
+      - diff-header-only-ml-kem
+      - build
+      - build-header-only-ml-dsa
+      - build-header-only-ml-kem
+    steps:
+      - name: Report status
+        run: echo "All tests completed successfully"
+
+  report-status-all:
+    runs-on: ubuntu-latest
+    needs: [report-status-tests]
+    # run if all the tests succeeded, or...
+    # ...if they were not supposed to run.
+    if: ${{ always() && needs.report-status-tests.result == 'success' || needs.report-status-tests.result == 'skipped'}}
+    steps:
+      - name: Report status
+        run: echo "Tests completed successfully or were skipped"
+
+  extract:
+    needs: [setup]
+    if: ${{ needs.setup.outputs.should-run == 'true' }}
+    runs-on: ubuntu-latest
+    container:
+      image: ${{ needs.setup.outputs.image }}
     defaults:
       run:
         working-directory: libcrux-ml-kem
@@ -36,8 +84,11 @@ jobs:
           if-no-files-found: error
 
   extract-header-only-ml-kem:
+    needs: [setup]
+    if: ${{ needs.setup.outputs.should-run == 'true' }}
     runs-on: ubuntu-latest
-    container: franziskus/libcrux-c:latest
+    container:
+      image: ${{ needs.setup.outputs.image }}
     defaults:
       run:
         working-directory: libcrux-ml-kem
@@ -59,8 +110,11 @@ jobs:
 
 
   extract-header-only-ml-dsa:
+    needs: [setup]
+    if: ${{ needs.setup.outputs.should-run == 'true' }}
     runs-on: ubuntu-latest
-    container: franziskus/libcrux-c:latest
+    container:
+      image: ${{ needs.setup.outputs.image }}
     defaults:
       run:
         working-directory: libcrux-ml-dsa
