@@ -1,5 +1,4 @@
 use criterion::{criterion_group, criterion_main, BatchSize, Criterion};
-use libcrux::ecdh;
 
 use benchmarks::util::*;
 use rand::RngCore;
@@ -12,12 +11,14 @@ fn derive(c: &mut Criterion) {
         b.iter_batched(
             || {
                 let sk1 = randombytes(32);
-                let pk1 = ecdh::secret_to_public(ecdh::Algorithm::X25519, &sk1).unwrap();
+                let pk1 =
+                    libcrux_ecdh::secret_to_public(libcrux_ecdh::Algorithm::X25519, &sk1).unwrap();
                 let sk2 = randombytes(32);
                 (pk1, sk2)
             },
             |(pk1, sk2)| {
-                let _zz = ecdh::derive(ecdh::Algorithm::X25519, &pk1, &sk2).unwrap();
+                let _zz =
+                    libcrux_ecdh::derive(libcrux_ecdh::Algorithm::X25519, &pk1, &sk2).unwrap();
             },
             BatchSize::SmallInput,
         )
@@ -151,7 +152,8 @@ fn secret_to_public(c: &mut Criterion) {
                 sk
             },
             |sk| {
-                let _pk = ecdh::secret_to_public(ecdh::Algorithm::X25519, &sk).unwrap();
+                let _pk =
+                    libcrux_ecdh::secret_to_public(libcrux_ecdh::Algorithm::X25519, &sk).unwrap();
             },
             BatchSize::SmallInput,
         )
@@ -251,7 +253,8 @@ fn nym_outfox_create(c: &mut Criterion) {
         b.iter_batched(
             || {
                 let sk1 = randombytes(32);
-                let pk1 = ecdh::secret_to_public(ecdh::Algorithm::X25519, &sk1).unwrap();
+                let pk1 =
+                    libcrux_ecdh::secret_to_public(libcrux_ecdh::Algorithm::X25519, &sk1).unwrap();
                 let sk2a = randombytes(32);
                 let sk2b = randombytes(32);
                 let sk2c = randombytes(32);
@@ -259,14 +262,22 @@ fn nym_outfox_create(c: &mut Criterion) {
                 (pk1, sk2a, sk2b, sk2c, sk2d)
             },
             |(pk1, sk2a, sk2b, sk2c, sk2d)| {
-                let _pk2a = ecdh::secret_to_public(ecdh::Algorithm::X25519, &sk2a).unwrap();
-                let _pk2b = ecdh::secret_to_public(ecdh::Algorithm::X25519, &sk2b).unwrap();
-                let _pk2c = ecdh::secret_to_public(ecdh::Algorithm::X25519, &sk2c).unwrap();
-                let _pk2d = ecdh::secret_to_public(ecdh::Algorithm::X25519, &sk2d).unwrap();
-                let _zza = ecdh::derive(ecdh::Algorithm::X25519, &pk1, &sk2a).unwrap();
-                let _zzb = ecdh::derive(ecdh::Algorithm::X25519, &pk1, &sk2b).unwrap();
-                let _zzc = ecdh::derive(ecdh::Algorithm::X25519, &pk1, &sk2c).unwrap();
-                let _zzd = ecdh::derive(ecdh::Algorithm::X25519, &pk1, &sk2d).unwrap();
+                let _pk2a =
+                    libcrux_ecdh::secret_to_public(libcrux_ecdh::Algorithm::X25519, &sk2a).unwrap();
+                let _pk2b =
+                    libcrux_ecdh::secret_to_public(libcrux_ecdh::Algorithm::X25519, &sk2b).unwrap();
+                let _pk2c =
+                    libcrux_ecdh::secret_to_public(libcrux_ecdh::Algorithm::X25519, &sk2c).unwrap();
+                let _pk2d =
+                    libcrux_ecdh::secret_to_public(libcrux_ecdh::Algorithm::X25519, &sk2d).unwrap();
+                let _zza =
+                    libcrux_ecdh::derive(libcrux_ecdh::Algorithm::X25519, &pk1, &sk2a).unwrap();
+                let _zzb =
+                    libcrux_ecdh::derive(libcrux_ecdh::Algorithm::X25519, &pk1, &sk2b).unwrap();
+                let _zzc =
+                    libcrux_ecdh::derive(libcrux_ecdh::Algorithm::X25519, &pk1, &sk2c).unwrap();
+                let _zzd =
+                    libcrux_ecdh::derive(libcrux_ecdh::Algorithm::X25519, &pk1, &sk2d).unwrap();
             },
             BatchSize::SmallInput,
         )
@@ -494,12 +505,14 @@ fn nym_outfox_process(c: &mut Criterion) {
         b.iter_batched(
             || {
                 let sk1 = randombytes(32);
-                let pk1 = ecdh::secret_to_public(ecdh::Algorithm::X25519, &sk1).unwrap();
+                let pk1 =
+                    libcrux_ecdh::secret_to_public(libcrux_ecdh::Algorithm::X25519, &sk1).unwrap();
                 let sk2 = randombytes(32);
                 (pk1, sk2)
             },
             |(pk1, sk2)| {
-                let _zz = ecdh::derive(ecdh::Algorithm::X25519, &pk1, &sk2).unwrap();
+                let _zz =
+                    libcrux_ecdh::derive(libcrux_ecdh::Algorithm::X25519, &pk1, &sk2).unwrap();
             },
             BatchSize::SmallInput,
         )
@@ -630,19 +643,28 @@ fn nym_sphinx_create(c: &mut Criterion) {
         b.iter_batched(
             || {
                 let sk1 = randombytes(32);
-                let pk1 = ecdh::secret_to_public(ecdh::Algorithm::X25519, &sk1).unwrap();
+                let pk1 =
+                    libcrux_ecdh::secret_to_public(libcrux_ecdh::Algorithm::X25519, &sk1).unwrap();
                 let sk2 = randombytes(32);
                 (pk1, sk2)
             },
             |(pk1, sk2)| {
-                let _pk2a = ecdh::secret_to_public(ecdh::Algorithm::X25519, &sk2).unwrap();
-                let zza = ecdh::derive(ecdh::Algorithm::X25519, &pk1, &sk2).unwrap();
-                let _pk2b = ecdh::secret_to_public(ecdh::Algorithm::X25519, &zza).unwrap();
-                let zzb = ecdh::derive(ecdh::Algorithm::X25519, &pk1, &zza).unwrap();
-                let _pk2c = ecdh::secret_to_public(ecdh::Algorithm::X25519, &zzb).unwrap();
-                let zzc = ecdh::derive(ecdh::Algorithm::X25519, &pk1, &zzb).unwrap();
-                let _pk2d = ecdh::secret_to_public(ecdh::Algorithm::X25519, &zzc).unwrap();
-                let _zzd = ecdh::derive(ecdh::Algorithm::X25519, &pk1, &zzc).unwrap();
+                let _pk2a =
+                    libcrux_ecdh::secret_to_public(libcrux_ecdh::Algorithm::X25519, &sk2).unwrap();
+                let zza =
+                    libcrux_ecdh::derive(libcrux_ecdh::Algorithm::X25519, &pk1, &sk2).unwrap();
+                let _pk2b =
+                    libcrux_ecdh::secret_to_public(libcrux_ecdh::Algorithm::X25519, &zza).unwrap();
+                let zzb =
+                    libcrux_ecdh::derive(libcrux_ecdh::Algorithm::X25519, &pk1, &zza).unwrap();
+                let _pk2c =
+                    libcrux_ecdh::secret_to_public(libcrux_ecdh::Algorithm::X25519, &zzb).unwrap();
+                let zzc =
+                    libcrux_ecdh::derive(libcrux_ecdh::Algorithm::X25519, &pk1, &zzb).unwrap();
+                let _pk2d =
+                    libcrux_ecdh::secret_to_public(libcrux_ecdh::Algorithm::X25519, &zzc).unwrap();
+                let _zzd =
+                    libcrux_ecdh::derive(libcrux_ecdh::Algorithm::X25519, &pk1, &zzc).unwrap();
             },
             BatchSize::SmallInput,
         )
@@ -867,13 +889,16 @@ fn nym_sphinx_process(c: &mut Criterion) {
         b.iter_batched(
             || {
                 let sk1 = randombytes(32);
-                let pk1 = ecdh::secret_to_public(ecdh::Algorithm::X25519, &sk1).unwrap();
+                let pk1 =
+                    libcrux_ecdh::secret_to_public(libcrux_ecdh::Algorithm::X25519, &sk1).unwrap();
                 let sk2 = randombytes(32);
                 (pk1, sk2)
             },
             |(pk1, sk2)| {
-                let _zz1 = ecdh::derive(ecdh::Algorithm::X25519, &pk1, &sk2).unwrap();
-                let _zz2 = ecdh::derive(ecdh::Algorithm::X25519, &pk1, &sk2).unwrap();
+                let _zz1 =
+                    libcrux_ecdh::derive(libcrux_ecdh::Algorithm::X25519, &pk1, &sk2).unwrap();
+                let _zz2 =
+                    libcrux_ecdh::derive(libcrux_ecdh::Algorithm::X25519, &pk1, &sk2).unwrap();
             },
             BatchSize::SmallInput,
         )
