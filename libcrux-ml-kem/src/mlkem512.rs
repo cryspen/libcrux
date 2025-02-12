@@ -48,7 +48,6 @@ macro_rules! instantiate {
             pub fn validate_public_key(public_key: &MlKem512PublicKey) -> bool {
                 p::validate_public_key::<
                     RANK,
-                    RANKED_BYTES_PER_RING_ELEMENT,
                     CPA_PKE_PUBLIC_KEY_SIZE,
                 >(&public_key.value)
             }
@@ -90,7 +89,6 @@ macro_rules! instantiate {
                         CPA_PKE_SECRET_KEY_SIZE,
                         SECRET_KEY_SIZE,
                         CPA_PKE_PUBLIC_KEY_SIZE,
-                        RANKED_BYTES_PER_RING_ELEMENT,
                         ETA1,
                         ETA1_RANDOMNESS_SIZE,
                     >(randomness)
@@ -108,7 +106,6 @@ macro_rules! instantiate {
                         CPA_PKE_SECRET_KEY_SIZE,
                         SECRET_KEY_SIZE,
                         CPA_PKE_PUBLIC_KEY_SIZE,
-                        RANKED_BYTES_PER_RING_ELEMENT,
                         ETA1,
                         ETA1_RANDOMNESS_SIZE,
                     >(randomness)
@@ -258,19 +255,18 @@ macro_rules! instantiate {
                     serialized: &mut MlKem512PublicKey,
                 ) {
                     public_key.serialized_mut::<
-                        RANKED_BYTES_PER_RING_ELEMENT,
                         CPA_PKE_PUBLIC_KEY_SIZE
                     >(serialized)
                 }
 
                 /// Get the serialized private key.
                 pub fn key_pair_serialized_private_key(key_pair: &MlKem512KeyPairUnpacked) -> MlKem512PrivateKey {
-                    key_pair.serialized_private_key::<CPA_PKE_SECRET_KEY_SIZE, SECRET_KEY_SIZE, CPA_PKE_PUBLIC_KEY_SIZE, RANKED_BYTES_PER_RING_ELEMENT>()
+                    key_pair.serialized_private_key::<CPA_PKE_SECRET_KEY_SIZE, SECRET_KEY_SIZE, CPA_PKE_PUBLIC_KEY_SIZE>()
                 }
 
                 /// Get the serialized private key.
                 pub fn key_pair_serialized_private_key_mut(key_pair: &MlKem512KeyPairUnpacked, serialized : &mut MlKem512PrivateKey) {
-                    key_pair.serialized_private_key_mut::<CPA_PKE_SECRET_KEY_SIZE, SECRET_KEY_SIZE, CPA_PKE_PUBLIC_KEY_SIZE, RANKED_BYTES_PER_RING_ELEMENT>(serialized);
+                    key_pair.serialized_private_key_mut::<CPA_PKE_SECRET_KEY_SIZE, SECRET_KEY_SIZE, CPA_PKE_PUBLIC_KEY_SIZE>(serialized);
                 }
 
                 /// Get the serialized public key.
@@ -278,7 +274,7 @@ macro_rules! instantiate {
                     Libcrux_ml_kem.Serialize.coefficients_field_modulus_range (Seq.index 
                         ${key_pair.public_key.ind_cpa_public_key.t_as_ntt} i)"#))]
                 pub fn key_pair_serialized_public_key_mut(key_pair: &MlKem512KeyPairUnpacked, serialized: &mut MlKem512PublicKey) {
-                    key_pair.serialized_public_key_mut::<RANKED_BYTES_PER_RING_ELEMENT, CPA_PKE_PUBLIC_KEY_SIZE>(serialized);
+                    key_pair.serialized_public_key_mut::<CPA_PKE_PUBLIC_KEY_SIZE>(serialized);
                 }
 
                 /// Get the serialized public key.
@@ -286,12 +282,12 @@ macro_rules! instantiate {
                     Libcrux_ml_kem.Serialize.coefficients_field_modulus_range (Seq.index 
                         ${key_pair.public_key.ind_cpa_public_key.t_as_ntt} i)"#))]
                 pub fn key_pair_serialized_public_key(key_pair: &MlKem512KeyPairUnpacked) ->MlKem512PublicKey {
-                    key_pair.serialized_public_key::<RANKED_BYTES_PER_RING_ELEMENT, CPA_PKE_PUBLIC_KEY_SIZE>()
+                    key_pair.serialized_public_key::<CPA_PKE_PUBLIC_KEY_SIZE>()
                 }
 
                 /// Get an unpacked key from a private key.
                 pub fn key_pair_from_private_mut(private_key: &MlKem512PrivateKey, key_pair: &mut MlKem512KeyPairUnpacked) {
-                    p::unpacked::keypair_from_private_key::<RANK, SECRET_KEY_SIZE, CPA_PKE_SECRET_KEY_SIZE, CPA_PKE_PUBLIC_KEY_SIZE, RANKED_BYTES_PER_RING_ELEMENT, T_AS_NTT_ENCODED_SIZE>(private_key, key_pair);
+                    p::unpacked::keypair_from_private_key::<RANK, SECRET_KEY_SIZE, CPA_PKE_SECRET_KEY_SIZE, CPA_PKE_PUBLIC_KEY_SIZE, T_AS_NTT_ENCODED_SIZE>(private_key, key_pair);
                 }
 
                 /// Get the unpacked public key.
@@ -302,7 +298,6 @@ macro_rules! instantiate {
                         p::unpacked::unpack_public_key::<
                             RANK,
                             T_AS_NTT_ENCODED_SIZE,
-                            RANKED_BYTES_PER_RING_ELEMENT,
                             CPA_PKE_PUBLIC_KEY_SIZE,
                         >(public_key, unpacked_public_key)
                 }
@@ -326,7 +321,6 @@ macro_rules! instantiate {
                             CPA_PKE_SECRET_KEY_SIZE,
                             SECRET_KEY_SIZE,
                             CPA_PKE_PUBLIC_KEY_SIZE,
-                            RANKED_BYTES_PER_RING_ELEMENT,
                             ETA1,
                             ETA1_RANDOMNESS_SIZE,
                         >(randomness, key_pair);
@@ -422,9 +416,7 @@ instantiate! {neon, ind_cca::instantiations::neon, vector::SIMD128Vector, "Neon 
 /// Returns `true` if valid, and `false` otherwise.
 #[cfg(not(eurydice))]
 pub fn validate_public_key(public_key: &MlKem512PublicKey) -> bool {
-    multiplexing::validate_public_key::<RANK, RANKED_BYTES_PER_RING_ELEMENT, CPA_PKE_PUBLIC_KEY_SIZE>(
-        &public_key.value,
-    )
+    multiplexing::validate_public_key::<RANK, CPA_PKE_PUBLIC_KEY_SIZE>(&public_key.value)
 }
 
 /// Validate a private key.
@@ -459,7 +451,6 @@ pub fn generate_key_pair(randomness: [u8; KEY_GENERATION_SEED_SIZE]) -> MlKem512
         CPA_PKE_SECRET_KEY_SIZE,
         SECRET_KEY_SIZE,
         CPA_PKE_PUBLIC_KEY_SIZE,
-        RANKED_BYTES_PER_RING_ELEMENT,
         ETA1,
         ETA1_RANDOMNESS_SIZE,
     >(randomness)

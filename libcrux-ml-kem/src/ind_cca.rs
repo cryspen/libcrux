@@ -1,6 +1,9 @@
 use crate::{
     constant_time_ops::compare_ciphertexts_select_shared_secret_in_constant_time,
-    constants::{CPA_PKE_KEY_GENERATION_SEED_SIZE, H_DIGEST_SIZE, SHARED_SECRET_SIZE},
+    constants::{
+        ranked_bytes_per_ring_element, CPA_PKE_KEY_GENERATION_SEED_SIZE, H_DIGEST_SIZE,
+        SHARED_SECRET_SIZE,
+    },
     hash_functions::Hash,
     ind_cpa::serialize_public_key,
     serialize::deserialize_ring_elements_reduced_out,
@@ -131,20 +134,18 @@ fn serialize_kem_secret_key<const K: usize, const SERIALIZED_KEY_LEN: usize, Has
     $PUBLIC_KEY_SIZE == Spec.MLKEM.v_CCA_PUBLIC_KEY_SIZE $K"#))]
 pub(crate) fn validate_public_key<
     const K: usize,
-    const RANKED_BYTES_PER_RING_ELEMENT: usize,
     const PUBLIC_KEY_SIZE: usize,
     Vector: Operations,
 >(
     public_key: &[u8; PUBLIC_KEY_SIZE],
 ) -> bool {
     let deserialized_pk = deserialize_ring_elements_reduced_out::<K, Vector>(
-        &public_key[..RANKED_BYTES_PER_RING_ELEMENT],
+        &public_key[..ranked_bytes_per_ring_element::<K>()],
     );
-    let public_key_serialized =
-        serialize_public_key::<K, RANKED_BYTES_PER_RING_ELEMENT, PUBLIC_KEY_SIZE, Vector>(
-            &deserialized_pk,
-            &public_key[RANKED_BYTES_PER_RING_ELEMENT..],
-        );
+    let public_key_serialized = serialize_public_key::<K, PUBLIC_KEY_SIZE, Vector>(
+        &deserialized_pk,
+        &public_key[ranked_bytes_per_ring_element::<K>()..],
+    );
 
     *public_key == public_key_serialized
 }
@@ -215,7 +216,6 @@ pub(crate) fn generate_keypair<
     const CPA_PRIVATE_KEY_SIZE: usize,
     const PRIVATE_KEY_SIZE: usize,
     const PUBLIC_KEY_SIZE: usize,
-    const RANKED_BYTES_PER_RING_ELEMENT: usize,
     const ETA1: usize,
     const ETA1_RANDOMNESS_SIZE: usize,
     Vector: Operations,
@@ -231,7 +231,6 @@ pub(crate) fn generate_keypair<
         K,
         CPA_PRIVATE_KEY_SIZE,
         PUBLIC_KEY_SIZE,
-        RANKED_BYTES_PER_RING_ELEMENT,
         ETA1,
         ETA1_RANDOMNESS_SIZE,
         Vector,
@@ -511,7 +510,6 @@ pub(crate) mod unpacked {
     pub(crate) fn unpack_public_key<
         const K: usize,
         const T_AS_NTT_ENCODED_SIZE: usize,
-        const RANKED_BYTES_PER_RING_ELEMENT: usize,
         const PUBLIC_KEY_SIZE: usize,
         Hasher: Hash<K>,
         Vector: Operations,
@@ -558,14 +556,11 @@ pub(crate) mod unpacked {
                         ${self_.ind_cpa_public_key.t_as_ntt}))
                 ${self_.ind_cpa_public_key.seed_for_A})"#)
         )]
-        pub fn serialized_mut<
-            const RANKED_BYTES_PER_RING_ELEMENT: usize,
-            const PUBLIC_KEY_SIZE: usize,
-        >(
+        pub fn serialized_mut<const PUBLIC_KEY_SIZE: usize>(
             &self,
             serialized: &mut MlKemPublicKey<PUBLIC_KEY_SIZE>,
         ) {
-            serialize_public_key_mut::<K, RANKED_BYTES_PER_RING_ELEMENT, PUBLIC_KEY_SIZE, Vector>(
+            serialize_public_key_mut::<K, PUBLIC_KEY_SIZE, Vector>(
                 &self.ind_cpa_public_key.t_as_ntt,
                 &self.ind_cpa_public_key.seed_for_A,
                 &mut serialized.value,
@@ -588,18 +583,8 @@ pub(crate) mod unpacked {
                                 ${self_.ind_cpa_public_key.t_as_ntt}))
                         ${self_.ind_cpa_public_key.seed_for_A})"#)
         )]
-        pub fn serialized<
-            const RANKED_BYTES_PER_RING_ELEMENT: usize,
-            const PUBLIC_KEY_SIZE: usize,
-        >(
-            &self,
-        ) -> MlKemPublicKey<PUBLIC_KEY_SIZE> {
-            MlKemPublicKey::from(serialize_public_key::<
-                K,
-                RANKED_BYTES_PER_RING_ELEMENT,
-                PUBLIC_KEY_SIZE,
-                Vector,
-            >(
+        pub fn serialized<const PUBLIC_KEY_SIZE: usize>(&self) -> MlKemPublicKey<PUBLIC_KEY_SIZE> {
+            MlKemPublicKey::from(serialize_public_key::<K, PUBLIC_KEY_SIZE, Vector>(
                 &self.ind_cpa_public_key.t_as_ntt,
                 &self.ind_cpa_public_key.seed_for_A,
             ))
@@ -629,7 +614,6 @@ pub(crate) mod unpacked {
         const SECRET_KEY_SIZE: usize,
         const CPA_SECRET_KEY_SIZE: usize,
         const PUBLIC_KEY_SIZE: usize,
-        const BYTES_PER_RING_ELEMENT: usize,
         const T_AS_NTT_ENCODED_SIZE: usize,
         Vector: Operations,
     >(
@@ -692,7 +676,6 @@ pub(crate) mod unpacked {
             const SECRET_KEY_SIZE: usize,
             const CPA_SECRET_KEY_SIZE: usize,
             const PUBLIC_KEY_SIZE: usize,
-            const BYTES_PER_RING_ELEMENT: usize,
             const T_AS_NTT_ENCODED_SIZE: usize,
         >(
             private_key: &MlKemPrivateKey<SECRET_KEY_SIZE>,
@@ -703,7 +686,6 @@ pub(crate) mod unpacked {
                 SECRET_KEY_SIZE,
                 CPA_SECRET_KEY_SIZE,
                 PUBLIC_KEY_SIZE,
-                BYTES_PER_RING_ELEMENT,
                 T_AS_NTT_ENCODED_SIZE,
                 Vector,
             >(private_key, &mut out);
@@ -727,15 +709,12 @@ pub(crate) mod unpacked {
                         ${self_.public_key.ind_cpa_public_key.t_as_ntt}))
                 ${self_.public_key.ind_cpa_public_key.seed_for_A})"#)
         )]
-        pub fn serialized_public_key_mut<
-            const RANKED_BYTES_PER_RING_ELEMENT: usize,
-            const PUBLIC_KEY_SIZE: usize,
-        >(
+        pub fn serialized_public_key_mut<const PUBLIC_KEY_SIZE: usize>(
             &self,
             serialized: &mut MlKemPublicKey<PUBLIC_KEY_SIZE>,
         ) {
             self.public_key
-                .serialized_mut::<RANKED_BYTES_PER_RING_ELEMENT, PUBLIC_KEY_SIZE>(serialized)
+                .serialized_mut::<PUBLIC_KEY_SIZE>(serialized)
         }
 
         /// Get the serialized public key.
@@ -754,14 +733,10 @@ pub(crate) mod unpacked {
                                 ${self_.public_key.ind_cpa_public_key.t_as_ntt}))
                         ${self_.public_key.ind_cpa_public_key.seed_for_A})"#)
         )]
-        pub fn serialized_public_key<
-            const RANKED_BYTES_PER_RING_ELEMENT: usize,
-            const PUBLIC_KEY_SIZE: usize,
-        >(
+        pub fn serialized_public_key<const PUBLIC_KEY_SIZE: usize>(
             &self,
         ) -> MlKemPublicKey<PUBLIC_KEY_SIZE> {
-            self.public_key
-                .serialized::<RANKED_BYTES_PER_RING_ELEMENT, PUBLIC_KEY_SIZE>()
+            self.public_key.serialized::<PUBLIC_KEY_SIZE>()
         }
 
         /// Get the serialized public key.
@@ -787,7 +762,6 @@ pub(crate) mod unpacked {
             const CPA_PRIVATE_KEY_SIZE: usize,
             const PRIVATE_KEY_SIZE: usize,
             const PUBLIC_KEY_SIZE: usize,
-            const RANKED_BYTES_PER_RING_ELEMENT: usize,
         >(
             &self,
             serialized: &mut MlKemPrivateKey<PRIVATE_KEY_SIZE>,
@@ -796,7 +770,6 @@ pub(crate) mod unpacked {
                 K,
                 CPA_PRIVATE_KEY_SIZE,
                 PUBLIC_KEY_SIZE,
-                RANKED_BYTES_PER_RING_ELEMENT,
                 Vector,
             >(
                 &self.public_key.ind_cpa_public_key,
@@ -822,12 +795,11 @@ pub(crate) mod unpacked {
             const CPA_PRIVATE_KEY_SIZE: usize,
             const PRIVATE_KEY_SIZE: usize,
             const PUBLIC_KEY_SIZE: usize,
-            const RANKED_BYTES_PER_RING_ELEMENT: usize,
         >(
             &self,
         ) -> MlKemPrivateKey<PRIVATE_KEY_SIZE> {
             let mut sk = MlKemPrivateKey::default();
-            self.serialized_private_key_mut::<CPA_PRIVATE_KEY_SIZE, PRIVATE_KEY_SIZE, PUBLIC_KEY_SIZE, RANKED_BYTES_PER_RING_ELEMENT>(&mut sk);
+            self.serialized_private_key_mut::<CPA_PRIVATE_KEY_SIZE, PRIVATE_KEY_SIZE, PUBLIC_KEY_SIZE>(&mut sk);
             sk
         }
     }
@@ -912,7 +884,6 @@ pub(crate) mod unpacked {
         const CPA_PRIVATE_KEY_SIZE: usize,
         const PRIVATE_KEY_SIZE: usize,
         const PUBLIC_KEY_SIZE: usize,
-        const BYTES_PER_RING_ELEMENT: usize,
         const ETA1: usize,
         const ETA1_RANDOMNESS_SIZE: usize,
         Vector: Operations,
@@ -956,11 +927,10 @@ pub(crate) mod unpacked {
         );
         out.public_key.ind_cpa_public_key.A = A;
 
-        let pk_serialized =
-            serialize_public_key::<K, BYTES_PER_RING_ELEMENT, PUBLIC_KEY_SIZE, Vector>(
-                &out.public_key.ind_cpa_public_key.t_as_ntt,
-                &out.public_key.ind_cpa_public_key.seed_for_A,
-            );
+        let pk_serialized = serialize_public_key::<K, PUBLIC_KEY_SIZE, Vector>(
+            &out.public_key.ind_cpa_public_key.t_as_ntt,
+            &out.public_key.ind_cpa_public_key.seed_for_A,
+        );
         out.public_key.public_key_hash = Hasher::H(&pk_serialized);
         out.private_key.implicit_rejection_value = implicit_rejection_value.try_into().unwrap();
     }

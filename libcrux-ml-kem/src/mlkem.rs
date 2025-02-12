@@ -1,7 +1,7 @@
 #![cfg(feature = "incremental")]
 
 //! Top level entry points for ML-KEM
-//! 
+//!
 //! For now this is only used for the incremental API.
 
 // This should be replaced with a nicer proc macro later.
@@ -499,7 +499,6 @@ macro_rules! impl_incr_platform {
                 CPA_PRIVATE_KEY_SIZE,
                 PRIVATE_KEY_SIZE,
                 PUBLIC_KEY_SIZE,
-                BYTES_PER_RING_ELEMENT,
                 ETA1,
                 ETA1_RANDOMNESS_SIZE,
                 $vector,
@@ -531,7 +530,6 @@ macro_rules! impl_incr_platform {
                 CPA_PRIVATE_KEY_SIZE,
                 PRIVATE_KEY_SIZE,
                 PUBLIC_KEY_SIZE,
-                BYTES_PER_RING_ELEMENT,
                 ETA1,
                 ETA1_RANDOMNESS_SIZE,
                 $vector,
@@ -560,7 +558,6 @@ macro_rules! impl_incr_platform {
                 CPA_PRIVATE_KEY_SIZE,
                 PRIVATE_KEY_SIZE,
                 PUBLIC_KEY_SIZE,
-                BYTES_PER_RING_ELEMENT,
                 ETA1,
                 ETA1_RANDOMNESS_SIZE,
                 KEYPAIR_LEN,
@@ -574,7 +571,7 @@ macro_rules! impl_incr_platform {
             pk1: &PublicKey1,
             pk2: &[u8],
         ) -> Result<(), Error> {
-            super::validate_pk::<K, PK_LEN, $hash>(pk1, pk2)
+            super::validate_pk::<K, PK_LEN, $hash, $vector>(pk1, pk2)
         }
 
         $(#[$meta])*
@@ -582,7 +579,7 @@ macro_rules! impl_incr_platform {
             pk1: &[u8],
             pk2: &[u8],
         ) -> Result<(), Error> {
-            super::validate_pk_bytes::<K, PK_LEN, $hash>(pk1, pk2)
+            super::validate_pk_bytes::<K, PK_LEN, $hash, $vector>(pk1, pk2)
         }
 
         $(#[$meta])*

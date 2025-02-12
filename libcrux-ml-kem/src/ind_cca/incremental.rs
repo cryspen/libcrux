@@ -7,13 +7,13 @@
 use crate::{
     constants::BITS_PER_RING_ELEMENT,
     hash_functions::Hash,
-    ind_cca::unpacked::MlKemPrivateKeyUnpacked,
+    ind_cca::{unpacked::MlKemPrivateKeyUnpacked, validate_public_key},
     ind_cpa::{self, unpacked::IndCpaPrivateKeyUnpacked},
     matrix::sample_matrix_A,
     mlkem::impl_incr_platform,
     polynomial::{vec_len_bytes, PolynomialRingElement},
     utils::into_padded_array,
-    variant, SHARED_SECRET_SIZE,
+    variant, vector, SHARED_SECRET_SIZE,
 };
 
 use super::{
@@ -32,7 +32,7 @@ pub(crate) mod avx2 {
     use super::*;
 
     impl_incr_platform!(
-        crate::vector::SIMD256Vector,
+        vector::SIMD256Vector,
         crate::hash_functions::avx2::Simd256Hash,
         unsafe,
         #[cfg_attr(not(hax), target_feature(enable = "avx2"))],
@@ -52,7 +52,7 @@ pub(crate) mod portable {
     use super::*;
 
     impl_incr_platform!(
-        crate::vector::portable::PortableVector,
+        vector::portable::PortableVector,
         crate::hash_functions::portable::PortableHash<K>
     );
 }
@@ -74,7 +74,6 @@ pub(crate) fn generate_keypair<
     const CPA_PRIVATE_KEY_SIZE: usize,
     const PRIVATE_KEY_SIZE: usize,
     const PUBLIC_KEY_SIZE: usize,
-    const BYTES_PER_RING_ELEMENT: usize,
     const ETA1: usize,
     const ETA1_RANDOMNESS_SIZE: usize,
     Vector: Operations,
@@ -89,7 +88,6 @@ pub(crate) fn generate_keypair<
         CPA_PRIVATE_KEY_SIZE,
         PRIVATE_KEY_SIZE,
         PUBLIC_KEY_SIZE,
-        BYTES_PER_RING_ELEMENT,
         ETA1,
         ETA1_RANDOMNESS_SIZE,
         Vector,
@@ -113,7 +111,6 @@ pub(crate) fn generate_keypair_compressed<
     const CPA_PRIVATE_KEY_SIZE: usize,
     const PRIVATE_KEY_SIZE: usize,
     const PUBLIC_KEY_SIZE: usize,
-    const BYTES_PER_RING_ELEMENT: usize,
     const ETA1: usize,
     const ETA1_RANDOMNESS_SIZE: usize,
     const KEYPAIR_LEN: usize,
@@ -130,7 +127,6 @@ pub(crate) fn generate_keypair_compressed<
         CPA_PRIVATE_KEY_SIZE,
         PRIVATE_KEY_SIZE,
         PUBLIC_KEY_SIZE,
-        BYTES_PER_RING_ELEMENT,
         ETA1,
         ETA1_RANDOMNESS_SIZE,
         Vector,
@@ -155,7 +151,6 @@ pub(crate) fn generate_keypair_serialized<
     const CPA_PRIVATE_KEY_SIZE: usize,
     const PRIVATE_KEY_SIZE: usize,
     const PUBLIC_KEY_SIZE: usize,
-    const BYTES_PER_RING_ELEMENT: usize,
     const ETA1: usize,
     const ETA1_RANDOMNESS_SIZE: usize,
     Vector: Operations,
@@ -171,7 +166,6 @@ pub(crate) fn generate_keypair_serialized<
         CPA_PRIVATE_KEY_SIZE,
         PRIVATE_KEY_SIZE,
         PUBLIC_KEY_SIZE,
-        BYTES_PER_RING_ELEMENT,
         ETA1,
         ETA1_RANDOMNESS_SIZE,
         Vector,
@@ -281,7 +275,12 @@ pub(crate) fn encapsulate1_serialized<
 
 /// Check that the pk1 and pk2 parts are consistent.
 #[inline(always)]
-pub(crate) fn validate_pk<const K: usize, const PK_LEN: usize, Hasher: Hash<K>>(
+pub(crate) fn validate_pk<
+    const K: usize,
+    const PK_LEN: usize,
+    Hasher: Hash<K>,
+    Vector: Operations,
+>(
     pk1: &PublicKey1,
     pk2: &[u8],
 ) -> Result<(), Error> {
@@ -290,12 +289,17 @@ pub(crate) fn validate_pk<const K: usize, const PK_LEN: usize, Hasher: Hash<K>>(
         return Err(Error::InvalidInputLength);
     }
 
-    validate_pk_parts::<K, PK_LEN, Hasher>(&pk1.seed, &pk1.hash, pk2)
+    validate_pk_parts::<K, PK_LEN, Hasher, Vector>(&pk1.seed, &pk1.hash, pk2)
 }
 
 /// Check that the pk1 and pk2 parts are consistent.
 #[inline(always)]
-pub(crate) fn validate_pk_bytes<const K: usize, const PK_LEN: usize, Hasher: Hash<K>>(
+pub(crate) fn validate_pk_bytes<
+    const K: usize,
+    const PK_LEN: usize,
+    Hasher: Hash<K>,
+    Vector: Operations,
+>(
     pk1: &[u8],
     pk2: &[u8],
 ) -> Result<(), Error> {
@@ -304,11 +308,11 @@ pub(crate) fn validate_pk_bytes<const K: usize, const PK_LEN: usize, Hasher: Has
         return Err(Error::InvalidInputLength);
     }
 
-    validate_pk_parts::<K, PK_LEN, Hasher>(&pk1[0..32], &pk1[32..], pk2)
+    validate_pk_parts::<K, PK_LEN, Hasher, Vector>(&pk1[0..32], &pk1[32..], pk2)
 }
 
 #[inline(always)]
-fn validate_pk_parts<const K: usize, const PK_LEN: usize, Hasher: Hash<K>>(
+fn validate_pk_parts<const K: usize, const PK_LEN: usize, Hasher: Hash<K>, Vector: Operations>(
     pk1_seed: &[u8],
     pk1_hash: &[u8],
     pk2: &[u8],
@@ -323,6 +327,11 @@ fn validate_pk_parts<const K: usize, const PK_LEN: usize, Hasher: Hash<K>>(
 
     let hash = Hasher::H(&pk);
     if hash != pk1_hash {
+        return Err(Error::InvalidPublicKey);
+    }
+
+    // Check the domain of t
+    if !validate_public_key::<K, PK_LEN, Vector>(&pk) {
         return Err(Error::InvalidPublicKey);
     }
 

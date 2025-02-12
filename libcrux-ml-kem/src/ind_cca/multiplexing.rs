@@ -56,16 +56,10 @@ use instantiations::portable::{
     $RANKED_BYTES_PER_RING_ELEMENT == Spec.MLKEM.v_RANKED_BYTES_PER_RING_ELEMENT $K /\
     $PUBLIC_KEY_SIZE == Spec.MLKEM.v_CCA_PUBLIC_KEY_SIZE $K"#))]
 #[inline(always)]
-pub(crate) fn validate_public_key<
-    const K: usize,
-    const RANKED_BYTES_PER_RING_ELEMENT: usize,
-    const PUBLIC_KEY_SIZE: usize,
->(
+pub(crate) fn validate_public_key<const K: usize, const PUBLIC_KEY_SIZE: usize>(
     public_key: &[u8; PUBLIC_KEY_SIZE],
 ) -> bool {
-    instantiations::portable::validate_public_key::<K, RANKED_BYTES_PER_RING_ELEMENT, PUBLIC_KEY_SIZE>(
-        public_key,
-    )
+    instantiations::portable::validate_public_key::<K, PUBLIC_KEY_SIZE>(public_key)
 }
 
 #[inline(always)]
@@ -144,7 +138,6 @@ pub(crate) fn generate_keypair<
     const CPA_PRIVATE_KEY_SIZE: usize,
     const PRIVATE_KEY_SIZE: usize,
     const PUBLIC_KEY_SIZE: usize,
-    const RANKED_BYTES_PER_RING_ELEMENT: usize,
     const ETA1: usize,
     const ETA1_RANDOMNESS_SIZE: usize,
 >(
@@ -157,7 +150,6 @@ pub(crate) fn generate_keypair<
             CPA_PRIVATE_KEY_SIZE,
             PRIVATE_KEY_SIZE,
             PUBLIC_KEY_SIZE,
-            RANKED_BYTES_PER_RING_ELEMENT,
             ETA1,
             ETA1_RANDOMNESS_SIZE,
         >(randomness)
@@ -167,7 +159,6 @@ pub(crate) fn generate_keypair<
             CPA_PRIVATE_KEY_SIZE,
             PRIVATE_KEY_SIZE,
             PUBLIC_KEY_SIZE,
-            RANKED_BYTES_PER_RING_ELEMENT,
             ETA1,
             ETA1_RANDOMNESS_SIZE,
         >(randomness)
@@ -177,7 +168,6 @@ pub(crate) fn generate_keypair<
             CPA_PRIVATE_KEY_SIZE,
             PRIVATE_KEY_SIZE,
             PUBLIC_KEY_SIZE,
-            RANKED_BYTES_PER_RING_ELEMENT,
             ETA1,
             ETA1_RANDOMNESS_SIZE,
         >(randomness)

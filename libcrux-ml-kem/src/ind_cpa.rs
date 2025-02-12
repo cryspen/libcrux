@@ -1,7 +1,10 @@
 use core::array::from_fn;
 
 use crate::{
-    constants::{BYTES_PER_RING_ELEMENT, COEFFICIENTS_IN_RING_ELEMENT, SHARED_SECRET_SIZE},
+    constants::{
+        ranked_bytes_per_ring_element, BYTES_PER_RING_ELEMENT, COEFFICIENTS_IN_RING_ELEMENT,
+        SHARED_SECRET_SIZE,
+    },
     hash_functions::Hash,
     helper::cloop,
     matrix::*,
@@ -73,7 +76,6 @@ use unpacked::*;
 )]
 pub(crate) fn serialize_public_key<
     const K: usize,
-    const RANKED_BYTES_PER_RING_ELEMENT: usize,
     const PUBLIC_KEY_SIZE: usize,
     Vector: Operations,
 >(
@@ -81,7 +83,7 @@ pub(crate) fn serialize_public_key<
     seed_for_a: &[u8],
 ) -> [u8; PUBLIC_KEY_SIZE] {
     let mut public_key_serialized = [0u8; PUBLIC_KEY_SIZE];
-    serialize_public_key_mut::<K, RANKED_BYTES_PER_RING_ELEMENT, PUBLIC_KEY_SIZE, Vector>(
+    serialize_public_key_mut::<K, PUBLIC_KEY_SIZE, Vector>(
         t_as_ntt,
         seed_for_a,
         &mut public_key_serialized,
@@ -105,7 +107,6 @@ pub(crate) fn serialize_public_key<
 )]
 pub(crate) fn serialize_public_key_mut<
     const K: usize,
-    const RANKED_BYTES_PER_RING_ELEMENT: usize,
     const PUBLIC_KEY_SIZE: usize,
     Vector: Operations,
 >(
@@ -113,9 +114,12 @@ pub(crate) fn serialize_public_key_mut<
     seed_for_a: &[u8],
     serialized: &mut [u8; PUBLIC_KEY_SIZE],
 ) {
-    serialize_vector::<K, Vector>(t_as_ntt, &mut serialized[0..RANKED_BYTES_PER_RING_ELEMENT]);
+    serialize_vector::<K, Vector>(
+        t_as_ntt,
+        &mut serialized[0..ranked_bytes_per_ring_element::<K>()],
+    );
 
-    serialized[RANKED_BYTES_PER_RING_ELEMENT..].copy_from_slice(seed_for_a);
+    serialized[ranked_bytes_per_ring_element::<K>()..].copy_from_slice(seed_for_a);
     hax_lib::fstar!(
         "Lib.Sequence.eq_intro #u8 #(v $PUBLIC_KEY_SIZE) serialized
         (Seq.append (Spec.MLKEM.vector_encode_12 #$K (Libcrux_ml_kem.Polynomial.to_spec_vector_t
@@ -575,7 +579,6 @@ pub(crate) fn generate_keypair<
     const K: usize,
     const PRIVATE_KEY_SIZE: usize,
     const PUBLIC_KEY_SIZE: usize,
-    const RANKED_BYTES_PER_RING_ELEMENT: usize,
     const ETA1: usize,
     const ETA1_RANDOMNESS_SIZE: usize,
     Vector: Operations,
@@ -593,13 +596,10 @@ pub(crate) fn generate_keypair<
         &mut public_key,
     );
 
-    serialize_unpacked_secret_key::<
-        K,
-        PRIVATE_KEY_SIZE,
-        PUBLIC_KEY_SIZE,
-        RANKED_BYTES_PER_RING_ELEMENT,
-        Vector,
-    >(&public_key, &private_key)
+    serialize_unpacked_secret_key::<K, PRIVATE_KEY_SIZE, PUBLIC_KEY_SIZE, Vector>(
+        &public_key,
+        &private_key,
+    )
 }
 
 /// Serialize the secret key from the unpacked key pair generation.
@@ -608,18 +608,16 @@ pub(crate) fn serialize_unpacked_secret_key<
     const K: usize,
     const PRIVATE_KEY_SIZE: usize,
     const PUBLIC_KEY_SIZE: usize,
-    const RANKED_BYTES_PER_RING_ELEMENT: usize,
     Vector: Operations,
 >(
     public_key: &IndCpaPublicKeyUnpacked<K, Vector>,
     private_key: &IndCpaPrivateKeyUnpacked<K, Vector>,
 ) -> ([u8; PRIVATE_KEY_SIZE], [u8; PUBLIC_KEY_SIZE]) {
     // pk := (Encode_12(tˆ mod^{+}q) || ρ)
-    let public_key_serialized =
-        serialize_public_key::<K, RANKED_BYTES_PER_RING_ELEMENT, PUBLIC_KEY_SIZE, Vector>(
-            &public_key.t_as_ntt,
-            &public_key.seed_for_A,
-        );
+    let public_key_serialized = serialize_public_key::<K, PUBLIC_KEY_SIZE, Vector>(
+        &public_key.t_as_ntt,
+        &public_key.seed_for_A,
+    );
 
     // sk := Encode_12(sˆ mod^{+}q)
     let mut secret_key_serialized = [0u8; PRIVATE_KEY_SIZE];
