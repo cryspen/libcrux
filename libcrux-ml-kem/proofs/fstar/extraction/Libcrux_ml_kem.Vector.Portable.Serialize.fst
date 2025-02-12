@@ -3,6 +3,203 @@ module Libcrux_ml_kem.Vector.Portable.Serialize
 open Core
 open FStar.Mul
 
+let serialize_1_ (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) =
+  let result0:u8 =
+    (((((((cast (v.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ mk_usize 0 ] <: i16)
+                  <:
+                  u8) |.
+                ((cast (v.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ mk_usize 1 ]
+                        <:
+                        i16)
+                    <:
+                    u8) <<!
+                  mk_i32 1
+                  <:
+                  u8)
+                <:
+                u8) |.
+              ((cast (v.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ mk_usize 2 ] <: i16)
+                  <:
+                  u8) <<!
+                mk_i32 2
+                <:
+                u8)
+              <:
+              u8) |.
+            ((cast (v.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ mk_usize 3 ] <: i16)
+                <:
+                u8) <<!
+              mk_i32 3
+              <:
+              u8)
+            <:
+            u8) |.
+          ((cast (v.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ mk_usize 4 ] <: i16)
+              <:
+              u8) <<!
+            mk_i32 4
+            <:
+            u8)
+          <:
+          u8) |.
+        ((cast (v.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ mk_usize 5 ] <: i16) <: u8
+          ) <<!
+          mk_i32 5
+          <:
+          u8)
+        <:
+        u8) |.
+      ((cast (v.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ mk_usize 6 ] <: i16) <: u8) <<!
+        mk_i32 6
+        <:
+        u8)
+      <:
+      u8) |.
+    ((cast (v.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ mk_usize 7 ] <: i16) <: u8) <<!
+      mk_i32 7
+      <:
+      u8)
+  in
+  let result1:u8 =
+    (((((((cast (v.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ mk_usize 8 ] <: i16)
+                  <:
+                  u8) |.
+                ((cast (v.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ mk_usize 9 ]
+                        <:
+                        i16)
+                    <:
+                    u8) <<!
+                  mk_i32 1
+                  <:
+                  u8)
+                <:
+                u8) |.
+              ((cast (v.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ mk_usize 10 ] <: i16
+                    )
+                  <:
+                  u8) <<!
+                mk_i32 2
+                <:
+                u8)
+              <:
+              u8) |.
+            ((cast (v.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ mk_usize 11 ] <: i16)
+                <:
+                u8) <<!
+              mk_i32 3
+              <:
+              u8)
+            <:
+            u8) |.
+          ((cast (v.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ mk_usize 12 ] <: i16)
+              <:
+              u8) <<!
+            mk_i32 4
+            <:
+            u8)
+          <:
+          u8) |.
+        ((cast (v.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ mk_usize 13 ] <: i16)
+            <:
+            u8) <<!
+          mk_i32 5
+          <:
+          u8)
+        <:
+        u8) |.
+      ((cast (v.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ mk_usize 14 ] <: i16) <: u8) <<!
+        mk_i32 6
+        <:
+        u8)
+      <:
+      u8) |.
+    ((cast (v.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ mk_usize 15 ] <: i16) <: u8) <<!
+      mk_i32 7
+      <:
+      u8)
+  in
+  let list = [result0; result1] in
+  FStar.Pervasives.assert_norm (Prims.eq2 (List.Tot.length list) 2);
+  Rust_primitives.Hax.array_of_list 2 list
+
+#push-options "--compat_pre_core 2 --z3rlimit 300 --z3refresh"
+
+let serialize_1_bit_vec_lemma (v: t_Array i16 (sz 16))
+  (_: squash (forall i. Rust_primitives.bounded (Seq.index v i) 1))
+   : squash (
+     let inputs = bit_vec_of_int_t_array v 1 in
+     let outputs = bit_vec_of_int_t_array (serialize_1_ ({ f_elements = v })) 8 in
+     (forall (i: nat {i < 16}). inputs i == outputs i)
+   ) =
+  _ by (Tactics.GetBit.prove_bit_vector_equality' ())
+
+#pop-options
+
+#push-options "--z3rlimit 300"
+
+let serialize_1_lemma inputs =
+  serialize_1_bit_vec_lemma inputs.f_elements ();
+  BitVecEq.bit_vec_equal_intro (bit_vec_of_int_t_array (serialize_1_ inputs) 8) 
+    (BitVecEq.retype (bit_vec_of_int_t_array inputs.f_elements 1))
+
+#pop-options
+
+let deserialize_1_ (v: t_Slice u8) =
+  let result0:i16 = cast ((v.[ mk_usize 0 ] <: u8) &. mk_u8 1 <: u8) <: i16 in
+  let result1:i16 = cast (((v.[ mk_usize 0 ] <: u8) >>! mk_i32 1 <: u8) &. mk_u8 1 <: u8) <: i16 in
+  let result2:i16 = cast (((v.[ mk_usize 0 ] <: u8) >>! mk_i32 2 <: u8) &. mk_u8 1 <: u8) <: i16 in
+  let result3:i16 = cast (((v.[ mk_usize 0 ] <: u8) >>! mk_i32 3 <: u8) &. mk_u8 1 <: u8) <: i16 in
+  let result4:i16 = cast (((v.[ mk_usize 0 ] <: u8) >>! mk_i32 4 <: u8) &. mk_u8 1 <: u8) <: i16 in
+  let result5:i16 = cast (((v.[ mk_usize 0 ] <: u8) >>! mk_i32 5 <: u8) &. mk_u8 1 <: u8) <: i16 in
+  let result6:i16 = cast (((v.[ mk_usize 0 ] <: u8) >>! mk_i32 6 <: u8) &. mk_u8 1 <: u8) <: i16 in
+  let result7:i16 = cast (((v.[ mk_usize 0 ] <: u8) >>! mk_i32 7 <: u8) &. mk_u8 1 <: u8) <: i16 in
+  let result8:i16 = cast ((v.[ mk_usize 1 ] <: u8) &. mk_u8 1 <: u8) <: i16 in
+  let result9:i16 = cast (((v.[ mk_usize 1 ] <: u8) >>! mk_i32 1 <: u8) &. mk_u8 1 <: u8) <: i16 in
+  let result10:i16 = cast (((v.[ mk_usize 1 ] <: u8) >>! mk_i32 2 <: u8) &. mk_u8 1 <: u8) <: i16 in
+  let result11:i16 = cast (((v.[ mk_usize 1 ] <: u8) >>! mk_i32 3 <: u8) &. mk_u8 1 <: u8) <: i16 in
+  let result12:i16 = cast (((v.[ mk_usize 1 ] <: u8) >>! mk_i32 4 <: u8) &. mk_u8 1 <: u8) <: i16 in
+  let result13:i16 = cast (((v.[ mk_usize 1 ] <: u8) >>! mk_i32 5 <: u8) &. mk_u8 1 <: u8) <: i16 in
+  let result14:i16 = cast (((v.[ mk_usize 1 ] <: u8) >>! mk_i32 6 <: u8) &. mk_u8 1 <: u8) <: i16 in
+  let result15:i16 = cast (((v.[ mk_usize 1 ] <: u8) >>! mk_i32 7 <: u8) &. mk_u8 1 <: u8) <: i16 in
+  {
+    Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements
+    =
+    let list =
+      [
+        result0; result1; result2; result3; result4; result5; result6; result7; result8; result9;
+        result10; result11; result12; result13; result14; result15
+      ]
+    in
+    FStar.Pervasives.assert_norm (Prims.eq2 (List.Tot.length list) 16);
+    Rust_primitives.Hax.array_of_list 16 list
+  }
+  <:
+  Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
+
+#push-options "--compat_pre_core 2 --z3rlimit 300 --z3refresh"
+
+let deserialize_1_bit_vec_lemma (v: t_Array u8 (sz 2))
+   : squash (
+     let inputs = bit_vec_of_int_t_array v 8 in
+     let outputs = bit_vec_of_int_t_array (deserialize_1_ v).f_elements 1 in
+     (forall (i: nat {i < 16}). inputs i == outputs i)
+   ) =
+  _ by (Tactics.GetBit.prove_bit_vector_equality' ())
+
+#pop-options
+
+#push-options "--z3rlimit 300"
+
+let deserialize_1_lemma inputs =
+  deserialize_1_bit_vec_lemma inputs;
+  BitVecEq.bit_vec_equal_intro (bit_vec_of_int_t_array (deserialize_1_ inputs).f_elements 1) 
+    (BitVecEq.retype (bit_vec_of_int_t_array inputs 8))
+
+#pop-options
+
+let deserialize_1_bounded_lemma inputs =
+  admit()
+
 let serialize_4_int (v: t_Slice i16) =
   let result0:u8 =
     ((cast (v.[ mk_usize 1 ] <: i16) <: u8) <<! mk_i32 4 <: u8) |.
@@ -22,6 +219,64 @@ let serialize_4_int (v: t_Slice i16) =
   in
   result0, result1, result2, result3 <: (u8 & u8 & u8 & u8)
 
+let serialize_4_ (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) =
+  let result0_3_:(u8 & u8 & u8 & u8) =
+    serialize_4_int (v.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ {
+            Core.Ops.Range.f_start = mk_usize 0;
+            Core.Ops.Range.f_end = mk_usize 8
+          }
+          <:
+          Core.Ops.Range.t_Range usize ]
+        <:
+        t_Slice i16)
+  in
+  let result4_7_:(u8 & u8 & u8 & u8) =
+    serialize_4_int (v.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ {
+            Core.Ops.Range.f_start = mk_usize 8;
+            Core.Ops.Range.f_end = mk_usize 16
+          }
+          <:
+          Core.Ops.Range.t_Range usize ]
+        <:
+        t_Slice i16)
+  in
+  let list =
+    [
+      result0_3_._1;
+      result0_3_._2;
+      result0_3_._3;
+      result0_3_._4;
+      result4_7_._1;
+      result4_7_._2;
+      result4_7_._3;
+      result4_7_._4
+    ]
+  in
+  FStar.Pervasives.assert_norm (Prims.eq2 (List.Tot.length list) 8);
+  Rust_primitives.Hax.array_of_list 8 list
+
+#push-options "--compat_pre_core 2 --z3rlimit 300 --z3refresh"
+
+let serialize_4_bit_vec_lemma (v: t_Array i16 (sz 16))
+  (_: squash (forall i. Rust_primitives.bounded (Seq.index v i) 4))
+   : squash (
+     let inputs = bit_vec_of_int_t_array v 4 in
+     let outputs = bit_vec_of_int_t_array (serialize_4_ ({ f_elements = v })) 8 in
+     (forall (i: nat {i < 64}). inputs i == outputs i)
+   ) =
+  _ by (Tactics.GetBit.prove_bit_vector_equality' ())
+
+#pop-options
+
+#push-options "--z3rlimit 300"
+
+let serialize_4_lemma inputs =
+  serialize_4_bit_vec_lemma inputs.f_elements ();
+  BitVecEq.bit_vec_equal_intro (bit_vec_of_int_t_array (serialize_4_ inputs) 8) 
+    (BitVecEq.retype (bit_vec_of_int_t_array inputs.f_elements 4))
+
+#pop-options
+
 let deserialize_4_int (bytes: t_Slice u8) =
   let v0:i16 = cast ((bytes.[ mk_usize 0 ] <: u8) &. mk_u8 15 <: u8) <: i16 in
   let v1:i16 = cast (((bytes.[ mk_usize 0 ] <: u8) >>! mk_i32 4 <: u8) &. mk_u8 15 <: u8) <: i16 in
@@ -32,6 +287,66 @@ let deserialize_4_int (bytes: t_Slice u8) =
   let v6:i16 = cast ((bytes.[ mk_usize 3 ] <: u8) &. mk_u8 15 <: u8) <: i16 in
   let v7:i16 = cast (((bytes.[ mk_usize 3 ] <: u8) >>! mk_i32 4 <: u8) &. mk_u8 15 <: u8) <: i16 in
   v0, v1, v2, v3, v4, v5, v6, v7 <: (i16 & i16 & i16 & i16 & i16 & i16 & i16 & i16)
+
+let deserialize_4_ (bytes: t_Slice u8) =
+  let v0_7_:(i16 & i16 & i16 & i16 & i16 & i16 & i16 & i16) =
+    deserialize_4_int (bytes.[ {
+            Core.Ops.Range.f_start = mk_usize 0;
+            Core.Ops.Range.f_end = mk_usize 4
+          }
+          <:
+          Core.Ops.Range.t_Range usize ]
+        <:
+        t_Slice u8)
+  in
+  let v8_15_:(i16 & i16 & i16 & i16 & i16 & i16 & i16 & i16) =
+    deserialize_4_int (bytes.[ {
+            Core.Ops.Range.f_start = mk_usize 4;
+            Core.Ops.Range.f_end = mk_usize 8
+          }
+          <:
+          Core.Ops.Range.t_Range usize ]
+        <:
+        t_Slice u8)
+  in
+  {
+    Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements
+    =
+    let list =
+      [
+        v0_7_._1; v0_7_._2; v0_7_._3; v0_7_._4; v0_7_._5; v0_7_._6; v0_7_._7; v0_7_._8; v8_15_._1;
+        v8_15_._2; v8_15_._3; v8_15_._4; v8_15_._5; v8_15_._6; v8_15_._7; v8_15_._8
+      ]
+    in
+    FStar.Pervasives.assert_norm (Prims.eq2 (List.Tot.length list) 16);
+    Rust_primitives.Hax.array_of_list 16 list
+  }
+  <:
+  Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
+
+let deserialize_4_bounded_lemma inputs =
+  admit()
+
+#push-options "--compat_pre_core 2 --z3rlimit 300 --z3refresh"
+
+let deserialize_4_bit_vec_lemma (v: t_Array u8 (sz 8))
+   : squash (
+     let inputs = bit_vec_of_int_t_array v 8 in
+     let outputs = bit_vec_of_int_t_array (deserialize_4_ v).f_elements 4 in
+     (forall (i: nat {i < 64}). inputs i == outputs i)
+   ) =
+  _ by (Tactics.GetBit.prove_bit_vector_equality' ())
+
+#pop-options
+
+#push-options "--z3rlimit 300"
+
+let deserialize_4_lemma inputs =
+  deserialize_4_bit_vec_lemma inputs;
+  BitVecEq.bit_vec_equal_intro (bit_vec_of_int_t_array (deserialize_4_ inputs).f_elements 4) 
+    (BitVecEq.retype (bit_vec_of_int_t_array inputs 8))
+
+#pop-options
 
 let serialize_5_int (v: t_Slice i16) =
   let r0:u8 =
@@ -199,6 +514,79 @@ let serialize_10_int (v: t_Slice i16) =
   let r4:u8 = cast (((v.[ mk_usize 3 ] <: i16) >>! mk_i32 2 <: i16) &. mk_i16 255 <: i16) <: u8 in
   r0, r1, r2, r3, r4 <: (u8 & u8 & u8 & u8 & u8)
 
+let serialize_10_ (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) =
+  let r0_4_:(u8 & u8 & u8 & u8 & u8) =
+    serialize_10_int (v.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ {
+            Core.Ops.Range.f_start = mk_usize 0;
+            Core.Ops.Range.f_end = mk_usize 4
+          }
+          <:
+          Core.Ops.Range.t_Range usize ]
+        <:
+        t_Slice i16)
+  in
+  let r5_9_:(u8 & u8 & u8 & u8 & u8) =
+    serialize_10_int (v.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ {
+            Core.Ops.Range.f_start = mk_usize 4;
+            Core.Ops.Range.f_end = mk_usize 8
+          }
+          <:
+          Core.Ops.Range.t_Range usize ]
+        <:
+        t_Slice i16)
+  in
+  let r10_14_:(u8 & u8 & u8 & u8 & u8) =
+    serialize_10_int (v.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ {
+            Core.Ops.Range.f_start = mk_usize 8;
+            Core.Ops.Range.f_end = mk_usize 12
+          }
+          <:
+          Core.Ops.Range.t_Range usize ]
+        <:
+        t_Slice i16)
+  in
+  let r15_19_:(u8 & u8 & u8 & u8 & u8) =
+    serialize_10_int (v.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ {
+            Core.Ops.Range.f_start = mk_usize 12;
+            Core.Ops.Range.f_end = mk_usize 16
+          }
+          <:
+          Core.Ops.Range.t_Range usize ]
+        <:
+        t_Slice i16)
+  in
+  let list =
+    [
+      r0_4_._1; r0_4_._2; r0_4_._3; r0_4_._4; r0_4_._5; r5_9_._1; r5_9_._2; r5_9_._3; r5_9_._4;
+      r5_9_._5; r10_14_._1; r10_14_._2; r10_14_._3; r10_14_._4; r10_14_._5; r15_19_._1; r15_19_._2;
+      r15_19_._3; r15_19_._4; r15_19_._5
+    ]
+  in
+  FStar.Pervasives.assert_norm (Prims.eq2 (List.Tot.length list) 20);
+  Rust_primitives.Hax.array_of_list 20 list
+
+#push-options "--compat_pre_core 2 --z3rlimit 300 --z3refresh"
+
+let serialize_10_bit_vec_lemma (v: t_Array i16 (sz 16))
+  (_: squash (forall i. Rust_primitives.bounded (Seq.index v i) 10))
+   : squash (
+     let inputs = bit_vec_of_int_t_array v 10 in
+     let outputs = bit_vec_of_int_t_array (serialize_10_ ({ f_elements = v })) 8 in
+     (forall (i: nat {i < 160}). inputs i == outputs i)
+   ) =
+  _ by (Tactics.GetBit.prove_bit_vector_equality' ())
+
+#pop-options
+
+#push-options "--z3rlimit 300"
+
+let serialize_10_lemma inputs =
+  serialize_10_bit_vec_lemma inputs.f_elements ();
+  BitVecEq.bit_vec_equal_intro (bit_vec_of_int_t_array (serialize_10_ inputs) 8) 
+    (BitVecEq.retype (bit_vec_of_int_t_array inputs.f_elements 10))
+
+#pop-options
+
 let deserialize_10_int (bytes: t_Slice u8) =
   let r0:i16 =
     (((cast (bytes.[ mk_usize 1 ] <: u8) <: i16) &. mk_i16 3 <: i16) <<! mk_i32 8 <: i16) |.
@@ -233,6 +621,66 @@ let deserialize_10_int (bytes: t_Slice u8) =
     ((cast (bytes.[ mk_usize 8 ] <: u8) <: i16) >>! mk_i32 6 <: i16)
   in
   r0, r1, r2, r3, r4, r5, r6, r7 <: (i16 & i16 & i16 & i16 & i16 & i16 & i16 & i16)
+
+let deserialize_10_ (bytes: t_Slice u8) =
+  let v0_7_:(i16 & i16 & i16 & i16 & i16 & i16 & i16 & i16) =
+    deserialize_10_int (bytes.[ {
+            Core.Ops.Range.f_start = mk_usize 0;
+            Core.Ops.Range.f_end = mk_usize 10
+          }
+          <:
+          Core.Ops.Range.t_Range usize ]
+        <:
+        t_Slice u8)
+  in
+  let v8_15_:(i16 & i16 & i16 & i16 & i16 & i16 & i16 & i16) =
+    deserialize_10_int (bytes.[ {
+            Core.Ops.Range.f_start = mk_usize 10;
+            Core.Ops.Range.f_end = mk_usize 20
+          }
+          <:
+          Core.Ops.Range.t_Range usize ]
+        <:
+        t_Slice u8)
+  in
+  {
+    Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements
+    =
+    let list =
+      [
+        v0_7_._1; v0_7_._2; v0_7_._3; v0_7_._4; v0_7_._5; v0_7_._6; v0_7_._7; v0_7_._8; v8_15_._1;
+        v8_15_._2; v8_15_._3; v8_15_._4; v8_15_._5; v8_15_._6; v8_15_._7; v8_15_._8
+      ]
+    in
+    FStar.Pervasives.assert_norm (Prims.eq2 (List.Tot.length list) 16);
+    Rust_primitives.Hax.array_of_list 16 list
+  }
+  <:
+  Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
+
+#push-options "--compat_pre_core 2 --z3rlimit 300 --z3refresh"
+
+let deserialize_10_bit_vec_lemma (v: t_Array u8 (sz 20))
+   : squash (
+     let inputs = bit_vec_of_int_t_array v 8 in
+     let outputs = bit_vec_of_int_t_array (deserialize_10_ v).f_elements 10 in
+     (forall (i: nat {i < 160}). inputs i == outputs i)
+   ) =
+  _ by (Tactics.GetBit.prove_bit_vector_equality' ())
+
+#pop-options
+
+#push-options "--z3rlimit 300"
+
+let deserialize_10_lemma inputs =
+  deserialize_10_bit_vec_lemma inputs;
+  BitVecEq.bit_vec_equal_intro (bit_vec_of_int_t_array (deserialize_10_ inputs).f_elements 10) 
+    (BitVecEq.retype (bit_vec_of_int_t_array inputs 8))
+
+#pop-options
+
+let deserialize_10_bounded_lemma inputs =
+  admit()
 
 let serialize_11_int (v: t_Slice i16) =
   let r0:u8 = cast (v.[ mk_usize 0 ] <: i16) <: u8 in
@@ -392,463 +840,7 @@ let serialize_12_int (v: t_Slice i16) =
   let r2:u8 = cast (((v.[ mk_usize 1 ] <: i16) >>! mk_i32 4 <: i16) &. mk_i16 255 <: i16) <: u8 in
   r0, r1, r2 <: (u8 & u8 & u8)
 
-let deserialize_12_int (bytes: t_Slice u8) =
-  let byte0:i16 = cast (bytes.[ mk_usize 0 ] <: u8) <: i16 in
-  let byte1:i16 = cast (bytes.[ mk_usize 1 ] <: u8) <: i16 in
-  let byte2:i16 = cast (bytes.[ mk_usize 2 ] <: u8) <: i16 in
-  let r0:i16 = ((byte1 &. mk_i16 15 <: i16) <<! mk_i32 8 <: i16) |. (byte0 &. mk_i16 255 <: i16) in
-  let r1:i16 = (byte2 <<! mk_i32 4 <: i16) |. ((byte1 >>! mk_i32 4 <: i16) &. mk_i16 15 <: i16) in
-  r0, r1 <: (i16 & i16)
-
-let rec serialize_1_ (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) =
-  let result0:u8 =
-    (((((((cast (v.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ mk_usize 0 ] <: i16)
-                  <:
-                  u8) |.
-                ((cast (v.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ mk_usize 1 ]
-                        <:
-                        i16)
-                    <:
-                    u8) <<!
-                  mk_i32 1
-                  <:
-                  u8)
-                <:
-                u8) |.
-              ((cast (v.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ mk_usize 2 ] <: i16)
-                  <:
-                  u8) <<!
-                mk_i32 2
-                <:
-                u8)
-              <:
-              u8) |.
-            ((cast (v.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ mk_usize 3 ] <: i16)
-                <:
-                u8) <<!
-              mk_i32 3
-              <:
-              u8)
-            <:
-            u8) |.
-          ((cast (v.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ mk_usize 4 ] <: i16)
-              <:
-              u8) <<!
-            mk_i32 4
-            <:
-            u8)
-          <:
-          u8) |.
-        ((cast (v.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ mk_usize 5 ] <: i16) <: u8
-          ) <<!
-          mk_i32 5
-          <:
-          u8)
-        <:
-        u8) |.
-      ((cast (v.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ mk_usize 6 ] <: i16) <: u8) <<!
-        mk_i32 6
-        <:
-        u8)
-      <:
-      u8) |.
-    ((cast (v.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ mk_usize 7 ] <: i16) <: u8) <<!
-      mk_i32 7
-      <:
-      u8)
-  in
-  let result1:u8 =
-    (((((((cast (v.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ mk_usize 8 ] <: i16)
-                  <:
-                  u8) |.
-                ((cast (v.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ mk_usize 9 ]
-                        <:
-                        i16)
-                    <:
-                    u8) <<!
-                  mk_i32 1
-                  <:
-                  u8)
-                <:
-                u8) |.
-              ((cast (v.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ mk_usize 10 ] <: i16
-                    )
-                  <:
-                  u8) <<!
-                mk_i32 2
-                <:
-                u8)
-              <:
-              u8) |.
-            ((cast (v.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ mk_usize 11 ] <: i16)
-                <:
-                u8) <<!
-              mk_i32 3
-              <:
-              u8)
-            <:
-            u8) |.
-          ((cast (v.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ mk_usize 12 ] <: i16)
-              <:
-              u8) <<!
-            mk_i32 4
-            <:
-            u8)
-          <:
-          u8) |.
-        ((cast (v.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ mk_usize 13 ] <: i16)
-            <:
-            u8) <<!
-          mk_i32 5
-          <:
-          u8)
-        <:
-        u8) |.
-      ((cast (v.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ mk_usize 14 ] <: i16) <: u8) <<!
-        mk_i32 6
-        <:
-        u8)
-      <:
-      u8) |.
-    ((cast (v.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ mk_usize 15 ] <: i16) <: u8) <<!
-      mk_i32 7
-      <:
-      u8)
-  in
-  let list = [result0; result1] in
-  FStar.Pervasives.assert_norm (Prims.eq2 (List.Tot.length list) 2);
-  Rust_primitives.Hax.array_of_list 2 list
-
-#push-options "--compat_pre_core 2 --z3rlimit 300 --z3refresh"
-
-let serialize_1_bit_vec_lemma (v: t_Array i16 (sz 16))
-  (_: squash (forall i. Rust_primitives.bounded (Seq.index v i) 1))
-   : squash (
-     let inputs = bit_vec_of_int_t_array v 1 in
-     let outputs = bit_vec_of_int_t_array (serialize_1_ ({ f_elements = v })) 8 in
-     (forall (i: nat {i < 16}). inputs i == outputs i)
-   ) =
-  _ by (Tactics.GetBit.prove_bit_vector_equality' ())
-
-#pop-options
-
-#push-options "--z3rlimit 300"
-
-let serialize_1_lemma inputs =
-  serialize_1_bit_vec_lemma inputs.f_elements ();
-  BitVecEq.bit_vec_equal_intro (bit_vec_of_int_t_array (serialize_1_ inputs) 8) 
-    (BitVecEq.retype (bit_vec_of_int_t_array inputs.f_elements 1))
-
-#pop-options
-
-let rec deserialize_1_ (v: t_Slice u8) =
-  let result0:i16 = cast ((v.[ mk_usize 0 ] <: u8) &. mk_u8 1 <: u8) <: i16 in
-  let result1:i16 = cast (((v.[ mk_usize 0 ] <: u8) >>! mk_i32 1 <: u8) &. mk_u8 1 <: u8) <: i16 in
-  let result2:i16 = cast (((v.[ mk_usize 0 ] <: u8) >>! mk_i32 2 <: u8) &. mk_u8 1 <: u8) <: i16 in
-  let result3:i16 = cast (((v.[ mk_usize 0 ] <: u8) >>! mk_i32 3 <: u8) &. mk_u8 1 <: u8) <: i16 in
-  let result4:i16 = cast (((v.[ mk_usize 0 ] <: u8) >>! mk_i32 4 <: u8) &. mk_u8 1 <: u8) <: i16 in
-  let result5:i16 = cast (((v.[ mk_usize 0 ] <: u8) >>! mk_i32 5 <: u8) &. mk_u8 1 <: u8) <: i16 in
-  let result6:i16 = cast (((v.[ mk_usize 0 ] <: u8) >>! mk_i32 6 <: u8) &. mk_u8 1 <: u8) <: i16 in
-  let result7:i16 = cast (((v.[ mk_usize 0 ] <: u8) >>! mk_i32 7 <: u8) &. mk_u8 1 <: u8) <: i16 in
-  let result8:i16 = cast ((v.[ mk_usize 1 ] <: u8) &. mk_u8 1 <: u8) <: i16 in
-  let result9:i16 = cast (((v.[ mk_usize 1 ] <: u8) >>! mk_i32 1 <: u8) &. mk_u8 1 <: u8) <: i16 in
-  let result10:i16 = cast (((v.[ mk_usize 1 ] <: u8) >>! mk_i32 2 <: u8) &. mk_u8 1 <: u8) <: i16 in
-  let result11:i16 = cast (((v.[ mk_usize 1 ] <: u8) >>! mk_i32 3 <: u8) &. mk_u8 1 <: u8) <: i16 in
-  let result12:i16 = cast (((v.[ mk_usize 1 ] <: u8) >>! mk_i32 4 <: u8) &. mk_u8 1 <: u8) <: i16 in
-  let result13:i16 = cast (((v.[ mk_usize 1 ] <: u8) >>! mk_i32 5 <: u8) &. mk_u8 1 <: u8) <: i16 in
-  let result14:i16 = cast (((v.[ mk_usize 1 ] <: u8) >>! mk_i32 6 <: u8) &. mk_u8 1 <: u8) <: i16 in
-  let result15:i16 = cast (((v.[ mk_usize 1 ] <: u8) >>! mk_i32 7 <: u8) &. mk_u8 1 <: u8) <: i16 in
-  {
-    Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements
-    =
-    let list =
-      [
-        result0; result1; result2; result3; result4; result5; result6; result7; result8; result9;
-        result10; result11; result12; result13; result14; result15
-      ]
-    in
-    FStar.Pervasives.assert_norm (Prims.eq2 (List.Tot.length list) 16);
-    Rust_primitives.Hax.array_of_list 16 list
-  }
-  <:
-  Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
-
-#push-options "--compat_pre_core 2 --z3rlimit 300 --z3refresh"
-
-let deserialize_1_bit_vec_lemma (v: t_Array u8 (sz 2))
-   : squash (
-     let inputs = bit_vec_of_int_t_array v 8 in
-     let outputs = bit_vec_of_int_t_array (deserialize_1_ v).f_elements 1 in
-     (forall (i: nat {i < 16}). inputs i == outputs i)
-   ) =
-  _ by (Tactics.GetBit.prove_bit_vector_equality' ())
-
-#pop-options
-
-#push-options "--z3rlimit 300"
-
-let deserialize_1_lemma inputs =
-  deserialize_1_bit_vec_lemma inputs;
-  BitVecEq.bit_vec_equal_intro (bit_vec_of_int_t_array (deserialize_1_ inputs).f_elements 1) 
-    (BitVecEq.retype (bit_vec_of_int_t_array inputs 8))
-
-#pop-options
-
-let deserialize_1_bounded_lemma inputs =
-  admit()
-
-let rec serialize_4_ (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) =
-  let result0_3_:(u8 & u8 & u8 & u8) =
-    serialize_4_int (v.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ {
-            Core.Ops.Range.f_start = mk_usize 0;
-            Core.Ops.Range.f_end = mk_usize 8
-          }
-          <:
-          Core.Ops.Range.t_Range usize ]
-        <:
-        t_Slice i16)
-  in
-  let result4_7_:(u8 & u8 & u8 & u8) =
-    serialize_4_int (v.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ {
-            Core.Ops.Range.f_start = mk_usize 8;
-            Core.Ops.Range.f_end = mk_usize 16
-          }
-          <:
-          Core.Ops.Range.t_Range usize ]
-        <:
-        t_Slice i16)
-  in
-  let list =
-    [
-      result0_3_._1;
-      result0_3_._2;
-      result0_3_._3;
-      result0_3_._4;
-      result4_7_._1;
-      result4_7_._2;
-      result4_7_._3;
-      result4_7_._4
-    ]
-  in
-  FStar.Pervasives.assert_norm (Prims.eq2 (List.Tot.length list) 8);
-  Rust_primitives.Hax.array_of_list 8 list
-
-#push-options "--compat_pre_core 2 --z3rlimit 300 --z3refresh"
-
-let serialize_4_bit_vec_lemma (v: t_Array i16 (sz 16))
-  (_: squash (forall i. Rust_primitives.bounded (Seq.index v i) 4))
-   : squash (
-     let inputs = bit_vec_of_int_t_array v 4 in
-     let outputs = bit_vec_of_int_t_array (serialize_4_ ({ f_elements = v })) 8 in
-     (forall (i: nat {i < 64}). inputs i == outputs i)
-   ) =
-  _ by (Tactics.GetBit.prove_bit_vector_equality' ())
-
-#pop-options
-
-#push-options "--z3rlimit 300"
-
-let serialize_4_lemma inputs =
-  serialize_4_bit_vec_lemma inputs.f_elements ();
-  BitVecEq.bit_vec_equal_intro (bit_vec_of_int_t_array (serialize_4_ inputs) 8) 
-    (BitVecEq.retype (bit_vec_of_int_t_array inputs.f_elements 4))
-
-#pop-options
-
-let rec deserialize_4_ (bytes: t_Slice u8) =
-  let v0_7_:(i16 & i16 & i16 & i16 & i16 & i16 & i16 & i16) =
-    deserialize_4_int (bytes.[ {
-            Core.Ops.Range.f_start = mk_usize 0;
-            Core.Ops.Range.f_end = mk_usize 4
-          }
-          <:
-          Core.Ops.Range.t_Range usize ]
-        <:
-        t_Slice u8)
-  in
-  let v8_15_:(i16 & i16 & i16 & i16 & i16 & i16 & i16 & i16) =
-    deserialize_4_int (bytes.[ {
-            Core.Ops.Range.f_start = mk_usize 4;
-            Core.Ops.Range.f_end = mk_usize 8
-          }
-          <:
-          Core.Ops.Range.t_Range usize ]
-        <:
-        t_Slice u8)
-  in
-  {
-    Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements
-    =
-    let list =
-      [
-        v0_7_._1; v0_7_._2; v0_7_._3; v0_7_._4; v0_7_._5; v0_7_._6; v0_7_._7; v0_7_._8; v8_15_._1;
-        v8_15_._2; v8_15_._3; v8_15_._4; v8_15_._5; v8_15_._6; v8_15_._7; v8_15_._8
-      ]
-    in
-    FStar.Pervasives.assert_norm (Prims.eq2 (List.Tot.length list) 16);
-    Rust_primitives.Hax.array_of_list 16 list
-  }
-  <:
-  Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
-
-let deserialize_4_bounded_lemma inputs =
-  admit()
-
-#push-options "--compat_pre_core 2 --z3rlimit 300 --z3refresh"
-
-let deserialize_4_bit_vec_lemma (v: t_Array u8 (sz 8))
-   : squash (
-     let inputs = bit_vec_of_int_t_array v 8 in
-     let outputs = bit_vec_of_int_t_array (deserialize_4_ v).f_elements 4 in
-     (forall (i: nat {i < 64}). inputs i == outputs i)
-   ) =
-  _ by (Tactics.GetBit.prove_bit_vector_equality' ())
-
-#pop-options
-
-#push-options "--z3rlimit 300"
-
-let deserialize_4_lemma inputs =
-  deserialize_4_bit_vec_lemma inputs;
-  BitVecEq.bit_vec_equal_intro (bit_vec_of_int_t_array (deserialize_4_ inputs).f_elements 4) 
-    (BitVecEq.retype (bit_vec_of_int_t_array inputs 8))
-
-#pop-options
-
-let rec serialize_10_ (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) =
-  let r0_4_:(u8 & u8 & u8 & u8 & u8) =
-    serialize_10_int (v.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ {
-            Core.Ops.Range.f_start = mk_usize 0;
-            Core.Ops.Range.f_end = mk_usize 4
-          }
-          <:
-          Core.Ops.Range.t_Range usize ]
-        <:
-        t_Slice i16)
-  in
-  let r5_9_:(u8 & u8 & u8 & u8 & u8) =
-    serialize_10_int (v.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ {
-            Core.Ops.Range.f_start = mk_usize 4;
-            Core.Ops.Range.f_end = mk_usize 8
-          }
-          <:
-          Core.Ops.Range.t_Range usize ]
-        <:
-        t_Slice i16)
-  in
-  let r10_14_:(u8 & u8 & u8 & u8 & u8) =
-    serialize_10_int (v.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ {
-            Core.Ops.Range.f_start = mk_usize 8;
-            Core.Ops.Range.f_end = mk_usize 12
-          }
-          <:
-          Core.Ops.Range.t_Range usize ]
-        <:
-        t_Slice i16)
-  in
-  let r15_19_:(u8 & u8 & u8 & u8 & u8) =
-    serialize_10_int (v.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ {
-            Core.Ops.Range.f_start = mk_usize 12;
-            Core.Ops.Range.f_end = mk_usize 16
-          }
-          <:
-          Core.Ops.Range.t_Range usize ]
-        <:
-        t_Slice i16)
-  in
-  let list =
-    [
-      r0_4_._1; r0_4_._2; r0_4_._3; r0_4_._4; r0_4_._5; r5_9_._1; r5_9_._2; r5_9_._3; r5_9_._4;
-      r5_9_._5; r10_14_._1; r10_14_._2; r10_14_._3; r10_14_._4; r10_14_._5; r15_19_._1; r15_19_._2;
-      r15_19_._3; r15_19_._4; r15_19_._5
-    ]
-  in
-  FStar.Pervasives.assert_norm (Prims.eq2 (List.Tot.length list) 20);
-  Rust_primitives.Hax.array_of_list 20 list
-
-#push-options "--compat_pre_core 2 --z3rlimit 300 --z3refresh"
-
-let serialize_10_bit_vec_lemma (v: t_Array i16 (sz 16))
-  (_: squash (forall i. Rust_primitives.bounded (Seq.index v i) 10))
-   : squash (
-     let inputs = bit_vec_of_int_t_array v 10 in
-     let outputs = bit_vec_of_int_t_array (serialize_10_ ({ f_elements = v })) 8 in
-     (forall (i: nat {i < 160}). inputs i == outputs i)
-   ) =
-  _ by (Tactics.GetBit.prove_bit_vector_equality' ())
-
-#pop-options
-
-#push-options "--z3rlimit 300"
-
-let serialize_10_lemma inputs =
-  serialize_10_bit_vec_lemma inputs.f_elements ();
-  BitVecEq.bit_vec_equal_intro (bit_vec_of_int_t_array (serialize_10_ inputs) 8) 
-    (BitVecEq.retype (bit_vec_of_int_t_array inputs.f_elements 10))
-
-#pop-options
-
-let rec deserialize_10_ (bytes: t_Slice u8) =
-  let v0_7_:(i16 & i16 & i16 & i16 & i16 & i16 & i16 & i16) =
-    deserialize_10_int (bytes.[ {
-            Core.Ops.Range.f_start = mk_usize 0;
-            Core.Ops.Range.f_end = mk_usize 10
-          }
-          <:
-          Core.Ops.Range.t_Range usize ]
-        <:
-        t_Slice u8)
-  in
-  let v8_15_:(i16 & i16 & i16 & i16 & i16 & i16 & i16 & i16) =
-    deserialize_10_int (bytes.[ {
-            Core.Ops.Range.f_start = mk_usize 10;
-            Core.Ops.Range.f_end = mk_usize 20
-          }
-          <:
-          Core.Ops.Range.t_Range usize ]
-        <:
-        t_Slice u8)
-  in
-  {
-    Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements
-    =
-    let list =
-      [
-        v0_7_._1; v0_7_._2; v0_7_._3; v0_7_._4; v0_7_._5; v0_7_._6; v0_7_._7; v0_7_._8; v8_15_._1;
-        v8_15_._2; v8_15_._3; v8_15_._4; v8_15_._5; v8_15_._6; v8_15_._7; v8_15_._8
-      ]
-    in
-    FStar.Pervasives.assert_norm (Prims.eq2 (List.Tot.length list) 16);
-    Rust_primitives.Hax.array_of_list 16 list
-  }
-  <:
-  Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
-
-#push-options "--compat_pre_core 2 --z3rlimit 300 --z3refresh"
-
-let deserialize_10_bit_vec_lemma (v: t_Array u8 (sz 20))
-   : squash (
-     let inputs = bit_vec_of_int_t_array v 8 in
-     let outputs = bit_vec_of_int_t_array (deserialize_10_ v).f_elements 10 in
-     (forall (i: nat {i < 160}). inputs i == outputs i)
-   ) =
-  _ by (Tactics.GetBit.prove_bit_vector_equality' ())
-
-#pop-options
-
-#push-options "--z3rlimit 300"
-
-let deserialize_10_lemma inputs =
-  deserialize_10_bit_vec_lemma inputs;
-  BitVecEq.bit_vec_equal_intro (bit_vec_of_int_t_array (deserialize_10_ inputs).f_elements 10) 
-    (BitVecEq.retype (bit_vec_of_int_t_array inputs 8))
-
-#pop-options
-
-let deserialize_10_bounded_lemma inputs =
-  admit()
-
-let rec serialize_12_ (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) =
+let serialize_12_ (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) =
   let r0_2_:(u8 & u8 & u8) =
     serialize_12_int (v.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ {
             Core.Ops.Range.f_start = mk_usize 0;
@@ -961,7 +953,15 @@ let serialize_12_lemma inputs =
 
 #pop-options
 
-let rec deserialize_12_ (bytes: t_Slice u8) =
+let deserialize_12_int (bytes: t_Slice u8) =
+  let byte0:i16 = cast (bytes.[ mk_usize 0 ] <: u8) <: i16 in
+  let byte1:i16 = cast (bytes.[ mk_usize 1 ] <: u8) <: i16 in
+  let byte2:i16 = cast (bytes.[ mk_usize 2 ] <: u8) <: i16 in
+  let r0:i16 = ((byte1 &. mk_i16 15 <: i16) <<! mk_i32 8 <: i16) |. (byte0 &. mk_i16 255 <: i16) in
+  let r1:i16 = (byte2 <<! mk_i32 4 <: i16) |. ((byte1 >>! mk_i32 4 <: i16) &. mk_i16 15 <: i16) in
+  r0, r1 <: (i16 & i16)
+
+let deserialize_12_ (bytes: t_Slice u8) =
   let v0_1_:(i16 & i16) =
     deserialize_12_int (bytes.[ {
             Core.Ops.Range.f_start = mk_usize 0;

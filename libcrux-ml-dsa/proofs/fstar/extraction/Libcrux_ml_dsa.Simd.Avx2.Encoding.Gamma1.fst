@@ -10,7 +10,7 @@ let serialize_when_gamma1_is_2_pow_17_
   let serialized:t_Array u8 (mk_usize 32) = Rust_primitives.Hax.repeat (mk_u8 0) (mk_usize 32) in
   let simd_unit_shifted:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
     Libcrux_intrinsics.Avx2_extract.mm256_sub_epi32 (Libcrux_intrinsics.Avx2_extract.mm256_set1_epi32
-          serialize_when_gamma1_is_2_pow_17___GAMMA1
+          serialize_when_gamma1_is_2_pow_17___v_GAMMA1
         <:
         Libcrux_intrinsics.Avx2_extract.t_Vec256)
       simd_unit
@@ -107,7 +107,7 @@ let serialize_when_gamma1_is_2_pow_19_
   let serialized:t_Array u8 (mk_usize 32) = Rust_primitives.Hax.repeat (mk_u8 0) (mk_usize 32) in
   let simd_unit_shifted:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
     Libcrux_intrinsics.Avx2_extract.mm256_sub_epi32 (Libcrux_intrinsics.Avx2_extract.mm256_set1_epi32
-          serialize_when_gamma1_is_2_pow_19___GAMMA1
+          serialize_when_gamma1_is_2_pow_19___v_GAMMA1
         <:
         Libcrux_intrinsics.Avx2_extract.t_Vec256)
       simd_unit
@@ -262,14 +262,14 @@ let deserialize_when_gamma1_is_2_pow_17_
   in
   let coefficients:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
     Libcrux_intrinsics.Avx2_extract.mm256_and_si256 coefficients
-      (Libcrux_intrinsics.Avx2_extract.mm256_set1_epi32 deserialize_when_gamma1_is_2_pow_17___GAMMA1_TIMES_2_MASK
+      (Libcrux_intrinsics.Avx2_extract.mm256_set1_epi32 deserialize_when_gamma1_is_2_pow_17___v_GAMMA1_TIMES_2_MASK
 
         <:
         Libcrux_intrinsics.Avx2_extract.t_Vec256)
   in
   let out:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
     Libcrux_intrinsics.Avx2_extract.mm256_sub_epi32 (Libcrux_intrinsics.Avx2_extract.mm256_set1_epi32
-          deserialize_when_gamma1_is_2_pow_17___GAMMA1
+          deserialize_when_gamma1_is_2_pow_17___v_GAMMA1
         <:
         Libcrux_intrinsics.Avx2_extract.t_Vec256)
       coefficients
@@ -336,14 +336,14 @@ let deserialize_when_gamma1_is_2_pow_19_
   in
   let coefficients:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
     Libcrux_intrinsics.Avx2_extract.mm256_and_si256 coefficients
-      (Libcrux_intrinsics.Avx2_extract.mm256_set1_epi32 deserialize_when_gamma1_is_2_pow_19___GAMMA1_TIMES_2_MASK
+      (Libcrux_intrinsics.Avx2_extract.mm256_set1_epi32 deserialize_when_gamma1_is_2_pow_19___v_GAMMA1_TIMES_2_MASK
 
         <:
         Libcrux_intrinsics.Avx2_extract.t_Vec256)
   in
   let out:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
     Libcrux_intrinsics.Avx2_extract.mm256_sub_epi32 (Libcrux_intrinsics.Avx2_extract.mm256_set1_epi32
-          deserialize_when_gamma1_is_2_pow_19___GAMMA1
+          deserialize_when_gamma1_is_2_pow_19___v_GAMMA1
         <:
         Libcrux_intrinsics.Avx2_extract.t_Vec256)
       coefficients

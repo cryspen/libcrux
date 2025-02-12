@@ -308,7 +308,7 @@ let compute_hint
       (hint: Libcrux_intrinsics.Avx2_extract.t_Vec256)
      =
   let minus_gamma2:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
-    Libcrux_intrinsics.Avx2_extract.mm256_set1_epi32 (Core.Ops.Arith.Neg.neg gamma2 <: i32)
+    Libcrux_intrinsics.Avx2_extract.mm256_set1_epi32 (Core.Ops.Arith.f_neg gamma2 <: i32)
   in
   let gamma2:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
     Libcrux_intrinsics.Avx2_extract.mm256_set1_epi32 gamma2
@@ -342,10 +342,10 @@ let compute_hint
         <:
         Libcrux_intrinsics.Avx2_extract.t_Vec256)
   in
-  let hax_temp_output:usize = cast (Core.Num.impl__i32__count_ones hints_mask <: u32) <: usize in
+  let hax_temp_output:usize = cast (Core.Num.impl_i32__count_ones hints_mask <: u32) <: usize in
   hint, hax_temp_output <: (Libcrux_intrinsics.Avx2_extract.t_Vec256 & usize)
 
-let use_hint (gamma2: i32) (r hint: Libcrux_intrinsics.Avx2_extract.t_Vec256) =
+let uuse_hint (gamma2: i32) (r hint: Libcrux_intrinsics.Avx2_extract.t_Vec256) =
   let r0, r1:(Libcrux_intrinsics.Avx2_extract.t_Vec256 & Libcrux_intrinsics.Avx2_extract.t_Vec256) =
     Libcrux_intrinsics.Avx2_extract.mm256_setzero_si256 (),
     Libcrux_intrinsics.Avx2_extract.mm256_setzero_si256 ()
