@@ -103,7 +103,7 @@ impl<T: KEM<Ciphertext: Encode>> Encode for Ciphertext<T> {
 }
 
 // TODO: Use functions from `secrets` crate instead once that's merged.
-// See: 
+// See:
 /// Return 1 if `value` is not zero and 0 otherwise.
 fn inz(value: u8) -> u8 {
     let value = value as u16;
