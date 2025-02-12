@@ -65,7 +65,7 @@ fn xwing_hpke_selftest() {
     let aad = b"xwing hpke selftest aad";
     let ptxt = b"xwing hpke selftest plaintext";
 
-    let mut randomness = vec![0u8; 32];
+    let mut randomness = vec![0u8; 64];
     rng.fill_bytes(&mut randomness);
 
     let HPKECiphertext(enc, ct) =
