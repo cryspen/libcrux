@@ -1,0 +1,12 @@
+[package]
+name = "minicore"
+version.workspace = true
+authors.workspace = true
+license.workspace = true
+homepage.workspace = true
+edition.workspace = true
+repository.workspace = true
+readme.workspace = true
+
+[dependencies]
+rand = "0.9.0"

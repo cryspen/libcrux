@@ -28,7 +28,8 @@ members = [
     "rsa",
     "ecdsa",
     "p256",
-    "blake2",
+    "blake2", 
+    "minicore",
 ]
 
 [workspace.package]
