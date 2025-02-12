@@ -32,6 +32,12 @@ For the incremental API, we split this key up as follows:
 - private key (unpacked)
 - matrix A (rank x rank)
 
+### Compressed key bytes
+
+When space is more important than speed, the key pair can be stored with a serialized
+private key, which is `s | (t | ⍴) | H(ek) | z` where `s = dk_PKE` and `(t | ⍴) = ek`.
+This is `2 * ((rank * 3072) / 8) + 3 * 32` bytes, which is 1632, 2400, 3168 bytes for ML-KEM 512, 768, 1024.
+
 ## Encapsulation
 
 With these keys, we can now encapsulate in two steps.

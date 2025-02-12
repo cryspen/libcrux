@@ -33,7 +33,7 @@ macro_rules! impl_incr_key_size {
         }
 
         /// The size of a compressed key pair in bytes.
-        pub const KEYPAIR_LEN: usize = pk1_len() + pk2_len() + SECRET_KEY_SIZE;
+        pub const COMPRESSED_KEYPAIR_LEN: usize = SECRET_KEY_SIZE;
 
         /// The size of the key pair in bytes.
         pub const fn key_pair_len() -> usize {
@@ -52,7 +52,7 @@ macro_rules! impl_incr_key_size {
 
         /// The size of the compressed key pair in bytes.
         pub const fn key_pair_compressed_len() -> usize {
-            KEYPAIR_LEN
+            COMPRESSED_KEYPAIR_LEN
         }
 
         /// The size of the encaps state in bytes.
@@ -228,6 +228,8 @@ macro_rules! impl_incr_key_size {
             >(randomness, key_pair)
         }
         /// An encoded, compressed, incremental key pair.
+        ///
+        /// Layout: dk | (t | ⍴) | H(ek) | z
         pub struct KeyPairCompressedBytes {
             value: [u8; key_pair_compressed_len()]
         }
@@ -265,21 +267,21 @@ macro_rules! impl_incr_key_size {
             pub fn pk1(&self) -> &[u8; pk1_len()] {
                 // The unwrap here is ok because that's exactly what we take
                 // and we know that `self.value` is long enough.
-                <&[u8; pk1_len()]>::try_from(&self.value[0..pk1_len()]).unwrap()
+                const START: usize = 2 *  RANKED_BYTES_PER_RING_ELEMENT;
+                <&[u8; pk1_len()]>::try_from(&self.value[START..START + pk1_len()]).unwrap()
             }
 
             /// Get the PK2 bytes from the serialized key pair bytes
             pub fn pk2(&self) -> &[u8; pk2_len()] {
                 // The unwrap here is ok because that's exactly what we take
                 // and we know that `self.value` is long enough.
-                <&[u8; pk2_len()]>::try_from(&self.value[pk1_len()..pk1_len() + pk2_len()]).unwrap()
+                const START: usize = RANKED_BYTES_PER_RING_ELEMENT;
+                <&[u8; pk2_len()]>::try_from(&self.value[START..START + pk2_len()]).unwrap()
             }
 
             /// Get the serialized private for decapsulation.
             pub fn sk(&self) -> &[u8; SECRET_KEY_SIZE] {
-                // unwrap is safe here because
-                // self.value.len() == SECRET_KEY_SIZE - pk1_len() - pk2_len()
-                <&[u8; SECRET_KEY_SIZE]>::try_from(&self.value[pk1_len() + pk2_len()..]).unwrap()
+                &self.value
             }
         }
 
@@ -291,7 +293,7 @@ macro_rules! impl_incr_key_size {
 
         /// Generate a key pair and write it into `key_pair`.
         /// This compresses the keys.
-        pub fn generate_key_pair_compressed(randomness: [u8; KEY_GENERATION_SEED_SIZE], key_pair: &mut [u8; KEYPAIR_LEN]) {
+        pub fn generate_key_pair_compressed(randomness: [u8; KEY_GENERATION_SEED_SIZE], key_pair: &mut [u8; COMPRESSED_KEYPAIR_LEN]) {
             multiplexing::generate_keypair_compressed::<
                 RANK,
                 RANKED_BYTES_PER_RING_ELEMENT,
@@ -301,7 +303,7 @@ macro_rules! impl_incr_key_size {
                 RANKED_BYTES_PER_RING_ELEMENT,
                 ETA1,
                 ETA1_RANDOMNESS_SIZE,
-                KEYPAIR_LEN,
+                COMPRESSED_KEYPAIR_LEN,
             >(randomness, key_pair)
         }
 
@@ -547,10 +549,10 @@ macro_rules! impl_incr_platform {
             const BYTES_PER_RING_ELEMENT: usize,
             const ETA1: usize,
             const ETA1_RANDOMNESS_SIZE: usize,
-            const KEYPAIR_LEN: usize,
+            const COMPRESSED_KEYPAIR_LEN: usize,
         >(
             randomness: [u8; KEY_GENERATION_SEED_SIZE],
-            key_pair: &mut [u8; KEYPAIR_LEN],
+            key_pair: &mut [u8; COMPRESSED_KEYPAIR_LEN],
         ) {
             super::generate_keypair_compressed::<
                 K,
@@ -560,7 +562,7 @@ macro_rules! impl_incr_platform {
                 PUBLIC_KEY_SIZE,
                 ETA1,
                 ETA1_RANDOMNESS_SIZE,
-                KEYPAIR_LEN,
+                COMPRESSED_KEYPAIR_LEN,
                 $vector,
                 $hash,
             >(randomness, key_pair)

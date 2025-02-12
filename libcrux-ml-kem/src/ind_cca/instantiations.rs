@@ -11,7 +11,6 @@ macro_rules! instantiate {
                 $CPA_PRIVATE_KEY_SIZE == Spec.MLKEM.v_CPA_PRIVATE_KEY_SIZE $K /\
                 $PRIVATE_KEY_SIZE == Spec.MLKEM.v_CCA_PRIVATE_KEY_SIZE $K /\
                 $PUBLIC_KEY_SIZE == Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE $K /\
-                $RANKED_BYTES_PER_RING_ELEMENT == Spec.MLKEM.v_RANKED_BYTES_PER_RING_ELEMENT $K /\
                 $ETA1 == Spec.MLKEM.v_ETA1 $K /\
                 $ETA1_RANDOMNESS_SIZE == Spec.MLKEM.v_ETA1_RANDOMNESS_SIZE $K"#))]
             pub(crate) fn generate_keypair<
@@ -43,7 +42,6 @@ macro_rules! instantiate {
                 const CPA_PRIVATE_KEY_SIZE: usize,
                 const PRIVATE_KEY_SIZE: usize,
                 const PUBLIC_KEY_SIZE: usize,
-                const BYTES_PER_RING_ELEMENT: usize,
                 const ETA1: usize,
                 const ETA1_RANDOMNESS_SIZE: usize,
             >(
@@ -54,7 +52,6 @@ macro_rules! instantiate {
                     CPA_PRIVATE_KEY_SIZE,
                     PRIVATE_KEY_SIZE,
                     PUBLIC_KEY_SIZE,
-                    BYTES_PER_RING_ELEMENT,
                     ETA1,
                     ETA1_RANDOMNESS_SIZE,
                     $vector,
@@ -66,7 +63,6 @@ macro_rules! instantiate {
             /// Public key validation
             #[inline(always)]
             #[hax_lib::requires(fstar!(r#"Spec.MLKEM.is_rank $K /\
-                $RANKED_BYTES_PER_RING_ELEMENT == Spec.MLKEM.v_RANKED_BYTES_PER_RING_ELEMENT $K /\
                 $PUBLIC_KEY_SIZE == Spec.MLKEM.v_CCA_PUBLIC_KEY_SIZE $K"#))]
             pub(crate) fn validate_public_key<
                 const K: usize,
@@ -351,7 +347,6 @@ macro_rules! instantiate {
                             v_SECRET_KEY_SIZE == Spec.MLKEM.v_CCA_PRIVATE_KEY_SIZE v_K /\
                             v_CPA_SECRET_KEY_SIZE == Spec.MLKEM.v_CPA_PRIVATE_KEY_SIZE v_K /\
                             v_PUBLIC_KEY_SIZE == Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE v_K /\
-                            v_BYTES_PER_RING_ELEMENT == Spec.MLKEM.v_RANKED_BYTES_PER_RING_ELEMENT v_K /\
                             v_T_AS_NTT_ENCODED_SIZE == Spec.MLKEM.v_T_AS_NTT_ENCODED_SIZE v_K"#))]
                 pub(crate) fn keypair_from_private_key<
                     const K: usize,
@@ -378,7 +373,6 @@ macro_rules! instantiate {
                     $CPA_PRIVATE_KEY_SIZE == Spec.MLKEM.v_CPA_PRIVATE_KEY_SIZE $K /\
                     $PRIVATE_KEY_SIZE == Spec.MLKEM.v_CCA_PRIVATE_KEY_SIZE $K /\
                     $PUBLIC_KEY_SIZE == Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE $K /\
-                    $BYTES_PER_RING_ELEMENT == Spec.MLKEM.v_RANKED_BYTES_PER_RING_ELEMENT $K /\
                     $ETA1 == Spec.MLKEM.v_ETA1 $K /\
                     $ETA1_RANDOMNESS_SIZE == Spec.MLKEM.v_ETA1_RANDOMNESS_SIZE $K"#))]
                 #[inline(always)]

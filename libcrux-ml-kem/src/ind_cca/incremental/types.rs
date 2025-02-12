@@ -378,7 +378,13 @@ impl<const K: usize, const PK2_LEN: usize, Vector: Operations> KeyPair<K, PK2_LE
         }
 
         let mut offset = 0;
-        self.write_pks(key, &mut offset);
+
+        // PK1
+        write(key, &self.pk1.seed, &mut offset);
+        write(key, &self.pk1.hash, &mut offset);
+
+        // PK2
+        write(key, &self.pk2.t_as_ntt, &mut offset);
 
         // SK
         vec_to_bytes(
@@ -397,35 +403,21 @@ impl<const K: usize, const PK2_LEN: usize, Vector: Operations> KeyPair<K, PK2_LE
         Ok(())
     }
 
-    fn write_pks(&self, key: &mut [u8], offset: &mut usize) {
-        // PK1
-        write(key, &self.pk1.seed, offset);
-        write(key, &self.pk1.hash, offset);
-
-        // PK2
-        write(key, &self.pk2.t_as_ntt, offset);
-    }
-
     /// Write this key pair into the `key` bytes.
-    /// It compresses the private key.
+    /// This is the compressed private key.
     ///
-    /// `key` must be at least of length pk1 + pk2 + secret key size
+    /// `key` must be at least of length secret key size
+    ///
+    /// Layout: dk | ek | H(ek) | z
     pub fn to_bytes_compressed<const KEY_SIZE: usize, const VEC_SIZE: usize>(
         &self,
         key: &mut [u8; KEY_SIZE],
     ) {
-        let mut offset = 0;
-        self.write_pks(key, &mut offset);
-
         // Write the private key.
         // This is a manual version of serialize_kem_secret_key_mut that skips
         // the hash.
-        // dk | ek | H(ek) | z
-        serialize_vector(
-            &self.sk.ind_cpa_private_key.secret_as_ntt,
-            &mut key[offset..],
-        );
-        offset += VEC_SIZE;
+        serialize_vector(&self.sk.ind_cpa_private_key.secret_as_ntt, key);
+        let mut offset = VEC_SIZE;
 
         // ek = t | ⍴
         write(key, &self.pk2.t_as_ntt, &mut offset);
