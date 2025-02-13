@@ -138,3 +138,52 @@ fn wycheproof() {
     );
     assert_eq!(num_tests - skipped_tests, tests_run);
 }
+
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[test]
+fn chachapoly_self_test() {
+    let _ = pretty_env_logger::try_init();
+
+    let ptxt = b"hacspec rulez";
+    let aad = b"associated data" as &[u8];
+    let key = [
+        1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25,
+        26, 27, 28, 29, 30, 31, 32,
+    ];
+    let nonce = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
+
+    let mut ctxt = [0; 29];
+
+    libcrux_chacha20poly1305::encrypt(&key, ptxt, &mut ctxt, aad, &nonce).unwrap();
+
+    let mut ptxt_rx = [0; 13];
+
+    assert!(libcrux_chacha20poly1305::decrypt(&key, &mut ptxt_rx, &ctxt, aad, &nonce).is_ok());
+    assert_eq!(ptxt, &ptxt_rx);
+}
+
+/*
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[test]
+fn chachapoly_self_test_rand() {
+    let _ = pretty_env_logger::try_init();
+
+    let orig_msg = b"hacspec rulez";
+    let mut msg = *orig_msg;
+    let aad = b"associated data" as &[u8];
+
+    #[cfg(not(target_arch = "wasm32"))]
+    let mut rng = drbg::Drbg::new(libcrux::digest::Algorithm::Sha256).unwrap();
+    #[cfg(target_arch = "wasm32")]
+    let mut rng = OsRng;
+
+    let key = Key::generate(Chacha20Poly1305, &mut rng);
+    let iv = Iv::generate(&mut rng);
+    let iv2 = Iv(iv.0);
+
+    let tag = encrypt(&key, &mut msg, iv, aad).unwrap();
+    assert!(decrypt(&key, &mut msg, iv2, aad, &tag).is_ok());
+
+    assert_eq!(orig_msg, &msg);
+}
+*/
