@@ -39,3 +39,54 @@ let from_i16_array (array: t_Slice i16) =
   }
   <:
   t_PortableVector
+
+let from_bytes (array: t_Slice u8) =
+  let elements:t_Array i16 (mk_usize 16) = Rust_primitives.Hax.repeat (mk_i16 0) (mk_usize 16) in
+  let elements:t_Array i16 (mk_usize 16) =
+    Rust_primitives.Hax.Folds.fold_range (mk_usize 0)
+      Libcrux_ml_kem.Vector.Traits.v_FIELD_ELEMENTS_IN_VECTOR
+      (fun elements temp_1_ ->
+          let elements:t_Array i16 (mk_usize 16) = elements in
+          let _:usize = temp_1_ in
+          true)
+      elements
+      (fun elements i ->
+          let elements:t_Array i16 (mk_usize 16) = elements in
+          let i:usize = i in
+          Rust_primitives.Hax.Monomorphized_update_at.update_at_usize elements
+            i
+            (((cast (array.[ mk_usize 2 *! i <: usize ] <: u8) <: i16) <<! mk_i32 8 <: i16) |.
+              (cast (array.[ (mk_usize 2 *! i <: usize) +! mk_usize 1 <: usize ] <: u8) <: i16)
+              <:
+              i16)
+          <:
+          t_Array i16 (mk_usize 16))
+  in
+  { f_elements = elements } <: t_PortableVector
+
+let to_bytes (x: t_PortableVector) (bytes: t_Slice u8) =
+  let e_bytes_len:usize = Core.Slice.impl__len #u8 bytes in
+  let bytes:t_Slice u8 =
+    Rust_primitives.Hax.Folds.fold_range (mk_usize 0)
+      Libcrux_ml_kem.Vector.Traits.v_FIELD_ELEMENTS_IN_VECTOR
+      (fun bytes e_i ->
+          let bytes:t_Slice u8 = bytes in
+          let e_i:usize = e_i in
+          (Core.Slice.impl__len #u8 bytes <: usize) =. e_bytes_len <: bool)
+      bytes
+      (fun bytes i ->
+          let bytes:t_Slice u8 = bytes in
+          let i:usize = i in
+          let bytes:t_Slice u8 =
+            Rust_primitives.Hax.Monomorphized_update_at.update_at_usize bytes
+              (mk_usize 2 *! i <: usize)
+              (cast ((x.f_elements.[ i ] <: i16) >>! mk_i32 8 <: i16) <: u8)
+          in
+          let bytes:t_Slice u8 =
+            Rust_primitives.Hax.Monomorphized_update_at.update_at_usize bytes
+              ((mk_usize 2 *! i <: usize) +! mk_usize 1 <: usize)
+              (cast (x.f_elements.[ i ] <: i16) <: u8)
+          in
+          bytes)
+  in
+  bytes

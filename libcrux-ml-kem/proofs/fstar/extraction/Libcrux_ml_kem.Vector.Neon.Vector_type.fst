@@ -87,6 +87,77 @@ let from_i16_array (array: t_Slice i16) =
   let _:Prims.unit = admit () (* Panic freedom *) in
   result
 
+#push-options "--admit_smt_queries true"
+
+let to_bytes (v: t_SIMD128Vector) (bytes: t_Slice u8) =
+  let bytes:t_Slice u8 =
+    Rust_primitives.Hax.Monomorphized_update_at.update_at_range bytes
+      ({ Core.Ops.Range.f_start = mk_usize 0; Core.Ops.Range.f_end = mk_usize 16 }
+        <:
+        Core.Ops.Range.t_Range usize)
+      (Libcrux_intrinsics.Arm64_extract.e_vst1q_bytes (bytes.[ {
+                Core.Ops.Range.f_start = mk_usize 0;
+                Core.Ops.Range.f_end = mk_usize 16
+              }
+              <:
+              Core.Ops.Range.t_Range usize ]
+            <:
+            t_Slice u8)
+          v.f_low
+        <:
+        t_Slice u8)
+  in
+  let bytes:t_Slice u8 =
+    Rust_primitives.Hax.Monomorphized_update_at.update_at_range bytes
+      ({ Core.Ops.Range.f_start = mk_usize 16; Core.Ops.Range.f_end = mk_usize 32 }
+        <:
+        Core.Ops.Range.t_Range usize)
+      (Libcrux_intrinsics.Arm64_extract.e_vst1q_bytes (bytes.[ {
+                Core.Ops.Range.f_start = mk_usize 16;
+                Core.Ops.Range.f_end = mk_usize 32
+              }
+              <:
+              Core.Ops.Range.t_Range usize ]
+            <:
+            t_Slice u8)
+          v.f_high
+        <:
+        t_Slice u8)
+  in
+  bytes
+
+#pop-options
+
+#push-options "--admit_smt_queries true"
+
+let from_bytes (array: t_Slice u8) =
+  {
+    f_low
+    =
+    Libcrux_intrinsics.Arm64_extract.e_vld1q_bytes (array.[ {
+            Core.Ops.Range.f_start = mk_usize 0;
+            Core.Ops.Range.f_end = mk_usize 16
+          }
+          <:
+          Core.Ops.Range.t_Range usize ]
+        <:
+        t_Slice u8);
+    f_high
+    =
+    Libcrux_intrinsics.Arm64_extract.e_vld1q_bytes (array.[ {
+            Core.Ops.Range.f_start = mk_usize 16;
+            Core.Ops.Range.f_end = mk_usize 32
+          }
+          <:
+          Core.Ops.Range.t_Range usize ]
+        <:
+        t_Slice u8)
+  }
+  <:
+  t_SIMD128Vector
+
+#pop-options
+
 let v_ZERO (_: Prims.unit) =
   let result:t_SIMD128Vector =
     {

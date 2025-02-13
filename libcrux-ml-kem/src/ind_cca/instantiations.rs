@@ -11,7 +11,6 @@ macro_rules! instantiate {
                 $CPA_PRIVATE_KEY_SIZE == Spec.MLKEM.v_CPA_PRIVATE_KEY_SIZE $K /\
                 $PRIVATE_KEY_SIZE == Spec.MLKEM.v_CCA_PRIVATE_KEY_SIZE $K /\
                 $PUBLIC_KEY_SIZE == Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE $K /\
-                $RANKED_BYTES_PER_RING_ELEMENT == Spec.MLKEM.v_RANKED_BYTES_PER_RING_ELEMENT $K /\
                 $ETA1 == Spec.MLKEM.v_ETA1 $K /\
                 $ETA1_RANDOMNESS_SIZE == Spec.MLKEM.v_ETA1_RANDOMNESS_SIZE $K"#))]
             pub(crate) fn generate_keypair<
@@ -19,7 +18,6 @@ macro_rules! instantiate {
                 const CPA_PRIVATE_KEY_SIZE: usize,
                 const PRIVATE_KEY_SIZE: usize,
                 const PUBLIC_KEY_SIZE: usize,
-                const RANKED_BYTES_PER_RING_ELEMENT: usize,
                 const ETA1: usize,
                 const ETA1_RANDOMNESS_SIZE: usize,
             >(
@@ -30,7 +28,6 @@ macro_rules! instantiate {
                     CPA_PRIVATE_KEY_SIZE,
                     PRIVATE_KEY_SIZE,
                     PUBLIC_KEY_SIZE,
-                    RANKED_BYTES_PER_RING_ELEMENT,
                     ETA1,
                     ETA1_RANDOMNESS_SIZE,
                     $vector,
@@ -45,7 +42,6 @@ macro_rules! instantiate {
                 const CPA_PRIVATE_KEY_SIZE: usize,
                 const PRIVATE_KEY_SIZE: usize,
                 const PUBLIC_KEY_SIZE: usize,
-                const BYTES_PER_RING_ELEMENT: usize,
                 const ETA1: usize,
                 const ETA1_RANDOMNESS_SIZE: usize,
             >(
@@ -56,7 +52,6 @@ macro_rules! instantiate {
                     CPA_PRIVATE_KEY_SIZE,
                     PRIVATE_KEY_SIZE,
                     PUBLIC_KEY_SIZE,
-                    BYTES_PER_RING_ELEMENT,
                     ETA1,
                     ETA1_RANDOMNESS_SIZE,
                     $vector,
@@ -68,18 +63,15 @@ macro_rules! instantiate {
             /// Public key validation
             #[inline(always)]
             #[hax_lib::requires(fstar!(r#"Spec.MLKEM.is_rank $K /\
-                $RANKED_BYTES_PER_RING_ELEMENT == Spec.MLKEM.v_RANKED_BYTES_PER_RING_ELEMENT $K /\
                 $PUBLIC_KEY_SIZE == Spec.MLKEM.v_CCA_PUBLIC_KEY_SIZE $K"#))]
             pub(crate) fn validate_public_key<
                 const K: usize,
-                const RANKED_BYTES_PER_RING_ELEMENT: usize,
                 const PUBLIC_KEY_SIZE: usize,
             >(
                 public_key: &[u8; PUBLIC_KEY_SIZE],
             ) -> bool {
                 crate::ind_cca::validate_public_key::<
                     K,
-                    RANKED_BYTES_PER_RING_ELEMENT,
                     PUBLIC_KEY_SIZE,
                     $vector,
                 >(public_key)
@@ -334,7 +326,6 @@ macro_rules! instantiate {
                 pub(crate) fn unpack_public_key<
                     const K: usize,
                     const T_AS_NTT_ENCODED_SIZE: usize,
-                    const RANKED_BYTES_PER_RING_ELEMENT: usize,
                     const PUBLIC_KEY_SIZE: usize,
                 >(
                     public_key: &MlKemPublicKey<PUBLIC_KEY_SIZE>,
@@ -343,7 +334,6 @@ macro_rules! instantiate {
                     crate::ind_cca::unpacked::unpack_public_key::<
                         K,
                         T_AS_NTT_ENCODED_SIZE,
-                        RANKED_BYTES_PER_RING_ELEMENT,
                         PUBLIC_KEY_SIZE,
                         $hash,
                         $vector,
@@ -357,14 +347,12 @@ macro_rules! instantiate {
                             v_SECRET_KEY_SIZE == Spec.MLKEM.v_CCA_PRIVATE_KEY_SIZE v_K /\
                             v_CPA_SECRET_KEY_SIZE == Spec.MLKEM.v_CPA_PRIVATE_KEY_SIZE v_K /\
                             v_PUBLIC_KEY_SIZE == Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE v_K /\
-                            v_BYTES_PER_RING_ELEMENT == Spec.MLKEM.v_RANKED_BYTES_PER_RING_ELEMENT v_K /\
                             v_T_AS_NTT_ENCODED_SIZE == Spec.MLKEM.v_T_AS_NTT_ENCODED_SIZE v_K"#))]
                 pub(crate) fn keypair_from_private_key<
                     const K: usize,
                     const SECRET_KEY_SIZE: usize,
                     const CPA_SECRET_KEY_SIZE: usize,
                     const PUBLIC_KEY_SIZE: usize,
-                    const BYTES_PER_RING_ELEMENT: usize,
                     const T_AS_NTT_ENCODED_SIZE: usize,
                 >(
                     private_key: &MlKemPrivateKey<SECRET_KEY_SIZE>,
@@ -375,7 +363,6 @@ macro_rules! instantiate {
                         SECRET_KEY_SIZE,
                         CPA_SECRET_KEY_SIZE,
                         PUBLIC_KEY_SIZE,
-                        BYTES_PER_RING_ELEMENT,
                         T_AS_NTT_ENCODED_SIZE,
                         $vector,
                     >(private_key, key_pair);
@@ -386,7 +373,6 @@ macro_rules! instantiate {
                     $CPA_PRIVATE_KEY_SIZE == Spec.MLKEM.v_CPA_PRIVATE_KEY_SIZE $K /\
                     $PRIVATE_KEY_SIZE == Spec.MLKEM.v_CCA_PRIVATE_KEY_SIZE $K /\
                     $PUBLIC_KEY_SIZE == Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE $K /\
-                    $BYTES_PER_RING_ELEMENT == Spec.MLKEM.v_RANKED_BYTES_PER_RING_ELEMENT $K /\
                     $ETA1 == Spec.MLKEM.v_ETA1 $K /\
                     $ETA1_RANDOMNESS_SIZE == Spec.MLKEM.v_ETA1_RANDOMNESS_SIZE $K"#))]
                 #[inline(always)]
@@ -395,7 +381,6 @@ macro_rules! instantiate {
                     const CPA_PRIVATE_KEY_SIZE: usize,
                     const PRIVATE_KEY_SIZE: usize,
                     const PUBLIC_KEY_SIZE: usize,
-                    const BYTES_PER_RING_ELEMENT: usize,
                     const ETA1: usize,
                     const ETA1_RANDOMNESS_SIZE: usize,
                 >(
@@ -407,7 +392,6 @@ macro_rules! instantiate {
                         CPA_PRIVATE_KEY_SIZE,
                         PRIVATE_KEY_SIZE,
                         PUBLIC_KEY_SIZE,
-                        BYTES_PER_RING_ELEMENT,
                         ETA1,
                         ETA1_RANDOMNESS_SIZE,
                         $vector,

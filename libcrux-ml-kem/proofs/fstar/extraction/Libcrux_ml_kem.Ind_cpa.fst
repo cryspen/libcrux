@@ -14,20 +14,20 @@ let _ =
 
 #push-options "--z3rlimit 1000 --ext context_pruning --z3refresh"
 
-let serialize_secret_key
-      (v_K v_OUT_LEN: usize)
+let serialize_vector
+      (v_K: usize)
       (#v_Vector: Type0)
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
           i1:
           Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector)
       (key: t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K)
+      (out: t_Slice u8)
      =
   let _:Prims.unit = assert_norm (Spec.MLKEM.polynomial_d 12 == Spec.MLKEM.polynomial) in
-  let out:t_Array u8 v_OUT_LEN = Rust_primitives.Hax.repeat (mk_u8 0) v_OUT_LEN in
-  let out:t_Array u8 v_OUT_LEN =
+  let out:t_Slice u8 =
     Rust_primitives.Hax.Folds.fold_enumerated_slice key
       (fun out i ->
-          let out:t_Array u8 v_OUT_LEN = out in
+          let out:t_Slice u8 = out in
           let i:usize = i in
           (v i < v v_K ==>
             Libcrux_ml_kem.Serialize.coefficients_field_modulus_range (Seq.index key (v i))) /\
@@ -41,11 +41,11 @@ let serialize_secret_key
                   (Libcrux_ml_kem.Polynomial.to_spec_poly_t #v_Vector (Seq.index key j)))))
       out
       (fun out temp_1_ ->
-          let out:t_Array u8 v_OUT_LEN = out in
+          let out:t_Slice u8 = out in
           let i, re:(usize & Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) =
             temp_1_
           in
-          let out:t_Array u8 v_OUT_LEN =
+          let out:t_Slice u8 =
             Rust_primitives.Hax.Monomorphized_update_at.update_at_range out
               ({
                   Core.Ops.Range.f_start
@@ -108,7 +108,7 @@ let serialize_secret_key
         Libcrux_ml_kem.Polynomial.to_spec_vector_t #v_K #v_Vector key);
     reveal_opaque (`%Spec.MLKEM.vector_encode_12) (Spec.MLKEM.vector_encode_12 #v_K);
     Lib.Sequence.eq_intro #u8
-      #(v v_OUT_LEN)
+      #(v (Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE v_K))
       out
       (Spec.MLKEM.vector_encode_12 #v_K
           (Libcrux_ml_kem.Polynomial.to_spec_vector_t #v_K #v_Vector key))
@@ -118,7 +118,7 @@ let serialize_secret_key
 #pop-options
 
 let serialize_public_key_mut
-      (v_K v_RANKED_BYTES_PER_RING_ELEMENT v_PUBLIC_KEY_SIZE: usize)
+      (v_K v_PUBLIC_KEY_SIZE: usize)
       (#v_Vector: Type0)
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
           i1:
@@ -131,20 +131,21 @@ let serialize_public_key_mut
     Rust_primitives.Hax.Monomorphized_update_at.update_at_range serialized
       ({
           Core.Ops.Range.f_start = mk_usize 0;
-          Core.Ops.Range.f_end = v_RANKED_BYTES_PER_RING_ELEMENT
+          Core.Ops.Range.f_end = Libcrux_ml_kem.Constants.ranked_bytes_per_ring_element v_K <: usize
         }
         <:
         Core.Ops.Range.t_Range usize)
-      (Core.Slice.impl__copy_from_slice #u8
+      (serialize_vector v_K
+          #v_Vector
+          tt_as_ntt
           (serialized.[ {
                 Core.Ops.Range.f_start = mk_usize 0;
-                Core.Ops.Range.f_end = v_RANKED_BYTES_PER_RING_ELEMENT
+                Core.Ops.Range.f_end
+                =
+                Libcrux_ml_kem.Constants.ranked_bytes_per_ring_element v_K <: usize
               }
               <:
               Core.Ops.Range.t_Range usize ]
-            <:
-            t_Slice u8)
-          (serialize_secret_key v_K v_RANKED_BYTES_PER_RING_ELEMENT #v_Vector tt_as_ntt
             <:
             t_Slice u8)
         <:
@@ -152,11 +153,19 @@ let serialize_public_key_mut
   in
   let serialized:t_Array u8 v_PUBLIC_KEY_SIZE =
     Rust_primitives.Hax.Monomorphized_update_at.update_at_range_from serialized
-      ({ Core.Ops.Range.f_start = v_RANKED_BYTES_PER_RING_ELEMENT }
+      ({
+          Core.Ops.Range.f_start
+          =
+          Libcrux_ml_kem.Constants.ranked_bytes_per_ring_element v_K <: usize
+        }
         <:
         Core.Ops.Range.t_RangeFrom usize)
       (Core.Slice.impl__copy_from_slice #u8
-          (serialized.[ { Core.Ops.Range.f_start = v_RANKED_BYTES_PER_RING_ELEMENT }
+          (serialized.[ {
+                Core.Ops.Range.f_start
+                =
+                Libcrux_ml_kem.Constants.ranked_bytes_per_ring_element v_K <: usize
+              }
               <:
               Core.Ops.Range.t_RangeFrom usize ]
             <:
@@ -176,7 +185,7 @@ let serialize_public_key_mut
   serialized
 
 let serialize_public_key
-      (v_K v_RANKED_BYTES_PER_RING_ELEMENT v_PUBLIC_KEY_SIZE: usize)
+      (v_K v_PUBLIC_KEY_SIZE: usize)
       (#v_Vector: Type0)
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
           i1:
@@ -189,7 +198,6 @@ let serialize_public_key
   in
   let public_key_serialized:t_Array u8 v_PUBLIC_KEY_SIZE =
     serialize_public_key_mut v_K
-      v_RANKED_BYTES_PER_RING_ELEMENT
       v_PUBLIC_KEY_SIZE
       #v_Vector
       tt_as_ntt
@@ -669,7 +677,7 @@ let generate_keypair_unpacked
 #push-options "--admit_smt_queries true"
 
 let serialize_unpacked_secret_key
-      (v_K v_PRIVATE_KEY_SIZE v_PUBLIC_KEY_SIZE v_RANKED_BYTES_PER_RING_ELEMENT: usize)
+      (v_K v_PRIVATE_KEY_SIZE v_PUBLIC_KEY_SIZE: usize)
       (#v_Vector: Type0)
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
           i1:
@@ -679,17 +687,19 @@ let serialize_unpacked_secret_key
      =
   let public_key_serialized:t_Array u8 v_PUBLIC_KEY_SIZE =
     serialize_public_key v_K
-      v_RANKED_BYTES_PER_RING_ELEMENT
       v_PUBLIC_KEY_SIZE
       #v_Vector
       public_key.Libcrux_ml_kem.Ind_cpa.Unpacked.f_tt_as_ntt
       (public_key.Libcrux_ml_kem.Ind_cpa.Unpacked.f_seed_for_A <: t_Slice u8)
   in
   let secret_key_serialized:t_Array u8 v_PRIVATE_KEY_SIZE =
-    serialize_secret_key v_K
-      v_PRIVATE_KEY_SIZE
+    Rust_primitives.Hax.repeat (mk_u8 0) v_PRIVATE_KEY_SIZE
+  in
+  let secret_key_serialized:t_Array u8 v_PRIVATE_KEY_SIZE =
+    serialize_vector v_K
       #v_Vector
       private_key.Libcrux_ml_kem.Ind_cpa.Unpacked.f_secret_as_ntt
+      secret_key_serialized
   in
   secret_key_serialized, public_key_serialized
   <:
@@ -698,8 +708,7 @@ let serialize_unpacked_secret_key
 #pop-options
 
 let generate_keypair
-      (v_K v_PRIVATE_KEY_SIZE v_PUBLIC_KEY_SIZE v_RANKED_BYTES_PER_RING_ELEMENT v_ETA1 v_ETA1_RANDOMNESS_SIZE:
-          usize)
+      (v_K v_PRIVATE_KEY_SIZE v_PUBLIC_KEY_SIZE v_ETA1 v_ETA1_RANDOMNESS_SIZE: usize)
       (#v_Vector #v_Hasher #v_Scheme: Type0)
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
           i3:
@@ -739,7 +748,6 @@ let generate_keypair
   serialize_unpacked_secret_key v_K
     v_PRIVATE_KEY_SIZE
     v_PUBLIC_KEY_SIZE
-    v_RANKED_BYTES_PER_RING_ELEMENT
     #v_Vector
     public_key
     private_key
@@ -844,10 +852,8 @@ let compress_then_serialize_u
 
 #pop-options
 
-#push-options "--z3rlimit 800 --ext context_pruning --z3refresh"
-
-let encrypt_unpacked
-      (v_K v_CIPHERTEXT_SIZE v_T_AS_NTT_ENCODED_SIZE v_C1_LEN v_C2_LEN v_U_COMPRESSION_FACTOR v_V_COMPRESSION_FACTOR v_BLOCK_LEN v_ETA1 v_ETA1_RANDOMNESS_SIZE v_ETA2 v_ETA2_RANDOMNESS_SIZE:
+let encrypt_c1
+      (v_K v_C1_LEN v_U_COMPRESSION_FACTOR v_BLOCK_LEN v_ETA1 v_ETA1_RANDOMNESS_SIZE v_ETA2 v_ETA2_RANDOMNESS_SIZE:
           usize)
       (#v_Vector #v_Hasher: Type0)
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
@@ -856,9 +862,10 @@ let encrypt_unpacked
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
           i3:
           Libcrux_ml_kem.Hash_functions.t_Hash v_Hasher v_K)
-      (public_key: Libcrux_ml_kem.Ind_cpa.Unpacked.t_IndCpaPublicKeyUnpacked v_K v_Vector)
-      (message: t_Array u8 (mk_usize 32))
       (randomness: t_Slice u8)
+      (matrix:
+          t_Array (t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K) v_K)
+      (ciphertext: t_Slice u8)
      =
   let (prf_input: t_Array u8 (mk_usize 33)):t_Array u8 (mk_usize 33) =
     Libcrux_ml_kem.Utils.into_padded_array (mk_usize 33) randomness
@@ -911,69 +918,115 @@ let encrypt_unpacked
       (prf_output <: t_Slice u8)
   in
   let u:t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K =
-    Libcrux_ml_kem.Matrix.compute_vector_u v_K
-      #v_Vector
-      public_key.Libcrux_ml_kem.Ind_cpa.Unpacked.f_A
-      r_as_ntt
-      error_1_
+    Libcrux_ml_kem.Matrix.compute_vector_u v_K #v_Vector matrix r_as_ntt error_1_
   in
+  let ciphertext:t_Slice u8 =
+    compress_then_serialize_u v_K v_C1_LEN v_U_COMPRESSION_FACTOR v_BLOCK_LEN #v_Vector u ciphertext
+  in
+  let hax_temp_output:(t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K &
+    Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) =
+    r_as_ntt, error_2_
+    <:
+    (t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K &
+      Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
+  in
+  ciphertext, hax_temp_output
+  <:
+  (t_Slice u8 &
+    (t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K &
+      Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector))
+
+let encrypt_c2
+      (v_K v_V_COMPRESSION_FACTOR v_C2_LEN: usize)
+      (#v_Vector: Type0)
+      (#[FStar.Tactics.Typeclasses.tcresolve ()]
+          i1:
+          Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector)
+      (tt_as_ntt r_as_ntt: t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K)
+      (error_2_: Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
+      (message: t_Array u8 (mk_usize 32))
+      (ciphertext: t_Slice u8)
+     =
   let message_as_ring_element:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector =
     Libcrux_ml_kem.Serialize.deserialize_then_decompress_message #v_Vector message
   in
   let v:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector =
     Libcrux_ml_kem.Matrix.compute_ring_element_v v_K
       #v_Vector
-      public_key.Libcrux_ml_kem.Ind_cpa.Unpacked.f_tt_as_ntt
+      tt_as_ntt
       r_as_ntt
       error_2_
       message_as_ring_element
   in
-  let _:Prims.unit =
-    assert (v_C1_LEN = Spec.MLKEM.v_C1_SIZE v_K);
-    assert (v_C2_LEN = Spec.MLKEM.v_C2_SIZE v_K);
-    assert (v_CIPHERTEXT_SIZE == v_C1_LEN +! v_C2_LEN);
-    assert (v_C1_LEN <=. v_CIPHERTEXT_SIZE)
+  let _:Prims.unit = assert (v_C2_LEN = Spec.MLKEM.v_C2_SIZE v_K) in
+  let ciphertext:t_Slice u8 =
+    Libcrux_ml_kem.Serialize.compress_then_serialize_ring_element_v v_K
+      v_V_COMPRESSION_FACTOR
+      v_C2_LEN
+      #v_Vector
+      v
+      ciphertext
   in
+  ciphertext
+
+#push-options "--z3rlimit 800 --ext context_pruning --z3refresh"
+
+let encrypt_unpacked
+      (v_K v_CIPHERTEXT_SIZE v_T_AS_NTT_ENCODED_SIZE v_C1_LEN v_C2_LEN v_U_COMPRESSION_FACTOR v_V_COMPRESSION_FACTOR v_BLOCK_LEN v_ETA1 v_ETA1_RANDOMNESS_SIZE v_ETA2 v_ETA2_RANDOMNESS_SIZE:
+          usize)
+      (#v_Vector #v_Hasher: Type0)
+      (#[FStar.Tactics.Typeclasses.tcresolve ()]
+          i2:
+          Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector)
+      (#[FStar.Tactics.Typeclasses.tcresolve ()]
+          i3:
+          Libcrux_ml_kem.Hash_functions.t_Hash v_Hasher v_K)
+      (public_key: Libcrux_ml_kem.Ind_cpa.Unpacked.t_IndCpaPublicKeyUnpacked v_K v_Vector)
+      (message: t_Array u8 (mk_usize 32))
+      (randomness: t_Slice u8)
+     =
   let ciphertext:t_Array u8 v_CIPHERTEXT_SIZE =
     Rust_primitives.Hax.repeat (mk_u8 0) v_CIPHERTEXT_SIZE
+  in
+  let tmp0, out:(t_Slice u8 &
+    (t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K &
+      Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)) =
+    encrypt_c1 v_K v_C1_LEN v_U_COMPRESSION_FACTOR v_BLOCK_LEN v_ETA1 v_ETA1_RANDOMNESS_SIZE v_ETA2
+      v_ETA2_RANDOMNESS_SIZE #v_Vector #v_Hasher randomness
+      public_key.Libcrux_ml_kem.Ind_cpa.Unpacked.f_A
+      (ciphertext.[ { Core.Ops.Range.f_start = mk_usize 0; Core.Ops.Range.f_end = v_C1_LEN }
+          <:
+          Core.Ops.Range.t_Range usize ]
+        <:
+        t_Slice u8)
   in
   let ciphertext:t_Array u8 v_CIPHERTEXT_SIZE =
     Rust_primitives.Hax.Monomorphized_update_at.update_at_range ciphertext
       ({ Core.Ops.Range.f_start = mk_usize 0; Core.Ops.Range.f_end = v_C1_LEN }
         <:
         Core.Ops.Range.t_Range usize)
-      (compress_then_serialize_u v_K
-          v_C1_LEN
-          v_U_COMPRESSION_FACTOR
-          v_BLOCK_LEN
-          #v_Vector
-          u
-          (ciphertext.[ { Core.Ops.Range.f_start = mk_usize 0; Core.Ops.Range.f_end = v_C1_LEN }
-              <:
-              Core.Ops.Range.t_Range usize ]
-            <:
-            t_Slice u8)
-        <:
-        t_Slice u8)
+      tmp0
+  in
+  let r_as_ntt, error_2_:(t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K &
+    Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) =
+    out
   in
   let ciphertext:t_Array u8 v_CIPHERTEXT_SIZE =
     Rust_primitives.Hax.Monomorphized_update_at.update_at_range_from ciphertext
       ({ Core.Ops.Range.f_start = v_C1_LEN } <: Core.Ops.Range.t_RangeFrom usize)
-      (Libcrux_ml_kem.Serialize.compress_then_serialize_ring_element_v v_K
+      (encrypt_c2 v_K
           v_V_COMPRESSION_FACTOR
           v_C2_LEN
           #v_Vector
-          v
+          public_key.Libcrux_ml_kem.Ind_cpa.Unpacked.f_tt_as_ntt
+          r_as_ntt
+          error_2_
+          message
           (ciphertext.[ { Core.Ops.Range.f_start = v_C1_LEN } <: Core.Ops.Range.t_RangeFrom usize ]
             <:
             t_Slice u8)
         <:
         t_Slice u8)
-  in
-  let _:Prims.unit =
-    lemma_slice_append ciphertext
-      (Seq.slice ciphertext 0 (Rust_primitives.v v_C1_LEN))
-      (Seq.slice ciphertext (Rust_primitives.v v_C1_LEN) (Seq.length ciphertext))
   in
   ciphertext
 
@@ -1176,7 +1229,7 @@ let deserialize_then_decompress_u
 
 #push-options "--z3rlimit 800 --ext context_pruning"
 
-let deserialize_secret_key
+let deserialize_vector
       (v_K: usize)
       (#v_Vector: Type0)
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
@@ -1195,8 +1248,8 @@ let deserialize_secret_key
           Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
   in
   let secret_as_ntt:t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K =
-    Rust_primitives.Hax.Folds.fold_enumerated_chunked_slice Libcrux_ml_kem.Constants.v_BYTES_PER_RING_ELEMENT
-      secret_key
+    Rust_primitives.Hax.Folds.fold_range (mk_usize 0)
+      v_K
       (fun secret_as_ntt i ->
           let secret_as_ntt:t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K
           =
@@ -1215,18 +1268,32 @@ let deserialize_secret_key
                   (j * v Libcrux_ml_kem.Constants.v_BYTES_PER_RING_ELEMENT +
                     v Libcrux_ml_kem.Constants.v_BYTES_PER_RING_ELEMENT)))
       secret_as_ntt
-      (fun secret_as_ntt temp_1_ ->
+      (fun secret_as_ntt i ->
           let secret_as_ntt:t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K
           =
             secret_as_ntt
           in
-          let i, secret_bytes:(usize & t_Slice u8) = temp_1_ in
+          let i:usize = i in
           let secret_as_ntt:t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K
           =
             Rust_primitives.Hax.Monomorphized_update_at.update_at_usize secret_as_ntt
               i
               (Libcrux_ml_kem.Serialize.deserialize_to_uncompressed_ring_element #v_Vector
-                  secret_bytes
+                  (secret_key.[ {
+                        Core.Ops.Range.f_start
+                        =
+                        i *! Libcrux_ml_kem.Constants.v_BYTES_PER_RING_ELEMENT <: usize;
+                        Core.Ops.Range.f_end
+                        =
+                        (i +! mk_usize 1 <: usize) *!
+                        Libcrux_ml_kem.Constants.v_BYTES_PER_RING_ELEMENT
+                        <:
+                        usize
+                      }
+                      <:
+                      Core.Ops.Range.t_Range usize ]
+                    <:
+                    t_Slice u8)
                 <:
                 Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
           in
@@ -1286,7 +1353,7 @@ let decrypt
      =
   let _:Prims.unit = reveal_opaque (`%Spec.MLKEM.ind_cpa_decrypt) Spec.MLKEM.ind_cpa_decrypt in
   let secret_as_ntt:t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K =
-    deserialize_secret_key v_K #v_Vector secret_key
+    deserialize_vector v_K #v_Vector secret_key
   in
   let secret_key_unpacked:Libcrux_ml_kem.Ind_cpa.Unpacked.t_IndCpaPrivateKeyUnpacked v_K v_Vector =
     { Libcrux_ml_kem.Ind_cpa.Unpacked.f_secret_as_ntt = secret_as_ntt }
