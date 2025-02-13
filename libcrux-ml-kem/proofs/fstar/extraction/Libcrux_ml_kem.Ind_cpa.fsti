@@ -35,7 +35,7 @@ val serialize_vector
 
 /// Concatenate `t` and `ρ` into the public key.
 val serialize_public_key_mut
-      (v_K v_RANKED_BYTES_PER_RING_ELEMENT v_PUBLIC_KEY_SIZE: usize)
+      (v_K v_PUBLIC_KEY_SIZE: usize)
       (#v_Vector: Type0)
       {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
       (tt_as_ntt: t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K)
@@ -43,9 +43,8 @@ val serialize_public_key_mut
       (serialized: t_Array u8 v_PUBLIC_KEY_SIZE)
     : Prims.Pure (t_Array u8 v_PUBLIC_KEY_SIZE)
       (requires
-        Spec.MLKEM.is_rank v_K /\
-        v_RANKED_BYTES_PER_RING_ELEMENT == Spec.MLKEM.v_RANKED_BYTES_PER_RING_ELEMENT v_K /\
-        v_PUBLIC_KEY_SIZE == Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE v_K /\ length seed_for_a == sz 32 /\
+        Spec.MLKEM.is_rank v_K /\ v_PUBLIC_KEY_SIZE == Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE v_K /\
+        length seed_for_a == sz 32 /\
         (forall (i: nat).
             i < v v_K ==>
             Libcrux_ml_kem.Serialize.coefficients_field_modulus_range (Seq.index tt_as_ntt i)))
@@ -59,16 +58,15 @@ val serialize_public_key_mut
 
 /// Concatenate `t` and `ρ` into the public key.
 val serialize_public_key
-      (v_K v_RANKED_BYTES_PER_RING_ELEMENT v_PUBLIC_KEY_SIZE: usize)
+      (v_K v_PUBLIC_KEY_SIZE: usize)
       (#v_Vector: Type0)
       {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
       (tt_as_ntt: t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K)
       (seed_for_a: t_Slice u8)
     : Prims.Pure (t_Array u8 v_PUBLIC_KEY_SIZE)
       (requires
-        Spec.MLKEM.is_rank v_K /\
-        v_RANKED_BYTES_PER_RING_ELEMENT == Spec.MLKEM.v_RANKED_BYTES_PER_RING_ELEMENT v_K /\
-        v_PUBLIC_KEY_SIZE == Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE v_K /\ length seed_for_a == sz 32 /\
+        Spec.MLKEM.is_rank v_K /\ v_PUBLIC_KEY_SIZE == Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE v_K /\
+        length seed_for_a == sz 32 /\
         (forall (i: nat).
             i < v v_K ==>
             Libcrux_ml_kem.Serialize.coefficients_field_modulus_range (Seq.index tt_as_ntt i)))
@@ -246,7 +244,7 @@ val generate_keypair_unpacked
 
 /// Serialize the secret key from the unpacked key pair generation.
 val serialize_unpacked_secret_key
-      (v_K v_PRIVATE_KEY_SIZE v_PUBLIC_KEY_SIZE v_RANKED_BYTES_PER_RING_ELEMENT: usize)
+      (v_K v_PRIVATE_KEY_SIZE v_PUBLIC_KEY_SIZE: usize)
       (#v_Vector: Type0)
       {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
       (public_key: Libcrux_ml_kem.Ind_cpa.Unpacked.t_IndCpaPublicKeyUnpacked v_K v_Vector)
@@ -256,8 +254,7 @@ val serialize_unpacked_secret_key
       (fun _ -> Prims.l_True)
 
 val generate_keypair
-      (v_K v_PRIVATE_KEY_SIZE v_PUBLIC_KEY_SIZE v_RANKED_BYTES_PER_RING_ELEMENT v_ETA1 v_ETA1_RANDOMNESS_SIZE:
-          usize)
+      (v_K v_PRIVATE_KEY_SIZE v_PUBLIC_KEY_SIZE v_ETA1 v_ETA1_RANDOMNESS_SIZE: usize)
       (#v_Vector #v_Hasher #v_Scheme: Type0)
       {| i3: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
       {| i4: Libcrux_ml_kem.Hash_functions.t_Hash v_Hasher v_K |}
@@ -266,9 +263,7 @@ val generate_keypair
     : Prims.Pure (t_Array u8 v_PRIVATE_KEY_SIZE & t_Array u8 v_PUBLIC_KEY_SIZE)
       (requires
         Spec.MLKEM.is_rank v_K /\ v_PRIVATE_KEY_SIZE == Spec.MLKEM.v_CPA_PRIVATE_KEY_SIZE v_K /\
-        v_PUBLIC_KEY_SIZE == Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE v_K /\
-        v_RANKED_BYTES_PER_RING_ELEMENT == Spec.MLKEM.v_RANKED_BYTES_PER_RING_ELEMENT v_K /\
-        v_ETA1 == Spec.MLKEM.v_ETA1 v_K /\
+        v_PUBLIC_KEY_SIZE == Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE v_K /\ v_ETA1 == Spec.MLKEM.v_ETA1 v_K /\
         v_ETA1_RANDOMNESS_SIZE == Spec.MLKEM.v_ETA1_RANDOMNESS_SIZE v_K /\
         length key_generation_seed == Spec.MLKEM.v_CPA_KEY_GENERATION_SEED_SIZE)
       (ensures

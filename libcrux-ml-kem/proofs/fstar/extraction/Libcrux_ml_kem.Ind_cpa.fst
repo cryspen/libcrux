@@ -118,7 +118,7 @@ let serialize_vector
 #pop-options
 
 let serialize_public_key_mut
-      (v_K v_RANKED_BYTES_PER_RING_ELEMENT v_PUBLIC_KEY_SIZE: usize)
+      (v_K v_PUBLIC_KEY_SIZE: usize)
       (#v_Vector: Type0)
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
           i1:
@@ -131,7 +131,7 @@ let serialize_public_key_mut
     Rust_primitives.Hax.Monomorphized_update_at.update_at_range serialized
       ({
           Core.Ops.Range.f_start = mk_usize 0;
-          Core.Ops.Range.f_end = v_RANKED_BYTES_PER_RING_ELEMENT
+          Core.Ops.Range.f_end = Libcrux_ml_kem.Constants.ranked_bytes_per_ring_element v_K <: usize
         }
         <:
         Core.Ops.Range.t_Range usize)
@@ -140,7 +140,9 @@ let serialize_public_key_mut
           tt_as_ntt
           (serialized.[ {
                 Core.Ops.Range.f_start = mk_usize 0;
-                Core.Ops.Range.f_end = v_RANKED_BYTES_PER_RING_ELEMENT
+                Core.Ops.Range.f_end
+                =
+                Libcrux_ml_kem.Constants.ranked_bytes_per_ring_element v_K <: usize
               }
               <:
               Core.Ops.Range.t_Range usize ]
@@ -151,11 +153,19 @@ let serialize_public_key_mut
   in
   let serialized:t_Array u8 v_PUBLIC_KEY_SIZE =
     Rust_primitives.Hax.Monomorphized_update_at.update_at_range_from serialized
-      ({ Core.Ops.Range.f_start = v_RANKED_BYTES_PER_RING_ELEMENT }
+      ({
+          Core.Ops.Range.f_start
+          =
+          Libcrux_ml_kem.Constants.ranked_bytes_per_ring_element v_K <: usize
+        }
         <:
         Core.Ops.Range.t_RangeFrom usize)
       (Core.Slice.impl__copy_from_slice #u8
-          (serialized.[ { Core.Ops.Range.f_start = v_RANKED_BYTES_PER_RING_ELEMENT }
+          (serialized.[ {
+                Core.Ops.Range.f_start
+                =
+                Libcrux_ml_kem.Constants.ranked_bytes_per_ring_element v_K <: usize
+              }
               <:
               Core.Ops.Range.t_RangeFrom usize ]
             <:
@@ -175,7 +185,7 @@ let serialize_public_key_mut
   serialized
 
 let serialize_public_key
-      (v_K v_RANKED_BYTES_PER_RING_ELEMENT v_PUBLIC_KEY_SIZE: usize)
+      (v_K v_PUBLIC_KEY_SIZE: usize)
       (#v_Vector: Type0)
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
           i1:
@@ -188,7 +198,6 @@ let serialize_public_key
   in
   let public_key_serialized:t_Array u8 v_PUBLIC_KEY_SIZE =
     serialize_public_key_mut v_K
-      v_RANKED_BYTES_PER_RING_ELEMENT
       v_PUBLIC_KEY_SIZE
       #v_Vector
       tt_as_ntt
@@ -668,7 +677,7 @@ let generate_keypair_unpacked
 #push-options "--admit_smt_queries true"
 
 let serialize_unpacked_secret_key
-      (v_K v_PRIVATE_KEY_SIZE v_PUBLIC_KEY_SIZE v_RANKED_BYTES_PER_RING_ELEMENT: usize)
+      (v_K v_PRIVATE_KEY_SIZE v_PUBLIC_KEY_SIZE: usize)
       (#v_Vector: Type0)
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
           i1:
@@ -678,7 +687,6 @@ let serialize_unpacked_secret_key
      =
   let public_key_serialized:t_Array u8 v_PUBLIC_KEY_SIZE =
     serialize_public_key v_K
-      v_RANKED_BYTES_PER_RING_ELEMENT
       v_PUBLIC_KEY_SIZE
       #v_Vector
       public_key.Libcrux_ml_kem.Ind_cpa.Unpacked.f_tt_as_ntt
@@ -700,8 +708,7 @@ let serialize_unpacked_secret_key
 #pop-options
 
 let generate_keypair
-      (v_K v_PRIVATE_KEY_SIZE v_PUBLIC_KEY_SIZE v_RANKED_BYTES_PER_RING_ELEMENT v_ETA1 v_ETA1_RANDOMNESS_SIZE:
-          usize)
+      (v_K v_PRIVATE_KEY_SIZE v_PUBLIC_KEY_SIZE v_ETA1 v_ETA1_RANDOMNESS_SIZE: usize)
       (#v_Vector #v_Hasher #v_Scheme: Type0)
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
           i3:
@@ -741,7 +748,6 @@ let generate_keypair
   serialize_unpacked_secret_key v_K
     v_PRIVATE_KEY_SIZE
     v_PUBLIC_KEY_SIZE
-    v_RANKED_BYTES_PER_RING_ELEMENT
     #v_Vector
     public_key
     private_key

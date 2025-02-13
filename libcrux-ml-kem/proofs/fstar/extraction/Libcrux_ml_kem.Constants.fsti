@@ -25,3 +25,9 @@ let v_H_DIGEST_SIZE: usize = mk_usize 32
 
 /// SHA3 512 digest size
 let v_G_DIGEST_SIZE: usize = mk_usize 64
+
+/// K * BITS_PER_RING_ELEMENT / 8
+/// [eurydice] Note that we can't use const generics here because that breaks
+///            C extraction with eurydice.
+val ranked_bytes_per_ring_element (rank: usize)
+    : Prims.Pure usize Prims.l_True (fun _ -> Prims.l_True)

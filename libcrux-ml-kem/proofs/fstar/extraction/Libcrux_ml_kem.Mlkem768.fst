@@ -5,7 +5,6 @@ open FStar.Mul
 
 let validate_public_key (public_key: Libcrux_ml_kem.Types.t_MlKemPublicKey (mk_usize 1184)) =
   Libcrux_ml_kem.Ind_cca.Multiplexing.validate_public_key (mk_usize 3)
-    (mk_usize 1152)
     (mk_usize 1184)
     public_key.Libcrux_ml_kem.Types.f_value
 
@@ -25,7 +24,6 @@ let generate_key_pair (randomness: t_Array u8 (mk_usize 64)) =
       (mk_usize 1152)
       (mk_usize 2400)
       (mk_usize 1184)
-      (mk_usize 1152)
       (mk_usize 2)
       (mk_usize 128)
       randomness
