@@ -13,7 +13,7 @@ fn run_wycheproof() {
         for (k, test_group) in test_set.test_groups.into_iter().enumerate() {
             let pk = &test_group.key.pk;
             if pk.len() != 32 {
-                println!("Skipping test group {k}: public key length {} != 32", pk.len());
+                println!("Skipping test group {k}: private key length {} != 32", pk.len());
                 continue;
             }
             let pk_buf: [u8; 32] = pk.as_slice().try_into().unwrap();
