@@ -130,7 +130,6 @@ fn serialize_kem_secret_key<const K: usize, const SERIALIZED_KEY_LEN: usize, Has
 /// `public_key` type.
 #[inline(always)]
 #[hax_lib::requires(fstar!(r#"Spec.MLKEM.is_rank $K /\
-    $RANKED_BYTES_PER_RING_ELEMENT == Spec.MLKEM.v_RANKED_BYTES_PER_RING_ELEMENT $K /\
     $PUBLIC_KEY_SIZE == Spec.MLKEM.v_CCA_PUBLIC_KEY_SIZE $K"#))]
 pub(crate) fn validate_public_key<
     const K: usize,
@@ -205,7 +204,6 @@ pub(crate) fn validate_private_key_only<
     $CPA_PRIVATE_KEY_SIZE == Spec.MLKEM.v_CPA_PRIVATE_KEY_SIZE $K /\
     $PRIVATE_KEY_SIZE == Spec.MLKEM.v_CCA_PRIVATE_KEY_SIZE $K /\
     $PUBLIC_KEY_SIZE == Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE $K /\
-    $RANKED_BYTES_PER_RING_ELEMENT == Spec.MLKEM.v_RANKED_BYTES_PER_RING_ELEMENT $K /\
     $ETA1 == Spec.MLKEM.v_ETA1 $K /\
     $ETA1_RANDOMNESS_SIZE == Spec.MLKEM.v_ETA1_RANDOMNESS_SIZE $K"#))]
 #[hax_lib::ensures(|result| fstar!(r#"let (expected, valid) = Spec.MLKEM.ind_cca_generate_keypair $K $randomness in
@@ -543,7 +541,6 @@ pub(crate) mod unpacked {
         #[inline(always)]
         #[requires(fstar!(r#"let ${self_} = self in
         Spec.MLKEM.is_rank $K /\
-            $RANKED_BYTES_PER_RING_ELEMENT == Spec.MLKEM.v_RANKED_BYTES_PER_RING_ELEMENT $K /\
             $PUBLIC_KEY_SIZE == Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE $K /\
             (forall (i:nat). i < v $K ==>
                 Libcrux_ml_kem.Serialize.coefficients_field_modulus_range (Seq.index 
@@ -571,7 +568,6 @@ pub(crate) mod unpacked {
         #[inline(always)]
         #[requires(fstar!(r#"let ${self_} = self in
         Spec.MLKEM.is_rank $K /\
-            $RANKED_BYTES_PER_RING_ELEMENT == Spec.MLKEM.v_RANKED_BYTES_PER_RING_ELEMENT $K /\
             $PUBLIC_KEY_SIZE == Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE $K /\
             (forall (i:nat). i < v $K ==>
                 Libcrux_ml_kem.Serialize.coefficients_field_modulus_range (Seq.index
@@ -607,7 +603,6 @@ pub(crate) mod unpacked {
            v_SECRET_KEY_SIZE == Spec.MLKEM.v_CCA_PRIVATE_KEY_SIZE v_K /\
            v_CPA_SECRET_KEY_SIZE == Spec.MLKEM.v_CPA_PRIVATE_KEY_SIZE v_K /\
            v_PUBLIC_KEY_SIZE == Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE v_K /\
-           v_BYTES_PER_RING_ELEMENT == Spec.MLKEM.v_RANKED_BYTES_PER_RING_ELEMENT v_K /\
            v_T_AS_NTT_ENCODED_SIZE == Spec.MLKEM.v_T_AS_NTT_ENCODED_SIZE v_K"#))]
     pub fn keys_from_private_key<
         const K: usize,
@@ -670,7 +665,6 @@ pub(crate) mod unpacked {
            v_SECRET_KEY_SIZE == Spec.MLKEM.v_CCA_PRIVATE_KEY_SIZE v_K /\
            v_CPA_SECRET_KEY_SIZE == Spec.MLKEM.v_CPA_PRIVATE_KEY_SIZE v_K /\
            v_PUBLIC_KEY_SIZE == Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE v_K /\
-           v_BYTES_PER_RING_ELEMENT == Spec.MLKEM.v_RANKED_BYTES_PER_RING_ELEMENT v_K /\
            v_T_AS_NTT_ENCODED_SIZE == Spec.MLKEM.v_T_AS_NTT_ENCODED_SIZE v_K)"#))]
         pub fn from_private_key<
             const SECRET_KEY_SIZE: usize,
@@ -696,7 +690,6 @@ pub(crate) mod unpacked {
         #[inline(always)]
         #[requires(fstar!(r#"let ${self_} = self in
         Spec.MLKEM.is_rank $K /\
-            $RANKED_BYTES_PER_RING_ELEMENT == Spec.MLKEM.v_RANKED_BYTES_PER_RING_ELEMENT $K /\
             $PUBLIC_KEY_SIZE == Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE $K /\
             (forall (i:nat). i < v $K ==>
                 Libcrux_ml_kem.Serialize.coefficients_field_modulus_range (Seq.index 
@@ -721,7 +714,6 @@ pub(crate) mod unpacked {
         #[inline(always)]
         #[requires(fstar!(r#"let ${self_} = self in
         Spec.MLKEM.is_rank $K /\
-            $RANKED_BYTES_PER_RING_ELEMENT == Spec.MLKEM.v_RANKED_BYTES_PER_RING_ELEMENT $K /\
             $PUBLIC_KEY_SIZE == Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE $K /\
             (forall (i:nat). i < v $K ==>
                 Libcrux_ml_kem.Serialize.coefficients_field_modulus_range (Seq.index
@@ -756,8 +748,7 @@ pub(crate) mod unpacked {
         #[hax_lib::requires(fstar!(r#"Spec.MLKEM.is_rank $K /\
             $PRIVATE_KEY_SIZE == Spec.MLKEM.v_CCA_PRIVATE_KEY_SIZE $K /\
             $CPA_PRIVATE_KEY_SIZE == Spec.MLKEM.v_CPA_PRIVATE_KEY_SIZE $K /\
-            $PUBLIC_KEY_SIZE == Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE $K /\
-            $RANKED_BYTES_PER_RING_ELEMENT == Spec.MLKEM.v_RANKED_BYTES_PER_RING_ELEMENT $K"#))]
+            $PUBLIC_KEY_SIZE == Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE $K"#))]
         pub fn serialized_private_key_mut<
             const CPA_PRIVATE_KEY_SIZE: usize,
             const PRIVATE_KEY_SIZE: usize,
@@ -789,8 +780,7 @@ pub(crate) mod unpacked {
         #[hax_lib::requires(fstar!(r#"Spec.MLKEM.is_rank $K /\
             $PRIVATE_KEY_SIZE == Spec.MLKEM.v_CCA_PRIVATE_KEY_SIZE $K /\
             $CPA_PRIVATE_KEY_SIZE == Spec.MLKEM.v_CPA_PRIVATE_KEY_SIZE $K /\
-            $PUBLIC_KEY_SIZE == Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE $K /\
-            $RANKED_BYTES_PER_RING_ELEMENT == Spec.MLKEM.v_RANKED_BYTES_PER_RING_ELEMENT $K"#))]
+            $PUBLIC_KEY_SIZE == Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE $K"#))]
         pub fn serialized_private_key<
             const CPA_PRIVATE_KEY_SIZE: usize,
             const PRIVATE_KEY_SIZE: usize,
@@ -869,7 +859,6 @@ pub(crate) mod unpacked {
     #[hax_lib::requires(fstar!(r#"Spec.MLKEM.is_rank $K /\
         $ETA1_RANDOMNESS_SIZE == Spec.MLKEM.v_ETA1_RANDOMNESS_SIZE $K /\
         $ETA1 == Spec.MLKEM.v_ETA1 $K /\
-        $BYTES_PER_RING_ELEMENT == Spec.MLKEM.v_RANKED_BYTES_PER_RING_ELEMENT $K /\
         $PUBLIC_KEY_SIZE == Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE $K"#))]
     #[hax_lib::ensures(|result|
         fstar!(r#"let ((m_A, public_key_hash), implicit_rejection_value), valid =

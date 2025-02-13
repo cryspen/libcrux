@@ -64,7 +64,6 @@ use unpacked::*;
 /// Concatenate `t` and `ρ` into the public key.
 #[inline(always)]
 #[hax_lib::requires(fstar!(r#"Spec.MLKEM.is_rank $K /\
-    $RANKED_BYTES_PER_RING_ELEMENT == Spec.MLKEM.v_RANKED_BYTES_PER_RING_ELEMENT $K /\
     $PUBLIC_KEY_SIZE == Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE $K /\
     length $seed_for_a == sz 32 /\
     (forall (i:nat). i < v $K ==>
@@ -94,7 +93,6 @@ pub(crate) fn serialize_public_key<
 /// Concatenate `t` and `ρ` into the public key.
 #[inline(always)]
 #[hax_lib::requires(fstar!(r#"Spec.MLKEM.is_rank $K /\
-    $RANKED_BYTES_PER_RING_ELEMENT == Spec.MLKEM.v_RANKED_BYTES_PER_RING_ELEMENT $K /\
     $PUBLIC_KEY_SIZE == Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE $K /\
     length $seed_for_a == sz 32 /\
     (forall (i:nat). i < v $K ==>
@@ -568,7 +566,6 @@ pub(crate) fn generate_keypair_unpacked<
 #[hax_lib::requires(fstar!(r#"Spec.MLKEM.is_rank $K /\
     $PRIVATE_KEY_SIZE == Spec.MLKEM.v_CPA_PRIVATE_KEY_SIZE $K /\
     $PUBLIC_KEY_SIZE == Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE $K /\
-    $RANKED_BYTES_PER_RING_ELEMENT == Spec.MLKEM.v_RANKED_BYTES_PER_RING_ELEMENT $K /\
     $ETA1 == Spec.MLKEM.v_ETA1 $K /\
     $ETA1_RANDOMNESS_SIZE == Spec.MLKEM.v_ETA1_RANDOMNESS_SIZE $K /\
     length $key_generation_seed == Spec.MLKEM.v_CPA_KEY_GENERATION_SEED_SIZE"#))]
