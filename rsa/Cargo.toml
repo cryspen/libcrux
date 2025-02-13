@@ -25,3 +25,4 @@ libcrux-sha2 = { version = "=0.0.2-beta.2", path = "../sha2", features = [
 hex = { version = "0.4.3", features = ["serde"] }
 serde = { version = "1.0.216", features = ["derive"] }
 serde_json = "1.0.133"
+wycheproof = "0.6.0"

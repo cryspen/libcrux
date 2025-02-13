@@ -175,104 +175,56 @@ fn wycheproof_single_test() {
         .expect("Error verifying signature");
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone)]
-#[allow(non_snake_case)]
-struct RsaPssTestVector {
-    algorithm: String,
-    generatorVersion: String,
-    numberOfTests: usize,
-    notes: Option<Value>, // text notes (might not be present), keys correspond to flags
-    header: Vec<Value>,   // not used
-    testGroups: Vec<TestGroup>,
-}
-
-#[derive(Serialize, Deserialize, Debug, Clone)]
-#[allow(non_snake_case)]
-struct TestGroup {
-    e: String,
-    r#type: String,
-    mgf: String,
-    mgfSha: String,
-    #[serde(with = "hex::serde")]
-    n: Vec<u8>,
-    keysize: usize,
-    sLen: usize,
-    sha: String,
-    tests: Vec<Test>,
-}
-
-#[derive(Serialize, Deserialize, Debug, Clone)]
-#[allow(non_snake_case)]
-struct Test {
-    tcId: usize,
-    comment: String,
-    #[serde(with = "hex::serde")]
-    msg: Vec<u8>,
-    #[serde(with = "hex::serde")]
-    sig: Vec<u8>,
-    result: String,
-    flags: Vec<String>,
-}
-
-pub use serde::{self, de::DeserializeOwned};
-pub use std::fs::File;
-pub use std::io::BufReader;
-pub(crate) trait ReadFromFile {
-    fn from_file<T: DeserializeOwned>(file_str: &'static str) -> T {
-        let file = match File::open(file_str) {
-            Ok(f) => f,
-            Err(_) => panic!("Couldn't open file {file_str}."),
-        };
-        let reader = BufReader::new(file);
-        match serde_json::from_reader(reader) {
-            Ok(r) => r,
-            Err(e) => {
-                println!("{:?}", e);
-                panic!("Error reading file {file_str}.")
-            }
-        }
-    }
-}
-
-impl ReadFromFile for RsaPssTestVector {}
-
-#[allow(non_snake_case)]
 #[test]
-fn test_wycheproof() {
-    run(RsaPssTestVector::from_file(
-        "../tests/wycheproof/rsa_pss_2048_sha256_mgf1_0_test.json",
-    ));
-    run(RsaPssTestVector::from_file(
-        "../tests/wycheproof/rsa_pss_2048_sha256_mgf1_32_test.json",
-    ));
-    run(RsaPssTestVector::from_file(
-        "../tests/wycheproof/rsa_pss_3072_sha256_mgf1_32_test.json",
-    ));
-    run(RsaPssTestVector::from_file(
-        "../tests/wycheproof/rsa_pss_4096_sha256_mgf1_32_test.json",
-    ));
-    run(RsaPssTestVector::from_file(
-        "../tests/wycheproof/rsa_pss_4096_sha512_mgf1_32_test.json",
-    ));
+fn run_wycheproof() {
+    for test_name in wycheproof::rsa_pss_verify::TestName::all() {
+        let test_set = wycheproof::rsa_pss_verify::TestSet::load(test_name)
+            .expect("error loading wycheproof test for name {test_name}");
+        println!("Test Set {test_name:?}");
 
-    const N2048: usize = 2048 / 8;
-    const N3072: usize = 3072 / 8;
-    const N4096: usize = 4096 / 8;
-
-    fn run(tests: RsaPssTestVector) {
-        assert_eq!(tests.algorithm, "RSASSA-PSS");
-
-        let num_tests = tests.numberOfTests;
+        let num_tests = test_set.number_of_tests;
         let mut tests_run = 0;
 
-        for test_group in tests.testGroups.iter() {
-            assert_eq!(test_group.e, "010001");
-            assert_eq!(test_group.r#type, "RsassaPssVerify");
-            assert_eq!(test_group.mgf, "MGF1");
-            assert_eq!(test_group.sha, test_group.mgfSha);
+        for test_group in test_set.test_groups {
+            if !matches!(
+                test_group.hash,
+                wycheproof::HashFunction::Sha2_256
+                    | wycheproof::HashFunction::Sha3_384
+                    | wycheproof::HashFunction::Sha2_512
+            ) {
+                println!(
+                    "skipping due to unsupported hash function {:?}",
+                    test_group.hash
+                );
+                continue;
+            }
 
-            let salt_len = test_group.sLen;
-            let mut n = test_group.n.as_slice();
+            if !matches!(
+                test_group.mgf_hash.unwrap(),
+                wycheproof::HashFunction::Sha2_256
+                    | wycheproof::HashFunction::Sha3_384
+                    | wycheproof::HashFunction::Sha2_512
+            ) {
+                println!(
+                    "skipping due to unsupported mgf hash function {:?}",
+                    test_group.mgf_hash
+                );
+                continue;
+            }
+
+            if test_group.hash != test_group.mgf_hash.unwrap() {
+                println!(
+                    "skipping because hash function doesn't match mgf hash function: {:?} != {:?}",
+                    test_group.hash, test_group.mgf_hash
+                );
+                continue;
+            }
+
+            assert!(matches!(test_group.key.e.as_slice(), [1, 0, 1]));
+            assert_eq!(test_group.mgf, wycheproof::Mgf::Mgf1);
+
+            let salt_len = test_group.salt_size;
+            let mut n = test_group.key.n.as_slice();
 
             assert!(salt_len < u32::MAX as usize);
             let salt_len = salt_len as u32;
@@ -284,16 +236,21 @@ fn test_wycheproof() {
             }
             let pk = VarLenPublicKey::try_from(n).unwrap();
 
-            let hash_algorithm = match test_group.sha.as_str() {
-                "SHA-256" => DigestAlgorithm::Sha2_256,
-                "SHA-384" => DigestAlgorithm::Sha2_384,
-                "SHA-512" => DigestAlgorithm::Sha2_512,
-                _ => panic!("Unknown hash algorithm {}", test_group.sha),
+            let hash_algorithm = match &test_group.hash {
+                wycheproof::HashFunction::Sha2_256 => DigestAlgorithm::Sha2_256,
+                wycheproof::HashFunction::Sha2_384 => DigestAlgorithm::Sha2_384,
+                wycheproof::HashFunction::Sha2_512 => DigestAlgorithm::Sha2_512,
+                _ => panic!("Unknown hash algorithm {:?}", test_group.hash),
             };
-            for test in test_group.tests.iter() {
-                println!("Test {:?}: {:?}", test.tcId, test.comment);
+            for (i, test) in test_group.tests.into_iter().enumerate() {
+                let comment = &test.comment;
+                println!("Test {i}: {comment}");
 
-                let valid = test.result.eq("valid") || test.result.eq("acceptable");
+                let valid = matches!(
+                    test.result,
+                    wycheproof::TestResult::Valid | wycheproof::TestResult::Acceptable
+                );
+
                 let msg = &test.msg;
                 let signature = &test.sig;
 
@@ -312,8 +269,7 @@ fn test_wycheproof() {
                 tests_run += 1;
             }
         }
-        // Check that we ran all tests.
+
         println!("Ran {} out of {} tests.", tests_run, num_tests);
-        assert_eq!(num_tests, tests_run);
     }
 }
