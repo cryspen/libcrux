@@ -23,7 +23,7 @@ fn chachapoly_self_test() {
     let _ = pretty_env_logger::try_init();
 
     let orig_msg = b"hacspec rulez";
-    let mut msg = orig_msg.clone();
+    let mut msg = *orig_msg;
     let aad = b"associated data" as &[u8];
     let raw_key = Chacha20Key([
         1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25,
@@ -45,7 +45,7 @@ fn chachapoly_self_test_rand() {
     let _ = pretty_env_logger::try_init();
 
     let orig_msg = b"hacspec rulez";
-    let mut msg = orig_msg.clone();
+    let mut msg = *orig_msg;
     let aad = b"associated data" as &[u8];
 
     #[cfg(not(target_arch = "wasm32"))]
@@ -145,7 +145,7 @@ fn wycheproof() {
                 *skipped_tests += testGroup.tests.len();
                 continue;
             }
-            let invalid_iv = if testGroup.ivSize != 96 { true } else { false };
+            let invalid_iv = testGroup.ivSize != 96;
 
             for test in testGroup.tests.iter() {
                 let valid = test.result.eq("valid");
@@ -186,11 +186,8 @@ fn wycheproof() {
                             *skipped_tests += 1;
                             continue;
                         } else {
-                            println!("Encrypt failed unexpectedly {:?}", e);
-                            assert!(false);
+                            panic!("Encrypt failed unexpectedly {:?}", e);
                         }
-                        *tests_run += 1;
-                        continue;
                     }
                 };
                 if valid {
