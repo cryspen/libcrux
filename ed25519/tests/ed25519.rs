@@ -16,6 +16,9 @@ fn run_wycheproof() {
                     "Skipping test group {k}: public key length {} != 32",
                     pk.len()
                 );
+                for test in test_group.tests.into_iter() {
+                    assert_eq!(test.result, wycheproof::TestResult::Invalid);
+                }
                 continue;
             }
             let pk_buf: [u8; 32] = pk.as_slice().try_into().unwrap();
@@ -25,8 +28,9 @@ fn run_wycheproof() {
                 println!("Test {i}: {comment}");
 
                 let sig_len = test.sig.len();
-                if sig_len != 64 && test.result == wycheproof::TestResult::Invalid {
+                if sig_len != 64 {
                     println!("Skipping test {i}: signature length {} != 64", sig_len);
+                    assert_eq!(test.result, wycheproof::TestResult::Invalid);
                     continue;
                 }
                 let sig_buf: [u8; 64] = test.sig.as_slice().try_into().unwrap();
