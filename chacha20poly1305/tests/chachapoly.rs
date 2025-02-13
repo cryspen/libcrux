@@ -102,8 +102,7 @@ fn wycheproof() {
                 let key = <&[u8; 32]>::try_from(&test.key[..]).unwrap();
 
                 let mut ctxt = msg.clone();
-                let tag = match libcrux_chacha20poly1305::encrypt(key, msg, &mut ctxt, aad, nonce)
-                {
+                let tag = match libcrux_chacha20poly1305::encrypt(key, msg, &mut ctxt, aad, nonce) {
                     Ok((_v, t)) => t,
                     Err(_) => {
                         *tests_run += 1;
