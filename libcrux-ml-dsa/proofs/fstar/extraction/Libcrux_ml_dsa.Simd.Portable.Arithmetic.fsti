@@ -43,10 +43,7 @@ val subtract (lhs rhs: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients)
 
 val get_n_least_significant_bits (n: u8) (value: u64)
     : Prims.Pure u64
-      (requires
-        Rust_primitives.Hax.failure "(AST import) Fatal error: something we considered as impossible occurred! [1mPlease report this by submitting an issue on GitHub![0m\nDetails: [import_thir:literal] got an error literal: this means the Rust compiler or Hax's frontend probably reported errors above."
-          "{ Types.attributes = [];\n  contents =\n  Types.Literal {\n    lit =\n    { Types.node =\n      (Types.Err Types.ErrorGuaranteed {todo = \"ErrorGuaranteed(())\"});\n      span =\n      { Types.filename =\n        (Types.Real (Types.LocalPath \"libcrux-ml-dsa/src/lib.rs\"));\n        hi = { Types.col = \"0\"; line = \"1\" };\n        lo = { Types.col = \"0\"; line = \"1\" } }\n      };\n    neg = false};\n  hir_id = None;\n  span =\n  { Types.filename =\n    (Types.Real\n       (Types.LocalPath \"libcrux-ml-dsa/src/simd/portable/arithmetic.rs\"));\n    hi = { Types.col = \"29\"; line = \"67\" };\n    lo = { Types.col = \"0\"; line = \"67\" } };\n  ty = { Types.id = 0; value = Types.Never } }"
-        )
+      (requires n <=. mk_u8 32)
       (ensures
         fun result ->
           let result:u64 = result in
