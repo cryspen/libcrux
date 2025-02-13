@@ -1,4 +1,4 @@
-name: ML-DSA
+name: ML-DSA - Build & Test
 
 on:
   push:

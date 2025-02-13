@@ -1,4 +1,4 @@
-name: hax
+name: ML-KEM - hax
 
 on:
   push:
@@ -83,60 +83,4 @@ jobs:
 
       - name: 🏃 Lax ML-KEM crate
         working-directory: libcrux-ml-kem
-        run: ./hax.py prove --admit
-
-  mldsa-extract:
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v4
-      - uses: hacspec/hax-actions@main
-        with:
-          hax_reference: ${{ github.event.inputs.hax_rev || 'main' }}
-          fstar: v2025.01.17
-
-      - name: 🏃 Extract ML-DSA crate
-        working-directory: libcrux-ml-dsa
-        run: ./hax.py extract
-
-      - name: ↑ Upload F* extraction
-        uses: actions/upload-artifact@v4
-        with:
-          name: fstar-extraction-mldsa
-          path: libcrux-ml-dsa/proofs/
-          include-hidden-files: true
-          if-no-files-found: error
-
-  mldsa-diff:
-    needs: mldsa-extract
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/download-artifact@v4
-        with:
-          name: fstar-extraction-mldsa
-          path: ~/fstar-extraction-mldsa
-
-      - name: = Diff Extraction
-        if: ${{ github.event.inputs.skip_diff != 'false' }}
-        run: |
-          diff -r libcrux-ml-dsa/proofs/fstar/extraction/ \
-            ~/fstar-extraction-mldsa/fstar/extraction/
-
-  mldsa-lax:
-    runs-on: ubuntu-latest
-    needs:
-      - mldsa-extract
-      - mldsa-diff
-
-    steps:
-      - uses: actions/checkout@v4
-      - uses: hacspec/hax-actions@main
-        with:
-          hax_reference: ${{ github.event.inputs.hax_rev || 'main' }}
-          fstar: v2025.01.17
-
-      - name: 🏃 Lax ML-DSA crate
-        working-directory: libcrux-ml-dsa
         run: ./hax.py prove --admit
