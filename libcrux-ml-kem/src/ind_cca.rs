@@ -140,11 +140,11 @@ pub(crate) fn validate_public_key<
     public_key: &[u8; PUBLIC_KEY_SIZE],
 ) -> bool {
     let deserialized_pk = deserialize_ring_elements_reduced_out::<K, Vector>(
-        &public_key[..ranked_bytes_per_ring_element::<K>()],
+        &public_key[..ranked_bytes_per_ring_element(K)],
     );
     let public_key_serialized = serialize_public_key::<K, PUBLIC_KEY_SIZE, Vector>(
         &deserialized_pk,
-        &public_key[ranked_bytes_per_ring_element::<K>()..],
+        &public_key[ranked_bytes_per_ring_element(K)..],
     );
 
     *public_key == public_key_serialized

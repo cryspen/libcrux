@@ -116,10 +116,10 @@ pub(crate) fn serialize_public_key_mut<
 ) {
     serialize_vector::<K, Vector>(
         t_as_ntt,
-        &mut serialized[0..ranked_bytes_per_ring_element::<K>()],
+        &mut serialized[0..ranked_bytes_per_ring_element(K)],
     );
 
-    serialized[ranked_bytes_per_ring_element::<K>()..].copy_from_slice(seed_for_a);
+    serialized[ranked_bytes_per_ring_element(K)..].copy_from_slice(seed_for_a);
     hax_lib::fstar!(
         "Lib.Sequence.eq_intro #u8 #(v $PUBLIC_KEY_SIZE) serialized
         (Seq.append (Spec.MLKEM.vector_encode_12 #$K (Libcrux_ml_kem.Polynomial.to_spec_vector_t
