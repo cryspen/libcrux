@@ -25,7 +25,7 @@ fn run_wycheproof() {
                 println!("Test {i}: {comment}");
 
                 let sig_len = test.sig.len();
-                if sig_len != 64 {
+                if sig_len != 64 && test.result == wycheproof::TestResult::Invalid {
                     println!("Skipping test {i}: signature length {} != 64", sig_len);
                     continue;
                 }
