@@ -88,7 +88,7 @@ class extractAction(argparse.Action):
             "-**::types::non_hax_impls::**",
         ]
         include_str = " ".join(includes)
-        interface_include = "+**"
+        interface_include = "+** -libcrux_ml_dsa::simd::traits"
         cargo_hax_into = [
             "cargo",
             "hax",

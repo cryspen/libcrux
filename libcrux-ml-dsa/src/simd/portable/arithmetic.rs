@@ -6,15 +6,15 @@ use crate::{
     },
 };
 
+#[cfg(hax)]
+use crate::simd::traits::{add_pre, add_post, sub_pre, sub_post};
+
 pub(crate) const MONTGOMERY_SHIFT: u8 = 32;
 
 #[inline(always)]
 #[hax_lib::fstar::options("--z3rlimit 150")]
-#[hax_lib::requires(fstar!(r#"forall i. i < 8 ==> 
-    Spec.Utils.is_intb (pow2 31 - 1) (v (Seq.index ${lhs}.f_values i) + v (Seq.index ${rhs}.f_values i))"#))]
-#[hax_lib::ensures(|result| fstar!(r#"forall i. i < 8 ==>
-    (v (Seq.index ${lhs}_future.f_values i) == 
-     v (Seq.index ${lhs}.f_values i) + v (Seq.index ${rhs}.f_values i))"#))]
+#[hax_lib::requires(add_pre(&lhs.values, &rhs.values))]
+#[hax_lib::ensures(|result| add_post(&lhs.values, &rhs.values, &(future(lhs).values)))]
 pub fn add(lhs: &mut Coefficients, rhs: &Coefficients) {
     #[cfg(hax)]
     let _lhs0 = lhs.clone();
@@ -37,11 +37,8 @@ pub fn add(lhs: &mut Coefficients, rhs: &Coefficients) {
 
 #[inline(always)]
 #[hax_lib::fstar::options("--z3rlimit 150")]
-#[hax_lib::requires(fstar!(r#"forall i. i < 8 ==> 
-    Spec.Utils.is_intb (pow2 31 - 1) (v (Seq.index ${lhs}.f_values i) - v (Seq.index ${rhs}.f_values i))"#))]
-#[hax_lib::ensures(|result| fstar!(r#"forall i. i < 8 ==>
-    (v (Seq.index ${lhs}_future.f_values i) == 
-     v (Seq.index ${lhs}.f_values i) - v (Seq.index ${rhs}.f_values i))"#))]
+#[hax_lib::requires(sub_pre(&lhs.values, &rhs.values))]
+#[hax_lib::ensures(|result| sub_post(&lhs.values, &rhs.values, &(future(lhs).values)))]
 pub fn subtract(lhs: &mut Coefficients, rhs: &Coefficients) {
     #[cfg(hax)]
     let _lhs0 = lhs.clone();
