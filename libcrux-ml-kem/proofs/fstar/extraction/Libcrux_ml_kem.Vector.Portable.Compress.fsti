@@ -24,14 +24,8 @@ val compress_message_coefficient (fe: u16)
       (ensures
         fun result ->
           let result:u8 = result in
-          Hax_lib.implies ((mk_u16 833 <=. fe <: bool) && (fe <=. mk_u16 2496 <: bool))
-            (fun temp_0_ ->
-                let _:Prims.unit = temp_0_ in
-                result =. mk_u8 1 <: bool) &&
-          Hax_lib.implies (~.((mk_u16 833 <=. fe <: bool) && (fe <=. mk_u16 2496 <: bool)) <: bool)
-            (fun temp_0_ ->
-                let _:Prims.unit = temp_0_ in
-                result =. mk_u8 0 <: bool))
+          ((833 <= v fe && v fe <= 2496) ==> v result == 1) /\
+          (~(833 <= v fe && v fe <= 2496) ==> v result == 0))
 
 val compress_ciphertext_coefficient (coefficient_bits: u8) (fe: u16)
     : Prims.Pure i16
