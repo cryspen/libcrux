@@ -26,7 +26,8 @@ rand = { version = "0.8", optional = true }
 libcrux-platform = { version = "0.0.2-beta.2", path = "../sys/platform" }
 libcrux-sha3 = { version = "0.0.2-beta.2", path = "../libcrux-sha3" }
 libcrux-intrinsics = { version = "0.0.2-beta.2", path = "../libcrux-intrinsics" }
-hax-lib = { version = "0.1.0", git = "https://github.com/hacspec/hax/" }
+#hax-lib = { version = "0.1.0", git = "https://github.com/hacspec/hax/" }
+hax-lib = { git = "https://github.com/hacspec/hax/", branch = "prop-predicates" }
 
 [features]
 # By default all variants and std are enabled.
