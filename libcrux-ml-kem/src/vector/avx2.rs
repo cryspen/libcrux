@@ -281,25 +281,27 @@ impl Operations for SIMD256Vector {
         vec_to_i16_array(x)
     }
 
-    #[requires(fstar!(r#"forall i. i < 16 ==> 
-        Spec.Utils.is_intb (pow2 15 - 1) (v (Seq.index (impl.f_repr ${lhs}) i) + v (Seq.index (impl.f_repr ${rhs}) i))"#))]
-    #[ensures(|result| fstar!(r#"forall i. i < 16 ==> 
-        (v (Seq.index (impl.f_repr ${result}) i) == 
-         v (Seq.index (impl.f_repr ${lhs}) i) + v (Seq.index (impl.f_repr ${rhs}) i))"#))]
-    #[inline(always)]
+    #[requires(fstar!(r#"Libcrux_ml_kem.Vector.Traits.add_pre (impl.f_repr ${lhs}) (impl.f_repr ${rhs})"#))]
+    #[ensures(|result| fstar!(r#"Libcrux_ml_kem.Vector.Traits.add_post
+        (impl.f_repr ${lhs}) (impl.f_repr ${rhs}) (impl.f_repr ${result})"#))]
     fn add(lhs: Self, rhs: &Self) -> Self {
+        hax_lib::fstar!(
+            r#"reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.add_pre) Libcrux_ml_kem.Vector.Traits.add_pre;
+            reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.add_post) Libcrux_ml_kem.Vector.Traits.add_post"#
+        );
         Self {
             elements: arithmetic::add(lhs.elements, rhs.elements),
         }
     }
 
-    #[requires(fstar!(r#"forall i. i < 16 ==> 
-        Spec.Utils.is_intb (pow2 15 - 1) (v (Seq.index (impl.f_repr ${lhs}) i) - v (Seq.index (impl.f_repr ${rhs}) i))"#))]
-    #[ensures(|result| fstar!(r#"forall i. i < 16 ==> 
-        (v (Seq.index (impl.f_repr ${result}) i) == 
-         v (Seq.index (impl.f_repr ${lhs}) i) - v (Seq.index (impl.f_repr ${rhs}) i))"#))]
-    #[inline(always)]
+    #[requires(fstar!(r#"Libcrux_ml_kem.Vector.Traits.sub_pre (impl.f_repr ${lhs}) (impl.f_repr ${rhs})"#))]
+    #[ensures(|result| fstar!(r#"Libcrux_ml_kem.Vector.Traits.sub_post
+        (impl.f_repr ${lhs}) (impl.f_repr ${rhs}) (impl.f_repr ${result})"#))]
     fn sub(lhs: Self, rhs: &Self) -> Self {
+        hax_lib::fstar!(
+            r#"reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.sub_pre) Libcrux_ml_kem.Vector.Traits.sub_pre;
+            reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.sub_post) Libcrux_ml_kem.Vector.Traits.sub_post"#
+        );
         Self {
             elements: arithmetic::sub(lhs.elements, rhs.elements),
         }
@@ -341,17 +343,24 @@ impl Operations for SIMD256Vector {
         cond_subtract_3329(vector)
     }
 
-    #[requires(fstar!(r#"Spec.Utils.is_i16b_array 28296 (impl.f_repr ${vector})"#))]
+    #[requires(fstar!(r#"Spec.Utils.is_i16b_array_opaque 28296 (impl.f_repr ${vector})"#))]
     #[inline(always)]
     fn barrett_reduce(vector: Self) -> Self {
+        hax_lib::fstar!(
+            r#"reveal_opaque (`%Spec.Utils.is_i16b_array_opaque) Spec.Utils.is_i16b_array_opaque"#
+        );
         Self {
             elements: arithmetic::barrett_reduce(vector.elements),
         }
     }
 
     #[requires(fstar!(r#"Spec.Utils.is_i16b 1664 $constant"#))]
+    #[ensures(|out| fstar!(r#"Spec.Utils.is_i16b_array_opaque 3328 (impl.f_repr $out)"#))]
     #[inline(always)]
     fn montgomery_multiply_by_constant(vector: Self, constant: i16) -> Self {
+        hax_lib::fstar!(
+            r#"reveal_opaque (`%Spec.Utils.is_i16b_array_opaque) Spec.Utils.is_i16b_array_opaque"#
+        );
         Self {
             elements: arithmetic::montgomery_multiply_by_constant(vector.elements, constant),
         }
@@ -448,9 +457,9 @@ impl Operations for SIMD256Vector {
 
     #[requires(fstar!(r#"Spec.Utils.is_i16b 1664 zeta0 /\ Spec.Utils.is_i16b 1664 zeta1 /\
                        Spec.Utils.is_i16b 1664 zeta2 /\ Spec.Utils.is_i16b 1664 zeta3 /\
-                       Spec.Utils.is_i16b_array 3328 (impl.f_repr ${lhs}) /\
-                       Spec.Utils.is_i16b_array 3328 (impl.f_repr ${rhs})"#))]
-    #[ensures(|out| fstar!(r#"Spec.Utils.is_i16b_array 3328 (impl.f_repr $out)"#))]
+                       Spec.Utils.is_i16b_array_opaque 3328 (impl.f_repr ${lhs}) /\
+                       Spec.Utils.is_i16b_array_opaque 3328 (impl.f_repr ${rhs})"#))]
+    #[ensures(|out| fstar!(r#"Spec.Utils.is_i16b_array_opaque 3328 (impl.f_repr $out)"#))]
     #[inline(always)]
     fn ntt_multiply(
         lhs: &Self,
@@ -460,6 +469,9 @@ impl Operations for SIMD256Vector {
         zeta2: i16,
         zeta3: i16,
     ) -> Self {
+        hax_lib::fstar!(
+            r#"reveal_opaque (`%Spec.Utils.is_i16b_array_opaque) Spec.Utils.is_i16b_array_opaque"#
+        );
         ntt_multiply(lhs, rhs, zeta0, zeta1, zeta2, zeta3)
     }
 
