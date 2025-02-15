@@ -1,4 +1,7 @@
-use libcrux_rsa::{sign_2048, verify_2048, DigestAlgorithm, PrivateKey, PublicKey, Signature};
+use libcrux_rsa::{
+    sign, sign_2048, verify, verify_2048, DigestAlgorithm, Error, PrivateKey, PublicKey,
+    VarLenPrivateKey, VarLenPublicKey,
+};
 
 const MODULUS: [u8; 256] = [
     0xd2, 0x78, 0x16, 0xcb, 0x72, 0xbb, 0x6e, 0x27, 0xdb, 0x10, 0x1a, 0x6f, 0x3e, 0x64, 0x62, 0x93,
@@ -41,10 +44,10 @@ const PRIVATE_EXPONENT: [u8; 256] = [
 #[test]
 fn self_test_rsa_pss() {
     let pk = PublicKey::from(MODULUS);
-    let sk = PrivateKey::from_components(MODULUS, PRIVATE_EXPONENT);
+    let sk = PrivateKey::<256>::from_components(MODULUS, PRIVATE_EXPONENT);
     let salt = [1, 2, 3, 4, 5];
     let msg = [7, 8, 9, 10];
-    let mut signature = Signature::new();
+    let mut signature = [0u8; 256];
     sign_2048(DigestAlgorithm::Sha2_256, &sk, &msg, &salt, &mut signature).unwrap();
     eprintln!("signature: {:x?}", signature);
     verify_2048(
@@ -55,6 +58,47 @@ fn self_test_rsa_pss() {
         &signature,
     )
     .expect("Error verifying signature");
+
+    // test the variable length signing
+    let mut signature = [0u8; 257];
+    sign(
+        DigestAlgorithm::Sha2_256,
+        &sk.as_var_len(),
+        &msg,
+        &salt,
+        &mut signature[..256],
+    )
+    .unwrap();
+    verify(
+        DigestAlgorithm::Sha2_256,
+        &pk.as_var_len(),
+        &msg,
+        salt.len() as u32,
+        &signature[..256],
+    )
+    .expect("error verifying signature using variable length api");
+
+    // test the variable length signing fails if the length is wrong
+    let mut signature = [0u8; 257];
+    let err = sign(
+        DigestAlgorithm::Sha2_256,
+        &sk.as_var_len(),
+        &msg,
+        &salt,
+        &mut signature[..],
+    )
+    .expect_err("expected signing with wrong length to fail");
+    assert_eq!(err, Error::InvalidSignatureLength);
+
+    // test the variable length key parsing fails if length is wrong
+    let err = VarLenPrivateKey::from_components(sk.pk().n().as_slice(), &sk.d().as_slice()[0..255])
+        .expect_err("from_components should fail if wrong length is supplied");
+    assert_eq!(err, Error::KeyLengthMismatch);
+
+    // test the variable length key parsing fails if length is wrong
+    let err = VarLenPrivateKey::from_components(&sk.pk().n()[0..255], &sk.d()[0..255])
+        .expect_err("from_components should fail if wrong length is supplied");
+    assert_eq!(err, Error::InvalidKeyLength);
 }
 
 const N: [u8; 256] = [
@@ -100,7 +144,7 @@ fn wycheproof_single_test() {
         0x03, 0xcb, 0x29, 0x10, 0xdd, 0x70, 0x67, 0x2b, 0xbf, 0xb6, 0x2e, 0xa4, 0xea, 0xad, 0x72,
         0x5c,
     ];
-    verify_2048(DigestAlgorithm::Sha2_256, &pk, &msg, 0, &signature.into())
+    verify_2048(DigestAlgorithm::Sha2_256, &pk, &msg, 0, &signature)
         .expect("Error verifying signature");
 
     let msg = [0x33, 0x32, 0x32, 0x32, 0x30, 0x34, 0x31, 0x30, 0x34, 0x36];
@@ -124,6 +168,105 @@ fn wycheproof_single_test() {
         0xbc, 0xa4, 0x68, 0xf9, 0x3d, 0x3f, 0x13, 0x74, 0x95, 0x57, 0xb7, 0x01, 0x29, 0xef, 0x95,
         0xe5,
     ];
-    verify_2048(DigestAlgorithm::Sha2_256, &pk, &msg, 32, &signature.into())
+    verify_2048(DigestAlgorithm::Sha2_256, &pk, &msg, 32, &signature)
         .expect("Error verifying signature");
+}
+
+#[test]
+fn run_wycheproof() {
+    for test_name in wycheproof::rsa_pss_verify::TestName::all() {
+        let test_set = wycheproof::rsa_pss_verify::TestSet::load(test_name)
+            .expect("error loading wycheproof test for name {test_name}");
+        println!("Test Set {test_name:?}");
+
+        let num_tests = test_set.number_of_tests;
+        let mut tests_run = 0;
+
+        for test_group in test_set.test_groups {
+            if !matches!(
+                test_group.hash,
+                wycheproof::HashFunction::Sha2_256
+                    | wycheproof::HashFunction::Sha3_384
+                    | wycheproof::HashFunction::Sha2_512
+            ) {
+                println!(
+                    "skipping due to unsupported hash function {:?}",
+                    test_group.hash
+                );
+                continue;
+            }
+
+            if !matches!(
+                test_group.mgf_hash.unwrap(),
+                wycheproof::HashFunction::Sha2_256
+                    | wycheproof::HashFunction::Sha3_384
+                    | wycheproof::HashFunction::Sha2_512
+            ) {
+                println!(
+                    "skipping due to unsupported mgf hash function {:?}",
+                    test_group.mgf_hash
+                );
+                continue;
+            }
+
+            if test_group.hash != test_group.mgf_hash.unwrap() {
+                println!(
+                    "skipping because hash function doesn't match mgf hash function: {:?} != {:?}",
+                    test_group.hash, test_group.mgf_hash
+                );
+                continue;
+            }
+
+            assert!(matches!(test_group.key.e.as_slice(), [1, 0, 1]));
+            assert_eq!(test_group.mgf, wycheproof::Mgf::Mgf1);
+
+            let salt_len = test_group.salt_size;
+            let mut n = test_group.key.n.as_slice();
+
+            assert!(salt_len < u32::MAX as usize);
+            let salt_len = salt_len as u32;
+
+            // strip leading 0s in n
+            let first_non_zero = n.iter().position(|&x| x != 0).unwrap();
+            for _ in 0..first_non_zero {
+                n = &n[1..];
+            }
+            let pk = VarLenPublicKey::try_from(n).unwrap();
+
+            let hash_algorithm = match &test_group.hash {
+                wycheproof::HashFunction::Sha2_256 => DigestAlgorithm::Sha2_256,
+                wycheproof::HashFunction::Sha2_384 => DigestAlgorithm::Sha2_384,
+                wycheproof::HashFunction::Sha2_512 => DigestAlgorithm::Sha2_512,
+                _ => panic!("Unknown hash algorithm {:?}", test_group.hash),
+            };
+            for (i, test) in test_group.tests.into_iter().enumerate() {
+                let comment = &test.comment;
+                println!("Test {i}: {comment}");
+
+                let valid = matches!(
+                    test.result,
+                    wycheproof::TestResult::Valid | wycheproof::TestResult::Acceptable
+                );
+
+                let msg = &test.msg;
+                let signature = &test.sig;
+
+                let result = libcrux_rsa::verify_varlen(
+                    hash_algorithm,
+                    &pk,
+                    msg,
+                    salt_len,
+                    signature.as_slice(),
+                );
+                if valid {
+                    assert!(result.is_ok());
+                } else {
+                    assert!(result.is_err());
+                }
+                tests_run += 1;
+            }
+        }
+
+        println!("Ran {} out of {} tests.", tests_run, num_tests);
+    }
 }

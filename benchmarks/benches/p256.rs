@@ -1,5 +1,4 @@
 use criterion::{criterion_group, criterion_main, BatchSize, Criterion};
-use libcrux::ecdh;
 
 use rand_core::OsRng;
 
@@ -10,12 +9,14 @@ fn derive(c: &mut Criterion) {
     group.bench_function("libcrux", |b| {
         b.iter_batched(
             || {
-                let (_, pk1) = ecdh::key_gen(ecdh::Algorithm::P256, &mut OsRng).unwrap();
-                let (sk2, _) = ecdh::key_gen(ecdh::Algorithm::P256, &mut OsRng).unwrap();
+                let (_, pk1) =
+                    libcrux_ecdh::key_gen(libcrux_ecdh::Algorithm::P256, &mut OsRng).unwrap();
+                let (sk2, _) =
+                    libcrux_ecdh::key_gen(libcrux_ecdh::Algorithm::P256, &mut OsRng).unwrap();
                 (pk1, sk2)
             },
             |(pk1, sk2)| {
-                let _zz = ecdh::derive(ecdh::Algorithm::P256, &pk1, &sk2).unwrap();
+                let _zz = libcrux_ecdh::derive(libcrux_ecdh::Algorithm::P256, &pk1, &sk2).unwrap();
             },
             BatchSize::SmallInput,
         )
@@ -72,11 +73,13 @@ fn secret_to_public(c: &mut Criterion) {
     group.bench_function("libcrux", |b| {
         b.iter_batched(
             || {
-                let (sk, _) = ecdh::key_gen(ecdh::Algorithm::P256, &mut OsRng).unwrap();
+                let (sk, _) =
+                    libcrux_ecdh::key_gen(libcrux_ecdh::Algorithm::P256, &mut OsRng).unwrap();
                 sk
             },
             |sk| {
-                let _pk = ecdh::secret_to_public(ecdh::Algorithm::P256, &sk).unwrap();
+                let _pk =
+                    libcrux_ecdh::secret_to_public(libcrux_ecdh::Algorithm::P256, &sk).unwrap();
             },
             BatchSize::SmallInput,
         )
