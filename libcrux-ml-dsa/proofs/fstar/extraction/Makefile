@@ -1,9 +1,11 @@
 SLOW_MODULES += 
 VERIFIED_MODULES = \
-	Libcrux_ml_dsa.Simd.Portable.Encoding.Commitment.fst \
 	Libcrux_ml_dsa.Simd.Portable.Encoding.Commitment.fsti \
-	Libcrux_ml_dsa.Simd.Portable.Arithmetic.fst \
+	Libcrux_ml_dsa.Simd.Portable.Encoding.Commitment.fst \
 	Libcrux_ml_dsa.Simd.Portable.Arithmetic.fsti \
+	Libcrux_ml_dsa.Simd.Portable.Arithmetic.fst \
+	Libcrux_ml_dsa.Simd.Traits.fsti \
+	Libcrux_ml_dsa.Simd.Traits.fst \
 	end_of_verified_modules
 ADMIT_MODULES = $(filter-out ${VERIFIED_MODULES}, $(wildcard *.fst*))
 FSTAR_INCLUDE_DIRS_EXTRA += $(shell git rev-parse --show-toplevel)/fstar-helpers/fstar-bitvec \

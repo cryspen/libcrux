@@ -25,10 +25,8 @@ use crate::vector::FIELD_MODULUS;
 /// <https://csrc.nist.gov/pubs/fips/203/ipd>.
 #[hax_lib::fstar::options("--z3rlimit 200 --ext context_pruning")]
 #[cfg_attr(hax, hax_lib::requires(fe < (FIELD_MODULUS as u16)))]
-#[cfg_attr(hax, hax_lib::ensures(|result|
-        hax_lib::implies(833 <= fe && fe <= 2496, || result == 1) &&
-        hax_lib::implies(!(833 <= fe && fe <= 2496), || result == 0)
-))]
+#[cfg_attr(hax, hax_lib::ensures(|result| fstar!(r#"((833 <= v fe && v fe <= 2496) ==> v result == 1) /\
+						    (~(833 <=  v fe && v fe <= 2496) ==> v result == 0)"#)))]
 pub(crate) fn compress_message_coefficient(fe: u16) -> u8 {
     // The approach used here is inspired by:
     // https://github.com/cloudflare/circl/blob/main/pke/kyber/internal/common/poly.go#L150

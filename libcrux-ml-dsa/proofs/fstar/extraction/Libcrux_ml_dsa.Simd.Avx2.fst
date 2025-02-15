@@ -7,13 +7,35 @@ let _ =
   (* This module has implicit dependencies, here we make them explicit. *)
   (* The implicit dependencies arise from typeclasses instances. *)
   let open Libcrux_ml_dsa.Simd.Avx2.Vector_type in
+  let open Libcrux_ml_dsa.Simd.Traits in
   ()
 
 [@@ FStar.Tactics.Typeclasses.tcinstance]
-let impl: Libcrux_ml_dsa.Simd.Traits.t_Operations Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 =
+let impl: Libcrux_ml_dsa.Simd.Traits.t_Repr Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 =
   {
     _super_13011033735201511749 = FStar.Tactics.Typeclasses.solve;
     _super_9529721400157967266 = FStar.Tactics.Typeclasses.solve;
+    f_repr_pre = (fun (self: Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256) -> true);
+    f_repr_post
+    =
+    (fun (self: Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256) (out: t_Array i32 (mk_usize 8)) ->
+        true);
+    f_repr
+    =
+    fun (self: Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256) ->
+      let result:t_Array i32 (mk_usize 8) = Rust_primitives.Hax.repeat (mk_i32 0) (mk_usize 8) in
+      let result:t_Array i32 (mk_usize 8) =
+        Libcrux_ml_dsa.Simd.Avx2.Vector_type.to_coefficient_array self result
+      in
+      result
+  }
+
+[@@ FStar.Tactics.Typeclasses.tcinstance]
+let impl_1: Libcrux_ml_dsa.Simd.Traits.t_Operations Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 =
+  {
+    _super_13011033735201511749 = FStar.Tactics.Typeclasses.solve;
+    _super_9529721400157967266 = FStar.Tactics.Typeclasses.solve;
+    _super_6182285156695963586 = FStar.Tactics.Typeclasses.solve;
     f_zero_pre = (fun (_: Prims.unit) -> true);
     f_zero_post = (fun (_: Prims.unit) (out: Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256) -> true);
     f_zero = (fun (_: Prims.unit) -> Libcrux_ml_dsa.Simd.Avx2.Vector_type.zero ());

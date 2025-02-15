@@ -7,14 +7,35 @@ let _ =
   (* This module has implicit dependencies, here we make them explicit. *)
   (* The implicit dependencies arise from typeclasses instances. *)
   let open Libcrux_ml_dsa.Simd.Portable.Vector_type in
+  let open Libcrux_ml_dsa.Simd.Traits in
   ()
 
 [@@ FStar.Tactics.Typeclasses.tcinstance]
-let impl: Libcrux_ml_dsa.Simd.Traits.t_Operations
+let impl: Libcrux_ml_dsa.Simd.Traits.t_Repr Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients =
+  {
+    _super_13011033735201511749 = FStar.Tactics.Typeclasses.solve;
+    _super_9529721400157967266 = FStar.Tactics.Typeclasses.solve;
+    f_repr_pre = (fun (self: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients) -> true);
+    f_repr_post
+    =
+    (fun
+        (self: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients)
+        (out: t_Array i32 (mk_usize 8))
+        ->
+        true);
+    f_repr
+    =
+    fun (self: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients) ->
+      self.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values
+  }
+
+[@@ FStar.Tactics.Typeclasses.tcinstance]
+let impl_1: Libcrux_ml_dsa.Simd.Traits.t_Operations
 Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients =
   {
     _super_13011033735201511749 = FStar.Tactics.Typeclasses.solve;
     _super_9529721400157967266 = FStar.Tactics.Typeclasses.solve;
+    _super_6182285156695963586 = FStar.Tactics.Typeclasses.solve;
     f_zero_pre = (fun (_: Prims.unit) -> true);
     f_zero_post
     =
