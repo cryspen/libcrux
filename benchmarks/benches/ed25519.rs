@@ -10,7 +10,10 @@ fn sign(c: &mut Criterion) {
     group.bench_function("libcrux", |b| {
         b.iter_batched(
             || {
-                let sk: [u8; 32] = randombytes(32).try_into().unwrap();
+                // using openssl private key generation for now
+                let sk = openssl::pkey::PKey::generate_ed25519().unwrap();
+                let sk: [u8; 32] = sk.raw_private_key().unwrap().try_into().unwrap();
+
                 let mut pk = [0; 32];
                 libcrux_ed25519::secret_to_public(&mut pk, &sk);
 
@@ -88,7 +91,9 @@ fn verify(c: &mut Criterion) {
     group.bench_function("libcrux", |b| {
         b.iter_batched(
             || {
-                let sk: [u8; 32] = randombytes(32).try_into().unwrap();
+                // using openssl private key generation for now
+                let sk = openssl::pkey::PKey::generate_ed25519().unwrap();
+                let sk: [u8; 32] = sk.raw_private_key().unwrap().try_into().unwrap();
                 let mut pk = [0; 32];
                 libcrux_ed25519::secret_to_public(&mut pk, &sk);
 
