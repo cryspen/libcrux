@@ -1,6 +1,5 @@
 use criterion::{criterion_group, criterion_main, BatchSize, Criterion};
 
-use benchmarks::util::*;
 use rand::RngCore;
 
 fn derive(c: &mut Criterion) {
