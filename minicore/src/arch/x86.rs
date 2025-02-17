@@ -15,6 +15,7 @@ mod conversions {
         _mm_storeu_si128,
     };
     use super::BitVec;
+
     impl From<BitVec<256>> for __m256i {
         fn from(bv: BitVec<256>) -> __m256i {
             let bv: &[u8] = &bv.to_vec()[..];
@@ -109,6 +110,7 @@ pub fn _mm_shuffle_epi8(vector: BitVec<128>, indexes: BitVec<128>) -> BitVec<128
 
 mod extra {
     use super::*;
+
     pub fn mm256_sllv_epi32_u32_array(vector: BitVec<256>, counts: [u32; 8]) -> BitVec<256> {
         BitVec::from_fn(|i| {
             let nth_bit = i % 32;
@@ -250,6 +252,7 @@ mod tests {
             });
         }
     }
+
     #[test]
     fn mm256_permutevar8x32_epi32() {
         for _ in 0..N {

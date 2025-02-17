@@ -4,6 +4,7 @@ pub enum Bit {
     Zero,
     One,
 }
+
 impl From<Bit> for i128 {
     fn from(bit: Bit) -> Self {
         match bit {
@@ -12,6 +13,7 @@ impl From<Bit> for i128 {
         }
     }
 }
+
 impl From<Bit> for u64 {
     fn from(bit: Bit) -> Self {
         match bit {
@@ -34,11 +36,11 @@ impl From<bool> for Bit {
 pub trait MachineInteger {
     /// The size of this integer type in bits.
     const BITS: u32;
-    // fn bits() -> u32;
+
     /// The signedness of this integer type.
     const SIGNED: bool;
-    // fn signed() -> bool;
 }
+
 macro_rules! generate_machine_integer_impls {
     ($($ty:ident),*) => {
         $(impl MachineInteger for $ty {
@@ -58,6 +60,7 @@ impl Bit {
             Self::Zero
         }
     }
+
     pub fn of_int<T: Into<i128> + MachineInteger>(x: T, nth: u32) -> Bit {
         let x: i128 = x.into();
         if x >= 0 {

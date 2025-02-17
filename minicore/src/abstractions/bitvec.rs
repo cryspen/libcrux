@@ -48,7 +48,7 @@ fn u64_int_from_bit_slice(bits: &[Bit]) -> u64 {
 
 /// Convert a bit slice into a machine integer of type `T`.
 fn int_from_bit_slice<T: TryFrom<i128> + MachineInteger + Copy>(bits: &[Bit]) -> T {
-    assert!(bits.len() >= T::BITS as usize);
+    debug_assert!(bits.len() >= T::BITS as usize);
     let result = if T::SIGNED {
         let is_negative = matches!(bits[T::BITS as usize - 1], Bit::One);
         let s = u64_int_from_bit_slice(&bits[0..T::BITS as usize - 1]) as i128;
@@ -71,18 +71,22 @@ impl<const N: usize> BitVec<N> {
     pub fn from_fn<F: FnMut(usize) -> Bit>(f: F) -> Self {
         Self(core::array::from_fn(f))
     }
+
     /// Convert a slice of machine integers where only the `d` least significant bits are relevant.
     pub fn from_slice<T: Into<i128> + MachineInteger + Copy>(x: &[T], d: usize) -> Self {
         Self::from_fn(|i| Bit::of_int(x[i / d], (i % d) as u32))
     }
+
     /// Construct a BitVec out of a machine integer.
     pub fn from_int<T: Into<i128> + MachineInteger + Copy>(n: T) -> Self {
         Self::from_slice(&[n.into()], T::BITS as usize)
     }
+
     /// Convert a BitVec into a machine integer of type `T`.
     pub fn to_int<T: TryFrom<i128> + MachineInteger + Copy>(self) -> T {
         int_from_bit_slice(&self.0)
     }
+
     /// Convert a BitVec into a vector of machine integers of type `T`.
     pub fn to_vec<T: TryFrom<i128> + MachineInteger + Copy>(&self) -> Vec<T> {
         self.0
@@ -90,6 +94,7 @@ impl<const N: usize> BitVec<N> {
             .map(int_from_bit_slice)
             .collect()
     }
+
     /// Generate a random BitVec.
     pub fn rand() -> Self {
         use rand::prelude::*;
