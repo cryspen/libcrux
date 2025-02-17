@@ -29,7 +29,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  mldsa-extract:
+  extract:
     runs-on: ubuntu-latest
 
     steps:
@@ -51,8 +51,8 @@ jobs:
           include-hidden-files: true
           if-no-files-found: error
 
-  mldsa-diff:
-    needs: mldsa-extract
+  diff:
+    needs: extract
     runs-on: ubuntu-latest
 
     steps:
@@ -68,11 +68,11 @@ jobs:
           diff -r libcrux-ml-dsa/proofs/fstar/extraction/ \
             ~/fstar-extraction-mldsa/fstar/extraction/
 
-  mldsa-lax:
+  lax:
     runs-on: ubuntu-latest
     needs:
-      - mldsa-extract
-      - mldsa-diff
+      - extract
+      - diff
 
     steps:
       - uses: actions/checkout@v4

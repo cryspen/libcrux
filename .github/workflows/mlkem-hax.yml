@@ -29,7 +29,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  mlkem-extract:
+  extract:
     runs-on: ubuntu-latest
 
     steps:
@@ -51,8 +51,8 @@ jobs:
           include-hidden-files: true
           if-no-files-found: error
 
-  mlkem-diff:
-    needs: mlkem-extract
+  diff:
+    needs: extract
     runs-on: ubuntu-latest
 
     steps:
@@ -68,11 +68,11 @@ jobs:
           diff -r libcrux-ml-kem/proofs/fstar/extraction/ \
             ~/fstar-extraction-mlkem/fstar/extraction/
 
-  mlkem-lax:
+  lax:
     runs-on: ubuntu-latest
     needs:
-      - mlkem-extract
-      - mlkem-diff
+      - extract
+      - diff
 
     steps:
       - uses: actions/checkout@v4
