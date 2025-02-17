@@ -70,8 +70,8 @@ fn sign(c: &mut Criterion) {
 
         b.iter_batched(
             || {
-                let mut csprng = OsRng;
-                let signing_key = SigningKey::generate(&mut csprng);
+                let mut rng = OsRng;
+                let signing_key = SigningKey::generate(&mut rng);
                 let payload = randombytes(PAYLOAD_SIZE);
 
                 (signing_key, payload)
@@ -170,8 +170,8 @@ fn verify(c: &mut Criterion) {
 
         b.iter_batched(
             || {
-                let mut csprng = OsRng;
-                let signing_key = SigningKey::generate(&mut csprng);
+                let mut rng = OsRng;
+                let signing_key = SigningKey::generate(&mut rng);
                 let payload = randombytes(PAYLOAD_SIZE);
                 let signature = signing_key.sign(&payload);
 
