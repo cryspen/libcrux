@@ -1,7 +1,6 @@
 use criterion::{criterion_group, criterion_main, BatchSize, Criterion};
 
 use benchmarks::util::*;
-use rand::RngCore;
 
 const PAYLOAD_SIZE: usize = 32; // bytes
 
