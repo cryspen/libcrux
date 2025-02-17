@@ -22,6 +22,7 @@ libcrux-ecdh = { path = "../libcrux-ecdh" }
 libcrux-kem = { path = "../libcrux-kem", features = ["tests"] }
 libcrux-ml-kem = { path = "../libcrux-ml-kem" }
 libcrux-sha2 = { path = "../sha2" }
+libcrux-ecdsa = { path = "../ecdsa" }
 rand_core = { version = "0.6" }
 # Benchmarking "RustCrypto"
 chacha20poly1305 = "0.10"
@@ -85,4 +86,8 @@ harness = false
 
 [[bench]]
 name = "kyber768"
+harness = false
+
+[[bench]]
+name = "ecdsa_p256"
 harness = false
