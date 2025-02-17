@@ -21,5 +21,4 @@ libcrux-macros = { version = "=0.0.2-beta.2", path = "../macros" }
 hex = { version = "0.4.3", features = ["serde"] }
 serde = { version = "1.0.216", features = ["derive"] }
 serde_json = "1.0.133"
-pretty_env_logger = "0.5"
 rand_core = { version = "0.6", features = ["getrandom"] }

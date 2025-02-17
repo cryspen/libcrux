@@ -148,8 +148,6 @@ fn wycheproof() {
 #[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
 #[test]
 fn chachapoly_self_test() {
-    let _ = pretty_env_logger::try_init();
-
     let ptxt = b"hacspec rulez";
     let aad = b"associated data" as &[u8];
     let key = [
@@ -171,8 +169,6 @@ fn chachapoly_self_test() {
 #[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
 #[test]
 fn chachapoly_self_test_rand() {
-    let _ = pretty_env_logger::try_init();
-
     let msg = b"hacspec rulez";
     let aad = b"associated data" as &[u8];
 
