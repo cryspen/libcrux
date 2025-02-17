@@ -56,19 +56,26 @@ pub fn decrypt<'a>(
         return Err(AeadError::PlaintextTooShort);
     }
 
-    let ctxt_len: u32 = ctxt
-        .len()
-        .try_into()
-        .map_err(|_| AeadError::CiphertextTooLarge)?;
-
     let aad_len: u32 = aad.len().try_into().map_err(|_| AeadError::AadTooLarge)?;
 
     let (ctxt_cpa, tag) = ctxt.split_at(ctxt.len() - TAG_LEN);
     let ptxt = &mut ptxt[..ctxt_cpa.len()];
 
+    let ctxt_cpa_len: u32 = ctxt_cpa
+        .len()
+        .try_into()
+        .map_err(|_| AeadError::CiphertextTooLarge)?;
+
     // this call should only ever produce 0 or 1, where 0 is success and 1 is error
     match crate::hacl::aead_chacha20poly1305::decrypt(
-        ptxt, ctxt_cpa, ctxt_len, aad, aad_len, key, nonce, tag,
+        ptxt,
+        ctxt_cpa,
+        ctxt_cpa_len,
+        aad,
+        aad_len,
+        key,
+        nonce,
+        tag,
     ) {
         0 => Ok(ptxt),
         _ => Err(AeadError::InvalidCiphertext),
