@@ -167,7 +167,7 @@ macro_rules! impl_rsapss {
             salt: &[u8],
             sig: &mut [u8; $bytes],
         ) -> Result<(), Error> {
-            return sign_varlen(alg, &sk.into(), msg, salt, sig);
+            sign_varlen(alg, &sk.into(), msg, salt, sig)
         }
 
         /// Returns `Ok(())` if the provided signature is valid.
@@ -258,7 +258,7 @@ pub fn verify(
 ///   - checked explicitly
 /// - `msgLen `less_than_max_input_length` a`
 ///   - follows from the check that messages are shorter than `u32::MAX`.
-fn sign_varlen(
+pub fn sign_varlen(
     alg: crate::DigestAlgorithm,
     sk: &VarLenPrivateKey<'_>,
     msg: &[u8],
@@ -312,7 +312,7 @@ fn sign_varlen(
 ///     is less than `u32::MAX`.
 /// - `msgLen less_than_max_input_length a`
 ///   - follows from the check that messages are shorter than `u32::MAX`.
-fn verify_varlen(
+pub fn verify_varlen(
     alg: crate::DigestAlgorithm,
     pk: &VarLenPublicKey<'_>,
     msg: &[u8],
