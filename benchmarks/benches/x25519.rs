@@ -10,10 +10,10 @@ fn derive(c: &mut Criterion) {
     group.bench_function("libcrux", |b| {
         b.iter_batched(
             || {
-                let sk1 = randombytes(32);
-                let pk1 =
-                    libcrux_ecdh::secret_to_public(libcrux_ecdh::Algorithm::X25519, &sk1).unwrap();
-                let sk2 = randombytes(32);
+                let mut rng = rand_core::OsRng;
+                let (_, pk1) = libcrux_ecdh::x25519_key_gen(&mut rng).unwrap();
+                let sk2 = libcrux_ecdh::x25519_generate_secret(&mut rng).unwrap();
+
                 (pk1, sk2)
             },
             |(pk1, sk2)| {
@@ -148,7 +148,8 @@ fn secret_to_public(c: &mut Criterion) {
     group.bench_function("libcrux", |b| {
         b.iter_batched(
             || {
-                let sk = randombytes(32);
+                let mut rng = rand_core::OsRng;
+                let sk = libcrux_ecdh::x25519_generate_secret(&mut rng).unwrap();
                 sk
             },
             |sk| {
@@ -252,13 +253,14 @@ fn nym_outfox_create(c: &mut Criterion) {
     group.bench_function("libcrux", |b| {
         b.iter_batched(
             || {
-                let sk1 = randombytes(32);
-                let pk1 =
-                    libcrux_ecdh::secret_to_public(libcrux_ecdh::Algorithm::X25519, &sk1).unwrap();
-                let sk2a = randombytes(32);
-                let sk2b = randombytes(32);
-                let sk2c = randombytes(32);
-                let sk2d = randombytes(32);
+                let mut rng = rand_core::OsRng;
+                let (_, pk1) = libcrux_ecdh::x25519_key_gen(&mut rng).unwrap();
+
+                let sk2a = libcrux_ecdh::x25519_generate_secret(&mut rng).unwrap();
+                let sk2b = libcrux_ecdh::x25519_generate_secret(&mut rng).unwrap();
+                let sk2c = libcrux_ecdh::x25519_generate_secret(&mut rng).unwrap();
+                let sk2d = libcrux_ecdh::x25519_generate_secret(&mut rng).unwrap();
+
                 (pk1, sk2a, sk2b, sk2c, sk2d)
             },
             |(pk1, sk2a, sk2b, sk2c, sk2d)| {
@@ -504,10 +506,10 @@ fn nym_outfox_process(c: &mut Criterion) {
     group.bench_function("libcrux", |b| {
         b.iter_batched(
             || {
-                let sk1 = randombytes(32);
-                let pk1 =
-                    libcrux_ecdh::secret_to_public(libcrux_ecdh::Algorithm::X25519, &sk1).unwrap();
-                let sk2 = randombytes(32);
+                let mut rng = rand_core::OsRng;
+                let (_, pk1) = libcrux_ecdh::x25519_key_gen(&mut rng).unwrap();
+                let sk2 = libcrux_ecdh::x25519_generate_secret(&mut rng).unwrap();
+
                 (pk1, sk2)
             },
             |(pk1, sk2)| {
@@ -642,10 +644,10 @@ fn nym_sphinx_create(c: &mut Criterion) {
     group.bench_function("libcrux", |b| {
         b.iter_batched(
             || {
-                let sk1 = randombytes(32);
-                let pk1 =
-                    libcrux_ecdh::secret_to_public(libcrux_ecdh::Algorithm::X25519, &sk1).unwrap();
-                let sk2 = randombytes(32);
+                let mut rng = rand_core::OsRng;
+                let (_, pk1) = libcrux_ecdh::x25519_key_gen(&mut rng).unwrap();
+                let sk2 = libcrux_ecdh::x25519_generate_secret(&mut rng).unwrap();
+
                 (pk1, sk2)
             },
             |(pk1, sk2)| {
@@ -888,10 +890,10 @@ fn nym_sphinx_process(c: &mut Criterion) {
     group.bench_function("libcrux", |b| {
         b.iter_batched(
             || {
-                let sk1 = randombytes(32);
-                let pk1 =
-                    libcrux_ecdh::secret_to_public(libcrux_ecdh::Algorithm::X25519, &sk1).unwrap();
-                let sk2 = randombytes(32);
+                let mut rng = rand_core::OsRng;
+                let (_, pk1) = libcrux_ecdh::x25519_key_gen(&mut rng).unwrap();
+                let sk2 = libcrux_ecdh::x25519_generate_secret(&mut rng).unwrap();
+
                 (pk1, sk2)
             },
             |(pk1, sk2)| {
