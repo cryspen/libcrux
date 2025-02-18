@@ -35,6 +35,35 @@ impl Encode for Ciphertext {
 
 impl private::Seal for ClassicMcEliece {}
 
+// This is only here because `classic-mceliece-rust` still depends on
+// `rand` version `0.8.0`.
+struct McElieceRng<'a, T: rand::CryptoRng> {
+    inner_rng: &'a mut T,
+}
+
+impl<'a, T: rand::CryptoRng> McElieceRng<'a, T> {
+    fn new(inner_rng: &'a mut T) -> Self {
+        Self { inner_rng }
+    }
+}
+
+impl<'a, T: rand::CryptoRng> rand_old::RngCore for McElieceRng<'a, T> {
+    fn next_u32(&mut self) -> u32 {
+        self.inner_rng.next_u32()
+    }
+    fn next_u64(&mut self) -> u64 {
+        self.inner_rng.next_u64()
+    }
+    fn fill_bytes(&mut self, dest: &mut [u8]) {
+        self.inner_rng.fill_bytes(dest)
+    }
+    fn try_fill_bytes(&mut self, dest: &mut [u8]) -> Result<(), rand_old::Error> {
+        Ok(self.inner_rng.fill_bytes(dest))
+    }
+}
+
+impl<'a, T: rand::CryptoRng> rand_old::CryptoRng for McElieceRng<'a, T> {}
+
 impl KEM for ClassicMcEliece {
     /// The KEM's ciphertext.
     type Ciphertext = Ciphertext;
@@ -47,18 +76,20 @@ impl KEM for ClassicMcEliece {
 
     /// Generate a pair of encapsulation and decapsulation keys.
     fn generate_key_pair(
-        rng: &mut (impl rand_old::CryptoRng + rand_old::Rng),
+        rng: &mut (impl rand::CryptoRng + rand::Rng),
     ) -> Result<KeyPair<SecretKey<'static>, PublicKey<'static>>, KEMError> {
-        let (pk, sk) = keypair_boxed(rng);
+        let mut rng = McElieceRng::new(rng);
+        let (pk, sk) = keypair_boxed(&mut rng);
         Ok((sk, pk))
     }
 
     /// Encapsulate a shared secret towards a given encapsulation key.
     fn encapsulate(
         ek: &Self::EncapsulationKey,
-        rng: &mut (impl rand_old::CryptoRng + rand_old::Rng),
+        rng: &mut (impl rand::CryptoRng + rand::Rng),
     ) -> Result<(Self::SharedSecret, Self::Ciphertext), KEMError> {
-        let (enc, ss) = encapsulate_boxed(ek, rng);
+        let mut rng = McElieceRng::new(rng);
+        let (enc, ss) = encapsulate_boxed(ek, &mut rng);
         Ok((ss, enc))
     }
 
