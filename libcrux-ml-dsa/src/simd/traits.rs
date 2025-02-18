@@ -27,42 +27,46 @@ pub(crate) trait Repr: Copy + Clone {
 
 #[cfg(hax)]
 pub(crate) fn int_is_i32(i: hax_lib::Int) -> bool {
-    i <= i32::MAX.to_int() && i >= i32::MIN.to_int()
+    i <= i32::MAX.lift() && i >= i32::MIN.lift()
 }
 
 #[cfg(hax)]
 pub(crate) fn add_pre(lhs: &SIMDContent, rhs: &SIMDContent) -> Prop {
     hax_lib::forall(|i: usize| {
-        hax_lib::implies(i < COEFFICIENTS_IN_SIMD_UNIT, || {
-            int_is_i32(lhs[i].to_int() + rhs[i].to_int())
-        })
+        hax_lib::implies(
+            i < COEFFICIENTS_IN_SIMD_UNIT,
+            int_is_i32(lhs[i].lift() + rhs[i].lift()),
+        )
     })
 }
 
 #[cfg(hax)]
 pub(crate) fn add_post(lhs: &SIMDContent, rhs: &SIMDContent, future_lhs: &SIMDContent) -> Prop {
     hax_lib::forall(|i: usize| {
-        hax_lib::implies(i < COEFFICIENTS_IN_SIMD_UNIT, || {
-            future_lhs[i].to_int() == (lhs[i].to_int() + rhs[i].to_int())
-        })
+        hax_lib::implies(
+            i < COEFFICIENTS_IN_SIMD_UNIT,
+            future_lhs[i].lift() == (lhs[i].lift() + rhs[i].lift()),
+        )
     })
 }
 
 #[cfg(hax)]
 pub(crate) fn sub_pre(lhs: &SIMDContent, rhs: &SIMDContent) -> Prop {
     hax_lib::forall(|i: usize| {
-        hax_lib::implies(i < COEFFICIENTS_IN_SIMD_UNIT, || {
-            int_is_i32(lhs[i].to_int() - rhs[i].to_int())
-        })
+        hax_lib::implies(
+            i < COEFFICIENTS_IN_SIMD_UNIT,
+            int_is_i32(lhs[i].lift() - rhs[i].lift()),
+        )
     })
 }
 
 #[cfg(hax)]
 pub(crate) fn sub_post(lhs: &SIMDContent, rhs: &SIMDContent, future_lhs: &SIMDContent) -> Prop {
     hax_lib::forall(|i: usize| {
-        hax_lib::implies(i < COEFFICIENTS_IN_SIMD_UNIT, || {
-            future_lhs[i].to_int() == (lhs[i].to_int() - rhs[i].to_int())
-        })
+        hax_lib::implies(
+            i < COEFFICIENTS_IN_SIMD_UNIT,
+            future_lhs[i].lift() == (lhs[i].lift() - rhs[i].lift()),
+        )
     })
 }
 

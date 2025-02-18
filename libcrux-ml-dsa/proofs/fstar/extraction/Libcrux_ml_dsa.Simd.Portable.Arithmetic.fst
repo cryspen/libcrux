@@ -26,11 +26,25 @@ let add (lhs rhs: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients) =
       (fun lhs i ->
           let lhs:Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients = lhs in
           let i:usize = i in
-          (forall j.
-              j < v i ==>
-              (Seq.index lhs.f_values j) ==
-              (Seq.index e_lhs0.f_values j) +! (Seq.index rhs.f_values j)) /\
-          (forall j. j >= v i ==> (Seq.index lhs.f_values j) == (Seq.index e_lhs0.f_values j)))
+          (forall (j: usize).
+              b2t (j <. i <: bool) ==>
+              b2t
+              ((lhs.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values.[ j ] <: i32) =.
+                ((e_lhs0.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values.[ j ] <: i32) +!
+                  (rhs.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values.[ j ] <: i32)
+                  <:
+                  i32)
+                <:
+                bool)) /\
+          (forall (j: usize).
+              b2t
+              ((j >=. i <: bool) &&
+                (j <. Libcrux_ml_dsa.Simd.Traits.v_COEFFICIENTS_IN_SIMD_UNIT <: bool)) ==>
+              b2t
+              ((lhs.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values.[ j ] <: i32) =.
+                (e_lhs0.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values.[ j ] <: i32)
+                <:
+                bool)))
       lhs
       (fun lhs i ->
           let lhs:Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients = lhs in
@@ -53,11 +67,6 @@ let add (lhs rhs: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients) =
           in
           lhs)
   in
-  let _:Prims.unit =
-    assert (forall i.
-          v (Seq.index lhs.f_values i) ==
-          v (Seq.index e_lhs0.f_values i) + v (Seq.index rhs.f_values i))
-  in
   lhs
 
 #pop-options
@@ -79,11 +88,25 @@ let subtract (lhs rhs: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients) 
       (fun lhs i ->
           let lhs:Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients = lhs in
           let i:usize = i in
-          (forall j.
-              j < v i ==>
-              (Seq.index lhs.f_values j) ==
-              (Seq.index e_lhs0.f_values j) -! (Seq.index rhs.f_values j)) /\
-          (forall j. j >= v i ==> (Seq.index lhs.f_values j) == (Seq.index e_lhs0.f_values j)))
+          (forall (j: usize).
+              b2t (j <. i <: bool) ==>
+              b2t
+              ((lhs.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values.[ j ] <: i32) =.
+                ((e_lhs0.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values.[ j ] <: i32) -!
+                  (rhs.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values.[ j ] <: i32)
+                  <:
+                  i32)
+                <:
+                bool)) /\
+          (forall (j: usize).
+              b2t
+              ((j >=. i <: bool) &&
+                (j <. Libcrux_ml_dsa.Simd.Traits.v_COEFFICIENTS_IN_SIMD_UNIT <: bool)) ==>
+              b2t
+              ((lhs.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values.[ j ] <: i32) =.
+                (e_lhs0.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values.[ j ] <: i32)
+                <:
+                bool)))
       lhs
       (fun lhs i ->
           let lhs:Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients = lhs in
@@ -105,11 +128,6 @@ let subtract (lhs rhs: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients) 
             Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients
           in
           lhs)
-  in
-  let _:Prims.unit =
-    assert (forall i.
-          v (Seq.index lhs.f_values i) ==
-          v (Seq.index e_lhs0.f_values i) - v (Seq.index rhs.f_values i))
   in
   lhs
 

@@ -1,5 +1,4 @@
-use crate::simd::portable::vector_type::Coefficients    ;
-
+use crate::simd::portable::vector_type::Coefficients;
 
 #[inline(always)]
 #[hax_lib::requires(fstar!(r"Seq.length ${serialized} == 4 /\ (forall i. bounded (Seq.index ${simd_unit.values} i) 4)"))]
@@ -28,10 +27,9 @@ fn serialize_4(simd_unit: &Coefficients, serialized: &mut [u8]) {
     let byte3 = (coefficient7 << 4) | coefficient6;
 
     serialized[0] = byte0;
-    serialized[1] = byte1;  
+    serialized[1] = byte1;
     serialized[2] = byte2;
     serialized[3] = byte3;
-
 }
 
 #[inline(always)]
@@ -66,7 +64,7 @@ pub fn serialize_6(simd_unit: &Coefficients, serialized: &mut [u8]) {
     let byte5 = (coefficient7 << 2) | coefficient6 >> 4;
 
     serialized[0] = byte0;
-    serialized[1] = byte1;  
+    serialized[1] = byte1;
     serialized[2] = byte2;
     serialized[3] = byte3;
     serialized[4] = byte4;
