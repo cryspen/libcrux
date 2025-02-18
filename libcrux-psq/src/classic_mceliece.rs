@@ -35,7 +35,7 @@ impl Encode for Ciphertext {
 
 impl private::Seal for ClassicMcEliece {}
 
-impl ClassicMcEliece {
+impl KEM for ClassicMcEliece {
     /// The KEM's ciphertext.
     type Ciphertext = Ciphertext;
     /// The KEM's shared secret.
@@ -46,7 +46,7 @@ impl ClassicMcEliece {
     type DecapsulationKey = SecretKey<'static>;
 
     /// Generate a pair of encapsulation and decapsulation keys.
-    pub fn generate_key_pair(
+    fn generate_key_pair(
         rng: &mut (impl rand_old::CryptoRng + rand_old::Rng),
     ) -> Result<KeyPair<SecretKey<'static>, PublicKey<'static>>, KEMError> {
         let (pk, sk) = keypair_boxed(rng);
@@ -54,7 +54,7 @@ impl ClassicMcEliece {
     }
 
     /// Encapsulate a shared secret towards a given encapsulation key.
-    pub fn encapsulate(
+    fn encapsulate(
         ek: &Self::EncapsulationKey,
         rng: &mut (impl rand_old::CryptoRng + rand_old::Rng),
     ) -> Result<(Self::SharedSecret, Self::Ciphertext), KEMError> {
@@ -63,7 +63,7 @@ impl ClassicMcEliece {
     }
 
     /// Decapsulate a shared secret.
-    pub fn decapsulate(
+    fn decapsulate(
         dk: &Self::DecapsulationKey,
         ctxt: &Self::Ciphertext,
     ) -> Result<Self::SharedSecret, KEMError> {
