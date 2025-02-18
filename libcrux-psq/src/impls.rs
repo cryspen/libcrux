@@ -99,7 +99,10 @@ mod tests {
         ($alg:ident) => {
             #[test]
             fn $alg() {
-                let mut rng = rand::thread_rng();
+                use rand::TryRngCore;
+
+                let mut os_rng = rand::rng();
+                let mut rng = os_rng.unwrap_mut();
                 let (sk, pk) = $alg::generate_key_pair(&mut rng).unwrap();
                 let sctx = b"test context";
                 let (psk_initiator, message) = $alg::encapsulate_psq(&pk, sctx, &mut rng).unwrap();

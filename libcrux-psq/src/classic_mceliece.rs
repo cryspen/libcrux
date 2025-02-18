@@ -35,14 +35,14 @@ impl Encode for Ciphertext {
 
 impl private::Seal for ClassicMcEliece {}
 
-impl KEM for ClassicMcEliece {
+impl ClassicMcEliece {
     type Ciphertext = Ciphertext;
     type SharedSecret = SharedSecret<'static>;
     type EncapsulationKey = PublicKey<'static>;
     type DecapsulationKey = SecretKey<'static>;
 
     fn generate_key_pair(
-        rng: &mut (impl rand::CryptoRng + rand::Rng),
+        rng: &mut (impl rand_old::CryptoRng + rand_old::Rng),
     ) -> Result<KeyPair<SecretKey<'static>, PublicKey<'static>>, KEMError> {
         let (pk, sk) = keypair_boxed(rng);
         Ok((sk, pk))
@@ -50,7 +50,7 @@ impl KEM for ClassicMcEliece {
 
     fn encapsulate(
         ek: &Self::EncapsulationKey,
-        rng: &mut (impl rand::CryptoRng + rand::Rng),
+        rng: &mut (impl rand_old::CryptoRng + rand_old::Rng),
     ) -> Result<(Self::SharedSecret, Self::Ciphertext), KEMError> {
         let (enc, ss) = encapsulate_boxed(ek, rng);
         Ok((ss, enc))
