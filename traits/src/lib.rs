@@ -1,5 +1,7 @@
 #![no_std]
 
+extern crate alloc;
+
 /// A Hash algorithm returning hashes of length `HASH_LEN`.
 pub trait Digest<const HASH_LEN: usize> {
     /// Writes the digest for the given input byte slice, into `digest` in immediate mode.
@@ -17,3 +19,5 @@ pub trait Digest<const HASH_LEN: usize> {
     /// Reset the digest state.
     fn reset(&mut self);
 }
+
+pub mod kem;
