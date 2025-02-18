@@ -5,12 +5,14 @@ set -e
 SED=$(which gsed &>/dev/null && echo gsed || echo sed)
 
 no_clean=0
+no_extract=0
 
 # Parse command line arguments.
 all_args=("$@")
 while [ $# -gt 0 ]; do
     case "$1" in
     --no-clean) no_clean=1 ;;
+    --no-extract) no_extract=1 ;;
     esac
     shift
 done
@@ -19,10 +21,13 @@ done
 if [[ "$no_clean" = 0 ]]; then
     cargo clean
 fi
-./c.sh --config cg.yaml --out cg --mlkem768 --kyber768 \
-    --no-glue --no-unrolling --no-karamel_include --no-karamel_include
 
-clang-format-18 --style=Google -i cg/*.h
+if [[ "$no_extract" = 0 ]]; then
+    ./c.sh --config cg.yaml --out cg --mlkem768 --kyber768 \
+        --no-glue --no-unrolling --no-karamel_include --no-karamel_include
+
+    clang-format-18 --style=Google -i cg/*.h
+fi
 
 if [[ -n "$BORINGSSL_HOME" ]]; then
     echo "Copying the files into $BORINGSSL_HOME/third_party/libcrux/"
