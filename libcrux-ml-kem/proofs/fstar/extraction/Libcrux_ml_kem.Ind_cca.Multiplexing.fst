@@ -3,12 +3,8 @@ module Libcrux_ml_kem.Ind_cca.Multiplexing
 open Core
 open FStar.Mul
 
-let validate_public_key
-      (v_K v_RANKED_BYTES_PER_RING_ELEMENT v_PUBLIC_KEY_SIZE: usize)
-      (public_key: t_Array u8 v_PUBLIC_KEY_SIZE)
-     =
+let validate_public_key (v_K v_PUBLIC_KEY_SIZE: usize) (public_key: t_Array u8 v_PUBLIC_KEY_SIZE) =
   Libcrux_ml_kem.Ind_cca.Instantiations.Portable.validate_public_key v_K
-    v_RANKED_BYTES_PER_RING_ELEMENT
     v_PUBLIC_KEY_SIZE
     public_key
 
@@ -24,7 +20,7 @@ let validate_private_key
     ciphertext
 
 let generate_keypair
-      (v_K v_CPA_PRIVATE_KEY_SIZE v_PRIVATE_KEY_SIZE v_PUBLIC_KEY_SIZE v_RANKED_BYTES_PER_RING_ELEMENT v_ETA1 v_ETA1_RANDOMNESS_SIZE:
+      (v_K v_CPA_PRIVATE_KEY_SIZE v_PRIVATE_KEY_SIZE v_PUBLIC_KEY_SIZE v_ETA1 v_ETA1_RANDOMNESS_SIZE:
           usize)
       (randomness: t_Array u8 (mk_usize 64))
      =
@@ -34,7 +30,6 @@ let generate_keypair
       v_CPA_PRIVATE_KEY_SIZE
       v_PRIVATE_KEY_SIZE
       v_PUBLIC_KEY_SIZE
-      v_RANKED_BYTES_PER_RING_ELEMENT
       v_ETA1
       v_ETA1_RANDOMNESS_SIZE
       randomness
@@ -45,7 +40,6 @@ let generate_keypair
         v_CPA_PRIVATE_KEY_SIZE
         v_PRIVATE_KEY_SIZE
         v_PUBLIC_KEY_SIZE
-        v_RANKED_BYTES_PER_RING_ELEMENT
         v_ETA1
         v_ETA1_RANDOMNESS_SIZE
         randomness
@@ -54,7 +48,6 @@ let generate_keypair
         v_CPA_PRIVATE_KEY_SIZE
         v_PRIVATE_KEY_SIZE
         v_PUBLIC_KEY_SIZE
-        v_RANKED_BYTES_PER_RING_ELEMENT
         v_ETA1
         v_ETA1_RANDOMNESS_SIZE
         randomness

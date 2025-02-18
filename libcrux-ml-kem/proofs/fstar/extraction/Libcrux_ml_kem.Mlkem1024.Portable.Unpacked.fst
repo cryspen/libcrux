@@ -32,7 +32,6 @@ let serialized_public_key
   let serialized:Libcrux_ml_kem.Types.t_MlKemPublicKey (mk_usize 1568) =
     Libcrux_ml_kem.Ind_cca.Unpacked.impl_3__serialized_mut (mk_usize 4)
       #Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
-      (mk_usize 1536)
       (mk_usize 1568)
       public_key
       serialized
@@ -49,7 +48,6 @@ let key_pair_serialized_private_key
     (mk_usize 1536)
     (mk_usize 3168)
     (mk_usize 1568)
-    (mk_usize 1536)
     key_pair
 
 let key_pair_serialized_private_key_mut
@@ -64,7 +62,6 @@ let key_pair_serialized_private_key_mut
       (mk_usize 1536)
       (mk_usize 3168)
       (mk_usize 1568)
-      (mk_usize 1536)
       key_pair
       serialized
   in
@@ -79,7 +76,6 @@ let key_pair_serialized_public_key_mut
   let serialized:Libcrux_ml_kem.Types.t_MlKemPublicKey (mk_usize 1568) =
     Libcrux_ml_kem.Ind_cca.Unpacked.impl_4__serialized_public_key_mut (mk_usize 4)
       #Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
-      (mk_usize 1536)
       (mk_usize 1568)
       key_pair
       serialized
@@ -93,7 +89,6 @@ let key_pair_serialized_public_key
      =
   Libcrux_ml_kem.Ind_cca.Unpacked.impl_4__serialized_public_key (mk_usize 4)
     #Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
-    (mk_usize 1536)
     (mk_usize 1568)
     key_pair
 
@@ -110,7 +105,6 @@ let key_pair_from_private_mut
       (mk_usize 1536)
       (mk_usize 1568)
       (mk_usize 1536)
-      (mk_usize 1536)
       private_key
       key_pair
   in
@@ -125,7 +119,6 @@ let unpacked_public_key
   let unpacked_public_key:Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemPublicKeyUnpacked (mk_usize 4)
     Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
     Libcrux_ml_kem.Ind_cca.Instantiations.Portable.Unpacked.unpack_public_key (mk_usize 4)
-      (mk_usize 1536)
       (mk_usize 1536)
       (mk_usize 1568)
       public_key
@@ -145,7 +138,6 @@ let generate_key_pair_mut
       (mk_usize 1536)
       (mk_usize 3168)
       (mk_usize 1568)
-      (mk_usize 1536)
       (mk_usize 2)
       (mk_usize 128)
       randomness

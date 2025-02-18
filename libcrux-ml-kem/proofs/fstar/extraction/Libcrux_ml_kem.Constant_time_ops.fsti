@@ -71,6 +71,4 @@ val compare_ciphertexts_select_shared_secret_in_constant_time (lhs_c rhs_c lhs_s
       (ensures
         fun result ->
           let result:t_Array u8 (mk_usize 32) = result in
-          let selector = if lhs_c =. rhs_c then (mk_u8 0) else (mk_u8 1) in
-          ((selector == (mk_u8 0) ==> result == lhs_s) /\
-            (selector =!= (mk_u8 0) ==> result == rhs_s)))
+          if lhs_c =. rhs_c then result == lhs_s else result == rhs_s)

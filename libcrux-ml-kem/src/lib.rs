@@ -90,6 +90,9 @@ pub(crate) mod hax_utils;
 // This is being tracked in https://github.com/hacspec/hacspec-v2/issues/27
 pub(crate) mod constants;
 
+#[cfg(all(feature = "alloc", feature = "incremental"))]
+extern crate alloc;
+
 /// Helpers for verification and extraction
 mod helper;
 
@@ -99,6 +102,7 @@ mod ind_cca;
 mod ind_cpa;
 mod invert_ntt;
 mod matrix;
+mod mlkem;
 mod ntt;
 mod polynomial;
 mod sampling;

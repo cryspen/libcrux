@@ -281,6 +281,18 @@ impl Operations for SIMD256Vector {
         vec_to_i16_array(x)
     }
 
+    #[requires(array.len() >= 32)]
+    #[inline(always)]
+    fn from_bytes(array: &[u8]) -> Self {
+        from_bytes(array)
+    }
+
+    #[requires(bytes.len() >= 32)]
+    #[inline(always)]
+    fn to_bytes(x: Self, bytes: &mut [u8]) {
+        to_bytes(x, bytes)
+    }
+
     #[requires(fstar!(r#"forall i. i < 16 ==> 
         Spec.Utils.is_intb (pow2 15 - 1) (v (Seq.index (impl.f_repr ${lhs}) i) + v (Seq.index (impl.f_repr ${rhs}) i))"#))]
     #[ensures(|result| fstar!(r#"forall i. i < 16 ==> 
@@ -554,4 +566,19 @@ impl Operations for SIMD256Vector {
     fn rej_sample(input: &[u8], output: &mut [i16]) -> usize {
         sampling::rejection_sample(input, output)
     }
+}
+
+#[inline(always)]
+#[hax_lib::requires(array.len() >= 32)]
+pub(super) fn from_bytes(array: &[u8]) -> SIMD256Vector {
+    SIMD256Vector {
+        elements: mm256_loadu_si256_u8(&array[0..32]),
+    }
+}
+
+#[inline(always)]
+#[hax_lib::fstar::verification_status(lax)]
+#[hax_lib::requires(bytes.len() >= 32)]
+pub(super) fn to_bytes(x: SIMD256Vector, bytes: &mut [u8]) {
+    mm256_storeu_si256_u8(&mut bytes[0..32], x.elements)
 }

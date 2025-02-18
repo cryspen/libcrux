@@ -220,5 +220,15 @@ val deserialize_12_ (bytes: t_Slice u8)
 [@@ FStar.Tactics.Typeclasses.tcinstance]
 val impl:Libcrux_ml_kem.Vector.Traits.t_Repr t_SIMD256Vector
 
+val from_bytes (array: t_Slice u8)
+    : Prims.Pure t_SIMD256Vector
+      (requires (Core.Slice.impl__len #u8 array <: usize) >=. mk_usize 32)
+      (fun _ -> Prims.l_True)
+
+val to_bytes (x: t_SIMD256Vector) (bytes: t_Slice u8)
+    : Prims.Pure (t_Slice u8)
+      (requires (Core.Slice.impl__len #u8 bytes <: usize) >=. mk_usize 32)
+      (fun _ -> Prims.l_True)
+
 [@@ FStar.Tactics.Typeclasses.tcinstance]
 val impl_3:Libcrux_ml_kem.Vector.Traits.t_Operations t_SIMD256Vector

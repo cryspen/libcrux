@@ -4,11 +4,11 @@
  * SPDX-License-Identifier: MIT or Apache-2.0
  *
  * This code was generated with the following revisions:
- * Charon: 30cab88265206f4fa849736e704983e39a404d96
- * Eurydice: b8ea420ccde8db516ced5db9c097d77fa558fb94
- * Karamel: 97a06e07e7e423df192c40d5a88bf6c85fd4d278
+ * Charon: a8f2211d1b95e0462a96382023b164a4116c7ca4
+ * Eurydice: 60f543ddc60a777138070968daaf7620ec48170d
+ * Karamel: 1d81d757d5d9e16dd6463ccc72324e587c707959
  * F*: b0961063393215ca65927f017720cb365a193833-dirty
- * Libcrux: 15b22d1beea1cc7052b8a68b653b012241724664
+ * Libcrux: e2291b6e918559a4712b2a553f49ec92fdba1e42
  */
 
 #include "internal/libcrux_core.h"
@@ -80,6 +80,16 @@ void libcrux_ml_kem_constant_time_ops_compare_ciphertexts_select_shared_secret_i
   uint8_t ret0[32U];
   select_shared_secret_in_constant_time(lhs_s, rhs_s, selector, ret0);
   memcpy(ret, ret0, (size_t)32U * sizeof(uint8_t));
+}
+
+/**
+ K * BITS_PER_RING_ELEMENT / 8
+
+ [eurydice] Note that we can't use const generics here because that breaks
+            C extraction with eurydice.
+*/
+size_t libcrux_ml_kem_constants_ranked_bytes_per_ring_element(size_t rank) {
+  return rank * LIBCRUX_ML_KEM_CONSTANTS_BITS_PER_RING_ELEMENT / (size_t)8U;
 }
 
 /**

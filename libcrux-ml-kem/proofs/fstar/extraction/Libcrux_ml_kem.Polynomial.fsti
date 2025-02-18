@@ -99,6 +99,38 @@ val from_i16_array
         (Core.Slice.impl__len #i16 a <: usize))
       (fun _ -> Prims.l_True)
 
+val to_i16_array
+      (#v_Vector: Type0)
+      {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
+      (re: t_PolynomialRingElement v_Vector)
+      (out: t_Slice i16)
+    : Prims.Pure (t_Slice i16)
+      (requires
+        (Core.Slice.impl__len #i16 out <: usize) >=.
+        (v_VECTORS_IN_RING_ELEMENT *! mk_usize 16 <: usize))
+      (fun _ -> Prims.l_True)
+
+val from_bytes
+      (#v_Vector: Type0)
+      {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
+      (bytes: t_Slice u8)
+    : Prims.Pure (t_PolynomialRingElement v_Vector)
+      (requires
+        ((v_VECTORS_IN_RING_ELEMENT *! mk_usize 16 <: usize) *! mk_usize 2 <: usize) <=.
+        (Core.Slice.impl__len #u8 bytes <: usize))
+      (fun _ -> Prims.l_True)
+
+val to_bytes
+      (#v_Vector: Type0)
+      {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
+      (re: t_PolynomialRingElement v_Vector)
+      (out: t_Slice u8)
+    : Prims.Pure (t_Slice u8)
+      (requires
+        ((v_VECTORS_IN_RING_ELEMENT *! mk_usize 16 <: usize) *! mk_usize 2 <: usize) <=.
+        (Core.Slice.impl__len #u8 out <: usize))
+      (fun _ -> Prims.l_True)
+
 /// Given two polynomial ring elements `lhs` and `rhs`, compute the pointwise
 /// sum of their constituent coefficients.
 val add_to_ring_element
@@ -215,6 +247,26 @@ val impl_2__ntt_multiply
       (self rhs: t_PolynomialRingElement v_Vector)
     : Prims.Pure (t_PolynomialRingElement v_Vector) Prims.l_True (fun _ -> Prims.l_True)
 
+/// Size of a ring element in bytes.
+val impl_2__num_bytes:
+    #v_Vector: Type0 ->
+    {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |} ->
+    Prims.unit
+  -> Prims.Pure usize
+      Prims.l_True
+      (ensures
+        fun result ->
+          let result:usize = result in
+          result =. mk_usize 512)
+
+/// The length of a vector of ring elements in bytes
+val vec_len_bytes:
+    v_K: usize ->
+    #v_Vector: Type0 ->
+    {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |} ->
+    Prims.unit
+  -> Prims.Pure usize (requires v_K <=. mk_usize 4) (fun _ -> Prims.l_True)
+
 val impl_2__from_i16_array
       (#v_Vector: Type0)
       {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
@@ -223,4 +275,68 @@ val impl_2__from_i16_array
       (requires
         (v_VECTORS_IN_RING_ELEMENT *! mk_usize 16 <: usize) <=.
         (Core.Slice.impl__len #i16 a <: usize))
+      (fun _ -> Prims.l_True)
+
+val impl_2__to_i16_array
+      (#v_Vector: Type0)
+      {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
+      (self: t_PolynomialRingElement v_Vector)
+      (out: t_Slice i16)
+    : Prims.Pure (t_Slice i16)
+      (requires
+        (v_VECTORS_IN_RING_ELEMENT *! mk_usize 16 <: usize) <=.
+        (Core.Slice.impl__len #i16 out <: usize))
+      (fun _ -> Prims.l_True)
+
+val impl_2__from_bytes
+      (#v_Vector: Type0)
+      {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
+      (bytes: t_Slice u8)
+    : Prims.Pure (t_PolynomialRingElement v_Vector)
+      (requires
+        ((v_VECTORS_IN_RING_ELEMENT *! mk_usize 16 <: usize) *! mk_usize 2 <: usize) <=.
+        (Core.Slice.impl__len #u8 bytes <: usize))
+      (fun _ -> Prims.l_True)
+
+/// Build a vector of ring elements from `bytes`.
+val vec_from_bytes
+      (#v_Vector: Type0)
+      {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
+      (bytes: t_Slice u8)
+      (out: t_Slice (t_PolynomialRingElement v_Vector))
+    : Prims.Pure (t_Slice (t_PolynomialRingElement v_Vector))
+      (requires
+        (Core.Slice.impl__len #(t_PolynomialRingElement v_Vector) out <: usize) <=. mk_usize 4 &&
+        (((v_VECTORS_IN_RING_ELEMENT *! mk_usize 16 <: usize) *! mk_usize 2 <: usize) *!
+          (Core.Slice.impl__len #(t_PolynomialRingElement v_Vector) out <: usize)
+          <:
+          usize) <=.
+        (Core.Slice.impl__len #u8 bytes <: usize))
+      (fun _ -> Prims.l_True)
+
+val impl_2__to_bytes
+      (#v_Vector: Type0)
+      {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
+      (self: t_PolynomialRingElement v_Vector)
+      (out: t_Slice u8)
+    : Prims.Pure (t_Slice u8)
+      (requires
+        ((v_VECTORS_IN_RING_ELEMENT *! mk_usize 16 <: usize) *! mk_usize 2 <: usize) <=.
+        (Core.Slice.impl__len #u8 out <: usize))
+      (fun _ -> Prims.l_True)
+
+/// Get the bytes of the vector of ring elements in `re` and write them to `out`.
+val vec_to_bytes
+      (#v_Vector: Type0)
+      {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
+      (re: t_Slice (t_PolynomialRingElement v_Vector))
+      (out: t_Slice u8)
+    : Prims.Pure (t_Slice u8)
+      (requires
+        (Core.Slice.impl__len #(t_PolynomialRingElement v_Vector) re <: usize) <=. mk_usize 4 &&
+        (((v_VECTORS_IN_RING_ELEMENT *! mk_usize 16 <: usize) *! mk_usize 2 <: usize) *!
+          (Core.Slice.impl__len #(t_PolynomialRingElement v_Vector) re <: usize)
+          <:
+          usize) <=.
+        (Core.Slice.impl__len #u8 out <: usize))
       (fun _ -> Prims.l_True)
