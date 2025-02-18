@@ -2,7 +2,7 @@ use criterion::{criterion_group, criterion_main, BatchSize, Criterion};
 use libcrux::ecdh;
 
 use benchmarks::util::*;
-use rand::RngCore;
+use rand::TryRngCore;
 
 fn derive(c: &mut Criterion) {
     // Comparing libcrux performance for different payload sizes and other implementations.
@@ -102,11 +102,11 @@ fn derive(c: &mut Criterion) {
         b.iter_batched(
             || {
                 let mut sk1_b = [0u8; 32];
-                OsRng.fill_bytes(&mut sk1_b);
+                OsRng.try_fill_bytes(&mut sk1_b).unwrap();
                 let sk1 = Scalar::from_bytes_mod_order(sk1_b);
                 let pk1 = RistrettoPoint::mul_base(&sk1);
                 let mut sk2_b = [0u8; 32];
-                OsRng.fill_bytes(&mut sk2_b);
+                OsRng.try_fill_bytes(&mut sk2_b).unwrap();
                 let sk2 = Scalar::from_bytes_mod_order(sk2_b);
                 (pk1, sk2)
             },
@@ -216,7 +216,7 @@ fn secret_to_public(c: &mut Criterion) {
         b.iter_batched(
             || {
                 let mut sk_b = [0u8; 32];
-                OsRng.fill_bytes(&mut sk_b);
+                OsRng.try_fill_bytes(&mut sk_b).unwrap();
                 let sk = Scalar::from_bytes_mod_order(sk_b);
                 sk
             },
@@ -412,11 +412,11 @@ fn nym_outfox_create(c: &mut Criterion) {
         b.iter_batched(
             || {
                 let mut sk1_b = [0u8; 32];
-                OsRng.fill_bytes(&mut sk1_b);
+                OsRng.try_fill_bytes(&mut sk1_b).unwrap();
                 let sk1 = Scalar::from_bytes_mod_order(sk1_b);
                 let pk1 = RistrettoPoint::mul_base(&sk1);
                 let mut sk2_b = [0u8; 32];
-                OsRng.fill_bytes(&mut sk2_b);
+                OsRng.try_fill_bytes(&mut sk2_b).unwrap();
                 let sk2a = Scalar::from_bytes_mod_order(sk2_b);
                 let sk2b = Scalar::from_bytes_mod_order(sk2_b);
                 let sk2c = Scalar::from_bytes_mod_order(sk2_b);
@@ -584,11 +584,11 @@ fn nym_outfox_process(c: &mut Criterion) {
         b.iter_batched(
             || {
                 let mut sk1_b = [0u8; 32];
-                OsRng.fill_bytes(&mut sk1_b);
+                OsRng.try_fill_bytes(&mut sk1_b).unwrap();
                 let sk1 = Scalar::from_bytes_mod_order(sk1_b);
                 let pk1 = RistrettoPoint::mul_base(&sk1);
                 let mut sk2_b = [0u8; 32];
-                OsRng.fill_bytes(&mut sk2_b);
+                OsRng.try_fill_bytes(&mut sk2_b).unwrap();
                 let sk2 = Scalar::from_bytes_mod_order(sk2_b);
                 (pk1, sk2)
             },
@@ -791,11 +791,11 @@ fn nym_sphinx_create(c: &mut Criterion) {
         b.iter_batched(
             || {
                 let mut sk1_b = [0u8; 32];
-                OsRng.fill_bytes(&mut sk1_b);
+                OsRng.try_fill_bytes(&mut sk1_b).unwrap();
                 let sk1 = Scalar::from_bytes_mod_order(sk1_b);
                 let pk1 = RistrettoPoint::mul_base(&sk1);
                 let mut sk2_b = [0u8; 32];
-                OsRng.fill_bytes(&mut sk2_b);
+                OsRng.try_fill_bytes(&mut sk2_b).unwrap();
                 let sk2a = Scalar::from_bytes_mod_order(sk2_b);
                 (pk1, sk2a)
             },
@@ -977,11 +977,11 @@ fn nym_sphinx_process(c: &mut Criterion) {
         b.iter_batched(
             || {
                 let mut sk1_b = [0u8; 32];
-                OsRng.fill_bytes(&mut sk1_b);
+                OsRng.try_fill_bytes(&mut sk1_b).unwrap();
                 let sk1 = Scalar::from_bytes_mod_order(sk1_b);
                 let pk1 = RistrettoPoint::mul_base(&sk1);
                 let mut sk2_b = [0u8; 32];
-                OsRng.fill_bytes(&mut sk2_b);
+                OsRng.try_fill_bytes(&mut sk2_b).unwrap();
                 let sk2 = Scalar::from_bytes_mod_order(sk2_b);
                 let pk2 = RistrettoPoint::mul_base(&sk2);
                 (sk1, pk1, sk2, pk2)

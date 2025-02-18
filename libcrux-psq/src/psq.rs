@@ -4,8 +4,7 @@
 //! that can be bound to an outer protocol in a post-quantum pre-shared key
 //! establishment protocol.
 
-use classic_mceliece_rust::{decapsulate_boxed, encapsulate_boxed};
-use rand::{CryptoRng, Rng};
+use classic_mceliece_rust::decapsulate_boxed;
 
 use crate::Error;
 
@@ -34,6 +33,7 @@ pub enum Algorithm {
     XWingKemDraft02,
 }
 
+#[allow(dead_code)]
 pub(crate) enum InnerCiphertext {
     X25519(libcrux_kem::Ct),
     MlKem768(libcrux_kem::Ct),
@@ -158,10 +158,23 @@ impl From<Algorithm> for libcrux_kem::Algorithm {
     }
 }
 
+/// Generate a PSQ key pair using Classic McEliece.
+pub fn generate_key_pair_mceliece(
+    rng: &mut (impl rand_old::CryptoRng + rand_old::Rng),
+) -> Result<(PrivateKey<'static>, PublicKey<'static>), Error> {
+    let (pk, sk) = classic_mceliece_rust::keypair_boxed(rng);
+    Ok((
+        PrivateKey::ClassicMcEliece(sk),
+        PublicKey::ClassicMcEliece(pk),
+    ))
+}
+
 /// Generate a PSQ key pair.
+///
+/// For Classic McEliece, use [generate_key_pair_mceliece()].
 pub fn generate_key_pair(
     alg: Algorithm,
-    rng: &mut (impl CryptoRng + Rng),
+    rng: &mut (impl rand::CryptoRng + rand::Rng),
 ) -> Result<(PrivateKey<'static>, PublicKey<'static>), Error> {
     match alg {
         Algorithm::X25519 => {
@@ -172,13 +185,7 @@ pub fn generate_key_pair(
             let (sk, pk) = libcrux_kem::key_gen(alg.into(), rng)?;
             Ok((PrivateKey::MlKem768(sk), PublicKey::MlKem768(pk)))
         }
-        Algorithm::ClassicMcEliece => {
-            let (pk, sk) = classic_mceliece_rust::keypair_boxed(rng);
-            Ok((
-                PrivateKey::ClassicMcEliece(sk),
-                PublicKey::ClassicMcEliece(pk),
-            ))
-        }
+        Algorithm::ClassicMcEliece => Err(Error::InvalidAlgorithmError),
         Algorithm::XWingKemDraft02 => {
             let (sk, pk) = libcrux_kem::key_gen(alg.into(), rng)?;
             Ok((
@@ -202,11 +209,30 @@ impl PublicKey<'_> {
             PublicKey::ClassicMcEliece(k) => k.as_ref().to_vec(),
         }
     }
-
+    /// Use the underlying KEM to encapsulate a shared secret towards the receiver,
+    /// for Classic McEliece.
+    #[cfg(test)]
+    pub(crate) fn encapsulate_mceliece(
+        &self,
+        rng: &mut (impl rand_old::CryptoRng + rand_old::Rng),
+    ) -> Result<(SharedSecret, InnerCiphertext), Error> {
+        match self {
+            PublicKey::ClassicMcEliece(pk) => {
+                let (enc, ss) = classic_mceliece_rust::encapsulate_boxed(pk, rng);
+                Ok((
+                    SharedSecret::ClassicMcEliece(ss),
+                    InnerCiphertext::ClassicMcEliece(enc),
+                ))
+            }
+            _ => Err(Error::InvalidAlgorithmError),
+        }
+    }
     /// Use the underlying KEM to encapsulate a shared secret towards the receiver.
+    ///
+    /// For ClassicMcEliece, use [Self::encapsulate_mceliece()].
     pub(crate) fn encapsulate(
         &self,
-        rng: &mut (impl CryptoRng + Rng),
+        rng: &mut (impl rand::CryptoRng + rand::Rng),
     ) -> Result<(SharedSecret, InnerCiphertext), Error> {
         match self {
             PublicKey::X25519(pk) => {
@@ -217,13 +243,7 @@ impl PublicKey<'_> {
                 let (ss, enc) = pk.encapsulate(rng)?;
                 Ok((SharedSecret::MlKem768(ss), InnerCiphertext::MlKem768(enc)))
             }
-            PublicKey::ClassicMcEliece(pk) => {
-                let (enc, ss) = encapsulate_boxed(pk, rng);
-                Ok((
-                    SharedSecret::ClassicMcEliece(ss),
-                    InnerCiphertext::ClassicMcEliece(enc),
-                ))
-            }
+            PublicKey::ClassicMcEliece(_) => Err(Error::InvalidAlgorithmError),
             PublicKey::XWingKemDraft02(pk) => {
                 let (ss, enc) = pk.encapsulate(rng)?;
                 Ok((
@@ -236,13 +256,40 @@ impl PublicKey<'_> {
 
     /// Generate a fresh PSQ component, and a message encapsulating it for the
     /// receiver.
+    ///
+    /// For Classic McEliece, use [Self::gen_pq_psk_mceliece()].
     pub(crate) fn gen_pq_psk(
         &self,
         sctx: &[u8],
-        rng: &mut (impl CryptoRng + Rng),
+        rng: &mut (impl rand::CryptoRng + rand::Rng),
     ) -> Result<(PrePsk, Ciphertext), Error> {
         let (ikm, enc) = self
             .encapsulate(rng)
+            .map_err(|_| Error::PSQGenerationError)?;
+
+        let k0 = compute_k0(self, &ikm, &enc, sctx)?;
+        let mac = compute_mac(&k0)?;
+        let psk = compute_psk(&k0)?;
+
+        Ok((
+            psk,
+            Ciphertext {
+                inner_ctxt: enc,
+                mac,
+            },
+        ))
+    }
+
+    /// Generate a fresh PSQ component, and a message encapsulating it for the
+    /// receiver, for Classic McEliece.
+    #[cfg(test)]
+    pub(crate) fn gen_pq_psk_mceliece(
+        &self,
+        sctx: &[u8],
+        rng: &mut (impl rand_old::CryptoRng + rand_old::Rng),
+    ) -> Result<(PrePsk, Ciphertext), Error> {
+        let (ikm, enc) = self
+            .encapsulate_mceliece(rng)
             .map_err(|_| Error::PSQGenerationError)?;
 
         let k0 = compute_k0(self, &ikm, &enc, sctx)?;
@@ -369,7 +416,7 @@ mod tests {
 
     #[test]
     fn simple_x25519() {
-        let mut rng = rand::thread_rng();
+        let mut rng = rand::rng();
         let (sk, pk) = generate_key_pair(Algorithm::X25519, &mut rng).unwrap();
         let sctx = b"test context";
         let (psk_initiator, message) = pk.gen_pq_psk(sctx, &mut rng).unwrap();
@@ -380,7 +427,7 @@ mod tests {
 
     #[test]
     fn simple_mlkem768() {
-        let mut rng = rand::thread_rng();
+        let mut rng = rand::rng();
         let (sk, pk) = generate_key_pair(Algorithm::MlKem768, &mut rng).unwrap();
         let sctx = b"test context";
         let (psk_initiator, message) = pk.gen_pq_psk(sctx, &mut rng).unwrap();
@@ -391,7 +438,7 @@ mod tests {
 
     #[test]
     fn simple_xwing() {
-        let mut rng = rand::thread_rng();
+        let mut rng = rand::rng();
         let (sk, pk) = generate_key_pair(Algorithm::XWingKemDraft02, &mut rng).unwrap();
         let sctx = b"test context";
         let (psk_initiator, message) = pk.gen_pq_psk(sctx, &mut rng).unwrap();
@@ -402,10 +449,10 @@ mod tests {
 
     #[test]
     fn simple_classic_mceliece() {
-        let mut rng = rand::thread_rng();
-        let (sk, pk) = generate_key_pair(Algorithm::ClassicMcEliece, &mut rng).unwrap();
+        let mut rng = rand_old::thread_rng();
+        let (sk, pk) = generate_key_pair_mceliece(&mut rng).unwrap();
         let sctx = b"test context";
-        let (psk_initiator, message) = pk.gen_pq_psk(sctx, &mut rng).unwrap();
+        let (psk_initiator, message) = pk.gen_pq_psk_mceliece(sctx, &mut rng).unwrap();
 
         let psk_responder = sk.derive_pq_psk(&pk, &message, sctx).unwrap();
         assert_eq!(psk_initiator, psk_responder);

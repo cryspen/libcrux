@@ -281,7 +281,7 @@ mod tests {
 
     #[test]
     fn simple() {
-        let mut rng = rand::thread_rng();
+        let mut rng = rand::rng();
         let (receiver_pqsk, receiver_pqpk) =
             crate::psq::generate_key_pair(crate::psq::Algorithm::MlKem768, &mut rng).unwrap();
         let sctx = b"test context";

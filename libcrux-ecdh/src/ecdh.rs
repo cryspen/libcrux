@@ -52,7 +52,7 @@ pub enum Algorithm {
 
 pub(crate) mod x25519_internal {
     use alloc::format;
-    use rand::{CryptoRng, Rng, TryRngCore};
+    use rand::{CryptoRng, Rng};
 
     use super::Error;
 
@@ -216,8 +216,7 @@ pub(crate) mod x25519_internal {
         const LIMIT: usize = 100;
         for _ in 0..LIMIT {
             let mut out = [0u8; 32];
-            rng.try_fill_bytes(&mut out)
-                .map_err(|_| Error::KeyGenError)?;
+            rng.fill_bytes(&mut out);
 
             // We don't want a 0 key.
             if out.iter().all(|&b| b == 0) {
@@ -257,7 +256,7 @@ pub mod curve25519 {
 
 pub(crate) mod p256_internal {
     use alloc::format;
-    use rand::{CryptoRng, Rng, TryRngCore};
+    use rand::{CryptoRng, Rng};
 
     // P256 we only have in HACL
     use crate::hacl::p256;
@@ -406,8 +405,7 @@ pub(crate) mod p256_internal {
         const LIMIT: usize = 100;
         for _ in 0..LIMIT {
             let mut out = [0u8; 32];
-            rng.try_fill_bytes(&mut out)
-                .map_err(|_| Error::KeyGenError)?;
+            rng.fill_bytes(&mut out);
 
             let out = PrivateKey(out);
             if validate_scalar(&out).is_ok() {

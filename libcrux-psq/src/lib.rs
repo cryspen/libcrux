@@ -24,6 +24,8 @@ pub enum Error {
     CryptoError,
     /// Error relating to operating system environment
     OsError,
+    /// Error related to providing wrong algorithm
+    InvalidAlgorithmError,
 }
 
 impl From<libcrux_kem::Error> for Error {

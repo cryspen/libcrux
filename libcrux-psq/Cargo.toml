@@ -22,6 +22,7 @@ classic-mceliece-rust = { version = "2.0.0", features = [
     "zeroize",
 ] }
 rand = { version = "0.9" }
+rand_old = { version = "0.8", package = "rand" }
 libcrux-ecdh = { version = "0.0.2-beta.2", path = "../libcrux-ecdh" }
 libcrux = { version = "0.0.2-beta.2", path = ".." }
 
