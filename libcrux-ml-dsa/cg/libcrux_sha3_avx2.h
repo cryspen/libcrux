@@ -4,11 +4,11 @@
  * SPDX-License-Identifier: MIT or Apache-2.0
  *
  * This code was generated with the following revisions:
- * Charon: 30cab88265206f4fa849736e704983e39a404d96
- * Eurydice: b8ea420ccde8db516ced5db9c097d77fa558fb94
- * Karamel: 97a06e07e7e423df192c40d5a88bf6c85fd4d278
+ * Charon: a8f2211d1b95e0462a96382023b164a4116c7ca4
+ * Eurydice: 60f543ddc60a777138070968daaf7620ec48170d
+ * Karamel: 1d81d757d5d9e16dd6463ccc72324e587c707959
  * F*: b0961063393215ca65927f017720cb365a193833-dirty
- * Libcrux: 15b22d1beea1cc7052b8a68b653b012241724664
+ * Libcrux: 072dd6530cbd58bb23ba8e0fabab8141aa9de3b7
  */
 
 #ifndef __libcrux_sha3_avx2_H
@@ -227,31 +227,16 @@ KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE libcrux_sha3_generic_keccak_KeccakState_55
 libcrux_sha3_generic_keccak_new_89_a6(void) {
   libcrux_sha3_generic_keccak_KeccakState_55 lit;
-  lit.st[0U][0U] = libcrux_sha3_simd_avx2_zero_ef();
-  lit.st[0U][1U] = libcrux_sha3_simd_avx2_zero_ef();
-  lit.st[0U][2U] = libcrux_sha3_simd_avx2_zero_ef();
-  lit.st[0U][3U] = libcrux_sha3_simd_avx2_zero_ef();
-  lit.st[0U][4U] = libcrux_sha3_simd_avx2_zero_ef();
-  lit.st[1U][0U] = libcrux_sha3_simd_avx2_zero_ef();
-  lit.st[1U][1U] = libcrux_sha3_simd_avx2_zero_ef();
-  lit.st[1U][2U] = libcrux_sha3_simd_avx2_zero_ef();
-  lit.st[1U][3U] = libcrux_sha3_simd_avx2_zero_ef();
-  lit.st[1U][4U] = libcrux_sha3_simd_avx2_zero_ef();
-  lit.st[2U][0U] = libcrux_sha3_simd_avx2_zero_ef();
-  lit.st[2U][1U] = libcrux_sha3_simd_avx2_zero_ef();
-  lit.st[2U][2U] = libcrux_sha3_simd_avx2_zero_ef();
-  lit.st[2U][3U] = libcrux_sha3_simd_avx2_zero_ef();
-  lit.st[2U][4U] = libcrux_sha3_simd_avx2_zero_ef();
-  lit.st[3U][0U] = libcrux_sha3_simd_avx2_zero_ef();
-  lit.st[3U][1U] = libcrux_sha3_simd_avx2_zero_ef();
-  lit.st[3U][2U] = libcrux_sha3_simd_avx2_zero_ef();
-  lit.st[3U][3U] = libcrux_sha3_simd_avx2_zero_ef();
-  lit.st[3U][4U] = libcrux_sha3_simd_avx2_zero_ef();
-  lit.st[4U][0U] = libcrux_sha3_simd_avx2_zero_ef();
-  lit.st[4U][1U] = libcrux_sha3_simd_avx2_zero_ef();
-  lit.st[4U][2U] = libcrux_sha3_simd_avx2_zero_ef();
-  lit.st[4U][3U] = libcrux_sha3_simd_avx2_zero_ef();
-  lit.st[4U][4U] = libcrux_sha3_simd_avx2_zero_ef();
+  __m256i repeat_expression0[5U][5U];
+  for (size_t i0 = (size_t)0U; i0 < (size_t)5U; i0++) {
+    __m256i repeat_expression[5U];
+    for (size_t i = (size_t)0U; i < (size_t)5U; i++) {
+      repeat_expression[i] = libcrux_sha3_simd_avx2_zero_ef();
+    }
+    memcpy(repeat_expression0[i0], repeat_expression,
+           (size_t)5U * sizeof(__m256i));
+  }
+  memcpy(lit.st, repeat_expression0, (size_t)5U * sizeof(__m256i[5U]));
   return lit;
 }
 
