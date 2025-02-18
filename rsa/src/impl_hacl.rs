@@ -1,31 +1,9 @@
 use crate::Error;
 
-/// An RSA Signature that is `LEN` bytes long.
-#[derive(Debug)]
-pub struct Signature<const LEN: usize>([u8; LEN]);
-
-impl<const LEN: usize> Signature<LEN> {
-    pub fn new() -> Self {
-        Self([0u8; LEN])
-    }
-}
-
-impl<const LEN: usize> From<[u8; LEN]> for Signature<LEN> {
-    fn from(value: [u8; LEN]) -> Self {
-        Self(value)
-    }
-}
-
 /// An RSA Public Key that is `LEN` bytes long.
 #[derive(Debug, Clone)]
 pub struct PublicKey<const LEN: usize> {
     n: [u8; LEN],
-}
-
-impl<const LEN: usize> From<[u8; LEN]> for PublicKey<LEN> {
-    fn from(n: [u8; LEN]) -> Self {
-        Self { n }
-    }
 }
 
 /// An RSA Private Key that is `LEN` bytes long.
@@ -34,15 +12,74 @@ pub struct PrivateKey<const LEN: usize> {
     d: [u8; LEN],
 }
 
-impl<const LEN: usize> PrivateKey<LEN> {
+impl<const LEN: usize> alloc::fmt::Debug for PrivateKey<LEN> {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        f.debug_struct("PrivateKey")
+            .field("pk", &self.pk)
+            .field("d", &"****")
+            .finish()
+    }
+}
+
+/// An RSA Public Key backed by a slice. Use if the length is not known at compile time.
+#[derive(Debug, Clone)]
+pub struct VarLenPublicKey<'a> {
+    n: &'a [u8],
+}
+
+impl<'a> TryFrom<&'a [u8]> for VarLenPublicKey<'a> {
+    type Error = Error;
+
+    fn try_from(n: &'a [u8]) -> Result<Self, Error> {
+        match n.len() {
+            256 | 384 | 512 | 768 | 1024 => Ok(Self { n }),
+            _ => Err(Error::InvalidKeyLength),
+        }
+    }
+}
+
+impl VarLenPublicKey<'_> {
+    /// Returns the length of the key
+    pub fn key_len(&self) -> usize {
+        self.n.len()
+    }
+}
+impl alloc::fmt::Debug for VarLenPrivateKey<'_> {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        f.debug_struct("PrivateKey")
+            .field("pk", &self.pk)
+            .field("d", &"****")
+            .finish()
+    }
+}
+
+/// An RSA Private Key backed by slices. Use if the length is not known at compile time.
+pub struct VarLenPrivateKey<'a> {
+    pk: VarLenPublicKey<'a>,
+    d: &'a [u8],
+}
+
+impl<'a> VarLenPrivateKey<'a> {
     /// Constructor for the private key based on `n` and `d`.
-    pub fn from_components(n: [u8; LEN], d: [u8; LEN]) -> Self {
-        Self { pk: n.into(), d }
+    pub fn from_components(n: &'a [u8], d: &'a [u8]) -> Result<Self, Error> {
+        if n.len() != d.len() {
+            return Err(Error::KeyLengthMismatch);
+        }
+
+        Ok(Self {
+            pk: n.try_into()?,
+            d,
+        })
     }
 
     /// Returns the public key of the private key.
-    pub fn pk(&self) -> &PublicKey<LEN> {
+    pub fn pk(&self) -> &VarLenPublicKey {
         &self.pk
+    }
+
+    /// Returns the length of the keys
+    pub fn key_len(&self) -> usize {
+        self.d.len()
     }
 }
 
@@ -61,6 +98,61 @@ fn hacl_hash_alg(alg: crate::DigestAlgorithm) -> libcrux_hacl_rs::streaming_type
 
 macro_rules! impl_rsapss {
     ($sign_fn:ident, $verify_fn:ident, $bits:literal, $bytes:literal) => {
+        impl From<[u8; $bytes]> for PublicKey<$bytes> {
+            fn from(n: [u8; $bytes]) -> Self {
+                Self { n }
+            }
+        }
+
+        impl PublicKey<$bytes> {
+            /// Returns the slice-based public-key
+            pub fn as_var_len(&self) -> VarLenPublicKey<'_> {
+                VarLenPublicKey { n: &self.n }
+            }
+
+            /// Returns the modulus as bytes.
+            pub fn n(&self) -> &[u8; $bytes] {
+                &self.n
+            }
+        }
+
+        impl PrivateKey<$bytes> {
+            /// Constructor for the private key based on `n` and `d`.
+            pub fn from_components(n: [u8; $bytes], d: [u8; $bytes]) -> Self {
+                Self { pk: n.into(), d }
+            }
+
+            /// Returns the public key of the private key.
+            pub fn pk(&self) -> &PublicKey<$bytes> {
+                &self.pk
+            }
+
+            /// Returns the slice-based private key
+            pub fn as_var_len(&self) -> VarLenPrivateKey<'_> {
+                VarLenPrivateKey {
+                    pk: self.pk.as_var_len(),
+                    d: &self.d,
+                }
+            }
+
+            /// Returns the private exponent as bytes.
+            pub fn d(&self) -> &[u8; $bytes] {
+                &self.d
+            }
+        }
+
+        impl<'a> From<&'a PublicKey<$bytes>> for VarLenPublicKey<'a> {
+            fn from(value: &'a PublicKey<$bytes>) -> Self {
+                value.as_var_len()
+            }
+        }
+
+        impl<'a> From<&'a PrivateKey<$bytes>> for VarLenPrivateKey<'a> {
+            fn from(value: &'a PrivateKey<$bytes>) -> Self {
+                value.as_var_len()
+            }
+        }
+
         /// Computes a signature over `msg` using `sk` and writes it to `sig`.
         /// Returns `Ok(())` on success.
         ///
@@ -68,56 +160,14 @@ macro_rules! impl_rsapss {
         /// - the secret key is invalid
         /// - the length of `msg` exceeds `u32::MAX`
         /// - `salt_len` exceeds `u32::MAX - alg.hash_len() - 8`
-        ///
-        /// Ensures that the preconditions to hacl functions hold:
-        ///
-        /// - `sLen + Hash.hash_length a + 8 <= max_size_t`
-        ///   - checked explicitly
-        /// - `(sLen + Hash.hash_length a + 8) less_than_max_input_length a`
-        ///   - `max_input_length` is at least `2^62 - 1`, can't be reached since everyting
-        ///     is less than `u32::MAX`.
-        /// - `sLen + Hash.hash_length a + 2 <= blocks (modBits - 1) 8`
-        ///   - `blocks a b = (a - 1) / b + 1`, i.e. `ceil(div(a, b))`
-        ///   - checked explicitly
-        /// - `msgLen `less_than_max_input_length` a`
-        ///   - follows from the check that messages are shorter than `u32::MAX`.
         pub fn $sign_fn(
             alg: crate::DigestAlgorithm,
             sk: &PrivateKey<$bytes>,
             msg: &[u8],
             salt: &[u8],
-            sig: &mut Signature<$bytes>,
+            sig: &mut [u8; $bytes],
         ) -> Result<(), Error> {
-            let salt_len = salt.len().try_into().map_err(|_| Error::SaltTooLarge)?;
-            let msg_len = msg.len().try_into().map_err(|_| Error::MessageTooLarge)?;
-
-            // required by precondition to verify, see
-            // https://github.com/hacl-star/hacl-star/blob/efbf82f29190e2aecdac8899e4f42c8cb9defc98/code/rsapss/Hacl.Spec.RSAPSS.fst#L162
-            // all operands are at most u32, so coercing to u64 and then adding is safe.
-            if (salt_len as u64) + alg.hash_len() as u64 + 8 > u32::MAX as u64 {
-                return Err(Error::SaltTooLarge);
-            }
-
-            let a = hacl_hash_alg(alg);
-            let mod_bits = $bits;
-            let e_bits = E_BITS;
-            let d_bits = $bits;
-            let sgnt = &mut sig.0;
-
-            // required by precondition to verify, see
-            // https://github.com/hacl-star/hacl-star/blob/efbf82f29190e2aecdac8899e4f42c8cb9defc98/code/rsapss/Hacl.Spec.RSAPSS.fst#L164
-            // all operands are at most u32, so coercing to u64 and then adding is safe.
-            if salt_len as u64 + alg.hash_len() as u64 + 2 > (mod_bits as u64 - 1) / 8 + 1 {
-                return Err(Error::SaltTooLarge);
-            }
-
-            match crate::hacl::rsapss::rsapss_skey_sign(
-                a, mod_bits, e_bits, d_bits, &sk.pk.n, &E, &sk.d, salt_len, salt, msg_len, msg,
-                sgnt,
-            ) {
-                true => Ok(()),
-                false => Err(Error::SigningFailed),
-            }
+            sign_varlen(alg, &sk.into(), msg, salt, sig)
         }
 
         /// Returns `Ok(())` if the provided signature is valid.
@@ -127,44 +177,14 @@ macro_rules! impl_rsapss {
         /// - the signature verification fails
         /// - the length of `msg` exceeds `u32::MAX`
         /// - `salt_len` exceeds `u32::MAX - alg.hash_len() - 8`
-        ///
-        /// Ensures that the preconditions to hacl functions hold:
-        ///
-        /// - `sLen + Hash.hash_length a + 8 <= max_size_t`
-        ///   - checked explicitly
-        /// - `(sLen + Hash.hash_length a + 8) less_than_max_input_length a`
-        ///   - `max_input_length` is at least `2^62 - 1`, can't be reached since everyting
-        ///     is less than `u32::MAX`.
-        /// - `msgLen less_than_max_input_length a`
-        ///   - follows from the check that messages are shorter than `u32::MAX`.
         pub fn $verify_fn(
             alg: crate::DigestAlgorithm,
             pk: &PublicKey<$bytes>,
             msg: &[u8],
             salt_len: u32,
-            sig: &Signature<$bytes>,
+            sig: &[u8; $bytes],
         ) -> Result<(), Error> {
-            // required by precondition to verify, see
-            // https://github.com/hacl-star/hacl-star/blob/efbf82f29190e2aecdac8899e4f42c8cb9defc98/code/rsapss/Hacl.Spec.RSAPSS.fst#L236
-            // all operands are at most u32, so coercing to u64 and then adding is safe.
-            if (salt_len as u64) + alg.hash_len() as u64 + 8 > u32::MAX as u64 {
-                return Err(Error::SaltTooLarge);
-            }
-
-            let msg_len = msg.len().try_into().map_err(|_| Error::MessageTooLarge)?;
-
-            let a = hacl_hash_alg(alg);
-            let mod_bits = $bits;
-            let e_bits = E_BITS;
-            let sgnt = &sig.0;
-
-            match crate::hacl::rsapss::rsapss_pkey_verify(
-                a, mod_bits, e_bits, &pk.n, &E, salt_len, $bytes, /*signature length*/
-                sgnt, msg_len, msg,
-            ) {
-                true => Ok(()),
-                false => Err(Error::VerificationFailed),
-            }
+            verify_varlen(alg, &pk.into(), msg, salt_len, sig)
         }
     };
 }
@@ -174,6 +194,160 @@ impl_rsapss!(sign_3072, verify_3072, 3072, 384);
 impl_rsapss!(sign_4096, verify_4096, 4096, 512);
 impl_rsapss!(sign_6144, verify_6144, 6144, 768);
 impl_rsapss!(sign_8192, verify_8192, 8192, 1024);
+
+/// Computes a signature over `msg` using `sk` and writes it to `sig`.
+/// Returns `Ok(())` on success.
+///
+/// Returns an error in any of the following cases:
+/// - the secret key is invalid
+/// - the length of `msg` exceeds `u32::MAX`
+/// - `salt_len` exceeds `u32::MAX - alg.hash_len() - 8`
+/// - the length of `sig` does not match the length of `sk`
+pub fn sign(
+    alg: crate::DigestAlgorithm,
+    sk: &VarLenPrivateKey<'_>,
+    msg: &[u8],
+    salt: &[u8],
+    sig: &mut [u8],
+) -> Result<(), Error> {
+    if sig.len() != sk.key_len() {
+        return Err(Error::InvalidSignatureLength);
+    }
+
+    sign_varlen(alg, sk, msg, salt, sig)
+}
+
+/// Returns `Ok(())` if the provided signature is valid.
+///
+/// Returns an error in any of the following cases:
+/// - the public key is invalid
+/// - the signature verification fails
+/// - the length of `msg` exceeds `u32::MAX`
+/// - `salt_len` exceeds `u32::MAX - alg.hash_len() - 8`
+pub fn verify(
+    alg: crate::DigestAlgorithm,
+    pk: &VarLenPublicKey<'_>,
+    msg: &[u8],
+    salt_len: u32,
+    sig: &[u8],
+) -> Result<(), Error> {
+    if pk.key_len() != sig.len() {
+        return Err(Error::InvalidSignatureLength);
+    }
+
+    verify_varlen(alg, pk, msg, salt_len, sig)
+}
+
+/// Computes a signature over `msg` using `sk` and writes it to `sig`.
+/// Returns `Ok(())` on success.
+///
+/// Returns an error in any of the following cases:
+/// - `Error::SigningFailed`: the secret key is invalid
+/// - `Error::MessageTooLarge`: the length of `msg` exceeds `u32::MAX`
+/// - `Error::SaltTooLarge`: `salt_len` exceeds `u32::MAX - alg.hash_len() - 8`
+///
+/// Ensures that the preconditions to hacl functions hold:
+///
+/// - `sLen + Hash.hash_length a + 8 <= max_size_t`
+///   - checked explicitly
+/// - `(sLen + Hash.hash_length a + 8) less_than_max_input_length a`
+///   - `max_input_length` is at least `2^62 - 1`, can't be reached since everyting
+///     is less than `u32::MAX`.
+/// - `sLen + Hash.hash_length a + 2 <= blocks (modBits - 1) 8`
+///   - `blocks a b = (a - 1) / b + 1`, i.e. `ceil(div(a, b))`
+///   - checked explicitly
+/// - `msgLen `less_than_max_input_length` a`
+///   - follows from the check that messages are shorter than `u32::MAX`.
+pub fn sign_varlen(
+    alg: crate::DigestAlgorithm,
+    sk: &VarLenPrivateKey<'_>,
+    msg: &[u8],
+    salt: &[u8],
+    sig: &mut [u8],
+) -> Result<(), Error> {
+    let salt_len = salt.len().try_into().map_err(|_| Error::SaltTooLarge)?;
+    let msg_len = msg.len().try_into().map_err(|_| Error::MessageTooLarge)?;
+
+    // required by precondition to verify, see
+    // https://github.com/hacl-star/hacl-star/blob/efbf82f29190e2aecdac8899e4f42c8cb9defc98/code/rsapss/Hacl.Spec.RSAPSS.fst#L162
+    // all operands are at most u32, so coercing to u64 and then adding is safe.
+    if (salt_len as u64) + alg.hash_len() as u64 + 8 > u32::MAX as u64 {
+        return Err(Error::SaltTooLarge);
+    }
+
+    let a = hacl_hash_alg(alg);
+    let mod_bits = sk.pk.n.len() as u32 * 8;
+    let e_bits = E_BITS;
+    let d_bits = sk.d.len() as u32 * 8;
+
+    // required by precondition to verify, see
+    // https://github.com/hacl-star/hacl-star/blob/efbf82f29190e2aecdac8899e4f42c8cb9defc98/code/rsapss/Hacl.Spec.RSAPSS.fst#L164
+    // all operands are at most u32, so coercing to u64 and then adding is safe.
+    if salt_len as u64 + alg.hash_len() as u64 + 2 > (mod_bits as u64 - 1) / 8 + 1 {
+        return Err(Error::SaltTooLarge);
+    }
+
+    match crate::hacl::rsapss::rsapss_skey_sign(
+        a, mod_bits, e_bits, d_bits, sk.pk.n, &E, sk.d, salt_len, salt, msg_len, msg, sig,
+    ) {
+        true => Ok(()),
+        false => Err(Error::SigningFailed),
+    }
+}
+
+/// Returns `Ok(())` if the provided signature is valid.
+///
+/// Returns an error in any of the following cases:
+/// - the public key is invalid
+/// - the signature verification fails
+/// - the length of `msg` exceeds `u32::MAX`
+/// - `salt_len` exceeds `u32::MAX - alg.hash_len() - 8`
+///
+/// Ensures that the preconditions to hacl functions hold:
+///
+/// - `sLen + Hash.hash_length a + 8 <= max_size_t`
+///   - checked explicitly
+/// - `(sLen + Hash.hash_length a + 8) less_than_max_input_length a`
+///   - `max_input_length` is at least `2^62 - 1`, can't be reached since everyting
+///     is less than `u32::MAX`.
+/// - `msgLen less_than_max_input_length a`
+///   - follows from the check that messages are shorter than `u32::MAX`.
+pub fn verify_varlen(
+    alg: crate::DigestAlgorithm,
+    pk: &VarLenPublicKey<'_>,
+    msg: &[u8],
+    salt_len: u32,
+    sig: &[u8],
+) -> Result<(), Error> {
+    // required by precondition to verify, see
+    // https://github.com/hacl-star/hacl-star/blob/efbf82f29190e2aecdac8899e4f42c8cb9defc98/code/rsapss/Hacl.Spec.RSAPSS.fst#L236
+    // all operands are at most u32, so coercing to u64 and then adding is safe.
+    if (salt_len as u64) + alg.hash_len() as u64 + 8 > u32::MAX as u64 {
+        return Err(Error::SaltTooLarge);
+    }
+
+    let msg_len = msg.len().try_into().map_err(|_| Error::MessageTooLarge)?;
+
+    let a = hacl_hash_alg(alg);
+    let mod_bits = pk.n.len() as u32 * 8;
+    let e_bits = E_BITS;
+
+    match crate::hacl::rsapss::rsapss_pkey_verify(
+        a,
+        mod_bits,
+        e_bits,
+        pk.n,
+        &E,
+        salt_len,
+        sig.len() as u32, /*signature length*/
+        sig,
+        msg_len,
+        msg,
+    ) {
+        true => Ok(()),
+        false => Err(Error::VerificationFailed),
+    }
+}
 
 #[cfg(test)]
 mod tests {
@@ -230,7 +404,7 @@ mod tests {
         };
         let salt = [1, 2, 3, 4, 5];
         let msg = [7, 8, 9, 10];
-        let mut signature = Signature([0u8; 256]);
+        let mut signature = [0u8; 256];
         sign_2048(
             crate::DigestAlgorithm::Sha2_256,
             &sk,
