@@ -20,7 +20,7 @@ libcrux-p256 = { version = "=0.0.2-beta.2", path = "../p256", features = [
 ] }
 
 [dev-dependencies]
-rand_core = { version = "0.6" }
+rand_core = { version = "0.9" }
 hex = { version = "0.4.3", features = ["serde"] }
 serde_json = { version = "1.0" }
 serde = { version = "1.0", features = ["derive"] }
