@@ -19,7 +19,6 @@ on:
         description: "Skip diff jobs"
         default: false
         type: boolean
-  merge_group:
 
 env:
   CARGO_TERM_COLOR: always
