@@ -3,6 +3,12 @@ use std::{fs::File, io::BufReader};
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
 use serde_json::Value;
 
+fn randbuf<const N: usize>(rng: &mut impl rand_core::RngCore) -> [u8; N] {
+    let mut buf = [0; N];
+    rng.fill_bytes(&mut buf);
+    buf
+}
+
 pub(crate) trait ReadFromFile {
     fn from_file<T: DeserializeOwned>(file_str: &'static str) -> T {
         let file = match File::open(file_str) {
@@ -137,4 +143,45 @@ fn wycheproof() {
         tests_run, num_tests, skipped_tests
     );
     assert_eq!(num_tests - skipped_tests, tests_run);
+}
+
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[test]
+fn chachapoly_self_test() {
+    let ptxt = b"hacspec rulez";
+    let aad = b"associated data" as &[u8];
+    let key = [
+        1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25,
+        26, 27, 28, 29, 30, 31, 32,
+    ];
+    let nonce = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
+
+    let mut ctxt = [0; 29];
+
+    libcrux_chacha20poly1305::encrypt(&key, ptxt, &mut ctxt, aad, &nonce).unwrap();
+
+    let mut ptxt_rx = [0; 13];
+
+    assert!(libcrux_chacha20poly1305::decrypt(&key, &mut ptxt_rx, &ctxt, aad, &nonce).is_ok());
+    assert_eq!(ptxt, &ptxt_rx);
+}
+
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[test]
+fn chachapoly_self_test_rand() {
+    let msg = b"hacspec rulez";
+    let aad = b"associated data" as &[u8];
+
+    let mut rng = rand_core::OsRng;
+
+    let key: [u8; 32] = randbuf(&mut rng);
+    let nonce: [u8; 12] = randbuf(&mut rng);
+
+    let mut ctxt = [0; 29];
+    let mut ptxt = [0; 13];
+
+    libcrux_chacha20poly1305::encrypt(&key, msg, &mut ctxt, aad, &nonce).unwrap();
+    assert!(libcrux_chacha20poly1305::decrypt(&key, &mut ptxt, &ctxt, aad, &nonce).is_ok());
+
+    assert_eq!(msg, &ptxt);
 }
