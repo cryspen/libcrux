@@ -57,7 +57,7 @@ fn u64_int_from_bit_slice(bits: &[Bit]) -> u64 {
 
 /// Convert a bit slice into a machine integer of type `T`.
 fn int_from_bit_slice<T: TryFrom<i128> + MachineInteger + Copy>(bits: &[Bit]) -> T {
-    debug_assert!(bits.len() >= T::BITS as usize);
+    debug_assert!(bits.len() <= T::BITS as usize);
     let result = if T::SIGNED {
         let is_negative = matches!(bits[T::BITS as usize - 1], Bit::One);
         let s = u64_int_from_bit_slice(&bits[0..T::BITS as usize - 1]) as i128;
@@ -70,7 +70,8 @@ fn int_from_bit_slice<T: TryFrom<i128> + MachineInteger + Copy>(bits: &[Bit]) ->
         u64_int_from_bit_slice(bits) as i128
     };
     let Ok(n) = result.try_into() else {
-        panic!("cannot try_into {result}")
+        // Conversion must succeed as `result` is guaranteed to be in range due to the bit-length check.
+        unreachable!()
     };
     n
 }
