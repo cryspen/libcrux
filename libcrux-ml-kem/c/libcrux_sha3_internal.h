@@ -4,11 +4,11 @@
  * SPDX-License-Identifier: MIT or Apache-2.0
  *
  * This code was generated with the following revisions:
- * Charon: a8f2211d1b95e0462a96382023b164a4116c7ca4
- * Eurydice: 60f543ddc60a777138070968daaf7620ec48170d
- * Karamel: 1d81d757d5d9e16dd6463ccc72324e587c707959
- * F*: b0961063393215ca65927f017720cb365a193833-dirty
- * Libcrux: 072dd6530cbd58bb23ba8e0fabab8141aa9de3b7
+ * Charon: db4e045d4597d06d854ce7a2c10e8dcfda6ecd25
+ * Eurydice: 75eae2e2534a16f5ba5430e6ee5c69d8a46f3bea
+ * Karamel: 3823e3d82fa0b271d799b61c59ffb4742ddc1e65
+ * F*: 7cd06c5562fc47ec14cd35c38034d5558a5ff762
+ * Libcrux: c1c5844af691aae8cc6b1f37b0ada8b417634b25
  */
 
 #ifndef __libcrux_sha3_internal_H
@@ -203,15 +203,31 @@ with const generics
 static KRML_MUSTINLINE libcrux_sha3_generic_keccak_KeccakState_17
 libcrux_sha3_generic_keccak_new_89_04(void) {
   libcrux_sha3_generic_keccak_KeccakState_17 lit;
-  uint64_t repeat_expression0[5U][5U];
-  KRML_MAYBE_FOR5(
-      i0, (size_t)0U, (size_t)5U, (size_t)1U, uint64_t repeat_expression[5U];
-      KRML_MAYBE_FOR5(
-          i, (size_t)0U, (size_t)5U, (size_t)1U,
-          repeat_expression[i] = libcrux_sha3_portable_keccak_zero_5a(););
-      memcpy(repeat_expression0[i0], repeat_expression,
-             (size_t)5U * sizeof(uint64_t)););
-  memcpy(lit.st, repeat_expression0, (size_t)5U * sizeof(uint64_t[5U]));
+  lit.st[0U][0U] = libcrux_sha3_portable_keccak_zero_5a();
+  lit.st[0U][1U] = libcrux_sha3_portable_keccak_zero_5a();
+  lit.st[0U][2U] = libcrux_sha3_portable_keccak_zero_5a();
+  lit.st[0U][3U] = libcrux_sha3_portable_keccak_zero_5a();
+  lit.st[0U][4U] = libcrux_sha3_portable_keccak_zero_5a();
+  lit.st[1U][0U] = libcrux_sha3_portable_keccak_zero_5a();
+  lit.st[1U][1U] = libcrux_sha3_portable_keccak_zero_5a();
+  lit.st[1U][2U] = libcrux_sha3_portable_keccak_zero_5a();
+  lit.st[1U][3U] = libcrux_sha3_portable_keccak_zero_5a();
+  lit.st[1U][4U] = libcrux_sha3_portable_keccak_zero_5a();
+  lit.st[2U][0U] = libcrux_sha3_portable_keccak_zero_5a();
+  lit.st[2U][1U] = libcrux_sha3_portable_keccak_zero_5a();
+  lit.st[2U][2U] = libcrux_sha3_portable_keccak_zero_5a();
+  lit.st[2U][3U] = libcrux_sha3_portable_keccak_zero_5a();
+  lit.st[2U][4U] = libcrux_sha3_portable_keccak_zero_5a();
+  lit.st[3U][0U] = libcrux_sha3_portable_keccak_zero_5a();
+  lit.st[3U][1U] = libcrux_sha3_portable_keccak_zero_5a();
+  lit.st[3U][2U] = libcrux_sha3_portable_keccak_zero_5a();
+  lit.st[3U][3U] = libcrux_sha3_portable_keccak_zero_5a();
+  lit.st[3U][4U] = libcrux_sha3_portable_keccak_zero_5a();
+  lit.st[4U][0U] = libcrux_sha3_portable_keccak_zero_5a();
+  lit.st[4U][1U] = libcrux_sha3_portable_keccak_zero_5a();
+  lit.st[4U][2U] = libcrux_sha3_portable_keccak_zero_5a();
+  lit.st[4U][3U] = libcrux_sha3_portable_keccak_zero_5a();
+  lit.st[4U][4U] = libcrux_sha3_portable_keccak_zero_5a();
   return lit;
 }
 

@@ -1,6 +1,6 @@
 use crate::{
     constants::{Eta, Gamma2},
-    simd::traits::{Operations, Repr, COEFFICIENTS_IN_SIMD_UNIT, SIMD_UNITS_IN_RING_ELEMENT},
+    simd::traits::{Operations, COEFFICIENTS_IN_SIMD_UNIT, SIMD_UNITS_IN_RING_ELEMENT},
 };
 
 #[cfg(not(eurydice))]

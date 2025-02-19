@@ -153,7 +153,7 @@ pub(crate) trait Operations: Copy + Clone + Repr {
 }
 
 #[cfg(eurydice)]
-pub(crate) trait Operations: Copy + Clone + Repr {
+pub(crate) trait Operations: Copy + Clone {
     fn zero() -> Self;
 
     fn from_coefficient_array(array: &[i32], out: &mut Self);
