@@ -1,4 +1,4 @@
-name: Benchmark ML-KEM
+name: ML-KEM - Benchmark
 
 on:
   workflow_dispatch:

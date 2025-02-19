@@ -1,4 +1,4 @@
-name: Nix
+name: ML-KEM - Build via nix
 
 on:
   push:

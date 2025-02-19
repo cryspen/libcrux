@@ -1,4 +1,4 @@
-name: KEM
+name: ECDH - Build & Test
 
 on:
   push:
@@ -38,7 +38,7 @@ jobs:
     defaults:
       run:
         shell: bash
-        working-directory: libcrux-kem
+        working-directory: libcrux-ecdh
 
     steps:
       - uses: actions/checkout@v4

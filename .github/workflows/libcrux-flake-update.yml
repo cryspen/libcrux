@@ -1,4 +1,4 @@
-name: flake-update
+name: Libcrux - Update nix Flake
 
 on:
   workflow_dispatch:

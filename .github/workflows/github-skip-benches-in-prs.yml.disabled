@@ -1,4 +1,4 @@
-name: Skip Benchmarks in PRs
+name: GitHub - Skip Benchmarks in PRs
 
 on: [ pull_request ]
 
