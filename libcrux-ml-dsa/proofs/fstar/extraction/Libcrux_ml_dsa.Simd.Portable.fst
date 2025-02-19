@@ -129,84 +129,6 @@ Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients =
           Libcrux_ml_dsa.Simd.Portable.Arithmetic.subtract lhs rhs
         in
         lhs);
-    f_montgomery_multiply_pre
-    =
-    (fun
-        (lhs: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients)
-        (rhs: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients)
-        ->
-        true);
-    f_montgomery_multiply_post
-    =
-    (fun
-        (lhs: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients)
-        (rhs: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients)
-        (out: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients)
-        ->
-        true);
-    f_montgomery_multiply
-    =
-    (fun
-        (lhs: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients)
-        (rhs: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients)
-        ->
-        let lhs:Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients =
-          Libcrux_ml_dsa.Simd.Portable.Arithmetic.montgomery_multiply lhs rhs
-        in
-        lhs);
-    f_shift_left_then_reduce_pre
-    =
-    (fun (v_SHIFT_BY: i32) (simd_unit: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients) ->
-        true);
-    f_shift_left_then_reduce_post
-    =
-    (fun
-        (v_SHIFT_BY: i32)
-        (simd_unit: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients)
-        (out: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients)
-        ->
-        true);
-    f_shift_left_then_reduce
-    =
-    (fun (v_SHIFT_BY: i32) (simd_unit: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients) ->
-        let simd_unit:Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients =
-          Libcrux_ml_dsa.Simd.Portable.Arithmetic.shift_left_then_reduce v_SHIFT_BY simd_unit
-        in
-        simd_unit);
-    f_power2round_pre
-    =
-    (fun
-        (t0: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients)
-        (t1: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients)
-        ->
-        true);
-    f_power2round_post
-    =
-    (fun
-        (t0: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients)
-        (t1: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients)
-        (out:
-          (Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients &
-            Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients))
-        ->
-        true);
-    f_power2round
-    =
-    (fun
-        (t0: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients)
-        (t1: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients)
-        ->
-        let tmp0, tmp1:(Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients &
-          Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients) =
-          Libcrux_ml_dsa.Simd.Portable.Arithmetic.power2round t0 t1
-        in
-        let t0:Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients = tmp0 in
-        let t1:Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients = tmp1 in
-        let _:Prims.unit = () in
-        t0, t1
-        <:
-        (Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients &
-          Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients));
     f_infinity_norm_exceeds_pre
     =
     (fun (simd_unit: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients) (bound: i32) -> true);
@@ -323,6 +245,84 @@ Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients =
           Libcrux_ml_dsa.Simd.Portable.Arithmetic.uuse_hint gamma2 simd_unit hint
         in
         hint);
+    f_montgomery_multiply_pre
+    =
+    (fun
+        (lhs: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients)
+        (rhs: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients)
+        ->
+        true);
+    f_montgomery_multiply_post
+    =
+    (fun
+        (lhs: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients)
+        (rhs: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients)
+        (out: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients)
+        ->
+        true);
+    f_montgomery_multiply
+    =
+    (fun
+        (lhs: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients)
+        (rhs: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients)
+        ->
+        let lhs:Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients =
+          Libcrux_ml_dsa.Simd.Portable.Arithmetic.montgomery_multiply lhs rhs
+        in
+        lhs);
+    f_shift_left_then_reduce_pre
+    =
+    (fun (v_SHIFT_BY: i32) (simd_unit: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients) ->
+        true);
+    f_shift_left_then_reduce_post
+    =
+    (fun
+        (v_SHIFT_BY: i32)
+        (simd_unit: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients)
+        (out: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients)
+        ->
+        true);
+    f_shift_left_then_reduce
+    =
+    (fun (v_SHIFT_BY: i32) (simd_unit: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients) ->
+        let simd_unit:Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients =
+          Libcrux_ml_dsa.Simd.Portable.Arithmetic.shift_left_then_reduce v_SHIFT_BY simd_unit
+        in
+        simd_unit);
+    f_power2round_pre
+    =
+    (fun
+        (t0: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients)
+        (t1: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients)
+        ->
+        true);
+    f_power2round_post
+    =
+    (fun
+        (t0: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients)
+        (t1: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients)
+        (out:
+          (Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients &
+            Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients))
+        ->
+        true);
+    f_power2round
+    =
+    (fun
+        (t0: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients)
+        (t1: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients)
+        ->
+        let tmp0, tmp1:(Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients &
+          Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients) =
+          Libcrux_ml_dsa.Simd.Portable.Arithmetic.power2round t0 t1
+        in
+        let t0:Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients = tmp0 in
+        let t1:Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients = tmp1 in
+        let _:Prims.unit = () in
+        t0, t1
+        <:
+        (Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients &
+          Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients));
     f_rejection_sample_less_than_field_modulus_pre
     =
     (fun (randomness: t_Slice u8) (out: t_Slice i32) -> true);

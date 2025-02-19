@@ -45,18 +45,6 @@ impl Operations for Coefficients {
         arithmetic::subtract(lhs, rhs)
     }
 
-    fn montgomery_multiply(lhs: &mut Coefficients, rhs: &Coefficients) {
-        arithmetic::montgomery_multiply(lhs, rhs);
-    }
-
-    fn shift_left_then_reduce<const SHIFT_BY: i32>(simd_unit: &mut Coefficients) {
-        arithmetic::shift_left_then_reduce::<SHIFT_BY>(simd_unit);
-    }
-
-    fn power2round(t0: &mut Coefficients, t1: &mut Coefficients) {
-        arithmetic::power2round(t0, t1)
-    }
-
     fn infinity_norm_exceeds(simd_unit: &Coefficients, bound: i32) -> bool {
         arithmetic::infinity_norm_exceeds(simd_unit, bound)
     }
@@ -76,6 +64,18 @@ impl Operations for Coefficients {
 
     fn use_hint(gamma2: Gamma2, simd_unit: &Coefficients, hint: &mut Coefficients) {
         arithmetic::use_hint(gamma2, simd_unit, hint)
+    }
+
+    fn montgomery_multiply(lhs: &mut Coefficients, rhs: &Coefficients) {
+        arithmetic::montgomery_multiply(lhs, rhs);
+    }
+
+    fn shift_left_then_reduce<const SHIFT_BY: i32>(simd_unit: &mut Coefficients) {
+        arithmetic::shift_left_then_reduce::<SHIFT_BY>(simd_unit);
+    }
+
+    fn power2round(t0: &mut Coefficients, t1: &mut Coefficients) {
+        arithmetic::power2round(t0, t1)
     }
 
     fn rejection_sample_less_than_field_modulus(randomness: &[u8], out: &mut [i32]) -> usize {
