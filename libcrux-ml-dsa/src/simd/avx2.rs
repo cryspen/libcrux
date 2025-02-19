@@ -3,6 +3,9 @@ use crate::{
     simd::traits::{Operations, Repr, COEFFICIENTS_IN_SIMD_UNIT, SIMD_UNITS_IN_RING_ELEMENT},
 };
 
+#[cfg(not(eurydice))]
+use crate::simd::traits::Repr;
+
 mod arithmetic;
 mod encoding;
 mod invntt;
@@ -12,6 +15,7 @@ mod vector_type;
 
 pub(crate) use vector_type::{AVX2RingElement, Vec256 as AVX2SIMDUnit};
 
+#[cfg(not(eurydice))]
 impl Repr for AVX2SIMDUnit {
     fn repr(&self) -> [i32; COEFFICIENTS_IN_SIMD_UNIT] {
         let mut result = [0i32; COEFFICIENTS_IN_SIMD_UNIT];

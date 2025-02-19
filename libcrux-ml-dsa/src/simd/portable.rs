@@ -1,7 +1,10 @@
 use crate::{
     constants::{Eta, Gamma2},
-    simd::traits::{Operations, Repr, SIMD_UNITS_IN_RING_ELEMENT},
+    simd::traits::{Operations, SIMD_UNITS_IN_RING_ELEMENT},
 };
+
+#[cfg(not(eurydice))]
+use crate::simd::traits::Repr;
 
 mod arithmetic;
 mod vector_type;
@@ -18,6 +21,7 @@ use vector_type::Coefficients;
 
 use super::traits::COEFFICIENTS_IN_SIMD_UNIT;
 
+#[cfg(not(eurydice))]
 impl Repr for Coefficients {
     fn repr(&self) -> [i32; COEFFICIENTS_IN_SIMD_UNIT] {
         self.values

@@ -21,6 +21,7 @@ pub(crate) type FieldElementTimesMontgomeryR = i32;
 
 type SIMDContent = [i32; COEFFICIENTS_IN_SIMD_UNIT];
 
+#[cfg(not(eurydice))]
 #[hax_lib::attributes]
 pub(crate) trait Repr: Copy + Clone {
     #[requires(true)]
