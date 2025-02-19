@@ -5,7 +5,16 @@ use super::bit::{Bit, MachineInteger};
 
 use std::fmt::Formatter;
 
-/// A straight-forward bitvector type.
+/// A fixed-size bit vector type.
+///
+/// `BitVec<N>` is a specification-friendly, fixed-length bit vector that internally
+/// stores an array of [`Bit`] values, where each `Bit` represents a single binary digit (0 or 1).
+///
+/// This type provides several utility methods for constructing and converting bit vectors:
+///
+/// The [`Debug`] implementation for `BitVec` pretty-prints the bits in groups of eight,
+/// making the bit pattern more human-readable. The type also implements indexing,
+/// allowing for easy access to individual bits.
 #[derive(Copy, Clone, Eq, PartialEq)]
 pub struct BitVec<const N: usize>([Bit; N]);
 
