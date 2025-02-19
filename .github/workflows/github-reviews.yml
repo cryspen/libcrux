@@ -1,4 +1,4 @@
-name: Dismiss old reviews when re-requested
+name: GitHub - Dismiss old reviews when re-requested
 
 on:
   pull_request:
