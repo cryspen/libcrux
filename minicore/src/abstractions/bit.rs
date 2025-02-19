@@ -5,20 +5,22 @@ pub enum Bit {
     One,
 }
 
-impl From<Bit> for i128 {
-    fn from(bit: Bit) -> Self {
-        match bit {
-            Bit::Zero => 0,
-            Bit::One => 1,
-        }
-    }
+macro_rules! generate_from_bit_impls {
+    ($($ty:ident),*) => {
+        $(impl From<Bit> for $ty {
+            fn from(bit: Bit) -> Self {
+                bool::from(bit) as $ty
+            }
+        })*
+    };
 }
+generate_from_bit_impls!(u8, u16, u32, u64, u128, i8, i16, i32, i64, i128);
 
-impl From<Bit> for u64 {
+impl From<Bit> for bool {
     fn from(bit: Bit) -> Self {
         match bit {
-            Bit::Zero => 0,
-            Bit::One => 1,
+            Bit::Zero => false,
+            Bit::One => true,
         }
     }
 }
