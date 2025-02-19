@@ -66,7 +66,7 @@ impl Operations for AVX2SIMDUnit {
     fn use_hint(gamma2: Gamma2, simd_unit: &Self, hint: &mut Self) {
         arithmetic::use_hint(gamma2, &simd_unit.value, &mut hint.value);
     }
-    
+
     #[inline(always)]
     fn montgomery_multiply(lhs: &mut Self, rhs: &Self) {
         arithmetic::montgomery_multiply(&mut lhs.value, &rhs.value);
