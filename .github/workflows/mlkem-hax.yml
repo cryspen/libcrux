@@ -68,6 +68,20 @@ jobs:
           diff -r libcrux-ml-kem/proofs/fstar/extraction/ \
             ~/fstar-extraction-mlkem/fstar/extraction/
 
+  verify:
+    runs-on: self-hosted
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: hacspec/hax-actions@main
+        with:
+          hax_reference: ${{ github.event.inputs.hax_rev || 'main' }}
+          fstar: v2025.01.17
+
+      - name: 🏃 Verify ML-KEM crate
+        working-directory: libcrux-ml-kem
+        run: ./hax.py prove
+
   lax:
     runs-on: ubuntu-latest
     needs:
