@@ -374,7 +374,7 @@ fn sample_vector_cbd_then_ntt<
     let _domain_separator_init = domain_separator;
     domain_separator = prf_input_inc::<K>(&mut prf_inputs, domain_separator);
     hax_lib::fstar!(
-        "sample_vector_cbd_then_ntt_helper_1 $K $prf_inputs $prf_input $_domain_separator_init"
+        r#"sample_vector_cbd_then_ntt_helper_1 $K $prf_inputs $prf_input $_domain_separator_init"#
     );
     let prf_outputs: [[u8; ETA_RANDOMNESS_SIZE]; K] = Hasher::PRFxN(&prf_inputs);
     for i in 0..K {

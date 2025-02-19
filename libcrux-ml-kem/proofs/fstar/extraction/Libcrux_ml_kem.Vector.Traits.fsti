@@ -24,6 +24,26 @@ class t_Repr (v_Self: Type0) = {
     -> Prims.Pure (t_Array i16 (mk_usize 16)) (f_repr_pre x0) (fun result -> f_repr_post x0 result)
 }
 
+[@@ "opaque_to_smt"]
+let sub_pre (lhs rhs: t_Array i16 (sz 16)) =
+    forall i. i < 16 ==>
+        Spec.Utils.is_intb (pow2 15 - 1) (v (Seq.index lhs i) - v (Seq.index rhs i))
+
+[@@ "opaque_to_smt"]
+let sub_post (lhs rhs result: t_Array i16 (sz 16)) =
+    forall i. i < 16 ==>
+        (v (Seq.index result i) == v (Seq.index lhs i) - v (Seq.index rhs i))
+
+[@@ "opaque_to_smt"]
+let add_pre (lhs rhs: t_Array i16 (sz 16)) =
+    forall i. i < 16 ==>
+        Spec.Utils.is_intb (pow2 15 - 1) (v (Seq.index lhs i) + v (Seq.index rhs i))
+
+[@@ "opaque_to_smt"]
+let add_post (lhs rhs result: t_Array i16 (sz 16)) =
+    forall i. i < 16 ==>
+        (v (Seq.index result i) == v (Seq.index lhs i) + v (Seq.index rhs i))
+
 class t_Operations (v_Self: Type0) = {
   [@@@ FStar.Tactics.Typeclasses.no_method]_super_13011033735201511749:Core.Marker.t_Copy v_Self;
   [@@@ FStar.Tactics.Typeclasses.no_method]_super_9529721400157967266:Core.Clone.t_Clone v_Self;
@@ -54,40 +74,14 @@ class t_Operations (v_Self: Type0) = {
     -> Prims.Pure (t_Array i16 (mk_usize 16))
         (f_to_i16_array_pre x0)
         (fun result -> f_to_i16_array_post x0 result);
-  f_add_pre:lhs: v_Self -> rhs: v_Self
-    -> pred:
-      Type0
-        { (forall i.
-              i < 16 ==>
-              Spec.Utils.is_intb (pow2 15 - 1)
-                (v (Seq.index (f_repr lhs) i) + v (Seq.index (f_repr rhs) i))) ==>
-          pred };
+  f_add_pre:lhs: v_Self -> rhs: v_Self -> pred: Type0{add_pre (f_repr lhs) (f_repr rhs) ==> pred};
   f_add_post:lhs: v_Self -> rhs: v_Self -> result: v_Self
-    -> pred:
-      Type0
-        { pred ==>
-          (forall i.
-              i < 16 ==>
-              (v (Seq.index (f_repr result) i) ==
-                v (Seq.index (f_repr lhs) i) + v (Seq.index (f_repr rhs) i))) };
+    -> pred: Type0{pred ==> add_post (f_repr lhs) (f_repr rhs) (f_repr result)};
   f_add:x0: v_Self -> x1: v_Self
     -> Prims.Pure v_Self (f_add_pre x0 x1) (fun result -> f_add_post x0 x1 result);
-  f_sub_pre:lhs: v_Self -> rhs: v_Self
-    -> pred:
-      Type0
-        { (forall i.
-              i < 16 ==>
-              Spec.Utils.is_intb (pow2 15 - 1)
-                (v (Seq.index (f_repr lhs) i) - v (Seq.index (f_repr rhs) i))) ==>
-          pred };
+  f_sub_pre:lhs: v_Self -> rhs: v_Self -> pred: Type0{sub_pre (f_repr lhs) (f_repr rhs) ==> pred};
   f_sub_post:lhs: v_Self -> rhs: v_Self -> result: v_Self
-    -> pred:
-      Type0
-        { pred ==>
-          (forall i.
-              i < 16 ==>
-              (v (Seq.index (f_repr result) i) ==
-                v (Seq.index (f_repr lhs) i) - v (Seq.index (f_repr rhs) i))) };
+    -> pred: Type0{pred ==> sub_post (f_repr lhs) (f_repr rhs) (f_repr result)};
   f_sub:x0: v_Self -> x1: v_Self
     -> Prims.Pure v_Self (f_sub_pre x0 x1) (fun result -> f_sub_post x0 x1 result);
   f_multiply_by_constant_pre:vec: v_Self -> c: i16
@@ -139,13 +133,14 @@ class t_Operations (v_Self: Type0) = {
         (f_cond_subtract_3329__pre x0)
         (fun result -> f_cond_subtract_3329__post x0 result);
   f_barrett_reduce_pre:vector: v_Self
-    -> pred: Type0{Spec.Utils.is_i16b_array 28296 (f_repr vector) ==> pred};
+    -> pred: Type0{Spec.Utils.is_i16b_array_opaque 28296 (f_repr vector) ==> pred};
   f_barrett_reduce_post:v_Self -> v_Self -> Type0;
   f_barrett_reduce:x0: v_Self
     -> Prims.Pure v_Self (f_barrett_reduce_pre x0) (fun result -> f_barrett_reduce_post x0 result);
   f_montgomery_multiply_by_constant_pre:v: v_Self -> c: i16
     -> pred: Type0{Spec.Utils.is_i16b 1664 c ==> pred};
-  f_montgomery_multiply_by_constant_post:v_Self -> i16 -> v_Self -> Type0;
+  f_montgomery_multiply_by_constant_post:v: v_Self -> c: i16 -> result: v_Self
+    -> pred: Type0{pred ==> Spec.Utils.is_i16b_array_opaque 3328 (f_repr result)};
   f_montgomery_multiply_by_constant:x0: v_Self -> x1: i16
     -> Prims.Pure v_Self
         (f_montgomery_multiply_by_constant_pre x0 x1)
@@ -288,7 +283,8 @@ class t_Operations (v_Self: Type0) = {
       Type0
         { Spec.Utils.is_i16b 1664 zeta0 /\ Spec.Utils.is_i16b 1664 zeta1 /\
           Spec.Utils.is_i16b 1664 zeta2 /\ Spec.Utils.is_i16b 1664 zeta3 /\
-          Spec.Utils.is_i16b_array 3328 (f_repr lhs) /\ Spec.Utils.is_i16b_array 3328 (f_repr rhs) ==>
+          Spec.Utils.is_i16b_array_opaque 3328 (f_repr lhs) /\
+          Spec.Utils.is_i16b_array_opaque 3328 (f_repr rhs) ==>
           pred };
   f_ntt_multiply_post:
       lhs: v_Self ->
@@ -298,7 +294,7 @@ class t_Operations (v_Self: Type0) = {
       zeta2: i16 ->
       zeta3: i16 ->
       out: v_Self
-    -> pred: Type0{pred ==> Spec.Utils.is_i16b_array 3328 (f_repr out)};
+    -> pred: Type0{pred ==> Spec.Utils.is_i16b_array_opaque 3328 (f_repr out)};
   f_ntt_multiply:x0: v_Self -> x1: v_Self -> x2: i16 -> x3: i16 -> x4: i16 -> x5: i16
     -> Prims.Pure v_Self
         (f_ntt_multiply_pre x0 x1 x2 x3 x4 x5)
@@ -419,7 +415,12 @@ val montgomery_multiply_fe (#v_T: Type0) {| i1: t_Operations v_T |} (v: v_T) (fe
     : Prims.Pure v_T (requires Spec.Utils.is_i16b 1664 fer) (fun _ -> Prims.l_True)
 
 val to_standard_domain (#v_T: Type0) {| i1: t_Operations v_T |} (v: v_T)
-    : Prims.Pure v_T Prims.l_True (fun _ -> Prims.l_True)
+    : Prims.Pure v_T
+      Prims.l_True
+      (ensures
+        fun result ->
+          let result:v_T = result in
+          Spec.Utils.is_i16b_array_opaque 3328 (i1._super_12682756204189288427.f_repr result))
 
 val to_unsigned_representative (#v_T: Type0) {| i1: t_Operations v_T |} (a: v_T)
     : Prims.Pure v_T

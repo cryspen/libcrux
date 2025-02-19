@@ -75,51 +75,163 @@ fn from_i16_array<Vector: Operations>(a: &[i16]) -> PolynomialRingElement<Vector
 /// Given two polynomial ring elements `lhs` and `rhs`, compute the pointwise
 /// sum of their constituent coefficients.
 #[inline(always)]
-#[hax_lib::fstar::verification_status(lax)]
+#[hax_lib::requires(fstar!(r#"forall (i:nat). i < v (Core.Slice.impl__len ${myself}.f_coefficients) ==>
+    Libcrux_ml_kem.Vector.Traits.f_add_pre ${myself}.f_coefficients.[ sz i ] ${rhs}.f_coefficients.[ sz i ]"#))]
+#[hax_lib::ensures(|result| fstar!(r#"forall (i:nat). i < v (Core.Slice.impl__len ${myself}.f_coefficients) ==>
+    Libcrux_ml_kem.Vector.Traits.f_add_post ${myself}.f_coefficients.[ sz i ] ${rhs}.f_coefficients.[ sz i ] ${myself}_future.f_coefficients.[ sz i ]"#))]
 fn add_to_ring_element<Vector: Operations, const K: usize>(
     myself: &mut PolynomialRingElement<Vector>,
     rhs: &PolynomialRingElement<Vector>,
 ) {
+    let _myself = myself.coefficients;
     for i in 0..myself.coefficients.len() {
+        hax_lib::loop_invariant!(|i: usize| {
+            fstar!(
+                r#"(v $i < v (Core.Slice.impl__len myself.f_coefficients) ==>
+                (forall (j:nat). (j >= v $i /\ j < v (Core.Slice.impl__len myself.f_coefficients)) ==>
+                    myself.f_coefficients.[ sz j ] == ${_myself}.[ sz j ] /\
+                    Libcrux_ml_kem.Vector.Traits.f_add_pre myself.f_coefficients.[ sz j ] ${rhs}.f_coefficients.[ sz j ])) /\
+            (forall (j:nat). j < v $i ==>
+                Libcrux_ml_kem.Vector.Traits.f_add_post ${_myself}.[ sz j ] ${rhs}.f_coefficients.[ sz j ] myself.f_coefficients.[ sz j ])"#
+            )
+        });
         myself.coefficients[i] = Vector::add(myself.coefficients[i], &rhs.coefficients[i]);
     }
 }
 
 #[inline(always)]
-#[hax_lib::fstar::verification_status(lax)]
+#[hax_lib::requires(fstar!(r#"forall (i:nat). i < v $VECTORS_IN_RING_ELEMENT ==>
+    Spec.Utils.is_i16b_array_opaque 28296
+        (Libcrux_ml_kem.Vector.Traits.f_to_i16_array ${myself}.f_coefficients.[ sz i ])"#))]
 fn poly_barrett_reduce<Vector: Operations>(myself: &mut PolynomialRingElement<Vector>) {
-    // Using `hax_lib::fstar::verification_status(lax)` works but produces an error while extracting
     for i in 0..VECTORS_IN_RING_ELEMENT {
+        hax_lib::loop_invariant!(|i: usize| {
+            fstar!(
+                r#"v $i < v $VECTORS_IN_RING_ELEMENT ==>
+                (forall (j:nat). (j >= v $i /\ j < v $VECTORS_IN_RING_ELEMENT) ==>
+                    Spec.Utils.is_i16b_array_opaque 28296
+                        (Libcrux_ml_kem.Vector.Traits.f_to_i16_array myself.f_coefficients.[ sz j ]))"#
+            )
+        });
         myself.coefficients[i] = Vector::barrett_reduce(myself.coefficients[i]);
     }
 }
 
 #[inline(always)]
-#[hax_lib::fstar::verification_status(lax)]
+#[hax_lib::fstar::before(r#"#push-options "--ext context_pruning"
+
+let subtract_reduce_helper_1 (#v_Vector: Type0)
+    {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
+    (myself: t_Array v_Vector (sz 16))
+    (coefficient_normal_form: v_Vector) : Lemma
+    (requires (forall (i:nat). i < 16 ==> (forall j. j < 16 ==>
+        Spec.Utils.is_intb (pow2 15 - 1)
+        (v (Seq.index (Libcrux_ml_kem.Vector.Traits.f_to_i16_array myself.[ sz i ]) j) -
+            v (Seq.index (Libcrux_ml_kem.Vector.Traits.f_to_i16_array coefficient_normal_form) j)))))
+    (ensures (forall (i:nat). i < 16 ==> Libcrux_ml_kem.Vector.Traits.f_sub_pre myself.[ sz i ] coefficient_normal_form))
+    =
+    reveal_opaque (`%Spec.Utils.is_i16b_array_opaque) Spec.Utils.is_i16b_array_opaque;
+    reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.sub_pre) Libcrux_ml_kem.Vector.Traits.sub_pre;
+    assert_norm (pow2 15 == 32768)
+
+#pop-options
+
+#push-options " --z3rlimit 500 --ext context_pruning --split_queries always"
+
+let subtract_reduce_helper_2 (#v_Vector: Type0)
+    {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
+    (myself: t_Array v_Vector (sz 16))
+    (coefficient_normal_form: v_Vector) : Lemma
+    (requires (forall (i:nat). i < 16 ==> 
+      Libcrux_ml_kem.Vector.Traits.f_sub_pre myself.[ sz i ] coefficient_normal_form /\
+      (forall j. j < 16 ==> Spec.Utils.is_intb 28296
+        (v (Seq.index (Libcrux_ml_kem.Vector.Traits.f_to_i16_array myself.[ sz i ]) j) -
+            v (Seq.index (Libcrux_ml_kem.Vector.Traits.f_to_i16_array coefficient_normal_form) j)))))
+    (ensures (forall (i:nat). i < 16 ==>
+        Spec.Utils.is_i16b_array_opaque 28296 (Libcrux_ml_kem.Vector.Traits.f_to_i16_array
+        (Libcrux_ml_kem.Vector.Traits.f_sub myself.[ sz i ] coefficient_normal_form))))
+    =
+    reveal_opaque (`%Spec.Utils.is_i16b_array_opaque) Spec.Utils.is_i16b_array_opaque;
+    reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.sub_post) Libcrux_ml_kem.Vector.Traits.sub_post;
+    assert (forall (i:nat). i < 16 ==>
+        Spec.Utils.is_i16b_array_opaque 28296 (Libcrux_ml_kem.Vector.Traits.f_to_i16_array
+        (Libcrux_ml_kem.Vector.Traits.f_sub myself.[ sz i ] coefficient_normal_form)))
+
+#pop-options
+
+let subtract_reduce_helper (#v_Vector: Type0)
+    {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
+    (myself: t_Array v_Vector (sz 16))
+    (coefficient_normal_form: v_Vector) : Lemma
+    (requires (forall (i:nat). i < 16 ==>
+        Spec.Utils.is_i16b_array_opaque (28296 - 3328)
+        (Libcrux_ml_kem.Vector.Traits.f_to_i16_array myself.[ sz i ])) /\
+        Spec.Utils.is_i16b_array_opaque 3328
+        (Libcrux_ml_kem.Vector.Traits.f_to_i16_array coefficient_normal_form))
+    (ensures (forall (i:nat). i < 16 ==> Libcrux_ml_kem.Vector.Traits.f_sub_pre myself.[ sz i ] coefficient_normal_form /\
+        Spec.Utils.is_i16b_array_opaque 28296 (Libcrux_ml_kem.Vector.Traits.f_to_i16_array
+        (Libcrux_ml_kem.Vector.Traits.f_sub myself.[ sz i ] coefficient_normal_form))))
+    =
+    reveal_opaque (`%Spec.Utils.is_i16b_array_opaque) Spec.Utils.is_i16b_array_opaque;
+    assert_norm (pow2 15 == 32768);
+    assert (forall (i:nat). i < 16 ==>
+            Spec.Utils.is_i16b_array (28296 - 3328)
+            (Libcrux_ml_kem.Vector.Traits.f_to_i16_array myself.[ sz i ]));
+    assert (forall (i:nat). i < 16 ==> (forall j. j < 16 ==>
+            Spec.Utils.is_intb 28296
+            (v (Seq.index (Libcrux_ml_kem.Vector.Traits.f_to_i16_array myself.[ sz i ]) j) -
+                v (Seq.index (Libcrux_ml_kem.Vector.Traits.f_to_i16_array coefficient_normal_form) j))));
+    assert (forall (i:nat). i < 16 ==> (forall j. j < 16 ==>
+            Spec.Utils.is_intb (pow2 15 - 1)
+            (v (Seq.index (Libcrux_ml_kem.Vector.Traits.f_to_i16_array myself.[ sz i ]) j) -
+                v (Seq.index (Libcrux_ml_kem.Vector.Traits.f_to_i16_array coefficient_normal_form) j))));
+    subtract_reduce_helper_1 myself coefficient_normal_form;
+    subtract_reduce_helper_2 myself coefficient_normal_form"#)]
+#[hax_lib::requires(fstar!(r#"forall (i:nat). i < 16 ==> Spec.Utils.is_i16b_array_opaque (28296 - 3328)
+    (Libcrux_ml_kem.Vector.Traits.f_to_i16_array ${myself}.f_coefficients.[ sz i ])"#))]
 fn subtract_reduce<Vector: Operations>(
     myself: &PolynomialRingElement<Vector>,
     mut b: PolynomialRingElement<Vector>,
 ) -> PolynomialRingElement<Vector> {
-    // Using `hax_lib::fstar::verification_status(lax)` works but produces an error while extracting
     for i in 0..VECTORS_IN_RING_ELEMENT {
         let coefficient_normal_form =
             Vector::montgomery_multiply_by_constant(b.coefficients[i], 1441);
-        b.coefficients[i] = Vector::barrett_reduce(Vector::sub(
-            myself.coefficients[i],
-            &coefficient_normal_form,
-        ));
+        hax_lib::fstar!(
+            r#"subtract_reduce_helper ${myself}.f_coefficients $coefficient_normal_form"#
+        );
+        b.coefficients[i] =
+            Vector::barrett_reduce(Vector::sub(myself.coefficients[i], &coefficient_normal_form));
     }
     b
 }
 
 #[inline(always)]
-#[hax_lib::fstar::verification_status(lax)]
+#[hax_lib::fstar::before(
+r#"let add_message_error_reduce_helper (#v_Vector: Type0)
+    {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
+    (result coefficient_normal_form: v_Vector) : Lemma
+    (requires (Spec.Utils.is_i16b_array_opaque (28296 - 3328)
+          (Libcrux_ml_kem.Vector.Traits.f_to_i16_array result) /\
+        Spec.Utils.is_i16b_array_opaque 3328
+          (Libcrux_ml_kem.Vector.Traits.f_to_i16_array coefficient_normal_form)))
+    (ensures (Libcrux_ml_kem.Vector.Traits.f_add_pre coefficient_normal_form result /\
+        Spec.Utils.is_i16b_array_opaque 28296 (Libcrux_ml_kem.Vector.Traits.f_to_i16_array
+          (Libcrux_ml_kem.Vector.Traits.f_add coefficient_normal_form result))))
+    =
+    reveal_opaque (`%Spec.Utils.is_i16b_array_opaque) Spec.Utils.is_i16b_array_opaque;
+    reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.add_pre) Libcrux_ml_kem.Vector.Traits.add_pre;
+    reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.add_post) Libcrux_ml_kem.Vector.Traits.add_post;
+    assert_norm (pow2 15 == 32768)"#
+)]
+#[hax_lib::requires(fstar!(r#"(forall (i:nat). i < 16 ==>
+    Libcrux_ml_kem.Vector.Traits.f_add_pre ${myself}.f_coefficients.[ sz i ] ${message}.f_coefficients.[ sz i ] /\
+    Spec.Utils.is_i16b_array_opaque (28296 - 3328) (Libcrux_ml_kem.Vector.Traits.f_to_i16_array
+        (Libcrux_ml_kem.Vector.Traits.f_add ${myself}.f_coefficients.[ sz i ] ${message}.f_coefficients.[ sz i ])))"#))]
 fn add_message_error_reduce<Vector: Operations>(
     myself: &PolynomialRingElement<Vector>,
     message: &PolynomialRingElement<Vector>,
     mut result: PolynomialRingElement<Vector>,
 ) -> PolynomialRingElement<Vector> {
-    // Using `hax_lib::fstar::verification_status(lax)` works but produces an error while extracting
     for i in 0..VECTORS_IN_RING_ELEMENT {
         let coefficient_normal_form =
             Vector::montgomery_multiply_by_constant(result.coefficients[i], 1441);
@@ -141,6 +253,7 @@ fn add_message_error_reduce<Vector: Operations>(
         // ```
 
         let tmp = Vector::add(myself.coefficients[i], &message.coefficients[i]);
+        hax_lib::fstar!(r#"add_message_error_reduce_helper $tmp $coefficient_normal_form"#);
         let tmp = Vector::add(coefficient_normal_form, &tmp);
         result.coefficients[i] = Vector::barrett_reduce(tmp);
     }
@@ -148,33 +261,108 @@ fn add_message_error_reduce<Vector: Operations>(
 }
 
 #[inline(always)]
-#[hax_lib::fstar::verification_status(lax)]
+#[hax_lib::fstar::before(r#"#push-options "--ext context_pruning"
+
+let add_error_reduce_helper_1 (#v_Vector: Type0)
+    {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
+    (myself: t_Array v_Vector (sz 16))
+    (coefficient_normal_form: v_Vector) : Lemma
+    (requires (forall (i:nat). i < 16 ==> (forall j. j < 16 ==>
+        Spec.Utils.is_intb (pow2 15 - 1)
+        (v (Seq.index (Libcrux_ml_kem.Vector.Traits.f_to_i16_array coefficient_normal_form) j) +
+            v (Seq.index (Libcrux_ml_kem.Vector.Traits.f_to_i16_array myself.[ sz i ]) j)))))
+    (ensures (forall (i:nat). i < 16 ==> Libcrux_ml_kem.Vector.Traits.f_add_pre coefficient_normal_form myself.[ sz i ]))
+    =
+    reveal_opaque (`%Spec.Utils.is_i16b_array_opaque) Spec.Utils.is_i16b_array_opaque;
+    reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.add_pre) Libcrux_ml_kem.Vector.Traits.add_pre;
+    assert_norm (pow2 15 == 32768)
+
+#pop-options
+
+#push-options "--z3rlimit 500 --ext context_pruning --split_queries always"
+
+let add_error_reduce_helper_2 (#v_Vector: Type0)
+    {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
+    (myself: t_Array v_Vector (sz 16))
+    (coefficient_normal_form: v_Vector) : Lemma
+    (requires (forall (i:nat). i < 16 ==> 
+      Libcrux_ml_kem.Vector.Traits.f_add_pre coefficient_normal_form myself.[ sz i ] /\
+      (forall j. j < 16 ==> Spec.Utils.is_intb 28296
+        (v (Seq.index (Libcrux_ml_kem.Vector.Traits.f_to_i16_array coefficient_normal_form) j) +
+            v (Seq.index (Libcrux_ml_kem.Vector.Traits.f_to_i16_array myself.[ sz i ]) j)))))
+    (ensures (forall (i:nat). i < 16 ==>
+        Spec.Utils.is_i16b_array_opaque 28296 (Libcrux_ml_kem.Vector.Traits.f_to_i16_array
+        (Libcrux_ml_kem.Vector.Traits.f_add coefficient_normal_form myself.[ sz i ]))))
+    =
+    reveal_opaque (`%Spec.Utils.is_i16b_array_opaque) Spec.Utils.is_i16b_array_opaque;
+    reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.add_post) Libcrux_ml_kem.Vector.Traits.add_post;
+    assert (forall (i:nat). i < 16 ==>
+        Spec.Utils.is_i16b_array_opaque 28296 (Libcrux_ml_kem.Vector.Traits.f_to_i16_array
+        (Libcrux_ml_kem.Vector.Traits.f_add coefficient_normal_form myself.[ sz i ])))
+
+#pop-options
+
+let add_error_reduce_helper (#v_Vector: Type0)
+    {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
+    (myself: t_Array v_Vector (sz 16))
+    (coefficient_normal_form: v_Vector) : Lemma
+    (requires (forall (i:nat). i < 16 ==>
+        Spec.Utils.is_i16b_array_opaque (28296 - 3328)
+        (Libcrux_ml_kem.Vector.Traits.f_to_i16_array myself.[ sz i ])) /\
+        Spec.Utils.is_i16b_array_opaque 3328
+        (Libcrux_ml_kem.Vector.Traits.f_to_i16_array coefficient_normal_form))
+    (ensures (forall (i:nat). i < 16 ==> Libcrux_ml_kem.Vector.Traits.f_add_pre coefficient_normal_form myself.[ sz i ] /\
+        Spec.Utils.is_i16b_array_opaque 28296 (Libcrux_ml_kem.Vector.Traits.f_to_i16_array
+        (Libcrux_ml_kem.Vector.Traits.f_add coefficient_normal_form myself.[ sz i ]))))
+    =
+    reveal_opaque (`%Spec.Utils.is_i16b_array_opaque) Spec.Utils.is_i16b_array_opaque;
+    assert_norm (pow2 15 == 32768);
+    assert (forall (i:nat). i < 16 ==>
+            Spec.Utils.is_i16b_array (28296 - 3328)
+            (Libcrux_ml_kem.Vector.Traits.f_to_i16_array myself.[ sz i ]));
+    assert (forall (i:nat). i < 16 ==> (forall j. j < 16 ==>
+            Spec.Utils.is_intb 28296
+            (v (Seq.index (Libcrux_ml_kem.Vector.Traits.f_to_i16_array coefficient_normal_form) j) +
+                v (Seq.index (Libcrux_ml_kem.Vector.Traits.f_to_i16_array myself.[ sz i ]) j))));
+    assert (forall (i:nat). i < 16 ==> (forall j. j < 16 ==>
+            Spec.Utils.is_intb (pow2 15 - 1)
+            (v (Seq.index (Libcrux_ml_kem.Vector.Traits.f_to_i16_array coefficient_normal_form) j) +
+                v (Seq.index (Libcrux_ml_kem.Vector.Traits.f_to_i16_array myself.[ sz i ]) j))));
+    add_error_reduce_helper_1 myself coefficient_normal_form;
+    add_error_reduce_helper_2 myself coefficient_normal_form"#)]
+#[hax_lib::requires(fstar!(r#"forall (i:nat). i < 16 ==> Spec.Utils.is_i16b_array_opaque (28296 - 3328)
+    (Libcrux_ml_kem.Vector.Traits.f_to_i16_array ${error}.f_coefficients.[ sz i ])"#))]
 fn add_error_reduce<Vector: Operations>(
     myself: &mut PolynomialRingElement<Vector>,
     error: &PolynomialRingElement<Vector>,
 ) {
-    // Using `hax_lib::fstar::verification_status(lax)` works but produces an error while extracting
     for j in 0..VECTORS_IN_RING_ELEMENT {
         let coefficient_normal_form =
             Vector::montgomery_multiply_by_constant(myself.coefficients[j], 1441);
 
+        hax_lib::fstar!(
+            r#"add_error_reduce_helper ${error}.f_coefficients $coefficient_normal_form"#
+        );
         myself.coefficients[j] =
             Vector::barrett_reduce(Vector::add(coefficient_normal_form, &error.coefficients[j]));
     }
 }
 
 #[inline(always)]
-#[hax_lib::fstar::verification_status(lax)]
+#[hax_lib::requires(fstar!(r#"forall (i:nat). i < 16 ==> Spec.Utils.is_i16b_array_opaque (28296 - 3328)
+    (Libcrux_ml_kem.Vector.Traits.f_to_i16_array ${error}.f_coefficients.[ sz i ])"#))]
 fn add_standard_error_reduce<Vector: Operations>(
     myself: &mut PolynomialRingElement<Vector>,
     error: &PolynomialRingElement<Vector>,
 ) {
-    // Using `hax_lib::fstar::verification_status(lax)` works but produces an error while extracting
     for j in 0..VECTORS_IN_RING_ELEMENT {
         // The coefficients are of the form aR^{-1} mod q, which means
         // calling to_montgomery_domain() on them should return a mod q.
         let coefficient_normal_form = to_standard_domain::<Vector>(myself.coefficients[j]);
 
+        hax_lib::fstar!(
+            r#"add_error_reduce_helper ${error}.f_coefficients $coefficient_normal_form"#
+        );
         myself.coefficients[j] =
             Vector::barrett_reduce(Vector::add(coefficient_normal_form, &error.coefficients[j]));
     }
@@ -219,7 +407,12 @@ fn add_standard_error_reduce<Vector: Operations>(
 //                 result.coefficients[i].abs() <= FIELD_MODULUS
 // ))))]
 #[inline(always)]
-#[hax_lib::fstar::verification_status(lax)]
+#[hax_lib::fstar::options("--z3rlimit 200 --ext context_pruning")]
+#[hax_lib::requires(fstar!(r#"forall (i:nat). i < v $VECTORS_IN_RING_ELEMENT ==>
+    Spec.Utils.is_i16b_array_opaque 3328
+        (Libcrux_ml_kem.Vector.Traits.f_to_i16_array ${myself}.f_coefficients.[ sz i ]) /\
+    Spec.Utils.is_i16b_array_opaque 3328
+        (Libcrux_ml_kem.Vector.Traits.f_to_i16_array ${rhs}.f_coefficients.[ sz i ])"#))]
 fn ntt_multiply<Vector: Operations>(
     myself: &PolynomialRingElement<Vector>,
     rhs: &PolynomialRingElement<Vector>,
@@ -260,36 +453,56 @@ impl<Vector: Operations> PolynomialRingElement<Vector> {
     /// Given two polynomial ring elements `lhs` and `rhs`, compute the pointwise
     /// sum of their constituent coefficients.
     #[inline(always)]
+    #[hax_lib::requires(fstar!(r#"forall (i:nat). i < v (Core.Slice.impl__len self.f_coefficients) ==>
+        Libcrux_ml_kem.Vector.Traits.f_add_pre self.f_coefficients.[ sz i ] ${rhs}.f_coefficients.[ sz i ]"#))]
     pub(crate) fn add_to_ring_element<const K: usize>(&mut self, rhs: &Self) {
         add_to_ring_element::<Vector, K>(self, rhs);
     }
 
     #[inline(always)]
+    #[requires(fstar!(r#"forall (i:nat). i < v $VECTORS_IN_RING_ELEMENT ==>
+        Spec.Utils.is_i16b_array_opaque 28296
+            (Libcrux_ml_kem.Vector.Traits.f_to_i16_array self.f_coefficients.[ sz i ])"#))]
     pub(crate) fn poly_barrett_reduce(&mut self) {
         poly_barrett_reduce(self);
     }
 
     #[inline(always)]
+    #[requires(fstar!(r#"forall (i:nat). i < 16 ==> Spec.Utils.is_i16b_array_opaque (28296 - 3328)
+        (Libcrux_ml_kem.Vector.Traits.f_to_i16_array self.f_coefficients.[ sz i ])"#))]
     pub(crate) fn subtract_reduce(&self, b: Self) -> Self {
         subtract_reduce(self, b)
     }
 
     #[inline(always)]
+    #[requires(fstar!(r#"(forall (i:nat). i < 16 ==>
+        Libcrux_ml_kem.Vector.Traits.f_add_pre self.f_coefficients.[ sz i ] ${message}.f_coefficients.[ sz i ] /\
+        Spec.Utils.is_i16b_array_opaque (28296 - 3328) (Libcrux_ml_kem.Vector.Traits.f_to_i16_array
+            (Libcrux_ml_kem.Vector.Traits.f_add self.f_coefficients.[ sz i ] ${message}.f_coefficients.[ sz i ])))"#))]
     pub(crate) fn add_message_error_reduce(&self, message: &Self, result: Self) -> Self {
         add_message_error_reduce(self, message, result)
     }
 
     #[inline(always)]
+    #[requires(fstar!(r#"forall (i:nat). i < 16 ==> Spec.Utils.is_i16b_array_opaque (28296 - 3328)
+        (Libcrux_ml_kem.Vector.Traits.f_to_i16_array ${error}.f_coefficients.[ sz i ])"#))]
     pub(crate) fn add_error_reduce(&mut self, error: &Self) {
         add_error_reduce(self, error);
     }
 
     #[inline(always)]
+    #[requires(fstar!(r#"forall (i:nat). i < 16 ==> Spec.Utils.is_i16b_array_opaque (28296 - 3328)
+        (Libcrux_ml_kem.Vector.Traits.f_to_i16_array ${error}.f_coefficients.[ sz i ])"#))]
     pub(crate) fn add_standard_error_reduce(&mut self, error: &Self) {
         add_standard_error_reduce(self, error);
     }
 
     #[inline(always)]
+    #[requires(fstar!(r#"forall (i:nat). i < v $VECTORS_IN_RING_ELEMENT ==>
+        Spec.Utils.is_i16b_array_opaque 3328
+            (Libcrux_ml_kem.Vector.Traits.f_to_i16_array self.f_coefficients.[ sz i ]) /\
+        Spec.Utils.is_i16b_array_opaque 3328
+            (Libcrux_ml_kem.Vector.Traits.f_to_i16_array ${rhs}.f_coefficients.[ sz i ])"#))]
     pub(crate) fn ntt_multiply(&self, rhs: &Self) -> Self {
         ntt_multiply(self, rhs)
     }
