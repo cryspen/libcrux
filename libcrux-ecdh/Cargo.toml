@@ -13,7 +13,7 @@ description = "Libcrux ECDH implementation"
 path = "src/ecdh.rs"
 
 [dependencies]
-rand = { version = "0.8" }
+rand = { version = "0.9" }
 libcrux-curve25519 = { version = "=0.0.2-beta.2", path = "../curve25519" }
 libcrux-p256 = { version = "=0.0.2-beta.2", path = "../p256", features = [
     "expose-hacl",
