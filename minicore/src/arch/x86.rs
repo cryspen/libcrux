@@ -1,3 +1,4 @@
+/// This is a (partial) mirror of [`core::arch::x86`] and [`core::arch::x86_64`].
 use crate::abstractions::{bit::*, bitvec::*};
 
 pub(crate) mod upstream {
