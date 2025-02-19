@@ -1,4 +1,4 @@
-name: Specs
+name: Specs - Build & Test
 
 on:
   push:

@@ -1,4 +1,4 @@
-name: Platform
+name: Platform - Build & Test
 
 on:
   push:
