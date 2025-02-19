@@ -1,4 +1,4 @@
-name: hax
+name: ML-DSA - hax
 
 on:
   push:
@@ -29,63 +29,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  mlkem-extract:
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v4
-      - uses: hacspec/hax-actions@main
-        with:
-          hax_reference: ${{ github.event.inputs.hax_rev || 'main' }}
-          fstar: v2025.01.17
-
-      - name: 🏃 Extract ML-KEM crate
-        working-directory: libcrux-ml-kem
-        run: ./hax.py extract
-
-      - name: ↑ Upload F* extraction
-        uses: actions/upload-artifact@v4
-        with:
-          name: fstar-extraction-mlkem
-          path: libcrux-ml-kem/proofs/
-          include-hidden-files: true
-          if-no-files-found: error
-
-  mlkem-diff:
-    needs: mlkem-extract
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/download-artifact@v4
-        with:
-          name: fstar-extraction-mlkem
-          path: ~/fstar-extraction-mlkem
-
-      - name: = Diff Extraction
-        if: ${{ github.event.inputs.skip_diff != 'false' }}
-        run: |
-          diff -r libcrux-ml-kem/proofs/fstar/extraction/ \
-            ~/fstar-extraction-mlkem/fstar/extraction/
-
-  mlkem-lax:
-    runs-on: ubuntu-latest
-    needs:
-      - mlkem-extract
-      - mlkem-diff
-
-    steps:
-      - uses: actions/checkout@v4
-      - uses: hacspec/hax-actions@main
-        with:
-          hax_reference: ${{ github.event.inputs.hax_rev || 'main' }}
-          fstar: v2025.01.17
-
-      - name: 🏃 Lax ML-KEM crate
-        working-directory: libcrux-ml-kem
-        run: ./hax.py prove --admit
-
-  mldsa-extract:
+  extract:
     runs-on: ubuntu-latest
 
     steps:
@@ -107,8 +51,8 @@ jobs:
           include-hidden-files: true
           if-no-files-found: error
 
-  mldsa-diff:
-    needs: mldsa-extract
+  diff:
+    needs: extract
     runs-on: ubuntu-latest
 
     steps:
@@ -124,11 +68,11 @@ jobs:
           diff -r libcrux-ml-dsa/proofs/fstar/extraction/ \
             ~/fstar-extraction-mldsa/fstar/extraction/
 
-  mldsa-lax:
+  lax:
     runs-on: ubuntu-latest
     needs:
-      - mldsa-extract
-      - mldsa-diff
+      - extract
+      - diff
 
     steps:
       - uses: actions/checkout@v4
