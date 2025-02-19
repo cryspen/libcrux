@@ -1,3 +1,36 @@
+//! # Bit Manipulation and Machine Integer Utilities
+//!
+//! This module provides utilities for working with individual bits and machine integer types.
+//! It defines a [`Bit`] enum to represent a single bit (`0` or `1`) along with convenient
+//! conversion implementations between `Bit`, [`bool`], and various primitive integer types.
+//!
+//! In addition, the module introduces the [`MachineInteger`] trait which abstracts over
+//! integer types, providing associated constants:
+//!
+//! - `BITS`: The size of the integer type in bits.
+//! - `SIGNED`: A flag indicating whether the type is signed.
+//!
+//! The [`Bit`] type includes methods for extracting the value of a specific bit from an integer.
+//! For example, [`Bit::of_int`] returns the bit at a given position for a provided integer,
+//! handling both positive and negative values (assuming a two's complement representation).
+//!
+//! # Examples
+//!
+//! ```rust
+//! use minicore::abstractions::bit::{Bit, MachineInteger};
+//!
+//! // Extract the 3rd bit (0-indexed) from an integer.
+//! let bit = Bit::of_int(42, 2);
+//! println!("The extracted bit is: {:?}", bit);
+//!
+//! // Convert Bit to a primitive integer type.
+//! let num: u8 = bit.into();
+//! println!("As an integer: {}", num);
+//! ```
+//!
+//! [`bool`]: https://doc.rust-lang.org/std/primitive.bool.html
+//! [`Bit::of_int`]: enum.Bit.html#method.of_int
+
 /// Represent a bit: `0` or `1`.
 #[derive(Copy, Clone, Eq, PartialEq, Debug)]
 pub enum Bit {
