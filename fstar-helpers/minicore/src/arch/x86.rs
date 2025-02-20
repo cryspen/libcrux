@@ -3,7 +3,7 @@
 //! This module provides a purely Rust implementation of selected operations from
 //! `core::arch::x86` and `core::arch::x86_64`.
 
-use crate::abstractions::{bit::*, bitvec::*};
+use crate::abstractions::{bit::*, bitvec::*, funarr::*};
 
 pub(crate) mod upstream {
     #[cfg(target_arch = "x86")]
@@ -12,8 +12,9 @@ pub(crate) mod upstream {
     pub use core::arch::x86_64::*;
 }
 
-#[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
 /// Conversions impls between `BitVec<N>` and `__mNi` types.
+#[cfg(not(hax))]
+#[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
 mod conversions {
     use super::upstream::{
         __m128i, __m256i, _mm256_loadu_si256, _mm256_storeu_si256, _mm_loadu_si128,
@@ -66,6 +67,7 @@ type __m256i = BitVec<256>;
 #[allow(non_camel_case_types)]
 type __m128i = BitVec<128>;
 
+#[hax_lib::exclude]
 pub fn _mm_storeu_si128(output: *mut __m128i, a: __m128i) {
     // This is equivalent to `*output = a`
     let mut out = [0u8; 128];
@@ -75,7 +77,9 @@ pub fn _mm_storeu_si128(output: *mut __m128i, a: __m128i) {
     }
 }
 
+#[hax_lib::requires(SHIFT_BY >= 0 && SHIFT_BY < 16)]
 pub fn _mm256_slli_epi16<const SHIFT_BY: i32>(vector: __m256i) -> __m256i {
+    #[cfg(not(hax))]
     debug_assert!(SHIFT_BY >= 0 && SHIFT_BY < 16);
     BitVec::from_fn(|i| {
         let nth_bit = i % 16;
@@ -88,7 +92,9 @@ pub fn _mm256_slli_epi16<const SHIFT_BY: i32>(vector: __m256i) -> __m256i {
     })
 }
 
+#[hax_lib::requires(SHIFT_BY >= 0 && SHIFT_BY < 64)]
 pub fn _mm256_srli_epi64<const SHIFT_BY: i32>(vector: __m256i) -> __m256i {
+    #[cfg(not(hax))]
     debug_assert!(SHIFT_BY >= 0 && SHIFT_BY < 64);
     BitVec::from_fn(|i| {
         let nth_bit = i % 64;
@@ -101,27 +107,244 @@ pub fn _mm256_srli_epi64<const SHIFT_BY: i32>(vector: __m256i) -> __m256i {
     })
 }
 
+#[hax_lib::exclude]
 pub fn _mm256_sllv_epi32(vector: __m256i, counts: __m256i) -> __m256i {
-    extra::mm256_sllv_epi32_u32_array(vector, counts.to_vec().try_into().unwrap())
+    // extra::mm256_sllv_epi32_u32_array(vector, counts.to_vec().try_into().unwrap())
+    todo!()
 }
 
+#[hax_lib::exclude]
 pub fn _mm256_permutevar8x32_epi32(a: __m256i, b: __m256i) -> __m256i {
-    extra::mm256_permutevar8x32_epi32_u32_array(a, b.to_vec().try_into().unwrap())
+    // extra::mm256_permutevar8x32_epi32_u32_array(a, b.to_vec().try_into().unwrap())
+    todo!()
 }
 
 pub fn _mm256_castsi256_si128(vector: __m256i) -> __m128i {
     BitVec::from_fn(|i| vector[i])
 }
 
+#[hax_lib::exclude]
 pub fn _mm_shuffle_epi8(vector: __m128i, indexes: __m128i) -> __m128i {
-    let indexes: [u8; 16] = indexes.to_vec().try_into().unwrap();
-    extra::mm_shuffle_epi8_u8_array(vector, indexes)
+    // let indexes: [u8; 16] = indexes.to_vec().try_into().unwrap();
+    // extra::mm_shuffle_epi8_u8_array(vector, indexes)
+    todo!()
+}
+
+use hax_lib::implies;
+
+#[hax_lib::fstar::replace(
+    "
+    assume val b: nat -> $:{Bit}
+    let bb (i: usize) = b (v i)
+"
+)]
+fn bb(i: usize) -> Bit {
+    todo!()
+}
+
+fn hey() {
+    let x0 = proveme(&BitVec::from_fn(|i| bb(i)))[0];
+    let x1 = proveme(&BitVec::from_fn(|i| bb(i)))[1];
+    let x2 = proveme(&BitVec::from_fn(|i| bb(i)))[2];
+    let x3 = proveme(&BitVec::from_fn(|i| bb(i)))[3];
+    let x4 = proveme(&BitVec::from_fn(|i| bb(i)))[4];
+    let x5 = proveme(&BitVec::from_fn(|i| bb(i)))[5];
+    let x6 = proveme(&BitVec::from_fn(|i| bb(i)))[6];
+    let x7 = proveme(&BitVec::from_fn(|i| bb(i)))[7];
+    let x8 = proveme(&BitVec::from_fn(|i| bb(i)))[8];
+    let x9 = proveme(&BitVec::from_fn(|i| bb(i)))[9];
+    let x10 = proveme(&BitVec::from_fn(|i| bb(i)))[10];
+    let x11 = proveme(&BitVec::from_fn(|i| bb(i)))[11];
+    let x12 = proveme(&BitVec::from_fn(|i| bb(i)))[12];
+    let x13 = proveme(&BitVec::from_fn(|i| bb(i)))[13];
+    let x14 = proveme(&BitVec::from_fn(|i| bb(i)))[14];
+    let x15 = proveme(&BitVec::from_fn(|i| bb(i)))[15];
+    let x16 = proveme(&BitVec::from_fn(|i| bb(i)))[16];
+    let x17 = proveme(&BitVec::from_fn(|i| bb(i)))[17];
+    let x18 = proveme(&BitVec::from_fn(|i| bb(i)))[18];
+    let x19 = proveme(&BitVec::from_fn(|i| bb(i)))[19];
+    let x20 = proveme(&BitVec::from_fn(|i| bb(i)))[20];
+    let x21 = proveme(&BitVec::from_fn(|i| bb(i)))[21];
+    let x22 = proveme(&BitVec::from_fn(|i| bb(i)))[22];
+    let x23 = proveme(&BitVec::from_fn(|i| bb(i)))[23];
+    let x24 = proveme(&BitVec::from_fn(|i| bb(i)))[24];
+    let x25 = proveme(&BitVec::from_fn(|i| bb(i)))[25];
+    let x26 = proveme(&BitVec::from_fn(|i| bb(i)))[26];
+    let x27 = proveme(&BitVec::from_fn(|i| bb(i)))[27];
+    let x28 = proveme(&BitVec::from_fn(|i| bb(i)))[28];
+    let x29 = proveme(&BitVec::from_fn(|i| bb(i)))[29];
+    let x30 = proveme(&BitVec::from_fn(|i| bb(i)))[30];
+    let x31 = proveme(&BitVec::from_fn(|i| bb(i)))[31];
+    let x32 = proveme(&BitVec::from_fn(|i| bb(i)))[32];
+    let x33 = proveme(&BitVec::from_fn(|i| bb(i)))[33];
+    let x34 = proveme(&BitVec::from_fn(|i| bb(i)))[34];
+    let x35 = proveme(&BitVec::from_fn(|i| bb(i)))[35];
+    let x36 = proveme(&BitVec::from_fn(|i| bb(i)))[36];
+    let x37 = proveme(&BitVec::from_fn(|i| bb(i)))[37];
+    let x38 = proveme(&BitVec::from_fn(|i| bb(i)))[38];
+    let x39 = proveme(&BitVec::from_fn(|i| bb(i)))[39];
+    let x40 = proveme(&BitVec::from_fn(|i| bb(i)))[40];
+    let x41 = proveme(&BitVec::from_fn(|i| bb(i)))[41];
+    let x42 = proveme(&BitVec::from_fn(|i| bb(i)))[42];
+    let x43 = proveme(&BitVec::from_fn(|i| bb(i)))[43];
+    let x44 = proveme(&BitVec::from_fn(|i| bb(i)))[44];
+    let x45 = proveme(&BitVec::from_fn(|i| bb(i)))[45];
+    let x46 = proveme(&BitVec::from_fn(|i| bb(i)))[46];
+    let x47 = proveme(&BitVec::from_fn(|i| bb(i)))[47];
+    let x48 = proveme(&BitVec::from_fn(|i| bb(i)))[48];
+    let x49 = proveme(&BitVec::from_fn(|i| bb(i)))[49];
+    let x50 = proveme(&BitVec::from_fn(|i| bb(i)))[50];
+    let x51 = proveme(&BitVec::from_fn(|i| bb(i)))[51];
+    let x52 = proveme(&BitVec::from_fn(|i| bb(i)))[52];
+    let x53 = proveme(&BitVec::from_fn(|i| bb(i)))[53];
+    let x54 = proveme(&BitVec::from_fn(|i| bb(i)))[54];
+    let x55 = proveme(&BitVec::from_fn(|i| bb(i)))[55];
+    let x56 = proveme(&BitVec::from_fn(|i| bb(i)))[56];
+    let x57 = proveme(&BitVec::from_fn(|i| bb(i)))[57];
+    let x58 = proveme(&BitVec::from_fn(|i| bb(i)))[58];
+    let x59 = proveme(&BitVec::from_fn(|i| bb(i)))[59];
+    let x60 = proveme(&BitVec::from_fn(|i| bb(i)))[60];
+    let x61 = proveme(&BitVec::from_fn(|i| bb(i)))[61];
+    let x62 = proveme(&BitVec::from_fn(|i| bb(i)))[62];
+    let x63 = proveme(&BitVec::from_fn(|i| bb(i)))[63];
+    let x64 = proveme(&BitVec::from_fn(|i| bb(i)))[64];
+    let x65 = proveme(&BitVec::from_fn(|i| bb(i)))[65];
+    let x66 = proveme(&BitVec::from_fn(|i| bb(i)))[66];
+    let x67 = proveme(&BitVec::from_fn(|i| bb(i)))[67];
+    let x68 = proveme(&BitVec::from_fn(|i| bb(i)))[68];
+    let x69 = proveme(&BitVec::from_fn(|i| bb(i)))[69];
+    let x70 = proveme(&BitVec::from_fn(|i| bb(i)))[70];
+    let x71 = proveme(&BitVec::from_fn(|i| bb(i)))[71];
+    let x72 = proveme(&BitVec::from_fn(|i| bb(i)))[72];
+    let x73 = proveme(&BitVec::from_fn(|i| bb(i)))[73];
+    let x74 = proveme(&BitVec::from_fn(|i| bb(i)))[74];
+    let x75 = proveme(&BitVec::from_fn(|i| bb(i)))[75];
+    let x76 = proveme(&BitVec::from_fn(|i| bb(i)))[76];
+    let x77 = proveme(&BitVec::from_fn(|i| bb(i)))[77];
+    let x78 = proveme(&BitVec::from_fn(|i| bb(i)))[78];
+    let x79 = proveme(&BitVec::from_fn(|i| bb(i)))[79];
+    let x80 = proveme(&BitVec::from_fn(|i| bb(i)))[80];
+    let x81 = proveme(&BitVec::from_fn(|i| bb(i)))[81];
+    let x82 = proveme(&BitVec::from_fn(|i| bb(i)))[82];
+    let x83 = proveme(&BitVec::from_fn(|i| bb(i)))[83];
+    let x84 = proveme(&BitVec::from_fn(|i| bb(i)))[84];
+    let x85 = proveme(&BitVec::from_fn(|i| bb(i)))[85];
+    let x86 = proveme(&BitVec::from_fn(|i| bb(i)))[86];
+    let x87 = proveme(&BitVec::from_fn(|i| bb(i)))[87];
+    let x88 = proveme(&BitVec::from_fn(|i| bb(i)))[88];
+    let x89 = proveme(&BitVec::from_fn(|i| bb(i)))[89];
+    let x90 = proveme(&BitVec::from_fn(|i| bb(i)))[90];
+    let x91 = proveme(&BitVec::from_fn(|i| bb(i)))[91];
+    let x92 = proveme(&BitVec::from_fn(|i| bb(i)))[92];
+    let x93 = proveme(&BitVec::from_fn(|i| bb(i)))[93];
+    let x94 = proveme(&BitVec::from_fn(|i| bb(i)))[94];
+    let x95 = proveme(&BitVec::from_fn(|i| bb(i)))[95];
+    let x96 = proveme(&BitVec::from_fn(|i| bb(i)))[96];
+    let x97 = proveme(&BitVec::from_fn(|i| bb(i)))[97];
+    let x98 = proveme(&BitVec::from_fn(|i| bb(i)))[98];
+    let x99 = proveme(&BitVec::from_fn(|i| bb(i)))[99];
+    let x100 = proveme(&BitVec::from_fn(|i| bb(i)))[100];
+    let x101 = proveme(&BitVec::from_fn(|i| bb(i)))[101];
+    let x102 = proveme(&BitVec::from_fn(|i| bb(i)))[102];
+    let x103 = proveme(&BitVec::from_fn(|i| bb(i)))[103];
+    let x104 = proveme(&BitVec::from_fn(|i| bb(i)))[104];
+    let x105 = proveme(&BitVec::from_fn(|i| bb(i)))[105];
+    let x106 = proveme(&BitVec::from_fn(|i| bb(i)))[106];
+    let x107 = proveme(&BitVec::from_fn(|i| bb(i)))[107];
+    let x108 = proveme(&BitVec::from_fn(|i| bb(i)))[108];
+    let x109 = proveme(&BitVec::from_fn(|i| bb(i)))[109];
+    let x110 = proveme(&BitVec::from_fn(|i| bb(i)))[110];
+    let x111 = proveme(&BitVec::from_fn(|i| bb(i)))[111];
+    let x112 = proveme(&BitVec::from_fn(|i| bb(i)))[112];
+    let x113 = proveme(&BitVec::from_fn(|i| bb(i)))[113];
+    let x114 = proveme(&BitVec::from_fn(|i| bb(i)))[114];
+    let x115 = proveme(&BitVec::from_fn(|i| bb(i)))[115];
+    let x116 = proveme(&BitVec::from_fn(|i| bb(i)))[116];
+    let x117 = proveme(&BitVec::from_fn(|i| bb(i)))[117];
+    let x118 = proveme(&BitVec::from_fn(|i| bb(i)))[118];
+    let x119 = proveme(&BitVec::from_fn(|i| bb(i)))[119];
+    let x120 = proveme(&BitVec::from_fn(|i| bb(i)))[120];
+    let x121 = proveme(&BitVec::from_fn(|i| bb(i)))[121];
+    let x122 = proveme(&BitVec::from_fn(|i| bb(i)))[122];
+    let x123 = proveme(&BitVec::from_fn(|i| bb(i)))[123];
+    let x124 = proveme(&BitVec::from_fn(|i| bb(i)))[124];
+    let x125 = proveme(&BitVec::from_fn(|i| bb(i)))[125];
+    let x126 = proveme(&BitVec::from_fn(|i| bb(i)))[126];
+    let x127 = proveme(&BitVec::from_fn(|i| bb(i)))[127];
+
+    hax_lib::fstar!(
+        r#"
+    
+    let open FStar.Tactics in
+    assert (
+        [x0;x1;x2;x3;x4;x5;x6;x7;x8;x9;x10;x11;x12;x13;x14;x15;x16;x17;x18;x19;x20;x21;x22;x23;x24;x25;x26;x27;x28;x29;x30;x31;x32;x33;x34;x35;x36;x37;x38;x39;x40;x41;x42;x43;x44;x45;x46;x47;x48;x49;x50;x51;x52;x53;x54;x55;x56;x57;x58;x59;x60;x61;x62;x63;x64;x65;x66;x67;x68;x69;x70;x71;x72;x73;x74;x75;x76;x77;x78;x79;x80;x81;x82;x83;x84;x85;x86;x87;x88;x89;x90;x91;x92;x93;x94;x95;x96;x97;x98;x99;x100;x101;x102;x103;x104;x105;x106;x107;x108;x109;x110;x111;x112;x113;x114;x115;x116;x117;x118;x119;x120;x121;x122;x123;x124;x125;x126;x127] == magic ()
+    ) by (
+        norm [primops; iota; delta_namespace ["Core"; "Minicore"; "FStar.FunctionalExtensionality"; "Rust_primitives"]; zeta_full];
+        compute ();
+        norm [primops; iota; delta; zeta_full];
+        fail "x"
+    )
+    "#
+    )
+}
+
+// #[hax_lib::fstar::options("--ext context_pruning --split_queries always")]
+#[hax_lib::requires(hax_lib::forall(|i: usize| implies(i < 256, i % 16 > 4 || (simd_unit[i] == Bit::Zero))))]
+// #[hax_lib::ensures(|r|hax_lib::forall(|i: usize| implies(i < 4, r[i] == simd_unit[i])))]
+// #[hax_lib::ensures(|r|
+//     hax_lib::forall(|i: usize| i % 16 > 4 || (simd_unit[i] == Bit::Zero))
+// )]
+// #[hax_lib::requires(
+//     fstar!(
+//         r#"forall (i: nat{i < 256}). i % 16 < 4 || $simd_unit (mk_usize i) = ${Bit::Zero}"#
+//     )
+// )]
+// #[hax_lib::ensures(|r| fstar!(r#"forall (i: nat{i < 64}). $r (mk_usize i) == $simd_unit (mk_usize ((i/4) * 16 + i%4))"#))]
+#[inline(always)]
+fn proveme(simd_unit: &__m256i) -> __m128i {
+    // let mut serialized = [0u8; 19];
+    let adjacent_2_combined = extra::mm256_sllv_epi32_u32(*simd_unit, 0, 28, 0, 28, 0, 28, 0, 28);
+    let adjacent_2_combined = _mm256_srli_epi64::<28>(adjacent_2_combined);
+
+    let adjacent_4_combined =
+        mm256_permutevar8x32_epi32_u32(adjacent_2_combined, 0, 0, 0, 0, 6, 2, 4, 0);
+    let adjacent_4_combined = _mm256_castsi256_si128(adjacent_4_combined);
+    let adjacent_4_combined = extra::mm_shuffle_epi8_u8(
+        adjacent_4_combined,
+        0xF0,
+        0xF0,
+        0xF0,
+        0xF0,
+        0xF0,
+        0xF0,
+        0xF0,
+        0xF0,
+        0xF0,
+        0xF0,
+        0xF0,
+        0xF0,
+        12,
+        4,
+        8,
+        0,
+    );
+    adjacent_4_combined
+
+    // mm_storeu_bytes_si128(&mut serialized[0..16], adjacent_4_combined);
+
+    // out.copy_from_slice(&serialized[0..4]);
 }
 
 pub mod extra {
     use super::*;
 
-    pub fn mm256_sllv_epi32_u32_array(vector: BitVec<256>, counts: [u32; 8]) -> BitVec<256> {
+    // #[hax_lib::fstar::before(
+    //     r#"let bit_and_lt (t: uinttype) n x: Lemma (v (x &. mk_int #t n) < n) [SMTPat (x &. mk_int #t n)] = admit ()"#
+    // )]
+    pub fn mm256_sllv_epi32_u32_array(
+        vector: BitVec<256>,
+        counts: FunArray<8, u32>,
+    ) -> BitVec<256> {
         BitVec::from_fn(|i| {
             let nth_bit = i % 32;
             let shift = counts[i / 32];
@@ -144,13 +367,29 @@ pub mod extra {
         b1: u32,
         b0: u32,
     ) -> BitVec<256> {
-        mm256_sllv_epi32_u32_array(vector, [b7, b6, b5, b4, b3, b2, b1, b0])
+        mm256_sllv_epi32_u32_array(
+            vector,
+            FunArray::from_fn(|i| match i {
+                0 => b7,
+                1 => b6,
+                2 => b5,
+                3 => b4,
+                4 => b3,
+                5 => b2,
+                6 => b1,
+                7 => b0,
+                _ => unreachable!(),
+            }),
+        )
     }
 
-    pub fn mm256_permutevar8x32_epi32_u32_array(a: BitVec<256>, b: [u32; 8]) -> BitVec<256> {
+    pub fn mm256_permutevar8x32_epi32_u32_array(
+        a: BitVec<256>,
+        b: FunArray<8, u32>,
+    ) -> BitVec<256> {
         BitVec::from_fn(|i| {
             let j = i / 32;
-            let index = ((b[j] & 0b111) as usize) * 32;
+            let index = ((b[j] % 7) as usize) * 32;
             a[index + i % 32]
         })
     }
@@ -166,17 +405,30 @@ pub mod extra {
         b1: u32,
         b0: u32,
     ) -> BitVec<256> {
-        mm256_permutevar8x32_epi32_u32_array(vector, [b7, b6, b5, b4, b3, b2, b1, b0])
+        mm256_permutevar8x32_epi32_u32_array(
+            vector,
+            FunArray::from_fn(|i| match i {
+                0 => b7,
+                1 => b6,
+                2 => b5,
+                3 => b4,
+                4 => b3,
+                5 => b2,
+                6 => b1,
+                7 => b0,
+                _ => unreachable!(),
+            }),
+        )
     }
 
-    pub fn mm_shuffle_epi8_u8_array(vector: BitVec<128>, indexes: [u8; 16]) -> BitVec<128> {
+    pub fn mm_shuffle_epi8_u8_array(vector: BitVec<128>, indexes: FunArray<16, u8>) -> BitVec<128> {
         BitVec::from_fn(|i: usize| {
             let nth = i / 8;
             let index = indexes[nth];
             if index > 127 {
                 Bit::Zero
             } else {
-                let index = (index & 0b1111) as usize;
+                let index = (index % 15) as usize;
                 vector[index * 8 + i % 8]
             }
         })
@@ -201,12 +453,29 @@ pub mod extra {
         b1: u8,
         b0: u8,
     ) -> BitVec<128> {
-        let indexes = [
-            b15, b14, b13, b12, b11, b10, b9, b8, b7, b6, b5, b4, b3, b2, b1, b0,
-        ];
+        let indexes = FunArray::from_fn(|i| match i {
+            0 => b15,
+            1 => b14,
+            2 => b13,
+            3 => b12,
+            4 => b11,
+            5 => b10,
+            6 => b9,
+            7 => b8,
+            8 => b7,
+            9 => b6,
+            10 => b5,
+            11 => b4,
+            12 => b3,
+            13 => b2,
+            14 => b1,
+            15 => b0,
+            _ => unreachable!(),
+        });
         mm_shuffle_epi8_u8_array(vector, indexes)
     }
 
+    #[hax_lib::exclude]
     pub fn mm_storeu_bytes_si128(output: &mut [u8], vector: BitVec<128>) {
         output.copy_from_slice(&vector.to_vec()[..]);
     }
