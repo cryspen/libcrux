@@ -172,7 +172,10 @@ fn chachapoly_self_test_rand() {
     let msg = b"hacspec rulez";
     let aad = b"associated data" as &[u8];
 
-    let mut rng = rand_core::OsRng;
+    use rand_core::TryRngCore;
+
+    let mut os_rng = rand_core::OsRng;
+    let mut rng = os_rng.unwrap_mut();
 
     let key: [u8; 32] = randbuf(&mut rng);
     let nonce: [u8; 12] = randbuf(&mut rng);

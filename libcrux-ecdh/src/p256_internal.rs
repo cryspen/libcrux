@@ -1,5 +1,5 @@
 use alloc::format;
-use rand::{CryptoRng, Rng};
+use rand::{CryptoRng, Rng, TryRngCore};
 
 // P256 we only have in HACL
 use crate::hacl::p256;

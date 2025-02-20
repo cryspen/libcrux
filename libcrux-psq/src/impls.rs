@@ -33,7 +33,7 @@ macro_rules! libcrux_impl {
 
             fn encapsulate(
                 ek: &Self::EncapsulationKey,
-                rng: &mut (impl rand::CryptoRng + rand::Rng),
+                rng: &mut impl rand::CryptoRng,
             ) -> Result<(Self::SharedSecret, Self::Ciphertext), KEMError> {
                 ek.encapsulate(rng).map_err(|_| KEMError::Encapsulation)
             }
@@ -46,7 +46,7 @@ macro_rules! libcrux_impl {
             }
 
             fn generate_key_pair(
-                rng: &mut (impl rand::CryptoRng + rand::Rng),
+                rng: &mut impl rand::CryptoRng,
             ) -> Result<KeyPair<PrivateKey, PublicKey>, libcrux_traits::kem::KEMError> {
                 libcrux_kem::key_gen(Self::algorithm(), rng).map_err(|_| KEMError::KeyGeneration)
             }
@@ -99,7 +99,10 @@ mod tests {
         ($alg:ident) => {
             #[test]
             fn $alg() {
-                let mut rng = rand::thread_rng();
+                use rand::TryRngCore;
+
+                let mut os_rng = rand::rng();
+                let mut rng = os_rng.unwrap_mut();
                 let (sk, pk) = $alg::generate_key_pair(&mut rng).unwrap();
                 let sctx = b"test context";
                 let (psk_initiator, message) = $alg::encapsulate_psq(&pk, sctx, &mut rng).unwrap();
