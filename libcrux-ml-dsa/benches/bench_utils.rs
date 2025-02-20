@@ -1,4 +1,4 @@
-use rand::RngCore;
+use rand::TryRngCore;
 
 #[allow(unused)]
 pub(crate) fn random_array<const L: usize>() -> [u8; L] {

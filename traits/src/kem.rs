@@ -1,6 +1,6 @@
 //! This module provides a common interface trait for key
 //! encapsulation mechanisms (KEMs).
-use rand::{CryptoRng, Rng};
+use rand::CryptoRng;
 
 /// A KEM keypair.
 pub type KeyPair<DK, EK> = (DK, EK);
@@ -30,13 +30,13 @@ pub trait KEM {
 
     /// Generate a pair of encapsulation and decapsulation keys.
     fn generate_key_pair(
-        rng: &mut (impl CryptoRng + Rng),
+        rng: &mut impl CryptoRng,
     ) -> Result<KeyPair<Self::DecapsulationKey, Self::EncapsulationKey>, KEMError>;
 
     /// Encapsulate a shared secret towards a given encapsulation key.
     fn encapsulate(
         ek: &Self::EncapsulationKey,
-        rng: &mut (impl CryptoRng + Rng),
+        rng: &mut impl CryptoRng,
     ) -> Result<(Self::SharedSecret, Self::Ciphertext), KEMError>;
 
     /// Decapsulate a shared secret.

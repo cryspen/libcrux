@@ -2,7 +2,7 @@ use std::hint::black_box;
 use std::time::Duration;
 
 use criterion::{criterion_group, criterion_main, BatchSize, Criterion};
-use rand::{rngs::OsRng, RngCore};
+use rand::{rngs::OsRng, TryRngCore};
 
 use libcrux_ml_kem::{mlkem1024, mlkem512, mlkem768};
 
@@ -36,7 +36,7 @@ pub fn key_generation(c: &mut Criterion) {
                 use $p as p;
 
                 let mut seed = [0; 64];
-                rng.fill_bytes(&mut seed);
+                rng.try_fill_bytes(&mut seed).unwrap();
                 b.iter(|| {
                     let _kp = core::hint::black_box(p::generate_key_pair(seed));
                 })
@@ -52,7 +52,7 @@ pub fn key_generation(c: &mut Criterion) {
                     use $p as p;
 
                     let mut seed = [0; 64];
-                    rng.fill_bytes(&mut seed);
+                    rng.try_fill_bytes(&mut seed).unwrap();
                     b.iter(|| {
                         let mut kp = p::init_key_pair();
                         p::generate_key_pair_mut(seed, &mut kp);
@@ -76,7 +76,7 @@ pub fn pk_validation(c: &mut Criterion) {
                 use $p as p;
 
                 let mut seed = [0; 64];
-                rng.fill_bytes(&mut seed);
+                rng.try_fill_bytes(&mut seed).unwrap();
                 b.iter_batched(
                     || {
                         let keypair = p::generate_key_pair(seed);
@@ -108,9 +108,9 @@ pub fn encapsulation(c: &mut Criterion) {
             $group.bench_function(format!("libcrux {} (external random)", $name), |b| {
                 use $p as p;
                 let mut seed1 = [0; 64];
-                OsRng.fill_bytes(&mut seed1);
+                OsRng.try_fill_bytes(&mut seed1).unwrap();
                 let mut seed2 = [0; 32];
-                OsRng.fill_bytes(&mut seed2);
+                OsRng.try_fill_bytes(&mut seed2).unwrap();
                 b.iter_batched(
                     || p::generate_key_pair(seed1),
                     |keypair| {
@@ -130,9 +130,9 @@ pub fn encapsulation(c: &mut Criterion) {
                 |b| {
                     use $p as p;
                     let mut seed1 = [0; 64];
-                    OsRng.fill_bytes(&mut seed1);
+                    OsRng.try_fill_bytes(&mut seed1).unwrap();
                     let mut seed2 = [0; 32];
-                    OsRng.fill_bytes(&mut seed2);
+                    OsRng.try_fill_bytes(&mut seed2).unwrap();
                     b.iter_batched(
                         || {
                             let mut kp = p::init_key_pair();
@@ -161,9 +161,9 @@ pub fn decapsulation(c: &mut Criterion) {
             $group.bench_function(format!("libcrux {}", $name), |b| {
                 use $p as p;
                 let mut seed1 = [0; 64];
-                OsRng.fill_bytes(&mut seed1);
+                OsRng.try_fill_bytes(&mut seed1).unwrap();
                 let mut seed2 = [0; 32];
-                OsRng.fill_bytes(&mut seed2);
+                OsRng.try_fill_bytes(&mut seed2).unwrap();
                 b.iter_batched(
                     || {
                         let keypair = p::generate_key_pair(seed1);
@@ -186,9 +186,9 @@ pub fn decapsulation(c: &mut Criterion) {
             $group.bench_function(format!("libcrux unpacked {}", $name), |b| {
                 use $p as p;
                 let mut seed1 = [0; 64];
-                OsRng.fill_bytes(&mut seed1);
+                OsRng.try_fill_bytes(&mut seed1).unwrap();
                 let mut seed2 = [0; 32];
-                OsRng.fill_bytes(&mut seed2);
+                OsRng.try_fill_bytes(&mut seed2).unwrap();
                 b.iter_batched(
                     || {
                         let mut keypair = p::init_key_pair();

@@ -15,8 +15,12 @@
 //!
 //! ```
 //! use libcrux_kem::*;
+//! use rand::TryRngCore;
+//! use rand::rngs::OsRng;
 //!
-//! let mut rng = rand::rngs::OsRng;
+//! let mut os_rng = OsRng;
+//! let mut rng = os_rng.unwrap_mut();
+//!
 //! let (sk_a, pk_a) = key_gen(Algorithm::MlKem768, &mut rng).unwrap();
 //! let received_pk = pk_a.encode();
 //!
@@ -36,7 +40,7 @@ extern crate alloc;
 
 use alloc::{vec, vec::Vec};
 
-use rand::{CryptoRng, Rng};
+use rand::{CryptoRng, Rng, TryRngCore};
 
 use libcrux_ecdh::{p256_derive, x25519_derive};
 use libcrux_ecdh::{
