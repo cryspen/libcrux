@@ -5,7 +5,7 @@ use criterion::{criterion_group, criterion_main, BatchSize, Criterion};
 
 use der::Decode as _;
 use pkcs1::DecodeRsaPrivateKey;
-use rand_core::OsRng;
+use rand_core_old::OsRng;
 use ring::signature::KeyPair;
 
 const MSG_STR: &str = "the test message is 32 byte long";

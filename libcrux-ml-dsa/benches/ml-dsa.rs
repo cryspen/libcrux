@@ -1,7 +1,7 @@
 use std::time::Duration;
 
 use criterion::{criterion_group, criterion_main, Criterion};
-use rand::{rngs::OsRng, RngCore};
+use rand::{rngs::OsRng, TryRngCore};
 
 use libcrux_ml_dsa::ml_dsa_65;
 
@@ -11,7 +11,7 @@ pub fn comparisons_key_generation(c: &mut Criterion) {
     group.measurement_time(Duration::from_secs(10));
 
     let mut randomness = [0; 32];
-    rng.fill_bytes(&mut randomness);
+    rng.try_fill_bytes(&mut randomness).unwrap();
 
     group.bench_function("libcrux (external random)", move |b| {
         b.iter(|| {
@@ -33,13 +33,13 @@ pub fn comparisons_signing(c: &mut Criterion) {
     group.measurement_time(Duration::from_secs(10));
 
     let mut message = [0u8; 511];
-    rng.fill_bytes(&mut message);
+    rng.try_fill_bytes(&mut message).unwrap();
 
     let mut randomness = [0; 32];
-    rng.fill_bytes(&mut randomness);
+    rng.try_fill_bytes(&mut randomness).unwrap();
     let keypair = ml_dsa_65::generate_key_pair(randomness);
 
-    rng.fill_bytes(&mut randomness);
+    rng.try_fill_bytes(&mut randomness).unwrap();
 
     group.bench_function("libcrux (external random)", move |b| {
         b.iter(|| {
@@ -64,13 +64,13 @@ pub fn comparisons_verification(c: &mut Criterion) {
     group.measurement_time(Duration::from_secs(10));
 
     let mut message = [0u8; 511];
-    rng.fill_bytes(&mut message);
+    rng.try_fill_bytes(&mut message).unwrap();
 
     let mut randomness = [0; 32];
-    rng.fill_bytes(&mut randomness);
+    rng.try_fill_bytes(&mut randomness).unwrap();
     let keypair = ml_dsa_65::generate_key_pair(randomness);
 
-    rng.fill_bytes(&mut randomness);
+    rng.try_fill_bytes(&mut randomness).unwrap();
     let signature = ml_dsa_65::sign(&keypair.signing_key, &message, b"", randomness).unwrap();
 
     group.bench_function("libcrux", move |b| {

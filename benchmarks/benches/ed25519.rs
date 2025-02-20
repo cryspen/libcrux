@@ -68,7 +68,8 @@ fn sign(c: &mut Criterion) {
     });
     group.bench_function("Dalek", |b| {
         use ed25519_dalek::{Signer, SigningKey};
-        use rand_core::OsRng;
+        // Using older version of `rand_core` traits as required by `ed25519_dalek`
+        use rand_core_old::OsRng;
 
         b.iter_batched(
             || {
@@ -170,7 +171,9 @@ fn verify(c: &mut Criterion) {
     });
     group.bench_function("Dalek", |b| {
         use ed25519_dalek::{Signer, SigningKey};
-        use rand_core::OsRng;
+
+        // Using older version of `rand_core` traits as required by `ed25519_dalek`
+        use rand_core_old::OsRng;
 
         b.iter_batched(
             || {

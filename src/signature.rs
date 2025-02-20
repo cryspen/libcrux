@@ -10,7 +10,7 @@ use crate::{
     ecdh,
     hacl::{self, ed25519},
 };
-use rand::{CryptoRng, Rng, RngCore};
+use rand::{CryptoRng, Rng, TryRngCore};
 
 use self::rsa_pss::RsaPssSignature;
 
@@ -327,7 +327,7 @@ impl EcDsaP256Signature {
 /// Prepare the nonce for EcDSA and validate the key
 fn ecdsa_p256_sign_prep(
     private_key: &[u8],
-    rng: &mut (impl CryptoRng + RngCore),
+    rng: &mut impl CryptoRng,
 ) -> Result<(libcrux_ecdh::P256PrivateKey, [u8; 32]), Error> {
     let private_key =
         libcrux_ecdh::p256::validate_scalar_slice(private_key).map_err(|_| Error::SigningError)?;
@@ -369,7 +369,7 @@ pub fn sign(
     alg: Algorithm,
     payload: &[u8],
     private_key: &[u8],
-    rng: &mut (impl CryptoRng + RngCore),
+    rng: &mut impl CryptoRng,
 ) -> Result<Signature, Error> {
     let signature = match alg {
         Algorithm::EcDsaP256(DigestAlgorithm::Sha256) => {
