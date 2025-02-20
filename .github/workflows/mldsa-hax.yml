@@ -1,6 +1,9 @@
 name: ML-DSA - hax
 
 on:
+  merge_group:
+    # keep workflow specific if GH Actions adds more types in the future
+    types: ["checks-requested"]
   push:
     branches: ["dev", "main"]
 
@@ -29,6 +32,7 @@ concurrency:
 
 jobs:
   extract:
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event_name == 'pull_request' }}
     runs-on: ubuntu-latest
 
     steps:

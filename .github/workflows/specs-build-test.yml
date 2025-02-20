@@ -1,6 +1,9 @@
 name: Specs - Build & Test
 
 on:
+  merge_group:
+    # keep workflow specific if GH Actions adds more types in the future
+    types: ["checks-requested"]
   push:
     branches: [ "main", "dev" ]
   pull_request:
@@ -15,6 +18,7 @@ concurrency:
 
 jobs:
   build:
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event_name == 'pull_request' }}
     strategy:
       fail-fast: false
       matrix:
