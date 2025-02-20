@@ -78,7 +78,7 @@ pub trait MachineInteger {
 
 macro_rules! generate_machine_integer_impls {
     ($($ty:ident),*) => {
-        $(impl MachineInteger for $ty {
+        $(#[hax_lib::exclude]impl MachineInteger for $ty {
             const BITS: u32 = $ty::BITS;
             #[allow(unused_comparisons)]
             const SIGNED: bool = $ty::MIN < 0;
@@ -87,6 +87,15 @@ macro_rules! generate_machine_integer_impls {
 }
 generate_machine_integer_impls!(u8, u16, u32, u64, u128, i8, i16, i32, i64, i128);
 
+#[hax_lib::fstar::replace(
+    r"
+instance impl_MachineInteger_poly (t: inttype): t_MachineInteger (int_t t) =
+  { f_BITS = mk_u32 (bits t); f_SIGNED = signed t }
+"
+)]
+const _: () = {};
+
+#[hax_lib::exclude]
 impl Bit {
     fn of_raw_int(x: u128, nth: u32) -> Self {
         if x / 2u128.pow(nth) % 2 == 1 {

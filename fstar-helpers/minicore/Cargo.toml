@@ -5,3 +5,5 @@ publish = false
 
 [dependencies]
 rand = "0.9.0"
+hax-lib = { git = "https://github.com/cryspen/hax.git", branch = "replace-body-temp" }
+seq-macro = "0.3.5"
