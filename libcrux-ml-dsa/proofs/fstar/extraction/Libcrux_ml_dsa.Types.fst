@@ -62,8 +62,8 @@ let t_VerificationError_cast_to_repr (x: t_VerificationError) =
   match x <: t_VerificationError with
   | VerificationError_MalformedHintError  -> mk_isize 0
   | VerificationError_SignerResponseExceedsBoundError  -> mk_isize 1
-  | VerificationError_CommitmentHashesDontMatchError  -> mk_isize 2
-  | VerificationError_VerificationContextTooLongError  -> mk_isize 3
+  | VerificationError_CommitmentHashesDontMatchError  -> mk_isize 3
+  | VerificationError_VerificationContextTooLongError  -> mk_isize 6
 
 [@@ FStar.Tactics.Typeclasses.tcinstance]
 assume

@@ -3,29 +3,6 @@ module Libcrux_ml_dsa.Simd.Portable.Encoding.Commitment
 open Core
 open FStar.Mul
 
-val encode_4_ (coefficients: t_Slice i32)
-    : Prims.Pure u8
-      (requires Seq.length coefficients == 2 /\ (forall i. bounded (Seq.index coefficients i) 4))
-      (ensures
-        fun out ->
-          let out:u8 = out in
-          let inp = bit_vec_of_int_t_array #I32 #(mk_usize 2) coefficients 4 in
-          let out = bit_vec_of_int_t_array #U8 (MkSeq.create1 out) 8 in
-          forall (i: nat{i < 8}). inp i == out i)
-
-val encode_6_ (coefficients: t_Slice i32) (bytes: t_Slice u8)
-    : Prims.Pure (t_Slice u8)
-      (requires
-        Seq.length coefficients == 4 /\ Seq.length bytes == 3 /\
-        (forall i. bounded (Seq.index coefficients i) 6))
-      (ensures
-        fun bytes_future ->
-          let bytes_future:t_Slice u8 = bytes_future in
-          Seq.length bytes_future == Seq.length bytes /\
-          (let inp = bit_vec_of_int_t_array #I32 #(mk_usize 4) coefficients 6 in
-            let out = bit_vec_of_int_t_array #U8 #(mk_usize 3) bytes_future 8 in
-            forall (i: nat{i < 8 * 3}). inp i == out i))
-
 val serialize_4_
       (simd_unit: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients)
       (serialized: t_Slice u8)
