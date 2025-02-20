@@ -1,8 +1,4 @@
-# Elliptic Curve Diffie-Hellman (ECDH)
-
-This crate provides an API for performing elliptic curve
-Diffie-Hellman. Currently supported curves are Curve 25519 and NIST
-curve P256.
+# Blake2
 
 ## Verification
 ![verified-hacl]
