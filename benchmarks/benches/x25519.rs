@@ -1,6 +1,5 @@
 use criterion::{criterion_group, criterion_main, BatchSize, Criterion};
 
-
 fn derive(c: &mut Criterion) {
     // Comparing libcrux performance for different payload sizes and other implementations.
     let mut group = c.benchmark_group("x25519/derive");
