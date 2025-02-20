@@ -6,7 +6,6 @@ open FStar.Mul
 let _ =
   (* This module has implicit dependencies, here we make them explicit. *)
   (* The implicit dependencies arise from typeclasses instances. *)
-  let open Hax_lib.Prop in
   let open Libcrux_ml_dsa.Simd.Portable.Vector_type in
   ()
 
@@ -27,42 +26,25 @@ let add (lhs rhs: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients) =
       (fun lhs i ->
           let lhs:Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients = lhs in
           let i:usize = i in
-          (Hax_lib.Prop.v_forall #usize
-              #Hax_lib.Prop.t_Prop
-              (fun j ->
-                  let j:usize = j in
-                  Hax_lib.Prop.implies #bool
-                    #bool
-                    (j <. i <: bool)
-                    ((lhs.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values.[ j ] <: i32) =.
-                      ((e_lhs0.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values.[ j ] <: i32) +!
-                        (rhs.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values.[ j ] <: i32)
-                        <:
-                        i32)
-                      <:
-                      bool)
+          (forall (j: usize).
+              b2t (j <. i <: bool) ==>
+              b2t
+              ((lhs.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values.[ j ] <: i32) =.
+                ((e_lhs0.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values.[ j ] <: i32) +!
+                  (rhs.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values.[ j ] <: i32)
                   <:
-                  Hax_lib.Prop.t_Prop)
-            <:
-            Hax_lib.Prop.t_Prop) &.
-          (Hax_lib.Prop.v_forall #usize
-              #Hax_lib.Prop.t_Prop
-              (fun j ->
-                  let j:usize = j in
-                  Hax_lib.Prop.implies #bool
-                    #bool
-                    ((j >=. i <: bool) &&
-                      (j <. Libcrux_ml_dsa.Simd.Traits.v_COEFFICIENTS_IN_SIMD_UNIT <: bool))
-                    ((lhs.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values.[ j ] <: i32) =.
-                      (e_lhs0.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values.[ j ] <: i32)
-                      <:
-                      bool)
-                  <:
-                  Hax_lib.Prop.t_Prop)
-            <:
-            Hax_lib.Prop.t_Prop)
-          <:
-          Hax_lib.Prop.t_Prop)
+                  i32)
+                <:
+                bool)) /\
+          (forall (j: usize).
+              b2t
+              ((j >=. i <: bool) &&
+                (j <. Libcrux_ml_dsa.Simd.Traits.v_COEFFICIENTS_IN_SIMD_UNIT <: bool)) ==>
+              b2t
+              ((lhs.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values.[ j ] <: i32) =.
+                (e_lhs0.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values.[ j ] <: i32)
+                <:
+                bool)))
       lhs
       (fun lhs i ->
           let lhs:Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients = lhs in
@@ -106,42 +88,25 @@ let subtract (lhs rhs: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients) 
       (fun lhs i ->
           let lhs:Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients = lhs in
           let i:usize = i in
-          (Hax_lib.Prop.v_forall #usize
-              #Hax_lib.Prop.t_Prop
-              (fun j ->
-                  let j:usize = j in
-                  Hax_lib.Prop.implies #bool
-                    #bool
-                    (j <. i <: bool)
-                    ((lhs.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values.[ j ] <: i32) =.
-                      ((e_lhs0.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values.[ j ] <: i32) -!
-                        (rhs.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values.[ j ] <: i32)
-                        <:
-                        i32)
-                      <:
-                      bool)
+          (forall (j: usize).
+              b2t (j <. i <: bool) ==>
+              b2t
+              ((lhs.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values.[ j ] <: i32) =.
+                ((e_lhs0.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values.[ j ] <: i32) -!
+                  (rhs.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values.[ j ] <: i32)
                   <:
-                  Hax_lib.Prop.t_Prop)
-            <:
-            Hax_lib.Prop.t_Prop) &.
-          (Hax_lib.Prop.v_forall #usize
-              #Hax_lib.Prop.t_Prop
-              (fun j ->
-                  let j:usize = j in
-                  Hax_lib.Prop.implies #bool
-                    #bool
-                    ((j >=. i <: bool) &&
-                      (j <. Libcrux_ml_dsa.Simd.Traits.v_COEFFICIENTS_IN_SIMD_UNIT <: bool))
-                    ((lhs.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values.[ j ] <: i32) =.
-                      (e_lhs0.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values.[ j ] <: i32)
-                      <:
-                      bool)
-                  <:
-                  Hax_lib.Prop.t_Prop)
-            <:
-            Hax_lib.Prop.t_Prop)
-          <:
-          Hax_lib.Prop.t_Prop)
+                  i32)
+                <:
+                bool)) /\
+          (forall (j: usize).
+              b2t
+              ((j >=. i <: bool) &&
+                (j <. Libcrux_ml_dsa.Simd.Traits.v_COEFFICIENTS_IN_SIMD_UNIT <: bool)) ==>
+              b2t
+              ((lhs.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values.[ j ] <: i32) =.
+                (e_lhs0.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values.[ j ] <: i32)
+                <:
+                bool)))
       lhs
       (fun lhs i ->
           let lhs:Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients = lhs in

@@ -6,7 +6,6 @@ open FStar.Mul
 let _ =
   (* This module has implicit dependencies, here we make them explicit. *)
   (* The implicit dependencies arise from typeclasses instances. *)
-  let open Hax_lib.Prop in
   let open Libcrux_ml_dsa.Simd.Portable.Vector_type in
   ()
 
