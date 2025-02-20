@@ -4,16 +4,18 @@
  * SPDX-License-Identifier: MIT or Apache-2.0
  *
  * This code was generated with the following revisions:
- * Charon: db4e045d4597d06d854ce7a2c10e8dcfda6ecd25
- * Eurydice: 75eae2e2534a16f5ba5430e6ee5c69d8a46f3bea
- * Karamel: 3823e3d82fa0b271d799b61c59ffb4742ddc1e65
+ * Charon: a8f2211d1b95e0462a96382023b164a4116c7ca4
+ * Eurydice: 60f543ddc60a777138070968daaf7620ec48170d
+ * Karamel: 1d81d757d5d9e16dd6463ccc72324e587c707959
  * F*: 7cd06c5562fc47ec14cd35c38034d5558a5ff762
- * Libcrux: f739ef6e9db364d07a61165242c78b62c81b91ef
+ * Libcrux: ad4f692e8964249dc8a3a99f70cb70f5747bb00e
  */
 
 #include "internal/libcrux_sha3_avx2.h"
 
 #include "internal/libcrux_core.h"
+#include "libcrux_core.h"
+#include "libcrux_sha3_internal.h"
 
 /**
 This function found in impl {(libcrux_sha3::traits::internal::KeccakItem<4:
@@ -178,31 +180,14 @@ with const generics
 static KRML_MUSTINLINE libcrux_sha3_generic_keccak_KeccakState_55
 new_89_a6(void) {
   libcrux_sha3_generic_keccak_KeccakState_55 lit;
-  lit.st[0U][0U] = zero_ef();
-  lit.st[0U][1U] = zero_ef();
-  lit.st[0U][2U] = zero_ef();
-  lit.st[0U][3U] = zero_ef();
-  lit.st[0U][4U] = zero_ef();
-  lit.st[1U][0U] = zero_ef();
-  lit.st[1U][1U] = zero_ef();
-  lit.st[1U][2U] = zero_ef();
-  lit.st[1U][3U] = zero_ef();
-  lit.st[1U][4U] = zero_ef();
-  lit.st[2U][0U] = zero_ef();
-  lit.st[2U][1U] = zero_ef();
-  lit.st[2U][2U] = zero_ef();
-  lit.st[2U][3U] = zero_ef();
-  lit.st[2U][4U] = zero_ef();
-  lit.st[3U][0U] = zero_ef();
-  lit.st[3U][1U] = zero_ef();
-  lit.st[3U][2U] = zero_ef();
-  lit.st[3U][3U] = zero_ef();
-  lit.st[3U][4U] = zero_ef();
-  lit.st[4U][0U] = zero_ef();
-  lit.st[4U][1U] = zero_ef();
-  lit.st[4U][2U] = zero_ef();
-  lit.st[4U][3U] = zero_ef();
-  lit.st[4U][4U] = zero_ef();
+  __m256i repeat_expression0[5U][5U];
+  KRML_MAYBE_FOR5(i0, (size_t)0U, (size_t)5U, (size_t)1U,
+                  __m256i repeat_expression[5U];
+                  KRML_MAYBE_FOR5(i, (size_t)0U, (size_t)5U, (size_t)1U,
+                                  repeat_expression[i] = zero_ef(););
+                  memcpy(repeat_expression0[i0], repeat_expression,
+                         (size_t)5U * sizeof(__m256i)););
+  memcpy(lit.st, repeat_expression0, (size_t)5U * sizeof(__m256i[5U]));
   return lit;
 }
 

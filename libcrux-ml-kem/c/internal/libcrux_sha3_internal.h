@@ -4,11 +4,11 @@
  * SPDX-License-Identifier: MIT or Apache-2.0
  *
  * This code was generated with the following revisions:
- * Charon: db4e045d4597d06d854ce7a2c10e8dcfda6ecd25
- * Eurydice: 75eae2e2534a16f5ba5430e6ee5c69d8a46f3bea
- * Karamel: 3823e3d82fa0b271d799b61c59ffb4742ddc1e65
+ * Charon: a8f2211d1b95e0462a96382023b164a4116c7ca4
+ * Eurydice: 60f543ddc60a777138070968daaf7620ec48170d
+ * Karamel: 1d81d757d5d9e16dd6463ccc72324e587c707959
  * F*: 7cd06c5562fc47ec14cd35c38034d5558a5ff762
- * Libcrux: f739ef6e9db364d07a61165242c78b62c81b91ef
+ * Libcrux: ad4f692e8964249dc8a3a99f70cb70f5747bb00e
  */
 
 #ifndef __internal_libcrux_sha3_internal_H
@@ -20,6 +20,7 @@ extern "C" {
 
 #include "../libcrux_sha3_internal.h"
 #include "eurydice_glue.h"
+#include "libcrux_core.h"
 
 typedef libcrux_sha3_generic_keccak_KeccakState_17
     libcrux_sha3_portable_KeccakState;
@@ -298,9 +299,9 @@ static inline size_t libcrux_sha3_generic_keccak_absorb_full_8b_c6(
   if (input_consumed > (size_t)0U) {
     Eurydice_slice borrowed[1U];
     {
-      uint8_t buf[136U] = {0U};
+      uint8_t repeat_expression[136U] = {0U};
       borrowed[0U] = core_array___Array_T__N__23__as_slice(
-          (size_t)136U, buf, uint8_t, Eurydice_slice);
+          (size_t)136U, repeat_expression, uint8_t, Eurydice_slice);
     }
     {
       size_t i = (size_t)0U;
@@ -485,142 +486,8 @@ with const generics
 */
 static inline void libcrux_sha3_generic_keccak_zero_block_8b_c6(
     uint8_t ret[136U]) {
-  ret[0U] = 0U;
-  ret[1U] = 0U;
-  ret[2U] = 0U;
-  ret[3U] = 0U;
-  ret[4U] = 0U;
-  ret[5U] = 0U;
-  ret[6U] = 0U;
-  ret[7U] = 0U;
-  ret[8U] = 0U;
-  ret[9U] = 0U;
-  ret[10U] = 0U;
-  ret[11U] = 0U;
-  ret[12U] = 0U;
-  ret[13U] = 0U;
-  ret[14U] = 0U;
-  ret[15U] = 0U;
-  ret[16U] = 0U;
-  ret[17U] = 0U;
-  ret[18U] = 0U;
-  ret[19U] = 0U;
-  ret[20U] = 0U;
-  ret[21U] = 0U;
-  ret[22U] = 0U;
-  ret[23U] = 0U;
-  ret[24U] = 0U;
-  ret[25U] = 0U;
-  ret[26U] = 0U;
-  ret[27U] = 0U;
-  ret[28U] = 0U;
-  ret[29U] = 0U;
-  ret[30U] = 0U;
-  ret[31U] = 0U;
-  ret[32U] = 0U;
-  ret[33U] = 0U;
-  ret[34U] = 0U;
-  ret[35U] = 0U;
-  ret[36U] = 0U;
-  ret[37U] = 0U;
-  ret[38U] = 0U;
-  ret[39U] = 0U;
-  ret[40U] = 0U;
-  ret[41U] = 0U;
-  ret[42U] = 0U;
-  ret[43U] = 0U;
-  ret[44U] = 0U;
-  ret[45U] = 0U;
-  ret[46U] = 0U;
-  ret[47U] = 0U;
-  ret[48U] = 0U;
-  ret[49U] = 0U;
-  ret[50U] = 0U;
-  ret[51U] = 0U;
-  ret[52U] = 0U;
-  ret[53U] = 0U;
-  ret[54U] = 0U;
-  ret[55U] = 0U;
-  ret[56U] = 0U;
-  ret[57U] = 0U;
-  ret[58U] = 0U;
-  ret[59U] = 0U;
-  ret[60U] = 0U;
-  ret[61U] = 0U;
-  ret[62U] = 0U;
-  ret[63U] = 0U;
-  ret[64U] = 0U;
-  ret[65U] = 0U;
-  ret[66U] = 0U;
-  ret[67U] = 0U;
-  ret[68U] = 0U;
-  ret[69U] = 0U;
-  ret[70U] = 0U;
-  ret[71U] = 0U;
-  ret[72U] = 0U;
-  ret[73U] = 0U;
-  ret[74U] = 0U;
-  ret[75U] = 0U;
-  ret[76U] = 0U;
-  ret[77U] = 0U;
-  ret[78U] = 0U;
-  ret[79U] = 0U;
-  ret[80U] = 0U;
-  ret[81U] = 0U;
-  ret[82U] = 0U;
-  ret[83U] = 0U;
-  ret[84U] = 0U;
-  ret[85U] = 0U;
-  ret[86U] = 0U;
-  ret[87U] = 0U;
-  ret[88U] = 0U;
-  ret[89U] = 0U;
-  ret[90U] = 0U;
-  ret[91U] = 0U;
-  ret[92U] = 0U;
-  ret[93U] = 0U;
-  ret[94U] = 0U;
-  ret[95U] = 0U;
-  ret[96U] = 0U;
-  ret[97U] = 0U;
-  ret[98U] = 0U;
-  ret[99U] = 0U;
-  ret[100U] = 0U;
-  ret[101U] = 0U;
-  ret[102U] = 0U;
-  ret[103U] = 0U;
-  ret[104U] = 0U;
-  ret[105U] = 0U;
-  ret[106U] = 0U;
-  ret[107U] = 0U;
-  ret[108U] = 0U;
-  ret[109U] = 0U;
-  ret[110U] = 0U;
-  ret[111U] = 0U;
-  ret[112U] = 0U;
-  ret[113U] = 0U;
-  ret[114U] = 0U;
-  ret[115U] = 0U;
-  ret[116U] = 0U;
-  ret[117U] = 0U;
-  ret[118U] = 0U;
-  ret[119U] = 0U;
-  ret[120U] = 0U;
-  ret[121U] = 0U;
-  ret[122U] = 0U;
-  ret[123U] = 0U;
-  ret[124U] = 0U;
-  ret[125U] = 0U;
-  ret[126U] = 0U;
-  ret[127U] = 0U;
-  ret[128U] = 0U;
-  ret[129U] = 0U;
-  ret[130U] = 0U;
-  ret[131U] = 0U;
-  ret[132U] = 0U;
-  ret[133U] = 0U;
-  ret[134U] = 0U;
-  ret[135U] = 0U;
+  uint8_t repeat_expression[136U] = {0U};
+  memcpy(ret, repeat_expression, (size_t)136U * sizeof(uint8_t));
 }
 
 /**
@@ -641,9 +508,9 @@ static inline libcrux_sha3_generic_keccak_KeccakXofState_e2
 libcrux_sha3_generic_keccak_new_8b_c6(void) {
   libcrux_sha3_generic_keccak_KeccakXofState_e2 lit;
   lit.inner = libcrux_sha3_generic_keccak_new_89_04();
-  uint8_t ret[136U];
-  libcrux_sha3_generic_keccak_zero_block_8b_c6(ret);
-  memcpy(lit.buf[0U], ret, (size_t)136U * sizeof(uint8_t));
+  uint8_t repeat_expression[1U][136U];
+  { libcrux_sha3_generic_keccak_zero_block_8b_c6(repeat_expression[0U]); }
+  memcpy(lit.buf, repeat_expression, (size_t)1U * sizeof(uint8_t[136U]));
   lit.buf_len = (size_t)0U;
   lit.sponge = false;
   return lit;
@@ -862,9 +729,9 @@ static inline size_t libcrux_sha3_generic_keccak_absorb_full_8b_c60(
   if (input_consumed > (size_t)0U) {
     Eurydice_slice borrowed[1U];
     {
-      uint8_t buf[168U] = {0U};
+      uint8_t repeat_expression[168U] = {0U};
       borrowed[0U] = core_array___Array_T__N__23__as_slice(
-          (size_t)168U, buf, uint8_t, Eurydice_slice);
+          (size_t)168U, repeat_expression, uint8_t, Eurydice_slice);
     }
     {
       size_t i = (size_t)0U;
@@ -1043,174 +910,8 @@ with const generics
 */
 static inline void libcrux_sha3_generic_keccak_zero_block_8b_c60(
     uint8_t ret[168U]) {
-  ret[0U] = 0U;
-  ret[1U] = 0U;
-  ret[2U] = 0U;
-  ret[3U] = 0U;
-  ret[4U] = 0U;
-  ret[5U] = 0U;
-  ret[6U] = 0U;
-  ret[7U] = 0U;
-  ret[8U] = 0U;
-  ret[9U] = 0U;
-  ret[10U] = 0U;
-  ret[11U] = 0U;
-  ret[12U] = 0U;
-  ret[13U] = 0U;
-  ret[14U] = 0U;
-  ret[15U] = 0U;
-  ret[16U] = 0U;
-  ret[17U] = 0U;
-  ret[18U] = 0U;
-  ret[19U] = 0U;
-  ret[20U] = 0U;
-  ret[21U] = 0U;
-  ret[22U] = 0U;
-  ret[23U] = 0U;
-  ret[24U] = 0U;
-  ret[25U] = 0U;
-  ret[26U] = 0U;
-  ret[27U] = 0U;
-  ret[28U] = 0U;
-  ret[29U] = 0U;
-  ret[30U] = 0U;
-  ret[31U] = 0U;
-  ret[32U] = 0U;
-  ret[33U] = 0U;
-  ret[34U] = 0U;
-  ret[35U] = 0U;
-  ret[36U] = 0U;
-  ret[37U] = 0U;
-  ret[38U] = 0U;
-  ret[39U] = 0U;
-  ret[40U] = 0U;
-  ret[41U] = 0U;
-  ret[42U] = 0U;
-  ret[43U] = 0U;
-  ret[44U] = 0U;
-  ret[45U] = 0U;
-  ret[46U] = 0U;
-  ret[47U] = 0U;
-  ret[48U] = 0U;
-  ret[49U] = 0U;
-  ret[50U] = 0U;
-  ret[51U] = 0U;
-  ret[52U] = 0U;
-  ret[53U] = 0U;
-  ret[54U] = 0U;
-  ret[55U] = 0U;
-  ret[56U] = 0U;
-  ret[57U] = 0U;
-  ret[58U] = 0U;
-  ret[59U] = 0U;
-  ret[60U] = 0U;
-  ret[61U] = 0U;
-  ret[62U] = 0U;
-  ret[63U] = 0U;
-  ret[64U] = 0U;
-  ret[65U] = 0U;
-  ret[66U] = 0U;
-  ret[67U] = 0U;
-  ret[68U] = 0U;
-  ret[69U] = 0U;
-  ret[70U] = 0U;
-  ret[71U] = 0U;
-  ret[72U] = 0U;
-  ret[73U] = 0U;
-  ret[74U] = 0U;
-  ret[75U] = 0U;
-  ret[76U] = 0U;
-  ret[77U] = 0U;
-  ret[78U] = 0U;
-  ret[79U] = 0U;
-  ret[80U] = 0U;
-  ret[81U] = 0U;
-  ret[82U] = 0U;
-  ret[83U] = 0U;
-  ret[84U] = 0U;
-  ret[85U] = 0U;
-  ret[86U] = 0U;
-  ret[87U] = 0U;
-  ret[88U] = 0U;
-  ret[89U] = 0U;
-  ret[90U] = 0U;
-  ret[91U] = 0U;
-  ret[92U] = 0U;
-  ret[93U] = 0U;
-  ret[94U] = 0U;
-  ret[95U] = 0U;
-  ret[96U] = 0U;
-  ret[97U] = 0U;
-  ret[98U] = 0U;
-  ret[99U] = 0U;
-  ret[100U] = 0U;
-  ret[101U] = 0U;
-  ret[102U] = 0U;
-  ret[103U] = 0U;
-  ret[104U] = 0U;
-  ret[105U] = 0U;
-  ret[106U] = 0U;
-  ret[107U] = 0U;
-  ret[108U] = 0U;
-  ret[109U] = 0U;
-  ret[110U] = 0U;
-  ret[111U] = 0U;
-  ret[112U] = 0U;
-  ret[113U] = 0U;
-  ret[114U] = 0U;
-  ret[115U] = 0U;
-  ret[116U] = 0U;
-  ret[117U] = 0U;
-  ret[118U] = 0U;
-  ret[119U] = 0U;
-  ret[120U] = 0U;
-  ret[121U] = 0U;
-  ret[122U] = 0U;
-  ret[123U] = 0U;
-  ret[124U] = 0U;
-  ret[125U] = 0U;
-  ret[126U] = 0U;
-  ret[127U] = 0U;
-  ret[128U] = 0U;
-  ret[129U] = 0U;
-  ret[130U] = 0U;
-  ret[131U] = 0U;
-  ret[132U] = 0U;
-  ret[133U] = 0U;
-  ret[134U] = 0U;
-  ret[135U] = 0U;
-  ret[136U] = 0U;
-  ret[137U] = 0U;
-  ret[138U] = 0U;
-  ret[139U] = 0U;
-  ret[140U] = 0U;
-  ret[141U] = 0U;
-  ret[142U] = 0U;
-  ret[143U] = 0U;
-  ret[144U] = 0U;
-  ret[145U] = 0U;
-  ret[146U] = 0U;
-  ret[147U] = 0U;
-  ret[148U] = 0U;
-  ret[149U] = 0U;
-  ret[150U] = 0U;
-  ret[151U] = 0U;
-  ret[152U] = 0U;
-  ret[153U] = 0U;
-  ret[154U] = 0U;
-  ret[155U] = 0U;
-  ret[156U] = 0U;
-  ret[157U] = 0U;
-  ret[158U] = 0U;
-  ret[159U] = 0U;
-  ret[160U] = 0U;
-  ret[161U] = 0U;
-  ret[162U] = 0U;
-  ret[163U] = 0U;
-  ret[164U] = 0U;
-  ret[165U] = 0U;
-  ret[166U] = 0U;
-  ret[167U] = 0U;
+  uint8_t repeat_expression[168U] = {0U};
+  memcpy(ret, repeat_expression, (size_t)168U * sizeof(uint8_t));
 }
 
 /**
@@ -1231,9 +932,9 @@ static inline libcrux_sha3_generic_keccak_KeccakXofState_97
 libcrux_sha3_generic_keccak_new_8b_c60(void) {
   libcrux_sha3_generic_keccak_KeccakXofState_97 lit;
   lit.inner = libcrux_sha3_generic_keccak_new_89_04();
-  uint8_t ret[168U];
-  libcrux_sha3_generic_keccak_zero_block_8b_c60(ret);
-  memcpy(lit.buf[0U], ret, (size_t)168U * sizeof(uint8_t));
+  uint8_t repeat_expression[1U][168U];
+  { libcrux_sha3_generic_keccak_zero_block_8b_c60(repeat_expression[0U]); }
+  memcpy(lit.buf, repeat_expression, (size_t)1U * sizeof(uint8_t[168U]));
   lit.buf_len = (size_t)0U;
   lit.sponge = false;
   return lit;
