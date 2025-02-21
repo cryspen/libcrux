@@ -48,6 +48,9 @@ files:
   # MLKEM: MISC NON-ARCHITECTURE SPECIFIC HEADERS
   - name: libcrux_core
     inline_static: true
+    api:
+      - [libcrux_ml_kem, constants ]
+      - [Eurydice, "*"]
     private:
       monomorphizations_of:
         - [core, "*"]
@@ -60,11 +63,8 @@ files:
       patterns:
         - [core, "*"]
         - [libcrux_ml_kem, types ]
-        - [libcrux_ml_kem, constants ]
         - [libcrux_ml_kem, constant_time_ops, "*"]
         - [libcrux_ml_kem, utils, "*" ]
-    api:
-      - [Eurydice, "*"]
 
   # MLKEM-768
 
@@ -90,22 +90,24 @@ files:
 
   - name: libcrux_mlkem768_portable
     inline_static: true
+    api:
+      patterns:
+        - [libcrux_ml_kem, mlkem768, portable, "*"]
+      monomorphizations_of:
+        - [libcrux_ml_kem, mlkem768, portable]
     private:
       exact:
         - [ libcrux_ml_kem, variant, MlKem ]
         - [ libcrux_ml_kem, variant, Kyber ]
-    api:
       patterns:
         - [libcrux_ml_kem, "*"]
         - [libcrux_ml_kem, vector, "*"]
         - [libcrux_ml_kem, hash_functions, portable, "*"]
-        - [libcrux_ml_kem, mlkem768, portable, "*"]
         - [libcrux_ml_kem, ind_cca, instantiations, portable, "*"]
       monomorphizations_of:
         - [libcrux_ml_kem, polynomial, "*" ]
         - [libcrux_ml_kem, vector, "*"]
         - [libcrux_ml_kem, hash_functions, portable, "*"]
-        - [libcrux_ml_kem, mlkem768, portable]
         - [libcrux_ml_kem, ind_cca, instantiations, portable, "*"]
       monomorphizations_using:
         - [libcrux_ml_kem, polynomial, "*" ]
