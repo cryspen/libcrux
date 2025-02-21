@@ -24,6 +24,7 @@ libcrux-kem = { path = "../libcrux-kem", features = ["tests"] }
 libcrux-ml-kem = { path = "../libcrux-ml-kem" }
 rand_core_old = { version = "0.6", package = "rand_core" }
 libcrux-sha2 = { path = "../sha2" }
+libcrux-ecdsa = { path = "../ecdsa" }
 libcrux-rsa = { path = "../rsa" }
 rand_core = { version = "0.9" }
 # Benchmarking "RustCrypto"
@@ -67,6 +68,9 @@ openssl = "0.10"
 [target.'cfg(all(not(target_os = "windows"), target_arch = "x86_64"))'.dev-dependencies]
 libjade-sys = { version = "=0.0.2-beta.2", path = "../sys/libjade" }
 
+[lints.rust]
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(crypto_lib25519)'] }
+
 [[bench]]
 name = "sha2"
 harness = false
@@ -105,4 +109,8 @@ harness = false
 
 [[bench]]
 name = "rsa"
+harness = false
+
+[[bench]]
+name = "ecdsa_p256"
 harness = false
