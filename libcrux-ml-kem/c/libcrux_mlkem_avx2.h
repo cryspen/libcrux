@@ -8,7 +8,7 @@
  * Eurydice: 788c5abefac3a9c7f79abae6a30fa8558e39764c
  * Karamel: 1d81d757d5d9e16dd6463ccc72324e587c707959
  * F*: b0961063393215ca65927f017720cb365a193833-dirty
- * Libcrux: 773bb0f3772b00a0e43c2c7345303cf5fa57c273
+ * Libcrux: fe4a4d861034f88a22e8efd985255321a7faef55
  */
 
 #ifndef __libcrux_mlkem_avx2_H

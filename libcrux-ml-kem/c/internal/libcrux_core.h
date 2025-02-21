@@ -8,7 +8,7 @@
  * Eurydice: 788c5abefac3a9c7f79abae6a30fa8558e39764c
  * Karamel: 1d81d757d5d9e16dd6463ccc72324e587c707959
  * F*: b0961063393215ca65927f017720cb365a193833-dirty
- * Libcrux: 773bb0f3772b00a0e43c2c7345303cf5fa57c273
+ * Libcrux: fe4a4d861034f88a22e8efd985255321a7faef55
  */
 
 #ifndef __internal_libcrux_core_H
@@ -35,8 +35,11 @@ void libcrux_ml_kem_constant_time_ops_compare_ciphertexts_select_shared_secret_i
 
 #define LIBCRUX_ML_KEM_CONSTANTS_COEFFICIENTS_IN_RING_ELEMENT ((size_t)256U)
 
+#define LIBCRUX_ML_KEM_CONSTANTS_BITS_PER_RING_ELEMENT \
+  (LIBCRUX_ML_KEM_CONSTANTS_COEFFICIENTS_IN_RING_ELEMENT * (size_t)12U)
+
 #define LIBCRUX_ML_KEM_CONSTANTS_BYTES_PER_RING_ELEMENT \
-  (BITS_PER_RING_ELEMENT / (size_t)8U)
+  (LIBCRUX_ML_KEM_CONSTANTS_BITS_PER_RING_ELEMENT / (size_t)8U)
 
 #define LIBCRUX_ML_KEM_CONSTANTS_CPA_PKE_KEY_GENERATION_SEED_SIZE ((size_t)32U)
 

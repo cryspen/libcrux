@@ -8,7 +8,7 @@
  * Eurydice: 788c5abefac3a9c7f79abae6a30fa8558e39764c
  * Karamel: 1d81d757d5d9e16dd6463ccc72324e587c707959
  * F*: b0961063393215ca65927f017720cb365a193833-dirty
- * Libcrux: 773bb0f3772b00a0e43c2c7345303cf5fa57c273
+ * Libcrux: fe4a4d861034f88a22e8efd985255321a7faef55
  */
 
 #ifndef __libcrux_mlkem768_H
@@ -73,6 +73,10 @@ typedef libcrux_ml_kem_types_MlKemPrivateKey_d9
 
 typedef libcrux_ml_kem_types_MlKemPublicKey_30
     libcrux_ml_kem_mlkem768_MlKem768PublicKey;
+
+#define LIBCRUX_ML_KEM_MLKEM768_RANKED_BYTES_PER_RING_ELEMENT \
+  (LIBCRUX_ML_KEM_MLKEM768_RANK *                             \
+   LIBCRUX_ML_KEM_CONSTANTS_BITS_PER_RING_ELEMENT / (size_t)8U)
 
 #define LIBCRUX_ML_KEM_MLKEM768_SECRET_KEY_SIZE      \
   (LIBCRUX_ML_KEM_MLKEM768_CPA_PKE_SECRET_KEY_SIZE + \
