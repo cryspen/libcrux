@@ -5,10 +5,10 @@
  *
  * This code was generated with the following revisions:
  * Charon: a8f2211d1b95e0462a96382023b164a4116c7ca4
- * Eurydice: 60f543ddc60a777138070968daaf7620ec48170d
+ * Eurydice: 788c5abefac3a9c7f79abae6a30fa8558e39764c
  * Karamel: 1d81d757d5d9e16dd6463ccc72324e587c707959
  * F*: b0961063393215ca65927f017720cb365a193833-dirty
- * Libcrux: 072dd6530cbd58bb23ba8e0fabab8141aa9de3b7
+ * Libcrux: fe4a4d861034f88a22e8efd985255321a7faef55
  */
 
 #include "internal/libcrux_core.h"
@@ -80,6 +80,16 @@ void libcrux_ml_kem_constant_time_ops_compare_ciphertexts_select_shared_secret_i
   uint8_t ret0[32U];
   select_shared_secret_in_constant_time(lhs_s, rhs_s, selector, ret0);
   memcpy(ret, ret0, (size_t)32U * sizeof(uint8_t));
+}
+
+/**
+ K * BITS_PER_RING_ELEMENT / 8
+
+ [eurydice] Note that we can't use const generics here because that breaks
+            C extraction with eurydice.
+*/
+size_t libcrux_ml_kem_constants_ranked_bytes_per_ring_element(size_t rank) {
+  return rank * LIBCRUX_ML_KEM_CONSTANTS_BITS_PER_RING_ELEMENT / (size_t)8U;
 }
 
 /**

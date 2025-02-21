@@ -5,10 +5,10 @@
  *
  * This code was generated with the following revisions:
  * Charon: a8f2211d1b95e0462a96382023b164a4116c7ca4
- * Eurydice: 60f543ddc60a777138070968daaf7620ec48170d
+ * Eurydice: 788c5abefac3a9c7f79abae6a30fa8558e39764c
  * Karamel: 1d81d757d5d9e16dd6463ccc72324e587c707959
  * F*: b0961063393215ca65927f017720cb365a193833-dirty
- * Libcrux: 072dd6530cbd58bb23ba8e0fabab8141aa9de3b7
+ * Libcrux: fe4a4d861034f88a22e8efd985255321a7faef55
  */
 
 #ifndef __libcrux_mlkem_avx2_H
@@ -50,6 +50,22 @@ This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
 libcrux_ml_kem::vector::avx2::SIMD256Vector)#3}
 */
 void libcrux_ml_kem_vector_avx2_to_i16_array_9a(__m256i x, int16_t ret[16U]);
+
+__m256i libcrux_ml_kem_vector_avx2_from_bytes(Eurydice_slice array);
+
+/**
+This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
+libcrux_ml_kem::vector::avx2::SIMD256Vector)#3}
+*/
+__m256i libcrux_ml_kem_vector_avx2_from_bytes_9a(Eurydice_slice array);
+
+void libcrux_ml_kem_vector_avx2_to_bytes(__m256i x, Eurydice_slice bytes);
+
+/**
+This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
+libcrux_ml_kem::vector::avx2::SIMD256Vector)#3}
+*/
+void libcrux_ml_kem_vector_avx2_to_bytes_9a(__m256i x, Eurydice_slice bytes);
 
 __m256i libcrux_ml_kem_vector_avx2_arithmetic_add(__m256i lhs, __m256i rhs);
 

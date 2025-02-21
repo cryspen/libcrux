@@ -34,3 +34,13 @@ val from_i16_array (array: t_Slice i16)
         fun result ->
           let result:t_PortableVector = result in
           result.f_elements == array)
+
+val from_bytes (array: t_Slice u8)
+    : Prims.Pure t_PortableVector
+      (requires (Core.Slice.impl__len #u8 array <: usize) >=. mk_usize 32)
+      (fun _ -> Prims.l_True)
+
+val to_bytes (x: t_PortableVector) (bytes: t_Slice u8)
+    : Prims.Pure (t_Slice u8)
+      (requires (Core.Slice.impl__len #u8 bytes <: usize) >=. mk_usize 32)
+      (fun _ -> Prims.l_True)

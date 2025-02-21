@@ -20,6 +20,17 @@ val e_vst1q_s16': out: t_Slice i16 -> v: u8
 let e_vst1q_s16 = e_vst1q_s16'
 
 assume
+val e_vst1q_bytes': out: t_Slice u8 -> v: u8
+  -> Prims.Pure (t_Slice u8) Prims.l_True (fun _ -> Prims.l_True)
+
+let e_vst1q_bytes = e_vst1q_bytes'
+
+assume
+val e_vld1q_bytes': bytes: t_Slice u8 -> Prims.Pure u8 Prims.l_True (fun _ -> Prims.l_True)
+
+let e_vld1q_bytes = e_vld1q_bytes'
+
+assume
 val e_vld1q_s16': array: t_Slice i16 -> Prims.Pure u8 Prims.l_True (fun _ -> Prims.l_True)
 
 let e_vld1q_s16 = e_vld1q_s16'

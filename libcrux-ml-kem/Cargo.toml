@@ -50,10 +50,14 @@ kyber = []
 rand = ["dep:rand"]
 
 # std support
-std = []
+std = ["alloc"]
+alloc = []
+
+# Incremental encapsulation API
+incremental = []
 
 [dev-dependencies]
-rand = { version = "0.9" }
+rand = { version = "0.9", features = ["thread_rng"] }
 serde_json = { version = "1.0" }
 serde = { version = "1.0", features = ["derive"] }
 hex = { version = "0.4.3", features = ["serde"] }
