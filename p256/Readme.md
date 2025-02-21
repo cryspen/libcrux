@@ -1,5 +1,8 @@
 # NIST Curve P-256
 
+⚠️ NOTE: This crate serves as an internal dependency to other `libcrux`
+crates and SHOULD NOT be used directly.
+
 ## Verification
 ![verified-hacl]
 
