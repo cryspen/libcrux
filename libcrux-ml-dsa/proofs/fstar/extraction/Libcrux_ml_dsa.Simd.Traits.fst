@@ -21,56 +21,6 @@ class t_Repr (v_Self: Type0) = {
     -> Prims.Pure (t_Array i32 (mk_usize 8)) (f_repr_pre x0) (fun result -> f_repr_post x0 result)
 }
 
-let int_is_i32 (i: Hax_lib.Int.t_Int) : bool =
-  i <= (Rust_primitives.Hax.Int.from_machine Core.Num.impl_i32__MAX <: Hax_lib.Int.t_Int) &&
-  i >= (Rust_primitives.Hax.Int.from_machine Core.Num.impl_i32__MIN <: Hax_lib.Int.t_Int)
-
-let add_pre (lhs rhs: t_Array i32 (mk_usize 8)) : Hax_lib.Prop.t_Prop =
-  forall (i: usize).
-    b2t (i <. v_COEFFICIENTS_IN_SIMD_UNIT <: bool) ==>
-    b2t
-    (int_is_i32 ((Rust_primitives.Hax.Int.from_machine (lhs.[ i ] <: i32) <: Hax_lib.Int.t_Int) +
-          (Rust_primitives.Hax.Int.from_machine (rhs.[ i ] <: i32) <: Hax_lib.Int.t_Int)
-          <:
-          Hax_lib.Int.t_Int)
-      <:
-      bool)
-
-let add_post (lhs rhs future_lhs: t_Array i32 (mk_usize 8)) : Hax_lib.Prop.t_Prop =
-  forall (i: usize).
-    b2t (i <. v_COEFFICIENTS_IN_SIMD_UNIT <: bool) ==>
-    b2t
-    ((Rust_primitives.Hax.Int.from_machine (future_lhs.[ i ] <: i32) <: Hax_lib.Int.t_Int) =
-      ((Rust_primitives.Hax.Int.from_machine (lhs.[ i ] <: i32) <: Hax_lib.Int.t_Int) +
-        (Rust_primitives.Hax.Int.from_machine (rhs.[ i ] <: i32) <: Hax_lib.Int.t_Int)
-        <:
-        Hax_lib.Int.t_Int)
-      <:
-      bool)
-
-let sub_pre (lhs rhs: t_Array i32 (mk_usize 8)) : Hax_lib.Prop.t_Prop =
-  forall (i: usize).
-    b2t (i <. v_COEFFICIENTS_IN_SIMD_UNIT <: bool) ==>
-    b2t
-    (int_is_i32 ((Rust_primitives.Hax.Int.from_machine (lhs.[ i ] <: i32) <: Hax_lib.Int.t_Int) -
-          (Rust_primitives.Hax.Int.from_machine (rhs.[ i ] <: i32) <: Hax_lib.Int.t_Int)
-          <:
-          Hax_lib.Int.t_Int)
-      <:
-      bool)
-
-let sub_post (lhs rhs future_lhs: t_Array i32 (mk_usize 8)) : Hax_lib.Prop.t_Prop =
-  forall (i: usize).
-    b2t (i <. v_COEFFICIENTS_IN_SIMD_UNIT <: bool) ==>
-    b2t
-    ((Rust_primitives.Hax.Int.from_machine (future_lhs.[ i ] <: i32) <: Hax_lib.Int.t_Int) =
-      ((Rust_primitives.Hax.Int.from_machine (lhs.[ i ] <: i32) <: Hax_lib.Int.t_Int) -
-        (Rust_primitives.Hax.Int.from_machine (rhs.[ i ] <: i32) <: Hax_lib.Int.t_Int)
-        <:
-        Hax_lib.Int.t_Int)
-      <:
-      bool)
-
 class t_Operations (v_Self: Type0) = {
   [@@@ FStar.Tactics.Typeclasses.no_method]_super_13011033735201511749:Core.Marker.t_Copy v_Self;
   [@@@ FStar.Tactics.Typeclasses.no_method]_super_9529721400157967266:Core.Clone.t_Clone v_Self;
@@ -112,14 +62,22 @@ class t_Operations (v_Self: Type0) = {
   f_add_pre:lhs: v_Self -> rhs: v_Self
     -> pred:
       Type0
-        { add_pre (f_repr #v_Self #FStar.Tactics.Typeclasses.solve lhs <: t_Array i32 (mk_usize 8))
+        { Libcrux_ml_dsa.Simd.Traits.Specs.add_pre (f_repr #v_Self
+                #FStar.Tactics.Typeclasses.solve
+                lhs
+              <:
+              t_Array i32 (mk_usize 8))
             (f_repr #v_Self #FStar.Tactics.Typeclasses.solve rhs <: t_Array i32 (mk_usize 8)) ==>
           pred };
   f_add_post:lhs: v_Self -> rhs: v_Self -> lhs_future: v_Self
     -> pred:
       Type0
         { pred ==>
-          add_post (f_repr #v_Self #FStar.Tactics.Typeclasses.solve lhs <: t_Array i32 (mk_usize 8))
+          Libcrux_ml_dsa.Simd.Traits.Specs.add_post (f_repr #v_Self
+                #FStar.Tactics.Typeclasses.solve
+                lhs
+              <:
+              t_Array i32 (mk_usize 8))
             (f_repr #v_Self #FStar.Tactics.Typeclasses.solve rhs <: t_Array i32 (mk_usize 8))
             (f_repr #v_Self #FStar.Tactics.Typeclasses.solve lhs_future <: t_Array i32 (mk_usize 8))
         };
@@ -128,14 +86,22 @@ class t_Operations (v_Self: Type0) = {
   f_subtract_pre:lhs: v_Self -> rhs: v_Self
     -> pred:
       Type0
-        { sub_pre (f_repr #v_Self #FStar.Tactics.Typeclasses.solve lhs <: t_Array i32 (mk_usize 8))
+        { Libcrux_ml_dsa.Simd.Traits.Specs.sub_pre (f_repr #v_Self
+                #FStar.Tactics.Typeclasses.solve
+                lhs
+              <:
+              t_Array i32 (mk_usize 8))
             (f_repr #v_Self #FStar.Tactics.Typeclasses.solve rhs <: t_Array i32 (mk_usize 8)) ==>
           pred };
   f_subtract_post:lhs: v_Self -> rhs: v_Self -> lhs_future: v_Self
     -> pred:
       Type0
         { pred ==>
-          sub_post (f_repr #v_Self #FStar.Tactics.Typeclasses.solve lhs <: t_Array i32 (mk_usize 8))
+          Libcrux_ml_dsa.Simd.Traits.Specs.sub_post (f_repr #v_Self
+                #FStar.Tactics.Typeclasses.solve
+                lhs
+              <:
+              t_Array i32 (mk_usize 8))
             (f_repr #v_Self #FStar.Tactics.Typeclasses.solve rhs <: t_Array i32 (mk_usize 8))
             (f_repr #v_Self #FStar.Tactics.Typeclasses.solve lhs_future <: t_Array i32 (mk_usize 8))
         };

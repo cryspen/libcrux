@@ -14,24 +14,28 @@ let v_MONTGOMERY_SHIFT: u8 = mk_u8 32
 val add (lhs rhs: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients)
     : Prims.Pure Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients
       (requires
-        Libcrux_ml_dsa.Simd.Traits.add_pre lhs.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values
+        Libcrux_ml_dsa.Simd.Traits.Specs.add_pre lhs
+            .Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values
           rhs.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values)
       (ensures
         fun lhs_future ->
           let lhs_future:Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients = lhs_future in
-          Libcrux_ml_dsa.Simd.Traits.add_post lhs.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values
+          Libcrux_ml_dsa.Simd.Traits.Specs.add_post lhs
+              .Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values
             rhs.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values
             lhs_future.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values)
 
 val subtract (lhs rhs: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients)
     : Prims.Pure Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients
       (requires
-        Libcrux_ml_dsa.Simd.Traits.sub_pre lhs.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values
+        Libcrux_ml_dsa.Simd.Traits.Specs.sub_pre lhs
+            .Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values
           rhs.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values)
       (ensures
         fun lhs_future ->
           let lhs_future:Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients = lhs_future in
-          Libcrux_ml_dsa.Simd.Traits.sub_post lhs.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values
+          Libcrux_ml_dsa.Simd.Traits.Specs.sub_post lhs
+              .Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values
             rhs.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values
             lhs_future.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values)
 

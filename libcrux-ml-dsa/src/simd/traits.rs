@@ -19,58 +19,60 @@ pub const INVERSE_OF_MODULUS_MOD_MONTGOMERY_R: u64 = 58_728_449;
 /// We use 'fer' as a shorthand for this type.
 pub(crate) type FieldElementTimesMontgomeryR = i32;
 
-type SIMDContent = [i32; COEFFICIENTS_IN_SIMD_UNIT];
-
 #[cfg(not(eurydice))]
 #[hax_lib::attributes]
 pub(crate) trait Repr: Copy + Clone {
     #[requires(true)]
-    fn repr(&self) -> SIMDContent;
+    fn repr(&self) -> [i32; COEFFICIENTS_IN_SIMD_UNIT];
 }
 
 #[cfg(hax)]
-pub(crate) fn int_is_i32(i: hax_lib::Int) -> bool {
-    i <= i32::MAX.to_int() && i >= i32::MIN.to_int()
-}
+pub(crate) mod specs {
+    use hax_lib::*;
 
-#[cfg(hax)]
-pub(crate) fn add_pre(lhs: &SIMDContent, rhs: &SIMDContent) -> Prop {
-    forall(|i: usize| {
-        implies(
-            i < COEFFICIENTS_IN_SIMD_UNIT,
-            int_is_i32(lhs[i].to_int() + rhs[i].to_int()),
-        )
-    })
-}
+    type SIMDContent = [i32; COEFFICIENTS_IN_SIMD_UNIT];
+    // Avoiding a recursive bundle
+    const COEFFICIENTS_IN_SIMD_UNIT: usize = 8;
 
-#[cfg(hax)]
-pub(crate) fn add_post(lhs: &SIMDContent, rhs: &SIMDContent, future_lhs: &SIMDContent) -> Prop {
-    forall(|i: usize| {
-        implies(
-            i < COEFFICIENTS_IN_SIMD_UNIT,
-            future_lhs[i].to_int() == (lhs[i].to_int() + rhs[i].to_int()),
-        )
-    })
-}
+    pub(crate) fn int_is_i32(i: Int) -> bool {
+        i <= i32::MAX.to_int() && i >= i32::MIN.to_int()
+    }
 
-#[cfg(hax)]
-pub(crate) fn sub_pre(lhs: &SIMDContent, rhs: &SIMDContent) -> Prop {
-    forall(|i: usize| {
-        implies(
-            i < COEFFICIENTS_IN_SIMD_UNIT,
-            int_is_i32(lhs[i].to_int() - rhs[i].to_int()),
-        )
-    })
-}
+    pub(crate) fn add_pre(lhs: &SIMDContent, rhs: &SIMDContent) -> Prop {
+        forall(|i: usize| {
+            implies(
+                i < COEFFICIENTS_IN_SIMD_UNIT,
+                int_is_i32(lhs[i].to_int() + rhs[i].to_int()),
+            )
+        })
+    }
 
-#[cfg(hax)]
-pub(crate) fn sub_post(lhs: &SIMDContent, rhs: &SIMDContent, future_lhs: &SIMDContent) -> Prop {
-    forall(|i: usize| {
-        implies(
-            i < COEFFICIENTS_IN_SIMD_UNIT,
-            future_lhs[i].to_int() == (lhs[i].to_int() - rhs[i].to_int()),
-        )
-    })
+    pub(crate) fn add_post(lhs: &SIMDContent, rhs: &SIMDContent, future_lhs: &SIMDContent) -> Prop {
+        forall(|i: usize| {
+            implies(
+                i < COEFFICIENTS_IN_SIMD_UNIT,
+                future_lhs[i].to_int() == (lhs[i].to_int() + rhs[i].to_int()),
+            )
+        })
+    }
+
+    pub(crate) fn sub_pre(lhs: &SIMDContent, rhs: &SIMDContent) -> Prop {
+        forall(|i: usize| {
+            implies(
+                i < COEFFICIENTS_IN_SIMD_UNIT,
+                int_is_i32(lhs[i].to_int() - rhs[i].to_int()),
+            )
+        })
+    }
+
+    pub(crate) fn sub_post(lhs: &SIMDContent, rhs: &SIMDContent, future_lhs: &SIMDContent) -> Prop {
+        forall(|i: usize| {
+            implies(
+                i < COEFFICIENTS_IN_SIMD_UNIT,
+                future_lhs[i].to_int() == (lhs[i].to_int() - rhs[i].to_int()),
+            )
+        })
+    }
 }
 
 #[cfg(not(eurydice))]
@@ -88,12 +90,12 @@ pub(crate) trait Operations: Copy + Clone + Repr {
     fn to_coefficient_array(value: &Self, out: &mut [i32]);
 
     // Arithmetic
-    #[hax_lib::requires(add_pre(&lhs.repr(), &rhs.repr()))]
-    #[hax_lib::ensures(|_| add_post(&lhs.repr(), &rhs.repr(), &future(lhs).repr()))]
+    #[hax_lib::requires(specs::add_pre(&lhs.repr(), &rhs.repr()))]
+    #[hax_lib::ensures(|_| specs::add_post(&lhs.repr(), &rhs.repr(), &future(lhs).repr()))]
     fn add(lhs: &mut Self, rhs: &Self);
 
-    #[hax_lib::requires(sub_pre(&lhs.repr(), &rhs.repr()))]
-    #[hax_lib::ensures(|_| sub_post(&lhs.repr(), &rhs.repr(), &future(lhs).repr()))]
+    #[hax_lib::requires(specs::sub_pre(&lhs.repr(), &rhs.repr()))]
+    #[hax_lib::ensures(|_| specs::sub_post(&lhs.repr(), &rhs.repr(), &future(lhs).repr()))]
     fn subtract(lhs: &mut Self, rhs: &Self);
 
     fn infinity_norm_exceeds(simd_unit: &Self, bound: i32) -> bool;

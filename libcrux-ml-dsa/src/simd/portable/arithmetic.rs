@@ -7,7 +7,7 @@ use crate::{
 };
 
 #[cfg(hax)]
-use crate::simd::traits::{add_post, add_pre, sub_post, sub_pre, COEFFICIENTS_IN_SIMD_UNIT};
+use crate::simd::traits::{specs::*, COEFFICIENTS_IN_SIMD_UNIT};
 
 pub(crate) const MONTGOMERY_SHIFT: u8 = 32;
 
