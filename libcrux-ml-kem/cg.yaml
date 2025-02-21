@@ -92,7 +92,7 @@ files:
     inline_static: true
     api:
       patterns:
-        - [libcrux_ml_kem, mlkem768, portable, "*"]
+        - [libcrux_ml_kem, mlkem768, "*"]
       monomorphizations_of:
         - [libcrux_ml_kem, mlkem768, portable]
     private:
