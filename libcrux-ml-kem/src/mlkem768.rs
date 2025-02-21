@@ -690,7 +690,7 @@ pub(crate) mod kyber {
 ///
 /// // Use a n RNG that is safe to use for cryptography.
 /// // THIS ONE IS NOT!
-/// let mut rng = ::rand::rngs::OsRng;
+/// let mut rng = ::rand::rng();
 ///
 /// let key_pair = KeyPairCompressedBytes::generate(&mut rng);
 ///

@@ -369,6 +369,7 @@ macro_rules! impl_incr_key_size {
         #[cfg(feature = "rand")]
         pub mod rand {
             use super::*;
+            use ::rand::TryRngCore;
 
             /// Encapsulate the first part of the ciphertext.
             ///
@@ -376,7 +377,7 @@ macro_rules! impl_incr_key_size {
             /// the appropriate sizes.
             pub fn encapsulate1(
                 pk1: &[u8],
-                rng: &mut (impl RngCore + CryptoRng),
+                rng: &mut impl CryptoRng,
                 state: &mut [u8],
                 shared_secret: &mut [u8],
             ) -> Result<Ciphertext1, Error> {
