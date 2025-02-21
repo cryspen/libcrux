@@ -54,50 +54,13 @@ pub fn key_generation(c: &mut Criterion) {
         ($name:expr, $p:path, $group:expr) => {
             $group.bench_function(format!("unpacked {} (external random)", $name), |b| {
                 use $p as p;
-
-<<<<<<< HEAD
                 let mut seed = [0; 64];
-                rng.fill_bytes(&mut seed);
+                rng.try_fill_bytes(&mut seed).unwrap();
                 b.iter(|| {
                     let mut kp = p::init_key_pair();
                     p::generate_key_pair_mut(seed, &mut kp);
                 })
             });
-        };
-    }
-
-    macro_rules! fun_incremental {
-        ($name:expr, $p:path, $group:expr) => {
-            $group.bench_function(format!("incremental {} (external random)", $name), |b| {
-                use p::*;
-                use $p as p;
-
-                let mut seed = [0; 64];
-                rng.fill_bytes(&mut seed);
-                b.iter(|| {
-                    let _keypair = KeyPairCompressedBytes::from_seed(seed);
-                })
-            });
-
-            $group.bench_function(format!("incremental {}", $name), |b| {
-                use p::*;
-                use $p as p;
-
-                let mut rng = ::rand::rngs::OsRng;
-                b.iter(|| {
-                    let _keypair = KeyPairCompressedBytes::generate(&mut rng);
-                })
-            });
-=======
-                    let mut seed = [0; 64];
-                    rng.try_fill_bytes(&mut seed).unwrap();
-                    b.iter(|| {
-                        let mut kp = p::init_key_pair();
-                        p::generate_key_pair_mut(seed, &mut kp);
-                    })
-                },
-            );
->>>>>>> main
         };
     }
 
