@@ -16,7 +16,7 @@ fn sign(c: &mut Criterion) {
     group.bench_function("libcrux", |b| {
         b.iter_batched(
             || {
-                let mut rng = rand::rngs::OsRng;
+                let mut rng = rand::rng();
 
                 let sk: [u8; 32] = hex_str_to_array(SK_HEX);
                 let sk = PrivateKey::try_from(&sk).unwrap();
@@ -90,7 +90,7 @@ fn verify(c: &mut Criterion) {
     group.bench_function("libcrux", |b| {
         b.iter_batched(
             || {
-                let mut rng = rand::rngs::OsRng;
+                let mut rng = rand::rng();
 
                 let pk = hex_str_to_bytes(PK_HEX);
                 let pk = PublicKey::try_from(pk.as_slice()).unwrap();

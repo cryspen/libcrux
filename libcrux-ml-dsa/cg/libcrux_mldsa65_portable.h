@@ -4,11 +4,11 @@
  * SPDX-License-Identifier: MIT or Apache-2.0
  *
  * This code was generated with the following revisions:
- * Charon: 30cab88265206f4fa849736e704983e39a404d96
- * Eurydice: b8ea420ccde8db516ced5db9c097d77fa558fb94
- * Karamel: 97a06e07e7e423df192c40d5a88bf6c85fd4d278
+ * Charon: a8f2211d1b95e0462a96382023b164a4116c7ca4
+ * Eurydice: 60f543ddc60a777138070968daaf7620ec48170d
+ * Karamel: 1d81d757d5d9e16dd6463ccc72324e587c707959
  * F*: b0961063393215ca65927f017720cb365a193833-dirty
- * Libcrux: 15b22d1beea1cc7052b8a68b653b012241724664
+ * Libcrux: 072dd6530cbd58bb23ba8e0fabab8141aa9de3b7
  */
 
 #ifndef __libcrux_mldsa65_portable_H
@@ -782,14 +782,8 @@ typedef struct libcrux_ml_dsa_simd_portable_vector_type_Coefficients_s {
 static inline libcrux_ml_dsa_simd_portable_vector_type_Coefficients
 libcrux_ml_dsa_simd_portable_vector_type_zero(void) {
   libcrux_ml_dsa_simd_portable_vector_type_Coefficients lit;
-  lit.values[0U] = (int32_t)0;
-  lit.values[1U] = (int32_t)0;
-  lit.values[2U] = (int32_t)0;
-  lit.values[3U] = (int32_t)0;
-  lit.values[4U] = (int32_t)0;
-  lit.values[5U] = (int32_t)0;
-  lit.values[6U] = (int32_t)0;
-  lit.values[7U] = (int32_t)0;
+  int32_t repeat_expression[8U] = {0U};
+  memcpy(lit.values, repeat_expression, (size_t)8U * sizeof(int32_t));
   return lit;
 }
 
@@ -4546,38 +4540,13 @@ with const generics
 static inline libcrux_ml_dsa_polynomial_PolynomialRingElement_e8
 libcrux_ml_dsa_polynomial_zero_ff_5b(void) {
   libcrux_ml_dsa_polynomial_PolynomialRingElement_e8 lit;
-  lit.simd_units[0U] = libcrux_ml_dsa_simd_portable_zero_e9();
-  lit.simd_units[1U] = libcrux_ml_dsa_simd_portable_zero_e9();
-  lit.simd_units[2U] = libcrux_ml_dsa_simd_portable_zero_e9();
-  lit.simd_units[3U] = libcrux_ml_dsa_simd_portable_zero_e9();
-  lit.simd_units[4U] = libcrux_ml_dsa_simd_portable_zero_e9();
-  lit.simd_units[5U] = libcrux_ml_dsa_simd_portable_zero_e9();
-  lit.simd_units[6U] = libcrux_ml_dsa_simd_portable_zero_e9();
-  lit.simd_units[7U] = libcrux_ml_dsa_simd_portable_zero_e9();
-  lit.simd_units[8U] = libcrux_ml_dsa_simd_portable_zero_e9();
-  lit.simd_units[9U] = libcrux_ml_dsa_simd_portable_zero_e9();
-  lit.simd_units[10U] = libcrux_ml_dsa_simd_portable_zero_e9();
-  lit.simd_units[11U] = libcrux_ml_dsa_simd_portable_zero_e9();
-  lit.simd_units[12U] = libcrux_ml_dsa_simd_portable_zero_e9();
-  lit.simd_units[13U] = libcrux_ml_dsa_simd_portable_zero_e9();
-  lit.simd_units[14U] = libcrux_ml_dsa_simd_portable_zero_e9();
-  lit.simd_units[15U] = libcrux_ml_dsa_simd_portable_zero_e9();
-  lit.simd_units[16U] = libcrux_ml_dsa_simd_portable_zero_e9();
-  lit.simd_units[17U] = libcrux_ml_dsa_simd_portable_zero_e9();
-  lit.simd_units[18U] = libcrux_ml_dsa_simd_portable_zero_e9();
-  lit.simd_units[19U] = libcrux_ml_dsa_simd_portable_zero_e9();
-  lit.simd_units[20U] = libcrux_ml_dsa_simd_portable_zero_e9();
-  lit.simd_units[21U] = libcrux_ml_dsa_simd_portable_zero_e9();
-  lit.simd_units[22U] = libcrux_ml_dsa_simd_portable_zero_e9();
-  lit.simd_units[23U] = libcrux_ml_dsa_simd_portable_zero_e9();
-  lit.simd_units[24U] = libcrux_ml_dsa_simd_portable_zero_e9();
-  lit.simd_units[25U] = libcrux_ml_dsa_simd_portable_zero_e9();
-  lit.simd_units[26U] = libcrux_ml_dsa_simd_portable_zero_e9();
-  lit.simd_units[27U] = libcrux_ml_dsa_simd_portable_zero_e9();
-  lit.simd_units[28U] = libcrux_ml_dsa_simd_portable_zero_e9();
-  lit.simd_units[29U] = libcrux_ml_dsa_simd_portable_zero_e9();
-  lit.simd_units[30U] = libcrux_ml_dsa_simd_portable_zero_e9();
-  lit.simd_units[31U] = libcrux_ml_dsa_simd_portable_zero_e9();
+  libcrux_ml_dsa_simd_portable_vector_type_Coefficients repeat_expression[32U];
+  for (size_t i = (size_t)0U; i < (size_t)32U; i++) {
+    repeat_expression[i] = libcrux_ml_dsa_simd_portable_zero_e9();
+  }
+  memcpy(lit.simd_units, repeat_expression,
+         (size_t)32U *
+             sizeof(libcrux_ml_dsa_simd_portable_vector_type_Coefficients));
   return lit;
 }
 
@@ -4919,7 +4888,12 @@ static KRML_MUSTINLINE void libcrux_ml_dsa_samplex4_matrix_flat_63(
   uint8_t rand_stack1[840U] = {0U};
   uint8_t rand_stack2[840U] = {0U};
   uint8_t rand_stack3[840U] = {0U};
-  int32_t tmp_stack[4U][263U] = {{0U}};
+  int32_t tmp_stack[4U][263U];
+  memset(tmp_stack[0U], 0U, 263U * sizeof(int32_t));
+  memset(tmp_stack[1U], 0U, 263U * sizeof(int32_t));
+  memset(tmp_stack[2U], 0U, 263U * sizeof(int32_t));
+  int32_t repeat_expression[263U] = {0U};
+  memcpy(tmp_stack[3U], repeat_expression, (size_t)263U * sizeof(int32_t));
   for (size_t i = (size_t)0U;
        i < Eurydice_slice_len(
                matrix, libcrux_ml_dsa_polynomial_PolynomialRingElement_e8) /

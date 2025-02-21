@@ -1,10 +1,10 @@
 pub mod util {
     pub fn randombytes(n: usize) -> Vec<u8> {
         use rand::rngs::OsRng;
-        use rand::RngCore;
+        use rand::TryRngCore;
 
         let mut bytes = vec![0u8; n];
-        OsRng.fill_bytes(&mut bytes);
+        OsRng.try_fill_bytes(&mut bytes).unwrap();
         bytes
     }
 

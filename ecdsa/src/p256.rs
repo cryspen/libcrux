@@ -8,6 +8,8 @@ use libcrux_p256::{
 
 use crate::DigestAlgorithm;
 
+use ::rand::TryRngCore;
+
 use super::Error;
 
 /// A P-256 Signature
