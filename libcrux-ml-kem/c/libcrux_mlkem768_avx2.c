@@ -8,7 +8,7 @@
  * Eurydice: 60f543ddc60a777138070968daaf7620ec48170d
  * Karamel: 1d81d757d5d9e16dd6463ccc72324e587c707959
  * F*: b0961063393215ca65927f017720cb365a193833-dirty
- * Libcrux: e2291b6e918559a4712b2a553f49ec92fdba1e42
+ * Libcrux: 072dd6530cbd58bb23ba8e0fabab8141aa9de3b7
  */
 
 #include "libcrux_mlkem768_avx2.h"
@@ -163,15 +163,16 @@ generics
 - CPA_PRIVATE_KEY_SIZE= 1152
 - PRIVATE_KEY_SIZE= 2400
 - PUBLIC_KEY_SIZE= 1184
+- BYTES_PER_RING_ELEMENT= 1152
 - ETA1= 2
 - ETA1_RANDOMNESS_SIZE= 128
 */
-static libcrux_ml_kem_mlkem768_MlKem768KeyPair generate_keypair_avx2_ce(
+static libcrux_ml_kem_mlkem768_MlKem768KeyPair generate_keypair_avx2_c6(
     uint8_t randomness[64U]) {
   /* Passing arrays by value in Rust generates a copy in C */
   uint8_t copy_of_randomness[64U];
   memcpy(copy_of_randomness, randomness, (size_t)64U * sizeof(uint8_t));
-  return libcrux_ml_kem_ind_cca_generate_keypair_bb1(copy_of_randomness);
+  return libcrux_ml_kem_ind_cca_generate_keypair_d61(copy_of_randomness);
 }
 
 /**
@@ -181,15 +182,16 @@ libcrux_ml_kem.ind_cca.instantiations.avx2.generate_keypair with const generics
 - CPA_PRIVATE_KEY_SIZE= 1152
 - PRIVATE_KEY_SIZE= 2400
 - PUBLIC_KEY_SIZE= 1184
+- BYTES_PER_RING_ELEMENT= 1152
 - ETA1= 2
 - ETA1_RANDOMNESS_SIZE= 128
 */
-static libcrux_ml_kem_mlkem768_MlKem768KeyPair generate_keypair_ce(
+static libcrux_ml_kem_mlkem768_MlKem768KeyPair generate_keypair_c6(
     uint8_t randomness[64U]) {
   /* Passing arrays by value in Rust generates a copy in C */
   uint8_t copy_of_randomness[64U];
   memcpy(copy_of_randomness, randomness, (size_t)64U * sizeof(uint8_t));
-  return generate_keypair_avx2_ce(copy_of_randomness);
+  return generate_keypair_avx2_c6(copy_of_randomness);
 }
 
 /**
@@ -200,7 +202,7 @@ libcrux_ml_kem_mlkem768_avx2_generate_key_pair(uint8_t randomness[64U]) {
   /* Passing arrays by value in Rust generates a copy in C */
   uint8_t copy_of_randomness[64U];
   memcpy(copy_of_randomness, randomness, (size_t)64U * sizeof(uint8_t));
-  return generate_keypair_ce(copy_of_randomness);
+  return generate_keypair_c6(copy_of_randomness);
 }
 
 /**
@@ -273,9 +275,10 @@ A monomorphic instance of
 libcrux_ml_kem.ind_cca.instantiations.avx2.validate_public_key_avx2 with const
 generics
 - K= 3
+- RANKED_BYTES_PER_RING_ELEMENT= 1152
 - PUBLIC_KEY_SIZE= 1184
 */
-static bool validate_public_key_avx2_41(uint8_t *public_key) {
+static bool validate_public_key_avx2_31(uint8_t *public_key) {
   return libcrux_ml_kem_ind_cca_validate_public_key_ed(public_key);
 }
 
@@ -284,10 +287,11 @@ A monomorphic instance of
 libcrux_ml_kem.ind_cca.instantiations.avx2.validate_public_key with const
 generics
 - K= 3
+- RANKED_BYTES_PER_RING_ELEMENT= 1152
 - PUBLIC_KEY_SIZE= 1184
 */
-static bool validate_public_key_41(uint8_t *public_key) {
-  return validate_public_key_avx2_41(public_key);
+static bool validate_public_key_31(uint8_t *public_key) {
+  return validate_public_key_avx2_31(public_key);
 }
 
 /**
@@ -297,5 +301,5 @@ static bool validate_public_key_41(uint8_t *public_key) {
 */
 bool libcrux_ml_kem_mlkem768_avx2_validate_public_key(
     libcrux_ml_kem_types_MlKemPublicKey_30 *public_key) {
-  return validate_public_key_41(public_key->value);
+  return validate_public_key_31(public_key->value);
 }

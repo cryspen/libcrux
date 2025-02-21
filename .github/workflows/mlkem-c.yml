@@ -1,4 +1,4 @@
-name: Build & Test C
+name: ML-KEM - Build & Test C
 
 on:
   push:
@@ -39,11 +39,9 @@ jobs:
     runs-on: ubuntu-latest
     needs:
       - diff
-      - diff-header-only-ml-dsa
-      - diff-header-only-ml-kem
+      - diff-header-only
       - build
-      - build-header-only-ml-dsa
-      - build-header-only-ml-kem
+      - build-header-only
     steps:
       - name: Report status
         run: echo "All tests completed successfully"
@@ -83,7 +81,7 @@ jobs:
           include-hidden-files: true
           if-no-files-found: error
 
-  extract-header-only-ml-kem:
+  extract-header-only:
     needs: [setup]
     if: ${{ needs.setup.outputs.should-run == 'true' }}
     runs-on: ubuntu-latest
@@ -108,32 +106,6 @@ jobs:
           include-hidden-files: true
           if-no-files-found: error
 
-
-  extract-header-only-ml-dsa:
-    needs: [setup]
-    if: ${{ needs.setup.outputs.should-run == 'true' }}
-    runs-on: ubuntu-latest
-    container:
-      image: ${{ needs.setup.outputs.image }}
-    defaults:
-      run:
-        working-directory: libcrux-ml-dsa
-        shell: bash
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Extract C (header only)
-        run: |
-          ./boring.sh --no-clean
-
-      - name: Upload header only C extraction
-        uses: actions/upload-artifact@v4
-        with:
-          name: header-only-c-extraction-ml-dsa
-          path: libcrux-ml-dsa/cg/
-          include-hidden-files: true
-          if-no-files-found: error
-
   diff:
     needs: [extract]
     runs-on: ubuntu-latest
@@ -154,8 +126,8 @@ jobs:
           libcrux-ml-kem/headers_kill_revs.sh ~/c-extraction
           diff -r libcrux-ml-kem/c ~/c-extraction
 
-  diff-header-only-ml-kem:
-    needs: [extract-header-only-ml-kem]
+  diff-header-only:
+    needs: [extract-header-only]
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -173,27 +145,6 @@ jobs:
           libcrux-ml-kem/headers_kill_revs.sh libcrux-ml-kem/cg
           libcrux-ml-kem/headers_kill_revs.sh ~/mlkem-c-extraction
           diff -r libcrux-ml-kem/cg ~/mlkem-c-extraction
-
-  diff-header-only-ml-dsa:
-    needs: [extract-header-only-ml-dsa]
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        shell: bash
-    steps:
-      - uses: actions/download-artifact@v4
-        with:
-          name: header-only-c-extraction-ml-dsa
-          path: ~/mldsa-c-extraction
-
-      - uses: actions/checkout@v4
-
-      - name: Diff Extraction
-        run: |
-          libcrux-ml-kem/headers_kill_revs.sh libcrux-ml-dsa/cg
-          libcrux-ml-kem/headers_kill_revs.sh ~/mldsa-c-extraction
-          diff -r libcrux-ml-dsa/cg ~/mldsa-c-extraction
-
 
   build:
     needs: [extract]
@@ -234,8 +185,8 @@ jobs:
           cmake --build build --config Release
         if: ${{ matrix.os != 'windows-latest' }}
 
-  build-header-only-ml-kem:
-    needs: [extract-header-only-ml-kem]
+  build-header-only:
+    needs: [extract-header-only]
     strategy:
       fail-fast: false
       matrix:

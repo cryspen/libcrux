@@ -1,7 +1,7 @@
 use libcrux_ml_kem::{MlKemCiphertext, MlKemPrivateKey};
 
 use libcrux_sha3::shake256;
-use rand::{rngs::OsRng, thread_rng, RngCore};
+use rand::{rng, rngs::OsRng, TryRngCore};
 
 const SHARED_SECRET_SIZE: usize = 32;
 
@@ -253,7 +253,7 @@ fn modify_ciphertext<const LEN: usize>(ciphertext: MlKemCiphertext<LEN>) -> MlKe
     let mut raw_ciphertext = [0u8; LEN];
     raw_ciphertext.copy_from_slice(ciphertext.as_ref());
 
-    let mut random_u32: usize = thread_rng().next_u32().try_into().unwrap();
+    let mut random_u32: usize = rng().try_next_u32().unwrap().try_into().unwrap();
 
     let mut random_byte: u8 = (random_u32 & 0xFF) as u8;
     if random_byte == 0 {
@@ -300,7 +300,7 @@ fn modify_secret_key<const LEN: usize>(
     let mut raw_secret_key = [0u8; LEN];
     raw_secret_key.copy_from_slice(secret_key.as_slice());
 
-    let mut random_u32: usize = thread_rng().next_u32().try_into().unwrap();
+    let mut random_u32: usize = rng().try_next_u32().unwrap().try_into().unwrap();
 
     let mut random_byte: u8 = (random_u32 & 0xFF) as u8;
     if random_byte == 0 {

@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use test_util::*;
 
-use rand_core::OsRng;
+use rand_core::{OsRng, TryRngCore};
 
 use libcrux_ecdh::{self, key_gen, Algorithm, Error};
 
@@ -12,7 +12,8 @@ use libcrux_ecdh::{self, key_gen, Algorithm, Error};
 fn derive() {
     let _ = pretty_env_logger::try_init();
 
-    let mut rng = OsRng;
+    let mut os_rng = OsRng;
+    let mut rng = os_rng.unwrap_mut();
 
     let (private_a, public_a) = key_gen(Algorithm::X25519, &mut rng).unwrap();
     let (private_b, public_b) = key_gen(Algorithm::X25519, &mut rng).unwrap();

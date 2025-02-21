@@ -1,4 +1,4 @@
-name: ML-KEM
+name: KEM - Build & Test
 
 on:
   push:
@@ -31,31 +31,23 @@ jobs:
             os: "macos-latest"
           - bits: 32
             os: "macos-13"
+          - bits: 32 # FIXME: Linking isn't working here yet for hacl #42
+            os: "windows-latest"
 
     runs-on: ${{ matrix.os }}
     defaults:
       run:
         shell: bash
-        working-directory: libcrux-ml-kem
+        working-directory: libcrux-kem
 
     steps:
       - uses: actions/checkout@v4
-      - uses: taiki-e/install-action@cargo-hack
-
-      - name: Update dependencies
-        run: cargo update
 
       - run: echo "RUST_TARGET_FLAG=" > $GITHUB_ENV
         if: ${{ matrix.bits == 64 }}
 
-      - run: echo 'EXCLUDE_FEATURES=--exclude-features simd256' > $GITHUB_ENV
-        if: ${{ matrix.os == 'macos-latest' }}
-
-      - run: echo 'EXCLUDE_FEATURES=--exclude-features simd128' > $GITHUB_ENV
-        if: ${{ matrix.os != 'macos-latest' }}
-
       - name: 🛠️ Setup Rust Nightly
-        run: rustup toolchain install nightly
+        run: rustup toolchain install nightly-2024-12-14
 
       - name: 🛠️ Setup Ubuntu x86
         if: ${{ matrix.bits == 32 &&  matrix.os == 'ubuntu-latest' }}
@@ -90,9 +82,10 @@ jobs:
       - name: 🔨 Build Release
         run: cargo build --verbose --release $RUST_TARGET_FLAG
 
+      # TODO: https://github.com/cryspen/libcrux/issues/717
       - name: 🏃🏻 Asan MacOS
         if: ${{ matrix.os == 'macos-latest' }}
-        run: RUSTDOCFLAGS=-Zsanitizer=address RUSTFLAGS=-Zsanitizer=address cargo +nightly test --release --target aarch64-apple-darwin
+        run: RUSTDOCFLAGS=-Zsanitizer=address RUSTFLAGS=-Zsanitizer=address cargo +nightly-2024-12-14 test --release --target aarch64-apple-darwin
 
       # - name: ⬆ Upload build
       #   uses: ./.github/actions/upload_artifacts
@@ -104,31 +97,6 @@ jobs:
       # - name: 🏃🏻 Asan Linux
       #   if: ${{ matrix.bits == 64 && matrix.os == 'ubuntu-latest' }}
       #   run: RUSTDOCFLAGS=-Zsanitizer=address RUSTFLAGS=-Zsanitizer=address cargo +nightly test --release --target x86_64-unknown-linux-gnu
-
-      # Test SHA3
-      - name: 🏃🏻‍♀️ SHA3 Test
-        working-directory: libcrux-sha3
-        run: |
-          cargo clean
-          cargo test --verbose $RUST_TARGET_FLAG
-
-      - name: 🏃🏻‍♀️ SHA3 Test Release
-        working-directory: libcrux-sha3
-        run: |
-          cargo clean
-          cargo test --release --verbose $RUST_TARGET_FLAG
-
-      - name: 🏃🏻‍♀️ SHA3 Test Portable
-        working-directory: libcrux-sha3
-        run: |
-          cargo clean
-          LIBCRUX_DISABLE_SIMD128=1 LIBCRUX_DISABLE_SIMD256=1 cargo test --verbose $RUST_TARGET_FLAG
-
-      - name: 🏃🏻‍♀️ SHA3 Test Portable Release
-        working-directory: libcrux-sha3
-        run: |
-          cargo clean
-          LIBCRUX_DISABLE_SIMD128=1 LIBCRUX_DISABLE_SIMD256=1 cargo test --verbose --release $RUST_TARGET_FLAG
 
       # Test ...
 
@@ -151,54 +119,3 @@ jobs:
         run: |
           cargo clean
           LIBCRUX_DISABLE_SIMD128=1 LIBCRUX_DISABLE_SIMD256=1 cargo test --verbose --release $RUST_TARGET_FLAG
-
-      - name: 🏃🏻‍♀️ Test Kyber
-        run: |
-          cargo clean
-          cargo test ,kyber --verbose $RUST_TARGET_FLAG
-
-      - name: 🏃🏻‍♀️ Cargo Check Features
-        if: ${{ matrix.bits == 64 }}
-        run: |
-          cargo clean
-          cargo hack check --feature-powerset $EXCLUDE_FEATURES --verbose --no-dev-deps $RUST_TARGET_FLAG
-
-      - name: 🏃🏻‍♀️ Cargo Test Features
-        if: ${{ matrix.bits == 64 }}
-        run: |
-          cargo clean
-          cargo hack test --each-feature $EXCLUDE_FEATURES --verbose $RUST_TARGET_FLAG
-
-  fuzz:
-    strategy:
-      fail-fast: false
-      matrix:
-        os:
-          - macos-latest # macos-14 m1
-          - ubuntu-latest
-
-    runs-on: ${{ matrix.os }}
-    defaults:
-      run:
-        shell: bash
-        working-directory: libcrux-ml-kem
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: 🛠️ Setup Rust Nightly
-        run: |
-          rustup toolchain install nightly
-          cargo install cargo-fuzz
-
-      - name: 🛠️ Update dependencies
-        run: cargo update
-
-      - name: 🏃🏻‍♀️ Decaps
-        run: CARGO_PROFILE_RELEASE_LTO=false cargo +nightly fuzz run decaps -- -runs=100000
-
-      - name: 🏃🏻‍♀️ Encaps
-        run: CARGO_PROFILE_RELEASE_LTO=false cargo +nightly fuzz run encaps -- -runs=100000
-
-      - name: 🏃🏻‍♀️ KeyGen
-        run: CARGO_PROFILE_RELEASE_LTO=false cargo +nightly fuzz run keygen -- -runs=1000000

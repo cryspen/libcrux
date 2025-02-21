@@ -21,6 +21,8 @@ extern "C" {
 
 // SLICES, ARRAYS, ETC.
 
+#define LowStar_Ignore_ignore(e, t, _ret_t) ((void)e)
+
 // The MSVC C++ compiler does not support compound literals.
 // This CLITERAL is used to turn `(type){...}` into `type{...}` when using a C++
 // compiler.

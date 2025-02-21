@@ -8,7 +8,7 @@
  * Eurydice: 60f543ddc60a777138070968daaf7620ec48170d
  * Karamel: 1d81d757d5d9e16dd6463ccc72324e587c707959
  * F*: b0961063393215ca65927f017720cb365a193833-dirty
- * Libcrux: e2291b6e918559a4712b2a553f49ec92fdba1e42
+ * Libcrux: 072dd6530cbd58bb23ba8e0fabab8141aa9de3b7
  */
 
 #include "libcrux_mlkem1024_portable.h"
@@ -113,15 +113,16 @@ generics
 - CPA_PRIVATE_KEY_SIZE= 1536
 - PRIVATE_KEY_SIZE= 3168
 - PUBLIC_KEY_SIZE= 1568
+- RANKED_BYTES_PER_RING_ELEMENT= 1536
 - ETA1= 2
 - ETA1_RANDOMNESS_SIZE= 128
 */
-static libcrux_ml_kem_mlkem1024_MlKem1024KeyPair generate_keypair_b4(
+static libcrux_ml_kem_mlkem1024_MlKem1024KeyPair generate_keypair_c9(
     uint8_t randomness[64U]) {
   /* Passing arrays by value in Rust generates a copy in C */
   uint8_t copy_of_randomness[64U];
   memcpy(copy_of_randomness, randomness, (size_t)64U * sizeof(uint8_t));
-  return libcrux_ml_kem_ind_cca_generate_keypair_151(copy_of_randomness);
+  return libcrux_ml_kem_ind_cca_generate_keypair_f81(copy_of_randomness);
 }
 
 /**
@@ -132,7 +133,7 @@ libcrux_ml_kem_mlkem1024_portable_generate_key_pair(uint8_t randomness[64U]) {
   /* Passing arrays by value in Rust generates a copy in C */
   uint8_t copy_of_randomness[64U];
   memcpy(copy_of_randomness, randomness, (size_t)64U * sizeof(uint8_t));
-  return generate_keypair_b4(copy_of_randomness);
+  return generate_keypair_c9(copy_of_randomness);
 }
 
 /**
@@ -197,10 +198,11 @@ A monomorphic instance of
 libcrux_ml_kem.ind_cca.instantiations.portable.validate_public_key with const
 generics
 - K= 4
+- RANKED_BYTES_PER_RING_ELEMENT= 1536
 - PUBLIC_KEY_SIZE= 1568
 */
-static KRML_MUSTINLINE bool validate_public_key_44(uint8_t *public_key) {
-  return libcrux_ml_kem_ind_cca_validate_public_key_ff(public_key);
+static KRML_MUSTINLINE bool validate_public_key_6b(uint8_t *public_key) {
+  return libcrux_ml_kem_ind_cca_validate_public_key_00(public_key);
 }
 
 /**
@@ -210,5 +212,5 @@ static KRML_MUSTINLINE bool validate_public_key_44(uint8_t *public_key) {
 */
 bool libcrux_ml_kem_mlkem1024_portable_validate_public_key(
     libcrux_ml_kem_types_MlKemPublicKey_64 *public_key) {
-  return validate_public_key_44(public_key->value);
+  return validate_public_key_6b(public_key->value);
 }

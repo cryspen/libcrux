@@ -8,7 +8,7 @@
  * Eurydice: 60f543ddc60a777138070968daaf7620ec48170d
  * Karamel: 1d81d757d5d9e16dd6463ccc72324e587c707959
  * F*: b0961063393215ca65927f017720cb365a193833-dirty
- * Libcrux: e2291b6e918559a4712b2a553f49ec92fdba1e42
+ * Libcrux: 072dd6530cbd58bb23ba8e0fabab8141aa9de3b7
  */
 
 #ifndef __internal_libcrux_core_H
@@ -44,14 +44,6 @@ void libcrux_ml_kem_constant_time_ops_compare_ciphertexts_select_shared_secret_i
 #define LIBCRUX_ML_KEM_CONSTANTS_CPA_PKE_KEY_GENERATION_SEED_SIZE ((size_t)32U)
 
 #define LIBCRUX_ML_KEM_CONSTANTS_H_DIGEST_SIZE ((size_t)32U)
-
-/**
- K * BITS_PER_RING_ELEMENT / 8
-
- [eurydice] Note that we can't use const generics here because that breaks
-            C extraction with eurydice.
-*/
-size_t libcrux_ml_kem_constants_ranked_bytes_per_ring_element(size_t rank);
 
 typedef struct libcrux_ml_kem_utils_extraction_helper_Keypair1024_s {
   uint8_t fst[1536U];
