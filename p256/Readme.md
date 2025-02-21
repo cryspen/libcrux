@@ -1,8 +1,7 @@
-# Elliptic Curve Diffie-Hellman (ECDH)
+# NIST Curve P-256
 
-This crate provides an API for performing elliptic curve
-Diffie-Hellman. Currently supported curves are Curve 25519 and NIST
-curve P256.
+⚠️ NOTE: This crate serves as an internal dependency to other `libcrux`
+crates and SHOULD NOT be used directly.
 
 ## Verification
 ![verified-hacl]
