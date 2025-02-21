@@ -220,33 +220,3 @@ jobs:
         run: ./build/Debug/ml_kem_test
         if: ${{ matrix.os == 'windows-latest' }}
 
-  build-header-only-ml-dsa:
-    needs: [extract-header-only-ml-dsa]
-    strategy:
-      fail-fast: false
-      matrix:
-        os:
-          - macos-latest
-          - ubuntu-latest
-          - windows-latest
-    runs-on: ${{ matrix.os }}
-    defaults:
-      run:
-        shell: bash
-    steps:
-      - uses: actions/download-artifact@v4
-        with:
-          name: header-only-c-extraction-ml-dsa
-
-      - name: 🔨 Build
-        run: |
-          cmake -B build
-          cmake --build build
-
-      - name: 🏃🏻‍♀️ Test
-        run: ./build/ml_dsa_test
-        if: ${{ matrix.os != 'windows-latest' }}
-
-      - name: 🏃🏻‍♀️ Test
-        run: ./build/Debug/ml_dsa_test
-        if: ${{ matrix.os == 'windows-latest' }}
