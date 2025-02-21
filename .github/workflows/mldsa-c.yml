@@ -1,12 +1,14 @@
 name: ML-DSA - Build & Test C
 
 on:
+  merge_group:
+    # keep workflow specific if GH Actions adds more types in the future
+    types: ["checks-requested"]
   push:
     branches: ["main", "dev"]
   pull_request:
     branches: ["main", "dev"]
   workflow_dispatch:
-  merge_group:
 
 env:
   REGISTRY: ghcr.io
@@ -19,6 +21,7 @@ concurrency:
 
 jobs:
   setup:
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event_name == 'merge_group' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

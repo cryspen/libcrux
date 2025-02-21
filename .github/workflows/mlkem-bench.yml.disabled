@@ -2,7 +2,6 @@ name: ML-KEM - Benchmark
 
 on:
   workflow_dispatch:
-  merge_group:
 
 env:
   CARGO_TERM_COLOR: always

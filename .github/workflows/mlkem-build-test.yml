@@ -1,12 +1,14 @@
 name: ML-KEM - Build & Test
 
 on:
+  merge_group:
+    # keep workflow specific if GH Actions adds more types in the future
+    types: ["checks-requested"]
   push:
     branches: ["main", "dev"]
   pull_request:
     branches: ["main", "dev", "*"]
   workflow_dispatch:
-  merge_group:
 
 env:
   CARGO_TERM_COLOR: always
@@ -17,6 +19,7 @@ concurrency:
 
 jobs:
   build:
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event_name == 'pull_request' }}
     strategy:
       fail-fast: false
       matrix:
