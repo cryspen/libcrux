@@ -14,18 +14,18 @@ publish = false
 bench = false # so libtest doesn't eat the arguments to criterion
 
 [dependencies]
-libcrux-traits = { version = "0.0.2-beta.2", path = "../traits" }
-libcrux-kem = { version = "0.0.2-beta.2", path = "../libcrux-kem" }
-libcrux-hkdf = { version = "=0.0.2-beta.2", path = "../libcrux-hkdf" }
-libcrux-hmac = { version = "=0.0.2-beta.2", path = "../libcrux-hmac" }
+libcrux-traits = { version = "0.0.2-beta.3", path = "../traits" }
+libcrux-kem = { version = "0.0.2-beta.3", path = "../libcrux-kem" }
+libcrux-hkdf = { version = "=0.0.2-beta.3", path = "../libcrux-hkdf" }
+libcrux-hmac = { version = "=0.0.2-beta.3", path = "../libcrux-hmac" }
 classic-mceliece-rust = { version = "2.0.0", features = [
     "mceliece460896f",
     "zeroize",
 ], optional = true }
 rand = { version = "0.9" }
 rand_old = { version = "0.8", package = "rand", optional = true }
-libcrux-ecdh = { version = "0.0.2-beta.2", path = "../libcrux-ecdh" }
-libcrux = { version = "0.0.2-beta.2", path = ".." }
+libcrux-ecdh = { version = "0.0.2-beta.3", path = "../libcrux-ecdh" }
+libcrux = { version = "0.0.2-beta.3", path = ".." }
 
 [dev-dependencies]
 criterion = "0.5"

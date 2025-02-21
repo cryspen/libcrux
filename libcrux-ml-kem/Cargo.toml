@@ -23,9 +23,9 @@ bench = false # so libtest doesn't eat the arguments to criterion
 
 [dependencies]
 rand = { version = "0.9", optional = true }
-libcrux-platform = { version = "0.0.2-beta.2", path = "../sys/platform" }
-libcrux-sha3 = { version = "0.0.2-beta.2", path = "../libcrux-sha3" }
-libcrux-intrinsics = { version = "0.0.2-beta.2", path = "../libcrux-intrinsics" }
+libcrux-platform = { version = "0.0.2-beta.3", path = "../sys/platform" }
+libcrux-sha3 = { version = "0.0.2-beta.3", path = "../libcrux-sha3" }
+libcrux-intrinsics = { version = "0.0.2-beta.3", path = "../libcrux-intrinsics" }
 hax-lib = { version = "0.1.0", git = "https://github.com/hacspec/hax/" }
 
 [features]
