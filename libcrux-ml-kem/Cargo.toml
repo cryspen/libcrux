@@ -26,8 +26,7 @@ rand = { version = "0.9", optional = true }
 libcrux-platform = { version = "0.0.2-beta.2", path = "../sys/platform" }
 libcrux-sha3 = { version = "0.0.2-beta.2", path = "../libcrux-sha3" }
 libcrux-intrinsics = { version = "0.0.2-beta.2", path = "../libcrux-intrinsics" }
-#hax-lib = { version = "0.1.0", git = "https://github.com/hacspec/hax/" }
-hax-lib = { git = "https://github.com/cryspen/hax/", branch = "rand-core-traits" }
+hax-lib = { version = "0.1.0", git = "https://github.com/hacspec/hax/" }
 
 [features]
 # By default all variants and std are enabled.

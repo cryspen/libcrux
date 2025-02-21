@@ -7,8 +7,8 @@
  * Charon: a8f2211d1b95e0462a96382023b164a4116c7ca4
  * Eurydice: 60f543ddc60a777138070968daaf7620ec48170d
  * Karamel: 1d81d757d5d9e16dd6463ccc72324e587c707959
- * F*: b0961063393215ca65927f017720cb365a193833-dirty
- * Libcrux: 072dd6530cbd58bb23ba8e0fabab8141aa9de3b7
+ * F*: 7cd06c5562fc47ec14cd35c38034d5558a5ff762
+ * Libcrux: b58bd8d411ef8bf85b51f5d0233854517147f423
  */
 
 #ifndef __libcrux_core_H
@@ -77,6 +77,17 @@ static inline uint8_t core_num__u8_6__wrapping_sub(uint8_t x0, uint8_t x1);
 #define LIBCRUX_ML_KEM_CONSTANTS_CPA_PKE_KEY_GENERATION_SEED_SIZE ((size_t)32U)
 
 #define LIBCRUX_ML_KEM_CONSTANTS_H_DIGEST_SIZE ((size_t)32U)
+
+/**
+ K * BITS_PER_RING_ELEMENT / 8
+
+ [eurydice] Note that we can't use const generics here because that breaks
+            C extraction with eurydice.
+*/
+static inline size_t libcrux_ml_kem_constants_ranked_bytes_per_ring_element(
+    size_t rank) {
+  return rank * LIBCRUX_ML_KEM_CONSTANTS_BITS_PER_RING_ELEMENT / (size_t)8U;
+}
 
 typedef struct libcrux_ml_kem_utils_extraction_helper_Keypair768_s {
   uint8_t fst[1152U];
