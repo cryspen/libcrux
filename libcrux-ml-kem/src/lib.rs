@@ -16,7 +16,7 @@
     feature = "mlkem768",
     doc = r##"
 ```
- use rand::{rngs::OsRng, RngCore};
+ use rand::{rngs::OsRng, TryRngCore};
 
  // Ensure you use good randomness.
  // It is not recommended to use OsRng directly!

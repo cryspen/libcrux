@@ -1,6 +1,6 @@
 use libcrux_rsa::{
-    sign, sign_2048, verify, verify_2048, DigestAlgorithm, Error, PrivateKey, PublicKey,
-    VarLenPrivateKey, VarLenPublicKey,
+    sign, sign_2048, sign_varlen, verify, verify_2048, verify_varlen, DigestAlgorithm, Error,
+    PrivateKey, PublicKey, VarLenPrivateKey, VarLenPublicKey,
 };
 
 const MODULUS: [u8; 256] = [
@@ -40,6 +40,54 @@ const PRIVATE_EXPONENT: [u8; 256] = [
     0x21, 0xea, 0xfa, 0x32, 0xf0, 0x9f, 0x84, 0xb4, 0xfb, 0xaf, 0x25, 0x1e, 0x91, 0x08, 0x94, 0x5e,
     0x83, 0x7f, 0x0f, 0x6a, 0x86, 0x98, 0x77, 0xb8, 0xb0, 0xca, 0xd0, 0x34, 0x10, 0x69, 0x59, 0x21,
 ];
+
+#[test]
+fn self_test_rsa_pss_varlen() {
+    let pk = VarLenPublicKey::try_from(MODULUS.as_slice()).unwrap();
+    let sk = VarLenPrivateKey::from_components(&MODULUS, &PRIVATE_EXPONENT).unwrap();
+    let salt = [1, 2, 3, 4, 5];
+    let msg = [7, 8, 9, 10];
+    let mut signature = [0u8; 256];
+    sign_varlen(DigestAlgorithm::Sha2_256, &sk, &msg, &salt, &mut signature).unwrap();
+    eprintln!("signature: {:x?}", signature);
+    verify_varlen(
+        DigestAlgorithm::Sha2_256,
+        &pk,
+        &msg,
+        salt.len() as u32,
+        &signature,
+    )
+    .expect("Error verifying signature");
+
+    // test the variable length signing
+    let mut signature = [0u8; 257];
+    sign_varlen(
+        DigestAlgorithm::Sha2_256,
+        &sk,
+        &msg,
+        &salt,
+        &mut signature[..256],
+    )
+    .unwrap();
+    verify_varlen(
+        DigestAlgorithm::Sha2_256,
+        &pk,
+        &msg,
+        salt.len() as u32,
+        &signature[..256],
+    )
+    .expect("error verifying signature using variable length api");
+
+    // test the variable length key parsing fails if length is wrong
+    let err = VarLenPrivateKey::from_components(sk.pk().n(), &sk.d()[0..255])
+        .expect_err("from_components should fail if wrong length is supplied");
+    assert_eq!(err, Error::KeyLengthMismatch);
+
+    // test the variable length key parsing fails if length is wrong
+    let err = VarLenPrivateKey::from_components(&sk.pk().n()[0..255], &sk.d()[0..255])
+        .expect_err("from_components should fail if wrong length is supplied");
+    assert_eq!(err, Error::InvalidKeyLength);
+}
 
 #[test]
 fn self_test_rsa_pss() {

@@ -275,8 +275,9 @@ mod tests {
 
     #[test]
     fn simple() {
-        let mut rng = rand::thread_rng();
+        let mut rng = rand::rng();
         let (receiver_pqsk, receiver_pqpk) = MlKem768::generate_key_pair(&mut rng).unwrap();
+
         let sctx = b"test context";
         let psk_handle = b"test handle";
         let (initiator, initiator_msg) = Initiator::send_initial_message::<NoAuth, MlKem768>(

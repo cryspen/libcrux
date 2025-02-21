@@ -11,4 +11,4 @@ repository.workspace = true
 readme.workspace = true
 
 [dependencies]
-rand = { version = "0.8" }
+rand = { version = "0.9" }
