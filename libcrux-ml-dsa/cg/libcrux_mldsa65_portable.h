@@ -8,7 +8,7 @@
  * Eurydice: 60f543ddc60a777138070968daaf7620ec48170d
  * Karamel: 1d81d757d5d9e16dd6463ccc72324e587c707959
  * F*: 7cd06c5562fc47ec14cd35c38034d5558a5ff762
- * Libcrux: ad4f692e8964249dc8a3a99f70cb70f5747bb00e
+ * Libcrux: 291d865c12c21c323fdd343d65241b564e427e24
  */
 
 #ifndef __libcrux_mldsa65_portable_H
@@ -8066,8 +8066,6 @@ libcrux_ml_dsa_pre_hash_from_b6(
     libcrux_ml_dsa_pre_hash_DomainSeparationError e) {
   return libcrux_ml_dsa_types_VerificationError_VerificationContextTooLongError;
 }
-
-typedef int32_t libcrux_ml_dsa_simd_traits_SIMDContent[8U];
 
 typedef int32_t libcrux_ml_dsa_simd_traits_FieldElementTimesMontgomeryR;
 
