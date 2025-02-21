@@ -5,10 +5,10 @@
  *
  * This code was generated with the following revisions:
  * Charon: a8f2211d1b95e0462a96382023b164a4116c7ca4
- * Eurydice: 60f543ddc60a777138070968daaf7620ec48170d
+ * Eurydice: 788c5abefac3a9c7f79abae6a30fa8558e39764c
  * Karamel: 1d81d757d5d9e16dd6463ccc72324e587c707959
- * F*: 7cd06c5562fc47ec14cd35c38034d5558a5ff762
- * Libcrux: b58bd8d411ef8bf85b51f5d0233854517147f423
+ * F*: b0961063393215ca65927f017720cb365a193833-dirty
+ * Libcrux: 773bb0f3772b00a0e43c2c7345303cf5fa57c273
  */
 
 #include "internal/libcrux_core.h"
@@ -82,6 +82,9 @@ void libcrux_ml_kem_constant_time_ops_compare_ciphertexts_select_shared_secret_i
   memcpy(ret, ret0, (size_t)32U * sizeof(uint8_t));
 }
 
+#define BITS_PER_RING_ELEMENT \
+  (LIBCRUX_ML_KEM_CONSTANTS_COEFFICIENTS_IN_RING_ELEMENT * (size_t)12U)
+
 /**
  K * BITS_PER_RING_ELEMENT / 8
 
@@ -89,7 +92,7 @@ void libcrux_ml_kem_constant_time_ops_compare_ciphertexts_select_shared_secret_i
             C extraction with eurydice.
 */
 size_t libcrux_ml_kem_constants_ranked_bytes_per_ring_element(size_t rank) {
-  return rank * LIBCRUX_ML_KEM_CONSTANTS_BITS_PER_RING_ELEMENT / (size_t)8U;
+  return rank * BITS_PER_RING_ELEMENT / (size_t)8U;
 }
 
 /**
