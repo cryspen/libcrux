@@ -215,9 +215,9 @@ pub(crate) fn select_shared_secret_in_constant_time(
     lhs_s.len() == rhs_s.len() &&
     lhs_s.len() == SHARED_SECRET_SIZE
 )]
-#[hax_lib::ensures(|result| fstar!(r#"let selector = if $lhs_c =. $rhs_c then (mk_u8 0) else (mk_u8 1) in
-    ((selector == (mk_u8 0) ==> $result == $lhs_s) /\
-     (selector =!= (mk_u8 0) ==> $result == $rhs_s))"#))]
+#[hax_lib::ensures(|result| fstar!(r#"if $lhs_c =. $rhs_c 
+    then $result == $lhs_s
+    else $result == $rhs_s"#))]
 pub(crate) fn compare_ciphertexts_select_shared_secret_in_constant_time(
     lhs_c: &[u8],
     rhs_c: &[u8],

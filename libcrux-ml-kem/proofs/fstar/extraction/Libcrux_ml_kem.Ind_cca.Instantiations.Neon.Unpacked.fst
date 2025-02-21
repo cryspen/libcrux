@@ -14,7 +14,7 @@ let _ =
   ()
 
 let unpack_public_key
-      (v_K v_T_AS_NTT_ENCODED_SIZE v_RANKED_BYTES_PER_RING_ELEMENT v_PUBLIC_KEY_SIZE: usize)
+      (v_K v_T_AS_NTT_ENCODED_SIZE v_PUBLIC_KEY_SIZE: usize)
       (public_key: Libcrux_ml_kem.Types.t_MlKemPublicKey v_PUBLIC_KEY_SIZE)
       (unpacked_public_key:
           Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemPublicKeyUnpacked v_K
@@ -24,7 +24,6 @@ let unpack_public_key
     Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector =
     Libcrux_ml_kem.Ind_cca.Unpacked.unpack_public_key v_K
       v_T_AS_NTT_ENCODED_SIZE
-      v_RANKED_BYTES_PER_RING_ELEMENT
       v_PUBLIC_KEY_SIZE
       #Libcrux_ml_kem.Hash_functions.Neon.t_Simd128Hash
       #Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector
@@ -34,8 +33,7 @@ let unpack_public_key
   unpacked_public_key
 
 let keypair_from_private_key
-      (v_K v_SECRET_KEY_SIZE v_CPA_SECRET_KEY_SIZE v_PUBLIC_KEY_SIZE v_BYTES_PER_RING_ELEMENT v_T_AS_NTT_ENCODED_SIZE:
-          usize)
+      (v_K v_SECRET_KEY_SIZE v_CPA_SECRET_KEY_SIZE v_PUBLIC_KEY_SIZE v_T_AS_NTT_ENCODED_SIZE: usize)
       (private_key: Libcrux_ml_kem.Types.t_MlKemPrivateKey v_SECRET_KEY_SIZE)
       (key_pair:
           Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemKeyPairUnpacked v_K
@@ -47,7 +45,6 @@ let keypair_from_private_key
       v_SECRET_KEY_SIZE
       v_CPA_SECRET_KEY_SIZE
       v_PUBLIC_KEY_SIZE
-      v_BYTES_PER_RING_ELEMENT
       v_T_AS_NTT_ENCODED_SIZE
       #Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector
       private_key
@@ -56,7 +53,7 @@ let keypair_from_private_key
   key_pair
 
 let generate_keypair
-      (v_K v_CPA_PRIVATE_KEY_SIZE v_PRIVATE_KEY_SIZE v_PUBLIC_KEY_SIZE v_BYTES_PER_RING_ELEMENT v_ETA1 v_ETA1_RANDOMNESS_SIZE:
+      (v_K v_CPA_PRIVATE_KEY_SIZE v_PRIVATE_KEY_SIZE v_PUBLIC_KEY_SIZE v_ETA1 v_ETA1_RANDOMNESS_SIZE:
           usize)
       (randomness: t_Array u8 (mk_usize 64))
       (out:
@@ -66,7 +63,7 @@ let generate_keypair
   let out:Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemKeyPairUnpacked v_K
     Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector =
     Libcrux_ml_kem.Ind_cca.Unpacked.generate_keypair v_K v_CPA_PRIVATE_KEY_SIZE v_PRIVATE_KEY_SIZE
-      v_PUBLIC_KEY_SIZE v_BYTES_PER_RING_ELEMENT v_ETA1 v_ETA1_RANDOMNESS_SIZE
+      v_PUBLIC_KEY_SIZE v_ETA1 v_ETA1_RANDOMNESS_SIZE
       #Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector
       #Libcrux_ml_kem.Hash_functions.Neon.t_Simd128Hash #Libcrux_ml_kem.Variant.t_MlKem randomness
       out

@@ -65,15 +65,12 @@ val serialize_kem_secret_key
 /// Note that the size check in 7.2 1 is covered by the `PUBLIC_KEY_SIZE` in the
 /// `public_key` type.
 val validate_public_key
-      (v_K v_RANKED_BYTES_PER_RING_ELEMENT v_PUBLIC_KEY_SIZE: usize)
+      (v_K v_PUBLIC_KEY_SIZE: usize)
       (#v_Vector: Type0)
       {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
       (public_key: t_Array u8 v_PUBLIC_KEY_SIZE)
     : Prims.Pure bool
-      (requires
-        Spec.MLKEM.is_rank v_K /\
-        v_RANKED_BYTES_PER_RING_ELEMENT == Spec.MLKEM.v_RANKED_BYTES_PER_RING_ELEMENT v_K /\
-        v_PUBLIC_KEY_SIZE == Spec.MLKEM.v_CCA_PUBLIC_KEY_SIZE v_K)
+      (requires Spec.MLKEM.is_rank v_K /\ v_PUBLIC_KEY_SIZE == Spec.MLKEM.v_CCA_PUBLIC_KEY_SIZE v_K)
       (fun _ -> Prims.l_True)
 
 /// Validate an ML-KEM private key.
@@ -109,7 +106,7 @@ val validate_private_key
 /// Depending on the `Vector` and `Hasher` used, this requires different hardware
 /// features
 val generate_keypair
-      (v_K v_CPA_PRIVATE_KEY_SIZE v_PRIVATE_KEY_SIZE v_PUBLIC_KEY_SIZE v_RANKED_BYTES_PER_RING_ELEMENT v_ETA1 v_ETA1_RANDOMNESS_SIZE:
+      (v_K v_CPA_PRIVATE_KEY_SIZE v_PRIVATE_KEY_SIZE v_PUBLIC_KEY_SIZE v_ETA1 v_ETA1_RANDOMNESS_SIZE:
           usize)
       (#v_Vector #v_Hasher #v_Scheme: Type0)
       {| i3: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
@@ -120,9 +117,7 @@ val generate_keypair
       (requires
         Spec.MLKEM.is_rank v_K /\ v_CPA_PRIVATE_KEY_SIZE == Spec.MLKEM.v_CPA_PRIVATE_KEY_SIZE v_K /\
         v_PRIVATE_KEY_SIZE == Spec.MLKEM.v_CCA_PRIVATE_KEY_SIZE v_K /\
-        v_PUBLIC_KEY_SIZE == Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE v_K /\
-        v_RANKED_BYTES_PER_RING_ELEMENT == Spec.MLKEM.v_RANKED_BYTES_PER_RING_ELEMENT v_K /\
-        v_ETA1 == Spec.MLKEM.v_ETA1 v_K /\
+        v_PUBLIC_KEY_SIZE == Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE v_K /\ v_ETA1 == Spec.MLKEM.v_ETA1 v_K /\
         v_ETA1_RANDOMNESS_SIZE == Spec.MLKEM.v_ETA1_RANDOMNESS_SIZE v_K)
       (ensures
         fun result ->
