@@ -2,6 +2,7 @@
 use super::{constants::*, ind_cca::*, types::*, *};
 
 const RANK: usize = 4;
+#[cfg(feature = "incremental")]
 const RANKED_BYTES_PER_RING_ELEMENT: usize = RANK * BITS_PER_RING_ELEMENT / 8;
 const T_AS_NTT_ENCODED_SIZE: usize =
     (RANK * COEFFICIENTS_IN_RING_ELEMENT * BITS_PER_COEFFICIENT) / 8;

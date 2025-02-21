@@ -2,7 +2,7 @@ use std::hint::black_box;
 use std::time::Duration;
 
 use criterion::{criterion_group, criterion_main, BatchSize, Criterion};
-use rand::{rngs::OsRng, TryRngCore};
+use rand::{rngs::OsRng, RngCore, TryRngCore};
 
 use libcrux_ml_kem::{mlkem1024, mlkem512, mlkem768};
 
@@ -99,6 +99,7 @@ pub fn pk_validation(c: &mut Criterion) {
         };
     }
 
+    #[cfg(feature = "incremental")]
     macro_rules! fun_incremental {
         ($name:expr, $p:path, $group:expr) => {
             $group.bench_function(format!("{} incremental", $name), |b| {
@@ -146,14 +147,13 @@ pub fn encapsulation(c: &mut Criterion) {
 
     macro_rules! fun_unpacked {
         ($name:expr, $p:path, $group:expr) => {
-<<<<<<< HEAD
             $group.bench_function(format!("unpacked {} (external random)", $name), |b| {
                 use $p as p;
 
                 let mut seed1 = [0; 64];
-                OsRng.fill_bytes(&mut seed1);
+                ::rand::rng().fill_bytes(&mut seed1);
                 let mut seed2 = [0; 32];
-                OsRng.fill_bytes(&mut seed2);
+                ::rand::rng().fill_bytes(&mut seed2);
 
                 b.iter_batched(
                     || {
@@ -171,6 +171,7 @@ pub fn encapsulation(c: &mut Criterion) {
         };
     }
 
+    #[cfg(feature = "incremental")]
     macro_rules! fun_incremental {
         ($name:expr, $p:path, $group:expr) => {
             $group.bench_function(format!("incremental {} (external random)", $name), |b| {
@@ -227,30 +228,6 @@ pub fn encapsulation(c: &mut Criterion) {
                     BatchSize::SmallInput,
                 )
             });
-=======
-            $group.bench_function(
-                format!("libcrux unpacked {} (external random)", $name),
-                |b| {
-                    use $p as p;
-                    let mut seed1 = [0; 64];
-                    OsRng.try_fill_bytes(&mut seed1).unwrap();
-                    let mut seed2 = [0; 32];
-                    OsRng.try_fill_bytes(&mut seed2).unwrap();
-                    b.iter_batched(
-                        || {
-                            let mut kp = p::init_key_pair();
-                            p::generate_key_pair_mut(seed1, &mut kp);
-                            kp
-                        },
-                        |keypair| {
-                            let (_shared_secret, _ciphertext) =
-                                black_box(p::encapsulate(&keypair.public_key, seed2));
-                        },
-                        BatchSize::SmallInput,
-                    )
-                },
-            );
->>>>>>> main
         };
     }
 
@@ -310,6 +287,7 @@ pub fn decapsulation(c: &mut Criterion) {
         };
     }
 
+    #[cfg(feature = "incremental")]
     macro_rules! fun_incremental {
         ($name:expr, $p:path, $group:expr) => {
             $group.bench_function(format!("incremental {}", $name), |b| {
