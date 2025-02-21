@@ -16,7 +16,7 @@ use libcrux::{
 
 #[cfg(not(target_arch = "wasm32"))]
 use libcrux::drbg;
-use rand::{CryptoRng, Error};
+use rand::CryptoRng;
 #[cfg(target_arch = "wasm32")]
 use rand_core::OsRng;
 use rand_core::RngCore;
@@ -65,7 +65,7 @@ fn xwing_hpke_selftest() {
     let aad = b"xwing hpke selftest aad";
     let ptxt = b"xwing hpke selftest plaintext";
 
-    let mut randomness = vec![0u8; 32];
+    let mut randomness = vec![0u8; 64];
     rng.fill_bytes(&mut randomness);
 
     let HPKECiphertext(enc, ct) =
@@ -250,11 +250,6 @@ impl RngCore for DeterministicRng {
 
     fn fill_bytes(&mut self, dest: &mut [u8]) {
         self.fill_with_data(dest);
-    }
-
-    fn try_fill_bytes(&mut self, dest: &mut [u8]) -> Result<(), Error> {
-        self.fill_with_data(dest);
-        Ok(())
     }
 }
 

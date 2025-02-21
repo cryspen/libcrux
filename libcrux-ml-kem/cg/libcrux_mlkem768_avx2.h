@@ -4,11 +4,11 @@
  * SPDX-License-Identifier: MIT or Apache-2.0
  *
  * This code was generated with the following revisions:
- * Charon: db4e045d4597d06d854ce7a2c10e8dcfda6ecd25
- * Eurydice: 75eae2e2534a16f5ba5430e6ee5c69d8a46f3bea
- * Karamel: 3823e3d82fa0b271d799b61c59ffb4742ddc1e65
+ * Charon: a8f2211d1b95e0462a96382023b164a4116c7ca4
+ * Eurydice: 60f543ddc60a777138070968daaf7620ec48170d
+ * Karamel: 1d81d757d5d9e16dd6463ccc72324e587c707959
  * F*: b0961063393215ca65927f017720cb365a193833-dirty
- * Libcrux: 834b7f51701fa4e8695a784c138ed230f49f0c4e
+ * Libcrux: 072dd6530cbd58bb23ba8e0fabab8141aa9de3b7
  */
 
 #ifndef __libcrux_mlkem768_avx2_H
@@ -1414,22 +1414,11 @@ KRML_ATTRIBUTE_TARGET("avx2")
 static inline libcrux_ml_kem_polynomial_PolynomialRingElement_f6
 libcrux_ml_kem_polynomial_ZERO_ef_79(void) {
   libcrux_ml_kem_polynomial_PolynomialRingElement_f6 lit;
-  lit.coefficients[0U] = libcrux_ml_kem_vector_avx2_ZERO_9a();
-  lit.coefficients[1U] = libcrux_ml_kem_vector_avx2_ZERO_9a();
-  lit.coefficients[2U] = libcrux_ml_kem_vector_avx2_ZERO_9a();
-  lit.coefficients[3U] = libcrux_ml_kem_vector_avx2_ZERO_9a();
-  lit.coefficients[4U] = libcrux_ml_kem_vector_avx2_ZERO_9a();
-  lit.coefficients[5U] = libcrux_ml_kem_vector_avx2_ZERO_9a();
-  lit.coefficients[6U] = libcrux_ml_kem_vector_avx2_ZERO_9a();
-  lit.coefficients[7U] = libcrux_ml_kem_vector_avx2_ZERO_9a();
-  lit.coefficients[8U] = libcrux_ml_kem_vector_avx2_ZERO_9a();
-  lit.coefficients[9U] = libcrux_ml_kem_vector_avx2_ZERO_9a();
-  lit.coefficients[10U] = libcrux_ml_kem_vector_avx2_ZERO_9a();
-  lit.coefficients[11U] = libcrux_ml_kem_vector_avx2_ZERO_9a();
-  lit.coefficients[12U] = libcrux_ml_kem_vector_avx2_ZERO_9a();
-  lit.coefficients[13U] = libcrux_ml_kem_vector_avx2_ZERO_9a();
-  lit.coefficients[14U] = libcrux_ml_kem_vector_avx2_ZERO_9a();
-  lit.coefficients[15U] = libcrux_ml_kem_vector_avx2_ZERO_9a();
+  __m256i repeat_expression[16U];
+  for (size_t i = (size_t)0U; i < (size_t)16U; i++) {
+    repeat_expression[i] = libcrux_ml_kem_vector_avx2_ZERO_9a();
+  }
+  memcpy(lit.coefficients, repeat_expression, (size_t)16U * sizeof(__m256i));
   return lit;
 }
 
@@ -2160,22 +2149,11 @@ KRML_ATTRIBUTE_TARGET("avx2")
 static inline libcrux_ml_kem_polynomial_PolynomialRingElement_f6
 libcrux_ml_kem_polynomial_ZERO_79(void) {
   libcrux_ml_kem_polynomial_PolynomialRingElement_f6 lit;
-  lit.coefficients[0U] = libcrux_ml_kem_vector_avx2_ZERO_9a();
-  lit.coefficients[1U] = libcrux_ml_kem_vector_avx2_ZERO_9a();
-  lit.coefficients[2U] = libcrux_ml_kem_vector_avx2_ZERO_9a();
-  lit.coefficients[3U] = libcrux_ml_kem_vector_avx2_ZERO_9a();
-  lit.coefficients[4U] = libcrux_ml_kem_vector_avx2_ZERO_9a();
-  lit.coefficients[5U] = libcrux_ml_kem_vector_avx2_ZERO_9a();
-  lit.coefficients[6U] = libcrux_ml_kem_vector_avx2_ZERO_9a();
-  lit.coefficients[7U] = libcrux_ml_kem_vector_avx2_ZERO_9a();
-  lit.coefficients[8U] = libcrux_ml_kem_vector_avx2_ZERO_9a();
-  lit.coefficients[9U] = libcrux_ml_kem_vector_avx2_ZERO_9a();
-  lit.coefficients[10U] = libcrux_ml_kem_vector_avx2_ZERO_9a();
-  lit.coefficients[11U] = libcrux_ml_kem_vector_avx2_ZERO_9a();
-  lit.coefficients[12U] = libcrux_ml_kem_vector_avx2_ZERO_9a();
-  lit.coefficients[13U] = libcrux_ml_kem_vector_avx2_ZERO_9a();
-  lit.coefficients[14U] = libcrux_ml_kem_vector_avx2_ZERO_9a();
-  lit.coefficients[15U] = libcrux_ml_kem_vector_avx2_ZERO_9a();
+  __m256i repeat_expression[16U];
+  for (size_t i = (size_t)0U; i < (size_t)16U; i++) {
+    repeat_expression[i] = libcrux_ml_kem_vector_avx2_ZERO_9a();
+  }
+  memcpy(lit.coefficients, repeat_expression, (size_t)16U * sizeof(__m256i));
   return lit;
 }
 
@@ -2754,15 +2732,19 @@ libcrux_ml_kem_ind_cpa_unpacked_default_8d_ab(void) {
       lit.t_as_ntt, uu____0,
       (size_t)3U * sizeof(libcrux_ml_kem_polynomial_PolynomialRingElement_f6));
   memcpy(lit.seed_for_A, uu____1, (size_t)32U * sizeof(uint8_t));
-  lit.A[0U][0U] = libcrux_ml_kem_polynomial_ZERO_ef_79();
-  lit.A[0U][1U] = libcrux_ml_kem_polynomial_ZERO_ef_79();
-  lit.A[0U][2U] = libcrux_ml_kem_polynomial_ZERO_ef_79();
-  lit.A[1U][0U] = libcrux_ml_kem_polynomial_ZERO_ef_79();
-  lit.A[1U][1U] = libcrux_ml_kem_polynomial_ZERO_ef_79();
-  lit.A[1U][2U] = libcrux_ml_kem_polynomial_ZERO_ef_79();
-  lit.A[2U][0U] = libcrux_ml_kem_polynomial_ZERO_ef_79();
-  lit.A[2U][1U] = libcrux_ml_kem_polynomial_ZERO_ef_79();
-  lit.A[2U][2U] = libcrux_ml_kem_polynomial_ZERO_ef_79();
+  libcrux_ml_kem_polynomial_PolynomialRingElement_f6 repeat_expression0[3U][3U];
+  for (size_t i0 = (size_t)0U; i0 < (size_t)3U; i0++) {
+    libcrux_ml_kem_polynomial_PolynomialRingElement_f6 repeat_expression[3U];
+    for (size_t i = (size_t)0U; i < (size_t)3U; i++) {
+      repeat_expression[i] = libcrux_ml_kem_polynomial_ZERO_ef_79();
+    }
+    memcpy(repeat_expression0[i0], repeat_expression,
+           (size_t)3U *
+               sizeof(libcrux_ml_kem_polynomial_PolynomialRingElement_f6));
+  }
+  memcpy(lit.A, repeat_expression0,
+         (size_t)3U *
+             sizeof(libcrux_ml_kem_polynomial_PolynomialRingElement_f6[3U]));
   return lit;
 }
 
@@ -5037,9 +5019,13 @@ KRML_ATTRIBUTE_TARGET("avx2")
 static inline libcrux_ml_kem_ind_cpa_unpacked_IndCpaPrivateKeyUnpacked_63
 libcrux_ml_kem_ind_cpa_unpacked_default_1a_ab(void) {
   libcrux_ml_kem_ind_cpa_unpacked_IndCpaPrivateKeyUnpacked_63 lit;
-  lit.secret_as_ntt[0U] = libcrux_ml_kem_polynomial_ZERO_ef_79();
-  lit.secret_as_ntt[1U] = libcrux_ml_kem_polynomial_ZERO_ef_79();
-  lit.secret_as_ntt[2U] = libcrux_ml_kem_polynomial_ZERO_ef_79();
+  libcrux_ml_kem_polynomial_PolynomialRingElement_f6 repeat_expression[3U];
+  for (size_t i = (size_t)0U; i < (size_t)3U; i++) {
+    repeat_expression[i] = libcrux_ml_kem_polynomial_ZERO_ef_79();
+  }
+  memcpy(
+      lit.secret_as_ntt, repeat_expression,
+      (size_t)3U * sizeof(libcrux_ml_kem_polynomial_PolynomialRingElement_f6));
   return lit;
 }
 
@@ -7070,38 +7056,8 @@ static KRML_MUSTINLINE libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_63
 libcrux_ml_kem_ind_cca_unpacked_default_09_ab(void) {
   libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_63 lit;
   lit.ind_cpa_public_key = libcrux_ml_kem_ind_cpa_unpacked_default_8d_ab();
-  lit.public_key_hash[0U] = 0U;
-  lit.public_key_hash[1U] = 0U;
-  lit.public_key_hash[2U] = 0U;
-  lit.public_key_hash[3U] = 0U;
-  lit.public_key_hash[4U] = 0U;
-  lit.public_key_hash[5U] = 0U;
-  lit.public_key_hash[6U] = 0U;
-  lit.public_key_hash[7U] = 0U;
-  lit.public_key_hash[8U] = 0U;
-  lit.public_key_hash[9U] = 0U;
-  lit.public_key_hash[10U] = 0U;
-  lit.public_key_hash[11U] = 0U;
-  lit.public_key_hash[12U] = 0U;
-  lit.public_key_hash[13U] = 0U;
-  lit.public_key_hash[14U] = 0U;
-  lit.public_key_hash[15U] = 0U;
-  lit.public_key_hash[16U] = 0U;
-  lit.public_key_hash[17U] = 0U;
-  lit.public_key_hash[18U] = 0U;
-  lit.public_key_hash[19U] = 0U;
-  lit.public_key_hash[20U] = 0U;
-  lit.public_key_hash[21U] = 0U;
-  lit.public_key_hash[22U] = 0U;
-  lit.public_key_hash[23U] = 0U;
-  lit.public_key_hash[24U] = 0U;
-  lit.public_key_hash[25U] = 0U;
-  lit.public_key_hash[26U] = 0U;
-  lit.public_key_hash[27U] = 0U;
-  lit.public_key_hash[28U] = 0U;
-  lit.public_key_hash[29U] = 0U;
-  lit.public_key_hash[30U] = 0U;
-  lit.public_key_hash[31U] = 0U;
+  uint8_t repeat_expression[32U] = {0U};
+  memcpy(lit.public_key_hash, repeat_expression, (size_t)32U * sizeof(uint8_t));
   return lit;
 }
 
@@ -7122,38 +7078,9 @@ static KRML_MUSTINLINE
     libcrux_ml_kem_ind_cca_unpacked_default_53_ab(void) {
   libcrux_ml_kem_ind_cca_unpacked_MlKemPrivateKeyUnpacked_63 uu____0;
   uu____0.ind_cpa_private_key = libcrux_ml_kem_ind_cpa_unpacked_default_1a_ab();
-  uu____0.implicit_rejection_value[0U] = 0U;
-  uu____0.implicit_rejection_value[1U] = 0U;
-  uu____0.implicit_rejection_value[2U] = 0U;
-  uu____0.implicit_rejection_value[3U] = 0U;
-  uu____0.implicit_rejection_value[4U] = 0U;
-  uu____0.implicit_rejection_value[5U] = 0U;
-  uu____0.implicit_rejection_value[6U] = 0U;
-  uu____0.implicit_rejection_value[7U] = 0U;
-  uu____0.implicit_rejection_value[8U] = 0U;
-  uu____0.implicit_rejection_value[9U] = 0U;
-  uu____0.implicit_rejection_value[10U] = 0U;
-  uu____0.implicit_rejection_value[11U] = 0U;
-  uu____0.implicit_rejection_value[12U] = 0U;
-  uu____0.implicit_rejection_value[13U] = 0U;
-  uu____0.implicit_rejection_value[14U] = 0U;
-  uu____0.implicit_rejection_value[15U] = 0U;
-  uu____0.implicit_rejection_value[16U] = 0U;
-  uu____0.implicit_rejection_value[17U] = 0U;
-  uu____0.implicit_rejection_value[18U] = 0U;
-  uu____0.implicit_rejection_value[19U] = 0U;
-  uu____0.implicit_rejection_value[20U] = 0U;
-  uu____0.implicit_rejection_value[21U] = 0U;
-  uu____0.implicit_rejection_value[22U] = 0U;
-  uu____0.implicit_rejection_value[23U] = 0U;
-  uu____0.implicit_rejection_value[24U] = 0U;
-  uu____0.implicit_rejection_value[25U] = 0U;
-  uu____0.implicit_rejection_value[26U] = 0U;
-  uu____0.implicit_rejection_value[27U] = 0U;
-  uu____0.implicit_rejection_value[28U] = 0U;
-  uu____0.implicit_rejection_value[29U] = 0U;
-  uu____0.implicit_rejection_value[30U] = 0U;
-  uu____0.implicit_rejection_value[31U] = 0U;
+  uint8_t repeat_expression[32U] = {0U};
+  memcpy(uu____0.implicit_rejection_value, repeat_expression,
+         (size_t)32U * sizeof(uint8_t));
   return (
       CLITERAL(libcrux_ml_kem_mlkem768_avx2_unpacked_MlKem768KeyPairUnpacked){
           .private_key = uu____0,

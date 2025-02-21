@@ -1,0 +1,21 @@
+name: ML-KEM - Build via nix
+
+on:
+  push:
+    branches: [main, dev]
+  pull_request:
+  merge_group:
+
+jobs:
+  nix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: DeterminateSystems/nix-installer-action@v16
+      - uses: DeterminateSystems/magic-nix-cache-action@v9
+      - name: Install & configure Cachix
+        shell: bash
+        run: |
+          nix-env --quiet -j8 -iA cachix -f https://cachix.org/api/v1/install
+          cachix use hax
+      - uses: actions/checkout@v4
+      - run: nix build -L .#ml-kem

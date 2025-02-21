@@ -5,7 +5,7 @@ use libcrux::hpke::aead::*;
 use libcrux::hpke::kdf::KDF;
 use libcrux::hpke::kem::{GenerateKeyPair, KEM};
 use libcrux::{aes_ni_support, hpke::*};
-use rand::{rngs::OsRng, RngCore};
+use rand::{rngs::OsRng, TryRngCore};
 
 pub(crate) fn hex_str_to_bytes(val: &str) -> Vec<u8> {
     let b: Result<Vec<u8>, ParseIntError> = (0..val.len())
@@ -56,10 +56,10 @@ fn benchmark() {
                     println!("{}", label);
 
                     let mut randomness = [0u8; 32];
-                    OsRng.fill_bytes(&mut randomness);
+                    OsRng.try_fill_bytes(&mut randomness).unwrap();
                     let (_sk, enc) = GenerateKeyPair(kem_mode, randomness.to_vec()).unwrap();
                     let mut randomness = [0u8; 32];
-                    OsRng.fill_bytes(&mut randomness);
+                    OsRng.try_fill_bytes(&mut randomness).unwrap();
                     let (sk_rm, pk_rm) = GenerateKeyPair(kem_mode, randomness.to_vec()).unwrap();
                     let info = hex_str_to_bytes("4f6465206f6e2061204772656369616e2055726e");
                     let psk = if hpke_mode == Mode::mode_auth_psk || hpke_mode == Mode::mode_psk {
@@ -76,7 +76,7 @@ fn benchmark() {
                     let (pk_sm, sk_sm) =
                         if hpke_mode == Mode::mode_auth_psk || hpke_mode == Mode::mode_auth {
                             let mut randomness = [0u8; 32];
-                            OsRng.fill_bytes(&mut randomness);
+                            OsRng.try_fill_bytes(&mut randomness).unwrap();
                             let (sk, pk) = GenerateKeyPair(kem_mode, randomness.to_vec()).unwrap();
                             (Some(pk), Some(sk))
                         } else {
@@ -86,7 +86,7 @@ fn benchmark() {
                     let config = HPKEConfig(hpke_mode, kem_mode, kdf_mode, aead_mode);
 
                     let mut randomness = [0u8; 32];
-                    OsRng.fill_bytes(&mut randomness);
+                    OsRng.try_fill_bytes(&mut randomness).unwrap();
                     let randomness = randomness.to_vec();
                     let start = Instant::now();
                     for _ in 0..ITERATIONS {
@@ -186,10 +186,10 @@ fn benchmark() {
                     .unwrap();
 
                     let mut aad = vec![0u8; AEAD_AAD];
-                    OsRng.fill_bytes(&mut aad);
+                    OsRng.try_fill_bytes(&mut aad).unwrap();
                     let aad = aad.to_vec();
                     let mut ptxt = vec![0u8; AEAD_PAYLOAD];
-                    OsRng.fill_bytes(&mut ptxt);
+                    OsRng.try_fill_bytes(&mut ptxt).unwrap();
                     let ptxt = ptxt.to_vec();
 
                     let mut ctxts = Vec::with_capacity((AEAD_PAYLOAD + 16) * ITERATIONS);
@@ -253,13 +253,13 @@ fn benchmark() {
                     assert_eq!(ptxts[0], ptxt);
 
                     let mut aad = vec![0u8; AEAD_AAD];
-                    OsRng.fill_bytes(&mut aad);
+                    OsRng.try_fill_bytes(&mut aad).unwrap();
                     let aad = aad.to_vec();
                     let mut ptxt = vec![0u8; AEAD_PAYLOAD];
-                    OsRng.fill_bytes(&mut ptxt);
+                    OsRng.try_fill_bytes(&mut ptxt).unwrap();
                     let ptxt = ptxt.to_vec();
                     let mut randomness = [0u8; 32];
-                    OsRng.fill_bytes(&mut randomness);
+                    OsRng.try_fill_bytes(&mut randomness).unwrap();
                     let randomness = randomness.to_vec();
 
                     let mut ctxt = HPKECiphertext(vec![], vec![]);

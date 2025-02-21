@@ -3,7 +3,7 @@ module Libcrux_ml_dsa.Simd.Avx2.Rejection_sample.Less_than_field_modulus
 open Core
 open FStar.Mul
 
-let bytestream_to_potential_coefficients__COEFFICIENT_MASK: i32 =
+let bytestream_to_potential_coefficients__v_COEFFICIENT_MASK: i32 =
   (mk_i32 1 <<! mk_i32 23 <: i32) -! mk_i32 1
 
 val bytestream_to_potential_coefficients (serialized: t_Slice u8)

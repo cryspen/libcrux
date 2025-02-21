@@ -256,7 +256,7 @@ macro_rules! instantiate {
                 /// Get the serialized public key.
                 #[hax_lib::requires(fstar!(r#"forall (i:nat). i < 3 ==>
                     Libcrux_ml_kem.Serialize.coefficients_field_modulus_range (Seq.index 
-                        ${public_key}.f_ind_cpa_public_key.f_t_as_ntt i)"#))]
+                        ${public_key.ind_cpa_public_key.t_as_ntt} i)"#))]
                 pub fn serialized_public_key(public_key: &MlKem768PublicKeyUnpacked, serialized : &mut MlKem768PublicKey) {
                     public_key.serialized_mut::<RANKED_BYTES_PER_RING_ELEMENT_768, CPA_PKE_PUBLIC_KEY_SIZE_768>(serialized);
                 }
@@ -274,7 +274,7 @@ macro_rules! instantiate {
                 /// Get the serialized public key.
                 #[hax_lib::requires(fstar!(r#"(forall (i:nat). i < 3 ==>
                         Libcrux_ml_kem.Serialize.coefficients_field_modulus_range (Seq.index 
-                            ${key_pair}.f_public_key.f_ind_cpa_public_key.f_t_as_ntt i))"#))]
+                            ${key_pair.public_key.ind_cpa_public_key.t_as_ntt} i))"#))]
                 pub fn key_pair_serialized_public_key_mut(key_pair: &MlKem768KeyPairUnpacked, serialized: &mut MlKem768PublicKey) {
                     key_pair.serialized_public_key_mut::<RANKED_BYTES_PER_RING_ELEMENT_768, CPA_PKE_PUBLIC_KEY_SIZE_768>(serialized);
                 }
@@ -282,7 +282,7 @@ macro_rules! instantiate {
                 /// Get the serialized public key.
                 #[hax_lib::requires(fstar!(r#"forall (i:nat). i < 3 ==>
                     Libcrux_ml_kem.Serialize.coefficients_field_modulus_range (Seq.index 
-                        ${key_pair}.f_public_key.f_ind_cpa_public_key.f_t_as_ntt i)"#))]
+                        ${key_pair.public_key.ind_cpa_public_key.t_as_ntt} i)"#))]
                 pub fn key_pair_serialized_public_key(key_pair: &MlKem768KeyPairUnpacked) ->MlKem768PublicKey {
                     key_pair.serialized_public_key::<RANKED_BYTES_PER_RING_ELEMENT_768, CPA_PKE_PUBLIC_KEY_SIZE_768>()
                 }
@@ -536,7 +536,7 @@ pub fn decapsulate(
 ///
 /// The functions in this module are equivalent to the one in the main module,
 /// but sample their own randomness, provided a random number generator that
-/// implements `RngCore` and `CryptoRng`.
+/// implements `CryptoRng`.
 ///
 /// Decapsulation is not provided in this module as it does not require randomness.
 #[cfg(all(not(eurydice), feature = "rand"))]
@@ -545,15 +545,15 @@ pub mod rand {
         MlKem768Ciphertext, MlKem768KeyPair, MlKem768PublicKey, MlKemSharedSecret,
         KEY_GENERATION_SEED_SIZE, SHARED_SECRET_SIZE,
     };
-    use ::rand::{CryptoRng, RngCore};
+    use ::rand::CryptoRng;
 
     /// Generate ML-KEM 768 Key Pair
     ///
-    /// The random number generator `rng` needs to implement `RngCore` and
-    /// `CryptoRng` to sample the required randomness internally.
+    /// The random number generator `rng` needs to implement `CryptoRng`
+    /// to sample the required randomness internally.
     ///
     /// This function returns an [`MlKem768KeyPair`].
-    pub fn generate_key_pair(rng: &mut (impl RngCore + CryptoRng)) -> MlKem768KeyPair {
+    pub fn generate_key_pair(rng: &mut impl CryptoRng) -> MlKem768KeyPair {
         let mut randomness = [0u8; KEY_GENERATION_SEED_SIZE];
         rng.fill_bytes(&mut randomness);
 
@@ -564,11 +564,11 @@ pub mod rand {
     ///
     /// Generates an ([`MlKem768Ciphertext`], [`MlKemSharedSecret`]) tuple.
     /// The input is a reference to an [`MlKem768PublicKey`].
-    /// The random number generator `rng` needs to implement `RngCore` and
-    /// `CryptoRng` to sample the required randomness internally.
+    /// The random number generator `rng` needs to implement `CryptoRng`
+    /// to sample the required randomness internally.
     pub fn encapsulate(
         public_key: &MlKem768PublicKey,
-        rng: &mut (impl RngCore + CryptoRng),
+        rng: &mut impl CryptoRng,
     ) -> (MlKem768Ciphertext, MlKemSharedSecret) {
         let mut randomness = [0u8; SHARED_SECRET_SIZE];
         rng.fill_bytes(&mut randomness);
@@ -655,7 +655,7 @@ pub(crate) mod kyber {
 }
 #[cfg(test)]
 mod tests {
-    use rand::{rngs::OsRng, RngCore};
+    use rand::{rngs::OsRng, TryRngCore};
 
     use super::{
         mlkem768::{generate_key_pair, validate_public_key},
@@ -665,7 +665,7 @@ mod tests {
     #[test]
     fn pk_validation() {
         let mut randomness = [0u8; KEY_GENERATION_SEED_SIZE];
-        OsRng.fill_bytes(&mut randomness);
+        OsRng.try_fill_bytes(&mut randomness).unwrap();
 
         let key_pair = generate_key_pair(randomness);
         assert!(validate_public_key(&key_pair.pk));

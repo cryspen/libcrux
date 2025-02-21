@@ -4,11 +4,11 @@
  * SPDX-License-Identifier: MIT or Apache-2.0
  *
  * This code was generated with the following revisions:
- * Charon: db4e045d4597d06d854ce7a2c10e8dcfda6ecd25
- * Eurydice: 75eae2e2534a16f5ba5430e6ee5c69d8a46f3bea
- * Karamel: 3823e3d82fa0b271d799b61c59ffb4742ddc1e65
+ * Charon: a8f2211d1b95e0462a96382023b164a4116c7ca4
+ * Eurydice: 60f543ddc60a777138070968daaf7620ec48170d
+ * Karamel: 1d81d757d5d9e16dd6463ccc72324e587c707959
  * F*: b0961063393215ca65927f017720cb365a193833-dirty
- * Libcrux: 834b7f51701fa4e8695a784c138ed230f49f0c4e
+ * Libcrux: 072dd6530cbd58bb23ba8e0fabab8141aa9de3b7
  */
 
 #ifndef __libcrux_mlkem_avx2_H
@@ -19,10 +19,7 @@ extern "C" {
 #endif
 
 #include "eurydice_glue.h"
-#include "libcrux_core.h"
-#include "libcrux_mlkem_portable.h"
-#include "libcrux_sha3.h"
-#include "libcrux_sha3_avx2.h"
+#include "intrinsics/libcrux_intrinsics_avx2.h"
 
 void libcrux_ml_kem_hash_functions_avx2_G(Eurydice_slice input,
                                           uint8_t ret[64U]);

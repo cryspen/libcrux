@@ -1,10 +1,7 @@
 #![allow(non_snake_case)]
 #![allow(non_upper_case_globals)]
 #![allow(non_camel_case_types)]
-#![allow(unused_assignments)]
-#![allow(unreachable_patterns)]
-#![allow(clippy::match_single_binding)]
-#![allow(clippy::needless_lifetimes)]
+#![allow(dead_code)]
 
 use libcrux_hacl_rs::prelude::*;
 use libcrux_macros as krml;

@@ -265,7 +265,7 @@ macro_rules! instantiate {
                 /// Get the serialized public key.
                 #[hax_lib::requires(fstar!(r#"forall (i:nat). i < 4 ==>
                     Libcrux_ml_kem.Serialize.coefficients_field_modulus_range (Seq.index 
-                        ${public_key}.f_ind_cpa_public_key.f_t_as_ntt i)"#))]
+                        ${public_key.ind_cpa_public_key.t_as_ntt} i)"#))]
                 pub fn serialized_public_key(
                     public_key: &MlKem1024PublicKeyUnpacked,
                     serialized: &mut MlKem1024PublicKey,
@@ -289,7 +289,7 @@ macro_rules! instantiate {
                 /// Get the serialized public key.
                 #[hax_lib::requires(fstar!(r#"forall (i:nat). i < 4 ==>
                     Libcrux_ml_kem.Serialize.coefficients_field_modulus_range (Seq.index 
-                        ${key_pair}.f_public_key.f_ind_cpa_public_key.f_t_as_ntt i)"#))]
+                        ${key_pair.public_key.ind_cpa_public_key.t_as_ntt} i)"#))]
                 pub fn key_pair_serialized_public_key_mut(key_pair: &MlKem1024KeyPairUnpacked, serialized: &mut MlKem1024PublicKey) {
                     key_pair.serialized_public_key_mut::<RANKED_BYTES_PER_RING_ELEMENT_1024, CPA_PKE_PUBLIC_KEY_SIZE_1024>(serialized);
                 }
@@ -297,7 +297,7 @@ macro_rules! instantiate {
                 /// Get the serialized public key.
                 #[hax_lib::requires(fstar!(r#"forall (i:nat). i < 4 ==>
                     Libcrux_ml_kem.Serialize.coefficients_field_modulus_range (Seq.index 
-                        ${key_pair}.f_public_key.f_ind_cpa_public_key.f_t_as_ntt i)"#))]
+                        ${key_pair.public_key.ind_cpa_public_key.t_as_ntt} i)"#))]
                 pub fn key_pair_serialized_public_key(key_pair: &MlKem1024KeyPairUnpacked) ->MlKem1024PublicKey {
                     key_pair.serialized_public_key::<RANKED_BYTES_PER_RING_ELEMENT_1024, CPA_PKE_PUBLIC_KEY_SIZE_1024>()
                 }
@@ -555,7 +555,7 @@ pub fn decapsulate(
 ///
 /// The functions in this module are equivalent to the one in the main module,
 /// but sample their own randomness, provided a random number generator that
-/// implements `RngCore` and `CryptoRng`.
+/// implements `CryptoRng`.
 ///
 /// Decapsulation is not provided in this module as it does not require randomness.
 #[cfg(all(not(eurydice), feature = "rand"))]
@@ -564,15 +564,15 @@ pub mod rand {
         MlKem1024Ciphertext, MlKem1024KeyPair, MlKem1024PublicKey, MlKemSharedSecret,
         KEY_GENERATION_SEED_SIZE, SHARED_SECRET_SIZE,
     };
-    use ::rand::{CryptoRng, RngCore};
+    use ::rand::CryptoRng;
 
     /// Generate ML-KEM 1024 Key Pair
     ///
-    /// The random number generator `rng` needs to implement `RngCore` and
-    /// `CryptoRng` to sample the required randomness internally.
+    /// The random number generator `rng` needs to implement `CryptoRng`
+    /// to sample the required randomness internally.
     ///
     /// This function returns an [`MlKem1024KeyPair`].
-    pub fn generate_key_pair(rng: &mut (impl RngCore + CryptoRng)) -> MlKem1024KeyPair {
+    pub fn generate_key_pair(rng: &mut impl CryptoRng) -> MlKem1024KeyPair {
         let mut randomness = [0u8; KEY_GENERATION_SEED_SIZE];
         rng.fill_bytes(&mut randomness);
 
@@ -583,11 +583,11 @@ pub mod rand {
     ///
     /// Generates an ([`MlKem1024Ciphertext`], [`MlKemSharedSecret`]) tuple.
     /// The input is a reference to an [`MlKem1024PublicKey`].
-    /// The random number generator `rng` needs to implement `RngCore` and
-    /// `CryptoRng` to sample the required randomness internally.
+    /// The random number generator `rng` needs to implement `CryptoRng`
+    /// to sample the required randomness internally.
     pub fn encapsulate(
         public_key: &MlKem1024PublicKey,
-        rng: &mut (impl RngCore + CryptoRng),
+        rng: &mut impl CryptoRng,
     ) -> (MlKem1024Ciphertext, MlKemSharedSecret) {
         let mut randomness = [0u8; SHARED_SECRET_SIZE];
         rng.fill_bytes(&mut randomness);

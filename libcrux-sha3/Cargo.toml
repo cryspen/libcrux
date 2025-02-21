@@ -33,7 +33,7 @@ harness = false
 [dev-dependencies]
 criterion = "0.5.1"
 hex = "0.4.3"
-rand = "0.8.5"
+rand = "0.9"
 cavp = { version = "0.0.2-beta.2", path = "../cavp" }
 pretty_env_logger = "0.5.0"
 

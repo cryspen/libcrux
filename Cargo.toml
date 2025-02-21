@@ -26,6 +26,8 @@ members = [
     "poly1305",
     "chacha20poly1305",
     "rsa",
+    "ecdsa",
+    "p256",
     "blake2",
 ]
 
@@ -83,7 +85,7 @@ libcrux-ed25519 = { version = "=0.0.2-beta.2", path = "ed25519" }
 libcrux-ecdh = { version = "=0.0.2-beta.2", path = "libcrux-ecdh" }
 libcrux-ml-kem = { version = "=0.0.2-beta.2", path = "libcrux-ml-kem" }
 libcrux-kem = { version = "=0.0.2-beta.2", path = "libcrux-kem" }
-rand = { version = "0.8" }
+rand = { version = "0.9" }
 log = { version = "0.4", optional = true }
 # WASM API
 wasm-bindgen = { version = "0.2.87", optional = true }
@@ -93,8 +95,8 @@ hax-lib = { version = "0.1.0", git = "https://github.com/hacspec/hax/" }
 [dev-dependencies]
 libcrux = { path = ".", features = ["rand", "tests"] }
 pretty_env_logger = "0.5"
-rand = { version = "0.8" }
-rand_core = { version = "0.6" }
+rand = { version = "0.9" }
+rand_core = { version = "0.9" }
 quickcheck = "1"
 quickcheck_macros = "1"
 serde_json = { version = "1.0" }

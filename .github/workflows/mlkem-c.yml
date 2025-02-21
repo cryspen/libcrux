@@ -1,0 +1,249 @@
+name: ML-KEM - Build & Test C
+
+on:
+  push:
+    branches: ["main", "dev"]
+  pull_request:
+    branches: ["main", "dev"]
+  workflow_dispatch:
+  merge_group:
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}-c
+  VERSION_TAG: latest
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  setup:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: changes
+        with:
+          filters: |
+            docker-c:
+              - ".docker/c/**"
+        # If one of the above files is changed,
+        # `steps.changes.outputs.docker-c` = 'true'.
+    outputs:
+      # only run if files in `.docker/c/` unchanged
+      should-run: ${{ steps.changes.outputs.docker-c == 'false' }}
+      image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.VERSION_TAG }}
+
+  report-status-tests:
+    runs-on: ubuntu-latest
+    needs:
+      - diff
+      - diff-header-only
+      - build
+      - build-header-only
+    steps:
+      - name: Report status
+        run: echo "All tests completed successfully"
+
+  report-status-all:
+    runs-on: ubuntu-latest
+    needs: [report-status-tests]
+    # run if all the tests succeeded, or...
+    # ...if they were not supposed to run.
+    if: ${{ always() && needs.report-status-tests.result == 'success' || needs.report-status-tests.result == 'skipped'}}
+    steps:
+      - name: Report status
+        run: echo "Tests completed successfully or were skipped"
+
+  extract:
+    needs: [setup]
+    if: ${{ needs.setup.outputs.should-run == 'true' }}
+    runs-on: ubuntu-latest
+    container:
+      image: ${{ needs.setup.outputs.image }}
+    defaults:
+      run:
+        working-directory: libcrux-ml-kem
+        shell: bash
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Extract C
+        run: |
+          ./c.sh
+
+      - name: Upload C extraction
+        uses: actions/upload-artifact@v4
+        with:
+          name: c-extraction
+          path: libcrux-ml-kem/c
+          include-hidden-files: true
+          if-no-files-found: error
+
+  extract-header-only:
+    needs: [setup]
+    if: ${{ needs.setup.outputs.should-run == 'true' }}
+    runs-on: ubuntu-latest
+    container:
+      image: ${{ needs.setup.outputs.image }}
+    defaults:
+      run:
+        working-directory: libcrux-ml-kem
+        shell: bash
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Extract C (header only)
+        run: |
+          ./boring.sh --no-clean
+
+      - name: Upload header only C extraction
+        uses: actions/upload-artifact@v4
+        with:
+          name: header-only-c-extraction-ml-kem
+          path: libcrux-ml-kem/cg/
+          include-hidden-files: true
+          if-no-files-found: error
+
+  diff:
+    needs: [extract]
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: c-extraction
+          path: ~/c-extraction
+
+      - uses: actions/checkout@v4
+
+      - name: Diff Extraction
+        run: |
+          libcrux-ml-kem/headers_kill_revs.sh libcrux-ml-kem/c
+          libcrux-ml-kem/headers_kill_revs.sh ~/c-extraction
+          diff -r libcrux-ml-kem/c ~/c-extraction
+
+  diff-header-only:
+    needs: [extract-header-only]
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: header-only-c-extraction-ml-kem
+          path: ~/mlkem-c-extraction
+
+      - uses: actions/checkout@v4
+
+      - name: Diff Extraction
+        run: |
+          libcrux-ml-kem/headers_kill_revs.sh libcrux-ml-kem/cg
+          libcrux-ml-kem/headers_kill_revs.sh ~/mlkem-c-extraction
+          diff -r libcrux-ml-kem/cg ~/mlkem-c-extraction
+
+  build:
+    needs: [extract]
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - macos-latest
+          - ubuntu-latest
+          - windows-latest
+
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: c-extraction
+          
+      - name: 🔨 Build
+        run: |
+          LIBCRUX_BENCHMARKS=1 cmake -B build
+          cmake --build build
+
+      - name: 🏃🏻‍♀️ Test
+        run: ./build/Debug/ml_kem_test
+        if: ${{ matrix.os == 'windows-latest' }}
+
+      - name: 🏃🏻‍♀️ Test
+        run: ./build/ml_kem_test
+        if: ${{ matrix.os != 'windows-latest' }}
+
+      - name: 🔨 Build Release
+        run: |
+          rm -rf build
+          LIBCRUX_BENCHMARKS=1 cmake -B build -DCMAKE_BUILD_TYPE=Release
+          cmake --build build --config Release
+        if: ${{ matrix.os != 'windows-latest' }}
+
+  build-header-only:
+    needs: [extract-header-only]
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - macos-latest
+          - ubuntu-latest
+          - windows-latest
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: header-only-c-extraction-ml-kem
+
+      - name: 🔨 Build
+        run: |
+          cmake -B build
+          cmake --build build
+      # FIXME: Benchmark build for cg on Windows CI is not working right now.
+
+      - name: 🏃🏻‍♀️ Test
+        run: ./build/ml_kem_test
+        if: ${{ matrix.os != 'windows-latest' }}
+
+      - name: 🏃🏻‍♀️ Test
+        run: ./build/Debug/ml_kem_test
+        if: ${{ matrix.os == 'windows-latest' }}
+
+  build-header-only-ml-dsa:
+    needs: [extract-header-only-ml-dsa]
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - macos-latest
+          - ubuntu-latest
+          - windows-latest
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: header-only-c-extraction-ml-dsa
+
+      - name: 🔨 Build
+        run: |
+          cmake -B build
+          cmake --build build
+
+      - name: 🏃🏻‍♀️ Test
+        run: ./build/ml_dsa_test
+        if: ${{ matrix.os != 'windows-latest' }}
+
+      - name: 🏃🏻‍♀️ Test
+        run: ./build/Debug/ml_dsa_test
+        if: ${{ matrix.os == 'windows-latest' }}
