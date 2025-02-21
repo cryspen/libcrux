@@ -16,6 +16,10 @@ exclude = [
     "/c.sh",
     "/c.yaml",
     "/hax.py",
+    "/cg",
+    "/c-nss.sh",
+    "/c.sh",
+    "/boring.sh",
 ]
 
 [lib]
