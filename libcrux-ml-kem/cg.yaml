@@ -75,14 +75,17 @@ files:
       - '"intrinsics/libcrux_intrinsics_avx2.h"'
     api:
       patterns:  
+        - [libcrux_ml_kem, mlkem768, avx2, "*"]
+      monomorphizations_of:
+        - [libcrux_ml_kem, mlkem768, avx2, "*"]
+    private:
+      patterns:  
         - [libcrux_ml_kem, vector, avx2, "*"]
         - [libcrux_ml_kem, hash_functions, avx2, "*"]
-        - [libcrux_ml_kem, mlkem768, avx2, "*"]
         - [libcrux_ml_kem, ind_cca, instantiations, avx2, "*"]
       monomorphizations_of:
         - [libcrux_ml_kem, vector, avx2, "*"]
         - [libcrux_ml_kem, hash_functions, avx2, "*"]
-        - [libcrux_ml_kem, mlkem768, avx2, "*"]
         - [libcrux_ml_kem, ind_cca, instantiations, avx2, "*"]
       monomorphizations_using:
         - [libcrux_ml_kem, vector, avx2, "*"]

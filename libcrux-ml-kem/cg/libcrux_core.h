@@ -164,40 +164,6 @@ static inline void unwrap_26_20(Result_e1 self, uint8_t ret[20U]) {
   }
 }
 
-/**
-A monomorphic instance of core.result.Result
-with types uint8_t[10size_t], core_array_TryFromSliceError
-
-*/
-typedef struct Result_9d_s {
-  Result_a9_tags tag;
-  union {
-    uint8_t case_Ok[10U];
-    TryFromSliceError case_Err;
-  } val;
-} Result_9d;
-
-/**
-This function found in impl {core::result::Result<T, E>[TraitClause@0,
-TraitClause@1]}
-*/
-/**
-A monomorphic instance of core.result.unwrap_26
-with types uint8_t[10size_t], core_array_TryFromSliceError
-
-*/
-static inline void unwrap_26_ce(Result_9d self, uint8_t ret[10U]) {
-  if (self.tag == Ok) {
-    uint8_t f0[10U];
-    memcpy(f0, self.val.case_Ok, (size_t)10U * sizeof(uint8_t));
-    memcpy(ret, f0, (size_t)10U * sizeof(uint8_t));
-  } else {
-    KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__,
-                      "unwrap not Ok");
-    KRML_HOST_EXIT(255U);
-  }
-}
-
 typedef struct Eurydice_slice_uint8_t_4size_t__x2_s {
   Eurydice_slice fst[4U];
   Eurydice_slice snd[4U];
