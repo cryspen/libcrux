@@ -5,9 +5,6 @@ open FStar.Mul
 
 let v_RANK: usize = mk_usize 2
 
-let v_RANKED_BYTES_PER_RING_ELEMENT: usize =
-  (v_RANK *! Libcrux_ml_kem.Constants.v_BITS_PER_RING_ELEMENT <: usize) /! mk_usize 8
-
 let v_T_AS_NTT_ENCODED_SIZE: usize =
   ((v_RANK *! Libcrux_ml_kem.Constants.v_COEFFICIENTS_IN_RING_ELEMENT <: usize) *!
     Libcrux_ml_kem.Constants.v_BITS_PER_COEFFICIENT
