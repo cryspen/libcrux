@@ -1,7 +1,10 @@
 use crate::{
     constants::{Eta, Gamma2},
-    simd::traits::{Operations, SIMD_UNITS_IN_RING_ELEMENT},
+    simd::traits::{Operations, COEFFICIENTS_IN_SIMD_UNIT, SIMD_UNITS_IN_RING_ELEMENT},
 };
+
+#[cfg(not(eurydice))]
+use crate::simd::traits::Repr;
 
 mod arithmetic;
 mod encoding;
@@ -11,6 +14,15 @@ mod rejection_sample;
 mod vector_type;
 
 pub(crate) use vector_type::{AVX2RingElement, Vec256 as AVX2SIMDUnit};
+
+#[cfg(not(eurydice))]
+impl Repr for AVX2SIMDUnit {
+    fn repr(&self) -> [i32; COEFFICIENTS_IN_SIMD_UNIT] {
+        let mut result = [0i32; COEFFICIENTS_IN_SIMD_UNIT];
+        vector_type::to_coefficient_array(self, &mut result);
+        result
+    }
+}
 
 /// Implementing the [`Operations`] for AVX2.
 impl Operations for AVX2SIMDUnit {
@@ -40,21 +52,6 @@ impl Operations for AVX2SIMDUnit {
     }
 
     #[inline(always)]
-    fn montgomery_multiply(lhs: &mut Self, rhs: &Self) {
-        arithmetic::montgomery_multiply(&mut lhs.value, &rhs.value);
-    }
-
-    #[inline(always)]
-    fn shift_left_then_reduce<const SHIFT_BY: i32>(simd_unit: &mut Self) {
-        arithmetic::shift_left_then_reduce::<SHIFT_BY>(&mut simd_unit.value)
-    }
-
-    #[inline(always)]
-    fn power2round(t0: &mut Self, t1: &mut Self) {
-        arithmetic::power2round(&mut t0.value, &mut t1.value);
-    }
-
-    #[inline(always)]
     fn infinity_norm_exceeds(simd_unit: &Self, bound: i32) -> bool {
         arithmetic::infinity_norm_exceeds(&simd_unit.value, bound)
     }
@@ -72,6 +69,21 @@ impl Operations for AVX2SIMDUnit {
     #[inline(always)]
     fn use_hint(gamma2: Gamma2, simd_unit: &Self, hint: &mut Self) {
         arithmetic::use_hint(gamma2, &simd_unit.value, &mut hint.value);
+    }
+
+    #[inline(always)]
+    fn montgomery_multiply(lhs: &mut Self, rhs: &Self) {
+        arithmetic::montgomery_multiply(&mut lhs.value, &rhs.value);
+    }
+
+    #[inline(always)]
+    fn shift_left_then_reduce<const SHIFT_BY: i32>(simd_unit: &mut Self) {
+        arithmetic::shift_left_then_reduce::<SHIFT_BY>(&mut simd_unit.value)
+    }
+
+    #[inline(always)]
+    fn power2round(t0: &mut Self, t1: &mut Self) {
+        arithmetic::power2round(&mut t0.value, &mut t1.value);
     }
 
     #[inline(always)]
