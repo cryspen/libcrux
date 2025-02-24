@@ -43,3 +43,18 @@ pub(crate) const G_DIGEST_SIZE: usize = 64;
 pub(crate) const fn ranked_bytes_per_ring_element(rank: usize) -> usize {
     rank * BITS_PER_RING_ELEMENT / 8
 }
+
+#[cfg(feature = "mlkem512")]
+pub(crate) mod mlkem512 {
+
+}
+
+#[cfg(feature = "mlkem768")]
+pub(crate) mod mlkem768 {
+
+}
+
+#[cfg(feature = "mlkem1024")]
+pub(crate) mod mlkem1024 {
+
+}

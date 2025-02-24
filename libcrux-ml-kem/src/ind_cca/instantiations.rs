@@ -23,7 +23,7 @@ macro_rules! instantiate {
             >(
                 randomness: [u8; KEY_GENERATION_SEED_SIZE],
             ) -> MlKemKeyPair<PRIVATE_KEY_SIZE, PUBLIC_KEY_SIZE> {
-                crate::ind_cca::generate_keypair::<
+                crate::ind_cca::mlkem512::generate_keypair::<
                     K,
                     CPA_PRIVATE_KEY_SIZE,
                     PRIVATE_KEY_SIZE,
@@ -47,7 +47,7 @@ macro_rules! instantiate {
             >(
                 randomness: [u8; KEY_GENERATION_SEED_SIZE],
             ) -> MlKemKeyPair<PRIVATE_KEY_SIZE, PUBLIC_KEY_SIZE> {
-                crate::ind_cca::generate_keypair::<
+                crate::ind_cca::mlkem512::generate_keypair::<
                     K,
                     CPA_PRIVATE_KEY_SIZE,
                     PRIVATE_KEY_SIZE,
@@ -70,7 +70,7 @@ macro_rules! instantiate {
             >(
                 public_key: &[u8; PUBLIC_KEY_SIZE],
             ) -> bool {
-                crate::ind_cca::validate_public_key::<
+                crate::ind_cca::mlkem512::validate_public_key::<
                     K,
                     PUBLIC_KEY_SIZE,
                     $vector,
@@ -90,7 +90,7 @@ macro_rules! instantiate {
                 private_key: &MlKemPrivateKey<SECRET_KEY_SIZE>,
                 ciphertext: &MlKemCiphertext<CIPHERTEXT_SIZE>,
             ) -> bool {
-                crate::ind_cca::validate_private_key::<K, SECRET_KEY_SIZE, CIPHERTEXT_SIZE, $hash>(
+                crate::ind_cca::mlkem512::validate_private_key::<K, SECRET_KEY_SIZE, CIPHERTEXT_SIZE, $hash>(
                     private_key,
                     ciphertext,
                 )
@@ -106,7 +106,7 @@ macro_rules! instantiate {
             >(
                 private_key: &MlKemPrivateKey<SECRET_KEY_SIZE>,
             ) -> bool {
-                crate::ind_cca::validate_private_key_only::<K, SECRET_KEY_SIZE, $hash>(private_key)
+                crate::ind_cca::mlkem512::validate_private_key_only::<K, SECRET_KEY_SIZE, $hash>(private_key)
             }
 
             /// Portable encapsulate
@@ -129,7 +129,7 @@ macro_rules! instantiate {
                 public_key: &MlKemPublicKey<PUBLIC_KEY_SIZE>,
                 randomness: [u8; SHARED_SECRET_SIZE],
             ) -> (MlKemCiphertext<CIPHERTEXT_SIZE>, MlKemSharedSecret) {
-                crate::ind_cca::encapsulate::<
+                crate::ind_cca::mlkem512::encapsulate::<
                     K,
                     CIPHERTEXT_SIZE,
                     PUBLIC_KEY_SIZE,
@@ -180,7 +180,7 @@ macro_rules! instantiate {
                 public_key: &MlKemPublicKey<PUBLIC_KEY_SIZE>,
                 randomness: [u8; SHARED_SECRET_SIZE],
             ) -> (MlKemCiphertext<CIPHERTEXT_SIZE>, MlKemSharedSecret) {
-                crate::ind_cca::encapsulate::<
+                crate::ind_cca::mlkem512::encapsulate::<
                     K,
                     CIPHERTEXT_SIZE,
                     PUBLIC_KEY_SIZE,
@@ -223,7 +223,7 @@ macro_rules! instantiate {
                 private_key: &MlKemPrivateKey<SECRET_KEY_SIZE>,
                 ciphertext: &MlKemCiphertext<CIPHERTEXT_SIZE>,
             ) -> MlKemSharedSecret {
-                crate::ind_cca::decapsulate::<
+                crate::ind_cca::mlkem512::decapsulate::<
                     K,
                     SECRET_KEY_SIZE,
                     CPA_SECRET_KEY_SIZE,
@@ -284,7 +284,7 @@ macro_rules! instantiate {
                 private_key: &MlKemPrivateKey<SECRET_KEY_SIZE>,
                 ciphertext: &MlKemCiphertext<CIPHERTEXT_SIZE>,
             ) -> MlKemSharedSecret {
-                crate::ind_cca::decapsulate::<
+                crate::ind_cca::mlkem512::decapsulate::<
                     K,
                     SECRET_KEY_SIZE,
                     CPA_SECRET_KEY_SIZE,
@@ -312,9 +312,9 @@ macro_rules! instantiate {
                 use super::*;
 
                 pub(crate) type MlKemKeyPairUnpacked<const K: usize> =
-                    crate::ind_cca::unpacked::MlKemKeyPairUnpacked<K, $vector>;
+                    crate::ind_cca::mlkem512::unpacked::MlKemKeyPairUnpacked<K, $vector>;
                 pub(crate) type MlKemPublicKeyUnpacked<const K: usize> =
-                    crate::ind_cca::unpacked::MlKemPublicKeyUnpacked<K, $vector>;
+                    crate::ind_cca::mlkem512::unpacked::MlKemPublicKeyUnpacked<K, $vector>;
 
                 /// Get the unpacked public key.
                 #[hax_lib::requires(
@@ -331,7 +331,7 @@ macro_rules! instantiate {
                     public_key: &MlKemPublicKey<PUBLIC_KEY_SIZE>,
                     unpacked_public_key: &mut MlKemPublicKeyUnpacked<K>,
                 ) {
-                    crate::ind_cca::unpacked::unpack_public_key::<
+                    crate::ind_cca::mlkem512::unpacked::unpack_public_key::<
                         K,
                         T_AS_NTT_ENCODED_SIZE,
                         PUBLIC_KEY_SIZE,
@@ -358,7 +358,7 @@ macro_rules! instantiate {
                     private_key: &MlKemPrivateKey<SECRET_KEY_SIZE>,
                     key_pair: &mut MlKemKeyPairUnpacked<K>,
                 ) {
-                    crate::ind_cca::unpacked::keys_from_private_key::<
+                    crate::ind_cca::mlkem512::unpacked::keys_from_private_key::<
                         K,
                         SECRET_KEY_SIZE,
                         CPA_SECRET_KEY_SIZE,
@@ -387,7 +387,7 @@ macro_rules! instantiate {
                     randomness: [u8; KEY_GENERATION_SEED_SIZE],
                     out: &mut MlKemKeyPairUnpacked<K>,
                 ) {
-                    crate::ind_cca::unpacked::generate_keypair::<
+                    crate::ind_cca::mlkem512::unpacked::generate_keypair::<
                         K,
                         CPA_PRIVATE_KEY_SIZE,
                         PRIVATE_KEY_SIZE,
@@ -433,7 +433,7 @@ macro_rules! instantiate {
                     public_key: &MlKemPublicKeyUnpacked<K>,
                     randomness: [u8; SHARED_SECRET_SIZE],
                 ) -> (MlKemCiphertext<CIPHERTEXT_SIZE>, MlKemSharedSecret) {
-                    crate::ind_cca::unpacked::encapsulate::<
+                    crate::ind_cca::mlkem512::unpacked::encapsulate::<
                         K,
                         CIPHERTEXT_SIZE,
                         PUBLIC_KEY_SIZE,
@@ -491,7 +491,7 @@ macro_rules! instantiate {
                     key_pair: &MlKemKeyPairUnpacked<K>,
                     ciphertext: &MlKemCiphertext<CIPHERTEXT_SIZE>,
                 ) -> MlKemSharedSecret {
-                    crate::ind_cca::unpacked::decapsulate::<
+                    crate::ind_cca::mlkem512::unpacked::decapsulate::<
                         K,
                         SECRET_KEY_SIZE,
                         CPA_SECRET_KEY_SIZE,
