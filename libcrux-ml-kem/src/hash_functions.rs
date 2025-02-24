@@ -45,7 +45,7 @@ pub(crate) trait Hash<const K: usize> {
         // We need to repeat the pre-condition here because of https://github.com/hacspec/hax/issues/784
         fstar!(r#"v $LEN < pow2 32 ==> $result == Spec.Utils.v_PRF $LEN $input"#))
     ]
-    fn PRF<const LEN: usize>(input: &[u8]) -> [u8; LEN];
+    fn PRF(input: &[u8], output: &mut [u8]);
 
     /// PRFxN aka N SHAKE256
     #[requires(fstar!(r#"v $LEN < pow2 32 /\ (v $K == 2 \/ v $K == 3 \/ v $K == 4)"#))]
@@ -108,10 +108,8 @@ pub(crate) mod portable {
         fstar!(r#"$result == Spec.Utils.v_PRF $LEN $input"#))
     ]
     #[inline(always)]
-    fn PRF<const LEN: usize>(input: &[u8]) -> [u8; LEN] {
-        let mut digest = [0u8; LEN];
-        portable::shake256(&mut digest, input);
-        digest
+    fn PRF(input: &[u8], output: &mut [u8]) {
+        portable::shake256(output, input);
     }
 
     #[hax_lib::requires(fstar!(r#"v $LEN < pow2 32 /\ (v $K == 2 \/ v $K == 3 \/ v $K == 4)"#))]
@@ -193,8 +191,8 @@ pub(crate) mod portable {
             fstar!(r#"v $LEN < pow2 32 ==> $out == Spec.Utils.v_PRF $LEN $input"#))
         ]
         #[inline(always)]
-        fn PRF<const LEN: usize>(input: &[u8]) -> [u8; LEN] {
-            PRF::<LEN>(input)
+        fn PRF(input: &[u8], output: &mut [u8]) {
+            PRF(input, output)
         }
 
         #[requires(fstar!(r#"v $LEN < pow2 32 /\ (v $K == 2 \/ v $K == 3 \/ v $K == 4)"#))]
@@ -267,10 +265,8 @@ pub(crate) mod avx2 {
         fstar!(r#"$result == Spec.Utils.v_PRF $LEN $input"#))
     ]
     #[inline(always)]
-    fn PRF<const LEN: usize>(input: &[u8]) -> [u8; LEN] {
-        let mut digest = [0u8; LEN];
-        portable::shake256(&mut digest, input);
-        digest
+    fn PRF(input: &[u8], output: &mut [u8]) {
+        portable::shake256(output, input);
     }
 
     #[hax_lib::requires(fstar!(r#"v $LEN < pow2 32 /\ (v $K == 2 \/ v $K == 3 \/ v $K == 4)"#))]
@@ -446,8 +442,8 @@ pub(crate) mod avx2 {
             fstar!(r#"v $LEN < pow2 32 ==> $out == Spec.Utils.v_PRF $LEN $input"#))
         ]
         #[inline(always)]
-        fn PRF<const LEN: usize>(input: &[u8]) -> [u8; LEN] {
-            PRF::<LEN>(input)
+        fn PRF(input: &[u8], output: &mut [u8]) {
+            PRF(input, output)
         }
 
         #[requires(fstar!(r#"v $LEN < pow2 32 /\ (v $K == 2 \/ v $K == 3 \/ v $K == 4)"#))]
@@ -517,11 +513,9 @@ pub(crate) mod neon {
         fstar!(r#"$result == Spec.Utils.v_PRF $LEN $input"#))
     ]
     #[inline(always)]
-    fn PRF<const LEN: usize>(input: &[u8]) -> [u8; LEN] {
-        let mut digest = [0u8; LEN];
+    fn PRF(input: &[u8], output: &mut [u8]) {
         let mut dummy = [0u8; LEN];
-        x2::shake256(input, input, &mut digest, &mut dummy);
-        digest
+        x2::shake256(input, input, output, &mut dummy);
     }
 
     #[hax_lib::requires(fstar!(r#"v $LEN < pow2 32 /\ (v $K == 2 \/ v $K == 3 \/ v $K == 4)"#))]
@@ -724,8 +718,8 @@ pub(crate) mod neon {
             fstar!(r#"v $LEN < pow2 32 ==> $out == Spec.Utils.v_PRF $LEN $input"#))
         ]
         #[inline(always)]
-        fn PRF<const LEN: usize>(input: &[u8]) -> [u8; LEN] {
-            PRF::<LEN>(input)
+        fn PRF(input: &[u8], output: &mut [u8]) {
+            PRF(input, output)
         }
 
         #[requires(fstar!(r#"v $LEN < pow2 32 /\ (v $K == 2 \/ v $K == 3 \/ v $K == 4)"#))]

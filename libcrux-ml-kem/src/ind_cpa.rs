@@ -844,7 +844,8 @@ pub(crate) fn encrypt_c1<
         "assert (Seq.equal $prf_input (Seq.append $randomness (Seq.create 1 $domain_separator)));
         assert ($prf_input == Seq.append $randomness (Seq.create 1 $domain_separator))"
     );
-    let prf_output: [u8; ETA2_RANDOMNESS_SIZE] = Hasher::PRF(&prf_input);
+    let mut prf_output = [0u8; ETA2_RANDOMNESS_SIZE];
+    Hasher::PRF(&prf_input, &mut prf_output);
     let error_2 = sample_from_binomial_distribution::<ETA2, Vector>(&prf_output);
 
     // u := NTT^{-1}(AˆT ◦ rˆ) + e_1

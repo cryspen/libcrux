@@ -418,7 +418,9 @@ pub(crate) fn decapsulate<
         assert (i4.f_PRF_pre (sz 32) $to_hash);
         lemma_slice_append $to_hash $implicit_rejection_value ${ciphertext}.f_value"
     );
-    let implicit_rejection_shared_secret: [u8; SHARED_SECRET_SIZE] = Hasher::PRF(&to_hash);
+
+    let mut implicit_rejection_shared_secret = [0u8; SHARED_SECRET_SIZE];
+    Hasher::PRF(&to_hash, &mut implicit_rejection_shared_secret);
 
     hax_lib::fstar!(
         "assert ($implicit_rejection_shared_secret == Spec.Utils.v_PRF (sz 32) $to_hash);
@@ -1094,7 +1096,8 @@ pub(crate) mod unpacked {
             "Lib.Sequence.lemma_concat2 32 ${key_pair}.f_private_key.f_implicit_rejection_value
             (v (Spec.MLKEM.v_CPA_CIPHERTEXT_SIZE $K)) ${ciphertext}.f_value $to_hash"
         );
-        let implicit_rejection_shared_secret: [u8; SHARED_SECRET_SIZE] = Hasher::PRF(&to_hash);
+        let mut implicit_rejection_shared_secret = [0u8; SHARED_SECRET_SIZE];
+        Hasher::PRF(&to_hash, &mut implicit_rejection_shared_secret);
 
         let expected_ciphertext = ind_cpa::encrypt_unpacked::<
             K,
