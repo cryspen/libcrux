@@ -22,7 +22,7 @@ unsafe fn generate_keypair_avx2<
 >(
     randomness: [u8; KEY_GENERATION_SEED_SIZE],
 ) -> MlKemKeyPair<PRIVATE_KEY_SIZE, PUBLIC_KEY_SIZE> {
-    crate::ind_cca::generate_keypair::<
+    crate::ind_cca::mlkem512::generate_keypair::<
         K,
         CPA_PRIVATE_KEY_SIZE,
         PRIVATE_KEY_SIZE,
@@ -77,7 +77,7 @@ unsafe fn kyber_generate_keypair_avx2<
 >(
     randomness: [u8; KEY_GENERATION_SEED_SIZE],
 ) -> MlKemKeyPair<PRIVATE_KEY_SIZE, PUBLIC_KEY_SIZE> {
-    crate::ind_cca::generate_keypair::<
+    crate::ind_cca::mlkem512::generate_keypair::<
         K,
         CPA_PRIVATE_KEY_SIZE,
         PRIVATE_KEY_SIZE,
@@ -121,7 +121,7 @@ pub(crate) fn kyber_generate_keypair<
 unsafe fn validate_public_key_avx2<const K: usize, const PUBLIC_KEY_SIZE: usize>(
     public_key: &[u8; PUBLIC_KEY_SIZE],
 ) -> bool {
-    crate::ind_cca::validate_public_key::<K, PUBLIC_KEY_SIZE, crate::vector::SIMD256Vector>(
+    crate::ind_cca::mlkem512::validate_public_key::<K, PUBLIC_KEY_SIZE, crate::vector::SIMD256Vector>(
         public_key,
     )
 }
@@ -148,7 +148,7 @@ unsafe fn validate_private_key_avx2<
     private_key: &MlKemPrivateKey<SECRET_KEY_SIZE>,
     ciphertext: &MlKemCiphertext<CIPHERTEXT_SIZE>,
 ) -> bool {
-    crate::ind_cca::validate_private_key::<
+    crate::ind_cca::mlkem512::validate_private_key::<
         K,
         SECRET_KEY_SIZE,
         CIPHERTEXT_SIZE,
@@ -180,7 +180,7 @@ pub(crate) fn validate_private_key<
 pub(crate) fn validate_private_key_only<const K: usize, const SECRET_KEY_SIZE: usize>(
     private_key: &MlKemPrivateKey<SECRET_KEY_SIZE>,
 ) -> bool {
-    crate::ind_cca::validate_private_key_only::<
+    crate::ind_cca::mlkem512::validate_private_key_only::<
         K,
         SECRET_KEY_SIZE,
         crate::hash_functions::avx2::Simd256Hash,
@@ -208,7 +208,7 @@ unsafe fn kyber_encapsulate_avx2<
     public_key: &MlKemPublicKey<PUBLIC_KEY_SIZE>,
     randomness: [u8; SHARED_SECRET_SIZE],
 ) -> (MlKemCiphertext<CIPHERTEXT_SIZE>, MlKemSharedSecret) {
-    crate::ind_cca::encapsulate::<
+    crate::ind_cca::mlkem512::encapsulate::<
         K,
         CIPHERTEXT_SIZE,
         PUBLIC_KEY_SIZE,
@@ -300,7 +300,7 @@ unsafe fn encapsulate_avx2<
     public_key: &MlKemPublicKey<PUBLIC_KEY_SIZE>,
     randomness: [u8; SHARED_SECRET_SIZE],
 ) -> (MlKemCiphertext<CIPHERTEXT_SIZE>, MlKemSharedSecret) {
-    crate::ind_cca::encapsulate::<
+    crate::ind_cca::mlkem512::encapsulate::<
         K,
         CIPHERTEXT_SIZE,
         PUBLIC_KEY_SIZE,
@@ -395,7 +395,7 @@ unsafe fn kyber_decapsulate_avx2<
     private_key: &MlKemPrivateKey<SECRET_KEY_SIZE>,
     ciphertext: &MlKemCiphertext<CIPHERTEXT_SIZE>,
 ) -> MlKemSharedSecret {
-    crate::ind_cca::decapsulate::<
+    crate::ind_cca::mlkem512::decapsulate::<
         K,
         SECRET_KEY_SIZE,
         CPA_SECRET_KEY_SIZE,
@@ -502,7 +502,7 @@ unsafe fn decapsulate_avx2<
     private_key: &MlKemPrivateKey<SECRET_KEY_SIZE>,
     ciphertext: &MlKemCiphertext<CIPHERTEXT_SIZE>,
 ) -> MlKemSharedSecret {
-    crate::ind_cca::decapsulate::<
+    crate::ind_cca::mlkem512::decapsulate::<
         K,
         SECRET_KEY_SIZE,
         CPA_SECRET_KEY_SIZE,
@@ -590,9 +590,9 @@ pub(crate) mod unpacked {
     use super::*;
 
     pub(crate) type MlKemKeyPairUnpacked<const K: usize> =
-        crate::ind_cca::unpacked::MlKemKeyPairUnpacked<K, crate::vector::SIMD256Vector>;
+        crate::ind_cca::mlkem512::unpacked::MlKemKeyPairUnpacked<K, crate::vector::SIMD256Vector>;
     pub(crate) type MlKemPublicKeyUnpacked<const K: usize> =
-        crate::ind_cca::unpacked::MlKemPublicKeyUnpacked<K, crate::vector::SIMD256Vector>;
+        crate::ind_cca::mlkem512::unpacked::MlKemPublicKeyUnpacked<K, crate::vector::SIMD256Vector>;
 
     /// Get the unpacked public key.
     #[cfg_attr(not(hax), target_feature(enable = "avx2"))]
@@ -610,7 +610,7 @@ pub(crate) mod unpacked {
         public_key: &MlKemPublicKey<PUBLIC_KEY_SIZE>,
         unpacked_public_key: &mut MlKemPublicKeyUnpacked<K>,
     ) {
-        crate::ind_cca::unpacked::unpack_public_key::<
+        crate::ind_cca::mlkem512::unpacked::unpack_public_key::<
             K,
             T_AS_NTT_ENCODED_SIZE,
             PUBLIC_KEY_SIZE,
@@ -660,7 +660,7 @@ pub(crate) mod unpacked {
         private_key: &MlKemPrivateKey<SECRET_KEY_SIZE>,
         key_pair: &mut MlKemKeyPairUnpacked<K>,
     ) {
-        crate::ind_cca::unpacked::keys_from_private_key::<
+        crate::ind_cca::mlkem512::unpacked::keys_from_private_key::<
             K,
             SECRET_KEY_SIZE,
             CPA_SECRET_KEY_SIZE,
@@ -687,7 +687,7 @@ pub(crate) mod unpacked {
         randomness: [u8; KEY_GENERATION_SEED_SIZE],
         out: &mut MlKemKeyPairUnpacked<K>,
     ) {
-        crate::ind_cca::unpacked::generate_keypair::<
+        crate::ind_cca::mlkem512::unpacked::generate_keypair::<
             K,
             CPA_PRIVATE_KEY_SIZE,
             PRIVATE_KEY_SIZE,
@@ -760,7 +760,7 @@ pub(crate) mod unpacked {
         public_key: &MlKemPublicKeyUnpacked<K>,
         randomness: [u8; SHARED_SECRET_SIZE],
     ) -> (MlKemCiphertext<CIPHERTEXT_SIZE>, MlKemSharedSecret) {
-        crate::ind_cca::unpacked::encapsulate::<
+        crate::ind_cca::mlkem512::unpacked::encapsulate::<
             K,
             CIPHERTEXT_SIZE,
             PUBLIC_KEY_SIZE,
@@ -864,7 +864,7 @@ pub(crate) mod unpacked {
         key_pair: &MlKemKeyPairUnpacked<K>,
         ciphertext: &MlKemCiphertext<CIPHERTEXT_SIZE>,
     ) -> MlKemSharedSecret {
-        crate::ind_cca::unpacked::decapsulate::<
+        crate::ind_cca::mlkem512::unpacked::decapsulate::<
             K,
             SECRET_KEY_SIZE,
             CPA_SECRET_KEY_SIZE,

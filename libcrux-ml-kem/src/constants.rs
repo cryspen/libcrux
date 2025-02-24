@@ -43,3 +43,36 @@ pub(crate) const G_DIGEST_SIZE: usize = 64;
 pub(crate) const fn ranked_bytes_per_ring_element(rank: usize) -> usize {
     rank * BITS_PER_RING_ELEMENT / 8
 }
+
+/// Constants for ML-KEM 512, which will be injected into the generic
+/// implementation by the macro
+/// [libcrux_macros::ml_kem_parameter_sets].
+#[cfg(feature = "mlkem512")]
+pub(crate) mod mlkem512 {
+    pub(crate) const RANK: usize = 2;
+
+    pub(crate) const VECTOR_U_COMPRESSION_FACTOR: usize = 10;
+    pub(crate) const VECTOR_V_COMPRESSION_FACTOR: usize = 4;
+    pub(crate) const ETA1: usize = 3;
+    pub(crate) const ETA2: usize = 2;
+}
+
+// Constants for ML-KEM 768, which will be injected into the generic
+// implementation by the macro
+// [libcrux_macros::ml_kem_parameter_sets].
+// // #[cfg(feature = "mlkem768")]
+// pub(crate) mod mlkem768 {
+//     use crate::constants::*;
+    
+//     pub(crate) const RANK: usize = 3;
+// }
+
+// Constants for ML-KEM 1024, which will be injected into the generic
+// implementation by the macro
+// [libcrux_macros::ml_kem_parameter_sets].
+// #[cfg(feature = "mlkem1024")]
+// pub(crate) mod mlkem1024 {
+//     use crate::constants::*;
+    
+//     pub(crate) const RANK: usize = 4;
+// }
