@@ -49,6 +49,53 @@ pub fn unroll_for(ts: TokenStream) -> TokenStream {
     // "{ let i = 0; println!(\"FROM MACRO{}\", i); }".parse().unwrap()
 }
 
+
+/// Annotation for a generic ML-KEM implementation, which pulls in
+/// parameter-set specific constants.
+///
+/// Given a list of parameter set identifiers, i.e. `512,768,1024`, for
+/// each identifier $id a feature-gated module `ml_kem_$id` is generated, which
+/// pulls in the parameter specific constants, assumed to be specified
+/// in `crate::constants::ml_kem_$id`.
+#[proc_macro_attribute]
+pub fn ml_kem_parameter_sets(args: TokenStream, item: TokenStream) -> TokenStream {
+    let ItemMod {
+        attrs,
+        vis,
+        content,
+        semi,
+        ..
+    } = parse_macro_input!(item as ItemMod);
+
+    let variants_vec = syn::punctuated::Punctuated::<LitInt, Token![,]>::parse_terminated
+        .parse(args)
+        .unwrap();
+    let mut expanded = quote! {};
+
+    for parameter_set in variants_vec {
+        let parameter_set_string = quote! {#parameter_set}.to_string();
+        let feature_name = format!("mlkem{}", parameter_set_string);
+        let modpath = format_ident!("mlkem{}", parameter_set_string);
+
+        // add the variant at the end of the function name
+        if let Some((_, ref content)) = content {
+            let this_content = content.clone();
+            let fun = quote! {
+                #(#attrs)*
+                #[cfg(feature = #feature_name)]
+                #vis mod #modpath {
+                    use crate::constants::#modpath::*;
+
+                    #(#this_content)*
+                } #semi
+            };
+            expanded.extend(fun);
+        }
+    }
+    expanded.into()
+}
+
+
 /// Annotation for a generic ML-DSA implementation, which pulls in
 /// parameter-set specific constants.
 ///
