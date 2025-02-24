@@ -88,7 +88,7 @@ jobs:
         working-directory: libcrux-ml-kem
         run: ./hax.py prove --admit
   
-  mlkem-extract-build-test-status:
+  mlkem-extract-hax-status:
     if: ${{ always() }}
     needs: [extract]
     runs-on: ubuntu-latest
@@ -100,7 +100,7 @@ jobs:
         if: ${{ (contains(needs.*.result, 'failure')) }} 
         run: exit 1 
   
-  mlkem-diff-build-test-status:
+  mlkem-diff-hax-status:
     if: ${{ always() }}
     needs: [diff]
     runs-on: ubuntu-latest
@@ -112,7 +112,7 @@ jobs:
         if: ${{ (contains(needs.*.result, 'failure')) }} 
         run: exit 1 
   
-  mlkem-lax-build-test-status:
+  mlkem-lax-hax-status:
     if: ${{ always() }}
     needs: [lax]
     runs-on: ubuntu-latest

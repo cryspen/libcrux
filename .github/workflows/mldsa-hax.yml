@@ -87,7 +87,7 @@ jobs:
         working-directory: libcrux-ml-dsa
         run: ./hax.py prove --admit
   
-  mldsa-extract-build-test-status:
+  mldsa-extract-hax-status:
     if: ${{ always() }}
     needs: [extract]
     runs-on: ubuntu-latest
@@ -99,7 +99,7 @@ jobs:
         if: ${{ (contains(needs.*.result, 'failure')) }} 
         run: exit 1 
 
-  mldsa-diff-build-test-status:
+  mldsa-diff-hax-status:
     if: ${{ always() }}
     needs: [diff]
     runs-on: ubuntu-latest
@@ -111,7 +111,7 @@ jobs:
         if: ${{ (contains(needs.*.result, 'failure')) }} 
         run: exit 1 
   
-  mldsa-lax-build-test-status:
+  mldsa-lax-hax-status:
     if: ${{ always() }}
     needs: [lax]
     runs-on: ubuntu-latest
