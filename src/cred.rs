@@ -83,3 +83,53 @@ impl Credential for NoAuth {
         Ok(())
     }
 }
+
+/// A credential based on Ed25519 signatures.
+pub struct Ed25519 {}
+
+impl Credential for Ed25519 {
+    type Signature = [u8; 64];
+
+    type SigningKey = [u8; 32];
+
+    type VerificationKey = [u8; 32];
+
+    const VK_LEN: usize = 32;
+
+    const SIG_LEN: usize = 64;
+
+    fn sign(
+        signing_key: &Self::SigningKey,
+        message: &[u8],
+    ) -> Result<(Self::Signature, Self::VerificationKey), Error> {
+        let sig = libcrux_ed25519::sign(message, signing_key).map_err(|_| Error::CredError)?;
+        let mut vk = [0u8; 32];
+        libcrux_ed25519::secret_to_public(&mut vk, signing_key);
+        Ok((sig, vk))
+    }
+
+    fn verify(
+        verification_key: &Self::VerificationKey,
+        signature: &Self::Signature,
+        message: &[u8],
+    ) -> Result<(), Error> {
+        libcrux_ed25519::verify(message, verification_key, signature).map_err(|_| Error::CredError)
+    }
+
+    fn serialize_signature(signature: &Self::Signature) -> Vec<u8> {
+        signature.to_vec()
+    }
+
+    fn serialize_verification_key(verification_key: &Self::VerificationKey) -> Vec<u8> {
+        verification_key.to_vec()
+    }
+
+    /// CAUTION: This does not perform validation of the verification key.
+    fn deserialize_verification_key(bytes: &[u8]) -> Result<Self::VerificationKey, Error> {
+        bytes.try_into().map_err(|_| Error::CredError)
+    }
+
+    fn deserialize_signature(bytes: &[u8]) -> Result<Self::Signature, Error> {
+        bytes.try_into().map_err(|_| Error::CredError)
+    }
+}
