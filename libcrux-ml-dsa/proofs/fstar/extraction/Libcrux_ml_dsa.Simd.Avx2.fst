@@ -7,13 +7,35 @@ let _ =
   (* This module has implicit dependencies, here we make them explicit. *)
   (* The implicit dependencies arise from typeclasses instances. *)
   let open Libcrux_ml_dsa.Simd.Avx2.Vector_type in
+  let open Libcrux_ml_dsa.Simd.Traits in
   ()
 
 [@@ FStar.Tactics.Typeclasses.tcinstance]
-let impl: Libcrux_ml_dsa.Simd.Traits.t_Operations Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 =
+let impl: Libcrux_ml_dsa.Simd.Traits.t_Repr Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 =
   {
     _super_13011033735201511749 = FStar.Tactics.Typeclasses.solve;
     _super_9529721400157967266 = FStar.Tactics.Typeclasses.solve;
+    f_repr_pre = (fun (self: Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256) -> true);
+    f_repr_post
+    =
+    (fun (self: Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256) (out: t_Array i32 (mk_usize 8)) ->
+        true);
+    f_repr
+    =
+    fun (self: Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256) ->
+      let result:t_Array i32 (mk_usize 8) = Rust_primitives.Hax.repeat (mk_i32 0) (mk_usize 8) in
+      let result:t_Array i32 (mk_usize 8) =
+        Libcrux_ml_dsa.Simd.Avx2.Vector_type.to_coefficient_array self result
+      in
+      result
+  }
+
+[@@ FStar.Tactics.Typeclasses.tcinstance]
+let impl_1: Libcrux_ml_dsa.Simd.Traits.t_Operations Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 =
+  {
+    _super_13011033735201511749 = FStar.Tactics.Typeclasses.solve;
+    _super_9529721400157967266 = FStar.Tactics.Typeclasses.solve;
+    _super_6182285156695963586 = FStar.Tactics.Typeclasses.solve;
     f_zero_pre = (fun (_: Prims.unit) -> true);
     f_zero_post = (fun (_: Prims.unit) (out: Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256) -> true);
     f_zero = (fun (_: Prims.unit) -> Libcrux_ml_dsa.Simd.Avx2.Vector_type.zero ());
@@ -119,110 +141,6 @@ let impl: Libcrux_ml_dsa.Simd.Traits.t_Operations Libcrux_ml_dsa.Simd.Avx2.Vecto
           Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256
         in
         lhs);
-    f_montgomery_multiply_pre
-    =
-    (fun
-        (lhs: Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256)
-        (rhs: Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256)
-        ->
-        true);
-    f_montgomery_multiply_post
-    =
-    (fun
-        (lhs: Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256)
-        (rhs: Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256)
-        (out: Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256)
-        ->
-        true);
-    f_montgomery_multiply
-    =
-    (fun
-        (lhs: Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256)
-        (rhs: Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256)
-        ->
-        let lhs:Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 =
-          {
-            lhs with
-            Libcrux_ml_dsa.Simd.Avx2.Vector_type.f_value
-            =
-            Libcrux_ml_dsa.Simd.Avx2.Arithmetic.montgomery_multiply lhs
-                .Libcrux_ml_dsa.Simd.Avx2.Vector_type.f_value
-              rhs.Libcrux_ml_dsa.Simd.Avx2.Vector_type.f_value
-          }
-          <:
-          Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256
-        in
-        lhs);
-    f_shift_left_then_reduce_pre
-    =
-    (fun (v_SHIFT_BY: i32) (simd_unit: Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256) -> true);
-    f_shift_left_then_reduce_post
-    =
-    (fun
-        (v_SHIFT_BY: i32)
-        (simd_unit: Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256)
-        (out: Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256)
-        ->
-        true);
-    f_shift_left_then_reduce
-    =
-    (fun (v_SHIFT_BY: i32) (simd_unit: Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256) ->
-        let simd_unit:Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 =
-          {
-            simd_unit with
-            Libcrux_ml_dsa.Simd.Avx2.Vector_type.f_value
-            =
-            Libcrux_ml_dsa.Simd.Avx2.Arithmetic.shift_left_then_reduce v_SHIFT_BY
-              simd_unit.Libcrux_ml_dsa.Simd.Avx2.Vector_type.f_value
-          }
-          <:
-          Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256
-        in
-        simd_unit);
-    f_power2round_pre
-    =
-    (fun
-        (t0: Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256)
-        (t1: Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256)
-        ->
-        true);
-    f_power2round_post
-    =
-    (fun
-        (t0: Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256)
-        (t1: Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256)
-        (out:
-          (Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 &
-            Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256))
-        ->
-        true);
-    f_power2round
-    =
-    (fun
-        (t0: Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256)
-        (t1: Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256)
-        ->
-        let tmp0, tmp1:(Libcrux_intrinsics.Avx2_extract.t_Vec256 &
-          Libcrux_intrinsics.Avx2_extract.t_Vec256) =
-          Libcrux_ml_dsa.Simd.Avx2.Arithmetic.power2round t0
-              .Libcrux_ml_dsa.Simd.Avx2.Vector_type.f_value
-            t1.Libcrux_ml_dsa.Simd.Avx2.Vector_type.f_value
-        in
-        let t0:Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 =
-          { t0 with Libcrux_ml_dsa.Simd.Avx2.Vector_type.f_value = tmp0 }
-          <:
-          Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256
-        in
-        let t1:Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 =
-          { t1 with Libcrux_ml_dsa.Simd.Avx2.Vector_type.f_value = tmp1 }
-          <:
-          Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256
-        in
-        let _:Prims.unit = () in
-        t0, t1
-        <:
-        (Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 &
-          Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256));
     f_infinity_norm_exceeds_pre
     =
     (fun (simd_unit: Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256) (bound: i32) -> true);
@@ -365,6 +283,110 @@ let impl: Libcrux_ml_dsa.Simd.Traits.t_Operations Libcrux_ml_dsa.Simd.Avx2.Vecto
           Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256
         in
         hint);
+    f_montgomery_multiply_pre
+    =
+    (fun
+        (lhs: Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256)
+        (rhs: Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256)
+        ->
+        true);
+    f_montgomery_multiply_post
+    =
+    (fun
+        (lhs: Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256)
+        (rhs: Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256)
+        (out: Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256)
+        ->
+        true);
+    f_montgomery_multiply
+    =
+    (fun
+        (lhs: Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256)
+        (rhs: Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256)
+        ->
+        let lhs:Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 =
+          {
+            lhs with
+            Libcrux_ml_dsa.Simd.Avx2.Vector_type.f_value
+            =
+            Libcrux_ml_dsa.Simd.Avx2.Arithmetic.montgomery_multiply lhs
+                .Libcrux_ml_dsa.Simd.Avx2.Vector_type.f_value
+              rhs.Libcrux_ml_dsa.Simd.Avx2.Vector_type.f_value
+          }
+          <:
+          Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256
+        in
+        lhs);
+    f_shift_left_then_reduce_pre
+    =
+    (fun (v_SHIFT_BY: i32) (simd_unit: Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256) -> true);
+    f_shift_left_then_reduce_post
+    =
+    (fun
+        (v_SHIFT_BY: i32)
+        (simd_unit: Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256)
+        (out: Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256)
+        ->
+        true);
+    f_shift_left_then_reduce
+    =
+    (fun (v_SHIFT_BY: i32) (simd_unit: Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256) ->
+        let simd_unit:Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 =
+          {
+            simd_unit with
+            Libcrux_ml_dsa.Simd.Avx2.Vector_type.f_value
+            =
+            Libcrux_ml_dsa.Simd.Avx2.Arithmetic.shift_left_then_reduce v_SHIFT_BY
+              simd_unit.Libcrux_ml_dsa.Simd.Avx2.Vector_type.f_value
+          }
+          <:
+          Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256
+        in
+        simd_unit);
+    f_power2round_pre
+    =
+    (fun
+        (t0: Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256)
+        (t1: Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256)
+        ->
+        true);
+    f_power2round_post
+    =
+    (fun
+        (t0: Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256)
+        (t1: Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256)
+        (out:
+          (Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 &
+            Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256))
+        ->
+        true);
+    f_power2round
+    =
+    (fun
+        (t0: Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256)
+        (t1: Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256)
+        ->
+        let tmp0, tmp1:(Libcrux_intrinsics.Avx2_extract.t_Vec256 &
+          Libcrux_intrinsics.Avx2_extract.t_Vec256) =
+          Libcrux_ml_dsa.Simd.Avx2.Arithmetic.power2round t0
+              .Libcrux_ml_dsa.Simd.Avx2.Vector_type.f_value
+            t1.Libcrux_ml_dsa.Simd.Avx2.Vector_type.f_value
+        in
+        let t0:Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 =
+          { t0 with Libcrux_ml_dsa.Simd.Avx2.Vector_type.f_value = tmp0 }
+          <:
+          Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256
+        in
+        let t1:Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 =
+          { t1 with Libcrux_ml_dsa.Simd.Avx2.Vector_type.f_value = tmp1 }
+          <:
+          Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256
+        in
+        let _:Prims.unit = () in
+        t0, t1
+        <:
+        (Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 &
+          Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256));
     f_rejection_sample_less_than_field_modulus_pre
     =
     (fun (randomness: t_Slice u8) (out: t_Slice i32) -> true);

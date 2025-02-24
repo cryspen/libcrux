@@ -38,6 +38,16 @@ pub fn _vst1q_s16(out: &mut [i16], v: _int16x8_t) {
 }
 
 #[inline(always)]
+pub fn _vst1q_bytes(out: &mut [u8], v: _int16x8_t) {
+    unimplemented!()
+}
+
+#[inline(always)]
+pub fn _vld1q_bytes(bytes: &[u8]) -> _int16x8_t {
+    unimplemented!()
+}
+
+#[inline(always)]
 pub fn _vld1q_s16(array: &[i16]) -> _int16x8_t {
     unimplemented!()
 }

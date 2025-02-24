@@ -27,6 +27,22 @@ pub(crate) fn from_i16_array(array: &[i16]) -> SIMD128Vector {
     }
 }
 
+#[inline(always)]
+#[hax_lib::fstar::verification_status(lax)]
+pub(crate) fn to_bytes(v: SIMD128Vector, bytes: &mut [u8]) {
+    _vst1q_bytes(&mut bytes[0..16], v.low);
+    _vst1q_bytes(&mut bytes[16..32], v.high);
+}
+
+#[inline(always)]
+#[hax_lib::fstar::verification_status(lax)]
+pub(crate) fn from_bytes(array: &[u8]) -> SIMD128Vector {
+    SIMD128Vector {
+        low: _vld1q_bytes(&array[0..16]),
+        high: _vld1q_bytes(&array[16..32]),
+    }
+}
+
 #[allow(non_snake_case)]
 #[inline(always)]
 #[hax_lib::fstar::verification_status(panic_free)]
