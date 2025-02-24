@@ -4,11 +4,11 @@ use crate::Error;
 /// A generic signature primitive.
 pub trait Credential {
     /// The credentials' signature objects.
-    type Signature;
+    type Signature: AsRef<[u8]>;
     /// The credentials' signing key objects.
     type SigningKey;
     /// The credentials' verification key objects.
-    type VerificationKey;
+    type VerificationKey: AsRef<[u8]>;
     /// Length (in bytes) of a serialized verification key.
     const VK_LEN: usize;
     /// Length (in bytes) of a serialized signature.
@@ -28,12 +28,6 @@ pub trait Credential {
         message: &[u8],
     ) -> Result<(), Error>;
 
-    /// Serialize a signature to bytes.
-    fn serialize_signature(signature: &Self::Signature) -> Vec<u8>;
-
-    /// Serialize a verification key to bytes.
-    fn serialize_verification_key(verification_key: &Self::VerificationKey) -> Vec<u8>;
-
     /// Deserialize a verification key.
     fn deserialize_verification_key(bytes: &[u8]) -> Result<Self::VerificationKey, Error>;
 
@@ -45,9 +39,9 @@ pub trait Credential {
 pub struct NoAuth {}
 
 impl Credential for NoAuth {
-    type Signature = ();
-    type SigningKey = ();
-    type VerificationKey = ();
+    type Signature = [u8; 0];
+    type SigningKey = [u8; 0];
+    type VerificationKey = [u8; 0];
 
     const VK_LEN: usize = 0;
     const SIG_LEN: usize = 0;
@@ -56,7 +50,7 @@ impl Credential for NoAuth {
         _signing_key: &Self::SigningKey,
         _message: &[u8],
     ) -> Result<(Self::Signature, Self::VerificationKey), Error> {
-        Ok(((), ()))
+        Ok(([0; 0], [0; 0]))
     }
 
     fn verify(
@@ -67,20 +61,12 @@ impl Credential for NoAuth {
         Ok(())
     }
 
-    fn serialize_signature(_signature: &Self::Signature) -> Vec<u8> {
-        Vec::new()
-    }
-
-    fn serialize_verification_key(_verification_key: &Self::VerificationKey) -> Vec<u8> {
-        Vec::new()
-    }
-
     fn deserialize_verification_key(_bytes: &[u8]) -> Result<Self::VerificationKey, Error> {
-        Ok(())
+        Ok([0; 0])
     }
 
     fn deserialize_signature(_bytes: &[u8]) -> Result<Self::Signature, Error> {
-        Ok(())
+        Ok([0; 0])
     }
 }
 
@@ -114,14 +100,6 @@ impl Credential for Ed25519 {
         message: &[u8],
     ) -> Result<(), Error> {
         libcrux_ed25519::verify(message, verification_key, signature).map_err(|_| Error::CredError)
-    }
-
-    fn serialize_signature(signature: &Self::Signature) -> Vec<u8> {
-        signature.to_vec()
-    }
-
-    fn serialize_verification_key(verification_key: &Self::VerificationKey) -> Vec<u8> {
-        verification_key.to_vec()
     }
 
     /// CAUTION: This does not perform validation of the verification key.
