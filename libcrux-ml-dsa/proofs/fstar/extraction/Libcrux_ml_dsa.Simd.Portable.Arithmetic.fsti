@@ -102,10 +102,14 @@ val power2round_element (t: i32)
       (ensures
         fun temp_0_ ->
           let t0, t1:(i32 & i32) = temp_0_ in
-          v t0 == v t @% pow2 (v Libcrux_ml_dsa.Constants.v_BITS_IN_LOWER_PART_OF_T) /\
-          v t1 == (v t - v t0) / pow2 (v Libcrux_ml_dsa.Constants.v_BITS_IN_LOWER_PART_OF_T) /\
-          Spec.Utils.is_i32b ((pow2 (v Libcrux_ml_dsa.Constants.v_BITS_IN_LOWER_PART_OF_T - 1)) - 1)
-            t0)
+          v t0 ==
+          Spec.Utils.mod_q (v t % v Libcrux_ml_dsa.Simd.Traits.v_FIELD_MODULUS)
+            (pow2 (v Libcrux_ml_dsa.Constants.v_BITS_IN_LOWER_PART_OF_T)) /\
+          v t1 ==
+          ((v t % v Libcrux_ml_dsa.Simd.Traits.v_FIELD_MODULUS) - v t0) /
+          pow2 (v Libcrux_ml_dsa.Constants.v_BITS_IN_LOWER_PART_OF_T) /\
+          v t0 > - (pow2 (v Libcrux_ml_dsa.Constants.v_BITS_IN_LOWER_PART_OF_T - 1)) /\
+          v t0 <= pow2 (v Libcrux_ml_dsa.Constants.v_BITS_IN_LOWER_PART_OF_T - 1))
 
 val power2round (t0 t1: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients)
     : Prims.Pure
@@ -119,17 +123,18 @@ val power2round (t0 t1: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients)
             Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients) =
             temp_0_
           in
-          Spec.Utils.is_i32b_array ((pow2 (v Libcrux_ml_dsa.Constants.v_BITS_IN_LOWER_PART_OF_T - 1)
-              ) -
-              1)
-            t0_future.f_values /\
-          (forall i.
-              i < 8 ==>
-              (let t0_1 = v (Seq.index t0.f_values i) in
-                let t0_2 = v (Seq.index t0_future.f_values i) in
-                t0_2 == t0_1 @% pow2 (v Libcrux_ml_dsa.Constants.v_BITS_IN_LOWER_PART_OF_T) /\
-                v (Seq.index t1_future.f_values i) ==
-                (t0_1 - t0_2) / pow2 (v Libcrux_ml_dsa.Constants.v_BITS_IN_LOWER_PART_OF_T))))
+          forall i.
+            i < 8 ==>
+            (let t0_1 =
+                v (Seq.index t0.f_values i) % v Libcrux_ml_dsa.Simd.Traits.v_FIELD_MODULUS
+              in
+              let t0_2 = v (Seq.index t0_future.f_values i) in
+              t0_2 ==
+              Spec.Utils.mod_q t0_1 (pow2 (v Libcrux_ml_dsa.Constants.v_BITS_IN_LOWER_PART_OF_T)) /\
+              v (Seq.index t1_future.f_values i) ==
+              (t0_1 - t0_2) / pow2 (v Libcrux_ml_dsa.Constants.v_BITS_IN_LOWER_PART_OF_T) /\
+              t0_2 > - (pow2 (v Libcrux_ml_dsa.Constants.v_BITS_IN_LOWER_PART_OF_T - 1)) /\
+              t0_2 <= pow2 (v Libcrux_ml_dsa.Constants.v_BITS_IN_LOWER_PART_OF_T - 1)))
 
 val infinity_norm_exceeds
       (simd_unit: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients)
@@ -214,18 +219,38 @@ val compute_hint
 val decompose_element (gamma2 r: i32)
     : Prims.Pure (i32 & i32)
       (requires
-        v gamma2 > 0 /\ v gamma2 % 2 == 0 /\
+        (v gamma2 == v Libcrux_ml_dsa.Constants.v_GAMMA2_V261_888_ \/
+          v gamma2 == v Libcrux_ml_dsa.Constants.v_GAMMA2_V95_232_) /\
         Spec.Utils.is_i32b (v Libcrux_ml_dsa.Simd.Traits.v_FIELD_MODULUS - 1) r)
       (ensures
         fun temp_0_ ->
           let r0, r1:(i32 & i32) = temp_0_ in
-          v r0 == v r @% v gamma2 /\ v r1 == (v r - v r0) / v gamma2 /\
-          ((v r1 >= 0 /\ v r1 < (v Libcrux_ml_dsa.Simd.Traits.v_FIELD_MODULUS - 1) / v gamma2) ==>
-            Spec.Utils.is_i32b ((v gamma2 / 2) - 1) r0) /\
-          v r1 == (v Libcrux_ml_dsa.Simd.Traits.v_FIELD_MODULUS - 1) / v gamma2 ==>
-          (v r0 >= - (v gamma2 / 2) /\ v r0 < 0))
+          let r_q = v r % v Libcrux_ml_dsa.Simd.Traits.v_FIELD_MODULUS in
+          let r_g = Spec.Utils.mod_q r_q (v gamma2 * 2) in
+          (if r_q - r_g = v Libcrux_ml_dsa.Simd.Traits.v_FIELD_MODULUS - 1
+            then (v r0 == r_g - 1 /\ v r1 == 0 /\ (v r0 >= - (v gamma2) /\ v r0 < 0))
+            else
+              (v r0 == r_g /\ v r1 == (r_q - r_g) / (v gamma2 * 2) /\
+                (v r0 > - (v gamma2) /\ v r0 <= v gamma2))) /\
+          (v r1 >= 0 /\ v r1 < (v Libcrux_ml_dsa.Simd.Traits.v_FIELD_MODULUS - 1) / (v gamma2 * 2)))
 
-val use_one_hint (gamma2 r hint: i32) : Prims.Pure i32 Prims.l_True (fun _ -> Prims.l_True)
+val use_one_hint (gamma2 r hint: i32)
+    : Prims.Pure i32
+      (requires
+        (v gamma2 == v Libcrux_ml_dsa.Constants.v_GAMMA2_V261_888_ \/
+          v gamma2 == v Libcrux_ml_dsa.Constants.v_GAMMA2_V95_232_) /\
+        Spec.Utils.is_i32b (v Libcrux_ml_dsa.Simd.Traits.v_FIELD_MODULUS - 1) r /\
+        (v hint == 0 \/ v hint == 1))
+      (ensures
+        fun result ->
+          let result:i32 = result in
+          let r0, r1 = decompose_element gamma2 r in
+          if v hint = 0
+          then result = r1
+          else
+            (if v r0 > 0
+              then v result = (v r1 + 1) % (4190208 / v gamma2)
+              else v result = (v r1 - 1) % (4190208 / v gamma2)))
 
 val decompose
       (gamma2: i32)
@@ -234,7 +259,8 @@ val decompose
       (Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients &
         Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients)
       (requires
-        v gamma2 > 0 /\ v gamma2 % 2 == 0 /\
+        (v gamma2 == v Libcrux_ml_dsa.Constants.v_GAMMA2_V261_888_ \/
+          v gamma2 == v Libcrux_ml_dsa.Constants.v_GAMMA2_V95_232_) /\
         Spec.Utils.is_i32b_array (v Libcrux_ml_dsa.Simd.Traits.v_FIELD_MODULUS - 1)
           simd_unit.f_values)
       (ensures
@@ -245,16 +271,39 @@ val decompose
           in
           forall i.
             i < 8 ==>
-            (let r = Seq.index simd_unit.f_values i in
-              let r0 = Seq.index low_future.f_values i in
-              let r1 = Seq.index high_future.f_values i in
-              v r0 == v r @% v gamma2 /\ v r1 == (v r - v r0) / v gamma2 /\
-              ((v r1 >= 0 /\ v r1 < (v Libcrux_ml_dsa.Simd.Traits.v_FIELD_MODULUS - 1) / v gamma2) ==>
-                Spec.Utils.is_i32b ((v gamma2 / 2) - 1) r0) /\
-              v r1 == (v Libcrux_ml_dsa.Simd.Traits.v_FIELD_MODULUS - 1) / v gamma2 ==>
-              (v r0 >= - (v gamma2 / 2) /\ v r0 < 0)))
+            (let r = v (Seq.index simd_unit.f_values i) in
+              let r0 = v (Seq.index low_future.f_values i) in
+              let r1 = v (Seq.index high_future.f_values i) in
+              let r_q = r % v Libcrux_ml_dsa.Simd.Traits.v_FIELD_MODULUS in
+              let r_g = Spec.Utils.mod_q r_q (v gamma2 * 2) in
+              (if r_q - r_g = v Libcrux_ml_dsa.Simd.Traits.v_FIELD_MODULUS - 1
+                then (r0 == r_g - 1 /\ r1 == 0 /\ (r0 >= - (v gamma2) /\ r0 < 0))
+                else
+                  (r0 == r_g /\ r1 == (r_q - r_g) / (v gamma2 * 2) /\
+                    (r0 > - (v gamma2) /\ r0 <= v gamma2))) /\
+              (r1 >= 0 /\ r1 < (v Libcrux_ml_dsa.Simd.Traits.v_FIELD_MODULUS - 1) / (v gamma2 * 2)))
+      )
 
 val use_hint (gamma2: i32) (simd_unit hint: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients)
     : Prims.Pure Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients
-      Prims.l_True
-      (fun _ -> Prims.l_True)
+      (requires
+        (v gamma2 == v Libcrux_ml_dsa.Constants.v_GAMMA2_V261_888_ \/
+          v gamma2 == v Libcrux_ml_dsa.Constants.v_GAMMA2_V95_232_) /\
+        Spec.Utils.is_i32b_array (v Libcrux_ml_dsa.Simd.Traits.v_FIELD_MODULUS - 1)
+          simd_unit.f_values /\
+        (forall i.
+            i < 8 ==> v (Seq.index hint.f_values i) == 0 \/ v (Seq.index hint.f_values i) == 1))
+      (ensures
+        fun hint_future ->
+          let hint_future:Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients = hint_future in
+          forall i.
+            i < 8 ==>
+            (let h = Seq.index hint.f_values i in
+              let result = Seq.index hint_future.f_values i in
+              let r0, r1 = decompose_element gamma2 (Seq.index simd_unit.f_values i) in
+              if v h = 0
+              then result = r1
+              else
+                (if v r0 > 0
+                  then v result = (v r1 + 1) % (4190208 / v gamma2)
+                  else v result = (v r1 - 1) % (4190208 / v gamma2))))
