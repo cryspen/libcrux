@@ -39,3 +39,4 @@ test-utils = [] # DO NOT USE: This feature enables implementations backed
 [[bench]]
 name = "psq"
 harness = false
+required-features = ["classic-mceliece", "test-utils"]
