@@ -5,10 +5,10 @@
  *
  * This code was generated with the following revisions:
  * Charon: a8f2211d1b95e0462a96382023b164a4116c7ca4
- * Eurydice: 60f543ddc60a777138070968daaf7620ec48170d
+ * Eurydice: 788c5abefac3a9c7f79abae6a30fa8558e39764c
  * Karamel: 1d81d757d5d9e16dd6463ccc72324e587c707959
- * F*: 7cd06c5562fc47ec14cd35c38034d5558a5ff762
- * Libcrux: 370d71828112dbf0ad53a8995502ff1e5c8a719c
+ * F*: b0961063393215ca65927f017720cb365a193833-dirty
+ * Libcrux: 9055a3494b92f5b142edb2d1fe36ea2e1ce07257
  */
 
 #ifndef __libcrux_mlkem768_avx2_H
@@ -20,9 +20,9 @@ extern "C" {
 
 #include "eurydice_glue.h"
 #include "intrinsics/libcrux_intrinsics_avx2.h"
-#include "libcrux_core.h"
 #include "libcrux_ct_ops.h"
 #include "libcrux_mlkem768_portable.h"
+#include "libcrux_mlkem_core.h"
 #include "libcrux_sha3_avx2.h"
 #include "libcrux_sha3_portable.h"
 
@@ -43,8 +43,6 @@ static KRML_MUSTINLINE void libcrux_ml_kem_hash_functions_avx2_H(
       Eurydice_array_to_slice((size_t)32U, digest, uint8_t), input);
   memcpy(ret, digest, (size_t)32U * sizeof(uint8_t));
 }
-
-typedef __m256i libcrux_ml_kem_vector_avx2_SIMD256Vector;
 
 KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE __m256i libcrux_ml_kem_vector_avx2_vec_zero(void) {
@@ -74,59 +72,6 @@ KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE __m256i
 libcrux_ml_kem_vector_avx2_from_i16_array_9a(Eurydice_slice array) {
   return libcrux_ml_kem_vector_avx2_vec_from_i16_array(array);
-}
-
-KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE void libcrux_ml_kem_vector_avx2_vec_to_i16_array(
-    __m256i v, int16_t ret[16U]) {
-  int16_t output[16U] = {0U};
-  libcrux_intrinsics_avx2_mm256_storeu_si256_i16(
-      Eurydice_array_to_slice((size_t)16U, output, int16_t), v);
-  memcpy(ret, output, (size_t)16U * sizeof(int16_t));
-}
-
-/**
-This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::avx2::SIMD256Vector)#3}
-*/
-KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE void libcrux_ml_kem_vector_avx2_to_i16_array_9a(
-    __m256i x, int16_t ret[16U]) {
-  libcrux_ml_kem_vector_avx2_vec_to_i16_array(x, ret);
-}
-
-KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE __m256i
-libcrux_ml_kem_vector_avx2_from_bytes(Eurydice_slice array) {
-  return libcrux_intrinsics_avx2_mm256_loadu_si256_u8(
-      Eurydice_slice_subslice2(array, (size_t)0U, (size_t)32U, uint8_t));
-}
-
-/**
-This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::avx2::SIMD256Vector)#3}
-*/
-KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE __m256i
-libcrux_ml_kem_vector_avx2_from_bytes_9a(Eurydice_slice array) {
-  return libcrux_ml_kem_vector_avx2_from_bytes(array);
-}
-
-KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE void libcrux_ml_kem_vector_avx2_to_bytes(
-    __m256i x, Eurydice_slice bytes) {
-  libcrux_intrinsics_avx2_mm256_storeu_si256_u8(
-      Eurydice_slice_subslice2(bytes, (size_t)0U, (size_t)32U, uint8_t), x);
-}
-
-/**
-This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::avx2::SIMD256Vector)#3}
-*/
-KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE void libcrux_ml_kem_vector_avx2_to_bytes_9a(
-    __m256i x, Eurydice_slice bytes) {
-  libcrux_ml_kem_vector_avx2_to_bytes(x, bytes);
 }
 
 KRML_ATTRIBUTE_TARGET("avx2")
@@ -932,62 +877,6 @@ libcrux_ml_kem_vector_avx2_deserialize_4_9a(Eurydice_slice bytes) {
   return libcrux_ml_kem_vector_avx2_deserialize_4(bytes);
 }
 
-KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE void libcrux_ml_kem_vector_avx2_serialize_serialize_5(
-    __m256i vector, uint8_t ret[10U]) {
-  uint8_t serialized[32U] = {0U};
-  __m256i adjacent_2_combined = libcrux_intrinsics_avx2_mm256_madd_epi16(
-      vector, libcrux_intrinsics_avx2_mm256_set_epi16(
-                  (int16_t)1 << 5U, (int16_t)1, (int16_t)1 << 5U, (int16_t)1,
-                  (int16_t)1 << 5U, (int16_t)1, (int16_t)1 << 5U, (int16_t)1,
-                  (int16_t)1 << 5U, (int16_t)1, (int16_t)1 << 5U, (int16_t)1,
-                  (int16_t)1 << 5U, (int16_t)1, (int16_t)1 << 5U, (int16_t)1));
-  __m256i adjacent_4_combined = libcrux_intrinsics_avx2_mm256_sllv_epi32(
-      adjacent_2_combined,
-      libcrux_intrinsics_avx2_mm256_set_epi32(
-          (int32_t)0, (int32_t)22, (int32_t)0, (int32_t)22, (int32_t)0,
-          (int32_t)22, (int32_t)0, (int32_t)22));
-  __m256i adjacent_4_combined0 = libcrux_intrinsics_avx2_mm256_srli_epi64(
-      (int32_t)22, adjacent_4_combined, __m256i);
-  __m256i adjacent_8_combined = libcrux_intrinsics_avx2_mm256_shuffle_epi32(
-      (int32_t)8, adjacent_4_combined0, __m256i);
-  __m256i adjacent_8_combined0 = libcrux_intrinsics_avx2_mm256_sllv_epi32(
-      adjacent_8_combined,
-      libcrux_intrinsics_avx2_mm256_set_epi32(
-          (int32_t)0, (int32_t)0, (int32_t)0, (int32_t)12, (int32_t)0,
-          (int32_t)0, (int32_t)0, (int32_t)12));
-  __m256i adjacent_8_combined1 = libcrux_intrinsics_avx2_mm256_srli_epi64(
-      (int32_t)12, adjacent_8_combined0, __m256i);
-  __m128i lower_8 =
-      libcrux_intrinsics_avx2_mm256_castsi256_si128(adjacent_8_combined1);
-  libcrux_intrinsics_avx2_mm_storeu_bytes_si128(
-      Eurydice_array_to_subslice2(serialized, (size_t)0U, (size_t)16U, uint8_t),
-      lower_8);
-  __m128i upper_8 = libcrux_intrinsics_avx2_mm256_extracti128_si256(
-      (int32_t)1, adjacent_8_combined1, __m128i);
-  libcrux_intrinsics_avx2_mm_storeu_bytes_si128(
-      Eurydice_array_to_subslice2(serialized, (size_t)5U, (size_t)21U, uint8_t),
-      upper_8);
-  uint8_t ret0[10U];
-  Result_9d dst;
-  Eurydice_slice_to_array2(
-      &dst,
-      Eurydice_array_to_subslice2(serialized, (size_t)0U, (size_t)10U, uint8_t),
-      Eurydice_slice, uint8_t[10U]);
-  unwrap_26_ce(dst, ret0);
-  memcpy(ret, ret0, (size_t)10U * sizeof(uint8_t));
-}
-
-/**
-This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::avx2::SIMD256Vector)#3}
-*/
-KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE void libcrux_ml_kem_vector_avx2_serialize_5_9a(
-    __m256i vector, uint8_t ret[10U]) {
-  libcrux_ml_kem_vector_avx2_serialize_serialize_5(vector, ret);
-}
-
 /**
  We cannot model `mm256_inserti128_si256` on its own: it produces a
  Vec256 where the upper 128 bits are undefined. Thus
@@ -1004,60 +893,6 @@ libcrux_ml_kem_vector_avx2_serialize_mm256_si256_from_two_si128(__m128i lower,
   return libcrux_intrinsics_avx2_mm256_inserti128_si256(
       (int32_t)1, libcrux_intrinsics_avx2_mm256_castsi128_si256(lower), upper,
       __m256i);
-}
-
-KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE __m256i
-libcrux_ml_kem_vector_avx2_serialize_deserialize_5(Eurydice_slice bytes) {
-  __m128i coefficients = libcrux_intrinsics_avx2_mm_set_epi8(
-      Eurydice_slice_index(bytes, (size_t)9U, uint8_t, uint8_t *),
-      Eurydice_slice_index(bytes, (size_t)8U, uint8_t, uint8_t *),
-      Eurydice_slice_index(bytes, (size_t)8U, uint8_t, uint8_t *),
-      Eurydice_slice_index(bytes, (size_t)7U, uint8_t, uint8_t *),
-      Eurydice_slice_index(bytes, (size_t)7U, uint8_t, uint8_t *),
-      Eurydice_slice_index(bytes, (size_t)6U, uint8_t, uint8_t *),
-      Eurydice_slice_index(bytes, (size_t)6U, uint8_t, uint8_t *),
-      Eurydice_slice_index(bytes, (size_t)5U, uint8_t, uint8_t *),
-      Eurydice_slice_index(bytes, (size_t)4U, uint8_t, uint8_t *),
-      Eurydice_slice_index(bytes, (size_t)3U, uint8_t, uint8_t *),
-      Eurydice_slice_index(bytes, (size_t)3U, uint8_t, uint8_t *),
-      Eurydice_slice_index(bytes, (size_t)2U, uint8_t, uint8_t *),
-      Eurydice_slice_index(bytes, (size_t)2U, uint8_t, uint8_t *),
-      Eurydice_slice_index(bytes, (size_t)1U, uint8_t, uint8_t *),
-      Eurydice_slice_index(bytes, (size_t)1U, uint8_t, uint8_t *),
-      Eurydice_slice_index(bytes, (size_t)0U, uint8_t, uint8_t *));
-  __m256i coefficients_loaded =
-      libcrux_ml_kem_vector_avx2_serialize_mm256_si256_from_two_si128(
-          coefficients, coefficients);
-  __m256i coefficients0 = libcrux_intrinsics_avx2_mm256_shuffle_epi8(
-      coefficients_loaded,
-      libcrux_intrinsics_avx2_mm256_set_epi8(
-          (int8_t)15, (int8_t)14, (int8_t)15, (int8_t)14, (int8_t)13,
-          (int8_t)12, (int8_t)13, (int8_t)12, (int8_t)11, (int8_t)10,
-          (int8_t)11, (int8_t)10, (int8_t)9, (int8_t)8, (int8_t)9, (int8_t)8,
-          (int8_t)7, (int8_t)6, (int8_t)7, (int8_t)6, (int8_t)5, (int8_t)4,
-          (int8_t)5, (int8_t)4, (int8_t)3, (int8_t)2, (int8_t)3, (int8_t)2,
-          (int8_t)1, (int8_t)0, (int8_t)1, (int8_t)0));
-  __m256i coefficients1 = libcrux_intrinsics_avx2_mm256_mullo_epi16(
-      coefficients0, libcrux_intrinsics_avx2_mm256_set_epi16(
-                         (int16_t)1 << 0U, (int16_t)1 << 5U, (int16_t)1 << 2U,
-                         (int16_t)1 << 7U, (int16_t)1 << 4U, (int16_t)1 << 9U,
-                         (int16_t)1 << 6U, (int16_t)1 << 11U, (int16_t)1 << 0U,
-                         (int16_t)1 << 5U, (int16_t)1 << 2U, (int16_t)1 << 7U,
-                         (int16_t)1 << 4U, (int16_t)1 << 9U, (int16_t)1 << 6U,
-                         (int16_t)1 << 11U));
-  return libcrux_intrinsics_avx2_mm256_srli_epi16((int32_t)11, coefficients1,
-                                                  __m256i);
-}
-
-/**
-This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::avx2::SIMD256Vector)#3}
-*/
-KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE __m256i
-libcrux_ml_kem_vector_avx2_deserialize_5_9a(Eurydice_slice bytes) {
-  return libcrux_ml_kem_vector_avx2_serialize_deserialize_5(bytes);
 }
 
 typedef struct core_core_arch_x86___m128i_x2_s {
@@ -1196,51 +1031,6 @@ libcrux_ml_kem_vector_avx2_deserialize_10_9a(Eurydice_slice bytes) {
 }
 
 KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE void libcrux_ml_kem_vector_avx2_serialize_serialize_11(
-    __m256i vector, uint8_t ret[22U]) {
-  int16_t array[16U] = {0U};
-  libcrux_intrinsics_avx2_mm256_storeu_si256_i16(
-      Eurydice_array_to_slice((size_t)16U, array, int16_t), vector);
-  libcrux_ml_kem_vector_portable_vector_type_PortableVector input =
-      libcrux_ml_kem_vector_portable_from_i16_array_2c(
-          Eurydice_array_to_slice((size_t)16U, array, int16_t));
-  uint8_t ret0[22U];
-  libcrux_ml_kem_vector_portable_serialize_11_2c(input, ret0);
-  memcpy(ret, ret0, (size_t)22U * sizeof(uint8_t));
-}
-
-/**
-This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::avx2::SIMD256Vector)#3}
-*/
-KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE void libcrux_ml_kem_vector_avx2_serialize_11_9a(
-    __m256i vector, uint8_t ret[22U]) {
-  libcrux_ml_kem_vector_avx2_serialize_serialize_11(vector, ret);
-}
-
-KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE __m256i
-libcrux_ml_kem_vector_avx2_serialize_deserialize_11(Eurydice_slice bytes) {
-  libcrux_ml_kem_vector_portable_vector_type_PortableVector output =
-      libcrux_ml_kem_vector_portable_deserialize_11_2c(bytes);
-  int16_t array[16U];
-  libcrux_ml_kem_vector_portable_to_i16_array_2c(output, array);
-  return libcrux_intrinsics_avx2_mm256_loadu_si256_i16(
-      Eurydice_array_to_slice((size_t)16U, array, int16_t));
-}
-
-/**
-This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::avx2::SIMD256Vector)#3}
-*/
-KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE __m256i
-libcrux_ml_kem_vector_avx2_deserialize_11_9a(Eurydice_slice bytes) {
-  return libcrux_ml_kem_vector_avx2_serialize_deserialize_11(bytes);
-}
-
-KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE core_core_arch_x86___m128i_x2
 libcrux_ml_kem_vector_avx2_serialize_serialize_12_serialize_12_vec(
     __m256i vector) {
@@ -1368,6 +1158,521 @@ libcrux_ml_kem_vector_avx2_deserialize_12_9a(Eurydice_slice bytes) {
   return libcrux_ml_kem_vector_avx2_deserialize_12(bytes);
 }
 
+static const uint8_t
+    libcrux_ml_kem_vector_rej_sample_table_REJECTION_SAMPLE_SHUFFLE_TABLE
+        [256U][16U] = {{255U, 255U, 255U, 255U, 255U, 255U, 255U, 255U, 255U,
+                        255U, 255U, 255U, 255U, 255U, 255U, 255U},
+                       {0U, 1U, 255U, 255U, 255U, 255U, 255U, 255U, 255U, 255U,
+                        255U, 255U, 255U, 255U, 255U, 255U},
+                       {2U, 3U, 255U, 255U, 255U, 255U, 255U, 255U, 255U, 255U,
+                        255U, 255U, 255U, 255U, 255U, 255U},
+                       {0U, 1U, 2U, 3U, 255U, 255U, 255U, 255U, 255U, 255U,
+                        255U, 255U, 255U, 255U, 255U, 255U},
+                       {4U, 5U, 255U, 255U, 255U, 255U, 255U, 255U, 255U, 255U,
+                        255U, 255U, 255U, 255U, 255U, 255U},
+                       {0U, 1U, 4U, 5U, 255U, 255U, 255U, 255U, 255U, 255U,
+                        255U, 255U, 255U, 255U, 255U, 255U},
+                       {2U, 3U, 4U, 5U, 255U, 255U, 255U, 255U, 255U, 255U,
+                        255U, 255U, 255U, 255U, 255U, 255U},
+                       {0U, 1U, 2U, 3U, 4U, 5U, 255U, 255U, 255U, 255U, 255U,
+                        255U, 255U, 255U, 255U, 255U},
+                       {6U, 7U, 255U, 255U, 255U, 255U, 255U, 255U, 255U, 255U,
+                        255U, 255U, 255U, 255U, 255U, 255U},
+                       {0U, 1U, 6U, 7U, 255U, 255U, 255U, 255U, 255U, 255U,
+                        255U, 255U, 255U, 255U, 255U, 255U},
+                       {2U, 3U, 6U, 7U, 255U, 255U, 255U, 255U, 255U, 255U,
+                        255U, 255U, 255U, 255U, 255U, 255U},
+                       {0U, 1U, 2U, 3U, 6U, 7U, 255U, 255U, 255U, 255U, 255U,
+                        255U, 255U, 255U, 255U, 255U},
+                       {4U, 5U, 6U, 7U, 255U, 255U, 255U, 255U, 255U, 255U,
+                        255U, 255U, 255U, 255U, 255U, 255U},
+                       {0U, 1U, 4U, 5U, 6U, 7U, 255U, 255U, 255U, 255U, 255U,
+                        255U, 255U, 255U, 255U, 255U},
+                       {2U, 3U, 4U, 5U, 6U, 7U, 255U, 255U, 255U, 255U, 255U,
+                        255U, 255U, 255U, 255U, 255U},
+                       {0U, 1U, 2U, 3U, 4U, 5U, 6U, 7U, 255U, 255U, 255U, 255U,
+                        255U, 255U, 255U, 255U},
+                       {8U, 9U, 255U, 255U, 255U, 255U, 255U, 255U, 255U, 255U,
+                        255U, 255U, 255U, 255U, 255U, 255U},
+                       {0U, 1U, 8U, 9U, 255U, 255U, 255U, 255U, 255U, 255U,
+                        255U, 255U, 255U, 255U, 255U, 255U},
+                       {2U, 3U, 8U, 9U, 255U, 255U, 255U, 255U, 255U, 255U,
+                        255U, 255U, 255U, 255U, 255U, 255U},
+                       {0U, 1U, 2U, 3U, 8U, 9U, 255U, 255U, 255U, 255U, 255U,
+                        255U, 255U, 255U, 255U, 255U},
+                       {4U, 5U, 8U, 9U, 255U, 255U, 255U, 255U, 255U, 255U,
+                        255U, 255U, 255U, 255U, 255U, 255U},
+                       {0U, 1U, 4U, 5U, 8U, 9U, 255U, 255U, 255U, 255U, 255U,
+                        255U, 255U, 255U, 255U, 255U},
+                       {2U, 3U, 4U, 5U, 8U, 9U, 255U, 255U, 255U, 255U, 255U,
+                        255U, 255U, 255U, 255U, 255U},
+                       {0U, 1U, 2U, 3U, 4U, 5U, 8U, 9U, 255U, 255U, 255U, 255U,
+                        255U, 255U, 255U, 255U},
+                       {6U, 7U, 8U, 9U, 255U, 255U, 255U, 255U, 255U, 255U,
+                        255U, 255U, 255U, 255U, 255U, 255U},
+                       {0U, 1U, 6U, 7U, 8U, 9U, 255U, 255U, 255U, 255U, 255U,
+                        255U, 255U, 255U, 255U, 255U},
+                       {2U, 3U, 6U, 7U, 8U, 9U, 255U, 255U, 255U, 255U, 255U,
+                        255U, 255U, 255U, 255U, 255U},
+                       {0U, 1U, 2U, 3U, 6U, 7U, 8U, 9U, 255U, 255U, 255U, 255U,
+                        255U, 255U, 255U, 255U},
+                       {4U, 5U, 6U, 7U, 8U, 9U, 255U, 255U, 255U, 255U, 255U,
+                        255U, 255U, 255U, 255U, 255U},
+                       {0U, 1U, 4U, 5U, 6U, 7U, 8U, 9U, 255U, 255U, 255U, 255U,
+                        255U, 255U, 255U, 255U},
+                       {2U, 3U, 4U, 5U, 6U, 7U, 8U, 9U, 255U, 255U, 255U, 255U,
+                        255U, 255U, 255U, 255U},
+                       {0U, 1U, 2U, 3U, 4U, 5U, 6U, 7U, 8U, 9U, 255U, 255U,
+                        255U, 255U, 255U, 255U},
+                       {10U, 11U, 255U, 255U, 255U, 255U, 255U, 255U, 255U,
+                        255U, 255U, 255U, 255U, 255U, 255U, 255U},
+                       {0U, 1U, 10U, 11U, 255U, 255U, 255U, 255U, 255U, 255U,
+                        255U, 255U, 255U, 255U, 255U, 255U},
+                       {2U, 3U, 10U, 11U, 255U, 255U, 255U, 255U, 255U, 255U,
+                        255U, 255U, 255U, 255U, 255U, 255U},
+                       {0U, 1U, 2U, 3U, 10U, 11U, 255U, 255U, 255U, 255U, 255U,
+                        255U, 255U, 255U, 255U, 255U},
+                       {4U, 5U, 10U, 11U, 255U, 255U, 255U, 255U, 255U, 255U,
+                        255U, 255U, 255U, 255U, 255U, 255U},
+                       {0U, 1U, 4U, 5U, 10U, 11U, 255U, 255U, 255U, 255U, 255U,
+                        255U, 255U, 255U, 255U, 255U},
+                       {2U, 3U, 4U, 5U, 10U, 11U, 255U, 255U, 255U, 255U, 255U,
+                        255U, 255U, 255U, 255U, 255U},
+                       {0U, 1U, 2U, 3U, 4U, 5U, 10U, 11U, 255U, 255U, 255U,
+                        255U, 255U, 255U, 255U, 255U},
+                       {6U, 7U, 10U, 11U, 255U, 255U, 255U, 255U, 255U, 255U,
+                        255U, 255U, 255U, 255U, 255U, 255U},
+                       {0U, 1U, 6U, 7U, 10U, 11U, 255U, 255U, 255U, 255U, 255U,
+                        255U, 255U, 255U, 255U, 255U},
+                       {2U, 3U, 6U, 7U, 10U, 11U, 255U, 255U, 255U, 255U, 255U,
+                        255U, 255U, 255U, 255U, 255U},
+                       {0U, 1U, 2U, 3U, 6U, 7U, 10U, 11U, 255U, 255U, 255U,
+                        255U, 255U, 255U, 255U, 255U},
+                       {4U, 5U, 6U, 7U, 10U, 11U, 255U, 255U, 255U, 255U, 255U,
+                        255U, 255U, 255U, 255U, 255U},
+                       {0U, 1U, 4U, 5U, 6U, 7U, 10U, 11U, 255U, 255U, 255U,
+                        255U, 255U, 255U, 255U, 255U},
+                       {2U, 3U, 4U, 5U, 6U, 7U, 10U, 11U, 255U, 255U, 255U,
+                        255U, 255U, 255U, 255U, 255U},
+                       {0U, 1U, 2U, 3U, 4U, 5U, 6U, 7U, 10U, 11U, 255U, 255U,
+                        255U, 255U, 255U, 255U},
+                       {8U, 9U, 10U, 11U, 255U, 255U, 255U, 255U, 255U, 255U,
+                        255U, 255U, 255U, 255U, 255U, 255U},
+                       {0U, 1U, 8U, 9U, 10U, 11U, 255U, 255U, 255U, 255U, 255U,
+                        255U, 255U, 255U, 255U, 255U},
+                       {2U, 3U, 8U, 9U, 10U, 11U, 255U, 255U, 255U, 255U, 255U,
+                        255U, 255U, 255U, 255U, 255U},
+                       {0U, 1U, 2U, 3U, 8U, 9U, 10U, 11U, 255U, 255U, 255U,
+                        255U, 255U, 255U, 255U, 255U},
+                       {4U, 5U, 8U, 9U, 10U, 11U, 255U, 255U, 255U, 255U, 255U,
+                        255U, 255U, 255U, 255U, 255U},
+                       {0U, 1U, 4U, 5U, 8U, 9U, 10U, 11U, 255U, 255U, 255U,
+                        255U, 255U, 255U, 255U, 255U},
+                       {2U, 3U, 4U, 5U, 8U, 9U, 10U, 11U, 255U, 255U, 255U,
+                        255U, 255U, 255U, 255U, 255U},
+                       {0U, 1U, 2U, 3U, 4U, 5U, 8U, 9U, 10U, 11U, 255U, 255U,
+                        255U, 255U, 255U, 255U},
+                       {6U, 7U, 8U, 9U, 10U, 11U, 255U, 255U, 255U, 255U, 255U,
+                        255U, 255U, 255U, 255U, 255U},
+                       {0U, 1U, 6U, 7U, 8U, 9U, 10U, 11U, 255U, 255U, 255U,
+                        255U, 255U, 255U, 255U, 255U},
+                       {2U, 3U, 6U, 7U, 8U, 9U, 10U, 11U, 255U, 255U, 255U,
+                        255U, 255U, 255U, 255U, 255U},
+                       {0U, 1U, 2U, 3U, 6U, 7U, 8U, 9U, 10U, 11U, 255U, 255U,
+                        255U, 255U, 255U, 255U},
+                       {4U, 5U, 6U, 7U, 8U, 9U, 10U, 11U, 255U, 255U, 255U,
+                        255U, 255U, 255U, 255U, 255U},
+                       {0U, 1U, 4U, 5U, 6U, 7U, 8U, 9U, 10U, 11U, 255U, 255U,
+                        255U, 255U, 255U, 255U},
+                       {2U, 3U, 4U, 5U, 6U, 7U, 8U, 9U, 10U, 11U, 255U, 255U,
+                        255U, 255U, 255U, 255U},
+                       {0U, 1U, 2U, 3U, 4U, 5U, 6U, 7U, 8U, 9U, 10U, 11U, 255U,
+                        255U, 255U, 255U},
+                       {12U, 13U, 255U, 255U, 255U, 255U, 255U, 255U, 255U,
+                        255U, 255U, 255U, 255U, 255U, 255U, 255U},
+                       {0U, 1U, 12U, 13U, 255U, 255U, 255U, 255U, 255U, 255U,
+                        255U, 255U, 255U, 255U, 255U, 255U},
+                       {2U, 3U, 12U, 13U, 255U, 255U, 255U, 255U, 255U, 255U,
+                        255U, 255U, 255U, 255U, 255U, 255U},
+                       {0U, 1U, 2U, 3U, 12U, 13U, 255U, 255U, 255U, 255U, 255U,
+                        255U, 255U, 255U, 255U, 255U},
+                       {4U, 5U, 12U, 13U, 255U, 255U, 255U, 255U, 255U, 255U,
+                        255U, 255U, 255U, 255U, 255U, 255U},
+                       {0U, 1U, 4U, 5U, 12U, 13U, 255U, 255U, 255U, 255U, 255U,
+                        255U, 255U, 255U, 255U, 255U},
+                       {2U, 3U, 4U, 5U, 12U, 13U, 255U, 255U, 255U, 255U, 255U,
+                        255U, 255U, 255U, 255U, 255U},
+                       {0U, 1U, 2U, 3U, 4U, 5U, 12U, 13U, 255U, 255U, 255U,
+                        255U, 255U, 255U, 255U, 255U},
+                       {6U, 7U, 12U, 13U, 255U, 255U, 255U, 255U, 255U, 255U,
+                        255U, 255U, 255U, 255U, 255U, 255U},
+                       {0U, 1U, 6U, 7U, 12U, 13U, 255U, 255U, 255U, 255U, 255U,
+                        255U, 255U, 255U, 255U, 255U},
+                       {2U, 3U, 6U, 7U, 12U, 13U, 255U, 255U, 255U, 255U, 255U,
+                        255U, 255U, 255U, 255U, 255U},
+                       {0U, 1U, 2U, 3U, 6U, 7U, 12U, 13U, 255U, 255U, 255U,
+                        255U, 255U, 255U, 255U, 255U},
+                       {4U, 5U, 6U, 7U, 12U, 13U, 255U, 255U, 255U, 255U, 255U,
+                        255U, 255U, 255U, 255U, 255U},
+                       {0U, 1U, 4U, 5U, 6U, 7U, 12U, 13U, 255U, 255U, 255U,
+                        255U, 255U, 255U, 255U, 255U},
+                       {2U, 3U, 4U, 5U, 6U, 7U, 12U, 13U, 255U, 255U, 255U,
+                        255U, 255U, 255U, 255U, 255U},
+                       {0U, 1U, 2U, 3U, 4U, 5U, 6U, 7U, 12U, 13U, 255U, 255U,
+                        255U, 255U, 255U, 255U},
+                       {8U, 9U, 12U, 13U, 255U, 255U, 255U, 255U, 255U, 255U,
+                        255U, 255U, 255U, 255U, 255U, 255U},
+                       {0U, 1U, 8U, 9U, 12U, 13U, 255U, 255U, 255U, 255U, 255U,
+                        255U, 255U, 255U, 255U, 255U},
+                       {2U, 3U, 8U, 9U, 12U, 13U, 255U, 255U, 255U, 255U, 255U,
+                        255U, 255U, 255U, 255U, 255U},
+                       {0U, 1U, 2U, 3U, 8U, 9U, 12U, 13U, 255U, 255U, 255U,
+                        255U, 255U, 255U, 255U, 255U},
+                       {4U, 5U, 8U, 9U, 12U, 13U, 255U, 255U, 255U, 255U, 255U,
+                        255U, 255U, 255U, 255U, 255U},
+                       {0U, 1U, 4U, 5U, 8U, 9U, 12U, 13U, 255U, 255U, 255U,
+                        255U, 255U, 255U, 255U, 255U},
+                       {2U, 3U, 4U, 5U, 8U, 9U, 12U, 13U, 255U, 255U, 255U,
+                        255U, 255U, 255U, 255U, 255U},
+                       {0U, 1U, 2U, 3U, 4U, 5U, 8U, 9U, 12U, 13U, 255U, 255U,
+                        255U, 255U, 255U, 255U},
+                       {6U, 7U, 8U, 9U, 12U, 13U, 255U, 255U, 255U, 255U, 255U,
+                        255U, 255U, 255U, 255U, 255U},
+                       {0U, 1U, 6U, 7U, 8U, 9U, 12U, 13U, 255U, 255U, 255U,
+                        255U, 255U, 255U, 255U, 255U},
+                       {2U, 3U, 6U, 7U, 8U, 9U, 12U, 13U, 255U, 255U, 255U,
+                        255U, 255U, 255U, 255U, 255U},
+                       {0U, 1U, 2U, 3U, 6U, 7U, 8U, 9U, 12U, 13U, 255U, 255U,
+                        255U, 255U, 255U, 255U},
+                       {4U, 5U, 6U, 7U, 8U, 9U, 12U, 13U, 255U, 255U, 255U,
+                        255U, 255U, 255U, 255U, 255U},
+                       {0U, 1U, 4U, 5U, 6U, 7U, 8U, 9U, 12U, 13U, 255U, 255U,
+                        255U, 255U, 255U, 255U},
+                       {2U, 3U, 4U, 5U, 6U, 7U, 8U, 9U, 12U, 13U, 255U, 255U,
+                        255U, 255U, 255U, 255U},
+                       {0U, 1U, 2U, 3U, 4U, 5U, 6U, 7U, 8U, 9U, 12U, 13U, 255U,
+                        255U, 255U, 255U},
+                       {10U, 11U, 12U, 13U, 255U, 255U, 255U, 255U, 255U, 255U,
+                        255U, 255U, 255U, 255U, 255U, 255U},
+                       {0U, 1U, 10U, 11U, 12U, 13U, 255U, 255U, 255U, 255U,
+                        255U, 255U, 255U, 255U, 255U, 255U},
+                       {2U, 3U, 10U, 11U, 12U, 13U, 255U, 255U, 255U, 255U,
+                        255U, 255U, 255U, 255U, 255U, 255U},
+                       {0U, 1U, 2U, 3U, 10U, 11U, 12U, 13U, 255U, 255U, 255U,
+                        255U, 255U, 255U, 255U, 255U},
+                       {4U, 5U, 10U, 11U, 12U, 13U, 255U, 255U, 255U, 255U,
+                        255U, 255U, 255U, 255U, 255U, 255U},
+                       {0U, 1U, 4U, 5U, 10U, 11U, 12U, 13U, 255U, 255U, 255U,
+                        255U, 255U, 255U, 255U, 255U},
+                       {2U, 3U, 4U, 5U, 10U, 11U, 12U, 13U, 255U, 255U, 255U,
+                        255U, 255U, 255U, 255U, 255U},
+                       {0U, 1U, 2U, 3U, 4U, 5U, 10U, 11U, 12U, 13U, 255U, 255U,
+                        255U, 255U, 255U, 255U},
+                       {6U, 7U, 10U, 11U, 12U, 13U, 255U, 255U, 255U, 255U,
+                        255U, 255U, 255U, 255U, 255U, 255U},
+                       {0U, 1U, 6U, 7U, 10U, 11U, 12U, 13U, 255U, 255U, 255U,
+                        255U, 255U, 255U, 255U, 255U},
+                       {2U, 3U, 6U, 7U, 10U, 11U, 12U, 13U, 255U, 255U, 255U,
+                        255U, 255U, 255U, 255U, 255U},
+                       {0U, 1U, 2U, 3U, 6U, 7U, 10U, 11U, 12U, 13U, 255U, 255U,
+                        255U, 255U, 255U, 255U},
+                       {4U, 5U, 6U, 7U, 10U, 11U, 12U, 13U, 255U, 255U, 255U,
+                        255U, 255U, 255U, 255U, 255U},
+                       {0U, 1U, 4U, 5U, 6U, 7U, 10U, 11U, 12U, 13U, 255U, 255U,
+                        255U, 255U, 255U, 255U},
+                       {2U, 3U, 4U, 5U, 6U, 7U, 10U, 11U, 12U, 13U, 255U, 255U,
+                        255U, 255U, 255U, 255U},
+                       {0U, 1U, 2U, 3U, 4U, 5U, 6U, 7U, 10U, 11U, 12U, 13U,
+                        255U, 255U, 255U, 255U},
+                       {8U, 9U, 10U, 11U, 12U, 13U, 255U, 255U, 255U, 255U,
+                        255U, 255U, 255U, 255U, 255U, 255U},
+                       {0U, 1U, 8U, 9U, 10U, 11U, 12U, 13U, 255U, 255U, 255U,
+                        255U, 255U, 255U, 255U, 255U},
+                       {2U, 3U, 8U, 9U, 10U, 11U, 12U, 13U, 255U, 255U, 255U,
+                        255U, 255U, 255U, 255U, 255U},
+                       {0U, 1U, 2U, 3U, 8U, 9U, 10U, 11U, 12U, 13U, 255U, 255U,
+                        255U, 255U, 255U, 255U},
+                       {4U, 5U, 8U, 9U, 10U, 11U, 12U, 13U, 255U, 255U, 255U,
+                        255U, 255U, 255U, 255U, 255U},
+                       {0U, 1U, 4U, 5U, 8U, 9U, 10U, 11U, 12U, 13U, 255U, 255U,
+                        255U, 255U, 255U, 255U},
+                       {2U, 3U, 4U, 5U, 8U, 9U, 10U, 11U, 12U, 13U, 255U, 255U,
+                        255U, 255U, 255U, 255U},
+                       {0U, 1U, 2U, 3U, 4U, 5U, 8U, 9U, 10U, 11U, 12U, 13U,
+                        255U, 255U, 255U, 255U},
+                       {6U, 7U, 8U, 9U, 10U, 11U, 12U, 13U, 255U, 255U, 255U,
+                        255U, 255U, 255U, 255U, 255U},
+                       {0U, 1U, 6U, 7U, 8U, 9U, 10U, 11U, 12U, 13U, 255U, 255U,
+                        255U, 255U, 255U, 255U},
+                       {2U, 3U, 6U, 7U, 8U, 9U, 10U, 11U, 12U, 13U, 255U, 255U,
+                        255U, 255U, 255U, 255U},
+                       {0U, 1U, 2U, 3U, 6U, 7U, 8U, 9U, 10U, 11U, 12U, 13U,
+                        255U, 255U, 255U, 255U},
+                       {4U, 5U, 6U, 7U, 8U, 9U, 10U, 11U, 12U, 13U, 255U, 255U,
+                        255U, 255U, 255U, 255U},
+                       {0U, 1U, 4U, 5U, 6U, 7U, 8U, 9U, 10U, 11U, 12U, 13U,
+                        255U, 255U, 255U, 255U},
+                       {2U, 3U, 4U, 5U, 6U, 7U, 8U, 9U, 10U, 11U, 12U, 13U,
+                        255U, 255U, 255U, 255U},
+                       {0U, 1U, 2U, 3U, 4U, 5U, 6U, 7U, 8U, 9U, 10U, 11U, 12U,
+                        13U, 255U, 255U},
+                       {14U, 15U, 255U, 255U, 255U, 255U, 255U, 255U, 255U,
+                        255U, 255U, 255U, 255U, 255U, 255U, 255U},
+                       {0U, 1U, 14U, 15U, 255U, 255U, 255U, 255U, 255U, 255U,
+                        255U, 255U, 255U, 255U, 255U, 255U},
+                       {2U, 3U, 14U, 15U, 255U, 255U, 255U, 255U, 255U, 255U,
+                        255U, 255U, 255U, 255U, 255U, 255U},
+                       {0U, 1U, 2U, 3U, 14U, 15U, 255U, 255U, 255U, 255U, 255U,
+                        255U, 255U, 255U, 255U, 255U},
+                       {4U, 5U, 14U, 15U, 255U, 255U, 255U, 255U, 255U, 255U,
+                        255U, 255U, 255U, 255U, 255U, 255U},
+                       {0U, 1U, 4U, 5U, 14U, 15U, 255U, 255U, 255U, 255U, 255U,
+                        255U, 255U, 255U, 255U, 255U},
+                       {2U, 3U, 4U, 5U, 14U, 15U, 255U, 255U, 255U, 255U, 255U,
+                        255U, 255U, 255U, 255U, 255U},
+                       {0U, 1U, 2U, 3U, 4U, 5U, 14U, 15U, 255U, 255U, 255U,
+                        255U, 255U, 255U, 255U, 255U},
+                       {6U, 7U, 14U, 15U, 255U, 255U, 255U, 255U, 255U, 255U,
+                        255U, 255U, 255U, 255U, 255U, 255U},
+                       {0U, 1U, 6U, 7U, 14U, 15U, 255U, 255U, 255U, 255U, 255U,
+                        255U, 255U, 255U, 255U, 255U},
+                       {2U, 3U, 6U, 7U, 14U, 15U, 255U, 255U, 255U, 255U, 255U,
+                        255U, 255U, 255U, 255U, 255U},
+                       {0U, 1U, 2U, 3U, 6U, 7U, 14U, 15U, 255U, 255U, 255U,
+                        255U, 255U, 255U, 255U, 255U},
+                       {4U, 5U, 6U, 7U, 14U, 15U, 255U, 255U, 255U, 255U, 255U,
+                        255U, 255U, 255U, 255U, 255U},
+                       {0U, 1U, 4U, 5U, 6U, 7U, 14U, 15U, 255U, 255U, 255U,
+                        255U, 255U, 255U, 255U, 255U},
+                       {2U, 3U, 4U, 5U, 6U, 7U, 14U, 15U, 255U, 255U, 255U,
+                        255U, 255U, 255U, 255U, 255U},
+                       {0U, 1U, 2U, 3U, 4U, 5U, 6U, 7U, 14U, 15U, 255U, 255U,
+                        255U, 255U, 255U, 255U},
+                       {8U, 9U, 14U, 15U, 255U, 255U, 255U, 255U, 255U, 255U,
+                        255U, 255U, 255U, 255U, 255U, 255U},
+                       {0U, 1U, 8U, 9U, 14U, 15U, 255U, 255U, 255U, 255U, 255U,
+                        255U, 255U, 255U, 255U, 255U},
+                       {2U, 3U, 8U, 9U, 14U, 15U, 255U, 255U, 255U, 255U, 255U,
+                        255U, 255U, 255U, 255U, 255U},
+                       {0U, 1U, 2U, 3U, 8U, 9U, 14U, 15U, 255U, 255U, 255U,
+                        255U, 255U, 255U, 255U, 255U},
+                       {4U, 5U, 8U, 9U, 14U, 15U, 255U, 255U, 255U, 255U, 255U,
+                        255U, 255U, 255U, 255U, 255U},
+                       {0U, 1U, 4U, 5U, 8U, 9U, 14U, 15U, 255U, 255U, 255U,
+                        255U, 255U, 255U, 255U, 255U},
+                       {2U, 3U, 4U, 5U, 8U, 9U, 14U, 15U, 255U, 255U, 255U,
+                        255U, 255U, 255U, 255U, 255U},
+                       {0U, 1U, 2U, 3U, 4U, 5U, 8U, 9U, 14U, 15U, 255U, 255U,
+                        255U, 255U, 255U, 255U},
+                       {6U, 7U, 8U, 9U, 14U, 15U, 255U, 255U, 255U, 255U, 255U,
+                        255U, 255U, 255U, 255U, 255U},
+                       {0U, 1U, 6U, 7U, 8U, 9U, 14U, 15U, 255U, 255U, 255U,
+                        255U, 255U, 255U, 255U, 255U},
+                       {2U, 3U, 6U, 7U, 8U, 9U, 14U, 15U, 255U, 255U, 255U,
+                        255U, 255U, 255U, 255U, 255U},
+                       {0U, 1U, 2U, 3U, 6U, 7U, 8U, 9U, 14U, 15U, 255U, 255U,
+                        255U, 255U, 255U, 255U},
+                       {4U, 5U, 6U, 7U, 8U, 9U, 14U, 15U, 255U, 255U, 255U,
+                        255U, 255U, 255U, 255U, 255U},
+                       {0U, 1U, 4U, 5U, 6U, 7U, 8U, 9U, 14U, 15U, 255U, 255U,
+                        255U, 255U, 255U, 255U},
+                       {2U, 3U, 4U, 5U, 6U, 7U, 8U, 9U, 14U, 15U, 255U, 255U,
+                        255U, 255U, 255U, 255U},
+                       {0U, 1U, 2U, 3U, 4U, 5U, 6U, 7U, 8U, 9U, 14U, 15U, 255U,
+                        255U, 255U, 255U},
+                       {10U, 11U, 14U, 15U, 255U, 255U, 255U, 255U, 255U, 255U,
+                        255U, 255U, 255U, 255U, 255U, 255U},
+                       {0U, 1U, 10U, 11U, 14U, 15U, 255U, 255U, 255U, 255U,
+                        255U, 255U, 255U, 255U, 255U, 255U},
+                       {2U, 3U, 10U, 11U, 14U, 15U, 255U, 255U, 255U, 255U,
+                        255U, 255U, 255U, 255U, 255U, 255U},
+                       {0U, 1U, 2U, 3U, 10U, 11U, 14U, 15U, 255U, 255U, 255U,
+                        255U, 255U, 255U, 255U, 255U},
+                       {4U, 5U, 10U, 11U, 14U, 15U, 255U, 255U, 255U, 255U,
+                        255U, 255U, 255U, 255U, 255U, 255U},
+                       {0U, 1U, 4U, 5U, 10U, 11U, 14U, 15U, 255U, 255U, 255U,
+                        255U, 255U, 255U, 255U, 255U},
+                       {2U, 3U, 4U, 5U, 10U, 11U, 14U, 15U, 255U, 255U, 255U,
+                        255U, 255U, 255U, 255U, 255U},
+                       {0U, 1U, 2U, 3U, 4U, 5U, 10U, 11U, 14U, 15U, 255U, 255U,
+                        255U, 255U, 255U, 255U},
+                       {6U, 7U, 10U, 11U, 14U, 15U, 255U, 255U, 255U, 255U,
+                        255U, 255U, 255U, 255U, 255U, 255U},
+                       {0U, 1U, 6U, 7U, 10U, 11U, 14U, 15U, 255U, 255U, 255U,
+                        255U, 255U, 255U, 255U, 255U},
+                       {2U, 3U, 6U, 7U, 10U, 11U, 14U, 15U, 255U, 255U, 255U,
+                        255U, 255U, 255U, 255U, 255U},
+                       {0U, 1U, 2U, 3U, 6U, 7U, 10U, 11U, 14U, 15U, 255U, 255U,
+                        255U, 255U, 255U, 255U},
+                       {4U, 5U, 6U, 7U, 10U, 11U, 14U, 15U, 255U, 255U, 255U,
+                        255U, 255U, 255U, 255U, 255U},
+                       {0U, 1U, 4U, 5U, 6U, 7U, 10U, 11U, 14U, 15U, 255U, 255U,
+                        255U, 255U, 255U, 255U},
+                       {2U, 3U, 4U, 5U, 6U, 7U, 10U, 11U, 14U, 15U, 255U, 255U,
+                        255U, 255U, 255U, 255U},
+                       {0U, 1U, 2U, 3U, 4U, 5U, 6U, 7U, 10U, 11U, 14U, 15U,
+                        255U, 255U, 255U, 255U},
+                       {8U, 9U, 10U, 11U, 14U, 15U, 255U, 255U, 255U, 255U,
+                        255U, 255U, 255U, 255U, 255U, 255U},
+                       {0U, 1U, 8U, 9U, 10U, 11U, 14U, 15U, 255U, 255U, 255U,
+                        255U, 255U, 255U, 255U, 255U},
+                       {2U, 3U, 8U, 9U, 10U, 11U, 14U, 15U, 255U, 255U, 255U,
+                        255U, 255U, 255U, 255U, 255U},
+                       {0U, 1U, 2U, 3U, 8U, 9U, 10U, 11U, 14U, 15U, 255U, 255U,
+                        255U, 255U, 255U, 255U},
+                       {4U, 5U, 8U, 9U, 10U, 11U, 14U, 15U, 255U, 255U, 255U,
+                        255U, 255U, 255U, 255U, 255U},
+                       {0U, 1U, 4U, 5U, 8U, 9U, 10U, 11U, 14U, 15U, 255U, 255U,
+                        255U, 255U, 255U, 255U},
+                       {2U, 3U, 4U, 5U, 8U, 9U, 10U, 11U, 14U, 15U, 255U, 255U,
+                        255U, 255U, 255U, 255U},
+                       {0U, 1U, 2U, 3U, 4U, 5U, 8U, 9U, 10U, 11U, 14U, 15U,
+                        255U, 255U, 255U, 255U},
+                       {6U, 7U, 8U, 9U, 10U, 11U, 14U, 15U, 255U, 255U, 255U,
+                        255U, 255U, 255U, 255U, 255U},
+                       {0U, 1U, 6U, 7U, 8U, 9U, 10U, 11U, 14U, 15U, 255U, 255U,
+                        255U, 255U, 255U, 255U},
+                       {2U, 3U, 6U, 7U, 8U, 9U, 10U, 11U, 14U, 15U, 255U, 255U,
+                        255U, 255U, 255U, 255U},
+                       {0U, 1U, 2U, 3U, 6U, 7U, 8U, 9U, 10U, 11U, 14U, 15U,
+                        255U, 255U, 255U, 255U},
+                       {4U, 5U, 6U, 7U, 8U, 9U, 10U, 11U, 14U, 15U, 255U, 255U,
+                        255U, 255U, 255U, 255U},
+                       {0U, 1U, 4U, 5U, 6U, 7U, 8U, 9U, 10U, 11U, 14U, 15U,
+                        255U, 255U, 255U, 255U},
+                       {2U, 3U, 4U, 5U, 6U, 7U, 8U, 9U, 10U, 11U, 14U, 15U,
+                        255U, 255U, 255U, 255U},
+                       {0U, 1U, 2U, 3U, 4U, 5U, 6U, 7U, 8U, 9U, 10U, 11U, 14U,
+                        15U, 255U, 255U},
+                       {12U, 13U, 14U, 15U, 255U, 255U, 255U, 255U, 255U, 255U,
+                        255U, 255U, 255U, 255U, 255U, 255U},
+                       {0U, 1U, 12U, 13U, 14U, 15U, 255U, 255U, 255U, 255U,
+                        255U, 255U, 255U, 255U, 255U, 255U},
+                       {2U, 3U, 12U, 13U, 14U, 15U, 255U, 255U, 255U, 255U,
+                        255U, 255U, 255U, 255U, 255U, 255U},
+                       {0U, 1U, 2U, 3U, 12U, 13U, 14U, 15U, 255U, 255U, 255U,
+                        255U, 255U, 255U, 255U, 255U},
+                       {4U, 5U, 12U, 13U, 14U, 15U, 255U, 255U, 255U, 255U,
+                        255U, 255U, 255U, 255U, 255U, 255U},
+                       {0U, 1U, 4U, 5U, 12U, 13U, 14U, 15U, 255U, 255U, 255U,
+                        255U, 255U, 255U, 255U, 255U},
+                       {2U, 3U, 4U, 5U, 12U, 13U, 14U, 15U, 255U, 255U, 255U,
+                        255U, 255U, 255U, 255U, 255U},
+                       {0U, 1U, 2U, 3U, 4U, 5U, 12U, 13U, 14U, 15U, 255U, 255U,
+                        255U, 255U, 255U, 255U},
+                       {6U, 7U, 12U, 13U, 14U, 15U, 255U, 255U, 255U, 255U,
+                        255U, 255U, 255U, 255U, 255U, 255U},
+                       {0U, 1U, 6U, 7U, 12U, 13U, 14U, 15U, 255U, 255U, 255U,
+                        255U, 255U, 255U, 255U, 255U},
+                       {2U, 3U, 6U, 7U, 12U, 13U, 14U, 15U, 255U, 255U, 255U,
+                        255U, 255U, 255U, 255U, 255U},
+                       {0U, 1U, 2U, 3U, 6U, 7U, 12U, 13U, 14U, 15U, 255U, 255U,
+                        255U, 255U, 255U, 255U},
+                       {4U, 5U, 6U, 7U, 12U, 13U, 14U, 15U, 255U, 255U, 255U,
+                        255U, 255U, 255U, 255U, 255U},
+                       {0U, 1U, 4U, 5U, 6U, 7U, 12U, 13U, 14U, 15U, 255U, 255U,
+                        255U, 255U, 255U, 255U},
+                       {2U, 3U, 4U, 5U, 6U, 7U, 12U, 13U, 14U, 15U, 255U, 255U,
+                        255U, 255U, 255U, 255U},
+                       {0U, 1U, 2U, 3U, 4U, 5U, 6U, 7U, 12U, 13U, 14U, 15U,
+                        255U, 255U, 255U, 255U},
+                       {8U, 9U, 12U, 13U, 14U, 15U, 255U, 255U, 255U, 255U,
+                        255U, 255U, 255U, 255U, 255U, 255U},
+                       {0U, 1U, 8U, 9U, 12U, 13U, 14U, 15U, 255U, 255U, 255U,
+                        255U, 255U, 255U, 255U, 255U},
+                       {2U, 3U, 8U, 9U, 12U, 13U, 14U, 15U, 255U, 255U, 255U,
+                        255U, 255U, 255U, 255U, 255U},
+                       {0U, 1U, 2U, 3U, 8U, 9U, 12U, 13U, 14U, 15U, 255U, 255U,
+                        255U, 255U, 255U, 255U},
+                       {4U, 5U, 8U, 9U, 12U, 13U, 14U, 15U, 255U, 255U, 255U,
+                        255U, 255U, 255U, 255U, 255U},
+                       {0U, 1U, 4U, 5U, 8U, 9U, 12U, 13U, 14U, 15U, 255U, 255U,
+                        255U, 255U, 255U, 255U},
+                       {2U, 3U, 4U, 5U, 8U, 9U, 12U, 13U, 14U, 15U, 255U, 255U,
+                        255U, 255U, 255U, 255U},
+                       {0U, 1U, 2U, 3U, 4U, 5U, 8U, 9U, 12U, 13U, 14U, 15U,
+                        255U, 255U, 255U, 255U},
+                       {6U, 7U, 8U, 9U, 12U, 13U, 14U, 15U, 255U, 255U, 255U,
+                        255U, 255U, 255U, 255U, 255U},
+                       {0U, 1U, 6U, 7U, 8U, 9U, 12U, 13U, 14U, 15U, 255U, 255U,
+                        255U, 255U, 255U, 255U},
+                       {2U, 3U, 6U, 7U, 8U, 9U, 12U, 13U, 14U, 15U, 255U, 255U,
+                        255U, 255U, 255U, 255U},
+                       {0U, 1U, 2U, 3U, 6U, 7U, 8U, 9U, 12U, 13U, 14U, 15U,
+                        255U, 255U, 255U, 255U},
+                       {4U, 5U, 6U, 7U, 8U, 9U, 12U, 13U, 14U, 15U, 255U, 255U,
+                        255U, 255U, 255U, 255U},
+                       {0U, 1U, 4U, 5U, 6U, 7U, 8U, 9U, 12U, 13U, 14U, 15U,
+                        255U, 255U, 255U, 255U},
+                       {2U, 3U, 4U, 5U, 6U, 7U, 8U, 9U, 12U, 13U, 14U, 15U,
+                        255U, 255U, 255U, 255U},
+                       {0U, 1U, 2U, 3U, 4U, 5U, 6U, 7U, 8U, 9U, 12U, 13U, 14U,
+                        15U, 255U, 255U},
+                       {10U, 11U, 12U, 13U, 14U, 15U, 255U, 255U, 255U, 255U,
+                        255U, 255U, 255U, 255U, 255U, 255U},
+                       {0U, 1U, 10U, 11U, 12U, 13U, 14U, 15U, 255U, 255U, 255U,
+                        255U, 255U, 255U, 255U, 255U},
+                       {2U, 3U, 10U, 11U, 12U, 13U, 14U, 15U, 255U, 255U, 255U,
+                        255U, 255U, 255U, 255U, 255U},
+                       {0U, 1U, 2U, 3U, 10U, 11U, 12U, 13U, 14U, 15U, 255U,
+                        255U, 255U, 255U, 255U, 255U},
+                       {4U, 5U, 10U, 11U, 12U, 13U, 14U, 15U, 255U, 255U, 255U,
+                        255U, 255U, 255U, 255U, 255U},
+                       {0U, 1U, 4U, 5U, 10U, 11U, 12U, 13U, 14U, 15U, 255U,
+                        255U, 255U, 255U, 255U, 255U},
+                       {2U, 3U, 4U, 5U, 10U, 11U, 12U, 13U, 14U, 15U, 255U,
+                        255U, 255U, 255U, 255U, 255U},
+                       {0U, 1U, 2U, 3U, 4U, 5U, 10U, 11U, 12U, 13U, 14U, 15U,
+                        255U, 255U, 255U, 255U},
+                       {6U, 7U, 10U, 11U, 12U, 13U, 14U, 15U, 255U, 255U, 255U,
+                        255U, 255U, 255U, 255U, 255U},
+                       {0U, 1U, 6U, 7U, 10U, 11U, 12U, 13U, 14U, 15U, 255U,
+                        255U, 255U, 255U, 255U, 255U},
+                       {2U, 3U, 6U, 7U, 10U, 11U, 12U, 13U, 14U, 15U, 255U,
+                        255U, 255U, 255U, 255U, 255U},
+                       {0U, 1U, 2U, 3U, 6U, 7U, 10U, 11U, 12U, 13U, 14U, 15U,
+                        255U, 255U, 255U, 255U},
+                       {4U, 5U, 6U, 7U, 10U, 11U, 12U, 13U, 14U, 15U, 255U,
+                        255U, 255U, 255U, 255U, 255U},
+                       {0U, 1U, 4U, 5U, 6U, 7U, 10U, 11U, 12U, 13U, 14U, 15U,
+                        255U, 255U, 255U, 255U},
+                       {2U, 3U, 4U, 5U, 6U, 7U, 10U, 11U, 12U, 13U, 14U, 15U,
+                        255U, 255U, 255U, 255U},
+                       {0U, 1U, 2U, 3U, 4U, 5U, 6U, 7U, 10U, 11U, 12U, 13U, 14U,
+                        15U, 255U, 255U},
+                       {8U, 9U, 10U, 11U, 12U, 13U, 14U, 15U, 255U, 255U, 255U,
+                        255U, 255U, 255U, 255U, 255U},
+                       {0U, 1U, 8U, 9U, 10U, 11U, 12U, 13U, 14U, 15U, 255U,
+                        255U, 255U, 255U, 255U, 255U},
+                       {2U, 3U, 8U, 9U, 10U, 11U, 12U, 13U, 14U, 15U, 255U,
+                        255U, 255U, 255U, 255U, 255U},
+                       {0U, 1U, 2U, 3U, 8U, 9U, 10U, 11U, 12U, 13U, 14U, 15U,
+                        255U, 255U, 255U, 255U},
+                       {4U, 5U, 8U, 9U, 10U, 11U, 12U, 13U, 14U, 15U, 255U,
+                        255U, 255U, 255U, 255U, 255U},
+                       {0U, 1U, 4U, 5U, 8U, 9U, 10U, 11U, 12U, 13U, 14U, 15U,
+                        255U, 255U, 255U, 255U},
+                       {2U, 3U, 4U, 5U, 8U, 9U, 10U, 11U, 12U, 13U, 14U, 15U,
+                        255U, 255U, 255U, 255U},
+                       {0U, 1U, 2U, 3U, 4U, 5U, 8U, 9U, 10U, 11U, 12U, 13U, 14U,
+                        15U, 255U, 255U},
+                       {6U, 7U, 8U, 9U, 10U, 11U, 12U, 13U, 14U, 15U, 255U,
+                        255U, 255U, 255U, 255U, 255U},
+                       {0U, 1U, 6U, 7U, 8U, 9U, 10U, 11U, 12U, 13U, 14U, 15U,
+                        255U, 255U, 255U, 255U},
+                       {2U, 3U, 6U, 7U, 8U, 9U, 10U, 11U, 12U, 13U, 14U, 15U,
+                        255U, 255U, 255U, 255U},
+                       {0U, 1U, 2U, 3U, 6U, 7U, 8U, 9U, 10U, 11U, 12U, 13U, 14U,
+                        15U, 255U, 255U},
+                       {4U, 5U, 6U, 7U, 8U, 9U, 10U, 11U, 12U, 13U, 14U, 15U,
+                        255U, 255U, 255U, 255U},
+                       {0U, 1U, 4U, 5U, 6U, 7U, 8U, 9U, 10U, 11U, 12U, 13U, 14U,
+                        15U, 255U, 255U},
+                       {2U, 3U, 4U, 5U, 6U, 7U, 8U, 9U, 10U, 11U, 12U, 13U, 14U,
+                        15U, 255U, 255U},
+                       {0U, 1U, 2U, 3U, 4U, 5U, 6U, 7U, 8U, 9U, 10U, 11U, 12U,
+                        13U, 14U, 15U}};
+
 KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE size_t
 libcrux_ml_kem_vector_avx2_sampling_rejection_sample(Eurydice_slice input,
@@ -1457,18 +1762,6 @@ libcrux_ml_kem_polynomial_ZERO_ef_79(void) {
 }
 
 /**
-A monomorphic instance of libcrux_ml_kem.ind_cpa.deserialize_vector.closure
-with types libcrux_ml_kem_vector_avx2_SIMD256Vector
-with const generics
-- K= 3
-*/
-KRML_ATTRIBUTE_TARGET("avx2")
-static inline libcrux_ml_kem_polynomial_PolynomialRingElement_f6
-libcrux_ml_kem_ind_cpa_deserialize_vector_closure_ab(size_t _) {
-  return libcrux_ml_kem_polynomial_ZERO_ef_79();
-}
-
-/**
 A monomorphic instance of
 libcrux_ml_kem.serialize.deserialize_to_uncompressed_ring_element with types
 libcrux_ml_kem_vector_avx2_SIMD256Vector with const generics
@@ -1533,20 +1826,6 @@ libcrux_ml_kem_vector_avx2_SIMD256Vector with const generics
 typedef struct libcrux_ml_kem_ind_cpa_unpacked_IndCpaPrivateKeyUnpacked_63_s {
   libcrux_ml_kem_polynomial_PolynomialRingElement_f6 secret_as_ntt[3U];
 } libcrux_ml_kem_ind_cpa_unpacked_IndCpaPrivateKeyUnpacked_63;
-
-/**
-A monomorphic instance of
-libcrux_ml_kem.ind_cpa.deserialize_then_decompress_u.closure with types
-libcrux_ml_kem_vector_avx2_SIMD256Vector with const generics
-- K= 3
-- CIPHERTEXT_SIZE= 1088
-- U_COMPRESSION_FACTOR= 10
-*/
-KRML_ATTRIBUTE_TARGET("avx2")
-static inline libcrux_ml_kem_polynomial_PolynomialRingElement_f6
-libcrux_ml_kem_ind_cpa_deserialize_then_decompress_u_closure_ed(size_t _) {
-  return libcrux_ml_kem_polynomial_ZERO_ef_79();
-}
 
 /**
 A monomorphic instance of
@@ -1634,97 +1913,6 @@ libcrux_ml_kem_serialize_deserialize_then_decompress_10_79(
     __m256i coefficient = libcrux_ml_kem_vector_avx2_deserialize_10_9a(bytes);
     re.coefficients[i0] =
         libcrux_ml_kem_vector_avx2_decompress_ciphertext_coefficient_9a_ef(
-            coefficient);
-  }
-  return re;
-}
-
-/**
-A monomorphic instance of
-libcrux_ml_kem.vector.avx2.compress.decompress_ciphertext_coefficient with const
-generics
-- COEFFICIENT_BITS= 11
-*/
-KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE __m256i
-libcrux_ml_kem_vector_avx2_compress_decompress_ciphertext_coefficient_c4(
-    __m256i vector) {
-  __m256i field_modulus = libcrux_intrinsics_avx2_mm256_set1_epi32(
-      (int32_t)LIBCRUX_ML_KEM_VECTOR_TRAITS_FIELD_MODULUS);
-  __m256i two_pow_coefficient_bits = libcrux_intrinsics_avx2_mm256_set1_epi32(
-      (int32_t)1 << (uint32_t)(int32_t)11);
-  __m128i coefficients_low =
-      libcrux_intrinsics_avx2_mm256_castsi256_si128(vector);
-  __m256i coefficients_low0 =
-      libcrux_intrinsics_avx2_mm256_cvtepi16_epi32(coefficients_low);
-  __m256i decompressed_low = libcrux_intrinsics_avx2_mm256_mullo_epi32(
-      coefficients_low0, field_modulus);
-  __m256i decompressed_low0 = libcrux_intrinsics_avx2_mm256_slli_epi32(
-      (int32_t)1, decompressed_low, __m256i);
-  __m256i decompressed_low1 = libcrux_intrinsics_avx2_mm256_add_epi32(
-      decompressed_low0, two_pow_coefficient_bits);
-  __m256i decompressed_low2 = libcrux_intrinsics_avx2_mm256_srli_epi32(
-      (int32_t)11, decompressed_low1, __m256i);
-  __m256i decompressed_low3 = libcrux_intrinsics_avx2_mm256_srli_epi32(
-      (int32_t)1, decompressed_low2, __m256i);
-  __m128i coefficients_high = libcrux_intrinsics_avx2_mm256_extracti128_si256(
-      (int32_t)1, vector, __m128i);
-  __m256i coefficients_high0 =
-      libcrux_intrinsics_avx2_mm256_cvtepi16_epi32(coefficients_high);
-  __m256i decompressed_high = libcrux_intrinsics_avx2_mm256_mullo_epi32(
-      coefficients_high0, field_modulus);
-  __m256i decompressed_high0 = libcrux_intrinsics_avx2_mm256_slli_epi32(
-      (int32_t)1, decompressed_high, __m256i);
-  __m256i decompressed_high1 = libcrux_intrinsics_avx2_mm256_add_epi32(
-      decompressed_high0, two_pow_coefficient_bits);
-  __m256i decompressed_high2 = libcrux_intrinsics_avx2_mm256_srli_epi32(
-      (int32_t)11, decompressed_high1, __m256i);
-  __m256i decompressed_high3 = libcrux_intrinsics_avx2_mm256_srli_epi32(
-      (int32_t)1, decompressed_high2, __m256i);
-  __m256i compressed = libcrux_intrinsics_avx2_mm256_packs_epi32(
-      decompressed_low3, decompressed_high3);
-  return libcrux_intrinsics_avx2_mm256_permute4x64_epi64((int32_t)216,
-                                                         compressed, __m256i);
-}
-
-/**
-This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::avx2::SIMD256Vector)#3}
-*/
-/**
-A monomorphic instance of
-libcrux_ml_kem.vector.avx2.decompress_ciphertext_coefficient_9a with const
-generics
-- COEFFICIENT_BITS= 11
-*/
-KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE __m256i
-libcrux_ml_kem_vector_avx2_decompress_ciphertext_coefficient_9a_c4(
-    __m256i vector) {
-  return libcrux_ml_kem_vector_avx2_compress_decompress_ciphertext_coefficient_c4(
-      vector);
-}
-
-/**
-A monomorphic instance of
-libcrux_ml_kem.serialize.deserialize_then_decompress_11 with types
-libcrux_ml_kem_vector_avx2_SIMD256Vector with const generics
-
-*/
-KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE libcrux_ml_kem_polynomial_PolynomialRingElement_f6
-libcrux_ml_kem_serialize_deserialize_then_decompress_11_79(
-    Eurydice_slice serialized) {
-  libcrux_ml_kem_polynomial_PolynomialRingElement_f6 re =
-      libcrux_ml_kem_polynomial_ZERO_ef_79();
-  for (size_t i = (size_t)0U;
-       i < Eurydice_slice_len(serialized, uint8_t) / (size_t)22U; i++) {
-    size_t i0 = i;
-    Eurydice_slice bytes = Eurydice_slice_subslice2(
-        serialized, i0 * (size_t)22U, i0 * (size_t)22U + (size_t)22U, uint8_t);
-    __m256i coefficient = libcrux_ml_kem_vector_avx2_deserialize_11_9a(bytes);
-    re.coefficients[i0] =
-        libcrux_ml_kem_vector_avx2_decompress_ciphertext_coefficient_9a_c4(
             coefficient);
   }
   return re;
@@ -2061,97 +2249,6 @@ libcrux_ml_kem_serialize_deserialize_then_decompress_4_79(
     re.coefficients[i0] =
         libcrux_ml_kem_vector_avx2_decompress_ciphertext_coefficient_9a_d1(
             coefficient);
-  }
-  return re;
-}
-
-/**
-A monomorphic instance of
-libcrux_ml_kem.vector.avx2.compress.decompress_ciphertext_coefficient with const
-generics
-- COEFFICIENT_BITS= 5
-*/
-KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE __m256i
-libcrux_ml_kem_vector_avx2_compress_decompress_ciphertext_coefficient_f4(
-    __m256i vector) {
-  __m256i field_modulus = libcrux_intrinsics_avx2_mm256_set1_epi32(
-      (int32_t)LIBCRUX_ML_KEM_VECTOR_TRAITS_FIELD_MODULUS);
-  __m256i two_pow_coefficient_bits = libcrux_intrinsics_avx2_mm256_set1_epi32(
-      (int32_t)1 << (uint32_t)(int32_t)5);
-  __m128i coefficients_low =
-      libcrux_intrinsics_avx2_mm256_castsi256_si128(vector);
-  __m256i coefficients_low0 =
-      libcrux_intrinsics_avx2_mm256_cvtepi16_epi32(coefficients_low);
-  __m256i decompressed_low = libcrux_intrinsics_avx2_mm256_mullo_epi32(
-      coefficients_low0, field_modulus);
-  __m256i decompressed_low0 = libcrux_intrinsics_avx2_mm256_slli_epi32(
-      (int32_t)1, decompressed_low, __m256i);
-  __m256i decompressed_low1 = libcrux_intrinsics_avx2_mm256_add_epi32(
-      decompressed_low0, two_pow_coefficient_bits);
-  __m256i decompressed_low2 = libcrux_intrinsics_avx2_mm256_srli_epi32(
-      (int32_t)5, decompressed_low1, __m256i);
-  __m256i decompressed_low3 = libcrux_intrinsics_avx2_mm256_srli_epi32(
-      (int32_t)1, decompressed_low2, __m256i);
-  __m128i coefficients_high = libcrux_intrinsics_avx2_mm256_extracti128_si256(
-      (int32_t)1, vector, __m128i);
-  __m256i coefficients_high0 =
-      libcrux_intrinsics_avx2_mm256_cvtepi16_epi32(coefficients_high);
-  __m256i decompressed_high = libcrux_intrinsics_avx2_mm256_mullo_epi32(
-      coefficients_high0, field_modulus);
-  __m256i decompressed_high0 = libcrux_intrinsics_avx2_mm256_slli_epi32(
-      (int32_t)1, decompressed_high, __m256i);
-  __m256i decompressed_high1 = libcrux_intrinsics_avx2_mm256_add_epi32(
-      decompressed_high0, two_pow_coefficient_bits);
-  __m256i decompressed_high2 = libcrux_intrinsics_avx2_mm256_srli_epi32(
-      (int32_t)5, decompressed_high1, __m256i);
-  __m256i decompressed_high3 = libcrux_intrinsics_avx2_mm256_srli_epi32(
-      (int32_t)1, decompressed_high2, __m256i);
-  __m256i compressed = libcrux_intrinsics_avx2_mm256_packs_epi32(
-      decompressed_low3, decompressed_high3);
-  return libcrux_intrinsics_avx2_mm256_permute4x64_epi64((int32_t)216,
-                                                         compressed, __m256i);
-}
-
-/**
-This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::avx2::SIMD256Vector)#3}
-*/
-/**
-A monomorphic instance of
-libcrux_ml_kem.vector.avx2.decompress_ciphertext_coefficient_9a with const
-generics
-- COEFFICIENT_BITS= 5
-*/
-KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE __m256i
-libcrux_ml_kem_vector_avx2_decompress_ciphertext_coefficient_9a_f4(
-    __m256i vector) {
-  return libcrux_ml_kem_vector_avx2_compress_decompress_ciphertext_coefficient_f4(
-      vector);
-}
-
-/**
-A monomorphic instance of libcrux_ml_kem.serialize.deserialize_then_decompress_5
-with types libcrux_ml_kem_vector_avx2_SIMD256Vector
-with const generics
-
-*/
-KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE libcrux_ml_kem_polynomial_PolynomialRingElement_f6
-libcrux_ml_kem_serialize_deserialize_then_decompress_5_79(
-    Eurydice_slice serialized) {
-  libcrux_ml_kem_polynomial_PolynomialRingElement_f6 re =
-      libcrux_ml_kem_polynomial_ZERO_ef_79();
-  for (size_t i = (size_t)0U;
-       i < Eurydice_slice_len(serialized, uint8_t) / (size_t)10U; i++) {
-    size_t i0 = i;
-    Eurydice_slice bytes = Eurydice_slice_subslice2(
-        serialized, i0 * (size_t)10U, i0 * (size_t)10U + (size_t)10U, uint8_t);
-    re.coefficients[i0] = libcrux_ml_kem_vector_avx2_deserialize_5_9a(bytes);
-    re.coefficients[i0] =
-        libcrux_ml_kem_vector_avx2_decompress_ciphertext_coefficient_9a_f4(
-            re.coefficients[i0]);
   }
   return re;
 }
@@ -2840,9 +2937,6 @@ libcrux_ml_kem_serialize_deserialize_ring_elements_reduced_ab(
   }
 }
 
-typedef libcrux_sha3_avx2_x4_incremental_KeccakState
-    libcrux_ml_kem_hash_functions_avx2_Simd256Hash;
-
 /**
 A monomorphic instance of
 libcrux_ml_kem.hash_functions.avx2.shake128_init_absorb_final with const
@@ -3375,21 +3469,6 @@ typedef struct tuple_230_s {
 } tuple_230;
 
 /**
-A monomorphic instance of
-libcrux_ml_kem.ind_cpa.sample_vector_cbd_then_ntt_out.closure with types
-libcrux_ml_kem_vector_avx2_SIMD256Vector,
-libcrux_ml_kem_hash_functions_avx2_Simd256Hash with const generics
-- K= 3
-- ETA= 2
-- ETA_RANDOMNESS_SIZE= 128
-*/
-KRML_ATTRIBUTE_TARGET("avx2")
-static inline libcrux_ml_kem_polynomial_PolynomialRingElement_f6
-libcrux_ml_kem_ind_cpa_sample_vector_cbd_then_ntt_out_closure_b4(size_t _i) {
-  return libcrux_ml_kem_polynomial_ZERO_ef_79();
-}
-
-/**
 A monomorphic instance of libcrux_ml_kem.hash_functions.avx2.PRFxN
 with const generics
 - K= 3
@@ -3538,52 +3617,6 @@ libcrux_ml_kem_sampling_sample_from_binomial_distribution_2_79(
 
 /**
 A monomorphic instance of
-libcrux_ml_kem.sampling.sample_from_binomial_distribution_3 with types
-libcrux_ml_kem_vector_avx2_SIMD256Vector with const generics
-
-*/
-KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE libcrux_ml_kem_polynomial_PolynomialRingElement_f6
-libcrux_ml_kem_sampling_sample_from_binomial_distribution_3_79(
-    Eurydice_slice randomness) {
-  int16_t sampled_i16s[256U] = {0U};
-  for (size_t i0 = (size_t)0U;
-       i0 < Eurydice_slice_len(randomness, uint8_t) / (size_t)3U; i0++) {
-    size_t chunk_number = i0;
-    Eurydice_slice byte_chunk = Eurydice_slice_subslice2(
-        randomness, chunk_number * (size_t)3U,
-        chunk_number * (size_t)3U + (size_t)3U, uint8_t);
-    uint32_t random_bits_as_u24 =
-        ((uint32_t)Eurydice_slice_index(byte_chunk, (size_t)0U, uint8_t,
-                                        uint8_t *) |
-         (uint32_t)Eurydice_slice_index(byte_chunk, (size_t)1U, uint8_t,
-                                        uint8_t *)
-             << 8U) |
-        (uint32_t)Eurydice_slice_index(byte_chunk, (size_t)2U, uint8_t,
-                                       uint8_t *)
-            << 16U;
-    uint32_t first_bits = random_bits_as_u24 & 2396745U;
-    uint32_t second_bits = random_bits_as_u24 >> 1U & 2396745U;
-    uint32_t third_bits = random_bits_as_u24 >> 2U & 2396745U;
-    uint32_t coin_toss_outcomes = first_bits + second_bits + third_bits;
-    for (int32_t i = (int32_t)0; i < (int32_t)24 / (int32_t)6; i++) {
-      int32_t outcome_set = i;
-      int32_t outcome_set0 = outcome_set * (int32_t)6;
-      int16_t outcome_1 =
-          (int16_t)(coin_toss_outcomes >> (uint32_t)outcome_set0 & 7U);
-      int16_t outcome_2 = (int16_t)(coin_toss_outcomes >>
-                                        (uint32_t)(outcome_set0 + (int32_t)3) &
-                                    7U);
-      size_t offset = (size_t)(outcome_set0 / (int32_t)6);
-      sampled_i16s[(size_t)4U * chunk_number + offset] = outcome_1 - outcome_2;
-    }
-  }
-  return libcrux_ml_kem_polynomial_from_i16_array_ef_79(
-      Eurydice_array_to_slice((size_t)256U, sampled_i16s, int16_t));
-}
-
-/**
-A monomorphic instance of
 libcrux_ml_kem.sampling.sample_from_binomial_distribution with types
 libcrux_ml_kem_vector_avx2_SIMD256Vector with const generics
 - ETA= 2
@@ -3717,20 +3750,6 @@ libcrux_ml_kem_ind_cpa_sample_vector_cbd_then_ntt_out_b4(
 }
 
 /**
-A monomorphic instance of libcrux_ml_kem.ind_cpa.sample_ring_element_cbd.closure
-with types libcrux_ml_kem_vector_avx2_SIMD256Vector,
-libcrux_ml_kem_hash_functions_avx2_Simd256Hash with const generics
-- K= 3
-- ETA2_RANDOMNESS_SIZE= 128
-- ETA2= 2
-*/
-KRML_ATTRIBUTE_TARGET("avx2")
-static inline libcrux_ml_kem_polynomial_PolynomialRingElement_f6
-libcrux_ml_kem_ind_cpa_sample_ring_element_cbd_closure_b4(size_t _i) {
-  return libcrux_ml_kem_polynomial_ZERO_ef_79();
-}
-
-/**
  Sample a vector of ring elements from a centered binomial distribution.
 */
 /**
@@ -3808,18 +3827,6 @@ KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE void libcrux_ml_kem_hash_functions_avx2_PRF_a9_410(
     Eurydice_slice input, uint8_t ret[128U]) {
   libcrux_ml_kem_hash_functions_avx2_PRF_a6(input, ret);
-}
-
-/**
-A monomorphic instance of libcrux_ml_kem.matrix.compute_vector_u.closure
-with types libcrux_ml_kem_vector_avx2_SIMD256Vector
-with const generics
-- K= 3
-*/
-KRML_ATTRIBUTE_TARGET("avx2")
-static inline libcrux_ml_kem_polynomial_PolynomialRingElement_f6
-libcrux_ml_kem_matrix_compute_vector_u_closure_ab(size_t _i) {
-  return libcrux_ml_kem_polynomial_ZERO_ef_79();
 }
 
 /**
@@ -4015,113 +4022,6 @@ libcrux_ml_kem_serialize_compress_then_serialize_10_0e(
         serialized, (size_t)20U * i0, (size_t)20U * i0 + (size_t)20U, uint8_t);
     Eurydice_slice_copy(
         uu____0, Eurydice_array_to_slice((size_t)20U, bytes, uint8_t), uint8_t);
-  }
-  memcpy(ret, serialized, (size_t)320U * sizeof(uint8_t));
-}
-
-/**
-A monomorphic instance of
-libcrux_ml_kem.vector.avx2.compress.compress_ciphertext_coefficient with const
-generics
-- COEFFICIENT_BITS= 11
-*/
-KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE __m256i
-libcrux_ml_kem_vector_avx2_compress_compress_ciphertext_coefficient_c4(
-    __m256i vector) {
-  __m256i field_modulus_halved = libcrux_intrinsics_avx2_mm256_set1_epi32(
-      ((int32_t)LIBCRUX_ML_KEM_VECTOR_TRAITS_FIELD_MODULUS - (int32_t)1) /
-      (int32_t)2);
-  __m256i compression_factor =
-      libcrux_intrinsics_avx2_mm256_set1_epi32((int32_t)10321340);
-  __m256i coefficient_bits_mask = libcrux_intrinsics_avx2_mm256_set1_epi32(
-      ((int32_t)1 << (uint32_t)(int32_t)11) - (int32_t)1);
-  __m128i coefficients_low =
-      libcrux_intrinsics_avx2_mm256_castsi256_si128(vector);
-  __m256i coefficients_low0 =
-      libcrux_intrinsics_avx2_mm256_cvtepi16_epi32(coefficients_low);
-  __m256i compressed_low = libcrux_intrinsics_avx2_mm256_slli_epi32(
-      (int32_t)11, coefficients_low0, __m256i);
-  __m256i compressed_low0 = libcrux_intrinsics_avx2_mm256_add_epi32(
-      compressed_low, field_modulus_halved);
-  __m256i compressed_low1 =
-      libcrux_ml_kem_vector_avx2_compress_mulhi_mm256_epi32(compressed_low0,
-                                                            compression_factor);
-  __m256i compressed_low2 = libcrux_intrinsics_avx2_mm256_srli_epi32(
-      (int32_t)3, compressed_low1, __m256i);
-  __m256i compressed_low3 = libcrux_intrinsics_avx2_mm256_and_si256(
-      compressed_low2, coefficient_bits_mask);
-  __m128i coefficients_high = libcrux_intrinsics_avx2_mm256_extracti128_si256(
-      (int32_t)1, vector, __m128i);
-  __m256i coefficients_high0 =
-      libcrux_intrinsics_avx2_mm256_cvtepi16_epi32(coefficients_high);
-  __m256i compressed_high = libcrux_intrinsics_avx2_mm256_slli_epi32(
-      (int32_t)11, coefficients_high0, __m256i);
-  __m256i compressed_high0 = libcrux_intrinsics_avx2_mm256_add_epi32(
-      compressed_high, field_modulus_halved);
-  __m256i compressed_high1 =
-      libcrux_ml_kem_vector_avx2_compress_mulhi_mm256_epi32(compressed_high0,
-                                                            compression_factor);
-  __m256i compressed_high2 = libcrux_intrinsics_avx2_mm256_srli_epi32(
-      (int32_t)3, compressed_high1, __m256i);
-  __m256i compressed_high3 = libcrux_intrinsics_avx2_mm256_and_si256(
-      compressed_high2, coefficient_bits_mask);
-  __m256i compressed = libcrux_intrinsics_avx2_mm256_packs_epi32(
-      compressed_low3, compressed_high3);
-  return libcrux_intrinsics_avx2_mm256_permute4x64_epi64((int32_t)216,
-                                                         compressed, __m256i);
-}
-
-/**
-A monomorphic instance of libcrux_ml_kem.vector.avx2.compress
-with const generics
-- COEFFICIENT_BITS= 11
-*/
-KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE __m256i
-libcrux_ml_kem_vector_avx2_compress_c4(__m256i vector) {
-  return libcrux_ml_kem_vector_avx2_compress_compress_ciphertext_coefficient_c4(
-      vector);
-}
-
-/**
-This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::avx2::SIMD256Vector)#3}
-*/
-/**
-A monomorphic instance of libcrux_ml_kem.vector.avx2.compress_9a
-with const generics
-- COEFFICIENT_BITS= 11
-*/
-KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE __m256i
-libcrux_ml_kem_vector_avx2_compress_9a_c4(__m256i vector) {
-  return libcrux_ml_kem_vector_avx2_compress_c4(vector);
-}
-
-/**
-A monomorphic instance of libcrux_ml_kem.serialize.compress_then_serialize_11
-with types libcrux_ml_kem_vector_avx2_SIMD256Vector
-with const generics
-- OUT_LEN= 320
-*/
-KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE void
-libcrux_ml_kem_serialize_compress_then_serialize_11_0e(
-    libcrux_ml_kem_polynomial_PolynomialRingElement_f6 *re, uint8_t ret[320U]) {
-  uint8_t serialized[320U] = {0U};
-  for (size_t i = (size_t)0U;
-       i < LIBCRUX_ML_KEM_POLYNOMIAL_VECTORS_IN_RING_ELEMENT; i++) {
-    size_t i0 = i;
-    __m256i coefficient = libcrux_ml_kem_vector_avx2_compress_9a_c4(
-        libcrux_ml_kem_vector_traits_to_unsigned_representative_79(
-            re->coefficients[i0]));
-    uint8_t bytes[22U];
-    libcrux_ml_kem_vector_avx2_serialize_11_9a(coefficient, bytes);
-    Eurydice_slice uu____0 = Eurydice_array_to_subslice2(
-        serialized, (size_t)22U * i0, (size_t)22U * i0 + (size_t)22U, uint8_t);
-    Eurydice_slice_copy(
-        uu____0, Eurydice_array_to_slice((size_t)22U, bytes, uint8_t), uint8_t);
   }
   memcpy(ret, serialized, (size_t)320U * sizeof(uint8_t));
 }
@@ -4466,112 +4366,6 @@ libcrux_ml_kem_serialize_compress_then_serialize_4_79(
         Eurydice_slice_subslice2(serialized, (size_t)8U * i0,
                                  (size_t)8U * i0 + (size_t)8U, uint8_t),
         Eurydice_array_to_slice((size_t)8U, bytes, uint8_t), uint8_t);
-  }
-}
-
-/**
-A monomorphic instance of
-libcrux_ml_kem.vector.avx2.compress.compress_ciphertext_coefficient with const
-generics
-- COEFFICIENT_BITS= 5
-*/
-KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE __m256i
-libcrux_ml_kem_vector_avx2_compress_compress_ciphertext_coefficient_f4(
-    __m256i vector) {
-  __m256i field_modulus_halved = libcrux_intrinsics_avx2_mm256_set1_epi32(
-      ((int32_t)LIBCRUX_ML_KEM_VECTOR_TRAITS_FIELD_MODULUS - (int32_t)1) /
-      (int32_t)2);
-  __m256i compression_factor =
-      libcrux_intrinsics_avx2_mm256_set1_epi32((int32_t)10321340);
-  __m256i coefficient_bits_mask = libcrux_intrinsics_avx2_mm256_set1_epi32(
-      ((int32_t)1 << (uint32_t)(int32_t)5) - (int32_t)1);
-  __m128i coefficients_low =
-      libcrux_intrinsics_avx2_mm256_castsi256_si128(vector);
-  __m256i coefficients_low0 =
-      libcrux_intrinsics_avx2_mm256_cvtepi16_epi32(coefficients_low);
-  __m256i compressed_low = libcrux_intrinsics_avx2_mm256_slli_epi32(
-      (int32_t)5, coefficients_low0, __m256i);
-  __m256i compressed_low0 = libcrux_intrinsics_avx2_mm256_add_epi32(
-      compressed_low, field_modulus_halved);
-  __m256i compressed_low1 =
-      libcrux_ml_kem_vector_avx2_compress_mulhi_mm256_epi32(compressed_low0,
-                                                            compression_factor);
-  __m256i compressed_low2 = libcrux_intrinsics_avx2_mm256_srli_epi32(
-      (int32_t)3, compressed_low1, __m256i);
-  __m256i compressed_low3 = libcrux_intrinsics_avx2_mm256_and_si256(
-      compressed_low2, coefficient_bits_mask);
-  __m128i coefficients_high = libcrux_intrinsics_avx2_mm256_extracti128_si256(
-      (int32_t)1, vector, __m128i);
-  __m256i coefficients_high0 =
-      libcrux_intrinsics_avx2_mm256_cvtepi16_epi32(coefficients_high);
-  __m256i compressed_high = libcrux_intrinsics_avx2_mm256_slli_epi32(
-      (int32_t)5, coefficients_high0, __m256i);
-  __m256i compressed_high0 = libcrux_intrinsics_avx2_mm256_add_epi32(
-      compressed_high, field_modulus_halved);
-  __m256i compressed_high1 =
-      libcrux_ml_kem_vector_avx2_compress_mulhi_mm256_epi32(compressed_high0,
-                                                            compression_factor);
-  __m256i compressed_high2 = libcrux_intrinsics_avx2_mm256_srli_epi32(
-      (int32_t)3, compressed_high1, __m256i);
-  __m256i compressed_high3 = libcrux_intrinsics_avx2_mm256_and_si256(
-      compressed_high2, coefficient_bits_mask);
-  __m256i compressed = libcrux_intrinsics_avx2_mm256_packs_epi32(
-      compressed_low3, compressed_high3);
-  return libcrux_intrinsics_avx2_mm256_permute4x64_epi64((int32_t)216,
-                                                         compressed, __m256i);
-}
-
-/**
-A monomorphic instance of libcrux_ml_kem.vector.avx2.compress
-with const generics
-- COEFFICIENT_BITS= 5
-*/
-KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE __m256i
-libcrux_ml_kem_vector_avx2_compress_f4(__m256i vector) {
-  return libcrux_ml_kem_vector_avx2_compress_compress_ciphertext_coefficient_f4(
-      vector);
-}
-
-/**
-This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::avx2::SIMD256Vector)#3}
-*/
-/**
-A monomorphic instance of libcrux_ml_kem.vector.avx2.compress_9a
-with const generics
-- COEFFICIENT_BITS= 5
-*/
-KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE __m256i
-libcrux_ml_kem_vector_avx2_compress_9a_f4(__m256i vector) {
-  return libcrux_ml_kem_vector_avx2_compress_f4(vector);
-}
-
-/**
-A monomorphic instance of libcrux_ml_kem.serialize.compress_then_serialize_5
-with types libcrux_ml_kem_vector_avx2_SIMD256Vector
-with const generics
-
-*/
-KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE void
-libcrux_ml_kem_serialize_compress_then_serialize_5_79(
-    libcrux_ml_kem_polynomial_PolynomialRingElement_f6 re,
-    Eurydice_slice serialized) {
-  for (size_t i = (size_t)0U;
-       i < LIBCRUX_ML_KEM_POLYNOMIAL_VECTORS_IN_RING_ELEMENT; i++) {
-    size_t i0 = i;
-    __m256i coefficients = libcrux_ml_kem_vector_avx2_compress_9a_f4(
-        libcrux_ml_kem_vector_traits_to_unsigned_representative_79(
-            re.coefficients[i0]));
-    uint8_t bytes[10U];
-    libcrux_ml_kem_vector_avx2_serialize_5_9a(coefficients, bytes);
-    Eurydice_slice_copy(
-        Eurydice_slice_subslice2(serialized, (size_t)10U * i0,
-                                 (size_t)10U * i0 + (size_t)10U, uint8_t),
-        Eurydice_array_to_slice((size_t)10U, bytes, uint8_t), uint8_t);
   }
 }
 
@@ -6469,19 +6263,6 @@ static inline bool libcrux_ml_kem_mlkem768_avx2_validate_private_key_only(
 }
 
 /**
-A monomorphic instance of
-libcrux_ml_kem.serialize.deserialize_ring_elements_reduced_out.closure with
-types libcrux_ml_kem_vector_avx2_SIMD256Vector with const generics
-- K= 3
-*/
-KRML_ATTRIBUTE_TARGET("avx2")
-static inline libcrux_ml_kem_polynomial_PolynomialRingElement_f6
-libcrux_ml_kem_serialize_deserialize_ring_elements_reduced_out_closure_ab(
-    size_t _i) {
-  return libcrux_ml_kem_polynomial_ZERO_ef_79();
-}
-
-/**
  This function deserializes ring elements and reduces the result by the field
  modulus.
 
@@ -6944,18 +6725,6 @@ static inline tuple_c2 libcrux_ml_kem_mlkem768_avx2_unpacked_encapsulate(
   memcpy(copy_of_randomness, randomness, (size_t)32U * sizeof(uint8_t));
   return libcrux_ml_kem_ind_cca_instantiations_avx2_unpacked_encapsulate_cd(
       uu____0, copy_of_randomness);
-}
-
-/**
-A monomorphic instance of
-libcrux_ml_kem.ind_cca.unpacked.transpose_a.closure.closure with types
-libcrux_ml_kem_vector_avx2_SIMD256Vector with const generics
-- K= 3
-*/
-KRML_ATTRIBUTE_TARGET("avx2")
-static inline libcrux_ml_kem_polynomial_PolynomialRingElement_f6
-libcrux_ml_kem_ind_cca_unpacked_transpose_a_closure_closure_ab(size_t _j) {
-  return libcrux_ml_kem_polynomial_ZERO_ef_79();
 }
 
 /**
@@ -7856,25 +7625,6 @@ static inline void libcrux_ml_kem_mlkem768_avx2_unpacked_unpacked_public_key(
         *unpacked_public_key) {
   libcrux_ml_kem_ind_cca_instantiations_avx2_unpacked_unpack_public_key_31(
       public_key, unpacked_public_key);
-}
-
-/**
-This function found in impl {(core::clone::Clone for
-libcrux_ml_kem::vector::avx2::SIMD256Vector)#1}
-*/
-KRML_ATTRIBUTE_TARGET("avx2")
-static inline __m256i libcrux_ml_kem_vector_avx2_clone_3a(__m256i *self) {
-  return self[0U];
-}
-
-/**
-This function found in impl {(libcrux_ml_kem::vector::traits::Repr for
-libcrux_ml_kem::vector::avx2::SIMD256Vector)}
-*/
-KRML_ATTRIBUTE_TARGET("avx2")
-static inline void libcrux_ml_kem_vector_avx2_repr_11(__m256i x,
-                                                      int16_t ret[16U]) {
-  libcrux_ml_kem_vector_avx2_vec_to_i16_array(x, ret);
 }
 
 typedef libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_63

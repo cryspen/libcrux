@@ -5,14 +5,14 @@
  *
  * This code was generated with the following revisions:
  * Charon: a8f2211d1b95e0462a96382023b164a4116c7ca4
- * Eurydice: 60f543ddc60a777138070968daaf7620ec48170d
+ * Eurydice: 788c5abefac3a9c7f79abae6a30fa8558e39764c
  * Karamel: 1d81d757d5d9e16dd6463ccc72324e587c707959
- * F*: 7cd06c5562fc47ec14cd35c38034d5558a5ff762
- * Libcrux: 370d71828112dbf0ad53a8995502ff1e5c8a719c
+ * F*: b0961063393215ca65927f017720cb365a193833-dirty
+ * Libcrux: 9055a3494b92f5b142edb2d1fe36ea2e1ce07257
  */
 
-#ifndef __libcrux_core_H
-#define __libcrux_core_H
+#ifndef __libcrux_mlkem_core_H
+#define __libcrux_mlkem_core_H
 
 #if defined(__cplusplus)
 extern "C" {
@@ -75,6 +75,8 @@ static inline uint8_t core_num__u8_6__wrapping_sub(uint8_t x0, uint8_t x1);
   (LIBCRUX_ML_KEM_CONSTANTS_BITS_PER_RING_ELEMENT / (size_t)8U)
 
 #define LIBCRUX_ML_KEM_CONSTANTS_CPA_PKE_KEY_GENERATION_SEED_SIZE ((size_t)32U)
+
+#define LIBCRUX_ML_KEM_CONSTANTS_G_DIGEST_SIZE ((size_t)64U)
 
 #define LIBCRUX_ML_KEM_CONSTANTS_H_DIGEST_SIZE ((size_t)32U)
 
@@ -155,40 +157,6 @@ static inline void unwrap_26_20(Result_e1 self, uint8_t ret[20U]) {
     uint8_t f0[20U];
     memcpy(f0, self.val.case_Ok, (size_t)20U * sizeof(uint8_t));
     memcpy(ret, f0, (size_t)20U * sizeof(uint8_t));
-  } else {
-    KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__,
-                      "unwrap not Ok");
-    KRML_HOST_EXIT(255U);
-  }
-}
-
-/**
-A monomorphic instance of core.result.Result
-with types uint8_t[10size_t], core_array_TryFromSliceError
-
-*/
-typedef struct Result_9d_s {
-  Result_a9_tags tag;
-  union {
-    uint8_t case_Ok[10U];
-    TryFromSliceError case_Err;
-  } val;
-} Result_9d;
-
-/**
-This function found in impl {core::result::Result<T, E>[TraitClause@0,
-TraitClause@1]}
-*/
-/**
-A monomorphic instance of core.result.unwrap_26
-with types uint8_t[10size_t], core_array_TryFromSliceError
-
-*/
-static inline void unwrap_26_ce(Result_9d self, uint8_t ret[10U]) {
-  if (self.tag == Ok) {
-    uint8_t f0[10U];
-    memcpy(f0, self.val.case_Ok, (size_t)10U * sizeof(uint8_t));
-    memcpy(ret, f0, (size_t)10U * sizeof(uint8_t));
   } else {
     KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__,
                       "unwrap not Ok");
@@ -639,5 +607,5 @@ typedef struct Eurydice_slice_uint8_t_1size_t__x2_s {
 }
 #endif
 
-#define __libcrux_core_H_DEFINED
+#define __libcrux_mlkem_core_H_DEFINED
 #endif
