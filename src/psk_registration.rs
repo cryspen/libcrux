@@ -4,11 +4,12 @@
 //! PQ-PSK between an initiator and a responder.
 
 use libcrux::aead::{decrypt_detached, encrypt_detached, Algorithm};
+use libcrux_kem::Ct;
 use libcrux_traits::kem::KEM;
-use rand::{CryptoRng, Rng};
+use rand::CryptoRng;
 use std::time::{Duration, SystemTime};
 
-use crate::{cred::Credential, traits::*, Error, Psk};
+use crate::{cred::Credential, impls::MlKem768, traits::*, Error, Psk};
 
 const PSK_REGISTRATION_CONTEXT: &[u8] = b"PSK-Registration";
 const PSK_LENGTH: usize = 32;
@@ -25,15 +26,84 @@ struct AeadMac {
     ctxt: Vec<u8>,
 }
 
+impl Encode for AeadMac {
+    fn encode(&self) -> Vec<u8> {
+        let mut out = vec![];
+
+        out.extend_from_slice(self.tag.as_ref());
+        out.extend_from_slice(&self.ctxt);
+
+        out
+    }
+}
+
+impl Decode for AeadMac {
+    fn decode(bytes: &[u8]) -> Result<(Self, usize), Error> {
+        let tag = libcrux::aead::Tag::from_slice(&bytes[0..16]).map_err(|_| Error::Decoding)?;
+        let ctxt = bytes[16..].to_vec();
+
+        let out = Self { tag, ctxt };
+        let len = 16 + out.ctxt.len();
+
+        Ok((out, len))
+    }
+}
+
 /// The Initiator's message to the responder.
 pub struct InitiatorMsg<T: KEM> {
     encapsulation: Ciphertext<T>,
     aead_mac: AeadMac,
 }
 
+impl<T: KEM<Ciphertext: Encode>> Encode for InitiatorMsg<T> {
+    fn encode(&self) -> Vec<u8> {
+        let mut out = vec![];
+
+        out.extend_from_slice(&self.encapsulation.encode());
+        out.extend_from_slice(&self.aead_mac.encode());
+
+        out
+    }
+}
+
+impl Decode for InitiatorMsg<MlKem768> {
+    fn decode(bytes: &[u8]) -> Result<(Self, usize), Error> {
+        let ct = Ct::decode(libcrux_kem::Algorithm::MlKem768, &bytes[0..1088]).unwrap();
+        let mut mac = [0u8; MAC_LENGTH];
+        mac.copy_from_slice(&bytes[1088..1088 + 32]);
+
+        let (aead_mac, _len) = AeadMac::decode(&bytes[1088 + 32..])?;
+
+        let out = Self {
+            encapsulation: Ciphertext::<MlKem768> {
+                inner_ctxt: ct,
+                mac,
+            },
+            aead_mac,
+        };
+
+        Ok((out, bytes.len()))
+    }
+}
+
 /// The Responder's message to the initiator.
 pub struct ResponderMsg {
     aead_mac: AeadMac,
+}
+
+impl Encode for ResponderMsg {
+    fn encode(&self) -> Vec<u8> {
+        self.aead_mac.encode()
+    }
+}
+
+impl Decode for ResponderMsg {
+    fn decode(bytes: &[u8]) -> Result<(Self, usize), Error> {
+        let (aead_mac, read) = AeadMac::decode(bytes)?;
+        let out = Self { aead_mac };
+
+        Ok((out, read))
+    }
 }
 
 /// A finished PSK with an attached storage handle.
@@ -61,7 +131,7 @@ impl Initiator {
         psk_ttl: Duration,
         pqpk_responder: &<T::InnerKEM as KEM>::EncapsulationKey,
         signing_key: &C::SigningKey,
-        rng: &mut (impl CryptoRng + Rng),
+        rng: &mut impl CryptoRng,
     ) -> Result<(Self, InitiatorMsg<T::InnerKEM>), Error> {
         let (k_pq, enc_pq) = T::encapsulate_psq(pqpk_responder, sctx, rng)?;
         let (initiator_iv, initiator_key, _receiver_iv, _receiver_key) = derive_cipherstate(&k_pq)?;
@@ -73,19 +143,15 @@ impl Initiator {
 
         let ts_ttl = serialize_ts_ttl(&ts, &psk_ttl);
 
-        let (signature, verification_key) = C::sign(signing_key, &enc_pq.encode())?;
+        let signature = C::sign(signing_key, &enc_pq.encode())?;
 
         let mut message = Vec::new();
         message.extend_from_slice(&ts_ttl);
-        message.extend_from_slice(verification_key.as_ref());
         message.extend_from_slice(signature.as_ref());
 
         let (tag, ctxt) = encrypt_detached(&initiator_key, &mut message, initiator_iv, b"")
             .map_err(|_| Error::CryptoError)?;
-        let aead_mac = AeadMac {
-            tag,
-            ctxt: ctxt.to_owned(),
-        };
+        let aead_mac = AeadMac { tag, ctxt };
 
         Ok((
             Self { k_pq },
@@ -154,6 +220,7 @@ impl Responder {
         sctxt: &[u8],
         pqpk: &<T::InnerKEM as KEM>::EncapsulationKey,
         pqsk: &<T::InnerKEM as KEM>::DecapsulationKey,
+        verification_key: &C::VerificationKey,
         initiator_message: &InitiatorMsg<T::InnerKEM>,
     ) -> Result<(RegisteredPsk, ResponderMsg), Error> {
         let k_pq = T::decapsulate_psq(pqsk, pqpk, &initiator_message.encapsulation, sctxt)?;
@@ -168,11 +235,10 @@ impl Responder {
         )
         .map_err(|_| Error::CryptoError)?;
 
-        let verification_key = C::deserialize_verification_key(&msg_bytes[28..28 + C::VK_LEN])?;
-        let signature = C::deserialize_signature(&msg_bytes[28 + C::VK_LEN..])?;
+        let signature = C::deserialize_signature(&msg_bytes[28..])?;
 
         if C::verify(
-            &verification_key,
+            verification_key,
             &signature,
             &initiator_message.encapsulation.encode(),
         )
@@ -296,6 +362,7 @@ mod tests {
             sctx,
             &receiver_pqpk,
             &receiver_pqsk,
+            &[],
             &initiator_msg,
         )
         .unwrap();
@@ -315,7 +382,7 @@ mod tests {
     fn registration_ed25519_mlkem768() {
         let mut rng = rand::rng();
         let (receiver_pqsk, receiver_pqpk) = MlKem768::generate_key_pair(&mut rng).unwrap();
-        let (sk, _pk) =
+        let (sk, pk) =
             libcrux::signature::key_gen(libcrux::signature::Algorithm::Ed25519, &mut rng).unwrap();
 
         let sk: [u8; 32] = sk.try_into().unwrap();
@@ -336,6 +403,7 @@ mod tests {
             sctx,
             &receiver_pqpk,
             &receiver_pqsk,
+            pk.as_slice().try_into().unwrap(),
             &initiator_msg,
         )
         .unwrap();
