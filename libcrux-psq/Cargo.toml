@@ -24,18 +24,27 @@ classic-mceliece-rust = { version = "2.0.0", features = [
 ], optional = true }
 rand = { version = "0.9" }
 rand_old = { version = "0.8", package = "rand", optional = true }
-libcrux-ecdh = { version = "0.0.2-beta.3", path = "../libcrux-ecdh" }
+libcrux-ecdh = { version = "0.0.2-beta.3", path = "../libcrux-ecdh", optional = true }
 libcrux-ed25519 = { version = "0.0.2-beta.3", path = "../ed25519" }
 libcrux = { version = "0.0.2-beta.3", path = ".." }
 
 [dev-dependencies]
+libcrux-psq = { path = ".", features = ["test-utils"] }
+clap = { version = "4.5.30", features = ["derive"] }
 criterion = "0.5"
+defguard_wireguard_rs = "0.4.2"
+log = "0.4.26"
+pretty_env_logger = "0.5.0"
+base64 = "0.22.1"
+serde = { version = "1.0.218", features = ["derive"] }
+serde_json = "1.0.139"
 
 [features]
 classic-mceliece = ["dep:classic-mceliece-rust", "rand_old"]
-test-utils = [] # DO NOT USE: This feature enables implementations backed
-                # by non-post-quantum KEMs and should only be used for
-                # testing purposes and benchmark baselines.
+# DO NOT USE: This feature enables implementations backed
+# by non-post-quantum KEMs and should only be used for
+# testing purposes and benchmark baselines.
+test-utils = ["libcrux-ecdh"]
 
 [[bench]]
 name = "psq"
