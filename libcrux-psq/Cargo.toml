@@ -30,7 +30,6 @@ libcrux = { version = "0.0.2-beta.3", path = ".." }
 
 [dev-dependencies]
 criterion = "0.5"
-openssl = "0.10" # for generating Ed25519 private keys
 
 [features]
 classic-mceliece = ["dep:classic-mceliece-rust", "rand_old"]

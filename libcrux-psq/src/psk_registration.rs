@@ -315,9 +315,10 @@ mod tests {
     fn registration_ed25519_mlkem768() {
         let mut rng = rand::rng();
         let (receiver_pqsk, receiver_pqpk) = MlKem768::generate_key_pair(&mut rng).unwrap();
-        let sk = openssl::pkey::PKey::generate_ed25519().unwrap();
-        let sk: [u8; 32] = sk.raw_private_key().unwrap().try_into().unwrap();
+        let (sk, _pk) =
+            libcrux::signature::key_gen(libcrux::signature::Algorithm::Ed25519, &mut rng).unwrap();
 
+        let sk: [u8; 32] = sk.try_into().unwrap();
         let sctx = b"test context";
         let psk_handle = b"test handle";
         let (initiator, initiator_msg) = Initiator::send_initial_message::<Ed25519, MlKem768>(
