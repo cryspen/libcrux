@@ -74,13 +74,11 @@ impl Initiator {
         let ts_ttl = serialize_ts_ttl(&ts, &psk_ttl);
 
         let (signature, verification_key) = C::sign(signing_key, &enc_pq.encode())?;
-        let signature_bytes = C::serialize_signature(&signature);
-        let vk_bytes = C::serialize_verification_key(&verification_key);
 
         let mut message = Vec::new();
         message.extend_from_slice(&ts_ttl);
-        message.extend_from_slice(&vk_bytes);
-        message.extend_from_slice(&signature_bytes);
+        message.extend_from_slice(verification_key.as_ref());
+        message.extend_from_slice(signature.as_ref());
 
         let (tag, ctxt) = encrypt_detached(&initiator_key, &mut message, initiator_iv, b"")
             .map_err(|_| Error::CryptoError)?;
@@ -287,7 +285,7 @@ mod tests {
             sctx,
             Duration::from_secs(3600),
             &receiver_pqpk,
-            &(),
+            &[0; 0],
             &mut rng,
         )
         .unwrap();
