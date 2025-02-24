@@ -14,17 +14,16 @@ let _ =
   ()
 
 let generate_keypair_avx2
-      (v_K v_CPA_PRIVATE_KEY_SIZE v_PRIVATE_KEY_SIZE v_PUBLIC_KEY_SIZE v_BYTES_PER_RING_ELEMENT v_ETA1 v_ETA1_RANDOMNESS_SIZE:
+      (v_K v_CPA_PRIVATE_KEY_SIZE v_PRIVATE_KEY_SIZE v_PUBLIC_KEY_SIZE v_ETA1 v_ETA1_RANDOMNESS_SIZE:
           usize)
       (randomness: t_Array u8 (mk_usize 64))
      =
   Libcrux_ml_kem.Ind_cca.generate_keypair v_K v_CPA_PRIVATE_KEY_SIZE v_PRIVATE_KEY_SIZE
-    v_PUBLIC_KEY_SIZE v_BYTES_PER_RING_ELEMENT v_ETA1 v_ETA1_RANDOMNESS_SIZE
-    #Libcrux_ml_kem.Vector.Avx2.t_SIMD256Vector #Libcrux_ml_kem.Hash_functions.Avx2.t_Simd256Hash
-    #Libcrux_ml_kem.Variant.t_MlKem randomness
+    v_PUBLIC_KEY_SIZE v_ETA1 v_ETA1_RANDOMNESS_SIZE #Libcrux_ml_kem.Vector.Avx2.t_SIMD256Vector
+    #Libcrux_ml_kem.Hash_functions.Avx2.t_Simd256Hash #Libcrux_ml_kem.Variant.t_MlKem randomness
 
 let generate_keypair
-      (v_K v_CPA_PRIVATE_KEY_SIZE v_PRIVATE_KEY_SIZE v_PUBLIC_KEY_SIZE v_BYTES_PER_RING_ELEMENT v_ETA1 v_ETA1_RANDOMNESS_SIZE:
+      (v_K v_CPA_PRIVATE_KEY_SIZE v_PRIVATE_KEY_SIZE v_PUBLIC_KEY_SIZE v_ETA1 v_ETA1_RANDOMNESS_SIZE:
           usize)
       (randomness: t_Array u8 (mk_usize 64))
      =
@@ -32,25 +31,21 @@ let generate_keypair
     v_CPA_PRIVATE_KEY_SIZE
     v_PRIVATE_KEY_SIZE
     v_PUBLIC_KEY_SIZE
-    v_BYTES_PER_RING_ELEMENT
     v_ETA1
     v_ETA1_RANDOMNESS_SIZE
     randomness
 
 let validate_public_key_avx2
-      (v_K v_RANKED_BYTES_PER_RING_ELEMENT v_PUBLIC_KEY_SIZE: usize)
+      (v_K v_PUBLIC_KEY_SIZE: usize)
       (public_key: t_Array u8 v_PUBLIC_KEY_SIZE)
      =
   Libcrux_ml_kem.Ind_cca.validate_public_key v_K
-    v_RANKED_BYTES_PER_RING_ELEMENT
     v_PUBLIC_KEY_SIZE
     #Libcrux_ml_kem.Vector.Avx2.t_SIMD256Vector
     public_key
 
-let validate_public_key
-      (v_K v_RANKED_BYTES_PER_RING_ELEMENT v_PUBLIC_KEY_SIZE: usize)
-      (public_key: t_Array u8 v_PUBLIC_KEY_SIZE)
-     = validate_public_key_avx2 v_K v_RANKED_BYTES_PER_RING_ELEMENT v_PUBLIC_KEY_SIZE public_key
+let validate_public_key (v_K v_PUBLIC_KEY_SIZE: usize) (public_key: t_Array u8 v_PUBLIC_KEY_SIZE) =
+  validate_public_key_avx2 v_K v_PUBLIC_KEY_SIZE public_key
 
 let validate_private_key_avx2
       (v_K v_SECRET_KEY_SIZE v_CIPHERTEXT_SIZE: usize)

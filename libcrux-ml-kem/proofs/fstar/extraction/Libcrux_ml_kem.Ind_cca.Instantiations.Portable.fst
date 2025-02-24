@@ -14,22 +14,18 @@ let _ =
   ()
 
 let generate_keypair
-      (v_K v_CPA_PRIVATE_KEY_SIZE v_PRIVATE_KEY_SIZE v_PUBLIC_KEY_SIZE v_RANKED_BYTES_PER_RING_ELEMENT v_ETA1 v_ETA1_RANDOMNESS_SIZE:
+      (v_K v_CPA_PRIVATE_KEY_SIZE v_PRIVATE_KEY_SIZE v_PUBLIC_KEY_SIZE v_ETA1 v_ETA1_RANDOMNESS_SIZE:
           usize)
       (randomness: t_Array u8 (mk_usize 64))
      =
   Libcrux_ml_kem.Ind_cca.generate_keypair v_K v_CPA_PRIVATE_KEY_SIZE v_PRIVATE_KEY_SIZE
-    v_PUBLIC_KEY_SIZE v_RANKED_BYTES_PER_RING_ELEMENT v_ETA1 v_ETA1_RANDOMNESS_SIZE
+    v_PUBLIC_KEY_SIZE v_ETA1 v_ETA1_RANDOMNESS_SIZE
     #Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
     #(Libcrux_ml_kem.Hash_functions.Portable.t_PortableHash v_K) #Libcrux_ml_kem.Variant.t_MlKem
     randomness
 
-let validate_public_key
-      (v_K v_RANKED_BYTES_PER_RING_ELEMENT v_PUBLIC_KEY_SIZE: usize)
-      (public_key: t_Array u8 v_PUBLIC_KEY_SIZE)
-     =
+let validate_public_key (v_K v_PUBLIC_KEY_SIZE: usize) (public_key: t_Array u8 v_PUBLIC_KEY_SIZE) =
   Libcrux_ml_kem.Ind_cca.validate_public_key v_K
-    v_RANKED_BYTES_PER_RING_ELEMENT
     v_PUBLIC_KEY_SIZE
     #Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
     public_key

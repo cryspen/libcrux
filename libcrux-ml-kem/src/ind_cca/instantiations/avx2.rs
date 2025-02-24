@@ -10,7 +10,6 @@ use crate::{
     $CPA_PRIVATE_KEY_SIZE == Spec.MLKEM.v_CPA_PRIVATE_KEY_SIZE $K /\
     $PRIVATE_KEY_SIZE == Spec.MLKEM.v_CCA_PRIVATE_KEY_SIZE $K /\
     $PUBLIC_KEY_SIZE == Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE $K /\
-    $BYTES_PER_RING_ELEMENT == Spec.MLKEM.v_RANKED_BYTES_PER_RING_ELEMENT $K /\
     $ETA1 == Spec.MLKEM.v_ETA1 $K /\
     $ETA1_RANDOMNESS_SIZE == Spec.MLKEM.v_ETA1_RANDOMNESS_SIZE $K"#))]
 unsafe fn generate_keypair_avx2<
@@ -18,7 +17,6 @@ unsafe fn generate_keypair_avx2<
     const CPA_PRIVATE_KEY_SIZE: usize,
     const PRIVATE_KEY_SIZE: usize,
     const PUBLIC_KEY_SIZE: usize,
-    const BYTES_PER_RING_ELEMENT: usize,
     const ETA1: usize,
     const ETA1_RANDOMNESS_SIZE: usize,
 >(
@@ -29,7 +27,6 @@ unsafe fn generate_keypair_avx2<
         CPA_PRIVATE_KEY_SIZE,
         PRIVATE_KEY_SIZE,
         PUBLIC_KEY_SIZE,
-        BYTES_PER_RING_ELEMENT,
         ETA1,
         ETA1_RANDOMNESS_SIZE,
         crate::vector::SIMD256Vector,
@@ -43,7 +40,6 @@ unsafe fn generate_keypair_avx2<
     $CPA_PRIVATE_KEY_SIZE == Spec.MLKEM.v_CPA_PRIVATE_KEY_SIZE $K /\
     $PRIVATE_KEY_SIZE == Spec.MLKEM.v_CCA_PRIVATE_KEY_SIZE $K /\
     $PUBLIC_KEY_SIZE == Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE $K /\
-    $BYTES_PER_RING_ELEMENT == Spec.MLKEM.v_RANKED_BYTES_PER_RING_ELEMENT $K /\
     $ETA1 == Spec.MLKEM.v_ETA1 $K /\
     $ETA1_RANDOMNESS_SIZE == Spec.MLKEM.v_ETA1_RANDOMNESS_SIZE $K"#))]
 pub(crate) fn generate_keypair<
@@ -51,7 +47,6 @@ pub(crate) fn generate_keypair<
     const CPA_PRIVATE_KEY_SIZE: usize,
     const PRIVATE_KEY_SIZE: usize,
     const PUBLIC_KEY_SIZE: usize,
-    const BYTES_PER_RING_ELEMENT: usize,
     const ETA1: usize,
     const ETA1_RANDOMNESS_SIZE: usize,
 >(
@@ -63,7 +58,6 @@ pub(crate) fn generate_keypair<
             CPA_PRIVATE_KEY_SIZE,
             PRIVATE_KEY_SIZE,
             PUBLIC_KEY_SIZE,
-            BYTES_PER_RING_ELEMENT,
             ETA1,
             ETA1_RANDOMNESS_SIZE,
         >(randomness)
@@ -78,7 +72,6 @@ unsafe fn kyber_generate_keypair_avx2<
     const CPA_PRIVATE_KEY_SIZE: usize,
     const PRIVATE_KEY_SIZE: usize,
     const PUBLIC_KEY_SIZE: usize,
-    const BYTES_PER_RING_ELEMENT: usize,
     const ETA1: usize,
     const ETA1_RANDOMNESS_SIZE: usize,
 >(
@@ -89,7 +82,6 @@ unsafe fn kyber_generate_keypair_avx2<
         CPA_PRIVATE_KEY_SIZE,
         PRIVATE_KEY_SIZE,
         PUBLIC_KEY_SIZE,
-        BYTES_PER_RING_ELEMENT,
         ETA1,
         ETA1_RANDOMNESS_SIZE,
         crate::vector::SIMD256Vector,
@@ -105,7 +97,6 @@ pub(crate) fn kyber_generate_keypair<
     const CPA_PRIVATE_KEY_SIZE: usize,
     const PRIVATE_KEY_SIZE: usize,
     const PUBLIC_KEY_SIZE: usize,
-    const BYTES_PER_RING_ELEMENT: usize,
     const ETA1: usize,
     const ETA1_RANDOMNESS_SIZE: usize,
 >(
@@ -117,7 +108,6 @@ pub(crate) fn kyber_generate_keypair<
             CPA_PRIVATE_KEY_SIZE,
             PRIVATE_KEY_SIZE,
             PUBLIC_KEY_SIZE,
-            BYTES_PER_RING_ELEMENT,
             ETA1,
             ETA1_RANDOMNESS_SIZE,
         >(randomness)
@@ -127,37 +117,22 @@ pub(crate) fn kyber_generate_keypair<
 #[allow(unsafe_code)]
 #[cfg_attr(not(hax), target_feature(enable = "avx2"))]
 #[hax_lib::requires(fstar!(r#"Spec.MLKEM.is_rank $K /\
-    $RANKED_BYTES_PER_RING_ELEMENT == Spec.MLKEM.v_RANKED_BYTES_PER_RING_ELEMENT $K /\
     $PUBLIC_KEY_SIZE == Spec.MLKEM.v_CCA_PUBLIC_KEY_SIZE $K"#))]
-unsafe fn validate_public_key_avx2<
-    const K: usize,
-    const RANKED_BYTES_PER_RING_ELEMENT: usize,
-    const PUBLIC_KEY_SIZE: usize,
->(
+unsafe fn validate_public_key_avx2<const K: usize, const PUBLIC_KEY_SIZE: usize>(
     public_key: &[u8; PUBLIC_KEY_SIZE],
 ) -> bool {
-    crate::ind_cca::validate_public_key::<
-        K,
-        RANKED_BYTES_PER_RING_ELEMENT,
-        PUBLIC_KEY_SIZE,
-        crate::vector::SIMD256Vector,
-    >(public_key)
+    crate::ind_cca::validate_public_key::<K, PUBLIC_KEY_SIZE, crate::vector::SIMD256Vector>(
+        public_key,
+    )
 }
 
 #[allow(unsafe_code)]
 #[hax_lib::requires(fstar!(r#"Spec.MLKEM.is_rank $K /\
-    $RANKED_BYTES_PER_RING_ELEMENT == Spec.MLKEM.v_RANKED_BYTES_PER_RING_ELEMENT $K /\
     $PUBLIC_KEY_SIZE == Spec.MLKEM.v_CCA_PUBLIC_KEY_SIZE $K"#))]
-pub(crate) fn validate_public_key<
-    const K: usize,
-    const RANKED_BYTES_PER_RING_ELEMENT: usize,
-    const PUBLIC_KEY_SIZE: usize,
->(
+pub(crate) fn validate_public_key<const K: usize, const PUBLIC_KEY_SIZE: usize>(
     public_key: &[u8; PUBLIC_KEY_SIZE],
 ) -> bool {
-    unsafe {
-        validate_public_key_avx2::<K, RANKED_BYTES_PER_RING_ELEMENT, PUBLIC_KEY_SIZE>(public_key)
-    }
+    unsafe { validate_public_key_avx2::<K, PUBLIC_KEY_SIZE>(public_key) }
 }
 
 #[allow(unsafe_code)]
@@ -630,7 +605,6 @@ pub(crate) mod unpacked {
     unsafe fn unpack_public_key_avx2<
         const K: usize,
         const T_AS_NTT_ENCODED_SIZE: usize,
-        const RANKED_BYTES_PER_RING_ELEMENT: usize,
         const PUBLIC_KEY_SIZE: usize,
     >(
         public_key: &MlKemPublicKey<PUBLIC_KEY_SIZE>,
@@ -639,7 +613,6 @@ pub(crate) mod unpacked {
         crate::ind_cca::unpacked::unpack_public_key::<
             K,
             T_AS_NTT_ENCODED_SIZE,
-            RANKED_BYTES_PER_RING_ELEMENT,
             PUBLIC_KEY_SIZE,
             crate::hash_functions::avx2::Simd256Hash,
             crate::vector::SIMD256Vector,
@@ -656,19 +629,16 @@ pub(crate) mod unpacked {
     pub(crate) fn unpack_public_key<
         const K: usize,
         const T_AS_NTT_ENCODED_SIZE: usize,
-        const RANKED_BYTES_PER_RING_ELEMENT: usize,
         const PUBLIC_KEY_SIZE: usize,
     >(
         public_key: &MlKemPublicKey<PUBLIC_KEY_SIZE>,
         unpacked_public_key: &mut MlKemPublicKeyUnpacked<K>,
     ) {
         unsafe {
-            unpack_public_key_avx2::<
-                K,
-                T_AS_NTT_ENCODED_SIZE,
-                RANKED_BYTES_PER_RING_ELEMENT,
-                PUBLIC_KEY_SIZE,
-            >(public_key, unpacked_public_key)
+            unpack_public_key_avx2::<K, T_AS_NTT_ENCODED_SIZE, PUBLIC_KEY_SIZE>(
+                public_key,
+                unpacked_public_key,
+            )
         }
     }
 
@@ -679,14 +649,12 @@ pub(crate) mod unpacked {
                 v_SECRET_KEY_SIZE == Spec.MLKEM.v_CCA_PRIVATE_KEY_SIZE v_K /\
                 v_CPA_SECRET_KEY_SIZE == Spec.MLKEM.v_CPA_PRIVATE_KEY_SIZE v_K /\
                 v_PUBLIC_KEY_SIZE == Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE v_K /\
-                v_BYTES_PER_RING_ELEMENT == Spec.MLKEM.v_RANKED_BYTES_PER_RING_ELEMENT v_K /\
                 v_T_AS_NTT_ENCODED_SIZE == Spec.MLKEM.v_T_AS_NTT_ENCODED_SIZE v_K"#))]
     pub(crate) fn keypair_from_private_key<
         const K: usize,
         const SECRET_KEY_SIZE: usize,
         const CPA_SECRET_KEY_SIZE: usize,
         const PUBLIC_KEY_SIZE: usize,
-        const BYTES_PER_RING_ELEMENT: usize,
         const T_AS_NTT_ENCODED_SIZE: usize,
     >(
         private_key: &MlKemPrivateKey<SECRET_KEY_SIZE>,
@@ -697,7 +665,6 @@ pub(crate) mod unpacked {
             SECRET_KEY_SIZE,
             CPA_SECRET_KEY_SIZE,
             PUBLIC_KEY_SIZE,
-            BYTES_PER_RING_ELEMENT,
             T_AS_NTT_ENCODED_SIZE,
             crate::vector::SIMD256Vector,
         >(private_key, key_pair);
@@ -708,14 +675,12 @@ pub(crate) mod unpacked {
     #[hax_lib::requires(fstar!(r#"Spec.MLKEM.is_rank $K /\
         $ETA1_RANDOMNESS_SIZE == Spec.MLKEM.v_ETA1_RANDOMNESS_SIZE $K /\
         $ETA1 == Spec.MLKEM.v_ETA1 $K /\
-        $BYTES_PER_RING_ELEMENT == Spec.MLKEM.v_RANKED_BYTES_PER_RING_ELEMENT $K /\
         $PUBLIC_KEY_SIZE == Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE $K"#))]
     unsafe fn generate_keypair_avx2<
         const K: usize,
         const CPA_PRIVATE_KEY_SIZE: usize,
         const PRIVATE_KEY_SIZE: usize,
         const PUBLIC_KEY_SIZE: usize,
-        const BYTES_PER_RING_ELEMENT: usize,
         const ETA1: usize,
         const ETA1_RANDOMNESS_SIZE: usize,
     >(
@@ -727,7 +692,6 @@ pub(crate) mod unpacked {
             CPA_PRIVATE_KEY_SIZE,
             PRIVATE_KEY_SIZE,
             PUBLIC_KEY_SIZE,
-            BYTES_PER_RING_ELEMENT,
             ETA1,
             ETA1_RANDOMNESS_SIZE,
             crate::vector::SIMD256Vector,
@@ -741,14 +705,12 @@ pub(crate) mod unpacked {
     #[hax_lib::requires(fstar!(r#"Spec.MLKEM.is_rank $K /\
         $ETA1_RANDOMNESS_SIZE == Spec.MLKEM.v_ETA1_RANDOMNESS_SIZE $K /\
         $ETA1 == Spec.MLKEM.v_ETA1 $K /\
-        $BYTES_PER_RING_ELEMENT == Spec.MLKEM.v_RANKED_BYTES_PER_RING_ELEMENT $K /\
         $PUBLIC_KEY_SIZE == Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE $K"#))]
     pub(crate) fn generate_keypair<
         const K: usize,
         const CPA_PRIVATE_KEY_SIZE: usize,
         const PRIVATE_KEY_SIZE: usize,
         const PUBLIC_KEY_SIZE: usize,
-        const BYTES_PER_RING_ELEMENT: usize,
         const ETA1: usize,
         const ETA1_RANDOMNESS_SIZE: usize,
     >(
@@ -761,7 +723,6 @@ pub(crate) mod unpacked {
                 CPA_PRIVATE_KEY_SIZE,
                 PRIVATE_KEY_SIZE,
                 PUBLIC_KEY_SIZE,
-                BYTES_PER_RING_ELEMENT,
                 ETA1,
                 ETA1_RANDOMNESS_SIZE,
             >(randomness, out)

@@ -11,11 +11,11 @@ repository.workspace = true
 readme.workspace = true
 
 [dependencies]
-libcrux-poly1305 = { version = "=0.0.2-beta.2", path = "../poly1305/", features = [
+libcrux-poly1305 = { version = "=0.0.2-beta.3", path = "../poly1305/", features = [
     "expose-hacl",
 ] }
-libcrux-hacl-rs = { version = "=0.0.2-beta.2", path = "../hacl-rs/" }
-libcrux-macros = { version = "=0.0.2-beta.2", path = "../macros" }
+libcrux-hacl-rs = { version = "=0.0.2-beta.3", path = "../hacl-rs/" }
+libcrux-macros = { version = "=0.0.2-beta.3", path = "../macros" }
 
 [dev-dependencies]
 hex = { version = "0.4.3", features = ["serde"] }
