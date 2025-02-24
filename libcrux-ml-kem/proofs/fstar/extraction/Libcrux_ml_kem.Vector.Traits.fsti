@@ -54,6 +54,16 @@ class t_Operations (v_Self: Type0) = {
     -> Prims.Pure (t_Array i16 (mk_usize 16))
         (f_to_i16_array_pre x0)
         (fun result -> f_to_i16_array_post x0 result);
+  f_from_bytes_pre:array: t_Slice u8
+    -> pred: Type0{(Core.Slice.impl__len #u8 array <: usize) >=. mk_usize 32 ==> pred};
+  f_from_bytes_post:t_Slice u8 -> v_Self -> Type0;
+  f_from_bytes:x0: t_Slice u8
+    -> Prims.Pure v_Self (f_from_bytes_pre x0) (fun result -> f_from_bytes_post x0 result);
+  f_to_bytes_pre:x: v_Self -> bytes: t_Slice u8
+    -> pred: Type0{(Core.Slice.impl__len #u8 bytes <: usize) >=. mk_usize 32 ==> pred};
+  f_to_bytes_post:v_Self -> t_Slice u8 -> t_Slice u8 -> Type0;
+  f_to_bytes:x0: v_Self -> x1: t_Slice u8
+    -> Prims.Pure (t_Slice u8) (f_to_bytes_pre x0 x1) (fun result -> f_to_bytes_post x0 x1 result);
   f_add_pre:lhs: v_Self -> rhs: v_Self
     -> pred:
       Type0
