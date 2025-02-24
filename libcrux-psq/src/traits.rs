@@ -2,7 +2,7 @@
 use libcrux_hkdf::{expand as hkdf_expand, Algorithm as HKDF_Algorithm};
 use libcrux_hmac::{hmac, Algorithm as HMAC_Algorithm};
 use libcrux_traits::kem::KEM;
-use rand::{CryptoRng, Rng};
+use rand::CryptoRng;
 
 use crate::Error;
 
@@ -15,7 +15,7 @@ const CONFIRMATION_CONTEXT: &[u8] = b"Confirmation";
 const PSK_CONTEXT: &[u8] = b"PSK";
 const MAC_INPUT: &[u8] = b"MAC-Input";
 
-const MAC_LENGTH: usize = 32;
+pub(crate) const MAC_LENGTH: usize = 32;
 type Mac = [u8; MAC_LENGTH];
 
 /// A post-quantum shared secret component.
@@ -32,6 +32,16 @@ pub trait Encode {
     fn encode(&self) -> Vec<u8>;
 }
 
+/// Generic decode trait.
+pub trait Decode {
+    /// Decode bytes to self
+    ///
+    /// Returns self and the number of bytes consumed from `bytes`.
+    fn decode(bytes: &[u8]) -> Result<(Self, usize), Error>
+    where
+        Self: Sized;
+}
+
 pub(crate) mod private {
     pub trait Seal {}
 }
@@ -45,7 +55,7 @@ pub trait PSQ: private::Seal {
     fn encapsulate_psq(
         pk: &<Self::InnerKEM as KEM>::EncapsulationKey,
         sctx: &[u8],
-        rng: &mut (impl CryptoRng + Rng),
+        rng: &mut impl CryptoRng,
     ) -> Result<(PSQComponent, Ciphertext<Self::InnerKEM>), Error> {
         let (ikm, enc) =
             Self::InnerKEM::encapsulate(pk, rng).map_err(|_| Error::PSQGenerationError)?;
@@ -90,8 +100,8 @@ pub trait PSQ: private::Seal {
 
 /// A PSQ ciphertext, including MAC.
 pub struct Ciphertext<T: KEM> {
-    inner_ctxt: T::Ciphertext,
-    mac: Mac,
+    pub(crate) inner_ctxt: T::Ciphertext,
+    pub(crate) mac: Mac,
 }
 
 impl<T: KEM<Ciphertext: Encode>> Encode for Ciphertext<T> {

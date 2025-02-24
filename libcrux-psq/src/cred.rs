@@ -14,12 +14,8 @@ pub trait Credential {
     /// Length (in bytes) of a serialized signature.
     const SIG_LEN: usize;
 
-    /// Return a signature, as well as the verification key needed to
-    /// verify the signature.
-    fn sign(
-        signing_key: &Self::SigningKey,
-        message: &[u8],
-    ) -> Result<(Self::Signature, Self::VerificationKey), Error>;
+    /// Return a signature
+    fn sign(signing_key: &Self::SigningKey, message: &[u8]) -> Result<Self::Signature, Error>;
 
     /// Verify a signature.
     fn verify(
@@ -46,11 +42,8 @@ impl Credential for NoAuth {
     const VK_LEN: usize = 0;
     const SIG_LEN: usize = 0;
 
-    fn sign(
-        _signing_key: &Self::SigningKey,
-        _message: &[u8],
-    ) -> Result<(Self::Signature, Self::VerificationKey), Error> {
-        Ok(([0; 0], [0; 0]))
+    fn sign(_signing_key: &Self::SigningKey, _message: &[u8]) -> Result<Self::Signature, Error> {
+        Ok([0; 0])
     }
 
     fn verify(
@@ -84,14 +77,8 @@ impl Credential for Ed25519 {
 
     const SIG_LEN: usize = 64;
 
-    fn sign(
-        signing_key: &Self::SigningKey,
-        message: &[u8],
-    ) -> Result<(Self::Signature, Self::VerificationKey), Error> {
-        let sig = libcrux_ed25519::sign(message, signing_key).map_err(|_| Error::CredError)?;
-        let mut vk = [0u8; 32];
-        libcrux_ed25519::secret_to_public(&mut vk, signing_key);
-        Ok((sig, vk))
+    fn sign(signing_key: &Self::SigningKey, message: &[u8]) -> Result<Self::Signature, Error> {
+        libcrux_ed25519::sign(message, signing_key).map_err(|_| Error::CredError)
     }
 
     fn verify(
