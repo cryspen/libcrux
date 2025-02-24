@@ -17,7 +17,7 @@ concurrency:
 
 jobs:
   build:
-    if: ${{ github.event_name == 'workflow_dispatch' || github.event_name == 'pull_request' }}
+    if: ${{ github.event_name != 'merge_group' }}
     strategy:
       fail-fast: false
       matrix:
@@ -169,6 +169,18 @@ jobs:
         run: |
           cargo clean
           cargo hack test --each-feature $EXCLUDE_FEATURES --verbose $RUST_TARGET_FLAG
+  
+  mlkem-build-test-status:
+    if: ${{ always() }}
+    needs: [build]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Successful
+        if: ${{ !(contains(needs.*.result, 'failure')) }} 
+        run: exit 0 
+      - name: Failing
+        if: ${{ (contains(needs.*.result, 'failure')) }} 
+        run: exit 1 
 
   fuzz:
     strategy:

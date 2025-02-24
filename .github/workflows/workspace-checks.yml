@@ -17,7 +17,7 @@ concurrency:
 
 jobs:
   fmt:
-    if: ${{ github.event_name == 'workflow_dispatch' || github.event_name == 'pull_request' }}
+    if: ${{ github.event_name != 'merge_group' }}
     runs-on: ubuntu-latest
 
     steps:
@@ -25,3 +25,15 @@ jobs:
 
       - name: 🧹 Cargo fmt
         run: cargo fmt --all -- --check
+
+  fmt-status:
+    if: ${{ always() }}
+    needs: [fmt]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Successful
+        if: ${{ !(contains(needs.*.result, 'failure')) }} 
+        run: exit 0 
+      - name: Failing
+        if: ${{ (contains(needs.*.result, 'failure')) }} 
+        run: exit 1 

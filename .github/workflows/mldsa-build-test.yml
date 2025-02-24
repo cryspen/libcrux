@@ -17,6 +17,7 @@ concurrency:
 
 jobs:
   build:
+    if: ${{ github.event_name != 'merge_group' }}
     strategy:
       fail-fast: false
       matrix:
@@ -40,12 +41,6 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-      # ------------ Status check setup ------------
-      # ------------ Skip on merge queue -----------
-      - name: Setup
-        if: ${{ github.event_name != 'merge_group' }}
-        run: echo "Running status check job"
-      # --------------------------------------------
 
       - name: Update dependencies
         run: cargo update
@@ -110,10 +105,15 @@ jobs:
         run: |
           cargo clean
           cargo bench --no-run
-
-      # ------------ Status check report ------------
-      # ------------ Skip on merge queue ------------
-      - name: Report
-        if: ${{ (always() && github.event_name == 'merge_group') || github.event_name != 'merge_group' }}
-        run: echo "Completed or skipped status check job"
-      # ---------------------------------------------
+  
+  mldsa-build-test-status:
+    if: ${{ always() }}
+    needs: [build]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Successful
+        if: ${{ !(contains(needs.*.result, 'failure')) }} 
+        run: exit 0 
+      - name: Failing
+        if: ${{ (contains(needs.*.result, 'failure')) }} 
+        run: exit 1 
