@@ -8,7 +8,7 @@ edition.workspace = true
 repository.workspace = true
 readme.workspace = true
 description = "Libcrux Pre-Shared post-Quantum key establishement protocol"
-publish = false
+publish = true
 
 [lib]
 bench = false # so libtest doesn't eat the arguments to criterion
