@@ -112,7 +112,7 @@ jobs:
   status-build:
     runs-on: ubuntu-latest
     needs: [build]
-    if: ${{ ((always() && needs.build.result == 'skipped') || ((github.event_name == 'workflow_dispatch' || github.event_name == 'pull_request')}}
+    if: ${{ needs.build.result == 'success' || (always() && github.event_name == 'merge_group' && needs.build.result == 'skipped') }}
     steps:
       - name: Report status
-        run: echo "Succeeded or skipped build"
+        run: echo "Job succeeded, or was skipped due to invalid trigger"
