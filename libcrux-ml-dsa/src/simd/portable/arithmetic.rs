@@ -536,7 +536,7 @@ pub(super) fn compute_hint(
 //
 // Note that 0 ≤ r₁ < (q-1)/α.
 #[inline(always)]
-#[hax_lib::fstar::options("--z3rlimit 1500 --ext context_pruning --z3refresh --split_queries always")]
+#[hax_lib::fstar::options("--fuel 3 --z3rlimit 500 --ext context_pruning --z3refresh --split_queries always")]
 #[hax_lib::requires(fstar!(r#"(v $gamma2 == v $GAMMA2_V261_888 \/ v $gamma2 == v $GAMMA2_V95_232) /\
     Spec.Utils.is_i32b (v $FIELD_MODULUS - 1) $r"#))]
 #[hax_lib::ensures(|(r0,r1)| fstar!(r#"
