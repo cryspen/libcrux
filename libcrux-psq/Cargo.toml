@@ -25,10 +25,12 @@ classic-mceliece-rust = { version = "2.0.0", features = [
 rand = { version = "0.9" }
 rand_old = { version = "0.8", package = "rand", optional = true }
 libcrux-ecdh = { version = "0.0.2-beta.3", path = "../libcrux-ecdh" }
+libcrux-ed25519 = { version = "0.0.2-beta.3", path = "../ed25519" }
 libcrux = { version = "0.0.2-beta.3", path = ".." }
 
 [dev-dependencies]
 criterion = "0.5"
+openssl = "0.10" # for generating Ed25519 private keys
 
 [features]
 classic-mceliece = ["dep:classic-mceliece-rust", "rand_old"]
