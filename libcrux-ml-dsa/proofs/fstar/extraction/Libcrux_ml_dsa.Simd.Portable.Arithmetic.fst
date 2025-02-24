@@ -362,7 +362,7 @@ let montgomery_multiply (lhs rhs: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coe
 
 #pop-options
 
-#push-options "--ext context_pruning --z3refresh"
+#push-options "--ext context_pruning --z3refresh --split_queries always"
 
 let power2round_element (t: i32) =
   let _:Prims.unit =
@@ -722,7 +722,7 @@ let compute_hint
   let hax_temp_output:usize = one_hints_count in
   hint, hax_temp_output <: (Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients & usize)
 
-#push-options "--z3rlimit 800 --ext context_pruning --z3refresh --split_queries always"
+#push-options "--z3rlimit 1500 --ext context_pruning --z3refresh --split_queries always"
 
 let decompose_element (gamma2 r: i32) =
   let _:Prims.unit =

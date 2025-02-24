@@ -259,7 +259,7 @@ pub(crate) fn montgomery_multiply(lhs: &mut Coefficients, rhs: &Coefficients) {
 // We assume the input t is in the signed representative range and convert it
 // to the standard unsigned range.
 #[inline(always)]
-#[hax_lib::fstar::options("--ext context_pruning --z3refresh")]
+#[hax_lib::fstar::options("--ext context_pruning --z3refresh --split_queries always")]
 #[hax_lib::requires(fstar!(r#"Spec.Utils.is_i32b (v $FIELD_MODULUS - 1) $t"#))]
 #[hax_lib::ensures(|(t0,t1)| fstar!(r#"
     v $t0 == Spec.Utils.mod_q (v $t % v $FIELD_MODULUS) (pow2 (v $BITS_IN_LOWER_PART_OF_T)) /\
@@ -536,7 +536,7 @@ pub(super) fn compute_hint(
 //
 // Note that 0 ≤ r₁ < (q-1)/α.
 #[inline(always)]
-#[hax_lib::fstar::options("--z3rlimit 800 --ext context_pruning --z3refresh --split_queries always")]
+#[hax_lib::fstar::options("--z3rlimit 1500 --ext context_pruning --z3refresh --split_queries always")]
 #[hax_lib::requires(fstar!(r#"(v $gamma2 == v $GAMMA2_V261_888 \/ v $gamma2 == v $GAMMA2_V95_232) /\
     Spec.Utils.is_i32b (v $FIELD_MODULUS - 1) $r"#))]
 #[hax_lib::ensures(|(r0,r1)| fstar!(r#"
