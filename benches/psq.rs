@@ -139,33 +139,6 @@ pub fn comparisons_kem_decaps(c: &mut Criterion) {
     });
 }
 
-pub fn comparisons_psq_key_generation(c: &mut Criterion) {
-    let mut rng = thread_rng();
-    let mut group = c.benchmark_group("PSK-PQ Key Generation");
-    group.measurement_time(Duration::from_secs(15));
-
-    group.bench_function("libcrux ML-KEM-768", |b| {
-        b.iter(|| {
-            let _ = libcrux_psq::psq::generate_key_pair(Algorithm::MlKem768, &mut rng);
-        })
-    });
-    group.bench_function("libcrux X25519", |b| {
-        b.iter(|| {
-            let _ = libcrux_psq::psq::generate_key_pair(Algorithm::X25519, &mut rng);
-        })
-    });
-    group.bench_function("libcrux XWingKemDraft02", |b| {
-        b.iter(|| {
-            let _ = libcrux_psq::psq::generate_key_pair(Algorithm::XWingKemDraft02, &mut rng);
-        })
-    });
-    group.bench_function("classic_mceliece_rust (mceliece460896f)", |b| {
-        b.iter(|| {
-            let _ = libcrux_psq::psq::generate_key_pair(Algorithm::ClassicMcEliece, &mut rng);
-        })
-    });
-}
-
 pub fn comparisons_ecdh_psq_send(c: &mut Criterion) {
     let mut rng = thread_rng();
     let mut group = c.benchmark_group("ECDH-bound PSK-PQ Pre-Shared Key Send");
@@ -453,7 +426,6 @@ pub fn comparisons(c: &mut Criterion) {
     comparisons_kem_decaps(c);
 
     // PSQ protocol
-    comparisons_psq_key_generation(c);
     comparisons_ecdh_psq_send(c);
     comparisons_ecdh_psq_receive(c);
 }
