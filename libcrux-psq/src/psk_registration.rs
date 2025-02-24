@@ -74,13 +74,11 @@ impl Initiator {
         let ts_ttl = serialize_ts_ttl(&ts, &psk_ttl);
 
         let (signature, verification_key) = C::sign(signing_key, &enc_pq.encode())?;
-        let signature_bytes = C::serialize_signature(&signature);
-        let vk_bytes = C::serialize_verification_key(&verification_key);
 
         let mut message = Vec::new();
         message.extend_from_slice(&ts_ttl);
-        message.extend_from_slice(&vk_bytes);
-        message.extend_from_slice(&signature_bytes);
+        message.extend_from_slice(verification_key.as_ref());
+        message.extend_from_slice(signature.as_ref());
 
         let (tag, ctxt) = encrypt_detached(&initiator_key, &mut message, initiator_iv, b"")
             .map_err(|_| Error::CryptoError)?;
@@ -269,12 +267,15 @@ fn derive_key_iv(
 mod tests {
     use std::time::Duration;
 
-    use crate::{cred::NoAuth, impls::MlKem768};
+    use crate::{
+        cred::{Ed25519, NoAuth},
+        impls::MlKem768,
+    };
 
     use super::*;
 
     #[test]
-    fn simple() {
+    fn registration_no_auth_mlkem768() {
         let mut rng = rand::rng();
         let (receiver_pqsk, receiver_pqpk) = MlKem768::generate_key_pair(&mut rng).unwrap();
 
@@ -284,12 +285,52 @@ mod tests {
             sctx,
             Duration::from_secs(3600),
             &receiver_pqpk,
-            &(),
+            &[0; 0],
             &mut rng,
         )
         .unwrap();
 
         let (handled_psk_responder, respone_msg) = Responder::send::<NoAuth, MlKem768>(
+            psk_handle,
+            Duration::from_secs(3600),
+            sctx,
+            &receiver_pqpk,
+            &receiver_pqsk,
+            &initiator_msg,
+        )
+        .unwrap();
+
+        assert_eq!(handled_psk_responder.psk_handle, psk_handle);
+
+        let handled_psk_initiator = initiator.complete_handshake(&respone_msg).unwrap();
+
+        assert_eq!(
+            handled_psk_initiator.psk_handle,
+            handled_psk_responder.psk_handle
+        );
+        assert_eq!(handled_psk_initiator.psk, handled_psk_responder.psk);
+    }
+
+    #[test]
+    fn registration_ed25519_mlkem768() {
+        let mut rng = rand::rng();
+        let (receiver_pqsk, receiver_pqpk) = MlKem768::generate_key_pair(&mut rng).unwrap();
+        let (sk, _pk) =
+            libcrux::signature::key_gen(libcrux::signature::Algorithm::Ed25519, &mut rng).unwrap();
+
+        let sk: [u8; 32] = sk.try_into().unwrap();
+        let sctx = b"test context";
+        let psk_handle = b"test handle";
+        let (initiator, initiator_msg) = Initiator::send_initial_message::<Ed25519, MlKem768>(
+            sctx,
+            Duration::from_secs(3600),
+            &receiver_pqpk,
+            &sk,
+            &mut rng,
+        )
+        .unwrap();
+
+        let (handled_psk_responder, respone_msg) = Responder::send::<Ed25519, MlKem768>(
             psk_handle,
             Duration::from_secs(3600),
             sctx,
