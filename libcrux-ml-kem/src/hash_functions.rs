@@ -24,20 +24,20 @@ pub(crate) const THREE_BLOCKS: usize = BLOCK_SIZE * 3;
 /// - NEON
 /// - Portable
 #[hax_lib::attributes]
-pub(crate) trait Hash<const K: usize> {
+pub(crate) trait Hash {
     /// G aka SHA3 512
     #[requires(true)]
     #[ensures(|result|
         fstar!(r#"$result == Spec.Utils.v_G $input"#))
     ]
-    fn G(input: &[u8]) -> [u8; G_DIGEST_SIZE];
+    fn G(input: &[u8], output: &mut [u8; G_DIGEST_SIZE]);
 
     /// H aka SHA3 256
     #[requires(true)]
     #[ensures(|result|
         fstar!(r#"$result == Spec.Utils.v_H $input"#))
     ]
-    fn H(input: &[u8]) -> [u8; H_DIGEST_SIZE];
+    fn H(input: &[u8], output: &mut [u8; H_DIGEST_SIZE]);
 
     /// PRF aka SHAKE256
     #[requires(fstar!(r#"v $LEN < pow2 32"#))]
@@ -54,19 +54,20 @@ pub(crate) trait Hash<const K: usize> {
         fstar!(r#"(v $LEN < pow2 32 /\ (v $K == 2 \/ v $K == 3 \/ v $K == 4)) ==>
             $result == Spec.Utils.v_PRFxN $K $LEN $input"#))
     ]
-    fn PRFxN<const LEN: usize>(input: &[[u8; 33]; K]) -> [[u8; LEN]; K];
+    // fn PRFxN<const LEN: usize>(input: &[[u8; 33]; K]) -> [[u8; LEN]; K];
+    fn PRFxN(input: &[[u8; 33]], outputs: &mut [u8], out_len: usize);
 
     /// Create a SHAKE128 state and absorb the input.
     #[requires(true)]
-    fn shake128_init_absorb_final(input: [[u8; 34]; K]) -> Self;
+    fn shake128_init_absorb_final(input: &[[u8; 34]]) -> Self;
 
     /// Squeeze 3 blocks out of the SHAKE128 state.
     #[requires(true)]
-    fn shake128_squeeze_first_three_blocks(&mut self) -> [[u8; THREE_BLOCKS]; K];
+    fn shake128_squeeze_first_three_blocks(&mut self, output: &mut [[u8; THREE_BLOCKS]]);
 
     /// Squeeze 1 block out of the SHAKE128 state.
     #[requires(true)]
-    fn shake128_squeeze_next_block(&mut self) -> [[u8; BLOCK_SIZE]; K];
+    fn shake128_squeeze_next_block(&mut self, output: &mut [[u8; BLOCK_SIZE]]);
 }
 
 /// A portable implementation of [`Hash`]
@@ -79,28 +80,24 @@ pub(crate) mod portable {
     /// It's only used for SHAKE128.
     /// All other functions don't actually use any members.
     #[cfg_attr(hax, hax_lib::opaque)]
-    pub(crate) struct PortableHash<const K: usize> {
-        shake128_state: [KeccakState; K],
+    pub(crate) struct PortableHash {
+        shake128_state: [KeccakState; 4],
     }
 
     #[hax_lib::ensures(|result|
         fstar!(r#"$result == Spec.Utils.v_G $input"#))
     ]
     #[inline(always)]
-    fn G(input: &[u8]) -> [u8; G_DIGEST_SIZE] {
-        let mut digest = [0u8; G_DIGEST_SIZE];
-        portable::sha512(&mut digest, input);
-        digest
+    fn G(input: &[u8], output: &mut [u8; G_DIGEST_SIZE]) {
+        portable::sha512(output, input);
     }
 
     #[hax_lib::ensures(|result|
         fstar!(r#"$result == Spec.Utils.v_H $input"#))
     ]
     #[inline(always)]
-    fn H(input: &[u8]) -> [u8; H_DIGEST_SIZE] {
-        let mut digest = [0u8; H_DIGEST_SIZE];
-        portable::sha256(&mut digest, input);
-        digest
+    fn H(input: &[u8], output: &mut [u8; H_DIGEST_SIZE]) {
+        portable::sha256(output, input);
     }
 
     #[hax_lib::requires(fstar!(r#"v $LEN < pow2 32"#))]
@@ -119,72 +116,63 @@ pub(crate) mod portable {
         fstar!(r#"$result == Spec.Utils.v_PRFxN $K $LEN $input"#))
     ]
     #[inline(always)]
-    fn PRFxN<const K: usize, const LEN: usize>(input: &[[u8; 33]; K]) -> [[u8; LEN]; K] {
-        debug_assert!(K == 2 || K == 3 || K == 4);
-
-        let mut out = [[0u8; LEN]; K];
-        for i in 0..K {
-            portable::shake256(&mut out[i], &input[i]);
+    fn PRFxN(input: &[[u8; 33]], outputs: &mut [u8], out_len: usize) {
+        for i in 0..input.len() {
+            portable::shake256(&mut outputs[i * out_len..(i + 1) * out_len], &input[i]);
         }
-        out
     }
 
     #[inline(always)]
-    fn shake128_init_absorb_final<const K: usize>(input: [[u8; 34]; K]) -> PortableHash<K> {
-        debug_assert!(K == 2 || K == 3 || K == 4);
+    fn shake128_init_absorb_final(input: &[[u8; 34]]) -> PortableHash {
+        debug_assert!(input.len() == 2 || input.len() == 3 || input.len() == 4);
 
-        let mut shake128_state = [incremental::shake128_init(); K];
-        for i in 0..K {
+        let mut shake128_state = [incremental::shake128_init(); 4];
+        for i in 0..input.len() {
             incremental::shake128_absorb_final(&mut shake128_state[i], &input[i]);
         }
         PortableHash { shake128_state }
     }
 
     #[inline(always)]
-    fn shake128_squeeze_first_three_blocks<const K: usize>(
-        st: &mut PortableHash<K>,
-    ) -> [[u8; THREE_BLOCKS]; K] {
-        debug_assert!(K == 2 || K == 3 || K == 4);
+    fn shake128_squeeze_first_three_blocks(
+        st: &mut PortableHash,
+        outputs: &mut [[u8; THREE_BLOCKS]],
+    ) {
+        debug_assert!(outputs.len() == 2 || outputs.len() == 3 || outputs.len() == 4);
 
-        let mut out = [[0u8; THREE_BLOCKS]; K];
-        for i in 0..K {
+        for i in 0..outputs.len() {
             incremental::shake128_squeeze_first_three_blocks(
                 &mut st.shake128_state[i],
-                &mut out[i],
+                &mut outputs[i],
             );
         }
-        out
     }
 
     #[inline(always)]
-    fn shake128_squeeze_next_block<const K: usize>(
-        st: &mut PortableHash<K>,
-    ) -> [[u8; BLOCK_SIZE]; K] {
-        debug_assert!(K == 2 || K == 3 || K == 4);
+    fn shake128_squeeze_next_block(st: &mut PortableHash, outputs: &mut [[u8; BLOCK_SIZE]]) {
+        debug_assert!(outputs.len() == 2 || outputs.len() == 3 || outputs.len() == 4);
 
-        let mut out = [[0u8; BLOCK_SIZE]; K];
-        for i in 0..K {
-            incremental::shake128_squeeze_next_block(&mut st.shake128_state[i], &mut out[i]);
+        for i in 0..outputs.len() {
+            incremental::shake128_squeeze_next_block(&mut st.shake128_state[i], &mut outputs[i]);
         }
-        out
     }
 
     #[hax_lib::attributes]
-    impl<const K: usize> Hash<K> for PortableHash<K> {
+    impl Hash for PortableHash {
         #[ensures(|out|
             fstar!(r#"$out == Spec.Utils.v_G $input"#))
         ]
         #[inline(always)]
-        fn G(input: &[u8]) -> [u8; G_DIGEST_SIZE] {
-            G(input)
+        fn G(input: &[u8], output: &mut [u8; G_DIGEST_SIZE]) {
+            G(input, output)
         }
 
         #[ensures(|out|
             fstar!(r#"$out == Spec.Utils.v_H $input"#))
         ]
         #[inline(always)]
-        fn H(input: &[u8]) -> [u8; H_DIGEST_SIZE] {
-            H(input)
+        fn H(input: &[u8], output: &mut [u8; H_DIGEST_SIZE]) {
+            H(input, output)
         }
 
         #[requires(fstar!(r#"v $LEN < pow2 32"#))]
@@ -203,23 +191,23 @@ pub(crate) mod portable {
                 $out == Spec.Utils.v_PRFxN $K $LEN $input"#))
         ]
         #[inline(always)]
-        fn PRFxN<const LEN: usize>(input: &[[u8; 33]; K]) -> [[u8; LEN]; K] {
-            PRFxN::<K, LEN>(input)
+        fn PRFxN(input: &[[u8; 33]], outputs: &mut [u8], out_len: usize) {
+            PRFxN(input, outputs, out_len)
         }
 
         #[inline(always)]
-        fn shake128_init_absorb_final(input: [[u8; 34]; K]) -> Self {
+        fn shake128_init_absorb_final(input: &[[u8; 34]]) -> Self {
             shake128_init_absorb_final(input)
         }
 
         #[inline(always)]
-        fn shake128_squeeze_first_three_blocks(&mut self) -> [[u8; THREE_BLOCKS]; K] {
-            shake128_squeeze_first_three_blocks(self)
+        fn shake128_squeeze_first_three_blocks(&mut self, output: &mut [[u8; THREE_BLOCKS]]) {
+            shake128_squeeze_first_three_blocks(self, output)
         }
 
         #[inline(always)]
-        fn shake128_squeeze_next_block(&mut self) -> [[u8; BLOCK_SIZE]; K] {
-            shake128_squeeze_next_block(self)
+        fn shake128_squeeze_next_block(&mut self, output: &mut [[u8; BLOCK_SIZE]]) {
+            shake128_squeeze_next_block(self, output)
         }
     }
 }
@@ -246,20 +234,16 @@ pub(crate) mod avx2 {
         fstar!(r#"$result == Spec.Utils.v_G $input"#))
     ]
     #[inline(always)]
-    fn G(input: &[u8]) -> [u8; G_DIGEST_SIZE] {
-        let mut digest = [0u8; G_DIGEST_SIZE];
-        portable::sha512(&mut digest, input);
-        digest
+    fn G(input: &[u8], output: &mut [u8; G_DIGEST_SIZE]) {
+        portable::sha512(output, input);
     }
 
     #[hax_lib::ensures(|result|
         fstar!(r#"$result == Spec.Utils.v_H $input"#))
     ]
     #[inline(always)]
-    fn H(input: &[u8]) -> [u8; H_DIGEST_SIZE] {
-        let mut digest = [0u8; H_DIGEST_SIZE];
-        portable::sha256(&mut digest, input);
-        digest
+    fn H(input: &[u8], output: &mut [u8; H_DIGEST_SIZE]) {
+        portable::sha256(output, input);
     }
 
     #[hax_lib::requires(fstar!(r#"v $LEN < pow2 32"#))]
@@ -278,53 +262,57 @@ pub(crate) mod avx2 {
         fstar!(r#"$result == Spec.Utils.v_PRFxN $K $LEN $input"#))
     ]
     #[inline(always)]
-    fn PRFxN<const K: usize, const LEN: usize>(input: &[[u8; 33]; K]) -> [[u8; LEN]; K] {
-        debug_assert!(K == 2 || K == 3 || K == 4);
-        let mut out = [[0u8; LEN]; K];
-        let mut out0 = [0u8; LEN];
-        let mut out1 = [0u8; LEN];
-        let mut out2 = [0u8; LEN];
-        let mut out3 = [0u8; LEN];
+    fn PRFxN(input: &[[u8; 33]], outputs: &mut [u8], out_len: usize) {
+        // XXX: The buffer sizes here are the maximum that we will
+        // need. PRFxN is called to fill N buffers of size
+        // `ETA1/2_RANDOMNESS_SIZE`. The maximum value for
+        // `ETA1/2_RANDOMNESS_SIZE` is in ML-KEM 512 with `ETA1 = 3`
+        // and `ETA1_RANDOMNESS_SIZE = ETA1 * 64`.  This means,
+        // unfortunately, that we overallocate and oversample in the
+        // other cases.
+        let mut out0 = [0u8; 3 * 64];
+        let mut out1 = [0u8; 3 * 64];
+        let mut out2 = [0u8; 3 * 64];
+        let mut out3 = [0u8; 3 * 64];
 
-        match K as u8 {
+        match input.len() as u8 {
             2 => {
                 x4::shake256(
                     &input[0], &input[1], &input[0], &input[0], &mut out0, &mut out1, &mut out2,
                     &mut out3,
                 );
-                out[0] = out0;
-                out[1] = out1;
+                outputs[0..out_len].copy_from_slice(&out0[..out_len]);
+                outputs[out_len..2 * out_len].copy_from_slice(&out1[..out_len]);
             }
             3 => {
                 x4::shake256(
                     &input[0], &input[1], &input[2], &input[0], &mut out0, &mut out1, &mut out2,
                     &mut out3,
                 );
-                out[0] = out0;
-                out[1] = out1;
-                out[2] = out2;
+                outputs[0 * out_len..1 * out_len].copy_from_slice(&out0[..out_len]);
+                outputs[1 * out_len..2 * out_len].copy_from_slice(&out1[..out_len]);
+                outputs[2 * out_len..3 * out_len].copy_from_slice(&out2[..out_len]);
             }
             4 => {
                 x4::shake256(
                     &input[0], &input[1], &input[2], &input[3], &mut out0, &mut out1, &mut out2,
                     &mut out3,
                 );
-                out[0] = out0;
-                out[1] = out1;
-                out[2] = out2;
-                out[3] = out3;
+                outputs[0 * out_len..1 * out_len].copy_from_slice(&out0[..out_len]);
+                outputs[1 * out_len..2 * out_len].copy_from_slice(&out1[..out_len]);
+                outputs[2 * out_len..3 * out_len].copy_from_slice(&out2[..out_len]);
+                outputs[3 * out_len..4 * out_len].copy_from_slice(&out3[..out_len]);
             }
             _ => unreachable!("This function must only be called with N = 2, 3, 4"),
         }
-        out
     }
 
     #[inline(always)]
-    fn shake128_init_absorb_final<const K: usize>(input: [[u8; 34]; K]) -> Simd256Hash {
-        debug_assert!(K == 2 || K == 3 || K == 4);
+    fn shake128_init_absorb_final(input: &[[u8; 34]]) -> Simd256Hash {
+        debug_assert!(input.len() == 2 || input.len() == 3 || input.len() == 4);
         let mut state = x4::incremental::init();
 
-        match K as u8 {
+        match input.len() as u8 {
             2 => {
                 x4::incremental::shake128_absorb_final(
                     &mut state, &input[0], &input[1], &input[0], &input[0],
@@ -349,11 +337,11 @@ pub(crate) mod avx2 {
     }
 
     #[inline(always)]
-    fn shake128_squeeze_first_three_blocks<const K: usize>(
+    fn shake128_squeeze_first_three_blocks(
         st: &mut Simd256Hash,
-    ) -> [[u8; THREE_BLOCKS]; K] {
-        debug_assert!(K == 2 || K == 3 || K == 4);
-        let mut out = [[0u8; THREE_BLOCKS]; K];
+        outputs: &mut [[u8; THREE_BLOCKS]],
+    ) {
+        debug_assert!(outputs.len() == 2 || outputs.len() == 3 || outputs.len() == 4);
         let mut out0 = [0u8; THREE_BLOCKS];
         let mut out1 = [0u8; THREE_BLOCKS];
         let mut out2 = [0u8; THREE_BLOCKS];
@@ -365,31 +353,29 @@ pub(crate) mod avx2 {
             &mut out2,
             &mut out3,
         );
-        match K as u8 {
+        match outputs.len() as u8 {
             2 => {
-                out[0] = out0;
-                out[1] = out1;
+                outputs[0] = out0;
+                outputs[1] = out1;
             }
             3 => {
-                out[0] = out0;
-                out[1] = out1;
-                out[2] = out2;
+                outputs[0] = out0;
+                outputs[1] = out1;
+                outputs[2] = out2;
             }
             4 => {
-                out[0] = out0;
-                out[1] = out1;
-                out[2] = out2;
-                out[3] = out3;
+                outputs[0] = out0;
+                outputs[1] = out1;
+                outputs[2] = out2;
+                outputs[3] = out3;
             }
             _ => unreachable!("This function must only be called with N = 2, 3, 4"),
         }
-        out
     }
 
     #[inline(always)]
-    fn shake128_squeeze_next_block<const K: usize>(st: &mut Simd256Hash) -> [[u8; BLOCK_SIZE]; K] {
-        debug_assert!(K == 2 || K == 3 || K == 4);
-        let mut out = [[0u8; BLOCK_SIZE]; K];
+    fn shake128_squeeze_next_block(st: &mut Simd256Hash, outputs: &mut [[u8; BLOCK_SIZE]]) {
+        debug_assert!(outputs.len() == 2 || outputs.len() == 3 || outputs.len() == 4);
         let mut out0 = [0u8; BLOCK_SIZE];
         let mut out1 = [0u8; BLOCK_SIZE];
         let mut out2 = [0u8; BLOCK_SIZE];
@@ -401,43 +387,42 @@ pub(crate) mod avx2 {
             &mut out2,
             &mut out3,
         );
-        match K as u8 {
+        match outputs.len() as u8 {
             2 => {
-                out[0] = out0;
-                out[1] = out1;
+                outputs[0] = out0;
+                outputs[1] = out1;
             }
             3 => {
-                out[0] = out0;
-                out[1] = out1;
-                out[2] = out2;
+                outputs[0] = out0;
+                outputs[1] = out1;
+                outputs[2] = out2;
             }
             4 => {
-                out[0] = out0;
-                out[1] = out1;
-                out[2] = out2;
-                out[3] = out3;
+                outputs[0] = out0;
+                outputs[1] = out1;
+                outputs[2] = out2;
+                outputs[3] = out3;
             }
             _ => unreachable!("This function is only called with 2, 3, 4"),
         }
-        out
     }
 
     #[hax_lib::attributes]
-    impl<const K: usize> Hash<K> for Simd256Hash {
+    impl Hash for Simd256Hash {
         #[ensures(|out|
             fstar!(r#"$out == Spec.Utils.v_G $input"#))
         ]
         #[inline(always)]
-        fn G(input: &[u8]) -> [u8; G_DIGEST_SIZE] {
-            G(input)
+        fn G(input: &[u8], output: &mut [u8; G_DIGEST_SIZE]) {
+            G(input, output)
         }
 
         #[ensures(|out|
             fstar!(r#"$out == Spec.Utils.v_H $input"#))
         ]
         #[inline(always)]
-        fn H(input: &[u8]) -> [u8; H_DIGEST_SIZE] {
-            H(input)
+        fn H(input: &[u8], output: &mut [u8; H_DIGEST_SIZE]) {
+            H(input, output)
         }
 
         #[requires(fstar!(r#"v $LEN < pow2 32"#))]
@@ -456,23 +441,23 @@ pub(crate) mod avx2 {
                 $out == Spec.Utils.v_PRFxN $K $LEN $input"#))
         ]
         #[inline(always)]
-        fn PRFxN<const LEN: usize>(input: &[[u8; 33]; K]) -> [[u8; LEN]; K] {
-            PRFxN::<K, LEN>(input)
+        fn PRFxN(input: &[[u8; 33]], output: &mut [u8], out_len: usize) {
+            PRFxN(input, output, out_len)
         }
 
         #[inline(always)]
-        fn shake128_init_absorb_final(input: [[u8; 34]; K]) -> Self {
+        fn shake128_init_absorb_final(input: &[[u8; 34]]) -> Self {
             shake128_init_absorb_final(input)
         }
 
         #[inline(always)]
-        fn shake128_squeeze_first_three_blocks(&mut self) -> [[u8; THREE_BLOCKS]; K] {
-            shake128_squeeze_first_three_blocks(self)
+        fn shake128_squeeze_first_three_blocks(&mut self, outputs: &mut [[u8; THREE_BLOCKS]]) {
+            shake128_squeeze_first_three_blocks(self, outputs);
         }
 
         #[inline(always)]
-        fn shake128_squeeze_next_block(&mut self) -> [[u8; BLOCK_SIZE]; K] {
-            shake128_squeeze_next_block(self)
+        fn shake128_squeeze_next_block(&mut self, outputs: &mut [[u8; BLOCK_SIZE]]) {
+            shake128_squeeze_next_block(self, outputs);
         }
     }
 }
