@@ -148,7 +148,7 @@ pub(crate) const fn vec_len_bytes<const K: usize, Vector: Operations>() -> usize
 /// sum of their constituent coefficients.
 #[inline(always)]
 #[hax_lib::fstar::verification_status(lax)]
-fn add_to_ring_element<Vector: Operations, const K: usize>(
+fn add_to_ring_element<Vector: Operations>(
     myself: &mut PolynomialRingElement<Vector>,
     rhs: &PolynomialRingElement<Vector>,
 ) {
@@ -360,8 +360,8 @@ impl<Vector: Operations> PolynomialRingElement<Vector> {
     /// Given two polynomial ring elements `lhs` and `rhs`, compute the pointwise
     /// sum of their constituent coefficients.
     #[inline(always)]
-    pub(crate) fn add_to_ring_element<const K: usize>(&mut self, rhs: &Self) {
-        add_to_ring_element::<Vector, K>(self, rhs);
+    pub(crate) fn add_to_ring_element(&mut self, rhs: &Self) {
+        add_to_ring_element::<Vector>(self, rhs);
     }
 
     #[inline(always)]

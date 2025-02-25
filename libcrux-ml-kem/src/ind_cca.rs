@@ -5,7 +5,6 @@ use crate::{
         SHARED_SECRET_SIZE,
     },
     hash_functions::Hash,
-    ind_cpa::serialize_public_key,
     serialize::deserialize_ring_elements_reduced_out,
     types::*,
     utils::into_padded_array,
@@ -41,7 +40,7 @@ pub(crate) mod instantiations;
 pub(crate) mod incremental;
 
 // #[libcrux_macros::ml_kem_parameter_sets(512,768,1024)]
-#[libcrux_macros::ml_kem_parameter_sets(512)]
+#[libcrux_macros::ml_kem_parameter_sets_ind_cca(512)]
 pub(crate) mod generic {
     use super::*;
     use crate::constants::*;
@@ -173,7 +172,7 @@ pub(crate) mod generic {
         let deserialized_pk = deserialize_ring_elements_reduced_out::<K, Vector>(
             &public_key[..ranked_bytes_per_ring_element(K)],
         );
-        let public_key_serialized = serialize_public_key::<K, PUBLIC_KEY_SIZE, Vector>(
+        let public_key_serialized = ind_cpa_generic::serialize_public_key::<K, PUBLIC_KEY_SIZE, Vector>(
             &deserialized_pk,
             &public_key[ranked_bytes_per_ring_element(K)..],
         );
@@ -257,7 +256,7 @@ pub(crate) mod generic {
         let ind_cpa_keypair_randomness = &randomness[0..CPA_PKE_KEY_GENERATION_SEED_SIZE];
         let implicit_rejection_value = &randomness[CPA_PKE_KEY_GENERATION_SEED_SIZE..];
 
-        let (ind_cpa_private_key, public_key) = crate::ind_cpa::generate_keypair::<
+        let (ind_cpa_private_key, public_key) = ind_cpa_generic::generate_keypair::<
             K,
             CPA_PRIVATE_KEY_SIZE,
             PUBLIC_KEY_SIZE,
@@ -331,7 +330,7 @@ pub(crate) mod generic {
         let hashed = Hasher::G(&to_hash);
         let (shared_secret, pseudorandomness) = hashed.split_at(SHARED_SECRET_SIZE);
 
-        let ciphertext = crate::ind_cpa::encrypt::<
+        let ciphertext = ind_cpa_generic::encrypt::<
             K,
             CIPHERTEXT_SIZE,
             T_AS_NTT_ENCODED_SIZE,
@@ -418,7 +417,7 @@ pub(crate) mod generic {
         assert ($implicit_rejection_value == slice ${private_key}.f_value ($CPA_SECRET_KEY_SIZE +! $PUBLIC_KEY_SIZE +! Spec.MLKEM.v_H_DIGEST_SIZE)
             (length ${private_key}.f_value))"#
         );
-        let decrypted = crate::ind_cpa::decrypt::<
+        let decrypted = ind_cpa_generic::decrypt::<
             K,
             CIPHERTEXT_SIZE,
             C1_SIZE,
@@ -463,7 +462,7 @@ pub(crate) mod generic {
             "assert ($implicit_rejection_shared_secret == Spec.Utils.v_PRF (sz 32) $to_hash);
         assert (Seq.length $ind_cpa_public_key == v $PUBLIC_KEY_SIZE)"
         );
-        let expected_ciphertext = crate::ind_cpa::encrypt::<
+        let expected_ciphertext = ind_cpa_generic::encrypt::<
             K,
             CIPHERTEXT_SIZE,
             T_AS_NTT_ENCODED_SIZE,
@@ -499,12 +498,12 @@ pub(crate) mod generic {
         use core::array::from_fn;
 
         use super::*;
+        use super::ind_cpa_generic::{generate_keypair_unpacked, serialize_public_key_mut, unpacked::*};
         use crate::{
             constant_time_ops::{
                 compare_ciphertexts_in_constant_time, select_shared_secret_in_constant_time,
             },
             hash_functions::portable::PortableHash,
-            ind_cpa::{self, generate_keypair_unpacked, serialize_public_key_mut, unpacked::*},
             matrix::sample_matrix_A,
             polynomial::PolynomialRingElement,
             serialize::deserialize_ring_elements_reduced,
@@ -623,7 +622,7 @@ pub(crate) mod generic {
             pub fn serialized<const PUBLIC_KEY_SIZE: usize>(
                 &self,
             ) -> MlKemPublicKey<PUBLIC_KEY_SIZE> {
-                MlKemPublicKey::from(serialize_public_key::<K, PUBLIC_KEY_SIZE, Vector>(
+                MlKemPublicKey::from(ind_cpa_generic::serialize_public_key::<K, PUBLIC_KEY_SIZE, Vector>(
                     &self.ind_cpa_public_key.t_as_ntt,
                     &self.ind_cpa_public_key.seed_for_A,
                 ))
@@ -672,10 +671,10 @@ pub(crate) mod generic {
                 .private_key
                 .ind_cpa_private_key
                 .secret_as_ntt
-                .copy_from_slice(&ind_cpa::deserialize_vector::<K, Vector>(
+                .copy_from_slice(&ind_cpa_generic::deserialize_vector::<K, Vector>(
                     ind_cpa_secret_key,
                 ));
-            ind_cpa::build_unpacked_public_key_mut::<
+            ind_cpa_generic::build_unpacked_public_key_mut::<
                 K,
                 T_AS_NTT_ENCODED_SIZE,
                 Vector,
@@ -806,7 +805,7 @@ pub(crate) mod generic {
                 serialized: &mut MlKemPrivateKey<PRIVATE_KEY_SIZE>,
             ) {
                 let (ind_cpa_private_key, ind_cpa_public_key) =
-                    ind_cpa::serialize_unpacked_secret_key::<
+                    ind_cpa_generic::serialize_unpacked_secret_key::<
                         K,
                         CPA_PRIVATE_KEY_SIZE,
                         PUBLIC_KEY_SIZE,
@@ -965,7 +964,7 @@ pub(crate) mod generic {
             );
             out.public_key.ind_cpa_public_key.A = A;
 
-            let pk_serialized = serialize_public_key::<K, PUBLIC_KEY_SIZE, Vector>(
+            let pk_serialized = ind_cpa_generic::serialize_public_key::<K, PUBLIC_KEY_SIZE, Vector>(
                 &out.public_key.ind_cpa_public_key.t_as_ntt,
                 &out.public_key.ind_cpa_public_key.seed_for_A,
             );
@@ -1019,7 +1018,7 @@ pub(crate) mod generic {
             let (shared_secret, pseudorandomness) = hashed.split_at(SHARED_SECRET_SIZE);
 
             let ciphertext =
-                ind_cpa::encrypt_unpacked::<
+                ind_cpa_generic::encrypt_unpacked::<
                     K,
                     CIPHERTEXT_SIZE,
                     T_AS_NTT_ENCODED_SIZE,
@@ -1115,7 +1114,7 @@ pub(crate) mod generic {
         assert (v (Spec.MLKEM.v_C2_SIZE $K) == 32 * v (Spec.MLKEM.v_VECTOR_V_COMPRESSION_FACTOR $K))"#
             );
             let decrypted =
-                ind_cpa::decrypt_unpacked::<
+                ind_cpa_generic::decrypt_unpacked::<
                     K,
                     CIPHERTEXT_SIZE,
                     C1_SIZE,
@@ -1151,7 +1150,7 @@ pub(crate) mod generic {
             let mut implicit_rejection_shared_secret = [0u8; SHARED_SECRET_SIZE];
             Hasher::PRF(&to_hash, &mut implicit_rejection_shared_secret);
 
-            let expected_ciphertext = ind_cpa::encrypt_unpacked::<
+            let expected_ciphertext = ind_cpa_generic::encrypt_unpacked::<
                 K,
                 CIPHERTEXT_SIZE,
                 T_AS_NTT_ENCODED_SIZE,

@@ -50,7 +50,7 @@ pub fn unroll_for(ts: TokenStream) -> TokenStream {
 }
 
 
-/// Annotation for a generic ML-KEM implementation, which pulls in
+/// Annotation for a generic ML-KEM implementation (IND-CPA level), which pulls in
 /// parameter-set specific constants.
 ///
 /// Given a list of parameter set identifiers, i.e. `512,768,1024`, for
@@ -58,7 +58,7 @@ pub fn unroll_for(ts: TokenStream) -> TokenStream {
 /// pulls in the parameter specific constants, assumed to be specified
 /// in `crate::constants::ml_kem_$id`.
 #[proc_macro_attribute]
-pub fn ml_kem_parameter_sets(args: TokenStream, item: TokenStream) -> TokenStream {
+pub fn ml_kem_parameter_sets_ind_cpa(args: TokenStream, item: TokenStream) -> TokenStream {
     let ItemMod {
         attrs,
         vis,
@@ -76,6 +76,57 @@ pub fn ml_kem_parameter_sets(args: TokenStream, item: TokenStream) -> TokenStrea
         let parameter_set_string = quote! {#parameter_set}.to_string();
         let feature_name = format!("mlkem{}", parameter_set_string);
         let modpath = format_ident!("mlkem{}", parameter_set_string);
+        let ind_cpa_modpath = format_ident!("ind_cpa_mlkem{}", parameter_set_string);
+
+        // add the variant at the end of the function name
+        if let Some((_, ref content)) = content {
+            let this_content = content.clone();
+            let fun = quote! {
+                #(#attrs)*
+                #[cfg(feature = #feature_name)]
+                #vis mod #ind_cpa_modpath {
+                    use crate::constants::#modpath::*;
+
+                    #(#this_content)*
+                } #semi
+            };
+            expanded.extend(fun);
+        }
+    }
+    expanded.into()
+}
+
+
+/// Annotation for a generic ML-KEM implementation (IND-CCA level), which pulls in
+/// parameter-set specific constants.
+///
+/// Given a list of parameter set identifiers, i.e. `512,768,1024`,
+/// for each identifier $id a feature-gated module `ml_kem_$id` is
+/// generated, which pulls in the parameter specific constants,
+/// assumed to be specified in `crate::constants::ml_kem_$id`. The
+/// underlying IND-CPA instantiation for the parameter set is provided
+/// under the alias [ind_cpa_generic] and must be generated separately
+/// using macro [ml_kem_parameter_sets_ind_cpa].
+#[proc_macro_attribute]
+pub fn ml_kem_parameter_sets_ind_cca(args: TokenStream, item: TokenStream) -> TokenStream {
+    let ItemMod {
+        attrs,
+        vis,
+        content,
+        semi,
+        ..
+    } = parse_macro_input!(item as ItemMod);
+
+    let variants_vec = syn::punctuated::Punctuated::<LitInt, Token![,]>::parse_terminated
+        .parse(args)
+        .unwrap();
+    let mut expanded = quote! {};
+
+    for parameter_set in variants_vec {
+        let parameter_set_string = quote! {#parameter_set}.to_string();
+        let feature_name = format!("mlkem{}", parameter_set_string);
+        let modpath = format_ident!("mlkem{}", parameter_set_string);
+        let ind_cpa_modpath = format_ident!("ind_cpa_mlkem{}", parameter_set_string);
 
         // add the variant at the end of the function name
         if let Some((_, ref content)) = content {
@@ -85,6 +136,7 @@ pub fn ml_kem_parameter_sets(args: TokenStream, item: TokenStream) -> TokenStrea
                 #[cfg(feature = #feature_name)]
                 #vis mod #modpath {
                     use crate::constants::#modpath::*;
+                    use crate::ind_cpa::#ind_cpa_modpath as ind_cpa_generic;
 
                     #(#this_content)*
                 } #semi

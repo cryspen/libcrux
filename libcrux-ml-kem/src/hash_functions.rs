@@ -55,7 +55,7 @@ pub(crate) trait Hash {
             $result == Spec.Utils.v_PRFxN $K $LEN $input"#))
     ]
     // fn PRFxN<const LEN: usize>(input: &[[u8; 33]; K]) -> [[u8; LEN]; K];
-    fn PRFxN(input: &[[u8; 33]], outputs: &mut [u8], out_len: usize);
+    fn PRFxN(input: &[[u8; 33]], outputs: &mut [&mut [u8]], out_len: usize);
 
     /// Create a SHAKE128 state and absorb the input.
     #[requires(true)]
@@ -258,7 +258,7 @@ pub(crate) mod avx2 {
         fstar!(r#"$result == Spec.Utils.v_PRFxN $K $LEN $input"#))
     ]
     #[inline(always)]
-    fn PRFxN(input: &[[u8; 33]], outputs: &mut [u8], out_len: usize) {
+    fn PRFxN(input: &[[u8; 33]], outputs: &mut [&mut [u8]], out_len: usize) {
         // XXX: The buffer sizes here are the maximum that we will
         // need. PRFxN is called to fill N buffers of size
         // `ETA1/2_RANDOMNESS_SIZE`. The maximum value for

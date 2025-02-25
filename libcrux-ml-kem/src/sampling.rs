@@ -262,15 +262,16 @@ fn sample_from_binomial_distribution_3<Vector: Operations>(
     (${result}.f_coefficients.[ sz i ]) (${result}.f_coefficients.[ sz i +! sz 8 ])) /\
     Libcrux_ml_kem.Polynomial.to_spec_poly_t #$:Vector $result ==
         Spec.MLKEM.sample_poly_cbd $ETA $randomness"#))]
-pub(super) fn sample_from_binomial_distribution<const ETA: usize, Vector: Operations>(
+pub(super) fn sample_from_binomial_distribution<Vector: Operations>(
     randomness: &[u8],
+    eta: usize,
 ) -> PolynomialRingElement<Vector> {
     hax_lib::fstar!(
         r#"assert (
         (v (cast $ETA <: u32) == 2) \/
         (v (cast $ETA <: u32) == 3))"#
     );
-    match ETA as u32 {
+    match eta as u32 {
         2 => sample_from_binomial_distribution_2(randomness),
         3 => sample_from_binomial_distribution_3(randomness),
         _ => unreachable!(),

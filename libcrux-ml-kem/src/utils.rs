@@ -38,13 +38,10 @@ pub(crate) fn into_padded_array<const LEN: usize>(slice: &[u8]) -> [u8; LEN] {
                 v (Seq.index (Seq.index ${prf_inputs}_future i) 32) == v $domain_separator + i /\
                 Seq.slice (Seq.index ${prf_inputs}_future i) 0 32 == Seq.slice (Seq.index $prf_inputs i) 0 32)"#)
 )]
-pub(crate) fn prf_input_inc<const K: usize>(
-    prf_inputs: &mut [[u8; 33]; K],
-    mut domain_separator: u8,
-) -> u8 {
+pub(crate) fn prf_input_inc(prf_inputs: &mut [[u8; 33]], mut domain_separator: u8) -> u8 {
     let _domain_separator_init = domain_separator;
-    let _prf_inputs_init = prf_inputs.clone();
-    for i in 0..K {
+    // let _prf_inputs_init = prf_inputs.clone(); // XXX: Is this here for hax?
+    for i in 0..prf_inputs.len() {
         hax_lib::loop_invariant!(|i: usize| {
             fstar!(
                 r#"v $domain_separator == v $_domain_separator_init + v $i /\

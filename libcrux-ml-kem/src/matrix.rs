@@ -13,18 +13,21 @@ use crate::{
         if $transpose then Libcrux_ml_kem.Polynomial.to_spec_matrix_t ${A_transpose}_future == matrix_A
         else Libcrux_ml_kem.Polynomial.to_spec_matrix_t ${A_transpose}_future == Spec.MLKEM.matrix_transpose matrix_A)"#)
 )]
-pub(crate) fn sample_matrix_A<const K: usize, Vector: Operations, Hasher: Hash<K>>(
-    A_transpose: &mut [[PolynomialRingElement<Vector>; K]; K],
+pub(crate) fn sample_matrix_A<Vector: Operations, Hasher: Hash>(
+    A_transpose: &mut [PolynomialRingElement<Vector>],
+    rank: usize,
     seed: [u8; 34],
+    seeds: &mut [[u8; 34]],
     transpose: bool,
 ) {
-    for i in 0..K {
-        let mut seeds = [seed; K];
-        for j in 0..K {
+    for i in 0..rank {
+        for j in 0..rank {
+            seeds[j] = seed;
             seeds[j][32] = i as u8;
             seeds[j][33] = j as u8;
         }
-        let sampled = sample_from_xof::<K, Vector, Hasher>(seeds);
+        let mut sampled = core::array::from_fn(|_i| PolynomialRingElement::<Vector>::ZERO());
+        let sampled = sample_from_xof::<Vector, Hasher>(seeds);
         cloop! {
             for (j, sample) in sampled.into_iter().enumerate() {
                 // A[i][j] = A_transpose[j][i]
@@ -160,12 +163,13 @@ pub(crate) fn compute_vector_u<const K: usize, Vector: Operations>(
         (forall (i: nat). i < v $K ==>
             Libcrux_ml_kem.Serialize.coefficients_field_modulus_range (Seq.index ${t_as_ntt}_future i))"#)
 )]
-pub(crate) fn compute_As_plus_e<const K: usize, Vector: Operations>(
-    t_as_ntt: &mut [PolynomialRingElement<Vector>; K],
-    matrix_A: &[[PolynomialRingElement<Vector>; K]; K],
-    s_as_ntt: &[PolynomialRingElement<Vector>; K],
-    error_as_ntt: &[PolynomialRingElement<Vector>; K],
+pub(crate) fn compute_As_plus_e<Vector: Operations>(
+    t_as_ntt: &mut [PolynomialRingElement<Vector>],
+    matrix_A: &[PolynomialRingElement<Vector>],
+    s_as_ntt: &[PolynomialRingElement<Vector>],
+    error_as_ntt: &[PolynomialRingElement<Vector>],
 ) {
+    todo!();
     cloop! {
         for (i, row) in matrix_A.iter().enumerate() {
             // This may be externally provided memory. Ensure that `t_as_ntt`
@@ -174,7 +178,7 @@ pub(crate) fn compute_As_plus_e<const K: usize, Vector: Operations>(
             cloop! {
                 for (j, matrix_element) in row.iter().enumerate() {
                     let product = matrix_element.ntt_multiply(&s_as_ntt[j]);
-                    t_as_ntt[i].add_to_ring_element::<K>(&product);
+                    t_as_ntt[i].add_to_ring_element(&product);
                 }
             }
             t_as_ntt[i].add_standard_error_reduce(&error_as_ntt[i]);
