@@ -183,6 +183,7 @@ jobs:
         run: exit 1 
 
   fuzz:
+    if: ${{ github.event_name != 'pull_request' }}
     strategy:
       fail-fast: false
       matrix:
@@ -215,3 +216,14 @@ jobs:
 
       - name: 🏃🏻‍♀️ KeyGen
         run: CARGO_PROFILE_RELEASE_LTO=false cargo +nightly fuzz run keygen -- -runs=1000000
+  mlkem-fuzz-status:
+    if: ${{ always() }}
+    needs: [fuzz]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Successful
+        if: ${{ !(contains(needs.*.result, 'failure')) }}
+        run: exit 0
+      - name: Failing
+        if: ${{ (contains(needs.*.result, 'failure')) }}
+        run: exit 1
