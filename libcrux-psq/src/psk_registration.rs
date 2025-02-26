@@ -9,6 +9,9 @@ use libcrux_traits::kem::KEM;
 use rand::CryptoRng;
 use std::time::{Duration, SystemTime};
 
+#[cfg(feature = "classic-mceliece")]
+use crate::classic_mceliece::ClassicMcEliece;
+
 use crate::{cred::Authenticator, impls::MlKem768, traits::*, Error, Psk};
 
 const PSK_REGISTRATION_CONTEXT: &[u8] = b"PSK-Registration";
@@ -65,6 +68,31 @@ impl<T: KEM<Ciphertext: Encode>> Encode for InitiatorMsg<T> {
         out.extend_from_slice(&self.aead_mac.encode());
 
         out
+    }
+}
+
+#[cfg(feature = "classic-mceliece")]
+impl Decode for InitiatorMsg<ClassicMcEliece> {
+    fn decode(bytes: &[u8]) -> Result<(Self, usize), Error> {
+        let mut ct = [0u8; 188];
+        let (ct_bytes, rest) = bytes.split_at(188);
+        let (mac_bytes, aead_bytes) = rest.split_at(32);
+        ct.copy_from_slice(ct_bytes);
+        let ct = classic_mceliece_rust::Ciphertext::from(ct);
+        let mut mac = [0u8; MAC_LENGTH];
+        mac.copy_from_slice(mac_bytes);
+
+        let (aead_mac, _len) = AeadMac::decode(aead_bytes)?;
+
+        let out = Self {
+            encapsulation: Ciphertext::<ClassicMcEliece> {
+                inner_ctxt: ct,
+                mac,
+            },
+            aead_mac,
+        };
+
+        Ok((out, bytes.len()))
     }
 }
 

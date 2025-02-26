@@ -34,9 +34,9 @@ pub trait Encode {
 
 /// Generic decode trait.
 pub trait Decode {
-    /// Decode bytes to self
+    /// Decode bytes to Self
     ///
-    /// Returns self and the number of bytes consumed from `bytes`.
+    /// Returns Self and the number of bytes consumed from `bytes`.
     fn decode(bytes: &[u8]) -> Result<(Self, usize), Error>
     where
         Self: Sized;
