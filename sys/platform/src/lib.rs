@@ -9,10 +9,8 @@
 #[macro_use]
 extern crate std;
 
-#[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
+#[cfg(all(any(target_arch = "x86", target_arch = "x86_64"), not(hax)))]
 mod x86;
-#[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
-use x86::{self as cpu_id, Feature};
 
 #[cfg(all(target_arch = "aarch64", target_os = "linux"))]
 mod linux_arm;
@@ -54,7 +52,8 @@ mod platform {
 
 #[cfg(not(hax))]
 mod platform {
-    use super::*;
+    #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
+    use super::x86::{self as cpu_id, Feature};
 
     // TODO: Check for z14 or z15
     pub fn simd128_support() -> bool {
