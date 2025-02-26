@@ -14,6 +14,9 @@ use libcrux_psq::{
 };
 use libcrux_traits::kem::KEM;
 
+/// This is hardcoded for ML-KEM 768, for ClassicMcEliece it would be `524160`.
+const RESPONDER_PK_LEN: usize = 1184;
+
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
 enum Error {
     InvalidArguments,
@@ -123,7 +126,7 @@ fn initiator(host: String, port: u16, ctx: String) -> Result<(), Error> {
         stream.write_all(pk.as_ref())?;
 
         // Get the responder's public key.
-        let mut responder_pk = [0u8; 1184]; // XXX: Can we get the length somehow from MlKem768?
+        let mut responder_pk = [0u8; RESPONDER_PK_LEN];
         stream.read_exact(&mut responder_pk)?;
         let responder_pk = <libcrux_psq::impls::MlKem768 as KEM>::EncapsulationKey::decode(
             libcrux_kem::Algorithm::MlKem768,
