@@ -22,7 +22,7 @@ crate.
 The example implements a setup phase that is to be considered outside
 of the protocol. In this phase the initiator generates a signing key
 and sends over a certificate to the responder (In this case, the
-certificate is just the verification itself).  Similarly, the
+certificate is just the verification key itself).  Similarly, the
 responder creates a PSQ public key and makes that available to the
 initiator during setup.
 
