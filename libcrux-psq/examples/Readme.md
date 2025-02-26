@@ -1,9 +1,10 @@
 # PSQ Generator Example
 
 The example `psq.rs` implements a simple PSQ pre-shared key generator
-between an initiator and a responder running on different ports of
-`localhost`. The PSQ pre-shared key generated this way may then be
-inserted wherever a PSK of the given length is accepted.
+and confirmation handshake between an initiator and a responder
+communicating via a TCP stream. The PSQ pre-shared key generated this
+way may then be inserted wherever a PSK of the given length is
+accepted.
 
 ## What does the example do?
 The responder will wait for initiator connections on a fixed port and
@@ -27,6 +28,15 @@ initiator during setup.
 
 ## How can I run it?
 To start the responder: `RUST_LOG=debug cargo run --example psq -- responder`
-
 To start the initiator: `RUST_LOG=debug cargo run --example psq -- initiator`
 
+This will run responder and initator on fixed ports on
+`localhost`. The example implements the following additional command
+line arguments:
+ - `--host`: to specify a different responder hostname
+ - `--port`: to specify a different responde port
+ - `--context`: to specify a domain separation context for the
+   generated pre-shared key (defaults to `example application
+   context`)
+ - `--handle`: to specify a handle for the generated PSK at the
+   responder side (defaults to `psq example handle`)
