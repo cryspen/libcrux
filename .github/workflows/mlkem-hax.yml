@@ -87,6 +87,25 @@ jobs:
       - name: 🏃 Lax ML-KEM crate
         working-directory: libcrux-ml-kem
         run: ./hax.py prove --admit
+
+  prove:
+    runs-on: ubuntu-latest
+    if: ${{ github.event_name != 'merge_group' }}
+    needs:
+      - extract
+      - diff
+      - lax
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: hacspec/hax-actions@main
+        with:
+          hax_reference: ${{ github.event.inputs.hax_rev || 'main' }}
+          fstar: v2025.01.17
+
+      - name: 🏃 Prove ML-KEM crate
+        working-directory: libcrux-ml-kem
+        run: ./hax.py prove
   
   mlkem-extract-hax-status:
     if: ${{ always() }}
@@ -115,6 +134,18 @@ jobs:
   mlkem-lax-hax-status:
     if: ${{ always() }}
     needs: [lax]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Successful
+        if: ${{ !(contains(needs.*.result, 'failure')) }} 
+        run: exit 0 
+      - name: Failing
+        if: ${{ (contains(needs.*.result, 'failure')) }} 
+        run: exit 1 
+  
+  mlkem-prove-hax-status:
+    if: ${{ always() }}
+    needs: [prove]
     runs-on: ubuntu-latest
     steps:
       - name: Successful
