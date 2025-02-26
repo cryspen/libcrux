@@ -39,6 +39,10 @@ jobs:
         with:
           hax_reference: ${{ github.event.inputs.hax_rev || 'main' }}
           fstar: v2025.01.17
+        
+      - uses: actions-rust-lang/setup-rust-toolchain@v1
+        with:
+          toolchain: stable
 
       - name: 🏃 Extract ML-KEM crate
         working-directory: libcrux-ml-kem
