@@ -13,7 +13,7 @@ use crate::{
         if $transpose then Libcrux_ml_kem.Polynomial.to_spec_matrix_t ${A_transpose}_future == matrix_A
         else Libcrux_ml_kem.Polynomial.to_spec_matrix_t ${A_transpose}_future == Spec.MLKEM.matrix_transpose matrix_A)"#)
 )]
-pub(crate) fn sample_matrix_A<const K: usize, Vector: Operations, Hasher: Hash<K>>(
+pub(crate) fn sample_matrix_A<const K: usize, Vector: Operations, Hasher: Hash>(
     A_transpose: &mut [[PolynomialRingElement<Vector>; K]; K],
     seed: [u8; 34],
     transpose: bool,
@@ -24,14 +24,16 @@ pub(crate) fn sample_matrix_A<const K: usize, Vector: Operations, Hasher: Hash<K
             seeds[j][32] = i as u8;
             seeds[j][33] = j as u8;
         }
-        let sampled = sample_from_xof::<K, Vector, Hasher>(seeds);
+        let mut sampled_coefficients = [0usize; K];
+        let mut out = [[0i16;272]; K];
+        sample_from_xof::<K, Vector, Hasher>(&seeds, &mut sampled_coefficients, &mut out);
         cloop! {
-            for (j, sample) in sampled.into_iter().enumerate() {
+            for (j, sample) in out.into_iter().enumerate() {
                 // A[i][j] = A_transpose[j][i]
                 if transpose {
-                    A_transpose[j][i] = sample;
+                    PolynomialRingElement::from_i16_array(&sample[..256], &mut A_transpose[j][i]);
                 } else {
-                    A_transpose[i][j] = sample;
+                    PolynomialRingElement::from_i16_array(&sample[..256], &mut A_transpose[i][j]);
                 }
             }
         }
@@ -97,8 +99,8 @@ pub(crate) fn compute_ring_element_v<const K: usize, Vector: Operations>(
         result.add_to_ring_element::<K>(&product);
     }
 
-    invert_ntt_montgomery::<K, Vector>(&mut result);
-    result = error_2.add_message_error_reduce(message, result);
+    invert_ntt_montgomery::<K, Vector>(result);
+    error_2.add_message_error_reduce(message, result);
 }
 
 /// Compute u := InvertNTT(Aᵀ ◦ r̂) + e₁

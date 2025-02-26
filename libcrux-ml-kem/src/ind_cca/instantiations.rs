@@ -20,6 +20,7 @@ macro_rules! instantiate {
                 const PUBLIC_KEY_SIZE: usize,
                 const ETA1: usize,
                 const ETA1_RANDOMNESS_SIZE: usize,
+                const PRF_OUTPUT_SIZE1: usize,
             >(
                 randomness: [u8; KEY_GENERATION_SEED_SIZE],
             ) -> MlKemKeyPair<PRIVATE_KEY_SIZE, PUBLIC_KEY_SIZE> {
@@ -30,6 +31,7 @@ macro_rules! instantiate {
                     PUBLIC_KEY_SIZE,
                     ETA1,
                     ETA1_RANDOMNESS_SIZE,
+                    PRF_OUTPUT_SIZE1,
                     $vector,
                     $hash,
                     crate::variant::MlKem,
@@ -44,6 +46,7 @@ macro_rules! instantiate {
                 const PUBLIC_KEY_SIZE: usize,
                 const ETA1: usize,
                 const ETA1_RANDOMNESS_SIZE: usize,
+                const PRF_OUTPUT_SIZE1: usize,
             >(
                 randomness: [u8; KEY_GENERATION_SEED_SIZE],
             ) -> MlKemKeyPair<PRIVATE_KEY_SIZE, PUBLIC_KEY_SIZE> {
@@ -54,6 +57,7 @@ macro_rules! instantiate {
                     PUBLIC_KEY_SIZE,
                     ETA1,
                     ETA1_RANDOMNESS_SIZE,
+                    PRF_OUTPUT_SIZE1,
                     $vector,
                     $hash,
                     crate::variant::Kyber,
@@ -176,6 +180,8 @@ macro_rules! instantiate {
                 const ETA1_RANDOMNESS_SIZE: usize,
                 const ETA2: usize,
                 const ETA2_RANDOMNESS_SIZE: usize,
+                const PRF_OUTPUT_SIZE1: usize,
+                const PRF_OUTPUT_SIZE2: usize,
             >(
                 public_key: &MlKemPublicKey<PUBLIC_KEY_SIZE>,
                 randomness: [u8; SHARED_SECRET_SIZE],
@@ -194,6 +200,8 @@ macro_rules! instantiate {
                     ETA1_RANDOMNESS_SIZE,
                     ETA2,
                     ETA2_RANDOMNESS_SIZE,
+                    PRF_OUTPUT_SIZE1,
+                    PRF_OUTPUT_SIZE2,
                     $vector,
                     $hash,
                     crate::variant::MlKem,
@@ -279,6 +287,8 @@ macro_rules! instantiate {
                 const ETA1_RANDOMNESS_SIZE: usize,
                 const ETA2: usize,
                 const ETA2_RANDOMNESS_SIZE: usize,
+                const PRF_OUTPUT_SIZE1: usize,
+                const PRF_OUTPUT_SIZE2: usize,
                 const IMPLICIT_REJECTION_HASH_INPUT_SIZE: usize,
             >(
                 private_key: &MlKemPrivateKey<SECRET_KEY_SIZE>,
@@ -300,6 +310,8 @@ macro_rules! instantiate {
                     ETA1_RANDOMNESS_SIZE,
                     ETA2,
                     ETA2_RANDOMNESS_SIZE,
+                    PRF_OUTPUT_SIZE1,
+                    PRF_OUTPUT_SIZE2,
                     IMPLICIT_REJECTION_HASH_INPUT_SIZE,
                     $vector,
                     $hash,
@@ -383,6 +395,7 @@ macro_rules! instantiate {
                     const PUBLIC_KEY_SIZE: usize,
                     const ETA1: usize,
                     const ETA1_RANDOMNESS_SIZE: usize,
+                    const PRF_OUTPUT_SIZE1: usize,
                 >(
                     randomness: [u8; KEY_GENERATION_SEED_SIZE],
                     out: &mut MlKemKeyPairUnpacked<K>,
@@ -394,6 +407,7 @@ macro_rules! instantiate {
                         PUBLIC_KEY_SIZE,
                         ETA1,
                         ETA1_RANDOMNESS_SIZE,
+                        PRF_OUTPUT_SIZE1,
                         $vector,
                         $hash,
                         crate::variant::MlKem,
@@ -429,6 +443,8 @@ macro_rules! instantiate {
                     const ETA1_RANDOMNESS_SIZE: usize,
                     const ETA2: usize,
                     const ETA2_RANDOMNESS_SIZE: usize,
+                    const PRF_OUTPUT_SIZE1: usize,
+                    const PRF_OUTPUT_SIZE2: usize,
                 >(
                     public_key: &MlKemPublicKeyUnpacked<K>,
                     randomness: [u8; SHARED_SECRET_SIZE],
@@ -447,6 +463,8 @@ macro_rules! instantiate {
                         ETA1_RANDOMNESS_SIZE,
                         ETA2,
                         ETA2_RANDOMNESS_SIZE,
+                        PRF_OUTPUT_SIZE1,
+                        PRF_OUTPUT_SIZE2,
                         $vector,
                         $hash,
                     >(public_key, randomness)
@@ -486,6 +504,8 @@ macro_rules! instantiate {
                     const ETA1_RANDOMNESS_SIZE: usize,
                     const ETA2: usize,
                     const ETA2_RANDOMNESS_SIZE: usize,
+                    const PRF_OUTPUT_SIZE1: usize,
+                    const PRF_OUTPUT_SIZE2: usize,
                     const IMPLICIT_REJECTION_HASH_INPUT_SIZE: usize,
                 >(
                     key_pair: &MlKemKeyPairUnpacked<K>,
@@ -507,6 +527,8 @@ macro_rules! instantiate {
                         ETA1_RANDOMNESS_SIZE,
                         ETA2,
                         ETA2_RANDOMNESS_SIZE,
+                        PRF_OUTPUT_SIZE1,
+                        PRF_OUTPUT_SIZE2,
                         IMPLICIT_REJECTION_HASH_INPUT_SIZE,
                         $vector,
                         $hash,
@@ -518,7 +540,7 @@ macro_rules! instantiate {
 }
 
 // Portable generic implementations.
-instantiate! {portable, crate::vector::portable::PortableVector, crate::hash_functions::portable::PortableHash<K>}
+instantiate! {portable, crate::vector::portable::PortableVector, crate::hash_functions::portable::PortableHash}
 
 // AVX2 generic implementation.
 #[cfg(feature = "simd256")]

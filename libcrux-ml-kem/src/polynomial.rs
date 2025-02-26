@@ -186,8 +186,8 @@ fn subtract_reduce<Vector: Operations>(
 fn add_message_error_reduce<Vector: Operations>(
     myself: &PolynomialRingElement<Vector>,
     message: &PolynomialRingElement<Vector>,
-    mut result: PolynomialRingElement<Vector>,
-) -> PolynomialRingElement<Vector> {
+    result: &mut PolynomialRingElement<Vector>,
+) {
     // Using `hax_lib::fstar::verification_status(lax)` works but produces an error while extracting
     for i in 0..VECTORS_IN_RING_ELEMENT {
         let coefficient_normal_form =
@@ -213,7 +213,6 @@ fn add_message_error_reduce<Vector: Operations>(
         let tmp = Vector::add(coefficient_normal_form, &tmp);
         result.coefficients[i] = Vector::barrett_reduce(tmp);
     }
-    result
 }
 
 #[inline(always)]
@@ -373,8 +372,8 @@ impl<Vector: Operations> PolynomialRingElement<Vector> {
     }
 
     #[inline(always)]
-    pub(crate) fn add_message_error_reduce(&self, message: &Self, result: Self) -> Self {
-        add_message_error_reduce(self, message, result)
+    pub(crate) fn add_message_error_reduce(&self, message: &Self, result: &mut Self){
+        add_message_error_reduce(self, message, result);
     }
 
     #[inline(always)]

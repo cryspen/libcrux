@@ -1,6 +1,6 @@
 use crate::{
     constants::COEFFICIENTS_IN_RING_ELEMENT, hash_functions::*, helper::cloop,
-    polynomial::PolynomialRingElement, vector::Operations,
+    vector::Operations,
 };
 
 /// If `bytes` contains a set of uniformly random bytes, this function
@@ -43,9 +43,9 @@ use crate::{
 /// <https://csrc.nist.gov/pubs/fips/203/ipd>.
 #[inline(always)]
 fn sample_from_uniform_distribution_next<Vector: Operations, const K: usize, const N: usize>(
-    randomness: [[u8; N]; K],
-    sampled_coefficients: &mut [usize; K],
-    out: &mut [[i16; 272]; K],
+    randomness: &[[u8; N]],
+    sampled_coefficients: &mut [usize],
+    out: &mut [[i16; 272]],
 ) -> bool {
     // Would be great to trigger auto-vectorization or at least loop unrolling here
     for i in 0..K {
@@ -72,19 +72,20 @@ fn sample_from_uniform_distribution_next<Vector: Operations, const K: usize, con
 
 #[inline(always)]
 #[hax_lib::fstar::verification_status(lax)]
-pub(super) fn sample_from_xof<const K: usize, Vector: Operations, Hasher: Hash<K>>(
-    seeds: [[u8; 34]; K],
-) -> [PolynomialRingElement<Vector>; K] {
-    let mut sampled_coefficients: [usize; K] = [0; K];
-    let mut out: [[i16; 272]; K] = [[0; 272]; K];
-
+pub(super) fn sample_from_xof<const K: usize, Vector: Operations, Hasher: Hash>(
+    seeds: &[[u8; 34]],
+    sampled_coefficients: &mut [usize],
+    out: &mut [[i16; 272]],
+) {
     let mut xof_state = Hasher::shake128_init_absorb_final(seeds);
-    let randomness = xof_state.shake128_squeeze_first_three_blocks();
+    let mut randomness = [[0u8; THREE_BLOCKS]; K];
+    let mut randomness_blocksize = [[0u8; BLOCK_SIZE]; K];
+    xof_state.shake128_squeeze_first_three_blocks(&mut randomness);
 
     let mut done = sample_from_uniform_distribution_next::<Vector, K, THREE_BLOCKS>(
-        randomness,
-        &mut sampled_coefficients,
-        &mut out,
+        &randomness,
+        sampled_coefficients,
+        out,
     );
 
     // Requiring more than 5 blocks to sample a ring element should be very
@@ -93,15 +94,13 @@ pub(super) fn sample_from_xof<const K: usize, Vector: Operations, Hasher: Hash<K
     // To avoid failing here, we squeeze more blocks out of the state until
     // we have enough.
     while !done {
-        let randomness = xof_state.shake128_squeeze_next_block();
+        xof_state.shake128_squeeze_next_block(&mut randomness_blocksize);
         done = sample_from_uniform_distribution_next::<Vector, K, BLOCK_SIZE>(
-            randomness,
-            &mut sampled_coefficients,
-            &mut out,
+            &randomness_blocksize,
+            sampled_coefficients,
+            out,
         );
-    }
-
-    out.map(|s| PolynomialRingElement::<Vector>::from_i16_array(&s[0..256]))
+    };
 }
 
 /// Given a series of uniformly random bytes in `randomness`, for some number `eta`,

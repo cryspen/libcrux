@@ -19,6 +19,7 @@ unsafe fn generate_keypair_avx2<
     const PUBLIC_KEY_SIZE: usize,
     const ETA1: usize,
     const ETA1_RANDOMNESS_SIZE: usize,
+    const PRF_OUTPUT_SIZE1: usize,
 >(
     randomness: [u8; KEY_GENERATION_SEED_SIZE],
 ) -> MlKemKeyPair<PRIVATE_KEY_SIZE, PUBLIC_KEY_SIZE> {
@@ -29,6 +30,7 @@ unsafe fn generate_keypair_avx2<
         PUBLIC_KEY_SIZE,
         ETA1,
         ETA1_RANDOMNESS_SIZE,
+        PRF_OUTPUT_SIZE1,
         crate::vector::SIMD256Vector,
         crate::hash_functions::avx2::Simd256Hash,
         crate::variant::MlKem,
@@ -49,6 +51,7 @@ pub(crate) fn generate_keypair<
     const PUBLIC_KEY_SIZE: usize,
     const ETA1: usize,
     const ETA1_RANDOMNESS_SIZE: usize,
+    const PRF_OUTPUT_SIZE1: usize,
 >(
     randomness: [u8; KEY_GENERATION_SEED_SIZE],
 ) -> MlKemKeyPair<PRIVATE_KEY_SIZE, PUBLIC_KEY_SIZE> {
@@ -60,6 +63,7 @@ pub(crate) fn generate_keypair<
             PUBLIC_KEY_SIZE,
             ETA1,
             ETA1_RANDOMNESS_SIZE,
+            PRF_OUTPUT_SIZE1,
         >(randomness)
     }
 }
@@ -74,6 +78,7 @@ unsafe fn kyber_generate_keypair_avx2<
     const PUBLIC_KEY_SIZE: usize,
     const ETA1: usize,
     const ETA1_RANDOMNESS_SIZE: usize,
+    const PRF_OUTPUT_SIZE1: usize,
 >(
     randomness: [u8; KEY_GENERATION_SEED_SIZE],
 ) -> MlKemKeyPair<PRIVATE_KEY_SIZE, PUBLIC_KEY_SIZE> {
@@ -84,6 +89,7 @@ unsafe fn kyber_generate_keypair_avx2<
         PUBLIC_KEY_SIZE,
         ETA1,
         ETA1_RANDOMNESS_SIZE,
+        PRF_OUTPUT_SIZE1,
         crate::vector::SIMD256Vector,
         crate::hash_functions::avx2::Simd256Hash,
         crate::variant::Kyber,
@@ -99,6 +105,7 @@ pub(crate) fn kyber_generate_keypair<
     const PUBLIC_KEY_SIZE: usize,
     const ETA1: usize,
     const ETA1_RANDOMNESS_SIZE: usize,
+    const PRF_OUTPUT_SIZE1: usize,
 >(
     randomness: [u8; KEY_GENERATION_SEED_SIZE],
 ) -> MlKemKeyPair<PRIVATE_KEY_SIZE, PUBLIC_KEY_SIZE> {
@@ -110,6 +117,7 @@ pub(crate) fn kyber_generate_keypair<
             PUBLIC_KEY_SIZE,
             ETA1,
             ETA1_RANDOMNESS_SIZE,
+            PRF_OUTPUT_SIZE1,
         >(randomness)
     }
 }
@@ -204,6 +212,8 @@ unsafe fn kyber_encapsulate_avx2<
     const ETA1_RANDOMNESS_SIZE: usize,
     const ETA2: usize,
     const ETA2_RANDOMNESS_SIZE: usize,
+    const PRF_OUTPUT_SIZE1: usize,
+    const PRF_OUTPUT_SIZE2: usize,
 >(
     public_key: &MlKemPublicKey<PUBLIC_KEY_SIZE>,
     randomness: [u8; SHARED_SECRET_SIZE],
@@ -222,6 +232,8 @@ unsafe fn kyber_encapsulate_avx2<
         ETA1_RANDOMNESS_SIZE,
         ETA2,
         ETA2_RANDOMNESS_SIZE,
+        PRF_OUTPUT_SIZE1,
+        PRF_OUTPUT_SIZE2,
         crate::vector::SIMD256Vector,
         crate::hash_functions::avx2::Simd256Hash,
         crate::variant::Kyber,
@@ -244,6 +256,8 @@ pub(crate) fn kyber_encapsulate<
     const ETA1_RANDOMNESS_SIZE: usize,
     const ETA2: usize,
     const ETA2_RANDOMNESS_SIZE: usize,
+    const PRF_OUTPUT_SIZE1: usize,
+    const PRF_OUTPUT_SIZE2: usize,
 >(
     public_key: &MlKemPublicKey<PUBLIC_KEY_SIZE>,
     randomness: [u8; SHARED_SECRET_SIZE],
@@ -263,6 +277,8 @@ pub(crate) fn kyber_encapsulate<
             ETA1_RANDOMNESS_SIZE,
             ETA2,
             ETA2_RANDOMNESS_SIZE,
+            PRF_OUTPUT_SIZE1,
+            PRF_OUTPUT_SIZE2,
         >(public_key, randomness)
     }
 }
@@ -296,6 +312,8 @@ unsafe fn encapsulate_avx2<
     const ETA1_RANDOMNESS_SIZE: usize,
     const ETA2: usize,
     const ETA2_RANDOMNESS_SIZE: usize,
+    const PRF_OUTPUT_SIZE1: usize,
+    const PRF_OUTPUT_SIZE2: usize,
 >(
     public_key: &MlKemPublicKey<PUBLIC_KEY_SIZE>,
     randomness: [u8; SHARED_SECRET_SIZE],
@@ -314,6 +332,8 @@ unsafe fn encapsulate_avx2<
         ETA1_RANDOMNESS_SIZE,
         ETA2,
         ETA2_RANDOMNESS_SIZE,
+        PRF_OUTPUT_SIZE1,
+        PRF_OUTPUT_SIZE2,
         crate::vector::SIMD256Vector,
         crate::hash_functions::avx2::Simd256Hash,
         crate::variant::MlKem,
@@ -348,6 +368,8 @@ pub(crate) fn encapsulate<
     const ETA1_RANDOMNESS_SIZE: usize,
     const ETA2: usize,
     const ETA2_RANDOMNESS_SIZE: usize,
+    const PRF_OUTPUT_SIZE1: usize,
+    const PRF_OUTPUT_SIZE2: usize,
 >(
     public_key: &MlKemPublicKey<PUBLIC_KEY_SIZE>,
     randomness: [u8; SHARED_SECRET_SIZE],
@@ -367,6 +389,8 @@ pub(crate) fn encapsulate<
             ETA1_RANDOMNESS_SIZE,
             ETA2,
             ETA2_RANDOMNESS_SIZE,
+            PRF_OUTPUT_SIZE1,
+            PRF_OUTPUT_SIZE2,
         >(public_key, randomness)
     }
 }
@@ -390,6 +414,8 @@ unsafe fn kyber_decapsulate_avx2<
     const ETA1_RANDOMNESS_SIZE: usize,
     const ETA2: usize,
     const ETA2_RANDOMNESS_SIZE: usize,
+    const PRF_OUTPUT_SIZE1: usize,
+    const PRF_OUTPUT_SIZE2: usize,
     const IMPLICIT_REJECTION_HASH_INPUT_SIZE: usize,
 >(
     private_key: &MlKemPrivateKey<SECRET_KEY_SIZE>,
@@ -411,6 +437,8 @@ unsafe fn kyber_decapsulate_avx2<
         ETA1_RANDOMNESS_SIZE,
         ETA2,
         ETA2_RANDOMNESS_SIZE,
+        PRF_OUTPUT_SIZE1,
+        PRF_OUTPUT_SIZE2,
         IMPLICIT_REJECTION_HASH_INPUT_SIZE,
         crate::vector::SIMD256Vector,
         crate::hash_functions::avx2::Simd256Hash,
@@ -436,6 +464,8 @@ pub fn kyber_decapsulate<
     const ETA1_RANDOMNESS_SIZE: usize,
     const ETA2: usize,
     const ETA2_RANDOMNESS_SIZE: usize,
+    const PRF_OUTPUT_SIZE1: usize,
+    const PRF_OUTPUT_SIZE2: usize,
     const IMPLICIT_REJECTION_HASH_INPUT_SIZE: usize,
 >(
     private_key: &MlKemPrivateKey<SECRET_KEY_SIZE>,
@@ -458,6 +488,8 @@ pub fn kyber_decapsulate<
             ETA1_RANDOMNESS_SIZE,
             ETA2,
             ETA2_RANDOMNESS_SIZE,
+            PRF_OUTPUT_SIZE1,
+            PRF_OUTPUT_SIZE2,
             IMPLICIT_REJECTION_HASH_INPUT_SIZE,
         >(private_key, ciphertext)
     }
@@ -497,6 +529,8 @@ unsafe fn decapsulate_avx2<
     const ETA1_RANDOMNESS_SIZE: usize,
     const ETA2: usize,
     const ETA2_RANDOMNESS_SIZE: usize,
+    const PRF_OUTPUT_SIZE1: usize,
+    const PRF_OUTPUT_SIZE2: usize,
     const IMPLICIT_REJECTION_HASH_INPUT_SIZE: usize,
 >(
     private_key: &MlKemPrivateKey<SECRET_KEY_SIZE>,
@@ -518,6 +552,8 @@ unsafe fn decapsulate_avx2<
         ETA1_RANDOMNESS_SIZE,
         ETA2,
         ETA2_RANDOMNESS_SIZE,
+        PRF_OUTPUT_SIZE1,
+        PRF_OUTPUT_SIZE2,
         IMPLICIT_REJECTION_HASH_INPUT_SIZE,
         crate::vector::SIMD256Vector,
         crate::hash_functions::avx2::Simd256Hash,
@@ -558,6 +594,8 @@ pub fn decapsulate<
     const ETA1_RANDOMNESS_SIZE: usize,
     const ETA2: usize,
     const ETA2_RANDOMNESS_SIZE: usize,
+    const PRF_OUTPUT_SIZE1: usize,
+    const PRF_OUTPUT_SIZE2: usize,
     const IMPLICIT_REJECTION_HASH_INPUT_SIZE: usize,
 >(
     private_key: &MlKemPrivateKey<SECRET_KEY_SIZE>,
@@ -580,6 +618,8 @@ pub fn decapsulate<
             ETA1_RANDOMNESS_SIZE,
             ETA2,
             ETA2_RANDOMNESS_SIZE,
+            PRF_OUTPUT_SIZE1,
+            PRF_OUTPUT_SIZE2,
             IMPLICIT_REJECTION_HASH_INPUT_SIZE,
         >(private_key, ciphertext)
     }
@@ -683,6 +723,7 @@ pub(crate) mod unpacked {
         const PUBLIC_KEY_SIZE: usize,
         const ETA1: usize,
         const ETA1_RANDOMNESS_SIZE: usize,
+        const PRF_OUTPUT_SIZE1: usize,
     >(
         randomness: [u8; KEY_GENERATION_SEED_SIZE],
         out: &mut MlKemKeyPairUnpacked<K>,
@@ -694,6 +735,7 @@ pub(crate) mod unpacked {
             PUBLIC_KEY_SIZE,
             ETA1,
             ETA1_RANDOMNESS_SIZE,
+            PRF_OUTPUT_SIZE1,
             crate::vector::SIMD256Vector,
             crate::hash_functions::avx2::Simd256Hash,
             crate::variant::MlKem,
@@ -713,6 +755,7 @@ pub(crate) mod unpacked {
         const PUBLIC_KEY_SIZE: usize,
         const ETA1: usize,
         const ETA1_RANDOMNESS_SIZE: usize,
+        const PRF_OUTPUT_SIZE1: usize,
     >(
         randomness: [u8; KEY_GENERATION_SEED_SIZE],
         out: &mut MlKemKeyPairUnpacked<K>,
@@ -725,6 +768,7 @@ pub(crate) mod unpacked {
                 PUBLIC_KEY_SIZE,
                 ETA1,
                 ETA1_RANDOMNESS_SIZE,
+                PRF_OUTPUT_SIZE1,
             >(randomness, out)
         }
     }
@@ -756,6 +800,8 @@ pub(crate) mod unpacked {
         const ETA1_RANDOMNESS_SIZE: usize,
         const ETA2: usize,
         const ETA2_RANDOMNESS_SIZE: usize,
+        const PRF_OUTPUT_SIZE1: usize,
+        const PRF_OUTPUT_SIZE2: usize,
     >(
         public_key: &MlKemPublicKeyUnpacked<K>,
         randomness: [u8; SHARED_SECRET_SIZE],
@@ -774,6 +820,8 @@ pub(crate) mod unpacked {
             ETA1_RANDOMNESS_SIZE,
             ETA2,
             ETA2_RANDOMNESS_SIZE,
+            PRF_OUTPUT_SIZE1,
+            PRF_OUTPUT_SIZE2,
             crate::vector::SIMD256Vector,
             crate::hash_functions::avx2::Simd256Hash,
         >(public_key, randomness)
@@ -806,6 +854,8 @@ pub(crate) mod unpacked {
         const ETA1_RANDOMNESS_SIZE: usize,
         const ETA2: usize,
         const ETA2_RANDOMNESS_SIZE: usize,
+        const PRF_OUTPUT_SIZE1: usize,
+        const PRF_OUTPUT_SIZE2: usize,
     >(
         public_key: &MlKemPublicKeyUnpacked<K>,
         randomness: [u8; SHARED_SECRET_SIZE],
@@ -825,6 +875,8 @@ pub(crate) mod unpacked {
                 ETA1_RANDOMNESS_SIZE,
                 ETA2,
                 ETA2_RANDOMNESS_SIZE,
+                PRF_OUTPUT_SIZE1,
+                PRF_OUTPUT_SIZE2,
             >(public_key, randomness)
         }
     }
@@ -859,6 +911,8 @@ pub(crate) mod unpacked {
         const ETA1_RANDOMNESS_SIZE: usize,
         const ETA2: usize,
         const ETA2_RANDOMNESS_SIZE: usize,
+        const PRF_OUTPUT_SIZE1: usize,
+        const PRF_OUTPUT_SIZE2: usize,
         const IMPLICIT_REJECTION_HASH_INPUT_SIZE: usize,
     >(
         key_pair: &MlKemKeyPairUnpacked<K>,
@@ -880,6 +934,8 @@ pub(crate) mod unpacked {
             ETA1_RANDOMNESS_SIZE,
             ETA2,
             ETA2_RANDOMNESS_SIZE,
+            PRF_OUTPUT_SIZE1,
+            PRF_OUTPUT_SIZE2,
             IMPLICIT_REJECTION_HASH_INPUT_SIZE,
             crate::vector::SIMD256Vector,
             crate::hash_functions::avx2::Simd256Hash,
@@ -916,6 +972,8 @@ pub(crate) mod unpacked {
         const ETA1_RANDOMNESS_SIZE: usize,
         const ETA2: usize,
         const ETA2_RANDOMNESS_SIZE: usize,
+        const PRF_OUTPUT_SIZE1: usize,
+        const PRF_OUTPUT_SIZE2: usize,
         const IMPLICIT_REJECTION_HASH_INPUT_SIZE: usize,
     >(
         key_pair: &MlKemKeyPairUnpacked<K>,
@@ -938,6 +996,8 @@ pub(crate) mod unpacked {
                 ETA1_RANDOMNESS_SIZE,
                 ETA2,
                 ETA2_RANDOMNESS_SIZE,
+                PRF_OUTPUT_SIZE1,
+                PRF_OUTPUT_SIZE2,
                 IMPLICIT_REJECTION_HASH_INPUT_SIZE,
             >(key_pair, ciphertext)
         }
