@@ -4,16 +4,17 @@
  * SPDX-License-Identifier: MIT or Apache-2.0
  *
  * This code was generated with the following revisions:
- * Charon: db4e045d4597d06d854ce7a2c10e8dcfda6ecd25
- * Eurydice: 75eae2e2534a16f5ba5430e6ee5c69d8a46f3bea
- * Karamel: 3823e3d82fa0b271d799b61c59ffb4742ddc1e65
+ * Charon: a8f2211d1b95e0462a96382023b164a4116c7ca4
+ * Eurydice: 60f543ddc60a777138070968daaf7620ec48170d
+ * Karamel: 1d81d757d5d9e16dd6463ccc72324e587c707959
  * F*: 7cd06c5562fc47ec14cd35c38034d5558a5ff762
- * Libcrux: d7312a4f9c52625c8df67f20051237208cc6d7cd
+ * Libcrux: 370d71828112dbf0ad53a8995502ff1e5c8a719c
  */
 
 #include "libcrux_mlkem512_portable.h"
 
 #include "internal/libcrux_mlkem_portable.h"
+#include "libcrux_core.h"
 
 /**
  Portable decapsulate
@@ -112,16 +113,15 @@ generics
 - CPA_PRIVATE_KEY_SIZE= 768
 - PRIVATE_KEY_SIZE= 1632
 - PUBLIC_KEY_SIZE= 800
-- RANKED_BYTES_PER_RING_ELEMENT= 768
 - ETA1= 3
 - ETA1_RANDOMNESS_SIZE= 192
 */
-static libcrux_ml_kem_types_MlKemKeyPair_3e generate_keypair_a8(
+static libcrux_ml_kem_types_MlKemKeyPair_3e generate_keypair_9c(
     uint8_t randomness[64U]) {
   /* Passing arrays by value in Rust generates a copy in C */
   uint8_t copy_of_randomness[64U];
   memcpy(copy_of_randomness, randomness, (size_t)64U * sizeof(uint8_t));
-  return libcrux_ml_kem_ind_cca_generate_keypair_f80(copy_of_randomness);
+  return libcrux_ml_kem_ind_cca_generate_keypair_150(copy_of_randomness);
 }
 
 /**
@@ -132,7 +132,7 @@ libcrux_ml_kem_mlkem512_portable_generate_key_pair(uint8_t randomness[64U]) {
   /* Passing arrays by value in Rust generates a copy in C */
   uint8_t copy_of_randomness[64U];
   memcpy(copy_of_randomness, randomness, (size_t)64U * sizeof(uint8_t));
-  return generate_keypair_a8(copy_of_randomness);
+  return generate_keypair_9c(copy_of_randomness);
 }
 
 /**
@@ -197,11 +197,10 @@ A monomorphic instance of
 libcrux_ml_kem.ind_cca.instantiations.portable.validate_public_key with const
 generics
 - K= 2
-- RANKED_BYTES_PER_RING_ELEMENT= 768
 - PUBLIC_KEY_SIZE= 800
 */
-static KRML_MUSTINLINE bool validate_public_key_1c(uint8_t *public_key) {
-  return libcrux_ml_kem_ind_cca_validate_public_key_86(public_key);
+static KRML_MUSTINLINE bool validate_public_key_49(uint8_t *public_key) {
+  return libcrux_ml_kem_ind_cca_validate_public_key_64(public_key);
 }
 
 /**
@@ -211,5 +210,5 @@ static KRML_MUSTINLINE bool validate_public_key_1c(uint8_t *public_key) {
 */
 bool libcrux_ml_kem_mlkem512_portable_validate_public_key(
     libcrux_ml_kem_types_MlKemPublicKey_52 *public_key) {
-  return validate_public_key_1c(public_key->value);
+  return validate_public_key_49(public_key->value);
 }

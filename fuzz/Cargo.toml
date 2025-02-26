@@ -10,7 +10,7 @@ cargo-fuzz = true
 
 [dependencies]
 libfuzzer-sys = "0.4"
-rand = { version = "0.8" }
+rand = { version = "0.9" }
 
 [dependencies.libcrux]
 path = "../"

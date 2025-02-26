@@ -33,7 +33,6 @@ let serialized_public_key
   let serialized:Libcrux_ml_kem.Types.t_MlKemPublicKey (mk_usize 1184) =
     Libcrux_ml_kem.Ind_cca.Unpacked.impl_3__serialized_mut (mk_usize 3)
       #Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector
-      (mk_usize 1152)
       (mk_usize 1184)
       public_key
       serialized
@@ -50,7 +49,6 @@ let key_pair_serialized_private_key
     (mk_usize 1152)
     (mk_usize 2400)
     (mk_usize 1184)
-    (mk_usize 1152)
     key_pair
 
 let key_pair_serialized_private_key_mut
@@ -65,7 +63,6 @@ let key_pair_serialized_private_key_mut
       (mk_usize 1152)
       (mk_usize 2400)
       (mk_usize 1184)
-      (mk_usize 1152)
       key_pair
       serialized
   in
@@ -80,7 +77,6 @@ let key_pair_serialized_public_key_mut
   let serialized:Libcrux_ml_kem.Types.t_MlKemPublicKey (mk_usize 1184) =
     Libcrux_ml_kem.Ind_cca.Unpacked.impl_4__serialized_public_key_mut (mk_usize 3)
       #Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector
-      (mk_usize 1152)
       (mk_usize 1184)
       key_pair
       serialized
@@ -94,7 +90,6 @@ let key_pair_serialized_public_key
      =
   Libcrux_ml_kem.Ind_cca.Unpacked.impl_4__serialized_public_key (mk_usize 3)
     #Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector
-    (mk_usize 1152)
     (mk_usize 1184)
     key_pair
 
@@ -110,7 +105,6 @@ let key_pair_from_private_mut
       (mk_usize 2400)
       (mk_usize 1152)
       (mk_usize 1184)
-      (mk_usize 1152)
       (mk_usize 1152)
       private_key
       key_pair
@@ -149,7 +143,6 @@ let unpacked_public_key
     Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector =
     Libcrux_ml_kem.Ind_cca.Instantiations.Neon.Unpacked.unpack_public_key (mk_usize 3)
       (mk_usize 1152)
-      (mk_usize 1152)
       (mk_usize 1184)
       public_key
       unpacked_public_key
@@ -168,7 +161,6 @@ let generate_key_pair_mut
       (mk_usize 1152)
       (mk_usize 2400)
       (mk_usize 1184)
-      (mk_usize 1152)
       (mk_usize 2)
       (mk_usize 128)
       randomness

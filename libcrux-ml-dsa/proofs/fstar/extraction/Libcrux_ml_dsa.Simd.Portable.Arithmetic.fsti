@@ -14,32 +14,30 @@ let v_MONTGOMERY_SHIFT: u8 = mk_u8 32
 val add (lhs rhs: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients)
     : Prims.Pure Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients
       (requires
-        forall i.
-          i < 8 ==>
-          Spec.Utils.is_intb (pow2 31 - 1)
-            (v (Seq.index lhs.f_values i) + v (Seq.index rhs.f_values i)))
+        Libcrux_ml_dsa.Simd.Traits.Specs.add_pre lhs
+            .Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values
+          rhs.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values)
       (ensures
         fun lhs_future ->
           let lhs_future:Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients = lhs_future in
-          forall i.
-            i < 8 ==>
-            (v (Seq.index lhs_future.f_values i) ==
-              v (Seq.index lhs.f_values i) + v (Seq.index rhs.f_values i)))
+          Libcrux_ml_dsa.Simd.Traits.Specs.add_post lhs
+              .Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values
+            rhs.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values
+            lhs_future.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values)
 
 val subtract (lhs rhs: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients)
     : Prims.Pure Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients
       (requires
-        forall i.
-          i < 8 ==>
-          Spec.Utils.is_intb (pow2 31 - 1)
-            (v (Seq.index lhs.f_values i) - v (Seq.index rhs.f_values i)))
+        Libcrux_ml_dsa.Simd.Traits.Specs.sub_pre lhs
+            .Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values
+          rhs.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values)
       (ensures
         fun lhs_future ->
           let lhs_future:Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients = lhs_future in
-          forall i.
-            i < 8 ==>
-            (v (Seq.index lhs_future.f_values i) ==
-              v (Seq.index lhs.f_values i) - v (Seq.index rhs.f_values i)))
+          Libcrux_ml_dsa.Simd.Traits.Specs.sub_post lhs
+              .Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values
+            rhs.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values
+            lhs_future.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values)
 
 val get_n_least_significant_bits (n: u8) (value: u64)
     : Prims.Pure u64
@@ -234,7 +232,7 @@ val decompose_element (gamma2 r: i32)
                 (v r0 > - (v gamma2) /\ v r0 <= v gamma2))) /\
           (v r1 >= 0 /\ v r1 < (v Libcrux_ml_dsa.Simd.Traits.v_FIELD_MODULUS - 1) / (v gamma2 * 2)))
 
-val use_one_hint (gamma2 r hint: i32)
+val uuse_one_hint (gamma2 r hint: i32)
     : Prims.Pure i32
       (requires
         (v gamma2 == v Libcrux_ml_dsa.Constants.v_GAMMA2_V261_888_ \/
@@ -284,7 +282,9 @@ val decompose
               (r1 >= 0 /\ r1 < (v Libcrux_ml_dsa.Simd.Traits.v_FIELD_MODULUS - 1) / (v gamma2 * 2)))
       )
 
-val use_hint (gamma2: i32) (simd_unit hint: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients)
+val uuse_hint
+      (gamma2: i32)
+      (simd_unit hint: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients)
     : Prims.Pure Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients
       (requires
         (v gamma2 == v Libcrux_ml_dsa.Constants.v_GAMMA2_V261_888_ \/

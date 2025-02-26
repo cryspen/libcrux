@@ -4,11 +4,11 @@
  * SPDX-License-Identifier: MIT or Apache-2.0
  *
  * This code was generated with the following revisions:
- * Charon: db4e045d4597d06d854ce7a2c10e8dcfda6ecd25
- * Eurydice: 75eae2e2534a16f5ba5430e6ee5c69d8a46f3bea
- * Karamel: 3823e3d82fa0b271d799b61c59ffb4742ddc1e65
+ * Charon: a8f2211d1b95e0462a96382023b164a4116c7ca4
+ * Eurydice: 60f543ddc60a777138070968daaf7620ec48170d
+ * Karamel: 1d81d757d5d9e16dd6463ccc72324e587c707959
  * F*: 7cd06c5562fc47ec14cd35c38034d5558a5ff762
- * Libcrux: d7312a4f9c52625c8df67f20051237208cc6d7cd
+ * Libcrux: 370d71828112dbf0ad53a8995502ff1e5c8a719c
  */
 
 #ifndef __internal_libcrux_mlkem_avx2_H
@@ -20,9 +20,8 @@ extern "C" {
 
 #include "../libcrux_mlkem_avx2.h"
 #include "eurydice_glue.h"
-#include "internal/libcrux_core.h"
-#include "internal/libcrux_mlkem_portable.h"
-#include "internal/libcrux_sha3_avx2.h"
+#include "intrinsics/libcrux_intrinsics_avx2.h"
+#include "libcrux_core.h"
 
 /**
 A monomorphic instance of libcrux_ml_kem.polynomial.PolynomialRingElement
@@ -45,7 +44,6 @@ A monomorphic instance of libcrux_ml_kem.ind_cca.validate_public_key
 with types libcrux_ml_kem_vector_avx2_SIMD256Vector
 with const generics
 - K= 3
-- RANKED_BYTES_PER_RING_ELEMENT= 1152
 - PUBLIC_KEY_SIZE= 1184
 */
 bool libcrux_ml_kem_ind_cca_validate_public_key_ed(uint8_t *public_key);
@@ -101,12 +99,11 @@ with const generics
 - CPA_PRIVATE_KEY_SIZE= 1152
 - PRIVATE_KEY_SIZE= 2400
 - PUBLIC_KEY_SIZE= 1184
-- RANKED_BYTES_PER_RING_ELEMENT= 1152
 - ETA1= 2
 - ETA1_RANDOMNESS_SIZE= 128
 */
 libcrux_ml_kem_mlkem768_MlKem768KeyPair
-libcrux_ml_kem_ind_cca_generate_keypair_d61(uint8_t randomness[64U]);
+libcrux_ml_kem_ind_cca_generate_keypair_bb1(uint8_t randomness[64U]);
 
 /**
 A monomorphic instance of libcrux_ml_kem.ind_cca.encapsulate
@@ -172,10 +169,9 @@ A monomorphic instance of libcrux_ml_kem.ind_cca.validate_public_key
 with types libcrux_ml_kem_vector_avx2_SIMD256Vector
 with const generics
 - K= 4
-- RANKED_BYTES_PER_RING_ELEMENT= 1536
 - PUBLIC_KEY_SIZE= 1568
 */
-bool libcrux_ml_kem_ind_cca_validate_public_key_1e(uint8_t *public_key);
+bool libcrux_ml_kem_ind_cca_validate_public_key_78(uint8_t *public_key);
 
 /**
  Validate an ML-KEM private key.
@@ -228,12 +224,11 @@ with const generics
 - CPA_PRIVATE_KEY_SIZE= 1536
 - PRIVATE_KEY_SIZE= 3168
 - PUBLIC_KEY_SIZE= 1568
-- RANKED_BYTES_PER_RING_ELEMENT= 1536
 - ETA1= 2
 - ETA1_RANDOMNESS_SIZE= 128
 */
 libcrux_ml_kem_mlkem1024_MlKem1024KeyPair
-libcrux_ml_kem_ind_cca_generate_keypair_d60(uint8_t randomness[64U]);
+libcrux_ml_kem_ind_cca_generate_keypair_bb0(uint8_t randomness[64U]);
 
 /**
 A monomorphic instance of libcrux_ml_kem.ind_cca.encapsulate
@@ -299,10 +294,9 @@ A monomorphic instance of libcrux_ml_kem.ind_cca.validate_public_key
 with types libcrux_ml_kem_vector_avx2_SIMD256Vector
 with const generics
 - K= 2
-- RANKED_BYTES_PER_RING_ELEMENT= 768
 - PUBLIC_KEY_SIZE= 800
 */
-bool libcrux_ml_kem_ind_cca_validate_public_key_ba(uint8_t *public_key);
+bool libcrux_ml_kem_ind_cca_validate_public_key_29(uint8_t *public_key);
 
 /**
  Validate an ML-KEM private key.
@@ -355,11 +349,10 @@ with const generics
 - CPA_PRIVATE_KEY_SIZE= 768
 - PRIVATE_KEY_SIZE= 1632
 - PUBLIC_KEY_SIZE= 800
-- RANKED_BYTES_PER_RING_ELEMENT= 768
 - ETA1= 3
 - ETA1_RANDOMNESS_SIZE= 192
 */
-libcrux_ml_kem_types_MlKemKeyPair_3e libcrux_ml_kem_ind_cca_generate_keypair_d6(
+libcrux_ml_kem_types_MlKemKeyPair_3e libcrux_ml_kem_ind_cca_generate_keypair_bb(
     uint8_t randomness[64U]);
 
 /**

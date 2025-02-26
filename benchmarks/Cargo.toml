@@ -13,25 +13,47 @@ publish = false
 bench = false # so libtest doesn't eat the arguments for criterion
 
 [dependencies]
-rand = { version = "0.8" }
+rand = { version = "0.9" }
 
 [dev-dependencies]
 libcrux = { path = "../", features = ["rand", "tests"] }
+libcrux-chacha20poly1305 = { path = "../chacha20poly1305" }
+libcrux-ecdh = { path = "../libcrux-ecdh" }
+libcrux-ed25519 = { path = "../ed25519" }
 libcrux-kem = { path = "../libcrux-kem", features = ["tests"] }
 libcrux-ml-kem = { path = "../libcrux-ml-kem" }
-rand_core = { version = "0.6" }
+libcrux-sha2 = { path = "../sha2" }
+libcrux-ecdsa = { path = "../ecdsa" }
+libcrux-rsa = { path = "../rsa" }
+
+rand_core = { version = "0.9" }
+rand_core_old = { version = "0.6", package = "rand_core" }
+
 # Benchmarking "RustCrypto"
 chacha20poly1305 = "0.10"
 sha2 = "0.10"
+ed25519-dalek = { version = "2.1.1", features = ["rand_core"] }
 x25519-dalek-ng = "1.1"
 sha3 = "0.10"
 p256 = { version = "0.13", features = ["ecdh"] }
+
 # Benchmarking "Ring"
 ring = "0.17"
+
+# For inputs to `ring` ed25519 verification
+untrusted = "0.9.0"
+rsa = { version = "0.9.7", features = ["sha2"] }
+
 # Benchmarking "Dalek X25519"
 x25519-dalek = "2.0.1"
+
 # Benchmarking "Dalek Ristretto"
 curve25519-dalek = "4.1.2"
+
+# helpers needed for key conversion
+der = "0.7"
+pkcs1 = "0.7.5"
+
 
 # We always link this on linux, even if it may not be built.
 # We check that in the build instead.
@@ -50,7 +72,10 @@ pqcrypto-kyber = { version = "0.8.0" }
 openssl = "0.10"
 
 [target.'cfg(all(not(target_os = "windows"), target_arch = "x86_64"))'.dev-dependencies]
-libjade-sys = { version = "=0.0.2-beta.2", path = "../sys/libjade" }
+libjade-sys = { version = "=0.0.2-beta.3", path = "../sys/libjade" }
+
+[lints.rust]
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(crypto_lib25519)'] }
 
 [[bench]]
 name = "sha2"
@@ -69,7 +94,11 @@ name = "p256"
 harness = false
 
 [[bench]]
-name = "aead"
+name = "chacha20poly1305"
+harness = false
+
+[[bench]]
+name = "ed25519"
 harness = false
 
 [[bench]]
@@ -82,4 +111,12 @@ harness = false
 
 [[bench]]
 name = "kyber768"
+harness = false
+
+[[bench]]
+name = "rsa"
+harness = false
+
+[[bench]]
+name = "ecdsa_p256"
 harness = false

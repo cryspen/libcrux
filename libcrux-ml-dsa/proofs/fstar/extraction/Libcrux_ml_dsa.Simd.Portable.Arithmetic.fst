@@ -12,7 +12,7 @@ let _ =
 #push-options "--z3rlimit 150"
 
 let add (lhs rhs: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients) =
-  let v__lhs0:Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients =
+  let e_lhs0:Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients =
     Core.Clone.f_clone #Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients
       #FStar.Tactics.Typeclasses.solve
       lhs
@@ -26,11 +26,25 @@ let add (lhs rhs: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients) =
       (fun lhs i ->
           let lhs:Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients = lhs in
           let i:usize = i in
-          (forall j.
-              j < v i ==>
-              (Seq.index lhs.f_values j) ==
-              (Seq.index v__lhs0.f_values j) +! (Seq.index rhs.f_values j)) /\
-          (forall j. j >= v i ==> (Seq.index lhs.f_values j) == (Seq.index v__lhs0.f_values j)))
+          (forall (j: usize).
+              b2t (j <. i <: bool) ==>
+              b2t
+              ((lhs.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values.[ j ] <: i32) =.
+                ((e_lhs0.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values.[ j ] <: i32) +!
+                  (rhs.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values.[ j ] <: i32)
+                  <:
+                  i32)
+                <:
+                bool)) /\
+          (forall (j: usize).
+              b2t
+              ((j >=. i <: bool) &&
+                (j <. Libcrux_ml_dsa.Simd.Traits.v_COEFFICIENTS_IN_SIMD_UNIT <: bool)) ==>
+              b2t
+              ((lhs.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values.[ j ] <: i32) =.
+                (e_lhs0.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values.[ j ] <: i32)
+                <:
+                bool)))
       lhs
       (fun lhs i ->
           let lhs:Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients = lhs in
@@ -53,11 +67,6 @@ let add (lhs rhs: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients) =
           in
           lhs)
   in
-  let _:Prims.unit =
-    assert (forall i.
-          v (Seq.index lhs.f_values i) ==
-          v (Seq.index v__lhs0.f_values i) + v (Seq.index rhs.f_values i))
-  in
   lhs
 
 #pop-options
@@ -65,7 +74,7 @@ let add (lhs rhs: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients) =
 #push-options "--z3rlimit 150"
 
 let subtract (lhs rhs: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients) =
-  let v__lhs0:Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients =
+  let e_lhs0:Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients =
     Core.Clone.f_clone #Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients
       #FStar.Tactics.Typeclasses.solve
       lhs
@@ -79,11 +88,25 @@ let subtract (lhs rhs: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients) 
       (fun lhs i ->
           let lhs:Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients = lhs in
           let i:usize = i in
-          (forall j.
-              j < v i ==>
-              (Seq.index lhs.f_values j) ==
-              (Seq.index v__lhs0.f_values j) -! (Seq.index rhs.f_values j)) /\
-          (forall j. j >= v i ==> (Seq.index lhs.f_values j) == (Seq.index v__lhs0.f_values j)))
+          (forall (j: usize).
+              b2t (j <. i <: bool) ==>
+              b2t
+              ((lhs.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values.[ j ] <: i32) =.
+                ((e_lhs0.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values.[ j ] <: i32) -!
+                  (rhs.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values.[ j ] <: i32)
+                  <:
+                  i32)
+                <:
+                bool)) /\
+          (forall (j: usize).
+              b2t
+              ((j >=. i <: bool) &&
+                (j <. Libcrux_ml_dsa.Simd.Traits.v_COEFFICIENTS_IN_SIMD_UNIT <: bool)) ==>
+              b2t
+              ((lhs.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values.[ j ] <: i32) =.
+                (e_lhs0.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values.[ j ] <: i32)
+                <:
+                bool)))
       lhs
       (fun lhs i ->
           let lhs:Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients = lhs in
@@ -105,11 +128,6 @@ let subtract (lhs rhs: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients) 
             Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients
           in
           lhs)
-  in
-  let _:Prims.unit =
-    assert (forall i.
-          v (Seq.index lhs.f_values i) ==
-          v (Seq.index v__lhs0.f_values i) - v (Seq.index rhs.f_values i))
   in
   lhs
 
@@ -246,7 +264,7 @@ let montgomery_multiply_by_constant
       (simd_unit: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients)
       (c: i32)
      =
-  let v__simd_unit0:Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients =
+  let e_simd_unit0:Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients =
     Core.Clone.f_clone #Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients
       #FStar.Tactics.Typeclasses.solve
       simd_unit
@@ -265,10 +283,9 @@ let montgomery_multiply_by_constant
               (let vecj = Seq.index simd_unit.f_values j in
                 (Spec.Utils.is_i32b 8380416 vecj /\
                   v vecj % 8380417 ==
-                  (v (Seq.index v__simd_unit0.f_values j) * v c * 8265825) % 8380417))) /\
+                  (v (Seq.index e_simd_unit0.f_values j) * v c * 8265825) % 8380417))) /\
           (forall j.
-              j >= v i ==> (Seq.index simd_unit.f_values j) == (Seq.index v__simd_unit0.f_values j))
-      )
+              j >= v i ==> (Seq.index simd_unit.f_values j) == (Seq.index e_simd_unit0.f_values j)))
       simd_unit
       (fun simd_unit i ->
           let simd_unit:Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients = simd_unit in
@@ -305,7 +322,7 @@ let montgomery_multiply_by_constant
 #push-options "--z3rlimit 150"
 
 let montgomery_multiply (lhs rhs: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients) =
-  let v__lhs0:Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients =
+  let e_lhs0:Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients =
     Core.Clone.f_clone #Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients
       #FStar.Tactics.Typeclasses.solve
       lhs
@@ -324,9 +341,9 @@ let montgomery_multiply (lhs rhs: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coe
               (let vecj = Seq.index lhs.f_values j in
                 (Spec.Utils.is_i32b 8380416 vecj /\
                   v vecj % 8380417 ==
-                  (v (Seq.index v__lhs0.f_values j) * v (Seq.index rhs.f_values j) * 8265825) %
+                  (v (Seq.index e_lhs0.f_values j) * v (Seq.index rhs.f_values j) * 8265825) %
                   8380417))) /\
-          (forall j. j >= v i ==> (Seq.index lhs.f_values j) == (Seq.index v__lhs0.f_values j)))
+          (forall j. j >= v i ==> (Seq.index lhs.f_values j) == (Seq.index e_lhs0.f_values j)))
       lhs
       (fun lhs i ->
           let lhs:Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients = lhs in
@@ -370,7 +387,7 @@ let power2round_element (t: i32) =
     then
       let _:Prims.unit =
         Hax_lib.v_assert ((t >.
-              (Core.Ops.Arith.Neg.neg Libcrux_ml_dsa.Simd.Traits.v_FIELD_MODULUS <: i32)
+              (Core.Ops.Arith.f_neg Libcrux_ml_dsa.Simd.Traits.v_FIELD_MODULUS <: i32)
               <:
               bool) &&
             (t <. Libcrux_ml_dsa.Simd.Traits.v_FIELD_MODULUS <: bool))
@@ -378,11 +395,11 @@ let power2round_element (t: i32) =
       ()
   in
   let _:Prims.unit = logand_lemma Libcrux_ml_dsa.Simd.Traits.v_FIELD_MODULUS (t >>! mk_i32 31) in
-  let v__t:i32 = t in
+  let e_t:i32 = t in
   let t:i32 =
     t +! ((t >>! mk_i32 31 <: i32) &. Libcrux_ml_dsa.Simd.Traits.v_FIELD_MODULUS <: i32)
   in
-  let _:Prims.unit = assert (v t == v v__t % v Libcrux_ml_dsa.Simd.Traits.v_FIELD_MODULUS) in
+  let _:Prims.unit = assert (v t == v e_t % v Libcrux_ml_dsa.Simd.Traits.v_FIELD_MODULUS) in
   let t1:i32 =
     ((t -! mk_i32 1 <: i32) +!
       (mk_i32 1 <<! (Libcrux_ml_dsa.Constants.v_BITS_IN_LOWER_PART_OF_T -! mk_usize 1 <: usize)
@@ -420,7 +437,7 @@ let power2round_element (t: i32) =
 #pop-options
 
 let power2round (t0 t1: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients) =
-  let (v__t0: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients):Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients
+  let (e_t0: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients):Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients
   =
     Core.Clone.f_clone #Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients
       #FStar.Tactics.Typeclasses.solve
@@ -442,7 +459,7 @@ let power2round (t0 t1: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients)
           (forall j.
               j < v i ==>
               (let t0_1 =
-                  v (Seq.index v__t0.f_values j) % v Libcrux_ml_dsa.Simd.Traits.v_FIELD_MODULUS
+                  v (Seq.index e_t0.f_values j) % v Libcrux_ml_dsa.Simd.Traits.v_FIELD_MODULUS
                 in
                 let t0_2 = v (Seq.index t0.f_values j) in
                 t0_2 ==
@@ -453,7 +470,7 @@ let power2round (t0 t1: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients)
                 t0_2 <= pow2 (v Libcrux_ml_dsa.Constants.v_BITS_IN_LOWER_PART_OF_T - 1))) /\
           (forall j.
               j >= v i ==>
-              (Seq.index t0.f_values j == Seq.index v__t0.f_values j /\
+              (Seq.index t0.f_values j == Seq.index e_t0.f_values j /\
                 Spec.Utils.is_i32b (v Libcrux_ml_dsa.Simd.Traits.v_FIELD_MODULUS - 1)
                   (Seq.index t0.f_values j))))
       (t0, t1
@@ -532,7 +549,7 @@ let infinity_norm_exceeds
             then
               let _:Prims.unit =
                 Hax_lib.v_assert ((coefficient >.
-                      (Core.Ops.Arith.Neg.neg Libcrux_ml_dsa.Simd.Traits.v_FIELD_MODULUS <: i32)
+                      (Core.Ops.Arith.f_neg Libcrux_ml_dsa.Simd.Traits.v_FIELD_MODULUS <: i32)
                       <:
                       bool) &&
                     (coefficient <. Libcrux_ml_dsa.Simd.Traits.v_FIELD_MODULUS <: bool))
@@ -570,7 +587,7 @@ let shift_left_then_reduce
       (v_SHIFT_BY: i32)
       (simd_unit: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients)
      =
-  let v__simd_unit0:Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients =
+  let e_simd_unit0:Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients =
     Core.Clone.f_clone #Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients
       #FStar.Tactics.Typeclasses.solve
       simd_unit
@@ -588,10 +605,10 @@ let shift_left_then_reduce
               j < v i ==>
               (Spec.Utils.is_i32b 8380416 (Seq.index simd_unit.f_values j) /\
                 v (Seq.index simd_unit.f_values j) % 8380417 ==
-                (v ((Seq.index v__simd_unit0.f_values j) <<! v_SHIFT_BY) % 8380417))) /\
+                (v ((Seq.index e_simd_unit0.f_values j) <<! v_SHIFT_BY) % 8380417))) /\
           (forall j.
               j >= v i ==>
-              (Seq.index simd_unit.f_values j == Seq.index v__simd_unit0.f_values j /\
+              (Seq.index simd_unit.f_values j == Seq.index e_simd_unit0.f_values j /\
                 Spec.Utils.is_i32b 2143289343 ((Seq.index simd_unit.f_values j) <<! v_SHIFT_BY))))
       simd_unit
       (fun simd_unit i ->
@@ -623,8 +640,8 @@ let shift_left_then_reduce
 
 let compute_one_hint (low high gamma2: i32) =
   if
-    low >. gamma2 || low <. (Core.Ops.Arith.Neg.neg gamma2 <: i32) ||
-    low =. (Core.Ops.Arith.Neg.neg gamma2 <: i32) && high <>. mk_i32 0
+    low >. gamma2 || low <. (Core.Ops.Arith.f_neg gamma2 <: i32) ||
+    low =. (Core.Ops.Arith.f_neg gamma2 <: i32) && high <>. mk_i32 0
   then mk_i32 1
   else mk_i32 0
 
@@ -686,7 +703,7 @@ let compute_hint
             temp_0_
           in
           let i:usize = i in
-          let v__hint_values:t_Array i32 (mk_usize 8) =
+          let e_hint_values:t_Array i32 (mk_usize 8) =
             hint.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values
           in
           let hint:Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients =
@@ -709,7 +726,7 @@ let compute_hint
             Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients
           in
           let _:Prims.unit =
-            hint_counter_loop hint.f_values v__hint_values (v i);
+            hint_counter_loop hint.f_values e_hint_values (v i);
             Lib.LoopCombinators.unfold_repeati (v i + 1) (hint_counter hint.f_values) 0 (v i)
           in
           let one_hints_count:usize =
@@ -730,19 +747,19 @@ let decompose_element (gamma2 r: i32) =
     then
       let _:Prims.unit =
         Hax_lib.v_assert ((r >.
-              (Core.Ops.Arith.Neg.neg Libcrux_ml_dsa.Simd.Traits.v_FIELD_MODULUS <: i32)
+              (Core.Ops.Arith.f_neg Libcrux_ml_dsa.Simd.Traits.v_FIELD_MODULUS <: i32)
               <:
               bool) &&
             (r <. Libcrux_ml_dsa.Simd.Traits.v_FIELD_MODULUS <: bool))
       in
       ()
   in
-  let v__r:i32 = r in
+  let e_r:i32 = r in
   let _:Prims.unit = logand_lemma Libcrux_ml_dsa.Simd.Traits.v_FIELD_MODULUS (r >>! mk_i32 31) in
   let r:i32 =
     r +! ((r >>! mk_i32 31 <: i32) &. Libcrux_ml_dsa.Simd.Traits.v_FIELD_MODULUS <: i32)
   in
-  let _:Prims.unit = assert (v r == v v__r % v Libcrux_ml_dsa.Simd.Traits.v_FIELD_MODULUS) in
+  let _:Prims.unit = assert (v r == v e_r % v Libcrux_ml_dsa.Simd.Traits.v_FIELD_MODULUS) in
   let ceil_of_r_by_128_:i32 = (r +! mk_i32 127 <: i32) >>! mk_i32 7 in
   let _:Prims.unit = assert (v ceil_of_r_by_128_ == (v r + 127) / 128) in
   let r1:i32 =
@@ -799,7 +816,7 @@ let decompose_element (gamma2 r: i32) =
   in
   let alpha:i32 = gamma2 *! mk_i32 2 in
   let r0:i32 = r -! (r1 *! alpha <: i32) in
-  let v__r0:i32 = r0 in
+  let e_r0:i32 = r0 in
   let _:Prims.unit =
     logand_lemma ((((Libcrux_ml_dsa.Simd.Traits.v_FIELD_MODULUS -! mk_i32 1) /! mk_i32 2) -! r0) >>!
         mk_i32 31)
@@ -818,8 +835,8 @@ let decompose_element (gamma2 r: i32) =
       i32)
   in
   let _:Prims.unit =
-    assert (v v__r0 > 4190208 ==> v r0 == v v__r0 - 8380417);
-    assert (v v__r0 <= 4190208 ==> v r0 == v v__r0);
+    assert (v e_r0 > 4190208 ==> v r0 == v e_r0 - 8380417);
+    assert (v e_r0 <= 4190208 ==> v r0 == v e_r0);
     if v r - (Spec.Utils.mod_q (v r) (v alpha)) = 8380416
     then
       (assert (v r1 == 0);
@@ -837,7 +854,7 @@ let decompose_element (gamma2 r: i32) =
 
 #push-options "--ext context_pruning --z3refresh --split_queries always"
 
-let use_one_hint (gamma2 r hint: i32) =
+let uuse_one_hint (gamma2 r hint: i32) =
   let r0, r1:(i32 & i32) = decompose_element gamma2 r in
   if hint =. mk_i32 0
   then r1
@@ -865,7 +882,7 @@ let decompose
       (gamma2: i32)
       (simd_unit low high: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients)
      =
-  let v__simd_unit0:Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients = simd_unit in
+  let e_simd_unit0:Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients = simd_unit in
   let high, low:(Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients &
     Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients) =
     Rust_primitives.Hax.Folds.fold_range (mk_usize 0)
@@ -944,8 +961,11 @@ let decompose
   (Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients &
     Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients)
 
-let use_hint (gamma2: i32) (simd_unit hint: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients) =
-  let v__hint0:Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients =
+let uuse_hint
+      (gamma2: i32)
+      (simd_unit hint: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients)
+     =
+  let e_hint0:Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients =
     Core.Clone.f_clone #Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients
       #FStar.Tactics.Typeclasses.solve
       hint
@@ -961,7 +981,7 @@ let use_hint (gamma2: i32) (simd_unit hint: Libcrux_ml_dsa.Simd.Portable.Vector_
           let i:usize = i in
           (forall j.
               j < v i ==>
-              (let h = Seq.index v__hint0.f_values j in
+              (let h = Seq.index e_hint0.f_values j in
                 let result = Seq.index hint.f_values j in
                 let r0, r1 = decompose_element gamma2 (Seq.index simd_unit.f_values j) in
                 if v h = 0
@@ -972,7 +992,7 @@ let use_hint (gamma2: i32) (simd_unit hint: Libcrux_ml_dsa.Simd.Portable.Vector_
                     else v result = (v r1 - 1) % (4190208 / v gamma2)))) /\
           (forall j.
               j >= v i ==>
-              (Seq.index hint.f_values j == Seq.index v__hint0.f_values j /\
+              (Seq.index hint.f_values j == Seq.index e_hint0.f_values j /\
                 (v (Seq.index hint.f_values j) == 0 \/ v (Seq.index hint.f_values j) == 1))))
       hint
       (fun hint i ->
@@ -986,7 +1006,7 @@ let use_hint (gamma2: i32) (simd_unit hint: Libcrux_ml_dsa.Simd.Portable.Vector_
               Rust_primitives.Hax.Monomorphized_update_at.update_at_usize hint
                   .Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values
                 i
-                (use_one_hint gamma2
+                (uuse_one_hint gamma2
                     (simd_unit.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values.[ i ] <: i32)
                     (hint.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values.[ i ] <: i32)
                   <:

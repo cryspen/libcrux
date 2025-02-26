@@ -1,8 +1,4 @@
 use criterion::{criterion_group, criterion_main, BatchSize, Criterion};
-use libcrux::ecdh;
-
-use benchmarks::util::*;
-use rand::RngCore;
 
 fn derive(c: &mut Criterion) {
     // Comparing libcrux performance for different payload sizes and other implementations.
@@ -11,13 +7,17 @@ fn derive(c: &mut Criterion) {
     group.bench_function("libcrux", |b| {
         b.iter_batched(
             || {
-                let sk1 = randombytes(32);
-                let pk1 = ecdh::secret_to_public(ecdh::Algorithm::X25519, &sk1).unwrap();
-                let sk2 = randombytes(32);
+                use rand_core::{OsRng, TryRngCore};
+                let mut os_rng = OsRng;
+                let mut rng = os_rng.unwrap_mut();
+                let (_, pk1) = libcrux_ecdh::x25519_key_gen(&mut rng).unwrap();
+                let sk2 = libcrux_ecdh::x25519_generate_secret(&mut rng).unwrap();
+
                 (pk1, sk2)
             },
             |(pk1, sk2)| {
-                let _zz = ecdh::derive(ecdh::Algorithm::X25519, &pk1, &sk2).unwrap();
+                let _zz =
+                    libcrux_ecdh::derive(libcrux_ecdh::Algorithm::X25519, &pk1, &sk2).unwrap();
             },
             BatchSize::SmallInput,
         )
@@ -77,7 +77,7 @@ fn derive(c: &mut Criterion) {
     });
 
     group.bench_function("Dalek", |b| {
-        use rand_core::OsRng;
+        use rand_core_old::OsRng;
         use x25519_dalek::{EphemeralSecret, PublicKey};
 
         b.iter_batched(
@@ -97,16 +97,16 @@ fn derive(c: &mut Criterion) {
     group.bench_function("Dalek Ristretto", |b| {
         use curve25519_dalek::ristretto::RistrettoPoint;
         use curve25519_dalek::scalar::Scalar;
-        use rand_core::OsRng;
+        use rand_core::{OsRng, TryRngCore};
 
         b.iter_batched(
             || {
                 let mut sk1_b = [0u8; 32];
-                OsRng.fill_bytes(&mut sk1_b);
+                OsRng.try_fill_bytes(&mut sk1_b).unwrap();
                 let sk1 = Scalar::from_bytes_mod_order(sk1_b);
                 let pk1 = RistrettoPoint::mul_base(&sk1);
                 let mut sk2_b = [0u8; 32];
-                OsRng.fill_bytes(&mut sk2_b);
+                OsRng.try_fill_bytes(&mut sk2_b).unwrap();
                 let sk2 = Scalar::from_bytes_mod_order(sk2_b);
                 (pk1, sk2)
             },
@@ -147,11 +147,15 @@ fn secret_to_public(c: &mut Criterion) {
     group.bench_function("libcrux", |b| {
         b.iter_batched(
             || {
-                let sk = randombytes(32);
+                use rand_core::{OsRng, TryRngCore};
+                let mut os_rng = OsRng;
+                let mut rng = os_rng.unwrap_mut();
+                let sk = libcrux_ecdh::x25519_generate_secret(&mut rng).unwrap();
                 sk
             },
             |sk| {
-                let _pk = ecdh::secret_to_public(ecdh::Algorithm::X25519, &sk).unwrap();
+                let _pk =
+                    libcrux_ecdh::secret_to_public(libcrux_ecdh::Algorithm::X25519, &sk).unwrap();
             },
             BatchSize::SmallInput,
         )
@@ -193,7 +197,8 @@ fn secret_to_public(c: &mut Criterion) {
     });
 
     group.bench_function("Dalek", |b| {
-        use rand_core::OsRng;
+        // Use older version of `rand_core` as required by library
+        use rand_core_old::OsRng;
         use x25519_dalek::{EphemeralSecret, PublicKey};
 
         b.iter_batched(
@@ -211,12 +216,12 @@ fn secret_to_public(c: &mut Criterion) {
     group.bench_function("Dalek Ristretto", |b| {
         use curve25519_dalek::ristretto::RistrettoPoint;
         use curve25519_dalek::scalar::Scalar;
-        use rand_core::OsRng;
+        use rand_core::{OsRng, TryRngCore};
 
         b.iter_batched(
             || {
                 let mut sk_b = [0u8; 32];
-                OsRng.fill_bytes(&mut sk_b);
+                OsRng.try_fill_bytes(&mut sk_b).unwrap();
                 let sk = Scalar::from_bytes_mod_order(sk_b);
                 sk
             },
@@ -250,23 +255,36 @@ fn nym_outfox_create(c: &mut Criterion) {
     group.bench_function("libcrux", |b| {
         b.iter_batched(
             || {
-                let sk1 = randombytes(32);
-                let pk1 = ecdh::secret_to_public(ecdh::Algorithm::X25519, &sk1).unwrap();
-                let sk2a = randombytes(32);
-                let sk2b = randombytes(32);
-                let sk2c = randombytes(32);
-                let sk2d = randombytes(32);
+                use rand_core::{OsRng, TryRngCore};
+                let mut os_rng = OsRng;
+                let mut rng = os_rng.unwrap_mut();
+
+                let (_, pk1) = libcrux_ecdh::x25519_key_gen(&mut rng).unwrap();
+
+                let sk2a = libcrux_ecdh::x25519_generate_secret(&mut rng).unwrap();
+                let sk2b = libcrux_ecdh::x25519_generate_secret(&mut rng).unwrap();
+                let sk2c = libcrux_ecdh::x25519_generate_secret(&mut rng).unwrap();
+                let sk2d = libcrux_ecdh::x25519_generate_secret(&mut rng).unwrap();
+
                 (pk1, sk2a, sk2b, sk2c, sk2d)
             },
             |(pk1, sk2a, sk2b, sk2c, sk2d)| {
-                let _pk2a = ecdh::secret_to_public(ecdh::Algorithm::X25519, &sk2a).unwrap();
-                let _pk2b = ecdh::secret_to_public(ecdh::Algorithm::X25519, &sk2b).unwrap();
-                let _pk2c = ecdh::secret_to_public(ecdh::Algorithm::X25519, &sk2c).unwrap();
-                let _pk2d = ecdh::secret_to_public(ecdh::Algorithm::X25519, &sk2d).unwrap();
-                let _zza = ecdh::derive(ecdh::Algorithm::X25519, &pk1, &sk2a).unwrap();
-                let _zzb = ecdh::derive(ecdh::Algorithm::X25519, &pk1, &sk2b).unwrap();
-                let _zzc = ecdh::derive(ecdh::Algorithm::X25519, &pk1, &sk2c).unwrap();
-                let _zzd = ecdh::derive(ecdh::Algorithm::X25519, &pk1, &sk2d).unwrap();
+                let _pk2a =
+                    libcrux_ecdh::secret_to_public(libcrux_ecdh::Algorithm::X25519, &sk2a).unwrap();
+                let _pk2b =
+                    libcrux_ecdh::secret_to_public(libcrux_ecdh::Algorithm::X25519, &sk2b).unwrap();
+                let _pk2c =
+                    libcrux_ecdh::secret_to_public(libcrux_ecdh::Algorithm::X25519, &sk2c).unwrap();
+                let _pk2d =
+                    libcrux_ecdh::secret_to_public(libcrux_ecdh::Algorithm::X25519, &sk2d).unwrap();
+                let _zza =
+                    libcrux_ecdh::derive(libcrux_ecdh::Algorithm::X25519, &pk1, &sk2a).unwrap();
+                let _zzb =
+                    libcrux_ecdh::derive(libcrux_ecdh::Algorithm::X25519, &pk1, &sk2b).unwrap();
+                let _zzc =
+                    libcrux_ecdh::derive(libcrux_ecdh::Algorithm::X25519, &pk1, &sk2c).unwrap();
+                let _zzd =
+                    libcrux_ecdh::derive(libcrux_ecdh::Algorithm::X25519, &pk1, &sk2d).unwrap();
             },
             BatchSize::SmallInput,
         )
@@ -377,7 +395,8 @@ fn nym_outfox_create(c: &mut Criterion) {
     });
 
     group.bench_function("Dalek", |b| {
-        use rand_core::OsRng;
+        // use older version of `rand_core` as required by library
+        use rand_core_old::OsRng;
         use x25519_dalek::{EphemeralSecret, PublicKey};
 
         b.iter_batched(
@@ -407,16 +426,16 @@ fn nym_outfox_create(c: &mut Criterion) {
     group.bench_function("Dalek Ristretto", |b| {
         use curve25519_dalek::ristretto::RistrettoPoint;
         use curve25519_dalek::scalar::Scalar;
-        use rand_core::OsRng;
+        use rand_core::{OsRng, TryRngCore};
 
         b.iter_batched(
             || {
                 let mut sk1_b = [0u8; 32];
-                OsRng.fill_bytes(&mut sk1_b);
+                OsRng.try_fill_bytes(&mut sk1_b).unwrap();
                 let sk1 = Scalar::from_bytes_mod_order(sk1_b);
                 let pk1 = RistrettoPoint::mul_base(&sk1);
                 let mut sk2_b = [0u8; 32];
-                OsRng.fill_bytes(&mut sk2_b);
+                OsRng.try_fill_bytes(&mut sk2_b).unwrap();
                 let sk2a = Scalar::from_bytes_mod_order(sk2_b);
                 let sk2b = Scalar::from_bytes_mod_order(sk2_b);
                 let sk2c = Scalar::from_bytes_mod_order(sk2_b);
@@ -493,13 +512,18 @@ fn nym_outfox_process(c: &mut Criterion) {
     group.bench_function("libcrux", |b| {
         b.iter_batched(
             || {
-                let sk1 = randombytes(32);
-                let pk1 = ecdh::secret_to_public(ecdh::Algorithm::X25519, &sk1).unwrap();
-                let sk2 = randombytes(32);
+                use rand_core::{OsRng, TryRngCore};
+                let mut os_rng = OsRng;
+                let mut rng = os_rng.unwrap_mut();
+
+                let (_, pk1) = libcrux_ecdh::x25519_key_gen(&mut rng).unwrap();
+                let sk2 = libcrux_ecdh::x25519_generate_secret(&mut rng).unwrap();
+
                 (pk1, sk2)
             },
             |(pk1, sk2)| {
-                let _zz = ecdh::derive(ecdh::Algorithm::X25519, &pk1, &sk2).unwrap();
+                let _zz =
+                    libcrux_ecdh::derive(libcrux_ecdh::Algorithm::X25519, &pk1, &sk2).unwrap();
             },
             BatchSize::SmallInput,
         )
@@ -559,7 +583,8 @@ fn nym_outfox_process(c: &mut Criterion) {
     });
 
     group.bench_function("Dalek", |b| {
-        use rand_core::OsRng;
+        // use older version of `rand_core` as required by library
+        use rand_core_old::OsRng;
         use x25519_dalek::{EphemeralSecret, PublicKey};
 
         b.iter_batched(
@@ -579,16 +604,16 @@ fn nym_outfox_process(c: &mut Criterion) {
     group.bench_function("Dalek Ristretto", |b| {
         use curve25519_dalek::ristretto::RistrettoPoint;
         use curve25519_dalek::scalar::Scalar;
-        use rand_core::OsRng;
+        use rand_core::{OsRng, TryRngCore};
 
         b.iter_batched(
             || {
                 let mut sk1_b = [0u8; 32];
-                OsRng.fill_bytes(&mut sk1_b);
+                OsRng.try_fill_bytes(&mut sk1_b).unwrap();
                 let sk1 = Scalar::from_bytes_mod_order(sk1_b);
                 let pk1 = RistrettoPoint::mul_base(&sk1);
                 let mut sk2_b = [0u8; 32];
-                OsRng.fill_bytes(&mut sk2_b);
+                OsRng.try_fill_bytes(&mut sk2_b).unwrap();
                 let sk2 = Scalar::from_bytes_mod_order(sk2_b);
                 (pk1, sk2)
             },
@@ -629,20 +654,31 @@ fn nym_sphinx_create(c: &mut Criterion) {
     group.bench_function("libcrux", |b| {
         b.iter_batched(
             || {
-                let sk1 = randombytes(32);
-                let pk1 = ecdh::secret_to_public(ecdh::Algorithm::X25519, &sk1).unwrap();
-                let sk2 = randombytes(32);
+                use rand_core::{OsRng, TryRngCore};
+                let mut os_rng = OsRng;
+                let mut rng = os_rng.unwrap_mut();
+                let (_, pk1) = libcrux_ecdh::x25519_key_gen(&mut rng).unwrap();
+                let sk2 = libcrux_ecdh::x25519_generate_secret(&mut rng).unwrap();
+
                 (pk1, sk2)
             },
             |(pk1, sk2)| {
-                let _pk2a = ecdh::secret_to_public(ecdh::Algorithm::X25519, &sk2).unwrap();
-                let zza = ecdh::derive(ecdh::Algorithm::X25519, &pk1, &sk2).unwrap();
-                let _pk2b = ecdh::secret_to_public(ecdh::Algorithm::X25519, &zza).unwrap();
-                let zzb = ecdh::derive(ecdh::Algorithm::X25519, &pk1, &zza).unwrap();
-                let _pk2c = ecdh::secret_to_public(ecdh::Algorithm::X25519, &zzb).unwrap();
-                let zzc = ecdh::derive(ecdh::Algorithm::X25519, &pk1, &zzb).unwrap();
-                let _pk2d = ecdh::secret_to_public(ecdh::Algorithm::X25519, &zzc).unwrap();
-                let _zzd = ecdh::derive(ecdh::Algorithm::X25519, &pk1, &zzc).unwrap();
+                let _pk2a =
+                    libcrux_ecdh::secret_to_public(libcrux_ecdh::Algorithm::X25519, &sk2).unwrap();
+                let zza =
+                    libcrux_ecdh::derive(libcrux_ecdh::Algorithm::X25519, &pk1, &sk2).unwrap();
+                let _pk2b =
+                    libcrux_ecdh::secret_to_public(libcrux_ecdh::Algorithm::X25519, &zza).unwrap();
+                let zzb =
+                    libcrux_ecdh::derive(libcrux_ecdh::Algorithm::X25519, &pk1, &zza).unwrap();
+                let _pk2c =
+                    libcrux_ecdh::secret_to_public(libcrux_ecdh::Algorithm::X25519, &zzb).unwrap();
+                let zzc =
+                    libcrux_ecdh::derive(libcrux_ecdh::Algorithm::X25519, &pk1, &zzb).unwrap();
+                let _pk2d =
+                    libcrux_ecdh::secret_to_public(libcrux_ecdh::Algorithm::X25519, &zzc).unwrap();
+                let _zzd =
+                    libcrux_ecdh::derive(libcrux_ecdh::Algorithm::X25519, &pk1, &zzc).unwrap();
             },
             BatchSize::SmallInput,
         )
@@ -756,7 +792,8 @@ fn nym_sphinx_create(c: &mut Criterion) {
     });
 
     group.bench_function("Dalek", |b| {
-        use rand_core::OsRng;
+        // Use older version of `rand_core` as required by library
+        use rand_core_old::OsRng;
         use x25519_dalek::{EphemeralSecret, PublicKey};
 
         b.iter_batched(
@@ -786,16 +823,16 @@ fn nym_sphinx_create(c: &mut Criterion) {
     group.bench_function("Dalek Ristretto", |b| {
         use curve25519_dalek::ristretto::RistrettoPoint;
         use curve25519_dalek::scalar::Scalar;
-        use rand_core::OsRng;
+        use rand_core::{OsRng, TryRngCore};
 
         b.iter_batched(
             || {
                 let mut sk1_b = [0u8; 32];
-                OsRng.fill_bytes(&mut sk1_b);
+                OsRng.try_fill_bytes(&mut sk1_b).unwrap();
                 let sk1 = Scalar::from_bytes_mod_order(sk1_b);
                 let pk1 = RistrettoPoint::mul_base(&sk1);
                 let mut sk2_b = [0u8; 32];
-                OsRng.fill_bytes(&mut sk2_b);
+                OsRng.try_fill_bytes(&mut sk2_b).unwrap();
                 let sk2a = Scalar::from_bytes_mod_order(sk2_b);
                 (pk1, sk2a)
             },
@@ -866,14 +903,20 @@ fn nym_sphinx_process(c: &mut Criterion) {
     group.bench_function("libcrux", |b| {
         b.iter_batched(
             || {
-                let sk1 = randombytes(32);
-                let pk1 = ecdh::secret_to_public(ecdh::Algorithm::X25519, &sk1).unwrap();
-                let sk2 = randombytes(32);
+                use rand_core::{OsRng, TryRngCore};
+                let mut os_rng = OsRng;
+                let mut rng = os_rng.unwrap_mut();
+
+                let (_, pk1) = libcrux_ecdh::x25519_key_gen(&mut rng).unwrap();
+                let sk2 = libcrux_ecdh::x25519_generate_secret(&mut rng).unwrap();
+
                 (pk1, sk2)
             },
             |(pk1, sk2)| {
-                let _zz1 = ecdh::derive(ecdh::Algorithm::X25519, &pk1, &sk2).unwrap();
-                let _zz2 = ecdh::derive(ecdh::Algorithm::X25519, &pk1, &sk2).unwrap();
+                let _zz1 =
+                    libcrux_ecdh::derive(libcrux_ecdh::Algorithm::X25519, &pk1, &sk2).unwrap();
+                let _zz2 =
+                    libcrux_ecdh::derive(libcrux_ecdh::Algorithm::X25519, &pk1, &sk2).unwrap();
             },
             BatchSize::SmallInput,
         )
@@ -950,14 +993,15 @@ fn nym_sphinx_process(c: &mut Criterion) {
     });
 
     group.bench_function("Dalek", |b| {
-        use rand_core::OsRng;
+        use rand_core_old::OsRng;
         use x25519_dalek::{EphemeralSecret, PublicKey};
 
         b.iter_batched(
             || {
-                let sk1 = EphemeralSecret::random_from_rng(OsRng);
+                let rng = OsRng;
+                let sk1 = EphemeralSecret::random_from_rng(rng);
                 let pk1 = PublicKey::from(&sk1);
-                let sk2 = EphemeralSecret::random_from_rng(OsRng);
+                let sk2 = EphemeralSecret::random_from_rng(rng);
                 let pk2 = PublicKey::from(&sk2);
                 (sk1, pk1, sk2, pk2)
             },
@@ -972,16 +1016,16 @@ fn nym_sphinx_process(c: &mut Criterion) {
     group.bench_function("Dalek Ristretto", |b| {
         use curve25519_dalek::ristretto::RistrettoPoint;
         use curve25519_dalek::scalar::Scalar;
-        use rand_core::OsRng;
+        use rand_core::{OsRng, TryRngCore};
 
         b.iter_batched(
             || {
                 let mut sk1_b = [0u8; 32];
-                OsRng.fill_bytes(&mut sk1_b);
+                OsRng.try_fill_bytes(&mut sk1_b).unwrap();
                 let sk1 = Scalar::from_bytes_mod_order(sk1_b);
                 let pk1 = RistrettoPoint::mul_base(&sk1);
                 let mut sk2_b = [0u8; 32];
-                OsRng.fill_bytes(&mut sk2_b);
+                OsRng.try_fill_bytes(&mut sk2_b).unwrap();
                 let sk2 = Scalar::from_bytes_mod_order(sk2_b);
                 let pk2 = RistrettoPoint::mul_base(&sk2);
                 (sk1, pk1, sk2, pk2)
