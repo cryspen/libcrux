@@ -47,7 +47,7 @@ impl<'a, T: rand::CryptoRng> McElieceRng<'a, T> {
     }
 }
 
-impl<'a, T: rand::CryptoRng> rand_old::RngCore for McElieceRng<'a, T> {
+impl<T: rand::CryptoRng> rand_old::RngCore for McElieceRng<'_, T> {
     fn next_u32(&mut self) -> u32 {
         self.inner_rng.next_u32()
     }
@@ -58,11 +58,12 @@ impl<'a, T: rand::CryptoRng> rand_old::RngCore for McElieceRng<'a, T> {
         self.inner_rng.fill_bytes(dest)
     }
     fn try_fill_bytes(&mut self, dest: &mut [u8]) -> Result<(), rand_old::Error> {
-        Ok(self.inner_rng.fill_bytes(dest))
+        self.inner_rng.fill_bytes(dest);
+        Ok(())
     }
 }
 
-impl<'a, T: rand::CryptoRng> rand_old::CryptoRng for McElieceRng<'a, T> {}
+impl<T: rand::CryptoRng> rand_old::CryptoRng for McElieceRng<'_, T> {}
 
 impl KEM for ClassicMcEliece {
     /// The KEM's ciphertext.
