@@ -7,7 +7,7 @@ use std::{
 
 use clap::Parser;
 use libcrux_psq::{
-    cred::Ed25519,
+    cred::{Authenticator, Ed25519},
     impls::MlKem768,
     psk_registration::{Initiator, InitiatorMsg, Responder, ResponderMsg},
     traits::{Decode, Encode},
@@ -114,7 +114,7 @@ fn initiator(host: String, port: u16, ctx: String) -> Result<(), Error> {
     log::debug!("  {host}:{port}");
 
     // This setup is outside of PSQ but required to set up both sides for the protocol.
-    let (sk, responder_pk) = {
+    let (sk, credential, responder_pk) = {
         // Register an Ed25519 identity with the responder.
         let mut rng = rand::rng();
         let (sk, pk) = libcrux_ed25519::generate_key_pair(&mut rng).unwrap();
@@ -130,7 +130,7 @@ fn initiator(host: String, port: u16, ctx: String) -> Result<(), Error> {
             &responder_pk,
         )?;
 
-        (sk, responder_pk)
+        (sk, pk, responder_pk)
     };
 
     // Generate the first PSQ message
@@ -140,6 +140,7 @@ fn initiator(host: String, port: u16, ctx: String) -> Result<(), Error> {
         Duration::from_secs(3600),
         &responder_pk,
         sk.as_ref(),
+        credential.as_ref(),
         &mut rng,
     )
     .unwrap();
@@ -184,10 +185,10 @@ fn responder(host: String, port: u16, ctx: String, handle: String) -> Result<(),
         log::info!("  Accepted incoming connection ...");
 
         // Setup before running PSQ
-        let (initiator_id, sk, pk) = {
+        let (initiator_credential, sk, pk) = {
             // Read and store the initiator identity.
-            let mut initiator_id = [0u8; 32]; // XXX: Can we get the length somehow from ed25519?
-            stream.read_exact(&mut initiator_id)?;
+            let mut initiator_credential = [0u8; Ed25519::CRED_LEN];
+            stream.read_exact(&mut initiator_credential)?;
 
             // Generate the responder key pair.
             let mut rng = rand::rng();
@@ -196,7 +197,7 @@ fn responder(host: String, port: u16, ctx: String, handle: String) -> Result<(),
             // Send the public key to the initiator.
             stream.write_all(&pk.encode())?;
 
-            (initiator_id, sk, pk)
+            (initiator_credential, sk, pk)
         };
 
         // Read the initial PSQ message.
@@ -216,7 +217,7 @@ fn responder(host: String, port: u16, ctx: String, handle: String) -> Result<(),
             ctx.as_bytes(),
             &pk,
             &sk,
-            &initiator_id,
+            &initiator_credential,
             &msg,
         )?;
 

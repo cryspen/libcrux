@@ -9,7 +9,7 @@ use libcrux_traits::kem::KEM;
 use rand::CryptoRng;
 use std::time::{Duration, SystemTime};
 
-use crate::{cred::Credential, impls::MlKem768, traits::*, Error, Psk};
+use crate::{cred::Authenticator, impls::MlKem768, traits::*, Error, Psk};
 
 const PSK_REGISTRATION_CONTEXT: &[u8] = b"PSK-Registration";
 const PSK_LENGTH: usize = 32;
@@ -20,6 +20,8 @@ const AEAD_KEY_NONCE: usize = Algorithm::key_size(Algorithm::Chacha20Poly1305)
     + Algorithm::nonce_size(Algorithm::Chacha20Poly1305);
 
 const AEAD_KEY_LENGTH: usize = Algorithm::key_size(Algorithm::Chacha20Poly1305);
+
+const TS_TTL_LEN: usize = 28;
 
 struct AeadMac {
     tag: libcrux::aead::Tag,
@@ -126,11 +128,12 @@ pub struct Responder {}
 
 impl Initiator {
     /// Send the initial message encapsulating a PQ-PrePSK.
-    pub fn send_initial_message<C: Credential, T: PSQ>(
+    pub fn send_initial_message<C: Authenticator, T: PSQ>(
         sctx: &[u8],
         psk_ttl: Duration,
         pqpk_responder: &<T::InnerKEM as KEM>::EncapsulationKey,
         signing_key: &C::SigningKey,
+        credential: &C::Credential,
         rng: &mut impl CryptoRng,
     ) -> Result<(Self, InitiatorMsg<T::InnerKEM>), Error> {
         let (k_pq, enc_pq) = T::encapsulate_psq(pqpk_responder, sctx, rng)?;
@@ -148,6 +151,7 @@ impl Initiator {
         let mut message = Vec::new();
         message.extend_from_slice(&ts_ttl);
         message.extend_from_slice(signature.as_ref());
+        message.extend_from_slice(credential.as_ref());
 
         let (tag, ctxt) = encrypt_detached(&initiator_key, &mut message, initiator_iv, b"")
             .map_err(|_| Error::CryptoError)?;
@@ -186,10 +190,10 @@ impl Initiator {
     }
 }
 
-fn serialize_ts_ttl(ts: &Duration, psk_ttl: &Duration) -> [u8; 28] {
+fn serialize_ts_ttl(ts: &Duration, psk_ttl: &Duration) -> [u8; TS_TTL_LEN] {
     let ts_seconds = ts.as_secs();
     let ts_subsec_millis = ts.subsec_millis();
-    let mut ts_ttl = [0u8; 28];
+    let mut ts_ttl = [0u8; TS_TTL_LEN];
     ts_ttl[0..8].copy_from_slice(&ts_seconds.to_be_bytes());
     ts_ttl[8..12].copy_from_slice(&ts_subsec_millis.to_be_bytes());
     ts_ttl[12..].copy_from_slice(&psk_ttl.as_millis().to_be_bytes());
@@ -212,15 +216,24 @@ fn deserialize_ts(bytes: &[u8]) -> Result<(u64, u32), Error> {
     Ok((ts_seconds, ts_subsec_millis))
 }
 
+fn deserialize_sig_cred<C: Authenticator>(
+    bytes: &[u8],
+) -> Result<(C::Signature, C::Credential), Error> {
+    let (sig_bytes, cred_bytes) = bytes.split_at(C::SIG_LEN);
+    let signature = C::deserialize_signature(sig_bytes)?;
+    let credential = C::deserialize_credential(cred_bytes)?;
+    Ok((signature, credential))
+}
+
 impl Responder {
     /// On successful decapsulation of the PQ-PrePSK, send the response.
-    pub fn send<C: Credential, T: PSQ>(
+    pub fn send<C: Authenticator, T: PSQ>(
         psk_handle: &[u8],
         psk_ttl: Duration,
         sctxt: &[u8],
         pqpk: &<T::InnerKEM as KEM>::EncapsulationKey,
         pqsk: &<T::InnerKEM as KEM>::DecapsulationKey,
-        verification_key: &C::VerificationKey,
+        client_certificate: &C::Certificate,
         initiator_message: &InitiatorMsg<T::InnerKEM>,
     ) -> Result<(RegisteredPsk, ResponderMsg), Error> {
         let k_pq = T::decapsulate_psq(pqsk, pqpk, &initiator_message.encapsulation, sctxt)?;
@@ -235,10 +248,11 @@ impl Responder {
         )
         .map_err(|_| Error::CryptoError)?;
 
-        let signature = C::deserialize_signature(&msg_bytes[28..])?;
-
+        let (ts_bytes, sig_cred_bytes) = msg_bytes.split_at(TS_TTL_LEN);
+        let (signature, credential) = deserialize_sig_cred::<C>(sig_cred_bytes)?;
+        let verification_key = C::validate_credential(credential, client_certificate)?;
         if C::verify(
-            verification_key,
+            &verification_key,
             &signature,
             &initiator_message.encapsulation.encode(),
         )
@@ -247,7 +261,7 @@ impl Responder {
             return Err(Error::RegistrationError);
         }
 
-        let (ts_seconds, ts_subsec_millis) = deserialize_ts(&msg_bytes)?;
+        let (ts_seconds, ts_subsec_millis) = deserialize_ts(ts_bytes)?;
 
         // validate TTL
         let now = SystemTime::now();
@@ -352,6 +366,7 @@ mod tests {
             Duration::from_secs(3600),
             &receiver_pqpk,
             &[0; 0],
+            &[0; 0],
             &mut rng,
         )
         .unwrap();
@@ -382,17 +397,16 @@ mod tests {
     fn registration_ed25519_mlkem768() {
         let mut rng = rand::rng();
         let (receiver_pqsk, receiver_pqpk) = MlKem768::generate_key_pair(&mut rng).unwrap();
-        let (sk, pk) =
-            libcrux::signature::key_gen(libcrux::signature::Algorithm::Ed25519, &mut rng).unwrap();
+        let (sk, pk) = libcrux_ed25519::generate_key_pair(&mut rng).unwrap();
 
-        let sk: [u8; 32] = sk.try_into().unwrap();
         let sctx = b"test context";
         let psk_handle = b"test handle";
         let (initiator, initiator_msg) = Initiator::send_initial_message::<Ed25519, MlKem768>(
             sctx,
             Duration::from_secs(3600),
             &receiver_pqpk,
-            &sk,
+            sk.as_ref(),
+            pk.as_ref(),
             &mut rng,
         )
         .unwrap();
@@ -403,7 +417,7 @@ mod tests {
             sctx,
             &receiver_pqpk,
             &receiver_pqsk,
-            pk.as_slice().try_into().unwrap(),
+            pk.as_ref(),
             &initiator_msg,
         )
         .unwrap();
