@@ -207,7 +207,7 @@ fn responder(host: String, port: u16, ctx: String, handle: String) -> Result<(),
         let msg_size = u64::from_be_bytes(msg_size);
         log::trace!("reading {} bytes for initiator msg", msg_size);
 
-        let mut msg = vec![0u8; msg_size as usize]; // XXX: Get the size of the message from PSQ
+        let mut msg = vec![0u8; msg_size as usize];
         stream.read_exact(&mut msg)?;
         let (msg, _) = InitiatorMsg::<MlKem768>::decode(&msg)?;
 
