@@ -60,18 +60,15 @@ pub(crate) fn compute_message<const K: usize, Vector: Operations>(
     v: &PolynomialRingElement<Vector>,
     secret_as_ntt: &[PolynomialRingElement<Vector>; K],
     u_as_ntt: &[PolynomialRingElement<Vector>; K],
-) -> PolynomialRingElement<Vector> {
-    let mut result = PolynomialRingElement::<Vector>::ZERO();
-
+    result: &mut PolynomialRingElement<Vector>
+) {
     for i in 0..K {
         let product = secret_as_ntt[i].ntt_multiply(&u_as_ntt[i]);
         result.add_to_ring_element::<K>(&product);
     }
 
-    invert_ntt_montgomery::<K, Vector>(&mut result);
-    result = v.subtract_reduce(result);
-
-    result
+    invert_ntt_montgomery::<K, Vector>(result);
+    *result = v.subtract_reduce(*result);
 }
 
 /// Compute InverseNTT(tᵀ ◦ r̂) + e₂ + message
@@ -90,12 +87,11 @@ pub(crate) fn compute_message<const K: usize, Vector: Operations>(
 )]
 pub(crate) fn compute_ring_element_v<const K: usize, Vector: Operations>(
     t_as_ntt: &[PolynomialRingElement<Vector>; K],
-    r_as_ntt: &[PolynomialRingElement<Vector>; K],
+    r_as_ntt: &[PolynomialRingElement<Vector>],
     error_2: &PolynomialRingElement<Vector>,
     message: &PolynomialRingElement<Vector>,
-) -> PolynomialRingElement<Vector> {
-    let mut result = PolynomialRingElement::<Vector>::ZERO();
-
+    result: &mut PolynomialRingElement<Vector>
+) {
     for i in 0..K {
         let product = t_as_ntt[i].ntt_multiply(&r_as_ntt[i]);
         result.add_to_ring_element::<K>(&product);
@@ -103,8 +99,6 @@ pub(crate) fn compute_ring_element_v<const K: usize, Vector: Operations>(
 
     invert_ntt_montgomery::<K, Vector>(&mut result);
     result = error_2.add_message_error_reduce(message, result);
-
-    result
 }
 
 /// Compute u := InvertNTT(Aᵀ ◦ r̂) + e₁
@@ -123,10 +117,11 @@ pub(crate) fn compute_ring_element_v<const K: usize, Vector: Operations>(
 )]
 pub(crate) fn compute_vector_u<const K: usize, Vector: Operations>(
     a_as_ntt: &[[PolynomialRingElement<Vector>; K]; K],
-    r_as_ntt: &[PolynomialRingElement<Vector>; K],
+    r_as_ntt: &[PolynomialRingElement<Vector>],
     error_1: &[PolynomialRingElement<Vector>; K],
-) -> [PolynomialRingElement<Vector>; K] {
-    let mut result = core::array::from_fn(|_i| PolynomialRingElement::<Vector>::ZERO());
+    result: &mut [PolynomialRingElement<Vector>]
+) {
+
 
     cloop! {
         for (i, row) in a_as_ntt.iter().enumerate() {
@@ -141,8 +136,6 @@ pub(crate) fn compute_vector_u<const K: usize, Vector: Operations>(
             result[i].add_error_reduce(&error_1[i]);
         }
     }
-
-    result
 }
 
 /// Compute Â ◦ ŝ + ê

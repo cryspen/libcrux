@@ -162,13 +162,12 @@ pub(super) fn sample_from_xof<const K: usize, Vector: Operations, Hasher: Hash<K
 #[hax_lib::fstar::options("--z3rlimit 800")]
 fn sample_from_binomial_distribution_2<Vector: Operations>(
     randomness: &[u8],
-) -> PolynomialRingElement<Vector> {
+    sampled_i16s: &mut [i16],
+) {
     hax_lib::fstar!(
         "assert (v (sz 2 *! sz 64) == 128);
         assert (Seq.length $randomness == 128)"
     );
-    let mut sampled_i16s = [0i16; 256];
-
     cloop! {
         for (chunk_number, byte_chunk) in randomness.chunks_exact(4).enumerate() {
             let random_bits_as_u32: u32 = (byte_chunk[0] as u32)
@@ -200,7 +199,6 @@ fn sample_from_binomial_distribution_2<Vector: Operations>(
             }
         }
     }
-    PolynomialRingElement::from_i16_array(&sampled_i16s)
 }
 
 #[hax_lib::requires(randomness.len() == 3 * 64)]
@@ -213,12 +211,12 @@ fn sample_from_binomial_distribution_2<Vector: Operations>(
 #[hax_lib::fstar::options("--z3rlimit 800")]
 fn sample_from_binomial_distribution_3<Vector: Operations>(
     randomness: &[u8],
-) -> PolynomialRingElement<Vector> {
+    sampled_i16s: &mut [i16; 256],
+) {
     hax_lib::fstar!(
         "assert (v (sz 3 *! sz 64) == 192);
         assert (Seq.length $randomness == 192)"
     );
-    let mut sampled_i16s = [0i16; 256];
 
     cloop! {
         for (chunk_number, byte_chunk) in randomness.chunks_exact(3).enumerate() {
@@ -252,7 +250,6 @@ fn sample_from_binomial_distribution_3<Vector: Operations>(
             }
         }
     }
-    PolynomialRingElement::from_i16_array(&sampled_i16s)
 }
 
 #[inline(always)]
@@ -264,15 +261,16 @@ fn sample_from_binomial_distribution_3<Vector: Operations>(
         Spec.MLKEM.sample_poly_cbd $ETA $randomness"#))]
 pub(super) fn sample_from_binomial_distribution<const ETA: usize, Vector: Operations>(
     randomness: &[u8],
-) -> PolynomialRingElement<Vector> {
+    output: &mut [i16; 256],
+) {
     hax_lib::fstar!(
         r#"assert (
         (v (cast $ETA <: u32) == 2) \/
         (v (cast $ETA <: u32) == 3))"#
     );
     match ETA as u32 {
-        2 => sample_from_binomial_distribution_2(randomness),
-        3 => sample_from_binomial_distribution_3(randomness),
+        2 => sample_from_binomial_distribution_2::<Vector>(randomness, output),
+        3 => sample_from_binomial_distribution_3::<Vector>(randomness, output),
         _ => unreachable!(),
-    }
+    };
 }

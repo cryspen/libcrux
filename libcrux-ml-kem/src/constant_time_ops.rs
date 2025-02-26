@@ -121,14 +121,13 @@ fn compare(lhs: &[u8], rhs: &[u8]) -> u8 {
 #[hax_lib::ensures(|result| fstar!(r#"($selector == (mk_u8 0) ==> $result == $lhs) /\
         ($selector =!= (mk_u8 0) ==> $result == $rhs)"#))]
 #[hax_lib::fstar::options("--ifuel 0 --z3rlimit 50")]
-fn select_ct(lhs: &[u8], rhs: &[u8], selector: u8) -> [u8; SHARED_SECRET_SIZE] {
+fn select_ct(lhs: &[u8], rhs: &[u8], selector: u8, out: &mut [u8]) {
     let mask = is_non_zero(selector).wrapping_sub(1);
     hax_lib::fstar!(
         "assert (if $selector = (mk_u8 0) then $mask = ones else $mask = zero);
         lognot_lemma $mask;
         assert (if $selector = (mk_u8 0) then ~.$mask = zero else ~.$mask = ones)"
     );
-    let mut out = [0u8; SHARED_SECRET_SIZE];
 
     for i in 0..SHARED_SECRET_SIZE {
         hax_lib::loop_invariant!(|i: usize| {
@@ -176,7 +175,6 @@ fn select_ct(lhs: &[u8], rhs: &[u8], selector: u8) -> [u8; SHARED_SECRET_SIZE] {
             eq_intro $out $rhs
         )"
     );
-    out
 }
 
 #[inline(never)] // Don't inline this to avoid that the compiler optimizes this out.
@@ -202,12 +200,13 @@ pub(crate) fn select_shared_secret_in_constant_time(
     lhs: &[u8],
     rhs: &[u8],
     selector: u8,
-) -> [u8; SHARED_SECRET_SIZE] {
+    out: &mut [u8]
+) {
     #[cfg(eurydice)]
-    return select_ct(lhs, rhs, selector);
+    return select_ct(lhs, rhs, selector, out);
 
     #[cfg(not(eurydice))]
-    core::hint::black_box(select_ct(lhs, rhs, selector))
+    core::hint::black_box(select_ct(lhs, rhs, selector, out))
 }
 
 #[hax_lib::requires(
@@ -223,8 +222,9 @@ pub(crate) fn compare_ciphertexts_select_shared_secret_in_constant_time(
     rhs_c: &[u8],
     lhs_s: &[u8],
     rhs_s: &[u8],
-) -> [u8; SHARED_SECRET_SIZE] {
+    out: &mut [u8]
+) {
     let selector = compare_ciphertexts_in_constant_time(lhs_c, rhs_c);
 
-    select_shared_secret_in_constant_time(lhs_s, rhs_s, selector)
+    select_shared_secret_in_constant_time(lhs_s, rhs_s, selector, out);
 }
