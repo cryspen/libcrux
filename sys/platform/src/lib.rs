@@ -59,7 +59,7 @@ mod platform {
     pub fn simd128_support() -> bool {
         #[cfg(all(target_arch = "aarch64", target_os = "macos"))]
         {
-            use macos_arm::*;
+            use crate::macos_arm::*;
             adv_simd()
         }
 
@@ -73,7 +73,7 @@ mod platform {
 
         #[cfg(all(target_arch = "aarch64", target_os = "linux"))]
         {
-            use linux_arm::*;
+            use crate::linux_arm::*;
             adv_simd()
         }
 
@@ -144,13 +144,13 @@ mod platform {
     pub fn adv_simd_support() -> bool {
         #[cfg(all(target_arch = "aarch64", target_os = "macos"))]
         {
-            use macos_arm::*;
+            use crate::macos_arm::*;
             adv_simd()
         }
 
         #[cfg(all(target_arch = "aarch64", target_os = "linux"))]
         {
-            use linux_arm::*;
+            use crate::linux_arm::*;
             adv_simd()
         }
 
