@@ -408,8 +408,8 @@ pub mod portable {
 /// functions and compile them in.
 ///
 /// Feature `simd128` enables the implementations in this module.
+#[cfg(feature = "simd128")]
 pub mod neon {
-    #[cfg(feature = "simd128")]
     use crate::generic_keccak::keccak;
 
     #[cfg(feature = "simd128")]
@@ -422,83 +422,52 @@ pub mod neon {
     #[allow(unused_variables)]
     #[inline(always)]
     pub fn sha224(digest: &mut [u8], data: &[u8]) {
-        #[cfg(not(feature = "simd128"))]
-        unimplemented!();
-        #[cfg(feature = "simd128")]
-        {
-            let mut dummy = [0u8; 28];
-            keccakx2::<144, 0x06u8>([data, data], [digest, &mut dummy]);
-        }
+        let mut dummy = [0u8; 28];
+        keccakx2::<144, 0x06u8>([data, data], [digest, &mut dummy]);
     }
 
     /// A portable SHA3 256 implementation.
     #[allow(unused_variables)]
     #[inline(always)]
     pub fn sha256(digest: &mut [u8], data: &[u8]) {
-        #[cfg(not(feature = "simd128"))]
-        unimplemented!();
-        #[cfg(feature = "simd128")]
-        {
-            let mut dummy = [0u8; 32];
-            keccakx2::<136, 0x06u8>([data, data], [digest, &mut dummy]);
-        }
+        let mut dummy = [0u8; 32];
+        keccakx2::<136, 0x06u8>([data, data], [digest, &mut dummy]);
     }
 
     /// A portable SHA3 384 implementation.
     #[allow(unused_variables)]
     #[inline(always)]
     pub fn sha384(digest: &mut [u8], data: &[u8]) {
-        #[cfg(not(feature = "simd128"))]
-        unimplemented!();
-        #[cfg(feature = "simd128")]
-        {
-            let mut dummy = [0u8; 48];
-            keccakx2::<104, 0x06u8>([data, data], [digest, &mut dummy]);
-        }
+        let mut dummy = [0u8; 48];
+        keccakx2::<104, 0x06u8>([data, data], [digest, &mut dummy]);
     }
 
     /// A portable SHA3 512 implementation.
     #[allow(unused_variables)]
     #[inline(always)]
     pub fn sha512(digest: &mut [u8], data: &[u8]) {
-        #[cfg(not(feature = "simd128"))]
-        unimplemented!();
-        #[cfg(feature = "simd128")]
-        {
-            let mut dummy = [0u8; 64];
-            keccakx2::<72, 0x06u8>([data, data], [digest, &mut dummy]);
-        }
+        let mut dummy = [0u8; 64];
+        keccakx2::<72, 0x06u8>([data, data], [digest, &mut dummy]);
     }
 
     /// A portable SHAKE128 implementation.
     #[allow(unused_variables)]
     #[inline(always)]
     pub fn shake128<const LEN: usize>(digest: &mut [u8; LEN], data: &[u8]) {
-        #[cfg(not(feature = "simd128"))]
-        unimplemented!();
-        #[cfg(feature = "simd128")]
-        {
-            let mut dummy = [0u8; LEN];
-            keccakx2::<168, 0x1fu8>([data, data], [digest, &mut dummy]);
-        }
+        let mut dummy = [0u8; LEN];
+        keccakx2::<168, 0x1fu8>([data, data], [digest, &mut dummy]);
     }
 
     /// A portable SHAKE256 implementation.
     #[allow(unused_variables)]
     #[inline(always)]
     pub fn shake256<const LEN: usize>(digest: &mut [u8; LEN], data: &[u8]) {
-        #[cfg(not(feature = "simd128"))]
-        unimplemented!();
-        #[cfg(feature = "simd128")]
-        {
-            let mut dummy = [0u8; LEN];
-            keccakx2::<136, 0x1fu8>([data, data], [digest, &mut dummy]);
-        }
+        let mut dummy = [0u8; LEN];
+        keccakx2::<136, 0x1fu8>([data, data], [digest, &mut dummy]);
     }
 
     /// Performing 2 operations in parallel
     pub mod x2 {
-        #[cfg(feature = "simd128")]
         use super::*;
 
         /// Run SHAKE256 on both inputs in parallel.
@@ -508,9 +477,6 @@ pub mod neon {
         #[inline(always)]
         pub fn shake256(input0: &[u8], input1: &[u8], out0: &mut [u8], out1: &mut [u8]) {
             // TODO: make argument ordering consistent
-            #[cfg(not(feature = "simd128"))]
-            unimplemented!();
-            #[cfg(feature = "simd128")]
             keccakx2::<136, 0x1fu8>([input0, input1], [out0, out1]);
         }
 
@@ -549,33 +515,21 @@ pub mod neon {
 
         /// An incremental API to perform 2 operations in parallel
         pub mod incremental {
-            #[cfg(feature = "simd128")]
             use crate::generic_keccak::{
                 absorb_final, squeeze_first_block, squeeze_first_five_blocks,
                 squeeze_first_three_blocks, squeeze_next_block, KeccakState as GenericState,
             };
 
             /// The Keccak state for the incremental API.
-            #[cfg(feature = "simd128")]
             pub struct KeccakState {
                 state: GenericState<2, crate::simd::arm64::uint64x2_t>,
             }
 
-            #[cfg(feature = "simd128")]
             type KeccakState2Internal = GenericState<2, crate::simd::arm64::uint64x2_t>;
-
-            /// The Keccak state for the incremental API.
-            #[allow(dead_code)]
-            #[cfg(not(feature = "simd128"))]
-            pub struct KeccakState {
-                state: [crate::portable::KeccakState; 2],
-            }
 
             /// Initialise the `KeccakState2`.
             #[inline(always)]
             pub fn init() -> KeccakState {
-                #[cfg(not(feature = "simd128"))]
-                unimplemented!();
                 // XXX: These functions could alternatively implement the same with
                 //      the portable implementation
                 // {
@@ -583,7 +537,6 @@ pub mod neon {
                 //     let s1 = KeccakState::new();
                 //     [s0, s1]
                 // }
-                #[cfg(feature = "simd128")]
                 KeccakState {
                     state: KeccakState2Internal::new(),
                 }
@@ -591,10 +544,7 @@ pub mod neon {
 
             /// Shake128 absorb `data0` and `data1` in the [`KeccakState`] `s`.
             #[inline(always)]
-            #[allow(unused_variables)]
             pub fn shake128_absorb_final(s: &mut KeccakState, data0: &[u8], data1: &[u8]) {
-                #[cfg(not(feature = "simd128"))]
-                unimplemented!();
                 // XXX: These functions could alternatively implement the same with
                 //      the portable implementation
                 // {
@@ -602,7 +552,6 @@ pub mod neon {
                 //     shake128_absorb_final(&mut s0, data0);
                 //     shake128_absorb_final(&mut s1, data1);
                 // }
-                #[cfg(feature = "simd128")]
                 absorb_final::<2, crate::simd::arm64::uint64x2_t, 168, 0x1fu8>(
                     &mut s.state,
                     [data0, data1],
@@ -611,10 +560,7 @@ pub mod neon {
 
             /// Shake256 absorb `data0` and `data1` in the [`KeccakState`] `s`.
             #[inline(always)]
-            #[allow(unused_variables)]
             pub fn shake256_absorb_final(s: &mut KeccakState, data0: &[u8], data1: &[u8]) {
-                #[cfg(not(feature = "simd128"))]
-                unimplemented!();
                 // XXX: These functions could alternatively implement the same with
                 //      the portable implementation
                 // {
@@ -622,7 +568,6 @@ pub mod neon {
                 //     shake128_absorb_final(&mut s0, data0);
                 //     shake128_absorb_final(&mut s1, data1);
                 // }
-                #[cfg(feature = "simd128")]
                 absorb_final::<2, crate::simd::arm64::uint64x2_t, 136, 0x1fu8>(
                     &mut s.state,
                     [data0, data1],
@@ -633,7 +578,7 @@ pub mod neon {
             /// using two [`KeccakState2`].
             ///
             /// **PANICS** when `N` is not 2, 3, or 4.
-            #[allow(unused_variables, non_snake_case)]
+            #[allow(non_snake_case)]
             #[inline(always)]
             fn _shake128_absorb_finalxN<const N: usize>(input: [[u8; 34]; N]) -> [KeccakState; 2] {
                 debug_assert!(N == 2 || N == 3 || N == 4);
@@ -659,15 +604,12 @@ pub mod neon {
 
             /// Squeeze 2 times the first three blocks in parallel in the
             /// [`KeccakState`] and return the output in `out0` and `out1`.
-            #[allow(unused_variables)]
             #[inline(always)]
             pub fn shake128_squeeze_first_three_blocks(
                 s: &mut KeccakState,
                 out0: &mut [u8],
                 out1: &mut [u8],
             ) {
-                #[cfg(not(feature = "simd128"))]
-                unimplemented!();
                 // XXX: These functions could alternatively implement the same with
                 //      the portable implementation
                 // {
@@ -675,7 +617,6 @@ pub mod neon {
                 //     shake128_squeeze_first_three_blocks(&mut s0, out0);
                 //     shake128_squeeze_first_three_blocks(&mut s1, out1);
                 // }
-                #[cfg(feature = "simd128")]
                 squeeze_first_three_blocks::<2, crate::simd::arm64::uint64x2_t, 168>(
                     &mut s.state,
                     [out0, out1],
@@ -683,16 +624,12 @@ pub mod neon {
             }
 
             /// Squeeze five blocks
-            #[allow(unused_variables)]
             #[inline(always)]
             pub fn shake128_squeeze_first_five_blocks(
                 s: &mut KeccakState,
                 out0: &mut [u8],
                 out1: &mut [u8],
             ) {
-                #[cfg(not(feature = "simd128"))]
-                unimplemented!();
-                #[cfg(feature = "simd128")]
                 squeeze_first_five_blocks::<2, crate::simd::arm64::uint64x2_t, 168>(
                     &mut s.state,
                     [out0, out1],
@@ -701,15 +638,11 @@ pub mod neon {
 
             /// Squeeze block
             #[inline(always)]
-            #[allow(unused_variables)] // TODO: decide if we want to fall back here
             pub fn shake256_squeeze_first_block(
                 s: &mut KeccakState,
                 out0: &mut [u8],
                 out1: &mut [u8],
             ) {
-                #[cfg(not(feature = "simd128"))]
-                unimplemented!();
-                #[cfg(feature = "simd128")]
                 squeeze_first_block::<2, crate::simd::arm64::uint64x2_t, 136>(
                     &mut s.state,
                     [out0, out1],
@@ -718,15 +651,11 @@ pub mod neon {
 
             /// Squeeze next block
             #[inline(always)]
-            #[allow(unused_variables)] // TODO: decide if we want to fall back here
             pub fn shake256_squeeze_next_block(
                 s: &mut KeccakState,
                 out0: &mut [u8],
                 out1: &mut [u8],
             ) {
-                #[cfg(not(feature = "simd128"))]
-                unimplemented!();
-                #[cfg(feature = "simd128")]
                 squeeze_next_block::<2, crate::simd::arm64::uint64x2_t, 136>(
                     &mut s.state,
                     [out0, out1],
@@ -737,7 +666,7 @@ pub mod neon {
             /// Each block is of size `LEN`.
             ///
             /// **PANICS** when `N` is not 2, 3, or 4.
-            #[allow(unused_variables, non_snake_case)]
+            #[allow(non_snake_case)]
             #[inline(always)]
             fn _shake128_squeeze3xN<const LEN: usize, const N: usize>(
                 state: &mut [KeccakState; 2],
@@ -791,15 +720,12 @@ pub mod neon {
 
             /// Squeeze 2 times the next block in parallel in the
             /// [`KeccakState`] and return the output in `out0` and `out1`.
-            #[allow(unused_variables)]
             #[inline(always)]
             pub fn shake128_squeeze_next_block(
                 s: &mut KeccakState,
                 out0: &mut [u8],
                 out1: &mut [u8],
             ) {
-                #[cfg(not(feature = "simd128"))]
-                unimplemented!();
                 // XXX: These functions could alternatively implement the same with
                 //      the portable implementation
                 // {
@@ -807,7 +733,6 @@ pub mod neon {
                 //     shake128_squeeze_next_block(&mut s0, out0);
                 //     shake128_squeeze_next_block(&mut s1, out1);
                 // }
-                #[cfg(feature = "simd128")]
                 squeeze_next_block::<2, crate::simd::arm64::uint64x2_t, 168>(
                     &mut s.state,
                     [out0, out1],
@@ -818,7 +743,7 @@ pub mod neon {
             /// Each block is of size `LEN`.
             ///
             /// **PANICS** when `N` is not 2, 3, or 4.
-            #[allow(unused_variables, non_snake_case)]
+            #[allow(non_snake_case)]
             #[inline(always)]
             fn _shake128_squeezexN<const LEN: usize, const N: usize>(
                 state: &mut [KeccakState; 2],
@@ -872,17 +797,15 @@ pub mod neon {
 /// functions and compile them in.
 ///
 /// Feature `simd256` enables the implementations in this module.
+#[cfg(feature = "simd256")]
 pub mod avx2 {
-
     /// Performing 4 operations in parallel
     pub mod x4 {
-        #[cfg(feature = "simd256")]
         use crate::generic_keccak::keccak;
-        #[cfg(feature = "simd256")]
         use libcrux_intrinsics::avx2::*;
 
         /// Perform 4 SHAKE256 operations in parallel
-        #[allow(unused_variables, clippy::too_many_arguments)] // TODO: decide if we want to fall back here
+        #[allow(clippy::too_many_arguments)]
         #[inline(always)]
         pub fn shake256(
             input0: &[u8],
@@ -894,8 +817,6 @@ pub mod avx2 {
             out2: &mut [u8],
             out3: &mut [u8],
         ) {
-            #[cfg(not(feature = "simd256"))]
-            unimplemented!();
             // XXX: These functions could alternatively implement the same with
             //      the portable implementation
             // #[cfg(feature = "simd128")]
@@ -909,7 +830,6 @@ pub mod avx2 {
             //     keccakx1::<136, 0x1fu8>([input2], [out2]);
             //     keccakx1::<136, 0x1fu8>([input3], [out3]);
             // }
-            #[cfg(feature = "simd256")]
             keccak::<4, Vec256, 136, 0x1fu8>(
                 [input0, input1, input2, input3],
                 [out0, out1, out2, out3],
@@ -919,7 +839,7 @@ pub mod avx2 {
         /// Run up to 4 SHAKE256 operations in parallel.
         ///
         /// **PANICS** when `N` is not 2, 3, or 4.
-        #[allow(unused_variables, non_snake_case)]
+        #[allow(non_snake_case)]
         #[inline(always)]
         fn _shake256xN<const LEN: usize, const N: usize>(input: &[[u8; 33]; N]) -> [[u8; LEN]; N] {
             debug_assert!(N == 2 || N == 3 || N == 4);
@@ -978,14 +898,11 @@ pub mod avx2 {
 
         /// An incremental API to perform 4 operations in parallel
         pub mod incremental {
-            #[cfg(feature = "simd256")]
             use crate::generic_keccak::{
                 absorb_final, squeeze_first_three_blocks, squeeze_next_block,
                 KeccakState as GenericState,
             };
-            #[cfg(feature = "simd256")]
             use crate::generic_keccak::{squeeze_first_block, squeeze_first_five_blocks};
-            #[cfg(feature = "simd256")]
             use libcrux_intrinsics::avx2::*;
 
             /// The Keccak state for the incremental API.
@@ -994,39 +911,9 @@ pub mod avx2 {
                 state: GenericState<4, Vec256>,
             }
 
-            /// The Keccak state for the incremental API.
-            #[allow(dead_code)]
-            #[cfg(all(feature = "simd128", not(feature = "simd256")))]
-            pub struct KeccakState {
-                state: [crate::neon::x2::incremental::KeccakState; 2],
-            }
-
-            /// The Keccak state for the incremental API.
-            #[cfg(not(any(feature = "simd256", feature = "simd128")))]
-            pub type KeccakState = [crate::portable::KeccakState; 4];
-
             /// Initialise the [`KeccakState`].
             #[inline(always)]
             pub fn init() -> KeccakState {
-                #[cfg(not(feature = "simd256"))]
-                unimplemented!();
-                // XXX: These functions could alternatively implement the same with
-                //      the portable implementation
-                // #[cfg(feature = "simd128")]
-                // {
-                //     let s0 = KeccakState2::new();
-                //     let s1 = KeccakState2::new();
-                //     [s0, s1]
-                // }
-                // #[cfg(not(any(feature = "simd128", feature = "simd256")))]
-                // {
-                //     let s0 = KeccakState::new();
-                //     let s1 = KeccakState::new();
-                //     let s2 = KeccakState::new();
-                //     let s3 = KeccakState::new();
-                //     [s0, s1, s2, s3]
-                // }
-                #[cfg(feature = "simd256")]
                 KeccakState {
                     state: GenericState::new(),
                 }
@@ -1034,7 +921,6 @@ pub mod avx2 {
 
             /// Absorb
             #[inline(always)]
-            #[allow(unused_variables)] // TODO: decide if we want to fall back here
             pub fn shake128_absorb_final(
                 s: &mut KeccakState,
                 data0: &[u8],
@@ -1042,37 +928,11 @@ pub mod avx2 {
                 data2: &[u8],
                 data3: &[u8],
             ) {
-                #[cfg(not(feature = "simd256"))]
-                unimplemented!();
-                // XXX: These functions could alternatively implement the same with
-                //      the portable implementation
-                // #[cfg(feature = "simd128")]
-                // {
-                //     let [mut s0, mut s1] = s;
-                //     absorb_final::<2, crate::simd::arm64::uint64x2_t, 168, 0x1fu8>(
-                //         &mut s0,
-                //         [data0, data1],
-                //     );
-                //     absorb_final::<2, crate::simd::arm64::uint64x2_t, 168, 0x1fu8>(
-                //         &mut s1,
-                //         [data2, data3],
-                //     );
-                // }
-                // #[cfg(not(any(feature = "simd128", feature = "simd256")))]
-                // {
-                //     let [mut s0, mut s1, mut s2, mut s3] = s;
-                //     shake128_absorb_final(&mut s0, data0);
-                //     shake128_absorb_final(&mut s1, data1);
-                //     shake128_absorb_final(&mut s2, data2);
-                //     shake128_absorb_final(&mut s3, data3);
-                // }
-                #[cfg(feature = "simd256")]
                 absorb_final::<4, Vec256, 168, 0x1fu8>(&mut s.state, [data0, data1, data2, data3]);
             }
 
             /// Absorb
             #[inline(always)]
-            #[allow(unused_variables)] // TODO: decide if we want to fall back here
             pub fn shake256_absorb_final(
                 s: &mut KeccakState,
                 data0: &[u8],
@@ -1080,15 +940,11 @@ pub mod avx2 {
                 data2: &[u8],
                 data3: &[u8],
             ) {
-                #[cfg(not(feature = "simd256"))]
-                unimplemented!();
-                #[cfg(feature = "simd256")]
                 absorb_final::<4, Vec256, 136, 0x1fu8>(&mut s.state, [data0, data1, data2, data3]);
             }
 
             /// Squeeze block
             #[inline(always)]
-            #[allow(unused_variables)] // TODO: decide if we want to fall back here
             pub fn shake256_squeeze_first_block(
                 s: &mut KeccakState,
                 out0: &mut [u8],
@@ -1096,15 +952,11 @@ pub mod avx2 {
                 out2: &mut [u8],
                 out3: &mut [u8],
             ) {
-                #[cfg(not(feature = "simd256"))]
-                unimplemented!();
-                #[cfg(feature = "simd256")]
                 squeeze_first_block::<4, Vec256, 136>(&mut s.state, [out0, out1, out2, out3]);
             }
 
             /// Squeeze next block
             #[inline(always)]
-            #[allow(unused_variables)] // TODO: decide if we want to fall back here
             pub fn shake256_squeeze_next_block(
                 s: &mut KeccakState,
                 out0: &mut [u8],
@@ -1112,9 +964,6 @@ pub mod avx2 {
                 out2: &mut [u8],
                 out3: &mut [u8],
             ) {
-                #[cfg(not(feature = "simd256"))]
-                unimplemented!();
-                #[cfg(feature = "simd256")]
                 squeeze_next_block::<4, Vec256, 136>(&mut s.state, [out0, out1, out2, out3]);
             }
 
@@ -1123,7 +972,7 @@ pub mod avx2 {
             ///
             /// **PANICS** when `N` is not 2, 3, or 4.
             #[inline(always)]
-            #[allow(unused_variables, non_snake_case)]
+            #[allow(non_snake_case)]
             fn _shake128_absorb_finalxN<const N: usize>(input: [[u8; 34]; N]) -> KeccakState {
                 debug_assert!(N == 2 || N == 3 || N == 4);
                 let mut state = init();
@@ -1152,7 +1001,6 @@ pub mod avx2 {
 
             /// Squeeze three blocks
             #[inline(always)]
-            #[allow(unused_variables)] // TODO: decide if we want to fall back here
             pub fn shake128_squeeze_first_three_blocks(
                 s: &mut KeccakState,
                 out0: &mut [u8],
@@ -1160,31 +1008,6 @@ pub mod avx2 {
                 out2: &mut [u8],
                 out3: &mut [u8],
             ) {
-                #[cfg(not(feature = "simd256"))]
-                unimplemented!();
-                // XXX: These functions could alternatively implement the same with
-                //      the portable implementation
-                // #[cfg(feature = "simd128")]
-                // {
-                //     let [mut s0, mut s1] = s;
-                //     squeeze_first_three_blocks::<2, crate::simd::arm64::uint64x2_t, 168>(
-                //         &mut s0,
-                //         [out0, out1],
-                //     );
-                //     squeeze_first_three_blocks::<2, crate::simd::arm64::uint64x2_t, 168>(
-                //         &mut s1,
-                //         [out2, out3],
-                //     );
-                // }
-                // #[cfg(not(any(feature = "simd128", feature = "simd256")))]
-                // {
-                //     let [mut s0, mut s1, mut s2, mut s3] = s;
-                //     shake128_squeeze_first_three_blocks(&mut s0, out0);
-                //     shake128_squeeze_first_three_blocks(&mut s1, out1);
-                //     shake128_squeeze_first_three_blocks(&mut s2, out2);
-                //     shake128_squeeze_first_three_blocks(&mut s3, out3);
-                // }
-                #[cfg(feature = "simd256")]
                 squeeze_first_three_blocks::<4, Vec256, 168>(
                     &mut s.state,
                     [out0, out1, out2, out3],
@@ -1193,7 +1016,6 @@ pub mod avx2 {
 
             /// Squeeze five blocks
             #[inline(always)]
-            #[allow(unused_variables)] // TODO: decide if we want to fall back here
             pub fn shake128_squeeze_first_five_blocks(
                 s: &mut KeccakState,
                 out0: &mut [u8],
@@ -1201,9 +1023,6 @@ pub mod avx2 {
                 out2: &mut [u8],
                 out3: &mut [u8],
             ) {
-                #[cfg(not(feature = "simd256"))]
-                unimplemented!();
-                #[cfg(feature = "simd256")]
                 squeeze_first_five_blocks::<4, Vec256, 168>(&mut s.state, [out0, out1, out2, out3]);
             }
 
@@ -1212,7 +1031,7 @@ pub mod avx2 {
             ///
             /// **PANICS** when `N` is not 2, 3, or 4.
             #[inline(always)]
-            #[allow(unused_variables, non_snake_case)]
+            #[allow(non_snake_case)]
             fn _shake128_squeeze3xN<const LEN: usize, const N: usize>(
                 state: &mut KeccakState,
             ) -> [[u8; LEN]; N] {
@@ -1263,7 +1082,6 @@ pub mod avx2 {
 
             /// Squeeze another block
             #[inline(always)]
-            #[allow(unused_variables)] // TODO: decide if we want to fall back here
             pub fn shake128_squeeze_next_block(
                 s: &mut KeccakState,
                 out0: &mut [u8],
@@ -1271,31 +1089,6 @@ pub mod avx2 {
                 out2: &mut [u8],
                 out3: &mut [u8],
             ) {
-                #[cfg(not(feature = "simd256"))]
-                unimplemented!();
-                // XXX: These functions could alternatively implement the same with
-                //      the portable implementation
-                // #[cfg(feature = "simd128")]
-                // {
-                //     let [mut s0, mut s1] = s;
-                //     squeeze_next_block::<2, crate::simd::arm64::uint64x2_t, 168>(
-                //         &mut s0,
-                //         [out0, out1],
-                //     );
-                //     squeeze_next_block::<2, crate::simd::arm64::uint64x2_t, 168>(
-                //         &mut s1,
-                //         [out2, out3],
-                //     );
-                // }
-                // #[cfg(not(any(feature = "simd128", feature = "simd256")))]
-                // {
-                //     let [mut s0, mut s1, mut s2, mut s3] = s;
-                //     shake128_squeeze_next_block(&mut s0, out0);
-                //     shake128_squeeze_next_block(&mut s1, out1);
-                //     shake128_squeeze_next_block(&mut s2, out2);
-                //     shake128_squeeze_next_block(&mut s3, out3);
-                // }
-                #[cfg(feature = "simd256")]
                 squeeze_next_block::<4, Vec256, 168>(&mut s.state, [out0, out1, out2, out3]);
             }
 
@@ -1303,7 +1096,7 @@ pub mod avx2 {
             /// Each block is of size `LEN`.
             ///
             /// **PANICS** when `N` is not 2, 3, or 4.
-            #[allow(unused_variables, non_snake_case)]
+            #[allow(non_snake_case)]
             #[inline(always)]
             fn _shake128_squeezexN<const LEN: usize, const N: usize>(
                 state: &mut KeccakState,
