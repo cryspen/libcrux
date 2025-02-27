@@ -1,5 +1,105 @@
 use crate::{AeadError, KEY_LEN, NONCE_LEN, TAG_LEN};
 
+pub struct X25519PrivateKeyHandle {
+    value: [u8; 32],
+}
+
+pub struct X25519SharedKeyHandle {
+    value: [u8; 32],
+}
+
+pub struct X25519PublicKey {
+    value: [u8; 32],
+}
+
+pub struct X25519;
+
+impl X25519 {
+    fn key_gen() -> (X25519PrivateKeyHandle, X25519PublicKey) {
+        todo!()
+    }
+
+    fn shared(pk: &X25519PublicKey, sk: &X25519PrivateKeyHandle) -> X25519SharedKeyHandle {
+        todo!()
+    }
+}
+
+pub trait SharedKeyHandle {}
+
+pub trait Kdf<A: Algorithm, B: Algorithm, C: Algorithm> {
+    fn extract(salt: impl AsRef<[u8]>, ikm: impl SharedKeyHandle) -> impl KeyHandleTrait<B>;
+
+    fn expand(
+        prk: impl KeyHandleTrait<B>,
+        info: impl AsRef<[u8]>,
+        okm_len: usize,
+    ) -> impl KeyHandleTrait<C>;
+}
+
+struct Hkdf;
+
+impl<A: Algorithm, B: Algorithm, C: Algorithm> Kdf<A, B, C> for Hkdf {
+    fn extract(salt: impl AsRef<[u8]>, ikm: impl KeyHandleTrait<A>) -> impl KeyHandleTrait<B> {
+        todo!()
+    }
+
+    fn expand(
+        prk: impl KeyHandleTrait<B>,
+        info: impl AsRef<[u8]>,
+        okm_len: usize,
+    ) -> impl KeyHandleTrait<C> {
+        todo!()
+    }
+}
+
+pub trait Algorithm {}
+
+pub trait KeyHandleTrait<T: Algorithm> {
+    type Type;
+    // fn serialize(&self) -> [u8; 32] {
+    //     let b = T::hash(self.value);
+    //     todo!() // hash
+    // }
+}
+
+pub struct KeyHandle {
+    value: [u8; 32],
+}
+
+struct Chacha20Poly1305;
+impl Algorithm for Chacha20Poly1305 {}
+
+impl KeyHandleTrait<Chacha20Poly1305> for KeyHandle {}
+
+pub fn encrypt_handle<'a>(
+    key: &KeyHandle,
+    ptxt: &[u8],
+    ctxt: &'a mut [u8], // ptxt.len() + X
+    aad: &[u8],
+    nonce: &[u8; NONCE_LEN],
+) -> Result<(), AeadError> {
+    todo!()
+}
+
+pub fn decrypt_handle<'a>(
+    key: &KeyHandle,
+    ptxt: &[u8],
+    ctxt: &'a mut [u8], // ptxt.len() + X
+    aad: &[u8],
+    nonce: &[u8; NONCE_LEN],
+) -> Result<(), AeadError> {
+    todo!()
+}
+
+pub fn encrypt_handle_inplace(
+    key: &KeyHandle,
+    ptxt_ctxt: &mut [u8],
+    aad: &[u8],
+    nonce: &[u8; NONCE_LEN],
+) -> Result<(), AeadError> {
+    todo!()
+}
+
 /// The ChaCha20-Poly1305 AEAD encryption function. Writes the concatenation of the ciphertexoft
 /// produced by ChaCha20 and the MAC tag into `ctxt` and returns the two pieces separately.
 ///
