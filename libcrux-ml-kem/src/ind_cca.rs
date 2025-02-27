@@ -856,6 +856,7 @@ pub(crate) mod unpacked {
                 Seq.index (Seq.index $result i) j ==
                     Seq.index (Seq.index $ind_cpa_a j) i)"#))
     ]
+    #[inline(always)]
     fn transpose_a<const K: usize, Vector: Operations>(
         ind_cpa_a: [[PolynomialRingElement<Vector>; K]; K],
     ) -> [[PolynomialRingElement<Vector>; K]; K] {
