@@ -26,7 +26,7 @@ if [[ "$no_extract" = 0 ]]; then
     ./c.sh --config cg.yaml --out cg --mlkem768 --kyber768 \
         --no-glue --no-unrolling --no-karamel_include --no-karamel_include
 
-    clang-format-18 --style=Google -i cg/*.h
+    clang-format --style=Google -i cg/*.h
 fi
 
 if [[ -n "$BORINGSSL_HOME" ]]; then
