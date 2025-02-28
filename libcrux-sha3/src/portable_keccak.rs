@@ -68,10 +68,8 @@ pub(crate) fn store_block<const RATE: usize>(s: &[[u64; 5]; 5], out: &mut [u8]) 
 }
 
 #[inline(always)]
-pub(crate) fn store_block_full<const RATE: usize>(s: &[[u64; 5]; 5]) -> [u8; 200] {
-    let mut out = [0u8; 200];
-    store_block::<RATE>(s, &mut out);
-    out
+pub(crate) fn store_block_full<const RATE: usize>(s: &[[u64; 5]; 5], out: &mut [u8; 200]) {
+    store_block::<RATE>(s, out);
 }
 
 #[inline(always)]
@@ -117,8 +115,8 @@ impl KeccakItem<1> for u64 {
         load_block::<RATE>(state, blocks[0], start)
     }
     #[inline(always)]
-    fn store_block<const RATE: usize>(a: &[[Self; 5]; 5], b: [&mut [u8]; 1]) {
-        store_block::<RATE>(a, b[0])
+    fn store_block<const RATE: usize>(state: &[[Self; 5]; 5], out: &mut [&mut [u8]; 1]) {
+        store_block::<RATE>(state, out[0])
     }
     #[inline(always)]
     fn load_block_full<const RATE: usize>(
@@ -129,8 +127,8 @@ impl KeccakItem<1> for u64 {
         load_block_full::<RATE>(state, &blocks[0], start)
     }
     #[inline(always)]
-    fn store_block_full<const RATE: usize>(a: &[[Self; 5]; 5]) -> [[u8; 200]; 1] {
-        [store_block_full::<RATE>(a)]
+    fn store_block_full<const RATE: usize>(state: &[[Self; 5]; 5], out: &mut [[u8; 200]; 1]) {
+        store_block_full::<RATE>(state, &mut out[0]);
     }
 
     #[inline(always)]

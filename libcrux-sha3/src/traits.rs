@@ -20,13 +20,13 @@ pub(crate) mod internal {
             blocks: &[&[u8]; N],
             start: usize,
         );
-        fn store_block<const RATE: usize>(a: &[[Self; 5]; 5], b: [&mut [u8]; N]);
+        fn store_block<const RATE: usize>(state: &[[Self; 5]; 5], blocks: &mut [&mut [u8]; N]);
         fn load_block_full<const RATE: usize>(
             state: &mut [[Self; 5]; 5],
             blocks: &[[u8; 200]; N],
             start: usize,
         );
-        fn store_block_full<const RATE: usize>(a: &[[Self; 5]; 5]) -> [[u8; 200]; N];
+        fn store_block_full<const RATE: usize>(a: &[[Self; 5]; 5], out: &mut [[u8; 200]; N]);
         fn split_at_mut_n(a: [&mut [u8]; N], mid: usize) -> ([&mut [u8]; N], [&mut [u8]; N]);
         fn store<const RATE: usize>(state: &[[Self; 5]; 5], out: [&mut [u8]; N]);
     }

@@ -115,7 +115,7 @@ pub(crate) fn load_block_full<const RATE: usize>(
 }
 
 #[inline(always)]
-pub(crate) fn store_block<const RATE: usize>(s: &[[Vec256; 5]; 5], out: [&mut [u8]; 4]) {
+pub(crate) fn store_block<const RATE: usize>(s: &[[Vec256; 5]; 5], out: &mut [&mut [u8]; 4]) {
     for i in 0..RATE / 32 {
         let v0l = mm256_permute2x128_si256::<0x20>(
             s[(4 * i) / 5][(4 * i) % 5],
@@ -169,13 +169,18 @@ pub(crate) fn store_block<const RATE: usize>(s: &[[Vec256; 5]; 5], out: [&mut [u
 }
 
 #[inline(always)]
-pub(crate) fn store_block_full<const RATE: usize>(s: &[[Vec256; 5]; 5]) -> [[u8; 200]; 4] {
-    let mut out0 = [0u8; 200];
-    let mut out1 = [0u8; 200];
-    let mut out2 = [0u8; 200];
-    let mut out3 = [0u8; 200];
-    store_block::<RATE>(s, [&mut out0, &mut out1, &mut out2, &mut out3]);
-    [out0, out1, out2, out3]
+pub(crate) fn store_block_full<const RATE: usize>(
+    state: &[[Vec256; 5]; 5],
+    out: &mut [[u8; 200]; 4],
+) {
+    let (out0, rest) = out.split_at_mut(1);
+    let (out1, rest) = rest.split_at_mut(1);
+    let (out2, out3) = rest.split_at_mut(1);
+
+    store_block::<RATE>(
+        state,
+        &mut [&mut out0[0], &mut out1[0], &mut out2[0], &mut out3[0]],
+    );
 }
 
 #[inline(always)]
@@ -226,7 +231,7 @@ impl KeccakItem<4> for Vec256 {
         load_block::<RATE>(state, blocks, start)
     }
     #[inline(always)]
-    fn store_block<const RATE: usize>(a: &[[Self; 5]; 5], b: [&mut [u8]; 4]) {
+    fn store_block<const RATE: usize>(a: &[[Self; 5]; 5], b: &mut [&mut [u8]; 4]) {
         store_block::<RATE>(a, b)
     }
     #[inline(always)]
@@ -238,8 +243,8 @@ impl KeccakItem<4> for Vec256 {
         load_block_full::<RATE>(state, blocks, start)
     }
     #[inline(always)]
-    fn store_block_full<const RATE: usize>(a: &[[Self; 5]; 5]) -> [[u8; 200]; 4] {
-        store_block_full::<RATE>(a)
+    fn store_block_full<const RATE: usize>(state: &[[Self; 5]; 5], out: &mut [[u8; 200]; 4]) {
+        store_block_full::<RATE>(state, out)
     }
 
     #[inline(always)]

@@ -370,7 +370,7 @@ pub mod portable {
         /// Squeeze another block
         #[inline(always)]
         pub fn shake128_squeeze_next_block(s: &mut KeccakState, out0: &mut [u8]) {
-            squeeze_next_block::<1, u64, 168>(&mut s.state, [out0])
+            squeeze_next_block::<1, u64, 168>(&mut s.state, &mut [out0])
         }
 
         /// Create a new SHAKE-256 state object.
@@ -390,13 +390,13 @@ pub mod portable {
         /// Squeeze the first SHAKE-256 block
         #[inline(always)]
         pub fn shake256_squeeze_first_block(s: &mut KeccakState, out: &mut [u8]) {
-            squeeze_first_block::<1, u64, 136>(&mut s.state, [out])
+            squeeze_first_block::<1, u64, 136>(&mut s.state, &mut [out])
         }
 
         /// Squeeze the next SHAKE-256 block
         #[inline(always)]
         pub fn shake256_squeeze_next_block(s: &mut KeccakState, out: &mut [u8]) {
-            squeeze_next_block::<1, u64, 136>(&mut s.state, [out])
+            squeeze_next_block::<1, u64, 136>(&mut s.state, &mut [out])
         }
     }
 }
@@ -574,7 +574,7 @@ pub mod neon {
                     &mut s.state,
                     &[data0, data1],
                     data0.len(),
-                    0
+                    0,
                 );
             }
 
@@ -649,7 +649,7 @@ pub mod neon {
             ) {
                 squeeze_first_block::<2, crate::simd::arm64::uint64x2_t, 136>(
                     &mut s.state,
-                    [out0, out1],
+                    &mut [out0, out1],
                 );
             }
 
@@ -662,7 +662,7 @@ pub mod neon {
             ) {
                 squeeze_next_block::<2, crate::simd::arm64::uint64x2_t, 136>(
                     &mut s.state,
-                    [out0, out1],
+                    &mut [out0, out1],
                 );
             }
 
@@ -739,7 +739,7 @@ pub mod neon {
                 // }
                 squeeze_next_block::<2, crate::simd::arm64::uint64x2_t, 168>(
                     &mut s.state,
-                    [out0, out1],
+                    &mut [out0, out1],
                 )
             }
 
@@ -966,7 +966,7 @@ pub mod avx2 {
                 out2: &mut [u8],
                 out3: &mut [u8],
             ) {
-                squeeze_first_block::<4, Vec256, 136>(&mut s.state, [out0, out1, out2, out3]);
+                squeeze_first_block::<4, Vec256, 136>(&mut s.state, &mut [out0, out1, out2, out3]);
             }
 
             /// Squeeze next block
@@ -978,7 +978,7 @@ pub mod avx2 {
                 out2: &mut [u8],
                 out3: &mut [u8],
             ) {
-                squeeze_next_block::<4, Vec256, 136>(&mut s.state, [out0, out1, out2, out3]);
+                squeeze_next_block::<4, Vec256, 136>(&mut s.state, &mut [out0, out1, out2, out3]);
             }
 
             /// Initialise the state and perform up to 4 absorbs at the same time,
@@ -1103,7 +1103,7 @@ pub mod avx2 {
                 out2: &mut [u8],
                 out3: &mut [u8],
             ) {
-                squeeze_next_block::<4, Vec256, 168>(&mut s.state, [out0, out1, out2, out3]);
+                squeeze_next_block::<4, Vec256, 168>(&mut s.state, &mut [out0, out1, out2, out3]);
             }
 
             /// Squeeze up to 4 (N) blocks in parallel, using two [`KeccakState`].
