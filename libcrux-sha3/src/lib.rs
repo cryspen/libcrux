@@ -214,7 +214,7 @@ pub mod portable {
     }
 
     #[inline(always)]
-    fn keccakx1<const RATE: usize, const DELIM: u8>(data: [&[u8]; 1], out: [&mut [u8]; 1]) {
+    fn keccakx1<const RATE: usize, const DELIM: u8>(data: &[&[u8]; 1], out: [&mut [u8]; 1]) {
         // generic_keccak::keccak_xof::<1, u64, RATE, DELIM>(data, out);
         // or
         generic_keccak::keccak::<1, u64, RATE, DELIM>(data, out);
@@ -223,37 +223,37 @@ pub mod portable {
     /// A portable SHA3 224 implementation.
     #[inline(always)]
     pub fn sha224(digest: &mut [u8], data: &[u8]) {
-        keccakx1::<144, 0x06u8>([data], [digest]);
+        keccakx1::<144, 0x06u8>(&[data], [digest]);
     }
 
     /// A portable SHA3 256 implementation.
     #[inline(always)]
     pub fn sha256(digest: &mut [u8], data: &[u8]) {
-        keccakx1::<136, 0x06u8>([data], [digest]);
+        keccakx1::<136, 0x06u8>(&[data], [digest]);
     }
 
     /// A portable SHA3 384 implementation.
     #[inline(always)]
     pub fn sha384(digest: &mut [u8], data: &[u8]) {
-        keccakx1::<104, 0x06u8>([data], [digest]);
+        keccakx1::<104, 0x06u8>(&[data], [digest]);
     }
 
     /// A portable SHA3 512 implementation.
     #[inline(always)]
     pub fn sha512(digest: &mut [u8], data: &[u8]) {
-        keccakx1::<72, 0x06u8>([data], [digest]);
+        keccakx1::<72, 0x06u8>(&[data], [digest]);
     }
 
     /// A portable SHAKE128 implementation.
     #[inline(always)]
     pub fn shake128(digest: &mut [u8], data: &[u8]) {
-        keccakx1::<168, 0x1fu8>([data], [digest]);
+        keccakx1::<168, 0x1fu8>(&[data], [digest]);
     }
 
     /// A portable SHAKE256 implementation.
     #[inline(always)]
     pub fn shake256(digest: &mut [u8], data: &[u8]) {
-        keccakx1::<136, 0x1fu8>([data], [digest]);
+        keccakx1::<136, 0x1fu8>(&[data], [digest]);
     }
 
     /// An incremental API for SHAKE
@@ -303,11 +303,11 @@ pub mod portable {
             }
 
             fn absorb(&mut self, input: &[u8]) {
-                self.state.absorb([input]);
+                self.state.absorb(&[input]);
             }
 
             fn absorb_final(&mut self, input: &[u8]) {
-                self.state.absorb_final::<0x1fu8>([input]);
+                self.state.absorb_final::<0x1fu8>(&[input]);
             }
 
             /// Shake128 squeeze
@@ -327,12 +327,12 @@ pub mod portable {
 
             /// Shake256 absorb
             fn absorb(&mut self, input: &[u8]) {
-                self.state.absorb([input]);
+                self.state.absorb(&[input]);
             }
 
             /// Shake256 absorb final
             fn absorb_final(&mut self, input: &[u8]) {
-                self.state.absorb_final::<0x1fu8>([input]);
+                self.state.absorb_final::<0x1fu8>(&[input]);
             }
 
             /// Shake256 squeeze
@@ -352,7 +352,7 @@ pub mod portable {
         /// Absorb
         #[inline(always)]
         pub fn shake128_absorb_final(s: &mut KeccakState, data0: &[u8]) {
-            absorb_final::<1, u64, 168, 0x1fu8>(&mut s.state, [data0]);
+            absorb_final::<1, u64, 168, 0x1fu8>(&mut s.state, &[data0], 0, data0.len());
         }
 
         /// Squeeze three blocks
@@ -384,7 +384,7 @@ pub mod portable {
         /// Absorb some data for SHAKE-256 for the last time
         #[inline(always)]
         pub fn shake256_absorb_final(s: &mut KeccakState, data: &[u8]) {
-            absorb_final::<1, u64, 136, 0x1fu8>(&mut s.state, [data]);
+            absorb_final::<1, u64, 136, 0x1fu8>(&mut s.state, &[data], 0, data.len());
         }
 
         /// Squeeze the first SHAKE-256 block
@@ -414,7 +414,7 @@ pub mod neon {
 
     #[cfg(feature = "simd128")]
     #[inline(always)]
-    fn keccakx2<const RATE: usize, const DELIM: u8>(data: [&[u8]; 2], out: [&mut [u8]; 2]) {
+    fn keccakx2<const RATE: usize, const DELIM: u8>(data: &[&[u8]; 2], out: [&mut [u8]; 2]) {
         keccak::<2, crate::simd::arm64::uint64x2_t, RATE, DELIM>(data, out)
     }
 
@@ -423,7 +423,7 @@ pub mod neon {
     #[inline(always)]
     pub fn sha224(digest: &mut [u8], data: &[u8]) {
         let mut dummy = [0u8; 28];
-        keccakx2::<144, 0x06u8>([data, data], [digest, &mut dummy]);
+        keccakx2::<144, 0x06u8>(&[data, data], [digest, &mut dummy]);
     }
 
     /// A portable SHA3 256 implementation.
@@ -431,7 +431,7 @@ pub mod neon {
     #[inline(always)]
     pub fn sha256(digest: &mut [u8], data: &[u8]) {
         let mut dummy = [0u8; 32];
-        keccakx2::<136, 0x06u8>([data, data], [digest, &mut dummy]);
+        keccakx2::<136, 0x06u8>(&[data, data], [digest, &mut dummy]);
     }
 
     /// A portable SHA3 384 implementation.
@@ -439,7 +439,7 @@ pub mod neon {
     #[inline(always)]
     pub fn sha384(digest: &mut [u8], data: &[u8]) {
         let mut dummy = [0u8; 48];
-        keccakx2::<104, 0x06u8>([data, data], [digest, &mut dummy]);
+        keccakx2::<104, 0x06u8>(&[data, data], [digest, &mut dummy]);
     }
 
     /// A portable SHA3 512 implementation.
@@ -447,7 +447,7 @@ pub mod neon {
     #[inline(always)]
     pub fn sha512(digest: &mut [u8], data: &[u8]) {
         let mut dummy = [0u8; 64];
-        keccakx2::<72, 0x06u8>([data, data], [digest, &mut dummy]);
+        keccakx2::<72, 0x06u8>(&[data, data], [digest, &mut dummy]);
     }
 
     /// A portable SHAKE128 implementation.
@@ -455,7 +455,7 @@ pub mod neon {
     #[inline(always)]
     pub fn shake128<const LEN: usize>(digest: &mut [u8; LEN], data: &[u8]) {
         let mut dummy = [0u8; LEN];
-        keccakx2::<168, 0x1fu8>([data, data], [digest, &mut dummy]);
+        keccakx2::<168, 0x1fu8>(&[data, data], [digest, &mut dummy]);
     }
 
     /// A portable SHAKE256 implementation.
@@ -463,7 +463,7 @@ pub mod neon {
     #[inline(always)]
     pub fn shake256<const LEN: usize>(digest: &mut [u8; LEN], data: &[u8]) {
         let mut dummy = [0u8; LEN];
-        keccakx2::<136, 0x1fu8>([data, data], [digest, &mut dummy]);
+        keccakx2::<136, 0x1fu8>(&[data, data], [digest, &mut dummy]);
     }
 
     /// Performing 2 operations in parallel
@@ -477,7 +477,7 @@ pub mod neon {
         #[inline(always)]
         pub fn shake256(input0: &[u8], input1: &[u8], out0: &mut [u8], out1: &mut [u8]) {
             // TODO: make argument ordering consistent
-            keccakx2::<136, 0x1fu8>([input0, input1], [out0, out1]);
+            keccakx2::<136, 0x1fu8>(&[input0, input1], [out0, out1]);
         }
 
         /// Run up to 4 SHAKE256 operations in parallel.
@@ -554,7 +554,9 @@ pub mod neon {
                 // }
                 absorb_final::<2, crate::simd::arm64::uint64x2_t, 168, 0x1fu8>(
                     &mut s.state,
-                    [data0, data1],
+                    &[data0, data1],
+                    data0.len(),
+                    0,
                 );
             }
 
@@ -570,7 +572,9 @@ pub mod neon {
                 // }
                 absorb_final::<2, crate::simd::arm64::uint64x2_t, 136, 0x1fu8>(
                     &mut s.state,
-                    [data0, data1],
+                    &[data0, data1],
+                    data0.len(),
+                    0
                 );
             }
 
@@ -831,7 +835,7 @@ pub mod avx2 {
             //     keccakx1::<136, 0x1fu8>([input3], [out3]);
             // }
             keccak::<4, Vec256, 136, 0x1fu8>(
-                [input0, input1, input2, input3],
+                &[input0, input1, input2, input3],
                 [out0, out1, out2, out3],
             );
         }
@@ -928,7 +932,12 @@ pub mod avx2 {
                 data2: &[u8],
                 data3: &[u8],
             ) {
-                absorb_final::<4, Vec256, 168, 0x1fu8>(&mut s.state, [data0, data1, data2, data3]);
+                absorb_final::<4, Vec256, 168, 0x1fu8>(
+                    &mut s.state,
+                    &[data0, data1, data2, data3],
+                    0,
+                    data0.len(),
+                );
             }
 
             /// Absorb
@@ -940,7 +949,12 @@ pub mod avx2 {
                 data2: &[u8],
                 data3: &[u8],
             ) {
-                absorb_final::<4, Vec256, 136, 0x1fu8>(&mut s.state, [data0, data1, data2, data3]);
+                absorb_final::<4, Vec256, 136, 0x1fu8>(
+                    &mut s.state,
+                    &[data0, data1, data2, data3],
+                    0,
+                    data0.len(),
+                );
             }
 
             /// Squeeze block
