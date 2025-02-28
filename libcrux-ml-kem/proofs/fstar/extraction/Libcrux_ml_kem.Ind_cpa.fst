@@ -270,18 +270,15 @@ let sample_ring_element_cbd
           Libcrux_ml_kem.Hash_functions.t_Hash v_Hasher v_K)
       (prf_input: t_Array u8 (mk_usize 33))
       (domain_separator: u8)
+      (error_1_: t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K)
      =
-  let error_1_:t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K =
-    Core.Array.from_fn #(Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
-      v_K
-      (fun e_i ->
-          let e_i:usize = e_i in
-          Libcrux_ml_kem.Polynomial.impl_2__ZERO #v_Vector ()
-          <:
-          Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
-  in
   let prf_inputs:t_Array (t_Array u8 (mk_usize 33)) v_K =
-    Rust_primitives.Hax.repeat prf_input v_K
+    Rust_primitives.Hax.repeat (Core.Clone.f_clone #(t_Array u8 (mk_usize 33))
+          #FStar.Tactics.Typeclasses.solve
+          prf_input
+        <:
+        t_Array u8 (mk_usize 33))
+      v_K
   in
   let e_domain_separator_init:u8 = domain_separator in
   let tmp0, out:(t_Array (t_Array u8 (mk_usize 33)) v_K & u8) =
@@ -338,7 +335,8 @@ let sample_ring_element_cbd
       prf_input
       e_domain_separator_init
   in
-  error_1_, domain_separator
+  let hax_temp_output:u8 = domain_separator in
+  error_1_, hax_temp_output
   <:
   (t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K & u8)
 
@@ -413,7 +411,12 @@ let sample_vector_cbd_then_ntt
       (domain_separator: u8)
      =
   let prf_inputs:t_Array (t_Array u8 (mk_usize 33)) v_K =
-    Rust_primitives.Hax.repeat prf_input v_K
+    Rust_primitives.Hax.repeat (Core.Clone.f_clone #(t_Array u8 (mk_usize 33))
+          #FStar.Tactics.Typeclasses.solve
+          prf_input
+        <:
+        t_Array u8 (mk_usize 33))
+      v_K
   in
   let e_domain_separator_init:u8 = domain_separator in
   let tmp0, out:(t_Array (t_Array u8 (mk_usize 33)) v_K & u8) =
@@ -485,43 +488,6 @@ let sample_vector_cbd_then_ntt
   (t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K & u8)
 
 #pop-options
-
-let sample_vector_cbd_then_ntt_out
-      (v_K v_ETA v_ETA_RANDOMNESS_SIZE: usize)
-      (#v_Vector #v_Hasher: Type0)
-      (#[FStar.Tactics.Typeclasses.tcresolve ()]
-          i2:
-          Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector)
-      (#[FStar.Tactics.Typeclasses.tcresolve ()]
-          i3:
-          Libcrux_ml_kem.Hash_functions.t_Hash v_Hasher v_K)
-      (prf_input: t_Array u8 (mk_usize 33))
-      (domain_separator: u8)
-     =
-  let re_as_ntt:t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K =
-    Core.Array.from_fn #(Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
-      v_K
-      (fun e_i ->
-          let e_i:usize = e_i in
-          Libcrux_ml_kem.Polynomial.impl_2__ZERO #v_Vector ()
-          <:
-          Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
-  in
-  let tmp0, out:(t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K & u8) =
-    sample_vector_cbd_then_ntt v_K
-      v_ETA
-      v_ETA_RANDOMNESS_SIZE
-      #v_Vector
-      #v_Hasher
-      re_as_ntt
-      prf_input
-      domain_separator
-  in
-  let re_as_ntt:t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K = tmp0 in
-  let domain_separator:u8 = out in
-  re_as_ntt, domain_separator
-  <:
-  (t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K & u8)
 
 #push-options "--z3rlimit 500 --ext context_pruning --z3refresh"
 
@@ -597,16 +563,29 @@ let generate_keypair_unpacked
     Libcrux_ml_kem.Ind_cpa.Unpacked.t_IndCpaPrivateKeyUnpacked v_K v_Vector
   in
   let domain_separator:u8 = out in
-  let error_as_ntt, _:(t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K & u8
-  ) =
-    sample_vector_cbd_then_ntt_out v_K
+  let error_as_ntt:t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K =
+    Core.Array.from_fn #(Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
+      v_K
+      (fun e_i ->
+          let e_i:usize = e_i in
+          Libcrux_ml_kem.Polynomial.impl_2__ZERO #v_Vector ()
+          <:
+          Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
+  in
+  let tmp0, out:(t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K & u8) =
+    sample_vector_cbd_then_ntt v_K
       v_ETA1
       v_ETA1_RANDOMNESS_SIZE
       #v_Vector
       #v_Hasher
+      error_as_ntt
       prf_input
       domain_separator
   in
+  let error_as_ntt:t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K =
+    tmp0
+  in
+  let _:u8 = out in
   let public_key:Libcrux_ml_kem.Ind_cpa.Unpacked.t_IndCpaPublicKeyUnpacked v_K v_Vector =
     {
       public_key with
@@ -870,24 +849,41 @@ let encrypt_c1
   let (prf_input: t_Array u8 (mk_usize 33)):t_Array u8 (mk_usize 33) =
     Libcrux_ml_kem.Utils.into_padded_array (mk_usize 33) randomness
   in
-  let r_as_ntt, domain_separator:(t_Array
-      (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K &
-    u8) =
-    sample_vector_cbd_then_ntt_out v_K
+  let r_as_ntt:t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K =
+    Core.Array.from_fn #(Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
+      v_K
+      (fun e_i ->
+          let e_i:usize = e_i in
+          Libcrux_ml_kem.Polynomial.impl_2__ZERO #v_Vector ()
+          <:
+          Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
+  in
+  let tmp0, out:(t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K & u8) =
+    sample_vector_cbd_then_ntt v_K
       v_ETA1
       v_ETA1_RANDOMNESS_SIZE
       #v_Vector
       #v_Hasher
+      r_as_ntt
       prf_input
       (mk_u8 0)
   in
+  let r_as_ntt:t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K = tmp0 in
+  let domain_separator:u8 = out in
   let _:Prims.unit =
     Lib.Sequence.eq_intro #u8 #32 randomness (Seq.slice prf_input 0 32);
     assert (v domain_separator == v v_K)
   in
-  let error_1_, domain_separator:(t_Array
-      (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K &
-    u8) =
+  let error_1_:t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K =
+    Core.Array.from_fn #(Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
+      v_K
+      (fun e_i ->
+          let e_i:usize = e_i in
+          Libcrux_ml_kem.Polynomial.impl_2__ZERO #v_Vector ()
+          <:
+          Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
+  in
+  let tmp0, out:(t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K & u8) =
     sample_ring_element_cbd v_K
       v_ETA2_RANDOMNESS_SIZE
       v_ETA2
@@ -895,7 +891,10 @@ let encrypt_c1
       #v_Hasher
       prf_input
       domain_separator
+      error_1_
   in
+  let error_1_:t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K = tmp0 in
+  let domain_separator:u8 = out in
   let prf_input:t_Array u8 (mk_usize 33) =
     Rust_primitives.Hax.Monomorphized_update_at.update_at_usize prf_input
       (mk_usize 32)
@@ -1236,17 +1235,9 @@ let deserialize_vector
           i1:
           Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector)
       (secret_key: t_Slice u8)
+      (secret_as_ntt: t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K)
      =
   let _:Prims.unit = assert_norm (Spec.MLKEM.polynomial_d 12 == Spec.MLKEM.polynomial) in
-  let secret_as_ntt:t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K =
-    Core.Array.from_fn #(Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
-      v_K
-      (fun temp_0_ ->
-          let _:usize = temp_0_ in
-          Libcrux_ml_kem.Polynomial.impl_2__ZERO #v_Vector ()
-          <:
-          Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
-  in
   let secret_as_ntt:t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K =
     Rust_primitives.Hax.Folds.fold_range (mk_usize 0)
       v_K
@@ -1352,11 +1343,31 @@ let decrypt
       (ciphertext: t_Array u8 v_CIPHERTEXT_SIZE)
      =
   let _:Prims.unit = reveal_opaque (`%Spec.MLKEM.ind_cpa_decrypt) Spec.MLKEM.ind_cpa_decrypt in
-  let secret_as_ntt:t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K =
-    deserialize_vector v_K #v_Vector secret_key
+  let secret_key_unpacked:Libcrux_ml_kem.Ind_cpa.Unpacked.t_IndCpaPrivateKeyUnpacked v_K v_Vector =
+    {
+      Libcrux_ml_kem.Ind_cpa.Unpacked.f_secret_as_ntt
+      =
+      Core.Array.from_fn #(Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
+        v_K
+        (fun temp_0_ ->
+            let _:usize = temp_0_ in
+            Libcrux_ml_kem.Polynomial.impl_2__ZERO #v_Vector ()
+            <:
+            Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
+    }
+    <:
+    Libcrux_ml_kem.Ind_cpa.Unpacked.t_IndCpaPrivateKeyUnpacked v_K v_Vector
   in
   let secret_key_unpacked:Libcrux_ml_kem.Ind_cpa.Unpacked.t_IndCpaPrivateKeyUnpacked v_K v_Vector =
-    { Libcrux_ml_kem.Ind_cpa.Unpacked.f_secret_as_ntt = secret_as_ntt }
+    {
+      secret_key_unpacked with
+      Libcrux_ml_kem.Ind_cpa.Unpacked.f_secret_as_ntt
+      =
+      deserialize_vector v_K
+        #v_Vector
+        secret_key
+        secret_key_unpacked.Libcrux_ml_kem.Ind_cpa.Unpacked.f_secret_as_ntt
+    }
     <:
     Libcrux_ml_kem.Ind_cpa.Unpacked.t_IndCpaPrivateKeyUnpacked v_K v_Vector
   in
