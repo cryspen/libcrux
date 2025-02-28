@@ -3,7 +3,7 @@
 //! This module implements a protocol for mutual registration of a
 //! PQ-PSK between an initiator and a responder.
 
-use libcrux::aead::{decrypt_detached, encrypt_detached, Algorithm};
+use libcrux_chacha20poly1305::{decrypt_detached, encrypt_detached, KEY_LEN, NONCE_LEN, TAG_LEN};
 use libcrux_kem::Ct;
 use libcrux_traits::kem::KEM;
 use rand::CryptoRng;
@@ -19,15 +19,13 @@ const PSK_LENGTH: usize = 32;
 
 const AEAD_RESPONDER: &[u8] = b"AEAD-Responder-Initiator";
 const AEAD_INITIATOR: &[u8] = b"AEAD-Initiator-Responder";
-const AEAD_KEY_NONCE: usize = Algorithm::key_size(Algorithm::Chacha20Poly1305)
-    + Algorithm::nonce_size(Algorithm::Chacha20Poly1305);
-
-const AEAD_KEY_LENGTH: usize = Algorithm::key_size(Algorithm::Chacha20Poly1305);
+const AEAD_KEY_NONCE: usize = KEY_LEN + NONCE_LEN;
+const AEAD_KEY_LENGTH: usize = KEY_LEN;
 
 const TS_TTL_LEN: usize = 28;
 
 struct AeadMac {
-    tag: libcrux::aead::Tag,
+    tag: [u8; TAG_LEN],
     ctxt: Vec<u8>,
 }
 
@@ -44,7 +42,7 @@ impl Encode for AeadMac {
 
 impl Decode for AeadMac {
     fn decode(bytes: &[u8]) -> Result<(Self, usize), Error> {
-        let tag = libcrux::aead::Tag::from_slice(&bytes[0..16]).map_err(|_| Error::Decoding)?;
+        let tag = <[u8; TAG_LEN]>::try_from(&bytes[0..16]).map_err(|_| Error::Decoding)?;
         let ctxt = bytes[16..].to_vec();
 
         let out = Self { tag, ctxt };
@@ -181,8 +179,16 @@ impl Initiator {
         message.extend_from_slice(signature.as_ref());
         message.extend_from_slice(credential.as_ref());
 
-        let (tag, ctxt) = encrypt_detached(&initiator_key, &mut message, initiator_iv, b"")
-            .map_err(|_| Error::CryptoError)?;
+        let mut ctxt = message.clone();
+        let mut tag = [0u8; TAG_LEN];
+        let _ = encrypt_detached(
+            &initiator_key,
+            &mut message,
+            &mut ctxt,
+            &mut tag,
+            b"",
+            &initiator_iv,
+        )?;
         let aead_mac = AeadMac { tag, ctxt };
 
         Ok((
@@ -203,14 +209,15 @@ impl Initiator {
         let (_initiator_iv, _initiator_key, responder_iv, responder_key) =
             derive_cipherstate(&self.k_pq)?;
 
-        let psk_handle = decrypt_detached(
+        let mut psk_handle = responder_message.aead_mac.ctxt.clone();
+        let _ = decrypt_detached(
             &responder_key,
-            responder_message.aead_mac.ctxt.clone(),
-            responder_iv,
-            b"",
+            &mut psk_handle,
+            &responder_message.aead_mac.ctxt,
             &responder_message.aead_mac.tag,
-        )
-        .map_err(|_| Error::CryptoError)?;
+            b"",
+            &responder_iv,
+        )?;
 
         let psk = derive_psk(&self.k_pq)?;
 
@@ -267,14 +274,15 @@ impl Responder {
         let k_pq = T::decapsulate_psq(pqsk, pqpk, &initiator_message.encapsulation, sctxt)?;
         let (initiator_iv, initiator_key, responder_iv, responder_key) = derive_cipherstate(&k_pq)?;
 
-        let msg_bytes = decrypt_detached(
+        let mut msg_bytes = initiator_message.aead_mac.ctxt.clone();
+        let _ = decrypt_detached(
             &initiator_key,
-            initiator_message.aead_mac.ctxt.clone(),
-            initiator_iv,
-            b"",
+            &mut msg_bytes,
+            &initiator_message.aead_mac.ctxt,
             &initiator_message.aead_mac.tag,
-        )
-        .map_err(|_| Error::CryptoError)?;
+            b"",
+            &initiator_iv,
+        )?;
 
         let (ts_bytes, sig_cred_bytes) = msg_bytes.split_at(TS_TTL_LEN);
         let (signature, credential) = deserialize_sig_cred::<C>(sig_cred_bytes)?;
@@ -301,8 +309,16 @@ impl Responder {
 
         let psk = derive_psk(&k_pq)?;
 
-        let (tag, ctxt) = encrypt_detached(&responder_key, psk_handle, responder_iv, b"")
-            .map_err(|_| Error::CryptoError)?;
+        let mut tag = [0u8; TAG_LEN];
+        let mut ctxt = psk_handle.to_vec();
+        let _ = encrypt_detached(
+            &responder_key,
+            psk_handle,
+            &mut ctxt,
+            &mut tag,
+            b"",
+            &responder_iv,
+        )?;
 
         let aead_mac = AeadMac {
             tag,
@@ -332,8 +348,7 @@ fn derive_psk(prk: &[u8; 32]) -> Result<Psk, Error> {
         prk,
         PSK_REGISTRATION_CONTEXT,
         PSK_LENGTH,
-    )
-    .map_err(|_| Error::CryptoError)?
+    )?
     .try_into()
     .map_err(|_| Error::CryptoError)?;
 
@@ -344,10 +359,10 @@ fn derive_cipherstate(
     psk: &[u8; 32],
 ) -> Result<
     (
-        libcrux::aead::Iv,
-        libcrux::aead::Key,
-        libcrux::aead::Iv,
-        libcrux::aead::Key,
+        [u8; NONCE_LEN],
+        [u8; KEY_LEN],
+        [u8; NONCE_LEN],
+        [u8; KEY_LEN],
     ),
     Error,
 > {
@@ -357,17 +372,12 @@ fn derive_cipherstate(
     Ok((initiator_iv, initiator_key, receiver_iv, receiver_key))
 }
 
-fn derive_key_iv(
-    psk: &[u8; 32],
-    info: &[u8],
-) -> Result<(libcrux::aead::Iv, libcrux::aead::Key), Error> {
+fn derive_key_iv(psk: &[u8; 32], info: &[u8]) -> Result<([u8; NONCE_LEN], [u8; KEY_LEN]), Error> {
     let key_iv_bytes =
-        libcrux_hkdf::expand(libcrux_hkdf::Algorithm::Sha256, psk, info, AEAD_KEY_NONCE)
-            .map_err(|_| Error::CryptoError)?;
+        libcrux_hkdf::expand(libcrux_hkdf::Algorithm::Sha256, psk, info, AEAD_KEY_NONCE)?;
     let (key_bytes, iv_bytes) = key_iv_bytes.split_at(AEAD_KEY_LENGTH);
-    let key = libcrux::aead::Key::from_slice(libcrux::aead::Algorithm::Chacha20Poly1305, key_bytes)
-        .map_err(|_| Error::CryptoError)?;
-    let iv = libcrux::aead::Iv(iv_bytes.try_into().map_err(|_| Error::CryptoError)?);
+    let key = <[u8; AEAD_KEY_LENGTH]>::try_from(key_bytes)?;
+    let iv = <[u8; NONCE_LEN]>::try_from(iv_bytes)?;
     Ok((iv, key))
 }
 
