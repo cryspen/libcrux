@@ -43,7 +43,7 @@ use crate::{
 /// <https://csrc.nist.gov/pubs/fips/203/ipd>.
 #[inline(always)]
 fn sample_from_uniform_distribution_next<Vector: Operations, const K: usize, const N: usize>(
-    randomness: [[u8; N]; K],
+    randomness: &[[u8; N]; K],
     sampled_coefficients: &mut [usize; K],
     out: &mut [[i16; 272]; K],
 ) -> bool {
@@ -73,7 +73,7 @@ fn sample_from_uniform_distribution_next<Vector: Operations, const K: usize, con
 #[inline(always)]
 #[hax_lib::fstar::verification_status(lax)]
 pub(super) fn sample_from_xof<const K: usize, Vector: Operations, Hasher: Hash<K>>(
-    seeds: [[u8; 34]; K],
+    seeds: &[[u8; 34]; K],
 ) -> [PolynomialRingElement<Vector>; K] {
     let mut sampled_coefficients: [usize; K] = [0; K];
     let mut out: [[i16; 272]; K] = [[0; 272]; K];
@@ -82,7 +82,7 @@ pub(super) fn sample_from_xof<const K: usize, Vector: Operations, Hasher: Hash<K
     let randomness = xof_state.shake128_squeeze_first_three_blocks();
 
     let mut done = sample_from_uniform_distribution_next::<Vector, K, THREE_BLOCKS>(
-        randomness,
+        &randomness,
         &mut sampled_coefficients,
         &mut out,
     );
@@ -95,7 +95,7 @@ pub(super) fn sample_from_xof<const K: usize, Vector: Operations, Hasher: Hash<K
     while !done {
         let randomness = xof_state.shake128_squeeze_next_block();
         done = sample_from_uniform_distribution_next::<Vector, K, BLOCK_SIZE>(
-            randomness,
+            &randomness,
             &mut sampled_coefficients,
             &mut out,
         );
