@@ -8,7 +8,7 @@
  * Eurydice: 788c5abefac3a9c7f79abae6a30fa8558e39764c
  * Karamel: 1d81d757d5d9e16dd6463ccc72324e587c707959
  * F*: b0961063393215ca65927f017720cb365a193833-dirty
- * Libcrux: 9055a3494b92f5b142edb2d1fe36ea2e1ce07257
+ * Libcrux: bab611f6a9005751769f23d1d6cc3c7cf072c7e7
  */
 
 #ifndef __libcrux_mlkem_core_H
@@ -164,6 +164,11 @@ static inline void unwrap_26_20(Result_e1 self, uint8_t ret[20U]) {
   }
 }
 
+typedef struct Eurydice_slice_uint8_t_200size_t__x2_s {
+  Eurydice_slice fst;
+  Eurydice_slice snd;
+} Eurydice_slice_uint8_t_200size_t__x2;
+
 typedef struct Eurydice_slice_uint8_t_4size_t__x2_s {
   Eurydice_slice fst[4U];
   Eurydice_slice snd[4U];
@@ -212,23 +217,6 @@ libcrux_ml_kem_types_default_24_28(void) {
   uint8_t repeat_expression[2400U] = {0U};
   memcpy(lit.value, repeat_expression, (size_t)2400U * sizeof(uint8_t));
   return lit;
-}
-
-typedef struct libcrux_ml_kem_mlkem768_MlKem768Ciphertext_s {
-  uint8_t value[1088U];
-} libcrux_ml_kem_mlkem768_MlKem768Ciphertext;
-
-/**
-This function found in impl {libcrux_ml_kem::types::MlKemCiphertext<SIZE>#6}
-*/
-/**
-A monomorphic instance of libcrux_ml_kem.types.as_slice_d4
-with const generics
-- SIZE= 1088
-*/
-static inline uint8_t *libcrux_ml_kem_types_as_slice_d4_80(
-    libcrux_ml_kem_mlkem768_MlKem768Ciphertext *self) {
-  return self->value;
 }
 
 /**
@@ -334,6 +322,10 @@ static inline void unwrap_26_b3(Result_fb self, uint8_t ret[32U]) {
   }
 }
 
+typedef struct libcrux_ml_kem_mlkem768_MlKem768Ciphertext_s {
+  uint8_t value[1088U];
+} libcrux_ml_kem_mlkem768_MlKem768Ciphertext;
+
 /**
 A monomorphic instance of K.
 with types libcrux_ml_kem_types_MlKemCiphertext[[$1088size_t]],
@@ -374,6 +366,19 @@ with const generics
 */
 static inline uint8_t *libcrux_ml_kem_types_as_slice_fd_d0(
     libcrux_ml_kem_types_MlKemPublicKey_30 *self) {
+  return self->value;
+}
+
+/**
+This function found in impl {libcrux_ml_kem::types::MlKemCiphertext<SIZE>#6}
+*/
+/**
+A monomorphic instance of libcrux_ml_kem.types.as_slice_d4
+with const generics
+- SIZE= 1088
+*/
+static inline uint8_t *libcrux_ml_kem_types_as_slice_d4_80(
+    libcrux_ml_kem_mlkem768_MlKem768Ciphertext *self) {
   return self->value;
 }
 

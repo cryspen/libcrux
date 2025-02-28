@@ -5,10 +5,10 @@
  *
  * This code was generated with the following revisions:
  * Charon: a8f2211d1b95e0462a96382023b164a4116c7ca4
- * Eurydice: 60f543ddc60a777138070968daaf7620ec48170d
+ * Eurydice: 788c5abefac3a9c7f79abae6a30fa8558e39764c
  * Karamel: 1d81d757d5d9e16dd6463ccc72324e587c707959
- * F*: 7cd06c5562fc47ec14cd35c38034d5558a5ff762
- * Libcrux: 370d71828112dbf0ad53a8995502ff1e5c8a719c
+ * F*: b0961063393215ca65927f017720cb365a193833-dirty
+ * Libcrux: bab611f6a9005751769f23d1d6cc3c7cf072c7e7
  */
 
 #include "libcrux_mlkem1024_avx2.h"
@@ -99,13 +99,8 @@ libcrux_ml_kem.ind_cca.instantiations.avx2.encapsulate_avx2 with const generics
 - ETA2_RANDOMNESS_SIZE= 128
 */
 static tuple_fa encapsulate_avx2_8f(
-    libcrux_ml_kem_types_MlKemPublicKey_64 *public_key,
-    uint8_t randomness[32U]) {
-  libcrux_ml_kem_types_MlKemPublicKey_64 *uu____0 = public_key;
-  /* Passing arrays by value in Rust generates a copy in C */
-  uint8_t copy_of_randomness[32U];
-  memcpy(copy_of_randomness, randomness, (size_t)32U * sizeof(uint8_t));
-  return libcrux_ml_kem_ind_cca_encapsulate_700(uu____0, copy_of_randomness);
+    libcrux_ml_kem_types_MlKemPublicKey_64 *public_key, uint8_t *randomness) {
+  return libcrux_ml_kem_ind_cca_encapsulate_700(public_key, randomness);
 }
 
 /**
@@ -126,13 +121,8 @@ with const generics
 - ETA2_RANDOMNESS_SIZE= 128
 */
 static tuple_fa encapsulate_8f(
-    libcrux_ml_kem_types_MlKemPublicKey_64 *public_key,
-    uint8_t randomness[32U]) {
-  libcrux_ml_kem_types_MlKemPublicKey_64 *uu____0 = public_key;
-  /* Passing arrays by value in Rust generates a copy in C */
-  uint8_t copy_of_randomness[32U];
-  memcpy(copy_of_randomness, randomness, (size_t)32U * sizeof(uint8_t));
-  return encapsulate_avx2_8f(uu____0, copy_of_randomness);
+    libcrux_ml_kem_types_MlKemPublicKey_64 *public_key, uint8_t *randomness) {
+  return encapsulate_avx2_8f(public_key, randomness);
 }
 
 /**
@@ -145,11 +135,7 @@ static tuple_fa encapsulate_8f(
 tuple_fa libcrux_ml_kem_mlkem1024_avx2_encapsulate(
     libcrux_ml_kem_types_MlKemPublicKey_64 *public_key,
     uint8_t randomness[32U]) {
-  libcrux_ml_kem_types_MlKemPublicKey_64 *uu____0 = public_key;
-  /* Passing arrays by value in Rust generates a copy in C */
-  uint8_t copy_of_randomness[32U];
-  memcpy(copy_of_randomness, randomness, (size_t)32U * sizeof(uint8_t));
-  return encapsulate_8f(uu____0, copy_of_randomness);
+  return encapsulate_8f(public_key, randomness);
 }
 
 /**
@@ -167,11 +153,8 @@ generics
 - ETA1_RANDOMNESS_SIZE= 128
 */
 static libcrux_ml_kem_mlkem1024_MlKem1024KeyPair generate_keypair_avx2_b4(
-    uint8_t randomness[64U]) {
-  /* Passing arrays by value in Rust generates a copy in C */
-  uint8_t copy_of_randomness[64U];
-  memcpy(copy_of_randomness, randomness, (size_t)64U * sizeof(uint8_t));
-  return libcrux_ml_kem_ind_cca_generate_keypair_bb0(copy_of_randomness);
+    uint8_t *randomness) {
+  return libcrux_ml_kem_ind_cca_generate_keypair_bb0(randomness);
 }
 
 /**
@@ -185,11 +168,8 @@ libcrux_ml_kem.ind_cca.instantiations.avx2.generate_keypair with const generics
 - ETA1_RANDOMNESS_SIZE= 128
 */
 static libcrux_ml_kem_mlkem1024_MlKem1024KeyPair generate_keypair_b4(
-    uint8_t randomness[64U]) {
-  /* Passing arrays by value in Rust generates a copy in C */
-  uint8_t copy_of_randomness[64U];
-  memcpy(copy_of_randomness, randomness, (size_t)64U * sizeof(uint8_t));
-  return generate_keypair_avx2_b4(copy_of_randomness);
+    uint8_t *randomness) {
+  return generate_keypair_avx2_b4(randomness);
 }
 
 /**
@@ -197,10 +177,7 @@ static libcrux_ml_kem_mlkem1024_MlKem1024KeyPair generate_keypair_b4(
 */
 libcrux_ml_kem_mlkem1024_MlKem1024KeyPair
 libcrux_ml_kem_mlkem1024_avx2_generate_key_pair(uint8_t randomness[64U]) {
-  /* Passing arrays by value in Rust generates a copy in C */
-  uint8_t copy_of_randomness[64U];
-  memcpy(copy_of_randomness, randomness, (size_t)64U * sizeof(uint8_t));
-  return generate_keypair_b4(copy_of_randomness);
+  return generate_keypair_b4(randomness);
 }
 
 /**
