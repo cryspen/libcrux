@@ -106,7 +106,7 @@ jobs:
 
   mlkem-bench-status:
     if: ${{ always() }}
-    needs: [build]
+    needs: [benchmark]
     runs-on: ubuntu-latest
     steps:
       - name: Successful
