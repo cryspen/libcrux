@@ -28,9 +28,9 @@ members = [
     "rsa",
     "ecdsa",
     "p256",
-    "blake2", 
+    "blake2",
+    "fstar-helpers/minicore",
 ]
-exclude = ["fstar-helpers/minicore"]
 
 [workspace.package]
 version = "0.0.2-beta.2"
