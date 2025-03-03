@@ -1,4 +1,8 @@
-/// This is a (partial) mirror of [`core::arch::x86`] and [`core::arch::x86_64`].
+//! A (partial) Rust-based model of [`core::arch::x86`] and [`core::arch::x86_64`].
+//!
+//! This module provides a purely Rust implementation of selected operations from
+//! `core::arch::x86` and `core::arch::x86_64`.
+
 use crate::abstractions::{bit::*, bitvec::*};
 
 pub(crate) mod upstream {
@@ -52,8 +56,13 @@ mod conversions {
     }
 }
 
+/// 256-bit wide integer vector type.
+/// Models `core::arch::x86::__m256i` or `core::arch::x86_64::__m256i` (the __m256i type defined by Intel, representing a 256-bit SIMD register).
 #[allow(non_camel_case_types)]
 type __m256i = BitVec<256>;
+
+/// 128-bit wide integer vector type.
+/// Models `core::arch::x86::__m128i` or `core::arch::x86_64::__m128i` (the __m128i type defined by Intel, representing a 128-bit SIMD register).
 #[allow(non_camel_case_types)]
 type __m128i = BitVec<128>;
 
