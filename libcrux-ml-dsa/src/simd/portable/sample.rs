@@ -1,6 +1,11 @@
 use crate::{constants::FIELD_MODULUS, helper::cloop};
 
 #[inline(always)]
+#[hax_lib::fstar::verification_status(lax)]
+#[hax_lib::requires(fstar!(r#"(Seq.length $randomness) / 3 <= Seq.length $out"#))]
+#[hax_lib::ensures(|result| fstar!(r#"let s = Spec.MLDSA.Math.rejection_sample_field_modulus $randomness in
+    v $result <= Seq.length ${out}_future /\ v $result == Seq.length s /\
+    Seq.slice ${out}_future 0 (v $result) == s"#))]
 pub fn rejection_sample_less_than_field_modulus(randomness: &[u8], out: &mut [i32]) -> usize {
     let mut sampled = 0;
 
@@ -23,6 +28,11 @@ pub fn rejection_sample_less_than_field_modulus(randomness: &[u8], out: &mut [i3
 }
 
 #[inline(always)]
+#[hax_lib::fstar::verification_status(lax)]
+#[hax_lib::requires(fstar!(r#"(Seq.length $randomness) * 2 <= Seq.length $out"#))]
+#[hax_lib::ensures(|result| fstar!(r#"let s = Spec.MLDSA.Math.rejection_sample_eta_2 $randomness in
+    v $result <= Seq.length ${out}_future /\ v $result == Seq.length s /\
+    Seq.slice ${out}_future 0 (v $result) == s"#))]
 pub fn rejection_sample_less_than_eta_equals_2(randomness: &[u8], out: &mut [i32]) -> usize {
     let mut sampled = 0;
 
@@ -57,6 +67,11 @@ pub fn rejection_sample_less_than_eta_equals_2(randomness: &[u8], out: &mut [i32
 }
 
 #[inline(always)]
+#[hax_lib::fstar::verification_status(lax)]
+#[hax_lib::requires(fstar!(r#"(Seq.length $randomness) * 2 <= Seq.length $out"#))]
+#[hax_lib::ensures(|result| fstar!(r#"let s = Spec.MLDSA.Math.rejection_sample_eta_4 $randomness in
+    v $result <= Seq.length ${out}_future /\ v $result == Seq.length s /\
+    Seq.slice ${out}_future 0 (v $result) == s"#))]
 pub fn rejection_sample_less_than_eta_equals_4(randomness: &[u8], out: &mut [i32]) -> usize {
     let mut sampled = 0;
 
