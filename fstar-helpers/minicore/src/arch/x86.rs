@@ -66,7 +66,7 @@ pub fn _mm_storeu_si128(output: *mut __m128i, a: __m128i) {
     }
 }
 
-pub fn _mm256_slli_epi16<const SHIFT_BY: i32>(vector: BitVec<256>) -> BitVec<256> {
+pub fn _mm256_slli_epi16<const SHIFT_BY: i32>(vector: __m256i) -> __m256i {
     debug_assert!(SHIFT_BY >= 0 && SHIFT_BY < 16);
     BitVec::from_fn(|i| {
         let nth_bit = i % 16;
@@ -79,7 +79,7 @@ pub fn _mm256_slli_epi16<const SHIFT_BY: i32>(vector: BitVec<256>) -> BitVec<256
     })
 }
 
-pub fn _mm256_srli_epi64<const SHIFT_BY: i32>(vector: BitVec<256>) -> BitVec<256> {
+pub fn _mm256_srli_epi64<const SHIFT_BY: i32>(vector: __m256i) -> __m256i {
     debug_assert!(SHIFT_BY >= 0 && SHIFT_BY < 64);
     BitVec::from_fn(|i| {
         let nth_bit = i % 64;
@@ -92,19 +92,19 @@ pub fn _mm256_srli_epi64<const SHIFT_BY: i32>(vector: BitVec<256>) -> BitVec<256
     })
 }
 
-pub fn _mm256_sllv_epi32(vector: BitVec<256>, counts: BitVec<256>) -> BitVec<256> {
+pub fn _mm256_sllv_epi32(vector: __m256i, counts: __m256i) -> __m256i {
     extra::mm256_sllv_epi32_u32_array(vector, counts.to_vec().try_into().unwrap())
 }
 
-pub fn _mm256_permutevar8x32_epi32(a: BitVec<256>, b: BitVec<256>) -> BitVec<256> {
+pub fn _mm256_permutevar8x32_epi32(a: __m256i, b: __m256i) -> __m256i {
     extra::mm256_permutevar8x32_epi32_u32_array(a, b.to_vec().try_into().unwrap())
 }
 
-pub fn _mm256_castsi256_si128(vector: BitVec<256>) -> BitVec<128> {
+pub fn _mm256_castsi256_si128(vector: __m256i) -> __m128i {
     BitVec::from_fn(|i| vector[i])
 }
 
-pub fn _mm_shuffle_epi8(vector: BitVec<128>, indexes: BitVec<128>) -> BitVec<128> {
+pub fn _mm_shuffle_epi8(vector: __m128i, indexes: __m128i) -> __m128i {
     let indexes: [u8; 16] = indexes.to_vec().try_into().unwrap();
     extra::mm_shuffle_epi8_u8_array(vector, indexes)
 }
