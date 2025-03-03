@@ -1,6 +1,9 @@
 name: ML-KEM - Benchmark
 
 on:
+  merge_group:
+  pull_request:
+    branches: ["main", "dev", "*"]
   workflow_dispatch:
 
 env:
@@ -12,6 +15,7 @@ concurrency:
 
 jobs:
   benchmark:
+    if: ${{ github.event_name != 'pull_request' }}
     strategy:
       fail-fast: true
       matrix:
@@ -100,5 +104,14 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           auto-push: true
 
-        
-
+  mlkem-bench-status:
+    if: ${{ always() }}
+    needs: [build]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Successful
+        if: ${{ !(contains(needs.*.result, 'failure')) }}
+        run: exit 0
+      - name: Failing
+        if: ${{ (contains(needs.*.result, 'failure')) }}
+        run: exit 1
