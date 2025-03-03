@@ -44,7 +44,7 @@ pub(crate) mod neon {
     use super::*;
 
     impl_incr_platform!(
-        crate::vector::SIMD128Vector,
+        vector::SIMD128Vector,
         crate::hash_functions::neon::Simd128Hash
     );
 }

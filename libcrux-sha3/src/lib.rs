@@ -555,8 +555,8 @@ pub mod neon {
                 absorb_final::<2, crate::simd::arm64::uint64x2_t, 168, 0x1fu8>(
                     &mut s.state,
                     &[data0, data1],
-                    data0.len(),
                     0,
+                    data0.len(),
                 );
             }
 
@@ -573,8 +573,8 @@ pub mod neon {
                 absorb_final::<2, crate::simd::arm64::uint64x2_t, 136, 0x1fu8>(
                     &mut s.state,
                     &[data0, data1],
-                    data0.len(),
                     0,
+                    data0.len(),
                 );
             }
 

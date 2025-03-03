@@ -81,16 +81,9 @@ pub(crate) fn load_block<const RATE: usize>(
         let i = (RATE / 8 - 1) / 5;
         let j = (RATE / 8 - 1) % 5;
         let mut u = [0u64; 2];
-        u[0] = u64::from_le_bytes(
-            blocks[0][offset + RATE - 8..offset + RATE]
-                .try_into()
-                .unwrap(),
-        );
-        u[1] = u64::from_le_bytes(
-            blocks[1][offset + RATE - 8..offset + RATE]
-                .try_into()
-                .unwrap(),
-        );
+        let start = offset + RATE - 8;
+        u[0] = u64::from_le_bytes(blocks[0][start..start + 8].try_into().unwrap());
+        u[1] = u64::from_le_bytes(blocks[1][start..start + 8].try_into().unwrap());
         let uvec = _vld1q_u64(&u);
         s[i][j] = _veorq_u64(s[i][j], uvec);
     }
@@ -138,11 +131,6 @@ pub(crate) fn store_block_full<const RATE: usize>(
     let (out0, out1) = out.split_at_mut(1);
 
     store_block::<RATE>(s, &mut [&mut out0[0], &mut out1[0]]);
-}
-
-#[inline(always)]
-fn slice_2(a: [&[u8]; 2], start: usize, len: usize) -> [&[u8]; 2] {
-    [&a[0][start..start + len], &a[1][start..start + len]]
 }
 
 #[inline(always)]
