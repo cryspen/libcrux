@@ -109,7 +109,7 @@ pub fn _mm_shuffle_epi8(vector: __m128i, indexes: __m128i) -> __m128i {
     extra::mm_shuffle_epi8_u8_array(vector, indexes)
 }
 
-mod extra {
+pub mod extra {
     use super::*;
 
     pub fn mm256_sllv_epi32_u32_array(vector: BitVec<256>, counts: [u32; 8]) -> BitVec<256> {
