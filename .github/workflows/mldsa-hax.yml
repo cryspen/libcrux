@@ -1,6 +1,7 @@
 name: ML-DSA - hax
 
 on:
+  merge_group:
   push:
     branches: ["dev", "main"]
 
@@ -19,7 +20,6 @@ on:
         description: "Skip diff jobs"
         default: false
         type: boolean
-  merge_group:
 
 env:
   CARGO_TERM_COLOR: always
@@ -30,6 +30,7 @@ concurrency:
 
 jobs:
   extract:
+    if: ${{ github.event_name != 'merge_group' }}
     runs-on: ubuntu-latest
 
     steps:
@@ -53,6 +54,7 @@ jobs:
 
   diff:
     needs: extract
+    if: ${{ github.event_name != 'merge_group' }}
     runs-on: ubuntu-latest
 
     steps:
@@ -73,7 +75,7 @@ jobs:
     needs:
       - extract
       - diff
-
+    if: ${{ github.event_name != 'merge_group' }}
     steps:
       - uses: actions/checkout@v4
       - uses: hacspec/hax-actions@main
@@ -84,3 +86,39 @@ jobs:
       - name: 🏃 Lax ML-DSA crate
         working-directory: libcrux-ml-dsa
         run: ./hax.py prove --admit
+  
+  mldsa-extract-hax-status:
+    if: ${{ always() }}
+    needs: [extract]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Successful
+        if: ${{ !(contains(needs.*.result, 'failure')) }} 
+        run: exit 0 
+      - name: Failing
+        if: ${{ (contains(needs.*.result, 'failure')) }} 
+        run: exit 1 
+
+  mldsa-diff-hax-status:
+    if: ${{ always() }}
+    needs: [diff]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Successful
+        if: ${{ !(contains(needs.*.result, 'failure')) }} 
+        run: exit 0 
+      - name: Failing
+        if: ${{ (contains(needs.*.result, 'failure')) }} 
+        run: exit 1 
+  
+  mldsa-lax-hax-status:
+    if: ${{ always() }}
+    needs: [lax]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Successful
+        if: ${{ !(contains(needs.*.result, 'failure')) }} 
+        run: exit 0 
+      - name: Failing
+        if: ${{ (contains(needs.*.result, 'failure')) }} 
+        run: exit 1 

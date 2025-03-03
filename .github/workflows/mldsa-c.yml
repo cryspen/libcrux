@@ -1,12 +1,12 @@
 name: ML-DSA - Build & Test C
 
 on:
+  merge_group:
   push:
     branches: ["main", "dev"]
   pull_request:
     branches: ["main", "dev"]
   workflow_dispatch:
-  merge_group:
 
 env:
   REGISTRY: ghcr.io
@@ -19,6 +19,7 @@ concurrency:
 
 jobs:
   setup:
+    if: ${{ github.event_name != 'pull_request' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -44,15 +45,17 @@ jobs:
       - name: Report status
         run: echo "All tests completed successfully"
 
-  report-status-all:
-    runs-on: ubuntu-latest
+  mldsa-c-tests-status:
+    if: ${{ always() }}
     needs: [report-status-tests]
-    # run if all the tests succeeded, or...
-    # ...if they were not supposed to run.
-    if: ${{ always() && needs.report-status-tests.result == 'success' || needs.report-status-tests.result == 'skipped'}}
+    runs-on: ubuntu-latest
     steps:
-      - name: Report status
-        run: echo "Tests completed successfully or were skipped"
+      - name: Successful
+        if: ${{ !(contains(needs.*.result, 'failure')) }} 
+        run: exit 0 
+      - name: Failing
+        if: ${{ (contains(needs.*.result, 'failure')) }} 
+        run: exit 1 
 
   extract-header-only:
     needs: [setup]

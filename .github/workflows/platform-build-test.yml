@@ -1,12 +1,12 @@
 name: Platform - Build & Test
 
 on:
+  merge_group:
   push:
     branches: ["main", "dev"]
   pull_request:
     branches: ["main", "dev", "*"]
   workflow_dispatch:
-  merge_group:
 
 env:
   CARGO_TERM_COLOR: always
@@ -17,6 +17,7 @@ concurrency:
 
 jobs:
   platform:
+    if: ${{ github.event_name != 'merge_group' }}
     strategy:
       fail-fast: false
       matrix:
@@ -76,3 +77,14 @@ jobs:
         if: ${{ matrix.bits == 32 &&  matrix.os == 'windows-latest' }}
         run: cargo test --verbose --release --target i686-pc-windows-msvc -- --nocapture
 
+  platform-build-test-status:
+    if: ${{ always() }}
+    needs: [platform]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Successful
+        if: ${{ !(contains(needs.*.result, 'failure')) }} 
+        run: exit 0 
+      - name: Failing
+        if: ${{ (contains(needs.*.result, 'failure')) }} 
+        run: exit 1 

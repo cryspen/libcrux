@@ -1,7 +1,7 @@
 // XXX: This could be simplified with the pure Rust version now.
 
 use alloc::format;
-use rand::{CryptoRng, Rng};
+use rand::{CryptoRng, Rng, TryRngCore};
 
 use super::Error;
 

@@ -43,6 +43,11 @@ impl VarLenPublicKey<'_> {
     pub fn key_len(&self) -> usize {
         self.n.len()
     }
+
+    /// Returns the modulus
+    pub fn n(&self) -> &[u8] {
+        self.n
+    }
 }
 impl alloc::fmt::Debug for VarLenPrivateKey<'_> {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
@@ -80,6 +85,11 @@ impl<'a> VarLenPrivateKey<'a> {
     /// Returns the length of the keys
     pub fn key_len(&self) -> usize {
         self.d.len()
+    }
+
+    /// Returns the private exponent of the keys
+    pub fn d(&self) -> &[u8] {
+        self.d
     }
 }
 

@@ -8,33 +8,43 @@ edition.workspace = true
 repository.workspace = true
 readme.workspace = true
 description = "Libcrux Pre-Shared post-Quantum key establishement protocol"
-publish = false
+publish = true
 
 [lib]
 bench = false # so libtest doesn't eat the arguments to criterion
 
 [dependencies]
-libcrux-traits = { version = "0.0.2-beta.2", path = "../traits" }
-libcrux-kem = { version = "0.0.2-beta.2", path = "../libcrux-kem" }
-libcrux-hkdf = { version = "=0.0.2-beta.2", path = "../libcrux-hkdf" }
-libcrux-hmac = { version = "=0.0.2-beta.2", path = "../libcrux-hmac" }
+libcrux-traits = { version = "0.0.2-beta.3", path = "../traits" }
+libcrux-kem = { version = "0.0.2-beta.3", path = "../libcrux-kem" }
+libcrux-hkdf = { version = "=0.0.2-beta.3", path = "../libcrux-hkdf" }
+libcrux-hmac = { version = "=0.0.2-beta.3", path = "../libcrux-hmac" }
 classic-mceliece-rust = { version = "2.0.0", features = [
     "mceliece460896f",
     "zeroize",
 ], optional = true }
-rand = { version = "0.8" }
-libcrux-ecdh = { version = "0.0.2-beta.2", path = "../libcrux-ecdh" }
-libcrux = { version = "0.0.2-beta.2", path = ".." }
+rand = { version = "0.9" }
+rand_old = { version = "0.8", package = "rand", optional = true }
+libcrux-ecdh = { version = "0.0.2-beta.3", path = "../libcrux-ecdh", optional = true }
+libcrux-ed25519 = { version = "0.0.2-beta.3", path = "../ed25519", features = [
+    "rand",
+] }
+libcrux = { version = "0.0.2-beta.3", path = ".." }
 
 [dev-dependencies]
+libcrux-psq = { path = ".", features = ["test-utils"] }
+clap = { version = "4.5.30", features = ["derive"] }
 criterion = "0.5"
+log = "0.4.26"
+pretty_env_logger = "0.5.0"
 
 [features]
-classic-mceliece = ["dep:classic-mceliece-rust"]
-test-utils = [] # DO NOT USE: This feature enables implementations backed
-                # by non-post-quantum KEMs and should only be used for
-                # testing purposes and benchmark baselines.
+classic-mceliece = ["dep:classic-mceliece-rust", "rand_old"]
+# DO NOT USE: This feature enables implementations backed
+# by non-post-quantum KEMs and should only be used for
+# testing purposes and benchmark baselines.
+test-utils = ["libcrux-ecdh"]
 
 [[bench]]
 name = "psq"
 harness = false
+required-features = ["classic-mceliece", "test-utils"]

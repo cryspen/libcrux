@@ -6,60 +6,53 @@ use crate::{
     },
 };
 
+#[cfg(hax)]
+use crate::simd::traits::{specs::*, COEFFICIENTS_IN_SIMD_UNIT};
+
 pub(crate) const MONTGOMERY_SHIFT: u8 = 32;
 
 #[inline(always)]
 #[hax_lib::fstar::options("--z3rlimit 150")]
-#[hax_lib::requires(fstar!(r#"forall i. i < 8 ==> 
-    Spec.Utils.is_intb (pow2 31 - 1) (v (Seq.index ${lhs}.f_values i) + v (Seq.index ${rhs}.f_values i))"#))]
-#[hax_lib::ensures(|result| fstar!(r#"forall i. i < 8 ==>
-    (v (Seq.index ${lhs}_future.f_values i) == 
-     v (Seq.index ${lhs}.f_values i) + v (Seq.index ${rhs}.f_values i))"#))]
+#[hax_lib::requires(add_pre(&lhs.values, &rhs.values))]
+#[hax_lib::ensures(|result| add_post(&lhs.values, &rhs.values, &(future(lhs).values)))]
 pub fn add(lhs: &mut Coefficients, rhs: &Coefficients) {
     #[cfg(hax)]
     let _lhs0 = lhs.clone();
     for i in 0..lhs.values.len() {
         hax_lib::loop_invariant!(|i: usize| {
-            fstar!(
-                r#"
-              (forall j. j < v i ==> (Seq.index ${lhs}.f_values j) == 
-                                     (Seq.index ${_lhs0}.f_values j) +! (Seq.index ${rhs}.f_values j)) /\
-              (forall j. j >= v i ==> (Seq.index ${lhs}.f_values j) == (Seq.index ${_lhs0}.f_values j))"#
-            )
+            hax_lib::forall(|j: usize| {
+                hax_lib::implies(j < i, lhs.values[j] == _lhs0.values[j] + rhs.values[j])
+            }) & hax_lib::forall(|j: usize| {
+                hax_lib::implies(
+                    j >= i && j < COEFFICIENTS_IN_SIMD_UNIT,
+                    lhs.values[j] == _lhs0.values[j],
+                )
+            })
         });
         lhs.values[i] += rhs.values[i];
     }
-    hax_lib::fstar!(
-        "assert (forall i. v (Seq.index ${lhs}.f_values i) ==
-    			          v (Seq.index ${_lhs0}.f_values i) + v (Seq.index ${rhs}.f_values i))"
-    )
 }
 
 #[inline(always)]
 #[hax_lib::fstar::options("--z3rlimit 150")]
-#[hax_lib::requires(fstar!(r#"forall i. i < 8 ==> 
-    Spec.Utils.is_intb (pow2 31 - 1) (v (Seq.index ${lhs}.f_values i) - v (Seq.index ${rhs}.f_values i))"#))]
-#[hax_lib::ensures(|result| fstar!(r#"forall i. i < 8 ==>
-    (v (Seq.index ${lhs}_future.f_values i) == 
-     v (Seq.index ${lhs}.f_values i) - v (Seq.index ${rhs}.f_values i))"#))]
+#[hax_lib::requires(sub_pre(&lhs.values, &rhs.values))]
+#[hax_lib::ensures(|result| sub_post(&lhs.values, &rhs.values, &(future(lhs).values)))]
 pub fn subtract(lhs: &mut Coefficients, rhs: &Coefficients) {
     #[cfg(hax)]
     let _lhs0 = lhs.clone();
     for i in 0..lhs.values.len() {
         hax_lib::loop_invariant!(|i: usize| {
-            fstar!(
-                r#"
-              (forall j. j < v i ==> (Seq.index ${lhs}.f_values j) == 
-                                     (Seq.index ${_lhs0}.f_values j) -! (Seq.index ${rhs}.f_values j)) /\
-              (forall j. j >= v i ==> (Seq.index ${lhs}.f_values j) == (Seq.index ${_lhs0}.f_values j))"#
-            )
+            hax_lib::forall(|j: usize| {
+                hax_lib::implies(j < i, lhs.values[j] == _lhs0.values[j] - rhs.values[j])
+            }) & hax_lib::forall(|j: usize| {
+                hax_lib::implies(
+                    j >= i && j < COEFFICIENTS_IN_SIMD_UNIT,
+                    lhs.values[j] == _lhs0.values[j],
+                )
+            })
         });
         lhs.values[i] -= rhs.values[i];
     }
-    hax_lib::fstar!(
-        "assert (forall i. v (Seq.index ${lhs}.f_values i) ==
-    			          v (Seq.index ${_lhs0}.f_values i) - v (Seq.index ${rhs}.f_values i))"
-    )
 }
 
 #[inline(always)]

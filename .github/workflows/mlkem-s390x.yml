@@ -5,7 +5,6 @@ on:
   pull_request:
     branches: ["main", "dev"]
   workflow_dispatch:
-  merge_group:
 
 env:
   CARGO_TERM_COLOR: always
@@ -20,7 +19,7 @@ jobs:
     name: Build on ubuntu-22.04 s390x
     steps:
       - uses: actions/checkout@v4
-      - uses: uraimo/run-on-arch-action@v2
+      - uses: uraimo/run-on-arch-action@v3
         name: Run
         id: runcmd
         with:

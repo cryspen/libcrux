@@ -1,5 +1,5 @@
 use libcrux_ml_dsa::ml_dsa_44::*;
-use rand::{rngs::OsRng, RngCore};
+use rand::{rngs::OsRng, TryRngCore};
 
 fn random_array<const L: usize>() -> [u8; L] {
     let mut rng = OsRng;

@@ -1,12 +1,12 @@
 name: ECDH - Build & Test
 
 on:
+  merge_group:
   push:
     branches: ["main", "dev"]
   pull_request:
     branches: ["main", "dev", "*"]
   workflow_dispatch:
-  merge_group:
 
 env:
   CARGO_TERM_COLOR: always
@@ -17,6 +17,7 @@ concurrency:
 
 jobs:
   build:
+    if: ${{ github.event_name != 'merge_group' }}
     strategy:
       fail-fast: false
       matrix:
@@ -119,3 +120,15 @@ jobs:
         run: |
           cargo clean
           LIBCRUX_DISABLE_SIMD128=1 LIBCRUX_DISABLE_SIMD256=1 cargo test --verbose --release $RUST_TARGET_FLAG
+  
+  ecdh-build-test-status:
+    if: ${{ always() }}
+    needs: [build]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Successful
+        if: ${{ !(contains(needs.*.result, 'failure')) }} 
+        run: exit 0 
+      - name: Failing
+        if: ${{ (contains(needs.*.result, 'failure')) }} 
+        run: exit 1 

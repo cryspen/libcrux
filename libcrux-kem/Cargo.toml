@@ -14,10 +14,11 @@ exclude = ["/tests"]
 path = "src/kem.rs"
 
 [dependencies]
-libcrux-ml-kem = { version = "=0.0.2-beta.2", path = "../libcrux-ml-kem" }
-libcrux-sha3 = { version = "=0.0.2-beta.2", path = "../libcrux-sha3" }
-libcrux-ecdh = { version = "=0.0.2-beta.2", path = "../libcrux-ecdh" }
-rand = { version = "0.8" }
+libcrux-ml-kem = { version = "=0.0.2-beta.3", path = "../libcrux-ml-kem" }
+libcrux-sha3 = { version = "=0.0.2-beta.3", path = "../libcrux-sha3" }
+libcrux-ecdh = { version = "=0.0.2-beta.3", path = "../libcrux-ecdh" }
+libcrux-traits = { version = "=0.0.2-beta.3", path = "../traits" }
+rand = { version = "0.9" }
 
 [features]
 tests = []                       # Expose functions for testing.

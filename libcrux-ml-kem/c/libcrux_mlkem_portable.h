@@ -7,8 +7,8 @@
  * Charon: a8f2211d1b95e0462a96382023b164a4116c7ca4
  * Eurydice: 60f543ddc60a777138070968daaf7620ec48170d
  * Karamel: 1d81d757d5d9e16dd6463ccc72324e587c707959
- * F*: b0961063393215ca65927f017720cb365a193833-dirty
- * Libcrux: 072dd6530cbd58bb23ba8e0fabab8141aa9de3b7
+ * F*: 7cd06c5562fc47ec14cd35c38034d5558a5ff762
+ * Libcrux: 370d71828112dbf0ad53a8995502ff1e5c8a719c
  */
 
 #ifndef __libcrux_mlkem_portable_H
@@ -135,6 +135,28 @@ libcrux_ml_kem::vector::portable::vector_type::PortableVector)#1}
 */
 libcrux_ml_kem_vector_portable_vector_type_PortableVector
 libcrux_ml_kem_vector_portable_ZERO_2c(void);
+
+libcrux_ml_kem_vector_portable_vector_type_PortableVector
+libcrux_ml_kem_vector_portable_vector_type_from_bytes(Eurydice_slice array);
+
+/**
+This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
+libcrux_ml_kem::vector::portable::vector_type::PortableVector)#1}
+*/
+libcrux_ml_kem_vector_portable_vector_type_PortableVector
+libcrux_ml_kem_vector_portable_from_bytes_2c(Eurydice_slice array);
+
+void libcrux_ml_kem_vector_portable_vector_type_to_bytes(
+    libcrux_ml_kem_vector_portable_vector_type_PortableVector x,
+    Eurydice_slice bytes);
+
+/**
+This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
+libcrux_ml_kem::vector::portable::vector_type::PortableVector)#1}
+*/
+void libcrux_ml_kem_vector_portable_to_bytes_2c(
+    libcrux_ml_kem_vector_portable_vector_type_PortableVector x,
+    Eurydice_slice bytes);
 
 libcrux_ml_kem_vector_portable_vector_type_PortableVector
 libcrux_ml_kem_vector_portable_arithmetic_add(
