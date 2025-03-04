@@ -44,6 +44,8 @@ GIT_ROOT_DIR   := $(shell git rev-parse --show-toplevel)/
 CACHE_DIR      ?= ${GIT_ROOT_DIR}.fstar-cache/checked
 HINT_DIR       ?= ${GIT_ROOT_DIR}.fstar-cache/hints
 
+ENABLE_HINTS = --use_hints --use_hint_hashes --record_hints
+
 # Makes command quiet by default
 Q ?= @
 
