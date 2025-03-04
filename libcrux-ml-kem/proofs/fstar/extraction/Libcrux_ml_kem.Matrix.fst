@@ -42,7 +42,14 @@ let sample_matrix_A
             v_A_transpose
           in
           let i:usize = i in
-          let seeds:t_Array (t_Array u8 (mk_usize 34)) v_K = Rust_primitives.Hax.repeat seed v_K in
+          let seeds:t_Array (t_Array u8 (mk_usize 34)) v_K =
+            Rust_primitives.Hax.repeat (Core.Clone.f_clone #(t_Array u8 (mk_usize 34))
+                  #FStar.Tactics.Typeclasses.solve
+                  seed
+                <:
+                t_Array u8 (mk_usize 34))
+              v_K
+          in
           let seeds:t_Array (t_Array u8 (mk_usize 34)) v_K =
             Rust_primitives.Hax.Folds.fold_range (mk_usize 0)
               v_K

@@ -99,7 +99,7 @@ pub(crate) fn kyber_generate_keypair<
             PUBLIC_KEY_SIZE,
             ETA1,
             ETA1_RANDOMNESS_SIZE,
-        >(randomness)
+        >(&randomness)
     } else if libcrux_platform::simd128_support() {
         kyber_generate_keypair_neon::<
             K,
@@ -108,7 +108,7 @@ pub(crate) fn kyber_generate_keypair<
             PUBLIC_KEY_SIZE,
             ETA1,
             ETA1_RANDOMNESS_SIZE,
-        >(randomness)
+        >(&randomness)
     } else {
         instantiations::portable::kyber_generate_keypair::<
             K,
@@ -117,7 +117,7 @@ pub(crate) fn kyber_generate_keypair<
             PUBLIC_KEY_SIZE,
             ETA1,
             ETA1_RANDOMNESS_SIZE,
-        >(randomness)
+        >(&randomness)
     }
 }
 
@@ -135,7 +135,7 @@ pub(crate) fn generate_keypair<
     const ETA1: usize,
     const ETA1_RANDOMNESS_SIZE: usize,
 >(
-    randomness: [u8; KEY_GENERATION_SEED_SIZE],
+    randomness: &[u8; KEY_GENERATION_SEED_SIZE],
 ) -> MlKemKeyPair<PRIVATE_KEY_SIZE, PUBLIC_KEY_SIZE> {
     // Runtime feature detection.
     if libcrux_platform::simd256_support() {
@@ -202,7 +202,7 @@ pub(crate) fn kyber_encapsulate<
             ETA1_RANDOMNESS_SIZE,
             ETA2,
             ETA2_RANDOMNESS_SIZE,
-        >(public_key, randomness)
+        >(public_key, &randomness)
     } else if libcrux_platform::simd128_support() {
         kyber_encapsulate_neon::<
             K,
@@ -218,7 +218,7 @@ pub(crate) fn kyber_encapsulate<
             ETA1_RANDOMNESS_SIZE,
             ETA2,
             ETA2_RANDOMNESS_SIZE,
-        >(public_key, randomness)
+        >(public_key, &randomness)
     } else {
         instantiations::portable::kyber_encapsulate::<
             K,
@@ -234,7 +234,7 @@ pub(crate) fn kyber_encapsulate<
             ETA1_RANDOMNESS_SIZE,
             ETA2,
             ETA2_RANDOMNESS_SIZE,
-        >(public_key, randomness)
+        >(public_key, &randomness)
     }
 }
 
@@ -267,7 +267,7 @@ pub(crate) fn encapsulate<
     const ETA2_RANDOMNESS_SIZE: usize,
 >(
     public_key: &MlKemPublicKey<PUBLIC_KEY_SIZE>,
-    randomness: [u8; SHARED_SECRET_SIZE],
+    randomness: &[u8; SHARED_SECRET_SIZE],
 ) -> (MlKemCiphertext<CIPHERTEXT_SIZE>, MlKemSharedSecret) {
     if libcrux_platform::simd256_support() {
         encapsulate_avx2::<

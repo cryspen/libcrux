@@ -21,7 +21,7 @@ macro_rules! instantiate {
                 const ETA1: usize,
                 const ETA1_RANDOMNESS_SIZE: usize,
             >(
-                randomness: [u8; KEY_GENERATION_SEED_SIZE],
+                randomness: &[u8; KEY_GENERATION_SEED_SIZE],
             ) -> MlKemKeyPair<PRIVATE_KEY_SIZE, PUBLIC_KEY_SIZE> {
                 crate::ind_cca::generate_keypair::<
                     K,
@@ -45,7 +45,7 @@ macro_rules! instantiate {
                 const ETA1: usize,
                 const ETA1_RANDOMNESS_SIZE: usize,
             >(
-                randomness: [u8; KEY_GENERATION_SEED_SIZE],
+                randomness: &[u8; KEY_GENERATION_SEED_SIZE],
             ) -> MlKemKeyPair<PRIVATE_KEY_SIZE, PUBLIC_KEY_SIZE> {
                 crate::ind_cca::generate_keypair::<
                     K,
@@ -127,7 +127,7 @@ macro_rules! instantiate {
                 const ETA2_RANDOMNESS_SIZE: usize,
             >(
                 public_key: &MlKemPublicKey<PUBLIC_KEY_SIZE>,
-                randomness: [u8; SHARED_SECRET_SIZE],
+                randomness: &[u8; SHARED_SECRET_SIZE],
             ) -> (MlKemCiphertext<CIPHERTEXT_SIZE>, MlKemSharedSecret) {
                 crate::ind_cca::encapsulate::<
                     K,
@@ -178,7 +178,7 @@ macro_rules! instantiate {
                 const ETA2_RANDOMNESS_SIZE: usize,
             >(
                 public_key: &MlKemPublicKey<PUBLIC_KEY_SIZE>,
-                randomness: [u8; SHARED_SECRET_SIZE],
+                randomness: &[u8; SHARED_SECRET_SIZE],
             ) -> (MlKemCiphertext<CIPHERTEXT_SIZE>, MlKemSharedSecret) {
                 crate::ind_cca::encapsulate::<
                     K,
@@ -431,7 +431,7 @@ macro_rules! instantiate {
                     const ETA2_RANDOMNESS_SIZE: usize,
                 >(
                     public_key: &MlKemPublicKeyUnpacked<K>,
-                    randomness: [u8; SHARED_SECRET_SIZE],
+                    randomness: &[u8; SHARED_SECRET_SIZE],
                 ) -> (MlKemCiphertext<CIPHERTEXT_SIZE>, MlKemSharedSecret) {
                     crate::ind_cca::unpacked::encapsulate::<
                         K,

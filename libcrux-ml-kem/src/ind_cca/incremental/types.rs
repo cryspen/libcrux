@@ -117,7 +117,9 @@ impl<const LEN: usize> PublicKey2<LEN> {
     pub(crate) fn deserialize<const K: usize, Vector: Operations>(
         &self,
     ) -> [PolynomialRingElement<Vector>; K] {
-        deserialize_vector(&self.t_as_ntt)
+        let mut out = from_fn(|_| PolynomialRingElement::<Vector>::ZERO());
+        deserialize_vector(&self.t_as_ntt, &mut out);
+        out
     }
 }
 
@@ -312,11 +314,14 @@ impl<const K: usize, const PK2_LEN: usize, Vector: Operations> From<KeyPair<K, P
     for MlKemKeyPairUnpacked<K, Vector>
 {
     fn from(value: KeyPair<K, PK2_LEN, Vector>) -> Self {
+        let mut t_as_ntt = from_fn(|_| PolynomialRingElement::<Vector>::ZERO());
+        deserialize_vector(&value.pk2.t_as_ntt, &mut t_as_ntt);
+
         MlKemKeyPairUnpacked {
             private_key: value.sk,
             public_key: MlKemPublicKeyUnpacked {
                 ind_cpa_public_key: IndCpaPublicKeyUnpacked {
-                    t_as_ntt: deserialize_vector(&value.pk2.t_as_ntt),
+                    t_as_ntt,
                     seed_for_A: value.pk1.seed,
                     A: value.matrix,
                 },

@@ -44,7 +44,7 @@ pub(crate) mod neon {
     use super::*;
 
     impl_incr_platform!(
-        crate::vector::SIMD128Vector,
+        vector::SIMD128Vector,
         crate::hash_functions::neon::Simd128Hash
     );
 }
@@ -199,7 +199,7 @@ pub(crate) fn encapsulate1<
 
     // Rebuild the matrix A from the seed
     let mut matrix = [[PolynomialRingElement::<Vector>::ZERO(); K]; K];
-    sample_matrix_A::<K, Vector, Hasher>(&mut matrix, into_padded_array(&pk1.seed), false);
+    sample_matrix_A::<K, Vector, Hasher>(&mut matrix, &into_padded_array(&pk1.seed), false);
 
     let mut ciphertext = [0u8; C1_SIZE];
     let (r_as_ntt, error2) = ind_cpa::encrypt_c1::<
@@ -356,7 +356,7 @@ pub(crate) fn encapsulate2<
         &t_as_ntt,
         &state.r_as_ntt,
         &state.error2,
-        state.randomness,
+        &state.randomness,
         &mut ciphertext,
     );
 

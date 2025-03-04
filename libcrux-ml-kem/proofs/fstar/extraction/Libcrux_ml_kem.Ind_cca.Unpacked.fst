@@ -254,13 +254,11 @@ let keys_from_private_key
           key_pair.f_private_key.f_ind_cpa_private_key with
           Libcrux_ml_kem.Ind_cpa.Unpacked.f_secret_as_ntt
           =
-          Core.Slice.impl__copy_from_slice #(Libcrux_ml_kem.Polynomial.t_PolynomialRingElement
-              v_Vector)
+          Libcrux_ml_kem.Ind_cpa.deserialize_vector v_K
+            #v_Vector
+            ind_cpa_secret_key
             key_pair.f_private_key.f_ind_cpa_private_key
               .Libcrux_ml_kem.Ind_cpa.Unpacked.f_secret_as_ntt
-            (Libcrux_ml_kem.Ind_cpa.deserialize_vector v_K #v_Vector ind_cpa_secret_key
-              <:
-              t_Slice (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector))
         }
         <:
         Libcrux_ml_kem.Ind_cpa.Unpacked.t_IndCpaPrivateKeyUnpacked v_K v_Vector

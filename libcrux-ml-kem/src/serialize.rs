@@ -76,7 +76,7 @@ pub(super) fn compress_then_serialize_message<Vector: Operations>(
         Spec.MLKEM.decode_then_decompress_message $serialized"#)
 )]
 pub(super) fn deserialize_then_decompress_message<Vector: Operations>(
-    serialized: [u8; SHARED_SECRET_SIZE],
+    serialized: &[u8; SHARED_SECRET_SIZE],
 ) -> PolynomialRingElement<Vector> {
     let mut re = PolynomialRingElement::<Vector>::ZERO();
     for i in 0..16 {
