@@ -60,12 +60,12 @@ mod conversions {
 /// 256-bit wide integer vector type.
 /// Models `core::arch::x86::__m256i` or `core::arch::x86_64::__m256i` (the __m256i type defined by Intel, representing a 256-bit SIMD register).
 #[allow(non_camel_case_types)]
-type __m256i = BitVec<256>;
+pub type __m256i = BitVec<256>;
 
 /// 128-bit wide integer vector type.
 /// Models `core::arch::x86::__m128i` or `core::arch::x86_64::__m128i` (the __m128i type defined by Intel, representing a 128-bit SIMD register).
 #[allow(non_camel_case_types)]
-type __m128i = BitVec<128>;
+pub type __m128i = BitVec<128>;
 
 #[hax_lib::exclude]
 pub fn _mm_storeu_si128(output: *mut __m128i, a: __m128i) {
@@ -370,14 +370,14 @@ pub mod extra {
         mm256_sllv_epi32_u32_array(
             vector,
             FunArray::from_fn(|i| match i {
-                0 => b7,
-                1 => b6,
-                2 => b5,
-                3 => b4,
-                4 => b3,
-                5 => b2,
-                6 => b1,
-                7 => b0,
+                7 => b7,
+                6 => b6,
+                5 => b5,
+                4 => b4,
+                3 => b3,
+                2 => b2,
+                1 => b1,
+                0 => b0,
                 _ => unreachable!(),
             }),
         )
@@ -408,14 +408,14 @@ pub mod extra {
         mm256_permutevar8x32_epi32_u32_array(
             vector,
             FunArray::from_fn(|i| match i {
-                0 => b7,
-                1 => b6,
-                2 => b5,
-                3 => b4,
-                4 => b3,
-                5 => b2,
-                6 => b1,
-                7 => b0,
+                7 => b7,
+                6 => b6,
+                5 => b5,
+                4 => b4,
+                3 => b3,
+                2 => b2,
+                1 => b1,
+                0 => b0,
                 _ => unreachable!(),
             }),
         )
@@ -454,22 +454,22 @@ pub mod extra {
         b0: u8,
     ) -> BitVec<128> {
         let indexes = FunArray::from_fn(|i| match i {
-            0 => b15,
-            1 => b14,
-            2 => b13,
-            3 => b12,
-            4 => b11,
-            5 => b10,
-            6 => b9,
-            7 => b8,
-            8 => b7,
-            9 => b6,
-            10 => b5,
-            11 => b4,
-            12 => b3,
-            13 => b2,
-            14 => b1,
-            15 => b0,
+            15 => b15,
+            14 => b14,
+            13 => b13,
+            12 => b12,
+            11 => b11,
+            10 => b10,
+            9 => b9,
+            8 => b8,
+            7 => b7,
+            6 => b6,
+            5 => b5,
+            4 => b4,
+            3 => b3,
+            2 => b2,
+            1 => b1,
+            0 => b0,
             _ => unreachable!(),
         });
         mm_shuffle_epi8_u8_array(vector, indexes)
