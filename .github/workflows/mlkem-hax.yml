@@ -115,7 +115,7 @@ jobs:
 
       - name: 🏃 Prove ML-KEM crate
         working-directory: libcrux-ml-kem
-        run: ./hax.py prove
+        run: FSTAR_HOME=~/.nix-profile ./hax.py prove
   
   mlkem-extract-hax-status:
     if: ${{ always() }}
