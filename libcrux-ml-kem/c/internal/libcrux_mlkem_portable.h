@@ -5,10 +5,10 @@
  *
  * This code was generated with the following revisions:
  * Charon: a8f2211d1b95e0462a96382023b164a4116c7ca4
- * Eurydice: 60f543ddc60a777138070968daaf7620ec48170d
+ * Eurydice: 788c5abefac3a9c7f79abae6a30fa8558e39764c
  * Karamel: 1d81d757d5d9e16dd6463ccc72324e587c707959
- * F*: 7cd06c5562fc47ec14cd35c38034d5558a5ff762
- * Libcrux: 370d71828112dbf0ad53a8995502ff1e5c8a719c
+ * F*: b0961063393215ca65927f017720cb365a193833-dirty
+ * Libcrux: bab611f6a9005751769f23d1d6cc3c7cf072c7e7
  */
 
 #ifndef __internal_libcrux_mlkem_portable_H
@@ -108,7 +108,7 @@ libcrux_ml_kem_variant_MlKem with const generics
 - ETA1_RANDOMNESS_SIZE= 128
 */
 libcrux_ml_kem_mlkem1024_MlKem1024KeyPair
-libcrux_ml_kem_ind_cca_generate_keypair_151(uint8_t randomness[64U]);
+libcrux_ml_kem_ind_cca_generate_keypair_151(uint8_t *randomness);
 
 /**
 A monomorphic instance of libcrux_ml_kem.ind_cca.encapsulate
@@ -130,8 +130,7 @@ libcrux_ml_kem_variant_MlKem with const generics
 - ETA2_RANDOMNESS_SIZE= 128
 */
 tuple_fa libcrux_ml_kem_ind_cca_encapsulate_ca1(
-    libcrux_ml_kem_types_MlKemPublicKey_64 *public_key,
-    uint8_t randomness[32U]);
+    libcrux_ml_kem_types_MlKemPublicKey_64 *public_key, uint8_t *randomness);
 
 /**
  This code verifies on some machines, runs out of memory on others
@@ -233,7 +232,7 @@ libcrux_ml_kem_variant_MlKem with const generics
 - ETA1_RANDOMNESS_SIZE= 192
 */
 libcrux_ml_kem_types_MlKemKeyPair_3e
-libcrux_ml_kem_ind_cca_generate_keypair_150(uint8_t randomness[64U]);
+libcrux_ml_kem_ind_cca_generate_keypair_150(uint8_t *randomness);
 
 /**
 A monomorphic instance of libcrux_ml_kem.ind_cca.encapsulate
@@ -255,8 +254,7 @@ libcrux_ml_kem_variant_MlKem with const generics
 - ETA2_RANDOMNESS_SIZE= 128
 */
 tuple_41 libcrux_ml_kem_ind_cca_encapsulate_ca0(
-    libcrux_ml_kem_types_MlKemPublicKey_52 *public_key,
-    uint8_t randomness[32U]);
+    libcrux_ml_kem_types_MlKemPublicKey_52 *public_key, uint8_t *randomness);
 
 /**
  This code verifies on some machines, runs out of memory on others
@@ -358,7 +356,7 @@ libcrux_ml_kem_variant_MlKem with const generics
 - ETA1_RANDOMNESS_SIZE= 128
 */
 libcrux_ml_kem_mlkem768_MlKem768KeyPair
-libcrux_ml_kem_ind_cca_generate_keypair_15(uint8_t randomness[64U]);
+libcrux_ml_kem_ind_cca_generate_keypair_15(uint8_t *randomness);
 
 /**
 A monomorphic instance of libcrux_ml_kem.ind_cca.encapsulate
@@ -380,8 +378,7 @@ libcrux_ml_kem_variant_MlKem with const generics
 - ETA2_RANDOMNESS_SIZE= 128
 */
 tuple_c2 libcrux_ml_kem_ind_cca_encapsulate_ca(
-    libcrux_ml_kem_types_MlKemPublicKey_30 *public_key,
-    uint8_t randomness[32U]);
+    libcrux_ml_kem_types_MlKemPublicKey_30 *public_key, uint8_t *randomness);
 
 /**
  This code verifies on some machines, runs out of memory on others

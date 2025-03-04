@@ -20,7 +20,7 @@ class t_Variant (v_Self: Type0) = {
       #v_Hasher: Type0 ->
       {| i1: Libcrux_ml_kem.Hash_functions.t_Hash v_Hasher v_K |} ->
       shared_secret: t_Slice u8 ->
-      ciphertext: Libcrux_ml_kem.Types.t_MlKemCiphertext v_CIPHERTEXT_SIZE
+      ciphertext: t_Array u8 v_CIPHERTEXT_SIZE
     -> pred: Type0{(Core.Slice.impl__len #u8 shared_secret <: usize) =. mk_usize 32 ==> pred};
   f_kdf_post:
       v_K: usize ->
@@ -28,7 +28,7 @@ class t_Variant (v_Self: Type0) = {
       #v_Hasher: Type0 ->
       {| i1: Libcrux_ml_kem.Hash_functions.t_Hash v_Hasher v_K |} ->
       shared_secret: t_Slice u8 ->
-      ciphertext: Libcrux_ml_kem.Types.t_MlKemCiphertext v_CIPHERTEXT_SIZE ->
+      ciphertext: t_Array u8 v_CIPHERTEXT_SIZE ->
       res: t_Array u8 (mk_usize 32)
     -> pred: Type0{pred ==> res == shared_secret};
   f_kdf:
@@ -37,7 +37,7 @@ class t_Variant (v_Self: Type0) = {
       #v_Hasher: Type0 ->
       {| i1: Libcrux_ml_kem.Hash_functions.t_Hash v_Hasher v_K |} ->
       x0: t_Slice u8 ->
-      x1: Libcrux_ml_kem.Types.t_MlKemCiphertext v_CIPHERTEXT_SIZE
+      x1: t_Array u8 v_CIPHERTEXT_SIZE
     -> Prims.Pure (t_Array u8 (mk_usize 32))
         (f_kdf_pre v_K v_CIPHERTEXT_SIZE #v_Hasher #i1 x0 x1)
         (fun result -> f_kdf_post v_K v_CIPHERTEXT_SIZE #v_Hasher #i1 x0 x1 result);
