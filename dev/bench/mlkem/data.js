@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1741088798229,
+  "lastUpdate": 1741089093745,
   "repoUrl": "https://github.com/cryspen/libcrux",
   "entries": {
     "ML-KEM Benchmark": [
@@ -1621,6 +1621,280 @@ window.BENCHMARK_DATA = {
             "name": "portable ML-KEM mlkem1024 PK Validation/portable",
             "value": 1841,
             "range": "± 23",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Franziskus Kiefer",
+            "username": "franziskuskiefer",
+            "email": "franziskuskiefer@gmail.com"
+          },
+          "committer": {
+            "name": "GitHub",
+            "username": "web-flow",
+            "email": "noreply@github.com"
+          },
+          "id": "5131bf8d49af50878b8618d3221ee8d3149328ee",
+          "message": "Merge pull request #815 from cryspen/minicore\n\nSIMD: add a model",
+          "timestamp": "2025-03-04T11:25:00Z",
+          "url": "https://github.com/cryspen/libcrux/commit/5131bf8d49af50878b8618d3221ee8d3149328ee"
+        },
+        "date": 1741089083110,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "ML-KEM mlkem512 Key Generation/portable (external random)",
+            "value": 50437,
+            "range": "± 397",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-KEM mlkem512 Key Generation/unpacked portable (external random)",
+            "value": 50127,
+            "range": "± 734",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-KEM mlkem768 Key Generation/portable (external random)",
+            "value": 77776,
+            "range": "± 946",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-KEM mlkem768 Key Generation/unpacked portable (external random)",
+            "value": 77559,
+            "range": "± 1051",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-KEM mlkem1024 Key Generation/portable (external random)",
+            "value": 122012,
+            "range": "± 1733",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-KEM mlkem1024 Key Generation/unpacked portable (external random)",
+            "value": 121549,
+            "range": "± 4071",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-KEM mlkem512 Encapsulation/portable (external random)",
+            "value": 54128,
+            "range": "± 671",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-KEM mlkem512 Encapsulation/unpacked portable (external random)",
+            "value": 26228,
+            "range": "± 193",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-KEM mlkem768 Encapsulation/portable (external random)",
+            "value": 86204,
+            "range": "± 1102",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-KEM mlkem768 Encapsulation/unpacked portable (external random)",
+            "value": 31123,
+            "range": "± 246",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-KEM mlkem1024 Encapsulation/portable (external random)",
+            "value": 131332,
+            "range": "± 3793",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-KEM mlkem1024 Encapsulation/unpacked portable (external random)",
+            "value": 43695,
+            "range": "± 458",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-KEM mlkem512 Decapsulation/portable",
+            "value": 61103,
+            "range": "± 539",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-KEM mlkem512 Decapsulation/unpacked portable",
+            "value": 42603,
+            "range": "± 401",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-KEM mlkem768 Decapsulation/portable",
+            "value": 93477,
+            "range": "± 10957",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-KEM mlkem768 Decapsulation/unpacked portable",
+            "value": 53673,
+            "range": "± 373",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-KEM mlkem1024 Decapsulation/portable",
+            "value": 141150,
+            "range": "± 1643",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-KEM mlkem1024 Decapsulation/unpacked portable",
+            "value": 73027,
+            "range": "± 545",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-KEM mlkem512 PK Validation/portable",
+            "value": 1411,
+            "range": "± 51",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-KEM mlkem768 PK Validation/portable",
+            "value": 2041,
+            "range": "± 75",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "ML-KEM mlkem1024 PK Validation/portable",
+            "value": 2656,
+            "range": "± 77",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "portable ML-KEM mlkem512 Key Generation/portable (external random)",
+            "value": 50496,
+            "range": "± 1137",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "portable ML-KEM mlkem512 Key Generation/unpacked portable (external random)",
+            "value": 49907,
+            "range": "± 1162",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "portable ML-KEM mlkem768 Key Generation/portable (external random)",
+            "value": 77484,
+            "range": "± 755",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "portable ML-KEM mlkem768 Key Generation/unpacked portable (external random)",
+            "value": 77725,
+            "range": "± 715",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "portable ML-KEM mlkem1024 Key Generation/portable (external random)",
+            "value": 121203,
+            "range": "± 1321",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "portable ML-KEM mlkem1024 Key Generation/unpacked portable (external random)",
+            "value": 121728,
+            "range": "± 1666",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "portable ML-KEM mlkem512 Encapsulation/portable (external random)",
+            "value": 53673,
+            "range": "± 450",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "portable ML-KEM mlkem512 Encapsulation/unpacked portable (external random)",
+            "value": 26468,
+            "range": "± 185",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "portable ML-KEM mlkem768 Encapsulation/portable (external random)",
+            "value": 86635,
+            "range": "± 833",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "portable ML-KEM mlkem768 Encapsulation/unpacked portable (external random)",
+            "value": 30728,
+            "range": "± 221",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "portable ML-KEM mlkem1024 Encapsulation/portable (external random)",
+            "value": 132057,
+            "range": "± 1498",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "portable ML-KEM mlkem1024 Encapsulation/unpacked portable (external random)",
+            "value": 43053,
+            "range": "± 381",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "portable ML-KEM mlkem512 Decapsulation/portable",
+            "value": 61267,
+            "range": "± 574",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "portable ML-KEM mlkem512 Decapsulation/unpacked portable",
+            "value": 42134,
+            "range": "± 806",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "portable ML-KEM mlkem768 Decapsulation/portable",
+            "value": 94541,
+            "range": "± 955",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "portable ML-KEM mlkem768 Decapsulation/unpacked portable",
+            "value": 54539,
+            "range": "± 1046",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "portable ML-KEM mlkem1024 Decapsulation/portable",
+            "value": 142486,
+            "range": "± 1863",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "portable ML-KEM mlkem1024 Decapsulation/unpacked portable",
+            "value": 73625,
+            "range": "± 571",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "portable ML-KEM mlkem512 PK Validation/portable",
+            "value": 1437,
+            "range": "± 50",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "portable ML-KEM mlkem768 PK Validation/portable",
+            "value": 2053,
+            "range": "± 64",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "portable ML-KEM mlkem1024 PK Validation/portable",
+            "value": 2665,
+            "range": "± 110",
             "unit": "ns/iter"
           }
         ]
