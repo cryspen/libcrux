@@ -74,8 +74,8 @@ impl<T: KEM<Ciphertext: Encode>> Encode for InitiatorMsg<T> {
 #[cfg(feature = "classic-mceliece")]
 impl Decode for InitiatorMsg<ClassicMcEliece> {
     fn decode(bytes: &[u8]) -> Result<(Self, usize), Error> {
-        let mut ct = [0u8; 188];
-        let (ct_bytes, rest) = bytes.split_at(188);
+        let mut ct = [0u8; 156];
+        let (ct_bytes, rest) = bytes.split_at(156);
         let (mac_bytes, aead_bytes) = rest.split_at(32);
         ct.copy_from_slice(ct_bytes);
         let ct = classic_mceliece_rust::Ciphertext::from(ct);
