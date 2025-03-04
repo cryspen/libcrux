@@ -1,6 +1,47 @@
 use crate::{AeadError, KEY_LEN, NONCE_LEN, TAG_LEN};
 
-/// The ChaCha20-Poly1305 AEAD encryption function. Writes the concatenation of the ciphertexoft
+const DETACHED: bool = true;
+const NOT_DETACHED: bool = false;
+
+/// The ChaCha20-Poly1305 AEAD encryption function with detached tag.
+pub fn encrypt_detached<'a>(
+    key: &[u8; KEY_LEN],
+    ptxt: &[u8],
+    ctxt: &'a mut [u8],
+    tag: &'a mut [u8; TAG_LEN],
+    aad: &[u8],
+    nonce: &[u8; NONCE_LEN],
+) -> Result<(&'a [u8], &'a [u8; TAG_LEN]), AeadError> {
+    let (ptxt_len, aad_len) = encrypt_checks(ptxt, ctxt, aad, DETACHED)?;
+
+    crate::hacl::aead_chacha20poly1305::encrypt(
+        ctxt, tag, ptxt, ptxt_len, aad, aad_len, key, nonce,
+    );
+
+    Ok((ctxt, tag))
+}
+
+#[inline(always)]
+fn encrypt_checks(
+    ptxt: &[u8],
+    ctxt: &mut [u8],
+    aad: &[u8],
+    detached: bool,
+) -> Result<(u32, u32), AeadError> {
+    let ptxt_len: u32 = ptxt
+        .len()
+        .try_into()
+        .map_err(|_| AeadError::PlaintextTooLarge)?;
+    let aad_len: u32 = aad.len().try_into().map_err(|_| AeadError::AadTooLarge)?;
+
+    if !detached && (ctxt.len() as u64) < (ptxt.len() as u64) + (TAG_LEN as u64) {
+        return Err(AeadError::CiphertextTooShort);
+    }
+
+    Ok((ptxt_len, aad_len))
+}
+
+/// The ChaCha20-Poly1305 AEAD encryption function. Writes the concatenation of the ciphertext
 /// produced by ChaCha20 and the MAC tag into `ctxt` and returns the two pieces separately.
 ///
 /// This implementation is backed by hacl-rs and can only handle inputs up to a length of `u32::MAX`.
@@ -12,20 +53,10 @@ pub fn encrypt<'a>(
     aad: &[u8],
     nonce: &[u8; NONCE_LEN],
 ) -> Result<(&'a [u8], &'a [u8; TAG_LEN]), AeadError> {
-    let ptxt_len: u32 = ptxt
-        .len()
-        .try_into()
-        .map_err(|_| AeadError::PlaintextTooLarge)?;
-
-    let aad_len: u32 = aad.len().try_into().map_err(|_| AeadError::AadTooLarge)?;
-
-    // we already knwo that ptxt.len() < u32::MAX, so we can safely add if we use u64.
-    if (ctxt.len() as u64) < (ptxt.len() as u64) + (TAG_LEN as u64) {
-        return Err(AeadError::CiphertextTooShort);
-    }
+    let (ptxt_len, aad_len) = encrypt_checks(ptxt, ctxt, aad, NOT_DETACHED)?;
 
     // ensure destination slice has just the right length
-    let (ctxt_cpa, tag) = ctxt.split_at_mut(ptxt.len());
+    let (ctxt_cpa, tag) = ctxt.split_at_mut(ptxt_len as usize);
     let tag: &mut [u8; TAG_LEN] = tag.try_into().unwrap();
 
     crate::hacl::aead_chacha20poly1305::encrypt(
