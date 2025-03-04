@@ -626,9 +626,6 @@ pub(crate) mod unpacked {
             implicit_rejection_value,
         ) = unpack_private_key::<CPA_SECRET_KEY_SIZE, PUBLIC_KEY_SIZE>(&private_key.value);
 
-        // XXX: We need to copy_from_slice here because karamel can't handle
-        //      the assignment cf. https://github.com/FStarLang/karamel/pull/491
-
         ind_cpa::deserialize_vector::<K, Vector>(
             ind_cpa_secret_key,
             &mut key_pair.private_key.ind_cpa_private_key.secret_as_ntt,
