@@ -16,19 +16,21 @@ bench = false # so libtest doesn't eat the arguments to criterion
 [dependencies]
 libcrux-traits = { version = "0.0.2-beta.3", path = "../traits" }
 libcrux-kem = { version = "0.0.2-beta.3", path = "../libcrux-kem" }
+libcrux-chacha20poly1305 = { version = "0.0.2-beta.3", path = "../chacha20poly1305" }
 libcrux-hkdf = { version = "=0.0.2-beta.3", path = "../libcrux-hkdf" }
 libcrux-hmac = { version = "=0.0.2-beta.3", path = "../libcrux-hmac" }
-classic-mceliece-rust = { version = "2.0.0", features = [
-    "mceliece460896f",
-    "zeroize",
-], optional = true }
-rand = { version = "0.9" }
-rand_old = { version = "0.8", package = "rand", optional = true }
 libcrux-ecdh = { version = "0.0.2-beta.3", path = "../libcrux-ecdh", optional = true }
 libcrux-ed25519 = { version = "0.0.2-beta.3", path = "../ed25519", features = [
     "rand",
 ] }
-libcrux = { version = "0.0.2-beta.3", path = ".." }
+
+classic-mceliece-rust = { version = "2.0.0", features = [
+    "mceliece460896f",
+    "zeroize",
+], optional = true }
+
+rand = { version = "0.9" }
+rand_old = { version = "0.8", package = "rand", optional = true }
 
 [dev-dependencies]
 libcrux-psq = { path = ".", features = ["test-utils"] }
