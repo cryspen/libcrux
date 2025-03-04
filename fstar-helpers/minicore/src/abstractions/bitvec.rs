@@ -53,6 +53,42 @@ impl<const N: usize> core::ops::Index<usize> for BitVec<N> {
     }
 }
 
+// // #[cfg(hax)]
+// use hax_lib::int::Abstraction;
+
+// /// Convert a fun array of bits into an unsigned number.
+// // #[cfg(hax)]
+// fn math_int_from_fnarr_bit<const N: usize>(bits: FunArray<N, Bit>) -> hax_lib::Int {
+//     bits.fold(hax_lib::int!(0), |acc, n| {
+//         (acc * hax_lib::int!(2)) + u8::from(n).lift()
+//     })
+// }
+
+// #[hax_lib::requires(N.lift() == T::bits().lift())]
+// /// Convert a bit slice into a machine integer of type `T`.
+// fn int_from_fnarr_bit<const N: usize, T: MachineInteger + Copy>(
+//     bits: FunArray<N, Bit>,
+// ) -> hax_lib::Int {
+//     debug_assert!(N == T::bits() as usize);
+//     if T::SIGNED {
+//         let is_negative = matches!(bits[T::bits() as usize - 1], Bit::One);
+//         let s = math_int_from_fnarr_bit(FunArray::<N, _>::from_fn(|i| {
+//             if i == N - 1 {
+//                 Bit::Zero
+//             } else {
+//                 bits[i]
+//             }
+//         }));
+//         if is_negative {
+//             hax_lib::int!(0) - s
+//         } else {
+//             s
+//         }
+//     } else {
+//         math_int_from_fnarr_bit(bits)
+//     }
+// }
+
 /// Convert a bit slice into an unsigned number.
 #[hax_lib::exclude]
 fn u64_int_from_bit_slice(bits: &[Bit]) -> u64 {
@@ -65,10 +101,10 @@ fn u64_int_from_bit_slice(bits: &[Bit]) -> u64 {
 /// Convert a bit slice into a machine integer of type `T`.
 #[hax_lib::exclude]
 fn int_from_bit_slice<T: TryFrom<i128> + MachineInteger + Copy>(bits: &[Bit]) -> T {
-    debug_assert!(bits.len() <= T::BITS as usize);
+    debug_assert!(bits.len() <= T::bits() as usize);
     let result = if T::SIGNED {
-        let is_negative = matches!(bits[T::BITS as usize - 1], Bit::One);
-        let s = u64_int_from_bit_slice(&bits[0..T::BITS as usize - 1]) as i128;
+        let is_negative = matches!(bits[T::bits() as usize - 1], Bit::One);
+        let s = u64_int_from_bit_slice(&bits[0..T::bits() as usize - 1]) as i128;
         if is_negative {
             -s
         } else {
@@ -83,30 +119,6 @@ fn int_from_bit_slice<T: TryFrom<i128> + MachineInteger + Copy>(bits: &[Bit]) ->
     };
     n
 }
-
-// /// Convert a bit slice into a machine integer of type `T`.
-// fn int_from_bit_funarray<const N: usize, T: TryFrom<i128> + MachineInteger + Copy>(
-//     bits: FunArray<N, Bit>,
-// ) -> T {
-//     debug_assert!(N <= T::BITS as usize);
-//     let result = if T::SIGNED {
-//         let is_negative = matches!(bits[T::BITS as usize - 1], Bit::One);
-//         // let s = u64_int_from_bit_slice(&bits[0..T::BITS as usize - 1]) as i128;
-//         // let s = u64_int_from_bit_slice(&bits[0..T::BITS as usize - 1]) as i128;
-//         if is_negative {
-//             -s
-//         } else {
-//             s
-//         }
-//     } else {
-//         u64_int_from_bit_slice(bits) as i128
-//     };
-//     let Ok(n) = result.try_into() else {
-//         // Conversion must succeed as `result` is guaranteed to be in range due to the bit-length check.
-//         unreachable!()
-//     };
-//     n
-// }
 
 #[hax_lib::fstar::replace(
     r"
@@ -141,7 +153,7 @@ impl<const N: usize> BitVec<N> {
 
     /// Construct a BitVec out of a machine integer.
     pub fn from_int<T: Into<i128> + MachineInteger + Copy>(n: T) -> Self {
-        Self::from_slice(&[n.into()], T::BITS as usize)
+        Self::from_slice(&[n.into()], T::bits() as usize)
     }
 
     /// Convert a BitVec into a machine integer of type `T`.
@@ -153,7 +165,7 @@ impl<const N: usize> BitVec<N> {
     pub fn to_vec<T: TryFrom<i128> + MachineInteger + Copy>(&self) -> Vec<T> {
         self.0
             .as_ref()
-            .chunks(T::BITS as usize)
+            .chunks(T::bits() as usize)
             .map(int_from_bit_slice)
             .collect()
     }

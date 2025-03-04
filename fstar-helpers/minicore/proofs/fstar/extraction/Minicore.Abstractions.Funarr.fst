@@ -17,6 +17,16 @@ let impl_6__from_fn
 
 let impl_6__as_slice n #t (self: t_FunArray n t) = FStar.Seq.init (v n) (fun i -> self (mk_usize i))
 
+let rec impl_6__fold n #t #a (arr: t_FunArray n t) (init: a) (f: a -> t -> a): Tot a (decreases (v n)) = 
+    match n with
+    | MkInt 0 -> init
+    | MkInt n -> 
+        let acc: a = f init (arr (mk_usize 0)) in 
+        let n = MkInt (n - 1) in
+        impl_6__fold  n #t #a
+                      (impl_6__from_fn n (fun i -> arr (i +. mk_usize 1)))
+                      acc f
+
 [@@ FStar.Tactics.Typeclasses.tcinstance]
 assume
 val impl_2': v_N: usize -> #v_T: Type0 -> {| i1: Core.Clone.t_Clone v_T |}

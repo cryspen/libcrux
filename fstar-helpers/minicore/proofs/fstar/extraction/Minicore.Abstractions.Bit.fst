@@ -187,9 +187,24 @@ let impl_1: Core.Convert.t_From t_Bit bool =
 
 /// A trait for types that represent machine integers.
 class t_MachineInteger (v_Self: Type0) = {
-  f_BITS:u32;
+  f_bits_pre:x: Prims.unit
+    -> pred:
+      Type0
+        { (let _:Prims.unit = x in
+            true) ==>
+          pred };
+  f_bits_post:x: Prims.unit -> bits: u32
+    -> pred:
+      Type0
+        { pred ==>
+          (let _:Prims.unit = x in
+            bits >=. mk_u32 8) };
+  f_bits:x0: Prims.unit -> Prims.Pure u32 (f_bits_pre x0) (fun result -> f_bits_post x0 result);
   f_SIGNED:bool
 }
 
 instance impl_MachineInteger_poly (t: inttype): t_MachineInteger (int_t t) =
-  { f_BITS = mk_u32 (bits t); f_SIGNED = signed t }
+  { f_bits = (fun () -> mk_u32 (bits t));
+    f_bits_pre = (fun () -> True);
+    f_bits_post = (fun () r -> r == mk_u32 (bits t));
+    f_SIGNED = signed t }

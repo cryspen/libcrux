@@ -13,6 +13,16 @@ let ${FunArray::<0, ()>::from_fn::<fn(usize)->()>}
     : t_FunArray v_N v_T = on (i: usize {v i < v v_N}) f
 
 let ${FunArray::<0, ()>::as_slice} n #t (self: t_FunArray n t) = FStar.Seq.init (v n) (fun i -> self (mk_usize i))
+
+let rec ${FunArray::<0, ()>::fold::<()>} n #t #a (arr: t_FunArray n t) (init: a) (f: a -> t -> a): Tot a (decreases (v n)) = 
+    match n with
+    | MkInt 0 -> init
+    | MkInt n -> 
+        let acc: a = f init (arr (mk_usize 0)) in 
+        let n = MkInt (n - 1) in
+        ${FunArray::<0, ()>::fold::<()>}  n #t #a
+                      (impl_6__from_fn n (fun i -> arr (i +. mk_usize 1)))
+                      acc f
 "
 )]
 #[derive(Copy, Clone, Eq, PartialEq)]
@@ -29,6 +39,16 @@ impl<const N: usize, T> FunArray<N, T> {
     }
     pub fn as_slice(&self) -> &[T] {
         &self.0
+    }
+
+    pub fn fold<A>(&self, mut init: A, f: fn(A, T) -> A) -> A
+    where
+        T: Clone,
+    {
+        for i in 0..N {
+            init = f(init, self[i].clone());
+        }
+        init
     }
 }
 

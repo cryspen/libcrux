@@ -307,7 +307,7 @@ fn proveme(simd_unit: &__m256i) -> __m128i {
     let adjacent_2_combined = _mm256_srli_epi64::<28>(adjacent_2_combined);
 
     let adjacent_4_combined =
-        mm256_permutevar8x32_epi32_u32(adjacent_2_combined, 0, 0, 0, 0, 6, 2, 4, 0);
+        extra::mm256_permutevar8x32_epi32_u32(adjacent_2_combined, 0, 0, 0, 0, 6, 2, 4, 0);
     let adjacent_4_combined = _mm256_castsi256_si128(adjacent_4_combined);
     let adjacent_4_combined = extra::mm_shuffle_epi8_u8(
         adjacent_4_combined,
