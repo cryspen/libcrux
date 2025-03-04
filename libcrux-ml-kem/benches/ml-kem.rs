@@ -25,11 +25,11 @@ macro_rules! init {
             fun_unpacked!("neon", version::neon::unpacked, group);
         }
 
-        #[cfg(feature = "simd256")]
-        {
-            fun!("avx2", version::avx2, group);
-            fun_unpacked!("avx2", version::avx2::unpacked, group);
-        }
+        // #[cfg(feature = "simd256")]
+        // {
+        //     fun!("avx2", version::avx2, group);
+        //     fun_unpacked!("avx2", version::avx2::unpacked, group);
+        // }
     }};
 }
 

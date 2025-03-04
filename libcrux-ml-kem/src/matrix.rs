@@ -70,7 +70,7 @@ pub(crate) fn compute_message<const K: usize, Vector: Operations>(
         result.add_to_ring_element::<K>(scratch);
     }
 
-    invert_ntt_montgomery::<K, Vector>(result);
+    invert_ntt_montgomery::<K, Vector>(result, &mut scratch.coefficients[0]);
     v.subtract_reduce(result);
 }
 
@@ -101,7 +101,7 @@ pub(crate) fn compute_ring_element_v<const K: usize, Vector: Operations>(
         result.add_to_ring_element::<K>(&scratch);
     }
 
-    invert_ntt_montgomery::<K, Vector>(result);
+    invert_ntt_montgomery::<K, Vector>(result, &mut scratch.coefficients[0]);
     error_2.add_message_error_reduce(message, result, &mut scratch.coefficients[0]);
 }
 
@@ -137,7 +137,7 @@ pub(crate) fn compute_vector_u<const K: usize, Vector: Operations>(
                 }
             }
 
-            invert_ntt_montgomery::<K, Vector>(&mut result[i]);
+            invert_ntt_montgomery::<K, Vector>(&mut result[i], &mut scratch.coefficients[0]);
             result[i].add_error_reduce(&error_1[i]);
         }
     }

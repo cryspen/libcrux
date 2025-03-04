@@ -28,9 +28,9 @@ pub(crate) mod rej_sample_table;
 mod neon;
 #[cfg(feature = "simd128")]
 pub(crate) use neon::SIMD128Vector;
-#[cfg(feature = "simd256")]
-mod avx2;
-#[cfg(feature = "simd256")]
-pub(crate) use avx2::SIMD256Vector;
+// #[cfg(feature = "simd256")]
+// mod avx2;
+// #[cfg(feature = "simd256")]
+// pub(crate) use avx2::SIMD256Vector;
 
 pub mod portable;
