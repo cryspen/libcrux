@@ -396,6 +396,7 @@ let montgomery_reduce_element (value: i32) =
     (cast (Libcrux_ml_kem.Vector.Traits.v_FIELD_MODULUS <: i16) <: i32)
   in
   let _:Prims.unit =
+    assert_norm (pow2 15 * 3329 < pow2 31);
     Spec.Utils.lemma_mul_i16b (pow2 15)
       (3329)
       (cast (k <: i32) <: i16)
