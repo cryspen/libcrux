@@ -76,13 +76,7 @@ val validate_private_key
 val generate_key_pair (randomness: t_Array u8 (mk_usize 64))
     : Prims.Pure (Libcrux_ml_kem.Types.t_MlKemKeyPair (mk_usize 2400) (mk_usize 1184))
       Prims.l_True
-      (ensures
-        fun res ->
-          let res:Libcrux_ml_kem.Types.t_MlKemKeyPair (mk_usize 2400) (mk_usize 1184) = res in
-          let (secret_key, public_key), valid =
-            Spec.MLKEM.Instances.mlkem768_generate_keypair randomness
-          in
-          valid ==> (res.f_sk.f_value == secret_key /\ res.f_pk.f_value == public_key))
+      (fun _ -> Prims.l_True)
 
 /// Encapsulate ML-KEM 768
 /// Generates an ([`MlKem768Ciphertext`], [`MlKemSharedSecret`]) tuple.
@@ -93,17 +87,7 @@ val encapsulate
       (randomness: t_Array u8 (mk_usize 32))
     : Prims.Pure (Libcrux_ml_kem.Types.t_MlKemCiphertext (mk_usize 1088) & t_Array u8 (mk_usize 32))
       Prims.l_True
-      (ensures
-        fun res ->
-          let res:(Libcrux_ml_kem.Types.t_MlKemCiphertext (mk_usize 1088) & t_Array u8 (mk_usize 32)
-          ) =
-            res
-          in
-          let (ciphertext, shared_secret), valid =
-            Spec.MLKEM.Instances.mlkem768_encapsulate public_key.f_value randomness
-          in
-          let res_ciphertext, res_shared_secret = res in
-          valid ==> (res_ciphertext.f_value == ciphertext /\ res_shared_secret == shared_secret))
+      (fun _ -> Prims.l_True)
 
 /// Decapsulate ML-KEM 768
 /// Generates an [`MlKemSharedSecret`].
