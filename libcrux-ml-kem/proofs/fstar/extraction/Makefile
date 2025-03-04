@@ -1,3 +1,4 @@
+ENABLE_HINTS = --use_hints --use_hint_hashes --record_hints
 SLOW_MODULES += Libcrux_ml_kem.Vector.Portable.Serialize.fst \
                 Libcrux_ml_kem.Vector.Rej_sample_table.fsti
 
