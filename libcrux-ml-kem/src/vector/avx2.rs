@@ -36,10 +36,8 @@ fn vec_to_i16_array(v: SIMD256Vector) -> [i16; 16] {
 #[inline(always)]
 #[hax_lib::fstar::verification_status(panic_free)]
 #[hax_lib::ensures(|result| fstar!(r#"repr ${result} == ${array}"#))]
-fn vec_from_i16_array(array: &[i16]) -> SIMD256Vector {
-    SIMD256Vector {
-        elements: mm256_loadu_si256_i16(array),
-    }
+fn vec_from_i16_array(array: &[i16], out: &mut SIMD256Vector) {
+    out.elements = mm256_loadu_si256_i16(array);
 }
 
 #[inline(always)]
@@ -271,8 +269,8 @@ impl Operations for SIMD256Vector {
     #[requires(array.len() == 16)]
     #[ensures(|out| fstar!(r#"impl.f_repr out == $array"#))]
     #[inline(always)]
-    fn from_i16_array(array: &[i16]) -> Self {
-        vec_from_i16_array(array)
+    fn from_i16_array(array: &[i16], out: &mut Self) {
+        vec_from_i16_array(array, out)
     }
 
     #[ensures(|out| fstar!(r#"out == impl.f_repr $x"#))]

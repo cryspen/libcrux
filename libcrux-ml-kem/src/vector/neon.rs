@@ -32,8 +32,8 @@ impl Operations for SIMD128Vector {
 
     #[requires(array.len() == 16)]
     #[ensures(|out| fstar!(r#"impl.f_repr out == $array"#))]
-    fn from_i16_array(array: &[i16]) -> Self {
-        from_i16_array(array)
+    fn from_i16_array(array: &[i16], out: &mut Self) {
+        from_i16_array(array, out)
     }
 
     #[ensures(|out| fstar!(r#"out == impl.f_repr $x"#))]
