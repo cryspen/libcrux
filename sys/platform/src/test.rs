@@ -54,7 +54,7 @@ fn dump_raw() {
 #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
 #[test]
 fn cpuid() {
-    use super::x86::supported;
+    use super::x86::{supported, Feature};
     use std::time::Instant;
 
     let now = Instant::now();
