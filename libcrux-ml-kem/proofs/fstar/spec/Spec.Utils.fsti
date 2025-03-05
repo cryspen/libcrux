@@ -246,3 +246,6 @@ let inv_ntt_spec #len (vec_in: t_Array i16 len) (zeta: int) (i: nat{i < v len}) 
   ((v (Seq.index vec_out j) % 3329) ==
    (((v (Seq.index vec_in j) - v (Seq.index vec_in i)) * zeta * 169) % 3329))
 
+(* Wrap-around modulo: wraps into ]-p/2; p/2] *)
+let mod_q (v:int) (p:int{p>0/\ p%2=0}) : Tot int =
+  let m = v % p in if m > p/2 then m - p else m
