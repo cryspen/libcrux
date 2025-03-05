@@ -180,7 +180,7 @@ implementation such as the code in the IND-CCA and IND-CPA modules.
 Here is a diff that adds a simple mutable wrapper around the current
 ML-KEM encapsulate function:
 
-```
+```diff
 diff --git a/libcrux-ml-kem/src/mlkem768.rs b/libcrux-ml-kem/src/mlkem768.rs
 index d3bd4b1c..e9a6663d 100644
 --- a/libcrux-ml-kem/src/mlkem768.rs
