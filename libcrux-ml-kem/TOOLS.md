@@ -83,6 +83,7 @@ git clone https://github.com/AeneasVerif/charon
 cd charon
 make -j
 
+cd ..
 # install karamel
 git clone https://github.com/FStarLang/karamel.git
 cd karamel
