@@ -1,6 +1,6 @@
 //! This module provides a specification-friendly bit vector type.
 use super::bit::{Bit, MachineInteger};
-use super::funarr::FunArray;
+use super::funarr::*;
 
 // TODO: this module uses `u128/i128` as mathematic integers. We should use `hax_lib::int` or bigint.
 
@@ -121,27 +121,58 @@ fn int_from_bit_slice<T: TryFrom<i128> + MachineInteger + Copy>(bits: &[Bit]) ->
 }
 
 #[hax_lib::fstar::replace(
-    r"
+    r#"
 let ${BitVec::<0>::from_fn::<fn(u64)->Bit>}
     (v_N: u64)
     (f: (i: u64 {v i < v v_N}) -> $:{Bit})
     : t_BitVec v_N = 
     ${BitVec::<0>}(${FunArray::<0,()>::from_fn::<fn(u64)->()>} v_N f)
-"
+
+open FStar.FunctionalExtensionality
+let ${BitVec::<0>::pointwise}
+    (v_N: u64) (f: t_BitVec v_N)
+    (#[${_pointwise_apply_mk_term} (v v_N) (fun (i:nat{i < v v_N}) -> f._0 (mk_u64 i))] def: (n: nat {n < v v_N}) -> Minicore.Abstractions.Bit.t_Bit)
+    : t_BitVec v_N
+    = ${BitVec::<0>::from_fn::<fn(u64)->Bit>} v_N (on (i: u64 {v i < v v_N}) (fun i -> def (v i)))
+
+let extensionality' (#a: Type) (#b: Type) (f g: FStar.FunctionalExtensionality.(a ^-> b))
+  : Lemma (ensures (FStar.FunctionalExtensionality.feq f g <==> f == g))
+  = ()
+
+#push-options "--z3rlimit 80"
+let ${BitVec::<128>::rewrite_pointwise} (x: Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 128))
+: Lemma (x == ${BitVec::<128>::pointwise} (mk_u64 128) x) =
+    let a = x._0 in
+    let b = (${BitVec::<128>::pointwise} (mk_u64 128) x)._0 in
+    assert_norm (FStar.FunctionalExtensionality.feq a b);
+    extensionality' a b
+
+let ${BitVec::<256>::rewrite_pointwise} (x: Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 256))
+: Lemma (x == ${BitVec::<256>::pointwise} (mk_u64 256) x) =
+    let a = x._0 in
+    let b = (${BitVec::<256>::pointwise} (mk_u64 256) x)._0 in
+    assert_norm (FStar.FunctionalExtensionality.feq a b);
+    extensionality' a b
+#pop-options
+"#
 )]
 const _: () = ();
 
-// impl<const N: usize> BitVec<N> {
-//     #[hax_lib::fstar::replace_body("HEEEYYY")]
-//     pub fn to_funarray<const M: usize, T: TryFrom<i128> + MachineInteger + Copy>(
-//         &self,
-//     ) -> FunArray<M, T> {
-//         todo!()
-//     }
-// }
+#[hax_lib::exclude]
+impl BitVec<128> {
+    pub fn rewrite_pointwise(self) {}
+}
+#[hax_lib::exclude]
+impl BitVec<256> {
+    pub fn rewrite_pointwise(self) {}
+}
 
 #[hax_lib::exclude]
 impl<const N: u64> BitVec<N> {
+    pub fn pointwise(self) -> Self {
+        self
+    }
+
     /// Constructor for BitVec. `BitVec::<N>::from_fn` constructs a bitvector out of a function that takes usizes smaller than `N` and produces bits.
     pub fn from_fn<F: Fn(u64) -> Bit>(f: F) -> Self {
         Self(FunArray::from_fn(f))

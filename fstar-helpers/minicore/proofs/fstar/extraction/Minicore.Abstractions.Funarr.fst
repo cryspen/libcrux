@@ -3,8 +3,30 @@ module Minicore.Abstractions.Funarr
 open Core
 open FStar.Mul
 
-open FStar.FunctionalExtensionality
+open FStar.Tactics
+
+let e_pointwise_apply_mk_term #t
+  (max: nat)
+  (f: (n:nat {n < max}) -> t)
+  : Tac unit
+  = let rec brs (n:nat): Tac _ = 
+      let c = C_Int n in
+      let p = Pat_Constant c in
+      (p, mk_e_app (quote f) [pack (Tv_Const c)])
+      ::( match n with | 0 -> [] | _ -> brs (n - 1))
+    in
+    let bd = fresh_binder_named "i" (quote (m: nat {m < max})) in
+    let t = mk_abs [bd] (Tv_Match bd None (brs max)) in
+    exact t
+
+open FStar.FunctionalExtensionality    
 type t_FunArray (n: u64) (t: Type0) = i:u64 {v i < v n} ^-> t
+
+let pointwise_apply 
+    (v_N: u64) (#v_T: Type0) (f: t_FunArray v_N v_T)
+    (#[e_pointwise_apply_mk_term (v v_N) (fun (i:nat{i < v v_N}) -> f (mk_u64 i))] def: (n: nat {n < v v_N}) -> v_T)
+    : t_FunArray v_N v_T
+    = on (i: u64 {v i < v v_N}) (fun i -> def (v i))
 
 let impl_5__get (v_N: u64) (#v_T: Type0) (self: t_FunArray v_N v_T) (i: u64 {v i < v v_N}) : v_T = 
     self i

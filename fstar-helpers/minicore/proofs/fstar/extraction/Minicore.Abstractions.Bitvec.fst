@@ -60,8 +60,35 @@ let impl_6 (v_N: u64) : Core.Ops.Index.t_Index (t_BitVec v_N) u64 =
       Minicore.Abstractions.Funarr.impl_5__get v_N #Minicore.Abstractions.Bit.t_Bit self._0 index
   }
 
-let impl_7__from_fn
+let impl_9__from_fn
     (v_N: u64)
     (f: (i: u64 {v i < v v_N}) -> Minicore.Abstractions.Bit.t_Bit)
     : t_BitVec v_N = 
     BitVec(Minicore.Abstractions.Funarr.impl_5__from_fn v_N f)
+
+open FStar.FunctionalExtensionality
+let impl_9__pointwise
+    (v_N: u64) (f: t_BitVec v_N)
+    (#[Minicore.Abstractions.Funarr.e_pointwise_apply_mk_term (v v_N) (fun (i:nat{i < v v_N}) -> f._0 (mk_u64 i))] def: (n: nat {n < v v_N}) -> Minicore.Abstractions.Bit.t_Bit)
+    : t_BitVec v_N
+    = impl_9__from_fn v_N (on (i: u64 {v i < v v_N}) (fun i -> def (v i)))
+
+let extensionality' (#a: Type) (#b: Type) (f g: FStar.FunctionalExtensionality.(a ^-> b))
+  : Lemma (ensures (FStar.FunctionalExtensionality.feq f g <==> f == g))
+  = ()
+
+#push-options "--z3rlimit 80"
+let impl_7__rewrite_pointwise (x: Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 128))
+: Lemma (x == impl_9__pointwise (mk_u64 128) x) =
+    let a = x._0 in
+    let b = (impl_9__pointwise (mk_u64 128) x)._0 in
+    assert_norm (FStar.FunctionalExtensionality.feq a b);
+    extensionality' a b
+
+let impl_8__rewrite_pointwise (x: Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 256))
+: Lemma (x == impl_9__pointwise (mk_u64 256) x) =
+    let a = x._0 in
+    let b = (impl_9__pointwise (mk_u64 256) x)._0 in
+    assert_norm (FStar.FunctionalExtensionality.feq a b);
+    extensionality' a b
+#pop-options

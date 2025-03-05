@@ -14,7 +14,7 @@ let mm256_sllv_epi32_u32_array
       (vector: Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 256))
       (counts: Minicore.Abstractions.Funarr.t_FunArray (mk_u64 8) u32)
     : Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 256) =
-  Minicore.Abstractions.Bitvec.impl_7__from_fn (mk_u64 256)
+  Minicore.Abstractions.Bitvec.impl_9__from_fn (mk_u64 256)
     (fun i ->
         let i:u64 = i in
         let nth_bit:u64 = i %! mk_u64 32 in
@@ -55,7 +55,7 @@ let mm256_permutevar8x32_epi32_u32_array
       (a: Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 256))
       (b: Minicore.Abstractions.Funarr.t_FunArray (mk_u64 8) u32)
     : Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 256) =
-  Minicore.Abstractions.Bitvec.impl_7__from_fn (mk_u64 256)
+  Minicore.Abstractions.Bitvec.impl_9__from_fn (mk_u64 256)
     (fun i ->
         let i:u64 = i in
         let j:u64 = i /! mk_u64 32 in
@@ -94,7 +94,7 @@ let mm_shuffle_epi8_u8_array
       (vector: Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 128))
       (indexes: Minicore.Abstractions.Funarr.t_FunArray (mk_u64 16) u8)
     : Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 128) =
-  Minicore.Abstractions.Bitvec.impl_7__from_fn (mk_u64 128)
+  Minicore.Abstractions.Bitvec.impl_9__from_fn (mk_u64 128)
     (fun i ->
         let i:u64 = i in
         let nth:u64 = i /! mk_u64 8 in

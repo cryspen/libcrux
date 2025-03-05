@@ -1,7 +1,33 @@
 #[hax_lib::fstar::replace(
-    r"
-open FStar.FunctionalExtensionality
+    r#"
+open FStar.Tactics
+
+let ${_pointwise_apply_mk_term} #t
+  (max: nat)
+  (f: (n:nat {n < max}) -> t)
+  : Tac unit
+  = let rec brs (n:nat): Tac _ = 
+      let c = C_Int n in
+      let p = Pat_Constant c in
+      (p, mk_e_app (quote f) [pack (Tv_Const c)])
+      ::( match n with | 0 -> [] | _ -> brs (n - 1))
+    in
+    let bd = fresh_binder_named "i" (quote (m: nat {m < max})) in
+    let t = mk_abs [bd] (Tv_Match bd None (brs max)) in
+    exact t"#
+)]
+pub fn _pointwise_apply_mk_term() {}
+
+#[hax_lib::fstar::replace(
+    r#"
+open FStar.FunctionalExtensionality    
 type t_FunArray (n: u64) (t: Type0) = i:u64 {v i < v n} ^-> t
+
+let pointwise_apply 
+    (v_N: u64) (#v_T: Type0) (f: t_FunArray v_N v_T)
+    (#[${_pointwise_apply_mk_term} (v v_N) (fun (i:nat{i < v v_N}) -> f (mk_u64 i))] def: (n: nat {n < v v_N}) -> v_T)
+    : t_FunArray v_N v_T
+    = on (i: u64 {v i < v v_N}) (fun i -> def (v i))
 
 let ${FunArray::<0, ()>::get} (v_N: u64) (#v_T: Type0) (self: t_FunArray v_N v_T) (i: u64 {v i < v v_N}) : v_T = 
     self i
@@ -23,7 +49,7 @@ let rec ${FunArray::<0, ()>::fold::<()>} n #t #a (arr: t_FunArray n t) (init: a)
         ${FunArray::<0, ()>::fold::<()>}  n #t #a
                       (${FunArray::<0, ()>::from_fn::<fn(u64)->()>} n (fun i -> arr (i +. mk_u64 1)))
                       acc f
-"
+"#
 )]
 #[derive(Copy, Clone, Eq, PartialEq)]
 // pub struct FunArray<const N: usize, T>([T; N]);
@@ -31,6 +57,10 @@ pub struct FunArray<const N: u64, T>([Option<T>; 512]);
 
 #[hax_lib::exclude]
 impl<const N: u64, T> FunArray<N, T> {
+    pub fn pointwise_apply(self) -> FunArray<N, T> {
+        self
+    }
+
     pub fn get(&self, i: u64) -> &T {
         &self.0[i as usize].as_ref().unwrap()
     }

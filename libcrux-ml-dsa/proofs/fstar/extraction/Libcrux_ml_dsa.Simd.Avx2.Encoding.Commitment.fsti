@@ -3,17 +3,6 @@ module Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment
 open Core
 open FStar.Mul
 
-let _ =
-  (* This module has implicit dependencies, here we make them explicit. *)
-  (* The implicit dependencies arise from typeclasses instances. *)
-  let open Minicore.Abstractions.Bitvec in
-  ()
-
-val pointwise (x: Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 128))
-    : Prims.Pure (Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 128))
-      Prims.l_True
-      (fun _ -> Prims.l_True)
-
 val serialize_4_aux (simd_unit: Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 256))
     : Prims.Pure (Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 128))
       Prims.l_True
