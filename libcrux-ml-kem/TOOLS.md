@@ -36,7 +36,7 @@ with the OCaml version set to 5.1.1. (Other OCaml versions may also work, but we
 tested extensively on this version of OCaml.)
 
 ```bash
-sudo apt -y install gcc git rustup nodejs jq opam clang-format-18 cmake ninja-build
+sudo apt -y install gcc git rustup nodejs jq opam clang-format-18 cmake ninja-build libgmp-dev pkg-config libffi-dev curl 
 
 opam init
 opam switch create 5.1.1
