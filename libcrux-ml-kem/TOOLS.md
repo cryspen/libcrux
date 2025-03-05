@@ -99,7 +99,7 @@ make -j
 ### Setting Environment Variables
 
 After installing the tools, you may want to add the following environment variables
-into your .profile or equivalent so that they are set every time you log in.
+into your `.profile` or equivalent so that they are set every time you log in.
 
 ```
 # To be set in any shell where we run the tools
