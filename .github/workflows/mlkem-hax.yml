@@ -38,11 +38,7 @@ jobs:
       - uses: hacspec/hax-actions@main
         with:
           hax_reference: ${{ github.event.inputs.hax_rev || 'main' }}
-          fstar: v2025.01.17
-        
-      - uses: actions-rust-lang/setup-rust-toolchain@v1
-        with:
-          toolchain: stable
+          fstar: v2025.02.17
 
       - name: 🏃 Extract ML-KEM crate
         working-directory: libcrux-ml-kem
@@ -86,7 +82,7 @@ jobs:
       - uses: hacspec/hax-actions@main
         with:
           hax_reference: ${{ github.event.inputs.hax_rev || 'main' }}
-          fstar: v2025.01.17
+          fstar: v2025.02.17
 
       - name: 🏃 Lax ML-KEM crate
         working-directory: libcrux-ml-kem
@@ -111,7 +107,7 @@ jobs:
         run: |
           nix profile install ./hax
       - name: ⤵ Install FStar
-        run: nix profile install github:FStarLang/FStar/v2025.01.17
+        run: nix profile install github:FStarLang/FStar/v2025.02.17
 
       - name: 🏃 Prove ML-KEM crate
         working-directory: libcrux-ml-kem
