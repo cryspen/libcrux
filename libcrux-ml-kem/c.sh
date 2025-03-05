@@ -57,14 +57,14 @@ fi
 if [[ "$no_charon" = 0 ]]; then
     rm -rf ../libcrux_ml_kem.llbc ../libcrux_sha3.llbc
     echo "Running charon (sha3) ..."
-    (cd ../libcrux-sha3 && RUSTFLAGS="--cfg eurydice" $CHARON_HOME/bin/charon)
+    (cd ../libcrux-sha3 && RUSTFLAGS="--cfg eurydice" $CHARON_HOME/bin/charon --remove-associated-types '*')
     if ! [[ -f ../libcrux_sha3.llbc ]]; then
       echo "😱😱😱 You are the victim of this bug: https://hacspec.zulipchat.com/#narrow/stream/433829-Circus/topic/charon.20declines.20to.20generate.20an.20llbc.20file"
       echo "Suggestion: rm -rf ../target or cargo clean"
       exit 1
     fi
     echo "Running charon (ml-kem) ..."
-    RUSTFLAGS="--cfg eurydice" $CHARON_HOME/bin/charon $features
+    RUSTFLAGS="--cfg eurydice" $CHARON_HOME/bin/charon --remove-associated-types '*' $features
 else
     echo "Skipping charon"
 fi
