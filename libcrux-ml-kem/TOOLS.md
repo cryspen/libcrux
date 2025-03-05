@@ -16,7 +16,7 @@ at least 4 cores, 16GB of memory, and 128GB of disk space.
 ## Prerequisites
 
 The machine must have installed the following:
-* Gcc >= 13 or Clang >= 14 
+* Gcc >= 13 or Clang >= 14
 * Rustup (cargo, rustc)
 * Opam (with ocaml version 5.1.1)
 * Nodejs, jq
@@ -52,7 +52,7 @@ The following instructions should install all the verification tools needed by M
 The main notable step is that F* requires two specific versions of Z3 to be installed.
 Future versions of F* are expected to need only one (typically the latest) version of Z3.
 
-```
+```bash
 # Install hax
 git clone https://github.com/cryspen/hax.git
 cd hax
@@ -74,7 +74,7 @@ To compile our Rust code to C, we need to install Eurydice and its dependencies.
 Currently, we build and install these tools from source, as shown below.
 In future, we plan to package the installation into a more convenient script.
 
-```
+```bash
 # needed opam packages
 opam install ppx_deriving_yojson zarith pprint "menhir>=20161115" sedlex process fix "wasm>=2.0.0" visitors ctypes-foreign ctypes uucp terminal yaml unionFind easy_logging
 
@@ -104,7 +104,7 @@ make -j
 After installing the tools, you may want to add the following environment variables
 into your `.profile` or equivalent so that they are set every time you log in.
 
-```
+```bash
 # To be set in any shell where we run the tools
 eval $(opam env --switch=5.1.1)
 . $HOME/.cargo/env
@@ -118,7 +118,7 @@ export EURYDICE_HOME=~/eurydice
 We encourage developers to always begin by testing the code in Rust before
 doing any verification or C compilation:
 
-```
+```bash
 git clone https://github.com/cryspen/libcrux.git
 cd libcrux/libcrux-ml-kem
 cargo test
@@ -130,7 +130,7 @@ cargo bench
 We provide a script `boring.sh` to compile the Rust code for ML-KEM 768 to C.
 You can use this script to regenerate the C code and test and benchmark it.
 
-```
+```bash
 cd libcrux/libcrux-ml-kem
 ./boring.sh
 cd cg
@@ -159,7 +159,7 @@ Note that the C code is broken into several files:
 We provide a python script called `hax.py` that compiles the Rust code to F* and
 formally verifies it.
 
-```
+```bash
 cd libcrux/libcrux-ml-kem
 ./hax.py extract
 ./hax.py prove
@@ -226,7 +226,7 @@ index d3bd4b1c..e9a6663d 100644
 After making this change, you can rerun the Rust cargo tests, re-verify the code,
 and re-extract the C code.
 
-```
+```bash
 cargo test
 ./hax.py extract
 ./hax.py prove
@@ -257,7 +257,7 @@ fn inz2(value: u8) -> u8 {
 
 Again, you can test the Rust, verify it with hax, and compile it to C.
 
-```
+```bash
 cargo test
 ./hax.py extract
 ./hax.py prove
