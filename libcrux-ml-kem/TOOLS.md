@@ -145,7 +145,7 @@ Note that the C code is broken into several files:
 * `cg/libcrux_mlkem768_portable.h`: A portable implementation of ML-KEM 768
 * `cg/libcrux_mlkem768_avx2.h`: An AVX2 implementation of ML-KEM 768
 * `cg/libcrux_ct_ops.h`: Constant-time operations used in our code
-* `cg/libcrux_core.h`: Types and functions used by both portable and AVX2 implementations
+* `cg/libcrux_mlkem_core.h`: Types and functions used by both portable and AVX2 implementations
 * `cg/eurydice_glue.h`: C translations of a subset of the Rust core library
 * `cg/libcrux_sha3_portable.h`: A portable implementation of SHA-3 (including KeccakX4)
 * `cg/libcrux_sha3_avx2.h`: An AVX2 implementation of SHA-3 (including KeccakX4)
