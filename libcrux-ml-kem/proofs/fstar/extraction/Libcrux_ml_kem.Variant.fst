@@ -22,7 +22,7 @@ let impl: t_Variant t_MlKem =
           i1:
           Libcrux_ml_kem.Hash_functions.t_Hash v_Hasher v_K)
         (shared_secret: t_Slice u8)
-        (_: Libcrux_ml_kem.Types.t_MlKemCiphertext v_CIPHERTEXT_SIZE)
+        (_: t_Array u8 v_CIPHERTEXT_SIZE)
         ->
         (Core.Slice.impl__len #u8 shared_secret <: usize) =. mk_usize 32);
     f_kdf_post
@@ -35,7 +35,7 @@ let impl: t_Variant t_MlKem =
           i1:
           Libcrux_ml_kem.Hash_functions.t_Hash v_Hasher v_K)
         (shared_secret: t_Slice u8)
-        (_: Libcrux_ml_kem.Types.t_MlKemCiphertext v_CIPHERTEXT_SIZE)
+        (_: t_Array u8 v_CIPHERTEXT_SIZE)
         (res: t_Array u8 (mk_usize 32))
         ->
         res == shared_secret);
@@ -49,7 +49,7 @@ let impl: t_Variant t_MlKem =
           i1:
           Libcrux_ml_kem.Hash_functions.t_Hash v_Hasher v_K)
         (shared_secret: t_Slice u8)
-        (_: Libcrux_ml_kem.Types.t_MlKemCiphertext v_CIPHERTEXT_SIZE)
+        (_: t_Array u8 v_CIPHERTEXT_SIZE)
         ->
         let out:t_Array u8 (mk_usize 32) = Rust_primitives.Hax.repeat (mk_u8 0) (mk_usize 32) in
         let out:t_Array u8 (mk_usize 32) = Core.Slice.impl__copy_from_slice #u8 out shared_secret in

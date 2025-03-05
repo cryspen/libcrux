@@ -97,7 +97,7 @@ macro_rules! instantiate {
                     CPA_PKE_PUBLIC_KEY_SIZE,
                     ETA1,
                     ETA1_RANDOMNESS_SIZE,
-                >(randomness)
+                >(&randomness)
             }
 
             /// Generate Kyber 768 Key Pair
@@ -113,7 +113,7 @@ macro_rules! instantiate {
                     CPA_PKE_PUBLIC_KEY_SIZE,
                     ETA1,
                     ETA1_RANDOMNESS_SIZE,
-                >(randomness)
+                >(&randomness)
             }
 
             /// Encapsulate ML-KEM 768
@@ -139,7 +139,7 @@ macro_rules! instantiate {
                     ETA1_RANDOMNESS_SIZE,
                     ETA2,
                     ETA2_RANDOMNESS_SIZE,
-                >(public_key, randomness)
+                >(public_key, &randomness)
             }
 
             /// Encapsulate Kyber 768
@@ -167,7 +167,7 @@ macro_rules! instantiate {
                     ETA1_RANDOMNESS_SIZE,
                     ETA2,
                     ETA2_RANDOMNESS_SIZE,
-                >(public_key, randomness)
+                >(public_key, &randomness)
             }
 
             /// Decapsulate ML-KEM 768
@@ -364,7 +364,7 @@ macro_rules! instantiate {
                         ETA1_RANDOMNESS_SIZE,
                         ETA2,
                         ETA2_RANDOMNESS_SIZE,
-                    >(public_key, randomness)
+                    >(public_key, &randomness)
                 }
 
                 /// Decapsulate ML-KEM 768 (unpacked)
@@ -445,7 +445,7 @@ pub fn generate_key_pair(randomness: [u8; KEY_GENERATION_SEED_SIZE]) -> MlKem768
         CPA_PKE_PUBLIC_KEY_SIZE,
         ETA1,
         ETA1_RANDOMNESS_SIZE,
-    >(randomness)
+    >(&randomness)
 }
 
 /// Encapsulate ML-KEM 768
@@ -472,7 +472,7 @@ pub fn encapsulate(
         ETA1_RANDOMNESS_SIZE,
         ETA2,
         ETA2_RANDOMNESS_SIZE,
-    >(public_key, randomness)
+    >(public_key, &randomness)
 }
 
 /// Decapsulate ML-KEM 768

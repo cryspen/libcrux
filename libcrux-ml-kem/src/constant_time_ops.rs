@@ -40,6 +40,7 @@ fn is_non_zero(value: u8) -> u8 {
 
 /// Return 1 if the bytes of `lhs` and `rhs` do not exactly
 /// match and 0 otherwise.
+#[inline(never)] // Don't inline this to avoid that the compiler optimizes this out.
 #[hax_lib::requires(lhs.len() == rhs.len())]
 #[hax_lib::ensures(|result| if lhs == rhs {result == 0} else {result == 1})]
 fn compare(lhs: &[u8], rhs: &[u8]) -> u8 {
@@ -86,6 +87,7 @@ fn compare(lhs: &[u8], rhs: &[u8]) -> u8 {
                assert(False))
           )"#
         );
+
         r = nr;
     }
 
@@ -105,6 +107,7 @@ pub(crate) fn compare_ciphertexts_in_constant_time(lhs: &[u8], rhs: &[u8]) -> u8
 
 /// If `selector` is not zero, return the bytes in `rhs`; return the bytes in
 /// `lhs` otherwise.
+#[inline(never)] // Don't inline this to avoid that the compiler optimizes this out.
 #[hax_lib::fstar::options("--ifuel 0 --z3rlimit 50")]
 #[hax_lib::requires(
     lhs.len() == rhs.len() &&
@@ -187,6 +190,7 @@ pub(crate) fn select_shared_secret_in_constant_time(
     core::hint::black_box(select_ct(lhs, rhs, selector))
 }
 
+#[inline(never)] // Don't inline this to avoid that the compiler optimizes this out.
 #[hax_lib::requires(
     lhs_c.len() == rhs_c.len() &&
     lhs_s.len() == rhs_s.len() &&

@@ -29,6 +29,7 @@ members = [
     "ecdsa",
     "p256",
     "blake2",
+    "fstar-helpers/minicore",
 ]
 
 [workspace.package]

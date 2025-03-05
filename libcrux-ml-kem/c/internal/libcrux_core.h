@@ -5,10 +5,10 @@
  *
  * This code was generated with the following revisions:
  * Charon: a8f2211d1b95e0462a96382023b164a4116c7ca4
- * Eurydice: 60f543ddc60a777138070968daaf7620ec48170d
+ * Eurydice: 788c5abefac3a9c7f79abae6a30fa8558e39764c
  * Karamel: 1d81d757d5d9e16dd6463ccc72324e587c707959
- * F*: 7cd06c5562fc47ec14cd35c38034d5558a5ff762
- * Libcrux: 370d71828112dbf0ad53a8995502ff1e5c8a719c
+ * F*: b0961063393215ca65927f017720cb365a193833-dirty
+ * Libcrux: bab611f6a9005751769f23d1d6cc3c7cf072c7e7
  */
 
 #ifndef __internal_libcrux_core_H
@@ -95,6 +95,17 @@ libcrux_ml_kem_types_MlKemPrivateKey_83 libcrux_ml_kem_types_from_9a_39(
     uint8_t value[3168U]);
 
 /**
+This function found in impl {libcrux_ml_kem::types::MlKemCiphertext<SIZE>#6}
+*/
+/**
+A monomorphic instance of libcrux_ml_kem.types.as_slice_d4
+with const generics
+- SIZE= 1568
+*/
+uint8_t *libcrux_ml_kem_types_as_slice_d4_af(
+    libcrux_ml_kem_types_MlKemCiphertext_64 *self);
+
+/**
 This function found in impl
 {libcrux_ml_kem::types::MlKemKeyPair<PRIVATE_KEY_SIZE, PUBLIC_KEY_SIZE>#21}
 */
@@ -121,6 +132,17 @@ libcrux_ml_kem_types_MlKemPrivateKey_d9 libcrux_ml_kem_types_from_9a_28(
     uint8_t value[2400U]);
 
 /**
+This function found in impl {libcrux_ml_kem::types::MlKemCiphertext<SIZE>#6}
+*/
+/**
+A monomorphic instance of libcrux_ml_kem.types.as_slice_d4
+with const generics
+- SIZE= 1088
+*/
+uint8_t *libcrux_ml_kem_types_as_slice_d4_80(
+    libcrux_ml_kem_mlkem768_MlKem768Ciphertext *self);
+
+/**
 This function found in impl
 {libcrux_ml_kem::types::MlKemKeyPair<PRIVATE_KEY_SIZE, PUBLIC_KEY_SIZE>#21}
 */
@@ -145,6 +167,17 @@ with const generics
 */
 libcrux_ml_kem_types_MlKemPrivateKey_fa libcrux_ml_kem_types_from_9a_2a(
     uint8_t value[1632U]);
+
+/**
+This function found in impl {libcrux_ml_kem::types::MlKemCiphertext<SIZE>#6}
+*/
+/**
+A monomorphic instance of libcrux_ml_kem.types.as_slice_d4
+with const generics
+- SIZE= 768
+*/
+uint8_t *libcrux_ml_kem_types_as_slice_d4_d0(
+    libcrux_ml_kem_types_MlKemCiphertext_1a *self);
 
 /**
 This function found in impl {libcrux_ml_kem::types::MlKemPublicKey<SIZE>#20}
@@ -545,6 +578,11 @@ with types int16_t[16size_t], core_array_TryFromSliceError
 
 */
 void core_result_unwrap_26_00(core_result_Result_0a self, int16_t ret[16U]);
+
+typedef struct Eurydice_slice_uint8_t_200size_t__x2_s {
+  Eurydice_slice fst;
+  Eurydice_slice snd;
+} Eurydice_slice_uint8_t_200size_t__x2;
 
 typedef struct Eurydice_slice_uint8_t_4size_t__x2_s {
   Eurydice_slice fst[4U];

@@ -93,7 +93,7 @@ macro_rules! instantiate {
                         CPA_PKE_PUBLIC_KEY_SIZE,
                         ETA1,
                         ETA1_RANDOMNESS_SIZE,
-                    >(randomness)
+                    >(&randomness)
 
             }
 
@@ -108,7 +108,7 @@ macro_rules! instantiate {
                         CPA_PKE_PUBLIC_KEY_SIZE,
                         ETA1,
                         ETA1_RANDOMNESS_SIZE,
-                    >(randomness)
+                    >(&randomness)
 
             }
 
@@ -135,7 +135,7 @@ macro_rules! instantiate {
                         ETA1_RANDOMNESS_SIZE,
                         ETA2,
                         ETA2_RANDOMNESS_SIZE,
-                    >(public_key, randomness)
+                    >(public_key, &randomness)
 
             }
 
@@ -164,7 +164,7 @@ macro_rules! instantiate {
                         ETA1_RANDOMNESS_SIZE,
                         ETA2,
                         ETA2_RANDOMNESS_SIZE,
-                    >(public_key, randomness)
+                    >(public_key, &randomness)
 
             }
 
@@ -369,7 +369,7 @@ macro_rules! instantiate {
                             ETA1_RANDOMNESS_SIZE,
                             ETA2,
                             ETA2_RANDOMNESS_SIZE,
-                        >(public_key, randomness)
+                        >(public_key, &randomness)
 
                 }
 
@@ -459,7 +459,7 @@ pub fn generate_key_pair(
         CPA_PKE_PUBLIC_KEY_SIZE,
         ETA1,
         ETA1_RANDOMNESS_SIZE,
-    >(randomness)
+    >(&randomness)
 }
 
 /// Encapsulate ML-KEM 1024
@@ -492,7 +492,7 @@ pub fn encapsulate(
         ETA1_RANDOMNESS_SIZE,
         ETA2,
         ETA2_RANDOMNESS_SIZE,
-    >(public_key, randomness)
+    >(public_key, &randomness)
 }
 
 /// Decapsulate ML-KEM 1024
