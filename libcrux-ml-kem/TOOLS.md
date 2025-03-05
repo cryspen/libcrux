@@ -43,7 +43,7 @@ opam switch create 5.1.1
 eval $(opam env --switch=5.1.1)
 
 rustup default stable
-. $HOME/.cargo/env
+export PATH=$PATH:$HOME/.cargo/bin
 ```
 
 ## Install Verification Tools (Hax, F*, Z3)
