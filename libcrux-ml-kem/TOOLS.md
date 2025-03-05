@@ -109,7 +109,7 @@ into your `.profile` or equivalent so that they are set every time you log in.
 ```bash
 # To be set in any shell where we run the tools
 eval $(opam env --switch=5.1.1)
-. $HOME/.cargo/env
+export PATH=$PATH:$HOME/.cargo/bin
 export KRML_HOME=~/karamel
 export CHARON_HOME=~/charon
 export EURYDICE_HOME=~/eurydice
