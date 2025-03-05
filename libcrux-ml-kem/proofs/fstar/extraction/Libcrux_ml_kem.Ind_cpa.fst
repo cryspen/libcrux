@@ -12,8 +12,6 @@ let _ =
   let open Libcrux_ml_kem.Vector.Traits in
   ()
 
-#push-options "--admit_smt_queries true"
-
 #push-options "--z3rlimit 1000 --ext context_pruning --z3refresh"
 
 let serialize_vector
@@ -120,10 +118,6 @@ let serialize_vector
 
 #pop-options
 
-#pop-options
-
-#push-options "--admit_smt_queries true"
-
 let serialize_public_key_mut
       (v_K v_PUBLIC_KEY_SIZE: usize)
       (#v_Vector: Type0)
@@ -191,8 +185,6 @@ let serialize_public_key_mut
   in
   serialized
 
-#pop-options
-
 let serialize_public_key
       (v_K v_PUBLIC_KEY_SIZE: usize)
       (#v_Vector: Type0)
@@ -214,8 +206,6 @@ let serialize_public_key
       public_key_serialized
   in
   public_key_serialized
-
-#push-options "--admit_smt_queries true"
 
 #push-options "--max_fuel 15 --z3rlimit 1500 --ext context_pruning --z3refresh --split_queries always"
 
@@ -350,8 +340,6 @@ let sample_ring_element_cbd
   error_1_, hax_temp_output
   <:
   (t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K & u8)
-
-#pop-options
 
 #pop-options
 
@@ -666,8 +654,6 @@ let generate_keypair_unpacked
 
 #pop-options
 
-#push-options "--admit_smt_queries true"
-
 let serialize_unpacked_secret_key
       (v_K v_PRIVATE_KEY_SIZE v_PUBLIC_KEY_SIZE: usize)
       (#v_Vector: Type0)
@@ -696,8 +682,6 @@ let serialize_unpacked_secret_key
   secret_key_serialized, public_key_serialized
   <:
   (t_Array u8 v_PRIVATE_KEY_SIZE & t_Array u8 v_PUBLIC_KEY_SIZE)
-
-#pop-options
 
 let generate_keypair
       (v_K v_PRIVATE_KEY_SIZE v_PUBLIC_KEY_SIZE v_ETA1 v_ETA1_RANDOMNESS_SIZE: usize)
