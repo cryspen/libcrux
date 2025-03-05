@@ -89,6 +89,7 @@ git clone https://github.com/FStarLang/karamel.git
 cd karamel
 make -j
 
+cd ..
 # install eurydice
 git clone https://github.com/AeneasVerif/eurydice.git
 cd eurydice/lib
