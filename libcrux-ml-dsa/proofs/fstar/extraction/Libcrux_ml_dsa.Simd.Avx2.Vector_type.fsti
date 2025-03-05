@@ -4,7 +4,7 @@ open Core
 open FStar.Mul
 
 /// The vector type
-type t_Vec256 = { f_value:Libcrux_intrinsics.Avx2_extract.t_Vec256 }
+type t_Vec256 = { f_value:Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 256) }
 
 [@@ FStar.Tactics.Typeclasses.tcinstance]
 val impl:Core.Clone.t_Clone t_Vec256

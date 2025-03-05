@@ -6,7 +6,7 @@ open FStar.Mul
 let invert_ntt_montgomery__inv_inner__v_FACTOR: i32 = mk_i32 41978
 
 val simd_unit_invert_ntt_at_layer_0_
-      (simd_unit0 simd_unit1: Libcrux_intrinsics.Avx2_extract.t_Vec256)
+      (simd_unit0 simd_unit1: Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 256))
       (zeta00 zeta01 zeta02 zeta03 zeta10 zeta11 zeta12 zeta13: i32)
     : Prims.Pure
       (Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 & Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256
@@ -15,14 +15,14 @@ val simd_unit_invert_ntt_at_layer_0_
 let simd_unit_invert_ntt_at_layer_0___v_SHUFFLE: i32 = mk_i32 216
 
 val simd_unit_invert_ntt_at_layer_1_
-      (simd_unit0 simd_unit1: Libcrux_intrinsics.Avx2_extract.t_Vec256)
+      (simd_unit0 simd_unit1: Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 256))
       (zeta00 zeta01 zeta10 zeta11: i32)
     : Prims.Pure
       (Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 & Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256
       ) Prims.l_True (fun _ -> Prims.l_True)
 
 val simd_unit_invert_ntt_at_layer_2_
-      (simd_unit0 simd_unit1: Libcrux_intrinsics.Avx2_extract.t_Vec256)
+      (simd_unit0 simd_unit1: Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 256))
       (zeta0 zeta1: i32)
     : Prims.Pure
       (Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 & Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256

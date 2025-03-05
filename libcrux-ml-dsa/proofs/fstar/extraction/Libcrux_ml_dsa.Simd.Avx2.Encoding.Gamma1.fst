@@ -4,18 +4,18 @@ open Core
 open FStar.Mul
 
 let serialize_when_gamma1_is_2_pow_17_
-      (simd_unit: Libcrux_intrinsics.Avx2_extract.t_Vec256)
+      (simd_unit: Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 256))
       (out: t_Slice u8)
      =
   let serialized:t_Array u8 (mk_usize 32) = Rust_primitives.Hax.repeat (mk_u8 0) (mk_usize 32) in
-  let simd_unit_shifted:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+  let simd_unit_shifted:Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 256) =
     Libcrux_intrinsics.Avx2_extract.mm256_sub_epi32 (Libcrux_intrinsics.Avx2_extract.mm256_set1_epi32
           serialize_when_gamma1_is_2_pow_17___v_GAMMA1
         <:
-        Libcrux_intrinsics.Avx2_extract.t_Vec256)
+        Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 256))
       simd_unit
   in
-  let adjacent_2_combined:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+  let adjacent_2_combined:Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 256) =
     Libcrux_intrinsics.Avx2_extract.mm256_sllv_epi32 simd_unit_shifted
       (Libcrux_intrinsics.Avx2_extract.mm256_set_epi32 (mk_i32 0)
           (mk_i32 14)
@@ -26,30 +26,30 @@ let serialize_when_gamma1_is_2_pow_17_
           (mk_i32 0)
           (mk_i32 14)
         <:
-        Libcrux_intrinsics.Avx2_extract.t_Vec256)
+        Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 256))
   in
-  let adjacent_2_combined:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+  let adjacent_2_combined:Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 256) =
     Libcrux_intrinsics.Avx2_extract.mm256_srli_epi64 (mk_i32 14) adjacent_2_combined
   in
-  let every_second_element:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+  let every_second_element:Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 256) =
     Libcrux_intrinsics.Avx2_extract.mm256_bsrli_epi128 (mk_i32 8) adjacent_2_combined
   in
-  let every_second_element_shifted:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+  let every_second_element_shifted:Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 256) =
     Libcrux_intrinsics.Avx2_extract.mm256_slli_epi64 (mk_i32 36) every_second_element
   in
-  let adjacent_4_combined:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+  let adjacent_4_combined:Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 256) =
     Libcrux_intrinsics.Avx2_extract.mm256_add_epi64 adjacent_2_combined every_second_element_shifted
   in
-  let adjacent_4_combined:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+  let adjacent_4_combined:Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 256) =
     Libcrux_intrinsics.Avx2_extract.mm256_srlv_epi64 adjacent_4_combined
       (Libcrux_intrinsics.Avx2_extract.mm256_set_epi64x (mk_i64 28)
           (mk_i64 0)
           (mk_i64 28)
           (mk_i64 0)
         <:
-        Libcrux_intrinsics.Avx2_extract.t_Vec256)
+        Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 256))
   in
-  let lower_4_:Libcrux_intrinsics.Avx2_extract.t_Vec128 =
+  let lower_4_:Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 128) =
     Libcrux_intrinsics.Avx2_extract.mm256_castsi256_si128 adjacent_4_combined
   in
   let serialized:t_Array u8 (mk_usize 32) =
@@ -69,7 +69,7 @@ let serialize_when_gamma1_is_2_pow_17_
         <:
         t_Slice u8)
   in
-  let upper_4_:Libcrux_intrinsics.Avx2_extract.t_Vec128 =
+  let upper_4_:Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 128) =
     Libcrux_intrinsics.Avx2_extract.mm256_extracti128_si256 (mk_i32 1) adjacent_4_combined
   in
   let serialized:t_Array u8 (mk_usize 32) =
@@ -101,18 +101,18 @@ let serialize_when_gamma1_is_2_pow_17_
   out
 
 let serialize_when_gamma1_is_2_pow_19_
-      (simd_unit: Libcrux_intrinsics.Avx2_extract.t_Vec256)
+      (simd_unit: Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 256))
       (out: t_Slice u8)
      =
   let serialized:t_Array u8 (mk_usize 32) = Rust_primitives.Hax.repeat (mk_u8 0) (mk_usize 32) in
-  let simd_unit_shifted:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+  let simd_unit_shifted:Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 256) =
     Libcrux_intrinsics.Avx2_extract.mm256_sub_epi32 (Libcrux_intrinsics.Avx2_extract.mm256_set1_epi32
           serialize_when_gamma1_is_2_pow_19___v_GAMMA1
         <:
-        Libcrux_intrinsics.Avx2_extract.t_Vec256)
+        Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 256))
       simd_unit
   in
-  let adjacent_2_combined:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+  let adjacent_2_combined:Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 256) =
     Libcrux_intrinsics.Avx2_extract.mm256_sllv_epi32 simd_unit_shifted
       (Libcrux_intrinsics.Avx2_extract.mm256_set_epi32 (mk_i32 0)
           (mk_i32 12)
@@ -123,12 +123,12 @@ let serialize_when_gamma1_is_2_pow_19_
           (mk_i32 0)
           (mk_i32 12)
         <:
-        Libcrux_intrinsics.Avx2_extract.t_Vec256)
+        Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 256))
   in
-  let adjacent_2_combined:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+  let adjacent_2_combined:Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 256) =
     Libcrux_intrinsics.Avx2_extract.mm256_srli_epi64 (mk_i32 12) adjacent_2_combined
   in
-  let adjacent_4_combined:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+  let adjacent_4_combined:Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 256) =
     Libcrux_intrinsics.Avx2_extract.mm256_shuffle_epi8 adjacent_2_combined
       (Libcrux_intrinsics.Avx2_extract.mm256_set_epi8 (mk_i8 (-1)) (mk_i8 (-1)) (mk_i8 (-1))
           (mk_i8 (-1)) (mk_i8 (-1)) (mk_i8 (-1)) (mk_i8 12) (mk_i8 11) (mk_i8 10) (mk_i8 9)
@@ -136,9 +136,9 @@ let serialize_when_gamma1_is_2_pow_19_
           (mk_i8 (-1)) (mk_i8 (-1)) (mk_i8 (-1)) (mk_i8 (-1)) (mk_i8 12) (mk_i8 11) (mk_i8 10)
           (mk_i8 9) (mk_i8 8) (mk_i8 4) (mk_i8 3) (mk_i8 2) (mk_i8 1) (mk_i8 0)
         <:
-        Libcrux_intrinsics.Avx2_extract.t_Vec256)
+        Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 256))
   in
-  let lower_4_:Libcrux_intrinsics.Avx2_extract.t_Vec128 =
+  let lower_4_:Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 128) =
     Libcrux_intrinsics.Avx2_extract.mm256_castsi256_si128 adjacent_4_combined
   in
   let serialized:t_Array u8 (mk_usize 32) =
@@ -158,7 +158,7 @@ let serialize_when_gamma1_is_2_pow_19_
         <:
         t_Slice u8)
   in
-  let upper_4_:Libcrux_intrinsics.Avx2_extract.t_Vec128 =
+  let upper_4_:Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 128) =
     Libcrux_intrinsics.Avx2_extract.mm256_extracti128_si256 (mk_i32 1) adjacent_4_combined
   in
   let serialized:t_Array u8 (mk_usize 32) =
@@ -190,7 +190,7 @@ let serialize_when_gamma1_is_2_pow_19_
   out
 
 let serialize
-      (simd_unit: Libcrux_intrinsics.Avx2_extract.t_Vec256)
+      (simd_unit: Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 256))
       (serialized: t_Slice u8)
       (gamma1_exponent: usize)
      =
@@ -204,7 +204,7 @@ let serialize
 
 let deserialize_when_gamma1_is_2_pow_17_
       (serialized: t_Slice u8)
-      (out: Libcrux_intrinsics.Avx2_extract.t_Vec256)
+      (out: Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 256))
      =
   let _:Prims.unit =
     if true
@@ -214,7 +214,7 @@ let deserialize_when_gamma1_is_2_pow_17_
       in
       ()
   in
-  let serialized_lower:Libcrux_intrinsics.Avx2_extract.t_Vec128 =
+  let serialized_lower:Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 128) =
     Libcrux_intrinsics.Avx2_extract.mm_loadu_si128 (serialized.[ {
             Core.Ops.Range.f_start = mk_usize 0;
             Core.Ops.Range.f_end = mk_usize 16
@@ -224,7 +224,7 @@ let deserialize_when_gamma1_is_2_pow_17_
         <:
         t_Slice u8)
   in
-  let serialized_upper:Libcrux_intrinsics.Avx2_extract.t_Vec128 =
+  let serialized_upper:Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 128) =
     Libcrux_intrinsics.Avx2_extract.mm_loadu_si128 (serialized.[ {
             Core.Ops.Range.f_start = mk_usize 2;
             Core.Ops.Range.f_end = mk_usize 18
@@ -234,10 +234,10 @@ let deserialize_when_gamma1_is_2_pow_17_
         <:
         t_Slice u8)
   in
-  let serialized:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+  let serialized:Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 256) =
     Libcrux_intrinsics.Avx2_extract.mm256_set_m128i serialized_upper serialized_lower
   in
-  let coefficients:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+  let coefficients:Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 256) =
     Libcrux_intrinsics.Avx2_extract.mm256_shuffle_epi8 serialized
       (Libcrux_intrinsics.Avx2_extract.mm256_set_epi8 (mk_i8 (-1)) (mk_i8 15) (mk_i8 14) (mk_i8 13)
           (mk_i8 (-1)) (mk_i8 13) (mk_i8 12) (mk_i8 11) (mk_i8 (-1)) (mk_i8 11) (mk_i8 10) (mk_i8 9)
@@ -245,9 +245,9 @@ let deserialize_when_gamma1_is_2_pow_17_
           (mk_i8 (-1)) (mk_i8 6) (mk_i8 5) (mk_i8 4) (mk_i8 (-1)) (mk_i8 4) (mk_i8 3) (mk_i8 2)
           (mk_i8 (-1)) (mk_i8 2) (mk_i8 1) (mk_i8 0)
         <:
-        Libcrux_intrinsics.Avx2_extract.t_Vec256)
+        Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 256))
   in
-  let coefficients:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+  let coefficients:Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 256) =
     Libcrux_intrinsics.Avx2_extract.mm256_srlv_epi32 coefficients
       (Libcrux_intrinsics.Avx2_extract.mm256_set_epi32 (mk_i32 6)
           (mk_i32 4)
@@ -258,27 +258,27 @@ let deserialize_when_gamma1_is_2_pow_17_
           (mk_i32 2)
           (mk_i32 0)
         <:
-        Libcrux_intrinsics.Avx2_extract.t_Vec256)
+        Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 256))
   in
-  let coefficients:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+  let coefficients:Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 256) =
     Libcrux_intrinsics.Avx2_extract.mm256_and_si256 coefficients
       (Libcrux_intrinsics.Avx2_extract.mm256_set1_epi32 deserialize_when_gamma1_is_2_pow_17___v_GAMMA1_TIMES_2_MASK
 
         <:
-        Libcrux_intrinsics.Avx2_extract.t_Vec256)
+        Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 256))
   in
-  let out:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+  let out:Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 256) =
     Libcrux_intrinsics.Avx2_extract.mm256_sub_epi32 (Libcrux_intrinsics.Avx2_extract.mm256_set1_epi32
           deserialize_when_gamma1_is_2_pow_17___v_GAMMA1
         <:
-        Libcrux_intrinsics.Avx2_extract.t_Vec256)
+        Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 256))
       coefficients
   in
   out
 
 let deserialize_when_gamma1_is_2_pow_19_
       (serialized: t_Slice u8)
-      (out: Libcrux_intrinsics.Avx2_extract.t_Vec256)
+      (out: Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 256))
      =
   let _:Prims.unit =
     if true
@@ -288,7 +288,7 @@ let deserialize_when_gamma1_is_2_pow_19_
       in
       ()
   in
-  let serialized_lower:Libcrux_intrinsics.Avx2_extract.t_Vec128 =
+  let serialized_lower:Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 128) =
     Libcrux_intrinsics.Avx2_extract.mm_loadu_si128 (serialized.[ {
             Core.Ops.Range.f_start = mk_usize 0;
             Core.Ops.Range.f_end = mk_usize 16
@@ -298,7 +298,7 @@ let deserialize_when_gamma1_is_2_pow_19_
         <:
         t_Slice u8)
   in
-  let serialized_upper:Libcrux_intrinsics.Avx2_extract.t_Vec128 =
+  let serialized_upper:Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 128) =
     Libcrux_intrinsics.Avx2_extract.mm_loadu_si128 (serialized.[ {
             Core.Ops.Range.f_start = mk_usize 4;
             Core.Ops.Range.f_end = mk_usize 20
@@ -308,10 +308,10 @@ let deserialize_when_gamma1_is_2_pow_19_
         <:
         t_Slice u8)
   in
-  let serialized:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+  let serialized:Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 256) =
     Libcrux_intrinsics.Avx2_extract.mm256_set_m128i serialized_upper serialized_lower
   in
-  let coefficients:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+  let coefficients:Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 256) =
     Libcrux_intrinsics.Avx2_extract.mm256_shuffle_epi8 serialized
       (Libcrux_intrinsics.Avx2_extract.mm256_set_epi8 (mk_i8 (-1)) (mk_i8 15) (mk_i8 14) (mk_i8 13)
           (mk_i8 (-1)) (mk_i8 13) (mk_i8 12) (mk_i8 11) (mk_i8 (-1)) (mk_i8 10) (mk_i8 9) (mk_i8 8)
@@ -319,9 +319,9 @@ let deserialize_when_gamma1_is_2_pow_19_
           (mk_i8 (-1)) (mk_i8 7) (mk_i8 6) (mk_i8 5) (mk_i8 (-1)) (mk_i8 4) (mk_i8 3) (mk_i8 2)
           (mk_i8 (-1)) (mk_i8 2) (mk_i8 1) (mk_i8 0)
         <:
-        Libcrux_intrinsics.Avx2_extract.t_Vec256)
+        Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 256))
   in
-  let coefficients:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+  let coefficients:Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 256) =
     Libcrux_intrinsics.Avx2_extract.mm256_srlv_epi32 coefficients
       (Libcrux_intrinsics.Avx2_extract.mm256_set_epi32 (mk_i32 4)
           (mk_i32 0)
@@ -332,30 +332,30 @@ let deserialize_when_gamma1_is_2_pow_19_
           (mk_i32 4)
           (mk_i32 0)
         <:
-        Libcrux_intrinsics.Avx2_extract.t_Vec256)
+        Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 256))
   in
-  let coefficients:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+  let coefficients:Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 256) =
     Libcrux_intrinsics.Avx2_extract.mm256_and_si256 coefficients
       (Libcrux_intrinsics.Avx2_extract.mm256_set1_epi32 deserialize_when_gamma1_is_2_pow_19___v_GAMMA1_TIMES_2_MASK
 
         <:
-        Libcrux_intrinsics.Avx2_extract.t_Vec256)
+        Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 256))
   in
-  let out:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+  let out:Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 256) =
     Libcrux_intrinsics.Avx2_extract.mm256_sub_epi32 (Libcrux_intrinsics.Avx2_extract.mm256_set1_epi32
           deserialize_when_gamma1_is_2_pow_19___v_GAMMA1
         <:
-        Libcrux_intrinsics.Avx2_extract.t_Vec256)
+        Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 256))
       coefficients
   in
   out
 
 let deserialize
       (serialized: t_Slice u8)
-      (out: Libcrux_intrinsics.Avx2_extract.t_Vec256)
+      (out: Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 256))
       (gamma1_exponent: usize)
      =
-  let out:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+  let out:Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 256) =
     match cast (gamma1_exponent <: usize) <: u8 with
     | Rust_primitives.Integers.MkInt 17 -> deserialize_when_gamma1_is_2_pow_17_ serialized out
     | Rust_primitives.Integers.MkInt 19 -> deserialize_when_gamma1_is_2_pow_19_ serialized out

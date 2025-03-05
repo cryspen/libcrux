@@ -2,6 +2,9 @@ SLOW_MODULES +=
 VERIFIED_MODULES = \
 	Libcrux_ml_dsa.Simd.Portable.Encoding.Commitment.fsti \
 	Libcrux_ml_dsa.Simd.Portable.Encoding.Commitment.fst \
+	Libcrux_ml_dsa.Simd.Portable.Encoding.Commitment.fsti \
+	Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment.fst \
+	Libcrux_intrinsics.Avx2_extract.fst \
 	Libcrux_ml_dsa.Simd.Portable.Arithmetic.fsti \
 	Libcrux_ml_dsa.Simd.Portable.Arithmetic.fst \
 	Libcrux_ml_dsa.Simd.Traits.fsti \

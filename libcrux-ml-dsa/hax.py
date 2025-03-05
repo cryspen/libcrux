@@ -53,7 +53,7 @@ class extractAction(argparse.Action):
         )
 
         # Extract intrinsics interfaces
-        include_str = "+:**"
+        include_str = "+**"
         interface_include = "+**"
         cargo_hax_into = [
             "cargo",
@@ -63,13 +63,13 @@ class extractAction(argparse.Action):
             "simd128,simd256",
             ";",
             "into",
-            "-i",
-            include_str,
+            # "-i",
+            # include_str,
             "fstar",
             "--z3rlimit",
             "80",
-            "--interfaces",
-            interface_include,
+            # "--interfaces",
+            # interface_include,
         ]
         hax_env = {}
         shell(

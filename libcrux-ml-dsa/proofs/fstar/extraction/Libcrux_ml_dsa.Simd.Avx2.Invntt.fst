@@ -4,30 +4,30 @@ open Core
 open FStar.Mul
 
 let simd_unit_invert_ntt_at_layer_0_
-      (simd_unit0 simd_unit1: Libcrux_intrinsics.Avx2_extract.t_Vec256)
+      (simd_unit0 simd_unit1: Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 256))
       (zeta00 zeta01 zeta02 zeta03 zeta10 zeta11 zeta12 zeta13: i32)
      =
-  let a_shuffled:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+  let a_shuffled:Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 256) =
     Libcrux_intrinsics.Avx2_extract.mm256_shuffle_epi32 (mk_i32 216) simd_unit0
   in
-  let b_shuffled:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+  let b_shuffled:Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 256) =
     Libcrux_intrinsics.Avx2_extract.mm256_shuffle_epi32 (mk_i32 216) simd_unit1
   in
-  let lo_values:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+  let lo_values:Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 256) =
     Libcrux_intrinsics.Avx2_extract.mm256_unpacklo_epi64 a_shuffled b_shuffled
   in
-  let hi_values:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+  let hi_values:Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 256) =
     Libcrux_intrinsics.Avx2_extract.mm256_unpackhi_epi64 a_shuffled b_shuffled
   in
-  let differences:Libcrux_intrinsics.Avx2_extract.t_Vec256 = hi_values in
-  let differences:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+  let differences:Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 256) = hi_values in
+  let differences:Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 256) =
     Libcrux_ml_dsa.Simd.Avx2.Arithmetic.subtract differences lo_values
   in
-  let lo_values:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+  let lo_values:Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 256) =
     Libcrux_ml_dsa.Simd.Avx2.Arithmetic.add lo_values hi_values
   in
-  let sums:Libcrux_intrinsics.Avx2_extract.t_Vec256 = lo_values in
-  let zetas:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+  let sums:Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 256) = lo_values in
+  let zetas:Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 256) =
     Libcrux_intrinsics.Avx2_extract.mm256_set_epi32 zeta13
       zeta12
       zeta03
@@ -37,13 +37,13 @@ let simd_unit_invert_ntt_at_layer_0_
       zeta01
       zeta00
   in
-  let differences:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+  let differences:Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 256) =
     Libcrux_ml_dsa.Simd.Avx2.Arithmetic.montgomery_multiply differences zetas
   in
-  let a_shuffled:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+  let a_shuffled:Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 256) =
     Libcrux_intrinsics.Avx2_extract.mm256_unpacklo_epi64 sums differences
   in
-  let b_shuffled:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+  let b_shuffled:Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 256) =
     Libcrux_intrinsics.Avx2_extract.mm256_unpackhi_epi64 sums differences
   in
   let a:Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 =
@@ -69,24 +69,24 @@ let simd_unit_invert_ntt_at_layer_0_
   (Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 & Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256)
 
 let simd_unit_invert_ntt_at_layer_1_
-      (simd_unit0 simd_unit1: Libcrux_intrinsics.Avx2_extract.t_Vec256)
+      (simd_unit0 simd_unit1: Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 256))
       (zeta00 zeta01 zeta10 zeta11: i32)
      =
-  let lo_values:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+  let lo_values:Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 256) =
     Libcrux_intrinsics.Avx2_extract.mm256_unpacklo_epi64 simd_unit0 simd_unit1
   in
-  let hi_values:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+  let hi_values:Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 256) =
     Libcrux_intrinsics.Avx2_extract.mm256_unpackhi_epi64 simd_unit0 simd_unit1
   in
-  let differences:Libcrux_intrinsics.Avx2_extract.t_Vec256 = hi_values in
-  let differences:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+  let differences:Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 256) = hi_values in
+  let differences:Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 256) =
     Libcrux_ml_dsa.Simd.Avx2.Arithmetic.subtract differences lo_values
   in
-  let lo_values:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+  let lo_values:Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 256) =
     Libcrux_ml_dsa.Simd.Avx2.Arithmetic.add lo_values hi_values
   in
-  let sums:Libcrux_intrinsics.Avx2_extract.t_Vec256 = lo_values in
-  let zetas:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+  let sums:Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 256) = lo_values in
+  let zetas:Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 256) =
     Libcrux_intrinsics.Avx2_extract.mm256_set_epi32 zeta11
       zeta11
       zeta01
@@ -96,7 +96,7 @@ let simd_unit_invert_ntt_at_layer_1_
       zeta00
       zeta00
   in
-  let differences:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+  let differences:Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 256) =
     Libcrux_ml_dsa.Simd.Avx2.Arithmetic.montgomery_multiply differences zetas
   in
   let a:Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 =
@@ -122,27 +122,27 @@ let simd_unit_invert_ntt_at_layer_1_
   (Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 & Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256)
 
 let simd_unit_invert_ntt_at_layer_2_
-      (simd_unit0 simd_unit1: Libcrux_intrinsics.Avx2_extract.t_Vec256)
+      (simd_unit0 simd_unit1: Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 256))
       (zeta0 zeta1: i32)
      =
-  let lo_values:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+  let lo_values:Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 256) =
     Libcrux_intrinsics.Avx2_extract.mm256_permute2x128_si256 (mk_i32 32) simd_unit0 simd_unit1
   in
-  let hi_values:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+  let hi_values:Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 256) =
     Libcrux_intrinsics.Avx2_extract.mm256_permute2x128_si256 (mk_i32 49) simd_unit0 simd_unit1
   in
-  let differences:Libcrux_intrinsics.Avx2_extract.t_Vec256 = hi_values in
-  let differences:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+  let differences:Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 256) = hi_values in
+  let differences:Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 256) =
     Libcrux_ml_dsa.Simd.Avx2.Arithmetic.subtract differences lo_values
   in
-  let lo_values:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+  let lo_values:Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 256) =
     Libcrux_ml_dsa.Simd.Avx2.Arithmetic.add lo_values hi_values
   in
-  let sums:Libcrux_intrinsics.Avx2_extract.t_Vec256 = lo_values in
-  let zetas:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+  let sums:Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 256) = lo_values in
+  let zetas:Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 256) =
     Libcrux_intrinsics.Avx2_extract.mm256_set_epi32 zeta1 zeta1 zeta1 zeta1 zeta0 zeta0 zeta0 zeta0
   in
-  let differences:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+  let differences:Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 256) =
     Libcrux_ml_dsa.Simd.Avx2.Arithmetic.montgomery_multiply differences zetas
   in
   let a:Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 =
@@ -523,7 +523,7 @@ let outer_3_plus
       (fun re j ->
           let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32) = re in
           let j:usize = j in
-          let a_minus_b:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+          let a_minus_b:Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 256) =
             Libcrux_intrinsics.Avx2_extract.mm256_sub_epi32 (re.[ j +! v_STEP_BY <: usize ]
                 <:
                 Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256)
@@ -545,7 +545,7 @@ let outer_3_plus
                     )
                       .Libcrux_ml_dsa.Simd.Avx2.Vector_type.f_value
                   <:
-                  Libcrux_intrinsics.Avx2_extract.t_Vec256
+                  Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 256)
                 }
                 <:
                 Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256)
@@ -559,7 +559,7 @@ let outer_3_plus
                   Libcrux_ml_dsa.Simd.Avx2.Arithmetic.montgomery_multiply_by_constant a_minus_b
                     v_ZETA
                   <:
-                  Libcrux_intrinsics.Avx2_extract.t_Vec256
+                  Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 256)
                 }
                 <:
                 Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256)
@@ -728,7 +728,7 @@ let invert_ntt_montgomery__inv_inner
                     .Libcrux_ml_dsa.Simd.Avx2.Vector_type.f_value
                   invert_ntt_montgomery__inv_inner__v_FACTOR
                 <:
-                Libcrux_intrinsics.Avx2_extract.t_Vec256
+                Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 256)
               }
               <:
               Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256)

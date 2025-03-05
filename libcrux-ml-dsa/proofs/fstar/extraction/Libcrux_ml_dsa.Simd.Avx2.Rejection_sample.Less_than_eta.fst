@@ -3,37 +3,37 @@ module Libcrux_ml_dsa.Simd.Avx2.Rejection_sample.Less_than_eta
 open Core
 open FStar.Mul
 
-let shift_interval (v_ETA: usize) (coefficients: Libcrux_intrinsics.Avx2_extract.t_Vec256) =
+let shift_interval (v_ETA: usize) (coefficients: Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 256)) =
   match cast (v_ETA <: usize) <: u8 with
   | Rust_primitives.Integers.MkInt 2 ->
-    let quotient:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+    let quotient:Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 256) =
       Libcrux_intrinsics.Avx2_extract.mm256_mullo_epi32 coefficients
         (Libcrux_intrinsics.Avx2_extract.mm256_set1_epi32 (mk_i32 26)
           <:
-          Libcrux_intrinsics.Avx2_extract.t_Vec256)
+          Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 256))
     in
-    let quotient:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+    let quotient:Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 256) =
       Libcrux_intrinsics.Avx2_extract.mm256_srai_epi32 (mk_i32 7) quotient
     in
-    let quotient:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+    let quotient:Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 256) =
       Libcrux_intrinsics.Avx2_extract.mm256_mullo_epi32 quotient
         (Libcrux_intrinsics.Avx2_extract.mm256_set1_epi32 (mk_i32 5)
           <:
-          Libcrux_intrinsics.Avx2_extract.t_Vec256)
+          Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 256))
     in
-    let coefficients_mod_5_:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+    let coefficients_mod_5_:Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 256) =
       Libcrux_intrinsics.Avx2_extract.mm256_sub_epi32 coefficients quotient
     in
     Libcrux_intrinsics.Avx2_extract.mm256_sub_epi32 (Libcrux_intrinsics.Avx2_extract.mm256_set1_epi32
           (cast (v_ETA <: usize) <: i32)
         <:
-        Libcrux_intrinsics.Avx2_extract.t_Vec256)
+        Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 256))
       coefficients_mod_5_
   | Rust_primitives.Integers.MkInt 4 ->
     Libcrux_intrinsics.Avx2_extract.mm256_sub_epi32 (Libcrux_intrinsics.Avx2_extract.mm256_set1_epi32
           (cast (v_ETA <: usize) <: i32)
         <:
-        Libcrux_intrinsics.Avx2_extract.t_Vec256)
+        Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 256))
       coefficients
   | _ ->
     Rust_primitives.Hax.never_to_any (Core.Panicking.panic "internal error: entered unreachable code"
@@ -42,7 +42,7 @@ let shift_interval (v_ETA: usize) (coefficients: Libcrux_intrinsics.Avx2_extract
         Rust_primitives.Hax.t_Never)
 
 let sample (v_ETA: usize) (input: t_Slice u8) (output: t_Slice i32) =
-  let potential_coefficients:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+  let potential_coefficients:Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 256) =
     Libcrux_ml_dsa.Simd.Avx2.Encoding.Error.deserialize_to_unsigned (Libcrux_ml_dsa.Constants.Eta_Four
         <:
         Libcrux_ml_dsa.Constants.t_Eta)
@@ -58,11 +58,11 @@ let sample (v_ETA: usize) (input: t_Slice u8) (output: t_Slice i32) =
           <:
           Rust_primitives.Hax.t_Never)
   in
-  let compare_with_interval_boundary:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+  let compare_with_interval_boundary:Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 256) =
     Libcrux_intrinsics.Avx2_extract.mm256_cmpgt_epi32 (Libcrux_intrinsics.Avx2_extract.mm256_set1_epi32
           interval_boundary
         <:
-        Libcrux_intrinsics.Avx2_extract.t_Vec256)
+        Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 256))
       potential_coefficients
   in
   let good:i32 =
@@ -73,7 +73,7 @@ let sample (v_ETA: usize) (input: t_Slice u8) (output: t_Slice i32) =
   in
   let good_lower_half:i32 = good &. mk_i32 15 in
   let good_upper_half:i32 = good >>! mk_i32 4 in
-  let shifted:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+  let shifted:Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 256) =
     shift_interval v_ETA potential_coefficients
   in
   let lower_shuffles:t_Array u8 (mk_usize 16) =
@@ -83,13 +83,13 @@ let sample (v_ETA: usize) (input: t_Slice u8) (output: t_Slice i32) =
       <:
       usize ]
   in
-  let lower_shuffles:Libcrux_intrinsics.Avx2_extract.t_Vec128 =
+  let lower_shuffles:Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 128) =
     Libcrux_intrinsics.Avx2_extract.mm_loadu_si128 (lower_shuffles <: t_Slice u8)
   in
-  let lower_coefficients:Libcrux_intrinsics.Avx2_extract.t_Vec128 =
+  let lower_coefficients:Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 128) =
     Libcrux_intrinsics.Avx2_extract.mm256_castsi256_si128 shifted
   in
-  let lower_coefficients:Libcrux_intrinsics.Avx2_extract.t_Vec128 =
+  let lower_coefficients:Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 128) =
     Libcrux_intrinsics.Avx2_extract.mm_shuffle_epi8 lower_coefficients lower_shuffles
   in
   let output:t_Slice i32 =
@@ -117,13 +117,13 @@ let sample (v_ETA: usize) (input: t_Slice u8) (output: t_Slice i32) =
       <:
       usize ]
   in
-  let upper_shuffles:Libcrux_intrinsics.Avx2_extract.t_Vec128 =
+  let upper_shuffles:Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 128) =
     Libcrux_intrinsics.Avx2_extract.mm_loadu_si128 (upper_shuffles <: t_Slice u8)
   in
-  let upper_coefficients:Libcrux_intrinsics.Avx2_extract.t_Vec128 =
+  let upper_coefficients:Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 128) =
     Libcrux_intrinsics.Avx2_extract.mm256_extracti128_si256 (mk_i32 1) shifted
   in
-  let upper_coefficients:Libcrux_intrinsics.Avx2_extract.t_Vec128 =
+  let upper_coefficients:Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 128) =
     Libcrux_intrinsics.Avx2_extract.mm_shuffle_epi8 upper_coefficients upper_shuffles
   in
   let output:t_Slice i32 =

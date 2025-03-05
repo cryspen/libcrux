@@ -83,7 +83,7 @@ pub fn _mm256_slli_epi16<const SHIFT_BY: i32>(vector: __m256i) -> __m256i {
     debug_assert!(SHIFT_BY >= 0 && SHIFT_BY < 16);
     BitVec::from_fn(|i| {
         let nth_bit = i % 16;
-        let shift = SHIFT_BY as usize;
+        let shift = SHIFT_BY as u64;
         if nth_bit >= shift {
             vector[i - shift]
         } else {
@@ -98,7 +98,7 @@ pub fn _mm256_srli_epi64<const SHIFT_BY: i32>(vector: __m256i) -> __m256i {
     debug_assert!(SHIFT_BY >= 0 && SHIFT_BY < 64);
     BitVec::from_fn(|i| {
         let nth_bit = i % 64;
-        let shift = SHIFT_BY as usize;
+        let shift = SHIFT_BY as u64;
         if nth_bit < 64 - shift {
             vector[i + shift]
         } else {
@@ -135,10 +135,10 @@ use hax_lib::implies;
 #[hax_lib::fstar::replace(
     "
     assume val b: nat -> $:{Bit}
-    let bb (i: usize) = b (v i)
+    let bb (i: u64) = b (v i)
 "
 )]
-fn bb(i: usize) -> Bit {
+fn bb(i: u64) -> Bit {
     todo!()
 }
 
@@ -289,7 +289,7 @@ fn hey() {
 }
 
 // #[hax_lib::fstar::options("--ext context_pruning --split_queries always")]
-#[hax_lib::requires(hax_lib::forall(|i: usize| implies(i < 256, i % 16 > 4 || (simd_unit[i] == Bit::Zero))))]
+#[hax_lib::requires(hax_lib::forall(|i: u64| implies(i < 256, i % 16 > 4 || (simd_unit[i] == Bit::Zero))))]
 // #[hax_lib::ensures(|r|hax_lib::forall(|i: usize| implies(i < 4, r[i] == simd_unit[i])))]
 // #[hax_lib::ensures(|r|
 //     hax_lib::forall(|i: usize| i % 16 > 4 || (simd_unit[i] == Bit::Zero))
@@ -349,7 +349,7 @@ pub mod extra {
             let nth_bit = i % 32;
             let shift = counts[i / 32];
             if nth_bit as i128 >= shift as i128 {
-                vector[i - shift as usize]
+                vector[i - shift as u64]
             } else {
                 Bit::Zero
             }
@@ -389,7 +389,7 @@ pub mod extra {
     ) -> BitVec<256> {
         BitVec::from_fn(|i| {
             let j = i / 32;
-            let index = ((b[j] % 7) as usize) * 32;
+            let index = ((b[j] % 7) as u64) * 32;
             a[index + i % 32]
         })
     }
@@ -422,13 +422,13 @@ pub mod extra {
     }
 
     pub fn mm_shuffle_epi8_u8_array(vector: BitVec<128>, indexes: FunArray<16, u8>) -> BitVec<128> {
-        BitVec::from_fn(|i: usize| {
+        BitVec::from_fn(|i| {
             let nth = i / 8;
             let index = indexes[nth];
             if index > 127 {
                 Bit::Zero
             } else {
-                let index = (index % 15) as usize;
+                let index = (index % 15) as u64;
                 vector[index * 8 + i % 8]
             }
         })

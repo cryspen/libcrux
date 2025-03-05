@@ -18,7 +18,7 @@ use std::fmt::Formatter;
 /// allowing for easy access to individual bits.
 #[hax_lib::fstar::before("noeq")]
 #[derive(Copy, Clone, Eq, PartialEq)]
-pub struct BitVec<const N: usize>(FunArray<N, Bit>);
+pub struct BitVec<const N: u64>(FunArray<N, Bit>);
 
 /// Pretty prints a bit slice by group of 8
 #[hax_lib::exclude]
@@ -38,17 +38,17 @@ fn bit_slice_to_string(bits: &[Bit]) -> String {
 }
 
 #[hax_lib::exclude]
-impl<const N: usize> core::fmt::Debug for BitVec<N> {
+impl<const N: u64> core::fmt::Debug for BitVec<N> {
     fn fmt(&self, f: &mut Formatter<'_>) -> Result<(), std::fmt::Error> {
-        write!(f, "{}", bit_slice_to_string(self.0.as_ref()))
+        write!(f, "{}", bit_slice_to_string(&self.0.as_vec()))
     }
 }
 
 #[hax_lib::attributes]
-impl<const N: usize> core::ops::Index<usize> for BitVec<N> {
+impl<const N: u64> core::ops::Index<u64> for BitVec<N> {
     type Output = Bit;
     #[requires(index < N)]
-    fn index(&self, index: usize) -> &Self::Output {
+    fn index(&self, index: u64) -> &Self::Output {
         &self.0.get(index)
     }
 }
@@ -122,11 +122,11 @@ fn int_from_bit_slice<T: TryFrom<i128> + MachineInteger + Copy>(bits: &[Bit]) ->
 
 #[hax_lib::fstar::replace(
     r"
-let ${BitVec::<0>::from_fn::<fn(usize)->Bit>}
-    (v_N: usize)
-    (f: (i: usize {v i < v v_N}) -> $:{Bit})
+let ${BitVec::<0>::from_fn::<fn(u64)->Bit>}
+    (v_N: u64)
+    (f: (i: u64 {v i < v v_N}) -> $:{Bit})
     : t_BitVec v_N = 
-    ${BitVec::<0>}(${FunArray::<0,()>::from_fn::<fn(usize)->()>} v_N f)
+    ${BitVec::<0>}(${FunArray::<0,()>::from_fn::<fn(u64)->()>} v_N f)
 "
 )]
 const _: () = ();
@@ -141,30 +141,30 @@ const _: () = ();
 // }
 
 #[hax_lib::exclude]
-impl<const N: usize> BitVec<N> {
+impl<const N: u64> BitVec<N> {
     /// Constructor for BitVec. `BitVec::<N>::from_fn` constructs a bitvector out of a function that takes usizes smaller than `N` and produces bits.
-    pub fn from_fn<F: Fn(usize) -> Bit>(f: F) -> Self {
+    pub fn from_fn<F: Fn(u64) -> Bit>(f: F) -> Self {
         Self(FunArray::from_fn(f))
     }
     /// Convert a slice of machine integers where only the `d` least significant bits are relevant.
-    pub fn from_slice<T: Into<i128> + MachineInteger + Copy>(x: &[T], d: usize) -> Self {
-        Self::from_fn(|i| Bit::of_int(x[i / d], (i % d) as u32))
+    pub fn from_slice<T: Into<i128> + MachineInteger + Copy>(x: &[T], d: u64) -> Self {
+        Self::from_fn(|i| Bit::of_int(x[(i / d) as usize], (i % d) as u32))
     }
 
     /// Construct a BitVec out of a machine integer.
     pub fn from_int<T: Into<i128> + MachineInteger + Copy>(n: T) -> Self {
-        Self::from_slice(&[n.into()], T::bits() as usize)
+        Self::from_slice(&[n.into()], T::bits() as u64)
     }
 
     /// Convert a BitVec into a machine integer of type `T`.
     pub fn to_int<T: TryFrom<i128> + MachineInteger + Copy>(self) -> T {
-        int_from_bit_slice(self.0.as_ref())
+        int_from_bit_slice(&self.0.as_vec())
     }
 
     /// Convert a BitVec into a vector of machine integers of type `T`.
     pub fn to_vec<T: TryFrom<i128> + MachineInteger + Copy>(&self) -> Vec<T> {
         self.0
-            .as_ref()
+            .as_vec()
             .chunks(T::bits() as usize)
             .map(int_from_bit_slice)
             .collect()
@@ -173,10 +173,10 @@ impl<const N: usize> BitVec<N> {
     /// Generate a random BitVec.
     pub fn rand() -> Self {
         use rand::prelude::*;
-        let random_source: [bool; N] = {
+        let random_source: Vec<_> = {
             let mut rng = rand::rng();
-            core::array::from_fn(|_| rng.random::<bool>())
+            (0..N).map(|_| rng.random::<bool>()).collect()
         };
-        Self::from_fn(|i| random_source[i].into())
+        Self::from_fn(|i| random_source[i as usize].into())
     }
 }

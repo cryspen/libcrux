@@ -47,9 +47,10 @@ val ntt_at_layer_2_ (re: t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (
 val ntt_at_layer_7_and_6___mul
       (re: t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32))
       (index: usize)
-      (zeta: Libcrux_intrinsics.Avx2_extract.t_Vec256)
+      (zeta: Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 256))
       (step_by: usize)
-      (field_modulus inverse_of_modulus_mod_montgomery_r: Libcrux_intrinsics.Avx2_extract.t_Vec256)
+      (field_modulus inverse_of_modulus_mod_montgomery_r:
+          Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 256))
     : Prims.Pure (t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32))
       Prims.l_True
       (fun _ -> Prims.l_True)

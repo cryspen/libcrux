@@ -29,10 +29,10 @@ let bytestream_to_potential_coefficients (serialized: t_Slice u8) =
         <:
         t_Slice u8)
   in
-  let coefficients:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+  let coefficients:Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 256) =
     Libcrux_intrinsics.Avx2_extract.mm256_loadu_si256_u8 (serialized_extended <: t_Slice u8)
   in
-  let coefficients:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+  let coefficients:Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 256) =
     Libcrux_intrinsics.Avx2_extract.mm256_permutevar8x32_epi32 coefficients
       (Libcrux_intrinsics.Avx2_extract.mm256_set_epi32 (mk_i32 0)
           (mk_i32 5)
@@ -43,9 +43,9 @@ let bytestream_to_potential_coefficients (serialized: t_Slice u8) =
           (mk_i32 1)
           (mk_i32 0)
         <:
-        Libcrux_intrinsics.Avx2_extract.t_Vec256)
+        Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 256))
   in
-  let coefficients:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+  let coefficients:Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 256) =
     Libcrux_intrinsics.Avx2_extract.mm256_shuffle_epi8 coefficients
       (Libcrux_intrinsics.Avx2_extract.mm256_set_epi8 (mk_i8 (-1)) (mk_i8 11) (mk_i8 10) (mk_i8 9)
           (mk_i8 (-1)) (mk_i8 8) (mk_i8 7) (mk_i8 6) (mk_i8 (-1)) (mk_i8 5) (mk_i8 4) (mk_i8 3)
@@ -53,22 +53,22 @@ let bytestream_to_potential_coefficients (serialized: t_Slice u8) =
           (mk_i8 (-1)) (mk_i8 8) (mk_i8 7) (mk_i8 6) (mk_i8 (-1)) (mk_i8 5) (mk_i8 4) (mk_i8 3)
           (mk_i8 (-1)) (mk_i8 2) (mk_i8 1) (mk_i8 0)
         <:
-        Libcrux_intrinsics.Avx2_extract.t_Vec256)
+        Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 256))
   in
   Libcrux_intrinsics.Avx2_extract.mm256_and_si256 coefficients
     (Libcrux_intrinsics.Avx2_extract.mm256_set1_epi32 bytestream_to_potential_coefficients__v_COEFFICIENT_MASK
 
       <:
-      Libcrux_intrinsics.Avx2_extract.t_Vec256)
+      Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 256))
 
 let sample (input: t_Slice u8) (output: t_Slice i32) =
-  let field_modulus:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+  let field_modulus:Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 256) =
     Libcrux_intrinsics.Avx2_extract.mm256_set1_epi32 Libcrux_ml_dsa.Simd.Traits.v_FIELD_MODULUS
   in
-  let potential_coefficients:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+  let potential_coefficients:Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 256) =
     bytestream_to_potential_coefficients input
   in
-  let compare_with_field_modulus:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+  let compare_with_field_modulus:Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 256) =
     Libcrux_intrinsics.Avx2_extract.mm256_cmpgt_epi32 field_modulus potential_coefficients
   in
   let good:i32 =
@@ -86,13 +86,13 @@ let sample (input: t_Slice u8) (output: t_Slice i32) =
       <:
       usize ]
   in
-  let lower_shuffles:Libcrux_intrinsics.Avx2_extract.t_Vec128 =
+  let lower_shuffles:Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 128) =
     Libcrux_intrinsics.Avx2_extract.mm_loadu_si128 (lower_shuffles <: t_Slice u8)
   in
-  let lower_coefficients:Libcrux_intrinsics.Avx2_extract.t_Vec128 =
+  let lower_coefficients:Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 128) =
     Libcrux_intrinsics.Avx2_extract.mm256_castsi256_si128 potential_coefficients
   in
-  let lower_coefficients:Libcrux_intrinsics.Avx2_extract.t_Vec128 =
+  let lower_coefficients:Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 128) =
     Libcrux_intrinsics.Avx2_extract.mm_shuffle_epi8 lower_coefficients lower_shuffles
   in
   let output:t_Slice i32 =
@@ -120,13 +120,13 @@ let sample (input: t_Slice u8) (output: t_Slice i32) =
       <:
       usize ]
   in
-  let upper_shuffles:Libcrux_intrinsics.Avx2_extract.t_Vec128 =
+  let upper_shuffles:Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 128) =
     Libcrux_intrinsics.Avx2_extract.mm_loadu_si128 (upper_shuffles <: t_Slice u8)
   in
-  let upper_coefficients:Libcrux_intrinsics.Avx2_extract.t_Vec128 =
+  let upper_coefficients:Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 128) =
     Libcrux_intrinsics.Avx2_extract.mm256_extracti128_si256 (mk_i32 1) potential_coefficients
   in
-  let upper_coefficients:Libcrux_intrinsics.Avx2_extract.t_Vec128 =
+  let upper_coefficients:Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 128) =
     Libcrux_intrinsics.Avx2_extract.mm_shuffle_epi8 upper_coefficients upper_shuffles
   in
   let output:t_Slice i32 =

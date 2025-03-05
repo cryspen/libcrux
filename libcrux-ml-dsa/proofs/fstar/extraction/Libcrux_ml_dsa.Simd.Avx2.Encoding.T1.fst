@@ -3,7 +3,7 @@ module Libcrux_ml_dsa.Simd.Avx2.Encoding.T1
 open Core
 open FStar.Mul
 
-let serialize (simd_unit: Libcrux_intrinsics.Avx2_extract.t_Vec256) (out: t_Slice u8) =
+let serialize (simd_unit: Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 256)) (out: t_Slice u8) =
   let _:Prims.unit =
     if true
     then
@@ -13,7 +13,7 @@ let serialize (simd_unit: Libcrux_intrinsics.Avx2_extract.t_Vec256) (out: t_Slic
       ()
   in
   let serialized:t_Array u8 (mk_usize 24) = Rust_primitives.Hax.repeat (mk_u8 0) (mk_usize 24) in
-  let adjacent_2_combined:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+  let adjacent_2_combined:Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 256) =
     Libcrux_intrinsics.Avx2_extract.mm256_sllv_epi32 simd_unit
       (Libcrux_intrinsics.Avx2_extract.mm256_set_epi32 (mk_i32 0)
           (mk_i32 22)
@@ -24,12 +24,12 @@ let serialize (simd_unit: Libcrux_intrinsics.Avx2_extract.t_Vec256) (out: t_Slic
           (mk_i32 0)
           (mk_i32 22)
         <:
-        Libcrux_intrinsics.Avx2_extract.t_Vec256)
+        Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 256))
   in
-  let adjacent_2_combined:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+  let adjacent_2_combined:Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 256) =
     Libcrux_intrinsics.Avx2_extract.mm256_srli_epi64 (mk_i32 22) adjacent_2_combined
   in
-  let adjacent_4_combined:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+  let adjacent_4_combined:Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 256) =
     Libcrux_intrinsics.Avx2_extract.mm256_permutevar8x32_epi32 adjacent_2_combined
       (Libcrux_intrinsics.Avx2_extract.mm256_set_epi32 (mk_i32 0)
           (mk_i32 0)
@@ -40,9 +40,9 @@ let serialize (simd_unit: Libcrux_intrinsics.Avx2_extract.t_Vec256) (out: t_Slic
           (mk_i32 2)
           (mk_i32 0)
         <:
-        Libcrux_intrinsics.Avx2_extract.t_Vec256)
+        Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 256))
   in
-  let adjacent_4_combined:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+  let adjacent_4_combined:Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 256) =
     Libcrux_intrinsics.Avx2_extract.mm256_sllv_epi32 adjacent_4_combined
       (Libcrux_intrinsics.Avx2_extract.mm256_set_epi32 (mk_i32 0)
           (mk_i32 12)
@@ -53,12 +53,12 @@ let serialize (simd_unit: Libcrux_intrinsics.Avx2_extract.t_Vec256) (out: t_Slic
           (mk_i32 0)
           (mk_i32 12)
         <:
-        Libcrux_intrinsics.Avx2_extract.t_Vec256)
+        Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 256))
   in
-  let adjacent_4_combined:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+  let adjacent_4_combined:Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 256) =
     Libcrux_intrinsics.Avx2_extract.mm256_srli_epi64 (mk_i32 12) adjacent_4_combined
   in
-  let lower_4_:Libcrux_intrinsics.Avx2_extract.t_Vec128 =
+  let lower_4_:Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 128) =
     Libcrux_intrinsics.Avx2_extract.mm256_castsi256_si128 adjacent_4_combined
   in
   let serialized:t_Array u8 (mk_usize 24) =
@@ -78,7 +78,7 @@ let serialize (simd_unit: Libcrux_intrinsics.Avx2_extract.t_Vec256) (out: t_Slic
         <:
         t_Slice u8)
   in
-  let upper_4_:Libcrux_intrinsics.Avx2_extract.t_Vec128 =
+  let upper_4_:Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 128) =
     Libcrux_intrinsics.Avx2_extract.mm256_extracti128_si256 (mk_i32 1) adjacent_4_combined
   in
   let serialized:t_Array u8 (mk_usize 24) =
@@ -109,7 +109,7 @@ let serialize (simd_unit: Libcrux_intrinsics.Avx2_extract.t_Vec256) (out: t_Slic
   in
   out
 
-let deserialize (bytes: t_Slice u8) (out: Libcrux_intrinsics.Avx2_extract.t_Vec256) =
+let deserialize (bytes: t_Slice u8) (out: Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 256)) =
   let _:Prims.unit =
     if true
     then
@@ -140,13 +140,13 @@ let deserialize (bytes: t_Slice u8) (out: Libcrux_intrinsics.Avx2_extract.t_Vec2
         <:
         t_Slice u8)
   in
-  let bytes_loaded:Libcrux_intrinsics.Avx2_extract.t_Vec128 =
+  let bytes_loaded:Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 128) =
     Libcrux_intrinsics.Avx2_extract.mm_loadu_si128 (bytes_extended <: t_Slice u8)
   in
-  let bytes_loaded:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+  let bytes_loaded:Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 256) =
     Libcrux_intrinsics.Avx2_extract.mm256_set_m128i bytes_loaded bytes_loaded
   in
-  let coefficients:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+  let coefficients:Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 256) =
     Libcrux_intrinsics.Avx2_extract.mm256_shuffle_epi8 bytes_loaded
       (Libcrux_intrinsics.Avx2_extract.mm256_set_epi8 (mk_i8 (-1)) (mk_i8 (-1)) (mk_i8 9) (mk_i8 8)
           (mk_i8 (-1)) (mk_i8 (-1)) (mk_i8 8) (mk_i8 7) (mk_i8 (-1)) (mk_i8 (-1)) (mk_i8 7)
@@ -154,9 +154,9 @@ let deserialize (bytes: t_Slice u8) (out: Libcrux_intrinsics.Avx2_extract.t_Vec2
           (mk_i8 4) (mk_i8 3) (mk_i8 (-1)) (mk_i8 (-1)) (mk_i8 3) (mk_i8 2) (mk_i8 (-1))
           (mk_i8 (-1)) (mk_i8 2) (mk_i8 1) (mk_i8 (-1)) (mk_i8 (-1)) (mk_i8 1) (mk_i8 0)
         <:
-        Libcrux_intrinsics.Avx2_extract.t_Vec256)
+        Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 256))
   in
-  let coefficients:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+  let coefficients:Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 256) =
     Libcrux_intrinsics.Avx2_extract.mm256_srlv_epi32 coefficients
       (Libcrux_intrinsics.Avx2_extract.mm256_set_epi32 (mk_i32 6)
           (mk_i32 4)
@@ -167,12 +167,12 @@ let deserialize (bytes: t_Slice u8) (out: Libcrux_intrinsics.Avx2_extract.t_Vec2
           (mk_i32 2)
           (mk_i32 0)
         <:
-        Libcrux_intrinsics.Avx2_extract.t_Vec256)
+        Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 256))
   in
-  let out:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+  let out:Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 256) =
     Libcrux_intrinsics.Avx2_extract.mm256_and_si256 coefficients
       (Libcrux_intrinsics.Avx2_extract.mm256_set1_epi32 deserialize__v_COEFFICIENT_MASK
         <:
-        Libcrux_intrinsics.Avx2_extract.t_Vec256)
+        Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 256))
   in
   out

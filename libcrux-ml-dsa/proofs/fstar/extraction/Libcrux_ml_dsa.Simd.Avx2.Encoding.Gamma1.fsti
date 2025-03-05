@@ -6,19 +6,19 @@ open FStar.Mul
 let serialize_when_gamma1_is_2_pow_17___v_GAMMA1: i32 = mk_i32 1 <<! mk_i32 17
 
 val serialize_when_gamma1_is_2_pow_17_
-      (simd_unit: Libcrux_intrinsics.Avx2_extract.t_Vec256)
+      (simd_unit: Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 256))
       (out: t_Slice u8)
     : Prims.Pure (t_Slice u8) Prims.l_True (fun _ -> Prims.l_True)
 
 let serialize_when_gamma1_is_2_pow_19___v_GAMMA1: i32 = mk_i32 1 <<! mk_i32 19
 
 val serialize_when_gamma1_is_2_pow_19_
-      (simd_unit: Libcrux_intrinsics.Avx2_extract.t_Vec256)
+      (simd_unit: Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 256))
       (out: t_Slice u8)
     : Prims.Pure (t_Slice u8) Prims.l_True (fun _ -> Prims.l_True)
 
 val serialize
-      (simd_unit: Libcrux_intrinsics.Avx2_extract.t_Vec256)
+      (simd_unit: Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 256))
       (serialized: t_Slice u8)
       (gamma1_exponent: usize)
     : Prims.Pure (t_Slice u8) Prims.l_True (fun _ -> Prims.l_True)
@@ -30,8 +30,10 @@ let deserialize_when_gamma1_is_2_pow_17___v_GAMMA1_TIMES_2_MASK: i32 =
 
 val deserialize_when_gamma1_is_2_pow_17_
       (serialized: t_Slice u8)
-      (out: Libcrux_intrinsics.Avx2_extract.t_Vec256)
-    : Prims.Pure Libcrux_intrinsics.Avx2_extract.t_Vec256 Prims.l_True (fun _ -> Prims.l_True)
+      (out: Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 256))
+    : Prims.Pure (Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 256))
+      Prims.l_True
+      (fun _ -> Prims.l_True)
 
 let deserialize_when_gamma1_is_2_pow_19___v_GAMMA1: i32 = mk_i32 1 <<! mk_i32 19
 
@@ -40,11 +42,15 @@ let deserialize_when_gamma1_is_2_pow_19___v_GAMMA1_TIMES_2_MASK: i32 =
 
 val deserialize_when_gamma1_is_2_pow_19_
       (serialized: t_Slice u8)
-      (out: Libcrux_intrinsics.Avx2_extract.t_Vec256)
-    : Prims.Pure Libcrux_intrinsics.Avx2_extract.t_Vec256 Prims.l_True (fun _ -> Prims.l_True)
+      (out: Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 256))
+    : Prims.Pure (Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 256))
+      Prims.l_True
+      (fun _ -> Prims.l_True)
 
 val deserialize
       (serialized: t_Slice u8)
-      (out: Libcrux_intrinsics.Avx2_extract.t_Vec256)
+      (out: Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 256))
       (gamma1_exponent: usize)
-    : Prims.Pure Libcrux_intrinsics.Avx2_extract.t_Vec256 Prims.l_True (fun _ -> Prims.l_True)
+    : Prims.Pure (Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 256))
+      Prims.l_True
+      (fun _ -> Prims.l_True)

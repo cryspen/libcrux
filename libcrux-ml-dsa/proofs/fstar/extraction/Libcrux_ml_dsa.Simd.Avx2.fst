@@ -183,8 +183,8 @@ let impl_1: Libcrux_ml_dsa.Simd.Traits.t_Operations Libcrux_ml_dsa.Simd.Avx2.Vec
         (low: Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256)
         (high: Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256)
         ->
-        let tmp0, tmp1:(Libcrux_intrinsics.Avx2_extract.t_Vec256 &
-          Libcrux_intrinsics.Avx2_extract.t_Vec256) =
+        let tmp0, tmp1:(Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 256) &
+          Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 256)) =
           Libcrux_ml_dsa.Simd.Avx2.Arithmetic.decompose gamma2
             simd_unit.Libcrux_ml_dsa.Simd.Avx2.Vector_type.f_value
             low.Libcrux_ml_dsa.Simd.Avx2.Vector_type.f_value
@@ -232,7 +232,7 @@ let impl_1: Libcrux_ml_dsa.Simd.Traits.t_Operations Libcrux_ml_dsa.Simd.Avx2.Vec
         (gamma2: i32)
         (hint: Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256)
         ->
-        let tmp0, out1:(Libcrux_intrinsics.Avx2_extract.t_Vec256 & usize) =
+        let tmp0, out1:(Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 256) & usize) =
           Libcrux_ml_dsa.Simd.Avx2.Arithmetic.compute_hint low
               .Libcrux_ml_dsa.Simd.Avx2.Vector_type.f_value
             high.Libcrux_ml_dsa.Simd.Avx2.Vector_type.f_value
@@ -366,8 +366,8 @@ let impl_1: Libcrux_ml_dsa.Simd.Traits.t_Operations Libcrux_ml_dsa.Simd.Avx2.Vec
         (t0: Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256)
         (t1: Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256)
         ->
-        let tmp0, tmp1:(Libcrux_intrinsics.Avx2_extract.t_Vec256 &
-          Libcrux_intrinsics.Avx2_extract.t_Vec256) =
+        let tmp0, tmp1:(Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 256) &
+          Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 256)) =
           Libcrux_ml_dsa.Simd.Avx2.Arithmetic.power2round t0
               .Libcrux_ml_dsa.Simd.Avx2.Vector_type.f_value
             t1.Libcrux_ml_dsa.Simd.Avx2.Vector_type.f_value

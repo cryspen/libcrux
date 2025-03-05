@@ -3,16 +3,19 @@ module Libcrux_ml_dsa.Simd.Avx2.Encoding.Error
 open Core
 open FStar.Mul
 
-let serialize_when_eta_is_2_ (simd_unit: Libcrux_intrinsics.Avx2_extract.t_Vec256) (out: t_Slice u8) =
+let serialize_when_eta_is_2_
+      (simd_unit: Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 256))
+      (out: t_Slice u8)
+     =
   let serialized:t_Array u8 (mk_usize 16) = Rust_primitives.Hax.repeat (mk_u8 0) (mk_usize 16) in
-  let simd_unit_shifted:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+  let simd_unit_shifted:Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 256) =
     Libcrux_intrinsics.Avx2_extract.mm256_sub_epi32 (Libcrux_intrinsics.Avx2_extract.mm256_set1_epi32
           serialize_when_eta_is_2___v_ETA
         <:
-        Libcrux_intrinsics.Avx2_extract.t_Vec256)
+        Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 256))
       simd_unit
   in
-  let adjacent_2_combined:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+  let adjacent_2_combined:Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 256) =
     Libcrux_intrinsics.Avx2_extract.mm256_sllv_epi32 simd_unit_shifted
       (Libcrux_intrinsics.Avx2_extract.mm256_set_epi32 (mk_i32 0)
           (mk_i32 29)
@@ -23,12 +26,12 @@ let serialize_when_eta_is_2_ (simd_unit: Libcrux_intrinsics.Avx2_extract.t_Vec25
           (mk_i32 0)
           (mk_i32 29)
         <:
-        Libcrux_intrinsics.Avx2_extract.t_Vec256)
+        Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 256))
   in
-  let adjacent_2_combined:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+  let adjacent_2_combined:Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 256) =
     Libcrux_intrinsics.Avx2_extract.mm256_srli_epi64 (mk_i32 29) adjacent_2_combined
   in
-  let adjacent_4_combined:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+  let adjacent_4_combined:Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 256) =
     Libcrux_intrinsics.Avx2_extract.mm256_shuffle_epi8 adjacent_2_combined
       (Libcrux_intrinsics.Avx2_extract.mm256_set_epi8 (mk_i8 (-1)) (mk_i8 (-1)) (mk_i8 (-1))
           (mk_i8 (-1)) (mk_i8 (-1)) (mk_i8 (-1)) (mk_i8 (-1)) (mk_i8 (-1)) (mk_i8 (-1)) (mk_i8 (-1))
@@ -37,17 +40,17 @@ let serialize_when_eta_is_2_ (simd_unit: Libcrux_intrinsics.Avx2_extract.t_Vec25
           (mk_i8 (-1)) (mk_i8 (-1)) (mk_i8 (-1)) (mk_i8 (-1)) (mk_i8 (-1)) (mk_i8 8) (mk_i8 (-1))
           (mk_i8 0)
         <:
-        Libcrux_intrinsics.Avx2_extract.t_Vec256)
+        Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 256))
   in
-  let adjacent_4_combined:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+  let adjacent_4_combined:Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 256) =
     Libcrux_intrinsics.Avx2_extract.mm256_madd_epi16 adjacent_4_combined
       (Libcrux_intrinsics.Avx2_extract.mm256_set_epi16 (mk_i16 0) (mk_i16 0) (mk_i16 0) (mk_i16 0)
           (mk_i16 0) (mk_i16 0) (mk_i16 1 <<! mk_i32 6 <: i16) (mk_i16 1) (mk_i16 0) (mk_i16 0)
           (mk_i16 0) (mk_i16 0) (mk_i16 0) (mk_i16 0) (mk_i16 1 <<! mk_i32 6 <: i16) (mk_i16 1)
         <:
-        Libcrux_intrinsics.Avx2_extract.t_Vec256)
+        Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 256))
   in
-  let adjacent_6_combined:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+  let adjacent_6_combined:Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 256) =
     Libcrux_intrinsics.Avx2_extract.mm256_permutevar8x32_epi32 adjacent_4_combined
       (Libcrux_intrinsics.Avx2_extract.mm256_set_epi32 (mk_i32 0)
           (mk_i32 0)
@@ -58,18 +61,18 @@ let serialize_when_eta_is_2_ (simd_unit: Libcrux_intrinsics.Avx2_extract.t_Vec25
           (mk_i32 4)
           (mk_i32 0)
         <:
-        Libcrux_intrinsics.Avx2_extract.t_Vec256)
+        Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 256))
   in
-  let adjacent_6_combined:Libcrux_intrinsics.Avx2_extract.t_Vec128 =
+  let adjacent_6_combined:Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 128) =
     Libcrux_intrinsics.Avx2_extract.mm256_castsi256_si128 adjacent_6_combined
   in
-  let adjacent_6_combined:Libcrux_intrinsics.Avx2_extract.t_Vec128 =
+  let adjacent_6_combined:Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 128) =
     Libcrux_intrinsics.Avx2_extract.mm_sllv_epi32 adjacent_6_combined
       (Libcrux_intrinsics.Avx2_extract.mm_set_epi32 (mk_i32 0) (mk_i32 0) (mk_i32 0) (mk_i32 20)
         <:
-        Libcrux_intrinsics.Avx2_extract.t_Vec128)
+        Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 128))
   in
-  let adjacent_6_combined:Libcrux_intrinsics.Avx2_extract.t_Vec128 =
+  let adjacent_6_combined:Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 128) =
     Libcrux_intrinsics.Avx2_extract.mm_srli_epi64 (mk_i32 20) adjacent_6_combined
   in
   let serialized:t_Array u8 (mk_usize 16) =
@@ -100,16 +103,19 @@ let serialize_when_eta_is_2_ (simd_unit: Libcrux_intrinsics.Avx2_extract.t_Vec25
   in
   out
 
-let serialize_when_eta_is_4_ (simd_unit: Libcrux_intrinsics.Avx2_extract.t_Vec256) (out: t_Slice u8) =
+let serialize_when_eta_is_4_
+      (simd_unit: Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 256))
+      (out: t_Slice u8)
+     =
   let serialized:t_Array u8 (mk_usize 16) = Rust_primitives.Hax.repeat (mk_u8 0) (mk_usize 16) in
-  let simd_unit_shifted:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+  let simd_unit_shifted:Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 256) =
     Libcrux_intrinsics.Avx2_extract.mm256_sub_epi32 (Libcrux_intrinsics.Avx2_extract.mm256_set1_epi32
           serialize_when_eta_is_4___v_ETA
         <:
-        Libcrux_intrinsics.Avx2_extract.t_Vec256)
+        Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 256))
       simd_unit
   in
-  let adjacent_2_combined:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+  let adjacent_2_combined:Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 256) =
     Libcrux_intrinsics.Avx2_extract.mm256_sllv_epi32 simd_unit_shifted
       (Libcrux_intrinsics.Avx2_extract.mm256_set_epi32 (mk_i32 0)
           (mk_i32 28)
@@ -120,12 +126,12 @@ let serialize_when_eta_is_4_ (simd_unit: Libcrux_intrinsics.Avx2_extract.t_Vec25
           (mk_i32 0)
           (mk_i32 28)
         <:
-        Libcrux_intrinsics.Avx2_extract.t_Vec256)
+        Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 256))
   in
-  let adjacent_2_combined:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+  let adjacent_2_combined:Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 256) =
     Libcrux_intrinsics.Avx2_extract.mm256_srli_epi64 (mk_i32 28) adjacent_2_combined
   in
-  let adjacent_4_combined:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+  let adjacent_4_combined:Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 256) =
     Libcrux_intrinsics.Avx2_extract.mm256_permutevar8x32_epi32 adjacent_2_combined
       (Libcrux_intrinsics.Avx2_extract.mm256_set_epi32 (mk_i32 0)
           (mk_i32 0)
@@ -136,18 +142,18 @@ let serialize_when_eta_is_4_ (simd_unit: Libcrux_intrinsics.Avx2_extract.t_Vec25
           (mk_i32 4)
           (mk_i32 0)
         <:
-        Libcrux_intrinsics.Avx2_extract.t_Vec256)
+        Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 256))
   in
-  let adjacent_4_combined:Libcrux_intrinsics.Avx2_extract.t_Vec128 =
+  let adjacent_4_combined:Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 128) =
     Libcrux_intrinsics.Avx2_extract.mm256_castsi256_si128 adjacent_4_combined
   in
-  let adjacent_4_combined:Libcrux_intrinsics.Avx2_extract.t_Vec128 =
+  let adjacent_4_combined:Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 128) =
     Libcrux_intrinsics.Avx2_extract.mm_shuffle_epi8 adjacent_4_combined
       (Libcrux_intrinsics.Avx2_extract.mm_set_epi8 (mk_u8 240) (mk_u8 240) (mk_u8 240) (mk_u8 240)
           (mk_u8 240) (mk_u8 240) (mk_u8 240) (mk_u8 240) (mk_u8 240) (mk_u8 240) (mk_u8 240)
           (mk_u8 240) (mk_u8 12) (mk_u8 4) (mk_u8 8) (mk_u8 0)
         <:
-        Libcrux_intrinsics.Avx2_extract.t_Vec128)
+        Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 128))
   in
   let serialized:t_Array u8 (mk_usize 16) =
     Rust_primitives.Hax.Monomorphized_update_at.update_at_range serialized
@@ -179,7 +185,7 @@ let serialize_when_eta_is_4_ (simd_unit: Libcrux_intrinsics.Avx2_extract.t_Vec25
 
 let serialize
       (eta: Libcrux_ml_dsa.Constants.t_Eta)
-      (simd_unit: Libcrux_intrinsics.Avx2_extract.t_Vec256)
+      (simd_unit: Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 256))
       (serialized: t_Slice u8)
      =
   let serialized:t_Slice u8 =
@@ -198,7 +204,7 @@ let deserialize_to_unsigned_when_eta_is_2_ (bytes: t_Slice u8) =
       in
       ()
   in
-  let bytes_in_simd_unit:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+  let bytes_in_simd_unit:Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 256) =
     Libcrux_intrinsics.Avx2_extract.mm256_set_epi32 (cast (bytes.[ mk_usize 2 ] <: u8) <: i32)
       (cast (bytes.[ mk_usize 2 ] <: u8) <: i32)
       (((cast (bytes.[ mk_usize 2 ] <: u8) <: i32) <<! mk_i32 8 <: i32) |.
@@ -214,7 +220,7 @@ let deserialize_to_unsigned_when_eta_is_2_ (bytes: t_Slice u8) =
       (cast (bytes.[ mk_usize 0 ] <: u8) <: i32)
       (cast (bytes.[ mk_usize 0 ] <: u8) <: i32)
   in
-  let coefficients:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+  let coefficients:Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 256) =
     Libcrux_intrinsics.Avx2_extract.mm256_srlv_epi32 bytes_in_simd_unit
       (Libcrux_intrinsics.Avx2_extract.mm256_set_epi32 (mk_i32 5)
           (mk_i32 2)
@@ -225,13 +231,13 @@ let deserialize_to_unsigned_when_eta_is_2_ (bytes: t_Slice u8) =
           (mk_i32 3)
           (mk_i32 0)
         <:
-        Libcrux_intrinsics.Avx2_extract.t_Vec256)
+        Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 256))
   in
   Libcrux_intrinsics.Avx2_extract.mm256_and_si256 coefficients
     (Libcrux_intrinsics.Avx2_extract.mm256_set1_epi32 deserialize_to_unsigned_when_eta_is_2___v_COEFFICIENT_MASK
 
       <:
-      Libcrux_intrinsics.Avx2_extract.t_Vec256)
+      Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 256))
 
 let deserialize_to_unsigned_when_eta_is_4_ (bytes: t_Slice u8) =
   let _:Prims.unit =
@@ -242,7 +248,7 @@ let deserialize_to_unsigned_when_eta_is_4_ (bytes: t_Slice u8) =
       in
       ()
   in
-  let bytes_in_simd_unit:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+  let bytes_in_simd_unit:Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 256) =
     Libcrux_intrinsics.Avx2_extract.mm256_set_epi32 (cast (bytes.[ mk_usize 3 ] <: u8) <: i32)
       (cast (bytes.[ mk_usize 3 ] <: u8) <: i32)
       (cast (bytes.[ mk_usize 2 ] <: u8) <: i32)
@@ -252,7 +258,7 @@ let deserialize_to_unsigned_when_eta_is_4_ (bytes: t_Slice u8) =
       (cast (bytes.[ mk_usize 0 ] <: u8) <: i32)
       (cast (bytes.[ mk_usize 0 ] <: u8) <: i32)
   in
-  let coefficients:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+  let coefficients:Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 256) =
     Libcrux_intrinsics.Avx2_extract.mm256_srlv_epi32 bytes_in_simd_unit
       (Libcrux_intrinsics.Avx2_extract.mm256_set_epi32 (mk_i32 4)
           (mk_i32 0)
@@ -263,13 +269,13 @@ let deserialize_to_unsigned_when_eta_is_4_ (bytes: t_Slice u8) =
           (mk_i32 4)
           (mk_i32 0)
         <:
-        Libcrux_intrinsics.Avx2_extract.t_Vec256)
+        Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 256))
   in
   Libcrux_intrinsics.Avx2_extract.mm256_and_si256 coefficients
     (Libcrux_intrinsics.Avx2_extract.mm256_set1_epi32 deserialize_to_unsigned_when_eta_is_4___v_COEFFICIENT_MASK
 
       <:
-      Libcrux_intrinsics.Avx2_extract.t_Vec256)
+      Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 256))
 
 let deserialize_to_unsigned (eta: Libcrux_ml_dsa.Constants.t_Eta) (serialized: t_Slice u8) =
   match eta <: Libcrux_ml_dsa.Constants.t_Eta with
@@ -279,19 +285,21 @@ let deserialize_to_unsigned (eta: Libcrux_ml_dsa.Constants.t_Eta) (serialized: t
 let deserialize
       (eta: Libcrux_ml_dsa.Constants.t_Eta)
       (serialized: t_Slice u8)
-      (out: Libcrux_intrinsics.Avx2_extract.t_Vec256)
+      (out: Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 256))
      =
-  let unsigned:Libcrux_intrinsics.Avx2_extract.t_Vec256 = deserialize_to_unsigned eta serialized in
+  let unsigned:Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 256) =
+    deserialize_to_unsigned eta serialized
+  in
   let eta:i32 =
     match eta <: Libcrux_ml_dsa.Constants.t_Eta with
     | Libcrux_ml_dsa.Constants.Eta_Two  -> mk_i32 2
     | Libcrux_ml_dsa.Constants.Eta_Four  -> mk_i32 4
   in
-  let out:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+  let out:Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 256) =
     Libcrux_intrinsics.Avx2_extract.mm256_sub_epi32 (Libcrux_intrinsics.Avx2_extract.mm256_set1_epi32
           eta
         <:
-        Libcrux_intrinsics.Avx2_extract.t_Vec256)
+        Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 256))
       unsigned
   in
   out
