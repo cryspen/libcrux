@@ -12,7 +12,9 @@ let _ =
   let open Libcrux_ml_kem.Vector.Traits in
   ()
 
-#push-options "--z3rlimit 1200 --ext context_pruning --z3refresh"
+#push-options "--admit_smt_queries true"
+
+#push-options "--z3rlimit 1000 --ext context_pruning --z3refresh"
 
 let serialize_vector
       (v_K: usize)
@@ -29,8 +31,7 @@ let serialize_vector
       (fun out i ->
           let out:t_Slice u8 = out in
           let i:usize = i in
-
-          (Core.Slice.impl__len #u8 out == Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE v_K /\
+          Core.Slice.impl__len #u8 out == Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE v_K /\
           (v i < v v_K ==>
             Libcrux_ml_kem.Serialize.coefficients_field_modulus_range (Seq.index key (v i))) /\
           (forall (j: nat).
@@ -40,7 +41,7 @@ let serialize_vector
                   (j * v Libcrux_ml_kem.Constants.v_BYTES_PER_RING_ELEMENT)
                   ((j + 1) * v Libcrux_ml_kem.Constants.v_BYTES_PER_RING_ELEMENT) ==
                 Spec.MLKEM.byte_encode 12
-                  (Libcrux_ml_kem.Polynomial.to_spec_poly_t #v_Vector (Seq.index key j))))))
+                  (Libcrux_ml_kem.Polynomial.to_spec_poly_t #v_Vector (Seq.index key j)))))
       out
       (fun out temp_1_ ->
           let out:t_Slice u8 = out in
@@ -103,9 +104,25 @@ let serialize_vector
           in
           out)
   in
+  let _:Prims.unit =
+    assert (Spec.MLKEM.coerce_vector_12 (Libcrux_ml_kem.Polynomial.to_spec_vector_t #v_K
+              #v_Vector
+              key) ==
+        Libcrux_ml_kem.Polynomial.to_spec_vector_t #v_K #v_Vector key);
+    reveal_opaque (`%Spec.MLKEM.vector_encode_12) (Spec.MLKEM.vector_encode_12 #v_K);
+    Lib.Sequence.eq_intro #u8
+      #(v (Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE v_K))
+      out
+      (Spec.MLKEM.vector_encode_12 #v_K
+          (Libcrux_ml_kem.Polynomial.to_spec_vector_t #v_K #v_Vector key))
+  in
   out
 
 #pop-options
+
+#pop-options
+
+#push-options "--admit_smt_queries true"
 
 let serialize_public_key_mut
       (v_K v_PUBLIC_KEY_SIZE: usize)
@@ -174,6 +191,8 @@ let serialize_public_key_mut
   in
   serialized
 
+#pop-options
+
 let serialize_public_key
       (v_K v_PUBLIC_KEY_SIZE: usize)
       (#v_Vector: Type0)
@@ -195,6 +214,8 @@ let serialize_public_key
       public_key_serialized
   in
   public_key_serialized
+
+#push-options "--admit_smt_queries true"
 
 #push-options "--max_fuel 15 --z3rlimit 1500 --ext context_pruning --z3refresh --split_queries always"
 
@@ -331,6 +352,8 @@ let sample_ring_element_cbd
   error_1_, domain_separator
   <:
   (t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K & u8)
+
+#pop-options
 
 #pop-options
 

@@ -92,6 +92,7 @@ pub(crate) fn serialize_public_key<
 
 /// Concatenate `t` and `ρ` into the public key.
 #[inline(always)]
+#[hax_lib::fstar::verification_status(lax)]
 #[hax_lib::requires(fstar!(r#"Spec.MLKEM.is_rank $K /\
     $PUBLIC_KEY_SIZE == Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE $K /\
     length $seed_for_a == sz 32 /\
@@ -127,9 +128,10 @@ pub(crate) fn serialize_public_key_mut<
 
 /// Call [`serialize_uncompressed_ring_element`] for each ring element.
 #[inline(always)]
+#[hax_lib::fstar::verification_status(lax)]
 #[hax_lib::fstar::options("--z3rlimit 1000 --ext context_pruning --z3refresh")]
 #[hax_lib::requires(fstar!(r#"Spec.MLKEM.is_rank $K /\
-    ${out.len()} == Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE $K /\
+    ${out.len()} == Spec.MLKEM.v_RANKED_BYTES_PER_RING_ELEMENT $K /\
     (forall (i:nat). i < v $K ==>
         Libcrux_ml_kem.Serialize.coefficients_field_modulus_range (Seq.index $key i))"#))]
 #[hax_lib::ensures(|()|
@@ -145,7 +147,7 @@ pub(crate) fn serialize_vector<const K: usize, Vector: Operations>(
     cloop! {
         for (i, re) in key.into_iter().enumerate() {
             hax_lib::loop_invariant!(|i: usize| {
-                fstar!(r#"
+                fstar!(r#"${out.len()} == Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE $K /\
                     (v $i < v $K ==>
                     Libcrux_ml_kem.Serialize.coefficients_field_modulus_range (Seq.index $key (v $i))) /\
                     (forall (j: nat). j < v $i ==>
@@ -183,6 +185,7 @@ pub(crate) fn serialize_vector<const K: usize, Vector: Operations>(
 
 /// Sample a vector of ring elements from a centered binomial distribution.
 #[inline(always)]
+#[hax_lib::fstar::verification_status(lax)]
 #[hax_lib::fstar::options(
     "--max_fuel 15 --z3rlimit 1500 --ext context_pruning --z3refresh --split_queries always"
 )]

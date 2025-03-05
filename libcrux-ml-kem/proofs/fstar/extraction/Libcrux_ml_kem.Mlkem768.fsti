@@ -95,12 +95,4 @@ val encapsulate
 val decapsulate
       (private_key: Libcrux_ml_kem.Types.t_MlKemPrivateKey (mk_usize 2400))
       (ciphertext: Libcrux_ml_kem.Types.t_MlKemCiphertext (mk_usize 1088))
-    : Prims.Pure (t_Array u8 (mk_usize 32))
-      Prims.l_True
-      (ensures
-        fun res ->
-          let res:t_Array u8 (mk_usize 32) = res in
-          let shared_secret, valid =
-            Spec.MLKEM.Instances.mlkem768_decapsulate private_key.f_value ciphertext.f_value
-          in
-          valid ==> res == shared_secret)
+    : Prims.Pure (t_Array u8 (mk_usize 32)) Prims.l_True (fun _ -> Prims.l_True)

@@ -22,7 +22,7 @@ val serialize_vector
     : Prims.Pure (t_Slice u8)
       (requires
         Spec.MLKEM.is_rank v_K /\
-        Core.Slice.impl__len #u8 out == Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE v_K /\
+        Core.Slice.impl__len #u8 out == Spec.MLKEM.v_RANKED_BYTES_PER_RING_ELEMENT v_K /\
         (forall (i: nat).
             i < v v_K ==>
             Libcrux_ml_kem.Serialize.coefficients_field_modulus_range (Seq.index key i)))

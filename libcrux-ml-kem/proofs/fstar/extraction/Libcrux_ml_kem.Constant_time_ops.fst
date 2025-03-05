@@ -13,37 +13,8 @@ let inz (value: u8) =
   in
   let res:u8 = result &. mk_u8 1 in
   let _:Prims.unit =
-    if v e_orig_value = 0
-    then
-      (assert (value == zero);
-        lognot_lemma value;
-        assert ((~.value +. (mk_u16 1)) == zero);
-        assert ((Core.Num.impl_u16__wrapping_add (~.value <: u16) (mk_u16 1) <: u16) == zero);
-        logor_lemma value zero;
-        assert ((value |. (Core.Num.impl_u16__wrapping_add (~.value <: u16) (mk_u16 1) <: u16)
-              <:
-              u16) ==
-            value);
-        assert (v result == v ((value >>! (mk_i32 8))));
-        assert ((v value / pow2 8) == 0);
-        assert (result == (mk_u8 0));
-        logand_lemma (mk_u8 1) result;
-        assert (res == (mk_u8 0)))
-    else
-      (assert (v value <> 0);
-        lognot_lemma value;
-        assert (v (~.value) = pow2 16 - 1 - v value);
-        assert (v (~.value) + 1 = pow2 16 - v value);
-        assert (v (value) <= pow2 8 - 1);
-        assert ((v (~.value) + 1) = (pow2 16 - pow2 8) + (pow2 8 - v value));
-        assert ((v (~.value) + 1) = (pow2 8 - 1) * pow2 8 + (pow2 8 - v value));
-        assert ((v (~.value) + 1) / pow2 8 = (pow2 8 - 1));
-        assert (v ((Core.Num.impl_u16__wrapping_add (~.value <: u16) (mk_u16 1) <: u16) >>!
-                (mk_i32 8)) =
-            pow2 8 - 1);
-        assert (result = ones);
-        logand_lemma (mk_u8 1) result;
-        assert (res = (mk_u8 1)))
+    lognot_lemma value;
+    logand_lemma (mk_u8 1) result
   in
   res
 
@@ -103,6 +74,9 @@ let compare (lhs rhs: t_Slice u8) =
           r)
   in
   is_non_zero r
+
+let compare_ciphertexts_in_constant_time (lhs rhs: t_Slice u8) =
+  Core.Hint.black_box #u8 (compare lhs rhs <: u8)
 
 #push-options "--ifuel 0 --z3rlimit 50"
 
@@ -189,9 +163,6 @@ let select_ct (lhs rhs: t_Slice u8) (selector: u8) =
   out
 
 #pop-options
-
-let compare_ciphertexts_in_constant_time (lhs rhs: t_Slice u8) =
-  Core.Hint.black_box #u8 (compare lhs rhs <: u8)
 
 let select_shared_secret_in_constant_time (lhs rhs: t_Slice u8) (selector: u8) =
   Core.Hint.black_box #(t_Array u8 (mk_usize 32))
