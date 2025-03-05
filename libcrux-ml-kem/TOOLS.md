@@ -16,11 +16,14 @@ at least 4 cores, 16GB of memory, and 128GB of disk space.
 ## Prerequisites
 
 The machine must have installed the following:
-* Gcc >= 13 or Clang >= 14
+* Gcc >= 13 or Clang >= 14 
 * Rustup (cargo, rustc)
 * Opam (with ocaml version 5.1.1)
 * Nodejs, jq
 * clang-format-18, cmake, ninja-build
+
+The C compiler version constraints come from the Gtest and benchmarking framework;
+our C code compiles with all standard compiler versions.
 
 If you have a machine with all of the above, you can skip to the instructions 
 for our toolchain. 
@@ -40,7 +43,7 @@ opam switch create 5.1.1
 eval $(opam env --switch=5.1.1)
 
 rustup default stable
-export PATH=$PATH:~/.cargo/bin
+. $HOME/.cargo/env
 ```
 
 ## Install Verification Tools (Hax, F*, Z3)
@@ -104,7 +107,7 @@ into your `.profile` or equivalent so that they are set every time you log in.
 ```
 # To be set in any shell where we run the tools
 eval $(opam env --switch=5.1.1)
-export PATH=$PATH:~/.cargo/bin
+. $HOME/.cargo/env
 export KRML_HOME=~/karamel
 export CHARON_HOME=~/charon
 export EURYDICE_HOME=~/eurydice
@@ -162,7 +165,7 @@ cd libcrux/libcrux-ml-kem
 ./hax.py prove
 ```
 
-The F* files are located in `libcrux-ml-kem/proofs/fstar/extraction` and the spec they are verified against is in `proofs/fstar/spec`.
+The F* files are located in `libcrux-ml-kem/proofs/fstar/extraction` and the spec they are verified against is in `libcrux-ml-kem/proofs/fstar/spec`.
 
 ### Modifying the Top-Level API
 
