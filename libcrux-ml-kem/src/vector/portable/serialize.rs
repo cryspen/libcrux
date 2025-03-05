@@ -56,7 +56,7 @@ val serialize_1_lemma (inputs: Libcrux_ml_kem.Vector.Portable.Vector_type.t_Port
 #[inline(always)]
 pub(crate) fn serialize_1(v: PortableVector, out: &mut [u8]) {
     debug_assert!(out.len() == 2);
-    
+
     out[0] = (v.elements[0] as u8)
         | ((v.elements[1] as u8) << 1)
         | ((v.elements[2] as u8) << 2)

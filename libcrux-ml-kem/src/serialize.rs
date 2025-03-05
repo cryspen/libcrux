@@ -271,7 +271,7 @@ pub(super) fn compress_then_serialize_ring_element_u<
 fn compress_then_serialize_4<Vector: Operations>(
     re: PolynomialRingElement<Vector>,
     serialized: &mut [u8],
-    scratch: &mut Vector
+    scratch: &mut Vector,
 ) {
     hax_lib::fstar!(r#"assert_norm (pow2 4 == 16)"#);
     for i in 0..VECTORS_IN_RING_ELEMENT {
@@ -288,7 +288,7 @@ fn compress_then_serialize_4<Vector: Operations>(
             (coefficients_field_modulus_range #$:Vector)"
         );
         to_unsigned_field_modulus(&re.coefficients[i], scratch);
-         Vector::compress::<4>(scratch);
+        Vector::compress::<4>(scratch);
 
         Vector::serialize_4(*scratch, &mut serialized[8 * i..8 * i + 8]);
     }

@@ -406,20 +406,20 @@ pub(crate) fn ntt_multiply(
     hax_lib::fstar!(r#"assert (Spec.Utils.is_i16b 1664 nzeta2)"#);
     hax_lib::fstar!(r#"assert (Spec.Utils.is_i16b 1664 nzeta3)"#);
     hax_lib::fstar!(r#"assert (Spec.Utils.is_i16b_array 3328 out.f_elements)"#);
-    ntt_multiply_binomials(lhs, rhs, zeta0, 0,  out);
+    ntt_multiply_binomials(lhs, rhs, zeta0, 0, out);
     hax_lib::fstar!(r#"assert (Spec.Utils.is_i16b_array 3328 out.f_elements)"#);
-    ntt_multiply_binomials(lhs, rhs, nzeta0, 1,  out);
+    ntt_multiply_binomials(lhs, rhs, nzeta0, 1, out);
     hax_lib::fstar!(r#"assert (Spec.Utils.is_i16b_array 3328 out.f_elements)"#);
-    ntt_multiply_binomials(lhs, rhs, zeta1, 2,  out);
+    ntt_multiply_binomials(lhs, rhs, zeta1, 2, out);
     hax_lib::fstar!(r#"assert (Spec.Utils.is_i16b_array 3328 out.f_elements)"#);
-    ntt_multiply_binomials(lhs, rhs, nzeta1, 3,  out);
+    ntt_multiply_binomials(lhs, rhs, nzeta1, 3, out);
     hax_lib::fstar!(r#"assert (Spec.Utils.is_i16b_array 3328 out.f_elements)"#);
-    ntt_multiply_binomials(lhs, rhs, zeta2, 4,  out);
+    ntt_multiply_binomials(lhs, rhs, zeta2, 4, out);
     hax_lib::fstar!(r#"assert (Spec.Utils.is_i16b_array 3328 out.f_elements)"#);
-    ntt_multiply_binomials(lhs, rhs, nzeta2, 5,  out);
+    ntt_multiply_binomials(lhs, rhs, nzeta2, 5, out);
     hax_lib::fstar!(r#"assert (Spec.Utils.is_i16b_array 3328 out.f_elements)"#);
-    ntt_multiply_binomials(lhs, rhs, zeta3, 6,  out);
+    ntt_multiply_binomials(lhs, rhs, zeta3, 6, out);
     hax_lib::fstar!(r#"assert (Spec.Utils.is_i16b_array 3328 out.f_elements)"#);
-    ntt_multiply_binomials(lhs, rhs, nzeta3, 7,  out);
+    ntt_multiply_binomials(lhs, rhs, nzeta3, 7, out);
     hax_lib::fstar!(r#"assert (Spec.Utils.is_i16b_array 3328 out.f_elements)"#);
 }

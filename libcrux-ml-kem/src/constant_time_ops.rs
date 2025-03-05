@@ -200,7 +200,7 @@ pub(crate) fn select_shared_secret_in_constant_time(
     lhs: &[u8],
     rhs: &[u8],
     selector: u8,
-    out: &mut [u8]
+    out: &mut [u8],
 ) {
     #[cfg(eurydice)]
     return select_ct(lhs, rhs, selector, out);
@@ -222,7 +222,7 @@ pub(crate) fn compare_ciphertexts_select_shared_secret_in_constant_time(
     rhs_c: &[u8],
     lhs_s: &[u8],
     rhs_s: &[u8],
-    out: &mut [u8]
+    out: &mut [u8],
 ) {
     let selector = compare_ciphertexts_in_constant_time(lhs_c, rhs_c);
 

@@ -158,7 +158,7 @@ impl Operations for PortableVector {
     fn negate(vec: &mut Self) {
         negate(vec)
     }
-    
+
     #[requires(fstar!(r#"forall i. i < 16 ==> 
         Spec.Utils.is_intb (pow2 15 - 1) (v (Seq.index ${vec}.f_elements i) * v c)"#))]
     #[ensures(|result| fstar!(r#"forall i. i < 16 ==> 

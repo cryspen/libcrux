@@ -529,45 +529,20 @@ pub(crate) mod neon {
         match input.len() as u8 {
             2 => {
                 let (out0, out1) = outputs.split_at_mut(out_len);
-                x2::shake256(
-                    &input[0],
-                    &input[1],
-                    out0,
-                    out1,
-                );
+                x2::shake256(&input[0], &input[1], out0, out1);
             }
             3 => {
                 let (out0, rest) = outputs.split_at_mut(out_len);
                 let (out1, out2) = rest.split_at_mut(out_len);
-                x2::shake256(
-                    &input[0],
-                    &input[1],
-                    out0,
-                    out1,
-                );
-                x2::shake256(
-                    &input[2],
-                    &input[0],
-                    out2,
-                    &mut dummy,
-                );
+                x2::shake256(&input[0], &input[1], out0, out1);
+                x2::shake256(&input[2], &input[0], out2, &mut dummy);
             }
             4 => {
                 let (out0, rest) = outputs.split_at_mut(out_len);
                 let (out1, rest) = rest.split_at_mut(out_len);
                 let (out2, out3) = rest.split_at_mut(out_len);
-                x2::shake256(
-                    &input[0],
-                    &input[1],
-                    out0,
-                    out1,
-                );
-                x2::shake256(
-                    &input[2],
-                    &input[3],
-                    out2,
-                    out3,
-                );
+                x2::shake256(&input[0], &input[1], out0, out1);
+                x2::shake256(&input[2], &input[3], out2, out3);
             }
             _ => unreachable!("This function must only be called with N = 2, 3, 4"),
         }

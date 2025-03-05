@@ -185,7 +185,7 @@ fn add_message_error_reduce<Vector: Operations>(
     myself: &PolynomialRingElement<Vector>,
     message: &PolynomialRingElement<Vector>,
     result: &mut PolynomialRingElement<Vector>,
-    scratch: &mut Vector
+    scratch: &mut Vector,
 ) {
     // Using `hax_lib::fstar::verification_status(lax)` works but produces an error while extracting
     for i in 0..VECTORS_IN_RING_ELEMENT {
@@ -336,7 +336,7 @@ impl<Vector: Operations> PolynomialRingElement<Vector> {
     #[inline(always)]
     #[allow(dead_code)]
     #[requires(VECTORS_IN_RING_ELEMENT * 16 * 2 <= bytes.len())]
-    pub(crate) fn from_bytes(bytes: &[u8], out:& mut Self) {
+    pub(crate) fn from_bytes(bytes: &[u8], out: &mut Self) {
         from_bytes(bytes, out)
     }
 
@@ -365,7 +365,12 @@ impl<Vector: Operations> PolynomialRingElement<Vector> {
     }
 
     #[inline(always)]
-    pub(crate) fn add_message_error_reduce(&self, message: &Self, result: &mut Self, scratch: &mut Vector) {
+    pub(crate) fn add_message_error_reduce(
+        &self,
+        message: &Self,
+        result: &mut Self,
+        scratch: &mut Vector,
+    ) {
         add_message_error_reduce(self, message, result, scratch);
     }
 

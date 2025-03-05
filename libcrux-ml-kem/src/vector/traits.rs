@@ -258,8 +258,8 @@ pub fn to_standard_domain<T: Operations>(v: &mut T) {
 #[inline(always)]
 pub fn to_unsigned_representative<T: Operations>(a: &T, out: &mut T) {
     *out = a.clone(); // XXX: We need a copy of `a` here. At least
-                       // the allocation becomes apparent on the
-                       // outside.
+                      // the allocation becomes apparent on the
+                      // outside.
     T::shift_right::<15>(out);
     T::bitwise_and_with_constant(out, FIELD_MODULUS);
     T::add(out, a)

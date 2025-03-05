@@ -1,6 +1,5 @@
 use crate::{
-    constants::COEFFICIENTS_IN_RING_ELEMENT, hash_functions::*, helper::cloop,
-    vector::Operations,
+    constants::COEFFICIENTS_IN_RING_ELEMENT, hash_functions::*, helper::cloop, vector::Operations,
 };
 
 /// If `bytes` contains a set of uniformly random bytes, this function
@@ -100,7 +99,7 @@ pub(super) fn sample_from_xof<const K: usize, Vector: Operations, Hasher: Hash>(
             sampled_coefficients,
             out,
         );
-    };
+    }
 }
 
 /// Given a series of uniformly random bytes in `randomness`, for some number `eta`,

@@ -98,7 +98,7 @@ pub fn sub(lhs: &mut PortableVector, rhs: &PortableVector) {
 }
 
 pub fn negate(vec: &mut PortableVector) {
-       for i in 0..FIELD_ELEMENTS_IN_VECTOR {
+    for i in 0..FIELD_ELEMENTS_IN_VECTOR {
         vec.elements[i] = -vec.elements[i];
     }
 }

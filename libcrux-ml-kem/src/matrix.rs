@@ -3,6 +3,28 @@ use crate::{
     polynomial::PolynomialRingElement, sampling::sample_from_xof, vector::Operations,
 };
 
+pub(crate) fn entry<const K: usize, Vector: Operations>(
+    matrix: &[PolynomialRingElement<Vector>],
+    i: usize,
+    j: usize,
+) -> &PolynomialRingElement<Vector> {
+    debug_assert!(matrix.len() == K * K);
+    debug_assert!(i < K);
+    debug_assert!(j < K);
+    &matrix[i * K + j]
+}
+
+pub(crate) fn entry_mut<const K: usize, Vector: Operations>(
+    matrix: &mut [PolynomialRingElement<Vector>],
+    i: usize,
+    j: usize,
+) -> &mut PolynomialRingElement<Vector> {
+    debug_assert!(matrix.len() == K * K);
+    debug_assert!(i < K);
+    debug_assert!(j < K);
+    &mut matrix[i * K + j]
+}
+
 #[inline(always)]
 #[allow(non_snake_case)]
 #[hax_lib::fstar::verification_status(panic_free)]
@@ -14,10 +36,12 @@ use crate::{
         else Libcrux_ml_kem.Polynomial.to_spec_matrix_t ${A_transpose}_future == Spec.MLKEM.matrix_transpose matrix_A)"#)
 )]
 pub(crate) fn sample_matrix_A<const K: usize, Vector: Operations, Hasher: Hash>(
-    A_transpose: &mut [[PolynomialRingElement<Vector>; K]; K],
+    A_transpose: &mut [PolynomialRingElement<Vector>],
     seed: [u8; 34],
     transpose: bool,
 ) {
+    debug_assert!(A_transpose.len() == K * K);
+
     for i in 0..K {
         let mut seeds = [seed; K];
         for j in 0..K {
@@ -25,15 +49,15 @@ pub(crate) fn sample_matrix_A<const K: usize, Vector: Operations, Hasher: Hash>(
             seeds[j][33] = j as u8;
         }
         let mut sampled_coefficients = [0usize; K];
-        let mut out = [[0i16;272]; K];
+        let mut out = [[0i16; 272]; K];
         sample_from_xof::<K, Vector, Hasher>(&seeds, &mut sampled_coefficients, &mut out);
         cloop! {
             for (j, sample) in out.into_iter().enumerate() {
                 // A[i][j] = A_transpose[j][i]
                 if transpose {
-                    PolynomialRingElement::from_i16_array(&sample[..256], &mut A_transpose[j][i]);
+                    PolynomialRingElement::from_i16_array(&sample[..256], entry_mut::<K, Vector>(A_transpose, j,i));
                 } else {
-                    PolynomialRingElement::from_i16_array(&sample[..256], &mut A_transpose[i][j]);
+                    PolynomialRingElement::from_i16_array(&sample[..256], entry_mut::<K, Vector>(A_transpose, i, j)); // XXX: in this case we might want to copy all of sample at once
                 }
             }
         }
@@ -63,7 +87,7 @@ pub(crate) fn compute_message<const K: usize, Vector: Operations>(
     secret_as_ntt: &[PolynomialRingElement<Vector>; K],
     u_as_ntt: &[PolynomialRingElement<Vector>; K],
     result: &mut PolynomialRingElement<Vector>,
-    scratch: &mut PolynomialRingElement<Vector>
+    scratch: &mut PolynomialRingElement<Vector>,
 ) {
     for i in 0..K {
         secret_as_ntt[i].ntt_multiply(&u_as_ntt[i], scratch);
@@ -94,7 +118,7 @@ pub(crate) fn compute_ring_element_v<const K: usize, Vector: Operations>(
     error_2: &PolynomialRingElement<Vector>,
     message: &PolynomialRingElement<Vector>,
     result: &mut PolynomialRingElement<Vector>,
-    scratch: &mut PolynomialRingElement<Vector>
+    scratch: &mut PolynomialRingElement<Vector>,
 ) {
     for i in 0..K {
         t_as_ntt[i].ntt_multiply(&r_as_ntt[i], scratch);
@@ -120,26 +144,24 @@ pub(crate) fn compute_ring_element_v<const K: usize, Vector: Operations>(
             Libcrux_ml_kem.Serialize.coefficients_field_modulus_range (Seq.index $res i))"#)
 )]
 pub(crate) fn compute_vector_u<const K: usize, Vector: Operations>(
-    a_as_ntt: &[[PolynomialRingElement<Vector>; K]; K],
+    a_as_ntt: &[PolynomialRingElement<Vector>],
     r_as_ntt: &[PolynomialRingElement<Vector>],
-    error_1: &[PolynomialRingElement<Vector>; K],
+    error_1: &[PolynomialRingElement<Vector>],
     result: &mut [PolynomialRingElement<Vector>],
-    scratch: &mut PolynomialRingElement<Vector>
+    scratch: &mut PolynomialRingElement<Vector>,
 ) {
+    debug_assert!(a_as_ntt.len() == K * K);
+    debug_assert!(r_as_ntt.len() == K);
+    debug_assert!(error_1.len() == K);
 
-
-    cloop! {
-        for (i, row) in a_as_ntt.iter().enumerate() {
-            cloop! {
-                for (j, a_element) in row.iter().enumerate() {
-                    a_element.ntt_multiply(&r_as_ntt[j], scratch);
-                    result[i].add_to_ring_element::<K>(scratch);
-                }
-            }
-
-            invert_ntt_montgomery::<K, Vector>(&mut result[i], &mut scratch.coefficients[0]);
-            result[i].add_error_reduce(&error_1[i]);
+    for i in 0..K {
+        for j in 0..K {
+            entry::<K, Vector>(a_as_ntt, i, j).ntt_multiply(&r_as_ntt[j], scratch);
+            result[i].add_to_ring_element::<K>(scratch);
         }
+
+        invert_ntt_montgomery::<K, Vector>(&mut result[i], &mut scratch.coefficients[0]);
+        result[i].add_error_reduce(&error_1[i]);
     }
 }
 
@@ -160,24 +182,36 @@ pub(crate) fn compute_vector_u<const K: usize, Vector: Operations>(
 )]
 pub(crate) fn compute_As_plus_e<const K: usize, Vector: Operations>(
     t_as_ntt: &mut [PolynomialRingElement<Vector>; K],
-    matrix_A: &[[PolynomialRingElement<Vector>; K]; K],
+    matrix_A: &[PolynomialRingElement<Vector>],
     s_as_ntt: &[PolynomialRingElement<Vector>; K],
     error_as_ntt: &[PolynomialRingElement<Vector>; K],
-    scratch: &mut PolynomialRingElement<Vector>
+    scratch: &mut PolynomialRingElement<Vector>,
 ) {
-    cloop! {
-        for (i, row) in matrix_A.iter().enumerate() {
-            // This may be externally provided memory. Ensure that `t_as_ntt`
-            // is all 0.
-            t_as_ntt[i] = PolynomialRingElement::<Vector>::ZERO();
-            cloop! {
-                for (j, matrix_element) in row.iter().enumerate() {
-                    matrix_element.ntt_multiply(&s_as_ntt[j], scratch);
-                    t_as_ntt[i].add_to_ring_element::<K>(scratch);
-                }
-            }
-            t_as_ntt[i].add_standard_error_reduce(&error_as_ntt[i]);
+    for i in 0..K {
+        // This may be externally provided memory. Ensure that `t_as_ntt`
+        // is all 0.
+        t_as_ntt[i] = PolynomialRingElement::<Vector>::ZERO();
+
+        for j in 0..K {
+            entry::<K, Vector>(matrix_A, i, j).ntt_multiply(&s_as_ntt[j], scratch);
+            t_as_ntt[i].add_to_ring_element::<K>(scratch);
         }
-    };
+        t_as_ntt[i].add_standard_error_reduce(&error_as_ntt[i]);
+    }
+
+    // cloop! {
+    //     for (i, row) in matrix_A.iter().enumerate() {
+    //         // This may be externally provided memory. Ensure that `t_as_ntt`
+    //         // is all 0.
+    //         t_as_ntt[i] = PolynomialRingElement::<Vector>::ZERO();
+    //         cloop! {
+    //             for (j, matrix_element) in row.iter().enumerate() {
+    //                 matrix_element.ntt_multiply(&s_as_ntt[j], scratch);
+    //                 t_as_ntt[i].add_to_ring_element::<K>(scratch);
+    //             }
+    //         }
+    //         t_as_ntt[i].add_standard_error_reduce(&error_as_ntt[i]);
+    //     }
+    // };
     ()
 }
