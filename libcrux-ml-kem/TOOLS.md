@@ -32,7 +32,7 @@ The main notable step here is that we require the OCaml package manager (opam) i
 with the OCaml version set to 5.1.1. (Other OCaml versions may also work, but we have
 tested extensively on this version of OCaml.)
 
-```
+```bash
 sudo apt -y install gcc git rustup nodejs jq opam clang-format-18 cmake ninja-build
 
 opam init
