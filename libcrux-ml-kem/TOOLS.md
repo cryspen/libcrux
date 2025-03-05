@@ -241,7 +241,7 @@ module currently contains an `inz` function that returns 0 if the input byte is 
 and 1 otherwise. The current code implements this function and verified it in one
 way, but you can replace it with a different implementation, e.g.:
 
-```
+```rust
 #[inline(never)] // Don't inline this to avoid that the compiler optimizes this out.
 #[hax_lib::ensures(|result| if value == 0 {result == 0} else {result == 1})]
 fn inz2(value: u8) -> u8 {
