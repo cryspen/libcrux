@@ -8,7 +8,7 @@
  * Eurydice: 788c5abefac3a9c7f79abae6a30fa8558e39764c
  * Karamel: 1d81d757d5d9e16dd6463ccc72324e587c707959
  * F*: b0961063393215ca65927f017720cb365a193833-dirty
- * Libcrux: bab611f6a9005751769f23d1d6cc3c7cf072c7e7
+ * Libcrux: 1c4e2cbb4bc08f93cca04e22245f2b25dcb23d83
  */
 
 #include "internal/libcrux_core.h"
@@ -16,7 +16,7 @@
 /**
  Return 1 if `value` is not zero and 0 otherwise.
 */
-static uint8_t inz(uint8_t value) {
+static KRML_NOINLINE uint8_t inz(uint8_t value) {
   uint16_t value0 = (uint16_t)value;
   uint8_t result =
       (uint8_t)((uint32_t)core_num__u16_7__wrapping_add(~value0, 1U) >> 8U);
@@ -29,7 +29,7 @@ static KRML_NOINLINE uint8_t is_non_zero(uint8_t value) { return inz(value); }
  Return 1 if the bytes of `lhs` and `rhs` do not exactly
  match and 0 otherwise.
 */
-static uint8_t compare(Eurydice_slice lhs, Eurydice_slice rhs) {
+static KRML_NOINLINE uint8_t compare(Eurydice_slice lhs, Eurydice_slice rhs) {
   uint8_t r = 0U;
   for (size_t i = (size_t)0U; i < Eurydice_slice_len(lhs, uint8_t); i++) {
     size_t i0 = i;
@@ -50,8 +50,8 @@ compare_ciphertexts_in_constant_time(Eurydice_slice lhs, Eurydice_slice rhs) {
  If `selector` is not zero, return the bytes in `rhs`; return the bytes in
  `lhs` otherwise.
 */
-static void select_ct(Eurydice_slice lhs, Eurydice_slice rhs, uint8_t selector,
-                      uint8_t ret[32U]) {
+static KRML_NOINLINE void select_ct(Eurydice_slice lhs, Eurydice_slice rhs,
+                                    uint8_t selector, uint8_t ret[32U]) {
   uint8_t mask = core_num__u8_6__wrapping_sub(is_non_zero(selector), 1U);
   uint8_t out[32U] = {0U};
   for (size_t i = (size_t)0U; i < LIBCRUX_ML_KEM_CONSTANTS_SHARED_SECRET_SIZE;
@@ -73,7 +73,8 @@ static KRML_NOINLINE void select_shared_secret_in_constant_time(
   select_ct(lhs, rhs, selector, ret);
 }
 
-void libcrux_ml_kem_constant_time_ops_compare_ciphertexts_select_shared_secret_in_constant_time(
+KRML_NOINLINE void
+libcrux_ml_kem_constant_time_ops_compare_ciphertexts_select_shared_secret_in_constant_time(
     Eurydice_slice lhs_c, Eurydice_slice rhs_c, Eurydice_slice lhs_s,
     Eurydice_slice rhs_s, uint8_t ret[32U]) {
   uint8_t selector = compare_ciphertexts_in_constant_time(lhs_c, rhs_c);

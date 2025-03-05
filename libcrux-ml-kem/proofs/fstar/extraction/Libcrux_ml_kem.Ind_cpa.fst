@@ -29,6 +29,7 @@ let serialize_vector
       (fun out i ->
           let out:t_Slice u8 = out in
           let i:usize = i in
+          Core.Slice.impl__len #u8 out == Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE v_K /\
           (v i < v v_K ==>
             Libcrux_ml_kem.Serialize.coefficients_field_modulus_range (Seq.index key (v i))) /\
           (forall (j: nat).
@@ -653,8 +654,6 @@ let generate_keypair_unpacked
 
 #pop-options
 
-#push-options "--admit_smt_queries true"
-
 let serialize_unpacked_secret_key
       (v_K v_PRIVATE_KEY_SIZE v_PUBLIC_KEY_SIZE: usize)
       (#v_Vector: Type0)
@@ -683,8 +682,6 @@ let serialize_unpacked_secret_key
   secret_key_serialized, public_key_serialized
   <:
   (t_Array u8 v_PRIVATE_KEY_SIZE & t_Array u8 v_PUBLIC_KEY_SIZE)
-
-#pop-options
 
 let generate_keypair
       (v_K v_PRIVATE_KEY_SIZE v_PUBLIC_KEY_SIZE v_ETA1 v_ETA1_RANDOMNESS_SIZE: usize)
