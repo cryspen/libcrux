@@ -115,55 +115,45 @@ pub fn _mm_set_epi8(
 
 #[hax_lib::requires(SHIFT_BY >= 0 && SHIFT_BY < 16)]
 pub fn _mm256_slli_epi16<const SHIFT_BY: i32>(vector: __m256i) -> __m256i {
-    #[cfg(not(hax))]
-    debug_assert!(SHIFT_BY >= 0 && SHIFT_BY < 16);
-    BitVec::from_fn(|i| {
-        let nth_bit = i % 16;
-        let shift = SHIFT_BY as u64;
-        if nth_bit >= shift {
-            vector[i - shift]
-        } else {
-            Bit::Zero
-        }
-    })
+    vector.chunked_shift::<16, 16>(FunArray::from_fn(|_| SHIFT_BY as i128))
 }
 
 #[hax_lib::requires(SHIFT_BY >= 0 && SHIFT_BY < 64)]
 pub fn _mm256_srli_epi64<const SHIFT_BY: i32>(vector: __m256i) -> __m256i {
-    #[cfg(not(hax))]
-    debug_assert!(SHIFT_BY >= 0 && SHIFT_BY < 64);
-    BitVec::from_fn(|i| {
-        let nth_bit = i % 64;
-        let shift = SHIFT_BY as u64;
-        if nth_bit < 64 - shift {
-            vector[i + shift]
-        } else {
-            Bit::Zero
-        }
-    })
+    vector.chunked_shift::<64, 4>(FunArray::from_fn(|_| -(SHIFT_BY as i128)))
 }
+
+// pub fn _mm256_mullo_epi16(vector: __m256i, shifts: __m256i) -> __m256i {
+//     todo!()
+// }
 
 #[hax_lib::opaque]
 pub fn _mm256_sllv_epi32(vector: __m256i, counts: __m256i) -> __m256i {
-    // extra::mm256_sllv_epi32_u32_array(vector, counts.to_vec().try_into().unwrap())
-    todo!()
+    extra::mm256_sllv_epi32_u32_array(vector, counts.to_vec().try_into().unwrap())
+}
+
+#[hax_lib::opaque]
+pub fn _mm256_srlv_epi32(vector: __m256i, counts: __m256i) -> __m256i {
+    extra::mm256_srlv_epi32_u32_array(vector, counts.to_vec().try_into().unwrap())
 }
 
 #[hax_lib::opaque]
 pub fn _mm256_permutevar8x32_epi32(a: __m256i, b: __m256i) -> __m256i {
-    // extra::mm256_permutevar8x32_epi32_u32_array(a, b.to_vec().try_into().unwrap())
-    todo!()
+    extra::mm256_permutevar8x32_epi32_u32_array(a, b.to_vec().try_into().unwrap())
 }
 
 pub fn _mm256_castsi256_si128(vector: __m256i) -> __m128i {
     BitVec::from_fn(|i| vector[i])
 }
 
+pub fn _mm256_extracti128_si256<const IMM8: i32>(vector: __m256i) -> __m128i {
+    BitVec::from_fn(|i| vector[i + if IMM8 == 0 { 0 } else { 128 }])
+}
+
 #[hax_lib::opaque]
 pub fn _mm_shuffle_epi8(vector: __m128i, indexes: __m128i) -> __m128i {
-    // let indexes: [u8; 16] = indexes.to_vec().try_into().unwrap();
-    // extra::mm_shuffle_epi8_u8_array(vector, indexes)
-    todo!()
+    let indexes = indexes.to_vec().try_into().unwrap();
+    extra::mm_shuffle_epi8_u8_array(vector, indexes)
 }
 
 /// Rewrite lemmas
@@ -271,15 +261,7 @@ pub mod extra {
         vector: BitVec<256>,
         counts: FunArray<8, u32>,
     ) -> BitVec<256> {
-        BitVec::from_fn(|i| {
-            let nth_bit = i % 32;
-            let shift = counts[i / 32];
-            if nth_bit as i128 >= shift as i128 {
-                vector[i - shift as u64]
-            } else {
-                Bit::Zero
-            }
-        })
+        vector.chunked_shift::<32, 8>(FunArray::from_fn(|i| counts[i] as i128))
     }
 
     pub fn mm256_sllv_epi32_u32(
@@ -309,13 +291,47 @@ pub mod extra {
         )
     }
 
+    pub fn mm256_srlv_epi32_u32_array(
+        vector: BitVec<256>,
+        counts: FunArray<8, u32>,
+    ) -> BitVec<256> {
+        vector.chunked_shift::<32, 8>(FunArray::from_fn(|i| -(counts[i] as i128)))
+    }
+
+    pub fn mm256_srlv_epi32_u32(
+        vector: BitVec<256>,
+        b7: u32,
+        b6: u32,
+        b5: u32,
+        b4: u32,
+        b3: u32,
+        b2: u32,
+        b1: u32,
+        b0: u32,
+    ) -> BitVec<256> {
+        mm256_srlv_epi32_u32_array(
+            vector,
+            FunArray::from_fn(|i| match i {
+                7 => b7,
+                6 => b6,
+                5 => b5,
+                4 => b4,
+                3 => b3,
+                2 => b2,
+                1 => b1,
+                0 => b0,
+                _ => unreachable!(),
+            }),
+        )
+    }
+
     pub fn mm256_permutevar8x32_epi32_u32_array(
         a: BitVec<256>,
         b: FunArray<8, u32>,
     ) -> BitVec<256> {
         BitVec::from_fn(|i| {
             let j = i / 32;
-            let index = ((b[j] % 7) as u64) * 32;
+            let index = ((b[j] % 8) as u64) * 32;
             a[index + i % 32]
         })
     }
@@ -354,7 +370,7 @@ pub mod extra {
             if index > 127 {
                 Bit::Zero
             } else {
-                let index = (index % 15) as u64;
+                let index = (index % 16) as u64;
                 vector[index * 8 + i % 8]
             }
         })
@@ -399,6 +415,83 @@ pub mod extra {
             _ => unreachable!(),
         });
         mm_shuffle_epi8_u8_array(vector, indexes)
+    }
+
+    // pub fn _mm256_mullo_epi16(a: __m256i, b: __m256i) -> __m256i {
+    //     BitVec::from_fn(|i| {
+    //         let nth_bit = i % 16;
+    //         let nth_i16 = i / 16;
+
+    //         let a_slice = FunArray::<16, Bit>::from_fn(|i| a[nth_i16 * 16 + i]);
+    //         let b_slice = FunArray::<16, Bit>::from_fn(|i| b[nth_i16 * 16 + i]);
+
+    //         match b_slice.log2() {
+    //             Some(shift) => {
+    //                 if nth_bit >= shift {
+    //                     a_slice[i - shift]
+    //                 } else {
+    //                     Bit::Zero
+    //                 }
+    //             }
+    //             None => BitVec::<64>::from_int(a_slice.to_u64().saturating_mul(b_slice.to_u64()))
+    //                 [nth_bit],
+    //         }
+    //     })
+    // }
+
+    pub fn mm256_mullo_epi16_shifts(
+        vector: __m256i,
+        s15: u8,
+        s14: u8,
+        s13: u8,
+        s12: u8,
+        s11: u8,
+        s10: u8,
+        s9: u8,
+        s8: u8,
+        s7: u8,
+        s6: u8,
+        s5: u8,
+        s4: u8,
+        s3: u8,
+        s2: u8,
+        s1: u8,
+        s0: u8,
+    ) -> __m256i {
+        let shifts = FunArray::<16, _>::from_fn(|i| match i {
+            15 => s15,
+            14 => s14,
+            13 => s13,
+            12 => s12,
+            11 => s11,
+            10 => s10,
+            9 => s9,
+            8 => s8,
+            7 => s7,
+            6 => s6,
+            5 => s5,
+            4 => s4,
+            3 => s3,
+            2 => s2,
+            1 => s1,
+            0 => s0,
+            _ => unreachable!(),
+        });
+        mm256_mullo_epi16_shifts_array(vector, shifts)
+    }
+    pub fn mm256_mullo_epi16_shifts_array(vector: __m256i, shifts: FunArray<16, u8>) -> __m256i {
+        BitVec::from_fn(|i| {
+            let nth_bit = i % 16;
+            let nth_i16 = i / 16;
+
+            let shift = shifts[nth_i16] as u64;
+
+            if nth_bit >= shift {
+                vector[nth_i16 * 16 + nth_bit - shift]
+            } else {
+                Bit::Zero
+            }
+        })
     }
 
     #[hax_lib::exclude]
@@ -449,11 +542,22 @@ mod tests {
 
     #[test]
     fn mm256_sllv_epi32() {
-        for _ in 0..100 {
+        for _ in 0..N {
             let vector: BitVec<256> = BitVec::rand();
             let counts: BitVec<256> = BitVec::rand();
             assert_eq!(super::_mm256_sllv_epi32(vector, counts), unsafe {
                 upstream::_mm256_sllv_epi32(vector.into(), counts.into()).into()
+            });
+        }
+    }
+
+    #[test]
+    fn mm256_srlv_epi32() {
+        for _ in 0..N {
+            let vector: BitVec<256> = BitVec::rand();
+            let counts: BitVec<256> = BitVec::rand();
+            assert_eq!(super::_mm256_srlv_epi32(vector, counts), unsafe {
+                upstream::_mm256_srlv_epi32(vector.into(), counts.into()).into()
             });
         }
     }
@@ -480,11 +584,24 @@ mod tests {
     }
 
     #[test]
+    fn mm256_extracti128_si256() {
+        for _ in 0..N {
+            let vector: BitVec<256> = BitVec::rand();
+            assert_eq!(super::_mm256_extracti128_si256::<0>(vector), unsafe {
+                upstream::_mm256_extracti128_si256::<0>(vector.into()).into()
+            });
+            assert_eq!(super::_mm256_extracti128_si256::<1>(vector), unsafe {
+                upstream::_mm256_extracti128_si256::<1>(vector.into()).into()
+            });
+        }
+    }
+
+    #[test]
     fn mm_shuffle_epi8() {
         for _ in 0..N {
             let a: BitVec<128> = BitVec::rand();
-            let _: upstream::__m128i = a.into();
             let b: BitVec<128> = BitVec::rand();
+
             assert_eq!(super::_mm_shuffle_epi8(a, b), unsafe {
                 upstream::_mm_shuffle_epi8(a.into(), b.into()).into()
             });

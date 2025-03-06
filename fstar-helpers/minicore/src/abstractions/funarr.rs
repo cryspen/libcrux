@@ -3,14 +3,15 @@
 open FStar.Tactics
 
 let ${_pointwise_apply_mk_term} #t
-  (max: nat{max > 0})
+  (max: nat)
   (f: (n:nat {n < max}) -> t)
   : Tac unit
-  = let rec brs (n:nat): Tac _ = 
-      let c = C_Int n in
-      let p = Pat_Constant c in
-      (p, mk_e_app (quote f) [pack (Tv_Const c)])
-      ::( match n with | 0 -> [] | _ -> brs (n - 1))
+  = let rec brs (n:int): Tac _ =
+      if n < 0 then []
+      else
+        let c = C_Int n in
+        let p = Pat_Constant c in
+        (p, mk_e_app (quote f) [pack (Tv_Const c)])::brs (n - 1)
     in
     let bd = fresh_binder_named "i" (quote (m: nat {m < max})) in
     let t = mk_abs [bd] (Tv_Match bd None (brs (max - 1))) in
@@ -95,6 +96,25 @@ impl<const N: u64, T> FunArray<N, T> {
             init = f(init, self[i].clone());
         }
         init
+    }
+}
+
+#[hax_lib::exclude]
+impl<const N: u64, T: Clone> TryFrom<Vec<T>> for FunArray<N, T> {
+    type Error = ();
+    fn try_from(v: Vec<T>) -> Result<Self, ()> {
+        if (v.len() as u64) < N {
+            Err(())
+        } else {
+            Ok(Self::from_fn(|i| v[i as usize].clone()))
+        }
+    }
+}
+
+#[hax_lib::exclude]
+impl<const N: u64, T: core::fmt::Debug + Clone> core::fmt::Debug for FunArray<N, T> {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        write!(f, "{:?}", self.as_vec())
     }
 }
 

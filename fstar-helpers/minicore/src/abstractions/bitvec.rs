@@ -1,5 +1,5 @@
 //! This module provides a specification-friendly bit vector type.
-use super::bit::{Bit, MachineInteger};
+use super::bit::{full_adder, Bit, MachineInteger};
 use super::funarr::*;
 
 // TODO: this module uses `u128/i128` as mathematic integers. We should use `hax_lib::int` or bigint.
@@ -53,7 +53,28 @@ impl<const N: u64> core::ops::Index<u64> for BitVec<N> {
     }
 }
 
-// // #[cfg(hax)]
+// impl<const N: u64> FunArray<N, Bit> {
+//     pub fn to_u64(self) -> u64 {
+//         self.fold(0, |acc, n| (acc * 2) + u64::from(n))
+//     }
+//     pub fn log2(self) -> Option<u64> {
+//         self.fold((0u64, None), |acc, n| {
+//             let (position, acc) = acc;
+//             (
+//                 position + 1,
+//                 match (acc, n) {
+//                     // We have multiple `1`, this cannot be a power of 2
+//                     (Some(_), Bit::One) => None,
+//                     (None, Bit::One) => Some(position),
+//                     (_, Bit::Zero) => acc,
+//                 },
+//             )
+//         })
+//         .1
+//     }
+// }
+
+// #[cfg(hax)]
 // use hax_lib::int::Abstraction;
 
 // /// Convert a fun array of bits into an unsigned number.
@@ -252,5 +273,29 @@ impl<const N: u64> BitVec<N> {
             (0..N).map(|_| rng.random::<bool>()).collect()
         };
         Self::from_fn(|i| random_source[i as usize].into())
+    }
+}
+
+#[hax_lib::attributes]
+impl<const N: u64> BitVec<N> {
+    pub fn chunked_shift<const CHUNK: u64, const SHIFTS: u64>(
+        self,
+        shl: FunArray<SHIFTS, i128>,
+    ) -> BitVec<N> {
+        BitVec::from_fn(|i| {
+            let nth_bit = i % CHUNK;
+            let nth_chunk = i / CHUNK;
+            let shift: i128 = if nth_chunk < SHIFTS {
+                shl[nth_chunk]
+            } else {
+                0
+            };
+            let local_index = nth_bit as i128 - shift;
+            if local_index < CHUNK as i128 && local_index >= 0 {
+                self[nth_chunk * CHUNK + local_index as u64]
+            } else {
+                Bit::Zero
+            }
+        })
     }
 }

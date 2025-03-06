@@ -3,6 +3,12 @@ module Minicore.Abstractions.Bitvec
 open Core
 open FStar.Mul
 
+let _ =
+  (* This module has implicit dependencies, here we make them explicit. *)
+  (* The implicit dependencies arise from typeclasses instances. *)
+  let open Minicore.Abstractions.Funarr in
+  ()
+
 noeq
 
 /// A fixed-size bit vector type.
@@ -127,3 +133,19 @@ let postprocess_rewrite_helper (rw_lemma: term) (): Tac unit = with_compat_pre_c
 
 let impl_8__postprocess_rewrite = postprocess_rewrite_helper (`impl_8__rewrite_pointwise)
 let impl_7__postprocess_rewrite = postprocess_rewrite_helper (`impl_7__rewrite_pointwise)
+
+let impl_10__chunked_shift
+      (v_N v_CHUNK v_SHIFTS: u64)
+      (self: t_BitVec v_N)
+      (shl: Minicore.Abstractions.Funarr.t_FunArray v_SHIFTS i128)
+    : t_BitVec v_N =
+  impl_9__from_fn v_N
+    (fun i ->
+        let i:u64 = i in
+        let nth_bit:u64 = i %! v_CHUNK in
+        let nth_chunk:u64 = i /! v_CHUNK in
+        let (shift: i128):i128 = if nth_chunk <. v_SHIFTS then shl.[ nth_chunk ] else mk_i128 0 in
+        let local_index:i128 = (cast (nth_bit <: u64) <: i128) -! shift in
+        if local_index <. (cast (v_CHUNK <: u64) <: i128) && local_index >=. mk_i128 0
+        then self.[ (nth_chunk *! v_CHUNK <: u64) +! (cast (local_index <: i128) <: u64) <: u64 ]
+        else Minicore.Abstractions.Bit.Bit_Zero <: Minicore.Abstractions.Bit.t_Bit)

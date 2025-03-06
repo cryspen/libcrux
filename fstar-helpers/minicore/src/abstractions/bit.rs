@@ -120,3 +120,36 @@ impl Bit {
         }
     }
 }
+
+impl Bit {
+    // Bitwise AND.
+    fn and(self, other: Bit) -> Bit {
+        match (self, other) {
+            (Bit::One, Bit::One) => Bit::One,
+            _ => Bit::Zero,
+        }
+    }
+
+    // Bitwise OR.
+    fn or(self, other: Bit) -> Bit {
+        match (self, other) {
+            (Bit::Zero, Bit::Zero) => Bit::Zero,
+            _ => Bit::One,
+        }
+    }
+
+    // Bitwise XOR.
+    fn xor(self, other: Bit) -> Bit {
+        match (self, other) {
+            (Bit::Zero, Bit::Zero) | (Bit::One, Bit::One) => Bit::Zero,
+            _ => Bit::One,
+        }
+    }
+}
+
+// Full adder: given bits a, b and a carry, returns (sum, new_carry).
+pub fn full_adder(a: Bit, b: Bit, carry: Bit) -> (Bit, Bit) {
+    let sum = a.xor(b).xor(carry);
+    let carry_out = a.and(b).or(a.and(carry)).or(b.and(carry));
+    (sum, carry_out)
+}

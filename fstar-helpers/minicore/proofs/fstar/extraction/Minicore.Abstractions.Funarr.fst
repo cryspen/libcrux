@@ -6,14 +6,15 @@ open FStar.Mul
 open FStar.Tactics
 
 let e_pointwise_apply_mk_term #t
-  (max: nat{max > 0})
+  (max: nat)
   (f: (n:nat {n < max}) -> t)
   : Tac unit
-  = let rec brs (n:nat): Tac _ = 
-      let c = C_Int n in
-      let p = Pat_Constant c in
-      (p, mk_e_app (quote f) [pack (Tv_Const c)])
-      ::( match n with | 0 -> [] | _ -> brs (n - 1))
+  = let rec brs (n:int): Tac _ =
+      if n < 0 then []
+      else
+        let c = C_Int n in
+        let p = Pat_Constant c in
+        (p, mk_e_app (quote f) [pack (Tv_Const c)])::brs (n - 1)
     in
     let bd = fresh_binder_named "i" (quote (m: nat {m < max})) in
     let t = mk_abs [bd] (Tv_Match bd None (brs (max - 1))) in
@@ -100,7 +101,7 @@ let impl_2
      = impl_2' v_N #v_T #i1
 
 [@@ FStar.Tactics.Typeclasses.tcinstance]
-let impl_6 (v_N: u64) (#v_T: Type0) : Core.Ops.Index.t_Index (t_FunArray v_N v_T) u64 =
+let impl_8 (v_N: u64) (#v_T: Type0) : Core.Ops.Index.t_Index (t_FunArray v_N v_T) u64 =
   {
     f_Output = v_T;
     f_index_pre = (fun (self_: t_FunArray v_N v_T) (index: u64) -> index <. v_N);
