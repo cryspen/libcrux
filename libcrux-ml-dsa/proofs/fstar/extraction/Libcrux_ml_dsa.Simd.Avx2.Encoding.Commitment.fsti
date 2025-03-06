@@ -3,10 +3,10 @@ module Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment
 open Core
 open FStar.Mul
 
-val serialize_6_ (simd_unit: Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 256))
-    : Prims.Pure
-      (Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 128) &
-        Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 128)) Prims.l_True (fun _ -> Prims.l_True)
+// val serialize_6_ (simd_unit: Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 256))
+//     : Prims.Pure
+//       (Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 128) &
+//         Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 128)) Prims.l_True (fun _ -> Prims.l_True)
 
 val serialize_4___aux (simd_unit: Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 256))
     : Prims.Pure (Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 128))

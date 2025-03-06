@@ -34,12 +34,9 @@ let serialize_6_ (simd_unit: Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 256))
         Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 256))
   in
   let adjacent_3_combined:Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 256) =
-    Libcrux_intrinsics.Avx2_extract.mm256_mullo_epi16 adjacent_3_combined
-      (Libcrux_intrinsics.Avx2_extract.mm256_set_epi16 (mk_i16 1) (mk_i16 1) (mk_i16 1) (mk_i16 1)
-          (mk_i16 1) (mk_i16 1) (mk_i16 1) (mk_i16 1 <<! mk_i32 4 <: i16) (mk_i16 1) (mk_i16 1)
-          (mk_i16 1) (mk_i16 1) (mk_i16 1) (mk_i16 1) (mk_i16 1) (mk_i16 1 <<! mk_i32 4 <: i16)
-        <:
-        Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 256))
+    Minicore.Arch.X86.Extra.mm256_mullo_epi16_shifts adjacent_3_combined (mk_u8 0) (mk_u8 0)
+      (mk_u8 0) (mk_u8 0) (mk_u8 0) (mk_u8 0) (mk_u8 0) (mk_u8 4) (mk_u8 0) (mk_u8 0) (mk_u8 0)
+      (mk_u8 0) (mk_u8 0) (mk_u8 0) (mk_u8 0) (mk_u8 4)
   in
   let adjacent_3_combined:Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 256) =
     Libcrux_intrinsics.Avx2_extract.mm256_srlv_epi32 adjacent_3_combined

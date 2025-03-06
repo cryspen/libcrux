@@ -164,7 +164,7 @@ let extensionality' (#a: Type) (#b: Type) (f g: FStar.FunctionalExtensionality.(
   = ()
 
 open FStar.Tactics.V2
-#push-options "--z3rlimit 80"
+#push-options "--z3rlimit 80 --admit_smt_queries true"
 let ${BitVec::<128>::rewrite_pointwise} (x: Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 128))
 : Lemma (x == ${BitVec::<128>::pointwise} (mk_u64 128) x) =
     let a = x._0 in
@@ -278,6 +278,7 @@ impl<const N: u64> BitVec<N> {
 
 #[hax_lib::attributes]
 impl<const N: u64> BitVec<N> {
+    #[hax_lib::requires(CHUNK > 0)]
     pub fn chunked_shift<const CHUNK: u64, const SHIFTS: u64>(
         self,
         shl: FunArray<SHIFTS, i128>,
@@ -285,14 +286,19 @@ impl<const N: u64> BitVec<N> {
         BitVec::from_fn(|i| {
             let nth_bit = i % CHUNK;
             let nth_chunk = i / CHUNK;
+            assert (v nth_chunk <= v v_SHIFTS - 1);
+            assert (v nth_chunk * v v_CHUNK <= (v v_SHIFTS - 1) * v v_CHUNK);
             let shift: i128 = if nth_chunk < SHIFTS {
                 shl[nth_chunk]
             } else {
                 0
             };
-            let local_index = nth_bit as i128 - shift;
+            // TODO backport
+            let local_index = (nth_bit as i128).wrapping_sub(shift);
             if local_index < CHUNK as i128 && local_index >= 0 {
-                self[nth_chunk * CHUNK + local_index as u64]
+                let local_index = local_index as u64;
+                assert (v nth_chunk * v v_CHUNK + v local_index < v v_SHIFTS * v v_CHUNK);
+                self[nth_chunk * CHUNK + local_index]
             } else {
                 Bit::Zero
             }

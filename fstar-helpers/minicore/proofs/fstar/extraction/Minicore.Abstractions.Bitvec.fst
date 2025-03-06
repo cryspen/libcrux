@@ -87,7 +87,7 @@ let extensionality' (#a: Type) (#b: Type) (f g: FStar.FunctionalExtensionality.(
   = ()
 
 open FStar.Tactics.V2
-#push-options "--z3rlimit 80"
+#push-options "--z3rlimit 80 --admit_smt_queries true"
 let impl_7__rewrite_pointwise (x: Minicore.Abstractions.Bitvec.t_BitVec (mk_u64 128))
 : Lemma (x == impl_9__pointwise (mk_u64 128) x) =
     let a = x._0 in
@@ -134,18 +134,33 @@ let postprocess_rewrite_helper (rw_lemma: term) (): Tac unit = with_compat_pre_c
 let impl_8__postprocess_rewrite = postprocess_rewrite_helper (`impl_8__rewrite_pointwise)
 let impl_7__postprocess_rewrite = postprocess_rewrite_helper (`impl_7__rewrite_pointwise)
 
+
+#push-options "--fuel 0 --ifuel 1 --z3rlimit 150 --split_queries always"
+
 let impl_10__chunked_shift
       (v_N v_CHUNK v_SHIFTS: u64)
       (self: t_BitVec v_N)
       (shl: Minicore.Abstractions.Funarr.t_FunArray v_SHIFTS i128)
-    : t_BitVec v_N =
+    : Prims.Pure (t_BitVec v_N) (requires v_CHUNK >. mk_u64 0 /\ v v_CHUNK * v v_SHIFTS == v v_N) (fun _ -> Prims.l_True) =
   impl_9__from_fn v_N
     (fun i ->
         let i:u64 = i in
         let nth_bit:u64 = i %! v_CHUNK in
         let nth_chunk:u64 = i /! v_CHUNK in
+        assert (v nth_chunk <= v v_SHIFTS - 1);
+        assert (v nth_chunk * v v_CHUNK <= (v v_SHIFTS - 1) * v v_CHUNK);
         let (shift: i128):i128 = if nth_chunk <. v_SHIFTS then shl.[ nth_chunk ] else mk_i128 0 in
-        let local_index:i128 = (cast (nth_bit <: u64) <: i128) -! shift in
+        let local_index:i128 =
+          Core.Num.impl_i128__wrapping_sub (cast (nth_bit <: u64) <: i128) shift
+        in
         if local_index <. (cast (v_CHUNK <: u64) <: i128) && local_index >=. mk_i128 0
-        then self.[ (nth_chunk *! v_CHUNK <: u64) +! (cast (local_index <: i128) <: u64) <: u64 ]
+        then begin
+          let xxx = (cast (local_index <: i128) <: u64) <: u64 in
+          assert (v nth_chunk * v v_CHUNK + v xxx < v v_SHIFTS * v v_CHUNK);
+          let i = (nth_chunk *! v_CHUNK <: u64) +! xxx in
+          let bit = self.[i] in
+          bit
+        end
         else Minicore.Abstractions.Bit.Bit_Zero <: Minicore.Abstractions.Bit.t_Bit)
+
+#pop-options
