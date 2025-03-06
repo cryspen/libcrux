@@ -6,7 +6,7 @@ open FStar.Mul
 open FStar.Tactics
 
 let e_pointwise_apply_mk_term #t
-  (max: nat)
+  (max: nat{max > 0})
   (f: (n:nat {n < max}) -> t)
   : Tac unit
   = let rec brs (n:nat): Tac _ = 
@@ -16,7 +16,7 @@ let e_pointwise_apply_mk_term #t
       ::( match n with | 0 -> [] | _ -> brs (n - 1))
     in
     let bd = fresh_binder_named "i" (quote (m: nat {m < max})) in
-    let t = mk_abs [bd] (Tv_Match bd None (brs max)) in
+    let t = mk_abs [bd] (Tv_Match bd None (brs (max - 1))) in
     exact t
 
 open FStar.FunctionalExtensionality    

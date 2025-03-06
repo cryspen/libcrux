@@ -77,6 +77,42 @@ pub fn _mm_storeu_si128(output: *mut __m128i, a: __m128i) {
     }
 }
 
+#[hax_lib::opaque]
+pub fn _mm256_set_epi32(
+    e0: i32,
+    e1: i32,
+    e2: i32,
+    e3: i32,
+    e4: i32,
+    e5: i32,
+    e6: i32,
+    e7: i32,
+) -> __m256i {
+    todo!()
+}
+
+#[hax_lib::opaque]
+pub fn _mm_set_epi8(
+    e15: i8,
+    e14: i8,
+    e13: i8,
+    e12: i8,
+    e11: i8,
+    e10: i8,
+    e9: i8,
+    e8: i8,
+    e7: i8,
+    e6: i8,
+    e5: i8,
+    e4: i8,
+    e3: i8,
+    e2: i8,
+    e1: i8,
+    e0: i8,
+) -> __m128i {
+    todo!()
+}
+
 #[hax_lib::requires(SHIFT_BY >= 0 && SHIFT_BY < 16)]
 pub fn _mm256_slli_epi16<const SHIFT_BY: i32>(vector: __m256i) -> __m256i {
     #[cfg(not(hax))]
@@ -107,13 +143,13 @@ pub fn _mm256_srli_epi64<const SHIFT_BY: i32>(vector: __m256i) -> __m256i {
     })
 }
 
-#[hax_lib::exclude]
+#[hax_lib::opaque]
 pub fn _mm256_sllv_epi32(vector: __m256i, counts: __m256i) -> __m256i {
     // extra::mm256_sllv_epi32_u32_array(vector, counts.to_vec().try_into().unwrap())
     todo!()
 }
 
-#[hax_lib::exclude]
+#[hax_lib::opaque]
 pub fn _mm256_permutevar8x32_epi32(a: __m256i, b: __m256i) -> __m256i {
     // extra::mm256_permutevar8x32_epi32_u32_array(a, b.to_vec().try_into().unwrap())
     todo!()
@@ -123,19 +159,114 @@ pub fn _mm256_castsi256_si128(vector: __m256i) -> __m128i {
     BitVec::from_fn(|i| vector[i])
 }
 
-#[hax_lib::exclude]
+#[hax_lib::opaque]
 pub fn _mm_shuffle_epi8(vector: __m128i, indexes: __m128i) -> __m128i {
     // let indexes: [u8; 16] = indexes.to_vec().try_into().unwrap();
     // extra::mm_shuffle_epi8_u8_array(vector, indexes)
     todo!()
 }
 
+/// Rewrite lemmas
+const _: () = {
+    #[hax_lib::fstar::before("[@@ $REWRITE_RULE ]")]
+    #[hax_lib::lemma]
+    #[hax_lib::opaque]
+    fn _rw_mm256_sllv_epi32(
+        vector: __m256i,
+        b7: i32,
+        b6: i32,
+        b5: i32,
+        b4: i32,
+        b3: i32,
+        b2: i32,
+        b1: i32,
+        b0: i32,
+    ) -> Proof<
+        {
+            hax_lib::prop::eq(
+                _mm256_sllv_epi32(vector, _mm256_set_epi32(b7, b6, b5, b4, b3, b2, b1, b0)),
+                extra::mm256_sllv_epi32_u32(
+                    vector, b7 as u32, b6 as u32, b5 as u32, b4 as u32, b3 as u32, b2 as u32,
+                    b1 as u32, b0 as u32,
+                ),
+            )
+        },
+    > {
+    }
+
+    #[hax_lib::fstar::before("[@@ $REWRITE_RULE ]")]
+    #[hax_lib::lemma]
+    #[hax_lib::opaque]
+    fn _rw_mm256_permutevar8x32_epi32(
+        vector: __m256i,
+        b7: i32,
+        b6: i32,
+        b5: i32,
+        b4: i32,
+        b3: i32,
+        b2: i32,
+        b1: i32,
+        b0: i32,
+    ) -> Proof<
+        {
+            hax_lib::prop::eq(
+                _mm256_permutevar8x32_epi32(
+                    vector,
+                    _mm256_set_epi32(b7, b6, b5, b4, b3, b2, b1, b0),
+                ),
+                extra::mm256_permutevar8x32_epi32_u32(
+                    vector, b7 as u32, b6 as u32, b5 as u32, b4 as u32, b3 as u32, b2 as u32,
+                    b1 as u32, b0 as u32,
+                ),
+            )
+        },
+    > {
+    }
+
+    #[hax_lib::fstar::before("[@@ $REWRITE_RULE ]")]
+    #[hax_lib::lemma]
+    #[hax_lib::opaque]
+    fn _rw_mm_shuffle_epi8(
+        vector: __m128i,
+        e15: i8,
+        e14: i8,
+        e13: i8,
+        e12: i8,
+        e11: i8,
+        e10: i8,
+        e9: i8,
+        e8: i8,
+        e7: i8,
+        e6: i8,
+        e5: i8,
+        e4: i8,
+        e3: i8,
+        e2: i8,
+        e1: i8,
+        e0: i8,
+    ) -> Proof<
+        {
+            hax_lib::prop::eq(
+                _mm_shuffle_epi8(
+                    vector,
+                    _mm_set_epi8(
+                        e15, e14, e13, e12, e11, e10, e9, e8, e7, e6, e5, e4, e3, e2, e1, e0,
+                    ),
+                ),
+                extra::mm_shuffle_epi8_u8(
+                    vector, e15 as u8, e14 as u8, e13 as u8, e12 as u8, e11 as u8, e10 as u8,
+                    e9 as u8, e8 as u8, e7 as u8, e6 as u8, e5 as u8, e4 as u8, e3 as u8, e2 as u8,
+                    e1 as u8, e0 as u8,
+                ),
+            )
+        },
+    > {
+    }
+};
+
 pub mod extra {
     use super::*;
 
-    // #[hax_lib::fstar::before(
-    //     r#"let bit_and_lt (t: uinttype) n x: Lemma (v (x &. mk_int #t n) < n) [SMTPat (x &. mk_int #t n)] = admit ()"#
-    // )]
     pub fn mm256_sllv_epi32_u32_array(
         vector: BitVec<256>,
         counts: FunArray<8, u32>,
