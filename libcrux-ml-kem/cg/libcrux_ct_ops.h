@@ -5,10 +5,10 @@
  *
  * This code was generated with the following revisions:
  * Charon: a8f2211d1b95e0462a96382023b164a4116c7ca4
- * Eurydice: 60f543ddc60a777138070968daaf7620ec48170d
+ * Eurydice: 788c5abefac3a9c7f79abae6a30fa8558e39764c
  * Karamel: 1d81d757d5d9e16dd6463ccc72324e587c707959
- * F*: 7cd06c5562fc47ec14cd35c38034d5558a5ff762
- * Libcrux: 370d71828112dbf0ad53a8995502ff1e5c8a719c
+ * F*: b0961063393215ca65927f017720cb365a193833-dirty
+ * Libcrux: 1c4e2cbb4bc08f93cca04e22245f2b25dcb23d83
  */
 
 #ifndef __libcrux_ct_ops_H
@@ -19,12 +19,13 @@ extern "C" {
 #endif
 
 #include "eurydice_glue.h"
-#include "libcrux_core.h"
+#include "libcrux_mlkem_core.h"
 
 /**
  Return 1 if `value` is not zero and 0 otherwise.
 */
-static inline uint8_t libcrux_ml_kem_constant_time_ops_inz(uint8_t value) {
+static KRML_NOINLINE uint8_t
+libcrux_ml_kem_constant_time_ops_inz(uint8_t value) {
   uint16_t value0 = (uint16_t)value;
   uint8_t result =
       (uint8_t)((uint32_t)core_num__u16_7__wrapping_add(~value0, 1U) >> 8U);
@@ -40,7 +41,7 @@ libcrux_ml_kem_constant_time_ops_is_non_zero(uint8_t value) {
  Return 1 if the bytes of `lhs` and `rhs` do not exactly
  match and 0 otherwise.
 */
-static inline uint8_t libcrux_ml_kem_constant_time_ops_compare(
+static KRML_NOINLINE uint8_t libcrux_ml_kem_constant_time_ops_compare(
     Eurydice_slice lhs, Eurydice_slice rhs) {
   uint8_t r = 0U;
   for (size_t i = (size_t)0U; i < Eurydice_slice_len(lhs, uint8_t); i++) {
@@ -63,7 +64,7 @@ libcrux_ml_kem_constant_time_ops_compare_ciphertexts_in_constant_time(
  If `selector` is not zero, return the bytes in `rhs`; return the bytes in
  `lhs` otherwise.
 */
-static inline void libcrux_ml_kem_constant_time_ops_select_ct(
+static KRML_NOINLINE void libcrux_ml_kem_constant_time_ops_select_ct(
     Eurydice_slice lhs, Eurydice_slice rhs, uint8_t selector,
     uint8_t ret[32U]) {
   uint8_t mask = core_num__u8_6__wrapping_sub(
@@ -89,7 +90,7 @@ libcrux_ml_kem_constant_time_ops_select_shared_secret_in_constant_time(
   libcrux_ml_kem_constant_time_ops_select_ct(lhs, rhs, selector, ret);
 }
 
-static inline void
+static KRML_NOINLINE void
 libcrux_ml_kem_constant_time_ops_compare_ciphertexts_select_shared_secret_in_constant_time(
     Eurydice_slice lhs_c, Eurydice_slice rhs_c, Eurydice_slice lhs_s,
     Eurydice_slice rhs_s, uint8_t ret[32U]) {

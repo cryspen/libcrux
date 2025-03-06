@@ -36,18 +36,13 @@ jobs:
       should-run: ${{ steps.changes.outputs.docker-c == 'false' }}
       image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.VERSION_TAG }}
 
-  report-status-tests:
-    runs-on: ubuntu-latest
-    needs:
-      - diff-header-only
-      - build-header-only
-    steps:
-      - name: Report status
-        run: echo "All tests completed successfully"
-
   mldsa-c-tests-status:
     if: ${{ always() }}
-    needs: [report-status-tests]
+    needs:
+      - setup
+      - extract-header-only
+      - diff-header-only
+      - build-header-only
     runs-on: ubuntu-latest
     steps:
       - name: Successful

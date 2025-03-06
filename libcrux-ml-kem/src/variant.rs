@@ -2,7 +2,7 @@
 //! differences between the NIST standard FIPS 203 (ML-KEM) and the
 //! Round 3 CRYSTALS-Kyber submissions in the NIST PQ competition.
 
-use crate::{constants::CPA_PKE_KEY_GENERATION_SEED_SIZE, hash_functions::Hash, MlKemCiphertext};
+use crate::{constants::CPA_PKE_KEY_GENERATION_SEED_SIZE, hash_functions::Hash};
 
 /// This trait collects differences in specification between ML-KEM
 /// (FIPS 203) and the Round 3 CRYSTALS-Kyber submission in the
@@ -15,7 +15,7 @@ pub(crate) trait Variant {
     #[ensures(|res| fstar!(r#"$res == $shared_secret"#))] // We only have post-conditions for ML-KEM, not Kyber
     fn kdf<const K: usize, const CIPHERTEXT_SIZE: usize, Hasher: Hash<K>>(
         shared_secret: &[u8],
-        ciphertext: &MlKemCiphertext<CIPHERTEXT_SIZE>,
+        ciphertext: &[u8; CIPHERTEXT_SIZE],
     ) -> [u8; 32];
     #[requires(randomness.len() == 32)]
     #[ensures(|res| fstar!(r#"$res == $randomness"#))] // We only have post-conditions for ML-KEM, not Kyber
@@ -41,12 +41,12 @@ impl Variant for Kyber {
     #[inline(always)]
     fn kdf<const K: usize, const CIPHERTEXT_SIZE: usize, Hasher: Hash<K>>(
         shared_secret: &[u8],
-        ciphertext: &MlKemCiphertext<CIPHERTEXT_SIZE>,
+        ciphertext: &[u8; CIPHERTEXT_SIZE],
     ) -> [u8; 32] {
         use crate::{constants::H_DIGEST_SIZE, utils::into_padded_array};
 
         let mut kdf_input: [u8; 2 * H_DIGEST_SIZE] = into_padded_array(&shared_secret);
-        kdf_input[H_DIGEST_SIZE..].copy_from_slice(&Hasher::H(ciphertext.as_slice()));
+        kdf_input[H_DIGEST_SIZE..].copy_from_slice(&Hasher::H(ciphertext));
         Hasher::PRF::<32>(&kdf_input)
     }
 
@@ -76,7 +76,7 @@ impl Variant for MlKem {
     #[ensures(|res| fstar!(r#"$res == $shared_secret"#))]
     fn kdf<const K: usize, const CIPHERTEXT_SIZE: usize, Hasher: Hash<K>>(
         shared_secret: &[u8],
-        _: &MlKemCiphertext<CIPHERTEXT_SIZE>,
+        _: &[u8; CIPHERTEXT_SIZE],
     ) -> [u8; 32] {
         let mut out = [0u8; 32];
         out.copy_from_slice(shared_secret);

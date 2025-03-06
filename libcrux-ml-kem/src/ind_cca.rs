@@ -220,7 +220,7 @@ pub(crate) fn generate_keypair<
     Hasher: Hash<K>,
     Scheme: Variant,
 >(
-    randomness: [u8; KEY_GENERATION_SEED_SIZE],
+    randomness: &[u8; KEY_GENERATION_SEED_SIZE],
 ) -> MlKemKeyPair<PRIVATE_KEY_SIZE, PUBLIC_KEY_SIZE> {
     let ind_cpa_keypair_randomness = &randomness[0..CPA_PKE_KEY_GENERATION_SEED_SIZE];
     let implicit_rejection_value = &randomness[CPA_PKE_KEY_GENERATION_SEED_SIZE..];
@@ -283,9 +283,9 @@ pub(crate) fn encapsulate<
     Scheme: Variant,
 >(
     public_key: &MlKemPublicKey<PUBLIC_KEY_SIZE>,
-    randomness: [u8; SHARED_SECRET_SIZE],
+    randomness: &[u8; SHARED_SECRET_SIZE],
 ) -> (MlKemCiphertext<CIPHERTEXT_SIZE>, MlKemSharedSecret) {
-    let randomness = Scheme::entropy_preprocess::<K, Hasher>(&randomness);
+    let randomness = Scheme::entropy_preprocess::<K, Hasher>(randomness);
     let mut to_hash: [u8; 2 * H_DIGEST_SIZE] = into_padded_array(&randomness);
 
     hax_lib::fstar!(r#"eq_intro (Seq.slice $to_hash 0 32) $randomness"#);
@@ -314,11 +314,12 @@ pub(crate) fn encapsulate<
         ETA2_RANDOMNESS_SIZE,
         Vector,
         Hasher,
-    >(public_key.as_slice(), randomness, pseudorandomness);
+    >(public_key.as_slice(), &randomness, pseudorandomness);
 
-    let ciphertext = MlKemCiphertext::from(ciphertext);
-    let shared_secret_array = Scheme::kdf::<K, CIPHERTEXT_SIZE, Hasher>(shared_secret, &ciphertext);
-    (ciphertext, shared_secret_array)
+    (
+        MlKemCiphertext::from(ciphertext),
+        Scheme::kdf::<K, CIPHERTEXT_SIZE, Hasher>(shared_secret, &ciphertext),
+    )
 }
 
 /// This code verifies on some machines, runs out of memory on others
@@ -439,11 +440,14 @@ pub(crate) fn decapsulate<
         ETA2_RANDOMNESS_SIZE,
         Vector,
         Hasher,
-    >(ind_cpa_public_key, decrypted, pseudorandomness);
+    >(ind_cpa_public_key, &decrypted, pseudorandomness);
 
-    let implicit_rejection_shared_secret =
-        Scheme::kdf::<K, CIPHERTEXT_SIZE, Hasher>(&implicit_rejection_shared_secret, ciphertext);
-    let shared_secret = Scheme::kdf::<K, CIPHERTEXT_SIZE, Hasher>(shared_secret, ciphertext);
+    let implicit_rejection_shared_secret = Scheme::kdf::<K, CIPHERTEXT_SIZE, Hasher>(
+        &implicit_rejection_shared_secret,
+        ciphertext.as_slice(),
+    );
+    let shared_secret =
+        Scheme::kdf::<K, CIPHERTEXT_SIZE, Hasher>(shared_secret, ciphertext.as_slice());
 
     compare_ciphertexts_select_shared_secret_in_constant_time(
         ciphertext.as_ref(),
@@ -529,7 +533,7 @@ pub(crate) mod unpacked {
             into_padded_array(&public_key.value[T_AS_NTT_ENCODED_SIZE..]);
         sample_matrix_A::<K, Vector, Hasher>(
             &mut unpacked_public_key.ind_cpa_public_key.A,
-            into_padded_array(&public_key.value[T_AS_NTT_ENCODED_SIZE..]),
+            &into_padded_array(&public_key.value[T_AS_NTT_ENCODED_SIZE..]),
             false,
         );
         unpacked_public_key.public_key_hash = Hasher::H(public_key.as_slice());
@@ -622,16 +626,10 @@ pub(crate) mod unpacked {
             implicit_rejection_value,
         ) = unpack_private_key::<CPA_SECRET_KEY_SIZE, PUBLIC_KEY_SIZE>(&private_key.value);
 
-        // XXX: We need to copy_from_slice here because karamel can't handle
-        //      the assignment cf. https://github.com/FStarLang/karamel/pull/491
-
-        key_pair
-            .private_key
-            .ind_cpa_private_key
-            .secret_as_ntt
-            .copy_from_slice(&ind_cpa::deserialize_vector::<K, Vector>(
-                ind_cpa_secret_key,
-            ));
+        ind_cpa::deserialize_vector::<K, Vector>(
+            ind_cpa_secret_key,
+            &mut key_pair.private_key.ind_cpa_private_key.secret_as_ntt,
+        );
         ind_cpa::build_unpacked_public_key_mut::<K, T_AS_NTT_ENCODED_SIZE, Vector, PortableHash<K>>(
             ind_cpa_public_key,
             &mut key_pair.public_key.ind_cpa_public_key,
@@ -964,9 +962,9 @@ pub(crate) mod unpacked {
         Hasher: Hash<K>,
     >(
         public_key: &MlKemPublicKeyUnpacked<K, Vector>,
-        randomness: [u8; SHARED_SECRET_SIZE],
+        randomness: &[u8; SHARED_SECRET_SIZE],
     ) -> (MlKemCiphertext<CIPHERTEXT_SIZE>, MlKemSharedSecret) {
-        let hashed = encaps_prepare::<K, Hasher>(&randomness, &public_key.public_key_hash);
+        let hashed = encaps_prepare::<K, Hasher>(randomness, &public_key.public_key_hash);
         let (shared_secret, pseudorandomness) = hashed.split_at(SHARED_SECRET_SIZE);
 
         let ciphertext = ind_cpa::encrypt_unpacked::<
@@ -984,7 +982,11 @@ pub(crate) mod unpacked {
             ETA2_RANDOMNESS_SIZE,
             Vector,
             Hasher,
-        >(&public_key.ind_cpa_public_key, randomness, pseudorandomness);
+        >(
+            &public_key.ind_cpa_public_key,
+            &randomness,
+            pseudorandomness,
+        );
         let mut shared_secret_array = [0u8; SHARED_SECRET_SIZE];
         shared_secret_array.copy_from_slice(shared_secret);
         (MlKemCiphertext::from(ciphertext), shared_secret_array)
@@ -1113,7 +1115,7 @@ pub(crate) mod unpacked {
             Hasher,
         >(
             &key_pair.public_key.ind_cpa_public_key,
-            decrypted,
+            &decrypted,
             pseudorandomness,
         );
 

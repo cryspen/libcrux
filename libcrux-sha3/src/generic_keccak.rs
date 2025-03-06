@@ -77,7 +77,7 @@ impl<const PARALLEL_LANES: usize, const RATE: usize, STATE: KeccakStateItem<PARA
     ///
     /// This works best with relatively small `inputs`.
     #[inline(always)]
-    pub(crate) fn absorb(&mut self, inputs: [&[u8]; PARALLEL_LANES]) {
+    pub(crate) fn absorb(&mut self, inputs: &[&[u8]; PARALLEL_LANES]) {
         let input_remainder_len = self.absorb_full(inputs);
 
         // ... buffer the rest if there's not enough input (left).
@@ -96,7 +96,7 @@ impl<const PARALLEL_LANES: usize, const RATE: usize, STATE: KeccakStateItem<PARA
         }
     }
 
-    fn absorb_full(&mut self, inputs: [&[u8]; PARALLEL_LANES]) -> usize {
+    fn absorb_full(&mut self, inputs: &[&[u8]; PARALLEL_LANES]) -> usize {
         debug_assert!(PARALLEL_LANES > 0);
         debug_assert!(self.buf_len < RATE);
         #[cfg(debug_assertions)]
@@ -115,7 +115,7 @@ impl<const PARALLEL_LANES: usize, const RATE: usize, STATE: KeccakStateItem<PARA
             for i in 0..PARALLEL_LANES {
                 borrowed[i] = &self.buf[i];
             }
-            STATE::load_block::<RATE>(&mut self.inner.st, borrowed);
+            STATE::load_block::<RATE>(&mut self.inner.st, &borrowed, 0);
             keccakf1600(&mut self.inner);
 
             // "empty" the local buffer
@@ -130,10 +130,7 @@ impl<const PARALLEL_LANES: usize, const RATE: usize, STATE: KeccakStateItem<PARA
         let remainder = input_to_consume % RATE;
         for i in 0..num_blocks {
             // We only get in here if `input_len / RATE > 0`.
-            STATE::load_block::<RATE>(
-                &mut self.inner.st,
-                STATE::slice_n(inputs, input_consumed + i * RATE, RATE),
-            );
+            STATE::load_block::<RATE>(&mut self.inner.st, &inputs, input_consumed + i * RATE);
             keccakf1600(&mut self.inner);
         }
 
@@ -147,7 +144,7 @@ impl<const PARALLEL_LANES: usize, const RATE: usize, STATE: KeccakStateItem<PARA
     /// content to consume, and `0` otherwise.
     /// If `consumed > 0` is returned, `self.buf` contains a full block to be
     /// loaded.
-    fn fill_buffer(&mut self, inputs: [&[u8]; PARALLEL_LANES]) -> usize {
+    fn fill_buffer(&mut self, inputs: &[&[u8]; PARALLEL_LANES]) -> usize {
         let input_len = inputs[0].len();
         let mut consumed = 0;
         if self.buf_len > 0 {
@@ -170,7 +167,7 @@ impl<const PARALLEL_LANES: usize, const RATE: usize, STATE: KeccakStateItem<PARA
     /// The `inputs` block may be empty. Everything in the `inputs` block beyond
     /// `RATE` bytes is ignored.
     #[inline(always)]
-    pub(crate) fn absorb_final<const DELIMITER: u8>(&mut self, inputs: [&[u8]; PARALLEL_LANES]) {
+    pub(crate) fn absorb_final<const DELIMITER: u8>(&mut self, inputs: &[&[u8]; PARALLEL_LANES]) {
         let input_remainder_len = self.absorb_full(inputs);
 
         // Consume the remaining bytes.
@@ -189,7 +186,7 @@ impl<const PARALLEL_LANES: usize, const RATE: usize, STATE: KeccakStateItem<PARA
             blocks[i][RATE - 1] |= 0x80;
         }
 
-        STATE::load_block_full::<RATE>(&mut self.inner.st, blocks);
+        STATE::load_block_full::<RATE>(&mut self.inner.st, &blocks, 0);
         keccakf1600(&mut self.inner);
     }
 
@@ -379,9 +376,10 @@ pub(crate) fn keccakf1600<const N: usize, T: KeccakStateItem<N>>(s: &mut KeccakS
 #[inline(always)]
 pub(crate) fn absorb_block<const N: usize, T: KeccakStateItem<N>, const RATE: usize>(
     s: &mut KeccakState<N, T>,
-    blocks: [&[u8]; N],
+    blocks: &[&[u8]; N],
+    start: usize,
 ) {
-    T::load_block::<RATE>(&mut s.st, blocks);
+    T::load_block::<RATE>(&mut s.st, blocks, start);
     keccakf1600(s)
 }
 
@@ -393,26 +391,28 @@ pub(crate) fn absorb_final<
     const DELIM: u8,
 >(
     s: &mut KeccakState<N, T>,
-    last: [&[u8]; N],
+    last: &[&[u8]; N],
+    start: usize,
+    len: usize,
 ) {
-    debug_assert!(N > 0 && last[0].len() < RATE);
-    let last_len = last[0].len();
+    debug_assert!(N > 0 && len < RATE); // && last[0].len() < RATE
+
     let mut blocks = [[0u8; 200]; N];
     for i in 0..N {
-        if last_len > 0 {
-            blocks[i][0..last_len].copy_from_slice(last[i]);
+        if len > 0 {
+            blocks[i][0..len].copy_from_slice(&last[i][start..start + len]);
         }
-        blocks[i][last_len] = DELIM;
+        blocks[i][len] = DELIM;
         blocks[i][RATE - 1] |= 0x80;
     }
-    T::load_block_full::<RATE>(&mut s.st, blocks);
+    T::load_block_full::<RATE>(&mut s.st, &blocks, 0);
     keccakf1600(s)
 }
 
 #[inline(always)]
 pub(crate) fn squeeze_first_block<const N: usize, T: KeccakStateItem<N>, const RATE: usize>(
     s: &KeccakState<N, T>,
-    out: [&mut [u8]; N],
+    out: &mut [&mut [u8]; N],
 ) {
     T::store_block::<RATE>(&s.st, out)
 }
@@ -420,7 +420,7 @@ pub(crate) fn squeeze_first_block<const N: usize, T: KeccakStateItem<N>, const R
 #[inline(always)]
 pub(crate) fn squeeze_next_block<const N: usize, T: KeccakStateItem<N>, const RATE: usize>(
     s: &mut KeccakState<N, T>,
-    out: [&mut [u8]; N],
+    out: &mut [&mut [u8]; N],
 ) {
     keccakf1600(s);
     T::store_block::<RATE>(&s.st, out)
@@ -435,11 +435,11 @@ pub(crate) fn squeeze_first_three_blocks<
     s: &mut KeccakState<N, T>,
     out: [&mut [u8]; N],
 ) {
-    let (o0, o1) = T::split_at_mut_n(out, RATE);
-    squeeze_first_block::<N, T, RATE>(s, o0);
-    let (o1, o2) = T::split_at_mut_n(o1, RATE);
-    squeeze_next_block::<N, T, RATE>(s, o1);
-    squeeze_next_block::<N, T, RATE>(s, o2);
+    let (mut o0, o1) = T::split_at_mut_n(out, RATE);
+    squeeze_first_block::<N, T, RATE>(s, &mut o0);
+    let (mut o1, mut o2) = T::split_at_mut_n(o1, RATE);
+    squeeze_next_block::<N, T, RATE>(s, &mut o1);
+    squeeze_next_block::<N, T, RATE>(s, &mut o2);
 }
 
 #[inline(always)]
@@ -451,18 +451,18 @@ pub(crate) fn squeeze_first_five_blocks<
     s: &mut KeccakState<N, T>,
     out: [&mut [u8]; N],
 ) {
-    let (o0, o1) = T::split_at_mut_n(out, RATE);
-    squeeze_first_block::<N, T, RATE>(s, o0);
-    let (o1, o2) = T::split_at_mut_n(o1, RATE);
+    let (mut o0, o1) = T::split_at_mut_n(out, RATE);
+    squeeze_first_block::<N, T, RATE>(s, &mut o0);
+    let (mut o1, o2) = T::split_at_mut_n(o1, RATE);
 
-    squeeze_next_block::<N, T, RATE>(s, o1);
-    let (o2, o3) = T::split_at_mut_n(o2, RATE);
+    squeeze_next_block::<N, T, RATE>(s, &mut o1);
+    let (mut o2, o3) = T::split_at_mut_n(o2, RATE);
 
-    squeeze_next_block::<N, T, RATE>(s, o2);
-    let (o3, o4) = T::split_at_mut_n(o3, RATE);
+    squeeze_next_block::<N, T, RATE>(s, &mut o2);
+    let (mut o3, mut o4) = T::split_at_mut_n(o3, RATE);
 
-    squeeze_next_block::<N, T, RATE>(s, o3);
-    squeeze_next_block::<N, T, RATE>(s, o4);
+    squeeze_next_block::<N, T, RATE>(s, &mut o3);
+    squeeze_next_block::<N, T, RATE>(s, &mut o4);
 }
 
 #[inline(always)]
@@ -471,7 +471,8 @@ pub(crate) fn squeeze_last<const N: usize, T: KeccakStateItem<N>, const RATE: us
     out: [&mut [u8]; N],
 ) {
     keccakf1600(&mut s);
-    let b = T::store_block_full::<RATE>(&s.st);
+    let mut b = [[0u8; 200]; N];
+    T::store_block_full::<RATE>(&s.st, &mut b);
     for i in 0..N {
         out[i].copy_from_slice(&b[i][0..out[i].len()]);
     }
@@ -482,7 +483,8 @@ pub(crate) fn squeeze_first_and_last<const N: usize, T: KeccakStateItem<N>, cons
     s: &KeccakState<N, T>,
     out: [&mut [u8]; N],
 ) {
-    let b = T::store_block_full::<RATE>(&s.st);
+    let mut b = [[0u8; 200]; N];
+    T::store_block_full::<RATE>(&s.st, &mut b);
     for i in 0..N {
         out[i].copy_from_slice(&b[i][0..out[i].len()]);
     }
@@ -490,15 +492,17 @@ pub(crate) fn squeeze_first_and_last<const N: usize, T: KeccakStateItem<N>, cons
 
 #[inline(always)]
 pub(crate) fn keccak<const N: usize, T: KeccakStateItem<N>, const RATE: usize, const DELIM: u8>(
-    data: [&[u8]; N],
+    data: &[&[u8]; N],
     out: [&mut [u8]; N],
 ) {
     let mut s = KeccakState::<N, T>::new();
     for i in 0..data[0].len() / RATE {
-        absorb_block::<N, T, RATE>(&mut s, T::slice_n(data, i * RATE, RATE));
+        // T::slice_n(data, i * RATE, RATE)
+        absorb_block::<N, T, RATE>(&mut s, &data, i * RATE);
     }
     let rem = data[0].len() % RATE;
-    absorb_final::<N, T, RATE, DELIM>(&mut s, T::slice_n(data, data[0].len() - rem, rem));
+    // T::slice_n(data, data[0].len() - rem, rem)
+    absorb_final::<N, T, RATE, DELIM>(&mut s, data, data[0].len() - rem, rem);
 
     let outlen = out[0].len();
     let blocks = outlen / RATE;
@@ -507,11 +511,11 @@ pub(crate) fn keccak<const N: usize, T: KeccakStateItem<N>, const RATE: usize, c
     if blocks == 0 {
         squeeze_first_and_last::<N, T, RATE>(&s, out)
     } else {
-        let (o0, mut o1) = T::split_at_mut_n(out, RATE);
-        squeeze_first_block::<N, T, RATE>(&s, o0);
+        let (mut o0, mut o1) = T::split_at_mut_n(out, RATE);
+        squeeze_first_block::<N, T, RATE>(&s, &mut o0);
         for _i in 1..blocks {
-            let (o, orest) = T::split_at_mut_n(o1, RATE);
-            squeeze_next_block::<N, T, RATE>(&mut s, o);
+            let (mut o, orest) = T::split_at_mut_n(o1, RATE);
+            squeeze_next_block::<N, T, RATE>(&mut s, &mut o);
             o1 = orest;
         }
         if last < outlen {
