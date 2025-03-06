@@ -39,6 +39,9 @@ jobs:
   mlkem-c-tests-status:
     if: ${{ always() }}
     needs:
+      - setup
+      - extract
+      - extract-header-only
       - diff
       - diff-header-only
       - build

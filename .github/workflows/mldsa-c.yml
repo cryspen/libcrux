@@ -39,6 +39,8 @@ jobs:
   mldsa-c-tests-status:
     if: ${{ always() }}
     needs:
+      - setup
+      - extract-header-only
       - diff-header-only
       - build-header-only
     runs-on: ubuntu-latest
