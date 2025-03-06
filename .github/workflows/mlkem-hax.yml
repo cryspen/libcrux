@@ -91,11 +91,6 @@ jobs:
   prove:
     runs-on: self-hosted
     if: ${{ github.event_name == 'merge_group' || github.event_name == 'workflow_dispatch' }}
-    needs:
-      - extract
-      - diff
-      - lax
-
     steps:
       - uses: actions/checkout@v4
       - uses: actions/checkout@v4
