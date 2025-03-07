@@ -1,14 +1,14 @@
 /*
- * SPDX-FileCopyrightText: 2024 Cryspen Sarl <info@cryspen.com>
+ * SPDX-FileCopyrightText: 2025 Cryspen Sarl <info@cryspen.com>
  *
  * SPDX-License-Identifier: MIT or Apache-2.0
  *
  * This code was generated with the following revisions:
- * Charon: a8f2211d1b95e0462a96382023b164a4116c7ca4
- * Eurydice: 788c5abefac3a9c7f79abae6a30fa8558e39764c
- * Karamel: 1d81d757d5d9e16dd6463ccc72324e587c707959
- * F*: b0961063393215ca65927f017720cb365a193833-dirty
- * Libcrux: 1c4e2cbb4bc08f93cca04e22245f2b25dcb23d83
+ * Charon: d250df809d9b0fa1bddac2055794620e87f435cc
+ * Eurydice: a7d75fe821978f486e431a28f54a8327c8dc6b0f
+ * Karamel: 786646b50f22725a516afd04259aa90529c19a3b
+ * F*: 4b3fc11774003a6ff7c09500ecb5f0145ca6d862
+ * Libcrux: 00cd91805d0d59c1fb8a5866f6c87bd9cb4b9741
  */
 
 #ifndef __libcrux_mlkem768_avx2_H
@@ -926,8 +926,8 @@ libcrux_ml_kem_vector_avx2_serialize_serialize_10_serialize_10_vec(
       libcrux_intrinsics_avx2_mm256_castsi256_si128(adjacent_8_combined);
   __m128i upper_8 = libcrux_intrinsics_avx2_mm256_extracti128_si256(
       (int32_t)1, adjacent_8_combined, __m128i);
-  return (
-      CLITERAL(core_core_arch_x86___m128i_x2){.fst = lower_8, .snd = upper_8});
+  return CLITERAL(core_core_arch_x86___m128i_x2,
+                  CFIELDS({CFIELD(.fst, lower_8), CFIELD(.snd, upper_8)}));
 }
 
 KRML_ATTRIBUTE_TARGET("avx2")
@@ -1055,8 +1055,8 @@ libcrux_ml_kem_vector_avx2_serialize_serialize_12_serialize_12_vec(
       libcrux_intrinsics_avx2_mm256_castsi256_si128(adjacent_8_combined);
   __m128i upper_8 = libcrux_intrinsics_avx2_mm256_extracti128_si256(
       (int32_t)1, adjacent_8_combined, __m128i);
-  return (
-      CLITERAL(core_core_arch_x86___m128i_x2){.fst = lower_8, .snd = upper_8});
+  return CLITERAL(core_core_arch_x86___m128i_x2,
+                  CFIELDS({CFIELD(.fst, lower_8), CFIELD(.snd, upper_8)}));
 }
 
 KRML_ATTRIBUTE_TARGET("avx2")
@@ -1954,8 +1954,8 @@ libcrux_ml_kem_ntt_ntt_layer_int_vec_step_79(__m256i a, __m256i b,
   __m256i t = libcrux_ml_kem_vector_traits_montgomery_multiply_fe_79(b, zeta_r);
   b = libcrux_ml_kem_vector_avx2_sub_9a(a, &t);
   a = libcrux_ml_kem_vector_avx2_add_9a(a, &t);
-  return (CLITERAL(libcrux_ml_kem_vector_avx2_SIMD256Vector_x2){.fst = a,
-                                                                .snd = b});
+  return CLITERAL(libcrux_ml_kem_vector_avx2_SIMD256Vector_x2,
+                  CFIELDS({CFIELD(.fst, a), CFIELD(.snd, b)}));
 }
 
 /**
@@ -2472,8 +2472,8 @@ libcrux_ml_kem_invert_ntt_inv_ntt_layer_int_vec_step_reduce_79(__m256i a,
   a = libcrux_ml_kem_vector_avx2_barrett_reduce_9a(
       libcrux_ml_kem_vector_avx2_add_9a(a, &b));
   b = libcrux_ml_kem_vector_traits_montgomery_multiply_fe_79(a_minus_b, zeta_r);
-  return (CLITERAL(libcrux_ml_kem_vector_avx2_SIMD256Vector_x2){.fst = a,
-                                                                .snd = b});
+  return CLITERAL(libcrux_ml_kem_vector_avx2_SIMD256Vector_x2,
+                  CFIELDS({CFIELD(.fst, a), CFIELD(.snd, b)}));
 }
 
 /**
@@ -6741,10 +6741,11 @@ static KRML_MUSTINLINE
   uint8_t repeat_expression[32U] = {0U};
   memcpy(uu____0.implicit_rejection_value, repeat_expression,
          (size_t)32U * sizeof(uint8_t));
-  return (
-      CLITERAL(libcrux_ml_kem_mlkem768_avx2_unpacked_MlKem768KeyPairUnpacked){
-          .private_key = uu____0,
-          .public_key = libcrux_ml_kem_ind_cca_unpacked_default_09_ab()});
+  return CLITERAL(
+      libcrux_ml_kem_mlkem768_avx2_unpacked_MlKem768KeyPairUnpacked,
+      CFIELDS({CFIELD(.private_key, uu____0),
+               CFIELD(.public_key,
+                      libcrux_ml_kem_ind_cca_unpacked_default_09_ab())}));
 }
 
 /**

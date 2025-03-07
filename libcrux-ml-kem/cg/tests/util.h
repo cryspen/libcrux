@@ -11,7 +11,8 @@ using namespace std;
 typedef vector<uint8_t> bytes;
 
 template <typename T>
-Eurydice_slice mk_slice(T *x, size_t len) {
+Eurydice_slice mk_slice(T *x, size_t len)
+{
   Eurydice_slice s;
   s.ptr = (void *)x;
   s.len = len;
@@ -19,20 +20,25 @@ Eurydice_slice mk_slice(T *x, size_t len) {
 }
 
 // Not really random
-void generate_random(uint8_t *output, uint32_t output_len) {
-  for (size_t i = 0; i < output_len; i++) {
+void generate_random(uint8_t *output, uint32_t output_len)
+{
+  for (size_t i = 0; i < output_len; i++)
+  {
     output[i] = 13;
   }
 }
 
-vector<uint8_t> from_hex(const string &hex) {
-  if (hex.length() % 2 == 1) {
+vector<uint8_t> from_hex(const string &hex)
+{
+  if (hex.length() % 2 == 1)
+  {
     throw invalid_argument("Odd-length hex string");
   }
 
   int len = static_cast<int>(hex.length()) / 2;
   vector<uint8_t> out(len);
-  for (int i = 0; i < len; i += 1) {
+  for (int i = 0; i < len; i += 1)
+  {
     string byte = hex.substr(2 * i, 2);
     out[i] = static_cast<uint8_t>(strtol(byte.c_str(), nullptr, 16));
   }
@@ -40,17 +46,20 @@ vector<uint8_t> from_hex(const string &hex) {
   return out;
 }
 
-string bytes_to_hex(const vector<uint8_t> &data) {
+string bytes_to_hex(const vector<uint8_t> &data)
+{
   stringstream hex(ios_base::out);
   hex.flags(ios::hex);
-  for (const auto &byte : data) {
+  for (const auto &byte : data)
+  {
     hex << setw(2) << setfill('0') << int(byte);
   }
   return hex.str();
 }
 
-class KAT {
- public:
+class KAT
+{
+public:
   bytes key_generation_seed;
   bytes sha3_256_hash_of_public_key;
   bytes sha3_256_hash_of_secret_key;
@@ -59,7 +68,8 @@ class KAT {
   bytes shared_secret;
 };
 
-vector<KAT> read_kats(string path) {
+vector<KAT> read_kats(string path)
+{
   ifstream kat_file(path);
   nlohmann::json kats_raw;
   kat_file >> kats_raw;
@@ -67,19 +77,17 @@ vector<KAT> read_kats(string path) {
   vector<KAT> kats;
 
   // Read test group
-  for (auto &kat_raw : kats_raw.items()) {
+  for (auto &kat_raw : kats_raw.items())
+  {
     auto kat_raw_value = kat_raw.value();
 
     kats.push_back(KAT{
-        .key_generation_seed = from_hex(kat_raw_value["key_generation_seed"]),
-        .sha3_256_hash_of_public_key =
-            from_hex(kat_raw_value["sha3_256_hash_of_public_key"]),
-        .sha3_256_hash_of_secret_key =
-            from_hex(kat_raw_value["sha3_256_hash_of_secret_key"]),
-        .encapsulation_seed = from_hex(kat_raw_value["encapsulation_seed"]),
-        .sha3_256_hash_of_ciphertext =
-            from_hex(kat_raw_value["sha3_256_hash_of_ciphertext"]),
-        .shared_secret = from_hex(kat_raw_value["shared_secret"]),
+        from_hex(kat_raw_value["key_generation_seed"]),
+        from_hex(kat_raw_value["sha3_256_hash_of_public_key"]),
+        from_hex(kat_raw_value["sha3_256_hash_of_secret_key"]),
+        from_hex(kat_raw_value["encapsulation_seed"]),
+        from_hex(kat_raw_value["sha3_256_hash_of_ciphertext"]),
+        from_hex(kat_raw_value["shared_secret"]),
     });
   }
 

@@ -1,5 +1,5 @@
 /*
- *    Copyright 2023 Cryspen Sarl
+ *    Copyright 2025 Cryspen Sarl
  *
  *    Licensed under the Apache License, Version 2.0 or MIT.
  *    - http://www.apache.org/licenses/LICENSE-2.0

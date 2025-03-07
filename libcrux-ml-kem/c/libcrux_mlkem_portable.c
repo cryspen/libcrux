@@ -4,11 +4,11 @@
  * SPDX-License-Identifier: MIT or Apache-2.0
  *
  * This code was generated with the following revisions:
- * Charon: a8f2211d1b95e0462a96382023b164a4116c7ca4
- * Eurydice: 788c5abefac3a9c7f79abae6a30fa8558e39764c
- * Karamel: 1d81d757d5d9e16dd6463ccc72324e587c707959
- * F*: b0961063393215ca65927f017720cb365a193833-dirty
- * Libcrux: 1c4e2cbb4bc08f93cca04e22245f2b25dcb23d83
+ * Charon: d250df809d9b0fa1bddac2055794620e87f435cc
+ * Eurydice: a7d75fe821978f486e431a28f54a8327c8dc6b0f
+ * Karamel: 786646b50f22725a516afd04259aa90529c19a3b
+ * F*: 4b3fc11774003a6ff7c09500ecb5f0145ca6d862
+ * Libcrux: 00cd91805d0d59c1fb8a5866f6c87bd9cb4b9741
  */
 
 #include "internal/libcrux_mlkem_portable.h"
@@ -156,17 +156,11 @@ libcrux_ml_kem_vector_portable_serialize_serialize_11_int(Eurydice_slice v) {
                                    6U);
   uint8_t r10 =
       (uint8_t)(Eurydice_slice_index(v, (size_t)7U, int16_t, int16_t *) >> 3U);
-  return (CLITERAL(uint8_t_x11){.fst = r0,
-                                .snd = r1,
-                                .thd = r2,
-                                .f3 = r3,
-                                .f4 = r4,
-                                .f5 = r5,
-                                .f6 = r6,
-                                .f7 = r7,
-                                .f8 = r8,
-                                .f9 = r9,
-                                .f10 = r10});
+  return CLITERAL(uint8_t_x11,
+                  CFIELDS({CFIELD(.fst, r0), CFIELD(.snd, r1), CFIELD(.thd, r2),
+                           CFIELD(.f3, r3), CFIELD(.f4, r4), CFIELD(.f5, r5),
+                           CFIELD(.f6, r6), CFIELD(.f7, r7), CFIELD(.f8, r8),
+                           CFIELD(.f9, r9), CFIELD(.f10, r10)}));
 }
 
 KRML_MUSTINLINE void libcrux_ml_kem_vector_portable_serialize_serialize_11(
@@ -271,14 +265,10 @@ libcrux_ml_kem_vector_portable_serialize_deserialize_11_int(
           << 3U |
       (int16_t)Eurydice_slice_index(bytes, (size_t)9U, uint8_t, uint8_t *) >>
           5U;
-  return (CLITERAL(int16_t_x8){.fst = r0,
-                               .snd = r1,
-                               .thd = r2,
-                               .f3 = r3,
-                               .f4 = r4,
-                               .f5 = r5,
-                               .f6 = r6,
-                               .f7 = r7});
+  return CLITERAL(int16_t_x8,
+                  CFIELDS({CFIELD(.fst, r0), CFIELD(.snd, r1), CFIELD(.thd, r2),
+                           CFIELD(.f3, r3), CFIELD(.f4, r4), CFIELD(.f5, r5),
+                           CFIELD(.f6, r6), CFIELD(.f7, r7)}));
 }
 
 KRML_MUSTINLINE libcrux_ml_kem_vector_portable_vector_type_PortableVector
@@ -1729,8 +1719,9 @@ libcrux_ml_kem_vector_portable_serialize_serialize_4_int(Eurydice_slice v) {
           << 4U |
       (uint32_t)(uint8_t)Eurydice_slice_index(v, (size_t)6U, int16_t,
                                               int16_t *);
-  return (CLITERAL(uint8_t_x4){
-      .fst = result0, .snd = result1, .thd = result2, .f3 = result3});
+  return CLITERAL(uint8_t_x4,
+                  CFIELDS({CFIELD(.fst, result0), CFIELD(.snd, result1),
+                           CFIELD(.thd, result2), CFIELD(.f3, result3)}));
 }
 
 KRML_MUSTINLINE void libcrux_ml_kem_vector_portable_serialize_serialize_4(
@@ -1801,14 +1792,10 @@ libcrux_ml_kem_vector_portable_serialize_deserialize_4_int(
                                                         uint8_t, uint8_t *) >>
                              4U &
                          15U);
-  return (CLITERAL(int16_t_x8){.fst = v0,
-                               .snd = v1,
-                               .thd = v2,
-                               .f3 = v3,
-                               .f4 = v4,
-                               .f5 = v5,
-                               .f6 = v6,
-                               .f7 = v7});
+  return CLITERAL(int16_t_x8,
+                  CFIELDS({CFIELD(.fst, v0), CFIELD(.snd, v1), CFIELD(.thd, v2),
+                           CFIELD(.f3, v3), CFIELD(.f4, v4), CFIELD(.f5, v5),
+                           CFIELD(.f6, v6), CFIELD(.f7, v7)}));
 }
 
 KRML_MUSTINLINE libcrux_ml_kem_vector_portable_vector_type_PortableVector
@@ -1872,8 +1859,9 @@ libcrux_ml_kem_vector_portable_serialize_serialize_5_int(Eurydice_slice v) {
   uint8_t r4 =
       (uint8_t)(Eurydice_slice_index(v, (size_t)6U, int16_t, int16_t *) >> 2U |
                 Eurydice_slice_index(v, (size_t)7U, int16_t, int16_t *) << 3U);
-  return (CLITERAL(uint8_t_x5){
-      .fst = r0, .snd = r1, .thd = r2, .f3 = r3, .f4 = r4});
+  return CLITERAL(uint8_t_x5,
+                  CFIELDS({CFIELD(.fst, r0), CFIELD(.snd, r1), CFIELD(.thd, r2),
+                           CFIELD(.f3, r3), CFIELD(.f4, r4)}));
 }
 
 KRML_MUSTINLINE void libcrux_ml_kem_vector_portable_serialize_serialize_5(
@@ -1954,14 +1942,10 @@ libcrux_ml_kem_vector_portable_serialize_deserialize_5_int(
   int16_t v7 = (int16_t)((uint32_t)Eurydice_slice_index(bytes, (size_t)4U,
                                                         uint8_t, uint8_t *) >>
                          3U);
-  return (CLITERAL(int16_t_x8){.fst = v0,
-                               .snd = v1,
-                               .thd = v2,
-                               .f3 = v3,
-                               .f4 = v4,
-                               .f5 = v5,
-                               .f6 = v6,
-                               .f7 = v7});
+  return CLITERAL(int16_t_x8,
+                  CFIELDS({CFIELD(.fst, v0), CFIELD(.snd, v1), CFIELD(.thd, v2),
+                           CFIELD(.f3, v3), CFIELD(.f4, v4), CFIELD(.f5, v5),
+                           CFIELD(.f6, v6), CFIELD(.f7, v7)}));
 }
 
 KRML_MUSTINLINE libcrux_ml_kem_vector_portable_vector_type_PortableVector
@@ -2036,8 +2020,9 @@ libcrux_ml_kem_vector_portable_serialize_serialize_10_int(Eurydice_slice v) {
   uint8_t r4 =
       (uint8_t)(Eurydice_slice_index(v, (size_t)3U, int16_t, int16_t *) >> 2U &
                 (int16_t)255);
-  return (CLITERAL(uint8_t_x5){
-      .fst = r0, .snd = r1, .thd = r2, .f3 = r3, .f4 = r4});
+  return CLITERAL(uint8_t_x5,
+                  CFIELDS({CFIELD(.fst, r0), CFIELD(.snd, r1), CFIELD(.thd, r2),
+                           CFIELD(.f3, r3), CFIELD(.f4, r4)}));
 }
 
 KRML_MUSTINLINE void libcrux_ml_kem_vector_portable_serialize_serialize_10(
@@ -2140,14 +2125,10 @@ libcrux_ml_kem_vector_portable_serialize_deserialize_10_int(
           << 2U |
       (int16_t)Eurydice_slice_index(bytes, (size_t)8U, uint8_t, uint8_t *) >>
           6U;
-  return (CLITERAL(int16_t_x8){.fst = r0,
-                               .snd = r1,
-                               .thd = r2,
-                               .f3 = r3,
-                               .f4 = r4,
-                               .f5 = r5,
-                               .f6 = r6,
-                               .f7 = r7});
+  return CLITERAL(int16_t_x8,
+                  CFIELDS({CFIELD(.fst, r0), CFIELD(.snd, r1), CFIELD(.thd, r2),
+                           CFIELD(.f3, r3), CFIELD(.f4, r4), CFIELD(.f5, r5),
+                           CFIELD(.f6, r6), CFIELD(.f7, r7)}));
 }
 
 KRML_MUSTINLINE libcrux_ml_kem_vector_portable_vector_type_PortableVector
@@ -2204,7 +2185,8 @@ libcrux_ml_kem_vector_portable_serialize_serialize_12_int(Eurydice_slice v) {
   uint8_t r2 =
       (uint8_t)(Eurydice_slice_index(v, (size_t)1U, int16_t, int16_t *) >> 4U &
                 (int16_t)255);
-  return (CLITERAL(uint8_t_x3){.fst = r0, .snd = r1, .thd = r2});
+  return CLITERAL(uint8_t_x3, CFIELDS({CFIELD(.fst, r0), CFIELD(.snd, r1),
+                                       CFIELD(.thd, r2)}));
 }
 
 KRML_MUSTINLINE void libcrux_ml_kem_vector_portable_serialize_serialize_12(
@@ -2283,7 +2265,7 @@ libcrux_ml_kem_vector_portable_serialize_deserialize_12_int(
       (int16_t)Eurydice_slice_index(bytes, (size_t)2U, uint8_t, uint8_t *);
   int16_t r0 = (byte1 & (int16_t)15) << 8U | (byte0 & (int16_t)255);
   int16_t r1 = byte2 << 4U | (byte1 >> 4U & (int16_t)15);
-  return (CLITERAL(int16_t_x2){.fst = r0, .snd = r1});
+  return CLITERAL(int16_t_x2, CFIELDS({CFIELD(.fst, r0), CFIELD(.snd, r1)}));
 }
 
 KRML_MUSTINLINE libcrux_ml_kem_vector_portable_vector_type_PortableVector
@@ -3530,9 +3512,8 @@ static KRML_MUSTINLINE
       montgomery_multiply_fe_96(b, zeta_r);
   b = libcrux_ml_kem_vector_portable_sub_2c(a, &t);
   a = libcrux_ml_kem_vector_portable_add_2c(a, &t);
-  return (
-      CLITERAL(libcrux_ml_kem_vector_portable_vector_type_PortableVector_x2){
-          .fst = a, .snd = b});
+  return CLITERAL(libcrux_ml_kem_vector_portable_vector_type_PortableVector_x2,
+                  CFIELDS({CFIELD(.fst, a), CFIELD(.snd, b)}));
 }
 
 /**
@@ -4389,9 +4370,8 @@ static KRML_MUSTINLINE
   a = libcrux_ml_kem_vector_portable_barrett_reduce_2c(
       libcrux_ml_kem_vector_portable_add_2c(a, &b));
   b = montgomery_multiply_fe_96(a_minus_b, zeta_r);
-  return (
-      CLITERAL(libcrux_ml_kem_vector_portable_vector_type_PortableVector_x2){
-          .fst = a, .snd = b});
+  return CLITERAL(libcrux_ml_kem_vector_portable_vector_type_PortableVector_x2,
+                  CFIELDS({CFIELD(.fst, a), CFIELD(.snd, b)}));
 }
 
 /**

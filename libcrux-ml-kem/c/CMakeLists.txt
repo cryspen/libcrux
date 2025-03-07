@@ -11,13 +11,14 @@ project(libcrux-ml-kem
 )
 
 set(CMAKE_C_STANDARD 11)
-set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD 17)
 
 if(NOT MSVC)
     # TODO: Clean up
     add_compile_options(
         -Wall
-
+        -fdiagnostics-color=always
+        -pedantic
         # -Wextra
         # -pedantic
         # -Wconversion

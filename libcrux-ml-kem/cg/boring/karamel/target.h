@@ -31,10 +31,10 @@
 #define KRML_MUSTINLINE inline
 
 #ifndef KRML_NOINLINE
-#if defined(_MSC_VER)
-#define KRML_NOINLINE __declspec(noinline)
-#elif defined(__GNUC__) || defined(__clang__)
+#if defined(__GNUC__) || defined(__clang__)
 #define KRML_NOINLINE __attribute__((noinline, unused))
+#elif defined(_MSC_VER)
+#define KRML_NOINLINE __declspec(noinline)
 #else
 #define KRML_NOINLINE
 #warning "The KRML_NOINLINE macro is not defined for this toolchain!"
