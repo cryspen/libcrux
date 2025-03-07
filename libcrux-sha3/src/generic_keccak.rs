@@ -213,7 +213,8 @@ impl<const PARALLEL_LANES: usize, const RATE: usize, STATE: KeccakStateItem<PARA
         STATE::store::<RATE>(&self.inner.st, out0);
 
         // If we got asked for more than one block, squeeze out more.
-        for _ in 1..blocks {
+        for i in 1..blocks {
+            foo(i);
             // Here we know that we always have full blocks to write out.
             let (out0, tmp) = STATE::split_at_mut_n(out_rest, RATE);
             keccakf1600(&mut self.inner);
@@ -490,6 +491,8 @@ pub(crate) fn squeeze_first_and_last<const N: usize, T: KeccakStateItem<N>, cons
     }
 }
 
+fn foo(_x: usize) {}
+
 #[inline(always)]
 pub(crate) fn keccak<const N: usize, T: KeccakStateItem<N>, const RATE: usize, const DELIM: u8>(
     data: &[&[u8]; N],
@@ -513,7 +516,8 @@ pub(crate) fn keccak<const N: usize, T: KeccakStateItem<N>, const RATE: usize, c
     } else {
         let (mut o0, mut o1) = T::split_at_mut_n(out, RATE);
         squeeze_first_block::<N, T, RATE>(&s, &mut o0);
-        for _i in 1..blocks {
+        for i in 1..blocks {
+            foo(i);
             let (mut o, orest) = T::split_at_mut_n(o1, RATE);
             squeeze_next_block::<N, T, RATE>(&mut s, &mut o);
             o1 = orest;
