@@ -62,6 +62,20 @@
 
         rustToolchain = inputs.charon.packages.${system}.rustToolchain;
         craneLib = (inputs.crane.mkLib pkgs).overrideToolchain rustToolchain;
+        # libcrux doesn't want to commit a Cargo.lock but flakes can only take
+        # local inputs if they're committed. The circus-green CI maintains a
+        # working Cargo.lock file for this repo, so we use it here.
+        defaultCargoLock =
+          let
+            circus-green = pkgs.fetchFromGitHub {
+              owner = "Inria-Prosecco";
+              repo = "circus-green";
+              rev = "main";
+              hash = "sha256-ilOqNJa4Il4e5FqXKH5f2jGXQhzvSkhcovXYnWCdgto=";
+            };
+          in
+          "${circus-green}/libcrux-Cargo.lock";
+
 
         ml-kem = pkgs.callPackage
           ({ lib
@@ -78,7 +92,7 @@
            , benchmark
            , json
            , tools-environment
-           , cargoLock ? ./Cargo.lock
+           , cargoLock ? defaultCargoLock
            , checkHax ? true
            , runBenchmarks ? true
            }:
@@ -154,25 +168,7 @@
             pkgs.clang
             inputs.fstar.packages.${system}.default
           ];
-
-          # Can't use `inputsFrom` because the `Cargo.lock` is not tracked by git on first evaluation.
-          buildInputs = [
-            pkgs.clang-tools
-            pkgs.cmake
-            pkgs.mold-wrapped
-            pkgs.ninja
-            pkgs.python3
-            inputs.hax.packages.${system}.default
-          ];
-
-          shellHook = ''
-            # `Cargo.lock` need to be known to git for the flake to find it.
-            # Note: run `cargo generate-lockfile` to generate a real
-            # `Cargo.lock`. Without that nix builds will error.
-            touch Cargo.lock
-            ${pkgs.git}/bin/git add --intent-to-add --force Cargo.lock
-            ${pkgs.git}/bin/git update-index --assume-unchanged Cargo.lock
-          '';
+          inputsFrom = [ packages.ml-kem ];
         });
       }
     );
