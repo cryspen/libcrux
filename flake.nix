@@ -79,7 +79,7 @@
 
         ml-kem = pkgs.callPackage
           ({ lib
-           , clang-tools
+           , clang-tools_18
            , cmake
            , mold-wrapped
            , ninja
@@ -110,7 +110,9 @@
               inherit src cargoArtifacts;
 
               nativeBuildInputs = [
-                clang-tools
+                clang-tools_18
+                # Alias `clang_format` to `clang-format-18`
+                (pkgs.writeShellScriptBin "clang-format-18" ''exec ${clang-tools_18}/bin/clang-format "$@"'')
                 cmake
                 mold-wrapped
                 ninja
@@ -165,7 +167,7 @@
         };
         devShells.default = craneLib.devShell (tools-environment // {
           packages = [
-            pkgs.clang
+            pkgs.clang_18
             inputs.fstar.packages.${system}.default
           ];
           inputsFrom = [ packages.ml-kem ];
