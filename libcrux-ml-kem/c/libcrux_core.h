@@ -1,24 +1,24 @@
 /*
- * SPDX-FileCopyrightText: 2024 Cryspen Sarl <info@cryspen.com>
+ * SPDX-FileCopyrightText: 2025 Cryspen Sarl <info@cryspen.com>
  *
  * SPDX-License-Identifier: MIT or Apache-2.0
  *
  * This code was generated with the following revisions:
  * Charon: d250df809d9b0fa1bddac2055794620e87f435cc
  * Eurydice: a7d75fe821978f486e431a28f54a8327c8dc6b0f
- * Karamel: 786646b50f22725a516afd04259aa90529c19a3b
+ * Karamel: 84db722ff2000edb178c76e4b86c0de91ea3717a
  * F*: 4b3fc11774003a6ff7c09500ecb5f0145ca6d862
- * Libcrux: 00cd91805d0d59c1fb8a5866f6c87bd9cb4b9741
+ * Libcrux: cf450e302a3c9f3efbba9f5a8e46047b75d3d32e
  */
 
 #ifndef __libcrux_core_H
 #define __libcrux_core_H
 
+#include "eurydice_glue.h"
+
 #if defined(__cplusplus)
 extern "C" {
 #endif
-
-#include "eurydice_glue.h"
 
 /**
 A monomorphic instance of core.ops.range.Range
@@ -34,6 +34,21 @@ typedef struct core_ops_range_Range_08_s {
 #define core_result_Err 1
 
 typedef uint8_t core_result_Result_a9_tags;
+
+#define core_option_None 0
+#define core_option_Some 1
+
+typedef uint8_t core_option_Option_9e_tags;
+
+/**
+A monomorphic instance of core.option.Option
+with types size_t
+
+*/
+typedef struct core_option_Option_08_s {
+  core_option_Option_9e_tags tag;
+  size_t f0;
+} core_option_Option_08;
 
 static inline uint64_t core_num__u64_9__from_le_bytes(uint8_t x0[8U]);
 

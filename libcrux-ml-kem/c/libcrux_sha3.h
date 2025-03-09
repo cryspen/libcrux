@@ -1,24 +1,25 @@
 /*
- * SPDX-FileCopyrightText: 2024 Cryspen Sarl <info@cryspen.com>
+ * SPDX-FileCopyrightText: 2025 Cryspen Sarl <info@cryspen.com>
  *
  * SPDX-License-Identifier: MIT or Apache-2.0
  *
  * This code was generated with the following revisions:
  * Charon: d250df809d9b0fa1bddac2055794620e87f435cc
  * Eurydice: a7d75fe821978f486e431a28f54a8327c8dc6b0f
- * Karamel: 786646b50f22725a516afd04259aa90529c19a3b
+ * Karamel: 84db722ff2000edb178c76e4b86c0de91ea3717a
  * F*: 4b3fc11774003a6ff7c09500ecb5f0145ca6d862
- * Libcrux: 00cd91805d0d59c1fb8a5866f6c87bd9cb4b9741
+ * Libcrux: cf450e302a3c9f3efbba9f5a8e46047b75d3d32e
  */
 
 #ifndef __libcrux_sha3_H
 #define __libcrux_sha3_H
 
+#include "eurydice_glue.h"
+
 #if defined(__cplusplus)
 extern "C" {
 #endif
 
-#include "eurydice_glue.h"
 #include "libcrux_core.h"
 #include "libcrux_sha3_internal.h"
 

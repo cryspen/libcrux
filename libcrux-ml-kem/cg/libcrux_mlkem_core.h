@@ -6,19 +6,19 @@
  * This code was generated with the following revisions:
  * Charon: d250df809d9b0fa1bddac2055794620e87f435cc
  * Eurydice: a7d75fe821978f486e431a28f54a8327c8dc6b0f
- * Karamel: 786646b50f22725a516afd04259aa90529c19a3b
+ * Karamel: 84db722ff2000edb178c76e4b86c0de91ea3717a
  * F*: 4b3fc11774003a6ff7c09500ecb5f0145ca6d862
- * Libcrux: 00cd91805d0d59c1fb8a5866f6c87bd9cb4b9741
+ * Libcrux: cf450e302a3c9f3efbba9f5a8e46047b75d3d32e
  */
 
 #ifndef __libcrux_mlkem_core_H
 #define __libcrux_mlkem_core_H
 
+#include "eurydice_glue.h"
+
 #if defined(__cplusplus)
 extern "C" {
 #endif
-
-#include "eurydice_glue.h"
 
 /**
 A monomorphic instance of core.ops.range.Range
@@ -34,6 +34,21 @@ typedef struct core_ops_range_Range_08_s {
 #define Err 1
 
 typedef uint8_t Result_a9_tags;
+
+#define None 0
+#define Some 1
+
+typedef uint8_t Option_9e_tags;
+
+/**
+A monomorphic instance of core.option.Option
+with types size_t
+
+*/
+typedef struct Option_08_s {
+  Option_9e_tags tag;
+  size_t f0;
+} Option_08;
 
 static inline uint16_t core_num__u16_7__wrapping_add(uint16_t x0, uint16_t x1);
 

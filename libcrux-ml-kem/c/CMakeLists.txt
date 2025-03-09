@@ -18,7 +18,7 @@ if(NOT MSVC)
     add_compile_options(
         -Wall
         -fdiagnostics-color=always
-        -pedantic
+        # -pedantic
         # -Wextra
         # -pedantic
         # -Wconversion
