@@ -11,7 +11,6 @@
 
 extern "C"
 {
-#endif
 
 #include <inttypes.h>
 #include <stdbool.h>
@@ -21,6 +20,74 @@ extern "C"
 
 #include "karamel/endianness.h"
 #include "karamel/target.h"
+
+  // We represent a slice as a pair of an (untyped) pointer, along with the length
+  // of the slice, i.e. the number of elements in the slice (this is NOT the
+  // number of bytes). This design choice has two important consequences.
+  // - if you need to use `ptr`, you MUST cast it to a proper type *before*
+  // performing pointer
+  //   arithmetic on it (remember that C desugars pointer arithmetic based on the
+  //   type of the address)
+  // - if you need to use `len` for a C style function (e.g. memcpy, memcmp), you
+  // need to multiply it
+  //   by sizeof t, where t is the type of the elements.
+  //
+  // Empty slices have `len == 0` and `ptr` always needs to be valid pointer that
+  // is not NULL (otherwise the construction in EURYDICE_SLICE computes `NULL +
+  // start`).
+  typedef struct
+  {
+    void *ptr;
+    size_t len;
+  } Eurydice_slice;
+}
+
+// Get C++ struct initialization as an expression
+template <typename Type>
+static inline Type mk(Type value)
+{
+  return value;
+}
+
+// XXX: We could use things like these for nicer C++ versions of macros.
+// template <typename Type, typename ElementType, typename SliceType>
+// static inline Type split_at(SliceType slice, size_t mid)
+// {
+//   // This must be a struct of the form
+//   // {
+//   //  SliceType fst;
+//   //  SliceType snd;
+//   // }
+//   Type out;
+
+//   out.fst = mk<SliceType>({(void *)(slice.ptr), mid});
+//   out.snd = mk<SliceType>({(void *)(((ElementType *)slice.ptr) + mid), slice.len - mid});
+
+//   return out;
+// }
+
+template <typename Type, typename SizeType>
+static inline Type iter_next(SizeType &start, SizeType end)
+{
+  Type out;
+
+  if (start >= end)
+  {
+    out.tag = 0; // XXX: None | not nice that we can't use the define
+    out.f0 = 0;
+  }
+  else
+  {
+    out.tag = 1; // XXX: Some | not nice that we can't use the define
+    out.f0 = start++;
+  }
+
+  return out;
+}
+
+extern "C"
+{
+#endif
 
 #define LowStar_Ignore_ignore(e, t, _ret_t) ((void)e)
 
@@ -46,28 +113,8 @@ extern "C"
 #if defined(__cplusplus)
 #define CFIELD(field, value) ESC(value)
 #else
-#define CFIELD(field, value) .field = value
+#define CFIELD(field, value) field = value
 #endif
-
-  // We represent a slice as a pair of an (untyped) pointer, along with the length
-  // of the slice, i.e. the number of elements in the slice (this is NOT the
-  // number of bytes). This design choice has two important consequences.
-  // - if you need to use `ptr`, you MUST cast it to a proper type *before*
-  // performing pointer
-  //   arithmetic on it (remember that C desugars pointer arithmetic based on the
-  //   type of the address)
-  // - if you need to use `len` for a C style function (e.g. memcpy, memcmp), you
-  // need to multiply it
-  //   by sizeof t, where t is the type of the elements.
-  //
-  // Empty slices have `len == 0` and `ptr` always needs to be valid pointer that
-  // is not NULL (otherwise the construction in EURYDICE_SLICE computes `NULL +
-  // start`).
-  typedef struct
-  {
-    void *ptr;
-    size_t len;
-  } Eurydice_slice;
 
   // Helper function to build a eurydice slice from a pointer and length.
   static inline Eurydice_slice mk_slice(void *start, size_t len)
@@ -146,6 +193,8 @@ extern "C"
     sz, a1, a2, t, _, _ret_t)                                                               \
   Eurydice_array_eq(sz, a1, ((a2)->ptr), t, _)
 
+// XXX: We could do something nicer in C++
+// split_at<ret_t, element_type, Eurydice_slice>((slice), (mid))
 #define Eurydice_slice_split_at(slice, mid, element_type, ret_t)               \
   CLITERAL(ret_t,                                                              \
            CFIELDS({CFIELD(.fst,                                               \
@@ -153,10 +202,18 @@ extern "C"
                     CFIELD(.snd, EURYDICE_SLICE((element_type *)slice.ptr,     \
                                                 mid, slice.len))}))
 
-#define Eurydice_slice_split_at_mut(slice, mid, element_type, ret_t)                                                                      \
-  CLITERAL(ret_t, CFIELDS({CFIELD(.fst, CLITERAL(Eurydice_slice, CFIELDS({CFIELD(.ptr, (slice.ptr)), CFIELD(.len, mid)}))),               \
-                           CFIELD(.snd, CLITERAL(Eurydice_slice, CFIELDS({CFIELD(.ptr, ((char *)slice.ptr + mid * sizeof(element_type))), \
-                                                                          CFIELD(.len, (slice.len - mid))})))}))
+#define Eurydice_slice_split_at_mut(slice, mid, element_type, ret_t)           \
+  CLITERAL(                                                                    \
+      ret_t,                                                                   \
+      CFIELDS({CFIELD(.fst, CLITERAL(Eurydice_slice,                           \
+                                     CFIELDS({CFIELD(.ptr, (slice.ptr)),       \
+                                              CFIELD(.len, mid)}))),           \
+               CFIELD(.snd,                                                    \
+                      CLITERAL(                                                \
+                          Eurydice_slice,                                      \
+                          CFIELDS({CFIELD(.ptr, ((char *)slice.ptr +           \
+                                                 mid * sizeof(element_type))), \
+                                   CFIELD(.len, (slice.len - mid))})))}))
 
 // Conversion of slice to an array, rewritten (by Eurydice) to name the
 // destination array, since arrays are not values in C.
@@ -206,6 +263,26 @@ extern "C"
   {
     return x - y;
   }
+
+  // ITERATORS
+
+#if defined(__cplusplus)
+#define Eurydice_range_iter_next(iter_ptr, t, ret_t) \
+  iter_next<ret_t, t>((iter_ptr)->start, (iter_ptr)->end)
+#else
+#define Eurydice_range_iter_next(iter_ptr, t, ret_t) \
+  (((iter_ptr)->start >= (iter_ptr)->end)            \
+       ? (CLITERAL(ret_t){.tag = None, .f0 = 0})     \
+       : (CLITERAL(ret_t){.tag = Some, .f0 = (iter_ptr)->start++}))
+#endif
+
+#define core_iter_range___core__iter__traits__iterator__Iterator_for_core__ops__range__Range_A__TraitClause_0___6__next \
+  Eurydice_range_iter_next
+
+// See note in karamel/lib/Inlining.ml if you change this
+#define Eurydice_into_iter(x, t, _ret_t) x
+#define core_iter_traits_collect___core__iter__traits__collect__IntoIterator_for_I__1__into_iter \
+  Eurydice_into_iter
 
 #if defined(__cplusplus)
 }
