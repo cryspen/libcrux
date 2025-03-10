@@ -60,7 +60,7 @@ let rejection_sample_eta_4 (randomness:Seq.seq u8) : (Seq.seq i32) =
   Lib.LoopCombinators.repeati (Seq.length randomness)
     (rejection_sample_eta_4_inner randomness) Seq.empty
 
-#push-options "--z3rlimit 1500 --max_fuel 3 --max_ifuel 3 --ext context_pruning --z3refresh"
+#push-options "--z3rlimit 1500 --fuel 3 --ifuel 3 --ext context_pruning --z3refresh"
 
 let rejection_sample_coefficient_lemma (randomness:Seq.seq u8) (i:nat{i < (Seq.length randomness) / 3}) :
   Lemma (let b0 = cast (Seq.index randomness (i * 3)) <: i32 in
