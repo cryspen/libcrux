@@ -3,61 +3,155 @@ module Libcrux_ml_dsa.Simd.Portable.Sample
 open Core
 open FStar.Mul
 
+#push-options "--z3rlimit 1500 --max_fuel 3 --max_ifuel 3 --ext context_pruning --z3refresh"
+
+let rejection_sample_coefficient_lemma (randomness:Seq.seq u8) (i:nat{i < (Seq.length randomness) / 3}) :
+  Lemma (let b0 = cast (Seq.index randomness (i * 3)) <: i32 in
+        let b1 = cast (Seq.index randomness (i * 3 + 1)) <: i32 in
+        let b2 = cast (Seq.index randomness (i * 3 + 2)) <: i32 in
+        let coefficient = (((b2 <<! mk_i32 16) |. (b1 <<! mk_i32 8)) |. b0) &.
+            mk_i32 8388607 in
+        Spec.MLDSA.Math.rejection_sample_coefficient randomness i == coefficient) =
+  let b0 = cast (Seq.index randomness (i * 3)) <: i32 in
+  let b1 = cast (Seq.index randomness (i * 3 + 1)) <: i32 in
+  let b2 = cast (Seq.index randomness (i * 3 + 2)) <: i32 in
+  let b2' = if b2 >. mk_i32 127 then b2 -. mk_i32 128  else b2 in
+  assert_norm (pow2 23 == 8388608);
+  assert (b2' == (b2 %! mk_i32 128));
+  assert (((mk_i32 (pow2 16) *. b2) %! mk_i32 (pow2 23)) == (mk_i32 (pow2 16) *. (b2 %! mk_i32 128)));
+  logor_disjoint (b2 <<! mk_i32 16) (b1 <<! mk_i32 8) 16;
+  assert (((b2 <<! mk_i32 16) |. (b1 <<! mk_i32 8)) == ((b2 <<! mk_i32 16) +. (b1 <<! mk_i32 8)));
+  logor_disjoint ((b2 <<! mk_i32 16) |. (b1 <<! mk_i32 8)) b0 8;
+  assert ((((b2 <<! mk_i32 16) |. (b1 <<! mk_i32 8)) |. b0) ==
+    (((b2 <<! mk_i32 16) +. (b1 <<! mk_i32 8)) +. b0));
+  assert ((b2 <<! mk_i32 16) == (mk_i32 (pow2 16) *. b2));
+  assert ((b1 <<! mk_i32 8) == (mk_i32 (pow2 8) *. b1));
+  logand_mask_lemma (((mk_i32 (pow2 16) *. b2) +. (mk_i32 (pow2 8) *. b1)) +. b0) 23;
+  assert (((((mk_i32 (pow2 16) *. b2) +. ((mk_i32 (pow2 8) *. b1)) +. b0)) %! mk_i32 (pow2 23)) ==
+    ((((mk_i32 (pow2 16) *. b2) %! mk_i32 (pow2 23)) +. ((mk_i32 (pow2 8) *. b1)) +. b0)));
+  assert (((((mk_i32 (pow2 16) *. b2) +. (mk_i32 (pow2 8) *. b1)) +. b0) %! mk_i32 (pow2 23)) ==
+    (((mk_i32 (pow2 16) *. (b2 %! mk_i32 128)) +. (mk_i32 (pow2 8) *. b1)) +. b0));
+  assert (((((mk_i32 (pow2 16) *. b2) +. (mk_i32 (pow2 8) *. b1)) +. b0) %! mk_i32 (pow2 23)) ==
+    (((mk_i32 (pow2 16) *. b2') +. (mk_i32 (pow2 8) *. b1)) +. b0))
+
+#pop-options
+
 let rejection_sample_less_than_field_modulus (randomness: t_Slice u8) (out: t_Slice i32) =
   let sampled:usize = mk_usize 0 in
+  let e_out_len:usize = Core.Slice.impl__len #i32 out in
+  let _:Prims.unit =
+    Lib.LoopCombinators.eq_repeati0 0
+      (Spec.MLDSA.Math.rejection_sample_field_modulus_inner randomness)
+      Seq.empty
+  in
   let out, sampled:(t_Slice i32 & usize) =
-    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Slice.Iter.t_ChunksExact
-            u8)
-          #FStar.Tactics.Typeclasses.solve
-          (Core.Slice.impl__chunks_exact #u8 randomness (mk_usize 3)
-            <:
-            Core.Slice.Iter.t_ChunksExact u8)
-        <:
-        Core.Slice.Iter.t_ChunksExact u8)
-      (out, sampled <: (t_Slice i32 & usize))
-      (fun temp_0_ bytes ->
+    Rust_primitives.Hax.Folds.fold_range (mk_usize 0)
+      ((Core.Slice.impl__len #u8 randomness <: usize) /! mk_usize 3 <: usize)
+      (fun temp_0_ i ->
           let out, sampled:(t_Slice i32 & usize) = temp_0_ in
-          let bytes:t_Slice u8 = bytes in
-          let b0:i32 = cast (bytes.[ mk_usize 0 ] <: u8) <: i32 in
-          let b1:i32 = cast (bytes.[ mk_usize 1 ] <: u8) <: i32 in
-          let b2:i32 = cast (bytes.[ mk_usize 2 ] <: u8) <: i32 in
+          let i:usize = i in
+          v sampled <= v i /\ Seq.length out == v e_out_len /\
+          (let samples =
+              Lib.LoopCombinators.repeati (v i)
+                (Spec.MLDSA.Math.rejection_sample_field_modulus_inner randomness)
+                Seq.empty
+            in
+            v sampled == Seq.length samples /\ Seq.slice out 0 (Seq.length samples) == samples))
+      (out, sampled <: (t_Slice i32 & usize))
+      (fun temp_0_ i ->
+          let out, sampled:(t_Slice i32 & usize) = temp_0_ in
+          let i:usize = i in
+          let b0:i32 = cast (randomness.[ i *! mk_usize 3 <: usize ] <: u8) <: i32 in
+          let b1:i32 =
+            cast (randomness.[ (i *! mk_usize 3 <: usize) +! mk_usize 1 <: usize ] <: u8) <: i32
+          in
+          let b2:i32 =
+            cast (randomness.[ (i *! mk_usize 3 <: usize) +! mk_usize 2 <: usize ] <: u8) <: i32
+          in
           let coefficient:i32 =
             (((b2 <<! mk_i32 16 <: i32) |. (b1 <<! mk_i32 8 <: i32) <: i32) |. b0 <: i32) &.
             mk_i32 8388607
           in
-          if coefficient <. Libcrux_ml_dsa.Constants.v_FIELD_MODULUS
-          then
-            let out:t_Slice i32 =
-              Rust_primitives.Hax.Monomorphized_update_at.update_at_usize out sampled coefficient
+          let _:Prims.unit =
+            rejection_sample_coefficient_lemma randomness (v i);
+            Lib.LoopCombinators.unfold_repeati (v i + 1)
+              (Spec.MLDSA.Math.rejection_sample_field_modulus_inner randomness)
+              Seq.empty
+              (v i)
+          in
+          let out, sampled:(t_Slice i32 & usize) =
+            if coefficient <. Libcrux_ml_dsa.Constants.v_FIELD_MODULUS
+            then
+              let out:t_Slice i32 =
+                Rust_primitives.Hax.Monomorphized_update_at.update_at_usize out sampled coefficient
+              in
+              let sampled:usize = sampled +! mk_usize 1 in
+              out, sampled <: (t_Slice i32 & usize)
+            else out, sampled <: (t_Slice i32 & usize)
+          in
+          let _:Prims.unit =
+            let samples =
+              Lib.LoopCombinators.repeati (v i + 1)
+                (Spec.MLDSA.Math.rejection_sample_field_modulus_inner randomness)
+                Seq.empty
             in
-            let sampled:usize = sampled +! mk_usize 1 in
-            out, sampled <: (t_Slice i32 & usize)
-          else out, sampled <: (t_Slice i32 & usize))
+            Lib.Sequence.eq_intro #i32
+              #(Seq.length samples)
+              (Seq.slice out 0 (Seq.length samples))
+              samples
+          in
+          out, sampled <: (t_Slice i32 & usize))
   in
   let hax_temp_output:usize = sampled in
   out, hax_temp_output <: (t_Slice i32 & usize)
 
+#push-options "--z3rlimit 800 --ext context_pruning --z3refresh"
+
 let rejection_sample_less_than_eta_equals_2_ (randomness: t_Slice u8) (out: t_Slice i32) =
   let sampled:usize = mk_usize 0 in
+  let e_out_len:usize = Core.Slice.impl__len #i32 out in
+  let _:Prims.unit =
+    Lib.LoopCombinators.eq_repeati0 0
+      (Spec.MLDSA.Math.rejection_sample_eta_2_inner randomness)
+      Seq.empty
+  in
   let out, sampled:(t_Slice i32 & usize) =
-    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Slice.Iter.t_Iter
-            u8)
-          #FStar.Tactics.Typeclasses.solve
-          (Core.Slice.impl__iter #u8 randomness <: Core.Slice.Iter.t_Iter u8)
-        <:
-        Core.Slice.Iter.t_Iter u8)
-      (out, sampled <: (t_Slice i32 & usize))
-      (fun temp_0_ byte ->
+    Rust_primitives.Hax.Folds.fold_range (mk_usize 0)
+      (Core.Slice.impl__len #u8 randomness <: usize)
+      (fun temp_0_ i ->
           let out, sampled:(t_Slice i32 & usize) = temp_0_ in
-          let byte:u8 = byte in
+          let i:usize = i in
+          v i >= 0 /\ v i <= Seq.length randomness /\ v sampled <= v i * 2 /\
+          Seq.length out == v e_out_len /\
+          (let samples =
+              Lib.LoopCombinators.repeati (v i)
+                (Spec.MLDSA.Math.rejection_sample_eta_2_inner randomness)
+                Seq.empty
+            in
+            v sampled == Seq.length samples /\ Seq.slice out 0 (Seq.length samples) == samples))
+      (out, sampled <: (t_Slice i32 & usize))
+      (fun temp_0_ i ->
+          let out, sampled:(t_Slice i32 & usize) = temp_0_ in
+          let i:usize = i in
+          let byte:u8 = randomness.[ i ] in
           let try_0_:u8 = byte &. mk_u8 15 in
           let try_1_:u8 = byte >>! mk_i32 4 in
+          let _:Prims.unit =
+            Lib.LoopCombinators.unfold_repeati (v i + 1)
+              (Spec.MLDSA.Math.rejection_sample_eta_2_inner randomness)
+              Seq.empty
+              (v i)
+          in
           let out, sampled:(t_Slice i32 & usize) =
             if try_0_ <. mk_u8 15
             then
               let try_0_:i32 = cast (try_0_ <: u8) <: i32 in
               let try_0_mod_5_:i32 =
                 try_0_ -! (((try_0_ *! mk_i32 26 <: i32) >>! mk_i32 7 <: i32) *! mk_i32 5 <: i32)
+              in
+              let _:Prims.unit =
+                assert (try_0_mod_5_ == (try_0_ %! mk_i32 5));
+                assert ((mk_i32 2 -. try_0_mod_5_) == (mk_i32 2 -! try_0_mod_5_))
               in
               let out:t_Slice i32 =
                 Rust_primitives.Hax.Monomorphized_update_at.update_at_usize out
@@ -68,39 +162,81 @@ let rejection_sample_less_than_eta_equals_2_ (randomness: t_Slice u8) (out: t_Sl
               out, sampled <: (t_Slice i32 & usize)
             else out, sampled <: (t_Slice i32 & usize)
           in
-          if try_1_ <. mk_u8 15
-          then
-            let try_1_:i32 = cast (try_1_ <: u8) <: i32 in
-            let try_1_mod_5_:i32 =
-              try_1_ -! (((try_1_ *! mk_i32 26 <: i32) >>! mk_i32 7 <: i32) *! mk_i32 5 <: i32)
+          let out, sampled:(t_Slice i32 & usize) =
+            if try_1_ <. mk_u8 15
+            then
+              let try_1_:i32 = cast (try_1_ <: u8) <: i32 in
+              let try_1_mod_5_:i32 =
+                try_1_ -! (((try_1_ *! mk_i32 26 <: i32) >>! mk_i32 7 <: i32) *! mk_i32 5 <: i32)
+              in
+              let _:Prims.unit =
+                assert (try_1_mod_5_ == (try_1_ %! mk_i32 5));
+                assert ((mk_i32 2 -. try_1_mod_5_) == (mk_i32 2 -! try_1_mod_5_))
+              in
+              let out:t_Slice i32 =
+                Rust_primitives.Hax.Monomorphized_update_at.update_at_usize out
+                  sampled
+                  (mk_i32 2 -! try_1_mod_5_ <: i32)
+              in
+              let sampled:usize = sampled +! mk_usize 1 in
+              out, sampled <: (t_Slice i32 & usize)
+            else out, sampled <: (t_Slice i32 & usize)
+          in
+          let _:Prims.unit =
+            let samples =
+              Lib.LoopCombinators.repeati (v i + 1)
+                (Spec.MLDSA.Math.rejection_sample_eta_2_inner randomness)
+                Seq.empty
             in
-            let out:t_Slice i32 =
-              Rust_primitives.Hax.Monomorphized_update_at.update_at_usize out
-                sampled
-                (mk_i32 2 -! try_1_mod_5_ <: i32)
-            in
-            let sampled:usize = sampled +! mk_usize 1 in
-            out, sampled <: (t_Slice i32 & usize)
-          else out, sampled <: (t_Slice i32 & usize))
+            Lib.Sequence.eq_intro #i32
+              #(Seq.length samples)
+              (Seq.slice out 0 (Seq.length samples))
+              samples
+          in
+          out, sampled <: (t_Slice i32 & usize))
   in
   let hax_temp_output:usize = sampled in
   out, hax_temp_output <: (t_Slice i32 & usize)
 
+#pop-options
+
+#push-options "--ext context_pruning --z3refresh"
+
 let rejection_sample_less_than_eta_equals_4_ (randomness: t_Slice u8) (out: t_Slice i32) =
   let sampled:usize = mk_usize 0 in
+  let e_out_len:usize = Core.Slice.impl__len #i32 out in
+  let _:Prims.unit =
+    Lib.LoopCombinators.eq_repeati0 0
+      (Spec.MLDSA.Math.rejection_sample_eta_4_inner randomness)
+      Seq.empty
+  in
   let out, sampled:(t_Slice i32 & usize) =
-    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Slice.Iter.t_Iter
-            u8)
-          #FStar.Tactics.Typeclasses.solve
-          (Core.Slice.impl__iter #u8 randomness <: Core.Slice.Iter.t_Iter u8)
-        <:
-        Core.Slice.Iter.t_Iter u8)
-      (out, sampled <: (t_Slice i32 & usize))
-      (fun temp_0_ byte ->
+    Rust_primitives.Hax.Folds.fold_range (mk_usize 0)
+      (Core.Slice.impl__len #u8 randomness <: usize)
+      (fun temp_0_ i ->
           let out, sampled:(t_Slice i32 & usize) = temp_0_ in
-          let byte:u8 = byte in
+          let i:usize = i in
+          v i >= 0 /\ v i <= Seq.length randomness /\ v sampled <= v i * 2 /\
+          Seq.length out == v e_out_len /\
+          (let samples =
+              Lib.LoopCombinators.repeati (v i)
+                (Spec.MLDSA.Math.rejection_sample_eta_4_inner randomness)
+                Seq.empty
+            in
+            v sampled == Seq.length samples /\ Seq.slice out 0 (Seq.length samples) == samples))
+      (out, sampled <: (t_Slice i32 & usize))
+      (fun temp_0_ i ->
+          let out, sampled:(t_Slice i32 & usize) = temp_0_ in
+          let i:usize = i in
+          let byte:u8 = randomness.[ i ] in
           let try_0_:u8 = byte &. mk_u8 15 in
           let try_1_:u8 = byte >>! mk_i32 4 in
+          let _:Prims.unit =
+            Lib.LoopCombinators.unfold_repeati (v i + 1)
+              (Spec.MLDSA.Math.rejection_sample_eta_4_inner randomness)
+              Seq.empty
+              (v i)
+          in
           let out, sampled:(t_Slice i32 & usize) =
             if try_0_ <. mk_u8 9
             then
@@ -113,16 +249,32 @@ let rejection_sample_less_than_eta_equals_4_ (randomness: t_Slice u8) (out: t_Sl
               out, sampled <: (t_Slice i32 & usize)
             else out, sampled <: (t_Slice i32 & usize)
           in
-          if try_1_ <. mk_u8 9
-          then
-            let out:t_Slice i32 =
-              Rust_primitives.Hax.Monomorphized_update_at.update_at_usize out
-                sampled
-                (mk_i32 4 -! (cast (try_1_ <: u8) <: i32) <: i32)
+          let out, sampled:(t_Slice i32 & usize) =
+            if try_1_ <. mk_u8 9
+            then
+              let out:t_Slice i32 =
+                Rust_primitives.Hax.Monomorphized_update_at.update_at_usize out
+                  sampled
+                  (mk_i32 4 -! (cast (try_1_ <: u8) <: i32) <: i32)
+              in
+              let sampled:usize = sampled +! mk_usize 1 in
+              out, sampled <: (t_Slice i32 & usize)
+            else out, sampled <: (t_Slice i32 & usize)
+          in
+          let _:Prims.unit =
+            let samples =
+              Lib.LoopCombinators.repeati (v i + 1)
+                (Spec.MLDSA.Math.rejection_sample_eta_4_inner randomness)
+                Seq.empty
             in
-            let sampled:usize = sampled +! mk_usize 1 in
-            out, sampled <: (t_Slice i32 & usize)
-          else out, sampled <: (t_Slice i32 & usize))
+            Lib.Sequence.eq_intro #i32
+              #(Seq.length samples)
+              (Seq.slice out 0 (Seq.length samples))
+              samples
+          in
+          out, sampled <: (t_Slice i32 & usize))
   in
   let hax_temp_output:usize = sampled in
   out, hax_temp_output <: (t_Slice i32 & usize)
+
+#pop-options
