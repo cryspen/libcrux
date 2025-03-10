@@ -30,7 +30,7 @@ typedef __m256i core_core_arch_x86___m256i;
 
 // Initialize, Load, Store
 
-#define libcrux_intrinsics_avx2_mm256_setzero_si256(void) \
+#define libcrux_intrinsics_avx2_mm256_setzero_si256() \
   (_mm256_setzero_si256())
 
 #define libcrux_intrinsics_avx2_mm256_set1_epi16(a) (_mm256_set1_epi16(a))
