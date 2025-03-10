@@ -251,14 +251,24 @@ pub(crate) fn montgomery_multiply(lhs: &mut Coefficients, rhs: &Coefficients) {
 //
 // We assume the input t is in the signed representative range and convert it
 // to the standard unsigned range.
-#[hax_lib::fstar::verification_status(lax)]
 #[inline(always)]
+#[hax_lib::fstar::options("--ext context_pruning --z3refresh --split_queries always")]
+#[hax_lib::requires(fstar!(r#"Spec.Utils.is_i32b (v $FIELD_MODULUS - 1) $t"#))]
+#[hax_lib::ensures(|(t0,t1)| fstar!(r#"
+    v $t0 == Spec.Utils.mod_q (v $t % v $FIELD_MODULUS) (pow2 (v $BITS_IN_LOWER_PART_OF_T)) /\
+    v $t1 == ((v $t % v $FIELD_MODULUS) - v $t0) / pow2 (v $BITS_IN_LOWER_PART_OF_T) /\
+    v $t0 > -(pow2 (v $BITS_IN_LOWER_PART_OF_T - 1)) /\ v $t0 <= pow2 (v $BITS_IN_LOWER_PART_OF_T - 1)"#))]
 fn power2round_element(t: i32) -> (i32, i32) {
     // Hax issue: https://github.com/hacspec/hax/issues/1082
     debug_assert!(t > -FIELD_MODULUS && t < FIELD_MODULUS);
 
+    hax_lib::fstar!(
+        "logand_lemma $FIELD_MODULUS (t >>! mk_i32 31)");
+    let _t = t;
     // Convert the signed representative to the standard unsigned one.
     let t = t + ((t >> 31) & FIELD_MODULUS);
+    hax_lib::fstar!(
+        "assert (v $t == v $_t % v $FIELD_MODULUS)");
 
     // t0 = t - (2^{BITS_IN_LOWER_PART_OF_T} * t1)
     // t1 = ⌊(t - 1)/2^{BITS_IN_LOWER_PART_OF_T} + 1/2⌋
@@ -266,29 +276,75 @@ fn power2round_element(t: i32) -> (i32, i32) {
     // See Lemma 10 of the implementation notes document for more information
     // on what these compute.
     let t1 = (t - 1 + (1 << (BITS_IN_LOWER_PART_OF_T - 1))) >> BITS_IN_LOWER_PART_OF_T;
+    hax_lib::fstar!(
+        "assert (v $t1 == (v $t - 1 + pow2 12) / pow2 13);
+        assert ((v $t - (Spec.Utils.mod_q (v $t) (pow2 13))) / pow2 13 ==
+            (v $t / pow2 13 - (Spec.Utils.mod_q (v $t) (pow2 13)) / pow2 13));
+        if v $t % pow2 13 > pow2 12 then
+            (assert (Spec.Utils.mod_q (v $t) (pow2 13) == v $t % pow2 13 - pow2 13);
+            assert ((Spec.Utils.mod_q (v $t) (pow2 13)) / pow2 13 == (v $t % pow2 13 - pow2 13) / pow2 13);
+            assert ((v $t % pow2 13 - pow2 13) / pow2 13 == (v $t % pow2 13) / pow2 13 - pow2 13 / pow2 13);
+            assert ((v $t % pow2 13) / pow2 13 - pow2 13 / pow2 13 == -1);
+            assert ((v $t - (Spec.Utils.mod_q (v $t) (pow2 13))) / pow2 13 == v $t / pow2 13 + 1))
+        else
+            (assert ((v $t - (Spec.Utils.mod_q (v $t) (pow2 13))) / pow2 13 == v $t / pow2 13);
+            assert ((v $t - 1 + pow2 12) / pow2 13 == v $t / pow2 13));
+        assert (v $t1 == (v $t - (Spec.Utils.mod_q (v $t) (pow2 13))) / pow2 13)");
     let t0 = t - (t1 << BITS_IN_LOWER_PART_OF_T);
+    hax_lib::fstar!(
+        "assert (v $t0 == v $t - ((v $t - (Spec.Utils.mod_q (v $t) (pow2 13))) / pow2 13) * pow2 13);
+        assert (v $t0 == v $t - (v $t - (Spec.Utils.mod_q (v $t) (pow2 13))));
+        assert (v $t0 == Spec.Utils.mod_q (v $t) (pow2 13))");
 
     (t0, t1)
 }
 
-#[hax_lib::fstar::verification_status(lax)]
 #[inline(always)]
+#[hax_lib::requires(fstar!(r#"Spec.Utils.is_i32b_array (v $FIELD_MODULUS - 1) ${t0}.f_values"#))]
+#[hax_lib::ensures(|_| fstar!(r#"
+    forall i. i < 8 ==>
+        (let t0_1 = v (Seq.index ${t0}.f_values i) % v $FIELD_MODULUS in
+        let t0_2 = v (Seq.index ${t0}_future.f_values i) in
+        t0_2 == Spec.Utils.mod_q t0_1 (pow2 (v $BITS_IN_LOWER_PART_OF_T)) /\
+        v (Seq.index ${t1}_future.f_values i) == (t0_1 - t0_2) / pow2 (v $BITS_IN_LOWER_PART_OF_T) /\
+        t0_2 > -(pow2 (v $BITS_IN_LOWER_PART_OF_T - 1)) /\ t0_2 <= pow2 (v $BITS_IN_LOWER_PART_OF_T - 1))"#))]
 pub(super) fn power2round(t0: &mut Coefficients, t1: &mut Coefficients) {
+    let _t0: Coefficients = t0.clone();
     for i in 0..t0.values.len() {
+        hax_lib::loop_invariant!(|i: usize| {
+            fstar!(r#"
+                (forall j. j < v i ==> (let t0_1 = v (Seq.index ${_t0}.f_values j) % v $FIELD_MODULUS in
+                    let t0_2 = v (Seq.index ${t0}.f_values j) in
+                    t0_2 == Spec.Utils.mod_q t0_1 (pow2 (v $BITS_IN_LOWER_PART_OF_T)) /\
+                    v (Seq.index ${t1}.f_values j) == (t0_1 - t0_2) / pow2 (v $BITS_IN_LOWER_PART_OF_T) /\
+                    t0_2 > -(pow2 (v $BITS_IN_LOWER_PART_OF_T - 1)) /\ t0_2 <= pow2 (v $BITS_IN_LOWER_PART_OF_T - 1))) /\
+                (forall j. j >= v i ==> (Seq.index ${t0}.f_values j == Seq.index ${_t0}.f_values j /\
+                    Spec.Utils.is_i32b (v $FIELD_MODULUS - 1) (Seq.index ${t0}.f_values j)))"#
+            )
+        });
         (t0.values[i], t1.values[i]) = power2round_element(t0.values[i]);
     }
 }
 
 // TODO: Revisit this function when doing the range analysis and testing
 // additional KATs.
-#[hax_lib::fstar::verification_status(lax)]
 #[inline(always)]
+#[hax_lib::requires(fstar!(r#"Spec.Utils.is_i32b_array (v $FIELD_MODULUS - 1) ${simd_unit}.f_values"#))]
+#[hax_lib::ensures(|result| fstar!(r#"
+    $result == false ==> (forall i. i < 8 ==>
+        abs (v (Seq.index ${simd_unit}.f_values i)) < v $bound)"#))]
 pub(super) fn infinity_norm_exceeds(simd_unit: &Coefficients, bound: i32) -> bool {
     let mut result = false;
     // It is ok to leak which coefficient violates the bound since
     // the probability for each coefficient is independent of secret
     // data but we must not leak the sign of the centralized representative.
     for i in 0..simd_unit.values.len() {
+        hax_lib::loop_invariant!(|i: usize| {
+            fstar!(r#"
+                $result == false ==> (forall j. j < v $i ==>
+                    abs (v (Seq.index ${simd_unit}.f_values j)) < v $bound)"#
+            )
+        });
         let coefficient = simd_unit.values[i];
         debug_assert!(coefficient > -FIELD_MODULUS && coefficient < FIELD_MODULUS);
         // This norm is calculated using the absolute value of the
@@ -299,7 +355,13 @@ pub(super) fn infinity_norm_exceeds(simd_unit: &Coefficients, bound: i32) -> boo
         // So if the coefficient is negative, get its absolute value, but
         // don't convert it into a different representation.
         let sign = coefficient >> 31;
+        hax_lib::fstar!(
+            "logand_lemma (mk_i32 2 *! $coefficient) $sign"
+        );
         let normalized = coefficient - (sign & (2 * coefficient));
+        hax_lib::fstar!(
+            "assert (v $normalized == abs (v $coefficient))"
+        );
 
         // FIXME: return
         // [hax] https://github.com/hacspec/hax/issues/1204
@@ -309,24 +371,60 @@ pub(super) fn infinity_norm_exceeds(simd_unit: &Coefficients, bound: i32) -> boo
     result
 }
 
-#[hax_lib::fstar::verification_status(lax)]
 #[inline(always)]
+#[hax_lib::requires(fstar!(r#"Spec.Utils.is_i32b 2143289343 $fe"#))]
+#[hax_lib::ensures(|result| fstar!(r#"Spec.Utils.is_i32b 8380416 $result /\
+    v $result % 8380417 == v $fe % 8380417"#))]
 fn reduce_element(fe: FieldElement) -> FieldElement {
     let quotient = (fe + (1 << 22)) >> 23;
 
-    fe - (quotient * FIELD_MODULUS)
+    let result = fe - (quotient * FIELD_MODULUS);
+    hax_lib::fstar!(
+    "calc (==) {
+        v $result % 8380417;
+        (==) { }
+        (v $fe - (v $quotient * 8380417)) % 8380417;
+        (==) {Math.Lemmas.lemma_mod_sub_distr (v $fe) (v $quotient * 8380417) 8380417}
+        (v $fe - (v $quotient * 8380417) % 8380417) % 8380417;
+        (==) {Math.Lemmas.cancel_mul_mod (v $quotient) 8380417}
+        (v $fe - 0) % 8380417;
+        (==) {}
+        (v $fe) % 8380417; 
+    }");
+    result
 }
 
-#[hax_lib::fstar::verification_status(lax)]
 #[inline(always)]
+#[hax_lib::requires(fstar!(r#"v $SHIFT_BY >= 0 /\ v $SHIFT_BY < 32 /\ (forall i. i < 8 ==>
+    Spec.Utils.is_i32b 2143289343 ((Seq.index ${simd_unit}.f_values i) <<! v_SHIFT_BY))"#))]
+#[hax_lib::ensures(|_| fstar!(r#"forall i. i < 8 ==>
+    (let fe_1 = (Seq.index ${simd_unit}.f_values i) <<! v_SHIFT_BY in
+    let fe_2 = Seq.index ${simd_unit}_future.f_values i in
+    Spec.Utils.is_i32b 8380416 fe_2 /\
+    v fe_2 % 8380417 == v fe_1 % 8380417)"#))]
 pub(super) fn shift_left_then_reduce<const SHIFT_BY: i32>(simd_unit: &mut Coefficients) {
+    let _simd_unit0 = simd_unit.clone();
     for i in 0..simd_unit.values.len() {
+        hax_lib::loop_invariant!(|i: usize| {
+            fstar!(r#"
+                (forall j. j < v i ==> (Spec.Utils.is_i32b 8380416 (Seq.index ${simd_unit}.f_values j) /\
+                    v (Seq.index ${simd_unit}.f_values j) % 8380417 == (v ((Seq.index ${_simd_unit0}.f_values j) <<! v_SHIFT_BY) % 8380417))) /\
+                (forall j. j >= v i ==> (Seq.index ${simd_unit}.f_values j == Seq.index ${_simd_unit0}.f_values j /\
+                    Spec.Utils.is_i32b 2143289343 ((Seq.index ${simd_unit}.f_values j) <<! v_SHIFT_BY)))"#
+            )
+        });
         simd_unit.values[i] = reduce_element(simd_unit.values[i] << SHIFT_BY);
     }
 }
 
-#[hax_lib::fstar::verification_status(lax)]
 #[inline(always)]
+#[hax_lib::requires(fstar!(r#"v $gamma2 == v $GAMMA2_V261_888 \/ v $gamma2 == v $GAMMA2_V95_232"#))]
+#[hax_lib::ensures(|result| fstar!(r#"if
+    v $low > v $gamma2 || v $low < -(v $gamma2) || (v $low = -(v $gamma2) && v $high <> 0)
+    then
+        v $result = 1
+    else
+        v $result = 0"#))]
 fn compute_one_hint(low: i32, high: i32, gamma2: i32) -> i32 {
     if (low > gamma2) || (low < -gamma2) || (low == -gamma2 && high != 0) {
         1
@@ -335,8 +433,47 @@ fn compute_one_hint(low: i32, high: i32, gamma2: i32) -> i32 {
     }
 }
 
-#[hax_lib::fstar::verification_status(lax)]
+#[cfg_attr(hax, hax_lib::fstar::before(interface,
+r#"let hint_counter (hint:t_Array i32 (mk_usize 8)) (i:nat{i < 8}) (s:nat) : Tot (nat) =
+  s + v (cast hint.[sz i] <: usize)"#
+))]
+#[cfg_attr(hax, hax_lib::fstar::before(
+r#"val hint_counter_loop:
+  hint_1:t_Array i32 (mk_usize 8)
+  -> hint_2:t_Array i32 (mk_usize 8)
+  -> n:nat{n < 8} ->
+  Lemma
+   (requires
+      forall (i:nat). i < n ==> hint_1.[mk_usize i] == hint_2.[mk_usize i])
+    (ensures
+      Lib.LoopCombinators.repeati n (hint_counter hint_1) 0 ==
+        Lib.LoopCombinators.repeati n (hint_counter hint_2) 0)
+
+let rec hint_counter_loop hint_1 hint_2 n =
+  if n = 0 then begin
+    Lib.LoopCombinators.eq_repeati0 n (hint_counter hint_1) 0;
+    Lib.LoopCombinators.eq_repeati0 n (hint_counter hint_2) 0;
+    () end
+  else begin
+    hint_counter_loop hint_1 hint_2 (n - 1);
+    Lib.LoopCombinators.unfold_repeati n (hint_counter hint_1) 0 (n - 1);
+    Lib.LoopCombinators.unfold_repeati n (hint_counter hint_2) 0 (n - 1);
+    () end"#
+))]
 #[inline(always)]
+#[hax_lib::requires(fstar!(r#"v $gamma2 == v $GAMMA2_V261_888 \/ v $gamma2 == v $GAMMA2_V95_232"#))]
+#[hax_lib::ensures(|result| fstar!(r#"
+    (forall i. i < 8 ==> (let r = v (Seq.index ${hint}_future.f_values i) in
+        let l = v (Seq.index ${low}.f_values i) in
+        let h = v (Seq.index ${high}.f_values i) in
+        if l > v $gamma2 || l < -(v $gamma2) || 
+        (l = -(v $gamma2) && h <> 0)
+        then
+            r = 1
+        else
+            r = 0)) /\
+    v $result == Lib.LoopCombinators.repeati 8 (hint_counter ${hint}_future.f_values) 0"#
+))]
 pub(super) fn compute_hint(
     low: &Coefficients,
     high: &Coefficients,
@@ -345,8 +482,32 @@ pub(super) fn compute_hint(
 ) -> usize {
     let mut one_hints_count = 0;
 
+    hax_lib::fstar!(
+        r#"Lib.LoopCombinators.eq_repeati0 0 (hint_counter ${hint}.f_values) 0"#
+    );
     for i in 0..hint.values.len() {
+        hax_lib::loop_invariant!(|i: usize| {
+            fstar!(r#"
+                v $i >= 0 /\ v $i <= 8 /\
+                (forall j. j < v i ==> (let r = v (Seq.index ${hint}.f_values j) in
+                    let l = v (Seq.index ${low}.f_values j) in
+                    let h = v (Seq.index ${high}.f_values j) in
+                    if l > v $gamma2 || l < -(v $gamma2) || 
+                    (l = -(v $gamma2) && h <> 0)
+                    then
+                        r = 1
+                    else
+                        r = 0)) /\
+                v $one_hints_count <= v $i /\
+                v $one_hints_count == Lib.LoopCombinators.repeati (v $i) (hint_counter ${hint}.f_values) 0"#
+            )
+        });
+        let _hint_values = hint.values;
         hint.values[i] = compute_one_hint(low.values[i], high.values[i], gamma2);
+        hax_lib::fstar!(
+            r#"hint_counter_loop ${hint}.f_values $_hint_values (v i);
+            Lib.LoopCombinators.unfold_repeati (v $i + 1) (hint_counter ${hint}.f_values) 0 (v $i)"#
+        );
         one_hints_count += hint.values[i] as usize;
     }
 
@@ -367,34 +528,90 @@ pub(super) fn compute_hint(
 // - α/2 ≤ r₀ < 0.
 //
 // Note that 0 ≤ r₁ < (q-1)/α.
-#[hax_lib::fstar::verification_status(lax)]
 #[inline(always)]
+#[hax_lib::fstar::options("--fuel 3 --z3rlimit 500 --ext context_pruning --z3refresh --split_queries always")]
+#[hax_lib::requires(fstar!(r#"(v $gamma2 == v $GAMMA2_V261_888 \/ v $gamma2 == v $GAMMA2_V95_232) /\
+    Spec.Utils.is_i32b (v $FIELD_MODULUS - 1) $r"#))]
+#[hax_lib::ensures(|(r0,r1)| fstar!(r#"
+    let r_q = v $r % v $FIELD_MODULUS in
+    let r_g = Spec.Utils.mod_q r_q (v $gamma2 * 2) in
+    (if r_q - r_g = v $FIELD_MODULUS - 1 then
+        (v $r0 == r_g - 1 /\ v $r1 == 0 /\
+        (v $r0 >= -(v $gamma2) /\ v $r0 < 0))
+    else
+        (v $r0 == r_g /\ v $r1 == (r_q - r_g) / (v $gamma2 * 2) /\
+        (v $r0 > -(v $gamma2) /\ v $r0 <= v $gamma2))) /\
+    (v $r1 >= 0 /\ v $r1 < (v $FIELD_MODULUS - 1) / (v $gamma2 * 2))"#))]
 fn decompose_element(gamma2: Gamma2, r: i32) -> (i32, i32) {
     debug_assert!(r > -FIELD_MODULUS && r < FIELD_MODULUS);
 
+    let _r = r;
+    hax_lib::fstar!(
+        r#"logand_lemma $FIELD_MODULUS ($r >>! mk_i32 31)"#
+    );
     // Convert the signed representative to the standard unsigned one.
     let r = r + ((r >> 31) & FIELD_MODULUS);
+    hax_lib::fstar!(
+        r#"assert (v $r == v $_r % v $FIELD_MODULUS)"#
+    );
 
     let r1 = {
         // Compute ⌈r / 128⌉
         let ceil_of_r_by_128 = (r + 127) >> 7;
+        hax_lib::fstar!(
+            r#"assert (v $ceil_of_r_by_128 == (v $r + 127) / 128)"#
+        );
 
         match gamma2 {
             GAMMA2_V95_232 => {
                 // We approximate 1 / 1488 as:
                 // ⌊2²⁴ / 1488⌋ / 2²⁴ = 11,275 / 2²⁴
                 let result = ((ceil_of_r_by_128 * 11_275) + (1 << 23)) >> 24;
+                hax_lib::fstar!(
+                    r#"assert (v $result == ((v $ceil_of_r_by_128 * 11275) + pow2 23) / pow2 24);
+                    assert (v $result == ((((v $r + 127) / 128) * 11275) + pow2 23) / pow2 24);
+                    assert (v $result == (v $r - 1 + 95232) / 190464);
+                    assert (v $result == (v $r - (Spec.Utils.mod_q (v $r) 190464)) / 190464);
+                    assert (v $result >= 0 /\ v $result <= 44)"#
+                );
 
+                hax_lib::fstar!(
+                    r#"logxor_lemma $result ((mk_i32 43 -! $result) >>! mk_i32 31);
+                    lognot_lemma $result;
+                    logand_lemma ($result ^. ((mk_i32 43 -! $result) >>! mk_i32 31)) $result"#
+                );
                 // For the corner-case a₁ = (q-1)/α = 44, we have to set a₁=0.
-                (result ^ (43 - result) >> 31) & result
+                let result_0 = (result ^ (43 - result) >> 31) & result;
+
+                hax_lib::fstar!(
+                    r#"assert (v $result == 44 ==> v $result_0 == 0);
+                    assert (v $result < 44 ==> v $result_0 == v $result)"#
+                );
+                result_0
             }
             GAMMA2_V261_888 => {
                 // We approximate 1 / 4092 as:
                 // ⌊2²² / 4092⌋ / 2²² = 1025 / 2²²
                 let result = (ceil_of_r_by_128 * 1025 + (1 << 21)) >> 22;
+                hax_lib::fstar!(
+                    r#"assert (v $result == ((v $ceil_of_r_by_128 * 1025) + pow2 21) / pow2 22);
+                    assert (v $result == ((((v $r + 127) / 128) * 1025) + pow2 21) / pow2 22);
+                    assert (v $result == (v $r - 1 + 261888) / 523776);
+                    assert (v $result == (v $r - (Spec.Utils.mod_q (v $r) 523776)) / 523776);
+                    assert (v $result >= 0 /\ v $result <= 16)"#
+                );
 
+                hax_lib::fstar!(
+                    r#"logand_mask_lemma $result 4"#
+                );
                 // For the corner-case a₁ = (q-1)/α = 16, we have to set a₁=0.
-                result & 15
+                let result_0 = result & 15;
+
+                hax_lib::fstar!(
+                    r#"assert (v $result == 16 ==> v $result_0 == 0);
+                    assert (v $result < 16 ==> v $result_0 == v $result)"#
+                );
+                result_0
             }
 
             _ => unreachable!(),
@@ -404,16 +621,45 @@ fn decompose_element(gamma2: Gamma2, r: i32) -> (i32, i32) {
     let alpha = gamma2 * 2;
     let mut r0 = r - (r1 * alpha);
 
+    let _r0 = r0;
+    hax_lib::fstar!(
+        r#"logand_lemma (((($FIELD_MODULUS -! mk_i32 1) /! mk_i32 2) -! $r0) >>! mk_i32 31)
+            $FIELD_MODULUS"#
+    );
     // In the corner-case, when we set a₁=0, we will incorrectly
     // have a₀ > (q-1)/2 and we'll need to subtract q.  As we
     // return a₀ + q, that comes down to adding q if a₀ < (q-1)/2.
     r0 -= (((FIELD_MODULUS - 1) / 2 - r0) >> 31) & FIELD_MODULUS;
 
+    hax_lib::fstar!(
+        r#"assert (v $_r0 > 4190208 ==> v $r0 == v $_r0 - 8380417);
+        assert (v $_r0 <= 4190208 ==> v $r0 == v $_r0);
+        if v $r - (Spec.Utils.mod_q (v $r) (v $alpha)) = 8380416 then
+            (assert (v $r1 == 0);
+            assert (v $r0 == (Spec.Utils.mod_q (v $r) (v $alpha)) - 1);
+            assert (v $r0 >= -(v $gamma2) /\ v $r0 < 0))
+        else
+            (assert (v $r1 == (v $r - (Spec.Utils.mod_q (v $r) (v $alpha))) / v $alpha);
+            assert (v $r0 == Spec.Utils.mod_q (v $r) (v $alpha));
+            assert (v $r0 > -(v $gamma2) /\ v $r0 <= v $gamma2));
+        assert (v $r1 >= 0 /\ v $r1 < 8380416 / (v $alpha))"#
+    );
     (r0, r1)
 }
 
-#[hax_lib::fstar::verification_status(lax)]
 #[inline(always)]
+#[hax_lib::fstar::options("--ext context_pruning --z3refresh --split_queries always")]
+#[hax_lib::requires(fstar!(r#"(v $gamma2 == v $GAMMA2_V261_888 \/ v $gamma2 == v $GAMMA2_V95_232) /\
+    Spec.Utils.is_i32b (v $FIELD_MODULUS - 1) $r /\
+    (v $hint == 0 \/ v $hint == 1)"#))]
+#[hax_lib::ensures(|result| fstar!(r#"let r0, r1 = decompose_element $gamma2 $r in
+    if v $hint = 0 then
+        $result = r1
+    else
+        (if v r0 > 0 then
+            v $result = (v r1 + 1) % (4190208 / v $gamma2)
+        else
+            v $result = (v r1 - 1) % (4190208 / v $gamma2))"#))]
 pub(crate) fn use_one_hint(gamma2: Gamma2, r: i32, hint: i32) -> i32 {
     let (r0, r1) = decompose_element(gamma2, r);
 
@@ -437,6 +683,10 @@ pub(crate) fn use_one_hint(gamma2: Gamma2, r: i32, hint: i32) -> i32 {
         }
 
         GAMMA2_V261_888 => {
+            hax_lib::fstar!(
+                r#"logand_mask_lemma ($r1 +! $hint) 4;
+                logand_mask_lemma ($r1 -! $hint) 4"#
+            );
             if r0 > 0 {
                 (r1 + hint) & 15
             } else {
@@ -448,23 +698,84 @@ pub(crate) fn use_one_hint(gamma2: Gamma2, r: i32, hint: i32) -> i32 {
     }
 }
 
-#[hax_lib::fstar::verification_status(lax)]
 #[inline(always)]
+#[hax_lib::requires(fstar!(r#"(v $gamma2 == v $GAMMA2_V261_888 \/ v $gamma2 == v $GAMMA2_V95_232) /\
+    Spec.Utils.is_i32b_array (v $FIELD_MODULUS - 1) ${simd_unit}.f_values"#))]
+#[hax_lib::ensures(|_| fstar!(r#"forall i. i < 8 ==>
+    (let r = v (Seq.index ${simd_unit}.f_values i) in
+    let r0 = v (Seq.index ${low}_future.f_values i) in
+    let r1 = v (Seq.index ${high}_future.f_values i) in
+    let r_q = r % v $FIELD_MODULUS in
+    let r_g = Spec.Utils.mod_q r_q (v $gamma2 * 2) in
+    (if r_q - r_g = v $FIELD_MODULUS - 1 then
+        (r0 == r_g - 1 /\ r1 == 0 /\
+        (r0 >= -(v $gamma2) /\ r0 < 0))
+    else
+        (r0 == r_g /\ r1 == (r_q - r_g) / (v $gamma2 * 2) /\
+        (r0 > -(v $gamma2) /\ r0 <= v $gamma2))) /\
+    (r1 >= 0 /\ r1 < (v $FIELD_MODULUS - 1) / (v $gamma2 * 2)))"#))]
 pub fn decompose(
     gamma2: Gamma2,
     simd_unit: &Coefficients,
     low: &mut Coefficients,
     high: &mut Coefficients,
 ) {
+    let _simd_unit0 = simd_unit;
     for i in 0..low.values.len() {
+        hax_lib::loop_invariant!(|i: usize| {
+            fstar!(r#"
+                forall j. j < v i ==> (let r = v (Seq.index ${simd_unit}.f_values j) in
+                    let r0 = v (Seq.index ${low}.f_values j) in
+                    let r1 = v (Seq.index ${high}.f_values j) in
+                    let r_q = r % v $FIELD_MODULUS in
+                    let r_g = Spec.Utils.mod_q r_q (v $gamma2 * 2) in
+                    (if r_q - r_g = v $FIELD_MODULUS - 1 then
+                        (r0 == r_g - 1 /\ r1 == 0 /\
+                        (r0 >= -(v $gamma2) /\ r0 < 0))
+                    else
+                        (r0 == r_g /\ r1 == (r_q - r_g) / (v $gamma2 * 2) /\
+                        (r0 > -(v $gamma2) /\ r0 <= v $gamma2))) /\
+                    (r1 >= 0 /\ r1 < (v $FIELD_MODULUS - 1) / (v $gamma2 * 2)))"#
+            )
+        });
         (low.values[i], high.values[i]) = decompose_element(gamma2, simd_unit.values[i]);
     }
 }
 
-#[hax_lib::fstar::verification_status(lax)]
 #[inline(always)]
+#[hax_lib::requires(fstar!(r#"(v $gamma2 == v $GAMMA2_V261_888 \/ v $gamma2 == v $GAMMA2_V95_232) /\
+    Spec.Utils.is_i32b_array (v $FIELD_MODULUS - 1) ${simd_unit}.f_values /\
+    (forall i. i < 8 ==> v (Seq.index ${hint}.f_values i) == 0 \/ v (Seq.index ${hint}.f_values i) == 1)"#))]
+#[hax_lib::ensures(|_| fstar!(r#"forall i. i < 8 ==>
+    (let h = Seq.index ${hint}.f_values i in
+    let result = Seq.index ${hint}_future.f_values i in
+    let r0, r1 = decompose_element $gamma2 (Seq.index ${simd_unit}.f_values i) in
+    if v h = 0 then
+        result = r1
+    else
+        (if v r0 > 0 then
+            v result = (v r1 + 1) % (4190208 / v $gamma2)
+        else
+            v result = (v r1 - 1) % (4190208 / v $gamma2)))"#))]
 pub fn use_hint(gamma2: Gamma2, simd_unit: &Coefficients, hint: &mut Coefficients) {
+    let _hint0 = hint.clone();
     for i in 0..hint.values.len() {
+        hax_lib::loop_invariant!(|i: usize| {
+            fstar!(r#"
+                (forall j. j < v i ==> (let h = Seq.index ${_hint0}.f_values j in
+                    let result = Seq.index ${hint}.f_values j in
+                    let r0, r1 = decompose_element $gamma2 (Seq.index ${simd_unit}.f_values j) in
+                    if v h = 0 then
+                        result = r1
+                    else
+                        (if v r0 > 0 then
+                            v result = (v r1 + 1) % (4190208 / v $gamma2)
+                        else
+                            v result = (v r1 - 1) % (4190208 / v $gamma2)))) /\
+                (forall j. j >= v i ==> (Seq.index ${hint}.f_values j == Seq.index ${_hint0}.f_values j /\
+                    (v (Seq.index ${hint}.f_values j) == 0 \/ v (Seq.index ${hint}.f_values j) == 1)))"#
+            )
+        });
         hint.values[i] = use_one_hint(gamma2, simd_unit.values[i], hint.values[i]);
     }
 }
