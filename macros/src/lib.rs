@@ -1,8 +1,8 @@
 //! This is a collection of libcrux internal proc macros.
 
 use proc_macro::{Delimiter, TokenStream, TokenTree};
-use quote::{format_ident, quote};
-use syn::{parse::Parser, parse_macro_input, ItemMod, LitInt, Token};
+use quote::{format_ident, quote, ToTokens};
+use syn::{parse::Parser, parse_macro_input, ItemFn, ItemMod, LitInt, Token};
 
 fn skip_comma<T: Iterator<Item = TokenTree>>(ts: &mut T) {
     match ts.next() {
@@ -104,4 +104,38 @@ pub fn ml_dsa_parameter_sets(args: TokenStream, item: TokenStream) -> TokenStrea
         }
     }
     expanded.into()
+}
+
+/// Emits span events (of types `EventType::SpanOpen` and `EventType::SpanClose`) with the
+/// provided label into the provided trace. Requires that the caller depends on the
+/// libcrux-test-utils crate.
+#[proc_macro_attribute]
+pub fn trace_span(args: TokenStream, item: TokenStream) -> TokenStream {
+    let args = syn::punctuated::Punctuated::<syn::Expr, Token![,]>::parse_terminated
+        .parse(args)
+        .unwrap();
+
+    let label = args[0].to_token_stream();
+    let trace = args[1].to_token_stream();
+
+    let use_stmt_ts = quote! { use ::libcrux_test_utils::tracing::Trace as _; }.into();
+    let use_stmt = parse_macro_input!(use_stmt_ts as syn::Stmt);
+
+    let assign_stmt_ts =
+        quote! { let __libcrux_trace_macro_span_handle = #trace .emit_span( #label ); }.into();
+    let assign_stmt = parse_macro_input!(assign_stmt_ts as syn::Stmt);
+
+    let mut item_fn = parse_macro_input!(item as ItemFn);
+    match item_fn.block.as_mut() {
+        syn::Block { stmts, .. } => {
+            let mut new_stmts = Vec::with_capacity(stmts.len() + 2);
+            new_stmts.push(use_stmt);
+            new_stmts.push(assign_stmt);
+            new_stmts.append(stmts);
+
+            *stmts = new_stmts
+        }
+    }
+
+    item_fn.to_token_stream().into()
 }
