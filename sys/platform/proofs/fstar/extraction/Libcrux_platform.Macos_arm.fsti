@@ -1,5 +1,5 @@
 module Libcrux_platform.Macos_arm
-#set-options "--fuel 0 --ifuel 1 --z3rlimit 15"
+#set-options "--fuel 0 --ifuel 1 --z3rlimit 80"
 open Core
 open FStar.Mul
 
@@ -59,6 +59,178 @@ let sysctl__v_FEAT_SHA256_STR: t_Array i8 (mk_usize 28) =
   FStar.Pervasives.assert_norm (Prims.eq2 (List.Tot.length list) 28);
   Rust_primitives.Hax.array_of_list 28 list
 
+(* item error backend: (AST import) something is not implemented yet.This is discussed in issue https://github.com/hacspec/hax/issues/1343.
+Please upvote or comment this issue if you see this error message.
+Mutable static items are not supported.
+
+Last AST:
+/** print_rust: pitem: not implemented  (item: { Concrete_ident.T.def_id =
+  { Explicit_def_id.T.is_constructor = false;
+    def_id =
+    { Types.index = (0, 0); is_local = true;
+      kind =
+      Types.Static {mutability = true; nested = false; safety = Types.Safe};
+      krate = "libcrux_platform";
+      parent =
+      (Some { Types.contents =
+              { Types.id = 0;
+                value =
+                { Types.index = (0, 0); is_local = true; kind = Types.Mod;
+                  krate = "libcrux_platform";
+                  parent =
+                  (Some { Types.contents =
+                          { Types.id = 0;
+                            value =
+                            { Types.index = (0, 0); is_local = true;
+                              kind = Types.Mod; krate = "libcrux_platform";
+                              parent = None; path = [] }
+                            }
+                          });
+                  path =
+                  [{ Types.data = (Types.TypeNs "macos_arm");
+                     disambiguator = 0 }
+                    ]
+                  }
+                }
+              });
+      path =
+      [{ Types.data = (Types.TypeNs "macos_arm"); disambiguator = 0 };
+        { Types.data = (Types.ValueNs "ADV_SIMD"); disambiguator = 0 }]
+      }
+    };
+  moved = None; suffix = None }) */
+const _: () = ();
+ *)
+
+(* item error backend: (AST import) something is not implemented yet.This is discussed in issue https://github.com/hacspec/hax/issues/1343.
+Please upvote or comment this issue if you see this error message.
+Mutable static items are not supported.
+
+Last AST:
+/** print_rust: pitem: not implemented  (item: { Concrete_ident.T.def_id =
+  { Explicit_def_id.T.is_constructor = false;
+    def_id =
+    { Types.index = (0, 0); is_local = true;
+      kind =
+      Types.Static {mutability = true; nested = false; safety = Types.Safe};
+      krate = "libcrux_platform";
+      parent =
+      (Some { Types.contents =
+              { Types.id = 0;
+                value =
+                { Types.index = (0, 0); is_local = true; kind = Types.Mod;
+                  krate = "libcrux_platform";
+                  parent =
+                  (Some { Types.contents =
+                          { Types.id = 0;
+                            value =
+                            { Types.index = (0, 0); is_local = true;
+                              kind = Types.Mod; krate = "libcrux_platform";
+                              parent = None; path = [] }
+                            }
+                          });
+                  path =
+                  [{ Types.data = (Types.TypeNs "macos_arm");
+                     disambiguator = 0 }
+                    ]
+                  }
+                }
+              });
+      path =
+      [{ Types.data = (Types.TypeNs "macos_arm"); disambiguator = 0 };
+        { Types.data = (Types.ValueNs "AES"); disambiguator = 0 }]
+      }
+    };
+  moved = None; suffix = None }) */
+const _: () = ();
+ *)
+
+(* item error backend: (AST import) something is not implemented yet.This is discussed in issue https://github.com/hacspec/hax/issues/1343.
+Please upvote or comment this issue if you see this error message.
+Mutable static items are not supported.
+
+Last AST:
+/** print_rust: pitem: not implemented  (item: { Concrete_ident.T.def_id =
+  { Explicit_def_id.T.is_constructor = false;
+    def_id =
+    { Types.index = (0, 0); is_local = true;
+      kind =
+      Types.Static {mutability = true; nested = false; safety = Types.Safe};
+      krate = "libcrux_platform";
+      parent =
+      (Some { Types.contents =
+              { Types.id = 0;
+                value =
+                { Types.index = (0, 0); is_local = true; kind = Types.Mod;
+                  krate = "libcrux_platform";
+                  parent =
+                  (Some { Types.contents =
+                          { Types.id = 0;
+                            value =
+                            { Types.index = (0, 0); is_local = true;
+                              kind = Types.Mod; krate = "libcrux_platform";
+                              parent = None; path = [] }
+                            }
+                          });
+                  path =
+                  [{ Types.data = (Types.TypeNs "macos_arm");
+                     disambiguator = 0 }
+                    ]
+                  }
+                }
+              });
+      path =
+      [{ Types.data = (Types.TypeNs "macos_arm"); disambiguator = 0 };
+        { Types.data = (Types.ValueNs "PMULL"); disambiguator = 0 }]
+      }
+    };
+  moved = None; suffix = None }) */
+const _: () = ();
+ *)
+
+(* item error backend: (AST import) something is not implemented yet.This is discussed in issue https://github.com/hacspec/hax/issues/1343.
+Please upvote or comment this issue if you see this error message.
+Mutable static items are not supported.
+
+Last AST:
+/** print_rust: pitem: not implemented  (item: { Concrete_ident.T.def_id =
+  { Explicit_def_id.T.is_constructor = false;
+    def_id =
+    { Types.index = (0, 0); is_local = true;
+      kind =
+      Types.Static {mutability = true; nested = false; safety = Types.Safe};
+      krate = "libcrux_platform";
+      parent =
+      (Some { Types.contents =
+              { Types.id = 0;
+                value =
+                { Types.index = (0, 0); is_local = true; kind = Types.Mod;
+                  krate = "libcrux_platform";
+                  parent =
+                  (Some { Types.contents =
+                          { Types.id = 0;
+                            value =
+                            { Types.index = (0, 0); is_local = true;
+                              kind = Types.Mod; krate = "libcrux_platform";
+                              parent = None; path = [] }
+                            }
+                          });
+                  path =
+                  [{ Types.data = (Types.TypeNs "macos_arm");
+                     disambiguator = 0 }
+                    ]
+                  }
+                }
+              });
+      path =
+      [{ Types.data = (Types.TypeNs "macos_arm"); disambiguator = 0 };
+        { Types.data = (Types.ValueNs "SHA256"); disambiguator = 0 }]
+      }
+    };
+  moved = None; suffix = None }) */
+const _: () = ();
+ *)
+
 val aes: Prims.unit -> Prims.Pure bool Prims.l_True (fun _ -> Prims.l_True)
 
 val adv_simd: Prims.unit -> Prims.Pure bool Prims.l_True (fun _ -> Prims.l_True)
@@ -66,6 +238,49 @@ val adv_simd: Prims.unit -> Prims.Pure bool Prims.l_True (fun _ -> Prims.l_True)
 val pmull: Prims.unit -> Prims.Pure bool Prims.l_True (fun _ -> Prims.l_True)
 
 val sha256: Prims.unit -> Prims.Pure bool Prims.l_True (fun _ -> Prims.l_True)
+
+(* item error backend: (AST import) something is not implemented yet.This is discussed in issue https://github.com/hacspec/hax/issues/1343.
+Please upvote or comment this issue if you see this error message.
+Mutable static items are not supported.
+
+Last AST:
+/** print_rust: pitem: not implemented  (item: { Concrete_ident.T.def_id =
+  { Explicit_def_id.T.is_constructor = false;
+    def_id =
+    { Types.index = (0, 0); is_local = true;
+      kind =
+      Types.Static {mutability = true; nested = false; safety = Types.Safe};
+      krate = "libcrux_platform";
+      parent =
+      (Some { Types.contents =
+              { Types.id = 0;
+                value =
+                { Types.index = (0, 0); is_local = true; kind = Types.Mod;
+                  krate = "libcrux_platform";
+                  parent =
+                  (Some { Types.contents =
+                          { Types.id = 0;
+                            value =
+                            { Types.index = (0, 0); is_local = true;
+                              kind = Types.Mod; krate = "libcrux_platform";
+                              parent = None; path = [] }
+                            }
+                          });
+                  path =
+                  [{ Types.data = (Types.TypeNs "macos_arm");
+                     disambiguator = 0 }
+                    ]
+                  }
+                }
+              });
+      path =
+      [{ Types.data = (Types.TypeNs "macos_arm"); disambiguator = 0 };
+        { Types.data = (Types.ValueNs "INITIALIZED"); disambiguator = 0 }]
+      }
+    };
+  moved = None; suffix = None }) */
+const _: () = ();
+ *)
 
 /// Initialize CPU detection.
 val init: Prims.unit -> Prims.Pure Prims.unit Prims.l_True (fun _ -> Prims.l_True)
