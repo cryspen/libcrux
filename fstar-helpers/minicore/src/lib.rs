@@ -26,4 +26,6 @@
 //! proof assistants and other verification tools.
 
 pub mod abstractions;
-pub mod arch;
+pub mod core_arch;
+
+pub use core_arch as arch;
