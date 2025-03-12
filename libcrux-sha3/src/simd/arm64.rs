@@ -5,19 +5,6 @@ use crate::traits::internal::KeccakItem;
 #[allow(non_camel_case_types)]
 pub type uint64x2_t = _uint64x2_t;
 
-// This file optimizes for the stable Rust Neon Intrinsics
-// If we want to use the unstable neon-sha3 instructions, we could use:
-// veor3q_u64, vrax1q_u64, vxarq_u64, and vbcaxq_u64
-// These instructions might speed up our code even more.
-
-#[inline(always)]
-fn rotate_left<const LEFT: i32, const RIGHT: i32>(x: uint64x2_t) -> uint64x2_t {
-    debug_assert!(LEFT + RIGHT == 64);
-    // The following looks faster but is actually significantly slower
-    //unsafe { vsriq_n_u64::<RIGHT>(vshlq_n_u64::<LEFT>(x), x) }
-    _veorq_u64(_vshlq_n_u64::<LEFT>(x), _vshrq_n_u64::<RIGHT>(x))
-}
-
 #[inline(always)]
 fn _veor5q_u64(
     a: uint64x2_t,
@@ -26,34 +13,22 @@ fn _veor5q_u64(
     d: uint64x2_t,
     e: uint64x2_t,
 ) -> uint64x2_t {
-    let ab = _veorq_u64(a, b);
-    let cd = _veorq_u64(c, d);
-    let abcd = _veorq_u64(ab, cd);
-    _veorq_u64(abcd, e)
-    // Needs nightly+neon-sha3
-    //unsafe {veor3q_u64(veor3q_u64(a,b,c),d,e)}
+    _veor3q_u64(_veor3q_u64(a,b,c),d,e)
 }
 
 #[inline(always)]
 fn _vrax1q_u64(a: uint64x2_t, b: uint64x2_t) -> uint64x2_t {
-    _veorq_u64(a, rotate_left::<1, 63>(b))
-    // Needs nightly+neon-sha3
-    //unsafe { vrax1q_u64(a, b) }
+    libcrux_intrinsics::arm64::_vrax1q_u64(a, b)
 }
 
 #[inline(always)]
 fn _vxarq_u64<const LEFT: i32, const RIGHT: i32>(a: uint64x2_t, b: uint64x2_t) -> uint64x2_t {
-    let ab = _veorq_u64(a, b);
-    rotate_left::<LEFT, RIGHT>(ab)
-    // Needs nightly+neon-sha3
-    // unsafe { vxarq_u64::<RIGHT>(a,b) }
+    libcrux_intrinsics::arm64::_vxarq_u64::<RIGHT>(a,b)
 }
 
 #[inline(always)]
 fn _vbcaxq_u64(a: uint64x2_t, b: uint64x2_t, c: uint64x2_t) -> uint64x2_t {
-    _veorq_u64(a, _vbicq_u64(b, c))
-    // Needs nightly+neon-sha3
-    // unsafe{ vbcaxq_u64(a, b, c) }
+    libcrux_intrinsics::arm64::_vbcaxq_u64(a, b, c)
 }
 
 #[inline(always)]
