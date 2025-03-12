@@ -21,6 +21,7 @@ libcrux-intrinsics = { version = "0.0.2-beta.3", path = "../libcrux-intrinsics" 
 libcrux-platform = { version = "0.0.2-beta.3", path = "../sys/platform" }
 libcrux-macros = { version = "0.0.2-beta.3", path = "../macros" }
 hax-lib.workspace = true
+minicore = { path = "../fstar-helpers/minicore" }
 
 [dev-dependencies]
 rand = { version = "0.9" }
