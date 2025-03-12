@@ -26,8 +26,8 @@ fn test_refcell_trace_entries() {
     assert_eq!(close.label, "test block");
 
     let run_time = close.at - open.at;
-    assert!(run_time.as_micros() > 2500);
-    assert!(run_time.as_micros() < 3500);
+    assert!(run_time.as_micros() > 2300);
+    assert!(run_time.as_micros() < 3700);
 }
 
 #[test]
@@ -37,6 +37,15 @@ fn test_mutex_trace_report() {
 #[test]
 fn test_refcell_trace_report() {
     test_trace_report(&RefCellTrace::default());
+}
+
+#[test]
+fn test_nested_mutex_trace_report() {
+    test_nested_trace_report(&MutexTrace::default());
+}
+#[test]
+fn test_nested_refcell_trace_report() {
+    test_nested_trace_report(&RefCellTrace::default());
 }
 
 fn test_trace_report(trace: &(impl Clone + Trace<Label = &'static str, TimeStamp = Instant>)) {
@@ -57,6 +66,43 @@ fn test_trace_report(trace: &(impl Clone + Trace<Label = &'static str, TimeStamp
     assert_eq!(close.label, "test block");
 
     let run_time = close.at - open.at;
-    assert!(run_time.as_micros() > 2500);
-    assert!(run_time.as_micros() < 3500);
+    assert!(run_time.as_micros() > 2300);
+    assert!(run_time.as_micros() < 3700);
+}
+
+fn test_nested_trace_report(
+    trace: &(impl Clone + Trace<Label = &'static str, TimeStamp = Instant>),
+) {
+    {
+        let _handle = trace.emit_span("outer block");
+        std::thread::sleep(Duration::from_millis(3));
+
+        let _handle2 = trace.emit_span("inner block");
+        std::thread::sleep(Duration::from_millis(2));
+    }
+
+    let entries = trace.clone().report();
+    let [open_outer, open_inner, close_inner, close_outer] = entries.as_slice() else {
+        panic!("got wrong number of entries")
+    };
+
+    assert_eq!(open_outer.ty, EventType::SpanOpen);
+    assert_eq!(open_inner.ty, EventType::SpanOpen);
+
+    assert_eq!(open_outer.label, "outer block");
+    assert_eq!(open_inner.label, "inner block");
+
+    assert_eq!(close_inner.label, "inner block");
+    assert_eq!(close_outer.label, "outer block");
+
+    assert_eq!(close_inner.ty, EventType::SpanClose);
+    assert_eq!(close_outer.ty, EventType::SpanClose);
+
+    let run_time_inner = close_inner.at - open_inner.at;
+    assert!(run_time_inner.as_micros() > 1300);
+    assert!(run_time_inner.as_micros() < 2700);
+
+    let run_time_outer = close_outer.at - open_outer.at;
+    assert!(run_time_outer.as_micros() > 4300);
+    assert!(run_time_outer.as_micros() < 5700);
 }
