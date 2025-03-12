@@ -196,7 +196,6 @@ pub fn _vshrq_n_u32<const N: i32>(a: uint32x4_t) -> uint32x4_t {
     unsafe { vshrq_n_u32::<N>(a) }
 }
 
-
 #[inline(always)]
 pub fn _vandq_u32(a: uint32x4_t, b: uint32x4_t) -> uint32x4_t {
     unsafe { vandq_u32(a, b) }
