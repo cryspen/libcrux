@@ -38,7 +38,7 @@ jobs:
 
       - name: 🏃 Extract ML-DSA crate
         working-directory: libcrux-ml-dsa
-        run: ./hax.py extract
+        run: ./hax.sh extract
 
       - name: ↑ Upload F* extraction
         uses: actions/upload-artifact@v4
@@ -67,7 +67,7 @@ jobs:
 
       - name: 🏃 Lax ML-DSA crate
         working-directory: libcrux-ml-dsa
-        run: ./hax.py prove --admit
+        run: ./hax.sh prove --admit
   
   mldsa-extract-hax-status:
     if: ${{ always() }}
