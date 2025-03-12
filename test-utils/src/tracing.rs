@@ -8,7 +8,7 @@ use std::{
     sync::Mutex,
 };
 
-/// This trait descries a trace that is behind some sort of interior mutability mechanism. It can
+/// This trait describes a trace that is behind some sort of interior mutability mechanism. It can
 /// log trace events and later make these available. This is usually an argument to the
 /// `trace_span` function attribute macro in `libcrux-macros``, but it can also be called manually.
 ///
@@ -37,7 +37,10 @@ pub trait Trace: Sized {
         };
 
         self.emit(event);
-        SpanHandle(self, Some(label))
+        SpanHandle {
+            trace: self,
+            label: Some(label),
+        }
     }
 
     /// Emits an [`EventType::OnTheFly`] event.
@@ -83,16 +86,23 @@ impl<Label: Display, TimeStamp: Display> Display for TraceEvent<Label, TimeStamp
 }
 
 /// This type emits a [`EventType::SpanClose`] event on drop.
-pub struct SpanHandle<'a, T: Trace>(&'a T, Option<T::Label>);
+pub struct SpanHandle<'a, T: Trace> {
+    trace: &'a T,
+
+    // NOTE: We need an owned version of this value in `Drop::drop`. `Drop::drop` has an &mut self
+    //       receiver, so we can't just move the value out of this struct.
+    //       This is an option so we can call `Option::take` to move the value out.
+    label: Option<T::Label>,
+}
 
 impl<'a, T: Trace> Drop for SpanHandle<'a, T> {
     fn drop(&mut self) {
         let event = TraceEvent {
             ty: EventType::SpanClose,
             at: T::TimeStamp::now(),
-            label: self.1.take().unwrap(),
+            label: self.label.take().unwrap(),
         };
-        self.0.emit(event)
+        self.trace.emit(event)
     }
 }
 

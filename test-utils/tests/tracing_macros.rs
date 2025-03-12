@@ -15,7 +15,7 @@ mod str_labels {
 
     #[libcrux_macros::trace_span("maybe_slow", TRACE_STR)]
     fn maybe_slow_str() {
-        sleep(Duration::from_millis(100));
+        sleep(Duration::from_millis(10));
     }
 
     #[test]
@@ -32,8 +32,8 @@ mod str_labels {
         assert_eq!(close.label, "maybe_slow");
 
         let run_time = close.at - open.at;
-        assert!(run_time.as_micros() > 99500);
-        assert!(run_time.as_micros() < 100500);
+        assert!(run_time.as_micros() > 9300);
+        assert!(run_time.as_micros() < 10700);
     }
 }
 
@@ -51,7 +51,7 @@ mod enum_labels {
 
     #[libcrux_macros::trace_span(Label::MaybeSlow, TRACE_ENUM)]
     fn maybe_slow_enum() {
-        sleep(Duration::from_millis(100));
+        sleep(Duration::from_millis(10));
     }
 
     #[test]
@@ -68,7 +68,7 @@ mod enum_labels {
         assert_eq!(close.label, Label::MaybeSlow);
 
         let run_time = close.at - open.at;
-        assert!(run_time.as_micros() > 99500);
-        assert!(run_time.as_micros() < 100500);
+        assert!(run_time.as_micros() > 9300);
+        assert!(run_time.as_micros() < 10700);
     }
 }
