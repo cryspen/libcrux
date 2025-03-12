@@ -58,6 +58,21 @@ macro_rules! impl_comp {
                         )
                     },
                 );
+
+                group.bench_with_input(
+                    BenchmarkId::new("rust version (portable)", fmt(*payload_size)),
+                    payload_size,
+                    |b, payload_size| {
+                        b.iter_batched(
+                            || randombytes(*payload_size),
+                            |payload| {
+                                let mut digest = [0u8; digest_size($libcrux)];
+                                portable::$neon_fun(&mut digest, &payload);
+                            },
+                            BatchSize::SmallInput,
+                        )
+                    },
+                );
             }
         }
     };
