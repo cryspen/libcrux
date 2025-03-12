@@ -6,7 +6,7 @@ The benchmarks are run with
 cargo bench
 ```
 
-or (this requires installing the binary `cargo install criterion`)
+or (this requires installing the binary `cargo install cargo-criterion`)
 
 ```sh
 cargo criterion
