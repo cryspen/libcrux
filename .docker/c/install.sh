@@ -6,18 +6,20 @@ curl https://sh.rustup.rs -sSf | bash -s -- -y
 
 # Prepare the sources
 opam init --bare --disable-sandboxing --shell-setup --yes
-opam switch create 4.14.1
+opam switch create 5.1.1
 
 # Get F*, HACL*, Charon, Karamel, Eurydice for running proofs and extraction
-curl -L https://github.com/FStarLang/FStar/releases/download/v2024.12.03/fstar_2024.12.03_Linux_x86_64.tar.gz \
+curl -L https://github.com/FStarLang/FStar/releases/download/v2025.02.17/fstar-v2025.02.17-Linux-x86_64.tar.gz \
     --output Fstar.tar.gz
 tar --extract --file Fstar.tar.gz
 rm -f Fstar.tar.gz
 
-curl -L https://github.com/FStarLang/binaries/raw/master/z3-tested/z3-4.8.5-x64-ubuntu-16.04.zip --output z3.zip
-unzip z3.zip
-rm -rf z3.zip
-mv z3-4.8.5-x64-ubuntu-16.04/ z3
+curl -L https://raw.githubusercontent.com/FStarLang/FStar/refs/heads/master/.scripts/get_fstar_z3.sh \
+    --output get_fstar_z3.sh
+chmod +x get_fstar_z3.sh
+mkdir -p $HOME/z3/bin
+./get_fstar_z3.sh $HOME/z3/bin
+rm -rf get_fstar_z3.sh
 
 curl -L https://github.com/hacl-star/hacl-star/archive/2a8b61343a1a7232611cb763b0dc3e4dff84d656.zip \
     --output hacl-star.zip
