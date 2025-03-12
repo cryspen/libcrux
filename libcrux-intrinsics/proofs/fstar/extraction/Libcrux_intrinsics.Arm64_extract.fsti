@@ -41,6 +41,8 @@ val e_vshrq_n_u16 (v_SHIFT_BY: i32) (v: u8) : Prims.Pure u8 Prims.l_True (fun _ 
 
 val e_vshrq_n_u64 (v_SHIFT_BY: i32) (v: u8) : Prims.Pure u8 Prims.l_True (fun _ -> Prims.l_True)
 
+val e_vxarq_u64 (v_SHIFT_BY: i32) (a b: u8) : Prims.Pure u8 Prims.l_True (fun _ -> Prims.l_True)
+
 val e_vshlq_n_u64 (v_SHIFT_BY: i32) (v: u8) : Prims.Pure u8 Prims.l_True (fun _ -> Prims.l_True)
 
 val e_vshlq_n_s16 (v_SHIFT_BY: i32) (v: u8) : Prims.Pure u8 Prims.l_True (fun _ -> Prims.l_True)
@@ -57,6 +59,8 @@ val e_vandq_s16 (a b: u8) : Prims.Pure u8 Prims.l_True (fun _ -> Prims.l_True)
 
 val e_vbicq_u64 (a b: u8) : Prims.Pure u8 Prims.l_True (fun _ -> Prims.l_True)
 
+val e_vbcaxq_u64 (a b c: u8) : Prims.Pure u8 Prims.l_True (fun _ -> Prims.l_True)
+
 val e_vreinterpretq_s16_u16 (m0: u8) : Prims.Pure u8 Prims.l_True (fun _ -> Prims.l_True)
 
 val e_vreinterpretq_u16_s16 (m0: u8) : Prims.Pure u8 Prims.l_True (fun _ -> Prims.l_True)
@@ -66,6 +70,10 @@ val e_vmulq_s16 (v c: u8) : Prims.Pure u8 Prims.l_True (fun _ -> Prims.l_True)
 val e_veorq_s16 (mask shifted: u8) : Prims.Pure u8 Prims.l_True (fun _ -> Prims.l_True)
 
 val e_veorq_u64 (mask shifted: u8) : Prims.Pure u8 Prims.l_True (fun _ -> Prims.l_True)
+
+val e_vrax1q_u64 (a b: u8) : Prims.Pure u8 Prims.l_True (fun _ -> Prims.l_True)
+
+val e_veor3q_u64 (a b c: u8) : Prims.Pure u8 Prims.l_True (fun _ -> Prims.l_True)
 
 val e_vdupq_n_u32 (value: u32) : Prims.Pure u8 Prims.l_True (fun _ -> Prims.l_True)
 

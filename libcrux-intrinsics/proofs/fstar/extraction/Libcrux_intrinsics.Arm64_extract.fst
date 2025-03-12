@@ -93,6 +93,12 @@ val e_vshrq_n_u64': v_SHIFT_BY: i32 -> v: u8 -> Prims.Pure u8 Prims.l_True (fun 
 let e_vshrq_n_u64 (v_SHIFT_BY: i32) = e_vshrq_n_u64' v_SHIFT_BY
 
 assume
+val e_vxarq_u64': v_SHIFT_BY: i32 -> a: u8 -> b: u8
+  -> Prims.Pure u8 Prims.l_True (fun _ -> Prims.l_True)
+
+let e_vxarq_u64 (v_SHIFT_BY: i32) = e_vxarq_u64' v_SHIFT_BY
+
+assume
 val e_vshlq_n_u64': v_SHIFT_BY: i32 -> v: u8 -> Prims.Pure u8 Prims.l_True (fun _ -> Prims.l_True)
 
 let e_vshlq_n_u64 (v_SHIFT_BY: i32) = e_vshlq_n_u64' v_SHIFT_BY
@@ -133,6 +139,11 @@ val e_vbicq_u64': a: u8 -> b: u8 -> Prims.Pure u8 Prims.l_True (fun _ -> Prims.l
 let e_vbicq_u64 = e_vbicq_u64'
 
 assume
+val e_vbcaxq_u64': a: u8 -> b: u8 -> c: u8 -> Prims.Pure u8 Prims.l_True (fun _ -> Prims.l_True)
+
+let e_vbcaxq_u64 = e_vbcaxq_u64'
+
+assume
 val e_vreinterpretq_s16_u16': m0: u8 -> Prims.Pure u8 Prims.l_True (fun _ -> Prims.l_True)
 
 let e_vreinterpretq_s16_u16 = e_vreinterpretq_s16_u16'
@@ -156,6 +167,16 @@ assume
 val e_veorq_u64': mask: u8 -> shifted: u8 -> Prims.Pure u8 Prims.l_True (fun _ -> Prims.l_True)
 
 let e_veorq_u64 = e_veorq_u64'
+
+assume
+val e_vrax1q_u64': a: u8 -> b: u8 -> Prims.Pure u8 Prims.l_True (fun _ -> Prims.l_True)
+
+let e_vrax1q_u64 = e_vrax1q_u64'
+
+assume
+val e_veor3q_u64': a: u8 -> b: u8 -> c: u8 -> Prims.Pure u8 Prims.l_True (fun _ -> Prims.l_True)
+
+let e_veor3q_u64 = e_veor3q_u64'
 
 assume
 val e_vdupq_n_u32': value: u32 -> Prims.Pure u8 Prims.l_True (fun _ -> Prims.l_True)
