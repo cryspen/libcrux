@@ -43,36 +43,23 @@ pub(crate) fn load_block<const RATE: usize>(
     blocks: &[&[u8]; 2],
     offset: usize,
 ) {
-    debug_assert!(RATE <= blocks[0].len() && RATE % 8 == 0);
-    let mut last = [0u64; 2];
-    let mut st0 = [uint64x2_t::zero(); 16];
+    debug_assert!(RATE <= blocks[0].len() && RATE % 8 == 0 && blocks[0].len() == blocks[1].len());
     for i in 0..RATE / 16 {
         let start = offset + 16 * i;
-        st0[i] = _vld1q_bytes_u64(&blocks[0][start..start + 16]);
+        let v0 = _vld1q_bytes_u64(&blocks[0][start..start + 16]);
+        let v1 = _vld1q_bytes_u64(&blocks[1][start..start + 16]);
+        s[(2 * i) / 5][(2 * i) % 5] = _veorq_u64(s[(2 * i) / 5][(2 * i) % 5], _vtrn1q_u64(v0, v1));
+        s[(2 * i + 1) / 5][(2 * i + 1) % 5] =
+            _veorq_u64(s[(2 * i + 1) / 5][(2 * i + 1) % 5], _vtrn2q_u64(v0, v1));
     }
-    let last_offset = offset + RATE - 8;
-    last[0] = u64::from_le_bytes(blocks[0][last_offset..last_offset + 8].try_into().unwrap());
-
-    let mut st1 = [uint64x2_t::zero(); 16];
-    for i in 0..RATE / 16 {
-        let start = offset + 16 * i;
-        st1[i] = _vld1q_bytes_u64(&blocks[1][start..start + 16]);
-    }
-    last[1] = u64::from_le_bytes(blocks[1][last_offset..last_offset + 8].try_into().unwrap());
-
-    for i in 0..RATE / 16 {
-        s[(2 * i) / 5][(2 * i) % 5] =
-            _veorq_u64(s[(2 * i) / 5][(2 * i) % 5], _vtrn1q_u64(st0[i], st1[i]));
-        s[(2 * i + 1) / 5][(2 * i + 1) % 5] = _veorq_u64(
-            s[(2 * i + 1) / 5][(2 * i + 1) % 5],
-            _vtrn2q_u64(st0[i], st1[i]),
-        );
-    }
-
     if RATE % 16 != 0 {
         let i = (RATE / 8 - 1) / 5;
         let j = (RATE / 8 - 1) % 5;
-        let uvec = _vld1q_u64(&last);
+        let mut u = [0u64; 2];
+        let start = offset + RATE - 8;
+        u[0] = u64::from_le_bytes(blocks[0][start..start + 8].try_into().unwrap());
+        u[1] = u64::from_le_bytes(blocks[1][start..start + 8].try_into().unwrap());
+        let uvec = _vld1q_u64(&u);
         s[i][j] = _veorq_u64(s[i][j], uvec);
     }
 }
