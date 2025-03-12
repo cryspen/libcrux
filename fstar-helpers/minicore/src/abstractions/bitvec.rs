@@ -1,5 +1,6 @@
 //! This module provides a specification-friendly bit vector type.
 use super::bit::{Bit, MachineInteger};
+use super::funarr::*;
 
 // TODO: this module uses `u128/i128` as mathematic integers. We should use `hax_lib::int` or bigint.
 
@@ -15,10 +16,12 @@ use std::fmt::Formatter;
 /// The [`Debug`] implementation for `BitVec` pretty-prints the bits in groups of eight,
 /// making the bit pattern more human-readable. The type also implements indexing,
 /// allowing for easy access to individual bits.
+#[hax_lib::fstar::before("noeq")]
 #[derive(Copy, Clone, Eq, PartialEq)]
-pub struct BitVec<const N: usize>([Bit; N]);
+pub struct BitVec<const N: u64>(FunArray<N, Bit>);
 
 /// Pretty prints a bit slice by group of 8
+#[hax_lib::exclude]
 fn bit_slice_to_string(bits: &[Bit]) -> String {
     bits.into_iter()
         .map(|bit| match bit {
@@ -34,16 +37,19 @@ fn bit_slice_to_string(bits: &[Bit]) -> String {
         .into()
 }
 
-impl<const N: usize> core::fmt::Debug for BitVec<N> {
+#[hax_lib::exclude]
+impl<const N: u64> core::fmt::Debug for BitVec<N> {
     fn fmt(&self, f: &mut Formatter<'_>) -> Result<(), std::fmt::Error> {
-        write!(f, "{}", bit_slice_to_string(&self.0))
+        write!(f, "{}", bit_slice_to_string(&self.0.as_vec()))
     }
 }
 
-impl<const N: usize> core::ops::Index<usize> for BitVec<N> {
+#[hax_lib::attributes]
+impl<const N: u64> core::ops::Index<u64> for BitVec<N> {
     type Output = Bit;
-    fn index(&self, index: usize) -> &Self::Output {
-        &self.0[index]
+    #[requires(index < N)]
+    fn index(&self, index: u64) -> &Self::Output {
+        &self.0.get(index)
     }
 }
 
@@ -82,9 +88,13 @@ impl<const N: usize> BitVec<N> {
         Self(core::array::from_fn(f))
     }
 
+    /// Constructor for BitVec. `BitVec::<N>::from_fn` constructs a bitvector out of a function that takes usizes smaller than `N` and produces bits.
+    pub fn from_fn<F: Fn(u64) -> Bit>(f: F) -> Self {
+        Self(FunArray::from_fn(f))
+    }
     /// Convert a slice of machine integers where only the `d` least significant bits are relevant.
-    pub fn from_slice<T: Into<i128> + MachineInteger + Copy>(x: &[T], d: usize) -> Self {
-        Self::from_fn(|i| Bit::of_int(x[i / d], (i % d) as u32))
+    pub fn from_slice<T: Into<i128> + MachineInteger + Copy>(x: &[T], d: u64) -> Self {
+        Self::from_fn(|i| Bit::of_int(x[(i / d) as usize], (i % d) as u32))
     }
 
     /// Construct a BitVec out of a machine integer.
@@ -94,7 +104,7 @@ impl<const N: usize> BitVec<N> {
 
     /// Convert a BitVec into a machine integer of type `T`.
     pub fn to_int<T: TryFrom<i128> + MachineInteger + Copy>(self) -> T {
-        int_from_bit_slice(&self.0)
+        int_from_bit_slice(&self.0.as_vec())
     }
 
     /// Convert a BitVec into a vector of machine integers of type `T`.

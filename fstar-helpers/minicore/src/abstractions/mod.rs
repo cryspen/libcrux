@@ -22,3 +22,4 @@
 
 pub mod bit;
 pub mod bitvec;
+pub mod funarr;
