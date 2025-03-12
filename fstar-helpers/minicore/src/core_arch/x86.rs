@@ -3,7 +3,7 @@
 //! This module provides a purely Rust implementation of selected operations from
 //! `core::arch::x86` and `core::arch::x86_64`.
 
-use crate::abstractions::{bit::*, bitvec::*};
+use crate::abstractions::{bit::*, bitvec::*, funarr::*};
 
 pub(crate) mod upstream {
     #[cfg(target_arch = "x86")]
