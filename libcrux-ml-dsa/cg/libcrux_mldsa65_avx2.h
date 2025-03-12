@@ -4,11 +4,11 @@
  * SPDX-License-Identifier: MIT or Apache-2.0
  *
  * This code was generated with the following revisions:
- * Charon: a8f2211d1b95e0462a96382023b164a4116c7ca4
- * Eurydice: 788c5abefac3a9c7f79abae6a30fa8558e39764c
- * Karamel: 1d81d757d5d9e16dd6463ccc72324e587c707959
- * F*: b0961063393215ca65927f017720cb365a193833-dirty
- * Libcrux: 1c4e2cbb4bc08f93cca04e22245f2b25dcb23d83
+ * Charon: d250df809d9b0fa1bddac2055794620e87f435cc
+ * Eurydice: 78dde51b1023a6e449b84911804651d02a39aaa3
+ * Karamel: 4af7e13070bef647a962e66e5a53ca86e8411062
+ * F*: 0c4b790fd608bccfc332d3ff1e9b29c9be8b0595
+ * Libcrux: dc10875c33779c6f4eee8f4e204f2f9f51a4131c
  */
 
 #ifndef __libcrux_mldsa65_avx2_H
@@ -688,10 +688,10 @@ static KRML_MUSTINLINE __m256i
 libcrux_ml_dsa_simd_avx2_rejection_sample_less_than_field_modulus_bytestream_to_potential_coefficients(
     Eurydice_slice serialized) {
   uint8_t serialized_extended[32U] = {0U};
-  Eurydice_slice_copy(
-      Eurydice_array_to_subslice_to((size_t)32U, serialized_extended,
-                                    (size_t)24U, uint8_t, size_t),
-      serialized, uint8_t);
+  Eurydice_slice_copy(Eurydice_array_to_subslice_to(
+                          (size_t)32U, serialized_extended, (size_t)24U,
+                          uint8_t, size_t, __builtin_slice_t),
+                      serialized, uint8_t);
   __m256i coefficients = libcrux_intrinsics_avx2_mm256_loadu_si256_u8(
       Eurydice_array_to_slice((size_t)32U, serialized_extended, uint8_t));
   __m256i coefficients0 = libcrux_intrinsics_avx2_mm256_permutevar8x32_epi32(
@@ -3459,9 +3459,9 @@ libcrux_ml_dsa_sample_rejection_sample_less_than_field_modulus_21(
       Eurydice_slice uu____0 = random_bytes;
       size_t sampled =
           libcrux_ml_dsa_simd_avx2_rejection_sample_less_than_field_modulus_22(
-              uu____0, Eurydice_array_to_subslice_from((size_t)263U, out,
-                                                       sampled_coefficients[0U],
-                                                       int32_t, size_t));
+              uu____0, Eurydice_array_to_subslice_from(
+                           (size_t)263U, out, sampled_coefficients[0U], int32_t,
+                           size_t, __builtin_slice_t));
       sampled_coefficients[0U] = sampled_coefficients[0U] + sampled;
       if (sampled_coefficients[0U] >=
           LIBCRUX_ML_DSA_CONSTANTS_COEFFICIENTS_IN_RING_ELEMENT) {
@@ -3865,9 +3865,9 @@ libcrux_ml_dsa_sample_rejection_sample_less_than_eta_equals_4_21(
       Eurydice_slice uu____0 = random_bytes;
       size_t sampled =
           libcrux_ml_dsa_simd_avx2_rejection_sample_less_than_eta_equals_4_22(
-              uu____0, Eurydice_array_to_subslice_from((size_t)263U, out,
-                                                       sampled_coefficients[0U],
-                                                       int32_t, size_t));
+              uu____0, Eurydice_array_to_subslice_from(
+                           (size_t)263U, out, sampled_coefficients[0U], int32_t,
+                           size_t, __builtin_slice_t));
       sampled_coefficients[0U] = sampled_coefficients[0U] + sampled;
       if (sampled_coefficients[0U] >=
           LIBCRUX_ML_DSA_CONSTANTS_COEFFICIENTS_IN_RING_ELEMENT) {
@@ -3899,9 +3899,9 @@ libcrux_ml_dsa_sample_rejection_sample_less_than_eta_equals_2_21(
       Eurydice_slice uu____0 = random_bytes;
       size_t sampled =
           libcrux_ml_dsa_simd_avx2_rejection_sample_less_than_eta_equals_2_22(
-              uu____0, Eurydice_array_to_subslice_from((size_t)263U, out,
-                                                       sampled_coefficients[0U],
-                                                       int32_t, size_t));
+              uu____0, Eurydice_array_to_subslice_from(
+                           (size_t)263U, out, sampled_coefficients[0U], int32_t,
+                           size_t, __builtin_slice_t));
       sampled_coefficients[0U] = sampled_coefficients[0U] + sampled;
       if (sampled_coefficients[0U] >=
           LIBCRUX_ML_DSA_CONSTANTS_COEFFICIENTS_IN_RING_ELEMENT) {
@@ -5327,7 +5327,7 @@ libcrux_ml_dsa_sample_sample_challenge_ring_element_18(
   Eurydice_slice_to_array2(
       &dst,
       Eurydice_array_to_subslice2(randomness0, (size_t)0U, (size_t)8U, uint8_t),
-      Eurydice_slice, uint8_t[8U]);
+      Eurydice_slice, uint8_t[8U], TryFromSliceError);
   unwrap_26_68(dst, ret);
   uint64_t signs = core_num__u64_9__from_le_bytes(ret);
   int32_t result[256U] = {0U};
@@ -5335,8 +5335,9 @@ libcrux_ml_dsa_sample_sample_challenge_ring_element_18(
       Eurydice_slice_len(Eurydice_array_to_slice((size_t)256U, result, int32_t),
                          int32_t) -
       number_of_ones;
-  Eurydice_slice uu____0 = Eurydice_array_to_subslice_from(
-      (size_t)136U, randomness0, (size_t)8U, uint8_t, size_t);
+  Eurydice_slice uu____0 =
+      Eurydice_array_to_subslice_from((size_t)136U, randomness0, (size_t)8U,
+                                      uint8_t, size_t, __builtin_slice_t);
   bool done = libcrux_ml_dsa_sample_inside_out_shuffle(uu____0, &out_index,
                                                        &signs, result);
   while (true) {
@@ -6465,14 +6466,14 @@ libcrux_ml_dsa_encoding_signature_deserialize_21(
   }
   size_t previous_true_hints_seen = (size_t)0U;
   core_ops_range_Range_08 iter =
-      core_iter_traits_collect___core__iter__traits__collect__IntoIterator_for_I__1__into_iter(
+      core_iter_traits_collect___core__iter__traits__collect__IntoIterator_Clause1_Item__I__for_I__1__into_iter(
           (CLITERAL(core_ops_range_Range_08){.start = (size_t)0U,
                                              .end = rows_in_a}),
-          core_ops_range_Range_08, core_ops_range_Range_08);
+          core_ops_range_Range_08, size_t, core_ops_range_Range_08);
   Result_41 uu____2;
   while (true) {
     Option_08 uu____3 =
-        core_iter_range___core__iter__traits__iterator__Iterator_for_core__ops__range__Range_A__TraitClause_0___6__next(
+        core_iter_range___core__iter__traits__iterator__Iterator_A__for_core__ops__range__Range_A__TraitClause_0___6__next(
             &iter, size_t, Option_08);
     if (uu____3.tag == None) {
       for (size_t i = previous_true_hints_seen; i < max_ones_in_hint; i++) {

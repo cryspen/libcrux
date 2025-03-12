@@ -4,11 +4,11 @@
  * SPDX-License-Identifier: MIT or Apache-2.0
  *
  * This code was generated with the following revisions:
- * Charon: a8f2211d1b95e0462a96382023b164a4116c7ca4
- * Eurydice: 788c5abefac3a9c7f79abae6a30fa8558e39764c
- * Karamel: 1d81d757d5d9e16dd6463ccc72324e587c707959
- * F*: b0961063393215ca65927f017720cb365a193833-dirty
- * Libcrux: 1c4e2cbb4bc08f93cca04e22245f2b25dcb23d83
+ * Charon: d250df809d9b0fa1bddac2055794620e87f435cc
+ * Eurydice: 78dde51b1023a6e449b84911804651d02a39aaa3
+ * Karamel: 4af7e13070bef647a962e66e5a53ca86e8411062
+ * F*: 0c4b790fd608bccfc332d3ff1e9b29c9be8b0595
+ * Libcrux: dc10875c33779c6f4eee8f4e204f2f9f51a4131c
  */
 
 #ifndef __libcrux_core_H
@@ -29,10 +29,6 @@ typedef struct core_ops_range_Range_08_s {
   size_t start;
   size_t end;
 } core_ops_range_Range_08;
-
-static inline uint8_t Eurydice_bitand_pv_u8(uint8_t *x, uint8_t y);
-
-static inline uint8_t Eurydice_shr_pv_u8(uint8_t *x, int32_t y);
 
 #define Ok 0
 #define Err 1
@@ -59,6 +55,14 @@ static inline uint32_t core_num__i32_2__count_ones(int32_t x0);
 static inline uint64_t core_num__u64_9__from_le_bytes(uint8_t x0[8U]);
 
 static inline void core_num__u64_9__to_le_bytes(uint64_t x0, uint8_t x1[8U]);
+
+static inline uint8_t
+core_ops_bit___core__ops__bit__BitAnd_u8__u8__for___a__u8___46__bitand(
+    uint8_t *x0, uint8_t x1);
+
+static inline uint8_t
+core_ops_bit___core__ops__bit__Shr_i32__u8__for___a__u8___792__shr(uint8_t *x0,
+                                                                   int32_t x1);
 
 /**
 A monomorphic instance of libcrux_ml_dsa.types.MLDSASignature

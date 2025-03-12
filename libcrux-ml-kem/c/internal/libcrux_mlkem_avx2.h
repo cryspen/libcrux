@@ -4,11 +4,11 @@
  * SPDX-License-Identifier: MIT or Apache-2.0
  *
  * This code was generated with the following revisions:
- * Charon: a8f2211d1b95e0462a96382023b164a4116c7ca4
- * Eurydice: 788c5abefac3a9c7f79abae6a30fa8558e39764c
- * Karamel: 1d81d757d5d9e16dd6463ccc72324e587c707959
- * F*: b0961063393215ca65927f017720cb365a193833-dirty
- * Libcrux: 1c4e2cbb4bc08f93cca04e22245f2b25dcb23d83
+ * Charon: d250df809d9b0fa1bddac2055794620e87f435cc
+ * Eurydice: 78dde51b1023a6e449b84911804651d02a39aaa3
+ * Karamel: 4af7e13070bef647a962e66e5a53ca86e8411062
+ * F*: 0c4b790fd608bccfc332d3ff1e9b29c9be8b0595
+ * Libcrux: dc10875c33779c6f4eee8f4e204f2f9f51a4131c
  */
 
 #ifndef __internal_libcrux_mlkem_avx2_H
@@ -20,7 +20,6 @@ extern "C" {
 
 #include "../libcrux_mlkem_avx2.h"
 #include "eurydice_glue.h"
-#include "intrinsics/libcrux_intrinsics_avx2.h"
 #include "libcrux_core.h"
 
 /**
