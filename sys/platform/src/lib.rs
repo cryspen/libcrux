@@ -12,9 +12,9 @@ extern crate std;
 #[cfg(all(any(target_arch = "x86", target_arch = "x86_64"), not(hax)))]
 mod x86;
 
-#[cfg(all(target_arch = "aarch64", target_os = "linux"))]
+#[cfg(all(target_arch = "aarch64", target_os = "linux", not(hax)))]
 mod linux_arm;
-#[cfg(all(target_arch = "aarch64", target_os = "macos"))]
+#[cfg(all(target_arch = "aarch64", target_os = "macos", not(hax)))]
 mod macos_arm;
 
 #[cfg(test)]
