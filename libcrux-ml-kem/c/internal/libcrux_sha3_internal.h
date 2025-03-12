@@ -4,22 +4,23 @@
  * SPDX-License-Identifier: MIT or Apache-2.0
  *
  * This code was generated with the following revisions:
- * Charon: a8f2211d1b95e0462a96382023b164a4116c7ca4
- * Eurydice: 788c5abefac3a9c7f79abae6a30fa8558e39764c
- * Karamel: 1d81d757d5d9e16dd6463ccc72324e587c707959
- * F*: b0961063393215ca65927f017720cb365a193833-dirty
- * Libcrux: 1c4e2cbb4bc08f93cca04e22245f2b25dcb23d83
+ * Charon: f3e61e971d1c88c21ed197441715cd6cb7945844
+ * Eurydice: f4716a1a1eac138d4cc0a59e4cb57318200ec6a3
+ * Karamel: ffd6b7c8fb729256ea124300d5e716e759e7c1a6
+ * F*: 4b3fc11774003a6ff7c09500ecb5f0145ca6d862
+ * Libcrux: 44e6af4fbd36de09a8c74f5da94d3a814100e2bf
  */
 
 #ifndef __internal_libcrux_sha3_internal_H
 #define __internal_libcrux_sha3_internal_H
+
+#include "eurydice_glue.h"
 
 #if defined(__cplusplus)
 extern "C" {
 #endif
 
 #include "../libcrux_sha3_internal.h"
-#include "eurydice_glue.h"
 #include "libcrux_core.h"
 
 typedef libcrux_sha3_generic_keccak_KeccakState_17
@@ -268,10 +269,12 @@ static inline size_t libcrux_sha3_generic_keccak_fill_buffer_8b_c6(
       {
         size_t i = (size_t)0U;
         Eurydice_slice uu____0 = Eurydice_array_to_subslice_from(
-            (size_t)136U, self->buf[i], self->buf_len, uint8_t, size_t);
+            (size_t)136U, self->buf[i], self->buf_len, uint8_t, size_t,
+            __builtin_slice_t);
         Eurydice_slice_copy(
             uu____0,
-            Eurydice_slice_subslice_to(inputs[i], consumed, uint8_t, size_t),
+            Eurydice_slice_subslice_to(inputs[i], consumed, uint8_t, size_t,
+                                       __builtin_slice_t),
             uint8_t);
       }
       self->buf_len = self->buf_len + consumed;
@@ -361,11 +364,11 @@ static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_absorb_8b_c6(
       Eurydice_slice uu____0 = Eurydice_array_to_subslice2(
           self->buf[i], self->buf_len, self->buf_len + input_remainder_len,
           uint8_t);
-      Eurydice_slice_copy(
-          uu____0,
-          Eurydice_slice_subslice_from(
-              inputs[i], input_len - input_remainder_len, uint8_t, size_t),
-          uint8_t);
+      Eurydice_slice_copy(uu____0,
+                          Eurydice_slice_subslice_from(
+                              inputs[i], input_len - input_remainder_len,
+                              uint8_t, size_t, __builtin_slice_t),
+                          uint8_t);
     }
     self->buf_len = self->buf_len + input_remainder_len;
   }
@@ -423,11 +426,11 @@ static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_absorb_final_8b_9e(
       Eurydice_slice uu____1 = Eurydice_array_to_subslice2(
           blocks[i], self->buf_len, self->buf_len + input_remainder_len,
           uint8_t);
-      Eurydice_slice_copy(
-          uu____1,
-          Eurydice_slice_subslice_from(
-              inputs[i], input_len - input_remainder_len, uint8_t, size_t),
-          uint8_t);
+      Eurydice_slice_copy(uu____1,
+                          Eurydice_slice_subslice_from(
+                              inputs[i], input_len - input_remainder_len,
+                              uint8_t, size_t, __builtin_slice_t),
+                          uint8_t);
     }
     blocks[i][self->buf_len + input_remainder_len] = 31U;
     size_t uu____2 = i;
@@ -586,12 +589,12 @@ static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_squeeze_8b_c6(
   memcpy(out_rest, uu____0.snd, (size_t)1U * sizeof(Eurydice_slice));
   libcrux_sha3_portable_keccak_store_5a_5b(self->inner.st, out00);
   core_ops_range_Range_08 iter =
-      core_iter_traits_collect___core__iter__traits__collect__IntoIterator_for_I__1__into_iter(
-          (CLITERAL(core_ops_range_Range_08){.start = (size_t)1U,
-                                             .end = blocks}),
-          core_ops_range_Range_08, core_ops_range_Range_08);
+      core_iter_traits_collect___core__iter__traits__collect__IntoIterator_Clause1_Item__I__for_I__1__into_iter(
+          CLITERAL(core_ops_range_Range_08,
+                   CFIELDS({CFIELD(.start, (size_t)1U), CFIELD(.end, blocks)})),
+          core_ops_range_Range_08, size_t, core_ops_range_Range_08);
   while (true) {
-    if (core_iter_range___core__iter__traits__iterator__Iterator_for_core__ops__range__Range_A__TraitClause_0___6__next(
+    if (core_iter_range___core__iter__traits__iterator__Iterator_A__for_core__ops__range__Range_A__TraitClause_0___6__next(
             &iter, size_t, core_option_Option_08)
             .tag == core_option_None) {
       break;
@@ -676,10 +679,12 @@ static inline size_t libcrux_sha3_generic_keccak_fill_buffer_8b_c60(
       {
         size_t i = (size_t)0U;
         Eurydice_slice uu____0 = Eurydice_array_to_subslice_from(
-            (size_t)168U, self->buf[i], self->buf_len, uint8_t, size_t);
+            (size_t)168U, self->buf[i], self->buf_len, uint8_t, size_t,
+            __builtin_slice_t);
         Eurydice_slice_copy(
             uu____0,
-            Eurydice_slice_subslice_to(inputs[i], consumed, uint8_t, size_t),
+            Eurydice_slice_subslice_to(inputs[i], consumed, uint8_t, size_t,
+                                       __builtin_slice_t),
             uint8_t);
       }
       self->buf_len = self->buf_len + consumed;
@@ -769,11 +774,11 @@ static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_absorb_8b_c60(
       Eurydice_slice uu____0 = Eurydice_array_to_subslice2(
           self->buf[i], self->buf_len, self->buf_len + input_remainder_len,
           uint8_t);
-      Eurydice_slice_copy(
-          uu____0,
-          Eurydice_slice_subslice_from(
-              inputs[i], input_len - input_remainder_len, uint8_t, size_t),
-          uint8_t);
+      Eurydice_slice_copy(uu____0,
+                          Eurydice_slice_subslice_from(
+                              inputs[i], input_len - input_remainder_len,
+                              uint8_t, size_t, __builtin_slice_t),
+                          uint8_t);
     }
     self->buf_len = self->buf_len + input_remainder_len;
   }
@@ -828,11 +833,11 @@ static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_absorb_final_8b_9e0(
       Eurydice_slice uu____1 = Eurydice_array_to_subslice2(
           blocks[i], self->buf_len, self->buf_len + input_remainder_len,
           uint8_t);
-      Eurydice_slice_copy(
-          uu____1,
-          Eurydice_slice_subslice_from(
-              inputs[i], input_len - input_remainder_len, uint8_t, size_t),
-          uint8_t);
+      Eurydice_slice_copy(uu____1,
+                          Eurydice_slice_subslice_from(
+                              inputs[i], input_len - input_remainder_len,
+                              uint8_t, size_t, __builtin_slice_t),
+                          uint8_t);
     }
     blocks[i][self->buf_len + input_remainder_len] = 31U;
     size_t uu____2 = i;
@@ -985,12 +990,12 @@ static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_squeeze_8b_c60(
   memcpy(out_rest, uu____0.snd, (size_t)1U * sizeof(Eurydice_slice));
   libcrux_sha3_portable_keccak_store_5a_3a(self->inner.st, out00);
   core_ops_range_Range_08 iter =
-      core_iter_traits_collect___core__iter__traits__collect__IntoIterator_for_I__1__into_iter(
-          (CLITERAL(core_ops_range_Range_08){.start = (size_t)1U,
-                                             .end = blocks}),
-          core_ops_range_Range_08, core_ops_range_Range_08);
+      core_iter_traits_collect___core__iter__traits__collect__IntoIterator_Clause1_Item__I__for_I__1__into_iter(
+          CLITERAL(core_ops_range_Range_08,
+                   CFIELDS({CFIELD(.start, (size_t)1U), CFIELD(.end, blocks)})),
+          core_ops_range_Range_08, size_t, core_ops_range_Range_08);
   while (true) {
-    if (core_iter_range___core__iter__traits__iterator__Iterator_for_core__ops__range__Range_A__TraitClause_0___6__next(
+    if (core_iter_range___core__iter__traits__iterator__Iterator_A__for_core__ops__range__Range_A__TraitClause_0___6__next(
             &iter, size_t, core_option_Option_08)
             .tag == core_option_None) {
       break;

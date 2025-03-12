@@ -4,11 +4,11 @@
  * SPDX-License-Identifier: MIT or Apache-2.0
  *
  * This code was generated with the following revisions:
- * Charon: a8f2211d1b95e0462a96382023b164a4116c7ca4
- * Eurydice: 788c5abefac3a9c7f79abae6a30fa8558e39764c
- * Karamel: 1d81d757d5d9e16dd6463ccc72324e587c707959
- * F*: b0961063393215ca65927f017720cb365a193833-dirty
- * Libcrux: 1c4e2cbb4bc08f93cca04e22245f2b25dcb23d83
+ * Charon: f3e61e971d1c88c21ed197441715cd6cb7945844
+ * Eurydice: f4716a1a1eac138d4cc0a59e4cb57318200ec6a3
+ * Karamel: ffd6b7c8fb729256ea124300d5e716e759e7c1a6
+ * F*: 4b3fc11774003a6ff7c09500ecb5f0145ca6d862
+ * Libcrux: 44e6af4fbd36de09a8c74f5da94d3a814100e2bf
  */
 
 #include "internal/libcrux_core.h"
@@ -106,8 +106,8 @@ with const generics
 libcrux_ml_kem_mlkem1024_MlKem1024KeyPair libcrux_ml_kem_types_from_3a_94(
     libcrux_ml_kem_types_MlKemPrivateKey_83 sk,
     libcrux_ml_kem_types_MlKemPublicKey_64 pk) {
-  return (
-      CLITERAL(libcrux_ml_kem_mlkem1024_MlKem1024KeyPair){.sk = sk, .pk = pk});
+  return CLITERAL(libcrux_ml_kem_mlkem1024_MlKem1024KeyPair,
+                  CFIELDS({CFIELD(.sk, sk), CFIELD(.pk, pk)}));
 }
 
 /**
@@ -155,8 +155,8 @@ with const generics
 libcrux_ml_kem_mlkem768_MlKem768KeyPair libcrux_ml_kem_types_from_3a_74(
     libcrux_ml_kem_types_MlKemPrivateKey_d9 sk,
     libcrux_ml_kem_types_MlKemPublicKey_30 pk) {
-  return (
-      CLITERAL(libcrux_ml_kem_mlkem768_MlKem768KeyPair){.sk = sk, .pk = pk});
+  return CLITERAL(libcrux_ml_kem_mlkem768_MlKem768KeyPair,
+                  CFIELDS({CFIELD(.sk, sk), CFIELD(.pk, pk)}));
 }
 
 /**
@@ -204,7 +204,8 @@ with const generics
 libcrux_ml_kem_types_MlKemKeyPair_3e libcrux_ml_kem_types_from_3a_fa(
     libcrux_ml_kem_types_MlKemPrivateKey_fa sk,
     libcrux_ml_kem_types_MlKemPublicKey_52 pk) {
-  return (CLITERAL(libcrux_ml_kem_types_MlKemKeyPair_3e){.sk = sk, .pk = pk});
+  return CLITERAL(libcrux_ml_kem_types_MlKemKeyPair_3e,
+                  CFIELDS({CFIELD(.sk, sk), CFIELD(.pk, pk)}));
 }
 
 /**
@@ -297,10 +298,11 @@ Eurydice_slice_uint8_t_x4 libcrux_ml_kem_types_unpack_private_key_b4(
       Eurydice_slice_uint8_t_x2);
   Eurydice_slice ind_cpa_public_key_hash = uu____2.fst;
   Eurydice_slice implicit_rejection_value = uu____2.snd;
-  return (CLITERAL(Eurydice_slice_uint8_t_x4){.fst = ind_cpa_secret_key,
-                                              .snd = ind_cpa_public_key,
-                                              .thd = ind_cpa_public_key_hash,
-                                              .f3 = implicit_rejection_value});
+  return CLITERAL(Eurydice_slice_uint8_t_x4,
+                  CFIELDS({CFIELD(.fst, ind_cpa_secret_key),
+                           CFIELD(.snd, ind_cpa_public_key),
+                           CFIELD(.thd, ind_cpa_public_key_hash),
+                           CFIELD(.f3, implicit_rejection_value)}));
 }
 
 /**
@@ -430,10 +432,11 @@ Eurydice_slice_uint8_t_x4 libcrux_ml_kem_types_unpack_private_key_0c(
       Eurydice_slice_uint8_t_x2);
   Eurydice_slice ind_cpa_public_key_hash = uu____2.fst;
   Eurydice_slice implicit_rejection_value = uu____2.snd;
-  return (CLITERAL(Eurydice_slice_uint8_t_x4){.fst = ind_cpa_secret_key,
-                                              .snd = ind_cpa_public_key,
-                                              .thd = ind_cpa_public_key_hash,
-                                              .f3 = implicit_rejection_value});
+  return CLITERAL(Eurydice_slice_uint8_t_x4,
+                  CFIELDS({CFIELD(.fst, ind_cpa_secret_key),
+                           CFIELD(.snd, ind_cpa_public_key),
+                           CFIELD(.thd, ind_cpa_public_key_hash),
+                           CFIELD(.f3, implicit_rejection_value)}));
 }
 
 /**
@@ -563,10 +566,11 @@ Eurydice_slice_uint8_t_x4 libcrux_ml_kem_types_unpack_private_key_1f(
       Eurydice_slice_uint8_t_x2);
   Eurydice_slice ind_cpa_public_key_hash = uu____2.fst;
   Eurydice_slice implicit_rejection_value = uu____2.snd;
-  return (CLITERAL(Eurydice_slice_uint8_t_x4){.fst = ind_cpa_secret_key,
-                                              .snd = ind_cpa_public_key,
-                                              .thd = ind_cpa_public_key_hash,
-                                              .f3 = implicit_rejection_value});
+  return CLITERAL(Eurydice_slice_uint8_t_x4,
+                  CFIELDS({CFIELD(.fst, ind_cpa_secret_key),
+                           CFIELD(.snd, ind_cpa_public_key),
+                           CFIELD(.thd, ind_cpa_public_key_hash),
+                           CFIELD(.f3, implicit_rejection_value)}));
 }
 
 /**

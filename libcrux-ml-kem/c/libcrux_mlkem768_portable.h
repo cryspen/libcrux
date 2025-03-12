@@ -4,21 +4,22 @@
  * SPDX-License-Identifier: MIT or Apache-2.0
  *
  * This code was generated with the following revisions:
- * Charon: a8f2211d1b95e0462a96382023b164a4116c7ca4
- * Eurydice: 788c5abefac3a9c7f79abae6a30fa8558e39764c
- * Karamel: 1d81d757d5d9e16dd6463ccc72324e587c707959
- * F*: b0961063393215ca65927f017720cb365a193833-dirty
- * Libcrux: 1c4e2cbb4bc08f93cca04e22245f2b25dcb23d83
+ * Charon: f3e61e971d1c88c21ed197441715cd6cb7945844
+ * Eurydice: f4716a1a1eac138d4cc0a59e4cb57318200ec6a3
+ * Karamel: ffd6b7c8fb729256ea124300d5e716e759e7c1a6
+ * F*: 4b3fc11774003a6ff7c09500ecb5f0145ca6d862
+ * Libcrux: 44e6af4fbd36de09a8c74f5da94d3a814100e2bf
  */
 
 #ifndef __libcrux_mlkem768_portable_H
 #define __libcrux_mlkem768_portable_H
 
+#include "eurydice_glue.h"
+
 #if defined(__cplusplus)
 extern "C" {
 #endif
 
-#include "eurydice_glue.h"
 #include "libcrux_core.h"
 
 /**

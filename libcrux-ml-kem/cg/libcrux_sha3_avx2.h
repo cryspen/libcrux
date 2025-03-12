@@ -4,21 +4,22 @@
  * SPDX-License-Identifier: MIT or Apache-2.0
  *
  * This code was generated with the following revisions:
- * Charon: a8f2211d1b95e0462a96382023b164a4116c7ca4
- * Eurydice: 788c5abefac3a9c7f79abae6a30fa8558e39764c
- * Karamel: 1d81d757d5d9e16dd6463ccc72324e587c707959
- * F*: b0961063393215ca65927f017720cb365a193833-dirty
- * Libcrux: 1c4e2cbb4bc08f93cca04e22245f2b25dcb23d83
+ * Charon: f3e61e971d1c88c21ed197441715cd6cb7945844
+ * Eurydice: f4716a1a1eac138d4cc0a59e4cb57318200ec6a3
+ * Karamel: ffd6b7c8fb729256ea124300d5e716e759e7c1a6
+ * F*: 4b3fc11774003a6ff7c09500ecb5f0145ca6d862
+ * Libcrux: 44e6af4fbd36de09a8c74f5da94d3a814100e2bf
  */
 
 #ifndef __libcrux_sha3_avx2_H
 #define __libcrux_sha3_avx2_H
 
+#include "eurydice_glue.h"
+
 #if defined(__cplusplus)
 extern "C" {
 #endif
 
-#include "eurydice_glue.h"
 #include "intrinsics/libcrux_intrinsics_avx2.h"
 #include "libcrux_mlkem_core.h"
 #include "libcrux_sha3_portable.h"
@@ -1840,7 +1841,7 @@ libcrux_sha3_generic_keccak_squeeze_first_and_last_97(
     Eurydice_slice_copy(
         uu____0,
         Eurydice_array_to_subslice((size_t)200U, uu____1, lit, uint8_t,
-                                   core_ops_range_Range_08),
+                                   core_ops_range_Range_08, __builtin_slice_t),
         uint8_t);
   }
 }
@@ -1910,7 +1911,7 @@ static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_squeeze_last_97(
     Eurydice_slice_copy(
         uu____0,
         Eurydice_array_to_subslice((size_t)200U, uu____1, lit, uint8_t,
-                                   core_ops_range_Range_08),
+                                   core_ops_range_Range_08, __builtin_slice_t),
         uint8_t);
   }
 }
@@ -1952,12 +1953,13 @@ static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_keccak_fb(
     memcpy(o1, uu____2.snd, (size_t)4U * sizeof(Eurydice_slice));
     libcrux_sha3_generic_keccak_squeeze_first_block_97(&s, o0);
     core_ops_range_Range_08 iter =
-        core_iter_traits_collect___core__iter__traits__collect__IntoIterator_for_I__1__into_iter(
-            (CLITERAL(core_ops_range_Range_08){.start = (size_t)1U,
-                                               .end = blocks}),
-            core_ops_range_Range_08, core_ops_range_Range_08);
+        core_iter_traits_collect___core__iter__traits__collect__IntoIterator_Clause1_Item__I__for_I__1__into_iter(
+            CLITERAL(
+                core_ops_range_Range_08,
+                CFIELDS({CFIELD(.start, (size_t)1U), CFIELD(.end, blocks)})),
+            core_ops_range_Range_08, size_t, core_ops_range_Range_08);
     while (true) {
-      if (core_iter_range___core__iter__traits__iterator__Iterator_for_core__ops__range__Range_A__TraitClause_0___6__next(
+      if (core_iter_range___core__iter__traits__iterator__Iterator_A__for_core__ops__range__Range_A__TraitClause_0___6__next(
               &iter, size_t, Option_08)
               .tag == None) {
         break;
