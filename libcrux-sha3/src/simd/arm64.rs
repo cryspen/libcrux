@@ -13,7 +13,7 @@ fn _veor5q_u64(
     d: uint64x2_t,
     e: uint64x2_t,
 ) -> uint64x2_t {
-    _veor3q_u64(_veor3q_u64(a,b,c),d,e)
+    _veor3q_u64(_veor3q_u64(a, b, c), d, e)
 }
 
 #[inline(always)]
@@ -23,7 +23,7 @@ fn _vrax1q_u64(a: uint64x2_t, b: uint64x2_t) -> uint64x2_t {
 
 #[inline(always)]
 fn _vxarq_u64<const LEFT: i32, const RIGHT: i32>(a: uint64x2_t, b: uint64x2_t) -> uint64x2_t {
-    libcrux_intrinsics::arm64::_vxarq_u64::<RIGHT>(a,b)
+    libcrux_intrinsics::arm64::_vxarq_u64::<RIGHT>(a, b)
 }
 
 #[inline(always)]
