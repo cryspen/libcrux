@@ -57,10 +57,10 @@ fn u64_int_from_bit_slice(bits: &[Bit]) -> u64 {
 
 /// Convert a bit slice into a machine integer of type `T`.
 fn int_from_bit_slice<T: TryFrom<i128> + MachineInteger + Copy>(bits: &[Bit]) -> T {
-    debug_assert!(bits.len() <= T::BITS as usize);
+    debug_assert!(bits.len() <= T::bits() as usize);
     let result = if T::SIGNED {
-        let is_negative = matches!(bits[T::BITS as usize - 1], Bit::One);
-        let s = u64_int_from_bit_slice(&bits[0..T::BITS as usize - 1]) as i128;
+        let is_negative = matches!(bits[T::bits() as usize - 1], Bit::One);
+        let s = u64_int_from_bit_slice(&bits[0..T::bits() as usize - 1]) as i128;
         if is_negative {
             -s
         } else {
@@ -89,7 +89,7 @@ impl<const N: usize> BitVec<N> {
 
     /// Construct a BitVec out of a machine integer.
     pub fn from_int<T: Into<i128> + MachineInteger + Copy>(n: T) -> Self {
-        Self::from_slice(&[n.into()], T::BITS as usize)
+        Self::from_slice(&[n.into()], T::bits() as u64)
     }
 
     /// Convert a BitVec into a machine integer of type `T`.
@@ -100,7 +100,8 @@ impl<const N: usize> BitVec<N> {
     /// Convert a BitVec into a vector of machine integers of type `T`.
     pub fn to_vec<T: TryFrom<i128> + MachineInteger + Copy>(&self) -> Vec<T> {
         self.0
-            .chunks(T::BITS as usize)
+            .as_vec()
+            .chunks(T::bits() as usize)
             .map(int_from_bit_slice)
             .collect()
     }

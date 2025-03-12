@@ -68,9 +68,12 @@ impl From<bool> for Bit {
 }
 
 /// A trait for types that represent machine integers.
+#[hax_lib::attributes]
 pub trait MachineInteger {
     /// The size of this integer type in bits.
-    const BITS: u32;
+    #[hax_lib::requires(true)]
+    #[hax_lib::ensures(|bits| bits >= 8)]
+    fn bits() -> u32;
 
     /// The signedness of this integer type.
     const SIGNED: bool;
@@ -78,8 +81,8 @@ pub trait MachineInteger {
 
 macro_rules! generate_machine_integer_impls {
     ($($ty:ident),*) => {
-        $(impl MachineInteger for $ty {
-            const BITS: u32 = $ty::BITS;
+        $(#[hax_lib::exclude]impl MachineInteger for $ty {
+            fn bits() -> u32 { $ty::BITS }
             #[allow(unused_comparisons)]
             const SIGNED: bool = $ty::MIN < 0;
         })*
@@ -101,7 +104,7 @@ impl Bit {
         if x >= 0 {
             Self::of_raw_int(x as u128, nth)
         } else {
-            Self::of_raw_int((2i128.pow(T::BITS) + x) as u128, nth)
+            Self::of_raw_int((2i128.pow(T::bits()) + x) as u128, nth)
         }
     }
 }
