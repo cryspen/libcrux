@@ -5,15 +5,12 @@ use crate::traits::internal::*;
 #[inline(always)]
 fn rotate_left<const LEFT: i32, const RIGHT: i32>(x: u64) -> u64 {
     debug_assert!(LEFT + RIGHT == 64);
-    (x << LEFT) | (x >> RIGHT)
+    x.rotate_left(LEFT as u32)
 }
 
 #[inline(always)]
 fn _veor5q_u64(a: u64, b: u64, c: u64, d: u64, e: u64) -> u64 {
-    let ab = a ^ b;
-    let cd = c ^ d;
-    let abcd = ab ^ cd;
-    abcd ^ e
+    a ^ b ^ c ^ d ^ e
 }
 
 #[inline(always)]
@@ -23,8 +20,7 @@ fn _vrax1q_u64(a: u64, b: u64) -> u64 {
 
 #[inline(always)]
 fn _vxarq_u64<const LEFT: i32, const RIGHT: i32>(a: u64, b: u64) -> u64 {
-    let ab = a ^ b;
-    rotate_left::<LEFT, RIGHT>(ab)
+    rotate_left::<LEFT, RIGHT>(a ^ b)
 }
 
 #[inline(always)]
@@ -44,10 +40,13 @@ pub(crate) fn load_block<const RATE: usize>(
     start: usize,
 ) {
     debug_assert!(RATE <= blocks.len() && RATE % 8 == 0);
-
+    let mut state_flat = [0u64; 25];
     for i in 0..RATE / 8 {
         let offset = start + 8 * i;
-        state[i / 5][i % 5] ^= u64::from_le_bytes(blocks[offset..offset + 8].try_into().unwrap());
+        state_flat[i] = u64::from_le_bytes(blocks[offset..offset + 8].try_into().unwrap());
+    }
+    for i in 0..RATE / 8 {
+        state[i / 5][i % 5] ^= state_flat[i];
     }
 }
 
