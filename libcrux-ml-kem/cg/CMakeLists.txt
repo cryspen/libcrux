@@ -11,13 +11,15 @@ project(libcrux-ml-kem
 )
 
 set(CMAKE_C_STANDARD 11)
-set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD 17)
 
 if(NOT MSVC)
     add_compile_options(
         -Wall
         -fstack-usage
         -Wunused-function
+        -fdiagnostics-color=always
+        -pedantic
         $<$<CONFIG:DEBUG>:-g>
         $<$<CONFIG:DEBUG>:-Og>
         $<$<CONFIG:RELEASE>:-g>
@@ -78,13 +80,15 @@ target_link_libraries(ml_kem_test PRIVATE
     nlohmann_json::nlohmann_json
 )
 
-add_executable(kyber_test
-    ${PROJECT_SOURCE_DIR}/tests/kyber768.cc
-)
-target_link_libraries(kyber_test PRIVATE
-    gtest_main
-    nlohmann_json::nlohmann_json
-)
+if(DEFINED ENV{LIBCRUX_BENCHMARKS})
+    add_executable(kyber_test
+        ${PROJECT_SOURCE_DIR}/tests/kyber768.cc
+    )
+    target_link_libraries(kyber_test PRIVATE
+        gtest_main
+        nlohmann_json::nlohmann_json
+    )
+endif(DEFINED ENV{LIBCRUX_BENCHMARKS})
 
 add_executable(sha3_test
     ${PROJECT_SOURCE_DIR}/tests/sha3.cc

@@ -1,25 +1,20 @@
 /*
- * SPDX-FileCopyrightText: 2024 Cryspen Sarl <info@cryspen.com>
+ * SPDX-FileCopyrightText: 2025 Cryspen Sarl <info@cryspen.com>
  *
  * SPDX-License-Identifier: MIT or Apache-2.0
  *
  * This code was generated with the following revisions:
- * Charon: f3e61e971d1c88c21ed197441715cd6cb7945844
- * Eurydice: f4716a1a1eac138d4cc0a59e4cb57318200ec6a3
- * Karamel: ffd6b7c8fb729256ea124300d5e716e759e7c1a6
+ * Charon: d250df809d9b0fa1bddac2055794620e87f435cc
+ * Eurydice: 574bc5d60d562a5b513bd8d09e36fac0b6a111d3
+ * Karamel: 5e16cd5abf3f2323b0d27e3070ec2974657a391b
  * F*: 4b3fc11774003a6ff7c09500ecb5f0145ca6d862
- * Libcrux: 44e6af4fbd36de09a8c74f5da94d3a814100e2bf
+ * Libcrux: f603d790f9cd6af82406f8d929dfa89444599d37
  */
 
 #ifndef __libcrux_sha3_portable_H
 #define __libcrux_sha3_portable_H
 
 #include "eurydice_glue.h"
-
-#if defined(__cplusplus)
-extern "C" {
-#endif
-
 #include "libcrux_mlkem_core.h"
 
 static const uint64_t libcrux_sha3_generic_keccak_ROUNDCONSTANTS[24U] = {
@@ -1558,9 +1553,7 @@ static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_keccak_9e(
     libcrux_sha3_generic_keccak_squeeze_first_block_c6(&s, o0);
     core_ops_range_Range_08 iter =
         core_iter_traits_collect___core__iter__traits__collect__IntoIterator_Clause1_Item__I__for_I__1__into_iter(
-            CLITERAL(
-                core_ops_range_Range_08,
-                CFIELDS({CFIELD(.start, (size_t)1U), CFIELD(.end, blocks)})),
+            (core_ops_range_Range_08{(size_t)1U, blocks}),
             core_ops_range_Range_08, size_t, core_ops_range_Range_08);
     while (true) {
       if (core_iter_range___core__iter__traits__iterator__Iterator_A__for_core__ops__range__Range_A__TraitClause_0___6__next(
@@ -1886,9 +1879,7 @@ static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_keccak_9e0(
     libcrux_sha3_generic_keccak_squeeze_first_block_c60(&s, o0);
     core_ops_range_Range_08 iter =
         core_iter_traits_collect___core__iter__traits__collect__IntoIterator_Clause1_Item__I__for_I__1__into_iter(
-            CLITERAL(
-                core_ops_range_Range_08,
-                CFIELDS({CFIELD(.start, (size_t)1U), CFIELD(.end, blocks)})),
+            (core_ops_range_Range_08{(size_t)1U, blocks}),
             core_ops_range_Range_08, size_t, core_ops_range_Range_08);
     while (true) {
       if (core_iter_range___core__iter__traits__iterator__Iterator_A__for_core__ops__range__Range_A__TraitClause_0___6__next(
@@ -2001,9 +1992,7 @@ static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_keccak_9e1(
     libcrux_sha3_generic_keccak_squeeze_first_block_c60(&s, o0);
     core_ops_range_Range_08 iter =
         core_iter_traits_collect___core__iter__traits__collect__IntoIterator_Clause1_Item__I__for_I__1__into_iter(
-            CLITERAL(
-                core_ops_range_Range_08,
-                CFIELDS({CFIELD(.start, (size_t)1U), CFIELD(.end, blocks)})),
+            (core_ops_range_Range_08{(size_t)1U, blocks}),
             core_ops_range_Range_08, size_t, core_ops_range_Range_08);
     while (true) {
       if (core_iter_range___core__iter__traits__iterator__Iterator_A__for_core__ops__range__Range_A__TraitClause_0___6__next(
@@ -2559,9 +2548,7 @@ static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_keccak_9e2(
     libcrux_sha3_generic_keccak_squeeze_first_block_c62(&s, o0);
     core_ops_range_Range_08 iter =
         core_iter_traits_collect___core__iter__traits__collect__IntoIterator_Clause1_Item__I__for_I__1__into_iter(
-            CLITERAL(
-                core_ops_range_Range_08,
-                CFIELDS({CFIELD(.start, (size_t)1U), CFIELD(.end, blocks)})),
+            (core_ops_range_Range_08{(size_t)1U, blocks}),
             core_ops_range_Range_08, size_t, core_ops_range_Range_08);
     while (true) {
       if (core_iter_range___core__iter__traits__iterator__Iterator_A__for_core__ops__range__Range_A__TraitClause_0___6__next(
@@ -2887,9 +2874,7 @@ static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_keccak_9e3(
     libcrux_sha3_generic_keccak_squeeze_first_block_c63(&s, o0);
     core_ops_range_Range_08 iter =
         core_iter_traits_collect___core__iter__traits__collect__IntoIterator_Clause1_Item__I__for_I__1__into_iter(
-            CLITERAL(
-                core_ops_range_Range_08,
-                CFIELDS({CFIELD(.start, (size_t)1U), CFIELD(.end, blocks)})),
+            (core_ops_range_Range_08{(size_t)1U, blocks}),
             core_ops_range_Range_08, size_t, core_ops_range_Range_08);
     while (true) {
       if (core_iter_range___core__iter__traits__iterator__Iterator_A__for_core__ops__range__Range_A__TraitClause_0___6__next(
@@ -3157,9 +3142,7 @@ static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_keccak_9e4(
     libcrux_sha3_generic_keccak_squeeze_first_block_c61(&s, o0);
     core_ops_range_Range_08 iter =
         core_iter_traits_collect___core__iter__traits__collect__IntoIterator_Clause1_Item__I__for_I__1__into_iter(
-            CLITERAL(
-                core_ops_range_Range_08,
-                CFIELDS({CFIELD(.start, (size_t)1U), CFIELD(.end, blocks)})),
+            (core_ops_range_Range_08{(size_t)1U, blocks}),
             core_ops_range_Range_08, size_t, core_ops_range_Range_08);
     while (true) {
       if (core_iter_range___core__iter__traits__iterator__Iterator_A__for_core__ops__range__Range_A__TraitClause_0___6__next(
@@ -3700,8 +3683,7 @@ static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_squeeze_8b_c6(
   libcrux_sha3_portable_keccak_store_5a_5b(self->inner.st, out00);
   core_ops_range_Range_08 iter =
       core_iter_traits_collect___core__iter__traits__collect__IntoIterator_Clause1_Item__I__for_I__1__into_iter(
-          CLITERAL(core_ops_range_Range_08,
-                   CFIELDS({CFIELD(.start, (size_t)1U), CFIELD(.end, blocks)})),
+          (core_ops_range_Range_08{(size_t)1U, blocks}),
           core_ops_range_Range_08, size_t, core_ops_range_Range_08);
   while (true) {
     if (core_iter_range___core__iter__traits__iterator__Iterator_A__for_core__ops__range__Range_A__TraitClause_0___6__next(
@@ -4103,8 +4085,7 @@ static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_squeeze_8b_c60(
   libcrux_sha3_portable_keccak_store_5a_3a(self->inner.st, out00);
   core_ops_range_Range_08 iter =
       core_iter_traits_collect___core__iter__traits__collect__IntoIterator_Clause1_Item__I__for_I__1__into_iter(
-          CLITERAL(core_ops_range_Range_08,
-                   CFIELDS({CFIELD(.start, (size_t)1U), CFIELD(.end, blocks)})),
+          (core_ops_range_Range_08{(size_t)1U, blocks}),
           core_ops_range_Range_08, size_t, core_ops_range_Range_08);
   while (true) {
     if (core_iter_range___core__iter__traits__iterator__Iterator_A__for_core__ops__range__Range_A__TraitClause_0___6__next(
@@ -4205,10 +4186,6 @@ typedef uint8_t libcrux_sha3_Sha3_384Digest[48U];
 typedef uint8_t libcrux_sha3_Sha3_256Digest[32U];
 
 typedef uint8_t libcrux_sha3_Sha3_224Digest[28U];
-
-#if defined(__cplusplus)
-}
-#endif
 
 #define __libcrux_sha3_portable_H_DEFINED
 #endif

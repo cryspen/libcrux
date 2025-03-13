@@ -28,6 +28,7 @@ eurydice_glue=1
 karamel_include=1
 unrolling=16
 format=1
+cpp17=
 
 # Parse command line arguments.
 all_args=("$@")
@@ -46,6 +47,7 @@ while [ $# -gt 0 ]; do
         --no-karamel_include) karamel_include=0 ;;
         --no-unrolling) unrolling=0 ;;
         --no-format) format=0 ;;
+        --cpp17) cpp17=-fc++17-compat ;;
     esac
     shift
 done
@@ -57,6 +59,8 @@ fi
 
 # TODO: add LIBCRUX_ENABLE_SIMD128=1 LIBCRUX_ENABLE_SIMD256=1 charon invocations
 if [[ "$no_charon" = 0 ]]; then
+    # Because of a Charon bug we have to clean the sha3 crate.
+    cargo clean -p libcrux-sha3
     rm -rf ../libcrux_ml_kem.llbc ../libcrux_sha3.llbc
     echo "Running charon (sha3) ..."
     (cd ../libcrux-sha3 && RUSTFLAGS="--cfg eurydice" $CHARON_HOME/bin/charon --remove-associated-types '*')
@@ -113,11 +117,11 @@ echo " */" >> header.txt
 # Run eurydice to extract the C code
 echo "Running eurydice ..."
 echo $EURYDICE_HOME/eurydice --config ../$config -funroll-loops $unrolling \
---header header.txt \
-../../libcrux_ml_kem.llbc ../../libcrux_sha3.llbc
+--header header.txt $cpp17 ../../libcrux_ml_kem.llbc ../../libcrux_sha3.llbc
+
 $EURYDICE_HOME/eurydice --config ../$config -funroll-loops $unrolling \
---header header.txt \
-../../libcrux_ml_kem.llbc ../../libcrux_sha3.llbc
+--header header.txt $cpp17 ../../libcrux_ml_kem.llbc ../../libcrux_sha3.llbc
+
 if [[ "$eurydice_glue" = 1 ]]; then
     cp $EURYDICE_HOME/include/eurydice_glue.h .
 fi

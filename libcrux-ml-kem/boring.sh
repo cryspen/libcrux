@@ -12,9 +12,9 @@ no_charon=
 all_args=("$@")
 while [ $# -gt 0 ]; do
     case "$1" in
-    --no-clean) no_clean=1 ;;
-    --no-extract) no_extract=1 ;;
-    --no-charon) no_charon=--no-charon ;;
+        --no-clean) no_clean=1 ;;
+        --no-extract) no_extract=1 ;;
+        --no-charon) no_charon=--no-charon ;;
     esac
     shift
 done
@@ -25,10 +25,8 @@ if [[ "$no_clean" = 0 ]]; then
 fi
 
 if [[ "$no_extract" = 0 ]]; then
-    ./c.sh --config cg.yaml --out cg --mlkem768 --kyber768 \
-        --no-glue --no-unrolling --no-karamel_include --no-karamel_include $no_charon
-
-    clang-format-18 --style=Google -i cg/*.h
+    ./c.sh --config cg.yaml --out cg --mlkem768 --no-glue --no-unrolling \
+    --no-karamel_include --cpp17 $no_charon
 fi
 
 if [[ -n "$BORINGSSL_HOME" ]]; then

@@ -1,15 +1,11 @@
 /*
  * SPDX-FileCopyrightText: 2024 Eurydice Contributors
- * SPDX-FileCopyrightText: 2024 Cryspen Sarl <info@cryspen.com>
+ * SPDX-FileCopyrightText: 2025 Cryspen Sarl <info@cryspen.com>
  *
  * SPDX-License-Identifier: MIT or Apache-2.0
  */
 
 #pragma once
-
-#if defined(__cplusplus)
-extern "C" {
-#endif
 
 #include <inttypes.h>
 #include <stdbool.h>
@@ -25,29 +21,35 @@ extern "C" {
 #include "karamel/endianness.h"
 #include "karamel/target.h"
 
-// C++ HELPERS (temporarily closing the extern "C" block)
+// C++ HELPERS
 
 #if defined(__cplusplus)
-}  // extern "C"
 
-// Get C++ struct initialization as an expression
-template <typename Type>
-static inline Type mk(Type value) {
-  return value;
-}
+#ifndef KRML_HOST_EPRINTF
+#define KRML_HOST_EPRINTF(...) fprintf(stderr, __VA_ARGS__)
+#endif
 
-template <typename Type, typename SizeType>
-static inline Type iter_next(SizeType &start, SizeType end) {
-  if (start >= end) {
-    return mk<Type>(
-        {0, 0});  // XXX: None | not nice that we can't use the define
-  } else {
-    return mk<Type>(
-        {1, start++});  // XXX: Some | not nice that we can't use the define
-  }
-}
+#include <utility>
 
-extern "C" {
+#ifndef __cpp_lib_type_identity
+template <class T>
+struct type_identity {
+  using type = T;
+};
+
+template <class T>
+using type_identity_t = typename type_identity<T>::type;
+#else
+using std::type_identity_t;
+#endif
+
+#define KRML_UNION_CONSTRUCTOR(T)                              \
+  template <typename V>                                        \
+  constexpr T(int t, V U::*m, type_identity_t<V> v) : tag(t) { \
+    val.*m = std::move(v);                                     \
+  }                                                            \
+  T() = default;
+
 #endif
 
 // GENERAL-PURPOSE STUFF
@@ -73,59 +75,29 @@ typedef struct {
   size_t len;
 } Eurydice_slice;
 
-// Helper to drop brackets from arguments in macros
-#define ESC(...) __VA_ARGS__
-
-// The MSVC C++ compiler does not support compound literals or designated
-// initializers with C++-17. This CLITERAL and CFIELD are used to turn
-// `(type){.field = value, ...}` into `{value, ...}` when using a C++ compiler.
-//
-// Note that this is not always great because the C++ initializer list syntax
-// only works when the expected type is known from the context, which is not
-// always the case. Thus, it is preferred, when in a C++ context, to call `mk`
-// with an explicit type argument.
-//
-// TODO: determine if the CLITERAL below should be instead mk<type>(ESC(value))
-// -- this would perhaps allow removing iter_next and have a single
-// implementation across C/C++.
-// TODO: determine if we want to use C++21 syntax if available (similar to C99
-// compound literals)
 #if defined(__cplusplus)
-#define CLITERAL(type, value) ESC(value)
+#define CLITERAL(type) type
 #else
-#define CLITERAL(type, value) (type) value
+#define CLITERAL(type) (type)
 #endif
 
-#if defined(__cplusplus)
-#define CFIELDS(...) __VA_ARGS__
+#if defined(__cplusplus) && defined(__cpp_designated_initializers) || \
+    !(defined(__cplusplus))
+#define CFIELD(X) X
 #else
-#define CFIELDS(...) __VA_ARGS__
+#define CFIELD(X)
 #endif
-
-#if defined(__cplusplus)
-#define CFIELD(field, value) ESC(value)
-#else
-#define CFIELD(field, value) field = value
-#endif
-
-// Helper function to build a eurydice slice from a pointer and length.
-static inline Eurydice_slice mk_slice(void *start, size_t len) {
-#if defined(__cplusplus)
-  return {start, len};
-#else
-  return (Eurydice_slice){start, len};
-#endif
-}
 
 // Helper macro to create a slice out of a pointer x, a start index in x
 // (included), and an end index in x (excluded). The argument x must be suitably
 // cast to something that can decay (see remark above about how pointer
 // arithmetic works in C), meaning either pointer or array type.
-#define EURYDICE_SLICE(x, start, end) mk_slice((void *)(x + start), end - start)
+#define EURYDICE_SLICE(x, start, end) \
+  (CLITERAL(Eurydice_slice){(void *)(x + start), end - start})
 
 // Slice length
-#define EURYDICE_SLICE_LEN(s, _) s.len
-#define Eurydice_slice_len(s, t) EURYDICE_SLICE_LEN(s, t)
+#define EURYDICE_SLICE_LEN(s, _) (s).len
+#define Eurydice_slice_len(s, _) (s).len
 
 // This macro is a pain because in case the dereferenced element type is an
 // array, you cannot simply write `t x` as it would yield `int[4] x` instead,
@@ -172,7 +144,7 @@ static inline Eurydice_slice mk_slice(void *start, size_t len) {
   memcpy(dst.ptr, src.ptr, dst.len * sizeof(t))
 
 #define core_array___Array_T__N__23__as_slice(len_, ptr_, t, _ret_t) \
-  EURYDICE_SLICE(ptr_, 0, len_)
+  CLITERAL(Eurydice_slice) { ptr_, len_ }
 
 #define core_array___core__clone__Clone_for__Array_T__N___20__clone( \
     len, src, dst, elem_type, _ret_t)                                \
@@ -188,25 +160,24 @@ static inline Eurydice_slice mk_slice(void *start, size_t len) {
     sz, a1, a2, t, _, _ret_t)                                                               \
   Eurydice_array_eq(sz, a1, ((a2)->ptr), t, _)
 
-#define Eurydice_slice_split_at(slice, mid, element_type, ret_t)               \
-  CLITERAL(ret_t,                                                              \
-           CFIELDS({CFIELD(.fst,                                               \
-                           EURYDICE_SLICE((element_type *)slice.ptr, 0, mid)), \
-                    CFIELD(.snd, EURYDICE_SLICE((element_type *)slice.ptr,     \
-                                                mid, slice.len))}))
+#define Eurydice_slice_split_at(slice, mid, element_type, ret_t)          \
+  CLITERAL(ret_t) {                                                       \
+    CFIELD(.fst =)                                                        \
+    EURYDICE_SLICE((element_type *)(slice).ptr, 0, mid),                  \
+        CFIELD(.snd =)                                                    \
+            EURYDICE_SLICE((element_type *)(slice).ptr, mid, (slice).len) \
+  }
 
-#define Eurydice_slice_split_at_mut(slice, mid, element_type, ret_t)           \
-  CLITERAL(                                                                    \
-      ret_t,                                                                   \
-      CFIELDS({CFIELD(.fst, CLITERAL(Eurydice_slice,                           \
-                                     CFIELDS({CFIELD(.ptr, (slice.ptr)),       \
-                                              CFIELD(.len, mid)}))),           \
-               CFIELD(.snd,                                                    \
-                      CLITERAL(                                                \
-                          Eurydice_slice,                                      \
-                          CFIELDS({CFIELD(.ptr, ((char *)slice.ptr +           \
-                                                 mid * sizeof(element_type))), \
-                                   CFIELD(.len, (slice.len - mid))})))}))
+#define Eurydice_slice_split_at_mut(slice, mid, element_type, ret_t)         \
+  CLITERAL(ret_t) {                                                          \
+    CFIELD(.fst =)                                                           \
+    CLITERAL(Eurydice_slice){CFIELD(.ptr =)(slice.ptr), CFIELD(.len =) mid}, \
+        CFIELD(.snd =) CLITERAL(Eurydice_slice) {                            \
+      CFIELD(.ptr =)                                                         \
+      ((char *)slice.ptr + mid * sizeof(element_type)),                      \
+          CFIELD(.len =)(slice.len - mid)                                    \
+    }                                                                        \
+  }
 
 // Conversion of slice to an array, rewritten (by Eurydice) to name the
 // destination array, since arrays are not values in C.
@@ -253,24 +224,38 @@ static inline uint8_t core_num__u8_6__wrapping_sub(uint8_t x, uint8_t y) {
 // ITERATORS
 
 #if defined(__cplusplus)
+// Get C++ struct initialization as an expression
+template <typename Type>
+static inline Type mk(Type value) {
+  return value;
+}
+
+template <typename Type, typename SizeType>
+static inline Type iter_next(SizeType &start, SizeType end) {
+  if (start >= end) {
+    return mk<Type>({0, 0});  // XXX: None
+  } else {
+    return mk<Type>({1, start++});  // XXX: Some
+  }
+}
+
 #define Eurydice_range_iter_next(iter_ptr, t, ret_t) \
   iter_next<ret_t, t>((iter_ptr)->start, (iter_ptr)->end)
+
 #else
+
 #define Eurydice_range_iter_next(iter_ptr, t, ret_t)                 \
   (((iter_ptr)->start >= (iter_ptr)->end)                            \
        ? CLITERAL(ret_t, CFIELDS({CFIELD(.tag, 0), CFIELD(.f0, 0)})) \
        : CLITERAL(ret_t, CFIELDS({CFIELD(.tag, 1),                   \
                                   CFIELD(.f0, (iter_ptr)->start++)})))
+
 #endif
 
 #define core_iter_range___core__iter__traits__iterator__Iterator_A__for_core__ops__range__Range_A__TraitClause_0___6__next \
   Eurydice_range_iter_next
 
 // See note in karamel/lib/Inlining.ml if you change this
-#define Eurydice_into_iter(x, t, _ret_t, _) x
+#define Eurydice_into_iter(x, t, _ret_t, _) (x)
 #define core_iter_traits_collect___core__iter__traits__collect__IntoIterator_Clause1_Item__I__for_I__1__into_iter \
   Eurydice_into_iter
-
-#if defined(__cplusplus)
-}
-#endif

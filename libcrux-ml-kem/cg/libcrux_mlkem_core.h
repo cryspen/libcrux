@@ -1,24 +1,20 @@
 /*
- * SPDX-FileCopyrightText: 2024 Cryspen Sarl <info@cryspen.com>
+ * SPDX-FileCopyrightText: 2025 Cryspen Sarl <info@cryspen.com>
  *
  * SPDX-License-Identifier: MIT or Apache-2.0
  *
  * This code was generated with the following revisions:
- * Charon: f3e61e971d1c88c21ed197441715cd6cb7945844
- * Eurydice: f4716a1a1eac138d4cc0a59e4cb57318200ec6a3
- * Karamel: ffd6b7c8fb729256ea124300d5e716e759e7c1a6
+ * Charon: d250df809d9b0fa1bddac2055794620e87f435cc
+ * Eurydice: 574bc5d60d562a5b513bd8d09e36fac0b6a111d3
+ * Karamel: 5e16cd5abf3f2323b0d27e3070ec2974657a391b
  * F*: 4b3fc11774003a6ff7c09500ecb5f0145ca6d862
- * Libcrux: 44e6af4fbd36de09a8c74f5da94d3a814100e2bf
+ * Libcrux: f603d790f9cd6af82406f8d929dfa89444599d37
  */
 
 #ifndef __libcrux_mlkem_core_H
 #define __libcrux_mlkem_core_H
 
 #include "eurydice_glue.h"
-
-#if defined(__cplusplus)
-extern "C" {
-#endif
 
 /**
 A monomorphic instance of core.ops.range.Range
@@ -103,10 +99,11 @@ with types uint8_t[24size_t], core_array_TryFromSliceError
 */
 typedef struct Result_b2_s {
   Result_a9_tags tag;
-  union {
+  union U {
     uint8_t case_Ok[24U];
     TryFromSliceError case_Err;
   } val;
+  KRML_UNION_CONSTRUCTOR(Result_b2_s)
 } Result_b2;
 
 /**
@@ -137,10 +134,11 @@ with types uint8_t[20size_t], core_array_TryFromSliceError
 */
 typedef struct Result_e1_s {
   Result_a9_tags tag;
-  union {
+  union U {
     uint8_t case_Ok[20U];
     TryFromSliceError case_Err;
   } val;
+  KRML_UNION_CONSTRUCTOR(Result_e1_s)
 } Result_e1;
 
 /**
@@ -265,8 +263,7 @@ with const generics
 static inline libcrux_ml_kem_mlkem768_MlKem768KeyPair
 libcrux_ml_kem_types_from_3a_74(libcrux_ml_kem_types_MlKemPrivateKey_d9 sk,
                                 libcrux_ml_kem_types_MlKemPublicKey_30 pk) {
-  return CLITERAL(libcrux_ml_kem_mlkem768_MlKem768KeyPair,
-                  CFIELDS({CFIELD(.sk, sk), CFIELD(.pk, pk)}));
+  return (libcrux_ml_kem_mlkem768_MlKem768KeyPair{sk, pk});
 }
 
 /**
@@ -295,10 +292,11 @@ with types uint8_t[32size_t], core_array_TryFromSliceError
 */
 typedef struct Result_fb_s {
   Result_a9_tags tag;
-  union {
+  union U {
     uint8_t case_Ok[32U];
     TryFromSliceError case_Err;
   } val;
+  KRML_UNION_CONSTRUCTOR(Result_fb_s)
 } Result_fb;
 
 /**
@@ -529,11 +527,9 @@ libcrux_ml_kem_types_unpack_private_key_b4(Eurydice_slice private_key) {
       Eurydice_slice_uint8_t_x2);
   Eurydice_slice ind_cpa_public_key_hash = uu____2.fst;
   Eurydice_slice implicit_rejection_value = uu____2.snd;
-  return CLITERAL(Eurydice_slice_uint8_t_x4,
-                  CFIELDS({CFIELD(.fst, ind_cpa_secret_key),
-                           CFIELD(.snd, ind_cpa_public_key),
-                           CFIELD(.thd, ind_cpa_public_key_hash),
-                           CFIELD(.f3, implicit_rejection_value)}));
+  return (Eurydice_slice_uint8_t_x4{ind_cpa_secret_key, ind_cpa_public_key,
+                                    ind_cpa_public_key_hash,
+                                    implicit_rejection_value});
 }
 
 /**
@@ -543,10 +539,11 @@ with types int16_t[16size_t], core_array_TryFromSliceError
 */
 typedef struct Result_0a_s {
   Result_a9_tags tag;
-  union {
+  union U {
     int16_t case_Ok[16U];
     TryFromSliceError case_Err;
   } val;
+  KRML_UNION_CONSTRUCTOR(Result_0a_s)
 } Result_0a;
 
 /**
@@ -577,10 +574,11 @@ with types uint8_t[8size_t], core_array_TryFromSliceError
 */
 typedef struct Result_15_s {
   Result_a9_tags tag;
-  union {
+  union U {
     uint8_t case_Ok[8U];
     TryFromSliceError case_Err;
   } val;
+  KRML_UNION_CONSTRUCTOR(Result_15_s)
 } Result_15;
 
 /**
@@ -608,10 +606,6 @@ typedef struct Eurydice_slice_uint8_t_1size_t__x2_s {
   Eurydice_slice fst[1U];
   Eurydice_slice snd[1U];
 } Eurydice_slice_uint8_t_1size_t__x2;
-
-#if defined(__cplusplus)
-}
-#endif
 
 #define __libcrux_mlkem_core_H_DEFINED
 #endif
