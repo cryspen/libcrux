@@ -1,14 +1,14 @@
 /*
- * SPDX-FileCopyrightText: 2024 Cryspen Sarl <info@cryspen.com>
+ * SPDX-FileCopyrightText: 2025 Cryspen Sarl <info@cryspen.com>
  *
  * SPDX-License-Identifier: MIT or Apache-2.0
  *
  * This code was generated with the following revisions:
- * Charon: f3e61e971d1c88c21ed197441715cd6cb7945844
- * Eurydice: f4716a1a1eac138d4cc0a59e4cb57318200ec6a3
- * Karamel: ffd6b7c8fb729256ea124300d5e716e759e7c1a6
+ * Charon: d250df809d9b0fa1bddac2055794620e87f435cc
+ * Eurydice: 574bc5d60d562a5b513bd8d09e36fac0b6a111d3
+ * Karamel: 5e16cd5abf3f2323b0d27e3070ec2974657a391b
  * F*: 4b3fc11774003a6ff7c09500ecb5f0145ca6d862
- * Libcrux: 44e6af4fbd36de09a8c74f5da94d3a814100e2bf
+ * Libcrux: 40755e06b5ac176a1a8cfe5fa12adead07c1aef7
  */
 
 #include "internal/libcrux_mlkem_avx2.h"
@@ -926,8 +926,8 @@ libcrux_ml_kem_vector_avx2_serialize_serialize_10_serialize_10_vec(
   __m128i lower_8 = mm256_castsi256_si128(adjacent_8_combined);
   __m128i upper_8 =
       mm256_extracti128_si256((int32_t)1, adjacent_8_combined, __m128i);
-  return CLITERAL(core_core_arch_x86___m128i_x2,
-                  CFIELDS({CFIELD(.fst, lower_8), CFIELD(.snd, upper_8)}));
+  return (
+      CLITERAL(core_core_arch_x86___m128i_x2){.fst = lower_8, .snd = upper_8});
 }
 
 KRML_MUSTINLINE void libcrux_ml_kem_vector_avx2_serialize_serialize_10(
@@ -1081,8 +1081,8 @@ libcrux_ml_kem_vector_avx2_serialize_serialize_12_serialize_12_vec(
   __m128i lower_8 = mm256_castsi256_si128(adjacent_8_combined);
   __m128i upper_8 =
       mm256_extracti128_si256((int32_t)1, adjacent_8_combined, __m128i);
-  return CLITERAL(core_core_arch_x86___m128i_x2,
-                  CFIELDS({CFIELD(.fst, lower_8), CFIELD(.snd, upper_8)}));
+  return (
+      CLITERAL(core_core_arch_x86___m128i_x2){.fst = lower_8, .snd = upper_8});
 }
 
 KRML_MUSTINLINE void libcrux_ml_kem_vector_avx2_serialize_serialize_12(
@@ -2362,8 +2362,8 @@ ntt_layer_int_vec_step_79(__m256i a, __m256i b, int16_t zeta_r) {
   __m256i t = montgomery_multiply_fe_79(b, zeta_r);
   b = libcrux_ml_kem_vector_avx2_sub_9a(a, &t);
   a = libcrux_ml_kem_vector_avx2_add_9a(a, &t);
-  return CLITERAL(libcrux_ml_kem_vector_avx2_SIMD256Vector_x2,
-                  CFIELDS({CFIELD(.fst, a), CFIELD(.snd, b)}));
+  return (CLITERAL(libcrux_ml_kem_vector_avx2_SIMD256Vector_x2){.fst = a,
+                                                                .snd = b});
 }
 
 /**
@@ -3191,8 +3191,8 @@ inv_ntt_layer_int_vec_step_reduce_79(__m256i a, __m256i b, int16_t zeta_r) {
   a = libcrux_ml_kem_vector_avx2_barrett_reduce_9a(
       libcrux_ml_kem_vector_avx2_add_9a(a, &b));
   b = montgomery_multiply_fe_79(a_minus_b, zeta_r);
-  return CLITERAL(libcrux_ml_kem_vector_avx2_SIMD256Vector_x2,
-                  CFIELDS({CFIELD(.fst, a), CFIELD(.snd, b)}));
+  return (CLITERAL(libcrux_ml_kem_vector_avx2_SIMD256Vector_x2){.fst = a,
+                                                                .snd = b});
 }
 
 /**
