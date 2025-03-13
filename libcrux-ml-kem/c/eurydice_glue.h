@@ -23,6 +23,7 @@ extern "C" {
     if (!(test)) {                                                            \
       fprintf(stderr, "assertion \"%s\" failed: file \"%s\", line %d\n", msg, \
               __FILE__, __LINE__);                                            \
+      exit(255);                                                              \
     }                                                                         \
   } while (0)
 
@@ -123,7 +124,7 @@ typedef struct {
   Eurydice_slice_to_array3(&(dst)->tag, (char *)&(dst)->val.case_Ok, src, \
                            sizeof(t_arr))
 
-static inline void Eurydice_slice_to_array3(uint8_t *dst_tag, char *dst_ok,
+static KRML_MUSTINLINE void Eurydice_slice_to_array3(uint8_t *dst_tag, char *dst_ok,
                                             Eurydice_slice src, size_t sz) {
   *dst_tag = 0;
   memcpy(dst_ok, src.ptr, sz);
@@ -131,49 +132,53 @@ static inline void Eurydice_slice_to_array3(uint8_t *dst_tag, char *dst_ok,
 
 // CORE STUFF (conversions, endianness, ...)
 
-static inline void core_num__u32_8__to_be_bytes(uint32_t src, uint8_t dst[4]) {
+static KRML_MUSTINLINE void core_num__u32_8__to_be_bytes(uint32_t src, uint8_t dst[4]) {
   // TODO: why not store32_be?
   uint32_t x = htobe32(src);
   memcpy(dst, &x, 4);
 }
 
-static inline void core_num__u32_8__to_le_bytes(uint32_t src, uint8_t dst[4]) {
+static KRML_MUSTINLINE void core_num__u32_8__to_le_bytes(uint32_t src, uint8_t dst[4]) {
   store32_le(dst, src);
 }
 
-static inline uint32_t core_num__u32_8__from_le_bytes(uint8_t buf[4]) {
+static KRML_MUSTINLINE uint32_t core_num__u32_8__from_le_bytes(uint8_t buf[4]) {
   return load32_le(buf);
 }
 
-static inline void core_num__u64_9__to_le_bytes(uint64_t v, uint8_t buf[8]) {
+static KRML_MUSTINLINE void core_num__u64_9__to_le_bytes(uint64_t v, uint8_t buf[8]) {
   store64_le(buf, v);
 }
 
-static inline uint64_t core_num__u64_9__from_le_bytes(uint8_t buf[8]) {
+static KRML_MUSTINLINE uint64_t core_num__u64_9__from_le_bytes(uint8_t buf[8]) {
   return load64_le(buf);
 }
 
-static inline int64_t
+static KRML_MUSTINLINE uint64_t core_num__u64_9__rotate_left(uint64_t x0, uint32_t x1) {
+  return (x0 << x1 | x0 >> (64 - x1));
+}
+
+static KRML_MUSTINLINE int64_t
 core_convert_num___core__convert__From_i32__for_i64__59__from(int32_t x) {
   return x;
 }
 
-static inline uint64_t
+static KRML_MUSTINLINE uint64_t
 core_convert_num___core__convert__From_u8__for_u64__66__from(uint8_t x) {
   return x;
 }
 
-static inline uint64_t
+static KRML_MUSTINLINE uint64_t
 core_convert_num___core__convert__From_u16__for_u64__70__from(uint16_t x) {
   return x;
 }
 
-static inline size_t
+static KRML_MUSTINLINE size_t
 core_convert_num___core__convert__From_u16__for_usize__96__from(uint16_t x) {
   return x;
 }
 
-static inline uint32_t core_num__u8_6__count_ones(uint8_t x0) {
+static KRML_MUSTINLINE uint32_t core_num__u8_6__count_ones(uint8_t x0) {
 #ifdef _MSC_VER
   return __popcnt(x0);
 #else
@@ -181,31 +186,39 @@ static inline uint32_t core_num__u8_6__count_ones(uint8_t x0) {
 #endif
 }
 
+static KRML_MUSTINLINE size_t core_cmp_impls___core__cmp__Ord_for_usize__59__min(
+    size_t a, size_t b) {
+  if (a <= b)
+    return a;
+  else
+    return b;
+}
+
 // unsigned overflow wraparound semantics in C
-static inline uint16_t core_num__u16_7__wrapping_add(uint16_t x, uint16_t y) {
+static KRML_MUSTINLINE uint16_t core_num__u16_7__wrapping_add(uint16_t x, uint16_t y) {
   return x + y;
 }
-static inline uint8_t core_num__u8_6__wrapping_sub(uint8_t x, uint8_t y) {
+static KRML_MUSTINLINE uint8_t core_num__u8_6__wrapping_sub(uint8_t x, uint8_t y) {
   return x - y;
 }
 
-static inline void core_ops_arith__i32_319__add_assign(int32_t *x0,
+static KRML_MUSTINLINE void core_ops_arith__i32_319__add_assign(int32_t *x0,
                                                        int32_t *x1) {
   *x0 = *x0 + *x1;
 }
 
-static inline uint8_t Eurydice_bitand_pv_u8(uint8_t *p, uint8_t v) {
+static KRML_MUSTINLINE uint8_t Eurydice_bitand_pv_u8(uint8_t *p, uint8_t v) {
   return (*p) & v;
 }
-static inline uint8_t Eurydice_shr_pv_u8(uint8_t *p, int32_t v) {
+static KRML_MUSTINLINE uint8_t Eurydice_shr_pv_u8(uint8_t *p, int32_t v) {
   return (*p) >> v;
 }
-static inline uint32_t Eurydice_min_u32(uint32_t x, uint32_t y) {
+static KRML_MUSTINLINE uint32_t Eurydice_min_u32(uint32_t x, uint32_t y) {
   return x < y ? x : y;
 }
 
 #define core_num_nonzero_private_NonZeroUsizeInner size_t
-static inline core_num_nonzero_private_NonZeroUsizeInner
+static KRML_MUSTINLINE core_num_nonzero_private_NonZeroUsizeInner
 core_num_nonzero_private___core__clone__Clone_for_core__num__nonzero__private__NonZeroUsizeInner__26__clone(
     core_num_nonzero_private_NonZeroUsizeInner *x0) {
   return *x0;
@@ -245,7 +258,7 @@ typedef struct {
 // type, and this static inline function cannot receive a type as an argument.
 // Instead, we receive the element size and use it to peform manual offset
 // computations rather than going through the macros.
-static inline Eurydice_slice chunk_next(Eurydice_chunks *chunks,
+static KRML_MUSTINLINE Eurydice_slice chunk_next(Eurydice_chunks *chunks,
                                         size_t element_size) {
   size_t chunk_size = chunks->slice.len >= chunks->chunk_size
                           ? chunks->chunk_size
