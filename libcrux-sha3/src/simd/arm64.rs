@@ -48,13 +48,13 @@ pub(crate) fn load_block<const RATE: usize>(
         let start = offset + 16 * i;
         let v0 = _vld1q_bytes_u64(&blocks[0][start..start + 16]);
         let v1 = _vld1q_bytes_u64(&blocks[1][start..start + 16]);
-        s[(2 * i) / 5][(2 * i) % 5] = _veorq_u64(s[(2 * i) / 5][(2 * i) % 5], _vtrn1q_u64(v0, v1));
-        s[(2 * i + 1) / 5][(2 * i + 1) % 5] =
-            _veorq_u64(s[(2 * i + 1) / 5][(2 * i + 1) % 5], _vtrn2q_u64(v0, v1));
+        s[(2 * i) % 5][(2 * i) / 5] = _veorq_u64(s[(2 * i) % 5][(2 * i) / 5], _vtrn1q_u64(v0, v1));
+        s[(2 * i + 1) % 5][(2 * i + 1) / 5] =
+            _veorq_u64(s[(2 * i + 1) % 5][(2 * i + 1) / 5], _vtrn2q_u64(v0, v1));
     }
     if RATE % 16 != 0 {
-        let i = (RATE / 8 - 1) / 5;
-        let j = (RATE / 8 - 1) % 5;
+        let i = (RATE / 8 - 1) % 5;
+        let j = (RATE / 8 - 1) / 5;
         let mut u = [0u64; 2];
         let start = offset + RATE - 8;
         u[0] = u64::from_le_bytes(blocks[0][start..start + 8].try_into().unwrap());
@@ -77,20 +77,20 @@ pub(crate) fn load_block_full<const RATE: usize>(
 pub(crate) fn store_block<const RATE: usize>(s: &[[uint64x2_t; 5]; 5], out: &mut [&mut [u8]; 2]) {
     for i in 0..RATE / 16 {
         let v0 = _vtrn1q_u64(
-            s[(2 * i) / 5][(2 * i) % 5],
-            s[(2 * i + 1) / 5][(2 * i + 1) % 5],
+            s[(2 * i) % 5][(2 * i) / 5],
+            s[(2 * i + 1) % 5][(2 * i + 1) / 5],
         );
         let v1 = _vtrn2q_u64(
-            s[(2 * i) / 5][(2 * i) % 5],
-            s[(2 * i + 1) / 5][(2 * i + 1) % 5],
+            s[(2 * i) % 5][(2 * i) / 5],
+            s[(2 * i + 1) % 5][(2 * i + 1) / 5],
         );
         _vst1q_bytes_u64(&mut out[0][16 * i..16 * (i + 1)], v0);
         _vst1q_bytes_u64(&mut out[1][16 * i..16 * (i + 1)], v1);
     }
     if RATE % 16 != 0 {
         debug_assert!(RATE % 8 == 0);
-        let i = (RATE / 8 - 1) / 5;
-        let j = (RATE / 8 - 1) % 5;
+        let i = (RATE / 8 - 1) % 5;
+        let j = (RATE / 8 - 1) / 5;
         let mut u = [0u8; 16];
         _vst1q_bytes_u64(&mut u, s[i][j]);
         out[0][RATE - 8..RATE].copy_from_slice(&u[0..8]);
