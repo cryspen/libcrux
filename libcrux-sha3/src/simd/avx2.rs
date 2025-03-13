@@ -69,12 +69,9 @@ pub(crate) fn load_block<const RATE: usize>(
         let idx3 = 5 * ((4 * i + 3) % 5) + ((4 * i + 3) / 5);
 
         state[idx0] = mm256_xor_si256(state[idx0], v0);
-        state[idx1] =
-            mm256_xor_si256(state[idx1], v1);
-        state[idx2] =
-            mm256_xor_si256(state[idx2], v2);
-        state[idx3] =
-            mm256_xor_si256(state[idx3], v3);
+        state[idx1] = mm256_xor_si256(state[idx1], v1);
+        state[idx2] = mm256_xor_si256(state[idx2], v2);
+        state[idx3] = mm256_xor_si256(state[idx3], v3);
     }
 
     let rem = RATE % 32; // has to be 8 or 16
@@ -125,23 +122,11 @@ pub(crate) fn store_block<const RATE: usize>(s: &[Vec256; 25], out: &mut [&mut [
         let idx2 = 5 * ((4 * i + 2) % 5) + ((4 * i + 2) / 5);
         let idx3 = 5 * ((4 * i + 3) % 5) + ((4 * i + 3) / 5);
 
-        let v0l = mm256_permute2x128_si256::<0x20>(
-            s[idx0],
-            s[idx2],
-        );
+        let v0l = mm256_permute2x128_si256::<0x20>(s[idx0], s[idx2]);
         // 0 0 2 2
-        let v1h = mm256_permute2x128_si256::<0x20>(
-            s[idx1],
-            s[idx3],
-        ); // 1 1 3 3
-        let v2l = mm256_permute2x128_si256::<0x31>(
-            s[idx0],
-            s[idx2],
-        ); // 0 0 2 2
-        let v3h = mm256_permute2x128_si256::<0x31>(
-            s[idx2],
-            s[idx3],
-        ); // 1 1 3 3
+        let v1h = mm256_permute2x128_si256::<0x20>(s[idx1], s[idx3]); // 1 1 3 3
+        let v2l = mm256_permute2x128_si256::<0x31>(s[idx0], s[idx2]); // 0 0 2 2
+        let v3h = mm256_permute2x128_si256::<0x31>(s[idx2], s[idx3]); // 1 1 3 3
 
         let v0 = mm256_unpacklo_epi64(v0l, v1h); // 0 1 2 3
         let v1 = mm256_unpackhi_epi64(v0l, v1h); // 0 1 2 3
@@ -175,10 +160,7 @@ pub(crate) fn store_block<const RATE: usize>(s: &[Vec256; 25], out: &mut [&mut [
 }
 
 #[inline(always)]
-pub(crate) fn store_block_full<const RATE: usize>(
-    state: &[Vec256; 25],
-    out: &mut [[u8; 200]; 4],
-) {
+pub(crate) fn store_block_full<const RATE: usize>(state: &[Vec256; 25], out: &mut [[u8; 200]; 4]) {
     let (out0, rest) = out.split_at_mut(1);
     let (out1, rest) = rest.split_at_mut(1);
     let (out2, out3) = rest.split_at_mut(1);
@@ -229,11 +211,7 @@ impl KeccakItem<4> for Vec256 {
         mm256_xor_si256(a, b)
     }
     #[inline(always)]
-    fn load_block<const RATE: usize>(
-        state: &mut [Self; 25],
-        blocks: &[&[u8]; 4],
-        start: usize,
-    ) {
+    fn load_block<const RATE: usize>(state: &mut [Self; 25], blocks: &[&[u8]; 4], start: usize) {
         load_block::<RATE>(state, blocks, start)
     }
     #[inline(always)]

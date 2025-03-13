@@ -1,6 +1,6 @@
 use libcrux_intrinsics::arm64::*;
 
-use crate::traits::{get_ij, set_ij, internal::KeccakItem};
+use crate::traits::{get_ij, internal::KeccakItem, set_ij};
 
 #[allow(non_camel_case_types)]
 pub type uint64x2_t = _uint64x2_t;
@@ -52,8 +52,18 @@ pub(crate) fn load_block<const RATE: usize>(
         let j0 = (2 * i) % 5;
         let i1 = (2 * i + 1) / 5;
         let j1 = (2 * i + 1) % 5;
-        set_ij(s, i0, j0, _veorq_u64(get_ij(s, i0, j0), _vtrn1q_u64(v0, v1)));
-        set_ij(s, i1, j1, _veorq_u64(get_ij(s, i1, j1), _vtrn2q_u64(v0, v1)));
+        set_ij(
+            s,
+            i0,
+            j0,
+            _veorq_u64(get_ij(s, i0, j0), _vtrn1q_u64(v0, v1)),
+        );
+        set_ij(
+            s,
+            i1,
+            j1,
+            _veorq_u64(get_ij(s, i1, j1), _vtrn2q_u64(v0, v1)),
+        );
     }
     if RATE % 16 != 0 {
         let i = RATE / 8 - 1;
@@ -82,14 +92,8 @@ pub(crate) fn store_block<const RATE: usize>(s: &[uint64x2_t; 25], out: &mut [&m
         let j0 = (2 * i) % 5;
         let i1 = (2 * i + 1) / 5;
         let j1 = (2 * i + 1) % 5;
-        let v0 = _vtrn1q_u64(
-            get_ij(s, i0, j0),
-            get_ij(s, i1, j1)
-        );
-        let v1 = _vtrn2q_u64(
-            get_ij(s, i0, j0),
-            get_ij(s, i1, j1)
-        );
+        let v0 = _vtrn1q_u64(get_ij(s, i0, j0), get_ij(s, i1, j1));
+        let v1 = _vtrn2q_u64(get_ij(s, i0, j0), get_ij(s, i1, j1));
         _vst1q_bytes_u64(&mut out[0][16 * i..16 * (i + 1)], v0);
         _vst1q_bytes_u64(&mut out[1][16 * i..16 * (i + 1)], v1);
     }
@@ -104,10 +108,7 @@ pub(crate) fn store_block<const RATE: usize>(s: &[uint64x2_t; 25], out: &mut [&m
 }
 
 #[inline(always)]
-pub(crate) fn store_block_full<const RATE: usize>(
-    s: &[uint64x2_t; 25],
-    out: &mut [[u8; 200]; 2],
-) {
+pub(crate) fn store_block_full<const RATE: usize>(s: &[uint64x2_t; 25], out: &mut [[u8; 200]; 2]) {
     let (out0, out1) = out.split_at_mut(1);
 
     store_block::<RATE>(s, &mut [&mut out0[0], &mut out1[0]]);
@@ -151,11 +152,7 @@ impl KeccakItem<2> for uint64x2_t {
         _veorq_u64(a, b)
     }
     #[inline(always)]
-    fn load_block<const RATE: usize>(
-        state: &mut [Self; 25],
-        blocks: &[&[u8]; 2],
-        start: usize,
-    ) {
+    fn load_block<const RATE: usize>(state: &mut [Self; 25], blocks: &[&[u8]; 2], start: usize) {
         load_block::<RATE>(state, blocks, start)
     }
     #[inline(always)]

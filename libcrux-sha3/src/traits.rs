@@ -5,11 +5,20 @@ pub trait KeccakStateItem<const N: usize>: internal::KeccakItem<N> {}
 // Implement the public trait for all items.
 impl<const N: usize, T: internal::KeccakItem<N>> KeccakStateItem<N> for T {}
 
-pub(crate) fn get_ij<const N: usize, T:KeccakStateItem<N>>(arr: &[T; 25], i: usize, j: usize) -> T {
+pub(crate) fn get_ij<const N: usize, T: KeccakStateItem<N>>(
+    arr: &[T; 25],
+    i: usize,
+    j: usize,
+) -> T {
     arr[5 * j + i]
 }
 
-pub(crate) fn set_ij<const N: usize, T:KeccakStateItem<N>>(arr: &mut [T; 25], i: usize, j: usize, v: T) {
+pub(crate) fn set_ij<const N: usize, T: KeccakStateItem<N>>(
+    arr: &mut [T; 25],
+    i: usize,
+    j: usize,
+    v: T,
+) {
     arr[5 * j + i] = v;
 }
 
@@ -23,11 +32,7 @@ pub(crate) mod internal {
         fn and_not_xor(a: Self, b: Self, c: Self) -> Self;
         fn xor_constant(a: Self, c: u64) -> Self;
         fn xor(a: Self, b: Self) -> Self;
-        fn load_block<const RATE: usize>(
-            state: &mut [Self; 25],
-            blocks: &[&[u8]; N],
-            start: usize,
-        );
+        fn load_block<const RATE: usize>(state: &mut [Self; 25], blocks: &[&[u8]; N], start: usize);
         fn store_block<const RATE: usize>(state: &[Self; 25], blocks: &mut [&mut [u8]; N]);
         fn load_block_full<const RATE: usize>(
             state: &mut [Self; 25],
