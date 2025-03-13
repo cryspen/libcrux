@@ -1,6 +1,6 @@
 use libcrux_intrinsics::arm64::*;
 
-use crate::traits::internal::KeccakItem;
+use crate::traits::{get_ij, set_ij, internal::KeccakItem};
 
 #[allow(non_camel_case_types)]
 pub type uint64x2_t = _uint64x2_t;
@@ -48,10 +48,12 @@ pub(crate) fn load_block<const RATE: usize>(
         let start = offset + 16 * i;
         let v0 = _vld1q_bytes_u64(&blocks[0][start..start + 16]);
         let v1 = _vld1q_bytes_u64(&blocks[1][start..start + 16]);
-        let idx0 = 5 * ((2 * i) % 5) + ((2 * i) / 5);
-        let idx1 = 5 * ((2 * i + 1) % 5) + ((2 * i + 1) / 5);
-        s[idx0] = _veorq_u64(s[idx0], _vtrn1q_u64(v0, v1));
-        s[idx1] = _veorq_u64(s[idx1], _vtrn2q_u64(v0, v1));
+        let i0 = (2 * i) / 5;
+        let j0 = (2 * i) % 5;
+        let i1 = (2 * i + 1) / 5;
+        let j1 = (2 * i + 1) % 5;
+        set_ij(s, i0, j0, _veorq_u64(get_ij(s, i0, j0), _vtrn1q_u64(v0, v1)));
+        set_ij(s, i1, j1, _veorq_u64(get_ij(s, i1, j1), _vtrn2q_u64(v0, v1)));
     }
     if RATE % 16 != 0 {
         let i = RATE / 8 - 1;
@@ -60,7 +62,7 @@ pub(crate) fn load_block<const RATE: usize>(
         u[0] = u64::from_le_bytes(blocks[0][start..start + 8].try_into().unwrap());
         u[1] = u64::from_le_bytes(blocks[1][start..start + 8].try_into().unwrap());
         let uvec = _vld1q_u64(&u);
-        s[i] = _veorq_u64(s[5 * (i % 5) + (i / 5)], uvec);
+        set_ij(s, i / 5, i % 5, _veorq_u64(get_ij(s, i / 5, i % 5), uvec));
     }
 }
 
@@ -76,15 +78,17 @@ pub(crate) fn load_block_full<const RATE: usize>(
 #[inline(always)]
 pub(crate) fn store_block<const RATE: usize>(s: &[uint64x2_t; 25], out: &mut [&mut [u8]; 2]) {
     for i in 0..RATE / 16 {
-        let idx0 = 5 * ((2 * i) % 5) + ((2 * i) / 5);
-        let idx1 = 5 * ((2 * i + 1) % 5) + ((2 * i + 1) / 5);
+        let i0 = (2 * i) / 5;
+        let j0 = (2 * i) % 5;
+        let i1 = (2 * i + 1) / 5;
+        let j1 = (2 * i + 1) % 5;
         let v0 = _vtrn1q_u64(
-            s[idx0],
-            s[idx1],
+            get_ij(s, i0, j0),
+            get_ij(s, i1, j1)
         );
         let v1 = _vtrn2q_u64(
-            s[idx0],
-            s[idx1],
+            get_ij(s, i0, j0),
+            get_ij(s, i1, j1)
         );
         _vst1q_bytes_u64(&mut out[0][16 * i..16 * (i + 1)], v0);
         _vst1q_bytes_u64(&mut out[1][16 * i..16 * (i + 1)], v1);
@@ -93,7 +97,7 @@ pub(crate) fn store_block<const RATE: usize>(s: &[uint64x2_t; 25], out: &mut [&m
         debug_assert!(RATE % 8 == 0);
         let i = RATE / 8 - 1;
         let mut u = [0u8; 16];
-        _vst1q_bytes_u64(&mut u, s[5 * (i % 5) + (i / 5)]);
+        _vst1q_bytes_u64(&mut u, get_ij(s, i / 5, i % 5));
         out[0][RATE - 8..RATE].copy_from_slice(&u[0..8]);
         out[1][RATE - 8..RATE].copy_from_slice(&u[8..16]);
     }
