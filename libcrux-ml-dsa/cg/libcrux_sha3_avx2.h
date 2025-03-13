@@ -4,19 +4,15 @@
  * SPDX-License-Identifier: MIT or Apache-2.0
  *
  * This code was generated with the following revisions:
- * Charon: a8f2211d1b95e0462a96382023b164a4116c7ca4
- * Eurydice: 788c5abefac3a9c7f79abae6a30fa8558e39764c
- * Karamel: 1d81d757d5d9e16dd6463ccc72324e587c707959
- * F*: b0961063393215ca65927f017720cb365a193833-dirty
- * Libcrux: 1c4e2cbb4bc08f93cca04e22245f2b25dcb23d83
+ * Charon: d250df809d9b0fa1bddac2055794620e87f435cc
+ * Eurydice: 574bc5d60d562a5b513bd8d09e36fac0b6a111d3
+ * Karamel: 5e16cd5abf3f2323b0d27e3070ec2974657a391b
+ * F*: 4b3fc11774003a6ff7c09500ecb5f0145ca6d862
+ * Libcrux: 40755e06b5ac176a1a8cfe5fa12adead07c1aef7
  */
 
 #ifndef __libcrux_sha3_avx2_H
 #define __libcrux_sha3_avx2_H
-
-#if defined(__cplusplus)
-extern "C" {
-#endif
 
 #include "eurydice_glue.h"
 #include "intrinsics/libcrux_intrinsics_avx2.h"
@@ -2071,7 +2067,7 @@ libcrux_sha3_generic_keccak_squeeze_first_and_last_97(
     Eurydice_slice_copy(
         uu____0,
         Eurydice_array_to_subslice((size_t)200U, uu____1, lit, uint8_t,
-                                   core_ops_range_Range_08),
+                                   core_ops_range_Range_08, __builtin_slice_t),
         uint8_t);
   }
 }
@@ -2141,7 +2137,7 @@ static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_squeeze_last_97(
     Eurydice_slice_copy(
         uu____0,
         Eurydice_array_to_subslice((size_t)200U, uu____1, lit, uint8_t,
-                                   core_ops_range_Range_08),
+                                   core_ops_range_Range_08, __builtin_slice_t),
         uint8_t);
   }
 }
@@ -2183,12 +2179,11 @@ static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_keccak_fb(
     memcpy(o1, uu____2.snd, (size_t)4U * sizeof(Eurydice_slice));
     libcrux_sha3_generic_keccak_squeeze_first_block_97(&s, o0);
     core_ops_range_Range_08 iter =
-        core_iter_traits_collect___core__iter__traits__collect__IntoIterator_for_I__1__into_iter(
-            (CLITERAL(core_ops_range_Range_08){.start = (size_t)1U,
-                                               .end = blocks}),
-            core_ops_range_Range_08, core_ops_range_Range_08);
+        core_iter_traits_collect___core__iter__traits__collect__IntoIterator_Clause1_Item__I__for_I__1__into_iter(
+            (core_ops_range_Range_08{(size_t)1U, blocks}),
+            core_ops_range_Range_08, size_t, core_ops_range_Range_08);
     while (true) {
-      if (core_iter_range___core__iter__traits__iterator__Iterator_for_core__ops__range__Range_A__TraitClause_0___6__next(
+      if (core_iter_range___core__iter__traits__iterator__Iterator_A__for_core__ops__range__Range_A__TraitClause_0___6__next(
               &iter, size_t, Option_08)
               .tag == None) {
         break;
@@ -2516,10 +2511,6 @@ libcrux_sha3_avx2_x4_incremental_shake128_squeeze_first_three_blocks(
   Eurydice_slice buf[4U] = {out0, out1, out2, out3};
   libcrux_sha3_generic_keccak_squeeze_first_three_blocks_97(s, buf);
 }
-
-#if defined(__cplusplus)
-}
-#endif
 
 #define __libcrux_sha3_avx2_H_DEFINED
 #endif
