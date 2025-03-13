@@ -95,7 +95,7 @@ pub(crate) fn load_block<const RATE: usize>(
         u8s[24..32].copy_from_slice(&blocks[3][start + 8..start + 16]);
         let u = mm256_loadu_si256_u8(u8s.as_slice());
         let i = 5 * ((4 * (RATE / 32) + 1) % 5) + ((4 * (RATE / 32) + 1) / 5);
-        state[i][j] = mm256_xor_si256(state[i], u);
+        state[i] = mm256_xor_si256(state[i], u);
     }
 }
 
