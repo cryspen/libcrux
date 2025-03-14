@@ -1,8 +1,6 @@
 //! The generic SHA3 implementation that uses portable or platform specific
 //! sub-routines.
 
-use core::ops::Index;
-
 use crate::traits::*;
 
 #[cfg_attr(hax, hax_lib::opaque)]
