@@ -5,6 +5,7 @@ pub trait KeccakStateItem<const N: usize>: internal::KeccakItem<N> {}
 // Implement the public trait for all items.
 impl<const N: usize, T: internal::KeccakItem<N>> KeccakStateItem<N> for T {}
 
+#[inline(always)]
 pub(crate) fn get_ij<const N: usize, T: KeccakStateItem<N>>(
     arr: &[T; 25],
     i: usize,
@@ -13,6 +14,7 @@ pub(crate) fn get_ij<const N: usize, T: KeccakStateItem<N>>(
     arr[5 * j + i]
 }
 
+#[inline(always)]
 pub(crate) fn set_ij<const N: usize, T: KeccakStateItem<N>>(
     arr: &mut [T; 25],
     i: usize,

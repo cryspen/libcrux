@@ -178,6 +178,7 @@ impl KeccakItem<2> for uint64x2_t {
     }
 
     // TODO: Do we need this, or not? cf. https://github.com/cryspen/libcrux/issues/482
+    #[inline(always)]
     fn store<const RATE: usize>(_state: &[Self; 25], _out: [&mut [u8]; 2]) {
         todo!()
     }

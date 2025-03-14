@@ -10,9 +10,12 @@ pub(crate) struct KeccakState<const N: usize, T: KeccakStateItem<N>> {
 }
 
 impl<const N: usize, T: KeccakStateItem<N>> KeccakState<N, T> {
+    #[inline(always)]
     fn get(&self, i: usize, j: usize) -> T {
         get_ij(&self.st, i, j)
     }
+
+    #[inline(always)]
     fn set(&mut self, i: usize, j: usize, v: T) {
         set_ij(&mut self.st, i, j, v);
     }
@@ -52,11 +55,13 @@ impl<const PARALLEL_LANES: usize, const RATE: usize, STATE: KeccakStateItem<PARA
     KeccakXofState<PARALLEL_LANES, RATE, STATE>
 {
     /// An all zero block
+    #[inline(always)]
     pub(crate) const fn zero_block() -> [u8; RATE] {
         [0u8; RATE]
     }
 
     /// Generate a new keccak xof state.
+    #[inline(always)]
     pub(crate) fn new() -> Self {
         Self {
             inner: KeccakState::new(),
@@ -95,6 +100,7 @@ impl<const PARALLEL_LANES: usize, const RATE: usize, STATE: KeccakStateItem<PARA
         }
     }
 
+    #[inline(always)]
     fn absorb_full(&mut self, inputs: &[&[u8]; PARALLEL_LANES]) -> usize {
         debug_assert!(PARALLEL_LANES > 0);
         debug_assert!(self.buf_len < RATE);
@@ -143,6 +149,7 @@ impl<const PARALLEL_LANES: usize, const RATE: usize, STATE: KeccakStateItem<PARA
     /// content to consume, and `0` otherwise.
     /// If `consumed > 0` is returned, `self.buf` contains a full block to be
     /// loaded.
+    #[inline(always)]
     fn fill_buffer(&mut self, inputs: &[&[u8]; PARALLEL_LANES]) -> usize {
         let input_len = inputs[0].len();
         let mut consumed = 0;
