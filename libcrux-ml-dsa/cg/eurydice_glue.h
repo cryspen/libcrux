@@ -235,34 +235,11 @@ static inline uint8_t core_num__u8_6__wrapping_sub(uint8_t x, uint8_t y) {
 
 // ITERATORS
 
-#if defined(__cplusplus)
-// Get C++ struct initialization as an expression
-template <typename Type>
-static inline Type mk(Type value) {
-  return value;
-}
-
-template <typename Type, typename SizeType>
-static inline Type iter_next(SizeType &start, SizeType end) {
-  if (start >= end) {
-    return mk<Type>({0, 0});  // XXX: None
-  } else {
-    return mk<Type>({1, start++});  // XXX: Some
-  }
-}
-
-#define Eurydice_range_iter_next(iter_ptr, t, ret_t) \
-  iter_next<ret_t, t>((iter_ptr)->start, (iter_ptr)->end)
-
-#else
-
-#define Eurydice_range_iter_next(iter_ptr, t, ret_t)                 \
-  (((iter_ptr)->start >= (iter_ptr)->end)                            \
-       ? CLITERAL(ret_t, CFIELDS({CFIELD(.tag, 0), CFIELD(.f0, 0)})) \
-       : CLITERAL(ret_t, CFIELDS({CFIELD(.tag, 1),                   \
-                                  CFIELD(.f0, (iter_ptr)->start++)})))
-
-#endif
+#define Eurydice_range_iter_next(iter_ptr, t, ret_t)          \
+  (((iter_ptr)->start >= (iter_ptr)->end)                     \
+       ? (CLITERAL(ret_t){CFIELD(.tag =) 0, CFIELD(.f0 =) 0}) \
+       : (CLITERAL(ret_t){CFIELD(.tag =) 1,                   \
+                          CFIELD(.f0 =)(iter_ptr)->start++}))
 
 #define core_iter_range___core__iter__traits__iterator__Iterator_A__for_core__ops__range__Range_A__TraitClause_0___6__next \
   Eurydice_range_iter_next
