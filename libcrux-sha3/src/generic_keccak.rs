@@ -8,14 +8,15 @@ use crate::traits::*;
 #[cfg_attr(hax, hax_lib::opaque)]
 #[derive(Clone, Copy)]
 pub(crate) struct KeccakState<const N: usize, T: KeccakStateItem<N>> {
-    st: [[T; 5]; 5],
+    st: [T; 25],
 }
 
-impl<const N: usize, T: KeccakStateItem<N>> Index<usize> for KeccakState<N, T> {
-    type Output = [T; 5];
-
-    fn index(&self, index: usize) -> &Self::Output {
-        &self.st[index]
+impl<const N: usize, T: KeccakStateItem<N>> KeccakState<N, T> {
+    fn get(&self, i: usize, j: usize) -> T {
+        get_ij(&self.st, i, j)
+    }
+    fn set(&mut self, i: usize, j: usize, v: T) {
+        set_ij(&mut self.st, i, j, v);
     }
 }
 
@@ -24,7 +25,7 @@ impl<const N: usize, T: KeccakStateItem<N>> KeccakState<N, T> {
     #[inline(always)]
     pub(crate) fn new() -> Self {
         Self {
-            st: [[T::zero(); 5]; 5],
+            st: [T::zero(); 25],
         }
     }
 }
@@ -240,11 +241,41 @@ const _ROTC: [usize; 24] = [
 #[inline(always)]
 pub(crate) fn theta_rho<const N: usize, T: KeccakStateItem<N>>(s: &mut KeccakState<N, T>) {
     let c: [T; 5] = [
-        T::xor5(s.st[0][0], s.st[1][0], s.st[2][0], s.st[3][0], s.st[4][0]),
-        T::xor5(s.st[0][1], s.st[1][1], s.st[2][1], s.st[3][1], s.st[4][1]),
-        T::xor5(s.st[0][2], s.st[1][2], s.st[2][2], s.st[3][2], s.st[4][2]),
-        T::xor5(s.st[0][3], s.st[1][3], s.st[2][3], s.st[3][3], s.st[4][3]),
-        T::xor5(s.st[0][4], s.st[1][4], s.st[2][4], s.st[3][4], s.st[4][4]),
+        T::xor5(
+            s.get(0, 0),
+            s.get(1, 0),
+            s.get(2, 0),
+            s.get(3, 0),
+            s.get(4, 0),
+        ),
+        T::xor5(
+            s.get(0, 1),
+            s.get(1, 1),
+            s.get(2, 1),
+            s.get(3, 1),
+            s.get(4, 1),
+        ),
+        T::xor5(
+            s.get(0, 2),
+            s.get(1, 2),
+            s.get(2, 2),
+            s.get(3, 2),
+            s.get(4, 2),
+        ),
+        T::xor5(
+            s.get(0, 3),
+            s.get(1, 3),
+            s.get(2, 3),
+            s.get(3, 3),
+            s.get(4, 3),
+        ),
+        T::xor5(
+            s.get(0, 4),
+            s.get(1, 4),
+            s.get(2, 4),
+            s.get(3, 4),
+            s.get(4, 4),
+        ),
     ];
     #[allow(clippy::identity_op)]
     let t: [T; 5] = [
@@ -255,35 +286,35 @@ pub(crate) fn theta_rho<const N: usize, T: KeccakStateItem<N>>(s: &mut KeccakSta
         T::rotate_left1_and_xor(c[(4 + 4) % 5], c[(4 + 1) % 5]),
     ];
 
-    s.st[0][0] = T::xor(s.st[0][0], t[0]);
-    s.st[1][0] = T::xor_and_rotate::<36, 28>(s.st[1][0], t[0]);
-    s.st[2][0] = T::xor_and_rotate::<3, 61>(s.st[2][0], t[0]);
-    s.st[3][0] = T::xor_and_rotate::<41, 23>(s.st[3][0], t[0]);
-    s.st[4][0] = T::xor_and_rotate::<18, 46>(s.st[4][0], t[0]);
+    s.set(0, 0, T::xor(s.get(0, 0), t[0]));
+    s.set(1, 0, T::xor_and_rotate::<36, 28>(s.get(1, 0), t[0]));
+    s.set(2, 0, T::xor_and_rotate::<3, 61>(s.get(2, 0), t[0]));
+    s.set(3, 0, T::xor_and_rotate::<41, 23>(s.get(3, 0), t[0]));
+    s.set(4, 0, T::xor_and_rotate::<18, 46>(s.get(4, 0), t[0]));
 
-    s.st[0][1] = T::xor_and_rotate::<1, 63>(s.st[0][1], t[1]);
-    s.st[1][1] = T::xor_and_rotate::<44, 20>(s.st[1][1], t[1]);
-    s.st[2][1] = T::xor_and_rotate::<10, 54>(s.st[2][1], t[1]);
-    s.st[3][1] = T::xor_and_rotate::<45, 19>(s.st[3][1], t[1]);
-    s.st[4][1] = T::xor_and_rotate::<2, 62>(s.st[4][1], t[1]);
+    s.set(0, 1, T::xor_and_rotate::<1, 63>(s.get(0, 1), t[1]));
+    s.set(1, 1, T::xor_and_rotate::<44, 20>(s.get(1, 1), t[1]));
+    s.set(2, 1, T::xor_and_rotate::<10, 54>(s.get(2, 1), t[1]));
+    s.set(3, 1, T::xor_and_rotate::<45, 19>(s.get(3, 1), t[1]));
+    s.set(4, 1, T::xor_and_rotate::<2, 62>(s.get(4, 1), t[1]));
 
-    s.st[0][2] = T::xor_and_rotate::<62, 2>(s.st[0][2], t[2]);
-    s.st[1][2] = T::xor_and_rotate::<6, 58>(s.st[1][2], t[2]);
-    s.st[2][2] = T::xor_and_rotate::<43, 21>(s.st[2][2], t[2]);
-    s.st[3][2] = T::xor_and_rotate::<15, 49>(s.st[3][2], t[2]);
-    s.st[4][2] = T::xor_and_rotate::<61, 3>(s.st[4][2], t[2]);
+    s.set(0, 2, T::xor_and_rotate::<62, 2>(s.get(0, 2), t[2]));
+    s.set(1, 2, T::xor_and_rotate::<6, 58>(s.get(1, 2), t[2]));
+    s.set(2, 2, T::xor_and_rotate::<43, 21>(s.get(2, 2), t[2]));
+    s.set(3, 2, T::xor_and_rotate::<15, 49>(s.get(3, 2), t[2]));
+    s.set(4, 2, T::xor_and_rotate::<61, 3>(s.get(4, 2), t[2]));
 
-    s.st[0][3] = T::xor_and_rotate::<28, 36>(s.st[0][3], t[3]);
-    s.st[1][3] = T::xor_and_rotate::<55, 9>(s.st[1][3], t[3]);
-    s.st[2][3] = T::xor_and_rotate::<25, 39>(s.st[2][3], t[3]);
-    s.st[3][3] = T::xor_and_rotate::<21, 43>(s.st[3][3], t[3]);
-    s.st[4][3] = T::xor_and_rotate::<56, 8>(s.st[4][3], t[3]);
+    s.set(0, 3, T::xor_and_rotate::<28, 36>(s.get(0, 3), t[3]));
+    s.set(1, 3, T::xor_and_rotate::<55, 9>(s.get(1, 3), t[3]));
+    s.set(2, 3, T::xor_and_rotate::<25, 39>(s.get(2, 3), t[3]));
+    s.set(3, 3, T::xor_and_rotate::<21, 43>(s.get(3, 3), t[3]));
+    s.set(4, 3, T::xor_and_rotate::<56, 8>(s.get(4, 3), t[3]));
 
-    s.st[0][4] = T::xor_and_rotate::<27, 37>(s.st[0][4], t[4]);
-    s.st[1][4] = T::xor_and_rotate::<20, 44>(s.st[1][4], t[4]);
-    s.st[2][4] = T::xor_and_rotate::<39, 25>(s.st[2][4], t[4]);
-    s.st[3][4] = T::xor_and_rotate::<8, 56>(s.st[3][4], t[4]);
-    s.st[4][4] = T::xor_and_rotate::<14, 50>(s.st[4][4], t[4]);
+    s.set(0, 4, T::xor_and_rotate::<27, 37>(s.get(0, 4), t[4]));
+    s.set(1, 4, T::xor_and_rotate::<20, 44>(s.get(1, 4), t[4]));
+    s.set(2, 4, T::xor_and_rotate::<39, 25>(s.get(2, 4), t[4]));
+    s.set(3, 4, T::xor_and_rotate::<8, 56>(s.get(3, 4), t[4]));
+    s.set(4, 4, T::xor_and_rotate::<14, 50>(s.get(4, 4), t[4]));
 }
 
 const _PI: [usize; 24] = [
@@ -292,41 +323,49 @@ const _PI: [usize; 24] = [
 
 #[inline(always)]
 pub(crate) fn pi<const N: usize, T: KeccakStateItem<N>>(s: &mut KeccakState<N, T>) {
-    let old = s.st;
-    s.st[0][1] = old[1][1];
-    s.st[0][2] = old[2][2];
-    s.st[0][3] = old[3][3];
-    s.st[0][4] = old[4][4];
-    s.st[1][0] = old[0][3];
-    s.st[1][1] = old[1][4];
-    s.st[1][2] = old[2][0];
-    s.st[1][3] = old[3][1];
-    s.st[1][4] = old[4][2];
-    s.st[2][0] = old[0][1];
-    s.st[2][1] = old[1][2];
-    s.st[2][2] = old[2][3];
-    s.st[2][3] = old[3][4];
-    s.st[2][4] = old[4][0];
-    s.st[3][0] = old[0][4];
-    s.st[3][1] = old[1][0];
-    s.st[3][2] = old[2][1];
-    s.st[3][3] = old[3][2];
-    s.st[3][4] = old[4][3];
-    s.st[4][0] = old[0][2];
-    s.st[4][1] = old[1][3];
-    s.st[4][2] = old[2][4];
-    s.st[4][3] = old[3][0];
-    s.st[4][4] = old[4][1];
+    let old = s.clone();
+    s.set(1, 0, old.get(0, 3));
+    s.set(2, 0, old.get(0, 1));
+    s.set(3, 0, old.get(0, 4));
+    s.set(4, 0, old.get(0, 2));
+    s.set(0, 1, old.get(1, 1));
+    s.set(1, 1, old.get(1, 4));
+    s.set(2, 1, old.get(1, 2));
+    s.set(3, 1, old.get(1, 0));
+    s.set(4, 1, old.get(1, 3));
+    s.set(0, 2, old.get(2, 2));
+    s.set(1, 2, old.get(2, 0));
+    s.set(2, 2, old.get(2, 3));
+    s.set(3, 2, old.get(2, 1));
+    s.set(4, 2, old.get(2, 4));
+    s.set(0, 3, old.get(3, 3));
+    s.set(1, 3, old.get(3, 1));
+    s.set(2, 3, old.get(3, 4));
+    s.set(3, 3, old.get(3, 2));
+    s.set(4, 3, old.get(3, 0));
+    s.set(0, 4, old.get(4, 4));
+    s.set(1, 4, old.get(4, 2));
+    s.set(2, 4, old.get(4, 0));
+    s.set(3, 4, old.get(4, 3));
+    s.set(4, 4, old.get(4, 1));
 }
 
 #[inline(always)]
 pub(crate) fn chi<const N: usize, T: KeccakStateItem<N>>(s: &mut KeccakState<N, T>) {
-    let old = s.st;
+    let old = s.clone();
 
     #[allow(clippy::needless_range_loop)]
     for i in 0..5 {
         for j in 0..5 {
-            s.st[i][j] = T::and_not_xor(s.st[i][j], old[i][(j + 2) % 5], old[i][(j + 1) % 5]);
+            s.set(
+                i,
+                j,
+                T::and_not_xor(
+                    s.get(i, j),
+                    old.get(i, (j + 2) % 5),
+                    old.get(i, (j + 1) % 5),
+                ),
+            );
         }
     }
 }
@@ -360,7 +399,7 @@ const ROUNDCONSTANTS: [u64; 24] = [
 
 #[inline(always)]
 pub(crate) fn iota<const N: usize, T: KeccakStateItem<N>>(s: &mut KeccakState<N, T>, i: usize) {
-    s.st[0][0] = T::xor_constant(s.st[0][0], ROUNDCONSTANTS[i]);
+    s.set(0, 0, T::xor_constant(s.get(0, 0), ROUNDCONSTANTS[i]));
 }
 
 #[inline(always)]

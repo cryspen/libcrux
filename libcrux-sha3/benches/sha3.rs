@@ -19,7 +19,7 @@ pub fn fmt(x: usize) -> String {
 }
 
 macro_rules! impl_comp {
-    ($fun:ident, $libcrux:expr, $neon_fun:ident) => {
+    ($fun:ident, $libcrux:expr, $rust_fun:ident) => {
         // Comparing libcrux performance for different payload sizes and other implementations.
         fn $fun(c: &mut Criterion) {
             const PAYLOAD_SIZES: [usize; 3] = [128, 1024, 1024 * 1024 * 10];
@@ -43,6 +43,21 @@ macro_rules! impl_comp {
                     },
                 );
 
+                group.bench_with_input(
+                    BenchmarkId::new("rust version (portable)", fmt(*payload_size)),
+                    payload_size,
+                    |b, payload_size| {
+                        b.iter_batched(
+                            || randombytes(*payload_size),
+                            |payload| {
+                                let mut digest = [0u8; digest_size($libcrux)];
+                                portable::$rust_fun(&mut digest, &payload);
+                            },
+                            BatchSize::SmallInput,
+                        )
+                    },
+                );
+
                 #[cfg(all(feature = "simd128", target_arch = "aarch64"))]
                 group.bench_with_input(
                     BenchmarkId::new("rust version (simd128)", fmt(*payload_size)),
@@ -52,22 +67,7 @@ macro_rules! impl_comp {
                             || randombytes(*payload_size),
                             |payload| {
                                 let mut digest = [0u8; digest_size($libcrux)];
-                                neon::$neon_fun(&mut digest, &payload);
-                            },
-                            BatchSize::SmallInput,
-                        )
-                    },
-                );
-
-                group.bench_with_input(
-                    BenchmarkId::new("rust version (portable)", fmt(*payload_size)),
-                    payload_size,
-                    |b, payload_size| {
-                        b.iter_batched(
-                            || randombytes(*payload_size),
-                            |payload| {
-                                let mut digest = [0u8; digest_size($libcrux)];
-                                portable::$neon_fun(&mut digest, &payload);
+                                neon::$rust_fun(&mut digest, &payload);
                             },
                             BatchSize::SmallInput,
                         )

@@ -1,6 +1,6 @@
 //! A portable SHA3 implementation using the generic implementation.
 
-use crate::traits::internal::*;
+use crate::traits::{internal::*, *};
 
 #[inline(always)]
 fn rotate_left<const LEFT: i32, const RIGHT: i32>(x: u64) -> u64 {
@@ -34,11 +34,7 @@ fn _veorq_n_u64(a: u64, c: u64) -> u64 {
 }
 
 #[inline(always)]
-pub(crate) fn load_block<const RATE: usize>(
-    state: &mut [[u64; 5]; 5],
-    blocks: &[u8],
-    start: usize,
-) {
+pub(crate) fn load_block<const RATE: usize>(state: &mut [u64; 25], blocks: &[u8], start: usize) {
     debug_assert!(RATE <= blocks.len() && RATE % 8 == 0);
     let mut state_flat = [0u64; 25];
     for i in 0..RATE / 8 {
@@ -46,13 +42,18 @@ pub(crate) fn load_block<const RATE: usize>(
         state_flat[i] = u64::from_le_bytes(blocks[offset..offset + 8].try_into().unwrap());
     }
     for i in 0..RATE / 8 {
-        state[i / 5][i % 5] ^= state_flat[i];
+        set_ij(
+            state,
+            i / 5,
+            i % 5,
+            get_ij(state, i / 5, i % 5) ^ state_flat[i],
+        );
     }
 }
 
 #[inline(always)]
 pub(crate) fn load_block_full<const RATE: usize>(
-    state: &mut [[u64; 5]; 5],
+    state: &mut [u64; 25],
     blocks: &[u8; 200],
     start: usize,
 ) {
@@ -60,14 +61,14 @@ pub(crate) fn load_block_full<const RATE: usize>(
 }
 
 #[inline(always)]
-pub(crate) fn store_block<const RATE: usize>(s: &[[u64; 5]; 5], out: &mut [u8]) {
+pub(crate) fn store_block<const RATE: usize>(s: &[u64; 25], out: &mut [u8]) {
     for i in 0..RATE / 8 {
-        out[8 * i..8 * i + 8].copy_from_slice(&s[i / 5][i % 5].to_le_bytes());
+        out[8 * i..8 * i + 8].copy_from_slice(&get_ij(s, i / 5, i % 5).to_le_bytes());
     }
 }
 
 #[inline(always)]
-pub(crate) fn store_block_full<const RATE: usize>(s: &[[u64; 5]; 5], out: &mut [u8; 200]) {
+pub(crate) fn store_block_full<const RATE: usize>(s: &[u64; 25], out: &mut [u8; 200]) {
     store_block::<RATE>(s, out);
 }
 
@@ -106,27 +107,23 @@ impl KeccakItem<1> for u64 {
         a ^ b
     }
     #[inline(always)]
-    fn load_block<const RATE: usize>(
-        state: &mut [[Self; 5]; 5],
-        blocks: &[&[u8]; 1],
-        start: usize,
-    ) {
+    fn load_block<const RATE: usize>(state: &mut [Self; 25], blocks: &[&[u8]; 1], start: usize) {
         load_block::<RATE>(state, blocks[0], start)
     }
     #[inline(always)]
-    fn store_block<const RATE: usize>(state: &[[Self; 5]; 5], out: &mut [&mut [u8]; 1]) {
+    fn store_block<const RATE: usize>(state: &[Self; 25], out: &mut [&mut [u8]; 1]) {
         store_block::<RATE>(state, out[0])
     }
     #[inline(always)]
     fn load_block_full<const RATE: usize>(
-        state: &mut [[Self; 5]; 5],
+        state: &mut [Self; 25],
         blocks: &[[u8; 200]; 1],
         start: usize,
     ) {
         load_block_full::<RATE>(state, &blocks[0], start)
     }
     #[inline(always)]
-    fn store_block_full<const RATE: usize>(state: &[[Self; 5]; 5], out: &mut [[u8; 200]; 1]) {
+    fn store_block_full<const RATE: usize>(state: &[Self; 25], out: &mut [[u8; 200]; 1]) {
         store_block_full::<RATE>(state, &mut out[0]);
     }
 
@@ -138,18 +135,19 @@ impl KeccakItem<1> for u64 {
 
     /// `out` has the exact size we want here. It must be less than or equal to `RATE`.
     #[inline(always)]
-    fn store<const RATE: usize>(state: &[[Self; 5]; 5], out: [&mut [u8]; 1]) {
+    fn store<const RATE: usize>(state: &[Self; 25], out: [&mut [u8]; 1]) {
         debug_assert!(out.len() <= RATE / 8, "{} > {}", out.len(), RATE);
 
         let num_full_blocks = out[0].len() / 8;
         let last_block_len = out[0].len() % 8;
 
         for i in 0..num_full_blocks {
-            out[0][i * 8..i * 8 + 8].copy_from_slice(&state[i / 5][i % 5].to_le_bytes());
+            out[0][i * 8..i * 8 + 8].copy_from_slice(&get_ij(state, i / 5, i % 5).to_le_bytes());
         }
         if last_block_len != 0 {
             out[0][num_full_blocks * 8..num_full_blocks * 8 + last_block_len].copy_from_slice(
-                &state[num_full_blocks / 5][num_full_blocks % 5].to_le_bytes()[0..last_block_len],
+                &get_ij(state, num_full_blocks / 5, num_full_blocks % 5).to_le_bytes()
+                    [0..last_block_len],
             );
         }
     }
