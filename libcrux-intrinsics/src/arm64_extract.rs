@@ -108,7 +108,10 @@ pub fn _vshrq_n_u64<const SHIFT_BY: i32>(v: _uint64x2_t) -> _uint64x2_t {
 }
 
 #[inline(always)]
-pub fn _vxarq_u64<const SHIFT_BY: i32>(a: _uint64x2_t, b: _uint64x2_t) -> _uint64x2_t {
+pub fn _vxarq_u64<const LEFT: i32, const RIGHT: i32>(
+    a: _uint64x2_t,
+    b: _uint64x2_t,
+) -> _uint64x2_t {
     unimplemented!()
 }
 
