@@ -5,10 +5,10 @@
  *
  * This code was generated with the following revisions:
  * Charon: a8f2211d1b95e0462a96382023b164a4116c7ca4
- * Eurydice: 788c5abefac3a9c7f79abae6a30fa8558e39764c
+ * Eurydice: 4111503836daed994790eb86758b838951677bf7
  * Karamel: 1d81d757d5d9e16dd6463ccc72324e587c707959
- * F*: b0961063393215ca65927f017720cb365a193833-dirty
- * Libcrux: 1c4e2cbb4bc08f93cca04e22245f2b25dcb23d83
+ * F*: 7cd06c5562fc47ec14cd35c38034d5558a5ff762
+ * Libcrux: d2ba0bfbce3af7552501b2d99d3ecea5ed3b2773
  */
 
 #ifndef __libcrux_mlkem_core_H
@@ -55,6 +55,8 @@ static inline uint16_t core_num__u16_7__wrapping_add(uint16_t x0, uint16_t x1);
 #define CORE_NUM__U32_8__BITS (32U)
 
 static inline uint64_t core_num__u64_9__from_le_bytes(uint8_t x0[8U]);
+
+static inline uint64_t core_num__u64_9__rotate_left(uint64_t x0, uint32_t x1);
 
 static inline void core_num__u64_9__to_le_bytes(uint64_t x0, uint8_t x1[8U]);
 
