@@ -25,10 +25,6 @@
 
 #if defined(__cplusplus)
 
-#ifndef KRML_HOST_EPRINTF
-#define KRML_HOST_EPRINTF(...) fprintf(stderr, __VA_ARGS__)
-#endif
-
 #include <utility>
 
 #ifndef __cpp_lib_type_identity
@@ -76,16 +72,16 @@ typedef struct {
 } Eurydice_slice;
 
 #if defined(__cplusplus)
-#define CLITERAL(type) type
+#define KRML_CLITERAL(type) type
 #else
-#define CLITERAL(type) (type)
+#define KRML_CLITERAL(type) (type)
 #endif
 
 #if defined(__cplusplus) && defined(__cpp_designated_initializers) || \
     !(defined(__cplusplus))
-#define CFIELD(X) X
+#define EURYDICE_CFIELD(X) X
 #else
-#define CFIELD(X)
+#define EURYDICE_CFIELD(X)
 #endif
 
 // Helper macro to create a slice out of a pointer x, a start index in x
@@ -93,7 +89,7 @@ typedef struct {
 // cast to something that can decay (see remark above about how pointer
 // arithmetic works in C), meaning either pointer or array type.
 #define EURYDICE_SLICE(x, start, end) \
-  (CLITERAL(Eurydice_slice){(void *)(x + start), end - start})
+  (KRML_CLITERAL(Eurydice_slice){(void *)(x + start), end - start})
 
 // Slice length
 #define EURYDICE_SLICE_LEN(s, _) (s).len
@@ -144,7 +140,7 @@ typedef struct {
   memcpy(dst.ptr, src.ptr, dst.len * sizeof(t))
 
 #define core_array___Array_T__N__23__as_slice(len_, ptr_, t, _ret_t) \
-  CLITERAL(Eurydice_slice) { ptr_, len_ }
+  KRML_CLITERAL(Eurydice_slice) { ptr_, len_ }
 
 #define core_array___core__clone__Clone_for__Array_T__N___20__clone( \
     len, src, dst, elem_type, _ret_t)                                \
@@ -161,22 +157,23 @@ typedef struct {
   Eurydice_array_eq(sz, a1, ((a2)->ptr), t, _)
 
 #define Eurydice_slice_split_at(slice, mid, element_type, ret_t)          \
-  CLITERAL(ret_t) {                                                       \
-    CFIELD(.fst =)                                                        \
+  KRML_CLITERAL(ret_t) {                                                  \
+    EURYDICE_CFIELD(.fst =)                                               \
     EURYDICE_SLICE((element_type *)(slice).ptr, 0, mid),                  \
-        CFIELD(.snd =)                                                    \
+        EURYDICE_CFIELD(.snd =)                                           \
             EURYDICE_SLICE((element_type *)(slice).ptr, mid, (slice).len) \
   }
 
-#define Eurydice_slice_split_at_mut(slice, mid, element_type, ret_t)         \
-  CLITERAL(ret_t) {                                                          \
-    CFIELD(.fst =)                                                           \
-    CLITERAL(Eurydice_slice){CFIELD(.ptr =)(slice.ptr), CFIELD(.len =) mid}, \
-        CFIELD(.snd =) CLITERAL(Eurydice_slice) {                            \
-      CFIELD(.ptr =)                                                         \
-      ((char *)slice.ptr + mid * sizeof(element_type)),                      \
-          CFIELD(.len =)(slice.len - mid)                                    \
-    }                                                                        \
+#define Eurydice_slice_split_at_mut(slice, mid, element_type, ret_t)  \
+  KRML_CLITERAL(ret_t) {                                              \
+    EURYDICE_CFIELD(.fst =)                                           \
+    KRML_CLITERAL(Eurydice_slice){EURYDICE_CFIELD(.ptr =)(slice.ptr), \
+                                  EURYDICE_CFIELD(.len =) mid},       \
+        EURYDICE_CFIELD(.snd =) KRML_CLITERAL(Eurydice_slice) {       \
+      EURYDICE_CFIELD(.ptr =)                                         \
+      ((char *)slice.ptr + mid * sizeof(element_type)),               \
+          EURYDICE_CFIELD(.len =)(slice.len - mid)                    \
+    }                                                                 \
   }
 
 // Conversion of slice to an array, rewritten (by Eurydice) to name the
@@ -223,11 +220,12 @@ static inline uint8_t core_num__u8_6__wrapping_sub(uint8_t x, uint8_t y) {
 
 // ITERATORS
 
-#define Eurydice_range_iter_next(iter_ptr, t, ret_t)          \
-  (((iter_ptr)->start >= (iter_ptr)->end)                     \
-       ? (CLITERAL(ret_t){CFIELD(.tag =) 0, CFIELD(.f0 =) 0}) \
-       : (CLITERAL(ret_t){CFIELD(.tag =) 1,                   \
-                          CFIELD(.f0 =)(iter_ptr)->start++}))
+#define Eurydice_range_iter_next(iter_ptr, t, ret_t)      \
+  (((iter_ptr)->start >= (iter_ptr)->end)                 \
+       ? (KRML_CLITERAL(ret_t){EURYDICE_CFIELD(.tag =) 0, \
+                               EURYDICE_CFIELD(.f0 =) 0}) \
+       : (KRML_CLITERAL(ret_t){EURYDICE_CFIELD(.tag =) 1, \
+                               EURYDICE_CFIELD(.f0 =)(iter_ptr)->start++}))
 
 #define core_iter_range___core__iter__traits__iterator__Iterator_A__for_core__ops__range__Range_A__TraitClause_0___6__next \
   Eurydice_range_iter_next
