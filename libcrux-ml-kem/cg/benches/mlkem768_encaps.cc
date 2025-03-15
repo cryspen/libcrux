@@ -10,25 +10,24 @@
 
 #include "libcrux_mlkem768_portable.h"
 
-void generate_random(uint8_t *output, uint32_t output_len)
-{
-    for (unsigned int i = 0; i < output_len; i++)
-        output[i] = 13;
+void generate_random(uint8_t *output, uint32_t output_len) {
+  for (unsigned int i = 0; i < output_len; i++) output[i] = 13;
 }
 
-int main(int argc, char const *argv[])
-{
-    uint8_t randomness[64];
-    generate_random(randomness, 64);
+int main(int argc, char const *argv[]) {
+  uint8_t randomness[64];
+  generate_random(randomness, 64);
 
-    auto key_pair = libcrux_ml_kem_mlkem768_portable_generate_key_pair(randomness);
-    generate_random(randomness, 32);
-    auto ctxt = libcrux_ml_kem_mlkem768_portable_encapsulate(&key_pair.pk, randomness);
+  auto key_pair =
+      libcrux_ml_kem_mlkem768_portable_generate_key_pair(randomness);
+  generate_random(randomness, 32);
+  auto ctxt =
+      libcrux_ml_kem_mlkem768_portable_encapsulate(&key_pair.pk, randomness);
 
-    for (size_t i = 0; i < 100000; i++)
-    {
-        ctxt = libcrux_ml_kem_mlkem768_portable_encapsulate(&key_pair.pk, randomness);
-    }
+  for (size_t i = 0; i < 100000; i++) {
+    ctxt =
+        libcrux_ml_kem_mlkem768_portable_encapsulate(&key_pair.pk, randomness);
+  }
 
-    return 0;
+  return 0;
 }

@@ -11,7 +11,7 @@ project(libcrux-ml-dsa
 )
 
 set(CMAKE_C_STANDARD 11)
-set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD 17)
 
 if(NOT MSVC)
     add_compile_options(
@@ -20,6 +20,8 @@ if(NOT MSVC)
         -Wunused-function
         # -Wno-unused-function
         -Wno-unused-variable
+        -fdiagnostics-color=always
+        -pedantic
         $<$<CONFIG:DEBUG>:-g>
         $<$<CONFIG:DEBUG>:-Og>
         $<$<CONFIG:RELEASE>:-g>

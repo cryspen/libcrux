@@ -71,15 +71,12 @@ vector<KAT> read_kats(string path) {
     auto kat_raw_value = kat_raw.value();
 
     kats.push_back(KAT{
-        .key_generation_seed = from_hex(kat_raw_value["key_generation_seed"]),
-        .sha3_256_hash_of_public_key =
-            from_hex(kat_raw_value["sha3_256_hash_of_public_key"]),
-        .sha3_256_hash_of_secret_key =
-            from_hex(kat_raw_value["sha3_256_hash_of_secret_key"]),
-        .encapsulation_seed = from_hex(kat_raw_value["encapsulation_seed"]),
-        .sha3_256_hash_of_ciphertext =
-            from_hex(kat_raw_value["sha3_256_hash_of_ciphertext"]),
-        .shared_secret = from_hex(kat_raw_value["shared_secret"]),
+        from_hex(kat_raw_value["key_generation_seed"]),
+        from_hex(kat_raw_value["sha3_256_hash_of_public_key"]),
+        from_hex(kat_raw_value["sha3_256_hash_of_secret_key"]),
+        from_hex(kat_raw_value["encapsulation_seed"]),
+        from_hex(kat_raw_value["sha3_256_hash_of_ciphertext"]),
+        from_hex(kat_raw_value["shared_secret"]),
     });
   }
 
