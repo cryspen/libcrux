@@ -34,5 +34,7 @@ echo "export PATH=\"${PATH}:$HOME/fstar/bin:$HOME/z3/bin\"" >>$HOME/.profile
 echo "[[ ! -r /home/$USER/.opam/opam-init/init.sh ]] || source /home/$USER/.opam/opam-init/init.sh  > /dev/null 2> /dev/null" >>$HOME/.profile
 
 source $HOME/.profile
-opam install --yes ocamlfind visitors menhir ppx_deriving_yojson core_unix sedlex wasm fix process pprint zarith yaml easy_logging terminal unionFind
+opam install --yes ocamlfind visitors menhir ppx_deriving_yojson core_unix \
+    sedlex wasm fix process pprint zarith yaml easy_logging terminal unionFind \
+    odoc ocamlformat
 eval $(opam env)

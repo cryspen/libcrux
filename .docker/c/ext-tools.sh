@@ -33,11 +33,11 @@ echo "export CHARON_REV=$CHARON_REV" >>$HOME/.profile
 source $HOME/.profile
 
 # Build everything
-cd karamel
+cd charon
 make -j
 cd -
 
-cd charon
+cd karamel
 make -j
 cd -
 
