@@ -53,6 +53,7 @@ pub fn mm_storeu_si128_i32(output: &mut [i32], vector: Vec128) {
 }
 
 #[hax_lib::opaque]
+#[hax_lib::ensures(|_r| future(output).len() == output.len())]
 #[inline(always)]
 pub fn mm_storeu_bytes_si128(output: &mut [u8], vector: Vec128) {
     debug_assert_eq!(output.len(), 16);
