@@ -3,7 +3,6 @@
 set -v -e -x
 
 curl https://sh.rustup.rs -sSf | bash -s -- -y
-rustup toolchain install
 
 # Prepare the sources
 opam init --bare --disable-sandboxing --shell-setup --yes
