@@ -165,7 +165,7 @@ let extensionality' (#a: Type) (#b: Type) (f g: FStar.FunctionalExtensionality.(
 
 open FStar.Tactics.V2
 #push-options "--z3rlimit 80 --admit_smt_queries true"
-let ${BitVec::<128>::rewrite_pointwise} (x: $:{BitVec<128>}) heeey
+let ${BitVec::<128>::rewrite_pointwise} (x: $:{BitVec<128>})
 : Lemma (x == ${BitVec::<128>::pointwise} (${128u64}) x) =
     let a = x._0 in
     let b = (${BitVec::<128>::pointwise} (${128u64}) x)._0 in
