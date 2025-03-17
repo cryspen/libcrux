@@ -34,7 +34,7 @@ source $HOME/.profile
 
 # Build everything
 cd charon
-make -j
+make build-charon-rust -j
 cd -
 
 cd karamel

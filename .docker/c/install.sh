@@ -3,6 +3,7 @@
 set -v -e -x
 
 curl https://sh.rustup.rs -sSf | bash -s -- -y
+rustup toolchain install
 
 # Prepare the sources
 opam init --bare --disable-sandboxing --shell-setup --yes
@@ -35,6 +36,5 @@ echo "[[ ! -r /home/$USER/.opam/opam-init/init.sh ]] || source /home/$USER/.opam
 
 source $HOME/.profile
 opam install --yes ocamlfind visitors menhir ppx_deriving_yojson core_unix \
-    sedlex wasm fix process pprint zarith yaml easy_logging terminal unionFind \
-    odoc ocamlformat
+    sedlex wasm fix process pprint zarith yaml easy_logging terminal unionFind
 eval $(opam env)
