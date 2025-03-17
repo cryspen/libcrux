@@ -1,5 +1,5 @@
 module Libcrux_ml_dsa.Ntt
-#set-options "--fuel 0 --ifuel 1 --z3rlimit 100"
+#set-options "--fuel 0 --ifuel 1 --z3rlimit 80"
 open Core
 open FStar.Mul
 
@@ -15,7 +15,7 @@ let ntt
           i1:
           Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit)
       (re: Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
-     =
+    : Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit =
   let re:Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit =
     {
       re with
@@ -36,7 +36,7 @@ let invert_ntt_montgomery
           i1:
           Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit)
       (re: Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
-     =
+    : Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit =
   let re:Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit =
     {
       re with
@@ -57,7 +57,7 @@ let ntt_multiply_montgomery
           i1:
           Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit)
       (lhs rhs: Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
-     =
+    : Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit =
   let lhs:Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit =
     Rust_primitives.Hax.Folds.fold_range (mk_usize 0)
       (Core.Slice.impl__len #v_SIMDUnit

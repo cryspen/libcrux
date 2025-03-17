@@ -1,5 +1,5 @@
 module Libcrux_ml_dsa.Ml_dsa_generic.Instantiations.Avx2.Ml_dsa_87_
-#set-options "--fuel 0 --ifuel 1 --z3rlimit 100"
+#set-options "--fuel 0 --ifuel 1 --z3rlimit 80"
 open Core
 open FStar.Mul
 
@@ -17,10 +17,11 @@ let _ =
   let open Libcrux_ml_dsa.Simd.Traits in
   ()
 
+/// Key Generation.
 let generate_key_pair__e_inner
       (randomness: t_Array u8 (mk_usize 32))
       (signing_key verification_key: t_Slice u8)
-     =
+    : (t_Slice u8 & t_Slice u8) =
   let tmp0, tmp1:(t_Slice u8 & t_Slice u8) =
     Libcrux_ml_dsa.Ml_dsa_generic.Ml_dsa_87_.generate_key_pair #Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256
       #Libcrux_ml_dsa.Samplex4.Avx2.t_AVX2Sampler
@@ -40,7 +41,7 @@ let generate_key_pair__e_inner
 let generate_key_pair
       (randomness: t_Array u8 (mk_usize 32))
       (signing_key verification_key: t_Slice u8)
-     =
+    : (t_Slice u8 & t_Slice u8) =
   let tmp0, tmp1:(t_Slice u8 & t_Slice u8) =
     generate_key_pair__e_inner randomness signing_key verification_key
   in
@@ -53,7 +54,8 @@ let sign__e_inner
       (signing_key: t_Array u8 (mk_usize 4896))
       (message context: t_Slice u8)
       (randomness: t_Array u8 (mk_usize 32))
-     =
+    : Core.Result.t_Result (Libcrux_ml_dsa.Types.t_MLDSASignature (mk_usize 4627))
+      Libcrux_ml_dsa.Types.t_SigningError =
   Libcrux_ml_dsa.Ml_dsa_generic.Ml_dsa_87_.sign #Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256
     #Libcrux_ml_dsa.Samplex4.Avx2.t_AVX2Sampler #Libcrux_ml_dsa.Hash_functions.Simd256.t_Shake128x4
     #Libcrux_ml_dsa.Hash_functions.Simd256.t_Shake256
@@ -61,18 +63,21 @@ let sign__e_inner
     #Libcrux_ml_dsa.Hash_functions.Simd256.t_Shake256x4 (signing_key <: t_Slice u8) message context
     randomness
 
+/// Sign.
 let sign
       (signing_key: t_Array u8 (mk_usize 4896))
       (message context: t_Slice u8)
       (randomness: t_Array u8 (mk_usize 32))
-     = sign__e_inner signing_key message context randomness
+    : Core.Result.t_Result (Libcrux_ml_dsa.Types.t_MLDSASignature (mk_usize 4627))
+      Libcrux_ml_dsa.Types.t_SigningError = sign__e_inner signing_key message context randomness
 
 let sign_mut__e_inner
       (signing_key: t_Array u8 (mk_usize 4896))
       (message context: t_Slice u8)
       (randomness: t_Array u8 (mk_usize 32))
       (signature: t_Array u8 (mk_usize 4627))
-     =
+    : (t_Array u8 (mk_usize 4627) &
+      Core.Result.t_Result Prims.unit Libcrux_ml_dsa.Types.t_SigningError) =
   let tmp0, out:(t_Array u8 (mk_usize 4627) &
     Core.Result.t_Result Prims.unit Libcrux_ml_dsa.Types.t_SigningError) =
     Libcrux_ml_dsa.Ml_dsa_generic.Ml_dsa_87_.sign_mut #Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256
@@ -89,12 +94,14 @@ let sign_mut__e_inner
   <:
   (t_Array u8 (mk_usize 4627) & Core.Result.t_Result Prims.unit Libcrux_ml_dsa.Types.t_SigningError)
 
+/// Sign.
 let sign_mut
       (signing_key: t_Array u8 (mk_usize 4896))
       (message context: t_Slice u8)
       (randomness: t_Array u8 (mk_usize 32))
       (signature: t_Array u8 (mk_usize 4627))
-     =
+    : (t_Array u8 (mk_usize 4627) &
+      Core.Result.t_Result Prims.unit Libcrux_ml_dsa.Types.t_SigningError) =
   let tmp0, out:(t_Array u8 (mk_usize 4627) &
     Core.Result.t_Result Prims.unit Libcrux_ml_dsa.Types.t_SigningError) =
     sign_mut__e_inner signing_key message context randomness signature
@@ -109,7 +116,9 @@ let sign_pre_hashed_shake128__e_inner
       (signing_key: t_Array u8 (mk_usize 4896))
       (message context pre_hash_buffer: t_Slice u8)
       (randomness: t_Array u8 (mk_usize 32))
-     =
+    : (t_Slice u8 &
+      Core.Result.t_Result (Libcrux_ml_dsa.Types.t_MLDSASignature (mk_usize 4627))
+        Libcrux_ml_dsa.Types.t_SigningError) =
   let tmp0, out:(t_Slice u8 &
     Core.Result.t_Result (Libcrux_ml_dsa.Types.t_MLDSASignature (mk_usize 4627))
       Libcrux_ml_dsa.Types.t_SigningError) =
@@ -132,11 +141,14 @@ let sign_pre_hashed_shake128__e_inner
     Core.Result.t_Result (Libcrux_ml_dsa.Types.t_MLDSASignature (mk_usize 4627))
       Libcrux_ml_dsa.Types.t_SigningError)
 
+/// Sign (pre-hashed).
 let sign_pre_hashed_shake128
       (signing_key: t_Array u8 (mk_usize 4896))
       (message context pre_hash_buffer: t_Slice u8)
       (randomness: t_Array u8 (mk_usize 32))
-     =
+    : (t_Slice u8 &
+      Core.Result.t_Result (Libcrux_ml_dsa.Types.t_MLDSASignature (mk_usize 4627))
+        Libcrux_ml_dsa.Types.t_SigningError) =
   let tmp0, out:(t_Slice u8 &
     Core.Result.t_Result (Libcrux_ml_dsa.Types.t_MLDSASignature (mk_usize 4627))
       Libcrux_ml_dsa.Types.t_SigningError) =
@@ -157,7 +169,7 @@ let verify__e_inner
       (verification_key: t_Array u8 (mk_usize 2592))
       (message context: t_Slice u8)
       (signature: t_Array u8 (mk_usize 4627))
-     =
+    : Core.Result.t_Result Prims.unit Libcrux_ml_dsa.Types.t_VerificationError =
   Libcrux_ml_dsa.Ml_dsa_generic.Ml_dsa_87_.verify #Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256
     #Libcrux_ml_dsa.Samplex4.Avx2.t_AVX2Sampler
     #Libcrux_ml_dsa.Hash_functions.Simd256.t_Shake128x4
@@ -168,17 +180,19 @@ let verify__e_inner
     context
     signature
 
+/// Verify.
 let verify
       (verification_key: t_Array u8 (mk_usize 2592))
       (message context: t_Slice u8)
       (signature: t_Array u8 (mk_usize 4627))
-     = verify__e_inner verification_key message context signature
+    : Core.Result.t_Result Prims.unit Libcrux_ml_dsa.Types.t_VerificationError =
+  verify__e_inner verification_key message context signature
 
 let verify_pre_hashed_shake128__e_inner
       (verification_key: t_Array u8 (mk_usize 2592))
       (message context pre_hash_buffer: t_Slice u8)
       (signature: t_Array u8 (mk_usize 4627))
-     =
+    : (t_Slice u8 & Core.Result.t_Result Prims.unit Libcrux_ml_dsa.Types.t_VerificationError) =
   let tmp0, out:(t_Slice u8 &
     Core.Result.t_Result Prims.unit Libcrux_ml_dsa.Types.t_VerificationError) =
     Libcrux_ml_dsa.Ml_dsa_generic.Ml_dsa_87_.verify_pre_hashed #Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256
@@ -196,11 +210,12 @@ let verify_pre_hashed_shake128__e_inner
   <:
   (t_Slice u8 & Core.Result.t_Result Prims.unit Libcrux_ml_dsa.Types.t_VerificationError)
 
+/// Verify (pre-hashed with SHAKE-128).
 let verify_pre_hashed_shake128
       (verification_key: t_Array u8 (mk_usize 2592))
       (message context pre_hash_buffer: t_Slice u8)
       (signature: t_Array u8 (mk_usize 4627))
-     =
+    : (t_Slice u8 & Core.Result.t_Result Prims.unit Libcrux_ml_dsa.Types.t_VerificationError) =
   let tmp0, out:(t_Slice u8 &
     Core.Result.t_Result Prims.unit Libcrux_ml_dsa.Types.t_VerificationError) =
     verify_pre_hashed_shake128__e_inner verification_key message context pre_hash_buffer signature
