@@ -67,7 +67,7 @@ jobs:
 
       - name: Extract C (header only)
         run: |
-          sudo sh -c "echo HOME=/home/user >> $GITHUB_ENV"
+          export HOME=/home/user
           ./boring.sh --no-clean
 
       - name: Upload header only C extraction
