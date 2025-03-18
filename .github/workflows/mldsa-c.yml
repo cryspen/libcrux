@@ -118,7 +118,7 @@ jobs:
 
       - name: 🔨 Build
         run: |
-          cmake -B build
+          CC=clang CXX=clang++ cmake -B build
           cmake --build build
 
       - name: 🏃🏻‍♀️ Test

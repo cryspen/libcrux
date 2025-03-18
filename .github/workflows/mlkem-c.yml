@@ -71,7 +71,7 @@ jobs:
       - name: Extract C
         run: |
           export HOME=/home/user
-          ./c.sh
+          ./c.sh --no-glue
 
       - name: Upload C extraction
         uses: actions/upload-artifact@v4
