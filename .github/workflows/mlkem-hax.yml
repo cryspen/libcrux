@@ -90,7 +90,7 @@ jobs:
 
   prove:
     runs-on: self-hosted
-    if: ${{ github.event_name == 'merge_group' || github.event_name == 'workflow_dispatch' }}
+    if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/checkout@v4
@@ -135,18 +135,6 @@ jobs:
   mlkem-lax-hax-status:
     if: ${{ always() }}
     needs: [lax]
-    runs-on: ubuntu-latest
-    steps:
-      - name: Successful
-        if: ${{ !(contains(needs.*.result, 'failure')) }} 
-        run: exit 0 
-      - name: Failing
-        if: ${{ (contains(needs.*.result, 'failure')) }} 
-        run: exit 1 
-  
-  mlkem-prove-hax-status:
-    if: ${{ always() }}
-    needs: [prove]
     runs-on: ubuntu-latest
     steps:
       - name: Successful
