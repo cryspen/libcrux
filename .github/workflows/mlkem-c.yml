@@ -70,7 +70,8 @@ jobs:
 
       - name: Extract C
         run: |
-          ./c.sh
+          export HOME=/home/user
+          ./c.sh --no-glue
 
       - name: Upload C extraction
         uses: actions/upload-artifact@v4
@@ -95,6 +96,7 @@ jobs:
 
       - name: Extract C (header only)
         run: |
+          export HOME=/home/user
           ./boring.sh --no-clean
 
       - name: Upload header only C extraction
