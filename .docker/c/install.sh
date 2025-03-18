@@ -14,7 +14,7 @@ curl -L https://github.com/FStarLang/FStar/releases/download/v2025.02.17/fstar-v
 tar --extract --file Fstar.tar.gz
 rm -f Fstar.tar.gz
 
-curl -L https://raw.githubusercontent.com/FStarLang/FStar/refs/heads/master/.scripts/get_fstar_z3.sh \
+curl -L https://raw.githubusercontent.com/FStarLang/FStar/8080c2c10e2a15fdacea6df31f0921850294cd37/.scripts/get_fstar_z3.sh \
     --output get_fstar_z3.sh
 chmod +x get_fstar_z3.sh
 mkdir -p $HOME/z3/bin
