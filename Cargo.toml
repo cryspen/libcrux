@@ -29,6 +29,7 @@ members = [
     "ecdsa",
     "p256",
     "blake2",
+    "fstar-helpers/minicore",
 ]
 
 [workspace.package]
@@ -42,6 +43,9 @@ readme = "Readme.md"
 
 [workspace.metadata.release]
 allow-branch = ["main"]
+
+[workspace.dependencies]
+hax-lib = { version = "0.2", git = "https://github.com/cryspen/hax/" }
 
 [package]
 name = "libcrux"
@@ -90,7 +94,7 @@ log = { version = "0.4", optional = true }
 # WASM API
 wasm-bindgen = { version = "0.2.87", optional = true }
 getrandom = { version = "0.3", optional = true }
-hax-lib = { version = "0.1.0", git = "https://github.com/hacspec/hax/" }
+hax-lib.workspace = true
 
 [dev-dependencies]
 libcrux = { path = ".", features = ["rand", "tests"] }

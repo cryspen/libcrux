@@ -38,7 +38,7 @@ jobs:
       - uses: hacspec/hax-actions@main
         with:
           hax_reference: ${{ github.event.inputs.hax_rev || 'main' }}
-          fstar: v2025.01.17
+          fstar: v2025.02.17
 
       - name: 🏃 Extract ML-KEM crate
         working-directory: libcrux-ml-kem
@@ -82,11 +82,31 @@ jobs:
       - uses: hacspec/hax-actions@main
         with:
           hax_reference: ${{ github.event.inputs.hax_rev || 'main' }}
-          fstar: v2025.01.17
+          fstar: v2025.02.17
 
       - name: 🏃 Lax ML-KEM crate
         working-directory: libcrux-ml-kem
         run: ./hax.py prove --admit
+
+  prove:
+    runs-on: self-hosted
+    if: ${{ github.event_name == 'merge_group' || github.event_name == 'workflow_dispatch' }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          repository: cryspen/hax
+          path: hax
+          ref: ${{ github.event.inputs.hax_rev || 'main' }}
+      - name: ⤵ Install hax
+        run: |
+          nix profile install ./hax
+      - name: ⤵ Install FStar
+        run: nix profile install github:FStarLang/FStar/v2025.02.17
+
+      - name: 🏃 Prove ML-KEM crate
+        working-directory: libcrux-ml-kem
+        run: FSTAR_HOME=~/.nix-profile ./hax.py prove
   
   mlkem-extract-hax-status:
     if: ${{ always() }}
@@ -115,6 +135,18 @@ jobs:
   mlkem-lax-hax-status:
     if: ${{ always() }}
     needs: [lax]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Successful
+        if: ${{ !(contains(needs.*.result, 'failure')) }} 
+        run: exit 0 
+      - name: Failing
+        if: ${{ (contains(needs.*.result, 'failure')) }} 
+        run: exit 1 
+  
+  mlkem-prove-hax-status:
+    if: ${{ always() }}
+    needs: [prove]
     runs-on: ubuntu-latest
     steps:
       - name: Successful

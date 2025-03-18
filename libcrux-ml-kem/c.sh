@@ -27,6 +27,7 @@ features=""
 eurydice_glue=1
 karamel_include=1
 unrolling=16
+format=1
 
 # Parse command line arguments.
 all_args=("$@")
@@ -44,6 +45,7 @@ while [ $# -gt 0 ]; do
     --no-glue) eurydice_glue=0 ;;
     --no-karamel_include) karamel_include=0 ;;
     --no-unrolling) unrolling=0 ;;
+    --no-format) format=0 ;;
     esac
     shift
 done
@@ -126,9 +128,11 @@ if [[ "$karamel_include" = 1 ]]; then
     cp -R $KRML_HOME/include karamel/
 fi
 
-find . -type f -name '*.c' -and -not -path '*_deps*' -exec clang-format --style=Google -i "{}" \;
-find . -type f -name '*.h' -and -not -path '*_deps*' -exec clang-format --style=Google -i "{}" \;
-if [ -d "internal" ]; then
-    clang-format --style=Google -i internal/*.h
+if [[ "$format" = 1 ]]; then
+    find . -type f -name '*.c' -and -not -path '*_deps*' -exec clang-format-18 --style=Google -i "{}" \;
+    find . -type f -name '*.h' -and -not -path '*_deps*' -exec clang-format-18 --style=Google -i "{}" \;
+    if [ -d "internal" ]; then
+        clang-format-18 --style=Google -i internal/*.h
+    fi
+    clang-format-18 --style=Google -i intrinsics/*.h
 fi
-clang-format --style=Google -i intrinsics/*.h

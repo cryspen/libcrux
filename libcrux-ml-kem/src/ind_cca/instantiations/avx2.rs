@@ -20,7 +20,7 @@ unsafe fn generate_keypair_avx2<
     const ETA1: usize,
     const ETA1_RANDOMNESS_SIZE: usize,
 >(
-    randomness: [u8; KEY_GENERATION_SEED_SIZE],
+    randomness: &[u8; KEY_GENERATION_SEED_SIZE],
 ) -> MlKemKeyPair<PRIVATE_KEY_SIZE, PUBLIC_KEY_SIZE> {
     crate::ind_cca::generate_keypair::<
         K,
@@ -50,7 +50,7 @@ pub(crate) fn generate_keypair<
     const ETA1: usize,
     const ETA1_RANDOMNESS_SIZE: usize,
 >(
-    randomness: [u8; KEY_GENERATION_SEED_SIZE],
+    randomness: &[u8; KEY_GENERATION_SEED_SIZE],
 ) -> MlKemKeyPair<PRIVATE_KEY_SIZE, PUBLIC_KEY_SIZE> {
     unsafe {
         generate_keypair_avx2::<
@@ -75,7 +75,7 @@ unsafe fn kyber_generate_keypair_avx2<
     const ETA1: usize,
     const ETA1_RANDOMNESS_SIZE: usize,
 >(
-    randomness: [u8; KEY_GENERATION_SEED_SIZE],
+    randomness: &[u8; KEY_GENERATION_SEED_SIZE],
 ) -> MlKemKeyPair<PRIVATE_KEY_SIZE, PUBLIC_KEY_SIZE> {
     crate::ind_cca::generate_keypair::<
         K,
@@ -100,7 +100,7 @@ pub(crate) fn kyber_generate_keypair<
     const ETA1: usize,
     const ETA1_RANDOMNESS_SIZE: usize,
 >(
-    randomness: [u8; KEY_GENERATION_SEED_SIZE],
+    randomness: &[u8; KEY_GENERATION_SEED_SIZE],
 ) -> MlKemKeyPair<PRIVATE_KEY_SIZE, PUBLIC_KEY_SIZE> {
     unsafe {
         kyber_generate_keypair_avx2::<
@@ -206,7 +206,7 @@ unsafe fn kyber_encapsulate_avx2<
     const ETA2_RANDOMNESS_SIZE: usize,
 >(
     public_key: &MlKemPublicKey<PUBLIC_KEY_SIZE>,
-    randomness: [u8; SHARED_SECRET_SIZE],
+    randomness: &[u8; SHARED_SECRET_SIZE],
 ) -> (MlKemCiphertext<CIPHERTEXT_SIZE>, MlKemSharedSecret) {
     crate::ind_cca::encapsulate::<
         K,
@@ -246,7 +246,7 @@ pub(crate) fn kyber_encapsulate<
     const ETA2_RANDOMNESS_SIZE: usize,
 >(
     public_key: &MlKemPublicKey<PUBLIC_KEY_SIZE>,
-    randomness: [u8; SHARED_SECRET_SIZE],
+    randomness: &[u8; SHARED_SECRET_SIZE],
 ) -> (MlKemCiphertext<CIPHERTEXT_SIZE>, MlKemSharedSecret) {
     unsafe {
         kyber_encapsulate_avx2::<
@@ -298,7 +298,7 @@ unsafe fn encapsulate_avx2<
     const ETA2_RANDOMNESS_SIZE: usize,
 >(
     public_key: &MlKemPublicKey<PUBLIC_KEY_SIZE>,
-    randomness: [u8; SHARED_SECRET_SIZE],
+    randomness: &[u8; SHARED_SECRET_SIZE],
 ) -> (MlKemCiphertext<CIPHERTEXT_SIZE>, MlKemSharedSecret) {
     crate::ind_cca::encapsulate::<
         K,
@@ -350,7 +350,7 @@ pub(crate) fn encapsulate<
     const ETA2_RANDOMNESS_SIZE: usize,
 >(
     public_key: &MlKemPublicKey<PUBLIC_KEY_SIZE>,
-    randomness: [u8; SHARED_SECRET_SIZE],
+    randomness: &[u8; SHARED_SECRET_SIZE],
 ) -> (MlKemCiphertext<CIPHERTEXT_SIZE>, MlKemSharedSecret) {
     unsafe {
         encapsulate_avx2::<
@@ -758,7 +758,7 @@ pub(crate) mod unpacked {
         const ETA2_RANDOMNESS_SIZE: usize,
     >(
         public_key: &MlKemPublicKeyUnpacked<K>,
-        randomness: [u8; SHARED_SECRET_SIZE],
+        randomness: &[u8; SHARED_SECRET_SIZE],
     ) -> (MlKemCiphertext<CIPHERTEXT_SIZE>, MlKemSharedSecret) {
         crate::ind_cca::unpacked::encapsulate::<
             K,
@@ -808,7 +808,7 @@ pub(crate) mod unpacked {
         const ETA2_RANDOMNESS_SIZE: usize,
     >(
         public_key: &MlKemPublicKeyUnpacked<K>,
-        randomness: [u8; SHARED_SECRET_SIZE],
+        randomness: &[u8; SHARED_SECRET_SIZE],
     ) -> (MlKemCiphertext<CIPHERTEXT_SIZE>, MlKemSharedSecret) {
         unsafe {
             encapsulate_avx2::<

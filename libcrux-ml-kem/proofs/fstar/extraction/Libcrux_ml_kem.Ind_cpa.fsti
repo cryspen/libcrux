@@ -22,7 +22,7 @@ val serialize_vector
     : Prims.Pure (t_Slice u8)
       (requires
         Spec.MLKEM.is_rank v_K /\
-        Core.Slice.impl__len #u8 out == Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE v_K /\
+        Core.Slice.impl__len #u8 out == Spec.MLKEM.v_RANKED_BYTES_PER_RING_ELEMENT v_K /\
         (forall (i: nat).
             i < v v_K ==>
             Libcrux_ml_kem.Serialize.coefficients_field_modulus_range (Seq.index key i)))
@@ -86,6 +86,7 @@ val sample_ring_element_cbd
       {| i3: Libcrux_ml_kem.Hash_functions.t_Hash v_Hasher v_K |}
       (prf_input: t_Array u8 (mk_usize 33))
       (domain_separator: u8)
+      (error_1_: t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K)
     : Prims.Pure (t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K & u8)
       (requires
         Spec.MLKEM.is_rank v_K /\ v_ETA2_RANDOMNESS_SIZE == Spec.MLKEM.v_ETA2_RANDOMNESS_SIZE v_K /\
@@ -93,12 +94,13 @@ val sample_ring_element_cbd
         range (v domain_separator + v v_K) u8_inttype)
       (ensures
         fun temp_0_ ->
-          let err1, ds:(t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K &
+          let error_1_future, ds:(t_Array
+              (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K &
             u8) =
             temp_0_
           in
           v ds == v domain_separator + v v_K /\
-          Libcrux_ml_kem.Polynomial.to_spec_vector_t #v_K #v_Vector err1 ==
+          Libcrux_ml_kem.Polynomial.to_spec_vector_t #v_K #v_Vector error_1_ ==
           Spec.MLKEM.sample_vector_cbd2 #v_K (Seq.slice prf_input 0 32) (sz (v domain_separator)))
 
 /// Sample a vector of ring elements from a centered binomial distribution and
@@ -132,30 +134,6 @@ val sample_vector_cbd_then_ntt
               i < v v_K ==>
               Libcrux_ml_kem.Serialize.coefficients_field_modulus_range #v_Vector
                 (Seq.index re_as_ntt_future i)))
-
-val sample_vector_cbd_then_ntt_out
-      (v_K v_ETA v_ETA_RANDOMNESS_SIZE: usize)
-      (#v_Vector #v_Hasher: Type0)
-      {| i2: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
-      {| i3: Libcrux_ml_kem.Hash_functions.t_Hash v_Hasher v_K |}
-      (prf_input: t_Array u8 (mk_usize 33))
-      (domain_separator: u8)
-    : Prims.Pure (t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K & u8)
-      (requires
-        Spec.MLKEM.is_rank v_K /\ v_ETA_RANDOMNESS_SIZE == Spec.MLKEM.v_ETA1_RANDOMNESS_SIZE v_K /\
-        v_ETA == Spec.MLKEM.v_ETA1 v_K /\ v domain_separator < 2 * v v_K /\
-        range (v domain_separator + v v_K) u8_inttype)
-      (ensures
-        fun temp_0_ ->
-          let re, ds:(t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K & u8)
-          =
-            temp_0_
-          in
-          v ds == v domain_separator + v v_K /\
-          Libcrux_ml_kem.Polynomial.to_spec_vector_t #v_K #v_Vector re ==
-          Spec.MLKEM.sample_vector_cbd_then_ntt #v_K
-            (Seq.slice prf_input 0 32)
-            (sz (v domain_separator)))
 
 /// This function implements most of <strong>Algorithm 12</strong> of the
 /// NIST FIPS 203 specification; this is the Kyber CPA-PKE key generation algorithm.
@@ -503,6 +481,7 @@ val deserialize_vector
       (#v_Vector: Type0)
       {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
       (secret_key: t_Slice u8)
+      (secret_as_ntt: t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K)
     : Prims.Pure (t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K)
       (requires
         Spec.MLKEM.is_rank v_K /\ length secret_key == Spec.MLKEM.v_CPA_PRIVATE_KEY_SIZE v_K /\
@@ -510,9 +489,12 @@ val deserialize_vector
         v Libcrux_ml_kem.Constants.v_BYTES_PER_RING_ELEMENT <=
         v v_K)
       (ensures
-        fun res ->
-          let res:t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K = res in
-          Libcrux_ml_kem.Polynomial.to_spec_vector_t #v_K #v_Vector res ==
+        fun secret_as_ntt_future ->
+          let secret_as_ntt_future:t_Array
+            (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K =
+            secret_as_ntt_future
+          in
+          Libcrux_ml_kem.Polynomial.to_spec_vector_t #v_K #v_Vector secret_as_ntt ==
           Spec.MLKEM.vector_decode_12 #v_K secret_key)
 
 /// This function implements <strong>Algorithm 14</strong> of the

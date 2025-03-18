@@ -1,7 +1,6 @@
 name: ML-KEM - Build & Test on s390x
 
 on:
-  push:
   pull_request:
     branches: ["main", "dev"]
   workflow_dispatch:
@@ -19,7 +18,7 @@ jobs:
     name: Build on ubuntu-22.04 s390x
     steps:
       - uses: actions/checkout@v4
-      - uses: uraimo/run-on-arch-action@v2
+      - uses: uraimo/run-on-arch-action@v3
         name: Run
         id: runcmd
         with:

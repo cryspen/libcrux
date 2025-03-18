@@ -58,7 +58,7 @@ pub(crate) trait Hash<const K: usize> {
 
     /// Create a SHAKE128 state and absorb the input.
     #[requires(true)]
-    fn shake128_init_absorb_final(input: [[u8; 34]; K]) -> Self;
+    fn shake128_init_absorb_final(input: &[[u8; 34]; K]) -> Self;
 
     /// Squeeze 3 blocks out of the SHAKE128 state.
     #[requires(true)]
@@ -130,14 +130,17 @@ pub(crate) mod portable {
     }
 
     #[inline(always)]
-    fn shake128_init_absorb_final<const K: usize>(input: [[u8; 34]; K]) -> PortableHash<K> {
+    fn shake128_init_absorb_final<const K: usize>(input: &[[u8; 34]; K]) -> PortableHash<K> {
         debug_assert!(K == 2 || K == 3 || K == 4);
 
-        let mut shake128_state = [incremental::shake128_init(); K];
+        let mut shake128_state = PortableHash {
+            shake128_state: [incremental::shake128_init(); K],
+        };
         for i in 0..K {
-            incremental::shake128_absorb_final(&mut shake128_state[i], &input[i]);
+            incremental::shake128_absorb_final(&mut shake128_state.shake128_state[i], &input[i]);
         }
-        PortableHash { shake128_state }
+
+        shake128_state
     }
 
     #[inline(always)]
@@ -208,7 +211,7 @@ pub(crate) mod portable {
         }
 
         #[inline(always)]
-        fn shake128_init_absorb_final(input: [[u8; 34]; K]) -> Self {
+        fn shake128_init_absorb_final(input: &[[u8; 34]; K]) -> Self {
             shake128_init_absorb_final(input)
         }
 
@@ -320,32 +323,44 @@ pub(crate) mod avx2 {
     }
 
     #[inline(always)]
-    fn shake128_init_absorb_final<const K: usize>(input: [[u8; 34]; K]) -> Simd256Hash {
+    fn shake128_init_absorb_final<const K: usize>(input: &[[u8; 34]; K]) -> Simd256Hash {
         debug_assert!(K == 2 || K == 3 || K == 4);
-        let mut state = x4::incremental::init();
+        let mut state = Simd256Hash {
+            shake128_state: x4::incremental::init(),
+        };
 
         match K as u8 {
             2 => {
                 x4::incremental::shake128_absorb_final(
-                    &mut state, &input[0], &input[1], &input[0], &input[0],
+                    &mut state.shake128_state,
+                    &input[0],
+                    &input[1],
+                    &input[0],
+                    &input[0],
                 );
             }
             3 => {
                 x4::incremental::shake128_absorb_final(
-                    &mut state, &input[0], &input[1], &input[2], &input[0],
+                    &mut state.shake128_state,
+                    &input[0],
+                    &input[1],
+                    &input[2],
+                    &input[0],
                 );
             }
             4 => {
                 x4::incremental::shake128_absorb_final(
-                    &mut state, &input[0], &input[1], &input[2], &input[3],
+                    &mut state.shake128_state,
+                    &input[0],
+                    &input[1],
+                    &input[2],
+                    &input[3],
                 );
             }
             _ => unreachable!("This function must only be called with N = 2, 3, 4"),
         }
 
-        Simd256Hash {
-            shake128_state: state,
-        }
+        state
     }
 
     #[inline(always)]
@@ -461,7 +476,7 @@ pub(crate) mod avx2 {
         }
 
         #[inline(always)]
-        fn shake128_init_absorb_final(input: [[u8; 34]; K]) -> Self {
+        fn shake128_init_absorb_final(input: &[[u8; 34]; K]) -> Self {
             shake128_init_absorb_final(input)
         }
 
@@ -563,7 +578,7 @@ pub(crate) mod neon {
     }
 
     #[inline(always)]
-    fn shake128_init_absorb_final<const K: usize>(input: [[u8; 34]; K]) -> Simd128Hash {
+    fn shake128_init_absorb_final<const K: usize>(input: &[[u8; 34]; K]) -> Simd128Hash {
         debug_assert!(K == 2 || K == 3 || K == 4);
         let mut state = [x2::incremental::init(), x2::incremental::init()];
         match K as u8 {
@@ -740,7 +755,7 @@ pub(crate) mod neon {
         }
 
         #[inline(always)]
-        fn shake128_init_absorb_final(input: [[u8; 34]; K]) -> Self {
+        fn shake128_init_absorb_final(input: &[[u8; 34]; K]) -> Self {
             shake128_init_absorb_final(input)
         }
 

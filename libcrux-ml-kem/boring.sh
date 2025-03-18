@@ -6,6 +6,7 @@ SED=$(which gsed &>/dev/null && echo gsed || echo sed)
 
 no_clean=0
 no_extract=0
+no_charon=
 
 # Parse command line arguments.
 all_args=("$@")
@@ -13,6 +14,7 @@ while [ $# -gt 0 ]; do
     case "$1" in
     --no-clean) no_clean=1 ;;
     --no-extract) no_extract=1 ;;
+    --no-charon) no_charon=--no-charon ;;
     esac
     shift
 done
@@ -24,7 +26,7 @@ fi
 
 if [[ "$no_extract" = 0 ]]; then
     ./c.sh --config cg.yaml --out cg --mlkem768 --kyber768 \
-        --no-glue --no-unrolling --no-karamel_include --no-karamel_include
+        --no-glue --no-unrolling --no-karamel_include --no-karamel_include $no_charon
 
     clang-format-18 --style=Google -i cg/*.h
 fi

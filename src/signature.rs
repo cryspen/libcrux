@@ -10,7 +10,7 @@ use crate::{
     ecdh,
     hacl::{self, ed25519},
 };
-use rand::{CryptoRng, Rng, TryRngCore};
+use rand::{CryptoRng, TryRngCore};
 
 use self::rsa_pss::RsaPssSignature;
 
@@ -472,10 +472,7 @@ pub fn verify(payload: &[u8], signature: &Signature, public_key: &[u8]) -> Resul
 /// Generate a fresh key pair.
 ///
 /// The function returns the (secret key, public key) tuple, or an [`Error`].
-pub fn key_gen(
-    alg: Algorithm,
-    rng: &mut (impl CryptoRng + Rng),
-) -> Result<(Vec<u8>, Vec<u8>), Error> {
+pub fn key_gen(alg: Algorithm, rng: &mut impl CryptoRng) -> Result<(Vec<u8>, Vec<u8>), Error> {
     match alg {
         Algorithm::EcDsaP256(_) => {
             ecdh::key_gen(ecdh::Algorithm::P256, rng).map_err(|_| Error::KeyGenError)

@@ -1,5 +1,3 @@
-#[cfg(hax)]
-use crate::{constants::COEFFICIENTS_IN_RING_ELEMENT, vector::FIELD_MODULUS};
 use crate::{
     constants::{BYTES_PER_RING_ELEMENT, SHARED_SECRET_SIZE},
     helper::cloop,
@@ -15,8 +13,8 @@ let field_modulus_range (#v_Vector: Type0)
         {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
         (a: v_Vector) =
     let coef = Libcrux_ml_kem.Vector.Traits.f_to_i16_array a in
-    forall (i:nat). i < 16 ==> v (Seq.index coef i) > -(v $FIELD_MODULUS) /\
-        v (Seq.index coef i) < v $FIELD_MODULUS"#
+    forall (i:nat). i < 16 ==> v (Seq.index coef i) > -(v ${crate::vector::FIELD_MODULUS}) /\
+        v (Seq.index coef i) < v ${crate::vector::FIELD_MODULUS}"#
 )]
 #[hax_lib::fstar::before(
     interface,
@@ -30,7 +28,7 @@ let coefficients_field_modulus_range (#v_Vector: Type0)
 #[hax_lib::requires(fstar!(r#"field_modulus_range $a"#))]
 #[hax_lib::ensures(|result| fstar!(r#"forall (i:nat). i < 16 ==>
     v (Seq.index (Libcrux_ml_kem.Vector.Traits.f_to_i16_array $result) i) >= 0 /\
-    v (Seq.index (Libcrux_ml_kem.Vector.Traits.f_to_i16_array $result) i) < v $FIELD_MODULUS"#))]
+    v (Seq.index (Libcrux_ml_kem.Vector.Traits.f_to_i16_array $result) i) < v ${crate::vector::FIELD_MODULUS}"#))]
 pub(super) fn to_unsigned_field_modulus<Vector: Operations>(a: Vector) -> Vector {
     hax_lib::fstar!(r#"reveal_opaque (`%field_modulus_range) (field_modulus_range #$:Vector)"#);
     to_unsigned_representative::<Vector>(a)
@@ -76,7 +74,7 @@ pub(super) fn compress_then_serialize_message<Vector: Operations>(
         Spec.MLKEM.decode_then_decompress_message $serialized"#)
 )]
 pub(super) fn deserialize_then_decompress_message<Vector: Operations>(
-    serialized: [u8; SHARED_SECRET_SIZE],
+    serialized: &[u8; SHARED_SECRET_SIZE],
 ) -> PolynomialRingElement<Vector> {
     let mut re = PolynomialRingElement::<Vector>::ZERO();
     for i in 0..16 {
@@ -376,7 +374,9 @@ pub(super) fn compress_then_serialize_ring_element_v<
 fn deserialize_then_decompress_10<Vector: Operations>(
     serialized: &[u8],
 ) -> PolynomialRingElement<Vector> {
-    hax_lib::fstar!(r#"assert (v (($COEFFICIENTS_IN_RING_ELEMENT *! sz 10) /! sz 8) == 320)"#);
+    hax_lib::fstar!(
+        r#"assert (v ((${crate::constants::COEFFICIENTS_IN_RING_ELEMENT} *! sz 10) /! sz 8) == 320)"#
+    );
     let mut re = PolynomialRingElement::<Vector>::ZERO();
 
     cloop! {
@@ -396,7 +396,9 @@ fn deserialize_then_decompress_10<Vector: Operations>(
 fn deserialize_then_decompress_11<Vector: Operations>(
     serialized: &[u8],
 ) -> PolynomialRingElement<Vector> {
-    hax_lib::fstar!(r#"assert (v (($COEFFICIENTS_IN_RING_ELEMENT *! sz 11) /! sz 8) == 352)"#);
+    hax_lib::fstar!(
+        r#"assert (v ((${crate::constants::COEFFICIENTS_IN_RING_ELEMENT} *! sz 11) /! sz 8) == 352)"#
+    );
     let mut re = PolynomialRingElement::<Vector>::ZERO();
 
     cloop! {
@@ -444,7 +446,9 @@ pub(super) fn deserialize_then_decompress_ring_element_u<
 fn deserialize_then_decompress_4<Vector: Operations>(
     serialized: &[u8],
 ) -> PolynomialRingElement<Vector> {
-    hax_lib::fstar!(r#"assert (v (($COEFFICIENTS_IN_RING_ELEMENT *! sz 4) /! sz 8) == 128)"#);
+    hax_lib::fstar!(
+        r#"assert (v ((${crate::constants::COEFFICIENTS_IN_RING_ELEMENT} *! sz 4) /! sz 8) == 128)"#
+    );
     let mut re = PolynomialRingElement::<Vector>::ZERO();
 
     cloop! {
@@ -464,7 +468,9 @@ fn deserialize_then_decompress_4<Vector: Operations>(
 fn deserialize_then_decompress_5<Vector: Operations>(
     serialized: &[u8],
 ) -> PolynomialRingElement<Vector> {
-    hax_lib::fstar!(r#"assert (v (($COEFFICIENTS_IN_RING_ELEMENT *! sz 5) /! sz 8) == 160)"#);
+    hax_lib::fstar!(
+        r#"assert (v ((${crate::constants::COEFFICIENTS_IN_RING_ELEMENT} *! sz 5) /! sz 8) == 160)"#
+    );
     let mut re = PolynomialRingElement::<Vector>::ZERO();
 
     cloop! {
