@@ -1,9 +1,9 @@
 module Libcrux_ml_dsa.Simd.Avx2.Encoding.T1
-#set-options "--fuel 0 --ifuel 1 --z3rlimit 100"
+#set-options "--fuel 0 --ifuel 1 --z3rlimit 80"
 open Core
 open FStar.Mul
 
-let serialize (simd_unit: Libcrux_intrinsics.Avx2_extract.t_Vec256) (out: t_Slice u8) =
+let serialize (simd_unit: Minicore.Core_arch.X86.t_e_ee_m256i) (out: t_Slice u8) : t_Slice u8 =
   let _:Prims.unit =
     if true
     then
@@ -13,9 +13,9 @@ let serialize (simd_unit: Libcrux_intrinsics.Avx2_extract.t_Vec256) (out: t_Slic
       ()
   in
   let serialized:t_Array u8 (mk_usize 24) = Rust_primitives.Hax.repeat (mk_u8 0) (mk_usize 24) in
-  let adjacent_2_combined:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
-    Libcrux_intrinsics.Avx2_extract.mm256_sllv_epi32 simd_unit
-      (Libcrux_intrinsics.Avx2_extract.mm256_set_epi32 (mk_i32 0)
+  let adjacent_2_combined:Minicore.Core_arch.X86.t_e_ee_m256i =
+    Libcrux_intrinsics.Avx2.mm256_sllv_epi32 simd_unit
+      (Libcrux_intrinsics.Avx2.mm256_set_epi32 (mk_i32 0)
           (mk_i32 22)
           (mk_i32 0)
           (mk_i32 22)
@@ -24,14 +24,14 @@ let serialize (simd_unit: Libcrux_intrinsics.Avx2_extract.t_Vec256) (out: t_Slic
           (mk_i32 0)
           (mk_i32 22)
         <:
-        Libcrux_intrinsics.Avx2_extract.t_Vec256)
+        Minicore.Core_arch.X86.t_e_ee_m256i)
   in
-  let adjacent_2_combined:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
-    Libcrux_intrinsics.Avx2_extract.mm256_srli_epi64 (mk_i32 22) adjacent_2_combined
+  let adjacent_2_combined:Minicore.Core_arch.X86.t_e_ee_m256i =
+    Libcrux_intrinsics.Avx2.mm256_srli_epi64 (mk_i32 22) adjacent_2_combined
   in
-  let adjacent_4_combined:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
-    Libcrux_intrinsics.Avx2_extract.mm256_permutevar8x32_epi32 adjacent_2_combined
-      (Libcrux_intrinsics.Avx2_extract.mm256_set_epi32 (mk_i32 0)
+  let adjacent_4_combined:Minicore.Core_arch.X86.t_e_ee_m256i =
+    Libcrux_intrinsics.Avx2.mm256_permutevar8x32_epi32 adjacent_2_combined
+      (Libcrux_intrinsics.Avx2.mm256_set_epi32 (mk_i32 0)
           (mk_i32 0)
           (mk_i32 6)
           (mk_i32 4)
@@ -40,11 +40,11 @@ let serialize (simd_unit: Libcrux_intrinsics.Avx2_extract.t_Vec256) (out: t_Slic
           (mk_i32 2)
           (mk_i32 0)
         <:
-        Libcrux_intrinsics.Avx2_extract.t_Vec256)
+        Minicore.Core_arch.X86.t_e_ee_m256i)
   in
-  let adjacent_4_combined:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
-    Libcrux_intrinsics.Avx2_extract.mm256_sllv_epi32 adjacent_4_combined
-      (Libcrux_intrinsics.Avx2_extract.mm256_set_epi32 (mk_i32 0)
+  let adjacent_4_combined:Minicore.Core_arch.X86.t_e_ee_m256i =
+    Libcrux_intrinsics.Avx2.mm256_sllv_epi32 adjacent_4_combined
+      (Libcrux_intrinsics.Avx2.mm256_set_epi32 (mk_i32 0)
           (mk_i32 12)
           (mk_i32 0)
           (mk_i32 12)
@@ -53,20 +53,20 @@ let serialize (simd_unit: Libcrux_intrinsics.Avx2_extract.t_Vec256) (out: t_Slic
           (mk_i32 0)
           (mk_i32 12)
         <:
-        Libcrux_intrinsics.Avx2_extract.t_Vec256)
+        Minicore.Core_arch.X86.t_e_ee_m256i)
   in
-  let adjacent_4_combined:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
-    Libcrux_intrinsics.Avx2_extract.mm256_srli_epi64 (mk_i32 12) adjacent_4_combined
+  let adjacent_4_combined:Minicore.Core_arch.X86.t_e_ee_m256i =
+    Libcrux_intrinsics.Avx2.mm256_srli_epi64 (mk_i32 12) adjacent_4_combined
   in
-  let lower_4_:Libcrux_intrinsics.Avx2_extract.t_Vec128 =
-    Libcrux_intrinsics.Avx2_extract.mm256_castsi256_si128 adjacent_4_combined
+  let lower_4_:Minicore.Core_arch.X86.t_e_ee_m128i =
+    Libcrux_intrinsics.Avx2.mm256_castsi256_si128 adjacent_4_combined
   in
   let serialized:t_Array u8 (mk_usize 24) =
     Rust_primitives.Hax.Monomorphized_update_at.update_at_range serialized
       ({ Core.Ops.Range.f_start = mk_usize 0; Core.Ops.Range.f_end = mk_usize 16 }
         <:
         Core.Ops.Range.t_Range usize)
-      (Libcrux_intrinsics.Avx2_extract.mm_storeu_bytes_si128 (serialized.[ {
+      (Libcrux_intrinsics.Avx2.mm_storeu_bytes_si128 (serialized.[ {
                 Core.Ops.Range.f_start = mk_usize 0;
                 Core.Ops.Range.f_end = mk_usize 16
               }
@@ -78,15 +78,15 @@ let serialize (simd_unit: Libcrux_intrinsics.Avx2_extract.t_Vec256) (out: t_Slic
         <:
         t_Slice u8)
   in
-  let upper_4_:Libcrux_intrinsics.Avx2_extract.t_Vec128 =
-    Libcrux_intrinsics.Avx2_extract.mm256_extracti128_si256 (mk_i32 1) adjacent_4_combined
+  let upper_4_:Minicore.Core_arch.X86.t_e_ee_m128i =
+    Libcrux_intrinsics.Avx2.mm256_extracti128_si256 (mk_i32 1) adjacent_4_combined
   in
   let serialized:t_Array u8 (mk_usize 24) =
     Rust_primitives.Hax.Monomorphized_update_at.update_at_range serialized
       ({ Core.Ops.Range.f_start = mk_usize 5; Core.Ops.Range.f_end = mk_usize 21 }
         <:
         Core.Ops.Range.t_Range usize)
-      (Libcrux_intrinsics.Avx2_extract.mm_storeu_bytes_si128 (serialized.[ {
+      (Libcrux_intrinsics.Avx2.mm_storeu_bytes_si128 (serialized.[ {
                 Core.Ops.Range.f_start = mk_usize 5;
                 Core.Ops.Range.f_end = mk_usize 21
               }
@@ -109,7 +109,10 @@ let serialize (simd_unit: Libcrux_intrinsics.Avx2_extract.t_Vec256) (out: t_Slic
   in
   out
 
-let deserialize (bytes: t_Slice u8) (out: Libcrux_intrinsics.Avx2_extract.t_Vec256) =
+let deserialize__v_COEFFICIENT_MASK: i32 = (mk_i32 1 <<! mk_i32 10 <: i32) -! mk_i32 1
+
+let deserialize (bytes: t_Slice u8) (out: Minicore.Core_arch.X86.t_e_ee_m256i)
+    : Minicore.Core_arch.X86.t_e_ee_m256i =
   let _:Prims.unit =
     if true
     then
@@ -140,25 +143,25 @@ let deserialize (bytes: t_Slice u8) (out: Libcrux_intrinsics.Avx2_extract.t_Vec2
         <:
         t_Slice u8)
   in
-  let bytes_loaded:Libcrux_intrinsics.Avx2_extract.t_Vec128 =
-    Libcrux_intrinsics.Avx2_extract.mm_loadu_si128 (bytes_extended <: t_Slice u8)
+  let bytes_loaded:Minicore.Core_arch.X86.t_e_ee_m128i =
+    Libcrux_intrinsics.Avx2.mm_loadu_si128 (bytes_extended <: t_Slice u8)
   in
-  let bytes_loaded:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
-    Libcrux_intrinsics.Avx2_extract.mm256_set_m128i bytes_loaded bytes_loaded
+  let bytes_loaded:Minicore.Core_arch.X86.t_e_ee_m256i =
+    Libcrux_intrinsics.Avx2.mm256_set_m128i bytes_loaded bytes_loaded
   in
-  let coefficients:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
-    Libcrux_intrinsics.Avx2_extract.mm256_shuffle_epi8 bytes_loaded
-      (Libcrux_intrinsics.Avx2_extract.mm256_set_epi8 (mk_i8 (-1)) (mk_i8 (-1)) (mk_i8 9) (mk_i8 8)
+  let coefficients:Minicore.Core_arch.X86.t_e_ee_m256i =
+    Libcrux_intrinsics.Avx2.mm256_shuffle_epi8 bytes_loaded
+      (Libcrux_intrinsics.Avx2.mm256_set_epi8 (mk_i8 (-1)) (mk_i8 (-1)) (mk_i8 9) (mk_i8 8)
           (mk_i8 (-1)) (mk_i8 (-1)) (mk_i8 8) (mk_i8 7) (mk_i8 (-1)) (mk_i8 (-1)) (mk_i8 7)
           (mk_i8 6) (mk_i8 (-1)) (mk_i8 (-1)) (mk_i8 6) (mk_i8 5) (mk_i8 (-1)) (mk_i8 (-1))
           (mk_i8 4) (mk_i8 3) (mk_i8 (-1)) (mk_i8 (-1)) (mk_i8 3) (mk_i8 2) (mk_i8 (-1))
           (mk_i8 (-1)) (mk_i8 2) (mk_i8 1) (mk_i8 (-1)) (mk_i8 (-1)) (mk_i8 1) (mk_i8 0)
         <:
-        Libcrux_intrinsics.Avx2_extract.t_Vec256)
+        Minicore.Core_arch.X86.t_e_ee_m256i)
   in
-  let coefficients:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
-    Libcrux_intrinsics.Avx2_extract.mm256_srlv_epi32 coefficients
-      (Libcrux_intrinsics.Avx2_extract.mm256_set_epi32 (mk_i32 6)
+  let coefficients:Minicore.Core_arch.X86.t_e_ee_m256i =
+    Libcrux_intrinsics.Avx2.mm256_srlv_epi32 coefficients
+      (Libcrux_intrinsics.Avx2.mm256_set_epi32 (mk_i32 6)
           (mk_i32 4)
           (mk_i32 2)
           (mk_i32 0)
@@ -167,12 +170,12 @@ let deserialize (bytes: t_Slice u8) (out: Libcrux_intrinsics.Avx2_extract.t_Vec2
           (mk_i32 2)
           (mk_i32 0)
         <:
-        Libcrux_intrinsics.Avx2_extract.t_Vec256)
+        Minicore.Core_arch.X86.t_e_ee_m256i)
   in
-  let out:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
-    Libcrux_intrinsics.Avx2_extract.mm256_and_si256 coefficients
-      (Libcrux_intrinsics.Avx2_extract.mm256_set1_epi32 deserialize__v_COEFFICIENT_MASK
+  let out:Minicore.Core_arch.X86.t_e_ee_m256i =
+    Libcrux_intrinsics.Avx2.mm256_and_si256 coefficients
+      (Libcrux_intrinsics.Avx2.mm256_set1_epi32 deserialize__v_COEFFICIENT_MASK
         <:
-        Libcrux_intrinsics.Avx2_extract.t_Vec256)
+        Minicore.Core_arch.X86.t_e_ee_m256i)
   in
   out

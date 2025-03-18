@@ -1,5 +1,5 @@
 module Libcrux_ml_dsa.Encoding.Gamma1
-#set-options "--fuel 0 --ifuel 1 --z3rlimit 100"
+#set-options "--fuel 0 --ifuel 1 --z3rlimit 80"
 open Core
 open FStar.Mul
 
@@ -17,7 +17,7 @@ let serialize
       (re: Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
       (serialized: t_Slice u8)
       (gamma1_exponent: usize)
-     =
+    : t_Slice u8 =
   let serialized:t_Slice u8 =
     Rust_primitives.Hax.Folds.fold_enumerated_slice (re.Libcrux_ml_dsa.Polynomial.f_simd_units
         <:
@@ -73,7 +73,7 @@ let deserialize
       (gamma1_exponent: usize)
       (serialized: t_Slice u8)
       (result: Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
-     =
+    : Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit =
   let result:Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit =
     Rust_primitives.Hax.Folds.fold_range (mk_usize 0)
       (Core.Slice.impl__len #v_SIMDUnit

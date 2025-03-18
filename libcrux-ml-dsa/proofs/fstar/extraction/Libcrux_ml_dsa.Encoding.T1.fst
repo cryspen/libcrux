@@ -1,5 +1,5 @@
 module Libcrux_ml_dsa.Encoding.T1
-#set-options "--fuel 0 --ifuel 1 --z3rlimit 100"
+#set-options "--fuel 0 --ifuel 1 --z3rlimit 80"
 open Core
 open FStar.Mul
 
@@ -9,6 +9,8 @@ let _ =
   let open Libcrux_ml_dsa.Simd.Traits in
   ()
 
+let serialize__v_OUTPUT_BYTES_PER_SIMD_UNIT: usize = mk_usize 10
+
 let serialize
       (#v_SIMDUnit: Type0)
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
@@ -16,7 +18,7 @@ let serialize
           Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit)
       (re: Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
       (serialized: t_Slice u8)
-     =
+    : t_Slice u8 =
   let serialized:t_Slice u8 =
     Rust_primitives.Hax.Folds.fold_enumerated_slice (re.Libcrux_ml_dsa.Polynomial.f_simd_units
         <:
@@ -58,6 +60,8 @@ let serialize
   in
   serialized
 
+let deserialize__v_WINDOW: usize = mk_usize 10
+
 let deserialize
       (#v_SIMDUnit: Type0)
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
@@ -65,7 +69,7 @@ let deserialize
           Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit)
       (serialized: t_Slice u8)
       (result: Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
-     =
+    : Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit =
   let result:Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit =
     Rust_primitives.Hax.Folds.fold_range (mk_usize 0)
       (Core.Slice.impl__len #v_SIMDUnit

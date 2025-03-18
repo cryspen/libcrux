@@ -1,5 +1,5 @@
 module Libcrux_ml_dsa.Pre_hash
-#set-options "--fuel 0 --ifuel 1 --z3rlimit 100"
+#set-options "--fuel 0 --ifuel 1 --z3rlimit 80"
 open Core
 open FStar.Mul
 
@@ -8,6 +8,50 @@ let _ =
   (* The implicit dependencies arise from typeclasses instances. *)
   let open Libcrux_ml_dsa.Hash_functions.Shake128 in
   ()
+
+let v_PRE_HASH_OID_LEN: usize = mk_usize 11
+
+class t_PreHash (v_Self: Type0) = {
+  f_oid_pre:Prims.unit -> Type0;
+  f_oid_post:Prims.unit -> t_Array u8 (mk_usize 11) -> Type0;
+  f_oid:x0: Prims.unit
+    -> Prims.Pure (t_Array u8 (mk_usize 11)) (f_oid_pre x0) (fun result -> f_oid_post x0 result);
+  f_hash_pre:
+      #v_Shake128: Type0 ->
+      {| i1: Libcrux_ml_dsa.Hash_functions.Shake128.t_Xof v_Shake128 |} ->
+      t_Slice u8 ->
+      t_Slice u8
+    -> Type0;
+  f_hash_post:
+      #v_Shake128: Type0 ->
+      {| i1: Libcrux_ml_dsa.Hash_functions.Shake128.t_Xof v_Shake128 |} ->
+      t_Slice u8 ->
+      t_Slice u8 ->
+      t_Slice u8
+    -> Type0;
+  f_hash:
+      #v_Shake128: Type0 ->
+      {| i1: Libcrux_ml_dsa.Hash_functions.Shake128.t_Xof v_Shake128 |} ->
+      x0: t_Slice u8 ->
+      x1: t_Slice u8
+    -> Prims.Pure (t_Slice u8)
+        (f_hash_pre #v_Shake128 #i1 x0 x1)
+        (fun result -> f_hash_post #v_Shake128 #i1 x0 x1 result)
+}
+
+/// An implementation of the pre-hash trait for the SHAKE-128 XOF with
+/// digest length 256 bytes.
+type t_SHAKE128_PH = | SHAKE128_PH : t_SHAKE128_PH
+
+let v_SHAKE128_OID: t_Array u8 (mk_usize 11) =
+  let list =
+    [
+      mk_u8 6; mk_u8 9; mk_u8 96; mk_u8 134; mk_u8 72; mk_u8 1; mk_u8 101; mk_u8 3; mk_u8 4; mk_u8 2;
+      mk_u8 11
+    ]
+  in
+  FStar.Pervasives.assert_norm (Prims.eq2 (List.Tot.length list) 11);
+  Rust_primitives.Hax.array_of_list 11 list
 
 [@@ FStar.Tactics.Typeclasses.tcinstance]
 let impl: t_PreHash t_SHAKE128_PH =
@@ -66,13 +110,23 @@ let impl: t_PreHash t_SHAKE128_PH =
       output
   }
 
-let t_DomainSeparationError_cast_to_repr (x: t_DomainSeparationError) =
+/// Binds the context string to an optional pre-hash OID identifying
+/// the hash function or XOF used for pre-hashing.
+type t_DomainSeparationContext = {
+  f_context:t_Slice u8;
+  f_pre_hash_oid:Core.Option.t_Option (t_Array u8 (mk_usize 11))
+}
+
+type t_DomainSeparationError = | DomainSeparationError_ContextTooLongError : t_DomainSeparationError
+
+let t_DomainSeparationError_cast_to_repr (x: t_DomainSeparationError) : isize =
   match x <: t_DomainSeparationError with | DomainSeparationError_ContextTooLongError  -> mk_isize 0
 
+/// `context` must be at most 255 bytes long.
 let impl_1__new
       (context: t_Slice u8)
       (pre_hash_oid: Core.Option.t_Option (t_Array u8 (mk_usize 11)))
-     =
+    : Core.Result.t_Result t_DomainSeparationContext t_DomainSeparationError =
   if (Core.Slice.impl__len #u8 context <: usize) >. Libcrux_ml_dsa.Constants.v_CONTEXT_MAX_LEN
   then
     Core.Result.Result_Err (DomainSeparationError_ContextTooLongError <: t_DomainSeparationError)
@@ -84,9 +138,12 @@ let impl_1__new
     <:
     Core.Result.t_Result t_DomainSeparationContext t_DomainSeparationError
 
-let impl_1__context (self: t_DomainSeparationContext) = self.f_context
+/// Returns the context, guaranteed to be at most 255 bytes long.
+let impl_1__context (self: t_DomainSeparationContext) : t_Slice u8 = self.f_context
 
-let impl_1__pre_hash_oid (self: t_DomainSeparationContext) = self.f_pre_hash_oid
+/// Returns the pre-hash OID, if any.
+let impl_1__pre_hash_oid (self: t_DomainSeparationContext)
+    : Core.Option.t_Option (t_Array u8 (mk_usize 11)) = self.f_pre_hash_oid
 
 [@@ FStar.Tactics.Typeclasses.tcinstance]
 let impl_2: Core.Convert.t_From Libcrux_ml_dsa.Types.t_SigningError t_DomainSeparationError =

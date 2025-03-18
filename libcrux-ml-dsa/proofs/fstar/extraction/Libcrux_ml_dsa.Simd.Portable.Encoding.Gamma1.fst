@@ -1,12 +1,14 @@
 module Libcrux_ml_dsa.Simd.Portable.Encoding.Gamma1
-#set-options "--fuel 0 --ifuel 1 --z3rlimit 100"
+#set-options "--fuel 0 --ifuel 1 --z3rlimit 80"
 open Core
 open FStar.Mul
+
+let serialize_when_gamma1_is_2_pow_17___v_GAMMA1: i32 = mk_i32 1 <<! mk_i32 17
 
 let serialize_when_gamma1_is_2_pow_17_
       (simd_unit: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients)
       (serialized: t_Slice u8)
-     =
+    : t_Slice u8 =
   let serialized:t_Slice u8 =
     Rust_primitives.Hax.Folds.fold_enumerated_chunked_slice (mk_usize 4)
       (simd_unit.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values <: t_Slice i32)
@@ -103,10 +105,12 @@ let serialize_when_gamma1_is_2_pow_17_
   in
   serialized
 
+let serialize_when_gamma1_is_2_pow_19___v_GAMMA1: i32 = mk_i32 1 <<! mk_i32 19
+
 let serialize_when_gamma1_is_2_pow_19_
       (simd_unit: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients)
       (serialized: t_Slice u8)
-     =
+    : t_Slice u8 =
   let serialized:t_Slice u8 =
     Rust_primitives.Hax.Folds.fold_enumerated_chunked_slice (mk_usize 2)
       (simd_unit.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values <: t_Slice i32)
@@ -165,7 +169,7 @@ let serialize
       (simd_unit: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients)
       (serialized: t_Slice u8)
       (gamma1_exponent: usize)
-     =
+    : t_Slice u8 =
   let serialized:t_Slice u8 =
     match cast (gamma1_exponent <: usize) <: u8 with
     | Rust_primitives.Integers.MkInt 17 -> serialize_when_gamma1_is_2_pow_17_ simd_unit serialized
@@ -174,10 +178,15 @@ let serialize
   in
   serialized
 
+let deserialize_when_gamma1_is_2_pow_17___v_GAMMA1: i32 = mk_i32 1 <<! mk_i32 17
+
+let deserialize_when_gamma1_is_2_pow_17___v_GAMMA1_TIMES_2_BITMASK: i32 =
+  (deserialize_when_gamma1_is_2_pow_17___v_GAMMA1 <<! mk_i32 1 <: i32) -! mk_i32 1
+
 let deserialize_when_gamma1_is_2_pow_17_
       (serialized: t_Slice u8)
       (simd_unit: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients)
-     =
+    : Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients =
   let _:Prims.unit =
     if true
     then
@@ -293,10 +302,15 @@ let deserialize_when_gamma1_is_2_pow_17_
   in
   simd_unit
 
+let deserialize_when_gamma1_is_2_pow_19___v_GAMMA1: i32 = mk_i32 1 <<! mk_i32 19
+
+let deserialize_when_gamma1_is_2_pow_19___v_GAMMA1_TIMES_2_BITMASK: i32 =
+  (deserialize_when_gamma1_is_2_pow_19___v_GAMMA1 <<! mk_i32 1 <: i32) -! mk_i32 1
+
 let deserialize_when_gamma1_is_2_pow_19_
       (serialized: t_Slice u8)
       (simd_unit: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients)
-     =
+    : Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients =
   let _:Prims.unit =
     if true
     then
@@ -367,7 +381,7 @@ let deserialize
       (serialized: t_Slice u8)
       (out: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients)
       (gamma1_exponent: usize)
-     =
+    : Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients =
   let out:Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients =
     match cast (gamma1_exponent <: usize) <: u8 with
     | Rust_primitives.Integers.MkInt 17 -> deserialize_when_gamma1_is_2_pow_17_ serialized out

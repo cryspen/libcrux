@@ -1,5 +1,5 @@
 module Libcrux_ml_dsa.Matrix
-#set-options "--fuel 0 --ifuel 1 --z3rlimit 100"
+#set-options "--fuel 0 --ifuel 1 --z3rlimit 80"
 open Core
 open FStar.Mul
 
@@ -9,6 +9,7 @@ let _ =
   let open Libcrux_ml_dsa.Simd.Traits in
   ()
 
+/// Compute InvertNTT(Â ◦ ŝ₁) + s₂
 let compute_as1_plus_s2
       (#v_SIMDUnit: Type0)
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
@@ -17,7 +18,7 @@ let compute_as1_plus_s2
       (rows_in_a columns_in_a: usize)
       (a_as_ntt s1_ntt s1_s2 result:
           t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit))
-     =
+    : t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) =
   let result:t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) =
     Rust_primitives.Hax.Folds.fold_range (mk_usize 0)
       rows_in_a
@@ -110,6 +111,7 @@ let compute_as1_plus_s2
   in
   result
 
+/// Compute InvertNTT(Â ◦ ŷ)
 let compute_matrix_x_mask
       (#v_SIMDUnit: Type0)
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
@@ -117,7 +119,7 @@ let compute_matrix_x_mask
           Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit)
       (rows_in_a columns_in_a: usize)
       (matrix mask result: t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit))
-     =
+    : t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) =
   let result:t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) =
     Rust_primitives.Hax.Folds.fold_range (mk_usize 0)
       rows_in_a
@@ -193,7 +195,7 @@ let vector_times_ring_element
           Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit)
       (vector: t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit))
       (ring_element: Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
-     =
+    : t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) =
   let vector:t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) =
     Rust_primitives.Hax.Folds.fold_range (mk_usize 0)
       (Core.Slice.impl__len #(Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) vector
@@ -239,7 +241,7 @@ let add_vectors
           Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit)
       (dimension: usize)
       (lhs rhs: t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit))
-     =
+    : t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) =
   let lhs:t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) =
     Rust_primitives.Hax.Folds.fold_range (mk_usize 0)
       dimension
@@ -270,7 +272,7 @@ let subtract_vectors
           Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit)
       (dimension: usize)
       (lhs rhs: t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit))
-     =
+    : t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) =
   let lhs:t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) =
     Rust_primitives.Hax.Folds.fold_range (mk_usize 0)
       dimension
@@ -294,6 +296,7 @@ let subtract_vectors
   in
   lhs
 
+/// Compute InvertNTT(Â ◦ ẑ - ĉ ◦ NTT(t₁2ᵈ))
 let compute_w_approx
       (#v_SIMDUnit: Type0)
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
@@ -304,7 +307,7 @@ let compute_w_approx
           t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit))
       (verifier_challenge_as_ntt: Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
       (t1: t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit))
-     =
+    : t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) =
   let t1:t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) =
     Rust_primitives.Hax.Folds.fold_range (mk_usize 0)
       rows_in_a

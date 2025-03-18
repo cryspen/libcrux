@@ -1,9 +1,11 @@
 module Libcrux_ml_dsa.Ml_dsa_87_.Avx2
-#set-options "--fuel 0 --ifuel 1 --z3rlimit 100"
+#set-options "--fuel 0 --ifuel 1 --z3rlimit 80"
 open Core
 open FStar.Mul
 
-let generate_key_pair (randomness: t_Array u8 (mk_usize 32)) =
+/// Generate an ML-DSA-87 Key Pair
+let generate_key_pair (randomness: t_Array u8 (mk_usize 32))
+    : Libcrux_ml_dsa.Types.t_MLDSAKeyPair (mk_usize 2592) (mk_usize 4896) =
   let signing_key:t_Array u8 (mk_usize 4896) =
     Rust_primitives.Hax.repeat (mk_u8 0) (mk_usize 4896)
   in
@@ -27,11 +29,16 @@ let generate_key_pair (randomness: t_Array u8 (mk_usize 32)) =
   <:
   Libcrux_ml_dsa.Types.t_MLDSAKeyPair (mk_usize 2592) (mk_usize 4896)
 
+/// Generate an ML-DSA-87 Signature
+/// The parameter `context` is used for domain separation
+/// and is a byte string of length at most 255 bytes. It
+/// may also be empty.
 let sign
       (signing_key: Libcrux_ml_dsa.Types.t_MLDSASigningKey (mk_usize 4896))
       (message context: t_Slice u8)
       (randomness: t_Array u8 (mk_usize 32))
-     =
+    : Core.Result.t_Result (Libcrux_ml_dsa.Types.t_MLDSASignature (mk_usize 4627))
+      Libcrux_ml_dsa.Types.t_SigningError =
   Libcrux_ml_dsa.Ml_dsa_generic.Instantiations.Avx2.Ml_dsa_87_.sign (Libcrux_ml_dsa.Types.impl__as_ref
         (mk_usize 4896)
         signing_key
@@ -41,12 +48,17 @@ let sign
     context
     randomness
 
+/// Generate an ML-DSA-87 Signature
+/// The parameter `context` is used for domain separation
+/// and is a byte string of length at most 255 bytes. It
+/// may also be empty.
 let sign_mut
       (signing_key: Libcrux_ml_dsa.Types.t_MLDSASigningKey (mk_usize 4896))
       (message context: t_Slice u8)
       (randomness: t_Array u8 (mk_usize 32))
       (signature: t_Array u8 (mk_usize 4627))
-     =
+    : (t_Array u8 (mk_usize 4627) &
+      Core.Result.t_Result Prims.unit Libcrux_ml_dsa.Types.t_SigningError) =
   let tmp0, out:(t_Array u8 (mk_usize 4627) &
     Core.Result.t_Result Prims.unit Libcrux_ml_dsa.Types.t_SigningError) =
     Libcrux_ml_dsa.Ml_dsa_generic.Instantiations.Avx2.Ml_dsa_87_.sign_mut (Libcrux_ml_dsa.Types.impl__as_ref
@@ -65,11 +77,16 @@ let sign_mut
   <:
   (t_Array u8 (mk_usize 4627) & Core.Result.t_Result Prims.unit Libcrux_ml_dsa.Types.t_SigningError)
 
+/// Generate a HashML-DSA-87 Signature, with a SHAKE128 pre-hashing
+/// The parameter `context` is used for domain separation
+/// and is a byte string of length at most 255 bytes. It
+/// may also be empty.
 let sign_pre_hashed_shake128
       (signing_key: Libcrux_ml_dsa.Types.t_MLDSASigningKey (mk_usize 4896))
       (message context: t_Slice u8)
       (randomness: t_Array u8 (mk_usize 32))
-     =
+    : Core.Result.t_Result (Libcrux_ml_dsa.Types.t_MLDSASignature (mk_usize 4627))
+      Libcrux_ml_dsa.Types.t_SigningError =
   let pre_hash_buffer:t_Array u8 (mk_usize 256) =
     Rust_primitives.Hax.repeat (mk_u8 0) (mk_usize 256)
   in
@@ -89,11 +106,15 @@ let sign_pre_hashed_shake128
   let pre_hash_buffer:t_Array u8 (mk_usize 256) = tmp0 in
   out
 
+/// Verify an ML-DSA-87 Signature
+/// The parameter `context` is used for domain separation
+/// and is a byte string of length at most 255 bytes. It
+/// may also be empty.
 let verify
       (verification_key: Libcrux_ml_dsa.Types.t_MLDSAVerificationKey (mk_usize 2592))
       (message context: t_Slice u8)
       (signature: Libcrux_ml_dsa.Types.t_MLDSASignature (mk_usize 4627))
-     =
+    : Core.Result.t_Result Prims.unit Libcrux_ml_dsa.Types.t_VerificationError =
   Libcrux_ml_dsa.Ml_dsa_generic.Instantiations.Avx2.Ml_dsa_87_.verify (Libcrux_ml_dsa.Types.impl_2__as_ref
         (mk_usize 2592)
         verification_key
@@ -103,11 +124,15 @@ let verify
     context
     (Libcrux_ml_dsa.Types.impl_4__as_ref (mk_usize 4627) signature <: t_Array u8 (mk_usize 4627))
 
+/// Verify a HashML-DSA-87 Signature, with a SHAKE128 pre-hashing
+/// The parameter `context` is used for domain separation
+/// and is a byte string of length at most 255 bytes. It
+/// may also be empty.
 let verify_pre_hashed_shake128
       (verification_key: Libcrux_ml_dsa.Types.t_MLDSAVerificationKey (mk_usize 2592))
       (message context: t_Slice u8)
       (signature: Libcrux_ml_dsa.Types.t_MLDSASignature (mk_usize 4627))
-     =
+    : Core.Result.t_Result Prims.unit Libcrux_ml_dsa.Types.t_VerificationError =
   let pre_hash_buffer:t_Array u8 (mk_usize 256) =
     Rust_primitives.Hax.repeat (mk_u8 0) (mk_usize 256)
   in
