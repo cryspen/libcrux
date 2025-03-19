@@ -1,5 +1,76 @@
-//! This module contains types for producing timed traces of program runs. Make sure to also look
-//! at the `trace_span` macro from `libcrux_macros`.
+//! This module provides tools for annotating functions such that calls are traced.
+//! That means that whenever the function is called and when it returns, an entry
+//! is written to the specified trace.
+//!
+//! Usually, that trace will be a static variable with interior mutability. If in
+//! doubt, define it something like this in the library/application code:
+//!
+//! In this example we use `cfg` and `cfg_attr` to ensure that the tracing only runs
+//! during testing. In many cases one might want to also restrict this to only trace
+//! if a certain feature is enabled. This can be done using the same mechanism.
+//!
+//! ```rust
+//! # #[cfg(test)]
+//! # use std::{
+//! #  sync::LazyLock,
+//! #  time::Instant,
+//! # };
+//! # #[cfg(test)]
+//! # use libcrux_test_utils::tracing::MutexTrace;
+//! #
+//! #[cfg(test)]
+//! static TRACE: LazyLock<MutexTrace<&'static str, Instant>> =
+//!     LazyLock::new(|| MutexTrace::default());
+//! ```
+//!
+//! The `MutexTrace` can be defined and used as a static variable without unsafe, but,
+//! depending on the setting, my introduce too much overhead. Any type that implements
+//! `Trace` works.
+//!
+//! Then, annotate a function like this:
+//!
+//! ```rust
+//! # #[cfg(test)]
+//! # use std::{
+//! #  sync::LazyLock,
+//! #  time::Instant,
+//! # };
+//! # #[cfg(test)]
+//! # use libcrux_test_utils::tracing::MutexTrace;
+//! # #[cfg(test)]
+//! # static TRACE: LazyLock<MutexTrace<&'static str, Instant>> =
+//! #     LazyLock::new(|| MutexTrace::default());
+//! #
+//! // trace this function into `TRACE` if we are running the tests
+//! #[cfg_attr(test, libcrux_macros::trace_span("my_app_fun", TRACE))]
+//! fn my_app_function() {
+//!   // ... some long-running code ...
+//! }
+//! ```
+//!
+//! The macro is called `trace_span` because it traces a start and end,
+//! identified by a label. The type of the label can be chosen generically, here
+//! it is `&'static str`. There also are on-the-fly tracing facilities.
+//!
+//! After the code in question ran, the trace can be inspected. Due to the use
+//! of  interior mutability, there is no generic way to get a reference to the
+//! inner slice; therefore, it is easiest to just clone it. We expect that this
+//! already happens in test code, so we don't add the `#[cfg(test)]` here.
+//!
+//! ```rust
+//! # use std::{
+//! #  sync::LazyLock,
+//! #  time::Instant,
+//! # };
+//! # use libcrux_test_utils::tracing::MutexTrace;
+//! # static TRACE: LazyLock<MutexTrace<&'static str, Instant>> =
+//! #     LazyLock::new(|| MutexTrace::default());
+//! #
+//! // make sure the trait is in scope
+//! use libcrux_test_utils::tracing::Trace as _;
+//!
+//! println!("{:?}", TRACE.clone().report());
+//! ```
 
 use std::{
     borrow::Borrow,
@@ -13,7 +84,7 @@ use std::{
 /// `trace_span` function attribute macro in `libcrux-macros``, but it can also be called manually.
 ///
 /// When used with the `trace_span` macros, this needs to be a global static. For defining and
-/// instantiating this, look into the `lazy_static` crate.
+/// instantiating this, take a look at [`std::sync::LazyLock`].
 pub trait Trace: Sized {
     /// The label type used in events. Typically either `&'static str` or an enum.
     type Label: Clone;
