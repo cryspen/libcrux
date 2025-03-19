@@ -307,7 +307,8 @@ pub(crate) fn montgomery_reduce_element(value: i32) -> MontgomeryFieldElement {
     );
     let k_times_modulus = (k as i16 as i32) * (FIELD_MODULUS as i32);
     hax_lib::fstar!(
-        r#"Spec.Utils.lemma_mul_i16b (pow2 15) (3329) (cast (k <: i32) <: i16) Libcrux_ml_kem.Vector.Traits.v_FIELD_MODULUS;
+        r#"assert_norm (pow2 15 * 3329 < pow2 31);
+           Spec.Utils.lemma_mul_i16b (pow2 15) (3329) (cast (k <: i32) <: i16) Libcrux_ml_kem.Vector.Traits.v_FIELD_MODULUS;
                      assert (Spec.Utils.is_i32b (pow2 15 * 3329) k_times_modulus)"#
     );
     let c = (k_times_modulus >> MONTGOMERY_SHIFT) as i16;

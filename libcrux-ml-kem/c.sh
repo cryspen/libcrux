@@ -27,23 +27,27 @@ features=""
 eurydice_glue=1
 karamel_include=1
 unrolling=16
+format=1
+cpp17=
 
 # Parse command line arguments.
 all_args=("$@")
 while [ $# -gt 0 ]; do
     case "$1" in
-    -p | --portable) portable_only=1 ;;
-    --no-hacl) no_hacl=1 ;;
-    --no-charon) no_charon=1 ;;
-    -c | --clean) clean=1 ;;
-    --config) config="$2"; shift ;;
-    --out) out="$2"; shift ;;
-    --glue) glue="$2"; shift ;;
-    --mlkem768) features="${features} --cargo-arg=--no-default-features --cargo-arg=--features=mlkem768" ;;
-    --kyber768) features="${features} --cargo-arg=--features=kyber" ;;
-    --no-glue) eurydice_glue=0 ;;
-    --no-karamel_include) karamel_include=0 ;;
-    --no-unrolling) unrolling=0 ;;
+        -p | --portable) portable_only=1 ;;
+        --no-hacl) no_hacl=1 ;;
+        --no-charon) no_charon=1 ;;
+        -c | --clean) clean=1 ;;
+        --config) config="$2"; shift ;;
+        --out) out="$2"; shift ;;
+        --glue) glue="$2"; shift ;;
+        --mlkem768) features="${features} --cargo-arg=--no-default-features --cargo-arg=--features=mlkem768" ;;
+        --kyber768) features="${features} --cargo-arg=--features=kyber" ;;
+        --no-glue) eurydice_glue=0 ;;
+        --no-karamel_include) karamel_include=0 ;;
+        --no-unrolling) unrolling=0 ;;
+        --no-format) format=0 ;;
+        --cpp17) cpp17=-fc++17-compat ;;
     esac
     shift
 done
@@ -55,16 +59,18 @@ fi
 
 # TODO: add LIBCRUX_ENABLE_SIMD128=1 LIBCRUX_ENABLE_SIMD256=1 charon invocations
 if [[ "$no_charon" = 0 ]]; then
+    # Because of a Charon bug we have to clean the sha3 crate.
+    cargo clean -p libcrux-sha3
     rm -rf ../libcrux_ml_kem.llbc ../libcrux_sha3.llbc
     echo "Running charon (sha3) ..."
-    (cd ../libcrux-sha3 && RUSTFLAGS="--cfg eurydice" $CHARON_HOME/bin/charon)
+    (cd ../libcrux-sha3 && RUSTFLAGS="--cfg eurydice" $CHARON_HOME/bin/charon --remove-associated-types '*')
     if ! [[ -f ../libcrux_sha3.llbc ]]; then
-      echo "😱😱😱 You are the victim of this bug: https://hacspec.zulipchat.com/#narrow/stream/433829-Circus/topic/charon.20declines.20to.20generate.20an.20llbc.20file"
-      echo "Suggestion: rm -rf ../target or cargo clean"
-      exit 1
+        echo "😱😱😱 You are the victim of this bug: https://hacspec.zulipchat.com/#narrow/stream/433829-Circus/topic/charon.20declines.20to.20generate.20an.20llbc.20file"
+        echo "Suggestion: rm -rf ../target or cargo clean"
+        exit 1
     fi
     echo "Running charon (ml-kem) ..."
-    RUSTFLAGS="--cfg eurydice" $CHARON_HOME/bin/charon $features
+    RUSTFLAGS="--cfg eurydice" $CHARON_HOME/bin/charon --remove-associated-types '*' $features
 else
     echo "Skipping charon"
 fi
@@ -111,11 +117,11 @@ echo " */" >> header.txt
 # Run eurydice to extract the C code
 echo "Running eurydice ..."
 echo $EURYDICE_HOME/eurydice --config ../$config -funroll-loops $unrolling \
-    --header header.txt \
-    ../../libcrux_ml_kem.llbc ../../libcrux_sha3.llbc
+--header header.txt $cpp17 ../../libcrux_ml_kem.llbc ../../libcrux_sha3.llbc
+
 $EURYDICE_HOME/eurydice --config ../$config -funroll-loops $unrolling \
-    --header header.txt \
-    ../../libcrux_ml_kem.llbc ../../libcrux_sha3.llbc
+--header header.txt $cpp17 ../../libcrux_ml_kem.llbc ../../libcrux_sha3.llbc
+
 if [[ "$eurydice_glue" = 1 ]]; then
     cp $EURYDICE_HOME/include/eurydice_glue.h .
 fi
@@ -126,9 +132,11 @@ if [[ "$karamel_include" = 1 ]]; then
     cp -R $KRML_HOME/include karamel/
 fi
 
-find . -type f -name '*.c' -and -not -path '*_deps*' -exec clang-format-18 --style=Google -i "{}" \;
-find . -type f -name '*.h' -and -not -path '*_deps*' -exec clang-format-18 --style=Google -i "{}" \;
-if [ -d "internal" ]; then
-    clang-format-18 --style=Google -i internal/*.h
+if [[ "$format" = 1 ]]; then
+    find . -type f -name '*.c' -and -not -path '*_deps*' -exec clang-format-18 --style=Google -i "{}" \;
+    find . -type f -name '*.h' -and -not -path '*_deps*' -exec clang-format-18 --style=Google -i "{}" \;
+    if [ -d "internal" ]; then
+        clang-format-18 --style=Google -i internal/*.h
+    fi
+    clang-format-18 --style=Google -i intrinsics/*.h
 fi
-clang-format-18 --style=Google -i intrinsics/*.h

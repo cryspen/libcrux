@@ -67,6 +67,7 @@ jobs:
 
       - name: Extract C (header only)
         run: |
+          export HOME=/home/user
           ./boring.sh --no-clean
 
       - name: Upload header only C extraction
@@ -117,7 +118,7 @@ jobs:
 
       - name: 🔨 Build
         run: |
-          cmake -B build
+          CC=clang CXX=clang++ cmake -B build
           cmake --build build
 
       - name: 🏃🏻‍♀️ Test
