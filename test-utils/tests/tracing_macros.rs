@@ -1,4 +1,5 @@
 use std::{
+    sync::LazyLock,
     thread::sleep,
     time::{Duration, Instant},
 };
@@ -9,9 +10,8 @@ mod str_labels {
 
     use super::*;
 
-    lazy_static::lazy_static! {
-        static ref TRACE_STR: MutexTrace<&'static str, Instant> = Default::default();
-    }
+    static TRACE_STR: LazyLock<MutexTrace<&'static str, Instant>> =
+        LazyLock::new(|| MutexTrace::default());
 
     #[libcrux_macros::trace_span("maybe_slow", TRACE_STR)]
     fn maybe_slow_str() {
@@ -45,9 +45,8 @@ mod enum_labels {
         MaybeSlow,
     }
 
-    lazy_static::lazy_static! {
-        static ref TRACE_ENUM: MutexTrace<Label, Instant> = Default::default();
-    }
+    static TRACE_ENUM: LazyLock<MutexTrace<Label, Instant>> =
+        LazyLock::new(|| MutexTrace::default());
 
     #[libcrux_macros::trace_span(Label::MaybeSlow, TRACE_ENUM)]
     fn maybe_slow_enum() {

@@ -11,5 +11,4 @@ repository.workspace = true
 readme.workspace = true
 
 [dev-dependencies]
-lazy_static = "1.5"
 libcrux-macros = { path = "../macros/" }
