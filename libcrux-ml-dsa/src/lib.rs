@@ -18,6 +18,7 @@ mod sample;
 mod samplex4;
 mod simd;
 mod types;
+mod specs;
 
 // Public interface
 

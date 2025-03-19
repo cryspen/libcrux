@@ -10,12 +10,6 @@ let rejection_sample_coefficient (randomness:Seq.seq u8) (i:nat{i < (Seq.length 
   let b2' = if b2 >. mk_i32 127 then b2 -. mk_i32 128  else b2 in
   ((mk_i32 (pow2 16) *. b2') +. (mk_i32 (pow2 8) *. b1)) +. b0
 
-let rejection_sample_field_modulus_inner1
-  (randomness:Seq.seq u8)
-  (i:nat{i < (Seq.length randomness) / 3})
-  s : (Seq.seq i32) =
-  s
-
 let rejection_sample_field_modulus_inner
   (randomness:Seq.seq u8)
   (i:nat{i < (Seq.length randomness) / 3})

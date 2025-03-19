@@ -1,11 +1,9 @@
 use crate::constants::FIELD_MODULUS;
+use crate::specs::*;
 
 #[inline(always)]
-#[hax_lib::requires(fstar!(r#"Seq.length randomness / 3 <= Lib.IntTypes.max_size_t /\
-    Seq.length $randomness / 3 <= Seq.length $out"#))]
-#[hax_lib::ensures(|result| fstar!(r#"let s = Spec.MLDSA.Math.rejection_sample_field_modulus $randomness in
-    v $result <= Seq.length ${out}_future /\ v $result == Seq.length s /\
-    Seq.slice ${out}_future 0 (v $result) == s"#))]
+#[hax_lib::requires(rejection_sample_less_than_field_modulus_pre(randomness, out))]
+#[hax_lib::ensures(|r| rejection_sample_less_than_field_modulus_post(randomness, future(out), r))]
 pub fn rejection_sample_less_than_field_modulus(randomness: &[u8], out: &mut [i32]) -> usize {
     let mut sampled = 0;
     let _out_len = out.len();
@@ -51,11 +49,8 @@ pub fn rejection_sample_less_than_field_modulus(randomness: &[u8], out: &mut [i3
 
 #[inline(always)]
 #[hax_lib::fstar::options("--z3rlimit 800 --ext context_pruning --z3refresh")]
-#[hax_lib::requires(fstar!(r#"Seq.length randomness * 2 <= Lib.IntTypes.max_size_t /\
-    Seq.length $randomness * 2 <= Seq.length $out"#))]
-#[hax_lib::ensures(|result| fstar!(r#"let s = Spec.MLDSA.Math.rejection_sample_eta_2 $randomness in
-    v $result <= Seq.length ${out}_future /\ v $result == Seq.length s /\
-    Seq.slice ${out}_future 0 (v $result) == s"#))]
+#[hax_lib::requires(rejection_sample_less_than_eta_equals_2_pre(randomness, out))]
+#[hax_lib::ensures(|r| rejection_sample_less_than_eta_equals_2_post(randomness, future(out), r))]
 pub fn rejection_sample_less_than_eta_equals_2(randomness: &[u8], out: &mut [i32]) -> usize {
     let mut sampled = 0;
     let _out_len = out.len();
@@ -122,11 +117,8 @@ pub fn rejection_sample_less_than_eta_equals_2(randomness: &[u8], out: &mut [i32
 
 #[inline(always)]
 #[hax_lib::fstar::options("--ext context_pruning --z3refresh")]
-#[hax_lib::requires(fstar!(r#"Seq.length randomness * 2 <= Lib.IntTypes.max_size_t /\
-    Seq.length $randomness * 2 <= Seq.length $out"#))]
-#[hax_lib::ensures(|result| fstar!(r#"let s = Spec.MLDSA.Math.rejection_sample_eta_4 $randomness in
-    v $result <= Seq.length ${out}_future /\ v $result == Seq.length s /\
-    Seq.slice ${out}_future 0 (v $result) == s"#))]
+#[hax_lib::requires(rejection_sample_less_than_eta_equals_4_pre(randomness, out))]
+#[hax_lib::ensures(|r| rejection_sample_less_than_eta_equals_4_post(randomness, future(out), r))]
 pub fn rejection_sample_less_than_eta_equals_4(randomness: &[u8], out: &mut [i32]) -> usize {
     let mut sampled = 0;
     let _out_len = out.len();
