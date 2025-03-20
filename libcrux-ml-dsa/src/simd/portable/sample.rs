@@ -1,5 +1,5 @@
 use crate::constants::FIELD_MODULUS;
-use crate::specs::*;
+use crate::specs::simd::portable::sample::*;
 
 #[inline(always)]
 #[hax_lib::requires(rejection_sample_less_than_field_modulus_pre(randomness, out))]

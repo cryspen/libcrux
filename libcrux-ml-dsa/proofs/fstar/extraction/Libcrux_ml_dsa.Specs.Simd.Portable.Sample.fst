@@ -1,4 +1,4 @@
-module Libcrux_ml_dsa.Specs
+module Libcrux_ml_dsa.Specs.Simd.Portable.Sample
 #set-options "--fuel 0 --ifuel 1 --z3rlimit 100"
 open Core
 open FStar.Mul
@@ -43,8 +43,14 @@ let rejection_sample_less_than_eta_equals_2_post
 
 let rejection_sample_less_than_eta_equals_4_pre (randomness: t_Slice u8) (out: t_Slice i32)
     : Hax_lib.Prop.t_Prop =
-  Seq.length randomness * 2 <= Lib.IntTypes.max_size_t /\
-  Seq.length randomness * 2 <= Seq.length out
+  b2t
+  ((((Core.Slice.impl__len #u8 randomness <: usize) *! mk_usize 2 <: usize) <=. mk_usize 4294967295
+      <:
+      bool) &&
+    (((Core.Slice.impl__len #u8 randomness <: usize) *! mk_usize 2 <: usize) <=.
+      (Core.Slice.impl__len #i32 out <: usize)
+      <:
+      bool))
 
 let rejection_sample_less_than_eta_equals_4_post
       (randomness: t_Slice u8)
