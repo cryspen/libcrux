@@ -1,5 +1,5 @@
-use crate::traits::*;
 use super::classify::*;
+use crate::traits::*;
 use std::ops::*;
 
 pub type I8 = Secret<i8>;
@@ -96,15 +96,19 @@ impl<T: Not> Not for Secret<T> {
 }
 
 impl<U, T: Shl<U>> Shl<U> for Secret<T>
-    where T::Output: Into<T> {
+where
+    T::Output: Into<T>,
+{
     type Output = Secret<T>;
     fn shl(self, rhs: U) -> Self::Output {
         (self.0.shl(rhs).into()).into()
     }
 }
 
-impl<U, T: Shr<U>> Shr<U> for Secret<T> 
-    where T::Output: Into<T> {
+impl<U, T: Shr<U>> Shr<U> for Secret<T>
+where
+    T::Output: Into<T>,
+{
     type Output = Secret<T>;
     fn shr(self, rhs: U) -> Self::Output {
         (self.0.shr(rhs).into()).into()

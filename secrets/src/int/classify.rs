@@ -12,7 +12,6 @@ impl<T: Clone> Clone for Secret<T> {
 
 impl<T: Clone + Copy> Copy for Secret<T> {}
 
-
 impl<T: Scalar, const N: usize> Classify for [T; N] {
     type Classified = [Secret<T>; N];
     fn classify(self) -> [Secret<T>; N] {
@@ -40,7 +39,6 @@ impl<T: Scalar, const N: usize, const M: usize> Declassify for [[Secret<T>; N]; 
         self.map(|x| x.map(|y| y.0))
     }
 }
-
 
 impl<'a, T: Scalar> ClassifyRefMut for &'a mut T {
     type Classified = &'a mut Secret<T>;

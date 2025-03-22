@@ -564,10 +564,12 @@ pub(crate) fn serialize_11(v: PortableVector) -> [U8; 22] {
 pub(crate) fn deserialize_11_int(bytes: &[U8]) -> (I16, I16, I16, I16, I16, I16, I16, I16) {
     let r0 = (bytes[1].as_i16() & 0x7) << 8 | bytes[0].as_i16();
     let r1 = (bytes[2].as_i16() & 0x3F) << 5 | (bytes[1].as_i16() >> 3);
-    let r2 = (bytes[4].as_i16() & 0x1) << 10 | ((bytes[3].as_i16()) << 2) | ((bytes[2].as_i16()) >> 6);
+    let r2 =
+        (bytes[4].as_i16() & 0x1) << 10 | ((bytes[3].as_i16()) << 2) | ((bytes[2].as_i16()) >> 6);
     let r3 = (bytes[5].as_i16() & 0xF) << 7 | (bytes[4].as_i16() >> 1);
     let r4 = (bytes[6].as_i16() & 0x7F) << 4 | (bytes[5].as_i16() >> 4);
-    let r5 = (bytes[8].as_i16() & 0x3) << 9 | ((bytes[7].as_i16()) << 1) | ((bytes[6].as_i16()) >> 7);
+    let r5 =
+        (bytes[8].as_i16() & 0x3) << 9 | ((bytes[7].as_i16()) << 1) | ((bytes[6].as_i16()) >> 7);
     let r6 = (bytes[9].as_i16() & 0x1F) << 6 | (bytes[8].as_i16() >> 2);
     let r7 = ((bytes[10].as_i16()) << 3) | (bytes[9].as_i16() >> 5);
     (r0, r1, r2, r3, r4, r5, r6, r7)

@@ -43,7 +43,6 @@ impl<'a, T> DeclassifyRef for &'a T {
     }
 }
 
-
 impl<'a, T> ClassifyRefMut for &'a mut T {
     type Classified = &'a mut T;
     fn classify_ref_mut(self) -> &'a mut T {

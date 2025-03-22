@@ -197,7 +197,8 @@ pub(crate) fn compress<const COEFFICIENT_BITS: i32>(mut a: PortableVector) -> Po
             )
         });
         a.elements[i] =
-            compress_ciphertext_coefficient(COEFFICIENT_BITS as u8, a.elements[i].as_u16()).as_i16();
+            compress_ciphertext_coefficient(COEFFICIENT_BITS as u8, a.elements[i].as_u16())
+                .as_i16();
         hax_lib::fstar!(
             r#"assert (v (${a}.f_elements.[ $i ] <: i16) >= 0 /\
             v (${a}.f_elements.[ $i ] <: i16) < pow2 (v (cast ($COEFFICIENT_BITS) <: u32)))"#

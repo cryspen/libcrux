@@ -1,17 +1,16 @@
 use crate::traits::*;
 
-#[cfg(feature="check-secret-independence")]
+#[cfg(feature = "check-secret-independence")]
 mod classify;
-#[cfg(feature="check-secret-independence")]
+#[cfg(feature = "check-secret-independence")]
 mod secret_integers;
-#[cfg(feature="check-secret-independence")]
+#[cfg(feature = "check-secret-independence")]
 pub use secret_integers::*;
 
 #[cfg(not(feature = "check-secret-independence"))]
 mod public_integers;
 #[cfg(not(feature = "check-secret-independence"))]
 pub use public_integers::*;
-
 
 macro_rules! impl_new {
     ($name:ident, $t:ty, $st:ty) => {
@@ -89,7 +88,6 @@ macro_rules! impl_cast_ops {
             fn as_i128(self) -> I128 {
                 (self.declassify() as i128).classify()
             }
-            
         }
     };
 }
