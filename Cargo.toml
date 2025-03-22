@@ -30,6 +30,7 @@ members = [
     "p256",
     "blake2",
     "fstar-helpers/minicore",
+    "secrets",
 ]
 
 [workspace.package]

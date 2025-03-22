@@ -1,4 +1,6 @@
 use super::Operations;
+use libcrux_secrets::*;
+
 mod arithmetic;
 mod compress;
 mod ntt;
@@ -16,7 +18,7 @@ pub(crate) use vector_type::PortableVector;
 
 impl crate::vector::traits::Repr for PortableVector {
     fn repr(x: Self) -> [i16; 16] {
-        to_i16_array(x)
+        to_i16_array(x).declassify()
     }
 }
 
@@ -28,7 +30,7 @@ fn serialize_1(a: PortableVector) -> [u8; 2] {
         r#"assert (forall i. Rust_primitives.bounded (Seq.index ${a}.f_elements i) 1)"#
     );
     hax_lib::fstar!(r#"Libcrux_ml_kem.Vector.Portable.Serialize.serialize_1_lemma $a"#);
-    serialize::serialize_1(a)
+    serialize::serialize_1(a).declassify()
 }
 
 #[hax_lib::requires(a.len() == 2)]
@@ -36,7 +38,7 @@ fn serialize_1(a: PortableVector) -> [u8; 2] {
 fn deserialize_1(a: &[u8]) -> PortableVector {
     hax_lib::fstar!(r#"Libcrux_ml_kem.Vector.Portable.Serialize.deserialize_1_lemma $a"#);
     hax_lib::fstar!(r#"Libcrux_ml_kem.Vector.Portable.Serialize.deserialize_1_bounded_lemma $a"#);
-    serialize::deserialize_1(a)
+    serialize::deserialize_1(a.classify_ref())
 }
 
 #[hax_lib::requires(fstar!(r#"Spec.MLKEM.serialize_pre 4 (impl.f_repr $a)"#))]
@@ -46,7 +48,7 @@ fn serialize_4(a: PortableVector) -> [u8; 8] {
         r#"assert (forall i. Rust_primitives.bounded (Seq.index ${a}.f_elements i) 4)"#
     );
     hax_lib::fstar!(r#"Libcrux_ml_kem.Vector.Portable.Serialize.serialize_4_lemma $a"#);
-    serialize::serialize_4(a)
+    serialize::serialize_4(a).declassify()
 }
 
 #[hax_lib::requires(a.len() == 8)]
@@ -54,23 +56,23 @@ fn serialize_4(a: PortableVector) -> [u8; 8] {
 fn deserialize_4(a: &[u8]) -> PortableVector {
     hax_lib::fstar!(r#"Libcrux_ml_kem.Vector.Portable.Serialize.deserialize_4_lemma $a"#);
     hax_lib::fstar!(r#"Libcrux_ml_kem.Vector.Portable.Serialize.deserialize_4_bounded_lemma $a"#);
-    serialize::deserialize_4(a)
+    serialize::deserialize_4(a.classify_ref())
 }
 
 fn serialize_5(a: PortableVector) -> [u8; 10] {
-    serialize::serialize_5(a)
+    serialize::serialize_5(a).declassify()
 }
 
 #[hax_lib::requires(a.len() == 10)]
 fn deserialize_5(a: &[u8]) -> PortableVector {
-    serialize::deserialize_5(a)
+    serialize::deserialize_5(a.classify_ref())
 }
 
 #[hax_lib::requires(fstar!(r#"Spec.MLKEM.serialize_pre 10 (impl.f_repr $a)"#))]
 #[hax_lib::ensures(|out| fstar!(r#"Spec.MLKEM.serialize_pre 10 (impl.f_repr $a) ==> Spec.MLKEM.serialize_post 10 (impl.f_repr $a) $out"#))]
 fn serialize_10(a: PortableVector) -> [u8; 20] {
     hax_lib::fstar!(r#"Libcrux_ml_kem.Vector.Portable.Serialize.serialize_10_lemma $a"#);
-    serialize::serialize_10(a)
+    serialize::serialize_10(a).declassify()
 }
 
 #[hax_lib::requires(a.len() == 20)]
@@ -78,23 +80,23 @@ fn serialize_10(a: PortableVector) -> [u8; 20] {
 fn deserialize_10(a: &[u8]) -> PortableVector {
     hax_lib::fstar!(r#"Libcrux_ml_kem.Vector.Portable.Serialize.deserialize_10_lemma $a"#);
     hax_lib::fstar!(r#"Libcrux_ml_kem.Vector.Portable.Serialize.deserialize_10_bounded_lemma $a"#);
-    serialize::deserialize_10(a)
+    serialize::deserialize_10(a.classify_ref())
 }
 
 fn serialize_11(a: PortableVector) -> [u8; 22] {
-    serialize::serialize_11(a)
+    serialize::serialize_11(a).declassify()
 }
 
 #[hax_lib::requires(a.len() == 22)]
 fn deserialize_11(a: &[u8]) -> PortableVector {
-    serialize::deserialize_11(a)
+    serialize::deserialize_11(a.classify_ref())
 }
 
 #[hax_lib::requires(fstar!(r#"Spec.MLKEM.serialize_pre 12 (impl.f_repr $a)"#))]
 #[hax_lib::ensures(|out| fstar!(r#"Spec.MLKEM.serialize_pre 12 (impl.f_repr $a) ==> Spec.MLKEM.serialize_post 12 (impl.f_repr $a) $out"#))]
 fn serialize_12(a: PortableVector) -> [u8; 24] {
     hax_lib::fstar!(r#"Libcrux_ml_kem.Vector.Portable.Serialize.serialize_12_lemma $a"#);
-    serialize::serialize_12(a)
+    serialize::serialize_12(a).declassify()
 }
 
 #[hax_lib::requires(a.len() == 24)]
@@ -102,7 +104,7 @@ fn serialize_12(a: PortableVector) -> [u8; 24] {
 fn deserialize_12(a: &[u8]) -> PortableVector {
     hax_lib::fstar!(r#"Libcrux_ml_kem.Vector.Portable.Serialize.deserialize_12_lemma $a"#);
     hax_lib::fstar!(r#"Libcrux_ml_kem.Vector.Portable.Serialize.deserialize_12_bounded_lemma $a"#);
-    serialize::deserialize_12(a)
+    serialize::deserialize_12(a.classify_ref())
 }
 
 #[hax_lib::fstar::before(r#"#push-options "--z3rlimit 400 --split_queries always""#)]
@@ -117,22 +119,22 @@ impl Operations for PortableVector {
     #[requires(array.len() == 16)]
     #[ensures(|out| fstar!(r#"impl.f_repr out == $array"#))]
     fn from_i16_array(array: &[i16]) -> Self {
-        from_i16_array(array)
+        from_i16_array(array.classify_ref())
     }
 
     #[ensures(|out| fstar!(r#"out == impl.f_repr $x"#))]
     fn to_i16_array(x: Self) -> [i16; 16] {
-        to_i16_array(x)
+        to_i16_array(x).declassify()
     }
 
     #[requires(array.len() >= 32)]
     fn from_bytes(array: &[u8]) -> Self {
-        from_bytes(array)
+        from_bytes(array.classify_ref())
     }
 
     #[requires(bytes.len() >= 32)]
-    fn to_bytes(x: Self, bytes: &mut [u8]) {
-        to_bytes(x, bytes)
+    fn to_bytes(x: Self, mut bytes: &mut [u8]) {
+        to_bytes(x, bytes.classify_ref_mut())
     }
 
     #[requires(fstar!(r#"forall i. i < 16 ==> 
@@ -186,7 +188,7 @@ impl Operations for PortableVector {
 
     #[requires(fstar!(r#"Spec.Utils.is_i16b 1664 $r"#))]
     fn montgomery_multiply_by_constant(v: Self, r: i16) -> Self {
-        montgomery_multiply_by_constant(v, r)
+        montgomery_multiply_by_constant(v, r.classify())
     }
 
     #[requires(fstar!(r#"forall (i:nat). i < 16 ==> v (Seq.index (impl.f_repr $a) i) >= 0 /\

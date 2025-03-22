@@ -31,6 +31,7 @@ libcrux-platform = { version = "0.0.2-beta.3", path = "../sys/platform" }
 libcrux-sha3 = { version = "0.0.2-beta.3", path = "../libcrux-sha3" }
 libcrux-intrinsics = { version = "0.0.2-beta.3", path = "../libcrux-intrinsics" }
 hax-lib.workspace = true
+libcrux-secrets = { version = "0.0.2-beta.3", path = "../secrets" }
 
 [features]
 # By default all variants and std are enabled.
@@ -59,6 +60,9 @@ alloc = []
 
 # Incremental encapsulation API
 incremental = []
+
+# Checking secret independence
+check-secret-independence = ["libcrux-secrets/check-secret-independence"]
 
 [dev-dependencies]
 rand = { version = "0.9", features = ["thread_rng"] }
