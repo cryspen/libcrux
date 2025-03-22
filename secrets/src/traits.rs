@@ -20,19 +20,12 @@ pub trait DeclassifyRef {
 
 pub trait ClassifyRefMut {
     type Classified;
-
-    // fn classify_ref(&self) -> &Self::Classified;
-    // fn classify_ref_mut(&mut self) -> &mut Self::Classified;
+    fn classify_ref_mut(self) -> Self::Classified;
 }
 
-pub trait ClassifySlice<T: Classify> {
-    fn classify_each(&self) -> &[T::Classified];
-    fn classify_each_mut(&mut self) -> &mut [T::Classified];
-}
-
-pub trait DeclassifyEach {
-    type DeclassifiedEachOutput;
-    fn declassify_each(self) -> Self::DeclassifiedEachOutput;
+pub trait DeclassifyRefMut {
+    type Declassified;
+    fn declassify_ref_mut(self) -> Self::Declassified;
 }
 
 /// Marker trait to constrain the types for which we use SecretScalar
