@@ -43,6 +43,6 @@ impl<'a, T> DeclassifyRef for &'a T {
     }
 }
 
-pub fn classify_mut_slice<T>(x: T) -> T{
+pub fn classify_mut_slice<T>(x: T) -> T {
     x
 }

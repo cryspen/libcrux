@@ -43,7 +43,6 @@ impl Scalar for i32 {}
 impl Scalar for i64 {}
 impl Scalar for i128 {}
 
-
 #[cfg(target_arch = "x86")]
 impl Scalar for core::arch::x86::__m128i {}
 

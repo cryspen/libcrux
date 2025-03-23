@@ -46,7 +46,7 @@ impl<'a, T: Scalar> DeclassifyRef for &'a Secret<T> {
     }
 }
 
-pub fn classify_mut_slice<T: Scalar>(x: &mut [T]) -> &mut [Secret<T>]{
+pub fn classify_mut_slice<T: Scalar>(x: &mut [T]) -> &mut [Secret<T>] {
     unsafe { core::mem::transmute(x) }
 }
 
