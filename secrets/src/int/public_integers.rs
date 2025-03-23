@@ -30,22 +30,19 @@ impl<T> Declassify for T {
 }
 
 impl<'a, T> ClassifyRef for &'a T {
-    type Classified = &'a T;
+    type ClassifiedRef = &'a T;
     fn classify_ref(self) -> &'a T {
         self
     }
 }
 
 impl<'a, T> DeclassifyRef for &'a T {
-    type Declassified = &'a T;
+    type DeclassifiedRef = &'a T;
     fn declassify_ref(self) -> &'a T {
         self
     }
 }
 
-impl<'a, T> ClassifyRefMut for &'a mut T {
-    type Classified = &'a mut T;
-    fn classify_ref_mut(self) -> &'a mut T {
-        self
-    }
+pub fn classify_mut_slice<T>(x: T) -> T{
+    x
 }

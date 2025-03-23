@@ -33,17 +33,21 @@ impl<T: Scalar> Declassify for Secret<T> {
 }
 
 impl<'a, T: Scalar> ClassifyRef for &'a T {
-    type Classified = &'a Secret<T>;
+    type ClassifiedRef = &'a Secret<T>;
     fn classify_ref(self) -> &'a Secret<T> {
         unsafe { core::mem::transmute(self) }
     }
 }
 
 impl<'a, T: Scalar> DeclassifyRef for &'a Secret<T> {
-    type Declassified = &'a T;
+    type DeclassifiedRef = &'a T;
     fn declassify_ref(self) -> &'a T {
         unsafe { core::mem::transmute(self) }
     }
+}
+
+pub fn classify_mut_slice<T: Scalar>(x: &mut [T]) -> &mut [Secret<T>]{
+    unsafe { core::mem::transmute(x) }
 }
 
 impl<T: Add, V: Into<Secret<T>>> Add<V> for Secret<T> {

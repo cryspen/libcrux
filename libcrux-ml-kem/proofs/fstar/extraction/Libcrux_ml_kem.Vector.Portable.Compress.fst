@@ -3,17 +3,28 @@ module Libcrux_ml_kem.Vector.Portable.Compress
 open Core
 open FStar.Mul
 
+let _ =
+  (* This module has implicit dependencies, here we make them explicit. *)
+  (* The implicit dependencies arise from typeclasses instances. *)
+  let open Libcrux_secrets.Int in
+  let open Libcrux_secrets.Int.Public_integers in
+  let open Libcrux_secrets.Traits in
+  ()
+
 #push-options "--z3rlimit 200 --ext context_pruning"
 
 let compress_message_coefficient (fe: u16) =
-  let (shifted: i16):i16 = mk_i16 1664 -! (cast (fe <: u16) <: i16) in
+  let (shifted: i16):i16 =
+    (Libcrux_secrets.Traits.f_classify #i16 #FStar.Tactics.Typeclasses.solve (mk_i16 1664) <: i16) -!
+    (Libcrux_secrets.Int.f_as_i16 #u16 #FStar.Tactics.Typeclasses.solve fe <: i16)
+  in
   let _:Prims.unit = assert (v shifted == 1664 - v fe) in
   let mask:i16 = shifted >>! mk_i32 15 in
   let _:Prims.unit =
     assert (v mask = v shifted / pow2 15);
     assert (if v shifted < 0 then mask = ones else mask = zero)
   in
-  let shifted_to_positive:i16 = mask ^. shifted in
+  let (shifted_to_positive: i16):i16 = mask ^. shifted in
   let _:Prims.unit =
     logxor_lemma shifted mask;
     assert (v shifted < 0 ==> v shifted_to_positive = v (lognot shifted));
@@ -25,14 +36,14 @@ let compress_message_coefficient (fe: u16) =
     assert (v shifted >= 0 ==> v shifted_to_positive = v shifted);
     assert (shifted_to_positive >=. mk_i16 0)
   in
-  let shifted_positive_in_range:i16 = shifted_to_positive -! mk_i16 832 in
+  let (shifted_positive_in_range: i16):i16 = shifted_to_positive -! mk_i16 832 in
   let _:Prims.unit =
     assert (1664 - v fe >= 0 ==> v shifted_positive_in_range == 832 - v fe);
     assert (1664 - v fe < 0 ==> v shifted_positive_in_range == - 2497 + v fe)
   in
-  let r0:i16 = shifted_positive_in_range >>! mk_i32 15 in
+  let (r0: i16):i16 = shifted_positive_in_range >>! mk_i32 15 in
   let (r1: i16):i16 = r0 &. mk_i16 1 in
-  let res:u8 = cast (r1 <: i16) <: u8 in
+  let res:u8 = Libcrux_secrets.Int.f_as_u8 #i16 #FStar.Tactics.Typeclasses.solve r1 in
   let _:Prims.unit =
     assert (v r0 = v shifted_positive_in_range / pow2 15);
     assert (if v shifted_positive_in_range < 0 then r0 = ones else r0 = zero);
@@ -50,16 +61,19 @@ let compress_message_coefficient (fe: u16) =
 #push-options "--z3rlimit 200 --ext context_pruning"
 
 let compress_ciphertext_coefficient (coefficient_bits: u8) (fe: u16) =
-  let compressed:u64 = (cast (fe <: u16) <: u64) <<! coefficient_bits in
+  let compressed:u64 =
+    (Libcrux_secrets.Int.f_as_u64 #u16 #FStar.Tactics.Typeclasses.solve fe <: u64) <<!
+    coefficient_bits
+  in
   let compressed:u64 = compressed +! mk_u64 1664 in
   let compressed:u64 = compressed *! mk_u64 10321340 in
   let compressed:u64 = compressed >>! mk_i32 35 in
-  cast (Libcrux_ml_kem.Vector.Portable.Arithmetic.get_n_least_significant_bits coefficient_bits
-        (cast (compressed <: u64) <: u32)
+  Libcrux_secrets.Int.f_as_i16 #u32
+    #FStar.Tactics.Typeclasses.solve
+    (Libcrux_ml_kem.Vector.Portable.Arithmetic.get_n_least_significant_bits coefficient_bits
+        (Libcrux_secrets.Int.f_as_u32 #u64 #FStar.Tactics.Typeclasses.solve compressed <: u32)
       <:
       u32)
-  <:
-  i16
 
 #pop-options
 
@@ -108,10 +122,11 @@ let compress_1_ (a: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
               Rust_primitives.Hax.Monomorphized_update_at.update_at_usize a
                   .Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements
                 i
-                (cast (compress_message_coefficient (cast (a
-                                .Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ i ]
-                              <:
-                              i16)
+                (Libcrux_secrets.Int.f_as_i16 #u8
+                    #FStar.Tactics.Typeclasses.solve
+                    (compress_message_coefficient (Libcrux_secrets.Int.f_as_u16 #i16
+                            #FStar.Tactics.Typeclasses.solve
+                            (a.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ i ] <: i16)
                           <:
                           u16)
                       <:
@@ -179,10 +194,16 @@ let compress
               Rust_primitives.Hax.Monomorphized_update_at.update_at_usize a
                   .Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements
                 i
-                (compress_ciphertext_coefficient (cast (v_COEFFICIENT_BITS <: i32) <: u8)
-                    (cast (a.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ i ] <: i16)
+                (Libcrux_secrets.Int.f_as_i16 #i16
+                    #FStar.Tactics.Typeclasses.solve
+                    (compress_ciphertext_coefficient (cast (v_COEFFICIENT_BITS <: i32) <: u8)
+                        (Libcrux_secrets.Int.f_as_u16 #i16
+                            #FStar.Tactics.Typeclasses.solve
+                            (a.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ i ] <: i16)
+                          <:
+                          u16)
                       <:
-                      u16)
+                      i16)
                   <:
                   i16)
             }
@@ -247,8 +268,20 @@ let decompress_ciphertext_coefficient
                 v (cast (Libcrux_ml_kem.Vector.Traits.v_FIELD_MODULUS <: i16) <: i32))
           in
           let decompressed:i32 =
-            (cast (a.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ i ] <: i16) <: i32) *!
-            (cast (Libcrux_ml_kem.Vector.Traits.v_FIELD_MODULUS <: i16) <: i32)
+            (Libcrux_secrets.Int.f_as_i32 #i16
+                #FStar.Tactics.Typeclasses.solve
+                (a.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ i ] <: i16)
+              <:
+              i32) *!
+            (Libcrux_secrets.Int.f_as_i32 #i16
+                #FStar.Tactics.Typeclasses.solve
+                (Libcrux_secrets.Traits.f_classify #i16
+                    #FStar.Tactics.Typeclasses.solve
+                    Libcrux_ml_kem.Vector.Traits.v_FIELD_MODULUS
+                  <:
+                  i16)
+              <:
+              i32)
           in
           let _:Prims.unit =
             assert (v (decompressed <<! mk_i32 1) == v decompressed * 2);
@@ -277,7 +310,9 @@ let decompress_ciphertext_coefficient
               Rust_primitives.Hax.Monomorphized_update_at.update_at_usize a
                   .Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements
                 i
-                (cast (decompressed <: i32) <: i16)
+                (Libcrux_secrets.Int.f_as_i16 #i32 #FStar.Tactics.Typeclasses.solve decompressed
+                  <:
+                  i16)
             }
             <:
             Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector

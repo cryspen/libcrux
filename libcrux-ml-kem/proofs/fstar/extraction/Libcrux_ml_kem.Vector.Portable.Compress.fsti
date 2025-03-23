@@ -3,6 +3,14 @@ module Libcrux_ml_kem.Vector.Portable.Compress
 open Core
 open FStar.Mul
 
+let _ =
+  (* This module has implicit dependencies, here we make them explicit. *)
+  (* The implicit dependencies arise from typeclasses instances. *)
+  let open Libcrux_secrets.Int in
+  let open Libcrux_secrets.Int.Public_integers in
+  let open Libcrux_secrets.Traits in
+  ()
+
 /// The `compress_*` functions implement the `Compress` function specified in the NIST FIPS
 /// 203 standard (Page 18, Expression 4.5), which is defined as:
 /// ```plaintext

@@ -133,8 +133,13 @@ impl Operations for PortableVector {
     }
 
     #[requires(bytes.len() >= 32)]
-    fn to_bytes(x: Self, mut bytes: &mut [u8]) {
-        to_bytes(x, bytes.classify_ref_mut())
+    fn to_bytes(x: Self, bytes: &mut [u8]) {
+        #[cfg(not(hax))]
+        to_bytes(x, classify_mut_slice(bytes));
+
+        // hax does not support &mut returning functions like `classify_mut_slice`
+        #[cfg(hax)]
+        to_bytes(x, bytes);
     }
 
     #[requires(fstar!(r#"forall i. i < 16 ==> 

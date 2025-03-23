@@ -41,70 +41,70 @@ impl<T: Scalar, const N: usize, const M: usize> Declassify for [[Secret<T>; N]; 
 }
 
 impl<'a, T: Scalar> ClassifyRefMut for &'a mut T {
-    type Classified = &'a mut Secret<T>;
+    type ClassifiedRefMut = &'a mut Secret<T>;
     fn classify_ref_mut(self) -> &'a mut Secret<T> {
         unsafe { core::mem::transmute(self) }
     }
 }
 
 impl<'a, T: Scalar> DeclassifyRefMut for &'a mut Secret<T> {
-    type Declassified = &'a mut T;
+    type DeclassifiedRefMut = &'a mut T;
     fn declassify_ref_mut(self) -> &'a mut T {
         unsafe { core::mem::transmute(self) }
     }
 }
 
 impl<'a, T: Scalar> ClassifyRef for &'a [T] {
-    type Classified = &'a [Secret<T>];
+    type ClassifiedRef = &'a [Secret<T>];
     fn classify_ref(self) -> &'a [Secret<T>] {
         unsafe { core::mem::transmute(self) }
     }
 }
 
 impl<'a, T: Scalar> DeclassifyRef for &'a [Secret<T>] {
-    type Declassified = &'a [T];
+    type DeclassifiedRef = &'a [T];
     fn declassify_ref(self) -> &'a [T] {
         unsafe { core::mem::transmute(self) }
     }
 }
 
 impl<'a, T: Scalar> ClassifyRefMut for &'a mut [T] {
-    type Classified = &'a mut [Secret<T>];
+    type ClassifiedRefMut = &'a mut [Secret<T>];
     fn classify_ref_mut(self) -> &'a mut [Secret<T>] {
         unsafe { core::mem::transmute(self) }
     }
 }
 
 impl<'a, T: Scalar> DeclassifyRefMut for &'a mut [Secret<T>] {
-    type Declassified = &'a mut [T];
+    type DeclassifiedRefMut = &'a mut [T];
     fn declassify_ref_mut(self) -> &'a mut [T] {
         unsafe { core::mem::transmute(self) }
     }
 }
 
 impl<'a, T: Scalar, const N: usize> ClassifyRef for &'a [T; N] {
-    type Classified = &'a [Secret<T>; N];
+    type ClassifiedRef = &'a [Secret<T>; N];
     fn classify_ref(self) -> &'a [Secret<T>; N] {
         unsafe { core::mem::transmute(self) }
     }
 }
 
 impl<'a, T: Scalar, const N: usize> DeclassifyRef for &'a [Secret<T>; N] {
-    type Declassified = &'a [T; N];
+    type DeclassifiedRef = &'a [T; N];
     fn declassify_ref(self) -> &'a [T; N] {
         unsafe { core::mem::transmute(self) }
     }
 }
 
 impl<'a, T: Scalar, const N: usize> ClassifyRefMut for &'a mut [T; N] {
-    type Classified = &'a mut [Secret<T>; N];
+    type ClassifiedRefMut = &'a mut [Secret<T>; N];
     fn classify_ref_mut(self) -> &'a mut [Secret<T>; N] {
         unsafe { core::mem::transmute(self) }
     }
 }
 
 impl<'a, T: Scalar, const N: usize> DeclassifyRefMut for &'a mut [Secret<T>; N] {
-    type Declassified = &'a mut [T; N];
+    type DeclassifiedRefMut = &'a mut [T; N];
     fn declassify_ref_mut(self) -> &'a mut [T; N] {
         unsafe { core::mem::transmute(self) }
     }

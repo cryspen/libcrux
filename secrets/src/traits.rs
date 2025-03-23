@@ -4,8 +4,8 @@ pub trait Classify {
 }
 
 pub trait ClassifyRef {
-    type Classified;
-    fn classify_ref(self) -> Self::Classified;
+    type ClassifiedRef;
+    fn classify_ref(self) -> Self::ClassifiedRef;
 }
 
 pub trait Declassify {
@@ -14,18 +14,18 @@ pub trait Declassify {
 }
 
 pub trait DeclassifyRef {
-    type Declassified;
-    fn declassify_ref(self) -> Self::Declassified;
+    type DeclassifiedRef;
+    fn declassify_ref(self) -> Self::DeclassifiedRef;
 }
 
 pub trait ClassifyRefMut {
-    type Classified;
-    fn classify_ref_mut(self) -> Self::Classified;
+    type ClassifiedRefMut;
+    fn classify_ref_mut(self) -> Self::ClassifiedRefMut;
 }
 
 pub trait DeclassifyRefMut {
-    type Declassified;
-    fn declassify_ref_mut(self) -> Self::Declassified;
+    type DeclassifiedRefMut;
+    fn declassify_ref_mut(self) -> Self::DeclassifiedRefMut;
 }
 
 /// Marker trait to constrain the types for which we use SecretScalar
@@ -42,6 +42,7 @@ impl Scalar for i16 {}
 impl Scalar for i32 {}
 impl Scalar for i64 {}
 impl Scalar for i128 {}
+
 
 #[cfg(target_arch = "x86")]
 impl Scalar for core::arch::x86::__m128i {}
@@ -61,6 +62,7 @@ impl Scalar for core::arch::x86_64::__m256i {}
 #[cfg(target_arch = "x86_64")]
 impl Scalar for core::arch::x86_64::__m256 {}
 
+/*
 #[cfg(target_arch = "aarch64")]
 impl Scalar for core::arch::aarch64::int8x8_t {}
 
@@ -108,6 +110,7 @@ impl Scalar for core::arch::aarch64::uint64x1_t {}
 
 #[cfg(target_arch = "aarch64")]
 impl Scalar for core::arch::aarch64::uint64x2_t {}
+*/
 
 pub trait IntOps
 where

@@ -8,6 +8,8 @@ let _ =
   (* The implicit dependencies arise from typeclasses instances. *)
   let open Libcrux_ml_kem.Vector.Portable.Vector_type in
   let open Libcrux_ml_kem.Vector.Traits in
+  let open Libcrux_secrets.Int.Public_integers in
+  let open Libcrux_secrets.Traits in
   ()
 
 [@@ FStar.Tactics.Typeclasses.tcinstance]
@@ -27,56 +29,102 @@ Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
     f_repr
     =
     fun (x: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) ->
-      Libcrux_ml_kem.Vector.Portable.Vector_type.to_i16_array x
+      Libcrux_secrets.Traits.f_declassify #(t_Array i16 (mk_usize 16))
+        #FStar.Tactics.Typeclasses.solve
+        (Libcrux_ml_kem.Vector.Portable.Vector_type.to_i16_array x <: t_Array i16 (mk_usize 16))
   }
 
 let serialize_1_ (a: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) =
   let _:Prims.unit = assert (forall i. Rust_primitives.bounded (Seq.index a.f_elements i) 1) in
   let _:Prims.unit = Libcrux_ml_kem.Vector.Portable.Serialize.serialize_1_lemma a in
-  Libcrux_ml_kem.Vector.Portable.Serialize.serialize_1_ a
+  Libcrux_secrets.Traits.f_declassify #(t_Array u8 (mk_usize 2))
+    #FStar.Tactics.Typeclasses.solve
+    (Libcrux_ml_kem.Vector.Portable.Serialize.serialize_1_ a <: t_Array u8 (mk_usize 2))
 
 let deserialize_1_ (a: t_Slice u8) =
   let _:Prims.unit = Libcrux_ml_kem.Vector.Portable.Serialize.deserialize_1_lemma a in
   let _:Prims.unit = Libcrux_ml_kem.Vector.Portable.Serialize.deserialize_1_bounded_lemma a in
-  Libcrux_ml_kem.Vector.Portable.Serialize.deserialize_1_ a
+  Libcrux_ml_kem.Vector.Portable.Serialize.deserialize_1_ (Libcrux_secrets.Traits.f_classify_ref #(t_Slice
+          u8)
+        #FStar.Tactics.Typeclasses.solve
+        a
+      <:
+      t_Slice u8)
 
 let serialize_4_ (a: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) =
   let _:Prims.unit = assert (forall i. Rust_primitives.bounded (Seq.index a.f_elements i) 4) in
   let _:Prims.unit = Libcrux_ml_kem.Vector.Portable.Serialize.serialize_4_lemma a in
-  Libcrux_ml_kem.Vector.Portable.Serialize.serialize_4_ a
+  Libcrux_secrets.Traits.f_declassify #(t_Array u8 (mk_usize 8))
+    #FStar.Tactics.Typeclasses.solve
+    (Libcrux_ml_kem.Vector.Portable.Serialize.serialize_4_ a <: t_Array u8 (mk_usize 8))
 
 let deserialize_4_ (a: t_Slice u8) =
   let _:Prims.unit = Libcrux_ml_kem.Vector.Portable.Serialize.deserialize_4_lemma a in
   let _:Prims.unit = Libcrux_ml_kem.Vector.Portable.Serialize.deserialize_4_bounded_lemma a in
-  Libcrux_ml_kem.Vector.Portable.Serialize.deserialize_4_ a
+  Libcrux_ml_kem.Vector.Portable.Serialize.deserialize_4_ (Libcrux_secrets.Traits.f_classify_ref #(t_Slice
+          u8)
+        #FStar.Tactics.Typeclasses.solve
+        a
+      <:
+      t_Slice u8)
 
 let serialize_5_ (a: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) =
-  Libcrux_ml_kem.Vector.Portable.Serialize.serialize_5_ a
+  Libcrux_secrets.Traits.f_declassify #(t_Array u8 (mk_usize 10))
+    #FStar.Tactics.Typeclasses.solve
+    (Libcrux_ml_kem.Vector.Portable.Serialize.serialize_5_ a <: t_Array u8 (mk_usize 10))
 
-let deserialize_5_ (a: t_Slice u8) = Libcrux_ml_kem.Vector.Portable.Serialize.deserialize_5_ a
+let deserialize_5_ (a: t_Slice u8) =
+  Libcrux_ml_kem.Vector.Portable.Serialize.deserialize_5_ (Libcrux_secrets.Traits.f_classify_ref #(t_Slice
+          u8)
+        #FStar.Tactics.Typeclasses.solve
+        a
+      <:
+      t_Slice u8)
 
 let serialize_10_ (a: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) =
   let _:Prims.unit = Libcrux_ml_kem.Vector.Portable.Serialize.serialize_10_lemma a in
-  Libcrux_ml_kem.Vector.Portable.Serialize.serialize_10_ a
+  Libcrux_secrets.Traits.f_declassify #(t_Array u8 (mk_usize 20))
+    #FStar.Tactics.Typeclasses.solve
+    (Libcrux_ml_kem.Vector.Portable.Serialize.serialize_10_ a <: t_Array u8 (mk_usize 20))
 
 let deserialize_10_ (a: t_Slice u8) =
   let _:Prims.unit = Libcrux_ml_kem.Vector.Portable.Serialize.deserialize_10_lemma a in
   let _:Prims.unit = Libcrux_ml_kem.Vector.Portable.Serialize.deserialize_10_bounded_lemma a in
-  Libcrux_ml_kem.Vector.Portable.Serialize.deserialize_10_ a
+  Libcrux_ml_kem.Vector.Portable.Serialize.deserialize_10_ (Libcrux_secrets.Traits.f_classify_ref #(t_Slice
+          u8)
+        #FStar.Tactics.Typeclasses.solve
+        a
+      <:
+      t_Slice u8)
 
 let serialize_11_ (a: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) =
-  Libcrux_ml_kem.Vector.Portable.Serialize.serialize_11_ a
+  Libcrux_secrets.Traits.f_declassify #(t_Array u8 (mk_usize 22))
+    #FStar.Tactics.Typeclasses.solve
+    (Libcrux_ml_kem.Vector.Portable.Serialize.serialize_11_ a <: t_Array u8 (mk_usize 22))
 
-let deserialize_11_ (a: t_Slice u8) = Libcrux_ml_kem.Vector.Portable.Serialize.deserialize_11_ a
+let deserialize_11_ (a: t_Slice u8) =
+  Libcrux_ml_kem.Vector.Portable.Serialize.deserialize_11_ (Libcrux_secrets.Traits.f_classify_ref #(t_Slice
+          u8)
+        #FStar.Tactics.Typeclasses.solve
+        a
+      <:
+      t_Slice u8)
 
 let serialize_12_ (a: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) =
   let _:Prims.unit = Libcrux_ml_kem.Vector.Portable.Serialize.serialize_12_lemma a in
-  Libcrux_ml_kem.Vector.Portable.Serialize.serialize_12_ a
+  Libcrux_secrets.Traits.f_declassify #(t_Array u8 (mk_usize 24))
+    #FStar.Tactics.Typeclasses.solve
+    (Libcrux_ml_kem.Vector.Portable.Serialize.serialize_12_ a <: t_Array u8 (mk_usize 24))
 
 let deserialize_12_ (a: t_Slice u8) =
   let _:Prims.unit = Libcrux_ml_kem.Vector.Portable.Serialize.deserialize_12_lemma a in
   let _:Prims.unit = Libcrux_ml_kem.Vector.Portable.Serialize.deserialize_12_bounded_lemma a in
-  Libcrux_ml_kem.Vector.Portable.Serialize.deserialize_12_ a
+  Libcrux_ml_kem.Vector.Portable.Serialize.deserialize_12_ (Libcrux_secrets.Traits.f_classify_ref #(t_Slice
+          u8)
+        #FStar.Tactics.Typeclasses.solve
+        a
+      <:
+      t_Slice u8)
 
 #push-options "--z3rlimit 400 --split_queries always"
 
@@ -102,7 +150,13 @@ Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
         impl.f_repr out == array);
     f_from_i16_array
     =
-    (fun (array: t_Slice i16) -> Libcrux_ml_kem.Vector.Portable.Vector_type.from_i16_array array);
+    (fun (array: t_Slice i16) ->
+        Libcrux_ml_kem.Vector.Portable.Vector_type.from_i16_array (Libcrux_secrets.Traits.f_classify_ref
+              #(t_Slice i16)
+              #FStar.Tactics.Typeclasses.solve
+              array
+            <:
+            t_Slice i16));
     f_to_i16_array_pre
     =
     (fun (x: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) -> true);
@@ -116,7 +170,9 @@ Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
     f_to_i16_array
     =
     (fun (x: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) ->
-        Libcrux_ml_kem.Vector.Portable.Vector_type.to_i16_array x);
+        Libcrux_secrets.Traits.f_declassify #(t_Array i16 (mk_usize 16))
+          #FStar.Tactics.Typeclasses.solve
+          (Libcrux_ml_kem.Vector.Portable.Vector_type.to_i16_array x <: t_Array i16 (mk_usize 16)));
     f_from_bytes_pre
     =
     (fun (array: t_Slice u8) -> (Core.Slice.impl__len #u8 array <: usize) >=. mk_usize 32);
@@ -126,7 +182,13 @@ Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
         true);
     f_from_bytes
     =
-    (fun (array: t_Slice u8) -> Libcrux_ml_kem.Vector.Portable.Vector_type.from_bytes array);
+    (fun (array: t_Slice u8) ->
+        Libcrux_ml_kem.Vector.Portable.Vector_type.from_bytes (Libcrux_secrets.Traits.f_classify_ref
+              #(t_Slice u8)
+              #FStar.Tactics.Typeclasses.solve
+              array
+            <:
+            t_Slice u8));
     f_to_bytes_pre
     =
     (fun (x: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) (bytes: t_Slice u8) ->
@@ -297,7 +359,8 @@ Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
     f_montgomery_multiply_by_constant
     =
     (fun (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) (r: i16) ->
-        Libcrux_ml_kem.Vector.Portable.Arithmetic.montgomery_multiply_by_constant v r);
+        Libcrux_ml_kem.Vector.Portable.Arithmetic.montgomery_multiply_by_constant v
+          (Libcrux_secrets.Traits.f_classify #i16 #FStar.Tactics.Typeclasses.solve r <: i16));
     f_compress_1__pre
     =
     (fun (a: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) ->

@@ -8,6 +8,8 @@ let _ =
   (* The implicit dependencies arise from typeclasses instances. *)
   let open Libcrux_ml_kem.Vector.Portable.Vector_type in
   let open Libcrux_ml_kem.Vector.Traits in
+  let open Libcrux_secrets.Int.Public_integers in
+  let open Libcrux_secrets.Traits in
   ()
 
 [@@ FStar.Tactics.Typeclasses.tcinstance]
