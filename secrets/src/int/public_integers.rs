@@ -11,12 +11,14 @@ pub type I128 = i128;
 pub type U128 = u128;
 
 // Construct a secret integer
+#[inline(always)]
 pub const fn secret<T>(x: T) -> T {
     x
 }
 
 impl<T> Classify for T {
     type Classified = T;
+    #[inline(always)]
     fn classify(self) -> Self {
         self
     }
@@ -24,6 +26,7 @@ impl<T> Classify for T {
 
 impl<T> Declassify for T {
     type Declassified = T;
+    #[inline(always)]
     fn declassify(self) -> T {
         self
     }
@@ -31,6 +34,7 @@ impl<T> Declassify for T {
 
 impl<'a, T> ClassifyRef for &'a T {
     type ClassifiedRef = &'a T;
+    #[inline(always)]
     fn classify_ref(self) -> &'a T {
         self
     }
@@ -38,11 +42,13 @@ impl<'a, T> ClassifyRef for &'a T {
 
 impl<'a, T> DeclassifyRef for &'a T {
     type DeclassifiedRef = &'a T;
+    #[inline(always)]
     fn declassify_ref(self) -> &'a T {
         self
     }
 }
 
+#[inline(always)]
 pub fn classify_mut_slice<T>(x: T) -> T {
     x
 }
