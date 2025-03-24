@@ -171,6 +171,15 @@ let decompress_uint32x4_t (v_COEFFICIENT_BITS: i32) (v: u8) =
   let decompressed:u8 = Libcrux_intrinsics.Arm64_extract.e_vaddq_u32 decompressed coeff in
   Libcrux_intrinsics.Arm64_extract.e_vshrq_n_u32 v_COEFFICIENT_BITS decompressed
 
+let decompress_1_ (a: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) =
+  let z:Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector =
+    Libcrux_ml_kem.Vector.Neon.Vector_type.v_ZERO ()
+  in
+  let s:Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector =
+    Libcrux_ml_kem.Vector.Neon.Arithmetic.sub z a
+  in
+  Libcrux_ml_kem.Vector.Neon.Arithmetic.bitwise_and_with_constant s (mk_i16 1665)
+
 let decompress_ciphertext_coefficient
       (v_COEFFICIENT_BITS: i32)
       (v: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector)

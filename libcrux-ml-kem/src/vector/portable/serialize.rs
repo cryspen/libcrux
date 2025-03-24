@@ -94,12 +94,18 @@ let deserialize_1_bit_vec_lemma (v: t_Array u8 (sz 2))
     )
 )]
 //deserialize_1_lemma
-#[cfg_attr(hax, hax_lib::fstar::after(interface, r#"
+#[cfg_attr(
+    hax,
+    hax_lib::fstar::after(
+        interface,
+        r#"
 val deserialize_1_lemma (inputs: t_Array u8 (sz 2)) : Lemma
   (ensures (let result = ${deserialize_1} inputs in
             bit_vec_of_int_t_array result.f_elements 1 == bit_vec_of_int_t_array inputs 8 /\
             (forall i. Rust_primitives.bounded (Seq.index result.f_elements i) 1)))
-"#))]
+"#
+    )
+)]
 #[cfg_attr(
     hax,
     hax_lib::fstar::after(
@@ -248,12 +254,18 @@ let deserialize_4_bit_vec_lemma (v: t_Array u8 (sz 8))
     )
 )]
 //deserialize_4_lemma
-#[cfg_attr(hax, hax_lib::fstar::after(interface, r#"
+#[cfg_attr(
+    hax,
+    hax_lib::fstar::after(
+        interface,
+        r#"
 val deserialize_4_lemma (inputs: t_Array u8 (sz 8)) : Lemma
   (ensures (let result = ${deserialize_4} inputs in 
             bit_vec_of_int_t_array result.f_elements 4 == bit_vec_of_int_t_array inputs 8 /\
             (forall i. Rust_primitives.bounded (Seq.index result.f_elements i) 4)))
-"#))]
+"#
+    )
+)]
 #[cfg_attr(
     hax,
     hax_lib::fstar::after(
@@ -438,12 +450,18 @@ let deserialize_10_bit_vec_lemma (v: t_Array u8 (sz 20))
     )
 )]
 //deserialize_10_lemma
-#[cfg_attr(hax, hax_lib::fstar::after(interface, r#"
+#[cfg_attr(
+    hax,
+    hax_lib::fstar::after(
+        interface,
+        r#"
 val deserialize_10_lemma (inputs: t_Array u8 (sz 20)) : Lemma
   (ensures (let result = ${deserialize_10} inputs in 
             bit_vec_of_int_t_array result.f_elements 10 == bit_vec_of_int_t_array inputs 8 /\
             (forall i. Rust_primitives.bounded (Seq.index result.f_elements i) 10)))
-"#))]
+"#
+    )
+)]
 #[cfg_attr(
     hax,
     hax_lib::fstar::after(
@@ -636,12 +654,18 @@ let deserialize_12_bit_vec_lemma (v: t_Array u8 (sz 24))
     )
 )]
 //deserialize_12_lemma
-#[cfg_attr(hax, hax_lib::fstar::after(interface, r#"
+#[cfg_attr(
+    hax,
+    hax_lib::fstar::after(
+        interface,
+        r#"
 val deserialize_12_lemma (inputs: t_Array u8 (sz 24)) : Lemma
   (ensures (let result = ${deserialize_12} inputs in 
             bit_vec_of_int_t_array result.f_elements 12 == bit_vec_of_int_t_array inputs 8 /\
             (forall i. Rust_primitives.bounded (Seq.index result.f_elements i) 12)))
-"#))]
+"#
+    )
+)]
 #[cfg_attr(
     hax,
     hax_lib::fstar::after(

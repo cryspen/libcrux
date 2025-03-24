@@ -209,6 +209,32 @@ pub(crate) fn compress<const COEFFICIENT_BITS: i32>(mut a: PortableVector) -> Po
     a
 }
 
+#[hax_lib::fstar::options("--z3rlimit 200 --split_queries always")]
+#[hax_lib::requires(fstar!(r#"forall i. let x = Seq.index ${a}.f_elements i in 
+                                      (x == mk_i16 0 \/ x == mk_i16 1)"#))]
+#[inline(always)]
+pub fn decompress_1(a: PortableVector) -> PortableVector {
+    let z = zero();
+    hax_lib::fstar!("assert(forall i. Seq.index ${z}.f_elements i == mk_i16 0)");
+    hax_lib::fstar!(
+        r#"assert(forall i. let x = Seq.index ${a}.f_elements i in 
+                                      ((0 - v x) == 0 \/ (0 - v x) == -1))"#
+    );
+    hax_lib::fstar!(
+        r#"assert(forall i. i < 16 ==>
+                                      Spec.Utils.is_intb (pow2 15 - 1) 
+                                        (0 - v (Seq.index ${a}.f_elements i)))"#
+    );
+
+    let s = sub(z, &a);
+    hax_lib::fstar!(
+        r#"assert(forall i. Seq.index ${s}.f_elements i == mk_i16 0 \/ 
+                                      Seq.index ${s}.f_elements i == mk_i16 (-1))"#
+    );
+    let res = bitwise_and_with_constant(s, 1665);
+    res
+}
+
 #[inline(always)]
 #[hax_lib::fstar::options("--z3rlimit 300 --ext context_pruning")]
 #[hax_lib::requires(fstar!(r#"(v $COEFFICIENT_BITS == 4 \/

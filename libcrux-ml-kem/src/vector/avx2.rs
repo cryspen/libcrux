@@ -393,6 +393,15 @@ impl Operations for SIMD256Vector {
         compress::<COEFFICIENT_BITS>(vector)
     }
 
+    #[requires(fstar!(r#"forall (i:nat). i < 16 ==> 
+                                    (let x = Seq.index (impl.f_repr $a) i in 
+                                     (x == mk_i16 0 \/ x == mk_i16 1))"#))]
+    fn decompress_1(a: Self) -> Self {
+        Self {
+            elements: compress::decompress_1(a.elements),
+        }
+    }
+
     #[requires(fstar!(r#"(v $COEFFICIENT_BITS == 4 \/
         v $COEFFICIENT_BITS == 5 \/
         v $COEFFICIENT_BITS == 10 \/

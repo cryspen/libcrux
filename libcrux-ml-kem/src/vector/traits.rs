@@ -95,6 +95,12 @@ pub trait Operations: Copy + Clone + Repr {
             v $COEFFICIENT_BITS == 11) ==>
                 (forall (i:nat). i < 16 ==> bounded (Seq.index (f_repr $result) i) (v $COEFFICIENT_BITS))"#))]
     fn compress<const COEFFICIENT_BITS: i32>(a: Self) -> Self;
+
+    #[hax_lib::requires(fstar!(r#"forall (i:nat). i < 16 ==>
+                                    (let x = Seq.index (f_repr ${a}) i in 
+                                     (x == mk_i16 0 \/ x == mk_i16 1))"#))]
+    fn decompress_1(a: Self) -> Self;
+
     #[requires(fstar!(r#"(v $COEFFICIENT_BITS == 4 \/
         v $COEFFICIENT_BITS == 5 \/
         v $COEFFICIENT_BITS == 10 \/
@@ -202,8 +208,10 @@ pub trait Operations: Copy + Clone {
     fn cond_subtract_3329(v: Self) -> Self;
     fn barrett_reduce(vector: Self) -> Self;
     fn montgomery_multiply_by_constant(v: Self, c: i16) -> Self;
+    fn to_unsigned_representative<T: Operations>(a: Self) -> Self;
     fn compress_1(v: Self) -> Self;
     fn compress<const COEFFICIENT_BITS: i32>(v: Self) -> Self;
+    fn decompress_1(a: Self) -> Self;
     fn decompress_ciphertext_coefficient<const COEFFICIENT_BITS: i32>(a: Self) -> Self;
     fn ntt_layer_1_step(a: Self, zeta0: i16, zeta1: i16, zeta2: i16, zeta3: i16) -> Self;
     fn ntt_layer_2_step(a: Self, zeta0: i16, zeta1: i16) -> Self;
@@ -229,12 +237,6 @@ pub trait Operations: Copy + Clone {
 }
 
 // hax does not support trait with default implementations, so we use the following pattern
-#[hax_lib::requires(fstar!(r#"Spec.Utils.is_i16b 1664 $fer"#))]
-#[inline(always)]
-pub fn montgomery_multiply_fe<T: Operations>(v: T, fer: i16) -> T {
-    T::montgomery_multiply_by_constant(v, fer)
-}
-
 #[inline(always)]
 pub fn to_standard_domain<T: Operations>(v: T) -> T {
     T::montgomery_multiply_by_constant(v, MONTGOMERY_R_SQUARED_MOD_FIELD_MODULUS as i16)
@@ -251,33 +253,4 @@ pub fn to_unsigned_representative<T: Operations>(a: T) -> T {
     let t = T::shift_right::<15>(a);
     let fm = T::bitwise_and_with_constant(t, FIELD_MODULUS);
     T::add(a, &fm)
-}
-
-#[hax_lib::fstar::options("--z3rlimit 200 --split_queries always")]
-#[hax_lib::requires(fstar!(r#"forall i. let x = Seq.index (i1._super_12682756204189288427.f_repr ${vec}) i in 
-                                      (x == mk_i16 0 \/ x == mk_i16 1)"#))]
-#[inline(always)]
-pub fn decompress_1<T: Operations>(vec: T) -> T {
-    let z = T::ZERO();
-    hax_lib::fstar!(
-        "assert(forall i. Seq.index (i1._super_12682756204189288427.f_repr ${z}) i == mk_i16 0)"
-    );
-    hax_lib::fstar!(
-        r#"assert(forall i. let x = Seq.index (i1._super_12682756204189288427.f_repr ${vec}) i in 
-                                      ((0 - v x) == 0 \/ (0 - v x) == -1))"#
-    );
-    hax_lib::fstar!(
-        r#"assert(forall i. i < 16 ==>
-                                      Spec.Utils.is_intb (pow2 15 - 1) 
-                                        (0 - v (Seq.index (i1._super_12682756204189288427.f_repr ${vec}) i)))"#
-    );
-
-    let s = T::sub(z, &vec);
-    hax_lib::fstar!(
-        r#"assert(forall i. Seq.index (i1._super_12682756204189288427.f_repr ${s}) i == mk_i16 0 \/ 
-                                      Seq.index (i1._super_12682756204189288427.f_repr ${s}) i == mk_i16 (-1))"#
-    );
-    hax_lib::fstar!(r#"assert (i1.f_bitwise_and_with_constant_pre ${s} (mk_i16 1665))"#);
-    let res = T::bitwise_and_with_constant(s, 1665);
-    res
 }

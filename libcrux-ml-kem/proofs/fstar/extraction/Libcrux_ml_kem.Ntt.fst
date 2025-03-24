@@ -254,7 +254,12 @@ let ntt_layer_int_vec_step
       (a b: v_Vector)
       (zeta_r: i16)
      =
-  let t:v_Vector = Libcrux_ml_kem.Vector.Traits.montgomery_multiply_fe #v_Vector b zeta_r in
+  let t:v_Vector =
+    Libcrux_ml_kem.Vector.Traits.f_montgomery_multiply_by_constant #v_Vector
+      #FStar.Tactics.Typeclasses.solve
+      b
+      zeta_r
+  in
   let b:v_Vector =
     Libcrux_ml_kem.Vector.Traits.f_sub #v_Vector #FStar.Tactics.Typeclasses.solve a t
   in

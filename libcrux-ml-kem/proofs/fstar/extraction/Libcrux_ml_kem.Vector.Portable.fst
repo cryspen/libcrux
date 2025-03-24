@@ -339,6 +339,24 @@ Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
         (a: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
         ->
         Libcrux_ml_kem.Vector.Portable.Compress.compress v_COEFFICIENT_BITS a);
+    f_decompress_1__pre
+    =
+    (fun (a: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) ->
+        forall (i: nat).
+          i < 16 ==>
+          (let x = Seq.index (impl.f_repr a) i in
+            (x == mk_i16 0 \/ x == mk_i16 1)));
+    f_decompress_1__post
+    =
+    (fun
+        (a: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
+        (out: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
+        ->
+        true);
+    f_decompress_1_
+    =
+    (fun (a: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) ->
+        Libcrux_ml_kem.Vector.Portable.Compress.decompress_1_ a);
     f_decompress_ciphertext_coefficient_pre
     =
     (fun

@@ -207,6 +207,13 @@ impl Operations for PortableVector {
         compress::<COEFFICIENT_BITS>(a)
     }
 
+    #[hax_lib::requires(fstar!(r#"forall (i:nat). i < 16 ==> 
+                                    (let x = Seq.index (impl.f_repr $a) i in 
+                                     (x == mk_i16 0 \/ x == mk_i16 1))"#))]
+    fn decompress_1(a: Self) -> Self {
+        decompress_1(a)
+    }
+
     #[requires(fstar!(r#"(v $COEFFICIENT_BITS == 4 \/
         v $COEFFICIENT_BITS == 5 \/
         v $COEFFICIENT_BITS == 10 \/

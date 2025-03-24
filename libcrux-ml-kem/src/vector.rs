@@ -11,8 +11,8 @@
 
 pub(crate) mod traits;
 pub(crate) use traits::{
-    decompress_1, montgomery_multiply_fe, to_standard_domain, to_unsigned_representative,
-    Operations, FIELD_ELEMENTS_IN_VECTOR, FIELD_MODULUS,
+    to_standard_domain, to_unsigned_representative, Operations, FIELD_ELEMENTS_IN_VECTOR,
+    FIELD_MODULUS,
 };
 
 // XXX: This is not used on neon right now

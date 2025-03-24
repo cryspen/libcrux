@@ -69,6 +69,14 @@ val compress
             v (result.f_elements.[ sz i ] <: i16) >= 0 /\
             v (result.f_elements.[ sz i ] <: i16) < pow2 (v v_COEFFICIENT_BITS))
 
+val decompress_1_ (a: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
+    : Prims.Pure Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
+      (requires
+        forall i.
+          let x = Seq.index a.f_elements i in
+          (x == mk_i16 0 \/ x == mk_i16 1))
+      (fun _ -> Prims.l_True)
+
 val decompress_ciphertext_coefficient
       (v_COEFFICIENT_BITS: i32)
       (a: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)

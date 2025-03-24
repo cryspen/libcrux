@@ -127,7 +127,9 @@ let deserialize_then_decompress_message
               Rust_primitives.Hax.Monomorphized_update_at.update_at_usize re
                   .Libcrux_ml_kem.Polynomial.f_coefficients
                 i
-                (Libcrux_ml_kem.Vector.Traits.decompress_1_ #v_Vector coefficient_compressed
+                (Libcrux_ml_kem.Vector.Traits.f_decompress_1_ #v_Vector
+                    #FStar.Tactics.Typeclasses.solve
+                    coefficient_compressed
                   <:
                   v_Vector)
             }

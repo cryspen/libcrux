@@ -205,6 +205,33 @@ let compress
 
 #pop-options
 
+#push-options "--z3rlimit 200 --split_queries always"
+
+let decompress_1_ (a: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) =
+  let z:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
+    Libcrux_ml_kem.Vector.Portable.Vector_type.zero ()
+  in
+  let _:Prims.unit = assert (forall i. Seq.index z.f_elements i == mk_i16 0) in
+  let _:Prims.unit =
+    assert (forall i.
+          let x = Seq.index a.f_elements i in
+          ((0 - v x) == 0 \/ (0 - v x) == - 1))
+  in
+  let _:Prims.unit =
+    assert (forall i. i < 16 ==> Spec.Utils.is_intb (pow2 15 - 1) (0 - v (Seq.index a.f_elements i))
+      )
+  in
+  let s:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
+    Libcrux_ml_kem.Vector.Portable.Arithmetic.sub z a
+  in
+  let _:Prims.unit =
+    assert (forall i.
+          Seq.index s.f_elements i == mk_i16 0 \/ Seq.index s.f_elements i == mk_i16 (- 1))
+  in
+  Libcrux_ml_kem.Vector.Portable.Arithmetic.bitwise_and_with_constant s (mk_i16 1665)
+
+#pop-options
+
 #push-options "--z3rlimit 300 --ext context_pruning"
 
 let decompress_ciphertext_coefficient

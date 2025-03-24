@@ -132,6 +132,32 @@ let compress_ciphertext_coefficient
   in
   Libcrux_intrinsics.Avx2_extract.mm256_permute4x64_epi64 (mk_i32 216) compressed
 
+let decompress_1_ (a: Libcrux_intrinsics.Avx2_extract.t_Vec256) =
+  let z:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+    Libcrux_intrinsics.Avx2_extract.mm256_setzero_si256 ()
+  in
+  let _:Prims.unit =
+    assume (forall i. Seq.index (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 z) i == mk_i16 0)
+  in
+  let _:Prims.unit =
+    assert (forall i.
+          let x = Seq.index (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 a) i in
+          ((0 - v x) == 0 \/ (0 - v x) == - 1))
+  in
+  let _:Prims.unit =
+    assert (forall i.
+          i < 16 ==>
+          Spec.Utils.is_intb (pow2 15 - 1)
+            (0 - v (Seq.index (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 a) i)))
+  in
+  let s:Libcrux_intrinsics.Avx2_extract.t_Vec256 = Libcrux_ml_kem.Vector.Avx2.Arithmetic.sub z a in
+  let _:Prims.unit =
+    assert (forall i.
+          Seq.index (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 s) i == mk_i16 0 \/
+          Seq.index (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 s) i == mk_i16 (- 1))
+  in
+  Libcrux_ml_kem.Vector.Avx2.Arithmetic.bitwise_and_with_constant s (mk_i16 1665)
+
 let decompress_ciphertext_coefficient
       (v_COEFFICIENT_BITS: i32)
       (vector: Libcrux_intrinsics.Avx2_extract.t_Vec256)

@@ -190,6 +190,17 @@ class t_Operations (v_Self: Type0) = {
     -> Prims.Pure v_Self
         (f_compress_pre v_COEFFICIENT_BITS x0)
         (fun result -> f_compress_post v_COEFFICIENT_BITS x0 result);
+  f_decompress_1__pre:a: v_Self
+    -> pred:
+      Type0
+        { (forall (i: nat).
+              i < 16 ==>
+              (let x = Seq.index (f_repr a) i in
+                (x == mk_i16 0 \/ x == mk_i16 1))) ==>
+          pred };
+  f_decompress_1__post:v_Self -> v_Self -> Type0;
+  f_decompress_1_:x0: v_Self
+    -> Prims.Pure v_Self (f_decompress_1__pre x0) (fun result -> f_decompress_1__post x0 result);
   f_decompress_ciphertext_coefficient_pre:v_COEFFICIENT_BITS: i32 -> a: v_Self
     -> pred:
       Type0
@@ -425,9 +436,6 @@ class t_Operations (v_Self: Type0) = {
         (fun result -> f_rej_sample_post x0 x1 result)
 }
 
-val montgomery_multiply_fe (#v_T: Type0) {| i1: t_Operations v_T |} (v: v_T) (fer: i16)
-    : Prims.Pure v_T (requires Spec.Utils.is_i16b 1664 fer) (fun _ -> Prims.l_True)
-
 val to_standard_domain (#v_T: Type0) {| i1: t_Operations v_T |} (v: v_T)
     : Prims.Pure v_T Prims.l_True (fun _ -> Prims.l_True)
 
@@ -441,11 +449,3 @@ val to_unsigned_representative (#v_T: Type0) {| i1: t_Operations v_T |} (a: v_T)
             (let x = Seq.index (i1._super_12682756204189288427.f_repr a) i in
               let y = Seq.index (i1._super_12682756204189288427.f_repr result) i in
               (v y >= 0 /\ v y <= 3328 /\ (v y % 3329 == v x % 3329))))
-
-val decompress_1_ (#v_T: Type0) {| i1: t_Operations v_T |} (vec: v_T)
-    : Prims.Pure v_T
-      (requires
-        forall i.
-          let x = Seq.index (i1._super_12682756204189288427.f_repr vec) i in
-          (x == mk_i16 0 \/ x == mk_i16 1))
-      (fun _ -> Prims.l_True)

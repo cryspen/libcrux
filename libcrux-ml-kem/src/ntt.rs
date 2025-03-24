@@ -1,7 +1,7 @@
 use crate::{
     hax_utils::hax_debug_assert,
     polynomial::{zeta, PolynomialRingElement, VECTORS_IN_RING_ELEMENT},
-    vector::{montgomery_multiply_fe, Operations},
+    vector::Operations,
 };
 
 #[inline(always)]
@@ -183,7 +183,7 @@ pub(crate) fn ntt_at_layer_3<Vector: Operations>(
 
 #[inline(always)]
 #[hax_lib::requires(fstar!(r#"Spec.Utils.is_i16b 1664 $zeta_r /\
-    (let t = ${montgomery_multiply_fe::<Vector>} $b $zeta_r in
+    (let t = ${Vector::montgomery_multiply_by_constant} $b $zeta_r in
     (forall i. i < 16 ==>
         Spec.Utils.is_intb (pow2 15 - 1)
         (v (Seq.index (Libcrux_ml_kem.Vector.Traits.f_to_i16_array $a) i) -
@@ -197,7 +197,7 @@ fn ntt_layer_int_vec_step<Vector: Operations>(
     mut b: Vector,
     zeta_r: i16,
 ) -> (Vector, Vector) {
-    let t = montgomery_multiply_fe::<Vector>(b, zeta_r);
+    let t = Vector::montgomery_multiply_by_constant(b, zeta_r);
     b = Vector::sub(a, &t);
     a = Vector::add(a, &t);
     (a, b)

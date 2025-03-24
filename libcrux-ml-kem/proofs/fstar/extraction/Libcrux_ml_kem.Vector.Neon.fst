@@ -286,6 +286,18 @@ Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector =
     =
     (fun (v_COEFFICIENT_BITS: i32) (v: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) ->
         Libcrux_ml_kem.Vector.Neon.Compress.compress v_COEFFICIENT_BITS v);
+    f_decompress_1__pre = (fun (a: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) -> true);
+    f_decompress_1__post
+    =
+    (fun
+        (a: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector)
+        (out: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector)
+        ->
+        true);
+    f_decompress_1_
+    =
+    (fun (a: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) ->
+        Libcrux_ml_kem.Vector.Neon.Compress.decompress_1_ a);
     f_decompress_ciphertext_coefficient_pre
     =
     (fun (v_COEFFICIENT_BITS: i32) (v: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) ->

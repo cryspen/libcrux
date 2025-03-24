@@ -460,6 +460,20 @@ let impl_3: Libcrux_ml_kem.Vector.Traits.t_Operations t_SIMD256Vector =
     f_compress
     =
     (fun (v_COEFFICIENT_BITS: i32) (vector: t_SIMD256Vector) -> compress v_COEFFICIENT_BITS vector);
+    f_decompress_1__pre
+    =
+    (fun (a: t_SIMD256Vector) ->
+        forall (i: nat).
+          i < 16 ==>
+          (let x = Seq.index (impl.f_repr a) i in
+            (x == mk_i16 0 \/ x == mk_i16 1)));
+    f_decompress_1__post = (fun (a: t_SIMD256Vector) (out: t_SIMD256Vector) -> true);
+    f_decompress_1_
+    =
+    (fun (a: t_SIMD256Vector) ->
+        { f_elements = Libcrux_ml_kem.Vector.Avx2.Compress.decompress_1_ a.f_elements }
+        <:
+        t_SIMD256Vector);
     f_decompress_ciphertext_coefficient_pre
     =
     (fun (v_COEFFICIENT_BITS: i32) (vector: t_SIMD256Vector) ->
