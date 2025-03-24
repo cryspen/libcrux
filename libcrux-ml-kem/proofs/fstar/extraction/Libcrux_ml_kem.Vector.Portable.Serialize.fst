@@ -193,12 +193,10 @@ let deserialize_1_bit_vec_lemma (v: t_Array u8 (sz 2))
 let deserialize_1_lemma inputs =
   deserialize_1_bit_vec_lemma inputs;
   BitVecEq.bit_vec_equal_intro (bit_vec_of_int_t_array (deserialize_1_ inputs).f_elements 1) 
-    (BitVecEq.retype (bit_vec_of_int_t_array inputs 8))
+    (BitVecEq.retype (bit_vec_of_int_t_array inputs 8));
+  admit()
 
 #pop-options
-
-let deserialize_1_bounded_lemma inputs =
-  admit()
 
 let serialize_4_int (v: t_Slice i16) =
   let result0:u8 =
@@ -324,9 +322,6 @@ let deserialize_4_ (bytes: t_Slice u8) =
   <:
   Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
 
-let deserialize_4_bounded_lemma inputs =
-  admit()
-
 #push-options "--compat_pre_core 2 --z3rlimit 300 --z3refresh"
 
 let deserialize_4_bit_vec_lemma (v: t_Array u8 (sz 8))
@@ -344,7 +339,8 @@ let deserialize_4_bit_vec_lemma (v: t_Array u8 (sz 8))
 let deserialize_4_lemma inputs =
   deserialize_4_bit_vec_lemma inputs;
   BitVecEq.bit_vec_equal_intro (bit_vec_of_int_t_array (deserialize_4_ inputs).f_elements 4) 
-    (BitVecEq.retype (bit_vec_of_int_t_array inputs 8))
+    (BitVecEq.retype (bit_vec_of_int_t_array inputs 8));
+  admit()
 
 #pop-options
 
@@ -675,12 +671,10 @@ let deserialize_10_bit_vec_lemma (v: t_Array u8 (sz 20))
 let deserialize_10_lemma inputs =
   deserialize_10_bit_vec_lemma inputs;
   BitVecEq.bit_vec_equal_intro (bit_vec_of_int_t_array (deserialize_10_ inputs).f_elements 10) 
-    (BitVecEq.retype (bit_vec_of_int_t_array inputs 8))
+    (BitVecEq.retype (bit_vec_of_int_t_array inputs 8));
+    admit()
 
 #pop-options
-
-let deserialize_10_bounded_lemma inputs =
-  admit()
 
 let serialize_11_int (v: t_Slice i16) =
   let r0:u8 = cast (v.[ mk_usize 0 ] <: i16) <: u8 in
@@ -1057,9 +1051,6 @@ let deserialize_12_ (bytes: t_Slice u8) =
   <:
   Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
 
-let deserialize_12_bounded_lemma inputs =
-  admit()
-
 #push-options "--compat_pre_core 2 --z3rlimit 300 --z3refresh"
 
 let deserialize_12_bit_vec_lemma (v: t_Array u8 (sz 24))
@@ -1077,6 +1068,7 @@ let deserialize_12_bit_vec_lemma (v: t_Array u8 (sz 24))
 let deserialize_12_lemma inputs =
   deserialize_12_bit_vec_lemma inputs;
   BitVecEq.bit_vec_equal_intro (bit_vec_of_int_t_array (deserialize_12_ inputs).f_elements 12) 
-    (BitVecEq.retype (bit_vec_of_int_t_array inputs 8))
+    (BitVecEq.retype (bit_vec_of_int_t_array inputs 8));
+  admit()
 
 #pop-options

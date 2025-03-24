@@ -37,7 +37,6 @@ let serialize_1_ (a: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
 
 let deserialize_1_ (a: t_Slice u8) =
   let _:Prims.unit = Libcrux_ml_kem.Vector.Portable.Serialize.deserialize_1_lemma a in
-  let _:Prims.unit = Libcrux_ml_kem.Vector.Portable.Serialize.deserialize_1_bounded_lemma a in
   Libcrux_ml_kem.Vector.Portable.Serialize.deserialize_1_ a
 
 let serialize_4_ (a: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) =
@@ -47,7 +46,6 @@ let serialize_4_ (a: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
 
 let deserialize_4_ (a: t_Slice u8) =
   let _:Prims.unit = Libcrux_ml_kem.Vector.Portable.Serialize.deserialize_4_lemma a in
-  let _:Prims.unit = Libcrux_ml_kem.Vector.Portable.Serialize.deserialize_4_bounded_lemma a in
   Libcrux_ml_kem.Vector.Portable.Serialize.deserialize_4_ a
 
 let serialize_5_ (a: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) =
@@ -61,7 +59,6 @@ let serialize_10_ (a: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVecto
 
 let deserialize_10_ (a: t_Slice u8) =
   let _:Prims.unit = Libcrux_ml_kem.Vector.Portable.Serialize.deserialize_10_lemma a in
-  let _:Prims.unit = Libcrux_ml_kem.Vector.Portable.Serialize.deserialize_10_bounded_lemma a in
   Libcrux_ml_kem.Vector.Portable.Serialize.deserialize_10_ a
 
 let serialize_11_ (a: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) =
@@ -75,7 +72,6 @@ let serialize_12_ (a: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVecto
 
 let deserialize_12_ (a: t_Slice u8) =
   let _:Prims.unit = Libcrux_ml_kem.Vector.Portable.Serialize.deserialize_12_lemma a in
-  let _:Prims.unit = Libcrux_ml_kem.Vector.Portable.Serialize.deserialize_12_bounded_lemma a in
   Libcrux_ml_kem.Vector.Portable.Serialize.deserialize_12_ a
 
 #push-options "--z3rlimit 400 --split_queries always"
