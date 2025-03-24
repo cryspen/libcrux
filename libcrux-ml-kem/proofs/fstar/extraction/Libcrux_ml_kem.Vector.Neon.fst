@@ -201,36 +201,6 @@ Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector =
     =
     (fun (a: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) ->
         Libcrux_ml_kem.Vector.Neon.Arithmetic.to_unsigned_representative a);
-    f_bitwise_and_with_constant_pre
-    =
-    (fun (v: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) (c: i16) -> true);
-    f_bitwise_and_with_constant_post
-    =
-    (fun
-        (v: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector)
-        (c: i16)
-        (out: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector)
-        ->
-        true);
-    f_bitwise_and_with_constant
-    =
-    (fun (v: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) (c: i16) ->
-        Libcrux_ml_kem.Vector.Neon.Arithmetic.bitwise_and_with_constant v c);
-    f_shift_right_pre
-    =
-    (fun (v_SHIFT_BY: i32) (v: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) -> true);
-    f_shift_right_post
-    =
-    (fun
-        (v_SHIFT_BY: i32)
-        (v: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector)
-        (out: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector)
-        ->
-        true);
-    f_shift_right
-    =
-    (fun (v_SHIFT_BY: i32) (v: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) ->
-        Libcrux_ml_kem.Vector.Neon.Arithmetic.shift_right v_SHIFT_BY v);
     f_cond_subtract_3329__pre
     =
     (fun (v: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) -> true);

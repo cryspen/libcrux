@@ -214,38 +214,6 @@ Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
     =
     (fun (vec: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) (c: i16) ->
         Libcrux_ml_kem.Vector.Portable.Arithmetic.multiply_by_constant vec c);
-    f_bitwise_and_with_constant_pre
-    =
-    (fun (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) (c: i16) -> true);
-    f_bitwise_and_with_constant_post
-    =
-    (fun
-        (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
-        (c: i16)
-        (out: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
-        ->
-        impl.f_repr out == Spec.Utils.map_array (fun x -> x &. c) (impl.f_repr v));
-    f_bitwise_and_with_constant
-    =
-    (fun (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) (c: i16) ->
-        Libcrux_ml_kem.Vector.Portable.Arithmetic.bitwise_and_with_constant v c);
-    f_shift_right_pre
-    =
-    (fun (v_SHIFT_BY: i32) (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) ->
-        v_SHIFT_BY >=. mk_i32 0 && v_SHIFT_BY <. mk_i32 16);
-    f_shift_right_post
-    =
-    (fun
-        (v_SHIFT_BY: i32)
-        (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
-        (out: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
-        ->
-        (v_SHIFT_BY >=. (mk_i32 0) /\ v_SHIFT_BY <. (mk_i32 16)) ==>
-        impl.f_repr out == Spec.Utils.map_array (fun x -> x >>! v_SHIFT_BY) (impl.f_repr v));
-    f_shift_right
-    =
-    (fun (v_SHIFT_BY: i32) (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) ->
-        Libcrux_ml_kem.Vector.Portable.Arithmetic.shift_right v_SHIFT_BY v);
     f_cond_subtract_3329__pre
     =
     (fun (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) ->

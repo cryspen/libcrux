@@ -359,40 +359,6 @@ let impl_3: Libcrux_ml_kem.Vector.Traits.t_Operations t_SIMD256Vector =
         { f_elements = Libcrux_ml_kem.Vector.Avx2.Arithmetic.multiply_by_constant vec.f_elements c }
         <:
         t_SIMD256Vector);
-    f_bitwise_and_with_constant_pre = (fun (vector: t_SIMD256Vector) (constant: i16) -> true);
-    f_bitwise_and_with_constant_post
-    =
-    (fun (vector: t_SIMD256Vector) (constant: i16) (out: t_SIMD256Vector) ->
-        impl.f_repr out == Spec.Utils.map_array (fun x -> x &. constant) (impl.f_repr vector));
-    f_bitwise_and_with_constant
-    =
-    (fun (vector: t_SIMD256Vector) (constant: i16) ->
-        {
-          f_elements
-          =
-          Libcrux_ml_kem.Vector.Avx2.Arithmetic.bitwise_and_with_constant vector.f_elements constant
-        }
-        <:
-        t_SIMD256Vector);
-    f_shift_right_pre
-    =
-    (fun (v_SHIFT_BY: i32) (vector: t_SIMD256Vector) ->
-        v_SHIFT_BY >=. mk_i32 0 && v_SHIFT_BY <. mk_i32 16);
-    f_shift_right_post
-    =
-    (fun (v_SHIFT_BY: i32) (vector: t_SIMD256Vector) (out: t_SIMD256Vector) ->
-        (v_SHIFT_BY >=. (mk_i32 0) /\ v_SHIFT_BY <. (mk_i32 16)) ==>
-        impl.f_repr out == Spec.Utils.map_array (fun x -> x >>! v_SHIFT_BY) (impl.f_repr vector));
-    f_shift_right
-    =
-    (fun (v_SHIFT_BY: i32) (vector: t_SIMD256Vector) ->
-        {
-          f_elements
-          =
-          Libcrux_ml_kem.Vector.Avx2.Arithmetic.shift_right v_SHIFT_BY vector.f_elements
-        }
-        <:
-        t_SIMD256Vector);
     f_cond_subtract_3329__pre
     =
     (fun (vector: t_SIMD256Vector) -> Spec.Utils.is_i16b_array (pow2 12 - 1) (impl.f_repr vector));

@@ -57,15 +57,15 @@ pub trait Operations: Copy + Clone + Repr {
          v (Seq.index (f_repr ${vec}) i) * v c)"#))]
     fn multiply_by_constant(vec: Self, c: i16) -> Self;
 
-    // Bitwise operations
-    #[requires(true)]
-    #[ensures(|result| fstar!(r#"f_repr $result == Spec.Utils.map_array (fun x -> x &. c) (f_repr $v)"#))]
-    fn bitwise_and_with_constant(v: Self, c: i16) -> Self;
+    // // Bitwise operations
+    // #[requires(true)]
+    // #[ensures(|result| fstar!(r#"f_repr $result == Spec.Utils.map_array (fun x -> x &. c) (f_repr $v)"#))]
+    // fn bitwise_and_with_constant(v: Self, c: i16) -> Self;
 
-    #[requires(SHIFT_BY >= 0 && SHIFT_BY < 16)]
-    #[ensures(|result| fstar!(r#"(v_SHIFT_BY >=. (mk_i32 0) /\ v_SHIFT_BY <. (mk_i32 16)) ==> f_repr $result == Spec.Utils.map_array (fun x -> x >>! ${SHIFT_BY}) (f_repr $v)"#))]
-    fn shift_right<const SHIFT_BY: i32>(v: Self) -> Self;
-    // fn shift_left<const SHIFT_BY: i32>(v: Self) -> Self;
+    // #[requires(SHIFT_BY >= 0 && SHIFT_BY < 16)]
+    // #[ensures(|result| fstar!(r#"(v_SHIFT_BY >=. (mk_i32 0) /\ v_SHIFT_BY <. (mk_i32 16)) ==> f_repr $result == Spec.Utils.map_array (fun x -> x >>! ${SHIFT_BY}) (f_repr $v)"#))]
+    // fn shift_right<const SHIFT_BY: i32>(v: Self) -> Self;
+    // // fn shift_left<const SHIFT_BY: i32>(v: Self) -> Self;
 
     // Modular operations
     #[requires(fstar!(r#"Spec.Utils.is_i16b_array (pow2 12 - 1) (f_repr $v)"#))]
@@ -210,8 +210,8 @@ pub trait Operations: Copy + Clone {
     fn add(lhs: Self, rhs: &Self) -> Self;
     fn sub(lhs: Self, rhs: &Self) -> Self;
     fn multiply_by_constant(v: Self, c: i16) -> Self;
-    fn bitwise_and_with_constant(v: Self, c: i16) -> Self;
-    fn shift_right<const SHIFT_BY: i32>(v: Self) -> Self;
+    // fn bitwise_and_with_constant(v: Self, c: i16) -> Self;
+    // fn shift_right<const SHIFT_BY: i32>(v: Self) -> Self;
     fn cond_subtract_3329(v: Self) -> Self;
     fn barrett_reduce(vector: Self) -> Self;
     fn montgomery_multiply_by_constant(v: Self, c: i16) -> Self;

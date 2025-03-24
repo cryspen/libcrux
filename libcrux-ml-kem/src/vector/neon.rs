@@ -67,13 +67,13 @@ impl Operations for SIMD128Vector {
         to_unsigned_representative(a)
     }
 
-    fn bitwise_and_with_constant(v: Self, c: i16) -> Self {
-        bitwise_and_with_constant(v, c)
-    }
+    // fn bitwise_and_with_constant(v: Self, c: i16) -> Self {
+    //     bitwise_and_with_constant(v, c)
+    // }
 
-    fn shift_right<const SHIFT_BY: i32>(v: Self) -> Self {
-        shift_right::<SHIFT_BY>(v)
-    }
+    // fn shift_right<const SHIFT_BY: i32>(v: Self) -> Self {
+    //     shift_right::<SHIFT_BY>(v)
+    // }
 
     fn cond_subtract_3329(v: Self) -> Self {
         cond_subtract_3329(v)

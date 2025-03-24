@@ -116,25 +116,6 @@ class t_Operations (v_Self: Type0) = {
     -> Prims.Pure v_Self
         (f_multiply_by_constant_pre x0 x1)
         (fun result -> f_multiply_by_constant_post x0 x1 result);
-  f_bitwise_and_with_constant_pre:v: v_Self -> c: i16 -> pred: Type0{true ==> pred};
-  f_bitwise_and_with_constant_post:v: v_Self -> c: i16 -> result: v_Self
-    -> pred: Type0{pred ==> f_repr result == Spec.Utils.map_array (fun x -> x &. c) (f_repr v)};
-  f_bitwise_and_with_constant:x0: v_Self -> x1: i16
-    -> Prims.Pure v_Self
-        (f_bitwise_and_with_constant_pre x0 x1)
-        (fun result -> f_bitwise_and_with_constant_post x0 x1 result);
-  f_shift_right_pre:v_SHIFT_BY: i32 -> v: v_Self
-    -> pred: Type0{v_SHIFT_BY >=. mk_i32 0 && v_SHIFT_BY <. mk_i32 16 ==> pred};
-  f_shift_right_post:v_SHIFT_BY: i32 -> v: v_Self -> result: v_Self
-    -> pred:
-      Type0
-        { pred ==>
-          (v_SHIFT_BY >=. (mk_i32 0) /\ v_SHIFT_BY <. (mk_i32 16)) ==>
-          f_repr result == Spec.Utils.map_array (fun x -> x >>! v_SHIFT_BY) (f_repr v) };
-  f_shift_right:v_SHIFT_BY: i32 -> x0: v_Self
-    -> Prims.Pure v_Self
-        (f_shift_right_pre v_SHIFT_BY x0)
-        (fun result -> f_shift_right_post v_SHIFT_BY x0 result);
   f_cond_subtract_3329__pre:v: v_Self
     -> pred: Type0{Spec.Utils.is_i16b_array (pow2 12 - 1) (f_repr v) ==> pred};
   f_cond_subtract_3329__post:v: v_Self -> result: v_Self
