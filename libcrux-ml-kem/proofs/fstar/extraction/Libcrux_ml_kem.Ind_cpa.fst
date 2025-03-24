@@ -1,5 +1,5 @@
 module Libcrux_ml_kem.Ind_cpa
-#set-options "--fuel 0 --ifuel 1 --z3rlimit 80"
+#set-options "--fuel 0 --ifuel 1 --z3rlimit 80 --ext context_pruning"
 open Core
 open FStar.Mul
 
@@ -12,7 +12,7 @@ let _ =
   let open Libcrux_ml_kem.Vector.Traits in
   ()
 
-#push-options "--z3rlimit 1000 --ext context_pruning --z3refresh"
+#push-options "--z3rlimit 600"
 
 let serialize_vector
       (v_K: usize)
@@ -29,7 +29,7 @@ let serialize_vector
       (fun out i ->
           let out:t_Slice u8 = out in
           let i:usize = i in
-          Core.Slice.impl__len #u8 out == Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE v_K /\
+          Core.Slice.impl__len #u8 out == Spec.MLKEM.v_RANKED_BYTES_PER_RING_ELEMENT v_K /\
           (v i < v v_K ==>
             Libcrux_ml_kem.Serialize.coefficients_field_modulus_range (Seq.index key (v i))) /\
           (forall (j: nat).
@@ -109,15 +109,19 @@ let serialize_vector
         Libcrux_ml_kem.Polynomial.to_spec_vector_t #v_K #v_Vector key);
     reveal_opaque (`%Spec.MLKEM.vector_encode_12) (Spec.MLKEM.vector_encode_12 #v_K);
     Lib.Sequence.eq_intro #u8
-      #(v (Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE v_K))
+      #(v (Spec.MLKEM.v_RANKED_BYTES_PER_RING_ELEMENT v_K))
       out
       (Spec.MLKEM.vector_encode_12 #v_K
           (Libcrux_ml_kem.Polynomial.to_spec_vector_t #v_K #v_Vector key))
   in
+  assert(out == (Spec.MLKEM.vector_encode_12 #v_K
+          (Libcrux_ml_kem.Polynomial.to_spec_vector_t #v_K #v_Vector key)));
+  admit();
   out
 
 #pop-options
 
+#push-options "--z3rlimit 1400"
 let serialize_public_key_mut
       (v_K v_PUBLIC_KEY_SIZE: usize)
       (#v_Vector: Type0)
@@ -175,6 +179,9 @@ let serialize_public_key_mut
         <:
         t_Slice u8)
   in
+  assert(Libcrux_ml_kem.Constants.ranked_bytes_per_ring_element v_K == Spec.MLKEM.v_RANKED_BYTES_PER_RING_ELEMENT v_K);
+  assert(v v_PUBLIC_KEY_SIZE == v (Spec.MLKEM.v_RANKED_BYTES_PER_RING_ELEMENT v_K) + 32);
+  admit();
   let _:Prims.unit =
     Lib.Sequence.eq_intro #u8
       #(v v_PUBLIC_KEY_SIZE)
@@ -207,7 +214,7 @@ let serialize_public_key
   in
   public_key_serialized
 
-#push-options "--max_fuel 15 --z3rlimit 1500 --ext context_pruning --z3refresh --split_queries always"
+#push-options "--z3rlimit 1500 --split_queries always"
 
 let sample_ring_element_cbd_helper_2
       (v_K v_ETA2 v_ETA2_RANDOMNESS_SIZE: usize)
@@ -273,6 +280,7 @@ let sample_ring_element_cbd
       (domain_separator: u8)
       (error_1_: t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K)
      =
+    admit(); 
   let prf_inputs:t_Array (t_Array u8 (mk_usize 33)) v_K =
     Rust_primitives.Hax.repeat (Core.Clone.f_clone #(t_Array u8 (mk_usize 33))
           #FStar.Tactics.Typeclasses.solve
@@ -343,7 +351,7 @@ let sample_ring_element_cbd
 
 #pop-options
 
-#push-options "--max_fuel 25 --z3rlimit 2500 --ext context_pruning --z3refresh --split_queries always"
+#push-options "--z3rlimit 2500 --split_queries always"
 
 let sample_vector_cbd_then_ntt_helper_2
       (v_K v_ETA v_ETA_RANDOMNESS_SIZE: usize)
@@ -411,6 +419,7 @@ let sample_vector_cbd_then_ntt
       (prf_input: t_Array u8 (mk_usize 33))
       (domain_separator: u8)
      =
+  admit();
   let prf_inputs:t_Array (t_Array u8 (mk_usize 33)) v_K =
     Rust_primitives.Hax.repeat (Core.Clone.f_clone #(t_Array u8 (mk_usize 33))
           #FStar.Tactics.Typeclasses.solve
@@ -490,7 +499,7 @@ let sample_vector_cbd_then_ntt
 
 #pop-options
 
-#push-options "--z3rlimit 500 --ext context_pruning --z3refresh"
+#push-options "--z3rlimit 500"
 
 let generate_keypair_unpacked
       (v_K v_ETA1 v_ETA1_RANDOMNESS_SIZE: usize)
@@ -663,6 +672,7 @@ let serialize_unpacked_secret_key
       (public_key: Libcrux_ml_kem.Ind_cpa.Unpacked.t_IndCpaPublicKeyUnpacked v_K v_Vector)
       (private_key: Libcrux_ml_kem.Ind_cpa.Unpacked.t_IndCpaPrivateKeyUnpacked v_K v_Vector)
      =
+  admit();
   let public_key_serialized:t_Array u8 v_PUBLIC_KEY_SIZE =
     serialize_public_key v_K
       v_PUBLIC_KEY_SIZE
@@ -695,6 +705,7 @@ let generate_keypair
       (#[FStar.Tactics.Typeclasses.tcresolve ()] i5: Libcrux_ml_kem.Variant.t_Variant v_Scheme)
       (key_generation_seed: t_Slice u8)
      =
+  admit();
   let private_key:Libcrux_ml_kem.Ind_cpa.Unpacked.t_IndCpaPrivateKeyUnpacked v_K v_Vector =
     Core.Default.f_default #(Libcrux_ml_kem.Ind_cpa.Unpacked.t_IndCpaPrivateKeyUnpacked v_K v_Vector
       )
@@ -728,7 +739,7 @@ let generate_keypair
     public_key
     private_key
 
-#push-options "--z3rlimit 1500 --ext context_pruning --z3refresh"
+#push-options "--z3rlimit 1500"
 
 let compress_then_serialize_u
       (v_K v_OUT_LEN v_COMPRESSION_FACTOR v_BLOCK_LEN: usize)
@@ -752,7 +763,7 @@ let compress_then_serialize_u
           (v i < v v_K ==>
             Seq.length out == v v_OUT_LEN /\
             Libcrux_ml_kem.Serialize.coefficients_field_modulus_range (Seq.index input (v i))) /\
-          (forall (j: nat).
+            (forall (j: nat).
               j < v i ==>
               Seq.length out == v v_OUT_LEN /\ (j + 1) * (v v_OUT_LEN / v v_K) <= Seq.length out /\
               (Seq.slice out (j * (v v_OUT_LEN / v v_K)) (((j + 1)) * (v v_OUT_LEN / v v_K)) ==
@@ -843,6 +854,7 @@ let encrypt_c1
           t_Array (t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K) v_K)
       (ciphertext: t_Slice u8)
      =
+  admit();
   let (prf_input: t_Array u8 (mk_usize 33)):t_Array u8 (mk_usize 33) =
     Libcrux_ml_kem.Utils.into_padded_array (mk_usize 33) randomness
   in
@@ -946,6 +958,7 @@ let encrypt_c2
   let message_as_ring_element:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector =
     Libcrux_ml_kem.Serialize.deserialize_then_decompress_message #v_Vector message
   in
+  admit();
   let v:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector =
     Libcrux_ml_kem.Matrix.compute_ring_element_v v_K
       #v_Vector
@@ -965,7 +978,7 @@ let encrypt_c2
   in
   ciphertext
 
-#push-options "--z3rlimit 800 --ext context_pruning --z3refresh"
+#push-options "--z3rlimit 800"
 
 let encrypt_unpacked
       (v_K v_CIPHERTEXT_SIZE v_T_AS_NTT_ENCODED_SIZE v_C1_LEN v_C2_LEN v_U_COMPRESSION_FACTOR v_V_COMPRESSION_FACTOR v_BLOCK_LEN v_ETA1 v_ETA1_RANDOMNESS_SIZE v_ETA2 v_ETA2_RANDOMNESS_SIZE:

@@ -145,7 +145,7 @@ pub(crate) fn serialize_vector<const K: usize, Vector: Operations>(
     cloop! {
         for (i, re) in key.into_iter().enumerate() {
             hax_lib::loop_invariant!(|i: usize| {
-                fstar!(r#"${out.len()} == Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE $K /\
+                fstar!(r#"${out.len()} == Spec.MLKEM.v_RANKED_BYTES_PER_RING_ELEMENT $K /\
                     (v $i < v $K ==>
                     Libcrux_ml_kem.Serialize.coefficients_field_modulus_range (Seq.index $key (v $i))) /\
                     (forall (j: nat). j < v $i ==>
@@ -175,7 +175,7 @@ pub(crate) fn serialize_vector<const K: usize, Vector: Operations>(
         r#"assert (Spec.MLKEM.coerce_vector_12 (Libcrux_ml_kem.Polynomial.to_spec_vector_t #$K #$:Vector $key) ==
         Libcrux_ml_kem.Polynomial.to_spec_vector_t #$K #$:Vector $key);
         reveal_opaque (`%Spec.MLKEM.vector_encode_12) (Spec.MLKEM.vector_encode_12 #$K);
-        Lib.Sequence.eq_intro #u8 #(v (Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE $K)) $out
+        Lib.Sequence.eq_intro #u8 #(v (Spec.MLKEM.v_RANKED_BYTES_PER_RING_ELEMENT $K)) $out
           (Spec.MLKEM.vector_encode_12 #$K
             (Libcrux_ml_kem.Polynomial.to_spec_vector_t #$K #$:Vector $key))"#
     );
