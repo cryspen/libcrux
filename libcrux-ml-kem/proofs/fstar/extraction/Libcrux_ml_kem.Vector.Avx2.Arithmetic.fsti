@@ -138,3 +138,14 @@ val montgomery_multiply_m128i_by_constants (vec constants: Libcrux_intrinsics.Av
               i < 8 ==>
               v (get_lane128 result i) % 3329 ==
               ((v (get_lane128 vec i) * v (get_lane128 constants i) * 169) % 3329)))
+
+val to_unsigned_representative (a: Libcrux_intrinsics.Avx2_extract.t_Vec256)
+    : Prims.Pure Libcrux_intrinsics.Avx2_extract.t_Vec256
+      (requires Spec.Utils.is_i16b_array 3328 (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 a))
+      (ensures
+        fun result ->
+          let result:Libcrux_intrinsics.Avx2_extract.t_Vec256 = result in
+          forall i.
+            (let x = Seq.index (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 a) i in
+              let y = Seq.index (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 result) i in
+              (v y >= 0 /\ v y <= 3328 /\ (v y % 3329 == v x % 3329))))

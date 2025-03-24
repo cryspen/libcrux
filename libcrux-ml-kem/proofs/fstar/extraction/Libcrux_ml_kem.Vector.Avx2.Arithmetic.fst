@@ -453,3 +453,14 @@ let montgomery_multiply_m128i_by_constants (vec constants: Libcrux_intrinsics.Av
   result
 
 #pop-options
+
+#push-options "--admit_smt_queries true"
+
+let to_unsigned_representative (a: Libcrux_intrinsics.Avx2_extract.t_Vec256) =
+  let t:Libcrux_intrinsics.Avx2_extract.t_Vec256 = shift_right (mk_i32 15) a in
+  let fm:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+    bitwise_and_with_constant t Libcrux_ml_kem.Vector.Traits.v_FIELD_MODULUS
+  in
+  add a fm
+
+#pop-options

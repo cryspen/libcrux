@@ -527,3 +527,14 @@ let montgomery_multiply_by_constant
   vec
 
 #pop-options
+
+#push-options "--admit_smt_queries true"
+
+let to_unsigned_representative (a: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) =
+  let t:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector = shift_right (mk_i32 15) a in
+  let fm:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
+    bitwise_and_with_constant t Libcrux_ml_kem.Vector.Traits.v_FIELD_MODULUS
+  in
+  add a fm
+
+#pop-options

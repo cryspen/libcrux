@@ -369,6 +369,17 @@ impl Operations for SIMD256Vector {
         }
     }
 
+    #[requires(fstar!(r#"Spec.Utils.is_i16b_array 3328 (impl.f_repr $a)"#))]
+    #[ensures(|result| fstar!(r#"forall (i:nat). i < 16 ==>
+                                (let x = Seq.index (impl.f_repr ${a}) i in
+                                 let y = Seq.index (impl.f_repr ${result}) i in
+                                 (v y >= 0 /\ v y <= 3328 /\ (v y % 3329 == v x % 3329)))"#))]
+    fn to_unsigned_representative(a: Self) -> Self {
+        Self {
+            elements: arithmetic::to_unsigned_representative(a.elements),
+        }
+    }
+
     #[requires(fstar!(r#"forall (i:nat). i < 16 ==> v (Seq.index (impl.f_repr $vector) i) >= 0 /\
         v (Seq.index (impl.f_repr $vector) i) < 3329"#))]
     #[ensures(|out| fstar!(r#"forall (i:nat). i < 16 ==> bounded (Seq.index (impl.f_repr $out) i) 1"#))]

@@ -370,3 +370,16 @@ pub(crate) fn montgomery_multiply_m128i_by_constants(vec: Vec128, constants: Vec
 
     result
 }
+
+#[hax_lib::fstar::verification_status(lax)]
+#[hax_lib::requires(fstar!(r#"Spec.Utils.is_i16b_array 3328 (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 $a)"#))]
+#[hax_lib::ensures(|result| fstar!(r#"forall i.
+                                       (let x = Seq.index (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 $a) i in
+                                        let y = Seq.index (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 $result) i in
+                                        (v y >= 0 /\ v y <= 3328 /\ (v y % 3329 == v x % 3329)))"#))]
+#[inline(always)]
+pub(crate) fn to_unsigned_representative(a: Vec256) -> Vec256 {
+    let t = shift_right::<15>(a);
+    let fm = bitwise_and_with_constant(t, FIELD_MODULUS);
+    add(a, fm)
+}

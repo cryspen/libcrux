@@ -294,6 +294,25 @@ Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
     =
     (fun (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) (r: i16) ->
         Libcrux_ml_kem.Vector.Portable.Arithmetic.montgomery_multiply_by_constant v r);
+    f_to_unsigned_representative_pre
+    =
+    (fun (a: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) ->
+        Spec.Utils.is_i16b_array 3328 (impl.f_repr a));
+    f_to_unsigned_representative_post
+    =
+    (fun
+        (a: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
+        (result: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
+        ->
+        forall (i: nat).
+          i < 16 ==>
+          (let x = Seq.index (impl.f_repr a) i in
+            let y = Seq.index (impl.f_repr result) i in
+            (v y >= 0 /\ v y <= 3328 /\ (v y % 3329 == v x % 3329))));
+    f_to_unsigned_representative
+    =
+    (fun (a: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) ->
+        Libcrux_ml_kem.Vector.Portable.Arithmetic.to_unsigned_representative a);
     f_compress_1__pre
     =
     (fun (a: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) ->

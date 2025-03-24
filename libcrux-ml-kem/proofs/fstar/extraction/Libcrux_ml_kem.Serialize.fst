@@ -17,7 +17,11 @@ let to_unsigned_field_modulus
       (a: v_Vector)
      =
   let _:Prims.unit = reveal_opaque (`%field_modulus_range) (field_modulus_range #v_Vector) in
-  let result:v_Vector = Libcrux_ml_kem.Vector.Traits.to_unsigned_representative #v_Vector a in
+  let result:v_Vector =
+    Libcrux_ml_kem.Vector.Traits.f_to_unsigned_representative #v_Vector
+      #FStar.Tactics.Typeclasses.solve
+      a
+  in
   let _:Prims.unit = admit () (* Panic freedom *) in
   result
 
@@ -455,7 +459,8 @@ let compress_then_serialize_11_
             Libcrux_ml_kem.Vector.Traits.f_compress #v_Vector
               #FStar.Tactics.Typeclasses.solve
               (mk_i32 11)
-              (Libcrux_ml_kem.Vector.Traits.to_unsigned_representative #v_Vector
+              (Libcrux_ml_kem.Vector.Traits.f_to_unsigned_representative #v_Vector
+                  #FStar.Tactics.Typeclasses.solve
                   (re.Libcrux_ml_kem.Polynomial.f_coefficients.[ i ] <: v_Vector)
                 <:
                 v_Vector)
@@ -612,7 +617,8 @@ let compress_then_serialize_5_
             Libcrux_ml_kem.Vector.Traits.f_compress #v_Vector
               #FStar.Tactics.Typeclasses.solve
               (mk_i32 5)
-              (Libcrux_ml_kem.Vector.Traits.to_unsigned_representative #v_Vector
+              (Libcrux_ml_kem.Vector.Traits.f_to_unsigned_representative #v_Vector
+                  #FStar.Tactics.Typeclasses.solve
                   (re.Libcrux_ml_kem.Polynomial.f_coefficients.[ i ] <: v_Vector)
                 <:
                 v_Vector)

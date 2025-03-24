@@ -185,6 +185,15 @@ impl Operations for PortableVector {
         montgomery_multiply_by_constant(v, r)
     }
 
+    #[requires(fstar!(r#"Spec.Utils.is_i16b_array 3328 (impl.f_repr $a)"#))]
+    #[ensures(|result| fstar!(r#"forall (i:nat). i < 16 ==>
+                                (let x = Seq.index (impl.f_repr ${a}) i in
+                                 let y = Seq.index (impl.f_repr ${result}) i in
+                                 (v y >= 0 /\ v y <= 3328 /\ (v y % 3329 == v x % 3329)))"#))]
+    fn to_unsigned_representative(a: Self) -> Self {
+        to_unsigned_representative(a)
+    }
+
     #[requires(fstar!(r#"forall (i:nat). i < 16 ==> v (Seq.index (impl.f_repr $a) i) >= 0 /\
         v (Seq.index (impl.f_repr $a) i) < 3329"#))]
     #[ensures(|out| fstar!(r#"forall (i:nat). i < 16 ==> bounded (Seq.index (impl.f_repr $out) i) 1"#))]

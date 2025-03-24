@@ -63,6 +63,10 @@ impl Operations for SIMD128Vector {
         multiply_by_constant(v, c)
     }
 
+    fn to_unsigned_representative(a: Self) -> Self {
+        to_unsigned_representative(a)
+    }
+
     fn bitwise_and_with_constant(v: Self, c: i16) -> Self {
         bitwise_and_with_constant(v, c)
     }

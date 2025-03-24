@@ -1,4 +1,4 @@
-use crate::vector::{to_standard_domain, Operations, FIELD_ELEMENTS_IN_VECTOR};
+use crate::vector::{Operations, FIELD_ELEMENTS_IN_VECTOR, MONTGOMERY_R_SQUARED_MOD_FIELD_MODULUS};
 
 pub(crate) const ZETAS_TIMES_MONTGOMERY_R: [i16; 128] = {
     hax_lib::fstar!(r#"assert_norm (pow2 16 == 65536)"#);
@@ -232,6 +232,11 @@ fn add_error_reduce<Vector: Operations>(
         myself.coefficients[j] =
             Vector::barrett_reduce(Vector::add(coefficient_normal_form, &error.coefficients[j]));
     }
+}
+
+#[inline(always)]
+fn to_standard_domain<T: Operations>(v: T) -> T {
+    T::montgomery_multiply_by_constant(v, MONTGOMERY_R_SQUARED_MOD_FIELD_MODULUS as i16)
 }
 
 #[inline(always)]

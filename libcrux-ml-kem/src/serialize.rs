@@ -2,7 +2,7 @@ use crate::{
     constants::{BYTES_PER_RING_ELEMENT, SHARED_SECRET_SIZE},
     helper::cloop,
     polynomial::{PolynomialRingElement, VECTORS_IN_RING_ELEMENT},
-    vector::{to_unsigned_representative, Operations},
+    vector::Operations,
 };
 
 #[inline(always)]
@@ -31,7 +31,7 @@ let coefficients_field_modulus_range (#v_Vector: Type0)
     v (Seq.index (Libcrux_ml_kem.Vector.Traits.f_to_i16_array $result) i) < v ${crate::vector::FIELD_MODULUS}"#))]
 pub(super) fn to_unsigned_field_modulus<Vector: Operations>(a: Vector) -> Vector {
     hax_lib::fstar!(r#"reveal_opaque (`%field_modulus_range) (field_modulus_range #$:Vector)"#);
-    to_unsigned_representative::<Vector>(a)
+    Vector::to_unsigned_representative(a)
 }
 
 #[inline(always)]
@@ -247,7 +247,7 @@ fn compress_then_serialize_11<const OUT_LEN: usize, Vector: Operations>(
     let mut serialized = [0u8; OUT_LEN];
     for i in 0..VECTORS_IN_RING_ELEMENT {
         let coefficient =
-            Vector::compress::<11>(to_unsigned_representative::<Vector>(re.coefficients[i]));
+            Vector::compress::<11>(Vector::to_unsigned_representative(re.coefficients[i]));
 
         let bytes = Vector::serialize_11(coefficient);
         serialized[22 * i..22 * i + 22].copy_from_slice(&bytes);
@@ -328,7 +328,7 @@ fn compress_then_serialize_5<Vector: Operations>(
 ) {
     for i in 0..VECTORS_IN_RING_ELEMENT {
         let coefficients =
-            Vector::compress::<5>(to_unsigned_representative::<Vector>(re.coefficients[i]));
+            Vector::compress::<5>(Vector::to_unsigned_representative(re.coefficients[i]));
 
         let bytes = Vector::serialize_5(coefficients);
         serialized[10 * i..10 * i + 10].copy_from_slice(&bytes);

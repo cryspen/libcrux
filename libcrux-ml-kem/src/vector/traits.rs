@@ -78,6 +78,13 @@ pub trait Operations: Copy + Clone + Repr {
     #[requires(fstar!(r#"Spec.Utils.is_i16b 1664 c"#))]
     fn montgomery_multiply_by_constant(v: Self, c: i16) -> Self;
 
+    #[requires(fstar!(r#"Spec.Utils.is_i16b_array 3328 (f_repr a)"#))]
+    #[ensures(|result| fstar!(r#"forall (i:nat). i < 16 ==>
+                                (let x = Seq.index (f_repr ${a}) i in
+                                 let y = Seq.index (f_repr ${result}) i in
+                                 (v y >= 0 /\ v y <= 3328 /\ (v y % 3329 == v x % 3329)))"#))]
+    fn to_unsigned_representative(a: Self) -> Self;
+
     // Compression
     #[requires(fstar!(r#"forall (i:nat). i < 16 ==> v (Seq.index (f_repr $a) i) >= 0 /\
         v (Seq.index (f_repr $a) i) < 3329"#))]
@@ -208,7 +215,7 @@ pub trait Operations: Copy + Clone {
     fn cond_subtract_3329(v: Self) -> Self;
     fn barrett_reduce(vector: Self) -> Self;
     fn montgomery_multiply_by_constant(v: Self, c: i16) -> Self;
-    fn to_unsigned_representative<T: Operations>(a: Self) -> Self;
+    fn to_unsigned_representative(a: Self) -> Self;
     fn compress_1(v: Self) -> Self;
     fn compress<const COEFFICIENT_BITS: i32>(v: Self) -> Self;
     fn decompress_1(a: Self) -> Self;
@@ -234,23 +241,4 @@ pub trait Operations: Copy + Clone {
     fn serialize_12(a: Self) -> [u8; 24];
     fn deserialize_12(a: &[u8]) -> Self;
     fn rej_sample(a: &[u8], out: &mut [i16]) -> usize;
-}
-
-// hax does not support trait with default implementations, so we use the following pattern
-#[inline(always)]
-pub fn to_standard_domain<T: Operations>(v: T) -> T {
-    T::montgomery_multiply_by_constant(v, MONTGOMERY_R_SQUARED_MOD_FIELD_MODULUS as i16)
-}
-
-#[hax_lib::fstar::verification_status(lax)]
-#[hax_lib::requires(fstar!(r#"Spec.Utils.is_i16b_array 3328 (i1._super_12682756204189288427.f_repr a)"#))]
-#[hax_lib::ensures(|result| fstar!(r#"forall i.
-                                       (let x = Seq.index (i1._super_12682756204189288427.f_repr ${a}) i in
-                                        let y = Seq.index (i1._super_12682756204189288427.f_repr ${result}) i in
-                                        (v y >= 0 /\ v y <= 3328 /\ (v y % 3329 == v x % 3329)))"#))]
-#[inline(always)]
-pub fn to_unsigned_representative<T: Operations>(a: T) -> T {
-    let t = T::shift_right::<15>(a);
-    let fm = T::bitwise_and_with_constant(t, FIELD_MODULUS);
-    T::add(a, &fm)
 }

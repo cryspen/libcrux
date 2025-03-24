@@ -505,6 +505,16 @@ let add_error_reduce
 
 #pop-options
 
+let to_standard_domain
+      (#v_T: Type0)
+      (#[FStar.Tactics.Typeclasses.tcresolve ()] i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_T)
+      (v: v_T)
+     =
+  Libcrux_ml_kem.Vector.Traits.f_montgomery_multiply_by_constant #v_T
+    #FStar.Tactics.Typeclasses.solve
+    v
+    Libcrux_ml_kem.Vector.Traits.v_MONTGOMERY_R_SQUARED_MOD_FIELD_MODULUS
+
 #push-options "--admit_smt_queries true"
 
 let add_standard_error_reduce
@@ -526,8 +536,7 @@ let add_standard_error_reduce
           let myself:t_PolynomialRingElement v_Vector = myself in
           let j:usize = j in
           let coefficient_normal_form:v_Vector =
-            Libcrux_ml_kem.Vector.Traits.to_standard_domain #v_Vector
-              (myself.f_coefficients.[ j ] <: v_Vector)
+            to_standard_domain #v_Vector (myself.f_coefficients.[ j ] <: v_Vector)
           in
           let myself:t_PolynomialRingElement v_Vector =
             {

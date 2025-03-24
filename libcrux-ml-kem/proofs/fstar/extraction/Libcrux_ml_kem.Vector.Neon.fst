@@ -187,6 +187,20 @@ Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector =
     =
     (fun (v: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) (c: i16) ->
         Libcrux_ml_kem.Vector.Neon.Arithmetic.multiply_by_constant v c);
+    f_to_unsigned_representative_pre
+    =
+    (fun (a: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) -> true);
+    f_to_unsigned_representative_post
+    =
+    (fun
+        (a: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector)
+        (out: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector)
+        ->
+        true);
+    f_to_unsigned_representative
+    =
+    (fun (a: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) ->
+        Libcrux_ml_kem.Vector.Neon.Arithmetic.to_unsigned_representative a);
     f_bitwise_and_with_constant_pre
     =
     (fun (v: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) (c: i16) -> true);

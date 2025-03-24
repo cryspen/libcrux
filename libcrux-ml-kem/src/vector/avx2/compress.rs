@@ -109,7 +109,9 @@ pub(crate) fn compress_ciphertext_coefficient<const COEFFICIENT_BITS: i32>(
                                       (x == mk_i16 0 \/ x == mk_i16 1)"#))]
 pub fn decompress_1(a: Vec256) -> Vec256 {
     let z = mm256_setzero_si256();
-    hax_lib::fstar!("assert(Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 $z == Seq.create 16 (mk_i16 0))");
+    hax_lib::fstar!(
+        "assert(Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 $z == Seq.create 16 (mk_i16 0))"
+    );
     hax_lib::fstar!("assert(forall i. Seq.index (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 $z) i == mk_i16 0)");
     hax_lib::fstar!(
         r#"assert(forall i. let x = Seq.index (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 $a) i in 

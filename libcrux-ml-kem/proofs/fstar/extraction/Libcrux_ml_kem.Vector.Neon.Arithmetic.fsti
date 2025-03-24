@@ -55,3 +55,8 @@ val montgomery_multiply_by_constant
     : Prims.Pure Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector
       Prims.l_True
       (fun _ -> Prims.l_True)
+
+val to_unsigned_representative (a: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector)
+    : Prims.Pure Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector
+      Prims.l_True
+      (fun _ -> Prims.l_True)

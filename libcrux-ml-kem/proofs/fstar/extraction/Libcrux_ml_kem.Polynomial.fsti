@@ -164,6 +164,12 @@ val add_error_reduce
       (myself error: t_PolynomialRingElement v_Vector)
     : Prims.Pure (t_PolynomialRingElement v_Vector) Prims.l_True (fun _ -> Prims.l_True)
 
+val to_standard_domain
+      (#v_T: Type0)
+      {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_T |}
+      (v: v_T)
+    : Prims.Pure v_T Prims.l_True (fun _ -> Prims.l_True)
+
 val add_standard_error_reduce
       (#v_Vector: Type0)
       {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}

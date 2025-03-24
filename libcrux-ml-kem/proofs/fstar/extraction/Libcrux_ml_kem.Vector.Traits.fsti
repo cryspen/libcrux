@@ -160,6 +160,21 @@ class t_Operations (v_Self: Type0) = {
     -> Prims.Pure v_Self
         (f_montgomery_multiply_by_constant_pre x0 x1)
         (fun result -> f_montgomery_multiply_by_constant_post x0 x1 result);
+  f_to_unsigned_representative_pre:a: v_Self
+    -> pred: Type0{Spec.Utils.is_i16b_array 3328 (f_repr a) ==> pred};
+  f_to_unsigned_representative_post:a: v_Self -> result: v_Self
+    -> pred:
+      Type0
+        { pred ==>
+          (forall (i: nat).
+              i < 16 ==>
+              (let x = Seq.index (f_repr a) i in
+                let y = Seq.index (f_repr result) i in
+                (v y >= 0 /\ v y <= 3328 /\ (v y % 3329 == v x % 3329)))) };
+  f_to_unsigned_representative:x0: v_Self
+    -> Prims.Pure v_Self
+        (f_to_unsigned_representative_pre x0)
+        (fun result -> f_to_unsigned_representative_post x0 result);
   f_compress_1__pre:a: v_Self
     -> pred:
       Type0
@@ -435,17 +450,3 @@ class t_Operations (v_Self: Type0) = {
         (f_rej_sample_pre x0 x1)
         (fun result -> f_rej_sample_post x0 x1 result)
 }
-
-val to_standard_domain (#v_T: Type0) {| i1: t_Operations v_T |} (v: v_T)
-    : Prims.Pure v_T Prims.l_True (fun _ -> Prims.l_True)
-
-val to_unsigned_representative (#v_T: Type0) {| i1: t_Operations v_T |} (a: v_T)
-    : Prims.Pure v_T
-      (requires Spec.Utils.is_i16b_array 3328 (i1._super_12682756204189288427.f_repr a))
-      (ensures
-        fun result ->
-          let result:v_T = result in
-          forall i.
-            (let x = Seq.index (i1._super_12682756204189288427.f_repr a) i in
-              let y = Seq.index (i1._super_12682756204189288427.f_repr result) i in
-              (v y >= 0 /\ v y <= 3328 /\ (v y % 3329 == v x % 3329))))

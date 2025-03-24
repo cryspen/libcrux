@@ -430,6 +430,25 @@ let impl_3: Libcrux_ml_kem.Vector.Traits.t_Operations t_SIMD256Vector =
         }
         <:
         t_SIMD256Vector);
+    f_to_unsigned_representative_pre
+    =
+    (fun (a: t_SIMD256Vector) -> Spec.Utils.is_i16b_array 3328 (impl.f_repr a));
+    f_to_unsigned_representative_post
+    =
+    (fun (a: t_SIMD256Vector) (result: t_SIMD256Vector) ->
+        forall (i: nat).
+          i < 16 ==>
+          (let x = Seq.index (impl.f_repr a) i in
+            let y = Seq.index (impl.f_repr result) i in
+            (v y >= 0 /\ v y <= 3328 /\ (v y % 3329 == v x % 3329))));
+    f_to_unsigned_representative
+    =
+    (fun (a: t_SIMD256Vector) ->
+        {
+          f_elements = Libcrux_ml_kem.Vector.Avx2.Arithmetic.to_unsigned_representative a.f_elements
+        }
+        <:
+        t_SIMD256Vector);
     f_compress_1__pre
     =
     (fun (vector: t_SIMD256Vector) ->
