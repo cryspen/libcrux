@@ -137,7 +137,10 @@ let decompress_1_ (a: Libcrux_intrinsics.Avx2_extract.t_Vec256) =
     Libcrux_intrinsics.Avx2_extract.mm256_setzero_si256 ()
   in
   let _:Prims.unit =
-    assume (forall i. Seq.index (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 z) i == mk_i16 0)
+    assert (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 z == Seq.create 16 (mk_i16 0))
+  in
+  let _:Prims.unit =
+    assert (forall i. Seq.index (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 z) i == mk_i16 0)
   in
   let _:Prims.unit =
     assert (forall i.

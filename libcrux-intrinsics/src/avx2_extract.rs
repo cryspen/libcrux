@@ -97,6 +97,7 @@ pub fn mm256_loadu_si256_i32(input: &[i32]) -> Vec256 {
 }
 
 #[inline(always)]
+#[hax_lib::ensures(|result| fstar!("vec256_as_i16x16 $result == Seq.create 16 (mk_i16 0)"))]
 pub fn mm256_setzero_si256() -> Vec256 {
     unimplemented!()
 }

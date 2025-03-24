@@ -82,7 +82,13 @@ val mm256_loadu_si256_i32': input: t_Slice i32
 let mm256_loadu_si256_i32 = mm256_loadu_si256_i32'
 
 assume
-val mm256_setzero_si256': Prims.unit -> Prims.Pure t_Vec256 Prims.l_True (fun _ -> Prims.l_True)
+val mm256_setzero_si256': Prims.unit
+  -> Prims.Pure t_Vec256
+      Prims.l_True
+      (ensures
+        fun result ->
+          let result:t_Vec256 = result in
+          vec256_as_i16x16 result == Seq.create 16 (mk_i16 0))
 
 let mm256_setzero_si256 = mm256_setzero_si256'
 
