@@ -14,9 +14,9 @@ readme.workspace = true
 expose-hacl = []
 
 [dependencies]
-libcrux-hacl-rs = { version = "=0.0.2-beta.3", path = "../hacl-rs" }
-libcrux-traits = { version = "=0.0.2-beta.3", path = "../traits/" }
-libcrux-macros = { version = "=0.0.2-beta.3", path = "../macros" }
+libcrux-hacl-rs = { version = "=0.0.2", path = "../hacl-rs" }
+libcrux-traits = { version = "=0.0.2", path = "../traits/" }
+libcrux-macros = { version = "=0.0.2", path = "../macros" }
 
 [dev-dependencies]
 hex = { version = "0.4.3" }
