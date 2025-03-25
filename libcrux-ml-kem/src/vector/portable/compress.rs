@@ -133,7 +133,8 @@ let compress_message_coefficient_range_helper (fe: u16) : Lemma
 #[hax_lib::fstar::options("--fuel 0 --ifuel 0 --z3rlimit 2000")]
 #[hax_lib::requires(fstar!(r#"forall (i:nat). i < 16 ==> v (Seq.index ${a}.f_elements i) >= 0 /\
     v (Seq.index ${a}.f_elements i) < 3329"#))]
-#[hax_lib::ensures(|result| fstar!(r#"forall (i:nat). i < 16 ==> v (${result}.f_elements.[ sz i ] <: i16) >= 0 /\
+#[hax_lib::ensures(|result| fstar!(r#"forall (i:nat). i < 16 ==> 
+    v (${result}.f_elements.[ sz i ] <: i16) >= 0 /\
     v (${result}.f_elements.[ sz i ] <: i16) < 2"#))]
 pub(crate) fn compress_1(mut a: PortableVector) -> PortableVector {
     hax_lib::fstar!(
@@ -174,7 +175,8 @@ pub(crate) fn compress_1(mut a: PortableVector) -> PortableVector {
         v $COEFFICIENT_BITS == 11) /\
     (forall (i:nat). i < 16 ==> v (Seq.index ${a}.f_elements i) >= 0 /\
         v (Seq.index ${a}.f_elements i) < 3329)"#))]
-#[hax_lib::ensures(|result| fstar!(r#"forall (i:nat). i < 16 ==> v (${result}.f_elements.[ sz i ] <: i16) >= 0 /\
+#[hax_lib::ensures(|result| fstar!(r#"forall (i:nat). i < 16 ==> 
+    v (${result}.f_elements.[ sz i ] <: i16) >= 0 /\
     v (${result}.f_elements.[ sz i ] <: i16) < pow2 (v $COEFFICIENT_BITS))"#))]
 pub(crate) fn compress<const COEFFICIENT_BITS: i32>(mut a: PortableVector) -> PortableVector {
     hax_lib::fstar!(
