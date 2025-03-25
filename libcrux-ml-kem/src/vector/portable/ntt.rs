@@ -378,8 +378,7 @@ pub(crate) fn ntt_multiply_binomials(
 }
 
 #[inline(always)]
-#[hax_lib::fstar::verification_status(panic_free)]
-#[hax_lib::fstar::options("--z3rlimit 100")]
+#[hax_lib::fstar::options("--z3rlimit 1000")]
 #[hax_lib::requires(fstar!(r#"Spec.Utils.is_i16b 1664 $zeta0 /\
         Spec.Utils.is_i16b 1664 $zeta1 /\
         Spec.Utils.is_i16b 1664 $zeta2 /\

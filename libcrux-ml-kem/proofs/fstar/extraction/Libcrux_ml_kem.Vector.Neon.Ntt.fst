@@ -335,8 +335,6 @@ let inv_ntt_layer_3_step (v: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vec
   in
   v
 
-#push-options "--z3rlimit 1000"
-
 let ntt_multiply
       (lhs rhs: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector)
       (zeta1 zeta2 zeta3 zeta4: i16)
@@ -491,5 +489,3 @@ let ntt_multiply
   }
   <:
   Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector
-
-#pop-options

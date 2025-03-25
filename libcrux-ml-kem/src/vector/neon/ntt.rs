@@ -179,7 +179,6 @@ pub(crate) fn inv_ntt_layer_3_step(mut v: SIMD128Vector, zeta: i16) -> SIMD128Ve
 }
 
 #[inline(always)]
-#[hax_lib::fstar::options("--z3rlimit 1000")]
 pub(crate) fn ntt_multiply(
     lhs: &SIMD128Vector,
     rhs: &SIMD128Vector,

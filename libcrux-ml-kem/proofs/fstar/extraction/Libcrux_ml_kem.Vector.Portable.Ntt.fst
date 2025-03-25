@@ -519,7 +519,7 @@ let ntt_multiply_binomials
 
 #pop-options
 
-#push-options "--z3rlimit 100"
+#push-options "--z3rlimit 1000"
 
 let ntt_multiply
       (lhs rhs: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
@@ -569,8 +569,6 @@ let ntt_multiply
     ntt_multiply_binomials lhs rhs nzeta3 (mk_usize 7) out
   in
   let _:Prims.unit = assert (Spec.Utils.is_i16b_array 3328 out.f_elements) in
-  let result:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector = out in
-  let _:Prims.unit = admit () (* Panic freedom *) in
-  result
+  out
 
 #pop-options
