@@ -470,6 +470,14 @@ let deserialize_10_bit_vec_lemma (v: t_Array u8 (sz 20))
    ) =
   _ by (Tactics.GetBit.prove_bit_vector_equality' ())
 
+
+let deserialize_10_bit_vec_lemma_bounded (v: t_Array u8 (sz 20))
+  : squash (
+    let result = ${deserialize_10} v in
+    (forall (i: nat {i < 16}). Rust_primitives.bounded (Seq.index result.f_elements i) 10)
+  ) =
+ _ by (Tactics.GetBit.prove_bit_vector_equality' ())
+
 #pop-options
 "#
     )
@@ -495,9 +503,9 @@ val deserialize_10_lemma (inputs: t_Array u8 (sz 20)) : Lemma
 
 let deserialize_10_lemma inputs =
   deserialize_10_bit_vec_lemma inputs;
+  deserialize_10_bit_vec_lemma_bounded inputs;
   BitVecEq.bit_vec_equal_intro (bit_vec_of_int_t_array (${deserialize_10} inputs).f_elements 10) 
-    (BitVecEq.retype (bit_vec_of_int_t_array inputs 8));
-    admit()
+    (BitVecEq.retype (bit_vec_of_int_t_array inputs 8))
 
 #pop-options
 "#
@@ -674,6 +682,14 @@ let deserialize_12_bit_vec_lemma (v: t_Array u8 (sz 24))
    ) =
   _ by (Tactics.GetBit.prove_bit_vector_equality' ())
 
+let deserialize_12_bit_vec_lemma_bounded (v: t_Array u8 (sz 24))
+  : squash (
+    let result = ${deserialize_12} v in
+    (forall (i: nat {i < 16}). Rust_primitives.bounded (Seq.index result.f_elements i) 1)
+  ) =
+ _ by (Tactics.GetBit.prove_bit_vector_equality' ())
+
+
 #pop-options
 "
     )
@@ -699,9 +715,9 @@ val deserialize_12_lemma (inputs: t_Array u8 (sz 24)) : Lemma
 
 let deserialize_12_lemma inputs =
   deserialize_12_bit_vec_lemma inputs;
+  deserialize_12_bit_vec_lemma_bounded inputs;
   BitVecEq.bit_vec_equal_intro (bit_vec_of_int_t_array (${deserialize_12} inputs).f_elements 12) 
-    (BitVecEq.retype (bit_vec_of_int_t_array inputs 8));
-  admit()
+    (BitVecEq.retype (bit_vec_of_int_t_array inputs 8))
 
 #pop-options
 "
