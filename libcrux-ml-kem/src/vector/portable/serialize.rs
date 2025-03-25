@@ -23,6 +23,12 @@ let lemma_logand_smaller #t (x y: int_t t)
           (ensures v (x &. y) <= v y)
           [SMTPat (x &. y)]
   =  logand_lemma x y
+
+let lemma_get_bit_bounded' #t (x:int_t t) (d:num_bits t):
+  Lemma (requires forall i. v i > d ==> get_bit x i == 0)
+        (ensures bounded x d)
+        [SMTPat (bounded x d)]
+        = Rust_primitives.BitVectors.lemma_get_bit_bounded' #t x d
 "
     )
 )]
@@ -264,7 +270,7 @@ let deserialize_4_bit_vec_lemma (v: t_Array u8 (sz 8))
 let deserialize_4_bit_vec_lemma_bounded (v: t_Array u8 (sz 8))
   : squash (
     let result = ${deserialize_4} v in
-    (forall (i: nat {i < 16}). Rust_primitives.bounded (Seq.index result.f_elements i) 4)))
+    (forall (i: nat {i < 16}). Rust_primitives.bounded (Seq.index result.f_elements i) 4)
   ) =
  _ by (Tactics.GetBit.prove_bit_vector_equality' ())
 
