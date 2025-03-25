@@ -33,13 +33,13 @@ functions in the modules still need some proofs in that category.
 |          | ntt               | yes          | yes            | yes          |
 |          | compress          | yes          | yes            | yes          |
 |          | serialize         | yes          | yes            | yes          |
-|          | sampling          | yes          | needs proofs   | needs proofs |
+|          | sampling          | yes          | yes            | needs proofs |
 |          |                   |              |                |              |
 | _Avx2_     | arithmetic        | yes          | yes            | yes          |
 |          | ntt               | yes          | yes            | yes          |
 |          | compress          | yes          | yes            | needs proofs |
 |          | serialize         | yes          | needs proofs   | needs proofs |
-|          | sampling          | yes          | needs proofs   | needs proofs |
+|          | sampling          | yes          | yes            | needs proofs |
 |          |                   |              |                |              |
 | _Neon_     | arithmetic        | yes          | needs proofs   | needs proofs |
 |          | ntt               | yes          | needs proofs   | needs proofs |
