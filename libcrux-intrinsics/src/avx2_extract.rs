@@ -53,6 +53,8 @@ pub fn mm256_storeu_si256_i32(output: &mut [i32], vector: Vec256) {
 }
 
 #[inline(always)]
+#[hax_lib::requires(output.len() >= 8)]
+#[hax_lib::ensures(|_| future(output).len() == output.len())]
 pub fn mm_storeu_si128(output: &mut [i16], vector: Vec128) {
     debug_assert!(output.len() >= 8);
     unimplemented!()
@@ -325,6 +327,7 @@ pub fn mm_mullo_epi16(lhs: Vec128, rhs: Vec128) -> Vec128 {
 }
 
 #[inline(always)]
+#[hax_lib::ensures(|result| fstar!(r#"forall i. i % 16 >= 1 ==> result i == 0"#))]
 pub fn mm256_cmpgt_epi16(lhs: Vec256, rhs: Vec256) -> Vec256 {
     unimplemented!()
 }

@@ -5,7 +5,6 @@ use super::{
 };
 
 #[inline(always)]
-#[hax_lib::fstar::verification_status(lax)]
 #[hax_lib::requires(input.len() == 24 && output.len() == 16)]
 #[hax_lib::ensures(|res|
         fstar!(r#"Seq.length $output_future == Seq.length $output /\ v $res <= 16"#)
@@ -64,7 +63,6 @@ pub(crate) fn rejection_sample(input: &[u8], output: &mut [i16]) -> usize {
     // ... and finally count the number of bits of |good[0]| so we know how many
     // were actually sampled
     let sampled_count = good[0].count_ones() as usize;
-
     // Do the same for |goood[1]|
     let upper_shuffles = REJECTION_SAMPLE_SHUFFLE_TABLE[good[1] as usize];
     let upper_shuffles = mm_loadu_si128(&upper_shuffles);

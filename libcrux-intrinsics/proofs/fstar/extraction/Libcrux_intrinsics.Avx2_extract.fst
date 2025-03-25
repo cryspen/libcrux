@@ -53,7 +53,13 @@ let mm256_storeu_si256_i32 = mm256_storeu_si256_i32'
 
 assume
 val mm_storeu_si128': output: t_Slice i16 -> vector: t_Vec128
-  -> Prims.Pure (t_Slice i16) Prims.l_True (fun _ -> Prims.l_True)
+  -> Prims.Pure (t_Slice i16)
+      (requires (Core.Slice.impl__len #i16 output <: usize) >=. mk_usize 8)
+      (ensures
+        fun output_future ->
+          let output_future:t_Slice i16 = output_future in
+          (Core.Slice.impl__len #i16 output_future <: usize) =.
+          (Core.Slice.impl__len #i16 output <: usize))
 
 let mm_storeu_si128 = mm_storeu_si128'
 
@@ -205,7 +211,12 @@ let mm_mullo_epi16 = mm_mullo_epi16'
 
 assume
 val mm256_cmpgt_epi16': lhs: t_Vec256 -> rhs: t_Vec256
-  -> Prims.Pure t_Vec256 Prims.l_True (fun _ -> Prims.l_True)
+  -> Prims.Pure t_Vec256
+      Prims.l_True
+      (ensures
+        fun result ->
+          let result:t_Vec256 = result in
+          forall i. i % 16 >= 1 ==> result i == 0)
 
 let mm256_cmpgt_epi16 = mm256_cmpgt_epi16'
 

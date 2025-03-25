@@ -3,8 +3,6 @@ module Libcrux_ml_kem.Vector.Avx2.Sampling
 open Core
 open FStar.Mul
 
-#push-options "--admit_smt_queries true"
-
 let rejection_sample (input: t_Slice u8) (output: t_Slice i16) =
   let field_modulus:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
     Libcrux_intrinsics.Avx2_extract.mm256_set1_epi16 Libcrux_ml_kem.Vector.Traits.v_FIELD_MODULUS
@@ -96,5 +94,3 @@ let rejection_sample (input: t_Slice u8) (output: t_Slice i16) =
     (cast (Core.Num.impl_u8__count_ones (good.[ mk_usize 1 ] <: u8) <: u32) <: usize)
   in
   output, hax_temp_output <: (t_Slice i16 & usize)
-
-#pop-options
