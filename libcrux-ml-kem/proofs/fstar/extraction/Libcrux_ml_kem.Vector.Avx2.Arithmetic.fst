@@ -454,16 +454,6 @@ let montgomery_multiply_m128i_by_constants (vec constants: Libcrux_intrinsics.Av
 
 #pop-options
 
-let logand_zero_lemma (a:i16):
-  Lemma (((mk_i16 0) &. a) == mk_i16 0)
-        [SMTPat (logand (mk_i16 0) a)] =
-        logand_lemma a a
-
-let logand_ones_lemma (a:i16):
-  Lemma (((mk_i16 (-1)) &. a) == a)
-        [SMTPat (logand (mk_i16 (-1)) a)] =
-        logand_lemma a a
-
 let to_unsigned_representative (a: Libcrux_intrinsics.Avx2_extract.t_Vec256) =
   let t:Libcrux_intrinsics.Avx2_extract.t_Vec256 = shift_right (mk_i32 15) a in
   let _:Prims.unit =

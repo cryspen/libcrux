@@ -75,7 +75,13 @@ val decompress_1_ (a: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVecto
         forall i.
           let x = Seq.index a.f_elements i in
           (x == mk_i16 0 \/ x == mk_i16 1))
-      (fun _ -> Prims.l_True)
+      (ensures
+        fun result ->
+          let result:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector = result in
+          forall (i: nat).
+            i < 16 ==>
+            (let res_i = v (Seq.index result.f_elements i) in
+              res_i == 0 \/ res_i == 1665))
 
 val decompress_ciphertext_coefficient
       (v_COEFFICIENT_BITS: i32)
@@ -93,4 +99,5 @@ val decompress_ciphertext_coefficient
           let result:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector = result in
           forall (i: nat).
             i < 16 ==>
-            v (Seq.index result.f_elements i) < v Libcrux_ml_kem.Vector.Traits.v_FIELD_MODULUS)
+            (let res_i = v (Seq.index result.f_elements i) in
+              res_i >= 0 /\ res_i < v Libcrux_ml_kem.Vector.Traits.v_FIELD_MODULUS))

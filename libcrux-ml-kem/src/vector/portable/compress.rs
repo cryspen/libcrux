@@ -211,7 +211,10 @@ pub(crate) fn compress<const COEFFICIENT_BITS: i32>(mut a: PortableVector) -> Po
 
 #[hax_lib::fstar::options("--z3rlimit 200 --split_queries always")]
 #[hax_lib::requires(fstar!(r#"forall i. let x = Seq.index ${a}.f_elements i in 
-                                      (x == mk_i16 0 \/ x == mk_i16 1)"#))]
+                                        (x == mk_i16 0 \/ x == mk_i16 1)"#))]
+#[hax_lib::ensures(|result| fstar!(r#"forall (i:nat). i < 16 ==> 
+        (let res_i = v (Seq.index ${result}.f_elements i) in
+         res_i == 0 \/ res_i == 1665)"#))]
 #[inline(always)]
 pub fn decompress_1(a: PortableVector) -> PortableVector {
     let z = zero();
@@ -232,6 +235,10 @@ pub fn decompress_1(a: PortableVector) -> PortableVector {
                                       Seq.index ${s}.f_elements i == mk_i16 (-1))"#
     );
     let res = bitwise_and_with_constant(s, 1665);
+    hax_lib::fstar!(
+        r#"assert(forall i. Seq.index ${res}.f_elements i == mk_i16 0 \/ 
+                                      Seq.index ${res}.f_elements i == mk_i16 1665)"#
+    );
     res
 }
 
@@ -243,7 +250,9 @@ pub fn decompress_1(a: PortableVector) -> PortableVector {
         v $COEFFICIENT_BITS == 11) /\
     (forall (i:nat). i < 16 ==> v (Seq.index ${a}.f_elements i) >= 0 /\
         v (Seq.index ${a}.f_elements i) < pow2 (v $COEFFICIENT_BITS))"#))]
-#[hax_lib::ensures(|result| fstar!(r#"forall (i:nat). i < 16 ==> v (Seq.index ${result}.f_elements i) < v $FIELD_MODULUS"#))]
+#[hax_lib::ensures(|result| fstar!(r#"forall (i:nat). i < 16 ==> 
+        (let res_i = v (Seq.index ${result}.f_elements i) in
+         res_i >= 0 /\ res_i < v $FIELD_MODULUS)"#))]
 pub(crate) fn decompress_ciphertext_coefficient<const COEFFICIENT_BITS: i32>(
     mut a: PortableVector,
 ) -> PortableVector {
@@ -261,7 +270,7 @@ pub(crate) fn decompress_ciphertext_coefficient<const COEFFICIENT_BITS: i32>(
                 r#"(v $i < 16 ==> (forall (j:nat). (j >= v $i /\ j < 16) ==>
             v (Seq.index ${a}.f_elements j) >= 0 /\  v (Seq.index ${a}.f_elements j) < pow2 (v $COEFFICIENT_BITS))) /\
             (forall (j:nat). j < v $i ==>
-                v (Seq.index ${a}.f_elements j) < v $FIELD_MODULUS)"#
+                (v (Seq.index ${a}.f_elements j) >= 0 /\ v (Seq.index ${a}.f_elements j) < v $FIELD_MODULUS))"#
             )
         });
         hax_lib::fstar!(

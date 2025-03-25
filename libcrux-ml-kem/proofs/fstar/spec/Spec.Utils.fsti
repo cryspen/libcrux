@@ -246,3 +246,12 @@ let inv_ntt_spec #len (vec_in: t_Array i16 len) (zeta: int) (i: nat{i < v len}) 
   ((v (Seq.index vec_out j) % 3329) ==
    (((v (Seq.index vec_in j) - v (Seq.index vec_in i)) * zeta * 169) % 3329))
 
+let logand_zero_lemma (a:i16):
+  Lemma (((mk_i16 0) &. a) == mk_i16 0)
+        [SMTPat (logand (mk_i16 0) a)] =
+        logand_lemma a a
+
+let logand_ones_lemma (a:i16):
+  Lemma (((mk_i16 (-1)) &. a) == a)
+        [SMTPat (logand (mk_i16 (-1)) a)] =
+        logand_lemma a a

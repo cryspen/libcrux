@@ -528,16 +528,6 @@ let montgomery_multiply_by_constant
 
 #pop-options
 
-let logand_zero_lemma (a:i16):
-  Lemma (((mk_i16 0) &. a) == mk_i16 0)
-        [SMTPat (logand (mk_i16 0) a)] =
-        logand_lemma a a
-
-let logand_ones_lemma (a:i16):
-  Lemma (((mk_i16 (-1)) &. a) == a)
-        [SMTPat (logand (mk_i16 (-1)) a)] =
-        logand_lemma a a
-
 let to_unsigned_representative (a: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) =
   let t:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector = shift_right (mk_i32 15) a in
   let _:Prims.unit =
