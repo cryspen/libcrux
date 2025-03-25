@@ -454,13 +454,42 @@ let montgomery_multiply_m128i_by_constants (vec constants: Libcrux_intrinsics.Av
 
 #pop-options
 
-#push-options "--admit_smt_queries true"
+let logand_zero_lemma (a:i16):
+  Lemma (((mk_i16 0) &. a) == mk_i16 0)
+        [SMTPat (logand (mk_i16 0) a)] =
+        logand_lemma a a
+
+let logand_ones_lemma (a:i16):
+  Lemma (((mk_i16 (-1)) &. a) == a)
+        [SMTPat (logand (mk_i16 (-1)) a)] =
+        logand_lemma a a
 
 let to_unsigned_representative (a: Libcrux_intrinsics.Avx2_extract.t_Vec256) =
   let t:Libcrux_intrinsics.Avx2_extract.t_Vec256 = shift_right (mk_i32 15) a in
+  let _:Prims.unit =
+    assert (forall i.
+          Seq.index (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 t) i ==
+          ((Seq.index (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 a) i) >>! (mk_i32 15)));
+    assert (forall i.
+          Seq.index (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 a) i >=. mk_i16 0 ==>
+          Seq.index (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 t) i == mk_i16 0);
+    assert (forall i.
+          Seq.index (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 a) i <. mk_i16 0 ==>
+          Seq.index (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 t) i == mk_i16 (- 1))
+  in
   let fm:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
     bitwise_and_with_constant t Libcrux_ml_kem.Vector.Traits.v_FIELD_MODULUS
   in
+  let _:Prims.unit =
+    assert (forall i.
+          Seq.index (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 fm) i ==
+          (Seq.index (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 t) i &.
+            Libcrux_ml_kem.Vector.Traits.v_FIELD_MODULUS));
+    assert (forall i.
+          Seq.index (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 a) i >=. mk_i16 0 ==>
+          Seq.index (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 fm) i == mk_i16 0);
+    assert (forall i.
+          Seq.index (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 a) i <. mk_i16 0 ==>
+          Seq.index (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 fm) i == mk_i16 3329)
+  in
   add a fm
-
-#pop-options
