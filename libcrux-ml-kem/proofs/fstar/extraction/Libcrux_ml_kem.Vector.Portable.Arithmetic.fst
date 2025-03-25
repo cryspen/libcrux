@@ -528,13 +528,35 @@ let montgomery_multiply_by_constant
 
 #pop-options
 
-#push-options "--admit_smt_queries true"
+let logand_zero_lemma (a:i16):
+  Lemma (((mk_i16 0) &. a) == mk_i16 0)
+        [SMTPat (logand (mk_i16 0) a)] =
+        logand_lemma a a
+
+let logand_ones_lemma (a:i16):
+  Lemma (((mk_i16 (-1)) &. a) == a)
+        [SMTPat (logand (mk_i16 (-1)) a)] =
+        logand_lemma a a
 
 let to_unsigned_representative (a: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) =
   let t:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector = shift_right (mk_i32 15) a in
+  let _:Prims.unit =
+    assert (forall i. Seq.index t.f_elements i == ((Seq.index a.f_elements i) >>! (mk_i32 15)));
+    assert (forall i. Seq.index a.f_elements i >=. mk_i16 0 ==> Seq.index t.f_elements i == mk_i16 0
+      );
+    assert (forall i.
+          Seq.index a.f_elements i <. mk_i16 0 ==> Seq.index t.f_elements i == mk_i16 (- 1))
+  in
   let fm:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
     bitwise_and_with_constant t Libcrux_ml_kem.Vector.Traits.v_FIELD_MODULUS
   in
+  let _:Prims.unit =
+    assert (forall i.
+          Seq.index fm.f_elements i ==
+          (Seq.index t.f_elements i &. Libcrux_ml_kem.Vector.Traits.v_FIELD_MODULUS));
+    assert (forall i.
+          Seq.index a.f_elements i >=. mk_i16 0 ==> Seq.index fm.f_elements i == mk_i16 0);
+    assert (forall i.
+          Seq.index a.f_elements i <. mk_i16 0 ==> Seq.index fm.f_elements i == mk_i16 3329)
+  in
   add a fm
-
-#pop-options
