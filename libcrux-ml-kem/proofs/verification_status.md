@@ -38,7 +38,7 @@ functions in the modules still need some proofs in that category.
 | _Avx2_     | arithmetic        | yes          | yes            | yes          |
 |          | ntt               | yes          | yes            | yes          |
 |          | compress          | yes          | yes            | needs proofs |
-|          | serialize         | yes          | needs proofs   | needs proofs |
+|          | serialize         | yes          | yes            | yes          |
 |          | sampling          | yes          | yes            | needs proofs |
 |          |                   |              |                |              |
 | _Neon_     | arithmetic        | yes          | needs proofs   | needs proofs |
