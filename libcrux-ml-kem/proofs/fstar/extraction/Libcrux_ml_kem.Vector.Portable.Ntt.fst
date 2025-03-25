@@ -515,7 +515,6 @@ let ntt_multiply_binomials
     assert (forall k.
           (k <> 2 * v i /\ k <> 2 * v i + 1) ==> Seq.index out.f_elements k == Seq.index e_out0 k)
   in
-  let _:Prims.unit = admit () (* Panic freedom *) in
   out
 
 #pop-options
@@ -570,8 +569,6 @@ let ntt_multiply
     ntt_multiply_binomials lhs rhs nzeta3 (mk_usize 7) out
   in
   let _:Prims.unit = assert (Spec.Utils.is_i16b_array 3328 out.f_elements) in
-  let result:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector = out in
-  let _:Prims.unit = admit () (* Panic freedom *) in
-  result
+  out
 
 #pop-options
