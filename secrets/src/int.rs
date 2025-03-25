@@ -1,5 +1,6 @@
 use crate::traits::*;
 
+// If the feature "check-secret-independence" is set, we use secret integers
 #[cfg(feature = "check-secret-independence")]
 mod classify;
 #[cfg(feature = "check-secret-independence")]
@@ -7,11 +8,13 @@ mod secret_integers;
 #[cfg(feature = "check-secret-independence")]
 pub use secret_integers::*;
 
+// If the feature "check-secret-independence" is not set, we use public integers
 #[cfg(not(feature = "check-secret-independence"))]
 mod public_integers;
 #[cfg(not(feature = "check-secret-independence"))]
 pub use public_integers::*;
 
+// A macro defining const constructors for secret/public integers
 macro_rules! impl_new {
     ($name:ident, $t:ty, $st:ty) => {
         #[allow(non_snake_case)]
@@ -32,6 +35,7 @@ impl_new!(I32, i32, I32);
 impl_new!(I64, i64, I64);
 impl_new!(I128, i128, I128);
 
+// A trait defining cast operations for secret/public integers
 pub trait CastOps {
     fn as_u8(self) -> U8;
     fn as_i8(self) -> I8;
@@ -45,6 +49,7 @@ pub trait CastOps {
     fn as_i128(self) -> I128;
 }
 
+// Implementations of cast operations for all integers
 macro_rules! impl_cast_ops {
     ($name:ident) => {
         impl CastOps for $name {

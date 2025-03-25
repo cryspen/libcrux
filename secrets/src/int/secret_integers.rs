@@ -1,3 +1,5 @@
+/// This crate defines classification and declassification over secret integers
+/// These implementations are meant to be used when feature `check-secret-independence` is set
 use super::classify::*;
 use crate::traits::*;
 use std::ops::*;
@@ -18,6 +20,7 @@ pub const fn secret<T>(x: T) -> Secret<T> {
     Secret(x)
 }
 
+// Classify a scalar
 impl<T: Scalar> Classify for T {
     type Classified = Secret<T>;
     fn classify(self) -> Secret<Self> {
@@ -25,6 +28,7 @@ impl<T: Scalar> Classify for T {
     }
 }
 
+// Declassify a scalar
 impl<T: Scalar> Declassify for Secret<T> {
     type Declassified = T;
     fn declassify(self) -> T {
@@ -32,6 +36,9 @@ impl<T: Scalar> Declassify for Secret<T> {
     }
 }
 
+// Classify a reference to a scalar
+// Note: this is safe since the `Secret` type is `repr(transparent)`, so
+//       the memory represnetation of the public and secret values is the same
 impl<'a, T: Scalar> ClassifyRef for &'a T {
     type ClassifiedRef = &'a Secret<T>;
     fn classify_ref(self) -> &'a Secret<T> {
@@ -39,6 +46,9 @@ impl<'a, T: Scalar> ClassifyRef for &'a T {
     }
 }
 
+// Declassify a reference to a scalar
+// Note: this is safe since the `Secret` type is `repr(transparent)`, so
+//       the memory represnetation of the public and secret values is the same
 impl<'a, T: Scalar> DeclassifyRef for &'a Secret<T> {
     type DeclassifiedRef = &'a T;
     fn declassify_ref(self) -> &'a T {
@@ -46,10 +56,19 @@ impl<'a, T: Scalar> DeclassifyRef for &'a Secret<T> {
     }
 }
 
+// Classify a mutable reference to a slice
+// Note: this is safe since the `Secret` type is `repr(transparent)`, so
+//       the memory represnetation of the public and secret slices is the same
 pub fn classify_mut_slice<T: Scalar>(x: &mut [T]) -> &mut [Secret<T>] {
     unsafe { core::mem::transmute(x) }
 }
 
+// We define a series of operations that are safe over secret values
+// Notably, one cannot extract the inner value from a secret, one cannot
+// cast a secret into a public value, and one cannot divide or mod a secret
+// The absence of those operations enforces our secret independence discipline.
+
+// Add secret values
 impl<T: Add, V: Into<Secret<T>>> Add<V> for Secret<T> {
     type Output = Secret<T::Output>;
     fn add(self, rhs: V) -> Self::Output {
@@ -57,6 +76,7 @@ impl<T: Add, V: Into<Secret<T>>> Add<V> for Secret<T> {
     }
 }
 
+// Subtract secret values
 impl<T: Sub, V: Into<Secret<T>>> Sub<V> for Secret<T> {
     type Output = Secret<T::Output>;
     fn sub(self, rhs: V) -> Self::Output {
@@ -64,6 +84,7 @@ impl<T: Sub, V: Into<Secret<T>>> Sub<V> for Secret<T> {
     }
 }
 
+// Multiply secret values
 impl<T: Mul, V: Into<Secret<T>>> Mul<V> for Secret<T> {
     type Output = Secret<T::Output>;
     fn mul(self, rhs: V) -> Self::Output {
@@ -71,6 +92,7 @@ impl<T: Mul, V: Into<Secret<T>>> Mul<V> for Secret<T> {
     }
 }
 
+// Bitwise Xor of secret values
 impl<T: BitXor, V: Into<Secret<T>>> BitXor<V> for Secret<T> {
     type Output = Secret<T::Output>;
     fn bitxor(self, rhs: V) -> Self::Output {
@@ -78,6 +100,7 @@ impl<T: BitXor, V: Into<Secret<T>>> BitXor<V> for Secret<T> {
     }
 }
 
+// Bitwise Or of secret values
 impl<T: BitOr, V: Into<Secret<T>>> BitOr<V> for Secret<T> {
     type Output = Secret<T::Output>;
     fn bitor(self, rhs: V) -> Self::Output {
@@ -85,6 +108,7 @@ impl<T: BitOr, V: Into<Secret<T>>> BitOr<V> for Secret<T> {
     }
 }
 
+// Bitwise And of secret values
 impl<T: BitAnd, V: Into<Secret<T>>> BitAnd<V> for Secret<T> {
     type Output = Secret<T::Output>;
     fn bitand(self, rhs: V) -> Self::Output {
@@ -92,6 +116,7 @@ impl<T: BitAnd, V: Into<Secret<T>>> BitAnd<V> for Secret<T> {
     }
 }
 
+// Bitwise Not of secret values
 impl<T: Not> Not for Secret<T> {
     type Output = Secret<T::Output>;
     fn not(self) -> Self::Output {
@@ -99,6 +124,9 @@ impl<T: Not> Not for Secret<T> {
     }
 }
 
+// Shift-left of secret values
+// Note: the number of bits we shift the value by is not secret,
+//       since some implementations may leak this value
 impl<U, T: Shl<U>> Shl<U> for Secret<T>
 where
     T::Output: Into<T>,
@@ -109,6 +137,9 @@ where
     }
 }
 
+// Shift-right of secret values
+// Note: the number of bits we shift the value by is not secret,
+//       since some implementations may leak this value
 impl<U, T: Shr<U>> Shr<U> for Secret<T>
 where
     T::Output: Into<T>,
@@ -119,54 +150,63 @@ where
     }
 }
 
+// += over secret values
 impl<T: AddAssign, V: Into<Secret<T>>> AddAssign<V> for Secret<T> {
     fn add_assign(&mut self, rhs: V) {
         self.0 += rhs.into().0
     }
 }
 
+// -= over secret values
 impl<T: SubAssign, V: Into<Secret<T>>> SubAssign<V> for Secret<T> {
     fn sub_assign(&mut self, rhs: V) {
         self.0 -= rhs.into().0
     }
 }
 
+// *= over secret values
 impl<T: MulAssign, V: Into<Secret<T>>> MulAssign<V> for Secret<T> {
     fn mul_assign(&mut self, rhs: V) {
         self.0 *= rhs.into().0
     }
 }
 
+// ^= over secret values
 impl<T: BitXorAssign, V: Into<Secret<T>>> BitXorAssign<V> for Secret<T> {
     fn bitxor_assign(&mut self, rhs: V) {
         self.0 ^= rhs.into().0;
     }
 }
 
+// |= over secret values
 impl<T: BitOrAssign, V: Into<Secret<T>>> BitOrAssign<V> for Secret<T> {
     fn bitor_assign(&mut self, rhs: V) {
         self.0 |= rhs.into().0;
     }
 }
 
+// &= over secret values
 impl<T: BitAndAssign, V: Into<Secret<T>>> BitAndAssign<V> for Secret<T> {
     fn bitand_assign(&mut self, rhs: V) {
         self.0 &= rhs.into().0;
     }
 }
 
+// >>= over secret values
 impl<U, T: ShrAssign<U>> ShrAssign<U> for Secret<T> {
     fn shr_assign(&mut self, rhs: U) {
         self.0 >>= rhs;
     }
 }
 
+// <<= over secret values
 impl<U, T: ShlAssign<U>> ShlAssign<U> for Secret<T> {
     fn shl_assign(&mut self, rhs: U) {
         self.0 <<= rhs;
     }
 }
 
+// Implement Intops for secret integers
 macro_rules! impl_int_ops {
     ($t:ty) => {
         impl IntOps for Secret<$t> {
@@ -205,6 +245,7 @@ impl_int_ops!(i32);
 impl_int_ops!(i64);
 impl_int_ops!(i128);
 
+// Implement EncodingOps for secret integers
 macro_rules! impl_encode_ops {
     ($t:ty, $N:literal) => {
         impl EncodeOps<U8, $N> for Secret<$t> {

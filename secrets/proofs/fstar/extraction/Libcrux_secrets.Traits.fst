@@ -47,6 +47,70 @@ let impl_Scalar_for_i64: t_Scalar i64 =
 let impl_Scalar_for_i128: t_Scalar i128 =
   { _super_13011033735201511749 = FStar.Tactics.Typeclasses.solve }
 
+[@@ FStar.Tactics.Typeclasses.tcinstance]
+let impl_10: t_Scalar Core.Core_arch.Arm_shared.Neon.t_int8x8_t =
+  { _super_13011033735201511749 = FStar.Tactics.Typeclasses.solve }
+
+[@@ FStar.Tactics.Typeclasses.tcinstance]
+let impl_11: t_Scalar Core.Core_arch.Arm_shared.Neon.t_int8x16_t =
+  { _super_13011033735201511749 = FStar.Tactics.Typeclasses.solve }
+
+[@@ FStar.Tactics.Typeclasses.tcinstance]
+let impl_12: t_Scalar Core.Core_arch.Arm_shared.Neon.t_int16x4_t =
+  { _super_13011033735201511749 = FStar.Tactics.Typeclasses.solve }
+
+[@@ FStar.Tactics.Typeclasses.tcinstance]
+let impl_13: t_Scalar Core.Core_arch.Arm_shared.Neon.t_int16x8_t =
+  { _super_13011033735201511749 = FStar.Tactics.Typeclasses.solve }
+
+[@@ FStar.Tactics.Typeclasses.tcinstance]
+let impl_14: t_Scalar Core.Core_arch.Arm_shared.Neon.t_int32x2_t =
+  { _super_13011033735201511749 = FStar.Tactics.Typeclasses.solve }
+
+[@@ FStar.Tactics.Typeclasses.tcinstance]
+let impl_15: t_Scalar Core.Core_arch.Arm_shared.Neon.t_int32x4_t =
+  { _super_13011033735201511749 = FStar.Tactics.Typeclasses.solve }
+
+[@@ FStar.Tactics.Typeclasses.tcinstance]
+let impl_16: t_Scalar Core.Core_arch.Arm_shared.Neon.t_int64x1_t =
+  { _super_13011033735201511749 = FStar.Tactics.Typeclasses.solve }
+
+[@@ FStar.Tactics.Typeclasses.tcinstance]
+let impl_17: t_Scalar Core.Core_arch.Arm_shared.Neon.t_int64x2_t =
+  { _super_13011033735201511749 = FStar.Tactics.Typeclasses.solve }
+
+[@@ FStar.Tactics.Typeclasses.tcinstance]
+let impl_18: t_Scalar Core.Core_arch.Arm_shared.Neon.t_uint8x8_t =
+  { _super_13011033735201511749 = FStar.Tactics.Typeclasses.solve }
+
+[@@ FStar.Tactics.Typeclasses.tcinstance]
+let impl_19: t_Scalar Core.Core_arch.Arm_shared.Neon.t_uint8x16_t =
+  { _super_13011033735201511749 = FStar.Tactics.Typeclasses.solve }
+
+[@@ FStar.Tactics.Typeclasses.tcinstance]
+let impl_20: t_Scalar Core.Core_arch.Arm_shared.Neon.t_uint16x4_t =
+  { _super_13011033735201511749 = FStar.Tactics.Typeclasses.solve }
+
+[@@ FStar.Tactics.Typeclasses.tcinstance]
+let impl_21: t_Scalar Core.Core_arch.Arm_shared.Neon.t_uint16x8_t =
+  { _super_13011033735201511749 = FStar.Tactics.Typeclasses.solve }
+
+[@@ FStar.Tactics.Typeclasses.tcinstance]
+let impl_22: t_Scalar Core.Core_arch.Arm_shared.Neon.t_uint32x2_t =
+  { _super_13011033735201511749 = FStar.Tactics.Typeclasses.solve }
+
+[@@ FStar.Tactics.Typeclasses.tcinstance]
+let impl_23: t_Scalar Core.Core_arch.Arm_shared.Neon.t_uint32x4_t =
+  { _super_13011033735201511749 = FStar.Tactics.Typeclasses.solve }
+
+[@@ FStar.Tactics.Typeclasses.tcinstance]
+let impl_24: t_Scalar Core.Core_arch.Arm_shared.Neon.t_uint64x1_t =
+  { _super_13011033735201511749 = FStar.Tactics.Typeclasses.solve }
+
+[@@ FStar.Tactics.Typeclasses.tcinstance]
+let impl_25: t_Scalar Core.Core_arch.Arm_shared.Neon.t_uint64x2_t =
+  { _super_13011033735201511749 = FStar.Tactics.Typeclasses.solve }
+
 class t_IntOps (v_Self: Type0) = {
   f_wrapping_add_pre:#v_T: Type0 -> {| i1: Core.Convert.t_Into v_T v_Self |} -> v_Self -> v_T
     -> Type0;

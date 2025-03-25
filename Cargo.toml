@@ -46,7 +46,8 @@ readme = "Readme.md"
 allow-branch = ["main"]
 
 [workspace.dependencies]
-hax-lib = { version = "0.2", git = "https://github.com/cryspen/hax/" }
+#hax-lib = { version = "0.2", git = "https://github.com/cryspen/hax/" }
+hax-lib = { git = "https://github.com/cryspen/hax/", branch = "hax-lib-additions" }
 
 [package]
 name = "libcrux"
