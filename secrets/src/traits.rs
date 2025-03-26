@@ -28,7 +28,7 @@ pub trait ClassifyRefMut {
     fn classify_ref_mut(self) -> Self::ClassifiedRefMut;
 }
 
-// A trait for declassifying mutable references to secret types
+/// A trait for declassifying mutable references to secret types
 pub trait DeclassifyRefMut {
     type DeclassifiedRefMut;
     fn declassify_ref_mut(self) -> Self::DeclassifiedRefMut;
