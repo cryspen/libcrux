@@ -61,8 +61,7 @@ where
     fn rotate_right(self, rhs: u32) -> Self;
 }
 
-// A trait for byte conversion operations provided by Rust for machine integers
-
+/// A trait for byte conversion operations provided by Rust for machine integers
 pub trait EncodeOps<T, const N: usize> {
     fn to_le_bytes(&self) -> [T; N];
     fn to_be_bytes(&self) -> [T; N];
