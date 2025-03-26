@@ -30,8 +30,7 @@ let serialize_vector
           let out:t_Slice u8 = out in
           let i:usize = i in
           Core.Slice.impl__len #u8 out == Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE v_K /\
-          (v i < v v_K ==>
-            Libcrux_ml_kem.Serialize.coefficients_field_modulus_range (Seq.index key (v i))) /\
+          (v i < v v_K ==> Libcrux_ml_kem.Polynomial.is_bounded_poly 3328 (Seq.index key (v i))) /\
           (forall (j: nat).
               j < v i ==>
               (j + 1) * v Libcrux_ml_kem.Constants.v_BYTES_PER_RING_ELEMENT <= Seq.length out /\
@@ -448,7 +447,7 @@ let sample_vector_cbd_then_ntt
             j < v i ==>
             Libcrux_ml_kem.Polynomial.to_spec_poly_t #v_Vector re_as_ntt.[ sz j ] ==
             Spec.MLKEM.poly_ntt (Spec.MLKEM.sample_poly_cbd v_ETA prf_outputs.[ sz j ]) /\
-            Libcrux_ml_kem.Serialize.coefficients_field_modulus_range #v_Vector re_as_ntt.[ sz j ])
+            Libcrux_ml_kem.Polynomial.is_bounded_poly #v_Vector 3328 re_as_ntt.[ sz j ])
       re_as_ntt
       (fun re_as_ntt i ->
           let re_as_ntt:t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K =
@@ -638,14 +637,12 @@ let generate_keypair_unpacked
           secret_as_ntt));
     assert ((forall (i: nat).
             i < v v_K ==>
-            Libcrux_ml_kem.Serialize.coefficients_field_modulus_range (Seq.index private_key
-                    .Libcrux_ml_kem.Ind_cpa.Unpacked.f_secret_as_ntt
-                  i)) /\
+            Libcrux_ml_kem.Polynomial.is_bounded_poly 3328
+              (Seq.index private_key.Libcrux_ml_kem.Ind_cpa.Unpacked.f_secret_as_ntt i)) /\
         (forall (i: nat).
             i < v v_K ==>
-            Libcrux_ml_kem.Serialize.coefficients_field_modulus_range (Seq.index public_key
-                    .Libcrux_ml_kem.Ind_cpa.Unpacked.f_tt_as_ntt
-                  i)))
+            Libcrux_ml_kem.Polynomial.is_bounded_poly 3328
+              (Seq.index public_key.Libcrux_ml_kem.Ind_cpa.Unpacked.f_tt_as_ntt i)))
   in
   private_key, public_key
   <:
@@ -751,7 +748,7 @@ let compress_then_serialize_u
           let i:usize = i in
           (v i < v v_K ==>
             Seq.length out == v v_OUT_LEN /\
-            Libcrux_ml_kem.Serialize.coefficients_field_modulus_range (Seq.index input (v i))) /\
+            Libcrux_ml_kem.Polynomial.is_bounded_poly 3328 (Seq.index input (v i))) /\
           (forall (j: nat).
               j < v i ==>
               Seq.length out == v v_OUT_LEN /\ (j + 1) * (v v_OUT_LEN / v v_K) <= Seq.length out /\

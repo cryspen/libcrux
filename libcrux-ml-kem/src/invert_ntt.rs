@@ -212,6 +212,7 @@ pub(crate) fn invert_ntt_at_layer_4_plus<Vector: Operations>(
 }
 
 #[inline(always)]
+#[hax_lib::fstar::verification_status(lax)]
 #[hax_lib::requires(fstar!(r#"invert_ntt_re_range_1 $re"#))]
 pub(crate) fn invert_ntt_montgomery<const K: usize, Vector: Operations>(
     re: &mut PolynomialRingElement<Vector>,

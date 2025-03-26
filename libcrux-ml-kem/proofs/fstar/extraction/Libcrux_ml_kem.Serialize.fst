@@ -39,16 +39,12 @@ let compress_then_serialize_message
       (fun serialized i ->
           let serialized:t_Array u8 (mk_usize 32) = serialized in
           let i:usize = i in
-          v i < 16 ==> coefficients_field_modulus_range re)
+          v i < 16 ==> Libcrux_ml_kem.Polynomial.is_bounded_poly 3328 re)
       serialized
       (fun serialized i ->
           let serialized:t_Array u8 (mk_usize 32) = serialized in
           let i:usize = i in
           let _:Prims.unit = assert (2 * v i + 2 <= 32) in
-          let _:Prims.unit =
-            reveal_opaque (`%coefficients_field_modulus_range)
-              (coefficients_field_modulus_range #v_Vector)
-          in
           let coefficient:v_Vector =
             to_unsigned_field_modulus #v_Vector
               (re.Libcrux_ml_kem.Polynomial.f_coefficients.[ i ] <: v_Vector)
@@ -161,16 +157,12 @@ let serialize_uncompressed_ring_element
       (fun serialized i ->
           let serialized:t_Array u8 (mk_usize 384) = serialized in
           let i:usize = i in
-          v i >= 0 /\ v i <= 16 /\ v i < 16 ==> coefficients_field_modulus_range re)
+          v i >= 0 /\ v i <= 16 /\ v i < 16 ==> Libcrux_ml_kem.Polynomial.is_bounded_poly 3328 re)
       serialized
       (fun serialized i ->
           let serialized:t_Array u8 (mk_usize 384) = serialized in
           let i:usize = i in
           let _:Prims.unit = assert (24 * v i + 24 <= 384) in
-          let _:Prims.unit =
-            reveal_opaque (`%coefficients_field_modulus_range)
-              (coefficients_field_modulus_range #v_Vector)
-          in
           let coefficient:v_Vector =
             to_unsigned_field_modulus #v_Vector
               (re.Libcrux_ml_kem.Polynomial.f_coefficients.[ i ] <: v_Vector)
@@ -382,16 +374,12 @@ let compress_then_serialize_10_
       (fun serialized i ->
           let serialized:t_Array u8 v_OUT_LEN = serialized in
           let i:usize = i in
-          v i >= 0 /\ v i <= 16 /\ v i < 16 ==> coefficients_field_modulus_range re)
+          v i >= 0 /\ v i <= 16 /\ v i < 16 ==> Libcrux_ml_kem.Polynomial.is_bounded_poly 3328 re)
       serialized
       (fun serialized i ->
           let serialized:t_Array u8 v_OUT_LEN = serialized in
           let i:usize = i in
           let _:Prims.unit = assert (20 * v i + 20 <= 320) in
-          let _:Prims.unit =
-            reveal_opaque (`%coefficients_field_modulus_range)
-              (coefficients_field_modulus_range #v_Vector)
-          in
           let coefficient:v_Vector =
             Libcrux_ml_kem.Vector.Traits.f_compress #v_Vector
               #FStar.Tactics.Typeclasses.solve
@@ -538,16 +526,12 @@ let compress_then_serialize_4_
           let serialized:t_Slice u8 = serialized in
           let i:usize = i in
           v i >= 0 /\ v i <= 16 /\ v i < 16 ==>
-          (Seq.length serialized == 128 /\ coefficients_field_modulus_range re))
+          (Seq.length serialized == 128 /\ Libcrux_ml_kem.Polynomial.is_bounded_poly 3328 re))
       serialized
       (fun serialized i ->
           let serialized:t_Slice u8 = serialized in
           let i:usize = i in
           let _:Prims.unit = assert (8 * v i + 8 <= 128) in
-          let _:Prims.unit =
-            reveal_opaque (`%coefficients_field_modulus_range)
-              (coefficients_field_modulus_range #v_Vector)
-          in
           let coefficient:v_Vector =
             Libcrux_ml_kem.Vector.Traits.f_compress #v_Vector
               #FStar.Tactics.Typeclasses.solve

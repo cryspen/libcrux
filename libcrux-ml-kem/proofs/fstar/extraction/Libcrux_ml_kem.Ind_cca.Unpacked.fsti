@@ -98,10 +98,9 @@ val impl_3__serialized_mut
           Spec.MLKEM.is_rank v_K /\ v_PUBLIC_KEY_SIZE == Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE v_K /\
           (forall (i: nat).
               i < v v_K ==>
-              Libcrux_ml_kem.Serialize.coefficients_field_modulus_range (Seq.index self
-                      .f_ind_cpa_public_key
-                      .Libcrux_ml_kem.Ind_cpa.Unpacked.f_tt_as_ntt
-                    i))))
+              Libcrux_ml_kem.Polynomial.is_bounded_poly 3328
+                (Seq.index self.f_ind_cpa_public_key.Libcrux_ml_kem.Ind_cpa.Unpacked.f_tt_as_ntt i))
+        ))
       (ensures
         fun serialized_future ->
           let serialized_future:Libcrux_ml_kem.Types.t_MlKemPublicKey v_PUBLIC_KEY_SIZE =
@@ -128,10 +127,9 @@ val impl_3__serialized
           Spec.MLKEM.is_rank v_K /\ v_PUBLIC_KEY_SIZE == Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE v_K /\
           (forall (i: nat).
               i < v v_K ==>
-              Libcrux_ml_kem.Serialize.coefficients_field_modulus_range (Seq.index self
-                      .f_ind_cpa_public_key
-                      .Libcrux_ml_kem.Ind_cpa.Unpacked.f_tt_as_ntt
-                    i))))
+              Libcrux_ml_kem.Polynomial.is_bounded_poly 3328
+                (Seq.index self.f_ind_cpa_public_key.Libcrux_ml_kem.Ind_cpa.Unpacked.f_tt_as_ntt i))
+        ))
       (ensures
         fun res ->
           let res:Libcrux_ml_kem.Types.t_MlKemPublicKey v_PUBLIC_KEY_SIZE = res in
@@ -195,8 +193,8 @@ val impl_4__serialized_public_key_mut
           Spec.MLKEM.is_rank v_K /\ v_PUBLIC_KEY_SIZE == Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE v_K /\
           (forall (i: nat).
               i < v v_K ==>
-              Libcrux_ml_kem.Serialize.coefficients_field_modulus_range (Seq.index self.f_public_key
-                      .f_ind_cpa_public_key
+              Libcrux_ml_kem.Polynomial.is_bounded_poly 3328
+                (Seq.index self.f_public_key.f_ind_cpa_public_key
                       .Libcrux_ml_kem.Ind_cpa.Unpacked.f_tt_as_ntt
                     i))))
       (ensures
@@ -226,8 +224,8 @@ val impl_4__serialized_public_key
           Spec.MLKEM.is_rank v_K /\ v_PUBLIC_KEY_SIZE == Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE v_K /\
           (forall (i: nat).
               i < v v_K ==>
-              Libcrux_ml_kem.Serialize.coefficients_field_modulus_range (Seq.index self.f_public_key
-                      .f_ind_cpa_public_key
+              Libcrux_ml_kem.Polynomial.is_bounded_poly 3328
+                (Seq.index self.f_public_key.f_ind_cpa_public_key
                       .Libcrux_ml_kem.Ind_cpa.Unpacked.f_tt_as_ntt
                     i))))
       (ensures

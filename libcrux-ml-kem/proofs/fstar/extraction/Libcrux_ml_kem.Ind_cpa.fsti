@@ -24,8 +24,7 @@ val serialize_vector
         Spec.MLKEM.is_rank v_K /\
         Core.Slice.impl__len #u8 out == Spec.MLKEM.v_RANKED_BYTES_PER_RING_ELEMENT v_K /\
         (forall (i: nat).
-            i < v v_K ==>
-            Libcrux_ml_kem.Serialize.coefficients_field_modulus_range (Seq.index key i)))
+            i < v v_K ==> Libcrux_ml_kem.Polynomial.is_bounded_poly 3328 (Seq.index key i)))
       (ensures
         fun out_future ->
           let out_future:t_Slice u8 = out_future in
@@ -46,8 +45,7 @@ val serialize_public_key_mut
         Spec.MLKEM.is_rank v_K /\ v_PUBLIC_KEY_SIZE == Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE v_K /\
         length seed_for_a == sz 32 /\
         (forall (i: nat).
-            i < v v_K ==>
-            Libcrux_ml_kem.Serialize.coefficients_field_modulus_range (Seq.index tt_as_ntt i)))
+            i < v v_K ==> Libcrux_ml_kem.Polynomial.is_bounded_poly 3328 (Seq.index tt_as_ntt i)))
       (ensures
         fun serialized_future ->
           let serialized_future:t_Array u8 v_PUBLIC_KEY_SIZE = serialized_future in
@@ -68,8 +66,7 @@ val serialize_public_key
         Spec.MLKEM.is_rank v_K /\ v_PUBLIC_KEY_SIZE == Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE v_K /\
         length seed_for_a == sz 32 /\
         (forall (i: nat).
-            i < v v_K ==>
-            Libcrux_ml_kem.Serialize.coefficients_field_modulus_range (Seq.index tt_as_ntt i)))
+            i < v v_K ==> Libcrux_ml_kem.Polynomial.is_bounded_poly 3328 (Seq.index tt_as_ntt i)))
       (ensures
         fun res ->
           let res:t_Array u8 v_PUBLIC_KEY_SIZE = res in
@@ -132,7 +129,8 @@ val sample_vector_cbd_then_ntt
             (sz (v domain_separator)) /\
           (forall (i: nat).
               i < v v_K ==>
-              Libcrux_ml_kem.Serialize.coefficients_field_modulus_range #v_Vector
+              Libcrux_ml_kem.Polynomial.is_bounded_poly #v_Vector
+                3328
                 (Seq.index re_as_ntt_future i)))
 
 /// This function implements most of <strong>Algorithm 12</strong> of the
@@ -211,14 +209,12 @@ val generate_keypair_unpacked
               secret_as_ntt)) /\
           (forall (i: nat).
               i < v v_K ==>
-              Libcrux_ml_kem.Serialize.coefficients_field_modulus_range (Seq.index private_key_future
-                      .f_secret_as_ntt
-                    i)) /\
+              Libcrux_ml_kem.Polynomial.is_bounded_poly 3328
+                (Seq.index private_key_future.f_secret_as_ntt i)) /\
           (forall (i: nat).
               i < v v_K ==>
-              Libcrux_ml_kem.Serialize.coefficients_field_modulus_range (Seq.index public_key_future
-                      .Libcrux_ml_kem.Ind_cpa.Unpacked.f_tt_as_ntt
-                    i)))
+              Libcrux_ml_kem.Polynomial.is_bounded_poly 3328
+                (Seq.index public_key_future.Libcrux_ml_kem.Ind_cpa.Unpacked.f_tt_as_ntt i)))
 
 /// Serialize the secret key from the unpacked key pair generation.
 val serialize_unpacked_secret_key
@@ -263,8 +259,7 @@ val compress_then_serialize_u
         v_COMPRESSION_FACTOR == Spec.MLKEM.v_VECTOR_U_COMPRESSION_FACTOR v_K /\
         v_BLOCK_LEN == Spec.MLKEM.v_C1_BLOCK_SIZE v_K /\ Core.Slice.impl__len #u8 out == v_OUT_LEN /\
         (forall (i: nat).
-            i < v v_K ==>
-            Libcrux_ml_kem.Serialize.coefficients_field_modulus_range (Seq.index input i)))
+            i < v v_K ==> Libcrux_ml_kem.Polynomial.is_bounded_poly 3328 (Seq.index input i)))
       (ensures
         fun out_future ->
           let out_future:t_Slice u8 = out_future in

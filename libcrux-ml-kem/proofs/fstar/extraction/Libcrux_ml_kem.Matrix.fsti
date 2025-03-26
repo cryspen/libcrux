@@ -59,7 +59,7 @@ val compute_message
           to_spec_poly_t res ==
           Spec.MLKEM.(poly_sub v_spec
               (poly_inv_ntt (vector_dot_product_ntt #v_K secret_spec u_spec))) /\
-          Libcrux_ml_kem.Serialize.coefficients_field_modulus_range res)
+          Libcrux_ml_kem.Polynomial.is_bounded_poly 3328 res)
 
 /// Compute InverseNTT(tᵀ ◦ r\u{302}) + e₂ + message
 val compute_ring_element_v
@@ -81,7 +81,7 @@ val compute_ring_element_v
           let res_spec = to_spec_poly_t res in
           res_spec ==
           Spec.MLKEM.(poly_add (poly_add (vector_dot_product_ntt #v_K tt_spec r_spec) e2_spec)
-              m_spec) /\ Libcrux_ml_kem.Serialize.coefficients_field_modulus_range res)
+              m_spec) /\ Libcrux_ml_kem.Polynomial.is_bounded_poly 3328 res)
 
 /// Compute u := InvertNTT(Aᵀ ◦ r\u{302}) + e₁
 val compute_vector_u
@@ -104,8 +104,7 @@ val compute_vector_u
           res_spec ==
           Spec.MLKEM.(vector_add (vector_inv_ntt (matrix_vector_mul_ntt a_spec r_spec)) e_spec) /\
           (forall (i: nat).
-              i < v v_K ==>
-              Libcrux_ml_kem.Serialize.coefficients_field_modulus_range (Seq.index res i)))
+              i < v v_K ==> Libcrux_ml_kem.Polynomial.is_bounded_poly 3328 (Seq.index res i)))
 
 /// Compute Â ◦ ŝ + ê
 val compute_As_plus_e
@@ -132,5 +131,4 @@ val compute_As_plus_e
             (to_spec_vector_t error_as_ntt) /\
           (forall (i: nat).
               i < v v_K ==>
-              Libcrux_ml_kem.Serialize.coefficients_field_modulus_range (Seq.index tt_as_ntt_future
-                    i)))
+              Libcrux_ml_kem.Polynomial.is_bounded_poly 3328 (Seq.index tt_as_ntt_future i)))

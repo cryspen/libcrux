@@ -124,12 +124,22 @@ let nat_div_ceil (x:nat) (y:pos) : nat = if (x % y = 0) then x/y else (x/y)+1
 val lemma_intb_le b b'
   : Lemma (requires (b <= b'))
           (ensures (forall n. is_intb b n ==> is_intb b' n))
+          
+val lemma_add_intb (b1 b2: nat) (n1 n2: int) 
+    : Lemma (requires (is_intb b1 n1 /\ is_intb b2 n2))
+      (ensures (is_intb (b1 + b2) (n1 + n2)))
+
+val lemma_add_intb_forall (b1 b2: nat)
+    : Lemma (forall n1 n2. (is_intb b1 n1 /\ is_intb b2 n2) ==> is_intb (b1 + b2) (n1 + n2))
 
 #push-options "--z3rlimit 200"
 val lemma_mul_intb (b1 b2: nat) (n1 n2: int) 
     : Lemma (requires (is_intb b1 n1 /\ is_intb b2 n2))
       (ensures (is_intb (b1 * b2) (n1 * n2)))
 #pop-options
+
+val lemma_mul_intb_forall (b1 b2: nat)
+    : Lemma (forall n1 n2. (is_intb b1 n1 /\ is_intb b2 n2) ==> is_intb (b1 * b2) (n1 * n2))
 
 #push-options "--z3rlimit 200"
 val lemma_mul_i16b (b1 b2: nat) (n1 n2: i16) 

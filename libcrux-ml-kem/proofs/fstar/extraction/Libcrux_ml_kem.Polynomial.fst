@@ -251,6 +251,8 @@ let to_bytes
   in
   out
 
+#push-options "--z3rlimit 300"
+
 let add_to_ring_element
       (#v_Vector: Type0)
       (v_K: usize)
@@ -304,7 +306,7 @@ let add_to_ring_element
   in
   myself
 
-#push-options "--admit_smt_queries true"
+#pop-options
 
 let poly_barrett_reduce
       (#v_Vector: Type0)
@@ -342,8 +344,6 @@ let poly_barrett_reduce
           t_PolynomialRingElement v_Vector)
   in
   myself
-
-#pop-options
 
 #push-options "--admit_smt_queries true"
 
@@ -514,14 +514,14 @@ let add_error_reduce
 let to_standard_domain
       (#v_T: Type0)
       (#[FStar.Tactics.Typeclasses.tcresolve ()] i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_T)
-      (v: v_T)
+      (vector: v_T)
      =
   Libcrux_ml_kem.Vector.Traits.f_montgomery_multiply_by_constant #v_T
     #FStar.Tactics.Typeclasses.solve
-    v
+    vector
     Libcrux_ml_kem.Vector.Traits.v_MONTGOMERY_R_SQUARED_MOD_FIELD_MODULUS
 
-#push-options "--admit_smt_queries true"
+#push-options "--z3rlimit 300"
 
 let add_standard_error_reduce
       (#v_Vector: Type0)
@@ -543,6 +543,26 @@ let add_standard_error_reduce
           let j:usize = j in
           let coefficient_normal_form:v_Vector =
             to_standard_domain #v_Vector (myself.f_coefficients.[ j ] <: v_Vector)
+          in
+          let _:Prims.unit =
+            assert (is_bounded_vector 3328 coefficient_normal_form);
+            assert (is_bounded_vector 3328 (error.f_coefficients.[ j ]));
+            Spec.Utils.lemma_add_intb_forall 3328 3328;
+            assert (forall i.
+                  Spec.Utils.is_intb 6656
+                    (v (Seq.index (i1.f_to_i16_array coefficient_normal_form) i) +
+                      v (Seq.index (i1.f_to_i16_array error.f_coefficients.[ j ]) i)));
+            assert_norm (6656 <= pow2 15 - 1);
+            Spec.Utils.lemma_intb_le 6656 (pow2 15 - 1);
+            Spec.Utils.lemma_intb_le 6656 28296;
+            assert (forall i.
+                  Spec.Utils.is_intb (pow2 15 - 1)
+                    (v (Seq.index (i1.f_to_i16_array coefficient_normal_form) i) +
+                      v (Seq.index (i1.f_to_i16_array error.f_coefficients.[ j ]) i)));
+            assert (forall i.
+                  Spec.Utils.is_intb 28296
+                    (v (Seq.index (i1.f_to_i16_array coefficient_normal_form) i) +
+                      v (Seq.index (i1.f_to_i16_array error.f_coefficients.[ j ]) i)))
           in
           let myself:t_PolynomialRingElement v_Vector =
             {
@@ -647,16 +667,6 @@ let impl_2__ZERO
   <:
   t_PolynomialRingElement v_Vector
 
-let impl_2__poly_barrett_reduce
-      (#v_Vector: Type0)
-      (#[FStar.Tactics.Typeclasses.tcresolve ()]
-          i1:
-          Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector)
-      (self: t_PolynomialRingElement v_Vector)
-     =
-  let self:t_PolynomialRingElement v_Vector = poly_barrett_reduce #v_Vector self in
-  self
-
 let impl_2__subtract_reduce
       (#v_Vector: Type0)
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
@@ -681,16 +691,6 @@ let impl_2__add_error_reduce
       (self error: t_PolynomialRingElement v_Vector)
      =
   let self:t_PolynomialRingElement v_Vector = add_error_reduce #v_Vector self error in
-  self
-
-let impl_2__add_standard_error_reduce
-      (#v_Vector: Type0)
-      (#[FStar.Tactics.Typeclasses.tcresolve ()]
-          i1:
-          Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector)
-      (self error: t_PolynomialRingElement v_Vector)
-     =
-  let self:t_PolynomialRingElement v_Vector = add_standard_error_reduce #v_Vector self error in
   self
 
 let impl_2__ntt_multiply
@@ -844,4 +844,24 @@ let impl_2__add_to_ring_element
       (self rhs: t_PolynomialRingElement v_Vector)
      =
   let self:t_PolynomialRingElement v_Vector = add_to_ring_element #v_Vector v_K self rhs in
+  self
+
+let impl_2__poly_barrett_reduce
+      (#v_Vector: Type0)
+      (#[FStar.Tactics.Typeclasses.tcresolve ()]
+          i1:
+          Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector)
+      (self: t_PolynomialRingElement v_Vector)
+     =
+  let self:t_PolynomialRingElement v_Vector = poly_barrett_reduce #v_Vector self in
+  self
+
+let impl_2__add_standard_error_reduce
+      (#v_Vector: Type0)
+      (#[FStar.Tactics.Typeclasses.tcresolve ()]
+          i1:
+          Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector)
+      (self error: t_PolynomialRingElement v_Vector)
+     =
+  let self:t_PolynomialRingElement v_Vector = add_standard_error_reduce #v_Vector self error in
   self

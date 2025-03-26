@@ -9,26 +9,12 @@ let _ =
   let open Libcrux_ml_kem.Vector.Traits in
   ()
 
-[@@ "opaque_to_smt"]
-let field_modulus_range (#v_Vector: Type0)
-        {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
-        (a: v_Vector) =
-    let coef = Libcrux_ml_kem.Vector.Traits.f_to_i16_array a in
-    forall (i:nat). i < 16 ==> v (Seq.index coef i) > -(v Libcrux_ml_kem.Vector.Traits.v_FIELD_MODULUS) /\
-        v (Seq.index coef i) < v Libcrux_ml_kem.Vector.Traits.v_FIELD_MODULUS
-
-[@@ "opaque_to_smt"]
-let coefficients_field_modulus_range (#v_Vector: Type0)
-      {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
-      (re: Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) =
-    forall (i:nat). i < 16 ==> field_modulus_range (Seq.index re.f_coefficients i)
-
 val to_unsigned_field_modulus
       (#v_Vector: Type0)
       {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
       (a: v_Vector)
     : Prims.Pure v_Vector
-      (requires field_modulus_range a)
+      (requires Libcrux_ml_kem.Polynomial.is_bounded_vector 3328 a)
       (ensures
         fun result ->
           let result:v_Vector = result in
@@ -43,7 +29,7 @@ val compress_then_serialize_message
       {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
       (re: Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
     : Prims.Pure (t_Array u8 (mk_usize 32))
-      (requires coefficients_field_modulus_range re)
+      (requires Libcrux_ml_kem.Polynomial.is_bounded_poly 3328 re)
       (ensures
         fun result ->
           let result:t_Array u8 (mk_usize 32) = result in
@@ -68,7 +54,7 @@ val serialize_uncompressed_ring_element
       {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
       (re: Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
     : Prims.Pure (t_Array u8 (mk_usize 384))
-      (requires coefficients_field_modulus_range re)
+      (requires Libcrux_ml_kem.Polynomial.is_bounded_poly 3328 re)
       (ensures
         fun result ->
           let result:t_Array u8 (mk_usize 384) = result in
@@ -138,7 +124,8 @@ val deserialize_ring_elements_reduced_out
           let result:t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K =
             result
           in
-          forall (i: nat). i < v v_K ==> coefficients_field_modulus_range (Seq.index result i))
+          forall (i: nat).
+            i < v v_K ==> Libcrux_ml_kem.Polynomial.is_bounded_poly 3328 (Seq.index result i))
 
 val compress_then_serialize_10_
       (v_OUT_LEN: usize)
@@ -146,7 +133,7 @@ val compress_then_serialize_10_
       {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
       (re: Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
     : Prims.Pure (t_Array u8 v_OUT_LEN)
-      (requires v v_OUT_LEN == 320 /\ coefficients_field_modulus_range re)
+      (requires v v_OUT_LEN == 320 /\ Libcrux_ml_kem.Polynomial.is_bounded_poly 3328 re)
       (fun _ -> Prims.l_True)
 
 val compress_then_serialize_11_
@@ -164,7 +151,8 @@ val compress_then_serialize_ring_element_u
     : Prims.Pure (t_Array u8 v_OUT_LEN)
       (requires
         (v v_COMPRESSION_FACTOR == 10 \/ v v_COMPRESSION_FACTOR == 11) /\
-        v v_OUT_LEN == 32 * v v_COMPRESSION_FACTOR /\ coefficients_field_modulus_range re)
+        v v_OUT_LEN == 32 * v v_COMPRESSION_FACTOR /\
+        Libcrux_ml_kem.Polynomial.is_bounded_poly 3328 re)
       (ensures
         fun result ->
           let result:t_Array u8 v_OUT_LEN = result in
@@ -178,7 +166,7 @@ val compress_then_serialize_4_
       (re: Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
       (serialized: t_Slice u8)
     : Prims.Pure (t_Slice u8)
-      (requires Seq.length serialized == 128 /\ coefficients_field_modulus_range re)
+      (requires Seq.length serialized == 128 /\ Libcrux_ml_kem.Polynomial.is_bounded_poly 3328 re)
       (ensures
         fun serialized_future ->
           let serialized_future:t_Slice u8 = serialized_future in
@@ -207,7 +195,7 @@ val compress_then_serialize_ring_element_v
         Spec.MLKEM.is_rank v_K /\
         v_COMPRESSION_FACTOR == Spec.MLKEM.v_VECTOR_V_COMPRESSION_FACTOR v_K /\
         Seq.length out == v v_OUT_LEN /\ v v_OUT_LEN == 32 * v v_COMPRESSION_FACTOR /\
-        coefficients_field_modulus_range re)
+        Libcrux_ml_kem.Polynomial.is_bounded_poly 3328 re)
       (ensures
         fun out_future ->
           let out_future:t_Slice u8 = out_future in

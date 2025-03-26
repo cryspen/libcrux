@@ -352,6 +352,8 @@ let invert_ntt_at_layer_4_plus
 
 #pop-options
 
+#push-options "--admit_smt_queries true"
+
 let invert_ntt_montgomery
       (v_K: usize)
       (#v_Vector: Type0)
@@ -407,3 +409,5 @@ let invert_ntt_montgomery
     Libcrux_ml_kem.Polynomial.impl_2__poly_barrett_reduce #v_Vector re
   in
   re
+
+#pop-options

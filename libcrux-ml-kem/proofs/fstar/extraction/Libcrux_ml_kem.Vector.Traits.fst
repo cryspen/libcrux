@@ -141,12 +141,27 @@ class t_Operations (v_Self: Type0) = {
         (fun result -> f_cond_subtract_3329__post x0 result);
   f_barrett_reduce_pre:vector: v_Self
     -> pred: Type0{Spec.Utils.is_i16b_array 28296 (f_repr vector) ==> pred};
-  f_barrett_reduce_post:v_Self -> v_Self -> Type0;
+  f_barrett_reduce_post:vector: v_Self -> result: v_Self
+    -> pred:
+      Type0
+        { pred ==>
+          Spec.Utils.is_i16b_array 3328 (f_repr result) /\
+          (forall i.
+              (v (Seq.index (f_repr result) i) % 3329) == (v (Seq.index (f_repr vector) i) % 3329))
+        };
   f_barrett_reduce:x0: v_Self
     -> Prims.Pure v_Self (f_barrett_reduce_pre x0) (fun result -> f_barrett_reduce_post x0 result);
-  f_montgomery_multiply_by_constant_pre:v: v_Self -> c: i16
-    -> pred: Type0{Spec.Utils.is_i16b 1664 c ==> pred};
-  f_montgomery_multiply_by_constant_post:v_Self -> i16 -> v_Self -> Type0;
+  f_montgomery_multiply_by_constant_pre:vector: v_Self -> constant: i16
+    -> pred: Type0{Spec.Utils.is_i16b 1664 constant ==> pred};
+  f_montgomery_multiply_by_constant_post:vector: v_Self -> constant: i16 -> result: v_Self
+    -> pred:
+      Type0
+        { pred ==>
+          Spec.Utils.is_i16b_array 3328 (f_repr result) /\
+          (forall i.
+              i < 16 ==>
+              ((v (Seq.index (f_repr result) i) % 3329) ==
+                (v (Seq.index (f_repr vector) i) * v constant * 169) % 3329)) };
   f_montgomery_multiply_by_constant:x0: v_Self -> x1: i16
     -> Prims.Pure v_Self
         (f_montgomery_multiply_by_constant_pre x0 x1)
