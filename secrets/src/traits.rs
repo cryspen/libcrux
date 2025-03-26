@@ -1,4 +1,4 @@
-// A trait for public types that can be classified into secret types
+/// A trait for public types that can be classified into secret types
 pub trait Classify {
     type Classified;
     fn classify(self) -> Self::Classified;
