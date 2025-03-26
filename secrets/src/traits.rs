@@ -49,7 +49,7 @@ impl Scalar for i32 {}
 impl Scalar for i64 {}
 impl Scalar for i128 {}
 
-// A trait for integer operations provided by Rust for machine integers
+/// A trait for integer operations provided by Rust for machine integers
 pub trait IntOps
 where
     Self: Sized,
