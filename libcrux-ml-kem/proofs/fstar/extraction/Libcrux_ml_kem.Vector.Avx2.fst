@@ -219,9 +219,14 @@ let impl: Libcrux_ml_kem.Vector.Traits.t_Repr t_SIMD256Vector =
   {
     _super_13011033735201511749 = FStar.Tactics.Typeclasses.solve;
     _super_9529721400157967266 = FStar.Tactics.Typeclasses.solve;
-    f_repr_pre = (fun (x: t_SIMD256Vector) -> true);
-    f_repr_post = (fun (x: t_SIMD256Vector) (out: t_Array i16 (mk_usize 16)) -> true);
-    f_repr = fun (x: t_SIMD256Vector) -> vec_to_i16_array x
+    f_repr_pre = (fun (self: t_SIMD256Vector) -> true);
+    f_repr_post = (fun (self: t_SIMD256Vector) (out: t_Array i16 (mk_usize 16)) -> true);
+    f_repr
+    =
+    fun (self: t_SIMD256Vector) ->
+      vec_to_i16_array (Core.Clone.f_clone #t_SIMD256Vector #FStar.Tactics.Typeclasses.solve self
+          <:
+          t_SIMD256Vector)
   }
 
 let from_bytes (array: t_Slice u8) =
@@ -296,7 +301,11 @@ let impl_3: Libcrux_ml_kem.Vector.Traits.t_Operations t_SIMD256Vector =
     =
     (fun (x: t_SIMD256Vector) (bytes: t_Slice u8) ->
         (Core.Slice.impl__len #u8 bytes <: usize) >=. mk_usize 32);
-    f_to_bytes_post = (fun (x: t_SIMD256Vector) (bytes: t_Slice u8) (out: t_Slice u8) -> true);
+    f_to_bytes_post
+    =
+    (fun (x: t_SIMD256Vector) (bytes: t_Slice u8) (bytes_future: t_Slice u8) ->
+        (Core.Slice.impl__len #u8 bytes_future <: usize) =.
+        (Core.Slice.impl__len #u8 bytes <: usize));
     f_to_bytes
     =
     (fun (x: t_SIMD256Vector) (bytes: t_Slice u8) ->

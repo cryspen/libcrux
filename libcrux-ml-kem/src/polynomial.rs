@@ -94,9 +94,8 @@ fn from_bytes<Vector: Operations>(bytes: &[u8]) -> PolynomialRingElement<Vector>
     result
 }
 
-#[hax_lib::fstar::verification_status(lax)]
 #[inline(always)]
-#[hax_lib::requires(VECTORS_IN_RING_ELEMENT * 16 * 2 <= out.len())]
+#[hax_lib::requires(VECTORS_IN_RING_ELEMENT * 32 <= out.len())]
 fn to_bytes<Vector: Operations>(re: PolynomialRingElement<Vector>, out: &mut [u8]) {
     let _out_len = out.len();
     for i in 0..re.coefficients.len() {
@@ -147,12 +146,41 @@ pub(crate) const fn vec_len_bytes<const K: usize, Vector: Operations>() -> usize
 /// Given two polynomial ring elements `lhs` and `rhs`, compute the pointwise
 /// sum of their constituent coefficients.
 #[inline(always)]
-#[hax_lib::fstar::verification_status(lax)]
+#[hax_lib::requires(fstar!(r#"
+        forall (i:nat). i < v ${VECTORS_IN_RING_ELEMENT} ==>
+         (let lhs_i = i1.f_to_i16_array (${myself}.f_coefficients.[ sz i ]) in
+          let rhs_i = i1.f_to_i16_array (${rhs}.f_coefficients.[ sz i ]) in
+          Libcrux_ml_kem.Vector.Traits.Spec.add_pre lhs_i rhs_i)"#))]
+#[hax_lib::ensures(|_| fstar!(r#"
+        forall (i:nat). i < v ${VECTORS_IN_RING_ELEMENT} ==>
+         (let lhs_i = i1.f_to_i16_array (${myself}.f_coefficients.[ sz i ]) in
+          let rhs_i = i1.f_to_i16_array (${rhs}.f_coefficients.[ sz i ]) in
+          let result_i = i1.f_to_i16_array (${myself}_future.f_coefficients.[ sz i ]) in
+          Libcrux_ml_kem.Vector.Traits.Spec.add_post lhs_i rhs_i result_i)"#))]
 fn add_to_ring_element<Vector: Operations, const K: usize>(
     myself: &mut PolynomialRingElement<Vector>,
     rhs: &PolynomialRingElement<Vector>,
 ) {
+    #[cfg(hax)]
+    let _myself = myself.coefficients;
     for i in 0..myself.coefficients.len() {
+        hax_lib::loop_invariant!(|i: usize| {
+            fstar!(
+                r#"
+                v $i <= v ${VECTORS_IN_RING_ELEMENT} /\
+                (forall (j:nat). (j >= v $i /\ j < v ${VECTORS_IN_RING_ELEMENT}) ==>
+                   (let _myself_j = i1.f_to_i16_array (${_myself}.[ sz j ]) in
+                    let myself_j = i1.f_to_i16_array (${myself}.f_coefficients.[ sz j ]) in
+                    let rhs_j = i1.f_to_i16_array (${rhs}.f_coefficients.[ sz j ]) in
+                    myself_j ==  _myself_j /\
+                    Libcrux_ml_kem.Vector.Traits.Spec.add_pre myself_j rhs_j)) /\
+                (forall (j:nat). j < v $i ==>
+                   (let _myself_j = i1.f_to_i16_array (${_myself}.[ sz j ]) in
+                    let myself_j = i1.f_to_i16_array (${myself}.f_coefficients.[ sz j ]) in
+                    let rhs_j = i1.f_to_i16_array (${rhs}.f_coefficients.[ sz j ]) in
+                    Libcrux_ml_kem.Vector.Traits.Spec.add_post _myself_j rhs_j myself_j))"#
+            )
+        });
         myself.coefficients[i] = Vector::add(myself.coefficients[i], &rhs.coefficients[i]);
     }
 }
@@ -160,7 +188,6 @@ fn add_to_ring_element<Vector: Operations, const K: usize>(
 #[inline(always)]
 #[hax_lib::fstar::verification_status(lax)]
 fn poly_barrett_reduce<Vector: Operations>(myself: &mut PolynomialRingElement<Vector>) {
-    // Using `hax_lib::fstar::verification_status(lax)` works but produces an error while extracting
     for i in 0..VECTORS_IN_RING_ELEMENT {
         myself.coefficients[i] = Vector::barrett_reduce(myself.coefficients[i]);
     }
@@ -190,7 +217,6 @@ fn add_message_error_reduce<Vector: Operations>(
     message: &PolynomialRingElement<Vector>,
     mut result: PolynomialRingElement<Vector>,
 ) -> PolynomialRingElement<Vector> {
-    // Using `hax_lib::fstar::verification_status(lax)` works but produces an error while extracting
     for i in 0..VECTORS_IN_RING_ELEMENT {
         let coefficient_normal_form =
             Vector::montgomery_multiply_by_constant(result.coefficients[i], 1441);
@@ -224,7 +250,6 @@ fn add_error_reduce<Vector: Operations>(
     myself: &mut PolynomialRingElement<Vector>,
     error: &PolynomialRingElement<Vector>,
 ) {
-    // Using `hax_lib::fstar::verification_status(lax)` works but produces an error while extracting
     for j in 0..VECTORS_IN_RING_ELEMENT {
         let coefficient_normal_form =
             Vector::montgomery_multiply_by_constant(myself.coefficients[j], 1441);
@@ -245,7 +270,6 @@ fn add_standard_error_reduce<Vector: Operations>(
     myself: &mut PolynomialRingElement<Vector>,
     error: &PolynomialRingElement<Vector>,
 ) {
-    // Using `hax_lib::fstar::verification_status(lax)` works but produces an error while extracting
     for j in 0..VECTORS_IN_RING_ELEMENT {
         // The coefficients are of the form aR^{-1} mod q, which means
         // calling to_montgomery_domain() on them should return a mod q.
@@ -365,6 +389,17 @@ impl<Vector: Operations> PolynomialRingElement<Vector> {
     /// Given two polynomial ring elements `lhs` and `rhs`, compute the pointwise
     /// sum of their constituent coefficients.
     #[inline(always)]
+    #[requires(fstar!(r#"
+        forall (i:nat). i < v ${VECTORS_IN_RING_ELEMENT} ==>
+            (let lhs_i = i1.f_to_i16_array (self.f_coefficients.[ sz i ]) in
+            let rhs_i = i1.f_to_i16_array (${rhs}.f_coefficients.[ sz i ]) in
+            Libcrux_ml_kem.Vector.Traits.Spec.add_pre lhs_i rhs_i)"#))]
+    #[ensures(|_| fstar!(r#"
+        forall (i:nat). i < v ${VECTORS_IN_RING_ELEMENT} ==>
+            (let lhs_i = i1.f_to_i16_array (self.f_coefficients.[ sz i ]) in
+            let rhs_i = i1.f_to_i16_array (${rhs}.f_coefficients.[ sz i ]) in
+            let result_i = i1.f_to_i16_array (self_e_future.f_coefficients.[ sz i ]) in
+            Libcrux_ml_kem.Vector.Traits.Spec.add_post lhs_i rhs_i result_i)"#))]
     pub(crate) fn add_to_ring_element<const K: usize>(&mut self, rhs: &Self) {
         add_to_ring_element::<Vector, K>(self, rhs);
     }

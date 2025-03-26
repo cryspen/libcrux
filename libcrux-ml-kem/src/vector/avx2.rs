@@ -255,9 +255,26 @@ fn deserialize_12(bytes: &[u8]) -> SIMD256Vector {
 }
 
 impl crate::vector::traits::Repr for SIMD256Vector {
-    fn repr(x: Self) -> [i16; 16] {
-        vec_to_i16_array(x)
+    fn repr(&self) -> [i16; 16] {
+        vec_to_i16_array(self.clone())
     }
+}
+
+
+#[inline(always)]
+#[hax_lib::requires(array.len() >= 32)]
+pub(super) fn from_bytes(array: &[u8]) -> SIMD256Vector {
+    SIMD256Vector {
+        elements: mm256_loadu_si256_u8(&array[0..32]),
+    }
+}
+
+#[inline(always)]
+#[hax_lib::fstar::verification_status(lax)]
+#[hax_lib::requires(bytes.len() >= 32)]
+#[hax_lib::ensures(|_| future(bytes).len() == bytes.len())]
+pub(super) fn to_bytes(x: SIMD256Vector, bytes: &mut [u8]) {
+    mm256_storeu_si256_u8(&mut bytes[0..32], x.elements)
 }
 
 #[hax_lib::attributes]
@@ -289,6 +306,7 @@ impl Operations for SIMD256Vector {
 
     #[requires(bytes.len() >= 32)]
     #[inline(always)]
+    #[ensures(|_| future(bytes).len() == bytes.len())]
     fn to_bytes(x: Self, bytes: &mut [u8]) {
         to_bytes(x, bytes)
     }
@@ -328,23 +346,6 @@ impl Operations for SIMD256Vector {
             elements: arithmetic::multiply_by_constant(vec.elements, c),
         }
     }
-
-    // #[ensures(|out| fstar!(r#"impl.f_repr out == Spec.Utils.map_array (fun x -> x &. $constant) (impl.f_repr $vector)"#))]
-    // #[inline(always)]
-    // fn bitwise_and_with_constant(vector: Self, constant: i16) -> Self {
-    //     Self {
-    //         elements: arithmetic::bitwise_and_with_constant(vector.elements, constant),
-    //     }
-    // }
-
-    // #[requires(SHIFT_BY >= 0 && SHIFT_BY < 16)]
-    // #[ensures(|out| fstar!(r#"(v_SHIFT_BY >=. (mk_i32 0) /\ v_SHIFT_BY <. (mk_i32 16)) ==> impl.f_repr out == Spec.Utils.map_array (fun x -> x >>! ${SHIFT_BY}) (impl.f_repr $vector)"#))]
-    // #[inline(always)]
-    // fn shift_right<const SHIFT_BY: i32>(vector: Self) -> Self {
-    //     Self {
-    //         elements: arithmetic::shift_right::<{ SHIFT_BY }>(vector.elements),
-    //     }
-    // }
 
     #[requires(fstar!(r#"Spec.Utils.is_i16b_array (pow2 12 - 1) (impl.f_repr $vector)"#))]
     #[ensures(|out| fstar!(r#"impl.f_repr out == Spec.Utils.map_array (fun x -> if x >=. (mk_i16 3329) then x -! (mk_i16 3329) else x) (impl.f_repr $vector)"#))]
@@ -588,17 +589,3 @@ impl Operations for SIMD256Vector {
     }
 }
 
-#[inline(always)]
-#[hax_lib::requires(array.len() >= 32)]
-pub(super) fn from_bytes(array: &[u8]) -> SIMD256Vector {
-    SIMD256Vector {
-        elements: mm256_loadu_si256_u8(&array[0..32]),
-    }
-}
-
-#[inline(always)]
-#[hax_lib::fstar::verification_status(lax)]
-#[hax_lib::requires(bytes.len() >= 32)]
-pub(super) fn to_bytes(x: SIMD256Vector, bytes: &mut [u8]) {
-    mm256_storeu_si256_u8(&mut bytes[0..32], x.elements)
-}

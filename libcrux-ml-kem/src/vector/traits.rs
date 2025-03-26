@@ -10,7 +10,22 @@ pub const BARRETT_R: i32 = 1 << BARRETT_SHIFT;
 #[hax_lib::attributes]
 pub trait Repr: Copy + Clone {
     #[requires(true)]
-    fn repr(x: Self) -> [i16; 16];
+    fn repr(&self) -> [i16; 16];
+}
+
+#[cfg(hax)]
+mod spec {
+    pub(crate) fn add_pre(lhs: &[i16; 16], rhs: &[i16;16]) -> hax_lib::Prop {
+        hax_lib::fstar_prop_expr!(r#"forall i. i < 16 ==> 
+            Spec.Utils.is_intb (pow2 15 - 1) 
+                (v (Seq.index ${lhs} i) + v (Seq.index ${rhs} i))"#)
+    }
+
+    pub(crate) fn add_post(lhs: &[i16; 16], rhs: &[i16; 16], result:&[i16; 16]) -> hax_lib::Prop {
+        hax_lib::fstar_prop_expr!(r#"forall i. i < 16 ==> 
+            (v (Seq.index ${result} i) == 
+            v (Seq.index ${lhs} i) + v (Seq.index ${rhs} i))"#)
+    }
 }
 
 #[cfg(not(eurydice))]
@@ -33,14 +48,12 @@ pub trait Operations: Copy + Clone + Repr {
     fn from_bytes(array: &[u8]) -> Self;
 
     #[requires(bytes.len() >= 32)]
+    #[ensures(|_| future(bytes).len() == bytes.len())]
     fn to_bytes(x: Self, bytes: &mut [u8]);
 
     // Basic arithmetic
-    #[requires(fstar!(r#"forall i. i < 16 ==> 
-        Spec.Utils.is_intb (pow2 15 - 1) (v (Seq.index (f_repr ${lhs}) i) + v (Seq.index (f_repr ${rhs}) i))"#))]
-    #[ensures(|result| fstar!(r#"forall i. i < 16 ==> 
-        (v (Seq.index (f_repr ${result}) i) == 
-         v (Seq.index (f_repr ${lhs}) i) + v (Seq.index (f_repr ${rhs}) i))"#))]
+    #[requires(spec::add_pre(&lhs.repr(), &rhs.repr()))]
+    #[ensures(|result| spec::add_post(&lhs.repr(), &rhs.repr(), &result.repr()))]
     fn add(lhs: Self, rhs: &Self) -> Self;
 
     #[requires(fstar!(r#"forall i. i < 16 ==> 
@@ -56,16 +69,6 @@ pub trait Operations: Copy + Clone + Repr {
         (v (Seq.index (f_repr ${result}) i) == 
          v (Seq.index (f_repr ${vec}) i) * v c)"#))]
     fn multiply_by_constant(vec: Self, c: i16) -> Self;
-
-    // // Bitwise operations
-    // #[requires(true)]
-    // #[ensures(|result| fstar!(r#"f_repr $result == Spec.Utils.map_array (fun x -> x &. c) (f_repr $v)"#))]
-    // fn bitwise_and_with_constant(v: Self, c: i16) -> Self;
-
-    // #[requires(SHIFT_BY >= 0 && SHIFT_BY < 16)]
-    // #[ensures(|result| fstar!(r#"(v_SHIFT_BY >=. (mk_i32 0) /\ v_SHIFT_BY <. (mk_i32 16)) ==> f_repr $result == Spec.Utils.map_array (fun x -> x >>! ${SHIFT_BY}) (f_repr $v)"#))]
-    // fn shift_right<const SHIFT_BY: i32>(v: Self) -> Self;
-    // // fn shift_left<const SHIFT_BY: i32>(v: Self) -> Self;
 
     // Modular operations
     #[requires(fstar!(r#"Spec.Utils.is_i16b_array (pow2 12 - 1) (f_repr $v)"#))]
@@ -210,8 +213,6 @@ pub trait Operations: Copy + Clone {
     fn add(lhs: Self, rhs: &Self) -> Self;
     fn sub(lhs: Self, rhs: &Self) -> Self;
     fn multiply_by_constant(v: Self, c: i16) -> Self;
-    // fn bitwise_and_with_constant(v: Self, c: i16) -> Self;
-    // fn shift_right<const SHIFT_BY: i32>(v: Self) -> Self;
     fn cond_subtract_3329(v: Self) -> Self;
     fn barrett_reduce(vector: Self) -> Self;
     fn montgomery_multiply_by_constant(v: Self, c: i16) -> Self;

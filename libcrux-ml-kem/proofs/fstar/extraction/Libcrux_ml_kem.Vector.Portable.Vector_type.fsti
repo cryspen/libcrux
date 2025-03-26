@@ -43,4 +43,8 @@ val from_bytes (array: t_Slice u8)
 val to_bytes (x: t_PortableVector) (bytes: t_Slice u8)
     : Prims.Pure (t_Slice u8)
       (requires (Core.Slice.impl__len #u8 bytes <: usize) >=. mk_usize 32)
-      (fun _ -> Prims.l_True)
+      (ensures
+        fun bytes_future ->
+          let bytes_future:t_Slice u8 = bytes_future in
+          (Core.Slice.impl__len #u8 bytes_future <: usize) =.
+          (Core.Slice.impl__len #u8 bytes <: usize))

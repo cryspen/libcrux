@@ -18,7 +18,7 @@ let v_BARRETT_R: i32 = mk_i32 1 <<! v_BARRETT_SHIFT
 class t_Repr (v_Self: Type0) = {
   [@@@ FStar.Tactics.Typeclasses.no_method]_super_13011033735201511749:Core.Marker.t_Copy v_Self;
   [@@@ FStar.Tactics.Typeclasses.no_method]_super_9529721400157967266:Core.Clone.t_Clone v_Self;
-  f_repr_pre:x: v_Self -> pred: Type0{true ==> pred};
+  f_repr_pre:self_: v_Self -> pred: Type0{true ==> pred};
   f_repr_post:v_Self -> t_Array i16 (mk_usize 16) -> Type0;
   f_repr:x0: v_Self
     -> Prims.Pure (t_Array i16 (mk_usize 16)) (f_repr_pre x0) (fun result -> f_repr_post x0 result)
@@ -61,25 +61,35 @@ class t_Operations (v_Self: Type0) = {
     -> Prims.Pure v_Self (f_from_bytes_pre x0) (fun result -> f_from_bytes_post x0 result);
   f_to_bytes_pre:x: v_Self -> bytes: t_Slice u8
     -> pred: Type0{(Core.Slice.impl__len #u8 bytes <: usize) >=. mk_usize 32 ==> pred};
-  f_to_bytes_post:v_Self -> t_Slice u8 -> t_Slice u8 -> Type0;
+  f_to_bytes_post:x: v_Self -> bytes: t_Slice u8 -> bytes_future: t_Slice u8
+    -> pred:
+      Type0
+        { pred ==>
+          (Core.Slice.impl__len #u8 bytes_future <: usize) =.
+          (Core.Slice.impl__len #u8 bytes <: usize) };
   f_to_bytes:x0: v_Self -> x1: t_Slice u8
     -> Prims.Pure (t_Slice u8) (f_to_bytes_pre x0 x1) (fun result -> f_to_bytes_post x0 x1 result);
   f_add_pre:lhs: v_Self -> rhs: v_Self
     -> pred:
       Type0
-        { (forall i.
-              i < 16 ==>
-              Spec.Utils.is_intb (pow2 15 - 1)
-                (v (Seq.index (f_repr lhs) i) + v (Seq.index (f_repr rhs) i))) ==>
+        { Libcrux_ml_kem.Vector.Traits.Spec.add_pre (f_repr #v_Self
+                #FStar.Tactics.Typeclasses.solve
+                lhs
+              <:
+              t_Array i16 (mk_usize 16))
+            (f_repr #v_Self #FStar.Tactics.Typeclasses.solve rhs <: t_Array i16 (mk_usize 16)) ==>
           pred };
   f_add_post:lhs: v_Self -> rhs: v_Self -> result: v_Self
     -> pred:
       Type0
         { pred ==>
-          (forall i.
-              i < 16 ==>
-              (v (Seq.index (f_repr result) i) ==
-                v (Seq.index (f_repr lhs) i) + v (Seq.index (f_repr rhs) i))) };
+          Libcrux_ml_kem.Vector.Traits.Spec.add_post (f_repr #v_Self
+                #FStar.Tactics.Typeclasses.solve
+                lhs
+              <:
+              t_Array i16 (mk_usize 16))
+            (f_repr #v_Self #FStar.Tactics.Typeclasses.solve rhs <: t_Array i16 (mk_usize 16))
+            (f_repr #v_Self #FStar.Tactics.Typeclasses.solve result <: t_Array i16 (mk_usize 16)) };
   f_add:x0: v_Self -> x1: v_Self
     -> Prims.Pure v_Self (f_add_pre x0 x1) (fun result -> f_add_post x0 x1 result);
   f_sub_pre:lhs: v_Self -> rhs: v_Self

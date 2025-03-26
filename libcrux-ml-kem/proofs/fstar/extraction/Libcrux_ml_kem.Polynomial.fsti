@@ -127,7 +127,7 @@ val to_bytes
       (out: t_Slice u8)
     : Prims.Pure (t_Slice u8)
       (requires
-        ((v_VECTORS_IN_RING_ELEMENT *! mk_usize 16 <: usize) *! mk_usize 2 <: usize) <=.
+        (v_VECTORS_IN_RING_ELEMENT *! mk_usize 32 <: usize) <=.
         (Core.Slice.impl__len #u8 out <: usize))
       (fun _ -> Prims.l_True)
 
@@ -138,7 +138,22 @@ val add_to_ring_element
       (v_K: usize)
       {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
       (myself rhs: t_PolynomialRingElement v_Vector)
-    : Prims.Pure (t_PolynomialRingElement v_Vector) Prims.l_True (fun _ -> Prims.l_True)
+    : Prims.Pure (t_PolynomialRingElement v_Vector)
+      (requires
+        forall (i: nat).
+          i < v v_VECTORS_IN_RING_ELEMENT ==>
+          (let lhs_i = i1.f_to_i16_array (myself.f_coefficients.[ sz i ]) in
+            let rhs_i = i1.f_to_i16_array (rhs.f_coefficients.[ sz i ]) in
+            Libcrux_ml_kem.Vector.Traits.Spec.add_pre lhs_i rhs_i))
+      (ensures
+        fun myself_future ->
+          let myself_future:t_PolynomialRingElement v_Vector = myself_future in
+          forall (i: nat).
+            i < v v_VECTORS_IN_RING_ELEMENT ==>
+            (let lhs_i = i1.f_to_i16_array (myself.f_coefficients.[ sz i ]) in
+              let rhs_i = i1.f_to_i16_array (rhs.f_coefficients.[ sz i ]) in
+              let result_i = i1.f_to_i16_array (myself_future.f_coefficients.[ sz i ]) in
+              Libcrux_ml_kem.Vector.Traits.Spec.add_post lhs_i rhs_i result_i))
 
 val poly_barrett_reduce
       (#v_Vector: Type0)
@@ -207,15 +222,6 @@ val impl_2__ZERO:
     {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |} ->
     Prims.unit
   -> Prims.Pure (t_PolynomialRingElement v_Vector) Prims.l_True (fun _ -> Prims.l_True)
-
-/// Given two polynomial ring elements `lhs` and `rhs`, compute the pointwise
-/// sum of their constituent coefficients.
-val impl_2__add_to_ring_element
-      (#v_Vector: Type0)
-      (v_K: usize)
-      {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
-      (self rhs: t_PolynomialRingElement v_Vector)
-    : Prims.Pure (t_PolynomialRingElement v_Vector) Prims.l_True (fun _ -> Prims.l_True)
 
 val impl_2__poly_barrett_reduce
       (#v_Vector: Type0)
@@ -346,3 +352,27 @@ val vec_to_bytes
           usize) <=.
         (Core.Slice.impl__len #u8 out <: usize))
       (fun _ -> Prims.l_True)
+
+/// Given two polynomial ring elements `lhs` and `rhs`, compute the pointwise
+/// sum of their constituent coefficients.
+val impl_2__add_to_ring_element
+      (#v_Vector: Type0)
+      (v_K: usize)
+      {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
+      (self rhs: t_PolynomialRingElement v_Vector)
+    : Prims.Pure (t_PolynomialRingElement v_Vector)
+      (requires
+        forall (i: nat).
+          i < v v_VECTORS_IN_RING_ELEMENT ==>
+          (let lhs_i = i1.f_to_i16_array (self.f_coefficients.[ sz i ]) in
+            let rhs_i = i1.f_to_i16_array (rhs.f_coefficients.[ sz i ]) in
+            Libcrux_ml_kem.Vector.Traits.Spec.add_pre lhs_i rhs_i))
+      (ensures
+        fun self_e_future ->
+          let self_e_future:t_PolynomialRingElement v_Vector = self_e_future in
+          forall (i: nat).
+            i < v v_VECTORS_IN_RING_ELEMENT ==>
+            (let lhs_i = i1.f_to_i16_array (self.f_coefficients.[ sz i ]) in
+              let rhs_i = i1.f_to_i16_array (rhs.f_coefficients.[ sz i ]) in
+              let result_i = i1.f_to_i16_array (self_e_future.f_coefficients.[ sz i ]) in
+              Libcrux_ml_kem.Vector.Traits.Spec.add_post lhs_i rhs_i result_i))

@@ -16,18 +16,22 @@ Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
   {
     _super_13011033735201511749 = FStar.Tactics.Typeclasses.solve;
     _super_9529721400157967266 = FStar.Tactics.Typeclasses.solve;
-    f_repr_pre = (fun (x: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) -> true);
+    f_repr_pre = (fun (self: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) -> true);
     f_repr_post
     =
     (fun
-        (x: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
+        (self: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
         (out: t_Array i16 (mk_usize 16))
         ->
         true);
     f_repr
     =
-    fun (x: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) ->
-      Libcrux_ml_kem.Vector.Portable.Vector_type.to_i16_array x
+    fun (self: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) ->
+      Libcrux_ml_kem.Vector.Portable.Vector_type.to_i16_array (Core.Clone.f_clone #Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
+            #FStar.Tactics.Typeclasses.solve
+            self
+          <:
+          Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
   }
 
 let serialize_1_ (a: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) =
@@ -132,9 +136,10 @@ Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
     (fun
         (x: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
         (bytes: t_Slice u8)
-        (out: t_Slice u8)
+        (bytes_future: t_Slice u8)
         ->
-        true);
+        (Core.Slice.impl__len #u8 bytes_future <: usize) =.
+        (Core.Slice.impl__len #u8 bytes <: usize));
     f_to_bytes
     =
     (fun (x: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) (bytes: t_Slice u8) ->

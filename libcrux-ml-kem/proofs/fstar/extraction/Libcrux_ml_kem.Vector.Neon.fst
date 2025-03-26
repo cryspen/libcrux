@@ -15,18 +15,22 @@ let impl: Libcrux_ml_kem.Vector.Traits.t_Repr Libcrux_ml_kem.Vector.Neon.Vector_
   {
     _super_13011033735201511749 = FStar.Tactics.Typeclasses.solve;
     _super_9529721400157967266 = FStar.Tactics.Typeclasses.solve;
-    f_repr_pre = (fun (x: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) -> true);
+    f_repr_pre = (fun (self: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) -> true);
     f_repr_post
     =
     (fun
-        (x: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector)
+        (self: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector)
         (out: t_Array i16 (mk_usize 16))
         ->
         true);
     f_repr
     =
-    fun (x: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) ->
-      Libcrux_ml_kem.Vector.Neon.Vector_type.to_i16_array x
+    fun (self: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) ->
+      Libcrux_ml_kem.Vector.Neon.Vector_type.to_i16_array (Core.Clone.f_clone #Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector
+            #FStar.Tactics.Typeclasses.solve
+            self
+          <:
+          Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector)
   }
 
 let rej_sample (a: t_Slice u8) (result: t_Slice i16) =

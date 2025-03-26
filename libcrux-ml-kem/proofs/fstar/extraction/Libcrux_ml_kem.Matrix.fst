@@ -340,6 +340,8 @@ let compute_vector_u
 
 #pop-options
 
+#push-options "--admit_smt_queries true"
+
 let compute_As_plus_e
       (v_K: usize)
       (#v_Vector: Type0)
@@ -430,7 +432,7 @@ let compute_As_plus_e
           in
           tt_as_ntt)
   in
-  let result:Prims.unit = () <: Prims.unit in
-  let _:Prims.unit = admit () (* Panic freedom *) in
-  let _:Prims.unit = result in
+  let _:Prims.unit = () <: Prims.unit in
   tt_as_ntt
+
+#pop-options
