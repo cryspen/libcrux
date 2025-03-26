@@ -58,7 +58,7 @@ impl<'a, T: Scalar> DeclassifyRef for &'a Secret<T> {
 
 /// Classify a mutable reference to a slice
 // Note: this is safe since the `Secret` type is `repr(transparent)`, so
-//       the memory represnetation of the public and secret slices is the same
+//       the memory representation of the public and secret slices is the same
 pub fn classify_mut_slice<T: Scalar>(x: &mut [T]) -> &mut [Secret<T>] {
     unsafe { core::mem::transmute(x) }
 }
