@@ -3,6 +3,14 @@ module Libcrux_ml_kem.Vector.Portable.Vector_type
 open Core
 open FStar.Mul
 
+let _ =
+  (* This module has implicit dependencies, here we make them explicit. *)
+  (* The implicit dependencies arise from typeclasses instances. *)
+  let open Libcrux_secrets.Int in
+  let open Libcrux_secrets.Int.Public_integers in
+  let open Libcrux_secrets.Traits in
+  ()
+
 [@@ FStar.Tactics.Typeclasses.tcinstance]
 assume
 val impl': Core.Clone.t_Clone t_PortableVector
@@ -16,7 +24,15 @@ val impl_1': Core.Marker.t_Copy t_PortableVector
 let impl_1 = impl_1'
 
 let zero (_: Prims.unit) =
-  { f_elements = Rust_primitives.Hax.repeat (mk_i16 0) (mk_usize 16) } <: t_PortableVector
+  {
+    f_elements
+    =
+    Libcrux_secrets.Traits.f_classify #(t_Array i16 (mk_usize 16))
+      #FStar.Tactics.Typeclasses.solve
+      (Rust_primitives.Hax.repeat (mk_i16 0) (mk_usize 16) <: t_Array i16 (mk_usize 16))
+  }
+  <:
+  t_PortableVector
 
 let to_i16_array (x: t_PortableVector) = x.f_elements
 
@@ -41,7 +57,9 @@ let from_i16_array (array: t_Slice i16) =
   t_PortableVector
 
 let from_bytes (array: t_Slice u8) =
-  let elements:t_Array i16 (mk_usize 16) = Rust_primitives.Hax.repeat (mk_i16 0) (mk_usize 16) in
+  let elements:t_Array i16 (mk_usize 16) =
+    Rust_primitives.Hax.repeat (Libcrux_secrets.Int.v_I16 (mk_i16 0) <: i16) (mk_usize 16)
+  in
   let elements:t_Array i16 (mk_usize 16) =
     Rust_primitives.Hax.Folds.fold_range (mk_usize 0)
       Libcrux_ml_kem.Vector.Traits.v_FIELD_ELEMENTS_IN_VECTOR
@@ -55,8 +73,19 @@ let from_bytes (array: t_Slice u8) =
           let i:usize = i in
           Rust_primitives.Hax.Monomorphized_update_at.update_at_usize elements
             i
-            (((cast (array.[ mk_usize 2 *! i <: usize ] <: u8) <: i16) <<! mk_i32 8 <: i16) |.
-              (cast (array.[ (mk_usize 2 *! i <: usize) +! mk_usize 1 <: usize ] <: u8) <: i16)
+            (((Libcrux_secrets.Int.f_as_i16 #u8
+                    #FStar.Tactics.Typeclasses.solve
+                    (array.[ mk_usize 2 *! i <: usize ] <: u8)
+                  <:
+                  i16) <<!
+                mk_i32 8
+                <:
+                i16) |.
+              (Libcrux_secrets.Int.f_as_i16 #u8
+                  #FStar.Tactics.Typeclasses.solve
+                  (array.[ (mk_usize 2 *! i <: usize) +! mk_usize 1 <: usize ] <: u8)
+                <:
+                i16)
               <:
               i16)
           <:
@@ -80,12 +109,20 @@ let to_bytes (x: t_PortableVector) (bytes: t_Slice u8) =
           let bytes:t_Slice u8 =
             Rust_primitives.Hax.Monomorphized_update_at.update_at_usize bytes
               (mk_usize 2 *! i <: usize)
-              (cast ((x.f_elements.[ i ] <: i16) >>! mk_i32 8 <: i16) <: u8)
+              (Libcrux_secrets.Int.f_as_u8 #i16
+                  #FStar.Tactics.Typeclasses.solve
+                  ((x.f_elements.[ i ] <: i16) >>! mk_i32 8 <: i16)
+                <:
+                u8)
           in
           let bytes:t_Slice u8 =
             Rust_primitives.Hax.Monomorphized_update_at.update_at_usize bytes
               ((mk_usize 2 *! i <: usize) +! mk_usize 1 <: usize)
-              (cast (x.f_elements.[ i ] <: i16) <: u8)
+              (Libcrux_secrets.Int.f_as_u8 #i16
+                  #FStar.Tactics.Typeclasses.solve
+                  (x.f_elements.[ i ] <: i16)
+                <:
+                u8)
           in
           bytes)
   in

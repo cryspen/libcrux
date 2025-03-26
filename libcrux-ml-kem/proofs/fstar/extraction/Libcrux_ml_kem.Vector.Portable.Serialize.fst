@@ -3,14 +3,23 @@ module Libcrux_ml_kem.Vector.Portable.Serialize
 open Core
 open FStar.Mul
 
+let _ =
+  (* This module has implicit dependencies, here we make them explicit. *)
+  (* The implicit dependencies arise from typeclasses instances. *)
+  let open Libcrux_secrets.Int in
+  ()
+
 let serialize_1_ (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) =
   let result0:u8 =
-    (((((((cast (v.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ mk_usize 0 ] <: i16)
+    (((((((Libcrux_secrets.Int.f_as_u8 #i16
+                    #FStar.Tactics.Typeclasses.solve
+                    (v.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ mk_usize 0 ] <: i16)
                   <:
                   u8) |.
-                ((cast (v.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ mk_usize 1 ]
-                        <:
-                        i16)
+                ((Libcrux_secrets.Int.f_as_u8 #i16
+                      #FStar.Tactics.Typeclasses.solve
+                      (v.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ mk_usize 1 ] <: i16
+                      )
                     <:
                     u8) <<!
                   mk_i32 1
@@ -18,7 +27,9 @@ let serialize_1_ (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
                   u8)
                 <:
                 u8) |.
-              ((cast (v.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ mk_usize 2 ] <: i16)
+              ((Libcrux_secrets.Int.f_as_u8 #i16
+                    #FStar.Tactics.Typeclasses.solve
+                    (v.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ mk_usize 2 ] <: i16)
                   <:
                   u8) <<!
                 mk_i32 2
@@ -26,7 +37,9 @@ let serialize_1_ (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
                 u8)
               <:
               u8) |.
-            ((cast (v.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ mk_usize 3 ] <: i16)
+            ((Libcrux_secrets.Int.f_as_u8 #i16
+                  #FStar.Tactics.Typeclasses.solve
+                  (v.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ mk_usize 3 ] <: i16)
                 <:
                 u8) <<!
               mk_i32 3
@@ -34,7 +47,9 @@ let serialize_1_ (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
               u8)
             <:
             u8) |.
-          ((cast (v.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ mk_usize 4 ] <: i16)
+          ((Libcrux_secrets.Int.f_as_u8 #i16
+                #FStar.Tactics.Typeclasses.solve
+                (v.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ mk_usize 4 ] <: i16)
               <:
               u8) <<!
             mk_i32 4
@@ -42,64 +57,9 @@ let serialize_1_ (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
             u8)
           <:
           u8) |.
-        ((cast (v.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ mk_usize 5 ] <: i16) <: u8
-          ) <<!
-          mk_i32 5
-          <:
-          u8)
-        <:
-        u8) |.
-      ((cast (v.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ mk_usize 6 ] <: i16) <: u8) <<!
-        mk_i32 6
-        <:
-        u8)
-      <:
-      u8) |.
-    ((cast (v.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ mk_usize 7 ] <: i16) <: u8) <<!
-      mk_i32 7
-      <:
-      u8)
-  in
-  let result1:u8 =
-    (((((((cast (v.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ mk_usize 8 ] <: i16)
-                  <:
-                  u8) |.
-                ((cast (v.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ mk_usize 9 ]
-                        <:
-                        i16)
-                    <:
-                    u8) <<!
-                  mk_i32 1
-                  <:
-                  u8)
-                <:
-                u8) |.
-              ((cast (v.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ mk_usize 10 ] <: i16
-                    )
-                  <:
-                  u8) <<!
-                mk_i32 2
-                <:
-                u8)
-              <:
-              u8) |.
-            ((cast (v.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ mk_usize 11 ] <: i16)
-                <:
-                u8) <<!
-              mk_i32 3
-              <:
-              u8)
-            <:
-            u8) |.
-          ((cast (v.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ mk_usize 12 ] <: i16)
-              <:
-              u8) <<!
-            mk_i32 4
-            <:
-            u8)
-          <:
-          u8) |.
-        ((cast (v.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ mk_usize 13 ] <: i16)
+        ((Libcrux_secrets.Int.f_as_u8 #i16
+              #FStar.Tactics.Typeclasses.solve
+              (v.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ mk_usize 5 ] <: i16)
             <:
             u8) <<!
           mk_i32 5
@@ -107,13 +67,97 @@ let serialize_1_ (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
           u8)
         <:
         u8) |.
-      ((cast (v.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ mk_usize 14 ] <: i16) <: u8) <<!
+      ((Libcrux_secrets.Int.f_as_u8 #i16
+            #FStar.Tactics.Typeclasses.solve
+            (v.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ mk_usize 6 ] <: i16)
+          <:
+          u8) <<!
         mk_i32 6
         <:
         u8)
       <:
       u8) |.
-    ((cast (v.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ mk_usize 15 ] <: i16) <: u8) <<!
+    ((Libcrux_secrets.Int.f_as_u8 #i16
+          #FStar.Tactics.Typeclasses.solve
+          (v.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ mk_usize 7 ] <: i16)
+        <:
+        u8) <<!
+      mk_i32 7
+      <:
+      u8)
+  in
+  let result1:u8 =
+    (((((((Libcrux_secrets.Int.f_as_u8 #i16
+                    #FStar.Tactics.Typeclasses.solve
+                    (v.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ mk_usize 8 ] <: i16)
+                  <:
+                  u8) |.
+                ((Libcrux_secrets.Int.f_as_u8 #i16
+                      #FStar.Tactics.Typeclasses.solve
+                      (v.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ mk_usize 9 ] <: i16
+                      )
+                    <:
+                    u8) <<!
+                  mk_i32 1
+                  <:
+                  u8)
+                <:
+                u8) |.
+              ((Libcrux_secrets.Int.f_as_u8 #i16
+                    #FStar.Tactics.Typeclasses.solve
+                    (v.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ mk_usize 10 ] <: i16)
+                  <:
+                  u8) <<!
+                mk_i32 2
+                <:
+                u8)
+              <:
+              u8) |.
+            ((Libcrux_secrets.Int.f_as_u8 #i16
+                  #FStar.Tactics.Typeclasses.solve
+                  (v.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ mk_usize 11 ] <: i16)
+                <:
+                u8) <<!
+              mk_i32 3
+              <:
+              u8)
+            <:
+            u8) |.
+          ((Libcrux_secrets.Int.f_as_u8 #i16
+                #FStar.Tactics.Typeclasses.solve
+                (v.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ mk_usize 12 ] <: i16)
+              <:
+              u8) <<!
+            mk_i32 4
+            <:
+            u8)
+          <:
+          u8) |.
+        ((Libcrux_secrets.Int.f_as_u8 #i16
+              #FStar.Tactics.Typeclasses.solve
+              (v.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ mk_usize 13 ] <: i16)
+            <:
+            u8) <<!
+          mk_i32 5
+          <:
+          u8)
+        <:
+        u8) |.
+      ((Libcrux_secrets.Int.f_as_u8 #i16
+            #FStar.Tactics.Typeclasses.solve
+            (v.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ mk_usize 14 ] <: i16)
+          <:
+          u8) <<!
+        mk_i32 6
+        <:
+        u8)
+      <:
+      u8) |.
+    ((Libcrux_secrets.Int.f_as_u8 #i16
+          #FStar.Tactics.Typeclasses.solve
+          (v.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ mk_usize 15 ] <: i16)
+        <:
+        u8) <<!
       mk_i32 7
       <:
       u8)
@@ -145,22 +189,86 @@ let serialize_1_lemma inputs =
 #pop-options
 
 let deserialize_1_ (v: t_Slice u8) =
-  let result0:i16 = cast ((v.[ mk_usize 0 ] <: u8) &. mk_u8 1 <: u8) <: i16 in
-  let result1:i16 = cast (((v.[ mk_usize 0 ] <: u8) >>! mk_i32 1 <: u8) &. mk_u8 1 <: u8) <: i16 in
-  let result2:i16 = cast (((v.[ mk_usize 0 ] <: u8) >>! mk_i32 2 <: u8) &. mk_u8 1 <: u8) <: i16 in
-  let result3:i16 = cast (((v.[ mk_usize 0 ] <: u8) >>! mk_i32 3 <: u8) &. mk_u8 1 <: u8) <: i16 in
-  let result4:i16 = cast (((v.[ mk_usize 0 ] <: u8) >>! mk_i32 4 <: u8) &. mk_u8 1 <: u8) <: i16 in
-  let result5:i16 = cast (((v.[ mk_usize 0 ] <: u8) >>! mk_i32 5 <: u8) &. mk_u8 1 <: u8) <: i16 in
-  let result6:i16 = cast (((v.[ mk_usize 0 ] <: u8) >>! mk_i32 6 <: u8) &. mk_u8 1 <: u8) <: i16 in
-  let result7:i16 = cast (((v.[ mk_usize 0 ] <: u8) >>! mk_i32 7 <: u8) &. mk_u8 1 <: u8) <: i16 in
-  let result8:i16 = cast ((v.[ mk_usize 1 ] <: u8) &. mk_u8 1 <: u8) <: i16 in
-  let result9:i16 = cast (((v.[ mk_usize 1 ] <: u8) >>! mk_i32 1 <: u8) &. mk_u8 1 <: u8) <: i16 in
-  let result10:i16 = cast (((v.[ mk_usize 1 ] <: u8) >>! mk_i32 2 <: u8) &. mk_u8 1 <: u8) <: i16 in
-  let result11:i16 = cast (((v.[ mk_usize 1 ] <: u8) >>! mk_i32 3 <: u8) &. mk_u8 1 <: u8) <: i16 in
-  let result12:i16 = cast (((v.[ mk_usize 1 ] <: u8) >>! mk_i32 4 <: u8) &. mk_u8 1 <: u8) <: i16 in
-  let result13:i16 = cast (((v.[ mk_usize 1 ] <: u8) >>! mk_i32 5 <: u8) &. mk_u8 1 <: u8) <: i16 in
-  let result14:i16 = cast (((v.[ mk_usize 1 ] <: u8) >>! mk_i32 6 <: u8) &. mk_u8 1 <: u8) <: i16 in
-  let result15:i16 = cast (((v.[ mk_usize 1 ] <: u8) >>! mk_i32 7 <: u8) &. mk_u8 1 <: u8) <: i16 in
+  let result0:i16 =
+    Libcrux_secrets.Int.f_as_i16 #u8
+      #FStar.Tactics.Typeclasses.solve
+      ((v.[ mk_usize 0 ] <: u8) &. mk_u8 1 <: u8)
+  in
+  let result1:i16 =
+    Libcrux_secrets.Int.f_as_i16 #u8
+      #FStar.Tactics.Typeclasses.solve
+      (((v.[ mk_usize 0 ] <: u8) >>! mk_i32 1 <: u8) &. mk_u8 1 <: u8)
+  in
+  let result2:i16 =
+    Libcrux_secrets.Int.f_as_i16 #u8
+      #FStar.Tactics.Typeclasses.solve
+      (((v.[ mk_usize 0 ] <: u8) >>! mk_i32 2 <: u8) &. mk_u8 1 <: u8)
+  in
+  let result3:i16 =
+    Libcrux_secrets.Int.f_as_i16 #u8
+      #FStar.Tactics.Typeclasses.solve
+      (((v.[ mk_usize 0 ] <: u8) >>! mk_i32 3 <: u8) &. mk_u8 1 <: u8)
+  in
+  let result4:i16 =
+    Libcrux_secrets.Int.f_as_i16 #u8
+      #FStar.Tactics.Typeclasses.solve
+      (((v.[ mk_usize 0 ] <: u8) >>! mk_i32 4 <: u8) &. mk_u8 1 <: u8)
+  in
+  let result5:i16 =
+    Libcrux_secrets.Int.f_as_i16 #u8
+      #FStar.Tactics.Typeclasses.solve
+      (((v.[ mk_usize 0 ] <: u8) >>! mk_i32 5 <: u8) &. mk_u8 1 <: u8)
+  in
+  let result6:i16 =
+    Libcrux_secrets.Int.f_as_i16 #u8
+      #FStar.Tactics.Typeclasses.solve
+      (((v.[ mk_usize 0 ] <: u8) >>! mk_i32 6 <: u8) &. mk_u8 1 <: u8)
+  in
+  let result7:i16 =
+    Libcrux_secrets.Int.f_as_i16 #u8
+      #FStar.Tactics.Typeclasses.solve
+      (((v.[ mk_usize 0 ] <: u8) >>! mk_i32 7 <: u8) &. mk_u8 1 <: u8)
+  in
+  let result8:i16 =
+    Libcrux_secrets.Int.f_as_i16 #u8
+      #FStar.Tactics.Typeclasses.solve
+      ((v.[ mk_usize 1 ] <: u8) &. mk_u8 1 <: u8)
+  in
+  let result9:i16 =
+    Libcrux_secrets.Int.f_as_i16 #u8
+      #FStar.Tactics.Typeclasses.solve
+      (((v.[ mk_usize 1 ] <: u8) >>! mk_i32 1 <: u8) &. mk_u8 1 <: u8)
+  in
+  let result10:i16 =
+    Libcrux_secrets.Int.f_as_i16 #u8
+      #FStar.Tactics.Typeclasses.solve
+      (((v.[ mk_usize 1 ] <: u8) >>! mk_i32 2 <: u8) &. mk_u8 1 <: u8)
+  in
+  let result11:i16 =
+    Libcrux_secrets.Int.f_as_i16 #u8
+      #FStar.Tactics.Typeclasses.solve
+      (((v.[ mk_usize 1 ] <: u8) >>! mk_i32 3 <: u8) &. mk_u8 1 <: u8)
+  in
+  let result12:i16 =
+    Libcrux_secrets.Int.f_as_i16 #u8
+      #FStar.Tactics.Typeclasses.solve
+      (((v.[ mk_usize 1 ] <: u8) >>! mk_i32 4 <: u8) &. mk_u8 1 <: u8)
+  in
+  let result13:i16 =
+    Libcrux_secrets.Int.f_as_i16 #u8
+      #FStar.Tactics.Typeclasses.solve
+      (((v.[ mk_usize 1 ] <: u8) >>! mk_i32 5 <: u8) &. mk_u8 1 <: u8)
+  in
+  let result14:i16 =
+    Libcrux_secrets.Int.f_as_i16 #u8
+      #FStar.Tactics.Typeclasses.solve
+      (((v.[ mk_usize 1 ] <: u8) >>! mk_i32 6 <: u8) &. mk_u8 1 <: u8)
+  in
+  let result15:i16 =
+    Libcrux_secrets.Int.f_as_i16 #u8
+      #FStar.Tactics.Typeclasses.solve
+      (((v.[ mk_usize 1 ] <: u8) >>! mk_i32 7 <: u8) &. mk_u8 1 <: u8)
+  in
   {
     Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements
     =
@@ -202,20 +310,48 @@ let deserialize_1_bounded_lemma inputs =
 
 let serialize_4_int (v: t_Slice i16) =
   let result0:u8 =
-    ((cast (v.[ mk_usize 1 ] <: i16) <: u8) <<! mk_i32 4 <: u8) |.
-    (cast (v.[ mk_usize 0 ] <: i16) <: u8)
+    ((Libcrux_secrets.Int.f_as_u8 #i16 #FStar.Tactics.Typeclasses.solve (v.[ mk_usize 1 ] <: i16)
+        <:
+        u8) <<!
+      mk_i32 4
+      <:
+      u8) |.
+    (Libcrux_secrets.Int.f_as_u8 #i16 #FStar.Tactics.Typeclasses.solve (v.[ mk_usize 0 ] <: i16)
+      <:
+      u8)
   in
   let result1:u8 =
-    ((cast (v.[ mk_usize 3 ] <: i16) <: u8) <<! mk_i32 4 <: u8) |.
-    (cast (v.[ mk_usize 2 ] <: i16) <: u8)
+    ((Libcrux_secrets.Int.f_as_u8 #i16 #FStar.Tactics.Typeclasses.solve (v.[ mk_usize 3 ] <: i16)
+        <:
+        u8) <<!
+      mk_i32 4
+      <:
+      u8) |.
+    (Libcrux_secrets.Int.f_as_u8 #i16 #FStar.Tactics.Typeclasses.solve (v.[ mk_usize 2 ] <: i16)
+      <:
+      u8)
   in
   let result2:u8 =
-    ((cast (v.[ mk_usize 5 ] <: i16) <: u8) <<! mk_i32 4 <: u8) |.
-    (cast (v.[ mk_usize 4 ] <: i16) <: u8)
+    ((Libcrux_secrets.Int.f_as_u8 #i16 #FStar.Tactics.Typeclasses.solve (v.[ mk_usize 5 ] <: i16)
+        <:
+        u8) <<!
+      mk_i32 4
+      <:
+      u8) |.
+    (Libcrux_secrets.Int.f_as_u8 #i16 #FStar.Tactics.Typeclasses.solve (v.[ mk_usize 4 ] <: i16)
+      <:
+      u8)
   in
   let result3:u8 =
-    ((cast (v.[ mk_usize 7 ] <: i16) <: u8) <<! mk_i32 4 <: u8) |.
-    (cast (v.[ mk_usize 6 ] <: i16) <: u8)
+    ((Libcrux_secrets.Int.f_as_u8 #i16 #FStar.Tactics.Typeclasses.solve (v.[ mk_usize 7 ] <: i16)
+        <:
+        u8) <<!
+      mk_i32 4
+      <:
+      u8) |.
+    (Libcrux_secrets.Int.f_as_u8 #i16 #FStar.Tactics.Typeclasses.solve (v.[ mk_usize 6 ] <: i16)
+      <:
+      u8)
   in
   result0, result1, result2, result3 <: (u8 & u8 & u8 & u8)
 
@@ -278,14 +414,46 @@ let serialize_4_lemma inputs =
 #pop-options
 
 let deserialize_4_int (bytes: t_Slice u8) =
-  let v0:i16 = cast ((bytes.[ mk_usize 0 ] <: u8) &. mk_u8 15 <: u8) <: i16 in
-  let v1:i16 = cast (((bytes.[ mk_usize 0 ] <: u8) >>! mk_i32 4 <: u8) &. mk_u8 15 <: u8) <: i16 in
-  let v2:i16 = cast ((bytes.[ mk_usize 1 ] <: u8) &. mk_u8 15 <: u8) <: i16 in
-  let v3:i16 = cast (((bytes.[ mk_usize 1 ] <: u8) >>! mk_i32 4 <: u8) &. mk_u8 15 <: u8) <: i16 in
-  let v4:i16 = cast ((bytes.[ mk_usize 2 ] <: u8) &. mk_u8 15 <: u8) <: i16 in
-  let v5:i16 = cast (((bytes.[ mk_usize 2 ] <: u8) >>! mk_i32 4 <: u8) &. mk_u8 15 <: u8) <: i16 in
-  let v6:i16 = cast ((bytes.[ mk_usize 3 ] <: u8) &. mk_u8 15 <: u8) <: i16 in
-  let v7:i16 = cast (((bytes.[ mk_usize 3 ] <: u8) >>! mk_i32 4 <: u8) &. mk_u8 15 <: u8) <: i16 in
+  let v0:i16 =
+    Libcrux_secrets.Int.f_as_i16 #u8
+      #FStar.Tactics.Typeclasses.solve
+      ((bytes.[ mk_usize 0 ] <: u8) &. mk_u8 15 <: u8)
+  in
+  let v1:i16 =
+    Libcrux_secrets.Int.f_as_i16 #u8
+      #FStar.Tactics.Typeclasses.solve
+      (((bytes.[ mk_usize 0 ] <: u8) >>! mk_i32 4 <: u8) &. mk_u8 15 <: u8)
+  in
+  let v2:i16 =
+    Libcrux_secrets.Int.f_as_i16 #u8
+      #FStar.Tactics.Typeclasses.solve
+      ((bytes.[ mk_usize 1 ] <: u8) &. mk_u8 15 <: u8)
+  in
+  let v3:i16 =
+    Libcrux_secrets.Int.f_as_i16 #u8
+      #FStar.Tactics.Typeclasses.solve
+      (((bytes.[ mk_usize 1 ] <: u8) >>! mk_i32 4 <: u8) &. mk_u8 15 <: u8)
+  in
+  let v4:i16 =
+    Libcrux_secrets.Int.f_as_i16 #u8
+      #FStar.Tactics.Typeclasses.solve
+      ((bytes.[ mk_usize 2 ] <: u8) &. mk_u8 15 <: u8)
+  in
+  let v5:i16 =
+    Libcrux_secrets.Int.f_as_i16 #u8
+      #FStar.Tactics.Typeclasses.solve
+      (((bytes.[ mk_usize 2 ] <: u8) >>! mk_i32 4 <: u8) &. mk_u8 15 <: u8)
+  in
+  let v6:i16 =
+    Libcrux_secrets.Int.f_as_i16 #u8
+      #FStar.Tactics.Typeclasses.solve
+      ((bytes.[ mk_usize 3 ] <: u8) &. mk_u8 15 <: u8)
+  in
+  let v7:i16 =
+    Libcrux_secrets.Int.f_as_i16 #u8
+      #FStar.Tactics.Typeclasses.solve
+      (((bytes.[ mk_usize 3 ] <: u8) >>! mk_i32 4 <: u8) &. mk_u8 15 <: u8)
+  in
   v0, v1, v2, v3, v4, v5, v6, v7 <: (i16 & i16 & i16 & i16 & i16 & i16 & i16 & i16)
 
 let deserialize_4_ (bytes: t_Slice u8) =
@@ -350,45 +518,47 @@ let deserialize_4_lemma inputs =
 
 let serialize_5_int (v: t_Slice i16) =
   let r0:u8 =
-    cast ((v.[ mk_usize 0 ] <: i16) |. ((v.[ mk_usize 1 ] <: i16) <<! mk_i32 5 <: i16) <: i16) <: u8
+    Libcrux_secrets.Int.f_as_u8 #i16
+      #FStar.Tactics.Typeclasses.solve
+      ((v.[ mk_usize 0 ] <: i16) |. ((v.[ mk_usize 1 ] <: i16) <<! mk_i32 5 <: i16) <: i16)
   in
   let r1:u8 =
-    cast ((((v.[ mk_usize 1 ] <: i16) >>! mk_i32 3 <: i16) |.
+    Libcrux_secrets.Int.f_as_u8 #i16
+      #FStar.Tactics.Typeclasses.solve
+      ((((v.[ mk_usize 1 ] <: i16) >>! mk_i32 3 <: i16) |.
           ((v.[ mk_usize 2 ] <: i16) <<! mk_i32 2 <: i16)
           <:
           i16) |.
         ((v.[ mk_usize 3 ] <: i16) <<! mk_i32 7 <: i16)
         <:
         i16)
-    <:
-    u8
   in
   let r2:u8 =
-    cast (((v.[ mk_usize 3 ] <: i16) >>! mk_i32 1 <: i16) |.
+    Libcrux_secrets.Int.f_as_u8 #i16
+      #FStar.Tactics.Typeclasses.solve
+      (((v.[ mk_usize 3 ] <: i16) >>! mk_i32 1 <: i16) |.
         ((v.[ mk_usize 4 ] <: i16) <<! mk_i32 4 <: i16)
         <:
         i16)
-    <:
-    u8
   in
   let r3:u8 =
-    cast ((((v.[ mk_usize 4 ] <: i16) >>! mk_i32 4 <: i16) |.
+    Libcrux_secrets.Int.f_as_u8 #i16
+      #FStar.Tactics.Typeclasses.solve
+      ((((v.[ mk_usize 4 ] <: i16) >>! mk_i32 4 <: i16) |.
           ((v.[ mk_usize 5 ] <: i16) <<! mk_i32 1 <: i16)
           <:
           i16) |.
         ((v.[ mk_usize 6 ] <: i16) <<! mk_i32 6 <: i16)
         <:
         i16)
-    <:
-    u8
   in
   let r4:u8 =
-    cast (((v.[ mk_usize 6 ] <: i16) >>! mk_i32 2 <: i16) |.
+    Libcrux_secrets.Int.f_as_u8 #i16
+      #FStar.Tactics.Typeclasses.solve
+      (((v.[ mk_usize 6 ] <: i16) >>! mk_i32 2 <: i16) |.
         ((v.[ mk_usize 7 ] <: i16) <<! mk_i32 3 <: i16)
         <:
         i16)
-    <:
-    u8
   in
   r0, r1, r2, r3, r4 <: (u8 & u8 & u8 & u8 & u8)
 
@@ -423,42 +593,58 @@ let serialize_5_ (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
   Rust_primitives.Hax.array_of_list 10 list
 
 let deserialize_5_int (bytes: t_Slice u8) =
-  let v0:i16 = cast ((bytes.[ mk_usize 0 ] <: u8) &. mk_u8 31 <: u8) <: i16 in
+  let v0:i16 =
+    Libcrux_secrets.Int.f_as_i16 #u8
+      #FStar.Tactics.Typeclasses.solve
+      ((bytes.[ mk_usize 0 ] <: u8) &. mk_u8 31 <: u8)
+  in
   let v1:i16 =
-    cast ((((bytes.[ mk_usize 1 ] <: u8) &. mk_u8 3 <: u8) <<! mk_i32 3 <: u8) |.
+    Libcrux_secrets.Int.f_as_i16 #u8
+      #FStar.Tactics.Typeclasses.solve
+      ((((bytes.[ mk_usize 1 ] <: u8) &. mk_u8 3 <: u8) <<! mk_i32 3 <: u8) |.
         ((bytes.[ mk_usize 0 ] <: u8) >>! mk_i32 5 <: u8)
         <:
         u8)
-    <:
-    i16
   in
-  let v2:i16 = cast (((bytes.[ mk_usize 1 ] <: u8) >>! mk_i32 2 <: u8) &. mk_u8 31 <: u8) <: i16 in
+  let v2:i16 =
+    Libcrux_secrets.Int.f_as_i16 #u8
+      #FStar.Tactics.Typeclasses.solve
+      (((bytes.[ mk_usize 1 ] <: u8) >>! mk_i32 2 <: u8) &. mk_u8 31 <: u8)
+  in
   let v3:i16 =
-    cast ((((bytes.[ mk_usize 2 ] <: u8) &. mk_u8 15 <: u8) <<! mk_i32 1 <: u8) |.
+    Libcrux_secrets.Int.f_as_i16 #u8
+      #FStar.Tactics.Typeclasses.solve
+      ((((bytes.[ mk_usize 2 ] <: u8) &. mk_u8 15 <: u8) <<! mk_i32 1 <: u8) |.
         ((bytes.[ mk_usize 1 ] <: u8) >>! mk_i32 7 <: u8)
         <:
         u8)
-    <:
-    i16
   in
   let v4:i16 =
-    cast ((((bytes.[ mk_usize 3 ] <: u8) &. mk_u8 1 <: u8) <<! mk_i32 4 <: u8) |.
+    Libcrux_secrets.Int.f_as_i16 #u8
+      #FStar.Tactics.Typeclasses.solve
+      ((((bytes.[ mk_usize 3 ] <: u8) &. mk_u8 1 <: u8) <<! mk_i32 4 <: u8) |.
         ((bytes.[ mk_usize 2 ] <: u8) >>! mk_i32 4 <: u8)
         <:
         u8)
-    <:
-    i16
   in
-  let v5:i16 = cast (((bytes.[ mk_usize 3 ] <: u8) >>! mk_i32 1 <: u8) &. mk_u8 31 <: u8) <: i16 in
+  let v5:i16 =
+    Libcrux_secrets.Int.f_as_i16 #u8
+      #FStar.Tactics.Typeclasses.solve
+      (((bytes.[ mk_usize 3 ] <: u8) >>! mk_i32 1 <: u8) &. mk_u8 31 <: u8)
+  in
   let v6:i16 =
-    cast ((((bytes.[ mk_usize 4 ] <: u8) &. mk_u8 7 <: u8) <<! mk_i32 2 <: u8) |.
+    Libcrux_secrets.Int.f_as_i16 #u8
+      #FStar.Tactics.Typeclasses.solve
+      ((((bytes.[ mk_usize 4 ] <: u8) &. mk_u8 7 <: u8) <<! mk_i32 2 <: u8) |.
         ((bytes.[ mk_usize 3 ] <: u8) >>! mk_i32 6 <: u8)
         <:
         u8)
-    <:
-    i16
   in
-  let v7:i16 = cast ((bytes.[ mk_usize 4 ] <: u8) >>! mk_i32 3 <: u8) <: i16 in
+  let v7:i16 =
+    Libcrux_secrets.Int.f_as_i16 #u8
+      #FStar.Tactics.Typeclasses.solve
+      ((bytes.[ mk_usize 4 ] <: u8) >>! mk_i32 3 <: u8)
+  in
   v0, v1, v2, v3, v4, v5, v6, v7 <: (i16 & i16 & i16 & i16 & i16 & i16 & i16 & i16)
 
 let deserialize_5_ (bytes: t_Slice u8) =
@@ -498,20 +684,61 @@ let deserialize_5_ (bytes: t_Slice u8) =
   Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
 
 let serialize_10_int (v: t_Slice i16) =
-  let r0:u8 = cast ((v.[ mk_usize 0 ] <: i16) &. mk_i16 255 <: i16) <: u8 in
+  let r0:u8 =
+    Libcrux_secrets.Int.f_as_u8 #i16
+      #FStar.Tactics.Typeclasses.solve
+      ((v.[ mk_usize 0 ] <: i16) &. mk_i16 255 <: i16)
+  in
   let r1:u8 =
-    ((cast ((v.[ mk_usize 1 ] <: i16) &. mk_i16 63 <: i16) <: u8) <<! mk_i32 2 <: u8) |.
-    (cast (((v.[ mk_usize 0 ] <: i16) >>! mk_i32 8 <: i16) &. mk_i16 3 <: i16) <: u8)
+    ((Libcrux_secrets.Int.f_as_u8 #i16
+          #FStar.Tactics.Typeclasses.solve
+          ((v.[ mk_usize 1 ] <: i16) &. mk_i16 63 <: i16)
+        <:
+        u8) <<!
+      mk_i32 2
+      <:
+      u8) |.
+    (Libcrux_secrets.Int.f_as_u8 #i16
+        #FStar.Tactics.Typeclasses.solve
+        (((v.[ mk_usize 0 ] <: i16) >>! mk_i32 8 <: i16) &. mk_i16 3 <: i16)
+      <:
+      u8)
   in
   let r2:u8 =
-    ((cast ((v.[ mk_usize 2 ] <: i16) &. mk_i16 15 <: i16) <: u8) <<! mk_i32 4 <: u8) |.
-    (cast (((v.[ mk_usize 1 ] <: i16) >>! mk_i32 6 <: i16) &. mk_i16 15 <: i16) <: u8)
+    ((Libcrux_secrets.Int.f_as_u8 #i16
+          #FStar.Tactics.Typeclasses.solve
+          ((v.[ mk_usize 2 ] <: i16) &. mk_i16 15 <: i16)
+        <:
+        u8) <<!
+      mk_i32 4
+      <:
+      u8) |.
+    (Libcrux_secrets.Int.f_as_u8 #i16
+        #FStar.Tactics.Typeclasses.solve
+        (((v.[ mk_usize 1 ] <: i16) >>! mk_i32 6 <: i16) &. mk_i16 15 <: i16)
+      <:
+      u8)
   in
   let r3:u8 =
-    ((cast ((v.[ mk_usize 3 ] <: i16) &. mk_i16 3 <: i16) <: u8) <<! mk_i32 6 <: u8) |.
-    (cast (((v.[ mk_usize 2 ] <: i16) >>! mk_i32 4 <: i16) &. mk_i16 63 <: i16) <: u8)
+    ((Libcrux_secrets.Int.f_as_u8 #i16
+          #FStar.Tactics.Typeclasses.solve
+          ((v.[ mk_usize 3 ] <: i16) &. mk_i16 3 <: i16)
+        <:
+        u8) <<!
+      mk_i32 6
+      <:
+      u8) |.
+    (Libcrux_secrets.Int.f_as_u8 #i16
+        #FStar.Tactics.Typeclasses.solve
+        (((v.[ mk_usize 2 ] <: i16) >>! mk_i32 4 <: i16) &. mk_i16 63 <: i16)
+      <:
+      u8)
   in
-  let r4:u8 = cast (((v.[ mk_usize 3 ] <: i16) >>! mk_i32 2 <: i16) &. mk_i16 255 <: i16) <: u8 in
+  let r4:u8 =
+    Libcrux_secrets.Int.f_as_u8 #i16
+      #FStar.Tactics.Typeclasses.solve
+      (((v.[ mk_usize 3 ] <: i16) >>! mk_i32 2 <: i16) &. mk_i16 255 <: i16)
+  in
   r0, r1, r2, r3, r4 <: (u8 & u8 & u8 & u8 & u8)
 
 let serialize_10_ (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) =
@@ -589,36 +816,198 @@ let serialize_10_lemma inputs =
 
 let deserialize_10_int (bytes: t_Slice u8) =
   let r0:i16 =
-    (((cast (bytes.[ mk_usize 1 ] <: u8) <: i16) &. mk_i16 3 <: i16) <<! mk_i32 8 <: i16) |.
-    ((cast (bytes.[ mk_usize 0 ] <: u8) <: i16) &. mk_i16 255 <: i16)
+    Libcrux_secrets.Int.f_as_i16 #i16
+      #FStar.Tactics.Typeclasses.solve
+      ((((Libcrux_secrets.Int.f_as_i16 #u8
+                #FStar.Tactics.Typeclasses.solve
+                (bytes.[ mk_usize 1 ] <: u8)
+              <:
+              i16) &.
+            mk_i16 3
+            <:
+            i16) <<!
+          mk_i32 8
+          <:
+          i16) |.
+        ((Libcrux_secrets.Int.f_as_i16 #u8
+              #FStar.Tactics.Typeclasses.solve
+              (bytes.[ mk_usize 0 ] <: u8)
+            <:
+            i16) &.
+          mk_i16 255
+          <:
+          i16)
+        <:
+        i16)
   in
   let r1:i16 =
-    (((cast (bytes.[ mk_usize 2 ] <: u8) <: i16) &. mk_i16 15 <: i16) <<! mk_i32 6 <: i16) |.
-    ((cast (bytes.[ mk_usize 1 ] <: u8) <: i16) >>! mk_i32 2 <: i16)
+    Libcrux_secrets.Int.f_as_i16 #i16
+      #FStar.Tactics.Typeclasses.solve
+      ((((Libcrux_secrets.Int.f_as_i16 #u8
+                #FStar.Tactics.Typeclasses.solve
+                (bytes.[ mk_usize 2 ] <: u8)
+              <:
+              i16) &.
+            mk_i16 15
+            <:
+            i16) <<!
+          mk_i32 6
+          <:
+          i16) |.
+        ((Libcrux_secrets.Int.f_as_i16 #u8
+              #FStar.Tactics.Typeclasses.solve
+              (bytes.[ mk_usize 1 ] <: u8)
+            <:
+            i16) >>!
+          mk_i32 2
+          <:
+          i16)
+        <:
+        i16)
   in
   let r2:i16 =
-    (((cast (bytes.[ mk_usize 3 ] <: u8) <: i16) &. mk_i16 63 <: i16) <<! mk_i32 4 <: i16) |.
-    ((cast (bytes.[ mk_usize 2 ] <: u8) <: i16) >>! mk_i32 4 <: i16)
+    Libcrux_secrets.Int.f_as_i16 #i16
+      #FStar.Tactics.Typeclasses.solve
+      ((((Libcrux_secrets.Int.f_as_i16 #u8
+                #FStar.Tactics.Typeclasses.solve
+                (bytes.[ mk_usize 3 ] <: u8)
+              <:
+              i16) &.
+            mk_i16 63
+            <:
+            i16) <<!
+          mk_i32 4
+          <:
+          i16) |.
+        ((Libcrux_secrets.Int.f_as_i16 #u8
+              #FStar.Tactics.Typeclasses.solve
+              (bytes.[ mk_usize 2 ] <: u8)
+            <:
+            i16) >>!
+          mk_i32 4
+          <:
+          i16)
+        <:
+        i16)
   in
   let r3:i16 =
-    ((cast (bytes.[ mk_usize 4 ] <: u8) <: i16) <<! mk_i32 2 <: i16) |.
-    ((cast (bytes.[ mk_usize 3 ] <: u8) <: i16) >>! mk_i32 6 <: i16)
+    Libcrux_secrets.Int.f_as_i16 #i16
+      #FStar.Tactics.Typeclasses.solve
+      (((Libcrux_secrets.Int.f_as_i16 #u8
+              #FStar.Tactics.Typeclasses.solve
+              (bytes.[ mk_usize 4 ] <: u8)
+            <:
+            i16) <<!
+          mk_i32 2
+          <:
+          i16) |.
+        ((Libcrux_secrets.Int.f_as_i16 #u8
+              #FStar.Tactics.Typeclasses.solve
+              (bytes.[ mk_usize 3 ] <: u8)
+            <:
+            i16) >>!
+          mk_i32 6
+          <:
+          i16)
+        <:
+        i16)
   in
   let r4:i16 =
-    (((cast (bytes.[ mk_usize 6 ] <: u8) <: i16) &. mk_i16 3 <: i16) <<! mk_i32 8 <: i16) |.
-    ((cast (bytes.[ mk_usize 5 ] <: u8) <: i16) &. mk_i16 255 <: i16)
+    Libcrux_secrets.Int.f_as_i16 #i16
+      #FStar.Tactics.Typeclasses.solve
+      ((((Libcrux_secrets.Int.f_as_i16 #u8
+                #FStar.Tactics.Typeclasses.solve
+                (bytes.[ mk_usize 6 ] <: u8)
+              <:
+              i16) &.
+            mk_i16 3
+            <:
+            i16) <<!
+          mk_i32 8
+          <:
+          i16) |.
+        ((Libcrux_secrets.Int.f_as_i16 #u8
+              #FStar.Tactics.Typeclasses.solve
+              (bytes.[ mk_usize 5 ] <: u8)
+            <:
+            i16) &.
+          mk_i16 255
+          <:
+          i16)
+        <:
+        i16)
   in
   let r5:i16 =
-    (((cast (bytes.[ mk_usize 7 ] <: u8) <: i16) &. mk_i16 15 <: i16) <<! mk_i32 6 <: i16) |.
-    ((cast (bytes.[ mk_usize 6 ] <: u8) <: i16) >>! mk_i32 2 <: i16)
+    Libcrux_secrets.Int.f_as_i16 #i16
+      #FStar.Tactics.Typeclasses.solve
+      ((((Libcrux_secrets.Int.f_as_i16 #u8
+                #FStar.Tactics.Typeclasses.solve
+                (bytes.[ mk_usize 7 ] <: u8)
+              <:
+              i16) &.
+            mk_i16 15
+            <:
+            i16) <<!
+          mk_i32 6
+          <:
+          i16) |.
+        ((Libcrux_secrets.Int.f_as_i16 #u8
+              #FStar.Tactics.Typeclasses.solve
+              (bytes.[ mk_usize 6 ] <: u8)
+            <:
+            i16) >>!
+          mk_i32 2
+          <:
+          i16)
+        <:
+        i16)
   in
   let r6:i16 =
-    (((cast (bytes.[ mk_usize 8 ] <: u8) <: i16) &. mk_i16 63 <: i16) <<! mk_i32 4 <: i16) |.
-    ((cast (bytes.[ mk_usize 7 ] <: u8) <: i16) >>! mk_i32 4 <: i16)
+    Libcrux_secrets.Int.f_as_i16 #i16
+      #FStar.Tactics.Typeclasses.solve
+      ((((Libcrux_secrets.Int.f_as_i16 #u8
+                #FStar.Tactics.Typeclasses.solve
+                (bytes.[ mk_usize 8 ] <: u8)
+              <:
+              i16) &.
+            mk_i16 63
+            <:
+            i16) <<!
+          mk_i32 4
+          <:
+          i16) |.
+        ((Libcrux_secrets.Int.f_as_i16 #u8
+              #FStar.Tactics.Typeclasses.solve
+              (bytes.[ mk_usize 7 ] <: u8)
+            <:
+            i16) >>!
+          mk_i32 4
+          <:
+          i16)
+        <:
+        i16)
   in
   let r7:i16 =
-    ((cast (bytes.[ mk_usize 9 ] <: u8) <: i16) <<! mk_i32 2 <: i16) |.
-    ((cast (bytes.[ mk_usize 8 ] <: u8) <: i16) >>! mk_i32 6 <: i16)
+    Libcrux_secrets.Int.f_as_i16 #i16
+      #FStar.Tactics.Typeclasses.solve
+      (((Libcrux_secrets.Int.f_as_i16 #u8
+              #FStar.Tactics.Typeclasses.solve
+              (bytes.[ mk_usize 9 ] <: u8)
+            <:
+            i16) <<!
+          mk_i32 2
+          <:
+          i16) |.
+        ((Libcrux_secrets.Int.f_as_i16 #u8
+              #FStar.Tactics.Typeclasses.solve
+              (bytes.[ mk_usize 8 ] <: u8)
+            <:
+            i16) >>!
+          mk_i32 6
+          <:
+          i16)
+        <:
+        i16)
   in
   r0, r1, r2, r3, r4, r5, r6, r7 <: (i16 & i16 & i16 & i16 & i16 & i16 & i16 & i16)
 
@@ -683,38 +1072,129 @@ let deserialize_10_bounded_lemma inputs =
   admit()
 
 let serialize_11_int (v: t_Slice i16) =
-  let r0:u8 = cast (v.[ mk_usize 0 ] <: i16) <: u8 in
+  let r0:u8 =
+    Libcrux_secrets.Int.f_as_u8 #i16 #FStar.Tactics.Typeclasses.solve (v.[ mk_usize 0 ] <: i16)
+  in
   let r1:u8 =
-    ((cast ((v.[ mk_usize 1 ] <: i16) &. mk_i16 31 <: i16) <: u8) <<! mk_i32 3 <: u8) |.
-    (cast ((v.[ mk_usize 0 ] <: i16) >>! mk_i32 8 <: i16) <: u8)
+    ((Libcrux_secrets.Int.f_as_u8 #i16
+          #FStar.Tactics.Typeclasses.solve
+          ((v.[ mk_usize 1 ] <: i16) &. mk_i16 31 <: i16)
+        <:
+        u8) <<!
+      mk_i32 3
+      <:
+      u8) |.
+    (Libcrux_secrets.Int.f_as_u8 #i16
+        #FStar.Tactics.Typeclasses.solve
+        ((v.[ mk_usize 0 ] <: i16) >>! mk_i32 8 <: i16)
+      <:
+      u8)
   in
   let r2:u8 =
-    ((cast ((v.[ mk_usize 2 ] <: i16) &. mk_i16 3 <: i16) <: u8) <<! mk_i32 6 <: u8) |.
-    (cast ((v.[ mk_usize 1 ] <: i16) >>! mk_i32 5 <: i16) <: u8)
+    ((Libcrux_secrets.Int.f_as_u8 #i16
+          #FStar.Tactics.Typeclasses.solve
+          ((v.[ mk_usize 2 ] <: i16) &. mk_i16 3 <: i16)
+        <:
+        u8) <<!
+      mk_i32 6
+      <:
+      u8) |.
+    (Libcrux_secrets.Int.f_as_u8 #i16
+        #FStar.Tactics.Typeclasses.solve
+        ((v.[ mk_usize 1 ] <: i16) >>! mk_i32 5 <: i16)
+      <:
+      u8)
   in
-  let r3:u8 = cast (((v.[ mk_usize 2 ] <: i16) >>! mk_i32 2 <: i16) &. mk_i16 255 <: i16) <: u8 in
+  let r3:u8 =
+    Libcrux_secrets.Int.f_as_u8 #i16
+      #FStar.Tactics.Typeclasses.solve
+      (((v.[ mk_usize 2 ] <: i16) >>! mk_i32 2 <: i16) &. mk_i16 255 <: i16)
+  in
   let r4:u8 =
-    ((cast ((v.[ mk_usize 3 ] <: i16) &. mk_i16 127 <: i16) <: u8) <<! mk_i32 1 <: u8) |.
-    (cast ((v.[ mk_usize 2 ] <: i16) >>! mk_i32 10 <: i16) <: u8)
+    ((Libcrux_secrets.Int.f_as_u8 #i16
+          #FStar.Tactics.Typeclasses.solve
+          ((v.[ mk_usize 3 ] <: i16) &. mk_i16 127 <: i16)
+        <:
+        u8) <<!
+      mk_i32 1
+      <:
+      u8) |.
+    (Libcrux_secrets.Int.f_as_u8 #i16
+        #FStar.Tactics.Typeclasses.solve
+        ((v.[ mk_usize 2 ] <: i16) >>! mk_i32 10 <: i16)
+      <:
+      u8)
   in
   let r5:u8 =
-    ((cast ((v.[ mk_usize 4 ] <: i16) &. mk_i16 15 <: i16) <: u8) <<! mk_i32 4 <: u8) |.
-    (cast ((v.[ mk_usize 3 ] <: i16) >>! mk_i32 7 <: i16) <: u8)
+    ((Libcrux_secrets.Int.f_as_u8 #i16
+          #FStar.Tactics.Typeclasses.solve
+          ((v.[ mk_usize 4 ] <: i16) &. mk_i16 15 <: i16)
+        <:
+        u8) <<!
+      mk_i32 4
+      <:
+      u8) |.
+    (Libcrux_secrets.Int.f_as_u8 #i16
+        #FStar.Tactics.Typeclasses.solve
+        ((v.[ mk_usize 3 ] <: i16) >>! mk_i32 7 <: i16)
+      <:
+      u8)
   in
   let r6:u8 =
-    ((cast ((v.[ mk_usize 5 ] <: i16) &. mk_i16 1 <: i16) <: u8) <<! mk_i32 7 <: u8) |.
-    (cast ((v.[ mk_usize 4 ] <: i16) >>! mk_i32 4 <: i16) <: u8)
+    ((Libcrux_secrets.Int.f_as_u8 #i16
+          #FStar.Tactics.Typeclasses.solve
+          ((v.[ mk_usize 5 ] <: i16) &. mk_i16 1 <: i16)
+        <:
+        u8) <<!
+      mk_i32 7
+      <:
+      u8) |.
+    (Libcrux_secrets.Int.f_as_u8 #i16
+        #FStar.Tactics.Typeclasses.solve
+        ((v.[ mk_usize 4 ] <: i16) >>! mk_i32 4 <: i16)
+      <:
+      u8)
   in
-  let r7:u8 = cast (((v.[ mk_usize 5 ] <: i16) >>! mk_i32 1 <: i16) &. mk_i16 255 <: i16) <: u8 in
+  let r7:u8 =
+    Libcrux_secrets.Int.f_as_u8 #i16
+      #FStar.Tactics.Typeclasses.solve
+      (((v.[ mk_usize 5 ] <: i16) >>! mk_i32 1 <: i16) &. mk_i16 255 <: i16)
+  in
   let r8:u8 =
-    ((cast ((v.[ mk_usize 6 ] <: i16) &. mk_i16 63 <: i16) <: u8) <<! mk_i32 2 <: u8) |.
-    (cast ((v.[ mk_usize 5 ] <: i16) >>! mk_i32 9 <: i16) <: u8)
+    ((Libcrux_secrets.Int.f_as_u8 #i16
+          #FStar.Tactics.Typeclasses.solve
+          ((v.[ mk_usize 6 ] <: i16) &. mk_i16 63 <: i16)
+        <:
+        u8) <<!
+      mk_i32 2
+      <:
+      u8) |.
+    (Libcrux_secrets.Int.f_as_u8 #i16
+        #FStar.Tactics.Typeclasses.solve
+        ((v.[ mk_usize 5 ] <: i16) >>! mk_i32 9 <: i16)
+      <:
+      u8)
   in
   let r9:u8 =
-    ((cast ((v.[ mk_usize 7 ] <: i16) &. mk_i16 7 <: i16) <: u8) <<! mk_i32 5 <: u8) |.
-    (cast ((v.[ mk_usize 6 ] <: i16) >>! mk_i32 6 <: i16) <: u8)
+    ((Libcrux_secrets.Int.f_as_u8 #i16
+          #FStar.Tactics.Typeclasses.solve
+          ((v.[ mk_usize 7 ] <: i16) &. mk_i16 7 <: i16)
+        <:
+        u8) <<!
+      mk_i32 5
+      <:
+      u8) |.
+    (Libcrux_secrets.Int.f_as_u8 #i16
+        #FStar.Tactics.Typeclasses.solve
+        ((v.[ mk_usize 6 ] <: i16) >>! mk_i32 6 <: i16)
+      <:
+      u8)
   in
-  let r10:u8 = cast ((v.[ mk_usize 7 ] <: i16) >>! mk_i32 3 <: i16) <: u8 in
+  let r10:u8 =
+    Libcrux_secrets.Int.f_as_u8 #i16
+      #FStar.Tactics.Typeclasses.solve
+      ((v.[ mk_usize 7 ] <: i16) >>! mk_i32 3 <: i16)
+  in
   r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10
   <:
   (u8 & u8 & u8 & u8 & u8 & u8 & u8 & u8 & u8 & u8 & u8)
@@ -752,42 +1232,170 @@ let serialize_11_ (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVecto
 
 let deserialize_11_int (bytes: t_Slice u8) =
   let r0:i16 =
-    (((cast (bytes.[ mk_usize 1 ] <: u8) <: i16) &. mk_i16 7 <: i16) <<! mk_i32 8 <: i16) |.
-    (cast (bytes.[ mk_usize 0 ] <: u8) <: i16)
+    (((Libcrux_secrets.Int.f_as_i16 #u8
+            #FStar.Tactics.Typeclasses.solve
+            (bytes.[ mk_usize 1 ] <: u8)
+          <:
+          i16) &.
+        mk_i16 7
+        <:
+        i16) <<!
+      mk_i32 8
+      <:
+      i16) |.
+    (Libcrux_secrets.Int.f_as_i16 #u8 #FStar.Tactics.Typeclasses.solve (bytes.[ mk_usize 0 ] <: u8)
+      <:
+      i16)
   in
   let r1:i16 =
-    (((cast (bytes.[ mk_usize 2 ] <: u8) <: i16) &. mk_i16 63 <: i16) <<! mk_i32 5 <: i16) |.
-    ((cast (bytes.[ mk_usize 1 ] <: u8) <: i16) >>! mk_i32 3 <: i16)
+    (((Libcrux_secrets.Int.f_as_i16 #u8
+            #FStar.Tactics.Typeclasses.solve
+            (bytes.[ mk_usize 2 ] <: u8)
+          <:
+          i16) &.
+        mk_i16 63
+        <:
+        i16) <<!
+      mk_i32 5
+      <:
+      i16) |.
+    ((Libcrux_secrets.Int.f_as_i16 #u8 #FStar.Tactics.Typeclasses.solve (bytes.[ mk_usize 1 ] <: u8)
+        <:
+        i16) >>!
+      mk_i32 3
+      <:
+      i16)
   in
   let r2:i16 =
-    ((((cast (bytes.[ mk_usize 4 ] <: u8) <: i16) &. mk_i16 1 <: i16) <<! mk_i32 10 <: i16) |.
-      ((cast (bytes.[ mk_usize 3 ] <: u8) <: i16) <<! mk_i32 2 <: i16)
+    ((((Libcrux_secrets.Int.f_as_i16 #u8
+              #FStar.Tactics.Typeclasses.solve
+              (bytes.[ mk_usize 4 ] <: u8)
+            <:
+            i16) &.
+          mk_i16 1
+          <:
+          i16) <<!
+        mk_i32 10
+        <:
+        i16) |.
+      ((Libcrux_secrets.Int.f_as_i16 #u8
+            #FStar.Tactics.Typeclasses.solve
+            (bytes.[ mk_usize 3 ] <: u8)
+          <:
+          i16) <<!
+        mk_i32 2
+        <:
+        i16)
       <:
       i16) |.
-    ((cast (bytes.[ mk_usize 2 ] <: u8) <: i16) >>! mk_i32 6 <: i16)
+    ((Libcrux_secrets.Int.f_as_i16 #u8 #FStar.Tactics.Typeclasses.solve (bytes.[ mk_usize 2 ] <: u8)
+        <:
+        i16) >>!
+      mk_i32 6
+      <:
+      i16)
   in
   let r3:i16 =
-    (((cast (bytes.[ mk_usize 5 ] <: u8) <: i16) &. mk_i16 15 <: i16) <<! mk_i32 7 <: i16) |.
-    ((cast (bytes.[ mk_usize 4 ] <: u8) <: i16) >>! mk_i32 1 <: i16)
-  in
-  let r4:i16 =
-    (((cast (bytes.[ mk_usize 6 ] <: u8) <: i16) &. mk_i16 127 <: i16) <<! mk_i32 4 <: i16) |.
-    ((cast (bytes.[ mk_usize 5 ] <: u8) <: i16) >>! mk_i32 4 <: i16)
-  in
-  let r5:i16 =
-    ((((cast (bytes.[ mk_usize 8 ] <: u8) <: i16) &. mk_i16 3 <: i16) <<! mk_i32 9 <: i16) |.
-      ((cast (bytes.[ mk_usize 7 ] <: u8) <: i16) <<! mk_i32 1 <: i16)
+    (((Libcrux_secrets.Int.f_as_i16 #u8
+            #FStar.Tactics.Typeclasses.solve
+            (bytes.[ mk_usize 5 ] <: u8)
+          <:
+          i16) &.
+        mk_i16 15
+        <:
+        i16) <<!
+      mk_i32 7
       <:
       i16) |.
-    ((cast (bytes.[ mk_usize 6 ] <: u8) <: i16) >>! mk_i32 7 <: i16)
+    ((Libcrux_secrets.Int.f_as_i16 #u8 #FStar.Tactics.Typeclasses.solve (bytes.[ mk_usize 4 ] <: u8)
+        <:
+        i16) >>!
+      mk_i32 1
+      <:
+      i16)
+  in
+  let r4:i16 =
+    (((Libcrux_secrets.Int.f_as_i16 #u8
+            #FStar.Tactics.Typeclasses.solve
+            (bytes.[ mk_usize 6 ] <: u8)
+          <:
+          i16) &.
+        mk_i16 127
+        <:
+        i16) <<!
+      mk_i32 4
+      <:
+      i16) |.
+    ((Libcrux_secrets.Int.f_as_i16 #u8 #FStar.Tactics.Typeclasses.solve (bytes.[ mk_usize 5 ] <: u8)
+        <:
+        i16) >>!
+      mk_i32 4
+      <:
+      i16)
+  in
+  let r5:i16 =
+    ((((Libcrux_secrets.Int.f_as_i16 #u8
+              #FStar.Tactics.Typeclasses.solve
+              (bytes.[ mk_usize 8 ] <: u8)
+            <:
+            i16) &.
+          mk_i16 3
+          <:
+          i16) <<!
+        mk_i32 9
+        <:
+        i16) |.
+      ((Libcrux_secrets.Int.f_as_i16 #u8
+            #FStar.Tactics.Typeclasses.solve
+            (bytes.[ mk_usize 7 ] <: u8)
+          <:
+          i16) <<!
+        mk_i32 1
+        <:
+        i16)
+      <:
+      i16) |.
+    ((Libcrux_secrets.Int.f_as_i16 #u8 #FStar.Tactics.Typeclasses.solve (bytes.[ mk_usize 6 ] <: u8)
+        <:
+        i16) >>!
+      mk_i32 7
+      <:
+      i16)
   in
   let r6:i16 =
-    (((cast (bytes.[ mk_usize 9 ] <: u8) <: i16) &. mk_i16 31 <: i16) <<! mk_i32 6 <: i16) |.
-    ((cast (bytes.[ mk_usize 8 ] <: u8) <: i16) >>! mk_i32 2 <: i16)
+    (((Libcrux_secrets.Int.f_as_i16 #u8
+            #FStar.Tactics.Typeclasses.solve
+            (bytes.[ mk_usize 9 ] <: u8)
+          <:
+          i16) &.
+        mk_i16 31
+        <:
+        i16) <<!
+      mk_i32 6
+      <:
+      i16) |.
+    ((Libcrux_secrets.Int.f_as_i16 #u8 #FStar.Tactics.Typeclasses.solve (bytes.[ mk_usize 8 ] <: u8)
+        <:
+        i16) >>!
+      mk_i32 2
+      <:
+      i16)
   in
   let r7:i16 =
-    ((cast (bytes.[ mk_usize 10 ] <: u8) <: i16) <<! mk_i32 3 <: i16) |.
-    ((cast (bytes.[ mk_usize 9 ] <: u8) <: i16) >>! mk_i32 5 <: i16)
+    ((Libcrux_secrets.Int.f_as_i16 #u8
+          #FStar.Tactics.Typeclasses.solve
+          (bytes.[ mk_usize 10 ] <: u8)
+        <:
+        i16) <<!
+      mk_i32 3
+      <:
+      i16) |.
+    ((Libcrux_secrets.Int.f_as_i16 #u8 #FStar.Tactics.Typeclasses.solve (bytes.[ mk_usize 9 ] <: u8)
+        <:
+        i16) >>!
+      mk_i32 5
+      <:
+      i16)
   in
   r0, r1, r2, r3, r4, r5, r6, r7 <: (i16 & i16 & i16 & i16 & i16 & i16 & i16 & i16)
 
@@ -828,16 +1436,24 @@ let deserialize_11_ (bytes: t_Slice u8) =
   Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
 
 let serialize_12_int (v: t_Slice i16) =
-  let r0:u8 = cast ((v.[ mk_usize 0 ] <: i16) &. mk_i16 255 <: i16) <: u8 in
+  let r0:u8 =
+    Libcrux_secrets.Int.f_as_u8 #i16
+      #FStar.Tactics.Typeclasses.solve
+      ((v.[ mk_usize 0 ] <: i16) &. mk_i16 255 <: i16)
+  in
   let r1:u8 =
-    cast (((v.[ mk_usize 0 ] <: i16) >>! mk_i32 8 <: i16) |.
+    Libcrux_secrets.Int.f_as_u8 #i16
+      #FStar.Tactics.Typeclasses.solve
+      (((v.[ mk_usize 0 ] <: i16) >>! mk_i32 8 <: i16) |.
         (((v.[ mk_usize 1 ] <: i16) &. mk_i16 15 <: i16) <<! mk_i32 4 <: i16)
         <:
         i16)
-    <:
-    u8
   in
-  let r2:u8 = cast (((v.[ mk_usize 1 ] <: i16) >>! mk_i32 4 <: i16) &. mk_i16 255 <: i16) <: u8 in
+  let r2:u8 =
+    Libcrux_secrets.Int.f_as_u8 #i16
+      #FStar.Tactics.Typeclasses.solve
+      (((v.[ mk_usize 1 ] <: i16) >>! mk_i32 4 <: i16) &. mk_i16 255 <: i16)
+  in
   r0, r1, r2 <: (u8 & u8 & u8)
 
 let serialize_12_ (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) =
@@ -954,9 +1570,15 @@ let serialize_12_lemma inputs =
 #pop-options
 
 let deserialize_12_int (bytes: t_Slice u8) =
-  let byte0:i16 = cast (bytes.[ mk_usize 0 ] <: u8) <: i16 in
-  let byte1:i16 = cast (bytes.[ mk_usize 1 ] <: u8) <: i16 in
-  let byte2:i16 = cast (bytes.[ mk_usize 2 ] <: u8) <: i16 in
+  let byte0:i16 =
+    Libcrux_secrets.Int.f_as_i16 #u8 #FStar.Tactics.Typeclasses.solve (bytes.[ mk_usize 0 ] <: u8)
+  in
+  let byte1:i16 =
+    Libcrux_secrets.Int.f_as_i16 #u8 #FStar.Tactics.Typeclasses.solve (bytes.[ mk_usize 1 ] <: u8)
+  in
+  let byte2:i16 =
+    Libcrux_secrets.Int.f_as_i16 #u8 #FStar.Tactics.Typeclasses.solve (bytes.[ mk_usize 2 ] <: u8)
+  in
   let r0:i16 = ((byte1 &. mk_i16 15 <: i16) <<! mk_i32 8 <: i16) |. (byte0 &. mk_i16 255 <: i16) in
   let r1:i16 = (byte2 <<! mk_i32 4 <: i16) |. ((byte1 >>! mk_i32 4 <: i16) &. mk_i16 15 <: i16) in
   r0, r1 <: (i16 & i16)
