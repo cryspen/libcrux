@@ -5,7 +5,7 @@
 /// Otherwise, the crate defaults to public integers.
 use crate::traits::*;
 
-// A type for secret values
+/// A type for secret values
 #[repr(transparent)]
 pub struct Secret<T>(pub(crate) T);
 
