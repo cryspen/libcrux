@@ -100,16 +100,16 @@ jobs:
           platform: ${{ matrix.os }}_${{ matrix.bits }}
           output-file-path: libcrux-ml-kem/bench.txt
           data-out-path: libcrux-ml-kem/bench-processed.txt
-            #      - name: Upload benchmarks
-            #        uses: cryspen/benchmark-upload-and-plot-action@v1
-            #        with:
-            #          name: ML-KEM Benchmark
-            #          input-data-path-path: libcrux-ml-kem/bench-processed.txt
-            #          benchmark-data-dir-path: dev/bench/mlkem
-            #          github-token: ${{ secrets.GITHUB_TOKEN }}
-            #          gh-repository: github.com/cryspen/libcrux
-            #          gh-pages-branch: gh-pages-test
-            #          auto-push: true
+      - name: Upload benchmarks
+        uses: cryspen/benchmark-upload-and-plot-action@v1
+        with:
+          name: ML-KEM Benchmark
+          input-data-path: libcrux-ml-kem/bench-processed.txt
+          benchmark-data-dir-path: dev/bench/mlkem
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          # NOTE: pushes to current repository
+          gh-repository: github.com/${{ github.repository }}
+          auto-push: true
 
   mlkem-bench-status:
     if: ${{ always() }}
