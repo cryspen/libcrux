@@ -10,7 +10,7 @@ pub trait ClassifyRef {
     fn classify_ref(self) -> Self::ClassifiedRef;
 }
 
-// A trait for declassifying secret types into public types
+/// A trait for declassifying secret types into public types
 pub trait Declassify {
     type Declassified;
     fn declassify(self) -> Self::Declassified;
