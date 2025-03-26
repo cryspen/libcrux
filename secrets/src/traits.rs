@@ -4,7 +4,7 @@ pub trait Classify {
     fn classify(self) -> Self::Classified;
 }
 
-// A trait for classifying immutable references to public types
+/// A trait for classifying immutable references to public types
 pub trait ClassifyRef {
     type ClassifiedRef;
     fn classify_ref(self) -> Self::ClassifiedRef;
