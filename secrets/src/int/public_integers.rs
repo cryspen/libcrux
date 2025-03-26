@@ -54,8 +54,8 @@ impl<'a, T> DeclassifyRef for &'a T {
     }
 }
 
-// Classify a mutable slice (identity)
-// We define a separate function for this because hax has limited support for &mut-returning functions
+/// Classify a mutable slice (identity)
+/// We define a separate function for this because hax has limited support for &mut-returning functions
 #[inline(always)]
 pub fn classify_mut_slice<T>(x: T) -> T {
     x
