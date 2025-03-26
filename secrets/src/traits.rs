@@ -22,7 +22,7 @@ pub trait DeclassifyRef {
     fn declassify_ref(self) -> Self::DeclassifiedRef;
 }
 
-// A trait for classifying mutable references to public types
+/// A trait for classifying mutable references to public types
 pub trait ClassifyRefMut {
     type ClassifiedRefMut;
     fn classify_ref_mut(self) -> Self::ClassifiedRefMut;
