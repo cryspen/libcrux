@@ -16,7 +16,7 @@ pub trait Declassify {
     fn declassify(self) -> Self::Declassified;
 }
 
-// A trait for declassifying references to secret types
+/// A trait for declassifying references to secret types
 pub trait DeclassifyRef {
     type DeclassifiedRef;
     fn declassify_ref(self) -> Self::DeclassifiedRef;
