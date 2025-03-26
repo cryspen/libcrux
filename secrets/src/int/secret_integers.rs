@@ -1,5 +1,5 @@
-/// This crate defines classification and declassification over secret integers
-/// These implementations are meant to be used when feature `check-secret-independence` is set
+//! This module defines classification and declassification over secret integers
+//! These implementations are meant to be used when feature `check-secret-independence` is set
 use super::classify::*;
 use crate::traits::*;
 use std::ops::*;
