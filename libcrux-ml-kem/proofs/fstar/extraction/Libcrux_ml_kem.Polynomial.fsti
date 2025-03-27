@@ -195,7 +195,12 @@ val add_error_reduce
       (#v_Vector: Type0)
       {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
       (myself error: t_PolynomialRingElement v_Vector)
-    : Prims.Pure (t_PolynomialRingElement v_Vector) Prims.l_True (fun _ -> Prims.l_True)
+    : Prims.Pure (t_PolynomialRingElement v_Vector)
+      (requires is_bounded_poly 7 error)
+      (ensures
+        fun myself_future ->
+          let myself_future:t_PolynomialRingElement v_Vector = myself_future in
+          is_bounded_poly 3328 myself_future)
 
 val to_standard_domain
       (#v_T: Type0)
@@ -218,7 +223,10 @@ val add_standard_error_reduce
       (myself error: t_PolynomialRingElement v_Vector)
     : Prims.Pure (t_PolynomialRingElement v_Vector)
       (requires is_bounded_poly #v_Vector 3328 error)
-      (fun _ -> Prims.l_True)
+      (ensures
+        fun myself_future ->
+          let myself_future:t_PolynomialRingElement v_Vector = myself_future in
+          is_bounded_poly 3328 myself_future)
 
 /// Given two `KyberPolynomialRingElement`s in their NTT representations,
 /// compute their product. Given two polynomials in the NTT domain `f^` and `ĵ`,
@@ -256,12 +264,6 @@ val impl_2__add_message_error_reduce
       (#v_Vector: Type0)
       {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
       (self message result: t_PolynomialRingElement v_Vector)
-    : Prims.Pure (t_PolynomialRingElement v_Vector) Prims.l_True (fun _ -> Prims.l_True)
-
-val impl_2__add_error_reduce
-      (#v_Vector: Type0)
-      {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
-      (self error: t_PolynomialRingElement v_Vector)
     : Prims.Pure (t_PolynomialRingElement v_Vector) Prims.l_True (fun _ -> Prims.l_True)
 
 val impl_2__ntt_multiply
@@ -409,6 +411,14 @@ val impl_2__subtract_reduce
         fun result ->
           let result:t_PolynomialRingElement v_Vector = result in
           is_bounded_poly 3328 result)
+
+val impl_2__add_error_reduce
+      (#v_Vector: Type0)
+      {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
+      (self error: t_PolynomialRingElement v_Vector)
+    : Prims.Pure (t_PolynomialRingElement v_Vector)
+      (requires is_bounded_poly 7 error)
+      (fun _ -> Prims.l_True)
 
 val impl_2__add_standard_error_reduce
       (#v_Vector: Type0)

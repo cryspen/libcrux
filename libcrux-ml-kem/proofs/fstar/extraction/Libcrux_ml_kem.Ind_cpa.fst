@@ -307,8 +307,9 @@ let sample_ring_element_cbd
           let i:usize = i in
           forall (j: nat).
             j < v i ==>
-            Libcrux_ml_kem.Polynomial.to_spec_poly_t #v_Vector error_1_.[ sz j ] ==
-            Spec.MLKEM.sample_poly_cbd v_ETA2 prf_outputs.[ sz j ])
+            (Libcrux_ml_kem.Polynomial.is_bounded_poly 7 (Seq.index error_1_ j) /\
+              Libcrux_ml_kem.Polynomial.to_spec_poly_t #v_Vector error_1_.[ sz j ] ==
+              Spec.MLKEM.sample_poly_cbd v_ETA2 prf_outputs.[ sz j ]))
       error_1_
       (fun error_1_ i ->
           let error_1_:t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K =

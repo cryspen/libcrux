@@ -136,5 +136,6 @@ val sample_from_binomial_distribution
               i < 8 ==>
               Libcrux_ml_kem.Ntt.ntt_layer_7_pre (result.f_coefficients.[ sz i ])
                 (result.f_coefficients.[ sz i +! sz 8 ])) /\
+          Libcrux_ml_kem.Polynomial.is_bounded_poly 7 result /\
           Libcrux_ml_kem.Polynomial.to_spec_poly_t #v_Vector result ==
           Spec.MLKEM.sample_poly_cbd v_ETA randomness)

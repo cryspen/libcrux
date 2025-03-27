@@ -97,6 +97,8 @@ val sample_ring_element_cbd
             temp_0_
           in
           v ds == v domain_separator + v v_K /\
+          (forall i.
+              i < v v_K ==> Libcrux_ml_kem.Polynomial.is_bounded_poly 7 (Seq.index error_1_ i)) /\
           Libcrux_ml_kem.Polynomial.to_spec_vector_t #v_K #v_Vector error_1_ ==
           Spec.MLKEM.sample_vector_cbd2 #v_K (Seq.slice prf_input 0 32) (sz (v domain_separator)))
 

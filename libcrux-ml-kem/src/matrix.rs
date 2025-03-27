@@ -110,7 +110,10 @@ pub(crate) fn compute_ring_element_v<const K: usize, Vector: Operations>(
 /// Compute u := InvertNTT(Aᵀ ◦ r̂) + e₁
 #[inline(always)]
 #[hax_lib::fstar::verification_status(lax)]
-#[hax_lib::requires(fstar!(r#"Spec.MLKEM.is_rank $K"#))]
+#[hax_lib::requires(fstar!(r#"
+    Spec.MLKEM.is_rank $K /\
+    (forall (i:nat). i < v $K ==>
+        Libcrux_ml_kem.Polynomial.is_bounded_poly 7 (Seq.index ${error_1} i))"#))]
 #[hax_lib::ensures(|res|
     fstar!(r#"let open Libcrux_ml_kem.Polynomial in
         let a_spec = to_spec_matrix_t $a_as_ntt in

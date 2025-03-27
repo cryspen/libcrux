@@ -92,7 +92,10 @@ val compute_vector_u
           t_Array (t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K) v_K)
       (r_as_ntt error_1_: t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K)
     : Prims.Pure (t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K)
-      (requires Spec.MLKEM.is_rank v_K)
+      (requires
+        Spec.MLKEM.is_rank v_K /\
+        (forall (i: nat).
+            i < v v_K ==> Libcrux_ml_kem.Polynomial.is_bounded_poly 7 (Seq.index error_1_ i)))
       (ensures
         fun res ->
           let res:t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K = res in

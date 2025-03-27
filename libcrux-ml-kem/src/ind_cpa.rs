@@ -252,8 +252,10 @@ pub(crate) fn serialize_vector<const K: usize, Vector: Operations>(
     range (v $domain_separator + v $K) u8_inttype"#))]
 #[hax_lib::ensures(|ds|
     fstar!(r#"v $ds == v $domain_separator + v $K /\
-                Libcrux_ml_kem.Polynomial.to_spec_vector_t #$K #$:Vector $error_1 ==
-                Spec.MLKEM.sample_vector_cbd2 #$K (Seq.slice $prf_input 0 32) (sz (v $domain_separator))"#)
+              (forall i. i < v $K ==> 
+                Libcrux_ml_kem.Polynomial.is_bounded_poly 7 (Seq.index ${error_1} i))/\
+               Libcrux_ml_kem.Polynomial.to_spec_vector_t #$K #$:Vector $error_1 ==
+               Spec.MLKEM.sample_vector_cbd2 #$K (Seq.slice $prf_input 0 32) (sz (v $domain_separator))"#)
 )]
 fn sample_ring_element_cbd<
     const K: usize,
@@ -277,9 +279,11 @@ fn sample_ring_element_cbd<
     for i in 0..K {
         hax_lib::loop_invariant!(|i: usize| {
             fstar!(
-                "forall (j:nat). j < v $i ==>
-            Libcrux_ml_kem.Polynomial.to_spec_poly_t #$:Vector ${error_1}.[ sz j ] ==
-              Spec.MLKEM.sample_poly_cbd $ETA2 ${prf_outputs}.[ sz j ]"
+                r#"
+                forall (j:nat). j < v $i ==>
+                    (Libcrux_ml_kem.Polynomial.is_bounded_poly 7 (Seq.index ${error_1} j) /\
+                     Libcrux_ml_kem.Polynomial.to_spec_poly_t #$:Vector ${error_1}.[ sz j ] ==
+                     Spec.MLKEM.sample_poly_cbd $ETA2 ${prf_outputs}.[ sz j ])"#
             )
         });
         error_1[i] = sample_from_binomial_distribution::<ETA2, Vector>(&prf_outputs[i]);
