@@ -1,5 +1,5 @@
 module Libcrux_ml_dsa.Encoding.Error
-#set-options "--fuel 0 --ifuel 1 --z3rlimit 100"
+#set-options "--fuel 0 --ifuel 1 --z3rlimit 80"
 open Core
 open FStar.Mul
 
@@ -9,7 +9,7 @@ let _ =
   let open Libcrux_ml_dsa.Simd.Traits in
   ()
 
-let chunk_size (eta: Libcrux_ml_dsa.Constants.t_Eta) =
+let chunk_size (eta: Libcrux_ml_dsa.Constants.t_Eta) : usize =
   match eta <: Libcrux_ml_dsa.Constants.t_Eta with
   | Libcrux_ml_dsa.Constants.Eta_Two  -> mk_usize 3
   | Libcrux_ml_dsa.Constants.Eta_Four  -> mk_usize 4
@@ -22,7 +22,7 @@ let serialize
       (eta: Libcrux_ml_dsa.Constants.t_Eta)
       (re: Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
       (serialized: t_Slice u8)
-     =
+    : t_Slice u8 =
   let output_bytes_per_simd_unit:usize = chunk_size eta in
   let serialized:t_Slice u8 =
     Rust_primitives.Hax.Folds.fold_enumerated_slice (re.Libcrux_ml_dsa.Polynomial.f_simd_units
@@ -74,7 +74,7 @@ let deserialize
       (eta: Libcrux_ml_dsa.Constants.t_Eta)
       (serialized: t_Slice u8)
       (result: Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
-     =
+    : Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit =
   let chunk_size:usize = chunk_size eta in
   let result:Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit =
     Rust_primitives.Hax.Folds.fold_range (mk_usize 0)
@@ -128,7 +128,7 @@ let deserialize_to_vector_then_ntt
       (ring_element_size: usize)
       (serialized: t_Slice u8)
       (ring_elements: t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit))
-     =
+    : t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) =
   let ring_elements:t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) =
     Rust_primitives.Hax.Folds.fold_enumerated_chunked_slice ring_element_size
       serialized

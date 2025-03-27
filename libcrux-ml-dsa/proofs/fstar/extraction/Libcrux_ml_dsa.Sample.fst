@@ -1,5 +1,5 @@
 module Libcrux_ml_dsa.Sample
-#set-options "--fuel 0 --ifuel 1 --z3rlimit 100"
+#set-options "--fuel 0 --ifuel 1 --z3rlimit 80"
 open Core
 open FStar.Mul
 
@@ -19,7 +19,7 @@ let rejection_sample_less_than_field_modulus
       (randomness: t_Slice u8)
       (sampled_coefficients: usize)
       (out: t_Array i32 (mk_usize 263))
-     =
+    : (usize & t_Array i32 (mk_usize 263) & bool) =
   let done:bool = false in
   let done, out, sampled_coefficients:(bool & t_Array i32 (mk_usize 263) & usize) =
     Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Slice.Iter.t_ChunksExact
@@ -67,10 +67,10 @@ let rejection_sample_less_than_field_modulus
   let hax_temp_output:bool = done in
   sampled_coefficients, out, hax_temp_output <: (usize & t_Array i32 (mk_usize 263) & bool)
 
-let generate_domain_separator (row, column: (u8 & u8)) =
+let generate_domain_separator (row, column: (u8 & u8)) : u16 =
   (cast (column <: u8) <: u16) |. ((cast (row <: u8) <: u16) <<! mk_i32 8 <: u16)
 
-let add_domain_separator (slice: t_Slice u8) (indices: (u8 & u8)) =
+let add_domain_separator (slice: t_Slice u8) (indices: (u8 & u8)) : t_Array u8 (mk_usize 34) =
   let out:t_Array u8 (mk_usize 34) = Rust_primitives.Hax.repeat (mk_u8 0) (mk_usize 34) in
   let out:t_Array u8 (mk_usize 34) =
     Rust_primitives.Hax.Monomorphized_update_at.update_at_range out
@@ -106,9 +106,16 @@ let add_domain_separator (slice: t_Slice u8) (indices: (u8 & u8)) =
   in
   out
 
-let sample_up_to_four_ring_elements_flat__xy (index width: usize) =
+let sample_up_to_four_ring_elements_flat__xy (index width: usize) : (u8 & u8) =
   (cast (index /! width <: usize) <: u8), (cast (index %! width <: usize) <: u8) <: (u8 & u8)
 
+/// Sample and write out up to four ring elements.
+/// If i <= `elements_requested`, a field element with domain separated
+/// seed according to the provided index is generated in
+/// `tmp_stack[i]`. After successful rejection sampling in
+/// `tmp_stack[i]`, the ring element is written to `matrix` at the
+/// provided index in `indices[i]`.
+/// `rand_stack` is a working buffer that holds initial Shake output.
 let sample_up_to_four_ring_elements_flat
       (#v_SIMDUnit #v_Shake128: Type0)
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
@@ -123,7 +130,12 @@ let sample_up_to_four_ring_elements_flat
       (rand_stack0 rand_stack1 rand_stack2 rand_stack3: t_Array u8 (mk_usize 840))
       (tmp_stack: t_Slice (t_Array i32 (mk_usize 263)))
       (start_index elements_requested: usize)
-     =
+    : (t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) &
+      t_Array u8 (mk_usize 840) &
+      t_Array u8 (mk_usize 840) &
+      t_Array u8 (mk_usize 840) &
+      t_Array u8 (mk_usize 840) &
+      t_Slice (t_Array i32 (mk_usize 263))) =
   let _:Prims.unit =
     if true
     then
@@ -406,7 +418,7 @@ let rejection_sample_less_than_eta_equals_2_
       (randomness: t_Slice u8)
       (sampled_coefficients: usize)
       (out: t_Array i32 (mk_usize 263))
-     =
+    : (usize & t_Array i32 (mk_usize 263) & bool) =
   let done:bool = false in
   let done, out, sampled_coefficients:(bool & t_Array i32 (mk_usize 263) & usize) =
     Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Slice.Iter.t_ChunksExact
@@ -462,7 +474,7 @@ let rejection_sample_less_than_eta_equals_4_
       (randomness: t_Slice u8)
       (sampled_coefficients: usize)
       (out: t_Array i32 (mk_usize 263))
-     =
+    : (usize & t_Array i32 (mk_usize 263) & bool) =
   let done:bool = false in
   let done, out, sampled_coefficients:(bool & t_Array i32 (mk_usize 263) & usize) =
     Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Slice.Iter.t_ChunksExact
@@ -519,7 +531,7 @@ let rejection_sample_less_than_eta
       (randomness: t_Slice u8)
       (sampled: usize)
       (out: t_Array i32 (mk_usize 263))
-     =
+    : (usize & t_Array i32 (mk_usize 263) & bool) =
   let (out, sampled), hax_temp_output:((t_Array i32 (mk_usize 263) & usize) & bool) =
     match eta <: Libcrux_ml_dsa.Constants.t_Eta with
     | Libcrux_ml_dsa.Constants.Eta_Two  ->
@@ -543,7 +555,8 @@ let rejection_sample_less_than_eta
   in
   sampled, out, hax_temp_output <: (usize & t_Array i32 (mk_usize 263) & bool)
 
-let add_error_domain_separator (slice: t_Slice u8) (domain_separator: u16) =
+let add_error_domain_separator (slice: t_Slice u8) (domain_separator: u16)
+    : t_Array u8 (mk_usize 66) =
   let out:t_Array u8 (mk_usize 66) = Rust_primitives.Hax.repeat (mk_u8 0) (mk_usize 66) in
   let out:t_Array u8 (mk_usize 66) =
     Rust_primitives.Hax.Monomorphized_update_at.update_at_range out
@@ -590,7 +603,7 @@ let sample_four_error_ring_elements
       (seed: t_Slice u8)
       (start_index: u16)
       (re: t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit))
-     =
+    : t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) =
   let seed0:t_Array u8 (mk_usize 66) = add_error_domain_separator seed start_index in
   let seed1:t_Array u8 (mk_usize 66) =
     add_error_domain_separator seed (start_index +! mk_u16 1 <: u16)
@@ -882,7 +895,7 @@ let sample_mask_ring_element
       (seed: t_Array u8 (mk_usize 66))
       (result: Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
       (gamma1_exponent: usize)
-     =
+    : Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit =
   let result:Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit =
     match cast (gamma1_exponent <: usize) <: u8 with
     | Rust_primitives.Integers.MkInt 17 ->
@@ -936,7 +949,7 @@ let sample_mask_vector
       (seed: t_Array u8 (mk_usize 64))
       (domain_separator: u16)
       (mask: t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit))
-     =
+    : (u16 & t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)) =
   let _:Prims.unit =
     if true
     then
@@ -1127,7 +1140,7 @@ let inside_out_shuffle
       (out_index: usize)
       (signs: u64)
       (result: t_Array i32 (mk_usize 256))
-     =
+    : (usize & u64 & t_Array i32 (mk_usize 256) & bool) =
   let done:bool = false in
   let done, out_index, result, signs:(bool & usize & t_Array i32 (mk_usize 256) & u64) =
     Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Slice.Iter.t_Iter
@@ -1185,7 +1198,7 @@ let sample_challenge_ring_element
       (seed: t_Slice u8)
       (number_of_ones: usize)
       (re: Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
-     =
+    : Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit =
   let state:v_Shake256 =
     Libcrux_ml_dsa.Hash_functions.Shake256.f_init_absorb_final #v_Shake256
       #FStar.Tactics.Typeclasses.solve

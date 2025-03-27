@@ -1,7 +1,9 @@
 module Libcrux_ml_dsa.Simd.Portable.Vector_type
-#set-options "--fuel 0 --ifuel 1 --z3rlimit 100"
+#set-options "--fuel 0 --ifuel 1 --z3rlimit 80"
 open Core
 open FStar.Mul
+
+type t_Coefficients = { f_values:t_Array i32 (mk_usize 8) }
 
 [@@ FStar.Tactics.Typeclasses.tcinstance]
 assume
@@ -15,10 +17,10 @@ val impl_1': Core.Marker.t_Copy t_Coefficients
 
 let impl_1 = impl_1'
 
-let zero (_: Prims.unit) =
+let zero (_: Prims.unit) : t_Coefficients =
   { f_values = Rust_primitives.Hax.repeat (mk_i32 0) (mk_usize 8) } <: t_Coefficients
 
-let from_coefficient_array (array: t_Slice i32) (out: t_Coefficients) =
+let from_coefficient_array (array: t_Slice i32) (out: t_Coefficients) : t_Coefficients =
   let out:t_Coefficients =
     {
       out with
@@ -40,6 +42,6 @@ let from_coefficient_array (array: t_Slice i32) (out: t_Coefficients) =
   in
   out
 
-let to_coefficient_array (value: t_Coefficients) (out: t_Slice i32) =
+let to_coefficient_array (value: t_Coefficients) (out: t_Slice i32) : t_Slice i32 =
   let out:t_Slice i32 = Core.Slice.impl__copy_from_slice #i32 out (value.f_values <: t_Slice i32) in
   out

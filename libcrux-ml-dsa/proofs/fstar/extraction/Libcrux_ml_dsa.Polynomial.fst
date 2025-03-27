@@ -1,5 +1,5 @@
 module Libcrux_ml_dsa.Polynomial
-#set-options "--fuel 0 --ifuel 1 --z3rlimit 100"
+#set-options "--fuel 0 --ifuel 1 --z3rlimit 80"
 open Core
 open FStar.Mul
 
@@ -8,6 +8,10 @@ let _ =
   (* The implicit dependencies arise from typeclasses instances. *)
   let open Libcrux_ml_dsa.Simd.Traits in
   ()
+
+type t_PolynomialRingElement
+  (v_SIMDUnit: Type0) {| i1: Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit |}
+  = { f_simd_units:t_Array v_SIMDUnit (mk_usize 32) }
 
 [@@ FStar.Tactics.Typeclasses.tcinstance]
 assume
@@ -47,7 +51,7 @@ let impl__zero
           i1:
           Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit)
       (_: Prims.unit)
-     =
+    : t_PolynomialRingElement v_SIMDUnit =
   {
     f_simd_units
     =
@@ -67,7 +71,7 @@ let impl__to_i32_array
           i1:
           Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit)
       (self: t_PolynomialRingElement v_SIMDUnit)
-     =
+    : t_Array i32 (mk_usize 256) =
   let result:t_Array i32 (mk_usize 256) = Rust_primitives.Hax.repeat (mk_i32 0) (mk_usize 256) in
   let result:t_Array i32 (mk_usize 256) =
     Rust_primitives.Hax.Folds.fold_enumerated_slice (self.f_simd_units <: t_Slice v_SIMDUnit)
@@ -124,7 +128,7 @@ let impl__from_i32_array
           Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit)
       (array: t_Slice i32)
       (result: t_PolynomialRingElement v_SIMDUnit)
-     =
+    : t_PolynomialRingElement v_SIMDUnit =
   let _:Prims.unit =
     if true
     then
@@ -185,7 +189,7 @@ let impl__infinity_norm_exceeds
           Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit)
       (self: t_PolynomialRingElement v_SIMDUnit)
       (bound: i32)
-     =
+    : bool =
   let result:bool = false in
   let result:bool =
     Rust_primitives.Hax.Folds.fold_range (mk_usize 0)
@@ -214,7 +218,7 @@ let impl__add
           i1:
           Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit)
       (self rhs: t_PolynomialRingElement v_SIMDUnit)
-     =
+    : t_PolynomialRingElement v_SIMDUnit =
   let self:t_PolynomialRingElement v_SIMDUnit =
     Rust_primitives.Hax.Folds.fold_range (mk_usize 0)
       (Core.Slice.impl__len #v_SIMDUnit (self.f_simd_units <: t_Slice v_SIMDUnit) <: usize)
@@ -252,7 +256,7 @@ let impl__subtract
           i1:
           Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit)
       (self rhs: t_PolynomialRingElement v_SIMDUnit)
-     =
+    : t_PolynomialRingElement v_SIMDUnit =
   let self:t_PolynomialRingElement v_SIMDUnit =
     Rust_primitives.Hax.Folds.fold_range (mk_usize 0)
       (Core.Slice.impl__len #v_SIMDUnit (self.f_simd_units <: t_Slice v_SIMDUnit) <: usize)

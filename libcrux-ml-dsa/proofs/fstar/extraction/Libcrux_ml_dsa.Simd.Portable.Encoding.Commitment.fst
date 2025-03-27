@@ -1,12 +1,29 @@
 module Libcrux_ml_dsa.Simd.Portable.Encoding.Commitment
-#set-options "--fuel 0 --ifuel 1 --z3rlimit 100"
+#set-options "--fuel 0 --ifuel 1 --z3rlimit 80"
 open Core
 open FStar.Mul
 
 let serialize_4_
       (simd_unit: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients)
       (serialized: t_Slice u8)
-     =
+    : Prims.Pure (t_Slice u8)
+      (requires
+        Seq.length serialized == 4 /\
+        (forall i.
+            bounded (Seq.index simd_unit.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values i) 4))
+      (ensures
+        fun serialized_future ->
+          let serialized_future:t_Slice u8 = serialized_future in
+          let serialized_future:t_Slice u8 = serialized_future in
+          Seq.length serialized_future == Seq.length serialized /\
+          (let inp =
+              bit_vec_of_int_t_array #I32
+                #(mk_usize 8)
+                simd_unit.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values
+                4
+            in
+            let out = bit_vec_of_int_t_array #U8 #(mk_usize 4) serialized_future 8 in
+            forall (i: nat{i < 8 * 4}). inp i == out i)) =
   let coefficient0:u8 =
     cast (simd_unit.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values.[ mk_usize 0 ] <: i32) <: u8
   in
@@ -52,7 +69,24 @@ let serialize_4_
 let serialize_6_
       (simd_unit: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients)
       (serialized: t_Slice u8)
-     =
+    : Prims.Pure (t_Slice u8)
+      (requires
+        Seq.length serialized == 6 /\
+        (forall i.
+            bounded (Seq.index simd_unit.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values i) 6))
+      (ensures
+        fun serialized_future ->
+          let serialized_future:t_Slice u8 = serialized_future in
+          let serialized_future:t_Slice u8 = serialized_future in
+          Seq.length serialized_future == Seq.length serialized /\
+          (let inp =
+              bit_vec_of_int_t_array #I32
+                #(mk_usize 8)
+                simd_unit.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values
+                6
+            in
+            let out = bit_vec_of_int_t_array #U8 #(mk_usize 6) serialized_future 8 in
+            forall (i: nat{i < 8 * 6}). inp i == out i)) =
   let coefficient0:u8 =
     cast (simd_unit.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values.[ mk_usize 0 ] <: i32) <: u8
   in
@@ -106,7 +140,26 @@ let serialize_6_
 let serialize
       (simd_unit: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients)
       (serialized: t_Slice u8)
-     =
+    : Prims.Pure (t_Slice u8)
+      (requires
+        (let d = Seq.length serialized in
+          (d == 4 \/ d == 6) /\
+          (forall i.
+              bounded (Seq.index simd_unit.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values i) d)))
+      (ensures
+        fun serialized_future ->
+          let serialized_future:t_Slice u8 = serialized_future in
+          let serialized_future:t_Slice u8 = serialized_future in
+          let d = Seq.length serialized in
+          (Seq.length serialized_future == d /\
+            (let inp =
+                bit_vec_of_int_t_array #I32
+                  #(mk_usize 8)
+                  simd_unit.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values
+                  d
+              in
+              let out = bit_vec_of_int_t_array #U8 #(mk_usize d) serialized_future 8 in
+              forall (i: nat{i < 8 * d}). inp i == out i))) =
   let serialized:t_Slice u8 =
     match cast (Core.Slice.impl__len #u8 serialized <: usize) <: u8 with
     | Rust_primitives.Integers.MkInt 4 -> serialize_4_ simd_unit serialized

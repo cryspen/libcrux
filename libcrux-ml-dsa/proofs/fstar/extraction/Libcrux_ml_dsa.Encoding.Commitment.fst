@@ -1,5 +1,5 @@
 module Libcrux_ml_dsa.Encoding.Commitment
-#set-options "--fuel 0 --ifuel 1 --z3rlimit 100"
+#set-options "--fuel 0 --ifuel 1 --z3rlimit 80"
 open Core
 open FStar.Mul
 
@@ -16,7 +16,7 @@ let serialize
           Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit)
       (re: Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
       (serialized: t_Slice u8)
-     =
+    : t_Slice u8 =
   let output_bytes_per_simd_unit:usize =
     (Core.Slice.impl__len #u8 serialized <: usize) /! (mk_usize 8 *! mk_usize 4 <: usize)
   in
@@ -69,7 +69,7 @@ let serialize_vector
       (ring_element_size: usize)
       (vector: t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit))
       (serialized: t_Slice u8)
-     =
+    : t_Slice u8 =
   let (offset: usize):usize = mk_usize 0 in
   let offset, serialized:(usize & t_Slice u8) =
     Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Slice.Iter.t_Iter

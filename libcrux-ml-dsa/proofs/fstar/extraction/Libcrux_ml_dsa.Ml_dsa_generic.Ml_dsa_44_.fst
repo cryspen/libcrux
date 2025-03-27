@@ -1,5 +1,5 @@
 module Libcrux_ml_dsa.Ml_dsa_generic.Ml_dsa_44_
-#set-options "--fuel 0 --ifuel 1 --z3rlimit 100"
+#set-options "--fuel 0 --ifuel 1 --z3rlimit 80"
 open Core
 open FStar.Mul
 
@@ -13,6 +13,46 @@ let _ =
   let open Libcrux_ml_dsa.Samplex4 in
   let open Libcrux_ml_dsa.Simd.Traits in
   ()
+
+let v_ROW_COLUMN: usize =
+  Libcrux_ml_dsa.Constants.Ml_dsa_44_.v_ROWS_IN_A +!
+  Libcrux_ml_dsa.Constants.Ml_dsa_44_.v_COLUMNS_IN_A
+
+let v_ROW_X_COLUMN: usize =
+  Libcrux_ml_dsa.Constants.Ml_dsa_44_.v_ROWS_IN_A *!
+  Libcrux_ml_dsa.Constants.Ml_dsa_44_.v_COLUMNS_IN_A
+
+let v_ERROR_RING_ELEMENT_SIZE: usize =
+  Libcrux_ml_dsa.Constants.error_ring_element_size Libcrux_ml_dsa.Constants.Ml_dsa_44_.v_BITS_PER_ERROR_COEFFICIENT
+
+let v_GAMMA1_RING_ELEMENT_SIZE: usize =
+  Libcrux_ml_dsa.Constants.gamma1_ring_element_size Libcrux_ml_dsa.Constants.Ml_dsa_44_.v_BITS_PER_GAMMA1_COEFFICIENT
+
+let v_COMMITMENT_RING_ELEMENT_SIZE: usize =
+  Libcrux_ml_dsa.Constants.commitment_ring_element_size Libcrux_ml_dsa.Constants.Ml_dsa_44_.v_BITS_PER_COMMITMENT_COEFFICIENT
+
+let v_BETA: i32 =
+  Libcrux_ml_dsa.Constants.beta Libcrux_ml_dsa.Constants.Ml_dsa_44_.v_ONES_IN_VERIFIER_CHALLENGE
+    Libcrux_ml_dsa.Constants.Ml_dsa_44_.v_ETA
+
+let v_COMMITMENT_VECTOR_SIZE: usize =
+  Libcrux_ml_dsa.Constants.commitment_vector_size Libcrux_ml_dsa.Constants.Ml_dsa_44_.v_BITS_PER_COMMITMENT_COEFFICIENT
+    Libcrux_ml_dsa.Constants.Ml_dsa_44_.v_ROWS_IN_A
+
+let v_SIGNING_KEY_SIZE: usize =
+  Libcrux_ml_dsa.Constants.signing_key_size Libcrux_ml_dsa.Constants.Ml_dsa_44_.v_ROWS_IN_A
+    Libcrux_ml_dsa.Constants.Ml_dsa_44_.v_COLUMNS_IN_A
+    v_ERROR_RING_ELEMENT_SIZE
+
+let v_VERIFICATION_KEY_SIZE: usize =
+  Libcrux_ml_dsa.Constants.verification_key_size Libcrux_ml_dsa.Constants.Ml_dsa_44_.v_ROWS_IN_A
+
+let v_SIGNATURE_SIZE: usize =
+  Libcrux_ml_dsa.Constants.signature_size Libcrux_ml_dsa.Constants.Ml_dsa_44_.v_ROWS_IN_A
+    Libcrux_ml_dsa.Constants.Ml_dsa_44_.v_COLUMNS_IN_A
+    Libcrux_ml_dsa.Constants.Ml_dsa_44_.v_MAX_ONES_IN_HINT
+    Libcrux_ml_dsa.Constants.Ml_dsa_44_.v_COMMITMENT_HASH_SIZE
+    Libcrux_ml_dsa.Constants.Ml_dsa_44_.v_BITS_PER_GAMMA1_COEFFICIENT
 
 let generate_key_pair
       (#v_SIMDUnit #v_Sampler #v_Shake128X4 #v_Shake256 #v_Shake256Xof #v_Shake256X4: Type0)
@@ -34,7 +74,7 @@ let generate_key_pair
           Libcrux_ml_dsa.Hash_functions.Shake256.t_XofX4 v_Shake256X4)
       (randomness: t_Array u8 (mk_usize 32))
       (signing_key verification_key: t_Slice u8)
-     =
+    : (t_Slice u8 & t_Slice u8) =
   let _:Prims.unit =
     if true
     then
@@ -251,7 +291,8 @@ let sign_internal
           Core.Option.t_Option Libcrux_ml_dsa.Pre_hash.t_DomainSeparationContext)
       (randomness: t_Array u8 (mk_usize 32))
       (signature: t_Array u8 (mk_usize 2420))
-     =
+    : (t_Array u8 (mk_usize 2420) &
+      Core.Result.t_Result Prims.unit Libcrux_ml_dsa.Types.t_SigningError) =
   let seed_for_a, remaining_serialized:(t_Slice u8 & t_Slice u8) =
     Core.Slice.impl__split_at #u8 signing_key Libcrux_ml_dsa.Constants.v_SEED_FOR_A_SIZE
   in
@@ -827,6 +868,9 @@ let sign_internal
     (t_Array u8 (mk_usize 2420) &
       Core.Result.t_Result Prims.unit Libcrux_ml_dsa.Types.t_SigningError)
 
+/// The internal verification API.
+/// If no `domain_separation_context` is supplied, it is assumed that
+/// `message` already contains the domain separation.
 let verify_internal
       (#v_SIMDUnit #v_Sampler #v_Shake128X4 #v_Shake256 #v_Shake256Xof: Type0)
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
@@ -847,7 +891,7 @@ let verify_internal
       (domain_separation_context:
           Core.Option.t_Option Libcrux_ml_dsa.Pre_hash.t_DomainSeparationContext)
       (signature_serialized: t_Array u8 (mk_usize 2420))
-     =
+    : Core.Result.t_Result Prims.unit Libcrux_ml_dsa.Types.t_VerificationError =
   let seed_for_a, t1_serialized:(t_Slice u8 & t_Slice u8) =
     Core.Slice.impl__split_at #u8
       (verification_key <: t_Slice u8)
@@ -1102,7 +1146,8 @@ let sign_pre_hashed_mut
       (signing_key message context pre_hash_buffer: t_Slice u8)
       (randomness: t_Array u8 (mk_usize 32))
       (signature: t_Array u8 (mk_usize 2420))
-     =
+    : (t_Slice u8 & t_Array u8 (mk_usize 2420) &
+      Core.Result.t_Result Prims.unit Libcrux_ml_dsa.Types.t_SigningError) =
   if (Core.Slice.impl__len #u8 context <: usize) >. Libcrux_ml_dsa.Constants.v_CONTEXT_MAX_LEN
   then
     pre_hash_buffer,
@@ -1191,7 +1236,9 @@ let sign_pre_hashed
       (#[FStar.Tactics.Typeclasses.tcresolve ()] i15: Libcrux_ml_dsa.Pre_hash.t_PreHash v_PH)
       (signing_key message context pre_hash_buffer: t_Slice u8)
       (randomness: t_Array u8 (mk_usize 32))
-     =
+    : (t_Slice u8 &
+      Core.Result.t_Result (Libcrux_ml_dsa.Types.t_MLDSASignature (mk_usize 2420))
+        Libcrux_ml_dsa.Types.t_SigningError) =
   let signature:Libcrux_ml_dsa.Types.t_MLDSASignature (mk_usize 2420) =
     Libcrux_ml_dsa.Types.impl_4__zero (mk_usize 2420) ()
   in
@@ -1248,7 +1295,8 @@ let sign_mut
       (signing_key message context: t_Slice u8)
       (randomness: t_Array u8 (mk_usize 32))
       (signature: t_Array u8 (mk_usize 2420))
-     =
+    : (t_Array u8 (mk_usize 2420) &
+      Core.Result.t_Result Prims.unit Libcrux_ml_dsa.Types.t_SigningError) =
   match
     Libcrux_ml_dsa.Pre_hash.impl_1__new context
       (Core.Option.Option_None <: Core.Option.t_Option (t_Array u8 (mk_usize 11)))
@@ -1303,7 +1351,8 @@ let sign
           Libcrux_ml_dsa.Hash_functions.Shake256.t_XofX4 v_Shake256X4)
       (signing_key message context: t_Slice u8)
       (randomness: t_Array u8 (mk_usize 32))
-     =
+    : Core.Result.t_Result (Libcrux_ml_dsa.Types.t_MLDSASignature (mk_usize 2420))
+      Libcrux_ml_dsa.Types.t_SigningError =
   let signature:Libcrux_ml_dsa.Types.t_MLDSASignature (mk_usize 2420) =
     Libcrux_ml_dsa.Types.impl_4__zero (mk_usize 2420) ()
   in
@@ -1347,7 +1396,7 @@ let verify
       (verification_key_serialized: t_Array u8 (mk_usize 1312))
       (message context: t_Slice u8)
       (signature_serialized: t_Array u8 (mk_usize 2420))
-     =
+    : Core.Result.t_Result Prims.unit Libcrux_ml_dsa.Types.t_VerificationError =
   match
     Libcrux_ml_dsa.Pre_hash.impl_1__new context
       (Core.Option.Option_None <: Core.Option.t_Option (t_Array u8 (mk_usize 11)))
@@ -1398,7 +1447,7 @@ let verify_pre_hashed
       (verification_key_serialized: t_Array u8 (mk_usize 1312))
       (message context pre_hash_buffer: t_Slice u8)
       (signature_serialized: t_Array u8 (mk_usize 2420))
-     =
+    : (t_Slice u8 & Core.Result.t_Result Prims.unit Libcrux_ml_dsa.Types.t_VerificationError) =
   let pre_hash_buffer:t_Slice u8 =
     Libcrux_ml_dsa.Pre_hash.f_hash #v_PH
       #FStar.Tactics.Typeclasses.solve

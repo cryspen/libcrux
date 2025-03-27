@@ -1,12 +1,12 @@
 module Libcrux_ml_dsa.Simd.Portable.Ntt
-#set-options "--fuel 0 --ifuel 1 --z3rlimit 100"
+#set-options "--fuel 0 --ifuel 1 --z3rlimit 80"
 open Core
 open FStar.Mul
 
 let simd_unit_ntt_at_layer_0_
       (simd_unit: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients)
       (zeta0 zeta1 zeta2 zeta3: i32)
-     =
+    : Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients =
   let t:i32 =
     Libcrux_ml_dsa.Simd.Portable.Arithmetic.montgomery_multiply_fe_by_fer (simd_unit
           .Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values.[ mk_usize 1 ]
@@ -160,7 +160,7 @@ let simd_unit_ntt_at_layer_0_
 let simd_unit_ntt_at_layer_1_
       (simd_unit: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients)
       (zeta1 zeta2: i32)
-     =
+    : Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients =
   let t:i32 =
     Libcrux_ml_dsa.Simd.Portable.Arithmetic.montgomery_multiply_fe_by_fer (simd_unit
           .Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values.[ mk_usize 2 ]
@@ -314,7 +314,7 @@ let simd_unit_ntt_at_layer_1_
 let simd_unit_ntt_at_layer_2_
       (simd_unit: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients)
       (zeta: i32)
-     =
+    : Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients =
   let t:i32 =
     Libcrux_ml_dsa.Simd.Portable.Arithmetic.montgomery_multiply_fe_by_fer (simd_unit
           .Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values.[ mk_usize 4 ]
@@ -469,7 +469,7 @@ let ntt_at_layer_0___round
       (re: t_Array Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients (mk_usize 32))
       (index: usize)
       (zeta_0_ zeta_1_ zeta_2_ zeta_3_: i32)
-     =
+    : t_Array Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients (mk_usize 32) =
   let re:t_Array Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients (mk_usize 32) =
     Rust_primitives.Hax.Monomorphized_update_at.update_at_usize re
       index
@@ -487,7 +487,7 @@ let ntt_at_layer_0___round
 
 let ntt_at_layer_0_
       (re: t_Array Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients (mk_usize 32))
-     =
+    : t_Array Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients (mk_usize 32) =
   let re:t_Array Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients (mk_usize 32) =
     ntt_at_layer_0___round re
       (mk_usize 0)
@@ -750,7 +750,7 @@ let ntt_at_layer_1___round
       (re: t_Array Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients (mk_usize 32))
       (index: usize)
       (zeta_0_ zeta_1_: i32)
-     =
+    : t_Array Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients (mk_usize 32) =
   let re:t_Array Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients (mk_usize 32) =
     Rust_primitives.Hax.Monomorphized_update_at.update_at_usize re
       index
@@ -766,7 +766,7 @@ let ntt_at_layer_1___round
 
 let ntt_at_layer_1_
       (re: t_Array Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients (mk_usize 32))
-     =
+    : t_Array Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients (mk_usize 32) =
   let re:t_Array Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients (mk_usize 32) =
     ntt_at_layer_1___round re (mk_usize 0) (mk_i32 (-3930395)) (mk_i32 (-1528703))
   in
@@ -869,7 +869,7 @@ let ntt_at_layer_2___round
       (re: t_Array Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients (mk_usize 32))
       (index: usize)
       (zeta: i32)
-     =
+    : t_Array Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients (mk_usize 32) =
   let re:t_Array Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients (mk_usize 32) =
     Rust_primitives.Hax.Monomorphized_update_at.update_at_usize re
       index
@@ -884,7 +884,7 @@ let ntt_at_layer_2___round
 
 let ntt_at_layer_2_
       (re: t_Array Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients (mk_usize 32))
-     =
+    : t_Array Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients (mk_usize 32) =
   let re:t_Array Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients (mk_usize 32) =
     ntt_at_layer_2___round re (mk_usize 0) (mk_i32 2706023)
   in
@@ -987,7 +987,7 @@ let outer_3_plus
       (v_OFFSET v_STEP_BY: usize)
       (v_ZETA: i32)
       (re: t_Array Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients (mk_usize 32))
-     =
+    : t_Array Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients (mk_usize 32) =
   let re:t_Array Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients (mk_usize 32) =
     Rust_primitives.Hax.Folds.fold_range v_OFFSET
       (v_OFFSET +! v_STEP_BY <: usize)
@@ -1040,7 +1040,7 @@ let outer_3_plus
 
 let ntt_at_layer_3_
       (re: t_Array Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients (mk_usize 32))
-     =
+    : t_Array Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients (mk_usize 32) =
   let re:t_Array Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients (mk_usize 32) =
     outer_3_plus (mk_usize 0) (mk_usize 1) (mk_i32 2725464) re
   in
@@ -1091,9 +1091,13 @@ let ntt_at_layer_3_
   in
   re
 
+let ntt_at_layer_3___v_STEP: usize = mk_usize 8
+
+let ntt_at_layer_3___v_STEP_BY: usize = mk_usize 1
+
 let ntt_at_layer_4_
       (re: t_Array Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients (mk_usize 32))
-     =
+    : t_Array Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients (mk_usize 32) =
   let re:t_Array Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients (mk_usize 32) =
     outer_3_plus (mk_usize 0) (mk_usize 2) (mk_i32 1826347) re
   in
@@ -1120,9 +1124,13 @@ let ntt_at_layer_4_
   in
   re
 
+let ntt_at_layer_4___v_STEP: usize = mk_usize 16
+
+let ntt_at_layer_4___v_STEP_BY: usize = mk_usize 2
+
 let ntt_at_layer_5_
       (re: t_Array Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients (mk_usize 32))
-     =
+    : t_Array Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients (mk_usize 32) =
   let re:t_Array Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients (mk_usize 32) =
     outer_3_plus (mk_usize 0) (mk_usize 4) (mk_i32 237124) re
   in
@@ -1137,9 +1145,13 @@ let ntt_at_layer_5_
   in
   re
 
+let ntt_at_layer_5___v_STEP: usize = mk_usize 32
+
+let ntt_at_layer_5___v_STEP_BY: usize = mk_usize 4
+
 let ntt_at_layer_6_
       (re: t_Array Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients (mk_usize 32))
-     =
+    : t_Array Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients (mk_usize 32) =
   let re:t_Array Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients (mk_usize 32) =
     outer_3_plus (mk_usize 0) (mk_usize 8) (mk_i32 (-2608894)) re
   in
@@ -1148,15 +1160,24 @@ let ntt_at_layer_6_
   in
   re
 
+let ntt_at_layer_6___v_STEP: usize = mk_usize 64
+
+let ntt_at_layer_6___v_STEP_BY: usize = mk_usize 8
+
 let ntt_at_layer_7_
       (re: t_Array Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients (mk_usize 32))
-     =
+    : t_Array Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients (mk_usize 32) =
   let re:t_Array Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients (mk_usize 32) =
     outer_3_plus (mk_usize 0) (mk_usize 16) (mk_i32 25847) re
   in
   re
 
-let ntt (re: t_Array Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients (mk_usize 32)) =
+let ntt_at_layer_7___v_STEP: usize = mk_usize 128
+
+let ntt_at_layer_7___v_STEP_BY: usize = mk_usize 16
+
+let ntt (re: t_Array Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients (mk_usize 32))
+    : t_Array Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients (mk_usize 32) =
   let re:t_Array Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients (mk_usize 32) =
     ntt_at_layer_7_ re
   in

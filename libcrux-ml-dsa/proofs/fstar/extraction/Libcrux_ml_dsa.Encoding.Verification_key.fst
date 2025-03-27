@@ -1,5 +1,5 @@
 module Libcrux_ml_dsa.Encoding.Verification_key
-#set-options "--fuel 0 --ifuel 1 --z3rlimit 100"
+#set-options "--fuel 0 --ifuel 1 --z3rlimit 80"
 open Core
 open FStar.Mul
 
@@ -17,7 +17,7 @@ let generate_serialized
       (seed: t_Slice u8)
       (t1: t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit))
       (verification_key_serialized: t_Slice u8)
-     =
+    : t_Slice u8 =
   let verification_key_serialized:t_Slice u8 =
     Rust_primitives.Hax.Monomorphized_update_at.update_at_range verification_key_serialized
       ({
@@ -93,7 +93,7 @@ let deserialize
       (rows_in_a verification_key_size: usize)
       (serialized: t_Slice u8)
       (t1: t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit))
-     =
+    : t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) =
   let _:Prims.unit =
     if true
     then

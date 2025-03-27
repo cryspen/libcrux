@@ -1,5 +1,5 @@
 module Libcrux_ml_dsa.Ml_dsa_generic.Instantiations.Portable.Ml_dsa_87_
-#set-options "--fuel 0 --ifuel 1 --z3rlimit 100"
+#set-options "--fuel 0 --ifuel 1 --z3rlimit 80"
 open Core
 open FStar.Mul
 
@@ -16,11 +16,12 @@ let _ =
   let open Libcrux_ml_dsa.Simd.Traits in
   ()
 
+/// Generate key pair.
 let generate_key_pair
       (randomness: t_Array u8 (mk_usize 32))
       (signing_key: t_Array u8 (mk_usize 4896))
       (verification_key: t_Array u8 (mk_usize 2592))
-     =
+    : (t_Array u8 (mk_usize 4896) & t_Array u8 (mk_usize 2592)) =
   let tmp0, tmp1:(t_Array u8 (mk_usize 4896) & t_Array u8 (mk_usize 2592)) =
     Libcrux_ml_dsa.Ml_dsa_generic.Ml_dsa_87_.generate_key_pair #Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients
       #Libcrux_ml_dsa.Samplex4.Portable.t_PortableSampler
@@ -37,11 +38,13 @@ let generate_key_pair
   let _:Prims.unit = () in
   signing_key, verification_key <: (t_Array u8 (mk_usize 4896) & t_Array u8 (mk_usize 2592))
 
+/// Sign.
 let sign
       (signing_key: t_Array u8 (mk_usize 4896))
       (message context: t_Slice u8)
       (randomness: t_Array u8 (mk_usize 32))
-     =
+    : Core.Result.t_Result (Libcrux_ml_dsa.Types.t_MLDSASignature (mk_usize 4627))
+      Libcrux_ml_dsa.Types.t_SigningError =
   Libcrux_ml_dsa.Ml_dsa_generic.Ml_dsa_87_.sign #Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients
     #Libcrux_ml_dsa.Samplex4.Portable.t_PortableSampler
     #Libcrux_ml_dsa.Hash_functions.Portable.t_Shake128X4
@@ -50,12 +53,14 @@ let sign
     #Libcrux_ml_dsa.Hash_functions.Portable.t_Shake256X4 (signing_key <: t_Slice u8) message context
     randomness
 
+/// Sign.
 let sign_mut
       (signing_key: t_Array u8 (mk_usize 4896))
       (message context: t_Slice u8)
       (randomness: t_Array u8 (mk_usize 32))
       (signature: t_Array u8 (mk_usize 4627))
-     =
+    : (t_Array u8 (mk_usize 4627) &
+      Core.Result.t_Result Prims.unit Libcrux_ml_dsa.Types.t_SigningError) =
   let tmp0, out:(t_Array u8 (mk_usize 4627) &
     Core.Result.t_Result Prims.unit Libcrux_ml_dsa.Types.t_SigningError) =
     Libcrux_ml_dsa.Ml_dsa_generic.Ml_dsa_87_.sign_mut #Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients
@@ -72,11 +77,14 @@ let sign_mut
   <:
   (t_Array u8 (mk_usize 4627) & Core.Result.t_Result Prims.unit Libcrux_ml_dsa.Types.t_SigningError)
 
+/// Sign (pre-hashed).
 let sign_pre_hashed_shake128
       (signing_key: t_Array u8 (mk_usize 4896))
       (message context pre_hash_buffer: t_Slice u8)
       (randomness: t_Array u8 (mk_usize 32))
-     =
+    : (t_Slice u8 &
+      Core.Result.t_Result (Libcrux_ml_dsa.Types.t_MLDSASignature (mk_usize 4627))
+        Libcrux_ml_dsa.Types.t_SigningError) =
   let tmp0, out:(t_Slice u8 &
     Core.Result.t_Result (Libcrux_ml_dsa.Types.t_MLDSASignature (mk_usize 4627))
       Libcrux_ml_dsa.Types.t_SigningError) =
@@ -100,11 +108,12 @@ let sign_pre_hashed_shake128
     Core.Result.t_Result (Libcrux_ml_dsa.Types.t_MLDSASignature (mk_usize 4627))
       Libcrux_ml_dsa.Types.t_SigningError)
 
+/// Verify.
 let verify
       (verification_key: t_Array u8 (mk_usize 2592))
       (message context: t_Slice u8)
       (signature: t_Array u8 (mk_usize 4627))
-     =
+    : Core.Result.t_Result Prims.unit Libcrux_ml_dsa.Types.t_VerificationError =
   Libcrux_ml_dsa.Ml_dsa_generic.Ml_dsa_87_.verify #Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients
     #Libcrux_ml_dsa.Samplex4.Portable.t_PortableSampler
     #Libcrux_ml_dsa.Hash_functions.Portable.t_Shake128X4
@@ -115,11 +124,12 @@ let verify
     context
     signature
 
+/// Verify (pre-hashed with SHAKE-128).
 let verify_pre_hashed_shake128
       (verification_key: t_Array u8 (mk_usize 2592))
       (message context pre_hash_buffer: t_Slice u8)
       (signature: t_Array u8 (mk_usize 4627))
-     =
+    : (t_Slice u8 & Core.Result.t_Result Prims.unit Libcrux_ml_dsa.Types.t_VerificationError) =
   let tmp0, out:(t_Slice u8 &
     Core.Result.t_Result Prims.unit Libcrux_ml_dsa.Types.t_VerificationError) =
     Libcrux_ml_dsa.Ml_dsa_generic.Ml_dsa_87_.verify_pre_hashed #Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients

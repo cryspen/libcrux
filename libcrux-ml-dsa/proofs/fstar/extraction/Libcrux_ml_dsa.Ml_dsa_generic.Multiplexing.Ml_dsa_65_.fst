@@ -1,5 +1,5 @@
 module Libcrux_ml_dsa.Ml_dsa_generic.Multiplexing.Ml_dsa_65_
-#set-options "--fuel 0 --ifuel 1 --z3rlimit 100"
+#set-options "--fuel 0 --ifuel 1 --z3rlimit 80"
 open Core
 open FStar.Mul
 
@@ -7,7 +7,7 @@ let generate_key_pair
       (randomness: t_Array u8 (mk_usize 32))
       (signing_key: t_Array u8 (mk_usize 4032))
       (verification_key: t_Array u8 (mk_usize 1952))
-     =
+    : (t_Array u8 (mk_usize 4032) & t_Array u8 (mk_usize 1952)) =
   let signing_key, verification_key:(t_Array u8 (mk_usize 4032) & t_Array u8 (mk_usize 1952)) =
     if Libcrux_platform.Platform.simd256_support ()
     then
@@ -49,7 +49,8 @@ let sign
       (signing_key: t_Array u8 (mk_usize 4032))
       (message context: t_Slice u8)
       (randomness: t_Array u8 (mk_usize 32))
-     =
+    : Core.Result.t_Result (Libcrux_ml_dsa.Types.t_MLDSASignature (mk_usize 3309))
+      Libcrux_ml_dsa.Types.t_SigningError =
   if Libcrux_platform.Platform.simd256_support ()
   then
     Libcrux_ml_dsa.Ml_dsa_generic.Instantiations.Avx2.Ml_dsa_65_.sign signing_key
@@ -73,7 +74,9 @@ let sign_pre_hashed_shake128
       (signing_key: t_Array u8 (mk_usize 4032))
       (message context pre_hash_buffer: t_Slice u8)
       (randomness: t_Array u8 (mk_usize 32))
-     =
+    : (t_Slice u8 &
+      Core.Result.t_Result (Libcrux_ml_dsa.Types.t_MLDSASignature (mk_usize 3309))
+        Libcrux_ml_dsa.Types.t_SigningError) =
   let pre_hash_buffer, hax_temp_output:(t_Slice u8 &
     Core.Result.t_Result (Libcrux_ml_dsa.Types.t_MLDSASignature (mk_usize 3309))
       Libcrux_ml_dsa.Types.t_SigningError) =
@@ -139,7 +142,7 @@ let verify
       (verification_key_serialized: t_Array u8 (mk_usize 1952))
       (message context: t_Slice u8)
       (signature_serialized: t_Array u8 (mk_usize 3309))
-     =
+    : Core.Result.t_Result Prims.unit Libcrux_ml_dsa.Types.t_VerificationError =
   if Libcrux_platform.Platform.simd256_support ()
   then
     Libcrux_ml_dsa.Ml_dsa_generic.Instantiations.Avx2.Ml_dsa_65_.verify verification_key_serialized
@@ -163,7 +166,7 @@ let verify_pre_hashed_shake128
       (verification_key_serialized: t_Array u8 (mk_usize 1952))
       (message context pre_hash_buffer: t_Slice u8)
       (signature_serialized: t_Array u8 (mk_usize 3309))
-     =
+    : (t_Slice u8 & Core.Result.t_Result Prims.unit Libcrux_ml_dsa.Types.t_VerificationError) =
   let pre_hash_buffer, hax_temp_output:(t_Slice u8 &
     Core.Result.t_Result Prims.unit Libcrux_ml_dsa.Types.t_VerificationError) =
     if Libcrux_platform.Platform.simd256_support ()

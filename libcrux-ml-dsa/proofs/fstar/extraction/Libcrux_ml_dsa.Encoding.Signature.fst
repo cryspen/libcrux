@@ -1,5 +1,5 @@
 module Libcrux_ml_dsa.Encoding.Signature
-#set-options "--fuel 0 --ifuel 1 --z3rlimit 100"
+#set-options "--fuel 0 --ifuel 1 --z3rlimit 80"
 open Core
 open FStar.Mul
 
@@ -20,7 +20,7 @@ let serialize
       (commitment_hash_size columns_in_a rows_in_a gamma1_exponent gamma1_ring_element_size max_ones_in_hint:
           usize)
       (signature: t_Slice u8)
-     =
+    : t_Slice u8 =
   let offset:usize = mk_usize 0 in
   let signature:t_Slice u8 =
     Rust_primitives.Hax.Monomorphized_update_at.update_at_range signature
@@ -125,7 +125,8 @@ let serialize
   in
   signature
 
-let set_hint (out_hint: t_Slice (t_Array i32 (mk_usize 256))) (i j: usize) =
+let set_hint (out_hint: t_Slice (t_Array i32 (mk_usize 256))) (i j: usize)
+    : t_Slice (t_Array i32 (mk_usize 256)) =
   let out_hint:t_Slice (t_Array i32 (mk_usize 256)) =
     Rust_primitives.Hax.Monomorphized_update_at.update_at_usize out_hint
       i
@@ -149,7 +150,9 @@ let deserialize
       (serialized out_commitment_hash: t_Slice u8)
       (out_signer_response: t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit))
       (out_hint: t_Slice (t_Array i32 (mk_usize 256)))
-     =
+    : (t_Slice u8 & t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) &
+      t_Slice (t_Array i32 (mk_usize 256)) &
+      Core.Result.t_Result Prims.unit Libcrux_ml_dsa.Types.t_VerificationError) =
   let _:Prims.unit =
     if true
     then

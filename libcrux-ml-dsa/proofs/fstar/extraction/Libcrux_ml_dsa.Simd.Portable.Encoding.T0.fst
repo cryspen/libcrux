@@ -1,16 +1,16 @@
 module Libcrux_ml_dsa.Simd.Portable.Encoding.T0
-#set-options "--fuel 0 --ifuel 1 --z3rlimit 100"
+#set-options "--fuel 0 --ifuel 1 --z3rlimit 80"
 open Core
 open FStar.Mul
 
-let change_t0_interval (t0: i32) =
+let change_t0_interval (t0: i32) : i32 =
   (mk_i32 1 <<! (Libcrux_ml_dsa.Constants.v_BITS_IN_LOWER_PART_OF_T -! mk_usize 1 <: usize) <: i32) -!
   t0
 
 let serialize
       (simd_unit: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients)
       (serialized: t_Slice u8)
-     =
+    : t_Slice u8 =
   let _:Prims.unit =
     if true
     then
@@ -161,10 +161,14 @@ let serialize
   in
   serialized
 
+let deserialize__v_BITS_IN_LOWER_PART_OF_T_MASK: i32 =
+  (mk_i32 1 <<! (cast (Libcrux_ml_dsa.Constants.v_BITS_IN_LOWER_PART_OF_T <: usize) <: i32) <: i32) -!
+  mk_i32 1
+
 let deserialize
       (serialized: t_Slice u8)
       (simd_unit: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients)
-     =
+    : Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients =
   let _:Prims.unit =
     if true
     then

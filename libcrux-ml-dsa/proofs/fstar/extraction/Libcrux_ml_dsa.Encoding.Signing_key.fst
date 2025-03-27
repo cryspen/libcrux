@@ -1,5 +1,5 @@
 module Libcrux_ml_dsa.Encoding.Signing_key
-#set-options "--fuel 0 --ifuel 1 --z3rlimit 100"
+#set-options "--fuel 0 --ifuel 1 --z3rlimit 80"
 open Core
 open FStar.Mul
 
@@ -23,7 +23,7 @@ let generate_serialized
       (seed_matrix seed_signing verification_key: t_Slice u8)
       (s1_2_ t0: t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit))
       (signing_key_serialized: t_Slice u8)
-     =
+    : t_Slice u8 =
   let offset:usize = mk_usize 0 in
   let signing_key_serialized:t_Slice u8 =
     Rust_primitives.Hax.Monomorphized_update_at.update_at_range signing_key_serialized

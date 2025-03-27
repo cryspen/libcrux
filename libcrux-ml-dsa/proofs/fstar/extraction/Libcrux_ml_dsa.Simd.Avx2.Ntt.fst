@@ -1,5 +1,5 @@
 module Libcrux_ml_dsa.Simd.Avx2.Ntt
-#set-options "--fuel 0 --ifuel 1 --z3rlimit 100"
+#set-options "--fuel 0 --ifuel 1 --z3rlimit 80"
 open Core
 open FStar.Mul
 
@@ -7,25 +7,23 @@ let butterfly_2_
       (re: t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32))
       (index: usize)
       (zeta_a0 zeta_a1 zeta_a2 zeta_a3 zeta_b0 zeta_b1 zeta_b2 zeta_b3: i32)
-     =
-  let a:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
-    Libcrux_intrinsics.Avx2_extract.mm256_shuffle_epi32 (mk_i32 216)
+    : t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32) =
+  let a:Minicore.Core_arch.X86.t_e_ee_m256i =
+    Libcrux_intrinsics.Avx2.mm256_shuffle_epi32 (mk_i32 216)
       (re.[ index ] <: Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256)
         .Libcrux_ml_dsa.Simd.Avx2.Vector_type.f_value
   in
-  let b:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
-    Libcrux_intrinsics.Avx2_extract.mm256_shuffle_epi32 (mk_i32 216)
+  let b:Minicore.Core_arch.X86.t_e_ee_m256i =
+    Libcrux_intrinsics.Avx2.mm256_shuffle_epi32 (mk_i32 216)
       (re.[ index +! mk_usize 1 <: usize ] <: Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256)
         .Libcrux_ml_dsa.Simd.Avx2.Vector_type.f_value
   in
-  let summands:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
-    Libcrux_intrinsics.Avx2_extract.mm256_unpacklo_epi64 a b
+  let summands:Minicore.Core_arch.X86.t_e_ee_m256i = Libcrux_intrinsics.Avx2.mm256_unpacklo_epi64 a b in
+  let zeta_products:Minicore.Core_arch.X86.t_e_ee_m256i =
+    Libcrux_intrinsics.Avx2.mm256_unpackhi_epi64 a b
   in
-  let zeta_products:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
-    Libcrux_intrinsics.Avx2_extract.mm256_unpackhi_epi64 a b
-  in
-  let zetas:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
-    Libcrux_intrinsics.Avx2_extract.mm256_set_epi32 zeta_b3
+  let zetas:Minicore.Core_arch.X86.t_e_ee_m256i =
+    Libcrux_intrinsics.Avx2.mm256_set_epi32 zeta_b3
       zeta_b2
       zeta_a3
       zeta_a2
@@ -34,20 +32,20 @@ let butterfly_2_
       zeta_a1
       zeta_a0
   in
-  let zeta_products:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+  let zeta_products:Minicore.Core_arch.X86.t_e_ee_m256i =
     Libcrux_ml_dsa.Simd.Avx2.Arithmetic.montgomery_multiply zeta_products zetas
   in
-  let sub_terms:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
-    Libcrux_intrinsics.Avx2_extract.mm256_sub_epi32 summands zeta_products
+  let sub_terms:Minicore.Core_arch.X86.t_e_ee_m256i =
+    Libcrux_intrinsics.Avx2.mm256_sub_epi32 summands zeta_products
   in
-  let add_terms:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
-    Libcrux_intrinsics.Avx2_extract.mm256_add_epi32 summands zeta_products
+  let add_terms:Minicore.Core_arch.X86.t_e_ee_m256i =
+    Libcrux_intrinsics.Avx2.mm256_add_epi32 summands zeta_products
   in
-  let a_terms_shuffled:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
-    Libcrux_intrinsics.Avx2_extract.mm256_unpacklo_epi64 add_terms sub_terms
+  let a_terms_shuffled:Minicore.Core_arch.X86.t_e_ee_m256i =
+    Libcrux_intrinsics.Avx2.mm256_unpacklo_epi64 add_terms sub_terms
   in
-  let b_terms_shuffled:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
-    Libcrux_intrinsics.Avx2_extract.mm256_unpackhi_epi64 add_terms sub_terms
+  let b_terms_shuffled:Minicore.Core_arch.X86.t_e_ee_m256i =
+    Libcrux_intrinsics.Avx2.mm256_unpackhi_epi64 add_terms sub_terms
   in
   let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32) =
     Rust_primitives.Hax.Monomorphized_update_at.update_at_usize re
@@ -55,9 +53,9 @@ let butterfly_2_
       ({
           Libcrux_ml_dsa.Simd.Avx2.Vector_type.f_value
           =
-          Libcrux_intrinsics.Avx2_extract.mm256_shuffle_epi32 (mk_i32 216) a_terms_shuffled
+          Libcrux_intrinsics.Avx2.mm256_shuffle_epi32 (mk_i32 216) a_terms_shuffled
           <:
-          Libcrux_intrinsics.Avx2_extract.t_Vec256
+          Minicore.Core_arch.X86.t_e_ee_m256i
         }
         <:
         Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256)
@@ -68,38 +66,40 @@ let butterfly_2_
       ({
           Libcrux_ml_dsa.Simd.Avx2.Vector_type.f_value
           =
-          Libcrux_intrinsics.Avx2_extract.mm256_shuffle_epi32 (mk_i32 216) b_terms_shuffled
+          Libcrux_intrinsics.Avx2.mm256_shuffle_epi32 (mk_i32 216) b_terms_shuffled
           <:
-          Libcrux_intrinsics.Avx2_extract.t_Vec256
+          Minicore.Core_arch.X86.t_e_ee_m256i
         }
         <:
         Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256)
   in
   re
 
+let butterfly_2___v_SHUFFLE: i32 = mk_i32 216
+
 let butterfly_4_
       (re: t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32))
       (index: usize)
       (zeta_a0 zeta_a1 zeta_b0 zeta_b1: i32)
-     =
-  let summands:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
-    Libcrux_intrinsics.Avx2_extract.mm256_unpacklo_epi64 (re.[ index ]
+    : t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32) =
+  let summands:Minicore.Core_arch.X86.t_e_ee_m256i =
+    Libcrux_intrinsics.Avx2.mm256_unpacklo_epi64 (re.[ index ]
         <:
         Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256)
         .Libcrux_ml_dsa.Simd.Avx2.Vector_type.f_value
       (re.[ index +! mk_usize 1 <: usize ] <: Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256)
         .Libcrux_ml_dsa.Simd.Avx2.Vector_type.f_value
   in
-  let zeta_products:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
-    Libcrux_intrinsics.Avx2_extract.mm256_unpackhi_epi64 (re.[ index ]
+  let zeta_products:Minicore.Core_arch.X86.t_e_ee_m256i =
+    Libcrux_intrinsics.Avx2.mm256_unpackhi_epi64 (re.[ index ]
         <:
         Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256)
         .Libcrux_ml_dsa.Simd.Avx2.Vector_type.f_value
       (re.[ index +! mk_usize 1 <: usize ] <: Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256)
         .Libcrux_ml_dsa.Simd.Avx2.Vector_type.f_value
   in
-  let zetas:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
-    Libcrux_intrinsics.Avx2_extract.mm256_set_epi32 zeta_b1
+  let zetas:Minicore.Core_arch.X86.t_e_ee_m256i =
+    Libcrux_intrinsics.Avx2.mm256_set_epi32 zeta_b1
       zeta_b1
       zeta_a1
       zeta_a1
@@ -108,14 +108,14 @@ let butterfly_4_
       zeta_a0
       zeta_a0
   in
-  let zeta_products:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+  let zeta_products:Minicore.Core_arch.X86.t_e_ee_m256i =
     Libcrux_ml_dsa.Simd.Avx2.Arithmetic.montgomery_multiply zeta_products zetas
   in
-  let sub_terms:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
-    Libcrux_intrinsics.Avx2_extract.mm256_sub_epi32 summands zeta_products
+  let sub_terms:Minicore.Core_arch.X86.t_e_ee_m256i =
+    Libcrux_intrinsics.Avx2.mm256_sub_epi32 summands zeta_products
   in
-  let add_terms:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
-    Libcrux_intrinsics.Avx2_extract.mm256_add_epi32 summands zeta_products
+  let add_terms:Minicore.Core_arch.X86.t_e_ee_m256i =
+    Libcrux_intrinsics.Avx2.mm256_add_epi32 summands zeta_products
   in
   let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32) =
     Rust_primitives.Hax.Monomorphized_update_at.update_at_usize re
@@ -123,9 +123,9 @@ let butterfly_4_
       ({
           Libcrux_ml_dsa.Simd.Avx2.Vector_type.f_value
           =
-          Libcrux_intrinsics.Avx2_extract.mm256_unpacklo_epi64 add_terms sub_terms
+          Libcrux_intrinsics.Avx2.mm256_unpacklo_epi64 add_terms sub_terms
           <:
-          Libcrux_intrinsics.Avx2_extract.t_Vec256
+          Minicore.Core_arch.X86.t_e_ee_m256i
         }
         <:
         Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256)
@@ -136,9 +136,9 @@ let butterfly_4_
       ({
           Libcrux_ml_dsa.Simd.Avx2.Vector_type.f_value
           =
-          Libcrux_intrinsics.Avx2_extract.mm256_unpackhi_epi64 add_terms sub_terms
+          Libcrux_intrinsics.Avx2.mm256_unpackhi_epi64 add_terms sub_terms
           <:
-          Libcrux_intrinsics.Avx2_extract.t_Vec256
+          Minicore.Core_arch.X86.t_e_ee_m256i
         }
         <:
         Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256)
@@ -149,38 +149,42 @@ let butterfly_8_
       (re: t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32))
       (index: usize)
       (zeta0 zeta1: i32)
-     =
-  let summands:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
-    Libcrux_intrinsics.Avx2_extract.mm256_set_m128i (Libcrux_intrinsics.Avx2_extract.mm256_castsi256_si128
-          (re.[ index +! mk_usize 1 <: usize ] <: Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256)
-            .Libcrux_ml_dsa.Simd.Avx2.Vector_type.f_value
-        <:
-        Libcrux_intrinsics.Avx2_extract.t_Vec128)
-      (Libcrux_intrinsics.Avx2_extract.mm256_castsi256_si128 (re.[ index ]
+    : t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32) =
+  let summands:Minicore.Core_arch.X86.t_e_ee_m256i =
+    Libcrux_intrinsics.Avx2.mm256_set_m128i (Libcrux_intrinsics.Avx2.mm256_castsi256_si128 (re.[ index +!
+              mk_usize 1
+              <:
+              usize ]
             <:
             Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256)
             .Libcrux_ml_dsa.Simd.Avx2.Vector_type.f_value
         <:
-        Libcrux_intrinsics.Avx2_extract.t_Vec128)
+        Minicore.Core_arch.X86.t_e_ee_m128i)
+      (Libcrux_intrinsics.Avx2.mm256_castsi256_si128 (re.[ index ]
+            <:
+            Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256)
+            .Libcrux_ml_dsa.Simd.Avx2.Vector_type.f_value
+        <:
+        Minicore.Core_arch.X86.t_e_ee_m128i)
   in
-  let zeta_products:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
-    Libcrux_intrinsics.Avx2_extract.mm256_permute2x128_si256 (mk_i32 19)
+  let zeta_products:Minicore.Core_arch.X86.t_e_ee_m256i =
+    Libcrux_intrinsics.Avx2.mm256_permute2x128_si256 (mk_i32 19)
       (re.[ index +! mk_usize 1 <: usize ] <: Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256)
         .Libcrux_ml_dsa.Simd.Avx2.Vector_type.f_value
       (re.[ index ] <: Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256)
         .Libcrux_ml_dsa.Simd.Avx2.Vector_type.f_value
   in
-  let zetas:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
-    Libcrux_intrinsics.Avx2_extract.mm256_set_epi32 zeta1 zeta1 zeta1 zeta1 zeta0 zeta0 zeta0 zeta0
+  let zetas:Minicore.Core_arch.X86.t_e_ee_m256i =
+    Libcrux_intrinsics.Avx2.mm256_set_epi32 zeta1 zeta1 zeta1 zeta1 zeta0 zeta0 zeta0 zeta0
   in
-  let zeta_products:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
+  let zeta_products:Minicore.Core_arch.X86.t_e_ee_m256i =
     Libcrux_ml_dsa.Simd.Avx2.Arithmetic.montgomery_multiply zeta_products zetas
   in
-  let sub_terms:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
-    Libcrux_intrinsics.Avx2_extract.mm256_sub_epi32 summands zeta_products
+  let sub_terms:Minicore.Core_arch.X86.t_e_ee_m256i =
+    Libcrux_intrinsics.Avx2.mm256_sub_epi32 summands zeta_products
   in
-  let add_terms:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
-    Libcrux_intrinsics.Avx2_extract.mm256_add_epi32 summands zeta_products
+  let add_terms:Minicore.Core_arch.X86.t_e_ee_m256i =
+    Libcrux_intrinsics.Avx2.mm256_add_epi32 summands zeta_products
   in
   let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32) =
     Rust_primitives.Hax.Monomorphized_update_at.update_at_usize re
@@ -188,15 +192,15 @@ let butterfly_8_
       ({
           Libcrux_ml_dsa.Simd.Avx2.Vector_type.f_value
           =
-          Libcrux_intrinsics.Avx2_extract.mm256_set_m128i (Libcrux_intrinsics.Avx2_extract.mm256_castsi256_si128
-                sub_terms
+          Libcrux_intrinsics.Avx2.mm256_set_m128i (Libcrux_intrinsics.Avx2.mm256_castsi256_si128 sub_terms
+
               <:
-              Libcrux_intrinsics.Avx2_extract.t_Vec128)
-            (Libcrux_intrinsics.Avx2_extract.mm256_castsi256_si128 add_terms
+              Minicore.Core_arch.X86.t_e_ee_m128i)
+            (Libcrux_intrinsics.Avx2.mm256_castsi256_si128 add_terms
               <:
-              Libcrux_intrinsics.Avx2_extract.t_Vec128)
+              Minicore.Core_arch.X86.t_e_ee_m128i)
           <:
-          Libcrux_intrinsics.Avx2_extract.t_Vec256
+          Minicore.Core_arch.X86.t_e_ee_m256i
         }
         <:
         Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256)
@@ -207,16 +211,17 @@ let butterfly_8_
       ({
           Libcrux_ml_dsa.Simd.Avx2.Vector_type.f_value
           =
-          Libcrux_intrinsics.Avx2_extract.mm256_permute2x128_si256 (mk_i32 19) sub_terms add_terms
+          Libcrux_intrinsics.Avx2.mm256_permute2x128_si256 (mk_i32 19) sub_terms add_terms
           <:
-          Libcrux_intrinsics.Avx2_extract.t_Vec256
+          Minicore.Core_arch.X86.t_e_ee_m256i
         }
         <:
         Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256)
   in
   re
 
-let ntt_at_layer_0_ (re: t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32)) =
+let ntt_at_layer_0_ (re: t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32))
+    : t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32) =
   let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32) =
     butterfly_2_ re (mk_usize 0) (mk_i32 2091667) (mk_i32 3407706) (mk_i32 2316500) (mk_i32 3817976)
       (mk_i32 (-3342478)) (mk_i32 2244091) (mk_i32 (-2446433)) (mk_i32 (-3562462))
@@ -286,7 +291,8 @@ let ntt_at_layer_0_ (re: t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (
   in
   re
 
-let ntt_at_layer_1_ (re: t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32)) =
+let ntt_at_layer_1_ (re: t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32))
+    : t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32) =
   let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32) =
     butterfly_4_ re
       (mk_usize 0)
@@ -417,7 +423,8 @@ let ntt_at_layer_1_ (re: t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (
   in
   re
 
-let ntt_at_layer_2_ (re: t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32)) =
+let ntt_at_layer_2_ (re: t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32))
+    : t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32) =
   let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32) =
     butterfly_8_ re (mk_usize 0) (mk_i32 2706023) (mk_i32 95776)
   in
@@ -471,51 +478,47 @@ let ntt_at_layer_2_ (re: t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (
 let ntt_at_layer_7_and_6___mul
       (re: t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32))
       (index: usize)
-      (zeta: Libcrux_intrinsics.Avx2_extract.t_Vec256)
+      (zeta: Minicore.Core_arch.X86.t_e_ee_m256i)
       (step_by: usize)
-      (field_modulus inverse_of_modulus_mod_montgomery_r: Libcrux_intrinsics.Avx2_extract.t_Vec256)
-     =
-  let prod02:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
-    Libcrux_intrinsics.Avx2_extract.mm256_mul_epi32 (re.[ index +! step_by <: usize ]
+      (field_modulus inverse_of_modulus_mod_montgomery_r: Minicore.Core_arch.X86.t_e_ee_m256i)
+    : t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32) =
+  let prod02:Minicore.Core_arch.X86.t_e_ee_m256i =
+    Libcrux_intrinsics.Avx2.mm256_mul_epi32 (re.[ index +! step_by <: usize ]
         <:
         Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256)
         .Libcrux_ml_dsa.Simd.Avx2.Vector_type.f_value
       zeta
   in
-  let prod13:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
-    Libcrux_intrinsics.Avx2_extract.mm256_mul_epi32 (Libcrux_intrinsics.Avx2_extract.mm256_shuffle_epi32
-          (mk_i32 245)
+  let prod13:Minicore.Core_arch.X86.t_e_ee_m256i =
+    Libcrux_intrinsics.Avx2.mm256_mul_epi32 (Libcrux_intrinsics.Avx2.mm256_shuffle_epi32 (mk_i32 245
+          )
           (re.[ index +! step_by <: usize ] <: Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256)
             .Libcrux_ml_dsa.Simd.Avx2.Vector_type.f_value
         <:
-        Libcrux_intrinsics.Avx2_extract.t_Vec256)
-      (Libcrux_intrinsics.Avx2_extract.mm256_shuffle_epi32 (mk_i32 245) zeta
+        Minicore.Core_arch.X86.t_e_ee_m256i)
+      (Libcrux_intrinsics.Avx2.mm256_shuffle_epi32 (mk_i32 245) zeta
         <:
-        Libcrux_intrinsics.Avx2_extract.t_Vec256)
+        Minicore.Core_arch.X86.t_e_ee_m256i)
   in
-  let k02:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
-    Libcrux_intrinsics.Avx2_extract.mm256_mul_epi32 prod02 inverse_of_modulus_mod_montgomery_r
+  let k02:Minicore.Core_arch.X86.t_e_ee_m256i =
+    Libcrux_intrinsics.Avx2.mm256_mul_epi32 prod02 inverse_of_modulus_mod_montgomery_r
   in
-  let k13:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
-    Libcrux_intrinsics.Avx2_extract.mm256_mul_epi32 prod13 inverse_of_modulus_mod_montgomery_r
+  let k13:Minicore.Core_arch.X86.t_e_ee_m256i =
+    Libcrux_intrinsics.Avx2.mm256_mul_epi32 prod13 inverse_of_modulus_mod_montgomery_r
   in
-  let c02:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
-    Libcrux_intrinsics.Avx2_extract.mm256_mul_epi32 k02 field_modulus
+  let c02:Minicore.Core_arch.X86.t_e_ee_m256i =
+    Libcrux_intrinsics.Avx2.mm256_mul_epi32 k02 field_modulus
   in
-  let c13:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
-    Libcrux_intrinsics.Avx2_extract.mm256_mul_epi32 k13 field_modulus
+  let c13:Minicore.Core_arch.X86.t_e_ee_m256i =
+    Libcrux_intrinsics.Avx2.mm256_mul_epi32 k13 field_modulus
   in
-  let res02:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
-    Libcrux_intrinsics.Avx2_extract.mm256_sub_epi32 prod02 c02
+  let res02:Minicore.Core_arch.X86.t_e_ee_m256i = Libcrux_intrinsics.Avx2.mm256_sub_epi32 prod02 c02 in
+  let res13:Minicore.Core_arch.X86.t_e_ee_m256i = Libcrux_intrinsics.Avx2.mm256_sub_epi32 prod13 c13 in
+  let res02_shifted:Minicore.Core_arch.X86.t_e_ee_m256i =
+    Libcrux_intrinsics.Avx2.mm256_shuffle_epi32 (mk_i32 245) res02
   in
-  let res13:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
-    Libcrux_intrinsics.Avx2_extract.mm256_sub_epi32 prod13 c13
-  in
-  let res02_shifted:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
-    Libcrux_intrinsics.Avx2_extract.mm256_shuffle_epi32 (mk_i32 245) res02
-  in
-  let t:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
-    Libcrux_intrinsics.Avx2_extract.mm256_blend_epi32 (mk_i32 170) res02_shifted res13
+  let t:Minicore.Core_arch.X86.t_e_ee_m256i =
+    Libcrux_intrinsics.Avx2.mm256_blend_epi32 (mk_i32 170) res02_shifted res13
   in
   let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32) =
     Rust_primitives.Hax.Monomorphized_update_at.update_at_usize re
@@ -535,7 +538,7 @@ let ntt_at_layer_7_and_6___mul
               .Libcrux_ml_dsa.Simd.Avx2.Vector_type.f_value
             t
           <:
-          Libcrux_intrinsics.Avx2_extract.t_Vec256
+          Minicore.Core_arch.X86.t_e_ee_m256i
         }
         <:
         Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256)
@@ -553,32 +556,42 @@ let ntt_at_layer_7_and_6___mul
               .Libcrux_ml_dsa.Simd.Avx2.Vector_type.f_value
             t
           <:
-          Libcrux_intrinsics.Avx2_extract.t_Vec256
+          Minicore.Core_arch.X86.t_e_ee_m256i
         }
         <:
         Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256)
   in
   re
 
-let ntt_at_layer_7_and_6_ (re: t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32)) =
-  let field_modulus:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
-    Libcrux_intrinsics.Avx2_extract.mm256_set1_epi32 Libcrux_ml_dsa.Simd.Traits.v_FIELD_MODULUS
+let ntt_at_layer_7_and_6___v_STEP_BY_7_: usize =
+  mk_usize 2 *! Libcrux_ml_dsa.Simd.Traits.v_COEFFICIENTS_IN_SIMD_UNIT
+
+let ntt_at_layer_7_and_6___v_STEP_BY_6_: usize =
+  (mk_usize 1 <<! mk_i32 6 <: usize) /! Libcrux_ml_dsa.Simd.Traits.v_COEFFICIENTS_IN_SIMD_UNIT
+
+/// This is equivalent to the pqclean 0 and 1
+/// This does 32 Montgomery multiplications (192 multiplications).
+/// This is the same as in pqclean. The only difference is locality of registers.
+let ntt_at_layer_7_and_6_ (re: t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32))
+    : t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32) =
+  let field_modulus:Minicore.Core_arch.X86.t_e_ee_m256i =
+    Libcrux_intrinsics.Avx2.mm256_set1_epi32 Libcrux_ml_dsa.Simd.Traits.v_FIELD_MODULUS
   in
-  let inverse_of_modulus_mod_montgomery_r:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
-    Libcrux_intrinsics.Avx2_extract.mm256_set1_epi32 (cast (Libcrux_ml_dsa.Simd.Traits.v_INVERSE_OF_MODULUS_MOD_MONTGOMERY_R
+  let inverse_of_modulus_mod_montgomery_r:Minicore.Core_arch.X86.t_e_ee_m256i =
+    Libcrux_intrinsics.Avx2.mm256_set1_epi32 (cast (Libcrux_ml_dsa.Simd.Traits.v_INVERSE_OF_MODULUS_MOD_MONTGOMERY_R
             <:
             u64)
         <:
         i32)
   in
-  let zeta7:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
-    Libcrux_intrinsics.Avx2_extract.mm256_set1_epi32 (mk_i32 25847)
+  let zeta7:Minicore.Core_arch.X86.t_e_ee_m256i =
+    Libcrux_intrinsics.Avx2.mm256_set1_epi32 (mk_i32 25847)
   in
-  let zeta60:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
-    Libcrux_intrinsics.Avx2_extract.mm256_set1_epi32 (mk_i32 (-2608894))
+  let zeta60:Minicore.Core_arch.X86.t_e_ee_m256i =
+    Libcrux_intrinsics.Avx2.mm256_set1_epi32 (mk_i32 (-2608894))
   in
-  let zeta61:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
-    Libcrux_intrinsics.Avx2_extract.mm256_set1_epi32 (mk_i32 (-518909))
+  let zeta61:Minicore.Core_arch.X86.t_e_ee_m256i =
+    Libcrux_intrinsics.Avx2.mm256_set1_epi32 (mk_i32 (-518909))
   in
   let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32) =
     ntt_at_layer_7_and_6___mul re
@@ -851,10 +864,8 @@ let ntt_at_layer_5_to_3___round
       (re: t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32))
       (index: usize)
       (zeta: i32)
-     =
-  let rhs:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
-    Libcrux_intrinsics.Avx2_extract.mm256_set1_epi32 zeta
-  in
+    : t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32) =
+  let rhs:Minicore.Core_arch.X86.t_e_ee_m256i = Libcrux_intrinsics.Avx2.mm256_set1_epi32 zeta in
   let offset:usize =
     ((index *! v_STEP <: usize) *! mk_usize 2 <: usize) /!
     Libcrux_ml_dsa.Simd.Traits.v_COEFFICIENTS_IN_SIMD_UNIT
@@ -885,13 +896,13 @@ let ntt_at_layer_5_to_3___round
                       .Libcrux_ml_dsa.Simd.Avx2.Vector_type.f_value
                     rhs
                   <:
-                  Libcrux_intrinsics.Avx2_extract.t_Vec256
+                  Minicore.Core_arch.X86.t_e_ee_m256i
                 }
                 <:
                 Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256)
           in
-          let tmp:Libcrux_intrinsics.Avx2_extract.t_Vec256 =
-            Libcrux_intrinsics.Avx2_extract.mm256_sub_epi32 (re.[ j ]
+          let tmp:Minicore.Core_arch.X86.t_e_ee_m256i =
+            Libcrux_intrinsics.Avx2.mm256_sub_epi32 (re.[ j ]
                 <:
                 Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256)
                 .Libcrux_ml_dsa.Simd.Avx2.Vector_type.f_value
@@ -904,7 +915,7 @@ let ntt_at_layer_5_to_3___round
               ({
                   Libcrux_ml_dsa.Simd.Avx2.Vector_type.f_value
                   =
-                  Libcrux_intrinsics.Avx2_extract.mm256_add_epi32 (re.[ j ]
+                  Libcrux_intrinsics.Avx2.mm256_add_epi32 (re.[ j ]
                       <:
                       Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256)
                       .Libcrux_ml_dsa.Simd.Avx2.Vector_type.f_value
@@ -912,7 +923,7 @@ let ntt_at_layer_5_to_3___round
                     )
                       .Libcrux_ml_dsa.Simd.Avx2.Vector_type.f_value
                   <:
-                  Libcrux_intrinsics.Avx2_extract.t_Vec256
+                  Minicore.Core_arch.X86.t_e_ee_m256i
                 }
                 <:
                 Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256)
@@ -928,7 +939,11 @@ let ntt_at_layer_5_to_3___round
   in
   re
 
-let ntt_at_layer_5_to_3_ (re: t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32)) =
+/// Layer 5, 4, 3
+/// Each layer does 16 Montgomery multiplications -> 3*16 = 48 total
+/// pqclean does 4 * 4 on each layer -> 48 total | plus 4 * 4 shuffles every time (48)
+let ntt_at_layer_5_to_3_ (re: t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32))
+    : t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32) =
   let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32) =
     ntt_at_layer_5_to_3___round (mk_usize 32) (mk_usize 4) re (mk_usize 0) (mk_i32 237124)
   in
@@ -1019,7 +1034,23 @@ let ntt_at_layer_5_to_3_ (re: t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec
   let _:Prims.unit = () <: Prims.unit in
   re
 
-let ntt__avx2_ntt (re: t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32)) =
+let ntt_at_layer_5_to_3___v_STEP: usize = mk_usize 1 <<! mk_i32 5
+
+let ntt_at_layer_5_to_3___v_STEP_BY: usize =
+  ntt_at_layer_5_to_3___v_STEP /! Libcrux_ml_dsa.Simd.Traits.v_COEFFICIENTS_IN_SIMD_UNIT
+
+let ntt_at_layer_5_to_3___v_STEP_1: usize = mk_usize 1 <<! mk_i32 4
+
+let ntt_at_layer_5_to_3___v_STEP_BY_1: usize =
+  ntt_at_layer_5_to_3___v_STEP_1 /! Libcrux_ml_dsa.Simd.Traits.v_COEFFICIENTS_IN_SIMD_UNIT
+
+let ntt_at_layer_5_to_3___v_STEP_2: usize = mk_usize 1 <<! mk_i32 3
+
+let ntt_at_layer_5_to_3___v_STEP_BY_2: usize =
+  ntt_at_layer_5_to_3___v_STEP_2 /! Libcrux_ml_dsa.Simd.Traits.v_COEFFICIENTS_IN_SIMD_UNIT
+
+let ntt__avx2_ntt (re: t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32))
+    : t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32) =
   let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32) =
     ntt_at_layer_7_and_6_ re
   in
@@ -1031,6 +1062,7 @@ let ntt__avx2_ntt (re: t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk
   let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32) = ntt_at_layer_0_ re in
   re
 
-let ntt (re: t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32)) =
+let ntt (re: t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32))
+    : t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32) =
   let re:t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32) = ntt__avx2_ntt re in
   re

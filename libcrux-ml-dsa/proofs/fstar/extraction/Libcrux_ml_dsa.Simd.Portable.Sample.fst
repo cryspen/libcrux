@@ -1,9 +1,10 @@
 module Libcrux_ml_dsa.Simd.Portable.Sample
-#set-options "--fuel 0 --ifuel 1 --z3rlimit 100"
+#set-options "--fuel 0 --ifuel 1 --z3rlimit 80"
 open Core
 open FStar.Mul
 
-let rejection_sample_less_than_field_modulus (randomness: t_Slice u8) (out: t_Slice i32) =
+let rejection_sample_less_than_field_modulus (randomness: t_Slice u8) (out: t_Slice i32)
+    : (t_Slice i32 & usize) =
   let sampled:usize = mk_usize 0 in
   let out, sampled:(t_Slice i32 & usize) =
     Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Slice.Iter.t_ChunksExact
@@ -37,7 +38,8 @@ let rejection_sample_less_than_field_modulus (randomness: t_Slice u8) (out: t_Sl
   let hax_temp_output:usize = sampled in
   out, hax_temp_output <: (t_Slice i32 & usize)
 
-let rejection_sample_less_than_eta_equals_2_ (randomness: t_Slice u8) (out: t_Slice i32) =
+let rejection_sample_less_than_eta_equals_2_ (randomness: t_Slice u8) (out: t_Slice i32)
+    : (t_Slice i32 & usize) =
   let sampled:usize = mk_usize 0 in
   let out, sampled:(t_Slice i32 & usize) =
     Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Slice.Iter.t_Iter
@@ -86,7 +88,8 @@ let rejection_sample_less_than_eta_equals_2_ (randomness: t_Slice u8) (out: t_Sl
   let hax_temp_output:usize = sampled in
   out, hax_temp_output <: (t_Slice i32 & usize)
 
-let rejection_sample_less_than_eta_equals_4_ (randomness: t_Slice u8) (out: t_Slice i32) =
+let rejection_sample_less_than_eta_equals_4_ (randomness: t_Slice u8) (out: t_Slice i32)
+    : (t_Slice i32 & usize) =
   let sampled:usize = mk_usize 0 in
   let out, sampled:(t_Slice i32 & usize) =
     Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Slice.Iter.t_Iter

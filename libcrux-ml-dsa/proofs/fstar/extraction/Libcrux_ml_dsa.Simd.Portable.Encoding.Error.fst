@@ -1,12 +1,14 @@
 module Libcrux_ml_dsa.Simd.Portable.Encoding.Error
-#set-options "--fuel 0 --ifuel 1 --z3rlimit 100"
+#set-options "--fuel 0 --ifuel 1 --z3rlimit 80"
 open Core
 open FStar.Mul
+
+let serialize_when_eta_is_2___v_ETA: i32 = mk_i32 2
 
 let serialize_when_eta_is_2_
       (simd_unit: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients)
       (serialized: t_Slice u8)
-     =
+    : t_Slice u8 =
   let _:Prims.unit =
     if true
     then
@@ -108,10 +110,12 @@ let serialize_when_eta_is_2_
   in
   serialized
 
+let serialize_when_eta_is_4___v_ETA: i32 = mk_i32 4
+
 let serialize_when_eta_is_4_
       (simd_unit: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients)
       (serialized: t_Slice u8)
-     =
+    : t_Slice u8 =
   let serialized:t_Slice u8 =
     Rust_primitives.Hax.Folds.fold_enumerated_chunked_slice (mk_usize 2)
       (simd_unit.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values <: t_Slice i32)
@@ -146,7 +150,7 @@ let serialize
       (eta: Libcrux_ml_dsa.Constants.t_Eta)
       (simd_unit: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients)
       (serialized: t_Slice u8)
-     =
+    : t_Slice u8 =
   let serialized:t_Slice u8 =
     match eta <: Libcrux_ml_dsa.Constants.t_Eta with
     | Libcrux_ml_dsa.Constants.Eta_Two  -> serialize_when_eta_is_2_ simd_unit serialized
@@ -154,10 +158,12 @@ let serialize
   in
   serialized
 
+let deserialize_when_eta_is_2___v_ETA: i32 = mk_i32 2
+
 let deserialize_when_eta_is_2_
       (serialized: t_Slice u8)
       (simd_unit: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients)
-     =
+    : Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients =
   let _:Prims.unit =
     if true
     then
@@ -291,10 +297,12 @@ let deserialize_when_eta_is_2_
   in
   simd_unit
 
+let deserialize_when_eta_is_4___v_ETA: i32 = mk_i32 4
+
 let deserialize_when_eta_is_4_
       (serialized: t_Slice u8)
       (simd_units: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients)
-     =
+    : Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients =
   let _:Prims.unit =
     if true
     then
@@ -348,7 +356,7 @@ let deserialize
       (eta: Libcrux_ml_dsa.Constants.t_Eta)
       (serialized: t_Slice u8)
       (out: Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients)
-     =
+    : Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients =
   let out:Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients =
     match eta <: Libcrux_ml_dsa.Constants.t_Eta with
     | Libcrux_ml_dsa.Constants.Eta_Two  -> deserialize_when_eta_is_2_ serialized out
