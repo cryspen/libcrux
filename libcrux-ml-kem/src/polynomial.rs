@@ -1,4 +1,4 @@
-use crate::vector::{Operations, FIELD_ELEMENTS_IN_VECTOR, MONTGOMERY_R_SQUARED_MOD_FIELD_MODULUS};
+use crate::vector::{Operations, MONTGOMERY_R_SQUARED_MOD_FIELD_MODULUS};
 
 pub(crate) const ZETAS_TIMES_MONTGOMERY_R: [i16; 128] = {
     hax_lib::fstar!(r#"assert_norm (pow2 16 == 65536)"#);
@@ -24,8 +24,7 @@ pub fn zeta(i: usize) -> i16 {
     ZETAS_TIMES_MONTGOMERY_R[i]
 }
 
-pub(crate) const VECTORS_IN_RING_ELEMENT: usize =
-    super::constants::COEFFICIENTS_IN_RING_ELEMENT / FIELD_ELEMENTS_IN_VECTOR;
+pub(crate) const VECTORS_IN_RING_ELEMENT: usize = 16;
 
 #[cfg_attr(
     hax,
@@ -213,18 +212,61 @@ fn poly_barrett_reduce<Vector: Operations>(myself: &mut PolynomialRingElement<Ve
 }
 
 #[inline(always)]
-#[hax_lib::fstar::verification_status(lax)]
+#[hax_lib::fstar::options("--z3rlimit 300")]
+#[hax_lib::requires(fstar!(r#"is_bounded_poly (pow2 12 - 1) ${myself}"#))]
+#[hax_lib::ensures(|result| fstar!(r#"is_bounded_poly 3328 ${result}"#))]
 fn subtract_reduce<Vector: Operations>(
     myself: &PolynomialRingElement<Vector>,
     mut b: PolynomialRingElement<Vector>,
 ) -> PolynomialRingElement<Vector> {
+    let _b = b.coefficients;
     for i in 0..VECTORS_IN_RING_ELEMENT {
+        hax_lib::loop_invariant!(|i: usize| fstar!(
+            r#"
+        (forall j. j < v i ==> is_bounded_vector 3328 ${b}.f_coefficients.[ sz j ]) /\
+        (forall j. (j >= v i /\ j < 16) ==> ${b}.f_coefficients.[ sz j ] == ${_b}.[ sz j ])
+        "#
+        ));
+        hax_lib::fstar!(r#"
+          assert (v $i < 16);
+          assert_norm (1441 < pow2 15);
+          assert_norm (1664 < pow2 15);
+          assert_norm (mk_i16 1441 <. mk_i16 1664);
+          assert(Spec.Utils.is_i16b 1664 (mk_i16 1441))
+        "#);
         let coefficient_normal_form =
             Vector::montgomery_multiply_by_constant(b.coefficients[i], 1441);
-        b.coefficients[i] = Vector::barrett_reduce(Vector::sub(
-            myself.coefficients[i],
-            &coefficient_normal_form,
-        ));
+        hax_lib::fstar!(
+            r#"
+            assert (is_bounded_vector 3328 ${coefficient_normal_form});
+            assert (is_bounded_vector (pow2 12 - 1) (${myself}.f_coefficients.[ i ]));
+            assert_norm (pow2 12 - 1 == 4095);
+            Spec.Utils.lemma_sub_intb_forall 4095 3328;
+            assert (forall j. Spec.Utils.is_intb 7423
+                (v (Seq.index (i1.f_to_i16_array ${myself}.f_coefficients.[ i ]) j) -
+                 v (Seq.index (i1.f_to_i16_array ${coefficient_normal_form}) j)));
+            assert_norm (7423 <= pow2 15 - 1);
+            Spec.Utils.lemma_intb_le 7423 (pow2 15 - 1);
+            Spec.Utils.lemma_intb_le 7423 28296;
+            assert (forall j. Spec.Utils.is_intb (pow2 15 - 1) 
+                (v (Seq.index (i1.f_to_i16_array ${myself}.f_coefficients.[ i ]) j) -
+                 v (Seq.index (i1.f_to_i16_array ${coefficient_normal_form}) j)));
+            assert (forall j. Spec.Utils.is_intb 28296 
+                (v (Seq.index (i1.f_to_i16_array ${myself}.f_coefficients.[ i ]) j) -
+                 v (Seq.index (i1.f_to_i16_array ${coefficient_normal_form}) j)))
+        "#
+        );
+        let diff = Vector::sub(myself.coefficients[i], &coefficient_normal_form);
+        hax_lib::fstar!("assert (is_bounded_vector 28296 diff)");
+        let red = Vector::barrett_reduce(diff);
+        hax_lib::fstar!("assert (is_bounded_vector 3328 red)");
+        b.coefficients[i] = red;
+        hax_lib::fstar!(r#"
+            assert (forall j. (j > v $i /\ j < 16) ==> ${b}.f_coefficients.[ sz j ] == ${_b}.[ sz j]);
+            assert (forall j. j < v $i ==> is_bounded_vector 3328 ${b}.f_coefficients.[ sz j ]);
+            assert (${b}.f_coefficients.[ $i ] == ${red});
+            assert (forall j. j <= v $i ==> is_bounded_vector 3328 ${b}.f_coefficients.[ sz j ])
+        "#);
     }
     b
 }
@@ -453,6 +495,8 @@ impl<Vector: Operations> PolynomialRingElement<Vector> {
     }
 
     #[inline(always)]
+    #[hax_lib::requires(fstar!(r#"is_bounded_poly (pow2 12 - 1) self"#))]
+    #[hax_lib::ensures(|result| fstar!(r#"is_bounded_poly 3328 ${result}"#))]
     pub(crate) fn subtract_reduce(&self, b: Self) -> Self {
         subtract_reduce(self, b)
     }

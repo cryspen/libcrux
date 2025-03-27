@@ -3,6 +3,29 @@ module Spec.Utils
 open FStar.Mul
 open Core
 
+val pow2_values_more: x:nat -> Lemma
+  (let p = pow2 x in
+   match x with
+   | 0  -> p=1
+   | 1  -> p=2
+   | 2  -> p=4
+   | 3  -> p=8
+   | 4  -> p=16
+   | 5  -> p=32
+   | 6  -> p=64
+   | 7  -> p=128
+   | 8  -> p=256
+   | 9  -> p=512
+   | 10 -> p=1024
+   | 11 -> p=2048
+   | 12 -> p=4096
+   | 13 -> p=8192
+   | 14 -> p=16384
+   | 15 -> p=32768
+   | 16 -> p=65536
+   | _ -> true)
+ [SMTPat (pow2 x)]
+
 (** Utils *)
 let map_slice #a #b
   (f:a -> b)

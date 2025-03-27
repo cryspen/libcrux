@@ -46,9 +46,7 @@ val zeta (i: usize)
           let result:i16 = result in
           Spec.Utils.is_i16b 1664 result)
 
-let v_VECTORS_IN_RING_ELEMENT: usize =
-  Libcrux_ml_kem.Constants.v_COEFFICIENTS_IN_RING_ELEMENT /!
-  Libcrux_ml_kem.Vector.Traits.v_FIELD_ELEMENTS_IN_VECTOR
+let v_VECTORS_IN_RING_ELEMENT: usize = mk_usize 16
 
 type t_PolynomialRingElement
   (v_Vector: Type0) {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
@@ -180,7 +178,12 @@ val subtract_reduce
       (#v_Vector: Type0)
       {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
       (myself b: t_PolynomialRingElement v_Vector)
-    : Prims.Pure (t_PolynomialRingElement v_Vector) Prims.l_True (fun _ -> Prims.l_True)
+    : Prims.Pure (t_PolynomialRingElement v_Vector)
+      (requires is_bounded_poly (pow2 12 - 1) myself)
+      (ensures
+        fun result ->
+          let result:t_PolynomialRingElement v_Vector = result in
+          is_bounded_poly 3328 result)
 
 val add_message_error_reduce
       (#v_Vector: Type0)
@@ -248,12 +251,6 @@ val impl_2__ZERO:
     {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |} ->
     Prims.unit
   -> Prims.Pure (t_PolynomialRingElement v_Vector) Prims.l_True (fun _ -> Prims.l_True)
-
-val impl_2__subtract_reduce
-      (#v_Vector: Type0)
-      {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
-      (self b: t_PolynomialRingElement v_Vector)
-    : Prims.Pure (t_PolynomialRingElement v_Vector) Prims.l_True (fun _ -> Prims.l_True)
 
 val impl_2__add_message_error_reduce
       (#v_Vector: Type0)
@@ -401,6 +398,17 @@ val impl_2__poly_barrett_reduce
         fun self_e_future ->
           let self_e_future:t_PolynomialRingElement v_Vector = self_e_future in
           is_bounded_poly 3328 self_e_future)
+
+val impl_2__subtract_reduce
+      (#v_Vector: Type0)
+      {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
+      (self b: t_PolynomialRingElement v_Vector)
+    : Prims.Pure (t_PolynomialRingElement v_Vector)
+      (requires is_bounded_poly (pow2 12 - 1) self)
+      (ensures
+        fun result ->
+          let result:t_PolynomialRingElement v_Vector = result in
+          is_bounded_poly 3328 result)
 
 val impl_2__add_standard_error_reduce
       (#v_Vector: Type0)

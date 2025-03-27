@@ -3,6 +3,28 @@ module Spec.Utils
 open FStar.Mul
 open Core
 
+let pow2_values_more x =
+  let p = pow2 x in
+  match x with
+   | 0  -> assert_norm(p=1)
+   | 1  -> assert_norm(p=2)
+   | 2  -> assert_norm(p=4)
+   | 3  -> assert_norm(p=8)
+   | 4  -> assert_norm(p=16)
+   | 5  -> assert_norm(p=32)
+   | 6  -> assert_norm(p=64)
+   | 7  -> assert_norm(p=128)
+   | 8  -> assert_norm(p=256)
+   | 9  -> assert_norm(p=512)
+   | 10 -> assert_norm(p=1024)
+   | 11 -> assert_norm(p=2048)
+   | 12 -> assert_norm(p=4096)
+   | 13 -> assert_norm(p=8192)
+   | 14 -> assert_norm(p=16384)
+   | 15 -> assert_norm(p=32768)
+   | 16 -> assert_norm(p=65536)
+   | _ -> ()
+
 let lemma_createL_index #a len l i = ()
 
 let lemma_create16_index #a v15 v14 v13 v12 v11 v10 v9 v8 v7 v6 v5 v4 v3 v2 v1 v0 i =
