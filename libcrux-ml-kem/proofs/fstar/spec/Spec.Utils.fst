@@ -303,9 +303,22 @@ let lemma_mont_mul_red_i16 x y =
     lemma_mont_mul_red_i16_int x y) 
   else lemma_mont_mul_red_i16_int x y
 
-let lemma_barrett_red (x:i16) = admit()
+let lemma_barrett_red (x:i16) = ()
 
-let lemma_cond_sub x = admit()
+let lemma_cond_sub x =
+  let xm = x -. (mk_i16 3329) in
+  let mask = xm >>! (mk_i32 15) in
+  let mm = mask &. (mk_i16 3329) in
+  let result = xm +. mm in
+  assert(xm == x -! mk_i16 3329);
+  assert(v mask = v xm / pow2 15);
+  assert(v xm >= 0 ==> v mask == 0);
+  assert(v xm < 0 ==> v mask == -1);
+  logand_zero_lemma (mk_i16 3329);
+  assert(v xm >= 0 ==> v mm == 0);
+  logand_ones_lemma (mk_i16 3329);
+  assert(v xm < 0 ==> v mm == 3329)
+
 
 let lemma_shift_right_15_i16 (x:i16) =
   Rust_primitives.Integers.mk_int_v_lemma #i16_inttype (mk_i16 0);

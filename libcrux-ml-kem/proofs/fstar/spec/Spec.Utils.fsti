@@ -228,6 +228,16 @@ val lemma_barrett_red (x:i16) : Lemma
              v result % 3329 == v x % 3329)) 
    [SMTPat (barrett_red x)]
 
+let logand_zero_lemma (a:i16):
+  Lemma (((mk_i16 0) &. a) == mk_i16 0)
+        [SMTPat (logand (mk_i16 0) a)] =
+        logand_lemma a a
+
+let logand_ones_lemma (a:i16):
+  Lemma (((mk_i16 (-1)) &. a) == a)
+        [SMTPat (logand (mk_i16 (-1)) a)] =
+        logand_lemma a a
+
 let cond_sub (x:i16) =
   let xm = x -. (mk_i16 3329) in
   let mask = xm >>! (mk_i32 15) in
@@ -235,9 +245,11 @@ let cond_sub (x:i16) =
   xm +. mm
 
 val lemma_cond_sub x:
-  Lemma (let r = cond_sub x in
-         if x >=. (mk_i16 3329) then r == x -! (mk_i16 3329) else r == x)
-        [SMTPat (cond_sub x)]
+  Lemma 
+    (requires (is_i16b (pow2 12 - 1) x))
+    (ensures (let r = cond_sub x in
+              if x >=. (mk_i16 3329) then r == x -! (mk_i16 3329) else r == x))
+    [SMTPat (cond_sub x)]
 
 val lemma_shift_right_15_i16 (x:i16):
   Lemma (if v x >= 0 then (x >>! (mk_i32 15)) == mk_i16 0 else (x >>! (mk_i32 15)) == (mk_i16 (-1)))
@@ -256,12 +268,3 @@ let inv_ntt_spec #len (vec_in: t_Array i16 len) (zeta: int) (i: nat{i < v len}) 
   ((v (Seq.index vec_out j) % 3329) ==
    (((v (Seq.index vec_in j) - v (Seq.index vec_in i)) * zeta * 169) % 3329))
 
-let logand_zero_lemma (a:i16):
-  Lemma (((mk_i16 0) &. a) == mk_i16 0)
-        [SMTPat (logand (mk_i16 0) a)] =
-        logand_lemma a a
-
-let logand_ones_lemma (a:i16):
-  Lemma (((mk_i16 (-1)) &. a) == a)
-        [SMTPat (logand (mk_i16 (-1)) a)] =
-        logand_lemma a a
