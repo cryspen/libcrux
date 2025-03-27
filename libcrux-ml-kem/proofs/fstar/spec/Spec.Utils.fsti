@@ -132,6 +132,13 @@ val lemma_add_intb (b1 b2: nat) (n1 n2: int)
 val lemma_add_intb_forall (b1 b2: nat)
     : Lemma (forall n1 n2. (is_intb b1 n1 /\ is_intb b2 n2) ==> is_intb (b1 + b2) (n1 + n2))
 
+val lemma_sub_intb (b1 b2: nat) (n1 n2: int) 
+    : Lemma (requires (is_intb b1 n1 /\ is_intb b2 n2))
+      (ensures (is_intb (b1 + b2) (n1 - n2)))
+
+val lemma_sub_intb_forall (b1 b2: nat)
+    : Lemma (forall n1 n2. (is_intb b1 n1 /\ is_intb b2 n2) ==> is_intb (b1 + b2) (n1 - n2))
+
 #push-options "--z3rlimit 200"
 val lemma_mul_intb (b1 b2: nat) (n1 n2: int) 
     : Lemma (requires (is_intb b1 n1 /\ is_intb b2 n2))

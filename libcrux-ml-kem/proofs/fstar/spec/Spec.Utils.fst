@@ -71,6 +71,10 @@ let lemma_add_intb b1 b2 n1 n2 = ()
 
 let lemma_add_intb_forall b1 b2 = ()
 
+let lemma_sub_intb b1 b2 n1 n2 = ()
+
+let lemma_sub_intb_forall b1 b2 = ()
+
 #push-options "--z3rlimit 200"
 let lemma_mul_intb (b1 b2: nat) (n1 n2: int) =
   if n1 = 0 || n2 = 0
