@@ -28,9 +28,7 @@ pub(super) fn compress_then_serialize_message<Vector: Operations>(
     let mut serialized = [0u8; SHARED_SECRET_SIZE];
     for i in 0..16 {
         hax_lib::loop_invariant!(|i: usize| {
-            fstar!(
-                "v $i < 16 ==> Libcrux_ml_kem.Polynomial.is_bounded_poly 3328 $re"
-            )
+            fstar!("v $i < 16 ==> Libcrux_ml_kem.Polynomial.is_bounded_poly 3328 $re")
         });
         hax_lib::fstar!(r#"assert (2 * v $i + 2 <= 32)"#);
         let coefficient = to_unsigned_field_modulus(re.coefficients[i]);

@@ -15,16 +15,20 @@ pub trait Repr: Copy + Clone {
 
 #[cfg(hax)]
 mod spec {
-    pub(crate) fn add_pre(lhs: &[i16; 16], rhs: &[i16;16]) -> hax_lib::Prop {
-        hax_lib::fstar_prop_expr!(r#"forall i. i < 16 ==> 
+    pub(crate) fn add_pre(lhs: &[i16; 16], rhs: &[i16; 16]) -> hax_lib::Prop {
+        hax_lib::fstar_prop_expr!(
+            r#"forall i. i < 16 ==> 
             Spec.Utils.is_intb (pow2 15 - 1) 
-                (v (Seq.index ${lhs} i) + v (Seq.index ${rhs} i))"#)
+                (v (Seq.index ${lhs} i) + v (Seq.index ${rhs} i))"#
+        )
     }
 
-    pub(crate) fn add_post(lhs: &[i16; 16], rhs: &[i16; 16], result:&[i16; 16]) -> hax_lib::Prop {
-        hax_lib::fstar_prop_expr!(r#"forall i. i < 16 ==> 
+    pub(crate) fn add_post(lhs: &[i16; 16], rhs: &[i16; 16], result: &[i16; 16]) -> hax_lib::Prop {
+        hax_lib::fstar_prop_expr!(
+            r#"forall i. i < 16 ==> 
             (v (Seq.index ${result} i) == 
-            v (Seq.index ${lhs} i) + v (Seq.index ${rhs} i))"#)
+            v (Seq.index ${lhs} i) + v (Seq.index ${rhs} i))"#
+        )
     }
 }
 

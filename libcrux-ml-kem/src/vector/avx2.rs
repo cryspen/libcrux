@@ -260,7 +260,6 @@ impl crate::vector::traits::Repr for SIMD256Vector {
     }
 }
 
-
 #[inline(always)]
 #[hax_lib::requires(array.len() >= 32)]
 pub(super) fn from_bytes(array: &[u8]) -> SIMD256Vector {
@@ -594,4 +593,3 @@ impl Operations for SIMD256Vector {
         sampling::rejection_sample(input, output)
     }
 }
-

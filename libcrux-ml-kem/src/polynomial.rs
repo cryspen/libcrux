@@ -55,7 +55,8 @@ let is_bounded_poly (#v_Vector: Type0)
       (bound: nat)
       (re: t_PolynomialRingElement v_Vector) =
     forall (i:nat). i < 16 ==> is_bounded_vector bound (Seq.index re.f_coefficients i)"#
-))]
+    )
+)]
 // XXX: We don't want to copy this. But for eurydice we have to have this.
 #[derive(Clone, Copy)]
 #[repr(transparent)]
@@ -201,10 +202,12 @@ fn add_to_ring_element<Vector: Operations, const K: usize>(
 fn poly_barrett_reduce<Vector: Operations>(myself: &mut PolynomialRingElement<Vector>) {
     let _myself = myself.coefficients;
     for i in 0..VECTORS_IN_RING_ELEMENT {
-        hax_lib::loop_invariant!(|i:usize| fstar!(r#"
+        hax_lib::loop_invariant!(|i: usize| fstar!(
+            r#"
         (forall j. j < v i ==> is_bounded_vector 3328 ${myself}.f_coefficients.[ sz j ]) /\
         (forall j. (j >= v i /\ j < 16) ==> ${myself}.f_coefficients.[ sz j ] == ${_myself}.[ sz j ])
-        "#));
+        "#
+        ));
         myself.coefficients[i] = Vector::barrett_reduce(myself.coefficients[i]);
     }
 }
@@ -294,7 +297,8 @@ fn add_standard_error_reduce<Vector: Operations>(
         // The coefficients are of the form aR^{-1} mod q, which means
         // calling to_montgomery_domain() on them should return a mod q.
         let coefficient_normal_form = to_standard_domain::<Vector>(myself.coefficients[j]);
-        hax_lib::fstar!(r#"
+        hax_lib::fstar!(
+            r#"
           assert (is_bounded_vector 3328 ${coefficient_normal_form});
           assert (is_bounded_vector 3328 (error.f_coefficients.[ j ]));
           Spec.Utils.lemma_add_intb_forall 3328 3328;
@@ -310,7 +314,8 @@ fn add_standard_error_reduce<Vector: Operations>(
           assert (forall i. Spec.Utils.is_intb 28296 
             (v (Seq.index (i1.f_to_i16_array ${coefficient_normal_form}) i) +
             v (Seq.index (i1.f_to_i16_array ${error}.f_coefficients.[ j ]) i)))
-        "#);
+        "#
+        );
         myself.coefficients[j] =
             Vector::barrett_reduce(Vector::add(coefficient_normal_form, &error.coefficients[j]));
     }
