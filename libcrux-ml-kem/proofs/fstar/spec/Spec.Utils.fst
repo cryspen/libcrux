@@ -67,6 +67,10 @@ let update_at_range_lemma #n
 
 let lemma_intb_le b b' = ()          
 
+let lemma_add_intb b1 b2 n1 n2 = ()
+
+let lemma_add_intb_forall b1 b2 = ()
+
 #push-options "--z3rlimit 200"
 let lemma_mul_intb (b1 b2: nat) (n1 n2: int) =
   if n1 = 0 || n2 = 0
@@ -80,6 +84,8 @@ let lemma_mul_intb (b1 b2: nat) (n1 n2: int) =
     lemma_mult_le_right b2 (abs n1) b1;
     lemma_abs_bound (n1 * n2) (b1 * b2)
 #pop-options
+
+let lemma_mul_intb_forall b1 b2 = ()
 
 #push-options "--z3rlimit 200"
 let lemma_mul_i16b (b1 b2: nat) (n1 n2: i16) =
