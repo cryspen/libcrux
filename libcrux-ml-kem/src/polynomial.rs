@@ -227,13 +227,15 @@ fn subtract_reduce<Vector: Operations>(
         (forall j. (j >= v i /\ j < 16) ==> ${b}.f_coefficients.[ sz j ] == ${_b}.[ sz j ])
         "#
         ));
-        hax_lib::fstar!(r#"
+        hax_lib::fstar!(
+            r#"
           assert (v $i < 16);
           assert_norm (1441 < pow2 15);
           assert_norm (1664 < pow2 15);
           assert_norm (mk_i16 1441 <. mk_i16 1664);
           assert(Spec.Utils.is_i16b 1664 (mk_i16 1441))
-        "#);
+        "#
+        );
         let coefficient_normal_form =
             Vector::montgomery_multiply_by_constant(b.coefficients[i], 1441);
         hax_lib::fstar!(
@@ -261,12 +263,14 @@ fn subtract_reduce<Vector: Operations>(
         let red = Vector::barrett_reduce(diff);
         hax_lib::fstar!("assert (is_bounded_vector 3328 red)");
         b.coefficients[i] = red;
-        hax_lib::fstar!(r#"
+        hax_lib::fstar!(
+            r#"
             assert (forall j. (j > v $i /\ j < 16) ==> ${b}.f_coefficients.[ sz j ] == ${_b}.[ sz j]);
             assert (forall j. j < v $i ==> is_bounded_vector 3328 ${b}.f_coefficients.[ sz j ]);
             assert (${b}.f_coefficients.[ $i ] == ${red});
             assert (forall j. j <= v $i ==> is_bounded_vector 3328 ${b}.f_coefficients.[ sz j ])
-        "#);
+        "#
+        );
     }
     b
 }
