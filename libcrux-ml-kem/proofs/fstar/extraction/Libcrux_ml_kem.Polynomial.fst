@@ -315,33 +315,36 @@ let poly_barrett_reduce
           Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector)
       (myself: t_PolynomialRingElement v_Vector)
      =
+  let e_myself:t_Array v_Vector (mk_usize 16) = myself.f_coefficients in
   let myself:t_PolynomialRingElement v_Vector =
     Rust_primitives.Hax.Folds.fold_range (mk_usize 0)
       v_VECTORS_IN_RING_ELEMENT
-      (fun myself temp_1_ ->
+      (fun myself i ->
           let myself:t_PolynomialRingElement v_Vector = myself in
-          let _:usize = temp_1_ in
-          true)
+          let i:usize = i in
+          (forall j. j < v i ==> is_bounded_vector 3328 myself.f_coefficients.[ sz j ]) /\
+          (forall j. (j >= v i /\ j < 16) ==> myself.f_coefficients.[ sz j ] == e_myself.[ sz j ]))
       myself
       (fun myself i ->
           let myself:t_PolynomialRingElement v_Vector = myself in
           let i:usize = i in
-          {
-            myself with
-            f_coefficients
-            =
-            Rust_primitives.Hax.Monomorphized_update_at.update_at_usize myself.f_coefficients
-              i
-              (Libcrux_ml_kem.Vector.Traits.f_barrett_reduce #v_Vector
-                  #FStar.Tactics.Typeclasses.solve
-                  (myself.f_coefficients.[ i ] <: v_Vector)
-                <:
-                v_Vector)
+          let myself:t_PolynomialRingElement v_Vector =
+            {
+              myself with
+              f_coefficients
+              =
+              Rust_primitives.Hax.Monomorphized_update_at.update_at_usize myself.f_coefficients
+                i
+                (Libcrux_ml_kem.Vector.Traits.f_barrett_reduce #v_Vector
+                    #FStar.Tactics.Typeclasses.solve
+                    (myself.f_coefficients.[ i ] <: v_Vector)
+                  <:
+                  v_Vector)
+            }
             <:
-            t_Array v_Vector (mk_usize 16)
-          }
-          <:
-          t_PolynomialRingElement v_Vector)
+            t_PolynomialRingElement v_Vector
+          in
+          myself)
   in
   myself
 

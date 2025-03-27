@@ -165,14 +165,20 @@ impl Operations for PortableVector {
         cond_subtract_3329(v)
     }
 
-    #[requires(fstar!(r#"Spec.Utils.is_i16b_array 28296 (impl.f_repr ${v})"#))]
-    fn barrett_reduce(v: Self) -> Self {
-        barrett_reduce(v)
+    #[requires(fstar!(r#"Spec.Utils.is_i16b_array 28296 (impl.f_repr ${vector})"#))]
+    #[ensures(|result| fstar!(r#"Spec.Utils.is_i16b_array 3328 (impl.f_repr ${result}) /\
+                (forall i. (v (Seq.index (impl.f_repr ${result}) i) % 3329) == 
+                           (v (Seq.index (impl.f_repr ${vector})i) % 3329))"#))]
+    fn barrett_reduce(vector: Self) -> Self {
+        barrett_reduce(vector)
     }
 
-    #[requires(fstar!(r#"Spec.Utils.is_i16b 1664 $r"#))]
-    fn montgomery_multiply_by_constant(v: Self, r: i16) -> Self {
-        montgomery_multiply_by_constant(v, r)
+    #[requires(fstar!(r#"Spec.Utils.is_i16b 1664 $constant"#))]
+    #[ensures(|result| fstar!(r#"Spec.Utils.is_i16b_array 3328 (impl.f_repr ${result}) /\
+                (forall i. i < 16 ==> ((v (Seq.index (impl.f_repr ${result}) i) % 3329)==
+                                       (v (Seq.index (impl.f_repr ${vector}) i) * v ${constant} * 169) % 3329))"#))]
+    fn montgomery_multiply_by_constant(vector: Self, constant: i16) -> Self {
+        montgomery_multiply_by_constant(vector, constant)
     }
 
     #[requires(fstar!(r#"Spec.Utils.is_i16b_array 3328 (impl.f_repr $a)"#))]

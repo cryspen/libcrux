@@ -355,6 +355,9 @@ impl Operations for SIMD256Vector {
     }
 
     #[requires(fstar!(r#"Spec.Utils.is_i16b_array 28296 (impl.f_repr ${vector})"#))]
+    #[ensures(|result| fstar!(r#"Spec.Utils.is_i16b_array 3328 (impl.f_repr ${result}) /\
+                (forall i. (v (Seq.index (impl.f_repr ${result}) i) % 3329) == 
+                           (v (Seq.index (impl.f_repr ${vector})i) % 3329))"#))]
     #[inline(always)]
     fn barrett_reduce(vector: Self) -> Self {
         Self {
@@ -362,8 +365,11 @@ impl Operations for SIMD256Vector {
         }
     }
 
-    #[requires(fstar!(r#"Spec.Utils.is_i16b 1664 $constant"#))]
     #[inline(always)]
+    #[requires(fstar!(r#"Spec.Utils.is_i16b 1664 $constant"#))]
+    #[ensures(|result| fstar!(r#"Spec.Utils.is_i16b_array 3328 (impl.f_repr ${result}) /\
+                (forall i. i < 16 ==> ((v (Seq.index (impl.f_repr ${result}) i) % 3329)==
+                                       (v (Seq.index (impl.f_repr ${vector}) i) * v ${constant} * 169) % 3329))"#))]
     fn montgomery_multiply_by_constant(vector: Self, constant: i16) -> Self {
         Self {
             elements: arithmetic::montgomery_multiply_by_constant(vector.elements, constant),

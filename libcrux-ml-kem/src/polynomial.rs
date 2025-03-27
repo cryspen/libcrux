@@ -199,7 +199,12 @@ fn add_to_ring_element<Vector: Operations, const K: usize>(
 #[hax_lib::requires(fstar!(r#"is_bounded_poly 28296 ${myself}"#))]
 #[hax_lib::ensures(|_| fstar!(r#"is_bounded_poly 3328 ${myself}_future"#))]
 fn poly_barrett_reduce<Vector: Operations>(myself: &mut PolynomialRingElement<Vector>) {
+    let _myself = myself.coefficients;
     for i in 0..VECTORS_IN_RING_ELEMENT {
+        hax_lib::loop_invariant!(|i:usize| fstar!(r#"
+        (forall j. j < v i ==> is_bounded_vector 3328 ${myself}.f_coefficients.[ sz j ]) /\
+        (forall j. (j >= v i /\ j < 16) ==> ${myself}.f_coefficients.[ sz j ] == ${_myself}.[ sz j ])
+        "#));
         myself.coefficients[i] = Vector::barrett_reduce(myself.coefficients[i]);
     }
 }

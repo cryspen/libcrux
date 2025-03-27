@@ -12,7 +12,6 @@ use crate::{
     v (Seq.index (Libcrux_ml_kem.Vector.Traits.f_to_i16_array $result) i) >= 0 /\
     v (Seq.index (Libcrux_ml_kem.Vector.Traits.f_to_i16_array $result) i) < v ${crate::vector::FIELD_MODULUS}"#))]
 pub(super) fn to_unsigned_field_modulus<Vector: Operations>(a: Vector) -> Vector {
-    hax_lib::fstar!(r#"reveal_opaque (`%field_modulus_range) (field_modulus_range #$:Vector)"#);
     Vector::to_unsigned_representative(a)
 }
 

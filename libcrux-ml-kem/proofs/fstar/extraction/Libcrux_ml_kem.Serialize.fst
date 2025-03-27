@@ -16,7 +16,6 @@ let to_unsigned_field_modulus
           Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector)
       (a: v_Vector)
      =
-  let _:Prims.unit = reveal_opaque (`%field_modulus_range) (field_modulus_range #v_Vector) in
   let result:v_Vector =
     Libcrux_ml_kem.Vector.Traits.f_to_unsigned_representative #v_Vector
       #FStar.Tactics.Typeclasses.solve

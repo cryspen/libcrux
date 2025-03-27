@@ -381,7 +381,13 @@ let impl_3: Libcrux_ml_kem.Vector.Traits.t_Operations t_SIMD256Vector =
     f_barrett_reduce_pre
     =
     (fun (vector: t_SIMD256Vector) -> Spec.Utils.is_i16b_array 28296 (impl.f_repr vector));
-    f_barrett_reduce_post = (fun (vector: t_SIMD256Vector) (out: t_SIMD256Vector) -> true);
+    f_barrett_reduce_post
+    =
+    (fun (vector: t_SIMD256Vector) (result: t_SIMD256Vector) ->
+        Spec.Utils.is_i16b_array 3328 (impl.f_repr result) /\
+        (forall i.
+            (v (Seq.index (impl.f_repr result) i) % 3329) ==
+            (v (Seq.index (impl.f_repr vector) i) % 3329)));
     f_barrett_reduce
     =
     (fun (vector: t_SIMD256Vector) ->
@@ -393,7 +399,12 @@ let impl_3: Libcrux_ml_kem.Vector.Traits.t_Operations t_SIMD256Vector =
     (fun (vector: t_SIMD256Vector) (constant: i16) -> Spec.Utils.is_i16b 1664 constant);
     f_montgomery_multiply_by_constant_post
     =
-    (fun (vector: t_SIMD256Vector) (constant: i16) (out: t_SIMD256Vector) -> true);
+    (fun (vector: t_SIMD256Vector) (constant: i16) (result: t_SIMD256Vector) ->
+        Spec.Utils.is_i16b_array 3328 (impl.f_repr result) /\
+        (forall i.
+            i < 16 ==>
+            ((v (Seq.index (impl.f_repr result) i) % 3329) ==
+              (v (Seq.index (impl.f_repr vector) i) * v constant * 169) % 3329)));
     f_montgomery_multiply_by_constant
     =
     (fun (vector: t_SIMD256Vector) (constant: i16) ->
