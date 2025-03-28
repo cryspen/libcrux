@@ -132,6 +132,6 @@ fi
 find . -type f -name '*.c' -and -not -path '*_deps*' -exec clang-format --style=Google -i "{}" \;
 find . -type f -name '*.h' -and -not -path '*_deps*' -exec clang-format --style=Google -i "{}" \;
 if [ -d "internal" ]; then
-    clang-format --style=Google -i internal/*.h
+    clang-format-18 --style=Google -i internal/*.h
 fi
-clang-format --style=Google -i intrinsics/*.h
+clang-format-18 --style=Google -i intrinsics/*.h
