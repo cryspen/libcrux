@@ -70,8 +70,8 @@
             circus-green = pkgs.fetchFromGitHub {
               owner = "Inria-Prosecco";
               repo = "circus-green";
-              rev = "main";
-              hash = "sha256-ilOqNJa4Il4e5FqXKH5f2jGXQhzvSkhcovXYnWCdgto=";
+              rev = "b18bf804c2a999a2f476e09608284561c964225c";
+              hash = "sha256-XSRu3LH0RhZ+P8zCADl8e+yjghmol/Eb1oTsaI5JWr4=";
             };
           in
           "${circus-green}/libcrux-Cargo.lock";
