@@ -21,24 +21,24 @@ functions in the modules still need some proofs in that category.
 |          | ind_cca           | yes          | yes            | yes          |    
 |          | instantiations    | yes          | yes            | yes          |    
 |          | multiplexing      | yes          | yes            | yes          |    
-|          | mlkem*            | yes          | yes            | needs proofs |    
+|          | polynomial        | yes          | yes            | yes          |    
 |          | invert_ntt        | yes          | yes            | needs proofs |    
 |          | ntt               | yes          | yes            | needs proofs |    
+|          | mlkem*            | yes          | yes            | needs proofs |    
 |          | matrix            | yes          | needs proofs   | needs proofs |    
-|          | sampling          | yes          | needs proofs   | needs proofs |    
-|          | polynomial        | yes          | needs proofs   | needs proofs |    
 |          | serialize         | yes          | needs proofs   | needs proofs |    
+|          | sampling          | yes          | needs proofs   | needs proofs |    
 | 	   |                   |              |                |              |
 | _Portable_ | arithmetic        | yes          | yes            | yes          |
 |          | ntt               | yes          | yes            | yes          |
-|          | compress          | yes          | yes            | yes          |
 |          | serialize         | yes          | yes            | yes          |
+|          | compress          | yes          | yes            | yes          |
 |          | sampling          | yes          | yes            | needs proofs |
 |          |                   |              |                |              |
 | _Avx2_     | arithmetic        | yes          | yes            | yes          |
 |          | ntt               | yes          | yes            | yes          |
-|          | compress          | yes          | yes            | needs proofs |
 |          | serialize         | yes          | yes            | yes          |
+|          | compress          | yes          | yes            | needs proofs |
 |          | sampling          | yes          | yes            | needs proofs |
 |          |                   |              |                |              |
 | _Neon_     | arithmetic        | yes          | needs proofs   | needs proofs |
