@@ -7,7 +7,7 @@
   };
 
   outputs =
-    { nixpkgs, eurydice, hax, ... } @ inputs:
+    { self, nixpkgs, eurydice, hax, ... } @ inputs:
     inputs.flake-utils.lib.eachDefaultSystem (
       system:
       let
@@ -50,6 +50,7 @@
           EURYDICE_REV = eurydice.rev;
           KRML_REV = karamel.rev;
           FSTAR_REV = fstar.rev;
+          LIBCRUX_REV = self.rev or "dirty";
         };
 
         rustToolchain = charon.packages.${system}.rustToolchain;
@@ -68,6 +69,18 @@
           in
           "${circus-green}/libcrux-Cargo.lock";
 
+        # Construct a copy of the current directory with the given `Cargo.lock` added.
+        build_src = cargoLock:
+          let
+            src = builtins.filterSource (name: _: !(pkgs.lib.hasSuffix "flake.nix" name)) ./.;
+          in
+          pkgs.runCommand "libcrux-src" { }
+            ''
+              cp -r ${src} $out
+              chmod u+w $out
+              rm -f $out/Cargo.lock
+              cp ${cargoLock} $out/Cargo.lock
+            '';
 
         ml-kem = pkgs.callPackage
           ({ lib
@@ -77,7 +90,6 @@
            , ninja
            , git
            , python3
-           , runCommand
            , craneLib
            , hax
            , googletest
@@ -89,12 +101,7 @@
            , runBenchmarks ? true
            }:
             let
-              src = runCommand "libcrux-src" { } ''
-                cp -r ${./.} $out
-                chmod u+w $out
-                rm -f $out/Cargo.lock
-                cp ${cargoLock} $out/Cargo.lock
-              '';
+              src = build_src cargoLock;
               cargoArtifacts = craneLib.buildDepsOnly { inherit src; };
             in
             craneLib.buildPackage (tools-environment // {
@@ -116,10 +123,11 @@
               ];
               buildPhase = ''
                 cd libcrux-ml-kem
+                patchShebangs ./.
                 ${lib.optionalString checkHax ''
                   python hax.py extract
                 ''}
-                bash c.sh
+                ./c.sh
                 cd c
                 ${lib.optionalString runBenchmarks "LIBCRUX_BENCHMARKS=1"} \
                   cmake \
@@ -152,10 +160,84 @@
             hax =
               hax.packages.${system}.default;
           };
+
+        ml-dsa = pkgs.callPackage
+          ({ lib
+           , clang-tools_18
+           , cmake
+           , mold-wrapped
+           , ninja
+           , git
+           , python3
+           , craneLib
+           , hax
+           , googletest
+           , benchmark
+           , json
+           , tools-environment
+           , cargoLock ? defaultCargoLock
+           , checkHax ? true
+           }:
+            let
+              src = build_src cargoLock;
+              cargoArtifacts = craneLib.buildDepsOnly { inherit src; };
+            in
+            craneLib.buildPackage (tools-environment // {
+              name = "ml-dsa";
+              inherit src cargoArtifacts;
+
+              nativeBuildInputs = [
+                clang-tools_18
+                # Alias `clang_format` to `clang-format-18`
+                (pkgs.writeShellScriptBin "clang-format-18" ''exec ${clang-tools_18}/bin/clang-format "$@"'')
+                cmake
+                mold-wrapped
+                ninja
+                git
+                python3
+                fstar.packages.${system}.default
+              ] ++ lib.optional checkHax [
+                hax
+              ];
+              buildPhase = ''
+                cd libcrux-ml-dsa
+                patchShebangs ./.
+                ${lib.optionalString checkHax ''
+                  python hax.py extract
+                ''}
+                ./boring.sh --no-clean
+                cd cg
+                cmake \
+                  -DFETCHCONTENT_SOURCE_DIR_GOOGLETEST=${googletest} \
+                  -DFETCHCONTENT_SOURCE_DIR_BENCHMARK=${benchmark} \
+                  -DFETCHCONTENT_SOURCE_DIR_JSON=${json} \
+                  -DCMAKE_EXE_LINKER_FLAGS="-fuse-ld=mold" \
+                  -DCMAKE_SHARED_LINKER_FLAGS="-fuse-ld=mold" \
+                  -G "Ninja Multi-Config" -B build
+                cmake --build build --config Release
+                build/Release/ml_dsa_test
+                rm -rf build/_deps
+              '';
+              checkPhase = ''
+                build/Release/ml_dsa_test
+              '';
+              installPhase = ''
+                cd ./..
+                cp -r . $out
+              '';
+            })
+          )
+          {
+            inherit
+              googletest benchmark json
+              craneLib tools-environment;
+            hax =
+              hax.packages.${system}.default;
+          };
       in
       rec {
         packages = {
-          inherit ml-kem;
+          inherit ml-kem ml-dsa;
         };
         devShells.default = craneLib.devShell (tools-environment // {
           packages = [
