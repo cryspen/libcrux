@@ -2,29 +2,21 @@
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
     flake-utils.url = "github:numtide/flake-utils";
-    crane = {
-      url = "github:ipetkov/crane";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-    charon = {
-      url = "github:aeneasverif/charon";
-      inputs.nixpkgs.follows = "eurydice/nixpkgs";
-    };
-    eurydice = {
-      url = "github:aeneasverif/eurydice";
-      inputs.charon.follows = "charon";
-    };
-    fstar.follows = "karamel/fstar";
-    karamel.follows = "eurydice/karamel";
+    eurydice.url = "github:aeneasverif/eurydice";
     hax.url = "github:hacspec/hax";
   };
 
   outputs =
-    inputs:
+    { nixpkgs, eurydice, hax, ... } @ inputs:
     inputs.flake-utils.lib.eachDefaultSystem (
       system:
       let
-        pkgs = import inputs.nixpkgs { inherit system; };
+        pkgs = import nixpkgs { inherit system; };
+        charon = eurydice.inputs.charon;
+        crane = charon.inputs.crane;
+        karamel = eurydice.inputs.karamel;
+        fstar = karamel.inputs.fstar;
+
         googletest = pkgs.fetchFromGitHub {
           owner = "google";
           repo = "googletest";
@@ -45,23 +37,23 @@
         };
 
         tools-environment = {
-          CHARON_HOME = inputs.charon.packages.${system}.default;
+          CHARON_HOME = charon.packages.${system}.charon;
           EURYDICE_HOME = pkgs.runCommand "eurydice-home" { } ''
             mkdir -p $out
-            cp -r ${inputs.eurydice.packages.${system}.default}/bin/eurydice $out
-            cp -r ${inputs.eurydice}/include $out
+            cp -r ${eurydice.packages.${system}.default}/bin/eurydice $out
+            cp -r ${eurydice}/include $out
           '';
-          FSTAR_HOME = inputs.fstar.packages.${system}.default;
-          KRML_HOME = inputs.karamel.packages.${system}.default.home;
+          FSTAR_HOME = fstar.packages.${system}.default;
+          KRML_HOME = karamel.packages.${system}.default.home;
 
-          CHARON_REV = inputs.charon.rev;
-          EURYDICE_REV = inputs.eurydice.rev;
-          KRML_REV = inputs.karamel.rev;
-          FSTAR_REV = inputs.fstar.rev;
+          CHARON_REV = charon.rev;
+          EURYDICE_REV = eurydice.rev;
+          KRML_REV = karamel.rev;
+          FSTAR_REV = fstar.rev;
         };
 
-        rustToolchain = inputs.charon.packages.${system}.rustToolchain;
-        craneLib = (inputs.crane.mkLib pkgs).overrideToolchain rustToolchain;
+        rustToolchain = charon.packages.${system}.rustToolchain;
+        craneLib = (crane.mkLib pkgs).overrideToolchain rustToolchain;
         # libcrux doesn't want to commit a Cargo.lock but flakes can only take
         # local inputs if they're committed. The circus-green CI maintains a
         # working Cargo.lock file for this repo, so we use it here.
@@ -118,7 +110,7 @@
                 ninja
                 git
                 python3
-                inputs.fstar.packages.${system}.default
+                fstar.packages.${system}.default
               ] ++ lib.optional checkHax [
                 hax
               ];
@@ -158,7 +150,7 @@
               googletest benchmark json
               craneLib tools-environment;
             hax =
-              inputs.hax.packages.${system}.default;
+              hax.packages.${system}.default;
           };
       in
       rec {
@@ -168,7 +160,7 @@
         devShells.default = craneLib.devShell (tools-environment // {
           packages = [
             pkgs.clang_18
-            inputs.fstar.packages.${system}.default
+            fstar.packages.${system}.default
           ];
           inputsFrom = [ packages.ml-kem ];
         });
