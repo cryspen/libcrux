@@ -38,8 +38,8 @@ val serialized_public_key
       (requires
         forall (i: nat).
           i < 3 ==>
-          Libcrux_ml_kem.Serialize.coefficients_field_modulus_range (Seq.index public_key
-                  .Libcrux_ml_kem.Ind_cca.Unpacked.f_ind_cpa_public_key
+          Libcrux_ml_kem.Polynomial.is_bounded_poly 3328
+            (Seq.index public_key.Libcrux_ml_kem.Ind_cca.Unpacked.f_ind_cpa_public_key
                   .Libcrux_ml_kem.Ind_cpa.Unpacked.f_tt_as_ntt
                 i))
       (fun _ -> Prims.l_True)
@@ -73,8 +73,8 @@ val key_pair_serialized_public_key_mut
       (requires
         (forall (i: nat).
             i < 3 ==>
-            Libcrux_ml_kem.Serialize.coefficients_field_modulus_range (Seq.index key_pair
-                    .Libcrux_ml_kem.Ind_cca.Unpacked.f_public_key
+            Libcrux_ml_kem.Polynomial.is_bounded_poly 3328
+              (Seq.index key_pair.Libcrux_ml_kem.Ind_cca.Unpacked.f_public_key
                     .Libcrux_ml_kem.Ind_cca.Unpacked.f_ind_cpa_public_key
                     .Libcrux_ml_kem.Ind_cpa.Unpacked.f_tt_as_ntt
                   i)))
@@ -89,8 +89,8 @@ val key_pair_serialized_public_key
       (requires
         forall (i: nat).
           i < 3 ==>
-          Libcrux_ml_kem.Serialize.coefficients_field_modulus_range (Seq.index key_pair
-                  .Libcrux_ml_kem.Ind_cca.Unpacked.f_public_key
+          Libcrux_ml_kem.Polynomial.is_bounded_poly 3328
+            (Seq.index key_pair.Libcrux_ml_kem.Ind_cca.Unpacked.f_public_key
                   .Libcrux_ml_kem.Ind_cca.Unpacked.f_ind_cpa_public_key
                   .Libcrux_ml_kem.Ind_cpa.Unpacked.f_tt_as_ntt
                 i))

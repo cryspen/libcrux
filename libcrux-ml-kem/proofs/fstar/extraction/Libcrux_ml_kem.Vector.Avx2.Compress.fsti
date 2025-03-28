@@ -18,6 +18,14 @@ val compress_ciphertext_coefficient
         range (v ((mk_i32 1) <<! v_COEFFICIENT_BITS) - 1) i32_inttype)
       (fun _ -> Prims.l_True)
 
+val decompress_1_ (a: Libcrux_intrinsics.Avx2_extract.t_Vec256)
+    : Prims.Pure Libcrux_intrinsics.Avx2_extract.t_Vec256
+      (requires
+        forall i.
+          let x = Seq.index (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 a) i in
+          (x == mk_i16 0 \/ x == mk_i16 1))
+      (fun _ -> Prims.l_True)
+
 val decompress_ciphertext_coefficient
       (v_COEFFICIENT_BITS: i32)
       (vector: Libcrux_intrinsics.Avx2_extract.t_Vec256)

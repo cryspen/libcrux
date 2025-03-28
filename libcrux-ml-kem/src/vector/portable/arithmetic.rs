@@ -422,3 +422,29 @@ pub(crate) fn montgomery_multiply_by_constant(mut vec: PortableVector, c: i16) -
     }
     vec
 }
+
+#[hax_lib::requires(fstar!(r#"Spec.Utils.is_i16b_array 3328 ${a}.f_elements"#))]
+#[hax_lib::ensures(|result| fstar!(r#"forall i.
+                                       (let x = Seq.index ${a}.f_elements i in
+                                        let y = Seq.index ${result}.f_elements i in
+                                        (v y >= 0 /\ v y <= 3328 /\ (v y % 3329 == v x % 3329)))"#))]
+#[inline(always)]
+pub(crate) fn to_unsigned_representative(a: PortableVector) -> PortableVector {
+    let t = shift_right::<15>(a);
+    hax_lib::fstar!(
+        r#"
+  assert (forall i. Seq.index ${t}.f_elements i == ((Seq.index ${a}.f_elements i) >>! (mk_i32 15)));
+  assert (forall i. Seq.index ${a}.f_elements i >=. mk_i16 0 ==> Seq.index ${t}.f_elements i == mk_i16 0);
+  assert (forall i. Seq.index ${a}.f_elements i <. mk_i16 0 ==> Seq.index ${t}.f_elements i == mk_i16 (-1))
+    "#
+    );
+    let fm = bitwise_and_with_constant(t, FIELD_MODULUS);
+    hax_lib::fstar!(
+        r#"
+  assert (forall i. Seq.index ${fm}.f_elements i == (Seq.index ${t}.f_elements i &. Libcrux_ml_kem.Vector.Traits.v_FIELD_MODULUS));
+  assert (forall i. Seq.index ${a}.f_elements i >=. mk_i16 0 ==> Seq.index ${fm}.f_elements i == mk_i16 0);
+  assert (forall i. Seq.index ${a}.f_elements i <. mk_i16 0 ==> Seq.index ${fm}.f_elements i == mk_i16 3329)
+    "#
+    );
+    add(a, &fm)
+}

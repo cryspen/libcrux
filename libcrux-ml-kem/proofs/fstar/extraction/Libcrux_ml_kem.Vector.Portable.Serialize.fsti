@@ -16,10 +16,9 @@ val deserialize_1_ (v: t_Slice u8)
       (fun _ -> Prims.l_True)
 
 val deserialize_1_lemma (inputs: t_Array u8 (sz 2)) : Lemma
-  (ensures bit_vec_of_int_t_array (deserialize_1_ inputs).f_elements 1 == bit_vec_of_int_t_array inputs 8)
-
-val deserialize_1_bounded_lemma (inputs: t_Array u8 (sz 2)) : Lemma
-  (ensures forall i. i < 16 ==> bounded (Seq.index (deserialize_1_ inputs).f_elements i) 1)
+  (ensures (let result = deserialize_1_ inputs in
+            bit_vec_of_int_t_array result.f_elements 1 == bit_vec_of_int_t_array inputs 8 /\
+            (forall i. Rust_primitives.bounded (Seq.index result.f_elements i) 1)))
 
 val serialize_4_int (v: t_Slice i16)
     : Prims.Pure (u8 & u8 & u8 & u8)
@@ -43,11 +42,10 @@ val deserialize_4_ (bytes: t_Slice u8)
       (requires (Core.Slice.impl__len #u8 bytes <: usize) =. mk_usize 8)
       (fun _ -> Prims.l_True)
 
-val deserialize_4_bounded_lemma (inputs: t_Array u8 (sz 8)) : Lemma
-  (ensures forall i. i < 16 ==> bounded (Seq.index (deserialize_4_ inputs).f_elements i) 4)
-
 val deserialize_4_lemma (inputs: t_Array u8 (sz 8)) : Lemma
-  (ensures bit_vec_of_int_t_array (deserialize_4_ inputs).f_elements 4 == bit_vec_of_int_t_array inputs 8)
+  (ensures (let result = deserialize_4_ inputs in 
+            bit_vec_of_int_t_array result.f_elements 4 == bit_vec_of_int_t_array inputs 8 /\
+            (forall i. Rust_primitives.bounded (Seq.index result.f_elements i) 4)))
 
 val serialize_5_int (v: t_Slice i16)
     : Prims.Pure (u8 & u8 & u8 & u8 & u8)
@@ -90,10 +88,9 @@ val deserialize_10_ (bytes: t_Slice u8)
       (fun _ -> Prims.l_True)
 
 val deserialize_10_lemma (inputs: t_Array u8 (sz 20)) : Lemma
-  (ensures bit_vec_of_int_t_array (deserialize_10_ inputs).f_elements 10 == bit_vec_of_int_t_array inputs 8)
-
-val deserialize_10_bounded_lemma (inputs: t_Array u8 (sz 20)) : Lemma
-  (ensures forall i. i < 16 ==> bounded (Seq.index (deserialize_10_ inputs).f_elements i) 10)
+  (ensures (let result = deserialize_10_ inputs in 
+            bit_vec_of_int_t_array result.f_elements 10 == bit_vec_of_int_t_array inputs 8 /\
+            (forall i. Rust_primitives.bounded (Seq.index result.f_elements i) 10)))
 
 val serialize_11_int (v: t_Slice i16)
     : Prims.Pure (u8 & u8 & u8 & u8 & u8 & u8 & u8 & u8 & u8 & u8 & u8)
@@ -135,8 +132,7 @@ val deserialize_12_ (bytes: t_Slice u8)
       (requires (Core.Slice.impl__len #u8 bytes <: usize) =. mk_usize 24)
       (fun _ -> Prims.l_True)
 
-val deserialize_12_bounded_lemma (inputs: t_Array u8 (sz 24)) : Lemma
-  (ensures forall i. i < 16 ==> bounded (Seq.index (deserialize_12_ inputs).f_elements i) 12)
-
 val deserialize_12_lemma (inputs: t_Array u8 (sz 24)) : Lemma
-  (ensures bit_vec_of_int_t_array (deserialize_12_ inputs).f_elements 12 == bit_vec_of_int_t_array inputs 8)
+  (ensures (let result = deserialize_12_ inputs in 
+            bit_vec_of_int_t_array result.f_elements 12 == bit_vec_of_int_t_array inputs 8 /\
+            (forall i. Rust_primitives.bounded (Seq.index result.f_elements i) 12)))

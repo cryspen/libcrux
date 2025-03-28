@@ -258,3 +258,10 @@ let montgomery_multiply_by_constant
     Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector
   in
   v
+
+let to_unsigned_representative (a: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) =
+  let t:Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector = shift_right (mk_i32 15) a in
+  let fm:Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector =
+    bitwise_and_with_constant t Libcrux_ml_kem.Vector.Traits.v_FIELD_MODULUS
+  in
+  add a fm

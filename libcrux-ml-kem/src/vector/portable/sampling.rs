@@ -1,7 +1,6 @@
 use crate::vector::FIELD_MODULUS;
 
 #[inline(always)]
-#[hax_lib::fstar::verification_status(lax)]
 #[hax_lib::requires(a.len() == 24 && result.len() == 16)]
 #[hax_lib::ensures(|res|
         fstar!(r#"Seq.length $result_future == Seq.length $result /\ v $res <= 16"#)
@@ -9,6 +8,9 @@ use crate::vector::FIELD_MODULUS;
 pub(crate) fn rej_sample(a: &[u8], result: &mut [i16]) -> usize {
     let mut sampled = 0;
     for i in 0..a.len() / 3 {
+        hax_lib::loop_invariant!(|i: usize| {
+            fstar!(r#"Seq.length result == 16 /\ v $sampled <= v $i * 2"#)
+        });
         let b1 = a[i * 3 + 0] as i16;
         let b2 = a[i * 3 + 1] as i16;
         let b3 = a[i * 3 + 2] as i16;

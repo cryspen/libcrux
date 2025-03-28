@@ -16,18 +16,22 @@ Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
   {
     _super_13011033735201511749 = FStar.Tactics.Typeclasses.solve;
     _super_9529721400157967266 = FStar.Tactics.Typeclasses.solve;
-    f_repr_pre = (fun (x: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) -> true);
+    f_repr_pre = (fun (self: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) -> true);
     f_repr_post
     =
     (fun
-        (x: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
+        (self: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
         (out: t_Array i16 (mk_usize 16))
         ->
         true);
     f_repr
     =
-    fun (x: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) ->
-      Libcrux_ml_kem.Vector.Portable.Vector_type.to_i16_array x
+    fun (self: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) ->
+      Libcrux_ml_kem.Vector.Portable.Vector_type.to_i16_array (Core.Clone.f_clone #Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
+            #FStar.Tactics.Typeclasses.solve
+            self
+          <:
+          Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
   }
 
 let serialize_1_ (a: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) =
@@ -37,7 +41,6 @@ let serialize_1_ (a: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
 
 let deserialize_1_ (a: t_Slice u8) =
   let _:Prims.unit = Libcrux_ml_kem.Vector.Portable.Serialize.deserialize_1_lemma a in
-  let _:Prims.unit = Libcrux_ml_kem.Vector.Portable.Serialize.deserialize_1_bounded_lemma a in
   Libcrux_ml_kem.Vector.Portable.Serialize.deserialize_1_ a
 
 let serialize_4_ (a: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) =
@@ -47,7 +50,6 @@ let serialize_4_ (a: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
 
 let deserialize_4_ (a: t_Slice u8) =
   let _:Prims.unit = Libcrux_ml_kem.Vector.Portable.Serialize.deserialize_4_lemma a in
-  let _:Prims.unit = Libcrux_ml_kem.Vector.Portable.Serialize.deserialize_4_bounded_lemma a in
   Libcrux_ml_kem.Vector.Portable.Serialize.deserialize_4_ a
 
 let serialize_5_ (a: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) =
@@ -61,7 +63,6 @@ let serialize_10_ (a: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVecto
 
 let deserialize_10_ (a: t_Slice u8) =
   let _:Prims.unit = Libcrux_ml_kem.Vector.Portable.Serialize.deserialize_10_lemma a in
-  let _:Prims.unit = Libcrux_ml_kem.Vector.Portable.Serialize.deserialize_10_bounded_lemma a in
   Libcrux_ml_kem.Vector.Portable.Serialize.deserialize_10_ a
 
 let serialize_11_ (a: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) =
@@ -75,7 +76,6 @@ let serialize_12_ (a: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVecto
 
 let deserialize_12_ (a: t_Slice u8) =
   let _:Prims.unit = Libcrux_ml_kem.Vector.Portable.Serialize.deserialize_12_lemma a in
-  let _:Prims.unit = Libcrux_ml_kem.Vector.Portable.Serialize.deserialize_12_bounded_lemma a in
   Libcrux_ml_kem.Vector.Portable.Serialize.deserialize_12_ a
 
 #push-options "--z3rlimit 400 --split_queries always"
@@ -136,9 +136,10 @@ Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
     (fun
         (x: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
         (bytes: t_Slice u8)
-        (out: t_Slice u8)
+        (bytes_future: t_Slice u8)
         ->
-        true);
+        (Core.Slice.impl__len #u8 bytes_future <: usize) =.
+        (Core.Slice.impl__len #u8 bytes <: usize));
     f_to_bytes
     =
     (fun (x: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) (bytes: t_Slice u8) ->
@@ -218,38 +219,6 @@ Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
     =
     (fun (vec: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) (c: i16) ->
         Libcrux_ml_kem.Vector.Portable.Arithmetic.multiply_by_constant vec c);
-    f_bitwise_and_with_constant_pre
-    =
-    (fun (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) (c: i16) -> true);
-    f_bitwise_and_with_constant_post
-    =
-    (fun
-        (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
-        (c: i16)
-        (out: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
-        ->
-        impl.f_repr out == Spec.Utils.map_array (fun x -> x &. c) (impl.f_repr v));
-    f_bitwise_and_with_constant
-    =
-    (fun (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) (c: i16) ->
-        Libcrux_ml_kem.Vector.Portable.Arithmetic.bitwise_and_with_constant v c);
-    f_shift_right_pre
-    =
-    (fun (v_SHIFT_BY: i32) (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) ->
-        v_SHIFT_BY >=. mk_i32 0 && v_SHIFT_BY <. mk_i32 16);
-    f_shift_right_post
-    =
-    (fun
-        (v_SHIFT_BY: i32)
-        (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
-        (out: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
-        ->
-        (v_SHIFT_BY >=. (mk_i32 0) /\ v_SHIFT_BY <. (mk_i32 16)) ==>
-        impl.f_repr out == Spec.Utils.map_array (fun x -> x >>! v_SHIFT_BY) (impl.f_repr v));
-    f_shift_right
-    =
-    (fun (v_SHIFT_BY: i32) (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) ->
-        Libcrux_ml_kem.Vector.Portable.Arithmetic.shift_right v_SHIFT_BY v);
     f_cond_subtract_3329__pre
     =
     (fun (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) ->
@@ -269,35 +238,61 @@ Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
         Libcrux_ml_kem.Vector.Portable.Arithmetic.cond_subtract_3329_ v);
     f_barrett_reduce_pre
     =
-    (fun (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) ->
-        Spec.Utils.is_i16b_array 28296 (impl.f_repr v));
+    (fun (vector: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) ->
+        Spec.Utils.is_i16b_array 28296 (impl.f_repr vector));
     f_barrett_reduce_post
     =
     (fun
-        (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
-        (out: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
+        (vector: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
+        (result: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
         ->
-        true);
+        Spec.Utils.is_i16b_array 3328 (impl.f_repr result) /\
+        (forall i.
+            (v (Seq.index (impl.f_repr result) i) % 3329) ==
+            (v (Seq.index (impl.f_repr vector) i) % 3329)));
     f_barrett_reduce
     =
-    (fun (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) ->
-        Libcrux_ml_kem.Vector.Portable.Arithmetic.barrett_reduce v);
+    (fun (vector: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) ->
+        Libcrux_ml_kem.Vector.Portable.Arithmetic.barrett_reduce vector);
     f_montgomery_multiply_by_constant_pre
     =
-    (fun (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) (r: i16) ->
-        Spec.Utils.is_i16b 1664 r);
+    (fun (vector: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) (constant: i16) ->
+        Spec.Utils.is_i16b 1664 constant);
     f_montgomery_multiply_by_constant_post
     =
     (fun
-        (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
-        (r: i16)
-        (out: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
+        (vector: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
+        (constant: i16)
+        (result: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
         ->
-        true);
+        Spec.Utils.is_i16b_array 3328 (impl.f_repr result) /\
+        (forall i.
+            i < 16 ==>
+            ((v (Seq.index (impl.f_repr result) i) % 3329) ==
+              (v (Seq.index (impl.f_repr vector) i) * v constant * 169) % 3329)));
     f_montgomery_multiply_by_constant
     =
-    (fun (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) (r: i16) ->
-        Libcrux_ml_kem.Vector.Portable.Arithmetic.montgomery_multiply_by_constant v r);
+    (fun (vector: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) (constant: i16) ->
+        Libcrux_ml_kem.Vector.Portable.Arithmetic.montgomery_multiply_by_constant vector constant);
+    f_to_unsigned_representative_pre
+    =
+    (fun (a: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) ->
+        Spec.Utils.is_i16b_array 3328 (impl.f_repr a));
+    f_to_unsigned_representative_post
+    =
+    (fun
+        (a: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
+        (result: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
+        ->
+        forall (i: nat).
+          i < 16 ==>
+          (let x = Seq.index (impl.f_repr a) i in
+            let y = Seq.index (impl.f_repr result) i in
+            (v y >= 0 /\ v y <= 3328 /\ (v y % 3329 == v x % 3329))));
+    f_to_unsigned_representative
+    =
+    (fun (a: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) ->
+        Libcrux_ml_kem.Vector.Portable.Arithmetic.to_unsigned_representative a);
     f_compress_1__pre
     =
     (fun (a: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) ->
@@ -343,6 +338,24 @@ Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
         (a: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
         ->
         Libcrux_ml_kem.Vector.Portable.Compress.compress v_COEFFICIENT_BITS a);
+    f_decompress_1__pre
+    =
+    (fun (a: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) ->
+        forall (i: nat).
+          i < 16 ==>
+          (let x = Seq.index (impl.f_repr a) i in
+            (x == mk_i16 0 \/ x == mk_i16 1)));
+    f_decompress_1__post
+    =
+    (fun
+        (a: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
+        (out: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
+        ->
+        true);
+    f_decompress_1_
+    =
+    (fun (a: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) ->
+        Libcrux_ml_kem.Vector.Portable.Compress.decompress_1_ a);
     f_decompress_ciphertext_coefficient_pre
     =
     (fun

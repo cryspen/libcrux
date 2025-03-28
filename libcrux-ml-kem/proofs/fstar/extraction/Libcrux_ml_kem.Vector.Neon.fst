@@ -15,18 +15,22 @@ let impl: Libcrux_ml_kem.Vector.Traits.t_Repr Libcrux_ml_kem.Vector.Neon.Vector_
   {
     _super_13011033735201511749 = FStar.Tactics.Typeclasses.solve;
     _super_9529721400157967266 = FStar.Tactics.Typeclasses.solve;
-    f_repr_pre = (fun (x: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) -> true);
+    f_repr_pre = (fun (self: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) -> true);
     f_repr_post
     =
     (fun
-        (x: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector)
+        (self: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector)
         (out: t_Array i16 (mk_usize 16))
         ->
         true);
     f_repr
     =
-    fun (x: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) ->
-      Libcrux_ml_kem.Vector.Neon.Vector_type.to_i16_array x
+    fun (self: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) ->
+      Libcrux_ml_kem.Vector.Neon.Vector_type.to_i16_array (Core.Clone.f_clone #Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector
+            #FStar.Tactics.Typeclasses.solve
+            self
+          <:
+          Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector)
   }
 
 let rej_sample (a: t_Slice u8) (result: t_Slice i16) =
@@ -187,36 +191,20 @@ Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector =
     =
     (fun (v: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) (c: i16) ->
         Libcrux_ml_kem.Vector.Neon.Arithmetic.multiply_by_constant v c);
-    f_bitwise_and_with_constant_pre
+    f_to_unsigned_representative_pre
     =
-    (fun (v: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) (c: i16) -> true);
-    f_bitwise_and_with_constant_post
+    (fun (a: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) -> true);
+    f_to_unsigned_representative_post
     =
     (fun
-        (v: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector)
-        (c: i16)
+        (a: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector)
         (out: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector)
         ->
         true);
-    f_bitwise_and_with_constant
+    f_to_unsigned_representative
     =
-    (fun (v: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) (c: i16) ->
-        Libcrux_ml_kem.Vector.Neon.Arithmetic.bitwise_and_with_constant v c);
-    f_shift_right_pre
-    =
-    (fun (v_SHIFT_BY: i32) (v: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) -> true);
-    f_shift_right_post
-    =
-    (fun
-        (v_SHIFT_BY: i32)
-        (v: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector)
-        (out: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector)
-        ->
-        true);
-    f_shift_right
-    =
-    (fun (v_SHIFT_BY: i32) (v: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) ->
-        Libcrux_ml_kem.Vector.Neon.Arithmetic.shift_right v_SHIFT_BY v);
+    (fun (a: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) ->
+        Libcrux_ml_kem.Vector.Neon.Arithmetic.to_unsigned_representative a);
     f_cond_subtract_3329__pre
     =
     (fun (v: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) -> true);
@@ -286,6 +274,18 @@ Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector =
     =
     (fun (v_COEFFICIENT_BITS: i32) (v: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) ->
         Libcrux_ml_kem.Vector.Neon.Compress.compress v_COEFFICIENT_BITS v);
+    f_decompress_1__pre = (fun (a: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) -> true);
+    f_decompress_1__post
+    =
+    (fun
+        (a: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector)
+        (out: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector)
+        ->
+        true);
+    f_decompress_1_
+    =
+    (fun (a: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) ->
+        Libcrux_ml_kem.Vector.Neon.Compress.decompress_1_ a);
     f_decompress_ciphertext_coefficient_pre
     =
     (fun (v_COEFFICIENT_BITS: i32) (v: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) ->

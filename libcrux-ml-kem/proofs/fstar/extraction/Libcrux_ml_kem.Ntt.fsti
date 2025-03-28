@@ -93,7 +93,7 @@ val ntt_layer_int_vec_step
     : Prims.Pure (v_Vector & v_Vector)
       (requires
         Spec.Utils.is_i16b 1664 zeta_r /\
-        (let t = Libcrux_ml_kem.Vector.Traits.montgomery_multiply_fe b zeta_r in
+        (let t = Libcrux_ml_kem.Vector.Traits.f_montgomery_multiply_by_constant b zeta_r in
           (forall i.
               i < 16 ==>
               Spec.Utils.is_intb (pow2 15 - 1)
@@ -167,9 +167,10 @@ val ntt_binomially_sampled_ring_element
       (ensures
         fun re_future ->
           let re_future:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector = re_future in
+          Libcrux_ml_kem.Polynomial.is_bounded_poly 3328 re_future /\
           Libcrux_ml_kem.Polynomial.to_spec_poly_t #v_Vector re_future ==
           Spec.MLKEM.poly_ntt (Libcrux_ml_kem.Polynomial.to_spec_poly_t #v_Vector re) /\
-          Libcrux_ml_kem.Serialize.coefficients_field_modulus_range #v_Vector re_future)
+          Libcrux_ml_kem.Polynomial.is_bounded_poly #v_Vector 3328 re_future)
 
 val ntt_vector_u
       (v_VECTOR_U_COMPRESSION_FACTOR: usize)

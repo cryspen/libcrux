@@ -161,3 +161,14 @@ val montgomery_multiply_by_constant
               i < 16 ==>
               (v (Seq.index result.f_elements i) % 3329 ==
                 (v (Seq.index vec.f_elements i) * v c * 169) % 3329)))
+
+val to_unsigned_representative (a: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
+    : Prims.Pure Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
+      (requires Spec.Utils.is_i16b_array 3328 a.f_elements)
+      (ensures
+        fun result ->
+          let result:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector = result in
+          forall i.
+            (let x = Seq.index a.f_elements i in
+              let y = Seq.index result.f_elements i in
+              (v y >= 0 /\ v y <= 3328 /\ (v y % 3329 == v x % 3329))))
