@@ -276,35 +276,84 @@ fn subtract_reduce<Vector: Operations>(
 }
 
 #[inline(always)]
-#[hax_lib::fstar::verification_status(lax)]
+#[hax_lib::fstar::options("--z3rlimit 300 --split_queries always")]
+#[hax_lib::requires(fstar!(r#"
+    is_bounded_poly 3328 ${myself} /\ 
+    is_bounded_poly 3328 ${message}"#))]
+#[hax_lib::ensures(|output| fstar!("is_bounded_poly 3328 ${output}"))]
 fn add_message_error_reduce<Vector: Operations>(
     myself: &PolynomialRingElement<Vector>,
     message: &PolynomialRingElement<Vector>,
     mut result: PolynomialRingElement<Vector>,
 ) -> PolynomialRingElement<Vector> {
+    let _result = result.coefficients;
     for i in 0..VECTORS_IN_RING_ELEMENT {
+        hax_lib::loop_invariant!(|i: usize| fstar!(
+            r#"
+            (forall j. j < v i ==> is_bounded_vector 3328 ${result}.f_coefficients.[ sz j ]) /\
+            (forall j. (j >= v i /\ j < 16) ==> ${result}.f_coefficients.[ sz j ] == ${_result}.[ sz j ])
+            "#
+        ));
+        hax_lib::fstar!(
+            r#"
+          assert (v $i < 16);
+          Spec.Utils.pow2_values_more 15;
+          assert_norm (1441 < pow2 15);
+          assert_norm (1664 < pow2 15);
+          assert_norm (mk_i16 1441 <. mk_i16 1664);
+          assert(Spec.Utils.is_i16b 1664 (mk_i16 1441))
+        "#
+        );
         let coefficient_normal_form =
             Vector::montgomery_multiply_by_constant(result.coefficients[i], 1441);
 
-        // FIXME: Eurydice crashes with:
-        //
-        // Warning 11: in top-level declaration {libcrux_ml_kem::polynomial::PolynomialRingElement<Vector>[TraitClause@0]}.add_message_error_reduce__libcrux_ml_kem_libcrux_polynomials_PortableVector: this expression is not Low*; the enclosing function cannot be translated into C*: let mutable ret(Mark.Present,(Mark.AtMost 2), ): int16_t[16size_t] = $any in
-        // libcrux_ml_kem.libcrux_polynomials.{(libcrux_ml_kem::libcrux_polynomials::libcrux_traits::Operations␣for␣libcrux_ml_kem::libcrux_polynomials::PortableVector)}.add ((@9: libcrux_ml_kem_libcrux_polynomials_PortableVector[16size_t]*)[0uint32_t]:int16_t[16size_t][16size_t])[@4] &(((@8: libcrux_ml_kem_libcrux_polynomials_PortableVector[16size_t]*)[0uint32_t]:libcrux_ml_kem_libcrux_polynomials_PortableVector[16size_t])[@4]) @0;
-        // @0
-        // Warning 11 is fatal, exiting.
-        //
-        // On the following code:
+        hax_lib::fstar!(
+            r#"
+                Spec.Utils.lemma_add_intb_forall 3328 3328;
+                assert (6656 <= (pow2 15 - 1));
+                Spec.Utils.lemma_intb_le 6656 (pow2 15 - 1);
+                assert (forall j. Spec.Utils.is_intb 6656 
+                (v (Seq.index (i1.f_to_i16_array ${myself}.f_coefficients.[ i ]) j) +
+                 v (Seq.index (i1.f_to_i16_array ${message}.f_coefficients.[ i ]) j)));
+                assert (forall j. Spec.Utils.is_intb (pow2 15 - 1) 
+                (v (Seq.index (i1.f_to_i16_array ${myself}.f_coefficients.[ i ]) j) +
+                 v (Seq.index (i1.f_to_i16_array ${message}.f_coefficients.[ i ]) j)))
+            "#
+        );
 
-        // ```rust
-        // result.coefficients[i] = Vector::barrett_reduce(Vector::add(
-        //     coefficient_normal_form,
-        //     &Vector::add(myself.coefficients[i], &message.coefficients[i]),
-        // ));
-        // ```
+        let sum1 = Vector::add(myself.coefficients[i], &message.coefficients[i]);
+        hax_lib::fstar!("assert(is_bounded_vector 6656 sum1)");
 
-        let tmp = Vector::add(myself.coefficients[i], &message.coefficients[i]);
-        let tmp = Vector::add(coefficient_normal_form, &tmp);
-        result.coefficients[i] = Vector::barrett_reduce(tmp);
+        hax_lib::fstar!(
+            r#"                
+                Spec.Utils.lemma_add_intb_forall 3328 6656;
+                Spec.Utils.lemma_intb_le 9984 (pow2 15 - 1);
+                Spec.Utils.lemma_intb_le 9984 28296;
+                assert (forall j. Spec.Utils.is_intb 9984 
+                    (v (Seq.index (i1.f_to_i16_array ${coefficient_normal_form}) j) +
+                    v (Seq.index (i1.f_to_i16_array ${sum1}) j)));
+                assert (forall j. Spec.Utils.is_intb 28296 
+                    (v (Seq.index (i1.f_to_i16_array ${coefficient_normal_form}) j) +
+                    v (Seq.index (i1.f_to_i16_array ${sum1}) j)));
+                assert (forall j. Spec.Utils.is_intb (pow2 15 - 1)
+                    (v (Seq.index (i1.f_to_i16_array ${coefficient_normal_form}) j) +
+                    v (Seq.index (i1.f_to_i16_array ${sum1}) j)))
+            "#
+        );
+
+        let sum2 = Vector::add(coefficient_normal_form, &sum1);
+        hax_lib::fstar!("assert(is_bounded_vector 9984 sum2)");
+        let red = Vector::barrett_reduce(sum2);
+        hax_lib::fstar!("assert(is_bounded_vector 3328 red)");
+        result.coefficients[i] = red;
+        hax_lib::fstar!(
+            r#"
+            assert (forall j. (j > v $i /\ j < 16) ==> ${result}.f_coefficients.[ sz j ] == ${_result}.[ sz j]);
+            assert (forall j.  j < v $i ==> is_bounded_vector 3328 ${result}.f_coefficients.[ sz j ]);
+            assert (${result}.f_coefficients.[ $i ] == ${red});
+            assert (forall j. j <= v $i ==> is_bounded_vector 3328 ${result}.f_coefficients.[ sz j ])
+        "#
+        );
     }
     result
 }
@@ -371,7 +420,7 @@ fn to_standard_domain<T: Operations>(vector: T) -> T {
 }
 
 #[inline(always)]
-#[hax_lib::fstar::options("--z3rlimit 300")]
+#[hax_lib::fstar::options("--z3rlimit 300 --split_queries always")]
 #[hax_lib::requires(fstar!(r#"is_bounded_poly #$:Vector 3328 ${error}"#))]
 #[hax_lib::ensures(|result| fstar!(r#"is_bounded_poly 3328 ${myself}_future"#))]
 fn add_standard_error_reduce<Vector: Operations>(
@@ -391,6 +440,7 @@ fn add_standard_error_reduce<Vector: Operations>(
         let coefficient_normal_form = to_standard_domain::<Vector>(myself.coefficients[j]);
         hax_lib::fstar!(
             r#"
+          Spec.Utils.pow2_values_more 15;
           assert (is_bounded_vector 3328 ${coefficient_normal_form});
           assert (is_bounded_vector 3328 (error.f_coefficients.[ j ]));
           Spec.Utils.lemma_add_intb_forall 3328 3328;
@@ -463,7 +513,9 @@ fn add_standard_error_reduce<Vector: Operations>(
 //                 result.coefficients[i].abs() <= FIELD_MODULUS
 // ))))]
 #[inline(always)]
-#[hax_lib::fstar::verification_status(lax)]
+#[hax_lib::fstar::options("--z3rlimit 300")]
+#[hax_lib::requires(fstar!(r#"is_bounded_poly 3328 ${myself} /\
+                              is_bounded_poly 3328 ${rhs}"#))]
 fn ntt_multiply<Vector: Operations>(
     myself: &PolynomialRingElement<Vector>,
     rhs: &PolynomialRingElement<Vector>,
@@ -556,13 +608,16 @@ impl<Vector: Operations> PolynomialRingElement<Vector> {
     }
 
     #[inline(always)]
-    #[hax_lib::requires(fstar!(r#"is_bounded_poly (pow2 12 - 1) self"#))]
-    #[hax_lib::ensures(|result| fstar!(r#"is_bounded_poly 3328 ${result}"#))]
+    #[requires(fstar!(r#"is_bounded_poly (pow2 12 - 1) self"#))]
+    #[ensures(|result| fstar!(r#"is_bounded_poly 3328 ${result}"#))]
     pub(crate) fn subtract_reduce(&self, b: Self) -> Self {
         subtract_reduce(self, b)
     }
 
     #[inline(always)]
+    #[requires(fstar!(r#"is_bounded_poly 3328 self /\ 
+                         is_bounded_poly 3328 ${message}"#))]
+    #[ensures(|output| fstar!(r#"is_bounded_poly 3328 ${output}"#))]
     pub(crate) fn add_message_error_reduce(&self, message: &Self, result: Self) -> Self {
         add_message_error_reduce(self, message, result)
     }
@@ -574,12 +629,14 @@ impl<Vector: Operations> PolynomialRingElement<Vector> {
     }
 
     #[inline(always)]
-    #[hax_lib::requires(fstar!(r#"is_bounded_poly #$:Vector 3328 ${error}"#))]
+    #[requires(fstar!(r#"is_bounded_poly #$:Vector 3328 ${error}"#))]
     pub(crate) fn add_standard_error_reduce(&mut self, error: &Self) {
         add_standard_error_reduce(self, error);
     }
 
     #[inline(always)]
+    #[requires(fstar!(r#"is_bounded_poly 3328 self /\
+                         is_bounded_poly 3328 ${rhs}"#))]
     pub(crate) fn ntt_multiply(&self, rhs: &Self) -> Self {
         ntt_multiply(self, rhs)
     }

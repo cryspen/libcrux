@@ -189,7 +189,12 @@ val add_message_error_reduce
       (#v_Vector: Type0)
       {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
       (myself message result: t_PolynomialRingElement v_Vector)
-    : Prims.Pure (t_PolynomialRingElement v_Vector) Prims.l_True (fun _ -> Prims.l_True)
+    : Prims.Pure (t_PolynomialRingElement v_Vector)
+      (requires is_bounded_poly 3328 myself /\ is_bounded_poly 3328 message)
+      (ensures
+        fun output ->
+          let output:t_PolynomialRingElement v_Vector = output in
+          is_bounded_poly 3328 output)
 
 val add_error_reduce
       (#v_Vector: Type0)
@@ -230,7 +235,7 @@ val add_standard_error_reduce
 
 /// Given two `KyberPolynomialRingElement`s in their NTT representations,
 /// compute their product. Given two polynomials in the NTT domain `f^` and `ĵ`,
-/// the `iᵗʰ` coefficient of the product `k̂` is determined by the calculation:
+/// the `iᵗʰ` coefficient of the product `k\u{302}` is determined by the calculation:
 /// ```plaintext
 /// ĥ[2·i] + ĥ[2·i + 1]X = (f^[2·i] + f^[2·i + 1]X)·(ĝ[2·i] + ĝ[2·i + 1]X) mod (X² - ζ^(2·BitRev₇(i) + 1))
 /// ```
@@ -244,7 +249,7 @@ val add_standard_error_reduce
 /// end for
 /// return ĥ
 /// ```
-/// We say "almost" because the coefficients of the ring element output by
+/// We say \"almost\" because the coefficients of the ring element output by
 /// this function are in the Montgomery domain.
 /// The NIST FIPS 203 standard can be found at
 /// <https://csrc.nist.gov/pubs/fips/203/ipd>.
@@ -252,25 +257,15 @@ val ntt_multiply
       (#v_Vector: Type0)
       {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
       (myself rhs: t_PolynomialRingElement v_Vector)
-    : Prims.Pure (t_PolynomialRingElement v_Vector) Prims.l_True (fun _ -> Prims.l_True)
+    : Prims.Pure (t_PolynomialRingElement v_Vector)
+      (requires is_bounded_poly 3328 myself /\ is_bounded_poly 3328 rhs)
+      (fun _ -> Prims.l_True)
 
 val impl_2__ZERO:
     #v_Vector: Type0 ->
     {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |} ->
     Prims.unit
   -> Prims.Pure (t_PolynomialRingElement v_Vector) Prims.l_True (fun _ -> Prims.l_True)
-
-val impl_2__add_message_error_reduce
-      (#v_Vector: Type0)
-      {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
-      (self message result: t_PolynomialRingElement v_Vector)
-    : Prims.Pure (t_PolynomialRingElement v_Vector) Prims.l_True (fun _ -> Prims.l_True)
-
-val impl_2__ntt_multiply
-      (#v_Vector: Type0)
-      {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
-      (self rhs: t_PolynomialRingElement v_Vector)
-    : Prims.Pure (t_PolynomialRingElement v_Vector) Prims.l_True (fun _ -> Prims.l_True)
 
 /// Size of a ring element in bytes.
 val impl_2__num_bytes:
@@ -412,6 +407,17 @@ val impl_2__subtract_reduce
           let result:t_PolynomialRingElement v_Vector = result in
           is_bounded_poly 3328 result)
 
+val impl_2__add_message_error_reduce
+      (#v_Vector: Type0)
+      {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
+      (self message result: t_PolynomialRingElement v_Vector)
+    : Prims.Pure (t_PolynomialRingElement v_Vector)
+      (requires is_bounded_poly 3328 self /\ is_bounded_poly 3328 message)
+      (ensures
+        fun output ->
+          let output:t_PolynomialRingElement v_Vector = output in
+          is_bounded_poly 3328 output)
+
 val impl_2__add_error_reduce
       (#v_Vector: Type0)
       {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
@@ -426,4 +432,12 @@ val impl_2__add_standard_error_reduce
       (self error: t_PolynomialRingElement v_Vector)
     : Prims.Pure (t_PolynomialRingElement v_Vector)
       (requires is_bounded_poly #v_Vector 3328 error)
+      (fun _ -> Prims.l_True)
+
+val impl_2__ntt_multiply
+      (#v_Vector: Type0)
+      {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
+      (self rhs: t_PolynomialRingElement v_Vector)
+    : Prims.Pure (t_PolynomialRingElement v_Vector)
+      (requires is_bounded_poly 3328 self /\ is_bounded_poly 3328 rhs)
       (fun _ -> Prims.l_True)
