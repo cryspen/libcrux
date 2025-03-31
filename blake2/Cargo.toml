@@ -15,5 +15,5 @@ std = []
 default = ["std"]
 
 [dependencies]
-libcrux-hacl-rs = { version = "=0.0.2", path = "../hacl-rs/" }
-libcrux-macros = { version = "=0.0.2", path = "../macros" }
+libcrux-hacl-rs = { version = "=0.0.2" }
+libcrux-macros = { version = "=0.0.2" }
