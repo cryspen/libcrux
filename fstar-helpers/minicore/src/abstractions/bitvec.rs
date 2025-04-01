@@ -53,63 +53,6 @@ impl<const N: u64> core::ops::Index<u64> for BitVec<N> {
     }
 }
 
-// impl<const N: u64> FunArray<N, Bit> {
-//     pub fn to_u64(self) -> u64 {
-//         self.fold(0, |acc, n| (acc * 2) + u64::from(n))
-//     }
-//     pub fn log2(self) -> Option<u64> {
-//         self.fold((0u64, None), |acc, n| {
-//             let (position, acc) = acc;
-//             (
-//                 position + 1,
-//                 match (acc, n) {
-//                     // We have multiple `1`, this cannot be a power of 2
-//                     (Some(_), Bit::One) => None,
-//                     (None, Bit::One) => Some(position),
-//                     (_, Bit::Zero) => acc,
-//                 },
-//             )
-//         })
-//         .1
-//     }
-// }
-
-// #[cfg(hax)]
-// use hax_lib::int::Abstraction;
-
-// /// Convert a fun array of bits into an unsigned number.
-// // #[cfg(hax)]
-// fn math_int_from_fnarr_bit<const N: usize>(bits: FunArray<N, Bit>) -> hax_lib::Int {
-//     bits.fold(hax_lib::int!(0), |acc, n| {
-//         (acc * hax_lib::int!(2)) + u8::from(n).lift()
-//     })
-// }
-
-// #[hax_lib::requires(N.lift() == T::bits().lift())]
-// /// Convert a bit slice into a machine integer of type `T`.
-// fn int_from_fnarr_bit<const N: usize, T: MachineInteger + Copy>(
-//     bits: FunArray<N, Bit>,
-// ) -> hax_lib::Int {
-//     debug_assert!(N == T::bits() as usize);
-//     if T::SIGNED {
-//         let is_negative = matches!(bits[T::bits() as usize - 1], Bit::One);
-//         let s = math_int_from_fnarr_bit(FunArray::<N, _>::from_fn(|i| {
-//             if i == N - 1 {
-//                 Bit::Zero
-//             } else {
-//                 bits[i]
-//             }
-//         }));
-//         if is_negative {
-//             hax_lib::int!(0) - s
-//         } else {
-//             s
-//         }
-//     } else {
-//         math_int_from_fnarr_bit(bits)
-//     }
-// }
-
 /// Convert a bit slice into an unsigned number.
 #[hax_lib::exclude]
 fn u64_int_from_bit_slice(bits: &[Bit]) -> u64 {
