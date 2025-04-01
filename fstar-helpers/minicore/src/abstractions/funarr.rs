@@ -1,3 +1,15 @@
+/// A fixed-size array wrapper with functional semantics and F* integration.
+///
+/// `FunArray<N, T>` represents an array of `T` values of length `N`, where `N` is a compile-time constant.
+/// Internally, it uses a fixed-length array of `Option<T>` with a maximum capacity of 512 elements.
+/// Unused elements beyond `N` are filled with `None`.
+///
+/// This type is integrated with F* through various `#[hax_lib::fstar::replace]` attributes to support
+/// formal verification workflows.
+
+/// Internal helper for generating pointwise applications in F*.
+/// This replaces a functional array `arr` by `fun i -> match arr with | 0 -> arr 0 | ... | (N-1) -> arr (N-1)`.
+/// Replaced by F* tactic code to generate match-based function applications over bounded natural numbers.
 #[hax_lib::fstar::replace(
     r#"
 open FStar.Tactics
@@ -53,15 +65,17 @@ let rec ${FunArray::<0, ()>::fold::<()>} n #t #a (arr: t_FunArray n t) (init: a)
 "#
 )]
 #[derive(Copy, Clone, Eq, PartialEq)]
-// pub struct FunArray<const N: usize, T>([T; N]);
 pub struct FunArray<const N: u64, T>([Option<T>; 512]);
 
 #[hax_lib::exclude]
 impl<const N: u64, T> FunArray<N, T> {
+    /// In F*, this returns the array, applied pointwise.
+    /// In Rust, this is identity.
     pub fn pointwise_apply(self) -> FunArray<N, T> {
         self
     }
 
+    /// Gets a reference to the element at index `i`.
     pub fn get(&self, i: u64) -> &T {
         &self.0[i as usize].as_ref().unwrap()
     }
@@ -77,6 +91,8 @@ impl<const N: u64, T> FunArray<N, T> {
         });
         Self(arr)
     }
+
+    /// Converts the `FunArray` into a `Vec<T>`.
     pub fn as_vec(&self) -> Vec<T>
     where
         T: Clone,
@@ -88,6 +104,11 @@ impl<const N: u64, T> FunArray<N, T> {
             .collect()
     }
 
+    /// Folds over the array, accumulating a result.
+    ///
+    /// # Arguments
+    /// * `init` - The initial value of the accumulator.
+    /// * `f` - A function combining the accumulator and each element.
     pub fn fold<A>(&self, mut init: A, f: fn(A, T) -> A) -> A
     where
         T: Clone,
@@ -126,9 +147,3 @@ impl<const N: u64, T> core::ops::Index<u64> for FunArray<N, T> {
         self.get(index)
     }
 }
-
-// impl<const N: u64, T> AsRef<[T]> for FunArray<N, T> {
-//     fn as_ref(&self) -> &[T] {
-//         self.as_slice()
-//     }
-// }
