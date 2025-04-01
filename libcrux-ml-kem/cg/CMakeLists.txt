@@ -3,7 +3,7 @@
 # # For release (benchmarks)
 # cmake --build build --config Release
 
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.10..4.0)
 
 project(libcrux-ml-kem
     VERSION 0.1.0
@@ -57,8 +57,8 @@ endif()
 # Get gtests
 include(FetchContent)
 FetchContent_Declare(googletest
-    DOWNLOAD_EXTRACT_TIMESTAMP TRUE
-    URL https://github.com/google/googletest/archive/refs/tags/release-1.11.0.zip
+    GIT_REPOSITORY https://github.com/google/googletest.git
+    GIT_TAG v1.16.0
 )
 
 # For Windows: Prevent overriding the parent project's compiler/linker settings
@@ -67,8 +67,8 @@ FetchContent_MakeAvailable(googletest)
 
 # Get nlohmann json
 FetchContent_Declare(json
-    DOWNLOAD_EXTRACT_TIMESTAMP TRUE
-    URL https://github.com/nlohmann/json/archive/refs/tags/v3.10.3.zip
+    GIT_REPOSITORY https://github.com/nlohmann/json.git
+    GIT_TAG v3.11.3
 )
 FetchContent_MakeAvailable(json)
 
@@ -102,7 +102,7 @@ target_link_libraries(sha3_test PRIVATE
 if(DEFINED ENV{LIBCRUX_BENCHMARKS})
     FetchContent_Declare(benchmark
         GIT_REPOSITORY https://github.com/google/benchmark.git
-        GIT_TAG v1.8.4
+        GIT_TAG v1.9.2
     )
     FetchContent_MakeAvailable(benchmark)
 
