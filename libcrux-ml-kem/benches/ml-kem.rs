@@ -106,7 +106,7 @@ pub fn pk_validation(c: &mut Criterion) {
     #[cfg(feature = "incremental")]
     macro_rules! fun_incremental {
         ($name:expr, $p:path, $group:expr) => {
-            $group.bench_function(format!("{} incremental", $name), |b| {
+            $group.bench_function(format!("{}/incremental", $name), |b| {
                 use $p::*;
 
                 b.iter_batched(
@@ -206,7 +206,7 @@ pub fn encapsulation(c: &mut Criterion) {
                 )
             });
 
-            $group.bench_function(format!("incremental {}", $name), |b| {
+            $group.bench_function(format!("{}/incremental", $name), |b| {
                 use $p::*;
 
                 b.iter_batched(
@@ -294,7 +294,7 @@ pub fn decapsulation(c: &mut Criterion) {
     #[cfg(feature = "incremental")]
     macro_rules! fun_incremental {
         ($name:expr, $p:path, $group:expr) => {
-            $group.bench_function(format!("incremental {}", $name), |b| {
+            $group.bench_function(format!("{}/incremental", $name), |b| {
                 use $p::*;
 
                 let mut seed1 = [0; 64];
