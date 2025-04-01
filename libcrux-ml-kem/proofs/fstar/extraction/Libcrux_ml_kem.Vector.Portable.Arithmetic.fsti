@@ -3,6 +3,14 @@ module Libcrux_ml_kem.Vector.Portable.Arithmetic
 open Core
 open FStar.Mul
 
+let _ =
+  (* This module has implicit dependencies, here we make them explicit. *)
+  (* The implicit dependencies arise from typeclasses instances. *)
+  let open Libcrux_secrets.Int in
+  let open Libcrux_secrets.Int.Public_integers in
+  let open Libcrux_secrets.Traits in
+  ()
+
 let v_MONTGOMERY_SHIFT: u8 = mk_u8 16
 
 let v_MONTGOMERY_R: i32 = mk_i32 1 <<! v_MONTGOMERY_SHIFT

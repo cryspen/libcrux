@@ -3,6 +3,14 @@ module Libcrux_ml_kem.Vector.Portable.Ntt
 open Core
 open FStar.Mul
 
+let _ =
+  (* This module has implicit dependencies, here we make them explicit. *)
+  (* The implicit dependencies arise from typeclasses instances. *)
+  let open Libcrux_secrets.Int in
+  let open Libcrux_secrets.Int.Public_integers in
+  let open Libcrux_secrets.Traits in
+  ()
+
 let ntt_step
       (vec: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
       (zeta: i16)
@@ -13,7 +21,7 @@ let ntt_step
           .Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ j ]
         <:
         i16)
-      zeta
+      (Libcrux_secrets.Traits.f_classify #i16 #FStar.Tactics.Typeclasses.solve zeta <: i16)
   in
   let _:Prims.unit =
     assert (v t % 3329 == ((v (Seq.index vec.f_elements (v j)) * v zeta * 169) % 3329))
@@ -210,7 +218,8 @@ let inv_ntt_step
   in
   let o0:i16 = Libcrux_ml_kem.Vector.Portable.Arithmetic.barrett_reduce_element a_plus_b in
   let o1:i16 =
-    Libcrux_ml_kem.Vector.Portable.Arithmetic.montgomery_multiply_fe_by_fer a_minus_b zeta
+    Libcrux_ml_kem.Vector.Portable.Arithmetic.montgomery_multiply_fe_by_fer a_minus_b
+      (Libcrux_secrets.Traits.f_classify #i16 #FStar.Tactics.Typeclasses.solve zeta <: i16)
   in
   let _:Prims.unit =
     calc ( == ) {
@@ -416,13 +425,22 @@ let ntt_multiply_binomials
     assert_norm (3328 * 3328 < pow2 31)
   in
   let _:Prims.unit = Spec.Utils.lemma_mul_i16b 3328 3328 ai bi in
-  let ai_bi:i32 = (cast (ai <: i16) <: i32) *! (cast (bi <: i16) <: i32) in
+  let ai_bi:i32 =
+    (Libcrux_secrets.Int.f_as_i32 #i16 #FStar.Tactics.Typeclasses.solve ai <: i32) *!
+    (Libcrux_secrets.Int.f_as_i32 #i16 #FStar.Tactics.Typeclasses.solve bi <: i32)
+  in
   let _:Prims.unit = Spec.Utils.lemma_mul_i16b 3328 3328 aj bj in
-  let aj_bj_:i32 = (cast (aj <: i16) <: i32) *! (cast (bj <: i16) <: i32) in
+  let aj_bj_:i32 =
+    (Libcrux_secrets.Int.f_as_i32 #i16 #FStar.Tactics.Typeclasses.solve aj <: i32) *!
+    (Libcrux_secrets.Int.f_as_i32 #i16 #FStar.Tactics.Typeclasses.solve bj <: i32)
+  in
   let _:Prims.unit = assert_norm (3328 * 3328 <= 3328 * pow2 15) in
   let aj_bj:i16 = Libcrux_ml_kem.Vector.Portable.Arithmetic.montgomery_reduce_element aj_bj_ in
   let _:Prims.unit = Spec.Utils.lemma_mul_i16b 3328 1664 aj_bj zeta in
-  let aj_bj_zeta:i32 = (cast (aj_bj <: i16) <: i32) *! (cast (zeta <: i16) <: i32) in
+  let aj_bj_zeta:i32 =
+    (Libcrux_secrets.Int.f_as_i32 #i16 #FStar.Tactics.Typeclasses.solve aj_bj <: i32) *!
+    (Libcrux_secrets.Int.f_as_i32 #i16 #FStar.Tactics.Typeclasses.solve zeta <: i32)
+  in
   let ai_bi_aj_bj:i32 = ai_bi +! aj_bj_zeta in
   let _:Prims.unit = assert (Spec.Utils.is_i32b (3328 * 3328 + 3328 * 1664) ai_bi_aj_bj) in
   let _:Prims.unit = assert_norm (3328 * 3328 + 3328 * 1664 <= 3328 * pow2 15) in
@@ -459,9 +477,15 @@ let ntt_multiply_binomials
     }
   in
   let _:Prims.unit = Spec.Utils.lemma_mul_i16b 3328 3328 ai bj in
-  let ai_bj:i32 = (cast (ai <: i16) <: i32) *! (cast (bj <: i16) <: i32) in
+  let ai_bj:i32 =
+    (Libcrux_secrets.Int.f_as_i32 #i16 #FStar.Tactics.Typeclasses.solve ai <: i32) *!
+    (Libcrux_secrets.Int.f_as_i32 #i16 #FStar.Tactics.Typeclasses.solve bj <: i32)
+  in
   let _:Prims.unit = Spec.Utils.lemma_mul_i16b 3328 3328 aj bi in
-  let aj_bi:i32 = (cast (aj <: i16) <: i32) *! (cast (bi <: i16) <: i32) in
+  let aj_bi:i32 =
+    (Libcrux_secrets.Int.f_as_i32 #i16 #FStar.Tactics.Typeclasses.solve aj <: i32) *!
+    (Libcrux_secrets.Int.f_as_i32 #i16 #FStar.Tactics.Typeclasses.solve bi <: i32)
+  in
   let ai_bj_aj_bi:i32 = ai_bj +! aj_bi in
   let _:Prims.unit = assert (Spec.Utils.is_i32b (3328 * 3328 + 3328 * 3328) ai_bj_aj_bi) in
   let _:Prims.unit = assert_norm (3328 * 3328 + 3328 * 3328 <= 3328 * pow2 15) in
@@ -539,35 +563,67 @@ let ntt_multiply
   in
   let _:Prims.unit = assert (Spec.Utils.is_i16b_array 3328 out.f_elements) in
   let out:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
-    ntt_multiply_binomials lhs rhs zeta0 (mk_usize 0) out
+    ntt_multiply_binomials lhs
+      rhs
+      (Libcrux_secrets.Traits.f_classify #i16 #FStar.Tactics.Typeclasses.solve zeta0 <: i16)
+      (mk_usize 0)
+      out
   in
   let _:Prims.unit = assert (Spec.Utils.is_i16b_array 3328 out.f_elements) in
   let out:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
-    ntt_multiply_binomials lhs rhs nzeta0 (mk_usize 1) out
+    ntt_multiply_binomials lhs
+      rhs
+      (Libcrux_secrets.Traits.f_classify #i16 #FStar.Tactics.Typeclasses.solve nzeta0 <: i16)
+      (mk_usize 1)
+      out
   in
   let _:Prims.unit = assert (Spec.Utils.is_i16b_array 3328 out.f_elements) in
   let out:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
-    ntt_multiply_binomials lhs rhs zeta1 (mk_usize 2) out
+    ntt_multiply_binomials lhs
+      rhs
+      (Libcrux_secrets.Traits.f_classify #i16 #FStar.Tactics.Typeclasses.solve zeta1 <: i16)
+      (mk_usize 2)
+      out
   in
   let _:Prims.unit = assert (Spec.Utils.is_i16b_array 3328 out.f_elements) in
   let out:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
-    ntt_multiply_binomials lhs rhs nzeta1 (mk_usize 3) out
+    ntt_multiply_binomials lhs
+      rhs
+      (Libcrux_secrets.Traits.f_classify #i16 #FStar.Tactics.Typeclasses.solve nzeta1 <: i16)
+      (mk_usize 3)
+      out
   in
   let _:Prims.unit = assert (Spec.Utils.is_i16b_array 3328 out.f_elements) in
   let out:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
-    ntt_multiply_binomials lhs rhs zeta2 (mk_usize 4) out
+    ntt_multiply_binomials lhs
+      rhs
+      (Libcrux_secrets.Traits.f_classify #i16 #FStar.Tactics.Typeclasses.solve zeta2 <: i16)
+      (mk_usize 4)
+      out
   in
   let _:Prims.unit = assert (Spec.Utils.is_i16b_array 3328 out.f_elements) in
   let out:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
-    ntt_multiply_binomials lhs rhs nzeta2 (mk_usize 5) out
+    ntt_multiply_binomials lhs
+      rhs
+      (Libcrux_secrets.Traits.f_classify #i16 #FStar.Tactics.Typeclasses.solve nzeta2 <: i16)
+      (mk_usize 5)
+      out
   in
   let _:Prims.unit = assert (Spec.Utils.is_i16b_array 3328 out.f_elements) in
   let out:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
-    ntt_multiply_binomials lhs rhs zeta3 (mk_usize 6) out
+    ntt_multiply_binomials lhs
+      rhs
+      (Libcrux_secrets.Traits.f_classify #i16 #FStar.Tactics.Typeclasses.solve zeta3 <: i16)
+      (mk_usize 6)
+      out
   in
   let _:Prims.unit = assert (Spec.Utils.is_i16b_array 3328 out.f_elements) in
   let out:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
-    ntt_multiply_binomials lhs rhs nzeta3 (mk_usize 7) out
+    ntt_multiply_binomials lhs
+      rhs
+      (Libcrux_secrets.Traits.f_classify #i16 #FStar.Tactics.Typeclasses.solve nzeta3 <: i16)
+      (mk_usize 7)
+      out
   in
   let _:Prims.unit = assert (Spec.Utils.is_i16b_array 3328 out.f_elements) in
   let result:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector = out in

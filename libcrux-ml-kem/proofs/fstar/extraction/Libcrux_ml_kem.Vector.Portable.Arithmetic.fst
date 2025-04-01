@@ -3,6 +3,14 @@ module Libcrux_ml_kem.Vector.Portable.Arithmetic
 open Core
 open FStar.Mul
 
+let _ =
+  (* This module has implicit dependencies, here we make them explicit. *)
+  (* The implicit dependencies arise from typeclasses instances. *)
+  let open Libcrux_secrets.Int in
+  let open Libcrux_secrets.Int.Public_integers in
+  let open Libcrux_secrets.Traits in
+  ()
+
 #push-options "--z3rlimit 150 --split_queries always"
 
 let get_n_least_significant_bits (n: u8) (value: u32) =
@@ -253,7 +261,12 @@ let cond_subtract_3329_ (vec: Libcrux_ml_kem.Vector.Portable.Vector_type.t_Porta
           let vec:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector = vec in
           let i:usize = i in
           if
-            (vec.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ i ] <: i16) >=. mk_i16 3329
+            (Libcrux_secrets.Traits.f_declassify #i16
+                #FStar.Tactics.Typeclasses.solve
+                (vec.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ i ] <: i16)
+              <:
+              i16) >=.
+            mk_i16 3329
             <:
             bool
           then
@@ -288,7 +301,7 @@ let cond_subtract_3329_ (vec: Libcrux_ml_kem.Vector.Portable.Vector_type.t_Porta
 
 let barrett_reduce_element (value: i16) =
   let t:i32 =
-    ((Core.Convert.f_from #i32 #i16 #FStar.Tactics.Typeclasses.solve value <: i32) *!
+    ((Libcrux_secrets.Int.f_as_i32 #i16 #FStar.Tactics.Typeclasses.solve value <: i32) *!
       v_BARRETT_MULTIPLIER
       <:
       i32) +!
@@ -300,7 +313,11 @@ let barrett_reduce_element (value: i16) =
   in
   let _:Prims.unit = assert (v t / pow2 26 < 9) in
   let _:Prims.unit = assert (v t / pow2 26 > - 9) in
-  let quotient:i16 = cast (t >>! Libcrux_ml_kem.Vector.Traits.v_BARRETT_SHIFT <: i32) <: i16 in
+  let quotient:i16 =
+    Libcrux_secrets.Int.f_as_i16 #i32
+      #FStar.Tactics.Typeclasses.solve
+      (t >>! Libcrux_ml_kem.Vector.Traits.v_BARRETT_SHIFT <: i32)
+  in
   let _:Prims.unit = assert (v quotient = v t / pow2 26) in
   let _:Prims.unit = assert (Spec.Utils.is_i16b 9 quotient) in
   let result:i16 = value -! (quotient *! Libcrux_ml_kem.Vector.Traits.v_FIELD_MODULUS <: i16) in
@@ -380,8 +397,20 @@ let barrett_reduce (vec: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVe
 let montgomery_reduce_element (value: i32) =
   let _:i32 = v_MONTGOMERY_R in
   let k:i32 =
-    (cast (cast (value <: i32) <: i16) <: i32) *!
-    (cast (Libcrux_ml_kem.Vector.Traits.v_INVERSE_OF_MODULUS_MOD_MONTGOMERY_R <: u32) <: i32)
+    (Libcrux_secrets.Int.f_as_i32 #i16
+        #FStar.Tactics.Typeclasses.solve
+        (Libcrux_secrets.Int.f_as_i16 #i32 #FStar.Tactics.Typeclasses.solve value <: i16)
+      <:
+      i32) *!
+    (Libcrux_secrets.Int.f_as_i32 #u32
+        #FStar.Tactics.Typeclasses.solve
+        (Libcrux_secrets.Traits.f_classify #u32
+            #FStar.Tactics.Typeclasses.solve
+            Libcrux_ml_kem.Vector.Traits.v_INVERSE_OF_MODULUS_MOD_MONTGOMERY_R
+          <:
+          u32)
+      <:
+      i32)
   in
   let _:Prims.unit =
     assert (v (cast (cast (value <: i32) <: i16) <: i32) == v value @% pow2 16);
@@ -392,8 +421,20 @@ let montgomery_reduce_element (value: i32) =
     assert (v (cast (Libcrux_ml_kem.Vector.Traits.v_FIELD_MODULUS <: i16) <: i32) == 3329)
   in
   let k_times_modulus:i32 =
-    (cast (cast (k <: i32) <: i16) <: i32) *!
-    (cast (Libcrux_ml_kem.Vector.Traits.v_FIELD_MODULUS <: i16) <: i32)
+    (Libcrux_secrets.Int.f_as_i32 #i16
+        #FStar.Tactics.Typeclasses.solve
+        (Libcrux_secrets.Int.f_as_i16 #i32 #FStar.Tactics.Typeclasses.solve k <: i16)
+      <:
+      i32) *!
+    (Libcrux_secrets.Int.f_as_i32 #i16
+        #FStar.Tactics.Typeclasses.solve
+        (Libcrux_secrets.Traits.f_classify #i16
+            #FStar.Tactics.Typeclasses.solve
+            Libcrux_ml_kem.Vector.Traits.v_FIELD_MODULUS
+          <:
+          i16)
+      <:
+      i32)
   in
   let _:Prims.unit =
     assert_norm (pow2 15 * 3329 < pow2 31);
@@ -403,7 +444,11 @@ let montgomery_reduce_element (value: i32) =
       Libcrux_ml_kem.Vector.Traits.v_FIELD_MODULUS;
     assert (Spec.Utils.is_i32b (pow2 15 * 3329) k_times_modulus)
   in
-  let c:i16 = cast (k_times_modulus >>! v_MONTGOMERY_SHIFT <: i32) <: i16 in
+  let c:i16 =
+    Libcrux_secrets.Int.f_as_i16 #i32
+      #FStar.Tactics.Typeclasses.solve
+      (k_times_modulus >>! v_MONTGOMERY_SHIFT <: i32)
+  in
   let _:Prims.unit =
     assert (v k_times_modulus < pow2 31);
     assert (v k_times_modulus / pow2 16 < pow2 15);
@@ -411,7 +456,11 @@ let montgomery_reduce_element (value: i32) =
     assert (v c == v k_times_modulus / pow2 16);
     assert (Spec.Utils.is_i16b 1665 c)
   in
-  let value_high:i16 = cast (value >>! v_MONTGOMERY_SHIFT <: i32) <: i16 in
+  let value_high:i16 =
+    Libcrux_secrets.Int.f_as_i16 #i32
+      #FStar.Tactics.Typeclasses.solve
+      (value >>! v_MONTGOMERY_SHIFT <: i32)
+  in
   let _:Prims.unit =
     assert (v value < pow2 31);
     assert (v value / pow2 16 < pow2 15);
@@ -476,7 +525,10 @@ let montgomery_reduce_element (value: i32) =
 
 let montgomery_multiply_fe_by_fer (fe fer: i16) =
   let _:Prims.unit = Spec.Utils.lemma_mul_i16b (pow2 15) (1664) fe fer in
-  let product:i32 = (cast (fe <: i16) <: i32) *! (cast (fer <: i16) <: i32) in
+  let product:i32 =
+    (Libcrux_secrets.Int.f_as_i32 #i16 #FStar.Tactics.Typeclasses.solve fe <: i32) *!
+    (Libcrux_secrets.Int.f_as_i32 #i16 #FStar.Tactics.Typeclasses.solve fer <: i32)
+  in
   montgomery_reduce_element product
 
 #pop-options
