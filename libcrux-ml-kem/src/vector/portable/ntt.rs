@@ -263,7 +263,6 @@ pub(crate) fn inv_ntt_layer_3_step(mut vec: PortableVector, zeta: i16) -> Portab
 /// The NIST FIPS 203 standard can be found at
 /// <https://csrc.nist.gov/pubs/fips/203/ipd>.
 #[inline(always)]
-#[hax_lib::fstar::verification_status(panic_free)]
 #[hax_lib::fstar::options(
     "--z3rlimit 250 --split_queries always --query_stats --ext context_prune"
 )]
@@ -379,8 +378,7 @@ pub(crate) fn ntt_multiply_binomials(
 }
 
 #[inline(always)]
-#[hax_lib::fstar::verification_status(panic_free)]
-#[hax_lib::fstar::options("--z3rlimit 100")]
+#[hax_lib::fstar::options("--z3rlimit 1000")]
 #[hax_lib::requires(fstar!(r#"Spec.Utils.is_i16b 1664 $zeta0 /\
         Spec.Utils.is_i16b 1664 $zeta1 /\
         Spec.Utils.is_i16b 1664 $zeta2 /\

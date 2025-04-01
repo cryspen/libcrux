@@ -53,41 +53,33 @@ let to_i16_array (v: t_SIMD128Vector) =
         <:
         t_Slice i16)
   in
-  let result:t_Array i16 (mk_usize 16) = out in
-  let _:Prims.unit = admit () (* Panic freedom *) in
-  result
+  out
 
 let from_i16_array (array: t_Slice i16) =
-  let result:t_SIMD128Vector =
-    {
-      f_low
-      =
-      Libcrux_intrinsics.Arm64_extract.e_vld1q_s16 (array.[ {
-              Core.Ops.Range.f_start = mk_usize 0;
-              Core.Ops.Range.f_end = mk_usize 8
-            }
-            <:
-            Core.Ops.Range.t_Range usize ]
+  {
+    f_low
+    =
+    Libcrux_intrinsics.Arm64_extract.e_vld1q_s16 (array.[ {
+            Core.Ops.Range.f_start = mk_usize 0;
+            Core.Ops.Range.f_end = mk_usize 8
+          }
           <:
-          t_Slice i16);
-      f_high
-      =
-      Libcrux_intrinsics.Arm64_extract.e_vld1q_s16 (array.[ {
-              Core.Ops.Range.f_start = mk_usize 8;
-              Core.Ops.Range.f_end = mk_usize 16
-            }
-            <:
-            Core.Ops.Range.t_Range usize ]
+          Core.Ops.Range.t_Range usize ]
+        <:
+        t_Slice i16);
+    f_high
+    =
+    Libcrux_intrinsics.Arm64_extract.e_vld1q_s16 (array.[ {
+            Core.Ops.Range.f_start = mk_usize 8;
+            Core.Ops.Range.f_end = mk_usize 16
+          }
           <:
-          t_Slice i16)
-    }
-    <:
-    t_SIMD128Vector
-  in
-  let _:Prims.unit = admit () (* Panic freedom *) in
-  result
-
-#push-options "--admit_smt_queries true"
+          Core.Ops.Range.t_Range usize ]
+        <:
+        t_Slice i16)
+  }
+  <:
+  t_SIMD128Vector
 
 let to_bytes (v: t_SIMD128Vector) (bytes: t_Slice u8) =
   let bytes:t_Slice u8 =
@@ -126,10 +118,6 @@ let to_bytes (v: t_SIMD128Vector) (bytes: t_Slice u8) =
   in
   bytes
 
-#pop-options
-
-#push-options "--admit_smt_queries true"
-
 let from_bytes (array: t_Slice u8) =
   {
     f_low
@@ -156,16 +144,10 @@ let from_bytes (array: t_Slice u8) =
   <:
   t_SIMD128Vector
 
-#pop-options
-
 let v_ZERO (_: Prims.unit) =
-  let result:t_SIMD128Vector =
-    {
-      f_low = Libcrux_intrinsics.Arm64_extract.e_vdupq_n_s16 (mk_i16 0);
-      f_high = Libcrux_intrinsics.Arm64_extract.e_vdupq_n_s16 (mk_i16 0)
-    }
-    <:
-    t_SIMD128Vector
-  in
-  let _:Prims.unit = admit () (* Panic freedom *) in
-  result
+  {
+    f_low = Libcrux_intrinsics.Arm64_extract.e_vdupq_n_s16 (mk_i16 0);
+    f_high = Libcrux_intrinsics.Arm64_extract.e_vdupq_n_s16 (mk_i16 0)
+  }
+  <:
+  t_SIMD128Vector

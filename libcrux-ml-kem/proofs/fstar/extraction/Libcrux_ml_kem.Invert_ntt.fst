@@ -258,7 +258,12 @@ let inv_ntt_layer_int_vec_step_reduce
       (Libcrux_ml_kem.Vector.Traits.f_add #v_Vector #FStar.Tactics.Typeclasses.solve a b <: v_Vector
       )
   in
-  let b:v_Vector = Libcrux_ml_kem.Vector.Traits.montgomery_multiply_fe #v_Vector a_minus_b zeta_r in
+  let b:v_Vector =
+    Libcrux_ml_kem.Vector.Traits.f_montgomery_multiply_by_constant #v_Vector
+      #FStar.Tactics.Typeclasses.solve
+      a_minus_b
+      zeta_r
+  in
   a, b <: (v_Vector & v_Vector)
 
 #push-options "--admit_smt_queries true"
@@ -347,6 +352,8 @@ let invert_ntt_at_layer_4_plus
 
 #pop-options
 
+#push-options "--admit_smt_queries true"
+
 let invert_ntt_montgomery
       (v_K: usize)
       (#v_Vector: Type0)
@@ -402,3 +409,5 @@ let invert_ntt_montgomery
     Libcrux_ml_kem.Polynomial.impl_2__poly_barrett_reduce #v_Vector re
   in
   re
+
+#pop-options

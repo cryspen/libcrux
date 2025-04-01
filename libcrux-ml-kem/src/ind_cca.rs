@@ -547,7 +547,7 @@ pub(crate) mod unpacked {
         Spec.MLKEM.is_rank $K /\
             $PUBLIC_KEY_SIZE == Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE $K /\
             (forall (i:nat). i < v $K ==>
-                Libcrux_ml_kem.Serialize.coefficients_field_modulus_range (Seq.index 
+                Libcrux_ml_kem.Polynomial.is_bounded_poly 3328 (Seq.index 
                     ${self_.ind_cpa_public_key.t_as_ntt} i))"#))]
         #[ensures(|_|
             fstar!(r#"let ${self_} = self in            
@@ -574,7 +574,7 @@ pub(crate) mod unpacked {
         Spec.MLKEM.is_rank $K /\
             $PUBLIC_KEY_SIZE == Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE $K /\
             (forall (i:nat). i < v $K ==>
-                Libcrux_ml_kem.Serialize.coefficients_field_modulus_range (Seq.index
+                Libcrux_ml_kem.Polynomial.is_bounded_poly 3328 (Seq.index
                     ${self_.ind_cpa_public_key.t_as_ntt} i))"#))]
         #[ensures(|res|
             fstar!(r#"let ${self_} = self in
@@ -690,7 +690,7 @@ pub(crate) mod unpacked {
         Spec.MLKEM.is_rank $K /\
             $PUBLIC_KEY_SIZE == Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE $K /\
             (forall (i:nat). i < v $K ==>
-                Libcrux_ml_kem.Serialize.coefficients_field_modulus_range (Seq.index 
+                Libcrux_ml_kem.Polynomial.is_bounded_poly 3328 (Seq.index 
                     ${self_.public_key.ind_cpa_public_key.t_as_ntt} i))"#))]
         #[ensures(|_|
             fstar!(r#"let ${self_} = self in
@@ -714,7 +714,7 @@ pub(crate) mod unpacked {
         Spec.MLKEM.is_rank $K /\
             $PUBLIC_KEY_SIZE == Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE $K /\
             (forall (i:nat). i < v $K ==>
-                Libcrux_ml_kem.Serialize.coefficients_field_modulus_range (Seq.index
+                Libcrux_ml_kem.Polynomial.is_bounded_poly 3328 (Seq.index
                     ${self_.public_key.ind_cpa_public_key.t_as_ntt} i))"#))]
         #[ensures(|res|
             fstar!(r#"let ${self_} = self in

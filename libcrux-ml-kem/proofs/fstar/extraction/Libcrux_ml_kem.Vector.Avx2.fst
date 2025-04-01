@@ -219,9 +219,14 @@ let impl: Libcrux_ml_kem.Vector.Traits.t_Repr t_SIMD256Vector =
   {
     _super_13011033735201511749 = FStar.Tactics.Typeclasses.solve;
     _super_9529721400157967266 = FStar.Tactics.Typeclasses.solve;
-    f_repr_pre = (fun (x: t_SIMD256Vector) -> true);
-    f_repr_post = (fun (x: t_SIMD256Vector) (out: t_Array i16 (mk_usize 16)) -> true);
-    f_repr = fun (x: t_SIMD256Vector) -> vec_to_i16_array x
+    f_repr_pre = (fun (self: t_SIMD256Vector) -> true);
+    f_repr_post = (fun (self: t_SIMD256Vector) (out: t_Array i16 (mk_usize 16)) -> true);
+    f_repr
+    =
+    fun (self: t_SIMD256Vector) ->
+      vec_to_i16_array (Core.Clone.f_clone #t_SIMD256Vector #FStar.Tactics.Typeclasses.solve self
+          <:
+          t_SIMD256Vector)
   }
 
 let from_bytes (array: t_Slice u8) =
@@ -296,7 +301,11 @@ let impl_3: Libcrux_ml_kem.Vector.Traits.t_Operations t_SIMD256Vector =
     =
     (fun (x: t_SIMD256Vector) (bytes: t_Slice u8) ->
         (Core.Slice.impl__len #u8 bytes <: usize) >=. mk_usize 32);
-    f_to_bytes_post = (fun (x: t_SIMD256Vector) (bytes: t_Slice u8) (out: t_Slice u8) -> true);
+    f_to_bytes_post
+    =
+    (fun (x: t_SIMD256Vector) (bytes: t_Slice u8) (bytes_future: t_Slice u8) ->
+        (Core.Slice.impl__len #u8 bytes_future <: usize) =.
+        (Core.Slice.impl__len #u8 bytes <: usize));
     f_to_bytes
     =
     (fun (x: t_SIMD256Vector) (bytes: t_Slice u8) ->
@@ -359,40 +368,6 @@ let impl_3: Libcrux_ml_kem.Vector.Traits.t_Operations t_SIMD256Vector =
         { f_elements = Libcrux_ml_kem.Vector.Avx2.Arithmetic.multiply_by_constant vec.f_elements c }
         <:
         t_SIMD256Vector);
-    f_bitwise_and_with_constant_pre = (fun (vector: t_SIMD256Vector) (constant: i16) -> true);
-    f_bitwise_and_with_constant_post
-    =
-    (fun (vector: t_SIMD256Vector) (constant: i16) (out: t_SIMD256Vector) ->
-        impl.f_repr out == Spec.Utils.map_array (fun x -> x &. constant) (impl.f_repr vector));
-    f_bitwise_and_with_constant
-    =
-    (fun (vector: t_SIMD256Vector) (constant: i16) ->
-        {
-          f_elements
-          =
-          Libcrux_ml_kem.Vector.Avx2.Arithmetic.bitwise_and_with_constant vector.f_elements constant
-        }
-        <:
-        t_SIMD256Vector);
-    f_shift_right_pre
-    =
-    (fun (v_SHIFT_BY: i32) (vector: t_SIMD256Vector) ->
-        v_SHIFT_BY >=. mk_i32 0 && v_SHIFT_BY <. mk_i32 16);
-    f_shift_right_post
-    =
-    (fun (v_SHIFT_BY: i32) (vector: t_SIMD256Vector) (out: t_SIMD256Vector) ->
-        (v_SHIFT_BY >=. (mk_i32 0) /\ v_SHIFT_BY <. (mk_i32 16)) ==>
-        impl.f_repr out == Spec.Utils.map_array (fun x -> x >>! v_SHIFT_BY) (impl.f_repr vector));
-    f_shift_right
-    =
-    (fun (v_SHIFT_BY: i32) (vector: t_SIMD256Vector) ->
-        {
-          f_elements
-          =
-          Libcrux_ml_kem.Vector.Avx2.Arithmetic.shift_right v_SHIFT_BY vector.f_elements
-        }
-        <:
-        t_SIMD256Vector);
     f_cond_subtract_3329__pre
     =
     (fun (vector: t_SIMD256Vector) -> Spec.Utils.is_i16b_array (pow2 12 - 1) (impl.f_repr vector));
@@ -406,7 +381,13 @@ let impl_3: Libcrux_ml_kem.Vector.Traits.t_Operations t_SIMD256Vector =
     f_barrett_reduce_pre
     =
     (fun (vector: t_SIMD256Vector) -> Spec.Utils.is_i16b_array 28296 (impl.f_repr vector));
-    f_barrett_reduce_post = (fun (vector: t_SIMD256Vector) (out: t_SIMD256Vector) -> true);
+    f_barrett_reduce_post
+    =
+    (fun (vector: t_SIMD256Vector) (result: t_SIMD256Vector) ->
+        Spec.Utils.is_i16b_array 3328 (impl.f_repr result) /\
+        (forall i.
+            (v (Seq.index (impl.f_repr result) i) % 3329) ==
+            (v (Seq.index (impl.f_repr vector) i) % 3329)));
     f_barrett_reduce
     =
     (fun (vector: t_SIMD256Vector) ->
@@ -418,7 +399,12 @@ let impl_3: Libcrux_ml_kem.Vector.Traits.t_Operations t_SIMD256Vector =
     (fun (vector: t_SIMD256Vector) (constant: i16) -> Spec.Utils.is_i16b 1664 constant);
     f_montgomery_multiply_by_constant_post
     =
-    (fun (vector: t_SIMD256Vector) (constant: i16) (out: t_SIMD256Vector) -> true);
+    (fun (vector: t_SIMD256Vector) (constant: i16) (result: t_SIMD256Vector) ->
+        Spec.Utils.is_i16b_array 3328 (impl.f_repr result) /\
+        (forall i.
+            i < 16 ==>
+            ((v (Seq.index (impl.f_repr result) i) % 3329) ==
+              (v (Seq.index (impl.f_repr vector) i) * v constant * 169) % 3329)));
     f_montgomery_multiply_by_constant
     =
     (fun (vector: t_SIMD256Vector) (constant: i16) ->
@@ -427,6 +413,25 @@ let impl_3: Libcrux_ml_kem.Vector.Traits.t_Operations t_SIMD256Vector =
           =
           Libcrux_ml_kem.Vector.Avx2.Arithmetic.montgomery_multiply_by_constant vector.f_elements
             constant
+        }
+        <:
+        t_SIMD256Vector);
+    f_to_unsigned_representative_pre
+    =
+    (fun (a: t_SIMD256Vector) -> Spec.Utils.is_i16b_array 3328 (impl.f_repr a));
+    f_to_unsigned_representative_post
+    =
+    (fun (a: t_SIMD256Vector) (result: t_SIMD256Vector) ->
+        forall (i: nat).
+          i < 16 ==>
+          (let x = Seq.index (impl.f_repr a) i in
+            let y = Seq.index (impl.f_repr result) i in
+            (v y >= 0 /\ v y <= 3328 /\ (v y % 3329 == v x % 3329))));
+    f_to_unsigned_representative
+    =
+    (fun (a: t_SIMD256Vector) ->
+        {
+          f_elements = Libcrux_ml_kem.Vector.Avx2.Arithmetic.to_unsigned_representative a.f_elements
         }
         <:
         t_SIMD256Vector);
@@ -460,6 +465,20 @@ let impl_3: Libcrux_ml_kem.Vector.Traits.t_Operations t_SIMD256Vector =
     f_compress
     =
     (fun (v_COEFFICIENT_BITS: i32) (vector: t_SIMD256Vector) -> compress v_COEFFICIENT_BITS vector);
+    f_decompress_1__pre
+    =
+    (fun (a: t_SIMD256Vector) ->
+        forall (i: nat).
+          i < 16 ==>
+          (let x = Seq.index (impl.f_repr a) i in
+            (x == mk_i16 0 \/ x == mk_i16 1)));
+    f_decompress_1__post = (fun (a: t_SIMD256Vector) (out: t_SIMD256Vector) -> true);
+    f_decompress_1_
+    =
+    (fun (a: t_SIMD256Vector) ->
+        { f_elements = Libcrux_ml_kem.Vector.Avx2.Compress.decompress_1_ a.f_elements }
+        <:
+        t_SIMD256Vector);
     f_decompress_ciphertext_coefficient_pre
     =
     (fun (v_COEFFICIENT_BITS: i32) (vector: t_SIMD256Vector) ->

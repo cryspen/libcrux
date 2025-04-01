@@ -254,7 +254,12 @@ let ntt_layer_int_vec_step
       (a b: v_Vector)
       (zeta_r: i16)
      =
-  let t:v_Vector = Libcrux_ml_kem.Vector.Traits.montgomery_multiply_fe #v_Vector b zeta_r in
+  let t:v_Vector =
+    Libcrux_ml_kem.Vector.Traits.f_montgomery_multiply_by_constant #v_Vector
+      #FStar.Tactics.Typeclasses.solve
+      b
+      zeta_r
+  in
   let b:v_Vector =
     Libcrux_ml_kem.Vector.Traits.f_sub #v_Vector #FStar.Tactics.Typeclasses.solve a t
   in
@@ -422,6 +427,8 @@ let ntt_at_layer_7_
 
 #pop-options
 
+#push-options "--admit_smt_queries true"
+
 #push-options "--z3rlimit 200"
 
 let ntt_binomially_sampled_ring_element
@@ -484,16 +491,16 @@ let ntt_binomially_sampled_ring_element
   let zeta_i:usize = tmp0 in
   let re:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector = tmp1 in
   let _:Prims.unit = () in
-  let result, re:(Prims.unit & Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) =
-    (), Libcrux_ml_kem.Polynomial.impl_2__poly_barrett_reduce #v_Vector re
-    <:
-    (Prims.unit & Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
+  let re:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector =
+    Libcrux_ml_kem.Polynomial.impl_2__poly_barrett_reduce #v_Vector re
   in
-  let _:Prims.unit = admit () (* Panic freedom *) in
-  let _:Prims.unit = result in
   re
 
 #pop-options
+
+#pop-options
+
+#push-options "--admit_smt_queries true"
 
 #push-options "--z3rlimit 200"
 
@@ -548,13 +555,11 @@ let ntt_vector_u
   let zeta_i:usize = tmp0 in
   let re:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector = tmp1 in
   let _:Prims.unit = () in
-  let result, re:(Prims.unit & Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) =
-    (), Libcrux_ml_kem.Polynomial.impl_2__poly_barrett_reduce #v_Vector re
-    <:
-    (Prims.unit & Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
+  let re:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector =
+    Libcrux_ml_kem.Polynomial.impl_2__poly_barrett_reduce #v_Vector re
   in
-  let _:Prims.unit = admit () (* Panic freedom *) in
-  let _:Prims.unit = result in
   re
+
+#pop-options
 
 #pop-options

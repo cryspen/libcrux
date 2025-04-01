@@ -28,7 +28,9 @@ val inv_ntt_layer_1_step
     : Prims.Pure Libcrux_intrinsics.Avx2_extract.t_Vec256
       (requires
         Spec.Utils.is_i16b 1664 zeta0 /\ Spec.Utils.is_i16b 1664 zeta1 /\
-        Spec.Utils.is_i16b 1664 zeta2 /\ Spec.Utils.is_i16b 1664 zeta3)
+        Spec.Utils.is_i16b 1664 zeta2 /\ Spec.Utils.is_i16b 1664 zeta3 /\
+        Spec.Utils.is_i16b_array (4 * 3328)
+          (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 vector))
       (fun _ -> Prims.l_True)
 
 val inv_ntt_layer_2_step (vector: Libcrux_intrinsics.Avx2_extract.t_Vec256) (zeta0 zeta1: i16)
