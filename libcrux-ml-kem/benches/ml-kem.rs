@@ -78,7 +78,7 @@ pub fn pk_validation(c: &mut Criterion) {
 
     macro_rules! fun {
         ($name:expr, $p:path, $group:expr) => {
-            $group.bench_function(format!("{}", $name), |b| {
+            $group.bench_function(format!("{}/", $name), |b| {
                 use $p as p;
 
                 let mut seed = [0; 64];
@@ -243,7 +243,7 @@ pub fn encapsulation(c: &mut Criterion) {
 pub fn decapsulation(c: &mut Criterion) {
     macro_rules! fun {
         ($name:expr, $p:path, $group:expr) => {
-            $group.bench_function(format!("{}", $name), |b| {
+            $group.bench_function(format!("{}/", $name), |b| {
                 use $p as p;
                 let mut seed1 = [0; 64];
                 OsRng.try_fill_bytes(&mut seed1).unwrap();
