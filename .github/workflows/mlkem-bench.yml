@@ -88,10 +88,6 @@ jobs:
       - name: 🏃🏻‍♀️ Benchmarks
         run: cargo bench --verbose $RUST_TARGET_FLAG -- --output-format bencher | tee bench.txt 
 
-      - name: 🏃🏻‍♀️ Benchmarks Portable
-        run: |
-          cargo clean
-          LIBCRUX_DISABLE_SIMD128=1 LIBCRUX_DISABLE_SIMD256=1 cargo bench --verbose $RUST_TARGET_FLAG -- --output-format bencher | sed 's/^test \(.*\) \.\.\. bench/test portable \1 ... bench/' | tee -a bench.txt 
       - name: Store benchmarks
         uses: benchmark-action/github-action-benchmark@v1
         with:
