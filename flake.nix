@@ -14,8 +14,9 @@
         pkgs = import nixpkgs { inherit system; };
         charon = eurydice.inputs.charon;
         crane = charon.inputs.crane;
-        karamel = eurydice.inputs.karamel;
-        fstar = karamel.inputs.fstar;
+        # Use the overridden package exported by the eurydice flake.
+        karamel = eurydice.packages.${system}.karamel;
+        fstar = eurydice.inputs.karamel.inputs.fstar;
 
         googletest = pkgs.fetchFromGitHub {
           owner = "google";
@@ -44,11 +45,11 @@
             cp -r ${eurydice}/include $out
           '';
           FSTAR_HOME = fstar.packages.${system}.default;
-          KRML_HOME = karamel.packages.${system}.default.home;
+          KRML_HOME = karamel;
 
           CHARON_REV = charon.rev;
           EURYDICE_REV = eurydice.rev;
-          KRML_REV = karamel.rev;
+          KRML_REV = karamel.version;
           FSTAR_REV = fstar.rev;
           LIBCRUX_REV = self.rev or "dirty";
         };
