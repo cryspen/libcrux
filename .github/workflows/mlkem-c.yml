@@ -165,7 +165,13 @@ jobs:
       - uses: actions/download-artifact@v4
         with:
           name: c-extraction
-          
+
+      - name: Set CC and CXX to Clang on Ubuntu
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          echo "CC=clang" >> $GITHUB_ENV
+          echo "CXX=clang++" >> $GITHUB_ENV
+
       - name: 🔨 Build
         run: |
           LIBCRUX_BENCHMARKS=1 cmake -B build
@@ -203,6 +209,12 @@ jobs:
       - uses: actions/download-artifact@v4
         with:
           name: header-only-c-extraction-ml-kem
+
+      - name: Set CC and CXX to Clang on Ubuntu
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          echo "CC=clang" >> $GITHUB_ENV
+          echo "CXX=clang++" >> $GITHUB_ENV
 
       - name: 🔨 Build
         run: |

@@ -16,10 +16,6 @@ on:
       hax_rev:
         description: "The hax revision you want this job to use"
         default: "main"
-      skip_diff:
-        description: "Skip diff jobs"
-        default: false
-        type: boolean
 
 env:
   CARGO_TERM_COLOR: always
@@ -30,7 +26,6 @@ concurrency:
 
 jobs:
   extract:
-    if: ${{ github.event_name != 'merge_group' }}
     runs-on: ubuntu-latest
 
     steps:
@@ -47,35 +42,16 @@ jobs:
       - name: ↑ Upload F* extraction
         uses: actions/upload-artifact@v4
         with:
-          name: fstar-extraction-mlkem
-          path: libcrux-ml-kem/proofs/
+          name: fstar-extractions
+          path: "**/proofs/fstar"
           include-hidden-files: true
           if-no-files-found: error
-
-  diff:
-    needs: extract
-    if: ${{ github.event_name != 'merge_group' }}
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/download-artifact@v4
-        with:
-          name: fstar-extraction-mlkem
-          path: ~/fstar-extraction-mlkem
-
-      - name: = Diff Extraction
-        if: ${{ github.event.inputs.skip_diff != 'false' }}
-        run: |
-          diff -r libcrux-ml-kem/proofs/fstar/extraction/ \
-            ~/fstar-extraction-mlkem/fstar/extraction/
 
   lax:
     runs-on: ubuntu-latest
     if: ${{ github.event_name != 'merge_group' }}
     needs:
       - extract
-      - diff
 
     steps:
       - uses: actions/checkout@v4
@@ -84,6 +60,10 @@ jobs:
           hax_reference: ${{ github.event.inputs.hax_rev || 'main' }}
           fstar: v2025.02.17
 
+      - uses: actions/download-artifact@v4
+        with:
+          name: fstar-extractions
+          path: .
       - name: 🏃 Lax ML-KEM crate
         working-directory: libcrux-ml-kem
         run: ./hax.py prove --admit
@@ -91,6 +71,8 @@ jobs:
   prove:
     runs-on: self-hosted
     if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}
+    needs:
+      - extract
     steps:
       - uses: actions/checkout@v4
       - uses: actions/checkout@v4
@@ -104,6 +86,11 @@ jobs:
       - name: ⤵ Install FStar
         run: nix profile install github:FStarLang/FStar/v2025.02.17
 
+      - uses: actions/download-artifact@v4
+        with:
+          name: fstar-extractions
+          path: .
+
       - name: 🏃 Prove ML-KEM crate
         working-directory: libcrux-ml-kem
         run: FSTAR_HOME=~/.nix-profile ./hax.py prove
@@ -111,18 +98,6 @@ jobs:
   mlkem-extract-hax-status:
     if: ${{ always() }}
     needs: [extract]
-    runs-on: ubuntu-latest
-    steps:
-      - name: Successful
-        if: ${{ !(contains(needs.*.result, 'failure')) }} 
-        run: exit 0 
-      - name: Failing
-        if: ${{ (contains(needs.*.result, 'failure')) }} 
-        run: exit 1 
-  
-  mlkem-diff-hax-status:
-    if: ${{ always() }}
-    needs: [diff]
     runs-on: ubuntu-latest
     steps:
       - name: Successful
