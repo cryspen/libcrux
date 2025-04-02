@@ -1,5 +1,7 @@
 //! Non-standard XChacha implementation
 //! https://datatracker.ietf.org/doc/html/draft-arciszewski-xchacha-03
+//!
+//! **NOTE:** This part of the code has not been formally verified yet.
 
 use crate::{
     hacl::chacha20::{chacha20_constants, rounds},
