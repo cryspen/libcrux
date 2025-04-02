@@ -34,7 +34,7 @@ jobs:
       - uses: hacspec/hax-actions@main
         with:
           hax_reference: ${{ github.event.inputs.hax_rev || 'main' }}
-          fstar: v2025.01.17
+          fstar: v2025.03.25
 
       - name: 🏃 Extract ML-DSA crate
         working-directory: libcrux-ml-dsa
@@ -58,7 +58,7 @@ jobs:
       - uses: hacspec/hax-actions@main
         with:
           hax_reference: ${{ github.event.inputs.hax_rev || 'main' }}
-          fstar: v2025.01.17
+          fstar: v2025.03.25
 
       - uses: actions/download-artifact@v4
         with:
