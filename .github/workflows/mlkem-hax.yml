@@ -91,6 +91,7 @@ jobs:
         with:
           name: fstar-extractions
           path: .
+
       - name: 🏃 Prove ML-KEM crate
         working-directory: libcrux-ml-kem
         run: FSTAR_HOME=~/.nix-profile ./hax.py prove
