@@ -20,4 +20,4 @@ simd256 = []
 [dev-dependencies]
 
 [lints.rust]
-unexpected_cfgs = { level = "warn", check-cfg = ['cfg(hax)', 'cfg(eurydice)'] }
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(hax)', 'cfg(pre_minicore)', 'cfg(eurydice)'] }

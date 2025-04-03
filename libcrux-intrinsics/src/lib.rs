@@ -9,7 +9,11 @@ pub mod avx2;
 pub mod arm64_extract;
 #[cfg(all(feature = "simd128", hax))]
 pub use arm64_extract as arm64;
-#[cfg(all(feature = "simd256", hax))]
+
+#[cfg(all(feature = "simd256", hax, pre_minicore))]
 pub mod avx2_extract;
-#[cfg(all(feature = "simd256", hax))]
+#[cfg(all(feature = "simd256", hax, pre_minicore))]
 pub use avx2_extract as avx2;
+
+#[cfg(all(feature = "simd256", hax, not(pre_minicore)))]
+pub mod avx2;
