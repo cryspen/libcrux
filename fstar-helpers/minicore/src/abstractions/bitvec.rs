@@ -106,17 +106,19 @@ let extensionality' (#a: Type) (#b: Type) (f g: FStar.FunctionalExtensionality.(
   : Lemma (ensures (FStar.FunctionalExtensionality.feq f g <==> f == g))
   = ()
 
+let do_not_reduce #t (x: t): t = x
+
 open FStar.Tactics.V2
 #push-options "--z3rlimit 80 --admit_smt_queries true"
 let ${BitVec::<128>::rewrite_pointwise} (x: $:{BitVec<128>})
-: Lemma (x == ${BitVec::<128>::pointwise} (${128u64}) x) =
+: Lemma (x == do_not_reduce (${BitVec::<128>::pointwise} (${128u64}) x)) =
     let a = x._0 in
     let b = (${BitVec::<128>::pointwise} (${128u64}) x)._0 in
     assert_norm (FStar.FunctionalExtensionality.feq a b);
     extensionality' a b
 
 let ${BitVec::<256>::rewrite_pointwise} (x: $:{BitVec<256>})
-: Lemma (x == ${BitVec::<256>::pointwise} (${256u64}) x) =
+: Lemma (x == do_not_reduce (${BitVec::<256>::pointwise} (${256u64}) x)) =
     let a = x._0 in
     let b = (${BitVec::<256>::pointwise} (${256u64}) x)._0 in
     assert_norm (FStar.FunctionalExtensionality.feq a b);
@@ -136,14 +138,35 @@ let postprocess_rewrite_helper (rw_lemma: term) (): Tac unit = with_compat_pre_c
     if debug_mode then print ("[postprocess_rewrite_helper] lemmas = " ^ term_to_string (quote lemmas));
     if debug_mode then dump "[postprocess_rewrite_helper] After applying lemmas";
     // Apply pointwise rw
-    let done = alloc false in
-    ctrl_rewrite TopDown (fun _ -> if read done then (false, Skip) else (true, Continue))
-                            (fun _ -> (fun () -> apply_lemma_rw rw_lemma; write done true)
-                                    `or_else` trefl);
+    let rec pointwise_rw (): Tac unit =
+      print "[postprocess_rewrite_helper] running pointwise_rw...";
+      let done = alloc false in
+      ctrl_rewrite TopDown (fun t -> 
+          let f, _ = collect_app t in
+          let matches = match inspect f with | Tv_UInst f _ | Tv_FVar f -> (inspect_fv f) = explode_qn (`%do_not_reduce) | _ -> false in
+          //   let s = term_to_string f in
+          //   let s = match String.split ['\n'] s with | hd::_ -> hd | _ -> s in
+          //   print ("===>>" ^ s);
+          //   print ("===>> matches = " ^ string_of_bool matches);
+          if matches
+          then (false, Skip)
+          else if read done then (false, Skip) else (true, Continue)
+      ) 
+      (fun _ -> (fun () -> apply_lemma_rw rw_lemma; write done true)
+      `or_else` trefl);
+      if read done
+      then pointwise_rw ()
+      else ()
+    in
+    pointwise_rw ();
+    
+    if debug_mode then dump "[postprocess_rewrite_helper] Rewrote goal";
     // Normalize as much as possible
-    norm [primops; iota; delta_namespace ["Core"; crate; "Minicore"; "Libcrux_intrinsics"; "FStar.FunctionalExtensionality"; "Rust_primitives"]; zeta_full];
+    norm [primops; iota; delta_namespace ["Core"; crate; "Minicore"; "Libcrux_intrinsics"; "FStar.FunctionalExtensionality"; "Prims.pow2xx"; "Rust_primitives"]; zeta_full];
+    if debug_mode then print ("[postprocess_rewrite_helper] first norm done");
     // Compute the last bits
     compute ();
+    if debug_mode then dump ("[postprocess_rewrite_helper] compute done");
     // Force full normalization
     norm [primops; iota; delta; zeta_full];
     if debug_mode then dump "[postprocess_rewrite_helper] after full normalization";
