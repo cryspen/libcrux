@@ -61,7 +61,7 @@ fn double_round(st: &mut [u32]) {
 }
 
 #[inline]
-fn rounds(st: &mut [u32]) {
+pub(crate) fn rounds(st: &mut [u32]) {
     crate::hacl::chacha20::double_round(st);
     crate::hacl::chacha20::double_round(st);
     crate::hacl::chacha20::double_round(st);

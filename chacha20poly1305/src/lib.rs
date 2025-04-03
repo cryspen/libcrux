@@ -1,5 +1,7 @@
 #![no_std]
 
+pub mod xchacha20_poly1305;
+
 /// The length of ChaCha20-Poly1305 keys.
 pub const KEY_LEN: usize = 32;
 
