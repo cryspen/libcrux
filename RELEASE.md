@@ -2,7 +2,7 @@
 
 ## Update version
 
-Initially, all crate version in this repository were in sync, but we moved away from that model.s
+Initially, all crate versions in this repository were in sync, but we moved away from that model.
 Now, a crate _may_ follow the workspace version, but is not required to.
 
 Change the workspace version with
