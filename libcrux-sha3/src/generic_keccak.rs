@@ -100,6 +100,7 @@ impl<const PARALLEL_LANES: usize, const RATE: usize, STATE: KeccakStateItem<PARA
         }
     }
 
+    #[inline(always)]
     fn absorb_full(&mut self, inputs: &[&[u8]; PARALLEL_LANES]) -> usize {
         debug_assert!(PARALLEL_LANES > 0);
         debug_assert!(self.buf_len < RATE);
@@ -406,7 +407,6 @@ pub(crate) fn iota<const N: usize, T: KeccakStateItem<N>>(s: &mut KeccakState<N,
     s.set(0, 0, T::xor_constant(s.get(0, 0), ROUNDCONSTANTS[i]));
 }
 
-#[inline(always)]
 pub(crate) fn keccakf1600<const N: usize, T: KeccakStateItem<N>>(s: &mut KeccakState<N, T>) {
     for i in 0..24 {
         theta_rho(s);
