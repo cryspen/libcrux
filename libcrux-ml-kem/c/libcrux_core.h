@@ -4,11 +4,11 @@
  * SPDX-License-Identifier: MIT or Apache-2.0
  *
  * This code was generated with the following revisions:
- * Charon: 763350c6948d5594d3017ecb93273bc41c1a4e1d
- * Eurydice: 36a5ed7dd6b61b5cd3d69a010859005912d21537
- * Karamel: bf9b89d76dd24e2ceaaca32de3535353e7b6bc01
+ * Charon: bba1aa4cae0326f1d94d466f8263e85dd9f14efe
+ * Eurydice: 9f45c5b6710ac03aa157299391233be90bc1565c
+ * Karamel: b7bdca21d1dbfd635f6ff432c0d8da3d5ca2edbc
  * F*: 4b3fc11774003a6ff7c09500ecb5f0145ca6d862
- * Libcrux: f3f15359a852405a81628f982f2debc4d50fff30
+ * Libcrux: e023f8453e3c2f240705192cb557223357129b0d
  */
 
 #ifndef __libcrux_core_H
@@ -35,22 +35,9 @@ typedef struct core_ops_range_Range_08_s {
 
 typedef uint8_t core_result_Result_a9_tags;
 
-#define core_option_None 0
-#define core_option_Some 1
-
-typedef uint8_t core_option_Option_9e_tags;
-
-/**
-A monomorphic instance of core.option.Option
-with types size_t
-
-*/
-typedef struct core_option_Option_08_s {
-  core_option_Option_9e_tags tag;
-  size_t f0;
-} core_option_Option_08;
-
 static inline uint64_t core_num__u64_9__from_le_bytes(uint8_t x0[8U]);
+
+static inline uint64_t core_num__u64_9__rotate_left(uint64_t x0, uint32_t x1);
 
 static inline void core_num__u64_9__to_le_bytes(uint64_t x0, uint8_t x1[8U]);
 
