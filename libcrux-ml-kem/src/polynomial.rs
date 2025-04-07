@@ -208,6 +208,7 @@ fn poly_barrett_reduce<Vector: Operations>(myself: &mut PolynomialRingElement<Ve
         (forall j. (j >= v i /\ j < 16) ==> ${myself}.f_coefficients.[ sz j ] == ${_myself}.[ sz j ])
         "#
         ));
+
         myself.coefficients[i] = Vector::barrett_reduce(myself.coefficients[i]);
     }
 }
@@ -237,8 +238,10 @@ fn subtract_reduce<Vector: Operations>(
           assert(Spec.Utils.is_i16b 1664 (mk_i16 1441))
         "#
         );
+
         let coefficient_normal_form =
             Vector::montgomery_multiply_by_constant(b.coefficients[i], 1441);
+
         hax_lib::fstar!(
             r#"
             assert (is_bounded_vector 3328 ${coefficient_normal_form});
@@ -259,11 +262,13 @@ fn subtract_reduce<Vector: Operations>(
                  v (Seq.index (i1.f_to_i16_array ${coefficient_normal_form}) j)))
         "#
         );
+
         let diff = Vector::sub(myself.coefficients[i], &coefficient_normal_form);
         hax_lib::fstar!("assert (is_bounded_vector 28296 diff)");
         let red = Vector::barrett_reduce(diff);
         hax_lib::fstar!("assert (is_bounded_vector 3328 red)");
         b.coefficients[i] = red;
+
         hax_lib::fstar!(
             r#"
             assert (forall j. (j > v $i /\ j < 16) ==> ${b}.f_coefficients.[ sz j ] == ${_b}.[ sz j]);
@@ -305,6 +310,7 @@ fn add_message_error_reduce<Vector: Operations>(
           assert(Spec.Utils.is_i16b 1664 (mk_i16 1441))
         "#
         );
+
         let coefficient_normal_form =
             Vector::montgomery_multiply_by_constant(result.coefficients[i], 1441);
 
@@ -347,6 +353,7 @@ fn add_message_error_reduce<Vector: Operations>(
         let red = Vector::barrett_reduce(sum2);
         hax_lib::fstar!("assert(is_bounded_vector 3328 red)");
         result.coefficients[i] = red;
+
         hax_lib::fstar!(
             r#"
             assert (forall j. (j > v $i /\ j < 16) ==> ${result}.f_coefficients.[ sz j ] == ${_result}.[ sz j]);
@@ -375,8 +382,10 @@ fn add_error_reduce<Vector: Operations>(
             (forall j. (j >= v i /\ j < 16) ==> ${myself}.f_coefficients.[ sz j ] == ${_myself}.[ sz j ])
             "#
         ));
+
         let coefficient_normal_form =
             Vector::montgomery_multiply_by_constant(myself.coefficients[j], 1441);
+
         hax_lib::fstar!(
             r#"
               assert (is_bounded_vector 3328 ${coefficient_normal_form});
@@ -396,11 +405,13 @@ fn add_error_reduce<Vector: Operations>(
                 v (Seq.index (i1.f_to_i16_array ${error}.f_coefficients.[ j ]) i)))
             "#
         );
+
         let sum = Vector::add(coefficient_normal_form, &error.coefficients[j]);
         hax_lib::fstar!("assert(is_bounded_vector 3335 sum)");
         let red = Vector::barrett_reduce(sum);
         hax_lib::fstar!("assert(is_bounded_vector 3328 red)");
         myself.coefficients[j] = red;
+
         hax_lib::fstar!(
             r#"
             assert (forall i. (i > v $j /\ i < 16) ==> ${myself}.f_coefficients.[ sz i ] == ${_myself}.[ sz i]);
@@ -436,9 +447,11 @@ fn add_standard_error_reduce<Vector: Operations>(
             (forall j. (j >= v i /\ j < 16) ==> ${myself}.f_coefficients.[ sz j ] == ${_myself}.[ sz j ])
             "#
         ));
+
         // The coefficients are of the form aR^{-1} mod q, which means
         // calling to_montgomery_domain() on them should return a mod q.
         let coefficient_normal_form = to_standard_domain::<Vector>(myself.coefficients[j]);
+
         hax_lib::fstar!(
             r#"
           Spec.Utils.pow2_values_more 15;
@@ -459,11 +472,13 @@ fn add_standard_error_reduce<Vector: Operations>(
             v (Seq.index (i1.f_to_i16_array ${error}.f_coefficients.[ j ]) i)))
         "#
         );
+
         let sum = Vector::add(coefficient_normal_form, &error.coefficients[j]);
         hax_lib::fstar!("assert(is_bounded_vector 6656 sum)");
         let red = Vector::barrett_reduce(sum);
         hax_lib::fstar!("assert(is_bounded_vector 3328 red)");
         myself.coefficients[j] = red;
+        
         hax_lib::fstar!(
             r#"
             assert (forall i. (i > v $j /\ i < 16) ==> ${myself}.f_coefficients.[ sz i ] == ${_myself}.[ sz i]);
