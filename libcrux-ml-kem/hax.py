@@ -74,7 +74,7 @@ class extractAction(argparse.Action):
             env=hax_env,
         )
 
-        # Extract intrinsics
+        # Extract libcrux-secrets
         include_str = "+**"
         interface_include = ""
         cargo_hax_into = [

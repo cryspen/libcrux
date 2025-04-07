@@ -38,7 +38,7 @@ impl<T: Scalar> Declassify for Secret<T> {
 
 // Classify a reference to a scalar
 // Note: this is safe since the `Secret` type is `repr(transparent)`, so
-//       the memory represnetation of the public and secret values is the same
+//       the memory representation of the public and secret values is the same
 impl<'a, T: Scalar> ClassifyRef for &'a T {
     type ClassifiedRef = &'a Secret<T>;
     fn classify_ref(self) -> &'a Secret<T> {
@@ -48,7 +48,7 @@ impl<'a, T: Scalar> ClassifyRef for &'a T {
 
 // Declassify a reference to a scalar
 // Note: this is safe since the `Secret` type is `repr(transparent)`, so
-//       the memory represnetation of the public and secret values is the same
+//       the memory representation of the public and secret values is the same
 impl<'a, T: Scalar> DeclassifyRef for &'a Secret<T> {
     type DeclassifiedRef = &'a T;
     fn declassify_ref(self) -> &'a T {
