@@ -389,7 +389,7 @@ pub fn _veor3q_u64(a: uint64x2_t, b: uint64x2_t, c: uint64x2_t) -> uint64x2_t {
         target_feature = "neon",
         target_feature = "sha3"
     )))]
-    _veorq_u64(a, _veorq_u64(b, c));
+    _veorq_u64(a, _veorq_u64(b, c))
 }
 
 #[inline(always)]

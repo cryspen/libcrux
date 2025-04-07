@@ -19,9 +19,9 @@ pub(crate) fn set_ij<const N: usize, T: KeccakStateItem<N>>(
     arr: &mut [T; 25],
     i: usize,
     j: usize,
-    v: T,
+    value: T,
 ) {
-    arr[5 * j + i] = v;
+    arr[5 * j + i] = value;
 }
 
 pub(crate) mod internal {

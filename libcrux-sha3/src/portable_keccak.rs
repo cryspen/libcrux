@@ -36,6 +36,10 @@ fn _veorq_n_u64(a: u64, c: u64) -> u64 {
 #[inline(always)]
 pub(crate) fn load_block<const RATE: usize>(state: &mut [u64; 25], blocks: &[u8], start: usize) {
     debug_assert!(RATE <= blocks.len() && RATE % 8 == 0);
+
+    // First load the block, then xor it with the state
+    // Note: combining the two loops below reduces performance for large inputs,
+    //       so we knowingly use two loops: one for loading, one for xor
     let mut state_flat = [0u64; 25];
     for i in 0..RATE / 8 {
         let offset = start + 8 * i;

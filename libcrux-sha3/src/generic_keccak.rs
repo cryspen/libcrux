@@ -1,7 +1,7 @@
 //! The generic SHA3 implementation that uses portable or platform specific
 //! sub-routines.
 
-use crate::traits::*;
+use crate::traits::{KeccakStateItem, get_ij, set_ij};
 
 #[cfg_attr(hax, hax_lib::opaque)]
 #[derive(Clone, Copy)]
