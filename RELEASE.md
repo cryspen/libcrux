@@ -1,11 +1,17 @@
 # Release
 
 ## Update version
-All versions in this repository are in sync right now, for better or worse.
 
-Change the version with
+Initially, all crate versions in this repository were in sync, but we moved away from that model.
+Now, a crate _may_ follow the workspace version, but is not required to.
+
+Change the workspace version with
 
 `cargo release version <LEVEL> --execute`
+
+Change the version of an individual crate with
+
+`cargo release -p <CRATE> version <LEVEL>`
 
 ## Crates
 
@@ -44,3 +50,7 @@ Higher level crates
 
 ### Legacy
 - sys/hacl
+
+### Independently Versioned
+
+- blake2

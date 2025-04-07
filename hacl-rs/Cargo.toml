@@ -13,6 +13,6 @@ readme.workspace = true
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-libcrux-macros = { path = "../macros", version = "=0.0.2-beta.3" }
+libcrux-macros = { path = "../macros", version = "=0.0.2" }
 
 [lib]

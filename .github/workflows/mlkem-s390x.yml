@@ -1,7 +1,6 @@
 name: ML-KEM - Build & Test on s390x
 
 on:
-  push:
   pull_request:
     branches: ["main", "dev"]
   workflow_dispatch:

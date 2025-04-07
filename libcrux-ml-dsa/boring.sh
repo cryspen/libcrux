@@ -22,9 +22,7 @@ if [[ "$no_clean" = 0 ]]; then
 fi
 
 ./c.sh --config cg.yaml --out cg --mldsa65\
-    --no-glue --no-unrolling --no-karamel_include --no-karamel_include
-
-clang-format-18 --style=Google -i cg/*.h
+    --no-glue --no-unrolling --no-karamel_include --cpp17
 
 if [[ -n "$BORINGSSL_HOME" ]]; then
     echo "Copying the files into $BORINGSSL_HOME/third_party/libcrux/"

@@ -4,19 +4,15 @@
  * SPDX-License-Identifier: MIT or Apache-2.0
  *
  * This code was generated with the following revisions:
- * Charon: a8f2211d1b95e0462a96382023b164a4116c7ca4
- * Eurydice: 788c5abefac3a9c7f79abae6a30fa8558e39764c
- * Karamel: 1d81d757d5d9e16dd6463ccc72324e587c707959
- * F*: b0961063393215ca65927f017720cb365a193833-dirty
- * Libcrux: 1c4e2cbb4bc08f93cca04e22245f2b25dcb23d83
+ * Charon: 763350c6948d5594d3017ecb93273bc41c1a4e1d
+ * Eurydice: 36a5ed7dd6b61b5cd3d69a010859005912d21537
+ * Karamel: bf9b89d76dd24e2ceaaca32de3535353e7b6bc01
+ * F*: 4b3fc11774003a6ff7c09500ecb5f0145ca6d862
+ * Libcrux: f3f15359a852405a81628f982f2debc4d50fff30
  */
 
 #ifndef __libcrux_core_H
 #define __libcrux_core_H
-
-#if defined(__cplusplus)
-extern "C" {
-#endif
 
 #include "eurydice_glue.h"
 
@@ -29,10 +25,6 @@ typedef struct core_ops_range_Range_08_s {
   size_t start;
   size_t end;
 } core_ops_range_Range_08;
-
-static inline uint8_t Eurydice_bitand_pv_u8(uint8_t *x, uint8_t y);
-
-static inline uint8_t Eurydice_shr_pv_u8(uint8_t *x, int32_t y);
 
 #define Ok 0
 #define Err 1
@@ -59,6 +51,14 @@ static inline uint32_t core_num__i32_2__count_ones(int32_t x0);
 static inline uint64_t core_num__u64_9__from_le_bytes(uint8_t x0[8U]);
 
 static inline void core_num__u64_9__to_le_bytes(uint64_t x0, uint8_t x1[8U]);
+
+static inline uint8_t
+core_ops_bit___core__ops__bit__BitAnd_u8__u8__for___a__u8___46__bitand(
+    uint8_t *x0, uint8_t x1);
+
+static inline uint8_t
+core_ops_bit___core__ops__bit__Shr_i32__u8__for___a__u8___792__shr(uint8_t *x0,
+                                                                   int32_t x1);
 
 /**
 A monomorphic instance of libcrux_ml_dsa.types.MLDSASignature
@@ -166,10 +166,11 @@ libcrux_ml_dsa_types_SigningError
 */
 typedef struct Result_2e_s {
   Result_a9_tags tag;
-  union {
+  union U {
     libcrux_ml_dsa_types_MLDSASignature_8f case_Ok;
     libcrux_ml_dsa_types_SigningError case_Err;
   } val;
+  KRML_UNION_CONSTRUCTOR(Result_2e_s)
 } Result_2e;
 
 /**
@@ -302,10 +303,11 @@ with types uint8_t[8size_t], core_array_TryFromSliceError
 */
 typedef struct Result_15_s {
   Result_a9_tags tag;
-  union {
+  union U {
     uint8_t case_Ok[8U];
     TryFromSliceError case_Err;
   } val;
+  KRML_UNION_CONSTRUCTOR(Result_15_s)
 } Result_15;
 
 /**
@@ -338,10 +340,6 @@ typedef struct Eurydice_slice_uint8_t_x2_s {
   Eurydice_slice fst;
   Eurydice_slice snd;
 } Eurydice_slice_uint8_t_x2;
-
-#if defined(__cplusplus)
-}
-#endif
 
 #define __libcrux_core_H_DEFINED
 #endif

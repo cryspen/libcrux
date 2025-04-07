@@ -33,7 +33,7 @@ members = [
 ]
 
 [workspace.package]
-version = "0.0.2-beta.3"
+version = "0.0.2"
 authors = ["Cryspen"]
 license = "Apache-2.0"
 homepage = "https://github.com/cryspen/libcrux"
@@ -75,20 +75,20 @@ crate-type = ["staticlib", "cdylib", "lib"]
 bench = false                               # so libtest doesn't eat the arguments for criterion
 
 [build-dependencies]
-libcrux-platform = { version = "=0.0.2-beta.3", path = "sys/platform" }
+libcrux-platform = { version = "=0.0.2", path = "sys/platform" }
 
 [dependencies]
-libcrux-traits = { version = "=0.0.2-beta.3", path = "traits" }
-libcrux-hacl-rs = { version = "=0.0.2-beta.3", path = "hacl-rs" }
-libcrux-hacl = { version = "=0.0.2-beta.3", path = "sys/hacl" }
-libcrux-platform = { version = "=0.0.2-beta.3", path = "sys/platform" }
-libcrux-hkdf = { version = "=0.0.2-beta.3", path = "libcrux-hkdf" }
-libcrux-hmac = { version = "=0.0.2-beta.3", path = "libcrux-hmac" }
-libcrux-sha2 = { version = "=0.0.2-beta.3", path = "sha2" }
-libcrux-ed25519 = { version = "=0.0.2-beta.3", path = "ed25519" }
-libcrux-ecdh = { version = "=0.0.2-beta.3", path = "libcrux-ecdh" }
-libcrux-ml-kem = { version = "=0.0.2-beta.3", path = "libcrux-ml-kem" }
-libcrux-kem = { version = "=0.0.2-beta.3", path = "libcrux-kem" }
+libcrux-traits = { version = "=0.0.2", path = "traits" }
+libcrux-hacl-rs = { version = "=0.0.2", path = "hacl-rs" }
+libcrux-hacl = { version = "=0.0.2", path = "sys/hacl" }
+libcrux-platform = { version = "=0.0.2", path = "sys/platform" }
+libcrux-hkdf = { version = "=0.0.2", path = "libcrux-hkdf" }
+libcrux-hmac = { version = "=0.0.2", path = "libcrux-hmac" }
+libcrux-sha2 = { version = "=0.0.2", path = "sha2" }
+libcrux-ed25519 = { version = "=0.0.2", path = "ed25519" }
+libcrux-ecdh = { version = "=0.0.2", path = "libcrux-ecdh" }
+libcrux-ml-kem = { version = "=0.0.2", path = "libcrux-ml-kem" }
+libcrux-kem = { version = "=0.0.2", path = "libcrux-kem" }
 rand = { version = "0.9" }
 log = { version = "0.4", optional = true }
 # WASM API
