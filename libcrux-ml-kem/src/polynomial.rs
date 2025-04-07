@@ -132,7 +132,7 @@ pub(crate) fn vec_to_bytes<Vector: Operations>(
 /// Build a vector of ring elements from `bytes`.
 #[inline(always)]
 #[allow(dead_code)]
-#[hax_lib::requires(out.len() <= 4 && VECTORS_IN_RING_ELEMENT * 16 * 2 * out.len() <= bytes.len())]
+#[hax_lib::requires(fstar!(r#"Seq.length out <= 4 /\ Seq.length bytes >= 32 * v v_VECTORS_IN_RING_ELEMENT * Seq.length out"#))]
 pub(crate) fn vec_from_bytes<Vector: Operations>(
     bytes: &[u8],
     out: &mut [PolynomialRingElement<Vector>],
