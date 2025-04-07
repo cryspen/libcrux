@@ -40,9 +40,6 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-        # TODO: remove when migrating this workflow to libcrux
-        with:
-          repository: 'cryspen/libcrux'
 
       - name: Update dependencies
         run: cargo update
