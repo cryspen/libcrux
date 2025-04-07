@@ -31,6 +31,7 @@ pub(super) fn compress_then_serialize_message<Vector: Operations>(
             fstar!("v $i < 16 ==> Libcrux_ml_kem.Polynomial.is_bounded_poly 3328 $re")
         });
         hax_lib::fstar!(r#"assert (2 * v $i + 2 <= 32)"#);
+
         let coefficient = to_unsigned_field_modulus(re.coefficients[i]);
         let coefficient_compressed = Vector::compress_1(coefficient);
 

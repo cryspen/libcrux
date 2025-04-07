@@ -11,6 +11,7 @@ pub(crate) fn rej_sample(a: &[u8], result: &mut [i16]) -> usize {
         hax_lib::loop_invariant!(|i: usize| {
             fstar!(r#"Seq.length result == 16 /\ v $sampled <= v $i * 2"#)
         });
+
         let b1 = a[i * 3 + 0] as i16;
         let b2 = a[i * 3 + 1] as i16;
         let b3 = a[i * 3 + 2] as i16;

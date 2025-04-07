@@ -191,6 +191,7 @@ fn add_to_ring_element<Vector: Operations, const K: usize>(
                     Libcrux_ml_kem.Vector.Traits.Spec.add_post _myself_j rhs_j myself_j))"#
             )
         });
+
         myself.coefficients[i] = Vector::add(myself.coefficients[i], &rhs.coefficients[i]);
     }
 }
