@@ -478,7 +478,7 @@ fn add_standard_error_reduce<Vector: Operations>(
         let red = Vector::barrett_reduce(sum);
         hax_lib::fstar!("assert(is_bounded_vector 3328 red)");
         myself.coefficients[j] = red;
-        
+
         hax_lib::fstar!(
             r#"
             assert (forall i. (i > v $j /\ i < 16) ==> ${myself}.f_coefficients.[ sz i ] == ${_myself}.[ sz i]);

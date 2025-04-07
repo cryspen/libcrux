@@ -23,7 +23,7 @@ pub(crate) fn add(lhs: Vec256, rhs: Vec256) -> Vec256 {
         r#"assert (forall i. get_lane result i == get_lane lhs i +. get_lane rhs i);
                      assert (forall i. v (get_lane result i) == v (get_lane lhs i) + v (get_lane rhs i))"#
     );
-    
+
     result
 }
 
@@ -93,7 +93,7 @@ pub(crate) fn bitwise_and_with_constant(vector: Vec256, constant: i16) -> Vec256
         r#"Seq.lemma_eq_intro (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 ${result})
                         (Spec.Utils.map_array (fun x -> x &. $constant) (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 $vector))"#
     );
-    
+
     result
 }
 
@@ -110,7 +110,7 @@ pub(crate) fn shift_right<const SHIFT_BY: i32>(vector: Vec256) -> Vec256 {
                         (Spec.Utils.map_array (fun x -> x >>! ${SHIFT_BY}) 
                            (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 $vector))"
     );
-    
+
     result
 }
 
@@ -122,19 +122,19 @@ pub(crate) fn shift_right<const SHIFT_BY: i32>(vector: Vec256) -> Vec256 {
                 (if (get_lane $vector i) >=. (mk_i16 3329) then get_lane $vector i -! (mk_i16 3329) else get_lane $vector i)"#))]
 pub(crate) fn cond_subtract_3329(vector: Vec256) -> Vec256 {
     let field_modulus = mm256_set1_epi16(FIELD_MODULUS);
-    
+
     hax_lib::fstar!(r#"assert (forall i. get_lane $field_modulus i == (mk_i16 3329))"#);
-    
+
     // Compute v_i - Q and crate a mask from the sign bit of each of these
     // quantities.
     let v_minus_field_modulus = mm256_sub_epi16(vector, field_modulus);
-    
+
     hax_lib::fstar!(
         "assert (forall i. get_lane $v_minus_field_modulus i == get_lane $vector i -. (mk_i16 3329))"
     );
 
     let sign_mask = mm256_srai_epi16::<15>(v_minus_field_modulus);
-    
+
     hax_lib::fstar!(
         "assert (forall i. get_lane $sign_mask i == (get_lane $v_minus_field_modulus i >>! (mk_i32 15)))"
     );
@@ -173,15 +173,15 @@ pub(crate) fn barrett_reduce(vector: Vec256) -> Vec256 {
     hax_lib::fstar!(
         r#"assert (forall i. get_lane $t0 i == (cast (((cast (get_lane $vector i) <: i32) *. (cast v_BARRETT_MULTIPLIER <: i32)) >>! (mk_i32 16)) <: i16))"#
     );
-    
+
     let t512 = mm256_set1_epi16(512);
 
     hax_lib::fstar!(r#"assert (forall i. get_lane $t512 i == (mk_i16 512))"#);
-    
+
     let t1 = mm256_add_epi16(t0, t512);
 
     hax_lib::fstar!(r#"assert (forall i. get_lane $t1 i == get_lane $t0 i +. (mk_i16 512))"#);
-    
+
     let quotient = mm256_srai_epi16::<10>(t1);
 
     hax_lib::fstar!(
