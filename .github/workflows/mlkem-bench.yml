@@ -78,7 +78,8 @@ jobs:
       # Benchmarks ...
 
       - name: 🏃🏻‍♀️ Benchmarks
-        run: cargo bench --verbose $RUST_TARGET_FLAG -- --output-format bencher | tee bench.txt 
+        run: cargo bench --verbose $RUST_TARGET_FLAG -- --output-format bencher | tee bench.txt
+
       - name: Extract benchmarks
         uses: cryspen/benchmark-data-extract-transform@v1
         with:
