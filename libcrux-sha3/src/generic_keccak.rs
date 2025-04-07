@@ -100,7 +100,7 @@ impl<const PARALLEL_LANES: usize, const RATE: usize, STATE: KeccakStateItem<PARA
         }
     }
 
-    // Consciously not inlining this function to avoid using too much stack
+    // Note: consciously not inlining this function to avoid using too much stack
     fn absorb_full(&mut self, inputs: &[&[u8]; PARALLEL_LANES]) -> usize {
         debug_assert!(PARALLEL_LANES > 0);
         debug_assert!(self.buf_len < RATE);
@@ -149,7 +149,7 @@ impl<const PARALLEL_LANES: usize, const RATE: usize, STATE: KeccakStateItem<PARA
     /// content to consume, and `0` otherwise.
     /// If `consumed > 0` is returned, `self.buf` contains a full block to be
     /// loaded.
-    #[inline(always)]
+    // Note: consciously not inlining this function to avoid using too much stack
     fn fill_buffer(&mut self, inputs: &[&[u8]; PARALLEL_LANES]) -> usize {
         let input_len = inputs[0].len();
         let mut consumed = 0;
