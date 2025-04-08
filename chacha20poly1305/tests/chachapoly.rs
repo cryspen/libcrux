@@ -30,7 +30,6 @@ pub(crate) trait ReadFromFile {
 #[allow(non_snake_case)]
 struct AeadTestVector {
     algorithm: String,
-    //    generatorVersion: String,
     numberOfTests: usize,
     notes: Option<Value>, // text notes (might not be present), keys correspond to flags
     header: Vec<Value>,   // not used
