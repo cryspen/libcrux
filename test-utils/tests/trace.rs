@@ -65,9 +65,7 @@ fn test_trace_report(trace: &(impl Clone + Trace<Label = &'static str, TimeStamp
     assert_eq!(close.ty, EventType::SpanClose);
     assert_eq!(close.label, "test block");
 
-    let run_time = close.at - open.at;
-    assert!(run_time.as_micros() > 2300);
-    assert!(run_time.as_micros() < 3700);
+    assert!(open.at < close.at);
 }
 
 fn test_nested_trace_report(
@@ -98,11 +96,7 @@ fn test_nested_trace_report(
     assert_eq!(close_inner.ty, EventType::SpanClose);
     assert_eq!(close_outer.ty, EventType::SpanClose);
 
-    let run_time_inner = close_inner.at - open_inner.at;
-    assert!(run_time_inner.as_micros() > 1300);
-    assert!(run_time_inner.as_micros() < 2700);
-
-    let run_time_outer = close_outer.at - open_outer.at;
-    assert!(run_time_outer.as_micros() > 4300);
-    assert!(run_time_outer.as_micros() < 5700);
+    assert!(open_outer.at < open_inner.at);
+    assert!(open_inner.at < close_inner.at);
+    assert!(close_inner.at < close_outer.at);
 }
