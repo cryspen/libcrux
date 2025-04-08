@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1, user-scalable=yes" />
+        <style>
+            html {
+                font-family: BlinkMacSystemFont, -apple-system, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell,
+                    'Fira Sans', 'Droid Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+                -webkit-font-smoothing: antialiased;
+                background-color: #fff;
+                font-size: 16px;
+            }
+            body {
+                color: #4a4a4a;
+                margin: 8px;
+                font-size: 1em;
+                font-weight: 400;
+            }
+            header {
+                margin-bottom: 8px;
+                display: flex;
+                flex-direction: column;
+            }
+            main {
+                width: 100%;
+                display: flex;
+                flex-direction: column;
+            }
+            a {
+                color: #3273dc;
+                cursor: pointer;
+                text-decoration: none;
+            }
+            a:hover {
+                color: #000;
+            }
+            button {
+                color: #fff;
+                background-color: #3298dc;
+                border-color: transparent;
+                cursor: pointer;
+                text-align: center;
+            }
+            button:hover {
+                background-color: #2793da;
+                flex: none;
+            }
+            .spacer {
+                flex: auto;
+            }
+            .small {
+                font-size: 0.75rem;
+            }
+            footer {
+                margin-top: 16px;
+                display: flex;
+                align-items: center;
+            }
+            .header-label {
+                margin-right: 4px;
+            }
+            .benchmark-set {
+                margin: 8px 0;
+                width: 100%;
+                display: flex;
+                flex-direction: column;
+            }
+            .benchmark-title {
+                font-size: 3rem;
+                font-weight: 600;
+                word-break: break-word;
+                text-align: center;
+            }
+            .benchmark-graphs {
+                display: flex;
+                flex-direction: row;
+                justify-content: space-around;
+                align-items: center;
+                flex-wrap: wrap;
+                width: 100%;
+            }
+        </style>
+        <title>Benchmarks</title>
+    </head>
+
+    <body>
+        <header id="header">
+            <div class="header-item">
+                <strong class="header-label">Last Update:</strong>
+                <span id="last-update"></span>
+            </div>
+            <div class="header-item">
+                <strong class="header-label">Repository:</strong>
+                <a id="repository-link" rel="noopener"></a>
+            </div>
+        </header>
+        <main id="main"></main>
+        <footer>
+            <!--
+      <button id="dl-button">Download data as JSON</button>
+      <div class="spacer"></div>
+      <div class="small">Powered by <a rel="noopener" href="https://github.com/marketplace/actions/continuous-benchmark">github-action-benchmark</a></div>
+       -->
+        </footer>
+
+        <script src="https://cdn.plot.ly/plotly-3.0.0.min.js" charset="utf-8"></script>
+        <script src="data.js"></script>
+        <script id="main-script">
+            'use strict';
+            (function () {
+                function init() {
+                    function collectBenchesPerTestCase(entries) {
+                        // TODO: collect by all fields in `bench`
+                        // collect in nested map
+                        const map = new Map();
+                        for (const entry of entries) {
+                            const { commit, date, benches } = entry;
+                            for (const bench of benches) {
+                                let name = bench.name;
+                                let platform = bench.platform;
+                                let os = bench.os;
+                                let keySize = bench.keySize;
+                                let api = bench.api;
+                                let category = bench.category;
+
+                                let key = JSON.stringify({ name, platform, os, keySize, api, category });
+                                const result = { commit, date, bench };
+
+                                const arr = map.get(key);
+                                if (arr === undefined) {
+                                    map.set(key, [result]);
+                                } else {
+                                    arr.push(result);
+                                }
+                            }
+                        }
+
+                        // replace the key with data
+                        const data = Array.from(map.entries()).map(([key, value]) => {
+                            const d = JSON.parse(key);
+                            d.dataset = value;
+                            return d;
+                        });
+                        return data;
+                    }
+
+                    const data = window.BENCHMARK_DATA;
+
+                    // Render header
+                    document.getElementById('last-update').textContent = new Date(data.lastUpdate).toString();
+                    const repoLink = document.getElementById('repository-link');
+                    repoLink.href = data.repoUrl;
+                    repoLink.textContent = data.repoUrl;
+
+                    // Prepare data points for charts
+                    return Object.keys(data.entries).map((name) => ({
+                        name,
+                        dataSet: collectBenchesPerTestCase(data.entries[name]),
+                    }));
+                }
+
+                function createTitle(parent, name) {
+                    const nameElem = document.createElement('h1');
+                    nameElem.className = 'benchmark-title';
+                    nameElem.textContent = name;
+                    parent.appendChild(nameElem);
+                }
+
+                // input: separated-out datasets
+                function renderAllCharts(dataSets) {
+                    function chartByOsAndKeySize(parent, os, keySize, datasets, layout) {
+                        const filtered = Array.from(
+                            datasets
+                                .filter(
+                                    (d) =>
+                                        d.os == os &&
+                                        d.keySize == keySize &&
+                                        d.name !== undefined &&
+                                        d.api !== undefined &&
+                                        d.platform !== undefined,
+                                )
+                                .map((trace) => {
+                                    trace.name = `${trace.name} - ${trace.api} - ${trace.platform}`;
+                                    // tooltip
+                                    trace.text = trace.dataset.map(
+                                        (d) =>
+                                            `<b>${trace.name}</b><br>value: ${d.bench.value} ${d.bench.unit} ${d.bench.range}<br>commit id: ${d.commit.id}<br>commit name: ${d.commit.message}<br>commit url: ${d.commit.url}`,
+                                    );
+                                    return trace;
+                                }),
+                        );
+
+                        // return if no datasets
+                        if (filtered.length == 0) {
+                            console.log(`No datasets found with os "${os} and keySize ${keySize}"`);
+                            return;
+                        }
+                        layout.title = { text: `OS: ${os}, keySize: ${keySize}` };
+                        Plotly.newPlot(parent, filtered, layout);
+                    }
+
+                    function buildPlotConfig(dataSets) {
+                        const datasets = Array.from(
+                            dataSets.dataSet.map((item) => {
+                                let { name, api, keySize, category, os, platform, dataset } = item;
+
+                                return {
+                                    category,
+                                    name,
+                                    api,
+                                    keySize,
+                                    os,
+                                    platform,
+                                    x: dataset.map((d) => d.commit.timestamp),
+                                    y: dataset.map((d) => d.bench.value),
+                                    dataset,
+                                    showlegend: true,
+                                    hoverinfo: 'text',
+                                };
+                            }),
+                        );
+
+                        // TODO: more config
+                        const layout = {
+                            height: 600,
+                            width: 1200,
+                            xaxis: { type: 'date' },
+                        };
+
+                        return [datasets, layout];
+                    }
+
+                    const main = document.getElementById('main');
+                    const setElem = document.createElement('div');
+                    setElem.className = 'benchmark-set';
+                    main.appendChild(setElem);
+
+                    const [datasets, layout] = buildPlotConfig(dataSets[0]);
+
+                    const osList = [...new Set(datasets.map((d) => d.os))];
+                    const keySizes = [...new Set(datasets.map((d) => d.keySize))];
+
+                    // plots by OS/Key Size
+                    createTitle(setElem, 'Compare platform for OS/key size');
+                    for (let os of osList) {
+                        for (let keySize of keySizes) {
+                            if (!isNaN(keySize)) {
+                                const graphsElem = document.createElement('div');
+                                graphsElem.className = 'benchmark-graphs';
+                                setElem.appendChild(graphsElem);
+                                chartByOsAndKeySize(graphsElem, os, keySize, datasets, layout);
+                            }
+                        }
+                    }
+                }
+
+                renderAllCharts(init()); // Start
+            })();
+        </script>
+    </body>
+</html>
