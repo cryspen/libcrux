@@ -30,7 +30,7 @@ pub(crate) trait ReadFromFile {
 #[allow(non_snake_case)]
 struct AeadTestVector {
     algorithm: String,
-    generatorVersion: String,
+    //    generatorVersion: String,
     numberOfTests: usize,
     notes: Option<Value>, // text notes (might not be present), keys correspond to flags
     header: Vec<Value>,   // not used
@@ -124,6 +124,94 @@ fn wycheproof() {
 
                 let mut decrypted = vec![0; msg.len()];
                 match libcrux_chacha20poly1305::decrypt(key, &mut decrypted, &ctxt, aad, nonce) {
+                    Ok(m) => {
+                        assert_eq!(m, msg);
+                        assert_eq!(&decrypted, msg);
+                    }
+                    Err(_) => {
+                        assert!(!valid);
+                    }
+                };
+
+                *tests_run += 1;
+            }
+        }
+    }
+    // Check that we ran all tests.
+    println!(
+        "Ran {} out of {} tests and skipped {}.",
+        tests_run, num_tests, skipped_tests
+    );
+    assert_eq!(num_tests - skipped_tests, tests_run);
+}
+
+#[allow(non_snake_case)]
+#[test]
+fn wycheproof_xchacha() {
+    let chacha_poly_tests: AeadTestVector =
+        AeadTestVector::from_file("../tests/wycheproof/xchacha20_poly1305_test.json");
+
+    let num_tests = chacha_poly_tests.numberOfTests;
+    let mut skipped_tests = 0;
+    let mut tests_run = 0;
+    assert_eq!(chacha_poly_tests.algorithm, "XCHACHA20-POLY1305");
+
+    test_group(chacha_poly_tests, &mut skipped_tests, &mut tests_run);
+
+    fn test_group(test_vec: AeadTestVector, skipped_tests: &mut usize, tests_run: &mut usize) {
+        for testGroup in test_vec.testGroups.iter() {
+            assert_eq!(testGroup.r#type, "AeadTest");
+            assert_eq!(testGroup.keySize, 256);
+
+            let invalid_iv = testGroup.ivSize != 96;
+
+            for test in testGroup.tests.iter() {
+                let valid = test.result.eq("valid");
+                if invalid_iv {
+                    // AEAD requires input of a 12-byte nonce.
+                    let nonce = &test.iv;
+                    assert!(nonce.len() != 12);
+                    *skipped_tests += 1;
+                    continue;
+                }
+                println!("Test {:?}: {:?}", test.tcId, test.comment);
+                // Don't attempt to read nonces less than 24 bytes long.
+                if test.iv.len() != 24 {
+                    *tests_run += 1;
+                    continue;
+                }
+                let nonce = <&[u8; 24]>::try_from(&test.iv[..]).unwrap();
+                let msg = &test.msg;
+                let aad = &test.aad;
+                let exp_cipher = &test.ct;
+                let exp_tag = &test.tag;
+                let key = <&[u8; 32]>::try_from(&test.key[..]).unwrap();
+
+                let mut ctxt = msg.clone();
+                let tag = match libcrux_chacha20poly1305::xchacha20_poly1305::encrypt(
+                    key, msg, &mut ctxt, aad, nonce,
+                ) {
+                    Ok((_v, t)) => t,
+                    Err(_) => {
+                        *tests_run += 1;
+                        continue;
+                    }
+                };
+                if valid {
+                    assert_eq!(tag, exp_tag.as_slice());
+                } else {
+                    assert_ne!(tag, exp_tag.as_slice());
+                }
+                assert_eq!(ctxt, exp_cipher.as_slice());
+
+                let mut decrypted = vec![0; msg.len()];
+                match libcrux_chacha20poly1305::xchacha20_poly1305::decrypt(
+                    key,
+                    &mut decrypted,
+                    &ctxt,
+                    aad,
+                    nonce,
+                ) {
                     Ok(m) => {
                         assert_eq!(m, msg);
                         assert_eq!(&decrypted, msg);
