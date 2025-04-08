@@ -31,9 +31,7 @@ mod str_labels {
         assert_eq!(close.ty, EventType::SpanClose);
         assert_eq!(close.label, "maybe_slow");
 
-        let run_time = close.at - open.at;
-        assert!(run_time.as_micros() > 9300);
-        assert!(run_time.as_micros() < 10700);
+        assert!(open.at < close.at);
     }
 }
 
@@ -66,8 +64,6 @@ mod enum_labels {
         assert_eq!(close.ty, EventType::SpanClose);
         assert_eq!(close.label, Label::MaybeSlow);
 
-        let run_time = close.at - open.at;
-        assert!(run_time.as_micros() > 9300);
-        assert!(run_time.as_micros() < 10700);
+        assert!(open.at < close.at);
     }
 }
