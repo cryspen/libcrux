@@ -74,7 +74,7 @@ fn int_from_bit_slice<T: TryFrom<i128> + MachineInteger + Copy>(bits: &[Bit]) ->
         let is_negative = matches!(bits[T::bits() as usize - 1], Bit::One);
         let s = u64_int_from_bit_slice(&bits[0..T::bits() as usize - 1]) as i128;
         if is_negative {
-            -s
+            -2i128.pow(T::bits() - 1) + s
         } else {
             s
         }
