@@ -143,7 +143,7 @@ pub mod avx2 {
         let mut out = [0u8; 128];
         extra::mm_storeu_bytes_si128(&mut out, a);
         unsafe {
-            *(output.as_mut().unwrap()) = BitVec::from_slice(&mut out, 8);
+            *(output.as_mut().unwrap()) = BitVec::from_slice(&out, 8);
         }
     }
 
