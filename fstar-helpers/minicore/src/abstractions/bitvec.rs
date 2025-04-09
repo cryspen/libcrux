@@ -95,65 +95,6 @@ let ${BitVec::<0>::from_fn::<fn(u64)->Bit>}
     (f: (i: u64 {v i < v v_N}) -> $:{Bit})
     : t_BitVec v_N = 
     ${BitVec::<0>}(${FunArray::<0,()>::from_fn::<fn(u64)->()>} v_N f)
-
-open FStar.FunctionalExtensionality
-let ${BitVec::<0>::pointwise}
-    (v_N: u64) (f: t_BitVec v_N)
-    (#[${_pointwise_apply_mk_term} (v v_N) (fun (i:nat{i < v v_N}) -> f._0 (mk_u64 i))] def: (n: nat {n < v v_N}) -> $:{Bit})
-    : t_BitVec v_N
-    = ${BitVec::<0>::from_fn::<fn(u64)->Bit>} v_N (on (i: u64 {v i < v v_N}) (fun i -> def (v i)))
-
-let extensionality' (#a: Type) (#b: Type) (f g: FStar.FunctionalExtensionality.(a ^-> b))
-  : Lemma (ensures (FStar.FunctionalExtensionality.feq f g <==> f == g))
-  = ()
-
-open FStar.Tactics.V2
-#push-options "--z3rlimit 80 --admit_smt_queries true"
-let ${BitVec::<128>::rewrite_pointwise} (x: $:{BitVec<128>})
-: Lemma (x == ${BitVec::<128>::pointwise} (${128u64}) x) =
-    let a = x._0 in
-    let b = (${BitVec::<128>::pointwise} (${128u64}) x)._0 in
-    assert_norm (FStar.FunctionalExtensionality.feq a b);
-    extensionality' a b
-
-let ${BitVec::<256>::rewrite_pointwise} (x: $:{BitVec<256>})
-: Lemma (x == ${BitVec::<256>::pointwise} (${256u64}) x) =
-    let a = x._0 in
-    let b = (${BitVec::<256>::pointwise} (${256u64}) x)._0 in
-    assert_norm (FStar.FunctionalExtensionality.feq a b);
-    extensionality' a b
-#pop-options
-
-let postprocess_rewrite_helper (rw_lemma: term) (): Tac unit = with_compat_pre_core 1 (fun () -> 
-    let debug_mode = ext_enabled "debug_bv_postprocess_rewrite" in
-    let crate = match cur_module () with | crate::_ -> crate | _ -> fail "Empty module name" in
-    // Remove indirections
-    norm [primops; iota; delta_namespace [crate; "Libcrux_intrinsics"]; zeta_full];
-    // Rewrite call chains
-    let lemmas = FStar.List.Tot.map (fun f -> pack_ln (FStar.Stubs.Reflection.V2.Data.Tv_FVar f)) (lookup_attr (`${REWRITE_RULE}) (top_env ())) in
-    l_to_r lemmas;
-    /// Get rid of casts
-    norm [primops; iota; delta_namespace ["Rust_primitives"; "Prims.pow2"]; zeta_full];
-    if debug_mode then print ("[postprocess_rewrite_helper] lemmas = " ^ term_to_string (quote lemmas));
-    if debug_mode then dump "[postprocess_rewrite_helper] After applying lemmas";
-    // Apply pointwise rw
-    let done = alloc false in
-    ctrl_rewrite TopDown (fun _ -> if read done then (false, Skip) else (true, Continue))
-                            (fun _ -> (fun () -> apply_lemma_rw rw_lemma; write done true)
-                                    `or_else` trefl);
-    // Normalize as much as possible
-    norm [primops; iota; delta_namespace ["Core"; crate; "Minicore"; "Libcrux_intrinsics"; "FStar.FunctionalExtensionality"; "Rust_primitives"]; zeta_full];
-    // Compute the last bits
-    compute ();
-    // Force full normalization
-    norm [primops; iota; delta; zeta_full];
-    if debug_mode then dump "[postprocess_rewrite_helper] after full normalization";
-    // Solves the goal `<normalized body> == ?u`
-    trefl ()
-)
-
-let ${BitVec::<256>::postprocess_rewrite} = postprocess_rewrite_helper (`${BitVec::<256>::rewrite_pointwise})
-let ${BitVec::<128>::postprocess_rewrite} = postprocess_rewrite_helper (`${BitVec::<128>::rewrite_pointwise})
 "#
 )]
 const _: () = ();
@@ -217,6 +158,82 @@ impl<const N: u64> BitVec<N> {
         Self::from_fn(|i| random_source[i as usize].into())
     }
 }
+
+#[hax_lib::fstar::replace(
+    r#"
+open FStar.FunctionalExtensionality
+
+let extensionality' (#a: Type) (#b: Type) (f g: FStar.FunctionalExtensionality.(a ^-> b))
+  : Lemma (ensures (FStar.FunctionalExtensionality.feq f g <==> f == g))
+  = ()
+
+let mark_to_normalize #t (x: t): t = x
+
+open FStar.Tactics.V2
+#push-options "--z3rlimit 80 --admit_smt_queries true"
+let bitvec_rewrite_lemma_128 (x: $:{BitVec<128>})
+: Lemma (x == mark_to_normalize (${BitVec::<128>::pointwise} x)) =
+    let a = x._0 in
+    let b = (${BitVec::<128>::pointwise} x)._0 in
+    assert_norm (FStar.FunctionalExtensionality.feq a b);
+    extensionality' a b
+
+let bitvec_rewrite_lemma_256 (x: $:{BitVec<256>})
+: Lemma (x == mark_to_normalize (${BitVec::<256>::pointwise} x)) =
+    let a = x._0 in
+    let b = (${BitVec::<256>::pointwise} x)._0 in
+    assert_norm (FStar.FunctionalExtensionality.feq a b);
+    extensionality' a b
+#pop-options
+
+let ${bitvec_postprocess_norm} (): Tac unit = with_compat_pre_core 1 (fun () ->
+    let debug_mode = ext_enabled "debug_bv_postprocess_rewrite" in
+    let crate = match cur_module () with | crate::_ -> crate | _ -> fail "Empty module name" in
+    // Remove indirections
+    norm [primops; iota; delta_namespace [crate; "Libcrux_intrinsics"]; zeta_full];
+    // Rewrite call chains
+    let lemmas = FStar.List.Tot.map (fun f -> pack_ln (FStar.Stubs.Reflection.V2.Data.Tv_FVar f)) (lookup_attr (`${REWRITE_RULE}) (top_env ())) in
+    l_to_r lemmas;
+    /// Get rid of casts
+    norm [primops; iota; delta_namespace ["Rust_primitives"; "Prims.pow2"]; zeta_full];
+    if debug_mode then print ("[postprocess_rewrite_helper] lemmas = " ^ term_to_string (quote lemmas));
+
+    l_to_r [`bitvec_rewrite_lemma_128; `bitvec_rewrite_lemma_256];
+
+    let round _: Tac unit =
+        if debug_mode then dump "[postprocess_rewrite_helper] Rewrote goal";
+        // Normalize as much as possible
+        norm [primops; iota; delta_namespace ["Core"; crate; "Minicore"; "Libcrux_intrinsics"; "FStar.FunctionalExtensionality"; "Rust_primitives"]; zeta_full];
+        if debug_mode then print ("[postprocess_rewrite_helper] first norm done");
+        // Compute the last bits
+        // compute ();
+        // if debug_mode then dump ("[postprocess_rewrite_helper] compute done");
+        // Force full normalization
+        norm [primops; iota; delta; unascribe; zeta_full];
+        if debug_mode then dump "[postprocess_rewrite_helper] after full normalization";
+        // Solves the goal `<normalized body> == ?u`
+        trefl ()
+    in
+
+    ctrl_rewrite BottomUp (fun t ->
+        let f, args = collect_app t in
+        let matches = match inspect f with | Tv_UInst f _ | Tv_FVar f -> (inspect_fv f) = explode_qn (`%mark_to_normalize) | _ -> false in
+        let has_two_args = match args with | [_; _] -> true | _ -> false in
+        (matches && has_two_args, Continue)
+    ) round;
+
+    // Solves the goal `<normalized body> == ?u`
+    trefl ()
+)
+
+"#
+)]
+/// This function is useful only for verification in F*.
+/// Used with `postprocess_rewrite`, this tactic:
+///  1. Applies a series of rewrite rules (the lemmas marked with `REWRITE_RULE`)
+///  2. Normalizes, bottom-up, every sub-expressions typed `BitVec<_>` inside the body of a function.
+/// This tactic should be used on expressions that compute a _static_ permutation of bits.
+pub fn bitvec_postprocess_norm() {}
 
 #[hax_lib::attributes]
 impl<const N: u64> BitVec<N> {
