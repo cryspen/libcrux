@@ -23,7 +23,7 @@ pub struct BitVec<const N: u64>(FunArray<N, Bit>);
 /// Pretty prints a bit slice by group of 8
 #[hax_lib::exclude]
 fn bit_slice_to_string(bits: &[Bit]) -> String {
-    bits.into_iter()
+    bits.iter()
         .map(|bit| match bit {
             Bit::Zero => '0',
             Bit::One => '1',
@@ -56,7 +56,7 @@ impl<const N: u64> core::ops::Index<u64> for BitVec<N> {
 /// Convert a bit slice into an unsigned number.
 #[hax_lib::exclude]
 fn u64_int_from_bit_slice(bits: &[Bit]) -> u64 {
-    bits.into_iter()
+    bits.iter()
         .enumerate()
         .map(|(i, bit)| u64::from(bit.clone()) << i)
         .sum::<u64>()
