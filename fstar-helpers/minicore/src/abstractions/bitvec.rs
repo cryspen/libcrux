@@ -190,12 +190,12 @@ impl<const N: u64> BitVec<N> {
     }
     /// Convert a slice of machine integers where only the `d` least significant bits are relevant.
     pub fn from_slice<T: Into<i128> + MachineInteger + Copy>(x: &[T], d: u64) -> Self {
-        Self::from_fn(|i| Bit::of_int(x[(i / d) as usize], (i % d) as u32))
+        Self::from_fn(|i| Bit::of_int::<T>(x[(i / d) as usize], (i % d) as u32))
     }
 
     /// Construct a BitVec out of a machine integer.
     pub fn from_int<T: Into<i128> + MachineInteger + Copy>(n: T) -> Self {
-        Self::from_slice(&[n.into()], T::bits() as u64)
+        Self::from_slice::<T>(&[n], T::bits() as u64)
     }
 
     /// Convert a BitVec into a machine integer of type `T`.
