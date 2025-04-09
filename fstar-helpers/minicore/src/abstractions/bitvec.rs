@@ -49,7 +49,7 @@ impl<const N: u64> core::ops::Index<u64> for BitVec<N> {
     type Output = Bit;
     #[requires(index < N)]
     fn index(&self, index: u64) -> &Self::Output {
-        &self.0.get(index)
+        self.0.get(index)
     }
 }
 
