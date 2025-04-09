@@ -219,8 +219,6 @@ impl<const N: u64> BitVec<N> {
     }
 }
 
-use hax_lib::{int, ToInt};
-
 #[hax_lib::attributes]
 impl<const N: u64> BitVec<N> {
     #[hax_lib::requires(CHUNK > 0 && CHUNK.to_int() * SHIFTS.to_int() == N.to_int())]

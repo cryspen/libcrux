@@ -92,22 +92,22 @@ pub mod sse2 {
     use super::*;
     #[hax_lib::opaque]
     pub fn _mm_set_epi8(
-        e15: i8,
-        e14: i8,
-        e13: i8,
-        e12: i8,
-        e11: i8,
-        e10: i8,
-        e9: i8,
-        e8: i8,
-        e7: i8,
-        e6: i8,
-        e5: i8,
-        e4: i8,
-        e3: i8,
-        e2: i8,
-        e1: i8,
-        e0: i8,
+        _e15: i8,
+        _e14: i8,
+        _e13: i8,
+        _e12: i8,
+        _e11: i8,
+        _e10: i8,
+        _e9: i8,
+        _e8: i8,
+        _e7: i8,
+        _e6: i8,
+        _e5: i8,
+        _e4: i8,
+        _e3: i8,
+        _e2: i8,
+        _e1: i8,
+        _e0: i8,
     ) -> __m128i {
         todo!()
     }
@@ -122,14 +122,14 @@ pub mod avx {
 
     #[hax_lib::opaque]
     pub fn _mm256_set_epi32(
-        e0: i32,
-        e1: i32,
-        e2: i32,
-        e3: i32,
-        e4: i32,
-        e5: i32,
-        e6: i32,
-        e7: i32,
+        _e0: i32,
+        _e1: i32,
+        _e2: i32,
+        _e3: i32,
+        _e4: i32,
+        _e5: i32,
+        _e6: i32,
+        _e7: i32,
     ) -> __m256i {
         todo!()
     }
@@ -156,10 +156,6 @@ pub mod avx2 {
     pub fn _mm256_srli_epi64<const SHIFT_BY: i32>(vector: __m256i) -> __m256i {
         vector.chunked_shift::<64, 4>(FunArray::from_fn(|_| -(SHIFT_BY as i128)))
     }
-
-    // pub fn _mm256_mullo_epi16(vector: __m256i, shifts: __m256i) -> __m256i {
-    //     todo!()
-    // }
 
     #[hax_lib::opaque]
     pub fn _mm256_sllv_epi32(vector: __m256i, counts: __m256i) -> __m256i {
@@ -441,28 +437,6 @@ pub mod extra {
         });
         mm_shuffle_epi8_u8_array(vector, indexes)
     }
-
-    // pub fn _mm256_mullo_epi16(a: __m256i, b: __m256i) -> __m256i {
-    //     BitVec::from_fn(|i| {
-    //         let nth_bit = i % 16;
-    //         let nth_i16 = i / 16;
-
-    //         let a_slice = FunArray::<16, Bit>::from_fn(|i| a[nth_i16 * 16 + i]);
-    //         let b_slice = FunArray::<16, Bit>::from_fn(|i| b[nth_i16 * 16 + i]);
-
-    //         match b_slice.log2() {
-    //             Some(shift) => {
-    //                 if nth_bit >= shift {
-    //                     a_slice[i - shift]
-    //                 } else {
-    //                     Bit::Zero
-    //                 }
-    //             }
-    //             None => BitVec::<64>::from_int(a_slice.to_u64().saturating_mul(b_slice.to_u64()))
-    //                 [nth_bit],
-    //         }
-    //     })
-    // }
 
     pub fn mm256_mullo_epi16_shifts(
         vector: __m256i,
