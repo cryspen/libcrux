@@ -1,5 +1,6 @@
 use libcrux_intrinsics::avx2::*;
 
+#[cfg(hax)]
 use minicore::abstractions::{bit::Bit, bitvec::BitVec};
 
 #[hax_lib::ensures(|r| {
@@ -12,6 +13,7 @@ use minicore::abstractions::{bit::Bit, bitvec::BitVec};
 })]
 #[inline(always)]
 fn serialize_4(simd_unit: &Vec256) -> Vec128 {
+    // The F* annotation normalizes the body of the function. After normalization, this function is a simple permutation of bits.
     #[hax_lib::fstar::before(
         r#"[@@(FStar.Tactics.postprocess_with ${BitVec::<128>::postprocess_rewrite})]"#
     )]
