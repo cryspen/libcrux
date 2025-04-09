@@ -77,7 +77,7 @@ impl<const N: u64, T> FunArray<N, T> {
 
     /// Gets a reference to the element at index `i`.
     pub fn get(&self, i: u64) -> &T {
-        &self.0[i as usize].as_ref().unwrap()
+        self.0[i as usize].as_ref().unwrap()
     }
     /// Constructor for BitVec. `BitVec::<N>::from_fn` constructs a bitvector out of a function that takes usizes smaller than `N` and produces bits.
     pub fn from_fn<F: Fn(u64) -> T>(f: F) -> Self {
