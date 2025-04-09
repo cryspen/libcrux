@@ -123,8 +123,9 @@
                                 let keySize = bench.keySize;
                                 let api = bench.api;
                                 let category = bench.category;
+                                let unit = bench.unit;
 
-                                let key = JSON.stringify({ name, platform, os, keySize, api, category });
+                                let key = JSON.stringify({ name, platform, os, keySize, api, category, unit });
                                 const result = { commit, date, bench };
 
                                 const arr = map.get(key);
@@ -196,14 +197,22 @@
                             console.log(`No datasets found with os "${os} and keySize ${keySize}"`);
                             return;
                         }
+                        // get the unit from the first item (all are same, since this field is part of the key in `collectBenchesPerTestCase()`)
+                        // this is possible because there is at least one data point
+                        const unit = filtered[0].unit;
+
+                        // update layout
                         layout.title = { text: `OS: ${os}, keySize: ${keySize}` };
+                        layout.yaxis = { title: { text: `Value (${unit})` } };
+
+                        // create plot
                         Plotly.newPlot(parent, filtered, layout);
                     }
 
                     function buildPlotConfig(dataSets) {
                         const datasets = Array.from(
                             dataSets.dataSet.map((item) => {
-                                let { name, api, keySize, category, os, platform, dataset } = item;
+                                let { name, api, keySize, category, os, platform, dataset, unit } = item;
 
                                 return {
                                     category,
@@ -212,6 +221,7 @@
                                     keySize,
                                     os,
                                     platform,
+                                    unit,
                                     x: dataset.map((d) => new Date(d.commit.timestamp)),
                                     y: dataset.map((d) => d.bench.value),
                                     dataset,
@@ -221,11 +231,18 @@
                             }),
                         );
 
+                        // extract GMT+offset from current time zone, if available
+                        const timeZone = new Date()
+                            .toString()
+                            .split(' ')
+                            .filter((s) => s.includes('GMT'))
+                            .map((s) => `(${s})`);
+
                         // TODO: more config
                         const layout = {
                             height: 600,
                             width: 1200,
-                            xaxis: { type: 'date' },
+                            xaxis: { title: { text: `Time of benchmark run ${timeZone}` }, type: 'date' },
                         };
 
                         return [datasets, layout];
