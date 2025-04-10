@@ -6,11 +6,9 @@ fn criterion_benchmark(c: &mut Criterion) {
     c.bench_function(&format!("P256 Derive"), |b| {
         b.iter_batched(
             || {
-                let sk = HpkeEvercrypt::kem_key_gen(
-                    KemAlgorithm::DhKemP256,
-                    &mut HpkeEvercrypt::prng(),
-                )
-                .unwrap();
+                let sk =
+                    HpkeEvercrypt::kem_key_gen(KemAlgorithm::DhKemP256, &mut HpkeEvercrypt::prng())
+                        .unwrap();
                 let pk = HpkeEvercrypt::kem_derive_base(KemAlgorithm::DhKemP256, &sk).unwrap();
                 (sk.clone(), pk.clone())
             },
@@ -23,11 +21,9 @@ fn criterion_benchmark(c: &mut Criterion) {
     c.bench_function(&format!("P256 Derive Base"), |b| {
         b.iter_batched(
             || {
-                let sk = HpkeEvercrypt::kem_key_gen(
-                    KemAlgorithm::DhKemP256,
-                    &mut HpkeEvercrypt::prng(),
-                )
-                .unwrap();
+                let sk =
+                    HpkeEvercrypt::kem_key_gen(KemAlgorithm::DhKemP256, &mut HpkeEvercrypt::prng())
+                        .unwrap();
                 sk.clone()
             },
             |sk| {
