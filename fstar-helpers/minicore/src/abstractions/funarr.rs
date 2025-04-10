@@ -7,40 +7,10 @@
 /// This type is integrated with F* through various `#[hax_lib::fstar::replace]` attributes to support
 /// formal verification workflows.
 
-/// Internal helper for generating pointwise applications in F*.
-/// This replaces a functional array `arr` by `fun i -> match arr with | 0 -> arr 0 | ... | (N-1) -> arr (N-1)`.
-/// Replaced by F* tactic code to generate match-based function applications over bounded natural numbers.
-#[hax_lib::fstar::replace(
-    r#"
-open FStar.Tactics
-
-let ${_pointwise_apply_mk_term} #t
-  (max: nat)
-  (f: (n:nat {n < max}) -> t)
-  : Tac unit
-  = let rec brs (n:int): Tac _ =
-      if n < 0 then []
-      else
-        let c = C_Int n in
-        let p = Pat_Constant c in
-        (p, mk_e_app (quote f) [pack (Tv_Const c)])::brs (n - 1)
-    in
-    let bd = fresh_binder_named "i" (quote (m: nat {m < max})) in
-    let t = mk_abs [bd] (Tv_Match bd None (brs (max - 1))) in
-    exact t"#
-)]
-pub fn _pointwise_apply_mk_term() {}
-
 #[hax_lib::fstar::replace(
     r#"
 open FStar.FunctionalExtensionality    
 type t_FunArray (n: u64) (t: Type0) = i:u64 {v i < v n} ^-> t
-
-let pointwise_apply 
-    (v_N: u64) (#v_T: Type0) (f: t_FunArray v_N v_T)
-    (#[${_pointwise_apply_mk_term} (v v_N) (fun (i:nat{i < v v_N}) -> f (mk_u64 i))] def: (n: nat {n < v v_N}) -> v_T)
-    : t_FunArray v_N v_T
-    = on (i: u64 {v i < v v_N}) (fun i -> def (v i))
 
 let ${FunArray::<0, ()>::get} (v_N: u64) (#v_T: Type0) (self: t_FunArray v_N v_T) (i: u64 {v i < v v_N}) : v_T = 
     self i
@@ -69,12 +39,6 @@ pub struct FunArray<const N: u64, T>([Option<T>; 512]);
 
 #[hax_lib::exclude]
 impl<const N: u64, T> FunArray<N, T> {
-    /// In F*, this returns the array, applied pointwise.
-    /// In Rust, this is identity.
-    pub fn pointwise_apply(self) -> FunArray<N, T> {
-        self
-    }
-
     /// Gets a reference to the element at index `i`.
     pub fn get(&self, i: u64) -> &T {
         self.0[i as usize].as_ref().unwrap()
