@@ -42,9 +42,15 @@ function prove() {
     make -C proofs/fstar/extraction -j $JOBS "$@"
 }
 
-# This function replace every occurence of `Core<M>` by `Minicore<M>` if `Minicore<M>` is a module defined by `minicore`.
+# `fixup-minicore CRATE` adjusts the F* extraction output of `CRATE` to use modules from `minicore` instead of `core`.
+# This is necessary because our F* models of the Rust `core` library and the extracted code from `minicore` overlap,
+# particularly for `core::arch::*`. The `minicore` versions offer more accurate and specialized models.
+#
+# This function scans all modules defined in `minicore`, and for each one, replaces every occurrence of `Core<M>`
+# in the extracted code of `CRATE` with `Minicore<M>`, but only if that `Minicore<M>` module actually exists in `minicore`.
 function fixup-minicore() {
     go_to fstar-helpers/minicore/proofs/fstar/extraction
+    # List all modules provided by minicore
     minicore_modules=$(find . -type f -name '*Minicore*' -exec basename {} .fst ';')
 
     go_to "$1"/proofs/fstar/extraction/temp
