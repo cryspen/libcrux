@@ -190,7 +190,9 @@ impl HpkeCrypto for HpkeLibcrux {
         match alg {
             // Don't support Aes
             AeadAlgorithm::Aes128Gcm | AeadAlgorithm::Aes256Gcm => Err(Error::UnknownAeadAlgorithm),
-            AeadAlgorithm::ChaCha20Poly1305 | AeadAlgorithm::HpkeExport => Ok(()),
+            AeadAlgorithm::ChaCha20Poly1305 => Ok(()),
+            // TODO: should this be supported?
+            AeadAlgorithm::HpkeExport => todo!(),
         }
     }
 }
