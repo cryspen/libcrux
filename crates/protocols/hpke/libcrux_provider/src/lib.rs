@@ -74,8 +74,7 @@ impl HpkeCrypto for HpkeLibcrux {
     fn kem_derive_base(alg: KemAlgorithm, sk: &[u8]) -> Result<Vec<u8>, Error> {
         let alg = kem_key_type_to_ecdh_alg(alg)?;
 
-        libcrux_ecdh::secret_to_public(alg, sk)
-            .map_err(|_| todo!())
+        libcrux_ecdh::secret_to_public(alg, sk).map_err(|_| todo!())
     }
 
     fn kem_key_gen(alg: KemAlgorithm, prng: &mut Self::HpkePrng) -> Result<Vec<u8>, Error> {
