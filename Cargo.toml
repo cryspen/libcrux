@@ -31,6 +31,7 @@ members = [
     "blake2",
     "fstar-helpers/minicore",
     "secrets",
+    "test-utils",
 ]
 
 [workspace.package]
