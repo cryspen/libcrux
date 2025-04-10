@@ -2,35 +2,41 @@
 
 use std::{fmt::Display, sync::RwLock};
 
-use evercrypt::prelude::*;
 use hpke_rs_crypto::{
     error::Error,
     types::{AeadAlgorithm, KdfAlgorithm, KemAlgorithm},
     HpkeCrypto, HpkeTestRng,
 };
-use rand::{CryptoRng, RngCore, SeedableRng};
+use rand_old::{CryptoRng, RngCore, SeedableRng};
 
-/// The Evercrypt HPKE Provider
+/// The Libcrux HPKE Provider
 #[derive(Debug)]
-pub struct HpkeEvercrypt {}
+pub struct HpkeLibcrux {}
 
-/// The PRNG for the Evercrypt Provider.
-pub struct HpkeEvercryptPrng {
+/// The PRNG for the Libcrux Provider.
+pub struct HpkeLibcruxPrng {
     #[cfg(feature = "deterministic-prng")]
     fake_rng: Vec<u8>,
-    rng: RwLock<rand_chacha::ChaCha20Rng>,
+    rng: RwLock<rand_chacha_old::ChaCha20Rng>,
 }
 
-impl HpkeCrypto for HpkeEvercrypt {
+impl HpkeCrypto for HpkeLibcrux {
     fn name() -> String {
-        "Evercrypt".into()
+        "Libcrux".into()
     }
 
     fn kdf_extract(alg: KdfAlgorithm, salt: &[u8], ikm: &[u8]) -> Vec<u8> {
+        // TODO: error handling
         match alg {
-            KdfAlgorithm::HkdfSha256 => hkdf_extract(HmacMode::Sha256, salt, ikm),
-            KdfAlgorithm::HkdfSha384 => hkdf_extract(HmacMode::Sha384, salt, ikm),
-            KdfAlgorithm::HkdfSha512 => hkdf_extract(HmacMode::Sha512, salt, ikm),
+            KdfAlgorithm::HkdfSha256 => {
+                libcrux_hkdf::extract(libcrux_hkdf::Algorithm::Sha256, salt, ikm).unwrap()
+            }
+            KdfAlgorithm::HkdfSha384 => {
+                libcrux_hkdf::extract(libcrux_hkdf::Algorithm::Sha384, salt, ikm).unwrap()
+            }
+            KdfAlgorithm::HkdfSha512 => {
+                libcrux_hkdf::extract(libcrux_hkdf::Algorithm::Sha512, salt, ikm).unwrap()
+            }
         }
     }
 
@@ -40,54 +46,78 @@ impl HpkeCrypto for HpkeEvercrypt {
         info: &[u8],
         output_size: usize,
     ) -> Result<Vec<u8>, Error> {
+        // TODO: error handling
         Ok(match alg {
-            KdfAlgorithm::HkdfSha256 => hkdf_expand(HmacMode::Sha256, prk, info, output_size),
-            KdfAlgorithm::HkdfSha384 => hkdf_expand(HmacMode::Sha384, prk, info, output_size),
-            KdfAlgorithm::HkdfSha512 => hkdf_expand(HmacMode::Sha512, prk, info, output_size),
+            KdfAlgorithm::HkdfSha256 => {
+                libcrux_hkdf::expand(libcrux_hkdf::Algorithm::Sha256, prk, info, output_size)
+                    .unwrap()
+            }
+            KdfAlgorithm::HkdfSha384 => {
+                libcrux_hkdf::expand(libcrux_hkdf::Algorithm::Sha384, prk, info, output_size)
+                    .unwrap()
+            }
+            KdfAlgorithm::HkdfSha512 => {
+                libcrux_hkdf::expand(libcrux_hkdf::Algorithm::Sha512, prk, info, output_size)
+                    .unwrap()
+            }
         })
     }
 
     fn kem_derive(alg: KemAlgorithm, pk: &[u8], sk: &[u8]) -> Result<Vec<u8>, Error> {
-        let evercrypt_mode = kem_key_type_to_mode(alg)?;
-        ecdh_derive(evercrypt_mode, pk, sk)
+        let alg = kem_key_type_to_ecdh_alg(alg)?;
+
+        libcrux_ecdh::derive(alg, pk, sk)
             .map_err(|e| Error::CryptoLibraryError(format!("ECDH derive error: {:?}", e)))
-            .map(|mut p| {
-                if evercrypt_mode == EcdhMode::P256 {
-                    // We only want the x-coordinate here but evercrypt gives us the entire point
-                    p.truncate(32);
-                    p
-                } else {
-                    p
-                }
-            })
+        /*
+        .map(|mut p| {
+            if emode == EcdhMode::P256 {
+                // We only want the x-coordinate here but evercrypt gives us the entire point
+                p.truncate(32);
+                p
+            } else {
+                p
+            }
+        })
+        */
     }
 
     fn kem_derive_base(alg: KemAlgorithm, sk: &[u8]) -> Result<Vec<u8>, Error> {
-        let evercrypt_mode = kem_key_type_to_mode(alg)?;
-        ecdh_derive_base(evercrypt_mode, sk)
+        let alg = kem_key_type_to_ecdh_alg(alg)?;
+
+        todo!()
+
+        /*
+        ecdh_derive_base(mode, sk)
             .map_err(|e| Error::CryptoLibraryError(format!("ECDH derive base error: {:?}", e)))
-            .map(|p| {
-                if evercrypt_mode == EcdhMode::P256 {
-                    nist_format_uncompressed(p)
-                } else {
-                    p
-                }
-            })
+        .map(|p| {
+            if evercrypt_mode == EcdhMode::P256 {
+                nist_format_uncompressed(p)
+            } else {
+                p
+            }
+        })
+        */
     }
 
     fn kem_key_gen(alg: KemAlgorithm, _: &mut Self::HpkePrng) -> Result<Vec<u8>, Error> {
-        // XXX: Evercypt doesn't support bring your own randomness yet.
-        //      https://github.com/franziskuskiefer/evercrypt-rust/issues/35
-        let evercrypt_mode = kem_key_type_to_mode(alg)?;
-        ecdh::key_gen(evercrypt_mode)
-            .map_err(|e| Error::CryptoLibraryError(format!("ECDH key gen error: {:?}", e)))
+        let mode = kem_key_type_to_mode(alg)?;
+
+        use rand::TryRngCore;
+        let mut rng = rand::rngs::OsRng;
+        let (pk, sk) = libcrux_kem::key_gen(mode, &mut rng.unwrap_mut())
+            .map_err(|e| Error::CryptoLibraryError(format!("ECDH key gen error: {:?}", e)))?;
+
+        // return both keys as single vec
+        todo!()
     }
 
     fn kem_validate_sk(alg: KemAlgorithm, sk: &[u8]) -> Result<Vec<u8>, Error> {
         match alg {
-            KemAlgorithm::DhKemP256 => p256_validate_sk(&sk)
+            //KemAlgorithm::DhKemP256 => p256_validate_sk(&sk)
+            // XXX: do we support this?
+            KemAlgorithm::DhKemP256 => libcrux_ecdh::p256::validate_scalar_slice(&sk)
                 .map_err(|e| Error::CryptoLibraryError(format!("ECDH invalid sk error: {:?}", e)))
-                .map(|sk| sk.to_vec()),
+                .map(|sk| sk.0.to_vec()),
             _ => Err(Error::UnknownKemAlgorithm),
         }
     }
@@ -99,19 +129,20 @@ impl HpkeCrypto for HpkeEvercrypt {
         aad: &[u8],
         msg: &[u8],
     ) -> Result<Vec<u8>, Error> {
-        let mode = aead_type_to_mode(alg)?;
-        if nonce.len() != 12 {
-            return Err(Error::AeadInvalidNonce);
+        // only chacha20poly1305 is supported
+        if !matches!(alg, AeadAlgorithm::ChaCha20Poly1305) {
+            return Err(Error::UnknownAeadAlgorithm);
         }
 
-        let cipher = match Aead::new(mode, key) {
-            Ok(c) => c,
-            Err(_) => return Err(Error::CryptoLibraryError(format!("Invalid configuration"))),
-        };
+        let iv = <&[u8; 12]>::try_from(nonce).map_err(|_| Error::AeadInvalidNonce)?;
 
-        cipher
-            .encrypt_combined(&msg, &nonce, &aad)
-            .map_err(|e| Error::CryptoLibraryError(format!("AEAD encrypt error: {:?}", e)))
+        // TODO: instead, use key conversion from the libcrux-chacha20poly1305 crate, when available,
+        let key = <&[u8; 32]>::try_from(key).map_err(|_| todo!())?;
+        let mut msg_ctx: Vec<u8> = vec![0; msg.len() + 16];
+        libcrux_chacha20poly1305::encrypt(key, msg, &mut msg_ctx, aad, iv)
+            .map_err(|_| Error::CryptoLibraryError("Invalid configuration".into()))?;
+
+        Ok(msg_ctx)
     }
 
     fn aead_open(
@@ -121,37 +152,49 @@ impl HpkeCrypto for HpkeEvercrypt {
         aad: &[u8],
         cipher_txt: &[u8],
     ) -> Result<Vec<u8>, Error> {
-        let mode = aead_type_to_mode(alg)?;
-        let cipher = match Aead::new(mode, key) {
-            Ok(c) => c,
-            Err(_) => {
-                return Err(Error::CryptoLibraryError(format!(
-                    "Invalid configuration or unsupported algorithm {:?}",
-                    mode
-                )))
-            }
-        };
+        // only chacha20poly1305 is supported
+        if !matches!(alg, AeadAlgorithm::ChaCha20Poly1305) {
+            return Err(Error::UnknownAeadAlgorithm);
+        }
+        if cipher_txt.len() < 16 {
+            return Err(todo!());
+        }
 
-        cipher
-            .decrypt_combined(&cipher_txt, &nonce, &aad)
-            .map_err(|e| Error::CryptoLibraryError(format!("AEAD decryption error: {:?}", e)))
+        let boundary = cipher_txt.len() - 16;
+
+        let mut ptext = vec![0; boundary];
+
+        let iv = <&[u8; 12]>::try_from(nonce).map_err(|_| Error::AeadInvalidNonce)?;
+
+        // TODO: instead, use key conversion from the libcrux-chacha20poly1305 crate, when available,
+        let key = <&[u8; 32]>::try_from(key).map_err(|_| todo!())?;
+        libcrux_chacha20poly1305::decrypt(key, &mut ptext, cipher_txt, aad, iv).map_err(
+            |e| match e {
+                libcrux_chacha20poly1305::AeadError::InvalidCiphertext => {
+                    Error::CryptoLibraryError(format!("AEAD decryption error: {:?}", e))
+                }
+                _ => Error::CryptoLibraryError("Invalid configuration".into()),
+            },
+        )?;
+
+        Ok(ptext)
     }
 
-    type HpkePrng = HpkeEvercryptPrng;
+    type HpkePrng = HpkeLibcruxPrng;
 
     fn prng() -> Self::HpkePrng {
         #[cfg(feature = "deterministic-prng")]
         {
             let mut fake_rng = vec![0u8; 256];
-            rand_chacha::ChaCha20Rng::from_entropy().fill_bytes(&mut fake_rng);
-            HpkeEvercryptPrng {
+            rand_chacha_old::ChaCha20Rng::from_entropy().fill_bytes(&mut fake_rng);
+            HpkeLibcruxPrng {
                 fake_rng,
-                rng: RwLock::new(rand_chacha::ChaCha20Rng::from_entropy()),
+                rng: RwLock::new(rand_chacha_old::ChaCha20Rng::from_entropy()),
             }
         }
         #[cfg(not(feature = "deterministic-prng"))]
-        HpkeEvercryptPrng {
-            rng: RwLock::new(rand_chacha::ChaCha20Rng::from_entropy()),
+        HpkeLibcruxPrng {
+            rng: RwLock::new(rand_chacha_old::ChaCha20Rng::from_entropy()),
         }
     }
 
@@ -162,6 +205,7 @@ impl HpkeCrypto for HpkeEvercrypt {
 
     /// Returns an error if the KEM algorithm is not supported by this crypto provider.
     fn supports_kem(alg: KemAlgorithm) -> Result<(), Error> {
+        // XXX: do we support DhKemP256?
         match alg {
             KemAlgorithm::DhKem25519 | KemAlgorithm::DhKemP256 => Ok(()),
             _ => Err(Error::UnknownKemAlgorithm),
@@ -171,22 +215,14 @@ impl HpkeCrypto for HpkeEvercrypt {
     /// Returns an error if the AEAD algorithm is not supported by this crypto provider.
     fn supports_aead(alg: AeadAlgorithm) -> Result<(), Error> {
         match alg {
-            AeadAlgorithm::Aes128Gcm | AeadAlgorithm::Aes256Gcm => aes_support(),
+            // Don't support Aes
+            AeadAlgorithm::Aes128Gcm | AeadAlgorithm::Aes256Gcm => Err(Error::UnknownAeadAlgorithm),
             AeadAlgorithm::ChaCha20Poly1305 | AeadAlgorithm::HpkeExport => Ok(()),
         }
     }
 }
 
-#[cfg(all(target_arch = "x86_64", not(target_os = "macos")))]
-fn aes_support() -> Result<(), Error> {
-    Ok(())
-}
-
-#[cfg(any(not(target_arch = "x86_64"), target_os = "macos"))]
-fn aes_support() -> Result<(), Error> {
-    Err(Error::UnknownAeadAlgorithm)
-}
-
+/*
 /// Prepend 0x04 for uncompressed NIST curve points.
 #[inline(always)]
 fn nist_format_uncompressed(mut pk: Vec<u8>) -> Vec<u8> {
@@ -195,27 +231,30 @@ fn nist_format_uncompressed(mut pk: Vec<u8>) -> Vec<u8> {
     tmp.append(&mut pk);
     tmp
 }
+*/
 
 #[inline(always)]
-fn kem_key_type_to_mode(alg: KemAlgorithm) -> Result<EcdhMode, Error> {
+fn kem_key_type_to_mode(alg: KemAlgorithm) -> Result<libcrux_kem::Algorithm, Error> {
     match alg {
-        KemAlgorithm::DhKem25519 => Ok(EcdhMode::X25519),
-        KemAlgorithm::DhKemP256 => Ok(EcdhMode::P256),
+        KemAlgorithm::DhKem25519 => Ok(libcrux_kem::Algorithm::X25519),
+        // XXX: is this correct?
+        KemAlgorithm::DhKemP256 => Ok(libcrux_kem::Algorithm::Secp256r1),
         _ => Err(Error::UnknownKemAlgorithm),
     }
 }
 
+// TODO: is this correct?
 #[inline(always)]
-fn aead_type_to_mode(alg: AeadAlgorithm) -> Result<AeadMode, Error> {
+fn kem_key_type_to_ecdh_alg(alg: KemAlgorithm) -> Result<libcrux_ecdh::Algorithm, Error> {
     match alg {
-        AeadAlgorithm::Aes128Gcm => Ok(AeadMode::Aes128Gcm),
-        AeadAlgorithm::Aes256Gcm => Ok(AeadMode::Aes256Gcm),
-        AeadAlgorithm::ChaCha20Poly1305 => Ok(AeadMode::Chacha20Poly1305),
-        _ => Err(Error::UnknownAeadAlgorithm),
+        KemAlgorithm::DhKem25519 => Ok(libcrux_ecdh::Algorithm::X25519),
+        // XXX: do we support this?
+        KemAlgorithm::DhKemP256 => Ok(libcrux_ecdh::Algorithm::P256),
+        _ => Err(Error::UnknownKemAlgorithm),
     }
 }
 
-impl RngCore for HpkeEvercryptPrng {
+impl RngCore for HpkeLibcruxPrng {
     fn next_u32(&mut self) -> u32 {
         let mut rng = self.rng.write().unwrap();
         rng.next_u32()
@@ -231,25 +270,25 @@ impl RngCore for HpkeEvercryptPrng {
         rng.fill_bytes(dest)
     }
 
-    fn try_fill_bytes(&mut self, dest: &mut [u8]) -> Result<(), rand::Error> {
+    fn try_fill_bytes(&mut self, dest: &mut [u8]) -> Result<(), rand_old::Error> {
         let mut rng = self.rng.write().unwrap();
         rng.try_fill_bytes(dest)
     }
 }
-impl CryptoRng for HpkeEvercryptPrng {}
+impl CryptoRng for HpkeLibcruxPrng {}
 
-impl HpkeTestRng for HpkeEvercryptPrng {
+impl HpkeTestRng for HpkeLibcruxPrng {
     #[cfg(feature = "deterministic-prng")]
-    fn try_fill_test_bytes(&mut self, dest: &mut [u8]) -> Result<(), rand::Error> {
+    fn try_fill_test_bytes(&mut self, dest: &mut [u8]) -> Result<(), rand_old::Error> {
         // Here we fake our randomness for testing.
         if dest.len() > self.fake_rng.len() {
-            return Err(rand::Error::new(Error::InsufficientRandomness));
+            return Err(rand_old::Error::new(Error::InsufficientRandomness));
         }
         dest.clone_from_slice(&self.fake_rng.split_off(self.fake_rng.len() - dest.len()));
         Ok(())
     }
     #[cfg(not(feature = "deterministic-prng"))]
-    fn try_fill_test_bytes(&mut self, dest: &mut [u8]) -> Result<(), rand::Error> {
+    fn try_fill_test_bytes(&mut self, dest: &mut [u8]) -> Result<(), rand_old::Error> {
         self.rng.write().unwrap().try_fill_bytes(dest)
     }
 
@@ -261,7 +300,7 @@ impl HpkeTestRng for HpkeEvercryptPrng {
     fn seed(&mut self, _: &[u8]) {}
 }
 
-impl Display for HpkeEvercrypt {
+impl Display for HpkeLibcrux {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}", Self::name())
     }
