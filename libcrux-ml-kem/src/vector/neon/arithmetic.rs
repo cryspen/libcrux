@@ -64,7 +64,7 @@ const BARRETT_MULTIPLIER: i16 = 20159;
 #[inline(always)]
 pub(crate) fn barrett_reduce_int16x8_t(v: _int16x8_t) -> _int16x8_t {
     // This is what we are trying to do in portable:
-    // let t = (value as i16 * BARRETT_MULTIPLIER) + (BARRETT_R >> 1);
+    // let t = (value as i32 * BARRETT_MULTIPLIER) + (BARRETT_R >> 1);
     // let quotient = (t >> BARRETT_SHIFT) as i16;
     // let result = value - (quotient * FIELD_MODULUS);
 
@@ -82,7 +82,7 @@ pub(crate) fn barrett_reduce(mut v: SIMD128Vector) -> SIMD128Vector {
     //from_i16_array(crate::simd::portable::to_i16_array(crate::simd::portable::barrett_reduce(pv)))
 
     // This is what we are trying to do in portable:
-    // let t = (value as i16 * BARRETT_MULTIPLIER) + (BARRETT_R >> 1);
+    // let t = (value as i32 * BARRETT_MULTIPLIER) + (BARRETT_R >> 1);
     // let quotient = (t >> BARRETT_SHIFT) as i16;
     // let result = value - (quotient * FIELD_MODULUS);
 
@@ -142,4 +142,11 @@ pub(crate) fn montgomery_multiply_by_constant(mut v: SIMD128Vector, c: i16) -> S
     v.low = montgomery_multiply_by_constant_int16x8_t(v.low, c);
     v.high = montgomery_multiply_by_constant_int16x8_t(v.high, c);
     v
+}
+
+#[inline(always)]
+pub(crate) fn to_unsigned_representative(a: SIMD128Vector) -> SIMD128Vector {
+    let t = shift_right::<15>(a);
+    let fm = bitwise_and_with_constant(t, FIELD_MODULUS);
+    add(a, &fm)
 }
