@@ -84,7 +84,6 @@ impl HpkeCrypto for HpkeLibcrux {
         use rand::TryRngCore;
         let mut rng = rand::rngs::OsRng;
 
-        // return both keys as single vec
         libcrux_ecdh::generate_secret(alg, &mut rng.unwrap_mut())
             .map_err(|e| Error::CryptoLibraryError(format!("ECDH key gen error: {:?}", e)))
     }
