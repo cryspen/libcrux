@@ -34,7 +34,7 @@ fn bit_slice_to_string(bits: &[Bit]) -> String {
         })
         .collect::<Vec<_>>()
         .chunks(8)
-        .map(|bits| bits.into_iter().collect::<String>())
+        .map(|bits| bits.iter().collect::<String>())
         .map(|s| format!("{s} "))
         .collect::<String>()
         .trim()
@@ -62,7 +62,7 @@ impl<const N: u64> core::ops::Index<u64> for BitVec<N> {
 fn u64_int_from_bit_slice(bits: &[Bit]) -> u64 {
     bits.iter()
         .enumerate()
-        .map(|(i, bit)| u64::from(bit.clone()) << i)
+        .map(|(i, bit)| u64::from(*bit) << i)
         .sum::<u64>()
 }
 
