@@ -78,18 +78,14 @@ impl HpkeCrypto for HpkeLibcrux {
             .map_err(|_| todo!())
     }
 
-    fn kem_key_gen(alg: KemAlgorithm, _: &mut Self::HpkePrng) -> Result<Vec<u8>, Error> {
+    fn kem_key_gen(alg: KemAlgorithm, prng: &mut Self::HpkePrng) -> Result<Vec<u8>, Error> {
         let alg = kem_key_type_to_ecdh_alg(alg)?;
 
-        use rand::TryRngCore;
-        let mut rng = rand::rngs::OsRng;
-
-        libcrux_ecdh::generate_secret(alg, &mut rng.unwrap_mut())
+        libcrux_ecdh::generate_secret(alg, prng)
             .map_err(|e| Error::CryptoLibraryError(format!("ECDH key gen error: {:?}", e)))
     }
 
     fn kem_validate_sk(alg: KemAlgorithm, sk: &[u8]) -> Result<Vec<u8>, Error> {
-
         match alg {
             KemAlgorithm::DhKemP256 => libcrux_ecdh::p256::validate_scalar_slice(&sk)
                 .map_err(|e| Error::CryptoLibraryError(format!("ECDH invalid sk error: {:?}", e)))
@@ -219,7 +215,6 @@ fn kem_key_type_to_ecdh_alg(alg: KemAlgorithm) -> Result<libcrux_ecdh::Algorithm
         _ => Err(Error::UnknownKemAlgorithm),
     }
 }
-
 
 impl hpke_rs_crypto::RngCore for HpkeLibcruxPrng {
     fn next_u32(&mut self) -> u32 {
