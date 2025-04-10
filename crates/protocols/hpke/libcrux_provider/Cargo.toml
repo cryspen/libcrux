@@ -1,18 +1,19 @@
 [package]
-name = "hpke-rs-evercrypt"
-version = "0.1.3-pre.1"
+name = "hpke-rs-libcrux"
+version = "0.2.0-pre.1"
 authors = ["Franziskus Kiefer <franziskuskiefer@gmail.com>"]
 edition = "2021"
 license = "MPL-2.0"
 documentation = "https://docs.rs/hpke-rs-evercrypt"
-description = "Crypto backend for HPKE using formally verified code from Evercrypt."
+description = "Crypto backend for HPKE using formally verified code from libcrux."
 readme = "Readme.md"
-repository = "https://github.com/franziskuskiefer/hpke-rs"
+repository = "https://github.com/cryspen/hpke-rs"
 
 [dependencies]
-hpke-rs-crypto = { version = "0.1.2-pre.1", path = "../traits" }
-# Evercrypt
-evercrypt = { version = "0.0.11", features = ["serialization"] }
+hpke-rs-crypto = { version = "0.2.0", path = "../traits" }
+libcrux-hkdf = { version = "0.0.2" }
+libcrux-kem = { version = "0.0.2" }
+libcrux-chacha20poly1305 = { version = "0.0.2" }
 # Randomness
 rand = { version = "0.8" }
 rand_chacha = { version = "0.3" }
