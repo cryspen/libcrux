@@ -241,10 +241,10 @@ pub fn to_standard_domain<T: Operations>(v: T) -> T {
 }
 
 #[hax_lib::fstar::verification_status(lax)]
-#[hax_lib::requires(fstar!(r#"Spec.Utils.is_i16b_array 3328 (i1._super_12682756204189288427.f_repr a)"#))]
+#[hax_lib::requires(fstar!(r#"Spec.Utils.is_i16b_array 3328 (i1._super_15138760880757129450.f_repr a)"#))]
 #[hax_lib::ensures(|result| fstar!(r#"forall i.
-                                       (let x = Seq.index (i1._super_12682756204189288427.f_repr ${a}) i in
-                                        let y = Seq.index (i1._super_12682756204189288427.f_repr ${result}) i in
+                                       (let x = Seq.index (i1._super_15138760880757129450.f_repr ${a}) i in
+                                        let y = Seq.index (i1._super_15138760880757129450.f_repr ${result}) i in
                                         (v y >= 0 /\ v y <= 3328 /\ (v y % 3329 == v x % 3329)))"#))]
 #[inline(always)]
 pub fn to_unsigned_representative<T: Operations>(a: T) -> T {
@@ -254,28 +254,28 @@ pub fn to_unsigned_representative<T: Operations>(a: T) -> T {
 }
 
 #[hax_lib::fstar::options("--z3rlimit 200 --split_queries always")]
-#[hax_lib::requires(fstar!(r#"forall i. let x = Seq.index (i1._super_12682756204189288427.f_repr ${vec}) i in 
+#[hax_lib::requires(fstar!(r#"forall i. let x = Seq.index (i1._super_15138760880757129450.f_repr ${vec}) i in 
                                       (x == mk_i16 0 \/ x == mk_i16 1)"#))]
 #[inline(always)]
 pub fn decompress_1<T: Operations>(vec: T) -> T {
     let z = T::ZERO();
     hax_lib::fstar!(
-        "assert(forall i. Seq.index (i1._super_12682756204189288427.f_repr ${z}) i == mk_i16 0)"
+        "assert(forall i. Seq.index (i1._super_15138760880757129450.f_repr ${z}) i == mk_i16 0)"
     );
     hax_lib::fstar!(
-        r#"assert(forall i. let x = Seq.index (i1._super_12682756204189288427.f_repr ${vec}) i in 
+        r#"assert(forall i. let x = Seq.index (i1._super_15138760880757129450.f_repr ${vec}) i in 
                                       ((0 - v x) == 0 \/ (0 - v x) == -1))"#
     );
     hax_lib::fstar!(
         r#"assert(forall i. i < 16 ==>
                                       Spec.Utils.is_intb (pow2 15 - 1) 
-                                        (0 - v (Seq.index (i1._super_12682756204189288427.f_repr ${vec}) i)))"#
+                                        (0 - v (Seq.index (i1._super_15138760880757129450.f_repr ${vec}) i)))"#
     );
 
     let s = T::sub(z, &vec);
     hax_lib::fstar!(
-        r#"assert(forall i. Seq.index (i1._super_12682756204189288427.f_repr ${s}) i == mk_i16 0 \/ 
-                                      Seq.index (i1._super_12682756204189288427.f_repr ${s}) i == mk_i16 (-1))"#
+        r#"assert(forall i. Seq.index (i1._super_15138760880757129450.f_repr ${s}) i == mk_i16 0 \/ 
+                                      Seq.index (i1._super_15138760880757129450.f_repr ${s}) i == mk_i16 (-1))"#
     );
     hax_lib::fstar!(r#"assert (i1.f_bitwise_and_with_constant_pre ${s} (mk_i16 1665))"#);
     let res = T::bitwise_and_with_constant(s, 1665);
