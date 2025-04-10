@@ -66,7 +66,7 @@ pub trait HpkeCrypto: core::fmt::Debug + Send + Sync {
     /// KEM Derive with base
     fn kem_derive_base(alg: KemAlgorithm, sk: &[u8]) -> Result<Vec<u8>, Error>;
 
-    /// KEM Key generation
+    /// KEM secret key generation
     fn kem_key_gen(alg: KemAlgorithm, prng: &mut Self::HpkePrng) -> Result<Vec<u8>, Error>;
 
     /// Validate a secret key for its correctness.
