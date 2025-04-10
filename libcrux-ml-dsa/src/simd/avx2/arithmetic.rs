@@ -56,6 +56,64 @@ pub(super) fn montgomery_multiply_by_constant(lhs: Vec256, constant: i32) -> Vec
     res
 }
 
+// pub(super) fn montgomery_multiply_pointwise(lhs: [i32; 4], rhs: [i32; 4]) {
+//     let inverse_of_modulus_mod_montgomery_r = INVERSE_OF_MODULUS_MOD_MONTGOMERY_R as i32;
+//     let prod02 = [
+//         (lhs[0] as i64) * (rhs[0] as i64),
+//         (lhs[2] as i64) * (rhs[2] as i64),
+//     ];
+//     let prod13 = [
+//         (lhs[1] as i64) * (rhs[1] as i64),
+//         (lhs[3] as i64) * (rhs[3] as i64),
+//     ];
+
+//     let k02 = [(prod02[0] as i32) as i64 * inverse_of_modulus_mod_montgomery_r];
+//     let k02 = [(prod02[0] as i32) as i64 * inverse_of_modulus_mod_montgomery_r];
+
+//     // let prod12:
+// }
+
+pub(super) fn montgomery_multiply_pointwise(lhs: [i32; 8], rhs: [i32; 8]) {
+    let inverse_of_modulus_mod_montgomery_r = [INVERSE_OF_MODULUS_MOD_MONTGOMERY_R as i32; 8];
+    let prod02 = [
+        (lhs[0] as i64) * (rhs[0] as i64),
+        (lhs[2] as i64) * (rhs[2] as i64),
+        (lhs[4] as i64) * (rhs[4] as i64),
+        (lhs[6] as i64) * (rhs[6] as i64),
+    ];
+    let prod13 = [
+        (lhs[1] as i64) * (rhs[1] as i64),
+        (lhs[3] as i64) * (rhs[3] as i64),
+        (lhs[5] as i64) * (rhs[5] as i64),
+        (lhs[7] as i64) * (rhs[7] as i64),
+    ];
+
+    let k02 = [(prod02[0] as i32) as i64 * inverse_of_modulus_mod_montgomery_r];
+    let k02 = [(prod02[0] as i32) as i64 * inverse_of_modulus_mod_montgomery_r];
+
+    // let prod12:
+}
+
+// operates on four i32 (there are four blank i32)
+
+// x0 x1 x2 x3  0  0  0  0
+// y0 y1 y2 y3  0  0  0  0
+
+// y1 y1 y3 y3  0  0  0  0
+
+/// x: i32, y: i32
+/// let mul_64 = |x: i64, y: i64| => low_32(x) as i64 * low_32(y) as i64;
+/// let prod = mul_64(x as i64, y as i64);
+/// let k = mul_64(prod, inverse_of_modulus_mod_montgomery_r as i64);
+/// let c = mul_64(k, field_modulus as i64)
+/// let res = high_32(prod) - high_32(c);
+
+// mod specs {
+//     fn mm256_set1_epi32() -> [] {
+
+//     }
+// }
+
 #[inline(always)]
 pub(super) fn montgomery_multiply(lhs: &mut Vec256, rhs: &Vec256) {
     let field_modulus = mm256_set1_epi32(FIELD_MODULUS);
@@ -78,6 +136,29 @@ pub(super) fn montgomery_multiply(lhs: &mut Vec256, rhs: &Vec256) {
     let res02_shifted = mm256_shuffle_epi32::<0b11_11_01_01>(res02);
     *lhs = mm256_blend_epi32::<0b10101010>(res02_shifted, res13);
 }
+
+// #[inline(always)]
+// pub(super) fn montgomery_multiply(lhs: &mut Vec256, rhs: &Vec256) {
+//     let field_modulus = mm256_set1_epi32(FIELD_MODULUS);
+//     let inverse_of_modulus_mod_montgomery_r =
+//         mm256_set1_epi32(INVERSE_OF_MODULUS_MOD_MONTGOMERY_R as i32);
+
+//     let prod02 = mm256_mul_epi32(*lhs, *rhs);
+//     let prod13 = mm256_mul_epi32(
+//         mm256_shuffle_epi32::<0b11_11_01_01>(*lhs),
+//         mm256_shuffle_epi32::<0b11_11_01_01>(*rhs),
+//     );
+//     let k02 = mm256_mul_epi32(prod02, inverse_of_modulus_mod_montgomery_r);
+//     let k13 = mm256_mul_epi32(prod13, inverse_of_modulus_mod_montgomery_r);
+
+//     let c02 = mm256_mul_epi32(k02, field_modulus);
+//     let c13 = mm256_mul_epi32(k13, field_modulus);
+
+//     let res02 = mm256_sub_epi32(prod02, c02);
+//     let res13 = mm256_sub_epi32(prod13, c13);
+//     let res02_shifted = mm256_shuffle_epi32::<0b11_11_01_01>(res02);
+//     *lhs = mm256_blend_epi32::<0b10101010>(res02_shifted, res13);
+// }
 
 #[inline(always)]
 pub(super) fn shift_left_then_reduce<const SHIFT_BY: i32>(simd_unit: &mut Vec256) {
