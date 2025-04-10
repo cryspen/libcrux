@@ -5,9 +5,10 @@ use std::{fmt::Display, sync::RwLock};
 use hpke_rs_crypto::{
     error::Error,
     types::{AeadAlgorithm, KdfAlgorithm, KemAlgorithm},
-    HpkeCrypto, HpkeTestRng,
+    CryptoRng, HpkeCrypto, HpkeTestRng,
 };
-use rand_old::{CryptoRng, RngCore, SeedableRng};
+
+use rand::SeedableRng;
 
 /// The Libcrux HPKE Provider
 #[derive(Debug)]
@@ -17,7 +18,7 @@ pub struct HpkeLibcrux {}
 pub struct HpkeLibcruxPrng {
     #[cfg(feature = "deterministic-prng")]
     fake_rng: Vec<u8>,
-    rng: RwLock<rand_chacha_old::ChaCha20Rng>,
+    rng: RwLock<rand_chacha::ChaCha20Rng>,
 }
 
 impl HpkeCrypto for HpkeLibcrux {
@@ -68,53 +69,29 @@ impl HpkeCrypto for HpkeLibcrux {
 
         libcrux_ecdh::derive(alg, pk, sk)
             .map_err(|e| Error::CryptoLibraryError(format!("ECDH derive error: {:?}", e)))
-        /*
-        .map(|mut p| {
-            if emode == EcdhMode::P256 {
-                // We only want the x-coordinate here but evercrypt gives us the entire point
-                p.truncate(32);
-                p
-            } else {
-                p
-            }
-        })
-        */
     }
 
     fn kem_derive_base(alg: KemAlgorithm, sk: &[u8]) -> Result<Vec<u8>, Error> {
         let alg = kem_key_type_to_ecdh_alg(alg)?;
 
-        todo!()
-
-        /*
-        ecdh_derive_base(mode, sk)
-            .map_err(|e| Error::CryptoLibraryError(format!("ECDH derive base error: {:?}", e)))
-        .map(|p| {
-            if evercrypt_mode == EcdhMode::P256 {
-                nist_format_uncompressed(p)
-            } else {
-                p
-            }
-        })
-        */
+        libcrux_ecdh::secret_to_public(alg, sk)
+            .map_err(|_| todo!())
     }
 
     fn kem_key_gen(alg: KemAlgorithm, _: &mut Self::HpkePrng) -> Result<Vec<u8>, Error> {
-        let mode = kem_key_type_to_mode(alg)?;
+        let alg = kem_key_type_to_ecdh_alg(alg)?;
 
         use rand::TryRngCore;
         let mut rng = rand::rngs::OsRng;
-        let (pk, sk) = libcrux_kem::key_gen(mode, &mut rng.unwrap_mut())
-            .map_err(|e| Error::CryptoLibraryError(format!("ECDH key gen error: {:?}", e)))?;
 
         // return both keys as single vec
-        todo!()
+        libcrux_ecdh::generate_secret(alg, &mut rng.unwrap_mut())
+            .map_err(|e| Error::CryptoLibraryError(format!("ECDH key gen error: {:?}", e)))
     }
 
     fn kem_validate_sk(alg: KemAlgorithm, sk: &[u8]) -> Result<Vec<u8>, Error> {
+
         match alg {
-            //KemAlgorithm::DhKemP256 => p256_validate_sk(&sk)
-            // XXX: do we support this?
             KemAlgorithm::DhKemP256 => libcrux_ecdh::p256::validate_scalar_slice(&sk)
                 .map_err(|e| Error::CryptoLibraryError(format!("ECDH invalid sk error: {:?}", e)))
                 .map(|sk| sk.0.to_vec()),
@@ -185,16 +162,19 @@ impl HpkeCrypto for HpkeLibcrux {
     fn prng() -> Self::HpkePrng {
         #[cfg(feature = "deterministic-prng")]
         {
+            use rand::TryRngCore;
             let mut fake_rng = vec![0u8; 256];
-            rand_chacha_old::ChaCha20Rng::from_entropy().fill_bytes(&mut fake_rng);
+            rand_chacha::ChaCha20Rng::from_os_rng()
+                .try_fill_bytes(&mut fake_rng)
+                .unwrap();
             HpkeLibcruxPrng {
                 fake_rng,
-                rng: RwLock::new(rand_chacha_old::ChaCha20Rng::from_entropy()),
+                rng: RwLock::new(rand_chacha::ChaCha20Rng::from_os_rng()),
             }
         }
         #[cfg(not(feature = "deterministic-prng"))]
         HpkeLibcruxPrng {
-            rng: RwLock::new(rand_chacha_old::ChaCha20Rng::from_entropy()),
+            rng: RwLock::new(rand_chacha::ChaCha20Rng::from_os_rng()),
         }
     }
 
@@ -205,7 +185,6 @@ impl HpkeCrypto for HpkeLibcrux {
 
     /// Returns an error if the KEM algorithm is not supported by this crypto provider.
     fn supports_kem(alg: KemAlgorithm) -> Result<(), Error> {
-        // XXX: do we support DhKemP256?
         match alg {
             KemAlgorithm::DhKem25519 | KemAlgorithm::DhKemP256 => Ok(()),
             _ => Err(Error::UnknownKemAlgorithm),
@@ -234,62 +213,47 @@ fn nist_format_uncompressed(mut pk: Vec<u8>) -> Vec<u8> {
 */
 
 #[inline(always)]
-fn kem_key_type_to_mode(alg: KemAlgorithm) -> Result<libcrux_kem::Algorithm, Error> {
-    match alg {
-        KemAlgorithm::DhKem25519 => Ok(libcrux_kem::Algorithm::X25519),
-        // XXX: is this correct?
-        KemAlgorithm::DhKemP256 => Ok(libcrux_kem::Algorithm::Secp256r1),
-        _ => Err(Error::UnknownKemAlgorithm),
-    }
-}
-
-// TODO: is this correct?
-#[inline(always)]
 fn kem_key_type_to_ecdh_alg(alg: KemAlgorithm) -> Result<libcrux_ecdh::Algorithm, Error> {
     match alg {
         KemAlgorithm::DhKem25519 => Ok(libcrux_ecdh::Algorithm::X25519),
-        // XXX: do we support this?
         KemAlgorithm::DhKemP256 => Ok(libcrux_ecdh::Algorithm::P256),
         _ => Err(Error::UnknownKemAlgorithm),
     }
 }
 
-impl RngCore for HpkeLibcruxPrng {
+
+impl hpke_rs_crypto::RngCore for HpkeLibcruxPrng {
     fn next_u32(&mut self) -> u32 {
-        let mut rng = self.rng.write().unwrap();
-        rng.next_u32()
+        self.rng.write().unwrap().next_u32()
     }
 
     fn next_u64(&mut self) -> u64 {
-        let mut rng = self.rng.write().unwrap();
-        rng.next_u64()
+        self.rng.write().unwrap().next_u64()
     }
 
     fn fill_bytes(&mut self, dest: &mut [u8]) {
-        let mut rng = self.rng.write().unwrap();
-        rng.fill_bytes(dest)
-    }
-
-    fn try_fill_bytes(&mut self, dest: &mut [u8]) -> Result<(), rand_old::Error> {
-        let mut rng = self.rng.write().unwrap();
-        rng.try_fill_bytes(dest)
+        self.rng.write().unwrap().fill_bytes(dest)
     }
 }
 impl CryptoRng for HpkeLibcruxPrng {}
 
 impl HpkeTestRng for HpkeLibcruxPrng {
+    type Error = Error;
+
     #[cfg(feature = "deterministic-prng")]
-    fn try_fill_test_bytes(&mut self, dest: &mut [u8]) -> Result<(), rand_old::Error> {
+    fn try_fill_test_bytes(&mut self, dest: &mut [u8]) -> Result<(), Error> {
         // Here we fake our randomness for testing.
         if dest.len() > self.fake_rng.len() {
-            return Err(rand_old::Error::new(Error::InsufficientRandomness));
+            return Err(Error::InsufficientRandomness);
         }
         dest.clone_from_slice(&self.fake_rng.split_off(self.fake_rng.len() - dest.len()));
         Ok(())
     }
     #[cfg(not(feature = "deterministic-prng"))]
-    fn try_fill_test_bytes(&mut self, dest: &mut [u8]) -> Result<(), rand_old::Error> {
-        self.rng.write().unwrap().try_fill_bytes(dest)
+    fn try_fill_test_bytes(&mut self, dest: &mut [u8]) -> Result<(), Error> {
+        use rand_core::TryRngCore;
+        self.try_fill_bytes(dest)
+            .map_err(|_| Error::InsufficientRandomness)
     }
 
     #[cfg(feature = "deterministic-prng")]

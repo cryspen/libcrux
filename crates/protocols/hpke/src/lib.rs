@@ -23,13 +23,14 @@ use alloc::{
 
 #[cfg(feature = "hpke-test-prng")]
 use hpke_rs_crypto::HpkeTestRng;
-#[cfg(not(feature = "hpke-test-prng"))]
-use hpke_rs_crypto::RngCore;
 use hpke_rs_crypto::{
     types::{AeadAlgorithm, KdfAlgorithm, KemAlgorithm},
     HpkeCrypto,
 };
 use prelude::kdf::{labeled_expand, labeled_extract};
+#[cfg(not(feature = "hpke-test-prng"))]
+use rand_core::TryRngCore;
+
 #[cfg(feature = "serialization")]
 pub(crate) use serde::{Deserialize, Serialize};
 use zeroize::Zeroize;

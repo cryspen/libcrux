@@ -1,21 +1,19 @@
 use criterion::{criterion_group, criterion_main, BatchSize, Criterion};
 use hpke_rs_crypto::{types::*, HpkeCrypto};
-use hpke_rs_evercrypt::*;
+use hpke_rs_libcrux::*;
 
 fn criterion_benchmark(c: &mut Criterion) {
     c.bench_function(&format!("x25519 Derive"), |b| {
         b.iter_batched(
             || {
-                let sk = HpkeEvercrypt::kem_key_gen(
-                    KemAlgorithm::DhKem25519,
-                    &mut HpkeEvercrypt::prng(),
-                )
-                .unwrap();
-                let pk = HpkeEvercrypt::kem_derive_base(KemAlgorithm::DhKem25519, &sk).unwrap();
+                let sk =
+                    HpkeLibcrux::kem_key_gen(KemAlgorithm::DhKem25519, &mut HpkeLibcrux::prng())
+                        .unwrap();
+                let pk = HpkeLibcrux::kem_derive_base(KemAlgorithm::DhKem25519, &sk).unwrap();
                 (sk.clone(), pk.clone())
             },
             |(sk, pk)| {
-                let _ = HpkeEvercrypt::kem_derive(KemAlgorithm::DhKem25519, &pk, &sk);
+                let _ = HpkeLibcrux::kem_derive(KemAlgorithm::DhKem25519, &pk, &sk);
             },
             BatchSize::SmallInput,
         )
@@ -23,15 +21,13 @@ fn criterion_benchmark(c: &mut Criterion) {
     c.bench_function(&format!("x25519 Derive Base"), |b| {
         b.iter_batched(
             || {
-                let sk = HpkeEvercrypt::kem_key_gen(
-                    KemAlgorithm::DhKem25519,
-                    &mut HpkeEvercrypt::prng(),
-                )
-                .unwrap();
+                let sk =
+                    HpkeLibcrux::kem_key_gen(KemAlgorithm::DhKem25519, &mut HpkeLibcrux::prng())
+                        .unwrap();
                 sk.clone()
             },
             |sk| {
-                let _pk = HpkeEvercrypt::kem_derive_base(KemAlgorithm::DhKem25519, &sk).unwrap();
+                let _pk = HpkeLibcrux::kem_derive_base(KemAlgorithm::DhKem25519, &sk).unwrap();
             },
             BatchSize::SmallInput,
         )

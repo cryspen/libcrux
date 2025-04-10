@@ -1,19 +1,19 @@
 use criterion::{criterion_group, criterion_main, BatchSize, Criterion};
 use hpke_rs_crypto::{types::KemAlgorithm, HpkeCrypto};
-use hpke_rs_evercrypt::*;
+use hpke_rs_libcrux::*;
 
 fn criterion_benchmark(c: &mut Criterion) {
     c.bench_function(&format!("P256 Derive"), |b| {
         b.iter_batched(
             || {
                 let sk =
-                    HpkeEvercrypt::kem_key_gen(KemAlgorithm::DhKemP256, &mut HpkeEvercrypt::prng())
+                    HpkeLibcrux::kem_key_gen(KemAlgorithm::DhKemP256, &mut HpkeLibcrux::prng())
                         .unwrap();
-                let pk = HpkeEvercrypt::kem_derive_base(KemAlgorithm::DhKemP256, &sk).unwrap();
+                let pk = HpkeLibcrux::kem_derive_base(KemAlgorithm::DhKemP256, &sk).unwrap();
                 (sk.clone(), pk.clone())
             },
             |(sk, pk)| {
-                let _ = HpkeEvercrypt::kem_derive(KemAlgorithm::DhKemP256, &pk, &sk);
+                let _ = HpkeLibcrux::kem_derive(KemAlgorithm::DhKemP256, &pk, &sk);
             },
             BatchSize::SmallInput,
         )
@@ -22,12 +22,12 @@ fn criterion_benchmark(c: &mut Criterion) {
         b.iter_batched(
             || {
                 let sk =
-                    HpkeEvercrypt::kem_key_gen(KemAlgorithm::DhKemP256, &mut HpkeEvercrypt::prng())
+                    HpkeLibcrux::kem_key_gen(KemAlgorithm::DhKemP256, &mut HpkeLibcrux::prng())
                         .unwrap();
                 sk.clone()
             },
             |sk| {
-                let _pk = HpkeEvercrypt::kem_derive_base(KemAlgorithm::DhKemP256, &sk).unwrap();
+                let _pk = HpkeLibcrux::kem_derive_base(KemAlgorithm::DhKemP256, &sk).unwrap();
             },
             BatchSize::SmallInput,
         )

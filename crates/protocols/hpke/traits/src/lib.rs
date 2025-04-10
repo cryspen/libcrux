@@ -127,10 +127,14 @@ pub trait HpkeCrypto: core::fmt::Debug + Send + Sync {
     }
 }
 
+
 /// PRNG extension for testing that is supposed to return pre-configured bytes.
 pub trait HpkeTestRng {
+
+    // Error type to replace rand::Error (which is no longer available as of version 0.9)
+    type Error: core::fmt::Debug + core::fmt::Display;
     /// Like [`RngCore::try_fill_bytes`] but the result is expected to be known.
-    fn try_fill_test_bytes(&mut self, dest: &mut [u8]) -> Result<(), rand_core::Error>;
+    fn try_fill_test_bytes(&mut self, dest: &mut [u8]) -> Result<(), Self::Error>;
 
     /// Set the randomness state of this test PRNG.
     fn seed(&mut self, seed: &[u8]);
