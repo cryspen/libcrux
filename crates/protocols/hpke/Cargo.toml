@@ -24,7 +24,7 @@ std = []
 serialization = ["serde", "tls_codec", "tls_codec/serde", "std"]
 hazmat = []
 hpke-test = ["std"]
-hpke-test-prng = []                                                     # ⚠️ Enable testing PRNG - DO NOT USE
+hpke-test-prng = []                                              # ⚠️ Enable testing PRNG - DO NOT USE
 
 [dev-dependencies]
 hpke-rs-crypto = { version = "0.2.0", path = "./traits", features = ["std"] }
@@ -36,7 +36,9 @@ hpke-rs = { path = ".", features = ["hpke-test", "hazmat"] }
 hpke-rs-rust-crypto = { version = "0.2.0", path = "./rust_crypto_provider", features = [
     "deterministic-prng",
 ] }
-hpke-rs-libcrux = { version = "0.2.0-pre.1", path = "./libcrux_provider", features = ["deterministic-prng"] }
+hpke-rs-libcrux = { version = "0.2.0-alpha.1", path = "./libcrux_provider", features = [
+    "deterministic-prng",
+] }
 rand = { version = "0.9" }
 pretty_env_logger = "0.5"
 criterion = { version = "0.5", features = ["html_reports"] }

@@ -30,6 +30,7 @@ chacha20poly1305 = { version = "0.10", default-features = false, features = [
 aes-gcm = { version = "0.10", default-features = false, features = ["aes"] }
 # Randomness
 rand_core = { version = "0.6", features = ["getrandom"] }
+rand_old = { version = "0.8", package = "rand" }
 rand_chacha = { version = "0.3", default-features = false }
 
 [dev-dependencies]

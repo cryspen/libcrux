@@ -232,7 +232,10 @@ impl HpkeCrypto for HpkeRustCrypto {
     }
 }
 
-impl RngCore for HpkeRustCryptoPrng {
+// We need to implement the old and new traits here because the crytpo uses the
+// old one.
+
+impl rand_old::RngCore for HpkeRustCryptoPrng {
     fn next_u32(&mut self) -> u32 {
         self.rng.next_u32()
     }
@@ -250,11 +253,29 @@ impl RngCore for HpkeRustCryptoPrng {
     }
 }
 
+impl rand_old::CryptoRng for HpkeRustCryptoPrng {}
+
+use rand_old::RngCore as _;
+
+impl RngCore for HpkeRustCryptoPrng {
+    fn next_u32(&mut self) -> u32 {
+        self.rng.next_u32()
+    }
+
+    fn next_u64(&mut self) -> u64 {
+        self.rng.next_u64()
+    }
+
+    fn fill_bytes(&mut self, dest: &mut [u8]) {
+        self.rng.fill_bytes(dest);
+    }
+}
+
 impl CryptoRng for HpkeRustCryptoPrng {}
 
 impl HpkeTestRng for HpkeRustCryptoPrng {
     #[cfg(feature = "deterministic-prng")]
-    fn try_fill_test_bytes(&mut self, dest: &mut [u8]) -> Result<(), rand_core::Error> {
+    fn try_fill_test_bytes(&mut self, dest: &mut [u8]) -> Result<(), rand_old::Error> {
         // Here we fake our randomness for testing.
         if dest.len() > self.fake_rng.len() {
             return Err(rand_core::Error::new(Error::InsufficientRandomness));
@@ -268,12 +289,14 @@ impl HpkeTestRng for HpkeRustCryptoPrng {
         self.fake_rng = seed.to_vec();
     }
     #[cfg(not(feature = "deterministic-prng"))]
-    fn try_fill_test_bytes(&mut self, dest: &mut [u8]) -> Result<(), rand_core::Error> {
+    fn try_fill_test_bytes(&mut self, dest: &mut [u8]) -> Result<(), rand_old::Error> {
         self.rng.try_fill_bytes(dest)
     }
 
     #[cfg(not(feature = "deterministic-prng"))]
     fn seed(&mut self, _: &[u8]) {}
+
+    type Error = rand_old::Error;
 }
 
 impl Display for HpkeRustCrypto {

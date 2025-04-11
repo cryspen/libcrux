@@ -69,12 +69,28 @@ impl HpkeCrypto for HpkeLibcrux {
 
         libcrux_ecdh::derive(alg, pk, sk)
             .map_err(|e| Error::CryptoLibraryError(format!("ECDH derive error: {:?}", e)))
+            .map(|mut p| {
+                if alg == libcrux_ecdh::Algorithm::P256 {
+                    p.truncate(32);
+                    p
+                } else {
+                    p
+                }
+            })
     }
 
     fn kem_derive_base(alg: KemAlgorithm, sk: &[u8]) -> Result<Vec<u8>, Error> {
         let alg = kem_key_type_to_ecdh_alg(alg)?;
 
-        libcrux_ecdh::secret_to_public(alg, sk).map_err(|_| todo!())
+        libcrux_ecdh::secret_to_public(alg, sk)
+            .map_err(|e| Error::CryptoLibraryError(format!("ECDH derive base error: {:?}", e)))
+            .map(|p| {
+                if alg == libcrux_ecdh::Algorithm::P256 {
+                    nist_format_uncompressed(p)
+                } else {
+                    p
+                }
+            })
     }
 
     fn kem_key_gen(alg: KemAlgorithm, prng: &mut Self::HpkePrng) -> Result<Vec<u8>, Error> {
@@ -191,13 +207,11 @@ impl HpkeCrypto for HpkeLibcrux {
             // Don't support Aes
             AeadAlgorithm::Aes128Gcm | AeadAlgorithm::Aes256Gcm => Err(Error::UnknownAeadAlgorithm),
             AeadAlgorithm::ChaCha20Poly1305 => Ok(()),
-            // TODO: should this be supported?
-            AeadAlgorithm::HpkeExport => todo!(),
+            AeadAlgorithm::HpkeExport => Ok(()),
         }
     }
 }
 
-/*
 /// Prepend 0x04 for uncompressed NIST curve points.
 #[inline(always)]
 fn nist_format_uncompressed(mut pk: Vec<u8>) -> Vec<u8> {
@@ -206,7 +220,6 @@ fn nist_format_uncompressed(mut pk: Vec<u8>) -> Vec<u8> {
     tmp.append(&mut pk);
     tmp
 }
-*/
 
 #[inline(always)]
 fn kem_key_type_to_ecdh_alg(alg: KemAlgorithm) -> Result<libcrux_ecdh::Algorithm, Error> {

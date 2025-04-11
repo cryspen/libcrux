@@ -1,5 +1,6 @@
 use hpke_rs_crypto::{types::KdfAlgorithm, HpkeCrypto};
-use hpke_rs_rust_crypto::HpkeRustCrypto;
+// use hpke_rs_rust_crypto::HpkeRustCrypto;
+use hpke_rs_libcrux::HpkeLibcrux;
 
 use crate::test_util::hex_to_bytes;
 
@@ -16,8 +17,8 @@ fn test_hkdf_sha256() {
         "3cb25f25faacd57a90434f64d0362f2a2d2d0a90cf1a5a4c5db02d56ecc4c5bf34007208d5b887185865",
     );
 
-    let prk = HpkeRustCrypto::kdf_extract(KdfAlgorithm::HkdfSha256, &salt, &ikm);
-    let okm = HpkeRustCrypto::kdf_expand(KdfAlgorithm::HkdfSha256, &prk, &info, len)
+    let prk = HpkeLibcrux::kdf_extract(KdfAlgorithm::HkdfSha256, &salt, &ikm);
+    let okm = HpkeLibcrux::kdf_expand(KdfAlgorithm::HkdfSha256, &prk, &info, len)
         .expect("Error expanding with HKDF");
 
     assert_eq!(&expected_prk, &prk);
