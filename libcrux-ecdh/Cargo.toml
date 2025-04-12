@@ -1,6 +1,6 @@
 [package]
 name = "libcrux-ecdh"
-version.workspace = true
+version = "0.0.3-alpha.1"
 authors.workspace = true
 license.workspace = true
 homepage.workspace = true

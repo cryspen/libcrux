@@ -10,7 +10,7 @@ use super::errors::*;
 use super::kdf::*;
 use libcrux_kem::{
     Algorithm, X25519MlKem768Draft00PrivateKey, X25519MlKem768Draft00PublicKey,
-    XWingKemDraft02PrivateKey, XWingKemDraft02PublicKey,
+    XWingKemDraft06PrivateKey, XWingKemDraft06PublicKey,
 };
 use libcrux_ml_kem::mlkem768;
 
@@ -522,7 +522,7 @@ pub fn DeriveKeyPair(alg: KEM, ikm: &InputKeyMaterial) -> Result<KeyPair, HpkeEr
             // Use the next 32 bytes to generate the X25519 key pair
             let (xsk, xpk) = DeriveKeyPair(KEM::DHKEM_X25519_HKDF_SHA256, &seed[..96])?;
 
-            let private = XWingKemDraft02PrivateKey {
+            let private = XWingKemDraft06PrivateKey {
                 sk_m: sk,
                 sk_x: X25519PrivateKey(xsk.try_into().map_err(|_| HpkeError::DeriveKeyPairError)?),
                 pk_x: X25519PublicKey(
@@ -531,7 +531,7 @@ pub fn DeriveKeyPair(alg: KEM, ikm: &InputKeyMaterial) -> Result<KeyPair, HpkeEr
                         .map_err(|_| HpkeError::DeriveKeyPairError)?,
                 ),
             };
-            let public = XWingKemDraft02PublicKey {
+            let public = XWingKemDraft06PublicKey {
                 pk_m: pk,
                 pk_x: X25519PublicKey(xpk.try_into().map_err(|_| HpkeError::DeriveKeyPairError)?),
             };

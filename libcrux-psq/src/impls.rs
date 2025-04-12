@@ -68,7 +68,7 @@ libcrux_impl!(
     "ML-KEM 768, a lattice-based post-quantum KEM, as specified in FIPS 203 (Draft)"
 );
 libcrux_impl!(
-    XWingKemDraft02,
+    XWingKemDraft06,
     "A hybrid post-quantum KEM combining X25519 and ML-KEM 768"
 );
 
@@ -116,5 +116,5 @@ mod tests {
     #[cfg(feature = "test-utils")]
     libcrux_test!(X25519);
     libcrux_test!(MlKem768);
-    libcrux_test!(XWingKemDraft02);
+    libcrux_test!(XWingKemDraft06);
 }

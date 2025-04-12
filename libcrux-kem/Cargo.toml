@@ -1,6 +1,6 @@
 [package]
 name = "libcrux-kem"
-version.workspace = true
+version = "0.0.3-alpha.1"
 authors.workspace = true
 license.workspace = true
 homepage.workspace = true
@@ -16,13 +16,12 @@ path = "src/kem.rs"
 [dependencies]
 libcrux-ml-kem = { version = "=0.0.2", path = "../libcrux-ml-kem" }
 libcrux-sha3 = { version = "=0.0.2", path = "../libcrux-sha3" }
-libcrux-ecdh = { version = "=0.0.2", path = "../libcrux-ecdh" }
+libcrux-ecdh = { version = "=0.0.3-alpha.1", path = "../libcrux-ecdh" }
 libcrux-traits = { version = "=0.0.2", path = "../traits" }
 rand = { version = "0.9" }
 
 [features]
 tests = []                       # Expose functions for testing.
-kyber = ["libcrux-ml-kem/kyber"]
 pre-verification = []
 
 [dev-dependencies]
