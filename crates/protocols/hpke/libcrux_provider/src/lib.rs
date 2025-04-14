@@ -239,6 +239,7 @@ impl HpkeCrypto for HpkeLibcrux {
     }
 }
 
+#[inline(always)]
 fn kem_ecdh_secret_to_public(alg: libcrux_ecdh::Algorithm, sk: &[u8]) -> Result<Vec<u8>, Error> {
     libcrux_ecdh::secret_to_public(alg, sk)
         .map_err(|e| Error::CryptoLibraryError(format!("ECDH derive base error: {:?}", e)))
