@@ -82,31 +82,30 @@ impl HpkeCrypto for HpkeLibcrux {
     fn secret_to_public(alg: KemAlgorithm, sk: &[u8]) -> Result<Vec<u8>, Error> {
         let alg = kem_key_type_to_ecdh_alg(alg)?;
 
-        libcrux_ecdh::secret_to_public(alg, sk)
-            .map_err(|e| Error::CryptoLibraryError(format!("ECDH derive base error: {:?}", e)))
-            .map(|p| {
-                if alg == libcrux_ecdh::Algorithm::P256 {
-                    nist_format_uncompressed(p)
-                } else {
-                    p
-                }
-            })
+        kem_ecdh_secret_to_public(alg, sk)
     }
 
-
-    /// Only works for DH algorithms for now.
     fn kem_key_gen(
         alg: KemAlgorithm,
         prng: &mut Self::HpkePrng,
     ) -> Result<(Vec<u8>, Vec<u8>), Error> {
-        let ecdh_alg = kem_key_type_to_ecdh_alg(alg)?;
-        // Only works for DH now
-        let sk = libcrux_ecdh::generate_secret(ecdh_alg, prng)
-            .map_err(|e| Error::CryptoLibraryError(format!("KEM key gen error: {:?}", e)))?;
+        let libcrux_alg = kem_key_type_to_libcrux_alg(alg)?;
 
-        let pk = Self::secret_to_public(alg, &sk)?;
+        match libcrux_alg {
+            libcrux_kem::Algorithm::XWingKemDraft06 => libcrux_kem::key_gen(libcrux_alg, prng)
+                .map(|(sk, pk)| (pk.encode(), sk.encode()))
+                .map_err(|e| Error::CryptoLibraryError(format!("KEM key gen error: {:?}", e))),
+            _ => {
+                let ecdh_alg = kem_key_type_to_ecdh_alg(alg)?;
+                let sk = libcrux_ecdh::generate_secret(ecdh_alg, prng).map_err(|e| {
+                    Error::CryptoLibraryError(format!("KEM key gen error: {:?}", e))
+                })?;
 
-        Ok((pk, sk))
+                let pk = kem_ecdh_secret_to_public(ecdh_alg, &sk)?;
+
+                Ok((pk, sk))
+            }
+        }
     }
 
     fn kem_key_gen_derand(alg: KemAlgorithm, seed: &[u8]) -> Result<(Vec<u8>, Vec<u8>), Error> {
@@ -259,6 +258,18 @@ impl HpkeCrypto for HpkeLibcrux {
             AeadAlgorithm::HpkeExport => Ok(()),
         }
     }
+}
+
+fn kem_ecdh_secret_to_public(alg: libcrux_ecdh::Algorithm, sk: &[u8]) -> Result<Vec<u8>, Error> {
+    libcrux_ecdh::secret_to_public(alg, sk)
+        .map_err(|e| Error::CryptoLibraryError(format!("ECDH derive base error: {:?}", e)))
+        .map(|p| {
+            if alg == libcrux_ecdh::Algorithm::P256 {
+                nist_format_uncompressed(p)
+            } else {
+                p
+            }
+        })
 }
 
 /// Prepend 0x04 for uncompressed NIST curve points.
