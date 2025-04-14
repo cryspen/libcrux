@@ -29,6 +29,9 @@ pub enum KemAlgorithm {
 
     /// DH KEM on x448
     DhKem448 = 0x0021,
+
+    /// X-WING
+    XWingDraft06 = 0x004D,
 }
 
 impl core::fmt::Display for KemAlgorithm {
@@ -47,6 +50,7 @@ impl core::convert::TryFrom<u16> for KemAlgorithm {
             0x0016 => Ok(KemAlgorithm::DhKemK256),
             0x0020 => Ok(KemAlgorithm::DhKem25519),
             0x0021 => Ok(KemAlgorithm::DhKem448),
+            0x004D => Ok(KemAlgorithm::XWingDraft06),
             _ => Err(Self::Error::UnknownKemAlgorithm),
         }
     }
@@ -54,7 +58,7 @@ impl core::convert::TryFrom<u16> for KemAlgorithm {
 
 impl KemAlgorithm {
     /// Get the length of the private key for the KEM in bytes.
-    pub fn private_key_len(&self) -> usize {
+    pub const fn private_key_len(&self) -> usize {
         match self {
             KemAlgorithm::DhKemP256 => 32,
             KemAlgorithm::DhKemP384 => 48,
@@ -62,11 +66,12 @@ impl KemAlgorithm {
             KemAlgorithm::DhKemK256 => 32,
             KemAlgorithm::DhKem25519 => 32,
             KemAlgorithm::DhKem448 => 56,
+            KemAlgorithm::XWingDraft06 => 32,
         }
     }
 
     /// Get the length of the shared secret for the KEM in bytes.
-    pub fn shared_secret_len(&self) -> usize {
+    pub const fn shared_secret_len(&self) -> usize {
         match self {
             KemAlgorithm::DhKemP256 => 32,
             KemAlgorithm::DhKemP384 => 48,
@@ -74,6 +79,7 @@ impl KemAlgorithm {
             KemAlgorithm::DhKemK256 => 32,
             KemAlgorithm::DhKem25519 => 32,
             KemAlgorithm::DhKem448 => 64,
+            KemAlgorithm::XWingDraft06 => 32,
         }
     }
 }
@@ -204,6 +210,7 @@ impl From<KemAlgorithm> for KdfAlgorithm {
             KemAlgorithm::DhKemK256 => KdfAlgorithm::HkdfSha256,
             KemAlgorithm::DhKem25519 => KdfAlgorithm::HkdfSha256,
             KemAlgorithm::DhKem448 => KdfAlgorithm::HkdfSha512,
+            KemAlgorithm::XWingDraft06 => KdfAlgorithm::HkdfSha512,
         }
     }
 }

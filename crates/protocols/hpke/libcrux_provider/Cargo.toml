@@ -10,12 +10,12 @@ readme = "Readme.md"
 repository = "https://github.com/cryspen/hpke-rs"
 
 [dependencies]
-hpke-rs-crypto = { version = "0.2.0", path = "../traits" }
+hpke-rs-crypto = { version = "0.3.0-alpha.1", path = "../traits" }
 libcrux-ecdh = { version = "0.0.2" }
 libcrux-hkdf = { version = "0.0.2" }
-libcrux-kem = { version = "0.0.2" }
+libcrux-kem = { version = "0.0.3-alpha.1", git = "https://github.com/cryspen/libcrux", branch = "franziskus/kem-derand" }
 libcrux-chacha20poly1305 = { version = "0.0.2" }
-libcrux-ed25519 = { version = "0.0.2", features=["rand"] }
+libcrux-ed25519 = { version = "0.0.2", features = ["rand"] }
 # Randomness
 rand = { version = "0.9" }
 rand_core = { version = "0.9" }

@@ -28,6 +28,7 @@ use hpke_rs_crypto::{
     HpkeCrypto,
 };
 use prelude::kdf::{labeled_expand, labeled_extract};
+
 #[cfg(not(feature = "hpke-test-prng"))]
 use rand_core::TryRngCore;
 
@@ -407,17 +408,14 @@ impl<Crypto: HpkeCrypto> Hpke<Crypto> {
         psk_id: Option<&[u8]>,
         sk_s: Option<&HpkePrivateKey>,
     ) -> Result<(EncapsulatedSecret, Context<Crypto>), HpkeError> {
-        let randomness = self.random(self.kem_id.private_key_len())?;
         let (zz, enc) = match self.mode {
-            Mode::Base | Mode::Psk => {
-                kem::encaps::<Crypto>(self.kem_id, pk_r.value.as_slice(), &randomness)?
-            }
+            Mode::Base | Mode::Psk => kem::encaps::<Crypto>(self, pk_r.value.as_slice())?,
             Mode::Auth | Mode::AuthPsk => {
                 let sk_s = match sk_s {
                     Some(s) => &s.value,
                     None => return Err(HpkeError::InvalidInput),
                 };
-                kem::auth_encaps::<Crypto>(self.kem_id, pk_r.value.as_slice(), sk_s, &randomness)?
+                kem::auth_encaps::<Crypto>(self, pk_r.value.as_slice(), sk_s)?
             }
         };
         Ok((
@@ -711,6 +709,11 @@ impl<Crypto: HpkeCrypto> Hpke<Crypto> {
 
         Ok(out)
     }
+
+    /// Get the rng.
+    pub(crate) fn rng(&mut self) -> &mut Crypto::HpkePrng {
+        &mut self.prng
+    }
 }
 
 impl HpkeKeyPair {
@@ -1000,6 +1003,8 @@ impl From<hpke_rs_crypto::error::Error> for HpkeError {
             hpke_rs_crypto::error::Error::InsufficientRandomness => {
                 HpkeError::InsufficientRandomness
             }
+            hpke_rs_crypto::error::Error::UnsupportedKemOperation => HpkeError::InvalidConfig,
+            hpke_rs_crypto::error::Error::KemInvalidCiphertext => HpkeError::InvalidInput,
         }
     }
 }

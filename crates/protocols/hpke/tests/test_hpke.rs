@@ -43,6 +43,7 @@ macro_rules! generate_test_case {
     ($name:ident, $hpke_mode:expr, $kem_mode:expr, $kdf_mode:expr, $aead_mode:expr, $provider:ident) => {
         #[test]
         fn $name() {
+            let _ = pretty_env_logger::try_init();
             let mut hpke = Hpke::<$provider>::new($hpke_mode, $kem_mode, $kdf_mode, $aead_mode);
             println!("Self test {}", hpke);
 
@@ -293,6 +294,14 @@ generate_test_case!(
     base_dhkem25519_hkdfsha256_chacha20poly1305_libcrux,
     HpkeMode::Base,
     KemAlgorithm::DhKem25519,
+    KdfAlgorithm::HkdfSha256,
+    AeadAlgorithm::ChaCha20Poly1305,
+    HpkeLibcrux
+);
+generate_test_case!(
+    base_xwingdraft06_hkdfsha256_chacha20poly1305_libcrux,
+    HpkeMode::Base,
+    KemAlgorithm::XWingDraft06,
     KdfAlgorithm::HkdfSha256,
     AeadAlgorithm::ChaCha20Poly1305,
     HpkeLibcrux

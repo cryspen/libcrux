@@ -5,9 +5,8 @@ use hpke_rs_crypto::{
     types::{AeadAlgorithm, KdfAlgorithm, KemAlgorithm},
     HpkeCrypto, RngCore,
 };
-// use hpke_rs_evercrypt::*;
+use hpke_rs_libcrux::HpkeLibcrux;
 use hpke_rs_rust_crypto::*;
-use rand::rngs::OsRng;
 
 fn duration(d: Duration) -> f64 {
     ((d.as_secs() as f64) + (d.subsec_nanos() as f64 * 1e-9)) * 1000000f64
@@ -143,9 +142,9 @@ fn benchmark<Crypto: HpkeCrypto + 'static>() {
                         )
                         .unwrap();
                     let mut aad = vec![0u8; AEAD_AAD];
-                    OsRng.fill_bytes(&mut aad);
+                    rand::rng().fill_bytes(&mut aad);
                     let mut ptxt = vec![0u8; AEAD_PAYLOAD];
-                    OsRng.fill_bytes(&mut ptxt);
+                    rand::rng().fill_bytes(&mut ptxt);
 
                     let mut ctxts = Vec::with_capacity((AEAD_PAYLOAD + 16) * ITERATIONS);
                     let start = Instant::now();
@@ -190,9 +189,9 @@ fn benchmark<Crypto: HpkeCrypto + 'static>() {
                     assert_eq!(ptxts[0], ptxt);
 
                     let mut aad = vec![0u8; AEAD_AAD];
-                    OsRng.fill_bytes(&mut aad);
+                    rand::rng().fill_bytes(&mut aad);
                     let mut ptxt = vec![0u8; AEAD_PAYLOAD];
-                    OsRng.fill_bytes(&mut ptxt);
+                    rand::rng().fill_bytes(&mut ptxt);
 
                     let mut enc = Vec::<u8>::new();
                     let mut ctxt = Vec::<u8>::new();
@@ -253,6 +252,6 @@ fn benchmark<Crypto: HpkeCrypto + 'static>() {
 }
 
 fn main() {
-    // benchmark::<HpkeEvercrypt>();
+    benchmark::<HpkeLibcrux>();
     benchmark::<HpkeRustCrypto>();
 }

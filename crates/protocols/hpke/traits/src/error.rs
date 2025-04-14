@@ -20,8 +20,14 @@ pub enum Error {
     /// Invalid public key for the KEM.
     KemInvalidPublicKey,
 
+    /// Invalid ciphertext for the KEM.
+    KemInvalidCiphertext,
+
     /// Unknown or unsupported KEM algorithm,
     UnknownKemAlgorithm,
+
+    /// Unsupported operation for KEM algorithm.
+    UnsupportedKemOperation,
 
     /// Unknown or unsupported AEAD algorithm.
     UnknownAeadAlgorithm,

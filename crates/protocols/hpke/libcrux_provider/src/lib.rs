@@ -64,7 +64,7 @@ impl HpkeCrypto for HpkeLibcrux {
         })
     }
 
-    fn kem_derive(alg: KemAlgorithm, pk: &[u8], sk: &[u8]) -> Result<Vec<u8>, Error> {
+    fn dh(alg: KemAlgorithm, pk: &[u8], sk: &[u8]) -> Result<Vec<u8>, Error> {
         let alg = kem_key_type_to_ecdh_alg(alg)?;
 
         libcrux_ecdh::derive(alg, pk, sk)
@@ -79,7 +79,7 @@ impl HpkeCrypto for HpkeLibcrux {
             })
     }
 
-    fn kem_derive_base(alg: KemAlgorithm, sk: &[u8]) -> Result<Vec<u8>, Error> {
+    fn secret_to_public(alg: KemAlgorithm, sk: &[u8]) -> Result<Vec<u8>, Error> {
         let alg = kem_key_type_to_ecdh_alg(alg)?;
 
         libcrux_ecdh::secret_to_public(alg, sk)
@@ -93,14 +93,51 @@ impl HpkeCrypto for HpkeLibcrux {
             })
     }
 
-    fn kem_key_gen(alg: KemAlgorithm, prng: &mut Self::HpkePrng) -> Result<Vec<u8>, Error> {
-        let alg = kem_key_type_to_ecdh_alg(alg)?;
+    fn kem_key_gen(
+        alg: KemAlgorithm,
+        prng: &mut Self::HpkePrng,
+    ) -> Result<(Vec<u8>, Vec<u8>), Error> {
+        let alg = kem_key_type_to_libcrux_alg(alg)?;
 
-        libcrux_ecdh::generate_secret(alg, prng)
-            .map_err(|e| Error::CryptoLibraryError(format!("ECDH key gen error: {:?}", e)))
+        libcrux_kem::key_gen(alg, prng)
+            .map_err(|e| Error::CryptoLibraryError(format!("KEM key gen error: {:?}", e)))
+            .map(|(sk, pk)| (pk.encode(), sk.encode()))
     }
 
-    fn kem_validate_sk(alg: KemAlgorithm, sk: &[u8]) -> Result<Vec<u8>, Error> {
+    fn kem_key_gen_derand(alg: KemAlgorithm, seed: &[u8]) -> Result<(Vec<u8>, Vec<u8>), Error> {
+        let alg = kem_key_type_to_libcrux_alg(alg)?;
+
+        libcrux_kem::key_gen_derand(alg, seed)
+            .map_err(|e| Error::CryptoLibraryError(format!("KEM key gen error: {:?}", e)))
+            .map(|(sk, pk)| (pk.encode(), sk.encode()))
+    }
+
+    fn kem_encaps(
+        alg: KemAlgorithm,
+        pk_r: &[u8],
+        prng: &mut Self::HpkePrng,
+    ) -> Result<(Vec<u8>, Vec<u8>), Error> {
+        let alg = kem_key_type_to_libcrux_alg(alg)?;
+
+        let pk =
+            libcrux_kem::PublicKey::decode(alg, pk_r).map_err(|_| Error::KemInvalidPublicKey)?;
+        pk.encapsulate(prng)
+            .map_err(|e| Error::CryptoLibraryError(format!("Encaps error {:?}", e)))
+            .map(|(ss, ct)| (ss.encode(), ct.encode()))
+    }
+
+    fn kem_decaps(alg: KemAlgorithm, ct: &[u8], sk_r: &[u8]) -> Result<Vec<u8>, Error> {
+        let alg = kem_key_type_to_libcrux_alg(alg)?;
+
+        let ct = libcrux_kem::Ct::decode(alg, ct).map_err(|_| Error::AeadInvalidCiphertext)?;
+        let sk =
+            libcrux_kem::PrivateKey::decode(alg, sk_r).map_err(|_| Error::KemInvalidSecretKey)?;
+        ct.decapsulate(&sk)
+            .map_err(|e| Error::CryptoLibraryError(format!("Decaps error {:?}", e)))
+            .map(|ss| ss.encode())
+    }
+
+    fn dh_validate_sk(alg: KemAlgorithm, sk: &[u8]) -> Result<Vec<u8>, Error> {
         match alg {
             KemAlgorithm::DhKemP256 => libcrux_ecdh::p256::validate_scalar_slice(&sk)
                 .map_err(|e| Error::CryptoLibraryError(format!("ECDH invalid sk error: {:?}", e)))
@@ -129,6 +166,8 @@ impl HpkeCrypto for HpkeLibcrux {
         libcrux_chacha20poly1305::encrypt(key, msg, &mut msg_ctx, aad, iv)
             .map_err(|_| Error::CryptoLibraryError("Invalid configuration".into()))?;
 
+        eprintln!("aead key {:x?}", key);
+        eprintln!("aead seal {:x?}", msg_ctx);
         Ok(msg_ctx)
     }
 
@@ -139,6 +178,7 @@ impl HpkeCrypto for HpkeLibcrux {
         aad: &[u8],
         cipher_txt: &[u8],
     ) -> Result<Vec<u8>, Error> {
+        eprintln!("aead open {:x?}", cipher_txt);
         // only chacha20poly1305 is supported
         if !matches!(alg, AeadAlgorithm::ChaCha20Poly1305) {
             return Err(Error::UnknownAeadAlgorithm);
@@ -152,6 +192,8 @@ impl HpkeCrypto for HpkeLibcrux {
         let mut ptext = vec![0; boundary];
 
         let iv = <&[u8; 12]>::try_from(nonce).map_err(|_| Error::AeadInvalidNonce)?;
+
+        eprintln!("aead key {:x?}", key);
 
         // TODO: instead, use key conversion from the libcrux-chacha20poly1305 crate, when available,
         let key = <&[u8; 32]>::try_from(key).map_err(|_| todo!())?;
@@ -196,7 +238,9 @@ impl HpkeCrypto for HpkeLibcrux {
     /// Returns an error if the KEM algorithm is not supported by this crypto provider.
     fn supports_kem(alg: KemAlgorithm) -> Result<(), Error> {
         match alg {
-            KemAlgorithm::DhKem25519 | KemAlgorithm::DhKemP256 => Ok(()),
+            KemAlgorithm::DhKem25519 | KemAlgorithm::DhKemP256 | KemAlgorithm::XWingDraft06 => {
+                Ok(())
+            }
             _ => Err(Error::UnknownKemAlgorithm),
         }
     }
@@ -219,6 +263,16 @@ fn nist_format_uncompressed(mut pk: Vec<u8>) -> Vec<u8> {
     tmp.push(0x04);
     tmp.append(&mut pk);
     tmp
+}
+
+#[inline(always)]
+fn kem_key_type_to_libcrux_alg(alg: KemAlgorithm) -> Result<libcrux_kem::Algorithm, Error> {
+    match alg {
+        KemAlgorithm::DhKem25519 => Ok(libcrux_kem::Algorithm::X25519),
+        KemAlgorithm::DhKemP256 => Ok(libcrux_kem::Algorithm::Secp256r1),
+        KemAlgorithm::XWingDraft06 => Ok(libcrux_kem::Algorithm::XWingKemDraft06),
+        _ => Err(Error::UnknownKemAlgorithm),
+    }
 }
 
 #[inline(always)]
