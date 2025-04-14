@@ -93,11 +93,14 @@ impl HpkeCrypto for HpkeLibcrux {
             })
     }
 
+
+    /// Only works for DH algorithms for now.
     fn kem_key_gen(
         alg: KemAlgorithm,
         prng: &mut Self::HpkePrng,
     ) -> Result<(Vec<u8>, Vec<u8>), Error> {
         let ecdh_alg = kem_key_type_to_ecdh_alg(alg)?;
+        // Only works for DH now
         let sk = libcrux_ecdh::generate_secret(ecdh_alg, prng)
             .map_err(|e| Error::CryptoLibraryError(format!("KEM key gen error: {:?}", e)))?;
 
