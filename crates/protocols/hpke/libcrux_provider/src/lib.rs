@@ -27,9 +27,9 @@ impl HpkeCrypto for HpkeLibcrux {
     }
 
     fn kdf_extract(alg: KdfAlgorithm, salt: &[u8], ikm: &[u8]) -> Result<Vec<u8>, Error> {
-        // TODO: error handling
         let alg = kdf_algorithm_to_libcrux_hkdf_algorithm(alg);
-        libcrux_hkdf::extract(alg, salt, ikm).map_err(|_| todo!())
+        libcrux_hkdf::extract(alg, salt, ikm)
+            .map_err(|e| Error::CryptoLibraryError(format!("KDF extract error: {:?}", e)))
     }
 
     fn kdf_expand(
@@ -38,9 +38,9 @@ impl HpkeCrypto for HpkeLibcrux {
         info: &[u8],
         output_size: usize,
     ) -> Result<Vec<u8>, Error> {
-        // TODO: error handling
         let alg = kdf_algorithm_to_libcrux_hkdf_algorithm(alg);
-        libcrux_hkdf::expand(alg, prk, info, output_size).map_err(|_| todo!())
+        libcrux_hkdf::expand(alg, prk, info, output_size)
+            .map_err(|e| Error::CryptoLibraryError(format!("KDF expand error: {:?}", e)))
     }
 
     fn dh(alg: KemAlgorithm, pk: &[u8], sk: &[u8]) -> Result<Vec<u8>, Error> {
@@ -144,7 +144,9 @@ impl HpkeCrypto for HpkeLibcrux {
         let iv = <&[u8; 12]>::try_from(nonce).map_err(|_| Error::AeadInvalidNonce)?;
 
         // TODO: instead, use key conversion from the libcrux-chacha20poly1305 crate, when available,
-        let key = <&[u8; 32]>::try_from(key).map_err(|_| todo!())?;
+        let key = <&[u8; 32]>::try_from(key)
+            .map_err(|_| Error::CryptoLibraryError("AEAD invalid key length".into()))?;
+
         let mut msg_ctx: Vec<u8> = vec![0; msg.len() + 16];
         libcrux_chacha20poly1305::encrypt(key, msg, &mut msg_ctx, aad, iv)
             .map_err(|_| Error::CryptoLibraryError("Invalid configuration".into()))?;
@@ -164,7 +166,8 @@ impl HpkeCrypto for HpkeLibcrux {
             return Err(Error::UnknownAeadAlgorithm);
         }
         if cipher_txt.len() < 16 {
-            return Err(todo!());
+            // TODO: is this the correct error type?
+            return Err(Error::AeadInvalidCiphertext);
         }
 
         let boundary = cipher_txt.len() - 16;
@@ -174,7 +177,8 @@ impl HpkeCrypto for HpkeLibcrux {
         let iv = <&[u8; 12]>::try_from(nonce).map_err(|_| Error::AeadInvalidNonce)?;
 
         // TODO: instead, use key conversion from the libcrux-chacha20poly1305 crate, when available,
-        let key = <&[u8; 32]>::try_from(key).map_err(|_| todo!())?;
+        let key = <&[u8; 32]>::try_from(key)
+            .map_err(|_| Error::CryptoLibraryError("AEAD invalid key length".into()))?;
         libcrux_chacha20poly1305::decrypt(key, &mut ptext, cipher_txt, aad, iv).map_err(
             |e| match e {
                 libcrux_chacha20poly1305::AeadError::InvalidCiphertext => {
