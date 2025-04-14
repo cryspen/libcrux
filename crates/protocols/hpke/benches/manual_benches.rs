@@ -102,7 +102,7 @@ fn benchmark<Crypto: HpkeCrypto + 'static>() {
                             Hpke::<Crypto>::new(hpke_mode, kem_mode, kdf_mode, aead_mode);
                         let _sender = hpke
                             .setup_sender(
-                                &pk_rm,
+                                pk_rm,
                                 &info,
                                 psk.as_ref().map(Vec::as_ref),
                                 psk_id.as_ref().map(Vec::as_ref),
@@ -120,7 +120,7 @@ fn benchmark<Crypto: HpkeCrypto + 'static>() {
                         let _receiver = hpke
                             .setup_receiver(
                                 enc,
-                                &sk_rm,
+                                sk_rm,
                                 &info,
                                 psk.as_ref().map(Vec::as_ref),
                                 psk_id.as_ref().map(Vec::as_ref),
@@ -134,7 +134,7 @@ fn benchmark<Crypto: HpkeCrypto + 'static>() {
 
                     let (enc, mut context) = hpke
                         .setup_sender(
-                            &pk_rm,
+                            pk_rm,
                             &info,
                             psk.as_ref().map(Vec::as_ref),
                             psk_id.as_ref().map(Vec::as_ref),
@@ -164,7 +164,7 @@ fn benchmark<Crypto: HpkeCrypto + 'static>() {
                     let mut context = hpke
                         .setup_receiver(
                             &enc,
-                            &sk_rm,
+                            sk_rm,
                             &info,
                             psk.as_ref().map(Vec::as_ref),
                             psk_id.as_ref().map(Vec::as_ref),
@@ -199,7 +199,7 @@ fn benchmark<Crypto: HpkeCrypto + 'static>() {
                     for _ in 0..ITERATIONS {
                         let (new_enc, new_ctxt) = hpke
                             .seal(
-                                &pk_rm,
+                                pk_rm,
                                 &info,
                                 &aad,
                                 &ptxt,
@@ -226,7 +226,7 @@ fn benchmark<Crypto: HpkeCrypto + 'static>() {
                         ptxt_out = hpke
                             .open(
                                 &enc,
-                                &sk_rm,
+                                sk_rm,
                                 &info,
                                 &aad,
                                 &ctxt,

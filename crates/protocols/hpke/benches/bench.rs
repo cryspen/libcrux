@@ -80,13 +80,13 @@ fn benchmark<Crypto: HpkeCrypto + 'static>(c: &mut Criterion) {
                             (None, None)
                         };
 
-                    let mut group = c.benchmark_group(format!("{}", label));
+                    let mut group = c.benchmark_group(label.to_string());
                     group.bench_function("Setup Sender", |b| {
                         b.iter(|| {
                             let mut hpke =
                                 Hpke::<Crypto>::new(hpke_mode, kem_mode, kdf_mode, aead_mode);
                             hpke.setup_sender(
-                                &pk_rm,
+                                pk_rm,
                                 &info,
                                 psk.as_ref().map(Vec::as_ref),
                                 psk_id.as_ref().map(Vec::as_ref),
@@ -101,7 +101,7 @@ fn benchmark<Crypto: HpkeCrypto + 'static>(c: &mut Criterion) {
                                 Hpke::<Crypto>::new(hpke_mode, kem_mode, kdf_mode, aead_mode);
                             hpke.setup_receiver(
                                 enc,
-                                &sk_rm,
+                                sk_rm,
                                 &info,
                                 psk.as_ref().map(Vec::as_ref),
                                 psk_id.as_ref().map(Vec::as_ref),
@@ -111,14 +111,14 @@ fn benchmark<Crypto: HpkeCrypto + 'static>(c: &mut Criterion) {
                         })
                     });
 
-                    group.bench_function(&format!("Seal {}({})", AEAD_PAYLOAD, AEAD_AAD), |b| {
+                    group.bench_function(format!("Seal {}({})", AEAD_PAYLOAD, AEAD_AAD), |b| {
                         b.iter_batched(
                             || {
                                 let mut hpke =
                                     Hpke::<Crypto>::new(hpke_mode, kem_mode, kdf_mode, aead_mode);
                                 let (_enc, context) = hpke
                                     .setup_sender(
-                                        &pk_rm,
+                                        pk_rm,
                                         &info,
                                         psk.as_ref().map(Vec::as_ref),
                                         psk_id.as_ref().map(Vec::as_ref),
@@ -137,14 +137,14 @@ fn benchmark<Crypto: HpkeCrypto + 'static>(c: &mut Criterion) {
                             BatchSize::SmallInput,
                         )
                     });
-                    group.bench_function(&format!("Open {}({})", AEAD_PAYLOAD, AEAD_AAD), |b| {
+                    group.bench_function(format!("Open {}({})", AEAD_PAYLOAD, AEAD_AAD), |b| {
                         b.iter_batched(
                             || {
                                 let mut hpke =
                                     Hpke::<Crypto>::new(hpke_mode, kem_mode, kdf_mode, aead_mode);
                                 let (enc, mut sender_context) = hpke
                                     .setup_sender(
-                                        &pk_rm,
+                                        pk_rm,
                                         &info,
                                         psk.as_ref().map(Vec::as_ref),
                                         psk_id.as_ref().map(Vec::as_ref),
@@ -160,7 +160,7 @@ fn benchmark<Crypto: HpkeCrypto + 'static>(c: &mut Criterion) {
                                 let context = hpke
                                     .setup_receiver(
                                         &enc,
-                                        &sk_rm,
+                                        sk_rm,
                                         &info,
                                         psk.as_ref().map(Vec::as_ref),
                                         psk_id.as_ref().map(Vec::as_ref),
@@ -177,7 +177,7 @@ fn benchmark<Crypto: HpkeCrypto + 'static>(c: &mut Criterion) {
                     });
 
                     group.bench_function(
-                        &format!("Single-Shot Seal {}({})", AEAD_PAYLOAD, AEAD_AAD),
+                        format!("Single-Shot Seal {}({})", AEAD_PAYLOAD, AEAD_AAD),
                         |b| {
                             b.iter_batched(
                                 || {
@@ -193,7 +193,7 @@ fn benchmark<Crypto: HpkeCrypto + 'static>(c: &mut Criterion) {
                                 |(mut hpke, aad, ptxt)| {
                                     let _ctxt = hpke
                                         .seal(
-                                            &pk_rm,
+                                            pk_rm,
                                             &info,
                                             &aad,
                                             &ptxt,
@@ -208,7 +208,7 @@ fn benchmark<Crypto: HpkeCrypto + 'static>(c: &mut Criterion) {
                         },
                     );
                     group.bench_function(
-                        &format!("Single-Shot Open {}({})", AEAD_PAYLOAD, AEAD_AAD),
+                        format!("Single-Shot Open {}({})", AEAD_PAYLOAD, AEAD_AAD),
                         |b| {
                             b.iter_batched(
                                 || {
@@ -217,7 +217,7 @@ fn benchmark<Crypto: HpkeCrypto + 'static>(c: &mut Criterion) {
                                     );
                                     let (enc, mut sender_context) = hpke
                                         .setup_sender(
-                                            &pk_rm,
+                                            pk_rm,
                                             &info,
                                             psk.as_ref().map(Vec::as_ref),
                                             psk_id.as_ref().map(Vec::as_ref),
@@ -236,7 +236,7 @@ fn benchmark<Crypto: HpkeCrypto + 'static>(c: &mut Criterion) {
                                     let _ctxt_out = hpke
                                         .open(
                                             &enc,
-                                            &sk_rm,
+                                            sk_rm,
                                             &info,
                                             &aad,
                                             &ctxt,
