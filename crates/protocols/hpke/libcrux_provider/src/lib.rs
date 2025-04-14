@@ -167,7 +167,6 @@ impl HpkeCrypto for HpkeLibcrux {
             return Err(Error::UnknownAeadAlgorithm);
         }
         if cipher_txt.len() < 16 {
-            // TODO: is this the correct error type?
             return Err(Error::AeadInvalidCiphertext);
         }
 
