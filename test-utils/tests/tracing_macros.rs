@@ -4,7 +4,7 @@ use std::{
     time::{Duration, Instant},
 };
 
-use libcrux_test_utils::tracing::{EventType, MutexTrace, Trace as _, TraceEvent};
+use libcrux_test_utils::tracing::{trace_span, EventType, MutexTrace, Trace as _, TraceEvent};
 
 mod str_labels {
 
@@ -13,7 +13,7 @@ mod str_labels {
     static TRACE_STR: LazyLock<MutexTrace<&'static str, Instant>> =
         LazyLock::new(|| MutexTrace::default());
 
-    #[libcrux_macros::trace_span("maybe_slow", TRACE_STR)]
+    #[trace_span("maybe_slow", TRACE_STR)]
     fn maybe_slow_str() {
         sleep(Duration::from_millis(10));
     }
@@ -46,7 +46,7 @@ mod enum_labels {
     static TRACE_ENUM: LazyLock<MutexTrace<Label, Instant>> =
         LazyLock::new(|| MutexTrace::default());
 
-    #[libcrux_macros::trace_span(Label::MaybeSlow, TRACE_ENUM)]
+    #[trace_span(Label::MaybeSlow, TRACE_ENUM)]
     fn maybe_slow_enum() {
         sleep(Duration::from_millis(10));
     }
