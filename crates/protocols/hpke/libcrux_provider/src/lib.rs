@@ -68,14 +68,15 @@ impl HpkeCrypto for HpkeLibcrux {
         alg: KemAlgorithm,
         prng: &mut Self::HpkePrng,
     ) -> Result<(Vec<u8>, Vec<u8>), Error> {
-        let libcrux_alg = kem_key_type_to_libcrux_alg(alg)?;
-
-        match libcrux_alg {
-            libcrux_kem::Algorithm::XWingKemDraft06 => libcrux_kem::key_gen(libcrux_alg, prng)
-                .map(|(sk, pk)| (pk.encode(), sk.encode()))
-                .map_err(|e| Error::CryptoLibraryError(format!("KEM key gen error: {:?}", e))),
-            _ => {
-                let ecdh_alg = kem_key_type_to_ecdh_alg(alg)?;
+        match alg {
+            KemAlgorithm::XWingDraft06 => {
+                libcrux_kem::key_gen(libcrux_kem::Algorithm::XWingKemDraft06, prng)
+                    .map(|(sk, pk)| (pk.encode(), sk.encode()))
+                    .map_err(|e| Error::CryptoLibraryError(format!("KEM key gen error: {:?}", e)))
+            }
+            other_alg => {
+                // ECDH only
+                let ecdh_alg = kem_key_type_to_ecdh_alg(other_alg)?;
                 let sk = libcrux_ecdh::generate_secret(ecdh_alg, prng).map_err(|e| {
                     Error::CryptoLibraryError(format!("KEM key gen error: {:?}", e))
                 })?;
