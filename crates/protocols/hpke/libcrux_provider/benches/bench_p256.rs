@@ -6,14 +6,13 @@ fn criterion_benchmark(c: &mut Criterion) {
     c.bench_function(&format!("P256 Derive"), |b| {
         b.iter_batched(
             || {
-                let sk =
+                let (pk, sk) =
                     HpkeLibcrux::kem_key_gen(KemAlgorithm::DhKemP256, &mut HpkeLibcrux::prng())
                         .unwrap();
-                let pk = HpkeLibcrux::kem_derive_base(KemAlgorithm::DhKemP256, &sk).unwrap();
                 (sk.clone(), pk.clone())
             },
             |(sk, pk)| {
-                let _ = HpkeLibcrux::kem_derive(KemAlgorithm::DhKemP256, &pk, &sk);
+                let _ = HpkeLibcrux::dh(KemAlgorithm::DhKemP256, &pk, &sk);
             },
             BatchSize::SmallInput,
         )
@@ -21,13 +20,13 @@ fn criterion_benchmark(c: &mut Criterion) {
     c.bench_function(&format!("P256 Derive Base"), |b| {
         b.iter_batched(
             || {
-                let sk =
+                let (_pk, sk) =
                     HpkeLibcrux::kem_key_gen(KemAlgorithm::DhKemP256, &mut HpkeLibcrux::prng())
                         .unwrap();
                 sk.clone()
             },
             |sk| {
-                let _pk = HpkeLibcrux::kem_derive_base(KemAlgorithm::DhKemP256, &sk).unwrap();
+                let _pk = HpkeLibcrux::secret_to_public(KemAlgorithm::DhKemP256, &sk).unwrap();
             },
             BatchSize::SmallInput,
         )
