@@ -28,20 +28,8 @@ impl HpkeCrypto for HpkeLibcrux {
 
     fn kdf_extract(alg: KdfAlgorithm, salt: &[u8], ikm: &[u8]) -> Result<Vec<u8>, Error> {
         // TODO: error handling
-        match alg {
-            KdfAlgorithm::HkdfSha256 => {
-                libcrux_hkdf::extract(libcrux_hkdf::Algorithm::Sha256, salt, ikm)
-                    .map_err(|_| todo!())
-            }
-            KdfAlgorithm::HkdfSha384 => {
-                libcrux_hkdf::extract(libcrux_hkdf::Algorithm::Sha384, salt, ikm)
-                    .map_err(|_| todo!())
-            }
-            KdfAlgorithm::HkdfSha512 => {
-                libcrux_hkdf::extract(libcrux_hkdf::Algorithm::Sha512, salt, ikm)
-                    .map_err(|_| todo!())
-            }
-        }
+        let alg = kdf_algorithm_to_libcrux_hkdf_algorithm(alg);
+        libcrux_hkdf::extract(alg, salt, ikm).map_err(|_| todo!())
     }
 
     fn kdf_expand(
@@ -51,20 +39,8 @@ impl HpkeCrypto for HpkeLibcrux {
         output_size: usize,
     ) -> Result<Vec<u8>, Error> {
         // TODO: error handling
-        match alg {
-            KdfAlgorithm::HkdfSha256 => {
-                libcrux_hkdf::expand(libcrux_hkdf::Algorithm::Sha256, prk, info, output_size)
-                    .map_err(|_| todo!())
-            }
-            KdfAlgorithm::HkdfSha384 => {
-                libcrux_hkdf::expand(libcrux_hkdf::Algorithm::Sha384, prk, info, output_size)
-                    .map_err(|_| todo!())
-            }
-            KdfAlgorithm::HkdfSha512 => {
-                libcrux_hkdf::expand(libcrux_hkdf::Algorithm::Sha512, prk, info, output_size)
-                    .map_err(|_| todo!())
-            }
-        }
+        let alg = kdf_algorithm_to_libcrux_hkdf_algorithm(alg);
+        libcrux_hkdf::expand(alg, prk, info, output_size).map_err(|_| todo!())
     }
 
     fn dh(alg: KemAlgorithm, pk: &[u8], sk: &[u8]) -> Result<Vec<u8>, Error> {
@@ -277,6 +253,15 @@ fn nist_format_uncompressed(mut pk: Vec<u8>) -> Vec<u8> {
     tmp.push(0x04);
     tmp.append(&mut pk);
     tmp
+}
+
+#[inline(always)]
+fn kdf_algorithm_to_libcrux_hkdf_algorithm(alg: KdfAlgorithm) -> libcrux_hkdf::Algorithm {
+    match alg {
+        KdfAlgorithm::HkdfSha256 => libcrux_hkdf::Algorithm::Sha256,
+        KdfAlgorithm::HkdfSha384 => libcrux_hkdf::Algorithm::Sha384,
+        KdfAlgorithm::HkdfSha512 => libcrux_hkdf::Algorithm::Sha512,
+    }
 }
 
 #[inline(always)]
