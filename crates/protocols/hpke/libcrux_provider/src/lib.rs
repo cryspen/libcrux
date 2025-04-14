@@ -97,11 +97,13 @@ impl HpkeCrypto for HpkeLibcrux {
         alg: KemAlgorithm,
         prng: &mut Self::HpkePrng,
     ) -> Result<(Vec<u8>, Vec<u8>), Error> {
-        let alg = kem_key_type_to_libcrux_alg(alg)?;
+        let ecdh_alg = kem_key_type_to_ecdh_alg(alg)?;
+        let sk = libcrux_ecdh::generate_secret(ecdh_alg, prng)
+            .map_err(|e| Error::CryptoLibraryError(format!("KEM key gen error: {:?}", e)))?;
 
-        libcrux_kem::key_gen(alg, prng)
-            .map_err(|e| Error::CryptoLibraryError(format!("KEM key gen error: {:?}", e)))
-            .map(|(sk, pk)| (pk.encode(), sk.encode()))
+        let pk = Self::secret_to_public(alg, &sk)?;
+
+        Ok((pk, sk))
     }
 
     fn kem_key_gen_derand(alg: KemAlgorithm, seed: &[u8]) -> Result<(Vec<u8>, Vec<u8>), Error> {
