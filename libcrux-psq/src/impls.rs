@@ -2,7 +2,7 @@
 //!
 //! This module implements PSQ using the following underlying KEMs:
 //! * `MLKem768`, a lattice-based post-quantum KEM, as specified in FIPS 203 (Draft)
-//! * `XWingKemDraft02`, a hybrid post-quantum KEM combining X25519 and ML-KEM 768
+//! * `XWingKemDraft06`, a hybrid post-quantum KEM combining X25519 and ML-KEM 768
 //! * `X25519`, an elliptic-curve Diffie-Hellman based KEM. This
 //!   implementation is available with feature `test-utils` and using this
 //!   KEM *does not provide post-quantum security*. We include it for

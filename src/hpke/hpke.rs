@@ -433,51 +433,15 @@ pub fn SetupBaseS(
             );
             (ss.encode(), ct.encode())
         }
-        KEM::XWingDraft02 => {
-            // TODO: This should re-use PublicKey::encapsulate but we need
-            // CryptoRng + Rng for that, not just a slice of randomness
-            let XWingKemDraft06PublicKey { pk_m, pk_x } =
-                XWingKemDraft06PublicKey::decode(pkR).map_err(|_| HpkeError::EncapError)?;
+        KEM::XWingDraft06 => {
+            let pk = XWingKemDraft06PublicKey::decode(pkR)
+                .map_err(|_| HpkeError::EncapError)
+                .map(PublicKey::XWingKemDraft06)?;
 
-            let (ct_m, ss_m) = mlkem768::encapsulate(
-                &pk_m,
-                randomness[0..32]
-                    .try_into()
-                    .map_err(|_| HpkeError::EncapError)?,
-            );
-            let ek_x = libcrux_ecdh::X25519PrivateKey(
-                randomness[32..64]
-                    .try_into()
-                    .map_err(|_| HpkeError::EncapError)?,
-            );
-            let ct_x: [u8; 32] = secret_to_public(libcrux_ecdh::Algorithm::X25519, &ek_x)
-                .map_err(|_| HpkeError::EncapError)?
-                .try_into()
-                .expect("should have received the right number of bytes on success");
-            let ct_x = X25519PublicKey(ct_x);
+            let (ss, ct) = pk
+                .encapsulate_derand(&randomness)
+                .map_err(|_| HpkeError::EncapError)?;
 
-            let ss_x = x25519_derive(&pk_x, &ek_x).map_err(|_| HpkeError::EncapError)?;
-
-            let ct = Ct::XWingKemDraft06(
-                ct_m.as_slice()
-                    .try_into()
-                    .map_err(|_| HpkeError::EncapError)?,
-                ct_x.0
-                    .as_slice()
-                    .try_into()
-                    .map_err(|_| HpkeError::EncapError)?,
-            );
-            let ss = Ss::XWingKemDraft06(
-                ss_m.as_slice()
-                    .try_into()
-                    .map_err(|_| HpkeError::EncapError)?,
-                ss_x.0
-                    .as_slice()
-                    .try_into()
-                    .map_err(|_| HpkeError::EncapError)?,
-                ct_x,
-                pk_x,
-            );
             (ss.encode(), ct.encode())
         }
     };
@@ -535,8 +499,8 @@ pub fn SetupBaseR(
             );
             ss.encode()
         }
-        KEM::XWingDraft02 => {
-            let ct = kem::Ct::decode(crate::kem::Algorithm::XWingKemDraft02, enc)
+        KEM::XWingDraft06 => {
+            let ct = kem::Ct::decode(crate::kem::Algorithm::XWingKemDraft06, enc)
                 .map_err(|_| HpkeError::DecapError)?;
             let sk = crate::kem::XWingKemDraft06PrivateKey::decode(skR)
                 .map_err(|_| HpkeError::DecapError)?;

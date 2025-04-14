@@ -12,7 +12,7 @@ Available algorithms:
 * [`Algorithm::MlKem768`]\: ML-KEM 768 from [FIPS 203].
 * [`Algorithm::MlKem1024`]\: ML-KEM 1024 from [FIPS 203].
 * [`Algorithm::X25519MlKem768Draft00`]\: Hybrid x25519 - ML-KEM 768 [draft kem for hpke](https://www.ietf.org/archive/id/draft-westerbaan-cfrg-hpke-xyber768d00-00.html).
-* [`Algorithm::XWingKemDraft02`]\: Hybrid x25519 - ML-KEM 768 [draft xwing kem for hpke](https://www.ietf.org/archive/id/draft-connolly-cfrg-xwing-kem-02.html).
+* [`Algorithm::XWingKemDraft06`]\: Hybrid x25519 - ML-KEM 768 [draft xwing kem for hpke](https://www.ietf.org/archive/id/draft-connolly-cfrg-xwing-kem-02.html).
 
 ```Rust
 use libcrux_kem::*;

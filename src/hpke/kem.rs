@@ -2,16 +2,13 @@
 #![doc = include_str!("KEM_Security.md")]
 #![allow(non_camel_case_types, non_snake_case)]
 
-use libcrux_ecdh::{X25519PrivateKey, X25519PublicKey};
+use libcrux_ecdh::X25519PublicKey;
 
 use crate::std::{vec, vec::Vec};
 
 use super::errors::*;
 use super::kdf::*;
-use libcrux_kem::{
-    Algorithm, X25519MlKem768Draft00PrivateKey, X25519MlKem768Draft00PublicKey,
-    XWingKemDraft06PrivateKey, XWingKemDraft06PublicKey,
-};
+use libcrux_kem::{Algorithm, X25519MlKem768Draft00PrivateKey, X25519MlKem768Draft00PublicKey};
 use libcrux_ml_kem::mlkem768;
 
 /// ## Key Encapsulation Mechanisms (KEMs)
@@ -67,7 +64,7 @@ pub enum KEM {
     /// 0x0030
     X25519Kyber768Draft00,
     /// 0x004D
-    XWingDraft02,
+    XWingDraft06,
 }
 
 /// [`u16`] value of the `kem_id`.
@@ -81,7 +78,7 @@ pub fn kem_value(kem_id: KEM) -> u16 {
         KEM::DHKEM_X25519_HKDF_SHA256 => 0x00020,
         KEM::DHKEM_X448_HKDF_SHA512 => 0x0021,
         KEM::X25519Kyber768Draft00 => 0x0030,
-        KEM::XWingDraft02 => 0x004D,
+        KEM::XWingDraft06 => 0x004D,
     }
 }
 
@@ -96,7 +93,7 @@ fn kdf_for_kem(kem_id: KEM) -> KDF {
         KEM::DHKEM_X25519_HKDF_SHA256 => KDF::HKDF_SHA256,
         KEM::DHKEM_X448_HKDF_SHA512 => KDF::HKDF_SHA512,
         KEM::X25519Kyber768Draft00 => KDF::HKDF_SHA256,
-        KEM::XWingDraft02 => KDF::HKDF_SHA256,
+        KEM::XWingDraft06 => KDF::HKDF_SHA256,
     }
 }
 
@@ -109,7 +106,7 @@ fn kem_to_named_group(alg: KEM) -> Algorithm {
         KEM::DHKEM_X25519_HKDF_SHA256 => Algorithm::X25519,
         KEM::DHKEM_X448_HKDF_SHA512 => Algorithm::X448,
         KEM::X25519Kyber768Draft00 => Algorithm::X25519, // This is only used for DH operations
-        KEM::XWingDraft02 => Algorithm::X25519,          // This is only used for DH operations
+        KEM::XWingDraft06 => Algorithm::X25519,          // This is only used for DH operations
     }
 }
 
@@ -124,7 +121,7 @@ pub fn Nsecret(kem_id: KEM) -> usize {
         KEM::DHKEM_X25519_HKDF_SHA256 => 32,
         KEM::DHKEM_X448_HKDF_SHA512 => 64,
         KEM::X25519Kyber768Draft00 => 64,
-        KEM::XWingDraft02 => 32,
+        KEM::XWingDraft06 => 32,
     }
 }
 
@@ -139,7 +136,7 @@ pub fn Nenc(kem_id: KEM) -> usize {
         KEM::DHKEM_X25519_HKDF_SHA256 => 32,
         KEM::DHKEM_X448_HKDF_SHA512 => 56,
         KEM::X25519Kyber768Draft00 => 1120,
-        KEM::XWingDraft02 => 1120,
+        KEM::XWingDraft06 => 1120,
     }
 }
 
@@ -154,7 +151,7 @@ pub fn Nsk(kem_id: KEM) -> usize {
         KEM::DHKEM_X25519_HKDF_SHA256 => 32,
         KEM::DHKEM_X448_HKDF_SHA512 => 56,
         KEM::X25519Kyber768Draft00 => 2432,
-        KEM::XWingDraft02 => 2464,
+        KEM::XWingDraft06 => 2464,
     }
 }
 
@@ -169,7 +166,7 @@ pub fn Npk(kem_id: KEM) -> usize {
         KEM::DHKEM_X25519_HKDF_SHA256 => 32,
         KEM::DHKEM_X448_HKDF_SHA512 => 56,
         KEM::X25519Kyber768Draft00 => 1216,
-        KEM::XWingDraft02 => 1216,
+        KEM::XWingDraft06 => 1216,
     }
 }
 
@@ -191,7 +188,7 @@ pub fn Ndh(kem_id: KEM) -> usize {
         KEM::DHKEM_X25519_HKDF_SHA256 => 32,
         KEM::DHKEM_X448_HKDF_SHA512 => 56,
         KEM::X25519Kyber768Draft00 => 32,
-        KEM::XWingDraft02 => 32,
+        KEM::XWingDraft06 => 32,
     }
 }
 
@@ -268,7 +265,7 @@ fn shared_secret_from_dh(alg: KEM, mut secret: Vec<u8>) -> Result<SharedSecret, 
             // This is only the x25519 part.
             Ok(secret)
         }
-        KEM::XWingDraft02 => {
+        KEM::XWingDraft06 => {
             // This is only the x25519 part.
             Ok(secret)
         }
@@ -323,7 +320,7 @@ pub fn SerializePublicKey(alg: KEM, pk: PublicKey) -> PublicKey {
         KEM::DHKEM_X25519_HKDF_SHA256 => pk,
         KEM::DHKEM_X448_HKDF_SHA512 => pk,
         KEM::X25519Kyber768Draft00 => pk, // This must have been encoded before
-        KEM::XWingDraft02 => pk,          // This must have been encoded before
+        KEM::XWingDraft06 => pk,          // This must have been encoded before
     }
 }
 
@@ -347,7 +344,7 @@ pub fn DeserializePublicKey(alg: KEM, enc: &[u8]) -> HpkeBytesResult {
         KEM::DHKEM_X25519_HKDF_SHA256 => enc.to_vec(),
         KEM::DHKEM_X448_HKDF_SHA512 => enc.to_vec(),
         KEM::X25519Kyber768Draft00 => enc.to_vec(), // Deserialization must be done later
-        KEM::XWingDraft02 => enc.to_vec(),          // Deserialization must be done later
+        KEM::XWingDraft06 => enc.to_vec(),          // Deserialization must be done later
     })
 }
 
@@ -509,33 +506,12 @@ pub fn DeriveKeyPair(alg: KEM, ikm: &InputKeyMaterial) -> Result<KeyPair, HpkeEr
             }
         }
         KEM::X25519Kyber768Draft00 => Err(HpkeError::UnsupportedAlgorithm),
-        KEM::XWingDraft02 => {
-            // Use SHAKE128 to expand the ikm
-            let seed: [u8; 96] = crate::hacl::sha3::shake128(ikm);
-            // Use the first 64 bytes to generate the ML-KEM key pair
-            let (sk, pk) = mlkem768::generate_key_pair(
-                seed[..64]
-                    .try_into()
-                    .map_err(|_| HpkeError::DeriveKeyPairError)?,
-            )
-            .into_parts();
-            // Use the next 32 bytes to generate the X25519 key pair
-            let (xsk, xpk) = DeriveKeyPair(KEM::DHKEM_X25519_HKDF_SHA256, &seed[..96])?;
+        KEM::XWingDraft06 => {
+            let (sk, pk) =
+                libcrux_kem::key_gen_derand(libcrux_kem::Algorithm::XWingKemDraft06, ikm)
+                    .map_err(|_| HpkeError::DeriveKeyPairError)?;
 
-            let private = XWingKemDraft06PrivateKey {
-                sk_m: sk,
-                sk_x: X25519PrivateKey(xsk.try_into().map_err(|_| HpkeError::DeriveKeyPairError)?),
-                pk_x: X25519PublicKey(
-                    xpk.clone()
-                        .try_into()
-                        .map_err(|_| HpkeError::DeriveKeyPairError)?,
-                ),
-            };
-            let public = XWingKemDraft06PublicKey {
-                pk_m: pk,
-                pk_x: X25519PublicKey(xpk.try_into().map_err(|_| HpkeError::DeriveKeyPairError)?),
-            };
-            Ok((private.encode(), public.encode()))
+            Ok((sk.encode(), pk.encode()))
         }
     }
 }
@@ -587,7 +563,7 @@ pub fn GenerateKeyPair(alg: KEM, randomness: Randomness) -> Result<KeyPair, Hpke
                 };
                 Ok((private.encode(), public.encode()))
             }
-            KEM::XWingDraft02 => DeriveKeyPair(alg, &randomness),
+            KEM::XWingDraft06 => DeriveKeyPair(alg, &randomness),
         }
     }
 }

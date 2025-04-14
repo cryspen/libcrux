@@ -922,6 +922,16 @@ mod xwing {
             value: sha3::sha256(&input),
         }
     }
+
+    impl<'a> TryFrom<&'a [u8]> for XWingSharedSecret {
+        type Error = <[u8; 32] as TryFrom<&'a [u8]>>::Error;
+
+        fn try_from(value: &'a [u8]) -> Result<Self, Self::Error> {
+            Ok(Self {
+                value: value.try_into()?,
+            })
+        }
+    }
 }
 
 fn mlkem_rand(rng: &mut impl CryptoRng) -> Result<[u8; libcrux_ml_kem::SHARED_SECRET_SIZE], Error> {
