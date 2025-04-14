@@ -173,8 +173,6 @@ impl HpkeCrypto for HpkeLibcrux {
         libcrux_chacha20poly1305::encrypt(key, msg, &mut msg_ctx, aad, iv)
             .map_err(|_| Error::CryptoLibraryError("Invalid configuration".into()))?;
 
-        eprintln!("aead key {:x?}", key);
-        eprintln!("aead seal {:x?}", msg_ctx);
         Ok(msg_ctx)
     }
 
@@ -185,7 +183,6 @@ impl HpkeCrypto for HpkeLibcrux {
         aad: &[u8],
         cipher_txt: &[u8],
     ) -> Result<Vec<u8>, Error> {
-        eprintln!("aead open {:x?}", cipher_txt);
         // only chacha20poly1305 is supported
         if !matches!(alg, AeadAlgorithm::ChaCha20Poly1305) {
             return Err(Error::UnknownAeadAlgorithm);
@@ -199,8 +196,6 @@ impl HpkeCrypto for HpkeLibcrux {
         let mut ptext = vec![0; boundary];
 
         let iv = <&[u8; 12]>::try_from(nonce).map_err(|_| Error::AeadInvalidNonce)?;
-
-        eprintln!("aead key {:x?}", key);
 
         // TODO: instead, use key conversion from the libcrux-chacha20poly1305 crate, when available,
         let key = <&[u8; 32]>::try_from(key).map_err(|_| todo!())?;
