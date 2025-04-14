@@ -8,6 +8,7 @@ secure against harvest-now-decrypt-later (HNDL) passive quantum
 attackers.
 
 The protocol between initator `A` and receiver `B` roughly works as follows:
+
 ```
 A:  (K_pq, enc_pq) <- PQPSK.Encaps(pqpk_B, sctx)
     (K_regA, N_regA) <- KDF(K_pq, "AEAD-Responder-Initiator")
@@ -35,7 +36,9 @@ A:  psk_handle <- AEAD.Decrypt(K_reqB, N_regB, ctxt_B)
     PSK <- KDF(K_pq, "PSK-Registration")
         store (psk_handle, PSK)
 ```
+
 where `PQPSK.Encaps(pqpk_B, sctx)` denotes the following procedure:
+
 ```
 (ik, enc) <- PQ-KEM.Encaps(pk_B)
 K_0 <- KDF(ik, pk_B || enc || sctxt)
@@ -44,7 +47,9 @@ K <- KDF(K_0, "PQ-PSK")
 mac <- MAC(K_m, "MAC-Input")
 return (K, enc||mac)
 ```
+
 `PQPSK.Decaps(sk_B, pk_B, enc||mac)` denotes the following procedure:
+
 ```
 ik <- PQ-KEM.Decaps(pqsk_B, enc)
 K_0 <- KDF(ik, pk_B || enc || sctxt)
@@ -54,7 +59,9 @@ recomputed_mac <- MAC(K_m, "MAC-Input")
 if mac != recomputed_mac then ABORT
 else return K
 ```
+
 and
+
 * `pqpk_B` is the receiver's KEM public key,
 * `pqsk_B` is the receiver's KEM private key,
 * `sctx` is context information for the given session of the protocol,
