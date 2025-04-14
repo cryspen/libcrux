@@ -16,7 +16,7 @@ fn extract_and_expand<Crypto: HpkeCrypto>(
     kem_context: &[u8],
     suite_id: &[u8],
 ) -> Result<Vec<u8>, Error> {
-    let prk = labeled_extract::<Crypto>(alg.into(), &[], suite_id, "eae_prk", &pk);
+    let prk = labeled_extract::<Crypto>(alg.into(), &[], suite_id, "eae_prk", &pk)?;
     labeled_expand::<Crypto>(
         alg.into(),
         &prk,
@@ -55,7 +55,7 @@ pub(super) fn derive_key_pair<Crypto: HpkeCrypto>(
     suite_id: &[u8],
     ikm: &[u8],
 ) -> Result<(PublicKey, PrivateKey), Error> {
-    let dkp_prk = labeled_extract::<Crypto>(alg.into(), &[], suite_id, "dkp_prk", ikm);
+    let dkp_prk = labeled_extract::<Crypto>(alg.into(), &[], suite_id, "dkp_prk", ikm)?;
 
     let sk = match alg {
         KemAlgorithm::DhKem25519 => labeled_expand::<Crypto>(

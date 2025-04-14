@@ -50,7 +50,7 @@ pub trait HpkeCrypto: core::fmt::Debug + Send + Sync {
     }
 
     /// KDF Extract
-    fn kdf_extract(alg: types::KdfAlgorithm, salt: &[u8], ikm: &[u8]) -> Vec<u8>;
+    fn kdf_extract(alg: types::KdfAlgorithm, salt: &[u8], ikm: &[u8]) -> Result<Vec<u8>, Error>;
 
     /// KDF Expand
     fn kdf_expand(

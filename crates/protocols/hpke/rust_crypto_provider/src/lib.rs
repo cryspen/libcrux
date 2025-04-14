@@ -45,12 +45,12 @@ impl HpkeCrypto for HpkeRustCrypto {
         "RustCrypto".into()
     }
 
-    fn kdf_extract(alg: KdfAlgorithm, salt: &[u8], ikm: &[u8]) -> Vec<u8> {
-        match alg {
+    fn kdf_extract(alg: KdfAlgorithm, salt: &[u8], ikm: &[u8]) -> Result<Vec<u8>, Error> {
+        Ok(match alg {
             KdfAlgorithm::HkdfSha256 => sha256_extract(salt, ikm),
             KdfAlgorithm::HkdfSha384 => sha384_extract(salt, ikm),
             KdfAlgorithm::HkdfSha512 => sha512_extract(salt, ikm),
-        }
+        })
     }
 
     fn kdf_expand(

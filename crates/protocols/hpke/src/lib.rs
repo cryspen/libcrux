@@ -617,11 +617,20 @@ impl<Crypto: HpkeCrypto> Hpke<Crypto> {
     }
 
     #[inline]
-    fn key_schedule_context(&self, info: &[u8], psk_id: &[u8], suite_id: &[u8]) -> Vec<u8> {
+    fn key_schedule_context(
+        &self,
+        info: &[u8],
+        psk_id: &[u8],
+        suite_id: &[u8],
+    ) -> Result<Vec<u8>, HpkeError> {
         let psk_id_hash =
-            labeled_extract::<Crypto>(self.kdf_id, &[0], suite_id, "psk_id_hash", psk_id);
-        let info_hash = labeled_extract::<Crypto>(self.kdf_id, &[0], suite_id, "info_hash", info);
-        util::concat(&[&[self.mode as u8], &psk_id_hash, &info_hash])
+            labeled_extract::<Crypto>(self.kdf_id, &[0], suite_id, "psk_id_hash", psk_id)?;
+        let info_hash = labeled_extract::<Crypto>(self.kdf_id, &[0], suite_id, "info_hash", info)?;
+        Ok(util::concat(&[
+            &[self.mode as u8],
+            &psk_id_hash,
+            &info_hash,
+        ]))
     }
 
     /// Creating the Encryption Context
@@ -635,9 +644,10 @@ impl<Crypto: HpkeCrypto> Hpke<Crypto> {
     ) -> Result<Context<Crypto>, HpkeError> {
         self.verify_psk_inputs(psk, psk_id)?;
         let suite_id = self.ciphersuite();
-        let key_schedule_context = self.key_schedule_context(info, psk_id, &suite_id);
+        let key_schedule_context = self.key_schedule_context(info, psk_id, &suite_id)?;
         let secret =
-            labeled_extract::<Crypto>(self.kdf_id, shared_secret, &suite_id, "secret", psk);
+            labeled_extract::<Crypto>(self.kdf_id, shared_secret, &suite_id, "secret", psk)
+                .map_err(|e| HpkeError::CryptoError(format!("Crypto error: {}", e)))?;
 
         let key = labeled_expand::<Crypto>(
             self.kdf_id,
