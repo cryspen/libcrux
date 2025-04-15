@@ -1,6 +1,9 @@
 #![doc = include_str!("../Readme.md")]
+#![cfg_attr(not(test), no_std)]
+extern crate alloc;
 
-use std::{fmt::Display, sync::RwLock};
+use alloc::{string::String, vec::Vec, format};
+use core::fmt::Display;
 
 use hpke_rs_crypto::{
     error::Error,
@@ -8,7 +11,7 @@ use hpke_rs_crypto::{
     CryptoRng, HpkeCrypto, HpkeTestRng,
 };
 
-use rand::SeedableRng;
+use rand_core::SeedableRng;
 
 /// The Libcrux HPKE Provider
 #[derive(Debug)]
@@ -18,7 +21,7 @@ pub struct HpkeLibcrux {}
 pub struct HpkeLibcruxPrng {
     #[cfg(feature = "deterministic-prng")]
     fake_rng: Vec<u8>,
-    rng: RwLock<rand_chacha::ChaCha20Rng>,
+    rng: rand_chacha::ChaCha20Rng,
 }
 
 impl HpkeCrypto for HpkeLibcrux {
@@ -148,7 +151,7 @@ impl HpkeCrypto for HpkeLibcrux {
         let key = <&[u8; 32]>::try_from(key)
             .map_err(|_| Error::CryptoLibraryError("AEAD invalid key length".into()))?;
 
-        let mut msg_ctx: Vec<u8> = vec![0; msg.len() + 16];
+        let mut msg_ctx: Vec<u8> = alloc::vec![0; msg.len() + 16];
         libcrux_chacha20poly1305::encrypt(key, msg, &mut msg_ctx, aad, iv)
             .map_err(|_| Error::CryptoLibraryError("Invalid configuration".into()))?;
 
@@ -172,7 +175,7 @@ impl HpkeCrypto for HpkeLibcrux {
 
         let boundary = cipher_txt.len() - 16;
 
-        let mut ptext = vec![0; boundary];
+        let mut ptext = alloc::vec![0; boundary];
 
         let iv = <&[u8; 12]>::try_from(nonce).map_err(|_| Error::AeadInvalidNonce)?;
 
@@ -197,18 +200,18 @@ impl HpkeCrypto for HpkeLibcrux {
         #[cfg(feature = "deterministic-prng")]
         {
             use rand::TryRngCore;
-            let mut fake_rng = vec![0u8; 256];
+            let mut fake_rng = alloc::vec![0u8; 256];
             rand_chacha::ChaCha20Rng::from_os_rng()
                 .try_fill_bytes(&mut fake_rng)
                 .unwrap();
             HpkeLibcruxPrng {
                 fake_rng,
-                rng: RwLock::new(rand_chacha::ChaCha20Rng::from_os_rng()),
+                rng: rand_chacha::ChaCha20Rng::from_os_rng(),
             }
         }
         #[cfg(not(feature = "deterministic-prng"))]
         HpkeLibcruxPrng {
-            rng: RwLock::new(rand_chacha::ChaCha20Rng::from_os_rng()),
+            rng: rand_chacha::ChaCha20Rng::from_os_rng(),
         }
     }
 
@@ -290,15 +293,15 @@ fn kem_key_type_to_ecdh_alg(alg: KemAlgorithm) -> Result<libcrux_ecdh::Algorithm
 
 impl hpke_rs_crypto::RngCore for HpkeLibcruxPrng {
     fn next_u32(&mut self) -> u32 {
-        self.rng.write().unwrap().next_u32()
+        self.rng.next_u32()
     }
 
     fn next_u64(&mut self) -> u64 {
-        self.rng.write().unwrap().next_u64()
+        self.rng.next_u64()
     }
 
     fn fill_bytes(&mut self, dest: &mut [u8]) {
-        self.rng.write().unwrap().fill_bytes(dest)
+        self.rng.fill_bytes(dest)
     }
 }
 impl CryptoRng for HpkeLibcruxPrng {}
@@ -331,7 +334,7 @@ impl HpkeTestRng for HpkeLibcruxPrng {
 }
 
 impl Display for HpkeLibcrux {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         write!(f, "{}", Self::name())
     }
 }
