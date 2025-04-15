@@ -30,7 +30,7 @@ chacha20poly1305 = { version = "0.10", default-features = false, features = [
 aes-gcm = { version = "0.10", default-features = false, features = ["aes"] }
 # Randomness
 rand_core = { version = "0.6", features = ["getrandom"] }
-rand_old = { version = "0.8", package = "rand" }
+rand_old = { version = "0.8", package = "rand", default-features = false }
 rand_chacha = { version = "0.3", default-features = false }
 
 [dev-dependencies]
@@ -38,6 +38,7 @@ criterion = { version = "0.5", features = ["html_reports"] }
 rand = { version = "0.9" }
 
 [features]
+std = ["rand_core/std", "rand_old/std"]
 deterministic-prng = [
     "hpke-rs-crypto/std",
     "rand_core/std",
