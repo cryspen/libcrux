@@ -21,7 +21,8 @@ macro_rules! implement_aead {
                 return Err(Error::AeadInvalidNonce);
             }
 
-            let cipher = $algorithm::new(key.into());
+            let cipher = $algorithm::new_from_slice(key)
+                .map_err(|e| Error::CryptoLibraryError(format!("AEAD error: {:?}", e)))?;
             cipher
                 .encrypt(nonce.into(), Payload { msg, aad })
                 .map_err(|e| Error::CryptoLibraryError(format!("AEAD error: {:?}", e)))
@@ -42,7 +43,8 @@ macro_rules! implement_aead {
                 return Err(Error::AeadInvalidCiphertext);
             }
 
-            let cipher = $algorithm::new(key.into());
+            let cipher = $algorithm::new_from_slice(key)
+                .map_err(|e| Error::CryptoLibraryError(format!("AEAD error: {:?}", e)))?;
 
             cipher
                 .decrypt(nonce.into(), Payload { msg, aad })
