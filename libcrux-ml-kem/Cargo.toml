@@ -34,7 +34,7 @@ hax-lib.workspace = true
 
 [features]
 # By default all variants and std are enabled.
-default = ["std", "rand/std", "default-no-std"]
+default = ["default-no-std", "std"]
 default-no-std = ["mlkem512", "mlkem768", "mlkem1024", "rand"]
 
 # Hardware features can be force enabled.
