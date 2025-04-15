@@ -2,7 +2,7 @@
 name = "libcrux-traits"
 description = "Traits for cryptographic algorithms"
 
-version.workspace = true
+version = "0.0.3-alpha.1"
 authors.workspace = true
 license.workspace = true
 homepage.workspace = true
@@ -11,4 +11,4 @@ repository.workspace = true
 readme.workspace = true
 
 [dependencies]
-rand = { version = "0.9" }
+rand = { version = "0.9", default-features = false }

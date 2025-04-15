@@ -1,6 +1,6 @@
 [package]
 name = "libcrux-ml-kem"
-version.workspace = true
+version = "0.0.3-alpha.1"
 authors.workspace = true
 license.workspace = true
 homepage.workspace = true
@@ -26,7 +26,7 @@ exclude = [
 bench = false # so libtest doesn't eat the arguments to criterion
 
 [dependencies]
-rand = { version = "0.9", optional = true }
+rand = { version = "0.9", optional = true, default-features = false }
 libcrux-platform = { version = "0.0.2", path = "../sys/platform" }
 libcrux-sha3 = { version = "0.0.2", path = "../libcrux-sha3" }
 libcrux-intrinsics = { version = "0.0.2", path = "../libcrux-intrinsics" }
@@ -34,7 +34,8 @@ hax-lib.workspace = true
 
 [features]
 # By default all variants and std are enabled.
-default = ["std", "mlkem512", "mlkem768", "mlkem1024", "rand"]
+default = ["std", "rand/std", "default-no-std"]
+default-no-std = ["mlkem512", "mlkem768", "mlkem1024", "rand"]
 
 # Hardware features can be force enabled.
 # It is not recommended to use these. This crate performs CPU feature detection
@@ -54,7 +55,7 @@ kyber = []
 rand = ["dep:rand"]
 
 # std support
-std = ["alloc"]
+std = ["alloc", "rand/std"]
 alloc = []
 
 # Incremental encapsulation API
