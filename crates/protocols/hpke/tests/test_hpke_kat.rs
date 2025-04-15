@@ -297,7 +297,7 @@ fn test_kat() {
         let now = Instant::now();
         kat::<HpkeLibcrux>(tests);
         let time = now.elapsed();
-        log::info!("Test vectors with Evercrypt took: {}s", time.as_secs());
+        log::info!("Test vectors with Libcrux took: {}s", time.as_secs());
     }
 }
 
