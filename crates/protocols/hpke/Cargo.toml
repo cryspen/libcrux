@@ -7,7 +7,7 @@ license = "MPL-2.0"
 documentation = "https://docs.rs/hpke-rs"
 description = "HPKE Implementation"
 readme = "Readme.md"
-repository = "https://github.com/franziskuskiefer/hpke-rs"
+repository = "https://github.com/cryspen/hpke-rs"
 exclude = ["/tests"]
 
 [dependencies]

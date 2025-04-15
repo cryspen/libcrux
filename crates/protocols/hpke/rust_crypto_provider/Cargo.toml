@@ -7,7 +7,7 @@ license = "MPL-2.0"
 documentation = "https://docs.rs/hpke-rs-rust-crypto"
 description = "Crypto backend for HPKE using native Rust crypto."
 readme = "Readme.md"
-repository = "https://github.com/franziskuskiefer/hpke-rs"
+repository = "https://github.com/cryspen/hpke-rs"
 
 [dependencies]
 hpke-rs-crypto = { version = "0.3.0-alpha.1", path = "../traits" }
