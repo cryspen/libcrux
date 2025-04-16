@@ -11,10 +11,10 @@ repository = "https://github.com/cryspen/hpke-rs"
 
 [dependencies]
 hpke-rs-crypto = { version = "0.3.0-alpha.1", path = "../traits" }
-libcrux-ecdh = { version = "0.0.3-alpha.1", git = "https://github.com/cryspen/libcrux", branch = "wysiwys/kem-derand", default-features = false }
-libcrux-hkdf = { version = "0.0.3-alpha.1", git = "https://github.com/cryspen/libcrux", branch = "wysiwys/kem-derand" }
-libcrux-kem = { version = "0.0.3-alpha.1", git = "https://github.com/cryspen/libcrux", branch = "wysiwys/kem-derand", default-features = false }
-libcrux-chacha20poly1305 = { version = "0.0.2", git = "https://github.com/cryspen/libcrux", branch = "wysiwys/kem-derand" }
+libcrux-ecdh = { version = "0.0.3-alpha.1", git = "https://github.com/cryspen/libcrux", branch = "main", default-features = false }
+libcrux-hkdf = { version = "0.0.3-alpha.1", git = "https://github.com/cryspen/libcrux", branch = "main" }
+libcrux-kem = { version = "0.0.3-alpha.1", git = "https://github.com/cryspen/libcrux", branch = "main", default-features = false }
+libcrux-chacha20poly1305 = { version = "0.0.2", git = "https://github.com/cryspen/libcrux", branch = "main" }
 # Randomness
 rand = { version = "0.9", default-features = false }
 rand_core = { version = "0.9", features = ["os_rng"] }
