@@ -73,26 +73,26 @@ pub(super) fn montgomery_multiply_by_constant(lhs: Vec256, constant: i32) -> Vec
 //     // let prod12:
 // }
 
-pub(super) fn montgomery_multiply_pointwise(lhs: [i32; 8], rhs: [i32; 8]) {
-    let inverse_of_modulus_mod_montgomery_r = [INVERSE_OF_MODULUS_MOD_MONTGOMERY_R as i32; 8];
-    let prod02 = [
-        (lhs[0] as i64) * (rhs[0] as i64),
-        (lhs[2] as i64) * (rhs[2] as i64),
-        (lhs[4] as i64) * (rhs[4] as i64),
-        (lhs[6] as i64) * (rhs[6] as i64),
-    ];
-    let prod13 = [
-        (lhs[1] as i64) * (rhs[1] as i64),
-        (lhs[3] as i64) * (rhs[3] as i64),
-        (lhs[5] as i64) * (rhs[5] as i64),
-        (lhs[7] as i64) * (rhs[7] as i64),
-    ];
+// pub(super) fn montgomery_multiply_pointwise(lhs: [i32; 8], rhs: [i32; 8]) {
+//     let inverse_of_modulus_mod_montgomery_r = [INVERSE_OF_MODULUS_MOD_MONTGOMERY_R as i32; 8];
+//     let prod02 = [
+//         (lhs[0] as i64) * (rhs[0] as i64),
+//         (lhs[2] as i64) * (rhs[2] as i64),
+//         (lhs[4] as i64) * (rhs[4] as i64),
+//         (lhs[6] as i64) * (rhs[6] as i64),
+//     ];
+//     let prod13 = [
+//         (lhs[1] as i64) * (rhs[1] as i64),
+//         (lhs[3] as i64) * (rhs[3] as i64),
+//         (lhs[5] as i64) * (rhs[5] as i64),
+//         (lhs[7] as i64) * (rhs[7] as i64),
+//     ];
 
-    let k02 = [(prod02[0] as i32) as i64 * inverse_of_modulus_mod_montgomery_r];
-    let k02 = [(prod02[0] as i32) as i64 * inverse_of_modulus_mod_montgomery_r];
+//     let k02 = [(prod02[0] as i32) as i64 * inverse_of_modulus_mod_montgomery_r];
+//     let k02 = [(prod02[0] as i32) as i64 * inverse_of_modulus_mod_montgomery_r];
 
-    // let prod12:
-}
+//     // let prod12:
+// }
 
 // operates on four i32 (there are four blank i32)
 
@@ -108,12 +108,246 @@ pub(super) fn montgomery_multiply_pointwise(lhs: [i32; 8], rhs: [i32; 8]) {
 /// let c = mul_64(k, field_modulus as i64)
 /// let res = high_32(prod) - high_32(c);
 
-// mod specs {
-//     fn mm256_set1_epi32() -> [] {
+mod computable_specs {
+    use hax_lib::Prop;
+    use libcrux_intrinsics::avx2::{Vec128, Vec256};
+    use minicore::abstractions::{bitvec::BitVec, funarr::FunArray};
 
-//     }
-// }
+    type Vec8i32 = FunArray<8, i32>;
+    type Vec4i64 = FunArray<4, i64>;
 
+    #[hax_lib::fstar::before("irreducible")]
+    const MANUAL_NORM: () = ();
+
+    #[hax_lib::lemma]
+    pub fn manual_norm_lemma(_: ()) -> Proof<{ hax_lib::eq(MANUAL_NORM, ()) }> {}
+
+    fn mm256_set1_epi32(x: i32) -> Vec8i32 {
+        FunArray::from_fn(|_i| x)
+    }
+    #[hax_lib::fstar::before("[@@strict_on_arguments [0]]")]
+    fn shift_32(_: (), x: i64) -> i64 {
+        x >> 32
+    }
+    #[hax_lib::fstar::before("[@@strict_on_arguments [0]]")]
+    fn cast_i64_as_i32(_: (), x: i64) -> i32 {
+        x as i32
+    }
+    #[hax_lib::fstar::before("[@@strict_on_arguments [0]]")]
+    fn mul(_: (), x: i32, y: i32) -> i64 {
+        (x as i64) * (y as i64)
+    }
+    #[hax_lib::fstar::before("[@@strict_on_arguments [0]]")]
+    fn sub(_: (), x: i32, y: i32) -> i32 {
+        ((x as i64) - (y as i64)) as i32
+    }
+    fn vec_4_i16_to_vec_8_i32(x: Vec4i64) -> Vec8i32 {
+        FunArray::from_fn(|i| {
+            let value = x[i / 2];
+            cast_i64_as_i32(
+                MANUAL_NORM,
+                if i % 2 == 0 {
+                    value
+                } else {
+                    shift_32(MANUAL_NORM, value)
+                },
+            )
+        })
+        // FunArray::from_fn(|i| if i % 2 == 0 { x[i] } else { x[i] >> 32 } as i32)
+    }
+    fn mm256_mul_epi32(x: Vec8i32, y: Vec8i32) -> Vec4i64 {
+        FunArray::from_fn(|i| mul(MANUAL_NORM, x[i * 2], y[i * 2]))
+    }
+    fn mm256_sub_epi32(x: Vec8i32, y: Vec8i32) -> Vec8i32 {
+        FunArray::from_fn(|i| sub(MANUAL_NORM, x[i], y[i]))
+    }
+    fn mm256_shuffle_epi32(x: Vec8i32) -> Vec8i32 {
+        // TODO: hardcoded CONTROL!
+        let indexes: FunArray<4, _> = FunArray::from_fn(|i| match i {
+            0 | 1 => 0b01,
+            _ => 0b11,
+        });
+        FunArray::from_fn(|i| {
+            if i < 4 {
+                x[indexes[i]]
+            } else {
+                x[4 + indexes[i - 4]]
+            }
+        })
+    }
+    fn mm256_blend_epi32(x: Vec8i32, y: Vec8i32) -> Vec8i32 {
+        // TODO: hardcoded CONTROL!
+        FunArray::from_fn(|i| if i % 2 == 0 { x[i] } else { y[i] })
+    }
+
+    #[hax_lib::opaque]
+    pub fn bv_of_vec_8_i32(_vec: Vec8i32) -> Vec256 {
+        todo!()
+    }
+    #[hax_lib::opaque]
+    pub fn bv_of_vec_4_i64(_vec: Vec4i64) -> Vec256 {
+        todo!()
+    }
+    #[hax_lib::opaque]
+    pub fn vec_4_i64_of_bv(_bv: Vec256) -> Vec4i64 {
+        todo!()
+    }
+    #[hax_lib::opaque]
+    pub fn vec_8_i32_of_bv(_bv: Vec256) -> Vec8i32 {
+        todo!()
+    }
+
+    #[hax_lib::opaque]
+    #[hax_lib::lemma]
+    pub fn identity_vec_8_i32_inv(
+        x: Vec8i32,
+    ) -> Proof<{ hax_lib::eq(vec_8_i32_of_bv(bv_of_vec_8_i32(x)), x) }> {
+    }
+    #[hax_lib::opaque]
+    #[hax_lib::lemma]
+    pub fn identity_vec_4_i64_inv(
+        x: Vec4i64,
+    ) -> Proof<{ hax_lib::eq(vec_4_i64_of_bv(bv_of_vec_4_i64(x)), x) }> {
+    }
+    #[hax_lib::opaque]
+    #[hax_lib::lemma]
+    pub fn identity_vec_8_i32(
+        x: Vec256,
+    ) -> Proof<{ hax_lib::eq(bv_of_vec_8_i32(vec_8_i32_of_bv(x)), x) }> {
+    }
+    #[hax_lib::opaque]
+    #[hax_lib::lemma]
+    pub fn identity_vec_4_i64(
+        x: Vec256,
+    ) -> Proof<{ hax_lib::eq(bv_of_vec_4_i64(vec_4_i64_of_bv(x)), x) }> {
+    }
+
+    #[hax_lib::opaque]
+    #[hax_lib::lemma]
+    pub fn eq_mm256_blend_epi32(
+        x: Vec256,
+        y: Vec256,
+    ) -> Proof<
+        {
+            hax_lib::eq(
+                super::mm256_blend_epi32::<0b10101010>(x, y),
+                bv_of_vec_8_i32(mm256_blend_epi32(vec_8_i32_of_bv(x), vec_8_i32_of_bv(y))),
+            )
+        },
+    > {
+    }
+
+    #[hax_lib::opaque]
+    #[hax_lib::lemma]
+    pub fn eq_mm256_set1_epi32(
+        x: i32,
+    ) -> Proof<
+        {
+            hax_lib::eq(
+                super::mm256_set1_epi32(x),
+                bv_of_vec_8_i32(mm256_set1_epi32(x)),
+            )
+        },
+    > {
+    }
+
+    #[hax_lib::opaque]
+    #[hax_lib::lemma]
+    pub fn eq_mm256_mul_epi32(
+        x: Vec256,
+        y: Vec256,
+    ) -> Proof<
+        {
+            hax_lib::eq(
+                super::mm256_mul_epi32(x, y),
+                bv_of_vec_8_i32(vec_4_i16_to_vec_8_i32(mm256_mul_epi32(
+                    vec_8_i32_of_bv(x),
+                    vec_8_i32_of_bv(y),
+                ))),
+            )
+        },
+    > {
+    }
+    #[hax_lib::opaque]
+    #[hax_lib::lemma]
+    pub fn eq_mm256_sub_epi32(
+        x: Vec256,
+        y: Vec256,
+    ) -> Proof<
+        {
+            hax_lib::eq(
+                super::mm256_sub_epi32(x, y),
+                bv_of_vec_8_i32(mm256_sub_epi32(vec_8_i32_of_bv(x), vec_8_i32_of_bv(y))),
+            )
+        },
+    > {
+    }
+
+    #[hax_lib::opaque]
+    #[hax_lib::lemma]
+    pub fn eq_mm256_shuffle_epi32(
+        x: Vec256,
+    ) -> Proof<
+        {
+            hax_lib::eq(
+                super::mm256_shuffle_epi32::<0b11_11_01_01>(x),
+                bv_of_vec_8_i32(mm256_shuffle_epi32(vec_8_i32_of_bv(x))),
+            )
+        },
+    > {
+    }
+}
+
+use minicore::abstractions::{bitvec::bitvec_postprocess_norm, funarr::FunArray};
+
+#[hax_lib::fstar::before(
+    r#"
+open FStar.Tactics
+let pw8 #t (x: Minicore.Abstractions.Funarr.t_FunArray _ t): Lemma (x == ${FunArray::<8, ()>::pointwise} x) = admit ()
+let pw4 #t (x: Minicore.Abstractions.Funarr.t_FunArray _ t): Lemma (x == ${FunArray::<4, ()>::pointwise} x) = admit ()
+
+[@@FStar.Tactics.postprocess_with (fun _ -> 
+    l_to_r [
+        `${computable_specs::eq_mm256_set1_epi32};
+        `${computable_specs::eq_mm256_mul_epi32};
+        `${computable_specs::eq_mm256_shuffle_epi32};
+        `${computable_specs::eq_mm256_sub_epi32};
+        `${computable_specs::eq_mm256_blend_epi32}
+    ];
+    l_to_r [
+        `${computable_specs::identity_vec_8_i32_inv};
+        `${computable_specs::identity_vec_4_i64_inv};
+        `${computable_specs::identity_vec_8_i32};
+        `${computable_specs::identity_vec_4_i64}
+    ];
+    l_to_r [`pw8; `pw4];
+    dump "AAA";
+    // norm [primops; iota; delta_namespace ["Core"; "Minicore"; "Libcrux_intrinsics"; "FStar.FunctionalExtensionality"; "Rust_primitives"; "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.Computable_specs"]; zeta_full];
+    // dump "AAABBB1";
+    norm [primops; iota; delta; zeta_full];
+    dump "AAABBB2";
+    l_to_r [`${computable_specs::manual_norm_lemma}];
+    dump "AAABBB3";
+    norm [primops; iota; delta_namespace ["Libcrux_ml_dsa.Simd.Avx2.Arithmetic.Computable_specs"]; zeta_full];
+    dump "AAABBB4";
+    trefl ();
+
+    // ctrl_rewrite TopDown (fun t ->
+    //     dump ("LOOKING AT" ^ term_to_string t);
+    //     let env = cur_env () in
+    //     match FStar.InteractiveHelpers.ExploreTerm.free_in t with
+    //     | [] -> (true, Skip)
+    //     | _ -> (false, Continue)
+    // ) (fun () ->
+    //     norm [primops; iota; delta; zeta_full]
+    // );
+    // ${bitvec_postprocess_norm} ();
+    ()
+    // norm [primops; iota; delta_namespace ["Core"; "Minicore"; "Libcrux_intrinsics"; "FStar.FunctionalExtensionality"; "Rust_primitives"; "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.Computable_specs"]; zeta];
+    // fail "HEY"
+)]
+"#
+)]
 #[inline(always)]
 pub(super) fn montgomery_multiply(lhs: &mut Vec256, rhs: &Vec256) {
     let field_modulus = mm256_set1_epi32(FIELD_MODULUS);
@@ -135,6 +369,49 @@ pub(super) fn montgomery_multiply(lhs: &mut Vec256, rhs: &Vec256) {
     let res13 = mm256_sub_epi32(prod13, c13);
     let res02_shifted = mm256_shuffle_epi32::<0b11_11_01_01>(res02);
     *lhs = mm256_blend_epi32::<0b10101010>(res02_shifted, res13);
+}
+
+fn f(x: i32, y: i32) -> i32 {
+    ((((((x as i64) * (y as i64)) << 32i32) as i32) as i64)
+        - (((((((((((x as i64) * (y as i64)) as i32) as i64) * (58728449i32 as i64)) as i32)
+            as i64)
+            * (8380417i32 as i64))
+            << 32i32) as i32) as i64)) as i32
+}
+
+fn spec(x: i32, y: i32) -> i32 {
+    fn low_32(x: i64) -> i32 {
+        x as i32
+    }
+    fn high_32(x: i64) -> i32 {
+        (x >> 32) as i32
+    }
+    fn mul_64(x: i64, y: i64) -> i64 {
+        low_32(x) as i64 * low_32(y) as i64
+    }
+    let prod = mul_64(x as i64, y as i64);
+    let k = mul_64(prod, INVERSE_OF_MODULUS_MOD_MONTGOMERY_R as i64);
+    let c = mul_64(k, FIELD_MODULUS as i64);
+    let res = high_32(prod) as i64 - high_32(c) as i64;
+    res as i32
+}
+
+#[hax_lib::lemma]
+fn montgomery_multiply_lemma(
+    lhs: Vec256,
+    rhs: Vec256,
+) -> Proof<
+    {
+        let mut out = lhs.clone();
+        montgomery_multiply(&mut out, &rhs);
+        let lhs = computable_specs::vec_8_i32_of_bv(lhs);
+        let rhs = computable_specs::vec_8_i32_of_bv(rhs);
+        let out = computable_specs::vec_8_i32_of_bv(out);
+        use hax_lib::*;
+        eq(f(lhs[0], rhs[0]), out[0]) //.or(eq(spec(lhs[0], rhs[0]), out[0]))
+                                      // forall(|i: u64| implies(i < 8, f(lhs[i], rhs[i]) == out[i]))
+    },
+> {
 }
 
 // #[inline(always)]

@@ -184,21 +184,26 @@ let bitvec_rewrite_lemma_256 (x: $:{BitVec<256>})
     let b = (${BitVec::<256>::pointwise} x)._0 in
     assert_norm (FStar.FunctionalExtensionality.feq a b);
     extensionality' a b
+
+let funarr_rewrite_lemma_16 #t (x: Minicore.Abstractions.Funarr.t_FunArray _ t): Lemma (x == mark_to_normalize (${FunArray::<16, ()>::pointwise} x)) = admit ()
+let funarr_rewrite_lemma_8 #t (x: Minicore.Abstractions.Funarr.t_FunArray _ t): Lemma (x == mark_to_normalize (${FunArray::<8, ()>::pointwise} x)) = admit ()
+let funarr_rewrite_lemma_4 #t (x: Minicore.Abstractions.Funarr.t_FunArray _ t): Lemma (x == mark_to_normalize (${FunArray::<4, ()>::pointwise} x)) = admit ()
 #pop-options
 
 let ${bitvec_postprocess_norm} (): Tac unit = with_compat_pre_core 1 (fun () ->
     let debug_mode = ext_enabled "debug_bv_postprocess_rewrite" in
     let crate = match cur_module () with | crate::_ -> crate | _ -> fail "Empty module name" in
     // Remove indirections
-    norm [primops; iota; delta_namespace [crate; "Libcrux_intrinsics"]; zeta_full];
+    // norm [primops; iota; delta_namespace [crate; "Libcrux_intrinsics"]; zeta_full];
     // Rewrite call chains
-    let lemmas = FStar.List.Tot.map (fun f -> pack_ln (FStar.Stubs.Reflection.V2.Data.Tv_FVar f)) (lookup_attr (`${REWRITE_RULE}) (top_env ())) in
-    l_to_r lemmas;
+    // let lemmas = FStar.List.Tot.map (fun f -> pack_ln (FStar.Stubs.Reflection.V2.Data.Tv_FVar f)) (lookup_attr (`${REWRITE_RULE}) (top_env ())) in
+    // l_to_r lemmas;
     /// Get rid of casts
-    norm [primops; iota; delta_namespace ["Rust_primitives"; "Prims.pow2"]; zeta_full];
-    if debug_mode then print ("[postprocess_rewrite_helper] lemmas = " ^ term_to_string (quote lemmas));
+    // norm [primops; iota; delta_namespace ["Rust_primitives"; "Prims.pow2"]; zeta_full];
+    // if debug_mode then print ("[postprocess_rewrite_helper] lemmas = " ^ term_to_string (quote lemmas));
 
-    l_to_r [`bitvec_rewrite_lemma_128; `bitvec_rewrite_lemma_256];
+    l_to_r [`funarr_rewrite_lemma_16; `funarr_rewrite_lemma_8; `funarr_rewrite_lemma_4];
+    // l_to_r [`bitvec_rewrite_lemma_128; `bitvec_rewrite_lemma_256; `funarr_rewrite_lemma_16; `funarr_rewrite_lemma_8; `funarr_rewrite_lemma_4];
 
     let round _: Tac unit =
         if debug_mode then dump "[postprocess_rewrite_helper] Rewrote goal";
