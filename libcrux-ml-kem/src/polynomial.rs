@@ -400,13 +400,14 @@ mod tests {
     use crate::vector::portable::PortableVector;
 
     use super::PolynomialRingElement;
+    use libcrux_secrets::*;
 
     #[test]
     fn encoding_portable() {
         type RingElement = PolynomialRingElement<PortableVector>;
         let mut re = RingElement::ZERO();
-        re.coefficients[0].elements = [0xAB; 16];
-        re.coefficients[15].elements = [0xCD; 16];
+        re.coefficients[0].elements = [0xAB.classify(); 16];
+        re.coefficients[15].elements = [0xCD.classify(); 16];
 
         let mut bytes = [0u8; RingElement::num_bytes()];
         re.to_bytes(&mut bytes);
