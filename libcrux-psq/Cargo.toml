@@ -1,6 +1,6 @@
 [package]
 name = "libcrux-psq"
-version.workspace = true
+version = "0.0.3-alpha.1"
 authors.workspace = true
 license.workspace = true
 homepage.workspace = true
@@ -15,7 +15,7 @@ bench = false # so libtest doesn't eat the arguments to criterion
 
 [dependencies]
 libcrux-traits = { version = "0.0.2", path = "../traits" }
-libcrux-kem = { version = "0.0.2", path = "../libcrux-kem" }
+libcrux-kem = { version = "=0.0.3-alpha.1", path = "../libcrux-kem" }
 libcrux-chacha20poly1305 = { version = "0.0.2", path = "../chacha20poly1305" }
 libcrux-hkdf = { version = "=0.0.2", path = "../libcrux-hkdf" }
 libcrux-hmac = { version = "=0.0.2", path = "../libcrux-hmac" }
@@ -25,7 +25,7 @@ classic-mceliece-rust = { version = "3.1.0", features = [
 ], optional = true }
 rand = { version = "0.9" }
 rand_old = { version = "0.8", package = "rand", optional = true }
-libcrux-ecdh = { version = "0.0.2", path = "../libcrux-ecdh", optional = true }
+libcrux-ecdh = { version = "0.0.3-alpha.1", path = "../libcrux-ecdh", optional = true }
 libcrux-ed25519 = { version = "0.0.2", path = "../ed25519", features = [
     "rand",
 ] }
