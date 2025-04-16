@@ -109,7 +109,7 @@ impl HpkeCrypto for HpkeRustCrypto {
 
     fn kem_key_gen_derand(_alg: KemAlgorithm, _seed: &[u8]) -> Result<(Vec<u8>, Vec<u8>), Error> {
         // No ciphersuite uses this.
-        unimplemented!()
+        return Err(Error::UnsupportedKemOperation);
     }
 
     fn kem_encaps(
@@ -118,12 +118,12 @@ impl HpkeCrypto for HpkeRustCrypto {
         _prng: &mut Self::HpkePrng,
     ) -> Result<(Vec<u8>, Vec<u8>), Error> {
         // No ciphersuite uses this.
-        unimplemented!()
+        return Err(Error::UnsupportedKemOperation);
     }
 
     fn kem_decaps(_alg: KemAlgorithm, _ct: &[u8], _sk_r: &[u8]) -> Result<Vec<u8>, Error> {
         // No ciphersuite uses this.
-        unimplemented!()
+        return Err(Error::UnsupportedKemOperation);
     }
 
     fn secret_to_public(alg: KemAlgorithm, sk: &[u8]) -> Result<Vec<u8>, Error> {
