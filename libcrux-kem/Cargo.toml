@@ -28,4 +28,5 @@ pre-verification = []
 
 [dev-dependencies]
 libcrux-kem = { path = "./", features = ["tests"] }
+rand = { version = "0.9", features = ["os_rng"] }
 hex = { version = "0.4.3", features = ["serde"] }
