@@ -9,7 +9,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - [#72](https://github.com/cryspen/hpke-rs/pull/72):
   -  use new hpke-rs-crypto trait API
-  -  upgrade rand dependency from 0.8 -> 0.9
 
 ## [0.2.0] - 2023-12-01
 
