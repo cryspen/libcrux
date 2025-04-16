@@ -11,7 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   -  add support for X-Wing KEM
   -  upgrade rand dependency from 0.8 -> 0.9
   -  replace Evercrypt provider with Libcrux provider
-  -  redesign `HpkeCrypto` trait to support X-Wing as well as ecdh-based KEM algorithms
+  -  redesign `HpkeCrypto` trait to support X-Wing
 - [#66](https://github.com/franziskuskiefer/hpke-rs/pull/66): add support for secp256k1 curve. This adds `DhKemK256 = 0x0016` to the `KemAlgorithms`
 
 ## [0.2.0] - 2023-12-01
