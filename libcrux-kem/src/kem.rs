@@ -498,8 +498,7 @@ impl PublicKey {
         match self {
             PublicKey::X25519(pk) => {
                 let new_sk = X25519PrivateKey::try_from(seed)?; // clamps
-                let new_pk =
-                    libcrux_ecdh::secret_to_public(libcrux_ecdh::Algorithm::X25519, &new_sk)?;
+                let new_pk = x25519_secret_to_public(&new_sk)?;
                 let gxy = x25519_derive(pk, &new_sk)?;
                 Ok((Ss::X25519(gxy), Ct::X25519(new_pk.try_into().unwrap())))
             }
@@ -552,7 +551,6 @@ impl PublicKey {
             }
 
             PublicKey::XWingKemDraft06(XWingKemDraft06PublicKey { pk_m, pk_x }) => {
-                // let seed = mlkem_rand(rng)?;
                 let (ct_m, ss_m) =
                     mlkem768::encapsulate(pk_m, seed[0..32].try_into().map_err(|_| Error::KeyGen)?);
 
@@ -796,7 +794,7 @@ pub fn key_gen(alg: Algorithm, rng: &mut impl CryptoRng) -> Result<(PrivateKey, 
                 PublicKey::XWingKemDraft06(XWingKemDraft06PublicKey {
                     pk_m: kp_m.pk().into(),
                     // unwrap is ok here because it comes from the secret to pub above
-                    pk_x: pk_x.try_into().unwrap(),
+                    pk_x,
                 }),
             ))
         }
@@ -870,7 +868,7 @@ pub fn key_gen_derand(alg: Algorithm, seed: &[u8]) -> Result<(PrivateKey, Public
                 PublicKey::XWingKemDraft06(XWingKemDraft06PublicKey {
                     pk_m: kp_m.pk().into(),
                     // unwrap is ok here because it comes from the secret to pub above
-                    pk_x: pk_x.try_into().unwrap(),
+                    pk_x,
                 }),
             ))
         }

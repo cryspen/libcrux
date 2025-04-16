@@ -1,6 +1,6 @@
 // XXX: This could be simplified with the pure Rust version now.
 
-use alloc::{format, vec::Vec};
+use alloc::format;
 use rand::{CryptoRng, TryRngCore};
 
 use super::Error;
@@ -27,14 +27,6 @@ impl TryFrom<&[u8]> for PublicKey {
     type Error = Error;
 
     fn try_from(value: &[u8]) -> Result<Self, Self::Error> {
-        Ok(Self(value.try_into().map_err(|_| Error::InvalidPoint)?))
-    }
-}
-
-impl TryFrom<Vec<u8>> for PublicKey {
-    type Error = Error;
-
-    fn try_from(value: Vec<u8>) -> Result<Self, Self::Error> {
         Ok(Self(value.try_into().map_err(|_| Error::InvalidPoint)?))
     }
 }

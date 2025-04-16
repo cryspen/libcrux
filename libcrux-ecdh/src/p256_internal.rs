@@ -1,4 +1,4 @@
-use alloc::{format, vec::Vec};
+use alloc::format;
 use rand::{CryptoRng, Rng, TryRngCore};
 
 // P256 we only have in HACL
@@ -28,14 +28,6 @@ impl TryFrom<&[u8]> for PublicKey {
     type Error = Error;
 
     fn try_from(value: &[u8]) -> Result<Self, Self::Error> {
-        Ok(Self(value.try_into().map_err(|_| Error::InvalidPoint)?))
-    }
-}
-
-impl TryFrom<Vec<u8>> for PublicKey {
-    type Error = Error;
-
-    fn try_from(value: Vec<u8>) -> Result<Self, Self::Error> {
         Ok(Self(value.try_into().map_err(|_| Error::InvalidPoint)?))
     }
 }
