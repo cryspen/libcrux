@@ -1,16 +1,16 @@
 [package]
 name = "hpke-rs-rust-crypto"
-version = "0.2.0"
+version = "0.3.0-alpha.1"
 authors = ["Franziskus Kiefer <franziskuskiefer@gmail.com>"]
 edition = "2021"
 license = "MPL-2.0"
 documentation = "https://docs.rs/hpke-rs-rust-crypto"
 description = "Crypto backend for HPKE using native Rust crypto."
 readme = "Readme.md"
-repository = "https://github.com/franziskuskiefer/hpke-rs"
+repository = "https://github.com/cryspen/hpke-rs"
 
 [dependencies]
-hpke-rs-crypto = { version = "0.2.0", path = "../traits" }
+hpke-rs-crypto = { version = "0.3.0-alpha.1", path = "../traits" }
 # Rust crypto
 hkdf = { version = "0.12" }
 sha2 = { version = "0.10", default-features = false }
@@ -30,13 +30,15 @@ chacha20poly1305 = { version = "0.10", default-features = false, features = [
 aes-gcm = { version = "0.10", default-features = false, features = ["aes"] }
 # Randomness
 rand_core = { version = "0.6", features = ["getrandom"] }
+rand_old = { version = "0.8", package = "rand", default-features = false }
 rand_chacha = { version = "0.3", default-features = false }
 
 [dev-dependencies]
 criterion = { version = "0.5", features = ["html_reports"] }
-rand = { version = "0.8" }
+rand = { version = "0.9" }
 
 [features]
+std = ["rand_core/std", "rand_old/std"]
 deterministic-prng = [
     "hpke-rs-crypto/std",
     "rand_core/std",

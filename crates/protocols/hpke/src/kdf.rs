@@ -12,7 +12,7 @@ pub(crate) fn labeled_extract<Crypto: HpkeCrypto>(
     suite_id: &[u8],
     label: &str,
     ikm: &[u8],
-) -> Vec<u8> {
+) -> Result<Vec<u8>, Error> {
     let labeled_ikm = concat(&[HPKE_VERSION, suite_id, label.as_bytes(), ikm]);
     Crypto::kdf_extract(alg, salt, &labeled_ikm)
 }

@@ -18,6 +18,6 @@ fn test_concat() {
     let expected = "blablaRFCXXXX ";
     assert_eq!(
         expected.as_bytes()[..],
-        concat(&[&a.as_bytes(), &b.as_bytes()])[..]
+        concat(&[a.as_bytes(), b.as_bytes()])[..]
     )
 }

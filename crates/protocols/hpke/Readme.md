@@ -50,7 +50,7 @@ Instead it expects an implementation of the [HpkeCrypto] trait.
 [crate-link]: https://crates.io/crates/hpke-rs
 [docs-badge]: https://img.shields.io/badge/docs-rs-blue.svg?style=for-the-badge
 [docs-link]: https://docs.rs/hpke-rs
-[evercrypt]: https://github.com/franziskuskiefer/evercrypt-rust
+[libcrux]: https://github.com/cryspen/libcrux
 [hpke (RFC 9180)]: https://www.rfc-editor.org/rfc/rfc9180.html
 [hpkecrypto]: https://docs.rs/hpke-rs-crypto
 [rustc-image]: https://img.shields.io/badge/rustc-1.56+-blue.svg?style=for-the-badge

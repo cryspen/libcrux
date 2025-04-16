@@ -45,12 +45,12 @@ impl HpkeCrypto for HpkeRustCrypto {
         "RustCrypto".into()
     }
 
-    fn kdf_extract(alg: KdfAlgorithm, salt: &[u8], ikm: &[u8]) -> Vec<u8> {
-        match alg {
+    fn kdf_extract(alg: KdfAlgorithm, salt: &[u8], ikm: &[u8]) -> Result<Vec<u8>, Error> {
+        Ok(match alg {
             KdfAlgorithm::HkdfSha256 => sha256_extract(salt, ikm),
             KdfAlgorithm::HkdfSha384 => sha384_extract(salt, ikm),
             KdfAlgorithm::HkdfSha512 => sha512_extract(salt, ikm),
-        }
+        })
     }
 
     fn kdf_expand(
@@ -66,7 +66,7 @@ impl HpkeCrypto for HpkeRustCrypto {
         }
     }
 
-    fn kem_derive(alg: KemAlgorithm, pk: &[u8], sk: &[u8]) -> Result<Vec<u8>, Error> {
+    fn dh(alg: KemAlgorithm, pk: &[u8], sk: &[u8]) -> Result<Vec<u8>, Error> {
         match alg {
             KemAlgorithm::DhKem25519 => {
                 if sk.len() != 32 {
@@ -107,7 +107,26 @@ impl HpkeCrypto for HpkeRustCrypto {
         }
     }
 
-    fn kem_derive_base(alg: KemAlgorithm, sk: &[u8]) -> Result<Vec<u8>, Error> {
+    fn kem_key_gen_derand(_alg: KemAlgorithm, _seed: &[u8]) -> Result<(Vec<u8>, Vec<u8>), Error> {
+        // No ciphersuite uses this.
+        return Err(Error::UnsupportedKemOperation);
+    }
+
+    fn kem_encaps(
+        _alg: KemAlgorithm,
+        _pk_r: &[u8],
+        _prng: &mut Self::HpkePrng,
+    ) -> Result<(Vec<u8>, Vec<u8>), Error> {
+        // No ciphersuite uses this.
+        return Err(Error::UnsupportedKemOperation);
+    }
+
+    fn kem_decaps(_alg: KemAlgorithm, _ct: &[u8], _sk_r: &[u8]) -> Result<Vec<u8>, Error> {
+        // No ciphersuite uses this.
+        return Err(Error::UnsupportedKemOperation);
+    }
+
+    fn secret_to_public(alg: KemAlgorithm, sk: &[u8]) -> Result<Vec<u8>, Error> {
         match alg {
             KemAlgorithm::DhKem25519 => {
                 if sk.len() != 32 {
@@ -126,29 +145,39 @@ impl HpkeCrypto for HpkeRustCrypto {
                 let sk = k256SecretKey::from_slice(sk).map_err(|_| Error::KemInvalidSecretKey)?;
                 Ok(sk.public_key().to_encoded_point(false).as_bytes().into())
             }
-            _ => Err(Error::UnknownKemAlgorithm),
+            _ => Err(Error::UnsupportedKemOperation),
         }
     }
 
-    fn kem_key_gen(alg: KemAlgorithm, prng: &mut Self::HpkePrng) -> Result<Vec<u8>, Error> {
+    fn kem_key_gen(
+        alg: KemAlgorithm,
+        prng: &mut Self::HpkePrng,
+    ) -> Result<(Vec<u8>, Vec<u8>), Error> {
         let rng = &mut prng.rng;
         match alg {
-            KemAlgorithm::DhKem25519 => Ok(X25519StaticSecret::random_from_rng(&mut *rng)
-                .to_bytes()
-                .to_vec()),
-            KemAlgorithm::DhKemP256 => Ok(p256SecretKey::random(&mut *rng)
-                .to_bytes()
-                .as_slice()
-                .into()),
-            KemAlgorithm::DhKemK256 => Ok(k256SecretKey::random(&mut *rng)
-                .to_bytes()
-                .as_slice()
-                .into()),
+            KemAlgorithm::DhKem25519 => {
+                let sk = X25519StaticSecret::random_from_rng(&mut *rng);
+                let pk = X25519PublicKey::from(&sk).as_bytes().to_vec();
+                let sk = sk.to_bytes().to_vec();
+                Ok((pk, sk))
+            }
+            KemAlgorithm::DhKemP256 => {
+                let sk = p256SecretKey::random(&mut *rng);
+                let pk = sk.public_key().to_encoded_point(false).as_bytes().into();
+                let sk = sk.to_bytes().as_slice().into();
+                Ok((pk, sk))
+            }
+            KemAlgorithm::DhKemK256 => {
+                let sk = k256SecretKey::random(&mut *rng);
+                let pk = sk.public_key().to_encoded_point(false).as_bytes().into();
+                let sk = sk.to_bytes().as_slice().into();
+                Ok((pk, sk))
+            }
             _ => Err(Error::UnknownKemAlgorithm),
         }
     }
 
-    fn kem_validate_sk(alg: KemAlgorithm, sk: &[u8]) -> Result<Vec<u8>, Error> {
+    fn dh_validate_sk(alg: KemAlgorithm, sk: &[u8]) -> Result<Vec<u8>, Error> {
         match alg {
             KemAlgorithm::DhKemP256 => p256SecretKey::from_slice(sk)
                 .map_err(|_| Error::KemInvalidSecretKey)
@@ -232,7 +261,10 @@ impl HpkeCrypto for HpkeRustCrypto {
     }
 }
 
-impl RngCore for HpkeRustCryptoPrng {
+// We need to implement the old and new traits here because the crytpo uses the
+// old one.
+
+impl rand_old::RngCore for HpkeRustCryptoPrng {
     fn next_u32(&mut self) -> u32 {
         self.rng.next_u32()
     }
@@ -250,11 +282,29 @@ impl RngCore for HpkeRustCryptoPrng {
     }
 }
 
+impl rand_old::CryptoRng for HpkeRustCryptoPrng {}
+
+use rand_old::RngCore as _;
+
+impl RngCore for HpkeRustCryptoPrng {
+    fn next_u32(&mut self) -> u32 {
+        self.rng.next_u32()
+    }
+
+    fn next_u64(&mut self) -> u64 {
+        self.rng.next_u64()
+    }
+
+    fn fill_bytes(&mut self, dest: &mut [u8]) {
+        self.rng.fill_bytes(dest);
+    }
+}
+
 impl CryptoRng for HpkeRustCryptoPrng {}
 
 impl HpkeTestRng for HpkeRustCryptoPrng {
     #[cfg(feature = "deterministic-prng")]
-    fn try_fill_test_bytes(&mut self, dest: &mut [u8]) -> Result<(), rand_core::Error> {
+    fn try_fill_test_bytes(&mut self, dest: &mut [u8]) -> Result<(), rand_old::Error> {
         // Here we fake our randomness for testing.
         if dest.len() > self.fake_rng.len() {
             return Err(rand_core::Error::new(Error::InsufficientRandomness));
@@ -268,12 +318,14 @@ impl HpkeTestRng for HpkeRustCryptoPrng {
         self.fake_rng = seed.to_vec();
     }
     #[cfg(not(feature = "deterministic-prng"))]
-    fn try_fill_test_bytes(&mut self, dest: &mut [u8]) -> Result<(), rand_core::Error> {
+    fn try_fill_test_bytes(&mut self, dest: &mut [u8]) -> Result<(), rand_old::Error> {
         self.rng.try_fill_bytes(dest)
     }
 
     #[cfg(not(feature = "deterministic-prng"))]
     fn seed(&mut self, _: &[u8]) {}
+
+    type Error = rand_old::Error;
 }
 
 impl Display for HpkeRustCrypto {
