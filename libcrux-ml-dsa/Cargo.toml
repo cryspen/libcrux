@@ -33,6 +33,9 @@ criterion = "0.5"
 [target.'cfg(not(all(target_os = "macos", target_arch = "x86_64")))'.dev-dependencies]
 pqcrypto-mldsa = { version = "0.1.0" } #, default-features = false
 
+[target.'cfg(hax)'.dependencies]
+minicore = { path = "../fstar-helpers/minicore" }
+
 [features]
 default = ["std", "mldsa44", "mldsa65", "mldsa87"]
 simd128 = ["libcrux-sha3/simd128", "libcrux-intrinsics/simd128"]
