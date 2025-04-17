@@ -1,7 +1,6 @@
 use criterion::{criterion_group, criterion_main, BatchSize, Criterion};
 use hpke_rs_crypto::{types::*, HpkeCrypto, RngCore};
-use hpke_rs_evercrypt::*;
-use rand::rngs::OsRng;
+use hpke_rs_libcrux::*;
 
 fn criterion_benchmark(c: &mut Criterion) {
     c.bench_function(&format!("HKDF SHA256 Extract"), |b| {
@@ -9,12 +8,12 @@ fn criterion_benchmark(c: &mut Criterion) {
             || {
                 let mut salt = vec![0u8; 77];
                 let mut ikm = vec![0u8; 32];
-                OsRng.fill_bytes(&mut salt);
-                OsRng.fill_bytes(&mut ikm);
+                rand::rng().fill_bytes(&mut salt);
+                rand::rng().fill_bytes(&mut ikm);
                 (salt.clone(), ikm.clone())
             },
             |(salt, ikm)| {
-                let _ = HpkeEvercrypt::kdf_extract(KdfAlgorithm::HkdfSha256, &salt, &ikm);
+                let _ = HpkeLibcrux::kdf_extract(KdfAlgorithm::HkdfSha256, &salt, &ikm);
             },
             BatchSize::SmallInput,
         )
@@ -24,12 +23,12 @@ fn criterion_benchmark(c: &mut Criterion) {
             || {
                 let mut info = vec![0u8; 77];
                 let mut prk = vec![0u8; 32];
-                OsRng.fill_bytes(&mut info);
-                OsRng.fill_bytes(&mut prk);
+                rand::rng().fill_bytes(&mut info);
+                rand::rng().fill_bytes(&mut prk);
                 (prk.clone(), info.clone())
             },
             |(prk, info)| {
-                let _ = HpkeEvercrypt::kdf_expand(KdfAlgorithm::HkdfSha256, &prk, &info, 32);
+                let _ = HpkeLibcrux::kdf_expand(KdfAlgorithm::HkdfSha256, &prk, &info, 32);
             },
             BatchSize::SmallInput,
         )

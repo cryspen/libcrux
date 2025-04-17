@@ -50,7 +50,7 @@ pub trait HpkeCrypto: core::fmt::Debug + Send + Sync {
     }
 
     /// KDF Extract
-    fn kdf_extract(alg: types::KdfAlgorithm, salt: &[u8], ikm: &[u8]) -> Vec<u8>;
+    fn kdf_extract(alg: types::KdfAlgorithm, salt: &[u8], ikm: &[u8]) -> Result<Vec<u8>, Error>;
 
     /// KDF Expand
     fn kdf_expand(
@@ -60,17 +60,35 @@ pub trait HpkeCrypto: core::fmt::Debug + Send + Sync {
         output_size: usize,
     ) -> Result<Vec<u8>, Error>;
 
-    /// KEM Derive
-    fn kem_derive(alg: KemAlgorithm, pk: &[u8], sk: &[u8]) -> Result<Vec<u8>, Error>;
+    /// Diffie-Hellman
+    fn dh(alg: KemAlgorithm, pk: &[u8], sk: &[u8]) -> Result<Vec<u8>, Error>;
 
-    /// KEM Derive with base
-    fn kem_derive_base(alg: KemAlgorithm, sk: &[u8]) -> Result<Vec<u8>, Error>;
+    /// Diffie-Hellman with the base (generate public key for secret key `sk`).
+    fn secret_to_public(alg: KemAlgorithm, sk: &[u8]) -> Result<Vec<u8>, Error>;
 
-    /// KEM Key generation
-    fn kem_key_gen(alg: KemAlgorithm, prng: &mut Self::HpkePrng) -> Result<Vec<u8>, Error>;
+    /// KEM key pair generation (encapsulation key, decapsulation key).
+    fn kem_key_gen(
+        alg: KemAlgorithm,
+        prng: &mut Self::HpkePrng,
+    ) -> Result<(Vec<u8>, Vec<u8>), Error>;
+
+    /// KEM key pair generation (encapsulation key, decapsulation key) based
+    /// on the `seed`.
+    fn kem_key_gen_derand(alg: KemAlgorithm, seed: &[u8]) -> Result<(Vec<u8>, Vec<u8>), Error>;
+
+    /// KEM encapsulation to `pk_r` (shared secret, ciphertext).
+    fn kem_encaps(
+        alg: KemAlgorithm,
+        pk_r: &[u8],
+        prng: &mut Self::HpkePrng,
+    ) -> Result<(Vec<u8>, Vec<u8>), Error>;
+
+    /// KEM decapsulation with `sk_r`.
+    /// Returns the shared secret.
+    fn kem_decaps(alg: KemAlgorithm, ct: &[u8], sk_r: &[u8]) -> Result<Vec<u8>, Error>;
 
     /// Validate a secret key for its correctness.
-    fn kem_validate_sk(alg: KemAlgorithm, sk: &[u8]) -> Result<Vec<u8>, Error>;
+    fn dh_validate_sk(alg: KemAlgorithm, sk: &[u8]) -> Result<Vec<u8>, Error>;
 
     /// AEAD encrypt.
     fn aead_seal(
@@ -129,8 +147,10 @@ pub trait HpkeCrypto: core::fmt::Debug + Send + Sync {
 
 /// PRNG extension for testing that is supposed to return pre-configured bytes.
 pub trait HpkeTestRng {
-    /// Like [`RngCore::try_fill_bytes`] but the result is expected to be known.
-    fn try_fill_test_bytes(&mut self, dest: &mut [u8]) -> Result<(), rand_core::Error>;
+    // Error type to replace rand::Error (which is no longer available as of version 0.9)
+    type Error: core::fmt::Debug + core::fmt::Display;
+    /// Like [`TryRngCore::try_fill_bytes`] but the result is expected to be known.
+    fn try_fill_test_bytes(&mut self, dest: &mut [u8]) -> Result<(), Self::Error>;
 
     /// Set the randomness state of this test PRNG.
     fn seed(&mut self, seed: &[u8]);

@@ -1,0 +1,40 @@
+[package]
+name = "hpke-rs-libcrux"
+version = "0.2.0-alpha.1"
+authors = ["Franziskus Kiefer <franziskuskiefer@gmail.com>"]
+edition = "2021"
+license = "MPL-2.0"
+documentation = "https://docs.rs/hpke-rs-libcrux"
+description = "Crypto backend for HPKE using formally verified code from libcrux."
+readme = "Readme.md"
+repository = "https://github.com/cryspen/hpke-rs"
+
+[dependencies]
+hpke-rs-crypto = { version = "0.3.0-alpha.1", path = "../traits" }
+libcrux-ecdh = { version = "0.0.3-alpha.1", git = "https://github.com/cryspen/libcrux", branch = "main", default-features = false }
+libcrux-hkdf = { version = "0.0.3-alpha.1", git = "https://github.com/cryspen/libcrux", branch = "main" }
+libcrux-kem = { version = "0.0.3-alpha.1", git = "https://github.com/cryspen/libcrux", branch = "main", default-features = false }
+libcrux-chacha20poly1305 = { version = "0.0.2", git = "https://github.com/cryspen/libcrux", branch = "main" }
+# Randomness
+rand = { version = "0.9", default-features = false }
+rand_core = { version = "0.9", features = ["os_rng"] }
+rand_chacha = { version = "0.9", default-features = false }
+
+[dev-dependencies]
+criterion = { version = "0.5", features = ["html_reports"] }
+
+[features]
+deterministic-prng = [] # ⚠️ FOR TESTING ONLY.
+std = ["rand/std", "rand_chacha/std", "libcrux-ecdh/std", "libcrux-kem/std", "hpke-rs-crypto/std"]
+
+[[bench]]
+name = "bench_hkdf"
+harness = false
+
+[[bench]]
+name = "bench_p256"
+harness = false
+
+[[bench]]
+name = "bench_x25519"
+harness = false

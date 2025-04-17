@@ -7,7 +7,7 @@ use hpke_rs_crypto::{
     types::{AeadAlgorithm, KdfAlgorithm, KemAlgorithm},
     HpkeCrypto, RngCore,
 };
-// use hpke_rs_evercrypt::HpkeEvercrypt;
+use hpke_rs_libcrux::HpkeLibcrux;
 use hpke_rs_rust_crypto::HpkeRustCrypto;
 use lazy_static::lazy_static;
 
@@ -43,6 +43,7 @@ macro_rules! generate_test_case {
     ($name:ident, $hpke_mode:expr, $kem_mode:expr, $kdf_mode:expr, $aead_mode:expr, $provider:ident) => {
         #[test]
         fn $name() {
+            let _ = pretty_env_logger::try_init();
             let mut hpke = Hpke::<$provider>::new($hpke_mode, $kem_mode, $kdf_mode, $aead_mode);
             println!("Self test {}", hpke);
 
@@ -273,14 +274,14 @@ generate_test_case!(
     AeadAlgorithm::ChaCha20Poly1305,
     HpkeRustCrypto
 );
-// generate_test_case!(
-//     base_dhkemp256_hkdfsha256_chacha20poly1305_evercrypt,
-//     HpkeMode::Base,
-//     KemAlgorithm::DhKemP256,
-//     KdfAlgorithm::HkdfSha256,
-//     AeadAlgorithm::ChaCha20Poly1305,
-//     HpkeEvercrypt
-// );
+generate_test_case!(
+    base_dhkemp256_hkdfsha256_chacha20poly1305_libcrux,
+    HpkeMode::Base,
+    KemAlgorithm::DhKemP256,
+    KdfAlgorithm::HkdfSha256,
+    AeadAlgorithm::ChaCha20Poly1305,
+    HpkeLibcrux
+);
 generate_test_case!(
     base_dhkem25519_hkdfsha256_chacha20poly1305,
     HpkeMode::Base,
@@ -289,14 +290,22 @@ generate_test_case!(
     AeadAlgorithm::ChaCha20Poly1305,
     HpkeRustCrypto
 );
-// generate_test_case!(
-//     base_dhkem25519_hkdfsha256_chacha20poly1305_evercrypt,
-//     HpkeMode::Base,
-//     KemAlgorithm::DhKem25519,
-//     KdfAlgorithm::HkdfSha256,
-//     AeadAlgorithm::ChaCha20Poly1305,
-//     HpkeEvercrypt
-// );
+generate_test_case!(
+    base_dhkem25519_hkdfsha256_chacha20poly1305_libcrux,
+    HpkeMode::Base,
+    KemAlgorithm::DhKem25519,
+    KdfAlgorithm::HkdfSha256,
+    AeadAlgorithm::ChaCha20Poly1305,
+    HpkeLibcrux
+);
+generate_test_case!(
+    base_xwingdraft06_hkdfsha256_chacha20poly1305_libcrux,
+    HpkeMode::Base,
+    KemAlgorithm::XWingDraft06,
+    KdfAlgorithm::HkdfSha256,
+    AeadAlgorithm::ChaCha20Poly1305,
+    HpkeLibcrux
+);
 generate_test_case!(
     base_dhkemp256_hkdfsha384_chacha20poly1305,
     HpkeMode::Base,

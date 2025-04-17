@@ -16,7 +16,7 @@ fn extract_and_expand<Crypto: HpkeCrypto>(
     kem_context: &[u8],
     suite_id: &[u8],
 ) -> Result<Vec<u8>, Error> {
-    let prk = labeled_extract::<Crypto>(alg.into(), &[], suite_id, "eae_prk", &pk);
+    let prk = labeled_extract::<Crypto>(alg.into(), &[], suite_id, "eae_prk", &pk)?;
     labeled_expand::<Crypto>(
         alg.into(),
         &prk,
@@ -41,12 +41,12 @@ pub(super) fn deserialize(enc: &[u8]) -> Vec<u8> {
     enc.to_vec()
 }
 
+/// Return (private, public)
 pub(super) fn key_gen<Crypto: HpkeCrypto>(
     alg: KemAlgorithm,
     prng: &mut Crypto::HpkePrng,
 ) -> Result<(Vec<u8>, Vec<u8>), Error> {
-    let sk = Crypto::kem_key_gen(alg, prng)?;
-    let pk = Crypto::kem_derive_base(alg, &sk)?;
+    let (pk, sk) = Crypto::kem_key_gen(alg, prng)?;
     Ok((sk, pk))
 }
 
@@ -55,7 +55,7 @@ pub(super) fn derive_key_pair<Crypto: HpkeCrypto>(
     suite_id: &[u8],
     ikm: &[u8],
 ) -> Result<(PublicKey, PrivateKey), Error> {
-    let dkp_prk = labeled_extract::<Crypto>(alg.into(), &[], suite_id, "dkp_prk", ikm);
+    let dkp_prk = labeled_extract::<Crypto>(alg.into(), &[], suite_id, "dkp_prk", ikm)?;
 
     let sk = match alg {
         KemAlgorithm::DhKem25519 => labeled_expand::<Crypto>(
@@ -81,7 +81,7 @@ pub(super) fn derive_key_pair<Crypto: HpkeCrypto>(
                     alg.private_key_len(),
                 );
                 if let Ok(sk) = &candidate {
-                    if let Ok(sk) = Crypto::kem_validate_sk(alg, sk) {
+                    if let Ok(sk) = Crypto::dh_validate_sk(alg, sk) {
                         break sk;
                     }
                 }
@@ -98,7 +98,7 @@ pub(super) fn derive_key_pair<Crypto: HpkeCrypto>(
             panic!("This should be unreachable. Only x25519, P256, and K256 KEMs are implemented")
         }
     };
-    Ok((Crypto::kem_derive_base(alg, &sk)?, sk))
+    Ok((Crypto::secret_to_public(alg, &sk)?, sk))
 }
 
 pub(super) fn encaps<Crypto: HpkeCrypto>(
@@ -109,7 +109,7 @@ pub(super) fn encaps<Crypto: HpkeCrypto>(
 ) -> Result<(Vec<u8>, Vec<u8>), Error> {
     debug_assert_eq!(randomness.len(), alg.private_key_len());
     let (pk_e, sk_e) = derive_key_pair::<Crypto>(alg, suite_id, randomness)?;
-    let dh_pk = Crypto::kem_derive(alg, pk_r, &sk_e)?;
+    let dh_pk = Crypto::dh(alg, pk_r, &sk_e)?;
     let enc = serialize(&pk_e);
 
     let pk_rm = serialize(pk_r);
@@ -126,9 +126,9 @@ pub(super) fn decaps<Crypto: HpkeCrypto>(
     suite_id: &[u8],
 ) -> Result<Vec<u8>, Error> {
     let pk_e = deserialize(enc);
-    let dh_pk = Crypto::kem_derive(alg, &pk_e, sk_r)?;
+    let dh_pk = Crypto::dh(alg, &pk_e, sk_r)?;
 
-    let pk_rm = serialize(&Crypto::kem_derive_base(alg, sk_r)?);
+    let pk_rm = serialize(&Crypto::secret_to_public(alg, sk_r)?);
     let kem_context = concat(&[enc, &pk_rm]);
 
     extract_and_expand::<Crypto>(alg, dh_pk, &kem_context, suite_id)
@@ -144,13 +144,13 @@ pub(super) fn auth_encaps<Crypto: HpkeCrypto>(
     debug_assert_eq!(randomness.len(), alg.private_key_len());
     let (pk_e, sk_e) = derive_key_pair::<Crypto>(alg, suite_id, randomness)?;
     let dh_pk = concat(&[
-        &Crypto::kem_derive(alg, pk_r, &sk_e)?,
-        &Crypto::kem_derive(alg, pk_r, sk_s)?,
+        &Crypto::dh(alg, pk_r, &sk_e)?,
+        &Crypto::dh(alg, pk_r, sk_s)?,
     ]);
 
     let enc = serialize(&pk_e);
     let pk_rm = serialize(pk_r);
-    let pk_sm = serialize(&Crypto::kem_derive_base(alg, sk_s)?);
+    let pk_sm = serialize(&Crypto::secret_to_public(alg, sk_s)?);
 
     let kem_context = concat(&[&enc, &pk_rm, &pk_sm]);
 
@@ -167,11 +167,11 @@ pub(super) fn auth_decaps<Crypto: HpkeCrypto>(
 ) -> Result<Vec<u8>, Error> {
     let pk_e = deserialize(enc);
     let dh_pk = concat(&[
-        &Crypto::kem_derive(alg, &pk_e, sk_r)?,
-        &Crypto::kem_derive(alg, pk_s, sk_r)?,
+        &Crypto::dh(alg, &pk_e, sk_r)?,
+        &Crypto::dh(alg, pk_s, sk_r)?,
     ]);
 
-    let pk_rm = serialize(&Crypto::kem_derive_base(alg, sk_r)?);
+    let pk_rm = serialize(&Crypto::secret_to_public(alg, sk_r)?);
     let pk_sm = serialize(pk_s);
     let kem_context = concat(&[enc, &pk_rm, &pk_sm]);
 

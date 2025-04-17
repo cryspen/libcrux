@@ -23,13 +23,15 @@ use alloc::{
 
 #[cfg(feature = "hpke-test-prng")]
 use hpke_rs_crypto::HpkeTestRng;
-#[cfg(not(feature = "hpke-test-prng"))]
-use hpke_rs_crypto::RngCore;
 use hpke_rs_crypto::{
     types::{AeadAlgorithm, KdfAlgorithm, KemAlgorithm},
     HpkeCrypto,
 };
 use prelude::kdf::{labeled_expand, labeled_extract};
+
+#[cfg(not(feature = "hpke-test-prng"))]
+use rand_core::TryRngCore;
+
 #[cfg(feature = "serialization")]
 pub(crate) use serde::{Deserialize, Serialize};
 use zeroize::Zeroize;
@@ -406,17 +408,14 @@ impl<Crypto: HpkeCrypto> Hpke<Crypto> {
         psk_id: Option<&[u8]>,
         sk_s: Option<&HpkePrivateKey>,
     ) -> Result<(EncapsulatedSecret, Context<Crypto>), HpkeError> {
-        let randomness = self.random(self.kem_id.private_key_len())?;
         let (zz, enc) = match self.mode {
-            Mode::Base | Mode::Psk => {
-                kem::encaps::<Crypto>(self.kem_id, pk_r.value.as_slice(), &randomness)?
-            }
+            Mode::Base | Mode::Psk => kem::encaps::<Crypto>(self, pk_r.value.as_slice())?,
             Mode::Auth | Mode::AuthPsk => {
                 let sk_s = match sk_s {
                     Some(s) => &s.value,
                     None => return Err(HpkeError::InvalidInput),
                 };
-                kem::auth_encaps::<Crypto>(self.kem_id, pk_r.value.as_slice(), sk_s, &randomness)?
+                kem::auth_encaps::<Crypto>(self, pk_r.value.as_slice(), sk_s)?
             }
         };
         Ok((
@@ -618,11 +617,20 @@ impl<Crypto: HpkeCrypto> Hpke<Crypto> {
     }
 
     #[inline]
-    fn key_schedule_context(&self, info: &[u8], psk_id: &[u8], suite_id: &[u8]) -> Vec<u8> {
+    fn key_schedule_context(
+        &self,
+        info: &[u8],
+        psk_id: &[u8],
+        suite_id: &[u8],
+    ) -> Result<Vec<u8>, HpkeError> {
         let psk_id_hash =
-            labeled_extract::<Crypto>(self.kdf_id, &[0], suite_id, "psk_id_hash", psk_id);
-        let info_hash = labeled_extract::<Crypto>(self.kdf_id, &[0], suite_id, "info_hash", info);
-        util::concat(&[&[self.mode as u8], &psk_id_hash, &info_hash])
+            labeled_extract::<Crypto>(self.kdf_id, &[0], suite_id, "psk_id_hash", psk_id)?;
+        let info_hash = labeled_extract::<Crypto>(self.kdf_id, &[0], suite_id, "info_hash", info)?;
+        Ok(util::concat(&[
+            &[self.mode as u8],
+            &psk_id_hash,
+            &info_hash,
+        ]))
     }
 
     /// Creating the Encryption Context
@@ -636,9 +644,10 @@ impl<Crypto: HpkeCrypto> Hpke<Crypto> {
     ) -> Result<Context<Crypto>, HpkeError> {
         self.verify_psk_inputs(psk, psk_id)?;
         let suite_id = self.ciphersuite();
-        let key_schedule_context = self.key_schedule_context(info, psk_id, &suite_id);
+        let key_schedule_context = self.key_schedule_context(info, psk_id, &suite_id)?;
         let secret =
-            labeled_extract::<Crypto>(self.kdf_id, shared_secret, &suite_id, "secret", psk);
+            labeled_extract::<Crypto>(self.kdf_id, shared_secret, &suite_id, "secret", psk)
+                .map_err(|e| HpkeError::CryptoError(format!("Crypto error: {}", e)))?;
 
         let key = labeled_expand::<Crypto>(
             self.kdf_id,
@@ -709,6 +718,11 @@ impl<Crypto: HpkeCrypto> Hpke<Crypto> {
             .map_err(|_| HpkeError::InsufficientRandomness)?;
 
         Ok(out)
+    }
+
+    /// Get the rng.
+    pub(crate) fn rng(&mut self) -> &mut Crypto::HpkePrng {
+        &mut self.prng
     }
 }
 
@@ -999,6 +1013,8 @@ impl From<hpke_rs_crypto::error::Error> for HpkeError {
             hpke_rs_crypto::error::Error::InsufficientRandomness => {
                 HpkeError::InsufficientRandomness
             }
+            hpke_rs_crypto::error::Error::UnsupportedKemOperation => HpkeError::InvalidConfig,
+            hpke_rs_crypto::error::Error::KemInvalidCiphertext => HpkeError::InvalidInput,
         }
     }
 }

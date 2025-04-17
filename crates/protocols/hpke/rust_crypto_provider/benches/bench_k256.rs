@@ -6,16 +6,15 @@ fn criterion_benchmark(c: &mut Criterion) {
     c.bench_function(&format!("K256 Derive"), |b| {
         b.iter_batched(
             || {
-                let sk = HpkeRustCrypto::kem_key_gen(
+                let (pk, sk) = HpkeRustCrypto::kem_key_gen(
                     KemAlgorithm::DhKemK256,
                     &mut HpkeRustCrypto::prng(),
                 )
                 .unwrap();
-                let pk = HpkeRustCrypto::kem_derive_base(KemAlgorithm::DhKemK256, &sk).unwrap();
                 (sk.clone(), pk.clone())
             },
             |(sk, pk)| {
-                let _ = HpkeRustCrypto::kem_derive(KemAlgorithm::DhKemK256, &pk, &sk);
+                let _ = HpkeRustCrypto::dh(KemAlgorithm::DhKemK256, &pk, &sk);
             },
             BatchSize::SmallInput,
         )
@@ -23,7 +22,7 @@ fn criterion_benchmark(c: &mut Criterion) {
     c.bench_function(&format!("K256 Derive Base"), |b| {
         b.iter_batched(
             || {
-                let sk = HpkeRustCrypto::kem_key_gen(
+                let (_pk, sk) = HpkeRustCrypto::kem_key_gen(
                     KemAlgorithm::DhKemK256,
                     &mut HpkeRustCrypto::prng(),
                 )
@@ -31,7 +30,7 @@ fn criterion_benchmark(c: &mut Criterion) {
                 sk.clone()
             },
             |sk| {
-                let _pk = HpkeRustCrypto::kem_derive_base(KemAlgorithm::DhKemK256, &sk).unwrap();
+                let _pk = HpkeRustCrypto::secret_to_public(KemAlgorithm::DhKemK256, &sk).unwrap();
             },
             BatchSize::SmallInput,
         )

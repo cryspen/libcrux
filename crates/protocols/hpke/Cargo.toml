@@ -1,13 +1,13 @@
 [package]
 name = "hpke-rs"
-version = "0.2.1-pre.1"
+version = "0.2.1-alpha.1"
 authors = ["Franziskus Kiefer <franziskuskiefer@gmail.com>"]
 edition = "2021"
 license = "MPL-2.0"
 documentation = "https://docs.rs/hpke-rs"
 description = "HPKE Implementation"
 readme = "Readme.md"
-repository = "https://github.com/franziskuskiefer/hpke-rs"
+repository = "https://github.com/cryspen/hpke-rs"
 exclude = ["/tests"]
 
 [dependencies]
@@ -15,28 +15,34 @@ log = "0.4"
 serde = { version = "1.0", features = ["derive"], optional = true }
 tls_codec = { version = "0.4.1-pre.1", features = ["derive"], optional = true }
 zeroize = { version = "1.5", features = ["zeroize_derive"] }
-hpke-rs-crypto = { version = "0.2.0", path = "./traits" }
+hpke-rs-crypto = { version = "0.3.0-alpha.1", path = "./traits", default-features = false }
+rand_core = { version = "0.9", default-features = false}
+libcrux-sha3 = { version = "0.0.2" }
 
 [features]
 default = []
-std = []
+std = ["rand_core/std", "hpke-rs-crypto/std"]
 serialization = ["serde", "tls_codec", "tls_codec/serde", "std"]
 hazmat = []
 hpke-test = ["std"]
-hpke-test-prng = []                                                     # ⚠️ Enable testing PRNG - DO NOT USE
+hpke-test-prng = []                                              # ⚠️ Enable testing PRNG - DO NOT USE
 
 [dev-dependencies]
-hpke-rs-crypto = { version = "0.2.0", path = "./traits", features = ["std"] }
+hpke-rs-crypto = { version = "0.3.0-alpha.1", path = "./traits", features = [
+    "std",
+] }
 serde_json = "1.0"
 serde = { version = "1.0", features = ["derive"] }
 lazy_static = "1.4"
 rayon = "1.5"
 hpke-rs = { path = ".", features = ["hpke-test", "hazmat"] }
-hpke-rs-rust-crypto = { version = "0.2.0", path = "./rust_crypto_provider", features = [
+hpke-rs-rust-crypto = { version = "0.3.0-alpha.1", path = "./rust_crypto_provider", features = [
     "deterministic-prng",
 ] }
-# hpke-rs-evercrypt = { version = "0.1.3-pre.1", path = "./evercrypt_provider", features = ["deterministic-prng"] }
-rand = { version = "0.8" }
+hpke-rs-libcrux = { version = "0.2.0-alpha.1", path = "./libcrux_provider", features = [
+    "deterministic-prng",
+] }
+rand = { version = "0.9" }
 pretty_env_logger = "0.5"
 criterion = { version = "0.5", features = ["html_reports"] }
 

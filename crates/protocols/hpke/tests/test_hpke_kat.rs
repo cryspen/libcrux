@@ -1,6 +1,5 @@
 extern crate hpke_rs as hpke;
 
-// use hpke_rs_evercrypt::HpkeEvercrypt;
 use hpke_rs_rust_crypto::HpkeRustCrypto;
 use rayon::iter::{IntoParallelIterator, ParallelIterator};
 use serde::{self, Deserialize, Serialize};
@@ -12,6 +11,7 @@ use std::time::Instant;
 use hpke::prelude::*;
 use hpke::test_util::{hex_to_bytes, hex_to_bytes_option, vec_to_option_slice};
 use hpke_rs_crypto::{types::*, HpkeCrypto};
+use hpke_rs_libcrux::HpkeLibcrux;
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 #[allow(non_snake_case)]
@@ -294,10 +294,10 @@ fn test_kat() {
         let time = now.elapsed();
         log::info!("Test vectors with Rust Crypto took: {}s", time.as_secs());
 
-        // let now = Instant::now();
-        // kat::<HpkeEvercrypt>(tests);
-        // let time = now.elapsed();
-        // log::info!("Test vectors with Evercrypt took: {}s", time.as_secs());
+        let now = Instant::now();
+        kat::<HpkeLibcrux>(tests);
+        let time = now.elapsed();
+        log::info!("Test vectors with Libcrux took: {}s", time.as_secs());
     }
 }
 
