@@ -4,6 +4,7 @@ use crate::{
 };
 
 use libcrux_intrinsics::avx2::*;
+use rand::random;
 
 use super::Gamma2;
 
@@ -137,6 +138,7 @@ mod computable_specs {
     fn mul(_: (), x: i32, y: i32) -> i64 {
         (x as i64) * (y as i64)
     }
+    // TODO: this is wrapping sub
     #[hax_lib::fstar::before("[@@strict_on_arguments [0]]")]
     fn sub(_: (), x: i32, y: i32) -> i32 {
         ((x as i64) - (y as i64)) as i32
@@ -155,6 +157,7 @@ mod computable_specs {
         })
         // FunArray::from_fn(|i| if i % 2 == 0 { x[i] } else { x[i] >> 32 } as i32)
     }
+
     fn mm256_mul_epi32(x: Vec8i32, y: Vec8i32) -> Vec4i64 {
         FunArray::from_fn(|i| mul(MANUAL_NORM, x[i * 2], y[i * 2]))
     }
@@ -178,23 +181,6 @@ mod computable_specs {
     fn mm256_blend_epi32(x: Vec8i32, y: Vec8i32) -> Vec8i32 {
         // TODO: hardcoded CONTROL!
         FunArray::from_fn(|i| if i % 2 == 0 { x[i] } else { y[i] })
-    }
-
-    #[hax_lib::opaque]
-    pub fn bv_of_vec_8_i32(_vec: Vec8i32) -> Vec256 {
-        todo!()
-    }
-    #[hax_lib::opaque]
-    pub fn bv_of_vec_4_i64(_vec: Vec4i64) -> Vec256 {
-        todo!()
-    }
-    #[hax_lib::opaque]
-    pub fn vec_4_i64_of_bv(_bv: Vec256) -> Vec4i64 {
-        todo!()
-    }
-    #[hax_lib::opaque]
-    pub fn vec_8_i32_of_bv(_bv: Vec256) -> Vec8i32 {
-        todo!()
     }
 
     #[hax_lib::opaque]
@@ -260,6 +246,7 @@ mod computable_specs {
         {
             hax_lib::eq(
                 super::mm256_mul_epi32(x, y),
+                // TODO: we should  insert vec_4_i16_to_vec_8_i32 separatly
                 bv_of_vec_8_i32(vec_4_i16_to_vec_8_i32(mm256_mul_epi32(
                     vec_8_i32_of_bv(x),
                     vec_8_i32_of_bv(y),
@@ -321,15 +308,10 @@ let pw4 #t (x: Minicore.Abstractions.Funarr.t_FunArray _ t): Lemma (x == ${FunAr
         `${computable_specs::identity_vec_4_i64}
     ];
     l_to_r [`pw8; `pw4];
-    dump "AAA";
     // norm [primops; iota; delta_namespace ["Core"; "Minicore"; "Libcrux_intrinsics"; "FStar.FunctionalExtensionality"; "Rust_primitives"; "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.Computable_specs"]; zeta_full];
-    // dump "AAABBB1";
     norm [primops; iota; delta; zeta_full];
-    dump "AAABBB2";
     l_to_r [`${computable_specs::manual_norm_lemma}];
-    dump "AAABBB3";
     norm [primops; iota; delta_namespace ["Libcrux_ml_dsa.Simd.Avx2.Arithmetic.Computable_specs"]; zeta_full];
-    dump "AAABBB4";
     trefl ();
 
     // ctrl_rewrite TopDown (fun t ->
@@ -372,14 +354,56 @@ pub(super) fn montgomery_multiply(lhs: &mut Vec256, rhs: &Vec256) {
 }
 
 fn f(x: i32, y: i32) -> i32 {
-    ((((((x as i64) * (y as i64)) << 32i32) as i32) as i64)
-        - (((((((((((x as i64) * (y as i64)) as i32) as i64) * (58728449i32 as i64)) as i32)
-            as i64)
+    (((((x as i64 * y as i64) >> 32i32) as i32) as i64)
+        - ((((((((((x as i64 * y as i64) as i32) as i64) * (58728449i32 as i64)) as i32) as i64)
             * (8380417i32 as i64))
-            << 32i32) as i32) as i64)) as i32
+            >> 32i32) as i32) as i64)) as i32
 }
 
 fn spec(x: i32, y: i32) -> i32 {
+    let prod = (x as i64 * y as i64) as i64;
+    let k = prod as i32 as i64 * INVERSE_OF_MODULUS_MOD_MONTGOMERY_R as i64 as i32 as i64;
+    let c = k as i32 as i64 * FIELD_MODULUS as i64 as i32 as i64;
+    let res = (prod >> 32) as i32 as i64 - (c >> 32) as i32 as i64;
+    res as i32
+}
+///https://hax-playground.cryspen.com/#fstar+tc/8a05ecc3c5/gist=76dd7a4d13df3172c6d0a43821ee91a0 works
+
+// #[hax_lib::ensures(|out| f(x, y) == out)]
+// fn spec_(x: i32, y: i32) -> i32 {
+//     // fn low_32(x: i64) -> i32 {
+//     //     x as i32
+//     // }
+//     // fn high_32(x: i64) -> i32 {
+//     //     (x >> 32) as i32
+//     // }
+//     // fn mul_64(x: i64, y: i64) -> i64 {
+//     //     low_32(x) as i64 * low_32(y) as i64
+//     // }
+//     macro_rules! low_32 {
+//         ($x:expr) => {
+//             $x as i32
+//         };
+//     }
+//     macro_rules! high_32 {
+//         ($x:expr) => {
+//             ($x >> 32) as i32
+//         };
+//     }
+//     macro_rules! mul_64 {
+//         ($x:expr, $y:expr) => {
+//             low_32!($x) as i64 * low_32!($y) as i64
+//         };
+//     }
+//     let prod = mul_64!(x as i64, y as i64) as i64;
+//     let k = mul_64!(prod, INVERSE_OF_MODULUS_MOD_MONTGOMERY_R as i64);
+//     let c = mul_64!(k, FIELD_MODULUS as i64);
+//     let res = high_32!(prod) as i64 - high_32!(c) as i64;
+//     res as i32
+// }
+
+#[hax_lib::ensures(|out| f(x, y) == out)]
+fn spec_(x: i32, y: i32) -> i32 {
     fn low_32(x: i64) -> i32 {
         x as i32
     }

@@ -303,6 +303,9 @@ pub fn mm256_sub_epi32(lhs: Vec256, rhs: Vec256) -> Vec256 {
     unimplemented!()
 }
 
+// mm256_mullo_epi16 x == to_bv (vec256_as_i16x16 (mm256_mullo_epi16 x))
+// f (g x) == to_bv (vec256_as_i16x16 (f (to_bv (vec256_as_i16x16 (g x))))
+
 #[hax_lib::fstar::replace(
     interface,
     r#"

@@ -205,17 +205,69 @@ let spec__high_32_ (x: i64) : i32 = cast (x >>! mk_i32 32 <: i64) <: i32
 let spec__mul_64_ (x y: i64) : i64 =
   (cast (spec__low_32_ x <: i32) <: i64) *! (cast (spec__low_32_ y <: i32) <: i64)
 
-let spec (x y: i32) : i32 =
-  let prod:i64 = spec__mul_64_ (cast (x <: i32) <: i64) (cast (y <: i32) <: i64) in
-  let k:i64 =
-    spec__mul_64_ prod
-      (cast (Libcrux_ml_dsa.Simd.Traits.v_INVERSE_OF_MODULUS_MOD_MONTGOMERY_R <: u64) <: i64)
+let spec (x y: i32) : Pure i32 (requires True) (ensures (fun r -> r == f x y)) =
+  let prod:i64 =
+    (cast (x <: i32) <: i64) *!
+    (cast (y <: i32) <: i64)
   in
-  let c:i64 = spec__mul_64_ k (cast (Libcrux_ml_dsa.Simd.Traits.v_FIELD_MODULUS <: i32) <: i64) in
+  let k:i64 =
+    (cast (cast (prod <: i64) <: i32
+        )
+      <:
+      i64) *!
+    (cast (cast (cast (Libcrux_ml_dsa.Simd.Traits.v_INVERSE_OF_MODULUS_MOD_MONTGOMERY_R
+                  <:
+                  u64)
+              <:
+              i64)
+          <:
+          i32)
+      <:
+      i64)
+  in
+  let c:i64 =
+    (cast (cast (k <: i64) <: i32)
+      <:
+      i64) *!
+    (cast (cast (cast (v_FIELD_MODULUS
+                  <:
+                  i32)
+              <:
+              i64)
+          <:
+          i32)
+      <:
+      i64)
+  in
   let res:i64 =
-    (cast (spec__high_32_ prod <: i32) <: i64) -! (cast (spec__high_32_ c <: i32) <: i64)
+    (cast (cast (prod >>! mk_i32 32
+              <:
+              i64)
+          <:
+          i32)
+      <:
+      i64) -!
+    (cast (cast (c >>! mk_i32 32
+              <:
+              i64)
+          <:
+          i32)
+      <:
+      i64)
   in
   cast (res <: i64) <: i32
+
+// let spec (x y: i32) : Pure i32 (requires True) (ensures (fun r -> r == f x y)) =
+//   let prod:i64 = spec__mul_64_ (cast (x <: i32) <: i64) (cast (y <: i32) <: i64) in
+//   let k:i64 =
+//     spec__mul_64_ (cast (spec__low_32_ prod) <: i32)
+//       (cast (Libcrux_ml_dsa.Simd.Traits.v_INVERSE_OF_MODULUS_MOD_MONTGOMERY_R <: u64) <: i64)
+//   in
+//   let c:i64 = spec__mul_64_ k (cast (Libcrux_ml_dsa.Simd.Traits.v_FIELD_MODULUS <: i32) <: i64) in
+//   let res:i64 =
+//     (cast (spec__high_32_ prod <: i32) <: i64) -! (cast (spec__high_32_ c <: i32) <: i64)
+//   in
+//   cast (res <: i64) <: i32
 
 let montgomery_multiply_lemma (lhs rhs: Minicore.Core_arch.X86.t_e_ee_m256i)
     : Lemma
