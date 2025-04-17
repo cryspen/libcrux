@@ -58,10 +58,6 @@ pub unsafe fn _mm256_sub_epi16(a: __m256i, b: __m256i) -> __m256i {
     unimplemented!()
 }
 #[hax_lib::opaque]
-pub unsafe fn _mm256_sub_epi32(a: __m256i, b: __m256i) -> __m256i {
-    unimplemented!()
-}
-#[hax_lib::opaque]
 pub unsafe fn _mm_sub_epi16(a: __m128i, b: __m128i) -> __m128i {
     unimplemented!()
 }
@@ -114,10 +110,6 @@ pub unsafe fn _mm256_mul_epu32(a: __m256i, b: __m256i) -> __m256i {
     unimplemented!()
 }
 #[hax_lib::opaque]
-pub unsafe fn _mm256_mul_epi32(a: __m256i, b: __m256i) -> __m256i {
-    unimplemented!()
-}
-#[hax_lib::opaque]
 pub unsafe fn _mm256_and_si256(a: __m256i, b: __m256i) -> __m256i {
     unimplemented!()
 }
@@ -158,10 +150,6 @@ pub unsafe fn _mm256_slli_epi32<const IMM8: i32>(a: __m256i) -> __m256i {
     unimplemented!()
 }
 #[hax_lib::opaque]
-pub unsafe fn _mm256_shuffle_epi32<const IMM8: i32>(a: __m256i) -> __m256i {
-    unimplemented!()
-}
-#[hax_lib::opaque]
 pub unsafe fn _mm256_permute4x64_epi64<const IMM8: i32>(a: __m256i) -> __m256i {
     unimplemented!()
 }
@@ -199,10 +187,6 @@ pub unsafe fn _mm256_inserti128_si256<const IMM8: i32>(a: __m256i, b: __m128i) -
 }
 #[hax_lib::opaque]
 pub unsafe fn _mm256_blend_epi16<const IMM8: i32>(a: __m256i, b: __m256i) -> __m256i {
-    unimplemented!()
-}
-#[hax_lib::opaque]
-pub unsafe fn _mm256_blend_epi32<const IMM8: i32>(a: __m256i, b: __m256i) -> __m256i {
     unimplemented!()
 }
 #[hax_lib::opaque]
