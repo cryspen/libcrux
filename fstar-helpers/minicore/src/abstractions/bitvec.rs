@@ -282,3 +282,84 @@ impl<const N: u64> BitVec<N> {
         chunked_shift::<N, CHUNK, SHIFTS>(self, shl)
     }
 }
+
+pub mod int_vec_interp {
+    //! This module defines interpretation for bit vectors as vectors of machine integers of various size and signedness.
+    use super::*;
+
+    /// An F* attribute that marks an item as being an interpretation lemma.
+    #[allow(dead_code)]
+    #[hax_lib::fstar::before("irreducible")]
+    pub const SIMPLIFICATION_LEMMA: () = ();
+
+    /// Derives interpretations functions, simplification lemmas and type
+    /// synonyms.
+    macro_rules! interpretations {
+        ($n:literal; $($name:ident [$ty:ty; $m:literal]),*) => {
+            $(
+                #[doc = concat!(stringify!($ty), " vectors of size ", stringify!($m))]
+                #[allow(non_camel_case_types)]
+                pub type $name = FunArray<$m, $ty>;
+                const _: ()  = {
+                    #[doc = concat!("Conversion from bit vectors of size ", stringify!($n), " to ", stringify!($ty), " vectors of size ", stringify!($m))]
+                    #[hax_lib::opaque]
+                    impl From<BitVec<$n>> for $name {
+                        fn from(bv: BitVec<$n>) -> Self {
+                            let vec: Vec<$ty> = bv.to_vec();
+                            Self::from_fn(|i| vec[i as usize])
+                        }
+                    }
+
+                    #[doc = concat!("Conversion from ", stringify!($ty), " vectors of size ", stringify!($m), "to  bit vectors of size ", stringify!($n))]
+                    #[hax_lib::opaque]
+                    impl From<$name> for BitVec<$n> {
+                        fn from(iv: $name) -> Self {
+                            let vec: Vec<$ty> = iv.as_vec();
+                            Self::from_slice(&vec[..], u64::MAX)
+                        }
+                    }
+
+
+                    #[doc = concat!("Lemma that asserts that applying ", stringify!(BitVec::<$n>::from)," and then ", stringify!($name::from), " is the identity.")]
+                    #[hax_lib::fstar::before("[@@ $SIMPLIFICATION_LEMMA ]")]
+                    #[hax_lib::opaque]
+                    #[hax_lib::lemma]
+                    #[hax_lib::fstar::smt_pat($name::from(BitVec::<$n>::from(x)))]
+                    pub fn lemma_cancel_iv(x: $name) -> Proof<{
+                        hax_lib::eq($name::from(BitVec::<$n>::from(x)), x)
+                    }> {}
+                    #[doc = concat!("Lemma that asserts that applying ", stringify!($name::from)," and then ", stringify!(BitVec::<$n>::from), " is the identity.")]
+                    #[hax_lib::fstar::before("[@@ $SIMPLIFICATION_LEMMA ]")]
+                    #[hax_lib::opaque]
+                    #[hax_lib::lemma]
+                    #[hax_lib::fstar::smt_pat(BitVec::<$n>::from($name::from(x)))]
+                    pub fn lemma_cancel_bv(x: BitVec<$n>) -> Proof<{
+                        hax_lib::eq(BitVec::<$n>::from($name::from(x)), x)
+                    }> {}
+                };
+            )*
+        };
+    }
+
+    // Defines the types `i32x8` and `i64x4`, and define intepretations function (`From` instances) from/to those types from/to bit vectors.
+    interpretations!(256; i32x8 [i32; 8], i64x4 [i64; 4]);
+
+    impl From<i64x4> for i32x8 {
+        fn from(vec: i64x4) -> Self {
+            Self::from_fn(|i| {
+                let value = *vec.get(i / 2);
+                (if i % 2 == 0 { value } else { value >> 32 }) as i32
+            })
+        }
+    }
+
+    /// Lemma stating that converting an `i64x4` vector to a `BitVec<256>` and then into an `i32x8`
+    /// yields the same result as directly converting the `i64x4` into an `i32x8`.
+    #[hax_lib::fstar::before("[@@ $SIMPLIFICATION_LEMMA ]")]
+    #[hax_lib::opaque]
+    #[hax_lib::lemma]
+    fn lemma_rewrite_i64x4_bv_i32x8(
+        bv: i64x4,
+    ) -> Proof<{ hax_lib::eq(i32x8::from(BitVec::<256>::from(bv)), i32x8::from(bv)) }> {
+    }
+}

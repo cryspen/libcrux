@@ -26,10 +26,6 @@ pub unsafe fn _mm_set1_epi16(a: i16) -> __m128i {
     unimplemented!()
 }
 #[hax_lib::opaque]
-pub unsafe fn _mm256_set1_epi32(a: i32) -> __m256i {
-    unimplemented!()
-}
-#[hax_lib::opaque]
 pub unsafe fn _mm_set_epi32(e3: i32, e2: i32, e1: i32, e0: i32) -> __m128i {
     unimplemented!()
 }
