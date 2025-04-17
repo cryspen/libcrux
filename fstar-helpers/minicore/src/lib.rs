@@ -24,7 +24,7 @@
 //! `minicore` is designed as a reference model for formal verification and reasoning about Rust programs.
 //! By providing a readable, well-specified version of `core`'s behavior, it serves as a foundation for
 //! proof assistants and other verification tools.
-
+#![recursion_limit = "512"]
 pub mod abstractions;
 pub mod core_arch;
 
