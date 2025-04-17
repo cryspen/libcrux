@@ -122,6 +122,11 @@ pub mod avx {
     }
 
     #[hax_lib::opaque]
+    pub fn _mm256_set1_epi32(_: i32) -> __m256i {
+        unimplemented!()
+    }
+
+    #[hax_lib::opaque]
     pub fn _mm256_set_epi32(
         _e0: i32,
         _e1: i32,
@@ -198,6 +203,27 @@ pub mod avx {
 pub use avx2::*;
 pub mod avx2 {
     use super::*;
+
+    #[hax_lib::opaque]
+    pub fn _mm256_blend_epi32<const IMM8: i32>(_: __m256i, _: __m256i) -> __m256i {
+        unimplemented!()
+    }
+
+    #[hax_lib::opaque]
+    pub fn _mm256_shuffle_epi32<const MASK: i32>(_: __m256i) -> __m256i {
+        unimplemented!()
+    }
+
+    #[hax_lib::opaque]
+    pub fn _mm256_sub_epi32(_: __m256i, _: __m256i) -> __m256i {
+        unimplemented!()
+    }
+
+    #[hax_lib::opaque]
+    pub fn _mm256_mul_epi32(_: __m256i, _: __m256i) -> __m256i {
+        unimplemented!()
+    }
+
     #[hax_lib::exclude]
     pub fn _mm_storeu_si128(output: *mut __m128i, a: __m128i) {
         // This is equivalent to `*output = a`
