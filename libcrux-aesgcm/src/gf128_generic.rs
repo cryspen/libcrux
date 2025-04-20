@@ -60,11 +60,9 @@ pub fn gf128<T: GF128FieldElement>(key: &[u8], inp: &[u8], out: &mut [u8]) {
 
 #[cfg(test)]
 mod test {
-    use crate::platform;
-
     use super::gf128;
 
-    const input: [u8; 132] = [
+    const INPUT: [u8; 132] = [
         0xfe, 0xed, 0xfa, 0xce, 0xde, 0xad, 0xbe, 0xef, 0xfe, 0xed, 0xfa, 0xce, 0xde, 0xad, 0xbe,
         0xef, 0xab, 0xad, 0xda, 0xd2, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
         0x00, 0x00, 0x5a, 0x8d, 0xef, 0x2f, 0x0c, 0x9e, 0x53, 0xf1, 0xf7, 0x5d, 0x78, 0x53, 0x65,
@@ -76,12 +74,12 @@ mod test {
         0x0f, 0xc0, 0xc3, 0xb7, 0x80, 0xf2, 0x44, 0x45, 0x44, 0xae, 0x7e, 0x3f,
     ];
 
-    const key: [u8; 16] = [
+    const KEY: [u8; 16] = [
         0xac, 0xbe, 0xf2, 0x05, 0x79, 0xb4, 0xb8, 0xeb, 0xce, 0x88, 0x9b, 0xac, 0x87, 0x32, 0xda,
         0xd7,
     ];
 
-    const expected: [u8; 16] = [
+    const EXPECTED: [u8; 16] = [
         0xfb, 0xba, 0xaa, 0x70, 0xa0, 0x73, 0x6f, 0xf9, 0xed, 0x2f, 0xc4, 0x62, 0xde, 0x72, 0x61,
         0xe0,
     ];
@@ -89,13 +87,29 @@ mod test {
     #[test]
     fn test_gf128() {
         let mut computed: [u8; 16] = [0u8; 16];
-        gf128::<crate::platform::portable::FieldElement>(&key, &input, &mut computed);
+        gf128::<crate::platform::portable::FieldElement>(&KEY, &INPUT, &mut computed);
         for i in 0..16 {
-            if computed[i] != expected[i] {
+            if computed[i] != EXPECTED[i] {
                 println!(
                     "mismatch at {}: expected is {}, computed is {}",
-                    i, expected[i], computed[i]
-                )
+                    i, EXPECTED[i], computed[i]
+                );
+                assert!(false);
+            }
+        }
+    }
+
+    #[test]
+    fn test_gf128_neon() {
+        let mut computed: [u8; 16] = [0u8; 16];
+        gf128::<crate::platform::neon::FieldElement>(&KEY, &INPUT, &mut computed);
+        for i in 0..16 {
+            if computed[i] != EXPECTED[i] {
+                println!(
+                    "mismatch at {}: expected is {}, computed is {}",
+                    i, EXPECTED[i], computed[i]
+                );
+                assert!(false);
             }
         }
     }
