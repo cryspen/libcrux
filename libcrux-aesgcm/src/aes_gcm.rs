@@ -1,16 +1,16 @@
 use crate::{
     aes_ctr::{
-        aes128_ctr_encrypt, aes128_ctr_init, aes128_ctr_key_block, aes128_ctr_set_nonce,
-        aes128_ctr_update, aes128_ctr_xor_block, aes128_ctr_xor_blocks, AES128_CTR_Context,
+        aes128_ctr_init, aes128_ctr_key_block, aes128_ctr_set_nonce,
+        aes128_ctr_update, AES128_CTR_Context,
     },
     gf128_generic::{
-        self, gf128_emit, gf128_init, gf128_update, gf128_update_blocks, gf128_update_last,
+        gf128_emit, gf128_init, gf128_update,
         gf128_update_padded, GF128State,
     },
     platform::{AESState, GF128FieldElement},
 };
 
-#[allow(non_snake_case_types)]
+#[allow(non_camel_case_types)]
 pub struct AES128_GCM_State<T: AESState, U: GF128FieldElement> {
     aes_state: AES128_CTR_Context<T>,
     gcm_state: GF128State<U>,
@@ -101,28 +101,28 @@ pub fn aes128_gcm_decrypt<T: AESState, U: GF128FieldElement>(
 
 #[cfg(test)]
 mod test {
-    use crate::platform::{self, portable};
+    use crate::platform::{portable, neon};
 
     use super::{aes128_gcm_encrypt, aes128_gcm_init, aes128_gcm_set_nonce};
 
-    const input1: [u8; 60] = [
+    const INPUT1: [u8; 60] = [
         0xd9, 0x31, 0x32, 0x25, 0xf8, 0x84, 0x06, 0xe5, 0xa5, 0x59, 0x09, 0xc5, 0xaf, 0xf5, 0x26,
         0x9a, 0x86, 0xa7, 0xa9, 0x53, 0x15, 0x34, 0xf7, 0xda, 0x2e, 0x4c, 0x30, 0x3d, 0x8a, 0x31,
         0x8a, 0x72, 0x1c, 0x3c, 0x0c, 0x95, 0x95, 0x68, 0x09, 0x53, 0x2f, 0xcf, 0x0e, 0x24, 0x49,
         0xa6, 0xb5, 0x25, 0xb1, 0x6a, 0xed, 0xf5, 0xaa, 0x0d, 0xe6, 0x57, 0xba, 0x63, 0x7b, 0x39,
     ];
-    const key1: [u8; 16] = [
+    const KEY1: [u8; 16] = [
         0xfe, 0xff, 0xe9, 0x92, 0x86, 0x65, 0x73, 0x1c, 0x6d, 0x6a, 0x8f, 0x94, 0x67, 0x30, 0x83,
         0x08,
     ];
-    const nonce1: [u8; 12] = [
+    const NONCE1: [u8; 12] = [
         0xca, 0xfe, 0xba, 0xbe, 0xfa, 0xce, 0xdb, 0xad, 0xde, 0xca, 0xf8, 0x88,
     ];
-    const aad1: [u8; 20] = [
+    const AAD1: [u8; 20] = [
         0xfe, 0xed, 0xfa, 0xce, 0xde, 0xad, 0xbe, 0xef, 0xfe, 0xed, 0xfa, 0xce, 0xde, 0xad, 0xbe,
         0xef, 0xab, 0xad, 0xda, 0xd2,
     ];
-    const expected1: [u8; 76] = [
+    const EXPECTED1: [u8; 76] = [
         0x42, 0x83, 0x1e, 0xc2, 0x21, 0x77, 0x74, 0x24, 0x4b, 0x72, 0x21, 0xb7, 0x84, 0xd0, 0xd4,
         0x9c, 0xe3, 0xaa, 0x21, 0x2f, 0x2c, 0x02, 0xa4, 0xe0, 0x35, 0xc1, 0x7e, 0x23, 0x29, 0xac,
         0xa1, 0x2e, 0x21, 0xd5, 0x14, 0xb2, 0x54, 0x66, 0x93, 0x1c, 0x7d, 0x8f, 0x6a, 0x5a, 0xac,
@@ -131,7 +131,7 @@ mod test {
         0x47,
     ];
 
-    const input2: [u8; 652] = [
+    const INPUT2: [u8; 652] = [
         0x08, 0x00, 0x00, 0x1e, 0x00, 0x1c, 0x00, 0x0a, 0x00, 0x14, 0x00, 0x12, 0x00, 0x1d, 0x00,
         0x17, 0x00, 0x18, 0x00, 0x19, 0x01, 0x00, 0x01, 0x01, 0x01, 0x02, 0x01, 0x03, 0x01, 0x04,
         0x00, 0x00, 0x00, 0x00, 0x0b, 0x00, 0x01, 0xb9, 0x00, 0x00, 0x01, 0xb5, 0x00, 0x01, 0xb0,
@@ -178,16 +178,16 @@ mod test {
         0xe5, 0x67, 0x00, 0x13, 0xaa, 0xaa, 0x16,
     ];
 
-    const key2: [u8; 16] = [
+    const KEY2: [u8; 16] = [
         0xfd, 0xa2, 0xa4, 0x40, 0x46, 0x70, 0x80, 0x8f, 0x49, 0x37, 0x47, 0x8b, 0x8b, 0x6e, 0x3f,
         0xe1,
     ];
-    const nonce2: [u8; 12] = [
+    const NONCE2: [u8; 12] = [
         0xb5, 0xf3, 0xa3, 0xfa, 0xe1, 0xcb, 0x25, 0xc9, 0xdc, 0xd7, 0x39, 0x93,
     ];
-    const aad2: [u8; 0] = [];
+    const AAD2: [u8; 0] = [];
 
-    const expected2: [u8; 668] = [
+    const EXPECTED2: [u8; 668] = [
         0xc1, 0xe6, 0x31, 0xf8, 0x1d, 0x2a, 0xf2, 0x21, 0xeb, 0xb6, 0xa9, 0x57, 0xf5, 0x8f, 0x3e,
         0xe2, 0x66, 0x27, 0x26, 0x35, 0xe6, 0x7f, 0x99, 0xa7, 0x52, 0xf0, 0xdf, 0x08, 0xad, 0xeb,
         0x33, 0xba, 0xb8, 0x61, 0x1e, 0x55, 0xf3, 0x3d, 0x72, 0xcf, 0x84, 0x38, 0x24, 0x61, 0xa8,
@@ -238,16 +238,17 @@ mod test {
     #[test]
     fn test_gcm1() {
         let mut computed1 = [0u8; 76];
-        let mut st = aes128_gcm_init::<portable::State, portable::FieldElement>(&key1);
-        aes128_gcm_set_nonce(&mut st, &nonce1);
+        let mut st = aes128_gcm_init::<portable::State, portable::FieldElement>(&KEY1);
+        aes128_gcm_set_nonce(&mut st, &NONCE1);
         let (mut ciphertext, mut tag) = computed1.split_at_mut(60);
-        aes128_gcm_encrypt(&mut st, &aad1, &input1, &mut ciphertext, &mut tag);
+        aes128_gcm_encrypt(&mut st, &AAD1, &INPUT1, &mut ciphertext, &mut tag);
         for i in 0..76 {
-            if computed1[i] != expected1[i] {
+            if computed1[i] != EXPECTED1[i] {
                 println!(
                     "mismatch at {}: expected is {}, computed is {}",
-                    i, expected1[i], computed1[i]
-                )
+                    i, EXPECTED1[i], computed1[i]
+                );
+                assert!(false);
             }
         }
     }
@@ -255,16 +256,53 @@ mod test {
     #[test]
     fn test_gcm2() {
         let mut computed2 = [0u8; 668];
-        let mut st = aes128_gcm_init::<portable::State, portable::FieldElement>(&key2);
-        aes128_gcm_set_nonce(&mut st, &nonce2);
+        let mut st = aes128_gcm_init::<portable::State, portable::FieldElement>(&KEY2);
+        aes128_gcm_set_nonce(&mut st, &NONCE2);
         let (mut ciphertext, mut tag) = computed2.split_at_mut(652);
-        aes128_gcm_encrypt(&mut st, &aad2, &input2, &mut ciphertext, &mut tag);
+        aes128_gcm_encrypt(&mut st, &AAD2, &INPUT2, &mut ciphertext, &mut tag);
         for i in 0..668 {
-            if computed2[i] != expected2[i] {
+            if computed2[i] != EXPECTED2[i] {
                 println!(
                     "mismatch at {}: expected is {}, computed is {}",
-                    i, expected2[i], computed2[i]
-                )
+                    i, EXPECTED2[i], computed2[i]
+                );
+                assert!(false);
+            }
+        }
+    }
+
+    #[test]
+    fn test_gcm1_neon() {
+        let mut computed1 = [0u8; 76];
+        let mut st = aes128_gcm_init::<neon::State, neon::FieldElement>(&KEY1);
+        aes128_gcm_set_nonce(&mut st, &NONCE1);
+        let (mut ciphertext, mut tag) = computed1.split_at_mut(60);
+        aes128_gcm_encrypt(&mut st, &AAD1, &INPUT1, &mut ciphertext, &mut tag);
+        for i in 0..76 {
+            if computed1[i] != EXPECTED1[i] {
+                println!(
+                    "mismatch at {}: expected is {}, computed is {}",
+                    i, EXPECTED1[i], computed1[i]
+                );
+                assert!(false);
+            }
+        }
+    }
+
+    #[test]
+    fn test_gcm2_neon() {
+        let mut computed2 = [0u8; 668];
+        let mut st = aes128_gcm_init::<neon::State, neon::FieldElement>(&KEY2);
+        aes128_gcm_set_nonce(&mut st, &NONCE2);
+        let (mut ciphertext, mut tag) = computed2.split_at_mut(652);
+        aes128_gcm_encrypt(&mut st, &AAD2, &INPUT2, &mut ciphertext, &mut tag);
+        for i in 0..668 {
+            if computed2[i] != EXPECTED2[i] {
+                println!(
+                    "mismatch at {}: expected is {}, computed is {}",
+                    i, EXPECTED2[i], computed2[i]
+                );
+                assert!(false);
             }
         }
     }
