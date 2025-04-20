@@ -1,10 +1,10 @@
 pub(crate) type State = [u16; 8];
 
-fn  new_state() -> State {
+fn new_state() -> State {
     [0u16; 8]
 }
 
-fn  interleave_u8_1(i0:u8, i1:u8) -> u16 {
+fn interleave_u8_1(i0: u8, i1: u8) -> u16 {
     let mut x = i0 as u16;
     x = (x | (x << 4)) & 0x0F0F;
     x = (x | (x << 2)) & 0x3333;
@@ -14,9 +14,9 @@ fn  interleave_u8_1(i0:u8, i1:u8) -> u16 {
     y = (y | (y << 2)) & 0x3333;
     y = (y | (y << 1)) & 0x5555;
     x | (y << 1)
- }
- 
- fn  deinterleave_u8_1(i0:u16) -> (u8,u8) {
+}
+
+fn deinterleave_u8_1(i0: u16) -> (u8, u8) {
     let mut x = i0 & 0x5555;
     x = (x | (x >> 1)) & 0x3333;
     x = (x | (x >> 2)) & 0x0F0F;
@@ -26,80 +26,79 @@ fn  interleave_u8_1(i0:u8, i1:u8) -> u16 {
     y = (y | (y >> 2)) & 0x0F0F;
     y = (y | (y >> 4)) & 0x00FF;
     (x as u8, y as u8)
- }
+}
 
- fn  interleave_u16_2(i0:u16, i1:u16) -> (u16,u16) {
-     let x = ((i1 & 0x3333) << 2) | (i0 & 0x3333);
-     let y = ((i0 & 0xcccc) >> 2) | (i1 & 0xcccc);
-     (x,y)
- }
- 
- 
- fn  interleave_u16_4(i0:u16, i1:u16) -> (u16,u16) {
-     let x = ((i1 & 0x0F0F) << 4) | (i0 & 0x0F0F);
-     let y = ((i0 & 0xF0F0) >> 4) | (i1 & 0xF0F0);
-     (x,y)
- }
- 
- fn  interleave_u16_8(i0:u16, i1:u16) -> (u16,u16) {
-     let x = ((i1 & 0x00FF) << 8) | (i0 & 0x00FF);
-     let y = ((i0 & 0xFF00) >> 8) | (i1 & 0xFF00);
-     (x,y)
- }
- 
- fn  transpose_u8x16(input: &[u8;16], output: &mut [u16;8]) {
-     let o0 = interleave_u8_1(input[0], input[1]);
-     let o1 = interleave_u8_1(input[2], input[3]);
-     let o2 = interleave_u8_1(input[4], input[5]);
-     let o3 = interleave_u8_1(input[6], input[7]);
-     let o4 = interleave_u8_1(input[8], input[9]);
-     let o5 = interleave_u8_1(input[10], input[11]);
-     let o6 = interleave_u8_1(input[12], input[13]);
-     let o7 = interleave_u8_1(input[14], input[15]);
-     let (o0,o1) = interleave_u16_2(o0, o1);
-     let (o2,o3) = interleave_u16_2(o2, o3);
-     let (o4,o5) = interleave_u16_2(o4, o5);
-     let (o6,o7) = interleave_u16_2(o6, o7);
-     let (o0,o2) = interleave_u16_4(o0, o2);
-     let (o1,o3) = interleave_u16_4(o1, o3);
-     let (o4,o6) = interleave_u16_4(o4, o6);
-     let (o5,o7) = interleave_u16_4(o5, o7);
-     let (o0,o4) = interleave_u16_8(o0, o4);
-     let (o1,o5) = interleave_u16_8(o1, o5);
-     let (o2,o6) = interleave_u16_8(o2, o6);
-     let (o3,o7) = interleave_u16_8(o3, o7);
-     output[0] = o0;
-     output[1] = o1;
-     output[2] = o2;
-     output[3] = o3;
-     output[4] = o4;
-     output[5] = o5;
-     output[6] = o6;
-     output[7] = o7;
- }
- 
- fn  transpose_u16x8(input: &[u16;8], output: &mut [u8]) {
-    let (i0,i4) = interleave_u16_8(input[0], input[4]);
-    let (i1,i5) = interleave_u16_8(input[1], input[5]);
-    let (i2,i6) = interleave_u16_8(input[2], input[6]);
-    let (i3,i7) = interleave_u16_8(input[3], input[7]);
-    let (i0,i2) = interleave_u16_4(i0, i2);
-    let (i1,i3) = interleave_u16_4(i1, i3);
-    let (i4,i6) = interleave_u16_4(i4, i6);
-    let (i5,i7) = interleave_u16_4(i5, i7);
-    let (i0,i1) = interleave_u16_2(i0, i1);
-    let (i2,i3) = interleave_u16_2(i2, i3);
-    let (i4,i5) = interleave_u16_2(i4, i5);
-    let (i6,i7) = interleave_u16_2(i6, i7);
+fn interleave_u16_2(i0: u16, i1: u16) -> (u16, u16) {
+    let x = ((i1 & 0x3333) << 2) | (i0 & 0x3333);
+    let y = ((i0 & 0xcccc) >> 2) | (i1 & 0xcccc);
+    (x, y)
+}
 
-    let (o0,o1) = deinterleave_u8_1(i0);
-    let (o2,o3) = deinterleave_u8_1(i1);
-    let (o4,o5) = deinterleave_u8_1(i2);
-    let (o6,o7) = deinterleave_u8_1(i3);
-    let (o8,o9) = deinterleave_u8_1(i4);
-    let (o10,o11) = deinterleave_u8_1(i5);
-    let (o12,o13) = deinterleave_u8_1(i6);
-    let (o14,o15) = deinterleave_u8_1(i7);
+fn interleave_u16_4(i0: u16, i1: u16) -> (u16, u16) {
+    let x = ((i1 & 0x0F0F) << 4) | (i0 & 0x0F0F);
+    let y = ((i0 & 0xF0F0) >> 4) | (i1 & 0xF0F0);
+    (x, y)
+}
+
+fn interleave_u16_8(i0: u16, i1: u16) -> (u16, u16) {
+    let x = ((i1 & 0x00FF) << 8) | (i0 & 0x00FF);
+    let y = ((i0 & 0xFF00) >> 8) | (i1 & 0xFF00);
+    (x, y)
+}
+
+fn transpose_u8x16(input: &[u8; 16], output: &mut [u16; 8]) {
+    let o0 = interleave_u8_1(input[0], input[1]);
+    let o1 = interleave_u8_1(input[2], input[3]);
+    let o2 = interleave_u8_1(input[4], input[5]);
+    let o3 = interleave_u8_1(input[6], input[7]);
+    let o4 = interleave_u8_1(input[8], input[9]);
+    let o5 = interleave_u8_1(input[10], input[11]);
+    let o6 = interleave_u8_1(input[12], input[13]);
+    let o7 = interleave_u8_1(input[14], input[15]);
+    let (o0, o1) = interleave_u16_2(o0, o1);
+    let (o2, o3) = interleave_u16_2(o2, o3);
+    let (o4, o5) = interleave_u16_2(o4, o5);
+    let (o6, o7) = interleave_u16_2(o6, o7);
+    let (o0, o2) = interleave_u16_4(o0, o2);
+    let (o1, o3) = interleave_u16_4(o1, o3);
+    let (o4, o6) = interleave_u16_4(o4, o6);
+    let (o5, o7) = interleave_u16_4(o5, o7);
+    let (o0, o4) = interleave_u16_8(o0, o4);
+    let (o1, o5) = interleave_u16_8(o1, o5);
+    let (o2, o6) = interleave_u16_8(o2, o6);
+    let (o3, o7) = interleave_u16_8(o3, o7);
+    output[0] = o0;
+    output[1] = o1;
+    output[2] = o2;
+    output[3] = o3;
+    output[4] = o4;
+    output[5] = o5;
+    output[6] = o6;
+    output[7] = o7;
+}
+
+fn transpose_u16x8(input: &[u16; 8], output: &mut [u8]) {
+    let (i0, i4) = interleave_u16_8(input[0], input[4]);
+    let (i1, i5) = interleave_u16_8(input[1], input[5]);
+    let (i2, i6) = interleave_u16_8(input[2], input[6]);
+    let (i3, i7) = interleave_u16_8(input[3], input[7]);
+    let (i0, i2) = interleave_u16_4(i0, i2);
+    let (i1, i3) = interleave_u16_4(i1, i3);
+    let (i4, i6) = interleave_u16_4(i4, i6);
+    let (i5, i7) = interleave_u16_4(i5, i7);
+    let (i0, i1) = interleave_u16_2(i0, i1);
+    let (i2, i3) = interleave_u16_2(i2, i3);
+    let (i4, i5) = interleave_u16_2(i4, i5);
+    let (i6, i7) = interleave_u16_2(i6, i7);
+
+    let (o0, o1) = deinterleave_u8_1(i0);
+    let (o2, o3) = deinterleave_u8_1(i1);
+    let (o4, o5) = deinterleave_u8_1(i2);
+    let (o6, o7) = deinterleave_u8_1(i3);
+    let (o8, o9) = deinterleave_u8_1(i4);
+    let (o10, o11) = deinterleave_u8_1(i5);
+    let (o12, o13) = deinterleave_u8_1(i6);
+    let (o14, o15) = deinterleave_u8_1(i7);
 
     output[0] = o0;
     output[1] = o1;
@@ -119,13 +118,12 @@ fn  interleave_u8_1(i0:u8, i1:u8) -> u16 {
     output[15] = o15;
 }
 
-
-fn  xnor(a:u16, b:u16) -> u16 {
+fn xnor(a: u16, b: u16) -> u16 {
     !(a ^ b)
 }
 
 #[allow(non_snake_case)]
-fn  sub_bytes_state(st:&mut State) {
+fn sub_bytes_state(st: &mut State) {
     let U0 = st[7];
     let U1 = st[6];
     let U2 = st[5];
@@ -245,22 +243,22 @@ fn  sub_bytes_state(st:&mut State) {
     let T124 = T104 ^ T115;
     let T125 = T111 ^ T116;
     let S0 = T109 ^ T122;
-    let S2 = xnor(T123,T124);
+    let S2 = xnor(T123, T124);
     let T128 = T94 ^ T107;
     let S3 = T113 ^ T114;
     let S4 = T118 ^ T128;
     let T131 = T93 ^ T101;
     let T132 = T112 ^ T120;
-    let S7 = xnor(T113,T125);
+    let S7 = xnor(T113, T125);
     let T134 = T97 ^ T116;
     let T135 = T131 ^ T134;
     let T136 = T93 ^ T115;
-    let S6 = xnor(T109,T135);
+    let S6 = xnor(T109, T135);
     let T138 = T119 ^ T132;
     let S5 = T109 ^ T138;
     let T140 = T114 ^ T136;
-    let S1 = xnor(T109,T140);
-    
+    let S1 = xnor(T109, T140);
+
     st[0] = S7;
     st[1] = S6;
     st[2] = S5;
@@ -270,10 +268,9 @@ fn  sub_bytes_state(st:&mut State) {
     st[6] = S1;
     st[7] = S0;
 }
- 
 
 #[allow(non_snake_case)]
-fn  sub_bytes_inv_state(st:&mut State) {
+fn sub_bytes_inv_state(st: &mut State) {
     let U0 = st[7];
     let U1 = st[6];
     let U2 = st[5];
@@ -410,7 +407,7 @@ fn  sub_bytes_inv_state(st:&mut State) {
     let W5 = P19 ^ P24;
     let W6 = P14 ^ P23;
     let W7 = P9 ^ P16;
-    
+
     st[0] = W7;
     st[1] = W6;
     st[2] = W5;
@@ -421,14 +418,14 @@ fn  sub_bytes_inv_state(st:&mut State) {
     st[7] = W0;
 }
 
-fn  shift_row_u16(input:u16) -> u16 {
-   (input & 0x1111) |
-   ((input & 0x2220) >> 4) |
-   ((input & 0x0002) << 12) |
-   ((input & 0x4400) >> 8) |
-   ((input & 0x0044) << 8) |
-   ((input & 0x8000) >> 12) |
-   ((input & 0x0888) << 4)
+fn shift_row_u16(input: u16) -> u16 {
+    (input & 0x1111)
+        | ((input & 0x2220) >> 4)
+        | ((input & 0x0002) << 12)
+        | ((input & 0x4400) >> 8)
+        | ((input & 0x0044) << 8)
+        | ((input & 0x8000) >> 12)
+        | ((input & 0x0888) << 4)
 }
 
 fn shift_rows_state(st: &mut State) {
@@ -445,12 +442,8 @@ fn shift_rows_state(st: &mut State) {
 fn mix_columns_state(st: &mut State) {
     let mut last_col: u16 = 0;
     for i in 0..8 {
-        let col = st[i] ^
-            (((st[i] & 0xeeee) >> 1)
-            | ((st[i] & 0x1111) << 3));
-        st[i] = st[i] ^ last_col ^ col ^
-                (((col & 0xcccc) >> 2)
-                | ((col & 0x3333) << 2));
+        let col = st[i] ^ (((st[i] & 0xeeee) >> 1) | ((st[i] & 0x1111) << 3));
+        st[i] = st[i] ^ last_col ^ col ^ (((col & 0xcccc) >> 2) | ((col & 0x3333) << 2));
         last_col = col;
     }
     st[0] ^= last_col;
@@ -459,7 +452,7 @@ fn mix_columns_state(st: &mut State) {
     st[4] ^= last_col;
 }
 
-fn  xor_key1_state(st: &mut State, k:&State) {
+fn xor_key1_state(st: &mut State, k: &State) {
     st[0] ^= k[0];
     st[1] ^= k[1];
     st[2] ^= k[2];
@@ -470,86 +463,84 @@ fn  xor_key1_state(st: &mut State, k:&State) {
     st[7] ^= k[7];
 }
 
-fn  aes_enc(st: &mut State, key: &State) {
+fn aes_enc(st: &mut State, key: &State) {
     sub_bytes_state(st);
     shift_rows_state(st);
     mix_columns_state(st);
     xor_key1_state(st, key)
 }
 
-fn  aes_enc_last(st: &mut State, key: &State) {
+fn aes_enc_last(st: &mut State, key: &State) {
     sub_bytes_state(st);
     shift_rows_state(st);
     xor_key1_state(st, key)
 }
 
-fn aes_keygen_assisti(rcon:u8, i:usize, u:u16) -> u16 {
-  let u3 = u & 0xf000;
-  let n = u3 >> 12;
-  let n = ((n >> 1) | (n << 3)) & 0x000f;
-  let ri = ((rcon >> i) & 1) as u16;
-  let n = n ^ ri;
-  let n = n << 12;
-  n ^ (u3 >> 4)
+fn aes_keygen_assisti(rcon: u8, i: usize, u: u16) -> u16 {
+    let u3 = u & 0xf000;
+    let n = u3 >> 12;
+    let n = ((n >> 1) | (n << 3)) & 0x000f;
+    let ri = ((rcon >> i) & 1) as u16;
+    let n = n ^ ri;
+    let n = n << 12;
+    n ^ (u3 >> 4)
 }
 
-fn  aes_keygen_assist(next: &mut State, prev: &State, rcon: u8) {
-  next.copy_from_slice(prev);
-  sub_bytes_state(next);
-  next[0] = aes_keygen_assisti(rcon, 0, next[0]);
-  next[1] = aes_keygen_assisti(rcon, 1, next[1]);
-  next[2] = aes_keygen_assisti(rcon, 2, next[2]);
-  next[3] = aes_keygen_assisti(rcon, 3, next[3]);
-  next[4] = aes_keygen_assisti(rcon, 4, next[4]);
-  next[5] = aes_keygen_assisti(rcon, 5, next[5]);
-  next[6] = aes_keygen_assisti(rcon, 6, next[6]);
-  next[7] = aes_keygen_assisti(rcon, 7, next[7]);
+fn aes_keygen_assist(next: &mut State, prev: &State, rcon: u8) {
+    next.copy_from_slice(prev);
+    sub_bytes_state(next);
+    next[0] = aes_keygen_assisti(rcon, 0, next[0]);
+    next[1] = aes_keygen_assisti(rcon, 1, next[1]);
+    next[2] = aes_keygen_assisti(rcon, 2, next[2]);
+    next[3] = aes_keygen_assisti(rcon, 3, next[3]);
+    next[4] = aes_keygen_assisti(rcon, 4, next[4]);
+    next[5] = aes_keygen_assisti(rcon, 5, next[5]);
+    next[6] = aes_keygen_assisti(rcon, 6, next[6]);
+    next[7] = aes_keygen_assisti(rcon, 7, next[7]);
 }
 
-fn  aes_keygen_assist0(next: &mut State, prev: &State, rcon: u8){
+fn aes_keygen_assist0(next: &mut State, prev: &State, rcon: u8) {
     aes_keygen_assist(next, prev, rcon);
-    fn  aux(mut n:u16) -> u16 {
-      n &= 0xf000;
-      n ^= n >> 4;
-      n ^= n >> 8;
-      n
+    fn aux(mut n: u16) -> u16 {
+        n &= 0xf000;
+        n ^= n >> 4;
+        n ^= n >> 8;
+        n
     }
-    next[0] = aux(next[0]);   
-    next[1] = aux(next[1]);   
-    next[2] = aux(next[2]);   
-    next[3] = aux(next[3]);   
-    next[4] = aux(next[4]);   
-    next[5] = aux(next[5]);   
-    next[6] = aux(next[6]);   
-    next[7] = aux(next[7]);   
-}   
-
-
-fn  aes_keygen_assist1(next: &mut State, prev: &State){
-    aes_keygen_assist(next, prev, 0);
-    fn  aux(mut n:u16) -> u16 {
-      n &= 0x0f00;
-      n ^= (n << 4);
-      n ^= (n >> 8);
-      n
-    }
-    next[0] = aux(next[0]);   
-    next[1] = aux(next[1]);   
-    next[2] = aux(next[2]);   
-    next[3] = aux(next[3]);   
-    next[4] = aux(next[4]);   
-    next[5] = aux(next[5]);   
-    next[6] = aux(next[6]);   
-    next[7] = aux(next[7]);   
-}   
-
-fn key_expand1(p:u16, n:u16) -> u16 {
-  let p = p ^ ((p & 0x0fff) << 4) ^ ((p & 0x00ff) << 8)
-            ^ ((p & 0x000f) << 12);
-  n ^ p
+    next[0] = aux(next[0]);
+    next[1] = aux(next[1]);
+    next[2] = aux(next[2]);
+    next[3] = aux(next[3]);
+    next[4] = aux(next[4]);
+    next[5] = aux(next[5]);
+    next[6] = aux(next[6]);
+    next[7] = aux(next[7]);
 }
 
-fn  key_expansion_step(next: &mut State, prev: &State) {
+fn aes_keygen_assist1(next: &mut State, prev: &State) {
+    aes_keygen_assist(next, prev, 0);
+    fn aux(mut n: u16) -> u16 {
+        n &= 0x0f00;
+        n ^= (n << 4);
+        n ^= (n >> 8);
+        n
+    }
+    next[0] = aux(next[0]);
+    next[1] = aux(next[1]);
+    next[2] = aux(next[2]);
+    next[3] = aux(next[3]);
+    next[4] = aux(next[4]);
+    next[5] = aux(next[5]);
+    next[6] = aux(next[6]);
+    next[7] = aux(next[7]);
+}
+
+fn key_expand1(p: u16, n: u16) -> u16 {
+    let p = p ^ ((p & 0x0fff) << 4) ^ ((p & 0x00ff) << 8) ^ ((p & 0x000f) << 12);
+    n ^ p
+}
+
+fn key_expansion_step(next: &mut State, prev: &State) {
     next[0] = key_expand1(prev[0], next[0]);
     next[1] = key_expand1(prev[1], next[1]);
     next[2] = key_expand1(prev[2], next[2]);
@@ -565,17 +556,17 @@ impl crate::platform::AESState for State {
         new_state()
     }
 
-    fn load_block(&mut self, b:&[u8]) {
+    fn load_block(&mut self, b: &[u8]) {
         debug_assert!(b.len() == 16);
         transpose_u8x16(b.try_into().unwrap(), self);
     }
 
-    fn store_block(&self, out:&mut[u8]) {
+    fn store_block(&self, out: &mut [u8]) {
         debug_assert!(out.len() == 16);
         transpose_u16x8(self, out);
     }
 
-    fn xor_block(&self, inp:&[u8], out:&mut[u8]) {
+    fn xor_block(&self, inp: &[u8], out: &mut [u8]) {
         debug_assert!(inp.len() == out.len() && inp.len() <= 16);
         let mut block = [0u8; 16];
         self.store_block(&mut block);
@@ -589,7 +580,8 @@ impl crate::platform::AESState for State {
     }
 
     fn aes_enc(&mut self, key: &Self) {
-        aes_enc(self, key);(self, key);
+        aes_enc(self, key);
+        (self, key);
     }
 
     fn aes_enc_last(&mut self, key: &Self) {
@@ -604,98 +596,547 @@ impl crate::platform::AESState for State {
         aes_keygen_assist1(self, prev);
     }
 
-    fn key_expansion_step(&mut self, prev:&Self) {
+    fn key_expansion_step(&mut self, prev: &Self) {
         key_expansion_step(self, prev)
     }
 }
 
- #[cfg(test)]
- mod test {
-    fn  sbox_fwd(s:u8) -> u8 {
+#[cfg(test)]
+mod test {
+    fn sbox_fwd(s: u8) -> u8 {
         match s {
-            0 => 0x63 ,   1 => 0x7c ,   2 => 0x77 ,   3 => 0x7b ,   4 => 0xf2 ,   5 => 0x6b ,   6 => 0x6f ,   7 => 0xc5
-        ,   8 => 0x30 ,   9 => 0x01 ,  10 => 0x67 ,  11 => 0x2b ,  12 => 0xfe ,  13 => 0xd7 ,  14 => 0xab ,  15 => 0x76
-        ,  16 => 0xca ,  17 => 0x82 ,  18 => 0xc9 ,  19 => 0x7d ,  20 => 0xfa ,  21 => 0x59 ,  22 => 0x47 ,  23 => 0xf0
-        ,  24 => 0xad ,  25 => 0xd4 ,  26 => 0xa2 ,  27 => 0xaf ,  28 => 0x9c ,  29 => 0xa4 ,  30 => 0x72 ,  31 => 0xc0
-        ,  32 => 0xb7 ,  33 => 0xfd ,  34 => 0x93 ,  35 => 0x26 ,  36 => 0x36 ,  37 => 0x3f ,  38 => 0xf7 ,  39 => 0xcc
-        ,  40 => 0x34 ,  41 => 0xa5 ,  42 => 0xe5 ,  43 => 0xf1 ,  44 => 0x71 ,  45 => 0xd8 ,  46 => 0x31 ,  47 => 0x15
-        ,  48 => 0x04 ,  49 => 0xc7 ,  50 => 0x23 ,  51 => 0xc3 ,  52 => 0x18 ,  53 => 0x96 ,  54 => 0x05 ,  55 => 0x9a
-        ,  56 => 0x07 ,  57 => 0x12 ,  58 => 0x80 ,  59 => 0xe2 ,  60 => 0xeb ,  61 => 0x27 ,  62 => 0xb2 ,  63 => 0x75
-        ,  64 => 0x09 ,  65 => 0x83 ,  66 => 0x2c ,  67 => 0x1a ,  68 => 0x1b ,  69 => 0x6e ,  70 => 0x5a ,  71 => 0xa0
-        ,  72 => 0x52 ,  73 => 0x3b ,  74 => 0xd6 ,  75 => 0xb3 ,  76 => 0x29 ,  77 => 0xe3 ,  78 => 0x2f ,  79 => 0x84
-        ,  80 => 0x53 ,  81 => 0xd1 ,  82 => 0x00 ,  83 => 0xed ,  84 => 0x20 ,  85 => 0xfc ,  86 => 0xb1 ,  87 => 0x5b
-        ,  88 => 0x6a ,  89 => 0xcb ,  90 => 0xbe ,  91 => 0x39 ,  92 => 0x4a ,  93 => 0x4c ,  94 => 0x58 ,  95 => 0xcf
-        ,  96 => 0xd0 ,  97 => 0xef ,  98 => 0xaa ,  99 => 0xfb , 100 => 0x43 , 101 => 0x4d , 102 => 0x33 , 103 => 0x85
-        , 104 => 0x45 , 105 => 0xf9 , 106 => 0x02 , 107 => 0x7f , 108 => 0x50 , 109 => 0x3c , 110 => 0x9f , 111 => 0xa8
-        , 112 => 0x51 , 113 => 0xa3 , 114 => 0x40 , 115 => 0x8f , 116 => 0x92 , 117 => 0x9d , 118 => 0x38 , 119 => 0xf5
-        , 120 => 0xbc , 121 => 0xb6 , 122 => 0xda , 123 => 0x21 , 124 => 0x10 , 125 => 0xff , 126 => 0xf3 , 127 => 0xd2
-        , 128 => 0xcd , 129 => 0x0c , 130 => 0x13 , 131 => 0xec , 132 => 0x5f , 133 => 0x97 , 134 => 0x44 , 135 => 0x17
-        , 136 => 0xc4 , 137 => 0xa7 , 138 => 0x7e , 139 => 0x3d , 140 => 0x64 , 141 => 0x5d , 142 => 0x19 , 143 => 0x73
-        , 144 => 0x60 , 145 => 0x81 , 146 => 0x4f , 147 => 0xdc , 148 => 0x22 , 149 => 0x2a , 150 => 0x90 , 151 => 0x88
-        , 152 => 0x46 , 153 => 0xee , 154 => 0xb8 , 155 => 0x14 , 156 => 0xde , 157 => 0x5e , 158 => 0x0b , 159 => 0xdb
-        , 160 => 0xe0 , 161 => 0x32 , 162 => 0x3a , 163 => 0x0a , 164 => 0x49 , 165 => 0x06 , 166 => 0x24 , 167 => 0x5c
-        , 168 => 0xc2 , 169 => 0xd3 , 170 => 0xac , 171 => 0x62 , 172 => 0x91 , 173 => 0x95 , 174 => 0xe4 , 175 => 0x79
-        , 176 => 0xe7 , 177 => 0xc8 , 178 => 0x37 , 179 => 0x6d , 180 => 0x8d , 181 => 0xd5 , 182 => 0x4e , 183 => 0xa9
-        , 184 => 0x6c , 185 => 0x56 , 186 => 0xf4 , 187 => 0xea , 188 => 0x65 , 189 => 0x7a , 190 => 0xae , 191 => 0x08
-        , 192 => 0xba , 193 => 0x78 , 194 => 0x25 , 195 => 0x2e , 196 => 0x1c , 197 => 0xa6 , 198 => 0xb4 , 199 => 0xc6
-        , 200 => 0xe8 , 201 => 0xdd , 202 => 0x74 , 203 => 0x1f , 204 => 0x4b , 205 => 0xbd , 206 => 0x8b , 207 => 0x8a
-        , 208 => 0x70 , 209 => 0x3e , 210 => 0xb5 , 211 => 0x66 , 212 => 0x48 , 213 => 0x03 , 214 => 0xf6 , 215 => 0x0e
-        , 216 => 0x61 , 217 => 0x35 , 218 => 0x57 , 219 => 0xb9 , 220 => 0x86 , 221 => 0xc1 , 222 => 0x1d , 223 => 0x9e
-        , 224 => 0xe1 , 225 => 0xf8 , 226 => 0x98 , 227 => 0x11 , 228 => 0x69 , 229 => 0xd9 , 230 => 0x8e , 231 => 0x94
-        , 232 => 0x9b , 233 => 0x1e , 234 => 0x87 , 235 => 0xe9 , 236 => 0xce , 237 => 0x55 , 238 => 0x28 , 239 => 0xdf
-        , 240 => 0x8c , 241 => 0xa1 , 242 => 0x89 , 243 => 0x0d , 244 => 0xbf , 245 => 0xe6 , 246 => 0x42 , 247 => 0x68
-        , 248 => 0x41 , 249 => 0x99 , 250 => 0x2d , 251 => 0x0f , 252 => 0xb0 , 253 => 0x54 , 254 => 0xbb , 255 => 0x16
+            0 => 0x63,
+            1 => 0x7c,
+            2 => 0x77,
+            3 => 0x7b,
+            4 => 0xf2,
+            5 => 0x6b,
+            6 => 0x6f,
+            7 => 0xc5,
+            8 => 0x30,
+            9 => 0x01,
+            10 => 0x67,
+            11 => 0x2b,
+            12 => 0xfe,
+            13 => 0xd7,
+            14 => 0xab,
+            15 => 0x76,
+            16 => 0xca,
+            17 => 0x82,
+            18 => 0xc9,
+            19 => 0x7d,
+            20 => 0xfa,
+            21 => 0x59,
+            22 => 0x47,
+            23 => 0xf0,
+            24 => 0xad,
+            25 => 0xd4,
+            26 => 0xa2,
+            27 => 0xaf,
+            28 => 0x9c,
+            29 => 0xa4,
+            30 => 0x72,
+            31 => 0xc0,
+            32 => 0xb7,
+            33 => 0xfd,
+            34 => 0x93,
+            35 => 0x26,
+            36 => 0x36,
+            37 => 0x3f,
+            38 => 0xf7,
+            39 => 0xcc,
+            40 => 0x34,
+            41 => 0xa5,
+            42 => 0xe5,
+            43 => 0xf1,
+            44 => 0x71,
+            45 => 0xd8,
+            46 => 0x31,
+            47 => 0x15,
+            48 => 0x04,
+            49 => 0xc7,
+            50 => 0x23,
+            51 => 0xc3,
+            52 => 0x18,
+            53 => 0x96,
+            54 => 0x05,
+            55 => 0x9a,
+            56 => 0x07,
+            57 => 0x12,
+            58 => 0x80,
+            59 => 0xe2,
+            60 => 0xeb,
+            61 => 0x27,
+            62 => 0xb2,
+            63 => 0x75,
+            64 => 0x09,
+            65 => 0x83,
+            66 => 0x2c,
+            67 => 0x1a,
+            68 => 0x1b,
+            69 => 0x6e,
+            70 => 0x5a,
+            71 => 0xa0,
+            72 => 0x52,
+            73 => 0x3b,
+            74 => 0xd6,
+            75 => 0xb3,
+            76 => 0x29,
+            77 => 0xe3,
+            78 => 0x2f,
+            79 => 0x84,
+            80 => 0x53,
+            81 => 0xd1,
+            82 => 0x00,
+            83 => 0xed,
+            84 => 0x20,
+            85 => 0xfc,
+            86 => 0xb1,
+            87 => 0x5b,
+            88 => 0x6a,
+            89 => 0xcb,
+            90 => 0xbe,
+            91 => 0x39,
+            92 => 0x4a,
+            93 => 0x4c,
+            94 => 0x58,
+            95 => 0xcf,
+            96 => 0xd0,
+            97 => 0xef,
+            98 => 0xaa,
+            99 => 0xfb,
+            100 => 0x43,
+            101 => 0x4d,
+            102 => 0x33,
+            103 => 0x85,
+            104 => 0x45,
+            105 => 0xf9,
+            106 => 0x02,
+            107 => 0x7f,
+            108 => 0x50,
+            109 => 0x3c,
+            110 => 0x9f,
+            111 => 0xa8,
+            112 => 0x51,
+            113 => 0xa3,
+            114 => 0x40,
+            115 => 0x8f,
+            116 => 0x92,
+            117 => 0x9d,
+            118 => 0x38,
+            119 => 0xf5,
+            120 => 0xbc,
+            121 => 0xb6,
+            122 => 0xda,
+            123 => 0x21,
+            124 => 0x10,
+            125 => 0xff,
+            126 => 0xf3,
+            127 => 0xd2,
+            128 => 0xcd,
+            129 => 0x0c,
+            130 => 0x13,
+            131 => 0xec,
+            132 => 0x5f,
+            133 => 0x97,
+            134 => 0x44,
+            135 => 0x17,
+            136 => 0xc4,
+            137 => 0xa7,
+            138 => 0x7e,
+            139 => 0x3d,
+            140 => 0x64,
+            141 => 0x5d,
+            142 => 0x19,
+            143 => 0x73,
+            144 => 0x60,
+            145 => 0x81,
+            146 => 0x4f,
+            147 => 0xdc,
+            148 => 0x22,
+            149 => 0x2a,
+            150 => 0x90,
+            151 => 0x88,
+            152 => 0x46,
+            153 => 0xee,
+            154 => 0xb8,
+            155 => 0x14,
+            156 => 0xde,
+            157 => 0x5e,
+            158 => 0x0b,
+            159 => 0xdb,
+            160 => 0xe0,
+            161 => 0x32,
+            162 => 0x3a,
+            163 => 0x0a,
+            164 => 0x49,
+            165 => 0x06,
+            166 => 0x24,
+            167 => 0x5c,
+            168 => 0xc2,
+            169 => 0xd3,
+            170 => 0xac,
+            171 => 0x62,
+            172 => 0x91,
+            173 => 0x95,
+            174 => 0xe4,
+            175 => 0x79,
+            176 => 0xe7,
+            177 => 0xc8,
+            178 => 0x37,
+            179 => 0x6d,
+            180 => 0x8d,
+            181 => 0xd5,
+            182 => 0x4e,
+            183 => 0xa9,
+            184 => 0x6c,
+            185 => 0x56,
+            186 => 0xf4,
+            187 => 0xea,
+            188 => 0x65,
+            189 => 0x7a,
+            190 => 0xae,
+            191 => 0x08,
+            192 => 0xba,
+            193 => 0x78,
+            194 => 0x25,
+            195 => 0x2e,
+            196 => 0x1c,
+            197 => 0xa6,
+            198 => 0xb4,
+            199 => 0xc6,
+            200 => 0xe8,
+            201 => 0xdd,
+            202 => 0x74,
+            203 => 0x1f,
+            204 => 0x4b,
+            205 => 0xbd,
+            206 => 0x8b,
+            207 => 0x8a,
+            208 => 0x70,
+            209 => 0x3e,
+            210 => 0xb5,
+            211 => 0x66,
+            212 => 0x48,
+            213 => 0x03,
+            214 => 0xf6,
+            215 => 0x0e,
+            216 => 0x61,
+            217 => 0x35,
+            218 => 0x57,
+            219 => 0xb9,
+            220 => 0x86,
+            221 => 0xc1,
+            222 => 0x1d,
+            223 => 0x9e,
+            224 => 0xe1,
+            225 => 0xf8,
+            226 => 0x98,
+            227 => 0x11,
+            228 => 0x69,
+            229 => 0xd9,
+            230 => 0x8e,
+            231 => 0x94,
+            232 => 0x9b,
+            233 => 0x1e,
+            234 => 0x87,
+            235 => 0xe9,
+            236 => 0xce,
+            237 => 0x55,
+            238 => 0x28,
+            239 => 0xdf,
+            240 => 0x8c,
+            241 => 0xa1,
+            242 => 0x89,
+            243 => 0x0d,
+            244 => 0xbf,
+            245 => 0xe6,
+            246 => 0x42,
+            247 => 0x68,
+            248 => 0x41,
+            249 => 0x99,
+            250 => 0x2d,
+            251 => 0x0f,
+            252 => 0xb0,
+            253 => 0x54,
+            254 => 0xbb,
+            255 => 0x16,
         }
     }
-    
-    fn  sbox_inv(s:u8) -> u8 {
+
+    fn sbox_inv(s: u8) -> u8 {
         match s {
-           0 => 0x52,   1 => 0x09,   2 => 0x6a,   3 => 0xd5,   4 => 0x30,   5 => 0x36,   6 => 0xa5,   7 => 0x38
-       ,   8 => 0xbf,   9 => 0x40,  10 => 0xa3,  11 => 0x9e,  12 => 0x81,  13 => 0xf3,  14 => 0xd7,  15 => 0xfb
-       ,  16 => 0x7c,  17 => 0xe3,  18 => 0x39,  19 => 0x82,  20 => 0x9b,  21 => 0x2f,  22 => 0xff,  23 => 0x87
-       ,  24 => 0x34,  25 => 0x8e,  26 => 0x43,  27 => 0x44,  28 => 0xc4,  29 => 0xde,  30 => 0xe9,  31 => 0xcb
-       ,  32 => 0x54,  33 => 0x7b,  34 => 0x94,  35 => 0x32,  36 => 0xa6,  37 => 0xc2,  38 => 0x23,  39 => 0x3d
-       ,  40 => 0xee,  41 => 0x4c,  42 => 0x95,  43 => 0x0b,  44 => 0x42,  45 => 0xfa,  46 => 0xc3,  47 => 0x4e
-       ,  48 => 0x08,  49 => 0x2e,  50 => 0xa1,  51 => 0x66,  52 => 0x28,  53 => 0xd9,  54 => 0x24,  55 => 0xb2
-       ,  56 => 0x76,  57 => 0x5b,  58 => 0xa2,  59 => 0x49,  60 => 0x6d,  61 => 0x8b,  62 => 0xd1,  63 => 0x25
-       ,  64 => 0x72,  65 => 0xf8,  66 => 0xf6,  67 => 0x64,  68 => 0x86,  69 => 0x68,  70 => 0x98,  71 => 0x16
-       ,  72 => 0xd4,  73 => 0xa4,  74 => 0x5c,  75 => 0xcc,  76 => 0x5d,  77 => 0x65,  78 => 0xb6,  79 => 0x92
-       ,  80 => 0x6c,  81 => 0x70,  82 => 0x48,  83 => 0x50,  84 => 0xfd,  85 => 0xed,  86 => 0xb9,  87 => 0xda
-       ,  88 => 0x5e,  89 => 0x15,  90 => 0x46,  91 => 0x57,  92 => 0xa7,  93 => 0x8d,  94 => 0x9d,  95 => 0x84
-       ,  96 => 0x90,  97 => 0xd8,  98 => 0xab,  99 => 0x00, 100 => 0x8c, 101 => 0xbc, 102 => 0xd3, 103 => 0x0a
-       , 104 => 0xf7, 105 => 0xe4, 106 => 0x58, 107 => 0x05, 108 => 0xb8, 109 => 0xb3, 110 => 0x45, 111 => 0x06
-       , 112 => 0xd0, 113 => 0x2c, 114 => 0x1e, 115 => 0x8f, 116 => 0xca, 117 => 0x3f, 118 => 0x0f, 119 => 0x02
-       , 120 => 0xc1, 121 => 0xaf, 122 => 0xbd, 123 => 0x03, 124 => 0x01, 125 => 0x13, 126 => 0x8a, 127 => 0x6b
-       , 128 => 0x3a, 129 => 0x91, 130 => 0x11, 131 => 0x41, 132 => 0x4f, 133 => 0x67, 134 => 0xdc, 135 => 0xea
-       , 136 => 0x97, 137 => 0xf2, 138 => 0xcf, 139 => 0xce, 140 => 0xf0, 141 => 0xb4, 142 => 0xe6, 143 => 0x73
-       , 144 => 0x96, 145 => 0xac, 146 => 0x74, 147 => 0x22, 148 => 0xe7, 149 => 0xad, 150 => 0x35, 151 => 0x85
-       , 152 => 0xe2, 153 => 0xf9, 154 => 0x37, 155 => 0xe8, 156 => 0x1c, 157 => 0x75, 158 => 0xdf, 159 => 0x6e
-       , 160 => 0x47, 161 => 0xf1, 162 => 0x1a, 163 => 0x71, 164 => 0x1d, 165 => 0x29, 166 => 0xc5, 167 => 0x89
-       , 168 => 0x6f, 169 => 0xb7, 170 => 0x62, 171 => 0x0e, 172 => 0xaa, 173 => 0x18, 174 => 0xbe, 175 => 0x1b
-       , 176 => 0xfc, 177 => 0x56, 178 => 0x3e, 179 => 0x4b, 180 => 0xc6, 181 => 0xd2, 182 => 0x79, 183 => 0x20
-       , 184 => 0x9a, 185 => 0xdb, 186 => 0xc0, 187 => 0xfe, 188 => 0x78, 189 => 0xcd, 190 => 0x5a, 191 => 0xf4
-       , 192 => 0x1f, 193 => 0xdd, 194 => 0xa8, 195 => 0x33, 196 => 0x88, 197 => 0x07, 198 => 0xc7, 199 => 0x31
-       , 200 => 0xb1, 201 => 0x12, 202 => 0x10, 203 => 0x59, 204 => 0x27, 205 => 0x80, 206 => 0xec, 207 => 0x5f
-       , 208 => 0x60, 209 => 0x51, 210 => 0x7f, 211 => 0xa9, 212 => 0x19, 213 => 0xb5, 214 => 0x4a, 215 => 0x0d
-       , 216 => 0x2d, 217 => 0xe5, 218 => 0x7a, 219 => 0x9f, 220 => 0x93, 221 => 0xc9, 222 => 0x9c, 223 => 0xef
-       , 224 => 0xa0, 225 => 0xe0, 226 => 0x3b, 227 => 0x4d, 228 => 0xae, 229 => 0x2a, 230 => 0xf5, 231 => 0xb0
-       , 232 => 0xc8, 233 => 0xeb, 234 => 0xbb, 235 => 0x3c, 236 => 0x83, 237 => 0x53, 238 => 0x99, 239 => 0x61
-       , 240 => 0x17, 241 => 0x2b, 242 => 0x04, 243 => 0x7e, 244 => 0xba, 245 => 0x77, 246 => 0xd6, 247 => 0x26
-       , 248 => 0xe1, 249 => 0x69, 250 => 0x14, 251 => 0x63, 252 => 0x55, 253 => 0x21, 254 => 0x0c, 255 => 0x7d        }
+            0 => 0x52,
+            1 => 0x09,
+            2 => 0x6a,
+            3 => 0xd5,
+            4 => 0x30,
+            5 => 0x36,
+            6 => 0xa5,
+            7 => 0x38,
+            8 => 0xbf,
+            9 => 0x40,
+            10 => 0xa3,
+            11 => 0x9e,
+            12 => 0x81,
+            13 => 0xf3,
+            14 => 0xd7,
+            15 => 0xfb,
+            16 => 0x7c,
+            17 => 0xe3,
+            18 => 0x39,
+            19 => 0x82,
+            20 => 0x9b,
+            21 => 0x2f,
+            22 => 0xff,
+            23 => 0x87,
+            24 => 0x34,
+            25 => 0x8e,
+            26 => 0x43,
+            27 => 0x44,
+            28 => 0xc4,
+            29 => 0xde,
+            30 => 0xe9,
+            31 => 0xcb,
+            32 => 0x54,
+            33 => 0x7b,
+            34 => 0x94,
+            35 => 0x32,
+            36 => 0xa6,
+            37 => 0xc2,
+            38 => 0x23,
+            39 => 0x3d,
+            40 => 0xee,
+            41 => 0x4c,
+            42 => 0x95,
+            43 => 0x0b,
+            44 => 0x42,
+            45 => 0xfa,
+            46 => 0xc3,
+            47 => 0x4e,
+            48 => 0x08,
+            49 => 0x2e,
+            50 => 0xa1,
+            51 => 0x66,
+            52 => 0x28,
+            53 => 0xd9,
+            54 => 0x24,
+            55 => 0xb2,
+            56 => 0x76,
+            57 => 0x5b,
+            58 => 0xa2,
+            59 => 0x49,
+            60 => 0x6d,
+            61 => 0x8b,
+            62 => 0xd1,
+            63 => 0x25,
+            64 => 0x72,
+            65 => 0xf8,
+            66 => 0xf6,
+            67 => 0x64,
+            68 => 0x86,
+            69 => 0x68,
+            70 => 0x98,
+            71 => 0x16,
+            72 => 0xd4,
+            73 => 0xa4,
+            74 => 0x5c,
+            75 => 0xcc,
+            76 => 0x5d,
+            77 => 0x65,
+            78 => 0xb6,
+            79 => 0x92,
+            80 => 0x6c,
+            81 => 0x70,
+            82 => 0x48,
+            83 => 0x50,
+            84 => 0xfd,
+            85 => 0xed,
+            86 => 0xb9,
+            87 => 0xda,
+            88 => 0x5e,
+            89 => 0x15,
+            90 => 0x46,
+            91 => 0x57,
+            92 => 0xa7,
+            93 => 0x8d,
+            94 => 0x9d,
+            95 => 0x84,
+            96 => 0x90,
+            97 => 0xd8,
+            98 => 0xab,
+            99 => 0x00,
+            100 => 0x8c,
+            101 => 0xbc,
+            102 => 0xd3,
+            103 => 0x0a,
+            104 => 0xf7,
+            105 => 0xe4,
+            106 => 0x58,
+            107 => 0x05,
+            108 => 0xb8,
+            109 => 0xb3,
+            110 => 0x45,
+            111 => 0x06,
+            112 => 0xd0,
+            113 => 0x2c,
+            114 => 0x1e,
+            115 => 0x8f,
+            116 => 0xca,
+            117 => 0x3f,
+            118 => 0x0f,
+            119 => 0x02,
+            120 => 0xc1,
+            121 => 0xaf,
+            122 => 0xbd,
+            123 => 0x03,
+            124 => 0x01,
+            125 => 0x13,
+            126 => 0x8a,
+            127 => 0x6b,
+            128 => 0x3a,
+            129 => 0x91,
+            130 => 0x11,
+            131 => 0x41,
+            132 => 0x4f,
+            133 => 0x67,
+            134 => 0xdc,
+            135 => 0xea,
+            136 => 0x97,
+            137 => 0xf2,
+            138 => 0xcf,
+            139 => 0xce,
+            140 => 0xf0,
+            141 => 0xb4,
+            142 => 0xe6,
+            143 => 0x73,
+            144 => 0x96,
+            145 => 0xac,
+            146 => 0x74,
+            147 => 0x22,
+            148 => 0xe7,
+            149 => 0xad,
+            150 => 0x35,
+            151 => 0x85,
+            152 => 0xe2,
+            153 => 0xf9,
+            154 => 0x37,
+            155 => 0xe8,
+            156 => 0x1c,
+            157 => 0x75,
+            158 => 0xdf,
+            159 => 0x6e,
+            160 => 0x47,
+            161 => 0xf1,
+            162 => 0x1a,
+            163 => 0x71,
+            164 => 0x1d,
+            165 => 0x29,
+            166 => 0xc5,
+            167 => 0x89,
+            168 => 0x6f,
+            169 => 0xb7,
+            170 => 0x62,
+            171 => 0x0e,
+            172 => 0xaa,
+            173 => 0x18,
+            174 => 0xbe,
+            175 => 0x1b,
+            176 => 0xfc,
+            177 => 0x56,
+            178 => 0x3e,
+            179 => 0x4b,
+            180 => 0xc6,
+            181 => 0xd2,
+            182 => 0x79,
+            183 => 0x20,
+            184 => 0x9a,
+            185 => 0xdb,
+            186 => 0xc0,
+            187 => 0xfe,
+            188 => 0x78,
+            189 => 0xcd,
+            190 => 0x5a,
+            191 => 0xf4,
+            192 => 0x1f,
+            193 => 0xdd,
+            194 => 0xa8,
+            195 => 0x33,
+            196 => 0x88,
+            197 => 0x07,
+            198 => 0xc7,
+            199 => 0x31,
+            200 => 0xb1,
+            201 => 0x12,
+            202 => 0x10,
+            203 => 0x59,
+            204 => 0x27,
+            205 => 0x80,
+            206 => 0xec,
+            207 => 0x5f,
+            208 => 0x60,
+            209 => 0x51,
+            210 => 0x7f,
+            211 => 0xa9,
+            212 => 0x19,
+            213 => 0xb5,
+            214 => 0x4a,
+            215 => 0x0d,
+            216 => 0x2d,
+            217 => 0xe5,
+            218 => 0x7a,
+            219 => 0x9f,
+            220 => 0x93,
+            221 => 0xc9,
+            222 => 0x9c,
+            223 => 0xef,
+            224 => 0xa0,
+            225 => 0xe0,
+            226 => 0x3b,
+            227 => 0x4d,
+            228 => 0xae,
+            229 => 0x2a,
+            230 => 0xf5,
+            231 => 0xb0,
+            232 => 0xc8,
+            233 => 0xeb,
+            234 => 0xbb,
+            235 => 0x3c,
+            236 => 0x83,
+            237 => 0x53,
+            238 => 0x99,
+            239 => 0x61,
+            240 => 0x17,
+            241 => 0x2b,
+            242 => 0x04,
+            243 => 0x7e,
+            244 => 0xba,
+            245 => 0x77,
+            246 => 0xd6,
+            247 => 0x26,
+            248 => 0xe1,
+            249 => 0x69,
+            250 => 0x14,
+            251 => 0x63,
+            252 => 0x55,
+            253 => 0x21,
+            254 => 0x0c,
+            255 => 0x7d,
+        }
     }
 
-    use rand_core::{RngCore,OsRng};
-    
-    fn  get_bit_u8(x:&[u8], i:usize, j:usize) -> u8 {
-        (x[i] >> j) & 0x1 
+    use rand_core::{OsRng, RngCore};
+
+    fn get_bit_u8(x: &[u8], i: usize, j: usize) -> u8 {
+        (x[i] >> j) & 0x1
     }
-    
-    fn  get_bit_u16(x:&[u16], i:usize, j:usize) -> u8 {
+
+    fn get_bit_u16(x: &[u16], i: usize, j: usize) -> u8 {
         ((x[j] >> i) & 0x1) as u8
     }
 
     #[test]
-    fn  test_transpose () {
+    fn test_transpose() {
         let mut x = [0u8; 16];
         OsRng.fill_bytes(&mut x);
         let mut y = [0u16; 8];
@@ -704,10 +1145,11 @@ impl crate::platform::AESState for State {
             for j in 0..8 {
                 if get_bit_u8(&x, i, j) != get_bit_u16(&y, i, j) {
                     println!("x[{},{}] = {}", i, j, get_bit_u8(&x, i, j));
-                    println!("y[{},{}] = {}", i, j, get_bit_u16(&y,i, j));
+                    println!("y[{},{}] = {}", i, j, get_bit_u16(&y, i, j));
                     assert!(false);
+                } else {
+                    println!("transpose ok: {},{}", i, j);
                 }
-                else {println!("transpose ok: {},{}", i, j);}
             }
         }
         let mut z = [0u8; 16];
@@ -718,14 +1160,15 @@ impl crate::platform::AESState for State {
                     println!("x[{},{}] = {}", i, j, get_bit_u8(&x, i, j));
                     println!("z[{},{}] = {}", i, j, get_bit_u8(&z, i, j));
                     assert!(false);
+                } else {
+                    println!("inv-transpose ok: {},{}", i, j);
                 }
-                else {println!("inv-transpose ok: {},{}", i, j);}
             }
         }
     }
 
     #[test]
-    fn  test_sbox () {
+    fn test_sbox() {
         let mut x = [0u8; 16];
         let mut y = [0u16; 8];
         let mut w = [0u8; 16];
@@ -738,13 +1181,14 @@ impl crate::platform::AESState for State {
             if w[0] != sbox_fwd(i as u8) {
                 println!("sbox[{}] = {}, should be {}", i, w[0], sbox_fwd(i as u8));
                 assert!(false);
+            } else {
+                println!("sbox ok {}", i)
             }
-            else {println!("sbox ok {}", i)}
         }
     }
 
     #[test]
-    fn  test_sbox_inv () {
+    fn test_sbox_inv() {
         let mut x = [0u8; 16];
         let mut y = [0u16; 8];
         let mut w = [0u8; 16];
@@ -755,10 +1199,16 @@ impl crate::platform::AESState for State {
             super::sub_bytes_inv_state(&mut y);
             super::transpose_u16x8(&y, &mut w);
             if w[0] != sbox_inv(i as u8) {
-                println!("sbox_inv[{}] = {}, should be {}", i, w[0], sbox_inv(i as u8));
+                println!(
+                    "sbox_inv[{}] = {}, should be {}",
+                    i,
+                    w[0],
+                    sbox_inv(i as u8)
+                );
                 assert!(false);
+            } else {
+                println!("sbox inv ok {}", i)
             }
-            else {println!("sbox inv ok {}", i)}
         }
     }
 }
