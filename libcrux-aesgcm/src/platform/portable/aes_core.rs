@@ -521,8 +521,8 @@ fn aes_keygen_assist1(next: &mut State, prev: &State) {
     aes_keygen_assist(next, prev, 0);
     fn aux(mut n: u16) -> u16 {
         n &= 0x0f00;
-        n ^= (n << 4);
-        n ^= (n >> 8);
+        n ^= n << 4;
+        n ^= n >> 8;
         n
     }
     next[0] = aux(next[0]);
