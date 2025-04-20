@@ -3,6 +3,7 @@ pub(crate) type FieldElement = u128;
 fn zero() -> FieldElement {
     0
 }
+
 fn load_elem(b: &[u8]) -> FieldElement {
     debug_assert!(b.len() == 16);
     u128::from_be_bytes(b.try_into().unwrap())
@@ -37,7 +38,7 @@ fn mul_x(elem: &mut FieldElement) {
 fn mul_step(x: &FieldElement, y: &mut FieldElement, i: usize, result: &mut FieldElement) {
     debug_assert!(i < 128);
     let mask = ith_bit_mask(x, i);
-    *result ^= (*y & mask);
+    *result ^= *y & mask;
     mul_x(y);
 }
 
