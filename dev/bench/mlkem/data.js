@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1745332421840,
+  "lastUpdate": 1745332633909,
   "repoUrl": "https://github.com/cryspen/libcrux",
   "entries": {
     "ML-KEM Benchmark": [
@@ -18134,6 +18134,478 @@ window.BENCHMARK_DATA = {
             "category": "ML-KEM",
             "keySize": 1024,
             "platform": "portable"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Franziskus Kiefer",
+            "username": "franziskuskiefer",
+            "email": "franziskuskiefer@gmail.com"
+          },
+          "committer": {
+            "name": "GitHub",
+            "username": "web-flow",
+            "email": "noreply@github.com"
+          },
+          "id": "3d356440bea25987a22c37cc21c8ad65a530acd7",
+          "message": "Merge pull request #926 from cryspen/franziskus/psq-cleanup\n\npsq: drop flamegraph",
+          "timestamp": "2025-04-22T14:18:16Z",
+          "url": "https://github.com/cryspen/libcrux/commit/3d356440bea25987a22c37cc21c8ad65a530acd7"
+        },
+        "date": 1745332626278,
+        "bigger_is_better": false,
+        "benches": [
+          {
+            "name": "Key Generation",
+            "value": 33897,
+            "unit": "ns/iter",
+            "os": "macos-13_64",
+            "range": "± 5508",
+            "category": "ML-KEM",
+            "keySize": 512,
+            "platform": "portable",
+            "api": "external random"
+          },
+          {
+            "name": "Key Generation",
+            "value": 32340,
+            "unit": "ns/iter",
+            "os": "macos-13_64",
+            "range": "± 6576",
+            "category": "ML-KEM",
+            "keySize": 512,
+            "platform": "portable",
+            "api": "unpacked (external random)"
+          },
+          {
+            "name": "Key Generation",
+            "value": 18976,
+            "unit": "ns/iter",
+            "os": "macos-13_64",
+            "range": "± 2475",
+            "category": "ML-KEM",
+            "keySize": 512,
+            "platform": "avx2",
+            "api": "external random"
+          },
+          {
+            "name": "Key Generation",
+            "value": 18922,
+            "unit": "ns/iter",
+            "os": "macos-13_64",
+            "range": "± 4036",
+            "category": "ML-KEM",
+            "keySize": 512,
+            "platform": "avx2",
+            "api": "unpacked (external random)"
+          },
+          {
+            "name": "Key Generation",
+            "value": 61985,
+            "unit": "ns/iter",
+            "os": "macos-13_64",
+            "range": "± 17110",
+            "category": "ML-KEM",
+            "keySize": 768,
+            "platform": "portable",
+            "api": "external random"
+          },
+          {
+            "name": "Key Generation",
+            "value": 55176,
+            "unit": "ns/iter",
+            "os": "macos-13_64",
+            "range": "± 59286",
+            "category": "ML-KEM",
+            "keySize": 768,
+            "platform": "portable",
+            "api": "unpacked (external random)"
+          },
+          {
+            "name": "Key Generation",
+            "value": 26369,
+            "unit": "ns/iter",
+            "os": "macos-13_64",
+            "range": "± 6792",
+            "category": "ML-KEM",
+            "keySize": 768,
+            "platform": "avx2",
+            "api": "external random"
+          },
+          {
+            "name": "Key Generation",
+            "value": 25527,
+            "unit": "ns/iter",
+            "os": "macos-13_64",
+            "range": "± 3397",
+            "category": "ML-KEM",
+            "keySize": 768,
+            "platform": "avx2",
+            "api": "unpacked (external random)"
+          },
+          {
+            "name": "Key Generation",
+            "value": 81816,
+            "unit": "ns/iter",
+            "os": "macos-13_64",
+            "range": "± 8265",
+            "category": "ML-KEM",
+            "keySize": 1024,
+            "platform": "portable",
+            "api": "external random"
+          },
+          {
+            "name": "Key Generation",
+            "value": 80801,
+            "unit": "ns/iter",
+            "os": "macos-13_64",
+            "range": "± 36333",
+            "category": "ML-KEM",
+            "keySize": 1024,
+            "platform": "portable",
+            "api": "unpacked (external random)"
+          },
+          {
+            "name": "Key Generation",
+            "value": 35761,
+            "unit": "ns/iter",
+            "os": "macos-13_64",
+            "range": "± 14012",
+            "category": "ML-KEM",
+            "keySize": 1024,
+            "platform": "avx2",
+            "api": "external random"
+          },
+          {
+            "name": "Key Generation",
+            "value": 36649,
+            "unit": "ns/iter",
+            "os": "macos-13_64",
+            "range": "± 13211",
+            "category": "ML-KEM",
+            "keySize": 1024,
+            "platform": "avx2",
+            "api": "unpacked (external random)"
+          },
+          {
+            "name": "Encapsulation",
+            "value": 43285,
+            "unit": "ns/iter",
+            "os": "macos-13_64",
+            "range": "± 7920",
+            "category": "ML-KEM",
+            "keySize": 512,
+            "platform": "portable",
+            "api": "external random"
+          },
+          {
+            "name": "Encapsulation",
+            "value": 23754,
+            "unit": "ns/iter",
+            "os": "macos-13_64",
+            "range": "± 13256",
+            "category": "ML-KEM",
+            "keySize": 512,
+            "platform": "portable",
+            "api": "unpacked (external random)"
+          },
+          {
+            "name": "Encapsulation",
+            "value": 17291,
+            "unit": "ns/iter",
+            "os": "macos-13_64",
+            "range": "± 2980",
+            "category": "ML-KEM",
+            "keySize": 512,
+            "platform": "avx2",
+            "api": "external random"
+          },
+          {
+            "name": "Encapsulation",
+            "value": 11121,
+            "unit": "ns/iter",
+            "os": "macos-13_64",
+            "range": "± 5385",
+            "category": "ML-KEM",
+            "keySize": 512,
+            "platform": "avx2",
+            "api": "unpacked (external random)"
+          },
+          {
+            "name": "Encapsulation",
+            "value": 66680,
+            "unit": "ns/iter",
+            "os": "macos-13_64",
+            "range": "± 8283",
+            "category": "ML-KEM",
+            "keySize": 768,
+            "platform": "portable",
+            "api": "external random"
+          },
+          {
+            "name": "Encapsulation",
+            "value": 28198,
+            "unit": "ns/iter",
+            "os": "macos-13_64",
+            "range": "± 4557",
+            "category": "ML-KEM",
+            "keySize": 768,
+            "platform": "portable",
+            "api": "unpacked (external random)"
+          },
+          {
+            "name": "Encapsulation",
+            "value": 25440,
+            "unit": "ns/iter",
+            "os": "macos-13_64",
+            "range": "± 3282",
+            "category": "ML-KEM",
+            "keySize": 768,
+            "platform": "avx2",
+            "api": "external random"
+          },
+          {
+            "name": "Encapsulation",
+            "value": 10011,
+            "unit": "ns/iter",
+            "os": "macos-13_64",
+            "range": "± 4192",
+            "category": "ML-KEM",
+            "keySize": 768,
+            "platform": "avx2",
+            "api": "unpacked (external random)"
+          },
+          {
+            "name": "Encapsulation",
+            "value": 89236,
+            "unit": "ns/iter",
+            "os": "macos-13_64",
+            "range": "± 13040",
+            "category": "ML-KEM",
+            "keySize": 1024,
+            "platform": "portable",
+            "api": "external random"
+          },
+          {
+            "name": "Encapsulation",
+            "value": 39213,
+            "unit": "ns/iter",
+            "os": "macos-13_64",
+            "range": "± 8338",
+            "category": "ML-KEM",
+            "keySize": 1024,
+            "platform": "portable",
+            "api": "unpacked (external random)"
+          },
+          {
+            "name": "Encapsulation",
+            "value": 35481,
+            "unit": "ns/iter",
+            "os": "macos-13_64",
+            "range": "± 11334",
+            "category": "ML-KEM",
+            "keySize": 1024,
+            "platform": "avx2",
+            "api": "external random"
+          },
+          {
+            "name": "Encapsulation",
+            "value": 14650,
+            "unit": "ns/iter",
+            "os": "macos-13_64",
+            "range": "± 4101",
+            "category": "ML-KEM",
+            "keySize": 1024,
+            "platform": "avx2",
+            "api": "unpacked (external random)"
+          },
+          {
+            "name": "Decapsulation",
+            "value": 49117,
+            "unit": "ns/iter",
+            "os": "macos-13_64",
+            "range": "± 7592",
+            "category": "ML-KEM",
+            "keySize": 512,
+            "platform": "portable"
+          },
+          {
+            "name": "Decapsulation",
+            "value": 37980,
+            "unit": "ns/iter",
+            "os": "macos-13_64",
+            "range": "± 15045",
+            "category": "ML-KEM",
+            "keySize": 512,
+            "platform": "portable",
+            "api": "unpacked"
+          },
+          {
+            "name": "Decapsulation",
+            "value": 18207,
+            "unit": "ns/iter",
+            "os": "macos-13_64",
+            "range": "± 4786",
+            "category": "ML-KEM",
+            "keySize": 512,
+            "platform": "avx2"
+          },
+          {
+            "name": "Decapsulation",
+            "value": 13041,
+            "unit": "ns/iter",
+            "os": "macos-13_64",
+            "range": "± 4736",
+            "category": "ML-KEM",
+            "keySize": 512,
+            "platform": "avx2",
+            "api": "unpacked"
+          },
+          {
+            "name": "Decapsulation",
+            "value": 71626,
+            "unit": "ns/iter",
+            "os": "macos-13_64",
+            "range": "± 35250",
+            "category": "ML-KEM",
+            "keySize": 768,
+            "platform": "portable"
+          },
+          {
+            "name": "Decapsulation",
+            "value": 55017,
+            "unit": "ns/iter",
+            "os": "macos-13_64",
+            "range": "± 27101",
+            "category": "ML-KEM",
+            "keySize": 768,
+            "platform": "portable",
+            "api": "unpacked"
+          },
+          {
+            "name": "Decapsulation",
+            "value": 24590,
+            "unit": "ns/iter",
+            "os": "macos-13_64",
+            "range": "± 4494",
+            "category": "ML-KEM",
+            "keySize": 768,
+            "platform": "avx2"
+          },
+          {
+            "name": "Decapsulation",
+            "value": 16374,
+            "unit": "ns/iter",
+            "os": "macos-13_64",
+            "range": "± 6584",
+            "category": "ML-KEM",
+            "keySize": 768,
+            "platform": "avx2",
+            "api": "unpacked"
+          },
+          {
+            "name": "Decapsulation",
+            "value": 122308,
+            "unit": "ns/iter",
+            "os": "macos-13_64",
+            "range": "± 28046",
+            "category": "ML-KEM",
+            "keySize": 1024,
+            "platform": "portable"
+          },
+          {
+            "name": "Decapsulation",
+            "value": 78122,
+            "unit": "ns/iter",
+            "os": "macos-13_64",
+            "range": "± 22537",
+            "category": "ML-KEM",
+            "keySize": 1024,
+            "platform": "portable",
+            "api": "unpacked"
+          },
+          {
+            "name": "Decapsulation",
+            "value": 39958,
+            "unit": "ns/iter",
+            "os": "macos-13_64",
+            "range": "± 6355",
+            "category": "ML-KEM",
+            "keySize": 1024,
+            "platform": "avx2"
+          },
+          {
+            "name": "Decapsulation",
+            "value": 27030,
+            "unit": "ns/iter",
+            "os": "macos-13_64",
+            "range": "± 5457",
+            "category": "ML-KEM",
+            "keySize": 1024,
+            "platform": "avx2",
+            "api": "unpacked"
+          },
+          {
+            "name": "PK Validation",
+            "value": 1589,
+            "unit": "ns/iter",
+            "os": "macos-13_64",
+            "range": "± 287",
+            "category": "ML-KEM",
+            "keySize": 512,
+            "platform": "portable"
+          },
+          {
+            "name": "PK Validation",
+            "value": 616,
+            "unit": "ns/iter",
+            "os": "macos-13_64",
+            "range": "± 77",
+            "category": "ML-KEM",
+            "keySize": 512,
+            "platform": "avx2"
+          },
+          {
+            "name": "PK Validation",
+            "value": 2477,
+            "unit": "ns/iter",
+            "os": "macos-13_64",
+            "range": "± 262",
+            "category": "ML-KEM",
+            "keySize": 768,
+            "platform": "portable"
+          },
+          {
+            "name": "PK Validation",
+            "value": 1027,
+            "unit": "ns/iter",
+            "os": "macos-13_64",
+            "range": "± 171",
+            "category": "ML-KEM",
+            "keySize": 768,
+            "platform": "avx2"
+          },
+          {
+            "name": "PK Validation",
+            "value": 3565,
+            "unit": "ns/iter",
+            "os": "macos-13_64",
+            "range": "± 984",
+            "category": "ML-KEM",
+            "keySize": 1024,
+            "platform": "portable"
+          },
+          {
+            "name": "PK Validation",
+            "value": 1208,
+            "unit": "ns/iter",
+            "os": "macos-13_64",
+            "range": "± 138",
+            "category": "ML-KEM",
+            "keySize": 1024,
+            "platform": "avx2"
           }
         ]
       }
