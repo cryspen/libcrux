@@ -41,24 +41,36 @@ pub mod int_vec {
 
         /// Derives automatically a lift lemma for a given function
         macro_rules! mk {
-            (@into($x:expr) i32) => {$x};
-            (@into($x:expr) $any:ty) => {$x.into()};
-            ($name:ident$(<$(const $c:ident : $cty:ty),*>)?($($x:ident : $ty:ty),*)) => {
+            ($name:ident$(<$(const $c:ident : $cty:ty),*>)?($($x:ident : $ty:ty),*) == $lhs:expr) => {
                 #[hax_lib::opaque]
                 #[hax_lib::lemma]
                 fn $name$(<$(const $c : $cty,)*>)?($($x : $ty,)*) -> Proof<{
                     hax_lib::eq(
                         unsafe {upstream::$name$(::<$($c,)*>)?($($x,)*)},
-                        super::$name$(::<$($c,)*>)?($(mk!(@into($x) $ty),)*),
+                        $lhs
                     )
                 }> {}
             }
         }
-        mk!(_mm256_set1_epi32(x: i32));
-        mk!(_mm256_mul_epi32(x: __m256i, y: __m256i));
-        mk!(_mm256_sub_epi32(x: __m256i, y: __m256i));
-        mk!(_mm256_shuffle_epi32<const CONTROL: i32>(x: __m256i));
-        mk!(_mm256_blend_epi32<const CONTROL: i32>(x: __m256i, y: __m256i));
+        mk!(
+            _mm256_set1_epi32(x: i32) ==
+            __m256i::from(super::_mm256_set1_epi32(x))
+        );
+        mk!(
+            _mm256_mul_epi32(x: __m256i, y: __m256i) ==
+            __m256i::from(super::_mm256_mul_epi32(super::i32x8::from(x), super::i32x8::from(y)))
+        );
+        mk!(
+            _mm256_sub_epi32(x: __m256i, y: __m256i) ==
+            __m256i::from(super::_mm256_sub_epi32(super::i32x8::from(x), super::i32x8::from(y)))
+        );
+        mk!(
+            _mm256_shuffle_epi32<const CONTROL: i32>(x: __m256i) ==
+            __m256i::from(super::_mm256_shuffle_epi32::<CONTROL>(super::i32x8::from(x)))
+        );
+        mk!(_mm256_blend_epi32<const CONTROL: i32>(x: __m256i, y: __m256i) ==
+            __m256i::from(super::_mm256_blend_epi32::<CONTROL>(super::i32x8::from(x), super::i32x8::from(y)))
+        );
     }
 
     #[cfg(all(test, any(target_arch = "x86", target_arch = "x86_64")))]

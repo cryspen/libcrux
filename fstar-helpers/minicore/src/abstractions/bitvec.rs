@@ -317,14 +317,14 @@ pub mod int_vec_interp {
 
 
                     #[doc = concat!("Lemma that asserts that applying ", stringify!(BitVec::<$n>::from)," and then ", stringify!($name::from), " is the identity.")]
-                    #[hax_lib::fstar::before("[@@$INTERPRETATION_LEMMA]")]
+                    #[hax_lib::fstar::before("[@@ $INTERPRETATION_LEMMA ]")]
                     #[hax_lib::opaque]
                     #[hax_lib::lemma]
                     pub fn lemma_cancel_iv(x: $name) -> Proof<{
                         hax_lib::eq($name::from(BitVec::<$n>::from(x)), x)
                     }> {}
                     #[doc = concat!("Lemma that asserts that applying ", stringify!($name::from)," and then ", stringify!(BitVec::<$n>::from), " is the identity.")]
-                    #[hax_lib::fstar::before("[@@$INTERPRETATION_LEMMA]")]
+                    #[hax_lib::fstar::before("[@@ $INTERPRETATION_LEMMA ]")]
                     #[hax_lib::opaque]
                     #[hax_lib::lemma]
                     pub fn lemma_cancel_bv(x: BitVec<$n>) -> Proof<{
@@ -349,7 +349,7 @@ pub mod int_vec_interp {
 
     /// Lemma stating that converting an `i64x4` vector to a `BitVec<256>` and then into an `i32x8`
     /// yields the same result as directly converting the `i64x4` into an `i32x8`.
-    #[hax_lib::fstar::before("[@@$INTERPRETATION_LEMMA]")]
+    #[hax_lib::fstar::before("[@@ $INTERPRETATION_LEMMA ]")]
     #[hax_lib::opaque]
     #[hax_lib::lemma]
     fn lemma_rewrite_i64x4_bv_i32x8(
