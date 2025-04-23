@@ -99,6 +99,7 @@ mod test {
         }
     }
 
+    #[cfg(all(target_arch = "aarch64", target_feature="aes"))]
     #[test]
     fn test_gf128_neon() {
         let mut computed: [u8; 16] = [0u8; 16];

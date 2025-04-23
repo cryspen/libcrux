@@ -14,9 +14,9 @@ exclude = ["/proofs", "/c.sh", "/c.yaml", "/tests/tv", "tests/cavp.rs"]
 bench = false # so libtest doesn't eat the arguments to criterion
 
 [dependencies]
-libcrux-platform = { version = "0.0.2-beta.2", path = "../sys/platform" }
-libcrux-intrinsics = { version = "0.0.2-beta.2", path = "../libcrux-intrinsics" }
-hax-lib = { version = "0.1.0-alpha.1", git = "https://github.com/hacspec/hax/" }
+libcrux-platform = { version = "0.0.2", path = "../sys/platform" }
+libcrux-intrinsics = { version = "0.0.2", path = "../libcrux-intrinsics" }
+hax-lib = { version = "0.2", git = "https://github.com/cryspen/hax/" }
 
 [features]
 simd128 = []
