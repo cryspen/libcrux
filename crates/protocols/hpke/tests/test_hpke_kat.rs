@@ -275,7 +275,16 @@ fn kat<Crypto: HpkeCrypto + 'static>(tests: Vec<HpkeTestVector>) {
 }
 
 #[test]
-fn test_kat() {
+fn kats_rust_crypto() {
+    run::<HpkeRustCrypto>();
+}
+
+#[test]
+fn kats_libcrux() {
+    run::<HpkeLibcrux>();
+}
+
+fn run<Crypto: HpkeCrypto + 'static>() {
     let _ = pretty_env_logger::try_init();
     let files = vec!["tests/test_vectors.json", "tests/test_vectors_k256.json"];
     for file in files {
@@ -290,14 +299,13 @@ fn test_kat() {
         };
 
         let now = Instant::now();
-        kat::<HpkeRustCrypto>(tests.clone());
+        kat::<Crypto>(tests.clone());
         let time = now.elapsed();
-        log::info!("Test vectors with Rust Crypto took: {}s", time.as_secs());
-
-        let now = Instant::now();
-        kat::<HpkeLibcrux>(tests);
-        let time = now.elapsed();
-        log::info!("Test vectors with Libcrux took: {}s", time.as_secs());
+        log::info!(
+            "Test vectors with {} took: {}s",
+            Crypto::name(),
+            time.as_secs()
+        );
     }
 }
 
