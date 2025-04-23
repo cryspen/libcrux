@@ -1,8 +1,8 @@
-mod aes_ctr;
+pub mod aes_ctr;
 mod aes_gcm;
 mod aes_generic;
 mod gf128_generic;
-mod platform;
+pub mod platform;
 
 pub use aes_gcm::DecryptError;
 
