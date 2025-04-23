@@ -22,6 +22,7 @@ pub mod portable{
     }
 }
 
+#[cfg(all(target_arch = "aarch64", target_feature="aes"))]
 pub mod neon{
     use crate::{aes_gcm::{self, DecryptError}, platform};
 

@@ -290,6 +290,7 @@ mod test {
         }
     }
 
+    #[cfg(all(target_arch = "aarch64", target_feature="aes"))]
     #[test]
     fn test_ctr_block_neon() {
         let mut computed: [u8; 32] = [0u8; 32];
@@ -322,6 +323,7 @@ mod test {
         }
     }
 
+    #[cfg(all(target_arch = "aarch64", target_feature="aes"))]
     #[test]
     fn test_ctr_encrypt_neon() {
         let mut computed: [u8; 32] = [0u8; 32];
