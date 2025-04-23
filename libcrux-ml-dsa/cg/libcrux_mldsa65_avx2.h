@@ -8,7 +8,7 @@
  * Eurydice: 36a5ed7dd6b61b5cd3d69a010859005912d21537
  * Karamel: bf9b89d76dd24e2ceaaca32de3535353e7b6bc01
  * F*: 4b3fc11774003a6ff7c09500ecb5f0145ca6d862
- * Libcrux: f3f15359a852405a81628f982f2debc4d50fff30
+ * Libcrux: fe232ff426a7be69ae8434cdae0917405ac9d7a2
  */
 
 #ifndef __libcrux_mldsa65_avx2_H
@@ -1302,37 +1302,50 @@ static KRML_MUSTINLINE void libcrux_ml_dsa_simd_avx2_gamma1_deserialize_22(
 }
 
 KRML_ATTRIBUTE_TARGET("avx2")
+static KRML_MUSTINLINE __m128i
+libcrux_ml_dsa_simd_avx2_encoding_commitment_serialize_4_normalized_serialize_4(
+    __m256i *simd_unit) {
+  __m256i adjacent_2_combined = libcrux_intrinsics_avx2_mm256_sllv_epi32(
+      simd_unit[0U], libcrux_intrinsics_avx2_mm256_set_epi32(
+                         (int32_t)0, (int32_t)28, (int32_t)0, (int32_t)28,
+                         (int32_t)0, (int32_t)28, (int32_t)0, (int32_t)28));
+  __m256i adjacent_2_combined0 = libcrux_intrinsics_avx2_mm256_srli_epi64(
+      (int32_t)28, adjacent_2_combined, __m256i);
+  __m256i adjacent_4_combined =
+      libcrux_intrinsics_avx2_mm256_permutevar8x32_epi32(
+          adjacent_2_combined0,
+          libcrux_intrinsics_avx2_mm256_set_epi32(
+              (int32_t)0, (int32_t)0, (int32_t)0, (int32_t)0, (int32_t)6,
+              (int32_t)2, (int32_t)4, (int32_t)0));
+  __m128i adjacent_4_combined0 =
+      libcrux_intrinsics_avx2_mm256_castsi256_si128(adjacent_4_combined);
+  return libcrux_intrinsics_avx2_mm_shuffle_epi8(
+      adjacent_4_combined0, libcrux_intrinsics_avx2_mm_set_epi8(
+                                240U, 240U, 240U, 240U, 240U, 240U, 240U, 240U,
+                                240U, 240U, 240U, 240U, 12U, 4U, 8U, 0U));
+}
+
+KRML_ATTRIBUTE_TARGET("avx2")
+static KRML_MUSTINLINE __m128i
+libcrux_ml_dsa_simd_avx2_encoding_commitment_serialize_4(__m256i *simd_unit) {
+  return libcrux_ml_dsa_simd_avx2_encoding_commitment_serialize_4_normalized_serialize_4(
+      simd_unit);
+}
+
+KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE void
 libcrux_ml_dsa_simd_avx2_encoding_commitment_serialize(__m256i *simd_unit,
                                                        Eurydice_slice out) {
   uint8_t serialized[19U] = {0U};
   switch ((uint8_t)Eurydice_slice_len(out, uint8_t)) {
     case 4U: {
-      __m256i adjacent_2_combined = libcrux_intrinsics_avx2_mm256_sllv_epi32(
-          simd_unit[0U], libcrux_intrinsics_avx2_mm256_set_epi32(
-                             (int32_t)0, (int32_t)28, (int32_t)0, (int32_t)28,
-                             (int32_t)0, (int32_t)28, (int32_t)0, (int32_t)28));
-      __m256i adjacent_2_combined0 = libcrux_intrinsics_avx2_mm256_srli_epi64(
-          (int32_t)28, adjacent_2_combined, __m256i);
-      __m256i adjacent_4_combined =
-          libcrux_intrinsics_avx2_mm256_permutevar8x32_epi32(
-              adjacent_2_combined0,
-              libcrux_intrinsics_avx2_mm256_set_epi32(
-                  (int32_t)0, (int32_t)0, (int32_t)0, (int32_t)0, (int32_t)6,
-                  (int32_t)2, (int32_t)4, (int32_t)0));
-      __m128i adjacent_4_combined0 =
-          libcrux_intrinsics_avx2_mm256_castsi256_si128(adjacent_4_combined);
-      __m128i adjacent_4_combined1 = libcrux_intrinsics_avx2_mm_shuffle_epi8(
-          adjacent_4_combined0,
-          libcrux_intrinsics_avx2_mm_set_epi8(240U, 240U, 240U, 240U, 240U,
-                                              240U, 240U, 240U, 240U, 240U,
-                                              240U, 240U, 12U, 4U, 8U, 0U));
+      Eurydice_slice uu____0 = Eurydice_array_to_subslice2(
+          serialized, (size_t)0U, (size_t)16U, uint8_t);
       libcrux_intrinsics_avx2_mm_storeu_bytes_si128(
-          Eurydice_array_to_subslice2(serialized, (size_t)0U, (size_t)16U,
-                                      uint8_t),
-          adjacent_4_combined1);
-      Eurydice_slice uu____0 = out;
-      Eurydice_slice_copy(uu____0,
+          uu____0,
+          libcrux_ml_dsa_simd_avx2_encoding_commitment_serialize_4(simd_unit));
+      Eurydice_slice uu____1 = out;
+      Eurydice_slice_copy(uu____1,
                           Eurydice_array_to_subslice2(serialized, (size_t)0U,
                                                       (size_t)4U, uint8_t),
                           uint8_t);
@@ -1379,8 +1392,8 @@ libcrux_ml_dsa_simd_avx2_encoding_commitment_serialize(__m256i *simd_unit,
           Eurydice_array_to_subslice2(serialized, (size_t)3U, (size_t)19U,
                                       uint8_t),
           upper_3);
-      Eurydice_slice uu____1 = out;
-      Eurydice_slice_copy(uu____1,
+      Eurydice_slice uu____2 = out;
+      Eurydice_slice_copy(uu____2,
                           Eurydice_array_to_subslice2(serialized, (size_t)0U,
                                                       (size_t)6U, uint8_t),
                           uint8_t);
