@@ -101,7 +101,7 @@ pub fn aes128_gcm_decrypt<T: AESState, U: GF128FieldElement>(
 
 #[cfg(test)]
 mod test {
-    use crate::platform::{portable, neon};
+    use crate::platform::portable;
 
     use super::{aes128_gcm_encrypt, aes128_gcm_init, aes128_gcm_set_nonce};
 
@@ -270,7 +270,11 @@ mod test {
             }
         }
     }
+    
+    #[cfg(all(target_arch = "aarch64", target_feature="aes"))]
+    use crate::platform::neon;
 
+    #[cfg(all(target_arch = "aarch64", target_feature="aes"))]
     #[test]
     fn test_gcm1_neon() {
         let mut computed1 = [0u8; 76];
@@ -289,6 +293,7 @@ mod test {
         }
     }
 
+    #[cfg(all(target_arch = "aarch64", target_feature="aes"))]
     #[test]
     fn test_gcm2_neon() {
         let mut computed2 = [0u8; 668];
