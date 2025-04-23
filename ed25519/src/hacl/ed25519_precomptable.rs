@@ -4,6 +4,8 @@
 #![allow(unused_assignments)]
 #![allow(unreachable_patterns)]
 
+//! This module contains generated hacl code.
+
 pub(crate) const precomp_basepoint_table_w4: [u64; 320] = [
     0u64,
     0u64,

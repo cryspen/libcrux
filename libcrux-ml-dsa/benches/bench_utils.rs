@@ -1,4 +1,4 @@
-use rand::RngCore;
+use rand::TryRngCore;
 
 #[allow(unused)]
 pub(crate) fn random_array<const L: usize>() -> [u8; L] {
@@ -33,7 +33,7 @@ pub(crate) fn print_time(label: &str, d: std::time::Duration) {
     println!("{label}:{space}{time}");
 }
 
-pub(crate) const ITERATIONS: usize = 100_000;
+pub(crate) const ITERATIONS: usize = 10_000;
 #[allow(unused)]
 pub(crate) const WARMUP_ITERATIONS: usize = 1_000;
 
@@ -129,23 +129,24 @@ macro_rules! bench_group_libcrux {
     }};
 }
 
+#[cfg(not(all(target_os = "macos", target_arch = "x86_64")))]
 #[macro_export]
 macro_rules! bench_group_pqclean {
     ($variant:literal, $mod:ident) => {{
         bench!("(pqclean) KeyGen", $variant, (), |()| {}, |()| {
-            pqcrypto_dilithium::$mod::keypair()
+            pqcrypto_mldsa::$mod::keypair()
         });
         bench!(
             "(pqclean) Sign",
             $variant,
             (),
             |()| {
-                let (_, sk) = pqcrypto_dilithium::$mod::keypair();
+                let (_, sk) = pqcrypto_mldsa::$mod::keypair();
                 let message = bench_utils::random_array::<1023>();
                 (sk, message)
             },
-            |(sk, message): (pqcrypto_dilithium::$mod::SecretKey, [u8; 1023])| {
-                let _ = pqcrypto_dilithium::$mod::detached_sign(&message, &sk);
+            |(sk, message): (pqcrypto_mldsa::$mod::SecretKey, [u8; 1023])| {
+                let _ = pqcrypto_mldsa::$mod::detached_sign(&message, &sk);
             }
         );
         bench!(
@@ -153,19 +154,18 @@ macro_rules! bench_group_pqclean {
             $variant,
             (),
             |()| {
-                let (vk, sk) = pqcrypto_dilithium::$mod::keypair();
+                let (vk, sk) = pqcrypto_mldsa::$mod::keypair();
                 let message = bench_utils::random_array::<1023>();
-                let signature = pqcrypto_dilithium::$mod::detached_sign(&message, &sk);
+                let signature = pqcrypto_mldsa::$mod::detached_sign(&message, &sk);
                 (vk, message, signature)
             },
             |(vk, message, signature): (
-                pqcrypto_dilithium::$mod::PublicKey,
+                pqcrypto_mldsa::$mod::PublicKey,
                 [u8; 1023],
-                pqcrypto_dilithium::$mod::DetachedSignature
+                pqcrypto_mldsa::$mod::DetachedSignature
             )| {
-                let _ =
-                    pqcrypto_dilithium::$mod::verify_detached_signature(&signature, &message, &vk)
-                        .unwrap();
+                let _ = pqcrypto_mldsa::$mod::verify_detached_signature(&signature, &message, &vk)
+                    .unwrap();
             }
         );
     }};

@@ -1,5 +1,5 @@
 use super::vector_type::*;
-use crate::vector::{FIELD_MODULUS, INVERSE_OF_MODULUS_MOD_MONTGOMERY_R};
+use crate::vector::{traits::INVERSE_OF_MODULUS_MOD_MONTGOMERY_R, FIELD_MODULUS};
 use libcrux_intrinsics::arm64::*;
 
 #[inline(always)]

@@ -1,10 +1,11 @@
 use libcrux_ecdh::{self, key_gen};
-use rand_core::OsRng;
+use rand_core::{OsRng, TryRngCore};
 
 #[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
 #[test]
 fn derive_rand() {
-    let mut rng = OsRng;
+    let mut os_rng = OsRng;
+    let mut rng = os_rng.unwrap_mut();
 
     let (private_a, public_a) = key_gen(libcrux_ecdh::Algorithm::P256, &mut rng).unwrap();
     let (private_b, public_b) = key_gen(libcrux_ecdh::Algorithm::P256, &mut rng).unwrap();

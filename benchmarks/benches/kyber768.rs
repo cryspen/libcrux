@@ -5,12 +5,12 @@ use criterion::{criterion_group, criterion_main, BatchSize, Criterion};
 use libcrux::digest;
 use libcrux::drbg::Drbg;
 use libcrux::kem::Algorithm;
-use rand_core::OsRng;
-use rand_core::RngCore;
+use rand_core::{OsRng, RngCore, TryRngCore};
 
 pub fn comparisons_key_generation(c: &mut Criterion) {
     let mut drbg = Drbg::new(digest::Algorithm::Sha256).unwrap();
-    let mut rng = OsRng;
+    let mut os_rng = OsRng;
+    let mut rng = os_rng.unwrap_mut();
     let mut group = c.benchmark_group("Kyber768 Key Generation");
     group.measurement_time(Duration::from_secs(10));
 
@@ -26,7 +26,7 @@ pub fn comparisons_key_generation(c: &mut Criterion) {
     // group.bench_function("libcrux portable unpacked (external random)", |b| {
     //     b.iter(|| {
     //         let mut seed = [0; 64];
-    //         rng.fill_bytes(&mut seed);
+    //         rng.try_fill_bytes(&mut seed).unwrap();
     //         let _tuple = libcrux_ml_kem::mlkem768::generate_key_pair_unpacked(seed);
     //     })
     // });
@@ -55,7 +55,7 @@ pub fn comparisons_key_generation(c: &mut Criterion) {
     group.bench_function("libjade kyber avx2", |b| {
         b.iter(|| {
             let mut seed = [0; 64];
-            rng.fill_bytes(&mut seed);
+            rng.try_fill_bytes(&mut seed).unwrap();
             let mut public_key = [0u8; 1184];
             let mut secret_key = [0u8; 2400];
             unsafe {
@@ -76,7 +76,7 @@ pub fn comparisons_pk_validation(c: &mut Criterion) {
 
     group.bench_function("libcrux portable", |b| {
         let mut seed = [0; 64];
-        rng.fill_bytes(&mut seed);
+        rng.try_fill_bytes(&mut seed).unwrap();
         b.iter_batched(
             || libcrux_kem::deterministic::mlkem768_generate_keypair_derand(seed),
             |key_pair| {
@@ -93,9 +93,9 @@ pub fn comparisons_encapsulation(c: &mut Criterion) {
 
     group.bench_function("libcrux portable (external random)", |b| {
         let mut seed1 = [0; 64];
-        OsRng.fill_bytes(&mut seed1);
+        OsRng.try_fill_bytes(&mut seed1).unwrap();
         let mut seed2 = [0; 32];
-        OsRng.fill_bytes(&mut seed2);
+        OsRng.try_fill_bytes(&mut seed2).unwrap();
         b.iter_batched(
             || libcrux_kem::deterministic::mlkem768_generate_keypair_derand(seed1),
             |keypair| {
@@ -128,13 +128,16 @@ pub fn comparisons_encapsulation(c: &mut Criterion) {
     group.bench_function("libcrux portable OsRng", |b| {
         b.iter_batched(
             || {
-                let mut drbg = OsRng;
+                let mut os_rng = OsRng;
+                let mut drbg = os_rng.unwrap_mut();
                 let (_secret_key, public_key) =
                     libcrux_kem::key_gen(Algorithm::MlKem768, &mut drbg).unwrap();
 
-                (drbg, public_key)
+                public_key
             },
-            |(mut rng, public_key)| {
+            |public_key| {
+                let mut os_rng = OsRng;
+                let mut rng = os_rng.unwrap_mut();
                 let (_shared_secret, _ciphertext) = public_key.encapsulate(&mut rng).unwrap();
             },
             BatchSize::SmallInput,
@@ -162,7 +165,7 @@ pub fn comparisons_encapsulation(c: &mut Criterion) {
             || {
                 let mut rng = OsRng;
                 let mut seed = [0; 64];
-                rng.fill_bytes(&mut seed);
+                rng.try_fill_bytes(&mut seed).unwrap();
                 let mut public_key = [0u8; 1184];
                 let mut secret_key = [0u8; 2400];
                 unsafe {
@@ -177,7 +180,7 @@ pub fn comparisons_encapsulation(c: &mut Criterion) {
             },
             |(mut rng, public_key)| {
                 let mut seed = [0; 32];
-                rng.fill_bytes(&mut seed);
+                rng.try_fill_bytes(&mut seed).unwrap();
 
                 let mut ciphertext = [0u8; 1088];
                 let mut shared_secret = [0u8; 32];
@@ -221,11 +224,11 @@ pub fn comparisons_decapsulation(c: &mut Criterion) {
     //     b.iter_batched(
     //         || {
     //             let mut seed = [0; 64];
-    //             OsRng.fill_bytes(&mut seed);
+    //             OsRng.try_fill_bytes(&mut seed).unwrap();
     //             let (sk_state, pubkey) = libcrux_ml_kem::mlkem768::generate_key_pair_unpacked(seed);
 
     //             let mut rand = [0; 32];
-    //             OsRng.fill_bytes(&mut rand);
+    //             OsRng.try_fill_bytes(&mut rand).unwrap();
     //             let (ciphertext, _) = libcrux_ml_kem::mlkem768::encapsulate(&pubkey, rand);
     //             (sk_state, ciphertext)
     //         },
@@ -260,7 +263,7 @@ pub fn comparisons_decapsulation(c: &mut Criterion) {
             || {
                 let mut rng = OsRng;
                 let mut seed = [0; 64];
-                rng.fill_bytes(&mut seed);
+                rng.try_fill_bytes(&mut seed).unwrap();
                 let mut public_key = [0u8; 1184];
                 let mut secret_key = [0u8; 2400];
                 unsafe {
@@ -272,7 +275,7 @@ pub fn comparisons_decapsulation(c: &mut Criterion) {
                 };
 
                 let mut seed = [0; 32];
-                rng.fill_bytes(&mut seed);
+                rng.try_fill_bytes(&mut seed).unwrap();
 
                 let mut ciphertext = [0u8; 1088];
                 let mut shared_secret = [0u8; 32];

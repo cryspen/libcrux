@@ -72,7 +72,7 @@ fn generate(c: &mut Criterion) {
             || {},
             |()| {
                 let mut random_bytes = vec![0u8; 32];
-                OsRng.fill_bytes(&mut random_bytes);
+                OsRng.try_fill_bytes(&mut random_bytes).unwrap();
             },
             BatchSize::SmallInput,
         )

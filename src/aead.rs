@@ -17,6 +17,8 @@ use crate::hacl::chacha20_poly1305;
 
 use libcrux_platform::{aes_ni_support, simd128_support, simd256_support};
 
+use crate::std::vec::Vec;
+
 /// The caller has provided an invalid argument.
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
 pub enum InvalidArgumentError {
@@ -180,12 +182,12 @@ pub struct Chacha20Key(pub [u8; Algorithm::key_size(Algorithm::Chacha20Poly1305)
 
 mod keygen {
     use super::*;
-    use rand::{CryptoRng, RngCore};
+    use rand::CryptoRng;
 
     macro_rules! impl_key_gen {
         ($name:ident) => {
             impl $name {
-                pub fn generate(rng: &mut (impl RngCore + CryptoRng)) -> Self {
+                pub fn generate(rng: &mut impl CryptoRng) -> Self {
                     let mut k = Self::default();
                     rng.fill_bytes(&mut k.0);
                     k
@@ -198,7 +200,7 @@ mod keygen {
     impl_key_gen!(Chacha20Key);
 
     impl Key {
-        pub fn generate(alg: Algorithm, rng: &mut (impl RngCore + CryptoRng)) -> Self {
+        pub fn generate(alg: Algorithm, rng: &mut impl CryptoRng) -> Self {
             match alg {
                 Algorithm::Aes128Gcm => Self::Aes128(Aes128Key::generate(rng)),
                 Algorithm::Aes256Gcm => Self::Aes256(Aes256Key::generate(rng)),
@@ -209,7 +211,7 @@ mod keygen {
 
     impl Iv {
         /// Generate a new random Iv
-        pub fn generate(rng: &mut (impl RngCore + CryptoRng)) -> Self {
+        pub fn generate(rng: &mut impl CryptoRng) -> Self {
             let mut n = Self::default();
             rng.fill_bytes(&mut n.0);
             n

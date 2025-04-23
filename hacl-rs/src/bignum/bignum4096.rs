@@ -4,11 +4,9 @@
 #![allow(unused_assignments)]
 #![allow(unreachable_patterns)]
 
-use libcrux_macros as krml;
+use crate::prelude::*;
 
-use crate::fstar;
-use crate::lowstar;
-use crate::util as lib;
+use libcrux_macros as krml;
 
 /**
 Write `a + b mod 2^4096` in `res`.

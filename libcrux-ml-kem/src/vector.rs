@@ -10,8 +10,6 @@
 //! FIXME: This is kyber specific for now.
 
 pub(crate) mod traits;
-use traits::INVERSE_OF_MODULUS_MOD_MONTGOMERY_R;
-
 pub(crate) use traits::{
     decompress_1, montgomery_multiply_fe, to_standard_domain, to_unsigned_representative,
     Operations, FIELD_ELEMENTS_IN_VECTOR, FIELD_MODULUS,

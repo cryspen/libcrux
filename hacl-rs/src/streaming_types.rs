@@ -4,6 +4,8 @@
 #![allow(unused_assignments)]
 #![allow(unreachable_patterns)]
 
+use crate::prelude::*;
+
 #[derive(PartialEq, Clone, Copy)]
 pub enum hash_alg {
     SHA2_224,

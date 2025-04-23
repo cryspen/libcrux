@@ -4,9 +4,7 @@
 #![allow(unused_assignments)]
 #![allow(unreachable_patterns)]
 
-use crate::fstar;
-use crate::lowstar;
-use crate::util as lib;
+use crate::prelude::*;
 
 #[inline]
 pub(crate) fn mul_wide_add2_u32(a: u32, b: u32, c_in: u32, out: &mut [u32]) -> u32 {

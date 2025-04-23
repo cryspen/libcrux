@@ -1,9 +1,46 @@
 use super::*;
+use libcrux_hacl_rs::prelude::*;
 use libcrux_traits::Digest;
+
+/// The different Sha2 algorithms.
+#[derive(Clone, Copy, Debug)]
+pub enum Algorithm {
+    Sha224,
+    Sha256,
+    Sha384,
+    Sha512,
+}
+
+impl Algorithm {
+    // The length of the digest by algorithm.
+    pub const fn hash_len(&self) -> usize {
+        match self {
+            Algorithm::Sha224 => SHA224_LENGTH,
+            Algorithm::Sha256 => SHA256_LENGTH,
+            Algorithm::Sha384 => SHA384_LENGTH,
+            Algorithm::Sha512 => SHA512_LENGTH,
+        }
+    }
+}
+
+impl Algorithm {
+    /// Sha2
+    ///
+    /// Write the Sha2 hash of `payload` into `digest`.
+    pub fn hash(&self, payload: &[u8], digest: &mut [u8]) {
+        match self {
+            Algorithm::Sha224 => Sha224::hash(digest, payload),
+            Algorithm::Sha256 => Sha256::hash(digest, payload),
+            Algorithm::Sha384 => Sha384::hash(digest, payload),
+            Algorithm::Sha512 => Sha512::hash(digest, payload),
+        }
+    }
+}
 
 /// SHA2 224
 /// Will panic if `payload` is longer than `u32::MAX` to ensure that hacl-rs can
 /// process it.
+#[inline(always)]
 pub fn sha224(payload: &[u8]) -> [u8; SHA224_LENGTH] {
     let mut digest = [0u8; SHA224_LENGTH];
     Sha224::hash(&mut digest, payload);
@@ -13,6 +50,7 @@ pub fn sha224(payload: &[u8]) -> [u8; SHA224_LENGTH] {
 /// SHA2 256
 /// Will panic if `payload` is longer than `u32::MAX` to ensure that hacl-rs can
 /// process it.
+#[inline(always)]
 pub fn sha256(payload: &[u8]) -> [u8; SHA256_LENGTH] {
     let mut digest = [0u8; SHA256_LENGTH];
     Sha256::hash(&mut digest, payload);
@@ -22,6 +60,7 @@ pub fn sha256(payload: &[u8]) -> [u8; SHA256_LENGTH] {
 /// SHA2 384
 /// Will panic if `payload` is longer than `u32::MAX` to ensure that hacl-rs can
 /// process it.
+#[inline(always)]
 pub fn sha384(payload: &[u8]) -> [u8; SHA384_LENGTH] {
     let mut digest = [0u8; SHA384_LENGTH];
     Sha384::hash(&mut digest, payload);
@@ -31,6 +70,7 @@ pub fn sha384(payload: &[u8]) -> [u8; SHA384_LENGTH] {
 /// SHA2 512
 /// Will panic if `payload` is longer than `u32::MAX` to ensure that hacl-rs can
 /// process it.
+#[inline(always)]
 pub fn sha512(payload: &[u8]) -> [u8; SHA512_LENGTH] {
     let mut digest = [0u8; SHA512_LENGTH];
     Sha512::hash(&mut digest, payload);
@@ -57,7 +97,9 @@ macro_rules! impl_hash {
             /// Return the digest for the given input byte slice, in immediate mode.
             /// Will panic if `payload` is longer than `u32::MAX` to ensure that hacl-rs can
             /// process it.
-            fn hash(digest: &mut [u8; $digest_size], payload: &[u8]) {
+            #[inline(always)]
+            fn hash(digest: &mut [u8], payload: &[u8]) {
+                debug_assert!(digest.len() == $digest_size);
                 let payload_len = payload.len().try_into().unwrap();
                 $hash(digest, payload, payload_len)
             }
@@ -65,6 +107,7 @@ macro_rules! impl_hash {
             /// Add the `payload` to the digest.
             /// Will panic if `payload` is longer than `u32::MAX` to ensure that hacl-rs can
             /// process it.
+            #[inline(always)]
             fn update(&mut self, payload: &[u8]) {
                 let payload_len = payload.len().try_into().unwrap();
                 $update(self.state.as_mut(), payload, payload_len);
@@ -74,23 +117,27 @@ macro_rules! impl_hash {
             ///
             /// Note that the digest state can be continued to be used, to extend the
             /// digest.
+            #[inline(always)]
             fn finish(&self, digest: &mut [u8; $digest_size]) {
                 $finish(self.state.as_ref(), digest);
             }
 
             /// Reset the digest state.
+            #[inline(always)]
             fn reset(&mut self) {
                 $reset(self.state.as_mut());
             }
         }
 
         impl Default for $name {
+            #[inline(always)]
             fn default() -> Self {
                 Self::new()
             }
         }
 
         impl Clone for $name {
+            #[inline(always)]
             fn clone(&self) -> Self {
                 Self {
                     state: $copy(self.state.as_ref()),

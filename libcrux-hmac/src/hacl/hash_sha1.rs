@@ -4,7 +4,9 @@
 #![allow(unused_assignments)]
 #![allow(unreachable_patterns)]
 
-use libcrux_hacl_rs::lowstar;
+//! This module contains generated hacl code.
+
+use libcrux_hacl_rs::prelude::*;
 use libcrux_macros as krml;
 
 const _h0: [u32; 5] = [

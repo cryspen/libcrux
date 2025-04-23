@@ -1,3 +1,5 @@
+#![no_std]
+
 /// The length of a SHA224 hash in bytes.
 pub const SHA224_LENGTH: usize = 28;
 
@@ -11,13 +13,15 @@ pub const SHA384_LENGTH: usize = 48;
 pub const SHA512_LENGTH: usize = 64;
 
 /// The generated hacl code
-#[cfg(feature = "hacl")]
+#[cfg(not(feature = "expose-hacl"))]
+mod hacl;
+
+/// The generated hacl code
+#[cfg(feature = "expose-hacl")]
 pub mod hacl;
 
 /// The implementation of our types using that hacl code
-#[cfg(feature = "hacl")]
 mod impl_hacl;
 
 /// use it if we want to use hacl
-#[cfg(feature = "portable_hacl")]
 pub use impl_hacl::*;

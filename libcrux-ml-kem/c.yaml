@@ -107,6 +107,8 @@ files:
       monomorphizations_of:
         - [libcrux_ml_kem, vector, neon, "*"]
         - [libcrux_ml_kem, hash_functions, neon, "*"]
+    include_in_h:
+      - '"intrinsics/libcrux_intrinsics_arm64.h"'
 
   - name: libcrux_mlkem_avx2
     api:
@@ -119,6 +121,8 @@ files:
       monomorphizations_of:
         - [libcrux_ml_kem, vector, avx2, "*"]
         - [libcrux_ml_kem, hash_functions, avx2, "*"]
+    include_in_h:
+      - '"intrinsics/libcrux_intrinsics_avx2.h"'
 
   # This covers slightly more than the two bundles above, but this greatly
   # simplifies our lives.

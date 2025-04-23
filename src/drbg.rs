@@ -4,7 +4,9 @@
 
 use crate::hacl::drbg;
 // re-export here for convenience
-pub use rand::{CryptoRng, RngCore};
+pub use rand::{CryptoRng, RngCore, TryRngCore};
+
+use crate::std::{fmt, vec, vec::Vec};
 
 #[derive(Debug)]
 pub enum Error {
@@ -14,15 +16,21 @@ pub enum Error {
     UnsupportedAlgorithm,
     /// Unable to generate the requested randomness.
     UnableToGenerate,
+    /// Not enough OS randomness available, e.g. to initialize or reseed
+    InsufficientOSRandomness,
 }
 
-impl std::fmt::Display for Error {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl fmt::Display for Error {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.write_fmt(format_args!("{self:?}"))
     }
 }
 
+#[cfg(feature = "std")]
 impl std::error::Error for Error {}
+
+#[cfg(not(feature = "std"))]
+impl core::error::Error for Error {}
 
 pub struct Drbg {
     state: drbg::Drbg,
@@ -38,7 +46,9 @@ impl Drbg {
     #[cfg(feature = "rand")]
     pub fn new(alg: super::digest::Algorithm) -> Result<Self, Error> {
         let mut entropy = [0u8; 16];
-        rand::rngs::OsRng.fill_bytes(&mut entropy);
+        rand::rngs::OsRng
+            .try_fill_bytes(&mut entropy)
+            .map_err(|_| Error::InsufficientOSRandomness)?;
         Self::personalized(alg, &entropy, &[], "os seeded libcrux")
     }
 
@@ -82,7 +92,9 @@ impl Drbg {
     fn auto_reseed(&mut self) -> Result<(), Error> {
         if self.ctr > 512 {
             let mut entropy = [0u8; 16];
-            rand::rngs::OsRng.fill_bytes(&mut entropy);
+            rand::rngs::OsRng
+                .try_fill_bytes(&mut entropy)
+                .map_err(|_| Error::InsufficientOSRandomness)?;
             self.reseed(&entropy, b"reseed")?;
             self.ctr = 0;
         } else {
@@ -186,10 +198,6 @@ impl RngCore for Drbg {
 
     fn fill_bytes(&mut self, dest: &mut [u8]) {
         self.generate(dest).unwrap()
-    }
-
-    fn try_fill_bytes(&mut self, dest: &mut [u8]) -> Result<(), rand::Error> {
-        self.generate(dest).map_err(rand::Error::new)
     }
 }
 

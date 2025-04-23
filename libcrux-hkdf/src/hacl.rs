@@ -6,7 +6,7 @@
 
 //! This module contains generated hacl code.
 
-use libcrux_hacl_rs::lowstar;
+use libcrux_hacl_rs::prelude::*;
 
 /**
 Expand pseudorandom key to desired length.

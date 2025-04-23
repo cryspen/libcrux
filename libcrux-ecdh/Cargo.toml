@@ -1,6 +1,6 @@
 [package]
 name = "libcrux-ecdh"
-version.workspace = true
+version = "0.0.3-alpha.1"
 authors.workspace = true
 license.workspace = true
 homepage.workspace = true
@@ -13,18 +13,19 @@ description = "Libcrux ECDH implementation"
 path = "src/ecdh.rs"
 
 [dependencies]
-rand = { version = "0.8" }
-libcrux-hacl = { version = "=0.0.2-beta.2", path = "../sys/hacl" }
-libcrux-curve25519 = { version = "=0.0.2-beta.2", path = "../curve25519", features = [
-    "hacl",
+rand = { version = "0.9", default-features = false }
+libcrux-curve25519 = { version = "=0.0.2", path = "../curve25519" }
+libcrux-p256 = { version = "=0.0.3-alpha.1", path = "../p256", features = [
+    "expose-hacl",
 ] }
 
+[features]
+default = ["std"]
+std = ["rand/std"]
+
 [dev-dependencies]
-rand_core = { version = "0.6" }
+rand_core = { version = "0.9" , features = ["os_rng"]}
 hex = { version = "0.4.3", features = ["serde"] }
 serde_json = { version = "1.0" }
 serde = { version = "1.0", features = ["derive"] }
 pretty_env_logger = "0.5"
-
-[lints.rust]
-unexpected_cfgs = { level = "warn", check-cfg = ['cfg(adx)', 'cfg(bmi2)'] }

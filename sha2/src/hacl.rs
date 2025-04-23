@@ -4,9 +4,9 @@
 #![allow(unused_assignments)]
 #![allow(unreachable_patterns)]
 
-use libcrux_hacl_rs::fstar;
-use libcrux_hacl_rs::lowstar;
-use libcrux_hacl_rs::streaming_types;
+//! This module contains generated hacl code.
+
+use libcrux_hacl_rs::prelude::*;
 use libcrux_macros as krml;
 
 pub const h224: [u32; 8] = [

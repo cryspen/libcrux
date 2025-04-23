@@ -6,23 +6,27 @@ use crate::{
 #[allow(unsafe_code)]
 /// Portable generate key pair.
 #[cfg_attr(not(hax), target_feature(enable = "avx2"))]
+#[hax_lib::requires(fstar!(r#"Spec.MLKEM.is_rank $K /\
+    $CPA_PRIVATE_KEY_SIZE == Spec.MLKEM.v_CPA_PRIVATE_KEY_SIZE $K /\
+    $PRIVATE_KEY_SIZE == Spec.MLKEM.v_CCA_PRIVATE_KEY_SIZE $K /\
+    $PUBLIC_KEY_SIZE == Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE $K /\
+    $ETA1 == Spec.MLKEM.v_ETA1 $K /\
+    $ETA1_RANDOMNESS_SIZE == Spec.MLKEM.v_ETA1_RANDOMNESS_SIZE $K"#))]
 unsafe fn generate_keypair_avx2<
     const K: usize,
     const CPA_PRIVATE_KEY_SIZE: usize,
     const PRIVATE_KEY_SIZE: usize,
     const PUBLIC_KEY_SIZE: usize,
-    const BYTES_PER_RING_ELEMENT: usize,
     const ETA1: usize,
     const ETA1_RANDOMNESS_SIZE: usize,
 >(
-    randomness: [u8; KEY_GENERATION_SEED_SIZE],
+    randomness: &[u8; KEY_GENERATION_SEED_SIZE],
 ) -> MlKemKeyPair<PRIVATE_KEY_SIZE, PUBLIC_KEY_SIZE> {
     crate::ind_cca::generate_keypair::<
         K,
         CPA_PRIVATE_KEY_SIZE,
         PRIVATE_KEY_SIZE,
         PUBLIC_KEY_SIZE,
-        BYTES_PER_RING_ELEMENT,
         ETA1,
         ETA1_RANDOMNESS_SIZE,
         crate::vector::SIMD256Vector,
@@ -32,16 +36,21 @@ unsafe fn generate_keypair_avx2<
 }
 
 #[allow(unsafe_code)]
+#[hax_lib::requires(fstar!(r#"Spec.MLKEM.is_rank $K /\
+    $CPA_PRIVATE_KEY_SIZE == Spec.MLKEM.v_CPA_PRIVATE_KEY_SIZE $K /\
+    $PRIVATE_KEY_SIZE == Spec.MLKEM.v_CCA_PRIVATE_KEY_SIZE $K /\
+    $PUBLIC_KEY_SIZE == Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE $K /\
+    $ETA1 == Spec.MLKEM.v_ETA1 $K /\
+    $ETA1_RANDOMNESS_SIZE == Spec.MLKEM.v_ETA1_RANDOMNESS_SIZE $K"#))]
 pub(crate) fn generate_keypair<
     const K: usize,
     const CPA_PRIVATE_KEY_SIZE: usize,
     const PRIVATE_KEY_SIZE: usize,
     const PUBLIC_KEY_SIZE: usize,
-    const BYTES_PER_RING_ELEMENT: usize,
     const ETA1: usize,
     const ETA1_RANDOMNESS_SIZE: usize,
 >(
-    randomness: [u8; KEY_GENERATION_SEED_SIZE],
+    randomness: &[u8; KEY_GENERATION_SEED_SIZE],
 ) -> MlKemKeyPair<PRIVATE_KEY_SIZE, PUBLIC_KEY_SIZE> {
     unsafe {
         generate_keypair_avx2::<
@@ -49,7 +58,6 @@ pub(crate) fn generate_keypair<
             CPA_PRIVATE_KEY_SIZE,
             PRIVATE_KEY_SIZE,
             PUBLIC_KEY_SIZE,
-            BYTES_PER_RING_ELEMENT,
             ETA1,
             ETA1_RANDOMNESS_SIZE,
         >(randomness)
@@ -64,18 +72,16 @@ unsafe fn kyber_generate_keypair_avx2<
     const CPA_PRIVATE_KEY_SIZE: usize,
     const PRIVATE_KEY_SIZE: usize,
     const PUBLIC_KEY_SIZE: usize,
-    const BYTES_PER_RING_ELEMENT: usize,
     const ETA1: usize,
     const ETA1_RANDOMNESS_SIZE: usize,
 >(
-    randomness: [u8; KEY_GENERATION_SEED_SIZE],
+    randomness: &[u8; KEY_GENERATION_SEED_SIZE],
 ) -> MlKemKeyPair<PRIVATE_KEY_SIZE, PUBLIC_KEY_SIZE> {
     crate::ind_cca::generate_keypair::<
         K,
         CPA_PRIVATE_KEY_SIZE,
         PRIVATE_KEY_SIZE,
         PUBLIC_KEY_SIZE,
-        BYTES_PER_RING_ELEMENT,
         ETA1,
         ETA1_RANDOMNESS_SIZE,
         crate::vector::SIMD256Vector,
@@ -91,11 +97,10 @@ pub(crate) fn kyber_generate_keypair<
     const CPA_PRIVATE_KEY_SIZE: usize,
     const PRIVATE_KEY_SIZE: usize,
     const PUBLIC_KEY_SIZE: usize,
-    const BYTES_PER_RING_ELEMENT: usize,
     const ETA1: usize,
     const ETA1_RANDOMNESS_SIZE: usize,
 >(
-    randomness: [u8; KEY_GENERATION_SEED_SIZE],
+    randomness: &[u8; KEY_GENERATION_SEED_SIZE],
 ) -> MlKemKeyPair<PRIVATE_KEY_SIZE, PUBLIC_KEY_SIZE> {
     unsafe {
         kyber_generate_keypair_avx2::<
@@ -103,7 +108,6 @@ pub(crate) fn kyber_generate_keypair<
             CPA_PRIVATE_KEY_SIZE,
             PRIVATE_KEY_SIZE,
             PUBLIC_KEY_SIZE,
-            BYTES_PER_RING_ELEMENT,
             ETA1,
             ETA1_RANDOMNESS_SIZE,
         >(randomness)
@@ -112,36 +116,30 @@ pub(crate) fn kyber_generate_keypair<
 
 #[allow(unsafe_code)]
 #[cfg_attr(not(hax), target_feature(enable = "avx2"))]
-unsafe fn validate_public_key_avx2<
-    const K: usize,
-    const RANKED_BYTES_PER_RING_ELEMENT: usize,
-    const PUBLIC_KEY_SIZE: usize,
->(
+#[hax_lib::requires(fstar!(r#"Spec.MLKEM.is_rank $K /\
+    $PUBLIC_KEY_SIZE == Spec.MLKEM.v_CCA_PUBLIC_KEY_SIZE $K"#))]
+unsafe fn validate_public_key_avx2<const K: usize, const PUBLIC_KEY_SIZE: usize>(
     public_key: &[u8; PUBLIC_KEY_SIZE],
 ) -> bool {
-    crate::ind_cca::validate_public_key::<
-        K,
-        RANKED_BYTES_PER_RING_ELEMENT,
-        PUBLIC_KEY_SIZE,
-        crate::vector::SIMD256Vector,
-    >(public_key)
+    crate::ind_cca::validate_public_key::<K, PUBLIC_KEY_SIZE, crate::vector::SIMD256Vector>(
+        public_key,
+    )
 }
 
 #[allow(unsafe_code)]
-pub(crate) fn validate_public_key<
-    const K: usize,
-    const RANKED_BYTES_PER_RING_ELEMENT: usize,
-    const PUBLIC_KEY_SIZE: usize,
->(
+#[hax_lib::requires(fstar!(r#"Spec.MLKEM.is_rank $K /\
+    $PUBLIC_KEY_SIZE == Spec.MLKEM.v_CCA_PUBLIC_KEY_SIZE $K"#))]
+pub(crate) fn validate_public_key<const K: usize, const PUBLIC_KEY_SIZE: usize>(
     public_key: &[u8; PUBLIC_KEY_SIZE],
 ) -> bool {
-    unsafe {
-        validate_public_key_avx2::<K, RANKED_BYTES_PER_RING_ELEMENT, PUBLIC_KEY_SIZE>(public_key)
-    }
+    unsafe { validate_public_key_avx2::<K, PUBLIC_KEY_SIZE>(public_key) }
 }
 
 #[allow(unsafe_code)]
 #[cfg_attr(not(hax), target_feature(enable = "avx2"))]
+#[hax_lib::requires(fstar!(r#"Spec.MLKEM.is_rank $K /\
+    $SECRET_KEY_SIZE == Spec.MLKEM.v_CCA_PRIVATE_KEY_SIZE $K /\
+    $CIPHERTEXT_SIZE == Spec.MLKEM.v_CPA_CIPHERTEXT_SIZE $K"#))]
 unsafe fn validate_private_key_avx2<
     const K: usize,
     const SECRET_KEY_SIZE: usize,
@@ -159,6 +157,9 @@ unsafe fn validate_private_key_avx2<
 }
 
 #[allow(unsafe_code)]
+#[hax_lib::requires(fstar!(r#"Spec.MLKEM.is_rank $K /\
+    $SECRET_KEY_SIZE == Spec.MLKEM.v_CCA_PRIVATE_KEY_SIZE $K /\
+    $CIPHERTEXT_SIZE == Spec.MLKEM.v_CPA_CIPHERTEXT_SIZE $K"#))]
 pub(crate) fn validate_private_key<
     const K: usize,
     const SECRET_KEY_SIZE: usize,
@@ -174,6 +175,8 @@ pub(crate) fn validate_private_key<
 
 /// Private key validation
 #[inline(always)]
+#[hax_lib::requires(fstar!(r#"Spec.MLKEM.is_rank $K /\
+    $SECRET_KEY_SIZE == Spec.MLKEM.v_CCA_PRIVATE_KEY_SIZE $K"#))]
 pub(crate) fn validate_private_key_only<const K: usize, const SECRET_KEY_SIZE: usize>(
     private_key: &MlKemPrivateKey<SECRET_KEY_SIZE>,
 ) -> bool {
@@ -203,7 +206,7 @@ unsafe fn kyber_encapsulate_avx2<
     const ETA2_RANDOMNESS_SIZE: usize,
 >(
     public_key: &MlKemPublicKey<PUBLIC_KEY_SIZE>,
-    randomness: [u8; SHARED_SECRET_SIZE],
+    randomness: &[u8; SHARED_SECRET_SIZE],
 ) -> (MlKemCiphertext<CIPHERTEXT_SIZE>, MlKemSharedSecret) {
     crate::ind_cca::encapsulate::<
         K,
@@ -243,7 +246,7 @@ pub(crate) fn kyber_encapsulate<
     const ETA2_RANDOMNESS_SIZE: usize,
 >(
     public_key: &MlKemPublicKey<PUBLIC_KEY_SIZE>,
-    randomness: [u8; SHARED_SECRET_SIZE],
+    randomness: &[u8; SHARED_SECRET_SIZE],
 ) -> (MlKemCiphertext<CIPHERTEXT_SIZE>, MlKemSharedSecret) {
     unsafe {
         kyber_encapsulate_avx2::<
@@ -266,6 +269,19 @@ pub(crate) fn kyber_encapsulate<
 
 #[allow(unsafe_code)]
 #[cfg_attr(not(hax), target_feature(enable = "avx2"))]
+#[hax_lib::requires(fstar!(r#"Spec.MLKEM.is_rank $K /\
+    $CIPHERTEXT_SIZE == Spec.MLKEM.v_CPA_CIPHERTEXT_SIZE $K /\
+    $PUBLIC_KEY_SIZE == Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE $K /\
+    $T_AS_NTT_ENCODED_SIZE == Spec.MLKEM.v_T_AS_NTT_ENCODED_SIZE $K /\
+    $C1_SIZE == Spec.MLKEM.v_C1_SIZE $K /\
+    $C2_SIZE == Spec.MLKEM.v_C2_SIZE $K /\
+    $VECTOR_U_COMPRESSION_FACTOR == Spec.MLKEM.v_VECTOR_U_COMPRESSION_FACTOR  $K /\
+    $VECTOR_V_COMPRESSION_FACTOR == Spec.MLKEM.v_VECTOR_V_COMPRESSION_FACTOR  $K /\
+    $VECTOR_U_BLOCK_LEN == Spec.MLKEM.v_C1_BLOCK_SIZE $K /\
+    $ETA1 == Spec.MLKEM.v_ETA1 $K /\
+    $ETA1_RANDOMNESS_SIZE == Spec.MLKEM.v_ETA1_RANDOMNESS_SIZE $K /\
+    $ETA2 == Spec.MLKEM.v_ETA2 $K /\
+    $ETA2_RANDOMNESS_SIZE == Spec.MLKEM.v_ETA2_RANDOMNESS_SIZE $K"#))]
 unsafe fn encapsulate_avx2<
     const K: usize,
     const CIPHERTEXT_SIZE: usize,
@@ -282,7 +298,7 @@ unsafe fn encapsulate_avx2<
     const ETA2_RANDOMNESS_SIZE: usize,
 >(
     public_key: &MlKemPublicKey<PUBLIC_KEY_SIZE>,
-    randomness: [u8; SHARED_SECRET_SIZE],
+    randomness: &[u8; SHARED_SECRET_SIZE],
 ) -> (MlKemCiphertext<CIPHERTEXT_SIZE>, MlKemSharedSecret) {
     crate::ind_cca::encapsulate::<
         K,
@@ -305,6 +321,19 @@ unsafe fn encapsulate_avx2<
 }
 
 #[allow(unsafe_code)]
+#[hax_lib::requires(fstar!(r#"Spec.MLKEM.is_rank $K /\
+    $CIPHERTEXT_SIZE == Spec.MLKEM.v_CPA_CIPHERTEXT_SIZE $K /\
+    $PUBLIC_KEY_SIZE == Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE $K /\
+    $T_AS_NTT_ENCODED_SIZE == Spec.MLKEM.v_T_AS_NTT_ENCODED_SIZE $K /\
+    $C1_SIZE == Spec.MLKEM.v_C1_SIZE $K /\
+    $C2_SIZE == Spec.MLKEM.v_C2_SIZE $K /\
+    $VECTOR_U_COMPRESSION_FACTOR == Spec.MLKEM.v_VECTOR_U_COMPRESSION_FACTOR  $K /\
+    $VECTOR_V_COMPRESSION_FACTOR == Spec.MLKEM.v_VECTOR_V_COMPRESSION_FACTOR  $K /\
+    $VECTOR_U_BLOCK_LEN == Spec.MLKEM.v_C1_BLOCK_SIZE $K /\
+    $ETA1 == Spec.MLKEM.v_ETA1 $K /\
+    $ETA1_RANDOMNESS_SIZE == Spec.MLKEM.v_ETA1_RANDOMNESS_SIZE $K /\
+    $ETA2 == Spec.MLKEM.v_ETA2 $K /\
+    $ETA2_RANDOMNESS_SIZE == Spec.MLKEM.v_ETA2_RANDOMNESS_SIZE $K"#))]
 pub(crate) fn encapsulate<
     const K: usize,
     const CIPHERTEXT_SIZE: usize,
@@ -321,7 +350,7 @@ pub(crate) fn encapsulate<
     const ETA2_RANDOMNESS_SIZE: usize,
 >(
     public_key: &MlKemPublicKey<PUBLIC_KEY_SIZE>,
-    randomness: [u8; SHARED_SECRET_SIZE],
+    randomness: &[u8; SHARED_SECRET_SIZE],
 ) -> (MlKemCiphertext<CIPHERTEXT_SIZE>, MlKemSharedSecret) {
     unsafe {
         encapsulate_avx2::<
@@ -436,6 +465,22 @@ pub fn kyber_decapsulate<
 
 #[allow(unsafe_code)]
 #[cfg_attr(not(hax), target_feature(enable = "avx2"))]
+#[hax_lib::requires(fstar!(r#"Spec.MLKEM.is_rank $K /\
+    $SECRET_KEY_SIZE == Spec.MLKEM.v_CCA_PRIVATE_KEY_SIZE $K /\
+    $CPA_SECRET_KEY_SIZE == Spec.MLKEM.v_CPA_PRIVATE_KEY_SIZE $K /\
+    $PUBLIC_KEY_SIZE == Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE $K /\
+    $CIPHERTEXT_SIZE == Spec.MLKEM.v_CPA_CIPHERTEXT_SIZE $K /\
+    $T_AS_NTT_ENCODED_SIZE == Spec.MLKEM.v_T_AS_NTT_ENCODED_SIZE $K /\
+    $C1_SIZE == Spec.MLKEM.v_C1_SIZE $K /\
+    $C2_SIZE == Spec.MLKEM.v_C2_SIZE $K /\
+    $VECTOR_U_COMPRESSION_FACTOR == Spec.MLKEM.v_VECTOR_U_COMPRESSION_FACTOR  $K /\
+    $VECTOR_V_COMPRESSION_FACTOR == Spec.MLKEM.v_VECTOR_V_COMPRESSION_FACTOR  $K /\
+    $C1_BLOCK_SIZE == Spec.MLKEM.v_C1_BLOCK_SIZE $K /\
+    $ETA1 == Spec.MLKEM.v_ETA1 $K /\
+    $ETA1_RANDOMNESS_SIZE == Spec.MLKEM.v_ETA1_RANDOMNESS_SIZE $K /\
+    $ETA2 == Spec.MLKEM.v_ETA2 $K /\
+    $ETA2_RANDOMNESS_SIZE == Spec.MLKEM.v_ETA2_RANDOMNESS_SIZE $K /\
+    $IMPLICIT_REJECTION_HASH_INPUT_SIZE == Spec.MLKEM.v_IMPLICIT_REJECTION_HASH_INPUT_SIZE $K"#))]
 unsafe fn decapsulate_avx2<
     const K: usize,
     const SECRET_KEY_SIZE: usize,
@@ -481,6 +526,22 @@ unsafe fn decapsulate_avx2<
 }
 
 #[allow(unsafe_code)]
+#[hax_lib::requires(fstar!(r#"Spec.MLKEM.is_rank $K /\
+    $SECRET_KEY_SIZE == Spec.MLKEM.v_CCA_PRIVATE_KEY_SIZE $K /\
+    $CPA_SECRET_KEY_SIZE == Spec.MLKEM.v_CPA_PRIVATE_KEY_SIZE $K /\
+    $PUBLIC_KEY_SIZE == Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE $K /\
+    $CIPHERTEXT_SIZE == Spec.MLKEM.v_CPA_CIPHERTEXT_SIZE $K /\
+    $T_AS_NTT_ENCODED_SIZE == Spec.MLKEM.v_T_AS_NTT_ENCODED_SIZE $K /\
+    $C1_SIZE == Spec.MLKEM.v_C1_SIZE $K /\
+    $C2_SIZE == Spec.MLKEM.v_C2_SIZE $K /\
+    $VECTOR_U_COMPRESSION_FACTOR == Spec.MLKEM.v_VECTOR_U_COMPRESSION_FACTOR  $K /\
+    $VECTOR_V_COMPRESSION_FACTOR == Spec.MLKEM.v_VECTOR_V_COMPRESSION_FACTOR  $K /\
+    $C1_BLOCK_SIZE == Spec.MLKEM.v_C1_BLOCK_SIZE $K /\
+    $ETA1 == Spec.MLKEM.v_ETA1 $K /\
+    $ETA1_RANDOMNESS_SIZE == Spec.MLKEM.v_ETA1_RANDOMNESS_SIZE $K /\
+    $ETA2 == Spec.MLKEM.v_ETA2 $K /\
+    $ETA2_RANDOMNESS_SIZE == Spec.MLKEM.v_ETA2_RANDOMNESS_SIZE $K /\
+    $IMPLICIT_REJECTION_HASH_INPUT_SIZE == Spec.MLKEM.v_IMPLICIT_REJECTION_HASH_INPUT_SIZE $K"#))]
 pub fn decapsulate<
     const K: usize,
     const SECRET_KEY_SIZE: usize,
@@ -536,10 +597,14 @@ pub(crate) mod unpacked {
     /// Get the unpacked public key.
     #[cfg_attr(not(hax), target_feature(enable = "avx2"))]
     #[allow(unsafe_code)]
+    #[hax_lib::requires(
+        fstar!(r#"Spec.MLKEM.is_rank $K /\
+        $PUBLIC_KEY_SIZE == Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE $K /\
+        $T_AS_NTT_ENCODED_SIZE == Spec.MLKEM.v_T_AS_NTT_ENCODED_SIZE $K"#)
+    )]
     unsafe fn unpack_public_key_avx2<
         const K: usize,
         const T_AS_NTT_ENCODED_SIZE: usize,
-        const RANKED_BYTES_PER_RING_ELEMENT: usize,
         const PUBLIC_KEY_SIZE: usize,
     >(
         public_key: &MlKemPublicKey<PUBLIC_KEY_SIZE>,
@@ -548,7 +613,6 @@ pub(crate) mod unpacked {
         crate::ind_cca::unpacked::unpack_public_key::<
             K,
             T_AS_NTT_ENCODED_SIZE,
-            RANKED_BYTES_PER_RING_ELEMENT,
             PUBLIC_KEY_SIZE,
             crate::hash_functions::avx2::Simd256Hash,
             crate::vector::SIMD256Vector,
@@ -557,33 +621,40 @@ pub(crate) mod unpacked {
 
     /// Get the unpacked public key.
     #[allow(unsafe_code)]
+    #[hax_lib::requires(
+        fstar!(r#"Spec.MLKEM.is_rank $K /\
+        $PUBLIC_KEY_SIZE == Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE $K /\
+        $T_AS_NTT_ENCODED_SIZE == Spec.MLKEM.v_T_AS_NTT_ENCODED_SIZE $K"#)
+    )]
     pub(crate) fn unpack_public_key<
         const K: usize,
         const T_AS_NTT_ENCODED_SIZE: usize,
-        const RANKED_BYTES_PER_RING_ELEMENT: usize,
         const PUBLIC_KEY_SIZE: usize,
     >(
         public_key: &MlKemPublicKey<PUBLIC_KEY_SIZE>,
         unpacked_public_key: &mut MlKemPublicKeyUnpacked<K>,
     ) {
         unsafe {
-            unpack_public_key_avx2::<
-                K,
-                T_AS_NTT_ENCODED_SIZE,
-                RANKED_BYTES_PER_RING_ELEMENT,
-                PUBLIC_KEY_SIZE,
-            >(public_key, unpacked_public_key)
+            unpack_public_key_avx2::<K, T_AS_NTT_ENCODED_SIZE, PUBLIC_KEY_SIZE>(
+                public_key,
+                unpacked_public_key,
+            )
         }
     }
 
     /// Take a serialized private key and generate an unpacked key pair from it.
     #[inline(always)]
+    #[hax_lib::requires(
+        fstar!(r#"Spec.MLKEM.is_rank $K /\
+                v_SECRET_KEY_SIZE == Spec.MLKEM.v_CCA_PRIVATE_KEY_SIZE v_K /\
+                v_CPA_SECRET_KEY_SIZE == Spec.MLKEM.v_CPA_PRIVATE_KEY_SIZE v_K /\
+                v_PUBLIC_KEY_SIZE == Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE v_K /\
+                v_T_AS_NTT_ENCODED_SIZE == Spec.MLKEM.v_T_AS_NTT_ENCODED_SIZE v_K"#))]
     pub(crate) fn keypair_from_private_key<
         const K: usize,
         const SECRET_KEY_SIZE: usize,
         const CPA_SECRET_KEY_SIZE: usize,
         const PUBLIC_KEY_SIZE: usize,
-        const BYTES_PER_RING_ELEMENT: usize,
         const T_AS_NTT_ENCODED_SIZE: usize,
     >(
         private_key: &MlKemPrivateKey<SECRET_KEY_SIZE>,
@@ -594,7 +665,6 @@ pub(crate) mod unpacked {
             SECRET_KEY_SIZE,
             CPA_SECRET_KEY_SIZE,
             PUBLIC_KEY_SIZE,
-            BYTES_PER_RING_ELEMENT,
             T_AS_NTT_ENCODED_SIZE,
             crate::vector::SIMD256Vector,
         >(private_key, key_pair);
@@ -602,12 +672,15 @@ pub(crate) mod unpacked {
 
     #[allow(unsafe_code)]
     #[cfg_attr(not(hax), target_feature(enable = "avx2"))]
+    #[hax_lib::requires(fstar!(r#"Spec.MLKEM.is_rank $K /\
+        $ETA1_RANDOMNESS_SIZE == Spec.MLKEM.v_ETA1_RANDOMNESS_SIZE $K /\
+        $ETA1 == Spec.MLKEM.v_ETA1 $K /\
+        $PUBLIC_KEY_SIZE == Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE $K"#))]
     unsafe fn generate_keypair_avx2<
         const K: usize,
         const CPA_PRIVATE_KEY_SIZE: usize,
         const PRIVATE_KEY_SIZE: usize,
         const PUBLIC_KEY_SIZE: usize,
-        const BYTES_PER_RING_ELEMENT: usize,
         const ETA1: usize,
         const ETA1_RANDOMNESS_SIZE: usize,
     >(
@@ -619,7 +692,6 @@ pub(crate) mod unpacked {
             CPA_PRIVATE_KEY_SIZE,
             PRIVATE_KEY_SIZE,
             PUBLIC_KEY_SIZE,
-            BYTES_PER_RING_ELEMENT,
             ETA1,
             ETA1_RANDOMNESS_SIZE,
             crate::vector::SIMD256Vector,
@@ -630,12 +702,15 @@ pub(crate) mod unpacked {
 
     /// Generate a key pair
     #[allow(unsafe_code)]
+    #[hax_lib::requires(fstar!(r#"Spec.MLKEM.is_rank $K /\
+        $ETA1_RANDOMNESS_SIZE == Spec.MLKEM.v_ETA1_RANDOMNESS_SIZE $K /\
+        $ETA1 == Spec.MLKEM.v_ETA1 $K /\
+        $PUBLIC_KEY_SIZE == Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE $K"#))]
     pub(crate) fn generate_keypair<
         const K: usize,
         const CPA_PRIVATE_KEY_SIZE: usize,
         const PRIVATE_KEY_SIZE: usize,
         const PUBLIC_KEY_SIZE: usize,
-        const BYTES_PER_RING_ELEMENT: usize,
         const ETA1: usize,
         const ETA1_RANDOMNESS_SIZE: usize,
     >(
@@ -648,7 +723,6 @@ pub(crate) mod unpacked {
                 CPA_PRIVATE_KEY_SIZE,
                 PRIVATE_KEY_SIZE,
                 PUBLIC_KEY_SIZE,
-                BYTES_PER_RING_ELEMENT,
                 ETA1,
                 ETA1_RANDOMNESS_SIZE,
             >(randomness, out)
@@ -657,6 +731,17 @@ pub(crate) mod unpacked {
 
     #[allow(unsafe_code)]
     #[cfg_attr(not(hax), target_feature(enable = "avx2"))]
+    #[hax_lib::requires(fstar!(r#"Spec.MLKEM.is_rank $K /\
+        $ETA1 == Spec.MLKEM.v_ETA1 $K /\
+        $ETA1_RANDOMNESS_SIZE == Spec.MLKEM.v_ETA1_RANDOMNESS_SIZE $K /\
+        $ETA2 == Spec.MLKEM.v_ETA2 $K /\
+        $ETA2_RANDOMNESS_SIZE == Spec.MLKEM.v_ETA2_RANDOMNESS_SIZE $K /\
+        $C1_SIZE == Spec.MLKEM.v_C1_SIZE $K /\
+        $C2_SIZE == Spec.MLKEM.v_C2_SIZE $K /\
+        $VECTOR_U_COMPRESSION_FACTOR == Spec.MLKEM.v_VECTOR_U_COMPRESSION_FACTOR $K /\
+        $VECTOR_V_COMPRESSION_FACTOR == Spec.MLKEM.v_VECTOR_V_COMPRESSION_FACTOR $K /\
+        $VECTOR_U_BLOCK_LEN == Spec.MLKEM.v_C1_BLOCK_SIZE $K /\
+        $CIPHERTEXT_SIZE == Spec.MLKEM.v_CPA_CIPHERTEXT_SIZE $K"#))]
     unsafe fn encapsulate_avx2<
         const K: usize,
         const CIPHERTEXT_SIZE: usize,
@@ -673,7 +758,7 @@ pub(crate) mod unpacked {
         const ETA2_RANDOMNESS_SIZE: usize,
     >(
         public_key: &MlKemPublicKeyUnpacked<K>,
-        randomness: [u8; SHARED_SECRET_SIZE],
+        randomness: &[u8; SHARED_SECRET_SIZE],
     ) -> (MlKemCiphertext<CIPHERTEXT_SIZE>, MlKemSharedSecret) {
         crate::ind_cca::unpacked::encapsulate::<
             K,
@@ -696,6 +781,17 @@ pub(crate) mod unpacked {
 
     /// Unpacked encapsulate
     #[allow(unsafe_code)]
+    #[hax_lib::requires(fstar!(r#"Spec.MLKEM.is_rank $K /\
+        $ETA1 == Spec.MLKEM.v_ETA1 $K /\
+        $ETA1_RANDOMNESS_SIZE == Spec.MLKEM.v_ETA1_RANDOMNESS_SIZE $K /\
+        $ETA2 == Spec.MLKEM.v_ETA2 $K /\
+        $ETA2_RANDOMNESS_SIZE == Spec.MLKEM.v_ETA2_RANDOMNESS_SIZE $K /\
+        $C1_SIZE == Spec.MLKEM.v_C1_SIZE $K /\
+        $C2_SIZE == Spec.MLKEM.v_C2_SIZE $K /\
+        $VECTOR_U_COMPRESSION_FACTOR == Spec.MLKEM.v_VECTOR_U_COMPRESSION_FACTOR $K /\
+        $VECTOR_V_COMPRESSION_FACTOR == Spec.MLKEM.v_VECTOR_V_COMPRESSION_FACTOR $K /\
+        $VECTOR_U_BLOCK_LEN == Spec.MLKEM.v_C1_BLOCK_SIZE $K /\
+        $CIPHERTEXT_SIZE == Spec.MLKEM.v_CPA_CIPHERTEXT_SIZE $K"#))]
     pub(crate) fn encapsulate<
         const K: usize,
         const CIPHERTEXT_SIZE: usize,
@@ -712,7 +808,7 @@ pub(crate) mod unpacked {
         const ETA2_RANDOMNESS_SIZE: usize,
     >(
         public_key: &MlKemPublicKeyUnpacked<K>,
-        randomness: [u8; SHARED_SECRET_SIZE],
+        randomness: &[u8; SHARED_SECRET_SIZE],
     ) -> (MlKemCiphertext<CIPHERTEXT_SIZE>, MlKemSharedSecret) {
         unsafe {
             encapsulate_avx2::<
@@ -735,6 +831,18 @@ pub(crate) mod unpacked {
 
     #[cfg_attr(not(hax), target_feature(enable = "avx2"))]
     #[allow(unsafe_code)]
+    #[hax_lib::requires(fstar!(r#"Spec.MLKEM.is_rank $K /\
+        $ETA1 == Spec.MLKEM.v_ETA1 $K /\
+        $ETA1_RANDOMNESS_SIZE == Spec.MLKEM.v_ETA1_RANDOMNESS_SIZE $K /\
+        $ETA2 == Spec.MLKEM.v_ETA2 $K /\
+        $ETA2_RANDOMNESS_SIZE == Spec.MLKEM.v_ETA2_RANDOMNESS_SIZE $K /\
+        $C1_SIZE == Spec.MLKEM.v_C1_SIZE $K /\
+        $C2_SIZE == Spec.MLKEM.v_C2_SIZE $K /\
+        $VECTOR_U_COMPRESSION_FACTOR == Spec.MLKEM.v_VECTOR_U_COMPRESSION_FACTOR $K /\
+        $VECTOR_V_COMPRESSION_FACTOR == Spec.MLKEM.v_VECTOR_V_COMPRESSION_FACTOR $K /\
+        $C1_BLOCK_SIZE == Spec.MLKEM.v_C1_BLOCK_SIZE $K /\
+        $CIPHERTEXT_SIZE == Spec.MLKEM.v_CPA_CIPHERTEXT_SIZE $K /\
+        $IMPLICIT_REJECTION_HASH_INPUT_SIZE == Spec.MLKEM.v_IMPLICIT_REJECTION_HASH_INPUT_SIZE $K"#))]
     unsafe fn decapsulate_avx2<
         const K: usize,
         const SECRET_KEY_SIZE: usize,
@@ -780,6 +888,18 @@ pub(crate) mod unpacked {
 
     /// Unpacked decapsulate
     #[allow(unsafe_code)]
+    #[hax_lib::requires(fstar!(r#"Spec.MLKEM.is_rank $K /\
+        $ETA1 == Spec.MLKEM.v_ETA1 $K /\
+        $ETA1_RANDOMNESS_SIZE == Spec.MLKEM.v_ETA1_RANDOMNESS_SIZE $K /\
+        $ETA2 == Spec.MLKEM.v_ETA2 $K /\
+        $ETA2_RANDOMNESS_SIZE == Spec.MLKEM.v_ETA2_RANDOMNESS_SIZE $K /\
+        $C1_SIZE == Spec.MLKEM.v_C1_SIZE $K /\
+        $C2_SIZE == Spec.MLKEM.v_C2_SIZE $K /\
+        $VECTOR_U_COMPRESSION_FACTOR == Spec.MLKEM.v_VECTOR_U_COMPRESSION_FACTOR $K /\
+        $VECTOR_V_COMPRESSION_FACTOR == Spec.MLKEM.v_VECTOR_V_COMPRESSION_FACTOR $K /\
+        $C1_BLOCK_SIZE == Spec.MLKEM.v_C1_BLOCK_SIZE $K /\
+        $CIPHERTEXT_SIZE == Spec.MLKEM.v_CPA_CIPHERTEXT_SIZE $K /\
+        $IMPLICIT_REJECTION_HASH_INPUT_SIZE == Spec.MLKEM.v_IMPLICIT_REJECTION_HASH_INPUT_SIZE $K"#))]
     pub(crate) fn decapsulate<
         const K: usize,
         const SECRET_KEY_SIZE: usize,

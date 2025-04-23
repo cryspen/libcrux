@@ -15,5 +15,5 @@ libc = "0.2"
 
 [build-dependencies]
 cc = { version = "1.1", features = ["parallel"] }
-bindgen = { version = "0.69", optional = true }
+bindgen = { version = "0.71", optional = true }
 pkg-config = "0.3"

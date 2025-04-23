@@ -1,27 +1,26 @@
 /*
- * SPDX-FileCopyrightText: 2024 Cryspen Sarl <info@cryspen.com>
+ * SPDX-FileCopyrightText: 2025 Cryspen Sarl <info@cryspen.com>
  *
  * SPDX-License-Identifier: MIT or Apache-2.0
  *
  * This code was generated with the following revisions:
- * Charon: 45f5a34f336e35c6cc2253bc90cbdb8d812cefa9
- * Eurydice: 7d686376ec943225ff89942978c6c3028bac689c
- * Karamel: 8c3612018c25889288da6857771be3ad03b75bcd
- * F*: 5643e656b989aca7629723653a2570c7df6252b9-dirty
- * Libcrux: 122ee3d193e33f55c2324ee84f974e647255f545
+ * Charon: 763350c6948d5594d3017ecb93273bc41c1a4e1d
+ * Eurydice: 36a5ed7dd6b61b5cd3d69a010859005912d21537
+ * Karamel: bf9b89d76dd24e2ceaaca32de3535353e7b6bc01
+ * F*: 4b3fc11774003a6ff7c09500ecb5f0145ca6d862
+ * Libcrux: f3f15359a852405a81628f982f2debc4d50fff30
  */
 
 #ifndef __libcrux_sha3_avx2_H
 #define __libcrux_sha3_avx2_H
 
+#include "eurydice_glue.h"
+
 #if defined(__cplusplus)
 extern "C" {
 #endif
 
-#include "eurydice_glue.h"
 #include "intrinsics/libcrux_intrinsics_avx2.h"
-#include "libcrux_core.h"
-#include "libcrux_sha3_internal.h"
 
 /**
 A monomorphic instance of libcrux_sha3.generic_keccak.KeccakState
@@ -55,16 +54,16 @@ void libcrux_sha3_avx2_x4_incremental_shake128_absorb_final(
     Eurydice_slice data1, Eurydice_slice data2, Eurydice_slice data3);
 
 /**
- Squeeze another block
+ Squeeze three blocks
 */
-void libcrux_sha3_avx2_x4_incremental_shake128_squeeze_next_block(
+void libcrux_sha3_avx2_x4_incremental_shake128_squeeze_first_three_blocks(
     libcrux_sha3_generic_keccak_KeccakState_55 *s, Eurydice_slice out0,
     Eurydice_slice out1, Eurydice_slice out2, Eurydice_slice out3);
 
 /**
- Squeeze three blocks
+ Squeeze another block
 */
-void libcrux_sha3_avx2_x4_incremental_shake128_squeeze_first_three_blocks(
+void libcrux_sha3_avx2_x4_incremental_shake128_squeeze_next_block(
     libcrux_sha3_generic_keccak_KeccakState_55 *s, Eurydice_slice out0,
     Eurydice_slice out1, Eurydice_slice out2, Eurydice_slice out3);
 

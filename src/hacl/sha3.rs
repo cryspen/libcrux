@@ -232,7 +232,7 @@ pub mod x4 {
 /// bytes in increments.
 /// TODO: This module should not be public, see: https://github.com/cryspen/libcrux/issues/157
 pub mod incremental {
-    use std::ptr::null_mut;
+    use core::ptr::null_mut;
 
     use libcrux_hacl::{
         Hacl_Hash_SHA3_Scalar_shake128_absorb_final, Hacl_Hash_SHA3_Scalar_shake128_absorb_nblocks,
@@ -322,7 +322,7 @@ pub mod incremental {
 }
 
 pub mod incremental_x4 {
-    use std::ptr::null_mut;
+    use core::ptr::null_mut;
 
     use libcrux_hacl::{
         Hacl_Hash_SHA3_Scalar_shake128_absorb_final, Hacl_Hash_SHA3_Scalar_shake128_absorb_nblocks,

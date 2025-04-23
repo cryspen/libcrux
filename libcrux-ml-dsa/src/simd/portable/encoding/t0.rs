@@ -1,6 +1,4 @@
-use crate::constants::BITS_IN_LOWER_PART_OF_T;
-
-use super::super::vector_type::{PortableSIMDUnit, ZERO};
+use crate::{constants::BITS_IN_LOWER_PART_OF_T, simd::portable::vector_type::Coefficients};
 
 // If t0 is a signed representative, change it to an unsigned one and
 // vice versa.
@@ -10,17 +8,17 @@ fn change_t0_interval(t0: i32) -> i32 {
 }
 
 #[inline(always)]
-pub fn serialize(simd_unit: PortableSIMDUnit) -> [u8; 13] {
-    let mut serialized = [0u8; 13];
+pub fn serialize(simd_unit: &Coefficients, serialized: &mut [u8]) {
+    debug_assert!(serialized.len() == 13);
 
-    let coefficient0 = change_t0_interval(simd_unit.coefficients[0]);
-    let coefficient1 = change_t0_interval(simd_unit.coefficients[1]);
-    let coefficient2 = change_t0_interval(simd_unit.coefficients[2]);
-    let coefficient3 = change_t0_interval(simd_unit.coefficients[3]);
-    let coefficient4 = change_t0_interval(simd_unit.coefficients[4]);
-    let coefficient5 = change_t0_interval(simd_unit.coefficients[5]);
-    let coefficient6 = change_t0_interval(simd_unit.coefficients[6]);
-    let coefficient7 = change_t0_interval(simd_unit.coefficients[7]);
+    let coefficient0 = change_t0_interval(simd_unit.values[0]);
+    let coefficient1 = change_t0_interval(simd_unit.values[1]);
+    let coefficient2 = change_t0_interval(simd_unit.values[2]);
+    let coefficient3 = change_t0_interval(simd_unit.values[3]);
+    let coefficient4 = change_t0_interval(simd_unit.values[4]);
+    let coefficient5 = change_t0_interval(simd_unit.values[5]);
+    let coefficient6 = change_t0_interval(simd_unit.values[6]);
+    let coefficient7 = change_t0_interval(simd_unit.values[7]);
 
     serialized[0] = coefficient0 as u8;
 
@@ -54,12 +52,10 @@ pub fn serialize(simd_unit: PortableSIMDUnit) -> [u8; 13] {
     serialized[11] |= (coefficient7 << 3) as u8;
 
     serialized[12] = (coefficient7 >> 5) as u8;
-
-    serialized
 }
 
 #[inline(always)]
-pub fn deserialize(serialized: &[u8]) -> PortableSIMDUnit {
+pub fn deserialize(serialized: &[u8], simd_unit: &mut Coefficients) {
     debug_assert!(serialized.len() == 13);
 
     const BITS_IN_LOWER_PART_OF_T_MASK: i32 = (1 << (BITS_IN_LOWER_PART_OF_T as i32)) - 1;
@@ -114,16 +110,12 @@ pub fn deserialize(serialized: &[u8]) -> PortableSIMDUnit {
     coefficient7 |= byte12 << 5;
     coefficient7 &= BITS_IN_LOWER_PART_OF_T_MASK;
 
-    let mut simd_unit = ZERO();
-
-    simd_unit.coefficients[0] = change_t0_interval(coefficient0);
-    simd_unit.coefficients[1] = change_t0_interval(coefficient1);
-    simd_unit.coefficients[2] = change_t0_interval(coefficient2);
-    simd_unit.coefficients[3] = change_t0_interval(coefficient3);
-    simd_unit.coefficients[4] = change_t0_interval(coefficient4);
-    simd_unit.coefficients[5] = change_t0_interval(coefficient5);
-    simd_unit.coefficients[6] = change_t0_interval(coefficient6);
-    simd_unit.coefficients[7] = change_t0_interval(coefficient7);
-
-    simd_unit
+    simd_unit.values[0] = change_t0_interval(coefficient0);
+    simd_unit.values[1] = change_t0_interval(coefficient1);
+    simd_unit.values[2] = change_t0_interval(coefficient2);
+    simd_unit.values[3] = change_t0_interval(coefficient3);
+    simd_unit.values[4] = change_t0_interval(coefficient4);
+    simd_unit.values[5] = change_t0_interval(coefficient5);
+    simd_unit.values[6] = change_t0_interval(coefficient6);
+    simd_unit.values[7] = change_t0_interval(coefficient7);
 }

@@ -9,7 +9,7 @@ fn bytestream_to_potential_coefficients(serialized: &[u8]) -> Vec256 {
     debug_assert_eq!(serialized.len(), 24);
 
     let mut serialized_extended = [0u8; 32];
-    serialized_extended[..24].copy_from_slice(&serialized);
+    serialized_extended[..24].copy_from_slice(serialized);
 
     const COEFFICIENT_MASK: i32 = (1 << 23) - 1;
 
