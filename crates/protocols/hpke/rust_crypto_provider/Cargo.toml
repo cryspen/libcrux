@@ -35,7 +35,6 @@ rand_chacha = { version = "0.3", default-features = false }
 
 [dev-dependencies]
 criterion = { version = "0.5", features = ["html_reports"] }
-rand = { version = "0.9" }
 
 [features]
 std = ["rand_core/std", "rand_old/std"]
