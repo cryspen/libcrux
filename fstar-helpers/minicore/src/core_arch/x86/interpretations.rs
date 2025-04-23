@@ -13,7 +13,8 @@ pub mod int_vec {
         i64x4::from_fn(|i| (x[i * 2] as i64) * (y[i * 2] as i64))
     }
     pub fn _mm256_sub_epi32(x: i32x8, y: i32x8) -> i32x8 {
-        i32x8::from_fn(|i| x[i].wrapping_sub(y[i]))
+        // i32x8::from_fn(|i| x[i].wrapping_sub(y[i]))
+        i32x8::from_fn(|i| ((x[i] as i64) - (y[i] as i64)) as i32)
     }
 
     pub fn _mm256_shuffle_epi32<const CONTROL: i32>(x: i32x8) -> i32x8 {
@@ -31,8 +32,43 @@ pub mod int_vec {
         FunArray::from_fn(|i| if (CONTROL >> i) % 2 == 0 { x[i] } else { y[i] })
     }
 
-    mod lift_lemmas {
+    pub mod poinwise_lemmas {
+        /// An F* attribute that marks an item as being an lifting lemma.
+        #[allow(dead_code)]
+        #[hax_lib::fstar::before("irreducible")]
+        pub const POINTWISE_LEMMA: () = ();
+        use super::*;
+
+        pub fn mark_to_normalize<T>(x: T) -> T {
+            x
+        }
+
+        #[hax_lib::fstar::before("[@@ $POINTWISE_LEMMA ]")]
+        #[hax_lib::lemma]
+        pub fn pointwise_i32x8(
+            x: i32x8,
+        ) -> Proof<{ hax_lib::eq(x, mark_to_normalize(x.pointwise())) }> {
+        }
+
+        #[hax_lib::fstar::before("[@@ $POINTWISE_LEMMA ]")]
+        #[hax_lib::lemma]
+        pub fn pointwise_i64x4(
+            x: i64x4,
+        ) -> Proof<{ hax_lib::eq(x, mark_to_normalize(x.pointwise())) }> {
+        }
+    }
+
+    pub use lift_lemmas::LIFT_LEMMA;
+    pub mod lift_lemmas {
         //! This module provides lemmas allowing to lift the intrinsics modeled in `super` from their version operating on AVX2 vectors to functions operating on machine integer vectors (e.g. on `i32x8`).
+
+        /// An F* attribute that marks an item as being an lifting lemma.
+        #[allow(dead_code)]
+        #[hax_lib::fstar::before("irreducible")]
+        pub const LIFT_LEMMA: () = ();
+
+        /// Make sure there is a dependency to int_vec_interp in F*
+        pub const _: () = crate::abstractions::bitvec::int_vec_interp::SIMPLIFICATION_LEMMA;
 
         #[allow(unused)]
         use crate::core_arch::x86 as upstream;
@@ -44,6 +80,7 @@ pub mod int_vec {
             ($name:ident$(<$(const $c:ident : $cty:ty),*>)?($($x:ident : $ty:ty),*) == $lhs:expr) => {
                 #[hax_lib::opaque]
                 #[hax_lib::lemma]
+                #[hax_lib::fstar::before("[@@ $LIFT_LEMMA ]")]
                 fn $name$(<$(const $c : $cty,)*>)?($($x : $ty,)*) -> Proof<{
                     hax_lib::eq(
                         unsafe {upstream::$name$(::<$($c,)*>)?($($x,)*)},

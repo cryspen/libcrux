@@ -4,7 +4,7 @@
 //! `core::arch::x86` and `core::arch::x86_64`.
 #![allow(clippy::too_many_arguments)]
 
-mod interpretations;
+pub mod interpretations;
 use crate::abstractions::{bit::*, bitvec::*, funarr::*};
 
 pub(crate) mod upstream {
@@ -359,60 +359,48 @@ const _: () = {
     > {
     }
 
-    #[hax_lib::fstar::before("[@@ $REWRITE_RULE ]")]
-    #[hax_lib::lemma]
-    #[hax_lib::opaque]
-    pub fn _rw_mm256_mullo_epi16_shifts(
-        vector: __m256i,
-        s15: u8,
-        s14: u8,
-        s13: u8,
-        s12: u8,
-        s11: u8,
-        s10: u8,
-        s9: u8,
-        s8: u8,
-        s7: u8,
-        s6: u8,
-        s5: u8,
-        s4: u8,
-        s3: u8,
-        s2: u8,
-        s1: u8,
-        s0: u8,
-    ) -> Proof<
-        {
-            hax_lib::prop::eq(
-                _mm256_mullo_epi16(
-                    vector,
-                    _mm256_set_epi16(
-                        1i16 << s15,
-                        1i16 << s14,
-                        1i16 << s13,
-                        1i16 << s12,
-                        1i16 << s11,
-                        1i16 << s10,
-                        1i16 << s9,
-                        1i16 << s8,
-                        1i16 << s7,
-                        1i16 << s6,
-                        1i16 << s5,
-                        1i16 << s4,
-                        1i16 << s3,
-                        1i16 << s2,
-                        1i16 << s1,
-                        1i16 << s0,
-                    ),
-                ),
-                extra::mm256_mullo_epi16_shifts(
-                    vector, s15, s14, s13, s12, s11, s10, s9, s8, s7, s6, s5, s4, s3, s2, s1, s0,
-                ),
-            )
-        },
-    > {
-    }
+    #[hax_lib::fstar::replace(
+        r#"
+[@@ Minicore.Abstractions.Bitvec.v_REWRITE_RULE ]
 
-    // mm256_mullo_epi16_shifts
+assume
+val e___e_rw_mm256_mullo_epi16_shifts':
+    vector: $:{__m256i} ->
+    s15: (n: $:{u8} {v n < 16}) ->
+    s14: (n: $:{u8} {v n < 16}) ->
+    s13: (n: $:{u8} {v n < 16}) ->
+    s12: (n: $:{u8} {v n < 16}) ->
+    s11: (n: $:{u8} {v n < 16}) ->
+    s10: (n: $:{u8} {v n < 16}) ->
+    s9: (n: $:{u8} {v n < 16}) ->
+    s8: (n: $:{u8} {v n < 16}) ->
+    s7: (n: $:{u8} {v n < 16}) ->
+    s6: (n: $:{u8} {v n < 16}) ->
+    s5: (n: $:{u8} {v n < 16}) ->
+    s4: (n: $:{u8} {v n < 16}) ->
+    s3: (n: $:{u8} {v n < 16}) ->
+    s2: (n: $:{u8} {v n < 16}) ->
+    s1: (n: $:{u8} {v n < 16}) ->
+    s0: (n: $:{u8} {v n < 16})
+  -> Lemma
+    (ensures
+      ($_mm256_mullo_epi16 vector
+          ($_mm256_set_epi16 (${1i16} <<! s15 <: i16)
+              (${1i16} <<! s14 <: i16) (${1i16} <<! s13 <: i16) (${1i16} <<! s12 <: i16)
+              (${1i16} <<! s11 <: i16) (${1i16} <<! s10 <: i16) (${1i16} <<! s9 <: i16)
+              (${1i16} <<! s8 <: i16) (${1i16} <<! s7 <: i16) (${1i16} <<! s6 <: i16)
+              (${1i16} <<! s5 <: i16) (${1i16} <<! s4 <: i16) (${1i16} <<! s3 <: i16)
+              (${1i16} <<! s2 <: i16) (${1i16} <<! s1 <: i16) (${1i16} <<! s0 <: i16)
+            )
+        ) ==
+      (${extra::mm256_mullo_epi16_shifts} vector s15 s14 s13 s12 s11 s10 s9 s8 s7
+          s6 s5 s4 s3 s2 s1 s0))
+
+let ${_rw_mm256_mullo_epi16_shifts} = e___e_rw_mm256_mullo_epi16_shifts'
+    "#
+    )]
+    // Note: this is replace with F* code because we need to refine the input of the lemma.
+    pub fn _rw_mm256_mullo_epi16_shifts() {}
 
     #[hax_lib::fstar::before("[@@ $REWRITE_RULE ]")]
     #[hax_lib::lemma]

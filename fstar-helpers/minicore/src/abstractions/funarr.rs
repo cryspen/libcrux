@@ -84,6 +84,23 @@ impl<const N: u64, T> FunArray<N, T> {
     }
 }
 
+macro_rules! impl_pointwise {
+    ($n:literal, $($i:literal)*) => {
+        impl<T: Copy> FunArray<$n, T> {
+            pub fn pointwise(self) -> Self {
+                Self::from_fn(|i| match i {
+                    $($i => self[$i],)*
+                    _ => unreachable!(),
+                })
+            }
+        }
+    };
+}
+
+impl_pointwise!(4, 0 1 2 3);
+impl_pointwise!(8, 0 1 2 3 4 5 6 7);
+impl_pointwise!(16, 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15);
+
 #[hax_lib::exclude]
 impl<const N: u64, T: Clone> TryFrom<Vec<T>> for FunArray<N, T> {
     type Error = ();

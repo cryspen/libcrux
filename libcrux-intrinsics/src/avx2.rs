@@ -10,6 +10,7 @@ pub type Vec256Float = __m256;
 #[hax_lib::opaque]
 #[inline(always)]
 pub fn mm256_storeu_si256_u8(output: &mut [u8], vector: Vec256) {
+    #[cfg(not(hax))]
     debug_assert_eq!(output.len(), 32);
     unsafe {
         _mm256_storeu_si256(output.as_mut_ptr() as *mut Vec256, vector);
@@ -19,6 +20,7 @@ pub fn mm256_storeu_si256_u8(output: &mut [u8], vector: Vec256) {
 #[hax_lib::opaque]
 #[inline(always)]
 pub fn mm256_storeu_si256_i16(output: &mut [i16], vector: Vec256) {
+    #[cfg(not(hax))]
     debug_assert_eq!(output.len(), 16);
     unsafe {
         _mm256_storeu_si256(output.as_mut_ptr() as *mut Vec256, vector);
@@ -28,6 +30,7 @@ pub fn mm256_storeu_si256_i16(output: &mut [i16], vector: Vec256) {
 #[hax_lib::opaque]
 #[inline(always)]
 pub fn mm256_storeu_si256_i32(output: &mut [i32], vector: Vec256) {
+    #[cfg(not(hax))]
     debug_assert_eq!(output.len(), 8);
     unsafe {
         _mm256_storeu_si256(output.as_mut_ptr() as *mut Vec256, vector);
@@ -37,6 +40,7 @@ pub fn mm256_storeu_si256_i32(output: &mut [i32], vector: Vec256) {
 #[hax_lib::opaque]
 #[inline(always)]
 pub fn mm_storeu_si128(output: &mut [i16], vector: Vec128) {
+    #[cfg(not(hax))]
     debug_assert!(output.len() >= 8);
     unsafe {
         _mm_storeu_si128(output.as_mut_ptr() as *mut Vec128, vector);
@@ -46,6 +50,7 @@ pub fn mm_storeu_si128(output: &mut [i16], vector: Vec128) {
 #[hax_lib::opaque]
 #[inline(always)]
 pub fn mm_storeu_si128_i32(output: &mut [i32], vector: Vec128) {
+    #[cfg(not(hax))]
     debug_assert_eq!(output.len(), 4);
     unsafe {
         _mm_storeu_si128(output.as_mut_ptr() as *mut Vec128, vector);
@@ -56,6 +61,7 @@ pub fn mm_storeu_si128_i32(output: &mut [i32], vector: Vec128) {
 #[hax_lib::ensures(|_r| future(output).len() == output.len())]
 #[inline(always)]
 pub fn mm_storeu_bytes_si128(output: &mut [u8], vector: Vec128) {
+    #[cfg(not(hax))]
     debug_assert_eq!(output.len(), 16);
     unsafe {
         _mm_storeu_si128(output.as_mut_ptr() as *mut Vec128, vector);
@@ -65,6 +71,7 @@ pub fn mm_storeu_bytes_si128(output: &mut [u8], vector: Vec128) {
 #[hax_lib::opaque]
 #[inline(always)]
 pub fn mm_loadu_si128(input: &[u8]) -> Vec128 {
+    #[cfg(not(hax))]
     debug_assert_eq!(input.len(), 16);
     unsafe { _mm_loadu_si128(input.as_ptr() as *const Vec128) }
 }
@@ -72,6 +79,7 @@ pub fn mm_loadu_si128(input: &[u8]) -> Vec128 {
 #[hax_lib::opaque]
 #[inline(always)]
 pub fn mm256_loadu_si256_u8(input: &[u8]) -> Vec256 {
+    #[cfg(not(hax))]
     debug_assert_eq!(input.len(), 32);
     unsafe { _mm256_loadu_si256(input.as_ptr() as *const Vec256) }
 }
@@ -79,6 +87,7 @@ pub fn mm256_loadu_si256_u8(input: &[u8]) -> Vec256 {
 #[hax_lib::opaque]
 #[inline(always)]
 pub fn mm256_loadu_si256_i16(input: &[i16]) -> Vec256 {
+    #[cfg(not(hax))]
     debug_assert_eq!(input.len(), 16);
     unsafe { _mm256_loadu_si256(input.as_ptr() as *const Vec256) }
 }
@@ -86,6 +95,7 @@ pub fn mm256_loadu_si256_i16(input: &[i16]) -> Vec256 {
 #[hax_lib::opaque]
 #[inline(always)]
 pub fn mm256_loadu_si256_i32(input: &[i32]) -> Vec256 {
+    #[cfg(not(hax))]
     debug_assert_eq!(input.len(), 8);
     unsafe { _mm256_loadu_si256(input.as_ptr() as *const Vec256) }
 }
@@ -226,7 +236,6 @@ pub fn mm_set1_epi16(constant: i16) -> Vec128 {
     unsafe { _mm_set1_epi16(constant) }
 }
 
-#[hax_lib::opaque]
 #[inline(always)]
 pub fn mm256_set1_epi32(constant: i32) -> Vec256 {
     unsafe { _mm256_set1_epi32(constant) }
@@ -298,7 +307,6 @@ pub fn mm256_sub_epi16(lhs: Vec256, rhs: Vec256) -> Vec256 {
     unsafe { _mm256_sub_epi16(lhs, rhs) }
 }
 
-#[hax_lib::opaque]
 #[inline(always)]
 pub fn mm256_sub_epi32(lhs: Vec256, rhs: Vec256) -> Vec256 {
     unsafe { _mm256_sub_epi32(lhs, rhs) }
@@ -315,6 +323,7 @@ pub fn mm256_mullo_epi16(lhs: Vec256, rhs: Vec256) -> Vec256 {
     unsafe { _mm256_mullo_epi16(lhs, rhs) }
 }
 
+#[hax_lib::requires(s0 < 16 && s1 < 16 && s2 < 16 && s3 < 16 && s4 < 16 && s5 < 16 && s6 < 16 && s7 < 16 && s8 < 16 && s9 < 16 && s10 < 16 && s11 < 16 && s12 < 16 && s13 < 16 && s14 < 16 && s15 < 16)]
 #[inline(always)]
 pub fn mm256_mullo_epi16_shifts(
     vector: Vec256,
@@ -430,7 +439,6 @@ pub fn mm256_mul_epu32(lhs: Vec256, rhs: Vec256) -> Vec256 {
     unsafe { _mm256_mul_epu32(lhs, rhs) }
 }
 
-#[hax_lib::opaque]
 #[inline(always)]
 pub fn mm256_mul_epi32(lhs: Vec256, rhs: Vec256) -> Vec256 {
     unsafe { _mm256_mul_epi32(lhs, rhs) }
@@ -476,6 +484,7 @@ pub fn mm256_xor_si256(lhs: Vec256, rhs: Vec256) -> Vec256 {
 #[hax_lib::opaque]
 #[inline(always)]
 pub fn mm256_srai_epi16<const SHIFT_BY: i32>(vector: Vec256) -> Vec256 {
+    #[cfg(not(hax))]
     debug_assert!(SHIFT_BY >= 0 && SHIFT_BY < 16);
     unsafe { _mm256_srai_epi16(vector, SHIFT_BY) }
 }
@@ -483,6 +492,7 @@ pub fn mm256_srai_epi16<const SHIFT_BY: i32>(vector: Vec256) -> Vec256 {
 #[hax_lib::opaque]
 #[inline(always)]
 pub fn mm256_srai_epi32<const SHIFT_BY: i32>(vector: Vec256) -> Vec256 {
+    #[cfg(not(hax))]
     debug_assert!(SHIFT_BY >= 0 && SHIFT_BY < 32);
     unsafe { _mm256_srai_epi32(vector, SHIFT_BY) }
 }
@@ -490,6 +500,7 @@ pub fn mm256_srai_epi32<const SHIFT_BY: i32>(vector: Vec256) -> Vec256 {
 #[hax_lib::opaque]
 #[inline(always)]
 pub fn mm256_srli_epi16<const SHIFT_BY: i32>(vector: Vec256) -> Vec256 {
+    #[cfg(not(hax))]
     debug_assert!(SHIFT_BY >= 0 && SHIFT_BY < 16);
     unsafe { _mm256_srli_epi16(vector, SHIFT_BY) }
 }
@@ -497,6 +508,7 @@ pub fn mm256_srli_epi16<const SHIFT_BY: i32>(vector: Vec256) -> Vec256 {
 #[hax_lib::opaque]
 #[inline(always)]
 pub fn mm256_srli_epi32<const SHIFT_BY: i32>(vector: Vec256) -> Vec256 {
+    #[cfg(not(hax))]
     debug_assert!(SHIFT_BY >= 0 && SHIFT_BY < 32);
     unsafe { _mm256_srli_epi32(vector, SHIFT_BY) }
 }
@@ -504,12 +516,15 @@ pub fn mm256_srli_epi32<const SHIFT_BY: i32>(vector: Vec256) -> Vec256 {
 #[hax_lib::opaque]
 #[inline(always)]
 pub fn mm_srli_epi64<const SHIFT_BY: i32>(vector: Vec128) -> Vec128 {
+    #[cfg(not(hax))]
     debug_assert!(SHIFT_BY >= 0 && SHIFT_BY < 64);
     unsafe { _mm_srli_epi64(vector, SHIFT_BY) }
 }
 
 #[inline(always)]
+#[hax_lib::requires(SHIFT_BY > 0 && SHIFT_BY < 64)]
 pub fn mm256_srli_epi64<const SHIFT_BY: i32>(vector: Vec256) -> Vec256 {
+    #[cfg(not(hax))]
     debug_assert!(SHIFT_BY >= 0 && SHIFT_BY < 64);
     unsafe { _mm256_srli_epi64(vector, SHIFT_BY) }
 }
@@ -517,6 +532,7 @@ pub fn mm256_srli_epi64<const SHIFT_BY: i32>(vector: Vec256) -> Vec256 {
 #[hax_lib::opaque]
 #[inline(always)]
 pub fn mm256_slli_epi16<const SHIFT_BY: i32>(vector: Vec256) -> Vec256 {
+    #[cfg(not(hax))]
     debug_assert!(SHIFT_BY >= 0 && SHIFT_BY < 16);
     unsafe { _mm256_slli_epi16(vector, SHIFT_BY) }
 }
@@ -524,6 +540,7 @@ pub fn mm256_slli_epi16<const SHIFT_BY: i32>(vector: Vec256) -> Vec256 {
 #[hax_lib::opaque]
 #[inline(always)]
 pub fn mm256_slli_epi32<const SHIFT_BY: i32>(vector: Vec256) -> Vec256 {
+    #[cfg(not(hax))]
     debug_assert!(SHIFT_BY >= 0 && SHIFT_BY < 32);
     unsafe { _mm256_slli_epi32(vector, SHIFT_BY) }
 }
@@ -538,9 +555,9 @@ pub fn mm256_shuffle_epi8(vector: Vec256, control: Vec256) -> Vec256 {
     unsafe { _mm256_shuffle_epi8(vector, control) }
 }
 
-#[hax_lib::opaque]
 #[inline(always)]
 pub fn mm256_shuffle_epi32<const CONTROL: i32>(vector: Vec256) -> Vec256 {
+    #[cfg(not(hax))]
     debug_assert!(CONTROL >= 0 && CONTROL < 256);
     unsafe { _mm256_shuffle_epi32(vector, CONTROL) }
 }
@@ -548,6 +565,7 @@ pub fn mm256_shuffle_epi32<const CONTROL: i32>(vector: Vec256) -> Vec256 {
 #[hax_lib::opaque]
 #[inline(always)]
 pub fn mm256_permute4x64_epi64<const CONTROL: i32>(vector: Vec256) -> Vec256 {
+    #[cfg(not(hax))]
     debug_assert!(CONTROL >= 0 && CONTROL < 256);
     unsafe { _mm256_permute4x64_epi64(vector, CONTROL) }
 }
@@ -601,6 +619,7 @@ pub fn mm256_packs_epi32(lhs: Vec256, rhs: Vec256) -> Vec256 {
 
 #[inline(always)]
 pub fn mm256_extracti128_si256<const CONTROL: i32>(vector: Vec256) -> Vec128 {
+    #[cfg(not(hax))]
     debug_assert!(CONTROL == 0 || CONTROL == 1);
     unsafe { _mm256_extracti128_si256(vector, CONTROL) }
 }
@@ -608,6 +627,7 @@ pub fn mm256_extracti128_si256<const CONTROL: i32>(vector: Vec256) -> Vec128 {
 #[hax_lib::opaque]
 #[inline(always)]
 pub fn mm256_inserti128_si256<const CONTROL: i32>(vector: Vec256, vector_i128: Vec128) -> Vec256 {
+    #[cfg(not(hax))]
     debug_assert!(CONTROL == 0 || CONTROL == 1);
     unsafe { _mm256_inserti128_si256(vector, vector_i128, CONTROL) }
 }
@@ -615,13 +635,14 @@ pub fn mm256_inserti128_si256<const CONTROL: i32>(vector: Vec256, vector_i128: V
 #[hax_lib::opaque]
 #[inline(always)]
 pub fn mm256_blend_epi16<const CONTROL: i32>(lhs: Vec256, rhs: Vec256) -> Vec256 {
+    #[cfg(not(hax))]
     debug_assert!(CONTROL >= 0 && CONTROL < 256);
     unsafe { _mm256_blend_epi16(lhs, rhs, CONTROL) }
 }
 
-#[hax_lib::opaque]
 #[inline(always)]
 pub fn mm256_blend_epi32<const CONTROL: i32>(lhs: Vec256, rhs: Vec256) -> Vec256 {
+    #[cfg(not(hax))]
     debug_assert!(CONTROL >= 0 && CONTROL < 256);
     unsafe { _mm256_blend_epi32(lhs, rhs, CONTROL) }
 }
@@ -682,6 +703,7 @@ pub fn mm256_slli_epi64<const LEFT: i32>(x: Vec256) -> Vec256 {
 #[hax_lib::opaque]
 #[inline(always)]
 pub fn mm256_bsrli_epi128<const SHIFT_BY: i32>(x: Vec256) -> Vec256 {
+    #[cfg(not(hax))]
     debug_assert!(SHIFT_BY > 0 && SHIFT_BY < 16);
     unsafe { _mm256_bsrli_epi128::<SHIFT_BY>(x) }
 }

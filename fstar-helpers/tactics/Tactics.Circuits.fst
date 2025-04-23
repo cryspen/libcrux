@@ -210,7 +210,22 @@ let is_application_of (f: string) (#[(
 ///
 /// - `namespace_always_norm`: a list of top-level identifiers to
 /// *always* normalize fully. This should include (1) direct
-/// transformers (2) any function involved in 
+/// transformers (2) any function involved in indexing of the 
+/// data-strucure (e.g. `(.[])`).
+/// - `lift_lemmas`, `simpl_lemmas`: see `rewrite_with_lifts`
+/// - `eta_match_lemmas`: lemmas to eta-match expand collections.
+/// 
+/// ## "eta match expand"
+/// Given `x` and `index` our indexing operation, assuming `x`
+/// can be indexed from `0` to `N`, we say the following expression
+/// is the "eta match"-expansion of `x`:
+/// ```
+/// fun i -> match i with
+///        | 0 -> index x 0
+///        | 1 -> index x 1
+///        | ...
+///        | N -> index x N
+/// ```
 let flatten_circuit
   (namespace_always_norm: list string)
   (lift_lemmas: list term) (simpl_lemmas: list term)

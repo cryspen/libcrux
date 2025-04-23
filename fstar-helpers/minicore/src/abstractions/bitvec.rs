@@ -169,7 +169,8 @@ let extensionality' (#a: Type) (#b: Type) (f g: FStar.FunctionalExtensionality.(
 
 let mark_to_normalize #t (x: t): t = x
 
-open FStar.Tactics.V2
+
+open FStar.Tactics
 #push-options "--z3rlimit 80 --admit_smt_queries true"
 let bitvec_rewrite_lemma_128 (x: $:{BitVec<128>})
 : Lemma (x == mark_to_normalize (${BitVec::<128>::pointwise} x)) =
@@ -185,6 +186,69 @@ let bitvec_rewrite_lemma_256 (x: $:{BitVec<256>})
     assert_norm (FStar.FunctionalExtensionality.feq a b);
     extensionality' a b
 #pop-options
+
+let discharge_smt_goals_now () = iterAllSMT smt_sync
+let expect_eq (phi: formula): Tac (term & term) =
+  match phi with
+  | FStar.Reflection.V1.Formula.Comp (FStar.Reflection.V1.Formula.Eq _) lhs rhs -> (lhs, rhs)
+  | _ -> fail ("Expected [_ == _], got ["^formula_to_string phi^"]")
+
+/// Extracts `lhs` on a goal `squash (lhs == rhs)`.
+let goal_lhs (): Tac term =
+    let goal = cur_goal () in
+    let goal_phi = term_as_formula goal in
+    let (lhs, _) = expect_eq goal_phi in
+    lhs
+
+
+/// Test if the term `t` is of the shape `f arg1 ... arg<arity>`. 
+/// If `arity` is not given, it is computed automatically.
+let is_application_of (f: string) (#[(
+        let f = pack_fv (explode_qn f) in
+        let f_term = pack_ln (FStar.Stubs.Reflection.V1.Data.Tv_FVar f) in
+        let list, _ = collect_arr (tc (top_env ()) f_term) in
+        let arity = List.Tot.length list in
+        exact (`(`@arity))
+    )]arity: int) (t: term): Tac bool =
+    let f = pack_fv (explode_qn f) in
+    let hd, args = collect_app t in
+    if List.Tot.length args <> arity 
+    then false
+    else match inspect hd with
+    | Tv_UInst fv _ | Tv_FVar fv -> inspect_fv fv = inspect_fv f
+    | _ -> false
+    
+
+let full_norm_scrutinees () = 
+ t_pointwise BottomUp (fun _ ->
+      let goal = cur_goal () in
+      let goal_phi = term_as_formula goal in
+      let (lhs, _) = expect_eq goal_phi in
+      let _ = trytac (fun _ -> 
+        (match inspect lhs with
+        | Tv_Match scrut ret brs -> 
+          let hole  = uvar_env (top_env ()) None in
+          let typ   = tc (top_env ()) scrut in
+          let proof = tcut (`(`#scrut == `#hole)) in
+          // Fill hole with [scrut] fully normalized
+          focus (fun _ ->
+            flip ();
+            norm [primops; iota; delta; zeta_full];
+            trefl ()
+          );
+          // Rewrite scrut into its normalized form
+          grewrite_eq proof;
+          // Get rid of SMT goals right away
+          discharge_smt_goals_now ();
+          ()
+        | _ -> ())) in
+      trefl ()
+  )
+
+  
+open FStar.Tactics.V2
+
+let fvars_of_attr (attr: term) = FStar.List.Tot.map (fun f -> pack_ln (FStar.Stubs.Reflection.V2.Data.Tv_FVar f)) (lookup_attr attr (top_env ()))
 
 let ${bitvec_postprocess_norm} (): Tac unit = with_compat_pre_core 1 (fun () ->
     let debug_mode = ext_enabled "debug_bv_postprocess_rewrite" in
@@ -286,7 +350,7 @@ pub mod int_vec_interp {
     /// An F* attribute that marks an item as being an interpretation lemma.
     #[allow(dead_code)]
     #[hax_lib::fstar::before("irreducible")]
-    const INTERPRETATION_LEMMA: () = ();
+    pub const SIMPLIFICATION_LEMMA: () = ();
 
     /// Derives interpretations functions, simplification lemmas and type
     /// synonyms.
@@ -317,14 +381,14 @@ pub mod int_vec_interp {
 
 
                     #[doc = concat!("Lemma that asserts that applying ", stringify!(BitVec::<$n>::from)," and then ", stringify!($name::from), " is the identity.")]
-                    #[hax_lib::fstar::before("[@@ $INTERPRETATION_LEMMA ]")]
+                    #[hax_lib::fstar::before("[@@ $SIMPLIFICATION_LEMMA ]")]
                     #[hax_lib::opaque]
                     #[hax_lib::lemma]
                     pub fn lemma_cancel_iv(x: $name) -> Proof<{
                         hax_lib::eq($name::from(BitVec::<$n>::from(x)), x)
                     }> {}
                     #[doc = concat!("Lemma that asserts that applying ", stringify!($name::from)," and then ", stringify!(BitVec::<$n>::from), " is the identity.")]
-                    #[hax_lib::fstar::before("[@@ $INTERPRETATION_LEMMA ]")]
+                    #[hax_lib::fstar::before("[@@ $SIMPLIFICATION_LEMMA ]")]
                     #[hax_lib::opaque]
                     #[hax_lib::lemma]
                     pub fn lemma_cancel_bv(x: BitVec<$n>) -> Proof<{
@@ -338,22 +402,28 @@ pub mod int_vec_interp {
     // Defines the types `i32x8` and `i64x4`, and define intepretations function (`From` instances) from/to those types from/to bit vectors.
     interpretations!(256; i32x8 [i32; 8], i64x4 [i64; 4]);
 
-    impl From<i64x4> for i32x8 {
-        fn from(vec: i64x4) -> Self {
-            Self::from_fn(|i| {
-                let value = *vec.get(i / 2);
+    impl i64x4 {
+        pub fn into_i32x8(self) -> i32x8 {
+            i32x8::from_fn(|i| {
+                let value = *self.get(i / 2);
                 (if i % 2 == 0 { value } else { value >> 32 }) as i32
             })
         }
     }
 
+    impl From<i64x4> for i32x8 {
+        fn from(vec: i64x4) -> Self {
+            vec.into_i32x8()
+        }
+    }
+
     /// Lemma stating that converting an `i64x4` vector to a `BitVec<256>` and then into an `i32x8`
     /// yields the same result as directly converting the `i64x4` into an `i32x8`.
-    #[hax_lib::fstar::before("[@@ $INTERPRETATION_LEMMA ]")]
+    #[hax_lib::fstar::before("[@@ $SIMPLIFICATION_LEMMA ]")]
     #[hax_lib::opaque]
     #[hax_lib::lemma]
     fn lemma_rewrite_i64x4_bv_i32x8(
         bv: i64x4,
-    ) -> Proof<{ hax_lib::eq(i32x8::from(BitVec::<256>::from(bv)), i32x8::from(bv)) }> {
+    ) -> Proof<{ hax_lib::eq(i32x8::from(BitVec::<256>::from(bv)), bv.into_i32x8()) }> {
     }
 }
