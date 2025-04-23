@@ -17,3 +17,11 @@ default = ["std"]
 [dependencies]
 libcrux-hacl-rs = { version = "=0.0.2", path = "../hacl-rs/" }
 libcrux-macros = { version = "=0.0.2", path = "../macros" }
+
+[dev-dependencies]
+criterion = "0.5"
+rand = "0.9"
+
+[[bench]]
+name = "blake2"
+harness = false
