@@ -173,6 +173,7 @@ fn add_to_ring_element<Vector: Operations, const K: usize>(
 ) {
     #[cfg(hax)]
     let _myself = myself.coefficients;
+
     for i in 0..myself.coefficients.len() {
         hax_lib::loop_invariant!(|i: usize| {
             fstar!(
@@ -200,7 +201,9 @@ fn add_to_ring_element<Vector: Operations, const K: usize>(
 #[hax_lib::requires(fstar!(r#"is_bounded_poly 28296 ${myself}"#))]
 #[hax_lib::ensures(|_| fstar!(r#"is_bounded_poly 3328 ${myself}_future"#))]
 fn poly_barrett_reduce<Vector: Operations>(myself: &mut PolynomialRingElement<Vector>) {
+    #[cfg(hax)]
     let _myself = myself.coefficients;
+
     for i in 0..VECTORS_IN_RING_ELEMENT {
         hax_lib::loop_invariant!(|i: usize| fstar!(
             r#"
@@ -221,7 +224,9 @@ fn subtract_reduce<Vector: Operations>(
     myself: &PolynomialRingElement<Vector>,
     mut b: PolynomialRingElement<Vector>,
 ) -> PolynomialRingElement<Vector> {
+    #[cfg(hax)]
     let _b = b.coefficients;
+
     for i in 0..VECTORS_IN_RING_ELEMENT {
         hax_lib::loop_invariant!(|i: usize| fstar!(
             r#"
@@ -292,6 +297,7 @@ fn add_message_error_reduce<Vector: Operations>(
     message: &PolynomialRingElement<Vector>,
     mut result: PolynomialRingElement<Vector>,
 ) -> PolynomialRingElement<Vector> {
+    #[cfg(hax)]
     let _result = result.coefficients;
     for i in 0..VECTORS_IN_RING_ELEMENT {
         hax_lib::loop_invariant!(|i: usize| fstar!(
@@ -374,7 +380,9 @@ fn add_error_reduce<Vector: Operations>(
     myself: &mut PolynomialRingElement<Vector>,
     error: &PolynomialRingElement<Vector>,
 ) {
+    #[cfg(hax)]
     let _myself = myself.coefficients;
+
     for j in 0..VECTORS_IN_RING_ELEMENT {
         hax_lib::loop_invariant!(|i: usize| fstar!(
             r#"
@@ -439,7 +447,9 @@ fn add_standard_error_reduce<Vector: Operations>(
     myself: &mut PolynomialRingElement<Vector>,
     error: &PolynomialRingElement<Vector>,
 ) {
+    #[cfg(hax)]
     let _myself = myself.coefficients;
+    
     for j in 0..VECTORS_IN_RING_ELEMENT {
         hax_lib::loop_invariant!(|i: usize| fstar!(
             r#"
