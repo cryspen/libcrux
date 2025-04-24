@@ -344,12 +344,18 @@ pub mod int_vec_interp {
     // Defines the types `i32x8` and `i64x4`, and define intepretations function (`From` instances) from/to those types from/to bit vectors.
     interpretations!(256; i32x8 [i32; 8], i64x4 [i64; 4]);
 
-    impl From<i64x4> for i32x8 {
-        fn from(vec: i64x4) -> Self {
-            Self::from_fn(|i| {
-                let value = *vec.get(i / 2);
+    impl i64x4 {
+        pub fn into_i32x8(self) -> i32x8 {
+            i32x8::from_fn(|i| {
+                let value = *self.get(i / 2);
                 (if i % 2 == 0 { value } else { value >> 32 }) as i32
             })
+        }
+    }
+
+    impl From<i64x4> for i32x8 {
+        fn from(vec: i64x4) -> Self {
+            vec.into_i32x8()
         }
     }
 
@@ -360,6 +366,6 @@ pub mod int_vec_interp {
     #[hax_lib::lemma]
     fn lemma_rewrite_i64x4_bv_i32x8(
         bv: i64x4,
-    ) -> Proof<{ hax_lib::eq(i32x8::from(BitVec::<256>::from(bv)), i32x8::from(bv)) }> {
+    ) -> Proof<{ hax_lib::eq(i32x8::from(BitVec::<256>::from(bv)), bv.into_i32x8()) }> {
     }
 }
