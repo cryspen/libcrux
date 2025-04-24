@@ -49,8 +49,8 @@ pub enum Algorithm {
 pub(crate) mod x25519;
 pub use x25519::{
     derive as x25519_derive, generate_secret as x25519_generate_secret, key_gen as x25519_key_gen,
-    PrivateKey as X25519PrivateKey, PublicKey as X25519PublicKey,
-    SharedSecret as X25519SharedSecret,
+    secret_to_public as x25519_secret_to_public, PrivateKey as X25519PrivateKey,
+    PublicKey as X25519PublicKey, SharedSecret as X25519SharedSecret,
 };
 
 pub mod curve25519 {
@@ -71,8 +71,8 @@ pub mod p256 {
 
 pub use p256_internal::{
     generate_secret as p256_generate_secret, key_gen as p256_key_gen,
-    validate_scalar as p256_validate_scalar, PrivateKey as P256PrivateKey,
-    PublicKey as P256PublicKey, SharedSecret as P256SharedSecret,
+    secret_to_public as p256_secret_to_public, validate_scalar as p256_validate_scalar,
+    PrivateKey as P256PrivateKey, PublicKey as P256PublicKey, SharedSecret as P256SharedSecret,
 };
 
 /// Derive the ECDH shared secret.
