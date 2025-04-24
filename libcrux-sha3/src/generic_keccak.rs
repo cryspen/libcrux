@@ -55,13 +55,11 @@ impl<const PARALLEL_LANES: usize, const RATE: usize, STATE: KeccakStateItem<PARA
     KeccakXofState<PARALLEL_LANES, RATE, STATE>
 {
     /// An all zero block
-    #[inline(always)]
     pub(crate) const fn zero_block() -> [u8; RATE] {
         [0u8; RATE]
     }
 
     /// Generate a new keccak xof state.
-    #[inline(always)]
     pub(crate) fn new() -> Self {
         Self {
             inner: KeccakState::new(),
