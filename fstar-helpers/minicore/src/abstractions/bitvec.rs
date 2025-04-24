@@ -5,7 +5,7 @@ use super::funarr::*;
 use std::fmt::Formatter;
 
 // This is required due to some hax-lib inconsistencies with versus without `cfg(hax)`.
-#[allow(unused)]
+#[cfg(hax)]
 use hax_lib::{int, ToInt};
 
 // TODO: this module uses `u128/i128` as mathematic integers. We should use `hax_lib::int` or bigint.

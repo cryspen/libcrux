@@ -103,7 +103,8 @@ pub(super) fn derive(p: &PublicKey, s: &PrivateKey) -> Result<SharedSecret, Erro
         .map(SharedSecret)
 }
 
-pub(super) fn secret_to_public(s: &PrivateKey) -> Result<PublicKey, Error> {
+/// Compute the public key, corresponding to the private key `s`.
+pub fn secret_to_public(s: &PrivateKey) -> Result<PublicKey, Error> {
     p256::validate_scalar(s).map_err(|e| Error::Custom(format!("HACL Error {:?}", e)))?;
     p256::secret_to_public(s)
         .map_err(|e| Error::Custom(format!("HACL Error {:?}", e)))
