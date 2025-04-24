@@ -67,7 +67,9 @@ class extractAction(argparse.Action):
             "--interfaces",
             interface_include,
         ]
-        hax_env = {}
+        hax_env = {
+            'RUSTFLAGS': "--cfg pre_minicore"
+        }
         shell(
             cargo_hax_into,
             cwd="../libcrux-intrinsics",

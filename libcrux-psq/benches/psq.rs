@@ -21,9 +21,9 @@ pub fn kem_key_generation(c: &mut Criterion) {
             let _ = libcrux_kem::key_gen(libcrux_kem::Algorithm::X25519, &mut rng);
         })
     });
-    group.bench_function("libcrux XWingKemDraft02", |b| {
+    group.bench_function("libcrux XWingKemDraft06", |b| {
         b.iter(|| {
-            let _ = libcrux_kem::key_gen(libcrux_kem::Algorithm::XWingKemDraft02, &mut rng);
+            let _ = libcrux_kem::key_gen(libcrux_kem::Algorithm::XWingKemDraft06, &mut rng);
         })
     });
     group.bench_function("classic_mceliece_rust (mceliece460896f)", |b| {
@@ -59,9 +59,9 @@ pub fn kem_encaps(c: &mut Criterion) {
         )
     });
 
-    group.bench_function("libcrux XWingKemDraft02", |b| {
+    group.bench_function("libcrux XWingKemDraft06", |b| {
         b.iter_batched(
-            || libcrux_kem::key_gen(libcrux_kem::Algorithm::XWingKemDraft02, &mut rng).unwrap(),
+            || libcrux_kem::key_gen(libcrux_kem::Algorithm::XWingKemDraft06, &mut rng).unwrap(),
             |(_sk, pk)| {
                 let _ = pk.encapsulate(&mut rand::rng());
             },
@@ -112,11 +112,11 @@ pub fn kem_decaps(c: &mut Criterion) {
         )
     });
 
-    group.bench_function("libcrux XWingKemDraft02", |b| {
+    group.bench_function("libcrux XWingKemDraft06", |b| {
         b.iter_batched(
             || {
                 let (sk, pk) =
-                    libcrux_kem::key_gen(libcrux_kem::Algorithm::XWingKemDraft02, &mut rng)
+                    libcrux_kem::key_gen(libcrux_kem::Algorithm::XWingKemDraft06, &mut rng)
                         .unwrap();
                 let (_ss, enc) = pk.encapsulate(&mut rng).unwrap();
                 (sk, enc)
@@ -169,8 +169,8 @@ pub fn psq_encaps(c: &mut Criterion) {
     encaps_bench!("libcrux ML-KEM-768", libcrux_psq::impls::MlKem768);
     encaps_bench!("libcrux X25519", libcrux_psq::impls::X25519);
     encaps_bench!(
-        "libcrux XWingKemDraft02",
-        libcrux_psq::impls::XWingKemDraft02
+        "libcrux XWingKemDraft06",
+        libcrux_psq::impls::XWingKemDraft06
     );
     encaps_bench!(
         "classic_mceliece_rust (mceliece460896f)",
@@ -215,8 +215,8 @@ pub fn psq_decaps(c: &mut Criterion) {
     decaps_bench!("libcrux ML-KEM-768", libcrux_psq::impls::MlKem768);
     decaps_bench!("libcrux X25519", libcrux_psq::impls::X25519);
     decaps_bench!(
-        "libcrux XWingKemDraft02",
-        libcrux_psq::impls::XWingKemDraft02
+        "libcrux XWingKemDraft06",
+        libcrux_psq::impls::XWingKemDraft06
     );
     decaps_bench!(
         "classic_mceliece_rust (mceliece460896f)",

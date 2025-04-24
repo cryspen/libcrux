@@ -11,7 +11,7 @@
 //! * [`Algorithm::MlKem768`]\: ML-KEM 768 from [FIPS 203].
 //! * [`Algorithm::MlKem1024`]\: ML-KEM 1024 from [FIPS 203].
 //! * [`Algorithm::X25519MlKem768Draft00`]\: Hybrid x25519 - ML-KEM 768 [draft kem for hpke](https://www.ietf.org/archive/id/draft-westerbaan-cfrg-hpke-xyber768d00-00.html).
-//! * [`Algorithm::XWingKemDraft02`]\: Hybrid x25519 - ML-KEM 768 [draft xwing kem for hpke](https://www.ietf.org/archive/id/draft-connolly-cfrg-xwing-kem-02.html).
+//! * [`Algorithm::XWingKemDraft06`]\: Hybrid x25519 - ML-KEM 768 [draft xwing kem for hpke](https://www.ietf.org/archive/id/draft-connolly-cfrg-xwing-kem-06.html).
 //!
 //! ```
 //! use libcrux_kem::*;
@@ -38,11 +38,11 @@
 
 extern crate alloc;
 
-use alloc::{vec, vec::Vec};
+use alloc::vec::Vec;
 
-use rand::{CryptoRng, Rng, TryRngCore};
+use rand::{CryptoRng, TryRngCore};
 
-use libcrux_ecdh::{p256_derive, x25519_derive};
+use libcrux_ecdh::{p256_derive, p256_secret_to_public, x25519_derive, x25519_secret_to_public};
 use libcrux_ecdh::{
     P256PrivateKey, P256PublicKey, P256SharedSecret, X25519PrivateKey, X25519PublicKey,
     X25519SharedSecret,
@@ -50,9 +50,6 @@ use libcrux_ecdh::{
 use libcrux_sha3 as sha3;
 
 use libcrux_ml_kem::{mlkem1024, mlkem512, mlkem768};
-
-#[cfg(feature = "kyber")]
-use libcrux_ml_kem::kyber768;
 
 // TODO: These functions are currently exposed simply in order to make NIST KAT
 // testing possible without an implementation of the NIST AES-CTR DRBG. Remove them
@@ -86,6 +83,7 @@ pub use libcrux_ml_kem::{
     mlkem512::validate_public_key as ml_kem512_validate_public_key,
     mlkem768::validate_public_key as ml_kem768_validate_public_key,
 };
+use xwing::XWingSharedSecret;
 
 /// KEM Algorithms
 ///
@@ -100,11 +98,7 @@ pub enum Algorithm {
     MlKem512,
     MlKem768,
     X25519MlKem768Draft00,
-    XWingKemDraft02,
-    #[cfg(feature = "kyber")]
-    X25519Kyber768Draft00,
-    #[cfg(feature = "kyber")]
-    XWingKyberDraft02,
+    XWingKemDraft06,
     MlKem1024,
 }
 
@@ -131,11 +125,7 @@ impl TryFrom<Algorithm> for libcrux_ecdh::Algorithm {
             Algorithm::Secp384r1 => Ok(libcrux_ecdh::Algorithm::P384),
             Algorithm::Secp521r1 => Ok(libcrux_ecdh::Algorithm::P521),
             Algorithm::X25519MlKem768Draft00 => Ok(libcrux_ecdh::Algorithm::X25519),
-            Algorithm::XWingKemDraft02 => Ok(libcrux_ecdh::Algorithm::X25519),
-            #[cfg(feature = "kyber")]
-            Algorithm::XWingKyberDraft02 | Algorithm::X25519Kyber768Draft00 => {
-                Ok(libcrux_ecdh::Algorithm::X25519)
-            }
+            Algorithm::XWingKemDraft06 => Ok(libcrux_ecdh::Algorithm::X25519),
             _ => Err("provided algorithm is not an ECDH algorithm"),
         }
     }
@@ -173,32 +163,19 @@ impl X25519MlKem768Draft00PrivateKey {
 }
 
 /// An X-Wing private key.
-pub struct XWingKemDraft02PrivateKey {
-    pub sk_m: MlKem768PrivateKey,
-    pub sk_x: X25519PrivateKey,
-    pub pk_x: X25519PublicKey,
+pub struct XWingKemDraft06PrivateKey {
+    pub seed: [u8; 32],
 }
 
-impl XWingKemDraft02PrivateKey {
+impl XWingKemDraft06PrivateKey {
     pub fn decode(bytes: &[u8]) -> Result<Self, Error> {
         Ok(Self {
-            sk_m: bytes[..2400]
-                .try_into()
-                .map_err(|_| Error::InvalidPrivateKey)?,
-            sk_x: bytes[2400..2432]
-                .try_into()
-                .map_err(|_| Error::InvalidPrivateKey)?,
-            pk_x: bytes[2432..2464]
-                .try_into()
-                .map_err(|_| Error::InvalidPrivateKey)?,
+            seed: bytes.try_into().map_err(|_| Error::InvalidPrivateKey)?,
         })
     }
 
     pub fn encode(&self) -> Vec<u8> {
-        let mut out = self.sk_m.as_ref().to_vec();
-        out.extend_from_slice(self.sk_x.0.to_vec().as_ref());
-        out.extend_from_slice(self.pk_x.0.to_vec().as_ref());
-        out
+        self.seed.as_ref().to_vec()
     }
 }
 
@@ -209,11 +186,7 @@ pub enum PrivateKey {
     MlKem512(MlKem512PrivateKey),
     MlKem768(MlKem768PrivateKey),
     X25519MlKem768Draft00(X25519MlKem768Draft00PrivateKey),
-    XWingKemDraft02(XWingKemDraft02PrivateKey),
-    #[cfg(feature = "kyber")]
-    X25519Kyber768Draft00(X25519MlKem768Draft00PrivateKey),
-    #[cfg(feature = "kyber")]
-    XWingKyberDraft02(XWingKemDraft02PrivateKey),
+    XWingKemDraft06(XWingKemDraft06PrivateKey),
     MlKem1024(MlKem1024PrivateKey),
 }
 
@@ -248,12 +221,12 @@ impl X25519MlKem768Draft00PublicKey {
 }
 
 /// An X-Wing public key.
-pub struct XWingKemDraft02PublicKey {
+pub struct XWingKemDraft06PublicKey {
     pub pk_m: MlKem768PublicKey,
     pub pk_x: X25519PublicKey,
 }
 
-impl XWingKemDraft02PublicKey {
+impl XWingKemDraft06PublicKey {
     pub fn decode(bytes: &[u8]) -> Result<Self, Error> {
         Ok(Self {
             pk_m: {
@@ -284,11 +257,7 @@ pub enum PublicKey {
     MlKem512(MlKem512PublicKey),
     MlKem768(MlKem768PublicKey),
     X25519MlKem768Draft00(X25519MlKem768Draft00PublicKey),
-    XWingKemDraft02(XWingKemDraft02PublicKey),
-    #[cfg(feature = "kyber")]
-    X25519Kyber768Draft00(X25519MlKem768Draft00PublicKey),
-    #[cfg(feature = "kyber")]
-    XWingKyberDraft02(XWingKemDraft02PublicKey),
+    XWingKemDraft06(XWingKemDraft06PublicKey),
     MlKem1024(MlKem1024PublicKey),
 }
 
@@ -299,11 +268,7 @@ pub enum Ct {
     MlKem512(MlKem512Ciphertext),
     MlKem768(MlKem768Ciphertext),
     X25519MlKem768Draft00(MlKem768Ciphertext, X25519PublicKey),
-    XWingKemDraft02(MlKem768Ciphertext, X25519PublicKey),
-    #[cfg(feature = "kyber")]
-    X25519Kyber768Draft00(MlKem768Ciphertext, X25519PublicKey),
-    #[cfg(feature = "kyber")]
-    XWingKyberDraft02(MlKem768Ciphertext, X25519PublicKey),
+    XWingKemDraft06(MlKem768Ciphertext, X25519PublicKey),
     MlKem1024(MlKem1024Ciphertext),
 }
 
@@ -363,28 +328,28 @@ impl Ct {
 
                 Ok(Ss::X25519MlKem768Draft00(kss, xss))
             }
-            Ct::XWingKemDraft02(ct_m, ct_x) => {
-                let (sk_m, sk_x, pk_x) =
-                    if let PrivateKey::XWingKemDraft02(XWingKemDraft02PrivateKey {
-                        sk_m,
-                        sk_x,
-                        pk_x,
-                    }) = sk
-                    {
-                        (sk_m, sk_x, pk_x)
+
+            Ct::XWingKemDraft06(ct_m, ct_x) => {
+                let seed =
+                    if let PrivateKey::XWingKemDraft06(XWingKemDraft06PrivateKey { seed }) = sk {
+                        seed
                     } else {
                         return Err(Error::InvalidPrivateKey);
                     };
-                let ss_m = mlkem768::decapsulate(sk_m, ct_m);
-                let ss_x = x25519_derive(ct_x, sk_x)?;
 
-                Ok(Ss::XWingKemDraft02(
-                    ss_m,
-                    ss_x,
-                    X25519PublicKey(ct_x.0),
-                    X25519PublicKey(pk_x.0),
-                ))
+                let (kp_m, pk_x, sk_x) = xwing::expand_decap_key(seed)?;
+
+                let ss_m = mlkem768::decapsulate(kp_m.private_key(), ct_m);
+                let ss_x = x25519_derive(ct_x, &sk_x)?;
+
+                Ok(Ss::XWingKemDraft06(xwing::combiner(
+                    &ss_m,
+                    ss_x.as_ref(),
+                    ct_x.as_ref(),
+                    pk_x.as_ref(),
+                )))
             }
+
             Ct::MlKem1024(ct) => {
                 let sk = if let PrivateKey::MlKem1024(k) = sk {
                     k
@@ -394,46 +359,6 @@ impl Ct {
                 let ss = libcrux_ml_kem::mlkem1024::decapsulate(sk, ct);
 
                 Ok(Ss::MlKem1024(ss))
-            }
-            #[cfg(feature = "kyber")]
-            Ct::X25519Kyber768Draft00(kct, xct) => {
-                let (ksk, xsk) =
-                    if let PrivateKey::X25519Kyber768Draft00(X25519MlKem768Draft00PrivateKey {
-                        mlkem: kk,
-                        x25519: xk,
-                    }) = sk
-                    {
-                        (kk, xk)
-                    } else {
-                        return Err(Error::InvalidPrivateKey);
-                    };
-                let kss = kyber768::decapsulate(ksk, kct);
-                let xss = x25519_derive(xct, xsk)?;
-
-                Ok(Ss::X25519Kyber768Draft00(kss, xss))
-            }
-            #[cfg(feature = "kyber")]
-            Ct::XWingKyberDraft02(ct_m, ct_x) => {
-                let (sk_m, sk_x, pk_x) =
-                    if let PrivateKey::XWingKyberDraft02(XWingKemDraft02PrivateKey {
-                        sk_m,
-                        sk_x,
-                        pk_x,
-                    }) = sk
-                    {
-                        (sk_m, sk_x, pk_x)
-                    } else {
-                        return Err(Error::InvalidPrivateKey);
-                    };
-                let ss_m = kyber768::decapsulate(sk_m, ct_m);
-                let ss_x = x25519_derive(ct_x, sk_x)?;
-
-                Ok(Ss::XWingKyberDraft02(
-                    ss_m,
-                    ss_x,
-                    X25519PublicKey(ct_x.0.clone()),
-                    X25519PublicKey(pk_x.0.clone()),
-                ))
             }
         }
     }
@@ -446,21 +371,7 @@ pub enum Ss {
     MlKem512(MlKemSharedSecret),
     MlKem768(MlKemSharedSecret),
     X25519MlKem768Draft00(MlKemSharedSecret, X25519SharedSecret),
-    XWingKemDraft02(
-        MlKemSharedSecret,  // ss_M
-        X25519SharedSecret, // ss_X
-        X25519PublicKey,    // ct_X
-        X25519PublicKey,    // pk_X
-    ),
-    #[cfg(feature = "kyber")]
-    X25519Kyber768Draft00(MlKemSharedSecret, X25519SharedSecret),
-    #[cfg(feature = "kyber")]
-    XWingKyberDraft02(
-        MlKemSharedSecret,  // ss_M
-        X25519SharedSecret, // ss_X
-        X25519PublicKey,    // ct_X
-        X25519PublicKey,    // pk_X
-    ),
+    XWingKemDraft06(XWingSharedSecret),
     MlKem1024(MlKemSharedSecret),
 }
 
@@ -473,12 +384,8 @@ impl PrivateKey {
             PrivateKey::MlKem512(k) => k.as_slice().to_vec(),
             PrivateKey::MlKem768(k) => k.as_slice().to_vec(),
             PrivateKey::X25519MlKem768Draft00(k) => k.encode(),
-            PrivateKey::XWingKemDraft02(k) => k.encode(),
+            PrivateKey::XWingKemDraft06(k) => k.encode(),
             PrivateKey::MlKem1024(k) => k.as_slice().to_vec(),
-            #[cfg(feature = "kyber")]
-            PrivateKey::X25519Kyber768Draft00(k) => k.encode(),
-            #[cfg(feature = "kyber")]
-            PrivateKey::XWingKyberDraft02(k) => k.encode(),
         }
     }
 
@@ -504,21 +411,12 @@ impl PrivateKey {
             Algorithm::X25519MlKem768Draft00 => X25519MlKem768Draft00PrivateKey::decode(bytes)
                 .map_err(|_| Error::InvalidPrivateKey)
                 .map(Self::X25519MlKem768Draft00),
-            Algorithm::XWingKemDraft02 => {
-                let pk = XWingKemDraft02PrivateKey::decode(bytes)
+            Algorithm::XWingKemDraft06 => {
+                let pk = XWingKemDraft06PrivateKey::decode(bytes)
                     .map_err(|_| Error::InvalidPrivateKey)?;
-                Ok(Self::XWingKemDraft02(pk))
+                Ok(Self::XWingKemDraft06(pk))
             }
-            #[cfg(feature = "kyber")]
-            Algorithm::X25519Kyber768Draft00 => X25519MlKem768Draft00PrivateKey::decode(bytes)
-                .map_err(|_| Error::InvalidPrivateKey)
-                .map(Self::X25519Kyber768Draft00),
-            #[cfg(feature = "kyber")]
-            Algorithm::XWingKyberDraft02 => {
-                let pk = XWingKemDraft02PrivateKey::decode(bytes)
-                    .map_err(|_| Error::InvalidPrivateKey)?;
-                Ok(Self::XWingKyberDraft02(pk))
-            }
+
             Algorithm::MlKem1024 => bytes
                 .try_into()
                 .map_err(|_| Error::InvalidPrivateKey)
@@ -530,7 +428,7 @@ impl PrivateKey {
 
 impl PublicKey {
     /// Encapsulate a shared secret to the provided `pk` and return the `(Key, Enc)` tuple.
-    pub fn encapsulate(&self, rng: &mut (impl CryptoRng + Rng)) -> Result<(Ss, Ct), Error> {
+    pub fn encapsulate(&self, rng: &mut impl CryptoRng) -> Result<(Ss, Ct), Error> {
         match self {
             PublicKey::X25519(pk) => {
                 let (new_sk, new_pk) = libcrux_ecdh::x25519_key_gen(rng)?;
@@ -576,54 +474,99 @@ impl PublicKey {
                 ))
             }
 
-            PublicKey::XWingKemDraft02(XWingKemDraft02PublicKey { pk_m, pk_x }) => {
+            PublicKey::XWingKemDraft06(XWingKemDraft06PublicKey { pk_m, pk_x }) => {
                 let seed = mlkem_rand(rng)?;
                 let (ct_m, ss_m) = mlkem768::encapsulate(pk_m, seed);
                 let (ek_x, ct_x) = libcrux_ecdh::x25519_key_gen(rng)?;
                 let ss_x = x25519_derive(pk_x, &ek_x)?;
 
                 Ok((
-                    Ss::XWingKemDraft02(
-                        ss_m,
-                        ss_x,
-                        X25519PublicKey(ct_x.0.clone()),
-                        X25519PublicKey(pk_x.0.clone()),
-                    ),
-                    Ct::XWingKemDraft02(ct_m, X25519PublicKey(ct_x.0.clone())),
+                    Ss::XWingKemDraft06(xwing::combiner(
+                        &ss_m,
+                        ss_x.as_ref(),
+                        ct_x.as_ref(),
+                        pk_x.as_ref(),
+                    )),
+                    Ct::XWingKemDraft06(ct_m, X25519PublicKey(ct_x.0)),
                 ))
             }
+        }
+    }
 
-            #[cfg(feature = "kyber")]
-            PublicKey::X25519Kyber768Draft00(X25519MlKem768Draft00PublicKey {
+    /// Encapsulate a shared secret to the provided `pk` and return the `(Key, Enc)` tuple.
+    pub fn encapsulate_derand(&self, seed: &[u8]) -> Result<(Ss, Ct), Error> {
+        match self {
+            PublicKey::X25519(pk) => {
+                let new_sk = X25519PrivateKey::try_from(seed)?; // clamps
+                let new_pk = x25519_secret_to_public(&new_sk)?;
+                let gxy = x25519_derive(pk, &new_sk)?;
+                Ok((Ss::X25519(gxy), Ct::X25519(new_pk.try_into().unwrap())))
+            }
+
+            PublicKey::P256(pk) => {
+                let new_sk = P256PrivateKey::try_from(seed)?;
+                let new_pk = p256_secret_to_public(&new_sk)?;
+
+                let gxy = p256_derive(pk, &new_sk)?;
+                Ok((Ss::P256(gxy), Ct::P256(new_pk)))
+            }
+
+            PublicKey::MlKem512(pk) => {
+                let (ct, ss) = libcrux_ml_kem::mlkem512::encapsulate(
+                    pk,
+                    seed.try_into().map_err(|_| Error::KeyGen)?,
+                );
+                Ok((Ss::MlKem512(ss), Ct::MlKem512(ct)))
+            }
+
+            PublicKey::MlKem768(pk) => {
+                let (ct, ss) =
+                    mlkem768::encapsulate(pk, seed.try_into().map_err(|_| Error::KeyGen)?);
+                Ok((Ss::MlKem768(ss), Ct::MlKem768(ct)))
+            }
+
+            PublicKey::MlKem1024(pk) => {
+                let (ct, ss) =
+                    mlkem1024::encapsulate(pk, seed.try_into().map_err(|_| Error::KeyGen)?);
+                Ok((Ss::MlKem1024(ss), Ct::MlKem1024(ct)))
+            }
+
+            PublicKey::X25519MlKem768Draft00(X25519MlKem768Draft00PublicKey {
                 mlkem: kpk,
                 x25519: xpk,
             }) => {
-                let seed = mlkem_rand(rng)?;
-                let (mlkem_ct, mlkem_ss) = kyber768::encapsulate(kpk, seed);
-                let (x_sk, x_pk) = libcrux_ecdh::x25519_key_gen(rng)?;
+                // seed = mlkem_seed || x_sk
+                let (mlkem_ct, mlkem_ss) =
+                    mlkem768::encapsulate(kpk, seed[0..32].try_into().map_err(|_| Error::KeyGen)?);
+
+                let x_sk = X25519PrivateKey::try_from(&seed[32..])?; // clamps
+                let x_pk = x25519_secret_to_public(&x_sk)?;
+
                 let x_ss = x25519_derive(xpk, &x_sk)?;
 
                 Ok((
-                    Ss::X25519Kyber768Draft00(mlkem_ss, x_ss),
-                    Ct::X25519Kyber768Draft00(mlkem_ct, x_pk),
+                    Ss::X25519MlKem768Draft00(mlkem_ss, x_ss),
+                    Ct::X25519MlKem768Draft00(mlkem_ct, x_pk),
                 ))
             }
 
-            #[cfg(feature = "kyber")]
-            PublicKey::XWingKyberDraft02(XWingKemDraft02PublicKey { pk_m, pk_x }) => {
-                let seed = mlkem_rand(rng)?;
-                let (ct_m, ss_m) = kyber768::encapsulate(pk_m, seed);
-                let (ek_x, ct_x) = libcrux_ecdh::x25519_key_gen(rng)?;
+            PublicKey::XWingKemDraft06(XWingKemDraft06PublicKey { pk_m, pk_x }) => {
+                let (ct_m, ss_m) =
+                    mlkem768::encapsulate(pk_m, seed[0..32].try_into().map_err(|_| Error::KeyGen)?);
+
+                let ek_x = X25519PrivateKey::try_from(&seed[32..])?; // clamps
+                let ct_x = x25519_secret_to_public(&ek_x)?;
+
                 let ss_x = x25519_derive(pk_x, &ek_x)?;
 
                 Ok((
-                    Ss::XWingKyberDraft02(
-                        ss_m,
-                        ss_x,
-                        X25519PublicKey(ct_x.0.clone()),
-                        X25519PublicKey(pk_x.0.clone()),
-                    ),
-                    Ct::XWingKyberDraft02(ct_m, X25519PublicKey(ct_x.0.clone())),
+                    Ss::XWingKemDraft06(xwing::combiner(
+                        &ss_m,
+                        ss_x.as_ref(),
+                        ct_x.as_ref(),
+                        pk_x.as_ref(),
+                    )),
+                    Ct::XWingKemDraft06(ct_m, X25519PublicKey(ct_x.0)),
                 ))
             }
         }
@@ -637,12 +580,8 @@ impl PublicKey {
             PublicKey::MlKem512(k) => k.as_ref().to_vec(),
             PublicKey::MlKem768(k) => k.as_ref().to_vec(),
             PublicKey::X25519MlKem768Draft00(k) => k.encode(),
-            PublicKey::XWingKemDraft02(k) => k.encode(),
+            PublicKey::XWingKemDraft06(k) => k.encode(),
             PublicKey::MlKem1024(k) => k.as_ref().to_vec(),
-            #[cfg(feature = "kyber")]
-            PublicKey::X25519Kyber768Draft00(k) => k.encode(),
-            #[cfg(feature = "kyber")]
-            PublicKey::XWingKyberDraft02(k) => k.encode(),
         }
     }
 
@@ -676,16 +615,8 @@ impl PublicKey {
             Algorithm::X25519MlKem768Draft00 => {
                 X25519MlKem768Draft00PublicKey::decode(bytes).map(Self::X25519MlKem768Draft00)
             }
-            Algorithm::XWingKemDraft02 => {
-                XWingKemDraft02PublicKey::decode(bytes).map(Self::XWingKemDraft02)
-            }
-            #[cfg(feature = "kyber")]
-            Algorithm::X25519Kyber768Draft00 => {
-                X25519MlKem768Draft00PublicKey::decode(bytes).map(Self::X25519Kyber768Draft00)
-            }
-            #[cfg(feature = "kyber")]
-            Algorithm::XWingKyberDraft02 => {
-                XWingKemDraft02PublicKey::decode(bytes).map(Self::XWingKyberDraft02)
+            Algorithm::XWingKemDraft06 => {
+                XWingKemDraft06PublicKey::decode(bytes).map(Self::XWingKemDraft06)
             }
             Algorithm::MlKem1024 => {
                 let key =
@@ -713,35 +644,7 @@ impl Ss {
                 out.extend_from_slice(xk.0.as_ref());
                 out
             }
-            Ss::XWingKemDraft02(ss_m, ss_x, ct_x, pk_x) => {
-                // \./
-                // /^\
-                // 5c2e2f2f5e5c
-                let mut input = vec![0x5c, 0x2e, 0x2f, 0x2f, 0x5e, 0x5c];
-                input.extend_from_slice(ss_m.as_ref());
-                input.extend_from_slice(ss_x.as_ref());
-                input.extend_from_slice(ct_x.0.as_ref());
-                input.extend_from_slice(pk_x.0.as_ref());
-                sha3::sha256(&input).to_vec()
-            }
-            #[cfg(feature = "kyber")]
-            Ss::X25519Kyber768Draft00(kk, xk) => {
-                let mut out = xk.0.to_vec();
-                out.extend_from_slice(kk.as_ref());
-                out
-            }
-            #[cfg(feature = "kyber")]
-            Ss::XWingKyberDraft02(ss_m, ss_x, ct_x, pk_x) => {
-                // \./
-                // /^\
-                // 5c2e2f2f5e5c
-                let mut input = vec![0x5c, 0x2e, 0x2f, 0x2f, 0x5e, 0x5c];
-                input.extend_from_slice(ss_m.as_ref());
-                input.extend_from_slice(ss_x.as_ref());
-                input.extend_from_slice(ct_x.0.as_ref());
-                input.extend_from_slice(pk_x.0.as_ref());
-                sha3::sha256(&input).to_vec()
-            }
+            Ss::XWingKemDraft06(ss) => ss.value.into(),
             Ss::MlKem1024(k) => k.as_ref().to_vec(),
         }
     }
@@ -760,19 +663,7 @@ impl Ct {
                 out.extend_from_slice(xk.0.as_ref());
                 out
             }
-            Ct::XWingKemDraft02(ct_m, ct_x) => {
-                let mut out = ct_m.as_ref().to_vec();
-                out.extend_from_slice(ct_x.as_ref());
-                out
-            }
-            #[cfg(feature = "kyber")]
-            Ct::X25519Kyber768Draft00(kk, xk) => {
-                let mut out = xk.0.to_vec();
-                out.extend_from_slice(kk.as_ref());
-                out
-            }
-            #[cfg(feature = "kyber")]
-            Ct::XWingKyberDraft02(ct_m, ct_x) => {
+            Ct::XWingKemDraft06(ct_m, ct_x) => {
                 let mut out = ct_m.as_ref().to_vec();
                 out.extend_from_slice(ct_x.as_ref());
                 out
@@ -809,31 +700,11 @@ impl Ct {
                     xct.try_into().map_err(|_| Error::InvalidCiphertext)?,
                 ))
             }
-            Algorithm::XWingKemDraft02 => {
+            Algorithm::XWingKemDraft06 => {
                 let key: [u8; MlKem768Ciphertext::len() + 32] =
                     bytes.try_into().map_err(|_| Error::InvalidCiphertext)?;
                 let (ct_m, ct_x) = key.split_at(MlKem768Ciphertext::len());
-                Ok(Self::XWingKemDraft02(
-                    ct_m.try_into().map_err(|_| Error::InvalidCiphertext)?,
-                    ct_x.try_into().map_err(|_| Error::InvalidCiphertext)?,
-                ))
-            }
-            #[cfg(feature = "kyber")]
-            Algorithm::X25519Kyber768Draft00 => {
-                let key: [u8; MlKem768Ciphertext::len() + 32] =
-                    bytes.try_into().map_err(|_| Error::InvalidCiphertext)?;
-                let (xct, kct) = key.split_at(32);
-                Ok(Self::X25519Kyber768Draft00(
-                    kct.try_into().map_err(|_| Error::InvalidCiphertext)?,
-                    xct.try_into().map_err(|_| Error::InvalidCiphertext)?,
-                ))
-            }
-            #[cfg(feature = "kyber")]
-            Algorithm::XWingKyberDraft02 => {
-                let key: [u8; MlKem768Ciphertext::len() + 32] =
-                    bytes.try_into().map_err(|_| Error::InvalidCiphertext)?;
-                let (ct_m, ct_x) = key.split_at(MlKem768Ciphertext::len());
-                Ok(Self::XWingKyberDraft02(
+                Ok(Self::XWingKemDraft06(
                     ct_m.try_into().map_err(|_| Error::InvalidCiphertext)?,
                     ct_x.try_into().map_err(|_| Error::InvalidCiphertext)?,
                 ))
@@ -860,12 +731,12 @@ pub fn secret_to_public(alg: Algorithm, sk: impl AsRef<[u8]>) -> Result<Vec<u8>,
 }
 
 fn gen_mlkem768(
-    rng: &mut (impl CryptoRng + Rng),
+    rng: &mut impl CryptoRng,
 ) -> Result<(MlKem768PrivateKey, MlKem768PublicKey), Error> {
     Ok(mlkem768::generate_key_pair(random_array(rng)?).into_parts())
 }
 
-fn random_array<const L: usize>(rng: &mut (impl CryptoRng + Rng)) -> Result<[u8; L], Error> {
+fn random_array<const L: usize>(rng: &mut impl CryptoRng) -> Result<[u8; L], Error> {
     let mut seed = [0; L];
     rng.try_fill_bytes(&mut seed).map_err(|_| Error::KeyGen)?;
     Ok(seed)
@@ -876,10 +747,7 @@ fn random_array<const L: usize>(rng: &mut (impl CryptoRng + Rng)) -> Result<[u8;
 /// The function returns a fresh key or a [`Error::KeyGen`] error if
 /// * not enough entropy was available
 /// * it was not possible to generate a valid key within a reasonable amount of iterations.
-pub fn key_gen(
-    alg: Algorithm,
-    rng: &mut (impl CryptoRng + Rng),
-) -> Result<(PrivateKey, PublicKey), Error> {
+pub fn key_gen(alg: Algorithm, rng: &mut impl CryptoRng) -> Result<(PrivateKey, PublicKey), Error> {
     match alg {
         Algorithm::X25519 => libcrux_ecdh::x25519_key_gen(rng)
             .map_err(|e| e.into())
@@ -914,53 +782,157 @@ pub fn key_gen(
                 }),
             ))
         }
-        Algorithm::XWingKemDraft02 => {
-            let (sk_m, pk_m) = gen_mlkem768(rng)?;
-            let (sk_x, pk_x) = libcrux_ecdh::x25519_key_gen(rng)?;
+
+        Algorithm::XWingKemDraft06 => {
+            let mut seed = [0u8; 32];
+            rng.fill_bytes(&mut seed);
+
+            let (kp_m, pk_x, _) = xwing::expand_decap_key(&seed)?;
+
             Ok((
-                PrivateKey::XWingKemDraft02(XWingKemDraft02PrivateKey {
-                    sk_m,
-                    sk_x,
-                    pk_x: X25519PublicKey(pk_x.0.clone()),
+                PrivateKey::XWingKemDraft06(XWingKemDraft06PrivateKey { seed }),
+                PublicKey::XWingKemDraft06(XWingKemDraft06PublicKey {
+                    pk_m: kp_m.pk().into(),
+                    // unwrap is ok here because it comes from the secret to pub above
+                    pk_x,
                 }),
-                PublicKey::XWingKemDraft02(XWingKemDraft02PublicKey { pk_m, pk_x }),
-            ))
-        }
-        #[cfg(feature = "kyber")]
-        Algorithm::X25519Kyber768Draft00 => {
-            let (mlkem_private, mlkem_public) = gen_mlkem768(rng)?;
-            let (x25519_private, x25519_public) = libcrux_ecdh::x25519_key_gen(rng)?;
-            Ok((
-                PrivateKey::X25519Kyber768Draft00(X25519MlKem768Draft00PrivateKey {
-                    mlkem: mlkem_private,
-                    x25519: x25519_private,
-                }),
-                PublicKey::X25519Kyber768Draft00(X25519MlKem768Draft00PublicKey {
-                    mlkem: mlkem_public,
-                    x25519: x25519_public,
-                }),
-            ))
-        }
-        #[cfg(feature = "kyber")]
-        Algorithm::XWingKyberDraft02 => {
-            let (sk_m, pk_m) = gen_mlkem768(rng)?;
-            let (sk_x, pk_x) = libcrux_ecdh::x25519_key_gen(rng)?;
-            Ok((
-                PrivateKey::XWingKyberDraft02(XWingKemDraft02PrivateKey {
-                    sk_m,
-                    sk_x,
-                    pk_x: X25519PublicKey(pk_x.0.clone()),
-                }),
-                PublicKey::XWingKyberDraft02(XWingKemDraft02PublicKey { pk_m, pk_x }),
             ))
         }
         _ => Err(Error::UnsupportedAlgorithm),
     }
 }
 
-fn mlkem_rand(
-    rng: &mut (impl CryptoRng + Rng),
-) -> Result<[u8; libcrux_ml_kem::SHARED_SECRET_SIZE], Error> {
+/// Generate a key pair for the [`Algorithm`] using the provided rng.
+///
+/// The function returns a fresh key or a [`Error::KeyGen`] error if
+/// * the `seed` wasn't long enough
+/// * it was not possible to generate a valid key within a reasonable amount of iterations.
+pub fn key_gen_derand(alg: Algorithm, seed: &[u8]) -> Result<(PrivateKey, PublicKey), Error> {
+    match alg {
+        Algorithm::X25519 => {
+            let sk = X25519PrivateKey::try_from(seed)?;
+            let pk = x25519_secret_to_public(&sk)?;
+            Ok((PrivateKey::X25519(sk), PublicKey::X25519(pk)))
+        }
+
+        Algorithm::Secp256r1 => {
+            let sk = P256PrivateKey::try_from(seed)?;
+            let pk = p256_secret_to_public(&sk)?;
+            Ok((PrivateKey::P256(sk), PublicKey::P256(pk)))
+        }
+
+        Algorithm::MlKem512 => {
+            let (sk, pk) = mlkem512::generate_key_pair(seed.try_into().map_err(|_| Error::KeyGen)?)
+                .into_parts();
+            Ok((PrivateKey::MlKem512(sk), PublicKey::MlKem512(pk)))
+        }
+
+        Algorithm::MlKem768 => {
+            let (sk, pk) = mlkem768::generate_key_pair(seed.try_into().map_err(|_| Error::KeyGen)?)
+                .into_parts();
+            Ok((PrivateKey::MlKem768(sk), PublicKey::MlKem768(pk)))
+        }
+
+        Algorithm::MlKem1024 => {
+            let (sk, pk) =
+                mlkem1024::generate_key_pair(seed.try_into().map_err(|_| Error::KeyGen)?)
+                    .into_parts();
+            Ok((PrivateKey::MlKem1024(sk), PublicKey::MlKem1024(pk)))
+        }
+
+        Algorithm::X25519MlKem768Draft00 => {
+            let (mlkem_private, mlkem_public) =
+                mlkem768::generate_key_pair(seed.try_into().map_err(|_| Error::KeyGen)?)
+                    .into_parts();
+            let x25519_private = X25519PrivateKey::try_from(seed)?;
+            let x25519_public = x25519_secret_to_public(&x25519_private)?;
+
+            Ok((
+                PrivateKey::X25519MlKem768Draft00(X25519MlKem768Draft00PrivateKey {
+                    mlkem: mlkem_private,
+                    x25519: x25519_private,
+                }),
+                PublicKey::X25519MlKem768Draft00(X25519MlKem768Draft00PublicKey {
+                    mlkem: mlkem_public,
+                    x25519: x25519_public,
+                }),
+            ))
+        }
+
+        Algorithm::XWingKemDraft06 => {
+            let seed: [u8; 32] = seed.try_into().map_err(|_| Error::KeyGen)?;
+            let (kp_m, pk_x, _) = xwing::expand_decap_key(&seed)?;
+
+            Ok((
+                PrivateKey::XWingKemDraft06(XWingKemDraft06PrivateKey { seed }),
+                PublicKey::XWingKemDraft06(XWingKemDraft06PublicKey {
+                    pk_m: kp_m.pk().into(),
+                    // unwrap is ok here because it comes from the secret to pub above
+                    pk_x,
+                }),
+            ))
+        }
+
+        _ => Err(Error::UnsupportedAlgorithm),
+    }
+}
+
+/// The XWing KEM combiner with ML-KEM 768 and x25519
+mod xwing {
+    use libcrux_ecdh::X25519PrivateKey;
+
+    use super::*;
+
+    pub struct XWingSharedSecret {
+        pub(super) value: [u8; 32],
+    }
+
+    /// Expand the `seed` to the ML-KEM and x25519 key pairs.
+    pub(super) fn expand_decap_key(
+        seed: &[u8; 32],
+    ) -> Result<(MlKemKeyPair<2400, 1184>, X25519PublicKey, X25519PrivateKey), Error> {
+        let expanded: [u8; 96] = libcrux_sha3::shake256(seed);
+        let kp_m =
+            mlkem768::generate_key_pair(expanded[..64].try_into().map_err(|_| Error::KeyGen)?);
+        let mut sk_x = [0u8; 32];
+        sk_x.copy_from_slice(&expanded[64..]);
+        let sk_x = X25519PrivateKey::from(&sk_x); // clamps
+        let pk_x = x25519_secret_to_public(&sk_x)?;
+        Ok((kp_m, pk_x, sk_x))
+    }
+
+    pub(super) fn combiner(
+        ss_m: &[u8],
+        ss_x: &[u8],
+        ct_x: &[u8],
+        pk_x: &[u8],
+    ) -> XWingSharedSecret {
+        // label:
+        // \./
+        // /^\
+        // 5c2e2f2f5e5c
+        let mut input = ss_m.to_vec();
+        input.extend_from_slice(ss_x);
+        input.extend_from_slice(ct_x);
+        input.extend_from_slice(pk_x);
+        input.extend_from_slice(&[0x5c, 0x2e, 0x2f, 0x2f, 0x5e, 0x5c]);
+        XWingSharedSecret {
+            value: sha3::sha256(&input),
+        }
+    }
+
+    impl<'a> TryFrom<&'a [u8]> for XWingSharedSecret {
+        type Error = <[u8; 32] as TryFrom<&'a [u8]>>::Error;
+
+        fn try_from(value: &'a [u8]) -> Result<Self, Self::Error> {
+            Ok(Self {
+                value: value.try_into()?,
+            })
+        }
+    }
+}
+
+fn mlkem_rand(rng: &mut impl CryptoRng) -> Result<[u8; libcrux_ml_kem::SHARED_SECRET_SIZE], Error> {
     let mut seed = [0; libcrux_ml_kem::SHARED_SECRET_SIZE];
     rng.try_fill_bytes(&mut seed).map_err(|_| Error::KeyGen)?;
     Ok(seed)

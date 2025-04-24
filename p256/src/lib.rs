@@ -2,6 +2,7 @@
 //!
 //! This crate should not be used directly and is internal to libcrux.
 //! By default this crate is empty.
+#![no_std]
 
 // HACL* generated code
 mod p256;
