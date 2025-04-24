@@ -461,7 +461,9 @@ Spec.Utils.is_i16b_array 3328 ${result}.f_elements /\
     (v (Seq.index ${result}.f_elements i) % 3329 == 
        (v (Seq.index ${vec}.f_elements i) * v c * 169) %3329))"#)))]
 pub(crate) fn montgomery_multiply_by_constant(mut vec: PortableVector, c: i16) -> PortableVector {
+    #[cfg(hax)]
     let _vec0 = vec;
+    
     for i in 0..FIELD_ELEMENTS_IN_VECTOR {
         hax_lib::loop_invariant!(|i: usize| {
             fstar!(
@@ -504,6 +506,6 @@ pub(crate) fn to_unsigned_representative(a: PortableVector) -> PortableVector {
   assert (forall i. Seq.index ${a}.f_elements i <. mk_i16 0 ==> Seq.index ${fm}.f_elements i == mk_i16 3329)
     "#
     );
-    
+
     add(a, &fm)
 }

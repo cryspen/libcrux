@@ -86,7 +86,9 @@ fn from_i16_array<Vector: Operations>(a: &[i16]) -> PolynomialRingElement<Vector
 #[inline(always)]
 #[hax_lib::requires(out.len() >= VECTORS_IN_RING_ELEMENT * 16)]
 fn to_i16_array<Vector: Operations>(re: PolynomialRingElement<Vector>, out: &mut [i16]) {
+    #[cfg(hax)]
     let _out_len = out.len();
+
     for i in 0..re.coefficients.len() {
         hax_lib::loop_invariant!(|_i: usize| out.len() == _out_len);
         out[i * 16..(i + 1) * 16].copy_from_slice(&Vector::to_i16_array(re.coefficients[i]));
@@ -106,7 +108,9 @@ fn from_bytes<Vector: Operations>(bytes: &[u8]) -> PolynomialRingElement<Vector>
 #[inline(always)]
 #[hax_lib::requires(VECTORS_IN_RING_ELEMENT * 32 <= out.len())]
 fn to_bytes<Vector: Operations>(re: PolynomialRingElement<Vector>, out: &mut [u8]) {
+    #[cfg(hax)]
     let _out_len = out.len();
+
     for i in 0..re.coefficients.len() {
         hax_lib::loop_invariant!(|_i: usize| out.len() == _out_len);
         Vector::to_bytes(re.coefficients[i], &mut out[i * 32..(i + 1) * 32]);
@@ -121,6 +125,7 @@ pub(crate) fn vec_to_bytes<Vector: Operations>(
     re: &[PolynomialRingElement<Vector>],
     out: &mut [u8],
 ) {
+    #[cfg(hax)]
     let _out_len = out.len();
     let re_bytes = PolynomialRingElement::<Vector>::num_bytes();
     for i in 0..re.len() {
@@ -137,7 +142,9 @@ pub(crate) fn vec_from_bytes<Vector: Operations>(
     bytes: &[u8],
     out: &mut [PolynomialRingElement<Vector>],
 ) {
+    #[cfg(hax)]
     let _out_len = out.len();
+    
     let re_bytes = PolynomialRingElement::<Vector>::num_bytes();
     for i in 0..out.len() {
         hax_lib::loop_invariant!(|_i: usize| out.len() == _out_len);
@@ -299,6 +306,7 @@ fn add_message_error_reduce<Vector: Operations>(
 ) -> PolynomialRingElement<Vector> {
     #[cfg(hax)]
     let _result = result.coefficients;
+
     for i in 0..VECTORS_IN_RING_ELEMENT {
         hax_lib::loop_invariant!(|i: usize| fstar!(
             r#"
@@ -449,7 +457,7 @@ fn add_standard_error_reduce<Vector: Operations>(
 ) {
     #[cfg(hax)]
     let _myself = myself.coefficients;
-    
+
     for j in 0..VECTORS_IN_RING_ELEMENT {
         hax_lib::loop_invariant!(|i: usize| fstar!(
             r#"

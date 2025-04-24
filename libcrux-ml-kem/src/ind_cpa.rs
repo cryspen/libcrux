@@ -269,8 +269,10 @@ fn sample_ring_element_cbd<
     error_1: &mut [PolynomialRingElement<Vector>; K],
 ) -> u8 {
     let mut prf_inputs = [prf_input.clone(); K];
-    // See https://github.com/hacspec/hax/issues/1167
+
+    #[cfg(hax)]
     let _domain_separator_init = domain_separator;
+
     domain_separator = prf_input_inc::<K>(&mut prf_inputs, domain_separator);
     hax_lib::fstar!(
         "sample_ring_element_cbd_helper_1 $K $prf_inputs $prf_input $_domain_separator_init"
@@ -382,7 +384,10 @@ fn sample_vector_cbd_then_ntt<
     mut domain_separator: u8,
 ) -> u8 {
     let mut prf_inputs = [prf_input.clone(); K];
+
+    #[cfg(hax)]
     let _domain_separator_init = domain_separator;
+
     domain_separator = prf_input_inc::<K>(&mut prf_inputs, domain_separator);
     hax_lib::fstar!(
         "sample_vector_cbd_then_ntt_helper_1 $K $prf_inputs $prf_input $_domain_separator_init"
