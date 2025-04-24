@@ -331,7 +331,7 @@ pub(crate) fn decompress_ciphertext_coefficient<const COEFFICIENT_BITS: i32>(
             "assert (v $decompressed < v $FIELD_MODULUS);
           assert (v (cast $decompressed <: i16) < v $FIELD_MODULUS)"
         );
-        
+
         a.elements[i] = decompressed as i16;
     }
 

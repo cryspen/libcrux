@@ -248,7 +248,8 @@ pub fn cond_subtract_3329(mut vec: PortableVector) -> PortableVector {
 pub(crate) fn barrett_reduce_element(value: FieldElement) -> FieldElement {
     let t = (i32::from(value) * BARRETT_MULTIPLIER) + (BARRETT_R >> 1);
 
-    hax_lib::fstar!(r#"
+    hax_lib::fstar!(
+        r#"
         assert_norm (v v_BARRETT_MULTIPLIER == (pow2 27 + 3329) / (2*3329));
         assert (v t = v value * v v_BARRETT_MULTIPLIER + pow2 25);
         assert (v t / pow2 26 < 9);
@@ -257,9 +258,11 @@ pub(crate) fn barrett_reduce_element(value: FieldElement) -> FieldElement {
 
     let quotient = (t >> BARRETT_SHIFT) as i16;
 
-    hax_lib::fstar!(r#"
+    hax_lib::fstar!(
+        r#"
         assert (v quotient = v t / pow2 26);
-       assert (Spec.Utils.is_i16b 9 quotient)"#);
+       assert (Spec.Utils.is_i16b 9 quotient)"#
+    );
 
     let result = value - (quotient * FIELD_MODULUS);
 
@@ -383,10 +386,12 @@ pub(crate) fn montgomery_reduce_element(value: i32) -> MontgomeryFieldElement {
 
     let res = value_high - c;
 
-    hax_lib::fstar!(r#"
+    hax_lib::fstar!(
+        r#"
         assert(Spec.Utils.is_i16b (3328 + 1665) res);
         assert(Spec.Utils.is_i32b (3328 * pow2 15) value ==> Spec.Utils.is_i16b 3328 res)
-        "#);
+        "#
+    );
     hax_lib::fstar!(
         r#"calc ( == ) {
         v k_times_modulus % pow2 16;
@@ -463,7 +468,7 @@ Spec.Utils.is_i16b_array 3328 ${result}.f_elements /\
 pub(crate) fn montgomery_multiply_by_constant(mut vec: PortableVector, c: i16) -> PortableVector {
     #[cfg(hax)]
     let _vec0 = vec;
-    
+
     for i in 0..FIELD_ELEMENTS_IN_VECTOR {
         hax_lib::loop_invariant!(|i: usize| {
             fstar!(
@@ -490,7 +495,8 @@ pub(crate) fn montgomery_multiply_by_constant(mut vec: PortableVector, c: i16) -
 pub(crate) fn to_unsigned_representative(a: PortableVector) -> PortableVector {
     let t = shift_right::<15>(a);
 
-    hax_lib::fstar!(r#"
+    hax_lib::fstar!(
+        r#"
         assert (forall i. Seq.index ${t}.f_elements i == ((Seq.index ${a}.f_elements i) >>! (mk_i32 15)));
         assert (forall i. Seq.index ${a}.f_elements i >=. mk_i16 0 ==> Seq.index ${t}.f_elements i == mk_i16 0);
         assert (forall i. Seq.index ${a}.f_elements i <. mk_i16 0 ==> Seq.index ${t}.f_elements i == mk_i16 (-1))

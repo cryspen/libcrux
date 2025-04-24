@@ -133,7 +133,7 @@ pub(crate) fn invert_ntt_at_layer_3<Vector: Operations>(
     hax_lib::fstar!(r#"reveal_opaque (`%invert_ntt_re_range_2) (invert_ntt_re_range_2 #$:Vector)"#);
     #[cfg(hax)]
     let _zeta_i_init = *zeta_i;
-    
+
     for round in 0..16 {
         hax_lib::loop_invariant!(|round: usize| {
             fstar!(

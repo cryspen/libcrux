@@ -144,7 +144,7 @@ pub(crate) fn vec_from_bytes<Vector: Operations>(
 ) {
     #[cfg(hax)]
     let _out_len = out.len();
-    
+
     let re_bytes = PolynomialRingElement::<Vector>::num_bytes();
     for i in 0..out.len() {
         hax_lib::loop_invariant!(|_i: usize| out.len() == _out_len);
