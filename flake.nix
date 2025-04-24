@@ -126,7 +126,7 @@
                 cd libcrux-ml-kem
                 patchShebangs ./.
                 ${lib.optionalString checkHax ''
-                  python hax.py extract
+                  ./hax.sh extract
                 ''}
                 ./c.sh
                 cd c
@@ -204,7 +204,7 @@
                 cd libcrux-ml-dsa
                 patchShebangs ./.
                 ${lib.optionalString checkHax ''
-                  python hax.py extract
+                  ./hax.sh extract
                 ''}
                 ./boring.sh --no-clean
                 cd cg
