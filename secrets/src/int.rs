@@ -50,7 +50,7 @@ pub trait CastOps {
     fn as_i32(self) -> I32;
     fn as_u64(self) -> U64;
     fn as_i64(self) -> I64;
-    
+
     #[cfg(not(eurydice))]
     fn as_u128(self) -> U128;
     #[cfg(not(eurydice))]
@@ -93,13 +93,13 @@ macro_rules! impl_cast_ops {
             fn as_i64(self) -> I64 {
                 (self.declassify() as i64).classify()
             }
-	    
-	    #[cfg(not(eurydice))]
+
+            #[cfg(not(eurydice))]
             #[inline(always)]
             fn as_u128(self) -> U128 {
                 (self.declassify() as u128).classify()
             }
-	    #[cfg(not(eurydice))]
+            #[cfg(not(eurydice))]
             #[inline(always)]
             fn as_i128(self) -> I128 {
                 (self.declassify() as i128).classify()
