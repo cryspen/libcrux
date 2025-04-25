@@ -32,6 +32,14 @@ use prelude::kdf::{labeled_expand, labeled_extract};
 /// Re-export of the HPKE types from the [`hpke_rs_crypto`] crate.
 pub use hpke_rs_crypto::types as HpkeTypes;
 
+/// Re-export of the RustCrypto crate.
+#[cfg(feature = "rustcrypto")]
+pub use hpke_rs_rust_crypto as rustcrypto;
+
+/// Re-export of the libcrux crate.
+#[cfg(feature = "libcrux")]
+pub use hpke_rs_libcrux as libcrux;
+
 #[cfg(not(feature = "hpke-test-prng"))]
 use rand_core::TryRngCore;
 
