@@ -29,6 +29,9 @@ use hpke_rs_crypto::{
 };
 use prelude::kdf::{labeled_expand, labeled_extract};
 
+/// Re-export of the HPKE types from the [`hpke_rs_crypto`] crate.
+pub use hpke_rs_crypto::types as HpkeTypes;
+
 #[cfg(not(feature = "hpke-test-prng"))]
 use rand_core::TryRngCore;
 
