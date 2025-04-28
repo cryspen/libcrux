@@ -73,3 +73,4 @@ impl crate::platform::GF128FieldElement for FieldElement {
         *self = mul(self, other)
     }
 }
+
