@@ -3,7 +3,7 @@ pub mod portable;
 #[cfg(all(target_arch = "aarch64", target_feature="aes"))]
 pub mod neon;
 
-#[cfg(all(target_arch = "x86_64", target_feature="aes"))]
+//#[cfg(all(target_arch = "x86_64", target_feature="aes"))]
 pub mod intel_ni;
 
 pub trait AESState: Copy {
