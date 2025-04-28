@@ -186,7 +186,7 @@ let bitvec_rewrite_lemma_256 (x: $:{BitVec<256>})
     extensionality' a b
 #pop-options
 
-let ${bitvec_postprocess_norm} (): Tac unit = with_compat_pre_core 1 (fun () ->
+let bitvec_postprocess_norm_aux (): Tac unit = with_compat_pre_core 1 (fun () ->
     let debug_mode = ext_enabled "debug_bv_postprocess_rewrite" in
     let crate = match cur_module () with | crate::_ -> crate | _ -> fail "Empty module name" in
     // Remove indirections
@@ -226,6 +226,10 @@ let ${bitvec_postprocess_norm} (): Tac unit = with_compat_pre_core 1 (fun () ->
     trefl ()
 )
 
+let ${bitvec_postprocess_norm} (): Tac unit =
+    if lax_on ()
+    then tadmit ()
+    else bitvec_postprocess_norm_aux ()
 "#
 )]
 /// This function is useful only for verification in F*.
