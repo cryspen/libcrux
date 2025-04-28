@@ -228,7 +228,7 @@ let bitvec_postprocess_norm_aux (): Tac unit = with_compat_pre_core 1 (fun () ->
 
 let ${bitvec_postprocess_norm} (): Tac unit =
     if lax_on ()
-    then tadmit ()
+    then trefl () // don't bother rewritting the goal
     else bitvec_postprocess_norm_aux ()
 "#
 )]
