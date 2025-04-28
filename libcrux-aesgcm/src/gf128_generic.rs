@@ -114,4 +114,20 @@ mod test {
             }
         }
     }
+
+    #[cfg(all(target_arch = "x86_64", target_feature="aes"))]
+    #[test]
+    fn test_gf128_intel() {
+        let mut computed: [u8; 16] = [0u8; 16];
+        gf128::<crate::platform::intel_ni::FieldElement>(&KEY, &INPUT, &mut computed);
+        for i in 0..16 {
+            if computed[i] != EXPECTED[i] {
+                println!(
+                    "mismatch at {}: expected is {}, computed is {}",
+                    i, EXPECTED[i], computed[i]
+                );
+                assert!(false);
+            }
+        }
+    }
 }
