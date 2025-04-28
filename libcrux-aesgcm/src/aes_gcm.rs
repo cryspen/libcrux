@@ -311,4 +311,45 @@ mod test {
             }
         }
     }
+
+    #[cfg(all(target_arch = "x86_64", target_feature="aes"))]
+    use crate::platform::intel_ni;
+
+    #[cfg(all(target_arch = "x86_64", target_feature="aes"))]
+    #[test]
+    fn test_gcm1_intel() {
+        let mut computed1 = [0u8; 76];
+        let mut st = aes128_gcm_init::<intel_ni::State, intel_ni::FieldElement>(&KEY1);
+        aes128_gcm_set_nonce(&mut st, &NONCE1);
+        let (mut ciphertext, mut tag) = computed1.split_at_mut(60);
+        aes128_gcm_encrypt(&mut st, &AAD1, &INPUT1, &mut ciphertext, &mut tag);
+        for i in 0..76 {
+            if computed1[i] != EXPECTED1[i] {
+                println!(
+                    "mismatch at {}: expected is {}, computed is {}",
+                    i, EXPECTED1[i], computed1[i]
+                );
+                assert!(false);
+            }
+        }
+    }
+
+    #[cfg(all(target_arch = "x86_64", target_feature="aes"))]
+    #[test]
+    fn test_gcm2_intel() {
+        let mut computed2 = [0u8; 668];
+        let mut st = aes128_gcm_init::<intel_ni::State, intel_ni::FieldElement>(&KEY2);
+        aes128_gcm_set_nonce(&mut st, &NONCE2);
+        let (mut ciphertext, mut tag) = computed2.split_at_mut(652);
+        aes128_gcm_encrypt(&mut st, &AAD2, &INPUT2, &mut ciphertext, &mut tag);
+        for i in 0..668 {
+            if computed2[i] != EXPECTED2[i] {
+                println!(
+                    "mismatch at {}: expected is {}, computed is {}",
+                    i, EXPECTED2[i], computed2[i]
+                );
+                assert!(false);
+            }
+        }
+    }
 }
