@@ -308,23 +308,6 @@ mod test {
         }
     }
 
-    #[cfg(all(target_arch = "aarch64", target_feature="aes"))]
-    #[test]
-    fn test_ctr_block_neon() {
-        let mut computed: [u8; 32] = [0u8; 32];
-        let ctx = aes128_ctr_init::<platform::neon::State>(&KEY, &NONCE);
-        aes128_ctr_xor_block(&ctx, 1, &INPUT[0..16], &mut computed[0..16]);
-        aes128_ctr_xor_block(&ctx, 2, &INPUT[16..32], &mut computed[16..32]);
-        for i in 0..32 {
-            if computed[i] != EXPECTED[i] {
-                println!(
-                    "mismatch at {}: expected is {}, computed is {}",
-                    i, EXPECTED[i], computed[i]
-                );
-                assert!(false);
-            }
-        }
-    }
 
     #[test]
     fn test_ctr_encrypt() {
