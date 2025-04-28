@@ -1,6 +1,6 @@
 pub mod portable;
 
-#[cfg(all(target_arch = "aarch64", target_feature="aes"))]
+#[cfg(all(target_arch = "aarch64", target_feature = "aes"))]
 pub mod neon;
 
 #[cfg(all(target_arch = "x86_64"))] // ENABLE: target_feature="aes"
@@ -15,7 +15,7 @@ pub trait AESState: Copy {
     fn xor_key(&mut self, key: &Self);
     fn aes_enc(&mut self, key: &Self);
     fn aes_enc_last(&mut self, key: &Self);
-    fn aes_keygen_assist0<const RCON:i32>(&mut self, prev: &Self);
+    fn aes_keygen_assist0<const RCON: i32>(&mut self, prev: &Self);
     fn aes_keygen_assist1(&mut self, prev: &Self);
     fn key_expansion_step(&mut self, prev: &Self);
 }
