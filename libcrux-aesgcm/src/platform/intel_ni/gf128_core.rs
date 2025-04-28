@@ -1,5 +1,7 @@
 use core::arch::x86_64::*;
 
+// A lot of the code below is shared with NEON. Refactor!
+
 #[derive(Clone,Copy)]
 pub struct FieldElement(pub u128);
 
