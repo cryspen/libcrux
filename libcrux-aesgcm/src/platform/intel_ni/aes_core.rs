@@ -18,15 +18,14 @@ fn aes_enc_last(st: &mut State, key: &State) {
     unsafe { *st = _mm_aesenclast_si128(*st, *key) }
 }
 
-fn aes_keygen_assist<const RCON:i32>(next: &mut State, prev: &State) {
-    unsafe { *next = _mm_aeskeygenassist_si128::<RCON>(*prev)}
+fn aes_keygen_assist<const RCON: i32>(next: &mut State, prev: &State) {
+    unsafe { *next = _mm_aeskeygenassist_si128::<RCON>(*prev) }
 }
 
-fn aes_keygen_assist0<const RCON:i32>(next: &mut State, prev: &State) {
+fn aes_keygen_assist0<const RCON: i32>(next: &mut State, prev: &State) {
     aes_keygen_assist::<RCON>(next, prev);
     unsafe { *next = _mm_shuffle_epi32(*next, 0xff) }
 }
-
 
 fn aes_keygen_assist1(next: &mut State, prev: &State) {
     aes_keygen_assist::<0>(next, prev);
@@ -34,14 +33,13 @@ fn aes_keygen_assist1(next: &mut State, prev: &State) {
 }
 
 fn key_expansion_step(next: &mut State, prev: &State) {
-    unsafe{
-        let p0 = _mm_xor_si128(*prev, _mm_slli_si128(*prev,4));
-        let p1 = _mm_xor_si128(p0, _mm_slli_si128(p0,4));
-        let p2 = _mm_xor_si128(p1, _mm_slli_si128(p1,4));
-        *next = _mm_xor_si128(*next,p2);
+    unsafe {
+        let p0 = _mm_xor_si128(*prev, _mm_slli_si128(*prev, 4));
+        let p1 = _mm_xor_si128(p0, _mm_slli_si128(p0, 4));
+        let p2 = _mm_xor_si128(p1, _mm_slli_si128(p1, 4));
+        *next = _mm_xor_si128(*next, p2);
     }
 }
-
 
 impl crate::platform::AESState for State {
     fn new() -> Self {
@@ -78,7 +76,7 @@ impl crate::platform::AESState for State {
         aes_enc_last(self, key);
     }
 
-    fn aes_keygen_assist0<const RCON:i32>(&mut self, prev: &Self) {
+    fn aes_keygen_assist0<const RCON: i32>(&mut self, prev: &Self) {
         aes_keygen_assist0::<RCON>(self, prev);
     }
 
@@ -94,15 +92,15 @@ impl crate::platform::AESState for State {
 #[test]
 fn test() {
     unsafe {
-        let x = _mm_set_epi32(3,2,1,0);
-        let y = _mm_shuffle_epi32(x,0xaa);
-        let w = _mm_slli_si128(x,4);
-        let mut z:[i32; 4] = [0;4];
+        let x = _mm_set_epi32(3, 2, 1, 0);
+        let y = _mm_shuffle_epi32(x, 0xaa);
+        let w = _mm_slli_si128(x, 4);
+        let mut z: [i32; 4] = [0; 4];
         _mm_storeu_si128(z.as_mut_ptr() as *mut __m128i, x);
-        println!("{:?}",z);
+        println!("{:?}", z);
         _mm_storeu_si128(z.as_mut_ptr() as *mut __m128i, w);
-        println!("shift right 4 {:?}",z);
+        println!("shift right 4 {:?}", z);
         _mm_storeu_si128(z.as_mut_ptr() as *mut __m128i, y);
-        println!("shuffle aa {:?}",z);
+        println!("shuffle aa {:?}", z);
     }
 }

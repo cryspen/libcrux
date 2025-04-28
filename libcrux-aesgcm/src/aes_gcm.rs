@@ -1,12 +1,9 @@
 use crate::{
     aes_ctr::{
-        aes128_ctr_init, aes128_ctr_key_block, aes128_ctr_set_nonce,
-        aes128_ctr_update, AES128_CTR_Context,
+        aes128_ctr_init, aes128_ctr_key_block, aes128_ctr_set_nonce, aes128_ctr_update,
+        AES128_CTR_Context,
     },
-    gf128_generic::{
-        gf128_emit, gf128_init, gf128_update,
-        gf128_update_padded, GF128State,
-    },
+    gf128_generic::{gf128_emit, gf128_init, gf128_update, gf128_update_padded, GF128State},
     platform::{AESState, GF128FieldElement},
 };
 
@@ -270,11 +267,11 @@ mod test {
             }
         }
     }
-    
-    #[cfg(all(target_arch = "aarch64", target_feature="aes"))]
+
+    #[cfg(all(target_arch = "aarch64", target_feature = "aes"))]
     use crate::platform::neon;
 
-    #[cfg(all(target_arch = "aarch64", target_feature="aes"))]
+    #[cfg(all(target_arch = "aarch64", target_feature = "aes"))]
     #[test]
     fn test_gcm1_neon() {
         let mut computed1 = [0u8; 76];
@@ -293,7 +290,7 @@ mod test {
         }
     }
 
-    #[cfg(all(target_arch = "aarch64", target_feature="aes"))]
+    #[cfg(all(target_arch = "aarch64", target_feature = "aes"))]
     #[test]
     fn test_gcm2_neon() {
         let mut computed2 = [0u8; 668];
@@ -312,10 +309,10 @@ mod test {
         }
     }
 
-    #[cfg(all(target_arch = "x86_64", target_feature="aes"))]
+    #[cfg(all(target_arch = "x86_64", target_feature = "aes"))]
     use crate::platform::intel_ni;
 
-    #[cfg(all(target_arch = "x86_64", target_feature="aes"))]
+    #[cfg(all(target_arch = "x86_64", target_feature = "aes"))]
     #[test]
     fn test_gcm1_intel() {
         let mut computed1 = [0u8; 76];
@@ -334,7 +331,7 @@ mod test {
         }
     }
 
-    #[cfg(all(target_arch = "x86_64", target_feature="aes"))]
+    #[cfg(all(target_arch = "x86_64", target_feature = "aes"))]
     #[test]
     fn test_gcm2_intel() {
         let mut computed2 = [0u8; 668];
