@@ -39,7 +39,7 @@ pub mod neon{
     }
 }
 
-//#[cfg(all(target_arch = "x86_64", target_feature="aes"))]
+#[cfg(all(target_arch = "x86_64"))] // REENABLE target_feature="aes"
 pub mod intel_ni{
     use crate::{aes_gcm::{self, DecryptError}, platform};
 

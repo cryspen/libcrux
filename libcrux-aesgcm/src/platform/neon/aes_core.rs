@@ -91,8 +91,8 @@ impl crate::platform::AESState for State {
         aes_enc_last(self, key);
     }
 
-    fn aes_keygen_assist0(&mut self, prev: &Self, rcon: u8) {
-        aes_keygen_assist0(self, prev, rcon);
+    fn aes_keygen_assist0<const RCON:i32>(&mut self, prev: &Self) {
+        aes_keygen_assist0(self, prev, RCON as u8);
     }
 
     fn aes_keygen_assist1(&mut self, prev: &Self) {
@@ -101,18 +101,5 @@ impl crate::platform::AESState for State {
 
     fn key_expansion_step(&mut self, prev: &Self) {
         key_expansion_step(self, prev)
-    }
-}
-
-
-#[test]
-fn test () {
-    unsafe {
-        let zero = vdupq_n_u32(0);
-        let arr : [u32;4] = [0,1,2,3];
-        let x = vld1q_u32(arr.as_ptr());
-        let y = vdupq_laneq_u32(x, 3);
-        let z = vextq_u32(zero, x, 3);
-        println!("arr:{:?}, x: {:?}, y: {:?}, z: {:?}",arr,x,y,z);
     }
 }
