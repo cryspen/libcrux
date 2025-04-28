@@ -63,7 +63,7 @@ macro_rules! impl_comp {
                     },
                 );
 
-//                #[cfg(all(target_arch = "x86", target_feature="aes"))]
+                #[cfg(all(target_arch = "x86_64"))] // ENABLE: target_feature="aes"
                 group.bench_with_input(
                     BenchmarkId::new("intel-aes-clmul", fmt(*payload_size)),
                     payload_size,
