@@ -1,7 +1,6 @@
 #![allow(non_snake_case)]
 use criterion::{criterion_group, criterion_main, BatchSize, BenchmarkId, Criterion, Throughput};
 
-
 pub fn randombytes(n: usize) -> Vec<u8> {
     use rand::rngs::OsRng;
     use rand::RngCore;
@@ -17,13 +16,12 @@ pub fn fmt(x: usize) -> String {
     format!("{} {}", x >> (10 * base), suffix[base])
 }
 
-
 macro_rules! impl_comp {
     ($fun:ident, $portable_fun:expr, $neon_fun:expr, $intel_fun:expr, $rustcrypto_fun:expr) => {
         // Comparing libcrux performance for different payload sizes and other implementations.
         fn $fun(c: &mut Criterion) {
             const PAYLOAD_SIZES: [usize; 3] = [128, 1024, 1024 * 1024 * 10];
-            
+
             let mut group = c.benchmark_group(stringify!($fun).replace("_", " "));
 
             for payload_size in PAYLOAD_SIZES.iter() {
@@ -34,29 +32,49 @@ macro_rules! impl_comp {
                     payload_size,
                     |b, payload_size| {
                         b.iter_batched(
-                            || (randombytes(16), randombytes(12), randombytes(32), randombytes(*payload_size)),
-                            |(key,nonce,aad,payload)| {
+                            || {
+                                (
+                                    randombytes(16),
+                                    randombytes(12),
+                                    randombytes(32),
+                                    randombytes(*payload_size),
+                                )
+                            },
+                            |(key, nonce, aad, payload)| {
                                 let mut ciphertext = vec![0; *payload_size];
                                 let mut tag = [0u8; 16];
-                                $portable_fun(&key,&nonce,&aad,&payload,&mut ciphertext, &mut tag);
+                                $portable_fun(
+                                    &key,
+                                    &nonce,
+                                    &aad,
+                                    &payload,
+                                    &mut ciphertext,
+                                    &mut tag,
+                                );
                             },
                             BatchSize::SmallInput,
                         )
                     },
                 );
 
-
-                #[cfg(all(target_arch = "aarch64", target_feature="aes"))]
+                #[cfg(all(target_arch = "aarch64", target_feature = "aes"))]
                 group.bench_with_input(
                     BenchmarkId::new("neon-aes-clmul", fmt(*payload_size)),
                     payload_size,
                     |b, payload_size| {
                         b.iter_batched(
-                            || (randombytes(16), randombytes(12), randombytes(32), randombytes(*payload_size)),
-                            |(key,nonce,aad,payload)| {
+                            || {
+                                (
+                                    randombytes(16),
+                                    randombytes(12),
+                                    randombytes(32),
+                                    randombytes(*payload_size),
+                                )
+                            },
+                            |(key, nonce, aad, payload)| {
                                 let mut ciphertext = vec![0; *payload_size];
                                 let mut tag = [0u8; 16];
-                                $neon_fun(&key,&nonce,&aad,&payload,&mut ciphertext, &mut tag);
+                                $neon_fun(&key, &nonce, &aad, &payload, &mut ciphertext, &mut tag);
                             },
                             BatchSize::SmallInput,
                         )
@@ -69,11 +87,18 @@ macro_rules! impl_comp {
                     payload_size,
                     |b, payload_size| {
                         b.iter_batched(
-                            || (randombytes(16), randombytes(12), randombytes(32), randombytes(*payload_size)),
-                            |(key,nonce,aad,payload)| {
+                            || {
+                                (
+                                    randombytes(16),
+                                    randombytes(12),
+                                    randombytes(32),
+                                    randombytes(*payload_size),
+                                )
+                            },
+                            |(key, nonce, aad, payload)| {
                                 let mut ciphertext = vec![0; *payload_size];
                                 let mut tag = [0u8; 16];
-                                $intel_fun(&key,&nonce,&aad,&payload,&mut ciphertext, &mut tag);
+                                $intel_fun(&key, &nonce, &aad, &payload, &mut ciphertext, &mut tag);
                             },
                             BatchSize::SmallInput,
                         )
@@ -85,11 +110,25 @@ macro_rules! impl_comp {
                     payload_size,
                     |b, payload_size| {
                         b.iter_batched(
-                            || (randombytes(16), randombytes(12), randombytes(32), randombytes(*payload_size)),
-                            |(key,nonce,aad,payload)| {
+                            || {
+                                (
+                                    randombytes(16),
+                                    randombytes(12),
+                                    randombytes(32),
+                                    randombytes(*payload_size),
+                                )
+                            },
+                            |(key, nonce, aad, payload)| {
                                 let mut ciphertext = vec![0; *payload_size];
                                 let mut tag = [0u8; 16];
-                                $rustcrypto_fun(&key,&nonce,&aad,&payload,&mut ciphertext, &mut tag);
+                                $rustcrypto_fun(
+                                    &key,
+                                    &nonce,
+                                    &aad,
+                                    &payload,
+                                    &mut ciphertext,
+                                    &mut tag,
+                                );
                             },
                             BatchSize::SmallInput,
                         )
@@ -102,17 +141,32 @@ macro_rules! impl_comp {
 
 use aes_gcm::{
     aead::{Aead, AeadCore, KeyInit, OsRng},
-    Aes128Gcm, Nonce, Key // Or `Aes128Gcm`
+    Aes128Gcm,
+    Key, // Or `Aes128Gcm`
+    Nonce,
 };
 
-fn rustcrypto_aes128_gcm_encrypt(key:&[u8], nonce:&[u8], aad:&[u8], plain:&[u8], ciphertext:&mut [u8], tag:&mut [u8]){
+fn rustcrypto_aes128_gcm_encrypt(
+    key: &[u8],
+    nonce: &[u8],
+    aad: &[u8],
+    plain: &[u8],
+    ciphertext: &mut [u8],
+    tag: &mut [u8],
+) {
     let cipher = Aes128Gcm::new(key.into());
     let ctxt = cipher.encrypt(nonce.into(), plain).unwrap();
     ciphertext.copy_from_slice(&ctxt[0..plain.len()]);
     tag.copy_from_slice(&ctxt[plain.len()..]);
 }
 
-impl_comp!(AES128_GCM, libcrux_aesgcm::portable::aes128_gcm_encrypt, libcrux_aesgcm::neon::aes128_gcm_encrypt, libcrux_aesgcm::intel_ni::aes128_gcm_encrypt, rustcrypto_aes128_gcm_encrypt);
+impl_comp!(
+    AES128_GCM,
+    libcrux_aesgcm::portable::aes128_gcm_encrypt,
+    libcrux_aesgcm::neon::aes128_gcm_encrypt,
+    libcrux_aesgcm::intel_ni::aes128_gcm_encrypt,
+    rustcrypto_aes128_gcm_encrypt
+);
 
 fn benchmarks(c: &mut Criterion) {
     AES128_GCM(c);

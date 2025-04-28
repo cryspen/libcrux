@@ -2,7 +2,7 @@ use core::arch::x86_64::*;
 
 // A lot of the code below is shared with NEON. Refactor!
 
-#[derive(Clone,Copy)]
+#[derive(Clone, Copy)]
 pub struct FieldElement(pub u128);
 
 fn zero() -> FieldElement {
@@ -24,8 +24,8 @@ fn add(elem: &FieldElement, other: &FieldElement) -> FieldElement {
 }
 
 fn mul_wide(elem: &FieldElement, other: &FieldElement) -> (FieldElement, FieldElement) {
-    let lhs : __m128i = unsafe { std::mem::transmute((*elem).0) };
-    let rhs : __m128i = unsafe { std::mem::transmute((*other).0) };
+    let lhs: __m128i = unsafe { std::mem::transmute((*elem).0) };
+    let rhs: __m128i = unsafe { std::mem::transmute((*other).0) };
     let low = unsafe { _mm_clmulepi64_si128(lhs, rhs, 0x11) };
     let mid0 = unsafe { _mm_clmulepi64_si128(lhs, rhs, 0x10) };
     let mid1 = unsafe { _mm_clmulepi64_si128(lhs, rhs, 0x01) };
@@ -36,9 +36,9 @@ fn mul_wide(elem: &FieldElement, other: &FieldElement) -> (FieldElement, FieldEl
     let low = unsafe { _mm_xor_si128(low, m0) };
     let high = unsafe { _mm_xor_si128(high, m1) };
 
-    let low128 : u128 = unsafe { std::mem::transmute(low) };
-    let high128 : u128 = unsafe { std::mem::transmute(high) };   
-   (FieldElement(low128), FieldElement(high128))
+    let low128: u128 = unsafe { std::mem::transmute(low) };
+    let high128: u128 = unsafe { std::mem::transmute(high) };
+    (FieldElement(low128), FieldElement(high128))
 }
 
 fn reduce(high: &FieldElement, low: &FieldElement) -> FieldElement {
@@ -51,8 +51,8 @@ fn reduce(high: &FieldElement, low: &FieldElement) -> FieldElement {
 }
 
 fn mul(x: &FieldElement, y: &FieldElement) -> FieldElement {
-    let (high,low) = mul_wide(x,y);
-    reduce(&high,&low)
+    let (high, low) = mul_wide(x, y);
+    reduce(&high, &low)
 }
 
 impl crate::platform::GF128FieldElement for FieldElement {
@@ -80,11 +80,11 @@ impl crate::platform::GF128FieldElement for FieldElement {
 #[test]
 fn test_transmute() {
     let x = 1u128 << 64 ^ 2u128;
-    let xv : __m128i = unsafe { std::mem::transmute(x)};
-    let xv : __m128i = unsafe { _mm_slli_si128(xv,8)};
-    let x : u128 = unsafe { std::mem::transmute(xv)};
+    let xv: __m128i = unsafe { std::mem::transmute(x) };
+    let xv: __m128i = unsafe { _mm_slli_si128(xv, 8) };
+    let x: u128 = unsafe { std::mem::transmute(xv) };
     println!("trans {:x}", x);
     let mut u64s = [0u64; 2];
-    unsafe { _mm_storeu_si128(u64s.as_mut_ptr() as *mut __m128i, xv)};
+    unsafe { _mm_storeu_si128(u64s.as_mut_ptr() as *mut __m128i, xv) };
     println!("store {:?}", u64s)
 }
