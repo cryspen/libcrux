@@ -1,6 +1,6 @@
 use core::arch::aarch64::*;
 
-#[derive(Clone,Copy)]
+#[derive(Clone, Copy)]
 pub struct FieldElement(pub u128);
 
 fn zero() -> FieldElement {
@@ -26,10 +26,10 @@ fn mul_wide(elem: &FieldElement, other: &FieldElement) -> (FieldElement, FieldEl
     let h0 = ((*elem).0 >> 64) as u64;
     let l1 = (*other).0 as u64;
     let h1 = ((*other).0 >> 64) as u64;
-    let low : u128 = unsafe {vmull_p64(l0, l1)};
-    let m1 : u128 = unsafe {vmull_p64(l0, h1)};
-    let m2 : u128 = unsafe {vmull_p64(l1, h0)};
-    let high : u128 = unsafe {vmull_p64(h0, h1)};
+    let low: u128 = unsafe { vmull_p64(l0, l1) };
+    let m1: u128 = unsafe { vmull_p64(l0, h1) };
+    let m2: u128 = unsafe { vmull_p64(l1, h0) };
+    let high: u128 = unsafe { vmull_p64(h0, h1) };
     let mid = m1 ^ m2;
     let m0 = mid << 64;
     let m1 = mid >> 64;
@@ -48,8 +48,8 @@ fn reduce(high: &FieldElement, low: &FieldElement) -> FieldElement {
 }
 
 fn mul(x: &FieldElement, y: &FieldElement) -> FieldElement {
-    let (high,low) = mul_wide(x,y);
-    reduce(&high,&low)
+    let (high, low) = mul_wide(x, y);
+    reduce(&high, &low)
 }
 
 impl crate::platform::GF128FieldElement for FieldElement {
@@ -73,4 +73,3 @@ impl crate::platform::GF128FieldElement for FieldElement {
         *self = mul(self, other)
     }
 }
-

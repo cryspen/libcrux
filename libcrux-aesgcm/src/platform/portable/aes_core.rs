@@ -588,7 +588,7 @@ impl crate::platform::AESState for State {
         aes_enc_last(self, key);
     }
 
-    fn aes_keygen_assist0<const RCON:i32>(&mut self, prev: &Self) {
+    fn aes_keygen_assist0<const RCON: i32>(&mut self, prev: &Self) {
         aes_keygen_assist0(self, prev, RCON as u8);
     }
 
