@@ -19,7 +19,7 @@ pub fn fmt(x: usize) -> String {
 
 
 macro_rules! impl_comp {
-    ($fun:ident, $portable_fun:expr, $neon_fun:expr, $rustcrypto_fun:expr) => {
+    ($fun:ident, $portable_fun:expr, $neon_fun:expr, $intel_fun:expr, $rustcrypto_fun:expr) => {
         // Comparing libcrux performance for different payload sizes and other implementations.
         fn $fun(c: &mut Criterion) {
             const PAYLOAD_SIZES: [usize; 3] = [128, 1024, 1024 * 1024 * 10];
@@ -63,6 +63,23 @@ macro_rules! impl_comp {
                     },
                 );
 
+//                #[cfg(all(target_arch = "x86", target_feature="aes"))]
+                group.bench_with_input(
+                    BenchmarkId::new("intel-aes-clmul", fmt(*payload_size)),
+                    payload_size,
+                    |b, payload_size| {
+                        b.iter_batched(
+                            || (randombytes(16), randombytes(12), randombytes(32), randombytes(*payload_size)),
+                            |(key,nonce,aad,payload)| {
+                                let mut ciphertext = vec![0; *payload_size];
+                                let mut tag = [0u8; 16];
+                                $intel_fun(&key,&nonce,&aad,&payload,&mut ciphertext, &mut tag);
+                            },
+                            BatchSize::SmallInput,
+                        )
+                    },
+                );
+
                 group.bench_with_input(
                     BenchmarkId::new("rust-crypto", fmt(*payload_size)),
                     payload_size,
@@ -95,7 +112,7 @@ fn rustcrypto_aes128_gcm_encrypt(key:&[u8], nonce:&[u8], aad:&[u8], plain:&[u8],
     tag.copy_from_slice(&ctxt[plain.len()..]);
 }
 
-impl_comp!(AES128_GCM, libcrux_aesgcm::portable::aes128_gcm_encrypt, libcrux_aesgcm::neon::aes128_gcm_encrypt, rustcrypto_aes128_gcm_encrypt);
+impl_comp!(AES128_GCM, libcrux_aesgcm::portable::aes128_gcm_encrypt, libcrux_aesgcm::neon::aes128_gcm_encrypt, libcrux_aesgcm::intel_ni::aes128_gcm_encrypt, rustcrypto_aes128_gcm_encrypt);
 
 fn benchmarks(c: &mut Criterion) {
     AES128_GCM(c);
