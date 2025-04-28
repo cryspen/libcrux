@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1745422292598,
+  "lastUpdate": 1745821855496,
   "repoUrl": "https://github.com/cryspen/libcrux",
   "entries": {
     "ML-KEM Benchmark": [
@@ -22426,6 +22426,251 @@ window.BENCHMARK_DATA = {
             "category": "ML-KEM",
             "keySize": 1024,
             "platform": "avx2"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Franziskus Kiefer",
+            "username": "Franziskus Kiefer"
+          },
+          "committer": {
+            "name": "GitHub",
+            "username": "GitHub"
+          },
+          "id": "b85c50db583f37f390e45f36445f1f0e2ed1105f",
+          "message": "Merge pull request #933 from cryspen/dependabot/github_actions/DeterminateSystems/nix-installer-action-17\n\nbuild(deps): bump DeterminateSystems/nix-installer-action from 16 to 17",
+          "timestamp": "2025-04-28T06:20:23Z",
+          "url": "/commits/b85c50db583f37f390e45f36445f1f0e2ed1105f"
+        },
+        "date": 1745821851671,
+        "bigger_is_better": false,
+        "benches": [
+          {
+            "name": "Key Generation",
+            "value": 49391,
+            "unit": "ns/iter",
+            "os": "ubuntu-latest_32",
+            "range": "± 1270",
+            "category": "ML-KEM",
+            "keySize": 512,
+            "platform": "portable",
+            "api": "external random"
+          },
+          {
+            "name": "Key Generation",
+            "value": 48705,
+            "unit": "ns/iter",
+            "os": "ubuntu-latest_32",
+            "range": "± 1692",
+            "category": "ML-KEM",
+            "keySize": 512,
+            "platform": "portable",
+            "api": "unpacked (external random)"
+          },
+          {
+            "name": "Key Generation",
+            "value": 76534,
+            "unit": "ns/iter",
+            "os": "ubuntu-latest_32",
+            "range": "± 1532",
+            "category": "ML-KEM",
+            "keySize": 768,
+            "platform": "portable",
+            "api": "external random"
+          },
+          {
+            "name": "Key Generation",
+            "value": 75536,
+            "unit": "ns/iter",
+            "os": "ubuntu-latest_32",
+            "range": "± 694",
+            "category": "ML-KEM",
+            "keySize": 768,
+            "platform": "portable",
+            "api": "unpacked (external random)"
+          },
+          {
+            "name": "Key Generation",
+            "value": 119373,
+            "unit": "ns/iter",
+            "os": "ubuntu-latest_32",
+            "range": "± 4545",
+            "category": "ML-KEM",
+            "keySize": 1024,
+            "platform": "portable",
+            "api": "external random"
+          },
+          {
+            "name": "Key Generation",
+            "value": 120415,
+            "unit": "ns/iter",
+            "os": "ubuntu-latest_32",
+            "range": "± 2038",
+            "category": "ML-KEM",
+            "keySize": 1024,
+            "platform": "portable",
+            "api": "unpacked (external random)"
+          },
+          {
+            "name": "Encapsulation",
+            "value": 53044,
+            "unit": "ns/iter",
+            "os": "ubuntu-latest_32",
+            "range": "± 320",
+            "category": "ML-KEM",
+            "keySize": 512,
+            "platform": "portable",
+            "api": "external random"
+          },
+          {
+            "name": "Encapsulation",
+            "value": 26281,
+            "unit": "ns/iter",
+            "os": "ubuntu-latest_32",
+            "range": "± 410",
+            "category": "ML-KEM",
+            "keySize": 512,
+            "platform": "portable",
+            "api": "unpacked (external random)"
+          },
+          {
+            "name": "Encapsulation",
+            "value": 84727,
+            "unit": "ns/iter",
+            "os": "ubuntu-latest_32",
+            "range": "± 1049",
+            "category": "ML-KEM",
+            "keySize": 768,
+            "platform": "portable",
+            "api": "external random"
+          },
+          {
+            "name": "Encapsulation",
+            "value": 31015,
+            "unit": "ns/iter",
+            "os": "ubuntu-latest_32",
+            "range": "± 284",
+            "category": "ML-KEM",
+            "keySize": 768,
+            "platform": "portable",
+            "api": "unpacked (external random)"
+          },
+          {
+            "name": "Encapsulation",
+            "value": 130767,
+            "unit": "ns/iter",
+            "os": "ubuntu-latest_32",
+            "range": "± 2200",
+            "category": "ML-KEM",
+            "keySize": 1024,
+            "platform": "portable",
+            "api": "external random"
+          },
+          {
+            "name": "Encapsulation",
+            "value": 43717,
+            "unit": "ns/iter",
+            "os": "ubuntu-latest_32",
+            "range": "± 556",
+            "category": "ML-KEM",
+            "keySize": 1024,
+            "platform": "portable",
+            "api": "unpacked (external random)"
+          },
+          {
+            "name": "Decapsulation",
+            "value": 59354,
+            "unit": "ns/iter",
+            "os": "ubuntu-latest_32",
+            "range": "± 285",
+            "category": "ML-KEM",
+            "keySize": 512,
+            "platform": "portable"
+          },
+          {
+            "name": "Decapsulation",
+            "value": 42096,
+            "unit": "ns/iter",
+            "os": "ubuntu-latest_32",
+            "range": "± 177",
+            "category": "ML-KEM",
+            "keySize": 512,
+            "platform": "portable",
+            "api": "unpacked"
+          },
+          {
+            "name": "Decapsulation",
+            "value": 99355,
+            "unit": "ns/iter",
+            "os": "ubuntu-latest_32",
+            "range": "± 6212",
+            "category": "ML-KEM",
+            "keySize": 768,
+            "platform": "portable"
+          },
+          {
+            "name": "Decapsulation",
+            "value": 52430,
+            "unit": "ns/iter",
+            "os": "ubuntu-latest_32",
+            "range": "± 389",
+            "category": "ML-KEM",
+            "keySize": 768,
+            "platform": "portable",
+            "api": "unpacked"
+          },
+          {
+            "name": "Decapsulation",
+            "value": 140530,
+            "unit": "ns/iter",
+            "os": "ubuntu-latest_32",
+            "range": "± 1817",
+            "category": "ML-KEM",
+            "keySize": 1024,
+            "platform": "portable"
+          },
+          {
+            "name": "Decapsulation",
+            "value": 72843,
+            "unit": "ns/iter",
+            "os": "ubuntu-latest_32",
+            "range": "± 1016",
+            "category": "ML-KEM",
+            "keySize": 1024,
+            "platform": "portable",
+            "api": "unpacked"
+          },
+          {
+            "name": "PK Validation",
+            "value": 1060,
+            "unit": "ns/iter",
+            "os": "ubuntu-latest_32",
+            "range": "± 83",
+            "category": "ML-KEM",
+            "keySize": 512,
+            "platform": "portable"
+          },
+          {
+            "name": "PK Validation",
+            "value": 1584,
+            "unit": "ns/iter",
+            "os": "ubuntu-latest_32",
+            "range": "± 124",
+            "category": "ML-KEM",
+            "keySize": 768,
+            "platform": "portable"
+          },
+          {
+            "name": "PK Validation",
+            "value": 2068,
+            "unit": "ns/iter",
+            "os": "ubuntu-latest_32",
+            "range": "± 159",
+            "category": "ML-KEM",
+            "keySize": 1024,
+            "platform": "portable"
           }
         ]
       }
