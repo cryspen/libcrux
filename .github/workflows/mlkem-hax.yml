@@ -85,6 +85,13 @@ jobs:
           nix profile install ./hax
       - name: ⤵ Install FStar
         run: nix profile install github:FStarLang/FStar/v2025.02.17
+        
+      - name: Debug
+        run: |
+          set -x
+          nix profile list
+          realpath ~/.nix-profile
+          tree ~/.nix-profile
 
       - uses: actions/download-artifact@v4
         with:
