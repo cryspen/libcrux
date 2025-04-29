@@ -208,14 +208,6 @@ typedef __m256i core_core_arch_x86___m256i;
 
 #define libcrux_intrinsics_avx2_mm_shuffle_epi8(a, b) (_mm_shuffle_epi8(a, b))
 
-// Extra operations
-
-#define libcrux_intrinsics_avx2_mm256_mullo_epi16_shifts(v, x0, x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12, x13, x14, x15) \
-  (_mm256_mullo_epi16(v, _mm256_set_epi16((int16_t)(1 << x0), (int16_t)(1 << x1), (int16_t)(1 << x2), (int16_t)(1 << x3), \
-                                          (int16_t)(1 << x4), (int16_t)(1 << x5), (int16_t)(1 << x6), (int16_t)(1 << x7), \
-                                          (int16_t)(1 << x8), (int16_t)(1 << x9), (int16_t)(1 << x10), (int16_t)(1 << x11), \
-                                          (int16_t)(1 << x12), (int16_t)(1 << x13), (int16_t)(1 << x14), (int16_t)(1 << x15))))
-
 #if defined(__cplusplus)
 }
 #endif
