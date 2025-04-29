@@ -89,6 +89,7 @@ jobs:
       - name: Debug
         run: |
           set -x
+          echo $PATH
           nix profile list
           realpath ~/.nix-profile
           tree ~/.nix-profile
