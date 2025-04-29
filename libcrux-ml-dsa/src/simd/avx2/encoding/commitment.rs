@@ -32,24 +32,27 @@ fn serialize_6(simd_unit: &Vec256) -> (Vec128, Vec128) {
             ),
         );
 
-        let adjacent_3_combined = mm256_mullo_epi16_shifts(
+        let adjacent_3_combined = mm256_mullo_epi16(
             adjacent_3_combined,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            4,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            4,
+            // Note: the explicit style `1i16 << N` matters for F* proofs here.
+            mm256_set_epi16(
+                1i16 << 0,
+                1i16 << 0,
+                1i16 << 0,
+                1i16 << 0,
+                1i16 << 0,
+                1i16 << 0,
+                1i16 << 0,
+                1i16 << 4,
+                1i16 << 0,
+                1i16 << 0,
+                1i16 << 0,
+                1i16 << 0,
+                1i16 << 0,
+                1i16 << 0,
+                1i16 << 0,
+                1i16 << 4,
+            ),
         );
         let adjacent_3_combined =
             mm256_srlv_epi32(adjacent_3_combined, mm256_set_epi32(0, 0, 0, 4, 0, 0, 0, 4));
