@@ -64,9 +64,6 @@ jobs:
         with:
           name: fstar-extractions
           path: .
-      - name: 🏃 Lax ML-KEM crate
-        working-directory: libcrux-ml-kem
-        run: ./hax.py prove --admit
 
   prove:
     runs-on: self-hosted
