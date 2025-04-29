@@ -71,8 +71,6 @@ jobs:
   prove:
     runs-on: self-hosted
     if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}
-    needs:
-      - extract
     steps:
       - uses: actions/checkout@v4
       - uses: actions/checkout@v4
@@ -93,11 +91,6 @@ jobs:
           nix profile list
           realpath ~/.nix-profile
           tree ~/.nix-profile
-
-      - uses: actions/download-artifact@v4
-        with:
-          name: fstar-extractions
-          path: .
 
       - name: 🏃 Prove ML-KEM crate
         working-directory: libcrux-ml-kem
