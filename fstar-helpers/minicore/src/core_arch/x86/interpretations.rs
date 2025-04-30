@@ -31,19 +31,42 @@ pub mod int_vec {
         FunArray::from_fn(|i| if (CONTROL >> i) % 2 == 0 { x[i] } else { y[i] })
     }
 
-    mod lift_lemmas {
-        //! This module provides lemmas allowing to lift the intrinsics modeled in `super` from their version operating on AVX2 vectors to functions operating on machine integer vectors (e.g. on `i32x8`).
+    pub use lemmas::flatten_circuit;
+    // ! This module provides lemmas allowing to lift the intrinsics modeled in `super` from their version operating on AVX2 vectors to functions operating on machine integer vectors (e.g. on `i32x8`).
+    pub mod lemmas {
+        use super::*;
 
         #[allow(unused)]
         use crate::core_arch::x86 as upstream;
         #[allow(unused)]
         use crate::core_arch::x86::__m256i;
 
+        /// An F* attribute that marks an item as being an lifting lemma.
+        #[allow(dead_code)]
+        #[hax_lib::fstar::before("irreducible")]
+        pub const ETA_MATCH_EXPAND: () = ();
+
+        #[hax_lib::fstar::before("[@@ $ETA_MATCH_EXPAND ]")]
+        #[hax_lib::lemma]
+        #[hax_lib::opaque]
+        pub fn pointwise_i32x8(x: i32x8) -> Proof<{ hax_lib::eq(x, x.pointwise()) }> {}
+
+        #[hax_lib::fstar::before("[@@ $ETA_MATCH_EXPAND ]")]
+        #[hax_lib::lemma]
+        #[hax_lib::opaque]
+        pub fn pointwise_i64x4(x: i64x4) -> Proof<{ hax_lib::eq(x, x.pointwise()) }> {}
+
+        /// An F* attribute that marks an item as being an lifting lemma.
+        #[allow(dead_code)]
+        #[hax_lib::fstar::before("irreducible")]
+        pub const LIFT_LEMMA: () = ();
+
         /// Derives automatically a lift lemma for a given function
-        macro_rules! mk {
+        macro_rules! mk_lift_lemma {
             ($name:ident$(<$(const $c:ident : $cty:ty),*>)?($($x:ident : $ty:ty),*) == $lhs:expr) => {
                 #[hax_lib::opaque]
                 #[hax_lib::lemma]
+                #[hax_lib::fstar::before("[@@ $LIFT_LEMMA ]")]
                 fn $name$(<$(const $c : $cty,)*>)?($($x : $ty,)*) -> Proof<{
                     hax_lib::eq(
                         unsafe {upstream::$name$(::<$($c,)*>)?($($x,)*)},
@@ -52,25 +75,48 @@ pub mod int_vec {
                 }> {}
             }
         }
-        mk!(
+        mk_lift_lemma!(
             _mm256_set1_epi32(x: i32) ==
             __m256i::from(super::_mm256_set1_epi32(x))
         );
-        mk!(
+        mk_lift_lemma!(
             _mm256_mul_epi32(x: __m256i, y: __m256i) ==
             __m256i::from(super::_mm256_mul_epi32(super::i32x8::from(x), super::i32x8::from(y)))
         );
-        mk!(
+        mk_lift_lemma!(
             _mm256_sub_epi32(x: __m256i, y: __m256i) ==
             __m256i::from(super::_mm256_sub_epi32(super::i32x8::from(x), super::i32x8::from(y)))
         );
-        mk!(
+        mk_lift_lemma!(
             _mm256_shuffle_epi32<const CONTROL: i32>(x: __m256i) ==
             __m256i::from(super::_mm256_shuffle_epi32::<CONTROL>(super::i32x8::from(x)))
         );
-        mk!(_mm256_blend_epi32<const CONTROL: i32>(x: __m256i, y: __m256i) ==
+        mk_lift_lemma!(_mm256_blend_epi32<const CONTROL: i32>(x: __m256i, y: __m256i) ==
             __m256i::from(super::_mm256_blend_epi32::<CONTROL>(super::i32x8::from(x), super::i32x8::from(y)))
         );
+
+        #[hax_lib::fstar::replace(
+            r#"
+        // irreducible let cast (t:inttype) (t':inttype) (x:int_t t): int_t t' = magic ()
+        // let hey (#t:inttype) (#t':inttype) (x:int_t t): Lemma (Rust_primitives.cast x == cast t t' x) = admit ()
+
+        let ${flatten_circuit} (): FStar.Tactics.Tac unit =
+            let open Tactics.Circuits in
+            flatten_circuit
+                [
+                    "Minicore";
+                    "FStar.FunctionalExtensionality";
+                    `%Rust_primitives.cast_tc; `%Rust_primitives.unsize_tc;
+                    "Core.Ops"; `%(.[]);
+                ]
+                (top_levels_of_attr (` $LIFT_LEMMA ))
+                (top_levels_of_attr (` $SIMPLIFICATION_LEMMA ))
+                (top_levels_of_attr (` $ETA_MATCH_EXPAND ));
+            ()
+        "#
+        )]
+        /// F* tactic: specialization of `Tactics.Circuits.flatten_circuit`.
+        pub fn flatten_circuit() {}
     }
 
     #[cfg(all(test, any(target_arch = "x86", target_arch = "x86_64")))]

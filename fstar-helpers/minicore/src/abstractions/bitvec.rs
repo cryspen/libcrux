@@ -286,7 +286,7 @@ pub mod int_vec_interp {
     /// An F* attribute that marks an item as being an interpretation lemma.
     #[allow(dead_code)]
     #[hax_lib::fstar::before("irreducible")]
-    const INTERPRETATION_LEMMA: () = ();
+    pub const SIMPLIFICATION_LEMMA: () = ();
 
     /// Derives interpretations functions, simplification lemmas and type
     /// synonyms.
@@ -317,16 +317,18 @@ pub mod int_vec_interp {
 
 
                     #[doc = concat!("Lemma that asserts that applying ", stringify!(BitVec::<$n>::from)," and then ", stringify!($name::from), " is the identity.")]
-                    #[hax_lib::fstar::before("[@@ $INTERPRETATION_LEMMA ]")]
+                    #[hax_lib::fstar::before("[@@ $SIMPLIFICATION_LEMMA ]")]
                     #[hax_lib::opaque]
                     #[hax_lib::lemma]
+                    #[hax_lib::fstar::smt_pat($name::from(BitVec::<$n>::from(x)))]
                     pub fn lemma_cancel_iv(x: $name) -> Proof<{
                         hax_lib::eq($name::from(BitVec::<$n>::from(x)), x)
                     }> {}
                     #[doc = concat!("Lemma that asserts that applying ", stringify!($name::from)," and then ", stringify!(BitVec::<$n>::from), " is the identity.")]
-                    #[hax_lib::fstar::before("[@@ $INTERPRETATION_LEMMA ]")]
+                    #[hax_lib::fstar::before("[@@ $SIMPLIFICATION_LEMMA ]")]
                     #[hax_lib::opaque]
                     #[hax_lib::lemma]
+                    #[hax_lib::fstar::smt_pat(BitVec::<$n>::from($name::from(x)))]
                     pub fn lemma_cancel_bv(x: BitVec<$n>) -> Proof<{
                         hax_lib::eq(BitVec::<$n>::from($name::from(x)), x)
                     }> {}
@@ -355,7 +357,7 @@ pub mod int_vec_interp {
 
     /// Lemma stating that converting an `i64x4` vector to a `BitVec<256>` and then into an `i32x8`
     /// yields the same result as directly converting the `i64x4` into an `i32x8`.
-    #[hax_lib::fstar::before("[@@ $INTERPRETATION_LEMMA ]")]
+    #[hax_lib::fstar::before("[@@ $SIMPLIFICATION_LEMMA ]")]
     #[hax_lib::opaque]
     #[hax_lib::lemma]
     fn lemma_rewrite_i64x4_bv_i32x8(
