@@ -146,7 +146,6 @@ pub fn mm_set_epi8(
     }
 }
 
-#[hax_lib::opaque]
 #[inline(always)]
 pub fn mm256_set_epi8(
     byte31: i8,
@@ -197,7 +196,6 @@ pub fn mm256_set1_epi16(constant: i16) -> Vec256 {
     unsafe { _mm256_set1_epi16(constant) }
 }
 
-#[hax_lib::opaque]
 #[inline(always)]
 pub fn mm256_set_epi16(
     input15: i16,
@@ -315,54 +313,9 @@ pub fn mm_sub_epi16(lhs: Vec128, rhs: Vec128) -> Vec128 {
     unsafe { _mm_sub_epi16(lhs, rhs) }
 }
 
-#[hax_lib::opaque]
 #[inline(always)]
 pub fn mm256_mullo_epi16(lhs: Vec256, rhs: Vec256) -> Vec256 {
     unsafe { _mm256_mullo_epi16(lhs, rhs) }
-}
-
-#[hax_lib::opaque]
-#[inline(always)]
-pub fn mm256_mullo_epi16_shifts(
-    vector: Vec256,
-    s15: u8,
-    s14: u8,
-    s13: u8,
-    s12: u8,
-    s11: u8,
-    s10: u8,
-    s9: u8,
-    s8: u8,
-    s7: u8,
-    s6: u8,
-    s5: u8,
-    s4: u8,
-    s3: u8,
-    s2: u8,
-    s1: u8,
-    s0: u8,
-) -> Vec256 {
-    mm256_mullo_epi16(
-        vector,
-        mm256_set_epi16(
-            1i16 << s15,
-            1i16 << s14,
-            1i16 << s13,
-            1i16 << s12,
-            1i16 << s11,
-            1i16 << s10,
-            1i16 << s9,
-            1i16 << s8,
-            1i16 << s7,
-            1i16 << s6,
-            1i16 << s5,
-            1i16 << s4,
-            1i16 << s3,
-            1i16 << s2,
-            1i16 << s1,
-            1i16 << s0,
-        ),
-    )
 }
 
 #[hax_lib::opaque]
@@ -540,7 +493,6 @@ pub fn mm_shuffle_epi8(vector: Vec128, control: Vec128) -> Vec128 {
     unsafe { _mm_shuffle_epi8(vector, control) }
 }
 
-#[hax_lib::opaque]
 #[inline(always)]
 pub fn mm256_shuffle_epi8(vector: Vec256, control: Vec256) -> Vec256 {
     unsafe { _mm256_shuffle_epi8(vector, control) }
