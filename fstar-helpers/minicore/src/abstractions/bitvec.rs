@@ -341,7 +341,12 @@ pub mod int_vec_interp {
         };
     }
 
-    // Defines the types `i32x8` and `i64x4`, and define intepretations function (`From` instances) from/to those types from/to bit vectors.
+    // Defines the types `i32x8` and `i64x4`, and define intepretations function
+    // (`From` instances) from/to those types from/to bit vectors.
+    //
+    // We will need more such interpreations in the future to handle more avx2
+    // intrinsics (e.g. `_mm256_add_epi16` works on 16 bits integers, not on i32
+    // or i64).
     interpretations!(256; i32x8 [i32; 8], i64x4 [i64; 4]);
 
     impl i64x4 {
