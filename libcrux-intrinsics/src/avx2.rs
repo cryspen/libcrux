@@ -1,7 +1,10 @@
-#[cfg(target_arch = "x86")]
+#[cfg(all(target_arch = "x86", not(hax)))]
 pub use core::arch::x86::*;
-#[cfg(target_arch = "x86_64")]
+#[cfg(all(target_arch = "x86_64", not(hax)))]
 pub use core::arch::x86_64::*;
+
+#[cfg(hax)]
+pub use minicore::arch::x86::*;
 
 pub type Vec256 = __m256i;
 pub type Vec128 = __m128i;
