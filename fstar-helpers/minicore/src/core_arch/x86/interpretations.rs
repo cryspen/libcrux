@@ -97,9 +97,6 @@ pub mod int_vec {
 
         #[hax_lib::fstar::replace(
             r#"
-        // irreducible let cast (t:inttype) (t':inttype) (x:int_t t): int_t t' = magic ()
-        // let hey (#t:inttype) (#t':inttype) (x:int_t t): Lemma (Rust_primitives.cast x == cast t t' x) = admit ()
-
         let ${flatten_circuit} (): FStar.Tactics.Tac unit =
             let open Tactics.Circuits in
             flatten_circuit
@@ -111,8 +108,7 @@ pub mod int_vec {
                 ]
                 (top_levels_of_attr (` $LIFT_LEMMA ))
                 (top_levels_of_attr (` $SIMPLIFICATION_LEMMA ))
-                (top_levels_of_attr (` $ETA_MATCH_EXPAND ));
-            ()
+                (top_levels_of_attr (` $ETA_MATCH_EXPAND ))
         "#
         )]
         /// F* tactic: specialization of `Tactics.Circuits.flatten_circuit`.
