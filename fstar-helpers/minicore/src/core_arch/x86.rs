@@ -12,6 +12,10 @@ pub(crate) mod upstream {
     pub use core::arch::x86_64::*;
 }
 
+
+pub mod opaque;
+pub use opaque::*;
+
 /// Conversions impls between `BitVec<N>` and `__mNi` types.
 #[hax_lib::exclude]
 #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
@@ -66,7 +70,8 @@ mod conversions {
 const _: () = {};
 
 #[allow(non_camel_case_types)]
-struct __m256(());
+#[hax_lib::opaque]
+pub struct __m256(());
 
 /// 256-bit wide integer vector type.
 /// Models `core::arch::x86::__m256i` or `core::arch::x86_64::__m256i` (the __m256i type defined by Intel, representing a 256-bit SIMD register).
