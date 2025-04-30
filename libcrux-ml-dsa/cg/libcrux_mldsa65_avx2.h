@@ -1356,10 +1356,15 @@ libcrux_ml_dsa_simd_avx2_encoding_commitment_serialize_6_normalized_serialize_6(
           (int8_t)-1, (int8_t)-1, (int8_t)-1, (int8_t)-1, (int8_t)-1,
           (int8_t)-1, (int8_t)-1, (int8_t)-1, (int8_t)-1, (int8_t)-1,
           (int8_t)-1, (int8_t)-1, (int8_t)9, (int8_t)8, (int8_t)1, (int8_t)0));
-  __m256i adjacent_3_combined0 =
-      libcrux_intrinsics_avx2_mm256_mullo_epi16_shifts(
-          adjacent_3_combined, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 4U, 0U, 0U, 0U, 0U,
-          0U, 0U, 0U, 4U);
+  __m256i adjacent_3_combined0 = libcrux_intrinsics_avx2_mm256_mullo_epi16(
+      adjacent_3_combined,
+      libcrux_intrinsics_avx2_mm256_set_epi16(
+          (int16_t)1 << 0U, (int16_t)1 << 0U, (int16_t)1 << 0U,
+          (int16_t)1 << 0U, (int16_t)1 << 0U, (int16_t)1 << 0U,
+          (int16_t)1 << 0U, (int16_t)1 << 4U, (int16_t)1 << 0U,
+          (int16_t)1 << 0U, (int16_t)1 << 0U, (int16_t)1 << 0U,
+          (int16_t)1 << 0U, (int16_t)1 << 0U, (int16_t)1 << 0U,
+          (int16_t)1 << 4U));
   __m256i adjacent_3_combined1 = libcrux_intrinsics_avx2_mm256_srlv_epi32(
       adjacent_3_combined0,
       libcrux_intrinsics_avx2_mm256_set_epi32(
