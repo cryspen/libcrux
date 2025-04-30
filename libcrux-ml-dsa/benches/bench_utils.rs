@@ -12,15 +12,15 @@ pub(crate) fn random_array<const L: usize>() -> [u8; L] {
 pub(crate) fn print_time(label: &str, d: std::time::Duration) {
     let micros = d.as_micros();
     let time = if micros < MILLI_PER_ITERATION_THRESHOLD {
-        format!("{} μs", micros / ITERATIONS as u128)
+        format!("{} μs/iter", micros / ITERATIONS as u128)
     } else if micros < SECOND_PER_ITERATION_THRESHOLD {
         format!(
-            "{:.2} ms",
+            "{:.2} ms/iter",
             (micros as f64 / (MICROS_PER_MILLI * ITERATIONS as f64))
         )
     } else {
         format!(
-            "{:.2}s",
+            "{:.2}s/iter",
             (micros as f64 / (MICROS_PER_SECOND * ITERATIONS as f64))
         )
     };
@@ -30,7 +30,7 @@ pub(crate) fn print_time(label: &str, d: std::time::Duration) {
         "\t".to_string()
     };
 
-    println!("{label}:{space}{time}");
+    println!("{label} ... bench:{space}{time}");
 }
 
 pub(crate) const ITERATIONS: usize = 10_000;
@@ -66,6 +66,7 @@ macro_rules! bench {
         }
         bench_utils::print_time(
             concat!(
+                "test ",
                 $implementation,
                 " ML-DSA/",
                 $keysize,
