@@ -319,8 +319,14 @@ pub unsafe fn _mm256_permute2x128_si256<const IMM8: i32>(a: __m256i, b: __m256i)
 }
 
 #[hax_lib::exclude]
-pub unsafe fn _mm256_storeu_si256(mem_addr: *mut __m256i, a: __m256i) { unimplemented!() }
+pub unsafe fn _mm256_storeu_si256(mem_addr: *mut __m256i, a: __m256i) {
+    unimplemented!()
+}
 #[hax_lib::exclude]
-pub unsafe fn _mm_loadu_si128(mem_addr: *const __m128i) -> __m128i { unimplemented!() }
+pub unsafe fn _mm_loadu_si128(mem_addr: *const __m128i) -> __m128i {
+    unimplemented!()
+}
 #[hax_lib::exclude]
-pub unsafe fn _mm256_loadu_si256(mem_addr: *const __m256i) -> __m256i {unimplemented!()}
+pub unsafe fn _mm256_loadu_si256(mem_addr: *const __m256i) -> __m256i {
+    unimplemented!()
+}

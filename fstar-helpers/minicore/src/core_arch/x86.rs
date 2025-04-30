@@ -12,7 +12,6 @@ pub(crate) mod upstream {
     pub use core::arch::x86_64::*;
 }
 
-
 pub mod opaque;
 pub use opaque::*;
 
