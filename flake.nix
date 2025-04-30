@@ -170,6 +170,7 @@
            , ninja
            , git
            , python3
+           , perl
            , craneLib
            , hax
            , googletest
@@ -197,6 +198,7 @@
                 git
                 python3
                 fstar.packages.${system}.default
+                perl
               ] ++ lib.optional checkHax [
                 hax
               ];
@@ -204,7 +206,7 @@
                 cd libcrux-ml-dsa
                 patchShebangs ./.
                 ${lib.optionalString checkHax ''
-                  python hax.py extract
+                  ./hax.sh extract
                 ''}
                 ./boring.sh --no-clean
                 cd cg

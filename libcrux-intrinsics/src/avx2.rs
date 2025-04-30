@@ -1,7 +1,10 @@
-#[cfg(target_arch = "x86")]
+#[cfg(all(target_arch = "x86", not(hax)))]
 pub use core::arch::x86::*;
-#[cfg(target_arch = "x86_64")]
+#[cfg(all(target_arch = "x86_64", not(hax)))]
 pub use core::arch::x86_64::*;
+
+#[cfg(hax)]
+pub use minicore::arch::x86::*;
 
 pub type Vec256 = __m256i;
 pub type Vec128 = __m128i;
@@ -143,7 +146,6 @@ pub fn mm_set_epi8(
     }
 }
 
-#[hax_lib::opaque]
 #[inline(always)]
 pub fn mm256_set_epi8(
     byte31: i8,
@@ -194,7 +196,6 @@ pub fn mm256_set1_epi16(constant: i16) -> Vec256 {
     unsafe { _mm256_set1_epi16(constant) }
 }
 
-#[hax_lib::opaque]
 #[inline(always)]
 pub fn mm256_set_epi16(
     input15: i16,
@@ -312,54 +313,9 @@ pub fn mm_sub_epi16(lhs: Vec128, rhs: Vec128) -> Vec128 {
     unsafe { _mm_sub_epi16(lhs, rhs) }
 }
 
-#[hax_lib::opaque]
 #[inline(always)]
 pub fn mm256_mullo_epi16(lhs: Vec256, rhs: Vec256) -> Vec256 {
     unsafe { _mm256_mullo_epi16(lhs, rhs) }
-}
-
-#[hax_lib::opaque]
-#[inline(always)]
-pub fn mm256_mullo_epi16_shifts(
-    vector: Vec256,
-    s15: u8,
-    s14: u8,
-    s13: u8,
-    s12: u8,
-    s11: u8,
-    s10: u8,
-    s9: u8,
-    s8: u8,
-    s7: u8,
-    s6: u8,
-    s5: u8,
-    s4: u8,
-    s3: u8,
-    s2: u8,
-    s1: u8,
-    s0: u8,
-) -> Vec256 {
-    mm256_mullo_epi16(
-        vector,
-        mm256_set_epi16(
-            1i16 << s15,
-            1i16 << s14,
-            1i16 << s13,
-            1i16 << s12,
-            1i16 << s11,
-            1i16 << s10,
-            1i16 << s9,
-            1i16 << s8,
-            1i16 << s7,
-            1i16 << s6,
-            1i16 << s5,
-            1i16 << s4,
-            1i16 << s3,
-            1i16 << s2,
-            1i16 << s1,
-            1i16 << s0,
-        ),
-    )
 }
 
 #[hax_lib::opaque]
@@ -481,55 +437,55 @@ pub fn mm256_xor_si256(lhs: Vec256, rhs: Vec256) -> Vec256 {
 #[inline(always)]
 pub fn mm256_srai_epi16<const SHIFT_BY: i32>(vector: Vec256) -> Vec256 {
     debug_assert!(SHIFT_BY >= 0 && SHIFT_BY < 16);
-    unsafe { _mm256_srai_epi16(vector, SHIFT_BY) }
+    unsafe { _mm256_srai_epi16::<SHIFT_BY>(vector) }
 }
 
 #[hax_lib::opaque]
 #[inline(always)]
 pub fn mm256_srai_epi32<const SHIFT_BY: i32>(vector: Vec256) -> Vec256 {
     debug_assert!(SHIFT_BY >= 0 && SHIFT_BY < 32);
-    unsafe { _mm256_srai_epi32(vector, SHIFT_BY) }
+    unsafe { _mm256_srai_epi32::<SHIFT_BY>(vector) }
 }
 
 #[hax_lib::opaque]
 #[inline(always)]
 pub fn mm256_srli_epi16<const SHIFT_BY: i32>(vector: Vec256) -> Vec256 {
     debug_assert!(SHIFT_BY >= 0 && SHIFT_BY < 16);
-    unsafe { _mm256_srli_epi16(vector, SHIFT_BY) }
+    unsafe { _mm256_srli_epi16::<SHIFT_BY>(vector) }
 }
 
 #[hax_lib::opaque]
 #[inline(always)]
 pub fn mm256_srli_epi32<const SHIFT_BY: i32>(vector: Vec256) -> Vec256 {
     debug_assert!(SHIFT_BY >= 0 && SHIFT_BY < 32);
-    unsafe { _mm256_srli_epi32(vector, SHIFT_BY) }
+    unsafe { _mm256_srli_epi32::<SHIFT_BY>(vector) }
 }
 
 #[hax_lib::opaque]
 #[inline(always)]
 pub fn mm_srli_epi64<const SHIFT_BY: i32>(vector: Vec128) -> Vec128 {
     debug_assert!(SHIFT_BY >= 0 && SHIFT_BY < 64);
-    unsafe { _mm_srli_epi64(vector, SHIFT_BY) }
+    unsafe { _mm_srli_epi64::<SHIFT_BY>(vector) }
 }
 
 #[inline(always)]
 pub fn mm256_srli_epi64<const SHIFT_BY: i32>(vector: Vec256) -> Vec256 {
     debug_assert!(SHIFT_BY >= 0 && SHIFT_BY < 64);
-    unsafe { _mm256_srli_epi64(vector, SHIFT_BY) }
+    unsafe { _mm256_srli_epi64::<SHIFT_BY>(vector) }
 }
 
 #[hax_lib::opaque]
 #[inline(always)]
 pub fn mm256_slli_epi16<const SHIFT_BY: i32>(vector: Vec256) -> Vec256 {
     debug_assert!(SHIFT_BY >= 0 && SHIFT_BY < 16);
-    unsafe { _mm256_slli_epi16(vector, SHIFT_BY) }
+    unsafe { _mm256_slli_epi16::<SHIFT_BY>(vector) }
 }
 
 #[hax_lib::opaque]
 #[inline(always)]
 pub fn mm256_slli_epi32<const SHIFT_BY: i32>(vector: Vec256) -> Vec256 {
     debug_assert!(SHIFT_BY >= 0 && SHIFT_BY < 32);
-    unsafe { _mm256_slli_epi32(vector, SHIFT_BY) }
+    unsafe { _mm256_slli_epi32::<SHIFT_BY>(vector) }
 }
 
 #[inline(always)]
@@ -537,7 +493,6 @@ pub fn mm_shuffle_epi8(vector: Vec128, control: Vec128) -> Vec128 {
     unsafe { _mm_shuffle_epi8(vector, control) }
 }
 
-#[hax_lib::opaque]
 #[inline(always)]
 pub fn mm256_shuffle_epi8(vector: Vec256, control: Vec256) -> Vec256 {
     unsafe { _mm256_shuffle_epi8(vector, control) }
@@ -547,14 +502,14 @@ pub fn mm256_shuffle_epi8(vector: Vec256, control: Vec256) -> Vec256 {
 #[inline(always)]
 pub fn mm256_shuffle_epi32<const CONTROL: i32>(vector: Vec256) -> Vec256 {
     debug_assert!(CONTROL >= 0 && CONTROL < 256);
-    unsafe { _mm256_shuffle_epi32(vector, CONTROL) }
+    unsafe { _mm256_shuffle_epi32::<CONTROL>(vector) }
 }
 
 #[hax_lib::opaque]
 #[inline(always)]
 pub fn mm256_permute4x64_epi64<const CONTROL: i32>(vector: Vec256) -> Vec256 {
     debug_assert!(CONTROL >= 0 && CONTROL < 256);
-    unsafe { _mm256_permute4x64_epi64(vector, CONTROL) }
+    unsafe { _mm256_permute4x64_epi64::<CONTROL>(vector) }
 }
 
 #[hax_lib::opaque]
@@ -607,28 +562,28 @@ pub fn mm256_packs_epi32(lhs: Vec256, rhs: Vec256) -> Vec256 {
 #[inline(always)]
 pub fn mm256_extracti128_si256<const CONTROL: i32>(vector: Vec256) -> Vec128 {
     debug_assert!(CONTROL == 0 || CONTROL == 1);
-    unsafe { _mm256_extracti128_si256(vector, CONTROL) }
+    unsafe { _mm256_extracti128_si256::<CONTROL>(vector) }
 }
 
 #[hax_lib::opaque]
 #[inline(always)]
 pub fn mm256_inserti128_si256<const CONTROL: i32>(vector: Vec256, vector_i128: Vec128) -> Vec256 {
     debug_assert!(CONTROL == 0 || CONTROL == 1);
-    unsafe { _mm256_inserti128_si256(vector, vector_i128, CONTROL) }
+    unsafe { _mm256_inserti128_si256::<CONTROL>(vector, vector_i128) }
 }
 
 #[hax_lib::opaque]
 #[inline(always)]
 pub fn mm256_blend_epi16<const CONTROL: i32>(lhs: Vec256, rhs: Vec256) -> Vec256 {
     debug_assert!(CONTROL >= 0 && CONTROL < 256);
-    unsafe { _mm256_blend_epi16(lhs, rhs, CONTROL) }
+    unsafe { _mm256_blend_epi16::<CONTROL>(lhs, rhs) }
 }
 
 #[hax_lib::opaque]
 #[inline(always)]
 pub fn mm256_blend_epi32<const CONTROL: i32>(lhs: Vec256, rhs: Vec256) -> Vec256 {
     debug_assert!(CONTROL >= 0 && CONTROL < 256);
-    unsafe { _mm256_blend_epi32(lhs, rhs, CONTROL) }
+    unsafe { _mm256_blend_epi32::<CONTROL>(lhs, rhs) }
 }
 
 // This is essentially _mm256_blendv_ps adapted for use with the Vec256 type.
