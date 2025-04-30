@@ -13,6 +13,11 @@ pub type Vec256Float = __m256;
 #[hax_lib::opaque]
 #[inline(always)]
 pub fn mm256_storeu_si256_u8(output: &mut [u8], vector: Vec256) {
+    // Note: in this module the `debug_assert_eq!` are essentially sanity
+    // checks. In the context of hax, those are counterproductive. Our models
+    // are total: for example, `mm256_extracti128_si256` asserts CONTROL is
+    // either zero or one, but the intel spec allows any value, so our model
+    // does. Thus, we guard those debug asserts so that they don't appear in F*.
     #[cfg(not(hax))]
     debug_assert_eq!(output.len(), 32);
     unsafe {
