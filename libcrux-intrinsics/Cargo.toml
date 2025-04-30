@@ -13,6 +13,9 @@ exclude = ["/proofs"]
 [dependencies]
 hax-lib.workspace = true
 
+[target.'cfg(hax)'.dependencies]
+minicore = { path = "../fstar-helpers/minicore" }
+
 [features]
 simd128 = []
 simd256 = []
