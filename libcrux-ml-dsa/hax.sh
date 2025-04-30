@@ -10,11 +10,8 @@ function extract_all() {
 
     extract libcrux-intrinsics \
         -C --features simd128,simd256 ";" \
-        into --output-dir proofs/fstar/extraction/temp \
-        fstar --z3rlimit 80
+        into fstar --z3rlimit 80
     
-    fixup-minicore libcrux-intrinsics
-
     extract libcrux-ml-dsa \
         -C --features simd128,simd256 ";" \
         into -i "+**" \
@@ -23,10 +20,7 @@ function extract_all() {
              -i "-libcrux_ml_dsa::hash_functions::neon::*" \
              -i "+:libcrux_ml_dsa::hash_functions::*::*" \
              -i "-**::types::non_hax_impls::**" \
-             --output-dir proofs/fstar/extraction/temp \
         fstar --z3rlimit 80
-
-    fixup-minicore libcrux-ml-dsa
 }
 
 function prove() {
@@ -40,38 +34,6 @@ function prove() {
     JOBS="${JOBS:-$(nproc --all)}"
     JOBS="${JOBS:-4}"
     make -C proofs/fstar/extraction -j $JOBS "$@"
-}
-
-# `fixup-minicore CRATE` adjusts the F* extraction output of `CRATE` to use modules from `minicore` instead of `core`.
-# This is necessary because our F* models of the Rust `core` library and the extracted code from `minicore` overlap,
-# particularly for `core::arch::*`. The `minicore` versions offer more accurate and specialized models.
-#
-# This function scans all modules defined in `minicore`, and for each one, replaces every occurrence of `Core<M>`
-# in the extracted code of `CRATE` with `Minicore<M>`, but only if that `Minicore<M>` module actually exists in `minicore`.
-function fixup-minicore() {
-    go_to fstar-helpers/minicore/proofs/fstar/extraction
-    # List all modules provided by minicore
-    minicore_modules=$(find . -type f -name '*Minicore*' -exec basename {} .fst ';')
-
-    go_to "$1"/proofs/fstar/extraction/temp
-
-    for minicore_module in $minicore_modules; do
-        core_module="${minicore_module//Minicore/Core}"
-        msg "$BLUE" "fixup-minicore '$core_module' -> '$minicore_module'"
-        find . -type f -exec perl -pi -e 's/\Q'"$core_module"'\E/'"$minicore_module"'/g' {} +
-    done
-
-    find . -type f | while IFS= read -r file; do
-        if [ ! -e "../$file" ] || ! cmp -s "$file" "../$file"; then
-            rm -f "../$file"
-            cat "$file" > "../$file"
-        fi
-    done
-
-    cd ..
-
-    rm -f temp/*
-    rmdir temp
 }
 
 function init_vars() {
