@@ -4,11 +4,11 @@
  * SPDX-License-Identifier: MIT or Apache-2.0
  *
  * This code was generated with the following revisions:
- * Charon: 763350c6948d5594d3017ecb93273bc41c1a4e1d
- * Eurydice: 36a5ed7dd6b61b5cd3d69a010859005912d21537
- * Karamel: bf9b89d76dd24e2ceaaca32de3535353e7b6bc01
+ * Charon: bba1aa4cae0326f1d94d466f8263e85dd9f14efe
+ * Eurydice: 9f45c5b6710ac03aa157299391233be90bc1565c
+ * Karamel: b7bdca21d1dbfd635f6ff432c0d8da3d5ca2edbc
  * F*: 4b3fc11774003a6ff7c09500ecb5f0145ca6d862
- * Libcrux: f3f15359a852405a81628f982f2debc4d50fff30
+ * Libcrux: e023f8453e3c2f240705192cb557223357129b0d
  */
 
 #ifndef __internal_libcrux_sha3_avx2_H
@@ -39,6 +39,50 @@ libcrux_sha3_generic_keccak_KeccakState_55
 libcrux_sha3_generic_keccak_new_89_a6(void);
 
 /**
+A monomorphic instance of libcrux_sha3.traits.set_ij
+with types core_core_arch_x86___m256i
+with const generics
+- N= 4
+*/
+void libcrux_sha3_traits_set_ij_a6(__m256i *arr, size_t i, size_t j,
+                                   __m256i value);
+
+/**
+A monomorphic instance of libcrux_sha3.traits.get_ij
+with types core_core_arch_x86___m256i
+with const generics
+- N= 4
+*/
+__m256i libcrux_sha3_traits_get_ij_a6(__m256i *arr, size_t i, size_t j);
+
+/**
+This function found in impl {libcrux_sha3::generic_keccak::KeccakState<T,
+N>[TraitClause@0, TraitClause@1]}
+*/
+/**
+A monomorphic instance of libcrux_sha3.generic_keccak.get_80
+with types core_core_arch_x86___m256i
+with const generics
+- N= 4
+*/
+__m256i libcrux_sha3_generic_keccak_get_80_a6(
+    libcrux_sha3_generic_keccak_KeccakState_55 *self, size_t i, size_t j);
+
+/**
+This function found in impl {libcrux_sha3::generic_keccak::KeccakState<T,
+N>[TraitClause@0, TraitClause@1]}
+*/
+/**
+A monomorphic instance of libcrux_sha3.generic_keccak.set_80
+with types core_core_arch_x86___m256i
+with const generics
+- N= 4
+*/
+void libcrux_sha3_generic_keccak_set_80_a6(
+    libcrux_sha3_generic_keccak_KeccakState_55 *self, size_t i, size_t j,
+    __m256i v);
+
+/**
 A monomorphic instance of libcrux_sha3.generic_keccak.theta_rho
 with types core_core_arch_x86___m256i
 with const generics
@@ -46,6 +90,21 @@ with const generics
 */
 void libcrux_sha3_generic_keccak_theta_rho_a6(
     libcrux_sha3_generic_keccak_KeccakState_55 *s);
+
+/**
+This function found in impl {(core::clone::Clone for
+libcrux_sha3::generic_keccak::KeccakState<T, N>[TraitClause@0,
+TraitClause@2])#3}
+*/
+/**
+A monomorphic instance of libcrux_sha3.generic_keccak.clone_db
+with types core_core_arch_x86___m256i
+with const generics
+- N= 4
+*/
+libcrux_sha3_generic_keccak_KeccakState_55
+libcrux_sha3_generic_keccak_clone_db_a6(
+    libcrux_sha3_generic_keccak_KeccakState_55 *self);
 
 /**
 A monomorphic instance of libcrux_sha3.generic_keccak.pi
