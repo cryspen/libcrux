@@ -2,8 +2,81 @@
 //!
 //! This module provides a purely Rust implementation of selected operations from
 //! `core::arch::x86` and `core::arch::x86_64`.
+//!
+//! # Guide — Adding a New Intrinsic to the `core_arch::x86` Model
+//!
+//! ## Introduction — Why & How We Model SIMD
+//!
+//! In order to verify code that uses SIMD, every intrinsic has to be modeled.  
+//! Your crate already provides the scaffolding:
+//!
+//! * **`src/core_arch/x86/opaque.rs`** — list of **empty** intrinsics (stubs).  
+//! * **`src/core_arch/x86/{sse2,avx,avx2,…}.rs`** — where *real* models belong.
+//!
+//! This guide shows an end‑to‑end path:
+//!
+//! 1. **Locate** the intrinsic in upstream docs.  
+//! 2. **Pick a representation** (bit‑vector, integer vector, or both).  
+//! 3. **Move** the item out of `opaque.rs` (if it is defined here).  
+//! 4. **Implement** the model and (optionally) an interpretation with a lift lemma.  
+//! 5. **Test**.  
+//!
+//! ## Choosing Your Semantic Representation
+//!
+//! | Representation | Good for | Extra work |
+//! |----------------|----------|------------|
+//! | **Bit‑vector** (`BitVec<256>`) | Bit-wise proofs, shuffles, masking | None |
+//! | **Integer vector** (`i32x8`, `i64x4`, …) | Lane‑wise integer reasoning | Add lift lemma |
+//!
+//! ## Driving Example – `_mm256_mul_epi32`
+//!
+//! We add the AVX2 "multiply packed 32‑bit integers" intrinsic.
+//!
+//!  1. *Locate* in <https://doc.rust-lang.org/stable/core/arch/x86/> → click **Source**. Path shows `core_arch/src/x86/avx2.rs`: this intrinsics needs to be added to the  `avx2` sub module of `x86.rs`.
+//!  2. **Delete the stub** from `opaque.rs`
+//!  3. **Implement** the bit‑vector spec. (file `x86.rs`, module `avx2`)
+//!  4. *(Optional)* add an `i32x8` interpretation + lift lemma. (file `x86/interpretations.rs`)
+//!  5. **Unit‑test** equivalence.
+//!
+//! ### (step 3) Bit‑Vector Model (if needed)
+//! In the case of `_mm256_mul_epi32` you probably don't want to have a bit vec model. You would have to write a bit vec addition primitive first.
+//! In this case, we just declare an opaque `_mm256_mul_epi32` in `x86::avx2`.
+//!
+//! ```rust
+//! #[hax_lib::opaque]
+//! pub fn _mm256_mul_epi32(_: __m256i, _: __m256i) -> __m256i {
+//!     unimplemented!()
+//! }
+//! ```
+//!
+//! ### (step 4) Integer‑Vector Interpretation & Lift Lemma (if needed)
+//! In `minicore::core_arch::x86::interpretations::int_vec`, we add the following model:
+//!
+//! ```rust
+//! pub fn _mm256_mul_epi32(x: i32x8, y: i32x8) -> i64x4 {
+//!     i64x4::from_fn(|i| (x[i * 2] as i64) * (y[i * 2] as i64))
+//! }
+//! ```
+//!
+//! And a lift lemma in `minicore::core_arch::x86::interpretations::int_vec::lemmas`:
+//! ```rust
+//! mk_lift_lemma!(
+//!     _mm256_mul_epi32(x: __m256i, y: __m256i) ==
+//!     __m256i::from(super::_mm256_mul_epi32(super::i32x8::from(x), super::i32x8::from(y)))
+//! );
+//! ```
+//!
+//! ### (step 5) Unit Test
+//! In `minicore::core_arch::x86::interpretations::int_vec::tests`:
+//! ```rust
+//! mk!(_mm256_mul_epi32(x: BitVec, y: BitVec));
+//! ```
+//!
+//! `mk!` will create a test function that tests that our model of `_mm256_mul_epi32` and its original definition are equivalent for 1000 random values of `x` and `y`.
+//!
 #![allow(clippy::too_many_arguments)]
 
+pub mod interpretations;
 use crate::abstractions::{bit::*, bitvec::*, funarr::*};
 
 pub(crate) mod upstream {
@@ -125,6 +198,15 @@ pub mod avx {
         BitVec::from_fn(|i| vector[i])
     }
 
+    /// This is opaque to Hax: it is defined only via the integer
+    /// interpretation. See `interpretations::int_vec::_mm256_set1_epi32`.
+    #[hax_lib::opaque]
+    pub fn _mm256_set1_epi32(_: i32) -> __m256i {
+        unimplemented!()
+    }
+
+    /// This is opaque to Hax: we have lemmas about this intrinsics
+    /// composed with others. See e.g. `_rw_mm256_sllv_epi32`.
     #[hax_lib::opaque]
     pub fn _mm256_set_epi32(
         _e0: i32,
@@ -139,6 +221,8 @@ pub mod avx {
         todo!()
     }
 
+    /// This is opaque to Hax: we have lemmas about this intrinsics
+    /// composed with others. See e.g. `_rw_mm256_mullo_epi16_shifts`.
     #[hax_lib::opaque]
     pub fn _mm256_set_epi16(
         _e00: i16,
@@ -161,6 +245,8 @@ pub mod avx {
         todo!()
     }
 
+    /// This is opaque to Hax: we have lemmas about this intrinsics
+    /// composed with others. See e.g. `_rw_mm256_shuffle_epi8`.
     #[hax_lib::opaque]
     pub fn _mm256_set_epi8(
         _e00: i8,
@@ -202,6 +288,27 @@ pub mod avx {
 pub use avx2::*;
 pub mod avx2 {
     use super::*;
+
+    #[hax_lib::opaque]
+    pub fn _mm256_blend_epi32<const IMM8: i32>(_: __m256i, _: __m256i) -> __m256i {
+        unimplemented!()
+    }
+
+    #[hax_lib::opaque]
+    pub fn _mm256_shuffle_epi32<const MASK: i32>(_: __m256i) -> __m256i {
+        unimplemented!()
+    }
+
+    #[hax_lib::opaque]
+    pub fn _mm256_sub_epi32(_: __m256i, _: __m256i) -> __m256i {
+        unimplemented!()
+    }
+
+    #[hax_lib::opaque]
+    pub fn _mm256_mul_epi32(_: __m256i, _: __m256i) -> __m256i {
+        unimplemented!()
+    }
+
     #[hax_lib::exclude]
     pub fn _mm_storeu_si128(output: *mut __m128i, a: __m128i) {
         // This is equivalent to `*output = a`
