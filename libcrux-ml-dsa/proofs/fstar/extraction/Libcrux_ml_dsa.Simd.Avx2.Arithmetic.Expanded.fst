@@ -1,4 +1,4 @@
-module Libcrux_ml_dsa.Simd.Avx2.Arithmetic.Hello
+module Libcrux_ml_dsa.Simd.Avx2.Arithmetic.Expanded
 #set-options "--fuel 0 --ifuel 1 --z3rlimit 80"
 open Core
 open FStar.Mul
