@@ -394,6 +394,7 @@ const _: () = {
     #[hax_lib::fstar::before("[@@ $REWRITE_RULE ]")]
     #[hax_lib::lemma]
     #[hax_lib::opaque]
+    #[allow(unused_variables)]
     fn _rw_mm_shuffle_epi8(
         vector: __m128i,
         e15: i8,
@@ -434,6 +435,7 @@ const _: () = {
     #[hax_lib::fstar::before("[@@ $REWRITE_RULE ]")]
     #[hax_lib::lemma]
     #[hax_lib::opaque]
+    #[allow(unused_variables)]
     fn _rw_mm256_shuffle_epi8(
         vector: __m256i,
         byte31: i8,
