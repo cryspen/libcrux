@@ -126,11 +126,15 @@ pub mod avx {
         BitVec::from_fn(|i| vector[i])
     }
 
+    /// This is opaque to Hax: it is defined only via the integer
+    /// interpretation. See `interpretations::int_vec::_mm256_set1_epi32`.
     #[hax_lib::opaque]
     pub fn _mm256_set1_epi32(_: i32) -> __m256i {
         unimplemented!()
     }
 
+    /// This is opaque to Hax: we have lemmas about this intrinsics
+    /// composed with others. See e.g. `_rw_mm256_sllv_epi32`.
     #[hax_lib::opaque]
     pub fn _mm256_set_epi32(
         _e0: i32,
@@ -145,6 +149,8 @@ pub mod avx {
         todo!()
     }
 
+    /// This is opaque to Hax: we have lemmas about this intrinsics
+    /// composed with others. See e.g. `_rw_mm256_mullo_epi16_shifts`.
     #[hax_lib::opaque]
     pub fn _mm256_set_epi16(
         _e00: i16,
@@ -167,6 +173,8 @@ pub mod avx {
         todo!()
     }
 
+    /// This is opaque to Hax: we have lemmas about this intrinsics
+    /// composed with others. See e.g. `_rw_mm256_shuffle_epi8`.
     #[hax_lib::opaque]
     pub fn _mm256_set_epi8(
         _e00: i8,
