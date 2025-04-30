@@ -24,6 +24,9 @@
 //! `minicore` is designed as a reference model for formal verification and reasoning about Rust programs.
 //! By providing a readable, well-specified version of `core`'s behavior, it serves as a foundation for
 //! proof assistants and other verification tools.
+
+// This recursion limit is necessary for macro `minicore::core_arch::x86::interpretations::int_vec::tests::mk!`.
+// We test functions with const generics, the macro generate a test per possible (const generic) control value.
 #![recursion_limit = "512"]
 pub mod abstractions;
 pub mod core_arch;
