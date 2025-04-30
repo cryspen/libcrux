@@ -8,7 +8,7 @@
  * Eurydice: 36a5ed7dd6b61b5cd3d69a010859005912d21537
  * Karamel: bf9b89d76dd24e2ceaaca32de3535353e7b6bc01
  * F*: 4b3fc11774003a6ff7c09500ecb5f0145ca6d862
- * Libcrux: fe232ff426a7be69ae8434cdae0917405ac9d7a2
+ * Libcrux: 8c44e89dc61e0511852eeb7bb039160c69481a30
  */
 
 #ifndef __libcrux_mldsa65_avx2_H
@@ -1332,6 +1332,58 @@ libcrux_ml_dsa_simd_avx2_encoding_commitment_serialize_4(__m256i *simd_unit) {
       simd_unit);
 }
 
+typedef struct core_core_arch_x86___m128i_x2_s {
+  __m128i fst;
+  __m128i snd;
+} core_core_arch_x86___m128i_x2;
+
+KRML_ATTRIBUTE_TARGET("avx2")
+static KRML_MUSTINLINE core_core_arch_x86___m128i_x2
+libcrux_ml_dsa_simd_avx2_encoding_commitment_serialize_6_normalized_serialize_6(
+    __m256i *simd_unit) {
+  __m256i adjacent_2_combined = libcrux_intrinsics_avx2_mm256_sllv_epi32(
+      simd_unit[0U], libcrux_intrinsics_avx2_mm256_set_epi32(
+                         (int32_t)0, (int32_t)26, (int32_t)0, (int32_t)26,
+                         (int32_t)0, (int32_t)26, (int32_t)0, (int32_t)26));
+  __m256i adjacent_2_combined0 = libcrux_intrinsics_avx2_mm256_srli_epi64(
+      (int32_t)26, adjacent_2_combined, __m256i);
+  __m256i adjacent_3_combined = libcrux_intrinsics_avx2_mm256_shuffle_epi8(
+      adjacent_2_combined0,
+      libcrux_intrinsics_avx2_mm256_set_epi8(
+          (int8_t)-1, (int8_t)-1, (int8_t)-1, (int8_t)-1, (int8_t)-1,
+          (int8_t)-1, (int8_t)-1, (int8_t)-1, (int8_t)-1, (int8_t)-1,
+          (int8_t)-1, (int8_t)-1, (int8_t)9, (int8_t)8, (int8_t)1, (int8_t)0,
+          (int8_t)-1, (int8_t)-1, (int8_t)-1, (int8_t)-1, (int8_t)-1,
+          (int8_t)-1, (int8_t)-1, (int8_t)-1, (int8_t)-1, (int8_t)-1,
+          (int8_t)-1, (int8_t)-1, (int8_t)9, (int8_t)8, (int8_t)1, (int8_t)0));
+  __m256i adjacent_3_combined0 = libcrux_intrinsics_avx2_mm256_mullo_epi16(
+      adjacent_3_combined,
+      libcrux_intrinsics_avx2_mm256_set_epi16(
+          (int16_t)1 << 0U, (int16_t)1 << 0U, (int16_t)1 << 0U,
+          (int16_t)1 << 0U, (int16_t)1 << 0U, (int16_t)1 << 0U,
+          (int16_t)1 << 0U, (int16_t)1 << 4U, (int16_t)1 << 0U,
+          (int16_t)1 << 0U, (int16_t)1 << 0U, (int16_t)1 << 0U,
+          (int16_t)1 << 0U, (int16_t)1 << 0U, (int16_t)1 << 0U,
+          (int16_t)1 << 4U));
+  __m256i adjacent_3_combined1 = libcrux_intrinsics_avx2_mm256_srlv_epi32(
+      adjacent_3_combined0,
+      libcrux_intrinsics_avx2_mm256_set_epi32(
+          (int32_t)0, (int32_t)0, (int32_t)0, (int32_t)4, (int32_t)0,
+          (int32_t)0, (int32_t)0, (int32_t)4));
+  __m128i lower =
+      libcrux_intrinsics_avx2_mm256_castsi256_si128(adjacent_3_combined1);
+  __m128i upper = libcrux_intrinsics_avx2_mm256_extracti128_si256(
+      (int32_t)1, adjacent_3_combined1, __m128i);
+  return (core_core_arch_x86___m128i_x2{lower, upper});
+}
+
+KRML_ATTRIBUTE_TARGET("avx2")
+static KRML_MUSTINLINE core_core_arch_x86___m128i_x2
+libcrux_ml_dsa_simd_avx2_encoding_commitment_serialize_6(__m256i *simd_unit) {
+  return libcrux_ml_dsa_simd_avx2_encoding_commitment_serialize_6_normalized_serialize_6(
+      simd_unit);
+}
+
 KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE void
 libcrux_ml_dsa_simd_avx2_encoding_commitment_serialize(__m256i *simd_unit,
@@ -1352,48 +1404,20 @@ libcrux_ml_dsa_simd_avx2_encoding_commitment_serialize(__m256i *simd_unit,
       break;
     }
     case 6U: {
-      __m256i adjacent_2_combined = libcrux_intrinsics_avx2_mm256_sllv_epi32(
-          simd_unit[0U], libcrux_intrinsics_avx2_mm256_set_epi32(
-                             (int32_t)0, (int32_t)26, (int32_t)0, (int32_t)26,
-                             (int32_t)0, (int32_t)26, (int32_t)0, (int32_t)26));
-      __m256i adjacent_2_combined0 = libcrux_intrinsics_avx2_mm256_srli_epi64(
-          (int32_t)26, adjacent_2_combined, __m256i);
-      __m256i adjacent_3_combined = libcrux_intrinsics_avx2_mm256_shuffle_epi8(
-          adjacent_2_combined0,
-          libcrux_intrinsics_avx2_mm256_set_epi8(
-              (int8_t)-1, (int8_t)-1, (int8_t)-1, (int8_t)-1, (int8_t)-1,
-              (int8_t)-1, (int8_t)-1, (int8_t)-1, (int8_t)-1, (int8_t)-1,
-              (int8_t)-1, (int8_t)-1, (int8_t)9, (int8_t)8, (int8_t)1,
-              (int8_t)0, (int8_t)-1, (int8_t)-1, (int8_t)-1, (int8_t)-1,
-              (int8_t)-1, (int8_t)-1, (int8_t)-1, (int8_t)-1, (int8_t)-1,
-              (int8_t)-1, (int8_t)-1, (int8_t)-1, (int8_t)9, (int8_t)8,
-              (int8_t)1, (int8_t)0));
-      __m256i adjacent_3_combined0 = libcrux_intrinsics_avx2_mm256_mullo_epi16(
-          adjacent_3_combined,
-          libcrux_intrinsics_avx2_mm256_set_epi16(
-              (int16_t)1, (int16_t)1, (int16_t)1, (int16_t)1, (int16_t)1,
-              (int16_t)1, (int16_t)1, (int16_t)1 << 4U, (int16_t)1, (int16_t)1,
-              (int16_t)1, (int16_t)1, (int16_t)1, (int16_t)1, (int16_t)1,
-              (int16_t)1 << 4U));
-      __m256i adjacent_3_combined1 = libcrux_intrinsics_avx2_mm256_srlv_epi32(
-          adjacent_3_combined0,
-          libcrux_intrinsics_avx2_mm256_set_epi32(
-              (int32_t)0, (int32_t)0, (int32_t)0, (int32_t)4, (int32_t)0,
-              (int32_t)0, (int32_t)0, (int32_t)4));
-      __m128i lower_3 =
-          libcrux_intrinsics_avx2_mm256_castsi256_si128(adjacent_3_combined1);
+      core_core_arch_x86___m128i_x2 uu____2 =
+          libcrux_ml_dsa_simd_avx2_encoding_commitment_serialize_6(simd_unit);
+      __m128i lower_3 = uu____2.fst;
+      __m128i upper_3 = uu____2.snd;
       libcrux_intrinsics_avx2_mm_storeu_bytes_si128(
           Eurydice_array_to_subslice2(serialized, (size_t)0U, (size_t)16U,
                                       uint8_t),
           lower_3);
-      __m128i upper_3 = libcrux_intrinsics_avx2_mm256_extracti128_si256(
-          (int32_t)1, adjacent_3_combined1, __m128i);
       libcrux_intrinsics_avx2_mm_storeu_bytes_si128(
           Eurydice_array_to_subslice2(serialized, (size_t)3U, (size_t)19U,
                                       uint8_t),
           upper_3);
-      Eurydice_slice uu____2 = out;
-      Eurydice_slice_copy(uu____2,
+      Eurydice_slice uu____3 = out;
+      Eurydice_slice_copy(uu____3,
                           Eurydice_array_to_subslice2(serialized, (size_t)0U,
                                                       (size_t)6U, uint8_t),
                           uint8_t);

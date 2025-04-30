@@ -2,6 +2,7 @@
 //!
 //! This module provides a purely Rust implementation of selected operations from
 //! `core::arch::x86` and `core::arch::x86_64`.
+#![allow(clippy::too_many_arguments)]
 
 use crate::abstractions::{bit::*, bitvec::*, funarr::*};
 
@@ -133,6 +134,66 @@ pub mod avx {
     ) -> __m256i {
         todo!()
     }
+
+    #[hax_lib::opaque]
+    pub fn _mm256_set_epi16(
+        _e00: i16,
+        _e01: i16,
+        _e02: i16,
+        _e03: i16,
+        _e04: i16,
+        _e05: i16,
+        _e06: i16,
+        _e07: i16,
+        _e08: i16,
+        _e09: i16,
+        _e10: i16,
+        _e11: i16,
+        _e12: i16,
+        _e13: i16,
+        _e14: i16,
+        _e15: i16,
+    ) -> __m256i {
+        todo!()
+    }
+
+    #[hax_lib::opaque]
+    pub fn _mm256_set_epi8(
+        _e00: i8,
+        _e01: i8,
+        _e02: i8,
+        _e03: i8,
+        _e04: i8,
+        _e05: i8,
+        _e06: i8,
+        _e07: i8,
+        _e08: i8,
+        _e09: i8,
+        _e10: i8,
+        _e11: i8,
+        _e12: i8,
+        _e13: i8,
+        _e14: i8,
+        _e15: i8,
+        _e16: i8,
+        _e17: i8,
+        _e18: i8,
+        _e19: i8,
+        _e20: i8,
+        _e21: i8,
+        _e22: i8,
+        _e23: i8,
+        _e24: i8,
+        _e25: i8,
+        _e26: i8,
+        _e27: i8,
+        _e28: i8,
+        _e29: i8,
+        _e30: i8,
+        _e31: i8,
+    ) -> __m256i {
+        todo!()
+    }
 }
 pub use avx2::*;
 pub mod avx2 {
@@ -158,6 +219,11 @@ pub mod avx2 {
     }
 
     #[hax_lib::opaque]
+    pub fn _mm256_mullo_epi16(_vector: __m256i, _shifts: __m256i) -> __m256i {
+        todo!()
+    }
+
+    #[hax_lib::opaque]
     pub fn _mm256_sllv_epi32(vector: __m256i, counts: __m256i) -> __m256i {
         extra::mm256_sllv_epi32_u32_array(vector, counts.to_vec().try_into().unwrap())
     }
@@ -174,6 +240,12 @@ pub mod avx2 {
 
     pub fn _mm256_extracti128_si256<const IMM8: i32>(vector: __m256i) -> __m128i {
         BitVec::from_fn(|i| vector[i + if IMM8 == 0 { 0 } else { 128 }])
+    }
+
+    #[hax_lib::opaque]
+    pub fn _mm256_shuffle_epi8(vector: __m256i, indexes: __m256i) -> __m256i {
+        let indexes = indexes.to_vec().try_into().unwrap();
+        extra::mm256_shuffle_epi8_i8_array(vector, indexes)
     }
 }
 
@@ -197,6 +269,32 @@ const _: () = {
             hax_lib::prop::eq(
                 _mm256_sllv_epi32(vector, _mm256_set_epi32(b7, b6, b5, b4, b3, b2, b1, b0)),
                 extra::mm256_sllv_epi32_u32(
+                    vector, b7 as u32, b6 as u32, b5 as u32, b4 as u32, b3 as u32, b2 as u32,
+                    b1 as u32, b0 as u32,
+                ),
+            )
+        },
+    > {
+    }
+
+    #[hax_lib::fstar::before("[@@ $REWRITE_RULE ]")]
+    #[hax_lib::lemma]
+    #[hax_lib::opaque]
+    fn _rw_mm256_srlv_epi32(
+        vector: __m256i,
+        b7: i32,
+        b6: i32,
+        b5: i32,
+        b4: i32,
+        b3: i32,
+        b2: i32,
+        b1: i32,
+        b0: i32,
+    ) -> Proof<
+        {
+            hax_lib::prop::eq(
+                _mm256_srlv_epi32(vector, _mm256_set_epi32(b7, b6, b5, b4, b3, b2, b1, b0)),
+                extra::mm256_srlv_epi32_u32(
                     vector, b7 as u32, b6 as u32, b5 as u32, b4 as u32, b3 as u32, b2 as u32,
                     b1 as u32, b0 as u32,
                 ),
@@ -237,6 +335,61 @@ const _: () = {
     #[hax_lib::fstar::before("[@@ $REWRITE_RULE ]")]
     #[hax_lib::lemma]
     #[hax_lib::opaque]
+    pub fn _rw_mm256_mullo_epi16_shifts(
+        vector: __m256i,
+        s15: u8,
+        s14: u8,
+        s13: u8,
+        s12: u8,
+        s11: u8,
+        s10: u8,
+        s9: u8,
+        s8: u8,
+        s7: u8,
+        s6: u8,
+        s5: u8,
+        s4: u8,
+        s3: u8,
+        s2: u8,
+        s1: u8,
+        s0: u8,
+    ) -> Proof<
+        {
+            hax_lib::prop::eq(
+                _mm256_mullo_epi16(
+                    vector,
+                    _mm256_set_epi16(
+                        1i16 << s15,
+                        1i16 << s14,
+                        1i16 << s13,
+                        1i16 << s12,
+                        1i16 << s11,
+                        1i16 << s10,
+                        1i16 << s9,
+                        1i16 << s8,
+                        1i16 << s7,
+                        1i16 << s6,
+                        1i16 << s5,
+                        1i16 << s4,
+                        1i16 << s3,
+                        1i16 << s2,
+                        1i16 << s1,
+                        1i16 << s0,
+                    ),
+                ),
+                extra::mm256_mullo_epi16_shifts(
+                    vector, s15, s14, s13, s12, s11, s10, s9, s8, s7, s6, s5, s4, s3, s2, s1, s0,
+                ),
+            )
+        },
+    > {
+    }
+
+    // mm256_mullo_epi16_shifts
+
+    #[hax_lib::fstar::before("[@@ $REWRITE_RULE ]")]
+    #[hax_lib::lemma]
+    #[hax_lib::opaque]
     fn _rw_mm_shuffle_epi8(
         vector: __m128i,
         e15: i8,
@@ -268,6 +421,66 @@ const _: () = {
                     vector, e15 as u8, e14 as u8, e13 as u8, e12 as u8, e11 as u8, e10 as u8,
                     e9 as u8, e8 as u8, e7 as u8, e6 as u8, e5 as u8, e4 as u8, e3 as u8, e2 as u8,
                     e1 as u8, e0 as u8,
+                ),
+            )
+        },
+    > {
+    }
+
+    #[hax_lib::fstar::before("[@@ $REWRITE_RULE ]")]
+    #[hax_lib::lemma]
+    #[hax_lib::opaque]
+    fn _rw_mm256_shuffle_epi8(
+        vector: __m256i,
+        byte31: i8,
+        byte30: i8,
+        byte29: i8,
+        byte28: i8,
+        byte27: i8,
+        byte26: i8,
+        byte25: i8,
+        byte24: i8,
+        byte23: i8,
+        byte22: i8,
+        byte21: i8,
+        byte20: i8,
+        byte19: i8,
+        byte18: i8,
+        byte17: i8,
+        byte16: i8,
+        byte15: i8,
+        byte14: i8,
+        byte13: i8,
+        byte12: i8,
+        byte11: i8,
+        byte10: i8,
+        byte9: i8,
+        byte8: i8,
+        byte7: i8,
+        byte6: i8,
+        byte5: i8,
+        byte4: i8,
+        byte3: i8,
+        byte2: i8,
+        byte1: i8,
+        byte0: i8,
+    ) -> Proof<
+        {
+            hax_lib::prop::eq(
+                _mm256_shuffle_epi8(
+                    vector,
+                    _mm256_set_epi8(
+                        byte31, byte30, byte29, byte28, byte27, byte26, byte25, byte24, byte23,
+                        byte22, byte21, byte20, byte19, byte18, byte17, byte16, byte15, byte14,
+                        byte13, byte12, byte11, byte10, byte9, byte8, byte7, byte6, byte5, byte4,
+                        byte3, byte2, byte1, byte0,
+                    ),
+                ),
+                extra::mm256_shuffle_epi8_i8(
+                    vector, byte31, byte30, byte29, byte28, byte27, byte26, byte25, byte24, byte23,
+                    byte22, byte21, byte20, byte19, byte18, byte17, byte16, byte15, byte14, byte13,
+                    byte12, byte11, byte10, byte9, byte8, byte7, byte6, byte5, byte4, byte3, byte2,
+                    byte1, byte0,
                 ),
             )
         },
@@ -438,6 +651,95 @@ pub mod extra {
         mm_shuffle_epi8_u8_array(vector, indexes)
     }
 
+    pub fn mm256_shuffle_epi8_i8_array(
+        vector: BitVec<256>,
+        indexes: FunArray<32, i8>,
+    ) -> BitVec<256> {
+        BitVec::from_fn(|i| {
+            let nth = i / 8;
+            let index = indexes[nth];
+            if index < 0 {
+                Bit::Zero
+            } else {
+                let index = (index % 16) as u64;
+                vector[if i < 128 { 0 } else { 128 } + index * 8 + i % 8]
+            }
+        })
+    }
+
+    pub fn mm256_shuffle_epi8_i8(
+        vector: BitVec<256>,
+        byte31: i8,
+        byte30: i8,
+        byte29: i8,
+        byte28: i8,
+        byte27: i8,
+        byte26: i8,
+        byte25: i8,
+        byte24: i8,
+        byte23: i8,
+        byte22: i8,
+        byte21: i8,
+        byte20: i8,
+        byte19: i8,
+        byte18: i8,
+        byte17: i8,
+        byte16: i8,
+        byte15: i8,
+        byte14: i8,
+        byte13: i8,
+        byte12: i8,
+        byte11: i8,
+        byte10: i8,
+        byte9: i8,
+        byte8: i8,
+        byte7: i8,
+        byte6: i8,
+        byte5: i8,
+        byte4: i8,
+        byte3: i8,
+        byte2: i8,
+        byte1: i8,
+        byte0: i8,
+    ) -> BitVec<256> {
+        let indexes = FunArray::from_fn(|i| match i {
+            31 => byte31,
+            30 => byte30,
+            29 => byte29,
+            28 => byte28,
+            27 => byte27,
+            26 => byte26,
+            25 => byte25,
+            24 => byte24,
+            23 => byte23,
+            22 => byte22,
+            21 => byte21,
+            20 => byte20,
+            19 => byte19,
+            18 => byte18,
+            17 => byte17,
+            16 => byte16,
+            15 => byte15,
+            14 => byte14,
+            13 => byte13,
+            12 => byte12,
+            11 => byte11,
+            10 => byte10,
+            9 => byte9,
+            8 => byte8,
+            7 => byte7,
+            6 => byte6,
+            5 => byte5,
+            4 => byte4,
+            3 => byte3,
+            2 => byte2,
+            1 => byte1,
+            0 => byte0,
+            _ => unreachable!(),
+        });
+        mm256_shuffle_epi8_i8_array(vector, indexes)
+    }
+
     pub fn mm256_mullo_epi16_shifts(
         vector: __m256i,
         s15: u8,
@@ -604,6 +906,110 @@ mod tests {
             assert_eq!(super::_mm_shuffle_epi8(a, b), unsafe {
                 upstream::_mm_shuffle_epi8(a.into(), b.into()).into()
             });
+        }
+    }
+
+    #[test]
+    fn mm256_shuffle_epi8() {
+        for _ in 0..N {
+            let a: BitVec<256> = BitVec::rand();
+            let b: BitVec<256> = BitVec::rand();
+
+            assert_eq!(super::_mm256_shuffle_epi8(a, b), unsafe {
+                upstream::_mm256_shuffle_epi8(a.into(), b.into()).into()
+            });
+        }
+    }
+
+    #[test]
+    fn mm256_mullo_epi16_shifts() {
+        pub fn upsteam_mm256_mullo_epi16_shifts(
+            vector: upstream::__m256i,
+            s15: u8,
+            s14: u8,
+            s13: u8,
+            s12: u8,
+            s11: u8,
+            s10: u8,
+            s9: u8,
+            s8: u8,
+            s7: u8,
+            s6: u8,
+            s5: u8,
+            s4: u8,
+            s3: u8,
+            s2: u8,
+            s1: u8,
+            s0: u8,
+        ) -> upstream::__m256i {
+            unsafe {
+                upstream::_mm256_mullo_epi16(
+                    vector,
+                    upstream::_mm256_set_epi16(
+                        1i16 << s15,
+                        1i16 << s14,
+                        1i16 << s13,
+                        1i16 << s12,
+                        1i16 << s11,
+                        1i16 << s10,
+                        1i16 << s9,
+                        1i16 << s8,
+                        1i16 << s7,
+                        1i16 << s6,
+                        1i16 << s5,
+                        1i16 << s4,
+                        1i16 << s3,
+                        1i16 << s2,
+                        1i16 << s1,
+                        1i16 << s0,
+                    ),
+                )
+            }
+        }
+        for _ in 0..N {
+            let a: BitVec<256> = BitVec::rand();
+            let s15: u8 = rand::random::<u8>() % 16;
+            let s14: u8 = rand::random::<u8>() % 16;
+            let s13: u8 = rand::random::<u8>() % 16;
+            let s12: u8 = rand::random::<u8>() % 16;
+            let s11: u8 = rand::random::<u8>() % 16;
+            let s10: u8 = rand::random::<u8>() % 16;
+            let s9: u8 = rand::random::<u8>() % 16;
+            let s8: u8 = rand::random::<u8>() % 16;
+            let s7: u8 = rand::random::<u8>() % 16;
+            let s6: u8 = rand::random::<u8>() % 16;
+            let s5: u8 = rand::random::<u8>() % 16;
+            let s4: u8 = rand::random::<u8>() % 16;
+            let s3: u8 = rand::random::<u8>() % 16;
+            let s2: u8 = rand::random::<u8>() % 16;
+            let s1: u8 = rand::random::<u8>() % 16;
+            let s0: u8 = rand::random::<u8>() % 16;
+
+            assert_eq!(
+                super::extra::mm256_mullo_epi16_shifts(
+                    a, s15, s14, s13, s12, s11, s10, s9, s8, s7, s6, s5, s4, s3, s2, s1, s0,
+                ),
+                upsteam_mm256_mullo_epi16_shifts(
+                    a.into(),
+                    s15,
+                    s14,
+                    s13,
+                    s12,
+                    s11,
+                    s10,
+                    s9,
+                    s8,
+                    s7,
+                    s6,
+                    s5,
+                    s4,
+                    s3,
+                    s2,
+                    s1,
+                    s0,
+                )
+                .into()
+            );
         }
     }
 }
