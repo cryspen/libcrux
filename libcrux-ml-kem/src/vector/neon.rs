@@ -17,8 +17,8 @@ pub(crate) use vector_type::SIMD128Vector;
 use vector_type::*;
 
 impl crate::vector::traits::Repr for SIMD128Vector {
-    fn repr(x: Self) -> [i16; 16] {
-        to_i16_array(x)
+    fn repr(&self) -> [i16; 16] {
+        to_i16_array(self.clone())
     }
 }
 
@@ -63,12 +63,8 @@ impl Operations for SIMD128Vector {
         multiply_by_constant(v, c)
     }
 
-    fn bitwise_and_with_constant(v: Self, c: i16) -> Self {
-        bitwise_and_with_constant(v, c)
-    }
-
-    fn shift_right<const SHIFT_BY: i32>(v: Self) -> Self {
-        shift_right::<SHIFT_BY>(v)
+    fn to_unsigned_representative(a: Self) -> Self {
+        to_unsigned_representative(a)
     }
 
     fn cond_subtract_3329(v: Self) -> Self {
@@ -89,6 +85,10 @@ impl Operations for SIMD128Vector {
 
     fn compress<const COEFFICIENT_BITS: i32>(v: Self) -> Self {
         compress::<COEFFICIENT_BITS>(v)
+    }
+
+    fn decompress_1(a: Self) -> Self {
+        decompress_1(a)
     }
 
     fn decompress_ciphertext_coefficient<const COEFFICIENT_BITS: i32>(v: Self) -> Self {

@@ -3,6 +3,28 @@ module Spec.Utils
 open FStar.Mul
 open Core
 
+let pow2_values_more x =
+  let p = pow2 x in
+  match x with
+   | 0  -> assert_norm(p=1)
+   | 1  -> assert_norm(p=2)
+   | 2  -> assert_norm(p=4)
+   | 3  -> assert_norm(p=8)
+   | 4  -> assert_norm(p=16)
+   | 5  -> assert_norm(p=32)
+   | 6  -> assert_norm(p=64)
+   | 7  -> assert_norm(p=128)
+   | 8  -> assert_norm(p=256)
+   | 9  -> assert_norm(p=512)
+   | 10 -> assert_norm(p=1024)
+   | 11 -> assert_norm(p=2048)
+   | 12 -> assert_norm(p=4096)
+   | 13 -> assert_norm(p=8192)
+   | 14 -> assert_norm(p=16384)
+   | 15 -> assert_norm(p=32768)
+   | 16 -> assert_norm(p=65536)
+   | _ -> ()
+
 let lemma_createL_index #a len l i = ()
 
 let lemma_create16_index #a v15 v14 v13 v12 v11 v10 v9 v8 v7 v6 v5 v4 v3 v2 v1 v0 i =
@@ -67,6 +89,14 @@ let update_at_range_lemma #n
 
 let lemma_intb_le b b' = ()          
 
+let lemma_add_intb b1 b2 n1 n2 = ()
+
+let lemma_add_intb_forall b1 b2 = ()
+
+let lemma_sub_intb b1 b2 n1 n2 = ()
+
+let lemma_sub_intb_forall b1 b2 = ()
+
 #push-options "--z3rlimit 200"
 let lemma_mul_intb (b1 b2: nat) (n1 n2: int) =
   if n1 = 0 || n2 = 0
@@ -80,6 +110,8 @@ let lemma_mul_intb (b1 b2: nat) (n1 n2: int) =
     lemma_mult_le_right b2 (abs n1) b1;
     lemma_abs_bound (n1 * n2) (b1 * b2)
 #pop-options
+
+let lemma_mul_intb_forall b1 b2 = ()
 
 #push-options "--z3rlimit 200"
 let lemma_mul_i16b (b1 b2: nat) (n1 n2: i16) =
@@ -297,9 +329,22 @@ let lemma_mont_mul_red_i16 x y =
     lemma_mont_mul_red_i16_int x y) 
   else lemma_mont_mul_red_i16_int x y
 
-let lemma_barrett_red (x:i16) = admit()
+let lemma_barrett_red (x:i16) = ()
 
-let lemma_cond_sub x = admit()
+let lemma_cond_sub x =
+  let xm = x -. (mk_i16 3329) in
+  let mask = xm >>! (mk_i32 15) in
+  let mm = mask &. (mk_i16 3329) in
+  let result = xm +. mm in
+  assert(xm == x -! mk_i16 3329);
+  assert(v mask = v xm / pow2 15);
+  assert(v xm >= 0 ==> v mask == 0);
+  assert(v xm < 0 ==> v mask == -1);
+  logand_zero_lemma (mk_i16 3329);
+  assert(v xm >= 0 ==> v mm == 0);
+  logand_ones_lemma (mk_i16 3329);
+  assert(v xm < 0 ==> v mm == 3329)
+
 
 let lemma_shift_right_15_i16 (x:i16) =
   Rust_primitives.Integers.mk_int_v_lemma #i16_inttype (mk_i16 0);
