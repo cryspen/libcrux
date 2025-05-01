@@ -1,7 +1,71 @@
 use libcrux_intrinsics::avx2::*;
 
 #[cfg(hax)]
-use minicore::abstractions::{bit::Bit, bitvec::BitVec};
+use minicore::abstractions::{
+    bit::Bit,
+    bitvec::{bitvec_postprocess_norm, BitVec},
+};
+
+#[hax_lib::ensures(|(lower, upper)| {
+    use hax_lib::*;
+    let lower = BitVec::<128>::from(lower);
+    let upper = BitVec::<128>::from(upper);
+    let simd_unit = BitVec::<256>::from(*simd_unit);
+    forall(|i: u64|
+        implies(i < 48, if i < 24 {lower[i]} else { upper[i - 24] } == simd_unit[i / 6 * 32 + i % 6])
+    )
+})]
+#[inline(always)]
+fn serialize_6(simd_unit: &Vec256) -> (Vec128, Vec128) {
+    #[hax_lib::fstar::before(r#"[@@FStar.Tactics.postprocess_with ${bitvec_postprocess_norm}]"#)]
+    #[inline(always)]
+    fn normalized_serialize_6(simd_unit: &Vec256) -> (Vec128, Vec128) {
+        let adjacent_2_combined =
+            mm256_sllv_epi32(*simd_unit, mm256_set_epi32(0, 26, 0, 26, 0, 26, 0, 26));
+        let adjacent_2_combined = mm256_srli_epi64::<26>(adjacent_2_combined);
+
+        let adjacent_3_combined = mm256_shuffle_epi8(
+            adjacent_2_combined,
+            mm256_set_epi8(
+                -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 9, 8, 1, 0, -1, -1, -1, -1, -1, -1,
+                -1, -1, -1, -1, -1, -1, 9, 8, 1, 0,
+            ),
+        );
+
+        let adjacent_3_combined = mm256_mullo_epi16(
+            adjacent_3_combined,
+            // Note: the explicit style `1i16 << N` matters for F* proofs here.
+            mm256_set_epi16(
+                1i16 << 0,
+                1i16 << 0,
+                1i16 << 0,
+                1i16 << 0,
+                1i16 << 0,
+                1i16 << 0,
+                1i16 << 0,
+                1i16 << 4,
+                1i16 << 0,
+                1i16 << 0,
+                1i16 << 0,
+                1i16 << 0,
+                1i16 << 0,
+                1i16 << 0,
+                1i16 << 0,
+                1i16 << 4,
+            ),
+        );
+        let adjacent_3_combined =
+            mm256_srlv_epi32(adjacent_3_combined, mm256_set_epi32(0, 0, 0, 4, 0, 0, 0, 4));
+
+        // We now have 24 bits starting at position 0 in the lower 128-bit lane, ...
+        let lower = mm256_castsi256_si128(adjacent_3_combined);
+        // and 24 bits starting at position 0 in the upper 128-bit lane.
+        let upper = mm256_extracti128_si256::<1>(adjacent_3_combined);
+
+        (lower, upper)
+    }
+    normalized_serialize_6(simd_unit)
+}
 
 #[hax_lib::ensures(|r| {
     use hax_lib::*;
@@ -14,9 +78,7 @@ use minicore::abstractions::{bit::Bit, bitvec::BitVec};
 #[inline(always)]
 fn serialize_4(simd_unit: &Vec256) -> Vec128 {
     // The F* annotation normalizes the body of the function. After normalization, this function is a simple permutation of bits.
-    #[hax_lib::fstar::before(
-        r#"[@@(FStar.Tactics.postprocess_with ${BitVec::<128>::postprocess_rewrite})]"#
-    )]
+    #[hax_lib::fstar::before(r#"[@@FStar.Tactics.postprocess_with ${bitvec_postprocess_norm}]"#)]
     #[inline(always)]
     fn normalized_serialize_4(simd_unit: &Vec256) -> Vec128 {
         let adjacent_2_combined =
@@ -51,31 +113,9 @@ pub(in crate::simd::avx2) fn serialize(simd_unit: &Vec256, out: &mut [u8]) {
         }
 
         6 => {
-            let adjacent_2_combined =
-                mm256_sllv_epi32(*simd_unit, mm256_set_epi32(0, 26, 0, 26, 0, 26, 0, 26));
-            let adjacent_2_combined = mm256_srli_epi64::<26>(adjacent_2_combined);
+            let (lower_3, upper_3) = serialize_6(simd_unit);
 
-            let adjacent_3_combined = mm256_shuffle_epi8(
-                adjacent_2_combined,
-                mm256_set_epi8(
-                    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 9, 8, 1, 0, -1, -1, -1, -1, -1,
-                    -1, -1, -1, -1, -1, -1, -1, 9, 8, 1, 0,
-                ),
-            );
-
-            let adjacent_3_combined = mm256_mullo_epi16(
-                adjacent_3_combined,
-                mm256_set_epi16(1, 1, 1, 1, 1, 1, 1, 1 << 4, 1, 1, 1, 1, 1, 1, 1, 1 << 4),
-            );
-            let adjacent_3_combined =
-                mm256_srlv_epi32(adjacent_3_combined, mm256_set_epi32(0, 0, 0, 4, 0, 0, 0, 4));
-
-            // We now have 24 bits starting at position 0 in the lower 128-bit lane, ...
-            let lower_3 = mm256_castsi256_si128(adjacent_3_combined);
             mm_storeu_bytes_si128(&mut serialized[0..16], lower_3);
-
-            // and 24 bits starting at position 0 in the upper 128-bit lane.
-            let upper_3 = mm256_extracti128_si256::<1>(adjacent_3_combined);
             mm_storeu_bytes_si128(&mut serialized[3..19], upper_3);
 
             out.copy_from_slice(&serialized[0..6]);
