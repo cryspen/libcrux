@@ -8,7 +8,7 @@
  * Eurydice: 36a5ed7dd6b61b5cd3d69a010859005912d21537
  * Karamel: bf9b89d76dd24e2ceaaca32de3535353e7b6bc01
  * F*: 4b3fc11774003a6ff7c09500ecb5f0145ca6d862
- * Libcrux: 8c44e89dc61e0511852eeb7bb039160c69481a30
+ * Libcrux: da8cd3fe8f11d3c830394f92c5b7612b580dda91
  */
 
 #ifndef __libcrux_mldsa65_portable_H
@@ -1231,18 +1231,17 @@ static KRML_MUSTINLINE size_t
 libcrux_ml_dsa_simd_portable_sample_rejection_sample_less_than_field_modulus(
     Eurydice_slice randomness, Eurydice_slice out) {
   size_t sampled = (size_t)0U;
+  size_t _out_len = Eurydice_slice_len(out, int32_t);
+  LowStar_Ignore_ignore(_out_len, size_t, void *);
   for (size_t i = (size_t)0U;
        i < Eurydice_slice_len(randomness, uint8_t) / (size_t)3U; i++) {
-    size_t _cloop_i = i;
-    Eurydice_slice bytes =
-        Eurydice_slice_subslice2(randomness, _cloop_i * (size_t)3U,
-                                 _cloop_i * (size_t)3U + (size_t)3U, uint8_t);
-    int32_t b0 =
-        (int32_t)Eurydice_slice_index(bytes, (size_t)0U, uint8_t, uint8_t *);
-    int32_t b1 =
-        (int32_t)Eurydice_slice_index(bytes, (size_t)1U, uint8_t, uint8_t *);
-    int32_t b2 =
-        (int32_t)Eurydice_slice_index(bytes, (size_t)2U, uint8_t, uint8_t *);
+    size_t i0 = i;
+    int32_t b0 = (int32_t)Eurydice_slice_index(randomness, i0 * (size_t)3U,
+                                               uint8_t, uint8_t *);
+    int32_t b1 = (int32_t)Eurydice_slice_index(
+        randomness, i0 * (size_t)3U + (size_t)1U, uint8_t, uint8_t *);
+    int32_t b2 = (int32_t)Eurydice_slice_index(
+        randomness, i0 * (size_t)3U + (size_t)2U, uint8_t, uint8_t *);
     int32_t coefficient = ((b2 << 16U | b1 << 8U) | b0) & (int32_t)8388607;
     if (coefficient < LIBCRUX_ML_DSA_CONSTANTS_FIELD_MODULUS) {
       Eurydice_slice_index(out, sampled, int32_t, int32_t *) = coefficient;
@@ -1267,17 +1266,14 @@ static KRML_MUSTINLINE size_t
 libcrux_ml_dsa_simd_portable_sample_rejection_sample_less_than_eta_equals_2(
     Eurydice_slice randomness, Eurydice_slice out) {
   size_t sampled = (size_t)0U;
+  size_t _out_len = Eurydice_slice_len(out, int32_t);
+  LowStar_Ignore_ignore(_out_len, size_t, void *);
   for (size_t i = (size_t)0U; i < Eurydice_slice_len(randomness, uint8_t);
        i++) {
-    size_t _cloop_j = i;
-    uint8_t *byte =
-        &Eurydice_slice_index(randomness, _cloop_j, uint8_t, uint8_t *);
-    uint8_t try_0 =
-        core_ops_bit___core__ops__bit__BitAnd_u8__u8__for___a__u8___46__bitand(
-            byte, 15U);
-    uint8_t try_1 =
-        core_ops_bit___core__ops__bit__Shr_i32__u8__for___a__u8___792__shr(
-            byte, (int32_t)4);
+    size_t i0 = i;
+    uint8_t byte = Eurydice_slice_index(randomness, i0, uint8_t, uint8_t *);
+    uint8_t try_0 = (uint32_t)byte & 15U;
+    uint8_t try_1 = (uint32_t)byte >> 4U;
     if (try_0 < 15U) {
       int32_t try_00 = (int32_t)try_0;
       int32_t try_0_mod_5 = try_00 - (try_00 * (int32_t)26 >> 7U) * (int32_t)5;
@@ -1311,17 +1307,14 @@ static KRML_MUSTINLINE size_t
 libcrux_ml_dsa_simd_portable_sample_rejection_sample_less_than_eta_equals_4(
     Eurydice_slice randomness, Eurydice_slice out) {
   size_t sampled = (size_t)0U;
+  size_t _out_len = Eurydice_slice_len(out, int32_t);
+  LowStar_Ignore_ignore(_out_len, size_t, void *);
   for (size_t i = (size_t)0U; i < Eurydice_slice_len(randomness, uint8_t);
        i++) {
-    size_t _cloop_j = i;
-    uint8_t *byte =
-        &Eurydice_slice_index(randomness, _cloop_j, uint8_t, uint8_t *);
-    uint8_t try_0 =
-        core_ops_bit___core__ops__bit__BitAnd_u8__u8__for___a__u8___46__bitand(
-            byte, 15U);
-    uint8_t try_1 =
-        core_ops_bit___core__ops__bit__Shr_i32__u8__for___a__u8___792__shr(
-            byte, (int32_t)4);
+    size_t i0 = i;
+    uint8_t byte = Eurydice_slice_index(randomness, i0, uint8_t, uint8_t *);
+    uint8_t try_0 = (uint32_t)byte & 15U;
+    uint8_t try_1 = (uint32_t)byte >> 4U;
     if (try_0 < 9U) {
       Eurydice_slice_index(out, sampled, int32_t, int32_t *) =
           (int32_t)4 - (int32_t)try_0;
@@ -8055,6 +8048,72 @@ static inline libcrux_ml_dsa_types_VerificationError
 libcrux_ml_dsa_pre_hash_from_b6(
     libcrux_ml_dsa_pre_hash_DomainSeparationError e) {
   return libcrux_ml_dsa_types_VerificationError_VerificationContextTooLongError;
+}
+
+static inline hax_lib_prop_Prop
+libcrux_ml_dsa_specs_simd_portable_sample_rejection_sample_less_than_eta_equals_2_post(
+    Eurydice_slice randomness, Eurydice_slice out, size_t r) {
+  return core_convert___core__convert__Into_U__for_T__3__into(
+      true, bool, hax_lib_prop_Prop, hax_lib_prop_Prop);
+}
+
+static inline hax_lib_prop_Prop
+libcrux_ml_dsa_specs_simd_portable_sample_rejection_sample_less_than_eta_equals_2_pre(
+    Eurydice_slice randomness, Eurydice_slice out) {
+  bool uu____0;
+  if (Eurydice_slice_len(randomness, uint8_t) * (size_t)2U <=
+      (size_t)4294967295U) {
+    size_t uu____1 = Eurydice_slice_len(randomness, uint8_t) * (size_t)2U;
+    uu____0 = uu____1 <= Eurydice_slice_len(out, int32_t);
+  } else {
+    uu____0 = false;
+  }
+  return core_convert___core__convert__Into_U__for_T__3__into(
+      uu____0, bool, hax_lib_prop_Prop, hax_lib_prop_Prop);
+}
+
+static inline hax_lib_prop_Prop
+libcrux_ml_dsa_specs_simd_portable_sample_rejection_sample_less_than_eta_equals_4_post(
+    Eurydice_slice randomness, Eurydice_slice out, size_t r) {
+  return core_convert___core__convert__Into_U__for_T__3__into(
+      true, bool, hax_lib_prop_Prop, hax_lib_prop_Prop);
+}
+
+static inline hax_lib_prop_Prop
+libcrux_ml_dsa_specs_simd_portable_sample_rejection_sample_less_than_eta_equals_4_pre(
+    Eurydice_slice randomness, Eurydice_slice out) {
+  bool uu____0;
+  if (Eurydice_slice_len(randomness, uint8_t) * (size_t)2U <=
+      (size_t)4294967295U) {
+    size_t uu____1 = Eurydice_slice_len(randomness, uint8_t) * (size_t)2U;
+    uu____0 = uu____1 <= Eurydice_slice_len(out, int32_t);
+  } else {
+    uu____0 = false;
+  }
+  return core_convert___core__convert__Into_U__for_T__3__into(
+      uu____0, bool, hax_lib_prop_Prop, hax_lib_prop_Prop);
+}
+
+static inline hax_lib_prop_Prop
+libcrux_ml_dsa_specs_simd_portable_sample_rejection_sample_less_than_field_modulus_post(
+    Eurydice_slice randomness, Eurydice_slice out, size_t r) {
+  return core_convert___core__convert__Into_U__for_T__3__into(
+      true, bool, hax_lib_prop_Prop, hax_lib_prop_Prop);
+}
+
+static inline hax_lib_prop_Prop
+libcrux_ml_dsa_specs_simd_portable_sample_rejection_sample_less_than_field_modulus_pre(
+    Eurydice_slice randomness, Eurydice_slice out) {
+  bool uu____0;
+  if (Eurydice_slice_len(randomness, uint8_t) / (size_t)3U <=
+      (size_t)4294967295U) {
+    size_t uu____1 = Eurydice_slice_len(randomness, uint8_t) / (size_t)3U;
+    uu____0 = uu____1 <= Eurydice_slice_len(out, int32_t);
+  } else {
+    uu____0 = false;
+  }
+  return core_convert___core__convert__Into_U__for_T__3__into(
+      uu____0, bool, hax_lib_prop_Prop, hax_lib_prop_Prop);
 }
 
 typedef int32_t libcrux_ml_dsa_simd_traits_FieldElementTimesMontgomeryR;
