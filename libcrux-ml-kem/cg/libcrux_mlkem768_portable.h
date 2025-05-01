@@ -8,7 +8,7 @@
  * Eurydice: 36a5ed7dd6b61b5cd3d69a010859005912d21537
  * Karamel: bf9b89d76dd24e2ceaaca32de3535353e7b6bc01
  * F*: 4b3fc11774003a6ff7c09500ecb5f0145ca6d862
- * Libcrux: f3f15359a852405a81628f982f2debc4d50fff30
+ * Libcrux: cb58a8df56db6e5837153fe95ee333e9918d29a2
  */
 
 #ifndef __libcrux_mlkem768_portable_H
@@ -73,16 +73,14 @@ static KRML_MUSTINLINE int16_t libcrux_ml_kem_polynomial_zeta(size_t i) {
   return libcrux_ml_kem_polynomial_ZETAS_TIMES_MONTGOMERY_R[i];
 }
 
+#define LIBCRUX_ML_KEM_POLYNOMIAL_VECTORS_IN_RING_ELEMENT ((size_t)16U)
+
 #define LIBCRUX_ML_KEM_VECTOR_TRAITS_FIELD_ELEMENTS_IN_VECTOR ((size_t)16U)
-
-#define LIBCRUX_ML_KEM_POLYNOMIAL_VECTORS_IN_RING_ELEMENT  \
-  (LIBCRUX_ML_KEM_CONSTANTS_COEFFICIENTS_IN_RING_ELEMENT / \
-   LIBCRUX_ML_KEM_VECTOR_TRAITS_FIELD_ELEMENTS_IN_VECTOR)
-
-#define LIBCRUX_ML_KEM_VECTOR_TRAITS_FIELD_MODULUS ((int16_t)3329)
 
 #define LIBCRUX_ML_KEM_VECTOR_TRAITS_MONTGOMERY_R_SQUARED_MOD_FIELD_MODULUS \
   ((int16_t)1353)
+
+#define LIBCRUX_ML_KEM_VECTOR_TRAITS_FIELD_MODULUS ((int16_t)3329)
 
 #define LIBCRUX_ML_KEM_VECTOR_TRAITS_INVERSE_OF_MODULUS_MOD_MONTGOMERY_R \
   (62209U)
@@ -212,29 +210,6 @@ libcrux_ml_kem_vector_portable_multiply_by_constant_2c(
   return libcrux_ml_kem_vector_portable_arithmetic_multiply_by_constant(vec, c);
 }
 
-static KRML_MUSTINLINE libcrux_ml_kem_vector_portable_vector_type_PortableVector
-libcrux_ml_kem_vector_portable_arithmetic_bitwise_and_with_constant(
-    libcrux_ml_kem_vector_portable_vector_type_PortableVector vec, int16_t c) {
-  for (size_t i = (size_t)0U;
-       i < LIBCRUX_ML_KEM_VECTOR_TRAITS_FIELD_ELEMENTS_IN_VECTOR; i++) {
-    size_t i0 = i;
-    size_t uu____0 = i0;
-    vec.elements[uu____0] = vec.elements[uu____0] & c;
-  }
-  return vec;
-}
-
-/**
-This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::portable::vector_type::PortableVector)#1}
-*/
-static inline libcrux_ml_kem_vector_portable_vector_type_PortableVector
-libcrux_ml_kem_vector_portable_bitwise_and_with_constant_2c(
-    libcrux_ml_kem_vector_portable_vector_type_PortableVector v, int16_t c) {
-  return libcrux_ml_kem_vector_portable_arithmetic_bitwise_and_with_constant(v,
-                                                                             c);
-}
-
 /**
  Note: This function is not secret independent
  Only use with public values.
@@ -317,8 +292,8 @@ libcrux_ml_kem::vector::portable::vector_type::PortableVector)#1}
 */
 static inline libcrux_ml_kem_vector_portable_vector_type_PortableVector
 libcrux_ml_kem_vector_portable_barrett_reduce_2c(
-    libcrux_ml_kem_vector_portable_vector_type_PortableVector v) {
-  return libcrux_ml_kem_vector_portable_arithmetic_barrett_reduce(v);
+    libcrux_ml_kem_vector_portable_vector_type_PortableVector vector) {
+  return libcrux_ml_kem_vector_portable_arithmetic_barrett_reduce(vector);
 }
 
 #define LIBCRUX_ML_KEM_VECTOR_PORTABLE_ARITHMETIC_MONTGOMERY_SHIFT (16U)
@@ -396,9 +371,60 @@ libcrux_ml_kem::vector::portable::vector_type::PortableVector)#1}
 */
 static inline libcrux_ml_kem_vector_portable_vector_type_PortableVector
 libcrux_ml_kem_vector_portable_montgomery_multiply_by_constant_2c(
-    libcrux_ml_kem_vector_portable_vector_type_PortableVector v, int16_t r) {
+    libcrux_ml_kem_vector_portable_vector_type_PortableVector vector,
+    int16_t constant) {
   return libcrux_ml_kem_vector_portable_arithmetic_montgomery_multiply_by_constant(
-      v, r);
+      vector, constant);
+}
+
+static KRML_MUSTINLINE libcrux_ml_kem_vector_portable_vector_type_PortableVector
+libcrux_ml_kem_vector_portable_arithmetic_bitwise_and_with_constant(
+    libcrux_ml_kem_vector_portable_vector_type_PortableVector vec, int16_t c) {
+  for (size_t i = (size_t)0U;
+       i < LIBCRUX_ML_KEM_VECTOR_TRAITS_FIELD_ELEMENTS_IN_VECTOR; i++) {
+    size_t i0 = i;
+    size_t uu____0 = i0;
+    vec.elements[uu____0] = vec.elements[uu____0] & c;
+  }
+  return vec;
+}
+
+/**
+A monomorphic instance of libcrux_ml_kem.vector.portable.arithmetic.shift_right
+with const generics
+- SHIFT_BY= 15
+*/
+static KRML_MUSTINLINE libcrux_ml_kem_vector_portable_vector_type_PortableVector
+libcrux_ml_kem_vector_portable_arithmetic_shift_right_ef(
+    libcrux_ml_kem_vector_portable_vector_type_PortableVector vec) {
+  for (size_t i = (size_t)0U;
+       i < LIBCRUX_ML_KEM_VECTOR_TRAITS_FIELD_ELEMENTS_IN_VECTOR; i++) {
+    size_t i0 = i;
+    vec.elements[i0] = vec.elements[i0] >> (uint32_t)(int32_t)15;
+  }
+  return vec;
+}
+
+static KRML_MUSTINLINE libcrux_ml_kem_vector_portable_vector_type_PortableVector
+libcrux_ml_kem_vector_portable_arithmetic_to_unsigned_representative(
+    libcrux_ml_kem_vector_portable_vector_type_PortableVector a) {
+  libcrux_ml_kem_vector_portable_vector_type_PortableVector t =
+      libcrux_ml_kem_vector_portable_arithmetic_shift_right_ef(a);
+  libcrux_ml_kem_vector_portable_vector_type_PortableVector fm =
+      libcrux_ml_kem_vector_portable_arithmetic_bitwise_and_with_constant(
+          t, LIBCRUX_ML_KEM_VECTOR_TRAITS_FIELD_MODULUS);
+  return libcrux_ml_kem_vector_portable_arithmetic_add(a, &fm);
+}
+
+/**
+This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
+libcrux_ml_kem::vector::portable::vector_type::PortableVector)#1}
+*/
+static inline libcrux_ml_kem_vector_portable_vector_type_PortableVector
+libcrux_ml_kem_vector_portable_to_unsigned_representative_2c(
+    libcrux_ml_kem_vector_portable_vector_type_PortableVector a) {
+  return libcrux_ml_kem_vector_portable_arithmetic_to_unsigned_representative(
+      a);
 }
 
 /**
@@ -474,6 +500,29 @@ libcrux_ml_kem_vector_portable_compress_compress_ciphertext_coefficient(
   return (int16_t)
       libcrux_ml_kem_vector_portable_arithmetic_get_n_least_significant_bits(
           coefficient_bits, (uint32_t)compressed);
+}
+
+static KRML_MUSTINLINE libcrux_ml_kem_vector_portable_vector_type_PortableVector
+libcrux_ml_kem_vector_portable_compress_decompress_1(
+    libcrux_ml_kem_vector_portable_vector_type_PortableVector a) {
+  libcrux_ml_kem_vector_portable_vector_type_PortableVector z =
+      libcrux_ml_kem_vector_portable_vector_type_zero();
+  libcrux_ml_kem_vector_portable_vector_type_PortableVector s =
+      libcrux_ml_kem_vector_portable_arithmetic_sub(z, &a);
+  libcrux_ml_kem_vector_portable_vector_type_PortableVector res =
+      libcrux_ml_kem_vector_portable_arithmetic_bitwise_and_with_constant(
+          s, (int16_t)1665);
+  return res;
+}
+
+/**
+This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
+libcrux_ml_kem::vector::portable::vector_type::PortableVector)#1}
+*/
+static inline libcrux_ml_kem_vector_portable_vector_type_PortableVector
+libcrux_ml_kem_vector_portable_decompress_1_2c(
+    libcrux_ml_kem_vector_portable_vector_type_PortableVector a) {
+  return libcrux_ml_kem_vector_portable_compress_decompress_1(a);
 }
 
 static KRML_MUSTINLINE void libcrux_ml_kem_vector_portable_ntt_ntt_step(
@@ -754,8 +803,6 @@ libcrux_ml_kem_vector_portable_ntt_ntt_multiply_binomials(
   int16_t o1 =
       libcrux_ml_kem_vector_portable_arithmetic_montgomery_reduce_element(
           ai_bj_aj_bi);
-  int16_t _out0[16U];
-  memcpy(_out0, out->elements, (size_t)16U * sizeof(int16_t));
   out->elements[(size_t)2U * i] = o0;
   out->elements[(size_t)2U * i + (size_t)1U] = o1;
 }
@@ -1713,19 +1760,6 @@ typedef struct libcrux_ml_kem_vector_portable_vector_type_PortableVector_x2_s {
 } libcrux_ml_kem_vector_portable_vector_type_PortableVector_x2;
 
 /**
-A monomorphic instance of libcrux_ml_kem.vector.traits.montgomery_multiply_fe
-with types libcrux_ml_kem_vector_portable_vector_type_PortableVector
-with const generics
-
-*/
-static KRML_MUSTINLINE libcrux_ml_kem_vector_portable_vector_type_PortableVector
-libcrux_ml_kem_vector_traits_montgomery_multiply_fe_96(
-    libcrux_ml_kem_vector_portable_vector_type_PortableVector v, int16_t fer) {
-  return libcrux_ml_kem_vector_portable_montgomery_multiply_by_constant_2c(v,
-                                                                           fer);
-}
-
-/**
 A monomorphic instance of libcrux_ml_kem.ntt.ntt_layer_int_vec_step
 with types libcrux_ml_kem_vector_portable_vector_type_PortableVector
 with const generics
@@ -1738,7 +1772,8 @@ static KRML_MUSTINLINE
         libcrux_ml_kem_vector_portable_vector_type_PortableVector b,
         int16_t zeta_r) {
   libcrux_ml_kem_vector_portable_vector_type_PortableVector t =
-      libcrux_ml_kem_vector_traits_montgomery_multiply_fe_96(b, zeta_r);
+      libcrux_ml_kem_vector_portable_montgomery_multiply_by_constant_2c(b,
+                                                                        zeta_r);
   b = libcrux_ml_kem_vector_portable_sub_2c(a, &t);
   a = libcrux_ml_kem_vector_portable_add_2c(a, &t);
   return (libcrux_ml_kem_vector_portable_vector_type_PortableVector_x2{a, b});
@@ -2232,7 +2267,8 @@ static KRML_MUSTINLINE
       libcrux_ml_kem_vector_portable_sub_2c(b, &a);
   a = libcrux_ml_kem_vector_portable_barrett_reduce_2c(
       libcrux_ml_kem_vector_portable_add_2c(a, &b));
-  b = libcrux_ml_kem_vector_traits_montgomery_multiply_fe_96(a_minus_b, zeta_r);
+  b = libcrux_ml_kem_vector_portable_montgomery_multiply_by_constant_2c(
+      a_minus_b, zeta_r);
   return (libcrux_ml_kem_vector_portable_vector_type_PortableVector_x2{a, b});
 }
 
@@ -2310,11 +2346,12 @@ libcrux_ml_kem_polynomial_subtract_reduce_96(
         coefficient_normal_form =
             libcrux_ml_kem_vector_portable_montgomery_multiply_by_constant_2c(
                 b.coefficients[i0], (int16_t)1441);
-    libcrux_ml_kem_vector_portable_vector_type_PortableVector uu____0 =
-        libcrux_ml_kem_vector_portable_barrett_reduce_2c(
-            libcrux_ml_kem_vector_portable_sub_2c(myself->coefficients[i0],
-                                                  &coefficient_normal_form));
-    b.coefficients[i0] = uu____0;
+    libcrux_ml_kem_vector_portable_vector_type_PortableVector diff =
+        libcrux_ml_kem_vector_portable_sub_2c(myself->coefficients[i0],
+                                              &coefficient_normal_form);
+    libcrux_ml_kem_vector_portable_vector_type_PortableVector red =
+        libcrux_ml_kem_vector_portable_barrett_reduce_2c(diff);
+    b.coefficients[i0] = red;
   }
   return b;
 }
@@ -2368,54 +2405,6 @@ libcrux_ml_kem_matrix_compute_message_1b(
 }
 
 /**
-A monomorphic instance of libcrux_ml_kem.vector.portable.arithmetic.shift_right
-with const generics
-- SHIFT_BY= 15
-*/
-static KRML_MUSTINLINE libcrux_ml_kem_vector_portable_vector_type_PortableVector
-libcrux_ml_kem_vector_portable_arithmetic_shift_right_ef(
-    libcrux_ml_kem_vector_portable_vector_type_PortableVector vec) {
-  for (size_t i = (size_t)0U;
-       i < LIBCRUX_ML_KEM_VECTOR_TRAITS_FIELD_ELEMENTS_IN_VECTOR; i++) {
-    size_t i0 = i;
-    vec.elements[i0] = vec.elements[i0] >> (uint32_t)(int32_t)15;
-  }
-  return vec;
-}
-
-/**
-This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::portable::vector_type::PortableVector)#1}
-*/
-/**
-A monomorphic instance of libcrux_ml_kem.vector.portable.shift_right_2c
-with const generics
-- SHIFT_BY= 15
-*/
-static inline libcrux_ml_kem_vector_portable_vector_type_PortableVector
-libcrux_ml_kem_vector_portable_shift_right_2c_ef(
-    libcrux_ml_kem_vector_portable_vector_type_PortableVector v) {
-  return libcrux_ml_kem_vector_portable_arithmetic_shift_right_ef(v);
-}
-
-/**
-A monomorphic instance of
-libcrux_ml_kem.vector.traits.to_unsigned_representative with types
-libcrux_ml_kem_vector_portable_vector_type_PortableVector with const generics
-
-*/
-static KRML_MUSTINLINE libcrux_ml_kem_vector_portable_vector_type_PortableVector
-libcrux_ml_kem_vector_traits_to_unsigned_representative_96(
-    libcrux_ml_kem_vector_portable_vector_type_PortableVector a) {
-  libcrux_ml_kem_vector_portable_vector_type_PortableVector t =
-      libcrux_ml_kem_vector_portable_shift_right_2c_ef(a);
-  libcrux_ml_kem_vector_portable_vector_type_PortableVector fm =
-      libcrux_ml_kem_vector_portable_bitwise_and_with_constant_2c(
-          t, LIBCRUX_ML_KEM_VECTOR_TRAITS_FIELD_MODULUS);
-  return libcrux_ml_kem_vector_portable_add_2c(a, &fm);
-}
-
-/**
 A monomorphic instance of libcrux_ml_kem.serialize.to_unsigned_field_modulus
 with types libcrux_ml_kem_vector_portable_vector_type_PortableVector
 with const generics
@@ -2424,7 +2413,7 @@ with const generics
 static KRML_MUSTINLINE libcrux_ml_kem_vector_portable_vector_type_PortableVector
 libcrux_ml_kem_serialize_to_unsigned_field_modulus_96(
     libcrux_ml_kem_vector_portable_vector_type_PortableVector a) {
-  return libcrux_ml_kem_vector_traits_to_unsigned_representative_96(a);
+  return libcrux_ml_kem_vector_portable_to_unsigned_representative_2c(a);
 }
 
 /**
@@ -3485,11 +3474,12 @@ static KRML_MUSTINLINE void libcrux_ml_kem_polynomial_add_error_reduce_96(
         coefficient_normal_form =
             libcrux_ml_kem_vector_portable_montgomery_multiply_by_constant_2c(
                 myself->coefficients[j], (int16_t)1441);
-    libcrux_ml_kem_vector_portable_vector_type_PortableVector uu____0 =
-        libcrux_ml_kem_vector_portable_barrett_reduce_2c(
-            libcrux_ml_kem_vector_portable_add_2c(coefficient_normal_form,
-                                                  &error->coefficients[j]));
-    myself->coefficients[j] = uu____0;
+    libcrux_ml_kem_vector_portable_vector_type_PortableVector sum =
+        libcrux_ml_kem_vector_portable_add_2c(coefficient_normal_form,
+                                              &error->coefficients[j]);
+    libcrux_ml_kem_vector_portable_vector_type_PortableVector red =
+        libcrux_ml_kem_vector_portable_barrett_reduce_2c(sum);
+    myself->coefficients[j] = red;
   }
 }
 
@@ -3731,25 +3721,6 @@ static KRML_MUSTINLINE tuple_ed libcrux_ml_kem_ind_cpa_encrypt_c1_85(
 }
 
 /**
-A monomorphic instance of libcrux_ml_kem.vector.traits.decompress_1
-with types libcrux_ml_kem_vector_portable_vector_type_PortableVector
-with const generics
-
-*/
-static KRML_MUSTINLINE libcrux_ml_kem_vector_portable_vector_type_PortableVector
-libcrux_ml_kem_vector_traits_decompress_1_96(
-    libcrux_ml_kem_vector_portable_vector_type_PortableVector vec) {
-  libcrux_ml_kem_vector_portable_vector_type_PortableVector z =
-      libcrux_ml_kem_vector_portable_ZERO_2c();
-  libcrux_ml_kem_vector_portable_vector_type_PortableVector s =
-      libcrux_ml_kem_vector_portable_sub_2c(z, &vec);
-  libcrux_ml_kem_vector_portable_vector_type_PortableVector res =
-      libcrux_ml_kem_vector_portable_bitwise_and_with_constant_2c(
-          s, (int16_t)1665);
-  return res;
-}
-
-/**
 A monomorphic instance of
 libcrux_ml_kem.serialize.deserialize_then_decompress_message with types
 libcrux_ml_kem_vector_portable_vector_type_PortableVector with const generics
@@ -3769,7 +3740,7 @@ libcrux_ml_kem_serialize_deserialize_then_decompress_message_96(
                                             (size_t)2U * i0 + (size_t)2U,
                                             uint8_t));
     libcrux_ml_kem_vector_portable_vector_type_PortableVector uu____0 =
-        libcrux_ml_kem_vector_traits_decompress_1_96(coefficient_compressed);
+        libcrux_ml_kem_vector_portable_decompress_1_2c(coefficient_compressed);
     re.coefficients[i0] = uu____0;
   }
   return re;
@@ -3793,14 +3764,14 @@ libcrux_ml_kem_polynomial_add_message_error_reduce_96(
         coefficient_normal_form =
             libcrux_ml_kem_vector_portable_montgomery_multiply_by_constant_2c(
                 result.coefficients[i0], (int16_t)1441);
-    libcrux_ml_kem_vector_portable_vector_type_PortableVector tmp =
+    libcrux_ml_kem_vector_portable_vector_type_PortableVector sum1 =
         libcrux_ml_kem_vector_portable_add_2c(myself->coefficients[i0],
                                               &message->coefficients[i0]);
-    libcrux_ml_kem_vector_portable_vector_type_PortableVector tmp0 =
-        libcrux_ml_kem_vector_portable_add_2c(coefficient_normal_form, &tmp);
-    libcrux_ml_kem_vector_portable_vector_type_PortableVector uu____0 =
-        libcrux_ml_kem_vector_portable_barrett_reduce_2c(tmp0);
-    result.coefficients[i0] = uu____0;
+    libcrux_ml_kem_vector_portable_vector_type_PortableVector sum2 =
+        libcrux_ml_kem_vector_portable_add_2c(coefficient_normal_form, &sum1);
+    libcrux_ml_kem_vector_portable_vector_type_PortableVector red =
+        libcrux_ml_kem_vector_portable_barrett_reduce_2c(sum2);
+    result.coefficients[i0] = red;
   }
   return result;
 }
@@ -4404,16 +4375,17 @@ static KRML_MUSTINLINE void libcrux_ml_kem_variant_cpa_keygen_seed_d8_9c(
 }
 
 /**
-A monomorphic instance of libcrux_ml_kem.vector.traits.to_standard_domain
+A monomorphic instance of libcrux_ml_kem.polynomial.to_standard_domain
 with types libcrux_ml_kem_vector_portable_vector_type_PortableVector
 with const generics
 
 */
 static KRML_MUSTINLINE libcrux_ml_kem_vector_portable_vector_type_PortableVector
-libcrux_ml_kem_vector_traits_to_standard_domain_96(
-    libcrux_ml_kem_vector_portable_vector_type_PortableVector v) {
+libcrux_ml_kem_polynomial_to_standard_domain_96(
+    libcrux_ml_kem_vector_portable_vector_type_PortableVector vector) {
   return libcrux_ml_kem_vector_portable_montgomery_multiply_by_constant_2c(
-      v, LIBCRUX_ML_KEM_VECTOR_TRAITS_MONTGOMERY_R_SQUARED_MOD_FIELD_MODULUS);
+      vector,
+      LIBCRUX_ML_KEM_VECTOR_TRAITS_MONTGOMERY_R_SQUARED_MOD_FIELD_MODULUS);
 }
 
 /**
@@ -4431,13 +4403,14 @@ libcrux_ml_kem_polynomial_add_standard_error_reduce_96(
     size_t j = i;
     libcrux_ml_kem_vector_portable_vector_type_PortableVector
         coefficient_normal_form =
-            libcrux_ml_kem_vector_traits_to_standard_domain_96(
+            libcrux_ml_kem_polynomial_to_standard_domain_96(
                 myself->coefficients[j]);
-    libcrux_ml_kem_vector_portable_vector_type_PortableVector uu____0 =
-        libcrux_ml_kem_vector_portable_barrett_reduce_2c(
-            libcrux_ml_kem_vector_portable_add_2c(coefficient_normal_form,
-                                                  &error->coefficients[j]));
-    myself->coefficients[j] = uu____0;
+    libcrux_ml_kem_vector_portable_vector_type_PortableVector sum =
+        libcrux_ml_kem_vector_portable_add_2c(coefficient_normal_form,
+                                              &error->coefficients[j]);
+    libcrux_ml_kem_vector_portable_vector_type_PortableVector red =
+        libcrux_ml_kem_vector_portable_barrett_reduce_2c(sum);
+    myself->coefficients[j] = red;
   }
 }
 
