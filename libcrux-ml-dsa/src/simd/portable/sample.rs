@@ -13,7 +13,8 @@ pub fn rejection_sample_less_than_field_modulus(randomness: &[u8], out: &mut [i3
 
     for i in 0..randomness.len() / 3 {
         hax_lib::loop_invariant!(|i: usize| {
-            fstar!(r#"
+            fstar!(
+                r#"
               v $sampled <= v $i /\
               Seq.length $out == v $_out_len /\
               (let samples = Lib.LoopCombinators.repeati (v $i)
@@ -60,7 +61,8 @@ pub fn rejection_sample_less_than_eta_equals_2(randomness: &[u8], out: &mut [i32
 
     for i in 0..randomness.len() {
         hax_lib::loop_invariant!(|i: usize| {
-            fstar!(r#"
+            fstar!(
+                r#"
               v $i >= 0 /\ v $i <= Seq.length $randomness /\
               v $sampled <= v $i * 2 /\
               Seq.length $out == v $_out_len /\
@@ -128,7 +130,8 @@ pub fn rejection_sample_less_than_eta_equals_4(randomness: &[u8], out: &mut [i32
 
     for i in 0..randomness.len() {
         hax_lib::loop_invariant!(|i: usize| {
-            fstar!(r#"
+            fstar!(
+                r#"
               v $i >= 0 /\ v $i <= Seq.length $randomness /\
               v $sampled <= v $i * 2 /\
               Seq.length $out == v $_out_len /\
