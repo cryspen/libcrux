@@ -1,7 +1,17 @@
 [package]
 name = "minicore"
-edition = "2021"
+version.workspace = true
+authors.workspace = true
+license.workspace = true
+homepage.workspace = true
+edition.workspace = true
+repository.workspace = true
+readme.workspace = true
 publish = false
 
 [dependencies]
 rand = "0.9"
+hax-lib.workspace = true
+
+[lints.rust]
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(hax)'] }

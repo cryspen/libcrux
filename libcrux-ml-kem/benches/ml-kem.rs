@@ -8,7 +8,11 @@ use libcrux_ml_kem::{mlkem1024, mlkem512, mlkem768};
 
 macro_rules! init {
     ($version:path, $bench:expr, $c:expr) => {{
-        let mut group = $c.benchmark_group(format!("ML-KEM {} {}", stringify!($version), $bench));
+        let version = stringify!($version);
+        let key_size = version
+            .strip_prefix("mlkem")
+            .expect("crate name does not begin with 'mlkem'");
+        let mut group = $c.benchmark_group(format!("ML-KEM/{}/{}", key_size, $bench));
         group.measurement_time(Duration::from_secs(10));
 
         use $version as version;
@@ -38,7 +42,7 @@ pub fn key_generation(c: &mut Criterion) {
 
     macro_rules! fun {
         ($name:expr, $p:path, $group:expr) => {
-            $group.bench_function(format!("{} (external random)", $name), |b| {
+            $group.bench_function(format!("{}/external random", $name), |b| {
                 use $p as p;
 
                 let mut seed = [0; 64];
@@ -52,7 +56,7 @@ pub fn key_generation(c: &mut Criterion) {
 
     macro_rules! fun_unpacked {
         ($name:expr, $p:path, $group:expr) => {
-            $group.bench_function(format!("unpacked {} (external random)", $name), |b| {
+            $group.bench_function(format!("{}/unpacked (external random)", $name), |b| {
                 use $p as p;
                 let mut seed = [0; 64];
                 rng.try_fill_bytes(&mut seed).unwrap();
@@ -74,7 +78,7 @@ pub fn pk_validation(c: &mut Criterion) {
 
     macro_rules! fun {
         ($name:expr, $p:path, $group:expr) => {
-            $group.bench_function(format!("{}", $name), |b| {
+            $group.bench_function(format!("{}/", $name), |b| {
                 use $p as p;
 
                 let mut seed = [0; 64];
@@ -102,7 +106,7 @@ pub fn pk_validation(c: &mut Criterion) {
     #[cfg(feature = "incremental")]
     macro_rules! fun_incremental {
         ($name:expr, $p:path, $group:expr) => {
-            $group.bench_function(format!("{} incremental", $name), |b| {
+            $group.bench_function(format!("{}/incremental", $name), |b| {
                 use $p::*;
 
                 b.iter_batched(
@@ -127,7 +131,7 @@ pub fn pk_validation(c: &mut Criterion) {
 pub fn encapsulation(c: &mut Criterion) {
     macro_rules! fun {
         ($name:expr, $p:path, $group:expr) => {
-            $group.bench_function(format!("{} (external random)", $name), |b| {
+            $group.bench_function(format!("{}/external random", $name), |b| {
                 use $p as p;
                 let mut seed1 = [0; 64];
                 OsRng.try_fill_bytes(&mut seed1).unwrap();
@@ -147,7 +151,7 @@ pub fn encapsulation(c: &mut Criterion) {
 
     macro_rules! fun_unpacked {
         ($name:expr, $p:path, $group:expr) => {
-            $group.bench_function(format!("unpacked {} (external random)", $name), |b| {
+            $group.bench_function(format!("{}/unpacked (external random)", $name), |b| {
                 use $p as p;
 
                 let mut seed1 = [0; 64];
@@ -174,7 +178,7 @@ pub fn encapsulation(c: &mut Criterion) {
     #[cfg(feature = "incremental")]
     macro_rules! fun_incremental {
         ($name:expr, $p:path, $group:expr) => {
-            $group.bench_function(format!("incremental {} (external random)", $name), |b| {
+            $group.bench_function(format!("{}/incremental (external random)", $name), |b| {
                 use $p::*;
 
                 let mut seed1 = [0; 64];
@@ -202,7 +206,7 @@ pub fn encapsulation(c: &mut Criterion) {
                 )
             });
 
-            $group.bench_function(format!("incremental {}", $name), |b| {
+            $group.bench_function(format!("{}/incremental", $name), |b| {
                 use $p::*;
 
                 b.iter_batched(
@@ -239,7 +243,7 @@ pub fn encapsulation(c: &mut Criterion) {
 pub fn decapsulation(c: &mut Criterion) {
     macro_rules! fun {
         ($name:expr, $p:path, $group:expr) => {
-            $group.bench_function(format!("{}", $name), |b| {
+            $group.bench_function(format!("{}/", $name), |b| {
                 use $p as p;
                 let mut seed1 = [0; 64];
                 OsRng.try_fill_bytes(&mut seed1).unwrap();
@@ -264,7 +268,7 @@ pub fn decapsulation(c: &mut Criterion) {
 
     macro_rules! fun_unpacked {
         ($name:expr, $p:path, $group:expr) => {
-            $group.bench_function(format!("unpacked {}", $name), |b| {
+            $group.bench_function(format!("{}/unpacked", $name), |b| {
                 use $p as p;
                 let mut seed1 = [0; 64];
                 OsRng.try_fill_bytes(&mut seed1).unwrap();
@@ -290,7 +294,7 @@ pub fn decapsulation(c: &mut Criterion) {
     #[cfg(feature = "incremental")]
     macro_rules! fun_incremental {
         ($name:expr, $p:path, $group:expr) => {
-            $group.bench_function(format!("incremental {}", $name), |b| {
+            $group.bench_function(format!("{}/incremental", $name), |b| {
                 use $p::*;
 
                 let mut seed1 = [0; 64];

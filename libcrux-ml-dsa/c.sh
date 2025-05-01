@@ -60,14 +60,14 @@ if [[ "$no_charon" = 0 ]]; then
     cargo clean -p libcrux-sha3
     rm -rf ../libcrux_ml_dsa.llbc ../libcrux_sha3.llbc
     echo "Running charon (sha3) ..."
-    (cd ../libcrux-sha3 && RUSTFLAGS="--cfg eurydice" $CHARON_HOME/bin/charon --remove-associated-types '*')
+    (cd ../libcrux-sha3 && RUSTFLAGS="--cfg eurydice" $CHARON_HOME/bin/charon --remove-associated-types '*' --rustc-arg=-Cdebug-assertions=no)
     if ! [[ -f ../libcrux_sha3.llbc ]]; then
         echo "😱😱😱 You are the victim of a bug."
         echo "Suggestion: rm -rf ../target or cargo clean"
         exit 1
     fi
     echo "Running charon (ml-dsa) with $features ..."
-    RUSTFLAGS="--cfg eurydice" $CHARON_HOME/bin/charon --remove-associated-types '*' $features
+    RUSTFLAGS="--cfg eurydice" $CHARON_HOME/bin/charon --remove-associated-types '*' --rustc-arg=-Cdebug-assertions=no $features
 else
     echo "Skipping charon"
 fi
@@ -132,6 +132,6 @@ fi
 find . -type f -name '*.c' -and -not -path '*_deps*' -exec clang-format --style=Google -i "{}" \;
 find . -type f -name '*.h' -and -not -path '*_deps*' -exec clang-format --style=Google -i "{}" \;
 if [ -d "internal" ]; then
-    clang-format --style=Google -i internal/*.h
+    clang-format-18 --style=Google -i internal/*.h
 fi
-clang-format --style=Google -i intrinsics/*.h
+clang-format-18 --style=Google -i intrinsics/*.h
