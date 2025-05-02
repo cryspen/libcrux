@@ -1,7 +1,7 @@
 // XXX: This could be simplified with the pure Rust version now.
 
 use alloc::format;
-use rand::{CryptoRng, Rng, TryRngCore};
+use rand::{CryptoRng, TryRngCore};
 
 use super::Error;
 
@@ -33,7 +33,9 @@ impl TryFrom<&[u8]> for PublicKey {
 
 impl From<&[u8; 32]> for PrivateKey {
     fn from(value: &[u8; 32]) -> Self {
-        Self(*value)
+        let mut out = Self(*value);
+        clamp(&mut out.0);
+        out
     }
 }
 
@@ -41,7 +43,9 @@ impl TryFrom<&[u8]> for PrivateKey {
     type Error = Error;
 
     fn try_from(value: &[u8]) -> Result<Self, Self::Error> {
-        Ok(Self(value.try_into().map_err(|_| Error::InvalidScalar)?))
+        let mut out = Self(value.try_into().map_err(|_| Error::InvalidScalar)?);
+        clamp(&mut out.0);
+        Ok(out)
     }
 }
 
@@ -104,7 +108,8 @@ pub fn derive(p: &PublicKey, s: &PrivateKey) -> Result<SharedSecret, Error> {
         .map(SharedSecret)
 }
 
-pub(crate) fn secret_to_public(s: &PrivateKey) -> Result<PublicKey, Error> {
+/// Compute the public key, corresponding to the private key `s`.
+pub fn secret_to_public(s: &PrivateKey) -> Result<PublicKey, Error> {
     // Use the portable HACL implementation.
     use crate::hacl::curve25519;
 
@@ -112,7 +117,7 @@ pub(crate) fn secret_to_public(s: &PrivateKey) -> Result<PublicKey, Error> {
 }
 
 /// Generate a new x25519 secret.
-pub fn generate_secret(rng: &mut (impl CryptoRng + Rng)) -> Result<PrivateKey, Error> {
+pub fn generate_secret(rng: &mut impl CryptoRng) -> Result<PrivateKey, Error> {
     const LIMIT: usize = 100;
     for _ in 0..LIMIT {
         let mut out = [0u8; 32];
@@ -124,19 +129,23 @@ pub fn generate_secret(rng: &mut (impl CryptoRng + Rng)) -> Result<PrivateKey, E
             continue;
         }
 
-        // We clamp the key already to make sure it can't be misused.
-        out[0] &= 248u8;
-        out[31] &= 127u8;
-        out[31] |= 64u8;
-
+        clamp(&mut out);
         return Ok(PrivateKey(out));
     }
 
     Err(Error::KeyGenError)
 }
 
+/// Clamp a scalar.
+fn clamp(scalar: &mut [u8; 32]) {
+    // We clamp the key already to make sure it can't be misused.
+    scalar[0] &= 248u8;
+    scalar[31] &= 127u8;
+    scalar[31] |= 64u8;
+}
+
 /// Generate a new P256 key pair
-pub fn key_gen(rng: &mut (impl CryptoRng + Rng)) -> Result<(PrivateKey, PublicKey), Error> {
+pub fn key_gen(rng: &mut impl CryptoRng) -> Result<(PrivateKey, PublicKey), Error> {
     let sk = generate_secret(rng)?;
     let pk = secret_to_public(&sk)?;
     Ok((sk, pk))

@@ -1,24 +1,24 @@
 /*
- * SPDX-FileCopyrightText: 2024 Cryspen Sarl <info@cryspen.com>
+ * SPDX-FileCopyrightText: 2025 Cryspen Sarl <info@cryspen.com>
  *
  * SPDX-License-Identifier: MIT or Apache-2.0
  *
  * This code was generated with the following revisions:
- * Charon: a8f2211d1b95e0462a96382023b164a4116c7ca4
- * Eurydice: 788c5abefac3a9c7f79abae6a30fa8558e39764c
- * Karamel: 1d81d757d5d9e16dd6463ccc72324e587c707959
- * F*: b0961063393215ca65927f017720cb365a193833-dirty
- * Libcrux: 1c4e2cbb4bc08f93cca04e22245f2b25dcb23d83
+ * Charon: 763350c6948d5594d3017ecb93273bc41c1a4e1d
+ * Eurydice: 36a5ed7dd6b61b5cd3d69a010859005912d21537
+ * Karamel: bf9b89d76dd24e2ceaaca32de3535353e7b6bc01
+ * F*: 4b3fc11774003a6ff7c09500ecb5f0145ca6d862
+ * Libcrux: 11a6aaa008bc3af7b1891627593f88e86e9f052a
  */
 
 #ifndef __libcrux_mlkem_portable_H
 #define __libcrux_mlkem_portable_H
 
+#include "eurydice_glue.h"
+
 #if defined(__cplusplus)
 extern "C" {
 #endif
-
-#include "eurydice_glue.h"
 
 void libcrux_ml_kem_hash_functions_portable_G(Eurydice_slice input,
                                               uint8_t ret[64U]);
@@ -28,10 +28,10 @@ void libcrux_ml_kem_hash_functions_portable_H(Eurydice_slice input,
 
 #define LIBCRUX_ML_KEM_VECTOR_TRAITS_FIELD_ELEMENTS_IN_VECTOR ((size_t)16U)
 
-#define LIBCRUX_ML_KEM_VECTOR_TRAITS_FIELD_MODULUS ((int16_t)3329)
-
 #define LIBCRUX_ML_KEM_VECTOR_TRAITS_MONTGOMERY_R_SQUARED_MOD_FIELD_MODULUS \
   ((int16_t)1353)
+
+#define LIBCRUX_ML_KEM_VECTOR_TRAITS_FIELD_MODULUS ((int16_t)3329)
 
 #define LIBCRUX_ML_KEM_VECTOR_TRAITS_INVERSE_OF_MODULUS_MOD_MONTGOMERY_R \
   (62209U)
@@ -198,18 +198,6 @@ libcrux_ml_kem_vector_portable_vector_type_PortableVector
 libcrux_ml_kem_vector_portable_multiply_by_constant_2c(
     libcrux_ml_kem_vector_portable_vector_type_PortableVector vec, int16_t c);
 
-libcrux_ml_kem_vector_portable_vector_type_PortableVector
-libcrux_ml_kem_vector_portable_arithmetic_bitwise_and_with_constant(
-    libcrux_ml_kem_vector_portable_vector_type_PortableVector vec, int16_t c);
-
-/**
-This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::portable::vector_type::PortableVector)#1}
-*/
-libcrux_ml_kem_vector_portable_vector_type_PortableVector
-libcrux_ml_kem_vector_portable_bitwise_and_with_constant_2c(
-    libcrux_ml_kem_vector_portable_vector_type_PortableVector v, int16_t c);
-
 /**
  Note: This function is not secret independent
  Only use with public values.
@@ -262,13 +250,9 @@ libcrux_ml_kem::vector::portable::vector_type::PortableVector)#1}
 */
 libcrux_ml_kem_vector_portable_vector_type_PortableVector
 libcrux_ml_kem_vector_portable_barrett_reduce_2c(
-    libcrux_ml_kem_vector_portable_vector_type_PortableVector v);
+    libcrux_ml_kem_vector_portable_vector_type_PortableVector vector);
 
 #define LIBCRUX_ML_KEM_VECTOR_PORTABLE_ARITHMETIC_MONTGOMERY_SHIFT (16U)
-
-#define LIBCRUX_ML_KEM_VECTOR_PORTABLE_ARITHMETIC_MONTGOMERY_R \
-  ((int32_t)1 << (uint32_t)                                    \
-       LIBCRUX_ML_KEM_VECTOR_PORTABLE_ARITHMETIC_MONTGOMERY_SHIFT)
 
 /**
  Signed Montgomery Reduction
@@ -313,7 +297,24 @@ libcrux_ml_kem::vector::portable::vector_type::PortableVector)#1}
 */
 libcrux_ml_kem_vector_portable_vector_type_PortableVector
 libcrux_ml_kem_vector_portable_montgomery_multiply_by_constant_2c(
-    libcrux_ml_kem_vector_portable_vector_type_PortableVector v, int16_t r);
+    libcrux_ml_kem_vector_portable_vector_type_PortableVector vector,
+    int16_t constant);
+
+libcrux_ml_kem_vector_portable_vector_type_PortableVector
+libcrux_ml_kem_vector_portable_arithmetic_bitwise_and_with_constant(
+    libcrux_ml_kem_vector_portable_vector_type_PortableVector vec, int16_t c);
+
+libcrux_ml_kem_vector_portable_vector_type_PortableVector
+libcrux_ml_kem_vector_portable_arithmetic_to_unsigned_representative(
+    libcrux_ml_kem_vector_portable_vector_type_PortableVector a);
+
+/**
+This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
+libcrux_ml_kem::vector::portable::vector_type::PortableVector)#1}
+*/
+libcrux_ml_kem_vector_portable_vector_type_PortableVector
+libcrux_ml_kem_vector_portable_to_unsigned_representative_2c(
+    libcrux_ml_kem_vector_portable_vector_type_PortableVector a);
 
 /**
  The `compress_*` functions implement the `Compress` function specified in the
@@ -357,6 +358,18 @@ uint32_t libcrux_ml_kem_vector_portable_arithmetic_get_n_least_significant_bits(
 
 int16_t libcrux_ml_kem_vector_portable_compress_compress_ciphertext_coefficient(
     uint8_t coefficient_bits, uint16_t fe);
+
+libcrux_ml_kem_vector_portable_vector_type_PortableVector
+libcrux_ml_kem_vector_portable_compress_decompress_1(
+    libcrux_ml_kem_vector_portable_vector_type_PortableVector a);
+
+/**
+This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
+libcrux_ml_kem::vector::portable::vector_type::PortableVector)#1}
+*/
+libcrux_ml_kem_vector_portable_vector_type_PortableVector
+libcrux_ml_kem_vector_portable_decompress_1_2c(
+    libcrux_ml_kem_vector_portable_vector_type_PortableVector a);
 
 void libcrux_ml_kem_vector_portable_ntt_ntt_step(
     libcrux_ml_kem_vector_portable_vector_type_PortableVector *vec,
@@ -696,6 +709,10 @@ libcrux_ml_kem::vector::portable::vector_type::PortableVector)#1}
 size_t libcrux_ml_kem_vector_portable_rej_sample_2c(Eurydice_slice a,
                                                     Eurydice_slice out);
 
+#define LIBCRUX_ML_KEM_VECTOR_PORTABLE_ARITHMETIC_MONTGOMERY_R \
+  ((int32_t)1 << (uint32_t)                                    \
+       LIBCRUX_ML_KEM_VECTOR_PORTABLE_ARITHMETIC_MONTGOMERY_SHIFT)
+
 /**
 This function found in impl {(core::clone::Clone for
 libcrux_ml_kem::vector::portable::vector_type::PortableVector)}
@@ -709,7 +726,7 @@ This function found in impl {(libcrux_ml_kem::vector::traits::Repr for
 libcrux_ml_kem::vector::portable::vector_type::PortableVector)}
 */
 void libcrux_ml_kem_vector_portable_repr_94(
-    libcrux_ml_kem_vector_portable_vector_type_PortableVector x,
+    libcrux_ml_kem_vector_portable_vector_type_PortableVector *self,
     int16_t ret[16U]);
 
 #if defined(__cplusplus)

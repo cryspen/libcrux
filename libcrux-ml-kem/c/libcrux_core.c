@@ -1,14 +1,14 @@
 /*
- * SPDX-FileCopyrightText: 2024 Cryspen Sarl <info@cryspen.com>
+ * SPDX-FileCopyrightText: 2025 Cryspen Sarl <info@cryspen.com>
  *
  * SPDX-License-Identifier: MIT or Apache-2.0
  *
  * This code was generated with the following revisions:
- * Charon: a8f2211d1b95e0462a96382023b164a4116c7ca4
- * Eurydice: 788c5abefac3a9c7f79abae6a30fa8558e39764c
- * Karamel: 1d81d757d5d9e16dd6463ccc72324e587c707959
- * F*: b0961063393215ca65927f017720cb365a193833-dirty
- * Libcrux: 1c4e2cbb4bc08f93cca04e22245f2b25dcb23d83
+ * Charon: 763350c6948d5594d3017ecb93273bc41c1a4e1d
+ * Eurydice: 36a5ed7dd6b61b5cd3d69a010859005912d21537
+ * Karamel: bf9b89d76dd24e2ceaaca32de3535353e7b6bc01
+ * F*: 4b3fc11774003a6ff7c09500ecb5f0145ca6d862
+ * Libcrux: 11a6aaa008bc3af7b1891627593f88e86e9f052a
  */
 
 #include "internal/libcrux_core.h"
@@ -106,8 +106,8 @@ with const generics
 libcrux_ml_kem_mlkem1024_MlKem1024KeyPair libcrux_ml_kem_types_from_3a_94(
     libcrux_ml_kem_types_MlKemPrivateKey_83 sk,
     libcrux_ml_kem_types_MlKemPublicKey_64 pk) {
-  return (
-      CLITERAL(libcrux_ml_kem_mlkem1024_MlKem1024KeyPair){.sk = sk, .pk = pk});
+  return (KRML_CLITERAL(libcrux_ml_kem_mlkem1024_MlKem1024KeyPair){.sk = sk,
+                                                                   .pk = pk});
 }
 
 /**
@@ -155,8 +155,8 @@ with const generics
 libcrux_ml_kem_mlkem768_MlKem768KeyPair libcrux_ml_kem_types_from_3a_74(
     libcrux_ml_kem_types_MlKemPrivateKey_d9 sk,
     libcrux_ml_kem_types_MlKemPublicKey_30 pk) {
-  return (
-      CLITERAL(libcrux_ml_kem_mlkem768_MlKem768KeyPair){.sk = sk, .pk = pk});
+  return (KRML_CLITERAL(libcrux_ml_kem_mlkem768_MlKem768KeyPair){.sk = sk,
+                                                                 .pk = pk});
 }
 
 /**
@@ -204,7 +204,8 @@ with const generics
 libcrux_ml_kem_types_MlKemKeyPair_3e libcrux_ml_kem_types_from_3a_fa(
     libcrux_ml_kem_types_MlKemPrivateKey_fa sk,
     libcrux_ml_kem_types_MlKemPublicKey_52 pk) {
-  return (CLITERAL(libcrux_ml_kem_types_MlKemKeyPair_3e){.sk = sk, .pk = pk});
+  return (
+      KRML_CLITERAL(libcrux_ml_kem_types_MlKemKeyPair_3e){.sk = sk, .pk = pk});
 }
 
 /**
@@ -297,10 +298,11 @@ Eurydice_slice_uint8_t_x4 libcrux_ml_kem_types_unpack_private_key_b4(
       Eurydice_slice_uint8_t_x2);
   Eurydice_slice ind_cpa_public_key_hash = uu____2.fst;
   Eurydice_slice implicit_rejection_value = uu____2.snd;
-  return (CLITERAL(Eurydice_slice_uint8_t_x4){.fst = ind_cpa_secret_key,
-                                              .snd = ind_cpa_public_key,
-                                              .thd = ind_cpa_public_key_hash,
-                                              .f3 = implicit_rejection_value});
+  return (
+      KRML_CLITERAL(Eurydice_slice_uint8_t_x4){.fst = ind_cpa_secret_key,
+                                               .snd = ind_cpa_public_key,
+                                               .thd = ind_cpa_public_key_hash,
+                                               .f3 = implicit_rejection_value});
 }
 
 /**
@@ -329,10 +331,6 @@ with const generics
 */
 uint8_t libcrux_ml_kem_utils_prf_input_inc_e0(uint8_t (*prf_inputs)[33U],
                                               uint8_t domain_separator) {
-  uint8_t _prf_inputs_init[3U][33U];
-  core_array___core__clone__Clone_for__Array_T__N___20__clone(
-      (size_t)3U, prf_inputs, _prf_inputs_init, uint8_t[33U], void *);
-  LowStar_Ignore_ignore(_prf_inputs_init, uint8_t[3U][33U], void *);
   KRML_MAYBE_FOR3(i, (size_t)0U, (size_t)3U, (size_t)1U, size_t i0 = i;
                   prf_inputs[i0][32U] = domain_separator;
                   domain_separator = (uint32_t)domain_separator + 1U;);
@@ -430,10 +428,11 @@ Eurydice_slice_uint8_t_x4 libcrux_ml_kem_types_unpack_private_key_0c(
       Eurydice_slice_uint8_t_x2);
   Eurydice_slice ind_cpa_public_key_hash = uu____2.fst;
   Eurydice_slice implicit_rejection_value = uu____2.snd;
-  return (CLITERAL(Eurydice_slice_uint8_t_x4){.fst = ind_cpa_secret_key,
-                                              .snd = ind_cpa_public_key,
-                                              .thd = ind_cpa_public_key_hash,
-                                              .f3 = implicit_rejection_value});
+  return (
+      KRML_CLITERAL(Eurydice_slice_uint8_t_x4){.fst = ind_cpa_secret_key,
+                                               .snd = ind_cpa_public_key,
+                                               .thd = ind_cpa_public_key_hash,
+                                               .f3 = implicit_rejection_value});
 }
 
 /**
@@ -462,10 +461,6 @@ with const generics
 */
 uint8_t libcrux_ml_kem_utils_prf_input_inc_fd(uint8_t (*prf_inputs)[33U],
                                               uint8_t domain_separator) {
-  uint8_t _prf_inputs_init[2U][33U];
-  core_array___core__clone__Clone_for__Array_T__N___20__clone(
-      (size_t)2U, prf_inputs, _prf_inputs_init, uint8_t[33U], void *);
-  LowStar_Ignore_ignore(_prf_inputs_init, uint8_t[2U][33U], void *);
   KRML_MAYBE_FOR2(i, (size_t)0U, (size_t)2U, (size_t)1U, size_t i0 = i;
                   prf_inputs[i0][32U] = domain_separator;
                   domain_separator = (uint32_t)domain_separator + 1U;);
@@ -563,10 +558,11 @@ Eurydice_slice_uint8_t_x4 libcrux_ml_kem_types_unpack_private_key_1f(
       Eurydice_slice_uint8_t_x2);
   Eurydice_slice ind_cpa_public_key_hash = uu____2.fst;
   Eurydice_slice implicit_rejection_value = uu____2.snd;
-  return (CLITERAL(Eurydice_slice_uint8_t_x4){.fst = ind_cpa_secret_key,
-                                              .snd = ind_cpa_public_key,
-                                              .thd = ind_cpa_public_key_hash,
-                                              .f3 = implicit_rejection_value});
+  return (
+      KRML_CLITERAL(Eurydice_slice_uint8_t_x4){.fst = ind_cpa_secret_key,
+                                               .snd = ind_cpa_public_key,
+                                               .thd = ind_cpa_public_key_hash,
+                                               .f3 = implicit_rejection_value});
 }
 
 /**
@@ -635,10 +631,6 @@ with const generics
 */
 uint8_t libcrux_ml_kem_utils_prf_input_inc_ac(uint8_t (*prf_inputs)[33U],
                                               uint8_t domain_separator) {
-  uint8_t _prf_inputs_init[4U][33U];
-  core_array___core__clone__Clone_for__Array_T__N___20__clone(
-      (size_t)4U, prf_inputs, _prf_inputs_init, uint8_t[33U], void *);
-  LowStar_Ignore_ignore(_prf_inputs_init, uint8_t[4U][33U], void *);
   KRML_MAYBE_FOR4(i, (size_t)0U, (size_t)4U, (size_t)1U, size_t i0 = i;
                   prf_inputs[i0][32U] = domain_separator;
                   domain_separator = (uint32_t)domain_separator + 1U;);

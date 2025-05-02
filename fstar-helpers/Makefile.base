@@ -11,4 +11,5 @@ EXTRA_HELPMESSAGE += target SLOW_MODULES 'a list of modules to verify fully only
 EXTRA_HELPMESSAGE += target VERIFY_SLOW_MODULES '`yes` or `no`, defaults to `no`';
 
 FSTAR_INCLUDE_DIRS_EXTRA += $(HACL_HOME)/specs
+FSTAR_INCLUDE_DIRS_EXTRA += $(shell git rev-parse --show-toplevel)/fstar-helpers/tactics
 include $(shell git rev-parse --show-toplevel)/fstar-helpers/Makefile.generic

@@ -3,6 +3,29 @@ module Spec.Utils
 open FStar.Mul
 open Core
 
+val pow2_values_more: x:nat -> Lemma
+  (let p = pow2 x in
+   match x with
+   | 0  -> p=1
+   | 1  -> p=2
+   | 2  -> p=4
+   | 3  -> p=8
+   | 4  -> p=16
+   | 5  -> p=32
+   | 6  -> p=64
+   | 7  -> p=128
+   | 8  -> p=256
+   | 9  -> p=512
+   | 10 -> p=1024
+   | 11 -> p=2048
+   | 12 -> p=4096
+   | 13 -> p=8192
+   | 14 -> p=16384
+   | 15 -> p=32768
+   | 16 -> p=65536
+   | _ -> true)
+ [SMTPat (pow2 x)]
+
 (** Utils *)
 let map_slice #a #b
   (f:a -> b)
@@ -124,12 +147,29 @@ let nat_div_ceil (x:nat) (y:pos) : nat = if (x % y = 0) then x/y else (x/y)+1
 val lemma_intb_le b b'
   : Lemma (requires (b <= b'))
           (ensures (forall n. is_intb b n ==> is_intb b' n))
+          
+val lemma_add_intb (b1 b2: nat) (n1 n2: int) 
+    : Lemma (requires (is_intb b1 n1 /\ is_intb b2 n2))
+      (ensures (is_intb (b1 + b2) (n1 + n2)))
+
+val lemma_add_intb_forall (b1 b2: nat)
+    : Lemma (forall n1 n2. (is_intb b1 n1 /\ is_intb b2 n2) ==> is_intb (b1 + b2) (n1 + n2))
+
+val lemma_sub_intb (b1 b2: nat) (n1 n2: int) 
+    : Lemma (requires (is_intb b1 n1 /\ is_intb b2 n2))
+      (ensures (is_intb (b1 + b2) (n1 - n2)))
+
+val lemma_sub_intb_forall (b1 b2: nat)
+    : Lemma (forall n1 n2. (is_intb b1 n1 /\ is_intb b2 n2) ==> is_intb (b1 + b2) (n1 - n2))
 
 #push-options "--z3rlimit 200"
 val lemma_mul_intb (b1 b2: nat) (n1 n2: int) 
     : Lemma (requires (is_intb b1 n1 /\ is_intb b2 n2))
       (ensures (is_intb (b1 * b2) (n1 * n2)))
 #pop-options
+
+val lemma_mul_intb_forall (b1 b2: nat)
+    : Lemma (forall n1 n2. (is_intb b1 n1 /\ is_intb b2 n2) ==> is_intb (b1 * b2) (n1 * n2))
 
 #push-options "--z3rlimit 200"
 val lemma_mul_i16b (b1 b2: nat) (n1 n2: i16) 
@@ -218,6 +258,16 @@ val lemma_barrett_red (x:i16) : Lemma
              v result % 3329 == v x % 3329)) 
    [SMTPat (barrett_red x)]
 
+let logand_zero_lemma (a:i16):
+  Lemma (((mk_i16 0) &. a) == mk_i16 0)
+        [SMTPat (logand (mk_i16 0) a)] =
+        logand_lemma a a
+
+let logand_ones_lemma (a:i16):
+  Lemma (((mk_i16 (-1)) &. a) == a)
+        [SMTPat (logand (mk_i16 (-1)) a)] =
+        logand_lemma a a
+
 let cond_sub (x:i16) =
   let xm = x -. (mk_i16 3329) in
   let mask = xm >>! (mk_i32 15) in
@@ -225,9 +275,11 @@ let cond_sub (x:i16) =
   xm +. mm
 
 val lemma_cond_sub x:
-  Lemma (let r = cond_sub x in
-         if x >=. (mk_i16 3329) then r == x -! (mk_i16 3329) else r == x)
-        [SMTPat (cond_sub x)]
+  Lemma 
+    (requires (is_i16b (pow2 12 - 1) x))
+    (ensures (let r = cond_sub x in
+              if x >=. (mk_i16 3329) then r == x -! (mk_i16 3329) else r == x))
+    [SMTPat (cond_sub x)]
 
 val lemma_shift_right_15_i16 (x:i16):
   Lemma (if v x >= 0 then (x >>! (mk_i32 15)) == mk_i16 0 else (x >>! (mk_i32 15)) == (mk_i16 (-1)))

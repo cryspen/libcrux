@@ -1,22 +1,18 @@
 /*
- * SPDX-FileCopyrightText: 2024 Cryspen Sarl <info@cryspen.com>
+ * SPDX-FileCopyrightText: 2025 Cryspen Sarl <info@cryspen.com>
  *
  * SPDX-License-Identifier: MIT or Apache-2.0
  *
  * This code was generated with the following revisions:
- * Charon: a8f2211d1b95e0462a96382023b164a4116c7ca4
- * Eurydice: 788c5abefac3a9c7f79abae6a30fa8558e39764c
- * Karamel: 1d81d757d5d9e16dd6463ccc72324e587c707959
- * F*: b0961063393215ca65927f017720cb365a193833-dirty
- * Libcrux: 1c4e2cbb4bc08f93cca04e22245f2b25dcb23d83
+ * Charon: 763350c6948d5594d3017ecb93273bc41c1a4e1d
+ * Eurydice: 36a5ed7dd6b61b5cd3d69a010859005912d21537
+ * Karamel: bf9b89d76dd24e2ceaaca32de3535353e7b6bc01
+ * F*: 4b3fc11774003a6ff7c09500ecb5f0145ca6d862
+ * Libcrux: 11a6aaa008bc3af7b1891627593f88e86e9f052a
  */
 
 #ifndef __libcrux_mlkem_core_H
 #define __libcrux_mlkem_core_H
-
-#if defined(__cplusplus)
-extern "C" {
-#endif
 
 #include "eurydice_glue.h"
 
@@ -103,10 +99,11 @@ with types uint8_t[24size_t], core_array_TryFromSliceError
 */
 typedef struct Result_b2_s {
   Result_a9_tags tag;
-  union {
+  union U {
     uint8_t case_Ok[24U];
     TryFromSliceError case_Err;
   } val;
+  KRML_UNION_CONSTRUCTOR(Result_b2_s)
 } Result_b2;
 
 /**
@@ -137,10 +134,11 @@ with types uint8_t[20size_t], core_array_TryFromSliceError
 */
 typedef struct Result_e1_s {
   Result_a9_tags tag;
-  union {
+  union U {
     uint8_t case_Ok[20U];
     TryFromSliceError case_Err;
   } val;
+  KRML_UNION_CONSTRUCTOR(Result_e1_s)
 } Result_e1;
 
 /**
@@ -265,8 +263,7 @@ with const generics
 static inline libcrux_ml_kem_mlkem768_MlKem768KeyPair
 libcrux_ml_kem_types_from_3a_74(libcrux_ml_kem_types_MlKemPrivateKey_d9 sk,
                                 libcrux_ml_kem_types_MlKemPublicKey_30 pk) {
-  return (
-      CLITERAL(libcrux_ml_kem_mlkem768_MlKem768KeyPair){.sk = sk, .pk = pk});
+  return (libcrux_ml_kem_mlkem768_MlKem768KeyPair{sk, pk});
 }
 
 /**
@@ -295,10 +292,11 @@ with types uint8_t[32size_t], core_array_TryFromSliceError
 */
 typedef struct Result_fb_s {
   Result_a9_tags tag;
-  union {
+  union U {
     uint8_t case_Ok[32U];
     TryFromSliceError case_Err;
   } val;
+  KRML_UNION_CONSTRUCTOR(Result_fb_s)
 } Result_fb;
 
 /**
@@ -389,10 +387,6 @@ with const generics
 */
 static KRML_MUSTINLINE uint8_t libcrux_ml_kem_utils_prf_input_inc_e0(
     uint8_t (*prf_inputs)[33U], uint8_t domain_separator) {
-  uint8_t _prf_inputs_init[3U][33U];
-  core_array___core__clone__Clone_for__Array_T__N___20__clone(
-      (size_t)3U, prf_inputs, _prf_inputs_init, uint8_t[33U], void *);
-  LowStar_Ignore_ignore(_prf_inputs_init, uint8_t[3U][33U], void *);
   for (size_t i = (size_t)0U; i < (size_t)3U; i++) {
     size_t i0 = i;
     prf_inputs[i0][32U] = domain_separator;
@@ -529,10 +523,9 @@ libcrux_ml_kem_types_unpack_private_key_b4(Eurydice_slice private_key) {
       Eurydice_slice_uint8_t_x2);
   Eurydice_slice ind_cpa_public_key_hash = uu____2.fst;
   Eurydice_slice implicit_rejection_value = uu____2.snd;
-  return (CLITERAL(Eurydice_slice_uint8_t_x4){.fst = ind_cpa_secret_key,
-                                              .snd = ind_cpa_public_key,
-                                              .thd = ind_cpa_public_key_hash,
-                                              .f3 = implicit_rejection_value});
+  return (Eurydice_slice_uint8_t_x4{ind_cpa_secret_key, ind_cpa_public_key,
+                                    ind_cpa_public_key_hash,
+                                    implicit_rejection_value});
 }
 
 /**
@@ -542,10 +535,11 @@ with types int16_t[16size_t], core_array_TryFromSliceError
 */
 typedef struct Result_0a_s {
   Result_a9_tags tag;
-  union {
+  union U {
     int16_t case_Ok[16U];
     TryFromSliceError case_Err;
   } val;
+  KRML_UNION_CONSTRUCTOR(Result_0a_s)
 } Result_0a;
 
 /**
@@ -576,10 +570,11 @@ with types uint8_t[8size_t], core_array_TryFromSliceError
 */
 typedef struct Result_15_s {
   Result_a9_tags tag;
-  union {
+  union U {
     uint8_t case_Ok[8U];
     TryFromSliceError case_Err;
   } val;
+  KRML_UNION_CONSTRUCTOR(Result_15_s)
 } Result_15;
 
 /**
@@ -607,10 +602,6 @@ typedef struct Eurydice_slice_uint8_t_1size_t__x2_s {
   Eurydice_slice fst[1U];
   Eurydice_slice snd[1U];
 } Eurydice_slice_uint8_t_1size_t__x2;
-
-#if defined(__cplusplus)
-}
-#endif
 
 #define __libcrux_mlkem_core_H_DEFINED
 #endif
