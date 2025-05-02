@@ -8,7 +8,7 @@
  * Eurydice: 36a5ed7dd6b61b5cd3d69a010859005912d21537
  * Karamel: bf9b89d76dd24e2ceaaca32de3535353e7b6bc01
  * F*: 4b3fc11774003a6ff7c09500ecb5f0145ca6d862
- * Libcrux: da8cd3fe8f11d3c830394f92c5b7612b580dda91
+ * Libcrux: 6efcdf5988a054ae767be339f19e6876013b35aa
  */
 
 #ifndef __libcrux_mldsa65_portable_H
@@ -1231,8 +1231,6 @@ static KRML_MUSTINLINE size_t
 libcrux_ml_dsa_simd_portable_sample_rejection_sample_less_than_field_modulus(
     Eurydice_slice randomness, Eurydice_slice out) {
   size_t sampled = (size_t)0U;
-  size_t _out_len = Eurydice_slice_len(out, int32_t);
-  LowStar_Ignore_ignore(_out_len, size_t, void *);
   for (size_t i = (size_t)0U;
        i < Eurydice_slice_len(randomness, uint8_t) / (size_t)3U; i++) {
     size_t i0 = i;
@@ -1266,8 +1264,6 @@ static KRML_MUSTINLINE size_t
 libcrux_ml_dsa_simd_portable_sample_rejection_sample_less_than_eta_equals_2(
     Eurydice_slice randomness, Eurydice_slice out) {
   size_t sampled = (size_t)0U;
-  size_t _out_len = Eurydice_slice_len(out, int32_t);
-  LowStar_Ignore_ignore(_out_len, size_t, void *);
   for (size_t i = (size_t)0U; i < Eurydice_slice_len(randomness, uint8_t);
        i++) {
     size_t i0 = i;
@@ -1307,8 +1303,6 @@ static KRML_MUSTINLINE size_t
 libcrux_ml_dsa_simd_portable_sample_rejection_sample_less_than_eta_equals_4(
     Eurydice_slice randomness, Eurydice_slice out) {
   size_t sampled = (size_t)0U;
-  size_t _out_len = Eurydice_slice_len(out, int32_t);
-  LowStar_Ignore_ignore(_out_len, size_t, void *);
   for (size_t i = (size_t)0U; i < Eurydice_slice_len(randomness, uint8_t);
        i++) {
     size_t i0 = i;
@@ -8048,72 +8042,6 @@ static inline libcrux_ml_dsa_types_VerificationError
 libcrux_ml_dsa_pre_hash_from_b6(
     libcrux_ml_dsa_pre_hash_DomainSeparationError e) {
   return libcrux_ml_dsa_types_VerificationError_VerificationContextTooLongError;
-}
-
-static inline hax_lib_prop_Prop
-libcrux_ml_dsa_specs_simd_portable_sample_rejection_sample_less_than_eta_equals_2_post(
-    Eurydice_slice randomness, Eurydice_slice out, size_t r) {
-  return core_convert___core__convert__Into_U__for_T__3__into(
-      true, bool, hax_lib_prop_Prop, hax_lib_prop_Prop);
-}
-
-static inline hax_lib_prop_Prop
-libcrux_ml_dsa_specs_simd_portable_sample_rejection_sample_less_than_eta_equals_2_pre(
-    Eurydice_slice randomness, Eurydice_slice out) {
-  bool uu____0;
-  if (Eurydice_slice_len(randomness, uint8_t) * (size_t)2U <=
-      (size_t)4294967295U) {
-    size_t uu____1 = Eurydice_slice_len(randomness, uint8_t) * (size_t)2U;
-    uu____0 = uu____1 <= Eurydice_slice_len(out, int32_t);
-  } else {
-    uu____0 = false;
-  }
-  return core_convert___core__convert__Into_U__for_T__3__into(
-      uu____0, bool, hax_lib_prop_Prop, hax_lib_prop_Prop);
-}
-
-static inline hax_lib_prop_Prop
-libcrux_ml_dsa_specs_simd_portable_sample_rejection_sample_less_than_eta_equals_4_post(
-    Eurydice_slice randomness, Eurydice_slice out, size_t r) {
-  return core_convert___core__convert__Into_U__for_T__3__into(
-      true, bool, hax_lib_prop_Prop, hax_lib_prop_Prop);
-}
-
-static inline hax_lib_prop_Prop
-libcrux_ml_dsa_specs_simd_portable_sample_rejection_sample_less_than_eta_equals_4_pre(
-    Eurydice_slice randomness, Eurydice_slice out) {
-  bool uu____0;
-  if (Eurydice_slice_len(randomness, uint8_t) * (size_t)2U <=
-      (size_t)4294967295U) {
-    size_t uu____1 = Eurydice_slice_len(randomness, uint8_t) * (size_t)2U;
-    uu____0 = uu____1 <= Eurydice_slice_len(out, int32_t);
-  } else {
-    uu____0 = false;
-  }
-  return core_convert___core__convert__Into_U__for_T__3__into(
-      uu____0, bool, hax_lib_prop_Prop, hax_lib_prop_Prop);
-}
-
-static inline hax_lib_prop_Prop
-libcrux_ml_dsa_specs_simd_portable_sample_rejection_sample_less_than_field_modulus_post(
-    Eurydice_slice randomness, Eurydice_slice out, size_t r) {
-  return core_convert___core__convert__Into_U__for_T__3__into(
-      true, bool, hax_lib_prop_Prop, hax_lib_prop_Prop);
-}
-
-static inline hax_lib_prop_Prop
-libcrux_ml_dsa_specs_simd_portable_sample_rejection_sample_less_than_field_modulus_pre(
-    Eurydice_slice randomness, Eurydice_slice out) {
-  bool uu____0;
-  if (Eurydice_slice_len(randomness, uint8_t) / (size_t)3U <=
-      (size_t)4294967295U) {
-    size_t uu____1 = Eurydice_slice_len(randomness, uint8_t) / (size_t)3U;
-    uu____0 = uu____1 <= Eurydice_slice_len(out, int32_t);
-  } else {
-    uu____0 = false;
-  }
-  return core_convert___core__convert__Into_U__for_T__3__into(
-      uu____0, bool, hax_lib_prop_Prop, hax_lib_prop_Prop);
 }
 
 typedef int32_t libcrux_ml_dsa_simd_traits_FieldElementTimesMontgomeryR;
