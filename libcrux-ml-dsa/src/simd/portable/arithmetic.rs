@@ -80,7 +80,7 @@ pub(crate) fn get_n_least_significant_bits(n: u8, value: u64) -> u64 {
 }
 
 #[inline(always)]
-#[hax_lib::fstar::options("--z3rlimit 500 --split_queries always")]
+#[hax_lib::fstar::options("--z3rlimit 900 --split_queries always")]
 #[hax_lib::requires(fstar!(r#"Spec.Utils.is_i64b (8380416 * pow2 32) value "#))]
 #[hax_lib::ensures(|result| fstar!(r#"Spec.Utils.is_i32b (8380416 + 4190209) result /\
                 (Spec.Utils.is_i64b (8380416 * pow2 31) value ==> Spec.Utils.is_i32b 8380416 result) /\
