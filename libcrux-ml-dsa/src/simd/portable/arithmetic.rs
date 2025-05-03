@@ -257,13 +257,11 @@ pub(crate) fn montgomery_multiply(lhs: &mut Coefficients, rhs: &Coefficients) {
 #[hax_lib::ensures(|(t0,t1)| fstar!(r#"let (t0_s, t1_s) = Spec.MLDSA.Math.power2round (v $t) in
     v $t0 == t0_s /\ v $t1 == t1_s /\ Spec.Utils.is_intb_bt (pow2 (v $BITS_IN_LOWER_PART_OF_T - 1)) (v $t0)"#))]
 fn power2round_element(t: i32) -> (i32, i32) {
-    hax_lib::fstar!(
-        "logand_lemma $FIELD_MODULUS (t >>! mk_i32 31)");
+    hax_lib::fstar!("logand_lemma $FIELD_MODULUS (t >>! mk_i32 31)");
     let _t = t;
     // Convert the signed representative to the standard unsigned one.
     let t = t + ((t >> 31) & FIELD_MODULUS);
-    hax_lib::fstar!(
-        "assert (v $t == v $_t % v $FIELD_MODULUS)");
+    hax_lib::fstar!("assert (v $t == v $_t % v $FIELD_MODULUS)");
 
     // t0 = t - (2^{BITS_IN_LOWER_PART_OF_T} * t1)
     // t1 = ⌊(t - 1)/2^{BITS_IN_LOWER_PART_OF_T} + 1/2⌋
@@ -306,7 +304,8 @@ pub(super) fn power2round(t0: &mut Coefficients, t1: &mut Coefficients) {
     let _t0: Coefficients = t0.clone();
     for i in 0..t0.values.len() {
         hax_lib::loop_invariant!(|i: usize| {
-            fstar!(r#"
+            fstar!(
+                r#"
                 (forall j. j < v i ==> (let t0_v = v (Seq.index ${t0}.f_values j) in
                     let (t0_s, t1_s) = Spec.MLDSA.Math.power2round (v (Seq.index ${_t0}.f_values j)) in
                     t0_v == t0_s /\ v (Seq.index ${t1}.f_values j) == t1_s /\
@@ -333,7 +332,8 @@ pub(super) fn infinity_norm_exceeds(simd_unit: &Coefficients, bound: i32) -> boo
     // data but we must not leak the sign of the centralized representative.
     for i in 0..simd_unit.values.len() {
         hax_lib::loop_invariant!(|i: usize| {
-            fstar!(r#"
+            fstar!(
+                r#"
                 $result == false ==> (forall j. j < v $i ==>
                     abs (v (Seq.index ${simd_unit}.f_values j)) < v $bound)"#
             )
@@ -347,13 +347,9 @@ pub(super) fn infinity_norm_exceeds(simd_unit: &Coefficients, bound: i32) -> boo
         // So if the coefficient is negative, get its absolute value, but
         // don't convert it into a different representation.
         let sign = coefficient >> 31;
-        hax_lib::fstar!(
-            "logand_lemma (mk_i32 2 *! $coefficient) $sign"
-        );
+        hax_lib::fstar!("logand_lemma (mk_i32 2 *! $coefficient) $sign");
         let normalized = coefficient - (sign & (2 * coefficient));
-        hax_lib::fstar!(
-            "assert (v $normalized == abs (v $coefficient))"
-        );
+        hax_lib::fstar!("assert (v $normalized == abs (v $coefficient))");
 
         // FIXME: return
         // [hax] https://github.com/hacspec/hax/issues/1204
@@ -372,7 +368,7 @@ fn reduce_element(fe: FieldElement) -> FieldElement {
 
     let result = fe - (quotient * FIELD_MODULUS);
     hax_lib::fstar!(
-    "calc (==) {
+        "calc (==) {
         v $result % 8380417;
         (==) { }
         (v $fe - (v $quotient * 8380417)) % 8380417;
@@ -382,7 +378,8 @@ fn reduce_element(fe: FieldElement) -> FieldElement {
         (v $fe - 0) % 8380417;
         (==) {}
         (v $fe) % 8380417; 
-    }");
+    }"
+    );
     result
 }
 
@@ -398,7 +395,8 @@ pub(super) fn shift_left_then_reduce<const SHIFT_BY: i32>(simd_unit: &mut Coeffi
     let _simd_unit0 = simd_unit.clone();
     for i in 0..simd_unit.values.len() {
         hax_lib::loop_invariant!(|i: usize| {
-            fstar!(r#"
+            fstar!(
+                r#"
                 (forall j. j < v i ==> (Spec.Utils.is_i32b 8380416 (Seq.index ${simd_unit}.f_values j) /\
                     v (Seq.index ${simd_unit}.f_values j) % 8380417 == (v ((Seq.index ${_simd_unit0}.f_values j) <<! v_SHIFT_BY) % 8380417))) /\
                 (forall j. j >= v i ==> (Seq.index ${simd_unit}.f_values j == Seq.index ${_simd_unit0}.f_values j /\
@@ -441,7 +439,8 @@ pub(super) fn compute_hint(
     );
     for i in 0..hint.values.len() {
         hax_lib::loop_invariant!(|i: usize| {
-            fstar!(r#"
+            fstar!(
+                r#"
                 v $i >= 0 /\ v $i <= 8 /\
                 (forall j. j < v i ==> (v (Seq.index ${hint}.f_values j) =
                     Spec.MLDSA.Math.compute_one_hint (v (Seq.index ${low}.f_values j))
@@ -477,7 +476,9 @@ pub(super) fn compute_hint(
 //
 // Note that 0 ≤ r₁ < (q-1)/α.
 #[inline(always)]
-#[hax_lib::fstar::options("--fuel 3 --z3rlimit 1500 --ext context_pruning --z3refresh --split_queries always")]
+#[hax_lib::fstar::options(
+    "--fuel 3 --z3rlimit 1500 --ext context_pruning --z3refresh --split_queries always"
+)]
 #[hax_lib::requires(fstar!(r#"(v $gamma2 == v $GAMMA2_V261_888 \/ v $gamma2 == v $GAMMA2_V95_232) /\
     Spec.Utils.is_i32b (v $FIELD_MODULUS - 1) $r"#))]
 #[hax_lib::ensures(|(r0,r1)| fstar!(r#"
@@ -490,21 +491,15 @@ pub(super) fn compute_hint(
     (v $r1 >= 0 /\ v $r1 < (v $FIELD_MODULUS - 1) / (v $gamma2 * 2))"#))]
 fn decompose_element(gamma2: Gamma2, r: i32) -> (i32, i32) {
     let _r = r;
-    hax_lib::fstar!(
-        r#"logand_lemma $FIELD_MODULUS ($r >>! mk_i32 31)"#
-    );
+    hax_lib::fstar!(r#"logand_lemma $FIELD_MODULUS ($r >>! mk_i32 31)"#);
     // Convert the signed representative to the standard unsigned one.
     let r = r + ((r >> 31) & FIELD_MODULUS);
-    hax_lib::fstar!(
-        r#"assert (v $r == v $_r % v $FIELD_MODULUS)"#
-    );
+    hax_lib::fstar!(r#"assert (v $r == v $_r % v $FIELD_MODULUS)"#);
 
     let r1 = {
         // Compute ⌈r / 128⌉
         let ceil_of_r_by_128 = (r + 127) >> 7;
-        hax_lib::fstar!(
-            r#"assert (v $ceil_of_r_by_128 == (v $r + 127) / 128)"#
-        );
+        hax_lib::fstar!(r#"assert (v $ceil_of_r_by_128 == (v $r + 127) / 128)"#);
 
         match gamma2 {
             GAMMA2_V95_232 => {
@@ -545,9 +540,7 @@ fn decompose_element(gamma2: Gamma2, r: i32) -> (i32, i32) {
                     assert (v $result >= 0 /\ v $result <= 16)"#
                 );
 
-                hax_lib::fstar!(
-                    r#"logand_mask_lemma $result 4"#
-                );
+                hax_lib::fstar!(r#"logand_mask_lemma $result 4"#);
                 // For the corner-case a₁ = (q-1)/α = 16, we have to set a₁=0.
                 let result_0 = result & 15;
 
@@ -657,7 +650,8 @@ pub fn decompose(
 ) {
     for i in 0..low.values.len() {
         hax_lib::loop_invariant!(|i: usize| {
-            fstar!(r#"
+            fstar!(
+                r#"
                 forall j. j < v i ==> (let r = v (Seq.index ${simd_unit}.f_values j) in
                     let r0 = v (Seq.index ${low}.f_values j) in
                     let r1 = v (Seq.index ${high}.f_values j) in
@@ -686,7 +680,8 @@ pub fn use_hint(gamma2: Gamma2, simd_unit: &Coefficients, hint: &mut Coefficient
     let _hint0 = hint.clone();
     for i in 0..hint.values.len() {
         hax_lib::loop_invariant!(|i: usize| {
-            fstar!(r#"
+            fstar!(
+                r#"
                 (forall j. j < v i ==> (let h = Seq.index ${_hint0}.f_values j in
                     let result = Seq.index ${hint}.f_values j in
                     v result = Spec.MLDSA.Math.use_one_hint (v $gamma2) (v (Seq.index ${simd_unit}.f_values j)) (v h))) /\
