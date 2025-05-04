@@ -351,4 +351,3 @@ let lemma_shift_right_15_i16 (x:i16) =
   Rust_primitives.Integers.mk_int_v_lemma #i16_inttype (mk_i16 (-1));
   ()
 
-
