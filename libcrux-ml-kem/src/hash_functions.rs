@@ -30,14 +30,14 @@ pub(crate) trait Hash {
     #[ensures(|result|
         fstar!(r#"$result == Spec.Utils.v_G $input"#))
     ]
-    fn G(input: &[u8], output: &mut [u8; G_DIGEST_SIZE]);
+    fn G(input: &[u8], output: &mut [u8]);
 
     /// H aka SHA3 256
     #[requires(true)]
     #[ensures(|result|
         fstar!(r#"$result == Spec.Utils.v_H $input"#))
     ]
-    fn H(input: &[u8], output: &mut [u8; H_DIGEST_SIZE]);
+    fn H(input: &[u8], output: &mut [u8]);
 
     /// PRF aka SHAKE256
     #[requires(fstar!(r#"v $LEN < pow2 32"#))]
@@ -45,7 +45,7 @@ pub(crate) trait Hash {
         // We need to repeat the pre-condition here because of https://github.com/hacspec/hax/issues/784
         fstar!(r#"v $LEN < pow2 32 ==> $result == Spec.Utils.v_PRF $LEN $input"#))
     ]
-    fn PRF<const LEN: usize>(input: &[u8]) -> [u8; LEN];
+    fn PRF<const LEN: usize>(input: &[u8], out: &mut [u8]);
 
     /// PRFxN aka N SHAKE256
     #[requires(fstar!(r#"v $LEN < pow2 32 /\ (v $K == 2 \/ v $K == 3 \/ v $K == 4)"#))]
@@ -88,7 +88,7 @@ pub(crate) mod portable {
         fstar!(r#"$result == Spec.Utils.v_G $input"#))
     ]
     #[inline(always)]
-    fn G(input: &[u8], output: &mut [u8; G_DIGEST_SIZE]) {
+    fn G(input: &[u8], output: &mut [u8]) {
         portable::sha512(output, input);
     }
 
@@ -96,7 +96,7 @@ pub(crate) mod portable {
         fstar!(r#"$result == Spec.Utils.v_H $input"#))
     ]
     #[inline(always)]
-    fn H(input: &[u8], output: &mut [u8; H_DIGEST_SIZE]) {
+    fn H(input: &[u8], output: &mut [u8]) {
         portable::sha256(output, input);
     }
 
@@ -105,10 +105,8 @@ pub(crate) mod portable {
         fstar!(r#"$result == Spec.Utils.v_PRF $LEN $input"#))
     ]
     #[inline(always)]
-    fn PRF<const LEN: usize>(input: &[u8]) -> [u8; LEN] {
-        let mut digest = [0u8; LEN];
-        portable::shake256(&mut digest, input);
-        digest
+    fn PRF<const LEN: usize>(input: &[u8], out: &mut [u8]) {
+        portable::shake256(out, input);
     }
 
     #[hax_lib::requires(fstar!(r#"v $LEN < pow2 32 /\ (v $K == 2 \/ v $K == 3 \/ v $K == 4)"#))]
@@ -164,7 +162,7 @@ pub(crate) mod portable {
             fstar!(r#"$out == Spec.Utils.v_G $input"#))
         ]
         #[inline(always)]
-        fn G(input: &[u8], output: &mut [u8; G_DIGEST_SIZE]) {
+        fn G(input: &[u8], output: &mut [u8]) {
             G(input, output)
         }
 
@@ -172,7 +170,7 @@ pub(crate) mod portable {
             fstar!(r#"$out == Spec.Utils.v_H $input"#))
         ]
         #[inline(always)]
-        fn H(input: &[u8], output: &mut [u8; H_DIGEST_SIZE]) {
+        fn H(input: &[u8], output: &mut [u8]) {
             H(input, output)
         }
 
@@ -182,8 +180,8 @@ pub(crate) mod portable {
             fstar!(r#"v $LEN < pow2 32 ==> $out == Spec.Utils.v_PRF $LEN $input"#))
         ]
         #[inline(always)]
-        fn PRF<const LEN: usize>(input: &[u8]) -> [u8; LEN] {
-            PRF::<LEN>(input)
+        fn PRF<const LEN: usize>(input: &[u8], out: &mut [u8]) {
+            PRF::<LEN>(input, out)
         }
 
         #[requires(fstar!(r#"v $LEN < pow2 32 /\ (v $K == 2 \/ v $K == 3 \/ v $K == 4)"#))]
@@ -235,7 +233,7 @@ pub(crate) mod avx2 {
         fstar!(r#"$result == Spec.Utils.v_G $input"#))
     ]
     #[inline(always)]
-    fn G(input: &[u8], output: &mut [u8; G_DIGEST_SIZE]) {
+    fn G(input: &[u8], output: &mut [u8]) {
         portable::sha512(output, input);
     }
 
@@ -243,7 +241,7 @@ pub(crate) mod avx2 {
         fstar!(r#"$result == Spec.Utils.v_H $input"#))
     ]
     #[inline(always)]
-    fn H(input: &[u8], output: &mut [u8; H_DIGEST_SIZE]) {
+    fn H(input: &[u8], output: &mut [u8]) {
         portable::sha256(output, input);
     }
 
@@ -252,10 +250,8 @@ pub(crate) mod avx2 {
         fstar!(r#"$result == Spec.Utils.v_PRF $LEN $input"#))
     ]
     #[inline(always)]
-    fn PRF<const LEN: usize>(input: &[u8]) -> [u8; LEN] {
-        let mut digest = [0u8; LEN];
-        portable::shake256(&mut digest, input);
-        digest
+    fn PRF<const LEN: usize>(input: &[u8], out: &mut [u8]) {
+        portable::shake256(out, input);
     }
 
     #[hax_lib::requires(fstar!(r#"v $LEN < pow2 32 /\ (v $K == 2 \/ v $K == 3 \/ v $K == 4)"#))]
@@ -271,38 +267,48 @@ pub(crate) mod avx2 {
         // and `ETA1_RANDOMNESS_SIZE = ETA1 * 64`.  This means,
         // unfortunately, that we overallocate and oversample in the
         // other cases.
-        let mut out0 = [0u8; 3 * 64];
-        let mut out1 = [0u8; 3 * 64];
-        let mut out2 = [0u8; 3 * 64];
-        let mut out3 = [0u8; 3 * 64];
+        let mut dummy0 = [0u8; 3 * 64];
+        let mut dummy1 = [0u8; 3 * 64];
 
+        // XXX: If I understood correctly, the x4/2 SHAKEs assume that
+        // the output buffers are the same length and will write
+        // `out0.len()` bytes of output into all of them. That's okay
+        // for us, just want to document the assumption.
         match input.len() as u8 {
             2 => {
+                let (out0, out1) = outputs.split_at_mut(out_len);
                 x4::shake256(
-                    &input[0], &input[1], &input[0], &input[0], &mut out0, &mut out1, &mut out2,
-                    &mut out3,
+                    &input[0],
+                    &input[1],
+                    &input[0],
+                    &input[0],
+                    out0,
+                    out1,
+                    &mut dummy0,
+                    &mut dummy1,
                 );
-                outputs[0..out_len].copy_from_slice(&out0[..out_len]);
-                outputs[out_len..2 * out_len].copy_from_slice(&out1[..out_len]);
             }
             3 => {
+                let (out0, rest) = outputs.split_at_mut(out_len);
+                let (out1, out2) = rest.split_at_mut(out_len);
                 x4::shake256(
-                    &input[0], &input[1], &input[2], &input[0], &mut out0, &mut out1, &mut out2,
-                    &mut out3,
+                    &input[0],
+                    &input[1],
+                    &input[2],
+                    &input[0],
+                    out0,
+                    out1,
+                    out2,
+                    &mut dummy1,
                 );
-                outputs[0 * out_len..1 * out_len].copy_from_slice(&out0[..out_len]);
-                outputs[1 * out_len..2 * out_len].copy_from_slice(&out1[..out_len]);
-                outputs[2 * out_len..3 * out_len].copy_from_slice(&out2[..out_len]);
             }
             4 => {
+                let (out0, rest) = outputs.split_at_mut(out_len);
+                let (out1, rest) = rest.split_at_mut(out_len);
+                let (out2, out3) = rest.split_at_mut(out_len);
                 x4::shake256(
-                    &input[0], &input[1], &input[2], &input[3], &mut out0, &mut out1, &mut out2,
-                    &mut out3,
+                    &input[0], &input[1], &input[2], &input[3], out0, out1, out2, out3,
                 );
-                outputs[0 * out_len..1 * out_len].copy_from_slice(&out0[..out_len]);
-                outputs[1 * out_len..2 * out_len].copy_from_slice(&out1[..out_len]);
-                outputs[2 * out_len..3 * out_len].copy_from_slice(&out2[..out_len]);
-                outputs[3 * out_len..4 * out_len].copy_from_slice(&out3[..out_len]);
             }
             _ => unreachable!("This function must only be called with N = 2, 3, 4"),
         }
@@ -424,7 +430,7 @@ pub(crate) mod avx2 {
             fstar!(r#"$out == Spec.Utils.v_G $input"#))
         ]
         #[inline(always)]
-        fn G(input: &[u8], output: &mut [u8; G_DIGEST_SIZE]) {
+        fn G(input: &[u8], output: &mut [u8]) {
             G(input, output)
         }
 
@@ -432,7 +438,7 @@ pub(crate) mod avx2 {
             fstar!(r#"$out == Spec.Utils.v_H $input"#))
         ]
         #[inline(always)]
-        fn H(input: &[u8], output: &mut [u8; H_DIGEST_SIZE]) {
+        fn H(input: &[u8], output: &mut [u8]) {
             H(input, output)
         }
 
@@ -442,8 +448,8 @@ pub(crate) mod avx2 {
             fstar!(r#"v $LEN < pow2 32 ==> $out == Spec.Utils.v_PRF $LEN $input"#))
         ]
         #[inline(always)]
-        fn PRF<const LEN: usize>(input: &[u8]) -> [u8; LEN] {
-            PRF::<LEN>(input)
+        fn PRF<const LEN: usize>(input: &[u8], out: &mut [u8]) {
+            PRF::<LEN>(input, out)
         }
 
         #[requires(fstar!(r#"v $LEN < pow2 32 /\ (v $K == 2 \/ v $K == 3 \/ v $K == 4)"#))]
@@ -492,8 +498,8 @@ pub(crate) mod neon {
         fstar!(r#"$result == Spec.Utils.v_G $input"#))
     ]
     #[inline(always)]
-    fn G(input: &[u8]) -> [u8; G_DIGEST_SIZE] {
-        let mut digest = [0u8; G_DIGEST_SIZE];
+    fn G(input: &[u8]) -> [u8] {
+        let mut digest = [0u8];
         libcrux_sha3::neon::sha512(&mut digest, input);
         digest
     }
@@ -502,8 +508,8 @@ pub(crate) mod neon {
         fstar!(r#"$result == Spec.Utils.v_H $input"#))
     ]
     #[inline(always)]
-    fn H(input: &[u8]) -> [u8; H_DIGEST_SIZE] {
-        let mut digest = [0u8; H_DIGEST_SIZE];
+    fn H(input: &[u8]) -> [u8] {
+        let mut digest = [0u8];
         libcrux_sha3::neon::sha256(&mut digest, input);
         digest
     }
@@ -513,11 +519,9 @@ pub(crate) mod neon {
         fstar!(r#"$result == Spec.Utils.v_PRF $LEN $input"#))
     ]
     #[inline(always)]
-    fn PRF<const LEN: usize>(input: &[u8]) -> [u8; LEN] {
-        let mut digest = [0u8; LEN];
+    fn PRF<const LEN: usize>(input: &[u8], out: &mut [u8]) {
         let mut dummy = [0u8; LEN];
-        x2::shake256(input, input, &mut digest, &mut dummy);
-        digest
+        x2::shake256(input, input, out, &mut dummy);
     }
 
     #[hax_lib::requires(fstar!(r#"v $LEN < pow2 32 /\ (v $K == 2 \/ v $K == 3 \/ v $K == 4)"#))]
@@ -525,37 +529,61 @@ pub(crate) mod neon {
         fstar!(r#"$result == Spec.Utils.v_PRFxN $K $LEN $input"#))
     ]
     #[inline(always)]
-    fn PRFxN<const K: usize, const LEN: usize>(input: &[[u8; 33]; K]) -> [[u8; LEN]; K] {
-        debug_assert!(K == 2 || K == 3 || K == 4);
-        let mut out = [[0u8; LEN]; K];
-        let mut out0 = [0u8; LEN];
-        let mut out1 = [0u8; LEN];
-        let mut out2 = [0u8; LEN];
-        let mut out3 = [0u8; LEN];
-        match K as u8 {
+    fn PRFxN(input: &[[u8; 33]], outputs: &mut [u8], out_len: usize) {
+        // XXX: The buffer sizes here are the maximum that we will
+        // need. PRFxN is called to fill N buffers of size
+        // `ETA1/2_RANDOMNESS_SIZE`. The maximum value for
+        // `ETA1/2_RANDOMNESS_SIZE` is in ML-KEM 512 with `ETA1 = 3`
+        // and `ETA1_RANDOMNESS_SIZE = ETA1 * 64`.  This means,
+        // unfortunately, that we overallocate and oversample in the
+        // other cases.
+        let mut dummy = [0u8; 3 * 64];
+
+        match input.len() as u8 {
             2 => {
-                x2::shake256(&input[0], &input[1], &mut out0, &mut out1);
-                out[0] = out0;
-                out[1] = out1;
+                let (out0, out1) = outputs.split_at_mut(out_len);
+                x2::shake256(
+                    &input[0],
+                    &input[1],
+                    out0,
+                    out1,
+                );
             }
             3 => {
-                x2::shake256(&input[0], &input[1], &mut out0, &mut out1);
-                x2::shake256(&input[2], &input[2], &mut out2, &mut out3);
-                out[0] = out0;
-                out[1] = out1;
-                out[2] = out2;
+                let (out0, rest) = outputs.split_at_mut(out_len);
+                let (out1, out2) = rest.split_at_mut(out_len);
+                x2::shake256(
+                    &input[0],
+                    &input[1],
+                    out0,
+                    out1,
+                );
+                x2::shake256(
+                    &input[2],
+                    &input[0],
+                    out2,
+                    &mut dummy,
+                );
             }
             4 => {
-                x2::shake256(&input[0], &input[1], &mut out0, &mut out1);
-                x2::shake256(&input[2], &input[3], &mut out2, &mut out3);
-                out[0] = out0;
-                out[1] = out1;
-                out[2] = out2;
-                out[3] = out3;
+                let (out0, rest) = outputs.split_at_mut(out_len);
+                let (out1, rest) = rest.split_at_mut(out_len);
+                let (out2, out3) = rest.split_at_mut(out_len);
+                x2::shake256(
+                    &input[0],
+                    &input[1],
+                    out0,
+                    out1,
+                );
+                x2::shake256(
+                    &input[2],
+                    &input[3],
+                    out2,
+                    out3,
+                );
             }
-            _ => unreachable!("Only 2, 3, or 4 are supported for N"),
+            _ => unreachable!("This function must only be called with N = 2, 3, 4"),
         }
-        out
     }
 
     #[inline(always)]
@@ -702,7 +730,7 @@ pub(crate) mod neon {
             fstar!(r#"$out == Spec.Utils.v_G $input"#))
         ]
         #[inline(always)]
-        fn G(input: &[u8]) -> [u8; G_DIGEST_SIZE] {
+        fn G(input: &[u8]) -> [u8] {
             G(input)
         }
 
@@ -710,7 +738,7 @@ pub(crate) mod neon {
             fstar!(r#"$out == Spec.Utils.v_H $input"#))
         ]
         #[inline(always)]
-        fn H(input: &[u8]) -> [u8; H_DIGEST_SIZE] {
+        fn H(input: &[u8]) -> [u8] {
             H(input)
         }
 
@@ -720,8 +748,8 @@ pub(crate) mod neon {
             fstar!(r#"v $LEN < pow2 32 ==> $out == Spec.Utils.v_PRF $LEN $input"#))
         ]
         #[inline(always)]
-        fn PRF<const LEN: usize>(input: &[u8]) -> [u8; LEN] {
-            PRF::<LEN>(input)
+        fn PRF<const LEN: usize>(input: &[u8], out: &mut [u8]) {
+            PRF::<LEN>(input, out)
         }
 
         #[requires(fstar!(r#"v $LEN < pow2 32 /\ (v $K == 2 \/ v $K == 3 \/ v $K == 4)"#))]
