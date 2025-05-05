@@ -8,7 +8,7 @@
  * Eurydice: 36a5ed7dd6b61b5cd3d69a010859005912d21537
  * Karamel: bf9b89d76dd24e2ceaaca32de3535353e7b6bc01
  * F*: 4b3fc11774003a6ff7c09500ecb5f0145ca6d862
- * Libcrux: fe232ff426a7be69ae8434cdae0917405ac9d7a2
+ * Libcrux: 692c0c001620d322d231d3d4c2a671a008b57942
  */
 
 #ifndef __libcrux_mldsa65_portable_H
@@ -881,34 +881,24 @@ libcrux_ml_dsa_simd_portable_arithmetic_infinity_norm_exceeds(
     libcrux_ml_dsa_simd_portable_vector_type_Coefficients *simd_unit,
     int32_t bound) {
   bool result = false;
-  core_ops_range_Range_08 lit;
-  lit.start = (size_t)0U;
-  lit.end = Eurydice_slice_len(
-      Eurydice_array_to_slice((size_t)8U, simd_unit->values, int32_t), int32_t);
-  core_ops_range_Range_08 iter =
-      core_iter_traits_collect___core__iter__traits__collect__IntoIterator_Clause1_Item__I__for_I__1__into_iter(
-          lit, core_ops_range_Range_08, size_t, core_ops_range_Range_08);
-  while (true) {
-    Option_08 uu____0 =
-        core_iter_range___core__iter__traits__iterator__Iterator_A__for_core__ops__range__Range_A__TraitClause_0___6__next(
-            &iter, size_t, Option_08);
-    if (uu____0.tag == None) {
-      return result;
+  for (size_t i = (size_t)0U;
+       i < Eurydice_slice_len(
+               Eurydice_array_to_slice((size_t)8U, simd_unit->values, int32_t),
+               int32_t);
+       i++) {
+    size_t i0 = i;
+    int32_t coefficient = simd_unit->values[i0];
+    int32_t sign = coefficient >> 31U;
+    int32_t normalized = coefficient - (sign & (int32_t)2 * coefficient);
+    bool uu____0;
+    if (result) {
+      uu____0 = true;
     } else {
-      size_t i = uu____0.f0;
-      int32_t coefficient = simd_unit->values[i];
-      EURYDICE_ASSERT(!false, "panic!");
-      int32_t sign = coefficient >> 31U;
-      int32_t normalized = coefficient - (sign & (int32_t)2 * coefficient);
-      bool uu____1;
-      if (result) {
-        uu____1 = true;
-      } else {
-        uu____1 = normalized >= bound;
-      }
-      result = uu____1;
+      uu____0 = normalized >= bound;
     }
+    result = uu____0;
   }
+  return result;
 }
 
 /**
@@ -930,7 +920,6 @@ typedef struct int32_t_x2_s {
 static KRML_MUSTINLINE int32_t_x2
 libcrux_ml_dsa_simd_portable_arithmetic_decompose_element(int32_t gamma2,
                                                           int32_t r) {
-  EURYDICE_ASSERT(!false, "panic!");
   int32_t r0 = r + (r >> 31U & LIBCRUX_ML_DSA_SIMD_TRAITS_FIELD_MODULUS);
   int32_t ceil_of_r_by_128 = (r0 + (int32_t)127) >> 7U;
   int32_t r1;
@@ -938,13 +927,15 @@ libcrux_ml_dsa_simd_portable_arithmetic_decompose_element(int32_t gamma2,
     case 95232: {
       int32_t result =
           (ceil_of_r_by_128 * (int32_t)11275 + ((int32_t)1 << 23U)) >> 24U;
-      r1 = (result ^ ((int32_t)43 - result) >> 31U) & result;
+      int32_t result_0 = (result ^ ((int32_t)43 - result) >> 31U) & result;
+      r1 = result_0;
       break;
     }
     case 261888: {
       int32_t result =
           (ceil_of_r_by_128 * (int32_t)1025 + ((int32_t)1 << 21U)) >> 22U;
-      r1 = result & (int32_t)15;
+      int32_t result_0 = result & (int32_t)15;
+      r1 = result_0;
       break;
     }
     default: {
@@ -1185,7 +1176,6 @@ libcrux_ml_dsa_simd_portable_arithmetic_reduce_element(int32_t fe) {
 
 static KRML_MUSTINLINE int32_t_x2
 libcrux_ml_dsa_simd_portable_arithmetic_power2round_element(int32_t t) {
-  EURYDICE_ASSERT(!false, "panic!");
   int32_t t2 = t + (t >> 31U & LIBCRUX_ML_DSA_SIMD_TRAITS_FIELD_MODULUS);
   int32_t t1 =
       (t2 - (int32_t)1 +
@@ -1233,16 +1223,13 @@ libcrux_ml_dsa_simd_portable_sample_rejection_sample_less_than_field_modulus(
   size_t sampled = (size_t)0U;
   for (size_t i = (size_t)0U;
        i < Eurydice_slice_len(randomness, uint8_t) / (size_t)3U; i++) {
-    size_t _cloop_i = i;
-    Eurydice_slice bytes =
-        Eurydice_slice_subslice2(randomness, _cloop_i * (size_t)3U,
-                                 _cloop_i * (size_t)3U + (size_t)3U, uint8_t);
-    int32_t b0 =
-        (int32_t)Eurydice_slice_index(bytes, (size_t)0U, uint8_t, uint8_t *);
-    int32_t b1 =
-        (int32_t)Eurydice_slice_index(bytes, (size_t)1U, uint8_t, uint8_t *);
-    int32_t b2 =
-        (int32_t)Eurydice_slice_index(bytes, (size_t)2U, uint8_t, uint8_t *);
+    size_t i0 = i;
+    int32_t b0 = (int32_t)Eurydice_slice_index(randomness, i0 * (size_t)3U,
+                                               uint8_t, uint8_t *);
+    int32_t b1 = (int32_t)Eurydice_slice_index(
+        randomness, i0 * (size_t)3U + (size_t)1U, uint8_t, uint8_t *);
+    int32_t b2 = (int32_t)Eurydice_slice_index(
+        randomness, i0 * (size_t)3U + (size_t)2U, uint8_t, uint8_t *);
     int32_t coefficient = ((b2 << 16U | b1 << 8U) | b0) & (int32_t)8388607;
     if (coefficient < LIBCRUX_ML_DSA_CONSTANTS_FIELD_MODULUS) {
       Eurydice_slice_index(out, sampled, int32_t, int32_t *) = coefficient;
@@ -1269,15 +1256,10 @@ libcrux_ml_dsa_simd_portable_sample_rejection_sample_less_than_eta_equals_2(
   size_t sampled = (size_t)0U;
   for (size_t i = (size_t)0U; i < Eurydice_slice_len(randomness, uint8_t);
        i++) {
-    size_t _cloop_j = i;
-    uint8_t *byte =
-        &Eurydice_slice_index(randomness, _cloop_j, uint8_t, uint8_t *);
-    uint8_t try_0 =
-        core_ops_bit___core__ops__bit__BitAnd_u8__u8__for___a__u8___46__bitand(
-            byte, 15U);
-    uint8_t try_1 =
-        core_ops_bit___core__ops__bit__Shr_i32__u8__for___a__u8___792__shr(
-            byte, (int32_t)4);
+    size_t i0 = i;
+    uint8_t byte = Eurydice_slice_index(randomness, i0, uint8_t, uint8_t *);
+    uint8_t try_0 = (uint32_t)byte & 15U;
+    uint8_t try_1 = (uint32_t)byte >> 4U;
     if (try_0 < 15U) {
       int32_t try_00 = (int32_t)try_0;
       int32_t try_0_mod_5 = try_00 - (try_00 * (int32_t)26 >> 7U) * (int32_t)5;
@@ -1313,15 +1295,10 @@ libcrux_ml_dsa_simd_portable_sample_rejection_sample_less_than_eta_equals_4(
   size_t sampled = (size_t)0U;
   for (size_t i = (size_t)0U; i < Eurydice_slice_len(randomness, uint8_t);
        i++) {
-    size_t _cloop_j = i;
-    uint8_t *byte =
-        &Eurydice_slice_index(randomness, _cloop_j, uint8_t, uint8_t *);
-    uint8_t try_0 =
-        core_ops_bit___core__ops__bit__BitAnd_u8__u8__for___a__u8___46__bitand(
-            byte, 15U);
-    uint8_t try_1 =
-        core_ops_bit___core__ops__bit__Shr_i32__u8__for___a__u8___792__shr(
-            byte, (int32_t)4);
+    size_t i0 = i;
+    uint8_t byte = Eurydice_slice_index(randomness, i0, uint8_t, uint8_t *);
+    uint8_t try_0 = (uint32_t)byte & 15U;
+    uint8_t try_1 = (uint32_t)byte >> 4U;
     if (try_0 < 9U) {
       Eurydice_slice_index(out, sampled, int32_t, int32_t *) =
           (int32_t)4 - (int32_t)try_0;

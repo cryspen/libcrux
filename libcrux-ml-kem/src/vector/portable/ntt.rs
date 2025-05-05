@@ -263,7 +263,6 @@ pub(crate) fn inv_ntt_layer_3_step(mut vec: PortableVector, zeta: i16) -> Portab
 /// The NIST FIPS 203 standard can be found at
 /// <https://csrc.nist.gov/pubs/fips/203/ipd>.
 #[inline(always)]
-#[hax_lib::fstar::verification_status(panic_free)]
 #[hax_lib::fstar::options(
     "--z3rlimit 250 --split_queries always --query_stats --ext context_prune"
 )]
@@ -295,6 +294,7 @@ pub(crate) fn ntt_multiply_binomials(
     let bi = b.elements[2 * i];
     let aj = a.elements[2 * i + 1];
     let bj = b.elements[2 * i + 1];
+
     hax_lib::fstar!(
         "assert(Spec.Utils.is_i16b 3328 $ai);
                      assert(Spec.Utils.is_i16b 3328 $bi);
@@ -304,17 +304,27 @@ pub(crate) fn ntt_multiply_binomials(
     );
 
     hax_lib::fstar!(r#"Spec.Utils.lemma_mul_i16b 3328 3328 $ai $bi"#);
+
     let ai_bi = (ai as i32) * (bi as i32);
+
     hax_lib::fstar!(r#"Spec.Utils.lemma_mul_i16b 3328 3328 $aj $bj"#);
+
     let aj_bj_ = (aj as i32) * (bj as i32);
+
     hax_lib::fstar!(r#"assert_norm (3328 * 3328 <= 3328 * pow2 15)"#);
+
     let aj_bj = montgomery_reduce_element(aj_bj_);
+
     hax_lib::fstar!(r#"Spec.Utils.lemma_mul_i16b 3328 1664 $aj_bj $zeta"#);
+
     let aj_bj_zeta = (aj_bj as i32) * (zeta as i32);
     let ai_bi_aj_bj = ai_bi + aj_bj_zeta;
+
     hax_lib::fstar!(r#"assert(Spec.Utils.is_i32b (3328*3328 + 3328*1664) $ai_bi_aj_bj)"#);
     hax_lib::fstar!(r#"assert_norm (3328 * 3328 + 3328 * 1664 <= 3328 * pow2 15)"#);
+
     let o0 = montgomery_reduce_element(ai_bi_aj_bj);
+
     hax_lib::fstar!(
         r#"calc  ( == ) {
         v $o0 % 3329;
@@ -345,13 +355,19 @@ pub(crate) fn ntt_multiply_binomials(
         }"#
     );
     hax_lib::fstar!(r#"Spec.Utils.lemma_mul_i16b 3328 3328 $ai $bj"#);
+
     let ai_bj = (ai as i32) * (bj as i32);
+
     hax_lib::fstar!(r#"Spec.Utils.lemma_mul_i16b 3328 3328 $aj $bi"#);
+
     let aj_bi = (aj as i32) * (bi as i32);
     let ai_bj_aj_bi = ai_bj + aj_bi;
+
     hax_lib::fstar!(r#"assert(Spec.Utils.is_i32b (3328*3328 + 3328*3328) ai_bj_aj_bi) "#);
     hax_lib::fstar!(r#"assert_norm (3328 * 3328 + 3328 * 3328 <= 3328 * pow2 15)"#);
+
     let o1 = montgomery_reduce_element(ai_bj_aj_bi);
+
     hax_lib::fstar!(
         "calc  ( == ) {
         v $o1 % 3329;
@@ -365,9 +381,13 @@ pub(crate) fn ntt_multiply_binomials(
         ((v ai * v bj + v aj * v bi) * 169) % 3329;
     }"
     );
+
+    #[cfg(hax)]
     let _out0 = out.elements;
+
     out.elements[2 * i] = o0;
     out.elements[2 * i + 1] = o1;
+
     hax_lib::fstar!(
         r#"assert (Seq.index out.f_elements (2 * v i) == o0);
                      assert (Seq.index out.f_elements (2 * v i + 1) == o1);
@@ -379,8 +399,7 @@ pub(crate) fn ntt_multiply_binomials(
 }
 
 #[inline(always)]
-#[hax_lib::fstar::verification_status(panic_free)]
-#[hax_lib::fstar::options("--z3rlimit 100")]
+#[hax_lib::fstar::options("--z3rlimit 1000")]
 #[hax_lib::requires(fstar!(r#"Spec.Utils.is_i16b 1664 $zeta0 /\
         Spec.Utils.is_i16b 1664 $zeta1 /\
         Spec.Utils.is_i16b 1664 $zeta2 /\

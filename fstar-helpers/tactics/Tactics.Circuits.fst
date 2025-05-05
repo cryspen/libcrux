@@ -1,16 +1,15 @@
 /// This module defines a tactic for normalize circuit.
 /// See section "What is a circuit?" in the documentation of the tactic `flatten_circuit`.
 
-module CircuitTactics
+module Tactics.Circuits
 open FStar.Tactics
-let mark_to_normalize_here t (x: t): t = x
 
 /// A record that holds debugging methods.
 /// This is useful for doing conditional debugging with context.
 noeq type dbg = {
     print: (message:string) -> Tac unit;
     dump: (message:string) -> Tac unit;
-    fail: (message:string) -> Tac unit;
+    fail: #a:Type -> (message:string) -> Tac a;
     raw_sub: (subheader:string) -> Tac dbg;
     sub: (subheader:string) -> #t:Type -> (dbg -> Tac t) -> Tac t;
 }
@@ -19,7 +18,7 @@ noeq type dbg = {
 let rec mk_noop_dbg (): Tac dbg = {
     print = (fun _ -> ());
     dump = (fun _ -> ());
-    fail = (fun _ -> ());
+    fail = (fun msg -> fail msg);
     raw_sub = (fun _ -> mk_noop_dbg ());
     sub = (fun _ f -> f (mk_noop_dbg ()));
 }
@@ -72,8 +71,17 @@ let rewrite_subterm_in_goal (subterm: term) (tactic: dbg -> Tac unit) (d: dbg): 
         ) (fun _ -> d.sub "tactic" (fun d -> d.dump "rewrite this subterm"; tactic d))
     )
 
-/// Normalize fully (zeta_full) match scrutinees, effectively getting rid of (visible) control flow.
-/// Note that this is likely to crash if scrutinees are not closed terms.
+/// Helper for function `is_closed_term`
+private exception IsClosedTerm of bool
+
+/// Is the goal a closed term?
+let is_closed_term (): Tac bool =
+  try
+    let _ = repeat clear_top in
+    raise (IsClosedTerm (Nil? (cur_binders ())))
+  with | IsClosedTerm e -> e | e -> raise e
+
+/// Normalize fully (zeta_full) match closed-term scrutinees, effectively getting rid of (visible) control flow (unless terms are open).
 let full_norm_scrutinees (d: dbg) =
     d.sub "full_norm_scrutinees" (fun d ->
         let norm_scrutinee_in_goal () =
@@ -83,8 +91,10 @@ let full_norm_scrutinees (d: dbg) =
             (match inspect lhs with
             | Tv_Match scrut ret brs ->
                 rewrite_subterm_in_goal scrut (fun d -> 
-                    norm [primops; iota; delta; zeta_full];
-                    d.dump "`match` rewritten";
+                    if is_closed_term () then (
+                        norm [primops; iota; delta; zeta_full];
+                        d.dump "`match` rewritten (norm)"
+                    ) else d.dump "`match` **not** rewritten: the goal is not a closed term!";
                     trefl ()
                 ) d;
                 discharge_smt_goals_now ()
@@ -185,12 +195,98 @@ let is_application_of (f: string) (#[(
     | _ -> false
 
 
+/// `mk_app` variant with `binder`s instead of `argv`s.
+let mk_app_bs (t: term) (bs: list binder): Tac term
+  = let args = map (fun b -> (binder_to_term b, (inspect_binder b).binder_qual)) bs in
+    mk_app t args
+
+/// Given a lemma `i1 -> ... -> iN -> Lemma (lhs == rhs)`, this tactic
+/// produces a lemma `i1 -> ... -> iN -> Lemma (lhs == rhs')` where
+/// `rhs'` is given by the tactic call `f <rhs>`.
+let map_lemma_rhs (f: term -> Tac term) (lemma: term) (d: dbg): Tac term
+  = let typ = tc (top_env ()) lemma in
+    let inputs, comp = collect_arr_bs typ in
+    let post =
+      match inspect_comp comp with
+      | C_Lemma pre post _ ->
+        if not (term_eq pre (`True)) then d.fail "Expected a lemma without precondition";
+        post
+      | _ -> d.fail "Expected a lemma"
+    in
+    let post_bd, post_body = match inspect post with
+        | Tv_Abs bd body -> (bd, body)
+        | _ -> d.fail "Expected `fun _ -> _`"
+    in
+    let (lhs, rhs) = match collect_app post_body with
+      | _, [_; (lhs, _); (rhs, _)] -> (lhs, rhs)
+      | _ -> d.fail "expected lhs == rhs"
+    in
+    let lemma_body = mk_abs inputs (mk_app_bs lemma inputs) in
+    let post = mk_abs [post_bd] (mk_e_app (`eq2) [lhs; f rhs]) in
+    let lemma_typ = mk_arr inputs (pack_comp (C_Lemma (`True) post (`[]))) in
+    let lemma = pack (Tv_AscribedT lemma_body lemma_typ None false) in
+    lemma
+
+/// Helper to mark terms. This is an identity function.
+/// It is used to normalize terms selectively in two passes:
+///  1. browse the term, mark the subterms you want to target
+///  2. use `ctrl_rewrite`, doing something only for `mark_to_normalize_here #_ _` terms.
+private let mark_to_normalize_here #t (x: t): t = x
+
+let flatten_circuit_aux
+  (namespace_always_norm: list string)
+  (lift_lemmas: list term) (simpl_lemmas: list term)
+  (eta_match_lemmas: list term)
+  d
+  =
+    d.sub "postprocess_tactic" (fun d ->
+        norm [primops; iota; delta_namespace ["Libcrux_intrinsics"]; zeta_full];
+        d.dump "definitions unfolded";
+
+        rewrite_with_lifts lift_lemmas simpl_lemmas d;
+
+        let eta_match_lemmas =
+            map
+                (fun t ->
+                    map_lemma_rhs (fun rhs -> mk_e_app (`mark_to_normalize_here) [rhs]) t d
+                )
+                eta_match_lemmas
+        in
+        l_to_r eta_match_lemmas;
+        d.dump "eta-match expansion done";
+
+        let control t = (is_application_of (`%mark_to_normalize_here) t, Continue) in
+        let rewritter d =
+          let normalize_routine () =
+            let open FStar.List.Tot in
+            norm [primops; iota; zeta_full; delta_namespace (
+                 namespace_always_norm
+            @ ["FStar.FunctionalExtensionality"; `%mark_to_normalize_here]
+              )]
+          in
+          normalize_routine ();
+          d.dump "normalize the scrutinees in the following expression";
+          full_norm_scrutinees d;
+          normalize_routine ();
+          d.dump "after normalization of scrutinees";
+          trefl ()
+        in
+        ctrl_rewrite BottomUp control (fun _ -> d.sub "bottom-up-rewritter" rewritter);
+
+        let sgs = smt_goals () in
+        set_smt_goals [];
+        d.dump "after full normalization";
+        set_smt_goals sgs;
+
+        ()
+    )
+
 
 /// `flatten_circuit` works on a goal `squash (c == ?u)` such that `c`
 /// is a circuit.
 ///
 /// # What is a circuit?
-/// 
+///
 /// We consider that `c` is a circuit when `c` involves transforming
 /// one or multiple statically-finite collection(s) into one or
 /// multiple other statically-finite collections.
@@ -210,40 +306,33 @@ let is_application_of (f: string) (#[(
 ///
 /// - `namespace_always_norm`: a list of top-level identifiers to
 /// *always* normalize fully. This should include (1) direct
-/// transformers (2) any function involved in 
+/// transformers (2) any function involved in indexing of the
+/// data-strucure (e.g. `(.[])`).
+/// - `lift_lemmas`, `simpl_lemmas`: see `rewrite_with_lifts`
+/// - `eta_match_lemmas`: lemmas to eta-match expand collections.
+///
+/// ## "eta match expand"
+/// Given `x` and `index` our indexing operation, assuming `x`
+/// can be indexed from `0` to `N`, we say the following expression
+/// is the "eta match"-expansion of `x`:
+/// ```
+/// fun i -> match i with
+///        | 0 -> index x 0
+///        | 1 -> index x 1
+///        | ...
+///        | N -> index x N
+/// ```
 let flatten_circuit
   (namespace_always_norm: list string)
   (lift_lemmas: list term) (simpl_lemmas: list term)
-  (eta_match_lemmas: list term)
-  =
-    let d = mk_dbg "" in
-    d.sub "postprocess_tactic" (fun d ->
-        norm [primops; iota; delta_namespace ["Libcrux_intrinsics"]; zeta_full];
-        d.dump "definitions unfolded";
-
-        rewrite_with_lifts lift_lemmas simpl_lemmas d;
-
-        l_to_r eta_match_lemmas;
-        d.dump "eta-match expansion done";
-
-        let control t = (is_application_of (`%mark_to_normalize_here) t, Continue) in
-        let rewritter d =
-          let normalize_routine () =
-            let open FStar.List.Tot in
-            norm [primops; iota; zeta_full; delta_namespace (
-                 namespace_always_norm
-            @ ["FStar.FunctionalExtensionality"]
-              )]
-          in
-          normalize_routine ();
-          d.dump "normalize the scrutinees in the following expression";
-          full_norm_scrutinees d;
-          normalize_routine ();
-          d.dump "after normalization of scrutinees";
-          trefl ()
-        in
-        ctrl_rewrite BottomUp control (fun _ -> d.sub "bottom-up-rewritter" rewritter);
-
-        d.dump "after full normalization";
-        trefl ()
-    )
+  (eta_match_lemmas: list term) =
+  let run d =
+    flatten_circuit_aux
+        namespace_always_norm
+        lift_lemmas simpl_lemmas
+        eta_match_lemmas d;
+    trefl ()
+  in
+  if lax_on ()
+  then trefl ()
+  else run (mk_dbg "")

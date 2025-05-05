@@ -104,6 +104,13 @@ fn decompress_uint32x4_t<const COEFFICIENT_BITS: i32>(v: _uint32x4_t) -> _uint32
 }
 
 #[inline(always)]
+pub fn decompress_1(a: SIMD128Vector) -> SIMD128Vector {
+    let z = ZERO();
+    let s = super::arithmetic::sub(z, &a);
+    super::arithmetic::bitwise_and_with_constant(s, 1665)
+}
+
+#[inline(always)]
 pub(crate) fn decompress_ciphertext_coefficient<const COEFFICIENT_BITS: i32>(
     mut v: SIMD128Vector,
 ) -> SIMD128Vector {
