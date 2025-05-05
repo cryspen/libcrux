@@ -194,6 +194,7 @@ pub(crate) fn generate_keypair<
     const PUBLIC_KEY_SIZE: usize,
     const ETA1: usize,
     const ETA1_RANDOMNESS_SIZE: usize,
+    const PRF_OUTPUT_SIZE1: usize,
     Vector: Operations,
     Hasher: Hash,
     Scheme: Variant,
@@ -212,6 +213,7 @@ pub(crate) fn generate_keypair<
         PUBLIC_KEY_SIZE,
         ETA1,
         ETA1_RANDOMNESS_SIZE,
+        PRF_OUTPUT_SIZE1,
         Vector,
         Hasher,
         Scheme,
@@ -265,6 +267,8 @@ pub(crate) fn encapsulate<
     const ETA1_RANDOMNESS_SIZE: usize,
     const ETA2: usize,
     const ETA2_RANDOMNESS_SIZE: usize,
+    const PRF_OUTPUT_SIZE1: usize,
+    const PRF_OUTPUT_SIZE2: usize,
     Vector: Operations,
     Hasher: Hash,
     Scheme: Variant,
@@ -289,6 +293,9 @@ pub(crate) fn encapsulate<
     let (shared_secret, pseudorandomness) = hashed.split_at(SHARED_SECRET_SIZE);
 
     let mut ciphertext = [0u8; CIPHERTEXT_SIZE];
+    let mut r_as_ntt: [PolynomialRingElement<Vector>; K] =
+        core::array::from_fn(|_i| PolynomialRingElement::<Vector>::ZERO());
+    let mut error_2 = PolynomialRingElement::<Vector>::ZERO();
     crate::ind_cpa::encrypt::<
         K,
         CIPHERTEXT_SIZE,
@@ -302,13 +309,17 @@ pub(crate) fn encapsulate<
         ETA1_RANDOMNESS_SIZE,
         ETA2,
         ETA2_RANDOMNESS_SIZE,
+        PRF_OUTPUT_SIZE1,
+        PRF_OUTPUT_SIZE2,
         Vector,
         Hasher,
     >(
         public_key.as_slice(),
-        processed_randomness,
+        &processed_randomness,
         pseudorandomness,
         &mut ciphertext,
+        &mut r_as_ntt,
+        &mut error_2,
     );
 
     let ciphertext = MlKemCiphertext::from(ciphertext);
@@ -355,6 +366,8 @@ pub(crate) fn decapsulate<
     const ETA1_RANDOMNESS_SIZE: usize,
     const ETA2: usize,
     const ETA2_RANDOMNESS_SIZE: usize,
+    const PRF_OUTPUT_SIZE1: usize,
+    const PRF_OUTPUT_SIZE2: usize,
     const IMPLICIT_REJECTION_HASH_INPUT_SIZE: usize,
     Vector: Operations,
     Hasher: Hash,
@@ -424,6 +437,9 @@ pub(crate) fn decapsulate<
         assert (Seq.length $ind_cpa_public_key == v $PUBLIC_KEY_SIZE)"
     );
     let mut expected_ciphertext = [0u8; CIPHERTEXT_SIZE];
+    let mut r_as_ntt: [PolynomialRingElement<Vector>; K] =
+        core::array::from_fn(|_i| PolynomialRingElement::<Vector>::ZERO());
+    let mut error_2 = PolynomialRingElement::<Vector>::ZERO();
     crate::ind_cpa::encrypt::<
         K,
         CIPHERTEXT_SIZE,
@@ -437,13 +453,17 @@ pub(crate) fn decapsulate<
         ETA1_RANDOMNESS_SIZE,
         ETA2,
         ETA2_RANDOMNESS_SIZE,
+        PRF_OUTPUT_SIZE1,
+        PRF_OUTPUT_SIZE2,
         Vector,
         Hasher,
     >(
         ind_cpa_public_key,
-        decrypted,
+        &decrypted,
         pseudorandomness,
         &mut expected_ciphertext,
+        &mut r_as_ntt,
+        &mut error_2,
     );
 
     let mut implicit_rejection_shared_secret_kdf = [0u8; SHARED_SECRET_SIZE];
@@ -894,6 +914,7 @@ pub(crate) mod unpacked {
         const PUBLIC_KEY_SIZE: usize,
         const ETA1: usize,
         const ETA1_RANDOMNESS_SIZE: usize,
+        const PRF_OUTPUT_SIZE1: usize,
         Vector: Operations,
         Hasher: Hash,
         Scheme: Variant,
@@ -904,7 +925,15 @@ pub(crate) mod unpacked {
         let ind_cpa_keypair_randomness = &randomness[0..CPA_PKE_KEY_GENERATION_SEED_SIZE];
         let implicit_rejection_value = &randomness[CPA_PKE_KEY_GENERATION_SEED_SIZE..];
 
-        generate_keypair_unpacked::<K, ETA1, ETA1_RANDOMNESS_SIZE, Vector, Hasher, Scheme>(
+        generate_keypair_unpacked::<
+            K,
+            ETA1,
+            ETA1_RANDOMNESS_SIZE,
+            PRF_OUTPUT_SIZE1,
+            Vector,
+            Hasher,
+            Scheme,
+        >(
             ind_cpa_keypair_randomness,
             &mut out.private_key.ind_cpa_private_key,
             &mut out.public_key.ind_cpa_public_key,
@@ -981,6 +1010,8 @@ pub(crate) mod unpacked {
         const ETA1_RANDOMNESS_SIZE: usize,
         const ETA2: usize,
         const ETA2_RANDOMNESS_SIZE: usize,
+        const PRF_OUTPUT_SIZE1: usize,
+        const PRF_OUTPUT_SIZE2: usize,
         Vector: Operations,
         Hasher: Hash,
     >(
@@ -1007,6 +1038,8 @@ pub(crate) mod unpacked {
             ETA1_RANDOMNESS_SIZE,
             ETA2,
             ETA2_RANDOMNESS_SIZE,
+            PRF_OUTPUT_SIZE1,
+            PRF_OUTPUT_SIZE2,
             Vector,
             Hasher,
         >(
@@ -1083,6 +1116,8 @@ pub(crate) mod unpacked {
         const ETA1_RANDOMNESS_SIZE: usize,
         const ETA2: usize,
         const ETA2_RANDOMNESS_SIZE: usize,
+        const PRF_OUTPUT_SIZE1: usize,
+        const PRF_OUTPUT_SIZE2: usize,
         const IMPLICIT_REJECTION_HASH_INPUT_SIZE: usize,
         Vector: Operations,
         Hasher: Hash,
@@ -1097,14 +1132,19 @@ pub(crate) mod unpacked {
         assert (v (Spec.MLKEM.v_C1_BLOCK_SIZE $K)  == 32 * v (Spec.MLKEM.v_VECTOR_U_COMPRESSION_FACTOR $K));
         assert (v (Spec.MLKEM.v_C2_SIZE $K) == 32 * v (Spec.MLKEM.v_VECTOR_V_COMPRESSION_FACTOR $K))"#
         );
-        let decrypted = ind_cpa::decrypt_unpacked::<
+        let mut decrypted = [0u8; SHARED_SECRET_SIZE];
+        ind_cpa::decrypt_unpacked::<
             K,
             CIPHERTEXT_SIZE,
             C1_SIZE,
             VECTOR_U_COMPRESSION_FACTOR,
             VECTOR_V_COMPRESSION_FACTOR,
             Vector,
-        >(&key_pair.private_key.ind_cpa_private_key, &ciphertext.value);
+        >(
+            &key_pair.private_key.ind_cpa_private_key,
+            &ciphertext.value,
+            &mut decrypted,
+        );
 
         let mut to_hash: [u8; SHARED_SECRET_SIZE + H_DIGEST_SIZE] = into_padded_array(&decrypted);
         hax_lib::fstar!(r#"Lib.Sequence.eq_intro #u8 #32 (Seq.slice $to_hash 0 32) $decrypted"#);
@@ -1148,6 +1188,8 @@ pub(crate) mod unpacked {
             ETA1_RANDOMNESS_SIZE,
             ETA2,
             ETA2_RANDOMNESS_SIZE,
+            PRF_OUTPUT_SIZE1,
+            PRF_OUTPUT_SIZE2,
             Vector,
             Hasher,
         >(

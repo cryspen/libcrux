@@ -8,8 +8,6 @@
 // them to be properly abstracted in F*. We would like hax to do this automatically.
 // Related Issue: https://github.com/hacspec/hax/issues/616
 
-use crate::constants::{G_DIGEST_SIZE, H_DIGEST_SIZE};
-
 /// The SHA3 block size.
 pub(crate) const BLOCK_SIZE: usize = 168;
 
