@@ -476,7 +476,7 @@ pub(crate) fn montgomery_multiply_by_constant(vec: &mut PortableVector, c: i16) 
                                         let y = Seq.index ${result}.f_elements i in
                                         (v y >= 0 /\ v y <= 3328 /\ (v y % 3329 == v x % 3329)))"#))]
 #[inline(always)]
-pub(crate) fn to_unsigned_representative(a: PortableVector) -> PortableVector {
+pub(crate) fn to_unsigned_representative(mut a: PortableVector) -> PortableVector {
     let mut t = a.clone();
     shift_right::<15>(&mut t);
 
@@ -498,5 +498,6 @@ pub(crate) fn to_unsigned_representative(a: PortableVector) -> PortableVector {
     "#
     );
 
-    add(&mut a, &fm)
+    add(&mut a, &t);
+    a
 }
