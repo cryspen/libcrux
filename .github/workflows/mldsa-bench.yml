@@ -81,7 +81,7 @@ jobs:
         run: cargo bench --bench manual44 --bench manual65 --bench manual87 --verbose $RUST_TARGET_FLAG -- --output-format bencher | tee bench.txt
 
       - name: Extract benchmarks
-        uses: cryspen/benchmark-data-extract-transform@v1
+        uses: cryspen/benchmark-data-extract-transform@v2
         with:
           name: ML-DSA Benchmark
           tool: 'cargo'
@@ -90,7 +90,7 @@ jobs:
           data-out-path: libcrux-ml-dsa/bench-processed.json
 
       - name: Upload benchmarks
-        uses: cryspen/benchmark-upload-and-plot-action@v1
+        uses: cryspen/benchmark-upload-and-plot-action@v2
         with:
           name: ML-DSA Benchmark
           input-data-path: libcrux-ml-dsa/bench-processed.json
@@ -98,6 +98,8 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           # NOTE: pushes to current repository
           gh-repository: github.com/${{ github.repository }}
+          group-by: implementation,label,os
+          schema: implementation,keySize,label,hardware,os
           auto-push: true
 
   mldsa-bench-status:
