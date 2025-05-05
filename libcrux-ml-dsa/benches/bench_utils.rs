@@ -65,15 +65,9 @@ macro_rules! bench {
             time += end.duration_since(start);
         }
         bench_utils::print_time(
-            concat!(
-                "test ",
-                $implementation,
-                " ML-DSA/",
-                $keysize,
-                "/",
-                $fun_label,
-                "/",
-                $hardware
+            &format!(
+                "test implementation={} ML-DSA,keySize={},label={},hardware={}",
+                $implementation, $keysize, $fun_label, $hardware
             ),
             time,
         );
