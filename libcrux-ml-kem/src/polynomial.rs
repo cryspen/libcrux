@@ -76,7 +76,7 @@ fn ZERO<Vector: Operations>() -> PolynomialRingElement<Vector> {
 #[hax_lib::requires(VECTORS_IN_RING_ELEMENT * 16 <= a.len())]
 fn from_i16_array<Vector: Operations>(a: &[i16], result: &mut PolynomialRingElement<Vector>) {
     for i in 0..VECTORS_IN_RING_ELEMENT {
-        result.coefficients[i] = Vector::from_i16_array(&a[i * 16..(i + 1) * 16]);
+        Vector::from_i16_array(&a[i * 16..(i + 1) * 16], &mut result.coefficients[i]);
     }
 }
 
@@ -89,18 +89,19 @@ fn to_i16_array<Vector: Operations>(re: PolynomialRingElement<Vector>, out: &mut
 
     for i in 0..re.coefficients.len() {
         hax_lib::loop_invariant!(|_i: usize| out.len() == _out_len);
-        out[i * 16..(i + 1) * 16].copy_from_slice(&Vector::to_i16_array(re.coefficients[i]));
+        Vector::to_i16_array(
+            re.coefficients[i],
+            &mut out[i * 16..(i + 1) * 16].try_into().unwrap(),
+        );
     }
 }
 
 #[inline(always)]
 #[hax_lib::requires(VECTORS_IN_RING_ELEMENT * 16 *2 <= bytes.len())]
-fn from_bytes<Vector: Operations>(bytes: &[u8]) -> PolynomialRingElement<Vector> {
-    let mut result = ZERO();
+fn from_bytes<Vector: Operations>(bytes: &[u8], result: &mut PolynomialRingElement<Vector>) {
     for i in 0..VECTORS_IN_RING_ELEMENT {
-        result.coefficients[i] = Vector::from_bytes(&bytes[i * 32..(i + 1) * 32]);
+        Vector::from_bytes(&bytes[i * 32..(i + 1) * 32], &mut result.coefficients[i]);
     }
-    result
 }
 
 #[inline(always)]
@@ -146,7 +147,7 @@ pub(crate) fn vec_from_bytes<Vector: Operations>(
     let re_bytes = PolynomialRingElement::<Vector>::num_bytes();
     for i in 0..out.len() {
         hax_lib::loop_invariant!(|_i: usize| out.len() == _out_len);
-        out[i] = PolynomialRingElement::<Vector>::from_bytes(&bytes[i * re_bytes..]);
+        PolynomialRingElement::<Vector>::from_bytes(&bytes[i * re_bytes..], &mut out[i]);
     }
 }
 
@@ -197,8 +198,7 @@ fn add_to_ring_element<Vector: Operations, const K: usize>(
                     Libcrux_ml_kem.Vector.Traits.Spec.add_post _myself_j rhs_j myself_j))"#
             )
         });
-
-        myself.coefficients[i] = Vector::add(myself.coefficients[i], &rhs.coefficients[i]);
+        Vector::add(&mut myself.coefficients[i], &rhs.coefficients[i]);
     }
 }
 
@@ -217,7 +217,7 @@ fn poly_barrett_reduce<Vector: Operations>(myself: &mut PolynomialRingElement<Ve
         "#
         ));
 
-        myself.coefficients[i] = Vector::barrett_reduce(myself.coefficients[i]);
+        Vector::barrett_reduce(&mut myself.coefficients[i]);
     }
 }
 
@@ -227,8 +227,8 @@ fn poly_barrett_reduce<Vector: Operations>(myself: &mut PolynomialRingElement<Ve
 #[hax_lib::ensures(|result| fstar!(r#"is_bounded_poly 3328 ${result}"#))]
 fn subtract_reduce<Vector: Operations>(
     myself: &PolynomialRingElement<Vector>,
-    mut b: PolynomialRingElement<Vector>,
-) -> PolynomialRingElement<Vector> {
+    b: &mut PolynomialRingElement<Vector>,
+) {
     #[cfg(hax)]
     let _b = b.coefficients;
 
@@ -249,46 +249,52 @@ fn subtract_reduce<Vector: Operations>(
         "#
         );
 
-        let coefficient_normal_form =
-            Vector::montgomery_multiply_by_constant(b.coefficients[i], 1441);
+        Vector::montgomery_multiply_by_constant(&mut b.coefficients[i], 1441);
+        // XXX: The above used to be the below, with attached fstar.
+        // let coefficient_normal_form =
+        //     Vector::montgomery_multiply_by_constant(b.coefficients[i], 1441);
 
-        hax_lib::fstar!(
-            r#"
-            assert (is_bounded_vector 3328 ${coefficient_normal_form});
-            assert (is_bounded_vector (pow2 12 - 1) (${myself}.f_coefficients.[ i ]));
-            assert_norm (pow2 12 - 1 == 4095);
-            Spec.Utils.lemma_sub_intb_forall 4095 3328;
-            assert (forall j. Spec.Utils.is_intb 7423
-                (v (Seq.index (i1.f_to_i16_array ${myself}.f_coefficients.[ i ]) j) -
-                 v (Seq.index (i1.f_to_i16_array ${coefficient_normal_form}) j)));
-            assert_norm (7423 <= pow2 15 - 1);
-            Spec.Utils.lemma_intb_le 7423 (pow2 15 - 1);
-            Spec.Utils.lemma_intb_le 7423 28296;
-            assert (forall j. Spec.Utils.is_intb (pow2 15 - 1) 
-                (v (Seq.index (i1.f_to_i16_array ${myself}.f_coefficients.[ i ]) j) -
-                 v (Seq.index (i1.f_to_i16_array ${coefficient_normal_form}) j)));
-            assert (forall j. Spec.Utils.is_intb 28296 
-                (v (Seq.index (i1.f_to_i16_array ${myself}.f_coefficients.[ i ]) j) -
-                 v (Seq.index (i1.f_to_i16_array ${coefficient_normal_form}) j)))
-        "#
-        );
+        // hax_lib::fstar!(
+        //     r#"
+        //     assert (is_bounded_vector 3328 ${coefficient_normal_form});
+        //     assert (is_bounded_vector (pow2 12 - 1) (${myself}.f_coefficients.[ i ]));
+        //     assert_norm (pow2 12 - 1 == 4095);
+        //     Spec.Utils.lemma_sub_intb_forall 4095 3328;
+        //     assert (forall j. Spec.Utils.is_intb 7423
+        //         (v (Seq.index (i1.f_to_i16_array ${myself}.f_coefficients.[ i ]) j) -
+        //          v (Seq.index (i1.f_to_i16_array ${coefficient_normal_form}) j)));
+        //     assert_norm (7423 <= pow2 15 - 1);
+        //     Spec.Utils.lemma_intb_le 7423 (pow2 15 - 1);
+        //     Spec.Utils.lemma_intb_le 7423 28296;
+        //     assert (forall j. Spec.Utils.is_intb (pow2 15 - 1)
+        //         (v (Seq.index (i1.f_to_i16_array ${myself}.f_coefficients.[ i ]) j) -
+        //          v (Seq.index (i1.f_to_i16_array ${coefficient_normal_form}) j)));
+        //     assert (forall j. Spec.Utils.is_intb 28296
+        //         (v (Seq.index (i1.f_to_i16_array ${myself}.f_coefficients.[ i ]) j) -
+        //          v (Seq.index (i1.f_to_i16_array ${coefficient_normal_form}) j)))
+        // "#
+        // );
 
-        let diff = Vector::sub(myself.coefficients[i], &coefficient_normal_form);
-        hax_lib::fstar!("assert (is_bounded_vector 28296 diff)");
-        let red = Vector::barrett_reduce(diff);
-        hax_lib::fstar!("assert (is_bounded_vector 3328 red)");
-        b.coefficients[i] = red;
+        Vector::sub(&mut b.coefficients[i], &myself.coefficients[i]);
+        Vector::negate(&mut b.coefficients[i]);
+        // XXX: The above used to be the below, with attached fstar.
+        // let diff = Vector::sub(myself.coefficients[i], &coefficient_normal_form);
+        // hax_lib::fstar!("assert (is_bounded_vector 28296 diff)");
 
-        hax_lib::fstar!(
-            r#"
-            assert (forall j. (j > v $i /\ j < 16) ==> ${b}.f_coefficients.[ sz j ] == ${_b}.[ sz j]);
-            assert (forall j. j < v $i ==> is_bounded_vector 3328 ${b}.f_coefficients.[ sz j ]);
-            assert (${b}.f_coefficients.[ $i ] == ${red});
-            assert (forall j. j <= v $i ==> is_bounded_vector 3328 ${b}.f_coefficients.[ sz j ])
-        "#
-        );
+        Vector::barrett_reduce(&mut b.coefficients[i]);
+        // XXX: The above used to be the below, with attached fstar.
+        // let red = Vector::barrett_reduce(diff);
+        // hax_lib::fstar!("assert (is_bounded_vector 3328 red)");
+        // b.coefficients[i] = red;
+
+        // hax_lib::fstar!(
+        //     r#"
+        //     assert (forall j. (j > v $i /\ j < 16) ==> ${b}.f_coefficients.[ sz j ] == ${_b}.[ sz j]);
+        //     assert (forall j. j < v $i ==> is_bounded_vector 3328 ${b}.f_coefficients.[ sz j ]);
+        //     assert (${b}.f_coefficients.[ $i ] == ${red});
+        //     assert (forall j. j <= v $i ==> is_bounded_vector 3328 ${b}.f_coefficients.[ sz j ])
+        // "#
     }
-    b
 }
 
 #[inline(always)]
@@ -301,6 +307,7 @@ fn add_message_error_reduce<Vector: Operations>(
     myself: &PolynomialRingElement<Vector>,
     message: &PolynomialRingElement<Vector>,
     result: &mut PolynomialRingElement<Vector>,
+    scratch: &mut Vector,
 ) {
     #[cfg(hax)]
     let _result = result.coefficients;
@@ -324,8 +331,7 @@ fn add_message_error_reduce<Vector: Operations>(
         "#
         );
 
-        let coefficient_normal_form =
-            Vector::montgomery_multiply_by_constant(result.coefficients[i], 1441);
+        Vector::montgomery_multiply_by_constant(&mut result.coefficients[i], 1441);
 
         hax_lib::fstar!(
             r#"
@@ -341,40 +347,16 @@ fn add_message_error_reduce<Vector: Operations>(
             "#
         );
 
-        let sum1 = Vector::add(myself.coefficients[i], &message.coefficients[i]);
-        hax_lib::fstar!("assert(is_bounded_vector 6656 sum1)");
-
-        hax_lib::fstar!(
-            r#"                
-                Spec.Utils.lemma_add_intb_forall 3328 6656;
-                Spec.Utils.lemma_intb_le 9984 (pow2 15 - 1);
-                Spec.Utils.lemma_intb_le 9984 28296;
-                assert (forall j. Spec.Utils.is_intb 9984 
-                    (v (Seq.index (i1.f_to_i16_array ${coefficient_normal_form}) j) +
-                    v (Seq.index (i1.f_to_i16_array ${sum1}) j)));
-                assert (forall j. Spec.Utils.is_intb 28296 
-                    (v (Seq.index (i1.f_to_i16_array ${coefficient_normal_form}) j) +
-                    v (Seq.index (i1.f_to_i16_array ${sum1}) j)));
-                assert (forall j. Spec.Utils.is_intb (pow2 15 - 1)
-                    (v (Seq.index (i1.f_to_i16_array ${coefficient_normal_form}) j) +
-                    v (Seq.index (i1.f_to_i16_array ${sum1}) j)))
-            "#
-        );
-
-        let sum2 = Vector::add(coefficient_normal_form, &sum1);
-        hax_lib::fstar!("assert(is_bounded_vector 9984 sum2)");
-        let red = Vector::barrett_reduce(sum2);
-        hax_lib::fstar!("assert(is_bounded_vector 3328 red)");
-        result.coefficients[i] = red;
-
-        hax_lib::fstar!(
-            r#"
-            assert (forall j. (j > v $i /\ j < 16) ==> ${result}.f_coefficients.[ sz j ] == ${_result}.[ sz j]);
-            assert (forall j.  j < v $i ==> is_bounded_vector 3328 ${result}.f_coefficients.[ sz j ]);
-            assert (${result}.f_coefficients.[ $i ] == ${red});
-            assert (forall j. j <= v $i ==> is_bounded_vector 3328 ${result}.f_coefficients.[ sz j ])
-        "#
-        );
+        // ```rust
+        // result.coefficients[i] = Vector::barrett_reduce(Vector::add(
+        //     coefficient_normal_form,
+        //     &Vector::add(myself.coefficients[i], &message.coefficients[i]),
+        // ));
+        // ```
+        *scratch = myself.coefficients[i].clone(); // XXX: Need this?
+        Vector::add(scratch, &message.coefficients[i]);
+        Vector::add(&mut result.coefficients[i], &scratch);
+        Vector::barrett_reduce(&mut result.coefficients[i]);
     }
 }
 
@@ -390,50 +372,9 @@ fn add_error_reduce<Vector: Operations>(
     let _myself = myself.coefficients;
 
     for j in 0..VECTORS_IN_RING_ELEMENT {
-        hax_lib::loop_invariant!(|i: usize| fstar!(
-            r#"
-            (forall j. j < v i ==> is_bounded_vector 3328 ${myself}.f_coefficients.[ sz j ]) /\
-            (forall j. (j >= v i /\ j < 16) ==> ${myself}.f_coefficients.[ sz j ] == ${_myself}.[ sz j ])
-            "#
-        ));
-
-        let coefficient_normal_form =
-            Vector::montgomery_multiply_by_constant(myself.coefficients[j], 1441);
-
-        hax_lib::fstar!(
-            r#"
-              assert (is_bounded_vector 3328 ${coefficient_normal_form});
-              assert (is_bounded_vector 7 (error.f_coefficients.[ j ]));
-              Spec.Utils.lemma_add_intb_forall 3328 7;
-              assert (forall i. Spec.Utils.is_intb 3335 
-                (v (Seq.index (i1.f_to_i16_array ${coefficient_normal_form}) i) +
-                 v (Seq.index (i1.f_to_i16_array ${error}.f_coefficients.[ j ]) i)));
-              assert_norm (3335 <= pow2 15 - 1);
-              Spec.Utils.lemma_intb_le 3335 (pow2 15 - 1);
-              Spec.Utils.lemma_intb_le 3335 28296;
-              assert (forall i. Spec.Utils.is_intb (pow2 15 - 1) 
-                (v (Seq.index (i1.f_to_i16_array ${coefficient_normal_form}) i) +
-                v (Seq.index (i1.f_to_i16_array ${error}.f_coefficients.[ j ]) i)));
-              assert (forall i. Spec.Utils.is_intb 28296 
-                (v (Seq.index (i1.f_to_i16_array ${coefficient_normal_form}) i) +
-                v (Seq.index (i1.f_to_i16_array ${error}.f_coefficients.[ j ]) i)))
-            "#
-        );
-
-        let sum = Vector::add(coefficient_normal_form, &error.coefficients[j]);
-        hax_lib::fstar!("assert(is_bounded_vector 3335 sum)");
-        let red = Vector::barrett_reduce(sum);
-        hax_lib::fstar!("assert(is_bounded_vector 3328 red)");
-        myself.coefficients[j] = red;
-
-        hax_lib::fstar!(
-            r#"
-            assert (forall i. (i > v $j /\ i < 16) ==> ${myself}.f_coefficients.[ sz i ] == ${_myself}.[ sz i]);
-            assert (forall i. i < v $j ==> is_bounded_vector 3328 ${myself}.f_coefficients.[ sz i ]);
-            assert (${myself}.f_coefficients.[ $j ] == ${red});
-            assert (forall i. i <= v $j ==> is_bounded_vector 3328 ${myself}.f_coefficients.[ sz i ])
-        "#
-        );
+        Vector::montgomery_multiply_by_constant(&mut myself.coefficients[j], 1441);
+        Vector::add(&mut myself.coefficients[j], &error.coefficients[j]);
+        Vector::barrett_reduce(&mut myself.coefficients[j]);
     }
 }
 
@@ -441,7 +382,7 @@ fn add_error_reduce<Vector: Operations>(
 #[hax_lib::ensures(|result| fstar!(r#"Spec.Utils.is_i16b_array 3328 (i1.f_to_i16_array ${result}) /\
                 (forall i. i < 16 ==> ((v (Seq.index (i1.f_to_i16_array ${result}) i) % 3329)==
                                        (v (Seq.index (i1.f_to_i16_array ${vector}) i) * 1353 * 169) % 3329))"#))]
-fn to_standard_domain<T: Operations>(vector: T) -> T {
+fn to_standard_domain<T: Operations>(vector: &mut T) -> T {
     T::montgomery_multiply_by_constant(vector, MONTGOMERY_R_SQUARED_MOD_FIELD_MODULUS as i16)
 }
 
@@ -466,43 +407,9 @@ fn add_standard_error_reduce<Vector: Operations>(
 
         // The coefficients are of the form aR^{-1} mod q, which means
         // calling to_montgomery_domain() on them should return a mod q.
-        let coefficient_normal_form = to_standard_domain::<Vector>(myself.coefficients[j]);
-
-        hax_lib::fstar!(
-            r#"
-          Spec.Utils.pow2_values_more 15;
-          assert (is_bounded_vector 3328 ${coefficient_normal_form});
-          assert (is_bounded_vector 3328 (error.f_coefficients.[ j ]));
-          Spec.Utils.lemma_add_intb_forall 3328 3328;
-          assert (forall i. Spec.Utils.is_intb 6656 
-            (v (Seq.index (i1.f_to_i16_array ${coefficient_normal_form}) i) +
-             v (Seq.index (i1.f_to_i16_array ${error}.f_coefficients.[ j ]) i)));
-          assert_norm (6656 <= pow2 15 - 1);
-          Spec.Utils.lemma_intb_le 6656 (pow2 15 - 1);
-          Spec.Utils.lemma_intb_le 6656 28296;
-          assert (forall i. Spec.Utils.is_intb (pow2 15 - 1) 
-            (v (Seq.index (i1.f_to_i16_array ${coefficient_normal_form}) i) +
-            v (Seq.index (i1.f_to_i16_array ${error}.f_coefficients.[ j ]) i)));
-          assert (forall i. Spec.Utils.is_intb 28296 
-            (v (Seq.index (i1.f_to_i16_array ${coefficient_normal_form}) i) +
-            v (Seq.index (i1.f_to_i16_array ${error}.f_coefficients.[ j ]) i)))
-        "#
-        );
-
-        let sum = Vector::add(coefficient_normal_form, &error.coefficients[j]);
-        hax_lib::fstar!("assert(is_bounded_vector 6656 sum)");
-        let red = Vector::barrett_reduce(sum);
-        hax_lib::fstar!("assert(is_bounded_vector 3328 red)");
-        myself.coefficients[j] = red;
-
-        hax_lib::fstar!(
-            r#"
-            assert (forall i. (i > v $j /\ i < 16) ==> ${myself}.f_coefficients.[ sz i ] == ${_myself}.[ sz i]);
-            assert (forall i. i < v $j ==> is_bounded_vector 3328 ${myself}.f_coefficients.[ sz i ]);
-            assert (${myself}.f_coefficients.[ $j ] == ${red});
-            assert (forall i. i <= v $j ==> is_bounded_vector 3328 ${myself}.f_coefficients.[ sz i ])
-        "#
-        );
+        to_standard_domain::<Vector>(&mut myself.coefficients[j]);
+        Vector::add(&mut myself.coefficients[j], &error.coefficients[j]);
+        Vector::barrett_reduce(&mut myself.coefficients[j]);
     }
 }
 
@@ -551,21 +458,19 @@ fn add_standard_error_reduce<Vector: Operations>(
 fn ntt_multiply<Vector: Operations>(
     myself: &PolynomialRingElement<Vector>,
     rhs: &PolynomialRingElement<Vector>,
-) -> PolynomialRingElement<Vector> {
-    let mut out = ZERO();
-
+    out: &mut PolynomialRingElement<Vector>,
+) {
     for i in 0..VECTORS_IN_RING_ELEMENT {
-        out.coefficients[i] = Vector::ntt_multiply(
+        Vector::ntt_multiply(
             &myself.coefficients[i],
             &rhs.coefficients[i],
+            &mut out.coefficients[i],
             zeta(64 + 4 * i),
             zeta(64 + 4 * i + 1),
             zeta(64 + 4 * i + 2),
             zeta(64 + 4 * i + 3),
         );
     }
-
-    out
 }
 
 // FIXME: We pulled out all the items because of https://github.com/hacspec/hax/issues/1183
@@ -603,8 +508,8 @@ impl<Vector: Operations> PolynomialRingElement<Vector> {
     #[inline(always)]
     #[allow(dead_code)]
     #[requires(VECTORS_IN_RING_ELEMENT * 16 * 2 <= bytes.len())]
-    pub(crate) fn from_bytes(bytes: &[u8]) -> Self {
-        from_bytes(bytes)
+    pub(crate) fn from_bytes(bytes: &[u8], out: &mut Self) {
+        from_bytes(bytes, out)
     }
 
     #[inline(always)]
@@ -642,7 +547,7 @@ impl<Vector: Operations> PolynomialRingElement<Vector> {
     #[inline(always)]
     #[requires(fstar!(r#"is_bounded_poly (pow2 12 - 1) self"#))]
     #[ensures(|result| fstar!(r#"is_bounded_poly 3328 ${result}"#))]
-    pub(crate) fn subtract_reduce(&self, b: Self) -> Self {
+    pub(crate) fn subtract_reduce(&self, b: &mut Self) {
         subtract_reduce(self, b)
     }
 
@@ -650,8 +555,13 @@ impl<Vector: Operations> PolynomialRingElement<Vector> {
     #[requires(fstar!(r#"is_bounded_poly 3328 self /\ 
                          is_bounded_poly 3328 ${message}"#))]
     #[ensures(|output| fstar!(r#"is_bounded_poly 3328 ${output}"#))]
-    pub(crate) fn add_message_error_reduce(&self, message: &Self, result: &mut Self) {
-        add_message_error_reduce(self, message, result);
+    pub(crate) fn add_message_error_reduce(
+        &self,
+        message: &Self,
+        result: &mut Self,
+        scratch: &mut Vector,
+    ) {
+        add_message_error_reduce(self, message, result, scratch);
     }
 
     #[inline(always)]
@@ -669,8 +579,8 @@ impl<Vector: Operations> PolynomialRingElement<Vector> {
     #[inline(always)]
     #[requires(fstar!(r#"is_bounded_poly 3328 self /\
                          is_bounded_poly 3328 ${rhs}"#))]
-    pub(crate) fn ntt_multiply(&self, rhs: &Self) -> Self {
-        ntt_multiply(self, rhs)
+    pub(crate) fn ntt_multiply(&self, rhs: &Self, out: &mut Self) {
+        ntt_multiply(self, rhs, out)
     }
 }
 
@@ -690,7 +600,8 @@ mod tests {
         let mut bytes = [0u8; RingElement::num_bytes()];
         re.to_bytes(&mut bytes);
 
-        let re_decoded = RingElement::from_bytes(&bytes);
+        let mut re_decoded = RingElement::ZERO();
+        RingElement::from_bytes(&bytes, &mut re_decoded);
 
         // Compare
         let mut i16s = [0; RingElement::num_bytes() / 2];
@@ -709,13 +620,14 @@ mod tests {
 
         type RingElement = PolynomialRingElement<SIMD128Vector>;
         let mut re = RingElement::ZERO();
-        re.coefficients[0] = SIMD128Vector::from_i16_array(&[0xAB; 32]);
-        re.coefficients[15] = SIMD128Vector::from_i16_array(&[0xCD; 32]);
+        SIMD128Vector::from_i16_array(&[0xAB; 32], &mut re.coefficients[0]);
+        SIMD128Vector::from_i16_array(&[0xCD; 32], &mut re.coefficients[15]);
 
         let mut bytes = [0u8; RingElement::num_bytes()];
         re.to_bytes(&mut bytes);
 
-        let re_decoded = RingElement::from_bytes(&bytes);
+        let mut re_decoded = RingElement::ZERO();
+        RingElement::from_bytes(&bytes, &mut re_decoded);
 
         // Compare
         let mut i16s = [0; RingElement::num_bytes() / 2];
