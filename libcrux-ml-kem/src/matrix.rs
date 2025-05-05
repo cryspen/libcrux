@@ -63,14 +63,15 @@ pub(crate) fn compute_message<const K: usize, Vector: Operations>(
     secret_as_ntt: &[PolynomialRingElement<Vector>; K],
     u_as_ntt: &[PolynomialRingElement<Vector>; K],
     result: &mut PolynomialRingElement<Vector>,
+    scratch: &mut PolynomialRingElement<Vector>,
 ) {
     for i in 0..K {
-        let product = secret_as_ntt[i].ntt_multiply(&u_as_ntt[i]);
-        result.add_to_ring_element::<K>(&product);
+        secret_as_ntt[i].ntt_multiply(&u_as_ntt[i], scratch);
+        result.add_to_ring_element::<K>(scratch);
     }
 
     invert_ntt_montgomery::<K, Vector>(result);
-    *result = v.subtract_reduce(*result);
+    v.subtract_reduce(result);
 }
 
 /// Compute InverseNTT(tᵀ ◦ r̂) + e₂ + message
@@ -93,14 +94,15 @@ pub(crate) fn compute_ring_element_v<const K: usize, Vector: Operations>(
     error_2: &PolynomialRingElement<Vector>,
     message: &PolynomialRingElement<Vector>,
     result: &mut PolynomialRingElement<Vector>,
+    scratch: &mut PolynomialRingElement<Vector>,
 ) {
     for i in 0..K {
-        let product = t_as_ntt[i].ntt_multiply(&r_as_ntt[i]);
-        result.add_to_ring_element::<K>(&product);
+        t_as_ntt[i].ntt_multiply(&r_as_ntt[i], scratch);
+        result.add_to_ring_element::<K>(&scratch);
     }
 
     invert_ntt_montgomery::<K, Vector>(result);
-    error_2.add_message_error_reduce(message, result);
+    error_2.add_message_error_reduce(message, result, &mut scratch.coefficients[0]);
 }
 
 /// Compute u := InvertNTT(Aᵀ ◦ r̂) + e₁
@@ -125,13 +127,14 @@ pub(crate) fn compute_vector_u<const K: usize, Vector: Operations>(
     r_as_ntt: &[PolynomialRingElement<Vector>],
     error_1: &[PolynomialRingElement<Vector>; K],
     result: &mut [PolynomialRingElement<Vector>],
+    scratch: &mut PolynomialRingElement<Vector>,
 ) {
     cloop! {
         for (i, row) in a_as_ntt.iter().enumerate() {
             cloop! {
                 for (j, a_element) in row.iter().enumerate() {
-                    let product = a_element.ntt_multiply(&r_as_ntt[j]);
-                    result[i].add_to_ring_element::<K>(&product);
+                    a_element.ntt_multiply(&r_as_ntt[j], scratch);
+                    result[i].add_to_ring_element::<K>(scratch);
                 }
             }
 
@@ -161,6 +164,7 @@ pub(crate) fn compute_As_plus_e<const K: usize, Vector: Operations>(
     matrix_A: &[[PolynomialRingElement<Vector>; K]; K],
     s_as_ntt: &[PolynomialRingElement<Vector>; K],
     error_as_ntt: &[PolynomialRingElement<Vector>; K],
+    scratch: &mut PolynomialRingElement<Vector>,
 ) {
     cloop! {
         for (i, row) in matrix_A.iter().enumerate() {
@@ -169,8 +173,8 @@ pub(crate) fn compute_As_plus_e<const K: usize, Vector: Operations>(
             t_as_ntt[i] = PolynomialRingElement::<Vector>::ZERO();
             cloop! {
                 for (j, matrix_element) in row.iter().enumerate() {
-                    let product = matrix_element.ntt_multiply(&s_as_ntt[j]);
-                    t_as_ntt[i].add_to_ring_element::<K>(&product);
+                    matrix_element.ntt_multiply(&s_as_ntt[j], scratch);
+                    t_as_ntt[i].add_to_ring_element::<K>(scratch);
                 }
             }
             t_as_ntt[i].add_standard_error_reduce(&error_as_ntt[i]);
