@@ -133,6 +133,7 @@ pub(crate) fn kyber_generate_keypair<
     $ETA1_RANDOMNESS_SIZE == Spec.MLKEM.v_ETA1_RANDOMNESS_SIZE $K"#))]
 pub(crate) fn generate_keypair<
     const K: usize,
+    const K_SQUARED: usize,
     const CPA_PRIVATE_KEY_SIZE: usize,
     const PRIVATE_KEY_SIZE: usize,
     const PUBLIC_KEY_SIZE: usize,
@@ -157,6 +158,7 @@ pub(crate) fn generate_keypair<
     if libcrux_platform::simd128_support() {
         generate_keypair_neon::<
             K,
+            K_SQUARED,
             CPA_PRIVATE_KEY_SIZE,
             PRIVATE_KEY_SIZE,
             PUBLIC_KEY_SIZE,
@@ -167,6 +169,7 @@ pub(crate) fn generate_keypair<
     } else {
         instantiations::portable::generate_keypair::<
             K,
+            K_SQUARED,
             CPA_PRIVATE_KEY_SIZE,
             PRIVATE_KEY_SIZE,
             PUBLIC_KEY_SIZE,
@@ -270,6 +273,7 @@ pub(crate) fn kyber_encapsulate<
     $ETA2_RANDOMNESS_SIZE == Spec.MLKEM.v_ETA2_RANDOMNESS_SIZE $K"#))]
 pub(crate) fn encapsulate<
     const K: usize,
+    const K_SQUARED: usize,
     const CIPHERTEXT_SIZE: usize,
     const PUBLIC_KEY_SIZE: usize,
     const T_AS_NTT_ENCODED_SIZE: usize,
@@ -310,6 +314,7 @@ pub(crate) fn encapsulate<
     if libcrux_platform::simd128_support() {
         encapsulate_neon::<
             K,
+            K_SQUARED,
             CIPHERTEXT_SIZE,
             PUBLIC_KEY_SIZE,
             T_AS_NTT_ENCODED_SIZE,
@@ -328,6 +333,7 @@ pub(crate) fn encapsulate<
     } else {
         instantiations::portable::encapsulate::<
             K,
+            K_SQUARED,
             CIPHERTEXT_SIZE,
             PUBLIC_KEY_SIZE,
             T_AS_NTT_ENCODED_SIZE,
@@ -454,6 +460,7 @@ pub(crate) fn kyber_decapsulate<
     $IMPLICIT_REJECTION_HASH_INPUT_SIZE == Spec.MLKEM.v_IMPLICIT_REJECTION_HASH_INPUT_SIZE $K"#))]
 pub(crate) fn decapsulate<
     const K: usize,
+    const K_SQUARED: usize,
     const SECRET_KEY_SIZE: usize,
     const CPA_SECRET_KEY_SIZE: usize,
     const PUBLIC_KEY_SIZE: usize,
@@ -500,6 +507,7 @@ pub(crate) fn decapsulate<
     if libcrux_platform::simd128_support() {
         decapsulate_neon::<
             K,
+            K_SQUARED,
             SECRET_KEY_SIZE,
             CPA_SECRET_KEY_SIZE,
             PUBLIC_KEY_SIZE,
@@ -521,6 +529,7 @@ pub(crate) fn decapsulate<
     } else {
         instantiations::portable::decapsulate::<
             K,
+            K_SQUARED,
             SECRET_KEY_SIZE,
             CPA_SECRET_KEY_SIZE,
             PUBLIC_KEY_SIZE,
