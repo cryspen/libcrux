@@ -421,8 +421,8 @@ macro_rules! instantiate {
 // Instantiations
 
 instantiate! {portable, ind_cca::instantiations::portable, "Portable ML-KEM 768"}
-#[cfg(feature = "simd256")]
-instantiate! {avx2, ind_cca::instantiations::avx2, "AVX2 Optimised ML-KEM 768"}
+// #[cfg(feature = "simd256")]
+// instantiate! {avx2, ind_cca::instantiations::avx2, "AVX2 Optimised ML-KEM 768"}
 #[cfg(feature = "simd128")]
 instantiate! {neon, ind_cca::instantiations::neon, "Neon Optimised ML-KEM 768"}
 
