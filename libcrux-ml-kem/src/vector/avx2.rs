@@ -254,11 +254,15 @@ fn deserialize_12(bytes: &[u8]) -> SIMD256Vector {
     }
 }
 
+#[cfg(hax)]
 impl crate::vector::traits::Repr for SIMD256Vector {
     fn repr(&self) -> [i16; 16] {
         vec_to_i16_array(self.clone())
     }
 }
+
+#[cfg(any(eurydice, not(hax)))]
+impl crate::vector::traits::Repr for SIMD256Vector {}
 
 #[inline(always)]
 #[hax_lib::requires(array.len() >= 32)]

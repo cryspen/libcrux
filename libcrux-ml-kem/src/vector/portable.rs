@@ -14,11 +14,15 @@ use vector_type::*;
 
 pub(crate) use vector_type::PortableVector;
 
+#[cfg(hax)]
 impl crate::vector::traits::Repr for PortableVector {
     fn repr(&self) -> [i16; 16] {
         to_i16_array(self.clone())
     }
 }
+
+#[cfg(any(eurydice, not(hax)))]
+impl crate::vector::traits::Repr for PortableVector {}
 
 #[hax_lib::requires(fstar!(r#"Spec.MLKEM.serialize_pre 1 (impl.f_repr $a)"#))]
 #[hax_lib::ensures(|out| fstar!(r#"Spec.MLKEM.serialize_pre 1 (impl.f_repr $a) ==> 
