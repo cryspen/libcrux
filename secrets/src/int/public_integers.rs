@@ -9,7 +9,9 @@ pub type I32 = i32;
 pub type U32 = u32;
 pub type I64 = i64;
 pub type U64 = u64;
+#[cfg(not(eurydice))]
 pub type I128 = i128;
+#[cfg(not(eurydice))]
 pub type U128 = u128;
 
 /// Construct a public integer (identity)

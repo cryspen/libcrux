@@ -41,12 +41,14 @@ impl Scalar for u8 {}
 impl Scalar for u16 {}
 impl Scalar for u32 {}
 impl Scalar for u64 {}
+#[cfg(not(eurydice))]
 impl Scalar for u128 {}
 
 impl Scalar for i8 {}
 impl Scalar for i16 {}
 impl Scalar for i32 {}
 impl Scalar for i64 {}
+#[cfg(not(eurydice))]
 impl Scalar for i128 {}
 
 /// A trait for integer operations provided by Rust for machine integers
