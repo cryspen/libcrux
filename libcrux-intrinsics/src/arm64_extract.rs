@@ -83,6 +83,11 @@ pub fn _vsubq_s16(lhs: _int16x8_t, rhs: _int16x8_t) -> _int16x8_t {
 }
 
 #[inline(always)]
+pub fn _vnegq_s16(vec: _int16x8_t) -> _int16x8_t {
+    unimplemented!()
+}
+
+#[inline(always)]
 pub fn _vmulq_n_s16(v: _int16x8_t, c: i16) -> _int16x8_t {
     unimplemented!()
 }

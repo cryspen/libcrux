@@ -15,9 +15,9 @@ use vector_type::*;
 pub(crate) use vector_type::PortableVector;
 
 impl crate::vector::traits::Repr for PortableVector {
-    fn repr(x: Self) -> [i16; 16] {
+    fn repr(&self) -> [i16; 16] {
         let mut out = [0i16; 16];
-        to_i16_array(x, &mut out);
+        to_i16_array(self, &mut out);
         out
     }
 }
@@ -25,7 +25,7 @@ impl crate::vector::traits::Repr for PortableVector {
 #[hax_lib::requires(fstar!(r#"Spec.MLKEM.serialize_pre 1 (impl.f_repr $a)"#))]
 #[hax_lib::ensures(|out| fstar!(r#"Spec.MLKEM.serialize_pre 1 (impl.f_repr $a) ==> 
                                  Spec.MLKEM.serialize_post 1 (impl.f_repr $a) $out"#))]
-fn serialize_1(a: PortableVector, out: &mut [u8]) {
+fn serialize_1(a: &PortableVector, out: &mut [u8]) {
     hax_lib::fstar!(
         r#"assert (forall i. Rust_primitives.bounded (Seq.index ${a}.f_elements i) 1)"#
     );
@@ -42,7 +42,7 @@ fn deserialize_1(a: &[u8], out: &mut PortableVector) {
 
 #[hax_lib::requires(fstar!(r#"Spec.MLKEM.serialize_pre 4 (impl.f_repr $a)"#))]
 #[hax_lib::ensures(|out| fstar!(r#"Spec.MLKEM.serialize_pre 4 (impl.f_repr $a) ==> Spec.MLKEM.serialize_post 4 (impl.f_repr $a) $out"#))]
-fn serialize_4(a: PortableVector, out: &mut [u8]) {
+fn serialize_4(a: &PortableVector, out: &mut [u8]) {
     hax_lib::fstar!(
         r#"assert (forall i. Rust_primitives.bounded (Seq.index ${a}.f_elements i) 4)"#
     );
@@ -57,7 +57,7 @@ fn deserialize_4(a: &[u8], out: &mut PortableVector) {
     serialize::deserialize_4(a, out)
 }
 
-fn serialize_5(a: PortableVector, out: &mut [u8]) {
+fn serialize_5(a: &PortableVector, out: &mut [u8]) {
     serialize::serialize_5(a, out)
 }
 
@@ -68,7 +68,7 @@ fn deserialize_5(a: &[u8], out: &mut PortableVector) {
 
 #[hax_lib::requires(fstar!(r#"Spec.MLKEM.serialize_pre 10 (impl.f_repr $a)"#))]
 #[hax_lib::ensures(|out| fstar!(r#"Spec.MLKEM.serialize_pre 10 (impl.f_repr $a) ==> Spec.MLKEM.serialize_post 10 (impl.f_repr $a) $out"#))]
-fn serialize_10(a: PortableVector, out: &mut [u8]) {
+fn serialize_10(a: &PortableVector, out: &mut [u8]) {
     hax_lib::fstar!(r#"Libcrux_ml_kem.Vector.Portable.Serialize.serialize_10_lemma $a"#);
     serialize::serialize_10(a, out)
 }
@@ -81,7 +81,7 @@ fn deserialize_10(a: &[u8], out: &mut PortableVector) {
     serialize::deserialize_10(a, out)
 }
 
-fn serialize_11(a: PortableVector, out: &mut [u8]) {
+fn serialize_11(a: &PortableVector, out: &mut [u8]) {
     serialize::serialize_11(a, out)
 }
 
@@ -92,7 +92,7 @@ fn deserialize_11(a: &[u8], out: &mut PortableVector) {
 
 #[hax_lib::requires(fstar!(r#"Spec.MLKEM.serialize_pre 12 (impl.f_repr $a)"#))]
 #[hax_lib::ensures(|out| fstar!(r#"Spec.MLKEM.serialize_pre 12 (impl.f_repr $a) ==> Spec.MLKEM.serialize_post 12 (impl.f_repr $a) $out"#))]
-fn serialize_12(a: PortableVector, out: &mut [u8]) {
+fn serialize_12(a: &PortableVector, out: &mut [u8]) {
     hax_lib::fstar!(r#"Libcrux_ml_kem.Vector.Portable.Serialize.serialize_12_lemma $a"#);
     serialize::serialize_12(a, out)
 }
@@ -121,7 +121,7 @@ impl Operations for PortableVector {
     }
 
     #[ensures(|out| fstar!(r#"out == impl.f_repr $x"#))]
-    fn to_i16_array(x: Self, out: &mut [i16; 16]) {
+    fn to_i16_array(x: &Self, out: &mut [i16; 16]) {
         to_i16_array(x, out)
     }
 
@@ -312,7 +312,7 @@ impl Operations for PortableVector {
 
     #[requires(fstar!(r#"Spec.MLKEM.serialize_pre 1 (impl.f_repr $a)"#))]
     #[ensures(|out| fstar!(r#"Spec.MLKEM.serialize_pre 1 (impl.f_repr $a) ==> Spec.MLKEM.serialize_post 1 (impl.f_repr $a) $out"#))]
-    fn serialize_1(a: Self, out: &mut [u8]) {
+    fn serialize_1(a: &Self, out: &mut [u8]) {
         serialize_1(a, out)
     }
 
@@ -324,7 +324,7 @@ impl Operations for PortableVector {
 
     #[requires(fstar!(r#"Spec.MLKEM.serialize_pre 4 (impl.f_repr $a)"#))]
     #[ensures(|out| fstar!(r#"Spec.MLKEM.serialize_pre 4 (impl.f_repr $a) ==> Spec.MLKEM.serialize_post 4 (impl.f_repr $a) $out"#))]
-    fn serialize_4(a: Self, out: &mut [u8]) {
+    fn serialize_4(a: &Self, out: &mut [u8]) {
         serialize_4(a, out)
     }
 
@@ -334,7 +334,7 @@ impl Operations for PortableVector {
         deserialize_4(a, out)
     }
 
-    fn serialize_5(a: Self, out: &mut [u8]) {
+    fn serialize_5(a: &Self, out: &mut [u8]) {
         serialize_5(a, out)
     }
 
@@ -345,7 +345,7 @@ impl Operations for PortableVector {
 
     #[requires(fstar!(r#"Spec.MLKEM.serialize_pre 10 (impl.f_repr $a)"#))]
     #[ensures(|out| fstar!(r#"Spec.MLKEM.serialize_pre 10 (impl.f_repr $a) ==> Spec.MLKEM.serialize_post 10 (impl.f_repr $a) $out"#))]
-    fn serialize_10(a: Self, out: &mut [u8]) {
+    fn serialize_10(a: &Self, out: &mut [u8]) {
         serialize_10(a, out)
     }
 
@@ -355,7 +355,7 @@ impl Operations for PortableVector {
         deserialize_10(a, out)
     }
 
-    fn serialize_11(a: Self, out: &mut [u8]) {
+    fn serialize_11(a: &Self, out: &mut [u8]) {
         serialize_11(a, out)
     }
 
@@ -366,7 +366,7 @@ impl Operations for PortableVector {
 
     #[requires(fstar!(r#"Spec.MLKEM.serialize_pre 12 (impl.f_repr $a)"#))]
     #[ensures(|out| fstar!(r#"Spec.MLKEM.serialize_pre 12 (impl.f_repr $a) ==> Spec.MLKEM.serialize_post 12 (impl.f_repr $a) $out"#))]
-    fn serialize_12(a: Self, out: &mut [u8]) {
+    fn serialize_12(a: &Self, out: &mut [u8]) {
         serialize_12(a, out)
     }
 

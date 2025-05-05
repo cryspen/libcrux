@@ -10,7 +10,7 @@ pub const BARRETT_R: i32 = 1 << BARRETT_SHIFT;
 #[hax_lib::attributes]
 pub trait Repr: Copy + Clone {
     #[requires(true)]
-    fn repr(a: Self) -> [i16; 16];
+    fn repr(&self) -> [i16; 16];
 }
 
 #[cfg(hax)]
@@ -46,7 +46,7 @@ pub trait Operations: Copy + Clone + Repr {
 
     #[requires(true)]
     #[ensures(|result| fstar!(r#"f_repr $x == $result"#))]
-    fn to_i16_array(x: Self, out: &mut [i16; 16]);
+    fn to_i16_array(x: &Self, out: &mut [i16; 16]);
 
     #[requires(array.len() >= 32)]
     fn from_bytes(array: &[u8], out: &mut Self);
@@ -57,7 +57,7 @@ pub trait Operations: Copy + Clone + Repr {
 
     // Basic arithmetic
     #[requires(spec::add_pre(&lhs.repr(), &rhs.repr()))]
-    #[ensures(|result| spec::add_post(&lhs.repr(), &rhs.repr(), &result.repr()))]
+    #[ensures(|()| spec::add_post(&lhs.repr(), &rhs.repr(), &future(lhs).repr()))]
     fn add(lhs: &mut Self, rhs: &Self);
 
     #[requires(fstar!(r#"forall i. i < 16 ==> 
@@ -189,36 +189,36 @@ pub trait Operations: Copy + Clone + Repr {
     // Serialization and deserialization
     #[requires(fstar!(r#"Spec.MLKEM.serialize_pre 1 (f_repr $a)"#))]
     #[ensures(|result| fstar!(r#"Spec.MLKEM.serialize_pre 1 (f_repr $a) ==> Spec.MLKEM.serialize_post 1 (f_repr $a) $result"#))]
-    fn serialize_1(a: Self, out: &mut [u8]);
+    fn serialize_1(a: &Self, out: &mut [u8]);
     #[requires(a.len() == 2)]
     #[ensures(|result| fstar!(r#"sz (Seq.length $a) =. sz 2 ==> Spec.MLKEM.deserialize_post 1 $a (f_repr $result)"#))]
     fn deserialize_1(a: &[u8], out: &mut Self);
 
     #[requires(fstar!(r#"Spec.MLKEM.serialize_pre 4 (f_repr $a)"#))]
     #[ensures(|result| fstar!(r#"Spec.MLKEM.serialize_pre 4 (f_repr $a) ==> Spec.MLKEM.serialize_post 4 (f_repr $a) $result"#))]
-    fn serialize_4(a: Self, out: &mut [u8]);
+    fn serialize_4(a: &Self, out: &mut [u8]);
     #[requires(a.len() == 8)]
     #[ensures(|result| fstar!(r#"sz (Seq.length $a) =. sz 8 ==> Spec.MLKEM.deserialize_post 4 $a (f_repr $result)"#))]
     fn deserialize_4(a: &[u8], out: &mut Self);
 
-    fn serialize_5(a: Self, out: &mut [u8]);
+    fn serialize_5(a: &Self, out: &mut [u8]);
     #[requires(a.len() == 10)]
     fn deserialize_5(a: &[u8], out: &mut Self);
 
     #[requires(fstar!(r#"Spec.MLKEM.serialize_pre 10 (f_repr $a)"#))]
     #[ensures(|result| fstar!(r#"Spec.MLKEM.serialize_pre 10 (f_repr $a) ==> Spec.MLKEM.serialize_post 10 (f_repr $a) $result"#))]
-    fn serialize_10(a: Self, out: &mut [u8]);
+    fn serialize_10(a: &Self, out: &mut [u8]);
     #[requires(a.len() == 20)]
     #[ensures(|result| fstar!(r#"sz (Seq.length $a) =. sz 20 ==> Spec.MLKEM.deserialize_post 10 $a (f_repr $result)"#))]
     fn deserialize_10(a: &[u8], out: &mut Self);
 
-    fn serialize_11(a: Self, out: &mut [u8]);
+    fn serialize_11(a: &Self, out: &mut [u8]);
     #[requires(a.len() == 22)]
     fn deserialize_11(a: &[u8], out: &mut Self);
 
     #[requires(fstar!(r#"Spec.MLKEM.serialize_pre 12 (f_repr $a)"#))]
     #[ensures(|result| fstar!(r#"Spec.MLKEM.serialize_pre 12 (f_repr $a) ==> Spec.MLKEM.serialize_post 12 (f_repr $a) $result"#))]
-    fn serialize_12(a: Self, out: &mut [u8]);
+    fn serialize_12(a: &Self, out: &mut [u8]);
     #[requires(a.len() == 24)]
     #[ensures(|result| fstar!(r#"sz (Seq.length $a) =. sz 24 ==> Spec.MLKEM.deserialize_post 12 $a (f_repr $result)"#))]
     fn deserialize_12(a: &[u8], out: &mut Self);
@@ -230,49 +230,49 @@ pub trait Operations: Copy + Clone + Repr {
     fn rej_sample(a: &[u8], out: &mut [i16]) -> usize;
 }
 
-// The trait is duplicated for Eurudice to avoid the trait inheritance between Operations and Repr
-// This is needed because of this issue: https://github.com/AeneasVerif/eurydice/issues/111
-#[cfg(eurydice)]
-pub trait Operations: Copy + Clone {
-    #[allow(non_snake_case)]
-    fn ZERO() -> Self;
-    fn from_i16_array(array: &[i16]) -> Self;
-    fn to_i16_array(x: Self) -> [i16; 16];
-    fn from_bytes(array: &[u8]) -> Self;
-    fn to_bytes(x: Self, bytes: &mut [u8]);
-    fn add(lhs: Self, rhs: &Self) -> Self;
-    fn sub(lhs: Self, rhs: &Self) -> Self;
-    fn multiply_by_constant(v: Self, c: i16) -> Self;
-    fn cond_subtract_3329(v: Self) -> Self;
-    fn barrett_reduce(vector: Self) -> Self;
-    fn montgomery_multiply_by_constant(v: Self, c: i16) -> Self;
-    fn to_unsigned_representative(a: Self) -> Self;
-    fn compress_1(v: Self) -> Self;
-    fn compress<const COEFFICIENT_BITS: i32>(v: Self) -> Self;
-    fn decompress_1(a: Self) -> Self;
-    fn decompress_ciphertext_coefficient<const COEFFICIENT_BITS: i32>(a: Self) -> Self;
-    fn ntt_layer_1_step(a: Self, zeta0: i16, zeta1: i16, zeta2: i16, zeta3: i16) -> Self;
-    fn ntt_layer_2_step(a: Self, zeta0: i16, zeta1: i16) -> Self;
-    fn ntt_layer_3_step(a: Self, zeta: i16) -> Self;
-    fn inv_ntt_layer_1_step(a: Self, zeta0: i16, zeta1: i16, zeta2: i16, zeta3: i16) -> Self;
-    fn inv_ntt_layer_2_step(a: Self, zeta0: i16, zeta1: i16) -> Self;
-    fn inv_ntt_layer_3_step(a: Self, zeta: i16) -> Self;
-    fn ntt_multiply(lhs: &Self, rhs: &Self, zeta0: i16, zeta1: i16, zeta2: i16, zeta3: i16)
-        -> Self;
-    fn serialize_1(a: Self) -> [u8; 2];
-    fn deserialize_1(a: &[u8]) -> Self;
-    fn serialize_4(a: Self) -> [u8; 8];
-    fn deserialize_4(a: &[u8]) -> Self;
-    fn serialize_5(a: Self) -> [u8; 10];
-    fn deserialize_5(a: &[u8]) -> Self;
-    fn serialize_10(a: Self) -> [u8; 20];
-    fn deserialize_10(a: &[u8]) -> Self;
-    fn serialize_11(a: Self) -> [u8; 22];
-    fn deserialize_11(a: &[u8]) -> Self;
-    fn serialize_12(a: Self) -> [u8; 24];
-    fn deserialize_12(a: &[u8]) -> Self;
-    fn rej_sample(a: &[u8], out: &mut [i16]) -> usize;
-}
+// // The trait is duplicated for Eurudice to avoid the trait inheritance between Operations and Repr
+// // This is needed because of this issue: https://github.com/AeneasVerif/eurydice/issues/111
+// #[cfg(eurydice)]
+// pub trait Operations: Copy + Clone {
+//     #[allow(non_snake_case)]
+//     fn ZERO() -> Self;
+//     fn from_i16_array(array: &[i16]) -> Self;
+//     fn to_i16_array(x: Self) -> [i16; 16];
+//     fn from_bytes(array: &[u8]) -> Self;
+//     fn to_bytes(x: Self, bytes: &mut [u8]);
+//     fn add(lhs: Self, rhs: &Self) -> Self;
+//     fn sub(lhs: Self, rhs: &Self) -> Self;
+//     fn multiply_by_constant(v: Self, c: i16) -> Self;
+//     fn cond_subtract_3329(v: Self) -> Self;
+//     fn barrett_reduce(vector: Self) -> Self;
+//     fn montgomery_multiply_by_constant(v: Self, c: i16) -> Self;
+//     fn to_unsigned_representative(a: Self) -> Self;
+//     fn compress_1(v: Self) -> Self;
+//     fn compress<const COEFFICIENT_BITS: i32>(v: Self) -> Self;
+//     fn decompress_1(a: Self) -> Self;
+//     fn decompress_ciphertext_coefficient<const COEFFICIENT_BITS: i32>(a: Self) -> Self;
+//     fn ntt_layer_1_step(a: Self, zeta0: i16, zeta1: i16, zeta2: i16, zeta3: i16) -> Self;
+//     fn ntt_layer_2_step(a: Self, zeta0: i16, zeta1: i16) -> Self;
+//     fn ntt_layer_3_step(a: Self, zeta: i16) -> Self;
+//     fn inv_ntt_layer_1_step(a: Self, zeta0: i16, zeta1: i16, zeta2: i16, zeta3: i16) -> Self;
+//     fn inv_ntt_layer_2_step(a: Self, zeta0: i16, zeta1: i16) -> Self;
+//     fn inv_ntt_layer_3_step(a: Self, zeta: i16) -> Self;
+//     fn ntt_multiply(lhs: &Self, rhs: &Self, zeta0: i16, zeta1: i16, zeta2: i16, zeta3: i16)
+//         -> Self;
+//     fn serialize_1(a: Self) -> [u8; 2];
+//     fn deserialize_1(a: &[u8]) -> Self;
+//     fn serialize_4(a: Self) -> [u8; 8];
+//     fn deserialize_4(a: &[u8]) -> Self;
+//     fn serialize_5(a: Self) -> [u8; 10];
+//     fn deserialize_5(a: &[u8]) -> Self;
+//     fn serialize_10(a: Self) -> [u8; 20];
+//     fn deserialize_10(a: &[u8]) -> Self;
+//     fn serialize_11(a: Self) -> [u8; 22];
+//     fn deserialize_11(a: &[u8]) -> Self;
+//     fn serialize_12(a: Self) -> [u8; 24];
+//     fn deserialize_12(a: &[u8]) -> Self;
+//     fn rej_sample(a: &[u8], out: &mut [i16]) -> usize;
+// }
 
 // hax does not support trait with default implementations, so we use the following pattern
 #[hax_lib::requires(fstar!(r#"Spec.Utils.is_i16b 1664 $fer"#))]
@@ -281,40 +281,19 @@ pub fn montgomery_multiply_fe<T: Operations>(v: &mut T, fer: i16) {
     T::montgomery_multiply_by_constant(v, fer)
 }
 
-#[inline(always)]
-pub fn to_standard_domain<T: Operations>(v: &mut T) {
-    T::montgomery_multiply_by_constant(v, MONTGOMERY_R_SQUARED_MOD_FIELD_MODULUS as i16)
-}
-
-#[hax_lib::fstar::verification_status(lax)]
-#[hax_lib::requires(fstar!(r#"Spec.Utils.is_i16b_array 3328 (i1._super_12682756204189288427.f_repr a)"#))]
-#[hax_lib::ensures(|result| fstar!(r#"forall i.
-                                       (let x = Seq.index (i1._super_12682756204189288427.f_repr ${a}) i in
-                                        let y = Seq.index (i1._super_12682756204189288427.f_repr ${result}) i in
-                                        (v y >= 0 /\ v y <= 3328 /\ (v y % 3329 == v x % 3329)))"#))]
-#[inline(always)]
-pub fn to_unsigned_representative<T: Operations>(a: &T, out: &mut T) {
-    *out = a.clone(); // XXX: We need a copy of `a` here. At least
-                      // the allocation becomes apparent on the
-                      // outside.
-    T::shift_right::<15>(out);
-    T::bitwise_and_with_constant(out, FIELD_MODULUS);
-    T::add(out, a)
-}
-
 #[hax_lib::fstar::options("--z3rlimit 200 --split_queries always")]
-#[hax_lib::requires(fstar!(r#"forall i. let x = Seq.index (i1._super_12682756204189288427.f_repr ${vec}) i in 
+#[hax_lib::requires(fstar!(r#"forall i. let x = Seq.index (i1._super_12682756204189288427.f_repr ${vec}) i in
                                       (x == mk_i16 0 \/ x == mk_i16 1)"#))]
 #[inline(always)]
 #[hax_lib::requires(fstar!(r#"forall (i:nat). i < 16 ==>
-                                    (let x = Seq.index (f_repr ${a}) i in 
+                                    (let x = Seq.index (f_repr ${a}) i in
                                      (x == mk_i16 0 \/ x == mk_i16 1))"#))]
 pub fn decompress_1<T: Operations>(vec: &mut T) {
     hax_lib::fstar!(
         "assert(forall i. Seq.index (i1._super_12682756204189288427.f_repr ${z}) i == mk_i16 0)"
     );
     hax_lib::fstar!(
-        r#"assert(forall i. let x = Seq.index (i1._super_12682756204189288427.f_repr ${vec}) i in 
+        r#"assert(forall i. let x = Seq.index (i1._super_12682756204189288427.f_repr ${vec}) i in
                                       ((0 - v x) == 0 \/ (0 - v x) == -1))"#
     );
     hax_lib::fstar!(
@@ -325,7 +304,7 @@ pub fn decompress_1<T: Operations>(vec: &mut T) {
 
     T::negate(vec);
     hax_lib::fstar!(
-        r#"assert(forall i. Seq.index (i1._super_12682756204189288427.f_repr ${s}) i == mk_i16 0 \/ 
+        r#"assert(forall i. Seq.index (i1._super_12682756204189288427.f_repr ${s}) i == mk_i16 0 \/
                                       Seq.index (i1._super_12682756204189288427.f_repr ${s}) i == mk_i16 (-1))"#
     );
     hax_lib::fstar!(r#"assert (i1.f_bitwise_and_with_constant_pre ${s} (mk_i16 1665))"#);

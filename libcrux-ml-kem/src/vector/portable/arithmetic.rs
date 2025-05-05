@@ -15,6 +15,8 @@ pub type MontgomeryFieldElement = i16;
 pub type FieldElementTimesMontgomeryR = i16;
 
 pub(crate) const MONTGOMERY_SHIFT: u8 = 16;
+
+#[cfg(hax)]
 pub(crate) const MONTGOMERY_R: i32 = 1 << MONTGOMERY_SHIFT;
 
 /// This is calculated as ⌊(BARRETT_R / FIELD_MODULUS) + 1/2⌋
@@ -53,7 +55,7 @@ pub(crate) fn get_n_least_significant_bits(n: u8, value: u32) -> u32 {
 #[hax_lib::ensures(|result| fstar!(r#"forall i. i < 16 ==> 
     (v (Seq.index ${result}.f_elements i) == 
      v (Seq.index ${lhs}.f_elements i) + v (Seq.index ${rhs}.f_elements i))"#))]
-pub fn add(lhs: &mut PortableVector, rhs: &PortableVector) {
+pub(crate) fn add(lhs: &mut PortableVector, rhs: &PortableVector) {
     #[cfg(hax)]
     let _lhs0 = (*lhs).clone();
     for i in 0..FIELD_ELEMENTS_IN_VECTOR {
@@ -81,7 +83,7 @@ pub fn add(lhs: &mut PortableVector, rhs: &PortableVector) {
 #[hax_lib::ensures(|result| fstar!(r#"forall i. i < 16 ==> 
     (v (Seq.index ${result}.f_elements i) == 
      v (Seq.index ${lhs}.f_elements i) - v (Seq.index ${rhs}.f_elements i))"#))]
-pub fn sub(lhs: &mut PortableVector, rhs: &PortableVector) {
+pub(crate) fn sub(lhs: &mut PortableVector, rhs: &PortableVector) {
     #[cfg(hax)]
     let _lhs0 = (*lhs).clone();
     for i in 0..FIELD_ELEMENTS_IN_VECTOR {
@@ -103,7 +105,7 @@ pub fn sub(lhs: &mut PortableVector, rhs: &PortableVector) {
     );
 }
 
-pub fn negate(vec: &mut PortableVector) {
+pub(crate) fn negate(vec: &mut PortableVector) {
     for i in 0..FIELD_ELEMENTS_IN_VECTOR {
         vec.elements[i] = -vec.elements[i];
     }
@@ -115,7 +117,7 @@ pub fn negate(vec: &mut PortableVector) {
 #[hax_lib::ensures(|result| fstar!(r#"forall i. i < 16 ==> 
     (v (Seq.index ${result}.f_elements i) == 
      v (Seq.index ${vec}.f_elements i) * v c)"#))]
-pub fn multiply_by_constant(vec: &mut PortableVector, c: i16) {
+pub(crate) fn multiply_by_constant(vec: &mut PortableVector, c: i16) {
     #[cfg(hax)]
     let _vec0 = (*vec).clone();
     for i in 0..FIELD_ELEMENTS_IN_VECTOR {
@@ -139,7 +141,7 @@ pub fn multiply_by_constant(vec: &mut PortableVector, c: i16) {
 
 #[inline(always)]
 #[hax_lib::ensures(|result| fstar!(r#"${result}.f_elements == Spec.Utils.map_array (fun x -> x &. c) (${vec}.f_elements)"#))]
-pub fn bitwise_and_with_constant(vec: &mut PortableVector, c: i16) {
+pub(crate) fn bitwise_and_with_constant(vec: &mut PortableVector, c: i16) {
     #[cfg(hax)]
     let _vec0 = (*vec).clone();
     for i in 0..FIELD_ELEMENTS_IN_VECTOR {
@@ -164,7 +166,7 @@ pub fn bitwise_and_with_constant(vec: &mut PortableVector, c: i16) {
 #[hax_lib::requires(SHIFT_BY >= 0 && SHIFT_BY < 16)]
 #[hax_lib::ensures(|result| fstar!(r#"(v_SHIFT_BY >=. (mk_i32 0) /\ v_SHIFT_BY <. (mk_i32 16)) ==> 
         ${result}.f_elements == Spec.Utils.map_array (fun x -> x >>! ${SHIFT_BY}) (${vec}.f_elements)"#))]
-pub fn shift_right<const SHIFT_BY: i32>(vec: &mut PortableVector) {
+pub(crate) fn shift_right<const SHIFT_BY: i32>(vec: &mut PortableVector) {
     #[cfg(hax)]
     let _vec0 = (*vec).clone();
     for i in 0..FIELD_ELEMENTS_IN_VECTOR {
@@ -192,7 +194,7 @@ pub fn shift_right<const SHIFT_BY: i32>(vec: &mut PortableVector) {
 #[hax_lib::requires(fstar!(r#"Spec.Utils.is_i16b_array (pow2 12 - 1) ${vec}.f_elements"#))]
 #[hax_lib::ensures(|result| fstar!(r#"${result}.f_elements == Spec.Utils.map_array 
                 (fun x -> if x >=. (mk_i16 3329) then x -! (mk_i16 3329) else x) (${vec}.f_elements)"#))]
-pub fn cond_subtract_3329(vec: &mut PortableVector) {
+pub(crate) fn cond_subtract_3329(vec: &mut PortableVector) {
     #[cfg(hax)]
     let _vec0 = *(vec).clone();
     for i in 0..FIELD_ELEMENTS_IN_VECTOR {

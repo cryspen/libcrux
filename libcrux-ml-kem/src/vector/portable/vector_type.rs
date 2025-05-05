@@ -19,7 +19,7 @@ pub fn zero() -> PortableVector {
 
 #[inline(always)]
 #[hax_lib::ensures(|result| fstar!(r#"${result} == ${x}.f_elements"#))]
-pub fn to_i16_array(x: PortableVector, out: &mut [i16; 16]) {
+pub fn to_i16_array(x: &PortableVector, out: &mut [i16; 16]) {
     *out = x.elements;
 }
 

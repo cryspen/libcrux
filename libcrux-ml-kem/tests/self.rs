@@ -109,12 +109,12 @@ macro_rules! impl_consistency_unpacked {
                 p::unpacked::decapsulate(&key_pair_unpacked, &ciphertext);
             let shared_secret = p::decapsulate(key_pair.private_key(), &ciphertext);
             assert_eq!(
-                shared_secret_unpacked, shared_secret_decapsulated,
-                "lhs: shared_secret_unpacked, rhs: shared_secret_decapsulated"
-            );
-            assert_eq!(
                 shared_secret, shared_secret_decapsulated,
                 "lhs: shared_secret, rhs: shared_secret_decapsulated"
+            );
+            assert_eq!(
+                shared_secret_unpacked, shared_secret_decapsulated,
+                "lhs: shared_secret_unpacked, rhs: shared_secret_decapsulated"
             );
 
             // Check with re-assembled new_kp

@@ -63,15 +63,6 @@ pub(crate) struct PolynomialRingElement<Vector: Operations> {
     pub(crate) coefficients: [Vector; VECTORS_IN_RING_ELEMENT],
 }
 
-#[allow(non_snake_case)]
-fn ZERO<Vector: Operations>() -> PolynomialRingElement<Vector> {
-    PolynomialRingElement {
-        // https://github.com/hacspec/hax/issues/27
-        // FIXME:  The THIR body of item DefId(0:415 ~ libcrux_ml_kem[9000]::polynomial::{impl#0}::ZERO::{constant#0}) was stolen.
-        coefficients: [Vector::ZERO(); 16],
-    }
-}
-
 #[inline(always)]
 #[hax_lib::requires(VECTORS_IN_RING_ELEMENT * 16 <= a.len())]
 fn from_i16_array<Vector: Operations>(a: &[i16], result: &mut PolynomialRingElement<Vector>) {
@@ -90,7 +81,7 @@ fn to_i16_array<Vector: Operations>(re: PolynomialRingElement<Vector>, out: &mut
     for i in 0..re.coefficients.len() {
         hax_lib::loop_invariant!(|_i: usize| out.len() == _out_len);
         Vector::to_i16_array(
-            re.coefficients[i],
+            &re.coefficients[i],
             &mut out[i * 16..(i + 1) * 16].try_into().unwrap(),
         );
     }
