@@ -127,7 +127,7 @@ pub(crate) mod portable {
             incremental::shake128_absorb_final(&mut shake128_state[i], &input[i]);
         }
 
-        shake128_state
+        PortableHash { shake128_state }
     }
 
     #[inline(always)]
@@ -320,35 +320,25 @@ pub(crate) mod avx2 {
         match input.len() as u8 {
             2 => {
                 x4::incremental::shake128_absorb_final(
-                    &mut state.shake128_state,
-                    &input[0],
-                    &input[1],
-                    &input[0],
-                    &input[0],
+                    &mut state, &input[0], &input[1], &input[0], &input[0],
                 );
             }
             3 => {
                 x4::incremental::shake128_absorb_final(
-                    &mut state.shake128_state,
-                    &input[0],
-                    &input[1],
-                    &input[2],
-                    &input[0],
+                    &mut state, &input[0], &input[1], &input[2], &input[0],
                 );
             }
             4 => {
                 x4::incremental::shake128_absorb_final(
-                    &mut state.shake128_state,
-                    &input[0],
-                    &input[1],
-                    &input[2],
-                    &input[3],
+                    &mut state, &input[0], &input[1], &input[2], &input[3],
                 );
             }
             _ => unreachable!("This function must only be called with N = 2, 3, 4"),
         }
 
-        state
+        Simd256Hash {
+            shake128_state: state,
+        }
     }
 
     #[inline(always)]
@@ -733,7 +723,7 @@ pub(crate) mod neon {
         ]
         #[inline(always)]
         fn PRFxN<const LEN: usize>(input: &[[u8; 33]; K]) -> [[u8; LEN]; K] {
-            PRFxN::<K, LEN>(input)
+            PRFxN::<K, LEN>(input[..])
         }
 
         #[inline(always)]

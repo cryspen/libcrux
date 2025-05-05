@@ -283,7 +283,7 @@ pub(crate) fn encapsulate<
     randomness: &[u8; SHARED_SECRET_SIZE],
 ) -> (MlKemCiphertext<CIPHERTEXT_SIZE>, MlKemSharedSecret) {
     let mut processed_randomness = [0u8; 32];
-    Scheme::entropy_preprocess::<K, Hasher>(&randomness, &mut processed_randomness);
+    Scheme::entropy_preprocess::<K, Hasher>(randomness, &mut processed_randomness);
     let mut to_hash: [u8; 2 * H_DIGEST_SIZE] = into_padded_array(&processed_randomness);
 
     hax_lib::fstar!(r#"eq_intro (Seq.slice $to_hash 0 32) $randomness"#);
@@ -331,9 +331,9 @@ pub(crate) fn encapsulate<
         &mut scratch,
     );
 
-    let ciphertext = MlKemCiphertext::from(ciphertext);
     let mut shared_secret_array = [0u8; 32];
     Scheme::kdf::<K, CIPHERTEXT_SIZE, Hasher>(shared_secret, &ciphertext, &mut shared_secret_array);
+    let ciphertext = MlKemCiphertext::from(ciphertext);
     (ciphertext, shared_secret_array)
 }
 
@@ -488,11 +488,15 @@ pub(crate) fn decapsulate<
     let mut implicit_rejection_shared_secret_kdf = [0u8; SHARED_SECRET_SIZE];
     Scheme::kdf::<K, CIPHERTEXT_SIZE, Hasher>(
         &implicit_rejection_shared_secret,
-        ciphertext,
+        &ciphertext.value,
         &mut implicit_rejection_shared_secret_kdf,
     );
     let mut shared_secret_kdf = [0u8; SHARED_SECRET_SIZE];
-    Scheme::kdf::<K, CIPHERTEXT_SIZE, Hasher>(shared_secret, ciphertext, &mut shared_secret_kdf);
+    Scheme::kdf::<K, CIPHERTEXT_SIZE, Hasher>(
+        shared_secret,
+        &ciphertext.value,
+        &mut shared_secret_kdf,
+    );
 
     let mut shared_secret = [0u8; 32];
     compare_ciphertexts_select_shared_secret_in_constant_time(

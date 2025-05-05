@@ -382,8 +382,8 @@ fn add_error_reduce<Vector: Operations>(
 #[hax_lib::ensures(|result| fstar!(r#"Spec.Utils.is_i16b_array 3328 (i1.f_to_i16_array ${result}) /\
                 (forall i. i < 16 ==> ((v (Seq.index (i1.f_to_i16_array ${result}) i) % 3329)==
                                        (v (Seq.index (i1.f_to_i16_array ${vector}) i) * 1353 * 169) % 3329))"#))]
-fn to_standard_domain<T: Operations>(vector: &mut T) -> T {
-    T::montgomery_multiply_by_constant(vector, MONTGOMERY_R_SQUARED_MOD_FIELD_MODULUS as i16)
+fn to_standard_domain<T: Operations>(vector: &mut T) {
+    T::montgomery_multiply_by_constant(vector, MONTGOMERY_R_SQUARED_MOD_FIELD_MODULUS as i16);
 }
 
 #[inline(always)]

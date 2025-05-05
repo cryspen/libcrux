@@ -2,7 +2,7 @@ use crate::{
     constants::{BYTES_PER_RING_ELEMENT, SHARED_SECRET_SIZE},
     helper::cloop,
     polynomial::{PolynomialRingElement, VECTORS_IN_RING_ELEMENT},
-    vector::Operations,
+    vector::{traits::decompress_1, Operations},
 };
 
 #[inline(always)]
@@ -12,7 +12,7 @@ use crate::{
     v (Seq.index (Libcrux_ml_kem.Vector.Traits.f_to_i16_array $result) i) >= 0 /\
     v (Seq.index (Libcrux_ml_kem.Vector.Traits.f_to_i16_array $result) i) < v ${crate::vector::FIELD_MODULUS}"#))]
 pub(super) fn to_unsigned_field_modulus<Vector: Operations>(a: &Vector, out: &mut Vector) {
-    Vector::to_unsigned_representative(a)
+    *out = Vector::to_unsigned_representative(*a);
 }
 
 #[inline(always)]
@@ -46,7 +46,7 @@ pub(super) fn compress_then_serialize_message<Vector: Operations>(
         Spec.MLKEM.decode_then_decompress_message $serialized"#)
 )]
 pub(super) fn deserialize_then_decompress_message<Vector: Operations>(
-    serialized: [u8; SHARED_SECRET_SIZE],
+    serialized: &[u8; SHARED_SECRET_SIZE],
     re: &mut PolynomialRingElement<Vector>,
 ) {
     for i in 0..16 {
@@ -190,7 +190,7 @@ fn compress_then_serialize_11<const OUT_LEN: usize, Vector: Operations>(
     debug_assert!(serialized.len() == OUT_LEN);
 
     for i in 0..VECTORS_IN_RING_ELEMENT {
-        to_unsigned_representative::<Vector>(&re.coefficients[i], scratch);
+        *scratch = Vector::to_unsigned_representative(re.coefficients[i]);
         Vector::compress::<11>(scratch);
 
         Vector::serialize_11(*scratch, &mut serialized[22 * i..22 * i + 22]);
@@ -270,7 +270,7 @@ fn compress_then_serialize_5<Vector: Operations>(
     scratch: &mut Vector,
 ) {
     for i in 0..VECTORS_IN_RING_ELEMENT {
-        to_unsigned_representative::<Vector>(&re.coefficients[i], scratch);
+        *scratch = Vector::to_unsigned_representative(re.coefficients[i]);
         Vector::compress::<5>(scratch);
 
         Vector::serialize_5(*scratch, &mut serialized[10 * i..10 * i + 10]);
