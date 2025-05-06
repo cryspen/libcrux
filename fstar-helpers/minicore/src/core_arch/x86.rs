@@ -42,7 +42,7 @@
 //! In the case of `_mm256_mul_epi32` you probably don't want to have a bit vec model. You would have to write a bit vec addition primitive first.
 //! In this case, we just declare an opaque `_mm256_mul_epi32` in `x86::avx2`.
 //!
-//! ```rust
+//! ```compile_fail
 //! #[hax_lib::opaque]
 //! pub fn _mm256_mul_epi32(_: __m256i, _: __m256i) -> __m256i {
 //!     unimplemented!()
@@ -52,14 +52,14 @@
 //! ### (step 4) Integer‑Vector Interpretation & Lift Lemma (if needed)
 //! In `minicore::core_arch::x86::interpretations::int_vec`, we add the following model:
 //!
-//! ```rust
+//! ```compile_fail
 //! pub fn _mm256_mul_epi32(x: i32x8, y: i32x8) -> i64x4 {
 //!     i64x4::from_fn(|i| (x[i * 2] as i64) * (y[i * 2] as i64))
 //! }
 //! ```
 //!
 //! And a lift lemma in `minicore::core_arch::x86::interpretations::int_vec::lemmas`:
-//! ```rust
+//! ```compile_fail
 //! mk_lift_lemma!(
 //!     _mm256_mul_epi32(x: __m256i, y: __m256i) ==
 //!     __m256i::from(super::_mm256_mul_epi32(super::i32x8::from(x), super::i32x8::from(y)))
@@ -68,7 +68,7 @@
 //!
 //! ### (step 5) Unit Test
 //! In `minicore::core_arch::x86::interpretations::int_vec::tests`:
-//! ```rust
+//! ```compile_fail
 //! mk!(_mm256_mul_epi32(x: BitVec, y: BitVec));
 //! ```
 //!
