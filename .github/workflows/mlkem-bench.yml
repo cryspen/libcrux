@@ -90,7 +90,7 @@ jobs:
           data-out-path: libcrux-ml-kem/bench-processed.txt
 
       - name: Upload benchmarks
-        uses: cryspen/benchmark-upload-and-plot-action@v1
+        uses: cryspen/benchmark-upload-and-plot-action@v2
         with:
           name: ML-KEM Benchmark
           input-data-path: libcrux-ml-kem/bench-processed.txt
