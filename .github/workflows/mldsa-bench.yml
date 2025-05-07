@@ -95,7 +95,7 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           # NOTE: pushes to current repository
           gh-repository: github.com/${{ github.repository }}
-          group-by: implementation,label,os
+          group-by: implementation,keySize,os
           schema: implementation,keySize,label,hardware,os
           auto-push: true
           fail-on-alert: true
