@@ -23,26 +23,24 @@ fn mulhi_mm256_epi32(lhs: Vec256, rhs: Vec256) -> Vec256 {
 }
 
 #[inline(always)]
-pub(crate) fn compress_message_coefficient(vector: Vec256) -> Vec256 {
+pub(crate) fn compress_message_coefficient(vector: &mut Vec256) {
     let field_modulus_halved = mm256_set1_epi16((FIELD_MODULUS - 1) / 2);
     let field_modulus_quartered = mm256_set1_epi16((FIELD_MODULUS - 1) / 4);
 
-    let shifted = mm256_sub_epi16(field_modulus_halved, vector);
+    let shifted = mm256_sub_epi16(field_modulus_halved, *vector);
     let mask = mm256_srai_epi16::<15>(shifted);
 
     let shifted_to_positive = mm256_xor_si256(mask, shifted);
     let shifted_to_positive_in_range =
         mm256_sub_epi16(shifted_to_positive, field_modulus_quartered);
 
-    mm256_srli_epi16::<15>(shifted_to_positive_in_range)
+    *vector = mm256_srli_epi16::<15>(shifted_to_positive_in_range);
 }
 
 #[inline(always)]
 #[hax_lib::requires(fstar!(r#"v $COEFFICIENT_BITS >= 0 /\ v $COEFFICIENT_BITS < bits i32_inttype /\
     range (v ((mk_i32 1) <<! $COEFFICIENT_BITS) - 1) i32_inttype"#))]
-pub(crate) fn compress_ciphertext_coefficient<const COEFFICIENT_BITS: i32>(
-    vector: Vec256,
-) -> Vec256 {
+pub(crate) fn compress_ciphertext_coefficient<const COEFFICIENT_BITS: i32>(vector: &mut Vec256) {
     let field_modulus_halved = mm256_set1_epi32(((FIELD_MODULUS as i32) - 1) / 2);
     let compression_factor = mm256_set1_epi32(10_321_340);
     let coefficient_bits_mask = mm256_set1_epi32((1 << COEFFICIENT_BITS) - 1);
@@ -50,7 +48,7 @@ pub(crate) fn compress_ciphertext_coefficient<const COEFFICIENT_BITS: i32>(
     // ---- Compress the first 8 coefficients ----
 
     // Take the bottom 128 bits, i.e. the first 8 16-bit coefficients
-    let coefficients_low = mm256_castsi256_si128(vector);
+    let coefficients_low = mm256_castsi256_si128(*vector);
 
     // If:
     //
@@ -80,7 +78,7 @@ pub(crate) fn compress_ciphertext_coefficient<const COEFFICIENT_BITS: i32>(
     // ---- Compress the next 8 coefficients ----
 
     // Take the upper 128 bits, i.e. the next 8 16-bit coefficients
-    let coefficients_high = mm256_extracti128_si256::<1>(vector);
+    let coefficients_high = mm256_extracti128_si256::<1>(*vector);
     let coefficients_high = mm256_cvtepi16_epi32(coefficients_high);
 
     let compressed_high = mm256_slli_epi32::<{ COEFFICIENT_BITS }>(coefficients_high);
@@ -101,14 +99,14 @@ pub(crate) fn compress_ciphertext_coefficient<const COEFFICIENT_BITS: i32>(
     // To be in the right order, we need to move the |low|s above in position 2 to
     // position 1 and the |high|s in position 1 to position 2, and leave the
     // rest unchanged.
-    mm256_permute4x64_epi64::<0b11_01_10_00>(compressed)
+    *vector = mm256_permute4x64_epi64::<0b11_01_10_00>(compressed);
 }
 
 #[inline(always)]
 #[hax_lib::requires(fstar!(r#"forall i. let x = Seq.index (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 $a) i in 
                                       (x == mk_i16 0 \/ x == mk_i16 1)"#))]
-pub fn decompress_1(a: Vec256) -> Vec256 {
-    let z = mm256_setzero_si256();
+pub(crate) fn decompress_1(a: Vec256) -> Vec256 {
+    let mut z = mm256_setzero_si256();
 
     hax_lib::fstar!(
         r#"
@@ -122,26 +120,24 @@ pub fn decompress_1(a: Vec256) -> Vec256 {
     "#
     );
 
-    let s = arithmetic::sub(z, a);
+    arithmetic::sub(&mut z, &a);
 
     hax_lib::fstar!(
         r#"assert(forall i. Seq.index (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 $s) i == mk_i16 0 \/ 
                             Seq.index (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 $s) i == mk_i16 (-1))"#
     );
 
-    arithmetic::bitwise_and_with_constant(s, 1665)
+    bitwise_and_with_constant(z, 1665)
 }
 
 #[inline(always)]
 #[hax_lib::requires(fstar!(r#"v $COEFFICIENT_BITS >= 0 /\ v $COEFFICIENT_BITS < bits i32_inttype"#))]
-pub(crate) fn decompress_ciphertext_coefficient<const COEFFICIENT_BITS: i32>(
-    vector: Vec256,
-) -> Vec256 {
+pub(crate) fn decompress_ciphertext_coefficient<const COEFFICIENT_BITS: i32>(vector: &mut Vec256) {
     let field_modulus = mm256_set1_epi32(FIELD_MODULUS as i32);
     let two_pow_coefficient_bits = mm256_set1_epi32(1 << COEFFICIENT_BITS);
 
     // ---- Compress the first 8 coefficients ----
-    let coefficients_low = mm256_castsi256_si128(vector);
+    let coefficients_low = mm256_castsi256_si128(*vector);
     let coefficients_low = mm256_cvtepi16_epi32(coefficients_low);
 
     let decompressed_low = mm256_mullo_epi32(coefficients_low, field_modulus);
@@ -154,7 +150,7 @@ pub(crate) fn decompress_ciphertext_coefficient<const COEFFICIENT_BITS: i32>(
     let decompressed_low = mm256_srli_epi32::<1>(decompressed_low);
 
     // ---- Compress the next 8 coefficients ----
-    let coefficients_high = mm256_extracti128_si256::<1>(vector);
+    let coefficients_high = mm256_extracti128_si256::<1>(*vector);
     let coefficients_high = mm256_cvtepi16_epi32(coefficients_high);
 
     let decompressed_high = mm256_mullo_epi32(coefficients_high, field_modulus);
@@ -177,5 +173,5 @@ pub(crate) fn decompress_ciphertext_coefficient<const COEFFICIENT_BITS: i32>(
     // To be in the right order, we need to move the |low|s above in position 2 to
     // position 1 and the |high|s in position 1 to position 2, and leave the
     // rest unchanged.
-    mm256_permute4x64_epi64::<0b11_01_10_00>(compressed)
+    *vector = mm256_permute4x64_epi64::<0b11_01_10_00>(compressed);
 }

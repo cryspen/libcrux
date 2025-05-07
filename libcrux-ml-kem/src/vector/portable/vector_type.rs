@@ -27,7 +27,7 @@ pub fn to_i16_array(x: &PortableVector, out: &mut [i16; 16]) {
 #[hax_lib::requires(array.len() == 16)]
 #[hax_lib::ensures(|result| fstar!(r#"${result}.f_elements == $array"#))]
 pub fn from_i16_array(array: &[i16], out: &mut PortableVector) {
-    out.elements = array[0..16].try_into().unwrap();
+    out.elements.copy_from_slice(&array[0..16]);
 }
 
 #[inline(always)]

@@ -14,6 +14,7 @@ use crate::{
     $ETA1_RANDOMNESS_SIZE == Spec.MLKEM.v_ETA1_RANDOMNESS_SIZE $K"#))]
 unsafe fn generate_keypair_avx2<
     const K: usize,
+    const K_SQUARED: usize,
     const CPA_PRIVATE_KEY_SIZE: usize,
     const PRIVATE_KEY_SIZE: usize,
     const PUBLIC_KEY_SIZE: usize,
@@ -25,6 +26,7 @@ unsafe fn generate_keypair_avx2<
 ) -> MlKemKeyPair<PRIVATE_KEY_SIZE, PUBLIC_KEY_SIZE> {
     crate::ind_cca::generate_keypair::<
         K,
+        K_SQUARED,
         CPA_PRIVATE_KEY_SIZE,
         PRIVATE_KEY_SIZE,
         PUBLIC_KEY_SIZE,
@@ -46,6 +48,7 @@ unsafe fn generate_keypair_avx2<
     $ETA1_RANDOMNESS_SIZE == Spec.MLKEM.v_ETA1_RANDOMNESS_SIZE $K"#))]
 pub(crate) fn generate_keypair<
     const K: usize,
+    const K_SQUARED: usize,
     const CPA_PRIVATE_KEY_SIZE: usize,
     const PRIVATE_KEY_SIZE: usize,
     const PUBLIC_KEY_SIZE: usize,
@@ -58,6 +61,7 @@ pub(crate) fn generate_keypair<
     unsafe {
         generate_keypair_avx2::<
             K,
+            K_SQUARED,
             CPA_PRIVATE_KEY_SIZE,
             PRIVATE_KEY_SIZE,
             PUBLIC_KEY_SIZE,
@@ -300,6 +304,7 @@ pub(crate) fn kyber_encapsulate<
     $ETA2_RANDOMNESS_SIZE == Spec.MLKEM.v_ETA2_RANDOMNESS_SIZE $K"#))]
 unsafe fn encapsulate_avx2<
     const K: usize,
+    const K_SQUARED: usize,
     const CIPHERTEXT_SIZE: usize,
     const PUBLIC_KEY_SIZE: usize,
     const T_AS_NTT_ENCODED_SIZE: usize,
@@ -320,6 +325,7 @@ unsafe fn encapsulate_avx2<
 ) -> (MlKemCiphertext<CIPHERTEXT_SIZE>, MlKemSharedSecret) {
     crate::ind_cca::encapsulate::<
         K,
+        K_SQUARED,
         CIPHERTEXT_SIZE,
         PUBLIC_KEY_SIZE,
         T_AS_NTT_ENCODED_SIZE,
@@ -356,6 +362,7 @@ unsafe fn encapsulate_avx2<
     $ETA2_RANDOMNESS_SIZE == Spec.MLKEM.v_ETA2_RANDOMNESS_SIZE $K"#))]
 pub(crate) fn encapsulate<
     const K: usize,
+    const K_SQUARED: usize,
     const CIPHERTEXT_SIZE: usize,
     const PUBLIC_KEY_SIZE: usize,
     const T_AS_NTT_ENCODED_SIZE: usize,
@@ -377,6 +384,7 @@ pub(crate) fn encapsulate<
     unsafe {
         encapsulate_avx2::<
             K,
+            K_SQUARED,
             CIPHERTEXT_SIZE,
             PUBLIC_KEY_SIZE,
             T_AS_NTT_ENCODED_SIZE,
@@ -515,6 +523,7 @@ pub fn kyber_decapsulate<
     $IMPLICIT_REJECTION_HASH_INPUT_SIZE == Spec.MLKEM.v_IMPLICIT_REJECTION_HASH_INPUT_SIZE $K"#))]
 unsafe fn decapsulate_avx2<
     const K: usize,
+    const K_SQUARED: usize,
     const SECRET_KEY_SIZE: usize,
     const CPA_SECRET_KEY_SIZE: usize,
     const PUBLIC_KEY_SIZE: usize,
@@ -538,6 +547,7 @@ unsafe fn decapsulate_avx2<
 ) -> MlKemSharedSecret {
     crate::ind_cca::decapsulate::<
         K,
+        K_SQUARED,
         SECRET_KEY_SIZE,
         CPA_SECRET_KEY_SIZE,
         PUBLIC_KEY_SIZE,
@@ -580,6 +590,7 @@ unsafe fn decapsulate_avx2<
     $IMPLICIT_REJECTION_HASH_INPUT_SIZE == Spec.MLKEM.v_IMPLICIT_REJECTION_HASH_INPUT_SIZE $K"#))]
 pub fn decapsulate<
     const K: usize,
+    const K_SQUARED: usize,
     const SECRET_KEY_SIZE: usize,
     const CPA_SECRET_KEY_SIZE: usize,
     const PUBLIC_KEY_SIZE: usize,
@@ -604,6 +615,7 @@ pub fn decapsulate<
     unsafe {
         decapsulate_avx2::<
             K,
+            K_SQUARED,
             SECRET_KEY_SIZE,
             CPA_SECRET_KEY_SIZE,
             PUBLIC_KEY_SIZE,
@@ -629,10 +641,14 @@ pub fn decapsulate<
 pub(crate) mod unpacked {
     use super::*;
 
-    pub(crate) type MlKemKeyPairUnpacked<const K: usize> =
-        crate::ind_cca::unpacked::MlKemKeyPairUnpacked<K, crate::vector::SIMD256Vector>;
-    pub(crate) type MlKemPublicKeyUnpacked<const K: usize> =
-        crate::ind_cca::unpacked::MlKemPublicKeyUnpacked<K, crate::vector::SIMD256Vector>;
+    pub(crate) type MlKemKeyPairUnpacked<const K: usize, const K_SQUARED: usize> =
+        crate::ind_cca::unpacked::MlKemKeyPairUnpacked<K, K_SQUARED, crate::vector::SIMD256Vector>;
+    pub(crate) type MlKemPublicKeyUnpacked<const K: usize, const K_SQUARED: usize> =
+        crate::ind_cca::unpacked::MlKemPublicKeyUnpacked<
+            K,
+            K_SQUARED,
+            crate::vector::SIMD256Vector,
+        >;
 
     /// Get the unpacked public key.
     #[cfg_attr(not(hax), target_feature(enable = "avx2"))]
@@ -644,14 +660,16 @@ pub(crate) mod unpacked {
     )]
     unsafe fn unpack_public_key_avx2<
         const K: usize,
+        const K_SQUARED: usize,
         const T_AS_NTT_ENCODED_SIZE: usize,
         const PUBLIC_KEY_SIZE: usize,
     >(
         public_key: &MlKemPublicKey<PUBLIC_KEY_SIZE>,
-        unpacked_public_key: &mut MlKemPublicKeyUnpacked<K>,
+        unpacked_public_key: &mut MlKemPublicKeyUnpacked<K, K_SQUARED>,
     ) {
         crate::ind_cca::unpacked::unpack_public_key::<
             K,
+            K_SQUARED,
             T_AS_NTT_ENCODED_SIZE,
             PUBLIC_KEY_SIZE,
             crate::hash_functions::avx2::Simd256Hash,
@@ -668,14 +686,15 @@ pub(crate) mod unpacked {
     )]
     pub(crate) fn unpack_public_key<
         const K: usize,
+        const K_SQUARED: usize,
         const T_AS_NTT_ENCODED_SIZE: usize,
         const PUBLIC_KEY_SIZE: usize,
     >(
         public_key: &MlKemPublicKey<PUBLIC_KEY_SIZE>,
-        unpacked_public_key: &mut MlKemPublicKeyUnpacked<K>,
+        unpacked_public_key: &mut MlKemPublicKeyUnpacked<K, K_SQUARED>,
     ) {
         unsafe {
-            unpack_public_key_avx2::<K, T_AS_NTT_ENCODED_SIZE, PUBLIC_KEY_SIZE>(
+            unpack_public_key_avx2::<K, K_SQUARED, T_AS_NTT_ENCODED_SIZE, PUBLIC_KEY_SIZE>(
                 public_key,
                 unpacked_public_key,
             )
@@ -692,16 +711,18 @@ pub(crate) mod unpacked {
                 v_T_AS_NTT_ENCODED_SIZE == Spec.MLKEM.v_T_AS_NTT_ENCODED_SIZE v_K"#))]
     pub(crate) fn keypair_from_private_key<
         const K: usize,
+        const K_SQUARED: usize,
         const SECRET_KEY_SIZE: usize,
         const CPA_SECRET_KEY_SIZE: usize,
         const PUBLIC_KEY_SIZE: usize,
         const T_AS_NTT_ENCODED_SIZE: usize,
     >(
         private_key: &MlKemPrivateKey<SECRET_KEY_SIZE>,
-        key_pair: &mut MlKemKeyPairUnpacked<K>,
+        key_pair: &mut MlKemKeyPairUnpacked<K, K_SQUARED>,
     ) {
         crate::ind_cca::unpacked::keys_from_private_key::<
             K,
+            K_SQUARED,
             SECRET_KEY_SIZE,
             CPA_SECRET_KEY_SIZE,
             PUBLIC_KEY_SIZE,
@@ -718,6 +739,7 @@ pub(crate) mod unpacked {
         $PUBLIC_KEY_SIZE == Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE $K"#))]
     unsafe fn generate_keypair_avx2<
         const K: usize,
+        const K_SQUARED: usize,
         const CPA_PRIVATE_KEY_SIZE: usize,
         const PRIVATE_KEY_SIZE: usize,
         const PUBLIC_KEY_SIZE: usize,
@@ -726,10 +748,11 @@ pub(crate) mod unpacked {
         const PRF_OUTPUT_SIZE1: usize,
     >(
         randomness: [u8; KEY_GENERATION_SEED_SIZE],
-        out: &mut MlKemKeyPairUnpacked<K>,
+        out: &mut MlKemKeyPairUnpacked<K, K_SQUARED>,
     ) {
         crate::ind_cca::unpacked::generate_keypair::<
             K,
+            K_SQUARED,
             CPA_PRIVATE_KEY_SIZE,
             PRIVATE_KEY_SIZE,
             PUBLIC_KEY_SIZE,
@@ -750,6 +773,7 @@ pub(crate) mod unpacked {
         $PUBLIC_KEY_SIZE == Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE $K"#))]
     pub(crate) fn generate_keypair<
         const K: usize,
+        const K_SQUARED: usize,
         const CPA_PRIVATE_KEY_SIZE: usize,
         const PRIVATE_KEY_SIZE: usize,
         const PUBLIC_KEY_SIZE: usize,
@@ -758,11 +782,12 @@ pub(crate) mod unpacked {
         const PRF_OUTPUT_SIZE1: usize,
     >(
         randomness: [u8; KEY_GENERATION_SEED_SIZE],
-        out: &mut MlKemKeyPairUnpacked<K>,
+        out: &mut MlKemKeyPairUnpacked<K, K_SQUARED>,
     ) {
         unsafe {
             generate_keypair_avx2::<
                 K,
+                K_SQUARED,
                 CPA_PRIVATE_KEY_SIZE,
                 PRIVATE_KEY_SIZE,
                 PUBLIC_KEY_SIZE,
@@ -788,6 +813,7 @@ pub(crate) mod unpacked {
         $CIPHERTEXT_SIZE == Spec.MLKEM.v_CPA_CIPHERTEXT_SIZE $K"#))]
     unsafe fn encapsulate_avx2<
         const K: usize,
+        const K_SQUARED: usize,
         const CIPHERTEXT_SIZE: usize,
         const PUBLIC_KEY_SIZE: usize,
         const T_AS_NTT_ENCODED_SIZE: usize,
@@ -803,11 +829,12 @@ pub(crate) mod unpacked {
         const PRF_OUTPUT_SIZE1: usize,
         const PRF_OUTPUT_SIZE2: usize,
     >(
-        public_key: &MlKemPublicKeyUnpacked<K>,
+        public_key: &MlKemPublicKeyUnpacked<K, K_SQUARED>,
         randomness: &[u8; SHARED_SECRET_SIZE],
     ) -> (MlKemCiphertext<CIPHERTEXT_SIZE>, MlKemSharedSecret) {
         crate::ind_cca::unpacked::encapsulate::<
             K,
+            K_SQUARED,
             CIPHERTEXT_SIZE,
             PUBLIC_KEY_SIZE,
             T_AS_NTT_ENCODED_SIZE,
@@ -842,6 +869,7 @@ pub(crate) mod unpacked {
         $CIPHERTEXT_SIZE == Spec.MLKEM.v_CPA_CIPHERTEXT_SIZE $K"#))]
     pub(crate) fn encapsulate<
         const K: usize,
+        const K_SQUARED: usize,
         const CIPHERTEXT_SIZE: usize,
         const PUBLIC_KEY_SIZE: usize,
         const T_AS_NTT_ENCODED_SIZE: usize,
@@ -857,12 +885,13 @@ pub(crate) mod unpacked {
         const PRF_OUTPUT_SIZE1: usize,
         const PRF_OUTPUT_SIZE2: usize,
     >(
-        public_key: &MlKemPublicKeyUnpacked<K>,
+        public_key: &MlKemPublicKeyUnpacked<K, K_SQUARED>,
         randomness: &[u8; SHARED_SECRET_SIZE],
     ) -> (MlKemCiphertext<CIPHERTEXT_SIZE>, MlKemSharedSecret) {
         unsafe {
             encapsulate_avx2::<
                 K,
+                K_SQUARED,
                 CIPHERTEXT_SIZE,
                 PUBLIC_KEY_SIZE,
                 T_AS_NTT_ENCODED_SIZE,
@@ -897,6 +926,7 @@ pub(crate) mod unpacked {
         $IMPLICIT_REJECTION_HASH_INPUT_SIZE == Spec.MLKEM.v_IMPLICIT_REJECTION_HASH_INPUT_SIZE $K"#))]
     unsafe fn decapsulate_avx2<
         const K: usize,
+        const K_SQUARED: usize,
         const SECRET_KEY_SIZE: usize,
         const CPA_SECRET_KEY_SIZE: usize,
         const PUBLIC_KEY_SIZE: usize,
@@ -915,11 +945,12 @@ pub(crate) mod unpacked {
         const PRF_OUTPUT_SIZE2: usize,
         const IMPLICIT_REJECTION_HASH_INPUT_SIZE: usize,
     >(
-        key_pair: &MlKemKeyPairUnpacked<K>,
+        key_pair: &MlKemKeyPairUnpacked<K, K_SQUARED>,
         ciphertext: &MlKemCiphertext<CIPHERTEXT_SIZE>,
     ) -> MlKemSharedSecret {
         crate::ind_cca::unpacked::decapsulate::<
             K,
+            K_SQUARED,
             SECRET_KEY_SIZE,
             CPA_SECRET_KEY_SIZE,
             PUBLIC_KEY_SIZE,
@@ -958,6 +989,7 @@ pub(crate) mod unpacked {
         $IMPLICIT_REJECTION_HASH_INPUT_SIZE == Spec.MLKEM.v_IMPLICIT_REJECTION_HASH_INPUT_SIZE $K"#))]
     pub(crate) fn decapsulate<
         const K: usize,
+        const K_SQUARED: usize,
         const SECRET_KEY_SIZE: usize,
         const CPA_SECRET_KEY_SIZE: usize,
         const PUBLIC_KEY_SIZE: usize,
@@ -976,12 +1008,13 @@ pub(crate) mod unpacked {
         const PRF_OUTPUT_SIZE2: usize,
         const IMPLICIT_REJECTION_HASH_INPUT_SIZE: usize,
     >(
-        key_pair: &MlKemKeyPairUnpacked<K>,
+        key_pair: &MlKemKeyPairUnpacked<K, K_SQUARED>,
         ciphertext: &MlKemCiphertext<CIPHERTEXT_SIZE>,
     ) -> MlKemSharedSecret {
         unsafe {
             decapsulate_avx2::<
                 K,
+                K_SQUARED,
                 SECRET_KEY_SIZE,
                 CPA_SECRET_KEY_SIZE,
                 PUBLIC_KEY_SIZE,
