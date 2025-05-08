@@ -16,11 +16,15 @@ use serialize::*;
 pub(crate) use vector_type::SIMD128Vector;
 use vector_type::*;
 
+#[cfg(hax)]
 impl crate::vector::traits::Repr for SIMD128Vector {
     fn repr(&self) -> [i16; 16] {
         to_i16_array(self.clone())
     }
 }
+
+#[cfg(any(eurydice, not(hax)))]
+impl crate::vector::traits::Repr for SIMD128Vector {}
 
 #[hax_lib::attributes]
 impl Operations for SIMD128Vector {
