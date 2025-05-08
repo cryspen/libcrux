@@ -1,4 +1,4 @@
-use crate::vector::{portable::PortableVector, Operations, MONTGOMERY_R_SQUARED_MOD_FIELD_MODULUS};
+use crate::vector::{Operations, MONTGOMERY_R_SQUARED_MOD_FIELD_MODULUS};
 
 pub(crate) const ZETAS_TIMES_MONTGOMERY_R: [i16; 128] = {
     hax_lib::fstar!(r#"assert_norm (pow2 16 == 65536)"#);
@@ -568,16 +568,6 @@ impl<Vector: Operations> PolynomialRingElement<Vector> {
         Self {
             coefficients: [Vector::ZERO(); 16],
         }
-    }
-
-    pub(crate) fn to_portable(&self) -> PolynomialRingElement<PortableVector> {
-        let mut out = PolynomialRingElement::<PortableVector>::ZERO();
-        let mut array = [0i16; 16];
-        for i in 0..self.coefficients.len() {
-            Vector::to_i16_array(&self.coefficients[i], &mut array);
-            PortableVector::from_i16_array(&array, &mut out.coefficients[i]);
-        }
-        out
     }
 
     /// Size of a ring element in bytes.
