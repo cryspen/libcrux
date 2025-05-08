@@ -20,7 +20,7 @@ use crate::{
     },
     utils::{into_padded_array, prf_input_inc},
     variant::Variant,
-    vector::{portable::PortableVector, Operations},
+    vector::Operations,
 };
 
 /// Types for the unpacked API.
