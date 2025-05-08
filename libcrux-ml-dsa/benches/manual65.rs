@@ -7,21 +7,24 @@ mod bench_utils;
 
 fn main() {
     bench_group_libcrux!(
-        "65 portable",
+        "65",
+        "portable",
         ml_dsa_65::portable,
         MLDSA65KeyPair,
         MLDSA65Signature
     );
     #[cfg(feature = "simd128")]
     bench_group_libcrux!(
-        "65 sim1d28",
+        "65",
+        "neon",
         ml_dsa_65::neon,
         MLDSA65KeyPair,
         MLDSA65Signature
     );
     #[cfg(feature = "simd256")]
     bench_group_libcrux!(
-        "65 simd256",
+        "65",
+        "avx2",
         ml_dsa_65::avx2,
         MLDSA65KeyPair,
         MLDSA65Signature

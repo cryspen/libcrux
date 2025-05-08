@@ -12,15 +12,15 @@ pub(crate) fn random_array<const L: usize>() -> [u8; L] {
 pub(crate) fn print_time(label: &str, d: std::time::Duration) {
     let micros = d.as_micros();
     let time = if micros < MILLI_PER_ITERATION_THRESHOLD {
-        format!("{} μs", micros / ITERATIONS as u128)
+        format!("{} μs/iter", micros / ITERATIONS as u128)
     } else if micros < SECOND_PER_ITERATION_THRESHOLD {
         format!(
-            "{:.2} ms",
+            "{:.2} ms/iter",
             (micros as f64 / (MICROS_PER_MILLI * ITERATIONS as f64))
         )
     } else {
         format!(
-            "{:.2}s",
+            "{:.2}s/iter",
             (micros as f64 / (MICROS_PER_SECOND * ITERATIONS as f64))
         )
     };
@@ -30,7 +30,7 @@ pub(crate) fn print_time(label: &str, d: std::time::Duration) {
         "\t".to_string()
     };
 
-    println!("{label}:{space}{time}");
+    println!("{label} ... bench:{space}{time}");
 }
 
 pub(crate) const ITERATIONS: usize = 10_000;
@@ -45,7 +45,7 @@ pub(crate) const SECOND_PER_ITERATION_THRESHOLD: u128 = 1_000_000 * ITERATIONS a
 // A benchmarking macro to avoid copying memory and skewing the results.
 #[macro_export]
 macro_rules! bench {
-    ($label:literal, $variant:literal, $input:expr, $setup:expr, $routine:expr) => {{
+    ($implementation:literal, $fun_label:literal, $hardware:literal, $keysize:literal, $input:expr, $setup:expr, $routine:expr) => {{
         let mut time = std::time::Duration::ZERO;
 
         // Warmup
@@ -64,17 +64,25 @@ macro_rules! bench {
 
             time += end.duration_since(start);
         }
-        bench_utils::print_time(concat!($label, " ", $variant), time);
+        bench_utils::print_time(
+            &format!(
+                "test implementation={} ML-DSA,keySize={},label={},hardware={}",
+                $implementation, $keysize, $fun_label, $hardware
+            ),
+            time,
+        );
     }};
 }
 
 #[macro_export]
 macro_rules! bench_group_libcrux {
-    ($variant:literal, $mod:path, $keypair_t:ident, $signature_t:ident) => {{
+    ($keysize:literal, $hardware:literal, $mod:path, $keypair_t:ident, $signature_t:ident) => {{
         use $mod as p;
         bench!(
-            "(libcrux) KeyGen",
-            $variant,
+            "libcrux",
+            "KeyGen",
+            $hardware,
+            $keysize,
             (),
             |()| {
                 let key_generation_seed: [u8; KEY_GENERATION_RANDOMNESS_SIZE] =
@@ -87,8 +95,10 @@ macro_rules! bench_group_libcrux {
         );
 
         bench!(
-            "(libcrux) Sign",
-            $variant,
+            "libcrux",
+            "Sign",
+            $hardware,
+            $keysize,
             (),
             |()| {
                 let key_generation_seed: [u8; KEY_GENERATION_RANDOMNESS_SIZE] =
@@ -107,8 +117,10 @@ macro_rules! bench_group_libcrux {
         );
 
         bench!(
-            "(libcrux) Verify",
-            $variant,
+            "libcrux",
+            "Verify",
+            $hardware,
+            $keysize,
             (),
             |()| {
                 let key_generation_seed: [u8; KEY_GENERATION_RANDOMNESS_SIZE] =
@@ -133,11 +145,13 @@ macro_rules! bench_group_libcrux {
 #[macro_export]
 macro_rules! bench_group_pqclean {
     ($variant:literal, $mod:ident) => {{
-        bench!("(pqclean) KeyGen", $variant, (), |()| {}, |()| {
+        bench!("pqclean", "KeyGen", "auto", $variant, (), |()| {}, |()| {
             pqcrypto_mldsa::$mod::keypair()
         });
         bench!(
-            "(pqclean) Sign",
+            "pqclean",
+            "Sign",
+            "auto",
             $variant,
             (),
             |()| {
@@ -150,7 +164,9 @@ macro_rules! bench_group_pqclean {
             }
         );
         bench!(
-            "(pqclean) Verify",
+            "pqclean",
+            "Verify",
+            "auto",
             $variant,
             (),
             |()| {
