@@ -15,21 +15,25 @@ macro_rules! instantiate {
                 $ETA1_RANDOMNESS_SIZE == Spec.MLKEM.v_ETA1_RANDOMNESS_SIZE $K"#))]
             pub(crate) fn generate_keypair<
                 const K: usize,
+                const K_SQUARED: usize,
                 const CPA_PRIVATE_KEY_SIZE: usize,
                 const PRIVATE_KEY_SIZE: usize,
                 const PUBLIC_KEY_SIZE: usize,
                 const ETA1: usize,
                 const ETA1_RANDOMNESS_SIZE: usize,
+                const PRF_OUTPUT_SIZE1: usize,
             >(
                 randomness: &[u8; KEY_GENERATION_SEED_SIZE],
             ) -> MlKemKeyPair<PRIVATE_KEY_SIZE, PUBLIC_KEY_SIZE> {
                 crate::ind_cca::generate_keypair::<
                     K,
+                    K_SQUARED,
                     CPA_PRIVATE_KEY_SIZE,
                     PRIVATE_KEY_SIZE,
                     PUBLIC_KEY_SIZE,
                     ETA1,
                     ETA1_RANDOMNESS_SIZE,
+                    PRF_OUTPUT_SIZE1,
                     $vector,
                     $hash,
                     crate::variant::MlKem,
@@ -44,6 +48,7 @@ macro_rules! instantiate {
                 const PUBLIC_KEY_SIZE: usize,
                 const ETA1: usize,
                 const ETA1_RANDOMNESS_SIZE: usize,
+                const PRF_OUTPUT_SIZE1: usize,
             >(
                 randomness: &[u8; KEY_GENERATION_SEED_SIZE],
             ) -> MlKemKeyPair<PRIVATE_KEY_SIZE, PUBLIC_KEY_SIZE> {
@@ -54,6 +59,7 @@ macro_rules! instantiate {
                     PUBLIC_KEY_SIZE,
                     ETA1,
                     ETA1_RANDOMNESS_SIZE,
+                    PRF_OUTPUT_SIZE1,
                     $vector,
                     $hash,
                     crate::variant::Kyber,
@@ -164,6 +170,7 @@ macro_rules! instantiate {
                 $ETA2_RANDOMNESS_SIZE == Spec.MLKEM.v_ETA2_RANDOMNESS_SIZE $K"#))]
             pub(crate) fn encapsulate<
                 const K: usize,
+                const K_SQUARED: usize,
                 const CIPHERTEXT_SIZE: usize,
                 const PUBLIC_KEY_SIZE: usize,
                 const T_AS_NTT_ENCODED_SIZE: usize,
@@ -176,12 +183,15 @@ macro_rules! instantiate {
                 const ETA1_RANDOMNESS_SIZE: usize,
                 const ETA2: usize,
                 const ETA2_RANDOMNESS_SIZE: usize,
+                const PRF_OUTPUT_SIZE1: usize,
+                const PRF_OUTPUT_SIZE2: usize,
             >(
                 public_key: &MlKemPublicKey<PUBLIC_KEY_SIZE>,
                 randomness: &[u8; SHARED_SECRET_SIZE],
             ) -> (MlKemCiphertext<CIPHERTEXT_SIZE>, MlKemSharedSecret) {
                 crate::ind_cca::encapsulate::<
                     K,
+                    K_SQUARED,
                     CIPHERTEXT_SIZE,
                     PUBLIC_KEY_SIZE,
                     T_AS_NTT_ENCODED_SIZE,
@@ -194,6 +204,8 @@ macro_rules! instantiate {
                     ETA1_RANDOMNESS_SIZE,
                     ETA2,
                     ETA2_RANDOMNESS_SIZE,
+                    PRF_OUTPUT_SIZE1,
+                    PRF_OUTPUT_SIZE2,
                     $vector,
                     $hash,
                     crate::variant::MlKem,
@@ -265,6 +277,7 @@ macro_rules! instantiate {
                 $IMPLICIT_REJECTION_HASH_INPUT_SIZE == Spec.MLKEM.v_IMPLICIT_REJECTION_HASH_INPUT_SIZE $K"#))]
             pub fn decapsulate<
                 const K: usize,
+                const K_SQUARED: usize,
                 const SECRET_KEY_SIZE: usize,
                 const CPA_SECRET_KEY_SIZE: usize,
                 const PUBLIC_KEY_SIZE: usize,
@@ -279,6 +292,8 @@ macro_rules! instantiate {
                 const ETA1_RANDOMNESS_SIZE: usize,
                 const ETA2: usize,
                 const ETA2_RANDOMNESS_SIZE: usize,
+                const PRF_OUTPUT_SIZE1: usize,
+                const PRF_OUTPUT_SIZE2: usize,
                 const IMPLICIT_REJECTION_HASH_INPUT_SIZE: usize,
             >(
                 private_key: &MlKemPrivateKey<SECRET_KEY_SIZE>,
@@ -286,6 +301,7 @@ macro_rules! instantiate {
             ) -> MlKemSharedSecret {
                 crate::ind_cca::decapsulate::<
                     K,
+                    K_SQUARED,
                     SECRET_KEY_SIZE,
                     CPA_SECRET_KEY_SIZE,
                     PUBLIC_KEY_SIZE,
@@ -300,6 +316,8 @@ macro_rules! instantiate {
                     ETA1_RANDOMNESS_SIZE,
                     ETA2,
                     ETA2_RANDOMNESS_SIZE,
+                    PRF_OUTPUT_SIZE1,
+                    PRF_OUTPUT_SIZE2,
                     IMPLICIT_REJECTION_HASH_INPUT_SIZE,
                     $vector,
                     $hash,
@@ -311,10 +329,10 @@ macro_rules! instantiate {
             pub(crate) mod unpacked {
                 use super::*;
 
-                pub(crate) type MlKemKeyPairUnpacked<const K: usize> =
-                    crate::ind_cca::unpacked::MlKemKeyPairUnpacked<K, $vector>;
-                pub(crate) type MlKemPublicKeyUnpacked<const K: usize> =
-                    crate::ind_cca::unpacked::MlKemPublicKeyUnpacked<K, $vector>;
+                pub(crate) type MlKemKeyPairUnpacked<const K: usize, const K_SQUARED: usize> =
+                    crate::ind_cca::unpacked::MlKemKeyPairUnpacked<K, K_SQUARED, $vector>;
+                pub(crate) type MlKemPublicKeyUnpacked<const K: usize, const K_SQUARED: usize> =
+                    crate::ind_cca::unpacked::MlKemPublicKeyUnpacked<K, K_SQUARED, $vector>;
 
                 /// Get the unpacked public key.
                 #[hax_lib::requires(
@@ -325,14 +343,16 @@ macro_rules! instantiate {
                 #[inline(always)]
                 pub(crate) fn unpack_public_key<
                     const K: usize,
+                    const K_SQUARED: usize,
                     const T_AS_NTT_ENCODED_SIZE: usize,
                     const PUBLIC_KEY_SIZE: usize,
                 >(
                     public_key: &MlKemPublicKey<PUBLIC_KEY_SIZE>,
-                    unpacked_public_key: &mut MlKemPublicKeyUnpacked<K>,
+                    unpacked_public_key: &mut MlKemPublicKeyUnpacked<K, K_SQUARED>,
                 ) {
                     crate::ind_cca::unpacked::unpack_public_key::<
                         K,
+                        K_SQUARED,
                         T_AS_NTT_ENCODED_SIZE,
                         PUBLIC_KEY_SIZE,
                         $hash,
@@ -350,16 +370,18 @@ macro_rules! instantiate {
                             v_T_AS_NTT_ENCODED_SIZE == Spec.MLKEM.v_T_AS_NTT_ENCODED_SIZE v_K"#))]
                 pub(crate) fn keypair_from_private_key<
                     const K: usize,
+                    const K_SQUARED: usize,
                     const SECRET_KEY_SIZE: usize,
                     const CPA_SECRET_KEY_SIZE: usize,
                     const PUBLIC_KEY_SIZE: usize,
                     const T_AS_NTT_ENCODED_SIZE: usize,
                 >(
                     private_key: &MlKemPrivateKey<SECRET_KEY_SIZE>,
-                    key_pair: &mut MlKemKeyPairUnpacked<K>,
+                    key_pair: &mut MlKemKeyPairUnpacked<K, K_SQUARED>,
                 ) {
                     crate::ind_cca::unpacked::keys_from_private_key::<
                         K,
+                        K_SQUARED,
                         SECRET_KEY_SIZE,
                         CPA_SECRET_KEY_SIZE,
                         PUBLIC_KEY_SIZE,
@@ -378,22 +400,26 @@ macro_rules! instantiate {
                 #[inline(always)]
                 pub(crate) fn generate_keypair<
                     const K: usize,
+                    const K_SQUARED: usize,
                     const CPA_PRIVATE_KEY_SIZE: usize,
                     const PRIVATE_KEY_SIZE: usize,
                     const PUBLIC_KEY_SIZE: usize,
                     const ETA1: usize,
                     const ETA1_RANDOMNESS_SIZE: usize,
+                    const PRF_OUTPUT_SIZE1: usize,
                 >(
                     randomness: [u8; KEY_GENERATION_SEED_SIZE],
-                    out: &mut MlKemKeyPairUnpacked<K>,
+                    out: &mut MlKemKeyPairUnpacked<K, K_SQUARED>,
                 ) {
                     crate::ind_cca::unpacked::generate_keypair::<
                         K,
+                        K_SQUARED,
                         CPA_PRIVATE_KEY_SIZE,
                         PRIVATE_KEY_SIZE,
                         PUBLIC_KEY_SIZE,
                         ETA1,
                         ETA1_RANDOMNESS_SIZE,
+                        PRF_OUTPUT_SIZE1,
                         $vector,
                         $hash,
                         crate::variant::MlKem,
@@ -417,6 +443,7 @@ macro_rules! instantiate {
                 #[inline(always)]
                 pub(crate) fn encapsulate<
                     const K: usize,
+                    const K_SQUARED: usize,
                     const CIPHERTEXT_SIZE: usize,
                     const PUBLIC_KEY_SIZE: usize,
                     const T_AS_NTT_ENCODED_SIZE: usize,
@@ -429,12 +456,15 @@ macro_rules! instantiate {
                     const ETA1_RANDOMNESS_SIZE: usize,
                     const ETA2: usize,
                     const ETA2_RANDOMNESS_SIZE: usize,
+                    const PRF_OUTPUT_SIZE1: usize,
+                    const PRF_OUTPUT_SIZE2: usize,
                 >(
-                    public_key: &MlKemPublicKeyUnpacked<K>,
+                    public_key: &MlKemPublicKeyUnpacked<K, K_SQUARED>,
                     randomness: &[u8; SHARED_SECRET_SIZE],
                 ) -> (MlKemCiphertext<CIPHERTEXT_SIZE>, MlKemSharedSecret) {
                     crate::ind_cca::unpacked::encapsulate::<
                         K,
+                        K_SQUARED,
                         CIPHERTEXT_SIZE,
                         PUBLIC_KEY_SIZE,
                         T_AS_NTT_ENCODED_SIZE,
@@ -447,6 +477,8 @@ macro_rules! instantiate {
                         ETA1_RANDOMNESS_SIZE,
                         ETA2,
                         ETA2_RANDOMNESS_SIZE,
+                        PRF_OUTPUT_SIZE1,
+                        PRF_OUTPUT_SIZE2,
                         $vector,
                         $hash,
                     >(public_key, randomness)
@@ -472,6 +504,7 @@ macro_rules! instantiate {
                 #[inline(always)]
                 pub(crate) fn decapsulate<
                     const K: usize,
+                    const K_SQUARED: usize,
                     const SECRET_KEY_SIZE: usize,
                     const CPA_SECRET_KEY_SIZE: usize,
                     const PUBLIC_KEY_SIZE: usize,
@@ -486,13 +519,16 @@ macro_rules! instantiate {
                     const ETA1_RANDOMNESS_SIZE: usize,
                     const ETA2: usize,
                     const ETA2_RANDOMNESS_SIZE: usize,
+                    const PRF_OUTPUT_SIZE1: usize,
+                    const PRF_OUTPUT_SIZE2: usize,
                     const IMPLICIT_REJECTION_HASH_INPUT_SIZE: usize,
                 >(
-                    key_pair: &MlKemKeyPairUnpacked<K>,
+                    key_pair: &MlKemKeyPairUnpacked<K, K_SQUARED>,
                     ciphertext: &MlKemCiphertext<CIPHERTEXT_SIZE>,
                 ) -> MlKemSharedSecret {
                     crate::ind_cca::unpacked::decapsulate::<
                         K,
+                        K_SQUARED,
                         SECRET_KEY_SIZE,
                         CPA_SECRET_KEY_SIZE,
                         PUBLIC_KEY_SIZE,
@@ -507,6 +543,8 @@ macro_rules! instantiate {
                         ETA1_RANDOMNESS_SIZE,
                         ETA2,
                         ETA2_RANDOMNESS_SIZE,
+                        PRF_OUTPUT_SIZE1,
+                        PRF_OUTPUT_SIZE2,
                         IMPLICIT_REJECTION_HASH_INPUT_SIZE,
                         $vector,
                         $hash,
@@ -518,7 +556,7 @@ macro_rules! instantiate {
 }
 
 // Portable generic implementations.
-instantiate! {portable, crate::vector::portable::PortableVector, crate::hash_functions::portable::PortableHash<K>}
+instantiate! {portable, crate::vector::portable::PortableVector, crate::hash_functions::portable::PortableHash}
 
 // AVX2 generic implementation.
 #[cfg(feature = "simd256")]
