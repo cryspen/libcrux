@@ -486,6 +486,7 @@ pub(crate) fn montgomery_multiply_by_constant(mut vec: PortableVector, c: i16) -
     vec
 }
 
+#[hax_lib::fstar::options("--z3rlimit 300")]
 #[hax_lib::requires(fstar!(r#"Spec.Utils.is_i16b_array 3328 ${a}.f_elements"#))]
 #[hax_lib::ensures(|result| fstar!(r#"forall i.
                                        (let x = Seq.index ${a}.f_elements i in

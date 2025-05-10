@@ -120,7 +120,8 @@ fn to_bytes<Vector: Operations>(re: PolynomialRingElement<Vector>, out: &mut [u8
 /// Get the bytes of the vector of ring elements in `re` and write them to `out`.
 #[inline(always)]
 #[allow(dead_code)]
-#[hax_lib::requires(re.len() <= 4 && VECTORS_IN_RING_ELEMENT * 16 * 2 * re.len() <= out.len())]
+#[hax_lib::fstar::options("--z3rlimit 500 --split_queries always")]
+#[hax_lib::requires(re.len() <= 4 && 512 * re.len() <= out.len())]
 pub(crate) fn vec_to_bytes<Vector: Operations>(
     re: &[PolynomialRingElement<Vector>],
     out: &mut [u8],
@@ -137,7 +138,10 @@ pub(crate) fn vec_to_bytes<Vector: Operations>(
 /// Build a vector of ring elements from `bytes`.
 #[inline(always)]
 #[allow(dead_code)]
-#[hax_lib::requires(fstar!(r#"Seq.length out <= 4 /\ Seq.length bytes >= 32 * v v_VECTORS_IN_RING_ELEMENT * Seq.length out"#))]
+#[hax_lib::fstar::options("--z3rlimit 500 --split_queries always")]
+#[hax_lib::requires(fstar!(r#"Seq.length out <= 4 /\ 
+    Seq.length bytes >= 512 * Seq.length out"#))]
+#[hax_lib::ensures(|_| future(out).len() == out.len())]
 pub(crate) fn vec_from_bytes<Vector: Operations>(
     bytes: &[u8],
     out: &mut [PolynomialRingElement<Vector>],
@@ -162,7 +166,7 @@ pub(crate) const fn vec_len_bytes<const K: usize, Vector: Operations>() -> usize
 /// Given two polynomial ring elements `lhs` and `rhs`, compute the pointwise
 /// sum of their constituent coefficients.
 #[inline(always)]
-#[hax_lib::fstar::options("--z3rlimit 300")]
+#[hax_lib::fstar::options("--z3rlimit 500 --split_queries always")]
 #[hax_lib::requires(fstar!(r#"
         forall (i:nat). i < v ${VECTORS_IN_RING_ELEMENT} ==>
          (let lhs_i = i1.f_to_i16_array (${myself}.f_coefficients.[ sz i ]) in
@@ -180,6 +184,8 @@ fn add_to_ring_element<Vector: Operations, const K: usize>(
 ) {
     #[cfg(hax)]
     let _myself = myself.coefficients;
+    hax_lib::fstar!(r#"assert(forall (v: v_Vector).
+        i1.f_to_i16_array v == i1._super_15138760880757129450.f_repr v)"#);
 
     for i in 0..myself.coefficients.len() {
         hax_lib::loop_invariant!(|i: usize| {
