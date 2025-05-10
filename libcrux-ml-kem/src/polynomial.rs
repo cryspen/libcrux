@@ -547,7 +547,7 @@ fn add_standard_error_reduce<Vector: Operations>(
 //                 result.coefficients[i].abs() <= FIELD_MODULUS
 // ))))]
 #[inline(always)]
-#[hax_lib::fstar::options("--z3rlimit 300")]
+#[hax_lib::fstar::options("--z3rlimit 300 --split_queries always")]
 #[hax_lib::requires(fstar!(r#"is_bounded_poly 3328 ${myself} /\
                               is_bounded_poly 3328 ${rhs}"#))]
 fn ntt_multiply<Vector: Operations>(
