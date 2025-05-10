@@ -184,8 +184,10 @@ fn add_to_ring_element<Vector: Operations, const K: usize>(
 ) {
     #[cfg(hax)]
     let _myself = myself.coefficients;
-    hax_lib::fstar!(r#"assert(forall (v: v_Vector).
-        i1.f_to_i16_array v == i1._super_15138760880757129450.f_repr v)"#);
+    hax_lib::fstar!(
+        r#"assert(forall (v: v_Vector).
+        i1.f_to_i16_array v == i1._super_15138760880757129450.f_repr v)"#
+    );
 
     for i in 0..myself.coefficients.len() {
         hax_lib::loop_invariant!(|i: usize| {
