@@ -211,6 +211,12 @@ pub fn mm256_set1_epi16(constant: i16) -> Vec256 {
     unsafe { _mm256_set1_epi16(constant) }
 }
 
+#[hax_lib::opaque]
+#[inline(always)]
+pub fn mm256_set1_epi8(constant: i8) -> Vec256 {
+    unsafe { _mm256_set1_epi8(constant) }
+}
+
 #[inline(always)]
 pub fn mm256_set_epi16(
     input15: i16,
@@ -359,6 +365,12 @@ pub fn mm256_cmpeq_epi32(a: Vec256, b: Vec256) -> Vec256 {
 #[inline(always)]
 pub fn mm256_sign_epi32(a: Vec256, b: Vec256) -> Vec256 {
     unsafe { _mm256_sign_epi32(a, b) }
+}
+
+#[hax_lib::opaque]
+#[inline(always)]
+pub fn mm256_sign_epi16(a: Vec256, b: Vec256) -> Vec256 {
+    unsafe { _mm256_sign_epi16(a, b) }
 }
 
 #[hax_lib::opaque]
