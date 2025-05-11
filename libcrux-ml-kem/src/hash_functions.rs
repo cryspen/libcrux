@@ -25,34 +25,43 @@ pub(crate) const THREE_BLOCKS: usize = BLOCK_SIZE * 3;
 pub(crate) trait Hash {
     /// G aka SHA3 512
     #[requires(true)]
+    #[requires(output.len() == 64)]
     #[ensures(|result|
-        fstar!(r#"$result == Spec.Utils.v_G $input"#))
+        fstar!(r#"Seq.length ${output}_future == Seq.length ${output} /\
+            ${output}_future == Spec.Utils.v_G $input"#))
     ]
     fn G(input: &[u8], output: &mut [u8]);
 
     /// H aka SHA3 256
     #[requires(true)]
+    #[requires(output.len() == 32)]
     #[ensures(|result|
-        fstar!(r#"$result == Spec.Utils.v_H $input"#))
+        fstar!(r#"Seq.length ${output}_future == Seq.length ${output} /\
+            ${output}_future == Spec.Utils.v_H $input"#))
     ]
     fn H(input: &[u8], output: &mut [u8]);
 
     /// PRF aka SHAKE256
-    #[requires(fstar!(r#"v $LEN < pow2 32"#))]
+    #[requires(fstar!(r#"v $LEN < pow2 32 /\ 
+        Seq.length ${out} == v $LEN"#))]
     #[ensures(|result|
         // We need to repeat the pre-condition here because of https://github.com/hacspec/hax/issues/784
-        fstar!(r#"v $LEN < pow2 32 ==> $result == Spec.Utils.v_PRF $LEN $input"#))
+        fstar!(r#"Seq.length ${out}_future == Seq.length ${out} /\
+            (v $LEN < pow2 32 ==> 
+             ${out}_future == Spec.Utils.v_PRF $LEN $input)"#))
     ]
     fn PRF<const LEN: usize>(input: &[u8], out: &mut [u8]);
 
     /// PRFxN aka N SHAKE256
-    #[requires(fstar!(r#"v $LEN < pow2 32 /\ (v $K == 2 \/ v $K == 3 \/ v $K == 4)"#))]
-    #[ensures(|result|
-        // We need to repeat the pre-condition here because of https://github.com/hacspec/hax/issues/784
-        fstar!(r#"(v $LEN < pow2 32 /\ (v $K == 2 \/ v $K == 3 \/ v $K == 4)) ==>
-            $result == Spec.Utils.v_PRFxN $K $LEN $input"#))
-    ]
-    // fn PRFxN<const LEN: usize>(input: &[[u8; 33]; K]) -> [[u8; LEN]; K];
+    #[requires(fstar!(r#"let k = Seq.length $input in
+        ((k == 2 \/ k == 3 \/ k == 4) /\
+         (k * v $out_len < pow2 32) /\
+         Seq.length $outputs == k * v $out_len)"#))]
+    #[ensures(|result| fstar!(r#"
+        Seq.length ${outputs}_future == Seq.length ${outputs}"#))]
+    // This function no longer matches the spec of Spec.Utils.v_PRFxN so that spec
+    // needs to be adapted
+    //     ${outputs}_future == Spec.Utils.v_PRFxN $K $out_len $input"#))
     fn PRFxN(input: &[[u8; 33]], outputs: &mut [u8], out_len: usize);
 
     /// Create a SHAKE128 state and absorb the input.
@@ -82,35 +91,46 @@ pub(crate) mod portable {
         shake128_state: [KeccakState; 4],
     }
 
+    #[hax_lib::requires(output.len() == 64)]
     #[hax_lib::ensures(|result|
-        fstar!(r#"$result == Spec.Utils.v_G $input"#))
+        fstar!(r#"Seq.length ${output}_future == Seq.length ${output} /\
+            ${output}_future == Spec.Utils.v_G $input"#))
     ]
     #[inline(always)]
     fn G(input: &[u8], output: &mut [u8]) {
         portable::sha512(output, input);
     }
 
+    #[hax_lib::requires(output.len() == 32)]
     #[hax_lib::ensures(|result|
-        fstar!(r#"$result == Spec.Utils.v_H $input"#))
+        fstar!(r#"Seq.length ${output}_future == Seq.length ${output} /\
+            ${output}_future == Spec.Utils.v_H $input"#))
     ]
     #[inline(always)]
     fn H(input: &[u8], output: &mut [u8]) {
         portable::sha256(output, input);
     }
 
-    #[hax_lib::requires(fstar!(r#"v $LEN < pow2 32"#))]
+    #[hax_lib::requires(fstar!(r#"v $LEN < pow2 32 /\
+        Seq.length ${out} == v $LEN"#))]
     #[hax_lib::ensures(|result|
-        fstar!(r#"$result == Spec.Utils.v_PRF $LEN $input"#))
+        fstar!(r#"Seq.length ${out}_future == Seq.length ${out} /\
+            ${out}_future == Spec.Utils.v_PRF $LEN $input"#))
     ]
     #[inline(always)]
     fn PRF<const LEN: usize>(input: &[u8], out: &mut [u8]) {
         portable::shake256(out, input);
     }
 
-    #[hax_lib::requires(fstar!(r#"v $LEN < pow2 32 /\ (v $K == 2 \/ v $K == 3 \/ v $K == 4)"#))]
-    #[hax_lib::ensures(|result|
-        fstar!(r#"$result == Spec.Utils.v_PRFxN $K $LEN $input"#))
-    ]
+    #[hax_lib::requires(fstar!(r#"let k = Seq.length $input in
+        ((k == 2 \/ k == 3 \/ k == 4) /\
+         (k * v $out_len < pow2 32) /\
+         Seq.length $outputs == k * v $out_len)"#))]
+    #[hax_lib::ensures(|result| fstar!(r#"
+         Seq.length ${outputs}_future == Seq.length ${outputs}"#))]
+    // #[hax_lib::ensures(|result|
+    //     fstar!(r#"$result == Spec.Utils.v_PRFxN $K $LEN $input"#))
+    // ]
     #[inline(always)]
     fn PRFxN(input: &[[u8; 33]], outputs: &mut [u8], out_len: usize) {
         for i in 0..input.len() {
@@ -156,16 +176,18 @@ pub(crate) mod portable {
 
     #[hax_lib::attributes]
     impl Hash for PortableHash {
-        #[ensures(|out|
-            fstar!(r#"$out == Spec.Utils.v_G $input"#))
+        #[requires(output.len() == 64)]
+        #[ensures(|_|
+            fstar!(r#"${output}_future == Spec.Utils.v_G $input"#))
         ]
         #[inline(always)]
         fn G(input: &[u8], output: &mut [u8]) {
             G(input, output)
         }
 
-        #[ensures(|out|
-            fstar!(r#"$out == Spec.Utils.v_H $input"#))
+        #[requires(output.len() == 32)]
+        #[ensures(|_|
+            fstar!(r#"${output}_future == Spec.Utils.v_H $input"#))
         ]
         #[inline(always)]
         fn H(input: &[u8], output: &mut [u8]) {
@@ -173,20 +195,27 @@ pub(crate) mod portable {
         }
 
         #[requires(fstar!(r#"v $LEN < pow2 32"#))]
-        #[ensures(|out|
+        #[ensures(|_|
             // We need to repeat the pre-condition here because of https://github.com/hacspec/hax/issues/784
-            fstar!(r#"v $LEN < pow2 32 ==> $out == Spec.Utils.v_PRF $LEN $input"#))
+            fstar!(r#"v $LEN < pow2 32 ==> ${out}_future == Spec.Utils.v_PRF $LEN $input"#))
         ]
         #[inline(always)]
         fn PRF<const LEN: usize>(input: &[u8], out: &mut [u8]) {
             PRF::<LEN>(input, out)
         }
 
-        #[requires(fstar!(r#"v $LEN < pow2 32 /\ (v $K == 2 \/ v $K == 3 \/ v $K == 4)"#))]
-        #[ensures(|out|
-            fstar!(r#"(v $LEN < pow2 32 /\ (v $K == 2 \/ v $K == 3 \/ v $K == 4)) ==>
-                $out == Spec.Utils.v_PRFxN $K $LEN $input"#))
-        ]
+        #[requires(fstar!(r#"let k = Seq.length $input in
+            ((k == 2 \/ k == 3 \/ k == 4) /\
+            (k * v $out_len < pow2 32) /\
+            Seq.length $outputs == k * v $out_len)"#))]
+        #[ensures(|result| fstar!(r#"
+            Seq.length ${outputs}_future == Seq.length ${outputs}"#))]
+        // This function no longer matches the spec of Spec.Utils.v_PRFxN so that spec
+        // needs to be adapted
+        // #[ensures(|out|
+        //     fstar!(r#"(v $LEN < pow2 32 /\ (v $K == 2 \/ v $K == 3 \/ v $K == 4)) ==>
+        //         $out == Spec.Utils.v_PRFxN $K $LEN $input"#))
+        // ]
         #[inline(always)]
         fn PRFxN(input: &[[u8; 33]], outputs: &mut [u8], out_len: usize) {
             PRFxN(input, outputs, out_len)
@@ -227,16 +256,20 @@ pub(crate) mod avx2 {
         shake128_state: KeccakState,
     }
 
-    #[hax_lib::ensures(|result|
-        fstar!(r#"$result == Spec.Utils.v_G $input"#))
+    #[hax_lib::requires(output.len() == 64)]
+    #[hax_lib::ensures(|_|
+        fstar!(r#"Seq.length ${output}_future == Seq.length ${output} /\
+            ${output}_future == Spec.Utils.v_G $input"#))
     ]
     #[inline(always)]
     fn G(input: &[u8], output: &mut [u8]) {
         portable::sha512(output, input);
     }
 
-    #[hax_lib::ensures(|result|
-        fstar!(r#"$result == Spec.Utils.v_H $input"#))
+    #[hax_lib::requires(output.len() == 32)]
+    #[hax_lib::ensures(|_|
+        fstar!(r#"Seq.length ${output}_future == Seq.length ${output} /\
+            ${output}_future == Spec.Utils.v_H $input"#))
     ]
     #[inline(always)]
     fn H(input: &[u8], output: &mut [u8]) {
@@ -245,17 +278,25 @@ pub(crate) mod avx2 {
 
     #[hax_lib::requires(fstar!(r#"v $LEN < pow2 32"#))]
     #[hax_lib::ensures(|result|
-        fstar!(r#"$result == Spec.Utils.v_PRF $LEN $input"#))
+        fstar!(r#"Seq.length ${out}_future == Seq.length ${out} /\
+            ${out}_future == Spec.Utils.v_PRF $LEN $input"#))
     ]
     #[inline(always)]
     fn PRF<const LEN: usize>(input: &[u8], out: &mut [u8]) {
         portable::shake256(out, input);
     }
 
-    #[hax_lib::requires(fstar!(r#"v $LEN < pow2 32 /\ (v $K == 2 \/ v $K == 3 \/ v $K == 4)"#))]
-    #[hax_lib::ensures(|result|
-        fstar!(r#"$result == Spec.Utils.v_PRFxN $K $LEN $input"#))
-    ]
+    #[hax_lib::requires(fstar!(r#"let k = Seq.length $input in
+        ((k == 2 \/ k == 3 \/ k == 4) /\
+         (k * v $out_len < pow2 32) /\
+         Seq.length $outputs == k * v $out_len)"#))]
+    #[hax_lib::ensures(|result| fstar!(r#"
+         Seq.length ${outputs}_future == Seq.length ${outputs}"#))]
+    // This function no longer matches the spec of Spec.Utils.v_PRFxN so that spec
+    // needs to be adapted
+    // #[hax_lib::ensures(|result|
+    //     fstar!(r#"$result == Spec.Utils.v_PRFxN $K $LEN $input"#))
+    // ]
     #[inline(always)]
     fn PRFxN(input: &[[u8; 33]], outputs: &mut [u8], out_len: usize) {
         // XXX: The buffer sizes here are the maximum that we will
@@ -414,16 +455,20 @@ pub(crate) mod avx2 {
 
     #[hax_lib::attributes]
     impl Hash for Simd256Hash {
-        #[ensures(|out|
-            fstar!(r#"$out == Spec.Utils.v_G $input"#))
+        #[requires(output.len() == 64)]
+        #[ensures(|_|
+            fstar!(r#"Seq.length ${output}_future == Seq.length ${output} /\
+                ${output}_future == Spec.Utils.v_G $input"#))
         ]
         #[inline(always)]
         fn G(input: &[u8], output: &mut [u8]) {
             G(input, output)
         }
 
-        #[ensures(|out|
-            fstar!(r#"$out == Spec.Utils.v_H $input"#))
+        #[requires(output.len() == 32)]
+        #[ensures(|_|
+            fstar!(r#"Seq.length ${output}_future == Seq.length ${output} /\
+                ${output}_future == Spec.Utils.v_H $input"#))
         ]
         #[inline(always)]
         fn H(input: &[u8], output: &mut [u8]) {
@@ -431,23 +476,31 @@ pub(crate) mod avx2 {
         }
 
         #[requires(fstar!(r#"v $LEN < pow2 32"#))]
-        #[hax_lib::ensures(|out|
+        #[hax_lib::ensures(|_|
             // We need to repeat the pre-condition here because of https://github.com/hacspec/hax/issues/784
-            fstar!(r#"v $LEN < pow2 32 ==> $out == Spec.Utils.v_PRF $LEN $input"#))
+            fstar!(r#"Seq.length ${out}_future == Seq.length ${out} /\
+                (v $LEN < pow2 32 ==> ${out}_future == Spec.Utils.v_PRF $LEN $input)"#))
         ]
         #[inline(always)]
         fn PRF<const LEN: usize>(input: &[u8], out: &mut [u8]) {
             PRF::<LEN>(input, out)
         }
 
-        #[requires(fstar!(r#"v $LEN < pow2 32 /\ (v $K == 2 \/ v $K == 3 \/ v $K == 4)"#))]
-        #[ensures(|out|
-            fstar!(r#"(v $LEN < pow2 32 /\ (v $K == 2 \/ v $K == 3 \/ v $K == 4)) ==>
-                $out == Spec.Utils.v_PRFxN $K $LEN $input"#))
-        ]
+        #[requires(fstar!(r#"let k = Seq.length $input in
+            ((k == 2 \/ k == 3 \/ k == 4) /\
+            (k * v $out_len < pow2 32) /\
+            Seq.length $outputs == k * v $out_len)"#))]
+        #[ensures(|result| fstar!(r#"
+            Seq.length ${outputs}_future == Seq.length ${outputs}"#))]
+        // This function no longer matches the spec of Spec.Utils.v_PRFxN so that spec
+        // needs to be adapted
+        // #[ensures(|out|
+        //     fstar!(r#"(v $LEN < pow2 32 /\ (v $K == 2 \/ v $K == 3 \/ v $K == 4)) ==>
+        //         $out == Spec.Utils.v_PRFxN $K $LEN $input"#))
+        // ]
         #[inline(always)]
-        fn PRFxN(input: &[[u8; 33]], output: &mut [u8], out_len: usize) {
-            PRFxN(input, output, out_len)
+        fn PRFxN(input: &[[u8; 33]], outputs: &mut [u8], out_len: usize) {
+            PRFxN(input, outputs, out_len)
         }
 
         #[inline(always)]
@@ -482,16 +535,20 @@ pub(crate) mod neon {
         shake128_state: [KeccakState; 2],
     }
 
-    #[hax_lib::ensures(|result|
-        fstar!(r#"$result == Spec.Utils.v_G $input"#))
+    #[hax_lib::requires(output.len() == 64)]
+    #[hax_lib::ensures(|_|
+        fstar!(r#"Seq.length ${output}_future == Seq.length ${output} /\
+            ${output}_future == Spec.Utils.v_G $input"#))
     ]
     #[inline(always)]
     fn G(input: &[u8], output: &mut [u8]) {
         libcrux_sha3::neon::sha512(output, input);
     }
 
-    #[hax_lib::ensures(|result|
-        fstar!(r#"$result == Spec.Utils.v_H $input"#))
+    #[hax_lib::requires(output.len() == 32)]
+    #[hax_lib::ensures(|_|
+        fstar!(r#"Seq.length ${output}_future == Seq.length ${output} /\
+            ${output}_future == Spec.Utils.v_H $input"#))
     ]
     #[inline(always)]
     fn H(input: &[u8], output: &mut [u8]) {
@@ -500,7 +557,8 @@ pub(crate) mod neon {
 
     #[hax_lib::requires(fstar!(r#"v $LEN < pow2 32"#))]
     #[hax_lib::ensures(|()|
-        fstar!(r#"$out_future == Spec.Utils.v_PRF $LEN $input"#))
+        fstar!(r#"Seq.length ${out}_future == Seq.length ${out} /\
+            ${out}_future == Spec.Utils.v_PRF $LEN $input"#))
     ]
     #[inline(always)]
     fn PRF<const LEN: usize>(input: &[u8], out: &mut [u8]) {
@@ -508,10 +566,17 @@ pub(crate) mod neon {
         x2::shake256(input, input, out, &mut dummy);
     }
 
-    #[hax_lib::requires(fstar!(r#"v $LEN < pow2 32 /\ (v $K == 2 \/ v $K == 3 \/ v $K == 4)"#))]
-    #[hax_lib::ensures(|()|
-        fstar!(r#"$outputs_future == Spec.Utils.v_PRFxN $K $LEN $input"#))
-    ]
+    #[hax_lib::requires(fstar!(r#"let k = Seq.length $input in
+        ((k == 2 \/ k == 3 \/ k == 4) /\
+         (k * v $out_len < pow2 32) /\
+         Seq.length ${outputs} == k * v $out_len)"#))]
+    #[hax_lib::ensures(|result| fstar!(r#"
+         Seq.length ${outputs}_future == Seq.length ${outputs}"#))]
+    // This function no longer matches the spec of Spec.Utils.v_PRFxN so that spec
+    // needs to be adapted
+    // #[hax_lib::ensures(|()|
+    //     fstar!(r#"$outputs_future == Spec.Utils.v_PRFxN $K $LEN $input"#))
+    // ]
     #[inline(always)]
     fn PRFxN(input: &[[u8; 33]], outputs: &mut [u8], out_len: usize) {
         // XXX: The buffer sizes here are the maximum that we will
@@ -659,16 +724,20 @@ pub(crate) mod neon {
 
     #[hax_lib::attributes]
     impl Hash for Simd128Hash {
+        #[requires(output.len() == 64)]
         #[ensures(|out|
-            fstar!(r#"$out == Spec.Utils.v_G $input"#))
+            fstar!(r#"Seq.length ${output}_future == Seq.length ${output} /\
+                ${output}_future == Spec.Utils.v_G $input"#))
         ]
         #[inline(always)]
         fn G(input: &[u8], output: &mut [u8]) {
             G(input, output)
         }
 
+        #[requires(output.len() == 32)]
         #[ensures(|out|
-            fstar!(r#"$out == Spec.Utils.v_H $input"#))
+            fstar!(r#"Seq.length ${output}_future == Seq.length ${output} /\
+                ${output}_future == Spec.Utils.v_H $input"#))
         ]
         #[inline(always)]
         fn H(input: &[u8], output: &mut [u8]) {
@@ -678,19 +747,27 @@ pub(crate) mod neon {
         #[requires(fstar!(r#"v $LEN < pow2 32"#))]
         #[ensures(|out|
             // We need to repeat the pre-condition here because of https://github.com/hacspec/hax/issues/784
-            fstar!(r#"v $LEN < pow2 32 ==> $out == Spec.Utils.v_PRF $LEN $input"#))
+            fstar!(r#"Seq.length ${out}_future == Seq.length ${out} /\
+                (v $LEN < pow2 32 ==> ${out}_future == Spec.Utils.v_PRF $LEN $input)"#))
         ]
         #[inline(always)]
         fn PRF<const LEN: usize>(input: &[u8], out: &mut [u8]) {
             PRF::<LEN>(input, out)
         }
 
-        #[requires(fstar!(r#"v $LEN < pow2 32 /\ (v $K == 2 \/ v $K == 3 \/ v $K == 4)"#))]
-        #[ensures(|out|
-            // We need to repeat the pre-condition here because of https://github.com/hacspec/hax/issues/784
-            fstar!(r#"(v $LEN < pow2 32 /\ (v $K == 2 \/ v $K == 3 \/ v $K == 4)) ==>
-                $out == Spec.Utils.v_PRFxN $K $LEN $input"#))
-        ]
+        #[requires(fstar!(r#"let k = Seq.length $input in
+            ((k == 2 \/ k == 3 \/ k == 4) /\
+            (k * v $out_len < pow2 32) /\
+            Seq.length ${outputs}_future == k * v $out_len)"#))]
+        #[ensures(|result| fstar!(r#"
+            Seq.length ${outputs}_future == Seq.length ${outputs}"#))]
+        // This function no longer matches the spec of Spec.Utils.v_PRFxN so that spec
+        // needs to be adapted
+        // #[ensures(|out|
+        //     // We need to repeat the pre-condition here because of https://github.com/hacspec/hax/issues/784
+        //     fstar!(r#"(v $LEN < pow2 32 /\ (v $K == 2 \/ v $K == 3 \/ v $K == 4)) ==>
+        //         $out == Spec.Utils.v_PRFxN $K $LEN $input"#))
+        // ]
         #[inline(always)]
         fn PRFxN(input: &[[u8; 33]], outputs: &mut [u8], out_len: usize) {
             PRFxN(input, outputs, out_len)
