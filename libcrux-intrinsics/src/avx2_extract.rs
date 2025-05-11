@@ -346,6 +346,11 @@ pub fn mm256_sign_epi32(a: Vec256, b: Vec256) -> Vec256 {
 }
 
 #[inline(always)]
+pub fn mm256_sign_epi16(a: Vec256, b: Vec256) -> Vec256 {
+    unimplemented!()
+}
+
+#[inline(always)]
 pub fn mm256_castsi256_ps(a: Vec256) -> Vec256Float {
     unimplemented!()
 }
