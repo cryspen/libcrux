@@ -1,7 +1,7 @@
 use std::time::Duration;
 
 use criterion::{criterion_group, criterion_main, Criterion};
-use rand::{rngs::OsRng, RngCore};
+use rand::{rngs::OsRng, TryRngCore};
 
 use libcrux_ml_dsa::ml_dsa_65;
 
@@ -11,7 +11,7 @@ pub fn comparisons_key_generation(c: &mut Criterion) {
     group.measurement_time(Duration::from_secs(10));
 
     let mut randomness = [0; 32];
-    rng.fill_bytes(&mut randomness);
+    rng.try_fill_bytes(&mut randomness).unwrap();
 
     group.bench_function("libcrux (external random)", move |b| {
         b.iter(|| {
@@ -19,9 +19,10 @@ pub fn comparisons_key_generation(c: &mut Criterion) {
         })
     });
 
+    #[cfg(not(all(target_os = "macos", target_arch = "x86_64")))]
     group.bench_function("pqclean (internal random)", move |b| {
         b.iter(|| {
-            let (_, _) = pqcrypto_dilithium::dilithium3::keypair();
+            let (_, _) = pqcrypto_mldsa::mldsa65::keypair();
         })
     });
 }
@@ -32,13 +33,13 @@ pub fn comparisons_signing(c: &mut Criterion) {
     group.measurement_time(Duration::from_secs(10));
 
     let mut message = [0u8; 511];
-    rng.fill_bytes(&mut message);
+    rng.try_fill_bytes(&mut message).unwrap();
 
     let mut randomness = [0; 32];
-    rng.fill_bytes(&mut randomness);
+    rng.try_fill_bytes(&mut randomness).unwrap();
     let keypair = ml_dsa_65::generate_key_pair(randomness);
 
-    rng.fill_bytes(&mut randomness);
+    rng.try_fill_bytes(&mut randomness).unwrap();
 
     group.bench_function("libcrux (external random)", move |b| {
         b.iter(|| {
@@ -46,12 +47,15 @@ pub fn comparisons_signing(c: &mut Criterion) {
         })
     });
 
-    let (_, sk) = pqcrypto_dilithium::dilithium3::keypair();
-    group.bench_function("pqclean (internal random)", move |b| {
-        b.iter(|| {
-            let _ = pqcrypto_dilithium::dilithium3::detached_sign(&message, &sk);
-        })
-    });
+    #[cfg(not(all(target_os = "macos", target_arch = "x86_64")))]
+    {
+        let (_, sk) = pqcrypto_mldsa::mldsa65::keypair();
+        group.bench_function("pqclean (internal random)", move |b| {
+            b.iter(|| {
+                let _ = pqcrypto_mldsa::mldsa65::detached_sign(&message, &sk);
+            })
+        });
+    }
 }
 
 pub fn comparisons_verification(c: &mut Criterion) {
@@ -60,13 +64,13 @@ pub fn comparisons_verification(c: &mut Criterion) {
     group.measurement_time(Duration::from_secs(10));
 
     let mut message = [0u8; 511];
-    rng.fill_bytes(&mut message);
+    rng.try_fill_bytes(&mut message).unwrap();
 
     let mut randomness = [0; 32];
-    rng.fill_bytes(&mut randomness);
+    rng.try_fill_bytes(&mut randomness).unwrap();
     let keypair = ml_dsa_65::generate_key_pair(randomness);
 
-    rng.fill_bytes(&mut randomness);
+    rng.try_fill_bytes(&mut randomness).unwrap();
     let signature = ml_dsa_65::sign(&keypair.signing_key, &message, b"", randomness).unwrap();
 
     group.bench_function("libcrux", move |b| {
@@ -76,17 +80,19 @@ pub fn comparisons_verification(c: &mut Criterion) {
         })
     });
 
-    let (vk, sk) = pqcrypto_dilithium::dilithium3::keypair();
-    let signature = pqcrypto_dilithium::dilithium3::detached_sign(&message, &sk);
+    #[cfg(not(all(target_os = "macos", target_arch = "x86_64")))]
+    {
+        let (vk, sk) = pqcrypto_mldsa::mldsa65::keypair();
+        let signature = pqcrypto_mldsa::mldsa65::detached_sign(&message, &sk);
 
-    group.bench_function("pqclean", move |b| {
-        b.iter(|| {
-            let _ = pqcrypto_dilithium::dilithium3::verify_detached_signature(
-                &signature, &message, &vk,
-            )
-            .unwrap();
-        })
-    });
+        group.bench_function("pqclean", move |b| {
+            b.iter(|| {
+                let _ =
+                    pqcrypto_mldsa::mldsa65::verify_detached_signature(&signature, &message, &vk)
+                        .unwrap();
+            })
+        });
+    }
 }
 
 pub fn comparisons(c: &mut Criterion) {

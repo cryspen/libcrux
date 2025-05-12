@@ -38,6 +38,8 @@ pub(crate) fn compress_message_coefficient(vector: Vec256) -> Vec256 {
 }
 
 #[inline(always)]
+#[hax_lib::requires(fstar!(r#"v $COEFFICIENT_BITS >= 0 /\ v $COEFFICIENT_BITS < bits i32_inttype /\
+    range (v ((mk_i32 1) <<! $COEFFICIENT_BITS) - 1) i32_inttype"#))]
 pub(crate) fn compress_ciphertext_coefficient<const COEFFICIENT_BITS: i32>(
     vector: Vec256,
 ) -> Vec256 {
@@ -103,6 +105,35 @@ pub(crate) fn compress_ciphertext_coefficient<const COEFFICIENT_BITS: i32>(
 }
 
 #[inline(always)]
+#[hax_lib::requires(fstar!(r#"forall i. let x = Seq.index (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 $a) i in 
+                                      (x == mk_i16 0 \/ x == mk_i16 1)"#))]
+pub fn decompress_1(a: Vec256) -> Vec256 {
+    let z = mm256_setzero_si256();
+
+    hax_lib::fstar!(
+        r#"
+        assert(Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 $z == Seq.create 16 (mk_i16 0));
+        assert(forall i. Seq.index (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 $z) i == mk_i16 0);
+        assert(forall i. let x = Seq.index (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 $a) i in 
+                                      ((0 - v x) == 0 \/ (0 - v x) == -1));
+        assert(forall i. i < 16 ==>
+                        Spec.Utils.is_intb (pow2 15 - 1) 
+                        (0 - v (Seq.index (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 $a) i)))
+    "#
+    );
+
+    let s = arithmetic::sub(z, a);
+
+    hax_lib::fstar!(
+        r#"assert(forall i. Seq.index (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 $s) i == mk_i16 0 \/ 
+                            Seq.index (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 $s) i == mk_i16 (-1))"#
+    );
+
+    arithmetic::bitwise_and_with_constant(s, 1665)
+}
+
+#[inline(always)]
+#[hax_lib::requires(fstar!(r#"v $COEFFICIENT_BITS >= 0 /\ v $COEFFICIENT_BITS < bits i32_inttype"#))]
 pub(crate) fn decompress_ciphertext_coefficient<const COEFFICIENT_BITS: i32>(
     vector: Vec256,
 ) -> Vec256 {

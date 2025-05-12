@@ -1,161 +1,25 @@
-use crate::{
-    arithmetic::FieldElementTimesMontgomeryR,
-    constants::COEFFICIENTS_IN_RING_ELEMENT,
-    polynomial::PolynomialRingElement,
-    simd::traits::{montgomery_multiply_by_fer, Operations, COEFFICIENTS_IN_SIMD_UNIT},
-};
-
-const ZETAS_TIMES_MONTGOMERY_R: [FieldElementTimesMontgomeryR; 256] = [
-    0, 25847, -2608894, -518909, 237124, -777960, -876248, 466468, 1826347, 2353451, -359251,
-    -2091905, 3119733, -2884855, 3111497, 2680103, 2725464, 1024112, -1079900, 3585928, -549488,
-    -1119584, 2619752, -2108549, -2118186, -3859737, -1399561, -3277672, 1757237, -19422, 4010497,
-    280005, 2706023, 95776, 3077325, 3530437, -1661693, -3592148, -2537516, 3915439, -3861115,
-    -3043716, 3574422, -2867647, 3539968, -300467, 2348700, -539299, -1699267, -1643818, 3505694,
-    -3821735, 3507263, -2140649, -1600420, 3699596, 811944, 531354, 954230, 3881043, 3900724,
-    -2556880, 2071892, -2797779, -3930395, -1528703, -3677745, -3041255, -1452451, 3475950,
-    2176455, -1585221, -1257611, 1939314, -4083598, -1000202, -3190144, -3157330, -3632928, 126922,
-    3412210, -983419, 2147896, 2715295, -2967645, -3693493, -411027, -2477047, -671102, -1228525,
-    -22981, -1308169, -381987, 1349076, 1852771, -1430430, -3343383, 264944, 508951, 3097992,
-    44288, -1100098, 904516, 3958618, -3724342, -8578, 1653064, -3249728, 2389356, -210977, 759969,
-    -1316856, 189548, -3553272, 3159746, -1851402, -2409325, -177440, 1315589, 1341330, 1285669,
-    -1584928, -812732, -1439742, -3019102, -3881060, -3628969, 3839961, 2091667, 3407706, 2316500,
-    3817976, -3342478, 2244091, -2446433, -3562462, 266997, 2434439, -1235728, 3513181, -3520352,
-    -3759364, -1197226, -3193378, 900702, 1859098, 909542, 819034, 495491, -1613174, -43260,
-    -522500, -655327, -3122442, 2031748, 3207046, -3556995, -525098, -768622, -3595838, 342297,
-    286988, -2437823, 4108315, 3437287, -3342277, 1735879, 203044, 2842341, 2691481, -2590150,
-    1265009, 4055324, 1247620, 2486353, 1595974, -3767016, 1250494, 2635921, -3548272, -2994039,
-    1869119, 1903435, -1050970, -1333058, 1237275, -3318210, -1430225, -451100, 1312455, 3306115,
-    -1962642, -1279661, 1917081, -2546312, -1374803, 1500165, 777191, 2235880, 3406031, -542412,
-    -2831860, -1671176, -1846953, -2584293, -3724270, 594136, -3776993, -2013608, 2432395, 2454455,
-    -164721, 1957272, 3369112, 185531, -1207385, -3183426, 162844, 1616392, 3014001, 810149,
-    1652634, -3694233, -1799107, -3038916, 3523897, 3866901, 269760, 2213111, -975884, 1717735,
-    472078, -426683, 1723600, -1803090, 1910376, -1667432, -1104333, -260646, -3833893, -2939036,
-    -2235985, -420899, -2286327, 183443, -976891, 1612842, -3545687, -554416, 3919660, -48306,
-    -1362209, 3937738, 1400424, -846154, 1976782,
-];
+use crate::{polynomial::PolynomialRingElement, simd::traits::Operations};
 
 #[inline(always)]
-pub(crate) fn ntt<SIMDUnit: Operations>(
-    re: PolynomialRingElement<SIMDUnit>,
-) -> PolynomialRingElement<SIMDUnit> {
-    PolynomialRingElement {
-        simd_units: SIMDUnit::ntt(re.simd_units),
-    }
-}
-
-#[inline(always)]
-fn invert_ntt_at_layer_0<SIMDUnit: Operations>(
-    zeta_i: &mut usize,
-    re: &mut PolynomialRingElement<SIMDUnit>,
-) {
-    *zeta_i -= 1;
-
-    for round in 0..re.simd_units.len() {
-        re.simd_units[round] = SIMDUnit::invert_ntt_at_layer_0(
-            re.simd_units[round],
-            ZETAS_TIMES_MONTGOMERY_R[*zeta_i],
-            ZETAS_TIMES_MONTGOMERY_R[*zeta_i - 1],
-            ZETAS_TIMES_MONTGOMERY_R[*zeta_i - 2],
-            ZETAS_TIMES_MONTGOMERY_R[*zeta_i - 3],
-        );
-
-        *zeta_i -= 4;
-    }
-
-    *zeta_i += 1;
-}
-#[inline(always)]
-fn invert_ntt_at_layer_1<SIMDUnit: Operations>(
-    zeta_i: &mut usize,
-    re: &mut PolynomialRingElement<SIMDUnit>,
-) {
-    *zeta_i -= 1;
-
-    for round in 0..(256 / COEFFICIENTS_IN_SIMD_UNIT) {
-        re.simd_units[round] = SIMDUnit::invert_ntt_at_layer_1(
-            re.simd_units[round],
-            ZETAS_TIMES_MONTGOMERY_R[*zeta_i],
-            ZETAS_TIMES_MONTGOMERY_R[*zeta_i - 1],
-        );
-        *zeta_i -= 2;
-    }
-
-    *zeta_i += 1;
-}
-#[inline(always)]
-fn invert_ntt_at_layer_2<SIMDUnit: Operations>(
-    zeta_i: &mut usize,
-    re: &mut PolynomialRingElement<SIMDUnit>,
-) {
-    for round in 0..(256 / COEFFICIENTS_IN_SIMD_UNIT) {
-        *zeta_i -= 1;
-        re.simd_units[round] = SIMDUnit::invert_ntt_at_layer_2(
-            re.simd_units[round],
-            ZETAS_TIMES_MONTGOMERY_R[*zeta_i],
-        );
-    }
-}
-#[inline(always)]
-fn invert_ntt_at_layer_3_plus<SIMDUnit: Operations, const LAYER: usize>(
-    zeta_i: &mut usize,
-    re: &mut PolynomialRingElement<SIMDUnit>,
-) {
-    let step = 1 << LAYER;
-
-    for round in 0..(128 >> LAYER) {
-        *zeta_i -= 1;
-
-        let offset = (round * step * 2) / COEFFICIENTS_IN_SIMD_UNIT;
-        let step_by = step / COEFFICIENTS_IN_SIMD_UNIT;
-
-        for j in offset..offset + step_by {
-            let a_minus_b = SIMDUnit::subtract(&re.simd_units[j + step_by], &re.simd_units[j]);
-            re.simd_units[j] = SIMDUnit::add(&re.simd_units[j], &re.simd_units[j + step_by]);
-            re.simd_units[j + step_by] =
-                montgomery_multiply_by_fer(a_minus_b, ZETAS_TIMES_MONTGOMERY_R[*zeta_i]);
-        }
-    }
+pub(crate) fn ntt<SIMDUnit: Operations>(re: &mut PolynomialRingElement<SIMDUnit>) {
+    SIMDUnit::ntt(&mut re.simd_units);
 }
 
 #[inline(always)]
 pub(crate) fn invert_ntt_montgomery<SIMDUnit: Operations>(
-    mut re: PolynomialRingElement<SIMDUnit>,
-) -> PolynomialRingElement<SIMDUnit> {
-    let mut zeta_i = COEFFICIENTS_IN_RING_ELEMENT;
-
-    invert_ntt_at_layer_0(&mut zeta_i, &mut re);
-    invert_ntt_at_layer_1(&mut zeta_i, &mut re);
-    invert_ntt_at_layer_2(&mut zeta_i, &mut re);
-    invert_ntt_at_layer_3_plus::<SIMDUnit, 3>(&mut zeta_i, &mut re);
-    invert_ntt_at_layer_3_plus::<SIMDUnit, 4>(&mut zeta_i, &mut re);
-    invert_ntt_at_layer_3_plus::<SIMDUnit, 5>(&mut zeta_i, &mut re);
-    invert_ntt_at_layer_3_plus::<SIMDUnit, 6>(&mut zeta_i, &mut re);
-    invert_ntt_at_layer_3_plus::<SIMDUnit, 7>(&mut zeta_i, &mut re);
-
-    for i in 0..re.simd_units.len() {
-        // After invert_ntt_at_layer, elements are of the form a * MONTGOMERY_R^{-1}
-        // we multiply by (MONTGOMERY_R^2) * (1/2^8) mod Q = 41,978 to both:
-        //
-        // - Divide the elements by 256 and
-        // - Convert the elements form montgomery domain to the standard domain.
-        re.simd_units[i] = SIMDUnit::montgomery_multiply_by_constant(re.simd_units[i], 41_978);
-    }
-
-    re
+    re: &mut PolynomialRingElement<SIMDUnit>,
+) {
+    SIMDUnit::invert_ntt_montgomery(&mut re.simd_units);
 }
 
 #[inline(always)]
 pub(crate) fn ntt_multiply_montgomery<SIMDUnit: Operations>(
-    lhs: &PolynomialRingElement<SIMDUnit>,
+    lhs: &mut PolynomialRingElement<SIMDUnit>,
     rhs: &PolynomialRingElement<SIMDUnit>,
-) -> PolynomialRingElement<SIMDUnit> {
-    let mut out = PolynomialRingElement::ZERO();
-
-    for i in 0..out.simd_units.len() {
-        out.simd_units[i] = SIMDUnit::montgomery_multiply(lhs.simd_units[i], rhs.simd_units[i]);
+) {
+    for i in 0..lhs.simd_units.len() {
+        SIMDUnit::montgomery_multiply(&mut lhs.simd_units[i], &rhs.simd_units[i]);
     }
-
-    out
 }
 
 #[cfg(test)]
@@ -193,7 +57,7 @@ mod tests {
             -391807, 392057, -132521, -441664, -349459, -373059, -296519, 274235, 42417, 47385,
             -104540, 142532, 246380, -515363, -422665,
         ];
-        let re = PolynomialRingElement::<SIMDUnit>::from_i32_array(&coefficients);
+        let mut re = PolynomialRingElement::<SIMDUnit>::from_i32_array_test(&coefficients);
 
         let expected_coefficients = [
             -17129289, -17188287, -11027856, -7293060, -14589541, -12369669, -1420304, -9409026,
@@ -227,7 +91,8 @@ mod tests {
             15979738, 1459696, 8351548, 3335586, 1150210, -2462074, -4642922, 4538634, 1858098,
         ];
 
-        assert_eq!(ntt(re).to_i32_array(), expected_coefficients);
+        ntt(&mut re);
+        assert_eq!(re.to_i32_array(), expected_coefficients);
     }
 
     fn test_invert_ntt_montgomery_generic<SIMDUnit: Operations>() {
@@ -262,7 +127,7 @@ mod tests {
             -3881813, 2536840, -2924666, 2425664, 2635292, 2752536, -136653, 4057087, -633680,
             3039079, -2733512, 1734173, -2109687,
         ];
-        let re = PolynomialRingElement::<SIMDUnit>::from_i32_array(&coefficients);
+        let mut re = PolynomialRingElement::<SIMDUnit>::from_i32_array_test(&coefficients);
 
         let expected_coefficients = [
             3966085, -2067161, 579114, -3597478, 2232818, -17588, 1194752, -1205114, -4058138,
@@ -296,10 +161,8 @@ mod tests {
             -3909173, 1453538, -4079655,
         ];
 
-        assert_eq!(
-            invert_ntt_montgomery(re).to_i32_array(),
-            expected_coefficients
-        );
+        invert_ntt_montgomery(&mut re);
+        assert_eq!(re.to_i32_array(), expected_coefficients);
     }
 
     #[cfg(not(feature = "simd256"))]

@@ -1,142 +1,157 @@
-use crate::simd::traits::{Operations, SIMD_UNITS_IN_RING_ELEMENT};
-use libcrux_intrinsics;
+use crate::{
+    constants::{Eta, Gamma2},
+    simd::traits::{Operations, COEFFICIENTS_IN_SIMD_UNIT, SIMD_UNITS_IN_RING_ELEMENT},
+};
+
+#[cfg(not(eurydice))]
+use crate::simd::traits::Repr;
 
 mod arithmetic;
 mod encoding;
+mod invntt;
 mod ntt;
 mod rejection_sample;
+mod vector_type;
 
-#[derive(Clone, Copy)]
-pub struct AVX2SIMDUnit {
-    pub(crate) coefficients: libcrux_intrinsics::avx2::Vec256,
-}
+pub(crate) use vector_type::{AVX2RingElement, Vec256 as AVX2SIMDUnit};
 
-impl From<libcrux_intrinsics::avx2::Vec256> for AVX2SIMDUnit {
-    fn from(coefficients: libcrux_intrinsics::avx2::Vec256) -> Self {
-        Self { coefficients }
+#[cfg(not(eurydice))]
+impl Repr for AVX2SIMDUnit {
+    fn repr(&self) -> [i32; COEFFICIENTS_IN_SIMD_UNIT] {
+        let mut result = [0i32; COEFFICIENTS_IN_SIMD_UNIT];
+        vector_type::to_coefficient_array(self, &mut result);
+        result
     }
 }
 
+/// Implementing the [`Operations`] for AVX2.
 impl Operations for AVX2SIMDUnit {
-    fn ZERO() -> Self {
-        libcrux_intrinsics::avx2::mm256_setzero_si256().into()
+    #[inline(always)]
+    fn zero() -> Self {
+        vector_type::zero()
     }
 
-    fn from_coefficient_array(coefficient_array: &[i32]) -> Self {
-        libcrux_intrinsics::avx2::mm256_loadu_si256_i32(coefficient_array).into()
+    #[inline(always)]
+    fn from_coefficient_array(coefficient_array: &[i32], out: &mut Self) {
+        vector_type::from_coefficient_array(coefficient_array, out)
     }
 
-    fn to_coefficient_array(&self) -> [i32; 8] {
-        let mut coefficient_array = [0i32; 8];
-        libcrux_intrinsics::avx2::mm256_storeu_si256_i32(&mut coefficient_array, self.coefficients);
-
-        coefficient_array
+    #[inline(always)]
+    fn to_coefficient_array(value: &Self, out: &mut [i32]) {
+        vector_type::to_coefficient_array(value, out)
     }
 
-    fn add(lhs: &Self, rhs: &Self) -> Self {
-        arithmetic::add(lhs.coefficients, rhs.coefficients).into()
+    #[inline(always)]
+    fn add(lhs: &mut Self, rhs: &Self) {
+        arithmetic::add(&mut lhs.value, &rhs.value)
     }
 
-    fn subtract(lhs: &Self, rhs: &Self) -> Self {
-        arithmetic::subtract(lhs.coefficients, rhs.coefficients).into()
+    #[inline(always)]
+    fn subtract(lhs: &mut Self, rhs: &Self) {
+        arithmetic::subtract(&mut lhs.value, &rhs.value)
     }
 
-    fn montgomery_multiply_by_constant(simd_unit: Self, constant: i32) -> Self {
-        arithmetic::montgomery_multiply_by_constant(simd_unit.coefficients, constant).into()
-    }
-    fn montgomery_multiply(lhs: Self, rhs: Self) -> Self {
-        arithmetic::montgomery_multiply(lhs.coefficients, rhs.coefficients).into()
-    }
-    fn shift_left_then_reduce<const SHIFT_BY: i32>(simd_unit: Self) -> Self {
-        arithmetic::shift_left_then_reduce::<SHIFT_BY>(simd_unit.coefficients).into()
+    #[inline(always)]
+    fn infinity_norm_exceeds(simd_unit: &Self, bound: i32) -> bool {
+        arithmetic::infinity_norm_exceeds(&simd_unit.value, bound)
     }
 
-    fn power2round(simd_unit: Self) -> (Self, Self) {
-        let (lower, upper) = arithmetic::power2round(simd_unit.coefficients);
-
-        (lower.into(), upper.into())
+    #[inline(always)]
+    fn decompose(gamma2: Gamma2, simd_unit: &Self, low: &mut Self, high: &mut Self) {
+        arithmetic::decompose(gamma2, &simd_unit.value, &mut low.value, &mut high.value);
     }
 
-    fn infinity_norm_exceeds(simd_unit: Self, bound: i32) -> bool {
-        arithmetic::infinity_norm_exceeds(simd_unit.coefficients, bound)
+    #[inline(always)]
+    fn compute_hint(low: &Self, high: &Self, gamma2: i32, hint: &mut Self) -> usize {
+        arithmetic::compute_hint(&low.value, &high.value, gamma2, &mut hint.value)
     }
 
-    fn decompose<const GAMMA2: i32>(simd_unit: Self) -> (Self, Self) {
-        let (lower, upper) = arithmetic::decompose::<GAMMA2>(simd_unit.coefficients);
-
-        (lower.into(), upper.into())
+    #[inline(always)]
+    fn use_hint(gamma2: Gamma2, simd_unit: &Self, hint: &mut Self) {
+        arithmetic::use_hint(gamma2, &simd_unit.value, &mut hint.value);
     }
 
-    fn compute_hint<const GAMMA2: i32>(low: Self, high: Self) -> (usize, Self) {
-        let (count, hint) = arithmetic::compute_hint::<GAMMA2>(low.coefficients, high.coefficients);
-
-        (count, hint.into())
-    }
-    fn use_hint<const GAMMA2: i32>(simd_unit: Self, hint: Self) -> Self {
-        arithmetic::use_hint::<GAMMA2>(simd_unit.coefficients, hint.coefficients).into()
+    #[inline(always)]
+    fn montgomery_multiply(lhs: &mut Self, rhs: &Self) {
+        arithmetic::montgomery_multiply(&mut lhs.value, &rhs.value);
     }
 
+    #[inline(always)]
+    fn shift_left_then_reduce<const SHIFT_BY: i32>(simd_unit: &mut Self) {
+        arithmetic::shift_left_then_reduce::<SHIFT_BY>(&mut simd_unit.value)
+    }
+
+    #[inline(always)]
+    fn power2round(t0: &mut Self, t1: &mut Self) {
+        arithmetic::power2round(&mut t0.value, &mut t1.value);
+    }
+
+    #[inline(always)]
     fn rejection_sample_less_than_field_modulus(randomness: &[u8], out: &mut [i32]) -> usize {
         rejection_sample::less_than_field_modulus::sample(randomness, out)
     }
+
+    #[inline(always)]
     fn rejection_sample_less_than_eta_equals_2(randomness: &[u8], out: &mut [i32]) -> usize {
         rejection_sample::less_than_eta::sample::<2>(randomness, out)
     }
+
+    #[inline(always)]
     fn rejection_sample_less_than_eta_equals_4(randomness: &[u8], out: &mut [i32]) -> usize {
         rejection_sample::less_than_eta::sample::<4>(randomness, out)
     }
 
-    fn gamma1_serialize<const OUTPUT_SIZE: usize>(simd_unit: Self) -> [u8; OUTPUT_SIZE] {
-        encoding::gamma1::serialize::<OUTPUT_SIZE>(simd_unit.coefficients)
+    #[inline(always)]
+    fn gamma1_serialize(simd_unit: &Self, serialized: &mut [u8], gamma1_exponent: usize) {
+        encoding::gamma1::serialize(&simd_unit.value, serialized, gamma1_exponent)
     }
-    fn gamma1_deserialize<const GAMMA1_EXPONENT: usize>(serialized: &[u8]) -> Self {
-        encoding::gamma1::deserialize::<GAMMA1_EXPONENT>(serialized).into()
-    }
-
-    fn commitment_serialize<const OUTPUT_SIZE: usize>(simd_unit: Self) -> [u8; OUTPUT_SIZE] {
-        encoding::commitment::serialize::<OUTPUT_SIZE>(simd_unit.coefficients)
+    #[inline(always)]
+    fn gamma1_deserialize(serialized: &[u8], out: &mut Self, gamma1_exponent: usize) {
+        encoding::gamma1::deserialize(serialized, &mut out.value, gamma1_exponent);
     }
 
-    fn error_serialize<const OUTPUT_SIZE: usize>(simd_unit: Self) -> [u8; OUTPUT_SIZE] {
-        encoding::error::serialize::<OUTPUT_SIZE>(simd_unit.coefficients)
-    }
-    fn error_deserialize<const ETA: usize>(serialized: &[u8]) -> Self {
-        encoding::error::deserialize::<ETA>(serialized).into()
+    #[inline(always)]
+    fn commitment_serialize(simd_unit: &Self, serialized: &mut [u8]) {
+        encoding::commitment::serialize(&simd_unit.value, serialized)
     }
 
-    fn t0_serialize(simd_unit: Self) -> [u8; 13] {
-        encoding::t0::serialize(simd_unit.coefficients)
-    }
-    fn t0_deserialize(serialized: &[u8]) -> Self {
-        encoding::t0::deserialize(serialized).into()
+    #[inline(always)]
+    fn error_serialize(eta: Eta, simd_unit: &Self, serialized: &mut [u8]) {
+        encoding::error::serialize(eta, &simd_unit.value, serialized)
     }
 
-    fn t1_serialize(simd_unit: Self) -> [u8; 10] {
-        encoding::t1::serialize(simd_unit.coefficients)
-    }
-    fn t1_deserialize(serialized: &[u8]) -> Self {
-        encoding::t1::deserialize(serialized).into()
+    #[inline(always)]
+    fn error_deserialize(eta: Eta, serialized: &[u8], out: &mut Self) {
+        encoding::error::deserialize(eta, serialized, &mut out.value);
     }
 
-    fn ntt(simd_units: [Self; SIMD_UNITS_IN_RING_ELEMENT]) -> [Self; SIMD_UNITS_IN_RING_ELEMENT] {
-        let result = ntt::ntt(simd_units.map(|x| x.coefficients));
-
-        result.map(|x| x.into())
+    #[inline(always)]
+    fn t0_serialize(simd_unit: &Self, out: &mut [u8]) {
+        // out len 13
+        encoding::t0::serialize(&simd_unit.value, out);
+    }
+    #[inline(always)]
+    fn t0_deserialize(serialized: &[u8], out: &mut Self) {
+        encoding::t0::deserialize(serialized, &mut out.value);
     }
 
-    fn invert_ntt_at_layer_0(
-        simd_unit: Self,
-        zeta0: i32,
-        zeta1: i32,
-        zeta2: i32,
-        zeta3: i32,
-    ) -> Self {
-        ntt::invert_ntt_at_layer_0(simd_unit.coefficients, zeta0, zeta1, zeta2, zeta3).into()
+    #[inline(always)]
+    fn t1_serialize(simd_unit: &Self, out: &mut [u8]) {
+        encoding::t1::serialize(&simd_unit.value, out);
     }
-    fn invert_ntt_at_layer_1(simd_unit: Self, zeta0: i32, zeta1: i32) -> Self {
-        ntt::invert_ntt_at_layer_1(simd_unit.coefficients, zeta0, zeta1).into()
+
+    #[inline(always)]
+    fn t1_deserialize(serialized: &[u8], out: &mut Self) {
+        encoding::t1::deserialize(serialized, &mut out.value);
     }
-    fn invert_ntt_at_layer_2(simd_unit: Self, zeta: i32) -> Self {
-        ntt::invert_ntt_at_layer_2(simd_unit.coefficients, zeta).into()
+
+    #[inline(always)]
+    fn ntt(simd_units: &mut AVX2RingElement) {
+        ntt::ntt(simd_units);
+    }
+
+    #[inline(always)]
+    fn invert_ntt_montgomery(simd_units: &mut AVX2RingElement) {
+        invntt::invert_ntt_montgomery(simd_units);
     }
 }

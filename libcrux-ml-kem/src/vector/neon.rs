@@ -16,18 +16,43 @@ use serialize::*;
 pub(crate) use vector_type::SIMD128Vector;
 use vector_type::*;
 
+#[cfg(hax)]
+impl crate::vector::traits::Repr for SIMD128Vector {
+    fn repr(&self) -> [i16; 16] {
+        to_i16_array(self.clone())
+    }
+}
+
+#[cfg(any(eurydice, not(hax)))]
+impl crate::vector::traits::Repr for SIMD128Vector {}
+
+#[hax_lib::attributes]
 impl Operations for SIMD128Vector {
     #[inline(always)]
+    #[ensures(|out| fstar!(r#"impl.f_repr out == Seq.create 16 (mk_i16 0)"#))]
     fn ZERO() -> Self {
         ZERO()
     }
 
+    #[requires(array.len() == 16)]
+    #[ensures(|out| fstar!(r#"impl.f_repr out == $array"#))]
     fn from_i16_array(array: &[i16]) -> Self {
         from_i16_array(array)
     }
 
+    #[ensures(|out| fstar!(r#"out == impl.f_repr $x"#))]
     fn to_i16_array(x: Self) -> [i16; 16] {
         to_i16_array(x)
+    }
+
+    #[requires(array.len() >= 32)]
+    fn from_bytes(array: &[u8]) -> Self {
+        from_bytes(array)
+    }
+
+    #[requires(bytes.len() >= 32)]
+    fn to_bytes(x: Self, bytes: &mut [u8]) {
+        to_bytes(x, bytes)
     }
 
     fn add(lhs: Self, rhs: &Self) -> Self {
@@ -42,12 +67,8 @@ impl Operations for SIMD128Vector {
         multiply_by_constant(v, c)
     }
 
-    fn bitwise_and_with_constant(v: Self, c: i16) -> Self {
-        bitwise_and_with_constant(v, c)
-    }
-
-    fn shift_right<const SHIFT_BY: i32>(v: Self) -> Self {
-        shift_right::<SHIFT_BY>(v)
+    fn to_unsigned_representative(a: Self) -> Self {
+        to_unsigned_representative(a)
     }
 
     fn cond_subtract_3329(v: Self) -> Self {
@@ -68,6 +89,10 @@ impl Operations for SIMD128Vector {
 
     fn compress<const COEFFICIENT_BITS: i32>(v: Self) -> Self {
         compress::<COEFFICIENT_BITS>(v)
+    }
+
+    fn decompress_1(a: Self) -> Self {
+        decompress_1(a)
     }
 
     fn decompress_ciphertext_coefficient<const COEFFICIENT_BITS: i32>(v: Self) -> Self {

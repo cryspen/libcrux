@@ -1,9 +1,10 @@
 #![doc = include_str!("KDF_Readme.md")]
 #![allow(non_snake_case, non_camel_case_types)]
 
+use super::errors::*;
 use crate::hkdf::Algorithm;
 
-use super::errors::*;
+use crate::std::{vec, vec::Vec};
 
 /// ## Key Derivation Functions (KDFs)
 ///
@@ -98,11 +99,10 @@ pub fn LabeledExtract(
     labeled_ikm.extend_from_slice(&label);
     labeled_ikm.extend_from_slice(ikm);
 
-    Ok(crate::hkdf::extract(
-        hkdf_algorithm(alg),
-        salt,
-        &labeled_ikm,
-    ))
+    crate::hkdf::extract(hkdf_algorithm(alg), salt, &labeled_ikm).map_err(|err| match err {
+        libcrux_hkdf::Error::OkmTooLarge => HpkeError::CryptoError,
+        libcrux_hkdf::Error::ArgumentsTooLarge => HpkeError::InvalidParameters,
+    })
 }
 
 /// KDF: Labeled Expand

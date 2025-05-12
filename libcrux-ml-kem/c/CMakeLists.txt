@@ -3,7 +3,7 @@
 # # For release (benchmarks)
 # cmake --build build --config Release
 
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.10..4.0)
 
 project(libcrux-ml-kem
     VERSION 0.1.0
@@ -17,6 +17,7 @@ if(NOT MSVC)
     # TODO: Clean up
     add_compile_options(
         -Wall
+
         # -Wextra
         # -pedantic
         # -Wconversion
@@ -29,6 +30,7 @@ if(NOT MSVC)
 endif(NOT MSVC)
 
 set(CMAKE_COLOR_DIAGNOSTICS "ON")
+
 # For LSP-based editors
 set(CMAKE_EXPORT_COMPILE_COMMANDS 1)
 include_directories(
@@ -65,10 +67,15 @@ file(GLOB SOURCES_vec256
 if(${CMAKE_SYSTEM_NAME} MATCHES Linux)
     add_compile_options(
         -fPIC
-        -flto
     )
-    add_link_options(-flto)
 endif(${CMAKE_SYSTEM_NAME} MATCHES Linux)
+
+# if(${CMAKE_SYSTEM_NAME} MATCHES Linux AND CMAKE_BUILD_TYPE MATCHES "Release")
+#     add_compile_options(
+#         -flto
+#     )
+#     add_link_options(-flto)
+# endif(${CMAKE_SYSTEM_NAME} MATCHES Linux AND CMAKE_BUILD_TYPE MATCHES "Release")
 
 add_library(ml_kem SHARED ${SOURCES})
 add_library(ml_kem_static STATIC ${SOURCES})
@@ -101,17 +108,15 @@ if(CMAKE_SYSTEM_PROCESSOR MATCHES "aarch64|arm64|arm64v8" AND DEFINED ENV{LIBCRU
 endif()
 
 # --- Tests
-
 if(DEFINED ENV{LIBCRUX_UNPACKED})
     add_compile_definitions(LIBCRUX_UNPACKED)
 endif(DEFINED ENV{LIBCRUX_UNPACKED})
 
-
 # Get gtests
 include(FetchContent)
 FetchContent_Declare(googletest
-    DOWNLOAD_EXTRACT_TIMESTAMP TRUE
-    URL https://github.com/google/googletest/archive/refs/tags/release-1.11.0.zip
+    GIT_REPOSITORY https://github.com/google/googletest.git
+    GIT_TAG v1.16.0
 )
 
 # For Windows: Prevent overriding the parent project's compiler/linker settings
@@ -120,8 +125,8 @@ FetchContent_MakeAvailable(googletest)
 
 # Get nlohmann json
 FetchContent_Declare(json
-    DOWNLOAD_EXTRACT_TIMESTAMP TRUE
-    URL https://github.com/nlohmann/json/archive/refs/tags/v3.10.3.zip
+    GIT_REPOSITORY https://github.com/nlohmann/json.git
+    GIT_TAG v3.11.3
 )
 FetchContent_MakeAvailable(json)
 
@@ -144,52 +149,54 @@ target_link_libraries(sha3_test PRIVATE
 )
 
 # --- Benchmarks
-FetchContent_Declare(benchmark
-    GIT_REPOSITORY https://github.com/google/benchmark.git
-    GIT_TAG v1.8.4
-)
-FetchContent_MakeAvailable(benchmark)
-
-add_executable(ml_kem_bench
-    ${PROJECT_SOURCE_DIR}/benches/mlkem768.cc
-)
-target_link_libraries(ml_kem_bench PRIVATE
-    ml_kem_static
-    benchmark::benchmark
-)
-
-if(DEFINED ENV{SYMCRYPT_PATH})
-    message("Symcrypt path: $ENV{SYMCRYPT_PATH}")
-    add_compile_definitions(LIBCRUX_SYMCRYPT)
-    target_include_directories(ml_kem_bench PRIVATE $ENV{SYMCRYPT_PATH})
-    target_link_directories(ml_kem_bench PRIVATE $ENV{SYMCRYPT_PATH}/bin/lib)
-    target_link_libraries(ml_kem_bench PRIVATE symcrypt)
-endif(DEFINED ENV{SYMCRYPT_PATH})
-
-add_executable(ml_kem_keygen
-    ${PROJECT_SOURCE_DIR}/benches/mlkem768_keygen.cc
-)
-target_link_libraries(ml_kem_keygen PRIVATE
-    ml_kem_static
-    benchmark::benchmark
-)
-
-add_executable(ml_kem_encaps
-    ${PROJECT_SOURCE_DIR}/benches/mlkem768_encaps.cc
-)
-target_link_libraries(ml_kem_encaps PRIVATE
-    ml_kem_static
-    benchmark::benchmark
-)
-
-if(NOT MSVC)
-    # We benchmark internal functions here that are inlined and thus not available
-    # in MSVC.
-    add_executable(sha3_bench
-        ${PROJECT_SOURCE_DIR}/benches/sha3.cc
+if(DEFINED ENV{LIBCRUX_BENCHMARKS})
+    FetchContent_Declare(benchmark
+        GIT_REPOSITORY https://github.com/google/benchmark.git
+        GIT_TAG v1.9.2
     )
-    target_link_libraries(sha3_bench PRIVATE
+    FetchContent_MakeAvailable(benchmark)
+
+    add_executable(ml_kem_bench
+        ${PROJECT_SOURCE_DIR}/benches/mlkem768.cc
+    )
+    target_link_libraries(ml_kem_bench PRIVATE
         ml_kem_static
         benchmark::benchmark
     )
-endif(NOT MSVC)
+
+    if(DEFINED ENV{SYMCRYPT_PATH})
+        message("Symcrypt path: $ENV{SYMCRYPT_PATH}")
+        add_compile_definitions(LIBCRUX_SYMCRYPT)
+        target_include_directories(ml_kem_bench PRIVATE $ENV{SYMCRYPT_PATH})
+        target_link_directories(ml_kem_bench PRIVATE $ENV{SYMCRYPT_PATH}/bin/lib)
+        target_link_libraries(ml_kem_bench PRIVATE symcrypt)
+    endif(DEFINED ENV{SYMCRYPT_PATH})
+
+    add_executable(ml_kem_keygen
+        ${PROJECT_SOURCE_DIR}/benches/mlkem768_keygen.cc
+    )
+    target_link_libraries(ml_kem_keygen PRIVATE
+        ml_kem_static
+        benchmark::benchmark
+    )
+
+    add_executable(ml_kem_encaps
+        ${PROJECT_SOURCE_DIR}/benches/mlkem768_encaps.cc
+    )
+    target_link_libraries(ml_kem_encaps PRIVATE
+        ml_kem_static
+        benchmark::benchmark
+    )
+
+    if(NOT MSVC)
+        # We benchmark internal functions here that are inlined and thus not available
+        # in MSVC.
+        add_executable(sha3_bench
+            ${PROJECT_SOURCE_DIR}/benches/sha3.cc
+        )
+        target_link_libraries(sha3_bench PRIVATE
+            ml_kem_static
+            benchmark::benchmark
+        )
+    endif(NOT MSVC)
+endif(DEFINED ENV{LIBCRUX_BENCHMARKS})

@@ -10,11 +10,8 @@
 //! FIXME: This is kyber specific for now.
 
 pub mod traits;
-use traits::INVERSE_OF_MODULUS_MOD_MONTGOMERY_R;
-
 pub(crate) use traits::{
-    decompress_1, montgomery_multiply_fe, to_standard_domain, to_unsigned_representative,
-    Operations, FIELD_ELEMENTS_IN_VECTOR, FIELD_MODULUS,
+    Operations, FIELD_ELEMENTS_IN_VECTOR, FIELD_MODULUS, MONTGOMERY_R_SQUARED_MOD_FIELD_MODULUS,
 };
 
 // XXX: This is not used on neon right now

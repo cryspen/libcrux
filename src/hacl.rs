@@ -15,10 +15,9 @@ pub(crate) mod chacha20_poly1305;
 
 #[cfg(not(target_arch = "wasm32"))]
 pub(crate) mod drbg;
-pub(crate) mod ed25519;
+pub(crate) use libcrux_ed25519 as ed25519;
 pub(crate) mod p256;
 
-pub(crate) mod sha2;
 pub(crate) mod sha3;
 
 /// Unified error type.

@@ -1,4 +1,4 @@
-use crate::simd::avx2::{encoding, rejection_sample::shuffle_table::SHUFFLE_TABLE};
+use crate::simd::avx2::{encoding, rejection_sample::shuffle_table::SHUFFLE_TABLE, Eta};
 
 use libcrux_intrinsics::avx2::*;
 
@@ -27,7 +27,7 @@ fn shift_interval<const ETA: usize>(coefficients: Vec256) -> Vec256 {
 pub(crate) fn sample<const ETA: usize>(input: &[u8], output: &mut [i32]) -> usize {
     // Whether or not ETA is 2 or 4, we always split the input bytestream into
     // values that are 4-bits wide.
-    let potential_coefficients = encoding::error::deserialize_to_unsigned::<4>(input);
+    let potential_coefficients = encoding::error::deserialize_to_unsigned(Eta::Four, input);
 
     let interval_boundary: i32 = match ETA as u8 {
         2 => 15,

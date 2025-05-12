@@ -3,14 +3,23 @@
 
 #![allow(non_camel_case_types, unsafe_code, unused_variables)]
 
+#[hax_lib::opaque]
 pub type _uint16x4_t = u8;
+#[hax_lib::opaque]
 pub type _int16x4_t = u8;
+#[hax_lib::opaque]
 pub type _int16x8_t = u8;
+#[hax_lib::opaque]
 pub type _uint8x16_t = u8;
+#[hax_lib::opaque]
 pub type _uint16x8_t = u8;
+#[hax_lib::opaque]
 pub type _uint32x4_t = u8;
+#[hax_lib::opaque]
 pub type _int32x4_t = u8;
+#[hax_lib::opaque]
 pub type _uint64x2_t = u8;
+#[hax_lib::opaque]
 pub type _int64x2_t = u8;
 
 #[inline(always)]
@@ -25,6 +34,16 @@ pub fn _vdupq_n_u64(i: u64) -> _uint64x2_t {
 
 #[inline(always)]
 pub fn _vst1q_s16(out: &mut [i16], v: _int16x8_t) {
+    unimplemented!()
+}
+
+#[inline(always)]
+pub fn _vst1q_bytes(out: &mut [u8], v: _int16x8_t) {
+    unimplemented!()
+}
+
+#[inline(always)]
+pub fn _vld1q_bytes(bytes: &[u8]) -> _int16x8_t {
     unimplemented!()
 }
 

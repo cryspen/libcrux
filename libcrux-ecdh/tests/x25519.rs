@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use test_util::*;
 
-use rand_core::OsRng;
+use rand_core::{OsRng, TryRngCore};
 
 use libcrux_ecdh::{self, key_gen, Algorithm, Error};
 
@@ -12,7 +12,8 @@ use libcrux_ecdh::{self, key_gen, Algorithm, Error};
 fn derive() {
     let _ = pretty_env_logger::try_init();
 
-    let mut rng = OsRng;
+    let mut os_rng = OsRng;
+    let mut rng = os_rng.unwrap_mut();
 
     let (private_a, public_a) = key_gen(Algorithm::X25519, &mut rng).unwrap();
     let (private_b, public_b) = key_gen(Algorithm::X25519, &mut rng).unwrap();
@@ -80,7 +81,7 @@ fn wycheproof() {
                 "public key = 57896044618658097711785492504343953926634992332820282019728792003956564819968" => false,
                 "public key = 57896044618658097711785492504343953926634992332820282019728792003956564819969" => false,
                 "special case public key" => {
-                    if (test.flags.contains(&"Twist".to_owned()) && test.tcId != 154)
+                    (test.flags.contains(&"Twist".to_owned()) && test.tcId != 154)
                        || test.tcId == 120
                        || test.tcId == 122
                        || test.tcId == 123
@@ -102,11 +103,7 @@ fn wycheproof() {
                        || test.tcId == 150
                        || test.tcId == 151
                        || test.tcId == 152
-                       || test.tcId == 153 {
-                        true
-                    } else {
-                        false
-                    }
+                       || test.tcId == 153
                 },
                 "D = 0 in multiplication by 2" => false,
                 _ => valid,

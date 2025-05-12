@@ -41,13 +41,13 @@ TEST(Kyber768TestPortable, NISTKnownAnswerTest)
         uint8_t pk_hash[32];
         libcrux_sha3_sha256(
             mk_slice(key_pair.pk.value,
-                     LIBCRUX_ML_KEM_MLKEM768_CPA_PKE_PUBLIC_KEY_SIZE_768),
+                     LIBCRUX_ML_KEM_MLKEM768_CPA_PKE_PUBLIC_KEY_SIZE),
             pk_hash);
         EXPECT_EQ(0, memcmp(pk_hash, kat.sha3_256_hash_of_public_key.data(), 32));
 
         uint8_t sk_hash[32];
         libcrux_sha3_sha256(
-            mk_slice(key_pair.sk.value, LIBCRUX_ML_KEM_MLKEM768_SECRET_KEY_SIZE_768), sk_hash);
+            mk_slice(key_pair.sk.value, LIBCRUX_ML_KEM_MLKEM768_SECRET_KEY_SIZE), sk_hash);
         EXPECT_EQ(0, memcmp(sk_hash, kat.sha3_256_hash_of_secret_key.data(), 32));
 
         auto ctxt = libcrux_ml_kem_mlkem768_portable_kyber_encapsulate(
@@ -55,7 +55,7 @@ TEST(Kyber768TestPortable, NISTKnownAnswerTest)
         uint8_t ct_hash[32];
         libcrux_sha3_sha256(
             mk_slice(ctxt.fst.value,
-                     LIBCRUX_ML_KEM_MLKEM768_CPA_PKE_CIPHERTEXT_SIZE_768),
+                     LIBCRUX_ML_KEM_MLKEM768_CPA_PKE_CIPHERTEXT_SIZE),
             ct_hash);
         EXPECT_EQ(0, memcmp(ct_hash, kat.sha3_256_hash_of_ciphertext.data(), 32));
         EXPECT_EQ(0,
@@ -105,13 +105,13 @@ TEST(Kyber768TestAvx2, NISTKnownAnswerTest)
         uint8_t pk_hash[32];
         libcrux_sha3_sha256(
             mk_slice(key_pair.pk.value,
-                     LIBCRUX_ML_KEM_MLKEM768_CPA_PKE_PUBLIC_KEY_SIZE_768),
+                     LIBCRUX_ML_KEM_MLKEM768_CPA_PKE_PUBLIC_KEY_SIZE),
             pk_hash);
         EXPECT_EQ(0, memcmp(pk_hash, kat.sha3_256_hash_of_public_key.data(), 32));
 
         uint8_t sk_hash[32];
         libcrux_sha3_sha256(
-            mk_slice(key_pair.sk.value, LIBCRUX_ML_KEM_MLKEM768_SECRET_KEY_SIZE_768), sk_hash);
+            mk_slice(key_pair.sk.value, LIBCRUX_ML_KEM_MLKEM768_SECRET_KEY_SIZE), sk_hash);
         EXPECT_EQ(0, memcmp(sk_hash, kat.sha3_256_hash_of_secret_key.data(), 32));
 
         auto ctxt = libcrux_ml_kem_mlkem768_avx2_kyber_encapsulate(
@@ -119,7 +119,7 @@ TEST(Kyber768TestAvx2, NISTKnownAnswerTest)
         uint8_t ct_hash[32];
         libcrux_sha3_sha256(
             mk_slice(ctxt.fst.value,
-                     LIBCRUX_ML_KEM_MLKEM768_CPA_PKE_CIPHERTEXT_SIZE_768),
+                     LIBCRUX_ML_KEM_MLKEM768_CPA_PKE_CIPHERTEXT_SIZE),
             ct_hash);
         EXPECT_EQ(0, memcmp(ct_hash, kat.sha3_256_hash_of_ciphertext.data(), 32));
         EXPECT_EQ(0,
@@ -170,13 +170,13 @@ TEST(Kyber768TestNeon, NISTKnownAnswerTest)
         uint8_t pk_hash[32];
         libcrux_sha3_sha256(
             mk_slice(key_pair.pk.value,
-                     LIBCRUX_ML_KEM_MLKEM768_CPA_PKE_PUBLIC_KEY_SIZE_768),
+                     LIBCRUX_ML_KEM_MLKEM768_CPA_PKE_PUBLIC_KEY_SIZE),
             pk_hash);
         EXPECT_EQ(0, memcmp(pk_hash, kat.sha3_256_hash_of_public_key.data(), 32));
 
         uint8_t sk_hash[32];
         libcrux_sha3_sha256(
-            mk_slice(key_pair.sk.value, LIBCRUX_ML_KEM_MLKEM768_SECRET_KEY_SIZE_768), sk_hash);
+            mk_slice(key_pair.sk.value, LIBCRUX_ML_KEM_MLKEM768_SECRET_KEY_SIZE), sk_hash);
         EXPECT_EQ(0, memcmp(sk_hash, kat.sha3_256_hash_of_secret_key.data(), 32));
 
         auto ctxt = libcrux_ml_kem_mlkem768_neon_encapsulate(
@@ -184,7 +184,7 @@ TEST(Kyber768TestNeon, NISTKnownAnswerTest)
         uint8_t ct_hash[32];
         libcrux_sha3_sha256(
             mk_slice(ctxt.fst.value,
-                     LIBCRUX_ML_KEM_MLKEM768_CPA_PKE_CIPHERTEXT_SIZE_768),
+                     LIBCRUX_ML_KEM_MLKEM768_CPA_PKE_CIPHERTEXT_SIZE),
             ct_hash);
         EXPECT_EQ(0, memcmp(ct_hash, kat.sha3_256_hash_of_ciphertext.data(), 32));
         EXPECT_EQ(0,

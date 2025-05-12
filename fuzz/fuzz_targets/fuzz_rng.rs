@@ -34,11 +34,6 @@ impl RngCore for FuzzRng {
         dest.copy_from_slice(&self.data[0..dest.len()]);
         self.data = self.data.drain(dest.len()..).collect();
     }
-
-    fn try_fill_bytes(&mut self, dest: &mut [u8]) -> Result<(), rand::Error> {
-        self.fill_bytes(dest);
-        Ok(())
-    }
 }
 
 impl CryptoRng for FuzzRng {}

@@ -5,6 +5,10 @@ use super::{
 };
 
 #[inline(always)]
+#[hax_lib::requires(input.len() == 24 && output.len() == 16)]
+#[hax_lib::ensures(|res|
+        fstar!(r#"Seq.length $output_future == Seq.length $output /\ v $res <= 16"#)
+    )]
 pub(crate) fn rejection_sample(input: &[u8], output: &mut [i16]) -> usize {
     let field_modulus = mm256_set1_epi16(FIELD_MODULUS);
 
@@ -26,6 +30,16 @@ pub(crate) fn rejection_sample(input: &[u8], output: &mut [i16]) -> usize {
     // each lane in the register to tell us what coefficients to keep and what
     // to throw-away. Combine all the bits (there are 16) into two bytes.
     let good = serialize_1(compare_with_field_modulus);
+    hax_lib::fstar!(
+        r#"assert (v (cast (${good}.[ sz 0 ] <: u8) <: usize) < 256);
+        assert (v (cast (${good}.[ sz 1 ] <: u8) <: usize) < 256);
+        // We need to provide a definition or post-condition for ${u8::count_ones}
+        assume (v (cast (${u8::count_ones} ${good}.[ sz 0 ]) <: usize) <= 8);
+        assume (v (cast (${u8::count_ones} ${good}.[ sz 1 ]) <: usize) <= 8);
+        assume (Core.Ops.Index.f_index_pre output ({
+                    Core.Ops.Range.f_start = cast (${u8::count_ones} ${good}.[ sz 0 ]) <: usize;
+                    Core.Ops.Range.f_end = (cast (${u8::count_ones} ${good}.[ sz 0 ]) <: usize) +! sz 8 }))"#
+    );
 
     // Each bit (and its corresponding position) represents an element we
     // want to sample. We'd like all such elements to be next to each other starting
@@ -49,7 +63,6 @@ pub(crate) fn rejection_sample(input: &[u8], output: &mut [i16]) -> usize {
     // ... and finally count the number of bits of |good[0]| so we know how many
     // were actually sampled
     let sampled_count = good[0].count_ones() as usize;
-
     // Do the same for |goood[1]|
     let upper_shuffles = REJECTION_SAMPLE_SHUFFLE_TABLE[good[1] as usize];
     let upper_shuffles = mm_loadu_si128(&upper_shuffles);

@@ -19,6 +19,20 @@
 #define inline __inline__
 #endif
 
+/* There is no support for aligned_alloc() in macOS before Catalina, so
+ * let's make a macro to use _mm_malloc() and _mm_free() functions
+ * from mm_malloc.h. */
+#if defined(__APPLE__) && defined(__MACH__)
+#include <AvailabilityMacros.h>
+#if defined(MAC_OS_X_VERSION_MIN_REQUIRED) && \
+    (MAC_OS_X_VERSION_MIN_REQUIRED < 101500)
+#include <mm_malloc.h>
+#define LEGACY_MACOS
+#else
+#undef LEGACY_MACOS
+#endif
+#endif
+
 /******************************************************************************/
 /* Macros that KaRaMeL will generate.                                         */
 /******************************************************************************/
@@ -61,7 +75,7 @@
 #endif
 
 #ifndef KRML_MAYBE_UNUSED
-#if defined(__GNUC__)
+#if defined(__GNUC__) || defined(__clang__)
 #define KRML_MAYBE_UNUSED __attribute__((unused))
 #else
 #define KRML_MAYBE_UNUSED
@@ -69,7 +83,7 @@
 #endif
 
 #ifndef KRML_ATTRIBUTE_TARGET
-#if defined(__GNUC__)
+#if defined(__GNUC__) || defined(__clang__)
 #define KRML_ATTRIBUTE_TARGET(x) __attribute__((target(x)))
 #else
 #define KRML_ATTRIBUTE_TARGET(x)
@@ -77,10 +91,10 @@
 #endif
 
 #ifndef KRML_NOINLINE
-#if defined(_MSC_VER)
-#define KRML_NOINLINE __declspec(noinline)
-#elif defined(__GNUC__)
+#if defined(__GNUC__) || defined(__clang__)
 #define KRML_NOINLINE __attribute__((noinline, unused))
+#elif defined(_MSC_VER)
+#define KRML_NOINLINE __declspec(noinline)
 #elif defined(__SUNPRO_C)
 #define KRML_NOINLINE __attribute__((noinline))
 #else
@@ -134,6 +148,8 @@
 #if (defined(_MSC_VER) || \
      (defined(__MINGW32__) && defined(__MINGW64_VERSION_MAJOR)))
 #define KRML_ALIGNED_MALLOC(X, Y) _aligned_malloc(Y, X)
+#elif defined(LEGACY_MACOS)
+#define KRML_ALIGNED_MALLOC(X, Y) _mm_malloc(Y, X)
 #else
 #define KRML_ALIGNED_MALLOC(X, Y) aligned_alloc(X, Y)
 #endif
@@ -150,6 +166,8 @@
 #if (defined(_MSC_VER) || \
      (defined(__MINGW32__) && defined(__MINGW64_VERSION_MAJOR)))
 #define KRML_ALIGNED_FREE(X) _aligned_free(X)
+#elif defined(LEGACY_MACOS)
+#define KRML_ALIGNED_FREE(X) _mm_free(X)
 #else
 #define KRML_ALIGNED_FREE(X) free(X)
 #endif

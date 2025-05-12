@@ -14,13 +14,13 @@ pub use libcrux_kem::Error;
 
 pub use libcrux_kem::X25519MlKem768Draft00PrivateKey;
 
-pub use libcrux_kem::XWingKemDraft02PrivateKey;
+pub use libcrux_kem::XWingKemDraft06PrivateKey;
 
 pub use libcrux_kem::PrivateKey;
 
 pub use libcrux_kem::X25519MlKem768Draft00PublicKey;
 
-pub use libcrux_kem::XWingKemDraft02PublicKey;
+pub use libcrux_kem::XWingKemDraft06PublicKey;
 
 pub use libcrux_kem::PublicKey;
 

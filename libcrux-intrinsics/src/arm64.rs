@@ -21,6 +21,16 @@ pub fn _vst1q_s16(out: &mut [i16], v: int16x8_t) {
 }
 
 #[inline(always)]
+pub fn _vst1q_bytes(out: &mut [u8], v: int16x8_t) {
+    unsafe { vst1q_u8(out.as_mut_ptr(), vreinterpretq_u8_s16(v)) }
+}
+
+#[inline(always)]
+pub fn _vld1q_bytes(bytes: &[u8]) -> int16x8_t {
+    unsafe { vreinterpretq_s16_u8(vld1q_u8(bytes.as_ptr())) }
+}
+
+#[inline(always)]
 pub fn _vld1q_s16(array: &[i16]) -> int16x8_t {
     unsafe { vld1q_s16(array.as_ptr()) }
 }

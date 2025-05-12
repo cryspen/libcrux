@@ -7,6 +7,7 @@ use std::{
 
 use base64::prelude::*;
 use clap::{Parser, Subcommand};
+use libcrux_ml_kem::vector::traits::Operations;
 use libcrux_ml_kem::{
     mlkem1024::{
         self, MlKem1024Ciphertext, MlKem1024KeyPair, MlKem1024PrivateKey, MlKem1024PublicKey,
@@ -14,19 +15,13 @@ use libcrux_ml_kem::{
     mlkem512::{self, MlKem512Ciphertext, MlKem512KeyPair, MlKem512PrivateKey, MlKem512PublicKey},
     mlkem768::{
         self,
-        portable::unpacked::{
-            key_pair_serialized_public_key, MlKem768KeyPairUnpacked, MlKem768PublicKeyUnpacked,
-        },
+        portable::unpacked::{key_pair_serialized_public_key, MlKem768KeyPairUnpacked},
         MlKem768Ciphertext, MlKem768KeyPair, MlKem768PrivateKey, MlKem768PublicKey,
     },
     vector::portable::PortableVector,
     MlKemSharedSecret,
 };
-use libcrux_ml_kem::{
-    mlkem768::portable::unpacked::{public_key, serialized_public_key},
-    vector::traits::Operations,
-};
-use rand::RngCore;
+use rand::{rng, RngCore};
 use serde::{Deserialize, Serialize};
 
 #[allow(non_snake_case)]
@@ -206,17 +201,17 @@ impl UnpackedKeyPair {
         match alg {
             Algorithm::MlKem1024 => {
                 let mut kp = mlkem1024::portable::unpacked::MlKem1024KeyPairUnpacked::new();
-                mlkem1024::portable::unpacked::generate_key_pair(randomness, &mut kp);
+                mlkem1024::portable::unpacked::generate_key_pair_mut(randomness, &mut kp);
                 UnpackedKeyPair::MlKem1024(kp)
             }
             Algorithm::MlKem768 => {
                 let mut kp = mlkem768::portable::unpacked::MlKem768KeyPairUnpacked::new();
-                mlkem768::portable::unpacked::generate_key_pair(randomness, &mut kp);
+                mlkem768::portable::unpacked::generate_key_pair_mut(randomness, &mut kp);
                 UnpackedKeyPair::MlKem768(kp)
             }
             Algorithm::MlKem512 => {
                 let mut kp = mlkem512::portable::unpacked::MlKem512KeyPairUnpacked::new();
-                mlkem512::portable::unpacked::generate_key_pair(randomness, &mut kp);
+                mlkem512::portable::unpacked::generate_key_pair_mut(randomness, &mut kp);
                 UnpackedKeyPair::MlKem512(kp)
             }
         }
@@ -244,6 +239,9 @@ impl UnpackedKeyPair {
                 let mut p = 0;
 
                 // Private key
+                // kp.private_key
+                //     .ind_cpa_private_key
+                //     .as_bytes(&mut bytes[p..p + 512]);
                 for i in 0..kp.private_key.ind_cpa_private_key.secret_as_ntt.len() {
                     let s = &kp.private_key.ind_cpa_private_key.secret_as_ntt[i];
                     for j in 0..s.coefficients.len() {
@@ -251,6 +249,7 @@ impl UnpackedKeyPair {
                         p += 32;
                     }
                 }
+                // p += 512;
                 bytes[p..p + 32].copy_from_slice(&kp.private_key.implicit_rejection_value);
                 p += 32;
 
@@ -535,7 +534,7 @@ fn main() {
         Algorithm::MlKem768
     };
 
-    let mut rng = rand::rngs::OsRng;
+    let mut rng = rng();
 
     match cli.cmd {
         Cmd::GenerateKey {
@@ -613,8 +612,7 @@ fn main() {
                     pk_bytes
                 } else if let Some(key_file) = key_file {
                     let key_pair = UnpackedKeyPair::read_from_file(key_file);
-                    let mut pk = MlKem768PublicKey::default();
-                    key_pair_serialized_public_key(&key_pair, &mut pk);
+                    let pk = key_pair_serialized_public_key(&key_pair);
                     pk.as_slice().to_vec()
                 } else {
                     // Generates a key pair.

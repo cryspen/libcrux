@@ -2,29 +2,22 @@
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
     flake-utils.url = "github:numtide/flake-utils";
-    crane = {
-      url = "github:ipetkov/crane";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-    charon = {
-      url = "github:aeneasverif/charon";
-      inputs.nixpkgs.follows = "eurydice/nixpkgs";
-    };
-    eurydice = {
-      url = "github:aeneasverif/eurydice";
-      inputs.charon.follows = "charon";
-    };
-    fstar.follows = "eurydice/fstar";
-    karamel.follows = "eurydice/karamel";
+    eurydice.url = "github:aeneasverif/eurydice";
     hax.url = "github:hacspec/hax";
   };
 
   outputs =
-    inputs:
+    { self, nixpkgs, eurydice, hax, ... } @ inputs:
     inputs.flake-utils.lib.eachDefaultSystem (
       system:
       let
-        pkgs = import inputs.nixpkgs { inherit system; };
+        pkgs = import nixpkgs { inherit system; };
+        charon = eurydice.inputs.charon;
+        crane = charon.inputs.crane;
+        # Use the overridden package exported by the eurydice flake.
+        karamel = eurydice.packages.${system}.karamel;
+        fstar = eurydice.inputs.karamel.inputs.fstar;
+
         googletest = pkgs.fetchFromGitHub {
           owner = "google";
           repo = "googletest";
@@ -45,73 +38,216 @@
         };
 
         tools-environment = {
-          CHARON_HOME = inputs.charon.packages.${system}.default;
+          CHARON_HOME = charon.packages.${system}.charon;
           EURYDICE_HOME = pkgs.runCommand "eurydice-home" { } ''
             mkdir -p $out
-            cp -r ${inputs.eurydice.packages.${system}.default}/bin/eurydice $out
-            cp -r ${inputs.eurydice}/include $out
+            cp -r ${eurydice.packages.${system}.default}/bin/eurydice $out
+            cp -r ${eurydice}/include $out
           '';
-          FSTAR_HOME = inputs.fstar.packages.${system}.default;
-          KRML_HOME = inputs.karamel.packages.${system}.default.home;
+          FSTAR_HOME = fstar.packages.${system}.default;
+          KRML_HOME = karamel;
 
-          CHARON_REV = inputs.charon.rev;
-          EURYDICE_REV = inputs.eurydice.rev;
-          KRML_REV = inputs.karamel.rev;
-          FSTAR_REV = inputs.fstar.rev;
+          CHARON_REV = charon.rev;
+          EURYDICE_REV = eurydice.rev;
+          KRML_REV = karamel.version;
+          FSTAR_REV = fstar.rev;
+          LIBCRUX_REV = self.rev or "dirty";
         };
 
-        craneLib = inputs.crane.mkLib pkgs;
-        src = ./.;
-        cargoArtifacts = craneLib.buildDepsOnly { inherit src; };
-        ml-kem = craneLib.buildPackage (tools-environment // {
-          name = "ml-kem";
-          inherit src cargoArtifacts;
+        rustToolchain = charon.packages.${system}.rustToolchain;
+        craneLib = (crane.mkLib pkgs).overrideToolchain rustToolchain;
+        # libcrux doesn't want to commit a Cargo.lock but flakes can only take
+        # local inputs if they're committed. The circus-green CI maintains a
+        # working Cargo.lock file for this repo, so we use it here.
+        defaultCargoLock =
+          let
+            circus-green = pkgs.fetchFromGitHub {
+              owner = "Inria-Prosecco";
+              repo = "circus-green";
+              rev = "b18bf804c2a999a2f476e09608284561c964225c";
+              hash = "sha256-XSRu3LH0RhZ+P8zCADl8e+yjghmol/Eb1oTsaI5JWr4=";
+            };
+          in
+          "${circus-green}/libcrux-Cargo.lock";
 
-          nativeBuildInputs = [
-            pkgs.clang-tools
-            pkgs.cmake
-            pkgs.mold-wrapped
-            pkgs.ninja
-            pkgs.python3
-            inputs.hax.packages.${system}.default
-          ];
-          buildPhase = ''
-            cd libcrux-ml-kem
-            python hax.py extract
-            bash c.sh
-            cd c
-            cmake \
-              -DFETCHCONTENT_SOURCE_DIR_GOOGLETEST=${googletest} \
-              -DFETCHCONTENT_SOURCE_DIR_BENCHMARK=${benchmark} \
-              -DFETCHCONTENT_SOURCE_DIR_JSON=${json} \
-              -DCMAKE_EXE_LINKER_FLAGS="-fuse-ld=mold" \
-              -DCMAKE_SHARED_LINKER_FLAGS="-fuse-ld=mold" \
-              -G "Ninja Multi-Config" -B build
-            cmake --build build --config Release
-          '';
-          checkPhase = ''
-            build/Release/ml_kem_test
-            build/Release/ml_kem_bench
-          '';
-          installPhase = ''
-            cd ./..
-            cp -r . $out
-          '';
-        });
+        # Construct a copy of the current directory with the given `Cargo.lock` added.
+        build_src = cargoLock:
+          let
+            src = builtins.filterSource (name: _: !(pkgs.lib.hasSuffix "flake.nix" name)) ./.;
+          in
+          pkgs.runCommand "libcrux-src" { }
+            ''
+              cp -r ${src} $out
+              chmod u+w $out
+              rm -f $out/Cargo.lock
+              cp ${cargoLock} $out/Cargo.lock
+            '';
+
+        ml-kem = pkgs.callPackage
+          ({ lib
+           , clang-tools_18
+           , cmake
+           , mold-wrapped
+           , ninja
+           , git
+           , python3
+           , craneLib
+           , hax
+           , googletest
+           , benchmark
+           , json
+           , tools-environment
+           , cargoLock ? defaultCargoLock
+           , checkHax ? true
+           , runBenchmarks ? true
+           }:
+            let
+              src = build_src cargoLock;
+              cargoArtifacts = craneLib.buildDepsOnly { inherit src; };
+            in
+            craneLib.buildPackage (tools-environment // {
+              name = "ml-kem";
+              inherit src cargoArtifacts;
+
+              nativeBuildInputs = [
+                clang-tools_18
+                # Alias `clang_format` to `clang-format-18`
+                (pkgs.writeShellScriptBin "clang-format-18" ''exec ${clang-tools_18}/bin/clang-format "$@"'')
+                cmake
+                mold-wrapped
+                ninja
+                git
+                python3
+                fstar.packages.${system}.default
+              ] ++ lib.optional checkHax [
+                hax
+              ];
+              buildPhase = ''
+                cd libcrux-ml-kem
+                patchShebangs ./.
+                ${lib.optionalString checkHax ''
+                  python hax.py extract
+                ''}
+                ./c.sh
+                cd c
+                ${lib.optionalString runBenchmarks "LIBCRUX_BENCHMARKS=1"} \
+                  cmake \
+                  -DFETCHCONTENT_SOURCE_DIR_GOOGLETEST=${googletest} \
+                  -DFETCHCONTENT_SOURCE_DIR_BENCHMARK=${benchmark} \
+                  -DFETCHCONTENT_SOURCE_DIR_JSON=${json} \
+                  -DCMAKE_EXE_LINKER_FLAGS="-fuse-ld=mold" \
+                  -DCMAKE_SHARED_LINKER_FLAGS="-fuse-ld=mold" \
+                  -G "Ninja Multi-Config" -B build
+                cmake --build build --config Release
+                build/Release/ml_kem_test
+                build/Release/sha3_test
+                rm -rf build/_deps
+              '';
+              checkPhase = ''
+                build/Release/ml_kem_test
+              '' + lib.optionalString runBenchmarks ''
+                build/Release/ml_kem_bench
+              '';
+              installPhase = ''
+                cd ./..
+                cp -r . $out
+              '';
+            })
+          )
+          {
+            inherit
+              googletest benchmark json
+              craneLib tools-environment;
+            hax =
+              hax.packages.${system}.default;
+          };
+
+        ml-dsa = pkgs.callPackage
+          ({ lib
+           , clang-tools_18
+           , cmake
+           , mold-wrapped
+           , ninja
+           , git
+           , python3
+           , perl
+           , craneLib
+           , hax
+           , googletest
+           , benchmark
+           , json
+           , tools-environment
+           , cargoLock ? defaultCargoLock
+           , checkHax ? true
+           }:
+            let
+              src = build_src cargoLock;
+              cargoArtifacts = craneLib.buildDepsOnly { inherit src; };
+            in
+            craneLib.buildPackage (tools-environment // {
+              name = "ml-dsa";
+              inherit src cargoArtifacts;
+
+              nativeBuildInputs = [
+                clang-tools_18
+                # Alias `clang_format` to `clang-format-18`
+                (pkgs.writeShellScriptBin "clang-format-18" ''exec ${clang-tools_18}/bin/clang-format "$@"'')
+                cmake
+                mold-wrapped
+                ninja
+                git
+                python3
+                fstar.packages.${system}.default
+                perl
+              ] ++ lib.optional checkHax [
+                hax
+              ];
+              buildPhase = ''
+                cd libcrux-ml-dsa
+                patchShebangs ./.
+                ${lib.optionalString checkHax ''
+                  ./hax.sh extract
+                ''}
+                ./boring.sh --no-clean
+                cd cg
+                cmake \
+                  -DFETCHCONTENT_SOURCE_DIR_GOOGLETEST=${googletest} \
+                  -DFETCHCONTENT_SOURCE_DIR_BENCHMARK=${benchmark} \
+                  -DFETCHCONTENT_SOURCE_DIR_JSON=${json} \
+                  -DCMAKE_EXE_LINKER_FLAGS="-fuse-ld=mold" \
+                  -DCMAKE_SHARED_LINKER_FLAGS="-fuse-ld=mold" \
+                  -G "Ninja Multi-Config" -B build
+                cmake --build build --config Release
+                build/Release/ml_dsa_test
+                rm -rf build/_deps
+              '';
+              checkPhase = ''
+                build/Release/ml_dsa_test
+              '';
+              installPhase = ''
+                cd ./..
+                cp -r . $out
+              '';
+            })
+          )
+          {
+            inherit
+              googletest benchmark json
+              craneLib tools-environment;
+            hax =
+              hax.packages.${system}.default;
+          };
       in
       rec {
         packages = {
-          inherit ml-kem;
+          inherit ml-kem ml-dsa;
         };
-        devShells.default = pkgs.mkShell (tools-environment // {
+        devShells.default = craneLib.devShell (tools-environment // {
           packages = [
-            pkgs.clang
-            inputs.fstar.packages.${system}.default
+            pkgs.clang_18
+            fstar.packages.${system}.default
           ];
-
-          inputsFrom = [
-            packages.ml-kem
-          ];
+          inputsFrom = [ packages.ml-kem ];
         });
       }
     );

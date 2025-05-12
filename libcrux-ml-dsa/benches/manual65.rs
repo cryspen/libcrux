@@ -3,30 +3,33 @@ use libcrux_ml_dsa::{
     KEY_GENERATION_RANDOMNESS_SIZE, SIGNING_RANDOMNESS_SIZE,
 };
 
-use pqcrypto_dilithium;
-
 mod bench_utils;
 
 fn main() {
     bench_group_libcrux!(
-        "65 portable",
+        "65",
+        "portable",
         ml_dsa_65::portable,
         MLDSA65KeyPair,
         MLDSA65Signature
     );
     #[cfg(feature = "simd128")]
     bench_group_libcrux!(
-        "65 sim1d28",
+        "65",
+        "neon",
         ml_dsa_65::neon,
         MLDSA65KeyPair,
         MLDSA65Signature
     );
     #[cfg(feature = "simd256")]
     bench_group_libcrux!(
-        "65 simd256",
+        "65",
+        "avx2",
         ml_dsa_65::avx2,
         MLDSA65KeyPair,
         MLDSA65Signature
     );
-    bench_group_pqclean!("65", dilithium3);
+
+    #[cfg(not(all(target_os = "macos", target_arch = "x86_64")))]
+    bench_group_pqclean!("65", mldsa65);
 }

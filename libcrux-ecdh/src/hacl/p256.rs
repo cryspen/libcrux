@@ -1,6 +1,6 @@
-use libcrux_hacl::{
-    Hacl_P256_compressed_to_raw, Hacl_P256_dh_initiator, Hacl_P256_dh_responder,
-    Hacl_P256_uncompressed_to_raw, Hacl_P256_validate_private_key, Hacl_P256_validate_public_key,
+use libcrux_p256::{
+    compressed_to_raw, dh_initiator, dh_responder, uncompressed_to_raw, validate_private_key,
+    validate_public_key,
 };
 
 use crate::p256_internal::PrivateKey;
@@ -19,9 +19,7 @@ pub enum Error {
 pub fn uncompressed_to_coordinates(point: &[u8]) -> Result<[u8; 64], Error> {
     let mut concat_point = [0u8; 64];
     if point.len() >= 65 {
-        let ok = unsafe {
-            Hacl_P256_uncompressed_to_raw(point.as_ptr() as _, concat_point.as_mut_ptr())
-        };
+        let ok = uncompressed_to_raw(point, &mut concat_point);
         if ok {
             Ok(concat_point)
         } else {
@@ -37,8 +35,7 @@ pub fn uncompressed_to_coordinates(point: &[u8]) -> Result<[u8; 64], Error> {
 pub fn compressed_to_coordinates(point: &[u8]) -> Result<[u8; 64], Error> {
     let mut concat_point = [0u8; 64];
     if point.len() >= 33 {
-        let ok =
-            unsafe { Hacl_P256_compressed_to_raw(point.as_ptr() as _, concat_point.as_mut_ptr()) };
+        let ok = compressed_to_raw(point, &mut concat_point);
         if ok {
             Ok(concat_point)
         } else {
@@ -54,7 +51,7 @@ pub fn compressed_to_coordinates(point: &[u8]) -> Result<[u8; 64], Error> {
 ///
 /// Returns [`Error::InvalidPoint`] if the `point` is not valid.
 pub fn validate_point(point: impl AsRef<[u8; 64]>) -> Result<(), Error> {
-    if unsafe { Hacl_P256_validate_public_key(point.as_ref().as_ptr() as _) } {
+    if validate_public_key(point.as_ref()) {
         Ok(())
     } else {
         Err(Error::InvalidPoint)
@@ -77,7 +74,7 @@ pub fn validate_scalar_(scalar: &[u8; 32]) -> Result<(), Error> {
     }
 
     // Ensure that the key is in range  [1, p-1]
-    if unsafe { Hacl_P256_validate_private_key(scalar.as_ref().as_ptr() as _) } {
+    if validate_private_key(scalar.as_ref()) {
         Ok(())
     } else {
         Err(Error::InvalidScalar)
@@ -108,13 +105,7 @@ pub fn ecdh(
     public_key: impl AsRef<[u8; 64]>,
 ) -> Result<[u8; 64], Error> {
     let mut shared = [0u8; 64];
-    let ok = unsafe {
-        Hacl_P256_dh_responder(
-            shared.as_mut_ptr(),
-            public_key.as_ref().as_ptr() as _,
-            private_key.as_ref().as_ptr() as _,
-        )
-    };
+    let ok = dh_responder(&mut shared, public_key.as_ref(), private_key.as_ref());
     if !ok {
         Err(Error::InvalidInput)
     } else {
@@ -129,7 +120,7 @@ pub fn secret_to_public(s: impl AsRef<[u8; 32]>) -> Result<[u8; 64], Error> {
     validate_scalar(&s)?;
 
     let mut out = [0u8; 64];
-    if unsafe { Hacl_P256_dh_initiator(out.as_mut_ptr(), s.as_ref().as_ptr() as _) } {
+    if dh_initiator(&mut out, s.as_ref()) {
         Ok(out)
     } else {
         Err(Error::InvalidScalar)
