@@ -15,6 +15,8 @@ pub type MontgomeryFieldElement = i16;
 pub type FieldElementTimesMontgomeryR = i16;
 
 pub(crate) const MONTGOMERY_SHIFT: u8 = 16;
+
+#[cfg(hax)]
 pub(crate) const MONTGOMERY_R: i32 = 1 << MONTGOMERY_SHIFT;
 
 /// This is calculated as ⌊(BARRETT_R / FIELD_MODULUS) + 1/2⌋
