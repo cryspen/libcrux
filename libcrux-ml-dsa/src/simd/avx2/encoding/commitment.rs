@@ -1,7 +1,7 @@
 use libcrux_intrinsics::avx2::*;
 
 #[cfg(hax)]
-use minicore::abstractions::{
+use core_models::abstractions::{
     bit::Bit,
     bitvec::{bitvec_postprocess_norm, BitVec},
 };

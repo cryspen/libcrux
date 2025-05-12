@@ -34,7 +34,7 @@ criterion = "0.5"
 pqcrypto-mldsa = { version = "0.1.0" } #, default-features = false
 
 [target.'cfg(hax)'.dependencies]
-minicore = { path = "../fstar-helpers/minicore" }
+core-models = { path = "../fstar-helpers/core-models" }
 
 [features]
 default = ["std", "mldsa44", "mldsa65", "mldsa87"]

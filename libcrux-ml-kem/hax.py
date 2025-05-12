@@ -68,7 +68,7 @@ class extractAction(argparse.Action):
             interface_include,
         ]
         hax_env = {
-            'RUSTFLAGS': "--cfg pre_minicore"
+            'RUSTFLAGS': "--cfg pre_core_models"
         }
         shell(
             cargo_hax_into,
