@@ -66,7 +66,7 @@ pub fn gte_mask(a: uint128, b: uint128) -> uint128 {
     x_xor_q_.wrapping_sub(1u128)
 }
 pub fn uint64_to_uint128(x: u64) -> uint128 {
-    x as u128
+    x.into()
 }
 pub fn uint128_to_uint64(x: uint128) -> u64 {
     x as u64
@@ -75,5 +75,5 @@ pub fn mul32(x: u64, y: u32) -> uint128 {
     (x as u128) * (y as u128)
 }
 pub fn mul_wide(x: u64, y: u64) -> uint128 {
-    (x as u128) * (y as u128)
+    u128::from(x) * u128::from(y)
 }

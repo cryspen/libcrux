@@ -53,8 +53,7 @@ pub(crate) fn reduce_513(a: &mut [u64]) {
 
 #[inline]
 fn fmul(output: &mut [u64], input: &[u64], input2: &[u64]) {
-    let tmp: [fstar::uint128::uint128; 10] = [fstar::uint128::uint64_to_uint128(0u64); 10usize];
-    libcrux_hacl_rs::bignum25519_51::fmul(output, input, input2, &tmp)
+    libcrux_hacl_rs::bignum25519_51::fmul(output, input, input2)
 }
 
 #[inline]
@@ -100,28 +99,24 @@ fn times_2d(out: &mut [u64], a: &[u64]) {
 
 #[inline]
 fn fsquare(out: &mut [u64], a: &[u64]) {
-    let tmp: [fstar::uint128::uint128; 5] = [fstar::uint128::uint64_to_uint128(0u64); 5usize];
-    libcrux_hacl_rs::bignum25519_51::fsqr(out, a, &tmp)
+    libcrux_hacl_rs::bignum25519_51::fsqr(out, a)
 }
 
 #[inline]
 fn fsquare_times(output: &mut [u64], input: &[u64], count: u32) {
-    let tmp: [fstar::uint128::uint128; 5] = [fstar::uint128::uint64_to_uint128(0u64); 5usize];
-    libcrux_hacl_rs::curve25519_51::fsquare_times(output, input, &tmp, count)
+    libcrux_hacl_rs::curve25519_51::fsquare_times(output, input, count)
 }
 
 #[inline]
 fn fsquare_times_inplace(output: &mut [u64], count: u32) {
-    let tmp: [fstar::uint128::uint128; 5] = [fstar::uint128::uint64_to_uint128(0u64); 5usize];
     let mut input: [u64; 5] = [0u64; 5usize];
     ((&mut input)[0usize..5usize]).copy_from_slice(&output[0usize..5usize]);
-    libcrux_hacl_rs::curve25519_51::fsquare_times(output, &input, &tmp, count)
+    libcrux_hacl_rs::curve25519_51::fsquare_times(output, &input, count)
 }
 
 #[inline]
 pub(crate) fn inverse(out: &mut [u64], a: &[u64]) {
-    let tmp: [fstar::uint128::uint128; 10] = [fstar::uint128::uint64_to_uint128(0u64); 10usize];
-    libcrux_hacl_rs::curve25519_51::finv(out, a, &tmp)
+    libcrux_hacl_rs::curve25519_51::finv(out, a)
 }
 
 #[inline]

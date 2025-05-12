@@ -20,6 +20,7 @@ libcrux = { path = "../", features = ["rand", "tests"] }
 libcrux-chacha20poly1305 = { path = "../chacha20poly1305" }
 libcrux-ecdh = { path = "../libcrux-ecdh" }
 libcrux-ed25519 = { path = "../ed25519" }
+libcrux-curve25519 = { path = "../curve25519" }
 libcrux-kem = { path = "../libcrux-kem", features = ["tests"] }
 libcrux-ml-kem = { path = "../libcrux-ml-kem" }
 libcrux-sha2 = { path = "../sha2" }

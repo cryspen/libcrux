@@ -290,6 +290,51 @@ fn nym_outfox_create(c: &mut Criterion) {
         )
     });
 
+    group.bench_function("libcrux x4", |b| {
+        b.iter_batched(
+            || {
+                use rand_core::{OsRng, TryRngCore};
+                let mut os_rng = OsRng;
+                let mut rng = os_rng.unwrap_mut();
+
+                let (_, pk1) = libcrux_ecdh::x25519_key_gen(&mut rng).unwrap();
+
+                let sk2a = libcrux_ecdh::x25519_generate_secret(&mut rng).unwrap();
+                let sk2b = libcrux_ecdh::x25519_generate_secret(&mut rng).unwrap();
+                let sk2c = libcrux_ecdh::x25519_generate_secret(&mut rng).unwrap();
+                let sk2d = libcrux_ecdh::x25519_generate_secret(&mut rng).unwrap();
+
+                (pk1, sk2a, sk2b, sk2c, sk2d)
+            },
+            |(pk1, sk2a, sk2b, sk2c, sk2d)| {
+                let mut out = [[0u8; 32]; 4];
+                libcrux_curve25519::ecdh_x4(
+                    &mut out,
+                    &[&pk1.0, &pk1.0, &pk1.0, &pk1.0],
+                    &[&sk2a.0, &sk2a.0, &sk2a.0, &sk2a.0],
+                ).unwrap();
+
+                let _pk2a =
+                    libcrux_ecdh::secret_to_public(libcrux_ecdh::Algorithm::X25519, &sk2a).unwrap();
+                let _pk2b =
+                    libcrux_ecdh::secret_to_public(libcrux_ecdh::Algorithm::X25519, &sk2b).unwrap();
+                let _pk2c =
+                    libcrux_ecdh::secret_to_public(libcrux_ecdh::Algorithm::X25519, &sk2c).unwrap();
+                let _pk2d =
+                    libcrux_ecdh::secret_to_public(libcrux_ecdh::Algorithm::X25519, &sk2d).unwrap();
+                // let _zza =
+                //     libcrux_ecdh::derive(libcrux_ecdh::Algorithm::X25519, &pk1, &sk2a).unwrap();
+                // let _zzb =
+                //     libcrux_ecdh::derive(libcrux_ecdh::Algorithm::X25519, &pk1, &sk2b).unwrap();
+                // let _zzc =
+                //     libcrux_ecdh::derive(libcrux_ecdh::Algorithm::X25519, &pk1, &sk2c).unwrap();
+                // let _zzd =
+                //     libcrux_ecdh::derive(libcrux_ecdh::Algorithm::X25519, &pk1, &sk2d).unwrap();
+            },
+            BatchSize::SmallInput,
+        )
+    });
+
     group.bench_function("Ring", |b| {
         use ring::{agreement, rand::SystemRandom};
 
