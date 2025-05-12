@@ -6,7 +6,7 @@ function extract_all() {
         into -i "+:** -**::x86::init::cpuid -**::x86::init::cpuid_count" \
         fstar --z3rlimit 80 --interfaces "+**"
     
-    extract fstar-helpers/minicore into fstar
+    extract fstar-helpers/core-models into fstar
 
     extract libcrux-intrinsics \
         -C --features simd128,simd256 ";" \

@@ -101,7 +101,7 @@ pub mod int_vec {
             let open Tactics.Circuits in
             flatten_circuit
                 [
-                    "Minicore";
+                    "Core_models";
                     "FStar.FunctionalExtensionality";
                     `%Rust_primitives.cast_tc; `%Rust_primitives.unsize_tc;
                     "Core.Ops"; `%(.[]);

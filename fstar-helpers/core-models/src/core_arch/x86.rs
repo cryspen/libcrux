@@ -50,7 +50,7 @@
 //! ```
 //!
 //! ### (step 4) Integer‑Vector Interpretation & Lift Lemma (if needed)
-//! In `minicore::core_arch::x86::interpretations::int_vec`, we add the following model:
+//! In `core_models::core_arch::x86::interpretations::int_vec`, we add the following model:
 //!
 //! ```compile_fail
 //! pub fn _mm256_mul_epi32(x: i32x8, y: i32x8) -> i64x4 {
@@ -58,7 +58,7 @@
 //! }
 //! ```
 //!
-//! And a lift lemma in `minicore::core_arch::x86::interpretations::int_vec::lemmas`:
+//! And a lift lemma in `core_models::core_arch::x86::interpretations::int_vec::lemmas`:
 //! ```compile_fail
 //! mk_lift_lemma!(
 //!     _mm256_mul_epi32(x: __m256i, y: __m256i) ==
@@ -67,7 +67,7 @@
 //! ```
 //!
 //! ### (step 5) Unit Test
-//! In `minicore::core_arch::x86::interpretations::int_vec::tests`:
+//! In `core_models::core_arch::x86::interpretations::int_vec::tests`:
 //! ```compile_fail
 //! mk!(_mm256_mul_epi32(x: BitVec, y: BitVec));
 //! ```
@@ -445,7 +445,7 @@ const _: () = {
 
     #[hax_lib::fstar::replace(
         r#"
-[@@ Minicore.Abstractions.Bitvec.v_REWRITE_RULE ]
+[@@ Core_models.Abstractions.Bitvec.v_REWRITE_RULE ]
 
 assume
 val e___e_rw_mm256_mullo_epi16_shifts':
