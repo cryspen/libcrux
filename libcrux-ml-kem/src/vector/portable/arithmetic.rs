@@ -344,7 +344,7 @@ pub(crate) fn montgomery_reduce_element(value: I32) -> MontgomeryFieldElement {
     let _ = MONTGOMERY_R;
 
     let k = (value.as_i16()).as_i32() * (INVERSE_OF_MODULUS_MOD_MONTGOMERY_R.classify().as_i32());
-    
+
     hax_lib::fstar!(
         r#"assert(v (cast (cast (value <: i32) <: i16) <: i32) == v value @% pow2 16);
                      assert(v k == (v value @% pow2 16) * 62209);
@@ -355,7 +355,7 @@ pub(crate) fn montgomery_reduce_element(value: I32) -> MontgomeryFieldElement {
     );
 
     let k_times_modulus = (k.as_i16().as_i32()) * (FIELD_MODULUS.classify().as_i32());
-    
+
     hax_lib::fstar!(
         r#"assert_norm (pow2 15 * 3329 < pow2 31);
            Spec.Utils.lemma_mul_i16b (pow2 15) (3329) (cast (k <: i32) <: i16) Libcrux_ml_kem.Vector.Traits.v_FIELD_MODULUS;
@@ -363,7 +363,7 @@ pub(crate) fn montgomery_reduce_element(value: I32) -> MontgomeryFieldElement {
     );
 
     let c = (k_times_modulus >> MONTGOMERY_SHIFT).as_i16();
-    
+
     hax_lib::fstar!(
         "assert (v k_times_modulus < pow2 31);
                      assert (v k_times_modulus / pow2 16 < pow2 15);
@@ -371,9 +371,9 @@ pub(crate) fn montgomery_reduce_element(value: I32) -> MontgomeryFieldElement {
                      assert(v c == v k_times_modulus / pow2 16); 
                      assert(Spec.Utils.is_i16b 1665 c)"
     );
-    
+
     let value_high = (value >> MONTGOMERY_SHIFT).as_i16();
-    
+
     hax_lib::fstar!(
         r#"assert (v value < pow2 31);
                      assert (v value / pow2 16 < pow2 15);
@@ -452,7 +452,7 @@ pub(crate) fn montgomery_multiply_fe_by_fer(
     fer: FieldElementTimesMontgomeryR,
 ) -> FieldElement {
     hax_lib::fstar!(r#"Spec.Utils.lemma_mul_i16b (pow2 15) (1664) fe fer"#);
-    
+
     let product = (fe.as_i32()) * (fer.as_i32());
     montgomery_reduce_element(product)
 }

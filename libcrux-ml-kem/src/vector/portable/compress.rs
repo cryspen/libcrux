@@ -52,7 +52,7 @@ pub(crate) fn compress_message_coefficient(fe: U16) -> U8 {
     );
 
     let shifted_to_positive: I16 = mask ^ shifted;
-    
+
     hax_lib::fstar!(
         "logxor_lemma $shifted $mask;
         assert (v $shifted < 0 ==> v $shifted_to_positive = v (lognot $shifted));
@@ -66,7 +66,7 @@ pub(crate) fn compress_message_coefficient(fe: U16) -> U8 {
     );
 
     let shifted_positive_in_range: I16 = shifted_to_positive - 832;
-    
+
     hax_lib::fstar!(
         "assert (1664 - v $fe >= 0 ==> v $shifted_positive_in_range == 832 - v $fe);
         assert (1664 - v $fe < 0 ==> v $shifted_positive_in_range == -2497 + v $fe)"
@@ -77,7 +77,7 @@ pub(crate) fn compress_message_coefficient(fe: U16) -> U8 {
     let r0: I16 = shifted_positive_in_range >> 15;
     let r1: I16 = r0 & 1i16;
     let res = r1.as_u8();
-   
+
     hax_lib::fstar!(
         r#"assert (v $r0 = v $shifted_positive_in_range / pow2 15);
         assert (if v $shifted_positive_in_range < 0 then $r0 = ones else $r0 = zero);
@@ -162,9 +162,9 @@ pub(crate) fn compress_1(mut a: PortableVector) -> PortableVector {
         hax_lib::fstar!(
             "compress_message_coefficient_range_helper (cast (${a}.f_elements.[ $i ]) <: u16)"
         );
-       
+
         a.elements[i] = compress_message_coefficient(a.elements[i].as_u16()).as_i16();
-       
+
         hax_lib::fstar!(
             r#"assert (v (${a}.f_elements.[ $i ] <: i16) >= 0 /\
             v (${a}.f_elements.[ $i ] <: i16) < 2)"#
@@ -214,7 +214,7 @@ pub(crate) fn compress<const COEFFICIENT_BITS: i32>(mut a: PortableVector) -> Po
         a.elements[i] =
             compress_ciphertext_coefficient(COEFFICIENT_BITS as u8, a.elements[i].as_u16())
                 .as_i16();
-       
+
         hax_lib::fstar!(
             r#"assert (v (${a}.f_elements.[ $i ] <: i16) >= 0 /\
             v (${a}.f_elements.[ $i ] <: i16) < pow2 (v (cast ($COEFFICIENT_BITS) <: u32)))"#
@@ -308,9 +308,9 @@ pub(crate) fn decompress_ciphertext_coefficient<const COEFFICIENT_BITS: i32>(
               v (cast (${a}.f_elements.[ $i ] <: i16) <: i32) *
                 v (cast ($FIELD_MODULUS <: i16) <: i32))"
         );
-        
+
         let mut decompressed = a.elements[i].as_i32() * FIELD_MODULUS.classify().as_i32();
-        
+
         hax_lib::fstar!(
             "assert (v ($decompressed <<! mk_i32 1) == v $decompressed * 2);
           assert (v (mk_i32 1 <<! $COEFFICIENT_BITS) == pow2 (v $COEFFICIENT_BITS));
@@ -332,7 +332,7 @@ pub(crate) fn decompress_ciphertext_coefficient<const COEFFICIENT_BITS: i32>(
             "assert (v $decompressed < v $FIELD_MODULUS);
           assert (v (cast $decompressed <: i16) < v $FIELD_MODULUS)"
         );
-        
+
         a.elements[i] = decompressed.as_i16();
     }
 

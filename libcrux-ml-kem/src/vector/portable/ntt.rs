@@ -305,19 +305,19 @@ pub(crate) fn ntt_multiply_binomials(
     );
 
     hax_lib::fstar!(r#"Spec.Utils.lemma_mul_i16b 3328 3328 $ai $bi"#);
-  
+
     let ai_bi = (ai.as_i32()) * (bi.as_i32());
-  
+
     hax_lib::fstar!(r#"Spec.Utils.lemma_mul_i16b 3328 3328 $aj $bj"#);
-  
+
     let aj_bj_ = (aj.as_i32()) * (bj.as_i32());
-  
+
     hax_lib::fstar!(r#"assert_norm (3328 * 3328 <= 3328 * pow2 15)"#);
 
     let aj_bj = montgomery_reduce_element(aj_bj_);
 
     hax_lib::fstar!(r#"Spec.Utils.lemma_mul_i16b 3328 1664 $aj_bj $zeta"#);
-    
+
     let aj_bj_zeta = (aj_bj.as_i32()) * (zeta.as_i32());
     let ai_bi_aj_bj = ai_bi + aj_bj_zeta;
 
@@ -356,11 +356,11 @@ pub(crate) fn ntt_multiply_binomials(
         }"#
     );
     hax_lib::fstar!(r#"Spec.Utils.lemma_mul_i16b 3328 3328 $ai $bj"#);
-   
+
     let ai_bj = (ai.as_i32()) * (bj.as_i32());
-   
+
     hax_lib::fstar!(r#"Spec.Utils.lemma_mul_i16b 3328 3328 $aj $bi"#);
-   
+
     let aj_bi = (aj.as_i32()) * (bi.as_i32());
     let ai_bj_aj_bi = ai_bj + aj_bi;
 
