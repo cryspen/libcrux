@@ -13,7 +13,8 @@ apt-get install -y \
     locales \
     pkg-config \
     clang-format\
-    curl
+    curl \
+    time
 curl -fsSL https://deb.nodesource.com/setup_21.x | bash -
 apt-get update
 apt-get install -y nodejs
