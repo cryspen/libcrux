@@ -135,18 +135,19 @@ files:
         - [ libcrux_ml_kem, polynomial, "*" ]
       monomorphizations_using:
         - [ libcrux_ml_kem, polynomial, "*" ]
-        - [libcrux_ml_kem, vector, "*"]
-        - [libcrux_ml_kem, hash_functions, portable, "*"]
+        - [ libcrux_ml_kem, vector, "*"]
+        - [ libcrux_ml_kem, hash_functions, portable, "*"]
       monomorphizations_of:
         - [ libcrux_ml_kem, polynomial, "*" ]
-        - [libcrux_ml_kem, vector, "*"]
-        - [libcrux_ml_kem, hash_functions, portable, "*"]
+        - [ libcrux_ml_kem, vector, "*"]
+        - [ libcrux_ml_kem, hash_functions, portable, "*"]
 
   # MLKEM: MISC NON-ARCHITECTURE SPECIFIC HEADERS
   - name: libcrux_core
     private:
       monomorphizations_of:
         - [ core, "*"]
+        - [ libcrux_secrets, "*"]
         - [ libcrux_ml_kem, types, "*"]
         - [ libcrux_ml_kem, constant_time_ops, "*"]
         - [ libcrux_ml_kem, utils, "*" ]
@@ -155,6 +156,7 @@ files:
         - [ libcrux_ml_kem, types, "*"]
       patterns:
         - [ core, "*"]
+        - [ libcrux_secrets, "*"]
         - [ libcrux_ml_kem, types ]
         - [ libcrux_ml_kem, constants ]
         - [ libcrux_ml_kem, constant_time_ops, "*"]
