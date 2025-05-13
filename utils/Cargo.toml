@@ -1,0 +1,14 @@
+[package]
+name = "libcrux-utils"
+version.workspace = true
+authors.workspace = true
+license.workspace = true
+homepage.workspace = true
+edition.workspace = true
+repository.workspace = true
+readme.workspace = true
+
+[dependencies]
+
+[dev-dependencies]
+rand = "0.9.1"
