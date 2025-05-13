@@ -4,11 +4,11 @@
  * SPDX-License-Identifier: MIT or Apache-2.0
  *
  * This code was generated with the following revisions:
- * Charon: 763350c6948d5594d3017ecb93273bc41c1a4e1d
- * Eurydice: 36a5ed7dd6b61b5cd3d69a010859005912d21537
- * Karamel: bf9b89d76dd24e2ceaaca32de3535353e7b6bc01
+ * Charon: 3275bf4ad9dc8c25965dc5da6122653fc43c4287
+ * Eurydice: d3b14228e2b5fe8710ec7efae31e4de2c96ed20d
+ * Karamel: 095cdb73f246711f93f99a159ceca37cd2c227e1
  * F*: 4b3fc11774003a6ff7c09500ecb5f0145ca6d862
- * Libcrux: 753cc40f7a2d6820ba09be4427e02117dae64d48
+ * Libcrux: 66a4cc158af9173b734a201068778c26120c36a5
  */
 
 #include "internal/libcrux_sha3_avx2.h"
@@ -1671,26 +1671,15 @@ KRML_MUSTINLINE void libcrux_sha3_generic_keccak_keccak_fb(
     Eurydice_slice o1[4U];
     memcpy(o1, uu____2.snd, (size_t)4U * sizeof(Eurydice_slice));
     libcrux_sha3_generic_keccak_squeeze_first_block_97(&s, o0);
-    core_ops_range_Range_08 iter =
-        core_iter_traits_collect___core__iter__traits__collect__IntoIterator_Clause1_Item__I__for_I__1__into_iter(
-            (KRML_CLITERAL(core_ops_range_Range_08){.start = (size_t)1U,
-                                                    .end = blocks}),
-            core_ops_range_Range_08, size_t, core_ops_range_Range_08);
-    while (true) {
-      if (core_iter_range___core__iter__traits__iterator__Iterator_A__for_core__ops__range__Range_A__TraitClause_0___6__next(
-              &iter, size_t, core_option_Option_08)
-              .tag == core_option_None) {
-        break;
-      } else {
-        Eurydice_slice_uint8_t_4size_t__x2 uu____3 =
-            split_at_mut_n_ef(o1, (size_t)136U);
-        Eurydice_slice o[4U];
-        memcpy(o, uu____3.fst, (size_t)4U * sizeof(Eurydice_slice));
-        Eurydice_slice orest[4U];
-        memcpy(orest, uu____3.snd, (size_t)4U * sizeof(Eurydice_slice));
-        libcrux_sha3_generic_keccak_squeeze_next_block_97(&s, o);
-        memcpy(o1, orest, (size_t)4U * sizeof(Eurydice_slice));
-      }
+    for (size_t i = (size_t)1U; i < blocks; i++) {
+      Eurydice_slice_uint8_t_4size_t__x2 uu____3 =
+          split_at_mut_n_ef(o1, (size_t)136U);
+      Eurydice_slice o[4U];
+      memcpy(o, uu____3.fst, (size_t)4U * sizeof(Eurydice_slice));
+      Eurydice_slice orest[4U];
+      memcpy(orest, uu____3.snd, (size_t)4U * sizeof(Eurydice_slice));
+      libcrux_sha3_generic_keccak_squeeze_next_block_97(&s, o);
+      memcpy(o1, orest, (size_t)4U * sizeof(Eurydice_slice));
     }
     if (last < outlen) {
       libcrux_sha3_generic_keccak_squeeze_last_97(s, o1);
