@@ -4,11 +4,11 @@
  * SPDX-License-Identifier: MIT or Apache-2.0
  *
  * This code was generated with the following revisions:
- * Charon: 763350c6948d5594d3017ecb93273bc41c1a4e1d
- * Eurydice: 36a5ed7dd6b61b5cd3d69a010859005912d21537
- * Karamel: bf9b89d76dd24e2ceaaca32de3535353e7b6bc01
+ * Charon: 3275bf4ad9dc8c25965dc5da6122653fc43c4287
+ * Eurydice: d3b14228e2b5fe8710ec7efae31e4de2c96ed20d
+ * Karamel: 095cdb73f246711f93f99a159ceca37cd2c227e1
  * F*: 4b3fc11774003a6ff7c09500ecb5f0145ca6d862
- * Libcrux: 753cc40f7a2d6820ba09be4427e02117dae64d48
+ * Libcrux: 5a53a5e87838e7364ba1e64d818c252d0e0c8344
  */
 
 #ifndef __libcrux_mlkem_core_H
@@ -30,21 +30,6 @@ typedef struct core_ops_range_Range_08_s {
 #define Err 1
 
 typedef uint8_t Result_a9_tags;
-
-#define None 0
-#define Some 1
-
-typedef uint8_t Option_9e_tags;
-
-/**
-A monomorphic instance of core.option.Option
-with types size_t
-
-*/
-typedef struct Option_08_s {
-  Option_9e_tags tag;
-  size_t f0;
-} Option_08;
 
 static inline uint16_t core_num__u16_7__wrapping_add(uint16_t x0, uint16_t x1);
 
