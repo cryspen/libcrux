@@ -8,7 +8,6 @@ pub struct SIMD128Vector {
 }
 
 #[inline(always)]
-#[hax_lib::fstar::verification_status(panic_free)]
 #[hax_lib::ensures(|result| fstar!("${result} == repr ${v}"))]
 pub(crate) fn to_i16_array(v: SIMD128Vector) -> [i16; 16] {
     let mut out = [0i16; 16];
@@ -18,7 +17,6 @@ pub(crate) fn to_i16_array(v: SIMD128Vector) -> [i16; 16] {
 }
 
 #[inline(always)]
-#[hax_lib::fstar::verification_status(panic_free)]
 #[hax_lib::ensures(|result| fstar!("repr ${result} == $array"))]
 pub(crate) fn from_i16_array(array: &[i16]) -> SIMD128Vector {
     SIMD128Vector {
@@ -28,14 +26,12 @@ pub(crate) fn from_i16_array(array: &[i16]) -> SIMD128Vector {
 }
 
 #[inline(always)]
-#[hax_lib::fstar::verification_status(lax)]
 pub(crate) fn to_bytes(v: SIMD128Vector, bytes: &mut [u8]) {
     _vst1q_bytes(&mut bytes[0..16], v.low);
     _vst1q_bytes(&mut bytes[16..32], v.high);
 }
 
 #[inline(always)]
-#[hax_lib::fstar::verification_status(lax)]
 pub(crate) fn from_bytes(array: &[u8]) -> SIMD128Vector {
     SIMD128Vector {
         low: _vld1q_bytes(&array[0..16]),
@@ -45,7 +41,6 @@ pub(crate) fn from_bytes(array: &[u8]) -> SIMD128Vector {
 
 #[allow(non_snake_case)]
 #[inline(always)]
-#[hax_lib::fstar::verification_status(panic_free)]
 #[hax_lib::ensures(|result| fstar!("repr result == Seq.create 16 (mk_i16 0)"))]
 pub(crate) fn ZERO() -> SIMD128Vector {
     SIMD128Vector {

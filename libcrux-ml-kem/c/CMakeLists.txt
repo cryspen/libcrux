@@ -70,12 +70,12 @@ if(${CMAKE_SYSTEM_NAME} MATCHES Linux)
     )
 endif(${CMAKE_SYSTEM_NAME} MATCHES Linux)
 
-if(${CMAKE_SYSTEM_NAME} MATCHES Linux AND CMAKE_BUILD_TYPE MATCHES "Release")
-    add_compile_options(
-        -flto
-    )
-    add_link_options(-flto)
-endif(${CMAKE_SYSTEM_NAME} MATCHES Linux AND CMAKE_BUILD_TYPE MATCHES "Release")
+# if(${CMAKE_SYSTEM_NAME} MATCHES Linux AND CMAKE_BUILD_TYPE MATCHES "Release")
+#     add_compile_options(
+#         -flto
+#     )
+#     add_link_options(-flto)
+# endif(${CMAKE_SYSTEM_NAME} MATCHES Linux AND CMAKE_BUILD_TYPE MATCHES "Release")
 
 add_library(ml_kem SHARED ${SOURCES})
 add_library(ml_kem_static STATIC ${SOURCES})

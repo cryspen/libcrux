@@ -1,0 +1,113 @@
+name: ML-DSA - Benchmark
+
+on:
+  merge_group:
+  pull_request:
+    branches: ["main", "dev"]
+  workflow_dispatch:
+
+env:
+  CARGO_TERM_COLOR: always
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  benchmark:
+    if: ${{ github.event_name != 'pull_request' }}
+    strategy:
+      fail-fast: true
+      matrix:
+        bits: [32, 64]
+        os:
+          - macos-13
+          - macos-latest
+          - ubuntu-latest
+          - windows-latest
+        exclude:
+          # There's no such thing as 32-bit macOS
+          - bits: 32
+            os: "macos-latest"
+          - bits: 32
+            os: "macos-13"
+
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: bash
+        working-directory: libcrux-ml-dsa
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - run: echo "RUST_TARGET_FLAG=" > $GITHUB_ENV
+        if: ${{ matrix.bits == 64 }}
+
+      - name: 🛠️ Setup Ubuntu x86
+        if: ${{ matrix.bits == 32 &&  matrix.os == 'ubuntu-latest' }}
+        run: |
+          rustup target add i686-unknown-linux-gnu
+          sudo apt-get update
+          sudo apt-get install -y gcc-multilib g++-multilib
+
+      - name: 🛠️ Setup Ubuntu x64
+        if: ${{ matrix.bits == 64 &&  matrix.os == 'ubuntu-latest' }}
+        run: |
+          rustup target add aarch64-unknown-linux-gnu
+
+      - name: 🛠️ Setup macOS
+        if: ${{  matrix.os == 'macos-latest' }}
+        run: |
+          rustup target add aarch64-apple-darwin
+
+      # Set up 32 bit systems
+
+      - name: 🛠️ Config Windows x86
+        run: echo "RUST_TARGET_FLAG=--target=i686-pc-windows-msvc" > $GITHUB_ENV
+        if: ${{ matrix.bits == 32 && matrix.os == 'windows-latest' }}
+
+      - name: 🛠️ Config Linux x86
+        run: |
+          echo "RUST_TARGET_FLAG=--target=i686-unknown-linux-gnu" > $GITHUB_ENV
+        if: ${{ matrix.bits == 32 && matrix.os == 'ubuntu-latest' }}
+
+      # Benchmarks ...
+
+      - name: 🏃🏻‍♀️ Benchmarks
+        run: cargo bench --bench manual44 --bench manual65 --bench manual87 --verbose $RUST_TARGET_FLAG -- --output-format bencher | tee bench.txt
+
+      - name: Extract benchmarks
+        uses: cryspen/benchmark-data-extract-transform@v2
+        with:
+          name: ML-DSA Benchmark
+          tool: 'cargo'
+          os: ${{ matrix.os }}_${{ matrix.bits }}
+          output-file-path: libcrux-ml-dsa/bench.txt
+          data-out-path: libcrux-ml-dsa/bench-processed.json
+
+      - name: Upload benchmarks
+        uses: cryspen/benchmark-upload-and-plot-action@v2
+        with:
+          name: ML-DSA Benchmark
+          input-data-path: libcrux-ml-dsa/bench-processed.json
+          benchmark-data-dir-path: dev/bench/mldsa
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          gh-repository: github.com/cryspen/libcrux-benchmarks
+          group-by: label,keySize,os
+          schema: implementation,keySize,label,hardware,os
+          auto-push: true
+          fail-on-alert: true
+          alert-threshold: 200%
+
+  mldsa-bench-status:
+    if: ${{ always() }}
+    needs: [benchmark]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Successful
+        if: ${{ !(contains(needs.*.result, 'failure')) }}
+        run: exit 0
+      - name: Failing
+        if: ${{ (contains(needs.*.result, 'failure')) }}
+        run: exit 1

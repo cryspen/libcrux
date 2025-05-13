@@ -96,8 +96,7 @@ jobs:
           input-data-path: libcrux-ml-kem/bench-processed.txt
           benchmark-data-dir-path: dev/bench/mlkem
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          # NOTE: pushes to current repository
-          gh-repository: github.com/${{ github.repository }}
+          gh-repository: github.com/cryspen/libcrux-benchmarks
           auto-push: true
 
   mlkem-bench-status:

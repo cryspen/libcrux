@@ -29,8 +29,8 @@ members = [
     "ecdsa",
     "p256",
     "blake2",
-    "fstar-helpers/minicore",
     "secrets",
+    "fstar-helpers/core-models",
     "test-utils",
 ]
 

@@ -8,7 +8,7 @@
  * Eurydice: 36a5ed7dd6b61b5cd3d69a010859005912d21537
  * Karamel: bf9b89d76dd24e2ceaaca32de3535353e7b6bc01
  * F*: 4b3fc11774003a6ff7c09500ecb5f0145ca6d862
- * Libcrux: f3f15359a852405a81628f982f2debc4d50fff30
+ * Libcrux: 753cc40f7a2d6820ba09be4427e02117dae64d48
  */
 
 #include "internal/libcrux_core.h"
@@ -331,10 +331,6 @@ with const generics
 */
 uint8_t libcrux_ml_kem_utils_prf_input_inc_e0(uint8_t (*prf_inputs)[33U],
                                               uint8_t domain_separator) {
-  uint8_t _prf_inputs_init[3U][33U];
-  core_array___core__clone__Clone_for__Array_T__N___20__clone(
-      (size_t)3U, prf_inputs, _prf_inputs_init, uint8_t[33U], void *);
-  LowStar_Ignore_ignore(_prf_inputs_init, uint8_t[3U][33U], void *);
   KRML_MAYBE_FOR3(i, (size_t)0U, (size_t)3U, (size_t)1U, size_t i0 = i;
                   prf_inputs[i0][32U] = domain_separator;
                   domain_separator = (uint32_t)domain_separator + 1U;);
@@ -465,10 +461,6 @@ with const generics
 */
 uint8_t libcrux_ml_kem_utils_prf_input_inc_fd(uint8_t (*prf_inputs)[33U],
                                               uint8_t domain_separator) {
-  uint8_t _prf_inputs_init[2U][33U];
-  core_array___core__clone__Clone_for__Array_T__N___20__clone(
-      (size_t)2U, prf_inputs, _prf_inputs_init, uint8_t[33U], void *);
-  LowStar_Ignore_ignore(_prf_inputs_init, uint8_t[2U][33U], void *);
   KRML_MAYBE_FOR2(i, (size_t)0U, (size_t)2U, (size_t)1U, size_t i0 = i;
                   prf_inputs[i0][32U] = domain_separator;
                   domain_separator = (uint32_t)domain_separator + 1U;);
@@ -639,10 +631,6 @@ with const generics
 */
 uint8_t libcrux_ml_kem_utils_prf_input_inc_ac(uint8_t (*prf_inputs)[33U],
                                               uint8_t domain_separator) {
-  uint8_t _prf_inputs_init[4U][33U];
-  core_array___core__clone__Clone_for__Array_T__N___20__clone(
-      (size_t)4U, prf_inputs, _prf_inputs_init, uint8_t[33U], void *);
-  LowStar_Ignore_ignore(_prf_inputs_init, uint8_t[4U][33U], void *);
   KRML_MAYBE_FOR4(i, (size_t)0U, (size_t)4U, (size_t)1U, size_t i0 = i;
                   prf_inputs[i0][32U] = domain_separator;
                   domain_separator = (uint32_t)domain_separator + 1U;);
