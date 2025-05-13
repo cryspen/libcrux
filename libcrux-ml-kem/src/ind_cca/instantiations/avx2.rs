@@ -118,21 +118,33 @@ pub(crate) fn kyber_generate_keypair<
 #[cfg_attr(not(hax), target_feature(enable = "avx2"))]
 #[hax_lib::requires(fstar!(r#"Spec.MLKEM.is_rank $K /\
     $PUBLIC_KEY_SIZE == Spec.MLKEM.v_CCA_PUBLIC_KEY_SIZE $K"#))]
-unsafe fn validate_public_key_avx2<const K: usize, const PUBLIC_KEY_SIZE: usize>(
+unsafe fn validate_public_key_avx2<
+    const K: usize,
+    const T_AS_NTT_ENCODED_SIZE: usize,
+    const PUBLIC_KEY_SIZE: usize,
+>(
     public_key: &[u8; PUBLIC_KEY_SIZE],
 ) -> bool {
-    crate::ind_cca::validate_public_key::<K, PUBLIC_KEY_SIZE, crate::vector::SIMD256Vector>(
-        public_key,
-    )
+    crate::ind_cca::validate_public_key::<
+        K,
+        T_AS_NTT_ENCODED_SIZE,
+        PUBLIC_KEY_SIZE,
+        crate::hash_functions::avx2::Simd256Hash,
+        crate::vector::SIMD256Vector,
+    >(public_key)
 }
 
 #[allow(unsafe_code)]
 #[hax_lib::requires(fstar!(r#"Spec.MLKEM.is_rank $K /\
     $PUBLIC_KEY_SIZE == Spec.MLKEM.v_CCA_PUBLIC_KEY_SIZE $K"#))]
-pub(crate) fn validate_public_key<const K: usize, const PUBLIC_KEY_SIZE: usize>(
+pub(crate) fn validate_public_key<
+    const K: usize,
+    const T_AS_NTT_ENCODED_SIZE: usize,
+    const PUBLIC_KEY_SIZE: usize,
+>(
     public_key: &[u8; PUBLIC_KEY_SIZE],
 ) -> bool {
-    unsafe { validate_public_key_avx2::<K, PUBLIC_KEY_SIZE>(public_key) }
+    unsafe { validate_public_key_avx2::<K, T_AS_NTT_ENCODED_SIZE, PUBLIC_KEY_SIZE>(public_key) }
 }
 
 #[allow(unsafe_code)]
