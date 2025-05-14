@@ -44,7 +44,12 @@ let map2 #a #b #c #len
 
 let create len c = createi len (fun i -> c)
 
-let repeati #acc (l:usize) (f:(i:usize{v i < v l}) -> acc -> acc) acc0 : acc = Lib.LoopCombinators.repeati (v l) (fun i acc -> f (sz i) acc) acc0
+val repeati:
+    #a:Type
+  -> n:usize
+  -> f:(i:usize{v i < v n} -> a -> a)
+  -> acc0:a
+  -> a
 
 let createL len l = Rust_primitives.Hax.array_of_list len l 
 
