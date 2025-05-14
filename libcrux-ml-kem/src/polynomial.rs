@@ -389,7 +389,7 @@ fn add_message_error_reduce<Vector: Operations>(
 }
 
 #[inline(always)]
-#[hax_lib::fstar::options("--z3rlimit 300")]
+#[hax_lib::fstar::options("--z3rlimit 400 --split_queries always")]
 #[hax_lib::requires(fstar!("is_bounded_poly 7 ${error}"))]
 #[hax_lib::ensures(|result| fstar!(r#"is_bounded_poly 3328 ${myself}_future"#))]
 fn add_error_reduce<Vector: Operations>(
