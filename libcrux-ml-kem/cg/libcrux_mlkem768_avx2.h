@@ -4,11 +4,11 @@
  * SPDX-License-Identifier: MIT or Apache-2.0
  *
  * This code was generated with the following revisions:
- * Charon: 763350c6948d5594d3017ecb93273bc41c1a4e1d
- * Eurydice: 36a5ed7dd6b61b5cd3d69a010859005912d21537
- * Karamel: bf9b89d76dd24e2ceaaca32de3535353e7b6bc01
+ * Charon: 3275bf4ad9dc8c25965dc5da6122653fc43c4287
+ * Eurydice: d3b14228e2b5fe8710ec7efae31e4de2c96ed20d
+ * Karamel: 095cdb73f246711f93f99a159ceca37cd2c227e1
  * F*: 4b3fc11774003a6ff7c09500ecb5f0145ca6d862
- * Libcrux: 753cc40f7a2d6820ba09be4427e02117dae64d48
+ * Libcrux: 9eca8a01c16c6e6518dde0181f8f39a9bce44b85
  */
 
 #ifndef __libcrux_mlkem768_avx2_H
@@ -2915,10 +2915,10 @@ generics
 - K= 3
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE libcrux_sha3_avx2_x4_incremental_KeccakState
+static KRML_MUSTINLINE libcrux_sha3_generic_keccak_KeccakState_55
 libcrux_ml_kem_hash_functions_avx2_shake128_init_absorb_final_e0(
     uint8_t (*input)[34U]) {
-  libcrux_sha3_avx2_x4_incremental_KeccakState state =
+  libcrux_sha3_generic_keccak_KeccakState_55 state =
       libcrux_sha3_avx2_x4_incremental_init();
   libcrux_sha3_avx2_x4_incremental_shake128_absorb_final(
       &state, Eurydice_array_to_slice((size_t)34U, input[0U], uint8_t),
@@ -2939,7 +2939,7 @@ generics
 - K= 3
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE libcrux_sha3_avx2_x4_incremental_KeccakState
+static KRML_MUSTINLINE libcrux_sha3_generic_keccak_KeccakState_55
 libcrux_ml_kem_hash_functions_avx2_shake128_init_absorb_final_a9_e0(
     uint8_t (*input)[34U]) {
   return libcrux_ml_kem_hash_functions_avx2_shake128_init_absorb_final_e0(
@@ -2955,7 +2955,7 @@ const generics
 KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE void
 libcrux_ml_kem_hash_functions_avx2_shake128_squeeze_first_three_blocks_e0(
-    libcrux_sha3_avx2_x4_incremental_KeccakState *st, uint8_t ret[3U][504U]) {
+    libcrux_sha3_generic_keccak_KeccakState_55 *st, uint8_t ret[3U][504U]) {
   uint8_t out[3U][504U] = {{0U}};
   uint8_t out0[504U] = {0U};
   uint8_t out1[504U] = {0U};
@@ -2991,7 +2991,7 @@ const generics
 KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE void
 libcrux_ml_kem_hash_functions_avx2_shake128_squeeze_first_three_blocks_a9_e0(
-    libcrux_sha3_avx2_x4_incremental_KeccakState *self, uint8_t ret[3U][504U]) {
+    libcrux_sha3_generic_keccak_KeccakState_55 *self, uint8_t ret[3U][504U]) {
   libcrux_ml_kem_hash_functions_avx2_shake128_squeeze_first_three_blocks_e0(
       self, ret);
 }
@@ -3090,7 +3090,7 @@ generics
 KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE void
 libcrux_ml_kem_hash_functions_avx2_shake128_squeeze_next_block_e0(
-    libcrux_sha3_avx2_x4_incremental_KeccakState *st, uint8_t ret[3U][168U]) {
+    libcrux_sha3_generic_keccak_KeccakState_55 *st, uint8_t ret[3U][168U]) {
   uint8_t out[3U][168U] = {{0U}};
   uint8_t out0[168U] = {0U};
   uint8_t out1[168U] = {0U};
@@ -3126,7 +3126,7 @@ generics
 KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE void
 libcrux_ml_kem_hash_functions_avx2_shake128_squeeze_next_block_a9_e0(
-    libcrux_sha3_avx2_x4_incremental_KeccakState *self, uint8_t ret[3U][168U]) {
+    libcrux_sha3_generic_keccak_KeccakState_55 *self, uint8_t ret[3U][168U]) {
   libcrux_ml_kem_hash_functions_avx2_shake128_squeeze_next_block_e0(self, ret);
 }
 
@@ -3278,7 +3278,7 @@ static KRML_MUSTINLINE void libcrux_ml_kem_sampling_sample_from_xof_6c(
     libcrux_ml_kem_polynomial_PolynomialRingElement_f6 ret[3U]) {
   size_t sampled_coefficients[3U] = {0U};
   int16_t out[3U][272U] = {{0U}};
-  libcrux_sha3_avx2_x4_incremental_KeccakState xof_state =
+  libcrux_sha3_generic_keccak_KeccakState_55 xof_state =
       libcrux_ml_kem_hash_functions_avx2_shake128_init_absorb_final_a9_e0(
           seeds);
   uint8_t randomness0[3U][504U];
