@@ -30,6 +30,10 @@ let rec repeati #acc l f acc0 =
     if l = 0 then acc0 else
     f (l -! sz 1) (repeati #acc (l -! sz 1) acc0)
 
+let eq_repeati0 #a n f acc0 = ()
+
+let unfold_repeati #a n f acc0 i = admit ()
+
 let lemma_createL_index #a len l i = ()
 
 let lemma_create16_index #a v15 v14 v13 v12 v11 v10 v9 v8 v7 v6 v5 v4 v3 v2 v1 v0 i =

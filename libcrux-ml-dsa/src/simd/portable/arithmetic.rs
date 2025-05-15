@@ -472,7 +472,7 @@ pub(super) fn compute_hint(
     let mut one_hints_count = 0;
 
     hax_lib::fstar!(
-        r#"Lib.LoopCombinators.eq_repeati0 0 (Spec.MLDSA.Math.hint_counter ${hint}.f_values) 0"#
+        r#"Spec.Utils.eq_repeati0 (sz 0) (Spec.MLDSA.Math.hint_counter ${hint}.f_values) (0)"#
     );
 
     for i in 0..hint.values.len() {
@@ -484,7 +484,7 @@ pub(super) fn compute_hint(
                     Spec.MLDSA.Math.compute_one_hint (v (Seq.index ${low}.f_values j))
                         (v (Seq.index ${high}.f_values j)) (v $gamma2))) /\
                 v $one_hints_count <= v $i /\
-                v $one_hints_count == Lib.LoopCombinators.repeati (v $i) (Spec.MLDSA.Math.hint_counter ${hint}.f_values) 0"#
+                v $one_hints_count == Spec.Utils.repeati ($i) (Spec.MLDSA.Math.hint_counter ${hint}.f_values) (0)"#
             )
         });
 
@@ -495,7 +495,7 @@ pub(super) fn compute_hint(
 
         hax_lib::fstar!(
             r#"Spec.MLDSA.Math.hint_counter_loop ${hint}.f_values $_hint_values (v i);
-            Lib.LoopCombinators.unfold_repeati (v $i + 1) (Spec.MLDSA.Math.hint_counter ${hint}.f_values) 0 (v $i)"#
+            Spec.Utils.unfold_repeati ($i +! sz 1) (Spec.MLDSA.Math.hint_counter ${hint}.f_values) (0) ($i)"#
         );
 
         one_hints_count += hint.values[i] as usize;

@@ -51,6 +51,24 @@ val repeati:
   -> acc0:a
   -> a
 
+val eq_repeati0:
+    #a:Type
+  -> n:usize
+  -> f:(i:usize{v i < v n} -> a -> a)
+  -> acc0:a
+  -> Lemma (repeati #a (sz 0) f acc0 == acc0)
+
+(** Unfolding one iteration *)
+val unfold_repeati:
+    #a:Type
+  -> n:usize
+  -> f:(i:usize{v i < v n} -> a -> a)
+  -> acc0:a
+  -> i:usize{v i < v n}
+  -> Lemma (repeati #a (i +! sz 1) f acc0 == f i (repeati #a i f acc0))
+
+
+
 let createL len l = Rust_primitives.Hax.array_of_list len l 
 
 let create16 v15 v14 v13 v12 v11 v10 v9 v8 v7 v6 v5 v4 v3 v2 v1 v0 =
