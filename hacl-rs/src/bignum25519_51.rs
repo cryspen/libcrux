@@ -1,10 +1,4 @@
-#![allow(non_snake_case)]
-#![allow(non_upper_case_globals)]
-#![allow(non_camel_case_types)]
-#![allow(unused_assignments)]
-#![allow(unreachable_patterns)]
-
-use libcrux_macros as krml;
+use libcrux_utils::cswap::Swap;
 
 use crate::fstar::{self, uint128::uint128_to_uint64};
 
@@ -637,14 +631,8 @@ pub fn store_felem(u64s: &mut [u64], f: &[u64]) {
     u64s[3usize] = o30
 }
 
-// At the time of writing this appears to be safe, i.e. not being optimized
-// away. But this may change in future or with different compilers.
 #[inline(always)]
 pub fn cswap2(bit: u64, p1: &mut [u64], p2: &mut [u64]) {
-    let mask = 0u64.wrapping_sub(bit);
-    krml::unroll_for!(10, "i", 0u32, 1u32, {
-        let dummy = mask & (p1[i as usize] ^ p2[i as usize]);
-        p1[i as usize] ^= dummy;
-        p2[i as usize] ^= dummy
-    })
+    // Use libcrux hopefully constant time swaps.
+    p1.cswap(p2, bit as u8);
 }
