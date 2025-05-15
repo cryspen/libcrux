@@ -12,7 +12,7 @@ pub fn rejection_sample_less_than_field_modulus(randomness: &[u8], out: &mut [i3
     #[cfg(hax)]
     let _out_len = out.len();
     hax_lib::fstar!(
-        r#"Lib.LoopCombinators.eq_repeati0 0 (Spec.MLDSA.Math.rejection_sample_field_modulus_inner $randomness) Seq.empty"#
+        r#"Spec.Utils.eq_repeati0 (sz 0) (Spec.MLDSA.Math.rejection_sample_field_modulus_inner $randomness) Seq.empty"#
     );
 
     for i in 0..randomness.len() / 3 {
@@ -21,7 +21,7 @@ pub fn rejection_sample_less_than_field_modulus(randomness: &[u8], out: &mut [i3
                 r#"
               v $sampled <= v $i /\
               Seq.length $out == v $_out_len /\
-              (let samples = Lib.LoopCombinators.repeati (v $i)
+              (let samples = Spec.Utils.repeati ($i)
                 (Spec.MLDSA.Math.rejection_sample_field_modulus_inner $randomness) Seq.empty in
               v $sampled == Seq.length samples /\
               Seq.slice $out 0 (Seq.length samples) == samples)"#
@@ -34,9 +34,9 @@ pub fn rejection_sample_less_than_field_modulus(randomness: &[u8], out: &mut [i3
         let coefficient = ((b2 << 16) | (b1 << 8) | b0) & 0x00_7F_FF_FF;
 
         hax_lib::fstar!(
-            r#"Spec.MLDSA.Math.rejection_sample_coefficient_lemma $randomness (v $i);
-            Lib.LoopCombinators.unfold_repeati (v $i + 1) 
-                (Spec.MLDSA.Math.rejection_sample_field_modulus_inner $randomness) Seq.empty (v $i)"#
+            r#"Spec.MLDSA.Math.rejection_sample_coefficient_lemma $randomness ($i);
+            Spec.Utils.unfold_repeati ($i +! sz 1) 
+                (Spec.MLDSA.Math.rejection_sample_field_modulus_inner $randomness) Seq.empty ($i)"#
         );
 
         if coefficient < FIELD_MODULUS {
@@ -45,9 +45,9 @@ pub fn rejection_sample_less_than_field_modulus(randomness: &[u8], out: &mut [i3
         }
 
         hax_lib::fstar!(
-            r#"let samples = Lib.LoopCombinators.repeati (v $i + 1)
+            r#"let samples = Spec.Utils.repeati ($i +! sz 1)
                 (Spec.MLDSA.Math.rejection_sample_field_modulus_inner $randomness) Seq.empty in
-            Lib.Sequence.eq_intro #i32 #(Seq.length samples) (Seq.slice $out 0 (Seq.length samples)) samples"#
+            eq_intro (Seq.slice $out 0 (Seq.length samples)) samples"#
         );
     }
 
@@ -64,7 +64,7 @@ pub fn rejection_sample_less_than_eta_equals_2(randomness: &[u8], out: &mut [i32
     #[cfg(hax)]
     let _out_len = out.len();
     hax_lib::fstar!(
-        r#"Lib.LoopCombinators.eq_repeati0 0 (Spec.MLDSA.Math.rejection_sample_eta_2_inner $randomness) Seq.empty"#
+        r#"Spec.Utils.eq_repeati0 (sz 0) (Spec.MLDSA.Math.rejection_sample_eta_2_inner $randomness) Seq.empty"#
     );
 
     for i in 0..randomness.len() {
@@ -74,7 +74,7 @@ pub fn rejection_sample_less_than_eta_equals_2(randomness: &[u8], out: &mut [i32
               v $i >= 0 /\ v $i <= Seq.length $randomness /\
               v $sampled <= v $i * 2 /\
               Seq.length $out == v $_out_len /\
-              (let samples = Lib.LoopCombinators.repeati (v $i)
+              (let samples = Spec.Utils.repeati ($i)
                 (Spec.MLDSA.Math.rejection_sample_eta_2_inner $randomness) Seq.empty in
               v $sampled == Seq.length samples /\
               Seq.slice $out 0 (Seq.length samples) == samples)"#
@@ -86,8 +86,8 @@ pub fn rejection_sample_less_than_eta_equals_2(randomness: &[u8], out: &mut [i32
         let try_1 = byte >> 4;
 
         hax_lib::fstar!(
-            r#"Lib.LoopCombinators.unfold_repeati (v $i + 1) 
-                (Spec.MLDSA.Math.rejection_sample_eta_2_inner $randomness) Seq.empty (v $i)"#
+            r#"Spec.Utils.unfold_repeati ($i +! sz 1) 
+                (Spec.MLDSA.Math.rejection_sample_eta_2_inner $randomness) Seq.empty ($i)"#
         );
 
         if try_0 < 15 {
@@ -118,9 +118,9 @@ pub fn rejection_sample_less_than_eta_equals_2(randomness: &[u8], out: &mut [i32
         }
 
         hax_lib::fstar!(
-            r#"let samples = Lib.LoopCombinators.repeati (v $i + 1)
+            r#"let samples = Spec.Utils.repeati ($i +! sz 1)
                 (Spec.MLDSA.Math.rejection_sample_eta_2_inner $randomness) Seq.empty in
-            Lib.Sequence.eq_intro #i32 #(Seq.length samples) (Seq.slice $out 0 (Seq.length samples)) samples"#
+            eq_intro (Seq.slice $out 0 (Seq.length samples)) samples"#
         );
     }
 
@@ -137,7 +137,7 @@ pub fn rejection_sample_less_than_eta_equals_4(randomness: &[u8], out: &mut [i32
     #[cfg(hax)]
     let _out_len = out.len();
     hax_lib::fstar!(
-        r#"Lib.LoopCombinators.eq_repeati0 0 (Spec.MLDSA.Math.rejection_sample_eta_4_inner $randomness) Seq.empty"#
+        r#"Spec.Utils.eq_repeati0 (sz 0) (Spec.MLDSA.Math.rejection_sample_eta_4_inner $randomness) Seq.empty"#
     );
 
     for i in 0..randomness.len() {
@@ -147,7 +147,7 @@ pub fn rejection_sample_less_than_eta_equals_4(randomness: &[u8], out: &mut [i32
               v $i >= 0 /\ v $i <= Seq.length $randomness /\
               v $sampled <= v $i * 2 /\
               Seq.length $out == v $_out_len /\
-              (let samples = Lib.LoopCombinators.repeati (v $i)
+              (let samples = Spec.Utils.repeati ($i)
                 (Spec.MLDSA.Math.rejection_sample_eta_4_inner $randomness) Seq.empty in
               v $sampled == Seq.length samples /\
               Seq.slice $out 0 (Seq.length samples) == samples)"#
@@ -159,8 +159,8 @@ pub fn rejection_sample_less_than_eta_equals_4(randomness: &[u8], out: &mut [i32
         let try_1 = byte >> 4;
 
         hax_lib::fstar!(
-            r#"Lib.LoopCombinators.unfold_repeati (v $i + 1) 
-                (Spec.MLDSA.Math.rejection_sample_eta_4_inner $randomness) Seq.empty (v $i)"#
+            r#"Spec.Utils.unfold_repeati ($i +! sz 1) 
+                (Spec.MLDSA.Math.rejection_sample_eta_4_inner $randomness) Seq.empty ($i)"#
         );
 
         if try_0 < 9 {
@@ -173,9 +173,9 @@ pub fn rejection_sample_less_than_eta_equals_4(randomness: &[u8], out: &mut [i32
         }
 
         hax_lib::fstar!(
-            r#"let samples = Lib.LoopCombinators.repeati (v $i + 1)
+            r#"let samples = Spec.Utils.repeati ($i +! sz 1)
                 (Spec.MLDSA.Math.rejection_sample_eta_4_inner $randomness) Seq.empty in
-            Lib.Sequence.eq_intro #i32 #(Seq.length samples) (Seq.slice $out 0 (Seq.length samples)) samples"#
+            eq_intro (Seq.slice $out 0 (Seq.length samples)) samples"#
         );
     }
 
