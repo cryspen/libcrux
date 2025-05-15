@@ -10,12 +10,10 @@ pub(crate) struct KeccakState<const N: usize, T: KeccakStateItem<N>> {
 }
 
 impl<const N: usize, T: KeccakStateItem<N>> KeccakState<N, T> {
-    #[inline(always)]
     fn get(&self, i: usize, j: usize) -> T {
         get_ij(&self.st, i, j)
     }
 
-    #[inline(always)]
     fn set(&mut self, i: usize, j: usize, v: T) {
         set_ij(&mut self.st, i, j, v);
     }
