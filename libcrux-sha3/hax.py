@@ -94,7 +94,7 @@ class extractAction(argparse.Action):
 
         # Extract sha3
         includes = [
-            "+**"
+            "+** -**::avx2::** -**::neon::**"
         ]
         include_str = " ".join(includes)
         interface_include = "+**"
