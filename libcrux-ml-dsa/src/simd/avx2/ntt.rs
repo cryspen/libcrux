@@ -3,6 +3,58 @@ use crate::simd::traits::COEFFICIENTS_IN_SIMD_UNIT;
 
 use libcrux_intrinsics::avx2::*;
 
+// #[inline(always)]
+#[hax_lib::fstar::postprocess_with(
+    core_models::arch::x86::interpretations::int_vec::flatten_circuit
+)]
+fn butterfly_2_(
+    a: Vec256,
+    b: Vec256,
+    zeta_a0: i32,
+    zeta_a1: i32,
+    zeta_a2: i32,
+    zeta_a3: i32,
+    zeta_b0: i32,
+    zeta_b1: i32,
+    zeta_b2: i32,
+    zeta_b3: i32,
+) -> (Vec256) {
+    // ) -> (Vec256, Vec256) {
+    // We shuffle the terms to group those that need to be multiplied
+    // with zetas in the high QWORDS of the vectors, i.e. if the inputs are
+    //   a = (a7, a6, a5, a4, a3, a2, a1, a0)
+    //   b = (b7, b6, b5, b4, b3, b2, b1, b0)
+    // after shuffling we have
+    //   a_shuffled = ( a7, a5, a6, a4, a3, a1, a2, a0)
+    //   b_shuffled = ( b7, b5, b6, b4, b3, b1, b2, b0)
+    const SHUFFLE: i32 = 0b11_01_10_00;
+    let a = mm256_shuffle_epi32::<SHUFFLE>(a);
+    let b = mm256_shuffle_epi32::<SHUFFLE>(b);
+
+    // Now we can use the same approach as for `butterfly_4`, only
+    // zetas need to be adjusted.
+    let summands = mm256_unpacklo_epi64(a, b);
+    let mut zeta_products = mm256_unpackhi_epi64(a, b);
+    let zetas = mm256_set_epi32(
+        zeta_b3, zeta_b2, zeta_a3, zeta_a2, zeta_b1, zeta_b0, zeta_a1, zeta_a0,
+    );
+
+    arithmetic::montgomery_multiply(&mut zeta_products, &zetas);
+
+    zeta_products
+    // let sub_terms = mm256_sub_epi32(summands, zeta_products);
+    // let add_terms = mm256_add_epi32(summands, zeta_products);
+
+    // let a_terms_shuffled = mm256_unpacklo_epi64(add_terms, sub_terms);
+    // let b_terms_shuffled = mm256_unpackhi_epi64(add_terms, sub_terms);
+
+    // // Here, we undo the initial shuffle (it's self-inverse).
+    // (
+    //     mm256_shuffle_epi32::<SHUFFLE>(a_terms_shuffled),
+    //     mm256_shuffle_epi32::<SHUFFLE>(b_terms_shuffled),
+    // )
+}
+
 #[inline(always)]
 fn butterfly_2(
     re: &mut AVX2RingElement,

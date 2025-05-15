@@ -43,7 +43,7 @@ impl<const N: u64, T> FunArray<N, T> {
     pub fn get(&self, i: u64) -> &T {
         self.0[i as usize].as_ref().unwrap()
     }
-    /// Constructor for FunArray. `FunArray::<N,T>::from_fn` constructs a FunArray out of a function that takes usizes smaller than `N` and produces values of type T.
+    /// Constructor for FunArray. `FunArray<N,T>::from_fn` constructs a funarray out of a function that takes usizes smaller than `N` and produces an element of type T.
     pub fn from_fn<F: Fn(u64) -> T>(f: F) -> Self {
         // let vec = (0..N).map(f).collect();
         let arr = core::array::from_fn(|i| {
