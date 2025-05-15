@@ -5,3 +5,4 @@
 #![deny(unsafe_code)]
 
 pub mod cselect;
+pub mod cswap;
