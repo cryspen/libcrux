@@ -69,6 +69,33 @@ jobs:
         working-directory: libcrux-ml-dsa
         run: ./hax.sh prove --admit
   
+  prove:
+    runs-on: self-hosted
+    if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}
+    needs:
+      - extract
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          repository: cryspen/hax
+          path: hax
+          ref: ${{ github.event.inputs.hax_rev || 'main' }}
+      - name: ⤵ Install hax
+        run: |
+          nix profile install ./hax
+      - name: ⤵ Install FStar
+        run: nix profile install github:FStarLang/FStar/v2025.02.17
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: fstar-extractions
+          path: .
+
+      - name: 🏃 Prove ML-DSA crate
+        working-directory: libcrux-ml-dsa
+        run: ./hax.sh prove
+        
   mldsa-extract-hax-status:
     if: ${{ always() }}
     needs: [extract]

@@ -17,6 +17,10 @@ mod pre_hash;
 mod sample;
 mod samplex4;
 mod simd;
+
+#[cfg(hax)]
+mod specs;
+
 mod types;
 
 // Public interface

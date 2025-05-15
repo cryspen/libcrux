@@ -4,11 +4,11 @@
  * SPDX-License-Identifier: MIT or Apache-2.0
  *
  * This code was generated with the following revisions:
- * Charon: bba1aa4cae0326f1d94d466f8263e85dd9f14efe
- * Eurydice: 9f45c5b6710ac03aa157299391233be90bc1565c
- * Karamel: b7bdca21d1dbfd635f6ff432c0d8da3d5ca2edbc
+ * Charon: 3275bf4ad9dc8c25965dc5da6122653fc43c4287
+ * Eurydice: d3b14228e2b5fe8710ec7efae31e4de2c96ed20d
+ * Karamel: 095cdb73f246711f93f99a159ceca37cd2c227e1
  * F*: 4b3fc11774003a6ff7c09500ecb5f0145ca6d862
- * Libcrux: e023f8453e3c2f240705192cb557223357129b0d
+ * Libcrux: 9eca8a01c16c6e6518dde0181f8f39a9bce44b85
  */
 
 #ifndef __libcrux_mlkem_portable_H
@@ -28,10 +28,10 @@ void libcrux_ml_kem_hash_functions_portable_H(Eurydice_slice input,
 
 #define LIBCRUX_ML_KEM_VECTOR_TRAITS_FIELD_ELEMENTS_IN_VECTOR ((size_t)16U)
 
-#define LIBCRUX_ML_KEM_VECTOR_TRAITS_FIELD_MODULUS ((int16_t)3329)
-
 #define LIBCRUX_ML_KEM_VECTOR_TRAITS_MONTGOMERY_R_SQUARED_MOD_FIELD_MODULUS \
   ((int16_t)1353)
+
+#define LIBCRUX_ML_KEM_VECTOR_TRAITS_FIELD_MODULUS ((int16_t)3329)
 
 #define LIBCRUX_ML_KEM_VECTOR_TRAITS_INVERSE_OF_MODULUS_MOD_MONTGOMERY_R \
   (62209U)
@@ -198,18 +198,6 @@ libcrux_ml_kem_vector_portable_vector_type_PortableVector
 libcrux_ml_kem_vector_portable_multiply_by_constant_2c(
     libcrux_ml_kem_vector_portable_vector_type_PortableVector vec, int16_t c);
 
-libcrux_ml_kem_vector_portable_vector_type_PortableVector
-libcrux_ml_kem_vector_portable_arithmetic_bitwise_and_with_constant(
-    libcrux_ml_kem_vector_portable_vector_type_PortableVector vec, int16_t c);
-
-/**
-This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::portable::vector_type::PortableVector)#1}
-*/
-libcrux_ml_kem_vector_portable_vector_type_PortableVector
-libcrux_ml_kem_vector_portable_bitwise_and_with_constant_2c(
-    libcrux_ml_kem_vector_portable_vector_type_PortableVector v, int16_t c);
-
 /**
  Note: This function is not secret independent
  Only use with public values.
@@ -262,13 +250,9 @@ libcrux_ml_kem::vector::portable::vector_type::PortableVector)#1}
 */
 libcrux_ml_kem_vector_portable_vector_type_PortableVector
 libcrux_ml_kem_vector_portable_barrett_reduce_2c(
-    libcrux_ml_kem_vector_portable_vector_type_PortableVector v);
+    libcrux_ml_kem_vector_portable_vector_type_PortableVector vector);
 
 #define LIBCRUX_ML_KEM_VECTOR_PORTABLE_ARITHMETIC_MONTGOMERY_SHIFT (16U)
-
-#define LIBCRUX_ML_KEM_VECTOR_PORTABLE_ARITHMETIC_MONTGOMERY_R \
-  ((int32_t)1 << (uint32_t)                                    \
-       LIBCRUX_ML_KEM_VECTOR_PORTABLE_ARITHMETIC_MONTGOMERY_SHIFT)
 
 /**
  Signed Montgomery Reduction
@@ -313,7 +297,24 @@ libcrux_ml_kem::vector::portable::vector_type::PortableVector)#1}
 */
 libcrux_ml_kem_vector_portable_vector_type_PortableVector
 libcrux_ml_kem_vector_portable_montgomery_multiply_by_constant_2c(
-    libcrux_ml_kem_vector_portable_vector_type_PortableVector v, int16_t r);
+    libcrux_ml_kem_vector_portable_vector_type_PortableVector vector,
+    int16_t constant);
+
+libcrux_ml_kem_vector_portable_vector_type_PortableVector
+libcrux_ml_kem_vector_portable_arithmetic_bitwise_and_with_constant(
+    libcrux_ml_kem_vector_portable_vector_type_PortableVector vec, int16_t c);
+
+libcrux_ml_kem_vector_portable_vector_type_PortableVector
+libcrux_ml_kem_vector_portable_arithmetic_to_unsigned_representative(
+    libcrux_ml_kem_vector_portable_vector_type_PortableVector a);
+
+/**
+This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
+libcrux_ml_kem::vector::portable::vector_type::PortableVector)#1}
+*/
+libcrux_ml_kem_vector_portable_vector_type_PortableVector
+libcrux_ml_kem_vector_portable_to_unsigned_representative_2c(
+    libcrux_ml_kem_vector_portable_vector_type_PortableVector a);
 
 /**
  The `compress_*` functions implement the `Compress` function specified in the
@@ -357,6 +358,18 @@ uint32_t libcrux_ml_kem_vector_portable_arithmetic_get_n_least_significant_bits(
 
 int16_t libcrux_ml_kem_vector_portable_compress_compress_ciphertext_coefficient(
     uint8_t coefficient_bits, uint16_t fe);
+
+libcrux_ml_kem_vector_portable_vector_type_PortableVector
+libcrux_ml_kem_vector_portable_compress_decompress_1(
+    libcrux_ml_kem_vector_portable_vector_type_PortableVector a);
+
+/**
+This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
+libcrux_ml_kem::vector::portable::vector_type::PortableVector)#1}
+*/
+libcrux_ml_kem_vector_portable_vector_type_PortableVector
+libcrux_ml_kem_vector_portable_decompress_1_2c(
+    libcrux_ml_kem_vector_portable_vector_type_PortableVector a);
 
 void libcrux_ml_kem_vector_portable_ntt_ntt_step(
     libcrux_ml_kem_vector_portable_vector_type_PortableVector *vec,
@@ -703,14 +716,6 @@ libcrux_ml_kem::vector::portable::vector_type::PortableVector)}
 libcrux_ml_kem_vector_portable_vector_type_PortableVector
 libcrux_ml_kem_vector_portable_vector_type_clone_3b(
     libcrux_ml_kem_vector_portable_vector_type_PortableVector *self);
-
-/**
-This function found in impl {(libcrux_ml_kem::vector::traits::Repr for
-libcrux_ml_kem::vector::portable::vector_type::PortableVector)}
-*/
-void libcrux_ml_kem_vector_portable_repr_94(
-    libcrux_ml_kem_vector_portable_vector_type_PortableVector x,
-    int16_t ret[16U]);
 
 #if defined(__cplusplus)
 }

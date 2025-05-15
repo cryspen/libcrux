@@ -1,7 +1,7 @@
 use crate::{
     hax_utils::hax_debug_assert,
     polynomial::{zeta, PolynomialRingElement},
-    vector::{montgomery_multiply_fe, Operations, FIELD_ELEMENTS_IN_VECTOR},
+    vector::{Operations, FIELD_ELEMENTS_IN_VECTOR},
 };
 
 #[inline(always)]
@@ -34,7 +34,9 @@ pub(crate) fn invert_ntt_at_layer_1<Vector: Operations>(
 ) {
     hax_lib::fstar!(r#"reveal_opaque (`%invert_ntt_re_range_1) (invert_ntt_re_range_1 #$:Vector)"#);
     hax_lib::fstar!(r#"reveal_opaque (`%invert_ntt_re_range_2) (invert_ntt_re_range_2 #$:Vector)"#);
+    #[cfg(hax)]
     let _zeta_i_init = *zeta_i;
+
     for round in 0..16 {
         hax_lib::loop_invariant!(|round: usize| {
             fstar!(
@@ -83,7 +85,9 @@ pub(crate) fn invert_ntt_at_layer_2<Vector: Operations>(
     re: &mut PolynomialRingElement<Vector>,
 ) {
     hax_lib::fstar!(r#"reveal_opaque (`%invert_ntt_re_range_2) (invert_ntt_re_range_2 #$:Vector)"#);
+    #[cfg(hax)]
     let _zeta_i_init = *zeta_i;
+
     for round in 0..16 {
         hax_lib::loop_invariant!(|round: usize| {
             fstar!(
@@ -127,7 +131,9 @@ pub(crate) fn invert_ntt_at_layer_3<Vector: Operations>(
     re: &mut PolynomialRingElement<Vector>,
 ) {
     hax_lib::fstar!(r#"reveal_opaque (`%invert_ntt_re_range_2) (invert_ntt_re_range_2 #$:Vector)"#);
+    #[cfg(hax)]
     let _zeta_i_init = *zeta_i;
+
     for round in 0..16 {
         hax_lib::loop_invariant!(|round: usize| {
             fstar!(
@@ -178,7 +184,7 @@ pub(crate) fn inv_ntt_layer_int_vec_step_reduce<Vector: Operations>(
 ) -> (Vector, Vector) {
     let a_minus_b = Vector::sub(b, &a);
     a = Vector::barrett_reduce(Vector::add(a, &b));
-    b = montgomery_multiply_fe::<Vector>(a_minus_b, zeta_r);
+    b = Vector::montgomery_multiply_by_constant(a_minus_b, zeta_r);
     (a, b)
 }
 
@@ -212,6 +218,7 @@ pub(crate) fn invert_ntt_at_layer_4_plus<Vector: Operations>(
 }
 
 #[inline(always)]
+#[hax_lib::fstar::verification_status(lax)]
 #[hax_lib::requires(fstar!(r#"invert_ntt_re_range_1 $re"#))]
 pub(crate) fn invert_ntt_montgomery<const K: usize, Vector: Operations>(
     re: &mut PolynomialRingElement<Vector>,

@@ -42,8 +42,11 @@ pub(crate) fn prf_input_inc<const K: usize>(
     prf_inputs: &mut [[u8; 33]; K],
     mut domain_separator: u8,
 ) -> u8 {
+    #[cfg(hax)]
     let _domain_separator_init = domain_separator;
+    #[cfg(hax)]
     let _prf_inputs_init = prf_inputs.clone();
+
     for i in 0..K {
         hax_lib::loop_invariant!(|i: usize| {
             fstar!(

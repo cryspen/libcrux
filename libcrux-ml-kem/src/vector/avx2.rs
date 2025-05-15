@@ -254,10 +254,30 @@ fn deserialize_12(bytes: &[u8]) -> SIMD256Vector {
     }
 }
 
+#[cfg(hax)]
 impl crate::vector::traits::Repr for SIMD256Vector {
-    fn repr(x: Self) -> [i16; 16] {
-        vec_to_i16_array(x)
+    fn repr(&self) -> [i16; 16] {
+        vec_to_i16_array(self.clone())
     }
+}
+
+#[cfg(any(eurydice, not(hax)))]
+impl crate::vector::traits::Repr for SIMD256Vector {}
+
+#[inline(always)]
+#[hax_lib::requires(array.len() >= 32)]
+pub(super) fn from_bytes(array: &[u8]) -> SIMD256Vector {
+    SIMD256Vector {
+        elements: mm256_loadu_si256_u8(&array[0..32]),
+    }
+}
+
+#[inline(always)]
+#[hax_lib::fstar::verification_status(lax)]
+#[hax_lib::requires(bytes.len() >= 32)]
+#[hax_lib::ensures(|_| future(bytes).len() == bytes.len())]
+pub(super) fn to_bytes(x: SIMD256Vector, bytes: &mut [u8]) {
+    mm256_storeu_si256_u8(&mut bytes[0..32], x.elements)
 }
 
 #[hax_lib::attributes]
@@ -289,6 +309,7 @@ impl Operations for SIMD256Vector {
 
     #[requires(bytes.len() >= 32)]
     #[inline(always)]
+    #[ensures(|_| future(bytes).len() == bytes.len())]
     fn to_bytes(x: Self, bytes: &mut [u8]) {
         to_bytes(x, bytes)
     }
@@ -329,23 +350,6 @@ impl Operations for SIMD256Vector {
         }
     }
 
-    #[ensures(|out| fstar!(r#"impl.f_repr out == Spec.Utils.map_array (fun x -> x &. $constant) (impl.f_repr $vector)"#))]
-    #[inline(always)]
-    fn bitwise_and_with_constant(vector: Self, constant: i16) -> Self {
-        Self {
-            elements: arithmetic::bitwise_and_with_constant(vector.elements, constant),
-        }
-    }
-
-    #[requires(SHIFT_BY >= 0 && SHIFT_BY < 16)]
-    #[ensures(|out| fstar!(r#"(v_SHIFT_BY >=. (mk_i32 0) /\ v_SHIFT_BY <. (mk_i32 16)) ==> impl.f_repr out == Spec.Utils.map_array (fun x -> x >>! ${SHIFT_BY}) (impl.f_repr $vector)"#))]
-    #[inline(always)]
-    fn shift_right<const SHIFT_BY: i32>(vector: Self) -> Self {
-        Self {
-            elements: arithmetic::shift_right::<{ SHIFT_BY }>(vector.elements),
-        }
-    }
-
     #[requires(fstar!(r#"Spec.Utils.is_i16b_array (pow2 12 - 1) (impl.f_repr $vector)"#))]
     #[ensures(|out| fstar!(r#"impl.f_repr out == Spec.Utils.map_array (fun x -> if x >=. (mk_i16 3329) then x -! (mk_i16 3329) else x) (impl.f_repr $vector)"#))]
     #[inline(always)]
@@ -354,6 +358,9 @@ impl Operations for SIMD256Vector {
     }
 
     #[requires(fstar!(r#"Spec.Utils.is_i16b_array 28296 (impl.f_repr ${vector})"#))]
+    #[ensures(|result| fstar!(r#"Spec.Utils.is_i16b_array 3328 (impl.f_repr ${result}) /\
+                (forall i. (v (Seq.index (impl.f_repr ${result}) i) % 3329) == 
+                           (v (Seq.index (impl.f_repr ${vector})i) % 3329))"#))]
     #[inline(always)]
     fn barrett_reduce(vector: Self) -> Self {
         Self {
@@ -361,11 +368,25 @@ impl Operations for SIMD256Vector {
         }
     }
 
-    #[requires(fstar!(r#"Spec.Utils.is_i16b 1664 $constant"#))]
     #[inline(always)]
+    #[requires(fstar!(r#"Spec.Utils.is_i16b 1664 $constant"#))]
+    #[ensures(|result| fstar!(r#"Spec.Utils.is_i16b_array 3328 (impl.f_repr ${result}) /\
+                (forall i. i < 16 ==> ((v (Seq.index (impl.f_repr ${result}) i) % 3329)==
+                                       (v (Seq.index (impl.f_repr ${vector}) i) * v ${constant} * 169) % 3329))"#))]
     fn montgomery_multiply_by_constant(vector: Self, constant: i16) -> Self {
         Self {
             elements: arithmetic::montgomery_multiply_by_constant(vector.elements, constant),
+        }
+    }
+
+    #[requires(fstar!(r#"Spec.Utils.is_i16b_array 3328 (impl.f_repr $a)"#))]
+    #[ensures(|result| fstar!(r#"forall (i:nat). i < 16 ==>
+                                (let x = Seq.index (impl.f_repr ${a}) i in
+                                 let y = Seq.index (impl.f_repr ${result}) i in
+                                 (v y >= 0 /\ v y <= 3328 /\ (v y % 3329 == v x % 3329)))"#))]
+    fn to_unsigned_representative(a: Self) -> Self {
+        Self {
+            elements: arithmetic::to_unsigned_representative(a.elements),
         }
     }
 
@@ -391,6 +412,15 @@ impl Operations for SIMD256Vector {
     #[inline(always)]
     fn compress<const COEFFICIENT_BITS: i32>(vector: Self) -> Self {
         compress::<COEFFICIENT_BITS>(vector)
+    }
+
+    #[requires(fstar!(r#"forall (i:nat). i < 16 ==> 
+                                    (let x = Seq.index (impl.f_repr $a) i in 
+                                     (x == mk_i16 0 \/ x == mk_i16 1))"#))]
+    fn decompress_1(a: Self) -> Self {
+        Self {
+            elements: compress::decompress_1(a.elements),
+        }
     }
 
     #[requires(fstar!(r#"(v $COEFFICIENT_BITS == 4 \/
@@ -566,19 +596,4 @@ impl Operations for SIMD256Vector {
     fn rej_sample(input: &[u8], output: &mut [i16]) -> usize {
         sampling::rejection_sample(input, output)
     }
-}
-
-#[inline(always)]
-#[hax_lib::requires(array.len() >= 32)]
-pub(super) fn from_bytes(array: &[u8]) -> SIMD256Vector {
-    SIMD256Vector {
-        elements: mm256_loadu_si256_u8(&array[0..32]),
-    }
-}
-
-#[inline(always)]
-#[hax_lib::fstar::verification_status(lax)]
-#[hax_lib::requires(bytes.len() >= 32)]
-pub(super) fn to_bytes(x: SIMD256Vector, bytes: &mut [u8]) {
-    mm256_storeu_si256_u8(&mut bytes[0..32], x.elements)
 }

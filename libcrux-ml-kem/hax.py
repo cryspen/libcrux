@@ -68,11 +68,29 @@ class extractAction(argparse.Action):
             interface_include,
         ]
         hax_env = {
-            'RUSTFLAGS': "--cfg pre_minicore"
+            'RUSTFLAGS': "--cfg pre_core_models"
         }
         shell(
             cargo_hax_into,
             cwd="../libcrux-intrinsics",
+            env=hax_env,
+        )
+
+        # Extract libcrux-secrets
+        include_str = "+**"
+        interface_include = ""
+        cargo_hax_into = [
+            "cargo",
+            "hax",
+            "into",
+            "-i",
+            include_str,
+            "fstar",
+        ]
+        hax_env = {}
+        shell(
+            cargo_hax_into,
+            cwd="../secrets",
             env=hax_env,
         )
 
@@ -87,7 +105,7 @@ class extractAction(argparse.Action):
             "+:libcrux_ml_kem::hash_functions::*::*",
         ]
         include_str = " ".join(includes)
-        interface_include = "+** -libcrux_ml_kem::types -libcrux_ml_kem::constants"
+        interface_include = "+** -libcrux_ml_kem::vector::traits -libcrux_ml_kem::types -libcrux_ml_kem::constants"
         cargo_hax_into = [
             "cargo",
             "hax",
@@ -119,7 +137,7 @@ class proveAction(argparse.Action):
         admit_env = {}
         if args.admit:
             admit_env = {"OTHERFLAGS": "--admit_smt_queries true"}
-        shell(["make", "-C", "proofs/fstar/extraction/"], env=admit_env)
+        shell(["make", "-j4", "-C", "proofs/fstar/extraction/"], env=admit_env)
         return None
 
 

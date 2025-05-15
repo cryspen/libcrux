@@ -4,11 +4,11 @@
  * SPDX-License-Identifier: MIT or Apache-2.0
  *
  * This code was generated with the following revisions:
- * Charon: bba1aa4cae0326f1d94d466f8263e85dd9f14efe
- * Eurydice: 9f45c5b6710ac03aa157299391233be90bc1565c
- * Karamel: b7bdca21d1dbfd635f6ff432c0d8da3d5ca2edbc
+ * Charon: 3275bf4ad9dc8c25965dc5da6122653fc43c4287
+ * Eurydice: d3b14228e2b5fe8710ec7efae31e4de2c96ed20d
+ * Karamel: 095cdb73f246711f93f99a159ceca37cd2c227e1
  * F*: 4b3fc11774003a6ff7c09500ecb5f0145ca6d862
- * Libcrux: e023f8453e3c2f240705192cb557223357129b0d
+ * Libcrux: 9eca8a01c16c6e6518dde0181f8f39a9bce44b85
  */
 
 #ifndef __libcrux_mlkem_avx2_H
@@ -94,16 +94,6 @@ libcrux_ml_kem::vector::avx2::SIMD256Vector)#3}
 __m256i libcrux_ml_kem_vector_avx2_multiply_by_constant_9a(__m256i vec,
                                                            int16_t c);
 
-__m256i libcrux_ml_kem_vector_avx2_arithmetic_bitwise_and_with_constant(
-    __m256i vector, int16_t constant);
-
-/**
-This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::avx2::SIMD256Vector)#3}
-*/
-__m256i libcrux_ml_kem_vector_avx2_bitwise_and_with_constant_9a(
-    __m256i vector, int16_t constant);
-
 __m256i libcrux_ml_kem_vector_avx2_arithmetic_cond_subtract_3329(
     __m256i vector);
 
@@ -140,6 +130,18 @@ libcrux_ml_kem::vector::avx2::SIMD256Vector)#3}
 __m256i libcrux_ml_kem_vector_avx2_montgomery_multiply_by_constant_9a(
     __m256i vector, int16_t constant);
 
+__m256i libcrux_ml_kem_vector_avx2_arithmetic_bitwise_and_with_constant(
+    __m256i vector, int16_t constant);
+
+__m256i libcrux_ml_kem_vector_avx2_arithmetic_to_unsigned_representative(
+    __m256i a);
+
+/**
+This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
+libcrux_ml_kem::vector::avx2::SIMD256Vector)#3}
+*/
+__m256i libcrux_ml_kem_vector_avx2_to_unsigned_representative_9a(__m256i a);
+
 __m256i libcrux_ml_kem_vector_avx2_compress_compress_message_coefficient(
     __m256i vector);
 
@@ -153,6 +155,14 @@ __m256i libcrux_ml_kem_vector_avx2_compress_1_9a(__m256i vector);
 
 __m256i libcrux_ml_kem_vector_avx2_compress_mulhi_mm256_epi32(__m256i lhs,
                                                               __m256i rhs);
+
+__m256i libcrux_ml_kem_vector_avx2_compress_decompress_1(__m256i a);
+
+/**
+This function found in impl {(libcrux_ml_kem::vector::traits::Operations for
+libcrux_ml_kem::vector::avx2::SIMD256Vector)#3}
+*/
+__m256i libcrux_ml_kem_vector_avx2_decompress_1_9a(__m256i a);
 
 __m256i libcrux_ml_kem_vector_avx2_arithmetic_montgomery_multiply_by_constants(
     __m256i vec, __m256i constants);
@@ -464,12 +474,6 @@ This function found in impl {(core::clone::Clone for
 libcrux_ml_kem::vector::avx2::SIMD256Vector)#1}
 */
 __m256i libcrux_ml_kem_vector_avx2_clone_3a(__m256i *self);
-
-/**
-This function found in impl {(libcrux_ml_kem::vector::traits::Repr for
-libcrux_ml_kem::vector::avx2::SIMD256Vector)}
-*/
-void libcrux_ml_kem_vector_avx2_repr_11(__m256i x, int16_t ret[16U]);
 
 #if defined(__cplusplus)
 }
