@@ -13,7 +13,6 @@ impl<const N: usize, T: KeccakStateItem<N>> KeccakState<N, T> {
     fn get(&self, i: usize, j: usize) -> T {
         get_ij(&self.st, i, j)
     }
-
     fn set(&mut self, i: usize, j: usize, v: T) {
         set_ij(&mut self.st, i, j, v);
     }

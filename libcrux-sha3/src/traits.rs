@@ -11,7 +11,7 @@ pub(crate) fn get_ij<const N: usize, T: KeccakStateItem<N>>(
     i: usize,
     j: usize,
 ) -> T {
-    arr[5 * i + j]
+    arr[5 * j + i]
 }
 
 #[inline(always)]
@@ -21,7 +21,7 @@ pub(crate) fn set_ij<const N: usize, T: KeccakStateItem<N>>(
     j: usize,
     value: T,
 ) {
-    arr[5 * i + j] = value;
+    arr[5 * j + i] = value;
 }
 
 pub(crate) mod internal {
