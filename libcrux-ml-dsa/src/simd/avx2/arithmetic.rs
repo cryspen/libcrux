@@ -56,6 +56,7 @@ pub(super) fn montgomery_multiply_by_constant(lhs: Vec256, constant: i32) -> Vec
     res
 }
 
+// TODO: prove equivalence to math spec
 pub fn montgomery_multiply_spec(x: i32, y: i32) -> i32 {
     pub fn i32_extended64_mul(x: i32, y: i32) -> i64 {
         (x as i64) * (y as i64)
