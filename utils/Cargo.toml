@@ -11,4 +11,4 @@ readme.workspace = true
 [dependencies]
 
 [dev-dependencies]
-rand = "0.9.1"
+rand = "0.9"

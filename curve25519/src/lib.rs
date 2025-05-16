@@ -1,11 +1,10 @@
-// #![no_std]
+#![no_std]
 
 pub use libcrux_hacl_rs::curve25519_51 as hacl;
 
 mod impl_hacl;
-// mod x2;
 
-pub use impl_hacl::{ecdh, secret_to_public, ecdh_x4};
+pub use impl_hacl::{ecdh, secret_to_public};
 
 /// The length of Curve25519 secret keys.
 pub const SK_LEN: usize = 32;
