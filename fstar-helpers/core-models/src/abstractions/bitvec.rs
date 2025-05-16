@@ -401,7 +401,7 @@ pub mod int_vec_interp {
     #[hax_lib::fstar::before("[@@ $SIMPLIFICATION_LEMMA ]")]
     #[hax_lib::opaque]
     #[hax_lib::lemma]
-    fn lemma_rewrite_i64x4_bv_i32x8(
+    pub fn lemma_rewrite_i64x4_bv_i32x8(
         bv: i64x4,
     ) -> Proof<{ hax_lib::eq(BitVec::to_i32x8(BitVec::from_i64x4(bv)), bv.into_i32x8()) }> {
     }
@@ -411,7 +411,7 @@ pub mod int_vec_interp {
     #[hax_lib::fstar::before("[@@ $SIMPLIFICATION_LEMMA ]")]
     #[hax_lib::opaque]
     #[hax_lib::lemma]
-    fn lemma_rewrite_i32x8_bv_i64x4(
+    pub fn lemma_rewrite_i32x8_bv_i64x4(
         bv: i32x8,
     ) -> Proof<{ hax_lib::eq(BitVec::to_i64x4(BitVec::from_i32x8(bv)), bv.into_i64x4()) }> {
     }
