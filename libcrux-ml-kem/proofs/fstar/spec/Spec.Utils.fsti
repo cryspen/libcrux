@@ -30,17 +30,17 @@ val pow2_values_more: x:nat -> Lemma
 let map_slice #a #b
   (f:a -> b)
   (s: t_Slice a)
-  = createi (length s) (fun i -> f (Seq.index s (v i)))
+  = createi (length s) (fun i -> f (index s i))
 
 let map_array #a #b #len
   (f:a -> b)
   (s: t_Array a len)
-  = createi (length s) (fun i -> f (Seq.index s (v i)))
+  = createi (length s) (fun i -> f (index s i))
 
 let map2 #a #b #c #len
   (f:a -> b -> c)
   (x: t_Array a len) (y: t_Array b len)
-  = createi (length x) (fun i -> f (Seq.index x (v i)) (Seq.index y (v i)))
+  = createi (length x) (fun i -> f (index x i) (index y i))
 
 let create len c = createi len (fun i -> c)
 
@@ -77,11 +77,11 @@ let create16 v15 v14 v13 v12 v11 v10 v9 v8 v7 v6 v5 v4 v3 v2 v1 v0 =
   createL 16 l
 
 val lemma_createL_index #a len l i :
-  Lemma (Seq.index (createL #a len l) i == List.Tot.index l i)
-        [SMTPat (Seq.index (createL #a len l) i)]
+  Lemma (index (createL #a len l) i == List.Tot.index l i)
+        [SMTPat (index (createL #a len l) i)]
 
 val lemma_create16_index #a v15 v14 v13 v12 v11 v10 v9 v8 v7 v6 v5 v4 v3 v2 v1 v0 i :
-  Lemma (Seq.index (create16 #a v15 v14 v13 v12 v11 v10 v9 v8 v7 v6 v5 v4 v3 v2 v1 v0) i ==
+  Lemma (index (create16 #a v15 v14 v13 v12 v11 v10 v9 v8 v7 v6 v5 v4 v3 v2 v1 v0) i ==
         (if i = 0 then v15 else
          if i = 1 then v14 else
          if i = 2 then v13 else
@@ -98,15 +98,15 @@ val lemma_create16_index #a v15 v14 v13 v12 v11 v10 v9 v8 v7 v6 v5 v4 v3 v2 v1 v
          if i = 13 then v2 else
          if i = 14 then v1 else
          if i = 15 then v0))
-        [SMTPat (Seq.index (create16 #a v15 v14 v13 v12 v11 v10 v9 v8 v7 v6 v5 v4 v3 v2 v1 v0) i)]
+        [SMTPat (index (create16 #a v15 v14 v13 v12 v11 v10 v9 v8 v7 v6 v5 v4 v3 v2 v1 v0) i)]
 
 val lemma_createi_index #a len f i :
-  Lemma (Seq.index (createi #a len f) i == f (sz i))
-        [SMTPat (Seq.index (createi #a len f) i)]
+  Lemma (index (createi #a len f) i == f i)
+        [SMTPat (index (createi #a len f) i)]
 
 val lemma_create_index #a len c i:
-  Lemma (Seq.index (create #a len c) i == c)
-        [SMTPat (Seq.index (create #a len c) i)]
+  Lemma (index (create #a len c) i == c)
+        [SMTPat (index (create #a len c) i)]
 
 val lemma_bitand_properties #t (x:int_t t) :
   Lemma ((x &. ones) == x /\ (x &. mk_int #t 0) == mk_int #t 0 /\ (ones #t &. x) == x /\ (mk_int #t 0 &. x) == mk_int #t 0)
@@ -116,7 +116,7 @@ let flatten #t #n
   (#m: usize {range (v n * v m) usize_inttype})
   (x: t_Array (t_Array t m) n)
   : t_Array t (m *! n)
-  = createi (m *! n) (fun i -> Seq.index (Seq.index x (v i / v m)) (v i % v m))
+  = createi (v m * v n) (fun i -> index (index x (i / v m)) (i % v m))
 #pop-options
 
 type t_Error = | Error_RejectionSampling : t_Error
@@ -141,11 +141,11 @@ val update_at_range_lemma #n
   (i: Core.Ops.Range.t_Range (int_t n) {(Core.Ops.Range.impl_index_range_slice 't n).f_index_pre s i}) 
   (x: t_Slice 't)
   : Lemma
-    (requires (Seq.length x == v i.f_end - v i.f_start))
+    (requires (length x == v i.f_end - v i.f_start))
     (ensures (
       let s' = Rust_primitives.Hax.Monomorphized_update_at.update_at_range s i x in
       let len = v i.f_start in
-      forall (i: nat). i < len ==> Seq.index s i == Seq.index s' i
+      forall (i: nat). i < len ==> index s i == index s' i
     ))
     [SMTPat (Rust_primitives.Hax.Monomorphized_update_at.update_at_range s i x)]
 
@@ -153,15 +153,15 @@ val update_at_range_lemma #n
 
 let is_intb (l:nat) (x:int) = (x <= l) && (x >= -l)
 let is_i16b (l:nat) (x:i16) = is_intb l (v x)
-let is_i16b_array (l:nat) (x:t_Slice i16) = forall i. i < Seq.length x ==> is_i16b l (Seq.index x i)
-let is_i16b_vector (l:nat) (r:usize) (x:t_Array (t_Array i16 (sz 256)) r) = forall i. i < v r ==> is_i16b_array l (Seq.index x i)
-let is_i16b_matrix (l:nat) (r:usize) (x:t_Array (t_Array (t_Array i16 (sz 256)) r) r) = forall i. i < v r ==> is_i16b_vector l r (Seq.index x i)
+let is_i16b_array (l:nat) (x:t_Slice i16) = forall i. i < length x ==> is_i16b l (index x i)
+let is_i16b_vector (l:nat) (r:usize) (x:t_Array (t_Array i16 (sz 256)) r) = forall i. i < v r ==> is_i16b_array l (index x i)
+let is_i16b_matrix (l:nat) (r:usize) (x:t_Array (t_Array (t_Array i16 (sz 256)) r) r) = forall i. i < v r ==> is_i16b_vector l r (index x i)
 
 [@ "opaque_to_smt"]
 let is_i16b_array_opaque (l:nat) (x:t_Slice i16) = is_i16b_array l x
 
 let is_i32b (l:nat) (x:i32) = is_intb l (v x)
-let is_i32b_array (l:nat) (x:t_Slice i32) = forall i. i < Seq.length x ==> is_i32b l (Seq.index x i)
+let is_i32b_array (l:nat) (x:t_Slice i32) = forall i. i < length x ==> is_i32b l (index x i)
 
 let is_i64b (l:nat) (x:i64) = is_intb l (v x)
 
@@ -309,17 +309,17 @@ val lemma_shift_right_15_i16 (x:i16):
 
 let ntt_spec #len (vec_in: t_Array i16 len) (zeta: int) (i: nat{i < v len}) (j: nat{j < v len}) 
                   (vec_out: t_Array i16 len) : Type0 =
-  ((v (Seq.index vec_out i) % 3329) ==
-   ((v (Seq.index vec_in i) + (v (Seq.index vec_in j) * zeta * 169)) % 3329)) /\
-  ((v (Seq.index vec_out j) % 3329) ==
-   ((v (Seq.index vec_in i) - (v (Seq.index vec_in j) * zeta * 169)) % 3329))
+  ((v (index vec_out i) % 3329) ==
+   ((v (index vec_in i) + (v (index vec_in j) * zeta * 169)) % 3329)) /\
+  ((v (index vec_out j) % 3329) ==
+   ((v (index vec_in i) - (v (index vec_in j) * zeta * 169)) % 3329))
 
 let inv_ntt_spec #len (vec_in: t_Array i16 len) (zeta: int) (i: nat{i < v len}) (j: nat{j < v len}) 
                  (vec_out: t_Array i16 len) : Type0 =
-  ((v (Seq.index vec_out i) % 3329) ==
-   ((v (Seq.index vec_in j) + v (Seq.index vec_in i)) % 3329)) /\
-  ((v (Seq.index vec_out j) % 3329) ==
-   (((v (Seq.index vec_in j) - v (Seq.index vec_in i)) * zeta * 169) % 3329))
+  ((v (index vec_out i) % 3329) ==
+   ((v (index vec_in j) + v (index vec_in i)) % 3329)) /\
+  ((v (index vec_out j) % 3329) ==
+   (((v (index vec_in j) - v (index vec_in i)) * zeta * 169) % 3329))
 
 (* Wrap-around modulo: wraps into ]-p/2; p/2] *)
 let mod_p (v:int) (p:int{p>0/\ p%2=0}) : Tot int =

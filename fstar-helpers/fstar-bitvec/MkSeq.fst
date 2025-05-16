@@ -20,7 +20,7 @@ private let tuple_type (n: nat): Tac term
 
 open Rust_primitives.Integers
 
-private let create_gen_tac (n: nat): Tac sigelt
+private let create_gen_tac (n: nat{n <= max_usize}): Tac sigelt
   = let typ_bd = {fresh_binder_named "t" (`Type0) with qual = FStar.Reflection.V2.Q_Implicit} in
     let typ = binder_to_term typ_bd in
     let input_typ = mk_e_app (tuple_type n) (init n (fun _ -> typ)) in
@@ -29,8 +29,8 @@ private let create_gen_tac (n: nat): Tac sigelt
     let nth i = `((`#(tuple_proj n i)) (`#input_bd)) in
     let mk_and: term -> term -> Tac term = fun t u -> `(`#t /\ `#u) in
     let post =
-      let mk_inv s i = `(Seq.index (`#s) (`@i) == (`#(tuple_proj n i)) (`#input_bd)) in
-      let invs s = Tactics.fold_left mk_and (`(Seq.length (`#s) == (`@n))) (init n (mk_inv s)) in
+      let mk_inv s i = `(index (`#s) (`@i) == (`#(tuple_proj n i)) (`#input_bd)) in
+      let invs s = Tactics.fold_left mk_and (`(length (`#s) == (`@n))) (init n (mk_inv s)) in
       let bd = fresh_binder_named "s" output_type in
       mk_abs [bd] (invs bd)
     in
@@ -46,8 +46,8 @@ private let create_gen_tac (n: nat): Tac sigelt
     in
     let lb_def = mk_abs args (`(
       let l = `#l in
-      let s = Seq.createL l <: t_Array (`#typ) (sz (`@n)) in
-      FStar.Classical.forall_intro (Seq.lemma_index_is_nth s);
+      assume (List.Tot.length l == `@n);
+      let s = of_list l <: t_Array (`#typ) (sz (`@n)) in
       assert (`#indexes) by (Tactics.norm [primops; iota; delta; zeta]);
       s
     )) in
