@@ -89,6 +89,7 @@ pub(crate) fn store_block<const RATE: usize>(s: &[uint64x2_t; 25], out: &mut [&m
     }
     if RATE % 16 != 0 {
         debug_assert!(RATE % 8 == 0);
+
         let i = RATE / 8 - 1;
         let mut u = [0u8; 16];
         _vst1q_bytes_u64(&mut u, *s.get(i / 5, i % 5));
@@ -155,23 +156,51 @@ impl KeccakItem<2> for uint64x2_t {
         store_block::<RATE>(state, blocks)
     }
 
-    fn store_blocks<const RATE: usize>(
+    #[inline]
+    fn store_block2<const RATE: usize>(
         state: &[Self; 25],
-        blocks: &mut [&mut [u8]; 2],
+        out0: &mut [u8],
+        out1: &mut [u8],
         block: usize,
     ) {
-        // let (mut o0, mut o1) = Self::split_at_mut_n(blocks, RATE);
+        debug_assert!(out0.len() == out1.len());
+
+        let len = out0.len();
         let offset = RATE * block;
-        let [out0, out1] = blocks;
-        // let (out00, _) = out0.split_at_mut(RATE);
-        // let (out10, _) = out1.split_at_mut(RATE);
-        Self::store_block::<RATE>(
-            state,
-            &mut [
-                &mut out0[offset..offset + RATE],
-                &mut out1[offset..offset + RATE],
-            ],
-        );
+        let end = len.min(RATE);
+
+        for i in 0..end / 16 {
+            let i0 = (2 * i) / 5;
+            let j0 = (2 * i) % 5;
+            let i1 = (2 * i + 1) / 5;
+            let j1 = (2 * i + 1) % 5;
+            let v0 = _vtrn1q_u64(*state.get(i0, j0), *state.get(i1, j1));
+            let v1 = _vtrn2q_u64(*state.get(i0, j0), *state.get(i1, j1));
+
+            let start = offset + 16 * i;
+            _vst1q_bytes_u64(&mut out0[start..start + 16], v0);
+            _vst1q_bytes_u64(&mut out1[start..start + 16], v1);
+        }
+
+        if end % 16 != 0 {
+            debug_assert!(RATE % 8 == 0);
+
+            let i = end / 16;
+            let i0 = (2 * i) / 5;
+            let j0 = (2 * i) % 5;
+            let i1 = (2 * i + 1) / 5;
+            let j1 = (2 * i + 1) % 5;
+            let v0 = _vtrn1q_u64(*state.get(i0, j0), *state.get(i1, j1));
+            let v1 = _vtrn2q_u64(*state.get(i0, j0), *state.get(i1, j1));
+
+            let mut tmp0 = [0u8; 16];
+            let mut tmp1 = [0u8; 16];
+            _vst1q_bytes_u64(&mut tmp0, v0);
+            _vst1q_bytes_u64(&mut tmp1, v1);
+            let remainder = end % 16;
+            out0[len - remainder..].copy_from_slice(&tmp0[0..remainder]);
+            out1[len - remainder..].copy_from_slice(&tmp1[0..remainder]);
+        }
     }
 
     #[inline(always)]
@@ -197,4 +226,22 @@ impl KeccakItem<2> for uint64x2_t {
     fn store<const RATE: usize>(_state: &[Self; 25], _out: [&mut [u8]; 2]) {
         todo!()
     }
+
+    fn store_block1<const RATE: usize>(_: &[Self; 25], _: &mut [u8], _: usize) {
+        unimplemented!("This function should never be called")
+    }
 }
+
+// impl Output<2, uint64x2_t> for (&mut [u8], &mut [u8]) {
+//     fn store_blocks<const RATE: usize>(self, state: &[uint64x2_t; 25], block: usize) {
+//         let offset = RATE * block;
+//         let (out0, out1) = self;
+//         // Self::store_block::<RATE>(
+//         //     state,
+//         //     &mut [
+//         //         &mut out0[offset..offset + RATE],
+//         //         &mut out1[offset..offset + RATE],
+//         //     ],
+//         // );
+//     }
+// }

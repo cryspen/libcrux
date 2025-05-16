@@ -207,53 +207,57 @@ pub mod portable {
     use super::*;
     use generic_keccak::KeccakState as GenericState;
 
+    type PortableState = GenericState<1, u64>;
+
     /// The Keccak state for the incremental API.
     #[derive(Clone, Copy)]
     pub struct KeccakState {
-        state: GenericState<1, u64>,
+        state: PortableState,
     }
 
     #[inline(always)]
-    fn keccakx1<const RATE: usize, const DELIM: u8>(data: &[&[u8]; 1], mut out: [&mut [u8]; 1]) {
+    fn keccakx1<const RATE: usize, const DELIM: u8>(data: &[&[u8]; 1], out: &mut [u8]) {
         // generic_keccak::keccak_xof::<1, u64, RATE, DELIM>(data, out);
         // or
-        generic_keccak::keccak::<1, u64, RATE, DELIM>(data, &mut out);
+        // generic_keccak::keccak::<1, u64, RATE, DELIM>(data, out);
+        let state = PortableState::absorb::<RATE, DELIM>(data);
+        state.squeeze1::<RATE, DELIM>(out);
     }
 
     /// A portable SHA3 224 implementation.
     #[inline(always)]
     pub fn sha224(digest: &mut [u8], data: &[u8]) {
-        keccakx1::<144, 0x06u8>(&[data], [digest]);
+        keccakx1::<144, 0x06u8>(&[data], digest);
     }
 
     /// A portable SHA3 256 implementation.
     #[inline(always)]
     pub fn sha256(digest: &mut [u8], data: &[u8]) {
-        keccakx1::<136, 0x06u8>(&[data], [digest]);
+        keccakx1::<136, 0x06u8>(&[data], digest);
     }
 
     /// A portable SHA3 384 implementation.
     #[inline(always)]
     pub fn sha384(digest: &mut [u8], data: &[u8]) {
-        keccakx1::<104, 0x06u8>(&[data], [digest]);
+        keccakx1::<104, 0x06u8>(&[data], digest);
     }
 
     /// A portable SHA3 512 implementation.
     #[inline(always)]
     pub fn sha512(digest: &mut [u8], data: &[u8]) {
-        keccakx1::<72, 0x06u8>(&[data], [digest]);
+        keccakx1::<72, 0x06u8>(&[data], digest);
     }
 
     /// A portable SHAKE128 implementation.
     #[inline(always)]
     pub fn shake128(digest: &mut [u8], data: &[u8]) {
-        keccakx1::<168, 0x1fu8>(&[data], [digest]);
+        keccakx1::<168, 0x1fu8>(&[data], digest);
     }
 
     /// A portable SHAKE256 implementation.
     #[inline(always)]
     pub fn shake256(digest: &mut [u8], data: &[u8]) {
-        keccakx1::<136, 0x1fu8>(&[data], [digest]);
+        keccakx1::<136, 0x1fu8>(&[data], digest);
     }
 
     /// An incremental API for SHAKE
@@ -411,12 +415,17 @@ pub mod portable {
 /// Feature `simd128` enables the implementations in this module.
 #[cfg(feature = "simd128")]
 pub mod neon {
-    use crate::generic_keccak::keccak;
+    use x2::incremental::KeccakState2Internal;
 
-    #[cfg(feature = "simd128")]
     #[inline(always)]
-    fn keccakx2<const RATE: usize, const DELIM: u8>(data: &[&[u8]; 2], mut out: [&mut [u8]; 2]) {
-        keccak::<2, crate::simd::arm64::uint64x2_t, RATE, DELIM>(data, &mut out)
+    fn keccakx2<const RATE: usize, const DELIM: u8>(
+        data: &[&[u8]; 2],
+        out0: &mut [u8],
+        out1: &mut [u8],
+    ) {
+        // keccak::<2, crate::simd::arm64::uint64x2_t, RATE, DELIM>(data, &mut out)
+        let state = KeccakState2Internal::absorb::<RATE, DELIM>(data);
+        state.squeeze2::<RATE, DELIM>(out0, out1);
     }
 
     /// A portable SHA3 224 implementation.
@@ -424,7 +433,7 @@ pub mod neon {
     #[inline(always)]
     pub fn sha224(digest: &mut [u8], data: &[u8]) {
         let mut dummy = [0u8; 28];
-        keccakx2::<144, 0x06u8>(&[data, data], [digest, &mut dummy]);
+        keccakx2::<144, 0x06u8>(&[data, data], digest, &mut dummy);
     }
 
     /// A portable SHA3 256 implementation.
@@ -432,7 +441,7 @@ pub mod neon {
     #[inline(always)]
     pub fn sha256(digest: &mut [u8], data: &[u8]) {
         let mut dummy = [0u8; 32];
-        keccakx2::<136, 0x06u8>(&[data, data], [digest, &mut dummy]);
+        keccakx2::<136, 0x06u8>(&[data, data], digest, &mut dummy);
     }
 
     /// A portable SHA3 384 implementation.
@@ -440,7 +449,7 @@ pub mod neon {
     #[inline(always)]
     pub fn sha384(digest: &mut [u8], data: &[u8]) {
         let mut dummy = [0u8; 48];
-        keccakx2::<104, 0x06u8>(&[data, data], [digest, &mut dummy]);
+        keccakx2::<104, 0x06u8>(&[data, data], digest, &mut dummy);
     }
 
     /// A portable SHA3 512 implementation.
@@ -448,7 +457,7 @@ pub mod neon {
     #[inline(always)]
     pub fn sha512(digest: &mut [u8], data: &[u8]) {
         let mut dummy = [0u8; 64];
-        keccakx2::<72, 0x06u8>(&[data, data], [digest, &mut dummy]);
+        keccakx2::<72, 0x06u8>(&[data, data], digest, &mut dummy);
     }
 
     /// A portable SHAKE128 implementation.
@@ -456,7 +465,7 @@ pub mod neon {
     #[inline(always)]
     pub fn shake128<const LEN: usize>(digest: &mut [u8; LEN], data: &[u8]) {
         let mut dummy = [0u8; LEN];
-        keccakx2::<168, 0x1fu8>(&[data, data], [digest, &mut dummy]);
+        keccakx2::<168, 0x1fu8>(&[data, data], digest, &mut dummy);
     }
 
     /// A portable SHAKE256 implementation.
@@ -464,7 +473,7 @@ pub mod neon {
     #[inline(always)]
     pub fn shake256<const LEN: usize>(digest: &mut [u8; LEN], data: &[u8]) {
         let mut dummy = [0u8; LEN];
-        keccakx2::<136, 0x1fu8>(&[data, data], [digest, &mut dummy]);
+        keccakx2::<136, 0x1fu8>(&[data, data], digest, &mut dummy);
     }
 
     /// Performing 2 operations in parallel
@@ -477,8 +486,7 @@ pub mod neon {
         #[allow(unused_variables)]
         #[inline(always)]
         pub fn shake256(input0: &[u8], input1: &[u8], out0: &mut [u8], out1: &mut [u8]) {
-            // TODO: make argument ordering consistent
-            keccakx2::<136, 0x1fu8>(&[input0, input1], [out0, out1]);
+            keccakx2::<136, 0x1fu8>(&[input0, input1], out0, out1);
         }
 
         /// Run up to 4 SHAKE256 operations in parallel.
@@ -524,12 +532,13 @@ pub mod neon {
                 traits,
             };
 
+            pub(in crate::neon) type KeccakState2Internal =
+                GenericState<2, crate::simd::arm64::uint64x2_t>;
+
             /// The Keccak state for the incremental API.
             pub struct KeccakState {
-                state: GenericState<2, crate::simd::arm64::uint64x2_t>,
+                state: KeccakState2Internal,
             }
-
-            type KeccakState2Internal = GenericState<2, crate::simd::arm64::uint64x2_t>;
 
             /// Initialise the `KeccakState2`.
             #[inline(always)]

@@ -115,13 +115,23 @@ impl KeccakItem<1> for u64 {
         store_block::<RATE>(state, out[0])
     }
 
-    fn store_blocks<const RATE: usize>(
-        state: &[Self; 25],
-        blocks: &mut [&mut [u8]; 1],
-        block: usize,
-    ) {
+    fn store_block1<const RATE: usize>(state: &[Self; 25], out: &mut [u8], block: usize) {
+        let len = out.len();
         let offset = RATE * block;
-        store_block::<RATE>(state, &mut blocks[0][offset..offset + RATE])
+        let end = len.min(RATE);
+
+        for i in 0..end / 8 {
+            let index = offset + 8 * i;
+            out[index..index + 8].copy_from_slice(&state.get(i / 5, i % 5).to_le_bytes());
+        }
+
+        // Store the rest, if any
+        // XXX: may be faster to copy into a full block and then out?
+        if end % 8 != 0 {
+            let last = end / 8;
+            out[len - (end % 8)..]
+                .copy_from_slice(&state.get(last / 5, last % 5).to_le_bytes()[0..end % 8]);
+        }
     }
 
     #[inline(always)]
@@ -162,4 +172,29 @@ impl KeccakItem<1> for u64 {
             );
         }
     }
+
+    fn store_block2<const RATE: usize>(_: &[Self; 25], _: &mut [u8], _: &mut [u8], _: usize) {
+        unimplemented!("ThisThis function should never be called")
+    }
 }
+
+// impl Output<1, u64> for &mut [u8] {
+//     fn store_blocks<const RATE: usize>(self, state: &[u64; 25], block: usize) {
+//         let len = self.len();
+//         let offset = RATE * block;
+//         let end = len.min(RATE);
+
+//         for i in 0..end / 8 {
+//             let index = offset + 8 * i;
+//             self[index..index + 8].copy_from_slice(&state.get(i / 5, i % 5).to_le_bytes());
+//         }
+
+//         // Store the rest, if any
+//         // XXX: may be faster to copy into a full block and then out?
+//         if end % 8 != 0 {
+//             let last = end / 8;
+//             self[len - (end % 8)..]
+//                 .copy_from_slice(&state.get(last / 5, last % 5).to_le_bytes()[0..end % 8]);
+//         }
+//     }
+// }

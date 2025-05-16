@@ -19,7 +19,7 @@ impl<T> Ops<T> for [T; 25] {
 }
 
 /// A trait for multiplexing implementations.
-pub trait KeccakItem<const N: usize>: Clone + Copy {
+pub(crate) trait KeccakItem<const N: usize>: Clone + Copy {
     fn zero() -> Self;
     fn xor5(a: Self, b: Self, c: Self, d: Self, e: Self) -> Self;
     fn rotate_left1_and_xor(a: Self, b: Self) -> Self;
@@ -29,7 +29,13 @@ pub trait KeccakItem<const N: usize>: Clone + Copy {
     fn xor(a: Self, b: Self) -> Self;
     fn load_block<const RATE: usize>(state: &mut [Self; 25], blocks: &[&[u8]; N], start: usize);
     fn store_block<const RATE: usize>(state: &[Self; 25], blocks: &mut [&mut [u8]; N]);
-    fn store_blocks<const RATE: usize>(state: &[Self; 25], blocks: &mut [&mut [u8]; N], block: usize);
+    fn store_block1<const RATE: usize>(state: &[Self; 25], out: &mut [u8], block: usize);
+    fn store_block2<const RATE: usize>(
+        state: &[Self; 25],
+        out0: &mut [u8],
+        out1: &mut [u8],
+        block: usize,
+    );
     fn load_block_full<const RATE: usize>(
         state: &mut [Self; 25],
         blocks: &[[u8; 200]; N],
@@ -39,3 +45,7 @@ pub trait KeccakItem<const N: usize>: Clone + Copy {
     fn split_at_mut_n(a: [&mut [u8]; N], mid: usize) -> ([&mut [u8]; N], [&mut [u8]; N]);
     fn store<const RATE: usize>(state: &[Self; 25], out: [&mut [u8]; N]);
 }
+
+// pub(crate) trait Output<const N: usize, T: KeccakItem<N>> {
+//     fn store_blocks<const RATE: usize>(self, state: &[T; 25], block: usize);
+// }
