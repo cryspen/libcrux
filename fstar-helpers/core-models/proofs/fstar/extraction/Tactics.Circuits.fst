@@ -311,6 +311,22 @@ let flatten_circuit_aux
         ()
     )
 
+/// Unapplies a function named `f_name` of arity `arity`.
+let unapply (f_name: string) (arity: nat) =
+  let f = pack (Tv_FVar (pack_fv (explode_qn f_name))) in
+  let bds = 
+    let rec aux (n: nat): Tac _ = match n with | 0 -> [] | _ -> fresh_binder (`int) :: aux (n - 1) in
+    aux arity
+  in
+  let applied_f = mk_app_bs f bds in
+  let rhs = norm_term [delta_only [f_name]] f in
+  let rhs = mk_app_bs rhs bds in
+  let post = mk_e_app (`(==)) [rhs; applied_f] in
+  let typ = mk_arr bds (pack_comp (C_Lemma (`True) (mk_abs [fresh_binder (`_)] post) (`[]))) in
+  let body = mk_abs bds (`()) in
+  let lemma = `(`#body <: `#typ) in
+  let lemma = norm_term [] lemma in
+  l_to_r [lemma]
 
 /// `flatten_circuit` works on a goal `squash (c == ?u)` such that `c`
 /// is a circuit.
