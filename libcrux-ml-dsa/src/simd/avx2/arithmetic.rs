@@ -95,6 +95,23 @@ pub(super) fn montgomery_multiply(lhs: &mut Vec256, rhs: &Vec256) {
     *lhs = mm256_blend_epi32::<0b10101010>(res02_shifted, res13);
 }
 
+#[hax_lib::fstar::replace(
+    r#"
+let montgomery_multiply_lemma lhs rhs (i: u64 {v i < 8}): squash (
+     (Core_models.Abstractions.Bitvec.Int_vec_interp.e_ee_1__impl__to_i32x8 (montgomery_multiply lhs rhs)).[i]
+  == (montgomery_multiply_spec
+        ((Core_models.Abstractions.Bitvec.Int_vec_interp.e_ee_1__impl__to_i32x8 lhs).[i])
+        ((Core_models.Abstractions.Bitvec.Int_vec_interp.e_ee_1__impl__to_i32x8 rhs).[i])
+    )
+) = _ by (
+  let open FStar.Tactics in
+  norm [iota; primops; delta_only [`%montgomery_multiply]; zeta];
+  l_to_r [`Core_models.Abstractions.Bitvec.Int_vec_interp.e_ee_1__lemma_cancel_iv]
+)
+"#
+)]
+const _: () = ();
+
 #[inline(always)]
 pub(super) fn shift_left_then_reduce<const SHIFT_BY: i32>(simd_unit: &mut Vec256) {
     let shifted = mm256_slli_epi32::<SHIFT_BY>(*simd_unit);

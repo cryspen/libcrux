@@ -9,28 +9,28 @@
 
 #[hax_lib::fstar::replace(
     r#"
-open FStar.FunctionalExtensionality    
-type t_FunArray (n: u64) (t: Type0) = i:u64 {v i < v n} ^-> t
+open FStar.FunctionalExtensionality
+noeq type t_FunArray (n: u64) (t: Type0) = | FunArray : (i:u64 {v i < v n} ^-> t) -> t_FunArray n t
 
 let ${FunArray::<0, ()>::get} (v_N: u64) (#v_T: Type0) (self: t_FunArray v_N v_T) (i: u64 {v i < v v_N}) : v_T = 
-    self i
+    self._0 i
 
 let ${FunArray::<0, ()>::from_fn::<fn(u64)->()>}
     (v_N: u64)
     (#v_T: Type0)
     (f: (i: u64 {v i < v v_N}) -> v_T)
-    : t_FunArray v_N v_T = on (i: u64 {v i < v v_N}) f
+    : t_FunArray v_N v_T = FunArray (on (i: u64 {v i < v v_N}) f)
 
-let ${FunArray::<0, ()>::as_vec} n #t (self: t_FunArray n t) = FStar.Seq.init (v n) (fun i -> self (mk_u64 i))
+let ${FunArray::<0, ()>::as_vec} n #t (self: t_FunArray n t) = FStar.Seq.init (v n) (fun i -> self._0 (mk_u64 i))
 
 let rec ${FunArray::<0, ()>::fold::<()>} n #t #a (arr: t_FunArray n t) (init: a) (f: a -> t -> a): Tot a (decreases (v n)) = 
     match n with
     | MkInt 0 -> init
-    | MkInt n -> 
-        let acc: a = f init (arr (mk_u64 0)) in 
+    | MkInt n ->
+        let acc: a = f init (arr._0 (mk_u64 0)) in 
         let n = MkInt (n - 1) in
         ${FunArray::<0, ()>::fold::<()>}  n #t #a
-                      (${FunArray::<0, ()>::from_fn::<fn(u64)->()>} n (fun i -> arr (i +. mk_u64 1)))
+                      (${FunArray::<0, ()>::from_fn::<fn(u64)->()>} n (fun i -> arr._0 (i +. mk_u64 1)))
                       acc f
 "#
 )]

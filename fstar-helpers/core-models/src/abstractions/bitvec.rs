@@ -173,15 +173,15 @@ open FStar.Tactics.V2
 #push-options "--z3rlimit 80 --admit_smt_queries true"
 let bitvec_rewrite_lemma_128 (x: $:{BitVec<128>})
 : Lemma (x == mark_to_normalize (${BitVec::<128>::pointwise} x)) =
-    let a = x._0 in
-    let b = (${BitVec::<128>::pointwise} x)._0 in
+    let a = x._0._0 in
+    let b = (${BitVec::<128>::pointwise} x)._0._0 in
     assert_norm (FStar.FunctionalExtensionality.feq a b);
     extensionality' a b
 
 let bitvec_rewrite_lemma_256 (x: $:{BitVec<256>})
 : Lemma (x == mark_to_normalize (${BitVec::<256>::pointwise} x)) =
-    let a = x._0 in
-    let b = (${BitVec::<256>::pointwise} x)._0 in
+    let a = x._0._0 in
+    let b = (${BitVec::<256>::pointwise} x)._0._0 in
     assert_norm (FStar.FunctionalExtensionality.feq a b);
     extensionality' a b
 #pop-options

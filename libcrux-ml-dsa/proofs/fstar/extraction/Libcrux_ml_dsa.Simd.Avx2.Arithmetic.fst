@@ -88,11 +88,9 @@ let montgomery_multiply_by_constant
   in
   Libcrux_intrinsics.Avx2.mm256_blend_epi32 (mk_i32 170) res02_shifted res13
 
-unfold let montgomery_multiply_spec__i32_extended64_mul (x y: i32) : i64 =
+let montgomery_multiply_spec__i32_extended64_mul (x y: i32) : i64 =
   (cast (x <: i32) <: i64) *! (cast (y <: i32) <: i64)
 
-
-[@@ "opaque_to_smt"]
 let montgomery_multiply_spec (x y: i32) : i32 =
   let x_mul_y:i64 = montgomery_multiply_spec__i32_extended64_mul x y in
   let lhs:i32 = cast (x_mul_y >>! mk_i32 32 <: i64) <: i32 in
@@ -119,55 +117,7 @@ let montgomery_multiply_spec (x y: i32) : i32 =
   in
   Core.Num.impl_i32__wrapping_sub lhs rhs
 
-let montgomery_multiply_spec_rw (x y: i32) : Lemma ((let x_mul_y:i64 = montgomery_multiply_spec__i32_extended64_mul x y in
-  let lhs:i32 = cast (x_mul_y >>! mk_i32 32 <: i64) <: i32 in
-  let rhs:i32 =
-    cast (((cast (cast (montgomery_multiply_spec__i32_extended64_mul (cast (x_mul_y <: i64) <: i32)
-                      (cast (Libcrux_ml_dsa.Simd.Traits.v_INVERSE_OF_MODULUS_MOD_MONTGOMERY_R <: u64
-                          )
-                        <:
-                        i32)
-                    <:
-                    i64)
-                <:
-                i32)
-            <:
-            i64) *!
-          (cast (Libcrux_ml_dsa.Simd.Traits.v_FIELD_MODULUS <: i32) <: i64)
-          <:
-          i64) >>!
-        mk_i32 32
-        <:
-        i64)
-    <:
-    i32
-  in
-  Core.Num.impl_i32__wrapping_sub lhs rhs) == montgomery_multiply_spec x y)
-  = admit ()
-
-[@@FStar.Tactics.postprocess_with ( fun _ -> 
-  let open Tactics.Circuits in
-  let open FStar.Tactics in
-  let open Core_models.Core_arch.X86.Interpretations.Int_vec.Lemmas in
-  flatten_circuit_aux
-      [
-          "Core_models";
-          "FStar.FunctionalExtensionality";
-          `%Rust_primitives.cast_tc; `%Rust_primitives.unsize_tc;
-          "Core.Ops"; `%(.[]);
-          `%Core_models.Abstractions.Bitvec.Int_vec_interp.impl__into_i32x8;
-          `%Core_models.Abstractions.Bitvec.Int_vec_interp.impl_1__into_i64x4;
-      ]
-      (top_levels_of_attr (` v_LIFT_LEMMA ))
-      (top_levels_of_attr (` Core_models.Abstractions.Bitvec.Int_vec_interp.v_SIMPLIFICATION_LEMMA ))
-      (top_levels_of_attr (` v_ETA_MATCH_EXPAND ))
-      (mk_dbg "");
-  dump "AAAA";
-  l_to_r [`montgomery_multiply_spec_rw];
-  trefl ();
-  ()
-  // Core_models.Core_arch.X86.……¬…Interpretations.Int_vec.Lemmas.flatten_circuit
-)]
+[@@FStar.Tactics.postprocess_with ( Core_models.Core_arch.X86.Interpretations.Int_vec.Lemmas.flatten_circuit )]
 
 let montgomery_multiply (lhs rhs: Core_models.Abstractions.Bitvec.t_BitVec (mk_u64 256))
     : Core_models.Abstractions.Bitvec.t_BitVec (mk_u64 256) =
@@ -220,53 +170,17 @@ let montgomery_multiply (lhs rhs: Core_models.Abstractions.Bitvec.t_BitVec (mk_u
   in
   lhs
 
-module BV_LEMMAS = Core_models.Abstractions.Bitvec.Int_vec_interp
-
-
-// BV_LEMMAS.e_ee_1__impl__to_i32x8 (BV_LEMMAS.e_ee_1__impl__from_i32x8
-
-
-// ///Lemma that asserts that applying BitVec :: < 256 > :: from and then i32x8 :: from is the identity.
-// let e_ee_1__lemma_cancel_iv'
-//   (x: Core_models.Abstractions.Funarr.t_FunArray (mk_u64 8) i32) 
-//   (i: u64 {v i < 8})
-//   : Lemma
-//       (ensures (BV_LEMMAS.e_ee_1__impl__to_i32x8 (BV_LEMMAS.e_ee_1__impl__from_i32x8 x)) i == x i)
-//       [
-//         SMTPat
-//         (BV_LEMMAS.e_ee_1__impl__to_i32x8 (BV_LEMMAS.e_ee_1__impl__from_i32x8 x) i)
-//       ]
-//       = admit ()
-
-///Lemma that asserts that applying BitVec :: < 256 > :: from and then i32x8 :: from is the identity.
-let e_ee_1__lemma_cancel_iv'2
-  (x: Core_models.Abstractions.Funarr.t_FunArray (mk_u64 8) i32) 
-  : Lemma
-      (ensures (BV_LEMMAS.e_ee_1__impl__to_i32x8 (BV_LEMMAS.e_ee_1__impl__from_i32x8 x)) == x)
-      [
-        SMTPat
-        (BV_LEMMAS.e_ee_1__impl__to_i32x8 (BV_LEMMAS.e_ee_1__impl__from_i32x8 x))
-      ]
-      = admit ()
-
-
-#set-options "--fuel 2 --ifuel 2 --z3rlimit 300"
-let montgomery_multiply_lemma lhs rhs: Lemma (
-        Core_models.Abstractions.Bitvec.Int_vec_interp.e_ee_1__impl__to_i32x8 (montgomery_multiply lhs rhs) (mk_u64 0)
-     == montgomery_multiply_spec 
-          (Core_models.Abstractions.Bitvec.Int_vec_interp.e_ee_1__impl__to_i32x8 lhs (mk_u64 0)) 
-          (Core_models.Abstractions.Bitvec.Int_vec_interp.e_ee_1__impl__to_i32x8 rhs (mk_u64 0))
-    ) = assert (
-        Core_models.Abstractions.Bitvec.Int_vec_interp.e_ee_1__impl__to_i32x8 (montgomery_multiply lhs rhs) (mk_u64 0)
-     == montgomery_multiply_spec 
-          (Core_models.Abstractions.Bitvec.Int_vec_interp.e_ee_1__impl__to_i32x8 lhs (mk_u64 0)) 
-          (Core_models.Abstractions.Bitvec.Int_vec_interp.e_ee_1__impl__to_i32x8 rhs (mk_u64 0))
-    ) by (
-      let open FStar.Tactics in
-      norm [iota; primops; delta_only [`%montgomery_multiply]; zeta];
-      // l_to_r [`e_ee_1__lemma_cancel_iv'];
-      dump "goal"
+let lemma_pure_fstar lhs rhs (i: u64 {v i < 8}): squash (
+     (Core_models.Abstractions.Bitvec.Int_vec_interp.e_ee_1__impl__to_i32x8 (montgomery_multiply lhs rhs)).[i]
+  == (montgomery_multiply_spec
+        ((Core_models.Abstractions.Bitvec.Int_vec_interp.e_ee_1__impl__to_i32x8 lhs).[i])
+        ((Core_models.Abstractions.Bitvec.Int_vec_interp.e_ee_1__impl__to_i32x8 rhs).[i])
     )
+) = _ by (
+  let open FStar.Tactics in
+  norm [iota; primops; delta_only [`%montgomery_multiply]; zeta];
+  l_to_r [`Core_models.Abstractions.Bitvec.Int_vec_interp.e_ee_1__lemma_cancel_iv]
+)
 
 let shift_left_then_reduce
       (v_SHIFT_BY: i32)

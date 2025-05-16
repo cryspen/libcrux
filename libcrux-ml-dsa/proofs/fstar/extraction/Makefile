@@ -8,6 +8,8 @@ VERIFIED_MODULES = \
 	Libcrux_ml_dsa.Simd.Avx2.Ntt.fst \
 	Libcrux_ml_dsa.Simd.Traits.fsti \
 	Libcrux_ml_dsa.Simd.Traits.fst \
+	RmMe.fst \
+	RmMe2.fst \
 	end_of_verified_modules
 ADMIT_MODULES = $(filter-out ${VERIFIED_MODULES}, $(wildcard *.fst)) $(filter-out ${VERIFIED_MODULES}, $(wildcard *.fsti))
 FSTAR_INCLUDE_DIRS_EXTRA += ../spec \

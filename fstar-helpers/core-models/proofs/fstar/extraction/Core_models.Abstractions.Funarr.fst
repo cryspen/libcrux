@@ -3,28 +3,28 @@ module Core_models.Abstractions.Funarr
 open Core
 open FStar.Mul
 
-open FStar.FunctionalExtensionality    
-type t_FunArray (n: u64) (t: Type0) = i:u64 {v i < v n} ^-> t
+open FStar.FunctionalExtensionality
+noeq type t_FunArray (n: u64) (t: Type0) = | FunArray : (i:u64 {v i < v n} ^-> t) -> t_FunArray n t
 
 let impl_5__get (v_N: u64) (#v_T: Type0) (self: t_FunArray v_N v_T) (i: u64 {v i < v v_N}) : v_T = 
-    self i
+    self._0 i
 
 let impl_5__from_fn
     (v_N: u64)
     (#v_T: Type0)
     (f: (i: u64 {v i < v v_N}) -> v_T)
-    : t_FunArray v_N v_T = on (i: u64 {v i < v v_N}) f
+    : t_FunArray v_N v_T = FunArray (on (i: u64 {v i < v v_N}) f)
 
-let impl_5__as_vec n #t (self: t_FunArray n t) = FStar.Seq.init (v n) (fun i -> self (mk_u64 i))
+let impl_5__as_vec n #t (self: t_FunArray n t) = FStar.Seq.init (v n) (fun i -> self._0 (mk_u64 i))
 
 let rec impl_5__fold n #t #a (arr: t_FunArray n t) (init: a) (f: a -> t -> a): Tot a (decreases (v n)) = 
     match n with
     | MkInt 0 -> init
-    | MkInt n -> 
-        let acc: a = f init (arr (mk_u64 0)) in 
+    | MkInt n ->
+        let acc: a = f init (arr._0 (mk_u64 0)) in 
         let n = MkInt (n - 1) in
         impl_5__fold  n #t #a
-                      (impl_5__from_fn n (fun i -> arr (i +. mk_u64 1)))
+                      (impl_5__from_fn n (fun i -> arr._0 (i +. mk_u64 1)))
                       acc f
 
 let impl_1

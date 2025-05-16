@@ -885,15 +885,15 @@ open FStar.Tactics.V2
 #push-options "--z3rlimit 80 --admit_smt_queries true"
 let bitvec_rewrite_lemma_128 (x: t_BitVec (mk_u64 128))
 : Lemma (x == mark_to_normalize (impl_7__pointwise x)) =
-    let a = x._0 in
-    let b = (impl_7__pointwise x)._0 in
+    let a = x._0._0 in
+    let b = (impl_7__pointwise x)._0._0 in
     assert_norm (FStar.FunctionalExtensionality.feq a b);
     extensionality' a b
 
 let bitvec_rewrite_lemma_256 (x: t_BitVec (mk_u64 256))
 : Lemma (x == mark_to_normalize (impl_8__pointwise x)) =
-    let a = x._0 in
-    let b = (impl_8__pointwise x)._0 in
+    let a = x._0._0 in
+    let b = (impl_8__pointwise x)._0._0 in
     assert_norm (FStar.FunctionalExtensionality.feq a b);
     extensionality' a b
 #pop-options
