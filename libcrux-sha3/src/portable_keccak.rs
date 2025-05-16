@@ -45,13 +45,9 @@ pub(crate) fn load_block<const RATE: usize>(state: &mut [u64; 25], blocks: &[u8]
         let offset = start + 8 * i;
         state_flat[i] = u64::from_le_bytes(blocks[offset..offset + 8].try_into().unwrap());
     }
+
     for i in 0..RATE / 8 {
-        set_ij(
-            state,
-            i / 5,
-            i % 5,
-            get_ij(state, i / 5, i % 5) ^ state_flat[i],
-        );
+        state.set(i / 5, i % 5, state.get(i / 5, i % 5) ^ state_flat[i])
     }
 }
 
@@ -67,7 +63,7 @@ pub(crate) fn load_block_full<const RATE: usize>(
 #[inline(always)]
 pub(crate) fn store_block<const RATE: usize>(s: &[u64; 25], out: &mut [u8]) {
     for i in 0..RATE / 8 {
-        out[8 * i..8 * i + 8].copy_from_slice(&get_ij(s, i / 5, i % 5).to_le_bytes());
+        out[8 * i..8 * i + 8].copy_from_slice(&s.get(i / 5, i % 5).to_le_bytes());
     }
 }
 
@@ -146,12 +142,13 @@ impl KeccakItem<1> for u64 {
         let last_block_len = out[0].len() % 8;
 
         for i in 0..num_full_blocks {
-            out[0][i * 8..i * 8 + 8].copy_from_slice(&get_ij(state, i / 5, i % 5).to_le_bytes());
+            out[0][i * 8..i * 8 + 8].copy_from_slice(&state.get(i / 5, i % 5).to_le_bytes());
         }
         if last_block_len != 0 {
             out[0][num_full_blocks * 8..num_full_blocks * 8 + last_block_len].copy_from_slice(
-                &get_ij(state, num_full_blocks / 5, num_full_blocks % 5).to_le_bytes()
-                    [0..last_block_len],
+                &state
+                    .get(num_full_blocks / 5, num_full_blocks % 5)
+                    .to_le_bytes()[0..last_block_len],
             );
         }
     }
