@@ -78,14 +78,13 @@ let int_t_seq_slice_to_bv_sub_lemma #t #n
   (arr: t_Array (int_t t) n)
   (start: nat) (len: usize {start + v len <= v n})
   (d: num_bits t) 
-  : Lemma ( bit_vec_of_int_t_array (Seq.slice arr start (start + v len) <: t_Array _ len) d
+  : Lemma ( bit_vec_of_int_t_array (slice arr start (start + v len) <: t_Array _ len) d
      `bit_vec_equal` bit_vec_sub (bit_vec_of_int_t_array arr d) (start * d) (v len * d))
    [SMTPat (bit_vec_sub (bit_vec_of_int_t_array arr d) (start * d) (v len * d))]
-  = let bv1 = bit_vec_of_int_t_array #_ #len (Seq.slice arr start (start + v len)) d in
+  = let bv1 = bit_vec_of_int_t_array #_ #len (slice arr start (start + v len)) d in
     let bv2 = bit_vec_sub (bit_vec_of_int_t_array arr d) (start * d) (v len * d) in
     introduce forall i. bv1 i == bv2 i 
-    with ( Seq.lemma_index_slice arr start (start + v len) (i / d);
-           Math.Lemmas.lemma_div_plus i start d;
+    with ( Math.Lemmas.lemma_div_plus i start d;
            Math.Lemmas.lemma_mod_plus i start d);
     bit_vec_equal_intro bv1 bv2
 
@@ -93,7 +92,7 @@ let int_t_seq_slice_to_bv_sub_lemma #t #n
 let int_t_eq_seq_slice_bv_sub_lemma #t #n1 #n2
   (arr1: t_Array (int_t t) n1) (arr2: t_Array (int_t t) n2)  (d: num_bits t)
   (start1 start2: nat) (len: nat {start1 + len <= v n1 /\ start2 + len <= v n2})
-  : Lemma (requires Seq.slice arr1 start1 (start1 + len) == Seq.slice arr2 start2 (start2 + len))
+  : Lemma (requires slice arr1 start1 (start1 + len) == slice arr2 start2 (start2 + len))
           (ensures  bit_vec_equal
                        (bit_vec_sub (bit_vec_of_int_t_array arr1 d) (start1 * d) (len * d))
                        (bit_vec_sub (bit_vec_of_int_t_array arr2 d) (start2 * d) (len * d)))
@@ -268,7 +267,7 @@ let int_arr_bitwise_eq_range_intro_eq_slice
          /\ offset2 + bits <= v n2 * d
          /\ bits <= n * d
        })
-   : Lemma (requires Seq.slice arr1 offset1 (offset1 + n) == Seq.slice arr2 offset2 (offset2 + n))
+   : Lemma (requires slice arr1 offset1 (offset1 + n) == slice arr2 offset2 (offset2 + n))
            (ensures int_arr_bitwise_eq_range arr1 d arr2 d offset1 offset2 bits)
  = admit ()
  
@@ -287,7 +286,7 @@ let int_arr_bitwise_eq_range_intro_eq
          /\ n_offset2 * d + bits <= v n2 * d
          /\ bits <= n * d
        })
-   : Lemma (requires forall (i: nat). i < n ==> Seq.index arr1 (i + n_offset1) == Seq.index arr2 (i + n_offset2))
+   : Lemma (requires forall (i: nat). i < n ==> index arr1 (i + n_offset1) == index arr2 (i + n_offset2))
            (ensures int_arr_bitwise_eq_range arr1 d arr2 d (n_offset1 * d) (n_offset2 * d) bits)
  = admit ()
 *)
