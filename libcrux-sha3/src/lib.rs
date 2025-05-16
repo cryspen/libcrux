@@ -214,10 +214,10 @@ pub mod portable {
     }
 
     #[inline(always)]
-    fn keccakx1<const RATE: usize, const DELIM: u8>(data: &[&[u8]; 1], out: [&mut [u8]; 1]) {
+    fn keccakx1<const RATE: usize, const DELIM: u8>(data: &[&[u8]; 1], mut out: [&mut [u8]; 1]) {
         // generic_keccak::keccak_xof::<1, u64, RATE, DELIM>(data, out);
         // or
-        generic_keccak::keccak::<1, u64, RATE, DELIM>(data, out);
+        generic_keccak::keccak::<1, u64, RATE, DELIM>(data, &mut out);
     }
 
     /// A portable SHA3 224 implementation.
@@ -259,8 +259,8 @@ pub mod portable {
     /// An incremental API for SHAKE
     pub mod incremental {
         use generic_keccak::{
-            absorb_final, squeeze_first_block, squeeze_first_five_blocks,
-            squeeze_first_three_blocks, squeeze_next_block, KeccakXofState,
+            absorb_final, squeeze_first_five_blocks, squeeze_first_three_blocks,
+            squeeze_next_block, KeccakXofState,
         };
         mod private {
             pub trait Sealed {}
@@ -268,6 +268,7 @@ pub mod portable {
             impl Sealed for super::Shake128Xof {}
             impl Sealed for super::Shake256Xof {}
         }
+
         use super::*;
 
         /// SHAKE128 Xof state
@@ -390,7 +391,7 @@ pub mod portable {
         /// Squeeze the first SHAKE-256 block
         #[inline(always)]
         pub fn shake256_squeeze_first_block(s: &mut KeccakState, out: &mut [u8]) {
-            squeeze_first_block::<1, u64, 136>(&mut s.state, &mut [out])
+            traits::KeccakItem::<1>::store_block::<136>(&s.state.st, &mut [out])
         }
 
         /// Squeeze the next SHAKE-256 block
@@ -414,8 +415,8 @@ pub mod neon {
 
     #[cfg(feature = "simd128")]
     #[inline(always)]
-    fn keccakx2<const RATE: usize, const DELIM: u8>(data: &[&[u8]; 2], out: [&mut [u8]; 2]) {
-        keccak::<2, crate::simd::arm64::uint64x2_t, RATE, DELIM>(data, out)
+    fn keccakx2<const RATE: usize, const DELIM: u8>(data: &[&[u8]; 2], mut out: [&mut [u8]; 2]) {
+        keccak::<2, crate::simd::arm64::uint64x2_t, RATE, DELIM>(data, &mut out)
     }
 
     /// A portable SHA3 224 implementation.
@@ -515,9 +516,12 @@ pub mod neon {
 
         /// An incremental API to perform 2 operations in parallel
         pub mod incremental {
-            use crate::generic_keccak::{
-                absorb_final, squeeze_first_block, squeeze_first_five_blocks,
-                squeeze_first_three_blocks, squeeze_next_block, KeccakState as GenericState,
+            use crate::{
+                generic_keccak::{
+                    absorb_final, squeeze_first_five_blocks, squeeze_first_three_blocks,
+                    squeeze_next_block, KeccakState as GenericState,
+                },
+                traits,
             };
 
             /// The Keccak state for the incremental API.
@@ -647,10 +651,7 @@ pub mod neon {
                 out0: &mut [u8],
                 out1: &mut [u8],
             ) {
-                squeeze_first_block::<2, crate::simd::arm64::uint64x2_t, 136>(
-                    &mut s.state,
-                    &mut [out0, out1],
-                );
+                traits::KeccakItem::<2>::store_block::<136>(&s.state.st, &mut [out0, out1])
             }
 
             /// Squeeze next block

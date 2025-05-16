@@ -1,6 +1,6 @@
 use libcrux_intrinsics::arm64::*;
 
-use crate::traits::{internal::KeccakItem, Ops};
+use crate::traits::{KeccakItem, Ops};
 
 #[allow(non_camel_case_types)]
 pub type uint64x2_t = _uint64x2_t;
@@ -104,6 +104,11 @@ pub(crate) fn store_block_full<const RATE: usize>(s: &[uint64x2_t; 25], out: &mu
     store_block::<RATE>(s, &mut [&mut out0[0], &mut out1[0]]);
 }
 
+/// out: [[0, ...], [1, ...]]
+/// [0 ... mid], [mid ... 0]
+/// [1 ... mid], [mid ... 1]
+/// [[0 ... mid], [1 ... mid]]
+/// [[mid ... 0], [mid ... 1]]
 #[inline(always)]
 fn split_at_mut_2(out: [&mut [u8]; 2], mid: usize) -> ([&mut [u8]; 2], [&mut [u8]; 2]) {
     let [out0, out1] = out;
@@ -149,6 +154,26 @@ impl KeccakItem<2> for uint64x2_t {
     fn store_block<const RATE: usize>(state: &[Self; 25], blocks: &mut [&mut [u8]; 2]) {
         store_block::<RATE>(state, blocks)
     }
+
+    fn store_blocks<const RATE: usize>(
+        state: &[Self; 25],
+        blocks: &mut [&mut [u8]; 2],
+        block: usize,
+    ) {
+        // let (mut o0, mut o1) = Self::split_at_mut_n(blocks, RATE);
+        let offset = RATE * block;
+        let [out0, out1] = blocks;
+        // let (out00, _) = out0.split_at_mut(RATE);
+        // let (out10, _) = out1.split_at_mut(RATE);
+        Self::store_block::<RATE>(
+            state,
+            &mut [
+                &mut out0[offset..offset + RATE],
+                &mut out1[offset..offset + RATE],
+            ],
+        );
+    }
+
     #[inline(always)]
     fn load_block_full<const RATE: usize>(
         state: &mut [Self; 25],
