@@ -99,7 +99,7 @@ impl<const PARALLEL_LANES: usize, const RATE: usize, STATE: KeccakStateItem<PARA
     fn absorb_full(&mut self, inputs: &[&[u8]; PARALLEL_LANES]) -> usize {
         debug_assert!(PARALLEL_LANES > 0);
         debug_assert!(self.buf_len < RATE);
-        #[cfg(debug_assertions)]
+        #[cfg(all(debug_assertions, not(hax)))]
         {
             for block in inputs {
                 debug_assert!(block.len() == inputs[0].len());
