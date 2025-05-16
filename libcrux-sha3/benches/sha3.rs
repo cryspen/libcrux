@@ -33,10 +33,11 @@ macro_rules! impl_comp {
                     BenchmarkId::new("portable", fmt(*payload_size)),
                     payload_size,
                     |b, payload_size| {
-                        b.iter_batched(
+                        b.iter_batched_ref(
                             || randombytes(*payload_size),
                             |payload| {
-                                let _d: [u8; digest_size($libcrux)] = hash($libcrux, &payload);
+                                let _d: [u8; digest_size($libcrux)] =
+                                    core::hint::black_box(hash($libcrux, payload));
                             },
                             BatchSize::SmallInput,
                         )
@@ -48,11 +49,11 @@ macro_rules! impl_comp {
                     BenchmarkId::new("simd128", fmt(*payload_size)),
                     payload_size,
                     |b, payload_size| {
-                        b.iter_batched(
+                        b.iter_batched_ref(
                             || randombytes(*payload_size),
                             |payload| {
                                 let mut digest = [0u8; digest_size($libcrux)];
-                                neon::$rust_fun(&mut digest, &payload);
+                                core::hint::black_box(neon::$rust_fun(&mut digest, payload));
                             },
                             BatchSize::SmallInput,
                         )
@@ -73,7 +74,7 @@ fn shake256(c: &mut Criterion) {
 
     #[cfg(all(feature = "simd256", target_arch = "x86_64"))]
     group.bench_function("avx2", |b| {
-        b.iter_batched(
+        b.iter_batched_ref(
             || {
                 (
                     randombytes(33),
@@ -87,23 +88,23 @@ fn shake256(c: &mut Criterion) {
                 let mut digest1 = [0u8; 128];
                 let mut digest2 = [0u8; 128];
                 let mut digest3 = [0u8; 128];
-                avx2::x4::shake256(
-                    &payload0,
-                    &payload1,
-                    &payload2,
-                    &payload3,
+                core::hint::black_box(avx2::x4::shake256(
+                    payload0,
+                    payload1,
+                    payload2,
+                    payload3,
                     &mut digest0,
                     &mut digest1,
                     &mut digest2,
                     &mut digest3,
-                );
+                ));
             },
             BatchSize::SmallInput,
         )
     });
 
     group.bench_function("portable", |b| {
-        b.iter_batched(
+        b.iter_batched_ref(
             || {
                 (
                     randombytes(33),
@@ -117,10 +118,10 @@ fn shake256(c: &mut Criterion) {
                 let mut digest1 = [0u8; 128];
                 let mut digest2 = [0u8; 128];
                 let mut digest3 = [0u8; 128];
-                portable::shake256(&mut digest0, &payload0);
-                portable::shake256(&mut digest1, &payload1);
-                portable::shake256(&mut digest2, &payload2);
-                portable::shake256(&mut digest3, &payload3);
+                core::hint::black_box(portable::shake256(&mut digest0, payload0));
+                core::hint::black_box(portable::shake256(&mut digest1, payload1));
+                core::hint::black_box(portable::shake256(&mut digest2, payload2));
+                core::hint::black_box(portable::shake256(&mut digest3, payload3));
             },
             BatchSize::SmallInput,
         )
