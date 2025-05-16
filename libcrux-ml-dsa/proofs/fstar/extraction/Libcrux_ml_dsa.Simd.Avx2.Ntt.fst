@@ -5,11 +5,7 @@ open FStar.Mul
 
 let butterfly_2_e___v_SHUFFLE: i32 = mk_i32 216
 
-[@@FStar.Tactics.postprocess_with ( fun _ -> 
-  let open FStar.Tactics in
-  norm [primops; iota; delta_namespace ["Libcrux_ml_dsa"]; zeta_full];
-  Core_models.Core_arch.X86.Interpretations.Int_vec.Lemmas.flatten_circuit ()
-)]
+[@@FStar.Tactics.postprocess_with ( Core_models.Core_arch.X86.Interpretations.Int_vec.Lemmas.flatten_circuit )]
 
 let butterfly_2_e_
       (a b: Core_models.Abstractions.Bitvec.t_BitVec (mk_u64 256))

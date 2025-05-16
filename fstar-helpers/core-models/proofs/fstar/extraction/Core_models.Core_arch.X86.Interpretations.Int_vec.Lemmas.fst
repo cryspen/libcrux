@@ -42,54 +42,17 @@ irreducible
 let v_LIFT_LEMMA: Prims.unit = () <: Prims.unit
 
 [@@ v_LIFT_LEMMA ]
-
-assume
-val testA0':
-    e7: i32 ->
-    e6: i32 ->
-    e5: i32 ->
-    e4: i32 ->
-    e3: i32 ->
-    e2: i32 ->
-    e1: i32 ->
-    e0: i32 ->
-    (i: u64 {v i < 8})
+assume val _mm256_set_epi32_interp: e7: i32 -> e6: i32 -> e5: i32 -> e4: i32 -> e3: i32 -> e2: i32 -> e1: i32 -> e0: i32 -> (i: u64 {v i < 8})
   -> Lemma
-    (ensures
-      ((Core_models.Abstractions.Bitvec.Int_vec_interp.e_ee_1__impl__to_i32x8 (Core_models.Core_arch.X86.Avx.e_mm256_set_epi32
-                e7
-                e6
-                e5
-                e4
-                e3
-                e2
-                e1
-                e0
-              <:
-              Core_models.Abstractions.Bitvec.t_BitVec (mk_u64 256))
-          <:
-          Core_models.Abstractions.Funarr.t_FunArray (mk_u64 8) i32).[ i ]
-        <:
-        i32) ==
-      (match i <: u64 with
-        | Rust_primitives.Integers.MkInt 0 -> e0
-        | Rust_primitives.Integers.MkInt 1 -> e1
-        | Rust_primitives.Integers.MkInt 2 -> e2
-        | Rust_primitives.Integers.MkInt 3 -> e3
-        | Rust_primitives.Integers.MkInt 4 -> e4
-        | Rust_primitives.Integers.MkInt 5 -> e5
-        | Rust_primitives.Integers.MkInt 6 -> e6
-        | Rust_primitives.Integers.MkInt 7 -> e7
-        | _ ->
-          Rust_primitives.Hax.never_to_any (Core.Panicking.panic "internal error: entered unreachable code"
-
-              <:
-              Rust_primitives.Hax.t_Never)
-          <:
-          i32))
-
-unfold
-let testA0 = testA0'
+        (
+            (
+                Core_models.Abstractions.Bitvec.Int_vec_interp.e_ee_1__impl__to_i32x8
+                    (Core_models.Core_arch.X86.Avx.e_mm256_set_epi32 e7 e6 e5 e4 e3 e2 e1 e0)
+            ).[ i ]
+         == ( match i with
+            | MkInt 0 -> e0 | MkInt 1 -> e1 | MkInt 2 -> e2 | MkInt 3 -> e3
+            | MkInt 4 -> e4 | MkInt 5 -> e5 | MkInt 6 -> e6 | MkInt 7 -> e7 )
+        )
 
 [@@ v_LIFT_LEMMA ]
 
@@ -1259,6 +1222,8 @@ let flatten_circuit (): FStar.Tactics.Tac unit =
                     "FStar.FunctionalExtensionality";
                     `%Rust_primitives.cast_tc; `%Rust_primitives.unsize_tc;
                     "Core.Ops"; `%(.[]);
+                    `%Core_models.Abstractions.Bitvec.Int_vec_interp.impl__into_i32x8;
+                    `%Core_models.Abstractions.Bitvec.Int_vec_interp.impl_1__into_i64x4;
                 ]
                 (top_levels_of_attr (` v_LIFT_LEMMA ))
                 (top_levels_of_attr (` Core_models.Abstractions.Bitvec.Int_vec_interp.v_SIMPLIFICATION_LEMMA ))

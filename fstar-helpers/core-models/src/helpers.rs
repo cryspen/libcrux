@@ -1,6 +1,6 @@
 #[cfg(test)]
 pub mod test {
-    use crate::abstractions::{bitvec::BitVec, funarr::FunArray};
+    use crate::abstractions::{bit::Bit, bitvec::BitVec, funarr::FunArray};
     use rand::prelude::*;
 
     /// Helper trait to generate random values
@@ -18,6 +18,7 @@ pub mod test {
         };
     }
 
+    mk_has_random!(bool);
     mk_has_random!(i8, i16, i32, i64, i128);
     mk_has_random!(u8, u16, u32, u64, u128);
 
@@ -32,9 +33,14 @@ pub mod test {
         }
     }
 
+    impl HasRandom for Bit {
+        fn random() -> Self {
+            crate::abstractions::bit::Bit::from(bool::random())
+        }
+    }
     impl<const N: u64> HasRandom for BitVec<N> {
         fn random() -> Self {
-            BitVec::rand()
+            Self::from_fn(|_| Bit::random())
         }
     }
 

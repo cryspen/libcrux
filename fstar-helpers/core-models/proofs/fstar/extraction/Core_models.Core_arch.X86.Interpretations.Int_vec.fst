@@ -116,29 +116,6 @@ let e_mm_set_epi32 (e3 e2 e1 e0: i32) : Core_models.Abstractions.Funarr.t_FunArr
           <:
           i32)
 
-let e_mm256_set_epi32 (e7 e6 e5 e4 e3 e2 e1 e0: i32)
-    : Core_models.Abstractions.Funarr.t_FunArray (mk_u64 8) i32 =
-  Core_models.Abstractions.Funarr.impl_5__from_fn (mk_u64 8)
-    #i32
-    (fun i ->
-        let i:u64 = i in
-        match i <: u64 with
-        | Rust_primitives.Integers.MkInt 0 -> e0
-        | Rust_primitives.Integers.MkInt 1 -> e1
-        | Rust_primitives.Integers.MkInt 2 -> e2
-        | Rust_primitives.Integers.MkInt 3 -> e3
-        | Rust_primitives.Integers.MkInt 4 -> e4
-        | Rust_primitives.Integers.MkInt 5 -> e5
-        | Rust_primitives.Integers.MkInt 6 -> e6
-        | Rust_primitives.Integers.MkInt 7 -> e7
-        | _ ->
-          Rust_primitives.Hax.never_to_any (Core.Panicking.panic "internal error: entered unreachable code"
-
-              <:
-              Rust_primitives.Hax.t_Never)
-          <:
-          i32)
-
 let e_mm_add_epi16 (a b: Core_models.Abstractions.Funarr.t_FunArray (mk_u64 8) i16)
     : Core_models.Abstractions.Funarr.t_FunArray (mk_u64 8) i16 =
   Core_models.Abstractions.Funarr.impl_5__from_fn (mk_u64 8)

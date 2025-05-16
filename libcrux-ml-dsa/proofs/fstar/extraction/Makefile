@@ -5,6 +5,7 @@ VERIFIED_MODULES = \
 	Libcrux_ml_dsa.Simd.Portable.Arithmetic.fsti \
 	Libcrux_ml_dsa.Simd.Portable.Arithmetic.fst \
 	Libcrux_ml_dsa.Simd.Avx2.Arithmetic.fst \
+	Libcrux_ml_dsa.Simd.Avx2.Ntt.fst \
 	Libcrux_ml_dsa.Simd.Traits.fsti \
 	Libcrux_ml_dsa.Simd.Traits.fst \
 	end_of_verified_modules

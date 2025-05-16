@@ -391,25 +391,6 @@ pub mod int_vec_interp {
         }
     }
 
-    #[test]
-    fn f() {
-        use crate::helpers::HasRandom;
-        for _ in 0..10000 {
-            let x: i64x4 = i64x4::random();
-            let y = x.into_i32x8();
-            assert_eq!(BitVec::from_i64x4(x), BitVec::from_i32x8(y));
-        }
-    }
-    #[test]
-    fn g() {
-        use crate::helpers::HasRandom;
-        for _ in 0..10000 {
-            let x: i32x8 = i32x8::random();
-            let y = x.into_i64x4();
-            assert_eq!(BitVec::from_i32x8(x), BitVec::from_i64x4(y));
-        }
-    }
-
     impl From<i64x4> for i32x8 {
         fn from(vec: i64x4) -> Self {
             vec.into_i32x8()
@@ -436,6 +417,7 @@ pub mod int_vec_interp {
     ) -> Proof<{ hax_lib::eq(BitVec::to_i64x4(BitVec::from_i32x8(bv)), bv.into_i64x4()) }> {
     }
 
+    /// Normalize `from` calls that convert from one type to itself
     #[hax_lib::fstar::replace(
         r#"
         [@@ $SIMPLIFICATION_LEMMA ]
@@ -445,4 +427,25 @@ pub mod int_vec_interp {
     "#
     )]
     const _: () = ();
+
+    #[cfg(test)]
+    mod direct_convertions_tests {
+        use super::*;
+        use crate::helpers::test::HasRandom;
+
+        #[test]
+        fn into_i32x8() {
+            for _ in 0..10000 {
+                let x: i64x4 = i64x4::random();
+                let y = x.into_i32x8();
+                assert_eq!(BitVec::from_i64x4(x), BitVec::from_i32x8(y));
+            }
+        }
+        #[test]
+        fn into_i64x4() {
+            let x: i32x8 = i32x8::random();
+            let y = x.into_i64x4();
+            assert_eq!(BitVec::from_i32x8(x), BitVec::from_i64x4(y));
+        }
+    }
 }

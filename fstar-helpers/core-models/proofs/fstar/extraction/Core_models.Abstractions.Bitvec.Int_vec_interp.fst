@@ -10,6 +10,7 @@ let v_SIMPLIFICATION_LEMMA: Prims.unit = () <: Prims.unit
 
 let e_ee_1: Prims.unit = ()
 
+///Conversion from i32 vectors of size 8to  bit vectors of size 256
 assume
 val e_ee_1__impl__from_i32x8': iv: Core_models.Abstractions.Funarr.t_FunArray (mk_u64 8) i32
   -> Core_models.Abstractions.Bitvec.t_BitVec (mk_u64 256)
@@ -17,6 +18,7 @@ val e_ee_1__impl__from_i32x8': iv: Core_models.Abstractions.Funarr.t_FunArray (m
 unfold
 let e_ee_1__impl__from_i32x8 = e_ee_1__impl__from_i32x8'
 
+///Conversion from bit vectors of size 256 to i32 vectors of size 8
 assume
 val e_ee_1__impl__to_i32x8': bv: Core_models.Abstractions.Bitvec.t_BitVec (mk_u64 256)
   -> Core_models.Abstractions.Funarr.t_FunArray (mk_u64 8) i32
@@ -60,6 +62,7 @@ let e_ee_1__lemma_cancel_bv = e_ee_1__lemma_cancel_bv'
 
 let e_ee_2: Prims.unit = ()
 
+///Conversion from i64 vectors of size 4to  bit vectors of size 256
 assume
 val e_ee_2__impl__from_i64x4': iv: Core_models.Abstractions.Funarr.t_FunArray (mk_u64 4) i64
   -> Core_models.Abstractions.Bitvec.t_BitVec (mk_u64 256)
@@ -67,6 +70,7 @@ val e_ee_2__impl__from_i64x4': iv: Core_models.Abstractions.Funarr.t_FunArray (m
 unfold
 let e_ee_2__impl__from_i64x4 = e_ee_2__impl__from_i64x4'
 
+///Conversion from bit vectors of size 256 to i64 vectors of size 4
 assume
 val e_ee_2__impl__to_i64x4': bv: Core_models.Abstractions.Bitvec.t_BitVec (mk_u64 256)
   -> Core_models.Abstractions.Funarr.t_FunArray (mk_u64 4) i64
@@ -110,6 +114,7 @@ let e_ee_2__lemma_cancel_bv = e_ee_2__lemma_cancel_bv'
 
 let e_ee_3: Prims.unit = ()
 
+///Conversion from i16 vectors of size 16to  bit vectors of size 256
 assume
 val e_ee_3__impl__from_i16x16': iv: Core_models.Abstractions.Funarr.t_FunArray (mk_u64 16) i16
   -> Core_models.Abstractions.Bitvec.t_BitVec (mk_u64 256)
@@ -117,6 +122,7 @@ val e_ee_3__impl__from_i16x16': iv: Core_models.Abstractions.Funarr.t_FunArray (
 unfold
 let e_ee_3__impl__from_i16x16 = e_ee_3__impl__from_i16x16'
 
+///Conversion from bit vectors of size 256 to i16 vectors of size 16
 assume
 val e_ee_3__impl__to_i16x16': bv: Core_models.Abstractions.Bitvec.t_BitVec (mk_u64 256)
   -> Core_models.Abstractions.Funarr.t_FunArray (mk_u64 16) i16
@@ -160,6 +166,7 @@ let e_ee_3__lemma_cancel_bv = e_ee_3__lemma_cancel_bv'
 
 let e_ee_4: Prims.unit = ()
 
+///Conversion from i128 vectors of size 2to  bit vectors of size 256
 assume
 val e_ee_4__impl__from_i128x2': iv: Core_models.Abstractions.Funarr.t_FunArray (mk_u64 2) i128
   -> Core_models.Abstractions.Bitvec.t_BitVec (mk_u64 256)
@@ -167,6 +174,7 @@ val e_ee_4__impl__from_i128x2': iv: Core_models.Abstractions.Funarr.t_FunArray (
 unfold
 let e_ee_4__impl__from_i128x2 = e_ee_4__impl__from_i128x2'
 
+///Conversion from bit vectors of size 256 to i128 vectors of size 2
 assume
 val e_ee_4__impl__to_i128x2': bv: Core_models.Abstractions.Bitvec.t_BitVec (mk_u64 256)
   -> Core_models.Abstractions.Funarr.t_FunArray (mk_u64 2) i128
@@ -210,6 +218,7 @@ let e_ee_4__lemma_cancel_bv = e_ee_4__lemma_cancel_bv'
 
 let e_ee_5: Prims.unit = ()
 
+///Conversion from i8 vectors of size 32to  bit vectors of size 256
 assume
 val e_ee_5__impl__from_i8x32': iv: Core_models.Abstractions.Funarr.t_FunArray (mk_u64 32) i8
   -> Core_models.Abstractions.Bitvec.t_BitVec (mk_u64 256)
@@ -217,6 +226,7 @@ val e_ee_5__impl__from_i8x32': iv: Core_models.Abstractions.Funarr.t_FunArray (m
 unfold
 let e_ee_5__impl__from_i8x32 = e_ee_5__impl__from_i8x32'
 
+///Conversion from bit vectors of size 256 to i8 vectors of size 32
 assume
 val e_ee_5__impl__to_i8x32': bv: Core_models.Abstractions.Bitvec.t_BitVec (mk_u64 256)
   -> Core_models.Abstractions.Funarr.t_FunArray (mk_u64 32) i8
@@ -260,6 +270,7 @@ let e_ee_5__lemma_cancel_bv = e_ee_5__lemma_cancel_bv'
 
 let e_ee_6: Prims.unit = ()
 
+///Conversion from u32 vectors of size 8to  bit vectors of size 256
 assume
 val e_ee_6__impl__from_u32x8': iv: Core_models.Abstractions.Funarr.t_FunArray (mk_u64 8) u32
   -> Core_models.Abstractions.Bitvec.t_BitVec (mk_u64 256)
@@ -267,6 +278,7 @@ val e_ee_6__impl__from_u32x8': iv: Core_models.Abstractions.Funarr.t_FunArray (m
 unfold
 let e_ee_6__impl__from_u32x8 = e_ee_6__impl__from_u32x8'
 
+///Conversion from bit vectors of size 256 to u32 vectors of size 8
 assume
 val e_ee_6__impl__to_u32x8': bv: Core_models.Abstractions.Bitvec.t_BitVec (mk_u64 256)
   -> Core_models.Abstractions.Funarr.t_FunArray (mk_u64 8) u32
@@ -310,6 +322,7 @@ let e_ee_6__lemma_cancel_bv = e_ee_6__lemma_cancel_bv'
 
 let e_ee_7: Prims.unit = ()
 
+///Conversion from u64 vectors of size 4to  bit vectors of size 256
 assume
 val e_ee_7__impl__from_u64x4': iv: Core_models.Abstractions.Funarr.t_FunArray (mk_u64 4) u64
   -> Core_models.Abstractions.Bitvec.t_BitVec (mk_u64 256)
@@ -317,6 +330,7 @@ val e_ee_7__impl__from_u64x4': iv: Core_models.Abstractions.Funarr.t_FunArray (m
 unfold
 let e_ee_7__impl__from_u64x4 = e_ee_7__impl__from_u64x4'
 
+///Conversion from bit vectors of size 256 to u64 vectors of size 4
 assume
 val e_ee_7__impl__to_u64x4': bv: Core_models.Abstractions.Bitvec.t_BitVec (mk_u64 256)
   -> Core_models.Abstractions.Funarr.t_FunArray (mk_u64 4) u64
@@ -360,6 +374,7 @@ let e_ee_7__lemma_cancel_bv = e_ee_7__lemma_cancel_bv'
 
 let e_ee_8: Prims.unit = ()
 
+///Conversion from u16 vectors of size 16to  bit vectors of size 256
 assume
 val e_ee_8__impl__from_u16x16': iv: Core_models.Abstractions.Funarr.t_FunArray (mk_u64 16) u16
   -> Core_models.Abstractions.Bitvec.t_BitVec (mk_u64 256)
@@ -367,6 +382,7 @@ val e_ee_8__impl__from_u16x16': iv: Core_models.Abstractions.Funarr.t_FunArray (
 unfold
 let e_ee_8__impl__from_u16x16 = e_ee_8__impl__from_u16x16'
 
+///Conversion from bit vectors of size 256 to u16 vectors of size 16
 assume
 val e_ee_8__impl__to_u16x16': bv: Core_models.Abstractions.Bitvec.t_BitVec (mk_u64 256)
   -> Core_models.Abstractions.Funarr.t_FunArray (mk_u64 16) u16
@@ -410,6 +426,7 @@ let e_ee_8__lemma_cancel_bv = e_ee_8__lemma_cancel_bv'
 
 let e_ee_9: Prims.unit = ()
 
+///Conversion from i32 vectors of size 4to  bit vectors of size 128
 assume
 val e_ee_9__impl__from_i32x4': iv: Core_models.Abstractions.Funarr.t_FunArray (mk_u64 4) i32
   -> Core_models.Abstractions.Bitvec.t_BitVec (mk_u64 128)
@@ -417,6 +434,7 @@ val e_ee_9__impl__from_i32x4': iv: Core_models.Abstractions.Funarr.t_FunArray (m
 unfold
 let e_ee_9__impl__from_i32x4 = e_ee_9__impl__from_i32x4'
 
+///Conversion from bit vectors of size 128 to i32 vectors of size 4
 assume
 val e_ee_9__impl__to_i32x4': bv: Core_models.Abstractions.Bitvec.t_BitVec (mk_u64 128)
   -> Core_models.Abstractions.Funarr.t_FunArray (mk_u64 4) i32
@@ -460,6 +478,7 @@ let e_ee_9__lemma_cancel_bv = e_ee_9__lemma_cancel_bv'
 
 let e_ee_10: Prims.unit = ()
 
+///Conversion from i64 vectors of size 2to  bit vectors of size 128
 assume
 val e_ee_10__impl__from_i64x2': iv: Core_models.Abstractions.Funarr.t_FunArray (mk_u64 2) i64
   -> Core_models.Abstractions.Bitvec.t_BitVec (mk_u64 128)
@@ -467,6 +486,7 @@ val e_ee_10__impl__from_i64x2': iv: Core_models.Abstractions.Funarr.t_FunArray (
 unfold
 let e_ee_10__impl__from_i64x2 = e_ee_10__impl__from_i64x2'
 
+///Conversion from bit vectors of size 128 to i64 vectors of size 2
 assume
 val e_ee_10__impl__to_i64x2': bv: Core_models.Abstractions.Bitvec.t_BitVec (mk_u64 128)
   -> Core_models.Abstractions.Funarr.t_FunArray (mk_u64 2) i64
@@ -510,6 +530,7 @@ let e_ee_10__lemma_cancel_bv = e_ee_10__lemma_cancel_bv'
 
 let e_ee_11: Prims.unit = ()
 
+///Conversion from i16 vectors of size 8to  bit vectors of size 128
 assume
 val e_ee_11__impl__from_i16x8': iv: Core_models.Abstractions.Funarr.t_FunArray (mk_u64 8) i16
   -> Core_models.Abstractions.Bitvec.t_BitVec (mk_u64 128)
@@ -517,6 +538,7 @@ val e_ee_11__impl__from_i16x8': iv: Core_models.Abstractions.Funarr.t_FunArray (
 unfold
 let e_ee_11__impl__from_i16x8 = e_ee_11__impl__from_i16x8'
 
+///Conversion from bit vectors of size 128 to i16 vectors of size 8
 assume
 val e_ee_11__impl__to_i16x8': bv: Core_models.Abstractions.Bitvec.t_BitVec (mk_u64 128)
   -> Core_models.Abstractions.Funarr.t_FunArray (mk_u64 8) i16
@@ -560,6 +582,7 @@ let e_ee_11__lemma_cancel_bv = e_ee_11__lemma_cancel_bv'
 
 let e_ee_12: Prims.unit = ()
 
+///Conversion from i128 vectors of size 1to  bit vectors of size 128
 assume
 val e_ee_12__impl__from_i128x1': iv: Core_models.Abstractions.Funarr.t_FunArray (mk_u64 1) i128
   -> Core_models.Abstractions.Bitvec.t_BitVec (mk_u64 128)
@@ -567,6 +590,7 @@ val e_ee_12__impl__from_i128x1': iv: Core_models.Abstractions.Funarr.t_FunArray 
 unfold
 let e_ee_12__impl__from_i128x1 = e_ee_12__impl__from_i128x1'
 
+///Conversion from bit vectors of size 128 to i128 vectors of size 1
 assume
 val e_ee_12__impl__to_i128x1': bv: Core_models.Abstractions.Bitvec.t_BitVec (mk_u64 128)
   -> Core_models.Abstractions.Funarr.t_FunArray (mk_u64 1) i128
@@ -610,6 +634,7 @@ let e_ee_12__lemma_cancel_bv = e_ee_12__lemma_cancel_bv'
 
 let e_ee_13: Prims.unit = ()
 
+///Conversion from i8 vectors of size 16to  bit vectors of size 128
 assume
 val e_ee_13__impl__from_i8x16': iv: Core_models.Abstractions.Funarr.t_FunArray (mk_u64 16) i8
   -> Core_models.Abstractions.Bitvec.t_BitVec (mk_u64 128)
@@ -617,6 +642,7 @@ val e_ee_13__impl__from_i8x16': iv: Core_models.Abstractions.Funarr.t_FunArray (
 unfold
 let e_ee_13__impl__from_i8x16 = e_ee_13__impl__from_i8x16'
 
+///Conversion from bit vectors of size 128 to i8 vectors of size 16
 assume
 val e_ee_13__impl__to_i8x16': bv: Core_models.Abstractions.Bitvec.t_BitVec (mk_u64 128)
   -> Core_models.Abstractions.Funarr.t_FunArray (mk_u64 16) i8
@@ -660,6 +686,7 @@ let e_ee_13__lemma_cancel_bv = e_ee_13__lemma_cancel_bv'
 
 let e_ee_14: Prims.unit = ()
 
+///Conversion from u32 vectors of size 4to  bit vectors of size 128
 assume
 val e_ee_14__impl__from_u32x4': iv: Core_models.Abstractions.Funarr.t_FunArray (mk_u64 4) u32
   -> Core_models.Abstractions.Bitvec.t_BitVec (mk_u64 128)
@@ -667,6 +694,7 @@ val e_ee_14__impl__from_u32x4': iv: Core_models.Abstractions.Funarr.t_FunArray (
 unfold
 let e_ee_14__impl__from_u32x4 = e_ee_14__impl__from_u32x4'
 
+///Conversion from bit vectors of size 128 to u32 vectors of size 4
 assume
 val e_ee_14__impl__to_u32x4': bv: Core_models.Abstractions.Bitvec.t_BitVec (mk_u64 128)
   -> Core_models.Abstractions.Funarr.t_FunArray (mk_u64 4) u32
@@ -710,6 +738,7 @@ let e_ee_14__lemma_cancel_bv = e_ee_14__lemma_cancel_bv'
 
 let e_ee_15: Prims.unit = ()
 
+///Conversion from u64 vectors of size 2to  bit vectors of size 128
 assume
 val e_ee_15__impl__from_u64x2': iv: Core_models.Abstractions.Funarr.t_FunArray (mk_u64 2) u64
   -> Core_models.Abstractions.Bitvec.t_BitVec (mk_u64 128)
@@ -717,6 +746,7 @@ val e_ee_15__impl__from_u64x2': iv: Core_models.Abstractions.Funarr.t_FunArray (
 unfold
 let e_ee_15__impl__from_u64x2 = e_ee_15__impl__from_u64x2'
 
+///Conversion from bit vectors of size 128 to u64 vectors of size 2
 assume
 val e_ee_15__impl__to_u64x2': bv: Core_models.Abstractions.Bitvec.t_BitVec (mk_u64 128)
   -> Core_models.Abstractions.Funarr.t_FunArray (mk_u64 2) u64
@@ -760,6 +790,7 @@ let e_ee_15__lemma_cancel_bv = e_ee_15__lemma_cancel_bv'
 
 let e_ee_16: Prims.unit = ()
 
+///Conversion from u16 vectors of size 8to  bit vectors of size 128
 assume
 val e_ee_16__impl__from_u16x8': iv: Core_models.Abstractions.Funarr.t_FunArray (mk_u64 8) u16
   -> Core_models.Abstractions.Bitvec.t_BitVec (mk_u64 128)
@@ -767,6 +798,7 @@ val e_ee_16__impl__from_u16x8': iv: Core_models.Abstractions.Funarr.t_FunArray (
 unfold
 let e_ee_16__impl__from_u16x8 = e_ee_16__impl__from_u16x8'
 
+///Conversion from bit vectors of size 128 to u16 vectors of size 8
 assume
 val e_ee_16__impl__to_u16x8': bv: Core_models.Abstractions.Bitvec.t_BitVec (mk_u64 128)
   -> Core_models.Abstractions.Funarr.t_FunArray (mk_u64 8) u16

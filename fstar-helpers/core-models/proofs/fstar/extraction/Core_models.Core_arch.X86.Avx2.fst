@@ -398,9 +398,7 @@ let e_mm256_permute2x128_si256 (v_IMM8: i32) = e_mm256_permute2x128_si256' v_IMM
 let e_mm256_slli_epi16
       (v_SHIFT_BY: i32)
       (vector: Core_models.Abstractions.Bitvec.t_BitVec (mk_u64 256))
-    : Prims.Pure (Core_models.Abstractions.Bitvec.t_BitVec (mk_u64 256))
-      (requires v_SHIFT_BY >=. mk_i32 0 && v_SHIFT_BY <. mk_i32 16)
-      (fun _ -> Prims.l_True) =
+    : Core_models.Abstractions.Bitvec.t_BitVec (mk_u64 256) =
   Core_models.Abstractions.Bitvec.impl_10__chunked_shift (mk_u64 256)
     (mk_u64 16)
     (mk_u64 16)
@@ -417,9 +415,7 @@ let e_mm256_slli_epi16
 let e_mm256_srli_epi64
       (v_SHIFT_BY: i32)
       (vector: Core_models.Abstractions.Bitvec.t_BitVec (mk_u64 256))
-    : Prims.Pure (Core_models.Abstractions.Bitvec.t_BitVec (mk_u64 256))
-      (requires v_SHIFT_BY >=. mk_i32 0 && v_SHIFT_BY <. mk_i32 64)
-      (fun _ -> Prims.l_True) =
+    : Core_models.Abstractions.Bitvec.t_BitVec (mk_u64 256) =
   Core_models.Abstractions.Bitvec.impl_10__chunked_shift (mk_u64 256)
     (mk_u64 64)
     (mk_u64 4)

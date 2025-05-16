@@ -59,30 +59,6 @@ pub mod int_vec {
             _ => unreachable!(),
         })
     }
-
-    // pub fn _mm256_set_epi32(
-    //     e7: i32,
-    //     e6: i32,
-    //     e5: i32,
-    //     e4: i32,
-    //     e3: i32,
-    //     e2: i32,
-    //     e1: i32,
-    //     e0: i32,
-    // ) -> i32x8 {
-    //     i32x8::from_fn(|i| match i {
-    //         0 => e0,
-    //         1 => e1,
-    //         2 => e2,
-    //         3 => e3,
-    //         4 => e4,
-    //         5 => e5,
-    //         6 => e6,
-    //         7 => e7,
-    //         _ => unreachable!(),
-    //     })
-    // }
-
     pub fn _mm_add_epi16(a: i16x8, b: i16x8) -> i16x8 {
         i16x8::from_fn(|i| a[i].wrapping_add(b[i]))
     }
@@ -588,9 +564,9 @@ assume val _mm256_set_epi32_interp: e7: i32 -> e6: i32 -> e5: i32 -> e4: i32 -> 
                 Core_models.Abstractions.Bitvec.Int_vec_interp.e_ee_1__impl__to_i32x8
                     (Core_models.Core_arch.X86.Avx.e_mm256_set_epi32 e7 e6 e5 e4 e3 e2 e1 e0)
             ).[ i ]
-         == match i with
-          | MkInt 0 -> e0 | MkInt 1 -> e1 | MkInt 2 -> e2 | MkInt 3 -> e3
-          | MkInt 4 -> e4 | MkInt 5 -> e5 | MkInt 6 -> e6 | MkInt 7 -> e7
+         == ( match i with
+            | MkInt 0 -> e0 | MkInt 1 -> e1 | MkInt 2 -> e2 | MkInt 3 -> e3
+            | MkInt 4 -> e4 | MkInt 5 -> e5 | MkInt 6 -> e6 | MkInt 7 -> e7 )
         )"#)]
         const _: () = ();
 
@@ -633,8 +609,6 @@ assume val _mm256_set_epi32_interp: e7: i32 -> e6: i32 -> e5: i32 -> e4: i32 -> 
 		       __m128i::from_i16x8(super::_mm_set1_epi16(x)));
         mk_lift_lemma!(_mm_set_epi32(e3: i32, e2: i32, e1: i32, e0: i32) ==
                __m128i::from_i32x4(super::_mm_set_epi32(e3, e2, e1, e0)));
-        // mk_lift_lemma!(_mm256_set_epi32(e7: i32, e6: i32, e5: i32, e4: i32, e3: i32, e2: i32, e1: i32, e0: i32) ==
-        //        __m256i::from(super::_mm256_set_epi32(e7, e6, e5, e4, e3, e2, e1, e0)));
         mk_lift_lemma!(_mm_add_epi16(a: __m128i, b: __m128i) ==
                __m128i::from_i16x8(super::_mm_add_epi16(BitVec::to_i16x8(a), BitVec::to_i16x8(b))));
         mk_lift_lemma!(_mm256_add_epi16(a: __m256i, b: __m256i) ==
@@ -726,6 +700,8 @@ assume val _mm256_set_epi32_interp: e7: i32 -> e6: i32 -> e5: i32 -> e4: i32 -> 
                     "FStar.FunctionalExtensionality";
                     `%Rust_primitives.cast_tc; `%Rust_primitives.unsize_tc;
                     "Core.Ops"; `%(.[]);
+                    `%${i64x4::into_i32x8};
+                    `%${i32x8::into_i64x4};
                 ]
                 (top_levels_of_attr (` $LIFT_LEMMA ))
                 (top_levels_of_attr (` $SIMPLIFICATION_LEMMA ))
@@ -740,40 +716,7 @@ assume val _mm256_set_epi32_interp: e7: i32 -> e6: i32 -> e5: i32 -> e4: i32 -> 
     mod tests {
         use crate::abstractions::bitvec::BitVec;
         use crate::core_arch::x86::upstream;
-
-        /// Helper trait to generate random values
-        pub trait HasRandom {
-            fn random() -> Self;
-        }
-
-        impl HasRandom for i32 {
-            fn random() -> Self {
-                use rand::prelude::*;
-                let mut rng = rand::rng();
-                rng.random()
-            }
-        }
-
-        impl HasRandom for i16 {
-            fn random() -> Self {
-                use rand::prelude::*;
-                let mut rng = rand::rng();
-                rng.random()
-            }
-        }
-        impl HasRandom for i64 {
-            fn random() -> Self {
-                use rand::prelude::*;
-                let mut rng = rand::rng();
-                rng.random()
-            }
-        }
-
-        impl<const N: u64> HasRandom for BitVec<N> {
-            fn random() -> Self {
-                BitVec::rand()
-            }
-        }
+        use crate::helpers::test::HasRandom;
 
         /// Derives tests for a given intrinsics. Test that a given intrisics and its model compute the same thing over random values (1000 by default).
         macro_rules! mk {
@@ -816,7 +759,6 @@ assume val _mm256_set_epi32_interp: e7: i32 -> e6: i32 -> e5: i32 -> e4: i32 -> 
         mk!(_mm256_set1_epi16(x: i16 ));
         mk!(_mm_set1_epi16(x: i16));
         mk!(_mm_set_epi32(e3: i32, e2: i32, e1: i32, e0: i32));
-        // mk!(_mm256_set_epi32(e7: i32, e6: i32, e5: i32, e4: i32, e3: i32, e2: i32, e1: i32, e0: i32));
 
         mk!(_mm_add_epi16(a: BitVec, b: BitVec));
         mk!(_mm256_add_epi16(a: BitVec, b: BitVec));

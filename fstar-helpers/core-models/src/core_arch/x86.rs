@@ -657,12 +657,10 @@ pub mod avx2 {
         }
     }
     /// [Intel Documentation](https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm256_slli_epi16)
-    #[hax_lib::requires(SHIFT_BY >= 0 && SHIFT_BY < 16)]
     pub fn _mm256_slli_epi16<const SHIFT_BY: i32>(vector: __m256i) -> __m256i {
         vector.chunked_shift::<16, 16>(FunArray::from_fn(|_| SHIFT_BY as i128))
     }
     /// [Intel Documentation](https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm256_srli_epi64)
-    #[hax_lib::requires(SHIFT_BY >= 0 && SHIFT_BY < 64)]
     pub fn _mm256_srli_epi64<const SHIFT_BY: i32>(vector: __m256i) -> __m256i {
         vector.chunked_shift::<64, 4>(FunArray::from_fn(|_| -(SHIFT_BY as i128)))
     }
