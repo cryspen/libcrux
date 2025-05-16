@@ -13,8 +13,12 @@ pub mod int_vec {
         i32x8::from_fn(|_| x)
     }
 
+    pub fn i32_extended64_mul(x: i32, y: i32) -> i64 {
+        (x as i64) * (y as i64)
+    }
+
     pub fn _mm256_mul_epi32(x: i32x8, y: i32x8) -> i64x4 {
-        i64x4::from_fn(|i| (x[i * 2] as i64) * (y[i * 2] as i64))
+        i64x4::from_fn(|i| i32_extended64_mul(x[i * 2], y[i * 2]))
     }
     pub fn _mm256_sub_epi32(x: i32x8, y: i32x8) -> i32x8 {
         i32x8::from_fn(|i| x[i].wrapping_sub(y[i]))

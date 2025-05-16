@@ -56,6 +56,19 @@ pub(super) fn montgomery_multiply_by_constant(lhs: Vec256, constant: i32) -> Vec
     res
 }
 
+pub fn montgomery_multiply_spec(x: i32, y: i32) -> i32 {
+    pub fn i32_extended64_mul(x: i32, y: i32) -> i64 {
+        (x as i64) * (y as i64)
+    }
+    let x_mul_y = i32_extended64_mul(x, y);
+    let lhs = (x_mul_y >> 32i32) as i32;
+    let rhs = ((((i32_extended64_mul(x_mul_y as i32, INVERSE_OF_MODULUS_MOD_MONTGOMERY_R as i32)
+        as i32) as i64)
+        * (FIELD_MODULUS as i64))
+        >> 32i32) as i32;
+    lhs.wrapping_sub(rhs)
+}
+
 #[hax_lib::fstar::postprocess_with(
     core_models::arch::x86::interpretations::int_vec::flatten_circuit
 )]

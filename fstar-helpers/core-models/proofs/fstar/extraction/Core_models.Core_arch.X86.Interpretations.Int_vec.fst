@@ -18,14 +18,15 @@ let e_mm256_set1_epi32 (x: i32) : Core_models.Abstractions.Funarr.t_FunArray (mk
         let _:u64 = temp_0_ in
         x)
 
+let i32_extended64_mul (x y: i32) : i64 = (cast (x <: i32) <: i64) *! (cast (y <: i32) <: i64)
+
 let e_mm256_mul_epi32 (x y: Core_models.Abstractions.Funarr.t_FunArray (mk_u64 8) i32)
     : Core_models.Abstractions.Funarr.t_FunArray (mk_u64 4) i64 =
   Core_models.Abstractions.Funarr.impl_5__from_fn (mk_u64 4)
     #i64
     (fun i ->
         let i:u64 = i in
-        (cast (x.[ i *! mk_u64 2 <: u64 ] <: i32) <: i64) *!
-        (cast (y.[ i *! mk_u64 2 <: u64 ] <: i32) <: i64)
+        i32_extended64_mul (x.[ i *! mk_u64 2 <: u64 ] <: i32) (y.[ i *! mk_u64 2 <: u64 ] <: i32)
         <:
         i64)
 
