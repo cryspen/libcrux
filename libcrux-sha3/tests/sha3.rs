@@ -1,4 +1,7 @@
-use libcrux_sha3::{digest_size, portable::incremental};
+use libcrux_sha3::{
+    digest_size,
+    portable::incremental::{self, Xof},
+};
 
 #[test]
 fn sha224() {
@@ -126,4 +129,25 @@ fn shake256() {
     let expected =
         "b3be97bfd978833a65588ceae8a34cf59e95585af62063e6b89d0789f372424e8b0d1be4f21b40ce5a83a438473271e0661854f02d431db74e6904d6c347d757a33b44f18e740bd119782f48b0ac4ee1fa2dee4c5018ee2f186d0ff94d1cece111e29a6bbd0972cb8574b5afddd55f00e50bd402c998043ba3f4553558391be010abb209af935224b8c331d0d29c008185f2c900abad898851c4f3d941a13f03e3c315c4fb058fca2bb4e2bc53fec7866eb7e7636f276dc5a167cad77b286c9a94946fe054927c48db7f30424787f56153cc67ca49609928d24c16563d3a0aaad1ca1495003374868ec422a72bedd2f387abc350b46a9a6580a3ceb56b602b7edab836d58d8bb6b1a6975aaad4255413271ec544ddea12dbb65003da4273650d6e3b51373e4e86fced975dad607add1184702952d4bf8459d05197293d35b59688a9f13806887f9845211eb2d0b9cc1e089eba8c16f9967d80ec181a754ea6511a897c736ba4c09871d993a41cf7efb08f0479935eaa811865";
     assert_eq!(hex::encode(&digest), expected);
+
+    let mut state = incremental::shake256_init();
+    incremental::shake256_absorb_final(&mut state, b"Hello, World!");
+    let mut out = [0u8; 136]; // block size
+    incremental::shake256_squeeze_first_block(&mut state, &mut out);
+    let expected = "b3be97bfd978833a65588ceae8a34cf59e95585af62063e6b89d0789f372424e8b0d1be4f21b40ce5a83a438473271e0661854f02d431db74e6904d6c347d757a33b44f18e740bd119782f48b0ac4ee1fa2dee4c5018ee2f186d0ff94d1cece111e29a6bbd0972cb8574b5afddd55f00e50bd402c998043ba3f4553558391be010abb209af935224";
+    assert_eq!(hex::encode(&out), expected);
+
+    let mut out = [0u8; 136]; // block size
+    incremental::shake256_squeeze_next_block(&mut state, &mut out);
+    let expected = "b8c331d0d29c008185f2c900abad898851c4f3d941a13f03e3c315c4fb058fca2bb4e2bc53fec7866eb7e7636f276dc5a167cad77b286c9a94946fe054927c48db7f30424787f56153cc67ca49609928d24c16563d3a0aaad1ca1495003374868ec422a72bedd2f387abc350b46a9a6580a3ceb56b602b7edab836d58d8bb6b1a6975aaad4255413";
+    assert_eq!(hex::encode(&out), expected);
+
+    let mut state = incremental::Shake256Xof::new();
+    state.absorb(b"Hello, ");
+    state.absorb_final(b" World!");
+
+    let mut out = [0u8; 32]; // ml-dsa commitment has size
+    state.squeeze(&mut out);
+    let expected = "b3be97bfd978833a65588ceae8a34cf59e95585af62063e6b89d0789f372424e";
+    assert_eq!(hex::encode(&out), expected);
 }
