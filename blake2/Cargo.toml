@@ -19,7 +19,7 @@ libcrux-hacl-rs = { version = "=0.0.2", path = "../hacl-rs/" }
 libcrux-macros = { version = "=0.0.2", path = "../macros" }
 
 [dev-dependencies]
-criterion = "0.5"
+criterion = "0.6"
 rand = "0.9"
 
 [[bench]]
