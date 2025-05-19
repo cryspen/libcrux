@@ -30,7 +30,7 @@ use hpke_rs_crypto::{
 use prelude::kdf::{labeled_expand, labeled_extract};
 
 /// Re-export of the HPKE types from the [`hpke_rs_crypto`] crate.
-pub use hpke_rs_crypto::types as HpkeTypes;
+pub use hpke_rs_crypto::types as hpke_types;
 
 /// Re-export of the RustCrypto crate.
 #[cfg(feature = "rustcrypto")]
