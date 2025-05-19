@@ -18,12 +18,12 @@ zeroize = { version = "1.5", features = ["zeroize_derive"] }
 hpke-rs-crypto = { version = "0.3.0-alpha.1", path = "./traits", default-features = false }
 rand_core = { version = "0.9", default-features = false }
 libcrux-sha3 = { version = "0.0.2" }
-hpke-rs-rust-crypto = { version = "0.3.0-alpha.1", path = "./rust_crypto_provider", optional = true }
-hpke-rs-libcrux = { version = "0.2.0-alpha.1", path = "./libcrux_provider", optional = true }
+hpke-rs-rust-crypto = { version = "0.3.0-alpha.1", path = "./rust_crypto_provider", default-features = false, optional = true }
+hpke-rs-libcrux = { version = "0.2.0-alpha.1", path = "./libcrux_provider", default-features = false, optional = true }
 
 [features]
 default = []
-std = ["rand_core/std", "hpke-rs-crypto/std"]
+std = ["rand_core/std", "hpke-rs-crypto/std", "hpke-rs-rust-crypto/std", "hpke-rs-libcrux/std"]
 serialization = ["serde", "tls_codec", "tls_codec/serde", "std"]
 hazmat = []
 rustcrypto = ["dep:hpke-rs-rust-crypto"]
