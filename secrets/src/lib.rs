@@ -23,6 +23,8 @@
 //! However, note that every use of `.declassify()` is at the responsibility of the
 //! programmer and represents a potential side-channel leak
 //!
+#![no_std]
+
 mod traits;
 pub use traits::*;
 mod int;
