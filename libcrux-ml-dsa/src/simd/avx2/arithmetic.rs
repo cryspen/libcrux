@@ -56,6 +56,22 @@ pub(super) fn montgomery_multiply_by_constant(lhs: Vec256, constant: i32) -> Vec
     res
 }
 
+// TODO: prove equivalence to our specification of `montgomery_multiply`.
+#[cfg(hax)]
+#[hax_lib::fstar::before("[@@ Tactics.Circuits.auto_unapply 2 ]")]
+pub fn montgomery_multiply_spec(x: i32, y: i32) -> i32 {
+    pub fn i32_extended64_mul(x: i32, y: i32) -> i64 {
+        (x as i64) * (y as i64)
+    }
+    let x_mul_y = i32_extended64_mul(x, y);
+    let lhs = (x_mul_y >> 32i32) as i32;
+    let rhs = ((((i32_extended64_mul(x_mul_y as i32, INVERSE_OF_MODULUS_MOD_MONTGOMERY_R as i32)
+        as i32) as i64)
+        * (FIELD_MODULUS as i64))
+        >> 32i32) as i32;
+    lhs.wrapping_sub(rhs)
+}
+
 #[hax_lib::fstar::postprocess_with(
     core_models::arch::x86::interpretations::int_vec::flatten_circuit
 )]
@@ -81,6 +97,23 @@ pub(super) fn montgomery_multiply(lhs: &mut Vec256, rhs: &Vec256) {
     let res02_shifted = mm256_shuffle_epi32::<0b11_11_01_01>(res02);
     *lhs = mm256_blend_epi32::<0b10101010>(res02_shifted, res13);
 }
+
+#[hax_lib::fstar::replace(
+    r#"
+let montgomery_multiply_lemma lhs rhs (i: u64 {v i < 8}): squash (
+     (Core_models.Abstractions.Bitvec.Int_vec_interp.e_ee_1__impl__to_i32x8 (montgomery_multiply lhs rhs)).[i]
+  == (montgomery_multiply_spec
+        ((Core_models.Abstractions.Bitvec.Int_vec_interp.e_ee_1__impl__to_i32x8 lhs).[i])
+        ((Core_models.Abstractions.Bitvec.Int_vec_interp.e_ee_1__impl__to_i32x8 rhs).[i])
+    )
+) = _ by (
+  let open FStar.Tactics in
+  norm [iota; primops; delta_only [`%montgomery_multiply]; zeta];
+  l_to_r [`Core_models.Abstractions.Bitvec.Int_vec_interp.e_ee_1__lemma_cancel_iv]
+)
+"#
+)]
+const _: () = ();
 
 #[inline(always)]
 pub(super) fn shift_left_then_reduce<const SHIFT_BY: i32>(simd_unit: &mut Vec256) {
