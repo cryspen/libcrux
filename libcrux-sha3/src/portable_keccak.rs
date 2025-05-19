@@ -1,6 +1,8 @@
 //! A portable SHA3 implementation using the generic implementation.
 
-use crate::traits::*;
+use core::ops::Range;
+
+use crate::traits::{self, *};
 
 #[inline(always)]
 fn rotate_left<const LEFT: i32, const RIGHT: i32>(x: u64) -> u64 {
@@ -77,7 +79,24 @@ fn split_at_mut_1(out: &mut [u8], mid: usize) -> (&mut [u8], &mut [u8]) {
     out.split_at_mut(mid)
 }
 
+pub(crate) struct Output<'a> {
+    pub(crate) out: &'a mut [u8],
+}
+
+impl<'a> traits::Output for Output<'a> {
+    fn len(&self) -> usize {
+        self.out.len()
+    }
+
+    fn copy_from_slice(&mut self, range: Range<usize>, lane: usize, slice: &[u8]) {
+        debug_assert!(lane == 0);
+        self.out[range].copy_from_slice(slice);
+    }
+}
+
 impl KeccakItem<1> for u64 {
+    type Output<'a> = Output<'a>;
+
     #[inline(always)]
     fn zero() -> Self {
         0
@@ -161,5 +180,14 @@ impl KeccakItem<1> for u64 {
                     .to_le_bytes()[0..last_block_len],
             );
         }
+    }
+
+    fn store_blocks_out<const RATE: usize>(
+        state: &[Self; 25],
+        blocks: &mut Self::Output<'_>,
+        block: usize,
+    ) {
+        let offset = RATE * block;
+        store_block::<RATE>(state, &mut blocks.out[offset..offset + RATE]);
     }
 }

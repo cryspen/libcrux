@@ -1,7 +1,7 @@
 //! The generic SHA3 implementation that uses portable or platform specific
 //! sub-routines.
 
-use crate::traits::{KeccakItem, Ops};
+use crate::traits::{KeccakItem, Ops, Output};
 
 #[cfg_attr(hax, hax_lib::opaque)]
 #[derive(Clone, Copy)]
@@ -448,6 +448,7 @@ pub(crate) fn absorb_final<const N: usize, T: KeccakItem<N>, const RATE: usize, 
 pub(crate) fn squeeze_next_block<const N: usize, T: KeccakItem<N>, const RATE: usize>(
     s: &mut KeccakState<N, T>,
     out: &mut [&mut [u8]; N],
+    // out: T::Output<'_>,
 ) {
     keccakf1600(s);
     T::store_block::<RATE>(&s.st, out);
@@ -516,7 +517,7 @@ pub(crate) fn squeeze_first_and_last<const N: usize, T: KeccakItem<N>, const RAT
 #[inline(always)]
 pub(crate) fn keccak<const N: usize, T: KeccakItem<N>, const RATE: usize, const DELIM: u8>(
     data: &[&[u8]; N],
-    out: &mut [&mut [u8]; N],
+    mut out: T::Output<'_>,
 ) {
     let mut s = KeccakState::<N, T>::new();
     for i in 0..data[0].len() / RATE {
@@ -525,7 +526,7 @@ pub(crate) fn keccak<const N: usize, T: KeccakItem<N>, const RATE: usize, const 
     let rem = data[0].len() % RATE;
     absorb_final::<N, T, RATE, DELIM>(&mut s, data, data[0].len() - rem, rem);
 
-    let outlen = out[0].len();
+    let outlen = out.len();
     let blocks = outlen / RATE;
     let last = outlen - (outlen % RATE);
 
@@ -534,18 +535,18 @@ pub(crate) fn keccak<const N: usize, T: KeccakItem<N>, const RATE: usize, const 
         let mut b = [[0u8; 200]; N];
         T::store_block_full::<RATE>(&s.st, &mut b);
         for i in 0..N {
-            out[i].copy_from_slice(&b[i][0..out[i].len()]);
+            out.copy_from_slice(0..out.len(), i, &b[i][0..out.len()]);
         }
     } else {
         // let (mut o0, mut o1) = T::split_at_mut_n(out, RATE);
         // T::store_block::<RATE>(&s.st, &mut o0);
-        T::store_blocks::<RATE>(&s.st, out, 0);
+        T::store_blocks_out::<RATE>(&s.st, &mut out, 0);
         for _i in 1..blocks {
             // let (mut o, orest) = T::split_at_mut_n(o1, RATE);
             // squeeze_next_block::<N, T, RATE>(&mut s, &mut o);
             keccakf1600(&mut s);
             // T::store_block::<RATE>(&s.st, &mut o);
-            T::store_blocks::<RATE>(&s.st, out, _i);
+            T::store_blocks_out::<RATE>(&s.st, &mut out, _i);
             // o1 = orest;
         }
 
@@ -556,7 +557,8 @@ pub(crate) fn keccak<const N: usize, T: KeccakItem<N>, const RATE: usize, const 
             T::store_block_full::<RATE>(&s.st, &mut b);
             for i in 0..N {
                 // o1[i].copy_from_slice(&b[i][0..o1[i].len()]);
-                out[i][last..].copy_from_slice(&b[i][0..outlen - last]);
+                // out[i][last..].copy_from_slice(&b[i][0..outlen - last]);
+                out.copy_from_slice(last..out.len(), i, &b[i][0..outlen - last]);
             }
         }
     }

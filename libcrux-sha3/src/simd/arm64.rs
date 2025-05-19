@@ -1,6 +1,8 @@
+use core::ops::Range;
+
 use libcrux_intrinsics::arm64::*;
 
-use crate::traits::{KeccakItem, Ops};
+use crate::traits::{self, KeccakItem, Ops};
 
 #[allow(non_camel_case_types)]
 pub type uint64x2_t = _uint64x2_t;
@@ -117,7 +119,29 @@ fn split_at_mut_2(out: [&mut [u8]; 2], mid: usize) -> ([&mut [u8]; 2], [&mut [u8
     ([out00, out10], [out01, out11])
 }
 
+pub(crate) struct Output<'a> {
+    pub(crate) out0: &'a mut [u8],
+    pub(crate) out1: &'a mut [u8],
+}
+
+impl<'a> traits::Output for Output<'a> {
+    fn len(&self) -> usize {
+        self.out0.len()
+    }
+
+    fn copy_from_slice(&mut self, range: Range<usize>, lane: usize, slice: &[u8]) {
+        debug_assert!(lane == 0 || lane == 1);
+        if lane == 0 {
+            self.out0[range].copy_from_slice(slice);
+        } else {
+            self.out1[range].copy_from_slice(slice);
+        }
+    }
+}
+
 impl KeccakItem<2> for uint64x2_t {
+    type Output<'a> = Output<'a>;
+
     #[inline(always)]
     fn zero() -> Self {
         _vdupq_n_u64(0)
@@ -196,5 +220,20 @@ impl KeccakItem<2> for uint64x2_t {
     #[inline(always)]
     fn store<const RATE: usize>(_state: &[Self; 25], _out: [&mut [u8]; 2]) {
         todo!()
+    }
+
+    fn store_blocks_out<const RATE: usize>(
+        state: &[Self; 25],
+        blocks: &mut Self::Output<'_>,
+        block: usize,
+    ) {
+        let offset = RATE * block;
+        store_block::<RATE>(
+            state,
+            &mut [
+                &mut blocks.out0[offset..offset + RATE],
+                &mut blocks.out1[offset..offset + RATE],
+            ],
+        );
     }
 }
