@@ -253,6 +253,64 @@ let map_lemma_rhs (f: term -> Tac term) (lemma: term) (d: dbg): Tac term
 ///  2. use `ctrl_rewrite`, doing something only for `mark_to_normalize_here #_ _` terms.
 private let mark_to_normalize_here #t (x: t): t = x
 
+/// Unapplies a function named `f_name` of arity `arity`.
+let mk_unapply_lemma (f_name: string) (arity: nat): Tac term =
+  let f = pack (Tv_FVar (pack_fv (explode_qn f_name))) in
+  let bds =
+    let rec aux (n: nat): Tac _ = match n with | 0 -> [] | _ -> fresh_binder (`_) :: aux (n - 1) in
+    aux arity
+  in
+  let applied_f = mk_app_bs f bds in
+  let rhs = norm_term [delta_only [f_name]] f in
+  let rhs = mk_app_bs rhs bds in
+  let post = mk_e_app (`(==)) [rhs; applied_f] in
+  let typ = mk_arr bds (pack_comp (C_Lemma (`True) (mk_abs [fresh_binder (`_)] post) (`[]))) in
+  let body = mk_abs bds (`()) in
+  let lemma = `(`#body <: `#typ) in
+  norm_term [] lemma
+
+let (let??) (x: option 'a) (f: 'a -> Tac (option 'b)): Tac (option 'b)
+  = match x with
+  | Some x -> f x
+  | None   -> None
+
+let expect_const_int (t: term): Tac (option int)
+  = match t with
+  | Tv_Const (C_Int n) -> Some n
+  | _ -> None
+
+let expect_fvar (f: string) (t: term): Tac (option unit)
+  = match t with
+  | Tv_UInst fv _ | Tv_FVar fv ->
+    if implode_qn (inspect_fv fv) = f
+    then Some ()
+    else None
+  | _ -> None
+
+let expect_app (f: string) (arity: nat) (t: term): Tac (option (l: list term {List.Tot.length l = arity}))
+  = let hd, args = collect_app t in
+    let?? () = expect_fvar f hd in
+    let args = List.Tot.map fst args in
+    if List.Tot.length args = arity
+    then let args: l: list term {List.Tot.length l = arity} = args in
+         Some args
+    else None
+
+let auto_unapply (arity: int) = ()
+
+let get_unapply_auto_lemmas ()
+  = filter_map
+        (fun f ->
+          let name = inspect_fv f in
+          let?? sg = lookup_typ (top_env ()) name in
+          let attrs = sigelt_attrs sg in
+          let?? [arity] = tryPick (expect_app (`%auto_unapply) 1) attrs in
+          let?? arity = expect_const_int arity in
+          if arity < 0 then fail "negative arity";
+          Some (mk_unapply_lemma (implode_qn name) arity)
+        )
+        (lookup_attr (`auto_unapply) (top_env ()))
+
 let flatten_circuit_aux
   (namespace_always_norm: list string)
   (lift_lemmas: list term) (simpl_lemmas: list term)
@@ -308,25 +366,18 @@ let flatten_circuit_aux
         d.dump "after full normalization";
         set_smt_goals sgs;
 
+
+        d.print "unapply functions";
+        let unapply_lemmas = get_unapply_auto_lemmas () in
+        l_to_r unapply_lemmas;
+
+        let sgs = smt_goals () in
+        set_smt_goals [];
+        d.dump "after unapply";
+        set_smt_goals sgs;
+
         ()
     )
-
-/// Unapplies a function named `f_name` of arity `arity`.
-let unapply (f_name: string) (arity: nat) =
-  let f = pack (Tv_FVar (pack_fv (explode_qn f_name))) in
-  let bds = 
-    let rec aux (n: nat): Tac _ = match n with | 0 -> [] | _ -> fresh_binder (`int) :: aux (n - 1) in
-    aux arity
-  in
-  let applied_f = mk_app_bs f bds in
-  let rhs = norm_term [delta_only [f_name]] f in
-  let rhs = mk_app_bs rhs bds in
-  let post = mk_e_app (`(==)) [rhs; applied_f] in
-  let typ = mk_arr bds (pack_comp (C_Lemma (`True) (mk_abs [fresh_binder (`_)] post) (`[]))) in
-  let body = mk_abs bds (`()) in
-  let lemma = `(`#body <: `#typ) in
-  let lemma = norm_term [] lemma in
-  l_to_r [lemma]
 
 /// `flatten_circuit` works on a goal `squash (c == ?u)` such that `c`
 /// is a circuit.
