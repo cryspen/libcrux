@@ -2,7 +2,7 @@
 //! These implementations are meant to be used when feature `check-secret-independence` is set
 use super::classify::*;
 use crate::traits::*;
-use std::ops::*;
+use core::ops::*;
 
 pub type I8 = Secret<i8>;
 pub type U8 = Secret<u8>;
