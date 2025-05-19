@@ -859,18 +859,38 @@ fn ntt_at_layer_2(re: &mut [Coefficients; SIMD_UNITS_IN_RING_ELEMENT]) {
 
 #[inline(always)]
 #[hax_lib::fstar::before(r#"
-let layer_bound (step_by:usize) =
+[@ "opaque_to_smt"]
+let layer_bound (step_by:usize) : n:nat{n <= 4} =
     match step_by with
     | MkInt 1 -> 4
     | MkInt 2 -> 3
     | MkInt 4 -> 2
     | MkInt 8 -> 1
     | MkInt 16 -> 0
-    | _ -> 0"#)]
+    | _ -> 0
+
+let bounded_sub_pre (a b: t_Array i32 (sz 8)) (b1:nat) (b2:nat):
+  Lemma (requires (Spec.Utils.is_i32b_array_opaque b1 a /\ Spec.Utils.is_i32b_array_opaque b2 b /\ b1 + b2 <= 4294967295))
+        (ensures (Libcrux_ml_dsa.Simd.Traits.Specs.sub_pre a b)) = admit()
+
+let bounded_sub_post (a b a_future: t_Array i32 (sz 8)) (b1 b2 b3:nat):
+  Lemma (requires (Spec.Utils.is_i32b_array_opaque b1 a /\ Spec.Utils.is_i32b_array_opaque b2 b /\
+                   b1 + b2 <= b3 /\ Libcrux_ml_dsa.Simd.Traits.Specs.sub_post a b a_future))
+        (ensures (Spec.Utils.is_i32b_array_opaque b3 a_future)) = admit()
+
+let bounded_add_pre (a b: t_Array i32 (sz 8)) (b1:nat) (b2:nat):
+  Lemma (requires (Spec.Utils.is_i32b_array_opaque b1 a /\ Spec.Utils.is_i32b_array_opaque b2 b /\ b1 + b2 <= 4294967295))
+        (ensures (Libcrux_ml_dsa.Simd.Traits.Specs.add_pre a b)) = admit()
+
+let bounded_add_post (a b a_future: t_Array i32 (sz 8)) (b1 b2 b3:nat):
+  Lemma (requires (Spec.Utils.is_i32b_array_opaque b1 a /\ Spec.Utils.is_i32b_array_opaque b2 b /\
+                   b1 + b2 <= b3 /\ Libcrux_ml_dsa.Simd.Traits.Specs.add_post a b a_future))
+        (ensures (Spec.Utils.is_i32b_array_opaque b3 a_future)) = admit()
+"#)]
 #[hax_lib::fstar::options("--z3rlimit 600 --split_queries always")]
-#[hax_lib::fstar::verification_status(lax)]
 #[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
 #[hax_lib::requires(fstar!(r#"
+    (v $OFFSET + v $STEP_BY < v $SIMD_UNITS_IN_RING_ELEMENT) /\
     (v $OFFSET + 2 * v $STEP_BY <= v $SIMD_UNITS_IN_RING_ELEMENT) /\
     (Spec.Utils.forall32 (fun i -> (i >= v $OFFSET /\ i < (v $OFFSET + 2 * v $STEP_BY)) ==>
               Spec.Utils.is_i32b_array_opaque 
@@ -893,10 +913,8 @@ fn outer_3_plus<const OFFSET: usize, const STEP_BY: usize, const ZETA: i32>(
     
     for j in OFFSET..OFFSET + STEP_BY {
         hax_lib::loop_invariant!(|j: usize| fstar!(r#"
-            (Spec.Utils.forall32 (fun i -> (i < v $OFFSET \/ 
-                        (i >= v $j /\ i < v $OFFSET + v $STEP_BY) \/ 
-                        (i >= v $j + v $STEP_BY /\ i < v $SIMD_UNITS_IN_RING_ELEMENT)) 
-                ==> Seq.index re i == Seq.index orig_re i)) /\
+            (Spec.Utils.modifies_range2_32 $orig_re $re 
+                $OFFSET $j ($OFFSET +! $STEP_BY) ($j +! $STEP_BY)) /\
             (Spec.Utils.forall32 (fun i -> ((i >= v $OFFSET /\ i < v $j) \/ 
                         (i >= v $OFFSET + v $STEP_BY /\ i < v $j + v $STEP_BY)) ==>
                 Spec.Utils.is_i32b_array_opaque 
@@ -909,9 +927,33 @@ fn outer_3_plus<const OFFSET: usize, const STEP_BY: usize, const ZETA: i32>(
 
         re[j + STEP_BY] = re[j];
 
-        hax_lib::fstar!("reveal_opaque (`%Spec.Utils.is_i32b_array_opaque) (Spec.Utils.is_i32b_array_opaque)");
+        hax_lib::fstar!(r#"
+        bounded_sub_pre (Seq.index $orig_re (v $j)).f_values ${tmp}.f_values
+            (v $NTT_BASE_BOUND + ((layer_bound $STEP_BY) * v $FIELD_MAX))
+            (v $FIELD_MAX)"#);
+        hax_lib::fstar!(r#"
+            bounded_add_pre (Seq.index orig_re (v $j)).f_values ${tmp}.f_values
+                (v $NTT_BASE_BOUND + ((layer_bound $STEP_BY) * v $FIELD_MAX))
+                (v $FIELD_MAX)"#);
+
         arithmetic::subtract(&mut re[j + STEP_BY], &tmp);
         arithmetic::add(&mut re[j], &tmp);
+
+        hax_lib::fstar!(r#"
+        assert ((v v_NTT_BASE_BOUND + ((layer_bound v_STEP_BY) * v v_FIELD_MAX)) + (v v_FIELD_MAX) 
+                == (v v_NTT_BASE_BOUND + ((layer_bound v_STEP_BY + 1) * v v_FIELD_MAX)))"#);
+        hax_lib::fstar!(r#"
+        bounded_sub_post (Seq.index $orig_re (v $j)).f_values ${tmp}.f_values
+            (Seq.index $re (v $j + v $STEP_BY)).f_values
+            (v $NTT_BASE_BOUND + ((layer_bound $STEP_BY) * v $FIELD_MAX))
+            (v $FIELD_MAX)
+            (v $NTT_BASE_BOUND + ((layer_bound $STEP_BY + 1) * v $FIELD_MAX))"#);
+        hax_lib::fstar!(r#"
+        bounded_add_post (Seq.index $orig_re (v $j)).f_values ${tmp}.f_values
+            (Seq.index $re (v $j)).f_values
+            (v $NTT_BASE_BOUND + ((layer_bound $STEP_BY) * v $FIELD_MAX))
+            (v $FIELD_MAX)
+            (v $NTT_BASE_BOUND + ((layer_bound $STEP_BY + 1) * v $FIELD_MAX))"#);
     }
 }
 

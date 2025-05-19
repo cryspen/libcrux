@@ -10,6 +10,7 @@ pub fn simd_unit_invert_ntt_at_layer_0(
     zeta2: i32,
     zeta3: i32,
 ) {
+   // std::println!("0:{}, 4:{}", simd_unit.values[0], simd_unit.values[4]);
     let a_minus_b = simd_unit.values[1] - simd_unit.values[0];
     simd_unit.values[0] = simd_unit.values[0] + simd_unit.values[1];
     simd_unit.values[1] = montgomery_multiply_fe_by_fer(a_minus_b, zeta0);

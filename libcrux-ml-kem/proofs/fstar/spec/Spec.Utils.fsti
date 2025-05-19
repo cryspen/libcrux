@@ -415,7 +415,7 @@ let modifies1_32 #t
 
 let modifies_range_32 #t
         (a b: t_Array t (mk_usize 32))
-        (i:usize{v i < 32}) (j:usize{v j < 32 /\ v i <= v j}) =
+        (i:usize{v i < 32}) (j:usize{v j <= 32 /\ v i <= v j}) =
 //    normalize_term (forall32 (fun k -> ((v i > k \/ k >= v j)   ==> Seq.index a k == Seq.index b k)))
     ((v i > 0 \/ 0 >= v j)   ==> Seq.index a 0 == Seq.index b 0) /\
     ((v i > 1 \/ 1 >= v j)   ==> Seq.index a 1 == Seq.index b 1) /\
@@ -452,8 +452,8 @@ let modifies_range_32 #t
 
 let modifies_range2_32 #t
         (a b: t_Array t (mk_usize 32))
-        (i:usize{v i < 32}) (j:usize{v j < 32 /\ v i <= v j})
-        (k:usize{v k < 32}) (l:usize{v l < 32 /\ v k <= v l}) =
+        (i:usize{v i < 32}) (j:usize{v j <= 32 /\ v i <= v j})
+        (k:usize{v k < 32}) (l:usize{v l <= 32 /\ v k <= v l}) =
     (~((v i <= 0  /\ 0  < v j) \/ (v k <= 0 /\ 0 < v l))  ==> Seq.index a 0 == Seq.index b 0) /\
     (~((v i <= 1  /\ 1  < v j) \/ (v k <= 1 /\ 1 < v l))  ==> Seq.index a 1 == Seq.index b 1) /\
     (~((v i <= 2  /\ 2  < v j) \/ (v k <= 2 /\ 2 < v l))  ==> Seq.index a 2 == Seq.index b 2) /\

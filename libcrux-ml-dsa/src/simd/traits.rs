@@ -38,6 +38,7 @@ pub(crate) mod specs {
         i <= i32::MAX.to_int() && i >= i32::MIN.to_int()
     }
 
+    #[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
     pub(crate) fn add_pre(lhs: &SIMDContent, rhs: &SIMDContent) -> Prop {
         forall(|i: usize| {
             implies(
@@ -47,6 +48,7 @@ pub(crate) mod specs {
         })
     }
 
+    #[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
     pub(crate) fn add_post(lhs: &SIMDContent, rhs: &SIMDContent, future_lhs: &SIMDContent) -> Prop {
         forall(|i: usize| {
             implies(
@@ -56,6 +58,7 @@ pub(crate) mod specs {
         })
     }
 
+    #[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
     pub(crate) fn sub_pre(lhs: &SIMDContent, rhs: &SIMDContent) -> Prop {
         forall(|i: usize| {
             implies(
@@ -65,6 +68,7 @@ pub(crate) mod specs {
         })
     }
 
+    #[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
     pub(crate) fn sub_post(lhs: &SIMDContent, rhs: &SIMDContent, future_lhs: &SIMDContent) -> Prop {
         forall(|i: usize| {
             implies(
