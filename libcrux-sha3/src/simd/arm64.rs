@@ -231,17 +231,3 @@ impl KeccakItem<2> for uint64x2_t {
         unimplemented!("This function should never be called")
     }
 }
-
-// impl Output<2, uint64x2_t> for (&mut [u8], &mut [u8]) {
-//     fn store_blocks<const RATE: usize>(self, state: &[uint64x2_t; 25], block: usize) {
-//         let offset = RATE * block;
-//         let (out0, out1) = self;
-//         // Self::store_block::<RATE>(
-//         //     state,
-//         //     &mut [
-//         //         &mut out0[offset..offset + RATE],
-//         //         &mut out1[offset..offset + RATE],
-//         //     ],
-//         // );
-//     }
-// }

@@ -497,29 +497,34 @@ pub mod neon {
         fn _shake256xN<const LEN: usize, const N: usize>(input: &[[u8; 33]; N]) -> [[u8; LEN]; N] {
             debug_assert!(N == 2 || N == 3 || N == 4);
 
-            let mut out = [[0u8; LEN]; N];
+            // XXX: Because hax can't handle mutability well, we have to dance
+            //      around that.
+            let mut out0 = [0u8; LEN];
+            let mut out1 = [0u8; LEN];
             match N {
                 2 => {
-                    let (out0, out1) = out.split_at_mut(1);
-                    shake256(&input[0], &input[1], &mut out0[0], &mut out1[0]);
+                    shake256(&input[0], &input[1], &mut out0, &mut out1);
+                    let tmp = [out0, out1];
+                    return core::array::from_fn(|i| tmp[i]);
                 }
                 3 => {
                     let mut extra = [0u8; LEN];
-                    let (out0, out12) = out.split_at_mut(1);
-                    let (out1, out2) = out12.split_at_mut(1);
-                    shake256(&input[0], &input[1], &mut out0[0], &mut out1[0]);
-                    shake256(&input[2], &input[2], &mut out2[0], &mut extra);
+                    let mut out2 = [0u8; LEN];
+                    shake256(&input[0], &input[1], &mut out0, &mut out1);
+                    shake256(&input[2], &input[2], &mut out2, &mut extra);
+                    let tmp = [out0, out1, out2];
+                    return core::array::from_fn(|i| tmp[i]);
                 }
                 4 => {
-                    let (out0, out123) = out.split_at_mut(1);
-                    let (out1, out23) = out123.split_at_mut(1);
-                    let (out2, out3) = out23.split_at_mut(1);
-                    shake256(&input[0], &input[1], &mut out0[0], &mut out1[0]);
-                    shake256(&input[2], &input[3], &mut out2[0], &mut out3[0]);
+                    let mut out2 = [0u8; LEN];
+                    let mut out3 = [0u8; LEN];
+                    shake256(&input[0], &input[1], &mut out0, &mut out1);
+                    shake256(&input[2], &input[3], &mut out2, &mut out3);
+                    let tmp = [out0, out1, out2, out3];
+                    return core::array::from_fn(|i| tmp[i]);
                 }
                 _ => unreachable!("Only 2, 3, or 4 are supported for N"),
             }
-            out
         }
 
         /// An incremental API to perform 2 operations in parallel
@@ -543,13 +548,6 @@ pub mod neon {
             /// Initialise the `KeccakState2`.
             #[inline(always)]
             pub fn init() -> KeccakState {
-                // XXX: These functions could alternatively implement the same with
-                //      the portable implementation
-                // {
-                //     let s0 = KeccakState::new();
-                //     let s1 = KeccakState::new();
-                //     [s0, s1]
-                // }
                 KeccakState {
                     state: KeccakState2Internal::new(),
                 }
@@ -558,13 +556,6 @@ pub mod neon {
             /// Shake128 absorb `data0` and `data1` in the [`KeccakState`] `s`.
             #[inline(always)]
             pub fn shake128_absorb_final(s: &mut KeccakState, data0: &[u8], data1: &[u8]) {
-                // XXX: These functions could alternatively implement the same with
-                //      the portable implementation
-                // {
-                //     let [mut s0, mut s1] = s;
-                //     shake128_absorb_final(&mut s0, data0);
-                //     shake128_absorb_final(&mut s1, data1);
-                // }
                 absorb_final::<2, crate::simd::arm64::uint64x2_t, 168, 0x1fu8>(
                     &mut s.state,
                     &[data0, data1],
@@ -576,13 +567,6 @@ pub mod neon {
             /// Shake256 absorb `data0` and `data1` in the [`KeccakState`] `s`.
             #[inline(always)]
             pub fn shake256_absorb_final(s: &mut KeccakState, data0: &[u8], data1: &[u8]) {
-                // XXX: These functions could alternatively implement the same with
-                //      the portable implementation
-                // {
-                //     let [mut s0, mut s1] = s;
-                //     shake128_absorb_final(&mut s0, data0);
-                //     shake128_absorb_final(&mut s1, data1);
-                // }
                 absorb_final::<2, crate::simd::arm64::uint64x2_t, 136, 0x1fu8>(
                     &mut s.state,
                     &[data0, data1],
@@ -647,10 +631,7 @@ pub mod neon {
                 out0: &mut [u8],
                 out1: &mut [u8],
             ) {
-                squeeze_first_five_blocks::<2, crate::simd::arm64::uint64x2_t, 168>(
-                    &mut s.state,
-                    [out0, out1],
-                )
+                s.state.squeeze_first_five_blocks_simd128::<168>(out0, out1);
             }
 
             /// Squeeze block
@@ -660,7 +641,7 @@ pub mod neon {
                 out0: &mut [u8],
                 out1: &mut [u8],
             ) {
-                traits::KeccakItem::<2>::store_block::<136>(&s.state.st, &mut [out0, out1])
+                traits::KeccakItem::<2>::store_block2::<136>(&s.state.st, out0, out1, 0);
             }
 
             /// Squeeze next block

@@ -45,7 +45,3 @@ pub(crate) trait KeccakItem<const N: usize>: Clone + Copy {
     fn split_at_mut_n(a: [&mut [u8]; N], mid: usize) -> ([&mut [u8]; N], [&mut [u8]; N]);
     fn store<const RATE: usize>(state: &[Self; 25], out: [&mut [u8]; N]);
 }
-
-// pub(crate) trait Output<const N: usize, T: KeccakItem<N>> {
-//     fn store_blocks<const RATE: usize>(self, state: &[T; 25], block: usize);
-// }

@@ -10,21 +10,22 @@ pub(crate) struct KeccakState<const N: usize, T: KeccakItem<N>> {
 }
 
 impl<const N: usize, T: KeccakItem<N>> KeccakState<N, T> {
-    fn get(&self, i: usize, j: usize) -> &T {
-        Ops::get(&self.st, i, j)
-    }
-    fn set(&mut self, i: usize, j: usize, v: T) {
-        self.st.set(i, j, v);
-    }
-}
-
-impl<const N: usize, T: KeccakItem<N>> KeccakState<N, T> {
     /// Create a new Shake128 x4 state.
     #[inline(always)]
     pub(crate) fn new() -> Self {
         Self {
             st: [T::zero(); 25],
         }
+    }
+
+    /// Get the element at position `i,j`.
+    fn get(&self, i: usize, j: usize) -> &T {
+        Ops::get(&self.st, i, j)
+    }
+
+    /// Set the element at position `i,j` to `v`.
+    fn set(&mut self, i: usize, j: usize, v: T) {
+        self.st.set(i, j, v);
     }
 }
 
@@ -413,6 +414,40 @@ pub(crate) fn keccakf1600<const N: usize, T: KeccakItem<N>>(s: &mut KeccakState<
     }
 }
 
+#[cfg(feature = "simd128")]
+impl KeccakState<2, crate::simd::arm64::uint64x2_t> {
+    /// Squeeze the first 5 blocks x2.
+    #[inline(always)]
+    pub(crate) fn squeeze_first_five_blocks_simd128<const RATE: usize>(
+        &mut self,
+        out0: &mut [u8],
+        out1: &mut [u8],
+    ) {
+        use crate::simd::arm64::uint64x2_t;
+        let (mut o0, o1) = uint64x2_t::split_at_mut_n([out0, out1], RATE);
+        uint64x2_t::store_block::<RATE>(&self.st, &mut o0);
+        // uint64x2_t::store_block2::<RATE>(&self.st, out0, out1, 0);
+        let (mut o1, o2) = uint64x2_t::split_at_mut_n(o1, RATE);
+
+        // keccakf1600(self);
+        // uint64x2_t::store_block2::<RATE>(&self.st, out0, out1, 1);
+        squeeze_next_block::<2, uint64x2_t, RATE>(self, &mut o1);
+        let (mut o2, o3) = uint64x2_t::split_at_mut_n(o2, RATE);
+
+        // keccakf1600(self);
+        // uint64x2_t::store_block2::<RATE>(&self.st, out0, out1, 2);
+        squeeze_next_block::<2, uint64x2_t, RATE>(self, &mut o2);
+        let (mut o3, mut o4) = uint64x2_t::split_at_mut_n(o3, RATE);
+
+        squeeze_next_block::<2, uint64x2_t, RATE>(self, &mut o3);
+        squeeze_next_block::<2, uint64x2_t, RATE>(self, &mut o4);
+        // keccakf1600(self);
+        // uint64x2_t::store_block2::<RATE>(&self.st, out0, out1, 3);
+        // keccakf1600(self);
+        // uint64x2_t::store_block2::<RATE>(&self.st, out0, out1, 4);
+    }
+}
+
 #[inline(always)]
 pub(crate) fn absorb_block<const N: usize, T: KeccakItem<N>, const RATE: usize>(
     s: &mut KeccakState<N, T>,
@@ -461,12 +496,12 @@ pub(crate) fn squeeze_first_three_blocks<const N: usize, T: KeccakItem<N>, const
     let (mut o0, o1) = T::split_at_mut_n(out, RATE);
     T::store_block::<RATE>(&s.st, &mut o0);
     let (mut o1, mut o2) = T::split_at_mut_n(o1, RATE);
-    // squeeze_next_block::<N, T, RATE>(s, &mut o1);
-    keccakf1600(s);
-    T::store_block::<RATE>(&s.st, &mut o1);
-    // squeeze_next_block::<N, T, RATE>(s, &mut o2);
-    keccakf1600(s);
-    T::store_block::<RATE>(&s.st, &mut o2);
+    squeeze_next_block::<N, T, RATE>(s, &mut o1);
+    // keccakf1600(s);
+    // T::store_block::<RATE>(&s.st, &mut o1);
+    squeeze_next_block::<N, T, RATE>(s, &mut o2);
+    // keccakf1600(s);
+    // T::store_block::<RATE>(&s.st, &mut o2);
 }
 
 #[inline(always)]
