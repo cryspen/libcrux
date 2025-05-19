@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1, user-scalable=yes" />
+        <style>
+            html {
+                font-family: BlinkMacSystemFont, -apple-system, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell,
+                    'Fira Sans', 'Droid Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+                -webkit-font-smoothing: antialiased;
+                background-color: #fff;
+                font-size: 16px;
+            }
+            body {
+                color: #4a4a4a;
+                margin: 8px;
+                font-size: 1em;
+                font-weight: 400;
+            }
+            header {
+                margin-bottom: 8px;
+                display: flex;
+                flex-direction: column;
+            }
+            main {
+                width: 100%;
+                display: flex;
+                flex-direction: column;
+            }
+            a {
+                color: #3273dc;
+                cursor: pointer;
+                text-decoration: none;
+            }
+            a:hover {
+                color: #000;
+            }
+            button {
+                color: #fff;
+                background-color: #3298dc;
+                border-color: transparent;
+                cursor: pointer;
+                text-align: center;
+            }
+            button:hover {
+                background-color: #2793da;
+                flex: none;
+            }
+            .spacer {
+                flex: auto;
+            }
+            .small {
+                font-size: 0.75rem;
+            }
+            footer {
+                margin-top: 16px;
+                display: flex;
+                align-items: center;
+            }
+            .header-label {
+                margin-right: 4px;
+            }
+            .benchmark-set {
+                margin: 8px 0;
+                width: 100%;
+                display: flex;
+                flex-direction: column;
+            }
+            .benchmark-title {
+                font-size: 3rem;
+                font-weight: 600;
+                word-break: break-word;
+                text-align: center;
+            }
+            .benchmark-graphs {
+                display: flex;
+                flex-direction: row;
+                justify-content: space-around;
+                align-items: center;
+                flex-wrap: wrap;
+                width: 100%;
+            }
+        </style>
+        <title>Benchmarks</title>
+    </head>
+
+    <body>
+        <header id="header">
+            <div class="header-item">
+                <strong class="header-label">Last Update:</strong>
+                <span id="last-update"></span>
+            </div>
+            <div class="header-item">
+                <strong class="header-label">Repository:</strong>
+                <a id="repository-link" rel="noopener"></a>
+            </div>
+        </header>
+        <main id="main"></main>
+        <footer></footer>
+
+        <script src="https://cdn.plot.ly/plotly-3.0.0.min.js" charset="utf-8"></script>
+        <script src="data.js"></script>
+        <script id="main-script">
+            'use strict';
+            (function () {
+                function timeZoneOffset() {
+                    // extract GMT+offset from current time zone, if available
+                    return new Date()
+                        .toString()
+                        .split(' ')
+                        .filter((s) => s.includes('GMT'))
+                        .map((s) => `(${s})`);
+                }
+
+                function buildPlotLayout() {
+                    const offset = timeZoneOffset();
+                    const layout = {
+                        height: 600,
+                        width: 1200,
+                        xaxis: { title: { text: `Time of benchmark run ${offset}` }, type: 'date' },
+                    };
+
+                    return layout;
+                }
+
+                function addTitleToElement(parent, title) {
+                    const titleElem = document.createElement('h1');
+                    titleElem.className = 'benchmark-title';
+                    titleElem.textContent = title;
+                    parent.appendChild(titleElem);
+                }
+                function chartFilteredTraces(parent, title, filteredTraces) {
+                    // return if no datasets
+                    if (filteredTraces.length == 0) {
+                        console.error(`No datasets found with ${title}`);
+                        return;
+                    }
+
+                    // create elem for plot
+                    const elem = document.createElement('div');
+                    elem.className = 'benchmark-graphs';
+                    parent.appendChild(elem);
+
+                    const layout = buildPlotLayout();
+
+                    // get the unit from the first item
+                    // this is possible because there is at least one data point,
+                    // and the unit is the same across all data points.
+                    const unit = filteredTraces[0].metadata.unit;
+                    layout.yaxis = { title: { text: `Value (${unit})` } };
+
+                    layout.title = { text: title };
+
+                    // add the plot to the elem
+                    Plotly.newPlot(elem, filteredTraces, layout);
+                }
+
+                function buildKey(benchItem, schema) {
+                    // build the key from the values in the schema
+                    let key = {};
+                    for (const s of schema) {
+                        key[s] = benchItem[s];
+                    }
+                    // include unit
+                    key.unit = benchItem.unit;
+
+                    return JSON.stringify(key);
+                }
+                function parseKey(keyString, schema) {
+                    const key = JSON.parse(keyString);
+                    for (const s of schema) {
+                        if (!key.hasOwnProperty(s)) {
+                            // explicitly set to `undefined`
+                            key[s] = undefined;
+                        }
+                    }
+                    return key;
+                }
+                // separates the data into traces by key
+                function separateAllTraces(commits, schema) {
+                    // flatten and keep commit data
+                    const data = commits
+                        .map((commitEntry) => {
+                            const { commit, date, benches } = commitEntry;
+                            return benches.map((bench) => {
+                                return { commit, date, bench };
+                            });
+                        })
+                        .flat();
+
+                    // group by key
+                    const groupedData = Object.groupBy(data, (benchEntry) => {
+                        return buildKey(benchEntry.bench, schema);
+                    });
+
+                    // prepare for plotting
+                    const traces = Object.entries(groupedData).map(([keyString, dataset]) => {
+                        const metadata = parseKey(keyString, schema);
+
+                        return {
+                            metadata,
+                            x: dataset.map((d) => new Date(d.date)),
+                            y: dataset.map((d) => d.bench.value),
+                            dataset,
+                            showlegend: true,
+                            hoverinfo: 'text',
+                        };
+                    });
+
+                    return Array.from(traces);
+                }
+                // get the schema object from `window.BENCHMARK_DATA`,
+                // and return a default value if invalid or none is provided.
+                function retrieveSchema() {
+                    const defaultSchema = ['name', 'platform', 'os', 'keySize', 'api', 'category'];
+
+                    let schema = window.BENCHMARK_DATA.schema;
+                    if (!schema || typeof schema !== 'object') {
+                        console.error(`No or invalid schema provided: defaulting to [${defaultSchema}]`);
+                        schema = defaultSchema;
+                    }
+                    return schema;
+                }
+                // get the groupBy object from `window.BENCHMARK_DATA`,
+                // and return a default value if invalid or none is provided.
+                function retrieveGroupBy() {
+                    const defaultGroupBy = ['os'];
+                    let groupBy = window.BENCHMARK_DATA.groupBy;
+                    if (!groupBy || typeof groupBy !== 'object') {
+                        console.error(`No or invalid groupBy provided: defaulting to [${defaultGroupBy}]`);
+                        groupBy = defaultGroupBy;
+                    }
+                    return groupBy;
+                }
+
+                // build the groupKey for a trace,
+                // which consists of the key-value pairs
+                // for the groupBy keys only.
+                function buildTraceGroupKey(trace, groupBy) {
+                    const traceGroup = {};
+                    for (let key of groupBy) {
+                        traceGroup[key] = trace.metadata[key];
+                    }
+                    return JSON.stringify(traceGroup);
+                }
+                function getObservationTooltipText(name, observation) {
+                    const value = observation.bench.value;
+                    const unit = observation.bench.unit;
+                    const range = observation.bench.range;
+                    const commitId = observation.commit.id;
+                    const message = observation.commit.message;
+                    const url = observation.commit.url;
+
+                    return `<b>${name}</b><br>value: ${value} ${unit} ${range}<br>commit id: ${commitId}<br>commit name: ${message}<br>commit url: ${url}`;
+                }
+                // return the name for the graph legend,
+                // using only the metadata entries that are not included in the
+                // groupBy, and are not 'unit'.
+                // also, don't include the fields whose values are `undefined` in the name.
+                function getLegendName(trace, groupBy, schema) {
+                    // entries sorted by schema
+                    const orderedEntries = schema.map((key) => [key, trace.metadata[key]]);
+
+                    return orderedEntries
+                        .filter(([key, value]) => !groupBy.includes(key) && key !== 'unit' && value !== undefined)
+                        .map(([_, value]) => value)
+                        .join(' ');
+                }
+                function addLegendNameAndTooltip(trace, groupBy, schema) {
+                    // set the name in the legend
+                    trace.name = getLegendName(trace, groupBy, schema);
+
+                    // set the tooltip text
+                    trace.text = trace.dataset.map((observation) => getObservationTooltipText(trace.name, observation));
+                }
+
+                // Display the fields in the group as a comma-separated list
+                function buildTitleFromGroupKey(groupKey, groupBy) {
+                    return groupBy
+                        .map((field) => [field, groupKey[field]])
+                        .map(([field, value]) => `${field}: ${value}`)
+                        .join(', ');
+                }
+                function renderAllCharts() {
+                    // retrieve the data for the benchmark with the first name
+                    // TODO: don't just support a single overarching name
+                    const entries = window.BENCHMARK_DATA.entries;
+                    const entry = Object.values(entries)[0];
+
+                    // retrieve the custom metadata schema from `window.BENCHMARK_DATA`
+                    // each combination of fields is used to uniquely identify a trace
+                    const schema = retrieveSchema();
+
+                    // build the data traces by separating out the observations
+                    // by key. This is equivalent to separating out the observations
+                    // by benchmark id, except that the benchmark id consists
+                    // of multiple, separate fields.
+                    const traces = separateAllTraces(entry, schema);
+
+                    // get the groupBy information from `window.BENCHMARK_DATA`
+                    // this is an array of keys, e.g. ['os', 'keySize']
+                    // there should be one plot per combination of these values
+                    const groupBy = retrieveGroupBy();
+
+                    // create a div for the benchmark set
+                    const main = document.getElementById('main');
+                    const setElem = document.createElement('div');
+                    setElem.className = 'benchmark-set';
+                    main.appendChild(setElem);
+                    addTitleToElement(setElem, `Compare platform for ${groupBy}`);
+
+                    // group datasets by the relevant keys
+                    const groupedData = Object.groupBy(traces, (trace) => buildTraceGroupKey(trace, groupBy));
+
+                    // create  a chart for each group
+                    Object.entries(groupedData).forEach(([groupKeyString, filteredTraces]) => {
+                        // build the title
+                        const groupKey = parseKey(groupKeyString, groupBy);
+                        const title = buildTitleFromGroupKey(groupKey, groupBy);
+
+                        // add the legend name to each trace,
+                        // as well as the tooltip text for each point in each trace
+                        filteredTraces.forEach((trace) => addLegendNameAndTooltip(trace, groupBy, schema));
+
+                        chartFilteredTraces(setElem, title, filteredTraces);
+                    });
+                }
+                function init() {
+                    const data = window.BENCHMARK_DATA;
+
+                    // Render header
+                    document.getElementById('last-update').textContent = new Date(data.lastUpdate).toString();
+                    const repoLink = document.getElementById('repository-link');
+                    repoLink.href = data.repoUrl;
+                    repoLink.textContent = data.repoUrl;
+                }
+
+                init();
+                renderAllCharts();
+            })();
+        </script>
+    </body>
+</html>
