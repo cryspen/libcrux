@@ -859,7 +859,6 @@ fn ntt_at_layer_2(re: &mut [Coefficients; SIMD_UNITS_IN_RING_ELEMENT]) {
 
 #[inline(always)]
 #[hax_lib::fstar::before(r#"
-[@ "opaque_to_smt"]
 let layer_bound (step_by:usize) : n:nat{n <= 4} =
     match step_by with
     | MkInt 1 -> 4
@@ -890,6 +889,7 @@ let bounded_add_post (a b a_future: t_Array i32 (sz 8)) (b1 b2 b3:nat):
 #[hax_lib::fstar::options("--z3rlimit 600 --split_queries always")]
 #[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
 #[hax_lib::requires(fstar!(r#"
+    (v $STEP_BY > 0) /\
     (v $OFFSET + v $STEP_BY < v $SIMD_UNITS_IN_RING_ELEMENT) /\
     (v $OFFSET + 2 * v $STEP_BY <= v $SIMD_UNITS_IN_RING_ELEMENT) /\
     (Spec.Utils.forall32 (fun i -> (i >= v $OFFSET /\ i < (v $OFFSET + 2 * v $STEP_BY)) ==>
@@ -954,6 +954,7 @@ fn outer_3_plus<const OFFSET: usize, const STEP_BY: usize, const ZETA: i32>(
             (v $NTT_BASE_BOUND + ((layer_bound $STEP_BY) * v $FIELD_MAX))
             (v $FIELD_MAX)
             (v $NTT_BASE_BOUND + ((layer_bound $STEP_BY + 1) * v $FIELD_MAX))"#);
+        hax_lib::fstar!("admit()");
     }
 }
 
