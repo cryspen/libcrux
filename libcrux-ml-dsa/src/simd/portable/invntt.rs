@@ -1,3 +1,5 @@
+use hax_lib::loop_invariant;
+
 use super::arithmetic::{self, montgomery_multiply_fe_by_fer};
 use super::vector_type::Coefficients;
 use crate::simd::traits::{COEFFICIENTS_IN_SIMD_UNIT, SIMD_UNITS_IN_RING_ELEMENT};
@@ -462,8 +464,7 @@ fn invert_ntt_at_layer_7(re: &mut [Coefficients; SIMD_UNITS_IN_RING_ELEMENT]) {
 }
 
 #[inline(always)]
-#[hax_lib::fstar::verification_status(lax)]
-#[hax_lib::fstar::options("--z3rlimit 400 --split_queries always")]
+#[hax_lib::fstar::options("--z3rlimit 200 --split_queries always")]
 #[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
 #[hax_lib::requires(fstar!(r#"
     Libcrux_ml_dsa.Simd.Portable.Ntt.is_i32b_polynomial (v $FIELD_MAX) ${re}
@@ -482,6 +483,16 @@ pub(crate) fn invert_ntt_montgomery(re: &mut [Coefficients; SIMD_UNITS_IN_RING_E
     invert_ntt_at_layer_7(re);
 
     for i in 0..re.len() {
+        hax_lib::loop_invariant!(|i:usize| fstar!(r#"
+            (forall (k:nat).
+              k < v $i ==>
+              Spec.Utils.is_i32b_array_opaque (v $FIELD_MAX)
+                (Seq.index $re k).f_values) /\
+            (forall (k:nat).
+              (k >= v $i /\ k < 32) ==>
+              Spec.Utils.is_i32b_array_opaque (256 * v $FIELD_MAX)
+                (Seq.index $re k).f_values))
+        "#));
         // After invert_ntt_at_layer, elements are of the form a * MONTGOMERY_R^{-1}
         // we multiply by (MONTGOMERY_R^2) * (1/2^8) mod Q = 41,978 to both:
         //
