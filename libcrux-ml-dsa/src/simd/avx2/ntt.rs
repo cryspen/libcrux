@@ -4,9 +4,19 @@ use crate::simd::traits::COEFFICIENTS_IN_SIMD_UNIT;
 use libcrux_intrinsics::avx2::*;
 
 #[inline(always)]
-fn butterfly_2(
-    re: &mut AVX2RingElement,
-    index: usize,
+#[hax_lib::fstar::before(r#"open Spec.Intrinsics
+let ntt_step zeta (a, b) =
+    let t = mont_mul b zeta in
+    (add_mod a t, sub_mod a t)
+"#)]
+#[hax_lib::ensures(|result| fstar!(r#"
+    let (nre0, nre1) = result in
+    (to_i32x8 nre0 (mk_u64 0), to_i32x8 nre0 (mk_u64 1)) ==
+    ntt_step zeta_a0 (to_i32x8 re0 (mk_u64 0), to_i32x8 re0 (mk_u64 1))
+"#))]
+fn butterfly_2_aux(
+    re0: Vec256,
+    re1: Vec256,
     zeta_a0: i32,
     zeta_a1: i32,
     zeta_a2: i32,
@@ -15,7 +25,7 @@ fn butterfly_2(
     zeta_b1: i32,
     zeta_b2: i32,
     zeta_b3: i32,
-) {
+) -> (Vec256, Vec256) {
     // We shuffle the terms to group those that need to be multiplied
     // with zetas in the high QWORDS of the vectors, i.e. if the inputs are
     //   a = (a7, a6, a5, a4, a3, a2, a1, a0)
@@ -24,8 +34,8 @@ fn butterfly_2(
     //   a_shuffled = ( a7, a5, a6, a4, a3, a1, a2, a0)
     //   b_shuffled = ( b7, b5, b6, b4, b3, b1, b2, b0)
     const SHUFFLE: i32 = 0b11_01_10_00;
-    let a = mm256_shuffle_epi32::<SHUFFLE>(re[index].value);
-    let b = mm256_shuffle_epi32::<SHUFFLE>(re[index + 1].value);
+    let a = mm256_shuffle_epi32::<SHUFFLE>(re0);
+    let b = mm256_shuffle_epi32::<SHUFFLE>(re1);
 
     // Now we can use the same approach as for `butterfly_4`, only
     // zetas need to be adjusted.
@@ -44,12 +54,39 @@ fn butterfly_2(
     let b_terms_shuffled = mm256_unpackhi_epi64(add_terms, sub_terms);
 
     // Here, we undo the initial shuffle (it's self-inverse).
-    re[index] = AVX2SIMDUnit {
-        value: mm256_shuffle_epi32::<SHUFFLE>(a_terms_shuffled),
-    };
-    re[index + 1] = AVX2SIMDUnit {
-        value: mm256_shuffle_epi32::<SHUFFLE>(b_terms_shuffled),
-    };
+    let nre0 = mm256_shuffle_epi32::<SHUFFLE>(a_terms_shuffled);
+    let nre1 = mm256_shuffle_epi32::<SHUFFLE>(b_terms_shuffled);
+    (nre0, nre1)
+}
+
+#[inline(always)]
+fn butterfly_2(
+    re: &mut AVX2RingElement,
+    index: usize,
+    zeta_a0: i32,
+    zeta_a1: i32,
+    zeta_a2: i32,
+    zeta_a3: i32,
+    zeta_b0: i32,
+    zeta_b1: i32,
+    zeta_b2: i32,
+    zeta_b3: i32,
+) {
+    let (nre0, nre1) =
+        butterfly_2_aux(
+            re[index].value,
+            re[index + 1].value,
+            zeta_a0,
+            zeta_a1,
+            zeta_a2,
+            zeta_a3,
+            zeta_b0,
+            zeta_b1,
+            zeta_b2,
+            zeta_b3,
+        );
+    re[index].value = nre0;
+    re[index+1].value = nre1;
 }
 
 // Compute (a,b) ↦ (a + ζb, a - ζb) at layer 1 for 2 SIMD Units in one go.
