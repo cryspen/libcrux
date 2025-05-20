@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.2.1] - Unreleased
 
+- [#77]():
+  - `rustcrypto` and `libcrux` features expose the corresponding crypto providers
+  - trait types are re-exported as `hpke_types` for convenience
 - [#72](https://github.com/cryspen/hpke-rs/pull/72):
   -  add support for X-Wing KEM
   -  upgrade rand dependency from 0.8 -> 0.9
