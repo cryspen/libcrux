@@ -5,6 +5,7 @@ VERIFIED_MODULES = \
 	Libcrux_ml_dsa.Simd.Portable.Arithmetic.fsti \
 	Libcrux_ml_dsa.Simd.Portable.Arithmetic.fst \
 	Libcrux_ml_dsa.Simd.Portable.Ntt.fst \
+	Libcrux_ml_dsa.Simd.Portable.Invntt.fst \
 	Libcrux_ml_dsa.Simd.Avx2.Arithmetic.fst \
 	Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment.fst \
 	Libcrux_ml_dsa.Simd.Traits.fsti \

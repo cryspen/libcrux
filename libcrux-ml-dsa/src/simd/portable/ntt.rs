@@ -7,15 +7,15 @@ use crate::simd::traits::{COEFFICIENTS_IN_SIMD_UNIT, SIMD_UNITS_IN_RING_ELEMENT}
 
 
 #[cfg(hax)]
-const PRIME: u32 = 8380417;
+pub(crate) const PRIME: u32 = 8380417;
 #[cfg(hax)]
-const MONT_R: u32 = 8380417;
+pub(crate) const MONT_R: u32 = 8380417;
 #[cfg(hax)]
-const FIELD_MAX: u32 = 8380416;
+pub(crate) const FIELD_MAX: u32 = 8380416;
 #[cfg(hax)]
-const FIELD_MID: u32 = 4190208;
+pub(crate) const FIELD_MID: u32 = 4190208;
 #[cfg(hax)]
-const NTT_BASE_BOUND: u32 = FIELD_MID;
+pub(crate) const NTT_BASE_BOUND: u32 = FIELD_MID;
 
 #[cfg(hax)]
 #[hax_lib::requires(i < 256)]
