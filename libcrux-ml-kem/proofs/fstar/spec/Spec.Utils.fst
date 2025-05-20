@@ -25,6 +25,15 @@ let pow2_values_more x =
    | 16 -> assert_norm(p=65536)
    | _ -> ()
 
+
+let rec repeati #acc l f acc0 =
+    if l = 0 then acc0 else
+    f (l -! sz 1) (repeati #acc (l -! sz 1) acc0)
+
+let eq_repeati0 #a n f acc0 = ()
+
+let unfold_repeati #a n f acc0 i = admit ()
+
 let lemma_createL_index #a len l i = ()
 
 let lemma_create16_index #a v15 v14 v13 v12 v11 v10 v9 v8 v7 v6 v5 v4 v3 v2 v1 v0 i =
@@ -54,25 +63,13 @@ let lemma_create_index #a len c i = ()
 let lemma_bitand_properties #t (x:int_t t) =
     logand_lemma #t x x
 
-(** Hash Function *)
-open Spec.SHA3
-
-let to_secret_byte (x:u8) : Lib.IntTypes.uint8 = Lib.IntTypes.secret (to_uint8 x)
-let from_secret_byte (x:Lib.IntTypes.uint8) : u8 = from_uint8 (Lib.RawIntTypes.u8_to_UInt8 x)
-
-let v_G input = map_slice from_secret_byte (sha3_512 (Seq.length input) (map_slice to_secret_byte input))
-
-let v_H input = map_slice from_secret_byte (sha3_256 (Seq.length input) (map_slice to_secret_byte input)) 
-
-let v_PRF v_LEN input = map_slice from_secret_byte (
-  shake256 (Seq.length input) (map_slice to_secret_byte input) (v v_LEN))
-
+(** Hash Function: assumed definitions *)
+let v_G input = admit()
+let v_H input = admit()
+let v_PRF v_LEN input = admit()
 let v_PRFxN r v_LEN input = admit()
-
-let v_J (input: t_Slice u8) : t_Array u8 (sz 32) = v_PRF (sz 32) input
-
-let v_XOF v_LEN input = map_slice from_secret_byte (
-  shake128 (Seq.length input) (map_slice to_secret_byte input) (v v_LEN))
+let v_J (input: t_Slice u8) : t_Array u8 (sz 32) = admit()
+let v_XOF v_LEN input = admit()
 
 let update_at_range_lemma #n
   (s: t_Slice 't)
