@@ -32,8 +32,6 @@ jobs:
             os: "macos-latest"
           - bits: 32
             os: "macos-13"
-          - bits: 32 # FIXME: Linking isn't working here yet for hacl #42
-            os: "windows-latest"
 
     runs-on: ${{ matrix.os }}
     defaults:
