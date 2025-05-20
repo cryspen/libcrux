@@ -8,7 +8,7 @@
  * Eurydice: d3b14228e2b5fe8710ec7efae31e4de2c96ed20d
  * Karamel: 095cdb73f246711f93f99a159ceca37cd2c227e1
  * F*: 4b3fc11774003a6ff7c09500ecb5f0145ca6d862
- * Libcrux: 9eca8a01c16c6e6518dde0181f8f39a9bce44b85
+ * Libcrux: 75cbe9ea0e459cf8a62d97e8a867411e0dd8529a
  */
 
 #ifndef __libcrux_core_H
@@ -36,6 +36,8 @@ typedef struct core_ops_range_Range_08_s {
 typedef uint8_t core_result_Result_a9_tags;
 
 static inline uint64_t core_num__u64_9__from_le_bytes(uint8_t x0[8U]);
+
+static inline uint64_t core_num__u64_9__rotate_left(uint64_t x0, uint32_t x1);
 
 static inline void core_num__u64_9__to_le_bytes(uint64_t x0, uint8_t x1[8U]);
 
