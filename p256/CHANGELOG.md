@@ -7,7 +7,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
--  Drop support for XWingKyberDraft02, XWingKemDraft02, and X25519Kyber768Draft00
--  Add support for XWingKemDraft06
--  Add key gen and encaps derandomized functions
--  Make `no_std` optional using default `std` feature
+-  Add `#![no_std]` crate attribute and make crate `no_std`-compatible
