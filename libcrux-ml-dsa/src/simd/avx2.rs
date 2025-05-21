@@ -25,7 +25,7 @@ impl Repr for AVX2SIMDUnit {
 }
 
 #[cfg(any(eurydice, not(hax)))]
-impl Repr for Coefficients {}
+impl Repr for AVX2SIMDUnit {}
 
 /// Implementing the [`Operations`] for AVX2.
 impl Operations for AVX2SIMDUnit {
