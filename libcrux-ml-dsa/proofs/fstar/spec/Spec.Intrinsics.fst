@@ -2,11 +2,14 @@ module Spec.Intrinsics
 open Core
 open Core_models.Core_arch.X86.Interpretations.Int_vec
 
-let i32x4 = Core_models.Abstractions.Funarr.t_FunArray (mk_u64 4) i32
+open FStar.FunctionalExtensionality
+type t_FunArray (n: u64) t = i:u64 {v i < v n} ^-> t
+
+let i32x4 = t_FunArray (mk_u64 4) i32
 let bv128 = Core_models.Abstractions.Bitvec.t_BitVec (mk_u64 128)
 
-let i32x8 = Core_models.Abstractions.Funarr.t_FunArray (mk_u64 8) i32
-let i64x4 = Core_models.Abstractions.Funarr.t_FunArray (mk_u64 4) i64
+let i32x8 = t_FunArray (mk_u64 8) i32
+let i64x4 = t_FunArray (mk_u64 4) i64
 let bv256 = Core_models.Abstractions.Bitvec.t_BitVec (mk_u64 256)
 
 assume val to_i32x8 (x:Core_models.Abstractions.Bitvec.t_BitVec (mk_u64 256)): i32x8
