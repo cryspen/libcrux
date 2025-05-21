@@ -165,6 +165,10 @@ let is_i32b_array (l:nat) (x:t_Slice i32) = forall i. i < Seq.length x ==> is_i3
 
 [@ "opaque_to_smt"]
 let is_i32b_array_opaque (l:nat) (x:t_Slice i32) = is_i32b_array l x
+let is_i32b_array_larger (l:nat) (l':nat) (x:t_Slice i32):
+  Lemma (is_i32b_array_opaque l x /\ l <= l' ==> is_i32b_array_opaque l' x) 
+  = reveal_opaque (`%is_i32b_array_opaque) (is_i32b_array_opaque)
+
 
 let is_i64b (l:nat) (x:i64) = is_intb l (v x)
 

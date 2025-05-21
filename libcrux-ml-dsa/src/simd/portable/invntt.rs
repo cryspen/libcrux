@@ -307,9 +307,8 @@ fn invert_ntt_at_layer_2(re: &mut [Coefficients; SIMD_UNITS_IN_RING_ELEMENT]) {
 }
 
 #[inline(always)]
-#[hax_lib::fstar::verification_status(lax)]
 #[hax_lib::fstar::before(r#"
-let layer_bound (step_by:usize) : n:nat{n <= 4} =
+let layer_bound (step_by:usize) : n:nat{n <= 128} =
     match step_by with
     | MkInt 1 -> 8
     | MkInt 2 -> 16
@@ -339,14 +338,28 @@ let layer_bound (step_by:usize) : n:nat{n <= 4} =
 fn outer_3_plus<const OFFSET: usize, const STEP_BY: usize, const ZETA: i32>(
     re: &mut [Coefficients; SIMD_UNITS_IN_RING_ELEMENT],
 ) {
+    #[cfg(hax)]
+    let orig_re = re.clone();
+
     for j in OFFSET..OFFSET + STEP_BY {
-        // XXX: make nicer
-        let rejs = re[j + STEP_BY].clone();
-        let mut a_minus_b = rejs.clone();
-        arithmetic::subtract(&mut a_minus_b, &re[j]);
+        hax_lib::loop_invariant!(|j: usize| fstar!(r#"
+            (Spec.Utils.modifies_range2_32 $orig_re $re 
+                $OFFSET $j ($OFFSET +! $STEP_BY) ($j +! $STEP_BY)) /\
+            (Spec.Utils.forall32 (fun i -> ((i >= v $OFFSET /\ i < v $j) \/ 
+                        (i >= v $OFFSET + v $STEP_BY /\ i < v $j + v $STEP_BY)) ==>
+                Spec.Utils.is_i32b_array_opaque 
+                    (2 * (layer_bound $STEP_BY) * v $FIELD_MAX) 
+                    (Seq.index ${re} i).f_values))
+        "#));
+
+        let rej = re[j];
+        let rejs = re[j + STEP_BY];
         arithmetic::add(&mut re[j], &rejs);
-        re[j + STEP_BY] = a_minus_b;
+        arithmetic::subtract(&mut re[j + STEP_BY], &rej);
         arithmetic::montgomery_multiply_by_constant(&mut re[j + STEP_BY], ZETA);
+
+        hax_lib::fstar!("Spec.Utils.is_i32b_array_larger 
+            (v $FIELD_MAX) (2 * (layer_bound $STEP_BY) * v $FIELD_MAX) (Seq.index re (v j + v v_STEP_BY)).f_values");
     }
 }
 
