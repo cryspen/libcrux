@@ -174,7 +174,7 @@ pub(crate) fn validate_public_key<
         valid &= counts.values().find(|&&v| v >= 20).is_none();
         #[cfg(all(feature = "std"))]
         if !valid {
-            std::eprintln!("too many zeroes in public key");
+            std::eprintln!("many occurrences of the same element in seed public key");
         }
 
         // ML_KEM_DIS_02: not more than 18 sequential elements are the same
