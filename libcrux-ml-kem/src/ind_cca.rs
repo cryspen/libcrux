@@ -177,7 +177,7 @@ pub(crate) fn validate_public_key<
             std::eprintln!("many occurrences of the same element in seed public key");
         }
 
-        // ML_KEM_DIS_02: not more than 18 sequential elements are the same
+        // ML_KEM_DIS_02: not more than 17 sequential elements are the same
         valid &= no_sequential_elements(seed);
 
         // ML_KEM_DIS_03: not more than 29 values over or under 128
