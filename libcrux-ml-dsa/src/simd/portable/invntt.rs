@@ -3,13 +3,13 @@ use super::vector_type::Coefficients;
 use crate::simd::traits::{COEFFICIENTS_IN_SIMD_UNIT, SIMD_UNITS_IN_RING_ELEMENT};
 
 #[cfg(hax)]
-use crate::simd::traits::{FIELD_MAX, FIELD_MID, MONT_R, PRIME};
+use crate::simd::traits::specs::*;
 
 #[inline(always)]
 #[hax_lib::fstar::options("--z3rlimit 300 --split_queries always")]
 #[hax_lib::fstar::before(
     r#"
-let simd_layer_bound (step:usize) =
+let simd_layer_factor (step:usize) =
     match step with
     | MkInt 1 -> 1
     | MkInt 2 -> 2
@@ -20,17 +20,17 @@ let simd_layer_bound (step:usize) =
 #[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
 #[hax_lib::requires(fstar!(r#"
     v $step <= 4 /\ v $index + v $step < 8 /\    
-    Spec.Utils.is_i32b (simd_layer_bound $step * v $FIELD_MAX)
+    Spec.Utils.is_i32b (simd_layer_factor $step * v $FIELD_MAX)
                     (Seq.index ${simd_unit}.f_values (v $index)) /\
-    Spec.Utils.is_i32b (simd_layer_bound $step * v $FIELD_MAX)
+    Spec.Utils.is_i32b (simd_layer_factor $step * v $FIELD_MAX)
                     (Seq.index ${simd_unit}.f_values (v $index + v $step)) /\
     Spec.Utils.is_i32b 4190208 $zeta 
 "#))]
 #[hax_lib::ensures(|_| fstar!(r#"
     Spec.Utils.modifies2_8 ${simd_unit}.f_values ${simd_unit}_future.f_values index (index +! step) /\
-    Spec.Utils.is_i32b (2 * (simd_layer_bound $step)  * v $FIELD_MAX)
+    Spec.Utils.is_i32b (2 * (simd_layer_factor $step)  * v $FIELD_MAX)
                     (Seq.index ${simd_unit}_future.f_values (v $index)) /\
-    Spec.Utils.is_i32b (2 * (simd_layer_bound $step)  * v $FIELD_MAX)
+    Spec.Utils.is_i32b (2 * (simd_layer_factor $step)  * v $FIELD_MAX)
                     (Seq.index ${simd_unit}_future.f_values (v $index + v $step))
 "#) )]
 fn simd_unit_inv_ntt_step(simd_unit: &mut Coefficients, zeta: i32, index: usize, step: usize) {
@@ -315,7 +315,7 @@ fn invert_ntt_at_layer_2(re: &mut [Coefficients; SIMD_UNITS_IN_RING_ELEMENT]) {
 #[inline(always)]
 #[hax_lib::fstar::before(
     r#"
-let layer_bound (step_by:usize) : n:nat{n <= 128} =
+let layer_bound_factor (step_by:usize) : n:nat{n <= 128} =
     match step_by with
     | MkInt 1 -> 8
     | MkInt 2 -> 16
@@ -332,7 +332,7 @@ let layer_bound (step_by:usize) : n:nat{n <= 128} =
     (v $OFFSET + 2 * v $STEP_BY <= v $SIMD_UNITS_IN_RING_ELEMENT) /\
     (Spec.Utils.forall32 (fun i -> (i >= v $OFFSET /\ i < (v $OFFSET + 2 * v $STEP_BY)) ==>
               Spec.Utils.is_i32b_array_opaque 
-                ((layer_bound $STEP_BY) * v $FIELD_MAX)
+                ((layer_bound_factor $STEP_BY) * v $FIELD_MAX)
                 (Seq.index ${re} i).f_values)) /\
     Spec.Utils.is_i32b 4190208 $ZETA
 "#))]
@@ -340,7 +340,7 @@ let layer_bound (step_by:usize) : n:nat{n <= 128} =
     Spec.Utils.modifies_range_32 ${re} ${re}_future $OFFSET (${OFFSET + STEP_BY + STEP_BY}) /\
     (Spec.Utils.forall32 (fun i -> (i >= v $OFFSET /\ i < (v $OFFSET + 2 * v $STEP_BY)) ==>
               Spec.Utils.is_i32b_array_opaque 
-                (2 * (layer_bound $STEP_BY) * v $FIELD_MAX)
+                (2 * (layer_bound_factor $STEP_BY) * v $FIELD_MAX)
                 (Seq.index ${re}_future i).f_values))
 "#))]
 fn outer_3_plus<const OFFSET: usize, const STEP_BY: usize, const ZETA: i32>(
@@ -357,7 +357,7 @@ fn outer_3_plus<const OFFSET: usize, const STEP_BY: usize, const ZETA: i32>(
             (Spec.Utils.forall32 (fun i -> ((i >= v $OFFSET /\ i < v $j) \/ 
                         (i >= v $OFFSET + v $STEP_BY /\ i < v $j + v $STEP_BY)) ==>
                 Spec.Utils.is_i32b_array_opaque 
-                    (2 * (layer_bound $STEP_BY) * v $FIELD_MAX) 
+                    (2 * (layer_bound_factor $STEP_BY) * v $FIELD_MAX) 
                     (Seq.index ${re} i).f_values))
         "#
         ));
@@ -369,7 +369,7 @@ fn outer_3_plus<const OFFSET: usize, const STEP_BY: usize, const ZETA: i32>(
         arithmetic::montgomery_multiply_by_constant(&mut re[j + STEP_BY], ZETA);
 
         hax_lib::fstar!("Spec.Utils.is_i32b_array_larger 
-            (v $FIELD_MAX) (2 * (layer_bound $STEP_BY) * v $FIELD_MAX) (Seq.index re (v j + v v_STEP_BY)).f_values");
+            (v $FIELD_MAX) (2 * (layer_bound_factor $STEP_BY) * v $FIELD_MAX) (Seq.index re (v j + v v_STEP_BY)).f_values");
     }
 }
 
