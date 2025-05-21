@@ -641,6 +641,9 @@ unsafe fn ntt_at_layer_7_and_6(re: &mut AVX2RingElement) {
 #[allow(unsafe_code)]
 unsafe fn ntt_at_layer_5_to_3(re: &mut AVX2RingElement) {
     #[inline(always)]
+    #[hax_lib::requires(
+        (STEP == 8 || STEP == 16 || STEP == 32) && STEP_BY == STEP / COEFFICIENTS_IN_SIMD_UNIT && index < 128 / STEP
+    )]
     fn round<const STEP: usize, const STEP_BY: usize>(
         re: &mut AVX2RingElement,
         index: usize,
