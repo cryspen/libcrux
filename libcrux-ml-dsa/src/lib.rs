@@ -8,6 +8,7 @@ mod arithmetic;
 mod constants;
 mod encoding;
 mod hash_functions;
+mod hax_helper;
 mod helper;
 mod matrix;
 mod ml_dsa_generic;
