@@ -191,15 +191,18 @@ typedef struct {
   Eurydice_slice_to_array3(&(dst)->tag, (char *)&(dst)->val.case_Ok, src, \
                            sizeof(t_arr))
 
-static KRML_MUSTINLINE void Eurydice_slice_to_array3(uint8_t *dst_tag, char *dst_ok,
-                                            Eurydice_slice src, size_t sz) {
+static KRML_MUSTINLINE void Eurydice_slice_to_array3(uint8_t *dst_tag,
+                                                     char *dst_ok,
+                                                     Eurydice_slice src,
+                                                     size_t sz) {
   *dst_tag = 0;
   memcpy(dst_ok, src.ptr, sz);
 }
 
 // CORE STUFF (conversions, endianness, ...)
 
-static KRML_MUSTINLINE void core_num__u64_9__to_le_bytes(uint64_t v, uint8_t buf[8]) {
+static KRML_MUSTINLINE void core_num__u64_9__to_le_bytes(uint64_t v,
+                                                         uint8_t buf[8]) {
   store64_le(buf, v);
 }
 static KRML_MUSTINLINE uint64_t core_num__u64_9__from_le_bytes(uint8_t buf[8]) {
@@ -227,10 +230,12 @@ static KRML_MUSTINLINE uint32_t core_num__i32_2__count_ones(int32_t x0) {
 }
 
 // unsigned overflow wraparound semantics in C
-static KRML_MUSTINLINE uint16_t core_num__u16_7__wrapping_add(uint16_t x, uint16_t y) {
+static KRML_MUSTINLINE uint16_t core_num__u16_7__wrapping_add(uint16_t x,
+                                                              uint16_t y) {
   return x + y;
 }
-static KRML_MUSTINLINE uint8_t core_num__u8_6__wrapping_sub(uint8_t x, uint8_t y) {
+static KRML_MUSTINLINE uint8_t core_num__u8_6__wrapping_sub(uint8_t x,
+                                                            uint8_t y) {
   return x - y;
 }
 
