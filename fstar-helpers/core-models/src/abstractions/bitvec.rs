@@ -59,11 +59,11 @@ impl<const N: u64> core::ops::Index<u64> for BitVec<N> {
 
 /// Convert a bit slice into an unsigned number.
 #[hax_lib::exclude]
-fn u64_int_from_bit_slice(bits: &[Bit]) -> u64 {
+fn u128_int_from_bit_slice(bits: &[Bit]) -> u128 {
     bits.iter()
         .enumerate()
-        .map(|(i, bit)| u64::from(*bit) << i)
-        .sum::<u64>()
+        .map(|(i, bit)| u128::from(*bit) << i)
+        .sum::<u128>()
 }
 
 /// Convert a bit slice into a machine integer of type `T`.
@@ -72,14 +72,14 @@ fn int_from_bit_slice<T: TryFrom<i128> + MachineInteger + Copy>(bits: &[Bit]) ->
     debug_assert!(bits.len() <= T::bits() as usize);
     let result = if T::SIGNED {
         let is_negative = matches!(bits[T::bits() as usize - 1], Bit::One);
-        let s = u64_int_from_bit_slice(&bits[0..T::bits() as usize - 1]) as i128;
+        let s = u128_int_from_bit_slice(&bits[0..T::bits() as usize - 1]) as i128;
         if is_negative {
-            -2i128.pow(T::bits() - 1) + s
+            s + (-2i128).pow(T::bits() - 1)
         } else {
             s
         }
     } else {
-        u64_int_from_bit_slice(bits) as i128
+        u128_int_from_bit_slice(bits) as i128
     };
     let Ok(n) = result.try_into() else {
         // Conversion must succeed as `result` is guaranteed to be in range due to the bit-length check.
@@ -173,15 +173,15 @@ open FStar.Tactics.V2
 #push-options "--z3rlimit 80 --admit_smt_queries true"
 let bitvec_rewrite_lemma_128 (x: $:{BitVec<128>})
 : Lemma (x == mark_to_normalize (${BitVec::<128>::pointwise} x)) =
-    let a = x._0 in
-    let b = (${BitVec::<128>::pointwise} x)._0 in
+    let a = x._0._0 in
+    let b = (${BitVec::<128>::pointwise} x)._0._0 in
     assert_norm (FStar.FunctionalExtensionality.feq a b);
     extensionality' a b
 
 let bitvec_rewrite_lemma_256 (x: $:{BitVec<256>})
 : Lemma (x == mark_to_normalize (${BitVec::<256>::pointwise} x)) =
-    let a = x._0 in
-    let b = (${BitVec::<256>::pointwise} x)._0 in
+    let a = x._0._0 in
+    let b = (${BitVec::<256>::pointwise} x)._0._0 in
     assert_norm (FStar.FunctionalExtensionality.feq a b);
     extensionality' a b
 #pop-options
@@ -281,6 +281,15 @@ impl<const N: u64> BitVec<N> {
         }
         chunked_shift::<N, CHUNK, SHIFTS>(self, shl)
     }
+
+    /// Folds over the array, accumulating a result.
+    ///
+    /// # Arguments
+    /// * `init` - The initial value of the accumulator.
+    /// * `f` - A function combining the accumulator and each element.
+    pub fn fold<A>(&self, init: A, f: fn(A, Bit) -> A) -> A {
+        self.0.fold(init, f)
+    }
 }
 
 pub mod int_vec_interp {
@@ -300,43 +309,53 @@ pub mod int_vec_interp {
                 #[doc = concat!(stringify!($ty), " vectors of size ", stringify!($m))]
                 #[allow(non_camel_case_types)]
                 pub type $name = FunArray<$m, $ty>;
-                const _: ()  = {
-                    #[doc = concat!("Conversion from bit vectors of size ", stringify!($n), " to ", stringify!($ty), " vectors of size ", stringify!($m))]
-                    #[hax_lib::opaque]
-                    impl From<BitVec<$n>> for $name {
-                        fn from(bv: BitVec<$n>) -> Self {
-                            let vec: Vec<$ty> = bv.to_vec();
-                            Self::from_fn(|i| vec[i as usize])
+                pastey::paste! {
+                    const _: ()  = {
+                        #[hax_lib::opaque]
+                        impl BitVec<$n> {
+                            #[doc = concat!("Conversion from ", stringify!($ty), " vectors of size ", stringify!($m), "to  bit vectors of size ", stringify!($n))]
+                            pub fn [< from_ $name >](iv: $name) -> BitVec<$n> {
+                                let vec: Vec<$ty> = iv.as_vec();
+                                Self::from_slice(&vec[..], <$ty>::bits() as u64)
+                            }
+                            #[doc = concat!("Conversion from bit vectors of size ", stringify!($n), " to ", stringify!($ty), " vectors of size ", stringify!($m))]
+                            pub fn [< to_ $name >](bv: BitVec<$n>) -> $name {
+                                let vec: Vec<$ty> = bv.to_vec();
+                                $name::from_fn(|i| vec[i as usize])
+                            }
                         }
-                    }
 
-                    #[doc = concat!("Conversion from ", stringify!($ty), " vectors of size ", stringify!($m), "to  bit vectors of size ", stringify!($n))]
-                    #[hax_lib::opaque]
-                    impl From<$name> for BitVec<$n> {
-                        fn from(iv: $name) -> Self {
-                            let vec: Vec<$ty> = iv.as_vec();
-                            Self::from_slice(&vec[..], u64::MAX)
+                        #[cfg(test)]
+                        impl From<BitVec<$n>> for $name {
+                            fn from(bv: BitVec<$n>) -> Self {
+                                BitVec::[< to_ $name >](bv)
+                            }
                         }
-                    }
+                        #[cfg(test)]
+                        impl From<$name> for BitVec<$n> {
+                            fn from(iv: $name) -> Self {
+                                BitVec::[< from_ $name >](iv)
+                            }
+                        }
 
-
-                    #[doc = concat!("Lemma that asserts that applying ", stringify!(BitVec::<$n>::from)," and then ", stringify!($name::from), " is the identity.")]
-                    #[hax_lib::fstar::before("[@@ $SIMPLIFICATION_LEMMA ]")]
-                    #[hax_lib::opaque]
-                    #[hax_lib::lemma]
-                    #[hax_lib::fstar::smt_pat($name::from(BitVec::<$n>::from(x)))]
-                    pub fn lemma_cancel_iv(x: $name) -> Proof<{
-                        hax_lib::eq($name::from(BitVec::<$n>::from(x)), x)
-                    }> {}
-                    #[doc = concat!("Lemma that asserts that applying ", stringify!($name::from)," and then ", stringify!(BitVec::<$n>::from), " is the identity.")]
-                    #[hax_lib::fstar::before("[@@ $SIMPLIFICATION_LEMMA ]")]
-                    #[hax_lib::opaque]
-                    #[hax_lib::lemma]
-                    #[hax_lib::fstar::smt_pat(BitVec::<$n>::from($name::from(x)))]
-                    pub fn lemma_cancel_bv(x: BitVec<$n>) -> Proof<{
-                        hax_lib::eq(BitVec::<$n>::from($name::from(x)), x)
-                    }> {}
-                };
+                        #[doc = concat!("Lemma that asserts that applying ", stringify!(BitVec::<$n>::from)," and then ", stringify!($name::from), " is the identity.")]
+                        #[hax_lib::fstar::before("[@@ $SIMPLIFICATION_LEMMA ]")]
+                        #[hax_lib::opaque]
+                        #[hax_lib::lemma]
+                        #[hax_lib::fstar::smt_pat(BitVec::[< to_ $name >](BitVec::[<from_ $name>](x)))]
+                        pub fn lemma_cancel_iv(x: $name) -> Proof<{
+                            hax_lib::eq(BitVec::[< to_ $name >](BitVec::[<from_ $name>](x)), x)
+                        }> {}
+                        #[doc = concat!("Lemma that asserts that applying ", stringify!($name::from)," and then ", stringify!(BitVec::<$n>::from), " is the identity.")]
+                        #[hax_lib::fstar::before("[@@ $SIMPLIFICATION_LEMMA ]")]
+                        #[hax_lib::opaque]
+                        #[hax_lib::lemma]
+                        #[hax_lib::fstar::smt_pat(BitVec::[< from_ $name >](BitVec::[<to_ $name>](x)))]
+                        pub fn lemma_cancel_bv(x: BitVec<$n>) -> Proof<{
+                            hax_lib::eq(BitVec::[< from_ $name >](BitVec::[<to_ $name>](x)), x)
+                        }> {}
+                    };
+                }
             )*
         };
     }
@@ -347,13 +366,26 @@ pub mod int_vec_interp {
     // We will need more such interpreations in the future to handle more avx2
     // intrinsics (e.g. `_mm256_add_epi16` works on 16 bits integers, not on i32
     // or i64).
-    interpretations!(256; i32x8 [i32; 8], i64x4 [i64; 4]);
+    interpretations!(256; i32x8 [i32; 8], i64x4 [i64; 4], i16x16 [i16; 16], i128x2 [i128; 2], i8x32 [i8; 32],
+		     u32x8 [u32; 8], u64x4 [u64; 4], u16x16 [u16; 16]);
+    interpretations!(128; i32x4 [i32; 4], i64x2 [i64; 2], i16x8 [i16; 8], i128x1 [i128; 1], i8x16 [i8; 16],
+		     u32x4 [u32; 4], u64x2 [u64; 2], u16x8 [u16; 8]);
 
     impl i64x4 {
         pub fn into_i32x8(self) -> i32x8 {
             i32x8::from_fn(|i| {
                 let value = *self.get(i / 2);
                 (if i % 2 == 0 { value } else { value >> 32 }) as i32
+            })
+        }
+    }
+
+    impl i32x8 {
+        pub fn into_i64x4(self) -> i64x4 {
+            i64x4::from_fn(|i| {
+                let low = *self.get(2 * i) as u32 as u64;
+                let high = *self.get(2 * i + 1) as i32 as i64;
+                (high << 32) | low as i64
             })
         }
     }
@@ -369,8 +401,50 @@ pub mod int_vec_interp {
     #[hax_lib::fstar::before("[@@ $SIMPLIFICATION_LEMMA ]")]
     #[hax_lib::opaque]
     #[hax_lib::lemma]
-    fn lemma_rewrite_i64x4_bv_i32x8(
+    pub fn lemma_rewrite_i64x4_bv_i32x8(
         bv: i64x4,
-    ) -> Proof<{ hax_lib::eq(i32x8::from(BitVec::<256>::from(bv)), bv.into_i32x8()) }> {
+    ) -> Proof<{ hax_lib::eq(BitVec::to_i32x8(BitVec::from_i64x4(bv)), bv.into_i32x8()) }> {
+    }
+
+    /// Lemma stating that converting an `i64x4` vector to a `BitVec<256>` and then into an `i32x8`
+    /// yields the same result as directly converting the `i64x4` into an `i32x8`.
+    #[hax_lib::fstar::before("[@@ $SIMPLIFICATION_LEMMA ]")]
+    #[hax_lib::opaque]
+    #[hax_lib::lemma]
+    pub fn lemma_rewrite_i32x8_bv_i64x4(
+        bv: i32x8,
+    ) -> Proof<{ hax_lib::eq(BitVec::to_i64x4(BitVec::from_i32x8(bv)), bv.into_i64x4()) }> {
+    }
+
+    /// Normalize `from` calls that convert from one type to itself
+    #[hax_lib::fstar::replace(
+        r#"
+        [@@ $SIMPLIFICATION_LEMMA ]
+        let lemma (t: Type) (i: Core.Convert.t_From t t) (x: t)
+            : Lemma (Core.Convert.f_from #t #t #i x == (norm [primops; iota; delta; zeta] i.f_from) x)
+            = ()
+    "#
+    )]
+    const _: () = ();
+
+    #[cfg(test)]
+    mod direct_convertions_tests {
+        use super::*;
+        use crate::helpers::test::HasRandom;
+
+        #[test]
+        fn into_i32x8() {
+            for _ in 0..10000 {
+                let x: i64x4 = i64x4::random();
+                let y = x.into_i32x8();
+                assert_eq!(BitVec::from_i64x4(x), BitVec::from_i32x8(y));
+            }
+        }
+        #[test]
+        fn into_i64x4() {
+            let x: i32x8 = i32x8::random();
+            let y = x.into_i64x4();
+            assert_eq!(BitVec::from_i32x8(x), BitVec::from_i64x4(y));
+        }
     }
 }
