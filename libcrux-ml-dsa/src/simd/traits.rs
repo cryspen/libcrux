@@ -22,7 +22,6 @@ pub(crate) const FIELD_MID: u32 = 4190208;
 #[cfg(hax)]
 pub(crate) const NTT_BASE_BOUND: u32 = FIELD_MID;
 
-
 // FIELD_MODULUS^{-1} mod MONTGOMERY_R
 pub const INVERSE_OF_MODULUS_MOD_MONTGOMERY_R: u64 = 58_728_449;
 

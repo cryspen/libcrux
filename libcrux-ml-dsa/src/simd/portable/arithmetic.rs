@@ -205,7 +205,7 @@ pub(crate) fn montgomery_multiply_fe_by_fer(
     fer: FieldElementTimesMontgomeryR,
 ) -> FieldElement {
     hax_lib::fstar!(r#"Spec.Utils.lemma_mul_i32b (pow2 31) (4190208) fe fer"#);
-      
+
     montgomery_reduce_element((fe as i64) * (fer as i64))
 }
 
