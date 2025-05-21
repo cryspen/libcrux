@@ -21,7 +21,6 @@ pub fn add(lhs: &mut Coefficients, rhs: &Coefficients) {
     let _lhs0 = lhs.clone();
     hax_lib::fstar!("reveal_opaque (`%$add_pre) ($add_pre)");
     hax_lib::fstar!("reveal_opaque (`%$add_post) ($add_post)");
-        
 
     for i in 0..lhs.values.len() {
         hax_lib::loop_invariant!(|i: usize| {
@@ -99,7 +98,7 @@ pub(crate) fn get_n_least_significant_bits(n: u8, value: u64) -> u64 {
 #[hax_lib::requires(fstar!(r#"Spec.Utils.is_i64b (8380416 * pow2 32) value "#))]
 #[hax_lib::ensures(|result| fstar!(r#"Spec.Utils.is_i32b (8380416 + 4190209) result /\
                 (Spec.Utils.is_i64b (8380416 * pow2 31) value ==> Spec.Utils.is_i32b 8380416 result) /\
-                v result % 8380417 == (v value * 8265825) % 8380417"#))]
+                Spec.MLDSA.Math.(mod_q (v result) == mod_q (v value * 8265825))"#))]
 pub(crate) fn montgomery_reduce_element(value: i64) -> FieldElementTimesMontgomeryR {
     let t = get_n_least_significant_bits(MONTGOMERY_SHIFT, value as u64)
         * INVERSE_OF_MODULUS_MOD_MONTGOMERY_R;
@@ -191,7 +190,7 @@ pub(crate) fn montgomery_reduce_element(value: i64) -> FieldElementTimesMontgome
             (v $value * 8265825) % 8380417;
         }"#
     );
-
+    hax_lib::fstar!(r#"reveal_opaque (`%Spec.MLDSA.Math.mod_q) (Spec.MLDSA.Math.mod_q)"#);
     res
 }
 
@@ -199,14 +198,14 @@ pub(crate) fn montgomery_reduce_element(value: i64) -> FieldElementTimesMontgome
 #[hax_lib::fstar::options("--z3rlimit 300")]
 #[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
 #[hax_lib::requires(fstar!(r#"Spec.Utils.is_i32b 4190208 fer"#))]
-#[hax_lib::ensures(|result| fstar!(r#"Spec.Utils.is_i32b 8380416 result /\
-                v result % 8380417 == (v fe * v fer * 8265825) % 8380417"#))]
+#[hax_lib::ensures(|result| fstar!(r#"Spec.Utils.is_i32b 8380416 $result /\
+    Spec.MLDSA.Math.(mod_q (v result) == mod_q (v fe * v fer * 8265825))"#))]
 pub(crate) fn montgomery_multiply_fe_by_fer(
     fe: FieldElement,
     fer: FieldElementTimesMontgomeryR,
 ) -> FieldElement {
     hax_lib::fstar!(r#"Spec.Utils.lemma_mul_i32b (pow2 31) (4190208) fe fer"#);
-
+      
     montgomery_reduce_element((fe as i64) * (fer as i64))
 }
 
@@ -216,14 +215,16 @@ pub(crate) fn montgomery_multiply_fe_by_fer(
 #[hax_lib::requires(fstar!(r#"Spec.Utils.is_i32b 4190208 $c"#))]
 #[hax_lib::ensures(|result| fstar!(r#"
     Spec.Utils.is_i32b_array_opaque 8380416 ${simd_unit}_future.f_values /\
-    (forall i. i < 8 ==> 
-        (v (Seq.index ${simd_unit}_future.f_values i) % 8380417 == 
-        (v (Seq.index ${simd_unit}.f_values i) * v $c * 8265825) % 8380417))"#))]
+    Spec.MLDSA.Math.(forall i. i < 8 ==> 
+        mod_q (v (Seq.index ${simd_unit}_future.f_values i)) == 
+        mod_q (v (Seq.index ${simd_unit}.f_values i) * v $c * 8265825))"#))]
 pub(crate) fn montgomery_multiply_by_constant(simd_unit: &mut Coefficients, c: i32) {
     #[cfg(hax)]
     let _simd_unit0 = simd_unit.clone();
-    hax_lib::fstar!("reveal_opaque (`%Spec.Utils.is_i32b_array_opaque) (Spec.Utils.is_i32b_array_opaque)");
-        
+    hax_lib::fstar!(
+        "reveal_opaque (`%Spec.Utils.is_i32b_array_opaque) (Spec.Utils.is_i32b_array_opaque)"
+    );
+
     for i in 0..simd_unit.values.len() {
         hax_lib::loop_invariant!(|i: usize| {
             fstar!(
@@ -231,7 +232,7 @@ pub(crate) fn montgomery_multiply_by_constant(simd_unit: &mut Coefficients, c: i
               (forall j. j < v $i ==>
 	      	  (let vecj = Seq.index ${simd_unit}.f_values j in
 		       (Spec.Utils.is_i32b 8380416 vecj /\
-                v vecj % 8380417 == (v (Seq.index ${_simd_unit0}.f_values j) * v $c * 8265825) % 8380417))) /\
+                Spec.MLDSA.Math.mod_q (v vecj) == Spec.MLDSA.Math.mod_q (v (Seq.index ${_simd_unit0}.f_values j) * v $c * 8265825)))) /\
               (forall j. j >= v $i ==> (Seq.index ${simd_unit}.f_values j) == (Seq.index ${_simd_unit0}.f_values j))"#
             )
         });
@@ -250,14 +251,16 @@ pub(crate) fn montgomery_multiply_by_constant(simd_unit: &mut Coefficients, c: i
     (Seq.index ${rhs}.f_values i)"#))]
 #[hax_lib::ensures(|result| fstar!(r#"
     Spec.Utils.is_i32b_array_opaque 8380416 ${lhs}_future.f_values /\
-    (forall i. i < 8 ==> 
-        (v (Seq.index ${lhs}_future.f_values i) % 8380417 == 
-        (v (Seq.index ${lhs}.f_values i) * v (Seq.index ${rhs}.f_values i) * 8265825) % 8380417))"#))]
+    Spec.MLDSA.Math.(forall i. i < 8 ==> 
+        mod_q (v (Seq.index ${lhs}_future.f_values i)) == 
+        mod_q (v (Seq.index ${lhs}.f_values i) * v (Seq.index ${rhs}.f_values i) * 8265825))"#))]
 pub(crate) fn montgomery_multiply(lhs: &mut Coefficients, rhs: &Coefficients) {
     #[cfg(hax)]
     let _lhs0 = lhs.clone();
-    hax_lib::fstar!("reveal_opaque (`%Spec.Utils.is_i32b_array_opaque) (Spec.Utils.is_i32b_array_opaque)");
-        
+    hax_lib::fstar!(
+        "reveal_opaque (`%Spec.Utils.is_i32b_array_opaque) (Spec.Utils.is_i32b_array_opaque)"
+    );
+
     for i in 0..lhs.values.len() {
         hax_lib::loop_invariant!(|i: usize| {
             fstar!(
@@ -265,7 +268,7 @@ pub(crate) fn montgomery_multiply(lhs: &mut Coefficients, rhs: &Coefficients) {
               (forall j. j < v $i ==>
 	      	  (let vecj = Seq.index ${lhs}.f_values j in
 		       (Spec.Utils.is_i32b 8380416 vecj /\
-                v vecj % 8380417 == (v (Seq.index ${_lhs0}.f_values j) * v (Seq.index ${rhs}.f_values j) * 8265825) % 8380417))) /\
+                Spec.MLDSA.Math.mod_q (v vecj) == Spec.MLDSA.Math.mod_q (v (Seq.index ${_lhs0}.f_values j) * v (Seq.index ${rhs}.f_values j) * 8265825)))) /\
               (forall j. j >= v $i ==> (Seq.index ${lhs}.f_values j) == (Seq.index ${_lhs0}.f_values j))"#
             )
         });
@@ -367,10 +370,11 @@ pub(super) fn power2round(t0: &mut Coefficients, t1: &mut Coefficients) {
 // additional KATs.
 #[inline(always)]
 #[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
-#[hax_lib::requires(fstar!(r#"Spec.Utils.is_i32b_array (v $FIELD_MODULUS - 1) ${simd_unit}.f_values"#))]
+#[hax_lib::requires(fstar!(r#"v $bound > 0 /\ 
+        Spec.Utils.is_i32b_array (v $FIELD_MODULUS - 1) ${simd_unit}.f_values"#))]
 #[hax_lib::ensures(|result| fstar!(r#"
-    $result == false ==> (forall i. i < 8 ==>
-        abs (v (Seq.index ${simd_unit}.f_values i)) < v $bound)"#))]
+    $result == false ==> 
+        Spec.Utils.is_i32b_array (v $bound - 1) ${simd_unit}.f_values"#))]
 pub(super) fn infinity_norm_exceeds(simd_unit: &Coefficients, bound: i32) -> bool {
     let mut result = false;
     // It is ok to leak which coefficient violates the bound since
@@ -413,7 +417,7 @@ pub(super) fn infinity_norm_exceeds(simd_unit: &Coefficients, bound: i32) -> boo
 #[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
 #[hax_lib::requires(fstar!(r#"Spec.Utils.is_i32b 2143289343 $fe"#))]
 #[hax_lib::ensures(|result| fstar!(r#"Spec.Utils.is_i32b 8380416 $result /\
-    v $result % 8380417 == v $fe % 8380417"#))]
+    Spec.MLDSA.Math.mod_q (v $result) == Spec.MLDSA.Math.mod_q (v $fe)"#))]
 fn reduce_element(fe: FieldElement) -> FieldElement {
     let quotient = (fe + (1 << 22)) >> 23;
     let result = fe - (quotient * FIELD_MODULUS);
@@ -432,6 +436,7 @@ fn reduce_element(fe: FieldElement) -> FieldElement {
     }"
     );
 
+    hax_lib::fstar!(r#"reveal_opaque (`%Spec.MLDSA.Math.mod_q) (Spec.MLDSA.Math.mod_q)"#);
     result
 }
 
@@ -443,7 +448,7 @@ fn reduce_element(fe: FieldElement) -> FieldElement {
     (let fe_1 = (Seq.index ${simd_unit}.f_values i) <<! v_SHIFT_BY in
     let fe_2 = Seq.index ${simd_unit}_future.f_values i in
     Spec.Utils.is_i32b 8380416 fe_2 /\
-    v fe_2 % 8380417 == v fe_1 % 8380417)"#))]
+    Spec.MLDSA.Math.mod_q (v fe_2) == Spec.MLDSA.Math.mod_q (v fe_1))"#))]
 pub(super) fn shift_left_then_reduce<const SHIFT_BY: i32>(simd_unit: &mut Coefficients) {
     #[cfg(hax)]
     let _simd_unit0 = simd_unit.clone();
@@ -453,7 +458,8 @@ pub(super) fn shift_left_then_reduce<const SHIFT_BY: i32>(simd_unit: &mut Coeffi
             fstar!(
                 r#"
                 (forall j. j < v i ==> (Spec.Utils.is_i32b 8380416 (Seq.index ${simd_unit}.f_values j) /\
-                    v (Seq.index ${simd_unit}.f_values j) % 8380417 == (v ((Seq.index ${_simd_unit0}.f_values j) <<! v_SHIFT_BY) % 8380417))) /\
+                    Spec.MLDSA.Math.mod_q (v (Seq.index ${simd_unit}.f_values j)) == 
+                    Spec.MLDSA.Math.mod_q (v ((Seq.index ${_simd_unit0}.f_values j) <<! v_SHIFT_BY)))) /\
                 (forall j. j >= v i ==> (Seq.index ${simd_unit}.f_values j == Seq.index ${_simd_unit0}.f_values j /\
                     Spec.Utils.is_i32b 2143289343 ((Seq.index ${simd_unit}.f_values j) <<! v_SHIFT_BY)))"#
             )

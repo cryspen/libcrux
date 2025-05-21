@@ -1,11 +1,9 @@
-use hax_lib::loop_invariant;
-
 use super::arithmetic::{self, montgomery_multiply_fe_by_fer};
 use super::vector_type::Coefficients;
 use crate::simd::traits::{COEFFICIENTS_IN_SIMD_UNIT, SIMD_UNITS_IN_RING_ELEMENT};
 
 #[cfg(hax)]
-use super::ntt::*;
+use crate::simd::traits::{PRIME, MONT_R, FIELD_MAX, FIELD_MID};
 
 #[inline(always)]
 #[hax_lib::fstar::options("--z3rlimit 300 --split_queries always")]
