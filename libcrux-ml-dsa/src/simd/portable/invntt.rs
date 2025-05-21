@@ -212,7 +212,6 @@ fn invert_ntt_at_layer_1(re: &mut [Coefficients; SIMD_UNITS_IN_RING_ELEMENT]) {
         simd_unit_invert_ntt_at_layer_1(&mut re[index], zeta_00, zeta_01);
     }
 
-    // std::println!("layer 1:{}", re[0].values[0].abs());
     round(re, 0, 3839961, -3628969);
     round(re, 1, -3881060, -3019102);
     round(re, 2, -1439742, -812732);
