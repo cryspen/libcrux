@@ -8,7 +8,7 @@
  * Eurydice: d3b14228e2b5fe8710ec7efae31e4de2c96ed20d
  * Karamel: 095cdb73f246711f93f99a159ceca37cd2c227e1
  * F*: 4b3fc11774003a6ff7c09500ecb5f0145ca6d862
- * Libcrux: 9eca8a01c16c6e6518dde0181f8f39a9bce44b85
+ * Libcrux: 75cbe9ea0e459cf8a62d97e8a867411e0dd8529a
  */
 
 #ifndef __internal_libcrux_sha3_avx2_H
@@ -39,6 +39,50 @@ libcrux_sha3_generic_keccak_KeccakState_55
 libcrux_sha3_generic_keccak_new_89_a6(void);
 
 /**
+A monomorphic instance of libcrux_sha3.traits.set_ij
+with types core_core_arch_x86___m256i
+with const generics
+- N= 4
+*/
+void libcrux_sha3_traits_set_ij_a6(__m256i *arr, size_t i, size_t j,
+                                   __m256i value);
+
+/**
+A monomorphic instance of libcrux_sha3.traits.get_ij
+with types core_core_arch_x86___m256i
+with const generics
+- N= 4
+*/
+__m256i libcrux_sha3_traits_get_ij_a6(__m256i *arr, size_t i, size_t j);
+
+/**
+This function found in impl {libcrux_sha3::generic_keccak::KeccakState<T,
+N>[TraitClause@0, TraitClause@1]}
+*/
+/**
+A monomorphic instance of libcrux_sha3.generic_keccak.get_80
+with types core_core_arch_x86___m256i
+with const generics
+- N= 4
+*/
+__m256i libcrux_sha3_generic_keccak_get_80_a6(
+    libcrux_sha3_generic_keccak_KeccakState_55 *self, size_t i, size_t j);
+
+/**
+This function found in impl {libcrux_sha3::generic_keccak::KeccakState<T,
+N>[TraitClause@0, TraitClause@1]}
+*/
+/**
+A monomorphic instance of libcrux_sha3.generic_keccak.set_80
+with types core_core_arch_x86___m256i
+with const generics
+- N= 4
+*/
+void libcrux_sha3_generic_keccak_set_80_a6(
+    libcrux_sha3_generic_keccak_KeccakState_55 *self, size_t i, size_t j,
+    __m256i v);
+
+/**
 A monomorphic instance of libcrux_sha3.generic_keccak.theta_rho
 with types core_core_arch_x86___m256i
 with const generics
@@ -46,6 +90,21 @@ with const generics
 */
 void libcrux_sha3_generic_keccak_theta_rho_a6(
     libcrux_sha3_generic_keccak_KeccakState_55 *s);
+
+/**
+This function found in impl {(core::clone::Clone for
+libcrux_sha3::generic_keccak::KeccakState<T, N>[TraitClause@0,
+TraitClause@2])#3}
+*/
+/**
+A monomorphic instance of libcrux_sha3.generic_keccak.clone_db
+with types core_core_arch_x86___m256i
+with const generics
+- N= 4
+*/
+libcrux_sha3_generic_keccak_KeccakState_55
+libcrux_sha3_generic_keccak_clone_db_a6(
+    libcrux_sha3_generic_keccak_KeccakState_55 *self);
 
 /**
 A monomorphic instance of libcrux_sha3.generic_keccak.pi
