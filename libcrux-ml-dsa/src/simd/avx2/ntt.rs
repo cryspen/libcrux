@@ -475,12 +475,69 @@ unsafe fn ntt_at_layer_2(re: &mut AVX2RingElement) {
 /// This is the same as in pqclean. The only difference is locality of registers.
 #[cfg_attr(not(hax), target_feature(enable = "avx2"))]
 #[allow(unsafe_code)]
+#[hax_lib::fstar::verification_status(lax)]
 unsafe fn ntt_at_layer_7_and_6(re: &mut AVX2RingElement) {
     let field_modulus = mm256_set1_epi32(crate::simd::traits::FIELD_MODULUS);
     let inverse_of_modulus_mod_montgomery_r =
         mm256_set1_epi32(crate::simd::traits::INVERSE_OF_MODULUS_MOD_MONTGOMERY_R as i32);
 
     #[inline(always)]
+    #[hax_lib::requires({
+        use crate::constants::FIELD_MODULUS;
+        use crate::simd::traits::INVERSE_OF_MODULUS_MOD_MONTGOMERY_R;
+        hax_lib::eq(field_modulus, mm256_set1_epi32(FIELD_MODULUS)).and(
+            hax_lib::eq(inverse_of_modulus_mod_montgomery_r, mm256_set1_epi32(INVERSE_OF_MODULUS_MOD_MONTGOMERY_R as i32))
+        )
+    })]
+    #[hax_lib::ensures(|result| fstar!(r#"
+        let nre0, nre1 = $result in
+        Spec.Utils.forall8 (fun i ->
+           (to_i32x8 nre0 (mk_u64 i), to_i32x8 nre1 (mk_u64 i)) ==
+           ntt_step (to_i32x8 zeta (mk_int i)) (to_i32x8 re0 (mk_u64 i), to_i32x8 re1 (mk_u64 i))
+        )
+    "#))]
+    fn mul_aux(
+        mut re0: Vec256,
+        mut re1: Vec256,
+        zeta: Vec256,
+        field_modulus: Vec256,
+        inverse_of_modulus_mod_montgomery_r: Vec256,
+    ) -> (Vec256, Vec256) {
+        let mut t = re1;
+        crate::simd::avx2::arithmetic::montgomery_multiply_aux(
+            field_modulus,
+            inverse_of_modulus_mod_montgomery_r,
+            &mut t,
+            &zeta,
+        );
+
+        re1 = re0;
+        arithmetic::subtract(&mut re1, &t);
+        arithmetic::add(&mut re0, &t);
+        (re0, re1)
+    }
+
+    #[inline(always)]
+    #[hax_lib::requires({
+        use crate::constants::FIELD_MODULUS;
+        use crate::simd::traits::INVERSE_OF_MODULUS_MOD_MONTGOMERY_R;
+        use hax_lib::int::{ToInt, int};
+        hax_lib::eq(field_modulus, mm256_set1_epi32(FIELD_MODULUS)).and(
+            hax_lib::eq(inverse_of_modulus_mod_montgomery_r, mm256_set1_epi32(INVERSE_OF_MODULUS_MOD_MONTGOMERY_R as i32))
+        ).and(index.to_int() + step_by.to_int() < int!(32)).and(step_by > 0)
+    })]
+    #[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
+    #[hax_lib::ensures(|result| fstar!(r"
+        let open Libcrux_ml_dsa.Simd.Avx2.Vector_type in
+        let nre0, nre1 =
+           $mul_aux (${re}.[ $index ]).f_value
+                            (${re}.[ $index +! $step_by ]).f_value
+                             $zeta $field_modulus $inverse_of_modulus_mod_montgomery_r
+         in
+          Spec.Utils.modifies2_32 $re ${re}_future $index ($index +! $step_by)
+        /\ (Seq.index ${re}_future (v $index)).f_value == nre0
+        /\ (Seq.index ${re}_future (v $index + v $step_by)).f_value == nre1
+    "))]
     fn mul(
         re: &mut AVX2RingElement,
         index: usize,
@@ -489,17 +546,16 @@ unsafe fn ntt_at_layer_7_and_6(re: &mut AVX2RingElement) {
         field_modulus: Vec256,
         inverse_of_modulus_mod_montgomery_r: Vec256,
     ) {
-        let mut t = re[index + step_by].value;
-        arithmetic::montgomery_multiply_aux(
+        let (nre0, nre1) = mul_aux(
+            re[index].value,
+            re[index + step_by].value,
+            zeta,
             field_modulus,
             inverse_of_modulus_mod_montgomery_r,
-            &mut t,
-            &zeta,
         );
 
-        re[index + step_by] = re[index];
-        arithmetic::subtract(&mut re[index + step_by].value, &t);
-        arithmetic::add(&mut re[index].value, &t);
+        re[index].value = nre0;
+        re[index + step_by].value = nre1;
     }
 
     macro_rules! layer {
