@@ -302,7 +302,7 @@ fn subtract_reduce<Vector: Operations>(
 }
 
 #[inline(always)]
-#[hax_lib::fstar::options("--z3rlimit 300 --split_queries always")]
+#[hax_lib::fstar::options("--z3rlimit 300 --split_queries always --z3version 4.8.5")]
 #[hax_lib::requires(fstar!(r#"
     is_bounded_poly 3328 ${myself} /\ 
     is_bounded_poly 3328 ${message}"#))]
