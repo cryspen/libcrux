@@ -355,6 +355,12 @@ pub mod portable {
             absorb_final::<1, u64, 168, 0x1fu8>(&mut s.state, &[data0], 0, data0.len());
         }
 
+        /// Squeeze first block
+        #[inline(always)]
+        pub fn shake128_squeeze_first_block(s: &mut KeccakState, out0: &mut [u8]) {
+            squeeze_first_block::<1, u64, 168>(&mut s.state, &mut [out0])
+        }
+
         /// Squeeze three blocks
         #[inline(always)]
         pub fn shake128_squeeze_first_three_blocks(s: &mut KeccakState, out0: &mut [u8]) {
@@ -391,6 +397,18 @@ pub mod portable {
         #[inline(always)]
         pub fn shake256_squeeze_first_block(s: &mut KeccakState, out: &mut [u8]) {
             squeeze_first_block::<1, u64, 136>(&mut s.state, &mut [out])
+        }
+
+        /// Squeeze the first three SHAKE-256 blocks
+        #[inline(always)]
+        pub fn shake256_squeeze_first_three_blocks(s: &mut KeccakState, out: &mut [u8]) {
+            squeeze_first_three_blocks::<1, u64, 136>(&mut s.state, [out])
+        }
+
+        /// Squeeze the first five SHAKE-256 blocks
+        #[inline(always)]
+        pub fn shake256_squeeze_first_five_blocks(s: &mut KeccakState, out: &mut [u8]) {
+            squeeze_first_five_blocks::<1, u64, 136>(&mut s.state, [out])
         }
 
         /// Squeeze the next SHAKE-256 block
