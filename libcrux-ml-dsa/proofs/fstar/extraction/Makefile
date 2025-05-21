@@ -8,6 +8,8 @@ VERIFIED_MODULES = \
 	Libcrux_ml_dsa.Simd.Portable.Invntt.fst \
 	Libcrux_ml_dsa.Simd.Avx2.Arithmetic.fst \
 	Libcrux_ml_dsa.Simd.Avx2.Ntt.fst \
+	Libcrux_ml_dsa.Simd.Avx2.Encoding.Error.fst \
+	Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment.fst \
 	Libcrux_ml_dsa.Simd.Traits.fsti \
 	Libcrux_ml_dsa.Simd.Traits.fst \
 	end_of_verified_modules

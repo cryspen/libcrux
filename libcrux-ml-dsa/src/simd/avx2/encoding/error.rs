@@ -3,12 +3,17 @@ use libcrux_intrinsics::avx2::*;
 use crate::simd::avx2::Eta;
 
 #[inline(always)]
-fn serialize_when_eta_is_2(simd_unit: &Vec256, out: &mut [u8]) {
-    let mut serialized = [0u8; 16];
-
-    const ETA: i32 = 2;
-    let simd_unit_shifted = mm256_sub_epi32(mm256_set1_epi32(ETA), *simd_unit);
-
+#[hax_lib::fstar::before("open Spec.Intrinsics")]
+#[hax_lib::fstar::options(
+    "--fuel 0 --ifuel 0 --z3rlimit 500 --z3smtopt '(set-option :smt.arith.nl false)'"
+)]
+#[hax_lib::requires(
+    fstar!(r"forall (i: nat {i < 256}). i % 32 >= 3 ==> ${simd_unit_shifted}.(mk_int i) == Core_models.Abstractions.Bit.Bit_Zero")
+)]
+#[hax_lib::ensures(|result| {
+    fstar!(r"forall (i:nat{i < 24}). ${result}.(mk_int i) == ${simd_unit_shifted}.(mk_int ((i / 3) * 32 + i % 3))")
+})]
+fn serialize_when_eta_is_2_aux(simd_unit_shifted: Vec256) -> Vec128 {
     let adjacent_2_combined = mm256_sllv_epi32(
         simd_unit_shifted,
         mm256_set_epi32(0, 29, 0, 29, 0, 29, 0, 29),
@@ -34,8 +39,19 @@ fn serialize_when_eta_is_2(simd_unit: &Vec256, out: &mut [u8]) {
     let adjacent_6_combined = mm_sllv_epi32(adjacent_6_combined, mm_set_epi32(0, 0, 0, 20));
     let adjacent_6_combined = mm_srli_epi64::<20>(adjacent_6_combined);
 
-    mm_storeu_bytes_si128(&mut serialized[0..16], adjacent_6_combined);
+    adjacent_6_combined
+}
 
+#[inline(always)]
+fn serialize_when_eta_is_2(simd_unit: &Vec256, out: &mut [u8]) {
+    let mut serialized = [0u8; 16];
+
+    const ETA: i32 = 2;
+    let simd_unit_shifted = mm256_sub_epi32(mm256_set1_epi32(ETA), *simd_unit);
+
+    let adjacent_6_combined = serialize_when_eta_is_2_aux(simd_unit_shifted);
+
+    mm_storeu_bytes_si128(&mut serialized[0..16], adjacent_6_combined);
     out.copy_from_slice(&serialized[0..3]);
 }
 
