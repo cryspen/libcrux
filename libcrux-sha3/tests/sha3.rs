@@ -110,6 +110,7 @@ mod test_vectors {
 // Portable implementation tests
 mod portable {
     use super::test_vectors;
+    use libcrux_sha3::portable::incremental::Xof;
     use libcrux_sha3::portable::{incremental, sha224, sha256, sha384, sha512, shake128, shake256};
 
     #[test]
@@ -287,6 +288,52 @@ mod portable {
         assert_eq!(
             hex::encode(&digest),
             &test_vectors::shake256::HELLO_FIVE_BLOCKS[..1360]
+        );
+    }
+
+    #[test]
+    fn sha3_shake128_absorb() {
+        let mut state = incremental::Shake128Xof::new();
+        state.absorb_final(b"Hello, ");
+
+        let mut digest = [0u8; 32];
+        state.squeeze(&mut digest);
+        let expected = "62dac7f538d3c56e66a1e0ccda69f4b6c8f6269572ad9312c7a04a2228b474a5";
+        assert_eq!(hex::encode(&digest), expected);
+
+        // ---
+
+        state = incremental::Shake128Xof::new();
+        state.absorb(b"Hello, ");
+        state.absorb_final(b"World!");
+
+        state.squeeze(&mut digest);
+        assert_eq!(
+            hex::encode(&digest),
+            &test_vectors::shake128::HELLO_FIVE_BLOCKS[..64]
+        );
+    }
+
+    #[test]
+    fn sha3_shake256_absorb() {
+        let mut state = incremental::Shake256Xof::new();
+        state.absorb_final(b"Hello, ");
+
+        let mut digest = [0u8; 32];
+        state.squeeze(&mut digest);
+        let expected = "018680a686f24f889fe4613dba0058ea1b035b7270a8c26b363f42557bbd991a";
+        assert_eq!(hex::encode(&digest), expected);
+
+        // ---
+
+        state = incremental::Shake256Xof::new();
+        state.absorb(b"Hello, ");
+        state.absorb_final(b"World!");
+
+        state.squeeze(&mut digest);
+        assert_eq!(
+            hex::encode(&digest),
+            &test_vectors::shake256::HELLO_FIVE_BLOCKS[..64]
         );
     }
 }
