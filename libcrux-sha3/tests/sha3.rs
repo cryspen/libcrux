@@ -178,7 +178,6 @@ mod portable {
             &test_vectors::shake128::HELLO_FIVE_BLOCKS[..84]
         );
 
-
         let mut digest = [0u8; 53];
 
         shake128(&mut digest, test_vectors::FOX);
@@ -363,7 +362,6 @@ mod neon {
             hex::encode(&digest),
             &test_vectors::shake128::HELLO_FIVE_BLOCKS[..84]
         );
-
 
         let mut digest = [0u8; 53];
 
