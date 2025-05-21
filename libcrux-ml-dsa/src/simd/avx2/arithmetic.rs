@@ -56,9 +56,9 @@ pub(super) fn montgomery_multiply_by_constant(lhs: Vec256, constant: i32) -> Vec
     res
 }
 
-#[hax_lib::fstar::postprocess_with(
-    core_models::arch::x86::interpretations::int_vec::flatten_circuit
-)]
+// #[hax_lib::fstar::postprocess_with(
+//     core_models::arch::x86::interpretations::int_vec::flatten_circuit
+// )]
 #[hax_lib::requires(
     hax_lib::eq(field_modulus, mm256_set1_epi32(FIELD_MODULUS)).and(hax_lib::eq(
         inverse_of_modulus_mod_montgomery_r,
