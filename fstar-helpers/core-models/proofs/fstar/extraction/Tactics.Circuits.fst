@@ -201,11 +201,12 @@ let mk_app_bs (t: term) (bs: list binder): Tac term
     mk_app t args
 
 /// Given a lemma `i1 -> ... -> iN -> Lemma (lhs == rhs)`, this tactic
-/// produces a lemma `i1 -> ... -> iN -> Lemma (lhs == rhs')` where
-/// `rhs'` is given by the tactic call `f <rhs>`.
-let map_lemma_rhs (f: term -> Tac term) (lemma: term) (d: dbg): Tac term
+/// produces a lemma `i1 -> ... -> iN -> ...extra_args... -> Lemma (lhs' == rhs')` where
+/// `lhs'` and `rhs'` are given by the tactic call `f <rhs>`.
+let edit_lemma (extra_args: list binder) (f_lhs g_rhs: term -> Tac term) (lemma: term) (d: dbg): Tac term
   = let typ = tc (top_env ()) lemma in
-    let inputs, comp = collect_arr_bs typ in
+    let inputs0, comp = collect_arr_bs typ in
+    let inputs = List.Tot.append inputs0 extra_args in
     let post =
       match inspect_comp comp with
       | C_Lemma pre post _ ->
@@ -221,11 +222,30 @@ let map_lemma_rhs (f: term -> Tac term) (lemma: term) (d: dbg): Tac term
       | _, [_; (lhs, _); (rhs, _)] -> (lhs, rhs)
       | _ -> d.fail "expected lhs == rhs"
     in
-    let lemma_body = mk_abs inputs (mk_app_bs lemma inputs) in
-    let post = mk_abs [post_bd] (mk_e_app (`eq2) [lhs; f rhs]) in
+    let lemma_body = mk_abs inputs (mk_app_bs lemma inputs0) in
+    let post = mk_abs [post_bd] (mk_e_app (`eq2) [f_lhs lhs; g_rhs rhs]) in
     let lemma_typ = mk_arr inputs (pack_comp (C_Lemma (`True) post (`[]))) in
     let lemma = pack (Tv_AscribedT lemma_body lemma_typ None false) in
     lemma
+
+/// Specialize a lemma `lhs == rhs` into `lhs x == rhs x` if possible.
+let specialize_lemma_apply (lemma: term): Tac (option term)
+  = let x: binder = fresh_binder_named "arg0" (`_) in
+    let f t: Tac _ = mk_e_app t [binder_to_term x] in
+    let h = edit_lemma [x] f f lemma (mk_dbg "") in
+    trytac (fun _ -> norm_term [] h)
+
+let rec flatten_options (l: list (option 't)): list 't
+  = match l with
+  | Some hd::tl -> hd::flatten_options tl
+  | None   ::tl -> flatten_options tl
+  | []         -> []
+
+/// Given a lemma `i1 -> ... -> iN -> Lemma (lhs == rhs)`, this tactic
+/// produces a lemma `i1 -> ... -> iN -> Lemma (lhs == rhs')` where
+/// `rhs'` is given by the tactic call `f <rhs>`.
+let map_lemma_rhs (f: term -> Tac term) (lemma: term) (d: dbg): Tac term
+  = edit_lemma [] (fun t -> t) f lemma d
 
 /// Helper to mark terms. This is an identity function.
 /// It is used to normalize terms selectively in two passes:
@@ -240,8 +260,18 @@ let flatten_circuit_aux
   d
   =
     d.sub "postprocess_tactic" (fun d ->
-        norm [primops; iota; delta_namespace ["Libcrux_intrinsics"]; zeta_full];
+        let namespaces_to_unfold =
+          let crate = match cur_module () with | crate::_ -> crate | _ -> fail "Empty module name" in
+          [crate; "Libcrux_intrinsics"]
+        in
+        d.dump ("will unfold namespaces [" ^ FStar.String.concat ";" namespaces_to_unfold ^ "]");
+        norm [primops; iota; delta_namespace namespaces_to_unfold; zeta_full];
         d.dump "definitions unfolded";
+
+
+        let simpl_lemmas = simpl_lemmas
+          `List.Tot.append` flatten_options (map specialize_lemma_apply simpl_lemmas)
+        in
 
         rewrite_with_lifts lift_lemmas simpl_lemmas d;
 
@@ -281,6 +311,22 @@ let flatten_circuit_aux
         ()
     )
 
+/// Unapplies a function named `f_name` of arity `arity`.
+let unapply (f_name: string) (arity: nat) =
+  let f = pack (Tv_FVar (pack_fv (explode_qn f_name))) in
+  let bds = 
+    let rec aux (n: nat): Tac _ = match n with | 0 -> [] | _ -> fresh_binder (`int) :: aux (n - 1) in
+    aux arity
+  in
+  let applied_f = mk_app_bs f bds in
+  let rhs = norm_term [delta_only [f_name]] f in
+  let rhs = mk_app_bs rhs bds in
+  let post = mk_e_app (`(==)) [rhs; applied_f] in
+  let typ = mk_arr bds (pack_comp (C_Lemma (`True) (mk_abs [fresh_binder (`_)] post) (`[]))) in
+  let body = mk_abs bds (`()) in
+  let lemma = `(`#body <: `#typ) in
+  let lemma = norm_term [] lemma in
+  l_to_r [lemma]
 
 /// `flatten_circuit` works on a goal `squash (c == ?u)` such that `c`
 /// is a circuit.
@@ -333,6 +379,15 @@ let flatten_circuit
         eta_match_lemmas d;
     trefl ()
   in
-  if lax_on ()
+  let disable_ext_flag =
+    // Disabling the flatten circuit tactic in lax/admit mode is usually a bad idea:
+    //  - if there are no checked file, dependencies will be checked in lax mode
+    //  - then, if we want to apply the circuit flattening tactic on a function `A.f`
+    //    that happens to use a function `B.g` and expect it to be flattened,
+    //    then `B.g` actually not be flattened since it was lax checked
+    FStar.Stubs.Tactics.V2.Builtins.ext_enabled "disable_circuit_norm"
+  in
+  let is_lax_on = lax_on () in
+  if is_lax_on && disable_ext_flag
   then trefl ()
   else run (mk_dbg "")

@@ -1,9 +1,8 @@
-name: ML-KEM - Benchmark
+name: PSQ - Build & Test
 
 on:
-  merge_group:
   pull_request:
-    branches: ["main", "dev"]
+    branches: ["main", "dev", "*"]
   workflow_dispatch:
 
 env:
@@ -14,19 +13,18 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  benchmark:
-    if: ${{ github.event_name != 'pull_request' }}
+  build:
+    if: ${{ github.event_name != 'merge_group' }}
     strategy:
-      fail-fast: true
+      fail-fast: false
       matrix:
         bits: [32, 64]
         os:
-          - macos-13
-          - macos-latest
+          - macos-13 # Intel mac
+          - macos-latest # macos-14 m1
           - ubuntu-latest
           - windows-latest
         exclude:
-          # There's no such thing as 32-bit macOS
           - bits: 32
             os: "macos-latest"
           - bits: 32
@@ -36,16 +34,16 @@ jobs:
     defaults:
       run:
         shell: bash
-        working-directory: libcrux-ml-kem
+        working-directory: libcrux-psq
 
     steps:
       - uses: actions/checkout@v4
 
-      - name: Update dependencies
-        run: cargo update
-
       - run: echo "RUST_TARGET_FLAG=" > $GITHUB_ENV
         if: ${{ matrix.bits == 64 }}
+
+      - name: 🛠️ Setup Rust Nightly
+        run: rustup toolchain install nightly-2024-12-14
 
       - name: 🛠️ Setup Ubuntu x86
         if: ${{ matrix.bits == 32 &&  matrix.os == 'ubuntu-latest' }}
@@ -59,11 +57,6 @@ jobs:
         run: |
           rustup target add aarch64-unknown-linux-gnu
 
-      - name: 🛠️ Setup macOS
-        if: ${{  matrix.os == 'macos-latest' }}
-        run: |
-          rustup target add aarch64-apple-darwin
-
       # Set up 32 bit systems
 
       - name: 🛠️ Config Windows x86
@@ -75,38 +68,43 @@ jobs:
           echo "RUST_TARGET_FLAG=--target=i686-unknown-linux-gnu" > $GITHUB_ENV
         if: ${{ matrix.bits == 32 && matrix.os == 'ubuntu-latest' }}
 
-      # Benchmarks ...
+      # Build ...
 
-      - name: 🏃🏻‍♀️ Benchmarks
-        run: cargo bench --verbose $RUST_TARGET_FLAG -- --output-format bencher | tee bench.txt
+      - name: 🔨 Build
+        run: |
+          rustc --print=cfg
+          cargo build --verbose $RUST_TARGET_FLAG
 
-      - name: Extract benchmarks
-        uses: cryspen/benchmark-data-extract-transform@v1
-        with:
-          name: ML-KEM Benchmark
-          tool: 'cargo'
-          os: ${{ matrix.os }}_${{ matrix.bits }}
-          output-file-path: libcrux-ml-kem/bench.txt
-          data-out-path: libcrux-ml-kem/bench-processed.txt
+      - name: 🔨 Build Release
+        run: cargo build --verbose --release $RUST_TARGET_FLAG
 
-      - name: Upload benchmarks
-        uses: cryspen/benchmark-upload-and-plot-action@v1
-        with:
-          name: ML-KEM Benchmark
-          input-data-path: libcrux-ml-kem/bench-processed.txt
-          benchmark-data-dir-path: dev/bench/mlkem
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          gh-repository: github.com/${{ github.repository }}
-          auto-push: true
+      # TODO: https://github.com/cryspen/libcrux/issues/717
+      - name: 🏃🏻 Asan MacOS
+        if: ${{ matrix.os == 'macos-latest' }}
+        run: RUSTDOCFLAGS=-Zsanitizer=address RUSTFLAGS=-Zsanitizer=address cargo +nightly-2024-12-14 test --release --target aarch64-apple-darwin
 
-  mlkem-bench-status:
+
+
+      # Test ...
+
+      - name: 🏃🏻‍♀️ Test
+        run: |
+          cargo clean
+          cargo test --all-features --verbose $RUST_TARGET_FLAG
+
+      - name: 🏃🏻‍♀️ Test Release
+        run: |
+          cargo clean
+          cargo test --all-features --verbose --release $RUST_TARGET_FLAG
+
+  psq-build-test-status:
     if: ${{ always() }}
-    needs: [benchmark]
+    needs: [build]
     runs-on: ubuntu-latest
     steps:
       - name: Successful
-        if: ${{ !(contains(needs.*.result, 'failure')) }}
-        run: exit 0
+        if: ${{ !(contains(needs.*.result, 'failure')) }} 
+        run: exit 0 
       - name: Failing
-        if: ${{ (contains(needs.*.result, 'failure')) }}
-        run: exit 1
+        if: ${{ (contains(needs.*.result, 'failure')) }} 
+        run: exit 1 
