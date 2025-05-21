@@ -262,21 +262,13 @@ unsafe fn ntt_at_layer_7_and_6(re: &mut AVX2RingElement) {
         field_modulus: Vec256,
         inverse_of_modulus_mod_montgomery_r: Vec256,
     ) {
-        let prod02 = mm256_mul_epi32(re[index + step_by].value, zeta);
-        let prod13 = mm256_mul_epi32(
-            mm256_shuffle_epi32::<0b11_11_01_01>(re[index + step_by].value), // 0xF5
-            mm256_shuffle_epi32::<0b11_11_01_01>(zeta),                      // 0xF5
+        let mut t = re[index + step_by].value;
+        arithmetic::montgomery_multiply_aux(
+            field_modulus,
+            inverse_of_modulus_mod_montgomery_r,
+            &mut t,
+            &zeta,
         );
-        let k02 = mm256_mul_epi32(prod02, inverse_of_modulus_mod_montgomery_r);
-        let k13 = mm256_mul_epi32(prod13, inverse_of_modulus_mod_montgomery_r);
-
-        let c02 = mm256_mul_epi32(k02, field_modulus);
-        let c13 = mm256_mul_epi32(k13, field_modulus);
-
-        let res02 = mm256_sub_epi32(prod02, c02);
-        let res13 = mm256_sub_epi32(prod13, c13);
-        let res02_shifted = mm256_shuffle_epi32::<0b11_11_01_01>(res02); // 0xF5
-        let t = mm256_blend_epi32::<0b10101010>(res02_shifted, res13); // 0xAA
 
         re[index + step_by] = re[index];
         arithmetic::subtract(&mut re[index + step_by].value, &t);
