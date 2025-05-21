@@ -4,11 +4,11 @@
  * SPDX-License-Identifier: MIT or Apache-2.0
  *
  * This code was generated with the following revisions:
- * Charon: 763350c6948d5594d3017ecb93273bc41c1a4e1d
- * Eurydice: 36a5ed7dd6b61b5cd3d69a010859005912d21537
- * Karamel: bf9b89d76dd24e2ceaaca32de3535353e7b6bc01
+ * Charon: 3275bf4ad9dc8c25965dc5da6122653fc43c4287
+ * Eurydice: d3b14228e2b5fe8710ec7efae31e4de2c96ed20d
+ * Karamel: 095cdb73f246711f93f99a159ceca37cd2c227e1
  * F*: 4b3fc11774003a6ff7c09500ecb5f0145ca6d862
- * Libcrux: 753cc40f7a2d6820ba09be4427e02117dae64d48
+ * Libcrux: 75cbe9ea0e459cf8a62d97e8a867411e0dd8529a
  */
 
 #include "internal/libcrux_mlkem_portable.h"
@@ -93,69 +93,65 @@ libcrux_ml_kem::vector::portable::vector_type::PortableVector)#1}
 */
 libcrux_ml_kem_vector_portable_vector_type_PortableVector
 libcrux_ml_kem_vector_portable_from_i16_array_2c(Eurydice_slice array) {
-  return libcrux_ml_kem_vector_portable_vector_type_from_i16_array(array);
+  return libcrux_ml_kem_vector_portable_vector_type_from_i16_array(
+      libcrux_secrets_int_public_integers_classify_ref_b8_03(&array)[0U]);
 }
 
 KRML_MUSTINLINE uint8_t_x11
 libcrux_ml_kem_vector_portable_serialize_serialize_11_int(Eurydice_slice v) {
-  uint8_t r0 = (uint8_t)Eurydice_slice_index(v, (size_t)0U, int16_t, int16_t *);
-  uint8_t r1 = (uint32_t)(uint8_t)(Eurydice_slice_index(v, (size_t)1U, int16_t,
-                                                        int16_t *) &
-                                   (int16_t)31)
-                   << 3U |
-               (uint32_t)(uint8_t)(Eurydice_slice_index(v, (size_t)0U, int16_t,
-                                                        int16_t *) >>
-                                   8U);
-  uint8_t r2 = (uint32_t)(uint8_t)(Eurydice_slice_index(v, (size_t)2U, int16_t,
-                                                        int16_t *) &
-                                   (int16_t)3)
-                   << 6U |
-               (uint32_t)(uint8_t)(Eurydice_slice_index(v, (size_t)1U, int16_t,
-                                                        int16_t *) >>
-                                   5U);
-  uint8_t r3 =
-      (uint8_t)(Eurydice_slice_index(v, (size_t)2U, int16_t, int16_t *) >> 2U &
-                (int16_t)255);
-  uint8_t r4 = (uint32_t)(uint8_t)(Eurydice_slice_index(v, (size_t)3U, int16_t,
-                                                        int16_t *) &
-                                   (int16_t)127)
-                   << 1U |
-               (uint32_t)(uint8_t)(Eurydice_slice_index(v, (size_t)2U, int16_t,
-                                                        int16_t *) >>
-                                   10U);
-  uint8_t r5 = (uint32_t)(uint8_t)(Eurydice_slice_index(v, (size_t)4U, int16_t,
-                                                        int16_t *) &
-                                   (int16_t)15)
-                   << 4U |
-               (uint32_t)(uint8_t)(Eurydice_slice_index(v, (size_t)3U, int16_t,
-                                                        int16_t *) >>
-                                   7U);
-  uint8_t r6 = (uint32_t)(uint8_t)(Eurydice_slice_index(v, (size_t)5U, int16_t,
-                                                        int16_t *) &
-                                   (int16_t)1)
-                   << 7U |
-               (uint32_t)(uint8_t)(Eurydice_slice_index(v, (size_t)4U, int16_t,
-                                                        int16_t *) >>
-                                   4U);
-  uint8_t r7 =
-      (uint8_t)(Eurydice_slice_index(v, (size_t)5U, int16_t, int16_t *) >> 1U &
-                (int16_t)255);
-  uint8_t r8 = (uint32_t)(uint8_t)(Eurydice_slice_index(v, (size_t)6U, int16_t,
-                                                        int16_t *) &
-                                   (int16_t)63)
-                   << 2U |
-               (uint32_t)(uint8_t)(Eurydice_slice_index(v, (size_t)5U, int16_t,
-                                                        int16_t *) >>
-                                   9U);
-  uint8_t r9 = (uint32_t)(uint8_t)(Eurydice_slice_index(v, (size_t)7U, int16_t,
-                                                        int16_t *) &
-                                   (int16_t)7)
-                   << 5U |
-               (uint32_t)(uint8_t)(Eurydice_slice_index(v, (size_t)6U, int16_t,
-                                                        int16_t *) >>
-                                   6U);
-  uint8_t r10 =
-      (uint8_t)(Eurydice_slice_index(v, (size_t)7U, int16_t, int16_t *) >> 3U);
+  uint8_t r0 = libcrux_secrets_int_as_u8_d2(
+      Eurydice_slice_index(v, (size_t)0U, int16_t, int16_t *));
+  uint8_t r1 =
+      (uint32_t)libcrux_secrets_int_as_u8_d2(
+          Eurydice_slice_index(v, (size_t)1U, int16_t, int16_t *) & (int16_t)31)
+          << 3U |
+      (uint32_t)libcrux_secrets_int_as_u8_d2(
+          Eurydice_slice_index(v, (size_t)0U, int16_t, int16_t *) >> 8U);
+  uint8_t r2 =
+      (uint32_t)libcrux_secrets_int_as_u8_d2(
+          Eurydice_slice_index(v, (size_t)2U, int16_t, int16_t *) & (int16_t)3)
+          << 6U |
+      (uint32_t)libcrux_secrets_int_as_u8_d2(
+          Eurydice_slice_index(v, (size_t)1U, int16_t, int16_t *) >> 5U);
+  uint8_t r3 = libcrux_secrets_int_as_u8_d2(
+      Eurydice_slice_index(v, (size_t)2U, int16_t, int16_t *) >> 2U &
+      (int16_t)255);
+  uint8_t r4 =
+      (uint32_t)libcrux_secrets_int_as_u8_d2(
+          Eurydice_slice_index(v, (size_t)3U, int16_t, int16_t *) &
+          (int16_t)127)
+          << 1U |
+      (uint32_t)libcrux_secrets_int_as_u8_d2(
+          Eurydice_slice_index(v, (size_t)2U, int16_t, int16_t *) >> 10U);
+  uint8_t r5 =
+      (uint32_t)libcrux_secrets_int_as_u8_d2(
+          Eurydice_slice_index(v, (size_t)4U, int16_t, int16_t *) & (int16_t)15)
+          << 4U |
+      (uint32_t)libcrux_secrets_int_as_u8_d2(
+          Eurydice_slice_index(v, (size_t)3U, int16_t, int16_t *) >> 7U);
+  uint8_t r6 =
+      (uint32_t)libcrux_secrets_int_as_u8_d2(
+          Eurydice_slice_index(v, (size_t)5U, int16_t, int16_t *) & (int16_t)1)
+          << 7U |
+      (uint32_t)libcrux_secrets_int_as_u8_d2(
+          Eurydice_slice_index(v, (size_t)4U, int16_t, int16_t *) >> 4U);
+  uint8_t r7 = libcrux_secrets_int_as_u8_d2(
+      Eurydice_slice_index(v, (size_t)5U, int16_t, int16_t *) >> 1U &
+      (int16_t)255);
+  uint8_t r8 =
+      (uint32_t)libcrux_secrets_int_as_u8_d2(
+          Eurydice_slice_index(v, (size_t)6U, int16_t, int16_t *) & (int16_t)63)
+          << 2U |
+      (uint32_t)libcrux_secrets_int_as_u8_d2(
+          Eurydice_slice_index(v, (size_t)5U, int16_t, int16_t *) >> 9U);
+  uint8_t r9 =
+      (uint32_t)libcrux_secrets_int_as_u8_d2(
+          Eurydice_slice_index(v, (size_t)7U, int16_t, int16_t *) & (int16_t)7)
+          << 5U |
+      (uint32_t)libcrux_secrets_int_as_u8_d2(
+          Eurydice_slice_index(v, (size_t)6U, int16_t, int16_t *) >> 6U);
+  uint8_t r10 = libcrux_secrets_int_as_u8_d2(
+      Eurydice_slice_index(v, (size_t)7U, int16_t, int16_t *) >> 3U);
   return (KRML_CLITERAL(uint8_t_x11){.fst = r0,
                                      .snd = r1,
                                      .thd = r2,
@@ -205,7 +201,9 @@ KRML_MUSTINLINE void libcrux_ml_kem_vector_portable_serialize_serialize_11(
 void libcrux_ml_kem_vector_portable_serialize_11(
     libcrux_ml_kem_vector_portable_vector_type_PortableVector a,
     uint8_t ret[22U]) {
-  libcrux_ml_kem_vector_portable_serialize_serialize_11(a, ret);
+  uint8_t ret0[22U];
+  libcrux_ml_kem_vector_portable_serialize_serialize_11(a, ret0);
+  libcrux_secrets_int_public_integers_declassify_73_fa(ret0, ret);
 }
 
 /**
@@ -221,56 +219,66 @@ void libcrux_ml_kem_vector_portable_serialize_11_2c(
 KRML_MUSTINLINE int16_t_x8
 libcrux_ml_kem_vector_portable_serialize_deserialize_11_int(
     Eurydice_slice bytes) {
-  int16_t r0 =
-      ((int16_t)Eurydice_slice_index(bytes, (size_t)1U, uint8_t, uint8_t *) &
-       (int16_t)7)
-          << 8U |
-      (int16_t)Eurydice_slice_index(bytes, (size_t)0U, uint8_t, uint8_t *);
-  int16_t r1 =
-      ((int16_t)Eurydice_slice_index(bytes, (size_t)2U, uint8_t, uint8_t *) &
-       (int16_t)63)
-          << 5U |
-      (int16_t)Eurydice_slice_index(bytes, (size_t)1U, uint8_t, uint8_t *) >>
-          3U;
-  int16_t r2 =
-      (((int16_t)Eurydice_slice_index(bytes, (size_t)4U, uint8_t, uint8_t *) &
-        (int16_t)1)
-           << 10U |
-       (int16_t)Eurydice_slice_index(bytes, (size_t)3U, uint8_t, uint8_t *)
-           << 2U) |
-      (int16_t)Eurydice_slice_index(bytes, (size_t)2U, uint8_t, uint8_t *) >>
-          6U;
-  int16_t r3 =
-      ((int16_t)Eurydice_slice_index(bytes, (size_t)5U, uint8_t, uint8_t *) &
-       (int16_t)15)
-          << 7U |
-      (int16_t)Eurydice_slice_index(bytes, (size_t)4U, uint8_t, uint8_t *) >>
-          1U;
-  int16_t r4 =
-      ((int16_t)Eurydice_slice_index(bytes, (size_t)6U, uint8_t, uint8_t *) &
-       (int16_t)127)
-          << 4U |
-      (int16_t)Eurydice_slice_index(bytes, (size_t)5U, uint8_t, uint8_t *) >>
-          4U;
-  int16_t r5 =
-      (((int16_t)Eurydice_slice_index(bytes, (size_t)8U, uint8_t, uint8_t *) &
-        (int16_t)3)
-           << 9U |
-       (int16_t)Eurydice_slice_index(bytes, (size_t)7U, uint8_t, uint8_t *)
-           << 1U) |
-      (int16_t)Eurydice_slice_index(bytes, (size_t)6U, uint8_t, uint8_t *) >>
-          7U;
-  int16_t r6 =
-      ((int16_t)Eurydice_slice_index(bytes, (size_t)9U, uint8_t, uint8_t *) &
-       (int16_t)31)
-          << 6U |
-      (int16_t)Eurydice_slice_index(bytes, (size_t)8U, uint8_t, uint8_t *) >>
-          2U;
-  int16_t r7 =
-      (int16_t)Eurydice_slice_index(bytes, (size_t)10U, uint8_t, uint8_t *)
-          << 3U |
-      (int16_t)Eurydice_slice_index(bytes, (size_t)9U, uint8_t, uint8_t *) >>
-          5U;
+  int16_t r0 = (libcrux_secrets_int_as_i16_84(Eurydice_slice_index(
+                    bytes, (size_t)1U, uint8_t, uint8_t *)) &
+                (int16_t)7)
+                   << 8U |
+               libcrux_secrets_int_as_i16_84(
+                   Eurydice_slice_index(bytes, (size_t)0U, uint8_t, uint8_t *));
+  int16_t r1 = (libcrux_secrets_int_as_i16_84(Eurydice_slice_index(
+                    bytes, (size_t)2U, uint8_t, uint8_t *)) &
+                (int16_t)63)
+                   << 5U |
+               libcrux_secrets_int_as_i16_84(Eurydice_slice_index(
+                   bytes, (size_t)1U, uint8_t, uint8_t *)) >>
+                   3U;
+  int16_t r2 = ((libcrux_secrets_int_as_i16_84(Eurydice_slice_index(
+                     bytes, (size_t)4U, uint8_t, uint8_t *)) &
+                 (int16_t)1)
+                    << 10U |
+                libcrux_secrets_int_as_i16_84(
+                    Eurydice_slice_index(bytes, (size_t)3U, uint8_t, uint8_t *))
+                    << 2U) |
+               libcrux_secrets_int_as_i16_84(Eurydice_slice_index(
+                   bytes, (size_t)2U, uint8_t, uint8_t *)) >>
+                   6U;
+  int16_t r3 = (libcrux_secrets_int_as_i16_84(Eurydice_slice_index(
+                    bytes, (size_t)5U, uint8_t, uint8_t *)) &
+                (int16_t)15)
+                   << 7U |
+               libcrux_secrets_int_as_i16_84(Eurydice_slice_index(
+                   bytes, (size_t)4U, uint8_t, uint8_t *)) >>
+                   1U;
+  int16_t r4 = (libcrux_secrets_int_as_i16_84(Eurydice_slice_index(
+                    bytes, (size_t)6U, uint8_t, uint8_t *)) &
+                (int16_t)127)
+                   << 4U |
+               libcrux_secrets_int_as_i16_84(Eurydice_slice_index(
+                   bytes, (size_t)5U, uint8_t, uint8_t *)) >>
+                   4U;
+  int16_t r5 = ((libcrux_secrets_int_as_i16_84(Eurydice_slice_index(
+                     bytes, (size_t)8U, uint8_t, uint8_t *)) &
+                 (int16_t)3)
+                    << 9U |
+                libcrux_secrets_int_as_i16_84(
+                    Eurydice_slice_index(bytes, (size_t)7U, uint8_t, uint8_t *))
+                    << 1U) |
+               libcrux_secrets_int_as_i16_84(Eurydice_slice_index(
+                   bytes, (size_t)6U, uint8_t, uint8_t *)) >>
+                   7U;
+  int16_t r6 = (libcrux_secrets_int_as_i16_84(Eurydice_slice_index(
+                    bytes, (size_t)9U, uint8_t, uint8_t *)) &
+                (int16_t)31)
+                   << 6U |
+               libcrux_secrets_int_as_i16_84(Eurydice_slice_index(
+                   bytes, (size_t)8U, uint8_t, uint8_t *)) >>
+                   2U;
+  int16_t r7 = libcrux_secrets_int_as_i16_84(
+                   Eurydice_slice_index(bytes, (size_t)10U, uint8_t, uint8_t *))
+                   << 3U |
+               libcrux_secrets_int_as_i16_84(Eurydice_slice_index(
+                   bytes, (size_t)9U, uint8_t, uint8_t *)) >>
+                   5U;
   return (KRML_CLITERAL(int16_t_x8){.fst = r0,
                                     .snd = r1,
                                     .thd = r2,
@@ -310,7 +318,8 @@ libcrux_ml_kem_vector_portable_serialize_deserialize_11(Eurydice_slice bytes) {
 
 libcrux_ml_kem_vector_portable_vector_type_PortableVector
 libcrux_ml_kem_vector_portable_deserialize_11(Eurydice_slice a) {
-  return libcrux_ml_kem_vector_portable_serialize_deserialize_11(a);
+  return libcrux_ml_kem_vector_portable_serialize_deserialize_11(
+      libcrux_secrets_int_public_integers_classify_ref_b8_ba(&a)[0U]);
 }
 
 /**
@@ -335,7 +344,9 @@ libcrux_ml_kem::vector::portable::vector_type::PortableVector)#1}
 void libcrux_ml_kem_vector_portable_to_i16_array_2c(
     libcrux_ml_kem_vector_portable_vector_type_PortableVector x,
     int16_t ret[16U]) {
-  libcrux_ml_kem_vector_portable_vector_type_to_i16_array(x, ret);
+  int16_t ret0[16U];
+  libcrux_ml_kem_vector_portable_vector_type_to_i16_array(x, ret0);
+  libcrux_secrets_int_public_integers_declassify_73_46(ret0, ret);
 }
 
 const uint8_t
@@ -856,8 +867,10 @@ const uint8_t
 KRML_MUSTINLINE libcrux_ml_kem_vector_portable_vector_type_PortableVector
 libcrux_ml_kem_vector_portable_vector_type_zero(void) {
   libcrux_ml_kem_vector_portable_vector_type_PortableVector lit;
+  int16_t ret[16U];
   int16_t repeat_expression[16U] = {0U};
-  memcpy(lit.elements, repeat_expression, (size_t)16U * sizeof(int16_t));
+  libcrux_secrets_int_public_integers_classify_57_46(repeat_expression, ret);
+  memcpy(lit.elements, ret, (size_t)16U * sizeof(int16_t));
   return lit;
 }
 
@@ -872,15 +885,18 @@ libcrux_ml_kem_vector_portable_ZERO_2c(void) {
 
 KRML_MUSTINLINE libcrux_ml_kem_vector_portable_vector_type_PortableVector
 libcrux_ml_kem_vector_portable_vector_type_from_bytes(Eurydice_slice array) {
-  int16_t elements[16U] = {0U};
+  int16_t elements[16U];
+  KRML_MAYBE_FOR16(i, (size_t)0U, (size_t)16U, (size_t)1U,
+                   elements[i] = libcrux_secrets_int_I16((int16_t)0););
   for (size_t i = (size_t)0U;
        i < LIBCRUX_ML_KEM_VECTOR_TRAITS_FIELD_ELEMENTS_IN_VECTOR; i++) {
     size_t i0 = i;
-    elements[i0] = (int16_t)Eurydice_slice_index(array, (size_t)2U * i0,
-                                                 uint8_t, uint8_t *)
-                       << 8U |
-                   (int16_t)Eurydice_slice_index(
-                       array, (size_t)2U * i0 + (size_t)1U, uint8_t, uint8_t *);
+    elements[i0] =
+        libcrux_secrets_int_as_i16_84(
+            Eurydice_slice_index(array, (size_t)2U * i0, uint8_t, uint8_t *))
+            << 8U |
+        libcrux_secrets_int_as_i16_84(Eurydice_slice_index(
+            array, (size_t)2U * i0 + (size_t)1U, uint8_t, uint8_t *));
   }
   /* Passing arrays by value in Rust generates a copy in C */
   int16_t copy_of_elements[16U];
@@ -896,7 +912,8 @@ libcrux_ml_kem::vector::portable::vector_type::PortableVector)#1}
 */
 libcrux_ml_kem_vector_portable_vector_type_PortableVector
 libcrux_ml_kem_vector_portable_from_bytes_2c(Eurydice_slice array) {
-  return libcrux_ml_kem_vector_portable_vector_type_from_bytes(array);
+  return libcrux_ml_kem_vector_portable_vector_type_from_bytes(
+      libcrux_secrets_int_public_integers_classify_ref_b8_ba(&array)[0U]);
 }
 
 KRML_MUSTINLINE void libcrux_ml_kem_vector_portable_vector_type_to_bytes(
@@ -906,9 +923,10 @@ KRML_MUSTINLINE void libcrux_ml_kem_vector_portable_vector_type_to_bytes(
        i < LIBCRUX_ML_KEM_VECTOR_TRAITS_FIELD_ELEMENTS_IN_VECTOR; i++) {
     size_t i0 = i;
     Eurydice_slice_index(bytes, (size_t)2U * i0, uint8_t, uint8_t *) =
-        (uint8_t)(x.elements[i0] >> 8U);
+        libcrux_secrets_int_as_u8_d2(x.elements[i0] >> 8U);
     Eurydice_slice_index(bytes, (size_t)2U * i0 + (size_t)1U, uint8_t,
-                         uint8_t *) = (uint8_t)x.elements[i0];
+                         uint8_t *) =
+        libcrux_secrets_int_as_u8_d2(x.elements[i0]);
   }
 }
 
@@ -919,7 +937,8 @@ libcrux_ml_kem::vector::portable::vector_type::PortableVector)#1}
 void libcrux_ml_kem_vector_portable_to_bytes_2c(
     libcrux_ml_kem_vector_portable_vector_type_PortableVector x,
     Eurydice_slice bytes) {
-  libcrux_ml_kem_vector_portable_vector_type_to_bytes(x, bytes);
+  libcrux_ml_kem_vector_portable_vector_type_to_bytes(
+      x, libcrux_secrets_int_public_integers_classify_mut_slice_ba(bytes));
 }
 
 KRML_MUSTINLINE libcrux_ml_kem_vector_portable_vector_type_PortableVector
@@ -1002,7 +1021,8 @@ libcrux_ml_kem_vector_portable_arithmetic_cond_subtract_3329(
   for (size_t i = (size_t)0U;
        i < LIBCRUX_ML_KEM_VECTOR_TRAITS_FIELD_ELEMENTS_IN_VECTOR; i++) {
     size_t i0 = i;
-    if (vec.elements[i0] >= (int16_t)3329) {
+    if (libcrux_secrets_int_public_integers_declassify_73_39(
+            vec.elements[i0]) >= (int16_t)3329) {
       size_t uu____0 = i0;
       vec.elements[uu____0] = vec.elements[uu____0] - (int16_t)3329;
     }
@@ -1037,11 +1057,11 @@ libcrux_ml_kem_vector_portable_cond_subtract_3329_2c(
 */
 int16_t libcrux_ml_kem_vector_portable_arithmetic_barrett_reduce_element(
     int16_t value) {
-  int32_t t = (int32_t)value *
+  int32_t t = libcrux_secrets_int_as_i32_d2(value) *
                   LIBCRUX_ML_KEM_VECTOR_PORTABLE_ARITHMETIC_BARRETT_MULTIPLIER +
               (LIBCRUX_ML_KEM_VECTOR_TRAITS_BARRETT_R >> 1U);
-  int16_t quotient =
-      (int16_t)(t >> (uint32_t)LIBCRUX_ML_KEM_VECTOR_TRAITS_BARRETT_SHIFT);
+  int16_t quotient = libcrux_secrets_int_as_i16_98(
+      t >> (uint32_t)LIBCRUX_ML_KEM_VECTOR_TRAITS_BARRETT_SHIFT);
   return value - quotient * LIBCRUX_ML_KEM_VECTOR_TRAITS_FIELD_MODULUS;
 }
 
@@ -1088,18 +1108,21 @@ libcrux_ml_kem_vector_portable_barrett_reduce_2c(
 int16_t libcrux_ml_kem_vector_portable_arithmetic_montgomery_reduce_element(
     int32_t value) {
   int32_t k =
-      (int32_t)(int16_t)value *
-      (int32_t)LIBCRUX_ML_KEM_VECTOR_TRAITS_INVERSE_OF_MODULUS_MOD_MONTGOMERY_R;
+      libcrux_secrets_int_as_i32_d2(libcrux_secrets_int_as_i16_98(value)) *
+      libcrux_secrets_int_as_i32_41(
+          libcrux_secrets_int_public_integers_classify_57_df(
+              LIBCRUX_ML_KEM_VECTOR_TRAITS_INVERSE_OF_MODULUS_MOD_MONTGOMERY_R));
   int32_t k_times_modulus =
-      (int32_t)(int16_t)k * (int32_t)LIBCRUX_ML_KEM_VECTOR_TRAITS_FIELD_MODULUS;
-  int16_t c =
-      (int16_t)(k_times_modulus >>
-                (uint32_t)
-                    LIBCRUX_ML_KEM_VECTOR_PORTABLE_ARITHMETIC_MONTGOMERY_SHIFT);
-  int16_t value_high =
-      (int16_t)(value >>
-                (uint32_t)
-                    LIBCRUX_ML_KEM_VECTOR_PORTABLE_ARITHMETIC_MONTGOMERY_SHIFT);
+      libcrux_secrets_int_as_i32_d2(libcrux_secrets_int_as_i16_98(k)) *
+      libcrux_secrets_int_as_i32_d2(
+          libcrux_secrets_int_public_integers_classify_57_39(
+              LIBCRUX_ML_KEM_VECTOR_TRAITS_FIELD_MODULUS));
+  int16_t c = libcrux_secrets_int_as_i16_98(
+      k_times_modulus >>
+      (uint32_t)LIBCRUX_ML_KEM_VECTOR_PORTABLE_ARITHMETIC_MONTGOMERY_SHIFT);
+  int16_t value_high = libcrux_secrets_int_as_i16_98(
+      value >>
+      (uint32_t)LIBCRUX_ML_KEM_VECTOR_PORTABLE_ARITHMETIC_MONTGOMERY_SHIFT);
   return value_high - c;
 }
 
@@ -1117,7 +1140,8 @@ int16_t libcrux_ml_kem_vector_portable_arithmetic_montgomery_reduce_element(
 KRML_MUSTINLINE int16_t
 libcrux_ml_kem_vector_portable_arithmetic_montgomery_multiply_fe_by_fer(
     int16_t fe, int16_t fer) {
-  int32_t product = (int32_t)fe * (int32_t)fer;
+  int32_t product =
+      libcrux_secrets_int_as_i32_d2(fe) * libcrux_secrets_int_as_i32_d2(fer);
   return libcrux_ml_kem_vector_portable_arithmetic_montgomery_reduce_element(
       product);
 }
@@ -1144,7 +1168,7 @@ libcrux_ml_kem_vector_portable_montgomery_multiply_by_constant_2c(
     libcrux_ml_kem_vector_portable_vector_type_PortableVector vector,
     int16_t constant) {
   return libcrux_ml_kem_vector_portable_arithmetic_montgomery_multiply_by_constant(
-      vector, constant);
+      vector, libcrux_secrets_int_public_integers_classify_57_39(constant));
 }
 
 KRML_MUSTINLINE libcrux_ml_kem_vector_portable_vector_type_PortableVector
@@ -1220,13 +1244,15 @@ libcrux_ml_kem_vector_portable_to_unsigned_representative_2c(
 */
 uint8_t libcrux_ml_kem_vector_portable_compress_compress_message_coefficient(
     uint16_t fe) {
-  int16_t shifted = (int16_t)1664 - (int16_t)fe;
+  int16_t shifted =
+      libcrux_secrets_int_public_integers_classify_57_39((int16_t)1664) -
+      libcrux_secrets_int_as_i16_e9(fe);
   int16_t mask = shifted >> 15U;
   int16_t shifted_to_positive = mask ^ shifted;
   int16_t shifted_positive_in_range = shifted_to_positive - (int16_t)832;
   int16_t r0 = shifted_positive_in_range >> 15U;
   int16_t r1 = r0 & (int16_t)1;
-  return (uint8_t)r1;
+  return libcrux_secrets_int_as_u8_d2(r1);
 }
 
 KRML_MUSTINLINE libcrux_ml_kem_vector_portable_vector_type_PortableVector
@@ -1235,9 +1261,9 @@ libcrux_ml_kem_vector_portable_compress_compress_1(
   for (size_t i = (size_t)0U;
        i < LIBCRUX_ML_KEM_VECTOR_TRAITS_FIELD_ELEMENTS_IN_VECTOR; i++) {
     size_t i0 = i;
-    a.elements[i0] = (int16_t)
+    a.elements[i0] = libcrux_secrets_int_as_i16_84(
         libcrux_ml_kem_vector_portable_compress_compress_message_coefficient(
-            (uint16_t)a.elements[i0]);
+            libcrux_secrets_int_as_u16_d2(a.elements[i0])));
   }
   return a;
 }
@@ -1260,13 +1286,14 @@ libcrux_ml_kem_vector_portable_arithmetic_get_n_least_significant_bits(
 
 int16_t libcrux_ml_kem_vector_portable_compress_compress_ciphertext_coefficient(
     uint8_t coefficient_bits, uint16_t fe) {
-  uint64_t compressed = (uint64_t)fe << (uint32_t)coefficient_bits;
+  uint64_t compressed = libcrux_secrets_int_as_u64_e9(fe)
+                        << (uint32_t)coefficient_bits;
   compressed = compressed + 1664ULL;
   compressed = compressed * 10321340ULL;
   compressed = compressed >> 35U;
-  return (int16_t)
+  return libcrux_secrets_int_as_i16_41(
       libcrux_ml_kem_vector_portable_arithmetic_get_n_least_significant_bits(
-          coefficient_bits, (uint32_t)compressed);
+          coefficient_bits, libcrux_secrets_int_as_u32_0b(compressed)));
 }
 
 KRML_MUSTINLINE libcrux_ml_kem_vector_portable_vector_type_PortableVector
@@ -1297,7 +1324,8 @@ KRML_MUSTINLINE void libcrux_ml_kem_vector_portable_ntt_ntt_step(
     int16_t zeta, size_t i, size_t j) {
   int16_t t =
       libcrux_ml_kem_vector_portable_arithmetic_montgomery_multiply_fe_by_fer(
-          vec->elements[j], zeta);
+          vec->elements[j],
+          libcrux_secrets_int_public_integers_classify_57_39(zeta));
   int16_t a_minus_t = vec->elements[i] - t;
   int16_t a_plus_t = vec->elements[i] + t;
   vec->elements[j] = a_minus_t;
@@ -1415,7 +1443,7 @@ KRML_MUSTINLINE void libcrux_ml_kem_vector_portable_ntt_inv_ntt_step(
       a_plus_b);
   int16_t o1 =
       libcrux_ml_kem_vector_portable_arithmetic_montgomery_multiply_fe_by_fer(
-          a_minus_b, zeta);
+          a_minus_b, libcrux_secrets_int_public_integers_classify_57_39(zeta));
   vec->elements[i] = o0;
   vec->elements[j] = o1;
 }
@@ -1553,18 +1581,23 @@ KRML_MUSTINLINE void libcrux_ml_kem_vector_portable_ntt_ntt_multiply_binomials(
   int16_t bi = b->elements[(size_t)2U * i];
   int16_t aj = a->elements[(size_t)2U * i + (size_t)1U];
   int16_t bj = b->elements[(size_t)2U * i + (size_t)1U];
-  int32_t ai_bi = (int32_t)ai * (int32_t)bi;
-  int32_t aj_bj_ = (int32_t)aj * (int32_t)bj;
+  int32_t ai_bi =
+      libcrux_secrets_int_as_i32_d2(ai) * libcrux_secrets_int_as_i32_d2(bi);
+  int32_t aj_bj_ =
+      libcrux_secrets_int_as_i32_d2(aj) * libcrux_secrets_int_as_i32_d2(bj);
   int16_t aj_bj =
       libcrux_ml_kem_vector_portable_arithmetic_montgomery_reduce_element(
           aj_bj_);
-  int32_t aj_bj_zeta = (int32_t)aj_bj * (int32_t)zeta;
+  int32_t aj_bj_zeta = libcrux_secrets_int_as_i32_d2(aj_bj) *
+                       libcrux_secrets_int_as_i32_d2(zeta);
   int32_t ai_bi_aj_bj = ai_bi + aj_bj_zeta;
   int16_t o0 =
       libcrux_ml_kem_vector_portable_arithmetic_montgomery_reduce_element(
           ai_bi_aj_bj);
-  int32_t ai_bj = (int32_t)ai * (int32_t)bj;
-  int32_t aj_bi = (int32_t)aj * (int32_t)bi;
+  int32_t ai_bj =
+      libcrux_secrets_int_as_i32_d2(ai) * libcrux_secrets_int_as_i32_d2(bj);
+  int32_t aj_bi =
+      libcrux_secrets_int_as_i32_d2(aj) * libcrux_secrets_int_as_i32_d2(bi);
   int32_t ai_bj_aj_bi = ai_bj + aj_bi;
   int16_t o1 =
       libcrux_ml_kem_vector_portable_arithmetic_montgomery_reduce_element(
@@ -1584,22 +1617,30 @@ libcrux_ml_kem_vector_portable_ntt_ntt_multiply(
   int16_t nzeta3 = -zeta3;
   libcrux_ml_kem_vector_portable_vector_type_PortableVector out =
       libcrux_ml_kem_vector_portable_vector_type_zero();
-  libcrux_ml_kem_vector_portable_ntt_ntt_multiply_binomials(lhs, rhs, zeta0,
-                                                            (size_t)0U, &out);
-  libcrux_ml_kem_vector_portable_ntt_ntt_multiply_binomials(lhs, rhs, nzeta0,
-                                                            (size_t)1U, &out);
-  libcrux_ml_kem_vector_portable_ntt_ntt_multiply_binomials(lhs, rhs, zeta1,
-                                                            (size_t)2U, &out);
-  libcrux_ml_kem_vector_portable_ntt_ntt_multiply_binomials(lhs, rhs, nzeta1,
-                                                            (size_t)3U, &out);
-  libcrux_ml_kem_vector_portable_ntt_ntt_multiply_binomials(lhs, rhs, zeta2,
-                                                            (size_t)4U, &out);
-  libcrux_ml_kem_vector_portable_ntt_ntt_multiply_binomials(lhs, rhs, nzeta2,
-                                                            (size_t)5U, &out);
-  libcrux_ml_kem_vector_portable_ntt_ntt_multiply_binomials(lhs, rhs, zeta3,
-                                                            (size_t)6U, &out);
-  libcrux_ml_kem_vector_portable_ntt_ntt_multiply_binomials(lhs, rhs, nzeta3,
-                                                            (size_t)7U, &out);
+  libcrux_ml_kem_vector_portable_ntt_ntt_multiply_binomials(
+      lhs, rhs, libcrux_secrets_int_public_integers_classify_57_39(zeta0),
+      (size_t)0U, &out);
+  libcrux_ml_kem_vector_portable_ntt_ntt_multiply_binomials(
+      lhs, rhs, libcrux_secrets_int_public_integers_classify_57_39(nzeta0),
+      (size_t)1U, &out);
+  libcrux_ml_kem_vector_portable_ntt_ntt_multiply_binomials(
+      lhs, rhs, libcrux_secrets_int_public_integers_classify_57_39(zeta1),
+      (size_t)2U, &out);
+  libcrux_ml_kem_vector_portable_ntt_ntt_multiply_binomials(
+      lhs, rhs, libcrux_secrets_int_public_integers_classify_57_39(nzeta1),
+      (size_t)3U, &out);
+  libcrux_ml_kem_vector_portable_ntt_ntt_multiply_binomials(
+      lhs, rhs, libcrux_secrets_int_public_integers_classify_57_39(zeta2),
+      (size_t)4U, &out);
+  libcrux_ml_kem_vector_portable_ntt_ntt_multiply_binomials(
+      lhs, rhs, libcrux_secrets_int_public_integers_classify_57_39(nzeta2),
+      (size_t)5U, &out);
+  libcrux_ml_kem_vector_portable_ntt_ntt_multiply_binomials(
+      lhs, rhs, libcrux_secrets_int_public_integers_classify_57_39(zeta3),
+      (size_t)6U, &out);
+  libcrux_ml_kem_vector_portable_ntt_ntt_multiply_binomials(
+      lhs, rhs, libcrux_secrets_int_public_integers_classify_57_39(nzeta3),
+      (size_t)7U, &out);
   return out;
 }
 
@@ -1619,22 +1660,24 @@ libcrux_ml_kem_vector_portable_ntt_multiply_2c(
 KRML_MUSTINLINE void libcrux_ml_kem_vector_portable_serialize_serialize_1(
     libcrux_ml_kem_vector_portable_vector_type_PortableVector v,
     uint8_t ret[2U]) {
-  uint8_t result0 = (((((((uint32_t)(uint8_t)v.elements[0U] |
-                          (uint32_t)(uint8_t)v.elements[1U] << 1U) |
-                         (uint32_t)(uint8_t)v.elements[2U] << 2U) |
-                        (uint32_t)(uint8_t)v.elements[3U] << 3U) |
-                       (uint32_t)(uint8_t)v.elements[4U] << 4U) |
-                      (uint32_t)(uint8_t)v.elements[5U] << 5U) |
-                     (uint32_t)(uint8_t)v.elements[6U] << 6U) |
-                    (uint32_t)(uint8_t)v.elements[7U] << 7U;
-  uint8_t result1 = (((((((uint32_t)(uint8_t)v.elements[8U] |
-                          (uint32_t)(uint8_t)v.elements[9U] << 1U) |
-                         (uint32_t)(uint8_t)v.elements[10U] << 2U) |
-                        (uint32_t)(uint8_t)v.elements[11U] << 3U) |
-                       (uint32_t)(uint8_t)v.elements[12U] << 4U) |
-                      (uint32_t)(uint8_t)v.elements[13U] << 5U) |
-                     (uint32_t)(uint8_t)v.elements[14U] << 6U) |
-                    (uint32_t)(uint8_t)v.elements[15U] << 7U;
+  uint8_t result0 =
+      (((((((uint32_t)libcrux_secrets_int_as_u8_d2(v.elements[0U]) |
+            (uint32_t)libcrux_secrets_int_as_u8_d2(v.elements[1U]) << 1U) |
+           (uint32_t)libcrux_secrets_int_as_u8_d2(v.elements[2U]) << 2U) |
+          (uint32_t)libcrux_secrets_int_as_u8_d2(v.elements[3U]) << 3U) |
+         (uint32_t)libcrux_secrets_int_as_u8_d2(v.elements[4U]) << 4U) |
+        (uint32_t)libcrux_secrets_int_as_u8_d2(v.elements[5U]) << 5U) |
+       (uint32_t)libcrux_secrets_int_as_u8_d2(v.elements[6U]) << 6U) |
+      (uint32_t)libcrux_secrets_int_as_u8_d2(v.elements[7U]) << 7U;
+  uint8_t result1 =
+      (((((((uint32_t)libcrux_secrets_int_as_u8_d2(v.elements[8U]) |
+            (uint32_t)libcrux_secrets_int_as_u8_d2(v.elements[9U]) << 1U) |
+           (uint32_t)libcrux_secrets_int_as_u8_d2(v.elements[10U]) << 2U) |
+          (uint32_t)libcrux_secrets_int_as_u8_d2(v.elements[11U]) << 3U) |
+         (uint32_t)libcrux_secrets_int_as_u8_d2(v.elements[12U]) << 4U) |
+        (uint32_t)libcrux_secrets_int_as_u8_d2(v.elements[13U]) << 5U) |
+       (uint32_t)libcrux_secrets_int_as_u8_d2(v.elements[14U]) << 6U) |
+      (uint32_t)libcrux_secrets_int_as_u8_d2(v.elements[15U]) << 7U;
   ret[0U] = result0;
   ret[1U] = result1;
 }
@@ -1642,7 +1685,9 @@ KRML_MUSTINLINE void libcrux_ml_kem_vector_portable_serialize_serialize_1(
 void libcrux_ml_kem_vector_portable_serialize_1(
     libcrux_ml_kem_vector_portable_vector_type_PortableVector a,
     uint8_t ret[2U]) {
-  libcrux_ml_kem_vector_portable_serialize_serialize_1(a, ret);
+  uint8_t ret0[2U];
+  libcrux_ml_kem_vector_portable_serialize_serialize_1(a, ret0);
+  libcrux_secrets_int_public_integers_declassify_73_d4(ret0, ret);
 }
 
 /**
@@ -1657,68 +1702,52 @@ void libcrux_ml_kem_vector_portable_serialize_1_2c(
 
 KRML_MUSTINLINE libcrux_ml_kem_vector_portable_vector_type_PortableVector
 libcrux_ml_kem_vector_portable_serialize_deserialize_1(Eurydice_slice v) {
-  int16_t result0 = (int16_t)((uint32_t)Eurydice_slice_index(
-                                  v, (size_t)0U, uint8_t, uint8_t *) &
-                              1U);
-  int16_t result1 = (int16_t)((uint32_t)Eurydice_slice_index(
-                                  v, (size_t)0U, uint8_t, uint8_t *) >>
-                                  1U &
-                              1U);
-  int16_t result2 = (int16_t)((uint32_t)Eurydice_slice_index(
-                                  v, (size_t)0U, uint8_t, uint8_t *) >>
-                                  2U &
-                              1U);
-  int16_t result3 = (int16_t)((uint32_t)Eurydice_slice_index(
-                                  v, (size_t)0U, uint8_t, uint8_t *) >>
-                                  3U &
-                              1U);
-  int16_t result4 = (int16_t)((uint32_t)Eurydice_slice_index(
-                                  v, (size_t)0U, uint8_t, uint8_t *) >>
-                                  4U &
-                              1U);
-  int16_t result5 = (int16_t)((uint32_t)Eurydice_slice_index(
-                                  v, (size_t)0U, uint8_t, uint8_t *) >>
-                                  5U &
-                              1U);
-  int16_t result6 = (int16_t)((uint32_t)Eurydice_slice_index(
-                                  v, (size_t)0U, uint8_t, uint8_t *) >>
-                                  6U &
-                              1U);
-  int16_t result7 = (int16_t)((uint32_t)Eurydice_slice_index(
-                                  v, (size_t)0U, uint8_t, uint8_t *) >>
-                                  7U &
-                              1U);
-  int16_t result8 = (int16_t)((uint32_t)Eurydice_slice_index(
-                                  v, (size_t)1U, uint8_t, uint8_t *) &
-                              1U);
-  int16_t result9 = (int16_t)((uint32_t)Eurydice_slice_index(
-                                  v, (size_t)1U, uint8_t, uint8_t *) >>
-                                  1U &
-                              1U);
-  int16_t result10 = (int16_t)((uint32_t)Eurydice_slice_index(
-                                   v, (size_t)1U, uint8_t, uint8_t *) >>
-                                   2U &
-                               1U);
-  int16_t result11 = (int16_t)((uint32_t)Eurydice_slice_index(
-                                   v, (size_t)1U, uint8_t, uint8_t *) >>
-                                   3U &
-                               1U);
-  int16_t result12 = (int16_t)((uint32_t)Eurydice_slice_index(
-                                   v, (size_t)1U, uint8_t, uint8_t *) >>
-                                   4U &
-                               1U);
-  int16_t result13 = (int16_t)((uint32_t)Eurydice_slice_index(
-                                   v, (size_t)1U, uint8_t, uint8_t *) >>
-                                   5U &
-                               1U);
-  int16_t result14 = (int16_t)((uint32_t)Eurydice_slice_index(
-                                   v, (size_t)1U, uint8_t, uint8_t *) >>
-                                   6U &
-                               1U);
-  int16_t result15 = (int16_t)((uint32_t)Eurydice_slice_index(
-                                   v, (size_t)1U, uint8_t, uint8_t *) >>
-                                   7U &
-                               1U);
+  int16_t result0 = libcrux_secrets_int_as_i16_84(
+      (uint32_t)Eurydice_slice_index(v, (size_t)0U, uint8_t, uint8_t *) & 1U);
+  int16_t result1 = libcrux_secrets_int_as_i16_84(
+      (uint32_t)Eurydice_slice_index(v, (size_t)0U, uint8_t, uint8_t *) >> 1U &
+      1U);
+  int16_t result2 = libcrux_secrets_int_as_i16_84(
+      (uint32_t)Eurydice_slice_index(v, (size_t)0U, uint8_t, uint8_t *) >> 2U &
+      1U);
+  int16_t result3 = libcrux_secrets_int_as_i16_84(
+      (uint32_t)Eurydice_slice_index(v, (size_t)0U, uint8_t, uint8_t *) >> 3U &
+      1U);
+  int16_t result4 = libcrux_secrets_int_as_i16_84(
+      (uint32_t)Eurydice_slice_index(v, (size_t)0U, uint8_t, uint8_t *) >> 4U &
+      1U);
+  int16_t result5 = libcrux_secrets_int_as_i16_84(
+      (uint32_t)Eurydice_slice_index(v, (size_t)0U, uint8_t, uint8_t *) >> 5U &
+      1U);
+  int16_t result6 = libcrux_secrets_int_as_i16_84(
+      (uint32_t)Eurydice_slice_index(v, (size_t)0U, uint8_t, uint8_t *) >> 6U &
+      1U);
+  int16_t result7 = libcrux_secrets_int_as_i16_84(
+      (uint32_t)Eurydice_slice_index(v, (size_t)0U, uint8_t, uint8_t *) >> 7U &
+      1U);
+  int16_t result8 = libcrux_secrets_int_as_i16_84(
+      (uint32_t)Eurydice_slice_index(v, (size_t)1U, uint8_t, uint8_t *) & 1U);
+  int16_t result9 = libcrux_secrets_int_as_i16_84(
+      (uint32_t)Eurydice_slice_index(v, (size_t)1U, uint8_t, uint8_t *) >> 1U &
+      1U);
+  int16_t result10 = libcrux_secrets_int_as_i16_84(
+      (uint32_t)Eurydice_slice_index(v, (size_t)1U, uint8_t, uint8_t *) >> 2U &
+      1U);
+  int16_t result11 = libcrux_secrets_int_as_i16_84(
+      (uint32_t)Eurydice_slice_index(v, (size_t)1U, uint8_t, uint8_t *) >> 3U &
+      1U);
+  int16_t result12 = libcrux_secrets_int_as_i16_84(
+      (uint32_t)Eurydice_slice_index(v, (size_t)1U, uint8_t, uint8_t *) >> 4U &
+      1U);
+  int16_t result13 = libcrux_secrets_int_as_i16_84(
+      (uint32_t)Eurydice_slice_index(v, (size_t)1U, uint8_t, uint8_t *) >> 5U &
+      1U);
+  int16_t result14 = libcrux_secrets_int_as_i16_84(
+      (uint32_t)Eurydice_slice_index(v, (size_t)1U, uint8_t, uint8_t *) >> 6U &
+      1U);
+  int16_t result15 = libcrux_secrets_int_as_i16_84(
+      (uint32_t)Eurydice_slice_index(v, (size_t)1U, uint8_t, uint8_t *) >> 7U &
+      1U);
   libcrux_ml_kem_vector_portable_vector_type_PortableVector lit;
   lit.elements[0U] = result0;
   lit.elements[1U] = result1;
@@ -1741,7 +1770,8 @@ libcrux_ml_kem_vector_portable_serialize_deserialize_1(Eurydice_slice v) {
 
 libcrux_ml_kem_vector_portable_vector_type_PortableVector
 libcrux_ml_kem_vector_portable_deserialize_1(Eurydice_slice a) {
-  return libcrux_ml_kem_vector_portable_serialize_deserialize_1(a);
+  return libcrux_ml_kem_vector_portable_serialize_deserialize_1(
+      libcrux_secrets_int_public_integers_classify_ref_b8_ba(&a)[0U]);
 }
 
 /**
@@ -1755,26 +1785,26 @@ libcrux_ml_kem_vector_portable_deserialize_1_2c(Eurydice_slice a) {
 
 KRML_MUSTINLINE uint8_t_x4
 libcrux_ml_kem_vector_portable_serialize_serialize_4_int(Eurydice_slice v) {
-  uint8_t result0 =
-      (uint32_t)(uint8_t)Eurydice_slice_index(v, (size_t)1U, int16_t, int16_t *)
-          << 4U |
-      (uint32_t)(uint8_t)Eurydice_slice_index(v, (size_t)0U, int16_t,
-                                              int16_t *);
-  uint8_t result1 =
-      (uint32_t)(uint8_t)Eurydice_slice_index(v, (size_t)3U, int16_t, int16_t *)
-          << 4U |
-      (uint32_t)(uint8_t)Eurydice_slice_index(v, (size_t)2U, int16_t,
-                                              int16_t *);
-  uint8_t result2 =
-      (uint32_t)(uint8_t)Eurydice_slice_index(v, (size_t)5U, int16_t, int16_t *)
-          << 4U |
-      (uint32_t)(uint8_t)Eurydice_slice_index(v, (size_t)4U, int16_t,
-                                              int16_t *);
-  uint8_t result3 =
-      (uint32_t)(uint8_t)Eurydice_slice_index(v, (size_t)7U, int16_t, int16_t *)
-          << 4U |
-      (uint32_t)(uint8_t)Eurydice_slice_index(v, (size_t)6U, int16_t,
-                                              int16_t *);
+  uint8_t result0 = (uint32_t)libcrux_secrets_int_as_u8_d2(
+                        Eurydice_slice_index(v, (size_t)1U, int16_t, int16_t *))
+                        << 4U |
+                    (uint32_t)libcrux_secrets_int_as_u8_d2(Eurydice_slice_index(
+                        v, (size_t)0U, int16_t, int16_t *));
+  uint8_t result1 = (uint32_t)libcrux_secrets_int_as_u8_d2(
+                        Eurydice_slice_index(v, (size_t)3U, int16_t, int16_t *))
+                        << 4U |
+                    (uint32_t)libcrux_secrets_int_as_u8_d2(Eurydice_slice_index(
+                        v, (size_t)2U, int16_t, int16_t *));
+  uint8_t result2 = (uint32_t)libcrux_secrets_int_as_u8_d2(
+                        Eurydice_slice_index(v, (size_t)5U, int16_t, int16_t *))
+                        << 4U |
+                    (uint32_t)libcrux_secrets_int_as_u8_d2(Eurydice_slice_index(
+                        v, (size_t)4U, int16_t, int16_t *));
+  uint8_t result3 = (uint32_t)libcrux_secrets_int_as_u8_d2(
+                        Eurydice_slice_index(v, (size_t)7U, int16_t, int16_t *))
+                        << 4U |
+                    (uint32_t)libcrux_secrets_int_as_u8_d2(Eurydice_slice_index(
+                        v, (size_t)6U, int16_t, int16_t *));
   return (KRML_CLITERAL(uint8_t_x4){
       .fst = result0, .snd = result1, .thd = result2, .f3 = result3});
 }
@@ -1803,7 +1833,9 @@ KRML_MUSTINLINE void libcrux_ml_kem_vector_portable_serialize_serialize_4(
 void libcrux_ml_kem_vector_portable_serialize_4(
     libcrux_ml_kem_vector_portable_vector_type_PortableVector a,
     uint8_t ret[8U]) {
-  libcrux_ml_kem_vector_portable_serialize_serialize_4(a, ret);
+  uint8_t ret0[8U];
+  libcrux_ml_kem_vector_portable_serialize_serialize_4(a, ret0);
+  libcrux_secrets_int_public_integers_declassify_73_76(ret0, ret);
 }
 
 /**
@@ -1819,34 +1851,34 @@ void libcrux_ml_kem_vector_portable_serialize_4_2c(
 KRML_MUSTINLINE int16_t_x8
 libcrux_ml_kem_vector_portable_serialize_deserialize_4_int(
     Eurydice_slice bytes) {
-  int16_t v0 = (int16_t)((uint32_t)Eurydice_slice_index(bytes, (size_t)0U,
-                                                        uint8_t, uint8_t *) &
-                         15U);
-  int16_t v1 = (int16_t)((uint32_t)Eurydice_slice_index(bytes, (size_t)0U,
-                                                        uint8_t, uint8_t *) >>
-                             4U &
-                         15U);
-  int16_t v2 = (int16_t)((uint32_t)Eurydice_slice_index(bytes, (size_t)1U,
-                                                        uint8_t, uint8_t *) &
-                         15U);
-  int16_t v3 = (int16_t)((uint32_t)Eurydice_slice_index(bytes, (size_t)1U,
-                                                        uint8_t, uint8_t *) >>
-                             4U &
-                         15U);
-  int16_t v4 = (int16_t)((uint32_t)Eurydice_slice_index(bytes, (size_t)2U,
-                                                        uint8_t, uint8_t *) &
-                         15U);
-  int16_t v5 = (int16_t)((uint32_t)Eurydice_slice_index(bytes, (size_t)2U,
-                                                        uint8_t, uint8_t *) >>
-                             4U &
-                         15U);
-  int16_t v6 = (int16_t)((uint32_t)Eurydice_slice_index(bytes, (size_t)3U,
-                                                        uint8_t, uint8_t *) &
-                         15U);
-  int16_t v7 = (int16_t)((uint32_t)Eurydice_slice_index(bytes, (size_t)3U,
-                                                        uint8_t, uint8_t *) >>
-                             4U &
-                         15U);
+  int16_t v0 = libcrux_secrets_int_as_i16_84(
+      (uint32_t)Eurydice_slice_index(bytes, (size_t)0U, uint8_t, uint8_t *) &
+      15U);
+  int16_t v1 = libcrux_secrets_int_as_i16_84(
+      (uint32_t)Eurydice_slice_index(bytes, (size_t)0U, uint8_t, uint8_t *) >>
+          4U &
+      15U);
+  int16_t v2 = libcrux_secrets_int_as_i16_84(
+      (uint32_t)Eurydice_slice_index(bytes, (size_t)1U, uint8_t, uint8_t *) &
+      15U);
+  int16_t v3 = libcrux_secrets_int_as_i16_84(
+      (uint32_t)Eurydice_slice_index(bytes, (size_t)1U, uint8_t, uint8_t *) >>
+          4U &
+      15U);
+  int16_t v4 = libcrux_secrets_int_as_i16_84(
+      (uint32_t)Eurydice_slice_index(bytes, (size_t)2U, uint8_t, uint8_t *) &
+      15U);
+  int16_t v5 = libcrux_secrets_int_as_i16_84(
+      (uint32_t)Eurydice_slice_index(bytes, (size_t)2U, uint8_t, uint8_t *) >>
+          4U &
+      15U);
+  int16_t v6 = libcrux_secrets_int_as_i16_84(
+      (uint32_t)Eurydice_slice_index(bytes, (size_t)3U, uint8_t, uint8_t *) &
+      15U);
+  int16_t v7 = libcrux_secrets_int_as_i16_84(
+      (uint32_t)Eurydice_slice_index(bytes, (size_t)3U, uint8_t, uint8_t *) >>
+          4U &
+      15U);
   return (KRML_CLITERAL(int16_t_x8){.fst = v0,
                                     .snd = v1,
                                     .thd = v2,
@@ -1885,7 +1917,8 @@ libcrux_ml_kem_vector_portable_serialize_deserialize_4(Eurydice_slice bytes) {
 
 libcrux_ml_kem_vector_portable_vector_type_PortableVector
 libcrux_ml_kem_vector_portable_deserialize_4(Eurydice_slice a) {
-  return libcrux_ml_kem_vector_portable_serialize_deserialize_4(a);
+  return libcrux_ml_kem_vector_portable_serialize_deserialize_4(
+      libcrux_secrets_int_public_integers_classify_ref_b8_ba(&a)[0U]);
 }
 
 /**
@@ -1899,25 +1932,23 @@ libcrux_ml_kem_vector_portable_deserialize_4_2c(Eurydice_slice a) {
 
 KRML_MUSTINLINE uint8_t_x5
 libcrux_ml_kem_vector_portable_serialize_serialize_5_int(Eurydice_slice v) {
-  uint8_t r0 =
-      (uint8_t)(Eurydice_slice_index(v, (size_t)0U, int16_t, int16_t *) |
-                Eurydice_slice_index(v, (size_t)1U, int16_t, int16_t *) << 5U);
-  uint8_t r1 =
-      (uint8_t)((Eurydice_slice_index(v, (size_t)1U, int16_t, int16_t *) >> 3U |
-                 Eurydice_slice_index(v, (size_t)2U, int16_t, int16_t *)
-                     << 2U) |
-                Eurydice_slice_index(v, (size_t)3U, int16_t, int16_t *) << 7U);
-  uint8_t r2 =
-      (uint8_t)(Eurydice_slice_index(v, (size_t)3U, int16_t, int16_t *) >> 1U |
-                Eurydice_slice_index(v, (size_t)4U, int16_t, int16_t *) << 4U);
-  uint8_t r3 =
-      (uint8_t)((Eurydice_slice_index(v, (size_t)4U, int16_t, int16_t *) >> 4U |
-                 Eurydice_slice_index(v, (size_t)5U, int16_t, int16_t *)
-                     << 1U) |
-                Eurydice_slice_index(v, (size_t)6U, int16_t, int16_t *) << 6U);
-  uint8_t r4 =
-      (uint8_t)(Eurydice_slice_index(v, (size_t)6U, int16_t, int16_t *) >> 2U |
-                Eurydice_slice_index(v, (size_t)7U, int16_t, int16_t *) << 3U);
+  uint8_t r0 = libcrux_secrets_int_as_u8_d2(
+      Eurydice_slice_index(v, (size_t)0U, int16_t, int16_t *) |
+      Eurydice_slice_index(v, (size_t)1U, int16_t, int16_t *) << 5U);
+  uint8_t r1 = libcrux_secrets_int_as_u8_d2(
+      (Eurydice_slice_index(v, (size_t)1U, int16_t, int16_t *) >> 3U |
+       Eurydice_slice_index(v, (size_t)2U, int16_t, int16_t *) << 2U) |
+      Eurydice_slice_index(v, (size_t)3U, int16_t, int16_t *) << 7U);
+  uint8_t r2 = libcrux_secrets_int_as_u8_d2(
+      Eurydice_slice_index(v, (size_t)3U, int16_t, int16_t *) >> 1U |
+      Eurydice_slice_index(v, (size_t)4U, int16_t, int16_t *) << 4U);
+  uint8_t r3 = libcrux_secrets_int_as_u8_d2(
+      (Eurydice_slice_index(v, (size_t)4U, int16_t, int16_t *) >> 4U |
+       Eurydice_slice_index(v, (size_t)5U, int16_t, int16_t *) << 1U) |
+      Eurydice_slice_index(v, (size_t)6U, int16_t, int16_t *) << 6U);
+  uint8_t r4 = libcrux_secrets_int_as_u8_d2(
+      Eurydice_slice_index(v, (size_t)6U, int16_t, int16_t *) >> 2U |
+      Eurydice_slice_index(v, (size_t)7U, int16_t, int16_t *) << 3U);
   return (KRML_CLITERAL(uint8_t_x5){
       .fst = r0, .snd = r1, .thd = r2, .f3 = r3, .f4 = r4});
 }
@@ -1945,7 +1976,9 @@ KRML_MUSTINLINE void libcrux_ml_kem_vector_portable_serialize_serialize_5(
 void libcrux_ml_kem_vector_portable_serialize_5(
     libcrux_ml_kem_vector_portable_vector_type_PortableVector a,
     uint8_t ret[10U]) {
-  libcrux_ml_kem_vector_portable_serialize_serialize_5(a, ret);
+  uint8_t ret0[10U];
+  libcrux_ml_kem_vector_portable_serialize_serialize_5(a, ret0);
+  libcrux_secrets_int_public_integers_declassify_73_cc(ret0, ret);
 }
 
 /**
@@ -1961,45 +1994,41 @@ void libcrux_ml_kem_vector_portable_serialize_5_2c(
 KRML_MUSTINLINE int16_t_x8
 libcrux_ml_kem_vector_portable_serialize_deserialize_5_int(
     Eurydice_slice bytes) {
-  int16_t v0 = (int16_t)((uint32_t)Eurydice_slice_index(bytes, (size_t)0U,
-                                                        uint8_t, uint8_t *) &
-                         31U);
-  int16_t v1 = (int16_t)(((uint32_t)Eurydice_slice_index(bytes, (size_t)1U,
-                                                         uint8_t, uint8_t *) &
-                          3U) << 3U |
-                         (uint32_t)Eurydice_slice_index(bytes, (size_t)0U,
-                                                        uint8_t, uint8_t *) >>
-                             5U);
-  int16_t v2 = (int16_t)((uint32_t)Eurydice_slice_index(bytes, (size_t)1U,
-                                                        uint8_t, uint8_t *) >>
-                             2U &
-                         31U);
-  int16_t v3 = (int16_t)(((uint32_t)Eurydice_slice_index(bytes, (size_t)2U,
-                                                         uint8_t, uint8_t *) &
-                          15U)
-                             << 1U |
-                         (uint32_t)Eurydice_slice_index(bytes, (size_t)1U,
-                                                        uint8_t, uint8_t *) >>
-                             7U);
-  int16_t v4 = (int16_t)(((uint32_t)Eurydice_slice_index(bytes, (size_t)3U,
-                                                         uint8_t, uint8_t *) &
-                          1U) << 4U |
-                         (uint32_t)Eurydice_slice_index(bytes, (size_t)2U,
-                                                        uint8_t, uint8_t *) >>
-                             4U);
-  int16_t v5 = (int16_t)((uint32_t)Eurydice_slice_index(bytes, (size_t)3U,
-                                                        uint8_t, uint8_t *) >>
-                             1U &
-                         31U);
-  int16_t v6 = (int16_t)(((uint32_t)Eurydice_slice_index(bytes, (size_t)4U,
-                                                         uint8_t, uint8_t *) &
-                          7U) << 2U |
-                         (uint32_t)Eurydice_slice_index(bytes, (size_t)3U,
-                                                        uint8_t, uint8_t *) >>
-                             6U);
-  int16_t v7 = (int16_t)((uint32_t)Eurydice_slice_index(bytes, (size_t)4U,
-                                                        uint8_t, uint8_t *) >>
-                         3U);
+  int16_t v0 = libcrux_secrets_int_as_i16_84(
+      (uint32_t)Eurydice_slice_index(bytes, (size_t)0U, uint8_t, uint8_t *) &
+      31U);
+  int16_t v1 = libcrux_secrets_int_as_i16_84(
+      ((uint32_t)Eurydice_slice_index(bytes, (size_t)1U, uint8_t, uint8_t *) &
+       3U) << 3U |
+      (uint32_t)Eurydice_slice_index(bytes, (size_t)0U, uint8_t, uint8_t *) >>
+          5U);
+  int16_t v2 = libcrux_secrets_int_as_i16_84(
+      (uint32_t)Eurydice_slice_index(bytes, (size_t)1U, uint8_t, uint8_t *) >>
+          2U &
+      31U);
+  int16_t v3 = libcrux_secrets_int_as_i16_84(
+      ((uint32_t)Eurydice_slice_index(bytes, (size_t)2U, uint8_t, uint8_t *) &
+       15U)
+          << 1U |
+      (uint32_t)Eurydice_slice_index(bytes, (size_t)1U, uint8_t, uint8_t *) >>
+          7U);
+  int16_t v4 = libcrux_secrets_int_as_i16_84(
+      ((uint32_t)Eurydice_slice_index(bytes, (size_t)3U, uint8_t, uint8_t *) &
+       1U) << 4U |
+      (uint32_t)Eurydice_slice_index(bytes, (size_t)2U, uint8_t, uint8_t *) >>
+          4U);
+  int16_t v5 = libcrux_secrets_int_as_i16_84(
+      (uint32_t)Eurydice_slice_index(bytes, (size_t)3U, uint8_t, uint8_t *) >>
+          1U &
+      31U);
+  int16_t v6 = libcrux_secrets_int_as_i16_84(
+      ((uint32_t)Eurydice_slice_index(bytes, (size_t)4U, uint8_t, uint8_t *) &
+       7U) << 2U |
+      (uint32_t)Eurydice_slice_index(bytes, (size_t)3U, uint8_t, uint8_t *) >>
+          6U);
+  int16_t v7 = libcrux_secrets_int_as_i16_84(
+      (uint32_t)Eurydice_slice_index(bytes, (size_t)4U, uint8_t, uint8_t *) >>
+      3U);
   return (KRML_CLITERAL(int16_t_x8){.fst = v0,
                                     .snd = v1,
                                     .thd = v2,
@@ -2038,7 +2067,8 @@ libcrux_ml_kem_vector_portable_serialize_deserialize_5(Eurydice_slice bytes) {
 
 libcrux_ml_kem_vector_portable_vector_type_PortableVector
 libcrux_ml_kem_vector_portable_deserialize_5(Eurydice_slice a) {
-  return libcrux_ml_kem_vector_portable_serialize_deserialize_5(a);
+  return libcrux_ml_kem_vector_portable_serialize_deserialize_5(
+      libcrux_secrets_int_public_integers_classify_ref_b8_ba(&a)[0U]);
 }
 
 /**
@@ -2052,36 +2082,32 @@ libcrux_ml_kem_vector_portable_deserialize_5_2c(Eurydice_slice a) {
 
 KRML_MUSTINLINE uint8_t_x5
 libcrux_ml_kem_vector_portable_serialize_serialize_10_int(Eurydice_slice v) {
-  uint8_t r0 =
-      (uint8_t)(Eurydice_slice_index(v, (size_t)0U, int16_t, int16_t *) &
-                (int16_t)255);
-  uint8_t r1 = (uint32_t)(uint8_t)(Eurydice_slice_index(v, (size_t)1U, int16_t,
-                                                        int16_t *) &
-                                   (int16_t)63)
-                   << 2U |
-               (uint32_t)(uint8_t)(Eurydice_slice_index(v, (size_t)0U, int16_t,
-                                                        int16_t *) >>
-                                       8U &
-                                   (int16_t)3);
-  uint8_t r2 = (uint32_t)(uint8_t)(Eurydice_slice_index(v, (size_t)2U, int16_t,
-                                                        int16_t *) &
-                                   (int16_t)15)
-                   << 4U |
-               (uint32_t)(uint8_t)(Eurydice_slice_index(v, (size_t)1U, int16_t,
-                                                        int16_t *) >>
-                                       6U &
-                                   (int16_t)15);
-  uint8_t r3 = (uint32_t)(uint8_t)(Eurydice_slice_index(v, (size_t)3U, int16_t,
-                                                        int16_t *) &
-                                   (int16_t)3)
-                   << 6U |
-               (uint32_t)(uint8_t)(Eurydice_slice_index(v, (size_t)2U, int16_t,
-                                                        int16_t *) >>
-                                       4U &
-                                   (int16_t)63);
-  uint8_t r4 =
-      (uint8_t)(Eurydice_slice_index(v, (size_t)3U, int16_t, int16_t *) >> 2U &
-                (int16_t)255);
+  uint8_t r0 = libcrux_secrets_int_as_u8_d2(
+      Eurydice_slice_index(v, (size_t)0U, int16_t, int16_t *) & (int16_t)255);
+  uint8_t r1 =
+      (uint32_t)libcrux_secrets_int_as_u8_d2(
+          Eurydice_slice_index(v, (size_t)1U, int16_t, int16_t *) & (int16_t)63)
+          << 2U |
+      (uint32_t)libcrux_secrets_int_as_u8_d2(
+          Eurydice_slice_index(v, (size_t)0U, int16_t, int16_t *) >> 8U &
+          (int16_t)3);
+  uint8_t r2 =
+      (uint32_t)libcrux_secrets_int_as_u8_d2(
+          Eurydice_slice_index(v, (size_t)2U, int16_t, int16_t *) & (int16_t)15)
+          << 4U |
+      (uint32_t)libcrux_secrets_int_as_u8_d2(
+          Eurydice_slice_index(v, (size_t)1U, int16_t, int16_t *) >> 6U &
+          (int16_t)15);
+  uint8_t r3 =
+      (uint32_t)libcrux_secrets_int_as_u8_d2(
+          Eurydice_slice_index(v, (size_t)3U, int16_t, int16_t *) & (int16_t)3)
+          << 6U |
+      (uint32_t)libcrux_secrets_int_as_u8_d2(
+          Eurydice_slice_index(v, (size_t)2U, int16_t, int16_t *) >> 4U &
+          (int16_t)63);
+  uint8_t r4 = libcrux_secrets_int_as_u8_d2(
+      Eurydice_slice_index(v, (size_t)3U, int16_t, int16_t *) >> 2U &
+      (int16_t)255);
   return (KRML_CLITERAL(uint8_t_x5){
       .fst = r0, .snd = r1, .thd = r2, .f3 = r3, .f4 = r4});
 }
@@ -2124,7 +2150,9 @@ KRML_MUSTINLINE void libcrux_ml_kem_vector_portable_serialize_serialize_10(
 void libcrux_ml_kem_vector_portable_serialize_10(
     libcrux_ml_kem_vector_portable_vector_type_PortableVector a,
     uint8_t ret[20U]) {
-  libcrux_ml_kem_vector_portable_serialize_serialize_10(a, ret);
+  uint8_t ret0[20U];
+  libcrux_ml_kem_vector_portable_serialize_serialize_10(a, ret0);
+  libcrux_secrets_int_public_integers_declassify_73_57(ret0, ret);
 }
 
 /**
@@ -2140,52 +2168,68 @@ void libcrux_ml_kem_vector_portable_serialize_10_2c(
 KRML_MUSTINLINE int16_t_x8
 libcrux_ml_kem_vector_portable_serialize_deserialize_10_int(
     Eurydice_slice bytes) {
-  int16_t r0 =
-      ((int16_t)Eurydice_slice_index(bytes, (size_t)1U, uint8_t, uint8_t *) &
+  int16_t r0 = libcrux_secrets_int_as_i16_d2(
+      (libcrux_secrets_int_as_i16_84(
+           Eurydice_slice_index(bytes, (size_t)1U, uint8_t, uint8_t *)) &
        (int16_t)3)
           << 8U |
-      ((int16_t)Eurydice_slice_index(bytes, (size_t)0U, uint8_t, uint8_t *) &
-       (int16_t)255);
-  int16_t r1 =
-      ((int16_t)Eurydice_slice_index(bytes, (size_t)2U, uint8_t, uint8_t *) &
+      (libcrux_secrets_int_as_i16_84(
+           Eurydice_slice_index(bytes, (size_t)0U, uint8_t, uint8_t *)) &
+       (int16_t)255));
+  int16_t r1 = libcrux_secrets_int_as_i16_d2(
+      (libcrux_secrets_int_as_i16_84(
+           Eurydice_slice_index(bytes, (size_t)2U, uint8_t, uint8_t *)) &
        (int16_t)15)
           << 6U |
-      (int16_t)Eurydice_slice_index(bytes, (size_t)1U, uint8_t, uint8_t *) >>
-          2U;
-  int16_t r2 =
-      ((int16_t)Eurydice_slice_index(bytes, (size_t)3U, uint8_t, uint8_t *) &
+      libcrux_secrets_int_as_i16_84(
+          Eurydice_slice_index(bytes, (size_t)1U, uint8_t, uint8_t *)) >>
+          2U);
+  int16_t r2 = libcrux_secrets_int_as_i16_d2(
+      (libcrux_secrets_int_as_i16_84(
+           Eurydice_slice_index(bytes, (size_t)3U, uint8_t, uint8_t *)) &
        (int16_t)63)
           << 4U |
-      (int16_t)Eurydice_slice_index(bytes, (size_t)2U, uint8_t, uint8_t *) >>
-          4U;
-  int16_t r3 =
-      (int16_t)Eurydice_slice_index(bytes, (size_t)4U, uint8_t, uint8_t *)
+      libcrux_secrets_int_as_i16_84(
+          Eurydice_slice_index(bytes, (size_t)2U, uint8_t, uint8_t *)) >>
+          4U);
+  int16_t r3 = libcrux_secrets_int_as_i16_d2(
+      libcrux_secrets_int_as_i16_84(
+          Eurydice_slice_index(bytes, (size_t)4U, uint8_t, uint8_t *))
           << 2U |
-      (int16_t)Eurydice_slice_index(bytes, (size_t)3U, uint8_t, uint8_t *) >>
-          6U;
-  int16_t r4 =
-      ((int16_t)Eurydice_slice_index(bytes, (size_t)6U, uint8_t, uint8_t *) &
+      libcrux_secrets_int_as_i16_84(
+          Eurydice_slice_index(bytes, (size_t)3U, uint8_t, uint8_t *)) >>
+          6U);
+  int16_t r4 = libcrux_secrets_int_as_i16_d2(
+      (libcrux_secrets_int_as_i16_84(
+           Eurydice_slice_index(bytes, (size_t)6U, uint8_t, uint8_t *)) &
        (int16_t)3)
           << 8U |
-      ((int16_t)Eurydice_slice_index(bytes, (size_t)5U, uint8_t, uint8_t *) &
-       (int16_t)255);
-  int16_t r5 =
-      ((int16_t)Eurydice_slice_index(bytes, (size_t)7U, uint8_t, uint8_t *) &
+      (libcrux_secrets_int_as_i16_84(
+           Eurydice_slice_index(bytes, (size_t)5U, uint8_t, uint8_t *)) &
+       (int16_t)255));
+  int16_t r5 = libcrux_secrets_int_as_i16_d2(
+      (libcrux_secrets_int_as_i16_84(
+           Eurydice_slice_index(bytes, (size_t)7U, uint8_t, uint8_t *)) &
        (int16_t)15)
           << 6U |
-      (int16_t)Eurydice_slice_index(bytes, (size_t)6U, uint8_t, uint8_t *) >>
-          2U;
-  int16_t r6 =
-      ((int16_t)Eurydice_slice_index(bytes, (size_t)8U, uint8_t, uint8_t *) &
+      libcrux_secrets_int_as_i16_84(
+          Eurydice_slice_index(bytes, (size_t)6U, uint8_t, uint8_t *)) >>
+          2U);
+  int16_t r6 = libcrux_secrets_int_as_i16_d2(
+      (libcrux_secrets_int_as_i16_84(
+           Eurydice_slice_index(bytes, (size_t)8U, uint8_t, uint8_t *)) &
        (int16_t)63)
           << 4U |
-      (int16_t)Eurydice_slice_index(bytes, (size_t)7U, uint8_t, uint8_t *) >>
-          4U;
-  int16_t r7 =
-      (int16_t)Eurydice_slice_index(bytes, (size_t)9U, uint8_t, uint8_t *)
+      libcrux_secrets_int_as_i16_84(
+          Eurydice_slice_index(bytes, (size_t)7U, uint8_t, uint8_t *)) >>
+          4U);
+  int16_t r7 = libcrux_secrets_int_as_i16_d2(
+      libcrux_secrets_int_as_i16_84(
+          Eurydice_slice_index(bytes, (size_t)9U, uint8_t, uint8_t *))
           << 2U |
-      (int16_t)Eurydice_slice_index(bytes, (size_t)8U, uint8_t, uint8_t *) >>
-          6U;
+      libcrux_secrets_int_as_i16_84(
+          Eurydice_slice_index(bytes, (size_t)8U, uint8_t, uint8_t *)) >>
+          6U);
   return (KRML_CLITERAL(int16_t_x8){.fst = r0,
                                     .snd = r1,
                                     .thd = r2,
@@ -2225,7 +2269,8 @@ libcrux_ml_kem_vector_portable_serialize_deserialize_10(Eurydice_slice bytes) {
 
 libcrux_ml_kem_vector_portable_vector_type_PortableVector
 libcrux_ml_kem_vector_portable_deserialize_10(Eurydice_slice a) {
-  return libcrux_ml_kem_vector_portable_serialize_deserialize_10(a);
+  return libcrux_ml_kem_vector_portable_serialize_deserialize_10(
+      libcrux_secrets_int_public_integers_classify_ref_b8_ba(&a)[0U]);
 }
 
 /**
@@ -2239,17 +2284,15 @@ libcrux_ml_kem_vector_portable_deserialize_10_2c(Eurydice_slice a) {
 
 KRML_MUSTINLINE uint8_t_x3
 libcrux_ml_kem_vector_portable_serialize_serialize_12_int(Eurydice_slice v) {
-  uint8_t r0 =
-      (uint8_t)(Eurydice_slice_index(v, (size_t)0U, int16_t, int16_t *) &
-                (int16_t)255);
-  uint8_t r1 =
-      (uint8_t)(Eurydice_slice_index(v, (size_t)0U, int16_t, int16_t *) >> 8U |
-                (Eurydice_slice_index(v, (size_t)1U, int16_t, int16_t *) &
-                 (int16_t)15)
-                    << 4U);
-  uint8_t r2 =
-      (uint8_t)(Eurydice_slice_index(v, (size_t)1U, int16_t, int16_t *) >> 4U &
-                (int16_t)255);
+  uint8_t r0 = libcrux_secrets_int_as_u8_d2(
+      Eurydice_slice_index(v, (size_t)0U, int16_t, int16_t *) & (int16_t)255);
+  uint8_t r1 = libcrux_secrets_int_as_u8_d2(
+      Eurydice_slice_index(v, (size_t)0U, int16_t, int16_t *) >> 8U |
+      (Eurydice_slice_index(v, (size_t)1U, int16_t, int16_t *) & (int16_t)15)
+          << 4U);
+  uint8_t r2 = libcrux_secrets_int_as_u8_d2(
+      Eurydice_slice_index(v, (size_t)1U, int16_t, int16_t *) >> 4U &
+      (int16_t)255);
   return (KRML_CLITERAL(uint8_t_x3){.fst = r0, .snd = r1, .thd = r2});
 }
 
@@ -2305,7 +2348,9 @@ KRML_MUSTINLINE void libcrux_ml_kem_vector_portable_serialize_serialize_12(
 void libcrux_ml_kem_vector_portable_serialize_12(
     libcrux_ml_kem_vector_portable_vector_type_PortableVector a,
     uint8_t ret[24U]) {
-  libcrux_ml_kem_vector_portable_serialize_serialize_12(a, ret);
+  uint8_t ret0[24U];
+  libcrux_ml_kem_vector_portable_serialize_serialize_12(a, ret0);
+  libcrux_secrets_int_public_integers_declassify_73_d2(ret0, ret);
 }
 
 /**
@@ -2321,12 +2366,12 @@ void libcrux_ml_kem_vector_portable_serialize_12_2c(
 KRML_MUSTINLINE int16_t_x2
 libcrux_ml_kem_vector_portable_serialize_deserialize_12_int(
     Eurydice_slice bytes) {
-  int16_t byte0 =
-      (int16_t)Eurydice_slice_index(bytes, (size_t)0U, uint8_t, uint8_t *);
-  int16_t byte1 =
-      (int16_t)Eurydice_slice_index(bytes, (size_t)1U, uint8_t, uint8_t *);
-  int16_t byte2 =
-      (int16_t)Eurydice_slice_index(bytes, (size_t)2U, uint8_t, uint8_t *);
+  int16_t byte0 = libcrux_secrets_int_as_i16_84(
+      Eurydice_slice_index(bytes, (size_t)0U, uint8_t, uint8_t *));
+  int16_t byte1 = libcrux_secrets_int_as_i16_84(
+      Eurydice_slice_index(bytes, (size_t)1U, uint8_t, uint8_t *));
+  int16_t byte2 = libcrux_secrets_int_as_i16_84(
+      Eurydice_slice_index(bytes, (size_t)2U, uint8_t, uint8_t *));
   int16_t r0 = (byte1 & (int16_t)15) << 8U | (byte0 & (int16_t)255);
   int16_t r1 = byte2 << 4U | (byte1 >> 4U & (int16_t)15);
   return (KRML_CLITERAL(int16_t_x2){.fst = r0, .snd = r1});
@@ -2375,7 +2420,8 @@ libcrux_ml_kem_vector_portable_serialize_deserialize_12(Eurydice_slice bytes) {
 
 libcrux_ml_kem_vector_portable_vector_type_PortableVector
 libcrux_ml_kem_vector_portable_deserialize_12(Eurydice_slice a) {
-  return libcrux_ml_kem_vector_portable_serialize_deserialize_12(a);
+  return libcrux_ml_kem_vector_portable_serialize_deserialize_12(
+      libcrux_secrets_int_public_integers_classify_ref_b8_ba(&a)[0U]);
 }
 
 /**
@@ -4527,9 +4573,10 @@ compress_ef(libcrux_ml_kem_vector_portable_vector_type_PortableVector a) {
   for (size_t i = (size_t)0U;
        i < LIBCRUX_ML_KEM_VECTOR_TRAITS_FIELD_ELEMENTS_IN_VECTOR; i++) {
     size_t i0 = i;
-    int16_t uu____0 =
+    int16_t uu____0 = libcrux_secrets_int_as_i16_d2(
         libcrux_ml_kem_vector_portable_compress_compress_ciphertext_coefficient(
-            (uint8_t)(int32_t)10, (uint16_t)a.elements[i0]);
+            (uint8_t)(int32_t)10,
+            libcrux_secrets_int_as_u16_d2(a.elements[i0])));
     a.elements[i0] = uu____0;
   }
   return a;
@@ -4559,9 +4606,10 @@ compress_c4(libcrux_ml_kem_vector_portable_vector_type_PortableVector a) {
   for (size_t i = (size_t)0U;
        i < LIBCRUX_ML_KEM_VECTOR_TRAITS_FIELD_ELEMENTS_IN_VECTOR; i++) {
     size_t i0 = i;
-    int16_t uu____0 =
+    int16_t uu____0 = libcrux_secrets_int_as_i16_d2(
         libcrux_ml_kem_vector_portable_compress_compress_ciphertext_coefficient(
-            (uint8_t)(int32_t)11, (uint16_t)a.elements[i0]);
+            (uint8_t)(int32_t)11,
+            libcrux_secrets_int_as_u16_d2(a.elements[i0])));
     a.elements[i0] = uu____0;
   }
   return a;
@@ -4819,9 +4867,10 @@ compress_d1(libcrux_ml_kem_vector_portable_vector_type_PortableVector a) {
   for (size_t i = (size_t)0U;
        i < LIBCRUX_ML_KEM_VECTOR_TRAITS_FIELD_ELEMENTS_IN_VECTOR; i++) {
     size_t i0 = i;
-    int16_t uu____0 =
+    int16_t uu____0 = libcrux_secrets_int_as_i16_d2(
         libcrux_ml_kem_vector_portable_compress_compress_ciphertext_coefficient(
-            (uint8_t)(int32_t)4, (uint16_t)a.elements[i0]);
+            (uint8_t)(int32_t)4,
+            libcrux_secrets_int_as_u16_d2(a.elements[i0])));
     a.elements[i0] = uu____0;
   }
   return a;
@@ -4874,9 +4923,10 @@ compress_f4(libcrux_ml_kem_vector_portable_vector_type_PortableVector a) {
   for (size_t i = (size_t)0U;
        i < LIBCRUX_ML_KEM_VECTOR_TRAITS_FIELD_ELEMENTS_IN_VECTOR; i++) {
     size_t i0 = i;
-    int16_t uu____0 =
+    int16_t uu____0 = libcrux_secrets_int_as_i16_d2(
         libcrux_ml_kem_vector_portable_compress_compress_ciphertext_coefficient(
-            (uint8_t)(int32_t)5, (uint16_t)a.elements[i0]);
+            (uint8_t)(int32_t)5,
+            libcrux_secrets_int_as_u16_d2(a.elements[i0])));
     a.elements[i0] = uu____0;
   }
   return a;
@@ -5207,11 +5257,14 @@ decompress_ciphertext_coefficient_ef(
   for (size_t i = (size_t)0U;
        i < LIBCRUX_ML_KEM_VECTOR_TRAITS_FIELD_ELEMENTS_IN_VECTOR; i++) {
     size_t i0 = i;
-    int32_t decompressed = (int32_t)a.elements[i0] *
-                           (int32_t)LIBCRUX_ML_KEM_VECTOR_TRAITS_FIELD_MODULUS;
+    int32_t decompressed =
+        libcrux_secrets_int_as_i32_d2(a.elements[i0]) *
+        libcrux_secrets_int_as_i32_d2(
+            libcrux_secrets_int_public_integers_classify_57_39(
+                LIBCRUX_ML_KEM_VECTOR_TRAITS_FIELD_MODULUS));
     decompressed = (decompressed << 1U) + ((int32_t)1 << (uint32_t)(int32_t)10);
     decompressed = decompressed >> (uint32_t)((int32_t)10 + (int32_t)1);
-    a.elements[i0] = (int16_t)decompressed;
+    a.elements[i0] = libcrux_secrets_int_as_i16_98(decompressed);
   }
   return a;
 }
@@ -5267,11 +5320,14 @@ decompress_ciphertext_coefficient_c4(
   for (size_t i = (size_t)0U;
        i < LIBCRUX_ML_KEM_VECTOR_TRAITS_FIELD_ELEMENTS_IN_VECTOR; i++) {
     size_t i0 = i;
-    int32_t decompressed = (int32_t)a.elements[i0] *
-                           (int32_t)LIBCRUX_ML_KEM_VECTOR_TRAITS_FIELD_MODULUS;
+    int32_t decompressed =
+        libcrux_secrets_int_as_i32_d2(a.elements[i0]) *
+        libcrux_secrets_int_as_i32_d2(
+            libcrux_secrets_int_public_integers_classify_57_39(
+                LIBCRUX_ML_KEM_VECTOR_TRAITS_FIELD_MODULUS));
     decompressed = (decompressed << 1U) + ((int32_t)1 << (uint32_t)(int32_t)11);
     decompressed = decompressed >> (uint32_t)((int32_t)11 + (int32_t)1);
-    a.elements[i0] = (int16_t)decompressed;
+    a.elements[i0] = libcrux_secrets_int_as_i16_98(decompressed);
   }
   return a;
 }
@@ -5400,11 +5456,14 @@ decompress_ciphertext_coefficient_d1(
   for (size_t i = (size_t)0U;
        i < LIBCRUX_ML_KEM_VECTOR_TRAITS_FIELD_ELEMENTS_IN_VECTOR; i++) {
     size_t i0 = i;
-    int32_t decompressed = (int32_t)a.elements[i0] *
-                           (int32_t)LIBCRUX_ML_KEM_VECTOR_TRAITS_FIELD_MODULUS;
+    int32_t decompressed =
+        libcrux_secrets_int_as_i32_d2(a.elements[i0]) *
+        libcrux_secrets_int_as_i32_d2(
+            libcrux_secrets_int_public_integers_classify_57_39(
+                LIBCRUX_ML_KEM_VECTOR_TRAITS_FIELD_MODULUS));
     decompressed = (decompressed << 1U) + ((int32_t)1 << (uint32_t)(int32_t)4);
     decompressed = decompressed >> (uint32_t)((int32_t)4 + (int32_t)1);
-    a.elements[i0] = (int16_t)decompressed;
+    a.elements[i0] = libcrux_secrets_int_as_i16_98(decompressed);
   }
   return a;
 }
@@ -5460,11 +5519,14 @@ decompress_ciphertext_coefficient_f4(
   for (size_t i = (size_t)0U;
        i < LIBCRUX_ML_KEM_VECTOR_TRAITS_FIELD_ELEMENTS_IN_VECTOR; i++) {
     size_t i0 = i;
-    int32_t decompressed = (int32_t)a.elements[i0] *
-                           (int32_t)LIBCRUX_ML_KEM_VECTOR_TRAITS_FIELD_MODULUS;
+    int32_t decompressed =
+        libcrux_secrets_int_as_i32_d2(a.elements[i0]) *
+        libcrux_secrets_int_as_i32_d2(
+            libcrux_secrets_int_public_integers_classify_57_39(
+                LIBCRUX_ML_KEM_VECTOR_TRAITS_FIELD_MODULUS));
     decompressed = (decompressed << 1U) + ((int32_t)1 << (uint32_t)(int32_t)5);
     decompressed = decompressed >> (uint32_t)((int32_t)5 + (int32_t)1);
-    a.elements[i0] = (int16_t)decompressed;
+    a.elements[i0] = libcrux_secrets_int_as_i16_98(decompressed);
   }
   return a;
 }

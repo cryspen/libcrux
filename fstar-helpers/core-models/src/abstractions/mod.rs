@@ -1,5 +1,5 @@
 //! This module provides abstractions that are useful for writting
-//! specifications in minicore. Currently it provides two abstractions: bits and
+//! specifications in core_models. Currently it provides two abstractions: bits and
 //! bit vectors.
 //!
 //! # Examples
@@ -7,7 +7,7 @@
 //! Converting an integer to a bit vector and back:
 //!
 //! ```rust
-//! use minicore::abstractions::{bit::{Bit, MachineInteger}, bitvec::BitVec};
+//! use core_models::abstractions::{bit::{Bit, MachineInteger}, bitvec::BitVec};
 //!
 //! // Create a BitVec from a machine integer (using the integer's bit-width)
 //! let bv = BitVec::<16>::from_int(42u16);

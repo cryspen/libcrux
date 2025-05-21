@@ -93,7 +93,7 @@ jobs:
           input-data-path: libcrux-ml-dsa/bench-processed.json
           benchmark-data-dir-path: dev/bench/mldsa
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          gh-repository: github.com/cryspen/libcrux-benchmarks
+          gh-repository: github.com/${{ github.repository }}
           group-by: label,keySize,os
           schema: implementation,keySize,label,hardware,os
           auto-push: true

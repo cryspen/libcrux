@@ -68,11 +68,29 @@ class extractAction(argparse.Action):
             interface_include,
         ]
         hax_env = {
-            'RUSTFLAGS': "--cfg pre_minicore"
+            'RUSTFLAGS': "--cfg pre_core_models"
         }
         shell(
             cargo_hax_into,
             cwd="../libcrux-intrinsics",
+            env=hax_env,
+        )
+
+        # Extract libcrux-secrets
+        include_str = "+**"
+        interface_include = ""
+        cargo_hax_into = [
+            "cargo",
+            "hax",
+            "into",
+            "-i",
+            include_str,
+            "fstar",
+        ]
+        hax_env = {}
+        shell(
+            cargo_hax_into,
+            cwd="../secrets",
             env=hax_env,
         )
 

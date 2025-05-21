@@ -14,7 +14,7 @@ exclude = ["/proofs"]
 hax-lib.workspace = true
 
 [target.'cfg(hax)'.dependencies]
-minicore = { path = "../fstar-helpers/minicore" }
+core-models = { path = "../fstar-helpers/core-models" }
 
 [features]
 simd128 = []
@@ -23,4 +23,4 @@ simd256 = []
 [dev-dependencies]
 
 [lints.rust]
-unexpected_cfgs = { level = "warn", check-cfg = ['cfg(hax)', 'cfg(pre_minicore)', 'cfg(eurydice)'] }
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(hax)', 'cfg(pre_core_models)', 'cfg(eurydice)'] }

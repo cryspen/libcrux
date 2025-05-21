@@ -4,11 +4,11 @@
  * SPDX-License-Identifier: MIT or Apache-2.0
  *
  * This code was generated with the following revisions:
- * Charon: 763350c6948d5594d3017ecb93273bc41c1a4e1d
- * Eurydice: 36a5ed7dd6b61b5cd3d69a010859005912d21537
- * Karamel: bf9b89d76dd24e2ceaaca32de3535353e7b6bc01
+ * Charon: 3275bf4ad9dc8c25965dc5da6122653fc43c4287
+ * Eurydice: d3b14228e2b5fe8710ec7efae31e4de2c96ed20d
+ * Karamel: 095cdb73f246711f93f99a159ceca37cd2c227e1
  * F*: 4b3fc11774003a6ff7c09500ecb5f0145ca6d862
- * Libcrux: 753cc40f7a2d6820ba09be4427e02117dae64d48
+ * Libcrux: 75cbe9ea0e459cf8a62d97e8a867411e0dd8529a
  */
 
 #ifndef __libcrux_core_H
@@ -49,6 +49,8 @@ typedef struct Option_08_s {
 static inline uint32_t core_num__i32_2__count_ones(int32_t x0);
 
 static inline uint64_t core_num__u64_9__from_le_bytes(uint8_t x0[8U]);
+
+static inline uint64_t core_num__u64_9__rotate_left(uint64_t x0, uint32_t x1);
 
 static inline void core_num__u64_9__to_le_bytes(uint64_t x0, uint8_t x1[8U]);
 

@@ -203,7 +203,7 @@ let bitvec_postprocess_norm_aux (): Tac unit = with_compat_pre_core 1 (fun () ->
     let round _: Tac unit =
         if debug_mode then dump "[postprocess_rewrite_helper] Rewrote goal";
         // Normalize as much as possible
-        norm [primops; iota; delta_namespace ["Core"; crate; "Minicore"; "Libcrux_intrinsics"; "FStar.FunctionalExtensionality"; "Rust_primitives"]; zeta_full];
+        norm [primops; iota; delta_namespace ["Core"; crate; "Core_models"; "Libcrux_intrinsics"; "FStar.FunctionalExtensionality"; "Rust_primitives"]; zeta_full];
         if debug_mode then print ("[postprocess_rewrite_helper] first norm done");
         // Compute the last bits
         // compute ();
