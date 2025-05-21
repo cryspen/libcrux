@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1747815007831,
+  "lastUpdate": 1747815033934,
   "repoUrl": "https://github.com/cryspen/libcrux",
   "entries": {
     "ML-DSA Benchmark": [
@@ -8718,6 +8718,188 @@ window.BENCHMARK_DATA = {
             "keySize": "87",
             "label": "Verify",
             "hardware": "avx2"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Lucas Franceschino",
+            "username": "Lucas Franceschino"
+          },
+          "committer": {
+            "name": "GitHub",
+            "username": "GitHub"
+          },
+          "id": "96abd9f2460ff92811a1c181662590d96c37949c",
+          "message": "Merge pull request #970 from cryspen/update-core-models\n\ncore-models: backport changes from `cryspen/core-models`",
+          "timestamp": "2025-05-21T08:02:48Z",
+          "url": "/commits/96abd9f2460ff92811a1c181662590d96c37949c"
+        },
+        "date": 1747815020606,
+        "bigger_is_better": false,
+        "benches": [
+          {
+            "value": 212,
+            "unit": "μs/iter",
+            "os": "windows-latest_32",
+            "implementation": "libcrux ML-DSA",
+            "keySize": "44",
+            "label": "KeyGen",
+            "hardware": "portable"
+          },
+          {
+            "value": 559,
+            "unit": "μs/iter",
+            "os": "windows-latest_32",
+            "implementation": "libcrux ML-DSA",
+            "keySize": "44",
+            "label": "Sign",
+            "hardware": "portable"
+          },
+          {
+            "value": 215,
+            "unit": "μs/iter",
+            "os": "windows-latest_32",
+            "implementation": "libcrux ML-DSA",
+            "keySize": "44",
+            "label": "Verify",
+            "hardware": "portable"
+          },
+          {
+            "value": 220,
+            "unit": "μs/iter",
+            "os": "windows-latest_32",
+            "implementation": "pqclean ML-DSA",
+            "keySize": "44",
+            "label": "KeyGen",
+            "hardware": "auto"
+          },
+          {
+            "value": 714,
+            "unit": "μs/iter",
+            "os": "windows-latest_32",
+            "implementation": "pqclean ML-DSA",
+            "keySize": "44",
+            "label": "Sign",
+            "hardware": "auto"
+          },
+          {
+            "value": 238,
+            "unit": "μs/iter",
+            "os": "windows-latest_32",
+            "implementation": "pqclean ML-DSA",
+            "keySize": "44",
+            "label": "Verify",
+            "hardware": "auto"
+          },
+          {
+            "value": 394,
+            "unit": "μs/iter",
+            "os": "windows-latest_32",
+            "implementation": "libcrux ML-DSA",
+            "keySize": "65",
+            "label": "KeyGen",
+            "hardware": "portable"
+          },
+          {
+            "value": 907,
+            "unit": "μs/iter",
+            "os": "windows-latest_32",
+            "implementation": "libcrux ML-DSA",
+            "keySize": "65",
+            "label": "Sign",
+            "hardware": "portable"
+          },
+          {
+            "value": 373,
+            "unit": "μs/iter",
+            "os": "windows-latest_32",
+            "implementation": "libcrux ML-DSA",
+            "keySize": "65",
+            "label": "Verify",
+            "hardware": "portable"
+          },
+          {
+            "value": 405,
+            "unit": "μs/iter",
+            "os": "windows-latest_32",
+            "implementation": "pqclean ML-DSA",
+            "keySize": "65",
+            "label": "KeyGen",
+            "hardware": "auto"
+          },
+          {
+            "value": 1.11,
+            "unit": "ms/iter",
+            "os": "windows-latest_32",
+            "implementation": "pqclean ML-DSA",
+            "keySize": "65",
+            "label": "Sign",
+            "hardware": "auto"
+          },
+          {
+            "value": 393,
+            "unit": "μs/iter",
+            "os": "windows-latest_32",
+            "implementation": "pqclean ML-DSA",
+            "keySize": "65",
+            "label": "Verify",
+            "hardware": "auto"
+          },
+          {
+            "value": 624,
+            "unit": "μs/iter",
+            "os": "windows-latest_32",
+            "implementation": "libcrux ML-DSA",
+            "keySize": "87",
+            "label": "KeyGen",
+            "hardware": "portable"
+          },
+          {
+            "value": 1.16,
+            "unit": "ms/iter",
+            "os": "windows-latest_32",
+            "implementation": "libcrux ML-DSA",
+            "keySize": "87",
+            "label": "Sign",
+            "hardware": "portable"
+          },
+          {
+            "value": 611,
+            "unit": "μs/iter",
+            "os": "windows-latest_32",
+            "implementation": "libcrux ML-DSA",
+            "keySize": "87",
+            "label": "Verify",
+            "hardware": "portable"
+          },
+          {
+            "value": 659,
+            "unit": "μs/iter",
+            "os": "windows-latest_32",
+            "implementation": "pqclean ML-DSA",
+            "keySize": "87",
+            "label": "KeyGen",
+            "hardware": "auto"
+          },
+          {
+            "value": 1.43,
+            "unit": "ms/iter",
+            "os": "windows-latest_32",
+            "implementation": "pqclean ML-DSA",
+            "keySize": "87",
+            "label": "Sign",
+            "hardware": "auto"
+          },
+          {
+            "value": 664,
+            "unit": "μs/iter",
+            "os": "windows-latest_32",
+            "implementation": "pqclean ML-DSA",
+            "keySize": "87",
+            "label": "Verify",
+            "hardware": "auto"
           }
         ]
       }
