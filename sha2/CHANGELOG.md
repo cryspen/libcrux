@@ -8,3 +8,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [v0.0.3-alpha.1]
 
 - [#922](https://github.com/cryspen/libcrux/pull/922): Make crate `no_std`-compatible using latest, `no_std`-compatible version of `libcrux-traits` dependency
+- [#993](https://github.com/cryspen/libcrux/pull/993): Update dependencies `hacl-rs` and `macros`

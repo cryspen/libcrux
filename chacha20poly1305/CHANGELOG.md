@@ -7,4 +7,5 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [v0.0.3-alpha.1]
 
--[#896](https://github.com/cryspen/libcrux/pull/896): Add support for XChacha20Poly1305
+- [#896](https://github.com/cryspen/libcrux/pull/896): Add support for XChacha20Poly1305
+- [#993](https://github.com/cryspen/libcrux/pull/993): Update dependencies `hacl-rs` and `macros`
