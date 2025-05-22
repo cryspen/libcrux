@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1747929846890,
+  "lastUpdate": 1747930982708,
   "repoUrl": "https://github.com/cryspen/libcrux",
   "entries": {
     "ML-DSA Benchmark": [
@@ -14240,6 +14240,188 @@ window.BENCHMARK_DATA = {
             "keySize": "87",
             "label": "Verify",
             "hardware": "auto"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "karthikbhargavan",
+            "username": "karthikbhargavan"
+          },
+          "committer": {
+            "name": "GitHub",
+            "username": "GitHub"
+          },
+          "id": "4d5f5b5cd3b4e259c9db06437fc70a63551ed92d",
+          "message": "Merge pull request #989 from cryspen/mldsa-portable-ntt\n\nRange Proofs and Proof Speedups for ML-DSA (Portable) NTT",
+          "timestamp": "2025-05-22T15:55:45Z",
+          "url": "/commits/4d5f5b5cd3b4e259c9db06437fc70a63551ed92d"
+        },
+        "date": 1747930972701,
+        "bigger_is_better": false,
+        "benches": [
+          {
+            "value": 104,
+            "unit": "μs/iter",
+            "os": "macos-13_64",
+            "implementation": "libcrux ML-DSA",
+            "keySize": "44",
+            "label": "KeyGen",
+            "hardware": "portable"
+          },
+          {
+            "value": 310,
+            "unit": "μs/iter",
+            "os": "macos-13_64",
+            "implementation": "libcrux ML-DSA",
+            "keySize": "44",
+            "label": "Sign",
+            "hardware": "portable"
+          },
+          {
+            "value": 123,
+            "unit": "μs/iter",
+            "os": "macos-13_64",
+            "implementation": "libcrux ML-DSA",
+            "keySize": "44",
+            "label": "Verify",
+            "hardware": "portable"
+          },
+          {
+            "value": 75,
+            "unit": "μs/iter",
+            "os": "macos-13_64",
+            "implementation": "libcrux ML-DSA",
+            "keySize": "44",
+            "label": "KeyGen",
+            "hardware": "avx2"
+          },
+          {
+            "value": 116,
+            "unit": "μs/iter",
+            "os": "macos-13_64",
+            "implementation": "libcrux ML-DSA",
+            "keySize": "44",
+            "label": "Sign",
+            "hardware": "avx2"
+          },
+          {
+            "value": 40,
+            "unit": "μs/iter",
+            "os": "macos-13_64",
+            "implementation": "libcrux ML-DSA",
+            "keySize": "44",
+            "label": "Verify",
+            "hardware": "avx2"
+          },
+          {
+            "value": 168,
+            "unit": "μs/iter",
+            "os": "macos-13_64",
+            "implementation": "libcrux ML-DSA",
+            "keySize": "65",
+            "label": "KeyGen",
+            "hardware": "portable"
+          },
+          {
+            "value": 585,
+            "unit": "μs/iter",
+            "os": "macos-13_64",
+            "implementation": "libcrux ML-DSA",
+            "keySize": "65",
+            "label": "Sign",
+            "hardware": "portable"
+          },
+          {
+            "value": 198,
+            "unit": "μs/iter",
+            "os": "macos-13_64",
+            "implementation": "libcrux ML-DSA",
+            "keySize": "65",
+            "label": "Verify",
+            "hardware": "portable"
+          },
+          {
+            "value": 137,
+            "unit": "μs/iter",
+            "os": "macos-13_64",
+            "implementation": "libcrux ML-DSA",
+            "keySize": "65",
+            "label": "KeyGen",
+            "hardware": "avx2"
+          },
+          {
+            "value": 198,
+            "unit": "μs/iter",
+            "os": "macos-13_64",
+            "implementation": "libcrux ML-DSA",
+            "keySize": "65",
+            "label": "Sign",
+            "hardware": "avx2"
+          },
+          {
+            "value": 93,
+            "unit": "μs/iter",
+            "os": "macos-13_64",
+            "implementation": "libcrux ML-DSA",
+            "keySize": "65",
+            "label": "Verify",
+            "hardware": "avx2"
+          },
+          {
+            "value": 374,
+            "unit": "μs/iter",
+            "os": "macos-13_64",
+            "implementation": "libcrux ML-DSA",
+            "keySize": "87",
+            "label": "KeyGen",
+            "hardware": "portable"
+          },
+          {
+            "value": 841,
+            "unit": "μs/iter",
+            "os": "macos-13_64",
+            "implementation": "libcrux ML-DSA",
+            "keySize": "87",
+            "label": "Sign",
+            "hardware": "portable"
+          },
+          {
+            "value": 275,
+            "unit": "μs/iter",
+            "os": "macos-13_64",
+            "implementation": "libcrux ML-DSA",
+            "keySize": "87",
+            "label": "Verify",
+            "hardware": "portable"
+          },
+          {
+            "value": 231,
+            "unit": "μs/iter",
+            "os": "macos-13_64",
+            "implementation": "libcrux ML-DSA",
+            "keySize": "87",
+            "label": "KeyGen",
+            "hardware": "avx2"
+          },
+          {
+            "value": 266,
+            "unit": "μs/iter",
+            "os": "macos-13_64",
+            "implementation": "libcrux ML-DSA",
+            "keySize": "87",
+            "label": "Sign",
+            "hardware": "avx2"
+          },
+          {
+            "value": 98,
+            "unit": "μs/iter",
+            "os": "macos-13_64",
+            "implementation": "libcrux ML-DSA",
+            "keySize": "87",
+            "label": "Verify",
+            "hardware": "avx2"
           }
         ]
       }
