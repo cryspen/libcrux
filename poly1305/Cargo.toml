@@ -1,8 +1,8 @@
 [package]
 name = "libcrux-poly1305"
 description = "Formally verified Poly1305 MAC library"
+version = "0.0.3-alpha.1"
 
-version.workspace = true
 authors.workspace = true
 license.workspace = true
 homepage.workspace = true
