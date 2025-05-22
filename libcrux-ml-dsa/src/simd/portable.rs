@@ -19,14 +19,15 @@ mod sample;
 pub(crate) use vector_type::Coefficients as PortableSIMDUnit;
 use vector_type::Coefficients;
 
-use super::traits::COEFFICIENTS_IN_SIMD_UNIT;
-
-#[cfg(not(eurydice))]
+#[cfg(hax)]
 impl Repr for Coefficients {
-    fn repr(&self) -> [i32; COEFFICIENTS_IN_SIMD_UNIT] {
+    fn repr(&self) -> [i32; super::traits::COEFFICIENTS_IN_SIMD_UNIT] {
         self.values
     }
 }
+
+#[cfg(any(eurydice, not(hax)))]
+impl Repr for Coefficients {}
 
 impl Operations for Coefficients {
     fn zero() -> Coefficients {
