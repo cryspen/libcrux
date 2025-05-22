@@ -2,7 +2,56 @@ use super::arithmetic::{self, montgomery_multiply_fe_by_fer};
 use super::vector_type::Coefficients;
 use crate::simd::traits::{COEFFICIENTS_IN_SIMD_UNIT, SIMD_UNITS_IN_RING_ELEMENT};
 
+#[cfg(hax)]
+use crate::simd::traits::specs::*;
+
 #[inline(always)]
+#[hax_lib::fstar::options("--z3rlimit 300 --split_queries always")]
+#[hax_lib::fstar::before(
+    r#"
+let simd_layer_factor (step:usize) =
+    match step with
+    | MkInt 1 -> 1
+    | MkInt 2 -> 2
+    | MkInt 4 -> 4
+    | _ -> 5
+"#
+)]
+#[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
+#[hax_lib::requires(fstar!(r#"
+    v $step <= 4 /\ v $index + v $step < 8 /\    
+    Spec.Utils.is_i32b (simd_layer_factor $step * v $FIELD_MAX)
+                    (Seq.index ${simd_unit}.f_values (v $index)) /\
+    Spec.Utils.is_i32b (simd_layer_factor $step * v $FIELD_MAX)
+                    (Seq.index ${simd_unit}.f_values (v $index + v $step)) /\
+    Spec.Utils.is_i32b 4190208 $zeta 
+"#))]
+#[hax_lib::ensures(|_| fstar!(r#"
+    Spec.Utils.modifies2_8 ${simd_unit}.f_values ${simd_unit}_future.f_values index (index +! step) /\
+    Spec.Utils.is_i32b (2 * (simd_layer_factor $step)  * v $FIELD_MAX)
+                    (Seq.index ${simd_unit}_future.f_values (v $index)) /\
+    Spec.Utils.is_i32b (2 * (simd_layer_factor $step)  * v $FIELD_MAX)
+                    (Seq.index ${simd_unit}_future.f_values (v $index + v $step))
+"#) )]
+fn simd_unit_inv_ntt_step(simd_unit: &mut Coefficients, zeta: i32, index: usize, step: usize) {
+    let a_minus_b = simd_unit.values[index + step] - simd_unit.values[index];
+    simd_unit.values[index] = simd_unit.values[index] + simd_unit.values[index + step];
+    simd_unit.values[index + step] = montgomery_multiply_fe_by_fer(a_minus_b, zeta);
+}
+
+#[inline(always)]
+#[hax_lib::fstar::options("--z3rlimit 300 --split_queries always")]
+#[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
+#[hax_lib::requires(fstar!(r#"
+    Spec.Utils.is_i32b_array (v $FIELD_MAX) ${simd_unit}.f_values /\
+    Spec.Utils.is_i32b 4190208 $zeta0 /\
+    Spec.Utils.is_i32b 4190208 $zeta1 /\
+    Spec.Utils.is_i32b 4190208 $zeta2 /\
+    Spec.Utils.is_i32b 4190208 $zeta3
+"#))]
+#[hax_lib::ensures(|_| fstar!(r#"
+    Spec.Utils.is_i32b_array (2 * v $FIELD_MAX) ${simd_unit}_future.f_values
+"#) )]
 pub fn simd_unit_invert_ntt_at_layer_0(
     simd_unit: &mut Coefficients,
     zeta0: i32,
@@ -10,64 +59,74 @@ pub fn simd_unit_invert_ntt_at_layer_0(
     zeta2: i32,
     zeta3: i32,
 ) {
-    let a_minus_b = simd_unit.values[1] - simd_unit.values[0];
-    simd_unit.values[0] = simd_unit.values[0] + simd_unit.values[1];
-    simd_unit.values[1] = montgomery_multiply_fe_by_fer(a_minus_b, zeta0);
-
-    let a_minus_b = simd_unit.values[3] - simd_unit.values[2];
-    simd_unit.values[2] = simd_unit.values[2] + simd_unit.values[3];
-    simd_unit.values[3] = montgomery_multiply_fe_by_fer(a_minus_b, zeta1);
-
-    let a_minus_b = simd_unit.values[5] - simd_unit.values[4];
-    simd_unit.values[4] = simd_unit.values[4] + simd_unit.values[5];
-    simd_unit.values[5] = montgomery_multiply_fe_by_fer(a_minus_b, zeta2);
-
-    let a_minus_b = simd_unit.values[7] - simd_unit.values[6];
-    simd_unit.values[6] = simd_unit.values[6] + simd_unit.values[7];
-    simd_unit.values[7] = montgomery_multiply_fe_by_fer(a_minus_b, zeta3);
+    simd_unit_inv_ntt_step(simd_unit, zeta0, 0, 1);
+    simd_unit_inv_ntt_step(simd_unit, zeta1, 2, 1);
+    simd_unit_inv_ntt_step(simd_unit, zeta2, 4, 1);
+    simd_unit_inv_ntt_step(simd_unit, zeta3, 6, 1);
 }
 
 #[inline(always)]
+#[hax_lib::fstar::options("--z3rlimit 300 --split_queries always")]
+#[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
+#[hax_lib::requires(fstar!(r#"
+    Spec.Utils.is_i32b_array (2 * v $FIELD_MAX) ${simd_unit}.f_values /\
+    Spec.Utils.is_i32b 4190208 $zeta0 /\
+    Spec.Utils.is_i32b 4190208 $zeta1
+"#))]
+#[hax_lib::ensures(|_| fstar!(r#"
+    Spec.Utils.is_i32b_array (4 * v $FIELD_MAX) ${simd_unit}_future.f_values
+"#) )]
 pub fn simd_unit_invert_ntt_at_layer_1(simd_unit: &mut Coefficients, zeta0: i32, zeta1: i32) {
-    let a_minus_b = simd_unit.values[2] - simd_unit.values[0];
-    simd_unit.values[0] = simd_unit.values[0] + simd_unit.values[2];
-    simd_unit.values[2] = montgomery_multiply_fe_by_fer(a_minus_b, zeta0);
-
-    let a_minus_b = simd_unit.values[3] - simd_unit.values[1];
-    simd_unit.values[1] = simd_unit.values[1] + simd_unit.values[3];
-    simd_unit.values[3] = montgomery_multiply_fe_by_fer(a_minus_b, zeta0);
-
-    let a_minus_b = simd_unit.values[6] - simd_unit.values[4];
-    simd_unit.values[4] = simd_unit.values[4] + simd_unit.values[6];
-    simd_unit.values[6] = montgomery_multiply_fe_by_fer(a_minus_b, zeta1);
-
-    let a_minus_b = simd_unit.values[7] - simd_unit.values[5];
-    simd_unit.values[5] = simd_unit.values[5] + simd_unit.values[7];
-    simd_unit.values[7] = montgomery_multiply_fe_by_fer(a_minus_b, zeta1);
+    simd_unit_inv_ntt_step(simd_unit, zeta0, 0, 2);
+    simd_unit_inv_ntt_step(simd_unit, zeta0, 1, 2);
+    simd_unit_inv_ntt_step(simd_unit, zeta1, 4, 2);
+    simd_unit_inv_ntt_step(simd_unit, zeta1, 5, 2);
 }
 
 #[inline(always)]
+#[hax_lib::fstar::options("--z3rlimit 300 --split_queries always")]
+#[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
+#[hax_lib::requires(fstar!(r#"
+    Spec.Utils.is_i32b_array (4 * v $FIELD_MAX) ${simd_unit}.f_values /\
+    Spec.Utils.is_i32b 4190208 $zeta
+"#))]
+#[hax_lib::ensures(|_| fstar!(r#"
+    Spec.Utils.is_i32b_array (8 * v $FIELD_MAX) ${simd_unit}_future.f_values
+"#) )]
 pub fn simd_unit_invert_ntt_at_layer_2(simd_unit: &mut Coefficients, zeta: i32) {
-    let a_minus_b = simd_unit.values[4] - simd_unit.values[0];
-    simd_unit.values[0] = simd_unit.values[0] + simd_unit.values[4];
-    simd_unit.values[4] = montgomery_multiply_fe_by_fer(a_minus_b, zeta);
-
-    let a_minus_b = simd_unit.values[5] - simd_unit.values[1];
-    simd_unit.values[1] = simd_unit.values[1] + simd_unit.values[5];
-    simd_unit.values[5] = montgomery_multiply_fe_by_fer(a_minus_b, zeta);
-
-    let a_minus_b = simd_unit.values[6] - simd_unit.values[2];
-    simd_unit.values[2] = simd_unit.values[2] + simd_unit.values[6];
-    simd_unit.values[6] = montgomery_multiply_fe_by_fer(a_minus_b, zeta);
-
-    let a_minus_b = simd_unit.values[7] - simd_unit.values[3];
-    simd_unit.values[3] = simd_unit.values[3] + simd_unit.values[7];
-    simd_unit.values[7] = montgomery_multiply_fe_by_fer(a_minus_b, zeta);
+    simd_unit_inv_ntt_step(simd_unit, zeta, 0, 4);
+    simd_unit_inv_ntt_step(simd_unit, zeta, 1, 4);
+    simd_unit_inv_ntt_step(simd_unit, zeta, 2, 4);
+    simd_unit_inv_ntt_step(simd_unit, zeta, 3, 4);
 }
 
 #[inline(always)]
+#[hax_lib::fstar::options("--z3rlimit 400 --split_queries always")]
+#[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
+#[hax_lib::requires(fstar!(r#"
+    Libcrux_ml_dsa.Simd.Portable.Ntt.is_i32b_polynomial (v $FIELD_MAX) ${re}
+"#))]
+#[hax_lib::ensures(|_| fstar!(r#"
+    Libcrux_ml_dsa.Simd.Portable.Ntt.is_i32b_polynomial (2 * v $FIELD_MAX) ${re}_future
+"#) )]
 fn invert_ntt_at_layer_0(re: &mut [Coefficients; SIMD_UNITS_IN_RING_ELEMENT]) {
     #[inline(always)]
+    #[hax_lib::fstar::options("--z3rlimit 100")]
+    #[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
+    #[hax_lib::requires(fstar!(r#"
+        v index < v $SIMD_UNITS_IN_RING_ELEMENT /\
+        Spec.Utils.is_i32b_array_opaque (v $FIELD_MAX) 
+            (Seq.index ${re} (v index)).f_values /\
+        Spec.Utils.is_i32b 4190208 $zeta0 /\
+        Spec.Utils.is_i32b 4190208 $zeta1 /\
+        Spec.Utils.is_i32b 4190208 $zeta2 /\
+        Spec.Utils.is_i32b 4190208 $zeta3
+    "#))]
+    #[hax_lib::ensures(|_| fstar!(r#"
+        Spec.Utils.modifies1_32 ${re} ${re}_future $index /\
+        Spec.Utils.is_i32b_array_opaque (2* v $FIELD_MAX)
+            (Seq.index ${re}_future (v index)).f_values
+     "#))]
     fn round(
         re: &mut [Coefficients; SIMD_UNITS_IN_RING_ELEMENT],
         index: usize,
@@ -76,6 +135,9 @@ fn invert_ntt_at_layer_0(re: &mut [Coefficients; SIMD_UNITS_IN_RING_ELEMENT]) {
         zeta2: i32,
         zeta3: i32,
     ) {
+        hax_lib::fstar!(
+            "reveal_opaque (`%Spec.Utils.is_i32b_array_opaque) (Spec.Utils.is_i32b_array_opaque)"
+        );
         simd_unit_invert_ntt_at_layer_0(&mut re[index], zeta0, zeta1, zeta2, zeta3);
     }
 
@@ -114,14 +176,39 @@ fn invert_ntt_at_layer_0(re: &mut [Coefficients; SIMD_UNITS_IN_RING_ELEMENT]) {
 }
 
 #[inline(always)]
+#[hax_lib::fstar::options("--z3rlimit 400 --split_queries always")]
+#[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
+#[hax_lib::requires(fstar!(r#"
+    Libcrux_ml_dsa.Simd.Portable.Ntt.is_i32b_polynomial (2 * v $FIELD_MAX) ${re}
+"#))]
+#[hax_lib::ensures(|_| fstar!(r#"
+    Libcrux_ml_dsa.Simd.Portable.Ntt.is_i32b_polynomial (4 * v $FIELD_MAX) ${re}_future
+"#) )]
 fn invert_ntt_at_layer_1(re: &mut [Coefficients; SIMD_UNITS_IN_RING_ELEMENT]) {
     #[inline(always)]
+    #[hax_lib::fstar::options("--z3rlimit 100")]
+    #[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
+    #[hax_lib::requires(fstar!(r#"
+        v index < v $SIMD_UNITS_IN_RING_ELEMENT /\
+        Spec.Utils.is_i32b_array_opaque (2 * v $FIELD_MAX) 
+            (Seq.index ${re} (v index)).f_values /\
+        Spec.Utils.is_i32b 4190208 $zeta_00 /\
+        Spec.Utils.is_i32b 4190208 $zeta_01
+    "#))]
+    #[hax_lib::ensures(|_| fstar!(r#"
+        Spec.Utils.modifies1_32 ${re} ${re}_future $index /\
+        Spec.Utils.is_i32b_array_opaque (4 * v $FIELD_MAX)
+            (Seq.index ${re}_future (v $index)).f_values
+     "#))]
     fn round(
         re: &mut [Coefficients; SIMD_UNITS_IN_RING_ELEMENT],
         index: usize,
         zeta_00: i32,
         zeta_01: i32,
     ) {
+        hax_lib::fstar!(
+            "reveal_opaque (`%Spec.Utils.is_i32b_array_opaque) (Spec.Utils.is_i32b_array_opaque)"
+        );
         simd_unit_invert_ntt_at_layer_1(&mut re[index], zeta_00, zeta_01);
     }
 
@@ -160,8 +247,33 @@ fn invert_ntt_at_layer_1(re: &mut [Coefficients; SIMD_UNITS_IN_RING_ELEMENT]) {
 }
 
 #[inline(always)]
+#[hax_lib::fstar::options("--z3rlimit 400 --split_queries always")]
+#[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
+#[hax_lib::requires(fstar!(r#"
+    Libcrux_ml_dsa.Simd.Portable.Ntt.is_i32b_polynomial (4 * v $FIELD_MAX) ${re}
+"#))]
+#[hax_lib::ensures(|_| fstar!(r#"
+    Libcrux_ml_dsa.Simd.Portable.Ntt.is_i32b_polynomial (8 * v $FIELD_MAX) ${re}_future
+"#) )]
 fn invert_ntt_at_layer_2(re: &mut [Coefficients; SIMD_UNITS_IN_RING_ELEMENT]) {
+    #[inline(always)]
+    #[hax_lib::fstar::options("--z3rlimit 100")]
+    #[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
+    #[hax_lib::requires(fstar!(r#"
+        v index < v $SIMD_UNITS_IN_RING_ELEMENT /\
+        Spec.Utils.is_i32b_array_opaque (4 * v $FIELD_MAX) 
+            (Seq.index ${re} (v index)).f_values /\
+        Spec.Utils.is_i32b 4190208 $zeta1
+    "#))]
+    #[hax_lib::ensures(|_| fstar!(r#"
+        Spec.Utils.modifies1_32 ${re} ${re}_future $index /\
+        Spec.Utils.is_i32b_array_opaque (8 * v $FIELD_MAX)
+            (Seq.index ${re}_future (v $index)).f_values
+     "#))]
     fn round(re: &mut [Coefficients; SIMD_UNITS_IN_RING_ELEMENT], index: usize, zeta1: i32) {
+        hax_lib::fstar!(
+            "reveal_opaque (`%Spec.Utils.is_i32b_array_opaque) (Spec.Utils.is_i32b_array_opaque)"
+        );
         simd_unit_invert_ntt_at_layer_2(&mut re[index], zeta1);
     }
 
@@ -200,21 +312,75 @@ fn invert_ntt_at_layer_2(re: &mut [Coefficients; SIMD_UNITS_IN_RING_ELEMENT]) {
 }
 
 #[inline(always)]
+#[hax_lib::fstar::before(
+    r#"
+let layer_bound_factor (step_by:usize) : n:nat{n <= 128} =
+    match step_by with
+    | MkInt 1 -> 8
+    | MkInt 2 -> 16
+    | MkInt 4 -> 32
+    | MkInt 8 -> 64
+    | MkInt 16 -> 128
+    | _ -> 128"#
+)]
+#[hax_lib::fstar::options("--z3rlimit 600 --split_queries always")]
+#[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
+#[hax_lib::requires(fstar!(r#"
+    (v $STEP_BY > 0) /\
+    (v $OFFSET + v $STEP_BY < v $SIMD_UNITS_IN_RING_ELEMENT) /\
+    (v $OFFSET + 2 * v $STEP_BY <= v $SIMD_UNITS_IN_RING_ELEMENT) /\
+    (Spec.Utils.forall32 (fun i -> (i >= v $OFFSET /\ i < (v $OFFSET + 2 * v $STEP_BY)) ==>
+              Spec.Utils.is_i32b_array_opaque 
+                ((layer_bound_factor $STEP_BY) * v $FIELD_MAX)
+                (Seq.index ${re} i).f_values)) /\
+    Spec.Utils.is_i32b 4190208 $ZETA
+"#))]
+#[hax_lib::ensures(|_| fstar!(r#"
+    Spec.Utils.modifies_range_32 ${re} ${re}_future $OFFSET (${OFFSET + STEP_BY + STEP_BY}) /\
+    (Spec.Utils.forall32 (fun i -> (i >= v $OFFSET /\ i < (v $OFFSET + 2 * v $STEP_BY)) ==>
+              Spec.Utils.is_i32b_array_opaque 
+                (2 * (layer_bound_factor $STEP_BY) * v $FIELD_MAX)
+                (Seq.index ${re}_future i).f_values))
+"#))]
 fn outer_3_plus<const OFFSET: usize, const STEP_BY: usize, const ZETA: i32>(
     re: &mut [Coefficients; SIMD_UNITS_IN_RING_ELEMENT],
 ) {
+    #[cfg(hax)]
+    let orig_re = re.clone();
+
     for j in OFFSET..OFFSET + STEP_BY {
-        // XXX: make nicer
-        let rejs = re[j + STEP_BY].clone();
-        let mut a_minus_b = rejs.clone();
-        arithmetic::subtract(&mut a_minus_b, &re[j]);
+        hax_lib::loop_invariant!(|j: usize| fstar!(
+            r#"
+            (Spec.Utils.modifies_range2_32 $orig_re $re 
+                $OFFSET $j ($OFFSET +! $STEP_BY) ($j +! $STEP_BY)) /\
+            (Spec.Utils.forall32 (fun i -> ((i >= v $OFFSET /\ i < v $j) \/ 
+                        (i >= v $OFFSET + v $STEP_BY /\ i < v $j + v $STEP_BY)) ==>
+                Spec.Utils.is_i32b_array_opaque 
+                    (2 * (layer_bound_factor $STEP_BY) * v $FIELD_MAX) 
+                    (Seq.index ${re} i).f_values))
+        "#
+        ));
+
+        let rej = re[j];
+        let rejs = re[j + STEP_BY];
         arithmetic::add(&mut re[j], &rejs);
-        re[j + STEP_BY] = a_minus_b;
+        arithmetic::subtract(&mut re[j + STEP_BY], &rej);
         arithmetic::montgomery_multiply_by_constant(&mut re[j + STEP_BY], ZETA);
+
+        hax_lib::fstar!("Spec.Utils.is_i32b_array_larger 
+            (v $FIELD_MAX) (2 * (layer_bound_factor $STEP_BY) * v $FIELD_MAX) (Seq.index re (v j + v v_STEP_BY)).f_values");
     }
 }
 
 #[inline(always)]
+#[hax_lib::fstar::options("--z3rlimit 400 --split_queries always")]
+#[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
+#[hax_lib::requires(fstar!(r#"
+    Libcrux_ml_dsa.Simd.Portable.Ntt.is_i32b_polynomial (8 * v $FIELD_MAX) ${re}
+"#))]
+#[hax_lib::ensures(|_| fstar!(r#"
+    Libcrux_ml_dsa.Simd.Portable.Ntt.is_i32b_polynomial (16 * v $FIELD_MAX) ${re}_future
+"#) )]
 fn invert_ntt_at_layer_3(re: &mut [Coefficients; SIMD_UNITS_IN_RING_ELEMENT]) {
     const STEP: usize = 8; // 1 << LAYER;
     const STEP_BY: usize = 1; // step / COEFFICIENTS_IN_SIMD_UNIT;
@@ -238,6 +404,14 @@ fn invert_ntt_at_layer_3(re: &mut [Coefficients; SIMD_UNITS_IN_RING_ELEMENT]) {
 }
 
 #[inline(always)]
+#[hax_lib::fstar::options("--z3rlimit 400 --split_queries always")]
+#[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
+#[hax_lib::requires(fstar!(r#"
+    Libcrux_ml_dsa.Simd.Portable.Ntt.is_i32b_polynomial (16 * v $FIELD_MAX) ${re}
+"#))]
+#[hax_lib::ensures(|_| fstar!(r#"
+    Libcrux_ml_dsa.Simd.Portable.Ntt.is_i32b_polynomial (32 * v $FIELD_MAX) ${re}_future
+"#) )]
 fn invert_ntt_at_layer_4(re: &mut [Coefficients; SIMD_UNITS_IN_RING_ELEMENT]) {
     const STEP: usize = 16; // 1 << LAYER;
     const STEP_BY: usize = 2; // step / COEFFICIENTS_IN_SIMD_UNIT;
@@ -253,6 +427,14 @@ fn invert_ntt_at_layer_4(re: &mut [Coefficients; SIMD_UNITS_IN_RING_ELEMENT]) {
 }
 
 #[inline(always)]
+#[hax_lib::fstar::options("--z3rlimit 400 --split_queries always")]
+#[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
+#[hax_lib::requires(fstar!(r#"
+    Libcrux_ml_dsa.Simd.Portable.Ntt.is_i32b_polynomial (32 * v $FIELD_MAX) ${re}
+"#))]
+#[hax_lib::ensures(|_| fstar!(r#"
+    Libcrux_ml_dsa.Simd.Portable.Ntt.is_i32b_polynomial (64 * v $FIELD_MAX) ${re}_future
+"#) )]
 fn invert_ntt_at_layer_5(re: &mut [Coefficients; SIMD_UNITS_IN_RING_ELEMENT]) {
     const STEP: usize = 32; // 1 << LAYER;
     const STEP_BY: usize = 4; // step / COEFFICIENTS_IN_SIMD_UNIT;
@@ -264,6 +446,14 @@ fn invert_ntt_at_layer_5(re: &mut [Coefficients; SIMD_UNITS_IN_RING_ELEMENT]) {
 }
 
 #[inline(always)]
+#[hax_lib::fstar::options("--z3rlimit 400 --split_queries always")]
+#[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
+#[hax_lib::requires(fstar!(r#"
+    Libcrux_ml_dsa.Simd.Portable.Ntt.is_i32b_polynomial (64 * v $FIELD_MAX) ${re}
+"#))]
+#[hax_lib::ensures(|_| fstar!(r#"
+    Libcrux_ml_dsa.Simd.Portable.Ntt.is_i32b_polynomial (128 * v $FIELD_MAX) ${re}_future
+"#) )]
 fn invert_ntt_at_layer_6(re: &mut [Coefficients; SIMD_UNITS_IN_RING_ELEMENT]) {
     const STEP: usize = 64; // 1 << LAYER;
     const STEP_BY: usize = 8; // step / COEFFICIENTS_IN_SIMD_UNIT;
@@ -273,6 +463,14 @@ fn invert_ntt_at_layer_6(re: &mut [Coefficients; SIMD_UNITS_IN_RING_ELEMENT]) {
 }
 
 #[inline(always)]
+#[hax_lib::fstar::options("--z3rlimit 400 --split_queries always")]
+#[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
+#[hax_lib::requires(fstar!(r#"
+    Libcrux_ml_dsa.Simd.Portable.Ntt.is_i32b_polynomial (128 * v $FIELD_MAX) ${re}
+"#))]
+#[hax_lib::ensures(|_| fstar!(r#"
+    Libcrux_ml_dsa.Simd.Portable.Ntt.is_i32b_polynomial (256 * v $FIELD_MAX) ${re}_future
+"#) )]
 fn invert_ntt_at_layer_7(re: &mut [Coefficients; SIMD_UNITS_IN_RING_ELEMENT]) {
     const STEP: usize = 128; // 1 << LAYER;
     const STEP_BY: usize = 16; // step / COEFFICIENTS_IN_SIMD_UNIT;
@@ -280,6 +478,15 @@ fn invert_ntt_at_layer_7(re: &mut [Coefficients; SIMD_UNITS_IN_RING_ELEMENT]) {
     outer_3_plus::<{ (0 * STEP * 2) / COEFFICIENTS_IN_SIMD_UNIT }, STEP_BY, 25847>(re);
 }
 
+#[inline(always)]
+#[hax_lib::fstar::options("--z3rlimit 200 --split_queries always")]
+#[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
+#[hax_lib::requires(fstar!(r#"
+    Libcrux_ml_dsa.Simd.Portable.Ntt.is_i32b_polynomial (v $FIELD_MAX) ${re}
+"#))]
+#[hax_lib::ensures(|_| fstar!(r#"
+    Libcrux_ml_dsa.Simd.Portable.Ntt.is_i32b_polynomial (v $FIELD_MAX) ${re}_future
+"#) )]
 pub(crate) fn invert_ntt_montgomery(re: &mut [Coefficients; SIMD_UNITS_IN_RING_ELEMENT]) {
     invert_ntt_at_layer_0(re);
     invert_ntt_at_layer_1(re);
@@ -291,6 +498,18 @@ pub(crate) fn invert_ntt_montgomery(re: &mut [Coefficients; SIMD_UNITS_IN_RING_E
     invert_ntt_at_layer_7(re);
 
     for i in 0..re.len() {
+        hax_lib::loop_invariant!(|i: usize| fstar!(
+            r#"
+            (forall (k:nat).
+              k < v $i ==>
+              Spec.Utils.is_i32b_array_opaque (v $FIELD_MAX)
+                (Seq.index $re k).f_values) /\
+            (forall (k:nat).
+              (k >= v $i /\ k < 32) ==>
+              Spec.Utils.is_i32b_array_opaque (256 * v $FIELD_MAX)
+                (Seq.index $re k).f_values))
+        "#
+        ));
         // After invert_ntt_at_layer, elements are of the form a * MONTGOMERY_R^{-1}
         // we multiply by (MONTGOMERY_R^2) * (1/2^8) mod Q = 41,978 to both:
         //

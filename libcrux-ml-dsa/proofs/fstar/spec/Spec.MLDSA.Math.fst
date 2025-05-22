@@ -7,6 +7,9 @@ include Spec.Utils
 
 let v_FIELD_MODULUS: i32 = mk_i32 8380417
 
+[@@ "opaque_to_smt"]
+let mod_q a = a % 8380417
+
 let v_BITS_IN_LOWER_PART_OF_T: usize = mk_usize 13
 
 let v_GAMMA2_V261_888: i32 = mk_i32 261888

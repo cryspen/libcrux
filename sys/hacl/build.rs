@@ -254,6 +254,7 @@ fn build(platform: &Platform, home_path: &Path) {
     }
     let hacl_target_arch = platform.hacl_target_arch.to_string();
     defines.push(("TARGET_ARCHITECTURE", hacl_target_arch.as_str()));
+    defines.push(("LINUX_NO_EXPLICIT_BZERO", "1")); // We disable this to avoid running into issues.
 
     // Platform detection
     if platform.simd128 {
