@@ -1,8 +1,5 @@
 use crate::constants::{Eta, Gamma2};
 
-#[cfg(hax)]
-use hax_lib::*;
-
 // Each field element occupies 32 bits and the size of a simd_unit is 256 bits.
 pub(crate) const COEFFICIENTS_IN_SIMD_UNIT: usize = 8;
 
@@ -40,9 +37,9 @@ pub(crate) mod specs {
 
     pub(crate) const NTT_BASE_BOUND: u32 = FIELD_MID;
 
-    type SIMDContent = [i32; COEFFICIENTS_IN_SIMD_UNIT];
-    // Avoiding a recursive bundle
     const COEFFICIENTS_IN_SIMD_UNIT: usize = 8;
+
+    type SIMDContent = [i32; COEFFICIENTS_IN_SIMD_UNIT];
 
     pub(crate) fn int_is_i32(i: Int) -> bool {
         i <= i32::MAX.to_int() && i >= i32::MIN.to_int()
