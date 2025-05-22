@@ -3,7 +3,6 @@
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
     flake-utils.url = "github:numtide/flake-utils";
     eurydice.url = "github:aeneasverif/eurydice";
-    charon.url = "github:aeneasverif/charon"; 
     hax.url = "github:hacspec/hax";
     googletest = {
       url = "github:google/googletest/release-1.11.0";
@@ -24,11 +23,12 @@
   };
 
   outputs =
-    { self, nixpkgs, flake-utils, eurydice, hax, charon, googletest, benchmark, json, circus-green, ... } @ inputs:
+    { self, nixpkgs, flake-utils, eurydice, hax, googletest, benchmark, json, circus-green, ... } @ inputs:
     flake-utils.lib.eachDefaultSystem (
       system:
       let
         pkgs = import nixpkgs { inherit system; };
+        charon = eurydice.inputs.charon;
         crane = charon.inputs.crane;
         # Use the overridden package exported by the eurydice flake.
         karamel = eurydice.packages.${system}.karamel;
@@ -53,6 +53,9 @@
 
         rustToolchain = charon.packages.${system}.rustToolchain;
         craneLib = (crane.mkLib pkgs).overrideToolchain rustToolchain;
+        # libcrux doesn't want to commit a Cargo.lock but flakes can only take
+        # local inputs if they're committed. The circus-green CI maintains a
+        # working Cargo.lock file for this repo, so we use it here.
         defaultCargoLock = "${circus-green}/libcrux-Cargo.lock";
 
         # Construct a copy of the current directory with the given `Cargo.lock` added.
