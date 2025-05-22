@@ -212,9 +212,7 @@ pub(crate) const fn verification_key_size(rows_in_a: usize) -> usize {
             / 8
 }
 
-#[hax_lib::requires(rows_in_a <= 8 && columns_in_a <= 7 && 
-                    max_ones_in_hint <= 80 && commitment_hash_size <= 64 &&
-                    bits_per_gamma1_coefficient <= 20)]
+#[hax_lib::requires(rows_in_a <= 8 && columns_in_a <= 7 && max_ones_in_hint <= 80 && commitment_hash_size <= 64 && bits_per_gamma1_coefficient <= 20)]
 pub(crate) const fn signature_size(
     rows_in_a: usize,
     columns_in_a: usize,
