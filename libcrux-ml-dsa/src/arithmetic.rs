@@ -42,6 +42,7 @@ pub(crate) fn power2round_vector<SIMDUnit: Operations>(
 }
 
 #[inline(always)]
+#[hax_lib::requires(t.len() == dimension && low.len() == dimension && high.len() == dimension)]
 pub(crate) fn decompose_vector<SIMDUnit: Operations>(
     dimension: usize,
     gamma2: Gamma2,
@@ -50,7 +51,11 @@ pub(crate) fn decompose_vector<SIMDUnit: Operations>(
     high: &mut [PolynomialRingElement<SIMDUnit>],
 ) {
     for i in 0..dimension {
+        hax_lib::loop_invariant!(|i: usize| low.len() == dimension && high.len() == dimension);
+
         for j in 0..low[0].simd_units.len() {
+            hax_lib::loop_invariant!(|i: usize| low.len() == dimension && high.len() == dimension);
+
             SIMDUnit::decompose(
                 gamma2,
                 &t[i].simd_units[j],
@@ -62,6 +67,7 @@ pub(crate) fn decompose_vector<SIMDUnit: Operations>(
 }
 
 #[inline(always)]
+#[hax_lib::requires(low.len() == high.len() && hint.len() == low.len() && low.len() <= 8)]
 pub(crate) fn make_hint<SIMDUnit: Operations>(
     low: &[PolynomialRingElement<SIMDUnit>],
     high: &[PolynomialRingElement<SIMDUnit>],
@@ -72,7 +78,11 @@ pub(crate) fn make_hint<SIMDUnit: Operations>(
     let mut hint_simd = PolynomialRingElement::<SIMDUnit>::zero();
 
     for i in 0..low.len() {
+        hax_lib::loop_invariant!(|i: usize| true_hints <= 256 * i && hint.len() == low.len());
+
         for j in 0..hint_simd.simd_units.len() {
+            hax_lib::loop_invariant!(|j: usize| true_hints <= 256 * i + 8 * j);
+
             let one_hints_count = SIMDUnit::compute_hint(
                 &low[i].simd_units[j],
                 &high[i].simd_units[j],
@@ -90,12 +100,15 @@ pub(crate) fn make_hint<SIMDUnit: Operations>(
 }
 
 #[inline(always)]
+#[hax_lib::requires(hint.len() == re_vector.len() && hint.len() <= 8)]
 pub(crate) fn use_hint<SIMDUnit: Operations>(
     gamma2: Gamma2,
     hint: &[[i32; COEFFICIENTS_IN_RING_ELEMENT]],
     re_vector: &mut [PolynomialRingElement<SIMDUnit>],
 ) {
     for i in 0..re_vector.len() {
+        hax_lib::loop_invariant!(|j: usize| re_vector.len() == hint.len());
+
         let mut tmp = PolynomialRingElement::zero();
         PolynomialRingElement::<SIMDUnit>::from_i32_array(&hint[i], &mut tmp);
 

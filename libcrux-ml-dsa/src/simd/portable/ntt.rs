@@ -385,8 +385,8 @@ fn outer_3_plus<const OFFSET: usize, const STEP_BY: usize, const ZETA: i32>(
 
         hax_lib::fstar!(
             r#"
-        assert ((v v_NTT_BASE_BOUND + ((layer_bound_factor v_STEP_BY) * v $FIELD_MAX)) + (v $FIELD_MAX) 
-                == (v v_NTT_BASE_BOUND + ((layer_bound_factor v_STEP_BY + 1) * v $FIELD_MAX)))"#
+        assert ((v ${NTT_BASE_BOUND} + ((layer_bound_factor v_STEP_BY) * v $FIELD_MAX)) + (v $FIELD_MAX) 
+                == (v ${NTT_BASE_BOUND} + ((layer_bound_factor v_STEP_BY + 1) * v $FIELD_MAX)))"#
         );
     }
 }

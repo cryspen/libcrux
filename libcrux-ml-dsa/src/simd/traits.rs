@@ -682,6 +682,9 @@ pub(crate) trait Operations: Copy + Clone + Repr {
 
     fn infinity_norm_exceeds(simd_unit: &Self, bound: i32) -> bool;
     fn decompose(gamma2: Gamma2, simd_unit: &Self, low: &mut Self, high: &mut Self);
+
+    #[hax_lib::requires(true)]
+    #[hax_lib::ensures(|result| result <=   8)]
     fn compute_hint(low: &Self, high: &Self, gamma2: i32, hint: &mut Self) -> usize;
     fn use_hint(gamma2: Gamma2, simd_unit: &Self, hint: &mut Self);
 
