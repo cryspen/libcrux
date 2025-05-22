@@ -247,7 +247,8 @@ pub(crate) fn montgomery_multiply_by_constant(simd_unit: &mut Coefficients, c: i
 #[inline(always)]
 #[hax_lib::fstar::options("--z3rlimit 150")]
 #[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
-#[hax_lib::requires(fstar!(r#"Spec.Utils.is_i32b_array_opaque 8380416 ${rhs}.f_values"#))]
+#[hax_lib::requires(fstar!(r#"forall i. i < 8 ==> Spec.Utils.is_i32b 4190208
+    (Seq.index ${rhs}.f_values i)"#))]
 #[hax_lib::ensures(|result| fstar!(r#"
     Spec.Utils.is_i32b_array_opaque 8380416 ${lhs}_future.f_values /\
     Spec.MLDSA.Math.(forall i. i < 8 ==> 
@@ -272,7 +273,7 @@ pub(crate) fn montgomery_multiply(lhs: &mut Coefficients, rhs: &Coefficients) {
             )
         });
         hax_lib::fstar!(
-            r#"Spec.Utils.lemma_mul_i32b (pow2 31) (8380416) ${lhs}.f_values.[ $i ] ${rhs}.f_values.[ $i ]"#
+            r#"Spec.Utils.lemma_mul_i32b (pow2 31) (4190208) ${lhs}.f_values.[ $i ] ${rhs}.f_values.[ $i ]"#
         );
 
         lhs.values[i] = montgomery_reduce_element((lhs.values[i] as i64) * (rhs.values[i] as i64))

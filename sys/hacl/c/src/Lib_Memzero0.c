@@ -39,9 +39,7 @@ void Lib_Memzero0_memzero0(void *dst, uint64_t len) {
     SecureZeroMemory(dst, len);
   #elif defined(__APPLE__) && defined(__MACH__)
     memset_s(dst, len_, 0, len_);
-  #elif defined(__linux__) && defined(__GLIBC__) && (__GLIBC__ >= 2) && (__GLIBC_MINOR__ >= 25)
-    explicit_bzero(dst, len_);
-  #elif defined(__FreeBSD__)
+  #elif (defined(__linux__) && !defined(LINUX_NO_EXPLICIT_BZERO)) || defined(__FreeBSD__)
     explicit_bzero(dst, len_);
   #elif defined(__NetBSD__)
     explicit_memset(dst, 0, len_);

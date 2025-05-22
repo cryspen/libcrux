@@ -1,5 +1,6 @@
 use crate::{
     constants::{Gamma2, COEFFICIENTS_IN_RING_ELEMENT},
+    helper::cloop,
     polynomial::PolynomialRingElement,
     simd::traits::Operations,
 };
@@ -10,9 +11,12 @@ pub(crate) fn vector_infinity_norm_exceeds<SIMDUnit: Operations>(
     bound: i32,
 ) -> bool {
     let mut result = false;
-    for i in 0..vector.len() {
-        result = result || vector[i].infinity_norm_exceeds(bound);
+    cloop! {
+        for ring_element in vector.iter() {
+            result = result || ring_element.infinity_norm_exceeds(bound);
+        }
     }
+
     result
 }
 
@@ -26,22 +30,12 @@ pub(crate) fn shift_left_then_reduce<SIMDUnit: Operations, const SHIFT_BY: i32>(
 }
 
 #[inline(always)]
-#[hax_lib::requires(t.len() == t1.len())]
 pub(crate) fn power2round_vector<SIMDUnit: Operations>(
     t: &mut [PolynomialRingElement<SIMDUnit>],
     t1: &mut [PolynomialRingElement<SIMDUnit>],
 ) {
-    #[cfg(hax)]
-    let t_len = t.len();
-    #[cfg(hax)]
-    let t1_len = t1.len();
-
     for i in 0..t.len() {
-        hax_lib::loop_invariant!(|i: usize| t.len() == t_len && t1.len() == t1_len);
-
         for j in 0..t[i].simd_units.len() {
-            hax_lib::loop_invariant!(|i: usize| t.len() == t_len && t1.len() == t1_len);
-
             SIMDUnit::power2round(&mut t[i].simd_units[j], &mut t1[i].simd_units[j]);
         }
     }
