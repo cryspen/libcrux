@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1747921087477,
+  "lastUpdate": 1747921129711,
   "repoUrl": "https://github.com/cryspen/libcrux",
   "entries": {
     "ML-KEM Benchmark": [
@@ -95423,6 +95423,476 @@ window.BENCHMARK_DATA = {
             "unit": "ns/iter",
             "os": "macos-13_64",
             "range": "± 82",
+            "category": "ML-KEM",
+            "keySize": 1024,
+            "platform": "avx2"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "karthikbhargavan",
+            "username": "karthikbhargavan"
+          },
+          "committer": {
+            "name": "GitHub",
+            "username": "GitHub"
+          },
+          "id": "406ab5549c03ef90d021674f6e9ec3c3d238091d",
+          "message": "Merge pull request #989 from cryspen/mldsa-portable-ntt\n\nRange Proofs and Proof Speedups for ML-DSA (Portable) NTT",
+          "timestamp": "2025-05-22T13:21:43Z",
+          "url": "/commits/406ab5549c03ef90d021674f6e9ec3c3d238091d"
+        },
+        "date": 1747921115636,
+        "bigger_is_better": false,
+        "benches": [
+          {
+            "name": "Key Generation",
+            "value": 19264,
+            "unit": "ns/iter",
+            "os": "windows-latest_64",
+            "range": "± 238",
+            "category": "ML-KEM",
+            "keySize": 512,
+            "platform": "portable",
+            "api": "external random"
+          },
+          {
+            "name": "Key Generation",
+            "value": 19018,
+            "unit": "ns/iter",
+            "os": "windows-latest_64",
+            "range": "± 431",
+            "category": "ML-KEM",
+            "keySize": 512,
+            "platform": "portable",
+            "api": "unpacked (external random)"
+          },
+          {
+            "name": "Key Generation",
+            "value": 10532,
+            "unit": "ns/iter",
+            "os": "windows-latest_64",
+            "range": "± 147",
+            "category": "ML-KEM",
+            "keySize": 512,
+            "platform": "avx2",
+            "api": "external random"
+          },
+          {
+            "name": "Key Generation",
+            "value": 10344,
+            "unit": "ns/iter",
+            "os": "windows-latest_64",
+            "range": "± 112",
+            "category": "ML-KEM",
+            "keySize": 512,
+            "platform": "avx2",
+            "api": "unpacked (external random)"
+          },
+          {
+            "name": "Key Generation",
+            "value": 32827,
+            "unit": "ns/iter",
+            "os": "windows-latest_64",
+            "range": "± 611",
+            "category": "ML-KEM",
+            "keySize": 768,
+            "platform": "portable",
+            "api": "external random"
+          },
+          {
+            "name": "Key Generation",
+            "value": 32155,
+            "unit": "ns/iter",
+            "os": "windows-latest_64",
+            "range": "± 426",
+            "category": "ML-KEM",
+            "keySize": 768,
+            "platform": "portable",
+            "api": "unpacked (external random)"
+          },
+          {
+            "name": "Key Generation",
+            "value": 14928,
+            "unit": "ns/iter",
+            "os": "windows-latest_64",
+            "range": "± 163",
+            "category": "ML-KEM",
+            "keySize": 768,
+            "platform": "avx2",
+            "api": "external random"
+          },
+          {
+            "name": "Key Generation",
+            "value": 16174,
+            "unit": "ns/iter",
+            "os": "windows-latest_64",
+            "range": "± 184",
+            "category": "ML-KEM",
+            "keySize": 768,
+            "platform": "avx2",
+            "api": "unpacked (external random)"
+          },
+          {
+            "name": "Key Generation",
+            "value": 50941,
+            "unit": "ns/iter",
+            "os": "windows-latest_64",
+            "range": "± 1396",
+            "category": "ML-KEM",
+            "keySize": 1024,
+            "platform": "portable",
+            "api": "external random"
+          },
+          {
+            "name": "Key Generation",
+            "value": 50452,
+            "unit": "ns/iter",
+            "os": "windows-latest_64",
+            "range": "± 646",
+            "category": "ML-KEM",
+            "keySize": 1024,
+            "platform": "portable",
+            "api": "unpacked (external random)"
+          },
+          {
+            "name": "Key Generation",
+            "value": 20591,
+            "unit": "ns/iter",
+            "os": "windows-latest_64",
+            "range": "± 349",
+            "category": "ML-KEM",
+            "keySize": 1024,
+            "platform": "avx2",
+            "api": "external random"
+          },
+          {
+            "name": "Key Generation",
+            "value": 20188,
+            "unit": "ns/iter",
+            "os": "windows-latest_64",
+            "range": "± 255",
+            "category": "ML-KEM",
+            "keySize": 1024,
+            "platform": "avx2",
+            "api": "unpacked (external random)"
+          },
+          {
+            "name": "Encapsulation",
+            "value": 22863,
+            "unit": "ns/iter",
+            "os": "windows-latest_64",
+            "range": "± 543",
+            "category": "ML-KEM",
+            "keySize": 512,
+            "platform": "portable",
+            "api": "external random"
+          },
+          {
+            "name": "Encapsulation",
+            "value": 14580,
+            "unit": "ns/iter",
+            "os": "windows-latest_64",
+            "range": "± 214",
+            "category": "ML-KEM",
+            "keySize": 512,
+            "platform": "portable",
+            "api": "unpacked (external random)"
+          },
+          {
+            "name": "Encapsulation",
+            "value": 11187,
+            "unit": "ns/iter",
+            "os": "windows-latest_64",
+            "range": "± 128",
+            "category": "ML-KEM",
+            "keySize": 512,
+            "platform": "avx2",
+            "api": "external random"
+          },
+          {
+            "name": "Encapsulation",
+            "value": 5318,
+            "unit": "ns/iter",
+            "os": "windows-latest_64",
+            "range": "± 71",
+            "category": "ML-KEM",
+            "keySize": 512,
+            "platform": "avx2",
+            "api": "unpacked (external random)"
+          },
+          {
+            "name": "Encapsulation",
+            "value": 37878,
+            "unit": "ns/iter",
+            "os": "windows-latest_64",
+            "range": "± 461",
+            "category": "ML-KEM",
+            "keySize": 768,
+            "platform": "portable",
+            "api": "external random"
+          },
+          {
+            "name": "Encapsulation",
+            "value": 21695,
+            "unit": "ns/iter",
+            "os": "windows-latest_64",
+            "range": "± 211",
+            "category": "ML-KEM",
+            "keySize": 768,
+            "platform": "portable",
+            "api": "unpacked (external random)"
+          },
+          {
+            "name": "Encapsulation",
+            "value": 15862,
+            "unit": "ns/iter",
+            "os": "windows-latest_64",
+            "range": "± 370",
+            "category": "ML-KEM",
+            "keySize": 768,
+            "platform": "avx2",
+            "api": "external random"
+          },
+          {
+            "name": "Encapsulation",
+            "value": 6644,
+            "unit": "ns/iter",
+            "os": "windows-latest_64",
+            "range": "± 216",
+            "category": "ML-KEM",
+            "keySize": 768,
+            "platform": "avx2",
+            "api": "unpacked (external random)"
+          },
+          {
+            "name": "Encapsulation",
+            "value": 57845,
+            "unit": "ns/iter",
+            "os": "windows-latest_64",
+            "range": "± 1639",
+            "category": "ML-KEM",
+            "keySize": 1024,
+            "platform": "portable",
+            "api": "external random"
+          },
+          {
+            "name": "Encapsulation",
+            "value": 30735,
+            "unit": "ns/iter",
+            "os": "windows-latest_64",
+            "range": "± 205",
+            "category": "ML-KEM",
+            "keySize": 1024,
+            "platform": "portable",
+            "api": "unpacked (external random)"
+          },
+          {
+            "name": "Encapsulation",
+            "value": 22526,
+            "unit": "ns/iter",
+            "os": "windows-latest_64",
+            "range": "± 358",
+            "category": "ML-KEM",
+            "keySize": 1024,
+            "platform": "avx2",
+            "api": "external random"
+          },
+          {
+            "name": "Encapsulation",
+            "value": 9181,
+            "unit": "ns/iter",
+            "os": "windows-latest_64",
+            "range": "± 103",
+            "category": "ML-KEM",
+            "keySize": 1024,
+            "platform": "avx2",
+            "api": "unpacked (external random)"
+          },
+          {
+            "name": "Decapsulation",
+            "value": 28310,
+            "unit": "ns/iter",
+            "os": "windows-latest_64",
+            "range": "± 320",
+            "category": "ML-KEM",
+            "keySize": 512,
+            "platform": "portable"
+          },
+          {
+            "name": "Decapsulation",
+            "value": 21854,
+            "unit": "ns/iter",
+            "os": "windows-latest_64",
+            "range": "± 409",
+            "category": "ML-KEM",
+            "keySize": 512,
+            "platform": "portable",
+            "api": "unpacked"
+          },
+          {
+            "name": "Decapsulation",
+            "value": 12433,
+            "unit": "ns/iter",
+            "os": "windows-latest_64",
+            "range": "± 154",
+            "category": "ML-KEM",
+            "keySize": 512,
+            "platform": "avx2"
+          },
+          {
+            "name": "Decapsulation",
+            "value": 9054,
+            "unit": "ns/iter",
+            "os": "windows-latest_64",
+            "range": "± 86",
+            "category": "ML-KEM",
+            "keySize": 512,
+            "platform": "avx2",
+            "api": "unpacked"
+          },
+          {
+            "name": "Decapsulation",
+            "value": 45548,
+            "unit": "ns/iter",
+            "os": "windows-latest_64",
+            "range": "± 1134",
+            "category": "ML-KEM",
+            "keySize": 768,
+            "platform": "portable"
+          },
+          {
+            "name": "Decapsulation",
+            "value": 31489,
+            "unit": "ns/iter",
+            "os": "windows-latest_64",
+            "range": "± 219",
+            "category": "ML-KEM",
+            "keySize": 768,
+            "platform": "portable",
+            "api": "unpacked"
+          },
+          {
+            "name": "Decapsulation",
+            "value": 17627,
+            "unit": "ns/iter",
+            "os": "windows-latest_64",
+            "range": "± 533",
+            "category": "ML-KEM",
+            "keySize": 768,
+            "platform": "avx2"
+          },
+          {
+            "name": "Decapsulation",
+            "value": 11898,
+            "unit": "ns/iter",
+            "os": "windows-latest_64",
+            "range": "± 122",
+            "category": "ML-KEM",
+            "keySize": 768,
+            "platform": "avx2",
+            "api": "unpacked"
+          },
+          {
+            "name": "Decapsulation",
+            "value": 67340,
+            "unit": "ns/iter",
+            "os": "windows-latest_64",
+            "range": "± 736",
+            "category": "ML-KEM",
+            "keySize": 1024,
+            "platform": "portable"
+          },
+          {
+            "name": "Decapsulation",
+            "value": 44267,
+            "unit": "ns/iter",
+            "os": "windows-latest_64",
+            "range": "± 372",
+            "category": "ML-KEM",
+            "keySize": 1024,
+            "platform": "portable",
+            "api": "unpacked"
+          },
+          {
+            "name": "Decapsulation",
+            "value": 24913,
+            "unit": "ns/iter",
+            "os": "windows-latest_64",
+            "range": "± 245",
+            "category": "ML-KEM",
+            "keySize": 1024,
+            "platform": "avx2"
+          },
+          {
+            "name": "Decapsulation",
+            "value": 16816,
+            "unit": "ns/iter",
+            "os": "windows-latest_64",
+            "range": "± 171",
+            "category": "ML-KEM",
+            "keySize": 1024,
+            "platform": "avx2",
+            "api": "unpacked"
+          },
+          {
+            "name": "PK Validation",
+            "value": 923,
+            "unit": "ns/iter",
+            "os": "windows-latest_64",
+            "range": "± 37",
+            "category": "ML-KEM",
+            "keySize": 512,
+            "platform": "portable"
+          },
+          {
+            "name": "PK Validation",
+            "value": 414,
+            "unit": "ns/iter",
+            "os": "windows-latest_64",
+            "range": "± 26",
+            "category": "ML-KEM",
+            "keySize": 512,
+            "platform": "avx2"
+          },
+          {
+            "name": "PK Validation",
+            "value": 1374,
+            "unit": "ns/iter",
+            "os": "windows-latest_64",
+            "range": "± 70",
+            "category": "ML-KEM",
+            "keySize": 768,
+            "platform": "portable"
+          },
+          {
+            "name": "PK Validation",
+            "value": 617,
+            "unit": "ns/iter",
+            "os": "windows-latest_64",
+            "range": "± 40",
+            "category": "ML-KEM",
+            "keySize": 768,
+            "platform": "avx2"
+          },
+          {
+            "name": "PK Validation",
+            "value": 1682,
+            "unit": "ns/iter",
+            "os": "windows-latest_64",
+            "range": "± 69",
+            "category": "ML-KEM",
+            "keySize": 1024,
+            "platform": "portable"
+          },
+          {
+            "name": "PK Validation",
+            "value": 819,
+            "unit": "ns/iter",
+            "os": "windows-latest_64",
+            "range": "± 57",
             "category": "ML-KEM",
             "keySize": 1024,
             "platform": "avx2"
