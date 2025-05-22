@@ -2,6 +2,9 @@ use super::arithmetic::{self, montgomery_multiply_by_constant, montgomery_multip
 use super::vector_type::Coefficients;
 use crate::simd::traits::{COEFFICIENTS_IN_SIMD_UNIT, SIMD_UNITS_IN_RING_ELEMENT};
 
+#[cfg(hax)]
+use crate::simd::traits::specs::*;
+
 #[inline(always)]
 pub fn simd_unit_ntt_at_layer_0(
     simd_unit: &mut Coefficients,
@@ -281,6 +284,14 @@ fn ntt_at_layer_7(re: &mut [Coefficients; SIMD_UNITS_IN_RING_ELEMENT]) {
 }
 
 #[inline(always)]
+#[hax_lib::fstar::options("--z3rlimit 400 --split_queries always")]
+#[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
+#[hax_lib::requires(fstar!(r#"
+    is_i32b_polynomial (v $NTT_BASE_BOUND) ${re}
+"#))]
+#[hax_lib::ensures(|_| fstar!(r#"
+    is_i32b_polynomial (v $NTT_BASE_BOUND + 8 * v $FIELD_MAX) ${re}_future
+"#) )]
 pub(crate) fn ntt(re: &mut [Coefficients; SIMD_UNITS_IN_RING_ELEMENT]) {
     ntt_at_layer_7(re);
     ntt_at_layer_6(re);
