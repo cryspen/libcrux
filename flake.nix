@@ -3,39 +3,36 @@
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
     flake-utils.url = "github:numtide/flake-utils";
     eurydice.url = "github:aeneasverif/eurydice";
+    charon.url = "github:aeneasverif/charon"; 
     hax.url = "github:hacspec/hax";
+    googletest = {
+      url = "github:google/googletest/release-1.11.0";
+      flake = false;
+    };
+    benchmark = {
+      url = "github:google/benchmark/v1.8.4";
+      flake = false;
+    };
+    json = {
+      url = "github:nlohmann/json/v3.10.3";
+      flake = false;
+    };
+    circus-green = {
+      url = "github:Inria-Prosecco/circus-green/b18bf804c2a999a2f476e09608284561c964225c";
+      flake = false;
+    };
   };
 
   outputs =
-    { self, nixpkgs, eurydice, hax, ... } @ inputs:
-    inputs.flake-utils.lib.eachDefaultSystem (
+    { self, nixpkgs, flake-utils, eurydice, hax, charon, googletest, benchmark, json, circus-green, ... } @ inputs:
+    flake-utils.lib.eachDefaultSystem (
       system:
       let
         pkgs = import nixpkgs { inherit system; };
-        charon = eurydice.inputs.charon;
         crane = charon.inputs.crane;
         # Use the overridden package exported by the eurydice flake.
         karamel = eurydice.packages.${system}.karamel;
         fstar = eurydice.inputs.karamel.inputs.fstar;
-
-        googletest = pkgs.fetchFromGitHub {
-          owner = "google";
-          repo = "googletest";
-          rev = "release-1.11.0";
-          sha256 = "SjlJxushfry13RGA7BCjYC9oZqV4z6x8dOiHfl/wpF0=";
-        };
-        benchmark = pkgs.fetchFromGitHub {
-          owner = "google";
-          repo = "benchmark";
-          rev = "v1.8.4";
-          sha256 = "O+1ZHaNHSkKz3PlKDyI94LqiLtjyrKxjOIi8Q236/MI=";
-        };
-        json = pkgs.fetchFromGitHub {
-          owner = "nlohmann";
-          repo = "json";
-          rev = "v3.10.3";
-          sha256 = "EBzwaHyDWF8h/z3Zfq4p/n5Vpz7Ozlc3eoWDKXWv2YY=";
-        };
 
         tools-environment = {
           CHARON_HOME = charon.packages.${system}.charon;
@@ -56,19 +53,7 @@
 
         rustToolchain = charon.packages.${system}.rustToolchain;
         craneLib = (crane.mkLib pkgs).overrideToolchain rustToolchain;
-        # libcrux doesn't want to commit a Cargo.lock but flakes can only take
-        # local inputs if they're committed. The circus-green CI maintains a
-        # working Cargo.lock file for this repo, so we use it here.
-        defaultCargoLock =
-          let
-            circus-green = pkgs.fetchFromGitHub {
-              owner = "Inria-Prosecco";
-              repo = "circus-green";
-              rev = "b18bf804c2a999a2f476e09608284561c964225c";
-              hash = "sha256-XSRu3LH0RhZ+P8zCADl8e+yjghmol/Eb1oTsaI5JWr4=";
-            };
-          in
-          "${circus-green}/libcrux-Cargo.lock";
+        defaultCargoLock = "${circus-green}/libcrux-Cargo.lock";
 
         # Construct a copy of the current directory with the given `Cargo.lock` added.
         build_src = cargoLock:
@@ -245,9 +230,13 @@
         devShells.default = craneLib.devShell (tools-environment // {
           packages = [
             pkgs.clang_18
+            pkgs.openssl
+            pkgs.pkg-config
             fstar.packages.${system}.default
           ];
           inputsFrom = [ packages.ml-kem ];
+          RUST_SRC_PATH = "${rustToolchain.outPath}/lib/rustlib/src/rust/library";
+          LIBCLANG_PATH = "${pkgs.llvmPackages_18.libclang.lib}/lib";
         });
       }
     );
