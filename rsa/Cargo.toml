@@ -1,8 +1,8 @@
 [package]
 name = "libcrux-rsa"
 description = "Formally verified RSA signature library"
-
 version = "0.0.3-alpha.1"
+
 authors.workspace = true
 license.workspace = true
 homepage.workspace = true
