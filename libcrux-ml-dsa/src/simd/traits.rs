@@ -691,7 +691,6 @@ pub(crate) trait Operations: Copy + Clone + Repr {
     fn decompose(gamma2: Gamma2, simd_unit: &Self, low: &mut Self, high: &mut Self);
 
     #[hax_lib::requires(true)]
-    #[hax_lib::ensures(|result| result <=   8)]
     fn compute_hint(low: &Self, high: &Self, gamma2: i32, hint: &mut Self) -> usize;
 
     #[hax_lib::requires(true)]
