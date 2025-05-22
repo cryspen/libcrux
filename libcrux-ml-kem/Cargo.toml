@@ -9,17 +9,17 @@ repository.workspace = true
 readme = "README.md"
 description = "Libcrux ML-KEM & Kyber implementations"
 exclude = [
-  "/tests",
-  "/implementation_notes.pdf",
-  "/c",
-  "/proofs",
-  "/c.sh",
-  "/c.yaml",
-  "/hax.py",
-  "/cg",
-  "/c-nss.sh",
-  "/c.sh",
-  "/boring.sh",
+    "/tests",
+    "/implementation_notes.pdf",
+    "/c",
+    "/proofs",
+    "/c.sh",
+    "/c.yaml",
+    "/hax.py",
+    "/cg",
+    "/c-nss.sh",
+    "/c.sh",
+    "/boring.sh",
 ]
 
 [lib]
@@ -94,7 +94,7 @@ rustdoc-args = ["--cfg", "doc_cfg"]
 
 [lints.rust]
 unexpected_cfgs = { level = "warn", check-cfg = [
-  'cfg(hax)',
-  'cfg(eurydice)',
-  'cfg(doc_cfg)',
+    'cfg(hax)',
+    'cfg(eurydice)',
+    'cfg(doc_cfg)',
 ] }

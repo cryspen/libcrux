@@ -14,7 +14,7 @@ readme.workspace = true
 libcrux-macros = { version = "=0.0.3-alpha.1", path = "../macros" }
 libcrux-hacl-rs = { version = "=0.0.3-alpha.1", path = "../hacl-rs/" }
 libcrux-sha2 = { version = "=0.0.3-alpha.1", path = "../sha2", features = [
-  "expose-hacl",
+    "expose-hacl",
 ] }
 
 [features]
