@@ -1,6 +1,7 @@
 use super::vector_type::{Coefficients, FieldElement};
 use crate::{
     constants::{Gamma2, BITS_IN_LOWER_PART_OF_T, GAMMA2_V261_888, GAMMA2_V95_232},
+    hax_helper,
     simd::traits::{
         FieldElementTimesMontgomeryR, FIELD_MODULUS, INVERSE_OF_MODULUS_MOD_MONTGOMERY_R,
     },
@@ -16,8 +17,7 @@ pub(crate) const MONTGOMERY_SHIFT: u8 = 32;
 #[hax_lib::requires(add_pre(&lhs.values, &rhs.values))]
 #[hax_lib::ensures(|result| add_post(&lhs.values, &rhs.values, &(future(lhs).values)))]
 pub fn add(lhs: &mut Coefficients, rhs: &Coefficients) {
-    #[cfg(hax)]
-    let _lhs0 = lhs.clone();
+    hax_helper::clone!(_lhs0 = lhs);
 
     for i in 0..lhs.values.len() {
         hax_lib::loop_invariant!(|i: usize| {
@@ -40,8 +40,7 @@ pub fn add(lhs: &mut Coefficients, rhs: &Coefficients) {
 #[hax_lib::requires(sub_pre(&lhs.values, &rhs.values))]
 #[hax_lib::ensures(|result| sub_post(&lhs.values, &rhs.values, &(future(lhs).values)))]
 pub fn subtract(lhs: &mut Coefficients, rhs: &Coefficients) {
-    #[cfg(hax)]
-    let _lhs0 = lhs.clone();
+    hax_helper::clone!(_lhs0 = lhs);
 
     for i in 0..lhs.values.len() {
         hax_lib::loop_invariant!(|i: usize| {
@@ -209,8 +208,7 @@ pub(crate) fn montgomery_multiply_fe_by_fer(
         (v (Seq.index ${simd_unit}_future.f_values i) % 8380417 == 
         (v (Seq.index ${simd_unit}.f_values i) * v $c * 8265825) % 8380417))"#))]
 pub(crate) fn montgomery_multiply_by_constant(simd_unit: &mut Coefficients, c: i32) {
-    #[cfg(hax)]
-    let _simd_unit0 = simd_unit.clone();
+    hax_helper::clone!(_simd_unit0 = simd_unit);
 
     for i in 0..simd_unit.values.len() {
         hax_lib::loop_invariant!(|i: usize| {
@@ -241,8 +239,7 @@ pub(crate) fn montgomery_multiply_by_constant(simd_unit: &mut Coefficients, c: i
         (v (Seq.index ${lhs}_future.f_values i) % 8380417 == 
         (v (Seq.index ${lhs}.f_values i) * v (Seq.index ${rhs}.f_values i) * 8265825) % 8380417))"#))]
 pub(crate) fn montgomery_multiply(lhs: &mut Coefficients, rhs: &Coefficients) {
-    #[cfg(hax)]
-    let _lhs0 = lhs.clone();
+    hax_helper::clone!(_lhs0 = lhs);
 
     for i in 0..lhs.values.len() {
         hax_lib::loop_invariant!(|i: usize| {
@@ -327,8 +324,7 @@ fn power2round_element(t: i32) -> (i32, i32) {
         t0_v == t0_s /\ v (Seq.index ${t1}_future.f_values i) == t1_s /\
         Spec.Utils.is_intb_bt (pow2 (v $BITS_IN_LOWER_PART_OF_T - 1)) t0_v)"#))]
 pub(super) fn power2round(t0: &mut Coefficients, t1: &mut Coefficients) {
-    #[cfg(hax)]
-    let _t0: Coefficients = t0.clone();
+    hax_helper::clone!(_t0 = t0);
 
     for i in 0..t0.values.len() {
         hax_lib::loop_invariant!(|i: usize| {
@@ -426,8 +422,7 @@ fn reduce_element(fe: FieldElement) -> FieldElement {
     Spec.Utils.is_i32b 8380416 fe_2 /\
     v fe_2 % 8380417 == v fe_1 % 8380417)"#))]
 pub(super) fn shift_left_then_reduce<const SHIFT_BY: i32>(simd_unit: &mut Coefficients) {
-    #[cfg(hax)]
-    let _simd_unit0 = simd_unit.clone();
+    hax_helper::clone!(_simd_unit0 = simd_unit);
 
     for i in 0..simd_unit.values.len() {
         hax_lib::loop_invariant!(|i: usize| {
@@ -732,8 +727,7 @@ pub fn decompose(
     let result = Seq.index ${hint}_future.f_values i in
     v result = Spec.MLDSA.Math.use_one_hint (v $gamma2) (v (Seq.index ${simd_unit}.f_values i)) (v h))"#))]
 pub fn use_hint(gamma2: Gamma2, simd_unit: &Coefficients, hint: &mut Coefficients) {
-    #[cfg(hax)]
-    let _hint0 = hint.clone();
+    hax_helper::clone!(_hint0 = hint);
 
     for i in 0..hint.values.len() {
         hax_lib::loop_invariant!(|i: usize| {
