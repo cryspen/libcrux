@@ -1,8 +1,8 @@
 [package]
 name = "libcrux-sha2"
 description = "Formally verified SHA2 hash library"
-
 version = "0.0.3-alpha.1"
+
 authors.workspace = true
 license.workspace = true
 homepage.workspace = true
