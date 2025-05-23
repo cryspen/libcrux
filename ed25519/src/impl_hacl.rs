@@ -6,7 +6,7 @@ pub enum Error {
 }
 
 /// An Ed25519 public, verification key
-#[derive(Default)]
+#[derive(Default, Clone, Copy)]
 pub struct VerificationKey {
     value: [u8; 32],
 }
