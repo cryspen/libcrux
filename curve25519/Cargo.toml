@@ -1,15 +1,15 @@
 [package]
 name = "libcrux-curve25519"
 description = "Formally verified curve25519 ECDH library"
+version = "0.0.3-alpha.1"
 
-version.workspace = true
 authors.workspace = true
-license.workspace = true
 homepage.workspace = true
+license.workspace = true
 edition.workspace = true
 repository.workspace = true
 readme.workspace = true
 
 [dependencies]
-libcrux-hacl-rs = { version = "=0.0.2", path = "../hacl-rs/" }
-libcrux-macros = { version = "=0.0.2", path = "../macros" }
+libcrux-hacl-rs = { version = "=0.0.3-alpha.1", path = "../hacl-rs/" }
+libcrux-macros = { version = "=0.0.3-alpha.1", path = "../macros" }

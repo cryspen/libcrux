@@ -81,7 +81,7 @@ libcrux-platform = { version = "=0.0.2", path = "sys/platform" }
 
 [dependencies]
 libcrux-traits = { version = "=0.0.3-alpha.1", path = "traits" }
-libcrux-hacl-rs = { version = "=0.0.2", path = "hacl-rs" }
+libcrux-hacl-rs = { version = "=0.0.3-alpha.1", path = "hacl-rs" }
 libcrux-hacl = { version = "=0.0.2", path = "sys/hacl" }
 libcrux-platform = { version = "=0.0.2", path = "sys/platform" }
 libcrux-hkdf = { version = "=0.0.3-alpha.1", path = "libcrux-hkdf" }
