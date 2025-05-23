@@ -818,7 +818,7 @@ mod tests {
         fn test_sample_ring_element_uniform() {
             test_sample_ring_element_uniform_generic::<
                 simd::avx2::AVX2SIMDUnit,
-                crate::hash_functions::simd256::Shake128x4,
+                hash_functions::simd256::Shake128x4,
             >();
         }
 

@@ -17,4 +17,4 @@ path = "src/hkdf.rs"
 libcrux-hmac = { version = "=0.0.3-alpha.1", path = "../libcrux-hmac", features = [
     "expose-hacl",
 ] }
-libcrux-hacl-rs = { version = "=0.0.2", path = "../hacl-rs/" }
+libcrux-hacl-rs = { version = "=0.0.3-alpha.1", path = "../hacl-rs/" }

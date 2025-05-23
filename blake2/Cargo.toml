@@ -1,8 +1,8 @@
 [package]
 name = "libcrux-blake2"
 description = "Formally verified blake2 hash library"
+version = "0.0.3-alpha.1"
 
-version = "0.0.3"
 authors.workspace = true
 license.workspace = true
 homepage.workspace = true
@@ -15,8 +15,8 @@ std = []
 default = ["std"]
 
 [dependencies]
-libcrux-hacl-rs = { version = "=0.0.2", path = "../hacl-rs/" }
-libcrux-macros = { version = "=0.0.2", path = "../macros" }
+libcrux-hacl-rs = { version = "=0.0.3-alpha.1", path = "../hacl-rs/" }
+libcrux-macros = { version = "=0.0.3-alpha.1", path = "../macros" }
 
 [dev-dependencies]
 criterion = "0.6"
