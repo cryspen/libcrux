@@ -162,9 +162,16 @@ let is_i16b_array_opaque (l:nat) (x:t_Slice i16) = is_i16b_array l x
 
 let is_i32b (l:nat) (x:i32) = is_intb l (v x)
 let is_i32b_array (l:nat) (x:t_Slice i32) = forall i. i < Seq.length x ==> is_i32b l (Seq.index x i)
+let is_i32b_pos_array (l:nat) (x:t_Slice i32) = forall i. i < Seq.length x ==> is_i32b l (Seq.index x i) /\ v (Seq.index x i) >= 0
+let is_i32b_neg_array (l:nat) (x:t_Slice i32) = forall i. i < Seq.length x ==> is_i32b l (Seq.index x i) /\ v (Seq.index x i) <= 0
 
 [@ "opaque_to_smt"]
 let is_i32b_array_opaque (l:nat) (x:t_Slice i32) = is_i32b_array l x
+[@ "opaque_to_smt"]
+let is_i32b_pos_array_opaque (l:nat) (x:t_Slice i32) = is_i32b_pos_array l x
+[@ "opaque_to_smt"]
+let is_i32b_neg_array_opaque (l:nat) (x:t_Slice i32) = is_i32b_neg_array l x
+
 let is_i32b_array_larger (l:nat) (l':nat) (x:t_Slice i32):
   Lemma (is_i32b_array_opaque l x /\ l <= l' ==> is_i32b_array_opaque l' x) 
   = reveal_opaque (`%is_i32b_array_opaque) (is_i32b_array_opaque)

@@ -713,11 +713,21 @@ pub(crate) trait Operations: Copy + Clone + Repr {
     fn gamma1_deserialize(serialized: &[u8], out: &mut Self, gamma1_exponent: usize);
 
     // Commitment
-    #[hax_lib::requires(serialized.len() == 4 || serialized.len() == 6)]
+    #[hax_lib::requires(fstar!(r#"
+        (${serialized.len() == 4 || serialized.len() == 6}) /\
+        Spec.Utils.is_i32b_array_opaque (pow2 (v ${serialized.len()}) - 1) (${rhs.repr()})
+    "#))]
     #[hax_lib::ensures(|_| future(serialized).len() == serialized.len())]
     fn commitment_serialize(simd_unit: &Self, serialized: &mut [u8]);
 
     // Error
+    #[hax_lib::requires(fstar!(r#"
+        (${match eta {
+           Eta::Two => serialized.len() == 3,
+           Eta::Four => serialized.len() == 4,
+        }) /\
+        Spec.Utils.is_i32b_neg_array_opaque (pow2 (v ${serialized.len()}) - 1 - v ${eta as u8}) (${rhs.repr()})
+    "#))]
     fn error_serialize(eta: Eta, simd_unit: &Self, serialized: &mut [u8]);
     fn error_deserialize(eta: Eta, serialized: &[u8], out: &mut Self);
 
