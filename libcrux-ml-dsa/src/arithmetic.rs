@@ -34,8 +34,10 @@ pub(crate) fn shift_left_then_reduce<SIMDUnit: Operations, const SHIFT_BY: i32>(
     let old_re = re.clone();
 
     for i in 0..re.simd_units.len() {
-        hax_lib::loop_invariant!(|i:usize| fstar!(r#"
-            forall j. j >= v i ==> Seq.index re.f_simd_units j == Seq.index old_re.f_simd_units j"#)); 
+        hax_lib::loop_invariant!(|i: usize| fstar!(
+            r#"
+            forall j. j >= v i ==> Seq.index re.f_simd_units j == Seq.index old_re.f_simd_units j"#
+        ));
 
         SIMDUnit::shift_left_then_reduce::<SHIFT_BY>(&mut re.simd_units[i]);
     }
@@ -58,16 +60,19 @@ pub(crate) fn power2round_vector<SIMDUnit: Operations>(
     let old_t1 = t1.to_vec();
 
     for i in 0..t.len() {
-        hax_lib::loop_invariant!(|i: usize| fstar!(r#"
+        hax_lib::loop_invariant!(|i: usize| fstar!(
+            r#"
             ${t.len()} == ${old_t.len()} /\
             ${t1.len()} == ${old_t1.len()} /\
             (forall j. j >= v i ==> 
                 (Seq.index t j == Seq.index old_t j /\
                  Seq.index t1 j == Seq.index old_t1 j))
-            "#));
+            "#
+        ));
 
         for j in 0..t[i].simd_units.len() {
-            hax_lib::loop_invariant!(|j: usize| fstar!(r#"
+            hax_lib::loop_invariant!(|j: usize| fstar!(
+                r#"
                 ${t.len()} == ${old_t.len()} /\
                 ${t1.len()} == ${old_t1.len()} /\
                 (forall j. j > v i ==> 
@@ -78,7 +83,8 @@ pub(crate) fn power2round_vector<SIMDUnit: Operations>(
                      Seq.index (Seq.index old_t (v i)).f_simd_units k /\
                      Seq.index (Seq.index t1 (v i)).f_simd_units k ==
                      Seq.index (Seq.index old_t1 (v i)).f_simd_units k))
-                "#));
+                "#
+            ));
 
             SIMDUnit::power2round(&mut t[i].simd_units[j], &mut t1[i].simd_units[j]);
         }
@@ -182,24 +188,28 @@ pub(crate) fn use_hint<SIMDUnit: Operations>(
     let old_re_vector = re_vector.to_vec();
 
     for i in 0..re_vector.len() {
-        hax_lib::loop_invariant!(|i: usize| fstar!(r#"
+        hax_lib::loop_invariant!(|i: usize| fstar!(
+            r#"
             ${re_vector.len()} == ${hint.len()} /\
             (forall j. j >= v i ==> 
                 (Seq.index re_vector j == Seq.index old_re_vector j))
-            "#));
+            "#
+        ));
 
         let mut tmp = PolynomialRingElement::zero();
         PolynomialRingElement::<SIMDUnit>::from_i32_array(&hint[i], &mut tmp);
 
         for j in 0..re_vector[0].simd_units.len() {
-            hax_lib::loop_invariant!(|j: usize| fstar!(r#"
+            hax_lib::loop_invariant!(|j: usize| fstar!(
+                r#"
                 ${re_vector.len()} == ${hint.len()} /\
                 (forall j. j > v i ==> 
                     (Seq.index re_vector j == Seq.index old_re_vector j)) /\
                 (forall k. k >= v j ==> 
                     (Seq.index (Seq.index re_vector (v i)).f_simd_units k ==
                      Seq.index (Seq.index old_re_vector (v i)).f_simd_units k))
-                "#));
+                "#
+            ));
 
             SIMDUnit::use_hint(gamma2, &re_vector[i].simd_units[j], &mut tmp.simd_units[j]);
         }

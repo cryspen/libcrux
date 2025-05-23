@@ -685,7 +685,6 @@ pub(crate) trait Operations: Copy + Clone + Repr {
         Spec.Utils.is_i32b_array_opaque (v ${specs::FIELD_MAX}) (f_repr ${simd_unit})"#))]
     fn infinity_norm_exceeds(simd_unit: &Self, bound: i32) -> bool;
 
-   
     #[hax_lib::requires(fstar!(r#"
         (v $gamma2 == v ${crate::constants::GAMMA2_V261_888} \/ 
          v $gamma2 == v ${crate::constants::GAMMA2_V95_232}) /\

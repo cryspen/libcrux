@@ -464,12 +464,13 @@ pub(super) fn shift_left_then_reduce<const SHIFT_BY: i32>(simd_unit: &mut Coeffi
     );
 
     for i in 0..simd_unit.values.len() {
-        hax_lib::loop_invariant!(|i: usize| fstar!(r#"
+        hax_lib::loop_invariant!(|i: usize| fstar!(
+            r#"
                 (forall j. j < v i ==> (Spec.Utils.is_i32b 8380416 (Seq.index ${simd_unit}.f_values j) /\
                     Spec.MLDSA.Math.mod_q (v (Seq.index ${simd_unit}.f_values j)) == 
                     Spec.MLDSA.Math.mod_q (v ((Seq.index ${_simd_unit0}.f_values j) <<! v_SHIFT_BY)))) /\
                 (forall j. j >= v i ==> Seq.index ${simd_unit}.f_values j == Seq.index ${_simd_unit0}.f_values j)"#
-            ));
+        ));
 
         simd_unit.values[i] = reduce_element(simd_unit.values[i] << SHIFT_BY);
     }

@@ -71,10 +71,11 @@ impl<SIMDUnit: Operations> PolynomialRingElement<SIMDUnit> {
         let old_self = self.clone();
 
         for i in 0..self.simd_units.len() {
-            hax_lib::loop_invariant!(|i:usize| 
-                    fstar!(r#"forall j. j >= v i ==> 
+            hax_lib::loop_invariant!(|i: usize| fstar!(
+                r#"forall j. j >= v i ==> 
                             Seq.index self.f_simd_units j == 
-                            Seq.index old_self.f_simd_units j"#));
+                            Seq.index old_self.f_simd_units j"#
+            ));
 
             SIMDUnit::add(&mut self.simd_units[i], &rhs.simd_units[i]);
         }
@@ -89,11 +90,12 @@ impl<SIMDUnit: Operations> PolynomialRingElement<SIMDUnit> {
         let old_self = self.clone();
 
         for i in 0..self.simd_units.len() {
-            hax_lib::loop_invariant!(|i:usize| 
-                fstar!(r#"forall j. j >= v i ==> 
+            hax_lib::loop_invariant!(|i: usize| fstar!(
+                r#"forall j. j >= v i ==> 
                         Seq.index self.f_simd_units j == 
-                        Seq.index old_self.f_simd_units j"#));
-                        
+                        Seq.index old_self.f_simd_units j"#
+            ));
+
             SIMDUnit::subtract(&mut self.simd_units[i], &rhs.simd_units[i]);
         }
     }
