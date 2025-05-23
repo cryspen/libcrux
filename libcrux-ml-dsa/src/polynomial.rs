@@ -1,5 +1,8 @@
 use crate::simd::traits::{Operations, COEFFICIENTS_IN_SIMD_UNIT, SIMD_UNITS_IN_RING_ELEMENT};
 
+#[cfg(hax)]
+use crate::simd::traits::specs::*;
+
 #[derive(Clone, Copy)]
 #[hax_lib::fstar::after("open Libcrux_ml_dsa.Simd.Traits.Specs")]
 pub(crate) struct PolynomialRingElement<SIMDUnit: Operations> {
@@ -46,6 +49,10 @@ impl<SIMDUnit: Operations> PolynomialRingElement<SIMDUnit> {
     }
 
     #[inline(always)]
+    #[hax_lib::requires(fstar!(r#"v $bound > 0 /\ 
+        (forall i. Spec.Utils.is_i32b_array_opaque 
+            (v ${FIELD_MAX}) 
+            (i1._super_11538536829799775875.f_repr (Seq.index self.f_simd_units i)))"#))]
     pub(crate) fn infinity_norm_exceeds(&self, bound: i32) -> bool {
         let mut result = false;
         for i in 0..self.simd_units.len() {

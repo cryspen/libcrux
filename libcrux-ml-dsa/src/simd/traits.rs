@@ -681,17 +681,27 @@ pub(crate) trait Operations: Copy + Clone + Repr {
     #[hax_lib::ensures(|_| specs::sub_post(&lhs.repr(), &rhs.repr(), &future(lhs).repr()))]
     fn subtract(lhs: &mut Self, rhs: &Self);
 
-    #[hax_lib::requires(true)]
+    #[hax_lib::requires(fstar!(r#"v $bound > 0 /\ 
+        Spec.Utils.is_i32b_array_opaque (v ${specs::FIELD_MAX}) (f_repr ${simd_unit})"#))]
     fn infinity_norm_exceeds(simd_unit: &Self, bound: i32) -> bool;
 
-    #[hax_lib::requires(true)]
+   
+    #[hax_lib::requires(fstar!(r#"
+        (v $gamma2 == v ${crate::constants::GAMMA2_V261_888} \/ 
+         v $gamma2 == v ${crate::constants::GAMMA2_V95_232}) /\
+        Spec.Utils.is_i32b_array_opaque (v ${specs::FIELD_MAX}) (f_repr ${simd_unit})"#))]
     fn decompose(gamma2: Gamma2, simd_unit: &Self, low: &mut Self, high: &mut Self);
 
-    #[hax_lib::requires(true)]
-    #[hax_lib::ensures(|result| result <=   8)]
+    #[hax_lib::requires(fstar!(r#"
+        (v $gamma2 == v ${crate::constants::GAMMA2_V261_888} \/ 
+         v $gamma2 == v ${crate::constants::GAMMA2_V95_232})"#))]
+    #[hax_lib::ensures(|result| result <= 8)]
     fn compute_hint(low: &Self, high: &Self, gamma2: i32, hint: &mut Self) -> usize;
 
-    #[hax_lib::requires(true)]
+    #[hax_lib::requires(fstar!(r#"
+        (v $gamma2 == v ${crate::constants::GAMMA2_V261_888} \/ 
+         v $gamma2 == v ${crate::constants::GAMMA2_V95_232}) /\
+        Spec.Utils.is_i32b_array_opaque (v ${specs::FIELD_MAX}) (f_repr ${simd_unit})"#))]
     fn use_hint(gamma2: Gamma2, simd_unit: &Self, hint: &mut Self);
 
     // Modular operations
@@ -704,11 +714,15 @@ pub(crate) trait Operations: Copy + Clone + Repr {
             mod_q (v (Seq.index (${lhs.repr()}) i) * v (Seq.index (${rhs.repr()}) i) * 8265825))"#))]
     fn montgomery_multiply(lhs: &mut Self, rhs: &Self);
 
-    #[hax_lib::requires(true)]
+    // 261631 is the largest x such that x * pow2 13 <= 2143289343 (the barrett reduce input bound)
+    #[hax_lib::requires(fstar!(r#"v $SHIFT_BY == 13 /\ 
+        (forall i. i < 8 ==> v (Seq.index (f_repr ${simd_unit}) i) >= 0 /\
+            v (Seq.index (f_repr ${simd_unit}) i) <= 261631)"#))]
     fn shift_left_then_reduce<const SHIFT_BY: i32>(simd_unit: &mut Self);
 
     // Decomposition operations
-    #[hax_lib::requires(true)]
+    #[hax_lib::requires(fstar!(r#"
+        Spec.Utils.is_i32b_array_opaque (v ${specs::FIELD_MAX}) (f_repr ${t0})"#))]
     fn power2round(t0: &mut Self, t1: &mut Self);
 
     // Sampling
