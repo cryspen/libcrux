@@ -155,9 +155,6 @@ assume val mm256_unpackhi_epi64_lemma (a b: bv256) (i:u64{v i < 8}):
           i32))
   [SMTPat (to_i32x8 (Libcrux_intrinsics.Avx2.mm256_unpackhi_epi64 a b) i)]
 
-assume val mont_mul: i32 -> i32 -> i32
-
-
 assume val montgomery_multiply_aux_lemma field_modulus inverse_of_modulus_mod_montgomery_r
   (a b: Core_models.Abstractions.Bitvec.t_BitVec (mk_u64 256))
   (i:u64{v i < 8}):
@@ -177,7 +174,7 @@ assume val montgomery_multiply_aux_lemma field_modulus inverse_of_modulus_mod_mo
           Core_models.Abstractions.Bitvec.t_BitVec (mk_u64 256)))
   (ensures
     to_i32x8 (Libcrux_ml_dsa.Simd.Avx2.Arithmetic.montgomery_multiply_aux field_modulus inverse_of_modulus_mod_montgomery_r a b) i ==
-    mont_mul (to_i32x8 a i) (to_i32x8 b i))
+    Spec.MLDSA.Ntt.mont_mul (to_i32x8 a i) (to_i32x8 b i))
     [SMTPat (to_i32x8 (Libcrux_ml_dsa.Simd.Avx2.Arithmetic.montgomery_multiply_aux field_modulus inverse_of_modulus_mod_montgomery_r a b) i)]
 
 let montgomery_multiply_lemma
@@ -185,6 +182,7 @@ let montgomery_multiply_lemma
   (i:u64{v i < 8}):
   Lemma (
     to_i32x8 (Libcrux_ml_dsa.Simd.Avx2.Arithmetic.montgomery_multiply a b) i ==
-    mont_mul (to_i32x8 a i) (to_i32x8 b i))
+    Spec.MLDSA.Ntt.mont_mul (to_i32x8 a i) (to_i32x8 b i))
     [SMTPat (to_i32x8 (Libcrux_ml_dsa.Simd.Avx2.Arithmetic.montgomery_multiply a b) i)]
    = ()
+
