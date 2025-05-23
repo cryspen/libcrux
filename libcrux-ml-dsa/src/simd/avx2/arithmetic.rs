@@ -21,11 +21,14 @@ fn to_unsigned_representatives(t: &mut Vec256) {
 }
 
 #[inline(always)]
+#[hax_lib::fstar::before("open Spec.Intrinsics")]
+#[hax_lib::ensures(|r| fstar!("forall i. to_i32x8 ${lhs}_future i == to_i32x8 $lhs i `add_mod` to_i32x8 $rhs i"))]
 pub(super) fn add(lhs: &mut Vec256, rhs: &Vec256) {
     *lhs = mm256_add_epi32(*lhs, *rhs)
 }
 
 #[inline(always)]
+#[hax_lib::ensures(|r| fstar!("forall i. to_i32x8 ${lhs}_future i == to_i32x8 $lhs i `sub_mod` to_i32x8 $rhs i"))]
 pub(super) fn subtract(lhs: &mut Vec256, rhs: &Vec256) {
     *lhs = mm256_sub_epi32(*lhs, *rhs)
 }
@@ -54,6 +57,19 @@ pub(super) fn montgomery_multiply_by_constant(lhs: Vec256, constant: i32) -> Vec
     let res02_shifted = mm256_shuffle_epi32::<0b11_11_01_01>(res02);
     let res = mm256_blend_epi32::<0b10101010>(res02_shifted, res13);
     res
+}
+
+fn montgomery_multiply_spec(x: i32, y: i32) -> i32 {
+    pub fn i32_extended64_mul(x: i32, y: i32) -> i64 {
+        (x as i64) * (y as i64)
+    }
+    let x_mul_y = i32_extended64_mul(x, y);
+    let lhs = (x_mul_y >> 32i32) as i32;
+    let rhs = ((((i32_extended64_mul(x_mul_y as i32, INVERSE_OF_MODULUS_MOD_MONTGOMERY_R as i32)
+        as i32) as i64)
+        * (FIELD_MODULUS as i64))
+        >> 32i32) as i32;
+    lhs.wrapping_sub(rhs)
 }
 
 // #[hax_lib::fstar::postprocess_with(
@@ -114,7 +130,15 @@ pub(super) fn shift_left_then_reduce<const SHIFT_BY: i32>(simd_unit: &mut Vec256
 // TODO: Revisit this function when doing the range analysis and testing
 // additional KATs.
 #[inline(always)]
-#[hax_lib::fstar::verification_status(lax)]
+#[hax_lib::requires(fstar!(r#"
+(forall i. v (to_i32x8 $simd_unit i) >= -(v $FIELD_MODULUS - 1)
+         /\ v (to_i32x8 $simd_unit i) <=  (v $FIELD_MODULUS - 1)
+      ) /\ v bound > 0
+"#))]
+#[hax_lib::ensures(|result| fstar!(r#"
+result = false ==> (forall i. v (to_i32x8 simd_unit i) >= -(v bound - 1)
+                     /\ v (to_i32x8 simd_unit i) <=  (v bound - 1))
+"#))]
 pub(super) fn infinity_norm_exceeds(simd_unit: &Vec256, bound: i32) -> bool {
     let absolute_values = mm256_abs_epi32(*simd_unit);
 

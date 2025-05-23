@@ -337,6 +337,13 @@ val mm2_set_epi8_lemma
   )
   [SMTPat (to_u8x16 (I.mm_set_epi8 b0 b1 b2 b3 b4 b5 b6 b7 b8 b9 b10 b11 b12 b13 b14 b15) i)]
   
+val mm256_abs_epi32 vec i
+  : Lemma (  to_i32x8 (I.mm256_abs_epi32 vec) i
+          == (if v (to_i32x8 vec i) = minint I32
+              then to_i32x8 vec i
+              else abs_int (to_i32x8 vec i))
+          )
+   [SMTPat (to_i32x8 (I.mm256_abs_epi32 vec) i)]
 
 val mm256_set_epi16_lemma
   (v0 v1 v2 v3 v4 v5 v6 v7 v8 v9 v10 v11 v12 v13 v14 v15: i16)
@@ -429,6 +436,19 @@ val mm256_set_epi32_lemma (x0 x1 x2 x3 x4 x5 x6 x7:i32) (i:u64{v i < 8}):
 val mm256_set1_epi32_lemma (x0:i32) (i:u64{v i < 8}):
   Lemma (to_i32x8 (Libcrux_intrinsics.Avx2.mm256_set1_epi32 x0) i == x0)
   [SMTPat (to_i32x8 (Libcrux_intrinsics.Avx2.mm256_set1_epi32 x0) i)]
+  
+val mm256_cmpgt_epi32_lemma a b i:
+  Lemma ( to_i32x8 (Libcrux_intrinsics.Avx2.mm256_cmpgt_epi32 a b) i
+       == mk_int (if to_i32x8 a i >. to_i32x8 b i then -1 else 0)
+  ) [SMTPat (to_i32x8 (Libcrux_intrinsics.Avx2.mm256_cmpgt_epi32 a b) i)]
+
+val mm256_testz_si256_lemma_specialized a:
+  Lemma (I.mm256_testz_si256 a a
+     == (let is0at (i:nat{i < 8}) = v (to_i32x8 a (mk_int i)) = 0 in
+         if is0at 0 && is0at 1 && is0at 2 && is0at 3
+         && is0at 4 && is0at 5 && is0at 6 && is0at 7
+         then mk_int 1 else mk_int 0)
+  ) [SMTPat (I.mm256_testz_si256 a a)]
 
 val mm_set_epi32_lemma (x0 x1 x2 x3:i32) (i:u64{v i < 4}):
   Lemma (to_i32x4 (Libcrux_intrinsics.Avx2.mm_set_epi32 x0 x1 x2 x3) i ==
@@ -440,6 +460,7 @@ val mm256_blend_epi32_lemma (imm8: i32) (a b: bv256) (i:u64{v i < 8}):
         (if ((imm8 >>! i <: i32) %! mk_i32 2 <: i32) =. mk_i32 0 <: bool
          then to_i32x8 a i
          else to_i32x8 b i))
+  [SMTPat (to_i32x8 (Libcrux_intrinsics.Avx2.mm256_blend_epi32 imm8 a b) i)]
 
 val mm256_set_m128i_lemma (hi lo: bv128) (i:u64{v i < 8}):
   Lemma (to_i32x8 (Libcrux_intrinsics.Avx2.mm256_set_m128i hi lo) i ==
@@ -532,35 +553,34 @@ val i32_lt_pow2_n_to_bit_zero_lemma n vec
 
 val mont_mul: i32 -> i32 -> i32
 
+// val montgomery_multiply_aux_lemma field_modulus inverse_of_modulus_mod_montgomery_r
+//   (a b:  bv256)
+//   (i:u64{v i < 8}):
+//   Lemma
+//     (requires
+//         field_modulus ==
+//         (Libcrux_intrinsics.Avx2.mm256_set1_epi32 Libcrux_ml_dsa.Simd.Traits.v_FIELD_MODULUS
+//           <:
+//            bv256) /\
+//         inverse_of_modulus_mod_montgomery_r ==
+//         (Libcrux_intrinsics.Avx2.mm256_set1_epi32 (cast (Libcrux_ml_dsa.Simd.Traits.v_INVERSE_OF_MODULUS_MOD_MONTGOMERY_R
+//                   <:
+//                   u64)
+//               <:
+//               i32)
+//           <:
+//            bv256))
+//   (ensures
+//     to_i32x8 (Libcrux_ml_dsa.Simd.Avx2.Arithmetic.montgomery_multiply_aux field_modulus inverse_of_modulus_mod_montgomery_r a b) i ==
+//     Spec.MLDSA.Ntt.mont_mul (to_i32x8 a i) (to_i32x8 b i))
+//     [SMTPat (to_i32x8 (Libcrux_ml_dsa.Simd.Avx2.Arithmetic.montgomery_multiply_aux field_modulus inverse_of_modulus_mod_montgomery_r a b) i)]
 
-val montgomery_multiply_aux_lemma field_modulus inverse_of_modulus_mod_montgomery_r
-  (a b:  bv256)
-  (i:u64{v i < 8}):
-  Lemma
-    (requires
-        field_modulus ==
-        (Libcrux_intrinsics.Avx2.mm256_set1_epi32 Libcrux_ml_dsa.Simd.Traits.v_FIELD_MODULUS
-          <:
-           bv256) /\
-        inverse_of_modulus_mod_montgomery_r ==
-        (Libcrux_intrinsics.Avx2.mm256_set1_epi32 (cast (Libcrux_ml_dsa.Simd.Traits.v_INVERSE_OF_MODULUS_MOD_MONTGOMERY_R
-                  <:
-                  u64)
-              <:
-              i32)
-          <:
-           bv256))
-  (ensures
-    to_i32x8 (Libcrux_ml_dsa.Simd.Avx2.Arithmetic.montgomery_multiply_aux field_modulus inverse_of_modulus_mod_montgomery_r a b) i ==
-    Spec.MLDSA.Ntt.mont_mul (to_i32x8 a i) (to_i32x8 b i))
-    [SMTPat (to_i32x8 (Libcrux_ml_dsa.Simd.Avx2.Arithmetic.montgomery_multiply_aux field_modulus inverse_of_modulus_mod_montgomery_r a b) i)]
-
-let montgomery_multiply_lemma
-  (a b:  bv256)
-  (i:u64{v i < 8}):
-  Lemma (
-    to_i32x8 (Libcrux_ml_dsa.Simd.Avx2.Arithmetic.montgomery_multiply a b) i ==
-    Spec.MLDSA.Ntt.mont_mul (to_i32x8 a i) (to_i32x8 b i))
-    [SMTPat (to_i32x8 (Libcrux_ml_dsa.Simd.Avx2.Arithmetic.montgomery_multiply a b) i)]
-   = ()
+// let montgomery_multiply_lemma
+//   (a b:  bv256)
+//   (i:u64{v i < 8}):
+//   Lemma (
+//     to_i32x8 (Libcrux_ml_dsa.Simd.Avx2.Arithmetic.montgomery_multiply a b) i ==
+//     Spec.MLDSA.Ntt.mont_mul (to_i32x8 a i) (to_i32x8 b i))
+//     [SMTPat (to_i32x8 (Libcrux_ml_dsa.Simd.Avx2.Arithmetic.montgomery_multiply a b) i)]
+//    = ()
 
