@@ -334,6 +334,167 @@ let mod_p (v:int) (p:int{p>0/\ p%2=0}) : Tot int =
 
 let is_intb_bt (l:nat) (x:int) = (x > -l) && (x <= l)
 
+let forall4 (p:(x:nat{x < 4} -> Type0)) =
+    p 0  /\ p 1  /\ p 2  /\ p 3
+    
+let forall8 (p:(x:nat{x < 8} -> Type0)) =
+    p 0  /\ p 1  /\ p 2  /\ p 3  /\
+    p 4  /\ p 5  /\ p 6  /\ p 7 
+
+let forall16 (p:(x:nat{x < 16} -> Type0)) =
+    p 0  /\ p 1  /\ p 2  /\ p 3  /\
+    p 4  /\ p 5  /\ p 6  /\ p 7  /\
+    p 8  /\ p 9  /\ p 10 /\ p 11 /\
+    p 12 /\ p 13 /\ p 14 /\ p 15
+
+let forall32 (p:(x:nat{x < 32} -> Type0)) =
+    p 0  /\ p 1  /\ p 2  /\ p 3  /\
+    p 4  /\ p 5  /\ p 6  /\ p 7  /\
+    p 8  /\ p 9  /\ p 10 /\ p 11 /\
+    p 12 /\ p 13 /\ p 14 /\ p 15 /\
+    p 16 /\ p 17 /\ p 18 /\ p 19 /\
+    p 20 /\ p 21 /\ p 22 /\ p 23 /\
+    p 24 /\ p 25 /\ p 26 /\ p 27 /\
+    p 28 /\ p 29 /\ p 30 /\ p 31
+
+let modifies1_8 #t
+    (a b: t_Array t (sz 8))
+    (i:usize{v i < 8}) = 
+//    normalize_term (forall8 (fun j -> (v i <> j) ==> Seq.index a j == Seq.index b j))
+    ((v i <> 0)  ==> Seq.index a 0 == Seq.index b 0) /\
+    ((v i <> 1)  ==> Seq.index a 1 == Seq.index b 1) /\
+    ((v i <> 2)  ==> Seq.index a 2 == Seq.index b 2) /\
+    ((v i <> 3)  ==> Seq.index a 3 == Seq.index b 3) /\
+    ((v i <> 4)  ==> Seq.index a 4 == Seq.index b 4) /\
+    ((v i <> 5)  ==> Seq.index a 5 == Seq.index b 5) /\
+    ((v i <> 6)  ==> Seq.index a 6 == Seq.index b 6) /\
+    ((v i <> 7)  ==> Seq.index a 7 == Seq.index b 7)
+
+let modifies2_8 #t
+    (a b: t_Array t (sz 8))
+    (i:usize{v i < 8}) (j:usize{v j < 8}) =
+    ((v i <> 0 /\ v j <> 0)  ==> Seq.index a 0 == Seq.index b 0) /\
+    ((v i <> 1 /\ v j <> 1)  ==> Seq.index a 1 == Seq.index b 1) /\
+    ((v i <> 2 /\ v j <> 2)  ==> Seq.index a 2 == Seq.index b 2) /\
+    ((v i <> 3 /\ v j <> 3)  ==> Seq.index a 3 == Seq.index b 3) /\
+    ((v i <> 4 /\ v j <> 4)  ==> Seq.index a 4 == Seq.index b 4) /\
+    ((v i <> 5 /\ v j <> 5)  ==> Seq.index a 5 == Seq.index b 5) /\
+    ((v i <> 6 /\ v j <> 6)  ==> Seq.index a 6 == Seq.index b 6) /\
+    ((v i <> 7 /\ v j <> 7)  ==> Seq.index a 7 == Seq.index b 7)
+
+let modifies1_32 #t
+        (a b: t_Array t (mk_usize 32))
+        (j:usize{v j < 32}) =
+    // TODO: find some way to expand this from a smaller spec, e.g.:
+    // normalize_term (Spec.Utils.forall32 (fun x -> v j <> x ==> Seq.index a x == Seq.index b x))
+    (v j <> 0  ==> Seq.index a 0 == Seq.index b 0) /\
+    (v j <> 1  ==> Seq.index a 1 == Seq.index b 1) /\
+    (v j <> 2  ==> Seq.index a 2 == Seq.index b 2) /\
+    (v j <> 3  ==> Seq.index a 3 == Seq.index b 3) /\
+    (v j <> 4  ==> Seq.index a 4 == Seq.index b 4) /\
+    (v j <> 5  ==> Seq.index a 5 == Seq.index b 5) /\
+    (v j <> 6  ==> Seq.index a 6 == Seq.index b 6) /\
+    (v j <> 7  ==> Seq.index a 7 == Seq.index b 7) /\
+    (v j <> 8  ==> Seq.index a 8 == Seq.index b 8) /\
+    (v j <> 9  ==> Seq.index a 9 == Seq.index b 9) /\
+    (v j <> 10 ==> Seq.index a 10 == Seq.index b 10) /\
+    (v j <> 11 ==> Seq.index a 11 == Seq.index b 11) /\
+    (v j <> 12 ==> Seq.index a 12 == Seq.index b 12) /\
+    (v j <> 13 ==> Seq.index a 13 == Seq.index b 13) /\
+    (v j <> 14 ==> Seq.index a 14 == Seq.index b 14) /\
+    (v j <> 15 ==> Seq.index a 15 == Seq.index b 15) /\
+    (v j <> 16 ==> Seq.index a 16 == Seq.index b 16) /\
+    (v j <> 17 ==> Seq.index a 17 == Seq.index b 17) /\
+    (v j <> 18 ==> Seq.index a 18 == Seq.index b 18) /\
+    (v j <> 19 ==> Seq.index a 19 == Seq.index b 19) /\
+    (v j <> 20 ==> Seq.index a 20 == Seq.index b 20) /\
+    (v j <> 21 ==> Seq.index a 21 == Seq.index b 21) /\
+    (v j <> 22 ==> Seq.index a 22 == Seq.index b 22) /\
+    (v j <> 23 ==> Seq.index a 23 == Seq.index b 23) /\
+    (v j <> 24 ==> Seq.index a 24 == Seq.index b 24) /\
+    (v j <> 25 ==> Seq.index a 25 == Seq.index b 25) /\
+    (v j <> 26 ==> Seq.index a 26 == Seq.index b 26) /\
+    (v j <> 27 ==> Seq.index a 27 == Seq.index b 27) /\
+    (v j <> 28 ==> Seq.index a 28 == Seq.index b 28) /\
+    (v j <> 29 ==> Seq.index a 29 == Seq.index b 29) /\
+    (v j <> 30 ==> Seq.index a 30 == Seq.index b 30) /\
+    (v j <> 31 ==> Seq.index a 31 == Seq.index b 31)
+
+let modifies2_32 #t
+        (a b: t_Array t (mk_usize 32))
+        (i j:(n:usize{v n < 32})) =
+    // TODO: find some way to expand this from a smaller spec, e.g.:
+    // normalize_term (Spec.Utils.forall32 (fun x -> v j <> x ==> Seq.index a x == Seq.index b x))
+    ((v i <> 0  /\ v j <> 0)  ==> Seq.index a 0 == Seq.index b 0) /\
+    ((v i <> 1  /\ v j <> 1)  ==> Seq.index a 1 == Seq.index b 1) /\
+    ((v i <> 2  /\ v j <> 2)  ==> Seq.index a 2 == Seq.index b 2) /\
+    ((v i <> 3  /\ v j <> 3)  ==> Seq.index a 3 == Seq.index b 3) /\
+    ((v i <> 4  /\ v j <> 4)  ==> Seq.index a 4 == Seq.index b 4) /\
+    ((v i <> 5  /\ v j <> 5)  ==> Seq.index a 5 == Seq.index b 5) /\
+    ((v i <> 6  /\ v j <> 6)  ==> Seq.index a 6 == Seq.index b 6) /\
+    ((v i <> 7  /\ v j <> 7)  ==> Seq.index a 7 == Seq.index b 7) /\
+    ((v i <> 8  /\ v j <> 8)  ==> Seq.index a 8 == Seq.index b 8) /\
+    ((v i <> 9  /\ v j <> 9)  ==> Seq.index a 9 == Seq.index b 9) /\
+    ((v i <> 10 /\ v j <> 10) ==> Seq.index a 10 == Seq.index b 10) /\
+    ((v i <> 11 /\ v j <> 11) ==> Seq.index a 11 == Seq.index b 11) /\
+    ((v i <> 12 /\ v j <> 12) ==> Seq.index a 12 == Seq.index b 12) /\
+    ((v i <> 13 /\ v j <> 13) ==> Seq.index a 13 == Seq.index b 13) /\
+    ((v i <> 14 /\ v j <> 14) ==> Seq.index a 14 == Seq.index b 14) /\
+    ((v i <> 15 /\ v j <> 15) ==> Seq.index a 15 == Seq.index b 15) /\
+    ((v i <> 16 /\ v j <> 16) ==> Seq.index a 16 == Seq.index b 16) /\
+    ((v i <> 17 /\ v j <> 17) ==> Seq.index a 17 == Seq.index b 17) /\
+    ((v i <> 18 /\ v j <> 18) ==> Seq.index a 18 == Seq.index b 18) /\
+    ((v i <> 19 /\ v j <> 19) ==> Seq.index a 19 == Seq.index b 19) /\
+    ((v i <> 20 /\ v j <> 20) ==> Seq.index a 20 == Seq.index b 20) /\
+    ((v i <> 21 /\ v j <> 21) ==> Seq.index a 21 == Seq.index b 21) /\
+    ((v i <> 22 /\ v j <> 22) ==> Seq.index a 22 == Seq.index b 22) /\
+    ((v i <> 23 /\ v j <> 23) ==> Seq.index a 23 == Seq.index b 23) /\
+    ((v i <> 24 /\ v j <> 24) ==> Seq.index a 24 == Seq.index b 24) /\
+    ((v i <> 25 /\ v j <> 25) ==> Seq.index a 25 == Seq.index b 25) /\
+    ((v i <> 26 /\ v j <> 26) ==> Seq.index a 26 == Seq.index b 26) /\
+    ((v i <> 27 /\ v j <> 27) ==> Seq.index a 27 == Seq.index b 27) /\
+    ((v i <> 28 /\ v j <> 28) ==> Seq.index a 28 == Seq.index b 28) /\
+    ((v i <> 29 /\ v j <> 29) ==> Seq.index a 29 == Seq.index b 29) /\
+    ((v i <> 30 /\ v j <> 30) ==> Seq.index a 30 == Seq.index b 30) /\
+    ((v i <> 31 /\ v j <> 31) ==> Seq.index a 31 == Seq.index b 31)
+
+let modifies_range_32 #t
+        (a b: t_Array t (mk_usize 32))
+        (i:usize{v i < 32}) (j:usize{v j <= 32 /\ v i <= v j}) =
+//    normalize_term (forall32 (fun k -> ((v i > k \/ k >= v j)   ==> Seq.index a k == Seq.index b k)))
+    ((v i > 0 \/ 0 >= v j)   ==> Seq.index a 0 == Seq.index b 0) /\
+    ((v i > 1 \/ 1 >= v j)   ==> Seq.index a 1 == Seq.index b 1) /\
+    ((v i > 2 \/ 2 >= v j)   ==> Seq.index a 2 == Seq.index b 2) /\
+    ((v i > 3 \/ 3 >= v j)   ==> Seq.index a 3 == Seq.index b 3) /\
+    ((v i > 4 \/ 4 >= v j)   ==> Seq.index a 4 == Seq.index b 4) /\
+    ((v i > 5 \/ 5 >= v j)   ==> Seq.index a 5 == Seq.index b 5) /\
+    ((v i > 6 \/ 6 >= v j)   ==> Seq.index a 6 == Seq.index b 6) /\
+    ((v i > 7 \/ 7 >= v j)   ==> Seq.index a 7 == Seq.index b 7) /\
+    ((v i > 8 \/ 8 >= v j)   ==> Seq.index a 8 == Seq.index b 8) /\
+    ((v i > 9 \/ 9 >= v j)   ==> Seq.index a 9 == Seq.index b 9) /\
+    ((v i > 10 \/ 10 >= v j) ==> Seq.index a 10 == Seq.index b 10) /\
+    ((v i > 11 \/ 11 >= v j) ==> Seq.index a 11 == Seq.index b 11) /\
+    ((v i > 12 \/ 12 >= v j) ==> Seq.index a 12 == Seq.index b 12) /\
+    ((v i > 13 \/ 13 >= v j) ==> Seq.index a 13 == Seq.index b 13) /\
+    ((v i > 14 \/ 14 >= v j) ==> Seq.index a 14 == Seq.index b 14) /\
+    ((v i > 15 \/ 15 >= v j) ==> Seq.index a 15 == Seq.index b 15) /\
+    ((v i > 16 \/ 16 >= v j) ==> Seq.index a 16 == Seq.index b 16) /\
+    ((v i > 17 \/ 17 >= v j) ==> Seq.index a 17 == Seq.index b 17) /\
+    ((v i > 18 \/ 18 >= v j) ==> Seq.index a 18 == Seq.index b 18) /\
+    ((v i > 19 \/ 19 >= v j) ==> Seq.index a 19 == Seq.index b 19) /\
+    ((v i > 20 \/ 20 >= v j) ==> Seq.index a 20 == Seq.index b 20) /\
+    ((v i > 21 \/ 21 >= v j) ==> Seq.index a 21 == Seq.index b 21) /\
+    ((v i > 22 \/ 22 >= v j) ==> Seq.index a 22 == Seq.index b 22) /\
+    ((v i > 23 \/ 23 >= v j) ==> Seq.index a 23 == Seq.index b 23) /\
+    ((v i > 24 \/ 24 >= v j) ==> Seq.index a 24 == Seq.index b 24) /\
+    ((v i > 25 \/ 25 >= v j) ==> Seq.index a 25 == Seq.index b 25) /\
+    ((v i > 26 \/ 26 >= v j) ==> Seq.index a 26 == Seq.index b 26) /\
+    ((v i > 27 \/ 27 >= v j) ==> Seq.index a 27 == Seq.index b 27) /\
+    ((v i > 28 \/ 28 >= v j) ==> Seq.index a 28 == Seq.index b 28) /\
+    ((v i > 29 \/ 29 >= v j) ==> Seq.index a 29 == Seq.index b 29) /\
+    ((v i > 30 \/ 30 >= v j) ==> Seq.index a 30 == Seq.index b 30) /\
+    ((v i > 31 \/ 31 >= v j) ==> Seq.index a 31 == Seq.index b 31)
+
 let modifies_range2_32 #t
         (a b: t_Array t (mk_usize 32))
         (i:usize{v i < 32}) (j:usize{v j <= 32 /\ v i <= v j})
@@ -371,63 +532,3 @@ let modifies_range2_32 #t
     (~((v i <= 30 /\ 30 < v j) \/ (v k <= 30 /\ 30 < v l))  ==> Seq.index a 30 == Seq.index b 30) /\
     (~((v i <= 31 /\ 31 < v j) \/ (v k <= 31 /\ 31 < v l))  ==> Seq.index a 31 == Seq.index b 31)
 
-(*** Quantifiers Helpers *)
-open FStar.Tactics
-(**** Generic utilities *)
-let rec forall_n (n:pos) (p:(x:nat{x < n} -> Type0)): r: Type0 {r <==> forall (x:nat{x < n}). p x}
-  = if n = 1 then p 0
-             else forall_n (n - 1) p /\ p (n - 1)
-
-/// The arrays [a] and [b] are identical but at index [i]
-let modifies1_n #t n
-    (a b: t_Array t (sz n))
-    (i:usize{v i < n}) =
-    forall_n n (fun j -> (v i <> j) ==> Seq.index a j == Seq.index b j)
-
-/// The arrays [a] and [b] are identical but at indexes [i1] and [i2]
-let modifies2_n #t n
-    (a b: t_Array t (sz n))
-    (i1 i2:(i:usize{v i < n})) =
-    forall_n n (fun i -> ((v i1 <> i) /\ (v i2 <> i)) ==> Seq.index a i == Seq.index b i)
-
-/// The arrays [a] and [b] are identical but at indexes in the range `[i; j]`
-let modifies_range_n #t n
-        (a b: t_Array t (mk_usize n))
-        (i:usize{v i < n}) (j:usize{v j <= n /\ v i <= v j}) =
-   forall_n n (fun k -> ((v i > k \/ k >= v j)   ==> Seq.index a k == Seq.index b k))
-
-/// Tactic that unrolls fully any function present in this module
-private let unroll (): Tac unit
-  = norm [primops; iota; delta_namespace [implode_qn(cur_module ())]; zeta_full];
-    trefl ()
-
-(**** Specialized and normalized utilities *)
-[@@postprocess_with unroll] let forall2  = forall_n 4
-[@@postprocess_with unroll] let forall4  = forall_n 4
-[@@postprocess_with unroll] let forall8  = forall_n 8
-[@@postprocess_with unroll] let forall16 = forall_n 16
-[@@postprocess_with unroll] let forall32 = forall_n 32
-[@@postprocess_with unroll] let forall64 = forall_n 64
-[@@postprocess_with unroll] let forall128 = forall_n 128
-[@@postprocess_with unroll] let forall256 = forall_n 256
-
-[@@postprocess_with unroll] let modifies1_8  = modifies1_n 8
-[@@postprocess_with unroll] let modifies1_16 = modifies1_n 16
-[@@postprocess_with unroll] let modifies1_32 = modifies1_n 32
-[@@postprocess_with unroll] let modifies1_64 = modifies1_n 64
-[@@postprocess_with unroll] let modifies1_128 = modifies1_n 128
-[@@postprocess_with unroll] let modifies1_256 = modifies1_n 256
-
-[@@postprocess_with unroll] let modifies2_8  = modifies2_n 8
-[@@postprocess_with unroll] let modifies2_16 = modifies2_n 16
-[@@postprocess_with unroll] let modifies2_32 = modifies2_n 32
-[@@postprocess_with unroll] let modifies2_64 = modifies2_n 64
-[@@postprocess_with unroll] let modifies2_128 = modifies2_n 128
-[@@postprocess_with unroll] let modifies2_256 = modifies2_n 256
-
-[@@postprocess_with unroll] let modifies_range_8  = modifies_range_n 8
-[@@postprocess_with unroll] let modifies_range_16 = modifies_range_n 16
-[@@postprocess_with unroll] let modifies_range_32 = modifies_range_n 32
-[@@postprocess_with unroll] let modifies_range_64 = modifies_range_n 64
-[@@postprocess_with unroll] let modifies_range_128 = modifies_range_n 128
-[@@postprocess_with unroll] let modifies_range_256 = modifies_range_n 256
