@@ -1,3 +1,8 @@
+#
+#       Disclaimer: This nix environment is provided as-is.
+#       None of this is officially supported and use is at your own risk.
+#       We do not maintain or support nix environments.
+#
 {
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
