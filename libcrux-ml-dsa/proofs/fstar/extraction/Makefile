@@ -1,4 +1,4 @@
-SLOW_MODULES +=
+SLOW_MODULES += Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment.fst
 VERIFIED_MODULES = \
 	Libcrux_ml_dsa.Simd.Portable.Encoding.Commitment.fsti \
 	Libcrux_ml_dsa.Simd.Portable.Encoding.Commitment.fst \
@@ -10,7 +10,6 @@ VERIFIED_MODULES = \
 	Libcrux_ml_dsa.Simd.Avx2.Ntt.fst \
 	Libcrux_ml_dsa.Simd.Traits.fsti \
 	Libcrux_ml_dsa.Simd.Traits.fst \
-	 Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment.fst \
 	end_of_verified_modules
 VERIFIED_OR_SLOW_MODULES = $(sort $(SLOW_MODULES) $(VERIFIED_MODULES))
 ADMIT_MODULES = $(filter-out ${VERIFIED_OR_SLOW_MODULES}, $(wildcard *.fst)) $(filter-out ${VERIFIED_OR_SLOW_MODULES}, $(wildcard *.fsti))
