@@ -244,7 +244,7 @@ val mm256_madd_epi16_lemma (a b: bv256) i
                let y = (to_i16x16 a (mk_int (nth_32_block * 2 + 1)) `i16_mul_32extended` to_i16x16 b (mk_int (nth_32_block * 2 + 1))) in
                i32_to_bv (x `i32_wrapping_add` y) (i %! mk_int 32)
              )
-   ) [SMTPat (I.mm256_madd_epi16 a b).(i)]
+   ) (* [SMTPat (I.mm256_madd_epi16 a b).(i)] *)
 
 val mm256_madd_epi16_specialized_lemma vec i:
   Lemma
@@ -426,6 +426,10 @@ val mm256_set_epi32_lemma (x0 x1 x2 x3 x4 x5 x6 x7:i32) (i:u64{v i < 8}):
         ))
   [SMTPat (to_i32x8 (Libcrux_intrinsics.Avx2.mm256_set_epi32 x0 x1 x2 x3 x4 x5 x6 x7) i)]
 
+val mm256_set1_epi32_lemma (x0:i32) (i:u64{v i < 8}):
+  Lemma (to_i32x8 (Libcrux_intrinsics.Avx2.mm256_set1_epi32 x0) i == x0)
+  [SMTPat (to_i32x8 (Libcrux_intrinsics.Avx2.mm256_set1_epi32 x0) i)]
+
 val mm_set_epi32_lemma (x0 x1 x2 x3:i32) (i:u64{v i < 4}):
   Lemma (to_i32x4 (Libcrux_intrinsics.Avx2.mm_set_epi32 x0 x1 x2 x3) i ==
         (match v i with | 0 -> x3 | 1 -> x2 | 2 -> x1 | 3 -> x0))
@@ -518,6 +522,11 @@ val mm256_unpackhi_epi64_lemma (a b: bv256) (i:u64{v i < 8}):
           <:
           i32))
   [SMTPat (to_i32x8 (Libcrux_intrinsics.Avx2.mm256_unpackhi_epi64 a b) i)]
+
+val i32_lt_pow2_n_to_bit_zero_lemma n vec
+  : Lemma (forall i. v (to_i32x8 vec (i /! mk_int 32)) <= normalize_term (pow2 n - 1)
+                ==> v i % 32 >= n
+                ==> vec.(i) == Core_models.Abstractions.Bit.Bit_Zero)
 
 (**** Mongemory multiply *)
 
