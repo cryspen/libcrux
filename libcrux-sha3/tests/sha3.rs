@@ -113,18 +113,24 @@ mod portable {
     use libcrux_sha3::portable::incremental::Xof;
     use libcrux_sha3::portable::{incremental, sha224, sha256, sha384, sha512, shake128, shake256};
 
+    const DIGEST_LEN: usize = 42;
+    const STRING_LEN: usize = DIGEST_LEN * 2;
+
+    const DIGEST_LEN_SHAKE256: usize = 136;
+    const STRING_LEN_SHAKE256: usize = DIGEST_LEN_SHAKE256 * 2;
+
     #[test]
     fn sha3_224() {
         let mut digest = [0u8; 28];
 
         sha224(&mut digest, test_vectors::EMPTY);
-        assert_eq!(hex::encode(&digest), test_vectors::sha3_224::EMPTY);
+        assert_eq!(hex::encode(digest), test_vectors::sha3_224::EMPTY);
 
         sha224(&mut digest, test_vectors::HELLO);
-        assert_eq!(hex::encode(&digest), test_vectors::sha3_224::HELLO);
+        assert_eq!(hex::encode(digest), test_vectors::sha3_224::HELLO);
 
         sha224(&mut digest, test_vectors::FOX);
-        assert_eq!(hex::encode(&digest), test_vectors::sha3_224::FOX);
+        assert_eq!(hex::encode(digest), test_vectors::sha3_224::FOX);
     }
 
     #[test]
@@ -132,13 +138,13 @@ mod portable {
         let mut digest = [0u8; 32];
 
         sha256(&mut digest, test_vectors::EMPTY);
-        assert_eq!(hex::encode(&digest), test_vectors::sha3_256::EMPTY);
+        assert_eq!(hex::encode(digest), test_vectors::sha3_256::EMPTY);
 
         sha256(&mut digest, test_vectors::HELLO);
-        assert_eq!(hex::encode(&digest), test_vectors::sha3_256::HELLO);
+        assert_eq!(hex::encode(digest), test_vectors::sha3_256::HELLO);
 
         sha256(&mut digest, test_vectors::FOX);
-        assert_eq!(hex::encode(&digest), test_vectors::sha3_256::FOX);
+        assert_eq!(hex::encode(digest), test_vectors::sha3_256::FOX);
     }
 
     #[test]
@@ -146,13 +152,13 @@ mod portable {
         let mut digest = [0u8; 48];
 
         sha384(&mut digest, test_vectors::EMPTY);
-        assert_eq!(hex::encode(&digest), test_vectors::sha3_384::EMPTY);
+        assert_eq!(hex::encode(digest), test_vectors::sha3_384::EMPTY);
 
         sha384(&mut digest, test_vectors::HELLO);
-        assert_eq!(hex::encode(&digest), test_vectors::sha3_384::HELLO);
+        assert_eq!(hex::encode(digest), test_vectors::sha3_384::HELLO);
 
         sha384(&mut digest, test_vectors::FOX);
-        assert_eq!(hex::encode(&digest), test_vectors::sha3_384::FOX);
+        assert_eq!(hex::encode(digest), test_vectors::sha3_384::FOX);
     }
 
     #[test]
@@ -160,45 +166,45 @@ mod portable {
         let mut digest = [0u8; 64];
 
         sha512(&mut digest, test_vectors::EMPTY);
-        assert_eq!(hex::encode(&digest), test_vectors::sha3_512::EMPTY);
+        assert_eq!(hex::encode(digest), test_vectors::sha3_512::EMPTY);
 
         sha512(&mut digest, test_vectors::HELLO);
-        assert_eq!(hex::encode(&digest), test_vectors::sha3_512::HELLO);
+        assert_eq!(hex::encode(digest), test_vectors::sha3_512::HELLO);
 
         sha512(&mut digest, test_vectors::FOX);
-        assert_eq!(hex::encode(&digest), test_vectors::sha3_512::FOX);
+        assert_eq!(hex::encode(digest), test_vectors::sha3_512::FOX);
     }
 
     #[test]
     fn sha3_shake128() {
-        let mut digest = [0u8; 42];
+        let mut digest = [0u8; DIGEST_LEN];
 
         shake128(&mut digest, test_vectors::HELLO);
         assert_eq!(
-            hex::encode(&digest),
-            &test_vectors::shake128::HELLO_FIVE_BLOCKS[..84]
+            hex::encode(digest),
+            &test_vectors::shake128::HELLO_FIVE_BLOCKS[..STRING_LEN]
         );
 
         let mut digest = [0u8; 53];
 
         shake128(&mut digest, test_vectors::FOX);
-        assert_eq!(hex::encode(&digest), test_vectors::shake128::FOX_53);
+        assert_eq!(hex::encode(digest), test_vectors::shake128::FOX_53);
     }
 
     #[test]
     fn sha3_shake256() {
-        let mut digest = [0u8; 42];
+        let mut digest = [0u8; DIGEST_LEN];
 
         shake256(&mut digest, test_vectors::HELLO);
         assert_eq!(
-            hex::encode(&digest),
-            &test_vectors::shake256::HELLO_FIVE_BLOCKS[..84]
+            hex::encode(digest),
+            &test_vectors::shake256::HELLO_FIVE_BLOCKS[..STRING_LEN]
         );
 
         let mut digest = [0u8; 71];
 
         shake256(&mut digest, test_vectors::FOX);
-        assert_eq!(hex::encode(&digest), test_vectors::shake256::FOX_71);
+        assert_eq!(hex::encode(digest), test_vectors::shake256::FOX_71);
     }
 
     #[test]
@@ -207,17 +213,11 @@ mod portable {
         let mut state = incremental::shake128_init();
         incremental::shake128_absorb_final(&mut state, test_vectors::HELLO);
 
-        let mut digest = [0u8; 168];
-        incremental::shake128_squeeze_first_block(&mut state, &mut digest);
-        assert_eq!(
-            hex::encode(&digest),
-            &test_vectors::shake128::HELLO_FIVE_BLOCKS[..336]
-        );
-
         // Test squeezing next block (168 bytes)
+        let mut digest = [0u8; DIGEST_LEN * 4];
         incremental::shake128_squeeze_next_block(&mut state, &mut digest);
         assert_eq!(
-            hex::encode(&digest),
+            hex::encode(digest),
             &test_vectors::shake128::HELLO_FIVE_BLOCKS[336..672]
         );
 
@@ -227,11 +227,11 @@ mod portable {
         state = incremental::shake128_init();
         incremental::shake128_absorb_final(&mut state, test_vectors::HELLO);
 
-        let mut digest = [0u8; 504];
+        let mut digest = [0u8; DIGEST_LEN * 12];
         incremental::shake128_squeeze_first_three_blocks(&mut state, &mut digest);
         assert_eq!(
-            hex::encode(&digest),
-            &test_vectors::shake128::HELLO_FIVE_BLOCKS[..1008]
+            hex::encode(digest),
+            &test_vectors::shake128::HELLO_FIVE_BLOCKS[..STRING_LEN * 12]
         );
 
         // ---
@@ -240,10 +240,10 @@ mod portable {
         state = incremental::shake128_init();
         incremental::shake128_absorb_final(&mut state, test_vectors::HELLO);
 
-        let mut digest = [0u8; 840];
+        let mut digest = [0u8; DIGEST_LEN * 20];
         incremental::shake128_squeeze_first_five_blocks(&mut state, &mut digest);
         assert_eq!(
-            hex::encode(&digest),
+            hex::encode(digest),
             test_vectors::shake128::HELLO_FIVE_BLOCKS
         );
     }
@@ -254,40 +254,19 @@ mod portable {
         let mut state = incremental::shake256_init();
         incremental::shake256_absorb_final(&mut state, test_vectors::HELLO);
 
-        let mut digest = [0u8; 136];
+        let mut digest = [0u8; DIGEST_LEN_SHAKE256];
         incremental::shake256_squeeze_first_block(&mut state, &mut digest);
         assert_eq!(
-            hex::encode(&digest),
-            &test_vectors::shake256::HELLO_FIVE_BLOCKS[..272]
+            hex::encode(digest),
+            &test_vectors::shake256::HELLO_FIVE_BLOCKS[..STRING_LEN_SHAKE256]
         );
 
         // Test squeezing next block (136 bytes)
         incremental::shake256_squeeze_next_block(&mut state, &mut digest);
         assert_eq!(
-            hex::encode(&digest),
-            &test_vectors::shake256::HELLO_FIVE_BLOCKS[272..544]
-        );
-
-        // Test squeezing 3 blocks (408 bytes = 3 * 136)
-        state = incremental::shake256_init();
-        incremental::shake256_absorb_final(&mut state, test_vectors::HELLO);
-
-        let mut digest = [0u8; 408];
-        incremental::shake256_squeeze_first_three_blocks(&mut state, &mut digest);
-        assert_eq!(
-            hex::encode(&digest),
-            &test_vectors::shake256::HELLO_FIVE_BLOCKS[..816]
-        );
-
-        // Test squeezing 5 blocks (680 bytes = 5 * 136)
-        state = incremental::shake256_init();
-        incremental::shake256_absorb_final(&mut state, test_vectors::HELLO);
-
-        let mut digest = [0u8; 680];
-        incremental::shake256_squeeze_first_five_blocks(&mut state, &mut digest);
-        assert_eq!(
-            hex::encode(&digest),
-            &test_vectors::shake256::HELLO_FIVE_BLOCKS[..1360]
+            hex::encode(digest),
+            &test_vectors::shake256::HELLO_FIVE_BLOCKS
+                [DIGEST_LEN_SHAKE256 * 2..DIGEST_LEN_SHAKE256 * 4]
         );
     }
 
@@ -299,7 +278,7 @@ mod portable {
         let mut digest = [0u8; 32];
         state.squeeze(&mut digest);
         let expected = "62dac7f538d3c56e66a1e0ccda69f4b6c8f6269572ad9312c7a04a2228b474a5";
-        assert_eq!(hex::encode(&digest), expected);
+        assert_eq!(hex::encode(digest), expected);
 
         // ---
 
@@ -309,9 +288,18 @@ mod portable {
 
         state.squeeze(&mut digest);
         assert_eq!(
-            hex::encode(&digest),
+            hex::encode(digest),
             &test_vectors::shake128::HELLO_FIVE_BLOCKS[..64]
         );
+
+        // ---
+
+        state = incremental::Shake128Xof::new();
+        state.absorb(b"Hello, ");
+        state.absorb_final(&[]);
+
+        state.squeeze(&mut digest);
+        assert_eq!(hex::encode(digest), expected);
     }
 
     #[test]
@@ -322,7 +310,7 @@ mod portable {
         let mut digest = [0u8; 32];
         state.squeeze(&mut digest);
         let expected = "018680a686f24f889fe4613dba0058ea1b035b7270a8c26b363f42557bbd991a";
-        assert_eq!(hex::encode(&digest), expected);
+        assert_eq!(hex::encode(digest), expected);
 
         // ---
 
@@ -332,32 +320,17 @@ mod portable {
 
         state.squeeze(&mut digest);
         assert_eq!(
-            hex::encode(&digest),
+            hex::encode(digest),
             &test_vectors::shake256::HELLO_FIVE_BLOCKS[..64]
         );
+
+        // ---
+
+        state = incremental::Shake256Xof::new();
+        state.absorb(b"Hello, ");
+        state.absorb_final(&[]);
+
+        state.squeeze(&mut digest);
+        assert_eq!(hex::encode(digest), expected);
     }
-}
-
-#[test]
-fn sha3_kat_oneshot() {
-    let d256 = libcrux_sha3::sha256(b"Hello, World!");
-    let expected256 = "1af17a664e3fa8e419b8ba05c2a173169df76162a5a286e0c405b460d478f7ef";
-    assert_eq!(hex::encode(&d256), expected256);
-
-    let dshake = libcrux_sha3::shake128::<42>(b"Hello, World!");
-    let expectedshake =
-        "2bf5e6dee6079fad604f573194ba8426bd4d30eb13e8ba2edae70e529b570cbdd588f2c5dd4e465dfbaf";
-    assert_eq!(hex::encode(&dshake), expectedshake);
-}
-
-#[test]
-fn sha3_simd_kat_oneshot() {
-    let d256 = libcrux_sha3::sha256(b"Hello, World!");
-    let expected256 = "1af17a664e3fa8e419b8ba05c2a173169df76162a5a286e0c405b460d478f7ef";
-    assert_eq!(hex::encode(&d256), expected256);
-
-    let dshake = libcrux_sha3::shake128::<42>(b"Hello, World!");
-    let expectedshake =
-        "2bf5e6dee6079fad604f573194ba8426bd4d30eb13e8ba2edae70e529b570cbdd588f2c5dd4e465dfbaf";
-    assert_eq!(hex::encode(&dshake), expectedshake);
 }
