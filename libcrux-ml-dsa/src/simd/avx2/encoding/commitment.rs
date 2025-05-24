@@ -17,8 +17,16 @@ use core_models::abstractions::{
 })]
 #[inline(always)]
 fn serialize_6(simd_unit: &Vec256) -> (Vec128, Vec128) {
-    #[hax_lib::fstar::before(r#"[@@FStar.Tactics.postprocess_with ${bitvec_postprocess_norm}]"#)]
-    #[inline(always)]
+    #[hax_lib::ensures(|result| fstar!(r#"
+      let (lower, upper) = $result in 
+      let open Spec.Intrinsics in
+      forall (i: nat {i < 48}).
+         (if i < 24 then lower.(mk_int i) else upper.(mk_int (i - 24)))
+      == (${simd_unit}.(mk_int ((i / 6) * 32 + i % 6)))
+    "#
+    ))]
+    #[hax_lib::fstar::options("--ifuel 0 --z3rlimit 380")]
+    #[hax_lib::fstar::before(r#"[@@"opaque_to_smt"]"#)]
     fn normalized_serialize_6(simd_unit: &Vec256) -> (Vec128, Vec128) {
         let adjacent_2_combined =
             mm256_sllv_epi32(*simd_unit, mm256_set_epi32(0, 26, 0, 26, 0, 26, 0, 26));
@@ -77,8 +85,12 @@ fn serialize_6(simd_unit: &Vec256) -> (Vec128, Vec128) {
 })]
 #[inline(always)]
 fn serialize_4(simd_unit: &Vec256) -> Vec128 {
-    // The F* annotation normalizes the body of the function. After normalization, this function is a simple permutation of bits.
-    #[hax_lib::fstar::before(r#"[@@FStar.Tactics.postprocess_with ${bitvec_postprocess_norm}]"#)]
+    #[hax_lib::fstar::options("--ifuel 0 --z3rlimit 380")]
+    #[hax_lib::ensures(|result| fstar!(r"
+        let open Spec.Intrinsics in
+          forall (i: nat{i < 32}).
+                ${result}.(mk_int i) == simd_unit.(mk_int ((i / 4) * 32 + i % 4))
+    "))]
     #[inline(always)]
     fn normalized_serialize_4(simd_unit: &Vec256) -> Vec128 {
         let adjacent_2_combined =
