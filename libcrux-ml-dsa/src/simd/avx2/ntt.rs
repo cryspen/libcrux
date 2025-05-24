@@ -401,7 +401,7 @@ unsafe fn ntt_at_layer_2(re: &mut AVX2RingElement) {
 /// This is the same as in pqclean. The only difference is locality of registers.
 #[cfg_attr(not(hax), target_feature(enable = "avx2"))]
 #[allow(unsafe_code)]
-#[hax_lib::fstar::options(r#"--fuel 0 --ifuel 0 --z3rlimit 100"#)]
+#[hax_lib::fstar::options(r#"--fuel 0 --ifuel 0 --z3rlimit 200"#)]
 #[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
 unsafe fn ntt_at_layer_7_and_6(re: &mut AVX2RingElement) {
     let field_modulus = mm256_set1_epi32(crate::simd::traits::FIELD_MODULUS);
@@ -486,8 +486,8 @@ unsafe fn ntt_at_layer_7_and_6(re: &mut AVX2RingElement) {
         }};
     }
 
-    const STEP_BY_7: usize = 2 * COEFFICIENTS_IN_SIMD_UNIT;
-    const STEP_BY_6: usize = (1 << 6) / COEFFICIENTS_IN_SIMD_UNIT;
+    const STEP_BY_7: usize = 16; //2 * COEFFICIENTS_IN_SIMD_UNIT;
+    const STEP_BY_6: usize = 8; //(1 << 6) / COEFFICIENTS_IN_SIMD_UNIT;
 
     let zeta7 = mm256_set1_epi32(25847);
     let zeta60 = mm256_set1_epi32(-2608894);
