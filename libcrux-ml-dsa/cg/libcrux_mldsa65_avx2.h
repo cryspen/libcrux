@@ -8,7 +8,7 @@
  * Eurydice: d3b14228e2b5fe8710ec7efae31e4de2c96ed20d
  * Karamel: 095cdb73f246711f93f99a159ceca37cd2c227e1
  * F*: 4b3fc11774003a6ff7c09500ecb5f0145ca6d862
- * Libcrux: bdcd1a65f0598266ae3fcd8bb4df2e603ffc00b7
+ * Libcrux: 9d6fd26d4cdcc105035986cf23006e0982cf78ce
  */
 
 #ifndef __libcrux_mldsa65_avx2_H
@@ -603,14 +603,9 @@ static KRML_MUSTINLINE void libcrux_ml_dsa_simd_avx2_use_hint_22(
 
 KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE void
-libcrux_ml_dsa_simd_avx2_arithmetic_montgomery_multiply(__m256i *lhs,
-                                                        __m256i *rhs) {
-  __m256i field_modulus = libcrux_intrinsics_avx2_mm256_set1_epi32(
-      LIBCRUX_ML_DSA_SIMD_TRAITS_FIELD_MODULUS);
-  __m256i inverse_of_modulus_mod_montgomery_r =
-      libcrux_intrinsics_avx2_mm256_set1_epi32(
-          (int32_t)
-              LIBCRUX_ML_DSA_SIMD_TRAITS_INVERSE_OF_MODULUS_MOD_MONTGOMERY_R);
+libcrux_ml_dsa_simd_avx2_arithmetic_montgomery_multiply_aux(
+    __m256i field_modulus, __m256i inverse_of_modulus_mod_montgomery_r,
+    __m256i *lhs, __m256i *rhs) {
   __m256i prod02 = libcrux_intrinsics_avx2_mm256_mul_epi32(lhs[0U], rhs[0U]);
   __m256i prod13 = libcrux_intrinsics_avx2_mm256_mul_epi32(
       libcrux_intrinsics_avx2_mm256_shuffle_epi32((int32_t)245, lhs[0U],
@@ -629,6 +624,20 @@ libcrux_ml_dsa_simd_avx2_arithmetic_montgomery_multiply(__m256i *lhs,
       libcrux_intrinsics_avx2_mm256_shuffle_epi32((int32_t)245, res02, __m256i);
   lhs[0U] = libcrux_intrinsics_avx2_mm256_blend_epi32(
       (int32_t)170, res02_shifted, res13, __m256i);
+}
+
+KRML_ATTRIBUTE_TARGET("avx2")
+static KRML_MUSTINLINE void
+libcrux_ml_dsa_simd_avx2_arithmetic_montgomery_multiply(__m256i *lhs,
+                                                        __m256i *rhs) {
+  __m256i field_modulus = libcrux_intrinsics_avx2_mm256_set1_epi32(
+      LIBCRUX_ML_DSA_SIMD_TRAITS_FIELD_MODULUS);
+  __m256i inverse_of_modulus_mod_montgomery_r =
+      libcrux_intrinsics_avx2_mm256_set1_epi32(
+          (int32_t)
+              LIBCRUX_ML_DSA_SIMD_TRAITS_INVERSE_OF_MODULUS_MOD_MONTGOMERY_R);
+  libcrux_ml_dsa_simd_avx2_arithmetic_montgomery_multiply_aux(
+      field_modulus, inverse_of_modulus_mod_montgomery_r, lhs, rhs);
 }
 
 /**
@@ -1803,24 +1812,9 @@ static KRML_MUSTINLINE void
 libcrux_ml_dsa_simd_avx2_ntt_ntt_at_layer_7_and_6_mul(
     __m256i *re, size_t index, __m256i zeta, size_t step_by,
     __m256i field_modulus, __m256i inverse_of_modulus_mod_montgomery_r) {
-  __m256i prod02 =
-      libcrux_intrinsics_avx2_mm256_mul_epi32(re[index + step_by], zeta);
-  __m256i prod13 = libcrux_intrinsics_avx2_mm256_mul_epi32(
-      libcrux_intrinsics_avx2_mm256_shuffle_epi32((int32_t)245,
-                                                  re[index + step_by], __m256i),
-      libcrux_intrinsics_avx2_mm256_shuffle_epi32((int32_t)245, zeta, __m256i));
-  __m256i k02 = libcrux_intrinsics_avx2_mm256_mul_epi32(
-      prod02, inverse_of_modulus_mod_montgomery_r);
-  __m256i k13 = libcrux_intrinsics_avx2_mm256_mul_epi32(
-      prod13, inverse_of_modulus_mod_montgomery_r);
-  __m256i c02 = libcrux_intrinsics_avx2_mm256_mul_epi32(k02, field_modulus);
-  __m256i c13 = libcrux_intrinsics_avx2_mm256_mul_epi32(k13, field_modulus);
-  __m256i res02 = libcrux_intrinsics_avx2_mm256_sub_epi32(prod02, c02);
-  __m256i res13 = libcrux_intrinsics_avx2_mm256_sub_epi32(prod13, c13);
-  __m256i res02_shifted =
-      libcrux_intrinsics_avx2_mm256_shuffle_epi32((int32_t)245, res02, __m256i);
-  __m256i t = libcrux_intrinsics_avx2_mm256_blend_epi32(
-      (int32_t)170, res02_shifted, res13, __m256i);
+  __m256i t = re[index + step_by];
+  libcrux_ml_dsa_simd_avx2_arithmetic_montgomery_multiply_aux(
+      field_modulus, inverse_of_modulus_mod_montgomery_r, &t, &zeta);
   re[index + step_by] = re[index];
   libcrux_ml_dsa_simd_avx2_arithmetic_subtract(&re[index + step_by], &t);
   libcrux_ml_dsa_simd_avx2_arithmetic_add(&re[index], &t);
