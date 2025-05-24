@@ -10,6 +10,18 @@ let v_FIELD_MODULUS: i32 = mk_i32 8380417
 [@@ "opaque_to_smt"]
 let mod_q a = a % 8380417
 
+let i32_mul (x:i32) (y:i32) =
+  (cast x <: i64) *! (cast y <: i64)
+
+[@@ "opaque_to_smt"]
+let mont_mul (x:i32) (y:i32) : i32 =
+  let product : i64 = i32_mul x y in
+  let hi : i32 = cast (product >>! mk_u64 32) in
+  let low : i32 = cast product in
+  let k : i32 = cast (i32_mul low (mk_i32 58728449)) in
+  let c : i32 = cast ((i32_mul low (mk_i32 58728449)) >>! mk_u64 32) in
+  hi -. c  
+
 let v_BITS_IN_LOWER_PART_OF_T: usize = mk_usize 13
 
 let v_GAMMA2_V261_888: i32 = mk_i32 261888
