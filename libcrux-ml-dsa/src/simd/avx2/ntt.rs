@@ -418,10 +418,10 @@ unsafe fn ntt_at_layer_7_and_6(re: &mut AVX2RingElement) {
         ).and(index.to_int() + step_by.to_int() < int!(32)).and(step_by > 0)
     })]
     #[hax_lib::ensures(|result| fstar!(r#"
-        let re0 = Seq.index $re (v $index) in
-        let re0 = Seq.index $re (v $index + v $step_by) in
-        let re0 = Seq.index ${re}_future (v $index) in
-        let re0 = Seq.index ${re}_future (v $index + v $step_by) in
+        let re0 = (Seq.index $re (v $index)).f_value in
+        let re1 = (Seq.index $re (v $index + v $step_by)).f_value in
+        let nre0 = (Seq.index ${re}_future (v $index)).f_value in
+        let nre1 = (Seq.index ${re}_future (v $index + v $step_by)).f_value in
         Spec.Utils.forall8 (fun i ->
            (to_i32x8 nre0 (mk_u64 i), to_i32x8 nre1 (mk_u64 i)) ==
            ntt_step (to_i32x8 zeta (mk_int i)) (to_i32x8 re0 (mk_u64 i), to_i32x8 re1 (mk_u64 i))

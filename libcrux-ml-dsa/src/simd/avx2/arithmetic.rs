@@ -8,7 +8,6 @@ use libcrux_intrinsics::avx2::*;
 use super::Gamma2;
 
 #[inline(always)]
-#[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
 fn to_unsigned_representatives_ret(t: &Vec256) -> Vec256 {
     let signs = mm256_srai_epi32::<31>(*t);
     let conditional_add_field_modulus = mm256_and_si256(signs, mm256_set1_epi32(FIELD_MODULUS));
@@ -17,19 +16,16 @@ fn to_unsigned_representatives_ret(t: &Vec256) -> Vec256 {
 }
 
 #[inline(always)]
-#[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
 fn to_unsigned_representatives(t: &mut Vec256) {
     *t = to_unsigned_representatives_ret(t);
 }
 
 #[inline(always)]
-#[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
 pub(super) fn add(lhs: &mut Vec256, rhs: &Vec256) {
     *lhs = mm256_add_epi32(*lhs, *rhs)
 }
 
 #[inline(always)]
-#[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
 pub(super) fn subtract(lhs: &mut Vec256, rhs: &Vec256) {
     *lhs = mm256_sub_epi32(*lhs, *rhs)
 }
