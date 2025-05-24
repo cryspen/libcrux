@@ -8,6 +8,7 @@ use libcrux_intrinsics::avx2::*;
 use super::Gamma2;
 
 #[inline(always)]
+#[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
 fn to_unsigned_representatives_ret(t: &Vec256) -> Vec256 {
     let signs = mm256_srai_epi32::<31>(*t);
     let conditional_add_field_modulus = mm256_and_si256(signs, mm256_set1_epi32(FIELD_MODULUS));
@@ -16,21 +17,25 @@ fn to_unsigned_representatives_ret(t: &Vec256) -> Vec256 {
 }
 
 #[inline(always)]
+#[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
 fn to_unsigned_representatives(t: &mut Vec256) {
     *t = to_unsigned_representatives_ret(t);
 }
 
 #[inline(always)]
+#[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
 pub(super) fn add(lhs: &mut Vec256, rhs: &Vec256) {
     *lhs = mm256_add_epi32(*lhs, *rhs)
 }
 
 #[inline(always)]
+#[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
 pub(super) fn subtract(lhs: &mut Vec256, rhs: &Vec256) {
     *lhs = mm256_sub_epi32(*lhs, *rhs)
 }
 
 #[inline(always)]
+#[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
 pub(super) fn montgomery_multiply_by_constant(lhs: Vec256, constant: i32) -> Vec256 {
     let rhs = mm256_set1_epi32(constant);
     let field_modulus = mm256_set1_epi32(FIELD_MODULUS);
@@ -56,16 +61,14 @@ pub(super) fn montgomery_multiply_by_constant(lhs: Vec256, constant: i32) -> Vec
     res
 }
 
-// #[hax_lib::fstar::postprocess_with(
-//     core_models::arch::x86::interpretations::int_vec::flatten_circuit
-// )]
+#[inline(always)]
+#[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
 #[hax_lib::requires(
     hax_lib::eq(field_modulus, mm256_set1_epi32(FIELD_MODULUS)).and(hax_lib::eq(
         inverse_of_modulus_mod_montgomery_r,
         mm256_set1_epi32(INVERSE_OF_MODULUS_MOD_MONTGOMERY_R as i32),
     ))
 )]
-#[inline(always)]
 pub(super) fn montgomery_multiply_aux(
     field_modulus: Vec256,
     inverse_of_modulus_mod_montgomery_r: Vec256,
@@ -90,6 +93,7 @@ pub(super) fn montgomery_multiply_aux(
 }
 
 #[inline(always)]
+#[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
 pub(super) fn montgomery_multiply(lhs: &mut Vec256, rhs: &Vec256) {
     let field_modulus = mm256_set1_epi32(FIELD_MODULUS);
     let inverse_of_modulus_mod_montgomery_r =
@@ -99,6 +103,7 @@ pub(super) fn montgomery_multiply(lhs: &mut Vec256, rhs: &Vec256) {
 }
 
 #[inline(always)]
+#[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
 pub(super) fn shift_left_then_reduce<const SHIFT_BY: i32>(simd_unit: &mut Vec256) {
     let shifted = mm256_slli_epi32::<SHIFT_BY>(*simd_unit);
 
@@ -114,6 +119,7 @@ pub(super) fn shift_left_then_reduce<const SHIFT_BY: i32>(simd_unit: &mut Vec256
 // TODO: Revisit this function when doing the range analysis and testing
 // additional KATs.
 #[inline(always)]
+#[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
 #[hax_lib::fstar::verification_status(lax)]
 pub(super) fn infinity_norm_exceeds(simd_unit: &Vec256, bound: i32) -> bool {
     let absolute_values = mm256_abs_epi32(*simd_unit);
@@ -131,6 +137,7 @@ pub(super) fn infinity_norm_exceeds(simd_unit: &Vec256, bound: i32) -> bool {
 }
 
 #[inline(always)]
+#[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
 #[hax_lib::fstar::verification_status(lax)]
 pub(super) fn power2round(r0: &mut Vec256, r1: &mut Vec256) {
     to_unsigned_representatives(r0);
@@ -146,6 +153,7 @@ pub(super) fn power2round(r0: &mut Vec256, r1: &mut Vec256) {
 }
 
 #[inline(always)]
+#[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
 #[hax_lib::fstar::verification_status(lax)]
 pub(super) fn decompose(gamma2: Gamma2, r: &Vec256, r0: &mut Vec256, r1: &mut Vec256) {
     let r = to_unsigned_representatives_ret(r);
@@ -202,6 +210,7 @@ pub(super) fn decompose(gamma2: Gamma2, r: &Vec256, r0: &mut Vec256, r1: &mut Ve
 }
 
 #[inline(always)]
+#[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
 #[hax_lib::fstar::verification_status(lax)]
 pub(super) fn compute_hint(low: &Vec256, high: &Vec256, gamma2: i32, hint: &mut Vec256) -> usize {
     let minus_gamma2 = mm256_set1_epi32(-gamma2);
@@ -226,8 +235,9 @@ pub(super) fn compute_hint(low: &Vec256, high: &Vec256, gamma2: i32, hint: &mut 
     hints_mask.count_ones() as usize
 }
 
-#[hax_lib::fstar::verification_status(lax)]
 #[inline(always)]
+#[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
+#[hax_lib::fstar::verification_status(lax)]
 pub(super) fn use_hint(gamma2: Gamma2, r: &Vec256, hint: &mut Vec256) {
     let (mut r0, mut r1) = (mm256_setzero_si256(), mm256_setzero_si256());
     decompose(gamma2, r, &mut r0, &mut r1);
