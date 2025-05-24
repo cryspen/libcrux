@@ -8,7 +8,7 @@
  * Eurydice: d3b14228e2b5fe8710ec7efae31e4de2c96ed20d
  * Karamel: 095cdb73f246711f93f99a159ceca37cd2c227e1
  * F*: 4b3fc11774003a6ff7c09500ecb5f0145ca6d862
- * Libcrux: d27d698c4a5fa37103bc129ad8ec939063e8aee6
+ * Libcrux: ebf61f3e205ee9754c0cfe13298c895cd7873553
  */
 
 #ifndef __libcrux_mldsa65_avx2_H
@@ -1808,32 +1808,16 @@ static KRML_MUSTINLINE void libcrux_ml_dsa_simd_avx2_t1_deserialize_22(
   (((size_t)1U << 6U) / LIBCRUX_ML_DSA_SIMD_TRAITS_COEFFICIENTS_IN_SIMD_UNIT)
 
 KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE core_core_arch_x86___m256i_x2
-libcrux_ml_dsa_simd_avx2_ntt_ntt_at_layer_7_and_6_mul_aux(
-    __m256i re0, __m256i re1, __m256i zeta, __m256i field_modulus,
-    __m256i inverse_of_modulus_mod_montgomery_r) {
-  __m256i t = re1;
-  libcrux_ml_dsa_simd_avx2_arithmetic_montgomery_multiply_aux(
-      field_modulus, inverse_of_modulus_mod_montgomery_r, &t, &zeta);
-  re1 = re0;
-  libcrux_ml_dsa_simd_avx2_arithmetic_subtract(&re1, &t);
-  libcrux_ml_dsa_simd_avx2_arithmetic_add(&re0, &t);
-  return (core_core_arch_x86___m256i_x2{re0, re1});
-}
-
-KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE void
 libcrux_ml_dsa_simd_avx2_ntt_ntt_at_layer_7_and_6_mul(
     __m256i *re, size_t index, __m256i zeta, size_t step_by,
     __m256i field_modulus, __m256i inverse_of_modulus_mod_montgomery_r) {
-  core_core_arch_x86___m256i_x2 uu____0 =
-      libcrux_ml_dsa_simd_avx2_ntt_ntt_at_layer_7_and_6_mul_aux(
-          re[index], re[index + step_by], zeta, field_modulus,
-          inverse_of_modulus_mod_montgomery_r);
-  __m256i nre0 = uu____0.fst;
-  __m256i nre1 = uu____0.snd;
-  re[index] = nre0;
-  re[index + step_by] = nre1;
+  __m256i t = re[index + step_by];
+  libcrux_ml_dsa_simd_avx2_arithmetic_montgomery_multiply_aux(
+      field_modulus, inverse_of_modulus_mod_montgomery_r, &t, &zeta);
+  re[index + step_by] = re[index];
+  libcrux_ml_dsa_simd_avx2_arithmetic_subtract(&re[index + step_by], &t);
+  libcrux_ml_dsa_simd_avx2_arithmetic_add(&re[index], &t);
 }
 
 KRML_ATTRIBUTE_TARGET("avx2")
@@ -2039,9 +2023,10 @@ static inline void libcrux_ml_dsa_simd_avx2_ntt_ntt_at_layer_5_to_3(
 }
 
 KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE core_core_arch_x86___m256i_x2
-libcrux_ml_dsa_simd_avx2_ntt_butterfly_8_aux(__m256i re0, __m256i re1,
-                                             int32_t zeta0, int32_t zeta1) {
+static KRML_MUSTINLINE void libcrux_ml_dsa_simd_avx2_ntt_butterfly_8(
+    __m256i *re, size_t index, int32_t zeta0, int32_t zeta1) {
+  __m256i re0 = re[index];
+  __m256i re1 = re[index + (size_t)1U];
   __m256i summands = libcrux_intrinsics_avx2_mm256_set_m128i(
       libcrux_intrinsics_avx2_mm256_castsi256_si128(re1),
       libcrux_intrinsics_avx2_mm256_castsi256_si128(re0));
@@ -2055,22 +2040,11 @@ libcrux_ml_dsa_simd_avx2_ntt_butterfly_8_aux(__m256i re0, __m256i re1,
       libcrux_intrinsics_avx2_mm256_sub_epi32(summands, zeta_products);
   __m256i add_terms =
       libcrux_intrinsics_avx2_mm256_add_epi32(summands, zeta_products);
-  return (core_core_arch_x86___m256i_x2{
-      libcrux_intrinsics_avx2_mm256_set_m128i(
-          libcrux_intrinsics_avx2_mm256_castsi256_si128(sub_terms),
-          libcrux_intrinsics_avx2_mm256_castsi256_si128(add_terms)),
-      libcrux_intrinsics_avx2_mm256_permute2x128_si256((int32_t)19, sub_terms,
-                                                       add_terms, __m256i)});
-}
-
-KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE void libcrux_ml_dsa_simd_avx2_ntt_butterfly_8(
-    __m256i *re, size_t index, int32_t zeta0, int32_t zeta1) {
-  core_core_arch_x86___m256i_x2 uu____0 =
-      libcrux_ml_dsa_simd_avx2_ntt_butterfly_8_aux(
-          re[index], re[index + (size_t)1U], zeta0, zeta1);
-  __m256i nre0 = uu____0.fst;
-  __m256i nre1 = uu____0.snd;
+  __m256i nre0 = libcrux_intrinsics_avx2_mm256_set_m128i(
+      libcrux_intrinsics_avx2_mm256_castsi256_si128(sub_terms),
+      libcrux_intrinsics_avx2_mm256_castsi256_si128(add_terms));
+  __m256i nre1 = libcrux_intrinsics_avx2_mm256_permute2x128_si256(
+      (int32_t)19, sub_terms, add_terms, __m256i);
   re[index] = nre0;
   re[index + (size_t)1U] = nre1;
 }
@@ -2112,10 +2086,11 @@ static inline void libcrux_ml_dsa_simd_avx2_ntt_ntt_at_layer_2(__m256i *re) {
 }
 
 KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE core_core_arch_x86___m256i_x2
-libcrux_ml_dsa_simd_avx2_ntt_butterfly_4_aux(__m256i re0, __m256i re1,
-                                             int32_t zeta_a0, int32_t zeta_a1,
-                                             int32_t zeta_b0, int32_t zeta_b1) {
+static KRML_MUSTINLINE void libcrux_ml_dsa_simd_avx2_ntt_butterfly_4(
+    __m256i *re, size_t index, int32_t zeta_a0, int32_t zeta_a1,
+    int32_t zeta_b0, int32_t zeta_b1) {
+  __m256i re0 = re[index];
+  __m256i re1 = re[index + (size_t)1U];
   __m256i summands = libcrux_intrinsics_avx2_mm256_unpacklo_epi64(re0, re1);
   __m256i zeta_products =
       libcrux_intrinsics_avx2_mm256_unpackhi_epi64(re0, re1);
@@ -2127,21 +2102,10 @@ libcrux_ml_dsa_simd_avx2_ntt_butterfly_4_aux(__m256i re0, __m256i re1,
       libcrux_intrinsics_avx2_mm256_sub_epi32(summands, zeta_products);
   __m256i add_terms =
       libcrux_intrinsics_avx2_mm256_add_epi32(summands, zeta_products);
-  return (core_core_arch_x86___m256i_x2{
-      libcrux_intrinsics_avx2_mm256_unpacklo_epi64(add_terms, sub_terms),
-      libcrux_intrinsics_avx2_mm256_unpackhi_epi64(add_terms, sub_terms)});
-}
-
-KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE void libcrux_ml_dsa_simd_avx2_ntt_butterfly_4(
-    __m256i *re, size_t index, int32_t zeta_a0, int32_t zeta_a1,
-    int32_t zeta_b0, int32_t zeta_b1) {
-  core_core_arch_x86___m256i_x2 uu____0 =
-      libcrux_ml_dsa_simd_avx2_ntt_butterfly_4_aux(
-          re[index], re[index + (size_t)1U], zeta_a0, zeta_a1, zeta_b0,
-          zeta_b1);
-  __m256i nre0 = uu____0.fst;
-  __m256i nre1 = uu____0.snd;
+  __m256i nre0 =
+      libcrux_intrinsics_avx2_mm256_unpacklo_epi64(add_terms, sub_terms);
+  __m256i nre1 =
+      libcrux_intrinsics_avx2_mm256_unpackhi_epi64(add_terms, sub_terms);
   re[index] = nre0;
   re[index + (size_t)1U] = nre1;
 }
@@ -2199,12 +2163,12 @@ static inline void libcrux_ml_dsa_simd_avx2_ntt_ntt_at_layer_1(__m256i *re) {
 }
 
 KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE core_core_arch_x86___m256i_x2
-libcrux_ml_dsa_simd_avx2_ntt_butterfly_2_aux(__m256i re0, __m256i re1,
-                                             int32_t zeta_a0, int32_t zeta_a1,
-                                             int32_t zeta_a2, int32_t zeta_a3,
-                                             int32_t zeta_b0, int32_t zeta_b1,
-                                             int32_t zeta_b2, int32_t zeta_b3) {
+static KRML_MUSTINLINE void libcrux_ml_dsa_simd_avx2_ntt_butterfly_2(
+    __m256i *re, size_t index, int32_t zeta_a0, int32_t zeta_a1,
+    int32_t zeta_a2, int32_t zeta_a3, int32_t zeta_b0, int32_t zeta_b1,
+    int32_t zeta_b2, int32_t zeta_b3) {
+  __m256i re0 = re[index];
+  __m256i re1 = re[index + (size_t)1U];
   __m256i a =
       libcrux_intrinsics_avx2_mm256_shuffle_epi32((int32_t)216, re0, __m256i);
   __m256i b =
@@ -2227,20 +2191,6 @@ libcrux_ml_dsa_simd_avx2_ntt_butterfly_2_aux(__m256i re0, __m256i re1,
       (int32_t)216, a_terms_shuffled, __m256i);
   __m256i nre1 = libcrux_intrinsics_avx2_mm256_shuffle_epi32(
       (int32_t)216, b_terms_shuffled, __m256i);
-  return (core_core_arch_x86___m256i_x2{nre0, nre1});
-}
-
-KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE void libcrux_ml_dsa_simd_avx2_ntt_butterfly_2(
-    __m256i *re, size_t index, int32_t zeta_a0, int32_t zeta_a1,
-    int32_t zeta_a2, int32_t zeta_a3, int32_t zeta_b0, int32_t zeta_b1,
-    int32_t zeta_b2, int32_t zeta_b3) {
-  core_core_arch_x86___m256i_x2 uu____0 =
-      libcrux_ml_dsa_simd_avx2_ntt_butterfly_2_aux(
-          re[index], re[index + (size_t)1U], zeta_a0, zeta_a1, zeta_a2, zeta_a3,
-          zeta_b0, zeta_b1, zeta_b2, zeta_b3);
-  __m256i nre0 = uu____0.fst;
-  __m256i nre1 = uu____0.snd;
   re[index] = nre0;
   re[index + (size_t)1U] = nre1;
 }
