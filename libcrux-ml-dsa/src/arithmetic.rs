@@ -55,9 +55,7 @@ pub(crate) fn power2round_vector<SIMDUnit: Operations>(
     t1: &mut [PolynomialRingElement<SIMDUnit>],
 ) {
     #[cfg(hax)]
-    let old_t = t.to_vec();
-    #[cfg(hax)]
-    let old_t1 = t1.to_vec();
+    let (old_t, old_t1) = { (t.to_vec(), t1.to_vec()) };
 
     for i in 0..t.len() {
         hax_lib::loop_invariant!(|i: usize| fstar!(
