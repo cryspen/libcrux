@@ -4,8 +4,6 @@ use crate::simd::traits::{COEFFICIENTS_IN_SIMD_UNIT, SIMD_UNITS_IN_RING_ELEMENT}
 
 #[cfg(hax)]
 use crate::simd::traits::specs::*;
-#[cfg(hax)]
-pub(crate) const NTT_BASE_BOUND: u32 = FIELD_MID;
 
 #[inline(always)]
 #[hax_lib::fstar::options("--z3rlimit 300 --split_queries always")]
@@ -385,8 +383,8 @@ fn outer_3_plus<const OFFSET: usize, const STEP_BY: usize, const ZETA: i32>(
 
         hax_lib::fstar!(
             r#"
-        assert ((v v_NTT_BASE_BOUND + ((layer_bound_factor v_STEP_BY) * v $FIELD_MAX)) + (v $FIELD_MAX) 
-                == (v v_NTT_BASE_BOUND + ((layer_bound_factor v_STEP_BY + 1) * v $FIELD_MAX)))"#
+        assert ((v ${NTT_BASE_BOUND} + ((layer_bound_factor v_STEP_BY) * v $FIELD_MAX)) + (v $FIELD_MAX) 
+                == (v ${NTT_BASE_BOUND} + ((layer_bound_factor v_STEP_BY + 1) * v $FIELD_MAX)))"#
         );
     }
 }
@@ -503,6 +501,9 @@ fn ntt_at_layer_7(re: &mut [Coefficients; SIMD_UNITS_IN_RING_ELEMENT]) {
 #[hax_lib::requires(fstar!(r#"
     is_i32b_polynomial (v $NTT_BASE_BOUND) ${re}
 "#))]
+#[hax_lib::ensures(|_| fstar!(r#"
+    is_i32b_polynomial (v $NTT_BASE_BOUND + 8 * v $FIELD_MAX) ${re}_future
+"#) )]
 pub(crate) fn ntt(re: &mut [Coefficients; SIMD_UNITS_IN_RING_ELEMENT]) {
     ntt_at_layer_7(re);
     ntt_at_layer_6(re);
