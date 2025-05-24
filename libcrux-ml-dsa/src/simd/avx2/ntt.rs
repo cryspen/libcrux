@@ -422,6 +422,7 @@ unsafe fn ntt_at_layer_7_and_6(re: &mut AVX2RingElement) {
         let re1 = (Seq.index $re (v $index + v $step_by)).f_value in
         let nre0 = (Seq.index ${re}_future (v $index)).f_value in
         let nre1 = (Seq.index ${re}_future (v $index + v $step_by)).f_value in
+        Spec.Utils.modifies2_32 $re ${re}_future $index ($index +! $step_by) /\
         Spec.Utils.forall8 (fun i ->
            (to_i32x8 nre0 (mk_u64 i), to_i32x8 nre1 (mk_u64 i)) ==
            ntt_step (to_i32x8 zeta (mk_int i)) (to_i32x8 re0 (mk_u64 i), to_i32x8 re1 (mk_u64 i))
@@ -449,59 +450,38 @@ unsafe fn ntt_at_layer_7_and_6(re: &mut AVX2RingElement) {
 
     macro_rules! layer {
         ($start:literal, $zeta:expr, $step_by:expr) => {{
-            #[inline(always)]
-            #[hax_lib::requires({
-                use crate::constants::FIELD_MODULUS;
-                use crate::simd::traits::INVERSE_OF_MODULUS_MOD_MONTGOMERY_R;
-                hax_lib::eq(field_modulus, mm256_set1_epi32(FIELD_MODULUS)).and(
-                    hax_lib::eq(inverse_of_modulus_mod_montgomery_r, mm256_set1_epi32(INVERSE_OF_MODULUS_MOD_MONTGOMERY_R as i32))
-                )
-            })]
-            fn one_layer(
-                re: &mut AVX2RingElement,
-                zeta: Vec256,
-                field_modulus: Vec256,
-                inverse_of_modulus_mod_montgomery_r: Vec256,
-            ) {
-                mul(
-                    re,
-                    $start,
-                    zeta,
-                    $step_by,
-                    field_modulus,
-                    inverse_of_modulus_mod_montgomery_r,
-                );
-                mul(
-                    re,
-                    $start + 1,
-                    zeta,
-                    $step_by,
-                    field_modulus,
-                    inverse_of_modulus_mod_montgomery_r,
-                );
-                mul(
-                    re,
-                    $start + 2,
-                    zeta,
-                    $step_by,
-                    field_modulus,
-                    inverse_of_modulus_mod_montgomery_r,
-                );
-                mul(
-                    re,
-                    $start + 3,
-                    zeta,
-                    $step_by,
-                    field_modulus,
-                    inverse_of_modulus_mod_montgomery_r,
-                );
-            }
-            one_layer(
+            mul(
                 re,
+                $start,
                 $zeta,
+                $step_by,
                 field_modulus,
                 inverse_of_modulus_mod_montgomery_r,
-            )
+            );
+            mul(
+                re,
+                $start + 1,
+                $zeta,
+                $step_by,
+                field_modulus,
+                inverse_of_modulus_mod_montgomery_r,
+            );
+            mul(
+                re,
+                $start + 2,
+                $zeta,
+                $step_by,
+                field_modulus,
+                inverse_of_modulus_mod_montgomery_r,
+            );
+            mul(
+                re,
+                $start + 3,
+                $zeta,
+                $step_by,
+                field_modulus,
+                inverse_of_modulus_mod_montgomery_r,
+            );
         }};
     }
 
