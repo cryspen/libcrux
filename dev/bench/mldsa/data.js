@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1748107794819,
+  "lastUpdate": 1748107821114,
   "repoUrl": "https://github.com/cryspen/libcrux",
   "entries": {
     "ML-DSA Benchmark": [
@@ -21437,6 +21437,269 @@ window.BENCHMARK_DATA = {
             "value": 60,
             "unit": "μs/iter",
             "os": "macos-latest_64",
+            "implementation": "pqclean ML-DSA",
+            "keySize": "87",
+            "label": "Verify",
+            "hardware": "auto"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "karthikbhargavan",
+            "username": "karthikbhargavan"
+          },
+          "committer": {
+            "name": "GitHub",
+            "username": "GitHub"
+          },
+          "id": "b29301b57f1b30c487b87be6f2f001e1ecaaa8ea",
+          "message": "Merge pull request #999 from cryspen/ml-dsa-generic-range-proofs\n\nRange Proofs for some ML-DSA modules",
+          "timestamp": "2025-05-24T17:27:13Z",
+          "url": "/commits/b29301b57f1b30c487b87be6f2f001e1ecaaa8ea"
+        },
+        "date": 1748107816224,
+        "bigger_is_better": false,
+        "benches": [
+          {
+            "value": 76,
+            "unit": "μs/iter",
+            "os": "ubuntu-latest_64",
+            "implementation": "libcrux ML-DSA",
+            "keySize": "44",
+            "label": "KeyGen",
+            "hardware": "portable"
+          },
+          {
+            "value": 329,
+            "unit": "μs/iter",
+            "os": "ubuntu-latest_64",
+            "implementation": "libcrux ML-DSA",
+            "keySize": "44",
+            "label": "Sign",
+            "hardware": "portable"
+          },
+          {
+            "value": 85,
+            "unit": "μs/iter",
+            "os": "ubuntu-latest_64",
+            "implementation": "libcrux ML-DSA",
+            "keySize": "44",
+            "label": "Verify",
+            "hardware": "portable"
+          },
+          {
+            "value": 74,
+            "unit": "μs/iter",
+            "os": "ubuntu-latest_64",
+            "implementation": "libcrux ML-DSA",
+            "keySize": "44",
+            "label": "KeyGen",
+            "hardware": "avx2"
+          },
+          {
+            "value": 89,
+            "unit": "μs/iter",
+            "os": "ubuntu-latest_64",
+            "implementation": "libcrux ML-DSA",
+            "keySize": "44",
+            "label": "Sign",
+            "hardware": "avx2"
+          },
+          {
+            "value": 34,
+            "unit": "μs/iter",
+            "os": "ubuntu-latest_64",
+            "implementation": "libcrux ML-DSA",
+            "keySize": "44",
+            "label": "Verify",
+            "hardware": "avx2"
+          },
+          {
+            "value": 25,
+            "unit": "μs/iter",
+            "os": "ubuntu-latest_64",
+            "implementation": "pqclean ML-DSA",
+            "keySize": "44",
+            "label": "KeyGen",
+            "hardware": "auto"
+          },
+          {
+            "value": 78,
+            "unit": "μs/iter",
+            "os": "ubuntu-latest_64",
+            "implementation": "pqclean ML-DSA",
+            "keySize": "44",
+            "label": "Sign",
+            "hardware": "auto"
+          },
+          {
+            "value": 31,
+            "unit": "μs/iter",
+            "os": "ubuntu-latest_64",
+            "implementation": "pqclean ML-DSA",
+            "keySize": "44",
+            "label": "Verify",
+            "hardware": "auto"
+          },
+          {
+            "value": 150,
+            "unit": "μs/iter",
+            "os": "ubuntu-latest_64",
+            "implementation": "libcrux ML-DSA",
+            "keySize": "65",
+            "label": "KeyGen",
+            "hardware": "portable"
+          },
+          {
+            "value": 536,
+            "unit": "μs/iter",
+            "os": "ubuntu-latest_64",
+            "implementation": "libcrux ML-DSA",
+            "keySize": "65",
+            "label": "Sign",
+            "hardware": "portable"
+          },
+          {
+            "value": 142,
+            "unit": "μs/iter",
+            "os": "ubuntu-latest_64",
+            "implementation": "libcrux ML-DSA",
+            "keySize": "65",
+            "label": "Verify",
+            "hardware": "portable"
+          },
+          {
+            "value": 137,
+            "unit": "μs/iter",
+            "os": "ubuntu-latest_64",
+            "implementation": "libcrux ML-DSA",
+            "keySize": "65",
+            "label": "KeyGen",
+            "hardware": "avx2"
+          },
+          {
+            "value": 139,
+            "unit": "μs/iter",
+            "os": "ubuntu-latest_64",
+            "implementation": "libcrux ML-DSA",
+            "keySize": "65",
+            "label": "Sign",
+            "hardware": "avx2"
+          },
+          {
+            "value": 53,
+            "unit": "μs/iter",
+            "os": "ubuntu-latest_64",
+            "implementation": "libcrux ML-DSA",
+            "keySize": "65",
+            "label": "Verify",
+            "hardware": "avx2"
+          },
+          {
+            "value": 44,
+            "unit": "μs/iter",
+            "os": "ubuntu-latest_64",
+            "implementation": "pqclean ML-DSA",
+            "keySize": "65",
+            "label": "KeyGen",
+            "hardware": "auto"
+          },
+          {
+            "value": 122,
+            "unit": "μs/iter",
+            "os": "ubuntu-latest_64",
+            "implementation": "pqclean ML-DSA",
+            "keySize": "65",
+            "label": "Sign",
+            "hardware": "auto"
+          },
+          {
+            "value": 49,
+            "unit": "μs/iter",
+            "os": "ubuntu-latest_64",
+            "implementation": "pqclean ML-DSA",
+            "keySize": "65",
+            "label": "Verify",
+            "hardware": "auto"
+          },
+          {
+            "value": 216,
+            "unit": "μs/iter",
+            "os": "ubuntu-latest_64",
+            "implementation": "libcrux ML-DSA",
+            "keySize": "87",
+            "label": "KeyGen",
+            "hardware": "portable"
+          },
+          {
+            "value": 644,
+            "unit": "μs/iter",
+            "os": "ubuntu-latest_64",
+            "implementation": "libcrux ML-DSA",
+            "keySize": "87",
+            "label": "Sign",
+            "hardware": "portable"
+          },
+          {
+            "value": 224,
+            "unit": "μs/iter",
+            "os": "ubuntu-latest_64",
+            "implementation": "libcrux ML-DSA",
+            "keySize": "87",
+            "label": "Verify",
+            "hardware": "portable"
+          },
+          {
+            "value": 241,
+            "unit": "μs/iter",
+            "os": "ubuntu-latest_64",
+            "implementation": "libcrux ML-DSA",
+            "keySize": "87",
+            "label": "KeyGen",
+            "hardware": "avx2"
+          },
+          {
+            "value": 176,
+            "unit": "μs/iter",
+            "os": "ubuntu-latest_64",
+            "implementation": "libcrux ML-DSA",
+            "keySize": "87",
+            "label": "Sign",
+            "hardware": "avx2"
+          },
+          {
+            "value": 81,
+            "unit": "μs/iter",
+            "os": "ubuntu-latest_64",
+            "implementation": "libcrux ML-DSA",
+            "keySize": "87",
+            "label": "Verify",
+            "hardware": "avx2"
+          },
+          {
+            "value": 69,
+            "unit": "μs/iter",
+            "os": "ubuntu-latest_64",
+            "implementation": "pqclean ML-DSA",
+            "keySize": "87",
+            "label": "KeyGen",
+            "hardware": "auto"
+          },
+          {
+            "value": 142,
+            "unit": "μs/iter",
+            "os": "ubuntu-latest_64",
+            "implementation": "pqclean ML-DSA",
+            "keySize": "87",
+            "label": "Sign",
+            "hardware": "auto"
+          },
+          {
+            "value": 73,
+            "unit": "μs/iter",
+            "os": "ubuntu-latest_64",
             "implementation": "pqclean ML-DSA",
             "keySize": "87",
             "label": "Verify",
