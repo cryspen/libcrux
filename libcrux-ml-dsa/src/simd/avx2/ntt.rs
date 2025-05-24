@@ -168,7 +168,6 @@ fn butterfly_4(
 
 // Compute (a,b) ↦ (a + ζb, a - ζb) at layer 2 for 2 SIMD Units in one go.
 #[inline(always)]
-#[inline(always)]
 #[hax_lib::fstar::before(
     r#"
 let butterfly_8_spec re0 re1 zeta0 zeta1 nre0 nre1 =
