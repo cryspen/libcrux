@@ -8,7 +8,7 @@
  * Eurydice: d3b14228e2b5fe8710ec7efae31e4de2c96ed20d
  * Karamel: 095cdb73f246711f93f99a159ceca37cd2c227e1
  * F*: 4b3fc11774003a6ff7c09500ecb5f0145ca6d862
- * Libcrux: ebf61f3e205ee9754c0cfe13298c895cd7873553
+ * Libcrux: 7c306c5fef45d8a8ec3ab98876aa46f2761529a8
  */
 
 #ifndef __libcrux_mldsa65_avx2_H
@@ -1804,8 +1804,8 @@ static KRML_MUSTINLINE void libcrux_ml_dsa_simd_avx2_t1_deserialize_22(
   libcrux_ml_dsa_simd_avx2_encoding_t1_deserialize(serialized, out);
 }
 
-#define LIBCRUX_ML_DSA_SIMD_AVX2_NTT_NTT_AT_LAYER_7_AND_6_STEP_BY_6 \
-  (((size_t)1U << 6U) / LIBCRUX_ML_DSA_SIMD_TRAITS_COEFFICIENTS_IN_SIMD_UNIT)
+#define LIBCRUX_ML_DSA_SIMD_AVX2_NTT_NTT_AT_LAYER_7_AND_6_STEP_BY_7 \
+  ((size_t)2U * LIBCRUX_ML_DSA_SIMD_TRAITS_COEFFICIENTS_IN_SIMD_UNIT)
 
 KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE void
@@ -1820,28 +1820,8 @@ libcrux_ml_dsa_simd_avx2_ntt_ntt_at_layer_7_and_6_mul(
   libcrux_ml_dsa_simd_avx2_arithmetic_add(&re[index], &t);
 }
 
-KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE void
-libcrux_ml_dsa_simd_avx2_ntt_ntt_at_layer_7_and_6_one_layer(
-    __m256i *re, __m256i zeta, __m256i field_modulus,
-    __m256i inverse_of_modulus_mod_montgomery_r) {
-  libcrux_ml_dsa_simd_avx2_ntt_ntt_at_layer_7_and_6_mul(
-      re, (size_t)20U, zeta,
-      LIBCRUX_ML_DSA_SIMD_AVX2_NTT_NTT_AT_LAYER_7_AND_6_STEP_BY_6,
-      field_modulus, inverse_of_modulus_mod_montgomery_r);
-  libcrux_ml_dsa_simd_avx2_ntt_ntt_at_layer_7_and_6_mul(
-      re, (size_t)20U + (size_t)1U, zeta,
-      LIBCRUX_ML_DSA_SIMD_AVX2_NTT_NTT_AT_LAYER_7_AND_6_STEP_BY_6,
-      field_modulus, inverse_of_modulus_mod_montgomery_r);
-  libcrux_ml_dsa_simd_avx2_ntt_ntt_at_layer_7_and_6_mul(
-      re, (size_t)20U + (size_t)2U, zeta,
-      LIBCRUX_ML_DSA_SIMD_AVX2_NTT_NTT_AT_LAYER_7_AND_6_STEP_BY_6,
-      field_modulus, inverse_of_modulus_mod_montgomery_r);
-  libcrux_ml_dsa_simd_avx2_ntt_ntt_at_layer_7_and_6_mul(
-      re, (size_t)20U + (size_t)3U, zeta,
-      LIBCRUX_ML_DSA_SIMD_AVX2_NTT_NTT_AT_LAYER_7_AND_6_STEP_BY_6,
-      field_modulus, inverse_of_modulus_mod_montgomery_r);
-}
+#define LIBCRUX_ML_DSA_SIMD_AVX2_NTT_NTT_AT_LAYER_7_AND_6_STEP_BY_6 \
+  (((size_t)1U << 6U) / LIBCRUX_ML_DSA_SIMD_TRAITS_COEFFICIENTS_IN_SIMD_UNIT)
 
 /**
  This is equivalent to the pqclean 0 and 1
@@ -1861,22 +1841,134 @@ static inline void libcrux_ml_dsa_simd_avx2_ntt_ntt_at_layer_7_and_6(
   __m256i zeta7 = libcrux_intrinsics_avx2_mm256_set1_epi32((int32_t)25847);
   __m256i zeta60 = libcrux_intrinsics_avx2_mm256_set1_epi32((int32_t)-2608894);
   __m256i zeta61 = libcrux_intrinsics_avx2_mm256_set1_epi32((int32_t)-518909);
-  libcrux_ml_dsa_simd_avx2_ntt_ntt_at_layer_7_and_6_one_layer(
-      re, zeta7, field_modulus, inverse_of_modulus_mod_montgomery_r);
-  libcrux_ml_dsa_simd_avx2_ntt_ntt_at_layer_7_and_6_one_layer(
-      re, zeta7, field_modulus, inverse_of_modulus_mod_montgomery_r);
-  libcrux_ml_dsa_simd_avx2_ntt_ntt_at_layer_7_and_6_one_layer(
-      re, zeta60, field_modulus, inverse_of_modulus_mod_montgomery_r);
-  libcrux_ml_dsa_simd_avx2_ntt_ntt_at_layer_7_and_6_one_layer(
-      re, zeta61, field_modulus, inverse_of_modulus_mod_montgomery_r);
-  libcrux_ml_dsa_simd_avx2_ntt_ntt_at_layer_7_and_6_one_layer(
-      re, zeta7, field_modulus, inverse_of_modulus_mod_montgomery_r);
-  libcrux_ml_dsa_simd_avx2_ntt_ntt_at_layer_7_and_6_one_layer(
-      re, zeta7, field_modulus, inverse_of_modulus_mod_montgomery_r);
-  libcrux_ml_dsa_simd_avx2_ntt_ntt_at_layer_7_and_6_one_layer(
-      re, zeta60, field_modulus, inverse_of_modulus_mod_montgomery_r);
-  libcrux_ml_dsa_simd_avx2_ntt_ntt_at_layer_7_and_6_one_layer(
-      re, zeta61, field_modulus, inverse_of_modulus_mod_montgomery_r);
+  libcrux_ml_dsa_simd_avx2_ntt_ntt_at_layer_7_and_6_mul(
+      re, (size_t)0U, zeta7,
+      LIBCRUX_ML_DSA_SIMD_AVX2_NTT_NTT_AT_LAYER_7_AND_6_STEP_BY_7,
+      field_modulus, inverse_of_modulus_mod_montgomery_r);
+  libcrux_ml_dsa_simd_avx2_ntt_ntt_at_layer_7_and_6_mul(
+      re, (size_t)0U + (size_t)1U, zeta7,
+      LIBCRUX_ML_DSA_SIMD_AVX2_NTT_NTT_AT_LAYER_7_AND_6_STEP_BY_7,
+      field_modulus, inverse_of_modulus_mod_montgomery_r);
+  libcrux_ml_dsa_simd_avx2_ntt_ntt_at_layer_7_and_6_mul(
+      re, (size_t)0U + (size_t)2U, zeta7,
+      LIBCRUX_ML_DSA_SIMD_AVX2_NTT_NTT_AT_LAYER_7_AND_6_STEP_BY_7,
+      field_modulus, inverse_of_modulus_mod_montgomery_r);
+  libcrux_ml_dsa_simd_avx2_ntt_ntt_at_layer_7_and_6_mul(
+      re, (size_t)0U + (size_t)3U, zeta7,
+      LIBCRUX_ML_DSA_SIMD_AVX2_NTT_NTT_AT_LAYER_7_AND_6_STEP_BY_7,
+      field_modulus, inverse_of_modulus_mod_montgomery_r);
+  libcrux_ml_dsa_simd_avx2_ntt_ntt_at_layer_7_and_6_mul(
+      re, (size_t)8U, zeta7,
+      LIBCRUX_ML_DSA_SIMD_AVX2_NTT_NTT_AT_LAYER_7_AND_6_STEP_BY_7,
+      field_modulus, inverse_of_modulus_mod_montgomery_r);
+  libcrux_ml_dsa_simd_avx2_ntt_ntt_at_layer_7_and_6_mul(
+      re, (size_t)8U + (size_t)1U, zeta7,
+      LIBCRUX_ML_DSA_SIMD_AVX2_NTT_NTT_AT_LAYER_7_AND_6_STEP_BY_7,
+      field_modulus, inverse_of_modulus_mod_montgomery_r);
+  libcrux_ml_dsa_simd_avx2_ntt_ntt_at_layer_7_and_6_mul(
+      re, (size_t)8U + (size_t)2U, zeta7,
+      LIBCRUX_ML_DSA_SIMD_AVX2_NTT_NTT_AT_LAYER_7_AND_6_STEP_BY_7,
+      field_modulus, inverse_of_modulus_mod_montgomery_r);
+  libcrux_ml_dsa_simd_avx2_ntt_ntt_at_layer_7_and_6_mul(
+      re, (size_t)8U + (size_t)3U, zeta7,
+      LIBCRUX_ML_DSA_SIMD_AVX2_NTT_NTT_AT_LAYER_7_AND_6_STEP_BY_7,
+      field_modulus, inverse_of_modulus_mod_montgomery_r);
+  libcrux_ml_dsa_simd_avx2_ntt_ntt_at_layer_7_and_6_mul(
+      re, (size_t)0U, zeta60,
+      LIBCRUX_ML_DSA_SIMD_AVX2_NTT_NTT_AT_LAYER_7_AND_6_STEP_BY_6,
+      field_modulus, inverse_of_modulus_mod_montgomery_r);
+  libcrux_ml_dsa_simd_avx2_ntt_ntt_at_layer_7_and_6_mul(
+      re, (size_t)0U + (size_t)1U, zeta60,
+      LIBCRUX_ML_DSA_SIMD_AVX2_NTT_NTT_AT_LAYER_7_AND_6_STEP_BY_6,
+      field_modulus, inverse_of_modulus_mod_montgomery_r);
+  libcrux_ml_dsa_simd_avx2_ntt_ntt_at_layer_7_and_6_mul(
+      re, (size_t)0U + (size_t)2U, zeta60,
+      LIBCRUX_ML_DSA_SIMD_AVX2_NTT_NTT_AT_LAYER_7_AND_6_STEP_BY_6,
+      field_modulus, inverse_of_modulus_mod_montgomery_r);
+  libcrux_ml_dsa_simd_avx2_ntt_ntt_at_layer_7_and_6_mul(
+      re, (size_t)0U + (size_t)3U, zeta60,
+      LIBCRUX_ML_DSA_SIMD_AVX2_NTT_NTT_AT_LAYER_7_AND_6_STEP_BY_6,
+      field_modulus, inverse_of_modulus_mod_montgomery_r);
+  libcrux_ml_dsa_simd_avx2_ntt_ntt_at_layer_7_and_6_mul(
+      re, (size_t)16U, zeta61,
+      LIBCRUX_ML_DSA_SIMD_AVX2_NTT_NTT_AT_LAYER_7_AND_6_STEP_BY_6,
+      field_modulus, inverse_of_modulus_mod_montgomery_r);
+  libcrux_ml_dsa_simd_avx2_ntt_ntt_at_layer_7_and_6_mul(
+      re, (size_t)16U + (size_t)1U, zeta61,
+      LIBCRUX_ML_DSA_SIMD_AVX2_NTT_NTT_AT_LAYER_7_AND_6_STEP_BY_6,
+      field_modulus, inverse_of_modulus_mod_montgomery_r);
+  libcrux_ml_dsa_simd_avx2_ntt_ntt_at_layer_7_and_6_mul(
+      re, (size_t)16U + (size_t)2U, zeta61,
+      LIBCRUX_ML_DSA_SIMD_AVX2_NTT_NTT_AT_LAYER_7_AND_6_STEP_BY_6,
+      field_modulus, inverse_of_modulus_mod_montgomery_r);
+  libcrux_ml_dsa_simd_avx2_ntt_ntt_at_layer_7_and_6_mul(
+      re, (size_t)16U + (size_t)3U, zeta61,
+      LIBCRUX_ML_DSA_SIMD_AVX2_NTT_NTT_AT_LAYER_7_AND_6_STEP_BY_6,
+      field_modulus, inverse_of_modulus_mod_montgomery_r);
+  libcrux_ml_dsa_simd_avx2_ntt_ntt_at_layer_7_and_6_mul(
+      re, (size_t)4U, zeta7,
+      LIBCRUX_ML_DSA_SIMD_AVX2_NTT_NTT_AT_LAYER_7_AND_6_STEP_BY_7,
+      field_modulus, inverse_of_modulus_mod_montgomery_r);
+  libcrux_ml_dsa_simd_avx2_ntt_ntt_at_layer_7_and_6_mul(
+      re, (size_t)4U + (size_t)1U, zeta7,
+      LIBCRUX_ML_DSA_SIMD_AVX2_NTT_NTT_AT_LAYER_7_AND_6_STEP_BY_7,
+      field_modulus, inverse_of_modulus_mod_montgomery_r);
+  libcrux_ml_dsa_simd_avx2_ntt_ntt_at_layer_7_and_6_mul(
+      re, (size_t)4U + (size_t)2U, zeta7,
+      LIBCRUX_ML_DSA_SIMD_AVX2_NTT_NTT_AT_LAYER_7_AND_6_STEP_BY_7,
+      field_modulus, inverse_of_modulus_mod_montgomery_r);
+  libcrux_ml_dsa_simd_avx2_ntt_ntt_at_layer_7_and_6_mul(
+      re, (size_t)4U + (size_t)3U, zeta7,
+      LIBCRUX_ML_DSA_SIMD_AVX2_NTT_NTT_AT_LAYER_7_AND_6_STEP_BY_7,
+      field_modulus, inverse_of_modulus_mod_montgomery_r);
+  libcrux_ml_dsa_simd_avx2_ntt_ntt_at_layer_7_and_6_mul(
+      re, (size_t)12U, zeta7,
+      LIBCRUX_ML_DSA_SIMD_AVX2_NTT_NTT_AT_LAYER_7_AND_6_STEP_BY_7,
+      field_modulus, inverse_of_modulus_mod_montgomery_r);
+  libcrux_ml_dsa_simd_avx2_ntt_ntt_at_layer_7_and_6_mul(
+      re, (size_t)12U + (size_t)1U, zeta7,
+      LIBCRUX_ML_DSA_SIMD_AVX2_NTT_NTT_AT_LAYER_7_AND_6_STEP_BY_7,
+      field_modulus, inverse_of_modulus_mod_montgomery_r);
+  libcrux_ml_dsa_simd_avx2_ntt_ntt_at_layer_7_and_6_mul(
+      re, (size_t)12U + (size_t)2U, zeta7,
+      LIBCRUX_ML_DSA_SIMD_AVX2_NTT_NTT_AT_LAYER_7_AND_6_STEP_BY_7,
+      field_modulus, inverse_of_modulus_mod_montgomery_r);
+  libcrux_ml_dsa_simd_avx2_ntt_ntt_at_layer_7_and_6_mul(
+      re, (size_t)12U + (size_t)3U, zeta7,
+      LIBCRUX_ML_DSA_SIMD_AVX2_NTT_NTT_AT_LAYER_7_AND_6_STEP_BY_7,
+      field_modulus, inverse_of_modulus_mod_montgomery_r);
+  libcrux_ml_dsa_simd_avx2_ntt_ntt_at_layer_7_and_6_mul(
+      re, (size_t)4U, zeta60,
+      LIBCRUX_ML_DSA_SIMD_AVX2_NTT_NTT_AT_LAYER_7_AND_6_STEP_BY_6,
+      field_modulus, inverse_of_modulus_mod_montgomery_r);
+  libcrux_ml_dsa_simd_avx2_ntt_ntt_at_layer_7_and_6_mul(
+      re, (size_t)4U + (size_t)1U, zeta60,
+      LIBCRUX_ML_DSA_SIMD_AVX2_NTT_NTT_AT_LAYER_7_AND_6_STEP_BY_6,
+      field_modulus, inverse_of_modulus_mod_montgomery_r);
+  libcrux_ml_dsa_simd_avx2_ntt_ntt_at_layer_7_and_6_mul(
+      re, (size_t)4U + (size_t)2U, zeta60,
+      LIBCRUX_ML_DSA_SIMD_AVX2_NTT_NTT_AT_LAYER_7_AND_6_STEP_BY_6,
+      field_modulus, inverse_of_modulus_mod_montgomery_r);
+  libcrux_ml_dsa_simd_avx2_ntt_ntt_at_layer_7_and_6_mul(
+      re, (size_t)4U + (size_t)3U, zeta60,
+      LIBCRUX_ML_DSA_SIMD_AVX2_NTT_NTT_AT_LAYER_7_AND_6_STEP_BY_6,
+      field_modulus, inverse_of_modulus_mod_montgomery_r);
+  libcrux_ml_dsa_simd_avx2_ntt_ntt_at_layer_7_and_6_mul(
+      re, (size_t)20U, zeta61,
+      LIBCRUX_ML_DSA_SIMD_AVX2_NTT_NTT_AT_LAYER_7_AND_6_STEP_BY_6,
+      field_modulus, inverse_of_modulus_mod_montgomery_r);
+  libcrux_ml_dsa_simd_avx2_ntt_ntt_at_layer_7_and_6_mul(
+      re, (size_t)20U + (size_t)1U, zeta61,
+      LIBCRUX_ML_DSA_SIMD_AVX2_NTT_NTT_AT_LAYER_7_AND_6_STEP_BY_6,
+      field_modulus, inverse_of_modulus_mod_montgomery_r);
+  libcrux_ml_dsa_simd_avx2_ntt_ntt_at_layer_7_and_6_mul(
+      re, (size_t)20U + (size_t)2U, zeta61,
+      LIBCRUX_ML_DSA_SIMD_AVX2_NTT_NTT_AT_LAYER_7_AND_6_STEP_BY_6,
+      field_modulus, inverse_of_modulus_mod_montgomery_r);
+  libcrux_ml_dsa_simd_avx2_ntt_ntt_at_layer_7_and_6_mul(
+      re, (size_t)20U + (size_t)3U, zeta61,
+      LIBCRUX_ML_DSA_SIMD_AVX2_NTT_NTT_AT_LAYER_7_AND_6_STEP_BY_6,
+      field_modulus, inverse_of_modulus_mod_montgomery_r);
 }
 
 /**
@@ -6927,9 +7019,6 @@ libcrux_ml_dsa_ml_dsa_65_avx2_verify_pre_hashed_shake128(
       Eurydice_array_to_slice((size_t)256U, pre_hash_buffer, uint8_t),
       libcrux_ml_dsa_types_as_ref_8f_fa(signature));
 }
-
-#define LIBCRUX_ML_DSA_SIMD_AVX2_NTT_NTT_AT_LAYER_7_AND_6_STEP_BY_7 \
-  ((size_t)2U * LIBCRUX_ML_DSA_SIMD_TRAITS_COEFFICIENTS_IN_SIMD_UNIT)
 
 KRML_ATTRIBUTE_TARGET("avx2")
 static inline bool
