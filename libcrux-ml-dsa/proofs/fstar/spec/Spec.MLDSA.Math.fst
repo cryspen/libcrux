@@ -4,23 +4,25 @@ open FStar.Mul
 open Core
 
 include Spec.Utils
-
+open Spec.Intrinsics
+  
 let v_FIELD_MODULUS: i32 = mk_i32 8380417
 
 [@@ "opaque_to_smt"]
 let mod_q a = a % 8380417
 
 let i32_mul (x:i32) (y:i32) =
-  (cast x <: i64) *! (cast y <: i64)
+  mul_mod_opaque (cast_mod_opaque x <: i64) (cast_mod_opaque y <: i64)
 
 [@@ "opaque_to_smt"]
 let mont_mul (x:i32) (y:i32) : i32 =
   let product : i64 = i32_mul x y in
-  let hi : i32 = cast (product >>! mk_u64 32) in
-  let low : i32 = cast product in
-  let k : i32 = cast (i32_mul low (mk_i32 58728449)) in
-  let c : i32 = cast ((i32_mul low (mk_i32 58728449)) >>! mk_u64 32) in
-  hi -. c  
+  let hi : i32 = cast_mod_opaque (shift_right_opaque product (mk_i32 32)) in
+  let low : i32 = cast_mod_opaque product in
+  let k : i32 = cast_mod_opaque (i32_mul low (mk_i32 58728449)) in
+  let c : i32 = cast_mod_opaque (shift_right_opaque (i32_mul low (mk_i32 8380417)) (mk_i32 32)) in
+  sub_mod_opaque hi c  
+
 
 let v_BITS_IN_LOWER_PART_OF_T: usize = mk_usize 13
 

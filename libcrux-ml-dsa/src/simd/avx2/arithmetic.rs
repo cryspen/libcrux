@@ -8,14 +8,33 @@ use libcrux_intrinsics::avx2::*;
 use super::Gamma2;
 
 #[inline(always)]
+#[hax_lib::fstar::before(r#"open Spec.Intrinsics"#)]
+#[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
+#[hax_lib::requires(true)]
+#[hax_lib::ensures(|result| fstar!(r#"
+    forall i. if v (to_i32x8 $t i) < 0 
+              then to_i32x8 $result i = to_i32x8 $t i +! $FIELD_MODULUS
+              else to_i32x8 $result i = to_i32x8 $t i)) =
+"#))]
 fn to_unsigned_representatives_ret(t: &Vec256) -> Vec256 {
+    hax_lib::fstar!("reveal_opaque_arithmetic_ops #i32_inttype)");
+
     let signs = mm256_srai_epi32::<31>(*t);
     let conditional_add_field_modulus = mm256_and_si256(signs, mm256_set1_epi32(FIELD_MODULUS));
+
+    hax_lib::fstar!(r"logand_lemma $FIELD_MODULUS (mk_i32 0)");
 
     mm256_add_epi32(*t, conditional_add_field_modulus)
 }
 
 #[inline(always)]
+#[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
+#[hax_lib::requires(true)]
+#[hax_lib::ensures(|_| fstar!(r#"
+    forall i. if v (to_i32x8 $t i) < 0 
+              then to_i32x8 tt_future i = to_i32x8 $t i +! $FIELD_MODULUS
+              else to_i32x8 tt_future i = to_i32x8 $t i)) =
+"#))]
 fn to_unsigned_representatives(t: &mut Vec256) {
     *t = to_unsigned_representatives_ret(t);
 }
@@ -31,8 +50,15 @@ pub(super) fn subtract(lhs: &mut Vec256, rhs: &Vec256) {
 }
 
 #[inline(always)]
+#[hax_lib::fstar::verification_status(lax)]
 #[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
+#[hax_lib::ensures(|result| fstar!(r#"
+    forall i. to_i32x8 ${result} i == 
+              Spec.MLDSA.Math.mont_mul (to_i32x8 ${lhs} i) $constant
+"#))]
 pub(super) fn montgomery_multiply_by_constant(lhs: Vec256, constant: i32) -> Vec256 {
+    hax_lib::fstar!("reveal_opaque (`%Spec.MLDSA.Math.mont_mul) (Spec.MLDSA.Math.mont_mul)");
+
     let rhs = mm256_set1_epi32(constant);
     let field_modulus = mm256_set1_epi32(FIELD_MODULUS);
     let inverse_of_modulus_mod_montgomery_r =
@@ -58,6 +84,7 @@ pub(super) fn montgomery_multiply_by_constant(lhs: Vec256, constant: i32) -> Vec
 }
 
 #[inline(always)]
+#[hax_lib::fstar::verification_status(lax)]
 #[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
 #[hax_lib::requires(
     hax_lib::eq(field_modulus, mm256_set1_epi32(FIELD_MODULUS)).and(hax_lib::eq(
@@ -65,6 +92,10 @@ pub(super) fn montgomery_multiply_by_constant(lhs: Vec256, constant: i32) -> Vec
         mm256_set1_epi32(INVERSE_OF_MODULUS_MOD_MONTGOMERY_R as i32),
     ))
 )]
+#[hax_lib::ensures(|_| fstar!(r#"
+    forall i. to_i32x8 ${lhs}_future i == 
+              Spec.MLDSA.Math.mont_mul (to_i32x8 ${lhs} i) (to_i32x8 ${rhs} i)
+"#))]
 pub(super) fn montgomery_multiply_aux(
     field_modulus: Vec256,
     inverse_of_modulus_mod_montgomery_r: Vec256,
@@ -90,6 +121,10 @@ pub(super) fn montgomery_multiply_aux(
 
 #[inline(always)]
 #[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
+#[hax_lib::ensures(|_| fstar!(r#"
+    forall i. to_i32x8 ${lhs}_future i == 
+              Spec.MLDSA.Math.mont_mul (to_i32x8 ${lhs} i) (to_i32x8 ${rhs} i)
+"#))]
 pub(super) fn montgomery_multiply(lhs: &mut Vec256, rhs: &Vec256) {
     let field_modulus = mm256_set1_epi32(FIELD_MODULUS);
     let inverse_of_modulus_mod_montgomery_r =
