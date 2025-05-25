@@ -8,7 +8,7 @@
  * Eurydice: d3b14228e2b5fe8710ec7efae31e4de2c96ed20d
  * Karamel: 095cdb73f246711f93f99a159ceca37cd2c227e1
  * F*: 4b3fc11774003a6ff7c09500ecb5f0145ca6d862
- * Libcrux: 7c306c5fef45d8a8ec3ab98876aa46f2761529a8
+ * Libcrux: 1d7a02e5d5f864de468bd4921f35594b4afe8f78
  */
 
 #ifndef __libcrux_mldsa65_avx2_H
@@ -1805,7 +1805,7 @@ static KRML_MUSTINLINE void libcrux_ml_dsa_simd_avx2_t1_deserialize_22(
 }
 
 #define LIBCRUX_ML_DSA_SIMD_AVX2_NTT_NTT_AT_LAYER_7_AND_6_STEP_BY_7 \
-  ((size_t)2U * LIBCRUX_ML_DSA_SIMD_TRAITS_COEFFICIENTS_IN_SIMD_UNIT)
+  ((size_t)16U)
 
 KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE void
@@ -1820,8 +1820,7 @@ libcrux_ml_dsa_simd_avx2_ntt_ntt_at_layer_7_and_6_mul(
   libcrux_ml_dsa_simd_avx2_arithmetic_add(&re[index], &t);
 }
 
-#define LIBCRUX_ML_DSA_SIMD_AVX2_NTT_NTT_AT_LAYER_7_AND_6_STEP_BY_6 \
-  (((size_t)1U << 6U) / LIBCRUX_ML_DSA_SIMD_TRAITS_COEFFICIENTS_IN_SIMD_UNIT)
+#define LIBCRUX_ML_DSA_SIMD_AVX2_NTT_NTT_AT_LAYER_7_AND_6_STEP_BY_6 ((size_t)8U)
 
 /**
  This is equivalent to the pqclean 0 and 1
