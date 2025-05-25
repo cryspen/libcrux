@@ -59,12 +59,19 @@ pub(super) fn montgomery_multiply_by_constant(lhs: Vec256, constant: i32) -> Vec
 #[hax_lib::fstar::postprocess_with(
     core_models::arch::x86::interpretations::int_vec::flatten_circuit
 )]
+#[hax_lib::requires(
+    hax_lib::eq(field_modulus, mm256_set1_epi32(FIELD_MODULUS)).and(hax_lib::eq(
+        inverse_of_modulus_mod_montgomery_r,
+        mm256_set1_epi32(INVERSE_OF_MODULUS_MOD_MONTGOMERY_R as i32),
+    ))
+)]
 #[inline(always)]
-pub(super) fn montgomery_multiply(lhs: &mut Vec256, rhs: &Vec256) {
-    let field_modulus = mm256_set1_epi32(FIELD_MODULUS);
-    let inverse_of_modulus_mod_montgomery_r =
-        mm256_set1_epi32(INVERSE_OF_MODULUS_MOD_MONTGOMERY_R as i32);
-
+pub(super) fn montgomery_multiply_aux(
+    field_modulus: Vec256,
+    inverse_of_modulus_mod_montgomery_r: Vec256,
+    lhs: &mut Vec256,
+    rhs: &Vec256,
+) {
     let prod02 = mm256_mul_epi32(*lhs, *rhs);
     let prod13 = mm256_mul_epi32(
         mm256_shuffle_epi32::<0b11_11_01_01>(*lhs),
@@ -80,6 +87,15 @@ pub(super) fn montgomery_multiply(lhs: &mut Vec256, rhs: &Vec256) {
     let res13 = mm256_sub_epi32(prod13, c13);
     let res02_shifted = mm256_shuffle_epi32::<0b11_11_01_01>(res02);
     *lhs = mm256_blend_epi32::<0b10101010>(res02_shifted, res13);
+}
+
+#[inline(always)]
+pub(super) fn montgomery_multiply(lhs: &mut Vec256, rhs: &Vec256) {
+    let field_modulus = mm256_set1_epi32(FIELD_MODULUS);
+    let inverse_of_modulus_mod_montgomery_r =
+        mm256_set1_epi32(INVERSE_OF_MODULUS_MOD_MONTGOMERY_R as i32);
+
+    montgomery_multiply_aux(field_modulus, inverse_of_modulus_mod_montgomery_r, lhs, rhs)
 }
 
 #[inline(always)]
