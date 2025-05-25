@@ -2,6 +2,14 @@ module Spec.Intrinsics
 open Core
 open Core_models.Core_arch.X86.Interpretations.Int_vec
 
+let logand_mask_lemma_forall #t:
+  Lemma (forall a. logand ones a == a /\ 
+              logand a ones == a /\ 
+              logand a zero == zero #t /\ 
+              logand zero a == zero #t /\
+              logand a a == a) =
+  FStar.Classical.forall_intro (fun a -> logand_lemma #t a a)
+  
 (* Opaque arithmetic operations *)
 [@@ "opaque_to_smt"]
 let add_mod_opaque #t = add_mod #t
@@ -96,9 +104,27 @@ val mm256_srai_epi32_lemma (v_IMM8: i32) (a: bv256) (i:u64{v i < 8}):
          [SMTPat (to_i32x8 (Libcrux_intrinsics.Avx2.mm256_srai_epi32 v_IMM8 a) i)]
 
 val mm256_and_si256_lemma (a b: bv256) (i:u64{v i < 8}):
-  Lemma (to_i32x8 (Libcrux_intrinsics.Avx2.mm256_add_epi32 a b) i ==
+  Lemma (to_i32x8 (Libcrux_intrinsics.Avx2.mm256_and_si256 a b) i ==
          ((to_i32x8 a i) &. (to_i32x8 b i)))
-         [SMTPat (to_i32x8 (Libcrux_intrinsics.Avx2.mm256_and_si256 a b) i)]
+  [SMTPat (to_i32x8 (Libcrux_intrinsics.Avx2.mm256_and_si256 a b) i)]
+
+val mm256_abs_epi32_lemma (a: bv256) (i:u64{v i < 8}):
+  Lemma (requires (v (to_i32x8 a i) > minint i32_inttype))
+        (ensures to_i32x8 (Libcrux_intrinsics.Avx2.mm256_abs_epi32 a) i ==
+                 abs_int (to_i32x8 a i))
+  [SMTPat (to_i32x8 (Libcrux_intrinsics.Avx2.mm256_abs_epi32 a) i)]
+
+val mm256_cmpgt_epi32_lemma (a b: bv256) (i:u64{v i < 8}):
+  Lemma (to_i32x8 (Libcrux_intrinsics.Avx2.mm256_cmpgt_epi32 a b) i ==
+         (if (to_i32x8 a i >. to_i32x8 b i) then ones else zero))
+  [SMTPat (to_i32x8 (Libcrux_intrinsics.Avx2.mm256_cmpgt_epi32 a b) i)]
+
+val mm256_testz_si256_lemma (a b: bv256):
+  Lemma (let result = Libcrux_intrinsics.Avx2.mm256_testz_si256 a b in
+         let conjunct = Libcrux_intrinsics.Avx2.mm256_and_si256 a b in
+         ((result == mk_i32 0 \/ result == mk_i32 1) /\
+          (result == mk_i32 1 <==> (forall i. to_i32x8 conjunct i == mk_i32 0))))
+  [SMTPat (Libcrux_intrinsics.Avx2.mm256_testz_si256 a b)]
 
 val mm256_set1_epi32_lemma (x:i32) (i:u64{v i < 8}):
   Lemma (to_i32x8 (Libcrux_intrinsics.Avx2.mm256_set1_epi32 x) i == x)
