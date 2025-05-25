@@ -25,9 +25,7 @@ pub(crate) fn invert_ntt_montgomery(re: &mut AVX2RingElement) {
             // - Divide the elements by 256 and
             // - Convert the elements form montgomery domain to the standard domain.
             const FACTOR: i32 = 41_978;
-            re[i] = AVX2SIMDUnit {
-                value: arithmetic::montgomery_multiply_by_constant(re[i].value, FACTOR),
-            };
+            re[i].value = arithmetic::montgomery_multiply_by_constant(re[i].value, FACTOR);
         }
     }
 
