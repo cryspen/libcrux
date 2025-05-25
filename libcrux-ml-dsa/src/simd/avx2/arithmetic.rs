@@ -50,7 +50,6 @@ pub(super) fn subtract(lhs: &mut Vec256, rhs: &Vec256) {
 }
 
 #[inline(always)]
-#[hax_lib::fstar::verification_status(lax)]
 #[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
 #[hax_lib::ensures(|result| fstar!(r#"
     forall i. to_i32x8 ${result} i == 
@@ -79,12 +78,10 @@ pub(super) fn montgomery_multiply_by_constant(lhs: Vec256, constant: i32) -> Vec
     let res02 = mm256_sub_epi32(prod02, c02);
     let res13 = mm256_sub_epi32(prod13, c13);
     let res02_shifted = mm256_shuffle_epi32::<0b11_11_01_01>(res02);
-    let res = mm256_blend_epi32::<0b10101010>(res02_shifted, res13);
-    res
+    mm256_blend_epi32::<0b10101010>(res02_shifted, res13)
 }
 
 #[inline(always)]
-#[hax_lib::fstar::verification_status(lax)]
 #[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
 #[hax_lib::requires(
     hax_lib::eq(field_modulus, mm256_set1_epi32(FIELD_MODULUS)).and(hax_lib::eq(
@@ -102,6 +99,8 @@ pub(super) fn montgomery_multiply_aux(
     lhs: &mut Vec256,
     rhs: &Vec256,
 ) {
+    hax_lib::fstar!("reveal_opaque (`%Spec.MLDSA.Math.mont_mul) (Spec.MLDSA.Math.mont_mul)");
+
     let prod02 = mm256_mul_epi32(*lhs, *rhs);
     let prod13 = mm256_mul_epi32(
         mm256_shuffle_epi32::<0b11_11_01_01>(*lhs),

@@ -78,7 +78,7 @@ val mm256_add_epi32_lemma (a b: bv256) (i:u64{v i < 8}):
 val mm256_mul_epi32_lemma (a b: bv256) (i:u64{v i < 8}):
   Lemma (to_i32x8 (Libcrux_intrinsics.Avx2.mm256_mul_epi32 a b) i ==
          (
-           let j = i /! mk_int 2 in
+           let j = mk_u64 (v i - (v i % 2)) in
            let v64 = mul_mod_opaque (cast_mod_opaque (to_i32x8 a j) <: i64) (cast_mod_opaque (to_i32x8 b j) <: i64) in
            if v i % 2 = 0 then cast_mod_opaque v64 else cast_mod_opaque (shift_right_opaque v64 (mk_i32 32))
          ))

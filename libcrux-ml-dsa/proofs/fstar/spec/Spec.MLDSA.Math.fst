@@ -20,7 +20,7 @@ let mont_mul (x:i32) (y:i32) : i32 =
   let hi : i32 = cast_mod_opaque (shift_right_opaque product (mk_i32 32)) in
   let low : i32 = cast_mod_opaque product in
   let k : i32 = cast_mod_opaque (i32_mul low (mk_i32 58728449)) in
-  let c : i32 = cast_mod_opaque (shift_right_opaque (i32_mul low (mk_i32 8380417)) (mk_i32 32)) in
+  let c : i32 = cast_mod_opaque (shift_right_opaque (i32_mul k (mk_i32 8380417)) (mk_i32 32)) in
   sub_mod_opaque hi c  
 
 
