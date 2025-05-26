@@ -127,8 +127,11 @@ pub fn serialize(eta: Eta, simd_unit: &Vec256, serialized: &mut [u8]) {
 // )]
 
 #[inline(always)]
-#[hax_lib::fstar::verification_status(lax)]
 #[hax_lib::requires(bytes.len() == 3)]
+#[hax_lib::ensures(|result| fstar!(r#"
+  (forall (i: nat {i <  24}). u8_to_bv bytes.[mk_usize (i / 8)] (mk_int (i % 8)) == ${result}.(mk_int (i / 3 * 32 + i % 3)))
+/\ (forall (i: nat {i < 256}). i % 32 >= 3 ==> Core_models.Abstractions.Bit.Bit_Zero? ${result}.(mk_int i))
+"#))]
 fn deserialize_to_unsigned_when_eta_is_2(bytes: &[u8]) -> Vec256 {
     debug_assert!(bytes.len() == 3);
 
@@ -152,6 +155,11 @@ fn deserialize_to_unsigned_when_eta_is_2(bytes: &[u8]) -> Vec256 {
 }
 
 #[inline(always)]
+#[hax_lib::requires(bytes.len() == 4)]
+#[hax_lib::ensures(|result| fstar!(r#"
+  (forall (i: nat {i <  32}). u8_to_bv bytes.[mk_usize (i / 8)] (mk_int (i % 8)) == ${result}.(mk_int (i / 4 * 32 + i % 4)))
+/\ (forall (i: nat {i < 256}). i % 32 >= 4 ==> Core_models.Abstractions.Bit.Bit_Zero? ${result}.(mk_int i))
+"#))]
 fn deserialize_to_unsigned_when_eta_is_4(bytes: &[u8]) -> Vec256 {
     debug_assert!(bytes.len() == 4);
 
@@ -174,6 +182,10 @@ fn deserialize_to_unsigned_when_eta_is_4(bytes: &[u8]) -> Vec256 {
     mm256_and_si256(coefficients, mm256_set1_epi32(COEFFICIENT_MASK))
 }
 #[inline(always)]
+#[hax_lib::requires(serialized.len() == match eta {
+    Eta::Two => 3,
+    Eta::Four => 4,
+})]
 pub(crate) fn deserialize_to_unsigned(eta: Eta, serialized: &[u8]) -> Vec256 {
     match eta {
         Eta::Two => deserialize_to_unsigned_when_eta_is_2(serialized),
@@ -182,6 +194,10 @@ pub(crate) fn deserialize_to_unsigned(eta: Eta, serialized: &[u8]) -> Vec256 {
 }
 
 #[inline(always)]
+#[hax_lib::requires(serialized.len() == match eta {
+    Eta::Two => 3,
+    Eta::Four => 4,
+})]
 pub(crate) fn deserialize(eta: Eta, serialized: &[u8], out: &mut Vec256) {
     let unsigned = deserialize_to_unsigned(eta, serialized);
 
