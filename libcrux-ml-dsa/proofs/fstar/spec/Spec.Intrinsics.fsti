@@ -48,6 +48,7 @@ val from_i32x8 (x:i32x8):  bv256
 (**** Int to bit vecs *)
 val i16_to_bv (x: i16): t_FunArray (mk_int 16) t_Bit
 val i32_to_bv (x: i32): t_FunArray (mk_int 32) t_Bit
+val u8_to_bv (x: u8): t_FunArray (mk_int 8) t_Bit
 
 (**** Inversion lemmas *)
 val to_from_i32x8_inv_lemma (x: i32x8)
@@ -244,7 +245,7 @@ val mm256_madd_epi16_lemma (a b: bv256) i
                let y = (to_i16x16 a (mk_int (nth_32_block * 2 + 1)) `i16_mul_32extended` to_i16x16 b (mk_int (nth_32_block * 2 + 1))) in
                i32_to_bv (x `i32_wrapping_add` y) (i %! mk_int 32)
              )
-   ) (* [SMTPat (I.mm256_madd_epi16 a b).(i)] *)
+   )
 
 val mm256_madd_epi16_specialized_lemma vec i:
   Lemma

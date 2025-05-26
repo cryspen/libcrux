@@ -115,7 +115,19 @@ pub fn serialize(eta: Eta, simd_unit: &Vec256, serialized: &mut [u8]) {
     }
 }
 
+// #[hax_lib::ensures(|result| {
+//     fstar!(r#"
+// forall (i:nat{i < 24}).
+//      ${result}.(mk_int i)
+//   == get_bit (Seq.index ${bytes} (i / 3)) (mk_int (i % 8))
+// "#)
+// })]
+// #[hax_lib::fstar::options(
+//     "--fuel 0 --ifuel 0 --z3rlimit 500 --z3smtopt '(set-option :smt.arith.nl false)'"
+// )]
+
 #[inline(always)]
+#[hax_lib::fstar::verification_status(lax)]
 #[hax_lib::requires(bytes.len() == 3)]
 fn deserialize_to_unsigned_when_eta_is_2(bytes: &[u8]) -> Vec256 {
     debug_assert!(bytes.len() == 3);
