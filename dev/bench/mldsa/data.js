@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1748255302161,
+  "lastUpdate": 1748255423687,
   "repoUrl": "https://github.com/cryspen/libcrux",
   "entries": {
     "ML-DSA Benchmark": [
@@ -26049,6 +26049,269 @@ window.BENCHMARK_DATA = {
           },
           {
             "value": 55,
+            "unit": "μs/iter",
+            "os": "macos-latest_64",
+            "implementation": "pqclean ML-DSA",
+            "keySize": "87",
+            "label": "KeyGen",
+            "hardware": "auto"
+          },
+          {
+            "value": 128,
+            "unit": "μs/iter",
+            "os": "macos-latest_64",
+            "implementation": "pqclean ML-DSA",
+            "keySize": "87",
+            "label": "Sign",
+            "hardware": "auto"
+          },
+          {
+            "value": 56,
+            "unit": "μs/iter",
+            "os": "macos-latest_64",
+            "implementation": "pqclean ML-DSA",
+            "keySize": "87",
+            "label": "Verify",
+            "hardware": "auto"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Jan Winkelmann",
+            "username": "Jan Winkelmann"
+          },
+          "committer": {
+            "name": "GitHub",
+            "username": "GitHub"
+          },
+          "id": "a19524b01812e3806e628f472ac7eb91514aebb5",
+          "message": "Merge pull request #1001 from cryspen/keks/sha2-readme-path\n\nReference the correct Readme in Cargo.toml files",
+          "timestamp": "2025-05-26T10:13:07Z",
+          "url": "/commits/a19524b01812e3806e628f472ac7eb91514aebb5"
+        },
+        "date": 1748255418924,
+        "bigger_is_better": false,
+        "benches": [
+          {
+            "value": 39,
+            "unit": "μs/iter",
+            "os": "macos-latest_64",
+            "implementation": "libcrux ML-DSA",
+            "keySize": "44",
+            "label": "KeyGen",
+            "hardware": "portable"
+          },
+          {
+            "value": 155,
+            "unit": "μs/iter",
+            "os": "macos-latest_64",
+            "implementation": "libcrux ML-DSA",
+            "keySize": "44",
+            "label": "Sign",
+            "hardware": "portable"
+          },
+          {
+            "value": 42,
+            "unit": "μs/iter",
+            "os": "macos-latest_64",
+            "implementation": "libcrux ML-DSA",
+            "keySize": "44",
+            "label": "Verify",
+            "hardware": "portable"
+          },
+          {
+            "value": 26,
+            "unit": "μs/iter",
+            "os": "macos-latest_64",
+            "implementation": "libcrux ML-DSA",
+            "keySize": "44",
+            "label": "KeyGen",
+            "hardware": "neon"
+          },
+          {
+            "value": 126,
+            "unit": "μs/iter",
+            "os": "macos-latest_64",
+            "implementation": "libcrux ML-DSA",
+            "keySize": "44",
+            "label": "Sign",
+            "hardware": "neon"
+          },
+          {
+            "value": 32,
+            "unit": "μs/iter",
+            "os": "macos-latest_64",
+            "implementation": "libcrux ML-DSA",
+            "keySize": "44",
+            "label": "Verify",
+            "hardware": "neon"
+          },
+          {
+            "value": 21,
+            "unit": "μs/iter",
+            "os": "macos-latest_64",
+            "implementation": "pqclean ML-DSA",
+            "keySize": "44",
+            "label": "KeyGen",
+            "hardware": "auto"
+          },
+          {
+            "value": 73,
+            "unit": "μs/iter",
+            "os": "macos-latest_64",
+            "implementation": "pqclean ML-DSA",
+            "keySize": "44",
+            "label": "Sign",
+            "hardware": "auto"
+          },
+          {
+            "value": 25,
+            "unit": "μs/iter",
+            "os": "macos-latest_64",
+            "implementation": "pqclean ML-DSA",
+            "keySize": "44",
+            "label": "Verify",
+            "hardware": "auto"
+          },
+          {
+            "value": 80,
+            "unit": "μs/iter",
+            "os": "macos-latest_64",
+            "implementation": "libcrux ML-DSA",
+            "keySize": "65",
+            "label": "KeyGen",
+            "hardware": "portable"
+          },
+          {
+            "value": 253,
+            "unit": "μs/iter",
+            "os": "macos-latest_64",
+            "implementation": "libcrux ML-DSA",
+            "keySize": "65",
+            "label": "Sign",
+            "hardware": "portable"
+          },
+          {
+            "value": 76,
+            "unit": "μs/iter",
+            "os": "macos-latest_64",
+            "implementation": "libcrux ML-DSA",
+            "keySize": "65",
+            "label": "Verify",
+            "hardware": "portable"
+          },
+          {
+            "value": 58,
+            "unit": "μs/iter",
+            "os": "macos-latest_64",
+            "implementation": "libcrux ML-DSA",
+            "keySize": "65",
+            "label": "KeyGen",
+            "hardware": "neon"
+          },
+          {
+            "value": 215,
+            "unit": "μs/iter",
+            "os": "macos-latest_64",
+            "implementation": "libcrux ML-DSA",
+            "keySize": "65",
+            "label": "Sign",
+            "hardware": "neon"
+          },
+          {
+            "value": 52,
+            "unit": "μs/iter",
+            "os": "macos-latest_64",
+            "implementation": "libcrux ML-DSA",
+            "keySize": "65",
+            "label": "Verify",
+            "hardware": "neon"
+          },
+          {
+            "value": 50,
+            "unit": "μs/iter",
+            "os": "macos-latest_64",
+            "implementation": "pqclean ML-DSA",
+            "keySize": "65",
+            "label": "KeyGen",
+            "hardware": "auto"
+          },
+          {
+            "value": 114,
+            "unit": "μs/iter",
+            "os": "macos-latest_64",
+            "implementation": "pqclean ML-DSA",
+            "keySize": "65",
+            "label": "Sign",
+            "hardware": "auto"
+          },
+          {
+            "value": 37,
+            "unit": "μs/iter",
+            "os": "macos-latest_64",
+            "implementation": "pqclean ML-DSA",
+            "keySize": "65",
+            "label": "Verify",
+            "hardware": "auto"
+          },
+          {
+            "value": 114,
+            "unit": "μs/iter",
+            "os": "macos-latest_64",
+            "implementation": "libcrux ML-DSA",
+            "keySize": "87",
+            "label": "KeyGen",
+            "hardware": "portable"
+          },
+          {
+            "value": 304,
+            "unit": "μs/iter",
+            "os": "macos-latest_64",
+            "implementation": "libcrux ML-DSA",
+            "keySize": "87",
+            "label": "Sign",
+            "hardware": "portable"
+          },
+          {
+            "value": 116,
+            "unit": "μs/iter",
+            "os": "macos-latest_64",
+            "implementation": "libcrux ML-DSA",
+            "keySize": "87",
+            "label": "Verify",
+            "hardware": "portable"
+          },
+          {
+            "value": 72,
+            "unit": "μs/iter",
+            "os": "macos-latest_64",
+            "implementation": "libcrux ML-DSA",
+            "keySize": "87",
+            "label": "KeyGen",
+            "hardware": "neon"
+          },
+          {
+            "value": 253,
+            "unit": "μs/iter",
+            "os": "macos-latest_64",
+            "implementation": "libcrux ML-DSA",
+            "keySize": "87",
+            "label": "Sign",
+            "hardware": "neon"
+          },
+          {
+            "value": 80,
+            "unit": "μs/iter",
+            "os": "macos-latest_64",
+            "implementation": "libcrux ML-DSA",
+            "keySize": "87",
+            "label": "Verify",
+            "hardware": "neon"
+          },
+          {
+            "value": 54,
             "unit": "μs/iter",
             "os": "macos-latest_64",
             "implementation": "pqclean ML-DSA",
