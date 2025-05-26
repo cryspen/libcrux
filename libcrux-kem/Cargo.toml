@@ -1,13 +1,14 @@
 [package]
 name = "libcrux-kem"
 version = "0.0.3-alpha.1"
+description = "Libcrux KEM implementation"
+readme = "README.md"
+
 authors.workspace = true
 license.workspace = true
 homepage.workspace = true
 edition.workspace = true
 repository.workspace = true
-readme.workspace = true
-description = "Libcrux KEM implementation"
 exclude = ["/tests"]
 
 [lib]
