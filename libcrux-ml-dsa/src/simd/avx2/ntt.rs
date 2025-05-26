@@ -218,7 +218,7 @@ fn butterfly_8(re: &mut AVX2RingElement, index: usize, zeta0: i32, zeta1: i32) {
     );
     let nre1 = mm256_permute2x128_si256::<0b0001_0011>(sub_terms, add_terms);
 
-    // This assert allows all the SMT Patterns to kick in an prove correctness
+    // This assert allows all the SMT Patterns to kick in and prove correctness
     hax_lib::fstar!(
         r#"assert (butterfly_8_spec 
          $re0 $re1 $zeta0 $zeta1 $nre0 $nre1)"#
