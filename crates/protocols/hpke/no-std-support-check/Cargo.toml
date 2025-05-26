@@ -20,3 +20,7 @@ getrandom_old = { package = "getrandom", version = "0.2.11", features = [
 # for the newer version of `getrandom`, which is required by `hpke-rs-libcrux`, the `.cargo/config.toml` needs to contain configuration for a custom backend.
 # see https://docs.rs/getrandom/latest/getrandom/#custom-backend
 getrandom = { version = "0.3.2" }
+
+# Prevent this from interfering with workspaces
+[workspace]
+members = ["."]
