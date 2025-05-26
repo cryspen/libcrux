@@ -3,4 +3,4 @@
 
 set -e
 
-cargo release --workspace --sign-tag
+cargo release --workspace --sign-tag --allow-branch main
