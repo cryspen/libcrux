@@ -10,6 +10,9 @@ readme = "Readme.md"
 repository = "https://github.com/cryspen/hpke-rs"
 exclude = ["/tests"]
 
+[workspace]
+members = ["traits", "libcrux_provider", "rust_crypto_provider", "."]
+
 [dependencies]
 log = "0.4"
 serde = { version = "1.0", features = ["derive"], optional = true }
