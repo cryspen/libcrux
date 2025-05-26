@@ -84,7 +84,7 @@ pub fn pk_validation(c: &mut Criterion) {
 
     macro_rules! fun {
         ($name:expr, $p:path, $group:expr) => {
-            $group.bench_function(format!("platform={},", $name), |b| {
+            $group.bench_function(format!("platform={}", $name), |b| {
                 use $p as p;
 
                 let mut seed = [0; 64];
@@ -218,7 +218,7 @@ pub fn encapsulation(c: &mut Criterion) {
                 },
             );
 
-            $group.bench_function(format!("{},api=incremental", $name), |b| {
+            $group.bench_function(format!("platform={},api=incremental", $name), |b| {
                 use $p::*;
 
                 b.iter_batched(
