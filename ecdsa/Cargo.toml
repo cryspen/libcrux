@@ -1,14 +1,14 @@
 [package]
 name = "libcrux-ecdsa"
 description = "Formally verified ECDSA signature library"
-
+readme = "Readme.md"
 version = "0.0.3-alpha.1"
+
 authors.workspace = true
 license.workspace = true
 homepage.workspace = true
 edition.workspace = true
 repository.workspace = true
-readme.workspace = true
 
 [dependencies]
 libcrux-p256 = { version = "=0.0.3-alpha.1", path = "../p256", features = [
