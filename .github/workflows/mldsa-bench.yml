@@ -87,11 +87,10 @@ jobs:
           data-out-path: libcrux-ml-dsa/bench-processed.json
 
       - name: Upload benchmarks
-        uses: cryspen/benchmark-upload-and-plot-action@v2
+        uses: cryspen/benchmark-upload-and-plot-action@v3
         with:
           name: ML-DSA Benchmark
           input-data-path: libcrux-ml-dsa/bench-processed.json
-          benchmark-data-dir-path: dev/bench/mldsa
           github-token: ${{ secrets.GITHUB_TOKEN }}
           gh-repository: github.com/${{ github.repository }}
           group-by: label,keySize,os
