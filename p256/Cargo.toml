@@ -1,6 +1,7 @@
 [package]
 name = "libcrux-p256"
 description = "Formally verified P-256 implementation"
+readme = "Readme.md"
 
 version = "0.0.3-alpha.1"
 authors.workspace = true
@@ -8,7 +9,6 @@ license.workspace = true
 homepage.workspace = true
 edition.workspace = true
 repository.workspace = true
-readme.workspace = true
 
 [dependencies]
 libcrux-macros = { version = "=0.0.3-alpha.1", path = "../macros" }
