@@ -44,6 +44,11 @@ fn serialize_when_eta_is_2_aux(simd_unit_shifted: Vec256) -> Vec128 {
 
 #[inline(always)]
 #[hax_lib::requires(fstar!("forall i. let x = (2 - v (to_i32x8 simd_unit i)) in x >= 0 && x <= 7"))]
+#[hax_lib::ensures(|_result| fstar!(r#"
+     Seq.length ${out}_future == 3
+  /\ (forall (i:nat{i < 24}). u8_to_bv (Seq.index ${out}_future (i / 8)) (mk_int (i % 8))
+                   == i32_to_bv (mk_int 2 -! to_i32x8 $simd_unit (mk_int (i / 3))) (mk_int (i % 3)))
+"#))]
 fn serialize_when_eta_is_2(simd_unit: &Vec256, out: &mut [u8]) {
     let mut serialized = [0u8; 16];
 
@@ -53,14 +58,14 @@ fn serialize_when_eta_is_2(simd_unit: &Vec256, out: &mut [u8]) {
     hax_lib::fstar!("i32_lt_pow2_n_to_bit_zero_lemma 3 $simd_unit_shifted");
     let adjacent_6_combined = serialize_when_eta_is_2_aux(simd_unit_shifted);
 
+    hax_lib::fstar!("assert(forall (i:nat{i < 24}). to_i32x8 $simd_unit_shifted (mk_int (i / 3)) == mk_int 2 `sub_mod` to_i32x8 $simd_unit (mk_int (i / 3)))");
+    hax_lib::fstar!("assert(forall i. mk_int 2 `sub_mod` to_i32x8 simd_unit i == mk_int 2 -! to_i32x8 simd_unit i)");
+
     mm_storeu_bytes_si128(&mut serialized[0..16], adjacent_6_combined);
     out.copy_from_slice(&serialized[0..3]);
 }
 
 #[inline(always)]
-#[hax_lib::fstar::options(
-    "--fuel 0 --ifuel 0 --z3rlimit 5000 --z3smtopt '(set-option :smt.arith.nl false)'"
-)]
 #[hax_lib::requires(
     fstar!(r"forall (i: nat {i < 256}). i % 32 >= 4 ==> ${simd_unit_shifted}.(mk_int i) == Core_models.Abstractions.Bit.Bit_Zero")
 )]
@@ -87,8 +92,14 @@ fn serialize_when_eta_is_4_aux(simd_unit_shifted: Vec256) -> Vec128 {
     adjacent_4_combined
 }
 
-#[hax_lib::requires(fstar!("forall i. let x = (4 - v (to_i32x8 simd_unit i)) in x >= 0 && x <= 15"))]
 #[inline(always)]
+#[hax_lib::requires(fstar!("forall i. let x = (4 - v (to_i32x8 simd_unit i)) in x >= 0 && x <= 15"))]
+#[hax_lib::ensures(|_result| fstar!(r#"
+     Seq.length ${out}_future == 4
+  /\ (forall (i:nat{i < 32}). u8_to_bv (Seq.index ${out}_future (i / 8)) (mk_int (i % 8))
+                   == i32_to_bv (mk_int 4 -! to_i32x8 $simd_unit (mk_int (i / 4))) (mk_int (i % 4)))
+"#))]
+#[hax_lib::fstar::options("--split_queries always")]
 fn serialize_when_eta_is_4(simd_unit: &Vec256, out: &mut [u8]) {
     let mut serialized = [0u8; 16];
 
@@ -98,6 +109,9 @@ fn serialize_when_eta_is_4(simd_unit: &Vec256, out: &mut [u8]) {
     hax_lib::fstar!("i32_lt_pow2_n_to_bit_zero_lemma 4 $simd_unit_shifted");
     let adjacent_4_combined = serialize_when_eta_is_4_aux(simd_unit_shifted);
 
+    hax_lib::fstar!("assert(forall (i:nat{i < 32}). to_i32x8 $simd_unit_shifted (mk_int (i / 4)) == mk_int 4 `sub_mod` to_i32x8 $simd_unit (mk_int (i / 4)))");
+    hax_lib::fstar!("assert(forall i. mk_int 4 `sub_mod` to_i32x8 simd_unit i == mk_int 4 -! to_i32x8 simd_unit i)");
+
     mm_storeu_bytes_si128(&mut serialized[0..16], adjacent_4_combined);
 
     out.copy_from_slice(&serialized[0..4])
@@ -106,6 +120,18 @@ fn serialize_when_eta_is_4(simd_unit: &Vec256, out: &mut [u8]) {
 #[hax_lib::requires(
     fstar!("forall i. let x = (v (${eta as u8}) - v (to_i32x8 simd_unit i)) in x >= 0 && x <= (pow2 (v (${eta as u8})) - 1)")
 )]
+#[hax_lib::ensures(|_result| {
+    let bytes = match eta {
+        Eta::Two => 3,
+        Eta::Four => 4,
+    };
+    fstar!(r#"
+          Seq.length ${serialized}_future == v $bytes
+       /\ (forall (i:nat{i < v $bytes * 8}).
+              u8_to_bv (Seq.index ${serialized}_future (i / 8)) (mk_int (i % 8))
+           == i32_to_bv ((${eta as i32}) -! to_i32x8 $simd_unit (mk_int (i / v $bytes))) (mk_int (i % v $bytes)))
+    "#)
+})]
 #[inline(always)]
 pub fn serialize(eta: Eta, simd_unit: &Vec256, serialized: &mut [u8]) {
     // [eurydice] injects an unused variable here in the C code for some reason.
@@ -115,21 +141,10 @@ pub fn serialize(eta: Eta, simd_unit: &Vec256, serialized: &mut [u8]) {
     }
 }
 
-// #[hax_lib::ensures(|result| {
-//     fstar!(r#"
-// forall (i:nat{i < 24}).
-//      ${result}.(mk_int i)
-//   == get_bit (Seq.index ${bytes} (i / 3)) (mk_int (i % 8))
-// "#)
-// })]
-// #[hax_lib::fstar::options(
-//     "--fuel 0 --ifuel 0 --z3rlimit 500 --z3smtopt '(set-option :smt.arith.nl false)'"
-// )]
-
 #[inline(always)]
 #[hax_lib::requires(bytes.len() == 3)]
 #[hax_lib::ensures(|result| fstar!(r#"
-  (forall (i: nat {i <  24}). u8_to_bv bytes.[mk_usize (i / 8)] (mk_int (i % 8)) == ${result}.(mk_int (i / 3 * 32 + i % 3)))
+  (forall (i: nat {i <  24}). u8_to_bv ${bytes}.[mk_usize (i / 8)] (mk_int (i % 8)) == ${result}.(mk_int (i / 3 * 32 + i % 3)))
 /\ (forall (i: nat {i < 256}). i % 32 >= 3 ==> Core_models.Abstractions.Bit.Bit_Zero? ${result}.(mk_int i))
 "#))]
 fn deserialize_to_unsigned_when_eta_is_2(bytes: &[u8]) -> Vec256 {
@@ -157,7 +172,7 @@ fn deserialize_to_unsigned_when_eta_is_2(bytes: &[u8]) -> Vec256 {
 #[inline(always)]
 #[hax_lib::requires(bytes.len() == 4)]
 #[hax_lib::ensures(|result| fstar!(r#"
-  (forall (i: nat {i <  32}). u8_to_bv bytes.[mk_usize (i / 8)] (mk_int (i % 8)) == ${result}.(mk_int (i / 4 * 32 + i % 4)))
+  (forall (i: nat {i <  32}). u8_to_bv ${bytes}.[mk_usize (i / 8)] (mk_int (i % 8)) == ${result}.(mk_int (i / 4 * 32 + i % 4)))
 /\ (forall (i: nat {i < 256}). i % 32 >= 4 ==> Core_models.Abstractions.Bit.Bit_Zero? ${result}.(mk_int i))
 "#))]
 fn deserialize_to_unsigned_when_eta_is_4(bytes: &[u8]) -> Vec256 {
@@ -186,6 +201,11 @@ fn deserialize_to_unsigned_when_eta_is_4(bytes: &[u8]) -> Vec256 {
     Eta::Two => 3,
     Eta::Four => 4,
 })]
+#[hax_lib::ensures(|result| fstar!(r#"
+   let bytes = Seq.length ${serialized} in
+  (forall (i: nat {i < bytes * 8}). u8_to_bv ${serialized}.[mk_usize (i / 8)] (mk_int (i % 8)) == ${result}.(mk_int (i / bytes * 32 + i % bytes)))
+/\ (forall (i: nat {i < 256}). i % 32 >= bytes ==> Core_models.Abstractions.Bit.Bit_Zero? ${result}.(mk_int i))
+"#))]
 pub(crate) fn deserialize_to_unsigned(eta: Eta, serialized: &[u8]) -> Vec256 {
     match eta {
         Eta::Two => deserialize_to_unsigned_when_eta_is_2(serialized),
