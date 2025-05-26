@@ -431,6 +431,18 @@ val mm256_set1_epi32_lemma (x0:i32) (i:u64{v i < 8}):
   Lemma (to_i32x8 (Libcrux_intrinsics.Avx2.mm256_set1_epi32 x0) i == x0)
   [SMTPat (to_i32x8 (Libcrux_intrinsics.Avx2.mm256_set1_epi32 x0) i)]
 
+val mm256_set1_epi32_bv_lemma (x0:i32) (i:u64{v i < 256}):
+  Lemma ((Libcrux_intrinsics.Avx2.mm256_set1_epi32 x0).(i) == i32_to_bv x0 (i %! mk_int 32))
+  [SMTPat ((Libcrux_intrinsics.Avx2.mm256_set1_epi32 x0).(i))]
+
+val mm256_set_epi32_bv_lemma (x0 x1 x2 x3 x4 x5 x6 x7:i32) (i:u64{v i < 256}):
+  Lemma ((Libcrux_intrinsics.Avx2.mm256_set_epi32 x0 x1 x2 x3 x4 x5 x6 x7).(i) ==
+        i32_to_bv (match v i / 32 with
+        | 0 -> x7 | 1 -> x6  | 2 -> x5 | 3 -> x4
+        | 4 -> x3 | 5 -> x2 | 6 -> x1 | 7 -> x0
+        ) (mk_int (v i % 32)))
+  [SMTPat ((Libcrux_intrinsics.Avx2.mm256_set_epi32 x0 x1 x2 x3 x4 x5 x6 x7).(i))]
+
 val mm_set_epi32_lemma (x0 x1 x2 x3:i32) (i:u64{v i < 4}):
   Lemma (to_i32x4 (Libcrux_intrinsics.Avx2.mm_set_epi32 x0 x1 x2 x3) i ==
         (match v i with | 0 -> x3 | 1 -> x2 | 2 -> x1 | 3 -> x0))
@@ -528,6 +540,23 @@ val i32_lt_pow2_n_to_bit_zero_lemma n vec
   : Lemma (forall i. v (to_i32x8 vec (i /! mk_int 32)) <= normalize_term (pow2 n - 1)
                 ==> v i % 32 >= n
                 ==> vec.(i) == Core_models.Abstractions.Bit.Bit_Zero)
+
+val shl_casted_u8_bv_lemma (a b: u8) (i: u64 {v i < 32})
+  : Lemma ( i32_to_bv (((cast b <: i32) <<! mk_i32 8 <: i32) |. (cast a <: i32) <: i32) i
+        == (if v i >= 16 then Core_models.Abstractions.Bit.Bit_Zero
+                        else if v i >= 8 then u8_to_bv b (i -! mk_int 8) else u8_to_bv a i))
+  [SMTPat (i32_to_bv (((cast b <: i32) <<! mk_i32 8 <: i32) |. (cast a <: i32) <: i32) i)]
+
+val i32_to_bv_cast_lemma (a: u8) (i: _{v i < 32})
+  : Lemma (i32_to_bv (cast a) i == (if v i >= 8 then Core_models.Abstractions.Bit.Bit_Zero else u8_to_bv a i))
+  [SMTPat (i32_to_bv (cast a) i)]
+
+#push-options "--z3rlimit 40"
+val i32_to_bv_pow2_min_one_lemma (n: nat {n > 1 /\ n < 31}) (i:u64{v i < 32}):
+  Lemma (  i32_to_bv ((mk_i32 1 <<! mk_i32 n <: i32) -! mk_i32 1) i
+        == Core_models.Abstractions.Bit.(if v i < n then Bit_One else Bit_Zero))
+        [SMTPat (i32_to_bv ((mk_i32 1 <<! mk_i32 n <: i32) -! mk_i32 1) i)]
+#pop-options
 
 (**** Mongemory multiply *)
 
