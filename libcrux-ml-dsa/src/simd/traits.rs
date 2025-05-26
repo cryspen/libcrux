@@ -3,6 +3,7 @@ use crate::constants::{Eta, Gamma2};
 // Each field element occupies 32 bits and the size of a simd_unit is 256 bits.
 pub(crate) const COEFFICIENTS_IN_SIMD_UNIT: usize = 8;
 
+// Note: For proofs, it is better to use concrete constants instead of const expressions
 //COEFFICIENTS_IN_RING_ELEMENT / COEFFICIENTS_IN_SIMD_UNIT;
 pub(crate) const SIMD_UNITS_IN_RING_ELEMENT: usize = 32;
 
