@@ -156,7 +156,7 @@ fn butterfly_4(
     let nre0 = mm256_unpacklo_epi64(add_terms, sub_terms);
     let nre1 = mm256_unpackhi_epi64(add_terms, sub_terms);
 
-    // This assert allows all the SMT Patterns to kick in an prove correctness
+    // This assert allows all the SMT Patterns to kick in and prove correctness
     hax_lib::fstar!(
         r#"assert (butterfly_4_spec 
         $re0 $re1 $zeta_a0 $zeta_a1 $zeta_b0 $zeta_b1 $nre0 $nre1)"#
