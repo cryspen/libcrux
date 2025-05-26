@@ -76,6 +76,19 @@ val mm256_and_si256 lhs rhs i
             | _                -> Bit_Zero ))
             [SMTPat (I.mm256_and_si256 lhs rhs).(i)]
 
+val mm_storeu_bytes_si128_lemma out vec (i:nat {i < 16})
+  : Lemma (requires Seq.length out >= 16)
+          (ensures Seq.index (I.mm_storeu_bytes_si128 out vec) i == to_u8x16 vec (mk_int i))
+          [SMTPat (Seq.index (I.mm_storeu_bytes_si128 out vec) i)]
+
+val u8_to_bv_to_u8x16_inv (vec: bv128) (i: u64 {v i < 16}) (j: u64 {v j < 8})
+  : Lemma (u8_to_bv (to_u8x16 vec i) j == vec.(mk_int (v i * 8 + v j)))
+          [SMTPat (u8_to_bv (to_u8x16 vec i) j)]
+
+val i32_to_bv_to_i32x8_inv (vec: bv256) (i: u64 {v i < 8}) (j: u64 {v j < 32})
+  : Lemma (i32_to_bv (to_i32x8 vec i) j == vec.(mk_int (v i * 32 + v j)))
+         [SMTPat (i32_to_bv (to_i32x8 vec i) j)]
+
 val mm256_bsrli_epi128_lemma (shift: i32 {v shift >= 0 && v shift < 16}) vector i
   : Lemma (  (I.mm256_bsrli_epi128 shift vector).(i)
           == (
