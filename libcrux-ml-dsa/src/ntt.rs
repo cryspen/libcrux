@@ -13,6 +13,7 @@ pub(crate) fn invert_ntt_montgomery<SIMDUnit: Operations>(
 }
 
 #[inline(always)]
+// Barrett reduce all coefficients.
 pub(crate) fn reduce<SIMDUnit: Operations>(re: &mut PolynomialRingElement<SIMDUnit>) {
     SIMDUnit::reduce(&mut re.simd_units);
 }
