@@ -333,4 +333,7 @@ pub(crate) trait Operations: Copy + Clone {
 
     // invert NTT and convert to standard domain
     fn invert_ntt_montgomery(simd_units: &mut [Self; SIMD_UNITS_IN_RING_ELEMENT]);
+
+    // Barrett reduce all coefficients
+    fn reduce(simd_units: &mut [Self; SIMD_UNITS_IN_RING_ELEMENT]);
 }
