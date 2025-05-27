@@ -538,13 +538,31 @@ mod tests {
     #[test]
     #[should_panic]
     fn inv_ntt_unreduced_panic() {
-        let mut re = PolynomialRingElement::<crate::simd::portable::PortableSIMDUnit>::zero();
-        for simd_unit in re.simd_units.iter_mut() {
+        let mut re1 = PolynomialRingElement::<crate::simd::portable::PortableSIMDUnit>::zero();
+        for simd_unit in re1.simd_units.iter_mut() {
             for i in 0..8 {
                 simd_unit.values[i] = FIELD_MODULUS + (FIELD_MODULUS / 1024) + 7;
             }
         }
-        let _ = core::hint::black_box(invert_ntt_montgomery(&mut re.simd_units));
+        core::hint::black_box(invert_ntt_montgomery(&mut re1.simd_units)); // In debug mode this will panic since the intermediate values overflow.
+
+        let mut re2 = PolynomialRingElement::<crate::simd::portable::PortableSIMDUnit>::zero();
+        for simd_unit in re2.simd_units.iter_mut() {
+            for i in 0..8 {
+                simd_unit.values[i] = FIELD_MODULUS + (FIELD_MODULUS / 1024) + 7;
+            }
+        }
+        reduce(&mut re2);
+        core::hint::black_box(invert_ntt_montgomery(&mut re2.simd_units));
+
+        // In release mode, one of the checks below will panic, since
+        // the intermediate values silently overflowed, producing an
+        // incorrect result.
+        for (i, simd_unit) in re2.simd_units.iter().enumerate() {
+            for (j, reference_coeff) in simd_unit.values.iter().enumerate() {
+                assert_eq!(*reference_coeff, re1.simd_units[i].values[j])
+            }
+        }
     }
 
     #[test]
