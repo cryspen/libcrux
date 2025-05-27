@@ -1,7 +1,7 @@
 use crate::{
     arithmetic::shift_left_then_reduce,
     constants::BITS_IN_LOWER_PART_OF_T,
-    ntt::{invert_ntt_montgomery, ntt, ntt_multiply_montgomery},
+    ntt::{invert_ntt_montgomery, ntt, ntt_multiply_montgomery, reduce},
     polynomial::PolynomialRingElement,
     simd::traits::Operations,
 };
@@ -26,6 +26,11 @@ pub(crate) fn compute_as1_plus_s2<SIMDUnit: Operations>(
     }
 
     for i in 0..result.len() {
+        // We do a Barrett reduction here, since the absolute value of
+        // `columns_in_a` additions might be as large as `columns_in_a
+        // * FIELD_MODULUS`, and `invert_ntt_montgomery` expects
+        // coefficients of size at most `FIELD_MODULUS`.
+        reduce(&mut result[i]);
         invert_ntt_montgomery::<SIMDUnit>(&mut result[i]);
         PolynomialRingElement::add(&mut result[i], &s1_s2[columns_in_a + i]);
     }
@@ -49,6 +54,11 @@ pub(crate) fn compute_matrix_x_mask<SIMDUnit: Operations>(
             ntt_multiply_montgomery(&mut product, &matrix[i * columns_in_a + j]);
             PolynomialRingElement::<SIMDUnit>::add(&mut result[i], &product);
         }
+        // We do a Barrett reduction here, since the absolute value of
+        // `columns_in_a` additions might be as large as `columns_in_a
+        // * FIELD_MODULUS`, and `invert_ntt_montgomery` expects
+        // coefficients of size at most `FIELD_MODULUS`.
+        reduce(&mut result[i]);
         invert_ntt_montgomery(&mut result[i]);
     }
 }
@@ -109,6 +119,11 @@ pub(crate) fn compute_w_approx<SIMDUnit: Operations>(
         ntt_multiply_montgomery(&mut t1[i], verifier_challenge_as_ntt);
         PolynomialRingElement::<SIMDUnit>::subtract(&mut inner_result, &t1[i]);
         t1[i] = inner_result;
+        // We do a Barrett reduction here, since the absolute value of
+        // `columns_in_a` additions might be as large as `columns_in_a
+        // * FIELD_MODULUS`, and `invert_ntt_montgomery` expects
+        // coefficients of size at most `FIELD_MODULUS`.
+        reduce(&mut t1[i]);
         invert_ntt_montgomery(&mut t1[i]);
     }
 }
