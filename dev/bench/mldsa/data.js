@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1748347602823,
+  "lastUpdate": 1748347781729,
   "repoUrl": "https://github.com/cryspen/libcrux",
   "entries": {
     "ML-DSA Benchmark": [
@@ -33897,6 +33897,188 @@ window.BENCHMARK_DATA = {
             "value": 799,
             "unit": "μs/iter",
             "os": "ubuntu-latest_32",
+            "implementation": "pqclean ML-DSA",
+            "keySize": "87",
+            "label": "Verify",
+            "hardware": "auto"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Franziskus Kiefer",
+            "username": "Franziskus Kiefer"
+          },
+          "committer": {
+            "name": "GitHub",
+            "username": "GitHub"
+          },
+          "id": "27376a08e1ced9955a9ac978af220c1c528c85ba",
+          "message": "Merge pull request #1005 from cryspen/franziskus/mldsa-avx2-hotfix\n\nmldsa: better inlining for performance",
+          "timestamp": "2025-05-27T12:00:30Z",
+          "url": "/commits/27376a08e1ced9955a9ac978af220c1c528c85ba"
+        },
+        "date": 1748347757766,
+        "bigger_is_better": false,
+        "benches": [
+          {
+            "value": 208,
+            "unit": "μs/iter",
+            "os": "windows-latest_32",
+            "implementation": "libcrux ML-DSA",
+            "keySize": "44",
+            "label": "KeyGen",
+            "hardware": "portable"
+          },
+          {
+            "value": 566,
+            "unit": "μs/iter",
+            "os": "windows-latest_32",
+            "implementation": "libcrux ML-DSA",
+            "keySize": "44",
+            "label": "Sign",
+            "hardware": "portable"
+          },
+          {
+            "value": 216,
+            "unit": "μs/iter",
+            "os": "windows-latest_32",
+            "implementation": "libcrux ML-DSA",
+            "keySize": "44",
+            "label": "Verify",
+            "hardware": "portable"
+          },
+          {
+            "value": 220,
+            "unit": "μs/iter",
+            "os": "windows-latest_32",
+            "implementation": "pqclean ML-DSA",
+            "keySize": "44",
+            "label": "KeyGen",
+            "hardware": "auto"
+          },
+          {
+            "value": 699,
+            "unit": "μs/iter",
+            "os": "windows-latest_32",
+            "implementation": "pqclean ML-DSA",
+            "keySize": "44",
+            "label": "Sign",
+            "hardware": "auto"
+          },
+          {
+            "value": 238,
+            "unit": "μs/iter",
+            "os": "windows-latest_32",
+            "implementation": "pqclean ML-DSA",
+            "keySize": "44",
+            "label": "Verify",
+            "hardware": "auto"
+          },
+          {
+            "value": 395,
+            "unit": "μs/iter",
+            "os": "windows-latest_32",
+            "implementation": "libcrux ML-DSA",
+            "keySize": "65",
+            "label": "KeyGen",
+            "hardware": "portable"
+          },
+          {
+            "value": 925,
+            "unit": "μs/iter",
+            "os": "windows-latest_32",
+            "implementation": "libcrux ML-DSA",
+            "keySize": "65",
+            "label": "Sign",
+            "hardware": "portable"
+          },
+          {
+            "value": 375,
+            "unit": "μs/iter",
+            "os": "windows-latest_32",
+            "implementation": "libcrux ML-DSA",
+            "keySize": "65",
+            "label": "Verify",
+            "hardware": "portable"
+          },
+          {
+            "value": 403,
+            "unit": "μs/iter",
+            "os": "windows-latest_32",
+            "implementation": "pqclean ML-DSA",
+            "keySize": "65",
+            "label": "KeyGen",
+            "hardware": "auto"
+          },
+          {
+            "value": 1.11,
+            "unit": "ms/iter",
+            "os": "windows-latest_32",
+            "implementation": "pqclean ML-DSA",
+            "keySize": "65",
+            "label": "Sign",
+            "hardware": "auto"
+          },
+          {
+            "value": 392,
+            "unit": "μs/iter",
+            "os": "windows-latest_32",
+            "implementation": "pqclean ML-DSA",
+            "keySize": "65",
+            "label": "Verify",
+            "hardware": "auto"
+          },
+          {
+            "value": 624,
+            "unit": "μs/iter",
+            "os": "windows-latest_32",
+            "implementation": "libcrux ML-DSA",
+            "keySize": "87",
+            "label": "KeyGen",
+            "hardware": "portable"
+          },
+          {
+            "value": 1.17,
+            "unit": "ms/iter",
+            "os": "windows-latest_32",
+            "implementation": "libcrux ML-DSA",
+            "keySize": "87",
+            "label": "Sign",
+            "hardware": "portable"
+          },
+          {
+            "value": 614,
+            "unit": "μs/iter",
+            "os": "windows-latest_32",
+            "implementation": "libcrux ML-DSA",
+            "keySize": "87",
+            "label": "Verify",
+            "hardware": "portable"
+          },
+          {
+            "value": 673,
+            "unit": "μs/iter",
+            "os": "windows-latest_32",
+            "implementation": "pqclean ML-DSA",
+            "keySize": "87",
+            "label": "KeyGen",
+            "hardware": "auto"
+          },
+          {
+            "value": 1.47,
+            "unit": "ms/iter",
+            "os": "windows-latest_32",
+            "implementation": "pqclean ML-DSA",
+            "keySize": "87",
+            "label": "Sign",
+            "hardware": "auto"
+          },
+          {
+            "value": 682,
+            "unit": "μs/iter",
+            "os": "windows-latest_32",
             "implementation": "pqclean ML-DSA",
             "keySize": "87",
             "label": "Verify",
