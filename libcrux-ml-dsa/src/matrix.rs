@@ -6,20 +6,22 @@ use crate::{
     simd::traits::Operations,
 };
 
+// Not inlining this makes key generation 3x slower for avx2. Only `inline` this
+// function costs 30% performance too.
 /// Compute InvertNTT(Â ◦ ŝ₁) + s₂
+#[inline(always)]
 pub(crate) fn compute_as1_plus_s2<SIMDUnit: Operations>(
     rows_in_a: usize,
     columns_in_a: usize,
-    a_as_ntt: &[PolynomialRingElement<SIMDUnit>],
+    a_as_ntt: &mut [PolynomialRingElement<SIMDUnit>],
     s1_ntt: &[PolynomialRingElement<SIMDUnit>],
     s1_s2: &[PolynomialRingElement<SIMDUnit>],
     result: &mut [PolynomialRingElement<SIMDUnit>],
 ) {
     for i in 0..rows_in_a {
         for j in 0..columns_in_a {
-            let mut product = a_as_ntt[i * columns_in_a + j];
-            ntt_multiply_montgomery::<SIMDUnit>(&mut product, &s1_ntt[j]);
-            PolynomialRingElement::add(&mut result[i], &product);
+            ntt_multiply_montgomery::<SIMDUnit>(&mut a_as_ntt[i * columns_in_a + j], &s1_ntt[j]);
+            PolynomialRingElement::add(&mut result[i], &mut a_as_ntt[i * columns_in_a + j]);
         }
     }
 
@@ -40,6 +42,9 @@ pub(crate) fn compute_matrix_x_mask<SIMDUnit: Operations>(
 ) {
     for i in 0..rows_in_a {
         for j in 0..columns_in_a {
+            // We could make `matrix` mutable here and avoid copying.
+            // But that would require sampling the matrix multiple times.
+            // That's not worth it.
             let mut product = mask[j];
             ntt_multiply_montgomery(&mut product, &matrix[i * columns_in_a + j]);
             PolynomialRingElement::<SIMDUnit>::add(&mut result[i], &product);
