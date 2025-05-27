@@ -8,7 +8,7 @@
  * Eurydice: d3b14228e2b5fe8710ec7efae31e4de2c96ed20d
  * Karamel: 095cdb73f246711f93f99a159ceca37cd2c227e1
  * F*: 4b3fc11774003a6ff7c09500ecb5f0145ca6d862
- * Libcrux: 731d55bfababfc35bfa15d84035b1315ae5540ab
+ * Libcrux: d7e93a7ba1f32b019310e0fa86aba3055bac69de
  */
 
 #ifndef __libcrux_mldsa65_portable_H
@@ -4354,6 +4354,46 @@ static inline void libcrux_ml_dsa_simd_portable_invert_ntt_montgomery_e9(
 }
 
 /**
+A monomorphic instance of
+libcrux_ml_dsa.simd.portable.arithmetic.shift_left_then_reduce with const
+generics
+- SHIFT_BY= 0
+*/
+static KRML_MUSTINLINE void
+libcrux_ml_dsa_simd_portable_arithmetic_shift_left_then_reduce_c3(
+    libcrux_ml_dsa_simd_portable_vector_type_Coefficients *simd_unit) {
+  for (size_t i = (size_t)0U;
+       i < Eurydice_slice_len(
+               Eurydice_array_to_slice((size_t)8U, simd_unit->values, int32_t),
+               int32_t);
+       i++) {
+    size_t i0 = i;
+    simd_unit->values[i0] =
+        libcrux_ml_dsa_simd_portable_arithmetic_reduce_element(
+            simd_unit->values[i0] << (uint32_t)(int32_t)0);
+  }
+}
+
+/**
+This function found in impl {(libcrux_ml_dsa::simd::traits::Operations for
+libcrux_ml_dsa::simd::portable::vector_type::Coefficients)}
+*/
+static inline void libcrux_ml_dsa_simd_portable_reduce_e9(
+    libcrux_ml_dsa_simd_portable_vector_type_Coefficients *simd_units) {
+  for (size_t i = (size_t)0U;
+       i < Eurydice_slice_len(
+               Eurydice_array_to_slice(
+                   (size_t)32U, simd_units,
+                   libcrux_ml_dsa_simd_portable_vector_type_Coefficients),
+               libcrux_ml_dsa_simd_portable_vector_type_Coefficients);
+       i++) {
+    size_t i0 = i;
+    libcrux_ml_dsa_simd_portable_arithmetic_shift_left_then_reduce_c3(
+        &simd_units[i0]);
+  }
+}
+
+/**
 A monomorphic instance of libcrux_ml_dsa.polynomial.PolynomialRingElement
 with types libcrux_ml_dsa_simd_portable_vector_type_Coefficients
 
@@ -5135,6 +5175,17 @@ static KRML_MUSTINLINE void libcrux_ml_dsa_polynomial_add_bc_5b(
 }
 
 /**
+A monomorphic instance of libcrux_ml_dsa.ntt.reduce
+with types libcrux_ml_dsa_simd_portable_vector_type_Coefficients
+with const generics
+
+*/
+static KRML_MUSTINLINE void libcrux_ml_dsa_ntt_reduce_5b(
+    libcrux_ml_dsa_polynomial_PolynomialRingElement_e8 *re) {
+  libcrux_ml_dsa_simd_portable_reduce_e9(re->simd_units);
+}
+
+/**
 A monomorphic instance of libcrux_ml_dsa.ntt.invert_ntt_montgomery
 with types libcrux_ml_dsa_simd_portable_vector_type_Coefficients
 with const generics
@@ -5184,6 +5235,9 @@ static KRML_MUSTINLINE void libcrux_ml_dsa_matrix_compute_as1_plus_s2_5b(
                result, libcrux_ml_dsa_polynomial_PolynomialRingElement_e8);
        i++) {
     size_t i0 = i;
+    libcrux_ml_dsa_ntt_reduce_5b(&Eurydice_slice_index(
+        result, i0, libcrux_ml_dsa_polynomial_PolynomialRingElement_e8,
+        libcrux_ml_dsa_polynomial_PolynomialRingElement_e8 *));
     libcrux_ml_dsa_ntt_invert_ntt_montgomery_5b(&Eurydice_slice_index(
         result, i0, libcrux_ml_dsa_polynomial_PolynomialRingElement_e8,
         libcrux_ml_dsa_polynomial_PolynomialRingElement_e8 *));
@@ -6142,6 +6196,9 @@ static KRML_MUSTINLINE void libcrux_ml_dsa_matrix_compute_matrix_x_mask_5b(
               libcrux_ml_dsa_polynomial_PolynomialRingElement_e8 *),
           &product);
     }
+    libcrux_ml_dsa_ntt_reduce_5b(&Eurydice_slice_index(
+        result, i1, libcrux_ml_dsa_polynomial_PolynomialRingElement_e8,
+        libcrux_ml_dsa_polynomial_PolynomialRingElement_e8 *));
     libcrux_ml_dsa_ntt_invert_ntt_montgomery_5b(&Eurydice_slice_index(
         result, i1, libcrux_ml_dsa_polynomial_PolynomialRingElement_e8,
         libcrux_ml_dsa_polynomial_PolynomialRingElement_e8 *));
@@ -7524,6 +7581,9 @@ static KRML_MUSTINLINE void libcrux_ml_dsa_matrix_compute_w_approx_5b(
     Eurydice_slice_index(
         t1, i1, libcrux_ml_dsa_polynomial_PolynomialRingElement_e8,
         libcrux_ml_dsa_polynomial_PolynomialRingElement_e8 *) = inner_result;
+    libcrux_ml_dsa_ntt_reduce_5b(&Eurydice_slice_index(
+        t1, i1, libcrux_ml_dsa_polynomial_PolynomialRingElement_e8,
+        libcrux_ml_dsa_polynomial_PolynomialRingElement_e8 *));
     libcrux_ml_dsa_ntt_invert_ntt_montgomery_5b(&Eurydice_slice_index(
         t1, i1, libcrux_ml_dsa_polynomial_PolynomialRingElement_e8,
         libcrux_ml_dsa_polynomial_PolynomialRingElement_e8 *));

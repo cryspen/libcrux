@@ -8,7 +8,7 @@
  * Eurydice: d3b14228e2b5fe8710ec7efae31e4de2c96ed20d
  * Karamel: 095cdb73f246711f93f99a159ceca37cd2c227e1
  * F*: 4b3fc11774003a6ff7c09500ecb5f0145ca6d862
- * Libcrux: 731d55bfababfc35bfa15d84035b1315ae5540ab
+ * Libcrux: d7e93a7ba1f32b019310e0fa86aba3055bac69de
  */
 
 #ifndef __libcrux_mldsa65_avx2_H
@@ -3437,6 +3437,45 @@ static KRML_MUSTINLINE void libcrux_ml_dsa_simd_avx2_invert_ntt_montgomery_22(
 }
 
 /**
+A monomorphic instance of
+libcrux_ml_dsa.simd.avx2.arithmetic.shift_left_then_reduce with const generics
+- SHIFT_BY= 0
+*/
+KRML_ATTRIBUTE_TARGET("avx2")
+static inline void
+libcrux_ml_dsa_simd_avx2_arithmetic_shift_left_then_reduce_c3(
+    __m256i *simd_unit) {
+  __m256i shifted = libcrux_intrinsics_avx2_mm256_slli_epi32(
+      (int32_t)0, simd_unit[0U], __m256i);
+  __m256i quotient = libcrux_intrinsics_avx2_mm256_add_epi32(
+      shifted, libcrux_intrinsics_avx2_mm256_set1_epi32((int32_t)1 << 22U));
+  __m256i quotient0 =
+      libcrux_intrinsics_avx2_mm256_srai_epi32((int32_t)23, quotient, __m256i);
+  __m256i quotient_times_field_modulus =
+      libcrux_intrinsics_avx2_mm256_mullo_epi32(
+          quotient0, libcrux_intrinsics_avx2_mm256_set1_epi32(
+                         LIBCRUX_ML_DSA_SIMD_TRAITS_FIELD_MODULUS));
+  simd_unit[0U] = libcrux_intrinsics_avx2_mm256_sub_epi32(
+      shifted, quotient_times_field_modulus);
+}
+
+/**
+This function found in impl {(libcrux_ml_dsa::simd::traits::Operations for
+libcrux_ml_dsa::simd::avx2::vector_type::Vec256)}
+*/
+KRML_ATTRIBUTE_TARGET("avx2")
+static KRML_MUSTINLINE void libcrux_ml_dsa_simd_avx2_reduce_22(
+    __m256i *simd_units) {
+  libcrux_ml_dsa_simd_avx2_arithmetic_shift_left_then_reduce_c3(simd_units);
+  libcrux_ml_dsa_simd_avx2_arithmetic_shift_left_then_reduce_c3(
+      &simd_units[8U]);
+  libcrux_ml_dsa_simd_avx2_arithmetic_shift_left_then_reduce_c3(
+      &simd_units[16U]);
+  libcrux_ml_dsa_simd_avx2_arithmetic_shift_left_then_reduce_c3(
+      &simd_units[24U]);
+}
+
+/**
 A monomorphic instance of libcrux_ml_dsa.polynomial.PolynomialRingElement
 with types libcrux_ml_dsa_simd_avx2_vector_type_Vec256
 
@@ -4241,6 +4280,18 @@ static KRML_MUSTINLINE void libcrux_ml_dsa_polynomial_add_bc_21(
 }
 
 /**
+A monomorphic instance of libcrux_ml_dsa.ntt.reduce
+with types libcrux_ml_dsa_simd_avx2_vector_type_Vec256
+with const generics
+
+*/
+KRML_ATTRIBUTE_TARGET("avx2")
+static KRML_MUSTINLINE void libcrux_ml_dsa_ntt_reduce_21(
+    libcrux_ml_dsa_polynomial_PolynomialRingElement_4b *re) {
+  libcrux_ml_dsa_simd_avx2_reduce_22(re->simd_units);
+}
+
+/**
 A monomorphic instance of libcrux_ml_dsa.ntt.invert_ntt_montgomery
 with types libcrux_ml_dsa_simd_avx2_vector_type_Vec256
 with const generics
@@ -4292,6 +4343,9 @@ static KRML_MUSTINLINE void libcrux_ml_dsa_matrix_compute_as1_plus_s2_21(
                result, libcrux_ml_dsa_polynomial_PolynomialRingElement_4b);
        i++) {
     size_t i0 = i;
+    libcrux_ml_dsa_ntt_reduce_21(&Eurydice_slice_index(
+        result, i0, libcrux_ml_dsa_polynomial_PolynomialRingElement_4b,
+        libcrux_ml_dsa_polynomial_PolynomialRingElement_4b *));
     libcrux_ml_dsa_ntt_invert_ntt_montgomery_21(&Eurydice_slice_index(
         result, i0, libcrux_ml_dsa_polynomial_PolynomialRingElement_4b,
         libcrux_ml_dsa_polynomial_PolynomialRingElement_4b *));
@@ -5231,6 +5285,9 @@ static KRML_MUSTINLINE void libcrux_ml_dsa_matrix_compute_matrix_x_mask_21(
               libcrux_ml_dsa_polynomial_PolynomialRingElement_4b *),
           &product);
     }
+    libcrux_ml_dsa_ntt_reduce_21(&Eurydice_slice_index(
+        result, i1, libcrux_ml_dsa_polynomial_PolynomialRingElement_4b,
+        libcrux_ml_dsa_polynomial_PolynomialRingElement_4b *));
     libcrux_ml_dsa_ntt_invert_ntt_montgomery_21(&Eurydice_slice_index(
         result, i1, libcrux_ml_dsa_polynomial_PolynomialRingElement_4b,
         libcrux_ml_dsa_polynomial_PolynomialRingElement_4b *));
@@ -6656,6 +6713,9 @@ static KRML_MUSTINLINE void libcrux_ml_dsa_matrix_compute_w_approx_21(
     Eurydice_slice_index(
         t1, i1, libcrux_ml_dsa_polynomial_PolynomialRingElement_4b,
         libcrux_ml_dsa_polynomial_PolynomialRingElement_4b *) = inner_result;
+    libcrux_ml_dsa_ntt_reduce_21(&Eurydice_slice_index(
+        t1, i1, libcrux_ml_dsa_polynomial_PolynomialRingElement_4b,
+        libcrux_ml_dsa_polynomial_PolynomialRingElement_4b *));
     libcrux_ml_dsa_ntt_invert_ntt_montgomery_21(&Eurydice_slice_index(
         t1, i1, libcrux_ml_dsa_polynomial_PolynomialRingElement_4b,
         libcrux_ml_dsa_polynomial_PolynomialRingElement_4b *));
