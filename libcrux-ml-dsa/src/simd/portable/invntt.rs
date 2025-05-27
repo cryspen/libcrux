@@ -518,3 +518,56 @@ pub(crate) fn invert_ntt_montgomery(re: &mut [Coefficients; SIMD_UNITS_IN_RING_E
         arithmetic::montgomery_multiply_by_constant(&mut re[i], 41_978);
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::{ntt::reduce, polynomial::PolynomialRingElement, simd::traits::FIELD_MODULUS};
+
+    #[test]
+    fn inv_ntt_unreduced_max() {
+        let mut re = PolynomialRingElement::<crate::simd::portable::PortableSIMDUnit>::zero();
+        for simd_unit in re.simd_units.iter_mut() {
+            for i in 0..8 {
+                simd_unit.values[i] = FIELD_MODULUS + (FIELD_MODULUS / 1024) + 6;
+            }
+        }
+        let _ = core::hint::black_box(invert_ntt_montgomery(&mut re.simd_units));
+    }
+
+    #[test]
+    #[should_panic]
+    fn inv_ntt_unreduced_panic() {
+        let mut re = PolynomialRingElement::<crate::simd::portable::PortableSIMDUnit>::zero();
+        for simd_unit in re.simd_units.iter_mut() {
+            for i in 0..8 {
+                simd_unit.values[i] = FIELD_MODULUS + (FIELD_MODULUS / 1024) + 7;
+            }
+        }
+        let _ = core::hint::black_box(invert_ntt_montgomery(&mut re.simd_units));
+    }
+
+    #[test]
+    fn inv_ntt_reduced() {
+        let mut re = PolynomialRingElement::<crate::simd::portable::PortableSIMDUnit>::zero();
+        for simd_unit in re.simd_units.iter_mut() {
+            for i in 0..8 {
+                simd_unit.values[i] = FIELD_MODULUS + (FIELD_MODULUS / 1024) + 7;
+            }
+        }
+        reduce(&mut re);
+        let _ = core::hint::black_box(invert_ntt_montgomery(&mut re.simd_units));
+    }
+
+    #[test]
+    fn inv_ntt_reduced_large() {
+        let mut re = PolynomialRingElement::<crate::simd::portable::PortableSIMDUnit>::zero();
+        for simd_unit in re.simd_units.iter_mut() {
+            for i in 0..8 {
+                simd_unit.values[i] = FIELD_MODULUS * 8;
+            }
+        }
+        reduce(&mut re);
+        let _ = core::hint::black_box(invert_ntt_montgomery(&mut re.simd_units));
+    }
+}

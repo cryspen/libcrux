@@ -266,6 +266,8 @@ pub(crate) trait Operations: Copy + Clone + Repr {
             (f_repr (Seq.index ${simd_units}_future i)))
     "#))]
     fn invert_ntt_montgomery(simd_units: &mut [Self; SIMD_UNITS_IN_RING_ELEMENT]);
+
+    fn reduce(simd_units: &mut [Self; SIMD_UNITS_IN_RING_ELEMENT]);
 }
 
 #[cfg(eurydice)]

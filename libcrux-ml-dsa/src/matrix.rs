@@ -1,7 +1,7 @@
 use crate::{
     arithmetic::shift_left_then_reduce,
     constants::BITS_IN_LOWER_PART_OF_T,
-    ntt::{invert_ntt_montgomery, ntt, ntt_multiply_montgomery},
+    ntt::{invert_ntt_montgomery, ntt, ntt_multiply_montgomery, reduce},
     polynomial::PolynomialRingElement,
     simd::traits::Operations,
 };
@@ -24,6 +24,7 @@ pub(crate) fn compute_as1_plus_s2<SIMDUnit: Operations>(
     }
 
     for i in 0..result.len() {
+        reduce(&mut result[i]);
         invert_ntt_montgomery::<SIMDUnit>(&mut result[i]);
         PolynomialRingElement::add(&mut result[i], &s1_s2[columns_in_a + i]);
     }
@@ -44,6 +45,7 @@ pub(crate) fn compute_matrix_x_mask<SIMDUnit: Operations>(
             ntt_multiply_montgomery(&mut product, &matrix[i * columns_in_a + j]);
             PolynomialRingElement::<SIMDUnit>::add(&mut result[i], &product);
         }
+        reduce(&mut result[i]);
         invert_ntt_montgomery(&mut result[i]);
     }
 }
@@ -104,6 +106,7 @@ pub(crate) fn compute_w_approx<SIMDUnit: Operations>(
         ntt_multiply_montgomery(&mut t1[i], verifier_challenge_as_ntt);
         PolynomialRingElement::<SIMDUnit>::subtract(&mut inner_result, &t1[i]);
         t1[i] = inner_result;
+        reduce(&mut t1[i]);
         invert_ntt_montgomery(&mut t1[i]);
     }
 }
