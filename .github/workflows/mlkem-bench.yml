@@ -97,7 +97,7 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           gh-repository: github.com/${{ github.repository }}
           group-by: os,keySize
-          schema: category,keySize,name,platform,api
+          schema: category,keySize,name,platform,api,os
           auto-push: true
           fail-on-alert: true
           alert-threshold: 200%
