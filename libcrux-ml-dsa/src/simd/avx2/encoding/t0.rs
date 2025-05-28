@@ -12,6 +12,26 @@ fn change_interval(simd_unit: &Vec256) -> Vec256 {
 }
 
 #[inline(always)]
+#[hax_lib::fstar::before("open Spec.Intrinsics")]
+#[hax_lib::fstar::before(r#"
+let mm256_add_epi64_lemma_smtpat lhs rhs (i: u64 {v i < 256})
+  : Lemma
+    (requires
+      forall (j:nat{j < v i % 64}). Core_models.Abstractions.Bit.Bit_Zero? lhs.(mk_int ((v i / 64) * 64 + j))
+                         \/ Core_models.Abstractions.Bit.Bit_Zero? rhs.(mk_int ((v i / 64) * 64 + j))
+    )
+    (ensures
+      (Core_models.Abstractions.Bit.Bit_Zero? lhs.(i) ==> (Libcrux_intrinsics.Avx2.mm256_add_epi64 lhs rhs).(i) == rhs.(i)) /\
+      (Core_models.Abstractions.Bit.Bit_Zero? rhs.(i) ==> (Libcrux_intrinsics.Avx2.mm256_add_epi64 lhs rhs).(i) == lhs.(i))
+    )
+    [SMTPat (Libcrux_intrinsics.Avx2.mm256_add_epi64 lhs rhs).(i)]
+    = mm256_add_epi64_lemma lhs rhs i
+"#)]
+#[hax_lib::fstar::options("--fuel 0 --ifuel 0 --z3rlimit 500")]
+#[hax_lib::requires(fstar!(r#"forall i. v i % 32 >= 13 ==> ${simd_unit}.(i) == Core_models.Abstractions.Bit.Bit_Zero"#))]
+#[hax_lib::ensures(|out|fstar!(r#"
+forall (i: nat {i < 8}) (j: nat {j < 13}). ${out}.(mk_int (i * 13 + j)) == ${simd_unit}.(mk_int (i * 32 + j))
+"#))]
 pub(crate) fn serialize_aux(simd_unit: Vec256) -> Vec128 {
     let adjacent_2_combined =
         mm256_sllv_epi32(simd_unit, mm256_set_epi32(0, 19, 0, 19, 0, 19, 0, 19));
@@ -33,18 +53,38 @@ pub(crate) fn serialize_aux(simd_unit: Vec256) -> Vec128 {
 }
 
 #[inline(always)]
+#[hax_lib::fstar::options(r#"--ifuel 0 --z3rlimit 140 --split_queries always"#)]
+#[hax_lib::requires(fstar!(r#"forall i. let x = (v $POW_2_BITS_IN_LOWER_PART_OF_T_MINUS_ONE - v (to_i32x8 $simd_unit i)) in x >= 0 && x < pow2 13"#))]
+#[hax_lib::ensures(|_result| fstar!(r#"
+      Seq.length ${out}_future == 13
+    /\ (forall (i:nat{i < 8 * 13}).
+      u8_to_bv (Seq.index ${out}_future (i / 8)) (mk_int (i % 8))
+   == i32_to_bv (         $POW_2_BITS_IN_LOWER_PART_OF_T_MINUS_ONE
+                `sub_mod` to_i32x8 $simd_unit (mk_int (i / 13))) (mk_int (i % 13)))
+"#))]
 pub(crate) fn serialize(simd_unit: &Vec256, out: &mut [u8]) {
     let mut serialized = [0u8; 16];
 
     let simd_unit_changed = change_interval(simd_unit);
 
+    hax_lib::fstar!("i32_lt_pow2_n_to_bit_zero_lemma 13 $simd_unit_changed");
     let bits_sequential = serialize_aux(simd_unit_changed);
     mm_storeu_bytes_si128(&mut serialized, bits_sequential);
+
+    hax_lib::fstar!(
+        r"
+  assert(forall (i:nat{i < 104}). to_i32x8 $simd_unit_changed (mk_int (i / 13))
+       == $POW_2_BITS_IN_LOWER_PART_OF_T_MINUS_ONE `sub_mod` to_i32x8 $simd_unit (mk_int (i / 13)));
+  assert(forall i. $POW_2_BITS_IN_LOWER_PART_OF_T_MINUS_ONE `sub_mod` to_i32x8 $simd_unit i
+       == $POW_2_BITS_IN_LOWER_PART_OF_T_MINUS_ONE -! to_i32x8 $simd_unit i)
+"
+    );
 
     out.copy_from_slice(&serialized[0..13])
 }
 
 #[inline(always)]
+#[hax_lib::requires(serialized.len() == 13)]
 pub(crate) fn deserialize(serialized: &[u8], out: &mut Vec256) {
     debug_assert_eq!(serialized.len(), 13);
 
