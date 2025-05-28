@@ -1,6 +1,14 @@
 use libcrux_intrinsics::avx2::*;
 
 #[inline(always)]
+#[hax_lib::fstar::options("--fuel 0 --ifuel 0 --z3rlimit 1000 --split_queries always")]
+#[hax_lib::fstar::before("open Spec.Intrinsics")]
+#[hax_lib::requires(out.len() == 10)]
+#[hax_lib::ensures(|_result| fstar!(r"
+   (forall (i:nat).
+     i < 80 ==>
+       ${simd_unit}.(mk_int (32*(i/10) + (i%10))) == (u8_to_bv (Seq.index ${out}_future (i/8)))(mk_int (i % 8)))
+"))]
 pub(crate) fn serialize(simd_unit: &Vec256, out: &mut [u8]) {
     debug_assert!(out.len() == 10);
 
@@ -30,6 +38,18 @@ pub(crate) fn serialize(simd_unit: &Vec256, out: &mut [u8]) {
 }
 
 #[inline(always)]
+#[hax_lib::fstar::options("--fuel 0 --ifuel 1 --z3rlimit 300")]
+#[hax_lib::fstar::before("open Spec.Intrinsics")]
+#[hax_lib::requires(bytes.len() == 10)]
+#[hax_lib::ensures(|_result| fstar!(r"
+  (forall (i:nat).
+    i < 80 ==>
+      (u8_to_bv (Seq.index $bytes (i/8)))(mk_int (i%8)) == ${out}_future.(mk_int (32*(i/10) + (i%10)))
+  ) /\ (
+   forall (j:nat).
+    j < 256 ==>
+       ${out}_future.(mk_int j) == Core_models.Abstractions.Bit.Bit_Zero
+  )"))]
 pub(crate) fn deserialize(bytes: &[u8], out: &mut Vec256) {
     debug_assert_eq!(bytes.len(), 10);
 
