@@ -12,11 +12,7 @@ fn change_interval(simd_unit: &Vec256) -> Vec256 {
 }
 
 #[inline(always)]
-pub(crate) fn serialize(simd_unit: &Vec256, out: &mut [u8]) {
-    let mut serialized = [0u8; 16];
-
-    let simd_unit = change_interval(simd_unit);
-
+pub(crate) fn serialize_aux(simd_unit: Vec256) -> Vec128 {
     let adjacent_2_combined =
         mm256_sllv_epi32(simd_unit, mm256_set_epi32(0, 19, 0, 19, 0, 19, 0, 19));
     let adjacent_2_combined = mm256_srli_epi64::<19>(adjacent_2_combined);
@@ -33,7 +29,16 @@ pub(crate) fn serialize(simd_unit: &Vec256, out: &mut [u8]) {
     let bits_sequential = mm256_add_epi64(adjacent_4_combined, least_12_bits_shifted_up);
     let bits_sequential = mm256_srlv_epi64(bits_sequential, mm256_set_epi64x(0, 0, 12, 0));
 
-    let bits_sequential = mm256_castsi256_si128(bits_sequential);
+    mm256_castsi256_si128(bits_sequential)
+}
+
+#[inline(always)]
+pub(crate) fn serialize(simd_unit: &Vec256, out: &mut [u8]) {
+    let mut serialized = [0u8; 16];
+
+    let simd_unit_changed = change_interval(simd_unit);
+
+    let bits_sequential = serialize_aux(simd_unit_changed);
     mm_storeu_bytes_si128(&mut serialized, bits_sequential);
 
     out.copy_from_slice(&serialized[0..13])
