@@ -2,9 +2,11 @@ use libcrux_intrinsics::avx2::*;
 
 use crate::constants::BITS_IN_LOWER_PART_OF_T;
 
+const POW_2_BITS_IN_LOWER_PART_OF_T_MINUS_ONE: i32 = 1 << (BITS_IN_LOWER_PART_OF_T - 1);
+
 #[inline(always)]
 fn change_interval(simd_unit: &Vec256) -> Vec256 {
-    let interval_end = mm256_set1_epi32(1 << (BITS_IN_LOWER_PART_OF_T - 1));
+    let interval_end = mm256_set1_epi32(POW_2_BITS_IN_LOWER_PART_OF_T_MINUS_ONE);
 
     mm256_sub_epi32(interval_end, *simd_unit)
 }
