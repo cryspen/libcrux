@@ -110,14 +110,14 @@ val i32_to_bv_to_i32x8_inv (vec: bv256) (i: u64 {v i < 8}) (j: u64 {v j < 32})
   : Lemma (i32_to_bv (to_i32x8 vec i) j == vec.(mk_int (v i * 32 + v j)))
          [SMTPat (i32_to_bv (to_i32x8 vec i) j)]
 
-val mm256_bsrli_epi128_lemma (shift: i32 {v shift >= 0 && v shift < 16}) vector i
+val mm256_bsrli_epi128_lemma (shift: i32 {v shift >= 0}) vector i
   : Lemma (  (I.mm256_bsrli_epi128 shift vector).(i)
           == (
                let lane = v i / 128 in
                let local_index = v i % 128 in
                let shift = v shift * 8 in
-               let j = local_index - shift in
-               if j < 0 then Bit_Zero else vector.(mk_int j)
+               let j = local_index + shift in
+               if j < 0 || j >= 128 then Bit_Zero else vector.(mk_int (lane * 128 + j))
              )
           )
           [SMTPat (I.mm256_bsrli_epi128 shift vector).(i)]
