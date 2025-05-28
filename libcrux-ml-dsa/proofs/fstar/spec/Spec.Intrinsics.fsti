@@ -230,6 +230,26 @@ val mm256_srli_epi64_bv_lemma
     )
       [SMTPat (I.mm256_srli_epi64 shift vector).(i)]
 
+val mm256_slli_epi64_bv_lemma
+    (shift: i32 {v shift > 0 && v shift < 64})
+    (vector: bv256)
+    (i: u64 {v i < 256})
+  : Lemma
+    (ensures
+      (I.mm256_slli_epi64 shift vector).(i) ==
+       (let i:u64 = i in
+        let v_CHUNK = mk_u64 64 in
+        let v_SHIFTS = mk_u64 4 in
+        let nth_bit:u64 = i %! v_CHUNK in
+        let nth_chunk:u64 = i /! v_CHUNK in
+        let local_index = v nth_bit - v shift in
+        if local_index >= 0
+        then vector.( (nth_chunk *! v_CHUNK) +! mk_int local_index )
+        else Bit_Zero
+       )
+    )
+    [SMTPat (I.mm256_slli_epi64 shift vector).(i)]
+
 val mm_srli_epi64_bv_lemma
     (shift: i32 {v shift > 0 && v shift < 64})
     (vector: bv128)
@@ -325,26 +345,6 @@ val i32_to_bv_add_bv_lemma x y i
 val pow2_lemma shift i
   : Lemma (i32_to_bv (mk_i32 1 <<! shift) i == (if v shift = v i then Bit_One else Bit_Zero))
     [SMTPat (i32_to_bv (mk_i32 1 <<! shift) i)]
-
-val mm256_slli_epi64_bv_lemma
-    (shift: i32 {v shift > 0 && v shift < 64})
-    (vector: bv256)
-    (i: u64 {v i < 256})
-  : Lemma
-    (ensures
-      (I.mm256_slli_epi64 shift vector).(i) ==
-       (let i:u64 = i in
-        let v_CHUNK = mk_u64 64 in
-        let v_SHIFTS = mk_u64 4 in
-        let nth_bit:u64 = i %! v_CHUNK in
-        let nth_chunk:u64 = i /! v_CHUNK in
-        let local_index = v nth_bit - v shift in
-        if local_index >= 0
-        then vector.( (nth_chunk *! v_CHUNK) +! mk_int local_index )
-        else Bit_Zero
-       )
-    )
-      [SMTPat (I.mm256_slli_epi64 shift vector).(i)]
 
 val mm256_set_epi8_lemma
   (b0 b1 b2 b3 b4 b5 b6 b7 b8 b9 b10 b11 b12 b13 b14 b15 b16 b17 b18 b19 b20 b21 b22 b23 b24 b25 b26 b27 b28 b29 b30 b31: i8)
