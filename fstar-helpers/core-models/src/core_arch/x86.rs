@@ -50,7 +50,7 @@
 //! ```
 //!
 //! ### (step 4) Integer‑Vector Interpretation & Lift Lemma (if needed)
-//! In `core_models::core_arch::x86::interpretations::int_vec`, we add the following model:
+//! In `minicore::core_arch::x86::interpretations::int_vec`, we add the following model:
 //!
 //! ```compile_fail
 //! pub fn _mm256_mul_epi32(x: i32x8, y: i32x8) -> i64x4 {
@@ -58,7 +58,7 @@
 //! }
 //! ```
 //!
-//! And a lift lemma in `core_models::core_arch::x86::interpretations::int_vec::lemmas`:
+//! And a lift lemma in `minicore::core_arch::x86::interpretations::int_vec::lemmas`:
 //! ```compile_fail
 //! mk_lift_lemma!(
 //!     _mm256_mul_epi32(x: __m256i, y: __m256i) ==
@@ -67,7 +67,7 @@
 //! ```
 //!
 //! ### (step 5) Unit Test
-//! In `core_models::core_arch::x86::interpretations::int_vec::tests`:
+//! In `minicore::core_arch::x86::interpretations::int_vec::tests`:
 //! ```compile_fail
 //! mk!(_mm256_mul_epi32(x: BitVec, y: BitVec));
 //! ```
@@ -86,16 +86,13 @@ pub(crate) mod upstream {
     pub use core::arch::x86_64::*;
 }
 
-pub mod opaque;
-pub use opaque::*;
-
 /// Conversions impls between `BitVec<N>` and `__mNi` types.
 #[hax_lib::exclude]
 #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
 mod conversions {
     use super::upstream::{
-        __m128i, __m256i, _mm256_loadu_si256, _mm256_storeu_si256, _mm_loadu_si128,
-        _mm_storeu_si128,
+        __m128i, __m256, __m256i, _mm256_castps_si256, _mm256_castsi256_ps, _mm256_loadu_si256,
+        _mm256_storeu_si256, _mm_loadu_si128, _mm_storeu_si128,
     };
     use super::BitVec;
 
@@ -103,6 +100,12 @@ mod conversions {
         fn from(bv: BitVec<256>) -> __m256i {
             let bv: &[u8] = &bv.to_vec()[..];
             unsafe { _mm256_loadu_si256(bv.as_ptr() as *const _) }
+        }
+    }
+    impl From<BitVec<256>> for __m256 {
+        fn from(bv: BitVec<256>) -> __m256 {
+            let bv: &[u8] = &bv.to_vec()[..];
+            unsafe { _mm256_castsi256_ps(_mm256_loadu_si256(bv.as_ptr() as *const _)) }
         }
     }
 
@@ -118,6 +121,16 @@ mod conversions {
             let mut v = [0u8; 32];
             unsafe {
                 _mm256_storeu_si256(v.as_mut_ptr() as *mut _, vec);
+            }
+            BitVec::from_slice(&v[..], 8)
+        }
+    }
+
+    impl From<__m256> for BitVec<256> {
+        fn from(vec: __m256) -> BitVec<256> {
+            let mut v = [0u8; 32];
+            unsafe {
+                _mm256_storeu_si256(v.as_mut_ptr() as *mut _, _mm256_castps_si256(vec));
             }
             BitVec::from_slice(&v[..], 8)
         }
@@ -142,10 +155,6 @@ mod conversions {
 )]
 const _: () = {};
 
-#[allow(non_camel_case_types)]
-#[hax_lib::opaque]
-pub struct __m256(());
-
 /// 256-bit wide integer vector type.
 /// Models `core::arch::x86::__m256i` or `core::arch::x86_64::__m256i` (the __m256i type defined by Intel, representing a 256-bit SIMD register).
 #[allow(non_camel_case_types)]
@@ -155,6 +164,11 @@ pub type __m256i = BitVec<256>;
 /// Models `core::arch::x86::__m128i` or `core::arch::x86_64::__m128i` (the __m128i type defined by Intel, representing a 128-bit SIMD register).
 #[allow(non_camel_case_types)]
 pub type __m128i = BitVec<128>;
+
+/// 256-bit wide vector type, which can be interpreted as 8 32 bit floating point values.
+/// Models `core::arch::x86::__m256` or `core::arch::x86_64::__m256`, but since we do not have use and fully support floating points yet, it is treated the same as __m256i.
+#[allow(non_camel_case_types)]
+pub type __m256 = __m256i;
 
 pub use ssse3::*;
 pub mod ssse3 {
@@ -167,6 +181,19 @@ pub mod ssse3 {
 }
 pub use sse2::*;
 pub mod sse2 {
+    /// This intrinsics is not extracted via hax currently since it cannot hanlde raw pointers.
+    /// [Intel Documentation](https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm_loadu_si128&ig_expand=4106)
+    #[hax_lib::exclude]
+    pub unsafe fn _mm_loadu_si128(_mem_addr: *const __m128i) -> __m128i {
+        unimplemented!()
+    }
+
+    /// [Intel Documentation](https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm_packs_epi16)
+    #[hax_lib::opaque]
+    pub fn _mm_packs_epi16(_: __m128i, _: __m128i) -> __m128i {
+        unimplemented!()
+    }
+
     use super::*;
     #[hax_lib::opaque]
     pub fn _mm_set_epi8(
@@ -189,10 +216,121 @@ pub mod sse2 {
     ) -> __m128i {
         todo!()
     }
+
+    /// [Intel Documentation](https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm_set1_epi16)
+    #[hax_lib::opaque]
+    pub fn _mm_set1_epi16(_: i16) -> __m128i {
+        unimplemented!()
+    }
+    /// [Intel Documentation](https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm_set_epi32)
+    #[hax_lib::opaque]
+    pub fn _mm_set_epi32(_: i32, _: i32, _: i32, _: i32) -> __m128i {
+        unimplemented!()
+    }
+
+    /// [Intel Documentation](https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm_add_epi16)
+    #[hax_lib::opaque]
+    pub fn _mm_add_epi16(_: __m128i, _: __m128i) -> __m128i {
+        unimplemented!()
+    }
+    /// [Intel Documentation](https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm_sub_epi16)
+    #[hax_lib::opaque]
+    pub fn _mm_sub_epi16(_: __m128i, _: __m128i) -> __m128i {
+        unimplemented!()
+    }
+    /// [Intel Documentation](https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm_mullo_epi16)
+    #[hax_lib::opaque]
+    pub fn _mm_mullo_epi16(_: __m128i, _: __m128i) -> __m128i {
+        unimplemented!()
+    }
+
+    /// [Intel Documentation](https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm_mulhi_epi16)
+    #[hax_lib::opaque]
+    pub fn _mm_mulhi_epi16(_: __m128i, _: __m128i) -> __m128i {
+        unimplemented!()
+    }
+    /// [Intel Documentation](https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm_srli_epi64)
+    #[hax_lib::opaque]
+    pub fn _mm_srli_epi64<const IMM8: i32>(_: __m128i) -> __m128i {
+        unimplemented!()
+    }
+
+    /// [Intel Documentation](https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm_movemask_epi8)
+    #[hax_lib::opaque]
+    pub fn _mm_movemask_epi8(_: __m128i) -> i32 {
+        unimplemented!()
+    }
 }
 
 pub use avx::*;
 pub mod avx {
+    /// This intrinsics is not extracted via hax currently since it cannot hanlde raw pointers.
+    /// [Intel Documentation](https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm256_storeu_si256)
+    #[hax_lib::exclude]
+    pub unsafe fn _mm256_storeu_si256(_mem_addr: *mut __m256i, _a: __m256i) {
+        unimplemented!()
+    }
+
+    /// This intrinsics is not extracted via hax currently since it cannot hanlde raw pointers.
+    /// [Intel Documentation](https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm256_loadu_si256)
+    #[hax_lib::exclude]
+    pub unsafe fn _mm256_loadu_si256(_mem_addr: *const __m256i) -> __m256i {
+        unimplemented!()
+    }
+
+    /// [Intel Documentation](https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm256_set1_epi64x)
+    #[hax_lib::opaque]
+    pub fn _mm256_set1_epi64x(_: i64) -> __m256i {
+        unimplemented!()
+    }
+    /// [Intel Documentation](https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm256_set_epi64x)
+    #[hax_lib::opaque]
+    pub fn _mm256_set_epi64x(_: i64, _: i64, _: i64, _: i64) -> __m256i {
+        unimplemented!()
+    }
+    /// [Intel Documentation](https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm256_blendv_ps)
+    #[hax_lib::opaque]
+    pub fn _mm256_blendv_ps(_: __m256, _: __m256, _: __m256) -> __m256 {
+        unimplemented!()
+    }
+    /// [Intel Documentation](https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm256_castsi128_si256)
+    #[hax_lib::opaque]
+    pub fn _mm256_castsi128_si256(_: __m128i) -> __m256i {
+        unimplemented!()
+    }
+    /// [Intel Documentation](https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm256_testz_si256)
+    #[hax_lib::opaque]
+    pub fn _mm256_testz_si256(_: __m256i, _: __m256i) -> i32 {
+        unimplemented!()
+    }
+    /// [Intel Documentation](https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm256_castsi256_ps)
+    #[hax_lib::opaque]
+    pub fn _mm256_castsi256_ps(_: __m256i) -> __m256 {
+        unimplemented!()
+    }
+    /// [Intel Documentation](https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm256_castps_si256)
+    #[hax_lib::opaque]
+    pub fn _mm256_castps_si256(_: __m256) -> __m256i {
+        unimplemented!()
+    }
+    /// [Intel Documentation](https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm256_movemask_ps)
+    #[hax_lib::opaque]
+    pub fn _mm256_movemask_ps(_: __m256) -> i32 {
+        unimplemented!()
+    }
+
+    /// [Intel Documentation](https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm256_setzero_si256)
+    #[hax_lib::opaque]
+    pub fn _mm256_setzero_si256() -> __m256i {
+        BitVec::from_fn(|_| Bit::Zero)
+    }
+
+    /// [Intel Documentation](https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm256_set_m128i)
+    #[hax_lib::opaque]
+    pub fn _mm256_set_m128i(hi: __m128i, lo: __m128i) -> __m256i {
+        BitVec::from_fn(|i| if i < 128 { lo[i] } else { hi[i - 128] })
+    }
+
     pub use super::*;
     pub fn _mm256_castsi256_si128(vector: __m256i) -> __m128i {
         BitVec::from_fn(|i| vector[i])
@@ -284,31 +422,231 @@ pub mod avx {
     ) -> __m256i {
         todo!()
     }
+    /// [Intel Documentation](https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm256_set1_epi16)
+    #[hax_lib::opaque]
+    pub fn _mm256_set1_epi16(_: i16) -> __m256i {
+        unimplemented!()
+    }
 }
 pub use avx2::*;
 pub mod avx2 {
     use super::*;
 
+    /// [Intel Documentation](https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm256_blend_epi32)
     #[hax_lib::opaque]
     pub fn _mm256_blend_epi32<const IMM8: i32>(_: __m256i, _: __m256i) -> __m256i {
         unimplemented!()
     }
-
+    /// [Intel Documentation](https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm256_shuffle_epi32)
     #[hax_lib::opaque]
     pub fn _mm256_shuffle_epi32<const MASK: i32>(_: __m256i) -> __m256i {
         unimplemented!()
     }
-
+    /// [Intel Documentation](https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm256_sub_epi32)
     #[hax_lib::opaque]
     pub fn _mm256_sub_epi32(_: __m256i, _: __m256i) -> __m256i {
         unimplemented!()
     }
-
+    /// [Intel Documentation](https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm256_mul_epi32)
     #[hax_lib::opaque]
     pub fn _mm256_mul_epi32(_: __m256i, _: __m256i) -> __m256i {
         unimplemented!()
     }
 
+    /// [Intel Documentation](https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm256_add_epi16)
+    #[hax_lib::opaque]
+    pub fn _mm256_add_epi16(_: __m256i, _: __m256i) -> __m256i {
+        unimplemented!()
+    }
+    /// [Intel Documentation](https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm256_madd_epi16)
+    #[hax_lib::opaque]
+    pub fn _mm256_madd_epi16(_: __m256i, _: __m256i) -> __m256i {
+        unimplemented!()
+    }
+    /// [Intel Documentation](https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm256_add_epi32)
+    #[hax_lib::opaque]
+    pub fn _mm256_add_epi32(_: __m256i, _: __m256i) -> __m256i {
+        unimplemented!()
+    }
+    /// [Intel Documentation](https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm256_add_epi64)
+    #[hax_lib::opaque]
+    pub fn _mm256_add_epi64(_: __m256i, _: __m256i) -> __m256i {
+        unimplemented!()
+    }
+    /// [Intel Documentation](https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm256_abs_epi32)
+    #[hax_lib::opaque]
+    pub fn _mm256_abs_epi32(_: __m256i) -> __m256i {
+        unimplemented!()
+    }
+    /// [Intel Documentation](https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm256_sub_epi16)
+    #[hax_lib::opaque]
+    pub fn _mm256_sub_epi16(_: __m256i, _: __m256i) -> __m256i {
+        unimplemented!()
+    }
+
+    /// [Intel Documentation](https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm256_cmpgt_epi16)
+    #[hax_lib::opaque]
+    pub fn _mm256_cmpgt_epi16(_: __m256i, _: __m256i) -> __m256i {
+        unimplemented!()
+    }
+    /// [Intel Documentation](https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm256_cmpgt_epi32)
+    #[hax_lib::opaque]
+    pub fn _mm256_cmpgt_epi32(_: __m256i, _: __m256i) -> __m256i {
+        unimplemented!()
+    }
+    /// [Intel Documentation](https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm256_cmpeq_epi32)
+    #[hax_lib::opaque]
+    pub fn _mm256_cmpeq_epi32(_: __m256i, _: __m256i) -> __m256i {
+        unimplemented!()
+    }
+    /// [Intel Documentation](https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm256_sign_epi32)
+    #[hax_lib::opaque]
+    pub fn _mm256_sign_epi32(_: __m256i, _: __m256i) -> __m256i {
+        unimplemented!()
+    }
+
+    /// [Intel Documentation](https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm256_mullo_epi32)
+    #[hax_lib::opaque]
+    pub fn _mm256_mullo_epi32(_: __m256i, _: __m256i) -> __m256i {
+        unimplemented!()
+    }
+    /// [Intel Documentation](https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm256_mulhi_epi16)
+    #[hax_lib::opaque]
+    pub fn _mm256_mulhi_epi16(_: __m256i, _: __m256i) -> __m256i {
+        unimplemented!()
+    }
+    /// [Intel Documentation](https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm256_mul_epu32)
+    #[hax_lib::opaque]
+    pub fn _mm256_mul_epu32(_: __m256i, _: __m256i) -> __m256i {
+        unimplemented!()
+    }
+    /// [Intel Documentation](https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm256_and_si256)
+    #[hax_lib::opaque]
+    pub fn _mm256_and_si256(_: __m256i, _: __m256i) -> __m256i {
+        unimplemented!()
+    }
+    /// [Intel Documentation](https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm256_or_si256)
+    #[hax_lib::opaque]
+    pub fn _mm256_or_si256(_: __m256i, _: __m256i) -> __m256i {
+        unimplemented!()
+    }
+
+    /// [Intel Documentation](https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm256_xor_si256)
+    #[hax_lib::opaque]
+    pub fn _mm256_xor_si256(_: __m256i, _: __m256i) -> __m256i {
+        unimplemented!()
+    }
+    /// [Intel Documentation](https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm256_srai_epi16)
+    #[hax_lib::opaque]
+    pub fn _mm256_srai_epi16<const IMM8: i32>(_: __m256i) -> __m256i {
+        unimplemented!()
+    }
+    /// [Intel Documentation](https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm256_srai_epi32)
+    #[hax_lib::opaque]
+    pub fn _mm256_srai_epi32<const IMM8: i32>(_: __m256i) -> __m256i {
+        unimplemented!()
+    }
+    /// [Intel Documentation](https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm256_srli_epi16)
+    #[hax_lib::opaque]
+    pub fn _mm256_srli_epi16<const IMM8: i32>(_: __m256i) -> __m256i {
+        unimplemented!()
+    }
+    /// [Intel Documentation](https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm256_srli_epi32)
+    #[hax_lib::opaque]
+    pub fn _mm256_srli_epi32<const IMM8: i32>(_: __m256i) -> __m256i {
+        unimplemented!()
+    }
+
+    /// [Intel Documentation](https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm256_slli_epi32)
+    #[hax_lib::opaque]
+    pub fn _mm256_slli_epi32<const IMM8: i32>(_: __m256i) -> __m256i {
+        unimplemented!()
+    }
+    /// [Intel Documentation](https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm256_permute4x64_epi64)
+    #[hax_lib::opaque]
+    pub fn _mm256_permute4x64_epi64<const IMM8: i32>(_: __m256i) -> __m256i {
+        unimplemented!()
+    }
+    /// [Intel Documentation](https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm256_unpackhi_epi64)
+    #[hax_lib::opaque]
+    pub fn _mm256_unpackhi_epi64(_: __m256i, _: __m256i) -> __m256i {
+        unimplemented!()
+    }
+    /// [Intel Documentation](https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm256_unpacklo_epi32)
+    #[hax_lib::opaque]
+    pub fn _mm256_unpacklo_epi32(_: __m256i, _: __m256i) -> __m256i {
+        unimplemented!()
+    }
+    /// [Intel Documentation](https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm256_unpackhi_epi32)
+    #[hax_lib::opaque]
+    pub fn _mm256_unpackhi_epi32(_: __m256i, _: __m256i) -> __m256i {
+        unimplemented!()
+    }
+
+    /// [Intel Documentation](https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm256_cvtepi16_epi32)
+    #[hax_lib::opaque]
+    pub fn _mm256_cvtepi16_epi32(_: __m128i) -> __m256i {
+        unimplemented!()
+    }
+
+    /// [Intel Documentation](https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm256_packs_epi32)
+    #[hax_lib::opaque]
+    pub fn _mm256_packs_epi32(_: __m256i, _: __m256i) -> __m256i {
+        unimplemented!()
+    }
+    /// [Intel Documentation](https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm256_inserti128_si256)
+    #[hax_lib::opaque]
+    pub fn _mm256_inserti128_si256<const IMM8: i32>(_: __m256i, _: __m128i) -> __m256i {
+        unimplemented!()
+    }
+    /// [Intel Documentation](https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm256_blend_epi16)
+    #[hax_lib::opaque]
+    pub fn _mm256_blend_epi16<const IMM8: i32>(_: __m256i, _: __m256i) -> __m256i {
+        unimplemented!()
+    }
+
+    /// [Intel Documentation](https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm256_srlv_epi64)
+    #[hax_lib::opaque]
+    pub fn _mm256_srlv_epi64(_: __m256i, _: __m256i) -> __m256i {
+        unimplemented!()
+    }
+    /// [Intel Documentation](https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm_sllv_epi32)
+    #[hax_lib::opaque]
+    pub fn _mm_sllv_epi32(_: __m128i, _: __m128i) -> __m128i {
+        unimplemented!()
+    }
+    /// [Intel Documentation](https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm256_slli_epi64)
+    #[hax_lib::opaque]
+    pub fn _mm256_slli_epi64<const IMM8: i32>(_: __m256i) -> __m256i {
+        unimplemented!()
+    }
+
+    /// [Intel Documentation](https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm256_bsrli_epi128)
+    /// NOTE: the bsrli here is different from intel specification. In the intel specification, if an IMM8 is given whose first 8 bits are higher than 15, it fixes it to 16.
+    /// However, the Rust implementation erroneously takes the input modulo 16. Thus, instead of shifting by 16 bits at an input of 16, it shifts by 0.
+    /// We are currently modelling the Rust implementation.
+    #[hax_lib::opaque]
+    pub fn _mm256_bsrli_epi128<const IMM8: i32>(_: __m256i) -> __m256i {
+        unimplemented!()
+    }
+    /// [Intel Documentation](https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm256_andnot_si256)
+    #[hax_lib::opaque]
+    pub fn _mm256_andnot_si256(_: __m256i, _: __m256i) -> __m256i {
+        unimplemented!()
+    }
+
+    /// [Intel Documentation](https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm256_unpacklo_epi64)
+    #[hax_lib::opaque]
+    pub fn _mm256_unpacklo_epi64(_: __m256i, _: __m256i) -> __m256i {
+        unimplemented!()
+    }
+    /// [Intel Documentation](https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm256_permute2x128_si256)
+    #[hax_lib::opaque]
+    pub fn _mm256_permute2x128_si256<const IMM8: i32>(_: __m256i, _: __m256i) -> __m256i {
+        unimplemented!()
+    }
+
+    /// [Intel Documentation](https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm_storeu_si128)
     #[hax_lib::exclude]
     pub fn _mm_storeu_si128(output: *mut __m128i, a: __m128i) {
         // This is equivalent to `*output = a`
@@ -318,41 +656,39 @@ pub mod avx2 {
             *(output.as_mut().unwrap()) = BitVec::from_slice(&out, 8);
         }
     }
-
-    #[hax_lib::requires(SHIFT_BY >= 0 && SHIFT_BY < 16)]
+    /// [Intel Documentation](https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm256_slli_epi16)
     pub fn _mm256_slli_epi16<const SHIFT_BY: i32>(vector: __m256i) -> __m256i {
         vector.chunked_shift::<16, 16>(FunArray::from_fn(|_| SHIFT_BY as i128))
     }
-
-    #[hax_lib::requires(SHIFT_BY >= 0 && SHIFT_BY < 64)]
+    /// [Intel Documentation](https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm256_srli_epi64)
     pub fn _mm256_srli_epi64<const SHIFT_BY: i32>(vector: __m256i) -> __m256i {
         vector.chunked_shift::<64, 4>(FunArray::from_fn(|_| -(SHIFT_BY as i128)))
     }
-
+    /// [Intel Documentation](https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm256_mullo_epi16)
     #[hax_lib::opaque]
     pub fn _mm256_mullo_epi16(_vector: __m256i, _shifts: __m256i) -> __m256i {
         todo!()
     }
-
+    /// [Intel Documentation](https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm256_sllv_epi32)
     #[hax_lib::opaque]
     pub fn _mm256_sllv_epi32(vector: __m256i, counts: __m256i) -> __m256i {
         extra::mm256_sllv_epi32_u32_array(vector, counts.to_vec().try_into().unwrap())
     }
-
+    /// [Intel Documentation](https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm256_srlv_epi32)
     #[hax_lib::opaque]
     pub fn _mm256_srlv_epi32(vector: __m256i, counts: __m256i) -> __m256i {
         extra::mm256_srlv_epi32_u32_array(vector, counts.to_vec().try_into().unwrap())
     }
-
+    /// [Intel Documentation](https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm256_permutevar8x32_epi32)
     #[hax_lib::opaque]
     pub fn _mm256_permutevar8x32_epi32(a: __m256i, b: __m256i) -> __m256i {
         extra::mm256_permutevar8x32_epi32_u32_array(a, b.to_vec().try_into().unwrap())
     }
-
+    /// [Intel Documentation](https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm256_extracti128_si256)
     pub fn _mm256_extracti128_si256<const IMM8: i32>(vector: __m256i) -> __m128i {
         BitVec::from_fn(|i| vector[i + if IMM8 == 0 { 0 } else { 128 }])
     }
-
+    /// [Intel Documentation](https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm256_shuffle_epi8)
     #[hax_lib::opaque]
     pub fn _mm256_shuffle_epi8(vector: __m256i, indexes: __m256i) -> __m256i {
         let indexes = indexes.to_vec().try_into().unwrap();

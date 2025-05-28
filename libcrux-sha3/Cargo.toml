@@ -31,7 +31,7 @@ name = "sha3"
 harness = false
 
 [dev-dependencies]
-criterion = "0.5.1"
+criterion = "0.6.0"
 hex = "0.4.3"
 rand = "0.9"
 cavp = { version = "0.0.2", path = "../cavp" }

@@ -80,14 +80,14 @@ pub(crate) mod generic {
         let (seed_for_error_vectors, seed_for_signing) =
             seed_expanded.split_at(SEED_FOR_ERROR_VECTORS_SIZE);
 
-        let mut a_as_ntt = [PolynomialRingElement::<SIMDUnit>::zero(); ROW_X_COLUMN];
-        Sampler::matrix_flat::<SIMDUnit>(COLUMNS_IN_A, seed_for_a, &mut a_as_ntt);
-
         let mut s1_s2 = [PolynomialRingElement::<SIMDUnit>::zero(); ROW_COLUMN];
         samplex4::sample_s1_and_s2::<SIMDUnit, Shake256X4>(ETA, seed_for_error_vectors, &mut s1_s2);
 
         let mut t0 = [PolynomialRingElement::<SIMDUnit>::zero(); ROWS_IN_A];
         {
+            let mut a_as_ntt = [PolynomialRingElement::<SIMDUnit>::zero(); ROW_X_COLUMN];
+            Sampler::matrix_flat::<SIMDUnit>(COLUMNS_IN_A, seed_for_a, &mut a_as_ntt);
+
             let mut s1_ntt = [PolynomialRingElement::<SIMDUnit>::zero(); COLUMNS_IN_A];
             s1_ntt.copy_from_slice(&s1_s2[0..COLUMNS_IN_A]);
             for i in 0..s1_ntt.len() {
@@ -96,7 +96,7 @@ pub(crate) mod generic {
             compute_as1_plus_s2::<SIMDUnit>(
                 ROWS_IN_A,
                 COLUMNS_IN_A,
-                &a_as_ntt,
+                &mut a_as_ntt,
                 &s1_ntt,
                 &s1_s2,
                 &mut t0,
