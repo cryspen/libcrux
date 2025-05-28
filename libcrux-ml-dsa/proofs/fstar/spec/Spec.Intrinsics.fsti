@@ -462,6 +462,20 @@ val mm256_mul_epi32_lemma (a b: bv256) (i:u64{v i < 8}):
          ))
          [SMTPat (to_i32x8 (Libcrux_intrinsics.Avx2.mm256_mul_epi32 a b) i)]
 
+
+val mm256_set_epi64x_lemma x0 x1 x2 x3 i
+  : Lemma (  to_i64x4 (I.mm256_set_epi64x x0 x1 x2 x3) i
+          == (match v i with | 0 -> x3 | 1 -> x2 | 2 -> x1 | 3 -> x0))
+          [SMTPat (to_i64x4 (I.mm256_set_epi64x x0 x1 x2 x3) i)]
+
+val mm256_set_epi64x_bv_lemma x0 x1 x2 x3 i
+  : Lemma ( (I.mm256_set_epi64x x0 x1 x2 x3).(i)
+         == i64_to_bv
+                (match v i / 64 with | 0 -> x3 | 1 -> x2 | 2 -> x1 | 3 -> x0)
+                (i %! mk_int 64)
+          )
+          [SMTPat (I.mm256_set_epi64x x0 x1 x2 x3).(i)]
+
 val mm256_set_epi32_lemma (x0 x1 x2 x3 x4 x5 x6 x7:i32) (i:u64{v i < 8}):
   Lemma (to_i32x8 (Libcrux_intrinsics.Avx2.mm256_set_epi32 x0 x1 x2 x3 x4 x5 x6 x7) i ==
         (match v i with
