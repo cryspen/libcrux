@@ -13,8 +13,14 @@ hpke-rs-libcrux = { path = "../libcrux_provider" }
 # the no-std-support-check CI job uses the `thumbv7em-none-eabihf` target
 # this version of `getrandom`, required by `hpke-rs-rust-crypto`, does not support that target out of box so this feature needs to be enabled to avoid a compilation error
 # (normally this feature should NOT be enabled in a library but this crate is just used for a CI check)
-getrandom_old = { package = "getrandom", version = "0.2.11", features=["custom"] }
+getrandom_old = { package = "getrandom", version = "0.2.11", features = [
+    "custom",
+] }
 
 # for the newer version of `getrandom`, which is required by `hpke-rs-libcrux`, the `.cargo/config.toml` needs to contain configuration for a custom backend.
 # see https://docs.rs/getrandom/latest/getrandom/#custom-backend
 getrandom = { version = "0.3.2" }
+
+# Prevent this from interfering with workspaces
+[workspace]
+members = ["."]

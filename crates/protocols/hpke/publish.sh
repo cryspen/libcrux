@@ -3,14 +3,7 @@
 
 set -e
 
-# "hpke-rs-crypto
-cd traits && cargo publish $@ && cd -
-
-# hpke-rs-libcrux
-cd libcrux_provider && cargo publish $@ && cd -
-
-# hpke-rs-rust-crypto
-cd rust_crypto_provider && cargo publish $@ && cd -
-
-# hpke-rs
-cargo publish $@
+# release all crates in the workspace in order of appearance
+# in the root crate's `workspace.members`.
+# sign tags and only allow the command to be run from the `main` branch. 
+cargo release --workspace --sign-tag --allow-branch main
