@@ -1,13 +1,14 @@
 [package]
 name = "libcrux-psq"
+description = "Libcrux Pre-Shared post-Quantum key establishement protocol"
 version = "0.0.3-alpha.1"
+readme = "Readme.md"
+
 authors.workspace = true
 license.workspace = true
 homepage.workspace = true
 edition.workspace = true
 repository.workspace = true
-readme.workspace = true
-description = "Libcrux Pre-Shared post-Quantum key establishement protocol"
 publish = true
 
 [lib]

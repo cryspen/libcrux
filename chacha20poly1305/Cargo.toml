@@ -2,13 +2,13 @@
 name = "libcrux-chacha20poly1305"
 description = "Formally verified ChaCha20-Poly1305 AEAD library"
 version = "0.0.3-alpha.1"
+readme = "Readme.md"
 
 authors.workspace = true
 license.workspace = true
 homepage.workspace = true
 edition.workspace = true
 repository.workspace = true
-readme.workspace = true
 
 [dependencies]
 libcrux-poly1305 = { version = "=0.0.3-alpha.1", path = "../poly1305/", features = [

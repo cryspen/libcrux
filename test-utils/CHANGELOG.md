@@ -7,4 +7,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [v0.0.3-alpha.1]
 
-- [#880](https://github.com/cryspen/libcrux/pull/880): Add types and functions for tracing
+- [#880](https://github.com/cryspen/libcrux/pull/880), [#995](https://github.com/cryspen/libcrux/pull/995): Add types, functions and macros for tracing

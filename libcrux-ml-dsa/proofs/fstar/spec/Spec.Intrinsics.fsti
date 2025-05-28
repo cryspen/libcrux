@@ -660,5 +660,8 @@ let montgomery_multiply_lemma
     to_i32x8 (Libcrux_ml_dsa.Simd.Avx2.Arithmetic.montgomery_multiply a b) i ==
     Spec.MLDSA.Ntt.mont_mul (to_i32x8 a i) (to_i32x8 b i))
     [SMTPat (to_i32x8 (Libcrux_ml_dsa.Simd.Avx2.Arithmetic.montgomery_multiply a b) i)]
-   = ()
+   =
+   reveal_opaque (`%Libcrux_ml_dsa.Simd.Avx2.Arithmetic.montgomery_multiply) (Libcrux_ml_dsa.Simd.Avx2.Arithmetic.montgomery_multiply)
+
+
 

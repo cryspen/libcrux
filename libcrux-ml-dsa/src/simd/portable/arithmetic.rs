@@ -247,8 +247,7 @@ pub(crate) fn montgomery_multiply_by_constant(simd_unit: &mut Coefficients, c: i
 #[inline(always)]
 #[hax_lib::fstar::options("--z3rlimit 150")]
 #[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
-#[hax_lib::requires(fstar!(r#"forall i. i < 8 ==> Spec.Utils.is_i32b 4190208
-    (Seq.index ${rhs}.f_values i)"#))]
+#[hax_lib::requires(fstar!(r#"Spec.Utils.is_i32b_array_opaque 8380416 ${rhs}.f_values"#))]
 #[hax_lib::ensures(|result| fstar!(r#"
     Spec.Utils.is_i32b_array_opaque 8380416 ${lhs}_future.f_values /\
     Spec.MLDSA.Math.(forall i. i < 8 ==> 
@@ -273,7 +272,7 @@ pub(crate) fn montgomery_multiply(lhs: &mut Coefficients, rhs: &Coefficients) {
             )
         });
         hax_lib::fstar!(
-            r#"Spec.Utils.lemma_mul_i32b (pow2 31) (4190208) ${lhs}.f_values.[ $i ] ${rhs}.f_values.[ $i ]"#
+            r#"Spec.Utils.lemma_mul_i32b (pow2 31) (8380416) ${lhs}.f_values.[ $i ] ${rhs}.f_values.[ $i ]"#
         );
 
         lhs.values[i] = montgomery_reduce_element((lhs.values[i] as i64) * (rhs.values[i] as i64))
@@ -338,7 +337,7 @@ fn power2round_element(t: i32) -> (i32, i32) {
 
 #[inline(always)]
 #[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
-#[hax_lib::requires(fstar!(r#"Spec.Utils.is_i32b_array (v $FIELD_MODULUS - 1) ${t0}.f_values"#))]
+#[hax_lib::requires(fstar!(r#"Spec.Utils.is_i32b_array_opaque (v $FIELD_MODULUS - 1) ${t0}.f_values"#))]
 #[hax_lib::ensures(|_| fstar!(r#"
     forall i. i < 8 ==>
         (let t0_v = v (Seq.index ${t0}_future.f_values i) in
@@ -348,6 +347,9 @@ fn power2round_element(t: i32) -> (i32, i32) {
 pub(super) fn power2round(t0: &mut Coefficients, t1: &mut Coefficients) {
     #[cfg(hax)]
     let _t0: Coefficients = t0.clone();
+    hax_lib::fstar!(
+        "reveal_opaque (`%Spec.Utils.is_i32b_array_opaque) (Spec.Utils.is_i32b_array_opaque)"
+    );
 
     for i in 0..t0.values.len() {
         hax_lib::loop_invariant!(|i: usize| {
@@ -371,11 +373,15 @@ pub(super) fn power2round(t0: &mut Coefficients, t1: &mut Coefficients) {
 #[inline(always)]
 #[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
 #[hax_lib::requires(fstar!(r#"v $bound > 0 /\ 
-        Spec.Utils.is_i32b_array (v $FIELD_MODULUS - 1) ${simd_unit}.f_values"#))]
+        Spec.Utils.is_i32b_array_opaque (v $FIELD_MODULUS - 1) ${simd_unit}.f_values"#))]
 #[hax_lib::ensures(|result| fstar!(r#"
     $result == false ==> 
-        Spec.Utils.is_i32b_array (v $bound - 1) ${simd_unit}.f_values"#))]
+        Spec.Utils.is_i32b_array_opaque (v $bound - 1) ${simd_unit}.f_values"#))]
 pub(super) fn infinity_norm_exceeds(simd_unit: &Coefficients, bound: i32) -> bool {
+    hax_lib::fstar!(
+        "reveal_opaque (`%Spec.Utils.is_i32b_array_opaque) (Spec.Utils.is_i32b_array_opaque)"
+    );
+
     let mut result = false;
     // It is ok to leak which coefficient violates the bound since
     // the probability for each coefficient is independent of secret
@@ -442,28 +448,29 @@ fn reduce_element(fe: FieldElement) -> FieldElement {
 
 #[inline(always)]
 #[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
-#[hax_lib::requires(fstar!(r#"v $SHIFT_BY >= 0 /\ v $SHIFT_BY < 32 /\ (forall i. i < 8 ==>
-    Spec.Utils.is_i32b 2143289343 ((Seq.index ${simd_unit}.f_values i) <<! v_SHIFT_BY))"#))]
-#[hax_lib::ensures(|_| fstar!(r#"forall i. i < 8 ==>
-    (let fe_1 = (Seq.index ${simd_unit}.f_values i) <<! v_SHIFT_BY in
-    let fe_2 = Seq.index ${simd_unit}_future.f_values i in
-    Spec.Utils.is_i32b 8380416 fe_2 /\
-    Spec.MLDSA.Math.mod_q (v fe_2) == Spec.MLDSA.Math.mod_q (v fe_1))"#))]
+#[hax_lib::requires(fstar!(r#"v $SHIFT_BY == 13 /\ 
+    (forall i. i < 8 ==> v (Seq.index (${simd_unit}.f_values) i) >= 0 /\
+        v (Seq.index (${simd_unit}.f_values) i) <= 261631)"#))]
+#[hax_lib::ensures(|_| fstar!(r#"
+    Spec.Utils.is_i32b_array_opaque 8380416 (${simd_unit}_future.f_values) /\
+    (forall i. i < 8 ==> Spec.MLDSA.Math.(
+        mod_q (v (Seq.index ${simd_unit}_future.f_values i)) ==
+        mod_q (v ((Seq.index ${simd_unit}.f_values i) <<! v_SHIFT_BY))))"#))]
 pub(super) fn shift_left_then_reduce<const SHIFT_BY: i32>(simd_unit: &mut Coefficients) {
     #[cfg(hax)]
     let _simd_unit0 = simd_unit.clone();
+    hax_lib::fstar!(
+        "reveal_opaque (`%Spec.Utils.is_i32b_array_opaque) (Spec.Utils.is_i32b_array_opaque)"
+    );
 
     for i in 0..simd_unit.values.len() {
-        hax_lib::loop_invariant!(|i: usize| {
-            fstar!(
-                r#"
+        hax_lib::loop_invariant!(|i: usize| fstar!(
+            r#"
                 (forall j. j < v i ==> (Spec.Utils.is_i32b 8380416 (Seq.index ${simd_unit}.f_values j) /\
                     Spec.MLDSA.Math.mod_q (v (Seq.index ${simd_unit}.f_values j)) == 
                     Spec.MLDSA.Math.mod_q (v ((Seq.index ${_simd_unit0}.f_values j) <<! v_SHIFT_BY)))) /\
-                (forall j. j >= v i ==> (Seq.index ${simd_unit}.f_values j == Seq.index ${_simd_unit0}.f_values j /\
-                    Spec.Utils.is_i32b 2143289343 ((Seq.index ${simd_unit}.f_values j) <<! v_SHIFT_BY)))"#
-            )
-        });
+                (forall j. j >= v i ==> Seq.index ${simd_unit}.f_values j == Seq.index ${_simd_unit0}.f_values j)"#
+        ));
 
         simd_unit.values[i] = reduce_element(simd_unit.values[i] << SHIFT_BY);
     }
@@ -714,7 +721,7 @@ pub(crate) fn use_one_hint(gamma2: Gamma2, r: i32, hint: i32) -> i32 {
 #[inline(always)]
 #[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
 #[hax_lib::requires(fstar!(r#"(v $gamma2 == v $GAMMA2_V261_888 \/ v $gamma2 == v $GAMMA2_V95_232) /\
-    Spec.Utils.is_i32b_array (v $FIELD_MODULUS - 1) ${simd_unit}.f_values"#))]
+    Spec.Utils.is_i32b_array_opaque (v $FIELD_MODULUS - 1) ${simd_unit}.f_values"#))]
 #[hax_lib::ensures(|_| fstar!(r#"forall i. i < 8 ==>
     (let r = v (Seq.index ${simd_unit}.f_values i) in
     let r0 = v (Seq.index ${low}_future.f_values i) in
@@ -732,6 +739,10 @@ pub fn decompose(
     low: &mut Coefficients,
     high: &mut Coefficients,
 ) {
+    hax_lib::fstar!(
+        "reveal_opaque (`%Spec.Utils.is_i32b_array_opaque) (Spec.Utils.is_i32b_array_opaque)"
+    );
+
     for i in 0..low.values.len() {
         hax_lib::loop_invariant!(|i: usize| {
             fstar!(
@@ -756,7 +767,7 @@ pub fn decompose(
 #[inline(always)]
 #[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
 #[hax_lib::requires(fstar!(r#"(v $gamma2 == v $GAMMA2_V261_888 \/ v $gamma2 == v $GAMMA2_V95_232) /\
-    Spec.Utils.is_i32b_array (v $FIELD_MODULUS - 1) ${simd_unit}.f_values /\
+    Spec.Utils.is_i32b_array_opaque (v $FIELD_MODULUS - 1) ${simd_unit}.f_values /\
     (forall i. i < 8 ==> v (Seq.index ${hint}.f_values i) == 0 \/ v (Seq.index ${hint}.f_values i) == 1)"#))]
 #[hax_lib::ensures(|_| fstar!(r#"forall i. i < 8 ==>
     (let h = Seq.index ${hint}.f_values i in
@@ -765,6 +776,9 @@ pub fn decompose(
 pub fn use_hint(gamma2: Gamma2, simd_unit: &Coefficients, hint: &mut Coefficients) {
     #[cfg(hax)]
     let _hint0 = hint.clone();
+    hax_lib::fstar!(
+        "reveal_opaque (`%Spec.Utils.is_i32b_array_opaque) (Spec.Utils.is_i32b_array_opaque)"
+    );
 
     for i in 0..hint.values.len() {
         hax_lib::loop_invariant!(|i: usize| {
