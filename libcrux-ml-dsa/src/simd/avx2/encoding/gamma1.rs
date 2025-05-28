@@ -1,12 +1,7 @@
 use libcrux_intrinsics::avx2::*;
 
 #[inline(always)]
-fn serialize_when_gamma1_is_2_pow_17(simd_unit: &Vec256, out: &mut [u8]) {
-    let mut serialized = [0u8; 32];
-
-    const GAMMA1: i32 = 1 << 17;
-    let simd_unit_shifted = mm256_sub_epi32(mm256_set1_epi32(GAMMA1), *simd_unit);
-
+fn serialize_when_gamma1_is_2_pow_17_aux(simd_unit_shifted: Vec256) -> Vec256 {
     let adjacent_2_combined = mm256_sllv_epi32(
         simd_unit_shifted,
         mm256_set_epi32(0, 14, 0, 14, 0, 14, 0, 14),
@@ -18,6 +13,17 @@ fn serialize_when_gamma1_is_2_pow_17(simd_unit: &Vec256, out: &mut [u8]) {
 
     let adjacent_4_combined = mm256_add_epi64(adjacent_2_combined, every_second_element_shifted);
     let adjacent_4_combined = mm256_srlv_epi64(adjacent_4_combined, mm256_set_epi64x(28, 0, 28, 0));
+    adjacent_4_combined
+}
+
+const GAMMA1_2_POW_17: i32 = 1 << 17;
+
+#[inline(always)]
+fn serialize_when_gamma1_is_2_pow_17(simd_unit: &Vec256, out: &mut [u8]) {
+    let mut serialized = [0u8; 32];
+
+    let simd_unit_shifted = mm256_sub_epi32(mm256_set1_epi32(GAMMA1_2_POW_17), *simd_unit);
+    let adjacent_4_combined = serialize_when_gamma1_is_2_pow_17_aux(simd_unit_shifted);
 
     let lower_4 = mm256_castsi256_si128(adjacent_4_combined);
     mm_storeu_bytes_si128(&mut serialized[0..16], lower_4);
@@ -29,12 +35,7 @@ fn serialize_when_gamma1_is_2_pow_17(simd_unit: &Vec256, out: &mut [u8]) {
 }
 
 #[inline(always)]
-fn serialize_when_gamma1_is_2_pow_19(simd_unit: &Vec256, out: &mut [u8]) {
-    let mut serialized = [0u8; 32];
-
-    const GAMMA1: i32 = 1 << 19;
-    let simd_unit_shifted = mm256_sub_epi32(mm256_set1_epi32(GAMMA1), *simd_unit);
-
+fn serialize_when_gamma1_is_2_pow_19_aux(simd_unit_shifted: Vec256) -> Vec256 {
     let adjacent_2_combined = mm256_sllv_epi32(
         simd_unit_shifted,
         mm256_set_epi32(0, 12, 0, 12, 0, 12, 0, 12),
@@ -48,6 +49,16 @@ fn serialize_when_gamma1_is_2_pow_19(simd_unit: &Vec256, out: &mut [u8]) {
             11, 10, 9, 8, 4, 3, 2, 1, 0,
         ),
     );
+    adjacent_4_combined
+}
+
+const GAMMA1_2_POW_19: i32 = 1 << 19;
+#[inline(always)]
+fn serialize_when_gamma1_is_2_pow_19(simd_unit: &Vec256, out: &mut [u8]) {
+    let mut serialized = [0u8; 32];
+
+    let simd_unit_shifted = mm256_sub_epi32(mm256_set1_epi32(GAMMA1_2_POW_19), *simd_unit);
+    let adjacent_4_combined = serialize_when_gamma1_is_2_pow_19_aux(simd_unit_shifted);
 
     // We now have 80 bits starting at position 0 in the lower 128-bit lane, ...
     let lower_4 = mm256_castsi256_si128(adjacent_4_combined);
