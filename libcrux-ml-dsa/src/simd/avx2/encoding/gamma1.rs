@@ -175,6 +175,7 @@ pub(crate) fn serialize(simd_unit: &Vec256, serialized: &mut [u8], gamma1_expone
 }
 
 #[inline(always)]
+#[hax_lib::requires(serialized.len() == 18)]
 fn deserialize_when_gamma1_is_2_pow_17(serialized: &[u8], out: &mut Vec256) {
     debug_assert!(serialized.len() == 18);
 
@@ -202,6 +203,7 @@ fn deserialize_when_gamma1_is_2_pow_17(serialized: &[u8], out: &mut Vec256) {
 }
 
 #[inline(always)]
+#[hax_lib::requires(serialized.len() == 20)]
 fn deserialize_when_gamma1_is_2_pow_19(serialized: &[u8], out: &mut Vec256) {
     // Each set of 5 bytes deserializes to 2 coefficients, and since each Vec256
     // can hold 8 such coefficients, we process 5 * (8 / 2) = 20 bytes in this
@@ -231,6 +233,11 @@ fn deserialize_when_gamma1_is_2_pow_19(serialized: &[u8], out: &mut Vec256) {
 }
 
 #[inline(always)]
+#[hax_lib::requires( match gamma1_exponent as u8 {
+        17 => serialized.len() == 18,
+        19 => serialized.len() == 20,
+        _ => false,
+    })]
 pub(crate) fn deserialize(serialized: &[u8], out: &mut Vec256, gamma1_exponent: usize) {
     match gamma1_exponent as u8 {
         17 => deserialize_when_gamma1_is_2_pow_17(serialized, out),
