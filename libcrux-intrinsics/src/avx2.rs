@@ -119,6 +119,7 @@ pub fn mm256_set_m128i(hi: Vec128, lo: Vec128) -> Vec256 {
 }
 
 #[inline(always)]
+#[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
 pub fn mm_set_epi8(
     byte15: u8,
     byte14: u8,
@@ -160,6 +161,7 @@ pub fn mm_set_epi8(
 }
 
 #[inline(always)]
+#[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
 pub fn mm256_set_epi8(
     byte31: i8,
     byte30: i8,
@@ -204,11 +206,13 @@ pub fn mm256_set_epi8(
 }
 
 #[inline(always)]
+#[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
 pub fn mm256_set1_epi16(constant: i16) -> Vec256 {
     unsafe { _mm256_set1_epi16(constant) }
 }
 
 #[inline(always)]
+#[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
 pub fn mm256_set_epi16(
     input15: i16,
     input14: i16,
@@ -236,21 +240,25 @@ pub fn mm256_set_epi16(
 }
 
 #[inline(always)]
+#[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
 pub fn mm_set1_epi16(constant: i16) -> Vec128 {
     unsafe { _mm_set1_epi16(constant) }
 }
 
 #[inline(always)]
+#[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
 pub fn mm256_set1_epi32(constant: i32) -> Vec256 {
     unsafe { _mm256_set1_epi32(constant) }
 }
 
 #[inline(always)]
+#[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
 pub fn mm_set_epi32(input3: i32, input2: i32, input1: i32, input0: i32) -> Vec128 {
     unsafe { _mm_set_epi32(input3, input2, input1, input0) }
 }
 
 #[inline(always)]
+#[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
 pub fn mm256_set_epi32(
     input7: i32,
     input6: i32,
@@ -269,136 +277,163 @@ pub fn mm256_set_epi32(
 }
 
 #[inline(always)]
+#[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
 pub fn mm_add_epi16(lhs: Vec128, rhs: Vec128) -> Vec128 {
     unsafe { _mm_add_epi16(lhs, rhs) }
 }
 
 #[inline(always)]
+#[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
 pub fn mm256_add_epi16(lhs: Vec256, rhs: Vec256) -> Vec256 {
     unsafe { _mm256_add_epi16(lhs, rhs) }
 }
 
 #[inline(always)]
+#[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
 pub fn mm256_madd_epi16(lhs: Vec256, rhs: Vec256) -> Vec256 {
     unsafe { _mm256_madd_epi16(lhs, rhs) }
 }
 
 #[inline(always)]
+#[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
 pub fn mm256_add_epi32(lhs: Vec256, rhs: Vec256) -> Vec256 {
     unsafe { _mm256_add_epi32(lhs, rhs) }
 }
 
 #[inline(always)]
+#[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
 pub fn mm256_add_epi64(lhs: Vec256, rhs: Vec256) -> Vec256 {
     unsafe { _mm256_add_epi64(lhs, rhs) }
 }
 
 #[inline(always)]
+#[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
 pub fn mm256_abs_epi32(a: Vec256) -> Vec256 {
     unsafe { _mm256_abs_epi32(a) }
 }
 
 #[inline(always)]
+#[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
 pub fn mm256_sub_epi16(lhs: Vec256, rhs: Vec256) -> Vec256 {
     unsafe { _mm256_sub_epi16(lhs, rhs) }
 }
 
 #[inline(always)]
+#[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
 pub fn mm256_sub_epi32(lhs: Vec256, rhs: Vec256) -> Vec256 {
     unsafe { _mm256_sub_epi32(lhs, rhs) }
 }
 
 #[inline(always)]
+#[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
 pub fn mm_sub_epi16(lhs: Vec128, rhs: Vec128) -> Vec128 {
     unsafe { _mm_sub_epi16(lhs, rhs) }
 }
 
 #[inline(always)]
+#[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
 pub fn mm256_mullo_epi16(lhs: Vec256, rhs: Vec256) -> Vec256 {
     unsafe { _mm256_mullo_epi16(lhs, rhs) }
 }
 
 #[inline(always)]
+#[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
 pub fn mm_mullo_epi16(lhs: Vec128, rhs: Vec128) -> Vec128 {
     unsafe { _mm_mullo_epi16(lhs, rhs) }
 }
 
 #[inline(always)]
+#[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
 pub fn mm256_cmpgt_epi16(lhs: Vec256, rhs: Vec256) -> Vec256 {
     unsafe { _mm256_cmpgt_epi16(lhs, rhs) }
 }
 
 #[inline(always)]
+#[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
 pub fn mm256_cmpgt_epi32(lhs: Vec256, rhs: Vec256) -> Vec256 {
     unsafe { _mm256_cmpgt_epi32(lhs, rhs) }
 }
 
 #[inline(always)]
+#[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
 pub fn mm256_cmpeq_epi32(a: Vec256, b: Vec256) -> Vec256 {
     unsafe { _mm256_cmpeq_epi32(a, b) }
 }
 
 #[inline(always)]
+#[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
 pub fn mm256_sign_epi32(a: Vec256, b: Vec256) -> Vec256 {
     unsafe { _mm256_sign_epi32(a, b) }
 }
 
 #[inline(always)]
+#[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
 pub fn mm256_castsi256_ps(a: Vec256) -> Vec256Float {
     unsafe { _mm256_castsi256_ps(a) }
 }
 
 #[inline(always)]
+#[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
 pub fn mm256_castps_si256(a: Vec256Float) -> Vec256 {
     unsafe { _mm256_castps_si256(a) }
 }
 
 #[inline(always)]
+#[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
 pub fn mm256_movemask_ps(a: Vec256Float) -> i32 {
     unsafe { _mm256_movemask_ps(a) }
 }
 
 #[inline(always)]
+#[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
 pub fn mm_mulhi_epi16(lhs: Vec128, rhs: Vec128) -> Vec128 {
     unsafe { _mm_mulhi_epi16(lhs, rhs) }
 }
 
 #[inline(always)]
+#[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
 pub fn mm256_mullo_epi32(lhs: Vec256, rhs: Vec256) -> Vec256 {
     unsafe { _mm256_mullo_epi32(lhs, rhs) }
 }
 
 #[inline(always)]
+#[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
 pub fn mm256_mulhi_epi16(lhs: Vec256, rhs: Vec256) -> Vec256 {
     unsafe { _mm256_mulhi_epi16(lhs, rhs) }
 }
 
 #[inline(always)]
+#[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
 pub fn mm256_mul_epu32(lhs: Vec256, rhs: Vec256) -> Vec256 {
     unsafe { _mm256_mul_epu32(lhs, rhs) }
 }
 
 #[inline(always)]
+#[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
 pub fn mm256_mul_epi32(lhs: Vec256, rhs: Vec256) -> Vec256 {
     unsafe { _mm256_mul_epi32(lhs, rhs) }
 }
 
 #[inline(always)]
+#[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
 pub fn mm256_and_si256(lhs: Vec256, rhs: Vec256) -> Vec256 {
     unsafe { _mm256_and_si256(lhs, rhs) }
 }
 
 #[inline(always)]
+#[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
 pub fn mm256_or_si256(a: Vec256, b: Vec256) -> Vec256 {
     unsafe { _mm256_or_si256(a, b) }
 }
 
 #[inline(always)]
+#[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
 pub fn mm256_testz_si256(lhs: Vec256, rhs: Vec256) -> i32 {
     unsafe { _mm256_testz_si256(lhs, rhs) }
 }
 
 #[inline(always)]
+#[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
 pub fn mm256_xor_si256(lhs: Vec256, rhs: Vec256) -> Vec256 {
     // This floating point xor may or may not be faster than regular xor.
     // Local testing seems to indicate that it's a little more stable in
@@ -417,6 +452,7 @@ pub fn mm256_xor_si256(lhs: Vec256, rhs: Vec256) -> Vec256 {
 }
 
 #[inline(always)]
+#[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
 pub fn mm256_srai_epi16<const SHIFT_BY: i32>(vector: Vec256) -> Vec256 {
     #[cfg(not(hax))]
     debug_assert!(SHIFT_BY >= 0 && SHIFT_BY < 16);
@@ -424,6 +460,7 @@ pub fn mm256_srai_epi16<const SHIFT_BY: i32>(vector: Vec256) -> Vec256 {
 }
 
 #[inline(always)]
+#[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
 pub fn mm256_srai_epi32<const SHIFT_BY: i32>(vector: Vec256) -> Vec256 {
     #[cfg(not(hax))]
     debug_assert!(SHIFT_BY >= 0 && SHIFT_BY < 32);
@@ -431,6 +468,7 @@ pub fn mm256_srai_epi32<const SHIFT_BY: i32>(vector: Vec256) -> Vec256 {
 }
 
 #[inline(always)]
+#[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
 pub fn mm256_srli_epi16<const SHIFT_BY: i32>(vector: Vec256) -> Vec256 {
     #[cfg(not(hax))]
     debug_assert!(SHIFT_BY >= 0 && SHIFT_BY < 16);
@@ -438,6 +476,7 @@ pub fn mm256_srli_epi16<const SHIFT_BY: i32>(vector: Vec256) -> Vec256 {
 }
 
 #[inline(always)]
+#[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
 pub fn mm256_srli_epi32<const SHIFT_BY: i32>(vector: Vec256) -> Vec256 {
     #[cfg(not(hax))]
     debug_assert!(SHIFT_BY >= 0 && SHIFT_BY < 32);
@@ -445,6 +484,7 @@ pub fn mm256_srli_epi32<const SHIFT_BY: i32>(vector: Vec256) -> Vec256 {
 }
 
 #[inline(always)]
+#[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
 pub fn mm_srli_epi64<const SHIFT_BY: i32>(vector: Vec128) -> Vec128 {
     #[cfg(not(hax))]
     debug_assert!(SHIFT_BY >= 0 && SHIFT_BY < 64);
@@ -453,6 +493,7 @@ pub fn mm_srli_epi64<const SHIFT_BY: i32>(vector: Vec128) -> Vec128 {
 
 #[inline(always)]
 #[hax_lib::requires(SHIFT_BY > 0 && SHIFT_BY < 64)]
+#[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
 pub fn mm256_srli_epi64<const SHIFT_BY: i32>(vector: Vec256) -> Vec256 {
     #[cfg(not(hax))]
     debug_assert!(SHIFT_BY >= 0 && SHIFT_BY < 64);
@@ -460,6 +501,7 @@ pub fn mm256_srli_epi64<const SHIFT_BY: i32>(vector: Vec256) -> Vec256 {
 }
 
 #[inline(always)]
+#[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
 pub fn mm256_slli_epi16<const SHIFT_BY: i32>(vector: Vec256) -> Vec256 {
     #[cfg(not(hax))]
     debug_assert!(SHIFT_BY >= 0 && SHIFT_BY < 16);
@@ -467,6 +509,7 @@ pub fn mm256_slli_epi16<const SHIFT_BY: i32>(vector: Vec256) -> Vec256 {
 }
 
 #[inline(always)]
+#[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
 pub fn mm256_slli_epi32<const SHIFT_BY: i32>(vector: Vec256) -> Vec256 {
     #[cfg(not(hax))]
     debug_assert!(SHIFT_BY >= 0 && SHIFT_BY < 32);
@@ -474,16 +517,19 @@ pub fn mm256_slli_epi32<const SHIFT_BY: i32>(vector: Vec256) -> Vec256 {
 }
 
 #[inline(always)]
+#[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
 pub fn mm_shuffle_epi8(vector: Vec128, control: Vec128) -> Vec128 {
     unsafe { _mm_shuffle_epi8(vector, control) }
 }
 
 #[inline(always)]
+#[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
 pub fn mm256_shuffle_epi8(vector: Vec256, control: Vec256) -> Vec256 {
     unsafe { _mm256_shuffle_epi8(vector, control) }
 }
 
 #[inline(always)]
+#[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
 pub fn mm256_shuffle_epi32<const CONTROL: i32>(vector: Vec256) -> Vec256 {
     #[cfg(not(hax))]
     debug_assert!(CONTROL >= 0 && CONTROL < 256);
@@ -491,6 +537,7 @@ pub fn mm256_shuffle_epi32<const CONTROL: i32>(vector: Vec256) -> Vec256 {
 }
 
 #[inline(always)]
+#[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
 pub fn mm256_permute4x64_epi64<const CONTROL: i32>(vector: Vec256) -> Vec256 {
     #[cfg(not(hax))]
     debug_assert!(CONTROL >= 0 && CONTROL < 256);
@@ -498,46 +545,55 @@ pub fn mm256_permute4x64_epi64<const CONTROL: i32>(vector: Vec256) -> Vec256 {
 }
 
 #[inline(always)]
+#[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
 pub fn mm256_unpackhi_epi64(lhs: Vec256, rhs: Vec256) -> Vec256 {
     unsafe { _mm256_unpackhi_epi64(lhs, rhs) }
 }
 
 #[inline(always)]
+#[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
 pub fn mm256_unpacklo_epi32(lhs: Vec256, rhs: Vec256) -> Vec256 {
     unsafe { _mm256_unpacklo_epi32(lhs, rhs) }
 }
 
 #[inline(always)]
+#[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
 pub fn mm256_unpackhi_epi32(lhs: Vec256, rhs: Vec256) -> Vec256 {
     unsafe { _mm256_unpackhi_epi32(lhs, rhs) }
 }
 
 #[inline(always)]
+#[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
 pub fn mm256_castsi256_si128(vector: Vec256) -> Vec128 {
     unsafe { _mm256_castsi256_si128(vector) }
 }
 
 #[inline(always)]
+#[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
 pub fn mm256_castsi128_si256(vector: Vec128) -> Vec256 {
     unsafe { _mm256_castsi128_si256(vector) }
 }
 
 #[inline(always)]
+#[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
 pub fn mm256_cvtepi16_epi32(vector: Vec128) -> Vec256 {
     unsafe { _mm256_cvtepi16_epi32(vector) }
 }
 
 #[inline(always)]
+#[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
 pub fn mm_packs_epi16(lhs: Vec128, rhs: Vec128) -> Vec128 {
     unsafe { _mm_packs_epi16(lhs, rhs) }
 }
 
 #[inline(always)]
+#[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
 pub fn mm256_packs_epi32(lhs: Vec256, rhs: Vec256) -> Vec256 {
     unsafe { _mm256_packs_epi32(lhs, rhs) }
 }
 
 #[inline(always)]
+#[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
 pub fn mm256_extracti128_si256<const CONTROL: i32>(vector: Vec256) -> Vec128 {
     #[cfg(not(hax))]
     debug_assert!(CONTROL == 0 || CONTROL == 1);
@@ -545,6 +601,7 @@ pub fn mm256_extracti128_si256<const CONTROL: i32>(vector: Vec256) -> Vec128 {
 }
 
 #[inline(always)]
+#[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
 pub fn mm256_inserti128_si256<const CONTROL: i32>(vector: Vec256, vector_i128: Vec128) -> Vec256 {
     #[cfg(not(hax))]
     debug_assert!(CONTROL == 0 || CONTROL == 1);
@@ -552,6 +609,7 @@ pub fn mm256_inserti128_si256<const CONTROL: i32>(vector: Vec256, vector_i128: V
 }
 
 #[inline(always)]
+#[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
 pub fn mm256_blend_epi16<const CONTROL: i32>(lhs: Vec256, rhs: Vec256) -> Vec256 {
     #[cfg(not(hax))]
     debug_assert!(CONTROL >= 0 && CONTROL < 256);
@@ -559,6 +617,7 @@ pub fn mm256_blend_epi16<const CONTROL: i32>(lhs: Vec256, rhs: Vec256) -> Vec256
 }
 
 #[inline(always)]
+#[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
 pub fn mm256_blend_epi32<const CONTROL: i32>(lhs: Vec256, rhs: Vec256) -> Vec256 {
     #[cfg(not(hax))]
     debug_assert!(CONTROL >= 0 && CONTROL < 256);
@@ -569,6 +628,7 @@ pub fn mm256_blend_epi32<const CONTROL: i32>(lhs: Vec256, rhs: Vec256) -> Vec256
 // It is not offered by the AVX2 instruction set.
 
 #[inline(always)]
+#[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
 pub fn vec256_blendv_epi32(a: Vec256, b: Vec256, mask: Vec256) -> Vec256 {
     unsafe {
         _mm256_castps_si256(_mm256_blendv_ps(
@@ -580,41 +640,49 @@ pub fn vec256_blendv_epi32(a: Vec256, b: Vec256, mask: Vec256) -> Vec256 {
 }
 
 #[inline(always)]
+#[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
 pub fn mm_movemask_epi8(vector: Vec128) -> i32 {
     unsafe { _mm_movemask_epi8(vector) }
 }
 
 #[inline(always)]
+#[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
 pub fn mm256_permutevar8x32_epi32(vector: Vec256, control: Vec256) -> Vec256 {
     unsafe { _mm256_permutevar8x32_epi32(vector, control) }
 }
 
 #[inline(always)]
+#[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
 pub fn mm256_srlv_epi32(vector: Vec256, counts: Vec256) -> Vec256 {
     unsafe { _mm256_srlv_epi32(vector, counts) }
 }
 
 #[inline(always)]
+#[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
 pub fn mm256_srlv_epi64(vector: Vec256, counts: Vec256) -> Vec256 {
     unsafe { _mm256_srlv_epi64(vector, counts) }
 }
 
 #[inline(always)]
+#[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
 pub fn mm_sllv_epi32(vector: Vec128, counts: Vec128) -> Vec128 {
     unsafe { _mm_sllv_epi32(vector, counts) }
 }
 
 #[inline(always)]
+#[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
 pub fn mm256_sllv_epi32(vector: Vec256, counts: Vec256) -> Vec256 {
     unsafe { _mm256_sllv_epi32(vector, counts) }
 }
 
 #[inline(always)]
+#[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
 pub fn mm256_slli_epi64<const LEFT: i32>(x: Vec256) -> Vec256 {
     unsafe { _mm256_slli_epi64::<LEFT>(x) }
 }
 
 #[inline(always)]
+#[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
 pub fn mm256_bsrli_epi128<const SHIFT_BY: i32>(x: Vec256) -> Vec256 {
     #[cfg(not(hax))]
     debug_assert!(SHIFT_BY > 0 && SHIFT_BY < 16);
@@ -622,26 +690,31 @@ pub fn mm256_bsrli_epi128<const SHIFT_BY: i32>(x: Vec256) -> Vec256 {
 }
 
 #[inline(always)]
+#[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
 pub fn mm256_andnot_si256(a: Vec256, b: Vec256) -> Vec256 {
     unsafe { _mm256_andnot_si256(a, b) }
 }
 
 #[inline(always)]
+#[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
 pub fn mm256_set1_epi64x(a: i64) -> Vec256 {
     unsafe { _mm256_set1_epi64x(a) }
 }
 
 #[inline(always)]
+#[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
 pub fn mm256_set_epi64x(input3: i64, input2: i64, input1: i64, input0: i64) -> Vec256 {
     unsafe { _mm256_set_epi64x(input3, input2, input1, input0) }
 }
 
 #[inline(always)]
+#[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
 pub fn mm256_unpacklo_epi64(lhs: Vec256, rhs: Vec256) -> Vec256 {
     unsafe { _mm256_unpacklo_epi64(lhs, rhs) }
 }
 
 #[inline(always)]
+#[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
 pub fn mm256_permute2x128_si256<const IMM8: i32>(a: Vec256, b: Vec256) -> Vec256 {
     unsafe { _mm256_permute2x128_si256::<IMM8>(a, b) }
 }
