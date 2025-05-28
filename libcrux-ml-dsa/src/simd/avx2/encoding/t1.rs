@@ -5,6 +5,7 @@ use libcrux_intrinsics::avx2::*;
 #[hax_lib::fstar::before("open Spec.Intrinsics")]
 #[hax_lib::requires(out.len() == 10)]
 #[hax_lib::ensures(|_result| fstar!(r"
+   Seq.length ${out}_future == 10 /\
    (forall (i:nat).
      i < 80 ==>
        ${simd_unit}.(mk_int (32*(i/10) + (i%10))) == (u8_to_bv (Seq.index ${out}_future (i/8)))(mk_int (i % 8)))
@@ -48,6 +49,7 @@ pub(crate) fn serialize(simd_unit: &Vec256, out: &mut [u8]) {
   ) /\ (
    forall (j:nat).
     j < 256 ==>
+    j % 32 > 10 ==>
        ${out}_future.(mk_int j) == Core_models.Abstractions.Bit.Bit_Zero
   )"))]
 pub(crate) fn deserialize(bytes: &[u8], out: &mut Vec256) {
