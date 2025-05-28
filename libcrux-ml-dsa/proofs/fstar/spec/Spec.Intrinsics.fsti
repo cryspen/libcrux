@@ -301,6 +301,15 @@ val mm256_madd_epi16_lemma (a b: bv256) i
              )
    )
 
+// Note: this lemma has no SMTPat: we usually want more specialized version of this lemma.
+// For example, a lemma that requires this `Bit_Zero? .. \/ Bit_Zero? ..` precondition, but for every index: such a precondition is stronger that needed but easier for the SMT.
+val mm256_add_epi64_lemma lhs rhs (i: u64 {v i < 256})
+  : Lemma
+    (requires forall (j:nat{j < v i % 64}). Bit_Zero? lhs.(mk_int ((v i / 64) * 64 + j)) 
+                                   \/ Bit_Zero? rhs.(mk_int ((v i / 64) * 64 + j)))
+    (ensures (Bit_Zero? lhs.(i) ==> (I.mm256_add_epi64 lhs rhs).(i) == rhs.(i))
+           /\ (Bit_Zero? rhs.(i) ==> (I.mm256_add_epi64 lhs rhs).(i) == lhs.(i)))
+
 val mm256_madd_epi16_specialized_lemma vec i:
   Lemma
   (requires
