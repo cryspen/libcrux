@@ -201,7 +201,11 @@
                     // build the key from the values in the schema
                     let key = {};
                     for (const s of schema) {
-                        key[s] = benchItem[s];
+                        let value = benchItem[s];
+                        if (typeof value === 'number') {
+                            value = value.toString();
+                        }
+                        key[s] = value;
                     }
 
                     return JSON.stringify(key);
@@ -341,7 +345,11 @@
                 function buildTraceGroupKey(trace, groupBy) {
                     const traceGroup = {};
                     for (let key of groupBy) {
-                        traceGroup[key] = trace.metadata[key];
+                        let value = trace.metadata[key];
+                        if (typeof value === 'number') {
+                            value = value.toString();
+                        }
+                        traceGroup[key] = value;
                     }
                     return JSON.stringify(traceGroup);
                 }
