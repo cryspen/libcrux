@@ -15,6 +15,7 @@ mod invntt;
 mod ntt;
 mod sample;
 
+use arithmetic::shift_left_then_reduce;
 /// Portable SIMD coefficients
 pub(crate) use vector_type::Coefficients as PortableSIMDUnit;
 use vector_type::Coefficients;
@@ -75,7 +76,7 @@ impl Operations for Coefficients {
     }
 
     fn shift_left_then_reduce<const SHIFT_BY: i32>(simd_unit: &mut Coefficients) {
-        arithmetic::shift_left_then_reduce::<SHIFT_BY>(simd_unit);
+        shift_left_then_reduce::<SHIFT_BY>(simd_unit);
     }
 
     fn power2round(t0: &mut Coefficients, t1: &mut Coefficients) {
@@ -136,5 +137,11 @@ impl Operations for Coefficients {
 
     fn invert_ntt_montgomery(simd_units: &mut [Coefficients; SIMD_UNITS_IN_RING_ELEMENT]) {
         invntt::invert_ntt_montgomery(simd_units)
+    }
+
+    fn reduce(simd_units: &mut [Self; SIMD_UNITS_IN_RING_ELEMENT]) {
+        for i in 0..simd_units.len() {
+            shift_left_then_reduce::<0>(&mut simd_units[i]);
+        }
     }
 }
