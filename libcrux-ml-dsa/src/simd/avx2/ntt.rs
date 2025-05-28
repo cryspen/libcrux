@@ -51,6 +51,11 @@ fn butterfly_2(
     zeta_b2: i32,
     zeta_b3: i32,
 ) {
+    // For proofs, the style that works best is to separate out the
+    // stateful operations (reading and writing to mutable arrays)
+    // from the core computation. So this and the following functions
+    // have the pattern: read from array; compute; write to array.
+
     let re0 = re[index].value;
     let re1 = re[index + 1].value;
 
@@ -85,7 +90,7 @@ fn butterfly_2(
     let nre0 = mm256_shuffle_epi32::<SHUFFLE>(a_terms_shuffled);
     let nre1 = mm256_shuffle_epi32::<SHUFFLE>(b_terms_shuffled);
 
-    // This assert allows all the SMT Patterns to kick in an prove correctness
+    // This assert allows all the SMT Patterns to kick in and prove correctness
     hax_lib::fstar!(
         r#"assert (butterfly_2_spec 
                             $re0 $re1 $zeta_a0 $zeta_a1 $zeta_a2 $zeta_a3 
@@ -156,7 +161,7 @@ fn butterfly_4(
     let nre0 = mm256_unpacklo_epi64(add_terms, sub_terms);
     let nre1 = mm256_unpackhi_epi64(add_terms, sub_terms);
 
-    // This assert allows all the SMT Patterns to kick in an prove correctness
+    // This assert allows all the SMT Patterns to kick in and prove correctness
     hax_lib::fstar!(
         r#"assert (butterfly_4_spec 
         $re0 $re1 $zeta_a0 $zeta_a1 $zeta_b0 $zeta_b1 $nre0 $nre1)"#
@@ -167,7 +172,6 @@ fn butterfly_4(
 }
 
 // Compute (a,b) ↦ (a + ζb, a - ζb) at layer 2 for 2 SIMD Units in one go.
-#[inline(always)]
 #[inline(always)]
 #[hax_lib::fstar::before(
     r#"
@@ -219,7 +223,7 @@ fn butterfly_8(re: &mut AVX2RingElement, index: usize, zeta0: i32, zeta1: i32) {
     );
     let nre1 = mm256_permute2x128_si256::<0b0001_0011>(sub_terms, add_terms);
 
-    // This assert allows all the SMT Patterns to kick in an prove correctness
+    // This assert allows all the SMT Patterns to kick in and prove correctness
     hax_lib::fstar!(
         r#"assert (butterfly_8_spec 
          $re0 $re1 $zeta0 $zeta1 $nre0 $nre1)"#
@@ -486,6 +490,7 @@ unsafe fn ntt_at_layer_7_and_6(re: &mut AVX2RingElement) {
         }};
     }
 
+    // Note: For proofs, it is better to use concrete constants instead of const expressions
     const STEP_BY_7: usize = 16; //2 * COEFFICIENTS_IN_SIMD_UNIT;
     const STEP_BY_6: usize = 8; //(1 << 6) / COEFFICIENTS_IN_SIMD_UNIT;
 
