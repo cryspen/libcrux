@@ -87,8 +87,8 @@ define FINDLIBS
         : "if there is a [proofs/fstar/extraction] subfolder, then that s a F* library" ; \
         print_if_exists "$$path/proofs/fstar/extraction" ; \
         : "Maybe the [proof-libs] folder of hax is around?" ; \
-        MAYBE_PROOF_LIBS=$$(realpath -q "$$path/../proof-libs/fstar") ; \
-        if [ $$? -eq 0 ]; then \
+		MAYBE_PROOF_LIBS=$$(realpath -q "$$path/proof-libs/fstar" || realpath -q "$$path/../proof-libs/fstar") ; \
+		if [ -n "$$MAYBE_PROOF_LIBS" ]; then \
             print_if_exists "$$MAYBE_PROOF_LIBS/core" ; \
             print_if_exists "$$MAYBE_PROOF_LIBS/rust_primitives" ; \
         fi ; \
