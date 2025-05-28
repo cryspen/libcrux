@@ -600,6 +600,10 @@ val mm256_unpackhi_epi64_lemma (a b: bv256) (i:u64{v i < 8}):
           i32))
   [SMTPat (to_i32x8 (Libcrux_intrinsics.Avx2.mm256_unpackhi_epi64 a b) i)]
 
+val mm_loadu_si128_lemma (bytes: _{ Seq.length bytes = 16 }) i
+  : Lemma ((I.mm_loadu_si128 bytes).(i) == (u8_to_bv (Seq.index bytes ((v i) / 8)))(mk_int ((v i) % 8)) )
+  [SMTPat (((I.mm_loadu_si128 bytes).(i)))]
+
 val i32_lt_pow2_n_to_bit_zero_lemma n vec
   : Lemma (forall i. v (to_i32x8 vec (i /! mk_int 32)) <= normalize_term (pow2 n - 1)
                 ==> v i % 32 >= n
