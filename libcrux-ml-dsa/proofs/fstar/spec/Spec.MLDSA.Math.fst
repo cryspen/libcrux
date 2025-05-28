@@ -4,11 +4,31 @@ open FStar.Mul
 open Core
 
 include Spec.Utils
-
+open Spec.Intrinsics
+  
 let v_FIELD_MODULUS: i32 = mk_i32 8380417
 
 [@@ "opaque_to_smt"]
 let mod_q a = a % 8380417
+
+let i32_mul (x:i32) (y:i32) =
+  mul_mod_opaque (cast_mod_opaque x <: i64) (cast_mod_opaque y <: i64)
+
+[@@ "opaque_to_smt"]
+let mont_mul (x:i32) (y:i32) : i32 =
+  let product : i64 = i32_mul x y in
+  let hi : i32 = cast_mod_opaque (shift_right_opaque product (mk_i32 32)) in
+  let low : i32 = cast_mod_opaque product in
+  let k : i32 = cast_mod_opaque (i32_mul low (mk_i32 58728449)) in
+  let c : i32 = cast_mod_opaque (shift_right_opaque (i32_mul k (mk_i32 8380417)) (mk_i32 32)) in
+  sub_mod_opaque hi c  
+
+[@@ "opaque_to_smt"]
+let barrett_red (x:i32) : i32 =
+  let q = shift_right_opaque (add_mod_opaque x (shift_left (mk_i32 1) (mk_i32 22))) (mk_i32 23) in
+  sub_mod_opaque x (mul_mod_opaque q v_FIELD_MODULUS)
+  
+
 
 let v_BITS_IN_LOWER_PART_OF_T: usize = mk_usize 13
 
@@ -19,8 +39,9 @@ let is_gamma2 (g:range_t I32) = g == v v_GAMMA2_V261_888 \/ g == v v_GAMMA2_V95_
 type gamma2 = g:range_t I32{is_gamma2 g}
 
 let power2round (t:range_t I32) : (range_t I32 & range_t I32) =
-  let t0 = mod_p (t % v v_FIELD_MODULUS) (pow2 (v v_BITS_IN_LOWER_PART_OF_T)) in
-  let t1 = ((t % v v_FIELD_MODULUS) - t0) / pow2 (v v_BITS_IN_LOWER_PART_OF_T) in
+  let representative = t % v v_FIELD_MODULUS in
+  let t0 = mod_p  representative (pow2 (v v_BITS_IN_LOWER_PART_OF_T)) in
+  let t1 = (representative - t0) / pow2 (v v_BITS_IN_LOWER_PART_OF_T) in
   (t0, t1)
 
 let decompose (g:gamma2) (r:range_t I32) : (range_t I32 & range_t I32 & bool) =

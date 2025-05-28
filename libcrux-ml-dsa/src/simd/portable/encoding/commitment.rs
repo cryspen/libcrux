@@ -33,6 +33,7 @@ fn serialize_4(simd_unit: &Coefficients, serialized: &mut [u8]) {
 }
 
 #[inline(always)]
+#[hax_lib::fstar::options("--z3rlimit 300")]
 #[hax_lib::requires(fstar!(r"Seq.length ${serialized} == 6 /\ (forall i. bounded (Seq.index ${simd_unit.values} i) 6)"))]
 #[hax_lib::ensures(|out| {
     let serialized_future = future(serialized);
