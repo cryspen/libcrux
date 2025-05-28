@@ -41,6 +41,7 @@ val to_u8x16  (x: bv128): u8x16
 val to_i16x16 (x: bv256): i16x16
 val to_i32x4  (x: bv128): i32x4
 val to_i32x8  (x: bv256): i32x8
+val to_i64x4  (x: bv256): i64x4
 
 (**** Int vec to bit vec *)
 val from_i32x8 (x:i32x8):  bv256
@@ -48,6 +49,7 @@ val from_i32x8 (x:i32x8):  bv256
 (**** Int to bit vecs *)
 val i16_to_bv (x: i16): t_FunArray (mk_int 16) t_Bit
 val i32_to_bv (x: i32): t_FunArray (mk_int 32) t_Bit
+val i64_to_bv (x: i64): t_FunArray (mk_int 64) t_Bit
 val u8_to_bv (x: u8): t_FunArray (mk_int 8) t_Bit
 
 (**** Inversion lemmas *)
