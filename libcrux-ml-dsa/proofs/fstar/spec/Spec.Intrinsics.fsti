@@ -52,6 +52,18 @@ val i32_to_bv (x: i32): t_FunArray (mk_int 32) t_Bit
 val i64_to_bv (x: i64): t_FunArray (mk_int 64) t_Bit
 val u8_to_bv (x: u8): t_FunArray (mk_int 8) t_Bit
 
+(**** Reshaping of bit vectors *)
+let unpack_bytes_bv (vec: t_Slice u8)
+  : bv256
+  = Core_models.Abstractions.Bitvec.impl_9__from_fn (mk_int 256)  (fun (i:u64{v i < 256}) ->
+      let bits_per_i32 = Seq.length vec in
+      let i32_block = v i / 32 in
+      let j = i32_block * bits_per_i32 + v i % 32 in
+      if v i % 32 >= bits_per_i32
+      then Core_models.Abstractions.Bit.Bit_Zero 
+      else u8_to_bv (Seq.index vec (j / 8)) (mk_int (j % 8))
+    )
+
 (**** Inversion lemmas *)
 val to_from_i32x8_inv_lemma (x: i32x8)
   : Lemma (to_i32x8 (from_i32x8 x) == x) [SMTPat (to_i32x8 (from_i32x8 x))]

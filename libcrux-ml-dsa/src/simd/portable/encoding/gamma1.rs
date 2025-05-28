@@ -3,6 +3,7 @@ use crate::{helper::cloop, simd::portable::vector_type::Coefficients};
 #[inline(always)]
 fn serialize_when_gamma1_is_2_pow_17(simd_unit: &Coefficients, serialized: &mut [u8]) {
     const GAMMA1: i32 = 1 << 17;
+    // 18 bits per i32
 
     cloop! {
         for (i, coefficients) in simd_unit.values.chunks_exact(4).enumerate() {
