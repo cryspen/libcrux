@@ -61,15 +61,13 @@ val i16_to_bv_to_i16x16_inv (vec: bv256) (i: u64 {v i < 16}) (j: u64 {v j < 16})
     [SMTPat (i16_to_bv (to_i16x16 vec i) j)]
 
 (**** Lemmas about intrinsics *)
-let mm256_castsi256_si128_bv_lemma vec i
+val mm256_castsi256_si128_bv_lemma vec i
   : Lemma ((I.mm256_castsi256_si128 vec).(i) == vec.(i))
           [SMTPat (I.mm256_castsi256_si128 vec).(i)]
-  = ()
 
-let mm256_extracti128_si256_bv_lemma (control: i32) vec i
+val mm256_extracti128_si256_bv_lemma (control: i32) vec i
   : Lemma ((I.mm256_extracti128_si256 control vec).(i) == vec.(mk_int (if v control = 0 then 0 else 128) +! i))
           [SMTPat (I.mm256_extracti128_si256 control vec).(i)]
-  = ()
 
 val mm256_and_si256 lhs rhs i
   : Lemma ( (I.mm256_and_si256 lhs rhs).(i) == (
