@@ -6,115 +6,86 @@ use core_models::abstractions::{
     bitvec::{bitvec_postprocess_norm, BitVec},
 };
 
-#[hax_lib::ensures(|(lower, upper)| {
-    use hax_lib::*;
-    let lower = BitVec::<128>::from(lower);
-    let upper = BitVec::<128>::from(upper);
-    let simd_unit = BitVec::<256>::from(*simd_unit);
-    forall(|i: u64|
-        implies(i < 48, if i < 24 {lower[i]} else { upper[i - 24] } == simd_unit[i / 6 * 32 + i % 6])
-    )
-})]
-#[inline(always)]
-fn serialize_6(simd_unit: &Vec256) -> (Vec128, Vec128) {
-    #[hax_lib::ensures(|result| fstar!(r#"
-      let (lower, upper) = $result in 
+#[hax_lib::ensures(|result| fstar!(r#"
       let open Spec.Intrinsics in
       forall (i: nat {i < 48}).
-         (if i < 24 then lower.(mk_int i) else upper.(mk_int (i - 24)))
+         (if i < 24 then result.(mk_int i) else result.(mk_int (128 + i - 24)))
       == (${simd_unit}.(mk_int ((i / 6) * 32 + i % 6)))
     "#
     ))]
-    #[hax_lib::fstar::options("--ifuel 0 --z3rlimit 380")]
-    #[hax_lib::fstar::before(r#"[@@"opaque_to_smt"]"#)]
-    fn normalized_serialize_6(simd_unit: &Vec256) -> (Vec128, Vec128) {
-        let adjacent_2_combined =
-            mm256_sllv_epi32(*simd_unit, mm256_set_epi32(0, 26, 0, 26, 0, 26, 0, 26));
-        let adjacent_2_combined = mm256_srli_epi64::<26>(adjacent_2_combined);
+#[hax_lib::fstar::options("--ifuel 0 --z3rlimit 380")]
+#[hax_lib::fstar::before(r#"[@@"opaque_to_smt"]"#)]
+#[inline(always)]
+fn serialize_6(simd_unit: &Vec256) -> Vec256 {
+    let adjacent_2_combined =
+        mm256_sllv_epi32(*simd_unit, mm256_set_epi32(0, 26, 0, 26, 0, 26, 0, 26));
+    let adjacent_2_combined = mm256_srli_epi64::<26>(adjacent_2_combined);
 
-        let adjacent_3_combined = mm256_shuffle_epi8(
-            adjacent_2_combined,
-            mm256_set_epi8(
-                -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 9, 8, 1, 0, -1, -1, -1, -1, -1, -1,
-                -1, -1, -1, -1, -1, -1, 9, 8, 1, 0,
-            ),
-        );
+    let adjacent_3_combined = mm256_shuffle_epi8(
+        adjacent_2_combined,
+        mm256_set_epi8(
+            -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 9, 8, 1, 0, -1, -1, -1, -1, -1, -1, -1,
+            -1, -1, -1, -1, -1, 9, 8, 1, 0,
+        ),
+    );
 
-        let adjacent_3_combined = mm256_mullo_epi16(
-            adjacent_3_combined,
-            // Note: the explicit style `1i16 << N` matters for F* proofs here.
-            mm256_set_epi16(
-                1i16 << 0,
-                1i16 << 0,
-                1i16 << 0,
-                1i16 << 0,
-                1i16 << 0,
-                1i16 << 0,
-                1i16 << 0,
-                1i16 << 4,
-                1i16 << 0,
-                1i16 << 0,
-                1i16 << 0,
-                1i16 << 0,
-                1i16 << 0,
-                1i16 << 0,
-                1i16 << 0,
-                1i16 << 4,
-            ),
-        );
-        let adjacent_3_combined =
-            mm256_srlv_epi32(adjacent_3_combined, mm256_set_epi32(0, 0, 0, 4, 0, 0, 0, 4));
-
-        // We now have 24 bits starting at position 0 in the lower 128-bit lane, ...
-        let lower = mm256_castsi256_si128(adjacent_3_combined);
-        // and 24 bits starting at position 0 in the upper 128-bit lane.
-        let upper = mm256_extracti128_si256::<1>(adjacent_3_combined);
-
-        (lower, upper)
-    }
-    normalized_serialize_6(simd_unit)
+    let adjacent_3_combined = mm256_mullo_epi16(
+        adjacent_3_combined,
+        // Note: the explicit style `1i16 << N` matters for F* proofs here.
+        mm256_set_epi16(
+            1i16 << 0,
+            1i16 << 0,
+            1i16 << 0,
+            1i16 << 0,
+            1i16 << 0,
+            1i16 << 0,
+            1i16 << 0,
+            1i16 << 4,
+            1i16 << 0,
+            1i16 << 0,
+            1i16 << 0,
+            1i16 << 0,
+            1i16 << 0,
+            1i16 << 0,
+            1i16 << 0,
+            1i16 << 4,
+        ),
+    );
+    mm256_srlv_epi32(adjacent_3_combined, mm256_set_epi32(0, 0, 0, 4, 0, 0, 0, 4))
 }
 
-#[hax_lib::ensures(|r| {
-    use hax_lib::*;
-    let r = BitVec::<128>::from(r);
-    let simd_unit = BitVec::<256>::from(*simd_unit);
-    forall(|i: u64|
-        implies(i < 32, r[i] == simd_unit[i / 4 * 32 + i % 4])
-    )
-})]
-#[inline(always)]
-fn serialize_4(simd_unit: &Vec256) -> Vec128 {
-    #[hax_lib::fstar::options("--ifuel 0 --z3rlimit 380")]
-    #[hax_lib::ensures(|result| fstar!(r"
+#[hax_lib::fstar::options("--ifuel 0 --z3rlimit 380")]
+#[hax_lib::ensures(|result| fstar!(r"
         let open Spec.Intrinsics in
           forall (i: nat{i < 32}).
                 ${result}.(mk_int i) == simd_unit.(mk_int ((i / 4) * 32 + i % 4))
     "))]
-    #[inline(always)]
-    fn normalized_serialize_4(simd_unit: &Vec256) -> Vec128 {
-        let adjacent_2_combined =
-            mm256_sllv_epi32(*simd_unit, mm256_set_epi32(0, 28, 0, 28, 0, 28, 0, 28));
-        let adjacent_2_combined = mm256_srli_epi64::<28>(adjacent_2_combined);
+#[inline(always)]
+fn serialize_4(simd_unit: &Vec256) -> Vec128 {
+    let adjacent_2_combined =
+        mm256_sllv_epi32(*simd_unit, mm256_set_epi32(0, 28, 0, 28, 0, 28, 0, 28));
+    let adjacent_2_combined = mm256_srli_epi64::<28>(adjacent_2_combined);
 
-        let adjacent_4_combined = mm256_permutevar8x32_epi32(
-            adjacent_2_combined,
-            mm256_set_epi32(0, 0, 0, 0, 6, 2, 4, 0),
-        );
-        let adjacent_4_combined = mm256_castsi256_si128(adjacent_4_combined);
-        let adjacent_4_combined = mm_shuffle_epi8(
-            adjacent_4_combined,
-            mm_set_epi8(
-                0xF0, 0xF0, 0xF0, 0xF0, 0xF0, 0xF0, 0xF0, 0xF0, 0xF0, 0xF0, 0xF0, 0xF0, 12, 4, 8, 0,
-            ),
-        );
-        adjacent_4_combined
-    }
-    normalized_serialize_4(simd_unit)
+    let adjacent_4_combined =
+        mm256_permutevar8x32_epi32(adjacent_2_combined, mm256_set_epi32(0, 0, 0, 0, 6, 2, 4, 0));
+    let adjacent_4_combined = mm256_castsi256_si128(adjacent_4_combined);
+    let adjacent_4_combined = mm_shuffle_epi8(
+        adjacent_4_combined,
+        mm_set_epi8(
+            0xF0, 0xF0, 0xF0, 0xF0, 0xF0, 0xF0, 0xF0, 0xF0, 0xF0, 0xF0, 0xF0, 0xF0, 12, 4, 8, 0,
+        ),
+    );
+    adjacent_4_combined
 }
 
 #[inline(always)]
 #[hax_lib::requires(out.len() == 4 || out.len() == 6)]
+#[hax_lib::ensures(|_result| fstar!(r"
+  let open Spec.Intrinsics in
+  let bytes = Seq.length out in
+     Seq.length out_future == Seq.length out
+  /\ (forall (i: nat {i < bytes * 8}). u8_to_bv out_future.[mk_usize (i / 8)] (mk_int (i % 8)) == simd_unit.(mk_int (i / bytes * 32 + i % bytes)))
+"))]
 pub(in crate::simd::avx2) fn serialize(simd_unit: &Vec256, out: &mut [u8]) {
     let mut serialized = [0u8; 19];
 
@@ -125,7 +96,12 @@ pub(in crate::simd::avx2) fn serialize(simd_unit: &Vec256, out: &mut [u8]) {
         }
 
         6 => {
-            let (lower_3, upper_3) = serialize_6(simd_unit);
+            let adjacent_3_combined = serialize_6(simd_unit);
+
+            // We now have 24 bits starting at position 0 in the lower 128-bit lane, ...
+            let lower_3 = mm256_castsi256_si128(adjacent_3_combined);
+            // and 24 bits starting at position 0 in the upper 128-bit lane.
+            let upper_3 = mm256_extracti128_si256::<1>(adjacent_3_combined);
 
             mm_storeu_bytes_si128(&mut serialized[0..16], lower_3);
             mm_storeu_bytes_si128(&mut serialized[3..19], upper_3);
