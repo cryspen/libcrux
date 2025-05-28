@@ -23,6 +23,12 @@ let mont_mul (x:i32) (y:i32) : i32 =
   let c : i32 = cast_mod_opaque (shift_right_opaque (i32_mul k (mk_i32 8380417)) (mk_i32 32)) in
   sub_mod_opaque hi c  
 
+[@@ "opaque_to_smt"]
+let barrett_red (x:i32) : i32 =
+  let q = shift_right_opaque (add_mod_opaque x (shift_left (mk_i32 1) (mk_i32 22))) (mk_i32 23) in
+  sub_mod_opaque x (mul_mod_opaque q v_FIELD_MODULUS)
+  
+
 
 let v_BITS_IN_LOWER_PART_OF_T: usize = mk_usize 13
 

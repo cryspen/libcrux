@@ -1,7 +1,7 @@
 module Spec.Intrinsics
 open Core
 open Core_models.Core_arch.X86.Interpretations.Int_vec
-
+ 
 let logand_mask_lemma_forall #t:
   Lemma (forall a. logand ones a == a /\ 
               logand a ones == a /\ 
@@ -83,6 +83,12 @@ val mm256_add_epi32_lemma (a b: bv256) (i:u64{v i < 8}):
          add_mod_opaque (to_i32x8 a i) (to_i32x8 b i))
          [SMTPat (to_i32x8 (Libcrux_intrinsics.Avx2.mm256_add_epi32 a b) i)]
 
+// Check this definition, especially when a * b < -pow2 31
+val mm256_mullo_epi32_lemma (a b: bv256) (i:u64{v i < 8}):
+  Lemma (to_i32x8 (Libcrux_intrinsics.Avx2.mm256_mullo_epi32 a b) i ==
+         mul_mod_opaque (to_i32x8 a i) (to_i32x8 b i))
+         [SMTPat (to_i32x8 (Libcrux_intrinsics.Avx2.mm256_mullo_epi32 a b) i)]
+
 val mm256_mul_epi32_lemma (a b: bv256) (i:u64{v i < 8}):
   Lemma (to_i32x8 (Libcrux_intrinsics.Avx2.mm256_mul_epi32 a b) i ==
          (
@@ -102,6 +108,15 @@ val mm256_srai_epi32_lemma (v_IMM8: i32) (a: bv256) (i:u64{v i < 8}):
          else shift_right_opaque (to_i32x8 a i) imm8
          ))
          [SMTPat (to_i32x8 (Libcrux_intrinsics.Avx2.mm256_srai_epi32 v_IMM8 a) i)]
+
+val mm256_slli_epi32_lemma (v_IMM8: i32) (a: bv256) (i:u64{v i < 8}):
+  Lemma (to_i32x8 (Libcrux_intrinsics.Avx2.mm256_slli_epi32 v_IMM8 a) i ==
+         (
+         if v_IMM8 <. mk_i32 0 || v_IMM8 >. mk_i32 31
+         then mk_i32 0
+         else shift_left_opaque (to_i32x8 a i) v_IMM8
+         ))
+         [SMTPat (to_i32x8 (Libcrux_intrinsics.Avx2.mm256_slli_epi32 v_IMM8 a) i)]
 
 val mm256_and_si256_lemma (a b: bv256) (i:u64{v i < 8}):
   Lemma (to_i32x8 (Libcrux_intrinsics.Avx2.mm256_and_si256 a b) i ==

@@ -1,12 +1,9 @@
-use super::Gamma2;
 use crate::{
-    constants::{BITS_IN_LOWER_PART_OF_T, GAMMA2_V261_888, GAMMA2_V95_232},
+    constants::{Gamma2, BITS_IN_LOWER_PART_OF_T, GAMMA2_V261_888, GAMMA2_V95_232},
     simd::traits::{FIELD_MODULUS, INVERSE_OF_MODULUS_MOD_MONTGOMERY_R},
 };
 
 use libcrux_intrinsics::avx2::*;
-
-use super::Gamma2;
 
 #[inline]
 #[hax_lib::fstar::before(r#"open Spec.Intrinsics"#)]
@@ -138,7 +135,13 @@ pub(super) fn montgomery_multiply(lhs: &mut Vec256, rhs: &Vec256) {
 
 #[inline]
 #[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
+#[hax_lib::requires(fstar!(r#"v $SHIFT_BY == 13"#))]
+#[hax_lib::ensures(|_| fstar!(r#"
+    (forall i. to_i32x8 ${simd_unit}_future i ==
+        Spec.MLDSA.Math.barrett_red (shift_left_opaque (to_i32x8 ${simd_unit} i) v_SHIFT_BY))"#))]
 pub(super) fn shift_left_then_reduce<const SHIFT_BY: i32>(simd_unit: &mut Vec256) {
+    hax_lib::fstar!("reveal_opaque (`%Spec.MLDSA.Math.barrett_red) (Spec.MLDSA.Math.barrett_red)");
+
     let shifted = mm256_slli_epi32::<SHIFT_BY>(*simd_unit);
 
     let quotient = mm256_add_epi32(shifted, mm256_set1_epi32(1 << 22));
@@ -151,13 +154,13 @@ pub(super) fn shift_left_then_reduce<const SHIFT_BY: i32>(simd_unit: &mut Vec256
 }
 
 #[inline]
+#[hax_lib::fstar::options("--fuel 0 --ifuel 0 --z3rlimit 300")]
 #[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
 #[hax_lib::requires(fstar!(r#"v $bound > 0 /\ 
     (forall i. Spec.Utils.is_i32b (v $FIELD_MODULUS - 1) (to_i32x8 ${simd_unit} i))"#))]
 #[hax_lib::ensures(|result| fstar!(r#"
     $result == false <==> 
         (forall i. Spec.Utils.is_i32b (v $bound - 1) (to_i32x8 ${simd_unit} i))"#))]
-#[hax_lib::fstar::verification_status(lax)]
 pub(super) fn infinity_norm_exceeds(simd_unit: &Vec256, bound: i32) -> bool {
     let absolute_values = mm256_abs_epi32(*simd_unit);
 
