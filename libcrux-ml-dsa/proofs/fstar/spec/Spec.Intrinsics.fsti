@@ -69,6 +69,10 @@ val mm256_extracti128_si256_bv_lemma (control: i32) vec i
   : Lemma ((I.mm256_extracti128_si256 control vec).(i) == vec.(mk_int (if v control = 0 then 0 else 128) +! i))
           [SMTPat (I.mm256_extracti128_si256 control vec).(i)]
 
+val mm256_extracti128_si256_lemma (control: i32) vec (i: _{v i < 4})
+  : Lemma (to_i32x4 (I.mm256_extracti128_si256 control vec) i == to_i32x8 vec (i +! mk_int 4))
+          [SMTPat (to_i32x4 (I.mm256_extracti128_si256 control vec) i)]
+
 val mm256_and_si256 lhs rhs i
   : Lemma ( (I.mm256_and_si256 lhs rhs).(i) == (
             match lhs.(i), rhs.(i) with
