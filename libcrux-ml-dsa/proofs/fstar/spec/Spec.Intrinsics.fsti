@@ -85,6 +85,23 @@ val mm_storeu_bytes_si128_lemma out vec (i:nat {i < 16})
           (ensures Seq.index (I.mm_storeu_bytes_si128 out vec) i == to_u8x16 vec (mk_int i))
           [SMTPat (Seq.index (I.mm_storeu_bytes_si128 out vec) i)]
 
+val update_at_range_bv_lemma
+    (f_start: usize) (f_end: _ {v f_end == v f_start + 16})
+    (bytes: t_Slice u8{Seq.length bytes >= v f_start + 16})
+    (dummy_out: _ {Seq.length dummy_out == 16})
+    vec i
+  : Lemma (
+      Seq.index (
+        Rust_primitives.Hax.Monomorphized_update_at.update_at_range 
+          bytes { f_start; f_end } (I.mm_storeu_bytes_si128 dummy_out vec)
+      ) i == (if i >= v f_start && i < v f_end
+              then to_u8x16 vec (mk_int (i - v f_start))
+              else Seq.index bytes i))
+    [SMTPat (Seq.index (
+        Rust_primitives.Hax.Monomorphized_update_at.update_at_range 
+          bytes { f_start; f_end } (I.mm_storeu_bytes_si128 dummy_out vec)
+      ) i)]
+
 val u8_to_bv_to_u8x16_inv (vec: bv128) (i: u64 {v i < 16}) (j: u64 {v j < 8})
   : Lemma (u8_to_bv (to_u8x16 vec i) j == vec.(mk_int (v i * 8 + v j)))
           [SMTPat (u8_to_bv (to_u8x16 vec i) j)]
