@@ -511,6 +511,13 @@ val mm256_blend_epi32_lemma (imm8: i32) (a b: bv256) (i:u64{v i < 8}):
          then to_i32x8 a i
          else to_i32x8 b i))
 
+
+val mm256_set_m128i_bv_lemma (hi lo: bv128) (i: u64 {v i < 256}):
+  Lemma ((Libcrux_intrinsics.Avx2.mm256_set_m128i hi lo).(i) ==
+         (if v i < 128 then lo.(i) else hi.(mk_int (v i - 128)))
+        )
+  [SMTPat ((Libcrux_intrinsics.Avx2.mm256_set_m128i hi lo).(i))]
+
 val mm256_set_m128i_lemma (hi lo: bv128) (i:u64{v i < 8}):
   Lemma (to_i32x8 (Libcrux_intrinsics.Avx2.mm256_set_m128i hi lo) i ==
         (match i <: u64 with
