@@ -39,8 +39,9 @@ let is_gamma2 (g:range_t I32) = g == v v_GAMMA2_V261_888 \/ g == v v_GAMMA2_V95_
 type gamma2 = g:range_t I32{is_gamma2 g}
 
 let power2round (t:range_t I32) : (range_t I32 & range_t I32) =
-  let t0 = mod_p (t % v v_FIELD_MODULUS) (pow2 (v v_BITS_IN_LOWER_PART_OF_T)) in
-  let t1 = ((t % v v_FIELD_MODULUS) - t0) / pow2 (v v_BITS_IN_LOWER_PART_OF_T) in
+  let representative = t % v v_FIELD_MODULUS in
+  let t0 = mod_p  representative (pow2 (v v_BITS_IN_LOWER_PART_OF_T)) in
+  let t1 = (representative - t0) / pow2 (v v_BITS_IN_LOWER_PART_OF_T) in
   (t0, t1)
 
 let decompose (g:gamma2) (r:range_t I32) : (range_t I32 & range_t I32 & bool) =

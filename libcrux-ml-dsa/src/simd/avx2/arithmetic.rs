@@ -180,8 +180,17 @@ pub(super) fn infinity_norm_exceeds(simd_unit: &Vec256, bound: i32) -> bool {
 
 #[inline]
 #[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
-#[hax_lib::fstar::verification_status(lax)]
+#[hax_lib::requires(fstar!(r#"
+    forall i. Spec.Utils.is_i32b (v $FIELD_MODULUS - 1) (to_i32x8 $r0 i)"#))]
+#[hax_lib::ensures(|_| fstar!(r#"
+    forall i. 
+        let (t0, t1) = Spec.MLDSA.Math.power2round (v (to_i32x8 $r0 i)) in
+        (to_i32x8 ${r0}_future i == mk_i32 t0 /\
+         to_i32x8 ${r1}_future i == mk_i32 t1 /\
+         Spec.Utils.is_i32b (pow2 (v $BITS_IN_LOWER_PART_OF_T - 1)) (to_i32x8 ${r0}_future i))"#))]
 pub(super) fn power2round(r0: &mut Vec256, r1: &mut Vec256) {
+    hax_lib::fstar!("reveal_opaque_arithmetic_ops #i32_inttype");
+
     to_unsigned_representatives(r0);
 
     *r1 = mm256_add_epi32(
