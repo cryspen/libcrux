@@ -180,10 +180,10 @@ val mm256_srlv_epi64_bv_lemma
       (I.mm256_srlv_epi64 vector shifts).(i) ==
        (let i:u64 = i in
         let v_CHUNK = mk_u64 64 in
-        let v_SHIFTS = mk_u64 8 in
+        let v_SHIFTS = mk_u64 4 in
         let nth_bit:u64 = i %! v_CHUNK in
         let nth_chunk:u64 = i /! v_CHUNK in
-        let shift = if nth_chunk <. v_SHIFTS then v (to_i32x8 shifts nth_chunk) else 0 in
+        let shift = if nth_chunk <. v_SHIFTS then v (to_i64x4 shifts nth_chunk) else 0 in
         let local_index = v nth_bit + shift in
         if local_index < v v_CHUNK && local_index >= 0
         then vector.( (nth_chunk *! v_CHUNK) +! mk_int local_index )
