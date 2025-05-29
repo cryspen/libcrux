@@ -173,7 +173,7 @@ pub(super) fn infinity_norm_exceeds(simd_unit: &Vec256, bound: i32) -> bool {
     // If every lane of |result| is 0, all coefficients are <= bound - 1
     let result = mm256_testz_si256(compare_with_bound, compare_with_bound);
 
-    hax_lib::fstar!(r"logand_mask_lemma_forall #i32_inttype");
+    hax_lib::fstar!(r"logand_lemma_forall #i32_inttype");
 
     result != 1
 }
@@ -206,7 +206,17 @@ pub(super) fn power2round(r0: &mut Vec256, r1: &mut Vec256) {
 // Not using inline always here regresses performance significantly.
 #[inline(always)]
 #[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
-#[hax_lib::fstar::verification_status(lax)]
+#[hax_lib::requires(fstar!(r#"(v $gamma2 == v $GAMMA2_V261_888 \/ v $gamma2 == v $GAMMA2_V95_232) /\
+    (forall i. Spec.Utils.is_i32b (v $FIELD_MODULUS - 1) (to_i32x8 $r0 i))"#))]
+#[hax_lib::ensures(|(r0,r1)| fstar!(r#"
+    forall i.
+    let (r0_s, r1_s, cond) = Spec.MLDSA.Math.decompose (v $gamma2) (v (to_i32x8 $r0 i)) in
+    v (to_i32x8 ${r0}_future i) = r0_s /\ v (to_i32x8 ${r1}_future i) = r1_s /\
+    (if cond then
+        (v (to_i32x8 ${r0}_future i) >= -(v $gamma2) /\ v (to_i32x8 ${r0}_future i) < 0)
+    else
+        (v (to_i32x8 ${r0}_future i) > -(v $gamma2) /\ v (to_i32x8 ${r0}_future i) <= v $gamma2)) /\
+    (v (to_i32x8 ${r1}_future i) >= 0 /\ v (to_i32x8 ${r1}_future i) < (v $FIELD_MODULUS - 1) / (v $gamma2 * 2))"#))]
 pub(super) fn decompose(gamma2: Gamma2, r: &Vec256, r0: &mut Vec256, r1: &mut Vec256) {
     let r = to_unsigned_representatives_ret(r);
 

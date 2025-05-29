@@ -2,14 +2,41 @@ module Spec.Intrinsics
 open Core
 open Core_models.Core_arch.X86.Interpretations.Int_vec
  
-let logand_mask_lemma_forall #t:
+let logand_lemma_forall #t:
   Lemma (forall a. logand ones a == a /\ 
               logand a ones == a /\ 
               logand a zero == zero #t /\ 
               logand zero a == zero #t /\
               logand a a == a) =
   FStar.Classical.forall_intro (fun a -> logand_lemma #t a a)
-  
+
+let logand_mask_lemma_forall #t:
+  Lemma (forall a m. 
+              m < bits t ==>
+              (pow2 m < maxint t /\
+               logand a (sub #t (mk_int #t (pow2 m)) (mk_int #t 1)) ==
+               mk_int (v a % pow2 m))) = admit()
+
+
+let logxor_lemma_forall #t:
+  Lemma (forall a. 
+    a `logxor` a == zero /\
+    zero #t `logxor` a == a /\
+    a `logxor` zero #t == a /\
+    ones #t `logxor` a == lognot a /\
+    a `logxor` ones #t == lognot a) =
+  FStar.Classical.forall_intro (fun a -> logxor_lemma #t a a)
+
+let lognot_lemma_forall #t:
+  Lemma (forall a. 
+   lognot #t zero == ones /\
+   lognot #t ones == zero /\
+   lognot (lognot a) == a /\
+   (signed t ==> v (lognot a) = -1 - v a) /\
+   (unsigned t ==> v (lognot a)  = pow2 (bits t) - 1 - v #t a)) =
+  FStar.Classical.forall_intro (fun a -> lognot_lemma #t a)
+
+
 (* Opaque arithmetic operations *)
 [@@ "opaque_to_smt"]
 let add_mod_opaque #t = add_mod #t
