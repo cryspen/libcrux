@@ -13,6 +13,8 @@ use crate::simd::avx2::Eta;
 #[hax_lib::ensures(|result| {
     fstar!(r"forall (i:nat{i < 24}). ${result}.(mk_int i) == ${simd_unit_shifted}.(mk_int ((i / 3) * 32 + i % 3))")
 })]
+// `serialize_when_eta_is_2_aux` contains the AVX2-only pure operations.
+// This split is required for the F* proof to go through.
 fn serialize_when_eta_is_2_aux(simd_unit_shifted: Vec256) -> Vec128 {
     let adjacent_2_combined = mm256_sllv_epi32(
         simd_unit_shifted,
@@ -66,6 +68,8 @@ fn serialize_when_eta_is_2(simd_unit: &Vec256, out: &mut [u8]) {
 }
 
 #[inline(always)]
+// `serialize_when_eta_is_4_aux` contains the AVX2-only pure operations.
+// This split makes the F* proof much faster and stable (seconds versus about a minute).
 #[hax_lib::requires(
     fstar!(r"forall (i: nat {i < 256}). i % 32 >= 4 ==> ${simd_unit_shifted}.(mk_int i) == Core_models.Abstractions.Bit.Bit_Zero")
 )]

@@ -32,6 +32,8 @@ let mm256_add_epi64_lemma_smtpat lhs rhs (i: u64 {v i < 256})
 #[hax_lib::ensures(|out|fstar!(r#"
 forall (i: nat {i < 8}) (j: nat {j < 13}). ${out}.(mk_int (i * 13 + j)) == ${simd_unit}.(mk_int (i * 32 + j))
 "#))]
+// `serialize_aux` contains the AVX2-only pure operations.
+// This split is required for the F* proof to go through.
 pub(crate) fn serialize_aux(simd_unit: Vec256) -> Vec128 {
     let adjacent_2_combined =
         mm256_sllv_epi32(simd_unit, mm256_set_epi32(0, 19, 0, 19, 0, 19, 0, 19));
