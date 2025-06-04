@@ -4,6 +4,7 @@ fn new_state() -> State {
     [0u16; 8]
 }
 
+#[inline(always)]
 fn interleave_u8_1(i0: u8, i1: u8) -> u16 {
     let mut x = i0 as u16;
     x = (x | (x << 4)) & 0x0F0F;
@@ -16,6 +17,7 @@ fn interleave_u8_1(i0: u8, i1: u8) -> u16 {
     x | (y << 1)
 }
 
+#[inline(always)]
 fn deinterleave_u8_1(i0: u16) -> (u8, u8) {
     let mut x = i0 & 0x5555;
     x = (x | (x >> 1)) & 0x3333;
@@ -28,18 +30,21 @@ fn deinterleave_u8_1(i0: u16) -> (u8, u8) {
     (x as u8, y as u8)
 }
 
+#[inline(always)]
 fn interleave_u16_2(i0: u16, i1: u16) -> (u16, u16) {
     let x = ((i1 & 0x3333) << 2) | (i0 & 0x3333);
     let y = ((i0 & 0xcccc) >> 2) | (i1 & 0xcccc);
     (x, y)
 }
 
+#[inline(always)]
 fn interleave_u16_4(i0: u16, i1: u16) -> (u16, u16) {
     let x = ((i1 & 0x0F0F) << 4) | (i0 & 0x0F0F);
     let y = ((i0 & 0xF0F0) >> 4) | (i1 & 0xF0F0);
     (x, y)
 }
 
+#[inline(always)]
 fn interleave_u16_8(i0: u16, i1: u16) -> (u16, u16) {
     let x = ((i1 & 0x00FF) << 8) | (i0 & 0x00FF);
     let y = ((i0 & 0xFF00) >> 8) | (i1 & 0xFF00);
@@ -118,6 +123,7 @@ fn transpose_u16x8(input: &[u16; 8], output: &mut [u8]) {
     output[15] = o15;
 }
 
+#[inline(always)]
 fn xnor(a: u16, b: u16) -> u16 {
     !(a ^ b)
 }
@@ -269,155 +275,6 @@ fn sub_bytes_state(st: &mut State) {
     st[7] = S0;
 }
 
-#[allow(non_snake_case)]
-fn sub_bytes_inv_state(st: &mut State) {
-    let U0 = st[7];
-    let U1 = st[6];
-    let U2 = st[5];
-    let U3 = st[4];
-    let U4 = st[3];
-    let U5 = st[2];
-    let U6 = st[1];
-    let U7 = st[0];
-
-    let T23 = U0 ^ U3;
-    let T22 = xnor(U1, U3);
-    let T2 = xnor(U0, U1);
-    let T1 = U3 ^ U4;
-    let T24 = xnor(U4, U7);
-    let R5 = U6 ^ U7;
-    let T8 = xnor(U1, T23);
-    let T19 = T22 ^ R5;
-    let T9 = xnor(U7, T1);
-    let T10 = T2 ^ T24;
-    let T13 = T2 ^ R5;
-    let T3 = T1 ^ R5;
-    let T25 = xnor(U2, T1);
-    let R13 = U1 ^ U6;
-    let T17 = xnor(U2, T19);
-    let T20 = T24 ^ R13;
-    let T4 = U4 ^ T8;
-    let R17 = xnor(U2, U5);
-    let R18 = xnor(U5, U6);
-    let R19 = xnor(U2, U4);
-    let Y5 = U0 ^ R17;
-    let T6 = T22 ^ R17;
-    let T16 = R13 ^ R19;
-    let T27 = T1 ^ R18;
-    let T15 = T10 ^ T27;
-    let T14 = T10 ^ R18;
-    let T26 = T3 ^ T16;
-    let M1 = T13 & T6;
-    let M2 = T23 & T8;
-    let M3 = T14 ^ M1;
-    let M4 = T19 & Y5;
-    let M5 = M4 ^ M1;
-    let M6 = T3 & T16;
-    let M7 = T22 & T9;
-    let M8 = T26 ^ M6;
-    let M9 = T20 & T17;
-    let M10 = M9 ^ M6;
-    let M11 = T1 & T15;
-    let M12 = T4 & T27;
-    let M13 = M12 ^ M11;
-    let M14 = T2 & T10;
-    let M15 = M14 ^ M11;
-    let M16 = M3 ^ M2;
-    let M17 = M5 ^ T24;
-    let M18 = M8 ^ M7;
-    let M19 = M10 ^ M15;
-    let M20 = M16 ^ M13;
-    let M21 = M17 ^ M15;
-    let M22 = M18 ^ M13;
-    let M23 = M19 ^ T25;
-    let M24 = M22 ^ M23;
-    let M25 = M22 & M20;
-    let M26 = M21 ^ M25;
-    let M27 = M20 ^ M21;
-    let M28 = M23 ^ M25;
-    let M29 = M28 & M27;
-    let M30 = M26 & M24;
-    let M31 = M20 & M23;
-    let M32 = M27 & M31;
-    let M33 = M27 ^ M25;
-    let M34 = M21 & M22;
-    let M35 = M24 & M34;
-    let M36 = M24 ^ M25;
-    let M37 = M21 ^ M29;
-    let M38 = M32 ^ M33;
-    let M39 = M23 ^ M30;
-    let M40 = M35 ^ M36;
-    let M41 = M38 ^ M40;
-    let M42 = M37 ^ M39;
-    let M43 = M37 ^ M38;
-    let M44 = M39 ^ M40;
-    let M45 = M42 ^ M41;
-    let M46 = M44 & T6;
-    let M47 = M40 & T8;
-    let M48 = M39 & Y5;
-    let M49 = M43 & T16;
-    let M50 = M38 & T9;
-    let M51 = M37 & T17;
-    let M52 = M42 & T15;
-    let M53 = M45 & T27;
-    let M54 = M41 & T10;
-    let M55 = M44 & T13;
-    let M56 = M40 & T23;
-    let M57 = M39 & T19;
-    let M58 = M43 & T3;
-    let M59 = M38 & T22;
-    let M60 = M37 & T20;
-    let M61 = M42 & T1;
-    let M62 = M45 & T4;
-    let M63 = M41 & T2;
-    let P0 = M52 ^ M61;
-    let P1 = M58 ^ M59;
-    let P2 = M54 ^ M62;
-    let P3 = M47 ^ M50;
-    let P4 = M48 ^ M56;
-    let P5 = M46 ^ M51;
-    let P6 = M49 ^ M60;
-    let P7 = P0 ^ P1;
-    let P8 = M50 ^ M53;
-    let P9 = M55 ^ M63;
-    let P10 = M57 ^ P4;
-    let P11 = P0 ^ P3;
-    let P12 = M46 ^ M48;
-    let P13 = M49 ^ M51;
-    let P14 = M49 ^ M62;
-    let P15 = M54 ^ M59;
-    let P16 = M57 ^ M61;
-    let P17 = M58 ^ P2;
-    let P18 = M63 ^ P5;
-    let P19 = P2 ^ P3;
-    let P20 = P4 ^ P6;
-    let P22 = P2 ^ P7;
-    let P23 = P7 ^ P8;
-    let P24 = P5 ^ P7;
-    let P25 = P6 ^ P10;
-    let P26 = P9 ^ P11;
-    let P27 = P10 ^ P18;
-    let P28 = P11 ^ P25;
-    let P29 = P15 ^ P20;
-    let W0 = P13 ^ P22;
-    let W1 = P26 ^ P29;
-    let W2 = P17 ^ P28;
-    let W3 = P12 ^ P22;
-    let W4 = P23 ^ P27;
-    let W5 = P19 ^ P24;
-    let W6 = P14 ^ P23;
-    let W7 = P9 ^ P16;
-
-    st[0] = W7;
-    st[1] = W6;
-    st[2] = W5;
-    st[3] = W4;
-    st[4] = W3;
-    st[5] = W2;
-    st[6] = W1;
-    st[7] = W0;
-}
-
 fn shift_row_u16(input: u16) -> u16 {
     (input & 0x1111)
         | ((input & 0x2220) >> 4)
@@ -476,6 +333,7 @@ fn aes_enc_last(st: &mut State, key: &State) {
     xor_key1_state(st, key)
 }
 
+#[inline(always)]
 fn aes_keygen_assisti(rcon: u8, i: usize, u: u16) -> u16 {
     let u3 = u & 0xf000;
     let n = u3 >> 12;
@@ -501,12 +359,15 @@ fn aes_keygen_assist(next: &mut State, prev: &State, rcon: u8) {
 
 fn aes_keygen_assist0(next: &mut State, prev: &State, rcon: u8) {
     aes_keygen_assist(next, prev, rcon);
+
+    #[inline(always)]
     fn aux(mut n: u16) -> u16 {
         n &= 0xf000;
         n ^= n >> 4;
         n ^= n >> 8;
         n
     }
+
     next[0] = aux(next[0]);
     next[1] = aux(next[1]);
     next[2] = aux(next[2]);
@@ -519,12 +380,15 @@ fn aes_keygen_assist0(next: &mut State, prev: &State, rcon: u8) {
 
 fn aes_keygen_assist1(next: &mut State, prev: &State) {
     aes_keygen_assist(next, prev, 0);
+
+    #[inline(always)]
     fn aux(mut n: u16) -> u16 {
         n &= 0x0f00;
         n ^= n << 4;
         n ^= n >> 8;
         n
     }
+
     next[0] = aux(next[0]);
     next[1] = aux(next[1]);
     next[2] = aux(next[2]);
@@ -535,6 +399,7 @@ fn aes_keygen_assist1(next: &mut State, prev: &State) {
     next[7] = aux(next[7]);
 }
 
+#[inline(always)]
 fn key_expand1(p: u16, n: u16) -> u16 {
     let p = p ^ ((p & 0x0fff) << 4) ^ ((p & 0x00ff) << 8) ^ ((p & 0x000f) << 12);
     n ^ p
@@ -566,6 +431,7 @@ impl crate::platform::AESState for State {
         transpose_u16x8(self, out);
     }
 
+    #[inline(always)]
     fn xor_block(&self, inp: &[u8], out: &mut [u8]) {
         debug_assert!(inp.len() == out.len() && inp.len() <= 16);
         let mut block = [0u8; 16];
@@ -603,6 +469,157 @@ impl crate::platform::AESState for State {
 
 #[cfg(test)]
 mod test {
+    use super::*;
+
+    #[allow(non_snake_case)]
+    fn sub_bytes_inv_state(st: &mut State) {
+        let U0 = st[7];
+        let U1 = st[6];
+        let U2 = st[5];
+        let U3 = st[4];
+        let U4 = st[3];
+        let U5 = st[2];
+        let U6 = st[1];
+        let U7 = st[0];
+
+        let T23 = U0 ^ U3;
+        let T22 = xnor(U1, U3);
+        let T2 = xnor(U0, U1);
+        let T1 = U3 ^ U4;
+        let T24 = xnor(U4, U7);
+        let R5 = U6 ^ U7;
+        let T8 = xnor(U1, T23);
+        let T19 = T22 ^ R5;
+        let T9 = xnor(U7, T1);
+        let T10 = T2 ^ T24;
+        let T13 = T2 ^ R5;
+        let T3 = T1 ^ R5;
+        let T25 = xnor(U2, T1);
+        let R13 = U1 ^ U6;
+        let T17 = xnor(U2, T19);
+        let T20 = T24 ^ R13;
+        let T4 = U4 ^ T8;
+        let R17 = xnor(U2, U5);
+        let R18 = xnor(U5, U6);
+        let R19 = xnor(U2, U4);
+        let Y5 = U0 ^ R17;
+        let T6 = T22 ^ R17;
+        let T16 = R13 ^ R19;
+        let T27 = T1 ^ R18;
+        let T15 = T10 ^ T27;
+        let T14 = T10 ^ R18;
+        let T26 = T3 ^ T16;
+        let M1 = T13 & T6;
+        let M2 = T23 & T8;
+        let M3 = T14 ^ M1;
+        let M4 = T19 & Y5;
+        let M5 = M4 ^ M1;
+        let M6 = T3 & T16;
+        let M7 = T22 & T9;
+        let M8 = T26 ^ M6;
+        let M9 = T20 & T17;
+        let M10 = M9 ^ M6;
+        let M11 = T1 & T15;
+        let M12 = T4 & T27;
+        let M13 = M12 ^ M11;
+        let M14 = T2 & T10;
+        let M15 = M14 ^ M11;
+        let M16 = M3 ^ M2;
+        let M17 = M5 ^ T24;
+        let M18 = M8 ^ M7;
+        let M19 = M10 ^ M15;
+        let M20 = M16 ^ M13;
+        let M21 = M17 ^ M15;
+        let M22 = M18 ^ M13;
+        let M23 = M19 ^ T25;
+        let M24 = M22 ^ M23;
+        let M25 = M22 & M20;
+        let M26 = M21 ^ M25;
+        let M27 = M20 ^ M21;
+        let M28 = M23 ^ M25;
+        let M29 = M28 & M27;
+        let M30 = M26 & M24;
+        let M31 = M20 & M23;
+        let M32 = M27 & M31;
+        let M33 = M27 ^ M25;
+        let M34 = M21 & M22;
+        let M35 = M24 & M34;
+        let M36 = M24 ^ M25;
+        let M37 = M21 ^ M29;
+        let M38 = M32 ^ M33;
+        let M39 = M23 ^ M30;
+        let M40 = M35 ^ M36;
+        let M41 = M38 ^ M40;
+        let M42 = M37 ^ M39;
+        let M43 = M37 ^ M38;
+        let M44 = M39 ^ M40;
+        let M45 = M42 ^ M41;
+        let M46 = M44 & T6;
+        let M47 = M40 & T8;
+        let M48 = M39 & Y5;
+        let M49 = M43 & T16;
+        let M50 = M38 & T9;
+        let M51 = M37 & T17;
+        let M52 = M42 & T15;
+        let M53 = M45 & T27;
+        let M54 = M41 & T10;
+        let M55 = M44 & T13;
+        let M56 = M40 & T23;
+        let M57 = M39 & T19;
+        let M58 = M43 & T3;
+        let M59 = M38 & T22;
+        let M60 = M37 & T20;
+        let M61 = M42 & T1;
+        let M62 = M45 & T4;
+        let M63 = M41 & T2;
+        let P0 = M52 ^ M61;
+        let P1 = M58 ^ M59;
+        let P2 = M54 ^ M62;
+        let P3 = M47 ^ M50;
+        let P4 = M48 ^ M56;
+        let P5 = M46 ^ M51;
+        let P6 = M49 ^ M60;
+        let P7 = P0 ^ P1;
+        let P8 = M50 ^ M53;
+        let P9 = M55 ^ M63;
+        let P10 = M57 ^ P4;
+        let P11 = P0 ^ P3;
+        let P12 = M46 ^ M48;
+        let P13 = M49 ^ M51;
+        let P14 = M49 ^ M62;
+        let P15 = M54 ^ M59;
+        let P16 = M57 ^ M61;
+        let P17 = M58 ^ P2;
+        let P18 = M63 ^ P5;
+        let P19 = P2 ^ P3;
+        let P20 = P4 ^ P6;
+        let P22 = P2 ^ P7;
+        let P23 = P7 ^ P8;
+        let P24 = P5 ^ P7;
+        let P25 = P6 ^ P10;
+        let P26 = P9 ^ P11;
+        let P27 = P10 ^ P18;
+        let P28 = P11 ^ P25;
+        let P29 = P15 ^ P20;
+        let W0 = P13 ^ P22;
+        let W1 = P26 ^ P29;
+        let W2 = P17 ^ P28;
+        let W3 = P12 ^ P22;
+        let W4 = P23 ^ P27;
+        let W5 = P19 ^ P24;
+        let W6 = P14 ^ P23;
+        let W7 = P9 ^ P16;
+
+        st[0] = W7;
+        st[1] = W6;
+        st[2] = W5;
+        st[3] = W4;
+        st[4] = W3;
+        st[5] = W2;
+        st[6] = W1;
+        st[7] = W0;
+    }
+
     fn sbox_fwd(s: u8) -> u8 {
         match s {
             0 => 0x63,
@@ -1127,6 +1144,8 @@ mod test {
 
     use rand_core::{OsRng, RngCore};
 
+    use crate::platform::portable::aes_core::transpose_u8x16;
+
     fn get_bit_u8(x: &[u8], i: usize, j: usize) -> u8 {
         (x[i] >> j) & 0x1
     }
@@ -1140,7 +1159,7 @@ mod test {
         let mut x = [0u8; 16];
         OsRng.fill_bytes(&mut x);
         let mut y = [0u16; 8];
-        super::transpose_u8x16(&x, &mut y);
+        transpose_u8x16(&x, &mut y);
         for i in 0..16 {
             for j in 0..8 {
                 if get_bit_u8(&x, i, j) != get_bit_u16(&y, i, j) {
@@ -1153,7 +1172,7 @@ mod test {
             }
         }
         let mut z = [0u8; 16];
-        super::transpose_u16x8(&y, &mut z);
+        transpose_u16x8(&y, &mut z);
         for i in 0..16 {
             for j in 0..8 {
                 if get_bit_u8(&x, i, j) != get_bit_u8(&z, i, j) {
@@ -1175,9 +1194,9 @@ mod test {
         for i in 0..=255 {
             x[0] = i;
             x[9] = i;
-            super::transpose_u8x16(&x, &mut y);
-            super::sub_bytes_state(&mut y);
-            super::transpose_u16x8(&y, &mut w);
+            transpose_u8x16(&x, &mut y);
+            sub_bytes_state(&mut y);
+            transpose_u16x8(&y, &mut w);
             if w[0] != sbox_fwd(i as u8) {
                 println!("sbox[{}] = {}, should be {}", i, w[0], sbox_fwd(i as u8));
                 assert!(false);
@@ -1195,9 +1214,9 @@ mod test {
         for i in 0..=255 {
             x[0] = i;
             x[9] = i;
-            super::transpose_u8x16(&x, &mut y);
-            super::sub_bytes_inv_state(&mut y);
-            super::transpose_u16x8(&y, &mut w);
+            transpose_u8x16(&x, &mut y);
+            sub_bytes_inv_state(&mut y);
+            transpose_u16x8(&y, &mut w);
             if w[0] != sbox_inv(i as u8) {
                 println!(
                     "sbox_inv[{}] = {}, should be {}",
