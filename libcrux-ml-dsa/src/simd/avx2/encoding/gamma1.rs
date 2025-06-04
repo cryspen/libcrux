@@ -1,12 +1,27 @@
 use libcrux_intrinsics::avx2::*;
 
 #[inline(always)]
-fn serialize_when_gamma1_is_2_pow_17(simd_unit: &Vec256, out: &mut [u8]) {
-    let mut serialized = [0u8; 32];
-
-    const GAMMA1: i32 = 1 << 17;
-    let simd_unit_shifted = mm256_sub_epi32(mm256_set1_epi32(GAMMA1), *simd_unit);
-
+#[hax_lib::fstar::before(r#"
+open Spec.Intrinsics
+let lemma_mm256_add_epi64_lemma_weaker lhs rhs (i: u64 {v i < 256})
+  : Lemma
+    (requires forall i. Core_models.Abstractions.Bit.Bit_Zero? lhs.(i) \/ Core_models.Abstractions.Bit.Bit_Zero? rhs.(i))
+    (ensures (Core_models.Abstractions.Bit.Bit_Zero? lhs.(i) ==> (Libcrux_intrinsics.Avx2.mm256_add_epi64 lhs rhs).(i) == rhs.(i))
+           /\ (Core_models.Abstractions.Bit.Bit_Zero? rhs.(i) ==> (Libcrux_intrinsics.Avx2.mm256_add_epi64 lhs rhs).(i) == lhs.(i)))
+    [SMTPat (Libcrux_intrinsics.Avx2.mm256_add_epi64 lhs rhs).(i)]
+    = Spec.Intrinsics.mm256_add_epi64_lemma lhs rhs i
+"#)]
+#[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
+#[hax_lib::requires(fstar!(r#"forall i. v i % 32 >= 18 ==> simd_unit_shifted.(i) == Core_models.Abstractions.Bit.Bit_Zero"#))]
+#[hax_lib::ensures(|result| fstar!(r#"
+forall (i: nat {i < 8}) (j: nat {j < 18}).
+  let offset = if i >= 4 then 56 else 0 in
+  ${result}.(mk_int (i * 18 + j + offset)) == ${simd_unit_shifted}.(mk_int (i * 32 + j))
+"#))]
+#[hax_lib::fstar::options("--fuel 0 --ifuel 0 --z3rlimit 100")]
+// `serialize_when_gamma1_is_2_pow_17_aux` contains the AVX2-only pure operations.
+// This split is required for the F* proof to go through.
+fn serialize_when_gamma1_is_2_pow_17_aux(simd_unit_shifted: Vec256) -> Vec256 {
     let adjacent_2_combined = mm256_sllv_epi32(
         simd_unit_shifted,
         mm256_set_epi32(0, 14, 0, 14, 0, 14, 0, 14),
@@ -18,6 +33,26 @@ fn serialize_when_gamma1_is_2_pow_17(simd_unit: &Vec256, out: &mut [u8]) {
 
     let adjacent_4_combined = mm256_add_epi64(adjacent_2_combined, every_second_element_shifted);
     let adjacent_4_combined = mm256_srlv_epi64(adjacent_4_combined, mm256_set_epi64x(28, 0, 28, 0));
+    adjacent_4_combined
+}
+
+const GAMMA1_2_POW_17: i32 = 1 << 17;
+
+#[inline(always)]
+#[hax_lib::fstar::options(r#"--ifuel 0 --z3rlimit 140 --split_queries always"#)]
+#[hax_lib::requires(fstar!(r#"forall i. let x = (v ${GAMMA1_2_POW_17} - v (to_i32x8 $simd_unit i)) in x >= 0 && x < pow2 18"#))]
+#[hax_lib::ensures(|_result| fstar!(r#"
+      Seq.length ${out}_future == 18
+    /\ (forall (i:nat{i < 144}).
+      u8_to_bv (Seq.index ${out}_future (i / 8)) (mk_int (i % 8))
+   == i32_to_bv (${GAMMA1_2_POW_17} `sub_mod` to_i32x8 $simd_unit (mk_int (i / 18))) (mk_int (i % 18)))
+"#))]
+fn serialize_when_gamma1_is_2_pow_17(simd_unit: &Vec256, out: &mut [u8]) {
+    let mut serialized = [0u8; 32];
+
+    let simd_unit_shifted = mm256_sub_epi32(mm256_set1_epi32(GAMMA1_2_POW_17), *simd_unit);
+    hax_lib::fstar!("i32_lt_pow2_n_to_bit_zero_lemma 18 $simd_unit_shifted");
+    let adjacent_4_combined = serialize_when_gamma1_is_2_pow_17_aux(simd_unit_shifted);
 
     let lower_4 = mm256_castsi256_si128(adjacent_4_combined);
     mm_storeu_bytes_si128(&mut serialized[0..16], lower_4);
@@ -25,16 +60,34 @@ fn serialize_when_gamma1_is_2_pow_17(simd_unit: &Vec256, out: &mut [u8]) {
     let upper_4 = mm256_extracti128_si256::<1>(adjacent_4_combined);
     mm_storeu_bytes_si128(&mut serialized[9..25], upper_4);
 
+    hax_lib::fstar!(
+        r#"
+  // Thunk the two proofs, so that Z3 check them in parallel, and the SMT context is not polluted
+  let spec (i:nat{i < 144}) = u8_to_bv (Seq.index $serialized (i / 8)) (mk_int (i % 8))
+            == i32_to_bv (${GAMMA1_2_POW_17} `sub_mod` to_i32x8 $simd_unit (mk_int (i / 18))) (mk_int (i % 18)) in
+  let proof: squash (forall i. spec i) =
+    assert (forall (i:nat{i < 8}). to_i32x8 $simd_unit_shifted (mk_int ((i / 4) * 4 + i % 4)) == ${GAMMA1_2_POW_17} `sub_mod` to_i32x8 $simd_unit (mk_int i));
+    let proof_72 (): squash (forall i. i < 72 ==> spec i) = () in
+    let proof_144 (): squash (forall i. i >= 72 ==> spec i) = () in
+    proof_72 (); proof_144 ()
+  in ()
+    "#
+    );
+
     out.copy_from_slice(&serialized[0..18]);
 }
 
 #[inline(always)]
-fn serialize_when_gamma1_is_2_pow_19(simd_unit: &Vec256, out: &mut [u8]) {
-    let mut serialized = [0u8; 32];
-
-    const GAMMA1: i32 = 1 << 19;
-    let simd_unit_shifted = mm256_sub_epi32(mm256_set1_epi32(GAMMA1), *simd_unit);
-
+#[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
+#[hax_lib::requires(fstar!(r#"forall i. v i % 32 >= 20 ==> ${simd_unit_shifted}.(i) == Core_models.Abstractions.Bit.Bit_Zero"#))]
+#[hax_lib::ensures(|result| fstar!(r#"
+forall (i: nat {i < 8}) (j: nat {j < 20}).
+       ${result}.(mk_int ((if i >= 4 then 48 else 0) + i * 20 + j))
+    == ${simd_unit_shifted}.(mk_int (i * 32 + j))
+"#))]
+// `serialize_when_gamma1_is_2_pow_19_aux` contains the AVX2-only pure operations.
+// This split is required for the F* proof to go through.
+fn serialize_when_gamma1_is_2_pow_19_aux(simd_unit_shifted: Vec256) -> Vec256 {
     let adjacent_2_combined = mm256_sllv_epi32(
         simd_unit_shifted,
         mm256_set_epi32(0, 12, 0, 12, 0, 12, 0, 12),
@@ -48,6 +101,25 @@ fn serialize_when_gamma1_is_2_pow_19(simd_unit: &Vec256, out: &mut [u8]) {
             11, 10, 9, 8, 4, 3, 2, 1, 0,
         ),
     );
+    adjacent_4_combined
+}
+
+const GAMMA1_2_POW_19: i32 = 1 << 19;
+#[inline(always)]
+#[hax_lib::fstar::options(r#"--ifuel 0 --z3rlimit 140 --split_queries always"#)]
+#[hax_lib::requires(fstar!(r#"forall i. let x = (v ${GAMMA1_2_POW_19} - v (to_i32x8 $simd_unit i)) in x >= 0 && x < pow2 20"#))]
+#[hax_lib::ensures(|_result| fstar!(r#"
+      Seq.length ${out}_future == 20
+    /\ (forall (i:nat{i < 160}).
+      u8_to_bv (Seq.index ${out}_future (i / 8)) (mk_int (i % 8))
+   == i32_to_bv (${GAMMA1_2_POW_19} `sub_mod` to_i32x8 $simd_unit (mk_int (i / 20))) (mk_int (i % 20)))
+"#))]
+fn serialize_when_gamma1_is_2_pow_19(simd_unit: &Vec256, out: &mut [u8]) {
+    let mut serialized = [0u8; 32];
+
+    let simd_unit_shifted = mm256_sub_epi32(mm256_set1_epi32(GAMMA1_2_POW_19), *simd_unit);
+    hax_lib::fstar!("i32_lt_pow2_n_to_bit_zero_lemma 20 $simd_unit_shifted");
+    let adjacent_4_combined = serialize_when_gamma1_is_2_pow_19_aux(simd_unit_shifted);
 
     // We now have 80 bits starting at position 0 in the lower 128-bit lane, ...
     let lower_4 = mm256_castsi256_si128(adjacent_4_combined);
@@ -57,10 +129,47 @@ fn serialize_when_gamma1_is_2_pow_19(simd_unit: &Vec256, out: &mut [u8]) {
     let upper_4 = mm256_extracti128_si256::<1>(adjacent_4_combined);
     mm_storeu_bytes_si128(&mut serialized[10..26], upper_4);
 
+    hax_lib::fstar!(
+        r#"
+  // Thunk the two proofs, so that Z3 check them in parallel, and the SMT context is not polluted
+  let spec (i:nat{i < 160}) = u8_to_bv (Seq.index $serialized (i / 8)) (mk_int (i % 8))
+            == i32_to_bv (${GAMMA1_2_POW_19} `sub_mod` to_i32x8 $simd_unit (mk_int (i / 20))) (mk_int (i % 20)) in
+  let proof: squash (forall i. spec i) =
+    assert (forall (i:nat{i < 8}). to_i32x8 $simd_unit_shifted (mk_int ((i / 4) * 4 + i % 4)) == ${GAMMA1_2_POW_19} `sub_mod` to_i32x8 $simd_unit (mk_int i));
+    let proof_80 (): squash (forall i. i < 80 ==> spec i) = () in
+    let proof_160 (): squash (forall i. i >= 80 ==> spec i) = () in
+    proof_80 (); proof_160 ()
+  in ()
+    "#
+    );
+
     out.copy_from_slice(&serialized[0..20])
 }
 
 #[inline(always)]
+#[hax_lib::requires(fstar!(r#"
+     (v $gamma1_exponent == 17 \/ v $gamma1_exponent == 19)
+  /\ (Seq.length serialized == v $gamma1_exponent + 1)
+  /\ (
+    let gamma_pow = match v $gamma1_exponent with
+    | 17 -> $GAMMA1_2_POW_17
+    | 19 -> $GAMMA1_2_POW_19
+    in
+    forall i. let x = (v gamma_pow - v (to_i32x8 $simd_unit i)) in x >= 0 && x < pow2 (v $gamma1_exponent + 1)
+  )
+"#))
+]
+#[hax_lib::ensures(|_result| fstar!(r#"
+    let gamma_pow = match v $gamma1_exponent with
+    | 17 -> $GAMMA1_2_POW_17
+    | 19 -> $GAMMA1_2_POW_19
+    in
+    let n_bytes = v $gamma1_exponent + 1 in
+      Seq.length ${serialized}_future == n_bytes
+    /\ (forall (i:nat{i < n_bytes * 8}).
+      u8_to_bv (Seq.index ${serialized}_future (i / 8)) (mk_int (i % 8))
+   == i32_to_bv (gamma_pow -! to_i32x8 $simd_unit (mk_int (i / n_bytes))) (mk_int (i % n_bytes)))
+"#))]
 pub(crate) fn serialize(simd_unit: &Vec256, serialized: &mut [u8], gamma1_exponent: usize) {
     match gamma1_exponent as u8 {
         17 => serialize_when_gamma1_is_2_pow_17(simd_unit, serialized),
@@ -70,6 +179,7 @@ pub(crate) fn serialize(simd_unit: &Vec256, serialized: &mut [u8], gamma1_expone
 }
 
 #[inline(always)]
+#[hax_lib::requires(serialized.len() == 18)]
 fn deserialize_when_gamma1_is_2_pow_17(serialized: &[u8], out: &mut Vec256) {
     debug_assert!(serialized.len() == 18);
 
@@ -97,6 +207,7 @@ fn deserialize_when_gamma1_is_2_pow_17(serialized: &[u8], out: &mut Vec256) {
 }
 
 #[inline(always)]
+#[hax_lib::requires(serialized.len() == 20)]
 fn deserialize_when_gamma1_is_2_pow_19(serialized: &[u8], out: &mut Vec256) {
     // Each set of 5 bytes deserializes to 2 coefficients, and since each Vec256
     // can hold 8 such coefficients, we process 5 * (8 / 2) = 20 bytes in this
@@ -126,6 +237,11 @@ fn deserialize_when_gamma1_is_2_pow_19(serialized: &[u8], out: &mut Vec256) {
 }
 
 #[inline(always)]
+#[hax_lib::requires( match gamma1_exponent as u8 {
+        17 => serialized.len() == 18,
+        19 => serialized.len() == 20,
+        _ => false,
+    })]
 pub(crate) fn deserialize(serialized: &[u8], out: &mut Vec256, gamma1_exponent: usize) {
     match gamma1_exponent as u8 {
         17 => deserialize_when_gamma1_is_2_pow_17(serialized, out),
