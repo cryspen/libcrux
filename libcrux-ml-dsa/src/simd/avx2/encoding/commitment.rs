@@ -16,6 +16,7 @@ use core_models::abstractions::{
 #[hax_lib::fstar::options("--ifuel 0 --z3rlimit 380")]
 #[hax_lib::fstar::before(r#"[@@"opaque_to_smt"]"#)]
 #[inline(always)]
+// This function is purely AVX2 operations, which makes the SMT proof with F* easy.
 fn serialize_6(simd_unit: &Vec256) -> Vec256 {
     let adjacent_2_combined =
         mm256_sllv_epi32(*simd_unit, mm256_set_epi32(0, 26, 0, 26, 0, 26, 0, 26));
@@ -61,6 +62,7 @@ fn serialize_6(simd_unit: &Vec256) -> Vec256 {
                 ${result}.(mk_int i) == simd_unit.(mk_int ((i / 4) * 32 + i % 4))
     "))]
 #[inline(always)]
+// This function is purely AVX2 operations, which makes the SMT proof with F* easy.
 fn serialize_4(simd_unit: &Vec256) -> Vec128 {
     let adjacent_2_combined =
         mm256_sllv_epi32(*simd_unit, mm256_set_epi32(0, 28, 0, 28, 0, 28, 0, 28));
