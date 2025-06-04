@@ -29,8 +29,8 @@ default = []
 std = [
     "rand_core/std",
     "hpke-rs-crypto/std",
-    "hpke-rs-rust-crypto/std",
-    "hpke-rs-libcrux/std",
+    "hpke-rs-rust-crypto?/std",
+    "hpke-rs-libcrux?/std",
 ]
 serialization = ["serde", "tls_codec", "tls_codec/serde", "std"]
 hazmat = []
