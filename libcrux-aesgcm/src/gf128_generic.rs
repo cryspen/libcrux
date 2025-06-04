@@ -13,6 +13,7 @@ pub fn gf128_init<T: GF128FieldElement>(key: &[u8]) -> GF128State<T> {
     }
 }
 
+#[inline(always)]
 pub fn gf128_update<T: GF128FieldElement>(st: &mut GF128State<T>, block: &[u8]) {
     debug_assert!(block.len() == 16);
     let block_elem = T::load_elem(block);
