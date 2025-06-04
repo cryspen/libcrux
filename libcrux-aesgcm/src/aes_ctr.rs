@@ -28,6 +28,7 @@ fn aes_ctr_key_block<T: AESState, const NUM_KEYS: usize>(
     st.store_block(out);
 }
 
+#[inline(always)]
 fn aes_ctr_xor_block<T: AESState, const NUM_KEYS: usize>(
     ctx: &AES_CTR_Context<T, NUM_KEYS>,
     ctr: u32,
