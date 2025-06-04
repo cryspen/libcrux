@@ -44,18 +44,19 @@ fn serialize_when_eta_is_2_aux(simd_unit_shifted: Vec256) -> Vec128 {
     adjacent_6_combined
 }
 
+const ETA_2: i32 = 2;
+
 #[inline(always)]
-#[hax_lib::requires(fstar!("forall i. let x = (2 - v (to_i32x8 simd_unit i)) in x >= 0 && x <= 7"))]
+#[hax_lib::requires(fstar!("forall i. let x = (v $ETA_2 - v (to_i32x8 simd_unit i)) in x >= 0 && x <= 7"))]
 #[hax_lib::ensures(|_result| fstar!(r#"
      Seq.length ${out}_future == 3
   /\ (forall (i:nat{i < 24}). u8_to_bv (Seq.index ${out}_future (i / 8)) (mk_int (i % 8))
-                   == i32_to_bv (mk_int 2 -! to_i32x8 $simd_unit (mk_int (i / 3))) (mk_int (i % 3)))
+                   == i32_to_bv ($ETA_2 -! to_i32x8 $simd_unit (mk_int (i / 3))) (mk_int (i % 3)))
 "#))]
 fn serialize_when_eta_is_2(simd_unit: &Vec256, out: &mut [u8]) {
     let mut serialized = [0u8; 16];
 
-    const ETA: i32 = 2;
-    let simd_unit_shifted = mm256_sub_epi32(mm256_set1_epi32(ETA), *simd_unit);
+    let simd_unit_shifted = mm256_sub_epi32(mm256_set1_epi32(ETA_2), *simd_unit);
 
     hax_lib::fstar!("i32_lt_pow2_n_to_bit_zero_lemma 3 $simd_unit_shifted");
     let adjacent_6_combined = serialize_when_eta_is_2_aux(simd_unit_shifted);
@@ -96,19 +97,20 @@ fn serialize_when_eta_is_4_aux(simd_unit_shifted: Vec256) -> Vec128 {
     adjacent_4_combined
 }
 
+const ETA_4: i32 = 4;
+
 #[inline(always)]
-#[hax_lib::requires(fstar!("forall i. let x = (4 - v (to_i32x8 simd_unit i)) in x >= 0 && x <= 15"))]
+#[hax_lib::requires(fstar!("forall i. let x = (v $ETA_4 - v (to_i32x8 simd_unit i)) in x >= 0 && x <= 15"))]
 #[hax_lib::ensures(|_result| fstar!(r#"
      Seq.length ${out}_future == 4
   /\ (forall (i:nat{i < 32}). u8_to_bv (Seq.index ${out}_future (i / 8)) (mk_int (i % 8))
-                   == i32_to_bv (mk_int 4 -! to_i32x8 $simd_unit (mk_int (i / 4))) (mk_int (i % 4)))
+                   == i32_to_bv ($ETA_4 -! to_i32x8 $simd_unit (mk_int (i / 4))) (mk_int (i % 4)))
 "#))]
 #[hax_lib::fstar::options("--split_queries always")]
 fn serialize_when_eta_is_4(simd_unit: &Vec256, out: &mut [u8]) {
     let mut serialized = [0u8; 16];
 
-    const ETA: i32 = 4;
-    let simd_unit_shifted = mm256_sub_epi32(mm256_set1_epi32(ETA), *simd_unit);
+    let simd_unit_shifted = mm256_sub_epi32(mm256_set1_epi32(ETA_4), *simd_unit);
 
     hax_lib::fstar!("i32_lt_pow2_n_to_bit_zero_lemma 4 $simd_unit_shifted");
     let adjacent_4_combined = serialize_when_eta_is_4_aux(simd_unit_shifted);
