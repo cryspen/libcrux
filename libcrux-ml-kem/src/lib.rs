@@ -112,6 +112,10 @@ mod utils;
 mod variant;
 mod vector;
 
+#[cfg(feature = "mlkem512")]
+#[cfg_attr(docsrs, doc(cfg(feature = "mlkem512")))]
+pub mod mlkem512;
+
 #[cfg(feature = "mlkem768")]
 #[cfg_attr(docsrs, doc(cfg(feature = "mlkem768")))]
 pub mod mlkem768;
