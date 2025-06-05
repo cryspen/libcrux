@@ -76,6 +76,9 @@ check-secret-independence = ["libcrux-secrets/check-secret-independence"]
 # C-Style APIs
 c-apis = []
 
+# PQCP Common APIs
+pqcp = []
+
 [dev-dependencies]
 rand = { version = "0.9", features = ["thread_rng"] }
 serde_json = { version = "1.0" }
