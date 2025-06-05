@@ -112,10 +112,6 @@ mod utils;
 mod variant;
 mod vector;
 
-#[cfg(feature = "mlkem512")]
-#[cfg_attr(docsrs, doc(cfg(feature = "mlkem512")))]
-pub mod mlkem512;
-
 #[cfg(feature = "mlkem768")]
 #[cfg_attr(docsrs, doc(cfg(feature = "mlkem768")))]
 pub mod mlkem768;
@@ -130,6 +126,14 @@ pub use ind_cca::{MlKemSharedSecret, ENCAPS_SEED_SIZE, KEY_GENERATION_SEED_SIZE}
 
 // These types all have type aliases for the different variants.
 pub use types::{MlKemCiphertext, MlKemKeyPair, MlKemPrivateKey, MlKemPublicKey};
+
+/// Errors that can occur during encapsulation and decapsulation.
+pub enum MlKemError {
+    /// Validation of the public key before encapsulation has failed.
+    PublicKeyValidationError,
+    /// Validation of the private key before decapsulation has failed.
+    PrivateKeyValidationError,
+}
 
 cfg_kyber! {
     #[cfg(feature = "mlkem512")]
