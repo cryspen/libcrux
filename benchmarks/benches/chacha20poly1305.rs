@@ -26,17 +26,17 @@ fn comparisons_encrypt(c: &mut Criterion) {
             BenchmarkId::new("libcrux", fmt(*payload_size)),
             payload_size,
             |b, payload_size| {
-                b.iter_batched(
+                b.iter_batched_ref(
                     || {
                         let key = randbuf(&mut drbg).unwrap();
                         let nonce = randbuf(&mut drbg).unwrap();
                         let ptxt = randombytes(*payload_size);
-                        let ctxt = vec![0; *payload_size];
+                        let ctxt = vec![0; *payload_size + 16];
                         let aad = randombytes(1_000);
                         (ptxt, ctxt, nonce, aad, key)
                     },
-                    |(ptxt, mut ctxt, nonce, aad, key)| {
-                        let _tag = encrypt(&key, &ptxt, &mut ctxt, &aad, &nonce);
+                    |(ptxt, ctxt, nonce, aad, key)| {
+                        let (_ctxt, _tag) = encrypt(key, ptxt, ctxt, aad, nonce).unwrap();
                     },
                     BatchSize::SmallInput,
                 )

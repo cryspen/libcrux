@@ -1,9 +1,8 @@
 #![allow(non_snake_case)]
 use criterion::{criterion_group, criterion_main, BatchSize, BenchmarkId, Criterion, Throughput};
 
-use libcrux::digest::{self, *};
-
 use benchmarks::util::*;
+use libcrux_sha3::{digest_size, hash, Algorithm};
 
 macro_rules! impl_comp {
     ($fun:ident, $libcrux:expr, $rust_crypto:ty, $openssl:expr) => {
@@ -23,7 +22,7 @@ macro_rules! impl_comp {
                         b.iter_batched(
                             || randombytes(*payload_size),
                             |payload| {
-                                let _d = digest::hash($libcrux, &payload);
+                                let _d = hash::<{ digest_size($libcrux) }>($libcrux, &payload);
                             },
                             BatchSize::SmallInput,
                         )
@@ -95,25 +94,25 @@ macro_rules! impl_comp {
 
 impl_comp!(
     Sha3_224,
-    Algorithm::Sha3_224,
+    Algorithm::Sha224,
     sha3::Sha3_224,
     MessageDigest::sha3_224() // libcrux_pqclean::sha3_256 // This is wrong, but it's not actually used.
 );
 impl_comp!(
     Sha3_256,
-    Algorithm::Sha3_256,
+    Algorithm::Sha256,
     sha3::Sha3_256,
     MessageDigest::sha3_256() // libcrux_pqclean::sha3_256
 );
 impl_comp!(
     Sha3_384,
-    Algorithm::Sha3_384,
+    Algorithm::Sha384,
     sha3::Sha3_384,
     MessageDigest::sha3_384() // libcrux_pqclean::sha3_384
 );
 impl_comp!(
     Sha3_512,
-    Algorithm::Sha3_512,
+    Algorithm::Sha512,
     sha3::Sha3_512,
     MessageDigest::sha3_512() // libcrux_pqclean::sha3_512
 );
