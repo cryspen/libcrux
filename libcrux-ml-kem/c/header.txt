@@ -1,0 +1,12 @@
+/*
+ * SPDX-FileCopyrightText: 2025 Cryspen Sarl <info@cryspen.com>
+ *
+ * SPDX-License-Identifier: MIT or Apache-2.0
+ *
+ * This code was generated with the following revisions:
+ * Charon: 262d11e095a1563d2e0b1f9093a87a1b07d2874e
+ * Eurydice: 3b7420c918a3d98d59b652afe39efe8460353986
+ * Karamel: 32f765f4e8c9e1a4eb4751c7bddda0c14b132e7f
+ * F*: 71d8221589d4d438af3706d89cb653cf53e18aab
+ * Libcrux: 32a46ffb47e0ff8597e95f26f72bb692bbe1dc04
+ */

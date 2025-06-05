@@ -15,6 +15,11 @@
 #define __libcrux_sha3_portable_H
 
 #include "eurydice_glue.h"
+
+#if defined(__cplusplus)
+extern "C" {
+#endif
+
 #include "libcrux_mlkem_core.h"
 
 static const uint64_t libcrux_sha3_generic_keccak_ROUNDCONSTANTS[24U] = {
@@ -4362,6 +4367,10 @@ typedef uint8_t libcrux_sha3_Sha3_384Digest[48U];
 typedef uint8_t libcrux_sha3_Sha3_256Digest[32U];
 
 typedef uint8_t libcrux_sha3_Sha3_224Digest[28U];
+
+#if defined(__cplusplus)
+}
+#endif
 
 #define __libcrux_sha3_portable_H_DEFINED
 #endif

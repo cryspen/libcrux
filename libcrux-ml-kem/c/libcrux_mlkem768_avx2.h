@@ -15,6 +15,11 @@
 #define __libcrux_mlkem768_avx2_H
 
 #include "eurydice_glue.h"
+
+#if defined(__cplusplus)
+extern "C" {
+#endif
+
 #include "intrinsics/libcrux_intrinsics_avx2.h"
 #include "libcrux_ct_ops.h"
 #include "libcrux_mlkem768_portable.h"
@@ -958,7 +963,8 @@ libcrux_ml_kem_vector_avx2_serialize_serialize_10_serialize_10_vec(
       libcrux_intrinsics_avx2_mm256_castsi256_si128(adjacent_8_combined);
   __m128i upper_8 = libcrux_intrinsics_avx2_mm256_extracti128_si256(
       (int32_t)1, adjacent_8_combined, __m128i);
-  return (core_core_arch_x86___m128i_x2{lower_8, upper_8});
+  return (KRML_CLITERAL(core_core_arch_x86___m128i_x2){.fst = lower_8,
+                                                       .snd = upper_8});
 }
 
 KRML_ATTRIBUTE_TARGET("avx2")
@@ -1086,7 +1092,8 @@ libcrux_ml_kem_vector_avx2_serialize_serialize_12_serialize_12_vec(
       libcrux_intrinsics_avx2_mm256_castsi256_si128(adjacent_8_combined);
   __m128i upper_8 = libcrux_intrinsics_avx2_mm256_extracti128_si256(
       (int32_t)1, adjacent_8_combined, __m128i);
-  return (core_core_arch_x86___m128i_x2{lower_8, upper_8});
+  return (KRML_CLITERAL(core_core_arch_x86___m128i_x2){.fst = lower_8,
+                                                       .snd = upper_8});
 }
 
 KRML_ATTRIBUTE_TARGET("avx2")
@@ -2018,7 +2025,8 @@ libcrux_ml_kem_ntt_ntt_layer_int_vec_step_79(__m256i a, __m256i b,
       libcrux_ml_kem_vector_avx2_montgomery_multiply_by_constant_9a(b, zeta_r);
   b = libcrux_ml_kem_vector_avx2_sub_9a(a, &t);
   a = libcrux_ml_kem_vector_avx2_add_9a(a, &t);
-  return (libcrux_ml_kem_vector_avx2_SIMD256Vector_x2{a, b});
+  return (KRML_CLITERAL(libcrux_ml_kem_vector_avx2_SIMD256Vector_x2){.fst = a,
+                                                                     .snd = b});
 }
 
 /**
@@ -2540,7 +2548,8 @@ libcrux_ml_kem_invert_ntt_inv_ntt_layer_int_vec_step_reduce_79(__m256i a,
       libcrux_ml_kem_vector_avx2_add_9a(a, &b));
   b = libcrux_ml_kem_vector_avx2_montgomery_multiply_by_constant_9a(a_minus_b,
                                                                     zeta_r);
-  return (libcrux_ml_kem_vector_avx2_SIMD256Vector_x2{a, b});
+  return (KRML_CLITERAL(libcrux_ml_kem_vector_avx2_SIMD256Vector_x2){.fst = a,
+                                                                     .snd = b});
 }
 
 /**
@@ -6365,8 +6374,10 @@ static KRML_MUSTINLINE
   uint8_t repeat_expression[32U] = {0U};
   memcpy(uu____0.implicit_rejection_value, repeat_expression,
          (size_t)32U * sizeof(uint8_t));
-  return (libcrux_ml_kem_mlkem768_avx2_unpacked_MlKem768KeyPairUnpacked{
-      uu____0, libcrux_ml_kem_ind_cca_unpacked_default_09_ab()});
+  return (KRML_CLITERAL(
+      libcrux_ml_kem_mlkem768_avx2_unpacked_MlKem768KeyPairUnpacked){
+      .private_key = uu____0,
+      .public_key = libcrux_ml_kem_ind_cca_unpacked_default_09_ab()});
 }
 
 /**
@@ -7025,6 +7036,10 @@ static inline void libcrux_ml_kem_mlkem768_avx2_unpacked_unpacked_public_key(
 
 typedef libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_63
     libcrux_ml_kem_mlkem768_avx2_unpacked_MlKem768PublicKeyUnpacked;
+
+#if defined(__cplusplus)
+}
+#endif
 
 #define __libcrux_mlkem768_avx2_H_DEFINED
 #endif

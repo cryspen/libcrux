@@ -15,6 +15,11 @@
 #define __libcrux_ct_ops_H
 
 #include "eurydice_glue.h"
+
+#if defined(__cplusplus)
+extern "C" {
+#endif
+
 #include "libcrux_mlkem_core.h"
 
 /**
@@ -98,6 +103,10 @@ libcrux_ml_kem_constant_time_ops_compare_ciphertexts_select_shared_secret_in_con
       lhs_s, rhs_s, selector, ret0);
   memcpy(ret, ret0, (size_t)32U * sizeof(uint8_t));
 }
+
+#if defined(__cplusplus)
+}
+#endif
 
 #define __libcrux_ct_ops_H_DEFINED
 #endif

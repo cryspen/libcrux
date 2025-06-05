@@ -15,6 +15,11 @@
 #define __libcrux_sha3_avx2_H
 
 #include "eurydice_glue.h"
+
+#if defined(__cplusplus)
+extern "C" {
+#endif
+
 #include "intrinsics/libcrux_intrinsics_avx2.h"
 #include "libcrux_mlkem_core.h"
 #include "libcrux_sha3_portable.h"
@@ -2757,6 +2762,10 @@ libcrux_sha3_avx2_x4_incremental_shake256_squeeze_next_block(
   Eurydice_slice buf[4U] = {out0, out1, out2, out3};
   libcrux_sha3_generic_keccak_squeeze_next_block_97(s, buf);
 }
+
+#if defined(__cplusplus)
+}
+#endif
 
 #define __libcrux_sha3_avx2_H_DEFINED
 #endif
