@@ -39,7 +39,8 @@ tls_codec = { version = "0.4.2", features = [
 
 [features]
 # By default all variants and std are enabled.
-default = ["default-no-std", "std"]
+# In addition, we enable the C-style APIs until they will be fully deprecated.
+default = ["default-no-std", "std", "c-apis"]
 default-no-std = ["mlkem512", "mlkem768", "mlkem1024", "rand"]
 
 # Serialization & Deserialization using tls_codec
@@ -71,6 +72,9 @@ incremental = []
 
 # Checking secret independence
 check-secret-independence = ["libcrux-secrets/check-secret-independence"]
+
+# C-Style APIs
+c-apis = []
 
 [dev-dependencies]
 rand = { version = "0.9", features = ["thread_rng"] }
