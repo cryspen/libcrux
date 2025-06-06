@@ -189,31 +189,30 @@ impl<const PARALLEL_LANES: usize, const RATE: usize, STATE: KeccakStateItem<PARA
             keccakf1600(&mut self.inner);
         }
 
-        // How many blocks do we need to squeeze out?
         let out_len = out[0].len();
-        let blocks = out_len / RATE;
-        let last = out_len - (out_len % RATE);
 
-        // Squeeze out one to start with.
-        // XXX: Eurydice does not extract `core::cmp::min`, so we do
-        // this instead. (cf. https://github.com/AeneasVerif/eurydice/issues/49)
-        let mid = if RATE >= out_len { out_len } else { RATE };
-        STATE::store_block::<RATE>(&self.inner.st, &mut out, 0, mid);
+        if out_len > 0 {
+            if out_len <= RATE {
+                STATE::store_block::<RATE>(&self.inner.st, &mut out, 0, out_len);
+            } else {
+                // How many blocks do we need to squeeze out?
+                let blocks = out_len / RATE;
 
-        // If we got asked for more than one block, squeeze out more.
-        for i in 1..blocks {
-            // Here we know that we always have full blocks to write out.
-            keccakf1600(&mut self.inner);
-            STATE::store_block::<RATE>(&self.inner.st, &mut out, i * RATE, RATE);
+                for i in 0..blocks {
+                    // Here we know that we always have full blocks to write out.
+                    keccakf1600(&mut self.inner);
+                    STATE::store_block::<RATE>(&self.inner.st, &mut out, i * RATE, RATE);
+                }
+
+                let remaining = out_len % RATE;
+                if remaining > 0 {
+                    // Squeeze out the last partial block
+                    keccakf1600(&mut self.inner);
+                    STATE::store_block::<RATE>(&self.inner.st, &mut out, blocks * RATE, remaining);
+                }
+            }
+            self.sponge = true;
         }
-
-        if last < out_len {
-            // Squeeze out the last partial block
-            keccakf1600(&mut self.inner);
-            STATE::store_block::<RATE>(&self.inner.st, &mut out, last, out_len - last);
-        }
-
-        self.sponge = true;
     }
 }
 
