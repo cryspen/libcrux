@@ -120,7 +120,7 @@ pub(crate) fn store_block<const RATE: usize>(
     if remaining > 8 {
         let mut out0 = [0u8; 16];
         let mut out1 = [0u8; 16];
-        let i = len / 16;
+        let i = 2 * (len / 16);
         let i0 = i / 5;
         let j0 = i % 5;
         let i1 = (i + 1) / 5;
@@ -133,7 +133,7 @@ pub(crate) fn store_block<const RATE: usize>(
         out[1][start + len - remaining..start + len].copy_from_slice(&out1[0..remaining]);
     } else if remaining > 0 {
         let mut out01 = [0u8; 16];
-        let i = len / 16;
+        let i = 2 * (len / 16);
         _vst1q_bytes_u64(&mut out01, get_ij(s, i / 5, i % 5));
         out[0][start + len - remaining..start + len].copy_from_slice(&out01[0..remaining]);
         out[1][start + len - remaining..start + len].copy_from_slice(&out01[8..8 + remaining]);
