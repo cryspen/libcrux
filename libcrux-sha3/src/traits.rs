@@ -35,7 +35,17 @@ pub(crate) mod internal {
         fn xor_constant(a: Self, c: u64) -> Self;
         fn xor(a: Self, b: Self) -> Self;
         fn load_block<const RATE: usize>(state: &mut [Self; 25], input: &[&[u8]; N], start: usize);
-        fn load_last<const RATE: usize, const DELIMITER: u8>(state: &mut [Self; 25], input: &[&[u8]; N], start: usize, len:usize);
-        fn store_block<const RATE: usize>(state: &[Self; 25], input: &mut [&mut [u8]; N], start:usize, len:usize);
+        fn load_last<const RATE: usize, const DELIMITER: u8>(
+            state: &mut [Self; 25],
+            input: &[&[u8]; N],
+            start: usize,
+            len: usize,
+        );
+        fn store_block<const RATE: usize>(
+            state: &[Self; 25],
+            input: &mut [&mut [u8]; N],
+            start: usize,
+            len: usize,
+        );
     }
 }
