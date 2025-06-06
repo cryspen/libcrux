@@ -102,7 +102,7 @@ impl Variant for MlKem {
         seed[0..CPA_PKE_KEY_GENERATION_SEED_SIZE].copy_from_slice(key_generation_seed);
         seed[CPA_PKE_KEY_GENERATION_SEED_SIZE] = K as u8;
         hax_lib::fstar!(
-            "Lib.Sequence.eq_intro #u8 #33 $seed
+            "eq_intro $seed
             (Seq.append $key_generation_seed (Seq.create 1 (cast $K <: u8)))"
         );
         Hasher::G(&seed)

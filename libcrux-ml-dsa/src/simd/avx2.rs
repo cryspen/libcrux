@@ -13,6 +13,7 @@ mod ntt;
 mod rejection_sample;
 mod vector_type;
 
+use arithmetic::shift_left_then_reduce;
 pub(crate) use vector_type::{AVX2RingElement, Vec256 as AVX2SIMDUnit};
 
 #[cfg(not(eurydice))]
@@ -78,7 +79,7 @@ impl Operations for AVX2SIMDUnit {
 
     #[inline(always)]
     fn shift_left_then_reduce<const SHIFT_BY: i32>(simd_unit: &mut Self) {
-        arithmetic::shift_left_then_reduce::<SHIFT_BY>(&mut simd_unit.value)
+        shift_left_then_reduce::<SHIFT_BY>(&mut simd_unit.value)
     }
 
     #[inline(always)]
@@ -153,5 +154,13 @@ impl Operations for AVX2SIMDUnit {
     #[inline(always)]
     fn invert_ntt_montgomery(simd_units: &mut AVX2RingElement) {
         invntt::invert_ntt_montgomery(simd_units);
+    }
+
+    #[inline(always)]
+    fn reduce(simd_units: &mut [Self; SIMD_UNITS_IN_RING_ELEMENT]) {
+        shift_left_then_reduce::<0>(&mut simd_units[0].value);
+        shift_left_then_reduce::<0>(&mut simd_units[8].value);
+        shift_left_then_reduce::<0>(&mut simd_units[16].value);
+        shift_left_then_reduce::<0>(&mut simd_units[24].value);
     }
 }

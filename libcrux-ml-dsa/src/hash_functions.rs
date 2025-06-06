@@ -273,10 +273,10 @@ pub(crate) mod portable {
     /// We're using a portable implementation so this is actually sequential.
     #[cfg_attr(hax, hax_lib::opaque)]
     pub(crate) struct Shake256X4 {
-        state0: libcrux_sha3::portable::KeccakState,
-        state1: libcrux_sha3::portable::KeccakState,
-        state2: libcrux_sha3::portable::KeccakState,
-        state3: libcrux_sha3::portable::KeccakState,
+        state0: KeccakState,
+        state1: KeccakState,
+        state2: KeccakState,
+        state3: KeccakState,
     }
 
     #[inline(always)]
@@ -430,7 +430,7 @@ pub(crate) mod simd256 {
     /// version is used.
     #[cfg_attr(hax, hax_lib::opaque)]
     pub(crate) struct Shake128x4 {
-        state: libcrux_sha3::avx2::x4::incremental::KeccakState,
+        state: x4::incremental::KeccakState,
     }
 
     /// Init the state and absorb 4 blocks in parallel.
@@ -577,7 +577,7 @@ pub(crate) mod simd256 {
     /// AVX2 SHAKE 256 x4 state.
     #[cfg_attr(hax, hax_lib::opaque)]
     pub(crate) struct Shake256x4 {
-        state: libcrux_sha3::avx2::x4::incremental::KeccakState,
+        state: x4::incremental::KeccakState,
     }
 
     #[inline(always)]

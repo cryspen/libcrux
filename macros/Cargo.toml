@@ -1,8 +1,8 @@
 [package]
 name = "libcrux-macros"
 description = "Macros needed in libcrux"
+version = "0.0.3-alpha.1"
 
-version.workspace = true
 authors.workspace = true
 license.workspace = true
 homepage.workspace = true

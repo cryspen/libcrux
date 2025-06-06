@@ -1,8 +1,8 @@
 [package]
 name = "libcrux-hacl-rs"
 description = "Formally verified Rust code extracted from HACL* - helper library"
+version = "0.0.3-alpha.1"
 
-version.workspace = true
 authors.workspace = true
 license.workspace = true
 homepage.workspace = true
@@ -13,6 +13,6 @@ readme.workspace = true
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-libcrux-macros = { path = "../macros", version = "=0.0.2" }
+libcrux-macros = { version = "=0.0.3-alpha.1", path = "../macros" }
 
 [lib]

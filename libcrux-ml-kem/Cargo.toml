@@ -30,8 +30,8 @@ rand = { version = "0.9", optional = true, default-features = false }
 libcrux-platform = { version = "0.0.2", path = "../sys/platform" }
 libcrux-sha3 = { version = "0.0.2", path = "../libcrux-sha3" }
 libcrux-intrinsics = { version = "0.0.2", path = "../libcrux-intrinsics" }
+libcrux-secrets = { version = "0.0.3-alpha.1", path = "../secrets" }
 hax-lib.workspace = true
-libcrux-secrets = { version = "0.0.2", path = "../secrets" }
 
 [features]
 # By default all variants and std are enabled.
@@ -70,7 +70,7 @@ rand = { version = "0.9", features = ["thread_rng"] }
 serde_json = { version = "1.0" }
 serde = { version = "1.0", features = ["derive"] }
 hex = { version = "0.4.3", features = ["serde"] }
-criterion = "0.5"
+criterion = "0.6"
 
 [[bench]]
 name = "ml-kem"

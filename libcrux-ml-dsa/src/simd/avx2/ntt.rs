@@ -3,7 +3,42 @@ use crate::simd::traits::COEFFICIENTS_IN_SIMD_UNIT;
 
 use libcrux_intrinsics::avx2::*;
 
+// Compute (a,b) ↦ (a + ζb, a - ζb) at layer 0 for 2 SIMD Units in one go.
 #[inline(always)]
+#[hax_lib::fstar::before(r"open Spec.MLDSA.Ntt")]
+#[hax_lib::fstar::before(r"open Spec.Intrinsics")]
+#[hax_lib::fstar::before(
+    r#"
+let butterfly_2_spec re0 re1 zeta_a0 zeta_a1 zeta_a2 zeta_a3 
+                     zeta_b0 zeta_b1 zeta_b2 zeta_b3 nre0 nre1 =
+    (to_i32x8 nre0 (mk_u64 0), to_i32x8 nre0 (mk_u64 1)) ==
+     ntt_step zeta_a0 (to_i32x8 re0 (mk_u64 0), to_i32x8 re0 (mk_u64 1)) /\
+    (to_i32x8 nre0 (mk_u64 2), to_i32x8 nre0 (mk_u64 3)) ==
+     ntt_step zeta_a1 (to_i32x8 re0 (mk_u64 2), to_i32x8 re0 (mk_u64 3)) /\
+    (to_i32x8 nre0 (mk_u64 4), to_i32x8 nre0 (mk_u64 5)) ==
+     ntt_step zeta_a2 (to_i32x8 re0 (mk_u64 4), to_i32x8 re0 (mk_u64 5)) /\
+    (to_i32x8 nre0 (mk_u64 6), to_i32x8 nre0 (mk_u64 7)) ==
+     ntt_step zeta_a3 (to_i32x8 re0 (mk_u64 6), to_i32x8 re0 (mk_u64 7)) /\
+    (to_i32x8 nre1 (mk_u64 0), to_i32x8 nre1 (mk_u64 1)) ==
+     ntt_step zeta_b0 (to_i32x8 re1 (mk_u64 0), to_i32x8 re1 (mk_u64 1)) /\
+    (to_i32x8 nre1 (mk_u64 2), to_i32x8 nre1 (mk_u64 3)) ==
+     ntt_step zeta_b1 (to_i32x8 re1 (mk_u64 2), to_i32x8 re1 (mk_u64 3)) /\
+    (to_i32x8 nre1 (mk_u64 4), to_i32x8 nre1 (mk_u64 5)) ==
+     ntt_step zeta_b2 (to_i32x8 re1 (mk_u64 4), to_i32x8 re1 (mk_u64 5)) /\
+    (to_i32x8 nre1 (mk_u64 6), to_i32x8 nre1 (mk_u64 7)) ==
+     ntt_step zeta_b3 (to_i32x8 re1 (mk_u64 6), to_i32x8 re1 (mk_u64 7))
+"#
+)]
+#[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
+#[hax_lib::requires(index < 31)]
+#[hax_lib::ensures(|_result| fstar!(r"
+        butterfly_2_spec (Seq.index ${re} (v $index)).f_value
+                         (Seq.index ${re} (v $index + 1)).f_value
+                         $zeta_a0 $zeta_a1 $zeta_a2 $zeta_a3 $zeta_b0 $zeta_b1 $zeta_b2 $zeta_b3
+                         (Seq.index ${re}_future (v $index)).f_value
+                         (Seq.index ${re}_future (v $index + 1)).f_value /\
+        Spec.Utils.modifies2_32 re ${re}_future $index ($index +! mk_int 1)
+"))]
 fn butterfly_2(
     re: &mut AVX2RingElement,
     index: usize,
@@ -16,6 +51,14 @@ fn butterfly_2(
     zeta_b2: i32,
     zeta_b3: i32,
 ) {
+    // For proofs, the style that works best is to separate out the
+    // stateful operations (reading and writing to mutable arrays)
+    // from the core computation. So this and the following functions
+    // have the pattern: read from array; compute; write to array.
+
+    let re0 = re[index].value;
+    let re1 = re[index + 1].value;
+
     // We shuffle the terms to group those that need to be multiplied
     // with zetas in the high QWORDS of the vectors, i.e. if the inputs are
     //   a = (a7, a6, a5, a4, a3, a2, a1, a0)
@@ -24,8 +67,8 @@ fn butterfly_2(
     //   a_shuffled = ( a7, a5, a6, a4, a3, a1, a2, a0)
     //   b_shuffled = ( b7, b5, b6, b4, b3, b1, b2, b0)
     const SHUFFLE: i32 = 0b11_01_10_00;
-    let a = mm256_shuffle_epi32::<SHUFFLE>(re[index].value);
-    let b = mm256_shuffle_epi32::<SHUFFLE>(re[index + 1].value);
+    let a = mm256_shuffle_epi32::<SHUFFLE>(re0);
+    let b = mm256_shuffle_epi32::<SHUFFLE>(re1);
 
     // Now we can use the same approach as for `butterfly_4`, only
     // zetas need to be adjusted.
@@ -44,16 +87,53 @@ fn butterfly_2(
     let b_terms_shuffled = mm256_unpackhi_epi64(add_terms, sub_terms);
 
     // Here, we undo the initial shuffle (it's self-inverse).
-    re[index] = AVX2SIMDUnit {
-        value: mm256_shuffle_epi32::<SHUFFLE>(a_terms_shuffled),
-    };
-    re[index + 1] = AVX2SIMDUnit {
-        value: mm256_shuffle_epi32::<SHUFFLE>(b_terms_shuffled),
-    };
+    let nre0 = mm256_shuffle_epi32::<SHUFFLE>(a_terms_shuffled);
+    let nre1 = mm256_shuffle_epi32::<SHUFFLE>(b_terms_shuffled);
+
+    // This assert allows all the SMT Patterns to kick in and prove correctness
+    hax_lib::fstar!(
+        r#"assert (butterfly_2_spec 
+                            $re0 $re1 $zeta_a0 $zeta_a1 $zeta_a2 $zeta_a3 
+                            $zeta_b0 $zeta_b1 $zeta_b2 $zeta_b3 $nre0 $nre1)"#
+    );
+
+    re[index].value = nre0;
+    re[index + 1].value = nre1;
 }
 
 // Compute (a,b) ↦ (a + ζb, a - ζb) at layer 1 for 2 SIMD Units in one go.
 #[inline(always)]
+#[hax_lib::fstar::before(
+    r#"
+let butterfly_4_spec re0 re1 zeta_a0 zeta_a1 zeta_b0 zeta_b1 nre0 nre1 =
+    (to_i32x8 nre0 (mk_u64 0), to_i32x8 nre0 (mk_u64 2)) ==
+    ntt_step zeta_a0 (to_i32x8 re0 (mk_u64 0), to_i32x8 re0 (mk_u64 2)) /\
+    (to_i32x8 nre0 (mk_u64 1), to_i32x8 nre0 (mk_u64 3)) ==
+    ntt_step zeta_a0 (to_i32x8 re0 (mk_u64 1), to_i32x8 re0 (mk_u64 3)) /\
+    (to_i32x8 nre0 (mk_u64 4), to_i32x8 nre0 (mk_u64 6)) ==
+    ntt_step zeta_a1 (to_i32x8 re0 (mk_u64 4), to_i32x8 re0 (mk_u64 6)) /\
+    (to_i32x8 nre0 (mk_u64 5), to_i32x8 nre0 (mk_u64 7)) ==
+    ntt_step zeta_a1 (to_i32x8 re0 (mk_u64 5), to_i32x8 re0 (mk_u64 7)) /\
+    (to_i32x8 nre1 (mk_u64 0), to_i32x8 nre1 (mk_u64 2)) ==
+    ntt_step zeta_b0 (to_i32x8 re1 (mk_u64 0), to_i32x8 re1 (mk_u64 2)) /\
+    (to_i32x8 nre1 (mk_u64 1), to_i32x8 nre1 (mk_u64 3)) ==
+    ntt_step zeta_b0 (to_i32x8 re1 (mk_u64 1), to_i32x8 re1 (mk_u64 3)) /\
+    (to_i32x8 nre1 (mk_u64 4), to_i32x8 nre1 (mk_u64 6)) ==
+    ntt_step zeta_b1 (to_i32x8 re1 (mk_u64 4), to_i32x8 re1 (mk_u64 6)) /\
+    (to_i32x8 nre1 (mk_u64 5), to_i32x8 nre1 (mk_u64 7)) ==
+    ntt_step zeta_b1 (to_i32x8 re1 (mk_u64 5), to_i32x8 re1 (mk_u64 7))
+"#
+)]
+#[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
+#[hax_lib::requires(index < 31)]
+#[hax_lib::ensures(|_result| fstar!(r"
+        butterfly_4_spec    (Seq.index ${re} (v $index)).f_value
+                            (Seq.index ${re} (v $index + 1)).f_value
+                            $zeta_a0 $zeta_a1 $zeta_b0 $zeta_b1
+                            (Seq.index ${re}_future (v $index)).f_value
+                            (Seq.index ${re}_future (v $index + 1)).f_value /\
+        Spec.Utils.modifies2_32 $re ${re}_future $index ($index +! mk_int 1)
+"))]
 fn butterfly_4(
     re: &mut AVX2RingElement,
     index: usize,
@@ -62,8 +142,11 @@ fn butterfly_4(
     zeta_b0: i32,
     zeta_b1: i32,
 ) {
-    let summands = mm256_unpacklo_epi64(re[index].value, re[index + 1].value);
-    let mut zeta_products = mm256_unpackhi_epi64(re[index].value, re[index + 1].value);
+    let re0 = re[index].value;
+    let re1 = re[index + 1].value;
+
+    let summands = mm256_unpacklo_epi64(re0, re1);
+    let mut zeta_products = mm256_unpackhi_epi64(re0, re1);
 
     let zetas = mm256_set_epi32(
         zeta_b1, zeta_b1, zeta_a1, zeta_a1, zeta_b0, zeta_b0, zeta_a0, zeta_a0,
@@ -75,23 +158,58 @@ fn butterfly_4(
 
     // Results are shuffled across the two SIMD registers.
     // We need to bring them in the right order.
-    re[index] = AVX2SIMDUnit {
-        value: mm256_unpacklo_epi64(add_terms, sub_terms),
-    };
-    re[index + 1] = AVX2SIMDUnit {
-        value: mm256_unpackhi_epi64(add_terms, sub_terms),
-    };
+    let nre0 = mm256_unpacklo_epi64(add_terms, sub_terms);
+    let nre1 = mm256_unpackhi_epi64(add_terms, sub_terms);
+
+    // This assert allows all the SMT Patterns to kick in and prove correctness
+    hax_lib::fstar!(
+        r#"assert (butterfly_4_spec 
+        $re0 $re1 $zeta_a0 $zeta_a1 $zeta_b0 $zeta_b1 $nre0 $nre1)"#
+    );
+
+    re[index].value = nre0;
+    re[index + 1].value = nre1;
 }
 
 // Compute (a,b) ↦ (a + ζb, a - ζb) at layer 2 for 2 SIMD Units in one go.
 #[inline(always)]
+#[hax_lib::fstar::before(
+    r#"
+let butterfly_8_spec re0 re1 zeta0 zeta1 nre0 nre1 =
+    (to_i32x8 nre0 (mk_u64 0), to_i32x8 nre0 (mk_u64 4)) ==
+     ntt_step zeta0 (to_i32x8 re0 (mk_u64 0), to_i32x8 re0 (mk_u64 4)) /\
+    (to_i32x8 nre0 (mk_u64 1), to_i32x8 nre0 (mk_u64 5)) ==
+     ntt_step zeta0 (to_i32x8 re0 (mk_u64 1), to_i32x8 re0 (mk_u64 5)) /\
+    (to_i32x8 nre0 (mk_u64 2), to_i32x8 nre0 (mk_u64 6)) ==
+     ntt_step zeta0 (to_i32x8 re0 (mk_u64 2), to_i32x8 re0 (mk_u64 6)) /\
+    (to_i32x8 nre0 (mk_u64 3), to_i32x8 nre0 (mk_u64 7)) ==
+     ntt_step zeta0 (to_i32x8 re0 (mk_u64 3), to_i32x8 re0 (mk_u64 7)) /\
+    (to_i32x8 nre1 (mk_u64 0), to_i32x8 nre1 (mk_u64 4)) ==
+     ntt_step zeta1 (to_i32x8 re1 (mk_u64 0), to_i32x8 re1 (mk_u64 4)) /\
+    (to_i32x8 nre1 (mk_u64 1), to_i32x8 nre1 (mk_u64 5)) ==
+     ntt_step zeta1 (to_i32x8 re1 (mk_u64 1), to_i32x8 re1 (mk_u64 5)) /\
+    (to_i32x8 nre1 (mk_u64 2), to_i32x8 nre1 (mk_u64 6)) ==
+     ntt_step zeta1 (to_i32x8 re1 (mk_u64 2), to_i32x8 re1 (mk_u64 6)) /\
+    (to_i32x8 nre1 (mk_u64 3), to_i32x8 nre1 (mk_u64 7)) ==
+     ntt_step zeta1 (to_i32x8 re1 (mk_u64 3), to_i32x8 re1 (mk_u64 7))
+"#
+)]
+#[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
+#[hax_lib::requires(index < 31)]
+#[hax_lib::ensures(|_result| fstar!(r"
+        butterfly_8_spec    (Seq.index ${re} (v $index)).f_value
+                            (Seq.index ${re} (v $index + 1)).f_value
+                            $zeta0 $zeta1
+                            (Seq.index ${re}_future (v $index)).f_value
+                            (Seq.index ${re}_future (v $index + 1)).f_value /\
+        Spec.Utils.modifies2_32 $re ${re}_future $index ($index +! mk_int 1)
+"))]
 fn butterfly_8(re: &mut AVX2RingElement, index: usize, zeta0: i32, zeta1: i32) {
-    let summands = mm256_set_m128i(
-        mm256_castsi256_si128(re[index + 1].value),
-        mm256_castsi256_si128(re[index].value),
-    );
-    let mut zeta_products =
-        mm256_permute2x128_si256::<0b0001_0011>(re[index + 1].value, re[index].value);
+    let re0 = re[index].value;
+    let re1 = re[index + 1].value;
+
+    let summands = mm256_set_m128i(mm256_castsi256_si128(re1), mm256_castsi256_si128(re0));
+    let mut zeta_products = mm256_permute2x128_si256::<0b0001_0011>(re1, re0);
 
     let zetas = mm256_set_epi32(zeta1, zeta1, zeta1, zeta1, zeta0, zeta0, zeta0, zeta0);
     arithmetic::montgomery_multiply(&mut zeta_products, &zetas);
@@ -99,19 +217,46 @@ fn butterfly_8(re: &mut AVX2RingElement, index: usize, zeta0: i32, zeta1: i32) {
     let sub_terms = mm256_sub_epi32(summands, zeta_products);
     let add_terms = mm256_add_epi32(summands, zeta_products);
 
-    re[index] = AVX2SIMDUnit {
-        value: mm256_set_m128i(
-            mm256_castsi256_si128(sub_terms),
-            mm256_castsi256_si128(add_terms),
-        ),
-    };
-    re[index + 1] = AVX2SIMDUnit {
-        value: mm256_permute2x128_si256::<0b0001_0011>(sub_terms, add_terms),
-    };
+    let nre0 = mm256_set_m128i(
+        mm256_castsi256_si128(sub_terms),
+        mm256_castsi256_si128(add_terms),
+    );
+    let nre1 = mm256_permute2x128_si256::<0b0001_0011>(sub_terms, add_terms);
+
+    // This assert allows all the SMT Patterns to kick in and prove correctness
+    hax_lib::fstar!(
+        r#"assert (butterfly_8_spec 
+         $re0 $re1 $zeta0 $zeta1 $nre0 $nre1)"#
+    );
+
+    re[index].value = nre0;
+    re[index + 1].value = nre1;
 }
 
 #[cfg_attr(not(hax), target_feature(enable = "avx2"))]
 #[allow(unsafe_code)]
+#[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
+#[hax_lib::ensures(|result| fstar!(r#"
+norm [primops; iota; delta_namespace [ `%zeta_r; `%Spec.Utils.forall4; `%Spec.Utils.forall16 ]] (
+   Spec.Utils.forall16 (fun i ->
+     let  nre = ${re}_future in
+     let  re0 = Seq.index $re (i * 2) in
+     let  re1 = Seq.index $re (i * 2 + 1) in
+     let nre0 = Seq.index nre (i * 2) in
+     let nre1 = Seq.index nre (i * 2 + 1) in
+     Spec.Utils.forall4 (fun j ->
+       let zeta0 = zeta_r (128 + i * 8 + j) in
+       let zeta1 = zeta_r (128 + i * 8 + j + 4) in
+       let j0 = j * 2 in
+       let j1 = j0 + 1 in
+       (to_i32x8 nre0.f_value (mk_u64 j0), to_i32x8 nre0.f_value (mk_u64 j1)) ==
+        ntt_step (mk_int zeta0) (to_i32x8 re0.f_value (mk_u64 j0), to_i32x8 re0.f_value (mk_u64 j1)) /\
+       (to_i32x8 nre1.f_value (mk_u64 j0), to_i32x8 nre1.f_value (mk_u64 j1)) ==
+        ntt_step (mk_int zeta1) (to_i32x8 re1.f_value (mk_u64 j0), to_i32x8 re1.f_value (mk_u64 j1))
+     )
+   )
+)
+"#))]
 unsafe fn ntt_at_layer_0(re: &mut AVX2RingElement) {
     butterfly_2(
         re, 0, 2091667, 3407706, 2316500, 3817976, -3342478, 2244091, -2446433, -3562462,
@@ -165,6 +310,31 @@ unsafe fn ntt_at_layer_0(re: &mut AVX2RingElement) {
 
 #[cfg_attr(not(hax), target_feature(enable = "avx2"))]
 #[allow(unsafe_code)]
+#[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
+#[hax_lib::ensures(|result| fstar!(r#"
+norm [primops; iota; delta_namespace [ `%zeta_r; `%Spec.Utils.forall4; `%Spec.Utils.forall16 ]] (
+   Spec.Utils.forall16 (fun i ->
+     let  nre = ${re}_future in
+     let  re0 = Seq.index $re (i * 2) in
+     let  re1 = Seq.index $re (i * 2 + 1) in
+     let nre0 = Seq.index nre (i * 2) in
+     let nre1 = Seq.index nre (i * 2 + 1) in
+     Spec.Utils.forall4 (fun j ->
+         let zeta0 = zeta_r (64 + i * 4 + j / 2) in
+         let zeta1 = zeta_r (64 + i * 4 + j / 2 + 2) in
+         let j0 = match j with
+           | 0 -> 0 | 1 -> 1
+           | 2 -> 4 | 3 -> 5
+         in
+         let j1 = j0 + 2 in
+         (to_i32x8 nre0.f_value (mk_u64 j0), to_i32x8 nre0.f_value (mk_u64 j1)) ==
+          ntt_step (mk_int zeta0) (to_i32x8 re0.f_value (mk_u64 j0), to_i32x8 re0.f_value (mk_u64 j1)) /\
+         (to_i32x8 nre1.f_value (mk_u64 j0), to_i32x8 nre1.f_value (mk_u64 j1)) ==
+          ntt_step (mk_int zeta1) (to_i32x8 re1.f_value (mk_u64 j0), to_i32x8 re1.f_value (mk_u64 j1))
+     )
+   )
+)
+"#))]
 unsafe fn ntt_at_layer_1(re: &mut AVX2RingElement) {
     butterfly_4(re, 0, -3930395, -1528703, -3677745, -3041255);
     butterfly_4(re, 2, -1452451, 3475950, 2176455, -1585221);
@@ -186,6 +356,30 @@ unsafe fn ntt_at_layer_1(re: &mut AVX2RingElement) {
 
 #[cfg_attr(not(hax), target_feature(enable = "avx2"))]
 #[allow(unsafe_code)]
+#[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
+#[hax_lib::ensures(|result| fstar!(r#"
+norm [primops; iota; delta_namespace [ `%zeta_r; `%Spec.Utils.forall4; `%Spec.Utils.forall16 ]] (
+   Spec.Utils.forall16 (fun i ->
+     let  nre = ${re}_future in
+     let  re0 = Seq.index $re (i * 2) in
+     let  re1 = Seq.index $re (i * 2 + 1) in
+     let nre0 = Seq.index nre (i * 2) in
+     let nre1 = Seq.index nre (i * 2 + 1) in
+     Spec.Utils.forall4 (fun j ->
+        let zeta0 = zeta_r (32 + i * 2) in
+        let zeta1 = zeta_r (32 + i * 2 + 1) in
+        let j0 = j in
+        let j1 = j0 + 4 in
+        (to_i32x8 nre0.f_value (mk_u64 j0), to_i32x8 nre0.f_value (mk_u64 j1)) ==
+        ntt_step (mk_int zeta0)
+          (to_i32x8 re0.f_value (mk_u64 j0), to_i32x8 re0.f_value (mk_u64 j1)) /\
+        (to_i32x8 nre1.f_value (mk_u64 j0), to_i32x8 nre1.f_value (mk_u64 j1)) ==
+        ntt_step (mk_int zeta1)
+          (to_i32x8 re1.f_value (mk_u64 j0), to_i32x8 re1.f_value (mk_u64 j1))
+     )
+   )
+)
+"#))]
 unsafe fn ntt_at_layer_2(re: &mut AVX2RingElement) {
     butterfly_8(re, 0, 2706023, 95776);
     butterfly_8(re, 2, 3077325, 3530437);
@@ -211,12 +405,34 @@ unsafe fn ntt_at_layer_2(re: &mut AVX2RingElement) {
 /// This is the same as in pqclean. The only difference is locality of registers.
 #[cfg_attr(not(hax), target_feature(enable = "avx2"))]
 #[allow(unsafe_code)]
+#[hax_lib::fstar::options(r#"--fuel 0 --ifuel 0 --z3rlimit 200"#)]
+#[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
 unsafe fn ntt_at_layer_7_and_6(re: &mut AVX2RingElement) {
     let field_modulus = mm256_set1_epi32(crate::simd::traits::FIELD_MODULUS);
     let inverse_of_modulus_mod_montgomery_r =
         mm256_set1_epi32(crate::simd::traits::INVERSE_OF_MODULUS_MOD_MONTGOMERY_R as i32);
 
     #[inline(always)]
+    #[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
+    #[hax_lib::requires({
+        use crate::constants::FIELD_MODULUS;
+        use crate::simd::traits::INVERSE_OF_MODULUS_MOD_MONTGOMERY_R;
+        use hax_lib::int::{ToInt, int};
+        hax_lib::eq(field_modulus, mm256_set1_epi32(FIELD_MODULUS)).and(
+            hax_lib::eq(inverse_of_modulus_mod_montgomery_r, mm256_set1_epi32(INVERSE_OF_MODULUS_MOD_MONTGOMERY_R as i32))
+        ).and(index.to_int() + step_by.to_int() < int!(32)).and(step_by > 0)
+    })]
+    #[hax_lib::ensures(|result| fstar!(r#"
+        let re0 = (Seq.index $re (v $index)).f_value in
+        let re1 = (Seq.index $re (v $index + v $step_by)).f_value in
+        let nre0 = (Seq.index ${re}_future (v $index)).f_value in
+        let nre1 = (Seq.index ${re}_future (v $index + v $step_by)).f_value in
+        Spec.Utils.modifies2_32 $re ${re}_future $index ($index +! $step_by) /\
+        Spec.Utils.forall8 (fun i ->
+           (to_i32x8 nre0 (mk_u64 i), to_i32x8 nre1 (mk_u64 i)) ==
+           ntt_step (to_i32x8 zeta (mk_int i)) (to_i32x8 re0 (mk_u64 i), to_i32x8 re1 (mk_u64 i))
+        )
+    "#))]
     fn mul(
         re: &mut AVX2RingElement,
         index: usize,
@@ -225,23 +441,14 @@ unsafe fn ntt_at_layer_7_and_6(re: &mut AVX2RingElement) {
         field_modulus: Vec256,
         inverse_of_modulus_mod_montgomery_r: Vec256,
     ) {
-        let prod02 = mm256_mul_epi32(re[index + step_by].value, zeta);
-        let prod13 = mm256_mul_epi32(
-            mm256_shuffle_epi32::<0b11_11_01_01>(re[index + step_by].value), // 0xF5
-            mm256_shuffle_epi32::<0b11_11_01_01>(zeta),                      // 0xF5
+        let mut t = re[index + step_by].value;
+        arithmetic::montgomery_multiply_aux(
+            field_modulus,
+            inverse_of_modulus_mod_montgomery_r,
+            &mut t,
+            &zeta,
         );
-        let k02 = mm256_mul_epi32(prod02, inverse_of_modulus_mod_montgomery_r);
-        let k13 = mm256_mul_epi32(prod13, inverse_of_modulus_mod_montgomery_r);
-
-        let c02 = mm256_mul_epi32(k02, field_modulus);
-        let c13 = mm256_mul_epi32(k13, field_modulus);
-
-        let res02 = mm256_sub_epi32(prod02, c02);
-        let res13 = mm256_sub_epi32(prod13, c13);
-        let res02_shifted = mm256_shuffle_epi32::<0b11_11_01_01>(res02); // 0xF5
-        let t = mm256_blend_epi32::<0b10101010>(res02_shifted, res13); // 0xAA
-
-        re[index + step_by] = re[index];
+        re[index + step_by].value = re[index].value;
         arithmetic::subtract(&mut re[index + step_by].value, &t);
         arithmetic::add(&mut re[index].value, &t);
     }
@@ -283,8 +490,9 @@ unsafe fn ntt_at_layer_7_and_6(re: &mut AVX2RingElement) {
         }};
     }
 
-    const STEP_BY_7: usize = 2 * COEFFICIENTS_IN_SIMD_UNIT;
-    const STEP_BY_6: usize = (1 << 6) / COEFFICIENTS_IN_SIMD_UNIT;
+    // Note: For proofs, it is better to use concrete constants instead of const expressions
+    const STEP_BY_7: usize = 16; //2 * COEFFICIENTS_IN_SIMD_UNIT;
+    const STEP_BY_6: usize = 8; //(1 << 6) / COEFFICIENTS_IN_SIMD_UNIT;
 
     let zeta7 = mm256_set1_epi32(25847);
     let zeta60 = mm256_set1_epi32(-2608894);
@@ -307,8 +515,12 @@ unsafe fn ntt_at_layer_7_and_6(re: &mut AVX2RingElement) {
 /// pqclean does 4 * 4 on each layer -> 48 total | plus 4 * 4 shuffles every time (48)
 #[cfg_attr(not(hax), target_feature(enable = "avx2"))]
 #[allow(unsafe_code)]
+#[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
 unsafe fn ntt_at_layer_5_to_3(re: &mut AVX2RingElement) {
     #[inline(always)]
+    #[hax_lib::requires(
+        (STEP == 8 || STEP == 16 || STEP == 32) && STEP_BY == STEP / COEFFICIENTS_IN_SIMD_UNIT && index < 128 / STEP
+    )]
     fn round<const STEP: usize, const STEP_BY: usize>(
         re: &mut AVX2RingElement,
         index: usize,
@@ -394,6 +606,7 @@ unsafe fn ntt_at_layer_5_to_3(re: &mut AVX2RingElement) {
 
 #[allow(unsafe_code)]
 #[inline(always)]
+#[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
 pub(crate) fn ntt(re: &mut AVX2RingElement) {
     #[cfg_attr(not(hax), target_feature(enable = "avx2"))]
     unsafe fn avx2_ntt(re: &mut AVX2RingElement) {

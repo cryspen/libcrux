@@ -1,15 +1,29 @@
 # Base Makefile for F* in libcrux.
 # This inherits from Makefile.generic, and adds the `specs` folder from HACL.
 
+
+export ANSI_COLOR_RED=\033[31m
+export ANSI_COLOR_RESET=\033[0m
+
+# Check that no module from ADMIT_MODULES is also present in VERIFIED_MODULES or ADMIT_MODULES
+DUP_MODULES_SLOW := $(filter $(SLOW_MODULES), $(sort $(ADMIT_MODULES) $(VERIFIED_MODULES)))
+ifneq ($(strip $(DUP_MODULES_SLOW)),)
+K := $(info )
+ERROR := $(shell printf '  ${ANSI_COLOR_RED}The module(s) [${DUP_MODULES_SLOW}] are both in SLOW_MODULES and in VERIFIED_MODULES or ADMIT_MODULES. Please remove them from VERIFIED_MODULES or ADMIT_MODULES.${ANSI_COLOR_RESET}')
+K := $(info ${ERROR})
+K := $(info )
+K := $(error Fatal error: the intersection between variable ADMIT_MODULES and SLOW_MODULES is non-empty.)
+endif
+
 VERIFY_SLOW_MODULES ?= no
 ifeq (${VERIFY_SLOW_MODULES},no)
 	ADMIT_MODULES += ${SLOW_MODULES}
+else
+	VERIFIED_MODULES += ${SLOW_MODULES}
 endif
 
 EXTRA_HELPMESSAGE += printf "Libcrux specifics:\n";
 EXTRA_HELPMESSAGE += target SLOW_MODULES 'a list of modules to verify fully only when `VERIFY_SLOW_MODULES` is set to `yes`. When `VERIFY_SLOW_MODULES`, those modules are admitted.';
 EXTRA_HELPMESSAGE += target VERIFY_SLOW_MODULES '`yes` or `no`, defaults to `no`';
 
-FSTAR_INCLUDE_DIRS_EXTRA += $(HACL_HOME)/specs
-FSTAR_INCLUDE_DIRS_EXTRA += $(shell git rev-parse --show-toplevel)/fstar-helpers/tactics
 include $(shell git rev-parse --show-toplevel)/fstar-helpers/Makefile.generic
