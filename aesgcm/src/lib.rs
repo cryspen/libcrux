@@ -4,11 +4,11 @@ mod aes_generic;
 mod gf128_generic;
 pub mod platform;
 
-pub use aes_gcm::DecryptError;
+pub use aes_gcm::aes_gcm_128::DecryptError;
 
 pub mod portable {
     use crate::{
-        aes_gcm::{self, DecryptError},
+        aes_gcm::{self, aes_gcm_128::DecryptError},
         platform,
     };
 
@@ -25,6 +25,7 @@ pub mod portable {
             platform::portable::FieldElement,
         >(key);
         aes_gcm::aes128_gcm_set_nonce(&mut st, nonce);
+        eprintln!("tag: {tag:x?}");
         aes_gcm::aes128_gcm_encrypt(&mut st, aad, plaintext, ciphertext, tag);
     }
 
@@ -117,6 +118,6 @@ pub mod intel_ni {
             platform::intel_ni::FieldElement,
         >(key);
         aes_gcm::aes128_gcm_set_nonce(&mut st, nonce);
-        aes_gcm::aes128_gcm_decrypt(&mut st, aad, ciphertext, tag, plaintext)
+        aes_gcm::aes_gcm_128::aes128_gcm_decrypt(&mut st, aad, ciphertext, tag, plaintext)
     }
 }

@@ -1,106 +1,12 @@
-use crate::{
-    aes_ctr::{
-        aes128_ctr_init, aes128_ctr_key_block, aes128_ctr_set_nonce, aes128_ctr_update,
-        AES128_CTR_Context,
-    },
-    gf128_generic::{gf128_emit, gf128_init, gf128_update, gf128_update_padded, GF128State},
-    platform::{AESState, GF128FieldElement},
-};
+pub(crate) mod aes_gcm_128;
+pub(crate) use aes_gcm_128::*;
 
-#[allow(non_camel_case_types)]
-pub struct AES128_GCM_State<T: AESState, U: GF128FieldElement> {
-    aes_state: AES128_CTR_Context<T>,
-    gcm_state: GF128State<U>,
-    tag_mix: [u8; 16],
-}
-
-pub fn aes128_gcm_init<T: AESState, U: GF128FieldElement>(key: &[u8]) -> AES128_GCM_State<T, U> {
-    debug_assert!(key.len() == 16);
-    let nonce = [0u8; 12];
-    let mut gcm_key = [0u8; 16];
-    let tag_mix = [0u8; 16];
-    let aes_state = aes128_ctr_init(key, &nonce);
-    aes128_ctr_key_block(&aes_state, 0, &mut gcm_key);
-    let gcm_state = gf128_init(&gcm_key);
-    AES128_GCM_State {
-        aes_state,
-        gcm_state,
-        tag_mix,
-    }
-}
-
-pub fn aes128_gcm_set_nonce<T: AESState, U: GF128FieldElement>(
-    st: &mut AES128_GCM_State<T, U>,
-    nonce: &[u8],
-) {
-    debug_assert!(nonce.len() == 12);
-    aes128_ctr_set_nonce(&mut st.aes_state, nonce);
-    aes128_ctr_key_block(&st.aes_state, 1, &mut st.tag_mix);
-}
-
-pub fn aes128_gcm_encrypt<T: AESState, U: GF128FieldElement>(
-    st: &mut AES128_GCM_State<T, U>,
-    aad: &[u8],
-    plaintext: &[u8],
-    ciphertext: &mut [u8],
-    tag: &mut [u8],
-) {
-    debug_assert!(ciphertext.len() == plaintext.len());
-    debug_assert!(plaintext.len() / 16 <= u32::MAX as usize);
-    debug_assert!(tag.len() == 16);
-    aes128_ctr_update(&st.aes_state, 2, plaintext, ciphertext);
-    gf128_update_padded(&mut st.gcm_state, aad);
-    gf128_update_padded(&mut st.gcm_state, ciphertext);
-    let mut last_block = [0u8; 16];
-    last_block[0..8].copy_from_slice(&((aad.len() as u64) * 8).to_be_bytes());
-    last_block[8..16].copy_from_slice(&((plaintext.len() as u64) * 8).to_be_bytes());
-    gf128_update(&mut st.gcm_state, &last_block);
-    gf128_emit(&st.gcm_state, tag);
-    for i in 0..16 {
-        tag[i] ^= st.tag_mix[i];
-    }
-}
-
-pub struct DecryptError();
-
-pub fn aes128_gcm_decrypt<T: AESState, U: GF128FieldElement>(
-    st: &mut AES128_GCM_State<T, U>,
-    aad: &[u8],
-    ciphertext: &[u8],
-    tag: &[u8],
-    plaintext: &mut [u8],
-) -> Result<(), DecryptError> {
-    debug_assert!(plaintext.len() == ciphertext.len());
-    debug_assert!(ciphertext.len() / 16 <= u32::MAX as usize);
-    debug_assert!(tag.len() == 16);
-    gf128_update_padded(&mut st.gcm_state, aad);
-    gf128_update_padded(&mut st.gcm_state, ciphertext);
-    let mut last_block = [0u8; 16];
-    last_block[0..8].copy_from_slice(&((aad.len() as u64) * 8).to_be_bytes());
-    last_block[8..16].copy_from_slice(&((plaintext.len() as u64) * 8).to_be_bytes());
-    gf128_update(&mut st.gcm_state, &last_block);
-    let mut computed_tag = [0u8; 16];
-    gf128_emit(&st.gcm_state, &mut computed_tag);
-    for i in 0..16 {
-        computed_tag[i] ^= st.tag_mix[i];
-    }
-    let mut eq_mask = 0u8;
-    for i in 0..16 {
-        eq_mask |= computed_tag[i] ^ tag[i];
-    }
-    if eq_mask == 0 {
-        aes128_ctr_update(&st.aes_state, 2, ciphertext, plaintext);
-        Ok(())
-    } else {
-        Err(DecryptError())
-    }
-}
+pub(crate)  mod aes_gcm_256;
 
 #[cfg(test)]
 mod test {
+    use super::aes_gcm_128;
     use crate::platform::portable;
-
-    use super::{aes128_gcm_encrypt, aes128_gcm_init, aes128_gcm_set_nonce};
 
     const INPUT1: [u8; 60] = [
         0xd9, 0x31, 0x32, 0x25, 0xf8, 0x84, 0x06, 0xe5, 0xa5, 0x59, 0x09, 0xc5, 0xaf, 0xf5, 0x26,
@@ -235,10 +141,10 @@ mod test {
     #[test]
     fn test_gcm1() {
         let mut computed1 = [0u8; 76];
-        let mut st = aes128_gcm_init::<portable::State, portable::FieldElement>(&KEY1);
-        aes128_gcm_set_nonce(&mut st, &NONCE1);
+        let mut st = aes_gcm_128::aes128_gcm_init::<portable::State, portable::FieldElement>(&KEY1);
+        aes_gcm_128::aes128_gcm_set_nonce(&mut st, &NONCE1);
         let (mut ciphertext, mut tag) = computed1.split_at_mut(60);
-        aes128_gcm_encrypt(&mut st, &AAD1, &INPUT1, &mut ciphertext, &mut tag);
+        aes_gcm_128::aes128_gcm_encrypt(&mut st, &AAD1, &INPUT1, &mut ciphertext, &mut tag);
         for i in 0..76 {
             if computed1[i] != EXPECTED1[i] {
                 println!(
@@ -253,10 +159,10 @@ mod test {
     #[test]
     fn test_gcm2() {
         let mut computed2 = [0u8; 668];
-        let mut st = aes128_gcm_init::<portable::State, portable::FieldElement>(&KEY2);
-        aes128_gcm_set_nonce(&mut st, &NONCE2);
+        let mut st = aes_gcm_128::aes128_gcm_init::<portable::State, portable::FieldElement>(&KEY2);
+        aes_gcm_128::aes128_gcm_set_nonce(&mut st, &NONCE2);
         let (mut ciphertext, mut tag) = computed2.split_at_mut(652);
-        aes128_gcm_encrypt(&mut st, &AAD2, &INPUT2, &mut ciphertext, &mut tag);
+        aes_gcm_128::aes128_gcm_encrypt(&mut st, &AAD2, &INPUT2, &mut ciphertext, &mut tag);
         for i in 0..668 {
             if computed2[i] != EXPECTED2[i] {
                 println!(
@@ -275,10 +181,10 @@ mod test {
     #[test]
     fn test_gcm1_neon() {
         let mut computed1 = [0u8; 76];
-        let mut st = aes128_gcm_init::<neon::State, neon::FieldElement>(&KEY1);
-        aes128_gcm_set_nonce(&mut st, &NONCE1);
+        let mut st = aes_gcm_128::aes128_gcm_init::<neon::State, neon::FieldElement>(&KEY1);
+        aes_gcm_128::aes128_gcm_set_nonce(&mut st, &NONCE1);
         let (mut ciphertext, mut tag) = computed1.split_at_mut(60);
-        aes128_gcm_encrypt(&mut st, &AAD1, &INPUT1, &mut ciphertext, &mut tag);
+        aes_gcm_128::aes128_gcm_encrypt(&mut st, &AAD1, &INPUT1, &mut ciphertext, &mut tag);
         for i in 0..76 {
             if computed1[i] != EXPECTED1[i] {
                 println!(
@@ -294,10 +200,10 @@ mod test {
     #[test]
     fn test_gcm2_neon() {
         let mut computed2 = [0u8; 668];
-        let mut st = aes128_gcm_init::<neon::State, neon::FieldElement>(&KEY2);
-        aes128_gcm_set_nonce(&mut st, &NONCE2);
+        let mut st = aes_gcm_128::aes128_gcm_init::<neon::State, neon::FieldElement>(&KEY2);
+        aes_gcm_128::aes128_gcm_set_nonce(&mut st, &NONCE2);
         let (mut ciphertext, mut tag) = computed2.split_at_mut(652);
-        aes128_gcm_encrypt(&mut st, &AAD2, &INPUT2, &mut ciphertext, &mut tag);
+        aes_gcm_128::aes128_gcm_encrypt(&mut st, &AAD2, &INPUT2, &mut ciphertext, &mut tag);
         for i in 0..668 {
             if computed2[i] != EXPECTED2[i] {
                 println!(
@@ -316,10 +222,10 @@ mod test {
     #[test]
     fn test_gcm1_intel() {
         let mut computed1 = [0u8; 76];
-        let mut st = aes128_gcm_init::<intel_ni::State, intel_ni::FieldElement>(&KEY1);
-        aes128_gcm_set_nonce(&mut st, &NONCE1);
+        let mut st = aes_gcm_128::aes128_gcm_init::<intel_ni::State, intel_ni::FieldElement>(&KEY1);
+        aes_gcm_128::aes128_gcm_set_nonce(&mut st, &NONCE1);
         let (mut ciphertext, mut tag) = computed1.split_at_mut(60);
-        aes128_gcm_encrypt(&mut st, &AAD1, &INPUT1, &mut ciphertext, &mut tag);
+        aes_gcm_128::aes128_gcm_encrypt(&mut st, &AAD1, &INPUT1, &mut ciphertext, &mut tag);
         for i in 0..76 {
             if computed1[i] != EXPECTED1[i] {
                 println!(
@@ -335,10 +241,10 @@ mod test {
     #[test]
     fn test_gcm2_intel() {
         let mut computed2 = [0u8; 668];
-        let mut st = aes128_gcm_init::<intel_ni::State, intel_ni::FieldElement>(&KEY2);
-        aes128_gcm_set_nonce(&mut st, &NONCE2);
+        let mut st = aes_gcm_128::aes128_gcm_init::<intel_ni::State, intel_ni::FieldElement>(&KEY2);
+        aes_gcm_128::aes128_gcm_set_nonce(&mut st, &NONCE2);
         let (mut ciphertext, mut tag) = computed2.split_at_mut(652);
-        aes128_gcm_encrypt(&mut st, &AAD2, &INPUT2, &mut ciphertext, &mut tag);
+        aes_gcm_128::aes128_gcm_encrypt(&mut st, &AAD2, &INPUT2, &mut ciphertext, &mut tag);
         for i in 0..668 {
             if computed2[i] != EXPECTED2[i] {
                 println!(
