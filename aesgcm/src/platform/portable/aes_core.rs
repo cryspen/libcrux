@@ -423,19 +423,23 @@ impl crate::platform::AESState for State {
 
     fn load_block(&mut self, b: &[u8]) {
         debug_assert!(b.len() == 16);
+
         transpose_u8x16(b.try_into().unwrap(), self);
     }
 
     fn store_block(&self, out: &mut [u8]) {
         debug_assert!(out.len() == 16);
+
         transpose_u16x8(self, out);
     }
 
     #[inline(always)]
     fn xor_block(&self, inp: &[u8], out: &mut [u8]) {
         debug_assert!(inp.len() == out.len() && inp.len() <= 16);
+
         let mut block = [0u8; 16];
         self.store_block(&mut block);
+
         for i in 0..inp.len() {
             out[i] = inp[i] ^ block[i];
         }

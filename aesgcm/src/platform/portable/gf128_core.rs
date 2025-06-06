@@ -6,6 +6,7 @@ fn zero() -> FieldElement {
 
 fn load_elem(b: &[u8]) -> FieldElement {
     debug_assert!(b.len() == 16);
+
     u128::from_be_bytes(b.try_into().unwrap())
 }
 
