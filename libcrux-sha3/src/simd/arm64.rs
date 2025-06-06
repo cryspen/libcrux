@@ -112,20 +112,26 @@ pub(crate) fn store_block<const RATE: usize>(s: &[uint64x2_t; 25], out: &mut [&m
         _vst1q_bytes_u64(&mut out[1][start + 16 * i..start + 16 * (i + 1)], v1);
     }
     let remaining = len % 16;
-    if remaining > 0 {
-        let mut u = [0u8; 16];
+    if remaining > 8 {
+        let mut out0 = [0u8; 16];
+        let mut out1 = [0u8; 16];
+        let i = len / 16;
+        let i0 = i / 5;
+        let j0 = i % 5;
+        let i1 = (i + 1) / 5;
+        let j1 = (i + 1) % 5;
+        let v0 = _vtrn1q_u64(get_ij(s, i0, j0), get_ij(s, i1, j1));
+        let v1 = _vtrn2q_u64(get_ij(s, i0, j0), get_ij(s, i1, j1));
+        _vst1q_bytes_u64(&mut out0, v0);
+        _vst1q_bytes_u64(&mut out1, v1);
+        out[0][start + len - remaining .. start + len].copy_from_slice(&out0[0..remaining]);
+        out[1][start + len - remaining .. start + len].copy_from_slice(&out1[0..remaining]);
+    } else if remaining > 0 {
+        let mut out01 = [0u8; 16];
         let i = len / 16;        
-        let offset = start + len - (len % 16);
-        let bytes = if len < 8 {len} else {8};
-        _vst1q_bytes_u64(&mut u, get_ij(s, i / 5, i % 5));
-        out[0][offset .. offset+bytes].copy_from_slice(&u[0..bytes]);
-        out[1][offset .. offset+bytes].copy_from_slice(&u[8..8+bytes]);
-
-        if remaining > 8 {
-          _vst1q_bytes_u64(&mut u, get_ij(s, (i+1) / 5, (i+1) % 5));
-          out[0][offset+8 .. offset+remaining].copy_from_slice(&u[0..remaining-8]);
-          out[1][offset+8 .. offset+remaining].copy_from_slice(&u[8..8+remaining-8]);
-        }
+        _vst1q_bytes_u64(&mut out01, get_ij(s, i / 5, i % 5));
+        out[0][start + len - remaining .. start + len].copy_from_slice(&out01[0..remaining]);
+        out[1][start + len - remaining .. start + len].copy_from_slice(&out01[8..8+remaining]);
     }
 }
 
