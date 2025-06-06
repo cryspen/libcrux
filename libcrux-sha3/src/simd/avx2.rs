@@ -4,7 +4,8 @@ use libcrux_intrinsics::avx2::*;
 #[inline(always)]
 fn rotate_left<const LEFT: i32, const RIGHT: i32>(x: Vec256) -> Vec256 {
     debug_assert!(LEFT + RIGHT == 64);
-    // XXX: This could be done more efficiently, if the shift values are multiples of 8.
+    // This could be done more efficiently, if the shift values are multiples of 8.
+    // However, in SHA-3 this function is only called twice with such inputs (8/56).
     mm256_xor_si256(mm256_slli_epi64::<LEFT>(x), mm256_srli_epi64::<RIGHT>(x))
 }
 
@@ -103,20 +104,28 @@ pub(crate) fn load_block<const RATE: usize>(
 }
 
 #[inline(always)]
-pub(crate) fn load_block_full<const RATE: usize>(
+pub(crate) fn load_last<const RATE: usize>(
     state: &mut [Vec256; 25],
-    blocks: &[[u8; 200]; 4],
+    blocks: &[&[u8]; 4],
     start: usize,
+    len: usize,
 ) {
+    let mut buffers = [[0u8; RATE]; 4];
+    for i in 0..4 {
+        buffers[i][0..len].copy_from_slice(&blocks[i][offset..offset + len]);
+        buffers[i][len] = DELIMITER;
+        buffers[i][RATE - 1] |= 0x80;
+    }
+
     load_block::<RATE>(
         state,
         &[
-            &blocks[0] as &[u8],
-            &blocks[1] as &[u8],
-            &blocks[2] as &[u8],
-            &blocks[3] as &[u8],
+            &buffers[0] as &[u8],
+            &buffers[1] as &[u8],
+            &buffers[2] as &[u8],
+            &buffers[3] as &[u8],
         ],
-        start,
+        0,
     );
 }
 
@@ -171,28 +180,6 @@ pub(crate) fn store_block<const RATE: usize>(s: &[Vec256; 25], out: &mut [&mut [
     }
 }
 
-#[inline(always)]
-pub(crate) fn store_block_full<const RATE: usize>(state: &[Vec256; 25], out: &mut [[u8; 200]; 4]) {
-    let (out0, rest) = out.split_at_mut(1);
-    let (out1, rest) = rest.split_at_mut(1);
-    let (out2, out3) = rest.split_at_mut(1);
-
-    store_block::<RATE>(
-        state,
-        &mut [&mut out0[0], &mut out1[0], &mut out2[0], &mut out3[0]],
-    );
-}
-
-#[inline(always)]
-fn split_at_mut_4(out: [&mut [u8]; 4], mid: usize) -> ([&mut [u8]; 4], [&mut [u8]; 4]) {
-    let [out0, out1, out2, out3] = out;
-    let (out00, out01) = out0.split_at_mut(mid);
-    let (out10, out11) = out1.split_at_mut(mid);
-    let (out20, out21) = out2.split_at_mut(mid);
-    let (out30, out31) = out3.split_at_mut(mid);
-    ([out00, out10, out20, out30], [out01, out11, out21, out31])
-}
-
 impl KeccakItem<4> for Vec256 {
     #[inline(always)]
     fn zero() -> Self {
@@ -227,29 +214,16 @@ impl KeccakItem<4> for Vec256 {
         load_block::<RATE>(state, blocks, start)
     }
     #[inline(always)]
+    fn load_last<const RATE: usize>(
+        state: &mut [Self; 25],
+        blocks: &[[u8]; 4],
+        start: usize,
+        len: usize,
+    ) {
+        load_last::<RATE>(state, blocks, start, len)
+    }
+    #[inline(always)]
     fn store_block<const RATE: usize>(a: &[Self; 25], b: &mut [&mut [u8]; 4]) {
         store_block::<RATE>(a, b)
-    }
-    #[inline(always)]
-    fn load_block_full<const RATE: usize>(
-        state: &mut [Self; 25],
-        blocks: &[[u8; 200]; 4],
-        start: usize,
-    ) {
-        load_block_full::<RATE>(state, blocks, start)
-    }
-    #[inline(always)]
-    fn store_block_full<const RATE: usize>(state: &[Self; 25], out: &mut [[u8; 200]; 4]) {
-        store_block_full::<RATE>(state, out)
-    }
-
-    #[inline(always)]
-    fn split_at_mut_n(a: [&mut [u8]; 4], mid: usize) -> ([&mut [u8]; 4], [&mut [u8]; 4]) {
-        split_at_mut_4(a, mid)
-    }
-
-    // TODO: Do we need this, or not? cf. https://github.com/cryspen/libcrux/issues/482
-    fn store<const RATE: usize>(_state: &[Self; 25], _out: [&mut [u8]; 4]) {
-        todo!()
     }
 }
