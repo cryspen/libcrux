@@ -7,6 +7,7 @@ pub struct GF128State<T: GF128FieldElement> {
 
 pub fn gf128_init<T: GF128FieldElement>(key: &[u8]) -> GF128State<T> {
     debug_assert!(key.len() == 16);
+
     GF128State {
         accumulator: T::zero(),
         r: T::load_elem(key),
@@ -16,6 +17,7 @@ pub fn gf128_init<T: GF128FieldElement>(key: &[u8]) -> GF128State<T> {
 #[inline(always)]
 pub fn gf128_update<T: GF128FieldElement>(st: &mut GF128State<T>, block: &[u8]) {
     debug_assert!(block.len() == 16);
+
     let block_elem = T::load_elem(block);
     st.accumulator.add(&block_elem);
     st.accumulator.mul(&st.r);
@@ -23,6 +25,7 @@ pub fn gf128_update<T: GF128FieldElement>(st: &mut GF128State<T>, block: &[u8]) 
 
 pub fn gf128_update_blocks<T: GF128FieldElement>(st: &mut GF128State<T>, input: &[u8]) {
     debug_assert!(input.len() % 16 == 0);
+
     let blocks = input.len() / 16;
     for i in 0..blocks {
         gf128_update(st, &input[i * 16..i * 16 + 16]);
@@ -31,6 +34,7 @@ pub fn gf128_update_blocks<T: GF128FieldElement>(st: &mut GF128State<T>, input: 
 
 pub fn gf128_update_last<T: GF128FieldElement>(st: &mut GF128State<T>, partial_block: &[u8]) {
     debug_assert!(partial_block.len() < 16);
+
     let mut block = [0u8; 16];
     block[0..partial_block.len()].copy_from_slice(partial_block);
     gf128_update(st, &block);
@@ -39,6 +43,7 @@ pub fn gf128_update_last<T: GF128FieldElement>(st: &mut GF128State<T>, partial_b
 pub fn gf128_update_padded<T: GF128FieldElement>(st: &mut GF128State<T>, input: &[u8]) {
     let blocks = input.len() / 16;
     gf128_update_blocks(st, &input[0..blocks * 16]);
+
     let last = input.len() - input.len() % 16;
     if last < input.len() {
         gf128_update_last(st, &input[last..]);
@@ -47,21 +52,22 @@ pub fn gf128_update_padded<T: GF128FieldElement>(st: &mut GF128State<T>, input: 
 
 pub fn gf128_emit<T: GF128FieldElement>(st: &GF128State<T>, out: &mut [u8]) {
     debug_assert!(out.len() == 16);
+
     st.accumulator.store_elem(out);
-}
-
-pub fn gf128<T: GF128FieldElement>(key: &[u8], inp: &[u8], out: &mut [u8]) {
-    debug_assert!(key.len() == 16);
-    debug_assert!(out.len() == 16);
-
-    let mut st = gf128_init::<T>(key);
-    gf128_update_padded(&mut st, inp);
-    gf128_emit(&st, out);
 }
 
 #[cfg(test)]
 mod test {
-    use super::gf128;
+    use super::*;
+
+    fn gf128<T: GF128FieldElement>(key: &[u8], inp: &[u8], out: &mut [u8]) {
+        debug_assert!(key.len() == 16);
+        debug_assert!(out.len() == 16);
+
+        let mut st = gf128_init::<T>(key);
+        gf128_update_padded(&mut st, inp);
+        gf128_emit(&st, out);
+    }
 
     const INPUT: [u8; 132] = [
         0xfe, 0xed, 0xfa, 0xce, 0xde, 0xad, 0xbe, 0xef, 0xfe, 0xed, 0xfa, 0xce, 0xde, 0xad, 0xbe,

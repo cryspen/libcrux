@@ -1,5 +1,6 @@
 [workspace]
 members = [
+    "aesgcm",
     "sys/hacl",
     "sys/libjade",
     "sys/platform",
@@ -10,7 +11,6 @@ members = [
     "libcrux-ml-kem",
     "libcrux-ml-kem/fuzz",
     "libcrux-sha3",
-    "libcrux-aesgcm",
     "libcrux-ml-dsa",
     "libcrux-intrinsics",
     "libcrux-kem",
