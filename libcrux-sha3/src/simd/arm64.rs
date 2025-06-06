@@ -105,7 +105,7 @@ pub(crate) fn store_block<const RATE: usize>(
     start: usize,
     len: usize,
 ) {
-    debug_assert!(len <= RATE && start + len < out[0].len() && out[0].len() == out[1].len());
+    debug_assert!(len <= RATE && start + len <= out[0].len() && out[0].len() == out[1].len());
     for i in 0..len / 16 {
         let i0 = (2 * i) / 5;
         let j0 = (2 * i) % 5;
