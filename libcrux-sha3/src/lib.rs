@@ -358,19 +358,19 @@ pub mod portable {
         /// Squeeze three blocks
         #[inline(always)]
         pub fn shake128_squeeze_first_three_blocks(s: &mut KeccakState, out0: &mut [u8]) {
-            squeeze_first_three_blocks::<1, u64, 168>(&mut s.state, [out0])
+            squeeze_first_three_blocks::<1, u64, 168>(&mut s.state, &mut [out0])
         }
 
         /// Squeeze five blocks
         #[inline(always)]
         pub fn shake128_squeeze_first_five_blocks(s: &mut KeccakState, out0: &mut [u8]) {
-            squeeze_first_five_blocks::<1, u64, 168>(&mut s.state, [out0])
+            squeeze_first_five_blocks::<1, u64, 168>(&mut s.state, &mut [out0])
         }
 
         /// Squeeze another block
         #[inline(always)]
         pub fn shake128_squeeze_next_block(s: &mut KeccakState, out0: &mut [u8]) {
-            squeeze_next_block::<1, u64, 168>(&mut s.state, &mut [out0])
+            squeeze_next_block::<1, u64, 168>(&mut s.state, &mut [out0], 0)
         }
 
         /// Create a new SHAKE-256 state object.
@@ -396,7 +396,7 @@ pub mod portable {
         /// Squeeze the next SHAKE-256 block
         #[inline(always)]
         pub fn shake256_squeeze_next_block(s: &mut KeccakState, out: &mut [u8]) {
-            squeeze_next_block::<1, u64, 136>(&mut s.state, &mut [out])
+            squeeze_next_block::<1, u64, 136>(&mut s.state, &mut [out], 0)
         }
     }
 }
@@ -623,7 +623,7 @@ pub mod neon {
                 // }
                 squeeze_first_three_blocks::<2, crate::simd::arm64::uint64x2_t, 168>(
                     &mut s.state,
-                    [out0, out1],
+                    &mut [out0, out1],
                 )
             }
 
@@ -636,7 +636,7 @@ pub mod neon {
             ) {
                 squeeze_first_five_blocks::<2, crate::simd::arm64::uint64x2_t, 168>(
                     &mut s.state,
-                    [out0, out1],
+                    &mut [out0, out1],
                 )
             }
 
@@ -663,6 +663,7 @@ pub mod neon {
                 squeeze_next_block::<2, crate::simd::arm64::uint64x2_t, 136>(
                     &mut s.state,
                     &mut [out0, out1],
+                    0
                 );
             }
 
@@ -740,6 +741,7 @@ pub mod neon {
                 squeeze_next_block::<2, crate::simd::arm64::uint64x2_t, 168>(
                     &mut s.state,
                     &mut [out0, out1],
+                    0
                 )
             }
 
