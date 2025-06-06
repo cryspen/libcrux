@@ -35,7 +35,7 @@ fn _veorq_n_u64(a: u64, c: u64) -> u64 {
 
 #[inline(always)]
 pub(crate) fn load_block<const RATE: usize>(state: &mut [u64; 25], blocks: &[u8], start: usize) {
-    debug_assert!(RATE <= blocks.len() && RATE % 8 == 0);
+    debug_assert!(start + RATE <= blocks.len() && RATE % 8 == 0);
 
     // First load the block, then xor it with the state
     // Note: combining the two loops below reduces performance for large inputs,
@@ -56,29 +56,27 @@ pub(crate) fn load_block<const RATE: usize>(state: &mut [u64; 25], blocks: &[u8]
 }
 
 #[inline(always)]
-pub(crate) fn load_block_full<const RATE: usize>(
-    state: &mut [u64; 25],
-    blocks: &[u8; 200],
-    start: usize,
-) {
-    load_block::<RATE>(state, blocks, start);
+pub(crate) fn load_last<const RATE: usize, const DELIMITER: u8>(state: &mut [u64; 25], blocks: &[u8], start: usize, len: usize) {
+    debug_assert!(start + len <= blocks.len());
+
+    let mut buffer = [0u8; RATE];
+    buffer[0..len].copy_from_slice(&blocks[start..start+len]);
+    buffer[len] = DELIMITER;
+    buffer[RATE - 1] |= 0x80;
+
+    load_block::<RATE>(state, &buffer, 0);
 }
 
 #[inline(always)]
-pub(crate) fn store_block<const RATE: usize>(s: &[u64; 25], out: &mut [u8]) {
-    for i in 0..RATE / 8 {
-        out[8 * i..8 * i + 8].copy_from_slice(&get_ij(s, i / 5, i % 5).to_le_bytes());
+pub(crate) fn store_block<const RATE: usize>(s: &[u64; 25], out: &mut [u8], start:usize, len:usize) {
+    let octets = len / 8;
+    for i in 0..octets {
+        out[start + 8 * i .. start + 8 * i + 8].copy_from_slice(&get_ij(s, i / 5, i % 5).to_le_bytes());
     }
-}
-
-#[inline(always)]
-pub(crate) fn store_block_full<const RATE: usize>(s: &[u64; 25], out: &mut [u8; 200]) {
-    store_block::<RATE>(s, out);
-}
-
-#[inline(always)]
-fn split_at_mut_1(out: &mut [u8], mid: usize) -> (&mut [u8], &mut [u8]) {
-    out.split_at_mut(mid)
+    let remaining = len % 8;
+    if remaining > 0 {
+        out[start + len - remaining..start + len].copy_from_slice(&get_ij(s, octets / 5, octets % 5).to_le_bytes()[0..remaining]);
+    }
 }
 
 impl KeccakItem<1> for u64 {
@@ -114,45 +112,14 @@ impl KeccakItem<1> for u64 {
     fn load_block<const RATE: usize>(state: &mut [Self; 25], blocks: &[&[u8]; 1], start: usize) {
         load_block::<RATE>(state, blocks[0], start)
     }
-    #[inline(always)]
-    fn store_block<const RATE: usize>(state: &[Self; 25], out: &mut [&mut [u8]; 1]) {
-        store_block::<RATE>(state, out[0])
-    }
-    #[inline(always)]
-    fn load_block_full<const RATE: usize>(
-        state: &mut [Self; 25],
-        blocks: &[[u8; 200]; 1],
-        start: usize,
-    ) {
-        load_block_full::<RATE>(state, &blocks[0], start)
-    }
-    #[inline(always)]
-    fn store_block_full<const RATE: usize>(state: &[Self; 25], out: &mut [[u8; 200]; 1]) {
-        store_block_full::<RATE>(state, &mut out[0]);
+   
+   #[inline(always)]
+    fn load_last<const RATE: usize, const DELIMITER: u8>(state: &mut [Self; 25], blocks: &[&[u8]; 1], start: usize, len: usize) {
+        load_last::<RATE, DELIMITER>(state, blocks[0], start, len)
     }
 
     #[inline(always)]
-    fn split_at_mut_n(a: [&mut [u8]; 1], mid: usize) -> ([&mut [u8]; 1], [&mut [u8]; 1]) {
-        let (x, y) = split_at_mut_1(a[0], mid);
-        ([x], [y])
-    }
-
-    /// `out` has the exact size we want here. It must be less than or equal to `RATE`.
-    #[inline(always)]
-    fn store<const RATE: usize>(state: &[Self; 25], out: [&mut [u8]; 1]) {
-        debug_assert!(out.len() <= RATE / 8, "{} > {}", out.len(), RATE);
-
-        let num_full_blocks = out[0].len() / 8;
-        let last_block_len = out[0].len() % 8;
-
-        for i in 0..num_full_blocks {
-            out[0][i * 8..i * 8 + 8].copy_from_slice(&get_ij(state, i / 5, i % 5).to_le_bytes());
-        }
-        if last_block_len != 0 {
-            out[0][num_full_blocks * 8..num_full_blocks * 8 + last_block_len].copy_from_slice(
-                &get_ij(state, num_full_blocks / 5, num_full_blocks % 5).to_le_bytes()
-                    [0..last_block_len],
-            );
-        }
+    fn store_block<const RATE: usize>(state: &[Self; 25], out: &mut [&mut [u8]; 1], start:usize, len:usize) {
+        store_block::<RATE>(state, out[0], start, len)
     }
 }
