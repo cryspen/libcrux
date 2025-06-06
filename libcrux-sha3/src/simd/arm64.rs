@@ -81,17 +81,17 @@ pub(crate) fn load_last<const RATE: usize, const DELIMITER: u8>(
     state: &mut [uint64x2_t; 25],
     blocks: &[&[u8]; 2],
     offset: usize,
-    len: usize
+    len: usize,
 ) {
-    debug_assert!(offset+len <= blocks[0].len() && blocks[0].len() == blocks[1].len());
+    debug_assert!(offset + len <= blocks[0].len() && blocks[0].len() == blocks[1].len());
 
     let mut buffer0 = [0u8; RATE];
-    buffer0[0..len].copy_from_slice(&blocks[0][offset..offset+len]);
+    buffer0[0..len].copy_from_slice(&blocks[0][offset..offset + len]);
     buffer0[len] = DELIMITER;
     buffer0[RATE - 1] |= 0x80;
 
     let mut buffer1 = [0u8; RATE];
-    buffer1[0..len].copy_from_slice(&blocks[1][offset..offset+len]);
+    buffer1[0..len].copy_from_slice(&blocks[1][offset..offset + len]);
     buffer1[len] = DELIMITER;
     buffer1[RATE - 1] |= 0x80;
 
@@ -99,8 +99,13 @@ pub(crate) fn load_last<const RATE: usize, const DELIMITER: u8>(
 }
 
 #[inline(always)]
-pub(crate) fn store_block<const RATE: usize>(s: &[uint64x2_t; 25], out: &mut [&mut [u8]; 2], start: usize, len: usize) {
-    debug_assert!(len <= RATE && start+len < out[0].len() && out[0].len() == out[1].len());
+pub(crate) fn store_block<const RATE: usize>(
+    s: &[uint64x2_t; 25],
+    out: &mut [&mut [u8]; 2],
+    start: usize,
+    len: usize,
+) {
+    debug_assert!(len <= RATE && start + len < out[0].len() && out[0].len() == out[1].len());
     for i in 0..len / 16 {
         let i0 = (2 * i) / 5;
         let j0 = (2 * i) % 5;
@@ -124,17 +129,16 @@ pub(crate) fn store_block<const RATE: usize>(s: &[uint64x2_t; 25], out: &mut [&m
         let v1 = _vtrn2q_u64(get_ij(s, i0, j0), get_ij(s, i1, j1));
         _vst1q_bytes_u64(&mut out0, v0);
         _vst1q_bytes_u64(&mut out1, v1);
-        out[0][start + len - remaining .. start + len].copy_from_slice(&out0[0..remaining]);
-        out[1][start + len - remaining .. start + len].copy_from_slice(&out1[0..remaining]);
+        out[0][start + len - remaining..start + len].copy_from_slice(&out0[0..remaining]);
+        out[1][start + len - remaining..start + len].copy_from_slice(&out1[0..remaining]);
     } else if remaining > 0 {
         let mut out01 = [0u8; 16];
-        let i = len / 16;        
+        let i = len / 16;
         _vst1q_bytes_u64(&mut out01, get_ij(s, i / 5, i % 5));
-        out[0][start + len - remaining .. start + len].copy_from_slice(&out01[0..remaining]);
-        out[1][start + len - remaining .. start + len].copy_from_slice(&out01[8..8+remaining]);
+        out[0][start + len - remaining..start + len].copy_from_slice(&out01[0..remaining]);
+        out[1][start + len - remaining..start + len].copy_from_slice(&out01[8..8 + remaining]);
     }
 }
-
 
 impl KeccakItem<2> for uint64x2_t {
     #[inline(always)]
@@ -170,11 +174,21 @@ impl KeccakItem<2> for uint64x2_t {
         load_block::<RATE>(state, blocks, start)
     }
     #[inline(always)]
-    fn load_last<const RATE: usize, const DELIMITER: u8>(state: &mut [Self; 25], blocks: &[&[u8]; 2], start: usize, len: usize) {
+    fn load_last<const RATE: usize, const DELIMITER: u8>(
+        state: &mut [Self; 25],
+        blocks: &[&[u8]; 2],
+        start: usize,
+        len: usize,
+    ) {
         load_last::<RATE, DELIMITER>(state, blocks, start, len)
     }
     #[inline(always)]
-    fn store_block<const RATE: usize>(state: &[Self; 25], blocks: &mut [&mut [u8]; 2], start: usize, len: usize) {
+    fn store_block<const RATE: usize>(
+        state: &[Self; 25],
+        blocks: &mut [&mut [u8]; 2],
+        start: usize,
+        len: usize,
+    ) {
         store_block::<RATE>(state, blocks, start, len)
     }
 }
