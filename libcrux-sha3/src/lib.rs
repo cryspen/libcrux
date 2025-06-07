@@ -358,19 +358,19 @@ pub mod portable {
         /// Squeeze three blocks
         #[inline(always)]
         pub fn shake128_squeeze_first_three_blocks(s: &mut KeccakState, out0: &mut [u8]) {
-            squeeze_first_three_blocks::<1, u64, 168>(&mut s.state, [out0])
+            squeeze_first_three_blocks::<1, u64, 168>(&mut s.state, &mut [out0])
         }
 
         /// Squeeze five blocks
         #[inline(always)]
         pub fn shake128_squeeze_first_five_blocks(s: &mut KeccakState, out0: &mut [u8]) {
-            squeeze_first_five_blocks::<1, u64, 168>(&mut s.state, [out0])
+            squeeze_first_five_blocks::<1, u64, 168>(&mut s.state, &mut [out0])
         }
 
         /// Squeeze another block
         #[inline(always)]
         pub fn shake128_squeeze_next_block(s: &mut KeccakState, out0: &mut [u8]) {
-            squeeze_next_block::<1, u64, 168>(&mut s.state, &mut [out0])
+            squeeze_next_block::<1, u64, 168>(&mut s.state, &mut [out0], 0)
         }
 
         /// Create a new SHAKE-256 state object.
@@ -396,7 +396,7 @@ pub mod portable {
         /// Squeeze the next SHAKE-256 block
         #[inline(always)]
         pub fn shake256_squeeze_next_block(s: &mut KeccakState, out: &mut [u8]) {
-            squeeze_next_block::<1, u64, 136>(&mut s.state, &mut [out])
+            squeeze_next_block::<1, u64, 136>(&mut s.state, &mut [out], 0)
         }
     }
 }
@@ -478,39 +478,6 @@ pub mod neon {
         pub fn shake256(input0: &[u8], input1: &[u8], out0: &mut [u8], out1: &mut [u8]) {
             // TODO: make argument ordering consistent
             keccakx2::<136, 0x1fu8>(&[input0, input1], [out0, out1]);
-        }
-
-        /// Run up to 4 SHAKE256 operations in parallel.
-        ///
-        /// **PANICS** when `N` is not 2, 3, or 4.
-        #[allow(non_snake_case)]
-        #[inline(always)]
-        fn _shake256xN<const LEN: usize, const N: usize>(input: &[[u8; 33]; N]) -> [[u8; LEN]; N] {
-            debug_assert!(N == 2 || N == 3 || N == 4);
-
-            let mut out = [[0u8; LEN]; N];
-            match N {
-                2 => {
-                    let (out0, out1) = out.split_at_mut(1);
-                    shake256(&input[0], &input[1], &mut out0[0], &mut out1[0]);
-                }
-                3 => {
-                    let mut extra = [0u8; LEN];
-                    let (out0, out12) = out.split_at_mut(1);
-                    let (out1, out2) = out12.split_at_mut(1);
-                    shake256(&input[0], &input[1], &mut out0[0], &mut out1[0]);
-                    shake256(&input[2], &input[2], &mut out2[0], &mut extra);
-                }
-                4 => {
-                    let (out0, out123) = out.split_at_mut(1);
-                    let (out1, out23) = out123.split_at_mut(1);
-                    let (out2, out3) = out23.split_at_mut(1);
-                    shake256(&input[0], &input[1], &mut out0[0], &mut out1[0]);
-                    shake256(&input[2], &input[3], &mut out2[0], &mut out3[0]);
-                }
-                _ => unreachable!("Only 2, 3, or 4 are supported for N"),
-            }
-            out
         }
 
         /// An incremental API to perform 2 operations in parallel
@@ -623,7 +590,7 @@ pub mod neon {
                 // }
                 squeeze_first_three_blocks::<2, crate::simd::arm64::uint64x2_t, 168>(
                     &mut s.state,
-                    [out0, out1],
+                    &mut [out0, out1],
                 )
             }
 
@@ -636,7 +603,7 @@ pub mod neon {
             ) {
                 squeeze_first_five_blocks::<2, crate::simd::arm64::uint64x2_t, 168>(
                     &mut s.state,
-                    [out0, out1],
+                    &mut [out0, out1],
                 )
             }
 
@@ -663,63 +630,8 @@ pub mod neon {
                 squeeze_next_block::<2, crate::simd::arm64::uint64x2_t, 136>(
                     &mut s.state,
                     &mut [out0, out1],
+                    0,
                 );
-            }
-
-            /// Squeeze up to 3 x 4 (N) blocks in parallel, using two [`KeccakState2`].
-            /// Each block is of size `LEN`.
-            ///
-            /// **PANICS** when `N` is not 2, 3, or 4.
-            #[allow(non_snake_case)]
-            #[inline(always)]
-            fn _shake128_squeeze3xN<const LEN: usize, const N: usize>(
-                state: &mut [KeccakState; 2],
-            ) -> [[u8; LEN]; N] {
-                debug_assert!(N == 2 || N == 3 || N == 4);
-
-                let mut out = [[0u8; LEN]; N];
-                match N {
-                    2 => {
-                        let (out0, out1) = out.split_at_mut(1);
-                        shake128_squeeze_first_three_blocks(
-                            &mut state[0],
-                            &mut out0[0],
-                            &mut out1[0],
-                        );
-                    }
-                    3 => {
-                        let mut extra = [0u8; LEN];
-                        let (out0, out12) = out.split_at_mut(1);
-                        let (out1, out2) = out12.split_at_mut(1);
-                        shake128_squeeze_first_three_blocks(
-                            &mut state[0],
-                            &mut out0[0],
-                            &mut out1[0],
-                        );
-                        shake128_squeeze_first_three_blocks(
-                            &mut state[1],
-                            &mut out2[0],
-                            &mut extra,
-                        );
-                    }
-                    4 => {
-                        let (out0, out123) = out.split_at_mut(1);
-                        let (out1, out23) = out123.split_at_mut(1);
-                        let (out2, out3) = out23.split_at_mut(1);
-                        shake128_squeeze_first_three_blocks(
-                            &mut state[0],
-                            &mut out0[0],
-                            &mut out1[0],
-                        );
-                        shake128_squeeze_first_three_blocks(
-                            &mut state[1],
-                            &mut out2[0],
-                            &mut out3[0],
-                        );
-                    }
-                    _ => unreachable!("This function can only called be called with N = 2, 3, 4"),
-                }
-                out
             }
 
             /// Squeeze 2 times the next block in parallel in the
@@ -740,6 +652,7 @@ pub mod neon {
                 squeeze_next_block::<2, crate::simd::arm64::uint64x2_t, 168>(
                     &mut s.state,
                     &mut [out0, out1],
+                    0,
                 )
             }
 
@@ -840,66 +753,6 @@ pub mod avx2 {
             );
         }
 
-        /// Run up to 4 SHAKE256 operations in parallel.
-        ///
-        /// **PANICS** when `N` is not 2, 3, or 4.
-        #[allow(non_snake_case)]
-        #[inline(always)]
-        fn _shake256xN<const LEN: usize, const N: usize>(input: &[[u8; 33]; N]) -> [[u8; LEN]; N] {
-            debug_assert!(N == 2 || N == 3 || N == 4);
-            let mut out = [[0u8; LEN]; N];
-
-            match N {
-                2 => {
-                    let mut dummy_out0 = [0u8; LEN];
-                    let mut dummy_out1 = [0u8; LEN];
-                    let (out0, out1) = out.split_at_mut(1);
-                    shake256(
-                        &input[0],
-                        &input[1],
-                        &input[0],
-                        &input[0],
-                        &mut out0[0],
-                        &mut out1[0],
-                        &mut dummy_out0,
-                        &mut dummy_out1,
-                    );
-                }
-                3 => {
-                    let mut dummy_out0 = [0u8; LEN];
-                    let (out0, out12) = out.split_at_mut(1);
-                    let (out1, out2) = out12.split_at_mut(1);
-                    shake256(
-                        &input[0],
-                        &input[1],
-                        &input[2],
-                        &input[0],
-                        &mut out0[0],
-                        &mut out1[0],
-                        &mut out2[0],
-                        &mut dummy_out0,
-                    );
-                }
-                4 => {
-                    let (out0, out123) = out.split_at_mut(1);
-                    let (out1, out23) = out123.split_at_mut(1);
-                    let (out2, out3) = out23.split_at_mut(1);
-                    shake256(
-                        &input[0],
-                        &input[1],
-                        &input[2],
-                        &input[3],
-                        &mut out0[0],
-                        &mut out1[0],
-                        &mut out2[0],
-                        &mut out3[0],
-                    );
-                }
-                _ => unreachable!("This function must only be called with N = 2, 3, 4"),
-            }
-            out
-        }
-
         /// An incremental API to perform 4 operations in parallel
         pub mod incremental {
             use crate::generic_keccak::{
@@ -978,7 +831,11 @@ pub mod avx2 {
                 out2: &mut [u8],
                 out3: &mut [u8],
             ) {
-                squeeze_next_block::<4, Vec256, 136>(&mut s.state, &mut [out0, out1, out2, out3]);
+                squeeze_next_block::<4, Vec256, 136>(
+                    &mut s.state,
+                    &mut [out0, out1, out2, out3],
+                    0,
+                );
             }
 
             /// Initialise the state and perform up to 4 absorbs at the same time,
@@ -1024,7 +881,7 @@ pub mod avx2 {
             ) {
                 squeeze_first_three_blocks::<4, Vec256, 168>(
                     &mut s.state,
-                    [out0, out1, out2, out3],
+                    &mut [out0, out1, out2, out3],
                 );
             }
 
@@ -1037,61 +894,10 @@ pub mod avx2 {
                 out2: &mut [u8],
                 out3: &mut [u8],
             ) {
-                squeeze_first_five_blocks::<4, Vec256, 168>(&mut s.state, [out0, out1, out2, out3]);
-            }
-
-            /// Squeeze up to 3 x 4 (N) blocks in parallel, using two [`KeccakState`].
-            /// Each block is of size `LEN`.
-            ///
-            /// **PANICS** when `N` is not 2, 3, or 4.
-            #[inline(always)]
-            #[allow(non_snake_case)]
-            fn _shake128_squeeze3xN<const LEN: usize, const N: usize>(
-                state: &mut KeccakState,
-            ) -> [[u8; LEN]; N] {
-                debug_assert!(N == 2 || N == 3 || N == 4);
-
-                let mut out = [[0u8; LEN]; N];
-                match N {
-                    2 => {
-                        let mut dummy_out0 = [0u8; LEN];
-                        let mut dummy_out1 = [0u8; LEN];
-                        let (out0, out1) = out.split_at_mut(1);
-                        shake128_squeeze_first_three_blocks(
-                            state,
-                            &mut out0[0],
-                            &mut out1[0],
-                            &mut dummy_out0,
-                            &mut dummy_out1,
-                        );
-                    }
-                    3 => {
-                        let mut dummy_out0 = [0u8; LEN];
-                        let (out0, out12) = out.split_at_mut(1);
-                        let (out1, out2) = out12.split_at_mut(1);
-                        shake128_squeeze_first_three_blocks(
-                            state,
-                            &mut out0[0],
-                            &mut out1[0],
-                            &mut out2[0],
-                            &mut dummy_out0,
-                        );
-                    }
-                    4 => {
-                        let (out0, out123) = out.split_at_mut(1);
-                        let (out1, out23) = out123.split_at_mut(1);
-                        let (out2, out3) = out23.split_at_mut(1);
-                        shake128_squeeze_first_three_blocks(
-                            state,
-                            &mut out0[0],
-                            &mut out1[0],
-                            &mut out2[0],
-                            &mut out3[0],
-                        );
-                    }
-                    _ => unreachable!("This function must only be called with N = 2, 3, 4"),
-                }
-                out
+                squeeze_first_five_blocks::<4, Vec256, 168>(
+                    &mut s.state,
+                    &mut [out0, out1, out2, out3],
+                );
             }
 
             /// Squeeze another block
@@ -1103,61 +909,11 @@ pub mod avx2 {
                 out2: &mut [u8],
                 out3: &mut [u8],
             ) {
-                squeeze_next_block::<4, Vec256, 168>(&mut s.state, &mut [out0, out1, out2, out3]);
-            }
-
-            /// Squeeze up to 4 (N) blocks in parallel, using two [`KeccakState`].
-            /// Each block is of size `LEN`.
-            ///
-            /// **PANICS** when `N` is not 2, 3, or 4.
-            #[allow(non_snake_case)]
-            #[inline(always)]
-            fn _shake128_squeezexN<const LEN: usize, const N: usize>(
-                state: &mut KeccakState,
-            ) -> [[u8; LEN]; N] {
-                debug_assert!(N == 2 || N == 3 || N == 4);
-
-                let mut out = [[0u8; LEN]; N];
-                match N {
-                    2 => {
-                        let mut dummy_out0 = [0u8; LEN];
-                        let mut dummy_out1 = [0u8; LEN];
-                        let (out0, out1) = out.split_at_mut(1);
-                        shake128_squeeze_next_block(
-                            state,
-                            &mut out0[0],
-                            &mut out1[0],
-                            &mut dummy_out0,
-                            &mut dummy_out1,
-                        );
-                    }
-                    3 => {
-                        let mut dummy_out0 = [0u8; LEN];
-                        let (out0, out12) = out.split_at_mut(1);
-                        let (out1, out2) = out12.split_at_mut(1);
-                        shake128_squeeze_next_block(
-                            state,
-                            &mut out0[0],
-                            &mut out1[0],
-                            &mut out2[0],
-                            &mut dummy_out0,
-                        );
-                    }
-                    4 => {
-                        let (out0, out123) = out.split_at_mut(1);
-                        let (out1, out23) = out123.split_at_mut(1);
-                        let (out2, out3) = out23.split_at_mut(1);
-                        shake128_squeeze_next_block(
-                            state,
-                            &mut out0[0],
-                            &mut out1[0],
-                            &mut out2[0],
-                            &mut out3[0],
-                        );
-                    }
-                    _ => unreachable!("This function is only called with 2, 3, 4"),
-                }
-                out
+                squeeze_next_block::<4, Vec256, 168>(
+                    &mut s.state,
+                    &mut [out0, out1, out2, out3],
+                    0,
+                );
             }
         }
     }
