@@ -831,7 +831,11 @@ pub mod avx2 {
                 out2: &mut [u8],
                 out3: &mut [u8],
             ) {
-                squeeze_next_block::<4, Vec256, 136>(&mut s.state, &mut [out0, out1, out2, out3]);
+                squeeze_next_block::<4, Vec256, 136>(
+                    &mut s.state,
+                    &mut [out0, out1, out2, out3],
+                    0,
+                );
             }
 
             /// Initialise the state and perform up to 4 absorbs at the same time,
@@ -877,7 +881,7 @@ pub mod avx2 {
             ) {
                 squeeze_first_three_blocks::<4, Vec256, 168>(
                     &mut s.state,
-                    [out0, out1, out2, out3],
+                    &mut [out0, out1, out2, out3],
                 );
             }
 
@@ -890,7 +894,10 @@ pub mod avx2 {
                 out2: &mut [u8],
                 out3: &mut [u8],
             ) {
-                squeeze_first_five_blocks::<4, Vec256, 168>(&mut s.state, [out0, out1, out2, out3]);
+                squeeze_first_five_blocks::<4, Vec256, 168>(
+                    &mut s.state,
+                    &mut [out0, out1, out2, out3],
+                );
             }
 
             /// Squeeze another block
@@ -902,7 +909,11 @@ pub mod avx2 {
                 out2: &mut [u8],
                 out3: &mut [u8],
             ) {
-                squeeze_next_block::<4, Vec256, 168>(&mut s.state, &mut [out0, out1, out2, out3]);
+                squeeze_next_block::<4, Vec256, 168>(
+                    &mut s.state,
+                    &mut [out0, out1, out2, out3],
+                    0,
+                );
             }
         }
     }
