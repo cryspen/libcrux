@@ -391,7 +391,7 @@ pub mod portable {
         /// Squeeze the first SHAKE-256 block
         #[inline(always)]
         pub fn shake256_squeeze_first_block(s: &mut KeccakState, out: &mut [u8]) {
-            squeeze_first_block::<1, u64, 136>(&mut s.state, &mut [out])
+            squeeze_first_block::<1, u64, 136>(&s.state, &mut [out])
         }
 
         /// Squeeze the next SHAKE-256 block
@@ -589,7 +589,7 @@ pub mod neon {
                 out1: &mut [u8],
             ) {
                 squeeze_first_block::<2, crate::simd::arm64::uint64x2_t, 136>(
-                    &mut s.state,
+                    &s.state,
                     &mut [out0, out1],
                 );
             }
@@ -710,10 +710,12 @@ pub mod avx2 {
         /// An incremental API to perform 4 operations in parallel
         pub mod incremental {
             use crate::generic_keccak::{
-                absorb_final, modname::squeeze_first_three_blocks, squeeze_next_block,
+                absorb_final, multi_squeeze::squeeze_first_three_blocks, squeeze_next_block,
                 KeccakState as GenericState,
             };
-            use crate::generic_keccak::{modname::squeeze_first_five_blocks, squeeze_first_block};
+            use crate::generic_keccak::{
+                multi_squeeze::squeeze_first_five_blocks, squeeze_first_block,
+            };
             use libcrux_intrinsics::avx2::*;
 
             /// The Keccak state for the incremental API.
