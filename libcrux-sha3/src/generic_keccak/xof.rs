@@ -62,6 +62,8 @@ impl<const PARALLEL_LANES: usize, const RATE: usize, STATE: KeccakStateItem<PARA
             );
 
             let input_len = inputs[0].len();
+
+            #[allow(clippy::needless_range_loop)]
             for i in 0..PARALLEL_LANES {
                 self.buf[i][self.buf_len..self.buf_len + input_remainder_len]
                     .copy_from_slice(&inputs[i][input_len - input_remainder_len..]);
@@ -87,9 +89,11 @@ impl<const PARALLEL_LANES: usize, const RATE: usize, STATE: KeccakStateItem<PARA
         if input_consumed > 0 {
             let mut borrowed = [[0u8; RATE].as_slice(); PARALLEL_LANES];
             // We have a full block in the local buffer now.
+            #[allow(clippy::needless_range_loop)]
             for i in 0..PARALLEL_LANES {
                 borrowed[i] = &self.buf[i];
             }
+
             STATE::load_block::<RATE>(&mut self.inner.st, &borrowed, 0);
             keccakf1600(&mut self.inner);
 
@@ -105,7 +109,7 @@ impl<const PARALLEL_LANES: usize, const RATE: usize, STATE: KeccakStateItem<PARA
         let remainder = input_to_consume % RATE;
         for i in 0..num_blocks {
             // We only get in here if `input_len / RATE > 0`.
-            STATE::load_block::<RATE>(&mut self.inner.st, &inputs, input_consumed + i * RATE);
+            STATE::load_block::<RATE>(&mut self.inner.st, inputs, input_consumed + i * RATE);
             keccakf1600(&mut self.inner);
         }
 
@@ -129,6 +133,8 @@ impl<const PARALLEL_LANES: usize, const RATE: usize, STATE: KeccakStateItem<PARA
                 // We have enough data when combining the internal buffer and
                 // the input.
                 consumed = RATE - self.buf_len;
+
+                #[allow(clippy::needless_range_loop)]
                 for i in 0..PARALLEL_LANES {
                     self.buf[i][self.buf_len..].copy_from_slice(&inputs[i][..consumed]);
                 }
@@ -147,9 +153,12 @@ impl<const PARALLEL_LANES: usize, const RATE: usize, STATE: KeccakStateItem<PARA
         self.absorb(inputs);
 
         let mut borrowed = [[0u8; RATE].as_slice(); PARALLEL_LANES];
+
+        #[allow(clippy::needless_range_loop)]
         for i in 0..PARALLEL_LANES {
             borrowed[i] = &self.buf[i];
         }
+
         STATE::load_last::<RATE, DELIMITER>(&mut self.inner.st, &borrowed, 0, self.buf_len);
         keccakf1600(&mut self.inner);
     }

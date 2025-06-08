@@ -41,10 +41,14 @@ pub(crate) fn load_block<const RATE: usize>(state: &mut [u64; 25], blocks: &[u8]
     // Note: combining the two loops below reduces performance for large inputs,
     //       so we knowingly use two loops: one for loading, one for xor
     let mut state_flat = [0u64; 25];
+
+    #[allow(clippy::needless_range_loop)]
     for i in 0..RATE / 8 {
         let offset = start + 8 * i;
         state_flat[i] = u64::from_le_bytes(blocks[offset..offset + 8].try_into().unwrap());
     }
+
+    #[allow(clippy::needless_range_loop)]
     for i in 0..RATE / 8 {
         set_ij(
             state,

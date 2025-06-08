@@ -8,6 +8,11 @@ use crate::traits::{get_ij, set_ij, KeccakStateItem};
 /// A generic Xof API.
 pub(crate) mod xof;
 
+/// Squeeze multiple blocks at once.
+///
+/// These are useful for ML-KEM and ML-DSA implementations.
+pub(crate) mod multi_squeeze;
+
 #[cfg_attr(hax, hax_lib::opaque)]
 #[derive(Clone, Copy)]
 pub(crate) struct KeccakState<const N: usize, T: KeccakStateItem<N>> {
@@ -95,7 +100,8 @@ const _PI: [usize; 24] = [
 
 #[inline(always)]
 pub(crate) fn pi<const N: usize, T: KeccakStateItem<N>>(s: &mut KeccakState<N, T>) {
-    let old = s.clone();
+    let old = *s;
+
     s.set(1, 0, old[(0, 3)]);
     s.set(2, 0, old[(0, 1)]);
     s.set(3, 0, old[(0, 4)]);
@@ -124,7 +130,7 @@ pub(crate) fn pi<const N: usize, T: KeccakStateItem<N>>(s: &mut KeccakState<N, T
 
 #[inline(always)]
 pub(crate) fn chi<const N: usize, T: KeccakStateItem<N>>(s: &mut KeccakState<N, T>) {
-    let old = s.clone();
+    let old = *s;
 
     #[allow(clippy::needless_range_loop)]
     for i in 0..5 {
@@ -254,7 +260,7 @@ pub(crate) fn keccak<const N: usize, T: KeccakStateItem<N>, const RATE: usize, c
 ) {
     let mut s = KeccakState::<N, T>::new();
     for i in 0..data[0].len() / RATE {
-        absorb_block::<N, T, RATE>(&mut s, &data, i * RATE);
+        absorb_block::<N, T, RATE>(&mut s, data, i * RATE);
     }
     let rem = data[0].len() % RATE;
     absorb_final::<N, T, RATE, DELIM>(&mut s, data, data[0].len() - rem, rem);
@@ -273,42 +279,5 @@ pub(crate) fn keccak<const N: usize, T: KeccakStateItem<N>, const RATE: usize, c
         if last < outlen {
             squeeze_last::<N, T, RATE>(s, &mut out, last, outlen - last);
         }
-    }
-}
-
-/// Squeeze multiple blocks at once.
-///
-/// These are useful for ML-KEM and ML-DSA implementations.
-pub(crate) mod multi_squeeze {
-    use super::*;
-
-    #[inline(always)]
-    pub(crate) fn squeeze_first_three_blocks<
-        const N: usize,
-        T: KeccakStateItem<N>,
-        const RATE: usize,
-    >(
-        s: &mut KeccakState<N, T>,
-        out: &mut [&mut [u8]; N],
-    ) {
-        squeeze_first_block::<N, T, RATE>(s, out);
-        squeeze_next_block::<N, T, RATE>(s, out, RATE);
-        squeeze_next_block::<N, T, RATE>(s, out, 2 * RATE);
-    }
-
-    #[inline(always)]
-    pub(crate) fn squeeze_first_five_blocks<
-        const N: usize,
-        T: KeccakStateItem<N>,
-        const RATE: usize,
-    >(
-        s: &mut KeccakState<N, T>,
-        out: &mut [&mut [u8]; N],
-    ) {
-        squeeze_first_block::<N, T, RATE>(s, out);
-        squeeze_next_block::<N, T, RATE>(s, out, RATE);
-        squeeze_next_block::<N, T, RATE>(s, out, 2 * RATE);
-        squeeze_next_block::<N, T, RATE>(s, out, 3 * RATE);
-        squeeze_next_block::<N, T, RATE>(s, out, 4 * RATE);
     }
 }
