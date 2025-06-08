@@ -56,13 +56,13 @@ pub(crate) fn load_block<const RATE: usize>(
             s,
             i0,
             j0,
-            _veorq_u64(get_ij(s, i0, j0), _vtrn1q_u64(v0, v1)),
+            _veorq_u64(*get_ij(s, i0, j0), _vtrn1q_u64(v0, v1)),
         );
         set_ij(
             s,
             i1,
             j1,
-            _veorq_u64(get_ij(s, i1, j1), _vtrn2q_u64(v0, v1)),
+            _veorq_u64(*get_ij(s, i1, j1), _vtrn2q_u64(v0, v1)),
         );
     }
     if RATE % 16 != 0 {
@@ -72,7 +72,7 @@ pub(crate) fn load_block<const RATE: usize>(
         u[0] = u64::from_le_bytes(blocks[0][start..start + 8].try_into().unwrap());
         u[1] = u64::from_le_bytes(blocks[1][start..start + 8].try_into().unwrap());
         let uvec = _vld1q_u64(&u);
-        set_ij(s, i / 5, i % 5, _veorq_u64(get_ij(s, i / 5, i % 5), uvec));
+        set_ij(s, i / 5, i % 5, _veorq_u64(*get_ij(s, i / 5, i % 5), uvec));
     }
 }
 
@@ -111,8 +111,8 @@ pub(crate) fn store_block<const RATE: usize>(
         let j0 = (2 * i) % 5;
         let i1 = (2 * i + 1) / 5;
         let j1 = (2 * i + 1) % 5;
-        let v0 = _vtrn1q_u64(get_ij(s, i0, j0), get_ij(s, i1, j1));
-        let v1 = _vtrn2q_u64(get_ij(s, i0, j0), get_ij(s, i1, j1));
+        let v0 = _vtrn1q_u64(*get_ij(s, i0, j0), *get_ij(s, i1, j1));
+        let v1 = _vtrn2q_u64(*get_ij(s, i0, j0), *get_ij(s, i1, j1));
         _vst1q_bytes_u64(&mut out[0][start + 16 * i..start + 16 * (i + 1)], v0);
         _vst1q_bytes_u64(&mut out[1][start + 16 * i..start + 16 * (i + 1)], v1);
     }
@@ -125,8 +125,8 @@ pub(crate) fn store_block<const RATE: usize>(
         let j0 = i % 5;
         let i1 = (i + 1) / 5;
         let j1 = (i + 1) % 5;
-        let v0 = _vtrn1q_u64(get_ij(s, i0, j0), get_ij(s, i1, j1));
-        let v1 = _vtrn2q_u64(get_ij(s, i0, j0), get_ij(s, i1, j1));
+        let v0 = _vtrn1q_u64(*get_ij(s, i0, j0), *get_ij(s, i1, j1));
+        let v1 = _vtrn2q_u64(*get_ij(s, i0, j0), *get_ij(s, i1, j1));
         _vst1q_bytes_u64(&mut out0, v0);
         _vst1q_bytes_u64(&mut out1, v1);
         out[0][start + len - remaining..start + len].copy_from_slice(&out0[0..remaining]);
@@ -134,7 +134,7 @@ pub(crate) fn store_block<const RATE: usize>(
     } else if remaining > 0 {
         let mut out01 = [0u8; 16];
         let i = 2 * (len / 16);
-        _vst1q_bytes_u64(&mut out01, get_ij(s, i / 5, i % 5));
+        _vst1q_bytes_u64(&mut out01, *get_ij(s, i / 5, i % 5));
         out[0][start + len - remaining..start + len].copy_from_slice(&out01[0..remaining]);
         out[1][start + len - remaining..start + len].copy_from_slice(&out01[8..8 + remaining]);
     }
