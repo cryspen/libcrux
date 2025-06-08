@@ -2,13 +2,13 @@
 name = "libcrux-rsa"
 description = "Formally verified RSA signature library"
 version = "0.0.3-alpha.1"
+readme = "Readme.md"
 
 authors.workspace = true
 license.workspace = true
 homepage.workspace = true
 edition.workspace = true
 repository.workspace = true
-readme.workspace = true
 
 [features]
 expose-hacl = []
