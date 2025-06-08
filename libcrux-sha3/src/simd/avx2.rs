@@ -73,10 +73,10 @@ pub(crate) fn load_block<const RATE: usize>(
         let i3 = (4 * i + 3) / 5;
         let j3 = (4 * i + 3) % 5;
 
-        set_ij(state, i0, j0, mm256_xor_si256(get_ij(state, i0, j0), v0));
-        set_ij(state, i1, j1, mm256_xor_si256(get_ij(state, i1, j1), v1));
-        set_ij(state, i2, j2, mm256_xor_si256(get_ij(state, i2, j2), v2));
-        set_ij(state, i3, j3, mm256_xor_si256(get_ij(state, i3, j3), v3));
+        set_ij(state, i0, j0, mm256_xor_si256(*get_ij(state, i0, j0), v0));
+        set_ij(state, i1, j1, mm256_xor_si256(*get_ij(state, i1, j1), v1));
+        set_ij(state, i2, j2, mm256_xor_si256(*get_ij(state, i2, j2), v2));
+        set_ij(state, i3, j3, mm256_xor_si256(*get_ij(state, i3, j3), v3));
     }
 
     let rem = RATE % 32; // has to be 8 or 16
@@ -89,7 +89,7 @@ pub(crate) fn load_block<const RATE: usize>(
     let u = mm256_loadu_si256_u8(u8s.as_slice());
     let i = (4 * (RATE / 32)) / 5;
     let j = (4 * (RATE / 32)) % 5;
-    set_ij(state, i, j, mm256_xor_si256(get_ij(state, i, j), u));
+    set_ij(state, i, j, mm256_xor_si256(*get_ij(state, i, j), u));
     if rem == 16 {
         let mut u8s = [0u8; 32];
         u8s[0..8].copy_from_slice(&blocks[0][start + 8..start + 16]);
@@ -99,7 +99,7 @@ pub(crate) fn load_block<const RATE: usize>(
         let u = mm256_loadu_si256_u8(u8s.as_slice());
         let i = (4 * (RATE / 32) + 1) / 5;
         let j = (4 * (RATE / 32) + 1) % 5;
-        set_ij(state, i, j, mm256_xor_si256(get_ij(state, i, j), u));
+        set_ij(state, i, j, mm256_xor_si256(*get_ij(state, i, j), u));
     }
 }
 
@@ -147,11 +147,11 @@ pub(crate) fn store_block<const RATE: usize>(
         let i3 = (4 * i + 3) / 5;
         let j3 = (4 * i + 3) % 5;
 
-        let v0l = mm256_permute2x128_si256::<0x20>(get_ij(s, i0, j0), get_ij(s, i2, j2));
+        let v0l = mm256_permute2x128_si256::<0x20>(*get_ij(s, i0, j0), *get_ij(s, i2, j2));
         // 0 0 2 2
-        let v1h = mm256_permute2x128_si256::<0x20>(get_ij(s, i1, j1), get_ij(s, i3, j3)); // 1 1 3 3
-        let v2l = mm256_permute2x128_si256::<0x31>(get_ij(s, i0, j0), get_ij(s, i2, j2)); // 0 0 2 2
-        let v3h = mm256_permute2x128_si256::<0x31>(get_ij(s, i1, j1), get_ij(s, i3, j3)); // 1 1 3 3
+        let v1h = mm256_permute2x128_si256::<0x20>(*get_ij(s, i1, j1), *get_ij(s, i3, j3)); // 1 1 3 3
+        let v2l = mm256_permute2x128_si256::<0x31>(*get_ij(s, i0, j0), *get_ij(s, i2, j2)); // 0 0 2 2
+        let v3h = mm256_permute2x128_si256::<0x31>(*get_ij(s, i1, j1), *get_ij(s, i3, j3)); // 1 1 3 3
 
         let v0 = mm256_unpacklo_epi64(v0l, v1h); // 0 1 2 3
         let v1 = mm256_unpackhi_epi64(v0l, v1h); // 0 1 2 3
@@ -172,7 +172,7 @@ pub(crate) fn store_block<const RATE: usize>(
         for k in 0..chunks8 {
             let i = (4 * chunks + k) / 5;
             let j = (4 * chunks + k) % 5;
-            mm256_storeu_si256_u8(&mut u8s, get_ij(s, i, j));
+            mm256_storeu_si256_u8(&mut u8s, *get_ij(s, i, j));
             out[0][start + 8 * k..start + 8 * (k + 1)].copy_from_slice(&u8s[0..8]);
             out[1][start + 8 * k..start + 8 * (k + 1)].copy_from_slice(&u8s[8..16]);
             out[2][start + 8 * k..start + 8 * (k + 1)].copy_from_slice(&u8s[16..24]);
@@ -182,7 +182,7 @@ pub(crate) fn store_block<const RATE: usize>(
         if rem8 > 0 {
             let i = (4 * chunks + chunks8) / 5;
             let j = (4 * chunks + chunks8) % 5;
-            mm256_storeu_si256_u8(&mut u8s, get_ij(s, i, j));
+            mm256_storeu_si256_u8(&mut u8s, *get_ij(s, i, j));
             out[0][start + len - rem8..start + len].copy_from_slice(&u8s[0..rem]);
             out[1][start + len - rem8..start + len].copy_from_slice(&u8s[8..8 + rem]);
             out[2][start + len - rem8..start + len].copy_from_slice(&u8s[16..16 + rem]);

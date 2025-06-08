@@ -259,8 +259,9 @@ pub mod portable {
     /// An incremental API for SHAKE
     pub mod incremental {
         use generic_keccak::{
-            absorb_final, squeeze_first_block, squeeze_first_five_blocks,
-            squeeze_first_three_blocks, squeeze_next_block, KeccakXofState,
+            absorb_final, multi_squeeze::squeeze_first_five_blocks,
+            multi_squeeze::squeeze_first_three_blocks, squeeze_first_block, squeeze_next_block,
+            xof::KeccakXofState,
         };
         mod private {
             pub trait Sealed {}
@@ -483,8 +484,9 @@ pub mod neon {
         /// An incremental API to perform 2 operations in parallel
         pub mod incremental {
             use crate::generic_keccak::{
-                absorb_final, squeeze_first_block, squeeze_first_five_blocks,
-                squeeze_first_three_blocks, squeeze_next_block, KeccakState as GenericState,
+                absorb_final, multi_squeeze::squeeze_first_five_blocks,
+                multi_squeeze::squeeze_first_three_blocks, squeeze_first_block, squeeze_next_block,
+                KeccakState as GenericState,
             };
 
             /// The Keccak state for the incremental API.
@@ -497,13 +499,6 @@ pub mod neon {
             /// Initialise the `KeccakState2`.
             #[inline(always)]
             pub fn init() -> KeccakState {
-                // XXX: These functions could alternatively implement the same with
-                //      the portable implementation
-                // {
-                //     let s0 = KeccakState::new();
-                //     let s1 = KeccakState::new();
-                //     [s0, s1]
-                // }
                 KeccakState {
                     state: KeccakState2Internal::new(),
                 }
@@ -512,13 +507,6 @@ pub mod neon {
             /// Shake128 absorb `data0` and `data1` in the [`KeccakState`] `s`.
             #[inline(always)]
             pub fn shake128_absorb_final(s: &mut KeccakState, data0: &[u8], data1: &[u8]) {
-                // XXX: These functions could alternatively implement the same with
-                //      the portable implementation
-                // {
-                //     let [mut s0, mut s1] = s;
-                //     shake128_absorb_final(&mut s0, data0);
-                //     shake128_absorb_final(&mut s1, data1);
-                // }
                 absorb_final::<2, crate::simd::arm64::uint64x2_t, 168, 0x1fu8>(
                     &mut s.state,
                     &[data0, data1],
@@ -530,13 +518,6 @@ pub mod neon {
             /// Shake256 absorb `data0` and `data1` in the [`KeccakState`] `s`.
             #[inline(always)]
             pub fn shake256_absorb_final(s: &mut KeccakState, data0: &[u8], data1: &[u8]) {
-                // XXX: These functions could alternatively implement the same with
-                //      the portable implementation
-                // {
-                //     let [mut s0, mut s1] = s;
-                //     shake128_absorb_final(&mut s0, data0);
-                //     shake128_absorb_final(&mut s1, data1);
-                // }
                 absorb_final::<2, crate::simd::arm64::uint64x2_t, 136, 0x1fu8>(
                     &mut s.state,
                     &[data0, data1],
@@ -581,13 +562,6 @@ pub mod neon {
                 out0: &mut [u8],
                 out1: &mut [u8],
             ) {
-                // XXX: These functions could alternatively implement the same with
-                //      the portable implementation
-                // {
-                //     let [mut s0, mut s1] = s;
-                //     shake128_squeeze_first_three_blocks(&mut s0, out0);
-                //     shake128_squeeze_first_three_blocks(&mut s1, out1);
-                // }
                 squeeze_first_three_blocks::<2, crate::simd::arm64::uint64x2_t, 168>(
                     &mut s.state,
                     &mut [out0, out1],
@@ -642,13 +616,6 @@ pub mod neon {
                 out0: &mut [u8],
                 out1: &mut [u8],
             ) {
-                // XXX: These functions could alternatively implement the same with
-                //      the portable implementation
-                // {
-                //     let [mut s0, mut s1] = s;
-                //     shake128_squeeze_next_block(&mut s0, out0);
-                //     shake128_squeeze_next_block(&mut s1, out1);
-                // }
                 squeeze_next_block::<2, crate::simd::arm64::uint64x2_t, 168>(
                     &mut s.state,
                     &mut [out0, out1],
@@ -734,19 +701,6 @@ pub mod avx2 {
             out2: &mut [u8],
             out3: &mut [u8],
         ) {
-            // XXX: These functions could alternatively implement the same with
-            //      the portable implementation
-            // #[cfg(feature = "simd128")]
-            // {
-            //     keccakx2::<136, 0x1fu8>([input0, input1], [out0, out1]);
-            //     keccakx2::<136, 0x1fu8>([input2, input3], [out2, out3]);
-            // }
-            // {
-            //     keccakx1::<136, 0x1fu8>([input0], [out0]);
-            //     keccakx1::<136, 0x1fu8>([input1], [out1]);
-            //     keccakx1::<136, 0x1fu8>([input2], [out2]);
-            //     keccakx1::<136, 0x1fu8>([input3], [out3]);
-            // }
             keccak::<4, Vec256, 136, 0x1fu8>(
                 &[input0, input1, input2, input3],
                 [out0, out1, out2, out3],
@@ -756,10 +710,10 @@ pub mod avx2 {
         /// An incremental API to perform 4 operations in parallel
         pub mod incremental {
             use crate::generic_keccak::{
-                absorb_final, squeeze_first_three_blocks, squeeze_next_block,
+                absorb_final, modname::squeeze_first_three_blocks, squeeze_next_block,
                 KeccakState as GenericState,
             };
-            use crate::generic_keccak::{squeeze_first_block, squeeze_first_five_blocks};
+            use crate::generic_keccak::{modname::squeeze_first_five_blocks, squeeze_first_block};
             use libcrux_intrinsics::avx2::*;
 
             /// The Keccak state for the incremental API.
