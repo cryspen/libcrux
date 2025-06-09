@@ -204,6 +204,8 @@ pub fn shake256_ema(out: &mut [u8], data: &[u8]) {
 
 /// A portable SHA3 implementation without platform dependent optimisations.
 pub mod portable {
+    use crate::generic_keccak::keccak1;
+
     use super::*;
     use generic_keccak::KeccakState as GenericState;
 
@@ -213,56 +215,45 @@ pub mod portable {
         state: GenericState<1, u64>,
     }
 
-    #[inline(always)]
-    fn keccakx1<const RATE: usize, const DELIM: u8>(data: &[&[u8]; 1], out: [&mut [u8]; 1]) {
-        // generic_keccak::keccak_xof::<1, u64, RATE, DELIM>(data, out);
-        // or
-        generic_keccak::keccak::<1, u64, RATE, DELIM>(data, out);
-    }
-
     /// A portable SHA3 224 implementation.
     #[inline(always)]
     pub fn sha224(digest: &mut [u8], data: &[u8]) {
-        keccakx1::<144, 0x06u8>(&[data], [digest]);
+        keccak1::<144, 0x06u8>(data, digest);
     }
 
     /// A portable SHA3 256 implementation.
     #[inline(always)]
     pub fn sha256(digest: &mut [u8], data: &[u8]) {
-        keccakx1::<136, 0x06u8>(&[data], [digest]);
+        keccak1::<136, 0x06u8>(data, digest);
     }
 
     /// A portable SHA3 384 implementation.
     #[inline(always)]
     pub fn sha384(digest: &mut [u8], data: &[u8]) {
-        keccakx1::<104, 0x06u8>(&[data], [digest]);
+        keccak1::<104, 0x06u8>(data, digest);
     }
 
     /// A portable SHA3 512 implementation.
     #[inline(always)]
     pub fn sha512(digest: &mut [u8], data: &[u8]) {
-        keccakx1::<72, 0x06u8>(&[data], [digest]);
+        keccak1::<72, 0x06u8>(data, digest);
     }
 
     /// A portable SHAKE128 implementation.
     #[inline(always)]
     pub fn shake128(digest: &mut [u8], data: &[u8]) {
-        keccakx1::<168, 0x1fu8>(&[data], [digest]);
+        keccak1::<168, 0x1fu8>(data, digest);
     }
 
     /// A portable SHAKE256 implementation.
     #[inline(always)]
     pub fn shake256(digest: &mut [u8], data: &[u8]) {
-        keccakx1::<136, 0x1fu8>(&[data], [digest]);
+        keccak1::<136, 0x1fu8>(data, digest);
     }
 
     /// An incremental API for SHAKE
     pub mod incremental {
-        use generic_keccak::{
-            absorb_final, multi_squeeze::squeeze_first_five_blocks,
-            multi_squeeze::squeeze_first_three_blocks, squeeze_first_block, squeeze_next_block,
-            xof::KeccakXofState,
-        };
+        use generic_keccak::{absorb_final, xof::KeccakXofState};
         mod private {
             pub trait Sealed {}
 
@@ -313,7 +304,7 @@ pub mod portable {
 
             /// Shake128 squeeze
             fn squeeze(&mut self, out: &mut [u8]) {
-                self.state.squeeze([out]);
+                self.state.squeeze(out);
             }
         }
 
@@ -338,7 +329,7 @@ pub mod portable {
 
             /// Shake256 squeeze
             fn squeeze(&mut self, out: &mut [u8]) {
-                self.state.squeeze([out]);
+                self.state.squeeze(out);
             }
         }
 
@@ -359,19 +350,19 @@ pub mod portable {
         /// Squeeze three blocks
         #[inline(always)]
         pub fn shake128_squeeze_first_three_blocks(s: &mut KeccakState, out0: &mut [u8]) {
-            squeeze_first_three_blocks::<1, u64, 168>(&mut s.state, &mut [out0])
+            s.state.squeeze_first_three_blocks::<168>(out0);
         }
 
         /// Squeeze five blocks
         #[inline(always)]
         pub fn shake128_squeeze_first_five_blocks(s: &mut KeccakState, out0: &mut [u8]) {
-            squeeze_first_five_blocks::<1, u64, 168>(&mut s.state, &mut [out0])
+            s.state.squeeze_first_five_blocks::<168>(out0);
         }
 
         /// Squeeze another block
         #[inline(always)]
         pub fn shake128_squeeze_next_block(s: &mut KeccakState, out0: &mut [u8]) {
-            squeeze_next_block::<1, u64, 168>(&mut s.state, &mut [out0], 0)
+            s.state.squeeze_next_block::<168>(out0, 0)
         }
 
         /// Create a new SHAKE-256 state object.
@@ -391,13 +382,13 @@ pub mod portable {
         /// Squeeze the first SHAKE-256 block
         #[inline(always)]
         pub fn shake256_squeeze_first_block(s: &mut KeccakState, out: &mut [u8]) {
-            squeeze_first_block::<1, u64, 136>(&s.state, &mut [out])
+            s.state.squeeze_first_block::<136>(out);
         }
 
         /// Squeeze the next SHAKE-256 block
         #[inline(always)]
         pub fn shake256_squeeze_next_block(s: &mut KeccakState, out: &mut [u8]) {
-            squeeze_next_block::<1, u64, 136>(&mut s.state, &mut [out], 0)
+            s.state.squeeze_next_block::<136>(out, 0);
         }
     }
 }
@@ -411,20 +402,14 @@ pub mod portable {
 /// Feature `simd128` enables the implementations in this module.
 #[cfg(feature = "simd128")]
 pub mod neon {
-    use crate::generic_keccak::keccak;
-
-    #[cfg(feature = "simd128")]
-    #[inline(always)]
-    fn keccakx2<const RATE: usize, const DELIM: u8>(data: &[&[u8]; 2], out: [&mut [u8]; 2]) {
-        keccak::<2, crate::simd::arm64::uint64x2_t, RATE, DELIM>(data, out)
-    }
+    use crate::generic_keccak::keccak2;
 
     /// A portable SHA3 224 implementation.
     #[allow(unused_variables)]
     #[inline(always)]
     pub fn sha224(digest: &mut [u8], data: &[u8]) {
         let mut dummy = [0u8; 28];
-        keccakx2::<144, 0x06u8>(&[data, data], [digest, &mut dummy]);
+        keccak2::<144, 0x06u8>(&[data, data], digest, &mut dummy);
     }
 
     /// A portable SHA3 256 implementation.
@@ -432,7 +417,7 @@ pub mod neon {
     #[inline(always)]
     pub fn sha256(digest: &mut [u8], data: &[u8]) {
         let mut dummy = [0u8; 32];
-        keccakx2::<136, 0x06u8>(&[data, data], [digest, &mut dummy]);
+        keccak2::<136, 0x06u8>(&[data, data], digest, &mut dummy);
     }
 
     /// A portable SHA3 384 implementation.
@@ -440,7 +425,7 @@ pub mod neon {
     #[inline(always)]
     pub fn sha384(digest: &mut [u8], data: &[u8]) {
         let mut dummy = [0u8; 48];
-        keccakx2::<104, 0x06u8>(&[data, data], [digest, &mut dummy]);
+        keccak2::<104, 0x06u8>(&[data, data], digest, &mut dummy);
     }
 
     /// A portable SHA3 512 implementation.
@@ -448,7 +433,7 @@ pub mod neon {
     #[inline(always)]
     pub fn sha512(digest: &mut [u8], data: &[u8]) {
         let mut dummy = [0u8; 64];
-        keccakx2::<72, 0x06u8>(&[data, data], [digest, &mut dummy]);
+        keccak2::<72, 0x06u8>(&[data, data], digest, &mut dummy);
     }
 
     /// A portable SHAKE128 implementation.
@@ -456,7 +441,7 @@ pub mod neon {
     #[inline(always)]
     pub fn shake128<const LEN: usize>(digest: &mut [u8; LEN], data: &[u8]) {
         let mut dummy = [0u8; LEN];
-        keccakx2::<168, 0x1fu8>(&[data, data], [digest, &mut dummy]);
+        keccak2::<168, 0x1fu8>(&[data, data], digest, &mut dummy);
     }
 
     /// A portable SHAKE256 implementation.
@@ -464,7 +449,7 @@ pub mod neon {
     #[inline(always)]
     pub fn shake256<const LEN: usize>(digest: &mut [u8; LEN], data: &[u8]) {
         let mut dummy = [0u8; LEN];
-        keccakx2::<136, 0x1fu8>(&[data, data], [digest, &mut dummy]);
+        keccak2::<136, 0x1fu8>(&[data, data], digest, &mut dummy);
     }
 
     /// Performing 2 operations in parallel
@@ -477,17 +462,12 @@ pub mod neon {
         #[allow(unused_variables)]
         #[inline(always)]
         pub fn shake256(input0: &[u8], input1: &[u8], out0: &mut [u8], out1: &mut [u8]) {
-            // TODO: make argument ordering consistent
-            keccakx2::<136, 0x1fu8>(&[input0, input1], [out0, out1]);
+            keccak2::<136, 0x1fu8>(&[input0, input1], out0, out1);
         }
 
         /// An incremental API to perform 2 operations in parallel
         pub mod incremental {
-            use crate::generic_keccak::{
-                absorb_final, multi_squeeze::squeeze_first_five_blocks,
-                multi_squeeze::squeeze_first_three_blocks, squeeze_first_block, squeeze_next_block,
-                KeccakState as GenericState,
-            };
+            use crate::generic_keccak::{absorb_final, KeccakState as GenericState};
 
             /// The Keccak state for the incremental API.
             pub struct KeccakState {
@@ -562,10 +542,7 @@ pub mod neon {
                 out0: &mut [u8],
                 out1: &mut [u8],
             ) {
-                squeeze_first_three_blocks::<2, crate::simd::arm64::uint64x2_t, 168>(
-                    &mut s.state,
-                    &mut [out0, out1],
-                )
+                s.state.squeeze_first_three_blocks::<168>(out0, out1)
             }
 
             /// Squeeze five blocks
@@ -575,10 +552,7 @@ pub mod neon {
                 out0: &mut [u8],
                 out1: &mut [u8],
             ) {
-                squeeze_first_five_blocks::<2, crate::simd::arm64::uint64x2_t, 168>(
-                    &mut s.state,
-                    &mut [out0, out1],
-                )
+                s.state.squeeze_first_five_blocks::<168>(out0, out1);
             }
 
             /// Squeeze block
@@ -588,10 +562,7 @@ pub mod neon {
                 out0: &mut [u8],
                 out1: &mut [u8],
             ) {
-                squeeze_first_block::<2, crate::simd::arm64::uint64x2_t, 136>(
-                    &s.state,
-                    &mut [out0, out1],
-                );
+                s.state.squeeze_first_block::<136>(out0, out1);
             }
 
             /// Squeeze next block
@@ -601,11 +572,7 @@ pub mod neon {
                 out0: &mut [u8],
                 out1: &mut [u8],
             ) {
-                squeeze_next_block::<2, crate::simd::arm64::uint64x2_t, 136>(
-                    &mut s.state,
-                    &mut [out0, out1],
-                    0,
-                );
+                s.state.squeeze_next_block::<136>(out0, out1, 0);
             }
 
             /// Squeeze 2 times the next block in parallel in the
@@ -616,11 +583,7 @@ pub mod neon {
                 out0: &mut [u8],
                 out1: &mut [u8],
             ) {
-                squeeze_next_block::<2, crate::simd::arm64::uint64x2_t, 168>(
-                    &mut s.state,
-                    &mut [out0, out1],
-                    0,
-                )
+                s.state.squeeze_next_block::<168>(out0, out1, 0)
             }
 
             /// Squeeze up to 4 (N) blocks in parallel, using two [`KeccakState2`].
