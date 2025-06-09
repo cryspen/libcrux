@@ -181,7 +181,27 @@ impl<const PARALLEL_LANES: usize, const RATE: usize, STATE: KeccakStateItem<PARA
 
     /// Squeeze `N` x `LEN` bytes.
     #[inline(always)]
-    pub(crate) fn squeeze(&mut self, mut out: [&mut [u8]; PARALLEL_LANES]) {
+    pub(crate) fn squeeze_blocks(&mut self, nblocks: usize, out: [&mut [u8]; PARALLEL_LANES]) {
+        if self.sponge {
+            // If we called `squeeze` before, call f1600 first.
+            // We do it this way around so that we don't call f1600 at the end
+            // when we don't need it.
+            keccakf1600(&mut self.inner);
+        }
+
+        for i in 0..nblocks {
+            // Here we know that we always have full blocks to write out.
+            keccakf1600(&mut self.inner);
+            STATE::store_block::<RATE>(&self.inner.st, out, i * RATE);
+        }
+        if nblocks > 0 {self.sponge = true}
+    }
+
+    /// Squeeze `N` x `LEN` bytes.
+    #[inline(always)]
+    pub(crate) fn squeeze_last(&mut self, out: [&mut [u8]; PARALLEL_LANES]) {
+        debug_assert!(out[0].len() < RATE);
+
         if self.sponge {
             // If we called `squeeze` before, call f1600 first.
             // We do it this way around so that we don't call f1600 at the end
@@ -192,26 +212,8 @@ impl<const PARALLEL_LANES: usize, const RATE: usize, STATE: KeccakStateItem<PARA
         let out_len = out[0].len();
 
         if out_len > 0 {
-            if out_len <= RATE {
-                STATE::store_block::<RATE>(&self.inner.st, &mut out, 0, out_len);
-            } else {
-                // How many blocks do we need to squeeze out?
-                let blocks = out_len / RATE;
-
-                for i in 0..blocks {
-                    // Here we know that we always have full blocks to write out.
-                    keccakf1600(&mut self.inner);
-                    STATE::store_block::<RATE>(&self.inner.st, &mut out, i * RATE, RATE);
-                }
-
-                let remaining = out_len % RATE;
-                if remaining > 0 {
-                    // Squeeze out the last partial block
-                    keccakf1600(&mut self.inner);
-                    STATE::store_block::<RATE>(&self.inner.st, &mut out, blocks * RATE, remaining);
-                }
-            }
-            self.sponge = true;
+            STATE::store_last::<RATE>(&self.inner.st, out, 0, out_len);
+            self.sponge = false;
         }
     }
 }
@@ -426,19 +428,19 @@ pub(crate) fn absorb_final<
 #[inline(always)]
 pub(crate) fn squeeze_first_block<const N: usize, T: KeccakStateItem<N>, const RATE: usize>(
     s: &KeccakState<N, T>,
-    out: &mut [&mut [u8]; N],
+    out: [&mut [u8]; N],
 ) {
-    T::store_block::<RATE>(&s.st, out, 0, RATE)
+    T::store_block::<RATE>(&s.st, out, 0)
 }
 
 #[inline(always)]
 pub(crate) fn squeeze_next_block<const N: usize, T: KeccakStateItem<N>, const RATE: usize>(
     s: &mut KeccakState<N, T>,
-    out: &mut [&mut [u8]; N],
+    out: [&mut [u8]; N],
     start: usize,
 ) {
     keccakf1600(s);
-    T::store_block::<RATE>(&s.st, out, start, RATE)
+    T::store_block::<RATE>(&s.st, out, start)
 }
 
 #[inline(always)]
@@ -448,7 +450,7 @@ pub(crate) fn squeeze_first_three_blocks<
     const RATE: usize,
 >(
     s: &mut KeccakState<N, T>,
-    out: &mut [&mut [u8]; N],
+    out: [&mut [u8]; N],
 ) {
     squeeze_first_block::<N, T, RATE>(s, out);
     squeeze_next_block::<N, T, RATE>(s, out, RATE);
@@ -462,7 +464,7 @@ pub(crate) fn squeeze_first_five_blocks<
     const RATE: usize,
 >(
     s: &mut KeccakState<N, T>,
-    out: &mut [&mut [u8]; N],
+    out: [&mut [u8]; N],
 ) {
     squeeze_first_block::<N, T, RATE>(s, out);
     squeeze_next_block::<N, T, RATE>(s, out, RATE);
@@ -479,17 +481,17 @@ pub(crate) fn squeeze_last<const N: usize, T: KeccakStateItem<N>, const RATE: us
     len: usize,
 ) {
     keccakf1600(&mut s);
-    T::store_block::<RATE>(&s.st, out, start, len);
+    T::store_last::<RATE>(&s.st, out, start, len);
 }
 
 #[inline(always)]
 pub(crate) fn squeeze_first_and_last<const N: usize, T: KeccakStateItem<N>, const RATE: usize>(
     s: &KeccakState<N, T>,
-    out: &mut [&mut [u8]; N],
+    out: [&mut [u8]; N],
     start: usize,
     len: usize,
 ) {
-    T::store_block::<RATE>(&s.st, out, start, len);
+    T::store_last::<RATE>(&s.st, out, start, len);
 }
 
 #[inline(always)]

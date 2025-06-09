@@ -43,7 +43,12 @@ pub(crate) mod internal {
         );
         fn store_block<const RATE: usize>(
             state: &[Self; 25],
-            input: &mut [&mut [u8]; N],
+            input: [&mut [u8]; N],
+            start: usize,
+        );
+        fn store_last<const RATE: usize>(
+            state: &[Self; 25],
+            input: [&mut [u8]; N],
             start: usize,
             len: usize,
         );

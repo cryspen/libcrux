@@ -77,6 +77,20 @@ pub(crate) fn store_block<const RATE: usize>(
     s: &[u64; 25],
     out: &mut [u8],
     start: usize,
+) {
+    debug_assert!(RATE % 8 == 0);
+    let octets = RATE / 8;
+    for i in 0..octets {
+        out[start + 8 * i..start + 8 * i + 8]
+            .copy_from_slice(&get_ij(s, i / 5, i % 5).to_le_bytes());
+    }
+}
+
+#[inline(always)]
+pub(crate) fn store_last<const RATE: usize>(
+    s: &[u64; 25],
+    out: &mut [u8],
+    start: usize,
     len: usize,
 ) {
     let octets = len / 8;
@@ -139,10 +153,19 @@ impl KeccakItem<1> for u64 {
     #[inline(always)]
     fn store_block<const RATE: usize>(
         state: &[Self; 25],
-        out: &mut [&mut [u8]; 1],
+        out: [&mut [u8]; 1],
+        start: usize,
+    ) {
+        store_block::<RATE>(state, out[0], start)
+    }
+
+    #[inline(always)]
+    fn store_last<const RATE: usize>(
+        state: &[Self; 25],
+        out: [&mut [u8]; 1],
         start: usize,
         len: usize,
     ) {
-        store_block::<RATE>(state, out[0], start, len)
+        store_last::<RATE>(state, out[0], start, len)
     }
 }

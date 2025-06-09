@@ -101,7 +101,35 @@ pub(crate) fn load_last<const RATE: usize, const DELIMITER: u8>(
 #[inline(always)]
 pub(crate) fn store_block<const RATE: usize>(
     s: &[uint64x2_t; 25],
-    out: &mut [&mut [u8]; 2],
+    out: [&mut [u8]; 2],
+    start: usize,
+) {
+    debug_assert!(RATE % 8 == 0 && start + RATE <= out[0].len() && out[0].len() == out[1].len());
+    for i in 0..RATE / 16 {
+        let i0 = (2 * i) / 5;
+        let j0 = (2 * i) % 5;
+        let i1 = (2 * i + 1) / 5;
+        let j1 = (2 * i + 1) % 5;
+        let v0 = _vtrn1q_u64(get_ij(s, i0, j0), get_ij(s, i1, j1));
+        let v1 = _vtrn2q_u64(get_ij(s, i0, j0), get_ij(s, i1, j1));
+        _vst1q_bytes_u64(&mut out[0][start + 16 * i..start + 16 * (i + 1)], v0);
+        _vst1q_bytes_u64(&mut out[1][start + 16 * i..start + 16 * (i + 1)], v1);
+    }
+    let remaining = RATE % 16;
+    debug_assert!(remaining == 8);
+    if remaining > 0 {
+        let mut out01 = [0u8; 16];
+        let i = 2 * (RATE / 16);
+        _vst1q_bytes_u64(&mut out01, get_ij(s, i / 5, i % 5));
+        out[0][start + RATE - remaining..start + RATE].copy_from_slice(&out01[0..remaining]);
+        out[1][start + RATE - remaining..start + RATE].copy_from_slice(&out01[8..8 + remaining]);
+    }
+}
+
+#[inline(always)]
+pub(crate) fn store_last<const RATE: usize>(
+    s: &[uint64x2_t; 25],
+    out: [&mut [u8]; 2],
     start: usize,
     len: usize,
 ) {
@@ -185,10 +213,19 @@ impl KeccakItem<2> for uint64x2_t {
     #[inline(always)]
     fn store_block<const RATE: usize>(
         state: &[Self; 25],
-        blocks: &mut [&mut [u8]; 2],
+        blocks: [&mut [u8]; 2],
+        start: usize,
+    ) {
+        store_block::<RATE>(state, blocks, start)
+    }
+
+    #[inline(always)]
+    fn store_last<const RATE: usize>(
+        state: &[Self; 25],
+        blocks: [&mut [u8]; 2],
         start: usize,
         len: usize,
     ) {
-        store_block::<RATE>(state, blocks, start, len)
+        store_last::<RATE>(state, blocks, start, len)
     }
 }
