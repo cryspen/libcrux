@@ -17,15 +17,39 @@ files:
     api:
       - [libcrux_platform, "*"]
 
+  - name: libcrux_sha3_portable
+    api:
+      - [libcrux_sha3]
+    private:
+      patterns:
+        - [libcrux_sha3, simd, portable, "*"]
+        - [libcrux_sha3, generic_keccak, portable, "*"]
+        - [libcrux_sha3, portable, "*"]
+      monomorphizations_of:
+        - [libcrux_sha3, simd, portable, "*"]
+        - [libcrux_sha3, generic_keccak, portable, "*"]
+        - [libcrux_sha3, portable, "*"]
+      monomorphizations_using:
+        - [libcrux_sha3, simd, portable, "*"]
+        - [libcrux_sha3, generic_keccak, portable, "*"]
+        - [libcrux_sha3, portable, "*"]
+
   - name: libcrux_sha3_neon
     api:
       - [libcrux_sha3, neon, "*"]
     private:
-      - [libcrux_sha3, simd, arm64, "*"]
-    monomorphizations_of:
-      - [libcrux_sha3, simd, arm64, "*"]
-    monomorphizations_using:
-      - [libcrux_sha3, simd, arm64, "*"]
+      patterns:
+        - [libcrux_sha3, simd, arm64, "*"]
+        - [libcrux_sha3, generic_keccak, simd128, "*"]
+        - [libcrux_sha3, neon, "*"]
+      monomorphizations_of:
+        - [libcrux_sha3, simd, arm64, "*"]
+        - [libcrux_sha3, generic_keccak, simd128, "*"]
+        - [libcrux_sha3, neon, "*"]
+      monomorphizations_using:
+        - [libcrux_sha3, simd, arm64, "*"]
+        - [libcrux_sha3, generic_keccak, simd128, "*"]
+        - [libcrux_sha3, neon, "*"]
     include_in_c:
       - '"intrinsics/libcrux_intrinsics_arm64.h"'
 
@@ -33,22 +57,34 @@ files:
     api:
       - [libcrux_sha3, avx2, "*"]
     private:
-      - [libcrux_sha3, simd, avx2, "*"]
-    monomorphizations_of:
-      - [libcrux_sha3, simd, avx2, "*"]
-    monomorphizations_using:
-      - [libcrux_sha3, simd, avx2, "*"]
+      patterns:
+        - [libcrux_sha3, simd, avx2, "*"]
+        - [libcrux_sha3, generic_keccak, simd256, "*"]
+        - [libcrux_sha3, avx2, "*"]
+      monomorphizations_of:
+        - [libcrux_sha3, simd, avx2, "*"]
+        - [libcrux_sha3, generic_keccak, simd256, "*"]
+        - [libcrux_sha3, avx2, "*"]
+      monomorphizations_using:
+        - [libcrux_sha3, simd, avx2, "*"]
+        - [libcrux_sha3, generic_keccak, simd256, "*"]
+        - [libcrux_sha3, avx2, "*"]
     include_in_c:
       - '"intrinsics/libcrux_intrinsics_avx2.h"'
 
-  - name: libcrux_sha3
-    api:
-      - [libcrux_sha3]
-
-  - name: core
-    private:
-      - [core, "*"]
-    monomorphizations_of:
-      - [core, result, "*"]
+  - name: sha3_core
     api:
       - [Eurydice, "*"]
+    private:
+      patterns:
+        - [core, "*"]
+        - [libcrux_sha3, generic_keccak, "*"]
+        - [libcrux_sha3, traits, "*"]
+      monomorphizations_of:
+        - [libcrux_sha3, generic_keccak, "*"]
+        - [libcrux_sha3, traits, "*"]
+        - [core, result, "*"]
+      monomorphizations_using:
+        - [libcrux_sha3, generic_keccak, "*"]
+        - [libcrux_sha3, traits, "*"]
+        - [core, result, "*"]

@@ -170,18 +170,20 @@ impl KeccakItem<2> for uint64x2_t {
     fn xor(a: Self, b: Self) -> Self {
         _veorq_u64(a, b)
     }
-    #[inline(always)]
-    fn load_block<const RATE: usize>(state: &mut [Self; 25], blocks: &[&[u8]; 2], start: usize) {
-        load_block::<RATE>(state, blocks, start);
+}
+
+impl Absorb<2> for KeccakState<2, uint64x2_t> {
+    fn load_block<const RATE: usize>(&mut self, input: &[&[u8]; 2], start: usize) {
+        load_block::<RATE>(&mut self.st, input, start);
     }
-    #[inline(always)]
+
     fn load_last<const RATE: usize, const DELIMITER: u8>(
-        state: &mut [Self; 25],
-        blocks: &[&[u8]; 2],
+        &mut self,
+        input: &[&[u8]; 2],
         start: usize,
         len: usize,
     ) {
-        load_last::<RATE, DELIMITER>(state, blocks, start, len);
+        load_last::<RATE, DELIMITER>(&mut self.st, input, start, len);
     }
 }
 
@@ -190,6 +192,7 @@ impl Squeeze<2, uint64x2_t> for KeccakState<2, uint64x2_t> {
         unreachable!("This must never be called.");
     }
 
+    #[cfg(feature = "simd128")]
     fn squeeze2<const RATE: usize>(
         &self,
         out0: &mut [u8],
@@ -200,6 +203,7 @@ impl Squeeze<2, uint64x2_t> for KeccakState<2, uint64x2_t> {
         store_block::<RATE>(&self.st, out0, out1, start, len);
     }
 
+    #[cfg(feature = "simd256")]
     fn squeeze4<const RATE: usize>(
         &self,
         _: &mut [u8],

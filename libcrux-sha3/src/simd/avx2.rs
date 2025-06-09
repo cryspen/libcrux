@@ -1,4 +1,4 @@
-use crate::traits::{internal::*, *};
+use crate::{generic_keccak::KeccakState, traits::*};
 use libcrux_intrinsics::avx2::*;
 
 #[inline(always)]
@@ -132,7 +132,10 @@ pub(crate) fn load_last<const RATE: usize, const DELIMITER: u8>(
 #[inline(always)]
 pub(crate) fn store_block<const RATE: usize>(
     s: &[Vec256; 25],
-    out: &mut [&mut [u8]; 4],
+    out0: &mut [u8],
+    out1: &mut [u8],
+    out2: &mut [u8],
+    out3: &mut [u8],
     start: usize,
     len: usize,
 ) {
@@ -158,10 +161,10 @@ pub(crate) fn store_block<const RATE: usize>(
         let v2 = mm256_unpacklo_epi64(v2l, v3h); // 0 1 2 3
         let v3 = mm256_unpackhi_epi64(v2l, v3h); // 0 1 2 3
 
-        mm256_storeu_si256_u8(&mut out[0][start + 32 * i..start + 32 * (i + 1)], v0);
-        mm256_storeu_si256_u8(&mut out[1][start + 32 * i..start + 32 * (i + 1)], v1);
-        mm256_storeu_si256_u8(&mut out[2][start + 32 * i..start + 32 * (i + 1)], v2);
-        mm256_storeu_si256_u8(&mut out[3][start + 32 * i..start + 32 * (i + 1)], v3);
+        mm256_storeu_si256_u8(&mut out0[start + 32 * i..start + 32 * (i + 1)], v0);
+        mm256_storeu_si256_u8(&mut out1[start + 32 * i..start + 32 * (i + 1)], v1);
+        mm256_storeu_si256_u8(&mut out2[start + 32 * i..start + 32 * (i + 1)], v2);
+        mm256_storeu_si256_u8(&mut out3[start + 32 * i..start + 32 * (i + 1)], v3);
     }
 
     let rem = len % 32;
@@ -173,20 +176,20 @@ pub(crate) fn store_block<const RATE: usize>(
             let i = (4 * chunks + k) / 5;
             let j = (4 * chunks + k) % 5;
             mm256_storeu_si256_u8(&mut u8s, *get_ij(s, i, j));
-            out[0][start + 8 * k..start + 8 * (k + 1)].copy_from_slice(&u8s[0..8]);
-            out[1][start + 8 * k..start + 8 * (k + 1)].copy_from_slice(&u8s[8..16]);
-            out[2][start + 8 * k..start + 8 * (k + 1)].copy_from_slice(&u8s[16..24]);
-            out[3][start + 8 * k..start + 8 * (k + 1)].copy_from_slice(&u8s[24..32]);
+            out0[start + 8 * k..start + 8 * (k + 1)].copy_from_slice(&u8s[0..8]);
+            out1[start + 8 * k..start + 8 * (k + 1)].copy_from_slice(&u8s[8..16]);
+            out2[start + 8 * k..start + 8 * (k + 1)].copy_from_slice(&u8s[16..24]);
+            out3[start + 8 * k..start + 8 * (k + 1)].copy_from_slice(&u8s[24..32]);
         }
         let rem8 = rem % 8;
         if rem8 > 0 {
             let i = (4 * chunks + chunks8) / 5;
             let j = (4 * chunks + chunks8) % 5;
             mm256_storeu_si256_u8(&mut u8s, *get_ij(s, i, j));
-            out[0][start + len - rem8..start + len].copy_from_slice(&u8s[0..rem]);
-            out[1][start + len - rem8..start + len].copy_from_slice(&u8s[8..8 + rem]);
-            out[2][start + len - rem8..start + len].copy_from_slice(&u8s[16..16 + rem]);
-            out[3][start + len - rem8..start + len].copy_from_slice(&u8s[24..24 + rem]);
+            out0[start + len - rem8..start + len].copy_from_slice(&u8s[0..rem]);
+            out1[start + len - rem8..start + len].copy_from_slice(&u8s[8..8 + rem]);
+            out2[start + len - rem8..start + len].copy_from_slice(&u8s[16..16 + rem]);
+            out3[start + len - rem8..start + len].copy_from_slice(&u8s[24..24 + rem]);
         }
     }
 }
@@ -220,26 +223,43 @@ impl KeccakItem<4> for Vec256 {
     fn xor(a: Self, b: Self) -> Self {
         mm256_xor_si256(a, b)
     }
-    #[inline(always)]
-    fn load_block<const RATE: usize>(state: &mut [Self; 25], blocks: &[&[u8]; 4], start: usize) {
-        load_block::<RATE>(state, blocks, start)
+}
+
+impl Absorb<4> for KeccakState<4, Vec256> {
+    fn load_block<const RATE: usize>(&mut self, input: &[&[u8]; 4], start: usize) {
+        load_block::<RATE>(&mut self.st, input, start);
     }
-    #[inline(always)]
+
     fn load_last<const RATE: usize, const DELIMITER: u8>(
-        state: &mut [Self; 25],
-        blocks: &[&[u8]; 4],
+        &mut self,
+        input: &[&[u8]; 4],
         start: usize,
         len: usize,
     ) {
-        load_last::<RATE, DELIMITER>(state, blocks, start, len)
+        load_last::<RATE, DELIMITER>(&mut self.st, input, start, len)
     }
-    #[inline(always)]
-    fn store_block<const RATE: usize>(
-        a: &[Self; 25],
-        b: &mut [&mut [u8]; 4],
+}
+
+impl Squeeze<4, Vec256> for KeccakState<4, Vec256> {
+    fn squeeze1<const RATE: usize>(&self, _: &mut [u8], _: usize, _: usize) {
+        unreachable!("This must never be called.");
+    }
+
+    #[cfg(feature = "simd128")]
+    fn squeeze2<const RATE: usize>(&self, _: &mut [u8], _: &mut [u8], _: usize, _: usize) {
+        unreachable!("This must never be called.");
+    }
+
+    #[cfg(feature = "simd256")]
+    fn squeeze4<const RATE: usize>(
+        &self,
+        out0: &mut [u8],
+        out1: &mut [u8],
+        out2: &mut [u8],
+        out3: &mut [u8],
         start: usize,
         len: usize,
     ) {
-        store_block::<RATE>(a, b, start, len)
+        store_block::<RATE>(&self.st, out0, out1, out2, out3, start, len)
     }
 }

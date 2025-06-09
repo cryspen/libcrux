@@ -15,9 +15,7 @@ pub(crate) fn set_ij<const N: usize, T: KeccakItem<N>>(
     arr[5 * j + i] = value;
 }
 
-/// A Keccak Item for multiplexing implementations.
-///
-/// This holds the internal state and depends on the architecture.
+/// A Keccak Item for multiplexing arithmetic implementations.
 pub(crate) trait KeccakItem<const N: usize>: Clone + Copy {
     /// Zero
     fn zero() -> Self;
@@ -39,24 +37,32 @@ pub(crate) trait KeccakItem<const N: usize>: Clone + Copy {
 
     /// `a ^ b`
     fn xor(a: Self, b: Self) -> Self;
+}
 
-    /// Load a block
-    fn load_block<const RATE: usize>(state: &mut [Self; 25], input: &[&[u8]; N], start: usize);
+/// Trait to load new bytes into the state.
+pub(crate) trait Absorb<const N: usize> {
+    /// Absorb a block
+    fn load_block<const RATE: usize>(&mut self, input: &[&[u8]; N], start: usize);
 
-    /// Load the last block
+    /// Absorb the last block (may be partial)
     fn load_last<const RATE: usize, const DELIMITER: u8>(
-        state: &mut [Self; 25],
+        &mut self,
         input: &[&[u8]; N],
         start: usize,
         len: usize,
     );
 }
 
+/// Trait to squeeze bytes out of the state.
+///
+/// Note that this is implemented for each platform (1, 2, 4) because hax can't
+/// handle the mutability required for a generic implementation.
 pub(crate) trait Squeeze<const N: usize, T: KeccakItem<N>> {
     /// Store blocks `N = 1`
     fn squeeze1<const RATE: usize>(&self, out: &mut [u8], start: usize, len: usize);
 
     /// Store blocks `N = 2`
+    #[cfg(feature = "simd128")]
     fn squeeze2<const RATE: usize>(
         &self,
         out0: &mut [u8],
@@ -66,6 +72,7 @@ pub(crate) trait Squeeze<const N: usize, T: KeccakItem<N>> {
     );
 
     /// Store blocks `N = 4`
+    #[cfg(feature = "simd256")]
     fn squeeze4<const RATE: usize>(
         &self,
         out0: &mut [u8],
