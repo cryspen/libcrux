@@ -1,6 +1,6 @@
 use crate::{
     generic_keccak::{keccakf1600, KeccakState},
-    traits::KeccakStateItem,
+    traits::{KeccakItem, Squeeze},
 };
 
 /// The internal keccak state that can also buffer inputs to absorb.
@@ -9,8 +9,10 @@ use crate::{
 pub(crate) struct KeccakXofState<
     const PARALLEL_LANES: usize,
     const RATE: usize,
-    STATE: KeccakStateItem<PARALLEL_LANES>,
-> {
+    STATE: KeccakItem<PARALLEL_LANES>,
+> where
+    KeccakState<PARALLEL_LANES, STATE>: Squeeze<PARALLEL_LANES, STATE>,
+{
     pub(crate) inner: KeccakState<PARALLEL_LANES, STATE>,
 
     // Buffer inputs on absorb.
@@ -23,8 +25,10 @@ pub(crate) struct KeccakXofState<
     pub(crate) sponge: bool,
 }
 
-impl<const PARALLEL_LANES: usize, const RATE: usize, STATE: KeccakStateItem<PARALLEL_LANES>>
+impl<const PARALLEL_LANES: usize, const RATE: usize, STATE: KeccakItem<PARALLEL_LANES>>
     KeccakXofState<PARALLEL_LANES, RATE, STATE>
+where
+    KeccakState<PARALLEL_LANES, STATE>: Squeeze<PARALLEL_LANES, STATE>,
 {
     /// An all zero block
     pub(crate) const fn zero_block() -> [u8; RATE] {
@@ -76,7 +80,7 @@ impl<const PARALLEL_LANES: usize, const RATE: usize, STATE: KeccakStateItem<PARA
     pub(crate) fn absorb_full(&mut self, inputs: &[&[u8]; PARALLEL_LANES]) -> usize {
         debug_assert!(PARALLEL_LANES > 0);
         debug_assert!(self.buf_len < RATE);
-        #[cfg(debug_assertions)]
+        #[cfg(all(debug_assertions, not(hax)))]
         {
             for block in inputs {
                 debug_assert!(block.len() == inputs[0].len());
@@ -162,10 +166,18 @@ impl<const PARALLEL_LANES: usize, const RATE: usize, STATE: KeccakStateItem<PARA
         STATE::load_last::<RATE, DELIMITER>(&mut self.inner.st, &borrowed, 0, self.buf_len);
         keccakf1600(&mut self.inner);
     }
+}
 
-    /// Squeeze `N` x `LEN` bytes.
+/// Squeeze we only implement for N = 1 right now.
+/// This is because it's not needed for N > 1 right now, but also because hax
+/// can't handle the required mutability for it.
+impl<const RATE: usize, STATE: KeccakItem<1>> KeccakXofState<1, RATE, STATE>
+where
+    KeccakState<1, STATE>: Squeeze<1, STATE>,
+{
+    /// Squeeze `N` x `LEN` bytes. Only `N = 1` for now.
     #[inline(always)]
-    pub(crate) fn squeeze(&mut self, mut out: [&mut [u8]; PARALLEL_LANES]) {
+    pub(crate) fn squeeze(&mut self, out: &mut [u8]) {
         if self.sponge {
             // If we called `squeeze` before, call f1600 first.
             // We do it this way around so that we don't call f1600 at the end
@@ -173,11 +185,11 @@ impl<const PARALLEL_LANES: usize, const RATE: usize, STATE: KeccakStateItem<PARA
             keccakf1600(&mut self.inner);
         }
 
-        let out_len = out[0].len();
+        let out_len = out.len();
 
         if out_len > 0 {
             if out_len <= RATE {
-                STATE::store_block::<RATE>(&self.inner.st, &mut out, 0, out_len);
+                self.inner.squeeze1::<RATE>(out, 0, out_len);
             } else {
                 // How many blocks do we need to squeeze out?
                 let blocks = out_len / RATE;
@@ -185,14 +197,14 @@ impl<const PARALLEL_LANES: usize, const RATE: usize, STATE: KeccakStateItem<PARA
                 for i in 0..blocks {
                     // Here we know that we always have full blocks to write out.
                     keccakf1600(&mut self.inner);
-                    STATE::store_block::<RATE>(&self.inner.st, &mut out, i * RATE, RATE);
+                    self.inner.squeeze1::<RATE>(out, i * RATE, RATE);
                 }
 
                 let remaining = out_len % RATE;
                 if remaining > 0 {
                     // Squeeze out the last partial block
                     keccakf1600(&mut self.inner);
-                    STATE::store_block::<RATE>(&self.inner.st, &mut out, blocks * RATE, remaining);
+                    self.inner.squeeze1::<RATE>(out, blocks * RATE, remaining);
                 }
             }
             self.sponge = true;

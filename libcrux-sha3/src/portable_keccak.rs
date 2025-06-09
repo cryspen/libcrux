@@ -1,6 +1,6 @@
 //! A portable SHA3 implementation using the generic implementation.
 
-use crate::traits::{internal::*, *};
+use crate::{generic_keccak::KeccakState, traits::*};
 
 #[inline(always)]
 fn rotate_left<const LEFT: i32, const RIGHT: i32>(x: u64) -> u64 {
@@ -127,7 +127,7 @@ impl KeccakItem<1> for u64 {
     }
     #[inline(always)]
     fn load_block<const RATE: usize>(state: &mut [Self; 25], blocks: &[&[u8]; 1], start: usize) {
-        load_block::<RATE>(state, blocks[0], start)
+        load_block::<RATE>(state, blocks[0], start);
     }
 
     #[inline(always)]
@@ -137,16 +137,28 @@ impl KeccakItem<1> for u64 {
         start: usize,
         len: usize,
     ) {
-        load_last::<RATE, DELIMITER>(state, blocks[0], start, len)
+        load_last::<RATE, DELIMITER>(state, blocks[0], start, len);
+    }
+}
+
+impl Squeeze<1, u64> for KeccakState<1, u64> {
+    fn squeeze1<const RATE: usize>(&self, out: &mut [u8], start: usize, len: usize) {
+        store_block::<RATE>(&self.st, out, start, len);
     }
 
-    #[inline(always)]
-    fn store_block<const RATE: usize>(
-        state: &[Self; 25],
-        out: &mut [&mut [u8]; 1],
-        start: usize,
-        len: usize,
+    fn squeeze2<const RATE: usize>(&self, _: &mut [u8], _: &mut [u8], _: usize, _: usize) {
+        unreachable!("This must never be called.");
+    }
+
+    fn squeeze4<const RATE: usize>(
+        &self,
+        _: &mut [u8],
+        _: &mut [u8],
+        _: &mut [u8],
+        _: &mut [u8],
+        _: usize,
+        _: usize,
     ) {
-        store_block::<RATE>(state, out[0], start, len)
+        unreachable!("This must never be called.");
     }
 }

@@ -1,6 +1,6 @@
 use libcrux_intrinsics::arm64::*;
 
-use crate::traits::{get_ij, internal::KeccakItem, set_ij};
+use crate::{generic_keccak::KeccakState, traits::*};
 
 #[allow(non_camel_case_types)]
 pub type uint64x2_t = _uint64x2_t;
@@ -101,11 +101,12 @@ pub(crate) fn load_last<const RATE: usize, const DELIMITER: u8>(
 #[inline(always)]
 pub(crate) fn store_block<const RATE: usize>(
     s: &[uint64x2_t; 25],
-    out: &mut [&mut [u8]; 2],
+    out0: &mut [u8],
+    out1: &mut [u8],
     start: usize,
     len: usize,
 ) {
-    debug_assert!(len <= RATE && start + len <= out[0].len() && out[0].len() == out[1].len());
+    debug_assert!(len <= RATE && start + len <= out0.len() && out0.len() == out1.len());
     for i in 0..len / 16 {
         let i0 = (2 * i) / 5;
         let j0 = (2 * i) % 5;
@@ -113,13 +114,13 @@ pub(crate) fn store_block<const RATE: usize>(
         let j1 = (2 * i + 1) % 5;
         let v0 = _vtrn1q_u64(*get_ij(s, i0, j0), *get_ij(s, i1, j1));
         let v1 = _vtrn2q_u64(*get_ij(s, i0, j0), *get_ij(s, i1, j1));
-        _vst1q_bytes_u64(&mut out[0][start + 16 * i..start + 16 * (i + 1)], v0);
-        _vst1q_bytes_u64(&mut out[1][start + 16 * i..start + 16 * (i + 1)], v1);
+        _vst1q_bytes_u64(&mut out0[start + 16 * i..start + 16 * (i + 1)], v0);
+        _vst1q_bytes_u64(&mut out1[start + 16 * i..start + 16 * (i + 1)], v1);
     }
     let remaining = len % 16;
     if remaining > 8 {
-        let mut out0 = [0u8; 16];
-        let mut out1 = [0u8; 16];
+        let mut out0_tmp = [0u8; 16];
+        let mut out1_tmp = [0u8; 16];
         let i = 2 * (len / 16);
         let i0 = i / 5;
         let j0 = i % 5;
@@ -127,16 +128,16 @@ pub(crate) fn store_block<const RATE: usize>(
         let j1 = (i + 1) % 5;
         let v0 = _vtrn1q_u64(*get_ij(s, i0, j0), *get_ij(s, i1, j1));
         let v1 = _vtrn2q_u64(*get_ij(s, i0, j0), *get_ij(s, i1, j1));
-        _vst1q_bytes_u64(&mut out0, v0);
-        _vst1q_bytes_u64(&mut out1, v1);
-        out[0][start + len - remaining..start + len].copy_from_slice(&out0[0..remaining]);
-        out[1][start + len - remaining..start + len].copy_from_slice(&out1[0..remaining]);
+        _vst1q_bytes_u64(&mut out0_tmp, v0);
+        _vst1q_bytes_u64(&mut out1_tmp, v1);
+        out0[start + len - remaining..start + len].copy_from_slice(&out0_tmp[0..remaining]);
+        out1[start + len - remaining..start + len].copy_from_slice(&out1_tmp[0..remaining]);
     } else if remaining > 0 {
         let mut out01 = [0u8; 16];
         let i = 2 * (len / 16);
         _vst1q_bytes_u64(&mut out01, *get_ij(s, i / 5, i % 5));
-        out[0][start + len - remaining..start + len].copy_from_slice(&out01[0..remaining]);
-        out[1][start + len - remaining..start + len].copy_from_slice(&out01[8..8 + remaining]);
+        out0[start + len - remaining..start + len].copy_from_slice(&out01[0..remaining]);
+        out1[start + len - remaining..start + len].copy_from_slice(&out01[8..8 + remaining]);
     }
 }
 
@@ -171,7 +172,7 @@ impl KeccakItem<2> for uint64x2_t {
     }
     #[inline(always)]
     fn load_block<const RATE: usize>(state: &mut [Self; 25], blocks: &[&[u8]; 2], start: usize) {
-        load_block::<RATE>(state, blocks, start)
+        load_block::<RATE>(state, blocks, start);
     }
     #[inline(always)]
     fn load_last<const RATE: usize, const DELIMITER: u8>(
@@ -180,15 +181,34 @@ impl KeccakItem<2> for uint64x2_t {
         start: usize,
         len: usize,
     ) {
-        load_last::<RATE, DELIMITER>(state, blocks, start, len)
+        load_last::<RATE, DELIMITER>(state, blocks, start, len);
     }
-    #[inline(always)]
-    fn store_block<const RATE: usize>(
-        state: &[Self; 25],
-        blocks: &mut [&mut [u8]; 2],
+}
+
+impl Squeeze<2, uint64x2_t> for KeccakState<2, uint64x2_t> {
+    fn squeeze1<const RATE: usize>(&self, _: &mut [u8], _: usize, _: usize) {
+        unreachable!("This must never be called.");
+    }
+
+    fn squeeze2<const RATE: usize>(
+        &self,
+        out0: &mut [u8],
+        out1: &mut [u8],
         start: usize,
         len: usize,
     ) {
-        store_block::<RATE>(state, blocks, start, len)
+        store_block::<RATE>(&self.st, out0, out1, start, len);
+    }
+
+    fn squeeze4<const RATE: usize>(
+        &self,
+        _: &mut [u8],
+        _: &mut [u8],
+        _: &mut [u8],
+        _: &mut [u8],
+        _: usize,
+        _: usize,
+    ) {
+        unreachable!("This must never be called.");
     }
 }
