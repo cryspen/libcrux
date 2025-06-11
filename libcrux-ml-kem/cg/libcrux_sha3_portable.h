@@ -4,11 +4,11 @@
  * SPDX-License-Identifier: MIT or Apache-2.0
  *
  * This code was generated with the following revisions:
- * Charon: 87a3a2f19ecd5e9528654a0a884682217559b109
- * Eurydice: 2ca24a2e00b05a7eeef7431e37dd113411191f8b
- * Karamel: 32f765f4e8c9e1a4eb4751c7bddda0c14b132e7f
- * F*: 4b3fc11774003a6ff7c09500ecb5f0145ca6d862
- * Libcrux: 88dc550750645fbdacc4b66b8cb35ecadbc7819b
+ * Charon: bb62a9b39db4ea8c6d536fe61b7d26663751bf3c
+ * Eurydice: ef0b2dfa7dea7f6f32ea6506cdbf3415b5f97640
+ * Karamel: 39cb85a718da8ae4a724d31b08f9134ca9311336
+ * F*: 71d8221589d4d438af3706d89cb653cf53e18aab
+ * Libcrux: 76d5b07d34b01ce27280f748780dcfc7b36f531d
  */
 
 #ifndef __libcrux_sha3_portable_H
@@ -2348,6 +2348,14 @@ libcrux_sha3_portable_incremental_shake128_squeeze_next_block(
 
 typedef uint8_t libcrux_sha3_Algorithm;
 
+typedef uint8_t libcrux_sha3_Sha3_224Digest[28U];
+
+typedef uint8_t libcrux_sha3_Sha3_256Digest[32U];
+
+typedef uint8_t libcrux_sha3_Sha3_384Digest[48U];
+
+typedef uint8_t libcrux_sha3_Sha3_512Digest[64U];
+
 /**
  Returns the output size of a digest.
 */
@@ -3854,14 +3862,6 @@ static inline libcrux_sha3_Algorithm libcrux_sha3_from_2d(uint32_t v) {
   }
   return libcrux_sha3_Algorithm_Sha224;
 }
-
-typedef uint8_t libcrux_sha3_Sha3_512Digest[64U];
-
-typedef uint8_t libcrux_sha3_Sha3_384Digest[48U];
-
-typedef uint8_t libcrux_sha3_Sha3_256Digest[32U];
-
-typedef uint8_t libcrux_sha3_Sha3_224Digest[28U];
 
 #define __libcrux_sha3_portable_H_DEFINED
 #endif
