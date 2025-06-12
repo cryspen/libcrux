@@ -36,6 +36,30 @@ macro_rules! impl_consistency {
     };
 }
 
+macro_rules! impl_consistency_new {
+    ($name:ident, $key_gen:expr, $encaps:expr, $decaps:expr) => {
+        #[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+        #[test]
+        fn $name() {
+            let randomness = random_array();
+            let key_pair = $key_gen(randomness);
+            let randomness = random_array();
+            let (ciphertext, shared_secret) =
+                key_pair.public_key().encapsulate(randomness).unwrap();
+            let shared_secret_decapsulated =
+                key_pair.private_key().decapsulate(&ciphertext).unwrap();
+            assert_eq!(
+                shared_secret, shared_secret_decapsulated,
+                "lhs: shared_secret, rhs: shared_secret_decapsulated"
+            );
+
+            // If the randomness was not enough for the rejection sampling step
+            // in key-generation and encapsulation, simply return without
+            // failing.
+        }
+    };
+}
+
 macro_rules! impl_consistency_unpacked {
     ($name:ident, $modp:path) => {
         #[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
@@ -54,6 +78,101 @@ macro_rules! impl_consistency_unpacked {
             // Ensure the two keys are the same
             let serialized_public_key =
                 p::unpacked::key_pair_serialized_public_key(&key_pair_unpacked);
+            assert_eq!(
+                key_pair.public_key().as_slice(),
+                serialized_public_key.as_slice()
+            );
+            let mut re_unpacked_public_key = Default::default();
+            p::unpacked::unpacked_public_key(key_pair.public_key(), &mut re_unpacked_public_key);
+            let mut serialized_public_key = Default::default();
+            p::unpacked::serialized_public_key(&re_unpacked_public_key, &mut serialized_public_key);
+            assert_eq!(
+                serialized_public_key.as_slice(),
+                key_pair.public_key().as_slice()
+            );
+            let mut serialized_private_key = Default::default();
+            p::unpacked::key_pair_serialized_private_key_mut(
+                &key_pair_unpacked,
+                &mut serialized_private_key,
+            );
+            assert_eq!(
+                serialized_private_key.as_slice(),
+                key_pair.private_key().as_slice()
+            );
+
+            // Unpacked key from the serialized private key
+            let mut new_kp = Default::default();
+            p::unpacked::key_pair_from_private_mut(&serialized_private_key, &mut new_kp);
+
+            let randomness = random_array();
+            let (ciphertext, shared_secret) = p::encapsulate(key_pair.public_key(), randomness);
+            let (ciphertext_unpacked, shared_secret_unpacked) =
+                p::unpacked::encapsulate(&key_pair_unpacked.public_key, randomness);
+            assert_eq!(
+                shared_secret, shared_secret_unpacked,
+                "lhs: shared_secret, rhs: shared_secret_unpacked"
+            );
+            assert_eq!(
+                ciphertext.as_slice(),
+                ciphertext_unpacked.as_slice(),
+                "lhs: ciphertext, rhs: ciphertext_unpacked"
+            );
+
+            // Check with re-assembled new_kp
+            let (ciphertext_unpacked, shared_secret_unpacked) =
+                p::unpacked::encapsulate(&new_kp.public_key, randomness);
+            assert_eq!(
+                shared_secret, shared_secret_unpacked,
+                "lhs: shared_secret, rhs: shared_secret_unpacked"
+            );
+            assert_eq!(
+                ciphertext.as_slice(),
+                ciphertext_unpacked.as_slice(),
+                "lhs: ciphertext, rhs: ciphertext_unpacked"
+            );
+
+            let shared_secret_decapsulated =
+                p::unpacked::decapsulate(&key_pair_unpacked, &ciphertext);
+            let shared_secret = p::decapsulate(key_pair.private_key(), &ciphertext);
+            assert_eq!(
+                shared_secret_unpacked, shared_secret_decapsulated,
+                "lhs: shared_secret_unpacked, rhs: shared_secret_decapsulated"
+            );
+            assert_eq!(
+                shared_secret, shared_secret_decapsulated,
+                "lhs: shared_secret, rhs: shared_secret_decapsulated"
+            );
+
+            // Check with re-assembled new_kp
+            let shared_secret_decapsulated = p::unpacked::decapsulate(&new_kp, &ciphertext);
+            assert_eq!(
+                shared_secret_unpacked, shared_secret_decapsulated,
+                "lhs: shared_secret_unpacked, rhs: shared_secret_decapsulated"
+            );
+
+            // If the randomness was not enough for the rejection sampling step
+            // in key-generation and encapsulation, simply return without
+            // failing.
+        }
+    };
+}
+macro_rules! impl_consistency_unpacked_new {
+    ($name:ident, $modp:path, $kptype:path, $kptypeunpacked:path) => {
+        #[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+        #[test]
+        fn $name() {
+            use $modp as p;
+
+            let randomness = random_array();
+
+            // Generate unpacked key
+            let key_pair_unpacked = p::unpacked::$kptypeunpacked::generate(randomness);
+
+            // Generate regular key
+            let key_pair = p::$kptype::generate(randomness);
+
+            // Ensure the two keys are the same
+            let serialized_public_key: p::$kptype = key_pair_unpacked.public_key().into();
             assert_eq!(
                 key_pair.public_key().as_slice(),
                 serialized_public_key.as_slice()
@@ -390,6 +509,37 @@ macro_rules! impl_modified_ciphertext_and_implicit_rejection_value {
     };
 }
 
+macro_rules! impl_modified_ciphertext_and_implicit_rejection_value_new {
+    ($name:ident, $key_gen:expr) => {
+        #[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+        #[test]
+        fn $name() {
+            let randomness = random_array();
+            let key_pair = $key_gen(randomness);
+            let randomness = random_array();
+            let (ciphertext, _) = key_pair.public_key().encapsulate(randomness).unwrap();
+
+            let ciphertext = modify_ciphertext(ciphertext);
+            let shared_secret_decapsulated =
+                key_pair.private_key().decapsulate(&ciphertext).unwrap();
+
+            let secret_key = modify_secret_key(key_pair.private_key(), true);
+            let shared_secret_decapsulated_ms = secret_key.decapsulate(&ciphertext).unwrap();
+
+            assert_ne!(shared_secret_decapsulated, shared_secret_decapsulated_ms);
+
+            assert_eq!(
+                shared_secret_decapsulated_ms,
+                compute_implicit_rejection_shared_secret(ciphertext, secret_key)
+            );
+
+            // if the randomness was not enough for the rejection sampling step
+            // in key-generation and encapsulation, simply return without
+            // failing.
+        }
+    };
+}
+
 #[cfg(feature = "mlkem512")]
 impl_consistency!(
     consistency_512,
@@ -510,12 +660,11 @@ impl_modified_secret_key!(
 );
 
 #[cfg(feature = "mlkem512")]
-impl_modified_ciphertext_and_implicit_rejection_value!(
+impl_modified_ciphertext_and_implicit_rejection_value_new!(
     modified_ciphertext_and_implicit_rejection_value_512,
-    libcrux_ml_kem::mlkem512::generate_key_pair,
-    libcrux_ml_kem::mlkem512::encapsulate,
-    libcrux_ml_kem::mlkem512::decapsulate
+    libcrux_ml_kem::mlkem512::MlKem512KeyPair::generate
 );
+
 #[cfg(feature = "mlkem768")]
 impl_modified_ciphertext_and_implicit_rejection_value!(
     modified_ciphertext_and_implicit_rejection_value_768,
