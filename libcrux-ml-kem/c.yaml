@@ -24,13 +24,17 @@ files:
       # just specify a list of patterns that are understood to match patterns
       # (not monomorphizations)
       patterns:
+        - [libcrux_sha3, neon, "*"]
         - [libcrux_sha3, simd, arm64, "*"]
+        - [libcrux_sha3, generic_keccak, simd128, "*"]
       monomorphizations_of:
         - [libcrux_sha3, neon, "*"]
         - [libcrux_sha3, simd, arm64, "*"]
+        - [libcrux_sha3, generic_keccak, simd128, "*"]
       monomorphizations_using:
         - [libcrux_sha3, neon, "*"]
         - [libcrux_sha3, simd, arm64, "*"]
+        - [libcrux_sha3, generic_keccak, simd128, "*"]
       monomorphizations_exact:
         - [libcrux_sha3, generic_keccak, "KeccakState_fc"]
     include_in_h:
@@ -41,19 +45,47 @@ files:
       - [libcrux_sha3, avx2, "*"]
     private:
       patterns:
+        - [libcrux_sha3, avx2, "*"]
         - [libcrux_sha3, simd, avx2, "*"]
+        - [libcrux_sha3, generic_keccak, simd256, "*"]
       monomorphizations_of:
         - [libcrux_sha3, avx2, "*"]
         - [libcrux_sha3, simd, avx2, "*"]
+        - [libcrux_sha3, generic_keccak, simd256, "*"]
       monomorphizations_using:
-        # Should this also include the monomorphizations using
-        # core.arch.x86.__m256i?
         - [libcrux_sha3, avx2, "*"]
         - [libcrux_sha3, simd, avx2, "*"]
+        - [libcrux_sha3, generic_keccak, simd256, "*"]
       monomorphizations_exact:
         - [libcrux_sha3, generic_keccak, KeccakState_55]
     include_in_h:
       - '"intrinsics/libcrux_intrinsics_avx2.h"'
+
+  # Portable SHA3
+  - name: libcrux_sha3_portable
+    api:
+      patterns:
+        - [libcrux_sha3, "*"]
+        - [libcrux_sha3, simd, portable, "*"]
+        - [libcrux_sha3, generic_keccak, portable, "*"]
+        - [libcrux_sha3, portable, "*"]
+        - [libcrux_sha3, generic_keccak, "*"]
+        - [libcrux_sha3, traits, "*"]
+        - [libcrux_sha3, generic_keccak, xof, "*"] # xof is only portable for now
+      monomorphizations_of:
+        - [libcrux_sha3, simd, portable, "*"]
+        - [libcrux_sha3, generic_keccak, portable, "*"]
+        - [libcrux_sha3, generic_keccak, "*"]
+        - [libcrux_sha3, traits, "*"]
+        - [libcrux_sha3, portable, "*"]
+        - [libcrux_sha3, generic_keccak, xof, "*"]
+      monomorphizations_using:
+        - [libcrux_sha3, simd, portable, "*"]
+        - [libcrux_sha3, generic_keccak, portable, "*"]
+        - [libcrux_sha3, generic_keccak, "*"]
+        - [libcrux_sha3, traits, "*"]
+        - [libcrux_sha3, portable, "*"]
+        - [libcrux_sha3, generic_keccak, xof, "*"]
 
   # Public API header for SHA3
   - name: libcrux_sha3
