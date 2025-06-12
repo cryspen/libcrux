@@ -569,6 +569,7 @@ macro_rules! instantiate {
                         Self::generate_key_pair(randomness)
                     }
 
+                    #[cfg(feature = "rand")]
                     pub fn generate_key_pair_mut_rand(key_pair: &mut MlKem512KeyPairUnpacked, rng: &mut impl CryptoRng)  {
                         let mut randomness = [0u8; KEY_GENERATION_SEED_SIZE];
                         rng.fill_bytes(&mut randomness);
