@@ -891,7 +891,7 @@ instantiate! {neon, ind_cca::instantiations::neon, vector::SIMD128Vector, "Neon 
 /// Validate a public key.
 ///
 /// Returns `true` if valid, and `false` otherwise.
-#[cfg(all(not(eurydice), feature = "c-apis"))]
+#[cfg(all(not(eurydice), any(feature = "c-apis", feature = "kyber")))]
 // XXX: Deprecate starting from which version?
 #[deprecated(
     since = "0.0.3-alpha.2",
@@ -904,7 +904,7 @@ pub fn validate_public_key(public_key: &MlKem512PublicKey) -> bool {
 /// Validate a private key.
 ///
 /// Returns `true` if valid, and `false` otherwise.
-#[cfg(all(not(eurydice), feature = "c-apis"))]
+#[cfg(all(not(eurydice), any(feature = "c-apis", feature = "kyber")))]
 // XXX: Deprecate starting from which version?
 #[deprecated(
     since = "0.0.3-alpha.2",
