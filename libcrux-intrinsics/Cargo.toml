@@ -1,6 +1,6 @@
 [package]
 name = "libcrux-intrinsics"
-version.workspace = true
+version = "0.0.3-alpha.3"
 authors.workspace = true
 license.workspace = true
 homepage.workspace = true
