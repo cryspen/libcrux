@@ -7,8 +7,8 @@
  * Charon: bb62a9b39db4ea8c6d536fe61b7d26663751bf3c
  * Eurydice: 46cef5d58a855ed049fa89bfe99c959b5d9d0d4b
  * Karamel: 39cb85a718da8ae4a724d31b08f9134ca9311336
- * F*: unset
- * Libcrux: ebc5ce6353daffce3fcd8bb1a92f7621ce266e9a
+ * F*: 71d8221589d4d438af3706d89cb653cf53e18aab
+ * Libcrux: d5c2e3173d83715a5459e13c74734f9df866b57f
  */
 
 #ifndef __libcrux_mlkem768_avx2_H
@@ -1009,12 +1009,16 @@ libcrux_ml_kem_vector_avx2_serialize_deserialize_10_deserialize_10_vec(
     __m128i lower_coefficients0, __m128i upper_coefficients0) {
   __m128i lower_coefficients = libcrux_intrinsics_avx2_mm_shuffle_epi8(
       lower_coefficients0,
-      libcrux_intrinsics_avx2_mm_set_epi8(9U, 8U, 8U, 7U, 7U, 6U, 6U, 5U, 4U,
-                                          3U, 3U, 2U, 2U, 1U, 1U, 0U));
+      libcrux_intrinsics_avx2_mm_set_epi8(
+          (int8_t)9, (int8_t)8, (int8_t)8, (int8_t)7, (int8_t)7, (int8_t)6,
+          (int8_t)6, (int8_t)5, (int8_t)4, (int8_t)3, (int8_t)3, (int8_t)2,
+          (int8_t)2, (int8_t)1, (int8_t)1, (int8_t)0));
   __m128i upper_coefficients = libcrux_intrinsics_avx2_mm_shuffle_epi8(
-      upper_coefficients0, libcrux_intrinsics_avx2_mm_set_epi8(
-                               15U, 14U, 14U, 13U, 13U, 12U, 12U, 11U, 10U, 9U,
-                               9U, 8U, 8U, 7U, 7U, 6U));
+      upper_coefficients0,
+      libcrux_intrinsics_avx2_mm_set_epi8(
+          (int8_t)15, (int8_t)14, (int8_t)14, (int8_t)13, (int8_t)13,
+          (int8_t)12, (int8_t)12, (int8_t)11, (int8_t)10, (int8_t)9, (int8_t)9,
+          (int8_t)8, (int8_t)8, (int8_t)7, (int8_t)7, (int8_t)6));
   __m256i coefficients =
       libcrux_ml_kem_vector_avx2_serialize_mm256_si256_from_two_si128(
           lower_coefficients, upper_coefficients);
@@ -1137,12 +1141,16 @@ libcrux_ml_kem_vector_avx2_serialize_deserialize_12_deserialize_12_vec(
     __m128i lower_coefficients0, __m128i upper_coefficients0) {
   __m128i lower_coefficients = libcrux_intrinsics_avx2_mm_shuffle_epi8(
       lower_coefficients0,
-      libcrux_intrinsics_avx2_mm_set_epi8(11U, 10U, 10U, 9U, 8U, 7U, 7U, 6U, 5U,
-                                          4U, 4U, 3U, 2U, 1U, 1U, 0U));
+      libcrux_intrinsics_avx2_mm_set_epi8(
+          (int8_t)11, (int8_t)10, (int8_t)10, (int8_t)9, (int8_t)8, (int8_t)7,
+          (int8_t)7, (int8_t)6, (int8_t)5, (int8_t)4, (int8_t)4, (int8_t)3,
+          (int8_t)2, (int8_t)1, (int8_t)1, (int8_t)0));
   __m128i upper_coefficients = libcrux_intrinsics_avx2_mm_shuffle_epi8(
       upper_coefficients0,
-      libcrux_intrinsics_avx2_mm_set_epi8(15U, 14U, 14U, 13U, 12U, 11U, 11U,
-                                          10U, 9U, 8U, 8U, 7U, 6U, 5U, 5U, 4U));
+      libcrux_intrinsics_avx2_mm_set_epi8(
+          (int8_t)15, (int8_t)14, (int8_t)14, (int8_t)13, (int8_t)12,
+          (int8_t)11, (int8_t)11, (int8_t)10, (int8_t)9, (int8_t)8, (int8_t)8,
+          (int8_t)7, (int8_t)6, (int8_t)5, (int8_t)5, (int8_t)4));
   __m256i coefficients =
       libcrux_ml_kem_vector_avx2_serialize_mm256_si256_from_two_si128(
           lower_coefficients, upper_coefficients);

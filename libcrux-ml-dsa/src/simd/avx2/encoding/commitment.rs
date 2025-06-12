@@ -74,7 +74,7 @@ fn serialize_4(simd_unit: &Vec256) -> Vec128 {
     let adjacent_4_combined = mm_shuffle_epi8(
         adjacent_4_combined,
         mm_set_epi8(
-            0xF0, 0xF0, 0xF0, 0xF0, 0xF0, 0xF0, 0xF0, 0xF0, 0xF0, 0xF0, 0xF0, 0xF0, 12, 4, 8, 0,
+            -16, -16, -16, -16, -16, -16, -16, -16, -16, -16, -16, -16, 12, 4, 8, 0,
         ),
     );
     adjacent_4_combined

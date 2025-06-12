@@ -112,22 +112,22 @@ pub fn mm256_set_m128i(hi: Vec128, lo: Vec128) -> Vec256 {
 #[hax_lib::fstar::replace(interface, "include BitVec.Intrinsics {mm_set_epi8}")]
 #[inline(always)]
 pub fn mm_set_epi8(
-    byte15: u8,
-    byte14: u8,
-    byte13: u8,
-    byte12: u8,
-    byte11: u8,
-    byte10: u8,
-    byte9: u8,
-    byte8: u8,
-    byte7: u8,
-    byte6: u8,
-    byte5: u8,
-    byte4: u8,
-    byte3: u8,
-    byte2: u8,
-    byte1: u8,
-    byte0: u8,
+    byte15: i8,
+    byte14: i8,
+    byte13: i8,
+    byte12: i8,
+    byte11: i8,
+    byte10: i8,
+    byte9: i8,
+    byte8: i8,
+    byte7: i8,
+    byte6: i8,
+    byte5: i8,
+    byte4: i8,
+    byte3: i8,
+    byte2: i8,
+    byte1: i8,
+    byte0: i8,
 ) -> Vec128 {
     unimplemented!()
 }

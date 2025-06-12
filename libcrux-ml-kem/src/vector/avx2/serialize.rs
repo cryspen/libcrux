@@ -465,8 +465,22 @@ fn mm256_si256_from_two_si128(lower: Vec128, upper: Vec128) -> Vec256 {
 #[hax_lib::requires(fstar!(r#"Seq.length bytes == 10"#))]
 pub(crate) fn deserialize_5(bytes: &[u8]) -> Vec256 {
     let coefficients = mm_set_epi8(
-        bytes[9], bytes[8], bytes[8], bytes[7], bytes[7], bytes[6], bytes[6], bytes[5], bytes[4],
-        bytes[3], bytes[3], bytes[2], bytes[2], bytes[1], bytes[1], bytes[0],
+        bytes[9] as i8,
+        bytes[8] as i8,
+        bytes[8] as i8,
+        bytes[7] as i8,
+        bytes[7] as i8,
+        bytes[6] as i8,
+        bytes[6] as i8,
+        bytes[5] as i8,
+        bytes[4] as i8,
+        bytes[3] as i8,
+        bytes[3] as i8,
+        bytes[2] as i8,
+        bytes[2] as i8,
+        bytes[1] as i8,
+        bytes[1] as i8,
+        bytes[0] as i8,
     );
 
     let coefficients_loaded = mm256_si256_from_two_si128(coefficients, coefficients);
