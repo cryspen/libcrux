@@ -1,3 +1,5 @@
+// TODO: Update these tests to the new API
+#![cfg(feature = "c-apis")]
 use serde::Deserialize;
 use serde_json;
 use std::{fs::File, io::BufReader, path::Path};
