@@ -4,11 +4,11 @@
  * SPDX-License-Identifier: MIT or Apache-2.0
  *
  * This code was generated with the following revisions:
- * Charon: 3275bf4ad9dc8c25965dc5da6122653fc43c4287
- * Eurydice: d3b14228e2b5fe8710ec7efae31e4de2c96ed20d
- * Karamel: 095cdb73f246711f93f99a159ceca37cd2c227e1
- * F*: 4b3fc11774003a6ff7c09500ecb5f0145ca6d862
- * Libcrux: 75cbe9ea0e459cf8a62d97e8a867411e0dd8529a
+ * Charon: bb62a9b39db4ea8c6d536fe61b7d26663751bf3c
+ * Eurydice: 46cef5d58a855ed049fa89bfe99c959b5d9d0d4b
+ * Karamel: 39cb85a718da8ae4a724d31b08f9134ca9311336
+ * F*: unset
+ * Libcrux: ebc5ce6353daffce3fcd8bb1a92f7621ce266e9a
  */
 
 #ifndef __libcrux_mlkem_core_H
@@ -29,7 +29,7 @@ typedef struct core_ops_range_Range_08_s {
 #define Ok 0
 #define Err 1
 
-typedef uint8_t Result_a9_tags;
+typedef uint8_t Result_10;
 
 static inline uint16_t core_num__u16_7__wrapping_add(uint16_t x0, uint16_t x1);
 
@@ -329,7 +329,7 @@ with types uint8_t[24size_t], core_array_TryFromSliceError
 
 */
 typedef struct Result_b2_s {
-  Result_a9_tags tag;
+  Result_10 tag;
   union U {
     uint8_t case_Ok[24U];
     TryFromSliceError case_Err;
@@ -364,7 +364,7 @@ with types uint8_t[20size_t], core_array_TryFromSliceError
 
 */
 typedef struct Result_e1_s {
-  Result_a9_tags tag;
+  Result_10 tag;
   union U {
     uint8_t case_Ok[20U];
     TryFromSliceError case_Err;
@@ -522,7 +522,7 @@ with types uint8_t[32size_t], core_array_TryFromSliceError
 
 */
 typedef struct Result_fb_s {
-  Result_a9_tags tag;
+  Result_10 tag;
   union U {
     uint8_t case_Ok[32U];
     TryFromSliceError case_Err;
@@ -862,7 +862,7 @@ with types int16_t[16size_t], core_array_TryFromSliceError
 
 */
 typedef struct Result_0a_s {
-  Result_a9_tags tag;
+  Result_10 tag;
   union U {
     int16_t case_Ok[16U];
     TryFromSliceError case_Err;
@@ -897,7 +897,7 @@ with types uint8_t[8size_t], core_array_TryFromSliceError
 
 */
 typedef struct Result_15_s {
-  Result_a9_tags tag;
+  Result_10 tag;
   union U {
     uint8_t case_Ok[8U];
     TryFromSliceError case_Err;

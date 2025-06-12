@@ -1,4 +1,4 @@
-SLOW_MODULES += Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment.fst
+SLOW_MODULES +=
 VERIFIED_MODULES = \
 	Libcrux_ml_dsa.Simd.Portable.Encoding.Commitment.fst \
 	Libcrux_ml_dsa.Simd.Portable.Vector_type.fst \
@@ -9,6 +9,12 @@ VERIFIED_MODULES = \
 	Libcrux_ml_dsa.Simd.Avx2.Vector_type.fst \
 	Libcrux_ml_dsa.Simd.Avx2.Arithmetic.fst \
 	Libcrux_ml_dsa.Simd.Avx2.Ntt.fst \
+	Libcrux_ml_dsa.Simd.Avx2.Encoding.Error.fst \
+	Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment.fst \
+	Libcrux_ml_dsa.Simd.Avx2.Encoding.Gamma1.fst \
+	Libcrux_ml_dsa.Simd.Avx2.Encoding.T0.fst \
+	Libcrux_ml_dsa.Simd.Avx2.Encoding.T1.fst \
+	Libcrux_ml_dsa.Simd.Traits.fsti \
 	Libcrux_ml_dsa.Simd.Traits.Spec.fst \
 	Libcrux_ml_dsa.Simd.Traits.fst \
 	Libcrux_ml_dsa.Constants.fst \
