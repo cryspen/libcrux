@@ -4,11 +4,11 @@
  * SPDX-License-Identifier: MIT or Apache-2.0
  *
  * This code was generated with the following revisions:
- * Charon: 3275bf4ad9dc8c25965dc5da6122653fc43c4287
- * Eurydice: d3b14228e2b5fe8710ec7efae31e4de2c96ed20d
- * Karamel: 095cdb73f246711f93f99a159ceca37cd2c227e1
- * F*: 4b3fc11774003a6ff7c09500ecb5f0145ca6d862
- * Libcrux: d7e93a7ba1f32b019310e0fa86aba3055bac69de
+ * Charon: bb62a9b39db4ea8c6d536fe61b7d26663751bf3c
+ * Eurydice: 46cef5d58a855ed049fa89bfe99c959b5d9d0d4b
+ * Karamel: 39cb85a718da8ae4a724d31b08f9134ca9311336
+ * F*: unset
+ * Libcrux: ebc5ce6353daffce3fcd8bb1a92f7621ce266e9a
  */
 
 #ifndef __libcrux_mldsa65_avx2_H
@@ -694,7 +694,7 @@ libcrux_ml_dsa_simd_avx2_rejection_sample_less_than_field_modulus_bytestream_to_
   uint8_t serialized_extended[32U] = {0U};
   Eurydice_slice_copy(Eurydice_array_to_subslice_to(
                           (size_t)32U, serialized_extended, (size_t)24U,
-                          uint8_t, size_t, __builtin_slice_t),
+                          uint8_t, size_t, Eurydice_derefed_slice),
                       serialized, uint8_t);
   __m256i coefficients = libcrux_intrinsics_avx2_mm256_loadu_si256_u8(
       Eurydice_array_to_slice((size_t)32U, serialized_extended, uint8_t));
@@ -3530,7 +3530,7 @@ libcrux_ml_dsa_sample_rejection_sample_less_than_eta_equals_4_21(
           libcrux_ml_dsa_simd_avx2_rejection_sample_less_than_eta_equals_4_22(
               uu____0, Eurydice_array_to_subslice_from(
                            (size_t)263U, out, sampled_coefficients[0U], int32_t,
-                           size_t, __builtin_slice_t));
+                           size_t, Eurydice_derefed_slice));
       sampled_coefficients[0U] = sampled_coefficients[0U] + sampled;
       if (sampled_coefficients[0U] >=
           LIBCRUX_ML_DSA_CONSTANTS_COEFFICIENTS_IN_RING_ELEMENT) {
@@ -3564,7 +3564,7 @@ libcrux_ml_dsa_sample_rejection_sample_less_than_eta_equals_2_21(
           libcrux_ml_dsa_simd_avx2_rejection_sample_less_than_eta_equals_2_22(
               uu____0, Eurydice_array_to_subslice_from(
                            (size_t)263U, out, sampled_coefficients[0U], int32_t,
-                           size_t, __builtin_slice_t));
+                           size_t, Eurydice_derefed_slice));
       sampled_coefficients[0U] = sampled_coefficients[0U] + sampled;
       if (sampled_coefficients[0U] >=
           LIBCRUX_ML_DSA_CONSTANTS_COEFFICIENTS_IN_RING_ELEMENT) {
@@ -3865,7 +3865,7 @@ libcrux_ml_dsa_sample_rejection_sample_less_than_field_modulus_21(
           libcrux_ml_dsa_simd_avx2_rejection_sample_less_than_field_modulus_22(
               uu____0, Eurydice_array_to_subslice_from(
                            (size_t)263U, out, sampled_coefficients[0U], int32_t,
-                           size_t, __builtin_slice_t));
+                           size_t, Eurydice_derefed_slice));
       sampled_coefficients[0U] = sampled_coefficients[0U] + sampled;
       if (sampled_coefficients[0U] >=
           LIBCRUX_ML_DSA_CONSTANTS_COEFFICIENTS_IN_RING_ELEMENT) {
@@ -4931,7 +4931,7 @@ libcrux_ml_dsa_simd_avx2_vector_type_Vec256[5size_t]
 
 */
 typedef struct Option_7e_s {
-  Option_d8_tags tag;
+  Option_08_tags tag;
   libcrux_ml_dsa_polynomial_PolynomialRingElement_4b f0[5U];
 } Option_7e;
 
@@ -5425,7 +5425,7 @@ libcrux_ml_dsa_sample_sample_challenge_ring_element_18(
       number_of_ones;
   Eurydice_slice uu____0 =
       Eurydice_array_to_subslice_from((size_t)136U, randomness0, (size_t)8U,
-                                      uint8_t, size_t, __builtin_slice_t);
+                                      uint8_t, size_t, Eurydice_derefed_slice);
   bool done = libcrux_ml_dsa_sample_inside_out_shuffle(uu____0, &out_index,
                                                        &signs, result);
   while (true) {

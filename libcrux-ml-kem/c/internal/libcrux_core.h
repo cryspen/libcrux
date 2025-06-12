@@ -4,11 +4,11 @@
  * SPDX-License-Identifier: MIT or Apache-2.0
  *
  * This code was generated with the following revisions:
- * Charon: 3275bf4ad9dc8c25965dc5da6122653fc43c4287
- * Eurydice: d3b14228e2b5fe8710ec7efae31e4de2c96ed20d
- * Karamel: 095cdb73f246711f93f99a159ceca37cd2c227e1
- * F*: 4b3fc11774003a6ff7c09500ecb5f0145ca6d862
- * Libcrux: 75cbe9ea0e459cf8a62d97e8a867411e0dd8529a
+ * Charon: bb62a9b39db4ea8c6d536fe61b7d26663751bf3c
+ * Eurydice: 46cef5d58a855ed049fa89bfe99c959b5d9d0d4b
+ * Karamel: 39cb85a718da8ae4a724d31b08f9134ca9311336
+ * F*: unset
+ * Libcrux: ebc5ce6353daffce3fcd8bb1a92f7621ce266e9a
  */
 
 #ifndef __internal_libcrux_core_H
@@ -477,7 +477,7 @@ with types uint8_t[32size_t], core_array_TryFromSliceError
 
 */
 typedef struct core_result_Result_fb_s {
-  core_result_Result_a9_tags tag;
+  core_result_Result_10 tag;
   union {
     uint8_t case_Ok[32U];
     core_array_TryFromSliceError case_Err;
@@ -577,7 +577,7 @@ with types uint8_t[24size_t], core_array_TryFromSliceError
 
 */
 typedef struct core_result_Result_b2_s {
-  core_result_Result_a9_tags tag;
+  core_result_Result_10 tag;
   union {
     uint8_t case_Ok[24U];
     core_array_TryFromSliceError case_Err;
@@ -601,7 +601,7 @@ with types uint8_t[20size_t], core_array_TryFromSliceError
 
 */
 typedef struct core_result_Result_e1_s {
-  core_result_Result_a9_tags tag;
+  core_result_Result_10 tag;
   union {
     uint8_t case_Ok[20U];
     core_array_TryFromSliceError case_Err;
@@ -625,7 +625,7 @@ with types uint8_t[10size_t], core_array_TryFromSliceError
 
 */
 typedef struct core_result_Result_9d_s {
-  core_result_Result_a9_tags tag;
+  core_result_Result_10 tag;
   union {
     uint8_t case_Ok[10U];
     core_array_TryFromSliceError case_Err;
@@ -774,7 +774,7 @@ with types int16_t[16size_t], core_array_TryFromSliceError
 
 */
 typedef struct core_result_Result_0a_s {
-  core_result_Result_a9_tags tag;
+  core_result_Result_10 tag;
   union {
     int16_t case_Ok[16U];
     core_array_TryFromSliceError case_Err;
