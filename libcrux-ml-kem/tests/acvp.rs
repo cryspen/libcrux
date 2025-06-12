@@ -1,4 +1,4 @@
-#![cfg(any(feature = "mlkem512", feature = "mlkem768", feature = "mlkem1024",))]
+#![cfg(any(feature = "mlkem512", feature = "mlkem768", feature = "mlkem1024"))]
 
 use serde::{de::DeserializeOwned, Deserialize};
 use std::{fs::File, io::BufReader, path::Path};
@@ -114,7 +114,7 @@ fn keygen() {
                 "ML-KEM-512" =>
                 {
                     #[cfg(feature = "mlkem512")]
-                    check(mlkem512::generate_key_pair(seed), expected_result)
+                    check(mlkem512::MlKem512KeyPair::generate(seed), expected_result)
                 }
 
                 "ML-KEM-768" =>
@@ -266,10 +266,12 @@ fn encap_decap() {
                         "ML-KEM-512" => {
                             #[cfg(feature = "mlkem512")]
                             {
-                                let (actual_ct, actual_k) = mlkem512::encapsulate(
-                                    &mlkem512::MlKem512PublicKey::try_from(ek.as_slice()).unwrap(),
-                                    randomness,
-                                );
+                                let (actual_ct, actual_k) =
+                                    mlkem512::MlKem512PublicKey::try_from(ek.as_slice())
+                                        .unwrap()
+                                        .encapsulate(randomness)
+                                        .unwrap();
+
                                 assert_eq!(actual_ct.as_ref(), c);
                                 assert_eq!(actual_k.as_ref(), k);
                             }
@@ -332,7 +334,7 @@ fn encap_decap() {
                                     mlkem512::MlKem512PrivateKey::try_from(dk.as_slice()).unwrap();
                                 let c =
                                     mlkem512::MlKem512Ciphertext::try_from(c.as_slice()).unwrap();
-                                let actual_k = mlkem512::decapsulate(&dk, &c);
+                                let actual_k = dk.decapsulate(&c).unwrap();
                                 assert_eq!(actual_k.as_ref(), k);
                             }
                         }
