@@ -1,13 +1,15 @@
 [package]
 name = "libcrux-sha3"
-version.workspace = true
+version = "0.0.3-alpha.2"
+description = "Libcrux SHA-3 implementation"
+readme = "README.md"
+
 authors.workspace = true
 license.workspace = true
 homepage.workspace = true
 edition.workspace = true
 repository.workspace = true
-readme = "README.md"
-description = "Libcrux SHA-3 implementation"
+
 exclude = ["/proofs", "/c.sh", "/c.yaml", "/tests/tv", "tests/cavp.rs"]
 
 [lib]
@@ -15,7 +17,7 @@ bench = false # so libtest doesn't eat the arguments to criterion
 
 [dependencies]
 libcrux-platform = { version = "0.0.2", path = "../sys/platform" }
-libcrux-intrinsics = { version = "0.0.2", path = "../libcrux-intrinsics" }
+libcrux-intrinsics = { version = "0.0.3-alpha.2", path = "../libcrux-intrinsics" }
 
 # This is only required for verification.
 # The hax config is set by the hax toolchain.

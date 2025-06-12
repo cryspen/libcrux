@@ -1,19 +1,20 @@
 [package]
 name = "libcrux-intrinsics"
-version.workspace = true
+description = "Libcrux intrinsics crate"
+version = "0.0.3-alpha.2"
+
 authors.workspace = true
 license.workspace = true
 homepage.workspace = true
 edition.workspace = true
 repository.workspace = true
 readme.workspace = true
-description = "Libcrux intrinsics crate"
 exclude = ["/proofs"]
 
 [dependencies]
 hax-lib.workspace = true
 
-[target.'cfg(hax)'.dependencies]
+[target.'cfg(hax)'.dev-dependencies]
 core-models = { path = "../fstar-helpers/core-models" }
 
 [features]
@@ -23,4 +24,8 @@ simd256 = []
 [dev-dependencies]
 
 [lints.rust]
-unexpected_cfgs = { level = "warn", check-cfg = ['cfg(hax)', 'cfg(pre_core_models)', 'cfg(eurydice)'] }
+unexpected_cfgs = { level = "warn", check-cfg = [
+    'cfg(hax)',
+    'cfg(pre_core_models)',
+    'cfg(eurydice)',
+] }
