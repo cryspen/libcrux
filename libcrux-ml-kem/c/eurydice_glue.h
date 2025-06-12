@@ -116,7 +116,7 @@ typedef struct {
 // Variant for when the start and end indices are statically known (i.e., the
 // range argument `r` is a literal).
 #define Eurydice_slice_subslice2(s, start, end, t) \
-  EURYDICE_SLICE((t *)s.ptr, start, end)
+  EURYDICE_SLICE((t *)s.ptr, (start), (end))
 
 #define Eurydice_slice_subslice_to(s, subslice_end_pos, t, _0, _1) \
   EURYDICE_SLICE((t *)s.ptr, 0, subslice_end_pos)
@@ -132,7 +132,7 @@ typedef struct {
 
 // Same as above, variant for when start and end are statically known
 #define Eurydice_array_to_subslice2(x, start, end, t) \
-  EURYDICE_SLICE((t *)x, start, end)
+  EURYDICE_SLICE((t *)x, (start), (end))
 
 #define Eurydice_array_repeat(dst, len, init, t) \
   ERROR "should've been desugared"
@@ -198,6 +198,37 @@ static inline void Eurydice_slice_to_array3(uint8_t *dst_tag, char *dst_ok,
   *dst_tag = 0;
   memcpy(dst_ok, src.ptr, sz);
 }
+
+// SUPPORT FOR DSTs (Dynamically-Sized Types)
+
+// A DST is a fat pointer that keeps tracks of the size of it flexible array
+// member. Slices are a specific case of DSTs, where [T; N] implements
+// Unsize<[T]>, meaning an array of statically known size can be converted to a
+// fat pointer, i.e. a slice.
+//
+// Unlike slices, DSTs have a built-in definition that gets monomorphized, of
+// the form:
+//
+// typedef struct {
+//   T *ptr;
+//   size_t len; // number of elements
+// } Eurydice_dst;
+//
+// Furthermore, T = T0<[U0]> where `struct T0<U: ?Sized>`, where the `U` is the
+// last field. This means that there are two monomorphizations of T0 in the
+// program. One is `T0<[V; N]>`
+// -- this is directly converted to a Eurydice_dst via suitable codegen (no
+// macro). The other is `T = T0<[U]>`, where `[U]` gets emitted to
+// `Eurydice_derefed_slice`, a type that only appears in that precise situation
+// and is thus defined to give rise to a flexible array member.
+
+typedef char Eurydice_derefed_slice[];
+
+#define Eurydice_slice_of_dst(fam_ptr, len_, t, _) \
+  ((Eurydice_slice){.ptr = (void *)(fam_ptr), .len = len_})
+
+#define Eurydice_slice_of_boxed_array(ptr_, len_, t, _) \
+  ((Eurydice_slice){.ptr = (void *)(ptr_), .len = len_})
 
 // CORE STUFF (conversions, endianness, ...)
 
@@ -282,8 +313,7 @@ static inline uint16_t core_num__u16_7__wrapping_add(uint16_t x, uint16_t y) {
 static inline uint8_t core_num__u8_6__wrapping_sub(uint8_t x, uint8_t y) {
   return x - y;
 }
-static KRML_MUSTINLINE uint64_t core_num__u64_9__rotate_left(uint64_t x0,
-                                                             uint32_t x1) {
+static inline uint64_t core_num__u64_9__rotate_left(uint64_t x0, uint32_t x1) {
   return (x0 << x1 | x0 >> (64 - x1));
 }
 
@@ -417,6 +447,21 @@ typedef void *core_fmt_rt_Argument;
                                                                 x4)         \
   NULL
 
+// BOXES
+
+// Crimes.
+static inline char *malloc_and_init(size_t sz, char *init) {
+  char *ptr = (char *)malloc(sz);
+  memcpy(ptr, init, sz);
+  return ptr;
+}
+
+#define Eurydice_box_new(init, t, t_dst) \
+  ((t_dst)(malloc_and_init(sizeof(t), (char *)(&init))))
+
+#define Eurydice_box_new_array(len, ptr, t, t_dst) \
+  ((t_dst)(malloc_and_init(len * sizeof(t), (char *)(ptr))))
+
 // VECTORS (ANCIENT, POSSIBLY UNTESTED)
 
 /* For now these are passed by value -- three words. We could conceivably change
@@ -463,12 +508,6 @@ typedef struct {
 #define EURYDICE_VEC_LEN(v, t) (v)->len
 
 /* TODO: remove GCC-isms */
-#define EURYDICE_BOX_NEW(x, t) \
-  ({                           \
-    t *p = malloc(sizeof(t));  \
-    *p = x;                    \
-    p;                         \
-  })
 
 #define EURYDICE_REPLACE(ptr, new_v, t) \
   ({                                    \
