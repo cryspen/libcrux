@@ -1,13 +1,14 @@
 [package]
 name = "core-models"
-version.workspace = true
+description = "Models of the Rust core library"
+version = "0.0.3-alpha.3"
+readme = "readme.md"
+
 authors.workspace = true
 license.workspace = true
 homepage.workspace = true
 edition.workspace = true
 repository.workspace = true
-readme.workspace = true
-publish = false
 
 [dependencies]
 rand = "0.9"
