@@ -22,7 +22,7 @@
       flake = false;
     };
     circus-green = {
-      url = "github:Inria-Prosecco/circus-green/b18bf804c2a999a2f476e09608284561c964225c";
+      url = "github:Inria-Prosecco/circus-green";
       flake = false;
     };
   };
@@ -49,10 +49,10 @@
           FSTAR_HOME = fstar.packages.${system}.default;
           KRML_HOME = karamel;
 
-          CHARON_REV = charon.rev;
-          EURYDICE_REV = eurydice.rev;
+          CHARON_REV = charon.rev or "dirty";
+          EURYDICE_REV = eurydice.rev or "dirty";
           KRML_REV = karamel.version;
-          FSTAR_REV = fstar.rev;
+          FSTAR_REV = fstar.rev or "dirty";
           LIBCRUX_REV = self.rev or "dirty";
         };
 
