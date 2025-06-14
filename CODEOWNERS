@@ -1,1 +1,2 @@
 * @cryspen/libcrux
+*.rs @cryspen/rust-reviews
