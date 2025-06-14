@@ -29,6 +29,7 @@ let bv256 = Core_models.Abstractions.Bitvec.t_BitVec (mk_u64 256)
 
 let u8x16  = t_FunArray (mk_u64 16) u8
 
+let i8x16  = t_FunArray (mk_u64 16) i8
 let i8x32  = t_FunArray (mk_u64 32) i8
 let i16x16 = t_FunArray (mk_u64 16) i16
 let i32x4  = t_FunArray (mk_u64 4) i32
@@ -37,11 +38,13 @@ let i64x4  = t_FunArray (mk_u64 4) i64
 
 (**** Bit vec to int vec *)
 val to_i8x32  (x: bv256): i8x32
-val to_u8x16  (x: bv128): u8x16
+val to_i8x16  (x: bv128): i8x16
 val to_i16x16 (x: bv256): i16x16
 val to_i32x4  (x: bv128): i32x4
 val to_i32x8  (x: bv256): i32x8
 val to_i64x4  (x: bv256): i64x4
+
+val to_u8x16  (x: bv128): u8x16
 
 (**** Int vec to bit vec *)
 val from_i32x8 (x:i32x8):  bv256
@@ -369,17 +372,17 @@ val mm256_set_epi8_lemma
   )
   [SMTPat (to_i8x32 (I.mm256_set_epi8 b0 b1 b2 b3 b4 b5 b6 b7 b8 b9 b10 b11 b12 b13 b14 b15 b16 b17 b18 b19 b20 b21 b22 b23 b24 b25 b26 b27 b28 b29 b30 b31) i)]
 
-val mm2_set_epi8_lemma
-  (b0 b1 b2 b3 b4 b5 b6 b7 b8 b9 b10 b11 b12 b13 b14 b15: u8)
+val mm_set_epi8_lemma
+  (b0 b1 b2 b3 b4 b5 b6 b7 b8 b9 b10 b11 b12 b13 b14 b15: i8)
   (i: u64 {v i < 16})
   : Lemma (
-    to_u8x16 (I.mm_set_epi8 b0 b1 b2 b3 b4 b5 b6 b7 b8 b9 b10 b11 b12 b13 b14 b15) i
+    to_i8x16 (I.mm_set_epi8 b0 b1 b2 b3 b4 b5 b6 b7 b8 b9 b10 b11 b12 b13 b14 b15) i
     == (match v i with
        | 15 -> b0 | 14 -> b1 | 13 -> b2 | 12 -> b3 | 11 -> b4 | 10 -> b5 | 9 -> b6 | 8 -> b7
        | 7 -> b8 | 6 -> b9 | 5 -> b10 | 4 -> b11 | 3 -> b12 | 2 -> b13 | 1 -> b14 | 0 -> b15
        )
   )
-  [SMTPat (to_u8x16 (I.mm_set_epi8 b0 b1 b2 b3 b4 b5 b6 b7 b8 b9 b10 b11 b12 b13 b14 b15) i)]
+  [SMTPat (to_i8x16 (I.mm_set_epi8 b0 b1 b2 b3 b4 b5 b6 b7 b8 b9 b10 b11 b12 b13 b14 b15) i)]
   
 
 val mm256_set_epi16_lemma
