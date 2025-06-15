@@ -1,4 +1,6 @@
 //! ML-KEM 512
+use crate::MlKemError as Error;
+
 use super::{constants::*, ind_cca::*, types::*, *};
 
 const RANK: usize = 2;
@@ -35,6 +37,210 @@ pub type MlKem512PublicKey = MlKemPublicKey<CPA_PKE_PUBLIC_KEY_SIZE>;
 /// An ML-KEM 512 Key pair
 pub type MlKem512KeyPair = MlKemKeyPair<SECRET_KEY_SIZE, CPA_PKE_PUBLIC_KEY_SIZE>;
 
+#[cfg(all(not(eurydice), feature = "rand"))]
+use ::rand::CryptoRng;
+
+#[cfg(all(not(eurydice), feature = "pqcp"))]
+pub use pqcp::{crypto_kem_dec, crypto_kem_enc_derand, crypto_kem_keypair_derand};
+
+#[cfg(all(not(eurydice), feature = "rand", feature = "pqcp"))]
+pub use pqcp::{crypto_kem_enc, crypto_kem_keypair};
+
+/// Common APIs shared between PQCP implementations.
+#[cfg(all(not(eurydice), feature = "pqcp"))]
+mod pqcp {
+    use super::*;
+
+    // NIST APIs
+
+    /// Generate ML-KEM 512 Key Pair
+    ///
+    /// The input is a byte array of size
+    /// [`KEY_GENERATION_SEED_SIZE`].
+    pub fn crypto_kem_keypair_derand(
+        randomness: [u8; KEY_GENERATION_SEED_SIZE],
+    ) -> MlKem512KeyPair {
+        MlKem512KeyPair::generate(randomness)
+    }
+
+    /// Generate ML-KEM 512 Key Pair
+    ///
+    /// The random number generator `rng` needs to implement
+    /// `CryptoRng` to sample the required randomness internally.
+    #[cfg(feature = "rand")]
+    pub fn crypto_kem_keypair(rng: &mut impl CryptoRng) -> MlKem512KeyPair {
+        MlKem512KeyPair::generate_rand(rng)
+    }
+
+    /// Encapsulate ML-KEM 512
+    ///
+    /// Generates an ([`MlKem512Ciphertext`], [`MlKemSharedSecret`])
+    /// tuple. The input is [`SHARED_SECRET_SIZE`] bytes of external
+    /// `randomness`.
+    pub fn crypto_kem_enc_derand(
+        public_key: &MlKem512PublicKey,
+        randomness: [u8; SHARED_SECRET_SIZE],
+    ) -> Result<(MlKem512Ciphertext, MlKemSharedSecret), Error> {
+        public_key.encapsulate(randomness)
+    }
+
+    #[cfg(feature = "rand")]
+    /// Encapsulate ML-KEM 512
+    ///
+    /// Generates an ([`MlKem512Ciphertext`], [`MlKemSharedSecret`]) tuple.
+    /// The random number generator `rng` needs to implement `CryptoRng`
+    /// to sample the required randomness internally.
+    pub fn crypto_kem_enc(
+        public_key: &MlKem512PublicKey,
+        rng: &mut impl CryptoRng,
+    ) -> Result<(MlKem512Ciphertext, MlKemSharedSecret), Error> {
+        public_key.encapsulate_rand(rng)
+    }
+
+    /// Decapsulate ML-KEM 512
+    ///
+    /// Generates an [`MlKemSharedSecret`].
+    /// The input is a reference to an [`MlKem512Ciphertext`].
+    pub fn crypto_kem_dec(
+        private_key: &MlKem512PrivateKey,
+        ciphertext: &MlKem512Ciphertext,
+    ) -> Result<MlKemSharedSecret, Error> {
+        private_key.decapsulate(ciphertext)
+    }
+
+    // Additional key APIs
+    // XXX: It is unclear to me if these should generate packed or unpacked keys.
+    // pub fn crypto_kem_sk_from_seed() {}
+    // pub fn crypto_kem_pk_from_sk() {}
+}
+
+#[cfg(not(eurydice))]
+impl MlKem512KeyPair {
+    /// Generate ML-KEM 512 Key Pair
+    ///
+    /// The input is a byte array of size
+    /// [`KEY_GENERATION_SEED_SIZE`].
+    pub fn generate(randomness: [u8; KEY_GENERATION_SEED_SIZE]) -> Self {
+        multiplexing::generate_keypair::<
+            RANK,
+            CPA_PKE_SECRET_KEY_SIZE,
+            SECRET_KEY_SIZE,
+            CPA_PKE_PUBLIC_KEY_SIZE,
+            ETA1,
+            ETA1_RANDOMNESS_SIZE,
+        >(&randomness)
+    }
+
+    /// Generate ML-KEM 512 Key Pair
+    ///
+    /// The random number generator `rng` needs to implement
+    /// `CryptoRng` to sample the required randomness internally.
+    #[cfg(feature = "rand")]
+    pub fn generate_rand(rng: &mut impl CryptoRng) -> Self {
+        let mut randomness = [0u8; KEY_GENERATION_SEED_SIZE];
+        rng.fill_bytes(&mut randomness);
+
+        Self::generate(randomness)
+    }
+}
+
+#[cfg(not(eurydice))]
+impl MlKem512PublicKey {
+    /// Validate a public key.
+    ///
+    /// Returns `true` if valid, and `false` otherwise.
+    pub fn validate(&self) -> bool {
+        multiplexing::validate_public_key::<RANK, CPA_PKE_PUBLIC_KEY_SIZE>(&self.value)
+    }
+
+    /// Encapsulate ML-KEM 512
+    ///
+    /// Generates an ([`MlKem512Ciphertext`], [`MlKemSharedSecret`])
+    /// tuple. The input is [`SHARED_SECRET_SIZE`] bytes of external
+    /// `randomness`.
+    pub fn encapsulate(
+        &self,
+        randomness: [u8; SHARED_SECRET_SIZE],
+    ) -> Result<(MlKem512Ciphertext, MlKemSharedSecret), Error> {
+        if self.validate() {
+            Ok(multiplexing::encapsulate::<
+                RANK,
+                CPA_PKE_CIPHERTEXT_SIZE,
+                CPA_PKE_PUBLIC_KEY_SIZE,
+                T_AS_NTT_ENCODED_SIZE,
+                C1_SIZE,
+                C2_SIZE,
+                VECTOR_U_COMPRESSION_FACTOR,
+                VECTOR_V_COMPRESSION_FACTOR,
+                C1_BLOCK_SIZE,
+                ETA1,
+                ETA1_RANDOMNESS_SIZE,
+                ETA2,
+                ETA2_RANDOMNESS_SIZE,
+            >(self, &randomness))
+        } else {
+            Err(Error::PublicKeyValidationError)
+        }
+    }
+
+    #[cfg(feature = "rand")]
+    /// Encapsulate ML-KEM 512
+    ///
+    /// Generates an ([`MlKem512Ciphertext`], [`MlKemSharedSecret`]) tuple.
+    /// The random number generator `rng` needs to implement `CryptoRng`
+    /// to sample the required randomness internally.
+    pub fn encapsulate_rand(
+        &self,
+        rng: &mut impl CryptoRng,
+    ) -> Result<(MlKem512Ciphertext, MlKemSharedSecret), Error> {
+        let mut randomness = [0u8; SHARED_SECRET_SIZE];
+        rng.fill_bytes(&mut randomness);
+
+        Self::encapsulate(self, randomness)
+    }
+}
+
+#[cfg(not(eurydice))]
+impl MlKem512PrivateKey {
+    /// Decapsulate ML-KEM 512
+    ///
+    /// Generates an [`MlKemSharedSecret`].
+    /// The input is a reference to an [`MlKem512Ciphertext`].
+    pub fn decapsulate(&self, ciphertext: &MlKem512Ciphertext) -> Result<MlKemSharedSecret, Error> {
+        if self.validate(ciphertext) {
+            Ok(multiplexing::decapsulate::<
+                RANK,
+                SECRET_KEY_SIZE,
+                CPA_PKE_SECRET_KEY_SIZE,
+                CPA_PKE_PUBLIC_KEY_SIZE,
+                CPA_PKE_CIPHERTEXT_SIZE,
+                T_AS_NTT_ENCODED_SIZE,
+                C1_SIZE,
+                C2_SIZE,
+                VECTOR_U_COMPRESSION_FACTOR,
+                VECTOR_V_COMPRESSION_FACTOR,
+                C1_BLOCK_SIZE,
+                ETA1,
+                ETA1_RANDOMNESS_SIZE,
+                ETA2,
+                ETA2_RANDOMNESS_SIZE,
+                IMPLICIT_REJECTION_HASH_INPUT_SIZE,
+            >(self, ciphertext))
+        } else {
+            Err(Error::PrivateKeyValidationError)
+        }
+    }
+
+    /// Validate a private key.
+    ///
+    /// Returns `true` if valid, and `false` otherwise.
+    pub fn validate(&self, ciphertext: &MlKem512Ciphertext) -> bool {
+        multiplexing::validate_private_key::<RANK, SECRET_KEY_SIZE, CPA_PKE_CIPHERTEXT_SIZE>(
+            self, ciphertext,
+        )
+    }
+}
+
 // Instantiate the different functions.
 macro_rules! instantiate {
     ($modp:ident, $p:path, $vec:path, $doc:expr) => {
@@ -60,13 +266,11 @@ macro_rules! instantiate {
                 private_key: &MlKem512PrivateKey,
                 ciphertext: &MlKem512Ciphertext,
             ) -> bool {
-
                     p::validate_private_key::<
                         RANK,
                         SECRET_KEY_SIZE,
                         CPA_PKE_CIPHERTEXT_SIZE,
                     >(private_key, ciphertext)
-
             }
 
             /// Validate the private key only.
@@ -93,7 +297,6 @@ macro_rules! instantiate {
                         ETA1,
                         ETA1_RANDOMNESS_SIZE,
                     >(&randomness)
-
             }
 
             /// Generate Kyber 512 Key Pair
@@ -120,8 +323,6 @@ macro_rules! instantiate {
                 public_key: &MlKem512PublicKey,
                 randomness: [u8; SHARED_SECRET_SIZE],
             ) -> (MlKem512Ciphertext, MlKemSharedSecret) {
-
-
                     p::encapsulate::<
                         RANK,
                         CPA_PKE_CIPHERTEXT_SIZE,
@@ -137,7 +338,6 @@ macro_rules! instantiate {
                         ETA2,
                         ETA2_RANDOMNESS_SIZE,
                     >(public_key, &randomness)
-
             }
 
             /// Encapsulate Kyber 512
@@ -194,7 +394,6 @@ macro_rules! instantiate {
                         ETA2_RANDOMNESS_SIZE,
                         IMPLICIT_REJECTION_HASH_INPUT_SIZE,
                     >(private_key, ciphertext)
-
             }
 
             /// Decapsulate Kyber 512
@@ -231,11 +430,261 @@ macro_rules! instantiate {
             pub mod unpacked {
                 use super::*;
 
-                /// An Unpacked ML-KEM 512 Public key
+                /// An unpacked, validated ML-KEM 512 Public key
                 pub type MlKem512PublicKeyUnpacked = p::unpacked::MlKemPublicKeyUnpacked<RANK>;
 
-                /// Am Unpacked ML-KEM 512 Key pair
+                /// An unpacked, validated ML-KEM 512 Key pair
                 pub type MlKem512KeyPairUnpacked = p::unpacked::MlKemKeyPairUnpacked<RANK>;
+
+                #[cfg(all(not(eurydice), feature = "pqcp"))]
+                pub use self::pqcp::{
+                    crypto_kem_keypair_derand_struct,
+                    crypto_kem_enc_derand_struct,
+                    crypto_kem_dec_struct,
+                    crypto_kem_marshal_pk,
+                    crypto_kem_marshal_sk,
+                    crypto_kem_parse_pk,
+                    crypto_kem_parse_sk
+                };
+
+                #[cfg(all(not(eurydice), feature = "rand", feature = "pqcp"))]
+                pub use self::pqcp::{crypto_kem_enc_struct, crypto_kem_keypair_struct};
+
+                /// Common APIs shared between PQCP implementations.
+                #[cfg(all(not(eurydice), feature = "pqcp"))]
+                mod pqcp {
+                    use super::*;
+
+                    /// Generate ML-KEM 512 Key Pair in "unpacked" form.
+                    pub fn crypto_kem_keypair_derand_struct(randomness: [u8; KEY_GENERATION_SEED_SIZE]) -> MlKem512KeyPairUnpacked {
+                        MlKem512KeyPairUnpacked::generate_key_pair(randomness)
+                    }
+
+                    #[cfg(feature = "rand")]
+                    /// Generate ML-KEM 512 Key Pair in "unpacked" form.
+                    pub fn crypto_kem_keypair_struct(rng: &mut impl CryptoRng) -> MlKem512KeyPairUnpacked {
+                        MlKem512KeyPairUnpacked::generate_key_pair_rand(rng)
+                    }
+
+                    /// Serialze an unpacked public key.
+                    pub fn crypto_kem_marshal_pk(public_key: &MlKem512PublicKeyUnpacked) -> MlKem512PublicKey {
+                        public_key.into()
+                    }
+
+                    /// Serialze an unpacked private key.
+                    pub fn crypto_kem_marshal_sk(key_pair: &MlKem512KeyPairUnpacked) -> MlKem512PrivateKey {
+                        key_pair.into()
+                    }
+
+                    /// Validate and deserialize an unpacked public key.
+                    pub fn crypto_kem_parse_pk(public_key: &MlKem512PublicKey) -> Result<MlKem512PublicKeyUnpacked, Error> {
+                        public_key.try_into()
+                    }
+
+                    /// Encapsulate using an unpacked public key.
+                    ///
+                    /// Does not perform public key validation, since
+                    /// the public key must have been validated on
+                    /// deserialization.
+                    pub fn crypto_kem_enc_derand_struct(
+                        public_key: &MlKem512PublicKeyUnpacked,
+                        randomness: &[u8; SHARED_SECRET_SIZE]
+                    ) -> (MlKem512Ciphertext, MlKemSharedSecret) {
+                        public_key.encapsulate(randomness)
+                    }
+
+                    #[cfg(feature = "rand")]
+                    /// Encapsulate using an unpacked public key.
+                    ///
+                    /// Does not perform public key validation, since
+                    /// the public key must have been validated on
+                    /// deserialization.
+                    pub fn crypto_kem_enc_struct(
+                        public_key: &MlKem512PublicKeyUnpacked,
+                        rng: &mut impl CryptoRng
+                    ) -> (MlKem512Ciphertext, MlKemSharedSecret) {
+                        public_key.encapsulate_rand(rng)
+                    }
+
+                    /// Validate and deserialize an unpacked private key.
+                    pub fn crypto_kem_parse_sk(private_key: &MlKem512PrivateKey) -> Result<MlKem512KeyPairUnpacked, Error> {
+                        private_key.try_into()
+                    }
+
+                    /// Decapsulate using an unpacked private key.
+                    ///
+                    /// Does not perform key validation, since the
+                    /// keys must have been validated on
+                    /// deserialization.
+                    pub fn crypto_kem_dec_struct(private_key: &MlKem512KeyPairUnpacked, ciphertext: &MlKem512Ciphertext) -> MlKemSharedSecret {
+                        private_key.decapsulate(ciphertext)
+                    }
+                }
+
+                #[cfg(not(eurydice))]
+                impl MlKem512KeyPairUnpacked {
+                    /// Generate ML-KEM 512 Key Pair in "unpacked" form
+                    pub fn generate_key_pair(randomness: [u8; KEY_GENERATION_SEED_SIZE]) -> Self {
+                        let mut key_pair = MlKem512KeyPairUnpacked::default();
+                        p::unpacked::generate_keypair::<
+                            RANK,
+                            CPA_PKE_SECRET_KEY_SIZE,
+                            SECRET_KEY_SIZE,
+                            CPA_PKE_PUBLIC_KEY_SIZE,
+                            ETA1,
+                            ETA1_RANDOMNESS_SIZE,
+                        >(randomness, &mut key_pair);
+                        key_pair
+                    }
+
+                    /// Generate ML-KEM 512 Key Pair in "unpacked" form
+                    pub fn generate_key_pair_mut(randomness: [u8; KEY_GENERATION_SEED_SIZE], key_pair: &mut MlKem512KeyPairUnpacked) {
+                        p::unpacked::generate_keypair::<
+                            RANK,
+                            CPA_PKE_SECRET_KEY_SIZE,
+                            SECRET_KEY_SIZE,
+                            CPA_PKE_PUBLIC_KEY_SIZE,
+                            ETA1,
+                            ETA1_RANDOMNESS_SIZE,
+                        >(randomness, key_pair);
+                    }
+
+                    #[cfg(feature = "rand")]
+                    /// Generate ML-KEM 512 Key Pair in "unpacked" form
+                    pub fn generate_key_pair_rand(rng: &mut impl CryptoRng) -> Self {
+                        let mut randomness = [0u8; KEY_GENERATION_SEED_SIZE];
+                        rng.fill_bytes(&mut randomness);
+
+                        Self::generate_key_pair(randomness)
+                    }
+
+                    #[cfg(feature = "rand")]
+                    pub fn generate_key_pair_mut_rand(key_pair: &mut MlKem512KeyPairUnpacked, rng: &mut impl CryptoRng)  {
+                        let mut randomness = [0u8; KEY_GENERATION_SEED_SIZE];
+                        rng.fill_bytes(&mut randomness);
+
+                        Self::generate_key_pair_mut(randomness, key_pair);
+                    }
+
+                    pub fn decapsulate(&self, ciphertext: &MlKem512Ciphertext) -> MlKemSharedSecret {
+                        p::unpacked::decapsulate::<
+                            RANK,
+                            SECRET_KEY_SIZE,
+                            CPA_PKE_SECRET_KEY_SIZE,
+                            CPA_PKE_PUBLIC_KEY_SIZE,
+                            CPA_PKE_CIPHERTEXT_SIZE,
+                            T_AS_NTT_ENCODED_SIZE,
+                            C1_SIZE,
+                            C2_SIZE,
+                            VECTOR_U_COMPRESSION_FACTOR,
+                            VECTOR_V_COMPRESSION_FACTOR,
+                            C1_BLOCK_SIZE,
+                            ETA1,
+                            ETA1_RANDOMNESS_SIZE,
+                            ETA2,
+                            ETA2_RANDOMNESS_SIZE,
+                            IMPLICIT_REJECTION_HASH_INPUT_SIZE,
+                        >(self, ciphertext)
+                    }
+                }
+
+                #[cfg(not(eurydice))]
+                impl MlKem512PublicKeyUnpacked {
+                    /// Encapsulate ML-KEM 512 (unpacked)
+                    ///
+                    /// Generates an ([`MlKem512Ciphertext`], [`MlKemSharedSecret`]) tuple.
+                    /// The input is [`SHARED_SECRET_SIZE`] bytes of `randomness`.
+                    pub fn encapsulate(&self, randomness: &[u8; SHARED_SECRET_SIZE]) -> (MlKem512Ciphertext, MlKemSharedSecret) {
+                        p::unpacked::encapsulate::<
+                            RANK,
+                            CPA_PKE_CIPHERTEXT_SIZE,
+                            CPA_PKE_PUBLIC_KEY_SIZE,
+                            T_AS_NTT_ENCODED_SIZE,
+                            C1_SIZE,
+                            C2_SIZE,
+                            VECTOR_U_COMPRESSION_FACTOR,
+                            VECTOR_V_COMPRESSION_FACTOR,
+                            C1_BLOCK_SIZE,
+                            ETA1,
+                            ETA1_RANDOMNESS_SIZE,
+                            ETA2,
+                            ETA2_RANDOMNESS_SIZE,
+                        >(self, &randomness)
+                    }
+
+                    #[cfg(feature = "rand")]
+                    /// Encapsulate ML-KEM 512 (unpacked)
+                    ///
+                    /// Generates an ([`MlKem512Ciphertext`], [`MlKemSharedSecret`]) tuple.
+                    /// The input is [`SHARED_SECRET_SIZE`] bytes of `randomness`.
+                    pub fn encapsulate_rand(&self, rng: &mut impl CryptoRng) -> (MlKem512Ciphertext, MlKemSharedSecret) {
+                        let mut randomness = [0u8; SHARED_SECRET_SIZE];
+                        rng.fill_bytes(&mut randomness);
+
+                        self.encapsulate(&randomness)
+                    }
+                }
+
+                #[cfg(not(eurydice))]
+                impl TryFrom<&MlKem512PublicKey> for MlKem512PublicKeyUnpacked {
+                    type Error = super::Error;
+
+                    fn try_from(value: &MlKem512PublicKey) -> Result<MlKem512PublicKeyUnpacked, Error> {
+                        if value.validate() {
+                            let mut unpacked_public_key = MlKem512PublicKeyUnpacked::default();
+                            p::unpacked::unpack_public_key::<
+                              RANK,
+                              T_AS_NTT_ENCODED_SIZE,
+                              CPA_PKE_PUBLIC_KEY_SIZE,
+                            >(value, &mut unpacked_public_key);
+
+                            Ok(unpacked_public_key)
+                        }
+                        else {
+                            Err(Error::PublicKeyValidationError)
+                        }
+                    }
+                }
+
+                #[cfg(not(eurydice))]
+                impl From<&MlKem512PublicKeyUnpacked> for MlKem512PublicKey {
+                    fn from(value: &MlKem512PublicKeyUnpacked) -> MlKem512PublicKey {
+                        value.serialized()
+                    }
+                }
+
+                #[cfg(not(eurydice))]
+                impl From<&MlKem512KeyPairUnpacked> for MlKem512PrivateKey {
+                    fn from(value: &MlKem512KeyPairUnpacked) -> MlKem512PrivateKey {
+                        value.serialized_private_key::<
+                          CPA_PKE_SECRET_KEY_SIZE,
+                          SECRET_KEY_SIZE,
+                          CPA_PKE_PUBLIC_KEY_SIZE
+                        >()
+                    }
+                }
+
+                #[cfg(not(eurydice))]
+                impl TryFrom<&MlKem512PrivateKey> for MlKem512KeyPairUnpacked {
+                    type Error = super::Error;
+
+                    fn try_from(value: &MlKem512PrivateKey) -> Result<MlKem512KeyPairUnpacked, Error> {
+                        if p::validate_private_key_only::<RANK, SECRET_KEY_SIZE>(value) {
+                            let mut key_pair = MlKem512KeyPairUnpacked::default();
+                            p::unpacked::keypair_from_private_key::<
+                              RANK,
+                              SECRET_KEY_SIZE,
+                              CPA_PKE_SECRET_KEY_SIZE,
+                              CPA_PKE_PUBLIC_KEY_SIZE,
+                              T_AS_NTT_ENCODED_SIZE
+                            >(value, &mut key_pair);
+                            Ok(key_pair)
+                        }
+                        else {
+                            Err(Error::PrivateKeyValidationError)
+                        }
+                    }
+                }
 
                 /// Create a new, empty unpacked key.
                 pub fn init_key_pair() -> MlKem512KeyPairUnpacked {
@@ -304,6 +753,11 @@ macro_rules! instantiate {
                 }
 
                 /// Generate ML-KEM 512 Key Pair in "unpacked" form.
+                // XXX: Deprecate starting from which version?
+                #[deprecated(
+                    since = "0.0.3-alpha.2",
+                    note = "please use `MlKem512KeyPairUnpacked::generate_key_pair` instead"
+                )]
                 pub fn generate_key_pair(
                     randomness: [u8; KEY_GENERATION_SEED_SIZE]
                 ) ->  MlKem512KeyPairUnpacked {
@@ -313,6 +767,11 @@ macro_rules! instantiate {
                 }
 
                 /// Generate ML-KEM 512 Key Pair in "unpacked" form
+                // XXX: Deprecate starting from which version?
+                #[deprecated(
+                    since = "0.0.3-alpha.2",
+                    note = "please use `MlKem512KeyPairUnpacked::generate_key_pair_mut` instead"
+                )]
                 pub fn generate_key_pair_mut(
                     randomness: [u8; KEY_GENERATION_SEED_SIZE],
                     key_pair: &mut MlKem512KeyPairUnpacked,
@@ -325,7 +784,6 @@ macro_rules! instantiate {
                             ETA1,
                             ETA1_RANDOMNESS_SIZE,
                         >(randomness, key_pair);
-
                 }
 
                 /// Encapsulate ML-KEM 512 (unpacked)
@@ -333,6 +791,7 @@ macro_rules! instantiate {
                 /// Generates an ([`MlKem512Ciphertext`], [`MlKemSharedSecret`]) tuple.
                 /// The input is a reference to an unpacked public key of type [`MlKem512PublicKeyUnpacked`],
                 /// the SHA3-256 hash of this public key, and [`SHARED_SECRET_SIZE`] bytes of `randomness`.
+                //XXX: The above doc comment does not match the code.
                 #[cfg_attr(
                     hax,
                     hax_lib::fstar::before(
@@ -346,12 +805,15 @@ macro_rules! instantiate {
         ()"
                     )
                 )]
+                // XXX: Deprecate starting from which version?
+                #[deprecated(
+                    since = "0.0.3-alpha.2",
+                    note = "please use `MlKem512PublicKeyUnpacked::encapsulate` instead"
+                )]
                 pub fn encapsulate(
                     public_key: &MlKem512PublicKeyUnpacked,
                     randomness: [u8; SHARED_SECRET_SIZE],
                 ) -> (MlKem512Ciphertext, MlKemSharedSecret) {
-
-
                         p::unpacked::encapsulate::<
                             RANK,
                             CPA_PKE_CIPHERTEXT_SIZE,
@@ -367,7 +829,6 @@ macro_rules! instantiate {
                             ETA2,
                             ETA2_RANDOMNESS_SIZE,
                         >(public_key, &randomness)
-
                 }
 
                 /// Decapsulate ML-KEM 512 (unpacked)
@@ -375,6 +836,11 @@ macro_rules! instantiate {
                 /// Generates an [`MlKemSharedSecret`].
                 /// The input is a reference to an unpacked key pair of type [`MlKem512KeyPairUnpacked`]
                 /// and an [`MlKem512Ciphertext`].
+                // XXX: Deprecate starting from which version?
+                #[deprecated(
+                    since = "0.0.3-alpha.2",
+                    note = "please use `MlKem512KeyPairUnpacked::decapsulate` instead"
+                )]
                 pub fn decapsulate(
                     private_key: &MlKem512KeyPairUnpacked,
                     ciphertext: &MlKem512Ciphertext,
@@ -397,7 +863,6 @@ macro_rules! instantiate {
                             ETA2_RANDOMNESS_SIZE,
                             IMPLICIT_REJECTION_HASH_INPUT_SIZE,
                         >(private_key, ciphertext)
-
                 }
             }
         }
@@ -415,7 +880,12 @@ instantiate! {neon, ind_cca::instantiations::neon, vector::SIMD128Vector, "Neon 
 /// Validate a public key.
 ///
 /// Returns `true` if valid, and `false` otherwise.
-#[cfg(not(eurydice))]
+#[cfg(all(not(eurydice), any(feature = "c-apis", feature = "kyber")))]
+// XXX: Deprecate starting from which version?
+#[deprecated(
+    since = "0.0.3-alpha.2",
+    note = "please use `MlKem512PublicKey::validate` instead"
+)]
 pub fn validate_public_key(public_key: &MlKem512PublicKey) -> bool {
     multiplexing::validate_public_key::<RANK, CPA_PKE_PUBLIC_KEY_SIZE>(&public_key.value)
 }
@@ -423,7 +893,12 @@ pub fn validate_public_key(public_key: &MlKem512PublicKey) -> bool {
 /// Validate a private key.
 ///
 /// Returns `true` if valid, and `false` otherwise.
-#[cfg(not(eurydice))]
+#[cfg(all(not(eurydice), any(feature = "c-apis", feature = "kyber")))]
+// XXX: Deprecate starting from which version?
+#[deprecated(
+    since = "0.0.3-alpha.2",
+    note = "please use `MlKem512PrivateKey::validate` instead"
+)]
 pub fn validate_private_key(
     private_key: &MlKem512PrivateKey,
     ciphertext: &MlKem512Ciphertext,
@@ -440,11 +915,16 @@ pub fn validate_private_key(
 /// [`KEY_GENERATION_SEED_SIZE`].
 ///
 /// This function returns an [`MlKem512KeyPair`].
-#[cfg(not(eurydice))]
+#[cfg(all(not(eurydice), feature = "c-apis"))]
 #[hax_lib::fstar::verification_status(panic_free)]
 #[hax_lib::ensures(|res|
     fstar!(r#"let ((secret_key, public_key), valid) = Spec.MLKEM.Instances.mlkem512_generate_keypair $randomness in
         valid ==> (${res}.f_sk.f_value == secret_key /\ ${res}.f_pk.f_value == public_key)"#)
+)]
+// XXX: Deprecate starting from which version?
+#[deprecated(
+    since = "0.0.3-alpha.2",
+    note = "please use `MlKem512KeyPair::generate_key_pair` instead"
 )]
 pub fn generate_key_pair(randomness: [u8; KEY_GENERATION_SEED_SIZE]) -> MlKem512KeyPair {
     multiplexing::generate_keypair::<
@@ -462,12 +942,17 @@ pub fn generate_key_pair(randomness: [u8; KEY_GENERATION_SEED_SIZE]) -> MlKem512
 /// Generates an ([`MlKem512Ciphertext`], [`MlKemSharedSecret`]) tuple.
 /// The input is a reference to an [`MlKem512PublicKey`] and [`SHARED_SECRET_SIZE`]
 /// bytes of `randomness`.
-#[cfg(not(eurydice))]
+#[cfg(all(not(eurydice), feature = "c-apis"))]
 #[hax_lib::fstar::verification_status(panic_free)]
 #[hax_lib::ensures(|res|
     fstar!(r#"let ((ciphertext, shared_secret), valid) = Spec.MLKEM.Instances.mlkem512_encapsulate ${public_key}.f_value $randomness in
         let (res_ciphertext, res_shared_secret) = $res in
         valid ==> (res_ciphertext.f_value == ciphertext /\ res_shared_secret == shared_secret)"#)
+)]
+// XXX: Deprecate starting from which version?
+#[deprecated(
+    since = "0.0.3-alpha.2",
+    note = "please use `MlKem512PublicKey::encapsulate` instead"
 )]
 pub fn encapsulate(
     public_key: &MlKem512PublicKey,
@@ -494,11 +979,16 @@ pub fn encapsulate(
 ///
 /// Generates an [`MlKemSharedSecret`].
 /// The input is a reference to an [`MlKem512PrivateKey`] and an [`MlKem512Ciphertext`].
-#[cfg(not(eurydice))]
+#[cfg(all(not(eurydice), feature = "c-apis"))]
 #[hax_lib::fstar::verification_status(panic_free)]
 #[hax_lib::ensures(|res|
     fstar!(r#"let (shared_secret, valid) = Spec.MLKEM.Instances.mlkem512_decapsulate ${private_key}.f_value ${ciphertext}.f_value in
         valid ==> $res == shared_secret"#)
+)]
+// XXX: Deprecate starting from which version?
+#[deprecated(
+    since = "0.0.3-alpha.2",
+    note = "please use `MlKem512PrivateKey::decapsulate` instead"
 )]
 pub fn decapsulate(
     private_key: &MlKem512PrivateKey,
@@ -531,7 +1021,7 @@ pub fn decapsulate(
 /// implements `CryptoRng`.
 ///
 /// Decapsulation is not provided in this module as it does not require randomness.
-#[cfg(all(not(eurydice), feature = "rand"))]
+#[cfg(all(not(eurydice), feature = "rand", feature = "c-apis"))]
 pub mod rand {
     use super::{
         MlKem512Ciphertext, MlKem512KeyPair, MlKem512PublicKey, MlKemSharedSecret,
@@ -545,6 +1035,11 @@ pub mod rand {
     /// `CryptoRng` to sample the required randomness internally.
     ///
     /// This function returns an [`MlKem512KeyPair`].
+    // XXX: Deprecate starting from which version?
+    #[deprecated(
+        since = "0.0.3-alpha.2",
+        note = "please use `MlKem512KeyPair::generate_key_pair_rand` instead"
+    )]
     pub fn generate_key_pair(rng: &mut impl CryptoRng) -> MlKem512KeyPair {
         let mut randomness = [0u8; KEY_GENERATION_SEED_SIZE];
         rng.fill_bytes(&mut randomness);
@@ -558,6 +1053,11 @@ pub mod rand {
     /// The input is a reference to an [`MlKem512PublicKey`].
     /// The random number generator `rng` needs to implement `CryptoRng`
     /// to sample the required randomness internally.
+    // XXX: Deprecate starting from which version?
+    #[deprecated(
+        since = "0.0.3-alpha.2",
+        note = "please use `MlKem512KeyPair::encapsulate_rand` instead"
+    )]
     pub fn encapsulate(
         public_key: &MlKem512PublicKey,
         rng: &mut impl CryptoRng,
@@ -620,7 +1120,6 @@ pub(crate) mod kyber {
     ///
     /// Generates an [`MlKemSharedSecret`].
     /// The input is a reference to an [`MlKem512PrivateKey`] and an [`MlKem512Ciphertext`].
-
     pub fn decapsulate(
         private_key: &MlKem512PrivateKey,
         ciphertext: &MlKem512Ciphertext,
