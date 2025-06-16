@@ -132,12 +132,11 @@
                   -DCMAKE_SHARED_LINKER_FLAGS="-fuse-ld=mold" \
                   -G "Ninja Multi-Config" -B build
                 cmake --build build --config Release
-                build/Release/ml_kem_test
-                build/Release/sha3_test
                 rm -rf build/_deps
               '';
               checkPhase = ''
                 build/Release/ml_kem_test
+                build/Release/sha3_test
               '' + lib.optionalString runBenchmarks ''
                 build/Release/ml_kem_bench
               '';
@@ -211,7 +210,6 @@
                   -DCMAKE_SHARED_LINKER_FLAGS="-fuse-ld=mold" \
                   -G "Ninja Multi-Config" -B build
                 cmake --build build --config Release
-                build/Release/ml_dsa_test
                 rm -rf build/_deps
               '';
               checkPhase = ''
