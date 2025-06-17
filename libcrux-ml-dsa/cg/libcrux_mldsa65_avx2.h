@@ -7,8 +7,8 @@
  * Charon: bb62a9b39db4ea8c6d536fe61b7d26663751bf3c
  * Eurydice: 46cef5d58a855ed049fa89bfe99c959b5d9d0d4b
  * Karamel: 39cb85a718da8ae4a724d31b08f9134ca9311336
- * F*: unset
- * Libcrux: 2ad2e927d2ad0a28a9ec91665761714466df89ea
+ * F*: 71d8221589d4d438af3706d89cb653cf53e18aab
+ * Libcrux: d5c2e3173d83715a5459e13c74734f9df866b57f
  */
 
 #ifndef __libcrux_mldsa65_avx2_H
@@ -1345,9 +1345,12 @@ libcrux_ml_dsa_simd_avx2_encoding_commitment_serialize_4(__m256i *simd_unit) {
   __m128i adjacent_4_combined0 =
       libcrux_intrinsics_avx2_mm256_castsi256_si128(adjacent_4_combined);
   return libcrux_intrinsics_avx2_mm_shuffle_epi8(
-      adjacent_4_combined0, libcrux_intrinsics_avx2_mm_set_epi8(
-                                240U, 240U, 240U, 240U, 240U, 240U, 240U, 240U,
-                                240U, 240U, 240U, 240U, 12U, 4U, 8U, 0U));
+      adjacent_4_combined0,
+      libcrux_intrinsics_avx2_mm_set_epi8(
+          (int8_t)-16, (int8_t)-16, (int8_t)-16, (int8_t)-16, (int8_t)-16,
+          (int8_t)-16, (int8_t)-16, (int8_t)-16, (int8_t)-16, (int8_t)-16,
+          (int8_t)-16, (int8_t)-16, (int8_t)12, (int8_t)4, (int8_t)8,
+          (int8_t)0));
 }
 
 KRML_ATTRIBUTE_TARGET("avx2")
@@ -1464,9 +1467,12 @@ libcrux_ml_dsa_simd_avx2_encoding_error_serialize_when_eta_is_4_aux(
   __m128i adjacent_4_combined0 =
       libcrux_intrinsics_avx2_mm256_castsi256_si128(adjacent_4_combined);
   return libcrux_intrinsics_avx2_mm_shuffle_epi8(
-      adjacent_4_combined0, libcrux_intrinsics_avx2_mm_set_epi8(
-                                240U, 240U, 240U, 240U, 240U, 240U, 240U, 240U,
-                                240U, 240U, 240U, 240U, 12U, 4U, 8U, 0U));
+      adjacent_4_combined0,
+      libcrux_intrinsics_avx2_mm_set_epi8(
+          (int8_t)-16, (int8_t)-16, (int8_t)-16, (int8_t)-16, (int8_t)-16,
+          (int8_t)-16, (int8_t)-16, (int8_t)-16, (int8_t)-16, (int8_t)-16,
+          (int8_t)-16, (int8_t)-16, (int8_t)12, (int8_t)4, (int8_t)8,
+          (int8_t)0));
 }
 
 KRML_ATTRIBUTE_TARGET("avx2")
