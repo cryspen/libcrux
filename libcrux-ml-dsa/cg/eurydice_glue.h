@@ -118,7 +118,7 @@ typedef struct {
 // Variant for when the start and end indices are statically known (i.e., the
 // range argument `r` is a literal).
 #define Eurydice_slice_subslice2(s, start, end, t) \
-  EURYDICE_SLICE((t *)s.ptr, start, end)
+  EURYDICE_SLICE((t *)s.ptr, (start), (end))
 
 #define Eurydice_slice_subslice_to(s, subslice_end_pos, t, _0, _1) \
   EURYDICE_SLICE((t *)s.ptr, 0, (subslice_end_pos))
@@ -134,7 +134,7 @@ typedef struct {
 
 // Same as above, variant for when start and end are statically known
 #define Eurydice_array_to_subslice2(x, start, end, t) \
-  EURYDICE_SLICE((t *)x, start, end)
+  EURYDICE_SLICE((t *)x, (start), (end))
 
 // The following functions convert an array into a slice.
 
