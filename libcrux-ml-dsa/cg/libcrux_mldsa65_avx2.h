@@ -8,7 +8,7 @@
  * Eurydice: 46cef5d58a855ed049fa89bfe99c959b5d9d0d4b
  * Karamel: 39cb85a718da8ae4a724d31b08f9134ca9311336
  * F*: 71d8221589d4d438af3706d89cb653cf53e18aab
- * Libcrux: d5c2e3173d83715a5459e13c74734f9df866b57f
+ * Libcrux: 1a8d6302bef94c8e94fdaa0f4831a83bbb0224e4
  */
 
 #ifndef __libcrux_mldsa65_avx2_H
@@ -4660,7 +4660,7 @@ libcrux_ml_dsa_ml_dsa_generic_ml_dsa_65_generate_key_pair_07(
     uint8_t randomness[32U], Eurydice_slice signing_key,
     Eurydice_slice verification_key) {
   uint8_t seed_expanded0[128U] = {0U};
-  libcrux_sha3_generic_keccak_KeccakXofState_e2 shake =
+  libcrux_sha3_generic_keccak_xof_KeccakXofState_e2 shake =
       libcrux_ml_dsa_hash_functions_portable_init_83();
   libcrux_ml_dsa_hash_functions_portable_absorb_83(
       &shake, Eurydice_array_to_slice((size_t)32U, randomness, uint8_t));
@@ -5876,7 +5876,7 @@ libcrux_ml_dsa_ml_dsa_generic_ml_dsa_65_sign_internal_07(
       verification_key_hash, &domain_separation_context, message,
       message_representative);
   uint8_t mask_seed[64U] = {0U};
-  libcrux_sha3_generic_keccak_KeccakXofState_e2 shake0 =
+  libcrux_sha3_generic_keccak_xof_KeccakXofState_e2 shake0 =
       libcrux_ml_dsa_hash_functions_portable_init_83();
   libcrux_ml_dsa_hash_functions_portable_absorb_83(&shake0, seed_for_signing);
   libcrux_ml_dsa_hash_functions_portable_absorb_83(
@@ -5961,7 +5961,7 @@ libcrux_ml_dsa_ml_dsa_generic_ml_dsa_65_sign_internal_07(
             (size_t)6U, commitment,
             libcrux_ml_dsa_polynomial_PolynomialRingElement_4b),
         Eurydice_array_to_slice((size_t)768U, commitment_serialized, uint8_t));
-    libcrux_sha3_generic_keccak_KeccakXofState_e2 shake =
+    libcrux_sha3_generic_keccak_xof_KeccakXofState_e2 shake =
         libcrux_ml_dsa_hash_functions_portable_init_83();
     libcrux_ml_dsa_hash_functions_portable_absorb_83(
         &shake,
@@ -6925,7 +6925,7 @@ libcrux_ml_dsa_ml_dsa_generic_ml_dsa_65_verify_internal_07(
               libcrux_ml_dsa_polynomial_PolynomialRingElement_4b),
           Eurydice_array_to_slice((size_t)768U, commitment_serialized,
                                   uint8_t));
-      libcrux_sha3_generic_keccak_KeccakXofState_e2 shake =
+      libcrux_sha3_generic_keccak_xof_KeccakXofState_e2 shake =
           libcrux_ml_dsa_hash_functions_portable_init_83();
       libcrux_ml_dsa_hash_functions_portable_absorb_83(
           &shake, Eurydice_array_to_slice((size_t)64U, message_representative,
