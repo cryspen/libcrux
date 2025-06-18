@@ -417,7 +417,7 @@ val mm_shuffle_epi8_lemma vec indexes i: Lemma (
        (I.mm_shuffle_epi8 vec indexes).(i)
     == (
          let nth = i /! mk_int 8 in
-         let index = to_u8x16 indexes nth in
+         let index = to_i8x16 indexes nth in
          if v index < 0
          then Bit_Zero
          else (
