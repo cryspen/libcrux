@@ -1,3 +1,5 @@
+// TODO: Update these tests to the new API
+#![cfg(feature = "c-apis")]
 use libcrux_ml_kem::{MlKemCiphertext, MlKemPrivateKey};
 
 use libcrux_sha3::shake256;

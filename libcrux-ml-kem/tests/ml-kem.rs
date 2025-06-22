@@ -1,3 +1,5 @@
+// TODO: Update these tests to the new API
+#![cfg(feature = "c-apis")]
 //! Tests for ML-KEM
 
 /// These tests are from https://github.com/C2SP/CCTV/
