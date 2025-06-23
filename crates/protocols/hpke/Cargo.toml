@@ -1,6 +1,6 @@
 [package]
 name = "hpke-rs"
-version = "0.2.1-alpha.1"
+version = "0.2.1-alpha.2"
 authors = ["Franziskus Kiefer <franziskuskiefer@gmail.com>"]
 edition = "2021"
 license = "MPL-2.0"
@@ -20,9 +20,9 @@ tls_codec = { version = "0.4.2", features = ["derive"], optional = true }
 zeroize = { version = "1.5", features = ["zeroize_derive"] }
 hpke-rs-crypto = { version = "0.3.0-alpha.1", path = "./traits", default-features = false }
 rand_core = { version = "0.9", default-features = false }
-libcrux-sha3 = { version = "0.0.2" }
+libcrux-sha3 = { version = "0.0.3-alpha.3" }
 hpke-rs-rust-crypto = { version = "0.3.0-alpha.1", path = "./rust_crypto_provider", default-features = false, optional = true }
-hpke-rs-libcrux = { version = "0.2.0-alpha.1", path = "./libcrux_provider", default-features = false, optional = true }
+hpke-rs-libcrux = { version = "0.2.0-alpha.2", path = "./libcrux_provider", default-features = false, optional = true }
 
 [features]
 default = []
