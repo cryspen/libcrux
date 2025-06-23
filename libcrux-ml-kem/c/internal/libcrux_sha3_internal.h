@@ -4,11 +4,11 @@
  * SPDX-License-Identifier: MIT or Apache-2.0
  *
  * This code was generated with the following revisions:
- * Charon: 3275bf4ad9dc8c25965dc5da6122653fc43c4287
- * Eurydice: d3b14228e2b5fe8710ec7efae31e4de2c96ed20d
- * Karamel: 095cdb73f246711f93f99a159ceca37cd2c227e1
- * F*: 4b3fc11774003a6ff7c09500ecb5f0145ca6d862
- * Libcrux: 75cbe9ea0e459cf8a62d97e8a867411e0dd8529a
+ * Charon: bb62a9b39db4ea8c6d536fe61b7d26663751bf3c
+ * Eurydice: 46cef5d58a855ed049fa89bfe99c959b5d9d0d4b
+ * Karamel: 39cb85a718da8ae4a724d31b08f9134ca9311336
+ * F*: 71d8221589d4d438af3706d89cb653cf53e18aab
+ * Libcrux: d5c2e3173d83715a5459e13c74734f9df866b57f
  */
 
 #ifndef __internal_libcrux_sha3_internal_H
@@ -270,11 +270,11 @@ static inline size_t libcrux_sha3_generic_keccak_fill_buffer_8b_c6(
         size_t i = (size_t)0U;
         Eurydice_slice uu____0 = Eurydice_array_to_subslice_from(
             (size_t)136U, self->buf[i], self->buf_len, uint8_t, size_t,
-            __builtin_slice_t);
+            Eurydice_derefed_slice);
         Eurydice_slice_copy(
             uu____0,
             Eurydice_slice_subslice_to(inputs[i], consumed, uint8_t, size_t,
-                                       __builtin_slice_t),
+                                       Eurydice_derefed_slice),
             uint8_t);
       }
       self->buf_len = self->buf_len + consumed;
@@ -367,7 +367,7 @@ static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_absorb_8b_c6(
       Eurydice_slice_copy(uu____0,
                           Eurydice_slice_subslice_from(
                               inputs[i], input_len - input_remainder_len,
-                              uint8_t, size_t, __builtin_slice_t),
+                              uint8_t, size_t, Eurydice_derefed_slice),
                           uint8_t);
     }
     self->buf_len = self->buf_len + input_remainder_len;
@@ -429,7 +429,7 @@ static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_absorb_final_8b_9e(
       Eurydice_slice_copy(uu____1,
                           Eurydice_slice_subslice_from(
                               inputs[i], input_len - input_remainder_len,
-                              uint8_t, size_t, __builtin_slice_t),
+                              uint8_t, size_t, Eurydice_derefed_slice),
                           uint8_t);
     }
     blocks[i][self->buf_len + input_remainder_len] = 31U;
@@ -672,11 +672,11 @@ static inline size_t libcrux_sha3_generic_keccak_fill_buffer_8b_c60(
         size_t i = (size_t)0U;
         Eurydice_slice uu____0 = Eurydice_array_to_subslice_from(
             (size_t)168U, self->buf[i], self->buf_len, uint8_t, size_t,
-            __builtin_slice_t);
+            Eurydice_derefed_slice);
         Eurydice_slice_copy(
             uu____0,
             Eurydice_slice_subslice_to(inputs[i], consumed, uint8_t, size_t,
-                                       __builtin_slice_t),
+                                       Eurydice_derefed_slice),
             uint8_t);
       }
       self->buf_len = self->buf_len + consumed;
@@ -769,7 +769,7 @@ static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_absorb_8b_c60(
       Eurydice_slice_copy(uu____0,
                           Eurydice_slice_subslice_from(
                               inputs[i], input_len - input_remainder_len,
-                              uint8_t, size_t, __builtin_slice_t),
+                              uint8_t, size_t, Eurydice_derefed_slice),
                           uint8_t);
     }
     self->buf_len = self->buf_len + input_remainder_len;
@@ -828,7 +828,7 @@ static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_absorb_final_8b_9e0(
       Eurydice_slice_copy(uu____1,
                           Eurydice_slice_subslice_from(
                               inputs[i], input_len - input_remainder_len,
-                              uint8_t, size_t, __builtin_slice_t),
+                              uint8_t, size_t, Eurydice_derefed_slice),
                           uint8_t);
     }
     blocks[i][self->buf_len + input_remainder_len] = 31U;

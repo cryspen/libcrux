@@ -51,10 +51,10 @@ let mm256_set_epi16 (x0 x1 x2 x3 x4 x5 x6 x7 x8 x9 x10 x11 x12 x13 x14 x15: i16)
     )
 
 let mm_set_epi8
-  (x0 x1 x2 x3 x4 x5 x6 x7 x8 x9 x10 x11 x12 x13 x14 x15: u8)
+  (x0 x1 x2 x3 x4 x5 x6 x7 x8 x9 x10 x11 x12 x13 x14 x15: i8)
   : bit_vec 128
   = mk_bv (fun i ->
-      let h (x: u8) = get_bit x (sz (i % 8)) in
+      let h (x: i8) = get_bit x (sz (i % 8)) in
       match i / 8 with
       |  0 -> h x15 |  1 -> h x14 |  2 -> h x13 |  3 -> h x12
       |  4 -> h x11 |  5 -> h x10 |  6 -> h x9  |  7 -> h x8
@@ -273,8 +273,8 @@ let mm_shuffle_epi8
     let t = match unify_app (quote y) 
       (quote (fun x0 x1 x2 x3 x4 x5 x6 x7 x8 x9 x10 x11 x12 x13 x14 x15 -> 
         mm_set_epi8
-          (mk_u8 x0 ) (mk_u8 x1 ) (mk_u8 x2 ) (mk_u8 x3 ) (mk_u8 x4 ) (mk_u8 x5 ) (mk_u8 x6 ) (mk_u8 x7 )
-          (mk_u8 x8 ) (mk_u8 x9 ) (mk_u8 x10) (mk_u8 x11) (mk_u8 x12) (mk_u8 x13) (mk_u8 x14) (mk_u8 x15))) [] with
+          (mk_i8 x0 ) (mk_i8 x1 ) (mk_i8 x2 ) (mk_i8 x3 ) (mk_i8 x4 ) (mk_i8 x5 ) (mk_i8 x6 ) (mk_i8 x7 )
+          (mk_i8 x8 ) (mk_i8 x9 ) (mk_i8 x10) (mk_i8 x11) (mk_i8 x12) (mk_i8 x13) (mk_i8 x14) (mk_i8 x15))) [] with
     | Some [x0;x1;x2;x3;x4;x5;x6;x7;x8;x9;x10;x11;x12;x13;x14;x15] ->
       `(mm_shuffle_epi8_u8 (`@x)
                               (mk_list_16
