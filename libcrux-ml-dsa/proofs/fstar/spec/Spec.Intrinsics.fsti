@@ -587,10 +587,6 @@ val mm256_testz_si256_lemma (a b: bv256):
           (result == mk_i32 1 <==> (forall i. to_i32x8 conjunct i == mk_i32 0))))
   [SMTPat (Libcrux_intrinsics.Avx2.mm256_testz_si256 a b)]
 
-val mm256_set1_epi32_lemma (x:i32) (i:u64{v i < 8}):
-  Lemma (to_i32x8 (Libcrux_intrinsics.Avx2.mm256_set1_epi32 x) i == x)
-        [SMTPat (to_i32x8 (Libcrux_intrinsics.Avx2.mm256_set1_epi32 x) i)]
-
 val mm256_set_epi64x_lemma x0 x1 x2 x3 i
   : Lemma (  to_i64x4 (I.mm256_set_epi64x x0 x1 x2 x3) i
           == (match v i with | 0 -> x3 | 1 -> x2 | 2 -> x1 | 3 -> x0))
@@ -756,43 +752,5 @@ val i32_to_bv_pow2_min_one_lemma (n: nat {n > 1 /\ n < 31}) (i:u64{v i < 32}):
         [SMTPat (i32_to_bv ((mk_i32 1 <<! mk_i32 n <: i32) -! mk_i32 1) i)]
 #pop-options
 
-(**** Mongemory multiply *)
-
-val mont_mul: i32 -> i32 -> i32
 
 
-val montgomery_multiply_aux_lemma field_modulus inverse_of_modulus_mod_montgomery_r
-  (a b:  bv256)
-  (i:u64{v i < 8}):
-  Lemma
-    (requires
-        field_modulus ==
-        (Libcrux_intrinsics.Avx2.mm256_set1_epi32 Libcrux_ml_dsa.Simd.Traits.v_FIELD_MODULUS
-          <:
-           bv256) /\
-        inverse_of_modulus_mod_montgomery_r ==
-        (Libcrux_intrinsics.Avx2.mm256_set1_epi32 (cast (Libcrux_ml_dsa.Simd.Traits.v_INVERSE_OF_MODULUS_MOD_MONTGOMERY_R
-                  <:
-                  u64)
-              <:
-              i32)
-          <:
-           bv256))
-  (ensures
-    to_i32x8 (Libcrux_ml_dsa.Simd.Avx2.Arithmetic.montgomery_multiply_aux field_modulus inverse_of_modulus_mod_montgomery_r a b) i ==
-    Spec.MLDSA.Ntt.mont_mul (to_i32x8 a i) (to_i32x8 b i))
-    [SMTPat (to_i32x8 (Libcrux_ml_dsa.Simd.Avx2.Arithmetic.montgomery_multiply_aux field_modulus inverse_of_modulus_mod_montgomery_r a b) i)]
-
-let montgomery_multiply_lemma
-  (a b:  bv256)
-  (i:u64{v i < 8}):
-  Lemma (
-    to_i32x8 (Libcrux_ml_dsa.Simd.Avx2.Arithmetic.montgomery_multiply a b) i ==
-    Spec.MLDSA.Ntt.mont_mul (to_i32x8 a i) (to_i32x8 b i))
-    [SMTPat (to_i32x8 (Libcrux_ml_dsa.Simd.Avx2.Arithmetic.montgomery_multiply a b) i)]
-   =
-   reveal_opaque (`%Libcrux_ml_dsa.Simd.Avx2.Arithmetic.montgomery_multiply) (Libcrux_ml_dsa.Simd.Avx2.Arithmetic.montgomery_multiply)
-
-
-
->>>>>>> main

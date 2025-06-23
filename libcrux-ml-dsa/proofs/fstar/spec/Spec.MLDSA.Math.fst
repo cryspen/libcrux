@@ -177,3 +177,4 @@ let rejection_sample_coefficient_lemma (randomness:Seq.seq u8) (i:usize{v i < (S
     (((mk_i32 (pow2 16) *. b2') +. (mk_i32 (pow2 8) *. b1)) +. b0))
 
 #pop-options
+
