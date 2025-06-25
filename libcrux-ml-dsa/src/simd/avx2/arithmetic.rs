@@ -207,16 +207,12 @@ pub(super) fn power2round(r0: &mut Vec256, r1: &mut Vec256) {
 #[inline(always)]
 #[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
 #[hax_lib::requires(fstar!(r#"(v $gamma2 == v $GAMMA2_V261_888 \/ v $gamma2 == v $GAMMA2_V95_232) /\
-    (forall i. Spec.Utils.is_i32b (v $FIELD_MODULUS - 1) (to_i32x8 $r0 i))"#))]
+    (forall i. Spec.Utils.is_i32b (v $FIELD_MODULUS - 1) (to_i32x8 $r i))"#))]
 #[hax_lib::ensures(|(r0,r1)| fstar!(r#"
     forall i.
-    let (r0_s, r1_s, cond) = Spec.MLDSA.Math.decompose (v $gamma2) (v (to_i32x8 $r0 i)) in
-    v (to_i32x8 ${r0}_future i) = r0_s /\ v (to_i32x8 ${r1}_future i) = r1_s /\
-    (if cond then
-        (v (to_i32x8 ${r0}_future i) >= -(v $gamma2) /\ v (to_i32x8 ${r0}_future i) < 0)
-    else
-        (v (to_i32x8 ${r0}_future i) > -(v $gamma2) /\ v (to_i32x8 ${r0}_future i) <= v $gamma2)) /\
-    (v (to_i32x8 ${r1}_future i) >= 0 /\ v (to_i32x8 ${r1}_future i) < (v $FIELD_MODULUS - 1) / (v $gamma2 * 2))"#))]
+    let (r0_s, r1_s) = Spec.MLDSA.Math.decompose_spec $gamma2 (to_i32x8 $r i) in
+    to_i32x8 ${r0}_future i = r0_s /\ 
+    to_i32x8 ${r1}_future i = r1_s"#))]
 pub(super) fn decompose(gamma2: Gamma2, r: &Vec256, r0: &mut Vec256, r1: &mut Vec256) {
     let r = to_unsigned_representatives_ret(r);
 
@@ -274,7 +270,7 @@ pub(super) fn decompose(gamma2: Gamma2, r: &Vec256, r0: &mut Vec256, r1: &mut Ve
 // Not using inline always here regresses performance significantly.
 #[inline(always)]
 #[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
-#[hax_lib::fstar::verification_status(lax)]
+#[hax_lib::fstar::verification_status(panic_free)]
 pub(super) fn compute_hint(low: &Vec256, high: &Vec256, gamma2: i32, hint: &mut Vec256) -> usize {
     let minus_gamma2 = mm256_set1_epi32(-gamma2);
     let gamma2 = mm256_set1_epi32(gamma2);
@@ -301,7 +297,7 @@ pub(super) fn compute_hint(low: &Vec256, high: &Vec256, gamma2: i32, hint: &mut 
 // Not using inline always here regresses performance significantly.
 #[inline(always)]
 #[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
-#[hax_lib::fstar::verification_status(lax)]
+#[hax_lib::fstar::verification_status(panic_free)]
 pub(super) fn use_hint(gamma2: Gamma2, r: &Vec256, hint: &mut Vec256) {
     let (mut r0, mut r1) = (mm256_setzero_si256(), mm256_setzero_si256());
     decompose(gamma2, r, &mut r0, &mut r1);

@@ -27,7 +27,34 @@ let mont_mul (x:i32) (y:i32) : i32 =
 let barrett_red (x:i32) : i32 =
   let q = shift_right_opaque (add_mod_opaque x (shift_left (mk_i32 1) (mk_i32 22))) (mk_i32 23) in
   sub_mod_opaque x (mul_mod_opaque q v_FIELD_MODULUS)
-  
+
+let decompose_spec (gamma2:i32{gamma2 == mk_i32 95232 \/ gamma2 == mk_i32 261888}) (r:i32) : (i32 & i32) =
+  let r = if r <. mk_i32 0 then add_mod r v_FIELD_MODULUS else r in
+  let ceil_of_r_by_128 = shift_right_opaque (add_mod_opaque r (mk_i32 127)) (mk_i32 7)  in
+  let r1 =
+    if v gamma2 = 95232 then
+      let result = mul_mod_opaque ceil_of_r_by_128 (mk_i32 11275) in
+      let result = add_mod_opaque result (mk_i32 1 <<! mk_i32 23 <: i32) in
+      let result = shift_right_opaque result (mk_i32 24) in
+      let mask = sub_mod_opaque (mk_i32 43) result in
+      let mask = shift_right_opaque mask (mk_i32 31) in
+      let not_result = result ^. mask in
+      result &. not_result
+    else 
+      let result = mul_mod_opaque ceil_of_r_by_128 (mk_i32 1025) in
+      let result = add_mod_opaque result (mk_i32 1 <<! mk_i32 21 <: i32) in
+      let result = shift_right_opaque result (mk_i32 22) in
+      result &. (mk_i32 15) in
+  let alpha = gamma2 *! (mk_i32 2) in
+  let r0_tmp = mul_mod_opaque r1 alpha in
+  let r0_tmp = sub_mod_opaque r r0_tmp in
+  let mask = sub_mod_opaque (mk_i32 ((v v_FIELD_MODULUS - 1) /2)) r0_tmp in
+  let mask = shift_right_opaque mask (mk_i32 31) in
+  let field_modulus_and_mask = mask &. v_FIELD_MODULUS in
+  let r0 = sub_mod_opaque r0_tmp field_modulus_and_mask in
+  (r0, r1)
+     
+    
 
 
 let v_BITS_IN_LOWER_PART_OF_T: usize = mk_usize 13

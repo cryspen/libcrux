@@ -1,10 +1,10 @@
 # ML-DSA
 
-![pre-verification]
+This crate implements all three ML-DSA ([FIPS 204](https://csrc.nist.gov/pubs/fips/204/final)) variants 44, 65, and 87, and includes
+both a portable implementation and an optimized SIMD implementation for Intel AVX2-enabled platforms.
 
-This crate implements all three ML-DSA ([FIPS 204](https://csrc.nist.gov/pubs/fips/204/final)) variants 44, 65, and 87.
-
-Currenly, these implementations are unverified and do not contain any architecture-specific code (i.e. they are portable).
+The arithmetic, NTT, and serialization code is formally verified using [hax](https://cryspen.com/hax) and
+ [F*](https://fstar-lang.org).
 
 ```Rust
  use rand::{rngs::OsRng, RngCore};

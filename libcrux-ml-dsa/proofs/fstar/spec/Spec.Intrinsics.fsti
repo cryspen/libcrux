@@ -569,6 +569,11 @@ val mm256_and_si256_lemma (a b: bv256) (i:u64{v i < 8}):
          ((to_i32x8 a i) &. (to_i32x8 b i)))
   [SMTPat (to_i32x8 (Libcrux_intrinsics.Avx2.mm256_and_si256 a b) i)]
 
+val mm256_xor_si256_lemma (a b: bv256) (i:u64{v i < 8}):
+  Lemma (to_i32x8 (Libcrux_intrinsics.Avx2.mm256_xor_si256 a b) i ==
+         ((to_i32x8 a i) ^. (to_i32x8 b i)))
+  [SMTPat (to_i32x8 (Libcrux_intrinsics.Avx2.mm256_xor_si256 a b) i)]
+
 val mm256_abs_epi32_lemma (a: bv256) (i:u64{v i < 8}):
   Lemma (requires (v (to_i32x8 a i) > minint i32_inttype))
         (ensures to_i32x8 (Libcrux_intrinsics.Avx2.mm256_abs_epi32 a) i ==
