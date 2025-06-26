@@ -325,7 +325,7 @@ fn add_message_error_reduce<Vector: Operations>(
         hax_lib::fstar!(
             r#"
           assert (v $i < 16);
-          Spec.Utils.pow2_values_more 15;
+          Spec.Utils.pow2_more_values 15;
           assert_norm (1441 < pow2 15);
           assert_norm (1664 < pow2 15);
           assert_norm (mk_i16 1441 <. mk_i16 1664);
@@ -480,7 +480,7 @@ fn add_standard_error_reduce<Vector: Operations>(
 
         hax_lib::fstar!(
             r#"
-          Spec.Utils.pow2_values_more 15;
+          Spec.Utils.pow2_more_values 15;
           assert (is_bounded_vector 3328 ${coefficient_normal_form});
           assert (is_bounded_vector 3328 (error.f_coefficients.[ j ]));
           Spec.Utils.lemma_add_intb_forall 3328 3328;
