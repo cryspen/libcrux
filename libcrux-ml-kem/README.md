@@ -1,10 +1,15 @@
 # ML-KEM
 
+This crate implements all three ML-KEM ([FIPS 203](https://csrc.nist.gov/pubs/fips/203/final)) variants 512, 768, and 1024.
+For each algorithm, it inlcudes a portable Rust implementation, as well as SIMD implementations for Intel AVX2 and AArch64 platforms.
 
+## Verification
+![verified]
 
-This crate implements all three ML-KEM ([FIPS 203](https://csrc.nist.gov/pubs/fips/203/final)) variants 512, 768, and 1024. It is
-formally verified using [hax](https://cryspen.com/hax) and
- [F*](https://fstar-lang.org).
+The portable and AVX2 code for field arithmetic, NTT polynomial arithmetic, serialization, and the generic code for high-level algorithms
+is formally verified using [hax](https://cryspen.com/hax) and  [F*](https://fstar-lang.org).
+
+## Usage
 
 Functions in this crate use CPU feature detection to pick the most efficient version
 on each platform. To use a specific version with your own feature detection

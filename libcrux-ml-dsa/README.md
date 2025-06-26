@@ -3,8 +3,13 @@
 This crate implements all three ML-DSA ([FIPS 204](https://csrc.nist.gov/pubs/fips/204/final)) variants 44, 65, and 87, and includes
 both a portable implementation and an optimized SIMD implementation for Intel AVX2-enabled platforms.
 
-The arithmetic, NTT, and serialization code is formally verified using [hax](https://cryspen.com/hax) and
+## Verification
+![verified]
+
+The portable and AVX2 code for field arithmetic, NTT polynomial arithmetic, and serialization is formally verified using [hax](https://cryspen.com/hax) and
  [F*](https://fstar-lang.org).
+
+## Usage
 
 ```Rust
  use rand::{rngs::OsRng, RngCore};
