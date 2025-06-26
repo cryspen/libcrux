@@ -16,6 +16,50 @@ pub enum KEMError {
     Decapsulation,
 }
 
+trait InternalKEM<const EK_LEN: usize, const DK_LEN: usize, const RNG_LEN: usize> {
+    fn generate_key_pair(
+        encapsulation_key: &mut [u8; EK_LEN],
+        decapsulation_key: &mut [u8; DK_LEN],
+        randomness: &[u8; RNG_LEN],
+    ) -> Result<(), KEMError>;
+    // ...
+}
+
+/// This trait captures the required slice-based interface of a key encapsulation
+/// mechanism (KEM).
+pub trait RawKEM {
+    const KEY_GENERATION_RAND_LENGTH: usize;
+
+    /// TODO: Document lengths
+    fn generate_key_pair(
+        encapsulation_key: &mut [u8],
+        decapsulation_key: &mut [u8],
+        randomness: &[u8],
+    ) -> Result<(), KEMError>;
+
+    fn encapsulate(
+        shared_secret: &mut [u8],
+        ciphertext: &mut [u8],
+        encapsulation_key: &[u8],
+        randomness: &[u8],
+    ) -> Result<(), KEMError>;
+
+    fn decapsulate(
+        shared_secret: &mut [u8],
+        decapsulation_key: &[u8],
+        ciphertext: &[u8],
+    ) -> Result<(), KEMError>;
+}
+
+pub trait RawKEMRand {
+    fn generate_key_pair(
+        encapsulation_key: &mut [u8],
+        decapsulation_key: &mut [u8],
+        rng: &mut impl CryptoRng,
+    ) -> Result<(), KEMError>;
+    // ...
+}
+
 /// This trait captures the required interface of a key encapsulation
 /// mechanism (KEM).
 pub trait KEM {
@@ -45,3 +89,12 @@ pub trait KEM {
         ctxt: &Self::Ciphertext,
     ) -> Result<Self::SharedSecret, KEMError>;
 }
+
+// Dynamic API like so?
+// pub trait KEMKeyPair {
+//     fn generate();
+// }
+
+// pub trait EncapsulationKey {
+//     fn encaps
+// }
