@@ -270,7 +270,7 @@ pub(super) fn decompose(gamma2: Gamma2, r: &Vec256, r0: &mut Vec256, r1: &mut Ve
 // Not using inline always here regresses performance significantly.
 #[inline(always)]
 #[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
-#[hax_lib::fstar::verification_status(panic_free)]
+#[hax_lib::fstar::verification_status(lax)]
 pub(super) fn compute_hint(low: &Vec256, high: &Vec256, gamma2: i32, hint: &mut Vec256) -> usize {
     let minus_gamma2 = mm256_set1_epi32(-gamma2);
     let gamma2 = mm256_set1_epi32(gamma2);
@@ -297,7 +297,7 @@ pub(super) fn compute_hint(low: &Vec256, high: &Vec256, gamma2: i32, hint: &mut 
 // Not using inline always here regresses performance significantly.
 #[inline(always)]
 #[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
-#[hax_lib::fstar::verification_status(panic_free)]
+#[hax_lib::fstar::verification_status(lax)]
 pub(super) fn use_hint(gamma2: Gamma2, r: &Vec256, hint: &mut Vec256) {
     let (mut r0, mut r1) = (mm256_setzero_si256(), mm256_setzero_si256());
     decompose(gamma2, r, &mut r0, &mut r1);
