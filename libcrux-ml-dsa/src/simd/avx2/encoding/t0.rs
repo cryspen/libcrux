@@ -70,6 +70,7 @@ pub(crate) fn serialize(simd_unit: &Vec256, out: &mut [u8]) {
     let simd_unit_changed = change_interval(simd_unit);
 
     hax_lib::fstar!("i32_lt_pow2_n_to_bit_zero_lemma 13 $simd_unit_changed");
+    hax_lib::fstar!("reveal_opaque_arithmetic_ops #I32");
     let bits_sequential = serialize_aux(simd_unit_changed);
     mm_storeu_bytes_si128(&mut serialized, bits_sequential);
 
