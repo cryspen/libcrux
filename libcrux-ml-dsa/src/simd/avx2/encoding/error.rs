@@ -58,6 +58,7 @@ fn serialize_when_eta_is_2(simd_unit: &Vec256, out: &mut [u8]) {
 
     let simd_unit_shifted = mm256_sub_epi32(mm256_set1_epi32(ETA_2), *simd_unit);
 
+    hax_lib::fstar!("reveal_opaque_arithmetic_ops #I32");
     hax_lib::fstar!("i32_lt_pow2_n_to_bit_zero_lemma 3 $simd_unit_shifted");
     let adjacent_6_combined = serialize_when_eta_is_2_aux(simd_unit_shifted);
 
@@ -112,6 +113,7 @@ fn serialize_when_eta_is_4(simd_unit: &Vec256, out: &mut [u8]) {
 
     let simd_unit_shifted = mm256_sub_epi32(mm256_set1_epi32(ETA_4), *simd_unit);
 
+    hax_lib::fstar!("reveal_opaque_arithmetic_ops #I32");
     hax_lib::fstar!("i32_lt_pow2_n_to_bit_zero_lemma 4 $simd_unit_shifted");
     let adjacent_4_combined = serialize_when_eta_is_4_aux(simd_unit_shifted);
 

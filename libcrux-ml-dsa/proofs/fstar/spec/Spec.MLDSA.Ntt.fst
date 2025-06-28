@@ -1,14 +1,14 @@
  module Spec.MLDSA.Ntt
  open Core
  open FStar.Mul
-
- #set-options "--fuel 0 --ifuel 0 --z3rlimit 100"
+ open Spec.Intrinsics
+ open Spec.MLDSA.Math
  
- assume val mont_mul: i32 -> i32 -> i32
+ #set-options "--fuel 0 --ifuel 0 --z3rlimit 100"
 
  let ntt_step zeta (a, b) =
      let t = mont_mul b zeta in
-     (add_mod a t, sub_mod a t)
+     (add_mod_opaque a t, sub_mod_opaque a t)
 
  let zeta(i: nat{i < 256}) : n:nat{n <= 8380416} =
              match i with

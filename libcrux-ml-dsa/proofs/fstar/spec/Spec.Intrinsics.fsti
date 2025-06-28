@@ -1,7 +1,80 @@
 module Spec.Intrinsics
+open FStar.Mul
 open Core
 open Core_models.Core_arch.X86.Interpretations.Int_vec
-open FStar.Mul
+ 
+let logand_lemma_forall #t:
+  Lemma (forall a. logand ones a == a /\ 
+              logand a ones == a /\ 
+              logand a zero == zero #t /\ 
+              logand zero a == zero #t /\
+              logand a a == a) =
+  FStar.Classical.forall_intro (fun a -> logand_lemma #t a a)
+
+let logand_mask_lemma_forall #t:
+  Lemma (forall a m. 
+              m < bits t ==>
+              (pow2 m < maxint t /\
+               logand a (sub #t (mk_int #t (pow2 m)) (mk_int #t 1)) ==
+               mk_int (v a % pow2 m))) = admit()
+
+
+let logxor_lemma_forall #t:
+  Lemma (forall a. 
+    a `logxor` a == zero /\
+    zero #t `logxor` a == a /\
+    a `logxor` zero #t == a /\
+    ones #t `logxor` a == lognot a /\
+    a `logxor` ones #t == lognot a) =
+  FStar.Classical.forall_intro (fun a -> logxor_lemma #t a a)
+
+let lognot_lemma_forall #t:
+  Lemma (forall a. 
+   lognot #t zero == ones /\
+   lognot #t ones == zero /\
+   lognot (lognot a) == a /\
+   (signed t ==> v (lognot a) = -1 - v a) /\
+   (unsigned t ==> v (lognot a)  = pow2 (bits t) - 1 - v #t a)) =
+  FStar.Classical.forall_intro (fun a -> lognot_lemma #t a)
+
+
+(* Opaque arithmetic operations *)
+[@@ "opaque_to_smt"]
+let add_mod_opaque #t = add_mod #t
+
+[@@ "opaque_to_smt"]
+let sub_mod_opaque #t = sub_mod #t
+
+[@@ "opaque_to_smt"]
+let mul_mod_opaque #t = mul_mod #t
+
+[@@ "opaque_to_smt"]
+let shift_right_opaque #t = shift_right #t #i32_inttype
+
+[@@ "opaque_to_smt"]
+let shift_left_opaque #t = shift_left #t #i32_inttype
+
+[@@ "opaque_to_smt"]
+let cast_mod_opaque #t #t' = cast_mod #t #t'
+
+let reveal_opaque_arithmetic_ops #t:
+  Lemma (add_mod_opaque #t == add_mod #t /\
+         sub_mod_opaque #t == sub_mod #t /\
+         mul_mod_opaque #t == mul_mod #t /\
+         shift_left_opaque #t == shift_left #t #i32_inttype /\
+         shift_right_opaque #t == shift_right #t #i32_inttype) =
+  reveal_opaque (`%add_mod_opaque) (add_mod_opaque #t);
+  reveal_opaque (`%sub_mod_opaque) (sub_mod_opaque #t);
+  reveal_opaque (`%mul_mod_opaque) (mul_mod_opaque #t);
+  reveal_opaque (`%shift_left_opaque) (shift_left_opaque #t);
+  reveal_opaque (`%shift_right_opaque) (shift_right_opaque #t)
+  
+let reveal_opaque_cast_ops #t #t':
+  Lemma (cast_mod_opaque #t #t' == cast_mod #t #t' /\
+         cast_mod_opaque #t' #t == cast_mod #t' #t) =
+  reveal_opaque (`%cast_mod_opaque) (cast_mod_opaque #t #t');
+  reveal_opaque (`%cast_mod_opaque) (cast_mod_opaque #t' #t)
+
 open FStar.FunctionalExtensionality
 module I = Libcrux_intrinsics.Avx2
 
@@ -448,23 +521,76 @@ val mm256_shuffle_epi32_lemma (a:i32) (b:bv256) (i:u64{v i < 8}):
 
 val mm256_sub_epi32_lemma (a b: bv256) (i:u64{v i < 8}):
   Lemma (to_i32x8 (Libcrux_intrinsics.Avx2.mm256_sub_epi32 a b) i ==
-         sub_mod (to_i32x8 a i) (to_i32x8 b i))
+         sub_mod_opaque (to_i32x8 a i) (to_i32x8 b i))
          [SMTPat (to_i32x8 (Libcrux_intrinsics.Avx2.mm256_sub_epi32 a b) i)]
 
 val mm256_add_epi32_lemma (a b: bv256) (i:u64{v i < 8}):
   Lemma (to_i32x8 (Libcrux_intrinsics.Avx2.mm256_add_epi32 a b) i ==
-         add_mod (to_i32x8 a i) (to_i32x8 b i))
+         add_mod_opaque (to_i32x8 a i) (to_i32x8 b i))
          [SMTPat (to_i32x8 (Libcrux_intrinsics.Avx2.mm256_add_epi32 a b) i)]
+
+// Check this definition, especially when a * b < -pow2 31
+val mm256_mullo_epi32_lemma (a b: bv256) (i:u64{v i < 8}):
+  Lemma (to_i32x8 (Libcrux_intrinsics.Avx2.mm256_mullo_epi32 a b) i ==
+         mul_mod_opaque (to_i32x8 a i) (to_i32x8 b i))
+         [SMTPat (to_i32x8 (Libcrux_intrinsics.Avx2.mm256_mullo_epi32 a b) i)]
 
 val mm256_mul_epi32_lemma (a b: bv256) (i:u64{v i < 8}):
   Lemma (to_i32x8 (Libcrux_intrinsics.Avx2.mm256_mul_epi32 a b) i ==
          (
-           let j = i /! mk_int 2 in
-           let v64 = (cast (to_i32x8 a j) <: i64) *! (cast (to_i32x8 b j) <: i64) in
-           if v i % 2 = 0 then cast (v64 >>! mk_u64 4) else cast v64
+           let j = mk_u64 (v i - (v i % 2)) in
+           let v64 = mul_mod_opaque (cast_mod_opaque (to_i32x8 a j) <: i64) (cast_mod_opaque (to_i32x8 b j) <: i64) in
+           if v i % 2 = 0 then cast_mod_opaque v64 else cast_mod_opaque (shift_right_opaque v64 (mk_i32 32))
          ))
          [SMTPat (to_i32x8 (Libcrux_intrinsics.Avx2.mm256_mul_epi32 a b) i)]
 
+
+val mm256_srai_epi32_lemma (v_IMM8: i32) (a: bv256) (i:u64{v i < 8}):
+  Lemma (to_i32x8 (Libcrux_intrinsics.Avx2.mm256_srai_epi32 v_IMM8 a) i ==
+         (
+         let imm8:i32 = Core.Num.impl_i32__rem_euclid v_IMM8 (mk_i32 256) in
+         if imm8 >. mk_i32 31
+         then if (to_i32x8 a i) <. mk_i32 0 then mk_i32 (-1) else mk_i32 0
+         else shift_right_opaque (to_i32x8 a i) imm8
+         ))
+         [SMTPat (to_i32x8 (Libcrux_intrinsics.Avx2.mm256_srai_epi32 v_IMM8 a) i)]
+
+val mm256_slli_epi32_lemma (v_IMM8: i32) (a: bv256) (i:u64{v i < 8}):
+  Lemma (to_i32x8 (Libcrux_intrinsics.Avx2.mm256_slli_epi32 v_IMM8 a) i ==
+         (
+         if v_IMM8 <. mk_i32 0 || v_IMM8 >. mk_i32 31
+         then mk_i32 0
+         else shift_left_opaque (to_i32x8 a i) v_IMM8
+         ))
+         [SMTPat (to_i32x8 (Libcrux_intrinsics.Avx2.mm256_slli_epi32 v_IMM8 a) i)]
+
+val mm256_and_si256_lemma (a b: bv256) (i:u64{v i < 8}):
+  Lemma (to_i32x8 (Libcrux_intrinsics.Avx2.mm256_and_si256 a b) i ==
+         ((to_i32x8 a i) &. (to_i32x8 b i)))
+  [SMTPat (to_i32x8 (Libcrux_intrinsics.Avx2.mm256_and_si256 a b) i)]
+
+val mm256_xor_si256_lemma (a b: bv256) (i:u64{v i < 8}):
+  Lemma (to_i32x8 (Libcrux_intrinsics.Avx2.mm256_xor_si256 a b) i ==
+         ((to_i32x8 a i) ^. (to_i32x8 b i)))
+  [SMTPat (to_i32x8 (Libcrux_intrinsics.Avx2.mm256_xor_si256 a b) i)]
+
+val mm256_abs_epi32_lemma (a: bv256) (i:u64{v i < 8}):
+  Lemma (requires (v (to_i32x8 a i) > minint i32_inttype))
+        (ensures to_i32x8 (Libcrux_intrinsics.Avx2.mm256_abs_epi32 a) i ==
+                 abs_int (to_i32x8 a i))
+  [SMTPat (to_i32x8 (Libcrux_intrinsics.Avx2.mm256_abs_epi32 a) i)]
+
+val mm256_cmpgt_epi32_lemma (a b: bv256) (i:u64{v i < 8}):
+  Lemma (to_i32x8 (Libcrux_intrinsics.Avx2.mm256_cmpgt_epi32 a b) i ==
+         (if (to_i32x8 a i >. to_i32x8 b i) then ones else zero))
+  [SMTPat (to_i32x8 (Libcrux_intrinsics.Avx2.mm256_cmpgt_epi32 a b) i)]
+
+val mm256_testz_si256_lemma (a b: bv256):
+  Lemma (let result = Libcrux_intrinsics.Avx2.mm256_testz_si256 a b in
+         let conjunct = Libcrux_intrinsics.Avx2.mm256_and_si256 a b in
+         ((result == mk_i32 0 \/ result == mk_i32 1) /\
+          (result == mk_i32 1 <==> (forall i. to_i32x8 conjunct i == mk_i32 0))))
+  [SMTPat (Libcrux_intrinsics.Avx2.mm256_testz_si256 a b)]
 
 val mm256_set_epi64x_lemma x0 x1 x2 x3 i
   : Lemma (  to_i64x4 (I.mm256_set_epi64x x0 x1 x2 x3) i
@@ -510,9 +636,10 @@ val mm_set_epi32_lemma (x0 x1 x2 x3:i32) (i:u64{v i < 4}):
 
 val mm256_blend_epi32_lemma (imm8: i32) (a b: bv256) (i:u64{v i < 8}):
   Lemma (to_i32x8 (Libcrux_intrinsics.Avx2.mm256_blend_epi32 imm8 a b) i ==
-        (if ((imm8 >>! i <: i32) %! mk_i32 2 <: i32) =. mk_i32 0 <: bool
+        (if (v imm8 / pow2 (v i)) % 2 = 0
          then to_i32x8 a i
          else to_i32x8 b i))
+  [SMTPat (to_i32x8 (Libcrux_intrinsics.Avx2.mm256_blend_epi32 imm8 a b) i)]
 
 
 val mm256_set_m128i_bv_lemma (hi lo: bv128) (i: u64 {v i < 256}):
@@ -603,6 +730,7 @@ val mm256_unpackhi_epi64_lemma (a b: bv256) (i:u64{v i < 8}):
           i32))
   [SMTPat (to_i32x8 (Libcrux_intrinsics.Avx2.mm256_unpackhi_epi64 a b) i)]
 
+
 val mm_loadu_si128_lemma (bytes: _{ Seq.length bytes = 16 }) i
   : Lemma ((I.mm_loadu_si128 bytes).(i) == (u8_to_bv (Seq.index bytes ((v i) / 8)))(mk_int ((v i) % 8)) )
   [SMTPat (((I.mm_loadu_si128 bytes).(i)))]
@@ -628,43 +756,6 @@ val i32_to_bv_pow2_min_one_lemma (n: nat {n > 1 /\ n < 31}) (i:u64{v i < 32}):
         == Core_models.Abstractions.Bit.(if v i < n then Bit_One else Bit_Zero))
         [SMTPat (i32_to_bv ((mk_i32 1 <<! mk_i32 n <: i32) -! mk_i32 1) i)]
 #pop-options
-
-(**** Mongemory multiply *)
-
-val mont_mul: i32 -> i32 -> i32
-
-
-val montgomery_multiply_aux_lemma field_modulus inverse_of_modulus_mod_montgomery_r
-  (a b:  bv256)
-  (i:u64{v i < 8}):
-  Lemma
-    (requires
-        field_modulus ==
-        (Libcrux_intrinsics.Avx2.mm256_set1_epi32 Libcrux_ml_dsa.Simd.Traits.v_FIELD_MODULUS
-          <:
-           bv256) /\
-        inverse_of_modulus_mod_montgomery_r ==
-        (Libcrux_intrinsics.Avx2.mm256_set1_epi32 (cast (Libcrux_ml_dsa.Simd.Traits.v_INVERSE_OF_MODULUS_MOD_MONTGOMERY_R
-                  <:
-                  u64)
-              <:
-              i32)
-          <:
-           bv256))
-  (ensures
-    to_i32x8 (Libcrux_ml_dsa.Simd.Avx2.Arithmetic.montgomery_multiply_aux field_modulus inverse_of_modulus_mod_montgomery_r a b) i ==
-    Spec.MLDSA.Ntt.mont_mul (to_i32x8 a i) (to_i32x8 b i))
-    [SMTPat (to_i32x8 (Libcrux_ml_dsa.Simd.Avx2.Arithmetic.montgomery_multiply_aux field_modulus inverse_of_modulus_mod_montgomery_r a b) i)]
-
-let montgomery_multiply_lemma
-  (a b:  bv256)
-  (i:u64{v i < 8}):
-  Lemma (
-    to_i32x8 (Libcrux_ml_dsa.Simd.Avx2.Arithmetic.montgomery_multiply a b) i ==
-    Spec.MLDSA.Ntt.mont_mul (to_i32x8 a i) (to_i32x8 b i))
-    [SMTPat (to_i32x8 (Libcrux_ml_dsa.Simd.Avx2.Arithmetic.montgomery_multiply a b) i)]
-   =
-   reveal_opaque (`%Libcrux_ml_dsa.Simd.Avx2.Arithmetic.montgomery_multiply) (Libcrux_ml_dsa.Simd.Avx2.Arithmetic.montgomery_multiply)
 
 
 

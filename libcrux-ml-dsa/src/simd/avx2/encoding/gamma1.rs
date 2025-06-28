@@ -52,6 +52,7 @@ fn serialize_when_gamma1_is_2_pow_17(simd_unit: &Vec256, out: &mut [u8]) {
 
     let simd_unit_shifted = mm256_sub_epi32(mm256_set1_epi32(GAMMA1_2_POW_17), *simd_unit);
     hax_lib::fstar!("i32_lt_pow2_n_to_bit_zero_lemma 18 $simd_unit_shifted");
+    hax_lib::fstar!("reveal_opaque_arithmetic_ops #I32");
     let adjacent_4_combined = serialize_when_gamma1_is_2_pow_17_aux(simd_unit_shifted);
 
     let lower_4 = mm256_castsi256_si128(adjacent_4_combined);
@@ -119,6 +120,7 @@ fn serialize_when_gamma1_is_2_pow_19(simd_unit: &Vec256, out: &mut [u8]) {
 
     let simd_unit_shifted = mm256_sub_epi32(mm256_set1_epi32(GAMMA1_2_POW_19), *simd_unit);
     hax_lib::fstar!("i32_lt_pow2_n_to_bit_zero_lemma 20 $simd_unit_shifted");
+    hax_lib::fstar!("reveal_opaque_arithmetic_ops #I32");
     let adjacent_4_combined = serialize_when_gamma1_is_2_pow_19_aux(simd_unit_shifted);
 
     // We now have 80 bits starting at position 0 in the lower 128-bit lane, ...
