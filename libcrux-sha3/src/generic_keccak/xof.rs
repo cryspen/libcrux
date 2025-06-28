@@ -1,6 +1,6 @@
 use crate::{
     generic_keccak::KeccakState,
-    traits::{Absorb, KeccakItem, Squeeze},
+    traits::{Absorb, KeccakItem, Squeeze1},
 };
 
 /// The internal keccak state that can also buffer inputs to absorb.
@@ -183,7 +183,7 @@ impl<const RATE: usize, STATE: KeccakItem<1>> KeccakXofState<1, RATE, STATE> {
     #[inline(always)]
     pub(crate) fn squeeze(&mut self, out: &mut [u8])
     where
-        KeccakState<1, STATE>: Squeeze<1, STATE>,
+        KeccakState<1, STATE>: Squeeze1<STATE>,
     {
         if self.sponge {
             // If we called `squeeze` before, call f1600 first.
@@ -196,7 +196,7 @@ impl<const RATE: usize, STATE: KeccakItem<1>> KeccakXofState<1, RATE, STATE> {
 
         if out_len > 0 {
             if out_len <= RATE {
-                self.inner.squeeze1::<RATE>(out, 0, out_len);
+                self.inner.squeeze::<RATE>(out, 0, out_len);
             } else {
                 // How many blocks do we need to squeeze out?
                 let blocks = out_len / RATE;
@@ -204,14 +204,14 @@ impl<const RATE: usize, STATE: KeccakItem<1>> KeccakXofState<1, RATE, STATE> {
                 for i in 0..blocks {
                     // Here we know that we always have full blocks to write out.
                     self.inner.keccakf1600();
-                    self.inner.squeeze1::<RATE>(out, i * RATE, RATE);
+                    self.inner.squeeze::<RATE>(out, i * RATE, RATE);
                 }
 
                 let remaining = out_len % RATE;
                 if remaining > 0 {
                     // Squeeze out the last partial block
                     self.inner.keccakf1600();
-                    self.inner.squeeze1::<RATE>(out, blocks * RATE, remaining);
+                    self.inner.squeeze::<RATE>(out, blocks * RATE, remaining);
                 }
             }
             self.sponge = true;

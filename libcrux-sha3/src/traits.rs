@@ -57,23 +57,38 @@ pub(crate) trait Absorb<const N: usize> {
 ///
 /// Note that this is implemented for each platform (1, 2, 4) because hax can't
 /// handle the mutability required for a generic implementation.
-pub(crate) trait Squeeze<const N: usize, T: KeccakItem<N>> {
-    /// Store blocks `N = 1`
-    fn squeeze1<const RATE: usize>(&self, out: &mut [u8], start: usize, len: usize);
+///
+/// Store blocks `N = 1`
+pub(crate) trait Squeeze1<T: KeccakItem<1>> {
+    fn squeeze<const RATE: usize>(&self, out: &mut [u8], start: usize, len: usize);
+}
 
-    /// Store blocks `N = 2`
-    #[cfg(feature = "simd128")]
-    fn squeeze2<const RATE: usize>(
+/// Trait to squeeze bytes out of the state.
+///
+/// Note that this is implemented for each platform (1, 2, 4) because hax can't
+/// handle the mutability required for a generic implementation.
+///
+/// Store blocks `N = 2`
+#[cfg(feature = "simd128")]
+pub(crate) trait Squeeze2<T: KeccakItem<2>> {
+    fn squeeze<const RATE: usize>(
         &self,
         out0: &mut [u8],
         out1: &mut [u8],
         start: usize,
         len: usize,
     );
+}
 
-    /// Store blocks `N = 4`
-    #[cfg(feature = "simd256")]
-    fn squeeze4<const RATE: usize>(
+/// Trait to squeeze bytes out of the state.
+///
+/// Note that this is implemented for each platform (1, 2, 4) because hax can't
+/// handle the mutability required for a generic implementation.
+///
+/// Store blocks `N = 4`
+#[cfg(feature = "simd256")]
+pub(crate) trait Squeeze4<T: KeccakItem<4>> {
+    fn squeeze<const RATE: usize>(
         &self,
         out0: &mut [u8],
         out1: &mut [u8],

@@ -187,13 +187,8 @@ impl Absorb<2> for KeccakState<2, uint64x2_t> {
     }
 }
 
-impl Squeeze<2, uint64x2_t> for KeccakState<2, uint64x2_t> {
-    fn squeeze1<const RATE: usize>(&self, _: &mut [u8], _: usize, _: usize) {
-        unreachable!("This must never be called.");
-    }
-
-    #[cfg(feature = "simd128")]
-    fn squeeze2<const RATE: usize>(
+impl Squeeze2<uint64x2_t> for KeccakState<2, uint64x2_t> {
+    fn squeeze<const RATE: usize>(
         &self,
         out0: &mut [u8],
         out1: &mut [u8],
@@ -201,18 +196,5 @@ impl Squeeze<2, uint64x2_t> for KeccakState<2, uint64x2_t> {
         len: usize,
     ) {
         store_block::<RATE>(&self.st, out0, out1, start, len);
-    }
-
-    #[cfg(feature = "simd256")]
-    fn squeeze4<const RATE: usize>(
-        &self,
-        _: &mut [u8],
-        _: &mut [u8],
-        _: &mut [u8],
-        _: &mut [u8],
-        _: usize,
-        _: usize,
-    ) {
-        unreachable!("This must never be called.");
     }
 }

@@ -240,18 +240,8 @@ impl Absorb<4> for KeccakState<4, Vec256> {
     }
 }
 
-impl Squeeze<4, Vec256> for KeccakState<4, Vec256> {
-    fn squeeze1<const RATE: usize>(&self, _: &mut [u8], _: usize, _: usize) {
-        unreachable!("This must never be called.");
-    }
-
-    #[cfg(feature = "simd128")]
-    fn squeeze2<const RATE: usize>(&self, _: &mut [u8], _: &mut [u8], _: usize, _: usize) {
-        unreachable!("This must never be called.");
-    }
-
-    #[cfg(feature = "simd256")]
-    fn squeeze4<const RATE: usize>(
+impl Squeeze4<Vec256> for KeccakState<4, Vec256> {
+    fn squeeze<const RATE: usize>(
         &self,
         out0: &mut [u8],
         out1: &mut [u8],
