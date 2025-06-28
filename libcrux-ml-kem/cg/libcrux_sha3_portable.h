@@ -8,7 +8,7 @@
  * Eurydice: 46cef5d58a855ed049fa89bfe99c959b5d9d0d4b
  * Karamel: 39cb85a718da8ae4a724d31b08f9134ca9311336
  * F*: 71d8221589d4d438af3706d89cb653cf53e18aab
- * Libcrux: 1a8d6302bef94c8e94fdaa0f4831a83bbb0224e4
+ * Libcrux: 6ddf6e3e72edfb901acf82a5802d94b3436810b5
  */
 
 #ifndef __libcrux_sha3_portable_H
@@ -3241,7 +3241,7 @@ static inline size_t libcrux_sha3_generic_keccak_xof_absorb_full_35_c6(
  Absorb
 
  This function takes any number of bytes to absorb and buffers if it's not
- enough. The function assumes that all input slices in `blocks` have the same
+ enough. The function assumes that all input slices in `inputs` have the same
  length.
 
  Only a multiple of `RATE` blocks are absorbed.
@@ -3583,7 +3583,7 @@ static inline size_t libcrux_sha3_generic_keccak_xof_absorb_full_35_c60(
  Absorb
 
  This function takes any number of bytes to absorb and buffers if it's not
- enough. The function assumes that all input slices in `blocks` have the same
+ enough. The function assumes that all input slices in `inputs` have the same
  length.
 
  Only a multiple of `RATE` blocks are absorbed.
