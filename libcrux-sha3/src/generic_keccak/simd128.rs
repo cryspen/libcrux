@@ -8,6 +8,9 @@ pub(crate) fn keccak2<const RATE: usize, const DELIM: u8>(
     out0: &mut [u8],
     out1: &mut [u8],
 ) {
+    debug_assert!(out0.len() == out1.len());
+    debug_assert!(data[0].len() == data[1].len());
+
     let mut s = KeccakState::<2, _uint64x2_t>::new();
     let data_len = data[0].len();
     for i in 0..data_len / RATE {
@@ -15,8 +18,6 @@ pub(crate) fn keccak2<const RATE: usize, const DELIM: u8>(
     }
     let rem = data_len % RATE;
     s.absorb_final::<RATE, DELIM>(data, data_len - rem, rem);
-
-    debug_assert!(out0.len() == out1.len());
 
     let outlen = out0.len();
     let blocks = outlen / RATE;
@@ -49,7 +50,12 @@ impl KeccakState<2, _uint64x2_t> {
         self.squeeze2::<RATE>(out0, out1, start, RATE);
     }
 
-    #[inline(always)]
+    /// Write out the first block of Keccak output.
+    ///
+    /// This function MUST NOT be called after any of the other `squeeze_*`
+    /// functions have been called, since that would result in a duplicate output
+    /// block.
+    pub(crate) fn squeeze_first_block<const RATE: usize>(&self, out0: &mut [u8], out1: &mut [u8]) {
     pub(crate) fn squeeze_first_block<const RATE: usize>(&self, out0: &mut [u8], out1: &mut [u8]) {
         self.squeeze2::<RATE>(out0, out1, 0, RATE);
     }

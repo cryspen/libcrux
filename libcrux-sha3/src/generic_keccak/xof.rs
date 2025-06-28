@@ -44,7 +44,7 @@ impl<const PARALLEL_LANES: usize, const RATE: usize, STATE: KeccakItem<PARALLEL_
     /// Absorb
     ///
     /// This function takes any number of bytes to absorb and buffers if it's not enough.
-    /// The function assumes that all input slices in `blocks` have the same length.
+    /// The function assumes that all input slices in `inputs` have the same length.
     ///
     /// Only a multiple of `RATE` blocks are absorbed.
     /// For the remaining bytes [`absorb_final`] needs to be called.

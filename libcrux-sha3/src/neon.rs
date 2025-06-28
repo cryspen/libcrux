@@ -1,6 +1,6 @@
 use crate::generic_keccak::simd128::keccak2;
 
-/// A portable SHA3 224 implementation.
+/// A SHA3 224 implementation.
 #[allow(unused_variables)]
 #[inline(always)]
 pub fn sha224(digest: &mut [u8], data: &[u8]) {
@@ -8,7 +8,7 @@ pub fn sha224(digest: &mut [u8], data: &[u8]) {
     keccak2::<144, 0x06u8>(&[data, data], digest, &mut dummy);
 }
 
-/// A portable SHA3 256 implementation.
+/// A SHA3 256 implementation.
 #[allow(unused_variables)]
 #[inline(always)]
 pub fn sha256(digest: &mut [u8], data: &[u8]) {
@@ -16,7 +16,7 @@ pub fn sha256(digest: &mut [u8], data: &[u8]) {
     keccak2::<136, 0x06u8>(&[data, data], digest, &mut dummy);
 }
 
-/// A portable SHA3 384 implementation.
+/// A SHA3 384 implementation.
 #[allow(unused_variables)]
 #[inline(always)]
 pub fn sha384(digest: &mut [u8], data: &[u8]) {
@@ -24,7 +24,7 @@ pub fn sha384(digest: &mut [u8], data: &[u8]) {
     keccak2::<104, 0x06u8>(&[data, data], digest, &mut dummy);
 }
 
-/// A portable SHA3 512 implementation.
+/// A SHA3 512 implementation.
 #[allow(unused_variables)]
 #[inline(always)]
 pub fn sha512(digest: &mut [u8], data: &[u8]) {
@@ -32,7 +32,7 @@ pub fn sha512(digest: &mut [u8], data: &[u8]) {
     keccak2::<72, 0x06u8>(&[data, data], digest, &mut dummy);
 }
 
-/// A portable SHAKE128 implementation.
+/// A SHAKE128 implementation.
 #[allow(unused_variables)]
 #[inline(always)]
 pub fn shake128<const LEN: usize>(digest: &mut [u8; LEN], data: &[u8]) {
@@ -40,7 +40,7 @@ pub fn shake128<const LEN: usize>(digest: &mut [u8; LEN], data: &[u8]) {
     keccak2::<168, 0x1fu8>(&[data, data], digest, &mut dummy);
 }
 
-/// A portable SHAKE256 implementation.
+/// A SHAKE256 implementation.
 #[allow(unused_variables)]
 #[inline(always)]
 pub fn shake256<const LEN: usize>(digest: &mut [u8; LEN], data: &[u8]) {

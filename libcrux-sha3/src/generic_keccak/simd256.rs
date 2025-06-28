@@ -10,6 +10,13 @@ pub(crate) fn keccak4<const RATE: usize, const DELIM: u8>(
     out2: &mut [u8],
     out3: &mut [u8],
 ) {
+    debug_assert!(out0.len() == out1.len() && out0.len() == out2.len() && out0.len() == out3.len());
+    debug_assert!(
+        data[0].len() == data[1].len()
+            && data[0].len() == data[2].len()
+            && data[0].len() == data[3].len()
+    );
+
     let mut s = KeccakState::<4, Vec256>::new();
     let data_len = data[0].len();
     for i in 0..data_len / RATE {
@@ -17,8 +24,6 @@ pub(crate) fn keccak4<const RATE: usize, const DELIM: u8>(
     }
     let rem = data_len % RATE;
     s.absorb_final::<RATE, DELIM>(data, data_len - rem, rem);
-
-    debug_assert!(out0.len() == out1.len());
 
     let outlen = out0.len();
     let blocks = outlen / RATE;

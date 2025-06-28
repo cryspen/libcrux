@@ -61,7 +61,7 @@ fn main() {
             }
             unknown_variant => {
                 eprintln!(
-                "Unsupported or unknown variant: \"{}\".\nSupported variants are: sha3-224, sha3-256, sha3-384, sha3-512, shake128, shake256.\n",
+                "Unsupported or unknown variant: \"{}\".\nSupported variants are: sha224, sha256, sha384, sha512, shake128, shake256.\n",
                 unknown_variant
             );
                 hex::encode(sha256(args.input.as_bytes()))
