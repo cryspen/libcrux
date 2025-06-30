@@ -1,6 +1,6 @@
 [package]
 name = "libcrux-kem"
-version = "0.0.3-alpha.3"
+version = "0.0.3"
 description = "Libcrux KEM implementation"
 readme = "README.md"
 
@@ -15,12 +15,12 @@ exclude = ["/tests"]
 path = "src/kem.rs"
 
 [dependencies]
-libcrux-ml-kem = { version = "=0.0.3-alpha.3", path = "../libcrux-ml-kem", default-features = false, features = [
+libcrux-ml-kem = { version = "=0.0.3", path = "../libcrux-ml-kem", default-features = false, features = [
     "default-no-std",
 ] }
-libcrux-sha3 = { version = "=0.0.3-alpha.3", path = "../libcrux-sha3" }
-libcrux-ecdh = { version = "=0.0.3-alpha.3", path = "../libcrux-ecdh", default-features = false }
-libcrux-traits = { version = "=0.0.3-alpha.3", path = "../traits" }
+libcrux-sha3 = { version = "=0.0.3", path = "../libcrux-sha3" }
+libcrux-ecdh = { version = "=0.0.3", path = "../libcrux-ecdh", default-features = false }
+libcrux-traits = { version = "=0.0.3", path = "../traits" }
 rand = { version = "0.9", default-features = false }
 
 [features]
