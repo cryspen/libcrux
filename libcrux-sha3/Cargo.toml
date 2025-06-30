@@ -1,6 +1,6 @@
 [package]
 name = "libcrux-sha3"
-version = "0.0.3-alpha.3"
+version = "0.0.3"
 authors.workspace = true
 license.workspace = true
 homepage.workspace = true
@@ -15,7 +15,7 @@ bench = false # so libtest doesn't eat the arguments to criterion
 
 [dependencies]
 libcrux-platform = { version = "0.0.2", path = "../sys/platform" }
-libcrux-intrinsics = { version = "0.0.3-alpha.3", path = "../libcrux-intrinsics" }
+libcrux-intrinsics = { version = "0.0.3", path = "../libcrux-intrinsics" }
 
 # This is only required for verification.
 # The hax config is set by the hax toolchain.
