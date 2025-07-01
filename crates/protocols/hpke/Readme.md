@@ -25,6 +25,11 @@ From the RFC:
 
 - DH KEM x25519
 - DH KEM P256
+- DH KEM P384
+- DH KEM P521
+- DH KEM K256
+- DH KEM 448
+- X-Wing (draft-06)
 
 ### AEAD
 
