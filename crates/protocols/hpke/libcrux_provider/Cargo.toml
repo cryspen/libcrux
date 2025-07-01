@@ -1,6 +1,6 @@
 [package]
 name = "hpke-rs-libcrux"
-version = "0.3.0-alpha.2"
+version = "0.3.0"
 authors = ["Franziskus Kiefer <franziskuskiefer@gmail.com>"]
 edition = "2021"
 license = "MPL-2.0"
@@ -10,11 +10,11 @@ readme = "Readme.md"
 repository = "https://github.com/cryspen/hpke-rs"
 
 [dependencies]
-hpke-rs-crypto = { version = "0.3.0-alpha.2", path = "../traits" }
-libcrux-ecdh = { version = "0.0.3-alpha.3", default-features = false }
-libcrux-hkdf = { version = "0.0.3-alpha.3" }
-libcrux-kem = { version = "0.0.3-alpha.3", default-features = false }
-libcrux-chacha20poly1305 = { version = "0.0.3-alpha.3" }
+hpke-rs-crypto = { version = "0.3.0", path = "../traits" }
+libcrux-ecdh = { version = "0.0.3", default-features = false }
+libcrux-hkdf = { version = "0.0.3" }
+libcrux-kem = { version = "0.0.3", default-features = false }
+libcrux-chacha20poly1305 = { version = "0.0.3" }
 # Randomness
 rand = { version = "0.9", default-features = false }
 rand_core = { version = "0.9", features = ["os_rng"] }
