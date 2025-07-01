@@ -76,6 +76,7 @@ type Psk = [u8; PSK_LENGTH];
 
 pub mod cred;
 pub mod psk_registration;
+pub mod psq_registration;
 
 #[cfg(feature = "classic-mceliece")]
 pub mod classic_mceliece;
