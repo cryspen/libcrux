@@ -7,8 +7,8 @@
  * Charon: bb62a9b39db4ea8c6d536fe61b7d26663751bf3c
  * Eurydice: 46cef5d58a855ed049fa89bfe99c959b5d9d0d4b
  * Karamel: 39cb85a718da8ae4a724d31b08f9134ca9311336
- * F*: unset
- * Libcrux: 95a13790b8b84526d9511b0e0401161f8049f6c7
+ * F*: 71d8221589d4d438af3706d89cb653cf53e18aab
+ * Libcrux: 82b7a4b7638a8c50ce5f5493d6ad7e434701b450
  */
 
 #ifndef __libcrux_mldsa65_portable_H
@@ -503,7 +503,8 @@ This function found in impl {(libcrux_ml_dsa::hash_functions::shake256::Xof for
 libcrux_ml_dsa::hash_functions::portable::Shake256Xof)#4}
 */
 static inline void libcrux_ml_dsa_hash_functions_portable_absorb_83(
-    libcrux_sha3_generic_keccak_KeccakXofState_e2 *self, Eurydice_slice input) {
+    libcrux_sha3_generic_keccak_xof_KeccakXofState_e2 *self,
+    Eurydice_slice input) {
   libcrux_sha3_portable_incremental_absorb_68(self, input);
 }
 
@@ -512,7 +513,8 @@ This function found in impl {(libcrux_ml_dsa::hash_functions::shake256::Xof for
 libcrux_ml_dsa::hash_functions::portable::Shake256Xof)#4}
 */
 static inline void libcrux_ml_dsa_hash_functions_portable_absorb_final_83(
-    libcrux_sha3_generic_keccak_KeccakXofState_e2 *self, Eurydice_slice input) {
+    libcrux_sha3_generic_keccak_xof_KeccakXofState_e2 *self,
+    Eurydice_slice input) {
   libcrux_sha3_portable_incremental_absorb_final_68(self, input);
 }
 
@@ -520,7 +522,7 @@ static inline void libcrux_ml_dsa_hash_functions_portable_absorb_final_83(
 This function found in impl {(libcrux_ml_dsa::hash_functions::shake256::Xof for
 libcrux_ml_dsa::hash_functions::portable::Shake256Xof)#4}
 */
-static inline libcrux_sha3_generic_keccak_KeccakXofState_e2
+static inline libcrux_sha3_generic_keccak_xof_KeccakXofState_e2
 libcrux_ml_dsa_hash_functions_portable_init_83(void) {
   return libcrux_sha3_portable_incremental_new_68();
 }
@@ -530,7 +532,8 @@ This function found in impl {(libcrux_ml_dsa::hash_functions::shake256::Xof for
 libcrux_ml_dsa::hash_functions::portable::Shake256Xof)#4}
 */
 static inline void libcrux_ml_dsa_hash_functions_portable_squeeze_83(
-    libcrux_sha3_generic_keccak_KeccakXofState_e2 *self, Eurydice_slice out) {
+    libcrux_sha3_generic_keccak_xof_KeccakXofState_e2 *self,
+    Eurydice_slice out) {
   libcrux_sha3_portable_incremental_squeeze_68(self, out);
 }
 
@@ -654,7 +657,7 @@ libcrux_ml_dsa_pre_hash_DomainSeparationError
 
 */
 typedef struct Result_a8_s {
-  Result_10 tag;
+  Result_41_tags tag;
   union U {
     libcrux_ml_dsa_pre_hash_DomainSeparationContext case_Ok;
     libcrux_ml_dsa_pre_hash_DomainSeparationError case_Err;
@@ -5528,7 +5531,7 @@ libcrux_ml_dsa_ml_dsa_generic_ml_dsa_65_generate_key_pair_5a(
     uint8_t randomness[32U], Eurydice_slice signing_key,
     Eurydice_slice verification_key) {
   uint8_t seed_expanded0[128U] = {0U};
-  libcrux_sha3_generic_keccak_KeccakXofState_e2 shake =
+  libcrux_sha3_generic_keccak_xof_KeccakXofState_e2 shake =
       libcrux_ml_dsa_hash_functions_portable_init_83();
   libcrux_ml_dsa_hash_functions_portable_absorb_83(
       &shake, Eurydice_array_to_slice((size_t)32U, randomness, uint8_t));
@@ -5841,21 +5844,21 @@ static KRML_MUSTINLINE void
 libcrux_ml_dsa_ml_dsa_generic_derive_message_representative_7b(
     Eurydice_slice verification_key_hash, Option_84 *domain_separation_context,
     Eurydice_slice message, uint8_t *message_representative) {
-  libcrux_sha3_generic_keccak_KeccakXofState_e2 shake =
+  libcrux_sha3_generic_keccak_xof_KeccakXofState_e2 shake =
       libcrux_ml_dsa_hash_functions_portable_init_83();
   libcrux_ml_dsa_hash_functions_portable_absorb_83(&shake,
                                                    verification_key_hash);
   if (domain_separation_context->tag == Some) {
     libcrux_ml_dsa_pre_hash_DomainSeparationContext
         *domain_separation_context0 = &domain_separation_context->f0;
-    libcrux_sha3_generic_keccak_KeccakXofState_e2 *uu____0 = &shake;
+    libcrux_sha3_generic_keccak_xof_KeccakXofState_e2 *uu____0 = &shake;
     uint8_t buf0[1U] = {
         (uint8_t)core_option__core__option__Option_T__TraitClause_0___is_some(
             libcrux_ml_dsa_pre_hash_pre_hash_oid_45(domain_separation_context0),
             uint8_t[11U], bool)};
     libcrux_ml_dsa_hash_functions_portable_absorb_83(
         uu____0, Eurydice_array_to_slice((size_t)1U, buf0, uint8_t));
-    libcrux_sha3_generic_keccak_KeccakXofState_e2 *uu____1 = &shake;
+    libcrux_sha3_generic_keccak_xof_KeccakXofState_e2 *uu____1 = &shake;
     uint8_t buf[1U] = {(uint8_t)Eurydice_slice_len(
         libcrux_ml_dsa_pre_hash_context_45(domain_separation_context0),
         uint8_t)};
@@ -6763,7 +6766,7 @@ libcrux_ml_dsa_ml_dsa_generic_ml_dsa_65_sign_internal_5a(
       verification_key_hash, &domain_separation_context, message,
       message_representative);
   uint8_t mask_seed[64U] = {0U};
-  libcrux_sha3_generic_keccak_KeccakXofState_e2 shake0 =
+  libcrux_sha3_generic_keccak_xof_KeccakXofState_e2 shake0 =
       libcrux_ml_dsa_hash_functions_portable_init_83();
   libcrux_ml_dsa_hash_functions_portable_absorb_83(&shake0, seed_for_signing);
   libcrux_ml_dsa_hash_functions_portable_absorb_83(
@@ -6848,7 +6851,7 @@ libcrux_ml_dsa_ml_dsa_generic_ml_dsa_65_sign_internal_5a(
             (size_t)6U, commitment,
             libcrux_ml_dsa_polynomial_PolynomialRingElement_e8),
         Eurydice_array_to_slice((size_t)768U, commitment_serialized, uint8_t));
-    libcrux_sha3_generic_keccak_KeccakXofState_e2 shake =
+    libcrux_sha3_generic_keccak_xof_KeccakXofState_e2 shake =
         libcrux_ml_dsa_hash_functions_portable_init_83();
     libcrux_ml_dsa_hash_functions_portable_absorb_83(
         &shake,
@@ -7767,7 +7770,7 @@ libcrux_ml_dsa_ml_dsa_generic_ml_dsa_65_verify_internal_5a(
               libcrux_ml_dsa_polynomial_PolynomialRingElement_e8),
           Eurydice_array_to_slice((size_t)768U, commitment_serialized,
                                   uint8_t));
-      libcrux_sha3_generic_keccak_KeccakXofState_e2 shake =
+      libcrux_sha3_generic_keccak_xof_KeccakXofState_e2 shake =
           libcrux_ml_dsa_hash_functions_portable_init_83();
       libcrux_ml_dsa_hash_functions_portable_absorb_83(
           &shake, Eurydice_array_to_slice((size_t)64U, message_representative,

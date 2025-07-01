@@ -23,8 +23,8 @@ libcrux-intrinsics = { version = "0.0.3", path = "../libcrux-intrinsics" }
 hax-lib.workspace = true
 
 [features]
-simd128 = []
-simd256 = []
+simd128 = ["libcrux-intrinsics/simd128"]
+simd256 = ["libcrux-intrinsics/simd256"]
 
 [[bench]]
 name = "sha3"
@@ -36,6 +36,7 @@ hex = "0.4.3"
 rand = "0.9"
 cavp = { version = "0.0.2", path = "../cavp" }
 pretty_env_logger = "0.5.0"
+clap = { version = "4.5.39", features = ["derive"] }
 
 [lints.rust]
 unexpected_cfgs = { level = "warn", check-cfg = ['cfg(hax)', 'cfg(eurydice)'] }
