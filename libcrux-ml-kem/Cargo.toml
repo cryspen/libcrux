@@ -1,6 +1,6 @@
 [package]
 name = "libcrux-ml-kem"
-version = "0.0.3-alpha.3"
+version = "0.0.3"
 authors.workspace = true
 license.workspace = true
 homepage.workspace = true
@@ -28,9 +28,9 @@ bench = false # so libtest doesn't eat the arguments to criterion
 [dependencies]
 rand = { version = "0.9", optional = true, default-features = false }
 libcrux-platform = { version = "0.0.2", path = "../sys/platform" }
-libcrux-sha3 = { version = "0.0.3-alpha.3", path = "../libcrux-sha3" }
-libcrux-intrinsics = { version = "0.0.3-alpha.3", path = "../libcrux-intrinsics" }
-libcrux-secrets = { version = "0.0.3-alpha.3", path = "../secrets" }
+libcrux-sha3 = { version = "0.0.3", path = "../libcrux-sha3" }
+libcrux-intrinsics = { version = "0.0.3", path = "../libcrux-intrinsics" }
+libcrux-secrets = { version = "0.0.3", path = "../secrets" }
 hax-lib.workspace = true
 
 [features]
