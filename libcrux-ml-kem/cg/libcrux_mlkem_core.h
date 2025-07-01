@@ -4,11 +4,11 @@
  * SPDX-License-Identifier: MIT or Apache-2.0
  *
  * This code was generated with the following revisions:
- * Charon: 3275bf4ad9dc8c25965dc5da6122653fc43c4287
- * Eurydice: d3b14228e2b5fe8710ec7efae31e4de2c96ed20d
- * Karamel: 095cdb73f246711f93f99a159ceca37cd2c227e1
- * F*: 4b3fc11774003a6ff7c09500ecb5f0145ca6d862
- * Libcrux: 75cbe9ea0e459cf8a62d97e8a867411e0dd8529a
+ * Charon: bb62a9b39db4ea8c6d536fe61b7d26663751bf3c
+ * Eurydice: 46cef5d58a855ed049fa89bfe99c959b5d9d0d4b
+ * Karamel: 39cb85a718da8ae4a724d31b08f9134ca9311336
+ * F*: 71d8221589d4d438af3706d89cb653cf53e18aab
+ * Libcrux: 82b7a4b7638a8c50ce5f5493d6ad7e434701b450
  */
 
 #ifndef __libcrux_mlkem_core_H
@@ -25,11 +25,6 @@ typedef struct core_ops_range_Range_08_s {
   size_t start;
   size_t end;
 } core_ops_range_Range_08;
-
-#define Ok 0
-#define Err 1
-
-typedef uint8_t Result_a9_tags;
 
 static inline uint16_t core_num__u16_7__wrapping_add(uint16_t x0, uint16_t x1);
 
@@ -323,13 +318,18 @@ typedef struct libcrux_ml_kem_utils_extraction_helper_Keypair768_s {
   uint8_t snd[1184U];
 } libcrux_ml_kem_utils_extraction_helper_Keypair768;
 
+#define Ok 0
+#define Err 1
+
+typedef uint8_t Result_b2_tags;
+
 /**
 A monomorphic instance of core.result.Result
 with types uint8_t[24size_t], core_array_TryFromSliceError
 
 */
 typedef struct Result_b2_s {
-  Result_a9_tags tag;
+  Result_b2_tags tag;
   union U {
     uint8_t case_Ok[24U];
     TryFromSliceError case_Err;
@@ -364,7 +364,7 @@ with types uint8_t[20size_t], core_array_TryFromSliceError
 
 */
 typedef struct Result_e1_s {
-  Result_a9_tags tag;
+  Result_b2_tags tag;
   union U {
     uint8_t case_Ok[20U];
     TryFromSliceError case_Err;
@@ -392,16 +392,6 @@ static inline void unwrap_26_20(Result_e1 self, uint8_t ret[20U]) {
     KRML_HOST_EXIT(255U);
   }
 }
-
-typedef struct Eurydice_slice_uint8_t_200size_t__x2_s {
-  Eurydice_slice fst;
-  Eurydice_slice snd;
-} Eurydice_slice_uint8_t_200size_t__x2;
-
-typedef struct Eurydice_slice_uint8_t_4size_t__x2_s {
-  Eurydice_slice fst[4U];
-  Eurydice_slice snd[4U];
-} Eurydice_slice_uint8_t_4size_t__x2;
 
 /**
  Pad the `slice` with `0`s at the end.
@@ -522,7 +512,7 @@ with types uint8_t[32size_t], core_array_TryFromSliceError
 
 */
 typedef struct Result_fb_s {
-  Result_a9_tags tag;
+  Result_b2_tags tag;
   union U {
     uint8_t case_Ok[32U];
     TryFromSliceError case_Err;
@@ -862,7 +852,7 @@ with types int16_t[16size_t], core_array_TryFromSliceError
 
 */
 typedef struct Result_0a_s {
-  Result_a9_tags tag;
+  Result_b2_tags tag;
   union U {
     int16_t case_Ok[16U];
     TryFromSliceError case_Err;
@@ -897,7 +887,7 @@ with types uint8_t[8size_t], core_array_TryFromSliceError
 
 */
 typedef struct Result_15_s {
-  Result_a9_tags tag;
+  Result_b2_tags tag;
   union U {
     uint8_t case_Ok[8U];
     TryFromSliceError case_Err;
@@ -925,11 +915,6 @@ static inline void unwrap_26_68(Result_15 self, uint8_t ret[8U]) {
     KRML_HOST_EXIT(255U);
   }
 }
-
-typedef struct Eurydice_slice_uint8_t_1size_t__x2_s {
-  Eurydice_slice fst[1U];
-  Eurydice_slice snd[1U];
-} Eurydice_slice_uint8_t_1size_t__x2;
 
 #define __libcrux_mlkem_core_H_DEFINED
 #endif

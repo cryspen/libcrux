@@ -1,6 +1,6 @@
 use libcrux_intrinsics::arm64::*;
 
-use crate::traits::{get_ij, internal::KeccakItem, set_ij};
+use crate::{generic_keccak::KeccakState, traits::*};
 
 #[allow(non_camel_case_types)]
 pub type uint64x2_t = _uint64x2_t;
@@ -56,13 +56,13 @@ pub(crate) fn load_block<const RATE: usize>(
             s,
             i0,
             j0,
-            _veorq_u64(get_ij(s, i0, j0), _vtrn1q_u64(v0, v1)),
+            _veorq_u64(*get_ij(s, i0, j0), _vtrn1q_u64(v0, v1)),
         );
         set_ij(
             s,
             i1,
             j1,
-            _veorq_u64(get_ij(s, i1, j1), _vtrn2q_u64(v0, v1)),
+            _veorq_u64(*get_ij(s, i1, j1), _vtrn2q_u64(v0, v1)),
         );
     }
     if RATE % 16 != 0 {
@@ -72,54 +72,73 @@ pub(crate) fn load_block<const RATE: usize>(
         u[0] = u64::from_le_bytes(blocks[0][start..start + 8].try_into().unwrap());
         u[1] = u64::from_le_bytes(blocks[1][start..start + 8].try_into().unwrap());
         let uvec = _vld1q_u64(&u);
-        set_ij(s, i / 5, i % 5, _veorq_u64(get_ij(s, i / 5, i % 5), uvec));
+        set_ij(s, i / 5, i % 5, _veorq_u64(*get_ij(s, i / 5, i % 5), uvec));
     }
 }
 
 #[inline(always)]
-pub(crate) fn load_block_full<const RATE: usize>(
-    s: &mut [uint64x2_t; 25],
-    blocks: &[[u8; 200]; 2],
-    start: usize,
+pub(crate) fn load_last<const RATE: usize, const DELIMITER: u8>(
+    state: &mut [uint64x2_t; 25],
+    blocks: &[&[u8]; 2],
+    offset: usize,
+    len: usize,
 ) {
-    load_block::<RATE>(s, &[&blocks[0] as &[u8], &blocks[1] as &[u8]], start);
+    debug_assert!(offset + len <= blocks[0].len() && blocks[0].len() == blocks[1].len());
+
+    let mut buffer0 = [0u8; RATE];
+    buffer0[0..len].copy_from_slice(&blocks[0][offset..offset + len]);
+    buffer0[len] = DELIMITER;
+    buffer0[RATE - 1] |= 0x80;
+
+    let mut buffer1 = [0u8; RATE];
+    buffer1[0..len].copy_from_slice(&blocks[1][offset..offset + len]);
+    buffer1[len] = DELIMITER;
+    buffer1[RATE - 1] |= 0x80;
+
+    load_block::<RATE>(state, &[&buffer0, &buffer1], 0);
 }
 
 #[inline(always)]
-pub(crate) fn store_block<const RATE: usize>(s: &[uint64x2_t; 25], out: &mut [&mut [u8]; 2]) {
-    for i in 0..RATE / 16 {
+pub(crate) fn store_block<const RATE: usize>(
+    s: &[uint64x2_t; 25],
+    out0: &mut [u8],
+    out1: &mut [u8],
+    start: usize,
+    len: usize,
+) {
+    debug_assert!(len <= RATE && start + len <= out0.len() && out0.len() == out1.len());
+    for i in 0..len / 16 {
         let i0 = (2 * i) / 5;
         let j0 = (2 * i) % 5;
         let i1 = (2 * i + 1) / 5;
         let j1 = (2 * i + 1) % 5;
-        let v0 = _vtrn1q_u64(get_ij(s, i0, j0), get_ij(s, i1, j1));
-        let v1 = _vtrn2q_u64(get_ij(s, i0, j0), get_ij(s, i1, j1));
-        _vst1q_bytes_u64(&mut out[0][16 * i..16 * (i + 1)], v0);
-        _vst1q_bytes_u64(&mut out[1][16 * i..16 * (i + 1)], v1);
+        let v0 = _vtrn1q_u64(*get_ij(s, i0, j0), *get_ij(s, i1, j1));
+        let v1 = _vtrn2q_u64(*get_ij(s, i0, j0), *get_ij(s, i1, j1));
+        _vst1q_bytes_u64(&mut out0[start + 16 * i..start + 16 * (i + 1)], v0);
+        _vst1q_bytes_u64(&mut out1[start + 16 * i..start + 16 * (i + 1)], v1);
     }
-    if RATE % 16 != 0 {
-        debug_assert!(RATE % 8 == 0);
-        let i = RATE / 8 - 1;
-        let mut u = [0u8; 16];
-        _vst1q_bytes_u64(&mut u, get_ij(s, i / 5, i % 5));
-        out[0][RATE - 8..RATE].copy_from_slice(&u[0..8]);
-        out[1][RATE - 8..RATE].copy_from_slice(&u[8..16]);
+    let remaining = len % 16;
+    if remaining > 8 {
+        let mut out0_tmp = [0u8; 16];
+        let mut out1_tmp = [0u8; 16];
+        let i = 2 * (len / 16);
+        let i0 = i / 5;
+        let j0 = i % 5;
+        let i1 = (i + 1) / 5;
+        let j1 = (i + 1) % 5;
+        let v0 = _vtrn1q_u64(*get_ij(s, i0, j0), *get_ij(s, i1, j1));
+        let v1 = _vtrn2q_u64(*get_ij(s, i0, j0), *get_ij(s, i1, j1));
+        _vst1q_bytes_u64(&mut out0_tmp, v0);
+        _vst1q_bytes_u64(&mut out1_tmp, v1);
+        out0[start + len - remaining..start + len].copy_from_slice(&out0_tmp[0..remaining]);
+        out1[start + len - remaining..start + len].copy_from_slice(&out1_tmp[0..remaining]);
+    } else if remaining > 0 {
+        let mut out01 = [0u8; 16];
+        let i = 2 * (len / 16);
+        _vst1q_bytes_u64(&mut out01, *get_ij(s, i / 5, i % 5));
+        out0[start + len - remaining..start + len].copy_from_slice(&out01[0..remaining]);
+        out1[start + len - remaining..start + len].copy_from_slice(&out01[8..8 + remaining]);
     }
-}
-
-#[inline(always)]
-pub(crate) fn store_block_full<const RATE: usize>(s: &[uint64x2_t; 25], out: &mut [[u8; 200]; 2]) {
-    let (out0, out1) = out.split_at_mut(1);
-
-    store_block::<RATE>(s, &mut [&mut out0[0], &mut out1[0]]);
-}
-
-#[inline(always)]
-fn split_at_mut_2(out: [&mut [u8]; 2], mid: usize) -> ([&mut [u8]; 2], [&mut [u8]; 2]) {
-    let [out0, out1] = out;
-    let (out00, out01) = out0.split_at_mut(mid);
-    let (out10, out11) = out1.split_at_mut(mid);
-    ([out00, out10], [out01, out11])
 }
 
 impl KeccakItem<2> for uint64x2_t {
@@ -151,35 +170,31 @@ impl KeccakItem<2> for uint64x2_t {
     fn xor(a: Self, b: Self) -> Self {
         _veorq_u64(a, b)
     }
-    #[inline(always)]
-    fn load_block<const RATE: usize>(state: &mut [Self; 25], blocks: &[&[u8]; 2], start: usize) {
-        load_block::<RATE>(state, blocks, start)
+}
+
+impl Absorb<2> for KeccakState<2, uint64x2_t> {
+    fn load_block<const RATE: usize>(&mut self, input: &[&[u8]; 2], start: usize) {
+        load_block::<RATE>(&mut self.st, input, start);
     }
-    #[inline(always)]
-    fn store_block<const RATE: usize>(state: &[Self; 25], blocks: &mut [&mut [u8]; 2]) {
-        store_block::<RATE>(state, blocks)
-    }
-    #[inline(always)]
-    fn load_block_full<const RATE: usize>(
-        state: &mut [Self; 25],
-        blocks: &[[u8; 200]; 2],
+
+    fn load_last<const RATE: usize, const DELIMITER: u8>(
+        &mut self,
+        input: &[&[u8]; 2],
         start: usize,
+        len: usize,
     ) {
-        load_block_full::<RATE>(state, blocks, start)
+        load_last::<RATE, DELIMITER>(&mut self.st, input, start, len);
     }
-    #[inline(always)]
-    fn store_block_full<const RATE: usize>(state: &[Self; 25], out: &mut [[u8; 200]; 2]) {
-        store_block_full::<RATE>(state, out)
-    }
+}
 
-    #[inline(always)]
-    fn split_at_mut_n(a: [&mut [u8]; 2], mid: usize) -> ([&mut [u8]; 2], [&mut [u8]; 2]) {
-        split_at_mut_2(a, mid)
-    }
-
-    // TODO: Do we need this, or not? cf. https://github.com/cryspen/libcrux/issues/482
-    #[inline(always)]
-    fn store<const RATE: usize>(_state: &[Self; 25], _out: [&mut [u8]; 2]) {
-        todo!()
+impl Squeeze2<uint64x2_t> for KeccakState<2, uint64x2_t> {
+    fn squeeze<const RATE: usize>(
+        &self,
+        out0: &mut [u8],
+        out1: &mut [u8],
+        start: usize,
+        len: usize,
+    ) {
+        store_block::<RATE>(&self.st, out0, out1, start, len);
     }
 }

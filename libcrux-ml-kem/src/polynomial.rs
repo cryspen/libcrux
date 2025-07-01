@@ -34,7 +34,7 @@ pub(crate) const VECTORS_IN_RING_ELEMENT: usize = 16;
     {| i2: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
     (p: t_PolynomialRingElement v_Vector) : Spec.MLKEM.polynomial =
     createi (sz 256) (fun i -> Spec.MLKEM.Math.to_spec_fe 
-                                (Seq.index (i2._super_15138760880757129450.f_repr 
+                                (Seq.index (i2._super_16084754032855797384.f_repr 
                                     (Seq.index p.f_coefficients (v i / 16))) (v i % 16)))
 let to_spec_vector_t (#r:Spec.MLKEM.rank) (#v_Vector: Type0)
     {| i2: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
@@ -186,7 +186,7 @@ fn add_to_ring_element<Vector: Operations, const K: usize>(
     let _myself = myself.coefficients;
     hax_lib::fstar!(
         r#"assert(forall (v: v_Vector).
-        i1.f_to_i16_array v == i1._super_15138760880757129450.f_repr v)"#
+        i1.f_to_i16_array v == i1._super_16084754032855797384.f_repr v)"#
     );
 
     for i in 0..myself.coefficients.len() {
@@ -325,7 +325,7 @@ fn add_message_error_reduce<Vector: Operations>(
         hax_lib::fstar!(
             r#"
           assert (v $i < 16);
-          Spec.Utils.pow2_values_more 15;
+          Spec.Utils.pow2_more_values 15;
           assert_norm (1441 < pow2 15);
           assert_norm (1664 < pow2 15);
           assert_norm (mk_i16 1441 <. mk_i16 1664);
@@ -480,7 +480,7 @@ fn add_standard_error_reduce<Vector: Operations>(
 
         hax_lib::fstar!(
             r#"
-          Spec.Utils.pow2_values_more 15;
+          Spec.Utils.pow2_more_values 15;
           assert (is_bounded_vector 3328 ${coefficient_normal_form});
           assert (is_bounded_vector 3328 (error.f_coefficients.[ j ]));
           Spec.Utils.lemma_add_intb_forall 3328 3328;

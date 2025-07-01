@@ -4,11 +4,11 @@
  * SPDX-License-Identifier: MIT or Apache-2.0
  *
  * This code was generated with the following revisions:
- * Charon: 3275bf4ad9dc8c25965dc5da6122653fc43c4287
- * Eurydice: d3b14228e2b5fe8710ec7efae31e4de2c96ed20d
- * Karamel: 095cdb73f246711f93f99a159ceca37cd2c227e1
- * F*: 4b3fc11774003a6ff7c09500ecb5f0145ca6d862
- * Libcrux: d7e93a7ba1f32b019310e0fa86aba3055bac69de
+ * Charon: bb62a9b39db4ea8c6d536fe61b7d26663751bf3c
+ * Eurydice: 46cef5d58a855ed049fa89bfe99c959b5d9d0d4b
+ * Karamel: 39cb85a718da8ae4a724d31b08f9134ca9311336
+ * F*: 71d8221589d4d438af3706d89cb653cf53e18aab
+ * Libcrux: 82b7a4b7638a8c50ce5f5493d6ad7e434701b450
  */
 
 #ifndef __libcrux_core_H
@@ -26,15 +26,10 @@ typedef struct core_ops_range_Range_08_s {
   size_t end;
 } core_ops_range_Range_08;
 
-#define Ok 0
-#define Err 1
-
-typedef uint8_t Result_a9_tags;
-
 #define None 0
 #define Some 1
 
-typedef uint8_t Option_d8_tags;
+typedef uint8_t Option_08_tags;
 
 /**
 A monomorphic instance of core.option.Option
@@ -42,7 +37,7 @@ with types size_t
 
 */
 typedef struct Option_08_s {
-  Option_d8_tags tag;
+  Option_08_tags tag;
   size_t f0;
 } Option_08;
 
@@ -120,13 +115,18 @@ static inline uint8_t *libcrux_ml_dsa_types_as_ref_66_97(
 
 typedef uint8_t libcrux_ml_dsa_types_VerificationError;
 
+#define Ok 0
+#define Err 1
+
+typedef uint8_t Result_41_tags;
+
 /**
 A monomorphic instance of core.result.Result
 with types (), libcrux_ml_dsa_types_VerificationError
 
 */
 typedef struct Result_41_s {
-  Result_a9_tags tag;
+  Result_41_tags tag;
   libcrux_ml_dsa_types_VerificationError f0;
 } Result_41;
 
@@ -167,7 +167,7 @@ libcrux_ml_dsa_types_SigningError
 
 */
 typedef struct Result_2e_s {
-  Result_a9_tags tag;
+  Result_41_tags tag;
   union U {
     libcrux_ml_dsa_types_MLDSASignature_8f case_Ok;
     libcrux_ml_dsa_types_SigningError case_Err;
@@ -181,7 +181,7 @@ with types int32_t[256size_t][6size_t]
 
 */
 typedef struct Option_f0_s {
-  Option_d8_tags tag;
+  Option_08_tags tag;
   int32_t f0[6U][256U];
 } Option_f0;
 
@@ -191,7 +191,7 @@ with types uint8_t[48size_t]
 
 */
 typedef struct Option_67_s {
-  Option_d8_tags tag;
+  Option_08_tags tag;
   uint8_t f0[48U];
 } Option_67;
 
@@ -201,7 +201,7 @@ with types (), libcrux_ml_dsa_types_SigningError
 
 */
 typedef struct Result_53_s {
-  Result_a9_tags tag;
+  Result_41_tags tag;
   libcrux_ml_dsa_types_SigningError f0;
 } Result_53;
 
@@ -278,25 +278,20 @@ libcrux_ml_dsa_types_new_9b_09(uint8_t value[4032U]) {
   return lit;
 }
 
+typedef struct Eurydice_slice_uint8_t_x2_s {
+  Eurydice_slice fst;
+  Eurydice_slice snd;
+} Eurydice_slice_uint8_t_x2;
+
 /**
 A monomorphic instance of core.option.Option
 with types uint8_t[11size_t]
 
 */
 typedef struct Option_30_s {
-  Option_d8_tags tag;
+  Option_08_tags tag;
   uint8_t f0[11U];
 } Option_30;
-
-typedef struct Eurydice_slice_uint8_t_200size_t__x2_s {
-  Eurydice_slice fst;
-  Eurydice_slice snd;
-} Eurydice_slice_uint8_t_200size_t__x2;
-
-typedef struct Eurydice_slice_uint8_t_4size_t__x2_s {
-  Eurydice_slice fst[4U];
-  Eurydice_slice snd[4U];
-} Eurydice_slice_uint8_t_4size_t__x2;
 
 /**
 A monomorphic instance of core.result.Result
@@ -304,7 +299,7 @@ with types uint8_t[8size_t], core_array_TryFromSliceError
 
 */
 typedef struct Result_15_s {
-  Result_a9_tags tag;
+  Result_41_tags tag;
   union U {
     uint8_t case_Ok[8U];
     TryFromSliceError case_Err;
@@ -332,16 +327,6 @@ static inline void unwrap_26_68(Result_15 self, uint8_t ret[8U]) {
     KRML_HOST_EXIT(255U);
   }
 }
-
-typedef struct Eurydice_slice_uint8_t_1size_t__x2_s {
-  Eurydice_slice fst[1U];
-  Eurydice_slice snd[1U];
-} Eurydice_slice_uint8_t_1size_t__x2;
-
-typedef struct Eurydice_slice_uint8_t_x2_s {
-  Eurydice_slice fst;
-  Eurydice_slice snd;
-} Eurydice_slice_uint8_t_x2;
 
 #define __libcrux_core_H_DEFINED
 #endif
