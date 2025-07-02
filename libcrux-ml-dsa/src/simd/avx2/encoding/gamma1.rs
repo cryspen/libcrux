@@ -180,13 +180,13 @@ pub(crate) fn serialize(simd_unit: &Vec256, serialized: &mut [u8], gamma1_expone
     }
 }
 
+const GAMMA1_17: i32 = 1 << 17;
+const GAMMA1_17_TIMES_2_MASK: i32 = (GAMMA1_17 << 1) - 1;
+
 #[inline(always)]
 #[hax_lib::requires(serialized.len() == 18)]
 fn deserialize_when_gamma1_is_2_pow_17(serialized: &[u8], out: &mut Vec256) {
     debug_assert!(serialized.len() == 18);
-
-    const GAMMA1: i32 = 1 << 17;
-    const GAMMA1_TIMES_2_MASK: i32 = (GAMMA1 << 1) - 1;
 
     let serialized_lower = mm_loadu_si128(&serialized[0..16]);
     let serialized_upper = mm_loadu_si128(&serialized[2..18]);
@@ -203,10 +203,13 @@ fn deserialize_when_gamma1_is_2_pow_17(serialized: &[u8], out: &mut Vec256) {
     );
 
     let coefficients = mm256_srlv_epi32(coefficients, mm256_set_epi32(6, 4, 2, 0, 6, 4, 2, 0));
-    let coefficients = mm256_and_si256(coefficients, mm256_set1_epi32(GAMMA1_TIMES_2_MASK));
+    let coefficients = mm256_and_si256(coefficients, mm256_set1_epi32(GAMMA1_19_TIMES_2_MASK));
 
-    *out = mm256_sub_epi32(mm256_set1_epi32(GAMMA1), coefficients);
+    *out = mm256_sub_epi32(mm256_set1_epi32(GAMMA1_17), coefficients);
 }
+
+const GAMMA1_19: i32 = 1 << 19;
+const GAMMA1_19_TIMES_2_MASK: i32 = (GAMMA1_19 << 1) - 1;
 
 #[inline(always)]
 #[hax_lib::requires(serialized.len() == 20)]
@@ -215,9 +218,6 @@ fn deserialize_when_gamma1_is_2_pow_19(serialized: &[u8], out: &mut Vec256) {
     // can hold 8 such coefficients, we process 5 * (8 / 2) = 20 bytes in this
     // function.
     debug_assert!(serialized.len() == 20);
-
-    const GAMMA1: i32 = 1 << 19;
-    const GAMMA1_TIMES_2_MASK: i32 = (GAMMA1 << 1) - 1;
 
     let serialized_lower = mm_loadu_si128(&serialized[0..16]);
     let serialized_upper = mm_loadu_si128(&serialized[4..20]);
@@ -233,9 +233,9 @@ fn deserialize_when_gamma1_is_2_pow_19(serialized: &[u8], out: &mut Vec256) {
     );
 
     let coefficients = mm256_srlv_epi32(coefficients, mm256_set_epi32(4, 0, 4, 0, 4, 0, 4, 0));
-    let coefficients = mm256_and_si256(coefficients, mm256_set1_epi32(GAMMA1_TIMES_2_MASK));
+    let coefficients = mm256_and_si256(coefficients, mm256_set1_epi32(GAMMA1_19_TIMES_2_MASK));
 
-    *out = mm256_sub_epi32(mm256_set1_epi32(GAMMA1), coefficients)
+    *out = mm256_sub_epi32(mm256_set1_epi32(GAMMA1_19), coefficients)
 }
 
 #[inline(always)]
