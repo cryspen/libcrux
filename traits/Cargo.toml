@@ -10,6 +10,8 @@ edition.workspace = true
 repository.workspace = true
 readme.workspace = true
 
+[features]
+error_in_core = []
+
 [dependencies]
 rand = { version = "0.9", default-features = false }
-thiserror = { version = "2.0.12" }

@@ -30,11 +30,9 @@ trait Curve25519 {
     fn ecdh(out: &mut [u8; SHK_LEN], pk: &[u8; PK_LEN], sk: &[u8; SK_LEN]) -> Result<(), Error>;
 }
 
-pub struct X25519;
+pub struct Kem;
 
-impl libcrux_traits::kem::arrayref::Kem<SK_LEN, PK_LEN, PK_LEN, SHK_LEN, SK_LEN, SK_LEN>
-    for X25519
-{
+impl libcrux_traits::kem::arrayref::Kem<SK_LEN, PK_LEN, PK_LEN, SHK_LEN, SK_LEN, SK_LEN> for Kem {
     fn keygen(
         ek: &mut [u8; SK_LEN],
         dk: &mut [u8; PK_LEN],
@@ -68,7 +66,7 @@ impl libcrux_traits::kem::arrayref::Kem<SK_LEN, PK_LEN, PK_LEN, SHK_LEN, SK_LEN,
     }
 }
 
-libcrux_traits::kem::slice::impl_trait!(X25519 => PK_LEN, SK_LEN, PK_LEN, PK_LEN, SK_LEN, SK_LEN);
+libcrux_traits::kem::slice::impl_trait!(Kem => PK_LEN, SK_LEN, PK_LEN, PK_LEN, SK_LEN, SK_LEN);
 
 /// Clamp a scalar.
 fn clamp(scalar: &mut [u8; SK_LEN]) {
