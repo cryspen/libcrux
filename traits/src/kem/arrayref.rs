@@ -31,40 +31,72 @@ pub trait Kem<
 }
 
 /// Error generating key with provided randomness
-#[derive(thiserror::Error, Debug)]
+#[derive(Debug)]
 pub enum KeyGenError {
-    #[doc = "Error generating key with provided randomness"]
-    #[error("error generating key with provided randomness")]
+    /// Error generating key with provided randomness
     InvalidRandomness,
-    #[doc = "An unknown error occurred"]
-    #[error("an unknown error occurred")]
+
+    /// An unknown error occurred
     Unknown,
 }
 
 /// Error indicating that encapsulating failed
-#[derive(thiserror::Error, Debug)]
+#[derive(Debug)]
 pub enum EncapsError {
-    #[doc = "Encapsulation key is invalid"]
-    #[error("encapsulation key is invalid")]
+    /// Encapsulation key is invalid
     InvalidEncapsKey,
-    #[doc = "Error encapsulating key with provided randomness"]
-    #[error("error encapsulating key with provided randomness")]
+
+    /// Error encapsulating key with provided randomness
     InvalidRandomness,
-    #[doc = "An unknown error occurred"]
-    #[error("an unknown error occurred")]
+
+    /// An unknown error occurred
     Unknown,
 }
 
 /// Error indicating that decapsulating failed
-#[derive(thiserror::Error, Debug)]
+#[derive(Debug)]
 pub enum DecapsError {
-    #[doc = "Ciphertext key is invalid"]
-    #[error("ciphertext key is invalid")]
-    InvalidCipertext,
-    #[doc = "Decapsulation key is invalid"]
-    #[error("decapsulation key is invalid")]
+    /// Ciphertext key is invalid
+    InvalidCiphertext,
+
+    /// Decapsulation key is invalid
     InvalidDecapsKey,
-    #[doc = "An unknown error occurred"]
-    #[error("an unknown error occurred")]
+
+    /// An unknown error occurred
     Unknown,
+}
+
+impl core::fmt::Display for KeyGenError {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        let text = match self {
+            KeyGenError::InvalidRandomness => "error generating key with provided randomness",
+            KeyGenError::Unknown => "an unknown error occurred",
+        };
+
+        f.write_str(text)
+    }
+}
+
+impl core::fmt::Display for EncapsError {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        let text = match self {
+            EncapsError::InvalidEncapsKey => "encapsulation key is invalid",
+            EncapsError::InvalidRandomness => "error generating key with provided randomness",
+            EncapsError::Unknown => "an unknown error occurred",
+        };
+
+        f.write_str(text)
+    }
+}
+
+impl core::fmt::Display for DecapsError {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        let text = match self {
+            DecapsError::InvalidDecapsKey => "encapsulation key is invalid",
+            DecapsError::InvalidCiphertext => "ciphertext is invalid",
+            DecapsError::Unknown => "an unknown error occurred",
+        };
+
+        f.write_str(text)
+    }
 }
