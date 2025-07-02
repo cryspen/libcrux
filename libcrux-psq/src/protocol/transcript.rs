@@ -55,6 +55,30 @@ pub(crate) fn tx0(
     })
 }
 
+// tx1 = hash(1 | tx0 | g^c | pkS | encap(pkS, SS))
+pub(crate) fn tx1(
+    tx0: &Transcript,
+    initiator_longterm_pk: &PublicKey,
+    responder_pq_pk: &Option<libcrux_ml_kem::mlkem768::MlKem768PublicKey>,
+    pq_encaps: &Option<libcrux_ml_kem::mlkem768::MlKem768Ciphertext>,
+) -> Transcript {
+    #[derive(TlsSerializeBytes, TlsSize)]
+    struct Transcript1Inputs {
+        initiator_longterm_pk: PublicKey,
+        responder_pq_pk: Option<libcrux_ml_kem::mlkem768::MlKem768PublicKey>,
+        pq_encaps: Option<libcrux_ml_kem::mlkem768::MlKem768Ciphertext>,
+    }
+
+    Transcript::add_hash::<TX1_DOMAIN_SEP>(
+        Some(*tx0),
+        &Transcript1Inputs {
+            initiator_longterm_pk: initiator_longterm_pk.clone(),
+            responder_pq_pk: responder_pq_pk.clone(),
+            pq_encaps: pq_encaps.clone(),
+        },
+    )
+}
+
 // Registration Mode: tx2 = hash(2 | tx1 | g^y)
 // Query Mode:        tx2 = hash(2 | tx0 | g^y)
 pub(crate) fn tx2(prev_tx: &Transcript, responder_ephemeral_pk: &PublicKey) -> Transcript {
