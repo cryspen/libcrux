@@ -88,9 +88,7 @@ pub(crate) fn serialize(simd_unit: &Vec256, out: &mut [u8]) {
 
 #[inline(always)]
 #[hax_lib::requires(serialized.len() == 13)]
-pub(crate) fn deserialize(serialized: &[u8], out: &mut Vec256) {
-    debug_assert_eq!(serialized.len(), 13);
-
+fn deserialize_unsigned(serialized: &[u8]) -> Vec256 {
     const COEFFICIENT_MASK: i32 = (1 << 13) - 1;
 
     let mut serialized_extended = [0u8; 16];
@@ -109,7 +107,12 @@ pub(crate) fn deserialize(serialized: &[u8], out: &mut Vec256) {
     );
 
     let coefficients = mm256_srlv_epi32(coefficients, mm256_set_epi32(3, 6, 1, 4, 7, 2, 5, 0));
-    let coefficients = mm256_and_si256(coefficients, mm256_set1_epi32(COEFFICIENT_MASK));
+    mm256_and_si256(coefficients, mm256_set1_epi32(COEFFICIENT_MASK))
+}
 
-    *out = change_interval(&coefficients);
+#[inline(always)]
+#[hax_lib::requires(serialized.len() == 13)]
+pub(crate) fn deserialize(serialized: &[u8], out: &mut Vec256) {
+    debug_assert_eq!(serialized.len(), 13);
+    *out = change_interval(&deserialize_unsigned(serialized));
 }
