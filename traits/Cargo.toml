@@ -15,3 +15,4 @@ error_in_core = []
 
 [dependencies]
 rand = { version = "0.9", default-features = false }
+libcrux-secrets = { version = "=0.0.3", path = "../secrets" }
