@@ -1,10 +1,11 @@
-use libcrux_chacha20poly1305::KEY_LEN;
-use tls_codec::{SerializeBytes, TlsSerializeBytes, TlsSize};
+use libcrux_chacha20poly1305::{decrypt, encrypt, KEY_LEN, NONCE_LEN};
+use tls_codec::{DeserializeBytes, SerializeBytes, TlsSerializeBytes, TlsSize};
 
 use super::{
     ecdh::{self, PrivateKey, PublicKey, SharedSecret},
     session::{SessionKey, SESSION_ID_LENGTH},
     transcript::{self, Transcript},
+    Message,
 };
 
 #[derive(PartialEq, Debug, TlsSerializeBytes, TlsSize)]
@@ -29,6 +30,37 @@ impl AEADKey {
             .try_into()
             .unwrap(),
         )
+    }
+
+    pub(crate) fn serialize_encrypt(&self, payload: &impl SerializeBytes, aad: &[u8]) -> Vec<u8> {
+        let mut ciphertext = vec![0u8; payload.tls_serialized_len() + 16];
+        let payload_serialized = payload.tls_serialize().unwrap();
+
+        let _ = encrypt(
+            self.as_ref(),
+            &payload_serialized,
+            &mut ciphertext,
+            aad,
+            &[0; NONCE_LEN],
+        )
+        .expect("Encryption Error");
+
+        ciphertext
+    }
+
+    pub(crate) fn decrypt_deserialize<T: DeserializeBytes>(&self, msg: &Message) -> T {
+        let mut payload_serialized = vec![0u8; msg.ciphertext.len() - 16];
+        let _ = decrypt(
+            self.as_ref(),
+            &mut payload_serialized,
+            &msg.ciphertext,
+            &msg.aad,
+            &[0; NONCE_LEN],
+        )
+        .unwrap();
+
+        let received_payload = T::tls_deserialize_exact_bytes(&payload_serialized).unwrap();
+        received_payload
     }
 }
 impl AsRef<[u8; KEY_LEN]> for AEADKey {
@@ -102,10 +134,75 @@ pub(super) fn derive_k0(
     (tx0, AEADKey::new(&ikm, &tx0))
 }
 
+// K1 = KDF(K0 | g^cs | SS, tx1)
+pub(super) fn derive_k1(
+    k0: &AEADKey,
+    own_longterm_key: &PrivateKey,
+    peer_longterm_pk: &PublicKey,
+    pq_shared_secret: &Option<[u8; 32]>,
+    tx1: &Transcript,
+) -> AEADKey {
+    #[derive(TlsSerializeBytes, TlsSize)]
+    struct K1Ikm {
+        k0: AEADKey,
+        ecdh_shared_secret: SharedSecret,
+        pq_shared_secret: Option<[u8; 32]>,
+    }
+    AEADKey::new(
+        &K1Ikm {
+            k0: k0.clone(),
+            ecdh_shared_secret: SharedSecret::derive(own_longterm_key, peer_longterm_pk),
+            pq_shared_secret: pq_shared_secret.clone(),
+        },
+        &tx1,
+    )
+}
+
 #[derive(TlsSerializeBytes, TlsSize)]
-struct K2Ikm {
+struct K2IkmQuery {
     g_xs: SharedSecret,
     g_xy: SharedSecret,
+}
+
+#[derive(TlsSerializeBytes, TlsSize)]
+struct K2IkmRegistration {
+    k1: AEADKey,
+    g_cy: SharedSecret,
+    g_xy: SharedSecret,
+}
+
+// K2 = KDF(K1 | g^cy | g^xy, tx2)
+pub(super) fn derive_k2_registration_responder(
+    k1: &AEADKey,
+    tx2: &Transcript,
+    initiator_longterm_pk: &PublicKey,
+    initiator_ephemeral_pk: &PublicKey,
+    responder_ephemeral_sk: &PrivateKey,
+) -> AEADKey {
+    let responder_ikm = K2IkmRegistration {
+        k1: k1.clone(),
+        g_cy: SharedSecret::derive(responder_ephemeral_sk, initiator_longterm_pk),
+        g_xy: SharedSecret::derive(responder_ephemeral_sk, initiator_ephemeral_pk),
+    };
+
+    AEADKey::new(&responder_ikm, tx2)
+}
+
+// K2 = KDF(K1 | g^cy | g^xy, tx2)
+pub(super) fn derive_k2_registration_initiator(
+    k1: &AEADKey,
+    tx2: &Transcript,
+    initiator_longterm_sk: &PrivateKey,
+    initiator_ephemeral_sk: &PrivateKey,
+    responder_ephemeral_pk: &PublicKey,
+) -> AEADKey {
+    let responder_ikm = K2IkmRegistration {
+        k1: k1.clone(),
+        g_cy: SharedSecret::derive(initiator_longterm_sk, responder_ephemeral_pk),
+        g_xy: SharedSecret::derive(initiator_ephemeral_sk, responder_ephemeral_pk),
+    };
+
+    AEADKey::new(&responder_ikm, tx2)
 }
 
 // K2 = KDF(g^xs | g^xy, tx2)
@@ -115,7 +212,7 @@ pub(super) fn derive_k2_query_responder(
     responder_longterm_ecdh_sk: &PrivateKey,
     tx2: &Transcript,
 ) -> AEADKey {
-    let responder_ikm = K2Ikm {
+    let responder_ikm = K2IkmQuery {
         g_xs: SharedSecret::derive(responder_longterm_ecdh_sk, initiator_ephemeral_ecdh_pk),
         g_xy: SharedSecret::derive(responder_ephemeral_ecdh_sk, initiator_ephemeral_ecdh_pk),
     };
@@ -130,7 +227,7 @@ pub(super) fn derive_k2_query_initiator(
     responder_longterm_ecdh_pk: &PublicKey,
     tx2: &Transcript,
 ) -> AEADKey {
-    let initiator_ikm = K2Ikm {
+    let initiator_ikm = K2IkmQuery {
         g_xs: SharedSecret::derive(initiator_ephemeral_ecdh_sk, responder_longterm_ecdh_pk),
         g_xy: SharedSecret::derive(initiator_ephemeral_ecdh_sk, responder_ephemeral_ecdh_pk),
     };
