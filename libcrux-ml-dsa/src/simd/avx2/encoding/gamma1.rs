@@ -185,7 +185,7 @@ const GAMMA1_17_TIMES_2_MASK: i32 = (GAMMA1_17 << 1) - 1;
 
 #[inline(always)]
 #[hax_lib::requires(serialized.len() == 18)]
-fn deserialize_when_gamma1_is_2_pow_17(serialized: &[u8], out: &mut Vec256) {
+fn deserialize_when_gamma1_is_2_pow_17_unsigned(serialized: &[u8]) -> Vec256 {
     debug_assert!(serialized.len() == 18);
 
     let serialized_lower = mm_loadu_si128(&serialized[0..16]);
@@ -203,9 +203,7 @@ fn deserialize_when_gamma1_is_2_pow_17(serialized: &[u8], out: &mut Vec256) {
     );
 
     let coefficients = mm256_srlv_epi32(coefficients, mm256_set_epi32(6, 4, 2, 0, 6, 4, 2, 0));
-    let coefficients = mm256_and_si256(coefficients, mm256_set1_epi32(GAMMA1_19_TIMES_2_MASK));
-
-    *out = mm256_sub_epi32(mm256_set1_epi32(GAMMA1_17), coefficients);
+    mm256_and_si256(coefficients, mm256_set1_epi32(GAMMA1_19_TIMES_2_MASK))
 }
 
 const GAMMA1_19: i32 = 1 << 19;
@@ -213,7 +211,7 @@ const GAMMA1_19_TIMES_2_MASK: i32 = (GAMMA1_19 << 1) - 1;
 
 #[inline(always)]
 #[hax_lib::requires(serialized.len() == 20)]
-fn deserialize_when_gamma1_is_2_pow_19(serialized: &[u8], out: &mut Vec256) {
+fn deserialize_when_gamma1_is_2_pow_19(serialized: &[u8]) -> Vec256 {
     // Each set of 5 bytes deserializes to 2 coefficients, and since each Vec256
     // can hold 8 such coefficients, we process 5 * (8 / 2) = 20 bytes in this
     // function.
@@ -234,8 +232,6 @@ fn deserialize_when_gamma1_is_2_pow_19(serialized: &[u8], out: &mut Vec256) {
 
     let coefficients = mm256_srlv_epi32(coefficients, mm256_set_epi32(4, 0, 4, 0, 4, 0, 4, 0));
     let coefficients = mm256_and_si256(coefficients, mm256_set1_epi32(GAMMA1_19_TIMES_2_MASK));
-
-    *out = mm256_sub_epi32(mm256_set1_epi32(GAMMA1_19), coefficients)
 }
 
 #[inline(always)]
@@ -245,9 +241,16 @@ fn deserialize_when_gamma1_is_2_pow_19(serialized: &[u8], out: &mut Vec256) {
         _ => false,
     })]
 pub(crate) fn deserialize(serialized: &[u8], out: &mut Vec256, gamma1_exponent: usize) {
+    // TODO: factor out the `mm256_sub_epi32`? (similarly to what is done in `super::error::deserialize`)
     match gamma1_exponent as u8 {
-        17 => deserialize_when_gamma1_is_2_pow_17(serialized, out),
-        19 => deserialize_when_gamma1_is_2_pow_19(serialized, out),
+        17 => {
+            let coefficients = deserialize_when_gamma1_is_2_pow_17(serialized, out);
+            *out = mm256_sub_epi32(mm256_set1_epi32(GAMMA1_17), coefficients)
+        }
+        19 => {
+            let coefficients = deserialize_when_gamma1_is_2_pow_19(serialized, out);
+            *out = mm256_sub_epi32(mm256_set1_epi32(GAMMA1_19), coefficients)
+        }
         _ => unreachable!(),
     }
 }
