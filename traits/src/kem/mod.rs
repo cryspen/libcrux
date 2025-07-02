@@ -1,5 +1,9 @@
 //! This module provides a common interface trait for key
 //! encapsulation mechanisms (KEMs).
+
+pub mod arrayref;
+pub mod slice;
+
 use rand::CryptoRng;
 
 /// A KEM keypair.

@@ -12,3 +12,4 @@ readme.workspace = true
 
 [dependencies]
 rand = { version = "0.9", default-features = false }
+thiserror = { version = "2.0.12" }
