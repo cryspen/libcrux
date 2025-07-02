@@ -218,6 +218,7 @@ let deserialize_to_unsigned_post
     (forall (i: nat{i < 256}).
        i % 32 >= bytes ==> Core_models.Abstractions.Bit.Bit_Zero? result.(mk_int i))
 "#)]
+#[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
 #[hax_lib::requires(serialized.len() == match eta {
     Eta::Two => 3,
     Eta::Four => 4,
@@ -231,7 +232,6 @@ pub(crate) fn deserialize_to_unsigned(eta: Eta, serialized: &[u8]) -> Vec256 {
 }
 
 #[inline(always)]
-#[hax_lib::fstar::options("--z3rlimit 300")]
 #[hax_lib::fstar::before(r#"
 module C = Libcrux_ml_dsa.Constants
 let deserialize_post (eta: C.t_Eta)
@@ -259,19 +259,13 @@ pub(crate) fn deserialize(eta: Eta, serialized: &[u8], out: &mut Vec256) {
     *out = mm256_sub_epi32(mm256_set1_epi32(eta_v), unsigned);
     hax_lib::fstar!(
         r"
-  let (): squash (forall i. v (to_i32x8 $out i) > minint I32) =
-    i32_bit_zero_lemma_to_lt_pow2_n_weak 4 $unsigned;
-    reveal_opaque_arithmetic_ops #I32
-  in
-  let out_reverted: bv256 = mk_i32x8 (fun i -> neg (to_i32x8 $out i) `add_mod` $eta_v) in
-  let (): squash ($unsigned == out_reverted) =
     i32_bit_zero_lemma_to_lt_pow2_n_weak 4 $unsigned;
     reveal_opaque_arithmetic_ops #I32;
+    let out_reverted: bv256 = mk_i32x8 (fun i -> neg (to_i32x8 $out i) `add_mod` $eta_v) in
     introduce forall i. neg (to_i32x8 out i) `add_mod` $eta_v == to_i32x8 $unsigned i
     with rewrite_eq_sub_mod (to_i32x8 out i) $eta_v (to_i32x8 $unsigned i);
-    to_i32x8_eq_to_bv_eq $unsigned out_reverted
-  in
-  assert_norm (deserialize_post $eta $serialized $out == ((forall i. v (to_i32x8 out i) > minint I32) /\ deserialize_to_unsigned_post $eta $serialized out_reverted))
+    to_i32x8_eq_to_bv_eq $unsigned out_reverted;
+    assert_norm (deserialize_post $eta $serialized $out == ((forall i. v (to_i32x8 out i) > minint I32) /\ deserialize_to_unsigned_post $eta $serialized out_reverted))
     "
     );
 }
