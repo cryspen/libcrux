@@ -2,7 +2,6 @@ use super::{
     ecdh::PublicKey,
     keys::{derive_session_key, AEADKey},
     transcript::Transcript,
-    ProtocolMode,
 };
 
 /// The length of a session ID in bytes.
@@ -11,13 +10,11 @@ pub const SESSION_ID_LENGTH: usize = 32;
 /// The length of a sessin key in bytes.
 pub const SESSION_KEY_LENGTH: usize = 32;
 
-#[derive(Debug, PartialEq)]
 pub struct SessionKey {
     pub(crate) identifier: [u8; SESSION_ID_LENGTH],
     pub(crate) key: AEADKey,
 }
 
-#[derive(Debug, PartialEq)]
 pub(crate) enum SessionState {
     Query {
         responder_longterm_ecdh_pk: PublicKey,
@@ -47,7 +44,7 @@ impl SessionState {
     pub(crate) fn registration_mode(
         responder_longterm_ecdh_pk: &PublicKey,
         initiator_longterm_ecdh_pk: &PublicKey,
-        responder_pq_pk: &Option<libcrux_ml_kem::mlkem768::MlKem768PublicKey>,
+        responder_pq_pk: Option<&libcrux_ml_kem::mlkem768::MlKem768PublicKey>,
         k2: &AEADKey,
         tx2: &Transcript,
     ) -> Self {
@@ -55,7 +52,7 @@ impl SessionState {
         Self::Registration {
             initiator_longterm_ecdh_pk: initiator_longterm_ecdh_pk.clone(),
             responder_longterm_ecdh_pk: responder_longterm_ecdh_pk.clone(),
-            responder_pq_pk: responder_pq_pk.clone(),
+            responder_pq_pk: responder_pq_pk.map(|i| *i.clone()),
             session_key,
         }
     }

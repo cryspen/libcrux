@@ -1,6 +1,4 @@
-use tls_codec::{
-    DeserializeBytes, SerializeBytes, TlsDeserializeBytes, TlsSerializeBytes, TlsSize,
-};
+use tls_codec::{TlsDeserializeBytes, TlsSerializeBytes, TlsSize};
 
 #[derive(Debug, Clone, PartialEq, TlsSerializeBytes, TlsDeserializeBytes, TlsSize)]
 #[repr(u8)]

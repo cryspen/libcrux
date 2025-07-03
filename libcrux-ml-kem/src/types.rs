@@ -146,6 +146,38 @@ mod index_impls {
     impl_index_impls_for_generic_struct!(MlKemPublicKey);
 }
 
+#[cfg(feature = "codec")]
+mod codec {
+    use super::*;
+
+    macro_rules! impl_tls_codec_for_generic_struct {
+        ($name:ident) => {
+            impl<const SIZE: usize> tls_codec::SerializeBytes for $name<SIZE> {
+                fn tls_serialize(&self) -> Result<Vec<u8>, tls_codec::Error> {
+                    todo!()
+                }
+            }
+
+            impl<const SIZE: usize> tls_codec::Size for $name<SIZE> {
+                fn tls_serialized_len(&self) -> usize {
+                    todo!()
+                }
+            }
+
+            impl<const SIZE: usize> tls_codec::DeserializeBytes for $name<SIZE> {
+                fn tls_deserialize_bytes(
+                    bytes: &[u8],
+                ) -> Result<($name<SIZE>, &[u8]), tls_codec::Error> {
+                    todo!()
+                }
+            }
+        };
+    }
+
+    impl_tls_codec_for_generic_struct!(MlKemCiphertext);
+    impl_tls_codec_for_generic_struct!(MlKemPublicKey);
+}
+
 /// An ML-KEM key pair
 pub struct MlKemKeyPair<const PRIVATE_KEY_SIZE: usize, const PUBLIC_KEY_SIZE: usize> {
     pub(crate) sk: MlKemPrivateKey<PRIVATE_KEY_SIZE>,
