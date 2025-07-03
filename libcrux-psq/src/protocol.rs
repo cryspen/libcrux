@@ -1,9 +1,7 @@
 //! The PSQ registration protocol
 #![allow(missing_docs)]
 
-use ecdh::{PrivateKey, PublicKey};
-use libcrux_ml_kem::mlkem768::MlKem768PublicKey;
-use signature::CredentialKeyPair;
+use ecdh::PublicKey;
 use tls_codec::{TlsDeserializeBytes, TlsSerializeBytes, TlsSize};
 
 mod ecdh;
@@ -14,16 +12,6 @@ mod session;
 mod signature;
 mod transcript;
 
-#[derive(Debug, PartialEq)]
-pub enum ProtocolMode {
-    Registration {
-        initiator_longterm_ecdh_pk: PublicKey,
-        initiator_longterm_ecdh_sk: PrivateKey,
-        responder_pq_pk: Option<MlKem768PublicKey>,
-    },
-    Query,
-}
-
 #[derive(TlsSerializeBytes, TlsDeserializeBytes, TlsSize)]
 pub(crate) struct Message {
     ephemeral_ecdh_pk: PublicKey,
@@ -33,6 +21,8 @@ pub(crate) struct Message {
 
 #[cfg(test)]
 mod tests {
+    use crate::protocol::session::SessionState;
+
     use super::*;
 
     #[test]
@@ -61,32 +51,45 @@ mod tests {
         let responder_ecdh_sk = PrivateKey::new(&mut rng);
         let responder_ecdh_pk = PublicKey::from(&responder_ecdh_sk);
 
-        // let mut mlkem_keygen_rand = [0u8; libcrux_ml_kem::KEY_GENERATION_SEED_SIZE];
-        // rng.fill_bytes(&mut mlkem_keygen_rand);
-        // let mlkem_key_pair = libcrux_ml_kem::mlkem768::generate_key_pair(mlkem_keygen_rand);
+        let (initiator_pre, initiator_msg) =
+            QueryInitiatorPre::first_message(&responder_ecdh_pk, ctx.as_slice(), &mut rng);
 
-        let (initiator_pre, initiator_msg) = InitiatorPre::first_message(
-            ProtocolMode::Query,
-            &responder_ecdh_pk,
-            ctx.as_slice(),
-            &mut rng,
-        );
+        let initiator_msg_wire = initiator_msg
+            .tls_serialize()
+            .expect("Failed to serialize initiator message");
+        let initiator_msd_deserialized = Message::tls_deserialize_exact_bytes(&initiator_msg_wire)
+            .expect("Failed to deserialize initiator message");
 
         let (responder, responder_msg) = Responder::respond(
             &responder_ecdh_sk,
             &responder_ecdh_pk,
-            &initiator_msg,
+            &initiator_msg_deserialized,
             ctx.as_slice(),
             &mut rng,
         );
 
         let initiator = initiator_pre.complete_registration(&responder_msg);
 
-        assert!(matches!(
-            initiator.session_state,
-            SessionState::Query { .. }
-        ));
+        let SessionState::Query {
+            responder_longterm_ecdh_pk: i_responder_longterm_ecdh_pk,
+            session_key: i_session_key,
+        } = initiator.session_state
+        else {
+            panic!("Wrong session state at Initiator.")
+        };
 
-        assert_eq!(initiator.session_state, responder.session_state);
+        let SessionState::Query {
+            responder_longterm_ecdh_pk: r_responder_longterm_ecdh_pk,
+            session_key: r_session_key,
+        } = responder.session_state
+        else {
+            panic!("Wrong session state at Responder.")
+        };
+
+        assert_eq!(
+            i_responder_longterm_ecdh_pk.as_ref(),
+            r_responder_longterm_ecdh_pk.as_ref()
+        );
+        assert_eq!(i_session_key.as_ref(), r_session_key.as_ref());
     }
 }

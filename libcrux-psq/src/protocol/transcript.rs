@@ -17,7 +17,7 @@ impl Transcript {
     }
 
     fn add_hash<const DOMAIN_SEPARATOR: u8>(
-        old_transcript: Option<Transcript>,
+        old_transcript: Option<&Transcript>,
         input: &impl SerializeBytes,
     ) -> Transcript {
         let mut domain_separated_input = vec![DOMAIN_SEPARATOR];
@@ -42,16 +42,16 @@ pub(crate) fn tx0(
     initiator_pk: &PublicKey,
 ) -> Transcript {
     #[derive(TlsSerializeBytes, TlsSize)]
-    struct Transcript0Inputs {
-        context: Vec<u8>,
-        responder_pk: PublicKey,
-        initiator_pk: PublicKey,
+    struct Transcript0Inputs<'a, 'b, 'c> {
+        context: &'a [u8],
+        responder_pk: &'b PublicKey,
+        initiator_pk: &'c PublicKey,
     }
 
     Transcript::new(&Transcript0Inputs {
-        context: context.to_vec(),
-        responder_pk: responder_pk.clone(),
-        initiator_pk: initiator_pk.clone(),
+        context,
+        responder_pk,
+        initiator_pk,
     })
 }
 
@@ -59,22 +59,24 @@ pub(crate) fn tx0(
 pub(crate) fn tx1(
     tx0: &Transcript,
     initiator_longterm_pk: &PublicKey,
-    responder_pq_pk: &Option<libcrux_ml_kem::mlkem768::MlKem768PublicKey>,
-    pq_encaps: &Option<libcrux_ml_kem::mlkem768::MlKem768Ciphertext>,
+    responder_pq_pk: Option<&libcrux_ml_kem::mlkem768::MlKem768PublicKey>,
+    pq_encaps: Option<&libcrux_ml_kem::mlkem768::MlKem768Ciphertext>,
 ) -> Transcript {
     #[derive(TlsSerializeBytes, TlsSize)]
-    struct Transcript1Inputs {
-        initiator_longterm_pk: PublicKey,
-        responder_pq_pk: Option<libcrux_ml_kem::mlkem768::MlKem768PublicKey>,
-        pq_encaps: Option<libcrux_ml_kem::mlkem768::MlKem768Ciphertext>,
+    struct Transcript1Inputs<'a, 'b, 'c> {
+        initiator_longterm_pk: &'a PublicKey,
+        #[tls_codec(with = "crate::util::mlkem_pk_codec")]
+        responder_pq_pk: &'b Option<libcrux_ml_kem::mlkem768::MlKem768PublicKey>,
+        #[tls_codec(with = "crate::util::mlkem_ct_codec")]
+        pq_encaps: &'c Option<libcrux_ml_kem::mlkem768::MlKem768Ciphertext>,
     }
 
     Transcript::add_hash::<TX1_DOMAIN_SEP>(
-        Some(*tx0),
+        Some(tx0),
         &Transcript1Inputs {
-            initiator_longterm_pk: initiator_longterm_pk.clone(),
-            responder_pq_pk: responder_pq_pk.clone(),
-            pq_encaps: pq_encaps.clone(),
+            initiator_longterm_pk,
+            pq_encaps,
+            responder_pq_pk: responder_pq_pk.as_ref(),
         },
     )
 }
@@ -82,5 +84,5 @@ pub(crate) fn tx1(
 // Registration Mode: tx2 = hash(2 | tx1 | g^y)
 // Query Mode:        tx2 = hash(2 | tx0 | g^y)
 pub(crate) fn tx2(prev_tx: &Transcript, responder_ephemeral_pk: &PublicKey) -> Transcript {
-    Transcript::add_hash::<TX2_DOMAIN_SEP>(Some(*prev_tx), responder_ephemeral_pk)
+    Transcript::add_hash::<TX2_DOMAIN_SEP>(Some(prev_tx), responder_ephemeral_pk)
 }

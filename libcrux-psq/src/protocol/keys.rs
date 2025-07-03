@@ -5,10 +5,9 @@ use super::{
     ecdh::{self, PrivateKey, PublicKey, SharedSecret},
     session::{SessionKey, SESSION_ID_LENGTH},
     transcript::{self, Transcript},
-    Message,
 };
 
-#[derive(PartialEq, Debug, TlsSerializeBytes, TlsSize)]
+#[derive(TlsSerializeBytes, TlsSize)]
 pub struct AEADKey([u8; KEY_LEN]);
 
 impl AEADKey {
@@ -48,13 +47,13 @@ impl AEADKey {
         ciphertext
     }
 
-    pub(crate) fn decrypt_deserialize<T: DeserializeBytes>(&self, msg: &Message) -> T {
-        let mut payload_serialized = vec![0u8; msg.ciphertext.len() - 16];
+    pub(crate) fn decrypt_deserialize<T: DeserializeBytes>(&self, msg: &[u8], aad: &[u8]) -> T {
+        let mut payload_serialized = vec![0u8; msg.len() - 16];
         let _ = decrypt(
             self.as_ref(),
             &mut payload_serialized,
-            &msg.ciphertext,
-            &msg.aad,
+            msg,
+            aad,
             &[0; NONCE_LEN],
         )
         .unwrap();
@@ -69,9 +68,9 @@ impl AsRef<[u8; KEY_LEN]> for AEADKey {
     }
 }
 
-#[derive(Debug, TlsSerializeBytes, TlsSize)]
-struct K0Ikm {
-    g_xs: SharedSecret,
+#[derive(TlsSerializeBytes, TlsSize)]
+struct K0Ikm<'a> {
+    g_xs: &'a SharedSecret,
 }
 
 const SESSION_KEY_INFO: &'static [u8] = b"shared key id";
@@ -99,16 +98,16 @@ fn session_key_id(key: &AEADKey) -> [u8; SESSION_ID_LENGTH] {
 // skCS = KDF(K2, "shared secret" | tx2)
 pub(super) fn derive_session_key(k2: &AEADKey, tx2: &Transcript) -> SessionKey {
     #[derive(TlsSerializeBytes, TlsSize)]
-    struct SessionKeyInfo {
-        domain_separator: Vec<u8>,
-        tx2: Transcript,
+    struct SessionKeyInfo<'a> {
+        domain_separator: &'static [u8],
+        tx2: &'a Transcript,
     }
 
     let key = AEADKey::new(
         k2,
         &SessionKeyInfo {
-            domain_separator: b"shared key".to_vec(),
-            tx2: *tx2,
+            domain_separator: b"shared key",
+            tx2,
         },
     );
     let identifier = session_key_id(&key);
@@ -126,9 +125,9 @@ pub(super) fn derive_k0(
     let tx0 = transcript::tx0(ctx, responder_ecdh_pk, &ephemeral_ecdh_pk);
     let ikm = K0Ikm {
         g_xs: if responder {
-            SharedSecret::derive(own_ecdh_sk, ephemeral_ecdh_pk)
+            &SharedSecret::derive(own_ecdh_sk, ephemeral_ecdh_pk)
         } else {
-            SharedSecret::derive(own_ecdh_sk, responder_ecdh_pk)
+            &SharedSecret::derive(own_ecdh_sk, responder_ecdh_pk)
         },
     };
     (tx0, AEADKey::new(&ikm, &tx0))
@@ -143,32 +142,32 @@ pub(super) fn derive_k1(
     tx1: &Transcript,
 ) -> AEADKey {
     #[derive(TlsSerializeBytes, TlsSize)]
-    struct K1Ikm {
-        k0: AEADKey,
-        ecdh_shared_secret: SharedSecret,
-        pq_shared_secret: Option<[u8; 32]>,
+    struct K1Ikm<'a, 'b, 'c> {
+        k0: &'a AEADKey,
+        ecdh_shared_secret: &'b SharedSecret,
+        pq_shared_secret: &'c Option<[u8; 32]>,
     }
     AEADKey::new(
         &K1Ikm {
-            k0: k0.clone(),
-            ecdh_shared_secret: SharedSecret::derive(own_longterm_key, peer_longterm_pk),
-            pq_shared_secret: pq_shared_secret.clone(),
+            k0,
+            ecdh_shared_secret: &SharedSecret::derive(own_longterm_key, peer_longterm_pk),
+            pq_shared_secret,
         },
         &tx1,
     )
 }
 
 #[derive(TlsSerializeBytes, TlsSize)]
-struct K2IkmQuery {
-    g_xs: SharedSecret,
-    g_xy: SharedSecret,
+struct K2IkmQuery<'a> {
+    g_xs: &'a SharedSecret,
+    g_xy: &'a SharedSecret,
 }
 
 #[derive(TlsSerializeBytes, TlsSize)]
-struct K2IkmRegistration {
-    k1: AEADKey,
-    g_cy: SharedSecret,
-    g_xy: SharedSecret,
+struct K2IkmRegistration<'a, 'b> {
+    k1: &'a AEADKey,
+    g_cy: &'b SharedSecret,
+    g_xy: &'b SharedSecret,
 }
 
 // K2 = KDF(K1 | g^cy | g^xy, tx2)
@@ -180,9 +179,9 @@ pub(super) fn derive_k2_registration_responder(
     responder_ephemeral_sk: &PrivateKey,
 ) -> AEADKey {
     let responder_ikm = K2IkmRegistration {
-        k1: k1.clone(),
-        g_cy: SharedSecret::derive(responder_ephemeral_sk, initiator_longterm_pk),
-        g_xy: SharedSecret::derive(responder_ephemeral_sk, initiator_ephemeral_pk),
+        k1,
+        g_cy: &SharedSecret::derive(responder_ephemeral_sk, initiator_longterm_pk),
+        g_xy: &SharedSecret::derive(responder_ephemeral_sk, initiator_ephemeral_pk),
     };
 
     AEADKey::new(&responder_ikm, tx2)
@@ -197,9 +196,9 @@ pub(super) fn derive_k2_registration_initiator(
     responder_ephemeral_pk: &PublicKey,
 ) -> AEADKey {
     let responder_ikm = K2IkmRegistration {
-        k1: k1.clone(),
-        g_cy: SharedSecret::derive(initiator_longterm_sk, responder_ephemeral_pk),
-        g_xy: SharedSecret::derive(initiator_ephemeral_sk, responder_ephemeral_pk),
+        k1,
+        g_cy: &SharedSecret::derive(initiator_longterm_sk, responder_ephemeral_pk),
+        g_xy: &SharedSecret::derive(initiator_ephemeral_sk, responder_ephemeral_pk),
     };
 
     AEADKey::new(&responder_ikm, tx2)
@@ -213,8 +212,8 @@ pub(super) fn derive_k2_query_responder(
     tx2: &Transcript,
 ) -> AEADKey {
     let responder_ikm = K2IkmQuery {
-        g_xs: SharedSecret::derive(responder_longterm_ecdh_sk, initiator_ephemeral_ecdh_pk),
-        g_xy: SharedSecret::derive(responder_ephemeral_ecdh_sk, initiator_ephemeral_ecdh_pk),
+        g_xs: &SharedSecret::derive(responder_longterm_ecdh_sk, initiator_ephemeral_ecdh_pk),
+        g_xy: &SharedSecret::derive(responder_ephemeral_ecdh_sk, initiator_ephemeral_ecdh_pk),
     };
 
     AEADKey::new(&responder_ikm, tx2)
@@ -228,8 +227,8 @@ pub(super) fn derive_k2_query_initiator(
     tx2: &Transcript,
 ) -> AEADKey {
     let initiator_ikm = K2IkmQuery {
-        g_xs: SharedSecret::derive(initiator_ephemeral_ecdh_sk, responder_longterm_ecdh_pk),
-        g_xy: SharedSecret::derive(initiator_ephemeral_ecdh_sk, responder_ephemeral_ecdh_pk),
+        g_xs: &SharedSecret::derive(initiator_ephemeral_ecdh_sk, responder_longterm_ecdh_pk),
+        g_xy: &SharedSecret::derive(initiator_ephemeral_ecdh_sk, responder_ephemeral_ecdh_pk),
     };
 
     AEADKey::new(&initiator_ikm, tx2)
