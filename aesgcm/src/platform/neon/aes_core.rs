@@ -83,7 +83,6 @@ impl crate::platform::AESState for State {
 
     fn aes_enc(&mut self, key: &Self) {
         aes_enc(self, key);
-        (self, key);
     }
 
     fn aes_enc_last(&mut self, key: &Self) {

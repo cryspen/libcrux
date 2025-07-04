@@ -2,11 +2,8 @@
 use criterion::{criterion_group, criterion_main, BatchSize, BenchmarkId, Criterion, Throughput};
 
 pub fn randombytes(n: usize) -> Vec<u8> {
-    use rand::rngs::OsRng;
-    use rand::RngCore;
-
     let mut bytes = vec![0u8; n];
-    OsRng.fill_bytes(&mut bytes);
+    rand::rng().fill_bytes(&mut bytes);
     bytes
 }
 
@@ -145,6 +142,7 @@ use aes_gcm::{
     Key, // Or `Aes128Gcm`
     Nonce,
 };
+use rand::RngCore;
 
 fn rustcrypto_aes128_gcm_encrypt(
     key: &[u8],
