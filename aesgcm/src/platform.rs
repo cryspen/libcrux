@@ -3,10 +3,10 @@ pub mod portable;
 #[cfg(all(target_arch = "aarch64", target_feature = "aes"))]
 pub mod neon;
 
-#[cfg(all(target_arch = "x86_64"))] // ENABLE: target_feature="aes"
+#[cfg(target_arch = "x86_64")] // ENABLE: target_feature="aes"
 pub mod intel_ni;
 
-pub trait AESState: Copy {
+pub trait AESState: Clone {
     fn new() -> Self;
     fn load_block(&mut self, b: &[u8]);
     fn store_block(&self, out: &mut [u8]);
@@ -20,10 +20,10 @@ pub trait AESState: Copy {
     fn key_expansion_step(&mut self, prev: &Self);
 }
 
-pub trait GF128FieldElement: Copy {
+pub trait GF128FieldElement {
     fn zero() -> Self;
-    fn load_elem(b: &[u8]) -> Self;
-    fn store_elem(&self, b: &mut [u8]);
+    fn load_element(bytes: &[u8]) -> Self;
+    fn store_element(&self, bytes: &mut [u8]);
     fn add(&mut self, other: &Self);
     fn mul(&mut self, other: &Self);
 }

@@ -351,6 +351,7 @@ pub fn _vld1q_u16(ptr: &[u16]) -> uint16x8_t {
 pub fn _vcleq_s16(a: int16x8_t, b: int16x8_t) -> uint16x8_t {
     unsafe { vcleq_s16(a, b) }
 }
+
 #[inline(always)]
 pub fn _vaddvq_u16(a: uint16x8_t) -> u16 {
     unsafe { vaddvq_u16(a) }
@@ -430,4 +431,9 @@ pub fn _vbcaxq_u64(a: uint64x2_t, b: uint64x2_t, c: uint64x2_t) -> uint64x2_t {
         target_feature = "sha3"
     )))]
     _veorq_u64(a, _vbicq_u64(b, c))
+}
+
+#[inline(always)]
+pub fn _vmull_p64(a: u64, b: u64) -> u128 {
+    unsafe { vmull_p64(a, b) }
 }
