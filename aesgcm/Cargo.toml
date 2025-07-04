@@ -8,29 +8,32 @@ edition.workspace = true
 repository.workspace = true
 readme = "README.md"
 description = "Libcrux AES-GCM implementation"
-exclude = ["/proofs", "/c.sh", "/c.yaml", "/tests/tv", "tests/cavp.rs"]
+exclude = []
 
 [lib]
 bench = false # so libtest doesn't eat the arguments to criterion
 
 [dependencies]
-libcrux-platform = { version = "0.0.2", path = "../sys/platform" }
-libcrux-intrinsics = { version = "0.0.3-alpha.3", path = "../libcrux-intrinsics" }
-hax-lib.workspace = true
+libcrux-platform.workspace = true
+libcrux-intrinsics.workspace = true
+libcrux-traits.workspace = true
+
+rand = { version = "0.9", optional = true }
 
 [features]
+default = ["rand"]  # XXX: remove rand here when cleaning up
 simd128 = []
 simd256 = []
+rand = ["dep:rand"]
 
 [[bench]]
 name = "aesgcm"
 harness = false
 
 [dev-dependencies]
+cavp = { version = "0.0.2", path = "../cavp" }
 criterion = "0.5.1"
 hex = "0.4.3"
-rand = "0.8.5"
-cavp = { version = "0.0.2-beta.2", path = "../cavp" }
 pretty_env_logger = "0.5.0"
 rand_core = { version = "0.6" }
 aes-gcm = "0.10.3"

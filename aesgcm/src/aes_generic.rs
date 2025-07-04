@@ -1,3 +1,7 @@
+#![allow(clippy::needless_range_loop)]
+
+use core::array::from_fn;
+
 use crate::platform::*;
 
 pub(crate) type ExtendedKey<T, const NUM_KEYS: usize> = [T; NUM_KEYS];
@@ -7,16 +11,21 @@ pub(crate) type ExtendedKey<T, const NUM_KEYS: usize> = [T; NUM_KEYS];
 //     0x8d, 0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80, 0x1b, 0x36,
 // ];
 
+/// AES block size
+pub(crate) const AES_BLOCK_LEN: usize = 16;
+
+const AES128_NUM_KEYS: usize = 11;
+
 /// 128 - Key expansion
-pub(crate) fn aes128_key_expansion<T: AESState>(key: &[u8]) -> ExtendedKey<T, 11> {
+pub(crate) fn aes128_key_expansion<T: AESState>(key: &[u8]) -> ExtendedKey<T, AES128_NUM_KEYS> {
     debug_assert!(key.len() == 16);
 
-    let mut keyex = [T::new(); 11];
-    keyex[0].load_block(&key);
+    let mut keyex = from_fn(|_| T::new());
+    keyex[0].load_block(key);
 
     macro_rules! expansion_step128 {
         ($i:expr,$rcon:expr) => {
-            let prev = keyex[$i - 1];
+            let prev = keyex[$i - 1].clone();
             keyex[$i].aes_keygen_assist0::<$rcon>(&prev);
             keyex[$i].key_expansion_step(&prev);
         };
@@ -36,24 +45,26 @@ pub(crate) fn aes128_key_expansion<T: AESState>(key: &[u8]) -> ExtendedKey<T, 11
     keyex
 }
 
+const AES256_NUM_KEYS: usize = 15;
+
 /// 256 - Key expansion
 /// TODO: use
 #[allow(dead_code)]
-pub(crate) fn aes256_key_expansion<T: AESState>(key: &[u8]) -> ExtendedKey<T, 15> {
+pub(crate) fn aes256_key_expansion<T: AESState>(key: &[u8]) -> ExtendedKey<T, AES256_NUM_KEYS> {
     debug_assert!(key.len() == 32);
 
-    let mut keyex = [T::new(); 15];
+    let mut keyex = from_fn(|_| T::new());
     keyex[0].load_block(&key[0..16]);
     keyex[1].load_block(&key[16..32]);
 
     macro_rules! expansion_step256 {
         ($i:expr,$rcon:expr) => {
-            let prev0 = keyex[$i - 2];
-            let prev1 = keyex[$i - 1];
+            let prev0 = keyex[$i - 2].clone();
+            let prev1 = keyex[$i - 1].clone();
             keyex[$i].aes_keygen_assist0::<$rcon>(&prev1);
             keyex[$i].key_expansion_step(&prev0);
 
-            let next0 = keyex[$i];
+            let next0 = keyex[$i].clone();
             keyex[$i + 1].aes_keygen_assist1(&next0);
             keyex[$i + 1].key_expansion_step(&prev1);
         };
@@ -72,8 +83,8 @@ pub(crate) fn aes256_key_expansion<T: AESState>(key: &[u8]) -> ExtendedKey<T, 15
     expansion_step256!(12, 0x20);
     expansion_step256!(13, 0x20);
 
-    let prev0 = keyex[12];
-    let prev1 = keyex[13];
+    let prev0 = keyex[12].clone();
+    let prev1 = keyex[13].clone();
     keyex[14].aes_keygen_assist0::<0x40>(&prev1);
     keyex[14].key_expansion_step(&prev0);
     keyex
@@ -81,7 +92,7 @@ pub(crate) fn aes256_key_expansion<T: AESState>(key: &[u8]) -> ExtendedKey<T, 15
 
 pub(crate) fn block_cipher<T: AESState, const NUM_KEYS: usize>(
     st: &mut T,
-    keyex: ExtendedKey<T, NUM_KEYS>,
+    keyex: &ExtendedKey<T, NUM_KEYS>,
 ) {
     st.xor_key(&keyex[0]);
     for i in 1..NUM_KEYS - 1 {
