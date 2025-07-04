@@ -1,6 +1,7 @@
 #![no_std]
 
-extern crate alloc;
+pub mod aead;
+pub mod kem;
 
 /// A Hash algorithm returning hashes of length `HASH_LEN`.
 pub trait Digest<const HASH_LEN: usize> {
@@ -19,5 +20,3 @@ pub trait Digest<const HASH_LEN: usize> {
     /// Reset the digest state.
     fn reset(&mut self);
 }
-
-pub mod kem;

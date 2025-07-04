@@ -11,4 +11,8 @@ repository.workspace = true
 readme.workspace = true
 
 [dependencies]
-rand = { version = "0.9", default-features = false }
+rand = { version = "0.9", default-features = false, optional = true }
+
+[features]
+default = ["rand"]
+rand = ["dep:rand"]

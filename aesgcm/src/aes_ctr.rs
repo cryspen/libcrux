@@ -1,4 +1,4 @@
-use crate::{aes_generic::*, platform::AESState};
+use crate::{aes_gcm_128, aes_generic::*, platform::AESState};
 
 mod aes128_ctr;
 // mod aes256_ctr; // TODO: use
@@ -6,102 +6,86 @@ mod aes128_ctr;
 pub(crate) use aes128_ctr::*;
 // pub(crate) use aes256_ctr::*;
 
-pub struct AesCtrContext<T: AESState, const NUM_KEYS: usize> {
-    pub(crate) keyex: ExtendedKey<T, NUM_KEYS>,
-    pub(crate) ctr_nonce: [u8; 16],
+const NONCE_LEN: usize = 16;
+
+/// Generic AES CTR context.
+pub(crate) struct AesCtrContext<T: AESState, const NUM_KEYS: usize> {
+    pub(crate) extended_key: ExtendedKey<T, NUM_KEYS>,
+    pub(crate) ctr_nonce: [u8; NONCE_LEN],
 }
 
-fn aes_ctr_set_nonce<T: AESState, const NUM_KEYS: usize>(
-    ctx: &mut AesCtrContext<T, NUM_KEYS>,
-    nonce: &[u8],
-) {
-    debug_assert!(nonce.len() == 12);
+impl<T: AESState, const NUM_KEYS: usize> AesCtrContext<T, NUM_KEYS> {
+    fn aes_ctr_set_nonce(&mut self, nonce: &[u8]) {
+        debug_assert!(nonce.len() == aes_gcm_128::NONCE_LEN);
 
-    ctx.ctr_nonce[0..12].copy_from_slice(nonce);
-}
-
-fn aes_ctr_key_block<T: AESState, const NUM_KEYS: usize>(
-    ctx: &AesCtrContext<T, NUM_KEYS>,
-    ctr: u32,
-    out: &mut [u8],
-) {
-    debug_assert!(out.len() == 16);
-
-    let mut st_init = ctx.ctr_nonce;
-    st_init[12..16].copy_from_slice(&ctr.to_be_bytes());
-    let mut st = T::new();
-
-    st.load_block(&st_init);
-
-    block_cipher(&mut st, ctx.keyex);
-
-    st.store_block(out);
-}
-
-#[inline(always)]
-fn aes_ctr_xor_block<T: AESState, const NUM_KEYS: usize>(
-    ctx: &AesCtrContext<T, NUM_KEYS>,
-    ctr: u32,
-    inp: &[u8],
-    out: &mut [u8],
-) {
-    debug_assert!(inp.len() == out.len() && inp.len() <= 16);
-
-    let mut st_init = ctx.ctr_nonce;
-    st_init[12..16].copy_from_slice(&ctr.to_be_bytes());
-    let mut st = T::new();
-    st.load_block(&st_init);
-
-    block_cipher(&mut st, ctx.keyex);
-
-    st.xor_block(inp, out);
-}
-
-fn aes_ctr_xor_blocks<T: AESState, const NUM_KEYS: usize>(
-    ctx: &AesCtrContext<T, NUM_KEYS>,
-    ctr: u32,
-    inp: &[u8],
-    out: &mut [u8],
-) {
-    debug_assert!(inp.len() == out.len() && inp.len() % 16 == 0);
-    let blocks = inp.len() / 16;
-    for i in 0..blocks {
-        aes_ctr_xor_block(
-            &ctx,
-            ctr.wrapping_add(i as u32),
-            &inp[i * 16..i * 16 + 16],
-            &mut out[i * 16..i * 16 + 16],
-        );
+        self.ctr_nonce[0..aes_gcm_128::NONCE_LEN].copy_from_slice(nonce);
     }
-}
 
-fn aes_ctr_update<T: AESState, const NUM_KEYS: usize>(
-    ctx: &AesCtrContext<T, NUM_KEYS>,
-    ctr: u32,
-    inp: &[u8],
-    out: &mut [u8],
-) {
-    debug_assert!(inp.len() == out.len());
+    fn aes_ctr_key_block(&self, ctr: u32, out: &mut [u8]) {
+        debug_assert!(out.len() == 16);
 
-    let blocks = inp.len() / 16;
-    aes_ctr_xor_blocks(&ctx, ctr, &inp[0..blocks * 16], &mut out[0..blocks * 16]);
+        let mut st_init = self.ctr_nonce;
+        st_init[12..16].copy_from_slice(&ctr.to_be_bytes());
+        let mut st = T::new();
 
-    let last = inp.len() - inp.len() % 16;
-    if last < inp.len() {
-        aes_ctr_xor_block(
-            &ctx,
-            ctr.wrapping_add(blocks as u32),
-            &inp[last..],
-            &mut out[last..],
-        );
+        st.load_block(&st_init);
+
+        block_cipher(&mut st, &self.extended_key);
+
+        st.store_block(out);
+    }
+
+    #[inline(always)]
+    fn aes_ctr_xor_block(&self, ctr: u32, input: &[u8], out: &mut [u8]) {
+        debug_assert!(input.len() == out.len() && input.len() <= 16);
+
+        let mut st_init = self.ctr_nonce;
+        st_init[12..16].copy_from_slice(&ctr.to_be_bytes());
+        let mut st = T::new();
+        st.load_block(&st_init);
+
+        block_cipher(&mut st, &self.extended_key);
+
+        st.xor_block(input, out);
+    }
+
+    fn aes_ctr_xor_blocks(&self, ctr: u32, input: &[u8], out: &mut [u8]) {
+        debug_assert!(input.len() == out.len() && input.len() % 16 == 0);
+        debug_assert!(input.len() / 16 < u32::MAX as usize);
+
+        let blocks = input.len() / 16;
+        for i in 0..blocks {
+            self.aes_ctr_xor_block(
+                ctr.wrapping_add(i as u32),
+                &input[i * 16..i * 16 + 16],
+                &mut out[i * 16..i * 16 + 16],
+            );
+        }
+    }
+
+    fn aes_ctr_update(&self, ctr: u32, input: &[u8], out: &mut [u8]) {
+        debug_assert!(input.len() == out.len());
+        debug_assert!(input.len() / 16 < u32::MAX as usize);
+
+        let blocks = input.len() / 16;
+        self.aes_ctr_xor_blocks(ctr, &input[0..blocks * 16], &mut out[0..blocks * 16]);
+
+        let last = input.len() - input.len() % 16;
+        if last < input.len() {
+            self.aes_ctr_xor_block(
+                ctr.wrapping_add(blocks as u32),
+                &input[last..],
+                &mut out[last..],
+            );
+        }
     }
 }
 
 #[cfg(test)]
 mod test {
-    use crate::platform;
+    use crate::{aes_ctr::Aes128CtrContext, platform};
 
-    use super::{aes128_ctr_init, test_utils::*};
+    use super::test_utils::*;
 
     const INPUT: [u8; 32] = [
         0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E,
@@ -124,7 +108,7 @@ mod test {
     #[test]
     fn test_ctr_block() {
         let mut computed: [u8; 32] = [0u8; 32];
-        let ctx = aes128_ctr_init::<platform::portable::State>(&KEY, &NONCE);
+        let ctx = Aes128CtrContext::<platform::portable::State>::init(&KEY, &NONCE);
         aes128_ctr_xor_block(&ctx, 1, &INPUT[0..16], &mut computed[0..16]);
         aes128_ctr_xor_block(&ctx, 2, &INPUT[16..32], &mut computed[16..32]);
         for i in 0..32 {
@@ -142,7 +126,7 @@ mod test {
     #[test]
     fn test_ctr_block_neon() {
         let mut computed: [u8; 32] = [0u8; 32];
-        let ctx = aes128_ctr_init::<platform::neon::State>(&KEY, &NONCE);
+        let ctx = Aes128CtrContext::<platform::neon::State>::init(&KEY, &NONCE);
         aes128_ctr_xor_block(&ctx, 1, &INPUT[0..16], &mut computed[0..16]);
         aes128_ctr_xor_block(&ctx, 2, &INPUT[16..32], &mut computed[16..32]);
         for i in 0..32 {
@@ -187,7 +171,7 @@ mod test {
         }
     }
 
-    #[cfg(all(target_arch = "x86_64"))] // ENABLE: target_feature="aes"
+    #[cfg(target_arch = "x86_64")] // ENABLE: target_feature="aes"
     #[test]
     fn test_ctr_encrypt_intel() {
         let mut computed: [u8; 32] = [0u8; 32];
