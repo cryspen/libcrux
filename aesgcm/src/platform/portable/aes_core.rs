@@ -1,3 +1,7 @@
+#![allow(clippy::needless_range_loop)]
+
+use crate::aes_generic::AES_BLOCK_LEN;
+
 pub(crate) type State = [u16; 8];
 
 fn new_state() -> State {
@@ -51,6 +55,7 @@ fn interleave_u16_8(i0: u16, i1: u16) -> (u16, u16) {
     (x, y)
 }
 
+#[inline(always)]
 fn transpose_u8x16(input: &[u8; 16], output: &mut [u16; 8]) {
     let o0 = interleave_u8_1(input[0], input[1]);
     let o1 = interleave_u8_1(input[2], input[3]);
@@ -82,6 +87,7 @@ fn transpose_u8x16(input: &[u8; 16], output: &mut [u16; 8]) {
     output[7] = o7;
 }
 
+#[inline(always)]
 fn transpose_u16x8(input: &[u16; 8], output: &mut [u8]) {
     let (i0, i4) = interleave_u16_8(input[0], input[4]);
     let (i1, i5) = interleave_u16_8(input[1], input[5]);
@@ -275,6 +281,7 @@ fn sub_bytes_state(st: &mut State) {
     st[7] = S0;
 }
 
+#[inline(always)]
 fn shift_row_u16(input: u16) -> u16 {
     (input & 0x1111)
         | ((input & 0x2220) >> 4)
@@ -296,6 +303,7 @@ fn shift_rows_state(st: &mut State) {
     st[7] = shift_row_u16(st[7]);
 }
 
+#[inline(always)]
 fn mix_columns_state(st: &mut State) {
     let mut last_col: u16 = 0;
     for i in 0..8 {
@@ -309,6 +317,7 @@ fn mix_columns_state(st: &mut State) {
     st[4] ^= last_col;
 }
 
+#[inline(always)]
 fn xor_key1_state(st: &mut State, k: &State) {
     st[0] ^= k[0];
     st[1] ^= k[1];
@@ -428,20 +437,20 @@ impl crate::platform::AESState for State {
     }
 
     fn store_block(&self, out: &mut [u8]) {
-        debug_assert!(out.len() == 16);
+        debug_assert!(out.len() == AES_BLOCK_LEN);
 
         transpose_u16x8(self, out);
     }
 
     #[inline(always)]
-    fn xor_block(&self, inp: &[u8], out: &mut [u8]) {
-        debug_assert!(inp.len() == out.len() && inp.len() <= 16);
+    fn xor_block(&self, input: &[u8], out: &mut [u8]) {
+        debug_assert!(input.len() == out.len() && input.len() <= AES_BLOCK_LEN);
 
-        let mut block = [0u8; 16];
+        let mut block = [0u8; AES_BLOCK_LEN];
         self.store_block(&mut block);
 
-        for i in 0..inp.len() {
-            out[i] = inp[i] ^ block[i];
+        for i in 0..input.len() {
+            out[i] = input[i] ^ block[i];
         }
     }
 
@@ -451,7 +460,6 @@ impl crate::platform::AESState for State {
 
     fn aes_enc(&mut self, key: &Self) {
         aes_enc(self, key);
-        (self, key);
     }
 
     fn aes_enc_last(&mut self, key: &Self) {
