@@ -277,7 +277,7 @@ fn chachapoly_self_test_rand() {
 }
 
 #[test]
-fn chachapoly_test_incorrect_buffer_lengths() {
+fn chachapoly_test_invalid_buffer_lengths() {
     let msg = b"hacspec rulez";
     let aad = b"associated data" as &[u8];
 
