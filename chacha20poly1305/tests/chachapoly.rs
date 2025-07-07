@@ -275,3 +275,53 @@ fn chachapoly_self_test_rand() {
 
     assert_eq!(msg, &ptxt);
 }
+
+#[test]
+fn chachapoly_test_incorrect_buffer_lengths() {
+    let msg = b"hacspec rulez";
+    let aad = b"associated data" as &[u8];
+
+    use rand_core::TryRngCore;
+
+    let mut os_rng = rand_core::OsRng;
+    let mut rng = os_rng.unwrap_mut();
+
+    let key: [u8; 32] = randbuf(&mut rng);
+    let nonce: [u8; 12] = randbuf(&mut rng);
+
+    // test that calling with incorrect-length buffers returns error: non-detached
+    let err = libcrux_chacha20poly1305::encrypt(&key, msg, &mut [], aad, &nonce).unwrap_err();
+    assert!(matches!(
+        err,
+        libcrux_chacha20poly1305::AeadError::CiphertextTooShort
+    ));
+
+    // test that calling with incorrect-length buffers returns error: detached
+    let err =
+        libcrux_chacha20poly1305::encrypt_detached(&key, msg, &mut [], &mut [0; 16], aad, &nonce)
+            .unwrap_err();
+    assert!(matches!(
+        err,
+        libcrux_chacha20poly1305::AeadError::CiphertextTooShort
+    ));
+
+    // encrypt correctly
+    let mut ctxt = [0; 29];
+    libcrux_chacha20poly1305::encrypt(&key, msg, &mut ctxt, aad, &nonce).unwrap();
+
+    // test that calling with incorrect-length buffers returns error: non-detached
+    let err = libcrux_chacha20poly1305::decrypt(&key, &mut [], &ctxt, aad, &nonce).unwrap_err();
+    assert!(matches!(
+        err,
+        libcrux_chacha20poly1305::AeadError::PlaintextTooShort
+    ));
+
+    // test that calling with incorrect-length buffers returns error: detached
+    let err =
+        libcrux_chacha20poly1305::decrypt_detached(&key, &mut [], &ctxt, &mut [0; 16], aad, &nonce)
+            .unwrap_err();
+    assert!(matches!(
+        err,
+        libcrux_chacha20poly1305::AeadError::PlaintextTooShort
+    ));
+}
