@@ -5,7 +5,7 @@ pub const TX1_DOMAIN_SEP: u8 = 1;
 pub const TX2_DOMAIN_SEP: u8 = 2;
 
 use super::ecdh::PublicKey;
-use libcrux_sha2::SHA256_LENGTH;
+use libcrux_sha2::{Digest, SHA256_LENGTH};
 
 /// The initial transcript hash.
 #[derive(Debug, Clone, Copy, TlsSerializeBytes, TlsSize)]
@@ -20,12 +20,14 @@ impl Transcript {
         old_transcript: Option<&Transcript>,
         input: &impl SerializeBytes,
     ) -> Transcript {
-        let mut domain_separated_input = vec![DOMAIN_SEPARATOR];
-        domain_separated_input
-            .extend_from_slice(old_transcript.tls_serialize().unwrap().as_slice());
-        domain_separated_input.extend_from_slice(input.tls_serialize().unwrap().as_slice());
+        let mut hasher = libcrux_sha2::Sha256::new();
+        hasher.update(&[DOMAIN_SEPARATOR]);
+        hasher.update(old_transcript.tls_serialize().unwrap().as_slice());
+        hasher.update(input.tls_serialize().unwrap().as_slice());
 
-        Transcript(libcrux_sha2::sha256(&domain_separated_input))
+        let mut digest = [0u8; 32];
+        hasher.finish(&mut digest);
+        Transcript(digest)
     }
 }
 
