@@ -1017,6 +1017,8 @@ mod xwing {
         }
     }
 
+    libcrux_traits::kem::slice::impl_trait!(XWing => EK_LEN, DK_LEN, CT_LEN, SS_LEN, RAND_KEYGEN_LEN, RAND_ENCAPS_LEN);
+
     pub struct XWingSharedSecret {
         pub(super) value: [u8; 32],
     }
