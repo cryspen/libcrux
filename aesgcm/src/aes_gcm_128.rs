@@ -5,17 +5,11 @@ use crate::{
     aes_generic::AES_BLOCK_LEN,
     gf128_generic::GF128State,
     platform::{AESState, GF128FieldElement},
-    DecryptError,
+    DecryptError, NONCE_LEN, TAG_LEN,
 };
 
 /// Key length.
 pub(crate) const KEY_LEN: usize = 16;
-
-/// Tag length.
-pub(crate) const TAG_LEN: usize = 16;
-
-/// Nonce length.
-pub(crate) const NONCE_LEN: usize = 12;
 
 /// The AES-GCM 128 state
 pub(crate) struct State<T: AESState, U: GF128FieldElement> {
@@ -59,7 +53,7 @@ impl<T: AESState, U: GF128FieldElement> State<T, U> {
         tag: &mut [u8],
     ) {
         debug_assert!(ciphertext.len() == plaintext.len());
-        debug_assert!(plaintext.len() / 16 <= u32::MAX as usize);
+        debug_assert!(plaintext.len() / AES_BLOCK_LEN <= u32::MAX as usize);
         debug_assert!(tag.len() == TAG_LEN);
 
         self.aes_state.update(2, plaintext, ciphertext);

@@ -1,7 +1,6 @@
 #![no_std]
 
-pub mod aead;
-pub mod kem;
+extern crate alloc;
 
 /// A Hash algorithm returning hashes of length `HASH_LEN`.
 pub trait Digest<const HASH_LEN: usize> {

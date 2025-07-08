@@ -1,9 +1,11 @@
-use crate::{aes_gcm_128::KEY_LEN, aes_generic::AES_BLOCK_LEN, platform::*};
+use crate::{aes_generic::AES_BLOCK_LEN, platform::*};
 
 pub(crate) struct GF128State<T: GF128FieldElement> {
     accumulator: T,
     r: T,
 }
+
+const KEY_LEN: usize = 16;
 
 impl<T: GF128FieldElement> GF128State<T> {
     pub(crate) fn init(key: &[u8]) -> Self {
