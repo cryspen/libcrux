@@ -6,7 +6,7 @@ pub mod neon;
 #[cfg(target_arch = "x86_64")] // ENABLE: target_feature="aes"
 pub mod intel_ni;
 
-pub trait AESState: Clone {
+pub trait AESState: Clone + core::fmt::Debug {
     fn new() -> Self;
     fn load_block(&mut self, b: &[u8]);
     fn store_block(&self, out: &mut [u8]);
