@@ -12,7 +12,7 @@ impl AsRef<[u8]> for SharedSecret {
 }
 
 #[derive(Clone, TlsDeserializeBytes, TlsSerializeBytes, TlsSize)]
-pub(crate) struct PublicKey(Vec<u8>);
+pub struct PublicKey(Vec<u8>);
 
 impl AsRef<[u8]> for PublicKey {
     fn as_ref(&self) -> &[u8] {
@@ -20,7 +20,7 @@ impl AsRef<[u8]> for PublicKey {
     }
 }
 #[derive(Clone)]
-pub(crate) struct PrivateKey(Vec<u8>);
+pub struct PrivateKey(Vec<u8>);
 
 impl AsRef<[u8]> for PrivateKey {
     fn as_ref(&self) -> &[u8] {

@@ -13,15 +13,19 @@ use super::{
     Message,
 };
 
-pub(crate) struct Responder<'keys> {
-    pub(crate) session_state: SessionState<'keys>,
-}
+pub struct Responder {}
 
 #[derive(TlsSerializeBytes, TlsDeserializeBytes, TlsSize)]
 #[repr(u8)]
-pub(crate) enum ResponderPayload {
+pub enum ResponderPayload {
     Query,
     Registration,
+}
+
+pub struct ResponderRegistrationState {
+    tx1: Transcript,
+    k1: AEADKey,
+    pq: bool,
 }
 
 // XXX: Determine what should be the contents here.
@@ -32,9 +36,9 @@ pub struct ResponderQueryPayload;
 #[derive(TlsSerializeBytes, TlsDeserializeBytes, TlsSize)]
 pub struct ResponderRegistrationPayload;
 
-impl<'keys> Responder<'keys> {
-    pub(crate) fn respond_query(
-        responder_longterm_ecdh_sk: &'keys PrivateKey,
+impl Responder {
+    pub fn respond_query(
+        responder_longterm_ecdh_sk: &PrivateKey,
         tx0: &Transcript,
         k0: &AEADKey,
         initiator_msg: &Message,
@@ -51,6 +55,7 @@ impl<'keys> Responder<'keys> {
 
         let tx2 = tx2(tx0, &responder_ephemeral_ecdh_pk);
         let k2 = derive_k2_query_responder(
+            k0,
             &initiator_ephemeral_ecdh_pk,
             &responder_ephemeral_ecdh_sk,
             responder_longterm_ecdh_sk,
@@ -66,37 +71,37 @@ impl<'keys> Responder<'keys> {
         }
     }
 
-    pub(crate) fn respond_registration(
-        responder_longterm_ecdh_sk: &'keys PrivateKey,
-        responder_longterm_ecdh_pk: &'keys PublicKey,
-        responder_pq_sk: Option<&'keys libcrux_ml_kem::mlkem768::MlKem768PrivateKey>,
-        responder_pq_pk: Option<&'keys libcrux_ml_kem::mlkem768::MlKem768PublicKey>,
-        tx1: &Transcript,
-        k1: &AEADKey,
-        initiator_longterm_ecdh_pk: &'keys PublicKey,
-        initiator_msg: &Message,
-        response: &ResponderRegistrationPayload,
-        aad: &[u8],
-        rng: &mut impl CryptoRng,
-    ) -> (SessionState<'keys>, Message) {
+    pub fn respond_registration<'a>(
+        responder_longterm_ecdh_pk: &'a PublicKey,
+        responder_pq_pk: &'a MlKem768PublicKey,
+        state: &'a ResponderRegistrationState,
+        initiator_longterm_ecdh_pk: &'a PublicKey,
+        initiator_msg: &'a Message,
+        response: &'a ResponderRegistrationPayload,
+        aad: &'a [u8],
+        rng: &'a mut impl CryptoRng,
+    ) -> (SessionState<'a>, Message) {
+        let ResponderRegistrationState { tx1, k1, pq } = state;
         let Message {
             ephemeral_ecdh_pk: initiator_ephemeral_ecdh_pk,
             ..
         } = initiator_msg;
         let responder_ephemeral_ecdh_sk = PrivateKey::new(rng);
         let responder_ephemeral_ecdh_pk = PublicKey::from(&responder_ephemeral_ecdh_sk);
-        let tx2 = tx2(tx1, &responder_ephemeral_ecdh_pk);
+        let tx2 = tx2(&tx1, &responder_ephemeral_ecdh_pk);
         let k2 = derive_k2_registration_responder(
-            k1,
+            &k1,
             &tx2,
             &Box::new(initiator_longterm_ecdh_pk),
             &initiator_ephemeral_ecdh_pk,
             &responder_ephemeral_ecdh_sk,
         );
 
-        let ciphertext = k2.serialize_encrypt(&ResponderPayload::Registration, aad);
+        let ciphertext = k2.serialize_encrypt(&ResponderRegistrationPayload {}, aad);
 
+        let responder_pq_pk = if *pq { Some(responder_pq_pk) } else { None };
         let session_state = SessionState::new(
+            false,
             response,
             responder_longterm_ecdh_pk,
             &initiator_longterm_ecdh_pk,
@@ -114,25 +119,24 @@ impl<'keys> Responder<'keys> {
         )
     }
 
-    pub(crate) fn decrypt_inner(
+    pub fn decrypt_inner(
         responder_longterm_ecdh_sk: &PrivateKey,
-        responder_longterm_ecdh_pk: &PublicKey,
-        responder_pq_sk: &libcrux_ml_kem::mlkem768::MlKem768PrivateKey,
-        responder_pq_pk: &libcrux_ml_kem::mlkem768::MlKem768PublicKey,
+        responder_pq_sk: &MlKem768PrivateKey,
+        responder_pq_pk: &MlKem768PublicKey,
         tx0: &Transcript,
         k0: &AEADKey,
         initiator_longterm_ecdh_pk: &PublicKey,
         pq_encaps: Option<&libcrux_ml_kem::mlkem768::MlKem768Ciphertext>,
         ciphertext: &[u8],
         aad: &[u8],
-    ) -> (InitiatorInnerPayload, Transcript, AEADKey) {
-        let pq_shared_secret =
-            pq_encaps.map(|enc| libcrux_ml_kem::mlkem768::decapsulate(responder_pq_sk, &enc));
+    ) -> (InitiatorInnerPayload, ResponderRegistrationState) {
+        let pq_shared_secret = pq_encaps.map(|enc| decapsulate(responder_pq_sk, &enc));
         let responder_pq_pk_opt = if pq_encaps.as_ref().is_some() {
             Some(responder_pq_pk)
         } else {
             None
         };
+
         let tx1 = tx1(
             tx0,
             initiator_longterm_ecdh_pk,
@@ -145,33 +149,41 @@ impl<'keys> Responder<'keys> {
             &responder_longterm_ecdh_sk,
             initiator_longterm_ecdh_pk,
             &pq_shared_secret,
-            &tx0,
+            &tx1,
         );
 
         let inner_payload: InitiatorInnerPayload = k1.decrypt_deserialize(&ciphertext, &aad);
 
-        (inner_payload, tx1, k1)
+        (
+            inner_payload,
+            ResponderRegistrationState {
+                tx1,
+                k1,
+                pq: pq_encaps.is_some(),
+            },
+        )
     }
 
-    pub(crate) fn decrypt_outer(
-        responder_longterm_ecdh_sk: &'keys PrivateKey,
-        responder_longterm_ecdh_pk: &'keys PublicKey,
-        responder_pq_pk: &'keys MlKem768PublicKey,
-        responder_pq_sk: &'keys MlKem768PrivateKey,
+    pub fn decrypt_outer(
+        responder_longterm_ecdh_sk: &PrivateKey,
+        responder_longterm_ecdh_pk: &PublicKey,
         initiator_msg: &Message,
         ctx: &[u8],
-        rng: &mut impl CryptoRng,
     ) -> (InitiatorOuterPayload, Transcript, AEADKey) {
+        let Message {
+            ephemeral_ecdh_pk: initiator_ephemeral_ecdh_pk,
+            ciphertext,
+            aad,
+        } = initiator_msg;
         let (tx0, k0) = derive_k0(
             responder_longterm_ecdh_pk,
-            &initiator_msg.ephemeral_ecdh_pk,
+            &initiator_ephemeral_ecdh_pk,
             responder_longterm_ecdh_sk,
             ctx,
             true,
         );
 
-        let received_payload =
-            k0.decrypt_deserialize(&initiator_msg.ciphertext, &initiator_msg.aad);
+        let received_payload = k0.decrypt_deserialize(&ciphertext, &aad);
 
         (received_payload, tx0, k0)
     }

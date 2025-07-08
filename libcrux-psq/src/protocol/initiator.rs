@@ -12,16 +12,14 @@ use libcrux_ml_kem::mlkem768::{MlKem768Ciphertext, MlKem768PublicKey};
 use rand::CryptoRng;
 use tls_codec::{TlsDeserializeBytes, TlsSerializeBytes, TlsSize};
 
-pub(crate) struct QueryInitiator<'keys> {
+pub struct QueryInitiator<'keys> {
     responder_longterm_ecdh_pk: &'keys PublicKey,
-    initiator_ephemeral_ecdh_pk: PublicKey,
     initiator_ephemeral_ecdh_sk: PrivateKey,
     tx0: Transcript,
     k0: AEADKey,
 }
 
-pub(crate) struct RegistrationInitiatorPre<'keys> {
-    initiator_ephemeral_ecdh_pk: PublicKey,
+pub struct RegistrationInitiatorPre<'keys> {
     initiator_ephemeral_ecdh_sk: PrivateKey,
     initiator_longterm_ecdh_sk: &'keys PrivateKey,
     initiator_longterm_ecdh_pk: &'keys PublicKey,
@@ -31,13 +29,9 @@ pub(crate) struct RegistrationInitiatorPre<'keys> {
     k1: AEADKey,
 }
 
-pub(crate) struct InitiatorDone<'keys> {
-    session_state: SessionState<'keys>,
-}
-
 #[derive(TlsSerializeBytes, TlsDeserializeBytes, TlsSize)]
 #[repr(u8)]
-pub(crate) enum InitiatorOuterPayload {
+pub enum InitiatorOuterPayload {
     Query,
     Registration {
         initiator_longterm_ecdh_pk: PublicKey,
@@ -48,10 +42,10 @@ pub(crate) enum InitiatorOuterPayload {
 }
 
 #[derive(TlsSerializeBytes, TlsDeserializeBytes, TlsSize)]
-pub(crate) struct InitiatorInnerPayload {}
+pub struct InitiatorInnerPayload {}
 
 impl<'rkeys> QueryInitiator<'rkeys> {
-    pub(crate) fn query(
+    pub fn query(
         responder_longterm_ecdh_pk: &'rkeys PublicKey,
         ctx: &[u8],
         aad: &[u8],
@@ -73,7 +67,6 @@ impl<'rkeys> QueryInitiator<'rkeys> {
         (
             Self {
                 responder_longterm_ecdh_pk,
-                initiator_ephemeral_ecdh_pk: initiator_ephemeral_ecdh_pk.clone(),
                 initiator_ephemeral_ecdh_sk,
                 tx0,
                 k0,
@@ -86,10 +79,9 @@ impl<'rkeys> QueryInitiator<'rkeys> {
         )
     }
 
-    pub(crate) fn read_response(self, responder_msg: &Message) -> ResponderQueryPayload {
+    pub fn read_response(self, responder_msg: &Message) -> ResponderQueryPayload {
         let Self {
             responder_longterm_ecdh_pk,
-            initiator_ephemeral_ecdh_pk,
             initiator_ephemeral_ecdh_sk,
             tx0,
             k0,
@@ -97,6 +89,7 @@ impl<'rkeys> QueryInitiator<'rkeys> {
         let tx2 = tx2(&tx0, &responder_msg.ephemeral_ecdh_pk);
 
         let k2 = derive_k2_query_initiator(
+            &k0,
             &responder_msg.ephemeral_ecdh_pk,
             &initiator_ephemeral_ecdh_sk,
             &responder_longterm_ecdh_pk,
@@ -108,7 +101,7 @@ impl<'rkeys> QueryInitiator<'rkeys> {
 }
 
 impl<'keys> RegistrationInitiatorPre<'keys> {
-    pub(crate) fn registration_message(
+    pub fn registration_message(
         initiator_longterm_ecdh_pk: &'keys PublicKey,
         initiator_longterm_ecdh_sk: &'keys PrivateKey,
         responder_pq_pk: Option<&'keys MlKem768PublicKey>,
@@ -129,7 +122,7 @@ impl<'keys> RegistrationInitiatorPre<'keys> {
             false,
         );
 
-        let (pq_encaps, tx1, k1, ciphertext) = encrypt_inner_payload(
+        let (pq_encaps, tx1, k1, ciphertext_inner) = encrypt_inner_payload(
             initiator_longterm_ecdh_pk,
             initiator_longterm_ecdh_sk,
             responder_pq_pk,
@@ -142,17 +135,16 @@ impl<'keys> RegistrationInitiatorPre<'keys> {
 
         let payload0 = InitiatorOuterPayload::Registration {
             pq_encaps,
-            aad: aad_outer.to_vec(),
-            ciphertext,
+            aad: aad_inner.to_vec(),
+            ciphertext: ciphertext_inner,
             initiator_longterm_ecdh_pk: initiator_longterm_ecdh_pk.clone(),
         };
 
-        let ciphertext = k0.serialize_encrypt(&payload0, &aad_outer);
+        let ciphertext_outer = k0.serialize_encrypt(&payload0, &aad_outer);
 
         (
             Self {
                 responder_longterm_ecdh_pk,
-                initiator_ephemeral_ecdh_pk: initiator_ephemeral_ecdh_pk.clone(),
                 initiator_ephemeral_ecdh_sk,
                 initiator_longterm_ecdh_sk,
                 initiator_longterm_ecdh_pk,
@@ -162,16 +154,15 @@ impl<'keys> RegistrationInitiatorPre<'keys> {
             },
             Message {
                 ephemeral_ecdh_pk: initiator_ephemeral_ecdh_pk,
-                ciphertext,
+                ciphertext: ciphertext_outer,
                 aad: aad_outer.to_vec(),
             },
         )
     }
 
-    pub(crate) fn complete_registration(self, responder_msg: &'keys Message) -> SessionState {
+    pub fn complete_registration(self, responder_msg: &'keys Message) -> SessionState<'keys> {
         let Self {
             responder_longterm_ecdh_pk,
-            initiator_ephemeral_ecdh_pk,
             initiator_ephemeral_ecdh_sk,
             initiator_longterm_ecdh_sk,
             initiator_longterm_ecdh_pk,
@@ -179,18 +170,23 @@ impl<'keys> RegistrationInitiatorPre<'keys> {
             tx1,
             k1,
         } = self;
-
-        let tx2 = tx2(&tx1, &responder_msg.ephemeral_ecdh_pk);
+        let Message {
+            ephemeral_ecdh_pk: responder_ephemeral_ecdh_pk,
+            ciphertext,
+            aad,
+        } = responder_msg;
+        let tx2 = tx2(&tx1, &responder_ephemeral_ecdh_pk);
         let k2 = derive_k2_registration_initiator(
             &k1,
             &tx2,
             &initiator_longterm_ecdh_sk,
             &initiator_ephemeral_ecdh_sk,
-            &responder_msg.ephemeral_ecdh_pk,
+            &responder_ephemeral_ecdh_pk,
         );
 
-        let payload2 = k2.decrypt_deserialize(&responder_msg.ciphertext, &responder_msg.aad);
+        let payload2 = k2.decrypt_deserialize(&ciphertext, &aad);
         SessionState::new(
+            true,
             &payload2,
             &responder_longterm_ecdh_pk,
             &initiator_longterm_ecdh_pk,
@@ -240,7 +236,7 @@ fn encrypt_inner_payload(
         &initiator_longterm_ecdh_sk,
         responder_longterm_ecdh_pk,
         &pq_shared_secret,
-        &tx0,
+        &tx1,
     );
 
     let ciphertext = k1.serialize_encrypt(&InitiatorInnerPayload {}, &aad);

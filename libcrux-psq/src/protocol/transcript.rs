@@ -9,7 +9,7 @@ use libcrux_sha2::SHA256_LENGTH;
 
 /// The initial transcript hash.
 #[derive(Debug, Clone, Copy, TlsSerializeBytes, TlsSize)]
-pub(crate) struct Transcript([u8; SHA256_LENGTH]);
+pub struct Transcript([u8; SHA256_LENGTH]);
 
 impl Transcript {
     fn new(initial_input: &impl SerializeBytes) -> Self {
