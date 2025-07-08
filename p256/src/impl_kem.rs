@@ -76,3 +76,5 @@ impl Kem<EK_LEN, DK_LEN, CT_LEN, SS_LEN, RAND_KEYGEN_LEN, RAND_ENCAPS_LEN> for s
         Ok(())
     }
 }
+
+libcrux_traits::kem::slice::impl_trait!(super::P256 => EK_LEN, DK_LEN, CT_LEN, SS_LEN, RAND_KEYGEN_LEN, RAND_ENCAPS_LEN);
