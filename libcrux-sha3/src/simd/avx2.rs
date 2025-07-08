@@ -1,5 +1,8 @@
 use crate::{generic_keccak::KeccakState, traits::*};
 use libcrux_intrinsics::avx2::*;
+use libcrux_secrets::{
+    Classify, ClassifyRef, Declassify as _, DeclassifyRef, DeclassifyRefMut, Secret,
+};
 
 #[inline(always)]
 fn rotate_left<const LEFT: i32, const RIGHT: i32>(x: Vec256) -> Vec256 {
@@ -42,17 +45,17 @@ fn _veorq_n_u64(a: Vec256, c: u64) -> Vec256 {
 
 #[inline(always)]
 pub(crate) fn load_block<const RATE: usize>(
-    state: &mut [Vec256; 25],
-    blocks: &[&[u8]; 4],
+    state: &mut [Secret<Vec256>; 25],
+    blocks: &[&[Secret<u8>]; 4],
     offset: usize,
 ) {
     debug_assert!(RATE <= blocks[0].len() && RATE % 8 == 0 && (RATE % 32 == 8 || RATE % 32 == 16));
     for i in 0..RATE / 32 {
         let start = offset + 32 * i;
-        let v0 = mm256_loadu_si256_u8(&blocks[0][start..start + 32]);
-        let v1 = mm256_loadu_si256_u8(&blocks[1][start..start + 32]);
-        let v2 = mm256_loadu_si256_u8(&blocks[2][start..start + 32]);
-        let v3 = mm256_loadu_si256_u8(&blocks[3][start..start + 32]);
+        let v0 = mm256_loadu_si256_u8(blocks[0][start..start + 32].declassify_ref());
+        let v1 = mm256_loadu_si256_u8(blocks[1][start..start + 32].declassify_ref());
+        let v2 = mm256_loadu_si256_u8(blocks[2][start..start + 32].declassify_ref());
+        let v3 = mm256_loadu_si256_u8(blocks[3][start..start + 32].declassify_ref());
 
         let v0l = mm256_unpacklo_epi64(v0, v1); // 0 0 2 2
         let v1h = mm256_unpackhi_epi64(v0, v1); // 1 1 3 3
@@ -73,46 +76,76 @@ pub(crate) fn load_block<const RATE: usize>(
         let i3 = (4 * i + 3) / 5;
         let j3 = (4 * i + 3) % 5;
 
-        set_ij(state, i0, j0, mm256_xor_si256(*get_ij(state, i0, j0), v0));
-        set_ij(state, i1, j1, mm256_xor_si256(*get_ij(state, i1, j1), v1));
-        set_ij(state, i2, j2, mm256_xor_si256(*get_ij(state, i2, j2), v2));
-        set_ij(state, i3, j3, mm256_xor_si256(*get_ij(state, i3, j3), v3));
+        set_ij(
+            state,
+            i0,
+            j0,
+            mm256_xor_si256(get_ij(state, i0, j0).declassify(), v0).classify(),
+        );
+        set_ij(
+            state,
+            i1,
+            j1,
+            mm256_xor_si256(get_ij(state, i1, j1).declassify(), v1).classify(),
+        );
+        set_ij(
+            state,
+            i2,
+            j2,
+            mm256_xor_si256(get_ij(state, i2, j2).declassify(), v2).classify(),
+        );
+        set_ij(
+            state,
+            i3,
+            j3,
+            mm256_xor_si256(get_ij(state, i3, j3).declassify(), v3).classify(),
+        );
     }
 
     let rem = RATE % 32; // has to be 8 or 16
     let start = offset + 32 * (RATE / 32);
     let mut u8s = [0u8; 32];
-    u8s[0..8].copy_from_slice(&blocks[0][start..start + 8]);
-    u8s[8..16].copy_from_slice(&blocks[1][start..start + 8]);
-    u8s[16..24].copy_from_slice(&blocks[2][start..start + 8]);
-    u8s[24..32].copy_from_slice(&blocks[3][start..start + 8]);
+    u8s[0..8].copy_from_slice(blocks[0][start..start + 8].declassify_ref());
+    u8s[8..16].copy_from_slice(blocks[1][start..start + 8].declassify_ref());
+    u8s[16..24].copy_from_slice(blocks[2][start..start + 8].declassify_ref());
+    u8s[24..32].copy_from_slice(blocks[3][start..start + 8].declassify_ref());
     let u = mm256_loadu_si256_u8(u8s.as_slice());
     let i = (4 * (RATE / 32)) / 5;
     let j = (4 * (RATE / 32)) % 5;
-    set_ij(state, i, j, mm256_xor_si256(*get_ij(state, i, j), u));
+    set_ij(
+        state,
+        i,
+        j,
+        mm256_xor_si256(get_ij(state, i, j).declassify(), u).classify(),
+    );
     if rem == 16 {
         let mut u8s = [0u8; 32];
-        u8s[0..8].copy_from_slice(&blocks[0][start + 8..start + 16]);
-        u8s[8..16].copy_from_slice(&blocks[1][start + 8..start + 16]);
-        u8s[16..24].copy_from_slice(&blocks[2][start + 8..start + 16]);
-        u8s[24..32].copy_from_slice(&blocks[3][start + 8..start + 16]);
+        u8s[0..8].copy_from_slice(blocks[0][start + 8..start + 16].declassify_ref());
+        u8s[8..16].copy_from_slice(blocks[1][start + 8..start + 16].declassify_ref());
+        u8s[16..24].copy_from_slice(blocks[2][start + 8..start + 16].declassify_ref());
+        u8s[24..32].copy_from_slice(blocks[3][start + 8..start + 16].declassify_ref());
         let u = mm256_loadu_si256_u8(u8s.as_slice());
         let i = (4 * (RATE / 32) + 1) / 5;
         let j = (4 * (RATE / 32) + 1) % 5;
-        set_ij(state, i, j, mm256_xor_si256(*get_ij(state, i, j), u));
+        set_ij(
+            state,
+            i,
+            j,
+            mm256_xor_si256(get_ij(state, i, j).declassify(), u).classify(),
+        );
     }
 }
 
 #[inline(always)]
 pub(crate) fn load_last<const RATE: usize, const DELIMITER: u8>(
-    state: &mut [Vec256; 25],
-    blocks: &[&[u8]; 4],
+    state: &mut [Secret<Vec256>; 25],
+    blocks: &[&[Secret<u8>]; 4],
     start: usize,
     len: usize,
 ) {
     let mut buffers = [[0u8; RATE]; 4];
     for i in 0..4 {
-        buffers[i][0..len].copy_from_slice(&blocks[i][start..start + len]);
+        buffers[i][0..len].copy_from_slice(&blocks[i][start..start + len].declassify_ref());
         buffers[i][len] = DELIMITER;
         buffers[i][RATE - 1] |= 0x80;
     }
@@ -120,10 +153,10 @@ pub(crate) fn load_last<const RATE: usize, const DELIMITER: u8>(
     load_block::<RATE>(
         state,
         &[
-            &buffers[0] as &[u8],
-            &buffers[1] as &[u8],
-            &buffers[2] as &[u8],
-            &buffers[3] as &[u8],
+            (&buffers[0] as &[u8]).classify_ref(),
+            (&buffers[1] as &[u8]).classify_ref(),
+            (&buffers[2] as &[u8]).classify_ref(),
+            (&buffers[3] as &[u8]).classify_ref(),
         ],
         0,
     );
@@ -131,11 +164,11 @@ pub(crate) fn load_last<const RATE: usize, const DELIMITER: u8>(
 
 #[inline(always)]
 pub(crate) fn store_block<const RATE: usize>(
-    s: &[Vec256; 25],
-    out0: &mut [u8],
-    out1: &mut [u8],
-    out2: &mut [u8],
-    out3: &mut [u8],
+    s: &[Secret<Vec256>; 25],
+    out0: &mut [Secret<u8>],
+    out1: &mut [Secret<u8>],
+    out2: &mut [Secret<u8>],
+    out3: &mut [Secret<u8>],
     start: usize,
     len: usize,
 ) {
@@ -150,32 +183,56 @@ pub(crate) fn store_block<const RATE: usize>(
         let i3 = (4 * i + 3) / 5;
         let j3 = (4 * i + 3) % 5;
 
-        let v0l = mm256_permute2x128_si256::<0x20>(*get_ij(s, i0, j0), *get_ij(s, i2, j2));
+        let v0l = mm256_permute2x128_si256::<0x20>(
+            get_ij(s, i0, j0).declassify(),
+            get_ij(s, i2, j2).declassify(),
+        );
         // 0 0 2 2
-        let v1h = mm256_permute2x128_si256::<0x20>(*get_ij(s, i1, j1), *get_ij(s, i3, j3)); // 1 1 3 3
-        let v2l = mm256_permute2x128_si256::<0x31>(*get_ij(s, i0, j0), *get_ij(s, i2, j2)); // 0 0 2 2
-        let v3h = mm256_permute2x128_si256::<0x31>(*get_ij(s, i1, j1), *get_ij(s, i3, j3)); // 1 1 3 3
+        let v1h = mm256_permute2x128_si256::<0x20>(
+            get_ij(s, i1, j1).declassify(),
+            get_ij(s, i3, j3).declassify(),
+        ); // 1 1 3 3
+        let v2l = mm256_permute2x128_si256::<0x31>(
+            get_ij(s, i0, j0).declassify(),
+            get_ij(s, i2, j2).declassify(),
+        ); // 0 0 2 2
+        let v3h = mm256_permute2x128_si256::<0x31>(
+            get_ij(s, i1, j1).declassify(),
+            get_ij(s, i3, j3).declassify(),
+        ); // 1 1 3 3
 
         let v0 = mm256_unpacklo_epi64(v0l, v1h); // 0 1 2 3
         let v1 = mm256_unpackhi_epi64(v0l, v1h); // 0 1 2 3
         let v2 = mm256_unpacklo_epi64(v2l, v3h); // 0 1 2 3
         let v3 = mm256_unpackhi_epi64(v2l, v3h); // 0 1 2 3
 
-        mm256_storeu_si256_u8(&mut out0[start + 32 * i..start + 32 * (i + 1)], v0);
-        mm256_storeu_si256_u8(&mut out1[start + 32 * i..start + 32 * (i + 1)], v1);
-        mm256_storeu_si256_u8(&mut out2[start + 32 * i..start + 32 * (i + 1)], v2);
-        mm256_storeu_si256_u8(&mut out3[start + 32 * i..start + 32 * (i + 1)], v3);
+        mm256_storeu_si256_u8(
+            out0[start + 32 * i..start + 32 * (i + 1)].declassify_ref_mut(),
+            v0,
+        );
+        mm256_storeu_si256_u8(
+            out1[start + 32 * i..start + 32 * (i + 1)].declassify_ref_mut(),
+            v1,
+        );
+        mm256_storeu_si256_u8(
+            out2[start + 32 * i..start + 32 * (i + 1)].declassify_ref_mut(),
+            v2,
+        );
+        mm256_storeu_si256_u8(
+            out3[start + 32 * i..start + 32 * (i + 1)].declassify_ref_mut(),
+            v3,
+        );
     }
 
     let rem = len % 32;
     if rem > 0 {
         let start = start + 32 * chunks;
-        let mut u8s = [0u8; 32];
+        let mut u8s = [0u8; 32].classify();
         let chunks8 = rem / 8;
         for k in 0..chunks8 {
             let i = (4 * chunks + k) / 5;
             let j = (4 * chunks + k) % 5;
-            mm256_storeu_si256_u8(&mut u8s, *get_ij(s, i, j));
+            mm256_storeu_si256_u8(u8s.declassify_ref_mut(), get_ij(s, i, j).declassify());
             out0[start + 8 * k..start + 8 * (k + 1)].copy_from_slice(&u8s[0..8]);
             out1[start + 8 * k..start + 8 * (k + 1)].copy_from_slice(&u8s[8..16]);
             out2[start + 8 * k..start + 8 * (k + 1)].copy_from_slice(&u8s[16..24]);
@@ -185,7 +242,7 @@ pub(crate) fn store_block<const RATE: usize>(
         if rem8 > 0 {
             let i = (4 * chunks + chunks8) / 5;
             let j = (4 * chunks + chunks8) % 5;
-            mm256_storeu_si256_u8(&mut u8s, *get_ij(s, i, j));
+            mm256_storeu_si256_u8(u8s.declassify_ref_mut(), get_ij(s, i, j).declassify());
             out0[start + len - rem8..start + len].copy_from_slice(&u8s[0..rem]);
             out1[start + len - rem8..start + len].copy_from_slice(&u8s[8..8 + rem]);
             out2[start + len - rem8..start + len].copy_from_slice(&u8s[16..16 + rem]);
@@ -226,13 +283,13 @@ impl KeccakItem<4> for Vec256 {
 }
 
 impl Absorb<4> for KeccakState<4, Vec256> {
-    fn load_block<const RATE: usize>(&mut self, input: &[&[u8]; 4], start: usize) {
+    fn load_block<const RATE: usize>(&mut self, input: &[&[Secret<u8>]; 4], start: usize) {
         load_block::<RATE>(&mut self.st, input, start);
     }
 
     fn load_last<const RATE: usize, const DELIMITER: u8>(
         &mut self,
-        input: &[&[u8]; 4],
+        input: &[&[Secret<u8>]; 4],
         start: usize,
         len: usize,
     ) {
@@ -243,10 +300,10 @@ impl Absorb<4> for KeccakState<4, Vec256> {
 impl Squeeze4<Vec256> for KeccakState<4, Vec256> {
     fn squeeze<const RATE: usize>(
         &self,
-        out0: &mut [u8],
-        out1: &mut [u8],
-        out2: &mut [u8],
-        out3: &mut [u8],
+        out0: &mut [Secret<u8>],
+        out1: &mut [Secret<u8>],
+        out2: &mut [Secret<u8>],
+        out3: &mut [Secret<u8>],
         start: usize,
         len: usize,
     ) {

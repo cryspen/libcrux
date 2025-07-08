@@ -3,6 +3,8 @@
 
 use core::ops::Index;
 
+use libcrux_secrets::{Classify as _, Declassify as _, Secret};
+
 use crate::traits::*;
 
 /// A generic Xof API.
@@ -29,7 +31,7 @@ pub(crate) mod portable;
 #[cfg_attr(hax, hax_lib::opaque)]
 #[derive(Clone, Copy)]
 pub(crate) struct KeccakState<const N: usize, T: KeccakItem<N>> {
-    pub(crate) st: [T; 25],
+    pub(crate) st: [Secret<T>; 25],
 }
 
 impl<const N: usize, T: KeccakItem<N>> KeccakState<N, T> {
@@ -37,12 +39,12 @@ impl<const N: usize, T: KeccakItem<N>> KeccakState<N, T> {
     #[inline(always)]
     pub(crate) fn new() -> Self {
         Self {
-            st: [T::zero(); 25],
+            st: [T::zero(); 25].classify(),
         }
     }
 
     /// Set element `[i, j] = v`.
-    fn set(&mut self, i: usize, j: usize, v: T) {
+    fn set(&mut self, i: usize, j: usize, v: Secret<T>) {
         set_ij(&mut self.st, i, j, v);
     }
 
@@ -50,39 +52,39 @@ impl<const N: usize, T: KeccakItem<N>> KeccakState<N, T> {
     fn theta_rho(&mut self) {
         let c: [T; 5] = [
             T::xor5(
-                self[(0, 0)],
-                self[(1, 0)],
-                self[(2, 0)],
-                self[(3, 0)],
-                self[(4, 0)],
+                self[(0, 0)].declassify(),
+                self[(1, 0)].declassify(),
+                self[(2, 0)].declassify(),
+                self[(3, 0)].declassify(),
+                self[(4, 0)].declassify(),
             ),
             T::xor5(
-                self[(0, 1)],
-                self[(1, 1)],
-                self[(2, 1)],
-                self[(3, 1)],
-                self[(4, 1)],
+                self[(0, 1)].declassify(),
+                self[(1, 1)].declassify(),
+                self[(2, 1)].declassify(),
+                self[(3, 1)].declassify(),
+                self[(4, 1)].declassify(),
             ),
             T::xor5(
-                self[(0, 2)],
-                self[(1, 2)],
-                self[(2, 2)],
-                self[(3, 2)],
-                self[(4, 2)],
+                self[(0, 2)].declassify(),
+                self[(1, 2)].declassify(),
+                self[(2, 2)].declassify(),
+                self[(3, 2)].declassify(),
+                self[(4, 2)].declassify(),
             ),
             T::xor5(
-                self[(0, 3)],
-                self[(1, 3)],
-                self[(2, 3)],
-                self[(3, 3)],
-                self[(4, 3)],
+                self[(0, 3)].declassify(),
+                self[(1, 3)].declassify(),
+                self[(2, 3)].declassify(),
+                self[(3, 3)].declassify(),
+                self[(4, 3)].declassify(),
             ),
             T::xor5(
-                self[(0, 4)],
-                self[(1, 4)],
-                self[(2, 4)],
-                self[(3, 4)],
-                self[(4, 4)],
+                self[(0, 4)].declassify(),
+                self[(1, 4)].declassify(),
+                self[(2, 4)].declassify(),
+                self[(3, 4)].declassify(),
+                self[(4, 4)].declassify(),
             ),
         ];
         #[allow(clippy::identity_op)]
@@ -94,35 +96,131 @@ impl<const N: usize, T: KeccakItem<N>> KeccakState<N, T> {
             T::rotate_left1_and_xor(c[(4 + 4) % 5], c[(4 + 1) % 5]),
         ];
 
-        self.set(0, 0, T::xor(self[(0, 0)], t[0]));
-        self.set(1, 0, T::xor_and_rotate::<36, 28>(self[(1, 0)], t[0]));
-        self.set(2, 0, T::xor_and_rotate::<3, 61>(self[(2, 0)], t[0]));
-        self.set(3, 0, T::xor_and_rotate::<41, 23>(self[(3, 0)], t[0]));
-        self.set(4, 0, T::xor_and_rotate::<18, 46>(self[(4, 0)], t[0]));
+        self.set(0, 0, T::xor(self[(0, 0)].declassify(), t[0]).classify());
+        self.set(
+            1,
+            0,
+            T::xor_and_rotate::<36, 28>(self[(1, 0)].declassify(), t[0]).classify(),
+        );
+        self.set(
+            2,
+            0,
+            T::xor_and_rotate::<3, 61>(self[(2, 0)].declassify(), t[0]).classify(),
+        );
+        self.set(
+            3,
+            0,
+            T::xor_and_rotate::<41, 23>(self[(3, 0)].declassify(), t[0]).classify(),
+        );
+        self.set(
+            4,
+            0,
+            T::xor_and_rotate::<18, 46>(self[(4, 0)].declassify(), t[0]).classify(),
+        );
 
-        self.set(0, 1, T::xor_and_rotate::<1, 63>(self[(0, 1)], t[1]));
-        self.set(1, 1, T::xor_and_rotate::<44, 20>(self[(1, 1)], t[1]));
-        self.set(2, 1, T::xor_and_rotate::<10, 54>(self[(2, 1)], t[1]));
-        self.set(3, 1, T::xor_and_rotate::<45, 19>(self[(3, 1)], t[1]));
-        self.set(4, 1, T::xor_and_rotate::<2, 62>(self[(4, 1)], t[1]));
+        self.set(
+            0,
+            1,
+            T::xor_and_rotate::<1, 63>(self[(0, 1)].declassify(), t[1]).classify(),
+        );
+        self.set(
+            1,
+            1,
+            T::xor_and_rotate::<44, 20>(self[(1, 1)].declassify(), t[1]).classify(),
+        );
+        self.set(
+            2,
+            1,
+            T::xor_and_rotate::<10, 54>(self[(2, 1)].declassify(), t[1]).classify(),
+        );
+        self.set(
+            3,
+            1,
+            T::xor_and_rotate::<45, 19>(self[(3, 1)].declassify(), t[1]).classify(),
+        );
+        self.set(
+            4,
+            1,
+            T::xor_and_rotate::<2, 62>(self[(4, 1)].declassify(), t[1]).classify(),
+        );
 
-        self.set(0, 2, T::xor_and_rotate::<62, 2>(self[(0, 2)], t[2]));
-        self.set(1, 2, T::xor_and_rotate::<6, 58>(self[(1, 2)], t[2]));
-        self.set(2, 2, T::xor_and_rotate::<43, 21>(self[(2, 2)], t[2]));
-        self.set(3, 2, T::xor_and_rotate::<15, 49>(self[(3, 2)], t[2]));
-        self.set(4, 2, T::xor_and_rotate::<61, 3>(self[(4, 2)], t[2]));
+        self.set(
+            0,
+            2,
+            T::xor_and_rotate::<62, 2>(self[(0, 2)].declassify(), t[2]).classify(),
+        );
+        self.set(
+            1,
+            2,
+            T::xor_and_rotate::<6, 58>(self[(1, 2)].declassify(), t[2]).classify(),
+        );
+        self.set(
+            2,
+            2,
+            T::xor_and_rotate::<43, 21>(self[(2, 2)].declassify(), t[2]).classify(),
+        );
+        self.set(
+            3,
+            2,
+            T::xor_and_rotate::<15, 49>(self[(3, 2)].declassify(), t[2]).classify(),
+        );
+        self.set(
+            4,
+            2,
+            T::xor_and_rotate::<61, 3>(self[(4, 2)].declassify(), t[2]).classify(),
+        );
 
-        self.set(0, 3, T::xor_and_rotate::<28, 36>(self[(0, 3)], t[3]));
-        self.set(1, 3, T::xor_and_rotate::<55, 9>(self[(1, 3)], t[3]));
-        self.set(2, 3, T::xor_and_rotate::<25, 39>(self[(2, 3)], t[3]));
-        self.set(3, 3, T::xor_and_rotate::<21, 43>(self[(3, 3)], t[3]));
-        self.set(4, 3, T::xor_and_rotate::<56, 8>(self[(4, 3)], t[3]));
+        self.set(
+            0,
+            3,
+            T::xor_and_rotate::<28, 36>(self[(0, 3)].declassify(), t[3]).classify(),
+        );
+        self.set(
+            1,
+            3,
+            T::xor_and_rotate::<55, 9>(self[(1, 3)].declassify(), t[3]).classify(),
+        );
+        self.set(
+            2,
+            3,
+            T::xor_and_rotate::<25, 39>(self[(2, 3)].declassify(), t[3]).classify(),
+        );
+        self.set(
+            3,
+            3,
+            T::xor_and_rotate::<21, 43>(self[(3, 3)].declassify(), t[3]).classify(),
+        );
+        self.set(
+            4,
+            3,
+            T::xor_and_rotate::<56, 8>(self[(4, 3)].declassify(), t[3]).classify(),
+        );
 
-        self.set(0, 4, T::xor_and_rotate::<27, 37>(self[(0, 4)], t[4]));
-        self.set(1, 4, T::xor_and_rotate::<20, 44>(self[(1, 4)], t[4]));
-        self.set(2, 4, T::xor_and_rotate::<39, 25>(self[(2, 4)], t[4]));
-        self.set(3, 4, T::xor_and_rotate::<8, 56>(self[(3, 4)], t[4]));
-        self.set(4, 4, T::xor_and_rotate::<14, 50>(self[(4, 4)], t[4]));
+        self.set(
+            0,
+            4,
+            T::xor_and_rotate::<27, 37>(self[(0, 4)].declassify(), t[4]).classify(),
+        );
+        self.set(
+            1,
+            4,
+            T::xor_and_rotate::<20, 44>(self[(1, 4)].declassify(), t[4]).classify(),
+        );
+        self.set(
+            2,
+            4,
+            T::xor_and_rotate::<39, 25>(self[(2, 4)].declassify(), t[4]).classify(),
+        );
+        self.set(
+            3,
+            4,
+            T::xor_and_rotate::<8, 56>(self[(3, 4)].declassify(), t[4]).classify(),
+        );
+        self.set(
+            4,
+            4,
+            T::xor_and_rotate::<14, 50>(self[(4, 4)].declassify(), t[4]).classify(),
+        );
     }
 
     #[inline(always)]
@@ -165,7 +263,12 @@ impl<const N: usize, T: KeccakItem<N>> KeccakState<N, T> {
                 self.set(
                     i,
                     j,
-                    T::and_not_xor(self[(i, j)], old[(i, (j + 2) % 5)], old[(i, (j + 1) % 5)]),
+                    T::and_not_xor(
+                        self[(i, j)].declassify(),
+                        old[(i, (j + 2) % 5)].declassify(),
+                        old[(i, (j + 1) % 5)].declassify(),
+                    )
+                    .classify(),
                 );
             }
         }
@@ -173,7 +276,11 @@ impl<const N: usize, T: KeccakItem<N>> KeccakState<N, T> {
 
     #[inline(always)]
     fn iota(&mut self, i: usize) {
-        self.set(0, 0, T::xor_constant(self[(0, 0)], ROUNDCONSTANTS[i]));
+        self.set(
+            0,
+            0,
+            T::xor_constant(self[(0, 0)].declassify(), ROUNDCONSTANTS[i]).classify(),
+        );
     }
 
     #[inline(always)]
@@ -187,7 +294,7 @@ impl<const N: usize, T: KeccakItem<N>> KeccakState<N, T> {
     }
 
     #[inline(always)]
-    fn absorb_block<const RATE: usize>(&mut self, blocks: &[&[u8]; N], start: usize)
+    fn absorb_block<const RATE: usize>(&mut self, blocks: &[&[Secret<u8>]; N], start: usize)
     where
         Self: Absorb<N>,
     {
@@ -198,7 +305,7 @@ impl<const N: usize, T: KeccakItem<N>> KeccakState<N, T> {
     #[inline(always)]
     pub(crate) fn absorb_final<const RATE: usize, const DELIM: u8>(
         &mut self,
-        last: &[&[u8]; N],
+        last: &[&[Secret<u8>]; N],
         start: usize,
         len: usize,
     ) where
@@ -212,7 +319,7 @@ impl<const N: usize, T: KeccakItem<N>> KeccakState<N, T> {
 }
 
 impl<const N: usize, T: KeccakItem<N>> Index<(usize, usize)> for KeccakState<N, T> {
-    type Output = T;
+    type Output = Secret<T>;
 
     /// Get element `[i, j]`.
     fn index(&self, index: (usize, usize)) -> &Self::Output {

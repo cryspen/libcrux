@@ -6,6 +6,8 @@ mod classify;
 #[cfg(feature = "check-secret-independence")]
 mod secret_integers;
 #[cfg(feature = "check-secret-independence")]
+pub use classify::Secret;
+#[cfg(feature = "check-secret-independence")]
 pub use secret_integers::*;
 
 // If the feature "check-secret-independence" is not set, we use public integers

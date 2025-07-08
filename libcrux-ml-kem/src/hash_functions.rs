@@ -72,6 +72,7 @@ pub(crate) trait Hash<const K: usize> {
 /// A portable implementation of [`Hash`]
 pub(crate) mod portable {
     use super::*;
+    use libcrux_secrets::{Classify, ClassifyRef, ClassifyRefMut as _, Declassify};
     use libcrux_sha3::portable::{self, incremental, KeccakState};
 
     /// The state.
@@ -89,7 +90,7 @@ pub(crate) mod portable {
     #[inline(always)]
     fn G(input: &[u8]) -> [u8; G_DIGEST_SIZE] {
         let mut digest = [0u8; G_DIGEST_SIZE];
-        portable::sha512(&mut digest, input);
+        portable::sha512(digest.classify_ref_mut(), input.classify_ref());
         digest
     }
 
@@ -99,7 +100,7 @@ pub(crate) mod portable {
     #[inline(always)]
     fn H(input: &[u8]) -> [u8; H_DIGEST_SIZE] {
         let mut digest = [0u8; H_DIGEST_SIZE];
-        portable::sha256(&mut digest, input);
+        portable::sha256(digest.classify_ref_mut(), input.classify_ref());
         digest
     }
 
@@ -110,7 +111,7 @@ pub(crate) mod portable {
     #[inline(always)]
     fn PRF<const LEN: usize>(input: &[u8]) -> [u8; LEN] {
         let mut digest = [0u8; LEN];
-        portable::shake256(&mut digest, input);
+        portable::shake256(digest.classify_ref_mut(), input.classify_ref());
         digest
     }
 
@@ -122,11 +123,11 @@ pub(crate) mod portable {
     fn PRFxN<const K: usize, const LEN: usize>(input: &[[u8; 33]; K]) -> [[u8; LEN]; K] {
         debug_assert!(K == 2 || K == 3 || K == 4);
 
-        let mut out = [[0u8; LEN]; K];
+        let mut out = [[0u8; LEN].classify(); K];
         for i in 0..K {
-            portable::shake256(&mut out[i], &input[i]);
+            portable::shake256(&mut out[i], input[i].classify_ref());
         }
-        out
+        out.declassify()
     }
 
     #[inline(always)]
@@ -137,7 +138,10 @@ pub(crate) mod portable {
             shake128_state: [incremental::shake128_init(); K],
         };
         for i in 0..K {
-            incremental::shake128_absorb_final(&mut shake128_state.shake128_state[i], &input[i]);
+            incremental::shake128_absorb_final(
+                &mut shake128_state.shake128_state[i],
+                input[i].classify_ref(),
+            );
         }
 
         shake128_state
@@ -149,14 +153,14 @@ pub(crate) mod portable {
     ) -> [[u8; THREE_BLOCKS]; K] {
         debug_assert!(K == 2 || K == 3 || K == 4);
 
-        let mut out = [[0u8; THREE_BLOCKS]; K];
+        let mut out = [[0u8; THREE_BLOCKS]; K].classify();
         for i in 0..K {
             incremental::shake128_squeeze_first_three_blocks(
                 &mut st.shake128_state[i],
                 &mut out[i],
             );
         }
-        out
+        out.declassify()
     }
 
     #[inline(always)]
@@ -165,11 +169,11 @@ pub(crate) mod portable {
     ) -> [[u8; BLOCK_SIZE]; K] {
         debug_assert!(K == 2 || K == 3 || K == 4);
 
-        let mut out = [[0u8; BLOCK_SIZE]; K];
+        let mut out = [[0u8; BLOCK_SIZE]; K].classify();
         for i in 0..K {
             incremental::shake128_squeeze_next_block(&mut st.shake128_state[i], &mut out[i]);
         }
-        out
+        out.declassify()
     }
 
     #[hax_lib::attributes]
@@ -231,6 +235,7 @@ pub(crate) mod portable {
 #[cfg(feature = "simd256")]
 pub(crate) mod avx2 {
     use super::*;
+    use libcrux_secrets::{ClassifyRef, ClassifyRefMut};
     use libcrux_sha3::{
         avx2::x4::{self, incremental::KeccakState},
         portable,
@@ -251,7 +256,7 @@ pub(crate) mod avx2 {
     #[inline(always)]
     fn G(input: &[u8]) -> [u8; G_DIGEST_SIZE] {
         let mut digest = [0u8; G_DIGEST_SIZE];
-        portable::sha512(&mut digest, input);
+        portable::sha512(digest.classify_ref_mut(), input.classify_ref());
         digest
     }
 
@@ -261,7 +266,7 @@ pub(crate) mod avx2 {
     #[inline(always)]
     fn H(input: &[u8]) -> [u8; H_DIGEST_SIZE] {
         let mut digest = [0u8; H_DIGEST_SIZE];
-        portable::sha256(&mut digest, input);
+        portable::sha256(digest.classify_ref_mut(), input.classify_ref());
         digest
     }
 
@@ -272,7 +277,7 @@ pub(crate) mod avx2 {
     #[inline(always)]
     fn PRF<const LEN: usize>(input: &[u8]) -> [u8; LEN] {
         let mut digest = [0u8; LEN];
-        portable::shake256(&mut digest, input);
+        portable::shake256(digest.classify_ref_mut(), input.classify_ref());
         digest
     }
 
@@ -292,16 +297,28 @@ pub(crate) mod avx2 {
         match K as u8 {
             2 => {
                 x4::shake256(
-                    &input[0], &input[1], &input[0], &input[0], &mut out0, &mut out1, &mut out2,
-                    &mut out3,
+                    input[0].classify_ref(),
+                    input[1].classify_ref(),
+                    input[0].classify_ref(),
+                    input[0].classify_ref(),
+                    out0.classify_ref_mut(),
+                    out1.classify_ref_mut(),
+                    out2.classify_ref_mut(),
+                    out3.classify_ref_mut(),
                 );
                 out[0] = out0;
                 out[1] = out1;
             }
             3 => {
                 x4::shake256(
-                    &input[0], &input[1], &input[2], &input[0], &mut out0, &mut out1, &mut out2,
-                    &mut out3,
+                    input[0].classify_ref(),
+                    input[1].classify_ref(),
+                    input[2].classify_ref(),
+                    input[0].classify_ref(),
+                    out0.classify_ref_mut(),
+                    out1.classify_ref_mut(),
+                    out2.classify_ref_mut(),
+                    out3.classify_ref_mut(),
                 );
                 out[0] = out0;
                 out[1] = out1;
@@ -309,8 +326,14 @@ pub(crate) mod avx2 {
             }
             4 => {
                 x4::shake256(
-                    &input[0], &input[1], &input[2], &input[3], &mut out0, &mut out1, &mut out2,
-                    &mut out3,
+                    input[0].classify_ref(),
+                    input[1].classify_ref(),
+                    input[2].classify_ref(),
+                    input[3].classify_ref(),
+                    out0.classify_ref_mut(),
+                    out1.classify_ref_mut(),
+                    out2.classify_ref_mut(),
+                    out3.classify_ref_mut(),
                 );
                 out[0] = out0;
                 out[1] = out1;
@@ -333,28 +356,28 @@ pub(crate) mod avx2 {
             2 => {
                 x4::incremental::shake128_absorb_final(
                     &mut state.shake128_state,
-                    &input[0],
-                    &input[1],
-                    &input[0],
-                    &input[0],
+                    input[0].classify_ref(),
+                    input[1].classify_ref(),
+                    input[0].classify_ref(),
+                    input[0].classify_ref(),
                 );
             }
             3 => {
                 x4::incremental::shake128_absorb_final(
                     &mut state.shake128_state,
-                    &input[0],
-                    &input[1],
-                    &input[2],
-                    &input[0],
+                    input[0].classify_ref(),
+                    input[1].classify_ref(),
+                    input[2].classify_ref(),
+                    input[0].classify_ref(),
                 );
             }
             4 => {
                 x4::incremental::shake128_absorb_final(
                     &mut state.shake128_state,
-                    &input[0],
-                    &input[1],
-                    &input[2],
-                    &input[3],
+                    input[0].classify_ref(),
+                    input[1].classify_ref(),
+                    input[2].classify_ref(),
+                    input[3].classify_ref(),
                 );
             }
             _ => unreachable!("This function must only be called with N = 2, 3, 4"),
@@ -375,10 +398,10 @@ pub(crate) mod avx2 {
         let mut out3 = [0u8; THREE_BLOCKS];
         x4::incremental::shake128_squeeze_first_three_blocks(
             &mut st.shake128_state,
-            &mut out0,
-            &mut out1,
-            &mut out2,
-            &mut out3,
+            out0.classify_ref_mut(),
+            out1.classify_ref_mut(),
+            out2.classify_ref_mut(),
+            out3.classify_ref_mut(),
         );
         match K as u8 {
             2 => {
@@ -411,10 +434,10 @@ pub(crate) mod avx2 {
         let mut out3 = [0u8; BLOCK_SIZE];
         x4::incremental::shake128_squeeze_next_block(
             &mut st.shake128_state,
-            &mut out0,
-            &mut out1,
-            &mut out2,
-            &mut out3,
+            out0.classify_ref_mut(),
+            out1.classify_ref_mut(),
+            out2.classify_ref_mut(),
+            out3.classify_ref_mut(),
         );
         match K as u8 {
             2 => {

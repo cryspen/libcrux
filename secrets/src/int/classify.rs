@@ -4,7 +4,6 @@
 /// That is, it should not be used when running the Rust code in production.
 /// Otherwise, the crate defaults to public integers.
 use crate::traits::*;
-
 /// A type for secret values
 #[repr(transparent)]
 pub struct Secret<T>(pub(crate) T);

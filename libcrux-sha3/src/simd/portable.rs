@@ -1,5 +1,7 @@
 //! A portable SHA3 implementation using the generic implementation.
 
+use libcrux_secrets::{Classify, ClassifyRef as _, DeclassifyRef, DeclassifyRefMut as _, Secret};
+
 use crate::{generic_keccak::KeccakState, traits::*};
 
 #[inline(always)]
@@ -34,7 +36,11 @@ fn _veorq_n_u64(a: u64, c: u64) -> u64 {
 }
 
 #[inline(always)]
-pub(crate) fn load_block<const RATE: usize>(state: &mut [u64; 25], blocks: &[u8], start: usize) {
+pub(crate) fn load_block<const RATE: usize>(
+    state: &mut [Secret<u64>; 25],
+    blocks: &[Secret<u8>],
+    start: usize,
+) {
     debug_assert!(start + RATE <= blocks.len() && RATE % 8 == 0);
 
     // First load the block, then xor it with the state
@@ -45,7 +51,12 @@ pub(crate) fn load_block<const RATE: usize>(state: &mut [u64; 25], blocks: &[u8]
     #[allow(clippy::needless_range_loop)]
     for i in 0..RATE / 8 {
         let offset = start + 8 * i;
-        state_flat[i] = u64::from_le_bytes(blocks[offset..offset + 8].try_into().unwrap());
+        state_flat[i] = u64::from_le_bytes(
+            blocks[offset..offset + 8]
+                .declassify_ref()
+                .try_into()
+                .unwrap(),
+        );
     }
 
     #[allow(clippy::needless_range_loop)]
@@ -61,16 +72,16 @@ pub(crate) fn load_block<const RATE: usize>(state: &mut [u64; 25], blocks: &[u8]
 
 #[inline(always)]
 pub(crate) fn load_last<const RATE: usize, const DELIMITER: u8>(
-    state: &mut [u64; 25],
-    blocks: &[u8],
+    state: &mut [Secret<u64>; 25],
+    blocks: &[Secret<u8>],
     start: usize,
     len: usize,
 ) {
     debug_assert!(start + len <= blocks.len());
 
-    let mut buffer = [0u8; RATE];
+    let mut buffer = [0u8; RATE].classify();
     buffer[0..len].copy_from_slice(&blocks[start..start + len]);
-    buffer[len] = DELIMITER;
+    buffer[len] = DELIMITER.classify();
     buffer[RATE - 1] |= 0x80;
 
     load_block::<RATE>(state, &buffer, 0);
@@ -78,21 +89,29 @@ pub(crate) fn load_last<const RATE: usize, const DELIMITER: u8>(
 
 #[inline(always)]
 pub(crate) fn store_block<const RATE: usize>(
-    s: &[u64; 25],
-    out: &mut [u8],
+    s: &[Secret<u64>; 25],
+    out: &mut [Secret<u8>],
     start: usize,
     len: usize,
 ) {
     let octets = len / 8;
     for i in 0..octets {
-        out[start + 8 * i..start + 8 * i + 8]
-            .copy_from_slice(&get_ij(s, i / 5, i % 5).to_le_bytes());
+        out[start + 8 * i..start + 8 * i + 8].copy_from_slice(
+            get_ij(s, i / 5, i % 5)
+                .declassify_ref()
+                .to_le_bytes()
+                .classify_ref(),
+        );
     }
 
     let remaining = len % 8;
     if remaining > 0 {
-        out[start + len - remaining..start + len]
-            .copy_from_slice(&get_ij(s, octets / 5, octets % 5).to_le_bytes()[0..remaining]);
+        out[start + len - remaining..start + len].copy_from_slice(
+            get_ij(s, octets / 5, octets % 5)
+                .declassify_ref()
+                .to_le_bytes()[0..remaining]
+                .classify_ref(),
+        );
     }
 }
 
@@ -128,13 +147,13 @@ impl KeccakItem<1> for u64 {
 }
 
 impl Absorb<1> for KeccakState<1, u64> {
-    fn load_block<const RATE: usize>(&mut self, input: &[&[u8]; 1], start: usize) {
+    fn load_block<const RATE: usize>(&mut self, input: &[&[Secret<u8>]; 1], start: usize) {
         load_block::<RATE>(&mut self.st, input[0], start);
     }
 
     fn load_last<const RATE: usize, const DELIMITER: u8>(
         &mut self,
-        input: &[&[u8]; 1],
+        input: &[&[Secret<u8>]; 1],
         start: usize,
         len: usize,
     ) {
@@ -143,7 +162,7 @@ impl Absorb<1> for KeccakState<1, u64> {
 }
 
 impl Squeeze1<u64> for KeccakState<1, u64> {
-    fn squeeze<const RATE: usize>(&self, out: &mut [u8], start: usize, len: usize) {
+    fn squeeze<const RATE: usize>(&self, out: &mut [Secret<u8>], start: usize, len: usize) {
         store_block::<RATE>(&self.st, out, start, len);
     }
 }

@@ -4,11 +4,11 @@ use libcrux_intrinsics::avx2::Vec256;
 
 #[inline]
 pub(crate) fn keccak4<const RATE: usize, const DELIM: u8>(
-    data: &[&[u8]; 4],
-    out0: &mut [u8],
-    out1: &mut [u8],
-    out2: &mut [u8],
-    out3: &mut [u8],
+    data: &[&[Secret<u8>]; 4],
+    out0: &mut [Secret<u8>],
+    out1: &mut [Secret<u8>],
+    out2: &mut [Secret<u8>],
+    out3: &mut [Secret<u8>],
 ) {
     debug_assert!(out0.len() == out1.len() && out0.len() == out2.len() && out0.len() == out3.len());
     debug_assert!(
@@ -48,10 +48,10 @@ impl KeccakState<4, Vec256> {
     #[inline(always)]
     pub(crate) fn squeeze_next_block<const RATE: usize>(
         &mut self,
-        out0: &mut [u8],
-        out1: &mut [u8],
-        out2: &mut [u8],
-        out3: &mut [u8],
+        out0: &mut [Secret<u8>],
+        out1: &mut [Secret<u8>],
+        out2: &mut [Secret<u8>],
+        out3: &mut [Secret<u8>],
         start: usize,
     ) {
         self.keccakf1600();
@@ -61,10 +61,10 @@ impl KeccakState<4, Vec256> {
     #[inline(always)]
     pub(crate) fn squeeze_first_block<const RATE: usize>(
         &self,
-        out0: &mut [u8],
-        out1: &mut [u8],
-        out2: &mut [u8],
-        out3: &mut [u8],
+        out0: &mut [Secret<u8>],
+        out1: &mut [Secret<u8>],
+        out2: &mut [Secret<u8>],
+        out3: &mut [Secret<u8>],
     ) {
         self.squeeze::<RATE>(out0, out1, out2, out3, 0, RATE);
     }
@@ -72,10 +72,10 @@ impl KeccakState<4, Vec256> {
     #[inline(always)]
     pub(crate) fn squeeze_first_three_blocks<const RATE: usize>(
         &mut self,
-        out0: &mut [u8],
-        out1: &mut [u8],
-        out2: &mut [u8],
-        out3: &mut [u8],
+        out0: &mut [Secret<u8>],
+        out1: &mut [Secret<u8>],
+        out2: &mut [Secret<u8>],
+        out3: &mut [Secret<u8>],
     ) {
         self.squeeze::<RATE>(out0, out1, out2, out3, 0, RATE);
 
@@ -89,10 +89,10 @@ impl KeccakState<4, Vec256> {
     #[inline(always)]
     pub(crate) fn squeeze_first_five_blocks<const RATE: usize>(
         &mut self,
-        out0: &mut [u8],
-        out1: &mut [u8],
-        out2: &mut [u8],
-        out3: &mut [u8],
+        out0: &mut [Secret<u8>],
+        out1: &mut [Secret<u8>],
+        out2: &mut [Secret<u8>],
+        out3: &mut [Secret<u8>],
     ) {
         self.squeeze::<RATE>(out0, out1, out2, out3, 0, RATE);
 

@@ -1,3 +1,5 @@
+use libcrux_secrets::{Classify, ClassifyRef, Secret};
+
 use crate::{
     generic_keccak::KeccakState,
     traits::{Absorb, KeccakItem, Squeeze1},
@@ -14,7 +16,7 @@ pub(crate) struct KeccakXofState<
     inner: KeccakState<PARALLEL_LANES, STATE>,
 
     // Buffer inputs on absorb.
-    buf: [[u8; RATE]; PARALLEL_LANES],
+    buf: [[Secret<u8>; RATE]; PARALLEL_LANES],
 
     // Buffered length.
     buf_len: usize,
@@ -35,7 +37,7 @@ impl<const PARALLEL_LANES: usize, const RATE: usize, STATE: KeccakItem<PARALLEL_
     pub(crate) fn new() -> Self {
         Self {
             inner: KeccakState::new(),
-            buf: [Self::zero_block(); PARALLEL_LANES],
+            buf: [Self::zero_block().classify(); PARALLEL_LANES],
             buf_len: 0,
             sponge: false,
         }
@@ -51,7 +53,7 @@ impl<const PARALLEL_LANES: usize, const RATE: usize, STATE: KeccakItem<PARALLEL_
     ///
     /// This works best with relatively small `inputs`.
     #[inline(always)]
-    pub(crate) fn absorb(&mut self, inputs: &[&[u8]; PARALLEL_LANES])
+    pub(crate) fn absorb(&mut self, inputs: &[&[Secret<u8>]; PARALLEL_LANES])
     where
         KeccakState<PARALLEL_LANES, STATE>: Absorb<PARALLEL_LANES>,
     {
@@ -76,7 +78,7 @@ impl<const PARALLEL_LANES: usize, const RATE: usize, STATE: KeccakItem<PARALLEL_
     }
 
     // Note: consciously not inlining this function to avoid using too much stack
-    pub(crate) fn absorb_full(&mut self, inputs: &[&[u8]; PARALLEL_LANES]) -> usize
+    pub(crate) fn absorb_full(&mut self, inputs: &[&[Secret<u8>]; PARALLEL_LANES]) -> usize
     where
         KeccakState<PARALLEL_LANES, STATE>: Absorb<PARALLEL_LANES>,
     {
@@ -93,7 +95,7 @@ impl<const PARALLEL_LANES: usize, const RATE: usize, STATE: KeccakItem<PARALLEL_
         let input_consumed = self.fill_buffer(inputs);
 
         if input_consumed > 0 {
-            let mut borrowed = [[0u8; RATE].as_slice(); PARALLEL_LANES];
+            let mut borrowed = [[0u8; RATE].as_slice().classify_ref(); PARALLEL_LANES];
             // We have a full block in the local buffer now.
             #[allow(clippy::needless_range_loop)]
             for i in 0..PARALLEL_LANES {
@@ -131,7 +133,7 @@ impl<const PARALLEL_LANES: usize, const RATE: usize, STATE: KeccakItem<PARALLEL_
     /// If `consumed > 0` is returned, `self.buf` contains a full block to be
     /// loaded.
     // Note: consciously not inlining this function to avoid using too much stack
-    pub(crate) fn fill_buffer(&mut self, inputs: &[&[u8]; PARALLEL_LANES]) -> usize {
+    pub(crate) fn fill_buffer(&mut self, inputs: &[&[Secret<u8>]; PARALLEL_LANES]) -> usize {
         let input_len = inputs[0].len();
         let mut consumed = 0;
         if self.buf_len > 0 {
@@ -156,13 +158,15 @@ impl<const PARALLEL_LANES: usize, const RATE: usize, STATE: KeccakItem<PARALLEL_
     /// The `inputs` block may be empty. Everything in the `inputs` block beyond
     /// `RATE` bytes is ignored.
     #[inline(always)]
-    pub(crate) fn absorb_final<const DELIMITER: u8>(&mut self, inputs: &[&[u8]; PARALLEL_LANES])
-    where
+    pub(crate) fn absorb_final<const DELIMITER: u8>(
+        &mut self,
+        inputs: &[&[Secret<u8>]; PARALLEL_LANES],
+    ) where
         KeccakState<PARALLEL_LANES, STATE>: Absorb<PARALLEL_LANES>,
     {
         self.absorb(inputs);
 
-        let mut borrowed = [[0u8; RATE].as_slice(); PARALLEL_LANES];
+        let mut borrowed = [[0u8; RATE].as_slice().classify_ref(); PARALLEL_LANES];
 
         #[allow(clippy::needless_range_loop)]
         for i in 0..PARALLEL_LANES {
@@ -181,7 +185,7 @@ impl<const PARALLEL_LANES: usize, const RATE: usize, STATE: KeccakItem<PARALLEL_
 impl<const RATE: usize, STATE: KeccakItem<1>> KeccakXofState<1, RATE, STATE> {
     /// Squeeze `N` x `LEN` bytes. Only `N = 1` for now.
     #[inline(always)]
-    pub(crate) fn squeeze(&mut self, out: &mut [u8])
+    pub(crate) fn squeeze(&mut self, out: &mut [Secret<u8>])
     where
         KeccakState<1, STATE>: Squeeze1<STATE>,
     {

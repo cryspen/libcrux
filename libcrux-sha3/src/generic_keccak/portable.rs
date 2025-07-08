@@ -2,18 +2,22 @@ use super::*;
 
 impl KeccakState<1, u64> {
     #[inline(always)]
-    pub(crate) fn squeeze_next_block<const RATE: usize>(&mut self, out: &mut [u8], start: usize) {
+    pub(crate) fn squeeze_next_block<const RATE: usize>(
+        &mut self,
+        out: &mut [Secret<u8>],
+        start: usize,
+    ) {
         self.keccakf1600();
         self.squeeze::<RATE>(out, start, RATE);
     }
 
     #[inline(always)]
-    pub(crate) fn squeeze_first_block<const RATE: usize>(&self, out: &mut [u8]) {
+    pub(crate) fn squeeze_first_block<const RATE: usize>(&self, out: &mut [Secret<u8>]) {
         self.squeeze::<RATE>(out, 0, RATE);
     }
 
     #[inline(always)]
-    pub(crate) fn squeeze_first_three_blocks<const RATE: usize>(&mut self, out: &mut [u8]) {
+    pub(crate) fn squeeze_first_three_blocks<const RATE: usize>(&mut self, out: &mut [Secret<u8>]) {
         self.squeeze::<RATE>(out, 0, RATE);
 
         self.keccakf1600();
@@ -24,7 +28,7 @@ impl KeccakState<1, u64> {
     }
 
     #[inline(always)]
-    pub(crate) fn squeeze_first_five_blocks<const RATE: usize>(&mut self, out: &mut [u8]) {
+    pub(crate) fn squeeze_first_five_blocks<const RATE: usize>(&mut self, out: &mut [Secret<u8>]) {
         self.squeeze::<RATE>(out, 0, RATE);
 
         self.keccakf1600();
@@ -42,7 +46,10 @@ impl KeccakState<1, u64> {
 }
 
 #[inline]
-pub(crate) fn keccak1<const RATE: usize, const DELIM: u8>(data: &[u8], out: &mut [u8]) {
+pub(crate) fn keccak1<const RATE: usize, const DELIM: u8>(
+    data: &[Secret<u8>],
+    out: &mut [Secret<u8>],
+) {
     let mut s = KeccakState::<1, u64>::new();
     let data_len = data.len();
     for i in 0..data_len / RATE {
