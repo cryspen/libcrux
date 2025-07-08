@@ -1,7 +1,6 @@
 #![no_std]
 
-pub mod aead;
-pub mod kem;
+extern crate alloc;
 
 // NOTE: This Digest trait and the new `digest` trait APIs overlap to some extent.
 // See issue #1039

@@ -1,7 +1,3 @@
-// XXX: make this conditional when cleaning up
-// #[cfg(feature = "rand")]
-use rand::CryptoRng;
-
 mod aes_ctr;
 mod aes_generic;
 mod gf128_generic;
@@ -10,7 +6,7 @@ mod platform;
 mod aes_gcm_128;
 mod aes_gcm_256;
 
-use libcrux_traits::aead::{Aead, Error};
+pub use libcrux_traits::aead::arrayref::Aead;
 
 /// AES-GCM decryption error.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -34,132 +30,126 @@ pub struct X64AesGcm128 {}
 #[cfg(not(target_arch = "x86_64"))]
 pub type X64AesGcm128 = PortableAesGcm128;
 
-impl Aead for AesGcm128 {
-    type Key = [u8; 16];
-    type Tag = [u8; 16];
-    type Nonce = [u8; 12];
+/// Tag length.
+pub(crate) const TAG_LEN: usize = 16;
 
-    // XXX: make this conditional when cleaning up
-    // #[cfg(feature = "rand")]
-    fn key_gen(key: &mut Self::Key, rng: &mut impl CryptoRng) -> Result<(), Error> {
-        rng.fill_bytes(key);
-        Ok(())
-    }
+/// Nonce length.
+pub(crate) const NONCE_LEN: usize = 12;
 
-    fn encrypt(
-        ciphertext: &mut [u8],
-        tag: &mut Self::Tag,
-        key: &Self::Key,
-        nonce: &Self::Nonce,
-        aad: &[u8],
-        plaintext: &[u8],
-    ) -> Result<(), Error> {
-        if libcrux_platform::simd128_support() && libcrux_platform::aes_ni_support() {
-            NeonAesGcm128::encrypt(ciphertext, tag, key, nonce, aad, plaintext)
-        } else if libcrux_platform::simd256_support() && libcrux_platform::aes_ni_support() {
-            X64AesGcm128::encrypt(ciphertext, tag, key, nonce, aad, plaintext)
-        } else {
-            PortableAesGcm128::encrypt(ciphertext, tag, key, nonce, aad, plaintext)
+mod aes128 {
+    use super::*;
+    use aes_gcm_128::KEY_LEN;
+    use libcrux_traits::aead::arrayref::{DecryptError, EncryptError};
+
+    pub type Key = [u8; KEY_LEN];
+    pub type Tag = [u8; TAG_LEN];
+    pub type Nonce = [u8; NONCE_LEN];
+
+    impl Aead<KEY_LEN, TAG_LEN, NONCE_LEN> for AesGcm128 {
+        fn encrypt(
+            ciphertext: &mut [u8],
+            tag: &mut Tag,
+            key: &Key,
+            nonce: &Nonce,
+            aad: &[u8],
+            plaintext: &[u8],
+        ) -> Result<(), EncryptError> {
+            if libcrux_platform::simd128_support() && libcrux_platform::aes_ni_support() {
+                NeonAesGcm128::encrypt(ciphertext, tag, key, nonce, aad, plaintext)
+            } else if libcrux_platform::simd256_support() && libcrux_platform::aes_ni_support() {
+                X64AesGcm128::encrypt(ciphertext, tag, key, nonce, aad, plaintext)
+            } else {
+                PortableAesGcm128::encrypt(ciphertext, tag, key, nonce, aad, plaintext)
+            }
+        }
+
+        fn decrypt(
+            plaintext: &mut [u8],
+            key: &Key,
+            nonce: &Nonce,
+            aad: &[u8],
+            ciphertext: &[u8],
+            tag: &Tag,
+        ) -> Result<(), DecryptError> {
+            if libcrux_platform::simd128_support() && libcrux_platform::aes_ni_support() {
+                NeonAesGcm128::decrypt(plaintext, key, nonce, aad, ciphertext, tag)
+            } else if libcrux_platform::simd256_support() && libcrux_platform::aes_ni_support() {
+                X64AesGcm128::decrypt(plaintext, key, nonce, aad, ciphertext, tag)
+            } else {
+                PortableAesGcm128::decrypt(plaintext, key, nonce, aad, ciphertext, tag)
+            }
         }
     }
 
-    fn decrypt(
-        plaintext: &mut [u8],
-        key: &Self::Key,
-        nonce: &Self::Nonce,
-        aad: &[u8],
-        ciphertext: &[u8],
-        tag: &Self::Tag,
-    ) -> Result<(), Error> {
-        if libcrux_platform::simd128_support() && libcrux_platform::aes_ni_support() {
-            NeonAesGcm128::decrypt(plaintext, key, nonce, aad, ciphertext, tag)
-        } else if libcrux_platform::simd256_support() && libcrux_platform::aes_ni_support() {
-            X64AesGcm128::decrypt(plaintext, key, nonce, aad, ciphertext, tag)
-        } else {
-            PortableAesGcm128::decrypt(plaintext, key, nonce, aad, ciphertext, tag)
+    impl Aead<KEY_LEN, TAG_LEN, NONCE_LEN> for PortableAesGcm128 {
+        fn encrypt(
+            ciphertext: &mut [u8],
+            tag: &mut Tag,
+            key: &Key,
+            nonce: &Nonce,
+            aad: &[u8],
+            plaintext: &[u8],
+        ) -> Result<(), EncryptError> {
+            portable::aes128_gcm_encrypt(key, nonce, aad, plaintext, ciphertext, tag);
+            Ok(())
+        }
+
+        fn decrypt(
+            plaintext: &mut [u8],
+            key: &Key,
+            nonce: &Nonce,
+            aad: &[u8],
+            ciphertext: &[u8],
+            tag: &Tag,
+        ) -> Result<(), DecryptError> {
+            portable::aes128_gcm_decrypt(key, nonce, aad, ciphertext, tag, plaintext)
+                .map_err(|_| DecryptError::InvalidTag)
         }
     }
-}
 
-impl Aead for PortableAesGcm128 {
-    type Key = [u8; 16];
-    type Tag = [u8; 16];
-    type Nonce = [u8; 12];
+    #[cfg(all(target_arch = "aarch64", target_feature = "aes"))]
+    impl Aead<KEY_LEN, TAG_LEN, NONCE_LEN> for NeonAesGcm128 {
+        fn encrypt(
+            ciphertext: &mut [u8],
+            tag: &mut Tag,
+            key: &Key,
+            nonce: &Nonce,
+            aad: &[u8],
+            plaintext: &[u8],
+        ) -> Result<(), EncryptError> {
+            neon::aes128_gcm_encrypt(key, nonce, aad, plaintext, ciphertext, tag);
+            Ok(())
+        }
 
-    // XXX: make this conditional when cleaning up
-    // #[cfg(feature = "rand")]
-    fn key_gen(key: &mut Self::Key, rng: &mut impl CryptoRng) -> Result<(), Error> {
-        rng.fill_bytes(key);
-        Ok(())
-    }
-
-    fn encrypt(
-        ciphertext: &mut [u8],
-        tag: &mut Self::Tag,
-        key: &Self::Key,
-        nonce: &Self::Nonce,
-        aad: &[u8],
-        plaintext: &[u8],
-    ) -> Result<(), Error> {
-        portable::aes128_gcm_encrypt(key, nonce, aad, plaintext, ciphertext, tag);
-        Ok(())
-    }
-
-    fn decrypt(
-        plaintext: &mut [u8],
-        key: &Self::Key,
-        nonce: &Self::Nonce,
-        aad: &[u8],
-        ciphertext: &[u8],
-        tag: &Self::Tag,
-    ) -> Result<(), Error> {
-        portable::aes128_gcm_decrypt(key, nonce, aad, ciphertext, tag, plaintext)
-            .map_err(|_| Error::Decrypt)
-    }
-}
-
-#[cfg(all(target_arch = "aarch64", target_feature = "aes"))]
-impl Aead for NeonAesGcm128 {
-    type Key = [u8; 16];
-    type Tag = [u8; 16];
-    type Nonce = [u8; 12];
-
-    // XXX: make this conditional when cleaning up
-    // #[cfg(feature = "rand")]
-    fn key_gen(key: &mut Self::Key, rng: &mut impl CryptoRng) -> Result<(), Error> {
-        rng.fill_bytes(key);
-        Ok(())
-    }
-
-    fn encrypt(
-        ciphertext: &mut [u8],
-        tag: &mut Self::Tag,
-        key: &Self::Key,
-        nonce: &Self::Nonce,
-        aad: &[u8],
-        plaintext: &[u8],
-    ) -> Result<(), Error> {
-        neon::aes128_gcm_encrypt(key, nonce, aad, plaintext, ciphertext, tag);
-        Ok(())
-    }
-
-    fn decrypt(
-        plaintext: &mut [u8],
-        key: &Self::Key,
-        nonce: &Self::Nonce,
-        aad: &[u8],
-        ciphertext: &[u8],
-        tag: &Self::Tag,
-    ) -> Result<(), Error> {
-        neon::aes128_gcm_decrypt(key, nonce, aad, ciphertext, tag, plaintext)
-            .map_err(|_| Error::Decrypt)
+        fn decrypt(
+            plaintext: &mut [u8],
+            key: &Key,
+            nonce: &Nonce,
+            aad: &[u8],
+            ciphertext: &[u8],
+            tag: &Tag,
+        ) -> Result<(), DecryptError> {
+            neon::aes128_gcm_decrypt(key, nonce, aad, ciphertext, tag, plaintext)
+                .map_err(|_| DecryptError::InvalidTag)
+        }
     }
 }
 
 pub mod portable {
-    use crate::{aes_gcm_128, platform, DecryptError};
+    use crate::{
+        aes_gcm_128::{self},
+        aes_gcm_256::{self},
+        platform, DecryptError, NONCE_LEN, TAG_LEN,
+    };
 
-    type State = aes_gcm_128::State<platform::portable::State, platform::portable::FieldElement>;
+    // XXX: It doesn't really make sense to have these states. We should abstract
+    // this differently
+
+    type Aes128State =
+        aes_gcm_128::State<platform::portable::State, platform::portable::FieldElement>;
+
+    type Aes256State =
+        aes_gcm_256::State<platform::portable::State, platform::portable::FieldElement>;
 
     pub fn aes128_gcm_encrypt(
         key: &[u8],
@@ -169,7 +159,11 @@ pub mod portable {
         ciphertext: &mut [u8],
         tag: &mut [u8],
     ) {
-        let mut st = State::init(key);
+        debug_assert!(key.len() == aes_gcm_128::KEY_LEN);
+        debug_assert!(nonce.len() == NONCE_LEN);
+        debug_assert!(tag.len() == TAG_LEN);
+
+        let mut st = Aes128State::init(key);
         st.set_nonce(nonce);
         st.encrypt(aad, plaintext, ciphertext, tag);
     }
@@ -182,7 +176,45 @@ pub mod portable {
         tag: &[u8],
         plaintext: &mut [u8],
     ) -> Result<(), DecryptError> {
-        let mut st = State::init(key);
+        debug_assert!(key.len() == aes_gcm_128::KEY_LEN);
+        debug_assert!(nonce.len() == NONCE_LEN);
+        debug_assert!(tag.len() == TAG_LEN);
+
+        let mut st = Aes128State::init(key);
+        st.set_nonce(nonce);
+        st.decrypt(aad, ciphertext, tag, plaintext)
+    }
+
+    pub fn aes256_gcm_encrypt(
+        key: &[u8],
+        nonce: &[u8],
+        aad: &[u8],
+        plaintext: &[u8],
+        ciphertext: &mut [u8],
+        tag: &mut [u8],
+    ) {
+        debug_assert!(key.len() == aes_gcm_256::KEY_LEN);
+        debug_assert!(nonce.len() == NONCE_LEN);
+        debug_assert!(tag.len() == TAG_LEN);
+
+        let mut st = Aes256State::init(key);
+        st.set_nonce(nonce);
+        st.encrypt(aad, plaintext, ciphertext, tag);
+    }
+
+    pub fn aes256_gcm_decrypt(
+        key: &[u8],
+        nonce: &[u8],
+        aad: &[u8],
+        ciphertext: &[u8],
+        tag: &[u8],
+        plaintext: &mut [u8],
+    ) -> Result<(), DecryptError> {
+        debug_assert!(key.len() == aes_gcm_256::KEY_LEN);
+        debug_assert!(nonce.len() == NONCE_LEN);
+        debug_assert!(tag.len() == TAG_LEN);
+
+        let mut st = Aes256State::init(key);
         st.set_nonce(nonce);
         st.decrypt(aad, ciphertext, tag, plaintext)
     }
