@@ -1,6 +1,7 @@
 use super::{
     ecdh::PublicKey,
     keys::{derive_session_key, AEADKey},
+    responder::ResponderRegistrationPayload,
     transcript::Transcript,
 };
 
@@ -15,44 +16,27 @@ pub struct SessionKey {
     pub(crate) key: AEADKey,
 }
 
-pub(crate) enum SessionState {
-    Query {
-        responder_longterm_ecdh_pk: PublicKey,
-        session_key: SessionKey, // This carries a key_id that can also serve as the session ID
-    },
-    Registration {
-        initiator_longterm_ecdh_pk: PublicKey,
-        responder_longterm_ecdh_pk: PublicKey,
-        responder_pq_pk: Option<libcrux_ml_kem::mlkem768::MlKem768PublicKey>,
-        session_key: SessionKey, // This carries a key_id that can also serve as the session ID
-    },
+pub(crate) struct SessionState<'keys> {
+    initiator_longterm_ecdh_pk: &'keys PublicKey,
+    responder_longterm_ecdh_pk: &'keys PublicKey,
+    responder_pq_pk: Option<&'keys libcrux_ml_kem::mlkem768::MlKem768PublicKey>,
+    session_key: SessionKey, // This carries a key_id that can also serve as the session ID
 }
 
-impl SessionState {
-    pub(crate) fn query_mode(
-        responder_longterm_ecdh_pk: &PublicKey,
+impl<'keys> SessionState<'keys> {
+    pub(crate) fn new(
+        _responder_reg_info: &ResponderRegistrationPayload,
+        responder_longterm_ecdh_pk: &'keys PublicKey,
+        initiator_longterm_ecdh_pk: &'keys PublicKey,
+        responder_pq_pk: Option<&'keys libcrux_ml_kem::mlkem768::MlKem768PublicKey>,
         k2: &AEADKey,
         tx2: &Transcript,
     ) -> Self {
         let session_key = derive_session_key(&k2, &tx2);
-        Self::Query {
-            session_key,
-            responder_longterm_ecdh_pk: responder_longterm_ecdh_pk.clone(),
-        }
-    }
-
-    pub(crate) fn registration_mode(
-        responder_longterm_ecdh_pk: &PublicKey,
-        initiator_longterm_ecdh_pk: &PublicKey,
-        responder_pq_pk: Option<&libcrux_ml_kem::mlkem768::MlKem768PublicKey>,
-        k2: &AEADKey,
-        tx2: &Transcript,
-    ) -> Self {
-        let session_key = derive_session_key(&k2, &tx2);
-        Self::Registration {
-            initiator_longterm_ecdh_pk: initiator_longterm_ecdh_pk.clone(),
-            responder_longterm_ecdh_pk: responder_longterm_ecdh_pk.clone(),
-            responder_pq_pk: responder_pq_pk.map(|i| *i.clone()),
+        Self {
+            initiator_longterm_ecdh_pk,
+            responder_longterm_ecdh_pk,
+            responder_pq_pk,
             session_key,
         }
     }

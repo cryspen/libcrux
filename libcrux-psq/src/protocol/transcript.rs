@@ -65,18 +65,17 @@ pub(crate) fn tx1(
     #[derive(TlsSerializeBytes, TlsSize)]
     struct Transcript1Inputs<'a, 'b, 'c> {
         initiator_longterm_pk: &'a PublicKey,
-        #[tls_codec(with = "crate::util::mlkem_pk_codec")]
-        responder_pq_pk: &'b Option<libcrux_ml_kem::mlkem768::MlKem768PublicKey>,
-        #[tls_codec(with = "crate::util::mlkem_ct_codec")]
-        pq_encaps: &'c Option<libcrux_ml_kem::mlkem768::MlKem768Ciphertext>,
+        responder_pq_pk: Option<&'b libcrux_ml_kem::mlkem768::MlKem768PublicKey>,
+        pq_encaps: Option<&'c libcrux_ml_kem::mlkem768::MlKem768Ciphertext>,
     }
 
     Transcript::add_hash::<TX1_DOMAIN_SEP>(
         Some(tx0),
         &Transcript1Inputs {
             initiator_longterm_pk,
+
             pq_encaps,
-            responder_pq_pk: responder_pq_pk.as_ref(),
+            responder_pq_pk,
         },
     )
 }

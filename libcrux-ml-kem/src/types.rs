@@ -180,6 +180,18 @@ mod codec {
                     }
                 }
             }
+
+            impl<const SIZE: usize> tls_codec::SerializeBytes for &$name<SIZE> {
+                fn tls_serialize(&self) -> Result<alloc::vec::Vec<u8>, tls_codec::Error> {
+                    tls_codec::TlsByteVecU16::from_slice(self.as_ref()).tls_serialize()
+                }
+            }
+
+            impl<const SIZE: usize> tls_codec::Size for &$name<SIZE> {
+                fn tls_serialized_len(&self) -> usize {
+                    SIZE + 2
+                }
+            }
         };
     }
 
