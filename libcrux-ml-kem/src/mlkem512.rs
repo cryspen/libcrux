@@ -26,7 +26,15 @@ const ETA2_RANDOMNESS_SIZE: usize = ETA2 * 64;
 
 const IMPLICIT_REJECTION_HASH_INPUT_SIZE: usize = SHARED_SECRET_SIZE + CPA_PKE_CIPHERTEXT_SIZE;
 
+/// The ML-KEM 512 algorithms
 pub struct MlKem512;
+
+crate::impl_kem_trait!(
+    MlKem512,
+    MlKem512PublicKey,
+    MlKem512PrivateKey,
+    MlKem512Ciphertext
+);
 
 /// An ML-KEM 512 Ciphertext
 pub type MlKem512Ciphertext = MlKemCiphertext<CPA_PKE_CIPHERTEXT_SIZE>;
@@ -526,61 +534,6 @@ pub fn decapsulate(
     >(private_key, ciphertext)
 }
 
-impl
-    libcrux_traits::kem::arrayref::Kem<
-        CPA_PKE_PUBLIC_KEY_SIZE,
-        SECRET_KEY_SIZE,
-        CPA_PKE_CIPHERTEXT_SIZE,
-        SHARED_SECRET_SIZE,
-        KEY_GENERATION_SEED_SIZE,
-        SHARED_SECRET_SIZE,
-    > for MlKem512
-{
-    fn keygen(
-        ek: &mut [u8; CPA_PKE_PUBLIC_KEY_SIZE],
-        dk: &mut [u8; SECRET_KEY_SIZE],
-        rand: &[u8; KEY_GENERATION_SEED_SIZE],
-    ) -> Result<(), libcrux_traits::kem::owned::KeyGenError> {
-        let key_pair = generate_key_pair(*rand);
-        ek.copy_from_slice(key_pair.pk());
-        dk.copy_from_slice(key_pair.sk());
-
-        // TODO: validate that the key is valid (how?)
-
-        Ok(())
-    }
-
-    fn encaps(
-        ct: &mut [u8; CPA_PKE_CIPHERTEXT_SIZE],
-        ss: &mut [u8; SHARED_SECRET_SIZE],
-        ek: &[u8; CPA_PKE_PUBLIC_KEY_SIZE],
-        rand: &[u8; SHARED_SECRET_SIZE],
-    ) -> Result<(), libcrux_traits::kem::owned::EncapsError> {
-        let public_key = MlKem512PublicKey::from(ek);
-
-        let (ct_, ss_) = encapsulate(&public_key, *rand);
-        ct.copy_from_slice(ct_.as_slice());
-        ss.copy_from_slice(ss_.as_slice());
-
-        Ok(())
-    }
-
-    fn decaps(
-        ss: &mut [u8; SHARED_SECRET_SIZE],
-        ct: &[u8; CPA_PKE_CIPHERTEXT_SIZE],
-        dk: &[u8; SECRET_KEY_SIZE],
-    ) -> Result<(), libcrux_traits::kem::owned::DecapsError> {
-        let secret_key = MlKem512PrivateKey::from(dk);
-        let ciphertext = MlKem512Ciphertext::from(ct);
-
-        let ss_ = decapsulate(&secret_key, &ciphertext);
-
-        ss.copy_from_slice(ss_.as_slice());
-
-        Ok(())
-    }
-}
-
 /// Randomized APIs
 ///
 /// The functions in this module are equivalent to the one in the main module,
@@ -629,6 +582,16 @@ pub mod rand {
 #[cfg(all(not(eurydice), feature = "kyber"))]
 pub(crate) mod kyber {
     use super::*;
+
+    /// The Kyber 512 algorithms
+    pub struct Kyber512;
+
+    crate::impl_kem_trait!(
+        Kyber512,
+        MlKem512PublicKey,
+        MlKem512PrivateKey,
+        MlKem512Ciphertext
+    );
 
     /// Generate Kyber 512 Key Pair
     ///

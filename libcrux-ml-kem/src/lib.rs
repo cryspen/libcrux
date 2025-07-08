@@ -137,6 +137,7 @@ cfg_kyber! {
     pub mod kyber512 {
         //! Kyber 512 (NIST PQC Round 3)
         cfg_no_eurydice! {
+            pub use crate::mlkem512::kyber::Kyber512;
             pub use crate::mlkem512::kyber::generate_key_pair;
             pub use crate::mlkem512::kyber::decapsulate;
             pub use crate::mlkem512::kyber::encapsulate;
@@ -150,6 +151,7 @@ cfg_kyber! {
     pub mod kyber768 {
         //! Kyber 768 (NIST PQC Round 3)
         cfg_no_eurydice! {
+            pub use crate::mlkem768::kyber::Kyber768;
             pub use crate::mlkem768::kyber::generate_key_pair;
             pub use crate::mlkem768::kyber::decapsulate;
             pub use crate::mlkem768::kyber::encapsulate;
@@ -163,6 +165,7 @@ cfg_kyber! {
     pub mod kyber1024 {
         //! Kyber 1024 (NIST PQC Round 3)
         cfg_no_eurydice! {
+            pub use crate::mlkem1024::kyber::Kyber1024;
             pub use crate::mlkem1024::kyber::generate_key_pair;
             pub use crate::mlkem1024::kyber::decapsulate;
             pub use crate::mlkem1024::kyber::encapsulate;
@@ -171,3 +174,64 @@ cfg_kyber! {
         }
     }
 }
+
+macro_rules! impl_kem_trait {
+    ($variant:ty, $pk:ty, $sk:ty, $ct:ty) => {
+        impl
+            libcrux_traits::kem::arrayref::Kem<
+                CPA_PKE_PUBLIC_KEY_SIZE,
+                SECRET_KEY_SIZE,
+                CPA_PKE_CIPHERTEXT_SIZE,
+                SHARED_SECRET_SIZE,
+                KEY_GENERATION_SEED_SIZE,
+                SHARED_SECRET_SIZE,
+            > for $variant
+        {
+            fn keygen(
+                ek: &mut [u8; CPA_PKE_PUBLIC_KEY_SIZE],
+                dk: &mut [u8; SECRET_KEY_SIZE],
+                rand: &[u8; KEY_GENERATION_SEED_SIZE],
+            ) -> Result<(), libcrux_traits::kem::owned::KeyGenError> {
+                let key_pair = generate_key_pair(*rand);
+                ek.copy_from_slice(key_pair.pk());
+                dk.copy_from_slice(key_pair.sk());
+
+                // TODO: validate that the key is valid (how?)
+
+                Ok(())
+            }
+
+            fn encaps(
+                ct: &mut [u8; CPA_PKE_CIPHERTEXT_SIZE],
+                ss: &mut [u8; SHARED_SECRET_SIZE],
+                ek: &[u8; CPA_PKE_PUBLIC_KEY_SIZE],
+                rand: &[u8; SHARED_SECRET_SIZE],
+            ) -> Result<(), libcrux_traits::kem::owned::EncapsError> {
+                let public_key: $pk = ek.into();
+
+                let (ct_, ss_) = encapsulate(&public_key, *rand);
+                ct.copy_from_slice(ct_.as_slice());
+                ss.copy_from_slice(ss_.as_slice());
+
+                Ok(())
+            }
+
+            fn decaps(
+                ss: &mut [u8; SHARED_SECRET_SIZE],
+                ct: &[u8; CPA_PKE_CIPHERTEXT_SIZE],
+                dk: &[u8; SECRET_KEY_SIZE],
+            ) -> Result<(), libcrux_traits::kem::owned::DecapsError> {
+                let secret_key: $sk = dk.into();
+                let ciphertext: $ct = ct.into();
+
+                let ss_ = decapsulate(&secret_key, &ciphertext);
+
+                ss.copy_from_slice(ss_.as_slice());
+
+                Ok(())
+            }
+        }
+    };
+}
+
+use impl_kem_trait;
