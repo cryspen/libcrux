@@ -8,7 +8,7 @@ use super::{
 };
 
 #[derive(TlsSerializeBytes, TlsSize)]
-pub struct AEADKey(pub [u8; KEY_LEN]);
+pub struct AEADKey([u8; KEY_LEN]);
 
 impl AEADKey {
     fn new(ikm: &impl SerializeBytes, info: &impl SerializeBytes) -> AEADKey {
