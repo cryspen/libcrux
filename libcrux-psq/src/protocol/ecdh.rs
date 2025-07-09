@@ -22,7 +22,7 @@ impl AsRef<[u8]> for SharedSecret {
     }
 }
 
-#[derive(Clone, TlsDeserializeBytes, TlsSerializeBytes, TlsSize)]
+#[derive(Eq, Hash, PartialEq, Clone, TlsDeserializeBytes, TlsSerializeBytes, TlsSize)]
 /// A wrapper around a KEM public key.
 pub struct PublicKey(Vec<u8>);
 

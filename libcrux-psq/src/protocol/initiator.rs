@@ -38,14 +38,14 @@ pub struct RegistrationInitiatorPre<'keys> {
 #[derive(TlsSerializeBytes, TlsDeserializeBytes, TlsSize)]
 #[repr(u8)]
 pub enum InitiatorOuterPayload {
-    Query,
+    Query(Vec<u8>),
     Registration(Box<Message>),
 }
 
 impl InitiatorOuterPayload {
-    pub fn as_query_msg(self) -> Option<()> {
-        if let InitiatorOuterPayload::Query = self {
-            Some(())
+    pub fn as_query_msg(self) -> Option<Vec<u8>> {
+        if let InitiatorOuterPayload::Query(query) = self {
+            Some(query)
         } else {
             None
         }
@@ -61,12 +61,13 @@ impl InitiatorOuterPayload {
 }
 
 #[derive(TlsSerializeBytes, TlsDeserializeBytes, TlsSize)]
-pub struct InitiatorInnerPayload {}
+pub struct InitiatorInnerPayload(pub Vec<u8>);
 
 impl<'keys> QueryInitiator<'keys> {
     pub fn query(
         responder_keys: &ResponderKeyPackage<'keys>,
         initiator_context: &InitiatorAppContext,
+        query_payload: &[u8],
         rng: &mut impl CryptoRng,
     ) -> Result<(Self, Message), Error> {
         let initiator_eph_keys = KEMKeyPair::new(rng);
@@ -78,7 +79,7 @@ impl<'keys> QueryInitiator<'keys> {
             false,
         )?;
 
-        let outer_payload = InitiatorOuterPayload::Query;
+        let outer_payload = InitiatorOuterPayload::Query(query_payload.to_vec());
         let mut ciphertext = vec![0u8; outer_payload.tls_serialized_len() + 16];
 
         k0.serialize_encrypt(&outer_payload, initiator_context.aad_outer, &mut ciphertext)?;
@@ -119,6 +120,7 @@ impl<'keys, 'context> RegistrationInitiatorPre<'keys> {
         initiator_keys: &'keys KEMKeyPair,
         responder_keys: &ResponderKeyPackage<'keys>,
         initiator_context: &InitiatorAppContext<'context>,
+        registration_payload: &[u8],
         rng: &mut impl CryptoRng,
     ) -> Result<(Self, Message), Error> {
         let initiator_eph_keys = KEMKeyPair::new(rng);
@@ -134,6 +136,7 @@ impl<'keys, 'context> RegistrationInitiatorPre<'keys> {
             initiator_keys,
             responder_keys,
             initiator_context,
+            registration_payload,
             &tx0,
             &k0,
             rng,
@@ -194,6 +197,7 @@ fn build_registration_payload<'context>(
     initiator_keys: &KEMKeyPair,
     responder_keys: &ResponderKeyPackage<'_>,
     initiator_context: &InitiatorAppContext<'context>,
+    registration_payload: &[u8],
     tx0: &Transcript,
     k0: &AEADKey,
     rng: &mut impl CryptoRng,
@@ -225,7 +229,7 @@ fn build_registration_payload<'context>(
         &tx1,
     )?;
 
-    let inner_payload = InitiatorInnerPayload {};
+    let inner_payload = InitiatorInnerPayload(registration_payload.to_vec());
     let mut ciphertext = vec![0u8; inner_payload.tls_serialized_len() + 16];
 
     k1.serialize_encrypt(&inner_payload, initiator_context.aad_inner, &mut ciphertext)?;

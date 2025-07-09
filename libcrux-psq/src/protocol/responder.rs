@@ -1,3 +1,8 @@
+use std::{
+    collections::HashMap,
+    time::{Duration, SystemTime},
+};
+
 use libcrux_ml_kem::mlkem768::{decapsulate, MlKem768KeyPair};
 use rand::CryptoRng;
 use tls_codec::{Size, TlsDeserializeBytes, TlsSerializeBytes, TlsSize};
@@ -12,7 +17,7 @@ use super::{
     },
     session::SessionState,
     transcript::{tx1, tx2, Transcript},
-    Message, ResponderAppContext,
+    Message, ResponderAppContext, TTL_THRESHOLD,
 };
 
 pub struct Responder {}
@@ -33,11 +38,23 @@ pub struct ResponderRegistrationState {
 
 // XXX: Determine what should be the contents here.
 #[derive(TlsSerializeBytes, TlsDeserializeBytes, TlsSize)]
-pub struct ResponderQueryPayload;
+pub struct ResponderQueryPayload(pub Vec<u8>);
+
+impl AsRef<[u8]> for ResponderQueryPayload {
+    fn as_ref(&self) -> &[u8] {
+        self.0.as_slice()
+    }
+}
+
+impl AsRef<[u8]> for ResponderRegistrationPayload {
+    fn as_ref(&self) -> &[u8] {
+        self.0.as_slice()
+    }
+}
 
 // XXX: Determine what should be the contents here.
 #[derive(TlsSerializeBytes, TlsDeserializeBytes, TlsSize)]
-pub struct ResponderRegistrationPayload;
+pub struct ResponderRegistrationPayload(pub Vec<u8>);
 
 impl<'context> Responder {
     pub fn respond_query(
@@ -92,10 +109,9 @@ impl<'context> Responder {
             &responder_eph_keys.sk,
         )?;
 
-        let responder_payload = ResponderRegistrationPayload {};
-        let mut ciphertext = vec![0u8; responder_payload.tls_serialized_len() + 16];
+        let mut ciphertext = vec![0u8; response.tls_serialized_len() + 16];
 
-        k2.serialize_encrypt(&responder_payload, responder_context.aad, &mut ciphertext)?;
+        k2.serialize_encrypt(&response, responder_context.aad, &mut ciphertext)?;
 
         let responder_pq_pk = state
             .registration_msg
@@ -170,10 +186,22 @@ impl<'context> Responder {
     }
 
     pub fn decrypt_outer(
+        eph_keys: &mut HashMap<PublicKey, Duration>,
         responder_keys: &KEMKeyPair,
         responder_context: &ResponderAppContext<'context>,
         initiator_msg: Message,
     ) -> Result<(InitiatorOuterPayload, Transcript, AEADKey, PublicKey), Error> {
+        let now = SystemTime::now()
+            .duration_since(SystemTime::UNIX_EPOCH)
+            .map_err(|_| Error::OsError)?;
+        if let Some(timestamp) = eph_keys.get(&initiator_msg.pk) {
+            if now - *timestamp > TTL_THRESHOLD {
+                return Err(Error::TimestampElapsed);
+            }
+        } else {
+            eph_keys.insert(initiator_msg.pk.clone(), now);
+        }
+
         let (tx0, k0) = derive_k0(
             &initiator_msg.pk,
             responder_keys,
