@@ -146,6 +146,85 @@ mod index_impls {
     impl_index_impls_for_generic_struct!(MlKemPublicKey);
 }
 
+#[cfg(all(feature = "codec", feature = "alloc"))]
+mod codec {
+    use super::*;
+
+    macro_rules! impl_tls_codec_for_generic_struct {
+        ($name:ident) => {
+            impl<const SIZE: usize> tls_codec::SerializeBytes for $name<SIZE> {
+                fn tls_serialize(&self) -> Result<alloc::vec::Vec<u8>, tls_codec::Error> {
+                    tls_codec::TlsByteVecU16::from_slice(self.as_ref()).tls_serialize()
+                }
+            }
+
+            impl<const SIZE: usize> tls_codec::Size for $name<SIZE> {
+                fn tls_serialized_len(&self) -> usize {
+                    SIZE + 2
+                }
+            }
+
+            impl<const SIZE: usize> tls_codec::DeserializeBytes for $name<SIZE> {
+                fn tls_deserialize_bytes(
+                    bytes: &[u8],
+                ) -> Result<($name<SIZE>, &[u8]), tls_codec::Error> {
+                    let (vec, rest) = tls_codec::TlsByteVecU16::tls_deserialize_bytes(bytes)?;
+                    if vec.len() != SIZE {
+                        Err(tls_codec::Error::InvalidVectorLength)
+                    } else {
+                        Ok((
+                            $name::<SIZE>::try_from(vec.as_slice())
+                                .expect("deserialized vector should have the length {SIZE}"),
+                            rest,
+                        ))
+                    }
+                }
+            }
+
+            impl<const SIZE: usize> tls_codec::SerializeBytes for &$name<SIZE> {
+                fn tls_serialize(&self) -> Result<alloc::vec::Vec<u8>, tls_codec::Error> {
+                    tls_codec::TlsByteVecU16::from_slice(self.as_ref()).tls_serialize()
+                }
+            }
+
+            impl<const SIZE: usize> tls_codec::Size for &$name<SIZE> {
+                fn tls_serialized_len(&self) -> usize {
+                    SIZE + 2
+                }
+            }
+        };
+    }
+
+    impl_tls_codec_for_generic_struct!(MlKemCiphertext);
+    impl_tls_codec_for_generic_struct!(MlKemPublicKey);
+
+    #[cfg(test)]
+    mod test {
+        use tls_codec::{DeserializeBytes, SerializeBytes, Size};
+
+        use super::*;
+
+        #[test]
+        fn ser_de() {
+            const SIZE: usize = 1568;
+            let test_struct = MlKemCiphertext::<SIZE>::default();
+
+            assert_eq!(test_struct.tls_serialized_len(), SIZE + 2);
+            let test_struct_serialized = test_struct.tls_serialize().unwrap();
+            assert_eq!(
+                test_struct_serialized.len(),
+                test_struct.tls_serialized_len()
+            );
+
+            let test_struct_deserialied =
+                MlKemCiphertext::<SIZE>::tls_deserialize_exact_bytes(&test_struct_serialized)
+                    .unwrap();
+
+            assert_eq!(test_struct.as_ref(), test_struct_deserialied.as_ref())
+        }
+    }
+}
+
 /// An ML-KEM key pair
 pub struct MlKemKeyPair<const PRIVATE_KEY_SIZE: usize, const PUBLIC_KEY_SIZE: usize> {
     pub(crate) sk: MlKemPrivateKey<PRIVATE_KEY_SIZE>,
