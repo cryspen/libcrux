@@ -195,7 +195,7 @@ impl<'context> Responder {
             .duration_since(SystemTime::UNIX_EPOCH)
             .map_err(|_| Error::OsError)?;
         if let Some(timestamp) = eph_keys.get(&initiator_msg.pk) {
-            if now - *timestamp > TTL_THRESHOLD {
+            if now - *timestamp < TTL_THRESHOLD {
                 return Err(Error::TimestampElapsed);
             }
         } else {
