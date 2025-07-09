@@ -8,6 +8,8 @@ use libcrux_ecdh::{secret_to_public, Algorithm};
 use rand::CryptoRng;
 use tls_codec::{TlsDeserializeBytes, TlsSerializeBytes, TlsSize};
 
+use crate::Error;
+
 #[derive(TlsSerializeBytes, TlsSize)]
 /// A wrapper around a KEM shared secret.
 ///
@@ -29,6 +31,7 @@ impl AsRef<[u8]> for PublicKey {
         self.0.as_slice()
     }
 }
+
 #[derive(Clone)]
 /// A wrapper around a KEM private key.
 pub struct PrivateKey(Vec<u8>);
@@ -41,8 +44,11 @@ impl AsRef<[u8]> for PrivateKey {
 
 impl SharedSecret {
     /// Derive a shared secret, DH-KEM style.
-    pub(crate) fn derive(sk: &PrivateKey, pk: &PublicKey) -> SharedSecret {
-        SharedSecret(libcrux_ecdh::derive(Algorithm::X25519, &pk.0, &sk.0).unwrap())
+    pub(crate) fn derive(sk: &PrivateKey, pk: &PublicKey) -> Result<SharedSecret, Error> {
+        Ok(SharedSecret(
+            libcrux_ecdh::derive(Algorithm::X25519, &pk.0, &sk.0)
+                .map_err(|_| Error::CryptoError)?,
+        ))
     }
 }
 
@@ -61,6 +67,7 @@ impl PrivateKey {
     }
 }
 
+#[derive(Clone)]
 pub struct KEMKeyPair {
     pub(crate) sk: PrivateKey,
     pub(crate) pk: PublicKey,
