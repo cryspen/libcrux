@@ -14,7 +14,10 @@ use super::{
 };
 
 pub struct Responder {}
-
+pub struct PQKeyPair {
+    private_key: MlKem768PrivateKey,
+    public_key: MlKem768PublicKey,
+}
 #[derive(TlsSerializeBytes, TlsDeserializeBytes, TlsSize)]
 #[repr(u8)]
 pub enum ResponderPayload {
@@ -126,8 +129,7 @@ impl Responder {
 
     pub fn decrypt_inner(
         responder_longterm_ecdh_sk: &PrivateKey,
-        responder_pq_sk: &MlKem768PrivateKey,
-        responder_pq_pk: &MlKem768PublicKey,
+        responder_pq_keypair: &PQKeyPair,
         tx0: &Transcript,
         k0: &AEADKey,
         initiator_longterm_ecdh_pk: &PublicKey,
@@ -135,9 +137,10 @@ impl Responder {
         ciphertext: &[u8],
         aad: &[u8],
     ) -> (InitiatorInnerPayload, ResponderRegistrationState) {
-        let pq_shared_secret = pq_encaps.map(|enc| decapsulate(responder_pq_sk, &enc));
+        let pq_shared_secret =
+            pq_encaps.map(|enc| decapsulate(&responder_pq_keypair.private_key, &enc));
         let responder_pq_pk_opt = if pq_encaps.as_ref().is_some() {
-            Some(responder_pq_pk)
+            Some(responder_pq_keypair.public_key)
         } else {
             None
         };
