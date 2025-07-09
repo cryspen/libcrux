@@ -10,6 +10,8 @@ use std::array::TryFromSliceError;
 #[derive(Debug)]
 /// PSQ Errors.
 pub enum Error {
+    /// An error during serialization.
+    Serialization,
     /// An invalid public key was provided
     InvalidPublicKey,
     /// An invalid private key was provided

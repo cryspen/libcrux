@@ -50,7 +50,7 @@ impl<'rkeys> QueryInitiator<'rkeys> {
         ctx: &[u8],
         aad: &[u8],
         rng: &mut impl CryptoRng,
-    ) -> (Self, Message) {
+    ) -> Result<(Self, Message), Error> {
         let initiator_ephemeral_ecdh_sk = PrivateKey::new(rng);
         let initiator_ephemeral_ecdh_pk = PublicKey::from(&initiator_ephemeral_ecdh_sk);
 
@@ -62,9 +62,12 @@ impl<'rkeys> QueryInitiator<'rkeys> {
             false,
         );
 
-        let ciphertext = k0.serialize_encrypt(&InitiatorOuterPayload::Query, &aad);
+        let outer_payload = InitiatorOuterPayload::Query;
+        let mut ciphertext = vec![0u8; outer_payload.tls_serialized_len() + 16];
 
-        (
+        k0.serialize_encrypt(&outer_payload, aad, &mut ciphertext)?;
+
+        Ok((
             Self {
                 responder_longterm_ecdh_pk,
                 initiator_ephemeral_ecdh_sk,
@@ -76,7 +79,7 @@ impl<'rkeys> QueryInitiator<'rkeys> {
                 ciphertext,
                 aad: aad.to_vec(),
             },
-        )
+        ))
     }
 
     pub fn read_response(self, responder_msg: &Message) -> ResponderQueryPayload {
@@ -110,7 +113,7 @@ impl<'keys> RegistrationInitiatorPre<'keys> {
         aad_outer: &[u8],
         aad_inner: &[u8],
         rng: &mut impl CryptoRng,
-    ) -> (Self, Message) {
+    ) -> Result<(Self, Message), Error> {
         let initiator_ephemeral_ecdh_sk = PrivateKey::new(rng);
         let initiator_ephemeral_ecdh_pk = PublicKey::from(&initiator_ephemeral_ecdh_sk);
 
@@ -140,9 +143,10 @@ impl<'keys> RegistrationInitiatorPre<'keys> {
             initiator_longterm_ecdh_pk: initiator_longterm_ecdh_pk.clone(),
         };
 
-        let ciphertext_outer = k0.serialize_encrypt(&payload0, &aad_outer);
+        let mut ciphertext_outer = vec![0u8; payload0.tls_serialized_len() + 16];
+        k0.serialize_encrypt(&payload0, &aad_outer, &mut ciphertext_outer)?;
 
-        (
+        Ok((
             Self {
                 responder_longterm_ecdh_pk,
                 initiator_ephemeral_ecdh_sk,
@@ -157,7 +161,7 @@ impl<'keys> RegistrationInitiatorPre<'keys> {
                 ciphertext: ciphertext_outer,
                 aad: aad_outer.to_vec(),
             },
-        )
+        ))
     }
 
     pub fn complete_registration(self, responder_msg: &'keys Message) -> SessionState<'keys> {
@@ -206,12 +210,15 @@ fn encrypt_inner_payload(
     rng: &mut impl CryptoRng,
     tx0: Transcript,
     k0: &AEADKey,
-) -> (
-    Option<libcrux_kem::MlKemCiphertext<1088>>,
-    Transcript,
-    AEADKey,
-    Vec<u8>,
-) {
+) -> Result<
+    (
+        Option<libcrux_kem::MlKemCiphertext<1088>>,
+        Transcript,
+        AEADKey,
+        Vec<u8>,
+    ),
+    Error,
+> {
     let pq_encaps_pair = responder_pq_pk.map(|pk| {
         let mut randomness = [0u8; libcrux_ml_kem::ENCAPS_SEED_SIZE];
         rng.fill_bytes(&mut randomness);
@@ -239,6 +246,9 @@ fn encrypt_inner_payload(
         &tx1,
     );
 
-    let ciphertext = k1.serialize_encrypt(&InitiatorInnerPayload {}, &aad);
-    (pq_encaps, tx1, k1, ciphertext)
+    let inner_payload = InitiatorInnerPayload {};
+    let mut ciphertext = vec![0u8; inner_payload.tls_serialized_len() + 16];
+
+    let ciphertext = k1.serialize_encrypt(&inner_payload, &aad, &mut ciphertext)?;
+    Ok((pq_encaps, tx1, k1, ciphertext))
 }

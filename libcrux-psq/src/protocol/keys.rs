@@ -31,20 +31,27 @@ impl AEADKey {
         )
     }
 
-    pub(crate) fn serialize_encrypt(&self, payload: &impl SerializeBytes, aad: &[u8]) -> Vec<u8> {
-        let mut ciphertext = vec![0u8; payload.tls_serialized_len() + 16];
-        let payload_serialized = payload.tls_serialize().unwrap();
+    pub(crate) fn serialize_encrypt(
+        &self,
+        payload: &impl SerializeBytes,
+        aad: &[u8],
+        ciphertext: &mut [u8],
+    ) -> Result<(), Error> {
+        debug_assert!(ciphertext.len() == payload.tls_serialized_len() + 16);
+        let payload_serialized = payload
+            .tls_serialize()
+            .map_err(|_| crate::Error::Serialization)?;
 
         let _ = encrypt(
             self.as_ref(),
             &payload_serialized,
-            &mut ciphertext,
+            ciphertext,
             aad,
             &[0; NONCE_LEN],
         )
         .expect("Encryption Error");
 
-        ciphertext
+        Ok(())
     }
 
     pub(crate) fn decrypt_deserialize<T: DeserializeBytes>(&self, msg: &[u8], aad: &[u8]) -> T {

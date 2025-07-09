@@ -49,12 +49,9 @@ mod tests {
         let responder_ecdh_sk = PrivateKey::new(&mut rng);
         let responder_ecdh_pk = PublicKey::from(&responder_ecdh_sk);
 
-        let (initiator_pre, initiator_msg) = QueryInitiator::query(
-            &responder_ecdh_pk,
-            ctx.as_slice(),
-            aad_initiator.as_slice(),
-            &mut rng,
-        );
+        let (initiator_pre, initiator_msg) =
+            QueryInitiator::query(&responder_ecdh_pk, ctx, aad_initiator, &mut rng)
+                .expect("Failed to build initiator query message");
 
         let initiator_msg_wire = initiator_msg
             .tls_serialize()
@@ -77,7 +74,8 @@ mod tests {
                     &ResponderQueryPayload {},
                     aad_responder.as_slice(),
                     &mut rng,
-                );
+                )
+                .expect("Failed to build responder query response");
 
                 let responder_message_serialized = responder_message
                     .tls_serialize()
@@ -121,7 +119,8 @@ mod tests {
             aad_initiator_outer,
             aad_initiator_inner,
             &mut rng,
-        );
+        )
+        .expect("Failed to build initiator registration message");
 
         let initiator_msg_wire = initiator_msg
             .tls_serialize()
@@ -167,7 +166,8 @@ mod tests {
                     &ResponderRegistrationPayload {},
                     aad_responder,
                     &mut rng,
-                );
+                )
+                .expect("Failed to build responder registration message");
 
                 let responder_message_serialized = responder_message
                     .tls_serialize()
@@ -239,7 +239,8 @@ mod tests {
             aad_initiator_outer,
             aad_initiator_inner,
             &mut rng,
-        );
+        )
+        .expect("Failed to build initiator registration message");
 
         let initiator_msg_wire = initiator_msg
             .tls_serialize()
@@ -285,7 +286,8 @@ mod tests {
                     &ResponderRegistrationPayload {},
                     aad_responder,
                     &mut rng,
-                );
+                )
+                .expect("Failed to build initiator registration message");
 
                 let responder_message_serialized = responder_message
                     .tls_serialize()

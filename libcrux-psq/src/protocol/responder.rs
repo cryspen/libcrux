@@ -45,7 +45,7 @@ impl Responder {
         response: &ResponderQueryPayload,
         aad: &[u8],
         rng: &mut impl CryptoRng,
-    ) -> Message {
+    ) -> Result<Message, Error> {
         let Message {
             ephemeral_ecdh_pk: initiator_ephemeral_ecdh_pk,
             ..
@@ -62,13 +62,15 @@ impl Responder {
             &tx2,
         );
 
-        let ciphertext = k2.serialize_encrypt(response, &aad);
+        let mut ciphertext = vec![0u8; response.tls_serialized_len() + 16];
 
-        Message {
+        k2.serialize_encrypt(response, &aad, &mut ciphertext)?;
+
+        Ok(Message {
             ephemeral_ecdh_pk: responder_ephemeral_ecdh_pk,
             ciphertext,
             aad: aad.to_vec(),
-        }
+        })
     }
 
     pub fn respond_registration<'a>(
@@ -80,7 +82,7 @@ impl Responder {
         response: &'a ResponderRegistrationPayload,
         aad: &'a [u8],
         rng: &'a mut impl CryptoRng,
-    ) -> (SessionState<'a>, Message) {
+    ) -> Result<(SessionState<'a>, Message), Error> {
         let ResponderRegistrationState { tx1, k1, pq } = state;
         let Message {
             ephemeral_ecdh_pk: initiator_ephemeral_ecdh_pk,
@@ -97,7 +99,10 @@ impl Responder {
             &responder_ephemeral_ecdh_sk,
         );
 
-        let ciphertext = k2.serialize_encrypt(&ResponderRegistrationPayload {}, aad);
+        let responder_payload = ResponderRegistrationPayload {};
+        let mut ciphertext = vec![0u8; responder_payload.tls_serialized_len() + 16];
+
+        k2.serialize_encrypt(&responder_payload, aad, &mut ciphertext)?;
 
         let responder_pq_pk = if *pq { Some(responder_pq_pk) } else { None };
         let session_state = SessionState::new(
@@ -109,14 +114,14 @@ impl Responder {
             &k2,
             &tx2,
         );
-        (
+        Ok((
             session_state,
             Message {
                 ephemeral_ecdh_pk: responder_ephemeral_ecdh_pk,
                 ciphertext,
                 aad: aad.to_vec(),
             },
-        )
+        ))
     }
 
     pub fn decrypt_inner(
