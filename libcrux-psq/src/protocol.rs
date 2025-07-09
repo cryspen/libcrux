@@ -62,37 +62,34 @@ mod tests {
         let initiator_msg_deserialized = Message::tls_deserialize_exact_bytes(&initiator_msg_wire)
             .expect("Failed to deserialize initiator message");
 
-        match Responder::decrypt_outer(
+        let (initiator_outer_payload, tx0, k0) = Responder::decrypt_outer(
             &responder_longterm_ecdh_keys,
             &initiator_msg_deserialized,
             ctx,
-        ) {
-            (InitiatorOuterPayload::Query, tx0, k0) => {
-                let responder_message = Responder::respond_query(
-                    &responder_longterm_ecdh_keys.sk,
-                    &tx0,
-                    &k0,
-                    &initiator_msg_deserialized,
-                    &ResponderQueryPayload {},
-                    aad_responder,
-                    &mut rng,
-                )
-                .expect("Failed to build responder query response");
+        );
 
-                let responder_message_serialized = responder_message
-                    .tls_serialize()
-                    .expect("Failed to serialize responder message");
+        assert!(initiator_outer_payload.as_query_msg().is_some());
 
-                let responder_message_deserialized =
-                    Message::tls_deserialize_exact_bytes(&responder_message_serialized)
-                        .expect("Failed to deserialize responder message");
+        let responder_message = Responder::respond_query(
+            &responder_longterm_ecdh_keys.sk,
+            &tx0,
+            &k0,
+            &initiator_msg_deserialized,
+            &ResponderQueryPayload {},
+            aad_responder,
+            &mut rng,
+        )
+        .expect("Failed to build responder query response");
 
-                let _received_response =
-                    initiator_pre.read_response(&responder_message_deserialized);
-            }
+        let responder_message_serialized = responder_message
+            .tls_serialize()
+            .expect("Failed to serialize responder message");
 
-            _ => panic!("Wrong message from query initiator"),
-        }
+        let responder_message_deserialized =
+            Message::tls_deserialize_exact_bytes(&responder_message_serialized)
+                .expect("Failed to deserialize responder message");
+
+        let _received_response = initiator_pre.read_response(&responder_message_deserialized);
     }
 
     #[test]
@@ -124,87 +121,80 @@ mod tests {
         let initiator_msg_deserialized = Message::tls_deserialize_exact_bytes(&initiator_msg_wire)
             .expect("Failed to deserialize initiator message");
 
-        match Responder::decrypt_outer(
+        let (initiator_outer_payload, tx0, k0) = Responder::decrypt_outer(
             &responder_longterm_ecdh_keys,
             &initiator_msg_deserialized,
             ctx,
+        );
+
+        let Some((initiator_longterm_ecdh_pk, pq_encaps, ciphertext, aad)) =
+            initiator_outer_payload.as_registration_msg()
+        else {
+            panic!("Wrong message type from initiator");
+        };
+
+        let (_inner_payload, state) = Responder::decrypt_inner(
+            &responder_longterm_ecdh_keys.sk,
+            &responder_pq_keys,
+            &tx0,
+            &k0,
+            &initiator_longterm_ecdh_pk,
+            pq_encaps,
+            &ciphertext,
+            &aad,
+        );
+
+        // pretend we did some validation of the inner_payload here
+        let (session_state_responder, responder_message) = Responder::respond_registration(
+            &responder_longterm_ecdh_keys.pk,
+            responder_pq_keys.public_key(),
+            &state,
+            &initiator_longterm_ecdh_pk,
+            &initiator_msg_deserialized,
+            &ResponderRegistrationPayload {},
+            aad_responder,
+            &mut rng,
+        )
+        .expect("Failed to build responder registration message");
+
+        let responder_message_serialized = responder_message
+            .tls_serialize()
+            .expect("Failed to serialize responder message");
+
+        let responder_message_deserialized =
+            Message::tls_deserialize_exact_bytes(&responder_message_serialized)
+                .expect("Failed to deserialize responder message");
+
+        let session_state_initiator =
+            initiator_pre.complete_registration(&responder_message_deserialized);
+
+        assert_eq!(
+            session_state_initiator.initiator_longterm_ecdh_pk.as_ref(),
+            session_state_responder.initiator_longterm_ecdh_pk.as_ref()
+        );
+        assert_eq!(
+            session_state_initiator.responder_longterm_ecdh_pk.as_ref(),
+            session_state_responder.responder_longterm_ecdh_pk.as_ref()
+        );
+        match (
+            session_state_initiator.responder_pq_pk,
+            session_state_responder.responder_pq_pk,
         ) {
-            (
-                InitiatorOuterPayload::Registration {
-                    initiator_longterm_ecdh_pk,
-                    pq_encaps,
-                    ciphertext,
-                    aad,
-                },
-                tx0,
-                k0,
-            ) => {
-                let (_inner_payload, state) = Responder::decrypt_inner(
-                    &responder_longterm_ecdh_keys.sk,
-                    &responder_pq_keys,
-                    &tx0,
-                    &k0,
-                    &initiator_longterm_ecdh_pk,
-                    pq_encaps.as_ref(),
-                    &ciphertext,
-                    &aad,
-                );
-
-                // pretend we did some validation of the inner_payload here
-                let (session_state_responder, responder_message) = Responder::respond_registration(
-                    &responder_longterm_ecdh_keys.pk,
-                    responder_pq_keys.public_key(),
-                    &state,
-                    &initiator_longterm_ecdh_pk,
-                    &initiator_msg_deserialized,
-                    &ResponderRegistrationPayload {},
-                    aad_responder,
-                    &mut rng,
-                )
-                .expect("Failed to build responder registration message");
-
-                let responder_message_serialized = responder_message
-                    .tls_serialize()
-                    .expect("Failed to serialize responder message");
-
-                let responder_message_deserialized =
-                    Message::tls_deserialize_exact_bytes(&responder_message_serialized)
-                        .expect("Failed to deserialize responder message");
-
-                let session_state_initiator =
-                    initiator_pre.complete_registration(&responder_message_deserialized);
-
-                assert_eq!(
-                    session_state_initiator.initiator_longterm_ecdh_pk.as_ref(),
-                    session_state_responder.initiator_longterm_ecdh_pk.as_ref()
-                );
-                assert_eq!(
-                    session_state_initiator.responder_longterm_ecdh_pk.as_ref(),
-                    session_state_responder.responder_longterm_ecdh_pk.as_ref()
-                );
-                match (
-                    session_state_initiator.responder_pq_pk,
-                    session_state_responder.responder_pq_pk,
-                ) {
-                    (Some(pk_at_i), Some(pk_at_r)) => {
-                        assert_eq!(pk_at_i.as_ref(), pk_at_r.as_ref())
-                    }
-                    (None, None) => (),
-                    _ => panic!("Incongruent session state: responder PQ public key"),
-                }
-
-                assert_eq!(
-                    session_state_initiator.session_key.identifier,
-                    session_state_responder.session_key.identifier
-                );
-                assert_eq!(
-                    session_state_initiator.session_key.key.as_ref(),
-                    session_state_responder.session_key.key.as_ref()
-                );
+            (Some(pk_at_i), Some(pk_at_r)) => {
+                assert_eq!(pk_at_i.as_ref(), pk_at_r.as_ref())
             }
-
-            _ => panic!("Wrong message from query initiator"),
+            (None, None) => (),
+            _ => panic!("Incongruent session state: responder PQ public key"),
         }
+
+        assert_eq!(
+            session_state_initiator.session_key.identifier,
+            session_state_responder.session_key.identifier
+        );
+        assert_eq!(
+            session_state_initiator.session_key.key.as_ref(),
+            session_state_responder.session_key.key.as_ref()
+        );
     }
 
     #[test]
@@ -236,86 +226,78 @@ mod tests {
         let initiator_msg_deserialized = Message::tls_deserialize_exact_bytes(&initiator_msg_wire)
             .expect("Failed to deserialize initiator message");
 
-        match Responder::decrypt_outer(
+        let (initiator_outer_payload, tx0, k0) = Responder::decrypt_outer(
             &responder_longterm_ecdh_keys,
             &initiator_msg_deserialized,
             ctx,
+        );
+
+        let Some((initiator_longterm_ecdh_pk, pq_encaps, ciphertext, aad)) =
+            initiator_outer_payload.as_registration_msg()
+        else {
+            panic!("Wrong message type from initiator");
+        };
+        let (_inner_payload, state) = Responder::decrypt_inner(
+            &responder_longterm_ecdh_keys.sk,
+            &responder_pq_keys,
+            &tx0,
+            &k0,
+            &initiator_longterm_ecdh_pk,
+            pq_encaps,
+            &ciphertext,
+            &aad,
+        );
+
+        // pretend we did some validation of the inner_payload here
+        let (session_state_responder, responder_message) = Responder::respond_registration(
+            &responder_longterm_ecdh_keys.pk,
+            responder_pq_keys.public_key(),
+            &state,
+            &initiator_longterm_ecdh_pk,
+            &initiator_msg_deserialized,
+            &ResponderRegistrationPayload {},
+            aad_responder,
+            &mut rng,
+        )
+        .expect("Failed to build initiator registration message");
+
+        let responder_message_serialized = responder_message
+            .tls_serialize()
+            .expect("Failed to serialize responder message");
+
+        let responder_message_deserialized =
+            Message::tls_deserialize_exact_bytes(&responder_message_serialized)
+                .expect("Failed to deserialize responder message");
+
+        let session_state_initiator =
+            initiator_pre.complete_registration(&responder_message_deserialized);
+
+        assert_eq!(
+            session_state_initiator.initiator_longterm_ecdh_pk.as_ref(),
+            session_state_responder.initiator_longterm_ecdh_pk.as_ref()
+        );
+        assert_eq!(
+            session_state_initiator.responder_longterm_ecdh_pk.as_ref(),
+            session_state_responder.responder_longterm_ecdh_pk.as_ref()
+        );
+        match (
+            session_state_initiator.responder_pq_pk,
+            session_state_responder.responder_pq_pk,
         ) {
-            (
-                InitiatorOuterPayload::Registration {
-                    initiator_longterm_ecdh_pk,
-                    pq_encaps,
-                    ciphertext,
-                    aad,
-                },
-                tx0,
-                k0,
-            ) => {
-                let (_inner_payload, state) = Responder::decrypt_inner(
-                    &responder_longterm_ecdh_keys.sk,
-                    &responder_pq_keys,
-                    &tx0,
-                    &k0,
-                    &initiator_longterm_ecdh_pk,
-                    pq_encaps.as_ref(),
-                    &ciphertext,
-                    &aad,
-                );
-
-                // pretend we did some validation of the inner_payload here
-                let (session_state_responder, responder_message) = Responder::respond_registration(
-                    &responder_longterm_ecdh_keys.pk,
-                    responder_pq_keys.public_key(),
-                    &state,
-                    &initiator_longterm_ecdh_pk,
-                    &initiator_msg_deserialized,
-                    &ResponderRegistrationPayload {},
-                    aad_responder,
-                    &mut rng,
-                )
-                .expect("Failed to build initiator registration message");
-
-                let responder_message_serialized = responder_message
-                    .tls_serialize()
-                    .expect("Failed to serialize responder message");
-
-                let responder_message_deserialized =
-                    Message::tls_deserialize_exact_bytes(&responder_message_serialized)
-                        .expect("Failed to deserialize responder message");
-
-                let session_state_initiator =
-                    initiator_pre.complete_registration(&responder_message_deserialized);
-
-                assert_eq!(
-                    session_state_initiator.initiator_longterm_ecdh_pk.as_ref(),
-                    session_state_responder.initiator_longterm_ecdh_pk.as_ref()
-                );
-                assert_eq!(
-                    session_state_initiator.responder_longterm_ecdh_pk.as_ref(),
-                    session_state_responder.responder_longterm_ecdh_pk.as_ref()
-                );
-                match (
-                    session_state_initiator.responder_pq_pk,
-                    session_state_responder.responder_pq_pk,
-                ) {
-                    (Some(pk_at_i), Some(pk_at_r)) => {
-                        assert_eq!(pk_at_i.as_ref(), pk_at_r.as_ref())
-                    }
-                    (None, None) => (),
-                    _ => panic!("Incongruent session state: responder PQ public key"),
-                }
-
-                assert_eq!(
-                    session_state_initiator.session_key.identifier,
-                    session_state_responder.session_key.identifier
-                );
-                assert_eq!(
-                    session_state_initiator.session_key.key.as_ref(),
-                    session_state_responder.session_key.key.as_ref()
-                );
+            (Some(pk_at_i), Some(pk_at_r)) => {
+                assert_eq!(pk_at_i.as_ref(), pk_at_r.as_ref())
             }
-
-            _ => panic!("Wrong message from query initiator"),
+            (None, None) => (),
+            _ => panic!("Incongruent session state: responder PQ public key"),
         }
+
+        assert_eq!(
+            session_state_initiator.session_key.identifier,
+            session_state_responder.session_key.identifier
+        );
+        assert_eq!(
+            session_state_initiator.session_key.key.as_ref(),
+            session_state_responder.session_key.key.as_ref()
+        );
     }
 }

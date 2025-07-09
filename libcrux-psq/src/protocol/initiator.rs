@@ -40,6 +40,37 @@ pub enum InitiatorOuterPayload {
     },
 }
 
+impl InitiatorOuterPayload {
+    pub fn as_query_msg(&self) -> Option<()> {
+        if let InitiatorOuterPayload::Query = self {
+            Some(())
+        } else {
+            None
+        }
+    }
+
+    pub fn as_registration_msg(
+        &self,
+    ) -> Option<(&PublicKey, Option<&MlKem768Ciphertext>, &[u8], &[u8])> {
+        if let InitiatorOuterPayload::Registration {
+            initiator_longterm_ecdh_pk,
+            pq_encaps,
+            ciphertext,
+            aad,
+        } = self
+        {
+            Some((
+                initiator_longterm_ecdh_pk,
+                pq_encaps.as_ref(),
+                ciphertext,
+                aad,
+            ))
+        } else {
+            None
+        }
+    }
+}
+
 #[derive(TlsSerializeBytes, TlsDeserializeBytes, TlsSize)]
 pub struct InitiatorInnerPayload {}
 
