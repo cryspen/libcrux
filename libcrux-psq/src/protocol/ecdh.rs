@@ -1,8 +1,17 @@
+//! KEM type wrappers
+//!
+//! This module provides wrappers around KEM types, assuming a DH-KEM
+//! style API (for now). In the future this module should become
+//! obsolete, since we can use libcrux KEM trait implementers
+//! directly. (cf. https://github.com/cryspen/libcrux/issues/1035)
 use libcrux_ecdh::{secret_to_public, Algorithm};
 use rand::CryptoRng;
 use tls_codec::{TlsDeserializeBytes, TlsSerializeBytes, TlsSize};
 
 #[derive(TlsSerializeBytes, TlsSize)]
+/// A wrapper around a KEM shared secret.
+///
+/// We don't directly expose this.
 pub(crate) struct SharedSecret(Vec<u8>);
 
 impl AsRef<[u8]> for SharedSecret {
@@ -12,6 +21,7 @@ impl AsRef<[u8]> for SharedSecret {
 }
 
 #[derive(Clone, TlsDeserializeBytes, TlsSerializeBytes, TlsSize)]
+/// A wrapper around a KEM public key.
 pub struct PublicKey(Vec<u8>);
 
 impl AsRef<[u8]> for PublicKey {
@@ -20,6 +30,7 @@ impl AsRef<[u8]> for PublicKey {
     }
 }
 #[derive(Clone)]
+/// A wrapper around a KEM private key.
 pub struct PrivateKey(Vec<u8>);
 
 impl AsRef<[u8]> for PrivateKey {
@@ -29,13 +40,15 @@ impl AsRef<[u8]> for PrivateKey {
 }
 
 impl SharedSecret {
+    /// Derive a shared secret, DH-KEM style.
     pub(crate) fn derive(sk: &PrivateKey, pk: &PublicKey) -> SharedSecret {
         SharedSecret(libcrux_ecdh::derive(Algorithm::X25519, &pk.0, &sk.0).unwrap())
     }
 }
 
 impl PrivateKey {
-    pub(crate) fn new(rng: &mut impl CryptoRng) -> Self {
+    /// Creates a new KEM private key.
+    pub fn new(rng: &mut impl CryptoRng) -> Self {
         Self(
             libcrux_ecdh::generate_secret(libcrux_ecdh::Algorithm::X25519, rng)
                 .expect("Insufficient Randomness"),
