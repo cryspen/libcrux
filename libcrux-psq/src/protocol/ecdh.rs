@@ -41,10 +41,9 @@ impl PrivateKey {
                 .expect("Insufficient Randomness"),
         )
     }
-}
 
-impl From<&PrivateKey> for PublicKey {
-    fn from(value: &PrivateKey) -> Self {
+    /// Compute the KEM public key from the KEM private key.
+    pub fn to_public(&self) -> PublicKey {
         PublicKey(secret_to_public(libcrux_ecdh::Algorithm::X25519, &value.0).unwrap())
     }
 }
