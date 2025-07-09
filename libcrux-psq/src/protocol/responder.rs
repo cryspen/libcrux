@@ -1,9 +1,11 @@
-use libcrux_ml_kem::mlkem768::{decapsulate, MlKem768PrivateKey, MlKem768PublicKey};
+use libcrux_ml_kem::mlkem768::{
+    decapsulate, MlKem768Ciphertext, MlKem768KeyPair, MlKem768PublicKey,
+};
 use rand::CryptoRng;
-use tls_codec::{TlsDeserializeBytes, TlsSerializeBytes, TlsSize};
+use tls_codec::{Size, TlsDeserializeBytes, TlsSerializeBytes, TlsSize};
 
 use super::{
-    ecdh::{PrivateKey, PublicKey},
+    ecdh::{KEMKeyPair, PrivateKey, PublicKey},
     initiator::{InitiatorInnerPayload, InitiatorOuterPayload},
     keys::{
         derive_k0, derive_k1, derive_k2_query_responder, derive_k2_registration_responder, AEADKey,
@@ -14,10 +16,7 @@ use super::{
 };
 
 pub struct Responder {}
-pub struct PQKeyPair {
-    private_key: MlKem768PrivateKey,
-    public_key: MlKem768PublicKey,
-}
+
 #[derive(TlsSerializeBytes, TlsDeserializeBytes, TlsSize)]
 #[repr(u8)]
 pub enum ResponderPayload {
@@ -48,13 +47,13 @@ impl Responder {
         response: &ResponderQueryPayload,
         aad: &[u8],
         rng: &mut impl CryptoRng,
-    ) -> Result<Message, Error> {
+    ) -> Result<Message, crate::Error> {
         let Message {
             ephemeral_ecdh_pk: initiator_ephemeral_ecdh_pk,
             ..
         } = initiator_msg;
         let responder_ephemeral_ecdh_sk = PrivateKey::new(rng);
-        let responder_ephemeral_ecdh_pk = PublicKey::from(&responder_ephemeral_ecdh_sk);
+        let responder_ephemeral_ecdh_pk = responder_ephemeral_ecdh_sk.to_public();
 
         let tx2 = tx2(tx0, &responder_ephemeral_ecdh_pk);
         let k2 = derive_k2_query_responder(
@@ -85,14 +84,15 @@ impl Responder {
         response: &'a ResponderRegistrationPayload,
         aad: &'a [u8],
         rng: &'a mut impl CryptoRng,
-    ) -> Result<(SessionState<'a>, Message), Error> {
+    ) -> Result<(SessionState<'a>, Message), crate::Error> {
         let ResponderRegistrationState { tx1, k1, pq } = state;
         let Message {
             ephemeral_ecdh_pk: initiator_ephemeral_ecdh_pk,
             ..
         } = initiator_msg;
         let responder_ephemeral_ecdh_sk = PrivateKey::new(rng);
-        let responder_ephemeral_ecdh_pk = PublicKey::from(&responder_ephemeral_ecdh_sk);
+        let responder_ephemeral_ecdh_pk = responder_ephemeral_ecdh_sk.to_public();
+
         let tx2 = tx2(&tx1, &responder_ephemeral_ecdh_pk);
         let k2 = derive_k2_registration_responder(
             &k1,
@@ -129,18 +129,18 @@ impl Responder {
 
     pub fn decrypt_inner(
         responder_longterm_ecdh_sk: &PrivateKey,
-        responder_pq_keypair: &PQKeyPair,
+        responder_pq_keypair: &MlKem768KeyPair,
         tx0: &Transcript,
         k0: &AEADKey,
         initiator_longterm_ecdh_pk: &PublicKey,
-        pq_encaps: Option<&libcrux_ml_kem::mlkem768::MlKem768Ciphertext>,
+        pq_encaps: Option<&MlKem768Ciphertext>,
         ciphertext: &[u8],
         aad: &[u8],
     ) -> (InitiatorInnerPayload, ResponderRegistrationState) {
         let pq_shared_secret =
-            pq_encaps.map(|enc| decapsulate(&responder_pq_keypair.private_key, &enc));
+            pq_encaps.map(|enc| decapsulate(&responder_pq_keypair.private_key(), &enc));
         let responder_pq_pk_opt = if pq_encaps.as_ref().is_some() {
-            Some(responder_pq_keypair.public_key)
+            Some(responder_pq_keypair.public_key())
         } else {
             None
         };
@@ -173,8 +173,7 @@ impl Responder {
     }
 
     pub fn decrypt_outer(
-        responder_longterm_ecdh_sk: &PrivateKey,
-        responder_longterm_ecdh_pk: &PublicKey,
+        responder_longterm_ecdh_keys: &KEMKeyPair,
         initiator_msg: &Message,
         ctx: &[u8],
     ) -> (InitiatorOuterPayload, Transcript, AEADKey) {
@@ -184,9 +183,9 @@ impl Responder {
             aad,
         } = initiator_msg;
         let (tx0, k0) = derive_k0(
-            responder_longterm_ecdh_pk,
+            &responder_longterm_ecdh_keys.pk,
             &initiator_ephemeral_ecdh_pk,
-            responder_longterm_ecdh_sk,
+            &responder_longterm_ecdh_keys.sk,
             ctx,
             true,
         );

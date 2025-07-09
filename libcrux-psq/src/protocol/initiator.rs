@@ -1,5 +1,5 @@
 use super::{
-    ecdh::{PrivateKey, PublicKey},
+    ecdh::{KEMKeyPair, PrivateKey, PublicKey},
     keys::{
         derive_k0, derive_k1, derive_k2_query_initiator, derive_k2_registration_initiator, AEADKey,
     },
@@ -10,7 +10,7 @@ use super::{
 };
 use libcrux_ml_kem::mlkem768::{MlKem768Ciphertext, MlKem768PublicKey};
 use rand::CryptoRng;
-use tls_codec::{TlsDeserializeBytes, TlsSerializeBytes, TlsSize};
+use tls_codec::{Size, TlsDeserializeBytes, TlsSerializeBytes, TlsSize};
 
 pub struct QueryInitiator<'keys> {
     responder_longterm_ecdh_pk: &'keys PublicKey,
@@ -21,8 +21,7 @@ pub struct QueryInitiator<'keys> {
 
 pub struct RegistrationInitiatorPre<'keys> {
     initiator_ephemeral_ecdh_sk: PrivateKey,
-    initiator_longterm_ecdh_sk: &'keys PrivateKey,
-    initiator_longterm_ecdh_pk: &'keys PublicKey,
+    initiator_longterm_ecdh_keys: &'keys KEMKeyPair,
     responder_longterm_ecdh_pk: &'keys PublicKey,
     responder_pq_pk: Option<&'keys MlKem768PublicKey>,
     tx1: Transcript,
@@ -50,9 +49,9 @@ impl<'rkeys> QueryInitiator<'rkeys> {
         ctx: &[u8],
         aad: &[u8],
         rng: &mut impl CryptoRng,
-    ) -> Result<(Self, Message), Error> {
+    ) -> Result<(Self, Message), crate::Error> {
         let initiator_ephemeral_ecdh_sk = PrivateKey::new(rng);
-        let initiator_ephemeral_ecdh_pk = PublicKey::from(&initiator_ephemeral_ecdh_sk);
+        let initiator_ephemeral_ecdh_pk = initiator_ephemeral_ecdh_sk.to_public();
 
         let (tx0, k0) = derive_k0(
             responder_longterm_ecdh_pk,
@@ -105,17 +104,16 @@ impl<'rkeys> QueryInitiator<'rkeys> {
 
 impl<'keys> RegistrationInitiatorPre<'keys> {
     pub fn registration_message(
-        initiator_longterm_ecdh_pk: &'keys PublicKey,
-        initiator_longterm_ecdh_sk: &'keys PrivateKey,
+        initiator_longterm_ecdh_keys: &'keys KEMKeyPair,
         responder_pq_pk: Option<&'keys MlKem768PublicKey>,
         responder_longterm_ecdh_pk: &'keys PublicKey,
         ctx: &[u8],
         aad_outer: &[u8],
         aad_inner: &[u8],
         rng: &mut impl CryptoRng,
-    ) -> Result<(Self, Message), Error> {
+    ) -> Result<(Self, Message), crate::Error> {
         let initiator_ephemeral_ecdh_sk = PrivateKey::new(rng);
-        let initiator_ephemeral_ecdh_pk = PublicKey::from(&initiator_ephemeral_ecdh_sk);
+        let initiator_ephemeral_ecdh_pk = initiator_ephemeral_ecdh_sk.to_public();
 
         let (tx0, k0) = derive_k0(
             responder_longterm_ecdh_pk,
@@ -126,21 +124,20 @@ impl<'keys> RegistrationInitiatorPre<'keys> {
         );
 
         let (pq_encaps, tx1, k1, ciphertext_inner) = encrypt_inner_payload(
-            initiator_longterm_ecdh_pk,
-            initiator_longterm_ecdh_sk,
+            initiator_longterm_ecdh_keys,
             responder_pq_pk,
             responder_longterm_ecdh_pk,
             aad_inner,
             rng,
             tx0,
             &k0,
-        );
+        )?;
 
         let payload0 = InitiatorOuterPayload::Registration {
             pq_encaps,
             aad: aad_inner.to_vec(),
             ciphertext: ciphertext_inner,
-            initiator_longterm_ecdh_pk: initiator_longterm_ecdh_pk.clone(),
+            initiator_longterm_ecdh_pk: initiator_longterm_ecdh_keys.pk.clone(),
         };
 
         let mut ciphertext_outer = vec![0u8; payload0.tls_serialized_len() + 16];
@@ -150,8 +147,7 @@ impl<'keys> RegistrationInitiatorPre<'keys> {
             Self {
                 responder_longterm_ecdh_pk,
                 initiator_ephemeral_ecdh_sk,
-                initiator_longterm_ecdh_sk,
-                initiator_longterm_ecdh_pk,
+                initiator_longterm_ecdh_keys,
                 responder_pq_pk,
                 tx1,
                 k1,
@@ -168,8 +164,7 @@ impl<'keys> RegistrationInitiatorPre<'keys> {
         let Self {
             responder_longterm_ecdh_pk,
             initiator_ephemeral_ecdh_sk,
-            initiator_longterm_ecdh_sk,
-            initiator_longterm_ecdh_pk,
+            initiator_longterm_ecdh_keys,
             responder_pq_pk,
             tx1,
             k1,
@@ -183,7 +178,7 @@ impl<'keys> RegistrationInitiatorPre<'keys> {
         let k2 = derive_k2_registration_initiator(
             &k1,
             &tx2,
-            &initiator_longterm_ecdh_sk,
+            &initiator_longterm_ecdh_keys.sk,
             &initiator_ephemeral_ecdh_sk,
             &responder_ephemeral_ecdh_pk,
         );
@@ -193,7 +188,7 @@ impl<'keys> RegistrationInitiatorPre<'keys> {
             true,
             &payload2,
             &responder_longterm_ecdh_pk,
-            &initiator_longterm_ecdh_pk,
+            &initiator_longterm_ecdh_keys.pk,
             responder_pq_pk,
             &k2,
             &tx2,
@@ -202,8 +197,7 @@ impl<'keys> RegistrationInitiatorPre<'keys> {
 }
 
 fn encrypt_inner_payload(
-    initiator_longterm_ecdh_pk: &PublicKey,
-    initiator_longterm_ecdh_sk: &PrivateKey,
+    initiator_longterm_ecdh_keys: &KEMKeyPair,
     responder_pq_pk: Option<&libcrux_ml_kem::MlKemPublicKey<1184>>,
     responder_longterm_ecdh_pk: &PublicKey,
     aad: &[u8],
@@ -217,7 +211,7 @@ fn encrypt_inner_payload(
         AEADKey,
         Vec<u8>,
     ),
-    Error,
+    crate::Error,
 > {
     let pq_encaps_pair = responder_pq_pk.map(|pk| {
         let mut randomness = [0u8; libcrux_ml_kem::ENCAPS_SEED_SIZE];
@@ -234,13 +228,13 @@ fn encrypt_inner_payload(
 
     let tx1 = tx1(
         &tx0,
-        &initiator_longterm_ecdh_pk,
+        &initiator_longterm_ecdh_keys.pk,
         responder_pq_pk,
         pq_encaps.as_ref(),
     );
     let k1 = derive_k1(
         k0,
-        &initiator_longterm_ecdh_sk,
+        &initiator_longterm_ecdh_keys.sk,
         responder_longterm_ecdh_pk,
         &pq_shared_secret,
         &tx1,
@@ -249,6 +243,6 @@ fn encrypt_inner_payload(
     let inner_payload = InitiatorInnerPayload {};
     let mut ciphertext = vec![0u8; inner_payload.tls_serialized_len() + 16];
 
-    let ciphertext = k1.serialize_encrypt(&inner_payload, &aad, &mut ciphertext)?;
+    k1.serialize_encrypt(&inner_payload, &aad, &mut ciphertext)?;
     Ok((pq_encaps, tx1, k1, ciphertext))
 }

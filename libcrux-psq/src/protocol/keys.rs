@@ -36,7 +36,7 @@ impl AEADKey {
         payload: &impl SerializeBytes,
         aad: &[u8],
         ciphertext: &mut [u8],
-    ) -> Result<(), Error> {
+    ) -> Result<(), crate::Error> {
         debug_assert!(ciphertext.len() == payload.tls_serialized_len() + 16);
         let payload_serialized = payload
             .tls_serialize()

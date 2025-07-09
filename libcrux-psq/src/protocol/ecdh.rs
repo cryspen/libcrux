@@ -57,6 +57,19 @@ impl PrivateKey {
 
     /// Compute the KEM public key from the KEM private key.
     pub fn to_public(&self) -> PublicKey {
-        PublicKey(secret_to_public(libcrux_ecdh::Algorithm::X25519, &value.0).unwrap())
+        PublicKey(secret_to_public(libcrux_ecdh::Algorithm::X25519, &self.0).unwrap())
+    }
+}
+
+pub struct KEMKeyPair {
+    pub(crate) sk: PrivateKey,
+    pub(crate) pk: PublicKey,
+}
+
+impl KEMKeyPair {
+    pub fn new(rng: &mut impl CryptoRng) -> Self {
+        let sk = PrivateKey::new(rng);
+        let pk = sk.to_public();
+        Self { sk, pk }
     }
 }

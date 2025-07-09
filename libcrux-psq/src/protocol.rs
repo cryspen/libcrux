@@ -33,7 +33,7 @@ mod tests {
     };
 
     use super::{
-        ecdh::PrivateKey,
+        ecdh::{KEMKeyPair, PrivateKey},
         initiator::{QueryInitiator, RegistrationInitiatorPre},
         responder::ResponderRegistrationPayload,
         *,
@@ -42,16 +42,19 @@ mod tests {
     #[test]
     fn query_mode() {
         let mut rng = rand::rng();
-        let ctx = b"Test Context";
-        let aad_initiator = b"Test Data I";
-        let aad_responder = b"Test Data R";
+        let ctx = b"Test Context".as_slice();
+        let aad_initiator = b"Test Data I".as_slice();
+        let aad_responder = b"Test Data R".as_slice();
 
-        let responder_ecdh_sk = PrivateKey::new(&mut rng);
-        let responder_ecdh_pk = PublicKey::from(&responder_ecdh_sk);
+        let responder_longterm_ecdh_keys = KEMKeyPair::new(&mut rng);
 
-        let (initiator_pre, initiator_msg) =
-            QueryInitiator::query(&responder_ecdh_pk, ctx, aad_initiator, &mut rng)
-                .expect("Failed to build initiator query message");
+        let (initiator_pre, initiator_msg) = QueryInitiator::query(
+            &responder_longterm_ecdh_keys.pk,
+            ctx,
+            aad_initiator,
+            &mut rng,
+        )
+        .expect("Failed to build initiator query message");
 
         let initiator_msg_wire = initiator_msg
             .tls_serialize()
@@ -60,19 +63,18 @@ mod tests {
             .expect("Failed to deserialize initiator message");
 
         match Responder::decrypt_outer(
-            &responder_ecdh_sk,
-            &responder_ecdh_pk,
+            &responder_longterm_ecdh_keys,
             &initiator_msg_deserialized,
-            ctx.as_slice(),
+            ctx,
         ) {
             (InitiatorOuterPayload::Query, tx0, k0) => {
                 let responder_message = Responder::respond_query(
-                    &responder_ecdh_sk,
+                    &responder_longterm_ecdh_keys.sk,
                     &tx0,
                     &k0,
                     &initiator_msg_deserialized,
                     &ResponderQueryPayload {},
-                    aad_responder.as_slice(),
+                    aad_responder,
                     &mut rng,
                 )
                 .expect("Failed to build responder query response");
@@ -101,20 +103,14 @@ mod tests {
         let aad_initiator_inner = b"Test Data I inner".as_slice();
         let aad_responder = b"Test Data R".as_slice();
 
-        let responder_longterm_ecdh_sk = PrivateKey::new(&mut rng);
-        let responder_longterm_ecdh_pk = PublicKey::from(&responder_longterm_ecdh_sk);
-
-        let initiator_longterm_ecdh_sk = PrivateKey::new(&mut rng);
-        let initiator_longterm_ecdh_pk = PublicKey::from(&initiator_longterm_ecdh_sk);
-
+        let responder_longterm_ecdh_keys = KEMKeyPair::new(&mut rng);
+        let initiator_longterm_ecdh_keys = KEMKeyPair::new(&mut rng);
         let responder_pq_keys = libcrux_ml_kem::mlkem768::rand::generate_key_pair(&mut rng);
-        let responder_pq_pk = responder_pq_keys.public_key();
-        let responder_pq_sk = responder_pq_keys.private_key();
+
         let (initiator_pre, initiator_msg) = RegistrationInitiatorPre::registration_message(
-            &initiator_longterm_ecdh_pk,
-            &initiator_longterm_ecdh_sk,
-            Some(responder_pq_pk),
-            &responder_longterm_ecdh_pk,
+            &initiator_longterm_ecdh_keys,
+            Some(responder_pq_keys.public_key()),
+            &responder_longterm_ecdh_keys.pk,
             ctx,
             aad_initiator_outer,
             aad_initiator_inner,
@@ -129,8 +125,7 @@ mod tests {
             .expect("Failed to deserialize initiator message");
 
         match Responder::decrypt_outer(
-            &responder_longterm_ecdh_sk,
-            &responder_longterm_ecdh_pk,
+            &responder_longterm_ecdh_keys,
             &initiator_msg_deserialized,
             ctx,
         ) {
@@ -145,9 +140,8 @@ mod tests {
                 k0,
             ) => {
                 let (_inner_payload, state) = Responder::decrypt_inner(
-                    &responder_longterm_ecdh_sk,
-                    responder_pq_sk,
-                    responder_pq_pk,
+                    &responder_longterm_ecdh_keys.sk,
+                    &responder_pq_keys,
                     &tx0,
                     &k0,
                     &initiator_longterm_ecdh_pk,
@@ -158,8 +152,8 @@ mod tests {
 
                 // pretend we did some validation of the inner_payload here
                 let (session_state_responder, responder_message) = Responder::respond_registration(
-                    &responder_longterm_ecdh_pk,
-                    responder_pq_pk,
+                    &responder_longterm_ecdh_keys.pk,
+                    responder_pq_keys.public_key(),
                     &state,
                     &initiator_longterm_ecdh_pk,
                     &initiator_msg_deserialized,
@@ -221,20 +215,14 @@ mod tests {
         let aad_initiator_inner = b"Test Data I inner".as_slice();
         let aad_responder = b"Test Data R".as_slice();
 
-        let responder_longterm_ecdh_sk = PrivateKey::new(&mut rng);
-        let responder_longterm_ecdh_pk = PublicKey::from(&responder_longterm_ecdh_sk);
-
-        let initiator_longterm_ecdh_sk = PrivateKey::new(&mut rng);
-        let initiator_longterm_ecdh_pk = PublicKey::from(&initiator_longterm_ecdh_sk);
-
+        let responder_longterm_ecdh_keys = KEMKeyPair::new(&mut rng);
+        let initiator_longterm_ecdh_keys = KEMKeyPair::new(&mut rng);
         let responder_pq_keys = libcrux_ml_kem::mlkem768::rand::generate_key_pair(&mut rng);
-        let responder_pq_pk = responder_pq_keys.public_key();
-        let responder_pq_sk = responder_pq_keys.private_key();
+
         let (initiator_pre, initiator_msg) = RegistrationInitiatorPre::registration_message(
-            &initiator_longterm_ecdh_pk,
-            &initiator_longterm_ecdh_sk,
+            &initiator_longterm_ecdh_keys,
             None,
-            &responder_longterm_ecdh_pk,
+            &responder_longterm_ecdh_keys.pk,
             ctx,
             aad_initiator_outer,
             aad_initiator_inner,
@@ -249,8 +237,7 @@ mod tests {
             .expect("Failed to deserialize initiator message");
 
         match Responder::decrypt_outer(
-            &responder_longterm_ecdh_sk,
-            &responder_longterm_ecdh_pk,
+            &responder_longterm_ecdh_keys,
             &initiator_msg_deserialized,
             ctx,
         ) {
@@ -265,9 +252,8 @@ mod tests {
                 k0,
             ) => {
                 let (_inner_payload, state) = Responder::decrypt_inner(
-                    &responder_longterm_ecdh_sk,
-                    responder_pq_sk,
-                    responder_pq_pk,
+                    &responder_longterm_ecdh_keys.sk,
+                    &responder_pq_keys,
                     &tx0,
                     &k0,
                     &initiator_longterm_ecdh_pk,
@@ -278,8 +264,8 @@ mod tests {
 
                 // pretend we did some validation of the inner_payload here
                 let (session_state_responder, responder_message) = Responder::respond_registration(
-                    &responder_longterm_ecdh_pk,
-                    responder_pq_pk,
+                    &responder_longterm_ecdh_keys.pk,
+                    responder_pq_keys.public_key(),
                     &state,
                     &initiator_longterm_ecdh_pk,
                     &initiator_msg_deserialized,
