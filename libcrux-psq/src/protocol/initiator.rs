@@ -94,7 +94,7 @@ impl<'rkeys> QueryInitiator<'rkeys> {
             &k0,
             &responder_msg.ephemeral_ecdh_pk,
             &initiator_ephemeral_ecdh_sk,
-            &responder_longterm_ecdh_pk,
+            responder_longterm_ecdh_pk,
             &tx2,
         );
 
@@ -141,7 +141,7 @@ impl<'keys> RegistrationInitiatorPre<'keys> {
         };
 
         let mut ciphertext_outer = vec![0u8; payload0.tls_serialized_len() + 16];
-        k0.serialize_encrypt(&payload0, &aad_outer, &mut ciphertext_outer)?;
+        k0.serialize_encrypt(&payload0, aad_outer, &mut ciphertext_outer)?;
 
         Ok((
             Self {
@@ -174,20 +174,20 @@ impl<'keys> RegistrationInitiatorPre<'keys> {
             ciphertext,
             aad,
         } = responder_msg;
-        let tx2 = tx2(&tx1, &responder_ephemeral_ecdh_pk);
+        let tx2 = tx2(&tx1, responder_ephemeral_ecdh_pk);
         let k2 = derive_k2_registration_initiator(
             &k1,
             &tx2,
             &initiator_longterm_ecdh_keys.sk,
             &initiator_ephemeral_ecdh_sk,
-            &responder_ephemeral_ecdh_pk,
+            responder_ephemeral_ecdh_pk,
         );
 
-        let payload2 = k2.decrypt_deserialize(&ciphertext, &aad);
+        let payload2 = k2.decrypt_deserialize(ciphertext, aad);
         SessionState::new(
             true,
             &payload2,
-            &responder_longterm_ecdh_pk,
+            responder_longterm_ecdh_pk,
             &initiator_longterm_ecdh_keys.pk,
             responder_pq_pk,
             &k2,
@@ -243,6 +243,6 @@ fn encrypt_inner_payload(
     let inner_payload = InitiatorInnerPayload {};
     let mut ciphertext = vec![0u8; inner_payload.tls_serialized_len() + 16];
 
-    k1.serialize_encrypt(&inner_payload, &aad, &mut ciphertext)?;
+    k1.serialize_encrypt(&inner_payload, aad, &mut ciphertext)?;
     Ok((pq_encaps, tx1, k1, ciphertext))
 }

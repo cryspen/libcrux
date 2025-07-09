@@ -36,7 +36,7 @@ impl<'keys> SessionState<'keys> {
         k2: &AEADKey,
         tx2: &Transcript,
     ) -> Self {
-        let session_key = derive_session_key(&k2, &tx2);
+        let session_key = derive_session_key(k2, tx2);
         Self {
             is_initiator,
             nonce: 0,

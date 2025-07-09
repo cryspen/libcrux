@@ -58,7 +58,7 @@ impl Responder {
         let tx2 = tx2(tx0, &responder_ephemeral_ecdh_pk);
         let k2 = derive_k2_query_responder(
             k0,
-            &initiator_ephemeral_ecdh_pk,
+            initiator_ephemeral_ecdh_pk,
             &responder_ephemeral_ecdh_sk,
             responder_longterm_ecdh_sk,
             &tx2,
@@ -66,7 +66,7 @@ impl Responder {
 
         let mut ciphertext = vec![0u8; response.tls_serialized_len() + 16];
 
-        k2.serialize_encrypt(response, &aad, &mut ciphertext)?;
+        k2.serialize_encrypt(response, aad, &mut ciphertext)?;
 
         Ok(Message {
             ephemeral_ecdh_pk: responder_ephemeral_ecdh_pk,
@@ -93,12 +93,12 @@ impl Responder {
         let responder_ephemeral_ecdh_sk = PrivateKey::new(rng);
         let responder_ephemeral_ecdh_pk = responder_ephemeral_ecdh_sk.to_public();
 
-        let tx2 = tx2(&tx1, &responder_ephemeral_ecdh_pk);
+        let tx2 = tx2(tx1, &responder_ephemeral_ecdh_pk);
         let k2 = derive_k2_registration_responder(
-            &k1,
+            k1,
             &tx2,
             &Box::new(initiator_longterm_ecdh_pk),
-            &initiator_ephemeral_ecdh_pk,
+            initiator_ephemeral_ecdh_pk,
             &responder_ephemeral_ecdh_sk,
         );
 
@@ -112,7 +112,7 @@ impl Responder {
             false,
             response,
             responder_longterm_ecdh_pk,
-            &initiator_longterm_ecdh_pk,
+            initiator_longterm_ecdh_pk,
             responder_pq_pk,
             &k2,
             &tx2,
@@ -138,7 +138,7 @@ impl Responder {
         aad: &[u8],
     ) -> (InitiatorInnerPayload, ResponderRegistrationState) {
         let pq_shared_secret =
-            pq_encaps.map(|enc| decapsulate(&responder_pq_keypair.private_key(), &enc));
+            pq_encaps.map(|enc| decapsulate(responder_pq_keypair.private_key(), enc));
         let responder_pq_pk_opt = if pq_encaps.as_ref().is_some() {
             Some(responder_pq_keypair.public_key())
         } else {
@@ -154,13 +154,13 @@ impl Responder {
 
         let k1 = derive_k1(
             k0,
-            &responder_longterm_ecdh_sk,
+            responder_longterm_ecdh_sk,
             initiator_longterm_ecdh_pk,
             &pq_shared_secret,
             &tx1,
         );
 
-        let inner_payload: InitiatorInnerPayload = k1.decrypt_deserialize(&ciphertext, &aad);
+        let inner_payload: InitiatorInnerPayload = k1.decrypt_deserialize(ciphertext, aad);
 
         (
             inner_payload,
@@ -184,13 +184,13 @@ impl Responder {
         } = initiator_msg;
         let (tx0, k0) = derive_k0(
             &responder_longterm_ecdh_keys.pk,
-            &initiator_ephemeral_ecdh_pk,
+            initiator_ephemeral_ecdh_pk,
             &responder_longterm_ecdh_keys.sk,
             ctx,
             true,
         );
 
-        let received_payload = k0.decrypt_deserialize(&ciphertext, &aad);
+        let received_payload = k0.decrypt_deserialize(ciphertext, aad);
 
         (received_payload, tx0, k0)
     }

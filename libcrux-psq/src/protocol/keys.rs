@@ -14,15 +14,15 @@ impl AEADKey {
     fn new(ikm: &impl SerializeBytes, info: &impl SerializeBytes) -> AEADKey {
         let prk = libcrux_hkdf::extract(
             libcrux_hkdf::Algorithm::Sha256,
-            &[],
-            &ikm.tls_serialize().unwrap(),
+            [],
+            ikm.tls_serialize().unwrap(),
         )
         .unwrap();
         AEADKey(
             libcrux_hkdf::expand(
                 libcrux_hkdf::Algorithm::Sha256,
                 prk,
-                &info.tls_serialize().unwrap(),
+                info.tls_serialize().unwrap(),
                 KEY_LEN,
             )
             .unwrap()
@@ -65,8 +65,8 @@ impl AEADKey {
         )
         .unwrap();
 
-        let received_payload = T::tls_deserialize_exact_bytes(&payload_serialized).unwrap();
-        received_payload
+        
+        T::tls_deserialize_exact_bytes(&payload_serialized).unwrap()
     }
 }
 impl AsRef<[u8; KEY_LEN]> for AEADKey {
@@ -80,14 +80,14 @@ struct K0Ikm<'a> {
     g_xs: &'a SharedSecret,
 }
 
-const SESSION_KEY_INFO: &'static [u8] = b"shared key id";
+const SESSION_KEY_INFO: &[u8] = b"shared key id";
 
 // id_skCS = KDF(skCS, "shared key id")
 fn session_key_id(key: &AEADKey) -> [u8; SESSION_ID_LENGTH] {
     let prk = libcrux_hkdf::extract(
         libcrux_hkdf::Algorithm::Sha256,
-        &[],
-        &key.tls_serialize().unwrap(),
+        [],
+        key.tls_serialize().unwrap(),
     )
     .unwrap();
 
@@ -129,7 +129,7 @@ pub(super) fn derive_k0(
     ctx: &[u8],
     responder: bool,
 ) -> (Transcript, AEADKey) {
-    let tx0 = transcript::tx0(ctx, responder_ecdh_pk, &ephemeral_ecdh_pk);
+    let tx0 = transcript::tx0(ctx, responder_ecdh_pk, ephemeral_ecdh_pk);
     let ikm = K0Ikm {
         g_xs: if responder {
             &SharedSecret::derive(own_ecdh_sk, ephemeral_ecdh_pk)
