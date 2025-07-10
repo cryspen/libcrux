@@ -5,8 +5,11 @@
 #![no_std]
 
 // HACL* generated code
+mod impl_kem;
 mod p256;
 mod p256_precomptable;
+
+pub struct P256;
 
 #[cfg(feature = "expose-hacl")]
 pub use p256::*;

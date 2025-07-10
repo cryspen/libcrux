@@ -20,6 +20,8 @@ libcrux-ml-kem = { version = "=0.0.3", path = "../libcrux-ml-kem", default-featu
 ] }
 libcrux-sha3 = { version = "=0.0.3", path = "../libcrux-sha3" }
 libcrux-ecdh = { version = "=0.0.3", path = "../libcrux-ecdh", default-features = false }
+libcrux-curve25519 = { version = "=0.0.3", path = "../curve25519", default-features = false }
+libcrux-p256 = { version = "=0.0.3", path = "../p256", default-features = false }
 libcrux-traits = { version = "=0.0.3", path = "../traits" }
 rand = { version = "0.9", default-features = false }
 
@@ -33,3 +35,6 @@ pre-verification = []
 libcrux-kem = { path = "./", features = ["tests"] }
 rand = { version = "0.9", features = ["os_rng"] }
 hex = { version = "0.4.3", features = ["serde"] }
+libcrux-traits = { version = "0.0.3", path = "../traits", features = [
+    "generic-tests",
+] }

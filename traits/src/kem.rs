@@ -1,5 +1,14 @@
 //! This module provides a common interface trait for key
 //! encapsulation mechanisms (KEMs).
+
+pub mod arrayref;
+pub mod owned;
+pub mod secrets;
+pub mod slice;
+
+#[cfg(feature = "generic-tests")]
+pub mod tests;
+
 use rand::CryptoRng;
 
 /// A KEM keypair.
