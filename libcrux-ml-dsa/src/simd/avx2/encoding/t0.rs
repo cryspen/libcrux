@@ -152,7 +152,7 @@ pub(crate) fn deserialize(serialized: &[u8], out: &mut Vec256) {
     introduce forall i. neg (to_i32x8 out i) `add_mod` $POW_2_BITS_IN_LOWER_PART_OF_T_MINUS_ONE == to_i32x8 $unsigned i
     with rewrite_eq_sub_mod (to_i32x8 out i) $POW_2_BITS_IN_LOWER_PART_OF_T_MINUS_ONE (to_i32x8 $unsigned i);
     to_i32x8_eq_to_bv_eq $unsigned out_reverted;
-    assert_norm (deserialize_post $serialized $out == ((forall i. v (to_i32x8 out i) > minint I32) /\ deserialize_to_unsigned_post $serialized out_reverted))
+    assert_norm (deserialize_post $serialized $out == ((forall i. v (to_i32x8 out i) > minint I32) /\ deserialize_unsigned_post $serialized out_reverted))
     "
     );
 }
