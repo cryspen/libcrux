@@ -10,6 +10,9 @@
      let t = mont_mul b zeta in
      (add_mod_opaque a t, sub_mod_opaque a t)
 
+ let inv_ntt_step zeta (a, b) =
+     (add_mod_opaque a b, mont_mul (sub_mod_opaque b a) zeta)
+
  let zeta(i: nat{i < 256}) : n:nat{n <= 8380416} =
              match i with
              |    0 -> 0
