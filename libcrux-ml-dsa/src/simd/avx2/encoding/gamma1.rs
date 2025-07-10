@@ -304,7 +304,10 @@ pub(crate) fn deserialize(serialized: &[u8], out: &mut Vec256, gamma1_exponent: 
     let out_reverted: bv256 = mk_i32x8 (fun i -> neg (to_i32x8 $out i) `add_mod` gamma1_of_exp $gamma1_exponent) in
     introduce forall i. neg (to_i32x8 out i) `add_mod` gamma1_of_exp $gamma1_exponent == to_i32x8 $unsigned i
     with rewrite_eq_sub_mod (to_i32x8 out i) (gamma1_of_exp $gamma1_exponent) (to_i32x8 $unsigned i);
-    to_i32x8_eq_to_bv_eq $unsigned out_reverted
+    to_i32x8_eq_to_bv_eq $unsigned out_reverted;
+    assert_norm (deserialize_post $gamma1_exponent $serialized out ==
+        ((forall i. v (to_i32x8 out i) > minint I32) /\
+          deserialize_unsigned_post $gamma1_exponent $serialized out_reverted))
     "#
     );
 }
