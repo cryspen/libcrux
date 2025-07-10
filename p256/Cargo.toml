@@ -20,3 +20,8 @@ libcrux-sha2 = { version = "=0.0.3", path = "../sha2", features = [
 
 [features]
 expose-hacl = []
+
+[dev-dependencies]
+libcrux-traits = { version = "0.0.3", path = "../traits", features = [
+    "generic-tests",
+] }
