@@ -762,12 +762,17 @@ val i32_to_bv_pow2_min_one_lemma (n: nat {n > 1 /\ n < 31}) (i:u64{v i < 32}):
   Lemma (  i32_to_bv ((mk_i32 1 <<! mk_i32 n <: i32) -! mk_i32 1) i
         == Core_models.Abstractions.Bit.(if v i < n then Bit_One else Bit_Zero))
         [SMTPat (i32_to_bv ((mk_i32 1 <<! mk_i32 n <: i32) -! mk_i32 1) i)]
+let i32_to_bv_pow2_min_one_lemma_fa (n: nat {n > 1 /\ n < 31}):
+  Lemma (forall (i:u64{v i < 32}). i32_to_bv ((mk_i32 1 <<! mk_i32 n <: i32) -! mk_i32 1) i
+        == Core_models.Abstractions.Bit.(if v i < n then Bit_One else Bit_Zero))
+  = introduce forall i. forall (i:u64{v i < 32}). i32_to_bv ((mk_i32 1 <<! mk_i32 n <: i32) -! mk_i32 1) i
+        == Core_models.Abstractions.Bit.(if v i < n then Bit_One else Bit_Zero)
+    with i32_to_bv_pow2_min_one_lemma n i
 #pop-options
-
 
 val i32_bit_zero_lemma_to_lt_pow2_n_weak (n: nat) vec
   : Lemma (requires forall i. v i % 32 >= n ==> vec.(i) == Core_models.Abstractions.Bit.Bit_Zero)
-          (ensures forall i. v (to_i32x8 vec i) < pow2 n /\ v (to_i32x8 vec i) >= 0)
+          (ensures forall i. v (to_i32x8 vec i) < pow2 n /\ (n <= 31 ==> v (to_i32x8 vec i) >= 0))
 
 val i32_bit_zero_lemma_to_positive vec
   : Lemma (requires forall i. v i % 32 == 31 ==> vec.(i) == Core_models.Abstractions.Bit.Bit_Zero)
