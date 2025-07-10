@@ -29,6 +29,7 @@ const IMPLICIT_REJECTION_HASH_INPUT_SIZE: usize = SHARED_SECRET_SIZE + CPA_PKE_C
 /// The ML-KEM 512 algorithms
 pub struct MlKem512;
 
+#[cfg(not(hax))]
 crate::impl_kem_trait!(
     MlKem512,
     MlKem512PublicKey,
