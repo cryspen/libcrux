@@ -103,6 +103,7 @@ class extractAction(argparse.Action):
             "-libcrux_ml_kem::hash_functions::avx2::*",
             "-libcrux_ml_kem::hash_functions::neon::*",
             "+:libcrux_ml_kem::hash_functions::*::*",
+            "-libcrux_traits::kem::slice::*",
         ]
         include_str = " ".join(includes)
         interface_include = "+** -libcrux_ml_kem::vector::traits -libcrux_ml_kem::types -libcrux_ml_kem::constants"
