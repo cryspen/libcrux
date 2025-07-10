@@ -1,7 +1,12 @@
+//! This module contains the trait and related errors for a KEM that takes array references as
+//! arguments and returns values as arrays.
+//!
 use super::arrayref;
 
 pub use arrayref::{DecapsError, EncapsError, KeyGenError};
 
+/// A Key Encapsulation Mechanismd (KEM) that returns values insteaf of writing the results to
+/// `&mut` arguments.
 pub trait Kem<
     const EK_LEN: usize,
     const DK_LEN: usize,

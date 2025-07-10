@@ -1,5 +1,9 @@
+//! This module contains the trait and related errors for a KEM that takes slices as
+//! arguments and writes the results to mutable slices..
+
 use super::arrayref;
 
+/// A Key Encapsulation Mechanismd (KEM). This trait takes slices as arguments.
 pub trait Kem {
     /// Generate a pair of encapsulation and decapsulation keys.
     fn keygen(ek: &mut [u8], dk: &mut [u8], rand: &[u8]) -> Result<(), KeyGenError>;
@@ -92,7 +96,7 @@ impl From<arrayref::DecapsError> for DecapsError {
 }
 
 #[macro_export]
-/// Implements [`Kem`] for any [`arrayref::Kem`]. Hides the impl in a module of the given name.
+/// Implements [`Kem`] for any [`arrayref::Kem`]
 macro_rules! impl_trait {
     ($type:ty => $ek:expr, $dk:expr, $ct:expr, $ss:expr, $rand_kg:expr, $rand_encaps:expr) => {
         impl $crate::kem::slice::Kem for $type {
@@ -143,7 +147,14 @@ macro_rules! impl_trait {
             }
 
         }
+
+        #[cfg(test)]
+        #[test]
+        fn simple_kem_test(){
+            $crate::kem::tests::simple::<$ek, $dk, $ct, $ss, $rand_kg, $rand_encaps, $type>();
+        }
     };
+
 }
 
 pub use impl_trait;

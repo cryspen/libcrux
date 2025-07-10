@@ -7,13 +7,13 @@ mod impl_hacl;
 pub use impl_hacl::{ecdh, secret_to_public};
 
 /// The length of Curve25519 secret keys.
-pub const SK_LEN: usize = 32;
+pub const DK_LEN: usize = 32;
 
 /// The length of Curve25519 public keys.
-pub const PK_LEN: usize = 32;
+pub const EK_LEN: usize = 32;
 
 /// The length of Curve25519 shared keys.
-pub const SHK_LEN: usize = 32;
+pub const SS_LEN: usize = 32;
 
 /// Indicates that an error occurred
 pub struct Error;
@@ -23,23 +23,30 @@ pub struct Error;
 #[allow(dead_code)]
 trait Curve25519 {
     /// Computes a public key from a secret key.
-    fn secret_to_public(pk: &mut [u8; PK_LEN], sk: &[u8; SK_LEN]);
+    fn secret_to_public(pk: &mut [u8; EK_LEN], sk: &[u8; DK_LEN]);
 
     /// Computes the scalar multiplication between the provided public and secret keys. Returns an
     /// error if the result is 0.
-    fn ecdh(out: &mut [u8; SHK_LEN], pk: &[u8; PK_LEN], sk: &[u8; SK_LEN]) -> Result<(), Error>;
+    fn ecdh(out: &mut [u8; SS_LEN], pk: &[u8; EK_LEN], sk: &[u8; DK_LEN]) -> Result<(), Error>;
 }
 
 pub struct X25519;
 
-impl libcrux_traits::kem::arrayref::Kem<SK_LEN, PK_LEN, PK_LEN, SHK_LEN, SK_LEN, SK_LEN>
-    for X25519
-{
+#[inline(always)]
+const fn or(a: u8, b: &u8) -> u8 {
+    a | *b
+}
+
+impl libcrux_traits::kem::arrayref::Kem<DK_LEN, EK_LEN, EK_LEN, SS_LEN, DK_LEN, DK_LEN> for X25519 {
     fn keygen(
-        ek: &mut [u8; SK_LEN],
-        dk: &mut [u8; PK_LEN],
-        rand: &[u8; SK_LEN],
+        ek: &mut [u8; DK_LEN],
+        dk: &mut [u8; EK_LEN],
+        rand: &[u8; DK_LEN],
     ) -> Result<(), libcrux_traits::kem::arrayref::KeyGenError> {
+        if rand.iter().fold(0, or) == 0 {
+            return Err(libcrux_traits::kem::arrayref::KeyGenError::InvalidRandomness);
+        }
+
         dk.copy_from_slice(rand);
         clamp(dk);
         secret_to_public(ek, dk);
@@ -47,11 +54,15 @@ impl libcrux_traits::kem::arrayref::Kem<SK_LEN, PK_LEN, PK_LEN, SHK_LEN, SK_LEN,
     }
 
     fn encaps(
-        ct: &mut [u8; PK_LEN],
-        ss: &mut [u8; SHK_LEN],
-        ek: &[u8; PK_LEN],
-        rand: &[u8; SK_LEN],
+        ct: &mut [u8; EK_LEN],
+        ss: &mut [u8; SS_LEN],
+        ek: &[u8; EK_LEN],
+        rand: &[u8; DK_LEN],
     ) -> Result<(), libcrux_traits::kem::arrayref::EncapsError> {
+        if rand.iter().fold(0, or) == 0 {
+            return Err(libcrux_traits::kem::arrayref::EncapsError::InvalidRandomness);
+        }
+
         let mut eph_dk = *rand;
         clamp(&mut eph_dk);
         secret_to_public(ct, &eph_dk);
@@ -60,18 +71,18 @@ impl libcrux_traits::kem::arrayref::Kem<SK_LEN, PK_LEN, PK_LEN, SHK_LEN, SK_LEN,
     }
 
     fn decaps(
-        ss: &mut [u8; SHK_LEN],
-        ct: &[u8; SK_LEN],
-        dk: &[u8; PK_LEN],
+        ss: &mut [u8; SS_LEN],
+        ct: &[u8; DK_LEN],
+        dk: &[u8; EK_LEN],
     ) -> Result<(), libcrux_traits::kem::arrayref::DecapsError> {
         ecdh(ss, ct, dk).map_err(|_| libcrux_traits::kem::arrayref::DecapsError::Unknown)
     }
 }
 
-libcrux_traits::kem::slice::impl_trait!(X25519 => PK_LEN, SK_LEN, PK_LEN, PK_LEN, SK_LEN, SK_LEN);
+libcrux_traits::kem::slice::impl_trait!(X25519 => EK_LEN, DK_LEN, EK_LEN, EK_LEN, DK_LEN, DK_LEN);
 
 /// Clamp a scalar.
-fn clamp(scalar: &mut [u8; SK_LEN]) {
+fn clamp(scalar: &mut [u8; DK_LEN]) {
     // We clamp the key already to make sure it can't be misused.
     scalar[0] &= 248u8;
     scalar[31] &= 127u8;

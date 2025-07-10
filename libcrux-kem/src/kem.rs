@@ -893,14 +893,13 @@ mod xwing {
     const MLKEM768_EK_LEN: usize = libcrux_ml_kem::mlkem768::MlKem768PublicKey::len();
     const MLKEM768_DK_LEN: usize = libcrux_ml_kem::mlkem768::MlKem768PrivateKey::len();
     const MLKEM768_CT_LEN: usize = libcrux_ml_kem::mlkem768::MlKem768Ciphertext::len();
-    const MLKEM768_SS_LEN: usize = 32;
-    const MLKEM768_RAND_KEYGEN_LEN: usize = 64;
+    const MLKEM768_SS_LEN: usize = libcrux_ml_kem::SHARED_SECRET_SIZE;
+    const MLKEM768_RAND_KEYGEN_LEN: usize = libcrux_ml_kem::KEY_GENERATION_SEED_SIZE;
     const MLKEM768_RAND_ENCAPS_LEN: usize = MLKEM768_SS_LEN;
 
-    const X25519_EK_LEN: usize = 32;
-    const X25519_DK_LEN: usize = 32;
-    const X25519_CT_LEN: usize = 32;
-    const X25519_SS_LEN: usize = 32;
+    const X25519_EK_LEN: usize = libcrux_curve25519::EK_LEN;
+    const X25519_DK_LEN: usize = libcrux_curve25519::DK_LEN;
+    const X25519_CT_LEN: usize = X25519_EK_LEN;
     const X25519_RAND_KEYGEN_LEN: usize = X25519_DK_LEN;
     const X25519_RAND_ENCAPS_LEN: usize = X25519_DK_LEN;
 
@@ -971,7 +970,6 @@ mod xwing {
             let ct_x: &mut [u8; X25519_CT_LEN] = ct_x.try_into().unwrap();
 
             let mut hash_buffer = [0u8; 32 + 32 + X25519_CT_LEN + X25519_EK_LEN + 6];
-            hash_buffer[64..96].copy_from_slice(ct_x);
             hash_buffer[96..128].copy_from_slice(ek_x);
             hash_buffer[128..134].copy_from_slice(&[0x5c, 0x2e, 0x2f, 0x2f, 0x5e, 0x5c]);
 
@@ -980,6 +978,7 @@ mod xwing {
 
             let ss_x: &mut [u8; 32] = (&mut hash_buffer[32..64]).try_into().unwrap();
             X25519::encaps(ct_x, ss_x, ek_x, rand_x)?;
+            hash_buffer[64..96].copy_from_slice(ct_x);
             sha3::sha256_ema(ss, &hash_buffer);
 
             Ok(())

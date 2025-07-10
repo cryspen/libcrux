@@ -35,3 +35,6 @@ pre-verification = []
 libcrux-kem = { path = "./", features = ["tests"] }
 rand = { version = "0.9", features = ["os_rng"] }
 hex = { version = "0.4.3", features = ["serde"] }
+libcrux-traits = { version = "0.0.3", path = "../traits", features = [
+    "generic-tests",
+] }

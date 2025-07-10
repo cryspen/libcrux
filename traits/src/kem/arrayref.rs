@@ -1,3 +1,8 @@
+//! This module contains the trait and related errors for a KEM that takes array references as
+//! arguments and writes to outputs to mutable array references.
+
+/// A Key Encapsulation Mechanismd (KEM). This trait is the most low-level and mostly used in the
+/// implementation of other, more usabe APIs on top.
 pub trait Kem<
     const EK_LEN: usize,
     const DK_LEN: usize,

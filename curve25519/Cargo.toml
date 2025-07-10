@@ -14,3 +14,8 @@ repository.workspace = true
 libcrux-hacl-rs = { version = "=0.0.3", path = "../hacl-rs/" }
 libcrux-macros = { version = "=0.0.3", path = "../macros" }
 libcrux-traits = { version = "=0.0.3", path = "../traits" }
+
+[dev-dependencies]
+libcrux-traits = { version = "0.0.3", path = "../traits", features = [
+    "generic-tests",
+] }
