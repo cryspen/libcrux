@@ -100,7 +100,7 @@ endef
 export FINDLIBS
 
 FSTAR_INCLUDE_DIRS_EXTRA ?=
-FINDLIBS_OUTPUT := $(shell bash -c '${FINDLIBS}')
+FINDLIBS_OUTPUT ?= $(shell bash -c '${FINDLIBS}')
 FSTAR_INCLUDE_DIRS = $(FSTAR_INCLUDE_DIRS_EXTRA) $(FINDLIBS_OUTPUT)
 
 # Make sure FSTAR_INCLUDE_DIRS has the `proof-libs`, print hints and
