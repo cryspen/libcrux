@@ -30,7 +30,7 @@ pub type Sha3_384Digest = [u8; 48];
 pub type Sha3_512Digest = [u8; 64];
 
 /// The Digest Algorithm.
-#[cfg_attr(not(eurydice), derive(Copy, Clone, Debug, PartialEq))]
+#[cfg_attr(not(eurydice), derive(Copy, Debug, PartialEq))]
 #[repr(u32)]
 pub enum Algorithm {
     /// SHA3 224
@@ -46,14 +46,13 @@ pub enum Algorithm {
     Sha512 = 4,
 }
 
-impl From<u32> for Algorithm {
-    fn from(v: u32) -> Algorithm {
-        match v {
-            1 => Algorithm::Sha224,
-            2 => Algorithm::Sha256,
-            3 => Algorithm::Sha384,
-            4 => Algorithm::Sha512,
-            _ => panic!(),
+impl Clone for Algorithm {
+    fn clone(&self) -> Self {
+        match self {
+            Algorithm::Sha224 => Algorithm::Sha224,
+            Algorithm::Sha256 => Algorithm::Sha256,
+            Algorithm::Sha384 => Algorithm::Sha384,
+            Algorithm::Sha512 => Algorithm::Sha512,
         }
     }
 }

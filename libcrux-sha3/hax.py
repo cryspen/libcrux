@@ -114,7 +114,7 @@ class extractAction(argparse.Action):
             "--z3rlimit",
             "80",
         ]
-        hax_env = {}
+        hax_env = {"RUSTFLAGS": "-C debug-assertions=off"}
         shell(
             cargo_hax_into,
             cwd=".",

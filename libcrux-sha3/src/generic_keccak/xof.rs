@@ -5,7 +5,6 @@ use crate::{
 
 /// The internal keccak state that can also buffer inputs to absorb.
 /// This is used in the general xof APIs.
-#[cfg_attr(hax, hax_lib::opaque)]
 pub(crate) struct KeccakXofState<
     const PARALLEL_LANES: usize,
     const RATE: usize,
@@ -23,6 +22,7 @@ pub(crate) struct KeccakXofState<
     sponge: bool,
 }
 
+#[hax_lib::attributes]
 impl<const PARALLEL_LANES: usize, const RATE: usize, STATE: KeccakItem<PARALLEL_LANES>>
     KeccakXofState<PARALLEL_LANES, RATE, STATE>
 {
@@ -131,24 +131,28 @@ impl<const PARALLEL_LANES: usize, const RATE: usize, STATE: KeccakItem<PARALLEL_
     /// If `consumed > 0` is returned, `self.buf` contains a full block to be
     /// loaded.
     // Note: consciously not inlining this function to avoid using too much stack
+    #[hax_lib::requires(PARALLEL_LANES > 0 && self.buf_len < RATE)]
     pub(crate) fn fill_buffer(&mut self, inputs: &[&[u8]; PARALLEL_LANES]) -> usize {
         let input_len = inputs[0].len();
-        let mut consumed = 0;
-        if self.buf_len > 0 {
-            // There's something buffered internally to consume.
-            if self.buf_len + input_len >= RATE {
-                // We have enough data when combining the internal buffer and
-                // the input.
-                consumed = RATE - self.buf_len;
 
-                #[allow(clippy::needless_range_loop)]
-                for i in 0..PARALLEL_LANES {
-                    self.buf[i][self.buf_len..].copy_from_slice(&inputs[i][..consumed]);
-                }
-                self.buf_len += consumed;
-            }
+        // Nothing buffered, buffer full, or no input
+        if self.buf_len == 0 || self.buf_len >= RATE || input_len == 0 {
+            return 0;
         }
-        consumed
+
+        // Remaining space to complete a full block
+        let need = RATE - self.buf_len;
+        if input_len < need {
+            return 0;
+        }
+
+        let end = RATE; // buf_len + need == RATE
+        #[allow(clippy::needless_range_loop)]
+        for i in 0..PARALLEL_LANES {
+            self.buf[i][self.buf_len..end].copy_from_slice(&inputs[i][..need]);
+        }
+        self.buf_len = end;
+        need
     }
 
     /// Absorb a final block.
