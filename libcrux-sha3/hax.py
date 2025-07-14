@@ -116,7 +116,7 @@ class extractAction(argparse.Action):
             "--interfaces",
             interface_include,
         ]
-        hax_env = {}
+        hax_env = {"RUSTFLAGS": "-C debug-assertions=off"}
         shell(
             cargo_hax_into,
             cwd=".",
