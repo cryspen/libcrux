@@ -1,3 +1,7 @@
+use std::io::Write;
+
+use crate::protocol::api::{Error, HandshakeState};
+
 use super::{
     ecdh::{PrivateKey, PublicKey},
     keys::{
@@ -10,13 +14,17 @@ use super::{
 };
 use libcrux_ml_kem::mlkem768::{MlKem768Ciphertext, MlKem768PublicKey};
 use rand::CryptoRng;
-use tls_codec::{TlsDeserializeBytes, TlsSerializeBytes, TlsSize};
+use tls_codec::{
+    DeserializeBytes, SerializeBytes, TlsDeserializeBytes, TlsSerializeBytes, TlsSize,
+};
 
-pub struct QueryInitiator<'keys> {
-    responder_longterm_ecdh_pk: &'keys PublicKey,
+pub struct QueryInitiator<'a> {
+    responder_longterm_ecdh_pk: &'a PublicKey,
     initiator_ephemeral_ecdh_sk: PrivateKey,
+    initiator_ephemeral_ecdh_pk: PublicKey,
     tx0: Transcript,
     k0: AEADKey,
+    aad: &'a [u8],
 }
 
 pub struct RegistrationInitiatorPre<'keys> {
@@ -32,6 +40,7 @@ pub struct RegistrationInitiatorPre<'keys> {
 #[derive(TlsSerializeBytes, TlsDeserializeBytes, TlsSize)]
 #[repr(u8)]
 pub enum InitiatorOuterPayload {
+    Reserved,
     Query,
     Registration {
         initiator_longterm_ecdh_pk: PublicKey,
@@ -44,11 +53,38 @@ pub enum InitiatorOuterPayload {
 #[derive(TlsSerializeBytes, TlsDeserializeBytes, TlsSize)]
 pub struct InitiatorInnerPayload {}
 
-impl<'rkeys> QueryInitiator<'rkeys> {
-    pub fn query(
-        responder_longterm_ecdh_pk: &'rkeys PublicKey,
+impl<'a> QueryInitiator<'a> {
+    pub fn new(
+        responder_longterm_ecdh_pk: &'a PublicKey,
         ctx: &[u8],
-        aad: &[u8],
+        aad: &'a [u8],
+        rng: &mut impl CryptoRng,
+    ) -> Self {
+        let initiator_ephemeral_ecdh_sk = PrivateKey::new(rng);
+        let initiator_ephemeral_ecdh_pk = PublicKey::from(&initiator_ephemeral_ecdh_sk);
+
+        let (tx0, k0) = derive_k0(
+            responder_longterm_ecdh_pk,
+            &initiator_ephemeral_ecdh_pk,
+            &initiator_ephemeral_ecdh_sk,
+            ctx,
+            false,
+        );
+
+        Self {
+            responder_longterm_ecdh_pk,
+            initiator_ephemeral_ecdh_sk,
+            initiator_ephemeral_ecdh_pk,
+            tx0,
+            k0,
+            aad,
+        }
+    }
+
+    pub fn query(
+        responder_longterm_ecdh_pk: &'a PublicKey,
+        ctx: &[u8],
+        aad: &'a [u8],
         rng: &mut impl CryptoRng,
     ) -> (Self, Message) {
         let initiator_ephemeral_ecdh_sk = PrivateKey::new(rng);
@@ -68,8 +104,10 @@ impl<'rkeys> QueryInitiator<'rkeys> {
             Self {
                 responder_longterm_ecdh_pk,
                 initiator_ephemeral_ecdh_sk,
+                initiator_ephemeral_ecdh_pk: initiator_ephemeral_ecdh_pk.clone(),
                 tx0,
                 k0,
+                aad,
             },
             Message {
                 ephemeral_ecdh_pk: initiator_ephemeral_ecdh_pk,
@@ -79,12 +117,14 @@ impl<'rkeys> QueryInitiator<'rkeys> {
         )
     }
 
-    pub fn read_response(self, responder_msg: &Message) -> ResponderQueryPayload {
+    pub fn read_response(&self, responder_msg: &Message) -> ResponderQueryPayload {
         let Self {
             responder_longterm_ecdh_pk,
             initiator_ephemeral_ecdh_sk,
+            initiator_ephemeral_ecdh_pk: _,
             tx0,
             k0,
+            aad: _,
         } = self;
         let tx2 = tx2(&tx0, &responder_msg.ephemeral_ecdh_pk);
 
@@ -241,4 +281,35 @@ fn encrypt_inner_payload(
 
     let ciphertext = k1.serialize_encrypt(&InitiatorInnerPayload {}, &aad);
     (pq_encaps, tx1, k1, ciphertext)
+}
+
+impl<'keys> HandshakeState for QueryInitiator<'keys> {
+    fn write_message(&mut self, payload: &[u8], out: &mut [u8]) -> Result<usize, Error> {
+        let ciphertext = self
+            .k0
+            .serialize_encrypt(&InitiatorOuterPayload::Query, self.aad);
+        _ = payload;
+
+        let msg = Message {
+            // XXX: Message should not own this.
+            ephemeral_ecdh_pk: self.initiator_ephemeral_ecdh_pk.clone(),
+            ciphertext,
+            aad: self.aad.to_vec(), // XXX: Message should not own this.
+        };
+
+        // XXX: This should write directly into `out`
+        let serialized_msg = msg.tls_serialize().map_err(|e| Error::Serialize(e))?;
+        let out_len = serialized_msg.len();
+        out[0..out_len].copy_from_slice(&serialized_msg);
+        Ok(out_len)
+    }
+
+    fn read_message(&mut self, message: &[u8], payload: &mut [u8]) -> Result<usize, Error> {
+        let (msg, _remainder) =
+            Message::tls_deserialize_bytes(message).map_err(|e| Error::Deserialize(e))?;
+        let result = self.read_response(&msg);
+        payload[0..result.0.len()].copy_from_slice(&result.0);
+
+        Ok(message.len() - _remainder.len())
+    }
 }

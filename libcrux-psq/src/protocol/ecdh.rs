@@ -1,6 +1,6 @@
 use libcrux_ecdh::{secret_to_public, Algorithm};
 use rand::CryptoRng;
-use tls_codec::{TlsDeserializeBytes, TlsSerializeBytes, TlsSize};
+use tls_codec::{TlsDeserializeBytes, TlsSerialize, TlsSerializeBytes, TlsSize};
 
 #[derive(TlsSerializeBytes, TlsSize)]
 pub(crate) struct SharedSecret(Vec<u8>);
@@ -35,7 +35,7 @@ impl SharedSecret {
 }
 
 impl PrivateKey {
-    pub(crate) fn new(rng: &mut impl CryptoRng) -> Self {
+    pub fn new(rng: &mut impl CryptoRng) -> Self {
         Self(
             libcrux_ecdh::generate_secret(libcrux_ecdh::Algorithm::X25519, rng)
                 .expect("Insufficient Randomness"),
