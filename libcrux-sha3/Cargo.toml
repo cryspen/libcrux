@@ -16,11 +16,11 @@ bench = false # so libtest doesn't eat the arguments to criterion
 [dependencies]
 libcrux-platform = { version = "0.0.2", path = "../sys/platform" }
 libcrux-intrinsics = { version = "0.0.3", path = "../libcrux-intrinsics" }
+hax-lib.workspace = true
 
 # This is only required for verification.
 # The hax config is set by the hax toolchain.
 [target.'cfg(hax)'.dependencies]
-hax-lib.workspace = true
 
 [features]
 simd128 = ["libcrux-intrinsics/simd128"]

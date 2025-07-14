@@ -1,8 +1,3 @@
-ADMIT_MODULES += \
-	Libcrux_sha3.Generic_keccak.fst \
-	Libcrux_sha3.Generic_keccak.Portable.fst \
-	Libcrux_sha3.Simd.Portable.fst
-
 # Override FINDLIBS_OUTPUT to exclude automatic discovery
 FINDLIBS_OUTPUT =
 
