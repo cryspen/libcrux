@@ -1,18 +1,30 @@
 use super::*;
 
+#[hax_lib::attributes]
 impl KeccakState<1, u64> {
     #[inline(always)]
+    #[hax_lib::requires(
+        start < usize::MAX / 2 &&
+        RATE < usize::MAX / 2 &&
+        start + RATE <= out.len() &&
+        RATE % 8 == 0
+    )]
     pub(crate) fn squeeze_next_block<const RATE: usize>(&mut self, out: &mut [u8], start: usize) {
         self.keccakf1600();
         self.squeeze::<RATE>(out, start, RATE);
     }
 
     #[inline(always)]
+    #[hax_lib::requires(RATE <= out.len())]
     pub(crate) fn squeeze_first_block<const RATE: usize>(&self, out: &mut [u8]) {
         self.squeeze::<RATE>(out, 0, RATE);
     }
 
     #[inline(always)]
+    #[hax_lib::requires(
+        RATE <= usize::MAX / 3 &&
+        3 * RATE <= out.len()
+    )]
     pub(crate) fn squeeze_first_three_blocks<const RATE: usize>(&mut self, out: &mut [u8]) {
         self.squeeze::<RATE>(out, 0, RATE);
 
@@ -24,6 +36,10 @@ impl KeccakState<1, u64> {
     }
 
     #[inline(always)]
+    #[hax_lib::requires(
+        RATE <= usize::MAX / 5 &&
+        5 * RATE <= out.len()
+    )]
     pub(crate) fn squeeze_first_five_blocks<const RATE: usize>(&mut self, out: &mut [u8]) {
         self.squeeze::<RATE>(out, 0, RATE);
 
