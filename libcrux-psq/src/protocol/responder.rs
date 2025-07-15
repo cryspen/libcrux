@@ -1,13 +1,17 @@
+use std::io::Write;
 use std::{
     collections::HashMap,
     time::{Duration, SystemTime},
 };
 
-use libcrux_ml_kem::mlkem768::{decapsulate, MlKem768KeyPair};
+use libcrux_kem::MlKem768Ciphertext;
+use libcrux_ml_kem::mlkem768::{decapsulate, MlKem768PrivateKey, MlKem768PublicKey};
 use rand::CryptoRng;
-use tls_codec::{Size, TlsDeserializeBytes, TlsSerializeBytes, TlsSize};
+use tls_codec::{
+    DeserializeBytes, SerializeBytes, TlsDeserializeBytes, TlsSerializeBytes, TlsSize,
+};
 
-use crate::Error;
+use crate::protocol::api::{Error, HandshakeState};
 
 use super::{
     ecdh::{KEMKeyPair, PublicKey},
@@ -20,7 +24,21 @@ use super::{
     Message, ResponderAppContext, TTL_THRESHOLD,
 };
 
-pub struct Responder {}
+pub(crate) struct ResponderState<'a, T: CryptoRng> {
+    pub(crate) longterm_ecdh_pk: &'a PublicKey,
+    pub(crate) longterm_ecdh_sk: &'a PrivateKey,
+    pub(crate) context: &'a [u8],
+    pub(crate) rng: &'a mut T,
+}
+
+pub struct Responder<'a, T: CryptoRng> {
+    pub(crate) setup: ResponderState<'a, T>,
+    pub(crate) outer: InitiatorOuterPayload,
+    pub(crate) tx: Transcript,
+    pub(crate) k0: AEADKey,
+    pub(crate) aad: Vec<u8>,
+    pub(crate) initiator_ephemeral_ecdh_pk: Option<PublicKey>,
+}
 
 #[derive(TlsSerializeBytes, TlsDeserializeBytes, TlsSize)]
 #[repr(u8)]
@@ -37,26 +55,60 @@ pub struct ResponderRegistrationState {
 }
 
 // XXX: Determine what should be the contents here.
-#[derive(TlsSerializeBytes, TlsDeserializeBytes, TlsSize)]
+#[derive(TlsSerializeBytes, TlsDeserializeBytes, TlsSize, Default)]
 pub struct ResponderQueryPayload(pub Vec<u8>);
-
-impl AsRef<[u8]> for ResponderQueryPayload {
-    fn as_ref(&self) -> &[u8] {
-        self.0.as_slice()
-    }
-}
-
-impl AsRef<[u8]> for ResponderRegistrationPayload {
-    fn as_ref(&self) -> &[u8] {
-        self.0.as_slice()
-    }
-}
 
 // XXX: Determine what should be the contents here.
 #[derive(TlsSerializeBytes, TlsDeserializeBytes, TlsSize)]
 pub struct ResponderRegistrationPayload(pub Vec<u8>);
 
-impl<'context> Responder {
+impl<'a, Rng: CryptoRng> Responder<'a, Rng> {
+    pub fn new(
+        longterm_ecdh_pk: &'a PublicKey,
+        longterm_ecdh_sk: &'a PrivateKey,
+        context: &'a [u8],
+        rng: &'a mut Rng,
+    ) -> Self {
+        Self {
+            setup: ResponderState {
+                longterm_ecdh_pk,
+                longterm_ecdh_sk,
+                context,
+                rng,
+            },
+            outer: InitiatorOuterPayload::Reserved,
+            tx: Transcript::default(),
+            k0: AEADKey::default(),
+            aad: vec![],
+            initiator_ephemeral_ecdh_pk: None,
+        }
+    }
+
+    fn respond_query_self(&mut self, payload: &[u8]) -> Message {
+        // XXX: Copied from respond_query
+
+        let responder_ephemeral_ecdh_sk = PrivateKey::new(self.setup.rng);
+        let responder_ephemeral_ecdh_pk = PublicKey::from(&responder_ephemeral_ecdh_sk);
+
+        let tx2 = tx2(&self.tx, &responder_ephemeral_ecdh_pk);
+        let k2 = derive_k2_query_responder(
+            &self.k0,
+            self.initiator_ephemeral_ecdh_pk.as_ref().unwrap(),
+            &responder_ephemeral_ecdh_sk,
+            self.setup.longterm_ecdh_sk,
+            &tx2,
+        );
+
+        // XXX: Don't copy `payload`
+        let ciphertext = k2.serialize_encrypt(&ResponderQueryPayload(payload.to_vec()), &self.aad);
+
+        Message {
+            ephemeral_ecdh_pk: responder_ephemeral_ecdh_pk,
+            ciphertext,
+            aad: self.aad.clone(),
+        }
+    }
+
     pub fn respond_query(
         responder_keys: &KEMKeyPair,
         responder_context: &ResponderAppContext<'context>,
@@ -89,10 +141,9 @@ impl<'context> Responder {
         })
     }
 
-    pub fn respond_registration<'a>(
-        responder_keys: &'a KEMKeyPair,
-        responder_pq_keys: &'a MlKem768KeyPair,
-        responder_context: &'a ResponderAppContext<'context>,
+    pub fn respond_registration(
+        responder_longterm_ecdh_pk: &'a PublicKey,
+        responder_pq_pk: &'a MlKem768PublicKey,
         state: &'a ResponderRegistrationState,
         response: &'a ResponderRegistrationPayload,
         rng: &'a mut impl CryptoRng,
@@ -185,6 +236,29 @@ impl<'context> Responder {
         ))
     }
 
+    fn decrypt_outer_msg(&mut self, initiator_msg: Message) {
+        // XXX: duplicated from `decrypt_outer`
+
+        let Message {
+            ephemeral_ecdh_pk: initiator_ephemeral_ecdh_pk,
+            ciphertext,
+            aad,
+        } = initiator_msg;
+        let (tx0, k0) = derive_k0(
+            self.setup.longterm_ecdh_pk,
+            &initiator_ephemeral_ecdh_pk,
+            self.setup.longterm_ecdh_sk,
+            self.setup.context,
+            true,
+        );
+
+        self.outer = k0.decrypt_deserialize(&ciphertext, &aad);
+        self.k0 = k0;
+        self.tx = tx0;
+        self.aad = aad;
+        self.initiator_ephemeral_ecdh_pk = Some(initiator_ephemeral_ecdh_pk);
+    }
+
     pub fn decrypt_outer(
         eph_keys: &mut HashMap<PublicKey, Duration>,
         responder_keys: &KEMKeyPair,
@@ -213,5 +287,24 @@ impl<'context> Responder {
             k0.decrypt_deserialize(&initiator_msg.ciphertext, initiator_msg.aad.as_ref());
 
         Ok((received_payload, tx0, k0, initiator_msg.pk))
+    }
+}
+
+impl<'a, Rng: CryptoRng> HandshakeState for Responder<'a, Rng> {
+    fn write_message(&mut self, payload: &[u8], out: &mut [u8]) -> Result<usize, Error> {
+        let msg = self.respond_query_self(payload);
+        let msg_out = msg.tls_serialize().map_err(|e| Error::Serialize(e))?;
+        out[0..msg_out.len()].copy_from_slice(&msg_out);
+        Ok(msg_out.len())
+    }
+
+    fn read_message(&mut self, message: &[u8], _payload: &mut [u8]) -> Result<usize, Error> {
+        let (msg, _remainder) =
+            Message::tls_deserialize_bytes(message).map_err(|e| Error::Deserialize(e))?;
+
+        self.decrypt_outer_msg(msg);
+
+        // XXX: not using the bytes version we wouldn't need to do this math
+        Ok(message.len() - _remainder.len())
     }
 }

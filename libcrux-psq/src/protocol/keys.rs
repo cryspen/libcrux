@@ -9,7 +9,7 @@ use super::{
     transcript::{self, Transcript},
 };
 
-#[derive(TlsSerializeBytes, TlsSize)]
+#[derive(Default, TlsSerializeBytes, TlsSize)]
 pub struct AEADKey([u8; KEY_LEN]);
 
 impl AEADKey {

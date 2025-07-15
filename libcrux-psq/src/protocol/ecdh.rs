@@ -6,7 +6,7 @@
 //! directly. (cf. https://github.com/cryspen/libcrux/issues/1035)
 use libcrux_ecdh::{secret_to_public, Algorithm};
 use rand::CryptoRng;
-use tls_codec::{TlsDeserializeBytes, TlsSerializeBytes, TlsSize};
+use tls_codec::{TlsDeserializeBytes, TlsSerialize, TlsSerializeBytes, TlsSize};
 
 use crate::Error;
 

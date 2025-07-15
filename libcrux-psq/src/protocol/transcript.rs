@@ -8,7 +8,7 @@ use super::ecdh::PublicKey;
 use libcrux_sha2::{Digest, SHA256_LENGTH};
 
 /// The initial transcript hash.
-#[derive(Debug, Clone, Copy, TlsSerializeBytes, TlsSize)]
+#[derive(Debug, Default, Clone, Copy, TlsSerializeBytes, TlsSize)]
 pub struct Transcript([u8; SHA256_LENGTH]);
 
 impl Transcript {
