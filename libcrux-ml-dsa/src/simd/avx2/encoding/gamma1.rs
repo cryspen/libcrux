@@ -282,7 +282,6 @@ let deserialize_post (gamma1_exponent: gamma1_exp)
 })]
 #[hax_lib::ensures(|result| fstar!("deserialize_post $gamma1_exponent $serialized ${out}_future"))]
 pub(crate) fn deserialize(serialized: &[u8], out: &mut Vec256, gamma1_exponent: usize) {
-    // TODO: why `gamma1_exponent as u8`, not `gamma1_exponent`?
     match gamma1_exponent as u8 {
         17 => deserialize_when_gamma1_is_2_pow_17_unsigned(serialized, out),
         19 => deserialize_when_gamma1_is_2_pow_19_unsigned(serialized, out),
