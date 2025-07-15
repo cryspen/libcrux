@@ -207,8 +207,8 @@ let deserialize_unsigned_post
 )]
 #[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
 #[hax_lib::requires(serialized.len() == 18)]
-#[hax_lib::ensures(|result| fstar!("deserialize_unsigned_post (mk_int 17) $serialized $result"))]
-fn deserialize_when_gamma1_is_2_pow_17_unsigned(serialized: &[u8]) -> Vec256 {
+#[hax_lib::ensures(|_result| fstar!("deserialize_unsigned_post (mk_int 17) $serialized ${out}_future"))]
+fn deserialize_when_gamma1_is_2_pow_17_unsigned(serialized: &[u8], out: &mut Vec256) {
     debug_assert!(serialized.len() == 18);
 
     let serialized_lower = mm_loadu_si128(&serialized[0..16]);
@@ -232,14 +232,14 @@ fn deserialize_when_gamma1_is_2_pow_17_unsigned(serialized: &[u8]) -> Vec256 {
              i32_to_bv_pow2_min_one_lemma_fa 18
            in ()"#
     );
-    coefficients
+    *out = coefficients
 }
 
 #[inline(always)]
 #[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
 #[hax_lib::requires(serialized.len() == 20)]
-#[hax_lib::ensures(|result| fstar!("deserialize_unsigned_post (mk_int 19) $serialized $result"))]
-fn deserialize_when_gamma1_is_2_pow_19_unsigned(serialized: &[u8]) -> Vec256 {
+#[hax_lib::ensures(|result| fstar!("deserialize_unsigned_post (mk_int 19) $serialized ${out}_future"))]
+fn deserialize_when_gamma1_is_2_pow_19_unsigned(serialized: &[u8], out: &mut Vec256) {
     // Each set of 5 bytes deserializes to 2 coefficients, and since each Vec256
     // can hold 8 such coefficients, we process 5 * (8 / 2) = 20 bytes in this
     // function.
@@ -261,7 +261,7 @@ fn deserialize_when_gamma1_is_2_pow_19_unsigned(serialized: &[u8]) -> Vec256 {
     let coefficients = mm256_srlv_epi32(coefficients, mm256_set_epi32(4, 0, 4, 0, 4, 0, 4, 0));
     let coefficients = mm256_and_si256(coefficients, mm256_set1_epi32(GAMMA1_19_TIMES_2_MASK));
     hax_lib::fstar!("i32_to_bv_pow2_min_one_lemma_fa 20");
-    coefficients
+    *out = coefficients
 }
 
 #[inline(always)]
@@ -283,11 +283,14 @@ let deserialize_post (gamma1_exponent: gamma1_exp)
 #[hax_lib::ensures(|result| fstar!("deserialize_post $gamma1_exponent $serialized ${out}_future"))]
 pub(crate) fn deserialize(serialized: &[u8], out: &mut Vec256, gamma1_exponent: usize) {
     // TODO: why `gamma1_exponent as u8`, not `gamma1_exponent`?
-    let unsigned = match gamma1_exponent as u8 {
-        17 => deserialize_when_gamma1_is_2_pow_17_unsigned(serialized),
-        19 => deserialize_when_gamma1_is_2_pow_19_unsigned(serialized),
+    match gamma1_exponent as u8 {
+        17 => deserialize_when_gamma1_is_2_pow_17_unsigned(serialized, out),
+        19 => deserialize_when_gamma1_is_2_pow_19_unsigned(serialized, out),
         _ => unreachable!(),
     };
+
+    #[cfg(hax)]
+    let unsigned = out.clone();
 
     let gamma1 = match gamma1_exponent as u8 {
         17 => GAMMA1_17,
@@ -295,7 +298,7 @@ pub(crate) fn deserialize(serialized: &[u8], out: &mut Vec256, gamma1_exponent: 
         _ => unreachable!(),
     };
 
-    *out = mm256_sub_epi32(mm256_set1_epi32(gamma1), unsigned);
+    *out = mm256_sub_epi32(mm256_set1_epi32(gamma1), *out);
 
     hax_lib::fstar!(
         r#"
