@@ -32,21 +32,12 @@ trait Curve25519 {
 
 pub struct X25519;
 
-#[inline(always)]
-const fn or(a: u8, b: &u8) -> u8 {
-    a | *b
-}
-
 impl libcrux_traits::kem::arrayref::Kem<DK_LEN, EK_LEN, EK_LEN, SS_LEN, DK_LEN, DK_LEN> for X25519 {
     fn keygen(
         ek: &mut [u8; DK_LEN],
         dk: &mut [u8; EK_LEN],
         rand: &[u8; DK_LEN],
     ) -> Result<(), libcrux_traits::kem::arrayref::KeyGenError> {
-        if rand.iter().fold(0, or) == 0 {
-            return Err(libcrux_traits::kem::arrayref::KeyGenError::InvalidRandomness);
-        }
-
         dk.copy_from_slice(rand);
         clamp(dk);
         secret_to_public(ek, dk);
@@ -59,10 +50,6 @@ impl libcrux_traits::kem::arrayref::Kem<DK_LEN, EK_LEN, EK_LEN, SS_LEN, DK_LEN, 
         ek: &[u8; EK_LEN],
         rand: &[u8; DK_LEN],
     ) -> Result<(), libcrux_traits::kem::arrayref::EncapsError> {
-        if rand.iter().fold(0, or) == 0 {
-            return Err(libcrux_traits::kem::arrayref::EncapsError::InvalidRandomness);
-        }
-
         let mut eph_dk = *rand;
         clamp(&mut eph_dk);
         secret_to_public(ct, &eph_dk);

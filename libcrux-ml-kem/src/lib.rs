@@ -192,10 +192,6 @@ macro_rules! impl_kem_trait {
                 dk: &mut [u8; SECRET_KEY_SIZE],
                 rand: &[u8; KEY_GENERATION_SEED_SIZE],
             ) -> Result<(), libcrux_traits::kem::owned::KeyGenError> {
-                if rand.iter().fold(0, crate::or) == 0 {
-                    return Err(libcrux_traits::kem::arrayref::KeyGenError::InvalidRandomness);
-                }
-
                 let key_pair = generate_key_pair(*rand);
                 ek.copy_from_slice(key_pair.pk());
                 dk.copy_from_slice(key_pair.sk());
@@ -209,9 +205,6 @@ macro_rules! impl_kem_trait {
                 ek: &[u8; CPA_PKE_PUBLIC_KEY_SIZE],
                 rand: &[u8; SHARED_SECRET_SIZE],
             ) -> Result<(), libcrux_traits::kem::owned::EncapsError> {
-                if rand.iter().fold(0, crate::or) == 0 {
-                    return Err(libcrux_traits::kem::arrayref::EncapsError::InvalidRandomness);
-                }
                 let public_key: $pk = ek.into();
 
                 let (ct_, ss_) = encapsulate(&public_key, *rand);
@@ -242,12 +235,6 @@ macro_rules! impl_kem_trait {
         CPA_PKE_CIPHERTEXT_SIZE, SHARED_SECRET_SIZE,
         KEY_GENERATION_SEED_SIZE, SHARED_SECRET_SIZE);
     };
-}
-
-/// Used in equality checks
-#[inline(always)]
-const fn or(a: u8, b: &u8) -> u8 {
-    a | *b
 }
 
 use impl_kem_trait;

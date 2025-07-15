@@ -17,9 +17,13 @@ pub trait Kem<
 >
 {
     /// Generate a pair of encapsulation and decapsulation keys.
+    /// It is the responsibility of the caller to ensure  that the `rand` argument is actually
+    /// random.
     fn keygen(rand: &[u8; RAND_KEYGEN_LEN]) -> Result<([u8; DK_LEN], [u8; EK_LEN]), KeyGenError>;
 
     /// Encapsulate a shared secret towards a given encapsulation key.
+    /// It is the responsibility of the caller to ensure  that the `rand` argument is actually
+    /// random.
     fn encaps(
         ek: &[u8; EK_LEN],
         rand: &[u8; RAND_ENCAPS_LEN],

@@ -6,9 +6,13 @@ use super::arrayref;
 /// A Key Encapsulation Mechanismd (KEM). This trait takes slices as arguments.
 pub trait Kem {
     /// Generate a pair of encapsulation and decapsulation keys.
+    /// It is the responsibility of the caller to ensure  that the `rand` argument is actually
+    /// random.
     fn keygen(ek: &mut [u8], dk: &mut [u8], rand: &[u8]) -> Result<(), KeyGenError>;
 
     /// Encapsulate a shared secret towards a given encapsulation key.
+    /// It is the responsibility of the caller to ensure  that the `rand` argument is actually
+    /// random.
     fn encaps(ct: &mut [u8], ss: &mut [u8], ek: &[u8], rand: &[u8]) -> Result<(), EncapsError>;
 
     /// Decapsulate a shared secret.
