@@ -1,3 +1,8 @@
+#!/bin/bash
+
+set -e
+set -x
+
 RUST_TARGET_FLAG=--target=thumbv7em-none-eabihf
 
 # Check no_std compatibility for crates that support it by default
