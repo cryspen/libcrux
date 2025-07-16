@@ -15,8 +15,6 @@ jobs:
       - name: Install toolchain
         run: rustup target add thumbv7em-none-eabihf
 
-      - name: config RUST_TARGET_FLAG
-
       - name: Check no_std compatibility
         run: |
           ./no-std-check.sh
