@@ -63,6 +63,7 @@ fn deserialize_when_eta_is_2(serialized: &[u8], simd_unit: &mut Coefficients) {
     let byte2 = serialized[2] as i32;
 
     hax_lib::fstar!("let (): squash (forall (x: int_t I32). get_bit x (mk_int 31) == 0 ==> v x >= 0) = reveal_opaque (`%get_bit) (get_bit #I32) in ()");
+
     simd_unit.values[0] = ETA - (byte0 & 7);
     simd_unit.values[1] = ETA - ((byte0 >> 3) & 7);
     simd_unit.values[2] = ETA - (((byte0 >> 6) | (byte1 << 2)) & 7);
