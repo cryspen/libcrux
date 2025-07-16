@@ -12,7 +12,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - name: Install toolchain
+      - name: Install target
         run: rustup target add thumbv7em-none-eabihf
 
       - name: Check no_std compatibility
