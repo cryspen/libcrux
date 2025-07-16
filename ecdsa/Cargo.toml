@@ -15,11 +15,12 @@ libcrux-p256 = { version = "=0.0.3", path = "../p256", features = [
     "expose-hacl",
 ] }
 libcrux-sha2 = { version = "=0.0.3", path = "../sha2" }
-rand = { version = "0.9", optional = true }
+rand = { version = "0.9", optional = true, default-features = false }
 
 [features]
-default = ["rand"]
+default = ["rand", "std"]
 rand = ["dep:rand"]
+std = ["rand?/std"]
 
 [dev-dependencies]
 serde = { version = "1.0.217", features = ["derive"] }
