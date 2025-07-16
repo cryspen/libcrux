@@ -173,7 +173,7 @@ fn serialize_when_gamma1_is_2_pow_19(simd_unit: &Vec256, out: &mut [u8]) {
    == i32_to_bv (gamma_pow -! to_i32x8 $simd_unit (mk_int (i / n_bytes))) (mk_int (i % n_bytes)))
 "#))]
 pub(crate) fn serialize(simd_unit: &Vec256, serialized: &mut [u8], gamma1_exponent: usize) {
-    match gamma1_exponent as u8 {
+    match gamma1_exponent {
         17 => serialize_when_gamma1_is_2_pow_17(simd_unit, serialized),
         19 => serialize_when_gamma1_is_2_pow_19(simd_unit, serialized),
         _ => unreachable!(),
@@ -239,13 +239,13 @@ fn deserialize_when_gamma1_is_2_pow_19(serialized: &[u8], out: &mut Vec256) {
 }
 
 #[inline(always)]
-#[hax_lib::requires( match gamma1_exponent as u8 {
+#[hax_lib::requires( match gamma1_exponent {
         17 => serialized.len() == 18,
         19 => serialized.len() == 20,
         _ => false,
     })]
 pub(crate) fn deserialize(serialized: &[u8], out: &mut Vec256, gamma1_exponent: usize) {
-    match gamma1_exponent as u8 {
+    match gamma1_exponent {
         17 => deserialize_when_gamma1_is_2_pow_17(serialized, out),
         19 => deserialize_when_gamma1_is_2_pow_19(serialized, out),
         _ => unreachable!(),

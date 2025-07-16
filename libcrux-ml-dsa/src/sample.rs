@@ -355,7 +355,7 @@ fn sample_mask_ring_element<SIMDUnit: Operations, Shake256: shake256::DsaXof>(
     result: &mut PolynomialRingElement<SIMDUnit>,
     gamma1_exponent: usize,
 ) {
-    match gamma1_exponent as u8 {
+    match gamma1_exponent {
         17 => {
             let mut out = [0u8; 576];
             Shake256::shake256::<576>(seed, &mut out);
@@ -392,7 +392,7 @@ pub(crate) fn sample_mask_vector<
     let seed3 = add_error_domain_separator(seed, *domain_separator + 3);
     *domain_separator += 4;
 
-    match gamma1_exponent as u8 {
+    match gamma1_exponent {
         17 => {
             let mut out0 = [0; 576];
             let mut out1 = [0; 576];
