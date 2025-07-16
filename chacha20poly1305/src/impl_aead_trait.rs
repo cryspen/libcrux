@@ -18,7 +18,7 @@ impl Aead<KEY_LEN, TAG_LEN, NONCE_LEN> for ChaCha20Poly1305 {
         plaintext: &[u8],
     ) -> Result<(), EncryptError> {
         if plaintext.len() != ciphertext.len() {
-            return Err(EncryptError::WrongCiphertextText);
+            return Err(EncryptError::WrongCiphertextLength);
         }
 
         let ptxt_len: u32 = plaintext
@@ -43,7 +43,7 @@ impl Aead<KEY_LEN, TAG_LEN, NONCE_LEN> for ChaCha20Poly1305 {
         tag: &[u8; TAG_LEN],
     ) -> Result<(), DecryptError> {
         if plaintext.len() != ciphertext.len() {
-            return Err(DecryptError::WrongPlaintextText);
+            return Err(DecryptError::WrongPlaintextLength);
         }
 
         let aad_len: u32 = aad.len().try_into().map_err(|_| DecryptError::AadTooLong)?;
