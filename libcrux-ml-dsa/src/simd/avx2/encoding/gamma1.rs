@@ -173,7 +173,7 @@ fn serialize_when_gamma1_is_2_pow_19(simd_unit: &Vec256, out: &mut [u8]) {
    == i32_to_bv (gamma_pow -! to_i32x8 $simd_unit (mk_int (i / n_bytes))) (mk_int (i % n_bytes)))
 "#))]
 pub(crate) fn serialize(simd_unit: &Vec256, serialized: &mut [u8], gamma1_exponent: usize) {
-    match gamma1_exponent as u8 {
+    match gamma1_exponent {
         17 => serialize_when_gamma1_is_2_pow_17(simd_unit, serialized),
         19 => serialize_when_gamma1_is_2_pow_19(simd_unit, serialized),
         _ => unreachable!(),
