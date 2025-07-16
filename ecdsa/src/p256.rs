@@ -8,8 +8,6 @@ use libcrux_p256::{
 
 use crate::DigestAlgorithm;
 
-use ::rand::TryRngCore;
-
 use super::Error;
 
 /// A P-256 Signature
@@ -200,7 +198,7 @@ pub mod rand {
     use crate::RAND_LIMIT;
 
     use super::*;
-    use ::rand::{CryptoRng, RngCore};
+    use ::rand::{CryptoRng, RngCore, TryRngCore};
 
     /// Generate a random scalar for ECDSA.
     ///
