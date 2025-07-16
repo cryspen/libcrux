@@ -26,6 +26,17 @@ const ETA2_RANDOMNESS_SIZE: usize = ETA2 * 64;
 
 const IMPLICIT_REJECTION_HASH_INPUT_SIZE: usize = SHARED_SECRET_SIZE + CPA_PKE_CIPHERTEXT_SIZE;
 
+/// The ML-KEM 512 algorithms
+pub struct MlKem512;
+
+#[cfg(not(any(hax, eurydice)))]
+crate::impl_kem_trait!(
+    MlKem512,
+    MlKem512PublicKey,
+    MlKem512PrivateKey,
+    MlKem512Ciphertext
+);
+
 /// An ML-KEM 512 Ciphertext
 pub type MlKem512Ciphertext = MlKemCiphertext<CPA_PKE_CIPHERTEXT_SIZE>;
 /// An ML-KEM 512 Private key
@@ -572,6 +583,16 @@ pub mod rand {
 #[cfg(all(not(eurydice), feature = "kyber"))]
 pub(crate) mod kyber {
     use super::*;
+
+    /// The Kyber 512 algorithms
+    pub struct Kyber512;
+
+    crate::impl_kem_trait!(
+        Kyber512,
+        MlKem512PublicKey,
+        MlKem512PrivateKey,
+        MlKem512Ciphertext
+    );
 
     /// Generate Kyber 512 Key Pair
     ///

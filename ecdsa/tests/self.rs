@@ -7,7 +7,7 @@ mod rand {
         p256::{Nonce, PrivateKey, PublicKey},
         *,
     };
-    use rand::rngs::OsRng;
+    use rand_core::OsRng;
 
     #[test]
     fn test_self() {
