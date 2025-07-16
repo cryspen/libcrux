@@ -4,9 +4,13 @@
 
 /// An Authenticated Encryption with Associated Data (AEAD) scheme. This trait
 /// is low-level and is mostly used for implementing other, more usable APIs.
+///
+/// Some implementors of this trait may impose stronger restrictions on the inputs than described
+/// here. Check the documentation of the types implementing this trait to make sure which inputs
+/// are valid.
 pub trait Aead<const KEY_LEN: usize, const TAG_LEN: usize, const NONCE_LEN: usize> {
     /// Encrypt a plaintext message, producing a ciphertext and an authentication tag.
-    /// The `ciphertext` argument must have length `plaintext.len() + TAG_LEN`.
+    /// The `ciphertext` argument must have the same length as `plaintext`.
     fn encrypt(
         ciphertext: &mut [u8],
         tag: &mut [u8; TAG_LEN],
@@ -32,7 +36,7 @@ pub trait Aead<const KEY_LEN: usize, const TAG_LEN: usize, const NONCE_LEN: usiz
 #[derive(Debug, PartialEq, Eq)]
 pub enum EncryptError {
     /// The ciphertext buffer has the wrong length.
-    WrongCiphertextText,
+    WrongCiphertextLength,
     /// The plaintext is too long for this algorithm or implementation.
     PlaintextTooLong,
     /// The AAD is too long for this algorithm or implementation.
@@ -48,7 +52,7 @@ pub enum DecryptError {
     /// or the key/nonce/aad is incorrect.
     InvalidTag,
     /// The plaintext buffer has the wrong length.
-    WrongPlaintextText,
+    WrongPlaintextLength,
     /// The plaintext is too long for this algorithm or implementation.
     PlaintextTooLong,
     /// The AAD is too long for this algorithm or implementation.
