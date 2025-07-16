@@ -106,6 +106,7 @@ fn deserialize_when_gamma1_is_2_pow_17(serialized: &[u8], simd_unit: &mut Coeffi
             coefficient3 &= GAMMA1_TIMES_2_BITMASK;
 
             hax_lib::fstar!("let (): squash (forall (x: int_t I32). get_bit x (mk_int 31) == 0 ==> v x >= 0) = reveal_opaque (`%get_bit) (get_bit #I32) in ()");
+
             simd_unit.values[4 * i] = GAMMA1 - coefficient0;
             simd_unit.values[4 * i + 1] = GAMMA1 - coefficient1;
             simd_unit.values[4 * i + 2] = GAMMA1 - coefficient2;
@@ -136,6 +137,7 @@ fn deserialize_when_gamma1_is_2_pow_19(serialized: &[u8], simd_unit: &mut Coeffi
             coefficient1 |= (bytes[4] as i32) << 12;
 
             hax_lib::fstar!("let (): squash (forall (x: int_t I32). get_bit x (mk_int 31) == 0 ==> v x >= 0) = reveal_opaque (`%get_bit) (get_bit #I32) in ()");
+
             simd_unit.values[2 * i] = GAMMA1 - coefficient0;
             simd_unit.values[2 * i + 1] = GAMMA1 - coefficient1;
         }

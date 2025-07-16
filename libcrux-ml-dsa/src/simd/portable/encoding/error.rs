@@ -84,6 +84,7 @@ fn deserialize_when_eta_is_4(serialized: &[u8], simd_units: &mut Coefficients) {
     cloop! {
         for (i, byte) in serialized.iter().enumerate() {
             hax_lib::fstar!("let (): squash (forall (x: int_t I32). get_bit x (mk_int 31) == 0 ==> v x >= 0) = reveal_opaque (`%get_bit) (get_bit #I32) in ()");
+
             simd_units.values[2 * i] = ETA - ((byte & 0xF) as i32);
             simd_units.values[2 * i + 1] = ETA - ((byte >> 4) as i32);
         }
