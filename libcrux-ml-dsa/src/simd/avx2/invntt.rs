@@ -479,6 +479,7 @@ let outer_3_plus_inv
 fn outer_3_plus<const OFFSET: usize, const STEP_BY: usize, const ZETA: i32>(
     re: &mut AVX2RingElement,
 ) {
+    #[cfg(hax)]
     let _re0 = re.clone();
     for j in OFFSET..OFFSET + STEP_BY {
         hax_lib::loop_invariant!(|j: usize| fstar!(
