@@ -10,7 +10,7 @@
 /// are valid.
 pub trait Aead<const KEY_LEN: usize, const TAG_LEN: usize, const NONCE_LEN: usize> {
     /// Encrypt a plaintext message, producing a ciphertext and an authentication tag.
-    /// The `ciphertext` argument must have the same length as `plaintext`.
+    /// The arguments `plaintext` and `ciphertext` must have the same length.
     fn encrypt(
         ciphertext: &mut [u8],
         tag: &mut [u8; TAG_LEN],
@@ -21,7 +21,7 @@ pub trait Aead<const KEY_LEN: usize, const TAG_LEN: usize, const NONCE_LEN: usiz
     ) -> Result<(), EncryptError>;
 
     /// Decrypt a ciphertext, verifying its authenticity.
-    /// The `plaintext` argument must have length `ciphertext.len() - TAG_LEN`.
+    /// The arguments `plaintext` and `ciphertext` must have the same length.
     fn decrypt(
         plaintext: &mut [u8],
         key: &[u8; KEY_LEN],

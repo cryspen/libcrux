@@ -95,3 +95,6 @@ impl Aead<KEY_LEN, TAG_LEN, XNONCE_LEN> for XChaCha20Poly1305 {
         ChaCha20Poly1305::decrypt(plaintext, &subkey, &new_nonce, &aad, ciphertext, tag)
     }
 }
+
+libcrux_traits::aead::slice::impl_aead_slice_trait!(ChaCha20Poly1305 => KEY_LEN, TAG_LEN, NONCE_LEN);
+libcrux_traits::aead::slice::impl_aead_slice_trait!(XChaCha20Poly1305 => KEY_LEN, TAG_LEN, XNONCE_LEN);
