@@ -24,6 +24,7 @@ pub struct Message {
     ciphertext: TlsByteVecU32, // XXX: SerializeBytes is not implemented for VLBytes
     tag: [u8; 16],
     aad: TlsByteVecU32, // XXX: SerializeBytes is not implemented for VLBytes
+    pq_encapsulation: Option<MlKem768Ciphertext>,
 }
 
 // pub struct TransportMessage {
