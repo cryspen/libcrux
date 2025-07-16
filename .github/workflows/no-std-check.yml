@@ -11,43 +11,38 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+
       - name: Install toolchain
         run: rustup target add thumbv7em-none-eabihf
+
       - name: config RUST_TARGET_FLAG
         run: echo "RUST_TARGET_FLAG=--target=thumbv7em-none-eabihf" > $GITHUB_ENV
-      - name: libcrux-chacha20poly1305 no_std check
-        run: cargo build -p libcrux-chacha20poly1305
-      - name: libcrux-curve25519 no_std check
-        run: cargo build -p libcrux-curve25519
-      - name: libcrux-ecdsa no_std check
-        run: cargo build -p libcrux-ecdsa
-      - name: libcrux-hacl-rs no_std check
-        run: cargo build -p libcrux-hacl-rs
-      - name: libcrux-ecdh no_std check
-        run: cargo build -p libcrux-ecdh --no-default-features
-      - name: libcrux-hkdf no_std check
-        run: cargo build -p libcrux-hkdf
-      - name: libcrux-hmac no_std check
-        run: cargo build -p libcrux-hmac
-      - name: libcrux-intrinsics no_std check
-        run: cargo build -p libcrux-intrinsics
-      - name: libcrux-kem no_std check
-        run: cargo build -p libcrux-kem --no-default-features
-      - name: libcrux-ml-dsa no_std check
-        run: cargo build -p libcrux-ml-dsa --no-default-features
-      - name: libcrux-ml-kem no_std check
-        run: cargo build -p libcrux-ml-kem --no-default-features
-      - name: libcrux-sha3 no_std check
-        run: cargo build -p libcrux-sha3
-      - name: libcrux-p256 no_std check
-        run: cargo build -p libcrux-p256
-      - name: libcrux-poly1305 no_std check
-        run: cargo build -p libcrux-poly1305
-      - name: libcrux-rsa no_std check
-        run: cargo build -p libcrux-rsa
-      - name: libcrux-secrets no_std check
-        run: cargo build -p libcrux-secrets
-      - name: libcrux-sha2 no_std check
-        run: cargo build -p libcrux-sha2
-      - name: libcrux-traits no_std check
-        run: cargo build -p libcrux-traits
+
+      - name: Check no_std compatibility for crates that support it by default
+        run: |
+          cargo build -p libcrux-chacha20poly1305 \
+          -p libcrux-curve25519 \
+          -p libcrux-ecdsa \
+          -p libcrux-hacl-rs \
+          -p libcrux-hkdf \
+          -p libcrux-hmac \
+          -p libcrux-intrinsics \
+          -p libcrux-sha3 \
+          -p libcrux-p256 \
+          -p libcrux-poly1305 \
+          -p libcrux-rsa \
+          -p libcrux-secrets \
+          -p libcrux-sha2 \
+          -p libcrux-traits \
+          $RUST_TARGET_FLAG
+
+      - name: Check no_std compatibility for crates that support it when no-default-features is set
+        run: |
+          cargo build \
+          -p libcrux-ecdh \
+          -p libcrux-kem \
+          -p libcrux-ml-dsa \
+          -p libcrux-ml-kem \
+          --no-default-features \
+          $RUST_TARGET_FLAG
+
