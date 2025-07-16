@@ -16,33 +16,7 @@ jobs:
         run: rustup target add thumbv7em-none-eabihf
 
       - name: config RUST_TARGET_FLAG
-        run: echo "RUST_TARGET_FLAG=--target=thumbv7em-none-eabihf" > $GITHUB_ENV
 
-      - name: Check no_std compatibility for crates that support it by default
+      - name: Check no_std compatibility
         run: |
-          cargo build -p libcrux-chacha20poly1305 \
-          -p libcrux-curve25519 \
-          -p libcrux-ecdsa \
-          -p libcrux-hacl-rs \
-          -p libcrux-hkdf \
-          -p libcrux-hmac \
-          -p libcrux-intrinsics \
-          -p libcrux-sha3 \
-          -p libcrux-p256 \
-          -p libcrux-poly1305 \
-          -p libcrux-rsa \
-          -p libcrux-secrets \
-          -p libcrux-sha2 \
-          -p libcrux-traits \
-          $RUST_TARGET_FLAG
-
-      - name: Check no_std compatibility for crates that support it when no-default-features is set
-        run: |
-          cargo build \
-          -p libcrux-ecdh \
-          -p libcrux-kem \
-          -p libcrux-ml-dsa \
-          -p libcrux-ml-kem \
-          --no-default-features \
-          $RUST_TARGET_FLAG
-
+          ./no-std-check.sh
