@@ -1,9 +1,9 @@
 use super::{
     ecdh::PublicKey,
     keys::{derive_session_key, AEADKey},
-    responder::ResponderRegistrationPayload,
+    // responder::ResponderRegistrationPayload,
     transcript::Transcript,
-    TransportMessage,
+    // TransportMessage,
 };
 
 /// The length of a session ID in bytes.
@@ -29,7 +29,7 @@ pub struct SessionState<'keys> {
 impl<'keys> SessionState<'keys> {
     pub(crate) fn new(
         is_initiator: bool,
-        _responder_reg_info: &ResponderRegistrationPayload,
+        // _responder_reg_info: &ResponderRegistrationPayload,
         responder_longterm_ecdh_pk: &'keys PublicKey,
         initiator_longterm_ecdh_pk: &'keys PublicKey,
         responder_pq_pk: Option<&'keys libcrux_ml_kem::mlkem768::MlKem768PublicKey>,
@@ -47,11 +47,11 @@ impl<'keys> SessionState<'keys> {
         }
     }
 
-    pub fn transport_encrypt(&mut self, _payload: &[u8], _aad: &[u8]) -> TransportMessage {
-        todo!()
-    }
+    // pub fn transport_encrypt(&mut self, _payload: &[u8], _aad: &[u8]) -> TransportMessage {
+    //     todo!()
+    // }
 
-    pub fn transport_decrypt(&mut self, _message: &TransportMessage) -> Vec<u8> {
-        todo!()
-    }
+    // pub fn transport_decrypt(&mut self, _message: &TransportMessage) -> Vec<u8> {
+    //     todo!()
+    // }
 }

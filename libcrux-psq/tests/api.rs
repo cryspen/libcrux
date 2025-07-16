@@ -1,8 +1,4 @@
-use libcrux_psq::protocol::{
-    api::HandshakeState,
-    ecdh::{PrivateKey, PublicKey},
-    *,
-};
+use libcrux_psq::protocol::{api::HandshakeState, ecdh::PrivateKey, *};
 
 #[test]
 fn query() {
@@ -11,10 +7,12 @@ fn query() {
     let aad_initiator = b"Test Data I";
 
     let mut msg_channel = vec![0u8; 4096];
+    let mut payload_buf_responder = vec![0u8; 4096];
+    let mut payload_buf_initiator = vec![0u8; 4096];
 
     // External setup
     let responder_ecdh_sk = PrivateKey::new(&mut rng);
-    let responder_ecdh_pk = PublicKey::from(&responder_ecdh_sk);
+    let responder_ecdh_pk = responder_ecdh_sk.to_public();
 
     // Setup initiator
     let mut initiator_rng = rand::rng();
@@ -35,28 +33,40 @@ fn query() {
         .unwrap();
 
     // Send first message
-    let len_i = initiator.write_message(&[], &mut msg_channel).unwrap();
+    let query_payload_initiator = b"Query_init";
+    let len_i = initiator
+        .write_message(query_payload_initiator, &mut msg_channel)
+        .unwrap();
 
     // Read first message
-    let mut _payload = vec![]; // There's nothing in here
-    let len_r = responder.read_message(&msg_channel, &mut _payload).unwrap();
-
-    // We read the same amount of data.
-    assert_eq!(len_r, len_i);
-
-    // Respond
-    let payload = vec![0x13u8; 32];
-    let len_r = responder.write_message(&payload, &mut msg_channel).unwrap();
-
-    // Finalize on query initiator
-    let mut responder_payload = vec![0u8; 1024];
-    let len_i = initiator
-        .read_message(&msg_channel, &mut responder_payload)
+    let (len_r_deserialized, len_r_payload) = responder
+        .read_message(&msg_channel, &mut payload_buf_responder)
         .unwrap();
 
     // We read the same amount of data.
-    // XXX: The len_i is the network bytes, not the payload bytes.
-    //      We need to get that from somewhere.
-    assert_eq!(len_r, len_i);
-    assert_eq!(&responder_payload[0..payload.len()], &payload);
+    assert_eq!(len_r_deserialized, len_i);
+    assert_eq!(len_r_payload, b"Query init".len());
+    assert_eq!(
+        &payload_buf_responder[0..len_r_payload],
+        query_payload_initiator
+    );
+
+    // Respond
+    let query_payload_responder = b"Query_respond";
+    let len_r = responder
+        .write_message(query_payload_responder, &mut msg_channel)
+        .unwrap();
+
+    // Finalize on query initiator
+    let (len_i_deserialized, len_i_payload) = initiator
+        .read_message(&msg_channel, &mut payload_buf_initiator)
+        .unwrap();
+
+    // We read the same amount of data.
+    assert_eq!(len_r, len_i_deserialized);
+    assert_eq!(query_payload_responder.len(), len_i_payload);
+    assert_eq!(
+        &payload_buf_initiator[0..len_i_payload],
+        query_payload_responder
+    );
 }

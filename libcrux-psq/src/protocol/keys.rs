@@ -1,9 +1,13 @@
-use libcrux_chacha20poly1305::{decrypt, encrypt, KEY_LEN, NONCE_LEN};
-use tls_codec::{DeserializeBytes, SerializeBytes, TlsSerializeBytes, TlsSize};
-
-use crate::Error;
+use libcrux_chacha20poly1305::{
+    decrypt, decrypt_detached, encrypt, encrypt_detached, KEY_LEN, NONCE_LEN,
+};
+use tls_codec::{
+    Deserialize, DeserializeBytes, Serialize, SerializeBytes, TlsDeserialize, TlsSerialize,
+    TlsSerializeBytes, TlsSize,
+};
 
 use super::{
+    api::Error,
     ecdh::{KEMKeyPair, PrivateKey, PublicKey, SharedSecret},
     session::{SessionKey, SESSION_ID_LENGTH},
     transcript::{self, Transcript},
@@ -33,48 +37,48 @@ impl AEADKey {
         )
     }
 
-    pub(crate) fn serialize_encrypt(
+    pub(crate) fn serialize_encrypt<T: SerializeBytes>(
         &self,
-        payload: &impl SerializeBytes,
-        aad: Option<&[u8]>,
+        payload: &T,
         ciphertext: &mut [u8],
-    ) -> Result<(), crate::Error> {
-        debug_assert!(ciphertext.len() == payload.tls_serialized_len() + 16);
-        let payload_serialized = payload
-            .tls_serialize()
-            .map_err(|_| crate::Error::Serialization)?;
+        tag: &mut [u8; 16],
+        aad: &[u8],
+    ) -> Result<(), crate::protocol::api::Error> {
+        let serialization_buffer = payload.tls_serialize().map_err(|e| Error::Serialize(e))?;
 
-        let aad_actual = aad.unwrap_or(&[]);
+        debug_assert_eq!(ciphertext.len(), serialization_buffer.len());
 
-        let _ = encrypt(
+        let _ = encrypt_detached(
             self.as_ref(),
-            &payload_serialized,
+            &serialization_buffer,
             ciphertext,
-            aad_actual,
+            tag,
+            aad,
             &[0; NONCE_LEN],
         )
-        .expect("Encryption Error");
+        .map_err(|_| Error::CryptoError);
 
         Ok(())
     }
 
     pub(crate) fn decrypt_deserialize<T: DeserializeBytes>(
         &self,
-        msg: &[u8],
-        aad: Option<&Vec<u8>>,
-    ) -> T {
-        let mut payload_serialized = vec![0u8; msg.len() - 16];
-        let aad_actual = aad.map(|aad| aad.as_slice()).unwrap_or(&[]);
-        let _ = decrypt(
+        ciphertext: &[u8],
+        tag: &[u8; 16],
+        aad: &[u8],
+    ) -> Result<T, crate::protocol::api::Error> {
+        let mut payload_serialized_buf = vec![0u8; ciphertext.len()];
+        let _ = decrypt_detached(
             self.as_ref(),
-            &mut payload_serialized,
-            msg,
-            aad_actual,
+            &mut payload_serialized_buf,
+            ciphertext,
+            tag,
+            aad,
             &[0; NONCE_LEN],
         )
-        .unwrap();
+        .map_err(|_| Error::CryptoError)?;
 
-        T::tls_deserialize_exact_bytes(&payload_serialized).unwrap()
+        T::tls_deserialize_exact_bytes(&payload_serialized_buf).map_err(|e| Error::Deserialize(e))
     }
 }
 impl AsRef<[u8; KEY_LEN]> for AEADKey {
@@ -132,17 +136,18 @@ pub(super) fn derive_session_key(k2: &AEADKey, tx2: &Transcript) -> SessionKey {
 // K0 = KDF(g^xs, tx0)
 pub(super) fn derive_k0(
     peer_pk: &PublicKey,
-    own_keys: &KEMKeyPair,
+    own_pk: &PublicKey,
+    own_sk: &PrivateKey,
     ctx: &[u8],
     is_responder: bool,
 ) -> Result<(Transcript, AEADKey), Error> {
     let tx0 = if is_responder {
-        transcript::tx0(ctx, &own_keys.pk, peer_pk)
+        transcript::tx0(ctx, own_pk, peer_pk)
     } else {
-        transcript::tx0(ctx, peer_pk, &own_keys.pk)
+        transcript::tx0(ctx, peer_pk, own_pk)
     };
     let ikm = K0Ikm {
-        g_xs: &SharedSecret::derive(&own_keys.sk, peer_pk)?,
+        g_xs: &SharedSecret::derive(own_sk, peer_pk)?,
     };
 
     Ok((tx0, AEADKey::new(&ikm, &tx0)))

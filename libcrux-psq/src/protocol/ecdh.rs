@@ -6,9 +6,9 @@
 //! directly. (cf. https://github.com/cryspen/libcrux/issues/1035)
 use libcrux_ecdh::{secret_to_public, Algorithm};
 use rand::CryptoRng;
-use tls_codec::{TlsDeserializeBytes, TlsSerialize, TlsSerializeBytes, TlsSize};
+use tls_codec::{TlsDeserialize, TlsDeserializeBytes, TlsSerialize, TlsSerializeBytes, TlsSize};
 
-use crate::Error;
+use crate::protocol::api::Error;
 
 #[derive(TlsSerializeBytes, TlsSize)]
 /// A wrapper around a KEM shared secret.

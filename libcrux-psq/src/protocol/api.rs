@@ -13,11 +13,14 @@ pub enum Error {
     BuilderState,
     Serialize(tls_codec::Error),
     Deserialize(tls_codec::Error),
+    CryptoError,
 }
 
 pub trait HandshakeState {
     fn write_message(&mut self, payload: &[u8], out: &mut [u8]) -> Result<usize, Error>;
-    fn read_message(&mut self, message: &[u8], payload: &mut [u8]) -> Result<usize, Error>;
+    // Returns (bytes deserialized, bytes written to payload)
+    fn read_message(&mut self, message: &[u8], payload: &mut [u8])
+        -> Result<(usize, usize), Error>;
 }
 
 pub struct Builder<'a, Rng: CryptoRng> {
@@ -71,7 +74,7 @@ impl<'a, Rng: CryptoRng> Builder<'a, Rng> {
             self.context,
             self.aad,
             self.rng,
-        ))
+        )?)
     }
 
     pub fn build_query_responder(self) -> Result<Responder<'a, Rng>, Error> {
@@ -90,7 +93,7 @@ impl<'a, Rng: CryptoRng> Builder<'a, Rng> {
                 rng: self.rng,
             },
             outer: InitiatorOuterPayload::Reserved,
-            tx: Transcript::default(),
+            tx0: Transcript::default(),
             k0: AEADKey::default(),
             aad: self.aad.to_vec(),
             initiator_ephemeral_ecdh_pk: None,

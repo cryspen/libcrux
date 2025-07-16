@@ -3,7 +3,10 @@
 
 use ecdh::PublicKey;
 use libcrux_ml_kem::mlkem768::MlKem768Ciphertext;
-use tls_codec::{TlsDeserializeBytes, TlsSerialize, TlsSerializeBytes, TlsSize};
+use tls_codec::{
+    DeserializeBytes, TlsByteVecU32, TlsDeserializeBytes, TlsSerializeBytes, TlsSize, VLByteSlice,
+    VLBytes,
+};
 
 pub mod ecdh;
 pub mod initiator;
@@ -18,16 +21,15 @@ pub mod api;
 #[derive(TlsSerializeBytes, TlsDeserializeBytes, TlsSize)]
 pub struct Message {
     pk: PublicKey,
-    ciphertext: Vec<u8>,
-    pq_encaps: Option<MlKem768Ciphertext>,
-    aad: Option<Vec<u8>>,
+    ciphertext: TlsByteVecU32, // XXX: SerializeBytes is not implemented for VLBytes
+    tag: [u8; 16],
+    aad: TlsByteVecU32, // XXX: SerializeBytes is not implemented for VLBytes
 }
 
-pub struct TransportMessage {
-    ciphertext: Vec<u8>,
-    aad: Vec<u8>,
-}
-
+// pub struct TransportMessage {
+//     ciphertext: Vec<u8>,
+//     aad: Vec<u8>,
+// }
 // #[cfg(test)]
 // mod tests {
 //     use tls_codec::{DeserializeBytes, SerializeBytes};
