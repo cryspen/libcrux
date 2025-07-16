@@ -4,7 +4,6 @@ RUST_TARGET_FLAG=--target=thumbv7em-none-eabihf
 cargo build \
   -p libcrux-chacha20poly1305 \
   -p libcrux-curve25519 \
-  -p libcrux-ecdsa \
   -p libcrux-hacl-rs \
   -p libcrux-hkdf \
   -p libcrux-hmac \
@@ -22,6 +21,7 @@ cargo build \
   cargo build \
   -p libcrux-ecdh \
   -p libcrux-kem \
+  -p libcrux-ecdsa -F rand \
   -p libcrux-ml-dsa -F mldsa44,mldsa65,mldsa87 \
   -p libcrux-ml-kem -F default-no-std \
   --no-default-features \
