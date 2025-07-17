@@ -6,7 +6,7 @@
 //! directly. (cf. https://github.com/cryspen/libcrux/issues/1035)
 use libcrux_ecdh::{secret_to_public, Algorithm};
 use rand::CryptoRng;
-use tls_codec::{TlsDeserialize, TlsDeserializeBytes, TlsSerialize, TlsSerializeBytes, TlsSize};
+use tls_codec::{TlsDeserializeBytes, TlsSerializeBytes, TlsSize};
 
 use crate::protocol::api::Error;
 
@@ -70,7 +70,7 @@ impl PrivateKey {
 #[derive(Clone)]
 pub struct KEMKeyPair {
     pub(crate) sk: PrivateKey,
-    pub(crate) pk: PublicKey,
+    pub pk: PublicKey,
 }
 
 impl KEMKeyPair {

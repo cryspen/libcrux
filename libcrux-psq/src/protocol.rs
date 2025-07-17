@@ -1,12 +1,10 @@
 //! The PSQ registration protocol
 #![allow(missing_docs)]
 
+use api::Error;
 use ecdh::PublicKey;
 use libcrux_ml_kem::mlkem768::MlKem768Ciphertext;
-use tls_codec::{
-    DeserializeBytes, TlsByteVecU32, TlsDeserializeBytes, TlsSerializeBytes, TlsSize, VLByteSlice,
-    VLBytes,
-};
+use tls_codec::{TlsByteVecU32, TlsDeserializeBytes, TlsSerializeBytes, TlsSize};
 
 pub mod ecdh;
 pub mod initiator;
@@ -15,7 +13,6 @@ pub mod responder;
 pub mod session;
 mod transcript;
 
-const TTL_THRESHOLD: std::time::Duration = std::time::Duration::from_secs(2);
 pub mod api;
 
 #[derive(TlsSerializeBytes, TlsDeserializeBytes, TlsSize)]
@@ -25,6 +22,15 @@ pub struct Message {
     tag: [u8; 16],
     aad: TlsByteVecU32, // XXX: SerializeBytes is not implemented for VLBytes
     pq_encapsulation: Option<MlKem768Ciphertext>,
+}
+
+pub(crate) fn write_output(payload: &[u8], out: &mut [u8]) -> Result<usize, Error> {
+    let payload_len = payload.len();
+    if out.len() < payload_len {
+        return Err(Error::OutputBufferShort);
+    }
+    out[..payload_len].copy_from_slice(payload);
+    Ok(payload_len)
 }
 
 // pub struct TransportMessage {

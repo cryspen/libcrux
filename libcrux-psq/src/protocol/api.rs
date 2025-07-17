@@ -2,15 +2,13 @@ use rand::CryptoRng;
 
 use crate::protocol::{
     ecdh::{PrivateKey, PublicKey},
-    initiator::{InitiatorOuterPayload, QueryInitiator},
-    keys::AEADKey,
-    responder::{Responder, ResponderState},
-    transcript::Transcript,
+    initiator::QueryInitiator,
+    responder::Responder,
 };
 
-use libcrux_ml_kem::mlkem768::{MlKem768PrivateKey, MlKem768PublicKey};
+use libcrux_ml_kem::mlkem768::{MlKem768KeyPair, MlKem768PrivateKey, MlKem768PublicKey};
 
-use super::initiator::RegistrationInitiator;
+use super::{ecdh::KEMKeyPair, initiator::RegistrationInitiator};
 
 #[derive(Debug)]
 pub enum Error {
@@ -41,12 +39,11 @@ pub struct Builder<'a, Rng: CryptoRng> {
     context: &'a [u8],
     inner_aad: &'a [u8],
     outer_aad: &'a [u8],
-    responder_ecdh_pk: Option<&'a PublicKey>,
-    responder_ecdh_sk: Option<&'a PrivateKey>,
-    initiator_ecdh_pk: Option<&'a PublicKey>,
-    initiator_ecdh_sk: Option<&'a PrivateKey>,
-    responder_pq_pk: Option<&'a MlKem768PublicKey>,
-    responder_pq_sk: Option<&'a MlKem768PrivateKey>,
+    longterm_ecdh_keys: Option<&'a KEMKeyPair>,
+    longterm_pq_keys: Option<&'a MlKem768KeyPair>,
+    peer_longterm_ecdh_pk: Option<&'a PublicKey>,
+    peer_longterm_pq_pk: Option<&'a MlKem768PublicKey>,
+    recent_keys_len_bound: Option<usize>,
 }
 
 impl<'a, Rng: CryptoRng> Builder<'a, Rng> {
@@ -56,13 +53,11 @@ impl<'a, Rng: CryptoRng> Builder<'a, Rng> {
             context: &[],
             inner_aad: &[],
             outer_aad: &[],
-            responder_ecdh_pk: None,
-            responder_ecdh_sk: None,
-            initiator_ecdh_pk: None,
-            initiator_ecdh_sk: None,
-
-            responder_pq_pk: None,
-            responder_pq_sk: None,
+            longterm_ecdh_keys: None,
+            longterm_pq_keys: None,
+            peer_longterm_ecdh_pk: None,
+            peer_longterm_pq_pk: None,
+            recent_keys_len_bound: None,
         }
     }
 
@@ -82,96 +77,79 @@ impl<'a, Rng: CryptoRng> Builder<'a, Rng> {
         self
     }
 
-    pub fn responder_ecdh_pk(mut self, responder_ecdh_pk: &'a PublicKey) -> Self {
-        self.responder_ecdh_pk = Some(responder_ecdh_pk);
+    pub fn longterm_ecdh_keys(mut self, longterm_ecdh_keys: &'a KEMKeyPair) -> Self {
+        self.longterm_ecdh_keys = Some(longterm_ecdh_keys);
         self
     }
 
-    pub fn responder_ecdh_sk(mut self, responder_ecdh_sk: &'a PrivateKey) -> Self {
-        self.responder_ecdh_sk = Some(responder_ecdh_sk);
+    pub fn longterm_pq_keys(mut self, longterm_pq_keys: &'a MlKem768KeyPair) -> Self {
+        self.longterm_pq_keys = Some(longterm_pq_keys);
         self
     }
 
-    pub fn responder_pq_pk(mut self, responder_pq_pk: &'a MlKem768PublicKey) -> Self {
-        self.responder_pq_pk = Some(responder_pq_pk);
+    pub fn peer_longterm_ecdh_pk(mut self, peer_longterm_ecdh_pk: &'a PublicKey) -> Self {
+        self.peer_longterm_ecdh_pk = Some(peer_longterm_ecdh_pk);
         self
     }
 
-    pub fn responder_pq_sk(mut self, responder_pq_sk: &'a MlKem768PrivateKey) -> Self {
-        self.responder_pq_sk = Some(responder_pq_sk);
+    pub fn peer_longterm_pq_pk(mut self, peer_longterm_pq_pk: &'a MlKem768PublicKey) -> Self {
+        self.peer_longterm_pq_pk = Some(peer_longterm_pq_pk);
         self
     }
 
-    pub fn initiator_ecdh_sk(mut self, initiator_ecdh_sk: &'a PrivateKey) -> Self {
-        self.initiator_ecdh_sk = Some(initiator_ecdh_sk);
-        self
-    }
-
-    pub fn initiator_ecdh_pk(mut self, initiator_ecdh_pk: &'a PublicKey) -> Self {
-        self.initiator_ecdh_pk = Some(initiator_ecdh_pk);
+    pub fn bound_recent_keys_by(mut self, recent_keys_len_bound: usize) -> Self {
+        self.recent_keys_len_bound = Some(recent_keys_len_bound);
         self
     }
 
     // builders
     pub fn build_query_initiator(self) -> Result<QueryInitiator<'a>, Error> {
-        let Some(responder_ecdh_pk) = self.responder_ecdh_pk else {
+        let Some(responder_ecdh_pk) = self.peer_longterm_ecdh_pk else {
             return Err(Error::BuilderState);
         };
 
-        Ok(QueryInitiator::new(
-            responder_ecdh_pk,
-            self.context,
-            self.outer_aad,
-            self.rng,
-        )?)
+        QueryInitiator::new(responder_ecdh_pk, self.context, self.outer_aad, self.rng)
     }
 
     pub fn build_registration_initiator(self) -> Result<RegistrationInitiator<'a, Rng>, Error> {
-        let Some(responder_ecdh_pk) = self.responder_ecdh_pk else {
+        let Some(longterm_ecdh_keys) = self.longterm_ecdh_keys else {
             return Err(Error::BuilderState);
         };
 
-        let Some(initiator_ecdh_pk) = self.initiator_ecdh_pk else {
+        let Some(peer_longterm_ecdh_pk) = self.peer_longterm_ecdh_pk else {
             return Err(Error::BuilderState);
         };
 
-        let Some(initiator_ecdh_sk) = self.initiator_ecdh_sk else {
-            return Err(Error::BuilderState);
-        };
-
-        Ok(RegistrationInitiator::new(
-            responder_ecdh_pk,
-            initiator_ecdh_pk,
-            initiator_ecdh_sk,
-            self.responder_pq_pk,
+        RegistrationInitiator::new(
+            longterm_ecdh_keys,
+            peer_longterm_ecdh_pk,
+            self.peer_longterm_pq_pk,
             self.context,
             self.inner_aad,
             self.outer_aad,
             self.rng,
-        )?)
+        )
     }
 
     pub fn build_responder(self) -> Result<Responder<'a, Rng>, Error> {
-        let Some(longterm_ecdh_pk) = self.responder_ecdh_pk else {
+        let Some(longterm_ecdh_keys) = self.longterm_ecdh_keys else {
             return Err(Error::BuilderState);
         };
-        let Some(longterm_ecdh_sk) = self.responder_ecdh_sk else {
+
+        let Some(longterm_pq_keys) = self.longterm_pq_keys else {
             return Err(Error::BuilderState);
         };
-        let Some(longterm_pq_pk) = self.responder_pq_pk else {
-            return Err(Error::BuilderState);
-        };
-        let Some(longterm_pq_sk) = self.responder_pq_sk else {
+
+        let Some(recent_keys_len_bound) = self.recent_keys_len_bound else {
             return Err(Error::BuilderState);
         };
 
         Ok(Responder::new(
-            longterm_ecdh_pk,
-            longterm_ecdh_sk,
-            longterm_pq_pk,
-            longterm_pq_sk,
+            longterm_ecdh_keys,
+            longterm_pq_keys,
             self.context,
             self.outer_aad,
+            recent_keys_len_bound,
             self.rng,
         ))
     }

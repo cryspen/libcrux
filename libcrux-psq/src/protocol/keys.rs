@@ -1,19 +1,14 @@
-use libcrux_chacha20poly1305::{
-    decrypt, decrypt_detached, encrypt, encrypt_detached, KEY_LEN, NONCE_LEN,
-};
-use tls_codec::{
-    Deserialize, DeserializeBytes, Serialize, SerializeBytes, TlsDeserialize, TlsSerialize,
-    TlsSerializeBytes, TlsSize,
-};
+use libcrux_chacha20poly1305::{decrypt_detached, encrypt_detached, KEY_LEN, NONCE_LEN};
+use tls_codec::{DeserializeBytes, SerializeBytes, TlsSerializeBytes, TlsSize};
 
 use super::{
     api::Error,
-    ecdh::{KEMKeyPair, PrivateKey, PublicKey, SharedSecret},
+    ecdh::{PrivateKey, PublicKey, SharedSecret},
     session::{SessionKey, SESSION_ID_LENGTH},
     transcript::{self, Transcript},
 };
 
-#[derive(Default, TlsSerializeBytes, TlsSize)]
+#[derive(Default, Clone, TlsSerializeBytes, TlsSize)]
 pub struct AEADKey([u8; KEY_LEN]);
 
 impl AEADKey {
@@ -40,25 +35,23 @@ impl AEADKey {
     pub(crate) fn serialize_encrypt<T: SerializeBytes>(
         &self,
         payload: &T,
-        ciphertext: &mut [u8],
-        tag: &mut [u8; 16],
         aad: &[u8],
-    ) -> Result<(), crate::protocol::api::Error> {
-        let serialization_buffer = payload.tls_serialize().map_err(|e| Error::Serialize(e))?;
-
-        debug_assert_eq!(ciphertext.len(), serialization_buffer.len());
+    ) -> Result<(Vec<u8>, [u8; 16]), crate::protocol::api::Error> {
+        let serialization_buffer = payload.tls_serialize().map_err(Error::Serialize)?;
+        let mut ciphertext = vec![0u8; serialization_buffer.len()];
+        let mut tag = [0u8; 16];
 
         let _ = encrypt_detached(
             self.as_ref(),
             &serialization_buffer,
-            ciphertext,
-            tag,
+            &mut ciphertext,
+            &mut tag,
             aad,
             &[0; NONCE_LEN],
         )
         .map_err(|_| Error::CryptoError);
 
-        Ok(())
+        Ok((ciphertext, tag))
     }
 
     pub(crate) fn decrypt_deserialize<T: DeserializeBytes>(
@@ -78,7 +71,7 @@ impl AEADKey {
         )
         .map_err(|_| Error::CryptoError)?;
 
-        T::tls_deserialize_exact_bytes(&payload_serialized_buf).map_err(|e| Error::Deserialize(e))
+        T::tls_deserialize_exact_bytes(&payload_serialized_buf).map_err(Error::Deserialize)
     }
 }
 impl AsRef<[u8; KEY_LEN]> for AEADKey {

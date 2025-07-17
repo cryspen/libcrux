@@ -46,12 +46,4 @@ impl<'keys> SessionState<'keys> {
             session_key,
         }
     }
-
-    // pub fn transport_encrypt(&mut self, _payload: &[u8], _aad: &[u8]) -> TransportMessage {
-    //     todo!()
-    // }
-
-    // pub fn transport_decrypt(&mut self, _message: &TransportMessage) -> Vec<u8> {
-    //     todo!()
-    // }
 }

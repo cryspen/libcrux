@@ -1,4 +1,8 @@
-use libcrux_psq::protocol::{api::HandshakeState, ecdh::PrivateKey, *};
+use libcrux_psq::protocol::{
+    api::HandshakeState,
+    ecdh::{KEMKeyPair, PrivateKey},
+    *,
+};
 use rand::RngCore;
 
 #[test]
@@ -13,8 +17,7 @@ fn query() {
     let mut payload_buf_initiator = vec![0u8; 4096];
 
     // External setup
-    let responder_ecdh_sk = PrivateKey::new(&mut rng);
-    let responder_ecdh_pk = responder_ecdh_sk.to_public();
+    let responder_ecdh_keys = KEMKeyPair::new(&mut rng);
 
     let mut pq_randomness = [0u8; libcrux_ml_kem::KEY_GENERATION_SEED_SIZE];
     rng.fill_bytes(&mut pq_randomness);
@@ -25,7 +28,7 @@ fn query() {
     let mut initiator = api::Builder::new(&mut initiator_rng)
         .outer_aad(aad_initiator)
         .context(ctx)
-        .responder_ecdh_pk(&responder_ecdh_pk)
+        .peer_longterm_ecdh_pk(&responder_ecdh_keys.pk)
         .build_query_initiator()
         .unwrap();
 
@@ -34,10 +37,9 @@ fn query() {
     let mut responder = api::Builder::new(&mut responder_rng)
         .context(ctx)
         .outer_aad(aad_responder)
-        .responder_ecdh_pk(&responder_ecdh_pk)
-        .responder_ecdh_sk(&responder_ecdh_sk)
-        .responder_pq_sk(responder_pq_keys.private_key())
-        .responder_pq_pk(responder_pq_keys.public_key())
+        .longterm_ecdh_keys(&responder_ecdh_keys)
+        .longterm_pq_keys(&responder_pq_keys)
+        .bound_recent_keys_by(30)
         .build_responder()
         .unwrap();
 
@@ -96,11 +98,8 @@ fn registration(pq: bool) {
     rng.fill_bytes(&mut pq_randomness);
     let responder_pq_keys = libcrux_ml_kem::mlkem768::generate_key_pair(pq_randomness);
 
-    let responder_ecdh_sk = PrivateKey::new(&mut rng);
-    let responder_ecdh_pk = responder_ecdh_sk.to_public();
-
-    let initiator_ecdh_sk = PrivateKey::new(&mut rng);
-    let initiator_ecdh_pk = initiator_ecdh_sk.to_public();
+    let responder_ecdh_keys = KEMKeyPair::new(&mut rng);
+    let initiator_ecdh_keys = KEMKeyPair::new(&mut rng);
 
     // Setup initiator
     let mut initiator_rng = rand::rng();
@@ -108,13 +107,12 @@ fn registration(pq: bool) {
         .outer_aad(aad_initiator_outer)
         .inner_aad(aad_initiator_inner)
         .context(ctx)
-        .responder_ecdh_pk(&responder_ecdh_pk)
-        .initiator_ecdh_sk(&initiator_ecdh_sk)
-        .initiator_ecdh_pk(&initiator_ecdh_pk);
+        .longterm_ecdh_keys(&initiator_ecdh_keys)
+        .peer_longterm_ecdh_pk(&responder_ecdh_keys.pk);
 
     let mut initiator = if pq {
         initiator
-            .responder_pq_pk(responder_pq_keys.public_key())
+            .peer_longterm_pq_pk(responder_pq_keys.public_key())
             .build_registration_initiator()
             .unwrap()
     } else {
@@ -126,10 +124,9 @@ fn registration(pq: bool) {
     let mut responder = api::Builder::new(&mut responder_rng)
         .context(ctx)
         .outer_aad(aad_responder)
-        .responder_ecdh_pk(&responder_ecdh_pk)
-        .responder_ecdh_sk(&responder_ecdh_sk)
-        .responder_pq_sk(responder_pq_keys.private_key())
-        .responder_pq_pk(responder_pq_keys.public_key())
+        .longterm_ecdh_keys(&responder_ecdh_keys)
+        .longterm_pq_keys(&responder_pq_keys)
+        .bound_recent_keys_by(30)
         .build_responder()
         .unwrap();
 
@@ -146,7 +143,7 @@ fn registration(pq: bool) {
 
     // We read the same amount of data.
     assert_eq!(len_r_deserialized, len_i);
-    assert_eq!(len_r_payload, b"Query init".len());
+    assert_eq!(len_r_payload, registration_payload_initiator.len());
     assert_eq!(
         &payload_buf_responder[0..len_r_payload],
         registration_payload_initiator
