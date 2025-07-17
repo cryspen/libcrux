@@ -184,6 +184,10 @@ impl<'a> HandshakeState for QueryInitiator<'a> {
 
         Ok((bytes_deserialized, out_bytes_written))
     }
+
+    fn is_initiator(&self) -> bool {
+        true
+    }
 }
 
 impl<'a, Rng: CryptoRng> HandshakeState for RegistrationInitiator<'a, Rng> {
@@ -309,10 +313,18 @@ impl<'a, Rng: CryptoRng> HandshakeState for RegistrationInitiator<'a, Rng> {
 
         Ok((bytes_deserialized, out_bytes_written))
     }
+
+    fn is_initiator(&self) -> bool {
+        true
+    }
 }
 
 impl<'a, Rng: CryptoRng> IntoTransport for RegistrationInitiator<'a, Rng> {
     fn into_transport_mode(self) -> TransportState {
+        todo!()
+    }
+
+    fn is_handshake_finished(&self) -> bool {
         todo!()
     }
 }

@@ -28,7 +28,6 @@ pub struct SessionState<'keys> {
 impl<'keys> SessionState<'keys> {
     pub(crate) fn new(
         is_initiator: bool,
-        // _responder_reg_info: &ResponderRegistrationPayload,
         responder_longterm_ecdh_pk: &'keys PublicKey,
         initiator_longterm_ecdh_pk: &'keys PublicKey,
         responder_pq_pk: Option<&'keys libcrux_ml_kem::mlkem768::MlKem768PublicKey>,

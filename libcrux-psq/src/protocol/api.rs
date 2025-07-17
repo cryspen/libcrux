@@ -21,9 +21,11 @@ pub struct TransportState;
 
 pub trait IntoTransport {
     fn into_transport_mode(self) -> TransportState;
+    fn is_handshake_finished(&self) -> bool;
 }
 
 pub trait HandshakeState {
+    fn is_initiator(&self) -> bool;
     fn write_message(&mut self, payload: &[u8], out: &mut [u8]) -> Result<usize, Error>;
     // Returns (bytes deserialized, bytes written to payload)
     fn read_message(&mut self, message: &[u8], payload: &mut [u8])

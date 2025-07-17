@@ -317,10 +317,18 @@ impl<'a, Rng: CryptoRng> HandshakeState for Responder<'a, Rng> {
             }
         }
     }
+
+    fn is_initiator(&self) -> bool {
+        false
+    }
 }
 
 impl<'a, Rng: CryptoRng> IntoTransport for Responder<'a, Rng> {
     fn into_transport_mode(self) -> TransportState {
+        todo!()
+    }
+
+    fn is_handshake_finished(&self) -> bool {
         todo!()
     }
 }
