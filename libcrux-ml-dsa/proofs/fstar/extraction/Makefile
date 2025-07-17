@@ -14,6 +14,7 @@ VERIFIED_MODULES = \
 	Libcrux_ml_dsa.Simd.Avx2.Vector_type.fst \
 	Libcrux_ml_dsa.Simd.Avx2.Arithmetic.fst \
 	Libcrux_ml_dsa.Simd.Avx2.Ntt.fst \
+	Libcrux_ml_dsa.Simd.Avx2.Invntt.fst \
 	Libcrux_ml_dsa.Simd.Avx2.Encoding.Error.fst \
 	Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment.fst \
 	Libcrux_ml_dsa.Simd.Avx2.Encoding.Gamma1.fst \
