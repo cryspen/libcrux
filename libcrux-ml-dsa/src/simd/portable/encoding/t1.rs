@@ -10,6 +10,7 @@ pub fn serialize(simd_unit: &Coefficients, serialized: &mut [u8]) {
     cloop! {
         for (i, coefficients) in simd_unit.values.chunks_exact(4).enumerate() {
             hax_lib::loop_invariant!(|_i: usize| serialized.len() == 10);
+
             serialized[5 * i] = (coefficients[0] & 0xFF) as u8;
             serialized[5 * i + 1] =
                 ((coefficients[1] & 0x3F) as u8) << 2 | ((coefficients[0] >> 8) & 0x03) as u8;
