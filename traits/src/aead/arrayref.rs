@@ -37,10 +37,13 @@ pub trait Aead<const KEY_LEN: usize, const TAG_LEN: usize, const NONCE_LEN: usiz
 pub enum EncryptError {
     /// The ciphertext buffer has the wrong length.
     WrongCiphertextLength,
+
     /// The plaintext is too long for this algorithm or implementation.
     PlaintextTooLong,
+
     /// The AAD is too long for this algorithm or implementation.
     AadTooLong,
+
     /// An unknown error occurred during encryption.
     Unknown,
 }
@@ -51,12 +54,53 @@ pub enum DecryptError {
     /// The authentication tag is invalid; the ciphertext has been tampered with
     /// or the key/nonce/aad is incorrect.
     InvalidTag,
+
     /// The plaintext buffer has the wrong length.
     WrongPlaintextLength,
+
     /// The plaintext is too long for this algorithm or implementation.
     PlaintextTooLong,
+
     /// The AAD is too long for this algorithm or implementation.
     AadTooLong,
+
     /// An unknown error occurred during decryption.
     Unknown,
+}
+
+impl core::fmt::Display for EncryptError {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        let text = match self {
+            EncryptError::WrongCiphertextLength => "ciphertext buffer has wrong length",
+            EncryptError::PlaintextTooLong => {
+                "plaintext is too long for algorithm or implementation"
+            }
+            EncryptError::AadTooLong => "aad is too long for algorithm or implementation",
+            EncryptError::Unknown => "an unknown error occurred",
+        };
+
+        f.write_str(text)
+    }
+}
+
+impl core::fmt::Display for DecryptError {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        let text = match self {
+            DecryptError::InvalidTag => "invalid authentication tag",
+            DecryptError::WrongPlaintextLength => "plaintext buffer has wrong length",
+            DecryptError::PlaintextTooLong => {
+                "plaintext is too long for algorithm or implementation"
+            }
+            DecryptError::AadTooLong => "aad is too long for algorithm or implementation",
+            DecryptError::Unknown => "an unknown error occurred",
+        };
+
+        f.write_str(text)
+    }
+}
+
+#[cfg(feature = "error_in_core")]
+mod error_in_core {
+    impl core::error::Error for super::EncryptError {}
+    impl core::error::Error for super::DecryptError {}
 }

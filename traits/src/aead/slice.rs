@@ -93,6 +93,14 @@ impl From<super::arrayref::DecryptError> for DecryptError {
     }
 }
 
+#[cfg(feature = "error_in_core")]
+/// Here we implement the Error trait. This has only been added to core relatively recently, so we
+/// are hiding that behind a feature.
+mod error_in_core {
+    impl core::error::Error for super::EncryptError {}
+    impl core::error::Error for super::DecryptError {}
+}
+
 /// Implements [`slice::Aead`] based on [`arrayref::Aead`].
 ///
 /// [`slice::Aead`]: Aead
@@ -148,6 +156,12 @@ macro_rules! impl_aead_slice_trait {
                 )
                 .map_err($crate::aead::slice::DecryptError::from)
             }
+        }
+
+        #[cfg(test)]
+        #[test]
+        fn simple_aead_test() {
+            $crate::aead::tests::simple::<$key, $tag, $nonce, $type>();
         }
     };
 }
