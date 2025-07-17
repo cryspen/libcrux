@@ -21,3 +21,4 @@ pub trait Digest<const HASH_LEN: usize> {
 }
 
 pub mod kem;
+pub mod signature;
