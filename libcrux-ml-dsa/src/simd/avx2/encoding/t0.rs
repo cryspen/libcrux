@@ -102,8 +102,8 @@ let deserialize_unsigned_post
 )]
 #[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
 #[hax_lib::requires(serialized.len() == 13)]
-#[hax_lib::ensures(|result| fstar!("deserialize_unsigned_post $serialized $result"))]
-fn deserialize_unsigned(serialized: &[u8]) -> Vec256 {
+#[hax_lib::ensures(|_result| fstar!("deserialize_unsigned_post $serialized ${out}_future"))]
+fn deserialize_unsigned(serialized: &[u8], out: &mut Vec256) {
     const COEFFICIENT_MASK: i32 = (1 << 13) - 1;
 
     let mut serialized_extended = [0u8; 16];
@@ -124,7 +124,7 @@ fn deserialize_unsigned(serialized: &[u8]) -> Vec256 {
     let coefficients = mm256_srlv_epi32(coefficients, mm256_set_epi32(3, 6, 1, 4, 7, 2, 5, 0));
     let coefficients = mm256_and_si256(coefficients, mm256_set1_epi32(COEFFICIENT_MASK));
     hax_lib::fstar!("i32_to_bv_pow2_min_one_lemma_fa 13");
-    coefficients
+    *out = coefficients
 }
 
 #[inline(always)]
@@ -142,8 +142,10 @@ let deserialize_post
 #[hax_lib::ensures(|result| fstar!("deserialize_post $serialized ${out}_future"))]
 pub(crate) fn deserialize(serialized: &[u8], out: &mut Vec256) {
     debug_assert_eq!(serialized.len(), 13);
-    let unsigned = deserialize_unsigned(serialized);
-    *out = change_interval(&unsigned);
+    deserialize_unsigned(serialized, out);
+    #[cfg(hax)]
+    let unsigned = out.clone();
+    *out = change_interval(out);
     hax_lib::fstar!(
         r"
     i32_bit_zero_lemma_to_lt_pow2_n_weak 13 $unsigned;
