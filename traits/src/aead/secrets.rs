@@ -2,7 +2,7 @@
 //! Encryption with Associated Data (AEAD) scheme that takes array references
 //! as arguments and returns outputs as arrays or vectors.
 
-use libcrux_secrets::{Classify, DeclassifyRef, DeclassifyRefMut, U8};
+use libcrux_secrets::{declassify_mut_slice, Classify, DeclassifyRef, U8};
 
 use super::arrayref::{DecryptError, EncryptError};
 
@@ -55,10 +55,10 @@ impl<
     > Aead<KEY_LEN, TAG_LEN, NONCE_LEN> for T
 {
     fn encrypt<const MSG_LEN: usize>(
-        key: &[libcrux_secrets::U8; KEY_LEN],
+        key: &[U8; KEY_LEN],
         nonce: &[u8; NONCE_LEN],
         aad: &[u8],
-        plaintext: &[libcrux_secrets::U8; MSG_LEN],
+        plaintext: &[U8; MSG_LEN],
     ) -> Result<([u8; MSG_LEN], [u8; TAG_LEN]), EncryptError> {
         let mut ciphertext = [0u8; MSG_LEN];
         let mut tag = [0u8; TAG_LEN];
@@ -75,10 +75,10 @@ impl<
     }
 
     fn encrypt_to_vec(
-        key: &[libcrux_secrets::U8; KEY_LEN],
+        key: &[U8; KEY_LEN],
         nonce: &[u8; NONCE_LEN],
         aad: &[u8],
-        plaintext: &[libcrux_secrets::U8],
+        plaintext: &[U8],
     ) -> Result<(alloc::vec::Vec<u8>, [u8; TAG_LEN]), EncryptError> {
         let mut ciphertext = alloc::vec![0u8; plaintext.len()];
         let mut tag = [0u8; TAG_LEN];
@@ -95,12 +95,12 @@ impl<
     }
 
     fn decrypt<const MSG_LEN: usize>(
-        key: &[libcrux_secrets::U8; KEY_LEN],
+        key: &[U8; KEY_LEN],
         nonce: &[u8; NONCE_LEN],
         aad: &[u8],
         ciphertext: &[u8; MSG_LEN],
         tag: &[u8; TAG_LEN],
-    ) -> Result<[libcrux_secrets::U8; MSG_LEN], DecryptError> {
+    ) -> Result<[U8; MSG_LEN], DecryptError> {
         let mut plaintext = [0u8; MSG_LEN];
 
         Self::decrypt(
@@ -115,16 +115,16 @@ impl<
     }
 
     fn decrypt_to_vec(
-        key: &[libcrux_secrets::U8; KEY_LEN],
+        key: &[U8; KEY_LEN],
         nonce: &[u8; NONCE_LEN],
         aad: &[u8],
         ciphertext: &[u8],
         tag: &[u8; TAG_LEN],
-    ) -> Result<alloc::vec::Vec<libcrux_secrets::U8>, DecryptError> {
+    ) -> Result<alloc::vec::Vec<U8>, DecryptError> {
         let mut plaintext = alloc::vec![0u8.classify(); ciphertext.len()];
 
         Self::decrypt(
-            &mut plaintext.declassify_ref_mut(),
+            declassify_mut_slice(&mut plaintext),
             key.declassify_ref(),
             nonce,
             aad,
