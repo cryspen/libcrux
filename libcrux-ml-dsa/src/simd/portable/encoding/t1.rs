@@ -33,6 +33,7 @@ pub fn deserialize(serialized: &[u8], simd_unit: &mut Coefficients) {
     cloop! {
         for (i, bytes) in serialized.chunks_exact(5).enumerate() {
             hax_lib::loop_invariant!(|_i: usize| serialized.len() == 10);
+
             let byte0 = bytes[0] as i32;
             let byte1 = bytes[1] as i32;
             let byte2 = bytes[2] as i32;
