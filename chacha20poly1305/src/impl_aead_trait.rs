@@ -2,10 +2,16 @@ use libcrux_traits::aead::arrayref::{Aead, DecryptError, EncryptError};
 
 use crate::{KEY_LEN, NONCE_LEN, TAG_LEN};
 
-/// The ChaCha20Poly1305 AEAD algorithm
+/// The ChaCha20Poly1305 AEAD algorithm.
+///
+/// Note: Plaintext, ciphertext and aad need to be at most [`u32::MAX`] long, due to limitations of
+/// the implementation.
 pub struct ChaCha20Poly1305;
 
-/// The extended ChaCha20Poly1305 AEAD algorithm, which uses longer nonces.
+/// The extended ChaCha20Poly1305 AEAD algorithm, which uses longer nonces than ChaCha20Poly1305.
+///
+/// Note: Plaintext, ciphertext and aad need to be at most [`u32::MAX`] long, due to limitations of
+/// the implementation.
 pub struct XChaCha20Poly1305;
 
 mod impl_chachapoly {
