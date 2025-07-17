@@ -86,6 +86,13 @@ type t_FunArray (n: u64) t = i:u64 {v i < v n} ^-> t
 /// Accessor for fun arrays
 let ( .() ) #n (bv: Core_models.Abstractions.Bitvec.t_BitVec n) i  = Core_models.Abstractions.Funarr.impl_5__get n bv._0 i
 
+let eq_pointwise_to_eq #n (a b: Core_models.Abstractions.Bitvec.t_BitVec n)
+  : Lemma (requires forall i. a.(i) == b.(i)) (ensures a == b)
+  = let Core_models.Abstractions.Bitvec.BitVec (Core_models.Abstractions.Funarr.FunArray a) = a in
+    let Core_models.Abstractions.Bitvec.BitVec (Core_models.Abstractions.Funarr.FunArray b) = b in
+    assert (forall i. a i == b i);
+    FStar.FunctionalExtensionality.extensionality _ _ a b
+
 [@@ "opaque_to_smt"]
 let i16_mul_32extended (x y: i16): i32 = (cast x <: i32) *! (cast x <: i32)
 [@@ "opaque_to_smt"]
@@ -755,7 +762,34 @@ val i32_to_bv_pow2_min_one_lemma (n: nat {n > 1 /\ n < 31}) (i:u64{v i < 32}):
   Lemma (  i32_to_bv ((mk_i32 1 <<! mk_i32 n <: i32) -! mk_i32 1) i
         == Core_models.Abstractions.Bit.(if v i < n then Bit_One else Bit_Zero))
         [SMTPat (i32_to_bv ((mk_i32 1 <<! mk_i32 n <: i32) -! mk_i32 1) i)]
+let i32_to_bv_pow2_min_one_lemma_fa (n: nat {n > 1 /\ n < 31}):
+  Lemma (forall (i:u64{v i < 32}). i32_to_bv ((mk_i32 1 <<! mk_i32 n <: i32) -! mk_i32 1) i
+        == Core_models.Abstractions.Bit.(if v i < n then Bit_One else Bit_Zero))
+  = introduce forall i. forall (i:u64{v i < 32}). i32_to_bv ((mk_i32 1 <<! mk_i32 n <: i32) -! mk_i32 1) i
+        == Core_models.Abstractions.Bit.(if v i < n then Bit_One else Bit_Zero)
+    with i32_to_bv_pow2_min_one_lemma n i
 #pop-options
 
+val i32_bit_zero_lemma_to_lt_pow2_n_weak (n: nat) vec
+  : Lemma (requires forall i. v i % 32 >= n ==> vec.(i) == Core_models.Abstractions.Bit.Bit_Zero)
+          (ensures forall i. v (to_i32x8 vec i) < pow2 n /\ (n <= 31 ==> v (to_i32x8 vec i) >= 0))
 
+val i32_bit_zero_lemma_to_positive vec
+  : Lemma (requires forall i. v i % 32 == 31 ==> vec.(i) == Core_models.Abstractions.Bit.Bit_Zero)
+          (ensures forall i. v (to_i32x8 vec i) >= 0)
 
+let rewrite_eq_sub_mod (#t: inttype {signed t}) (a b c: int_t t)
+  : Lemma (requires v a > minint t /\ a == b `sub_mod_opaque` c)
+          (ensures  neg a `add_mod_opaque` b == c)
+          = reveal_opaque_arithmetic_ops #t
+
+val to_i32x8_eq_to_bv_eq (a b: bv256)
+  : Lemma (requires forall i. to_i32x8 a i == to_i32x8 b i)
+          (ensures a == b)
+
+let lemma_from_i32x8_def_pt f: Lemma (forall i. to_i32x8 (from_i32x8 (FStar.FunctionalExtensionality.on (n:u64{v n < 8}) f)) i == f i)
+  = admit ()
+
+let mk_i32x8 (f: (i:u64{v i < 8}) -> i32): r: bv256 {forall i. to_i32x8 r i == f i}
+ = lemma_from_i32x8_def_pt f;
+   from_i32x8 (FStar.FunctionalExtensionality.on (n:u64{v n < 8}) f)

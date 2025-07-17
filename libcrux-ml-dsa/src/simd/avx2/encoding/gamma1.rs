@@ -180,22 +180,45 @@ pub(crate) fn serialize(simd_unit: &Vec256, serialized: &mut [u8], gamma1_expone
     }
 }
 
-#[inline(always)]
-#[hax_lib::requires(serialized.len() == 18)]
-fn deserialize_when_gamma1_is_2_pow_17(serialized: &[u8], out: &mut Vec256) {
-    debug_assert!(serialized.len() == 18);
+const GAMMA1_17: i32 = 1 << 17;
+const GAMMA1_17_TIMES_2_MASK: i32 = (GAMMA1_17 << 1) - 1;
 
-    const GAMMA1: i32 = 1 << 17;
-    const GAMMA1_TIMES_2_MASK: i32 = (GAMMA1 << 1) - 1;
+const GAMMA1_19: i32 = 1 << 19;
+const GAMMA1_19_TIMES_2_MASK: i32 = (GAMMA1_19 << 1) - 1;
+
+#[inline(always)]
+#[hax_lib::fstar::before(
+    r#"
+type gamma1_exp = g:usize {v g == 17 \/ v g == 19}
+unfold let serialized_len (g: gamma1_exp) = v g + 1
+unfold let gamma1_of_exp (g: gamma1_exp) = match v g with | 17 -> $GAMMA1_17 | 19 -> $GAMMA1_19
+
+let deserialize_unsigned_post
+  (g: gamma1_exp)
+  (serialized: t_Slice u8{Seq.length serialized == serialized_len g})
+  (result: bv256)
+  = let bytes = Seq.length serialized in
+    (forall (i: nat{i < bytes * 8}).
+       u8_to_bv serialized.[ mk_usize (i / 8) ] (mk_int (i % 8)) ==
+       result.(mk_int ((i / bytes) * 32 + i % bytes))) /\
+    (forall (i: nat{i < 256}).
+       i % 32 >= bytes ==> Core_models.Abstractions.Bit.Bit_Zero? result.(mk_int i))
+"#
+)]
+#[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
+#[hax_lib::requires(serialized.len() == 18)]
+#[hax_lib::ensures(|_result| fstar!("deserialize_unsigned_post (mk_int 17) $serialized ${out}_future"))]
+fn deserialize_when_gamma1_is_2_pow_17_unsigned(serialized: &[u8], out: &mut Vec256) {
+    debug_assert!(serialized.len() == 18);
 
     let serialized_lower = mm_loadu_si128(&serialized[0..16]);
     let serialized_upper = mm_loadu_si128(&serialized[2..18]);
 
-    let serialized = mm256_set_m128i(serialized_upper, serialized_lower);
+    let serialized_vec = mm256_set_m128i(serialized_upper, serialized_lower);
 
     // XXX: use out here
     let coefficients = mm256_shuffle_epi8(
-        serialized,
+        serialized_vec,
         mm256_set_epi8(
             -1, 15, 14, 13, -1, 13, 12, 11, -1, 11, 10, 9, -1, 9, 8, 7, -1, 8, 7, 6, -1, 6, 5, 4,
             -1, 4, 3, 2, -1, 2, 1, 0,
@@ -203,29 +226,32 @@ fn deserialize_when_gamma1_is_2_pow_17(serialized: &[u8], out: &mut Vec256) {
     );
 
     let coefficients = mm256_srlv_epi32(coefficients, mm256_set_epi32(6, 4, 2, 0, 6, 4, 2, 0));
-    let coefficients = mm256_and_si256(coefficients, mm256_set1_epi32(GAMMA1_TIMES_2_MASK));
-
-    *out = mm256_sub_epi32(mm256_set1_epi32(GAMMA1), coefficients);
+    let coefficients = mm256_and_si256(coefficients, mm256_set1_epi32(GAMMA1_17_TIMES_2_MASK));
+    hax_lib::fstar!(
+        r#"let (): squash (deserialize_unsigned_post (mk_int 17) $serialized $coefficients) =
+             i32_to_bv_pow2_min_one_lemma_fa 18
+           in ()"#
+    );
+    *out = coefficients
 }
 
 #[inline(always)]
+#[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
 #[hax_lib::requires(serialized.len() == 20)]
-fn deserialize_when_gamma1_is_2_pow_19(serialized: &[u8], out: &mut Vec256) {
+#[hax_lib::ensures(|result| fstar!("deserialize_unsigned_post (mk_int 19) $serialized ${out}_future"))]
+fn deserialize_when_gamma1_is_2_pow_19_unsigned(serialized: &[u8], out: &mut Vec256) {
     // Each set of 5 bytes deserializes to 2 coefficients, and since each Vec256
     // can hold 8 such coefficients, we process 5 * (8 / 2) = 20 bytes in this
     // function.
     debug_assert!(serialized.len() == 20);
 
-    const GAMMA1: i32 = 1 << 19;
-    const GAMMA1_TIMES_2_MASK: i32 = (GAMMA1 << 1) - 1;
-
     let serialized_lower = mm_loadu_si128(&serialized[0..16]);
     let serialized_upper = mm_loadu_si128(&serialized[4..20]);
 
-    let serialized = mm256_set_m128i(serialized_upper, serialized_lower);
+    let serialized_vec = mm256_set_m128i(serialized_upper, serialized_lower);
 
     let coefficients = mm256_shuffle_epi8(
-        serialized,
+        serialized_vec,
         mm256_set_epi8(
             -1, 15, 14, 13, -1, 13, 12, 11, -1, 10, 9, 8, -1, 8, 7, 6, -1, 9, 8, 7, -1, 7, 6, 5,
             -1, 4, 3, 2, -1, 2, 1, 0,
@@ -233,21 +259,57 @@ fn deserialize_when_gamma1_is_2_pow_19(serialized: &[u8], out: &mut Vec256) {
     );
 
     let coefficients = mm256_srlv_epi32(coefficients, mm256_set_epi32(4, 0, 4, 0, 4, 0, 4, 0));
-    let coefficients = mm256_and_si256(coefficients, mm256_set1_epi32(GAMMA1_TIMES_2_MASK));
-
-    *out = mm256_sub_epi32(mm256_set1_epi32(GAMMA1), coefficients)
+    let coefficients = mm256_and_si256(coefficients, mm256_set1_epi32(GAMMA1_19_TIMES_2_MASK));
+    hax_lib::fstar!("i32_to_bv_pow2_min_one_lemma_fa 20");
+    *out = coefficients
 }
 
 #[inline(always)]
+#[hax_lib::fstar::before(
+    r#"
+let deserialize_post (gamma1_exponent: gamma1_exp)
+         (serialized: t_Slice u8 {Seq.length serialized == v gamma1_exponent + 1})
+         (result: bv256)
+    = (forall i. v (to_i32x8 result i) > minint I32)
+    /\ ( let out_reverted = mk_i32x8 (fun i -> neg (to_i32x8 result i) `add_mod` gamma1_of_exp gamma1_exponent) in
+        deserialize_unsigned_post gamma1_exponent serialized out_reverted)
+"#
+)]
 #[hax_lib::requires( match gamma1_exponent {
         17 => serialized.len() == 18,
         19 => serialized.len() == 20,
         _ => false,
-    })]
+})]
+#[hax_lib::ensures(|result| fstar!("deserialize_post $gamma1_exponent $serialized ${out}_future"))]
 pub(crate) fn deserialize(serialized: &[u8], out: &mut Vec256, gamma1_exponent: usize) {
-    match gamma1_exponent {
-        17 => deserialize_when_gamma1_is_2_pow_17(serialized, out),
-        19 => deserialize_when_gamma1_is_2_pow_19(serialized, out),
+    match gamma1_exponent as u8 {
+        17 => deserialize_when_gamma1_is_2_pow_17_unsigned(serialized, out),
+        19 => deserialize_when_gamma1_is_2_pow_19_unsigned(serialized, out),
         _ => unreachable!(),
-    }
+    };
+
+    #[cfg(hax)]
+    let unsigned = out.clone();
+
+    let gamma1 = match gamma1_exponent as u8 {
+        17 => GAMMA1_17,
+        19 => GAMMA1_19,
+        _ => unreachable!(),
+    };
+
+    *out = mm256_sub_epi32(mm256_set1_epi32(gamma1), *out);
+
+    hax_lib::fstar!(
+        r#"
+    i32_bit_zero_lemma_to_lt_pow2_n_weak (v $gamma1_exponent + 1) $unsigned;
+    reveal_opaque_arithmetic_ops #I32;
+    let out_reverted: bv256 = mk_i32x8 (fun i -> neg (to_i32x8 $out i) `add_mod` gamma1_of_exp $gamma1_exponent) in
+    introduce forall i. neg (to_i32x8 out i) `add_mod` gamma1_of_exp $gamma1_exponent == to_i32x8 $unsigned i
+    with rewrite_eq_sub_mod (to_i32x8 out i) (gamma1_of_exp $gamma1_exponent) (to_i32x8 $unsigned i);
+    to_i32x8_eq_to_bv_eq $unsigned out_reverted;
+    assert_norm (deserialize_post $gamma1_exponent $serialized out ==
+        ((forall i. v (to_i32x8 out i) > minint I32) /\
+          deserialize_unsigned_post $gamma1_exponent $serialized out_reverted))
+    "#
+    );
 }
