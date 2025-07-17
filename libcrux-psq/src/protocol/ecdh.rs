@@ -63,7 +63,10 @@ impl PrivateKey {
 
     /// Compute the KEM public key from the KEM private key.
     pub fn to_public(&self) -> PublicKey {
-        PublicKey(secret_to_public(libcrux_ecdh::Algorithm::X25519, &self.0).unwrap())
+        PublicKey(
+            secret_to_public(libcrux_ecdh::Algorithm::X25519, &self.0)
+                .expect("secret key is honestly generated X25519 key"),
+        )
     }
 }
 

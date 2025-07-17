@@ -43,7 +43,6 @@ pub struct RegistrationInitiator<'a, T: CryptoRng> {
 #[derive(TlsSerializeBytes, TlsDeserializeBytes, TlsSize)]
 #[repr(u8)]
 pub enum InitiatorOuterPayload {
-    Reserved,
     Query(TlsByteVecU32), // XXX: SerializeBytes is not implemented for VLBytes
     Registration(Message),
 }

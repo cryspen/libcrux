@@ -12,24 +12,24 @@ use super::{
 pub struct AEADKey([u8; KEY_LEN]);
 
 impl AEADKey {
-    fn new(ikm: &impl SerializeBytes, info: &impl SerializeBytes) -> AEADKey {
+    fn new(ikm: &impl SerializeBytes, info: &impl SerializeBytes) -> Result<AEADKey, Error> {
         let prk = libcrux_hkdf::extract(
             libcrux_hkdf::Algorithm::Sha256,
             [],
-            ikm.tls_serialize().unwrap(),
+            ikm.tls_serialize().map_err(|e| Error::Serialize(e))?,
         )
-        .unwrap();
-        AEADKey(
+        .map_err(|_| Error::CryptoError)?;
+        Ok(AEADKey(
             libcrux_hkdf::expand(
                 libcrux_hkdf::Algorithm::Sha256,
                 prk,
-                info.tls_serialize().unwrap(),
+                info.tls_serialize().map_err(|e| Error::Serialize(e))?,
                 KEY_LEN,
             )
-            .unwrap()
+            .map_err(|_| Error::CryptoError)?
             .try_into()
-            .unwrap(),
-        )
+            .expect("HKDF expands to `KEY_LEN` bytes"),
+        ))
     }
 
     pub(crate) fn serialize_encrypt<T: SerializeBytes>(
@@ -88,27 +88,27 @@ struct K0Ikm<'a> {
 const SESSION_KEY_INFO: &[u8] = b"shared key id";
 
 // id_skCS = KDF(skCS, "shared key id")
-fn session_key_id(key: &AEADKey) -> [u8; SESSION_ID_LENGTH] {
+fn session_key_id(key: &AEADKey) -> Result<[u8; SESSION_ID_LENGTH], Error> {
     let prk = libcrux_hkdf::extract(
         libcrux_hkdf::Algorithm::Sha256,
         [],
-        key.tls_serialize().unwrap(),
+        key.tls_serialize().map_err(|e| Error::Serialize(e))?,
     )
-    .unwrap();
+    .map_err(|_| Error::CryptoError)?;
 
-    libcrux_hkdf::expand(
+    Ok(libcrux_hkdf::expand(
         libcrux_hkdf::Algorithm::Sha256,
         prk,
         SESSION_KEY_INFO,
         SESSION_ID_LENGTH,
     )
-    .unwrap()
+    .map_err(|_| Error::CryptoError)?
     .try_into()
-    .unwrap()
+    .expect("HKDF expands to `SESSION_ID_LENGHT` bytes"))
 }
 
 // skCS = KDF(K2, "shared secret" | tx2)
-pub(super) fn derive_session_key(k2: &AEADKey, tx2: &Transcript) -> SessionKey {
+pub(super) fn derive_session_key(k2: &AEADKey, tx2: &Transcript) -> Result<SessionKey, Error> {
     #[derive(TlsSerializeBytes, TlsSize)]
     struct SessionKeyInfo<'a> {
         domain_separator: &'static [u8],
@@ -121,9 +121,9 @@ pub(super) fn derive_session_key(k2: &AEADKey, tx2: &Transcript) -> SessionKey {
             domain_separator: b"shared key",
             tx2,
         },
-    );
-    let identifier = session_key_id(&key);
-    SessionKey { key, identifier }
+    )?;
+    let identifier = session_key_id(&key)?;
+    Ok(SessionKey { key, identifier })
 }
 
 // K0 = KDF(g^xs, tx0)
@@ -143,7 +143,7 @@ pub(super) fn derive_k0(
         g_xs: &SharedSecret::derive(own_sk, peer_pk)?,
     };
 
-    Ok((tx0, AEADKey::new(&ikm, &tx0)))
+    Ok((tx0, AEADKey::new(&ikm, &tx0)?))
 }
 
 // K1 = KDF(K0 | g^cs | SS, tx1)
@@ -163,14 +163,14 @@ pub(super) fn derive_k1(
 
     let ecdh_shared_secret = SharedSecret::derive(own_longterm_key, peer_longterm_pk)?;
 
-    Ok(AEADKey::new(
+    AEADKey::new(
         &K1Ikm {
             k0,
             ecdh_shared_secret: &ecdh_shared_secret,
             pq_shared_secret,
         },
         &tx1,
-    ))
+    )
 }
 
 #[derive(TlsSerializeBytes, TlsSize)]
@@ -201,7 +201,7 @@ pub(super) fn derive_k2_registration_responder(
         g_xy: &SharedSecret::derive(responder_ephemeral_sk, initiator_ephemeral_pk)?,
     };
 
-    Ok(AEADKey::new(&responder_ikm, tx2))
+    Ok(AEADKey::new(&responder_ikm, tx2)?)
 }
 
 // K2 = KDF(K1 | g^cy | g^xy, tx2)
@@ -218,7 +218,7 @@ pub(super) fn derive_k2_registration_initiator(
         g_xy: &SharedSecret::derive(initiator_ephemeral_sk, responder_ephemeral_pk)?,
     };
 
-    Ok(AEADKey::new(&responder_ikm, tx2))
+    AEADKey::new(&responder_ikm, tx2)
 }
 
 // K2 = KDF(K0 | g^xs | g^xy, tx2)
@@ -235,7 +235,7 @@ pub(super) fn derive_k2_query_responder(
         g_xy: &SharedSecret::derive(responder_ephemeral_ecdh_sk, initiator_ephemeral_ecdh_pk)?,
     };
 
-    Ok(AEADKey::new(&responder_ikm, tx2))
+    AEADKey::new(&responder_ikm, tx2)
 }
 
 // K2 = KDF(K0 | g^xs | g^xy, tx2)
@@ -252,5 +252,5 @@ pub(super) fn derive_k2_query_initiator(
         g_xy: &SharedSecret::derive(initiator_ephemeral_ecdh_sk, responder_ephemeral_ecdh_pk)?,
     };
 
-    Ok(AEADKey::new(&initiator_ikm, tx2))
+    AEADKey::new(&initiator_ikm, tx2)
 }

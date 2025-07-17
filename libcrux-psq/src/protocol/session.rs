@@ -1,9 +1,8 @@
 use super::{
+    api::Error,
     ecdh::PublicKey,
     keys::{derive_session_key, AEADKey},
-    // responder::ResponderRegistrationPayload,
-    transcript::Transcript,
-    // TransportMessage,
+    transcript::Transcript, // TransportMessage,
 };
 
 /// The length of a session ID in bytes.
@@ -35,15 +34,15 @@ impl<'keys> SessionState<'keys> {
         responder_pq_pk: Option<&'keys libcrux_ml_kem::mlkem768::MlKem768PublicKey>,
         k2: &AEADKey,
         tx2: &Transcript,
-    ) -> Self {
-        let session_key = derive_session_key(k2, tx2);
-        Self {
+    ) -> Result<Self, Error> {
+        let session_key = derive_session_key(k2, tx2)?;
+        Ok(Self {
             is_initiator,
             nonce: 0,
             initiator_longterm_ecdh_pk,
             responder_longterm_ecdh_pk,
             responder_pq_pk,
             session_key,
-        }
+        })
     }
 }

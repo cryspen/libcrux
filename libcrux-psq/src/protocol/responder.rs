@@ -1,8 +1,6 @@
 use std::collections::VecDeque;
 
-use libcrux_ml_kem::mlkem768::{
-    decapsulate, MlKem768KeyPair, MlKem768PrivateKey, MlKem768PublicKey,
-};
+use libcrux_ml_kem::mlkem768::{decapsulate, MlKem768KeyPair};
 use rand::CryptoRng;
 use tls_codec::{
     DeserializeBytes, SerializeBytes, TlsByteVecU32, TlsDeserializeBytes, TlsSerializeBytes,
@@ -256,7 +254,8 @@ impl<'a, Rng: CryptoRng> HandshakeState for Responder<'a, Rng> {
                 out_bytes_written = write_output(&msg_out, out)?;
                 ResponderState::ToTransport {}
             }
-            _ => panic!(), // do nothing
+            // We return early above, unless we're in state `RespondQuery` or `RespondRegistration`
+            _ => unreachable!(),
         };
 
         Ok(out_bytes_written)
@@ -316,7 +315,6 @@ impl<'a, Rng: CryptoRng> HandshakeState for Responder<'a, Rng> {
                 let out_bytes_written = write_output(initiator_inner_payload.0.as_slice(), out)?;
                 Ok((bytes_deserialized, out_bytes_written))
             }
-            _ => panic!(), // XXX Remove other variants
         }
     }
 }

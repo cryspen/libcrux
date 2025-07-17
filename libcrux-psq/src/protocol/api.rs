@@ -1,12 +1,8 @@
 use rand::CryptoRng;
 
-use crate::protocol::{
-    ecdh::{PrivateKey, PublicKey},
-    initiator::QueryInitiator,
-    responder::Responder,
-};
+use crate::protocol::{ecdh::PublicKey, initiator::QueryInitiator, responder::Responder};
 
-use libcrux_ml_kem::mlkem768::{MlKem768KeyPair, MlKem768PrivateKey, MlKem768PublicKey};
+use libcrux_ml_kem::mlkem768::{MlKem768KeyPair, MlKem768PublicKey};
 
 use super::{ecdh::KEMKeyPair, initiator::RegistrationInitiator};
 
