@@ -44,6 +44,7 @@ fn serialize_when_gamma1_is_2_pow_19(simd_unit: &Coefficients, serialized: &mut 
     cloop! {
         for (i, coefficients) in simd_unit.values.chunks_exact(2).enumerate() {
             hax_lib::loop_invariant!(|_i: usize| serialized.len() == 20);
+
             let coefficient0 = GAMMA1 - coefficients[0];
             let coefficient1 = GAMMA1 - coefficients[1];
 
