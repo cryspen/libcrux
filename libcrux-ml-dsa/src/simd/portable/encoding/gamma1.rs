@@ -87,6 +87,7 @@ fn deserialize_when_gamma1_is_2_pow_17(serialized: &[u8], simd_unit: &mut Coeffi
     cloop! {
         for (i, bytes) in serialized.chunks_exact(9).enumerate() {
             hax_lib::loop_invariant!(|_i: usize| serialized.len() == 18);
+
             let mut coefficient0 = bytes[0] as i32;
             coefficient0 |= (bytes[1] as i32) << 8;
             coefficient0 |= (bytes[2] as i32) << 16;
