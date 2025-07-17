@@ -17,6 +17,7 @@ libcrux-sha2 = { version = "=0.0.3", path = "../sha2", features = [
 ] }
 libcrux-macros = { version = "=0.0.3", path = "../macros" }
 rand_core = { version = "0.9", optional = true }
+libcrux-traits = { version = "=0.0.3", path = "../traits" }
 
 [dev-dependencies]
 rand = { version = "0.9" }
