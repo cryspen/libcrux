@@ -18,8 +18,6 @@ check-secret-independence = ["libcrux-secrets/check-secret-independence"]
 # expose tests that are generic over the traits
 generic-tests = []
 
-#default = ["generic-tests"]
-
 [dependencies]
 rand = { version = "0.9", default-features = false }
 libcrux-secrets = { version = "=0.0.3", path = "../secrets" }
