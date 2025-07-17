@@ -56,23 +56,25 @@ impl<'a, T> DeclassifyRef for &'a T {
     }
 }
 
-// Classify any mutable reference (identity)
-impl<'a, T> ClassifyRefMut for &'a mut T {
-    type ClassifiedRefMut = &'a mut T;
-    #[inline(always)]
-    fn classify_ref_mut(self) -> &'a mut T {
-        self
-    }
-}
-
-// Delassify any mutable reference (identity)
-impl<'a, T> DeclassifyRefMut for &'a mut T {
-    type DeclassifiedRefMut = &'a mut T;
-    #[inline(always)]
-    fn declassify_ref_mut(self) -> &'a mut T {
-        self
-    }
-}
+// TODO: hax doesn't like this, so comment this out for now
+//
+// // Classify any mutable reference (identity)
+// impl<'a, T> ClassifyRefMut for &'a mut T {
+//     type ClassifiedRefMut = &'a mut T;
+//     #[inline(always)]
+//     fn classify_ref_mut(self) -> &'a mut T {
+//         self
+//     }
+// }
+//
+// // Delassify any mutable reference (identity)
+// impl<'a, T> DeclassifyRefMut for &'a mut T {
+//     type DeclassifiedRefMut = &'a mut T;
+//     #[inline(always)]
+//     fn declassify_ref_mut(self) -> &'a mut T {
+//         self
+//     }
+// }
 
 /// Classify a mutable slice (identity)
 /// We define a separate function for this because hax has limited support for &mut-returning functions
