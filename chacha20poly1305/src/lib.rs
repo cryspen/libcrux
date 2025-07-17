@@ -86,6 +86,9 @@ mod hacl {
     pub(crate) mod chacha20;
 }
 
+mod impl_aead_trait;
 mod impl_hacl;
 
+pub use impl_aead_trait::ChaCha20Poly1305;
+pub use impl_aead_trait::XChaCha20Poly1305;
 pub use impl_hacl::*;
