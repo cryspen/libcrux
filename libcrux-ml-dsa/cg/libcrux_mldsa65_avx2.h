@@ -7,8 +7,8 @@
  * Charon: bb62a9b39db4ea8c6d536fe61b7d26663751bf3c
  * Eurydice: 46cef5d58a855ed049fa89bfe99c959b5d9d0d4b
  * Karamel: 39cb85a718da8ae4a724d31b08f9134ca9311336
- * F*: 71d8221589d4d438af3706d89cb653cf53e18aab
- * Libcrux: 82b7a4b7638a8c50ce5f5493d6ad7e434701b450
+ * F*: 4b3fc11774003a6ff7c09500ecb5f0145ca6d862
+ * Libcrux: 5d995158df9cb7834d818be995d380e9ccd7572e
  */
 
 #ifndef __libcrux_mldsa65_avx2_H
@@ -1068,6 +1068,60 @@ libcrux_ml_dsa_simd_avx2_rejection_sample_less_than_eta_equals_4_22(
       randomness, out);
 }
 
+#define LIBCRUX_ML_DSA_SIMD_AVX2_ENCODING_GAMMA1_GAMMA1_2_POW_19 \
+  ((int32_t)1 << 19U)
+
+KRML_ATTRIBUTE_TARGET("avx2")
+static KRML_MUSTINLINE __m256i
+libcrux_ml_dsa_simd_avx2_encoding_gamma1_serialize_when_gamma1_is_2_pow_19_aux(
+    __m256i simd_unit_shifted) {
+  __m256i adjacent_2_combined = libcrux_intrinsics_avx2_mm256_sllv_epi32(
+      simd_unit_shifted, libcrux_intrinsics_avx2_mm256_set_epi32(
+                             (int32_t)0, (int32_t)12, (int32_t)0, (int32_t)12,
+                             (int32_t)0, (int32_t)12, (int32_t)0, (int32_t)12));
+  __m256i adjacent_2_combined0 = libcrux_intrinsics_avx2_mm256_srli_epi64(
+      (int32_t)12, adjacent_2_combined, __m256i);
+  return libcrux_intrinsics_avx2_mm256_shuffle_epi8(
+      adjacent_2_combined0,
+      libcrux_intrinsics_avx2_mm256_set_epi8(
+          (int8_t)-1, (int8_t)-1, (int8_t)-1, (int8_t)-1, (int8_t)-1,
+          (int8_t)-1, (int8_t)12, (int8_t)11, (int8_t)10, (int8_t)9, (int8_t)8,
+          (int8_t)4, (int8_t)3, (int8_t)2, (int8_t)1, (int8_t)0, (int8_t)-1,
+          (int8_t)-1, (int8_t)-1, (int8_t)-1, (int8_t)-1, (int8_t)-1,
+          (int8_t)12, (int8_t)11, (int8_t)10, (int8_t)9, (int8_t)8, (int8_t)4,
+          (int8_t)3, (int8_t)2, (int8_t)1, (int8_t)0));
+}
+
+KRML_ATTRIBUTE_TARGET("avx2")
+static KRML_MUSTINLINE void
+libcrux_ml_dsa_simd_avx2_encoding_gamma1_serialize_when_gamma1_is_2_pow_19(
+    __m256i *simd_unit, Eurydice_slice out) {
+  uint8_t serialized[32U] = {0U};
+  __m256i simd_unit_shifted = libcrux_intrinsics_avx2_mm256_sub_epi32(
+      libcrux_intrinsics_avx2_mm256_set1_epi32(
+          LIBCRUX_ML_DSA_SIMD_AVX2_ENCODING_GAMMA1_GAMMA1_2_POW_19),
+      simd_unit[0U]);
+  __m256i adjacent_4_combined =
+      libcrux_ml_dsa_simd_avx2_encoding_gamma1_serialize_when_gamma1_is_2_pow_19_aux(
+          simd_unit_shifted);
+  __m128i lower_4 =
+      libcrux_intrinsics_avx2_mm256_castsi256_si128(adjacent_4_combined);
+  libcrux_intrinsics_avx2_mm_storeu_bytes_si128(
+      Eurydice_array_to_subslice2(serialized, (size_t)0U, (size_t)16U, uint8_t),
+      lower_4);
+  __m128i upper_4 = libcrux_intrinsics_avx2_mm256_extracti128_si256(
+      (int32_t)1, adjacent_4_combined, __m128i);
+  libcrux_intrinsics_avx2_mm_storeu_bytes_si128(
+      Eurydice_array_to_subslice2(serialized, (size_t)10U, (size_t)26U,
+                                  uint8_t),
+      upper_4);
+  Eurydice_slice uu____0 = out;
+  Eurydice_slice_copy(
+      uu____0,
+      Eurydice_array_to_subslice2(serialized, (size_t)0U, (size_t)20U, uint8_t),
+      uint8_t);
+}
+
 #define LIBCRUX_ML_DSA_SIMD_AVX2_ENCODING_GAMMA1_GAMMA1_2_POW_17 \
   ((int32_t)1 << 17U)
 
@@ -1123,73 +1177,18 @@ libcrux_ml_dsa_simd_avx2_encoding_gamma1_serialize_when_gamma1_is_2_pow_17(
       uint8_t);
 }
 
-#define LIBCRUX_ML_DSA_SIMD_AVX2_ENCODING_GAMMA1_GAMMA1_2_POW_19 \
-  ((int32_t)1 << 19U)
-
-KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE __m256i
-libcrux_ml_dsa_simd_avx2_encoding_gamma1_serialize_when_gamma1_is_2_pow_19_aux(
-    __m256i simd_unit_shifted) {
-  __m256i adjacent_2_combined = libcrux_intrinsics_avx2_mm256_sllv_epi32(
-      simd_unit_shifted, libcrux_intrinsics_avx2_mm256_set_epi32(
-                             (int32_t)0, (int32_t)12, (int32_t)0, (int32_t)12,
-                             (int32_t)0, (int32_t)12, (int32_t)0, (int32_t)12));
-  __m256i adjacent_2_combined0 = libcrux_intrinsics_avx2_mm256_srli_epi64(
-      (int32_t)12, adjacent_2_combined, __m256i);
-  return libcrux_intrinsics_avx2_mm256_shuffle_epi8(
-      adjacent_2_combined0,
-      libcrux_intrinsics_avx2_mm256_set_epi8(
-          (int8_t)-1, (int8_t)-1, (int8_t)-1, (int8_t)-1, (int8_t)-1,
-          (int8_t)-1, (int8_t)12, (int8_t)11, (int8_t)10, (int8_t)9, (int8_t)8,
-          (int8_t)4, (int8_t)3, (int8_t)2, (int8_t)1, (int8_t)0, (int8_t)-1,
-          (int8_t)-1, (int8_t)-1, (int8_t)-1, (int8_t)-1, (int8_t)-1,
-          (int8_t)12, (int8_t)11, (int8_t)10, (int8_t)9, (int8_t)8, (int8_t)4,
-          (int8_t)3, (int8_t)2, (int8_t)1, (int8_t)0));
-}
-
-KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE void
-libcrux_ml_dsa_simd_avx2_encoding_gamma1_serialize_when_gamma1_is_2_pow_19(
-    __m256i *simd_unit, Eurydice_slice out) {
-  uint8_t serialized[32U] = {0U};
-  __m256i simd_unit_shifted = libcrux_intrinsics_avx2_mm256_sub_epi32(
-      libcrux_intrinsics_avx2_mm256_set1_epi32(
-          LIBCRUX_ML_DSA_SIMD_AVX2_ENCODING_GAMMA1_GAMMA1_2_POW_19),
-      simd_unit[0U]);
-  __m256i adjacent_4_combined =
-      libcrux_ml_dsa_simd_avx2_encoding_gamma1_serialize_when_gamma1_is_2_pow_19_aux(
-          simd_unit_shifted);
-  __m128i lower_4 =
-      libcrux_intrinsics_avx2_mm256_castsi256_si128(adjacent_4_combined);
-  libcrux_intrinsics_avx2_mm_storeu_bytes_si128(
-      Eurydice_array_to_subslice2(serialized, (size_t)0U, (size_t)16U, uint8_t),
-      lower_4);
-  __m128i upper_4 = libcrux_intrinsics_avx2_mm256_extracti128_si256(
-      (int32_t)1, adjacent_4_combined, __m128i);
-  libcrux_intrinsics_avx2_mm_storeu_bytes_si128(
-      Eurydice_array_to_subslice2(serialized, (size_t)10U, (size_t)26U,
-                                  uint8_t),
-      upper_4);
-  Eurydice_slice uu____0 = out;
-  Eurydice_slice_copy(
-      uu____0,
-      Eurydice_array_to_subslice2(serialized, (size_t)0U, (size_t)20U, uint8_t),
-      uint8_t);
-}
-
 KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE void libcrux_ml_dsa_simd_avx2_encoding_gamma1_serialize(
     __m256i *simd_unit, Eurydice_slice serialized, size_t gamma1_exponent) {
-  switch ((uint8_t)gamma1_exponent) {
+  void *uu____0 = (void *)0U;
+  switch (gamma1_exponent) {
     case 17U: {
-      libcrux_ml_dsa_simd_avx2_encoding_gamma1_serialize_when_gamma1_is_2_pow_17(
-          simd_unit, serialized);
       break;
     }
     case 19U: {
       libcrux_ml_dsa_simd_avx2_encoding_gamma1_serialize_when_gamma1_is_2_pow_19(
           simd_unit, serialized);
-      break;
+      return;
     }
     default: {
       KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__,
@@ -1197,6 +1196,8 @@ static KRML_MUSTINLINE void libcrux_ml_dsa_simd_avx2_encoding_gamma1_serialize(
       KRML_HOST_EXIT(255U);
     }
   }
+  libcrux_ml_dsa_simd_avx2_encoding_gamma1_serialize_when_gamma1_is_2_pow_17(
+      simd_unit, serialized);
 }
 
 /**
@@ -1210,26 +1211,23 @@ static KRML_MUSTINLINE void libcrux_ml_dsa_simd_avx2_gamma1_serialize_22(
                                                      gamma1_exponent);
 }
 
-#define LIBCRUX_ML_DSA_SIMD_AVX2_ENCODING_GAMMA1_DESERIALIZE_WHEN_GAMMA1_IS_2_POW_17_GAMMA1 \
-  ((int32_t)1 << 17U)
+#define LIBCRUX_ML_DSA_SIMD_AVX2_ENCODING_GAMMA1_GAMMA1_17 ((int32_t)1 << 17U)
 
-#define LIBCRUX_ML_DSA_SIMD_AVX2_ENCODING_GAMMA1_DESERIALIZE_WHEN_GAMMA1_IS_2_POW_17_GAMMA1_TIMES_2_MASK \
-  ((LIBCRUX_ML_DSA_SIMD_AVX2_ENCODING_GAMMA1_DESERIALIZE_WHEN_GAMMA1_IS_2_POW_17_GAMMA1                  \
-    << 1U) -                                                                                             \
-   (int32_t)1)
+#define LIBCRUX_ML_DSA_SIMD_AVX2_ENCODING_GAMMA1_GAMMA1_17_TIMES_2_MASK \
+  ((LIBCRUX_ML_DSA_SIMD_AVX2_ENCODING_GAMMA1_GAMMA1_17 << 1U) - (int32_t)1)
 
 KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE void
-libcrux_ml_dsa_simd_avx2_encoding_gamma1_deserialize_when_gamma1_is_2_pow_17(
+libcrux_ml_dsa_simd_avx2_encoding_gamma1_deserialize_when_gamma1_is_2_pow_17_unsigned(
     Eurydice_slice serialized, __m256i *out) {
   __m128i serialized_lower = libcrux_intrinsics_avx2_mm_loadu_si128(
       Eurydice_slice_subslice2(serialized, (size_t)0U, (size_t)16U, uint8_t));
   __m128i serialized_upper = libcrux_intrinsics_avx2_mm_loadu_si128(
       Eurydice_slice_subslice2(serialized, (size_t)2U, (size_t)18U, uint8_t));
-  __m256i serialized0 = libcrux_intrinsics_avx2_mm256_set_m128i(
+  __m256i serialized_vec = libcrux_intrinsics_avx2_mm256_set_m128i(
       serialized_upper, serialized_lower);
   __m256i coefficients = libcrux_intrinsics_avx2_mm256_shuffle_epi8(
-      serialized0,
+      serialized_vec,
       libcrux_intrinsics_avx2_mm256_set_epi8(
           (int8_t)-1, (int8_t)15, (int8_t)14, (int8_t)13, (int8_t)-1,
           (int8_t)13, (int8_t)12, (int8_t)11, (int8_t)-1, (int8_t)11,
@@ -1244,33 +1242,27 @@ libcrux_ml_dsa_simd_avx2_encoding_gamma1_deserialize_when_gamma1_is_2_pow_17(
   __m256i coefficients1 = libcrux_intrinsics_avx2_mm256_and_si256(
       coefficients0,
       libcrux_intrinsics_avx2_mm256_set1_epi32(
-          LIBCRUX_ML_DSA_SIMD_AVX2_ENCODING_GAMMA1_DESERIALIZE_WHEN_GAMMA1_IS_2_POW_17_GAMMA1_TIMES_2_MASK));
-  out[0U] = libcrux_intrinsics_avx2_mm256_sub_epi32(
-      libcrux_intrinsics_avx2_mm256_set1_epi32(
-          LIBCRUX_ML_DSA_SIMD_AVX2_ENCODING_GAMMA1_DESERIALIZE_WHEN_GAMMA1_IS_2_POW_17_GAMMA1),
-      coefficients1);
+          LIBCRUX_ML_DSA_SIMD_AVX2_ENCODING_GAMMA1_GAMMA1_17_TIMES_2_MASK));
+  out[0U] = coefficients1;
 }
 
-#define LIBCRUX_ML_DSA_SIMD_AVX2_ENCODING_GAMMA1_DESERIALIZE_WHEN_GAMMA1_IS_2_POW_19_GAMMA1 \
-  ((int32_t)1 << 19U)
+#define LIBCRUX_ML_DSA_SIMD_AVX2_ENCODING_GAMMA1_GAMMA1_19 ((int32_t)1 << 19U)
 
-#define LIBCRUX_ML_DSA_SIMD_AVX2_ENCODING_GAMMA1_DESERIALIZE_WHEN_GAMMA1_IS_2_POW_19_GAMMA1_TIMES_2_MASK \
-  ((LIBCRUX_ML_DSA_SIMD_AVX2_ENCODING_GAMMA1_DESERIALIZE_WHEN_GAMMA1_IS_2_POW_19_GAMMA1                  \
-    << 1U) -                                                                                             \
-   (int32_t)1)
+#define LIBCRUX_ML_DSA_SIMD_AVX2_ENCODING_GAMMA1_GAMMA1_19_TIMES_2_MASK \
+  ((LIBCRUX_ML_DSA_SIMD_AVX2_ENCODING_GAMMA1_GAMMA1_19 << 1U) - (int32_t)1)
 
 KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE void
-libcrux_ml_dsa_simd_avx2_encoding_gamma1_deserialize_when_gamma1_is_2_pow_19(
+libcrux_ml_dsa_simd_avx2_encoding_gamma1_deserialize_when_gamma1_is_2_pow_19_unsigned(
     Eurydice_slice serialized, __m256i *out) {
   __m128i serialized_lower = libcrux_intrinsics_avx2_mm_loadu_si128(
       Eurydice_slice_subslice2(serialized, (size_t)0U, (size_t)16U, uint8_t));
   __m128i serialized_upper = libcrux_intrinsics_avx2_mm_loadu_si128(
       Eurydice_slice_subslice2(serialized, (size_t)4U, (size_t)20U, uint8_t));
-  __m256i serialized0 = libcrux_intrinsics_avx2_mm256_set_m128i(
+  __m256i serialized_vec = libcrux_intrinsics_avx2_mm256_set_m128i(
       serialized_upper, serialized_lower);
   __m256i coefficients = libcrux_intrinsics_avx2_mm256_shuffle_epi8(
-      serialized0,
+      serialized_vec,
       libcrux_intrinsics_avx2_mm256_set_epi8(
           (int8_t)-1, (int8_t)15, (int8_t)14, (int8_t)13, (int8_t)-1,
           (int8_t)13, (int8_t)12, (int8_t)11, (int8_t)-1, (int8_t)10, (int8_t)9,
@@ -1285,11 +1277,8 @@ libcrux_ml_dsa_simd_avx2_encoding_gamma1_deserialize_when_gamma1_is_2_pow_19(
   __m256i coefficients1 = libcrux_intrinsics_avx2_mm256_and_si256(
       coefficients0,
       libcrux_intrinsics_avx2_mm256_set1_epi32(
-          LIBCRUX_ML_DSA_SIMD_AVX2_ENCODING_GAMMA1_DESERIALIZE_WHEN_GAMMA1_IS_2_POW_19_GAMMA1_TIMES_2_MASK));
-  out[0U] = libcrux_intrinsics_avx2_mm256_sub_epi32(
-      libcrux_intrinsics_avx2_mm256_set1_epi32(
-          LIBCRUX_ML_DSA_SIMD_AVX2_ENCODING_GAMMA1_DESERIALIZE_WHEN_GAMMA1_IS_2_POW_19_GAMMA1),
-      coefficients1);
+          LIBCRUX_ML_DSA_SIMD_AVX2_ENCODING_GAMMA1_GAMMA1_19_TIMES_2_MASK));
+  out[0U] = coefficients1;
 }
 
 KRML_ATTRIBUTE_TARGET("avx2")
@@ -1299,12 +1288,12 @@ libcrux_ml_dsa_simd_avx2_encoding_gamma1_deserialize(Eurydice_slice serialized,
                                                      size_t gamma1_exponent) {
   switch ((uint8_t)gamma1_exponent) {
     case 17U: {
-      libcrux_ml_dsa_simd_avx2_encoding_gamma1_deserialize_when_gamma1_is_2_pow_17(
+      libcrux_ml_dsa_simd_avx2_encoding_gamma1_deserialize_when_gamma1_is_2_pow_17_unsigned(
           serialized, out);
       break;
     }
     case 19U: {
-      libcrux_ml_dsa_simd_avx2_encoding_gamma1_deserialize_when_gamma1_is_2_pow_19(
+      libcrux_ml_dsa_simd_avx2_encoding_gamma1_deserialize_when_gamma1_is_2_pow_19_unsigned(
           serialized, out);
       break;
     }
@@ -1314,6 +1303,24 @@ libcrux_ml_dsa_simd_avx2_encoding_gamma1_deserialize(Eurydice_slice serialized,
       KRML_HOST_EXIT(255U);
     }
   }
+  int32_t gamma1;
+  switch ((uint8_t)gamma1_exponent) {
+    case 17U: {
+      gamma1 = LIBCRUX_ML_DSA_SIMD_AVX2_ENCODING_GAMMA1_GAMMA1_17;
+      break;
+    }
+    case 19U: {
+      gamma1 = LIBCRUX_ML_DSA_SIMD_AVX2_ENCODING_GAMMA1_GAMMA1_19;
+      break;
+    }
+    default: {
+      KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__,
+                        "panic!");
+      KRML_HOST_EXIT(255U);
+    }
+  }
+  out[0U] = libcrux_intrinsics_avx2_mm256_sub_epi32(
+      libcrux_intrinsics_avx2_mm256_set1_epi32(gamma1), out[0U]);
 }
 
 /**
@@ -1595,14 +1602,14 @@ static KRML_MUSTINLINE void libcrux_ml_dsa_simd_avx2_encoding_error_deserialize(
   __m256i unsigned0 =
       libcrux_ml_dsa_simd_avx2_encoding_error_deserialize_to_unsigned(
           eta, serialized);
-  int32_t eta0;
+  int32_t eta_v;
   if (eta == libcrux_ml_dsa_constants_Eta_Two) {
-    eta0 = (int32_t)2;
+    eta_v = (int32_t)2;
   } else {
-    eta0 = (int32_t)4;
+    eta_v = (int32_t)4;
   }
   out[0U] = libcrux_intrinsics_avx2_mm256_sub_epi32(
-      libcrux_intrinsics_avx2_mm256_set1_epi32(eta0), unsigned0);
+      libcrux_intrinsics_avx2_mm256_set1_epi32(eta_v), unsigned0);
 }
 
 /**
@@ -1688,11 +1695,12 @@ static KRML_MUSTINLINE void libcrux_ml_dsa_simd_avx2_t0_serialize_22(
   libcrux_ml_dsa_simd_avx2_encoding_t0_serialize(simd_unit, out);
 }
 
-#define LIBCRUX_ML_DSA_SIMD_AVX2_ENCODING_T0_DESERIALIZE_COEFFICIENT_MASK \
+#define LIBCRUX_ML_DSA_SIMD_AVX2_ENCODING_T0_DESERIALIZE_UNSIGNED_COEFFICIENT_MASK \
   (((int32_t)1 << 13U) - (int32_t)1)
 
 KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE void libcrux_ml_dsa_simd_avx2_encoding_t0_deserialize(
+static KRML_MUSTINLINE void
+libcrux_ml_dsa_simd_avx2_encoding_t0_deserialize_unsigned(
     Eurydice_slice serialized, __m256i *out) {
   uint8_t serialized_extended[16U] = {0U};
   Eurydice_slice_copy(
@@ -1719,9 +1727,15 @@ static KRML_MUSTINLINE void libcrux_ml_dsa_simd_avx2_encoding_t0_deserialize(
   __m256i coefficients1 = libcrux_intrinsics_avx2_mm256_and_si256(
       coefficients0,
       libcrux_intrinsics_avx2_mm256_set1_epi32(
-          LIBCRUX_ML_DSA_SIMD_AVX2_ENCODING_T0_DESERIALIZE_COEFFICIENT_MASK));
-  out[0U] =
-      libcrux_ml_dsa_simd_avx2_encoding_t0_change_interval(&coefficients1);
+          LIBCRUX_ML_DSA_SIMD_AVX2_ENCODING_T0_DESERIALIZE_UNSIGNED_COEFFICIENT_MASK));
+  out[0U] = coefficients1;
+}
+
+KRML_ATTRIBUTE_TARGET("avx2")
+static KRML_MUSTINLINE void libcrux_ml_dsa_simd_avx2_encoding_t0_deserialize(
+    Eurydice_slice serialized, __m256i *out) {
+  libcrux_ml_dsa_simd_avx2_encoding_t0_deserialize_unsigned(serialized, out);
+  out[0U] = libcrux_ml_dsa_simd_avx2_encoding_t0_change_interval(out);
 }
 
 /**
@@ -5062,34 +5076,6 @@ libcrux_ml_dsa_hash_functions_simd256_shake256_x4_fb_c8(
 /**
 A monomorphic instance of libcrux_ml_dsa.hash_functions.simd256.shake256
 with const generics
-- OUTPUT_LENGTH= 576
-*/
-KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE void libcrux_ml_dsa_hash_functions_simd256_shake256_1b(
-    Eurydice_slice input, uint8_t *out) {
-  libcrux_sha3_portable_shake256(
-      Eurydice_array_to_slice((size_t)576U, out, uint8_t), input);
-}
-
-/**
-This function found in impl {(libcrux_ml_dsa::hash_functions::shake256::DsaXof
-for libcrux_ml_dsa::hash_functions::simd256::Shake256)#1}
-*/
-/**
-A monomorphic instance of libcrux_ml_dsa.hash_functions.simd256.shake256_d9
-with const generics
-- OUTPUT_LENGTH= 576
-*/
-KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE void
-libcrux_ml_dsa_hash_functions_simd256_shake256_d9_1b(Eurydice_slice input,
-                                                     uint8_t *out) {
-  libcrux_ml_dsa_hash_functions_simd256_shake256_1b(input, out);
-}
-
-/**
-A monomorphic instance of libcrux_ml_dsa.hash_functions.simd256.shake256
-with const generics
 - OUTPUT_LENGTH= 640
 */
 KRML_ATTRIBUTE_TARGET("avx2")
@@ -5116,6 +5102,34 @@ libcrux_ml_dsa_hash_functions_simd256_shake256_d9_c8(Eurydice_slice input,
 }
 
 /**
+A monomorphic instance of libcrux_ml_dsa.hash_functions.simd256.shake256
+with const generics
+- OUTPUT_LENGTH= 576
+*/
+KRML_ATTRIBUTE_TARGET("avx2")
+static KRML_MUSTINLINE void libcrux_ml_dsa_hash_functions_simd256_shake256_1b(
+    Eurydice_slice input, uint8_t *out) {
+  libcrux_sha3_portable_shake256(
+      Eurydice_array_to_slice((size_t)576U, out, uint8_t), input);
+}
+
+/**
+This function found in impl {(libcrux_ml_dsa::hash_functions::shake256::DsaXof
+for libcrux_ml_dsa::hash_functions::simd256::Shake256)#1}
+*/
+/**
+A monomorphic instance of libcrux_ml_dsa.hash_functions.simd256.shake256_d9
+with const generics
+- OUTPUT_LENGTH= 576
+*/
+KRML_ATTRIBUTE_TARGET("avx2")
+static KRML_MUSTINLINE void
+libcrux_ml_dsa_hash_functions_simd256_shake256_d9_1b(Eurydice_slice input,
+                                                     uint8_t *out) {
+  libcrux_ml_dsa_hash_functions_simd256_shake256_1b(input, out);
+}
+
+/**
 A monomorphic instance of libcrux_ml_dsa.sample.sample_mask_ring_element
 with types libcrux_ml_dsa_simd_avx2_vector_type_Vec256,
 libcrux_ml_dsa_hash_functions_simd256_Shake256 with const generics
@@ -5125,14 +5139,9 @@ KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE void libcrux_ml_dsa_sample_sample_mask_ring_element_18(
     uint8_t *seed, libcrux_ml_dsa_polynomial_PolynomialRingElement_4b *result,
     size_t gamma1_exponent) {
-  switch ((uint8_t)gamma1_exponent) {
+  void *uu____0 = (void *)0U;
+  switch (gamma1_exponent) {
     case 17U: {
-      uint8_t out[576U] = {0U};
-      libcrux_ml_dsa_hash_functions_simd256_shake256_d9_1b(
-          Eurydice_array_to_slice((size_t)66U, seed, uint8_t), out);
-      libcrux_ml_dsa_encoding_gamma1_deserialize_21(
-          gamma1_exponent, Eurydice_array_to_slice((size_t)576U, out, uint8_t),
-          result);
       break;
     }
     case 19U: {
@@ -5142,7 +5151,7 @@ static KRML_MUSTINLINE void libcrux_ml_dsa_sample_sample_mask_ring_element_18(
       libcrux_ml_dsa_encoding_gamma1_deserialize_21(
           gamma1_exponent, Eurydice_array_to_slice((size_t)640U, out, uint8_t),
           result);
-      break;
+      return;
     }
     default: {
       KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__,
@@ -5150,6 +5159,12 @@ static KRML_MUSTINLINE void libcrux_ml_dsa_sample_sample_mask_ring_element_18(
       KRML_HOST_EXIT(255U);
     }
   }
+  uint8_t out[576U] = {0U};
+  libcrux_ml_dsa_hash_functions_simd256_shake256_d9_1b(
+      Eurydice_array_to_slice((size_t)66U, seed, uint8_t), out);
+  libcrux_ml_dsa_encoding_gamma1_deserialize_21(
+      gamma1_exponent, Eurydice_array_to_slice((size_t)576U, out, uint8_t),
+      result);
 }
 
 /**
@@ -5180,7 +5195,7 @@ static KRML_MUSTINLINE void libcrux_ml_dsa_sample_sample_mask_vector_f4(
       Eurydice_array_to_slice((size_t)64U, seed, uint8_t),
       (uint32_t)domain_separator[0U] + 3U, seed3);
   domain_separator[0U] = (uint32_t)domain_separator[0U] + 4U;
-  switch ((uint8_t)gamma1_exponent) {
+  switch (gamma1_exponent) {
     case 17U: {
       uint8_t out0[576U] = {0U};
       uint8_t out1[576U] = {0U};
