@@ -1,8 +1,10 @@
+use libcrux_ml_kem::mlkem768::MlKem768PublicKey;
+
 use super::{
     api::Error,
     ecdh::PublicKey,
     keys::{derive_session_key, AEADKey},
-    transcript::Transcript, // TransportMessage,
+    transcript::Transcript,
 };
 
 /// The length of a session ID in bytes.
@@ -21,16 +23,16 @@ pub struct SessionState<'keys> {
     pub(crate) nonce: u64,
     pub(crate) initiator_longterm_ecdh_pk: &'keys PublicKey,
     pub(crate) responder_longterm_ecdh_pk: &'keys PublicKey,
-    pub(crate) responder_pq_pk: Option<&'keys libcrux_ml_kem::mlkem768::MlKem768PublicKey>,
+    pub(crate) responder_pq_pk: Option<&'keys MlKem768PublicKey>,
     pub(crate) session_key: SessionKey, // This carries a key_id that can also serve as the session ID
 }
 
 impl<'keys> SessionState<'keys> {
-    pub(crate) fn new(
+    pub fn new(
         is_initiator: bool,
         responder_longterm_ecdh_pk: &'keys PublicKey,
         initiator_longterm_ecdh_pk: &'keys PublicKey,
-        responder_pq_pk: Option<&'keys libcrux_ml_kem::mlkem768::MlKem768PublicKey>,
+        responder_pq_pk: Option<&'keys MlKem768PublicKey>,
         k2: &AEADKey,
         tx2: &Transcript,
     ) -> Result<Self, Error> {

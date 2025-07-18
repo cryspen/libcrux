@@ -22,7 +22,7 @@ impl AsRef<[u8]> for SharedSecret {
     }
 }
 
-#[derive(Eq, Hash, PartialEq, Clone, TlsDeserializeBytes, TlsSerializeBytes, TlsSize)]
+#[derive(Eq, Debug, Hash, PartialEq, Clone, TlsDeserializeBytes, TlsSerializeBytes, TlsSize)]
 /// A wrapper around a KEM public key.
 pub struct PublicKey(Vec<u8>);
 
@@ -32,7 +32,7 @@ impl AsRef<[u8]> for PublicKey {
     }
 }
 
-#[derive(Clone)]
+// #[derive(Clone)]
 /// A wrapper around a KEM private key.
 pub struct PrivateKey(Vec<u8>);
 
@@ -70,7 +70,7 @@ impl PrivateKey {
     }
 }
 
-#[derive(Clone)]
+// #[derive(Clone)]
 pub struct KEMKeyPair {
     pub(crate) sk: PrivateKey,
     pub pk: PublicKey,

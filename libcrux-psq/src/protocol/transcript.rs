@@ -1,3 +1,4 @@
+use libcrux_ml_kem::mlkem768::{MlKem768Ciphertext, MlKem768PublicKey};
 use tls_codec::{SerializeBytes, TlsSerializeBytes, TlsSize};
 
 pub const TX0_DOMAIN_SEP: u8 = 0;
@@ -61,21 +62,20 @@ pub(crate) fn tx0(
 pub(crate) fn tx1(
     tx0: &Transcript,
     initiator_longterm_pk: &PublicKey,
-    responder_pq_pk: Option<&libcrux_ml_kem::mlkem768::MlKem768PublicKey>,
-    pq_encaps: Option<&libcrux_ml_kem::mlkem768::MlKem768Ciphertext>,
+    responder_pq_pk: Option<&MlKem768PublicKey>,
+    pq_encaps: Option<&MlKem768Ciphertext>,
 ) -> Transcript {
     #[derive(TlsSerializeBytes, TlsSize)]
     struct Transcript1Inputs<'a, 'b, 'c> {
         initiator_longterm_pk: &'a PublicKey,
-        responder_pq_pk: Option<&'b libcrux_ml_kem::mlkem768::MlKem768PublicKey>,
-        pq_encaps: Option<&'c libcrux_ml_kem::mlkem768::MlKem768Ciphertext>,
+        responder_pq_pk: Option<&'b MlKem768PublicKey>,
+        pq_encaps: Option<&'c MlKem768Ciphertext>,
     }
 
     Transcript::add_hash::<TX1_DOMAIN_SEP>(
         Some(tx0),
         &Transcript1Inputs {
             initiator_longterm_pk,
-
             pq_encaps,
             responder_pq_pk,
         },

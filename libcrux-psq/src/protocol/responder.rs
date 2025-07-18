@@ -1,4 +1,4 @@
-use std::collections::VecDeque;
+use std::{collections::VecDeque, mem::take};
 
 use libcrux_ml_kem::mlkem768::{decapsulate, MlKem768KeyPair};
 use rand::CryptoRng;
@@ -7,35 +7,40 @@ use tls_codec::{
     TlsSize,
 };
 
-use crate::protocol::api::{Error, HandshakeState};
-
-use super::api::{IntoTransport, TransportState};
-use super::ecdh::KEMKeyPair;
-use super::write_output;
 use super::{
-    ecdh::{PrivateKey, PublicKey},
+    api::{Error, HandshakeState, IntoTransport, TransportState},
+    ecdh::{KEMKeyPair, PrivateKey, PublicKey},
     initiator::{InitiatorInnerPayload, InitiatorOuterPayload},
     keys::{
         derive_k0, derive_k1, derive_k2_query_responder, derive_k2_registration_responder, AEADKey,
     },
     transcript::{tx1, tx2, Transcript},
-    Message,
+    write_output, Message,
 };
 
+#[derive(Debug)]
+pub(crate) struct RespondQueryState {
+    pub(crate) tx0: Transcript,
+    pub(crate) k0: AEADKey,
+    pub(crate) initiator_ephemeral_ecdh_pk: PublicKey,
+}
+
+#[derive(Debug)]
+pub(crate) struct RespondRegistrationState {
+    pub(crate) tx1: Transcript,
+    pub(crate) k1: AEADKey,
+    pub(crate) initiator_ephemeral_ecdh_pk: PublicKey,
+    pub(crate) initiator_longterm_ecdh_pk: PublicKey,
+}
+
+#[derive(Default, Debug)]
 pub(crate) enum ResponderState {
-    Initial {},
-    RespondQuery {
-        tx0: Transcript,
-        k0: AEADKey,
-        initiator_ephemeral_ecdh_pk: PublicKey,
-    },
-    RespondRegistration {
-        tx1: Transcript,
-        k1: AEADKey,
-        initiator_ephemeral_ecdh_pk: PublicKey,
-        initiator_longterm_ecdh_pk: PublicKey,
-    },
-    ToTransport {},
+    #[default]
+    InProgress, // A placeholder while computing the next state
+    Initial,
+    RespondQuery(Box<RespondQueryState>),
+    RespondRegistration(Box<RespondRegistrationState>),
+    ToTransport,
 }
 
 pub struct Responder<'a, T: CryptoRng> {
@@ -177,86 +182,99 @@ impl<'a, Rng: CryptoRng> Responder<'a, Rng> {
 
         Ok((inner_payload, tx1, k1))
     }
+
+    fn registration(
+        &mut self,
+        payload: &[u8],
+        out: &mut [u8],
+        responder_ephemeral_ecdh_sk: PrivateKey,
+        responder_ephemeral_ecdh_pk: PublicKey,
+        state: Box<RespondRegistrationState>,
+    ) -> Result<usize, Error> {
+        let (_tx2, k2) = self.derive_registration_key(
+            &state.tx1,
+            &state.k1,
+            &responder_ephemeral_ecdh_pk,
+            &responder_ephemeral_ecdh_sk,
+            &state.initiator_longterm_ecdh_pk,
+            &state.initiator_ephemeral_ecdh_pk,
+        )?;
+
+        let outer_payload = ResponderRegistrationPayload(TlsByteVecU32::new(payload.to_vec()));
+        let (ciphertext, tag) = k2.serialize_encrypt(&outer_payload, self.aad)?;
+
+        let out_msg = Message {
+            pk: responder_ephemeral_ecdh_pk,
+            ciphertext: TlsByteVecU32::new(ciphertext),
+            tag,
+            aad: TlsByteVecU32::new(self.aad.to_vec()),
+            pq_encapsulation: None,
+        };
+
+        let msg_out = out_msg.tls_serialize().map_err(Error::Serialize)?;
+        self.state = ResponderState::ToTransport;
+
+        Ok(write_output(&msg_out, out)?)
+    }
+
+    fn query(
+        &mut self,
+        payload: &[u8],
+        out: &mut [u8],
+        responder_ephemeral_ecdh_sk: PrivateKey,
+        responder_ephemeral_ecdh_pk: PublicKey,
+        state: Box<RespondQueryState>,
+    ) -> Result<usize, Error> {
+        let (_tx2, k2) = self.derive_query_key(
+            &state.tx0,
+            &state.k0,
+            &responder_ephemeral_ecdh_pk,
+            &responder_ephemeral_ecdh_sk,
+            &state.initiator_ephemeral_ecdh_pk,
+        )?;
+
+        let outer_payload = ResponderQueryPayload(TlsByteVecU32::new(payload.to_vec()));
+        let (ciphertext, tag) = k2.serialize_encrypt(&outer_payload, self.aad)?;
+
+        let out_msg = Message {
+            pk: responder_ephemeral_ecdh_pk,
+            ciphertext: TlsByteVecU32::new(ciphertext),
+            tag,
+            aad: TlsByteVecU32::new(self.aad.to_vec()),
+            pq_encapsulation: None,
+        };
+
+        let msg_out = out_msg.tls_serialize().map_err(Error::Serialize)?;
+        self.state = ResponderState::Initial;
+
+        Ok(write_output(&msg_out, out)?)
+    }
 }
 
 impl<'a, Rng: CryptoRng> HandshakeState for Responder<'a, Rng> {
     fn write_message(&mut self, payload: &[u8], out: &mut [u8]) -> Result<usize, Error> {
-        if !matches!(
-            self.state,
-            ResponderState::RespondQuery { .. } | ResponderState::RespondRegistration { .. }
-        ) {
-            return Ok(0);
-        }
-
-        let out_bytes_written;
+        let mut out_bytes_written = 0;
         let responder_ephemeral_ecdh_sk = PrivateKey::new(&mut self.rng);
         let responder_ephemeral_ecdh_pk = responder_ephemeral_ecdh_sk.to_public();
 
-        self.state = match &self.state {
-            ResponderState::RespondQuery {
-                tx0,
-                k0,
-                initiator_ephemeral_ecdh_pk,
-            } => {
-                let (_tx2, k2) = self.derive_query_key(
-                    tx0,
-                    k0,
-                    &responder_ephemeral_ecdh_pk,
-                    &responder_ephemeral_ecdh_sk,
-                    initiator_ephemeral_ecdh_pk,
-                )?;
-
-                let outer_payload = ResponderQueryPayload(TlsByteVecU32::new(payload.to_vec()));
-
-                let (ciphertext, tag) = k2.serialize_encrypt(&outer_payload, self.aad)?;
-
-                let out_msg = Message {
-                    pk: responder_ephemeral_ecdh_pk,
-                    ciphertext: TlsByteVecU32::new(ciphertext),
-                    tag,
-                    aad: TlsByteVecU32::new(self.aad.to_vec()),
-                    pq_encapsulation: None,
-                };
-
-                let msg_out = out_msg.tls_serialize().map_err(Error::Serialize)?;
-                out_bytes_written = write_output(&msg_out, out)?;
-                ResponderState::Initial {}
-            }
-
-            ResponderState::RespondRegistration {
-                tx1,
-                k1,
-                initiator_ephemeral_ecdh_pk,
-                initiator_longterm_ecdh_pk,
-            } => {
-                let (_tx2, k2) = self.derive_registration_key(
-                    tx1,
-                    k1,
-                    &responder_ephemeral_ecdh_pk,
-                    &responder_ephemeral_ecdh_sk,
-                    initiator_longterm_ecdh_pk,
-                    initiator_ephemeral_ecdh_pk,
-                )?;
-                let outer_payload =
-                    ResponderRegistrationPayload(TlsByteVecU32::new(payload.to_vec()));
-
-                let (ciphertext, tag) = k2.serialize_encrypt(&outer_payload, self.aad)?;
-
-                let out_msg = Message {
-                    pk: responder_ephemeral_ecdh_pk,
-                    ciphertext: TlsByteVecU32::new(ciphertext),
-                    tag,
-                    aad: TlsByteVecU32::new(self.aad.to_vec()),
-                    pq_encapsulation: None,
-                };
-
-                let msg_out = out_msg.tls_serialize().map_err(Error::Serialize)?;
-                out_bytes_written = write_output(&msg_out, out)?;
-                ResponderState::ToTransport {}
-            }
-            // We return early above, unless we're in state `RespondQuery` or `RespondRegistration`
-            _ => unreachable!(),
-        };
+        let state = take(&mut self.state);
+        if let ResponderState::RespondQuery(state) = state {
+            out_bytes_written = self.query(
+                payload,
+                out,
+                responder_ephemeral_ecdh_sk,
+                responder_ephemeral_ecdh_pk,
+                state,
+            )?;
+        } else if let ResponderState::RespondRegistration(state) = state {
+            out_bytes_written = self.registration(
+                payload,
+                out,
+                responder_ephemeral_ecdh_sk,
+                responder_ephemeral_ecdh_pk,
+                state,
+            )?;
+        }
 
         Ok(out_bytes_written)
     }
@@ -293,25 +311,32 @@ impl<'a, Rng: CryptoRng> HandshakeState for Responder<'a, Rng> {
         match initiator_outer_payload {
             InitiatorOuterPayload::Query(initiator_query_payload) => {
                 // We're ready to respond to the query message.
-                self.state = ResponderState::RespondQuery {
-                    tx0,
-                    k0,
-                    initiator_ephemeral_ecdh_pk: initiator_outer_message.pk,
-                };
+                self.state = ResponderState::RespondQuery(
+                    RespondQueryState {
+                        tx0,
+                        k0,
+                        initiator_ephemeral_ecdh_pk: initiator_outer_message.pk,
+                    }
+                    .into(),
+                );
                 let out_bytes_written = write_output(initiator_query_payload.as_slice(), out)?;
                 Ok((bytes_deserialized, out_bytes_written))
             }
+
             InitiatorOuterPayload::Registration(initiator_inner_message) => {
                 // Decrypt the inner message payload.
                 let (initiator_inner_payload, tx1, k1) =
                     self.decrypt_inner_message(&tx0, &k0, &initiator_inner_message)?;
                 // We're ready to respond to the registration message.
-                self.state = ResponderState::RespondRegistration {
-                    tx1,
-                    k1,
-                    initiator_ephemeral_ecdh_pk: initiator_outer_message.pk,
-                    initiator_longterm_ecdh_pk: initiator_inner_message.pk,
-                };
+                self.state = ResponderState::RespondRegistration(
+                    RespondRegistrationState {
+                        tx1,
+                        k1,
+                        initiator_ephemeral_ecdh_pk: initiator_outer_message.pk,
+                        initiator_longterm_ecdh_pk: initiator_inner_message.pk,
+                    }
+                    .into(),
+                );
                 let out_bytes_written = write_output(initiator_inner_payload.0.as_slice(), out)?;
                 Ok((bytes_deserialized, out_bytes_written))
             }

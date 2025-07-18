@@ -1,4 +1,5 @@
 use libcrux_chacha20poly1305::{decrypt_detached, encrypt_detached, KEY_LEN, NONCE_LEN};
+use libcrux_hkdf::Algorithm;
 use tls_codec::{DeserializeBytes, SerializeBytes, TlsSerializeBytes, TlsSize};
 
 use super::{
@@ -11,19 +12,30 @@ use super::{
 #[derive(Default, Clone, TlsSerializeBytes, TlsSize)]
 pub struct AEADKey([u8; KEY_LEN]);
 
+impl std::fmt::Debug for AEADKey {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_tuple("AEADKey").field(&"***").finish()
+    }
+}
+
+fn serialize_error(e: tls_codec::Error) -> Error {
+    Error::Serialize(e)
+}
+
 impl AEADKey {
     fn new(ikm: &impl SerializeBytes, info: &impl SerializeBytes) -> Result<AEADKey, Error> {
         let prk = libcrux_hkdf::extract(
-            libcrux_hkdf::Algorithm::Sha256,
+            Algorithm::Sha256,
             [],
-            ikm.tls_serialize().map_err(|e| Error::Serialize(e))?,
+            ikm.tls_serialize().map_err(serialize_error)?,
         )
         .map_err(|_| Error::CryptoError)?;
+
         Ok(AEADKey(
             libcrux_hkdf::expand(
-                libcrux_hkdf::Algorithm::Sha256,
+                Algorithm::Sha256,
                 prk,
-                info.tls_serialize().map_err(|e| Error::Serialize(e))?,
+                info.tls_serialize().map_err(serialize_error)?,
                 KEY_LEN,
             )
             .map_err(|_| Error::CryptoError)?
@@ -49,7 +61,7 @@ impl AEADKey {
             aad,
             &[0; NONCE_LEN],
         )
-        .map_err(|_| Error::CryptoError);
+        .map_err(|_| Error::CryptoError)?;
 
         Ok((ciphertext, tag))
     }
@@ -90,21 +102,18 @@ const SESSION_KEY_INFO: &[u8] = b"shared key id";
 // id_skCS = KDF(skCS, "shared key id")
 fn session_key_id(key: &AEADKey) -> Result<[u8; SESSION_ID_LENGTH], Error> {
     let prk = libcrux_hkdf::extract(
-        libcrux_hkdf::Algorithm::Sha256,
+        Algorithm::Sha256,
         [],
-        key.tls_serialize().map_err(|e| Error::Serialize(e))?,
+        key.tls_serialize().map_err(serialize_error)?,
     )
     .map_err(|_| Error::CryptoError)?;
 
-    Ok(libcrux_hkdf::expand(
-        libcrux_hkdf::Algorithm::Sha256,
-        prk,
-        SESSION_KEY_INFO,
-        SESSION_ID_LENGTH,
+    Ok(
+        libcrux_hkdf::expand(Algorithm::Sha256, prk, SESSION_KEY_INFO, SESSION_ID_LENGTH)
+            .map_err(|_| Error::CryptoError)?
+            .try_into()
+            .expect("HKDF expands to `SESSION_ID_LENGHT` bytes"),
     )
-    .map_err(|_| Error::CryptoError)?
-    .try_into()
-    .expect("HKDF expands to `SESSION_ID_LENGHT` bytes"))
 }
 
 // skCS = KDF(K2, "shared secret" | tx2)
@@ -115,10 +124,11 @@ pub(super) fn derive_session_key(k2: &AEADKey, tx2: &Transcript) -> Result<Sessi
         tx2: &'a Transcript,
     }
 
+    const SHARED_KEY_LABEL: &'static [u8] = b"shared key";
     let key = AEADKey::new(
         k2,
         &SessionKeyInfo {
-            domain_separator: b"shared key",
+            domain_separator: SHARED_KEY_LABEL,
             tx2,
         },
     )?;
