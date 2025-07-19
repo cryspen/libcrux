@@ -4,7 +4,7 @@
 use api::Error;
 use ecdh::PublicKey;
 use libcrux_ml_kem::mlkem768::MlKem768Ciphertext;
-use tls_codec::{TlsByteVecU32, TlsDeserializeBytes, TlsSerializeBytes, TlsSize};
+use tls_codec::{TlsDeserialize, TlsSerialize, TlsSize, VLByteSlice, VLBytes};
 
 pub mod ecdh;
 pub mod initiator;
@@ -15,13 +15,22 @@ mod transcript;
 
 pub mod api;
 
-#[derive(TlsSerializeBytes, TlsDeserializeBytes, TlsSize)]
+#[derive(TlsDeserialize, TlsSize)]
 pub struct Message {
     pk: PublicKey,
-    ciphertext: TlsByteVecU32, // XXX: SerializeBytes is not implemented for VLBytes
+    ciphertext: VLBytes,
     tag: [u8; 16],
-    aad: TlsByteVecU32, // XXX: SerializeBytes is not implemented for VLBytes
+    aad: VLBytes,
     pq_encapsulation: Option<MlKem768Ciphertext>,
+}
+
+#[derive(TlsSerialize, TlsSize)]
+pub struct MessageOut<'a> {
+    pk: &'a PublicKey,
+    ciphertext: VLByteSlice<'a>,
+    tag: &'a [u8; 16],
+    aad: VLByteSlice<'a>,
+    pq_encapsulation: Option<&'a MlKem768Ciphertext>,
 }
 
 pub(crate) fn write_output(payload: &[u8], out: &mut [u8]) -> Result<usize, Error> {

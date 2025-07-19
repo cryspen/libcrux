@@ -3,9 +3,11 @@ use std::mem::take;
 use libcrux_ml_kem::mlkem768::{self, MlKem768PublicKey};
 use rand::CryptoRng;
 use tls_codec::{
-    DeserializeBytes, SerializeBytes, TlsByteVecU32, TlsDeserializeBytes, TlsSerializeBytes,
-    TlsSize,
+    Deserialize as _, Serialize as _, Size, TlsByteVecU32, TlsDeserialize, TlsDeserializeBytes,
+    TlsSerialize, TlsSerializeBytes, TlsSize, VLByteSlice, VLBytes,
 };
+
+use crate::protocol::MessageOut;
 
 use super::{
     api::{Error, HandshakeState, IntoTransport, TransportState},
@@ -39,11 +41,11 @@ pub struct RegistrationInitiator<'a, T: CryptoRng> {
     state: RegistrationInitiatorState,
 }
 
-#[derive(TlsSerializeBytes, TlsDeserializeBytes, TlsSize)]
+#[derive(TlsSerialize, TlsSize)]
 #[repr(u8)]
-pub enum InitiatorOuterPayload {
-    Query(TlsByteVecU32), // XXX: SerializeBytes is not implemented for VLBytes
-    Registration(Message),
+pub enum InitiatorOuterPayloadOut<'a> {
+    Query(VLByteSlice<'a>),
+    Registration(MessageOut<'a>),
 }
 
 #[derive(TlsSerializeBytes, TlsDeserializeBytes, TlsSize)]
@@ -170,19 +172,18 @@ impl<'a, Rng: CryptoRng> RegistrationInitiator<'a, Rng> {
 
 impl<'a> HandshakeState for QueryInitiator<'a> {
     fn write_message(&mut self, payload: &[u8], out: &mut [u8]) -> Result<usize, Error> {
-        let outer_payload = InitiatorOuterPayload::Query(TlsByteVecU32::new(payload.to_vec()));
-        let (ciphertext, tag) = self.k0.serialize_encrypt(&outer_payload, self.outer_aad)?;
+        let outer_payload = InitiatorOuterPayloadOut::Query(VLByteSlice(payload));
+        let (ciphertext, tag) = self.k0.serialize_encrypt2(&outer_payload, self.outer_aad)?;
 
-        let msg = Message {
-            pk: self.initiator_ephemeral_ecdh_pk.clone(),
-            ciphertext: TlsByteVecU32::new(ciphertext),
-            tag,
-            aad: TlsByteVecU32::new(self.outer_aad.to_vec()),
+        let msg = MessageOut {
+            pk: &self.initiator_ephemeral_ecdh_pk,
+            ciphertext: VLByteSlice(&ciphertext),
+            tag: &tag,
+            aad: VLByteSlice(self.outer_aad),
             pq_encapsulation: None,
         };
 
-        let msg_buf = msg.tls_serialize().map_err(Error::Serialize)?;
-        write_output(&msg_buf, out)
+        msg.tls_serialize(out).map_err(Error::Serialize)
     }
 
     fn read_message(
@@ -190,14 +191,12 @@ impl<'a> HandshakeState for QueryInitiator<'a> {
         message_bytes: &[u8],
         out: &mut [u8],
     ) -> Result<(usize, usize), Error> {
-        let (msg, remainder) =
-            Message::tls_deserialize_bytes(message_bytes).map_err(Error::Deserialize)?;
-        let bytes_deserialized = message_bytes.len() - remainder.len();
+        let msg = Message::tls_deserialize(message_bytes).map_err(Error::Deserialize)?;
 
         let result = self.read_response(&msg)?;
         let out_bytes_written = write_output(result.0.as_slice(), out)?;
 
-        Ok((bytes_deserialized, out_bytes_written))
+        Ok((msg.tls_serialized_len(), out_bytes_written))
     }
 
     fn is_initiator(&self) -> bool {
@@ -243,26 +242,26 @@ impl<'a, Rng: CryptoRng> HandshakeState for RegistrationInitiator<'a, Rng> {
         let inner_payload = InitiatorInnerPayload(TlsByteVecU32::new(payload.to_vec()));
         let (inner_ciphertext, inner_tag) = k1.serialize_encrypt(&inner_payload, self.inner_aad)?;
 
-        let outer_payload = InitiatorOuterPayload::Registration(Message {
-            pk: self.initiator_longterm_ecdh_keys.pk.clone(),
-            ciphertext: TlsByteVecU32::new(inner_ciphertext),
-            tag: inner_tag,
-            aad: TlsByteVecU32::new(self.inner_aad.to_vec()),
-            pq_encapsulation,
+        let outer_payload = InitiatorOuterPayloadOut::Registration(MessageOut {
+            pk: &self.initiator_longterm_ecdh_keys.pk,
+            ciphertext: VLByteSlice(&inner_ciphertext),
+            tag: &inner_tag,
+            aad: VLByteSlice(self.inner_aad),
+            pq_encapsulation: pq_encapsulation.as_ref(),
         });
-        let (outer_ciphertext, outer_tag) =
-            state.k0.serialize_encrypt(&outer_payload, self.outer_aad)?;
+        let (outer_ciphertext, outer_tag) = state
+            .k0
+            .serialize_encrypt2(&outer_payload, self.outer_aad)?;
 
-        let msg = Message {
-            pk: state.initiator_ephemeral_ecdh_pk,
-            ciphertext: TlsByteVecU32::new(outer_ciphertext),
-            tag: outer_tag,
-            aad: TlsByteVecU32::new(self.outer_aad.to_vec()),
+        let msg = MessageOut {
+            pk: &state.initiator_ephemeral_ecdh_pk,
+            ciphertext: VLByteSlice(&outer_ciphertext),
+            tag: &outer_tag,
+            aad: VLByteSlice(self.outer_aad),
             pq_encapsulation: None,
         };
 
-        let msg_buf = msg.tls_serialize().map_err(Error::Serialize)?;
-        out_bytes_written = write_output(&msg_buf, out)?;
+        out_bytes_written = msg.tls_serialize(out).map_err(Error::Serialize)?;
 
         self.state = RegistrationInitiatorState::Waiting(
             WaitingState {
@@ -281,18 +280,14 @@ impl<'a, Rng: CryptoRng> HandshakeState for RegistrationInitiator<'a, Rng> {
         message_bytes: &[u8],
         out: &mut [u8],
     ) -> Result<(usize, usize), Error> {
-        let bytes_deserialized;
-        let out_bytes_written;
-
         let RegistrationInitiatorState::Waiting(state) = take(&mut self.state) else {
             // If we're not in the waiting state, we do nothing.
             return Ok((0, 0));
         };
 
         // Deserialize the message.
-        let (responder_msg, remainder) =
-            Message::tls_deserialize_bytes(message_bytes).map_err(Error::Deserialize)?;
-        bytes_deserialized = message_bytes.len() - remainder.len();
+        let responder_msg = Message::tls_deserialize(message_bytes).map_err(Error::Deserialize)?;
+        let bytes_deserialized = responder_msg.tls_serialized_len();
 
         // Derive K2
         let tx2 = tx2(&state.tx1, &responder_msg.pk);
@@ -311,7 +306,7 @@ impl<'a, Rng: CryptoRng> HandshakeState for RegistrationInitiator<'a, Rng> {
             responder_msg.aad.as_slice(),
         )?;
 
-        out_bytes_written = write_output(registration_response.0.as_slice(), out)?;
+        let out_bytes_written = write_output(registration_response.0.as_slice(), out)?;
 
         self.state = RegistrationInitiatorState::Done(DoneState { tx2, k2 }.into());
 

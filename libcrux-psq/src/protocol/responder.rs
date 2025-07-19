@@ -3,20 +3,29 @@ use std::{collections::VecDeque, mem::take};
 use libcrux_ml_kem::mlkem768::{decapsulate, MlKem768KeyPair};
 use rand::CryptoRng;
 use tls_codec::{
-    DeserializeBytes, SerializeBytes, TlsByteVecU32, TlsDeserializeBytes, TlsSerializeBytes,
-    TlsSize,
+    Deserialize as _, Serialize, Size, TlsByteVecU32, TlsDeserialize, TlsDeserializeBytes,
+    TlsSerializeBytes, TlsSize, VLByteSlice, VLBytes,
 };
+
+use crate::protocol::MessageOut;
 
 use super::{
     api::{Error, HandshakeState, IntoTransport, TransportState},
     ecdh::{KEMKeyPair, PrivateKey, PublicKey},
-    initiator::{InitiatorInnerPayload, InitiatorOuterPayload},
+    initiator::InitiatorInnerPayload,
     keys::{
         derive_k0, derive_k1, derive_k2_query_responder, derive_k2_registration_responder, AEADKey,
     },
     transcript::{tx1, tx2, Transcript},
     write_output, Message,
 };
+
+#[derive(TlsDeserialize, TlsSize)]
+#[repr(u8)]
+pub enum InitiatorOuterPayload {
+    Query(VLBytes),
+    Registration(Message),
+}
 
 #[derive(Debug)]
 pub(crate) struct RespondQueryState {
@@ -134,7 +143,7 @@ impl<'a, Rng: CryptoRng> Responder<'a, Rng> {
             true,
         )?;
 
-        let initiator_payload: InitiatorOuterPayload = k0.decrypt_deserialize(
+        let initiator_payload: InitiatorOuterPayload = k0.decrypt_deserialize2(
             initiator_outer_message.ciphertext.as_slice(),
             &initiator_outer_message.tag,
             initiator_outer_message.aad.as_slice(),
@@ -203,18 +212,18 @@ impl<'a, Rng: CryptoRng> Responder<'a, Rng> {
         let outer_payload = ResponderRegistrationPayload(TlsByteVecU32::new(payload.to_vec()));
         let (ciphertext, tag) = k2.serialize_encrypt(&outer_payload, self.aad)?;
 
-        let out_msg = Message {
-            pk: responder_ephemeral_ecdh_pk,
-            ciphertext: TlsByteVecU32::new(ciphertext),
-            tag,
-            aad: TlsByteVecU32::new(self.aad.to_vec()),
+        let out_msg = MessageOut {
+            pk: &responder_ephemeral_ecdh_pk,
+            ciphertext: VLByteSlice(&ciphertext),
+            tag: &tag,
+            aad: VLByteSlice(self.aad),
             pq_encapsulation: None,
         };
 
-        let msg_out = out_msg.tls_serialize().map_err(Error::Serialize)?;
+        let out_len = out_msg.tls_serialize(out).map_err(Error::Serialize)?;
         self.state = ResponderState::ToTransport;
 
-        Ok(write_output(&msg_out, out)?)
+        Ok(out_len)
     }
 
     fn query(
@@ -236,18 +245,18 @@ impl<'a, Rng: CryptoRng> Responder<'a, Rng> {
         let outer_payload = ResponderQueryPayload(TlsByteVecU32::new(payload.to_vec()));
         let (ciphertext, tag) = k2.serialize_encrypt(&outer_payload, self.aad)?;
 
-        let out_msg = Message {
-            pk: responder_ephemeral_ecdh_pk,
-            ciphertext: TlsByteVecU32::new(ciphertext),
-            tag,
-            aad: TlsByteVecU32::new(self.aad.to_vec()),
+        let out_msg = MessageOut {
+            pk: &responder_ephemeral_ecdh_pk,
+            ciphertext: VLByteSlice(&ciphertext),
+            tag: &tag,
+            aad: VLByteSlice(self.aad),
             pq_encapsulation: None,
         };
 
-        let msg_out = out_msg.tls_serialize().map_err(Error::Serialize)?;
+        out_msg.tls_serialize(out).map_err(Error::Serialize)?;
         self.state = ResponderState::Initial;
 
-        Ok(write_output(&msg_out, out)?)
+        Ok(out_msg.tls_serialized_len())
     }
 }
 
@@ -289,9 +298,9 @@ impl<'a, Rng: CryptoRng> HandshakeState for Responder<'a, Rng> {
         }
 
         // Deserialize the outer message.
-        let (initiator_outer_message, remainder) =
-            Message::tls_deserialize_bytes(message_bytes).map_err(Error::Deserialize)?;
-        let bytes_deserialized = message_bytes.len() - remainder.len();
+        let initiator_outer_message =
+            Message::tls_deserialize(message_bytes).map_err(Error::Deserialize)?;
+        let bytes_deserialized = initiator_outer_message.tls_serialized_len();
 
         // Check that the ephemeral key was not in the most recent keys.
         if self.recent_keys.contains(&initiator_outer_message.pk) {

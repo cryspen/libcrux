@@ -1,5 +1,5 @@
 use libcrux_ml_kem::mlkem768::{MlKem768Ciphertext, MlKem768PublicKey};
-use tls_codec::{SerializeBytes, TlsSerializeBytes, TlsSize};
+use tls_codec::{Serialize, SerializeBytes, TlsSerialize, TlsSerializeBytes, TlsSize};
 
 pub const TX0_DOMAIN_SEP: u8 = 0;
 pub const TX1_DOMAIN_SEP: u8 = 1;
@@ -13,18 +13,18 @@ use libcrux_sha2::{Digest, SHA256_LENGTH};
 pub struct Transcript([u8; SHA256_LENGTH]);
 
 impl Transcript {
-    fn new(initial_input: &impl SerializeBytes) -> Self {
+    fn new(initial_input: &impl Serialize) -> Self {
         Self::add_hash::<TX0_DOMAIN_SEP>(None, initial_input)
     }
 
     fn add_hash<const DOMAIN_SEPARATOR: u8>(
         old_transcript: Option<&Transcript>,
-        input: &impl SerializeBytes,
+        input: &impl Serialize,
     ) -> Transcript {
         let mut hasher = libcrux_sha2::Sha256::new();
         hasher.update(&[DOMAIN_SEPARATOR]);
         hasher.update(old_transcript.tls_serialize().unwrap().as_slice());
-        hasher.update(input.tls_serialize().unwrap().as_slice());
+        hasher.update(input.tls_serialize_detached().unwrap().as_slice());
 
         let mut digest = [0u8; 32];
         hasher.finish(&mut digest);
@@ -44,7 +44,7 @@ pub(crate) fn tx0(
     responder_pk: &PublicKey,
     initiator_pk: &PublicKey,
 ) -> Transcript {
-    #[derive(TlsSerializeBytes, TlsSize)]
+    #[derive(TlsSerialize, TlsSize)]
     struct Transcript0Inputs<'a, 'b, 'c> {
         context: &'a [u8],
         responder_pk: &'b PublicKey,
@@ -65,7 +65,7 @@ pub(crate) fn tx1(
     responder_pq_pk: Option<&MlKem768PublicKey>,
     pq_encaps: Option<&MlKem768Ciphertext>,
 ) -> Transcript {
-    #[derive(TlsSerializeBytes, TlsSize)]
+    #[derive(TlsSerialize, TlsSize)]
     struct Transcript1Inputs<'a, 'b, 'c> {
         initiator_longterm_pk: &'a PublicKey,
         responder_pq_pk: Option<&'b MlKem768PublicKey>,

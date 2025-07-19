@@ -1,6 +1,6 @@
 use libcrux_chacha20poly1305::{decrypt_detached, encrypt_detached, KEY_LEN, NONCE_LEN};
 use libcrux_hkdf::Algorithm;
-use tls_codec::{DeserializeBytes, SerializeBytes, TlsSerializeBytes, TlsSize};
+use tls_codec::{Deserialize, DeserializeBytes, Serialize, SerializeBytes, TlsSerializeBytes, TlsSize};
 
 use super::{
     api::Error,
@@ -66,6 +66,29 @@ impl AEADKey {
         Ok((ciphertext, tag))
     }
 
+    pub(crate) fn serialize_encrypt2<T: Serialize>(
+        &self,
+        payload: &T,
+        aad: &[u8],
+    ) -> Result<(Vec<u8>, [u8; 16]), crate::protocol::api::Error> {
+        let serialization_buffer = payload.tls_serialize_detached().map_err(Error::Serialize)?;
+        let mut ciphertext = vec![0u8; serialization_buffer.len()];
+        let mut tag = [0u8; 16];
+
+        // XXX: We could do better if we'd have an inplace API here.
+        let _ = encrypt_detached(
+            self.as_ref(),
+            &serialization_buffer,
+            &mut ciphertext,
+            &mut tag,
+            aad,
+            &[0; NONCE_LEN],
+        )
+        .map_err(|_| Error::CryptoError)?;
+
+        Ok((ciphertext, tag))
+    }
+
     pub(crate) fn decrypt_deserialize<T: DeserializeBytes>(
         &self,
         ciphertext: &[u8],
@@ -84,6 +107,26 @@ impl AEADKey {
         .map_err(|_| Error::CryptoError)?;
 
         T::tls_deserialize_exact_bytes(&payload_serialized_buf).map_err(Error::Deserialize)
+    }
+
+    pub(crate) fn decrypt_deserialize2<T: Deserialize>(
+        &self,
+        ciphertext: &[u8],
+        tag: &[u8; 16],
+        aad: &[u8],
+    ) -> Result<T, crate::protocol::api::Error> {
+        let mut payload_serialized_buf = vec![0u8; ciphertext.len()];
+        let _ = decrypt_detached(
+            self.as_ref(),
+            &mut payload_serialized_buf,
+            ciphertext,
+            tag,
+            aad,
+            &[0; NONCE_LEN],
+        )
+        .map_err(|_| Error::CryptoError)?;
+
+        T::tls_deserialize_exact(&payload_serialized_buf).map_err(Error::Deserialize)
     }
 }
 impl AsRef<[u8; KEY_LEN]> for AEADKey {
