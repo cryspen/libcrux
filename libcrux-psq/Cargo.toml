@@ -55,3 +55,7 @@ test-utils = []
 name = "psq"
 harness = false
 required-features = ["classic-mceliece", "test-utils"]
+
+[[bench]]
+name = "psq_v2"
+harness = false

@@ -28,7 +28,7 @@ pub struct Message {
 pub struct MessageOut<'a> {
     pk: &'a PublicKey,
     ciphertext: VLByteSlice<'a>,
-    tag: &'a [u8; 16],
+    tag: [u8; 16], // XXX: implement Serialize for &[T; N]
     aad: VLByteSlice<'a>,
     pq_encapsulation: Option<&'a MlKem768Ciphertext>,
 }

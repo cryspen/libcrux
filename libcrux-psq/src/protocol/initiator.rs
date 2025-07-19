@@ -1,10 +1,10 @@
-use std::mem::take;
+use std::{io::Cursor, mem::take};
 
 use libcrux_ml_kem::mlkem768::{self, MlKem768PublicKey};
 use rand::CryptoRng;
 use tls_codec::{
-    Deserialize as _, Serialize as _, Size, TlsByteVecU32, TlsDeserialize, TlsDeserializeBytes,
-    TlsSerialize, TlsSerializeBytes, TlsSize, VLByteSlice, VLBytes,
+    Deserialize as _, Serialize as _, Size, TlsByteVecU32, TlsDeserializeBytes, TlsSerialize,
+    TlsSerializeBytes, TlsSize, VLByteSlice,
 };
 
 use crate::protocol::MessageOut;
@@ -31,13 +31,13 @@ pub struct QueryInitiator<'a> {
     outer_aad: &'a [u8],
 }
 
-pub struct RegistrationInitiator<'a, T: CryptoRng> {
+pub struct RegistrationInitiator<'a, Rng: CryptoRng> {
     responder_longterm_ecdh_pk: &'a PublicKey,
     responder_longterm_pq_pk: Option<&'a MlKem768PublicKey>,
     initiator_longterm_ecdh_keys: &'a KEMKeyPair,
     inner_aad: &'a [u8],
     outer_aad: &'a [u8],
-    rng: &'a mut T,
+    rng: Rng,
     state: RegistrationInitiatorState,
 }
 
@@ -84,9 +84,9 @@ impl<'a> QueryInitiator<'a> {
         responder_longterm_ecdh_pk: &'a PublicKey,
         ctx: &[u8],
         outer_aad: &'a [u8],
-        rng: &mut impl CryptoRng,
+        mut rng: impl CryptoRng,
     ) -> Result<Self, Error> {
-        let initiator_ephemeral_ecdh_sk = PrivateKey::new(rng);
+        let initiator_ephemeral_ecdh_sk = PrivateKey::new(&mut rng);
         let initiator_ephemeral_ecdh_pk = initiator_ephemeral_ecdh_sk.to_public();
 
         let (tx0, k0) = derive_k0(
@@ -135,9 +135,9 @@ impl<'a, Rng: CryptoRng> RegistrationInitiator<'a, Rng> {
         ctx: &[u8],
         inner_aad: &'a [u8],
         outer_aad: &'a [u8],
-        rng: &'a mut Rng,
+        mut rng: Rng,
     ) -> Result<Self, Error> {
-        let initiator_ephemeral_ecdh_sk = PrivateKey::new(rng);
+        let initiator_ephemeral_ecdh_sk = PrivateKey::new(&mut rng);
         let initiator_ephemeral_ecdh_pk = initiator_ephemeral_ecdh_sk.to_public();
 
         let (tx0, k0) = derive_k0(
@@ -178,12 +178,13 @@ impl<'a> HandshakeState for QueryInitiator<'a> {
         let msg = MessageOut {
             pk: &self.initiator_ephemeral_ecdh_pk,
             ciphertext: VLByteSlice(&ciphertext),
-            tag: &tag,
+            tag,
             aad: VLByteSlice(self.outer_aad),
             pq_encapsulation: None,
         };
 
-        msg.tls_serialize(out).map_err(Error::Serialize)
+        msg.tls_serialize(&mut &mut out[..])
+            .map_err(Error::Serialize)
     }
 
     fn read_message(
@@ -191,7 +192,8 @@ impl<'a> HandshakeState for QueryInitiator<'a> {
         message_bytes: &[u8],
         out: &mut [u8],
     ) -> Result<(usize, usize), Error> {
-        let msg = Message::tls_deserialize(message_bytes).map_err(Error::Deserialize)?;
+        let msg = Message::tls_deserialize(&mut Cursor::new(&message_bytes[..]))
+            .map_err(Error::Deserialize)?;
 
         let result = self.read_response(&msg)?;
         let out_bytes_written = write_output(result.0.as_slice(), out)?;
@@ -215,7 +217,7 @@ impl<'a, Rng: CryptoRng> HandshakeState for RegistrationInitiator<'a, Rng> {
 
         let pq_encaps_pair = self
             .responder_longterm_pq_pk
-            .map(|pk| mlkem768::rand::encapsulate(pk, self.rng));
+            .map(|pk| mlkem768::rand::encapsulate(pk, &mut self.rng));
 
         let (pq_encapsulation, pq_shared_secret) =
             if let Some((pq_encaps, pq_shared_secret)) = pq_encaps_pair {
@@ -245,7 +247,7 @@ impl<'a, Rng: CryptoRng> HandshakeState for RegistrationInitiator<'a, Rng> {
         let outer_payload = InitiatorOuterPayloadOut::Registration(MessageOut {
             pk: &self.initiator_longterm_ecdh_keys.pk,
             ciphertext: VLByteSlice(&inner_ciphertext),
-            tag: &inner_tag,
+            tag: inner_tag,
             aad: VLByteSlice(self.inner_aad),
             pq_encapsulation: pq_encapsulation.as_ref(),
         });
@@ -256,12 +258,14 @@ impl<'a, Rng: CryptoRng> HandshakeState for RegistrationInitiator<'a, Rng> {
         let msg = MessageOut {
             pk: &state.initiator_ephemeral_ecdh_pk,
             ciphertext: VLByteSlice(&outer_ciphertext),
-            tag: &outer_tag,
+            tag: outer_tag,
             aad: VLByteSlice(self.outer_aad),
             pq_encapsulation: None,
         };
 
-        out_bytes_written = msg.tls_serialize(out).map_err(Error::Serialize)?;
+        out_bytes_written = msg
+            .tls_serialize(&mut &mut out[..])
+            .map_err(Error::Serialize)?;
 
         self.state = RegistrationInitiatorState::Waiting(
             WaitingState {
@@ -286,7 +290,8 @@ impl<'a, Rng: CryptoRng> HandshakeState for RegistrationInitiator<'a, Rng> {
         };
 
         // Deserialize the message.
-        let responder_msg = Message::tls_deserialize(message_bytes).map_err(Error::Deserialize)?;
+        let responder_msg = Message::tls_deserialize(&mut Cursor::new(&message_bytes))
+            .map_err(Error::Deserialize)?;
         let bytes_deserialized = responder_msg.tls_serialized_len();
 
         // Derive K2

@@ -145,5 +145,5 @@ unexpected_cfgs = { level = "warn", check-cfg = [
     'cfg(aes_ni)',
 ] }
 
-[patch.crates-io]
-tls_codec = { version = "*", path = "/Users/franziskus/repos/rc-formats/tls_codec" }
+# [patch.crates-io]
+# tls_codec = { version = "*", path = "/Users/franziskus/repos/rc-formats/tls_codec" }

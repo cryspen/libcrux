@@ -41,7 +41,7 @@ pub trait HandshakeState {
 }
 
 pub struct Builder<'a, Rng: CryptoRng> {
-    rng: &'a mut Rng,
+    rng: Rng,
     context: &'a [u8],
     inner_aad: &'a [u8],
     outer_aad: &'a [u8],
@@ -54,7 +54,7 @@ pub struct Builder<'a, Rng: CryptoRng> {
 
 impl<'a, Rng: CryptoRng> Builder<'a, Rng> {
     /// Create a new builder.
-    pub fn new(rng: &'a mut Rng) -> Self {
+    pub fn new(rng: Rng) -> Self {
         Self {
             rng,
             context: &[],
@@ -167,17 +167,13 @@ impl<'a, Rng: CryptoRng> Builder<'a, Rng> {
             return Err(Error::BuilderState);
         };
 
-        let Some(longterm_pq_keys) = self.longterm_pq_keys else {
-            return Err(Error::BuilderState);
-        };
-
         let Some(recent_keys_len_bound) = self.recent_keys_len_bound else {
             return Err(Error::BuilderState);
         };
 
         Ok(Responder::new(
             longterm_ecdh_keys,
-            longterm_pq_keys,
+            self.longterm_pq_keys,
             self.context,
             self.outer_aad,
             recent_keys_len_bound,

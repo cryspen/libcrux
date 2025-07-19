@@ -1,4 +1,4 @@
-use std::{collections::VecDeque, mem::take};
+use std::{collections::VecDeque, io::Cursor, mem::take};
 
 use libcrux_ml_kem::mlkem768::{decapsulate, MlKem768KeyPair};
 use rand::CryptoRng;
@@ -52,15 +52,15 @@ pub(crate) enum ResponderState {
     ToTransport,
 }
 
-pub struct Responder<'a, T: CryptoRng> {
+pub struct Responder<'a, Rng: CryptoRng> {
     pub(crate) state: ResponderState,
     recent_keys: VecDeque<PublicKey>,
     recent_keys_len_bound: usize,
     longterm_ecdh_keys: &'a KEMKeyPair,
-    longterm_pq_keys: &'a MlKem768KeyPair,
+    longterm_pq_keys: Option<&'a MlKem768KeyPair>,
     context: &'a [u8],
     aad: &'a [u8],
-    rng: &'a mut T,
+    rng: Rng,
 }
 
 #[derive(TlsSerializeBytes, TlsDeserializeBytes, TlsSize, Default)]
@@ -72,11 +72,11 @@ pub struct ResponderRegistrationPayload(pub TlsByteVecU32);
 impl<'a, Rng: CryptoRng> Responder<'a, Rng> {
     pub fn new(
         longterm_ecdh_keys: &'a KEMKeyPair,
-        longterm_pq_keys: &'a MlKem768KeyPair,
+        longterm_pq_keys: Option<&'a MlKem768KeyPair>,
         context: &'a [u8],
         aad: &'a [u8],
         recent_keys_len_bound: usize,
-        rng: &'a mut Rng,
+        rng: Rng,
     ) -> Self {
         Self {
             state: ResponderState::Initial {},
@@ -161,12 +161,10 @@ impl<'a, Rng: CryptoRng> Responder<'a, Rng> {
         let pq_shared_secret = initiator_inner_message
             .pq_encapsulation
             .as_ref()
-            .map(|enc| decapsulate(self.longterm_pq_keys.private_key(), enc));
+            .zip(self.longterm_pq_keys)
+            .map(|(enc, longterm_pq_keys)| decapsulate(longterm_pq_keys.private_key(), enc));
 
-        let responder_pq_pk_opt = initiator_inner_message
-            .pq_encapsulation
-            .as_ref()
-            .map(|_| self.longterm_pq_keys.public_key());
+        let responder_pq_pk_opt = self.longterm_pq_keys.map(|keys| keys.public_key());
 
         let tx1 = tx1(
             tx0,
@@ -215,12 +213,14 @@ impl<'a, Rng: CryptoRng> Responder<'a, Rng> {
         let out_msg = MessageOut {
             pk: &responder_ephemeral_ecdh_pk,
             ciphertext: VLByteSlice(&ciphertext),
-            tag: &tag,
+            tag,
             aad: VLByteSlice(self.aad),
             pq_encapsulation: None,
         };
 
-        let out_len = out_msg.tls_serialize(out).map_err(Error::Serialize)?;
+        let out_len = out_msg
+            .tls_serialize(&mut &mut out[..])
+            .map_err(Error::Serialize)?;
         self.state = ResponderState::ToTransport;
 
         Ok(out_len)
@@ -248,12 +248,14 @@ impl<'a, Rng: CryptoRng> Responder<'a, Rng> {
         let out_msg = MessageOut {
             pk: &responder_ephemeral_ecdh_pk,
             ciphertext: VLByteSlice(&ciphertext),
-            tag: &tag,
+            tag,
             aad: VLByteSlice(self.aad),
             pq_encapsulation: None,
         };
 
-        out_msg.tls_serialize(out).map_err(Error::Serialize)?;
+        out_msg
+            .tls_serialize(&mut &mut out[..])
+            .map_err(Error::Serialize)?;
         self.state = ResponderState::Initial;
 
         Ok(out_msg.tls_serialized_len())
@@ -298,8 +300,8 @@ impl<'a, Rng: CryptoRng> HandshakeState for Responder<'a, Rng> {
         }
 
         // Deserialize the outer message.
-        let initiator_outer_message =
-            Message::tls_deserialize(message_bytes).map_err(Error::Deserialize)?;
+        let initiator_outer_message = Message::tls_deserialize(&mut Cursor::new(&message_bytes))
+            .map_err(Error::Deserialize)?;
         let bytes_deserialized = initiator_outer_message.tls_serialized_len();
 
         // Check that the ephemeral key was not in the most recent keys.
