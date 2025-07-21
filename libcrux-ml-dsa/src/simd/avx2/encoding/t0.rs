@@ -55,7 +55,7 @@ pub(crate) fn serialize_aux(simd_unit: Vec256) -> Vec128 {
 }
 
 #[inline(always)]
-#[hax_lib::fstar::options(r#"--ifuel 0 --z3rlimit 140 --split_queries always"#)]
+#[hax_lib::fstar::options(r#"--ifuel 0 --z3rlimit 340 --split_queries always"#)]
 #[hax_lib::requires(fstar!(r#"forall i. let x = (v $POW_2_BITS_IN_LOWER_PART_OF_T_MINUS_ONE - v (to_i32x8 $simd_unit i)) in x >= 0 && x < pow2 13"#))]
 #[hax_lib::ensures(|_result| fstar!(r#"
       Seq.length ${out}_future == 13
