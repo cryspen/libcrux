@@ -93,6 +93,43 @@ impl From<super::arrayref::DecryptError> for DecryptError {
     }
 }
 
+impl core::fmt::Display for EncryptError {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        let text = match self {
+            EncryptError::WrongCiphertextLength => "ciphertext buffer has wrong length",
+            EncryptError::PlaintextTooLong => {
+                "plaintext is too long for algorithm or implementation"
+            }
+            EncryptError::AadTooLong => "aad is too long for algorithm or implementation",
+            EncryptError::Unknown => "an unknown error occurred",
+            EncryptError::WrongKeyLength => "key has wrong length",
+            EncryptError::WrongTagLength => "tag has wrong length",
+            EncryptError::WrongNonceLength => "nonce has wrong length",
+        };
+
+        f.write_str(text)
+    }
+}
+
+impl core::fmt::Display for DecryptError {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        let text = match self {
+            DecryptError::InvalidTag => "invalid authentication tag",
+            DecryptError::WrongPlaintextLength => "plaintext buffer has wrong length",
+            DecryptError::PlaintextTooLong => {
+                "plaintext is too long for algorithm or implementation"
+            }
+            DecryptError::AadTooLong => "aad is too long for algorithm or implementation",
+            DecryptError::Unknown => "an unknown error occurred",
+            DecryptError::WrongKeyLength => "key has wrong length",
+            DecryptError::WrongTagLength => "tag has wrong length",
+            DecryptError::WrongNonceLength => "nonce has wrong length",
+        };
+
+        f.write_str(text)
+    }
+}
+
 #[cfg(feature = "error_in_core")]
 /// Here we implement the Error trait. This has only been added to core relatively recently, so we
 /// are hiding that behind a feature.
