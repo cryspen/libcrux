@@ -75,3 +75,21 @@ fn shaclone() {
     assert_eq!(digest, digest_2);
     assert_eq!(digest, libcrux_sha2::sha512(b"test 512more 512").unwrap());
 }
+
+#[test]
+fn sha256_to_owned_api() {
+    let payload = b"libcrux sha2 256 tests";
+    // Test to_owned incremental API
+    let mut hasher = libcrux_sha2::Sha256Hasher::default();
+    hasher.update(payload).unwrap();
+    let d = hasher.finish_to_owned();
+
+    let expected = "8683520e19e5b33db33c8fb90918c0c96fcdfd9a17c695ce0f0ea2eaa0c95956";
+    assert_eq!(hex::encode(d), expected);
+
+    // Test to_owned oneshot API
+    let d = libcrux_sha2::Sha256Hasher::hash_to_owned(payload).unwrap();
+
+    let expected = "8683520e19e5b33db33c8fb90918c0c96fcdfd9a17c695ce0f0ea2eaa0c95956";
+    assert_eq!(hex::encode(d), expected);
+}
