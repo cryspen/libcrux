@@ -1,6 +1,7 @@
 //! This module contains the trait and related errors for an Authenticated
 //! Encryption with Associated Data (AEAD) scheme that takes array references
-//! as arguments and returns outputs as arrays or vectors.
+//! as arguments and returns outputs as arrays or vectors. Secret values use
+//! the types from [libcrux-secrets](libcrux-secrets).
 
 use libcrux_secrets::{declassify_mut_slice, Classify, DeclassifyRef, U8};
 
