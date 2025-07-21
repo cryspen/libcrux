@@ -90,12 +90,6 @@ pub(crate) mod hax_utils;
 // This is being tracked in https://github.com/hacspec/hacspec-v2/issues/27
 pub(crate) mod constants;
 
-#[cfg(any(
-    all(feature = "alloc", feature = "incremental"),
-    all(feature = "alloc", feature = "codec")
-))]
-extern crate alloc;
-
 /// Helpers for verification and extraction
 mod helper;
 

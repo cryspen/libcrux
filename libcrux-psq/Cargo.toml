@@ -20,7 +20,7 @@ libcrux-kem = { version = "=0.0.3", path = "../libcrux-kem" }
 libcrux-chacha20poly1305 = { version = "0.0.3", path = "../chacha20poly1305" }
 libcrux-hkdf = { version = "=0.0.3", path = "../libcrux-hkdf" }
 libcrux-hmac = { version = "=0.0.3", path = "../libcrux-hmac" }
-libcrux-sha2 = { version = "=0.0.3", path = "../sha2" } 
+libcrux-sha2 = { version = "=0.0.3", path = "../sha2" }
 classic-mceliece-rust = { version = "3.1.0", features = [
     "mceliece460896f",
     "zeroize",
@@ -28,7 +28,10 @@ classic-mceliece-rust = { version = "3.1.0", features = [
 rand = { version = "0.9" }
 rand_old = { version = "0.8", package = "rand", optional = true }
 libcrux-ecdh = { version = "0.0.3", path = "../libcrux-ecdh" }
-libcrux-ml-kem = { version = "0.0.3", path = "../libcrux-ml-kem", features = ["codec"] }  
+libcrux-ml-kem = { version = "0.0.3", path = "../libcrux-ml-kem", features = [
+    "codec",
+    "rand",
+] }
 libcrux-ed25519 = { version = "0.0.3", path = "../ed25519", features = [
     "rand",
 ] }
@@ -52,3 +55,7 @@ test-utils = []
 name = "psq"
 harness = false
 required-features = ["classic-mceliece", "test-utils"]
+
+[[bench]]
+name = "psq_v2"
+harness = false

@@ -1,8 +1,5 @@
-use libcrux_psq::protocol::{
-    api::HandshakeState,
-    ecdh::{KEMKeyPair, PrivateKey},
-    *,
-};
+use libcrux_ml_kem::mlkem768;
+use libcrux_psq::protocol::{api::HandshakeState, ecdh::KEMKeyPair, *};
 use rand::RngCore;
 
 #[test]
@@ -21,11 +18,10 @@ fn query() {
 
     let mut pq_randomness = [0u8; libcrux_ml_kem::KEY_GENERATION_SEED_SIZE];
     rng.fill_bytes(&mut pq_randomness);
-    let responder_pq_keys = libcrux_ml_kem::mlkem768::generate_key_pair(pq_randomness);
+    let responder_pq_keys = mlkem768::generate_key_pair(pq_randomness);
 
     // Setup initiator
-    let mut initiator_rng = rand::rng();
-    let mut initiator = api::Builder::new(&mut initiator_rng)
+    let mut initiator = api::Builder::new(rand::rng())
         .outer_aad(aad_initiator)
         .context(ctx)
         .peer_longterm_ecdh_pk(&responder_ecdh_keys.pk)
@@ -33,13 +29,12 @@ fn query() {
         .unwrap();
 
     // Setup responder
-    let mut responder_rng = rand::rng();
-    let mut responder = api::Builder::new(&mut responder_rng)
+    let mut responder = api::Builder::new(rand::rng())
         .context(ctx)
         .outer_aad(aad_responder)
         .longterm_ecdh_keys(&responder_ecdh_keys)
         .longterm_pq_keys(&responder_pq_keys)
-        .bound_recent_keys_by(30)
+        .recent_keys_upper_bound(30)
         .build_responder()
         .unwrap();
 
@@ -94,41 +89,35 @@ fn registration(pq: bool) {
     let mut payload_buf_initiator = vec![0u8; 4096];
 
     // External setup
-    let mut pq_randomness = [0u8; libcrux_ml_kem::KEY_GENERATION_SEED_SIZE];
-    rng.fill_bytes(&mut pq_randomness);
-    let responder_pq_keys = libcrux_ml_kem::mlkem768::generate_key_pair(pq_randomness);
+    let responder_pq_keys = mlkem768::rand::generate_key_pair(&mut rng);
 
     let responder_ecdh_keys = KEMKeyPair::new(&mut rng);
     let initiator_ecdh_keys = KEMKeyPair::new(&mut rng);
 
     // Setup initiator
-    let mut initiator_rng = rand::rng();
-    let initiator = api::Builder::new(&mut initiator_rng)
+    let mut initiator = api::Builder::new(rand::rng())
         .outer_aad(aad_initiator_outer)
         .inner_aad(aad_initiator_inner)
         .context(ctx)
         .longterm_ecdh_keys(&initiator_ecdh_keys)
         .peer_longterm_ecdh_pk(&responder_ecdh_keys.pk);
 
-    let mut initiator = if pq {
-        initiator
-            .peer_longterm_pq_pk(responder_pq_keys.public_key())
-            .build_registration_initiator()
-            .unwrap()
-    } else {
-        initiator.build_registration_initiator().unwrap()
-    };
+    if pq {
+        initiator = initiator.peer_longterm_pq_pk(responder_pq_keys.public_key());
+    }
+
+    let mut initiator = initiator.build_registration_initiator().unwrap();
 
     // Setup responder
-    let mut responder_rng = rand::rng();
-    let mut responder = api::Builder::new(&mut responder_rng)
+    let mut builder = api::Builder::new(rand::rng())
         .context(ctx)
         .outer_aad(aad_responder)
         .longterm_ecdh_keys(&responder_ecdh_keys)
-        .longterm_pq_keys(&responder_pq_keys)
-        .bound_recent_keys_by(30)
-        .build_responder()
-        .unwrap();
+        .recent_keys_upper_bound(30);
+    if pq {
+        builder = builder.longterm_pq_keys(&responder_pq_keys);
+    }
+    let mut responder = builder.build_responder().unwrap();
 
     // Send first message
     let registration_payload_initiator = b"Registration_init";

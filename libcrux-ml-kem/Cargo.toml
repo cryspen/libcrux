@@ -33,7 +33,9 @@ libcrux-intrinsics = { version = "0.0.3", path = "../libcrux-intrinsics" }
 libcrux-secrets = { version = "0.0.3", path = "../secrets" }
 libcrux-traits = { version = "0.0.3", path = "../traits" }
 hax-lib.workspace = true
-tls_codec = { version = "0.4.2", features = ["derive"], default-features = false, optional = true}
+tls_codec = { version = "0.4.2", features = [
+    "derive",
+], default-features = false, optional = true }
 
 [features]
 # By default all variants and std are enabled.
