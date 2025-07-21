@@ -46,40 +46,38 @@ impl Algorithm {
 /// Will panic if `payload` is longer than `u32::MAX` to ensure that hacl-rs can
 /// process it.
 #[inline(always)]
-pub fn sha224(payload: &[u8]) -> [u8; SHA224_LENGTH] {
+pub fn sha224(payload: &[u8]) -> Result<[u8; SHA224_LENGTH], HashError> {
     let mut digest = [0u8; SHA224_LENGTH];
-    Sha224::hash(&mut digest, payload);
-    digest
+    Sha224::hash(&mut digest, payload).map(|_| digest)
 }
 
 /// SHA2 256
 /// Will panic if `payload` is longer than `u32::MAX` to ensure that hacl-rs can
 /// process it.
 #[inline(always)]
-pub fn sha256(payload: &[u8]) -> [u8; SHA256_LENGTH] {
+pub fn sha256(payload: &[u8]) -> Result<[u8; SHA256_LENGTH], HashError> {
     let mut digest = [0u8; SHA256_LENGTH];
-    Sha256::hash(&mut digest, payload);
-    digest
+    Sha256::hash(&mut digest, payload).map(|_| digest)
 }
 
 /// SHA2 384
 /// Will panic if `payload` is longer than `u32::MAX` to ensure that hacl-rs can
 /// process it.
 #[inline(always)]
-pub fn sha384(payload: &[u8]) -> [u8; SHA384_LENGTH] {
+pub fn sha384(payload: &[u8]) -> Result<[u8; SHA384_LENGTH], HashError> {
     let mut digest = [0u8; SHA384_LENGTH];
-    Sha384::hash(&mut digest, payload);
-    digest
+    Sha384::hash(&mut digest, payload).map(|_| digest)
 }
+
+pub use libcrux_traits::digest::arrayref::HashError;
 
 /// SHA2 512
 /// Will panic if `payload` is longer than `u32::MAX` to ensure that hacl-rs can
 /// process it.
 #[inline(always)]
-pub fn sha512(payload: &[u8]) -> [u8; SHA512_LENGTH] {
+pub fn sha512(payload: &[u8]) -> Result<[u8; SHA512_LENGTH], HashError> {
     let mut digest = [0u8; SHA512_LENGTH];
-    Sha512::hash(&mut digest, payload);
-    digest
+    Sha512::hash(&mut digest, payload).map(|_| digest)
 }
 
 // Streaming API - This is the recommended one.
@@ -110,22 +108,29 @@ macro_rules! impl_hash {
         impl libcrux_traits::digest::arrayref::Digest<$digest_size> for $name {
             type IncrementalState = $state_name;
             /// Return the digest for the given input byte slice, in immediate mode.
-            /// Will panic if `payload` is longer than `u32::MAX` to ensure that hacl-rs can
+            /// Will return an error if `payload` is longer than `u32::MAX` to ensure that hacl-rs can
             /// process it.
             #[inline(always)]
-            fn hash(digest: &mut [u8; $digest_size], payload: &[u8]) {
+            fn hash(digest: &mut [u8; $digest_size], payload: &[u8]) -> Result<(), libcrux_traits::digest::arrayref::HashError> {
                 debug_assert!(digest.len() == $digest_size);
-                let payload_len = payload.len().try_into().unwrap();
-                $hash(digest, payload, payload_len)
+                let payload_len: u32 = payload.len().try_into()
+                    .map_err(|_| libcrux_traits::digest::arrayref::HashError::PayloadTooLong)?;
+
+                $hash(digest, payload, payload_len);
+
+                Ok(())
             }
 
             /// Add the `payload` to the digest.
             /// Will panic if `payload` is longer than `u32::MAX` to ensure that hacl-rs can
             /// process it.
             #[inline(always)]
-            fn update(state: &mut Self::IncrementalState, payload: &[u8]) {
-                let payload_len = payload.len().try_into().unwrap();
+            fn update(state: &mut Self::IncrementalState, payload: &[u8])
+            -> Result<(), libcrux_traits::digest::arrayref::UpdateError> {
+                let payload_len: u32 = payload.len().try_into()
+                    .map_err(|_| libcrux_traits::digest::arrayref::UpdateError::PayloadTooLong)?;
                 $update(state.0.as_mut(), payload, payload_len);
+                Ok(())
             }
 
             /// Get the digest.

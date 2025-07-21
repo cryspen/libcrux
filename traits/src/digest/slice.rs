@@ -1,11 +1,12 @@
+use super::arrayref;
+
 pub trait Digest {
     type IncrementalState: Default;
 
     /// Oneshot API
     fn hash(digest: &mut [u8], payload: &[u8]) -> Result<(), HashError>;
 
-    // TODO: don't panic?
-    fn update(state: &mut Self::IncrementalState, payload: &[u8]);
+    fn update(state: &mut Self::IncrementalState, payload: &[u8]) -> Result<(), UpdateError>;
 
     fn finish(state: &mut Self::IncrementalState, digest: &mut [u8]) -> Result<(), FinishError>;
 
@@ -18,6 +19,28 @@ pub enum FinishError {
 
 pub enum HashError {
     IncorrectDigestLength,
+    PayloadTooLong,
+}
+
+#[derive(Debug)]
+pub enum UpdateError {
+    PayloadTooLong,
+}
+
+impl From<arrayref::HashError> for HashError {
+    fn from(e: arrayref::HashError) -> Self {
+        match e {
+            arrayref::HashError::PayloadTooLong => Self::PayloadTooLong,
+        }
+    }
+}
+
+impl From<arrayref::UpdateError> for UpdateError {
+    fn from(e: arrayref::UpdateError) -> Self {
+        match e {
+            arrayref::UpdateError::PayloadTooLong => Self::PayloadTooLong,
+        }
+    }
 }
 
 #[macro_export]
@@ -33,11 +56,15 @@ macro_rules! impl_digest_trait {
                 let digest: &mut [u8; $len] = digest
                     .try_into()
                     .map_err(|_| $crate::digest::slice::HashError::IncorrectDigestLength)?;
-                <Self as $crate::digest::arrayref::Digest<$len>>::hash(digest, payload);
-                Ok(())
+                <Self as $crate::digest::arrayref::Digest<$len>>::hash(digest, payload)
+                    .map_err($crate::digest::slice::HashError::from)
             }
-            fn update(state: &mut Self::IncrementalState, payload: &[u8]) {
-                <Self as $crate::digest::arrayref::Digest<$len>>::update(state, payload);
+            fn update(
+                state: &mut Self::IncrementalState,
+                payload: &[u8],
+            ) -> Result<(), $crate::digest::slice::UpdateError> {
+                <Self as $crate::digest::arrayref::Digest<$len>>::update(state, payload)
+                    .map_err($crate::digest::slice::UpdateError::from)
             }
 
             fn finish(
