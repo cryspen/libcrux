@@ -12,7 +12,7 @@ use std::array::TryFromSliceError;
 pub enum Error {
     /// An error during serialization.
     Serialization,
-    /// The Initator message was stale
+    /// The Initiator message was stale
     TimestampElapsed,
     /// An invalid public key was provided
     InvalidPublicKey,
