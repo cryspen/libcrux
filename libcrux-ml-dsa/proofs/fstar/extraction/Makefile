@@ -6,6 +6,11 @@ VERIFIED_MODULES = \
 	Libcrux_ml_dsa.Simd.Portable.Arithmetic.fst \
 	Libcrux_ml_dsa.Simd.Portable.Ntt.fst \
 	Libcrux_ml_dsa.Simd.Portable.Invntt.fst \
+	Libcrux_ml_dsa.Simd.Portable.Encoding.Error.fst \
+	Libcrux_ml_dsa.Simd.Portable.Encoding.Commitment.fst \
+	Libcrux_ml_dsa.Simd.Portable.Encoding.Gamma1.fst \
+	Libcrux_ml_dsa.Simd.Portable.Encoding.T0.fst \
+	Libcrux_ml_dsa.Simd.Portable.Encoding.T1.fst \
 	Libcrux_ml_dsa.Simd.Avx2.Vector_type.fst \
 	Libcrux_ml_dsa.Simd.Avx2.Arithmetic.fst \
 	Libcrux_ml_dsa.Simd.Avx2.Ntt.fst \

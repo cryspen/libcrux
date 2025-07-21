@@ -757,7 +757,7 @@ val i32_to_bv_cast_lemma (a: u8) (i: _{v i < 32})
   : Lemma (i32_to_bv (cast a) i == (if v i >= 8 then Core_models.Abstractions.Bit.Bit_Zero else u8_to_bv a i))
   [SMTPat (i32_to_bv (cast a) i)]
 
-#push-options "--z3rlimit 40"
+#push-options "--z3rlimit 80"
 val i32_to_bv_pow2_min_one_lemma (n: nat {n > 1 /\ n < 31}) (i:u64{v i < 32}):
   Lemma (  i32_to_bv ((mk_i32 1 <<! mk_i32 n <: i32) -! mk_i32 1) i
         == Core_models.Abstractions.Bit.(if v i < n then Bit_One else Bit_Zero))
@@ -765,9 +765,7 @@ val i32_to_bv_pow2_min_one_lemma (n: nat {n > 1 /\ n < 31}) (i:u64{v i < 32}):
 let i32_to_bv_pow2_min_one_lemma_fa (n: nat {n > 1 /\ n < 31}):
   Lemma (forall (i:u64{v i < 32}). i32_to_bv ((mk_i32 1 <<! mk_i32 n <: i32) -! mk_i32 1) i
         == Core_models.Abstractions.Bit.(if v i < n then Bit_One else Bit_Zero))
-  = introduce forall i. forall (i:u64{v i < 32}). i32_to_bv ((mk_i32 1 <<! mk_i32 n <: i32) -! mk_i32 1) i
-        == Core_models.Abstractions.Bit.(if v i < n then Bit_One else Bit_Zero)
-    with i32_to_bv_pow2_min_one_lemma n i
+  = ()
 #pop-options
 
 val i32_bit_zero_lemma_to_lt_pow2_n_weak (n: nat) vec
@@ -778,17 +776,18 @@ val i32_bit_zero_lemma_to_positive vec
   : Lemma (requires forall i. v i % 32 == 31 ==> vec.(i) == Core_models.Abstractions.Bit.Bit_Zero)
           (ensures forall i. v (to_i32x8 vec i) >= 0)
 
+#push-options "--z3rlimit 80"
 let rewrite_eq_sub_mod (#t: inttype {signed t}) (a b c: int_t t)
   : Lemma (requires v a > minint t /\ a == b `sub_mod_opaque` c)
           (ensures  neg a `add_mod_opaque` b == c)
           = reveal_opaque_arithmetic_ops #t
+#pop-options
 
 val to_i32x8_eq_to_bv_eq (a b: bv256)
   : Lemma (requires forall i. to_i32x8 a i == to_i32x8 b i)
           (ensures a == b)
 
-let lemma_from_i32x8_def_pt f: Lemma (forall i. to_i32x8 (from_i32x8 (FStar.FunctionalExtensionality.on (n:u64{v n < 8}) f)) i == f i)
-  = admit ()
+val lemma_from_i32x8_def_pt (f: (i:u64{v i < 8}) -> i32): Lemma (forall i. to_i32x8 (from_i32x8 (FStar.FunctionalExtensionality.on (i:u64{v i < 8}) f)) i == f i)
 
 let mk_i32x8 (f: (i:u64{v i < 8}) -> i32): r: bv256 {forall i. to_i32x8 r i == f i}
  = lemma_from_i32x8_def_pt f;
