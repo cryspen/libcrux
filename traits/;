@@ -20,4 +20,12 @@ impl<const N: usize, D: arrayref::Digest<N>> Hasher<N, D> {
     pub fn finish(&mut self, digest: &mut [u8; N]) {
         D::finish(&mut self.state, digest)
     }
+    /// detached hash
+    pub fn hash_detached(payload: &[u8]) -> Result<[u8; N], arrayref::HashError> {
+        <D as owned::Digest<N>>::hash(payload)
+    }
+    /// detached finish
+    pub fn finish_detached(&mut self) -> [u8; N] {
+        <D as owned::Digest<N>>::finish(&mut self.state)
+    }
 }
