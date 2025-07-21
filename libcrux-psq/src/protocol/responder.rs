@@ -9,7 +9,7 @@ use tls_codec::{
 use crate::protocol::MessageOut;
 
 use super::{
-    api::{Error, HandshakeState, IntoTransport, TransportState},
+    api::{Error, IntoTransport, Protocol, ToTransportState, Transport},
     ecdh::{KEMKeyPair, PrivateKey, PublicKey},
     initiator::InitiatorInnerPayload,
     keys::{
@@ -48,7 +48,7 @@ pub(crate) enum ResponderState {
     Initial,
     RespondQuery(Box<RespondQueryState>),
     RespondRegistration(Box<RespondRegistrationState>),
-    ToTransport,
+    ToTransport(Box<ToTransportState>),
 }
 
 pub struct Responder<'a, Rng: CryptoRng> {
@@ -140,7 +140,7 @@ impl<'a, Rng: CryptoRng> Responder<'a, Rng> {
         &self,
         initiator_outer_message: &Message,
     ) -> Result<(InitiatorOuterPayload, Transcript, AEADKey), Error> {
-        let (tx0, k0) = derive_k0(
+        let (tx0, mut k0) = derive_k0(
             &initiator_outer_message.pk,
             &self.longterm_ecdh_keys.pk,
             &self.longterm_ecdh_keys.sk,
@@ -178,7 +178,7 @@ impl<'a, Rng: CryptoRng> Responder<'a, Rng> {
             initiator_inner_message.pq_encapsulation.as_ref(),
         )?;
 
-        let k1 = derive_k1(
+        let mut k1 = derive_k1(
             k0,
             &self.longterm_ecdh_keys.sk,
             &initiator_inner_message.pk,
@@ -203,7 +203,7 @@ impl<'a, Rng: CryptoRng> Responder<'a, Rng> {
         responder_ephemeral_ecdh_pk: PublicKey,
         state: Box<RespondRegistrationState>,
     ) -> Result<usize, Error> {
-        let (_tx2, k2) = self.derive_registration_key(
+        let (tx2, mut k2) = self.derive_registration_key(
             &state.tx1,
             &state.k1,
             &responder_ephemeral_ecdh_pk,
@@ -226,7 +226,7 @@ impl<'a, Rng: CryptoRng> Responder<'a, Rng> {
         let out_len = out_msg
             .tls_serialize(&mut &mut out[..])
             .map_err(Error::Serialize)?;
-        self.state = ResponderState::ToTransport;
+        self.state = ResponderState::ToTransport(ToTransportState { tx2, k2 }.into());
 
         Ok(out_len)
     }
@@ -239,7 +239,7 @@ impl<'a, Rng: CryptoRng> Responder<'a, Rng> {
         responder_ephemeral_ecdh_pk: PublicKey,
         state: Box<RespondQueryState>,
     ) -> Result<usize, Error> {
-        let (_tx2, k2) = self.derive_query_key(
+        let (_tx2, mut k2) = self.derive_query_key(
             &state.tx0,
             &state.k0,
             &responder_ephemeral_ecdh_pk,
@@ -267,7 +267,7 @@ impl<'a, Rng: CryptoRng> Responder<'a, Rng> {
     }
 }
 
-impl<'a, Rng: CryptoRng> HandshakeState for Responder<'a, Rng> {
+impl<'a, Rng: CryptoRng> Protocol for Responder<'a, Rng> {
     fn write_message(&mut self, payload: &[u8], out: &mut [u8]) -> Result<usize, Error> {
         let mut out_bytes_written = 0;
         let responder_ephemeral_ecdh_sk = PrivateKey::new(&mut self.rng);
@@ -358,18 +358,18 @@ impl<'a, Rng: CryptoRng> HandshakeState for Responder<'a, Rng> {
             }
         }
     }
-
-    fn is_initiator(&self) -> bool {
-        false
-    }
 }
 
 impl<'a, Rng: CryptoRng> IntoTransport for Responder<'a, Rng> {
-    fn into_transport_mode(self) -> TransportState {
-        todo!()
+    fn into_transport_mode(mut self) -> Result<Transport, Error> {
+        let ResponderState::ToTransport(state) = take(&mut self.state) else {
+            return Err(Error::ResponderState);
+        };
+
+        Transport::new(state.tx2, state.k2)
     }
 
     fn is_handshake_finished(&self) -> bool {
-        todo!()
+        matches!(self.state, ResponderState::ToTransport { .. })
     }
 }

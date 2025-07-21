@@ -1,5 +1,9 @@
 use libcrux_ml_kem::mlkem768;
-use libcrux_psq::protocol::{api::HandshakeState, ecdh::KEMKeyPair, *};
+use libcrux_psq::protocol::{
+    api::{IntoTransport, Protocol},
+    ecdh::KEMKeyPair,
+    *,
+};
 use rand::RngCore;
 
 #[test]
@@ -156,6 +160,41 @@ fn registration(pq: bool) {
         &payload_buf_initiator[0..len_i_payload],
         registration_payload_responder
     );
+
+    // Ready for transport mode
+    assert!(initiator.is_handshake_finished());
+    assert!(responder.is_handshake_finished());
+
+    let mut i_transport = initiator.into_transport_mode().unwrap();
+    let mut r_transport = responder.into_transport_mode().unwrap();
+
+    let app_data_i = b"Derived session hey".as_slice();
+    let app_data_r = b"Derived session ho".as_slice();
+
+    let len_i = i_transport
+        .write_message(app_data_i, &mut msg_channel)
+        .unwrap();
+
+    let (len_r_deserialized, len_r_payload) = r_transport
+        .read_message(&msg_channel, &mut payload_buf_responder)
+        .unwrap();
+
+    // We read the same amount of data.
+    assert_eq!(len_r_deserialized, len_i);
+    assert_eq!(len_r_payload, app_data_i.len());
+    assert_eq!(&payload_buf_responder[0..len_r_payload], app_data_i);
+
+    let len_r = r_transport
+        .write_message(app_data_r, &mut msg_channel)
+        .unwrap();
+
+    let (len_i_deserialized, len_i_payload) = i_transport
+        .read_message(&msg_channel, &mut payload_buf_initiator)
+        .unwrap();
+
+    assert_eq!(len_r, len_i_deserialized);
+    assert_eq!(app_data_r.len(), len_i_payload);
+    assert_eq!(&payload_buf_initiator[0..len_i_payload], app_data_r);
 }
 
 #[test]

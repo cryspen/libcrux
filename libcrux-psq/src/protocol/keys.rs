@@ -10,7 +10,7 @@ use super::{
 };
 
 #[derive(Default, Clone, TlsSerializeBytes, TlsSize)]
-pub struct AEADKey([u8; KEY_LEN]);
+pub struct AEADKey([u8; KEY_LEN], #[tls_codec(skip)] [u8; NONCE_LEN]);
 
 impl std::fmt::Debug for AEADKey {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -40,50 +40,72 @@ impl AEADKey {
             )
             .map_err(|_| Error::CryptoError)?
             .try_into()
-            .map_err(|_| Error::CryptoError)?, // We don't expect this to fail, unless HDKF gave us the wrong output length
+            .map_err(|_| Error::CryptoError)?, // We don't expect this to fail, unless HDKF gave us the wrong output length,
+            [0u8; NONCE_LEN],
         ))
     }
 
+    fn increment_nonce(&mut self) {
+        let mut buf = [0u8; 16];
+        buf[16 - NONCE_LEN..].copy_from_slice(self.1.as_slice());
+        let mut nonce = u128::from_be_bytes(buf);
+        nonce += 1;
+        let buf = nonce.to_be_bytes();
+        self.1.copy_from_slice(&buf[16 - NONCE_LEN..]);
+    }
+
+    pub(crate) fn encrypt(
+        &mut self,
+        payload: &[u8],
+        aad: &[u8],
+        ciphertext: &mut [u8],
+    ) -> Result<[u8; 16], crate::protocol::api::Error> {
+        let mut tag = [0u8; 16];
+
+        // XXX: We could do better if we'd have an inplace API here.
+        let _ = encrypt_detached(&self.0, payload, ciphertext, &mut tag, aad, &self.1)
+            .map_err(|_| Error::CryptoError)?;
+
+        self.increment_nonce();
+
+        Ok(tag)
+    }
+
     pub(crate) fn serialize_encrypt<T: Serialize>(
-        &self,
+        &mut self,
         payload: &T,
         aad: &[u8],
     ) -> Result<(Vec<u8>, [u8; 16]), crate::protocol::api::Error> {
         let serialization_buffer = payload.tls_serialize_detached().map_err(Error::Serialize)?;
 
         let mut ciphertext = vec![0u8; serialization_buffer.len()];
-        let mut tag = [0u8; 16];
-
-        // XXX: We could do better if we'd have an inplace API here.
-        let _ = encrypt_detached(
-            self.as_ref(),
-            &serialization_buffer,
-            &mut ciphertext,
-            &mut tag,
-            aad,
-            &[0; NONCE_LEN],
-        )
-        .map_err(|_| Error::CryptoError)?;
+        let tag = self.encrypt(&serialization_buffer, aad, &mut ciphertext)?;
 
         Ok((ciphertext, tag))
     }
 
+    pub(crate) fn decrypt(
+        &mut self,
+        ciphertext: &[u8],
+        tag: &[u8; 16],
+        aad: &[u8],
+    ) -> Result<Vec<u8>, Error> {
+        let mut plaintext = vec![0u8; ciphertext.len()];
+        let _ = decrypt_detached(&self.0, &mut plaintext, ciphertext, tag, aad, &self.1)
+            .map_err(|_| Error::CryptoError)?;
+
+        self.increment_nonce();
+
+        Ok(plaintext)
+    }
+
     pub(crate) fn decrypt_deserialize<T: Deserialize>(
-        &self,
+        &mut self,
         ciphertext: &[u8],
         tag: &[u8; 16],
         aad: &[u8],
     ) -> Result<T, crate::protocol::api::Error> {
-        let mut payload_serialized_buf = vec![0u8; ciphertext.len()];
-        let _ = decrypt_detached(
-            self.as_ref(),
-            &mut payload_serialized_buf,
-            ciphertext,
-            tag,
-            aad,
-            &[0; NONCE_LEN],
-        )
-        .map_err(|_| Error::CryptoError)?;
+        let payload_serialized_buf = self.decrypt(ciphertext, tag, aad)?;
 
         T::tls_deserialize_exact(&payload_serialized_buf).map_err(Error::Deserialize)
     }

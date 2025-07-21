@@ -1,11 +1,21 @@
+use std::io::Cursor;
+
 use rand::CryptoRng;
 
 use libcrux_ml_kem::mlkem768::{MlKem768KeyPair, MlKem768PublicKey};
+use tls_codec::{
+    Deserialize, Serialize, Size, TlsDeserialize, TlsSerialize, TlsSize, VLByteSlice, VLBytes,
+};
+
+use crate::protocol::write_output;
 
 use super::{
     ecdh::{KEMKeyPair, PublicKey},
     initiator::{QueryInitiator, RegistrationInitiator},
+    keys::{derive_session_key, AEADKey},
     responder::Responder,
+    session::{SessionKey, SESSION_ID_LENGTH},
+    transcript::Transcript,
 };
 
 #[derive(Debug)]
@@ -14,21 +24,86 @@ pub enum Error {
     Serialize(tls_codec::Error),
     Deserialize(tls_codec::Error),
     CryptoError,
+    InitiatorState,
     ResponderState,
+    TransportState,
     OutputBufferShort,
     OtherError,
 }
 
-pub struct TransportState;
+#[derive(Debug)]
+pub(crate) struct ToTransportState {
+    pub(crate) tx2: Transcript,
+    pub(crate) k2: AEADKey,
+}
+
+pub struct Transport {
+    session_key: SessionKey,
+}
+impl Transport {
+    pub(crate) fn new(tx2: Transcript, k2: AEADKey) -> Result<Self, Error> {
+        Ok(Self {
+            session_key: derive_session_key(&k2, &tx2)?,
+        })
+    }
+
+    pub fn id(&self) -> &[u8; SESSION_ID_LENGTH] {
+        &self.session_key.identifier
+    }
+}
+
+#[derive(TlsSerialize, TlsSize)]
+struct TransportMessageOut<'a> {
+    ciphertext: VLByteSlice<'a>,
+    tag: [u8; 16],
+}
+
+#[derive(TlsDeserialize, TlsSize)]
+struct TransportMessage {
+    ciphertext: VLBytes,
+    tag: [u8; 16],
+}
+
+impl Protocol for Transport {
+    fn write_message(&mut self, payload: &[u8], out: &mut [u8]) -> Result<usize, Error> {
+        let mut ciphertext = vec![0u8; payload.len()];
+        let tag = self
+            .session_key
+            .key
+            .encrypt(payload, &[], &mut ciphertext)?;
+        let message = TransportMessageOut {
+            ciphertext: VLByteSlice(ciphertext.as_ref()),
+            tag,
+        };
+
+        message
+            .tls_serialize(&mut &mut out[..])
+            .map_err(|e| Error::Serialize(e))
+    }
+
+    fn read_message(&mut self, message: &[u8], out: &mut [u8]) -> Result<(usize, usize), Error> {
+        let message = TransportMessage::tls_deserialize(&mut Cursor::new(message))
+            .map_err(|e| Error::Deserialize(e))?;
+
+        let bytes_deserialized = message.tls_serialized_len();
+
+        let payload =
+            self.session_key
+                .key
+                .decrypt(message.ciphertext.as_slice(), &message.tag, &[])?;
+
+        let out_bytes_written = write_output(&payload, out)?;
+
+        Ok((bytes_deserialized, out_bytes_written))
+    }
+}
 
 pub trait IntoTransport {
-    fn into_transport_mode(self) -> TransportState;
+    fn into_transport_mode(self) -> Result<Transport, Error>;
     fn is_handshake_finished(&self) -> bool;
 }
 
-pub trait HandshakeState {
-    fn is_initiator(&self) -> bool;
-
+pub trait Protocol {
     /// Write a handshake message to `out` to drive the handshake forward.
     ///
     /// The message may include a `payload`. Returns the number of

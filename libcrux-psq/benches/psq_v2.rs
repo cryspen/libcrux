@@ -2,7 +2,7 @@ use criterion::{criterion_group, criterion_main, BatchSize, Criterion};
 
 use libcrux_ml_kem::mlkem768::{self, MlKem768KeyPair};
 use libcrux_psq::protocol::{
-    api::{Builder, HandshakeState as _},
+    api::{Builder, Protocol},
     ecdh::KEMKeyPair,
     initiator::QueryInitiator,
     responder::Responder,

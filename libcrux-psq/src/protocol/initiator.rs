@@ -9,14 +9,12 @@ use tls_codec::{
 use crate::protocol::MessageOut;
 
 use super::{
-    api::{Error, HandshakeState, IntoTransport, TransportState},
-    ecdh::KEMKeyPair,
-    ecdh::{PrivateKey, PublicKey},
+    api::{Error, IntoTransport, Protocol, Transport},
+    ecdh::{KEMKeyPair, PrivateKey, PublicKey},
     keys::{
         derive_k0, derive_k1, derive_k2_query_initiator, derive_k2_registration_initiator, AEADKey,
     },
-    responder::ResponderQueryPayload,
-    responder::ResponderRegistrationPayload,
+    responder::{ResponderQueryPayload, ResponderRegistrationPayload},
     transcript::{tx1, tx2, Transcript},
     write_output, Message,
 };
@@ -108,7 +106,7 @@ impl<'a> QueryInitiator<'a> {
     fn read_response(&self, responder_msg: &Message) -> Result<ResponderQueryPayload, Error> {
         let tx2 = tx2(&self.tx0, &responder_msg.pk)?;
 
-        let k2 = derive_k2_query_initiator(
+        let mut k2 = derive_k2_query_initiator(
             &self.k0,
             &responder_msg.pk,
             &self.initiator_ephemeral_keys.sk,
@@ -166,7 +164,7 @@ impl<'a, Rng: CryptoRng> RegistrationInitiator<'a, Rng> {
     }
 }
 
-impl<'a> HandshakeState for QueryInitiator<'a> {
+impl<'a> Protocol for QueryInitiator<'a> {
     fn write_message(&mut self, payload: &[u8], out: &mut [u8]) -> Result<usize, Error> {
         let outer_payload = InitiatorOuterPayloadOut::Query(VLByteSlice(payload));
         let (ciphertext, tag) = self.k0.serialize_encrypt(&outer_payload, self.outer_aad)?;
@@ -196,17 +194,13 @@ impl<'a> HandshakeState for QueryInitiator<'a> {
 
         Ok((msg.tls_serialized_len(), out_bytes_written))
     }
-
-    fn is_initiator(&self) -> bool {
-        true
-    }
 }
 
-impl<'a, Rng: CryptoRng> HandshakeState for RegistrationInitiator<'a, Rng> {
+impl<'a, Rng: CryptoRng> Protocol for RegistrationInitiator<'a, Rng> {
     fn write_message(&mut self, payload: &[u8], out: &mut [u8]) -> Result<usize, Error> {
         let out_bytes_written;
 
-        let RegistrationInitiatorState::Initial(state) = take(&mut self.state) else {
+        let RegistrationInitiatorState::Initial(mut state) = take(&mut self.state) else {
             // If we're not in the initial state, we write nothing
             return Ok(0);
         };
@@ -229,7 +223,7 @@ impl<'a, Rng: CryptoRng> HandshakeState for RegistrationInitiator<'a, Rng> {
             pq_encapsulation.as_ref(),
         )?;
 
-        let k1 = derive_k1(
+        let mut k1 = derive_k1(
             &state.k0,
             &self.initiator_longterm_ecdh_keys.sk,
             self.responder_longterm_ecdh_pk,
@@ -291,7 +285,7 @@ impl<'a, Rng: CryptoRng> HandshakeState for RegistrationInitiator<'a, Rng> {
 
         // Derive K2
         let tx2 = tx2(&state.tx1, &responder_msg.pk)?;
-        let k2 = derive_k2_registration_initiator(
+        let mut k2 = derive_k2_registration_initiator(
             &state.k1,
             &tx2,
             &self.initiator_longterm_ecdh_keys.sk,
@@ -312,18 +306,18 @@ impl<'a, Rng: CryptoRng> HandshakeState for RegistrationInitiator<'a, Rng> {
 
         Ok((bytes_deserialized, out_bytes_written))
     }
-
-    fn is_initiator(&self) -> bool {
-        true
-    }
 }
 
 impl<'a, Rng: CryptoRng> IntoTransport for RegistrationInitiator<'a, Rng> {
-    fn into_transport_mode(self) -> TransportState {
-        todo!()
+    fn into_transport_mode(mut self) -> Result<Transport, Error> {
+        let RegistrationInitiatorState::ToTransport(state) = take(&mut self.state) else {
+            return Err(Error::InitiatorState);
+        };
+
+        Transport::new(state.tx2, state.k2)
     }
 
     fn is_handshake_finished(&self) -> bool {
-        todo!()
+        matches!(self.state, RegistrationInitiatorState::ToTransport(_))
     }
 }
