@@ -1,6 +1,6 @@
 use super::*;
 use libcrux_hacl_rs::prelude::*;
-use libcrux_traits::Digest;
+use libcrux_traits::digest::arrayref::Digest;
 
 /// The different Sha2 algorithms.
 #[derive(Clone, Copy, Debug)]
@@ -27,12 +27,17 @@ impl Algorithm {
     /// Sha2
     ///
     /// Write the Sha2 hash of `payload` into `digest`.
-    pub fn hash(&self, payload: &[u8], digest: &mut [u8]) {
+    pub fn hash(
+        &self,
+        payload: &[u8],
+        digest: &mut [u8],
+    ) -> Result<(), libcrux_traits::digest::slice::HashError> {
+        use libcrux_traits::digest::slice::Digest;
         match self {
-            Algorithm::Sha224 => Sha224::hash(digest, payload),
-            Algorithm::Sha256 => Sha256::hash(digest, payload),
-            Algorithm::Sha384 => Sha384::hash(digest, payload),
-            Algorithm::Sha512 => Sha512::hash(digest, payload),
+            Algorithm::Sha224 => <Sha224 as Digest>::hash(digest, payload),
+            Algorithm::Sha256 => <Sha256 as Digest>::hash(digest, payload),
+            Algorithm::Sha384 => <Sha384 as Digest>::hash(digest, payload),
+            Algorithm::Sha512 => <Sha512 as Digest>::hash(digest, payload),
         }
     }
 }
@@ -80,25 +85,35 @@ pub fn sha512(payload: &[u8]) -> [u8; SHA512_LENGTH] {
 // Streaming API - This is the recommended one.
 // For implementations based on hacl_rs (over hacl-c)
 macro_rules! impl_hash {
-    ($name:ident, $digest_size:literal, $state:ty, $malloc:expr, $reset:expr, $update:expr, $finish:expr, $copy:expr, $hash:expr) => {
+    ($hasher_name:ident, $state_name:ident, $name:ident, $digest_size:literal, $state:ty, $malloc:expr, $reset:expr, $update:expr, $finish:expr, $copy:expr, $hash:expr) => {
+        #[derive(Clone, Default)]
         #[allow(non_camel_case_types)]
-        pub struct $name {
-            state: $state,
-        }
+        pub struct $name;
 
-        impl $name {
-            /// Initialize a new digest state for streaming use.
-            pub fn new() -> $name {
-                $name { state: $malloc() }
+        pub type $hasher_name = libcrux_traits::digest::Hasher<$digest_size, $name>;
+
+        pub struct $state_name($state);
+
+        impl Clone for $state_name {
+            fn clone(&self) -> Self {
+                Self($copy(self.0.as_ref()))
             }
         }
 
-        impl libcrux_traits::Digest<$digest_size> for $name {
+        impl Default for $state_name {
+            fn default() -> Self {
+                Self($malloc())
+            }
+        }
+
+
+        impl libcrux_traits::digest::arrayref::Digest<$digest_size> for $name {
+            type IncrementalState = $state_name;
             /// Return the digest for the given input byte slice, in immediate mode.
             /// Will panic if `payload` is longer than `u32::MAX` to ensure that hacl-rs can
             /// process it.
             #[inline(always)]
-            fn hash(digest: &mut [u8], payload: &[u8]) {
+            fn hash(digest: &mut [u8; $digest_size], payload: &[u8]) {
                 debug_assert!(digest.len() == $digest_size);
                 let payload_len = payload.len().try_into().unwrap();
                 $hash(digest, payload, payload_len)
@@ -108,9 +123,9 @@ macro_rules! impl_hash {
             /// Will panic if `payload` is longer than `u32::MAX` to ensure that hacl-rs can
             /// process it.
             #[inline(always)]
-            fn update(&mut self, payload: &[u8]) {
+            fn update(state: &mut Self::IncrementalState, payload: &[u8]) {
                 let payload_len = payload.len().try_into().unwrap();
-                $update(self.state.as_mut(), payload, payload_len);
+                $update(state.0.as_mut(), payload, payload_len);
             }
 
             /// Get the digest.
@@ -118,36 +133,24 @@ macro_rules! impl_hash {
             /// Note that the digest state can be continued to be used, to extend the
             /// digest.
             #[inline(always)]
-            fn finish(&self, digest: &mut [u8; $digest_size]) {
-                $finish(self.state.as_ref(), digest);
+            fn finish(state: &mut Self::IncrementalState, digest: &mut [u8; $digest_size]) {
+                $finish(state.0.as_ref(), digest);
             }
 
             /// Reset the digest state.
             #[inline(always)]
-            fn reset(&mut self) {
-                $reset(self.state.as_mut());
+            fn reset(state: &mut Self::IncrementalState) {
+                $reset(state.0.as_mut());
             }
         }
+        libcrux_traits::digest::slice::impl_digest_trait!($name => $state_name, $digest_size);
 
-        impl Default for $name {
-            #[inline(always)]
-            fn default() -> Self {
-                Self::new()
-            }
-        }
-
-        impl Clone for $name {
-            #[inline(always)]
-            fn clone(&self) -> Self {
-                Self {
-                    state: $copy(self.state.as_ref()),
-                }
-            }
-        }
     };
 }
 
 impl_hash!(
+    Sha256Hasher,
+    Sha256State,
     Sha256,
     32,
     Box<[libcrux_hacl_rs::streaming_types::state_32]>,
@@ -159,6 +162,8 @@ impl_hash!(
     crate::hacl::hash_256
 );
 impl_hash!(
+    Sha224Hasher,
+    Sha224State,
     Sha224,
     28,
     Box<[libcrux_hacl_rs::streaming_types::state_32]>,
@@ -171,6 +176,8 @@ impl_hash!(
 );
 
 impl_hash!(
+    Sha512Hasher,
+    Sha512State,
     Sha512,
     64,
     Box<[libcrux_hacl_rs::streaming_types::state_64]>,
@@ -181,7 +188,10 @@ impl_hash!(
     crate::hacl::copy_512,
     crate::hacl::hash_512
 );
+
 impl_hash!(
+    Sha384Hasher,
+    Sha384State,
     Sha384,
     48,
     Box<[libcrux_hacl_rs::streaming_types::state_64]>,
