@@ -63,7 +63,7 @@ kyber = []
 rand = ["dep:rand"]
 
 # std support
-std = ["alloc", "rand/std"]
+std = ["alloc", "rand/std", "tls_codec/std"]
 alloc = []
 
 # Incremental encapsulation API

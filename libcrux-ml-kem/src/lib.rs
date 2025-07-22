@@ -75,6 +75,9 @@
 #[cfg(feature = "std")]
 extern crate std;
 
+#[cfg(all(feature = "alloc", feature = "incremental"))]
+extern crate alloc;
+
 /// Feature gating helper macros
 #[macro_use]
 mod cfg;

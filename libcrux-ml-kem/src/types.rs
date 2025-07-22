@@ -149,12 +149,30 @@ mod index_impls {
 #[cfg(all(feature = "codec", feature = "alloc"))]
 mod codec {
     use super::*;
-    extern crate alloc;
-
-    use alloc::string::ToString;
 
     macro_rules! impl_tls_codec_for_generic_struct {
         ($name:ident) => {
+            // XXX: `tls_codec::{Serialize, Deserialize}` are only
+            // available for feature `std`. For `no_std` scenarios, we
+            // need to implement `tls_codec::{SerializeBytes,
+            // DeserializeBytes}`, but `SerializeBytes` is not
+            // implemented for `VLByteSlice`.
+            impl<const SIZE: usize> tls_codec::DeserializeBytes for $name<SIZE> {
+                fn tls_deserialize_bytes(bytes: &[u8]) -> Result<(Self, &[u8]), tls_codec::Error> {
+                    let (bytes, remainder) = tls_codec::VLBytes::tls_deserialize_bytes(bytes)?;
+                    Ok((
+                        Self {
+                            value: bytes
+                                .as_ref()
+                                .try_into()
+                                .map_err(|_| tls_codec::Error::InvalidInput)?,
+                        },
+                        remainder,
+                    ))
+                }
+            }
+
+            #[cfg(feature = "std")]
             impl<const SIZE: usize> tls_codec::Serialize for $name<SIZE> {
                 fn tls_serialize<W: std::io::Write>(
                     &self,
@@ -165,6 +183,7 @@ mod codec {
                 }
             }
 
+            #[cfg(feature = "std")]
             impl<const SIZE: usize> tls_codec::Serialize for &$name<SIZE> {
                 fn tls_serialize<W: std::io::Write>(
                     &self,
@@ -174,15 +193,17 @@ mod codec {
                 }
             }
 
+            #[cfg(feature = "std")]
             impl<const SIZE: usize> tls_codec::Deserialize for $name<SIZE> {
                 fn tls_deserialize<R: std::io::Read>(
                     bytes: &mut R,
                 ) -> Result<Self, tls_codec::Error> {
                     let bytes = tls_codec::VLBytes::tls_deserialize(bytes)?;
                     Ok(Self {
-                        value: bytes.as_ref().try_into().map_err(|_| {
-                            tls_codec::Error::DecodingError("Invalid input".to_string())
-                        })?,
+                        value: bytes
+                            .as_ref()
+                            .try_into()
+                            .map_err(|_| tls_codec::Error::InvalidInput)?,
                     })
                 }
             }
@@ -211,7 +232,10 @@ mod codec {
         use super::*;
 
         #[test]
+        #[cfg(feature = "std")]
         fn ser_de() {
+            use tls_codec::DeserializeBytes;
+
             const SIZE: usize = 1568;
             let test_struct = MlKemCiphertext::<SIZE>::default();
 
@@ -222,10 +246,18 @@ mod codec {
                 test_struct.tls_serialized_len()
             );
 
-            let test_struct_deserialied =
+            let test_struct_deserialized =
                 MlKemCiphertext::<SIZE>::tls_deserialize_exact(&test_struct_serialized).unwrap();
 
-            assert_eq!(test_struct.as_ref(), test_struct_deserialied.as_ref())
+            let test_struct_deserialized_bytes =
+                MlKemCiphertext::<SIZE>::tls_deserialize_exact_bytes(&test_struct_serialized)
+                    .unwrap();
+
+            assert_eq!(test_struct.as_ref(), test_struct_deserialized.as_ref());
+            assert_eq!(
+                test_struct.as_ref(),
+                test_struct_deserialized_bytes.as_ref()
+            )
         }
     }
 }
