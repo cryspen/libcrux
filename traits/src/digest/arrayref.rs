@@ -6,6 +6,8 @@ pub enum HashError {
 #[derive(Debug)]
 pub enum UpdateError {
     PayloadTooLong,
+    MaximumLengthExceeded,
+    Unknown,
 }
 
 pub trait DigestIncremental<const OUTPUT_LEN: usize> {
@@ -19,8 +21,6 @@ pub trait DigestIncremental<const OUTPUT_LEN: usize> {
 }
 
 pub trait Hash<const OUTPUT_LEN: usize> {
-
     /// Oneshot API
     fn hash(digest: &mut [u8; OUTPUT_LEN], payload: &[u8]) -> Result<(), HashError>;
-
 }

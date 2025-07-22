@@ -468,3 +468,73 @@ impl Blake2b<Dynamic> {
         Ok(())
     }
 }
+
+struct Blake2sHash<T> {
+    _phantom: PhantomData<T>,
+}
+
+impl<const OUT_SIZE: usize> libcrux_traits::digest::arrayref::DigestIncremental<OUT_SIZE>
+    for Blake2sHash<ConstKeyLenConstDigestLen<0, OUT_SIZE>>
+{
+    type IncrementalState = Box<[state_t]>;
+
+    fn update(
+        state: &mut Self::IncrementalState,
+        chunk: &[u8],
+    ) -> Result<(), libcrux_traits::digest::arrayref::UpdateError> {
+        if chunk.len() > (u32::MAX as usize) {
+            return Err(libcrux_traits::digest::arrayref::UpdateError::PayloadTooLong);
+        }
+
+        match update0(state.as_mut(), chunk, chunk.len() as u32) {
+            error_code::Success => Ok(()),
+            error_code::MaximumLengthExceeded => {
+                Err(libcrux_traits::digest::arrayref::UpdateError::MaximumLengthExceeded)
+            }
+            _ => Err(libcrux_traits::digest::arrayref::UpdateError::Unknown),
+        }
+    }
+
+    fn finish(state: &mut Self::IncrementalState, dst: &mut [u8; OUT_SIZE]) {
+        digest(state, dst);
+    }
+
+    fn reset(state: &mut Self::IncrementalState) {
+        reset(state)
+    }
+}
+
+impl libcrux_traits::digest::slice::DigestIncremental for Blake2sHash<ConstKeyLen<0>> {
+    type IncrementalState = Box<[state_t]>;
+
+    fn update(
+        state: &mut Self::IncrementalState,
+        chunk: &[u8],
+    ) -> Result<(), libcrux_traits::digest::slice::UpdateError> {
+        if chunk.len() > (u32::MAX as usize) {
+            return Err(libcrux_traits::digest::slice::UpdateError::PayloadTooLong);
+        }
+
+        match update0(state.as_mut(), chunk, chunk.len() as u32) {
+            error_code::Success => Ok(()),
+            error_code::MaximumLengthExceeded => {
+                Err(libcrux_traits::digest::slice::UpdateError::MaximumLengthExceeded)
+            }
+            _ => Err(libcrux_traits::digest::slice::UpdateError::Unknown),
+        }
+    }
+    fn finish(
+        state: &mut Self::IncrementalState,
+        dst: &mut [u8],
+    ) -> Result<usize, libcrux_traits::digest::slice::FinishError> {
+        let digest_len = state[0].block_state.snd;
+        if dst.len() < digest_len as usize {
+            return Err(libcrux_traits::digest::slice::FinishError::InvalidDigestLength);
+        }
+
+        Ok(digest(state, dst) as usize)
+    }
+    fn reset(state: &mut Self::IncrementalState) {
+        reset(state)
+    }
+}

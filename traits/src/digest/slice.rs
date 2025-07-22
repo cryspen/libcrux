@@ -26,6 +26,8 @@ pub enum HashError {
 #[derive(Debug)]
 pub enum UpdateError {
     PayloadTooLong,
+    MaximumLengthExceeded,
+    Unknown,
 }
 
 impl From<arrayref::HashError> for HashError {
@@ -40,6 +42,8 @@ impl From<arrayref::UpdateError> for UpdateError {
     fn from(e: arrayref::UpdateError) -> Self {
         match e {
             arrayref::UpdateError::PayloadTooLong => Self::PayloadTooLong,
+            arrayref::UpdateError::MaximumLengthExceeded => Self::MaximumLengthExceeded,
+            arrayref::UpdateError::Unknown => Self::Unknown,
         }
     }
 }
