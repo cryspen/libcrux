@@ -9,6 +9,15 @@ use libcrux_psq::protocol::{
 };
 use rand::CryptoRng;
 
+pub fn randombytes(n: usize) -> Vec<u8> {
+    use rand::rngs::OsRng;
+    use rand::TryRngCore;
+
+    let mut bytes = vec![0u8; n];
+    OsRng.try_fill_bytes(&mut bytes).unwrap();
+    bytes
+}
+
 fn query<const PQ: bool>(c: &mut Criterion) {
     let mut rng = rand::rng();
     let ciphersuite = if PQ { "x25519" } else { "x25519-mlkem768" };
@@ -568,7 +577,7 @@ fn registration<const PQ: bool>(c: &mut Criterion) {
         |b| {
             b.iter_batched_ref(
                 || {
-                    let mut msg_channel = vec![0u8; 4096];
+                    let mut msg_channel = vec![0u8; 5050];
                     let mut payload_buf_responder = vec![0u8; 4096];
                     let mut payload_buf_initiator = vec![0u8; 4096];
 
@@ -609,12 +618,11 @@ fn registration<const PQ: bool>(c: &mut Criterion) {
                         .unwrap();
 
                     let initiator = initiator.into_transport_mode().unwrap();
-                    (initiator, msg_channel)
+                    let payload = randombytes(4096);
+                    (initiator, msg_channel, payload)
                 },
-                |(initiator, msg_channel)| {
-                    let _ = initiator
-                        .write_message(b"Transport Message", msg_channel)
-                        .unwrap();
+                |(initiator, msg_channel, payload)| {
+                    let _ = initiator.write_message(payload, msg_channel).unwrap();
                 },
                 BatchSize::SmallInput,
             )
@@ -627,7 +635,7 @@ fn registration<const PQ: bool>(c: &mut Criterion) {
         |b| {
             b.iter_batched_ref(
                 || {
-                    let mut msg_channel = vec![0u8; 4096];
+                    let mut msg_channel = vec![0u8; 5050];
                     let mut payload_buf_responder = vec![0u8; 4096];
                     let mut payload_buf_initiator = vec![0u8; 4096];
 
@@ -669,7 +677,7 @@ fn registration<const PQ: bool>(c: &mut Criterion) {
 
                     let mut initiator = initiator.into_transport_mode().unwrap();
                     let _ = initiator
-                        .write_message(b"Transport Message", &mut msg_channel)
+                        .write_message(&randombytes(4096), &mut msg_channel)
                         .unwrap();
 
                     let responder = responder.into_transport_mode().unwrap();
