@@ -11,12 +11,6 @@ on:
   schedule:
     - cron: "0 0 * * *"
 
-  workflow_dispatch:
-    inputs:
-      hax_rev:
-        description: "The hax revision you want this job to use"
-        default: "main"
-
 env:
   CARGO_TERM_COLOR: always
 
@@ -24,16 +18,17 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
-jobs:
   extract:
     if: ${{ github.event_name != 'merge_group' }}
     runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v4
+      - uses: ./github/workflows/get-hax-rev.yml
+        id: get-hax-rev
       - uses: hacspec/hax-actions@main
         with:
-          hax_reference: ${{ github.event.inputs.hax_rev || 'main' }}
+          hax_reference: ${{ steps.get-hax-rev.outputs.hax_lib }}
           fstar: v2025.03.25
 
       - name: 🏃 Extract ML-DSA crate
@@ -55,9 +50,11 @@ jobs:
     if: ${{ github.event_name != 'merge_group' }}
     steps:
       - uses: actions/checkout@v4
+      - uses: ./github/workflows/get-hax-rev.yml
+        id: get-hax-rev
       - uses: hacspec/hax-actions@main
         with:
-          hax_reference: ${{ github.event.inputs.hax_rev || 'main' }}
+          hax_reference: ${{ steps.get-hax-rev.outputs.hax_lib }}
           fstar: v2025.03.25
 
       - uses: actions/download-artifact@v4
