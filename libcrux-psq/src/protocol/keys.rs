@@ -141,7 +141,7 @@ fn session_key_id(key: &AEADKey) -> Result<[u8; SESSION_ID_LENGTH], Error> {
 }
 
 // skCS = KDF(K2, "shared secret" | tx2)
-pub(super) fn derive_session_key(k2: &AEADKey, tx2: &Transcript) -> Result<SessionKey, Error> {
+pub(super) fn derive_session_key(k2: AEADKey, tx2: Transcript) -> Result<SessionKey, Error> {
     #[derive(TlsSerializeBytes, TlsSize)]
     struct SessionKeyInfo<'a> {
         domain_separator: &'static [u8],
@@ -150,10 +150,10 @@ pub(super) fn derive_session_key(k2: &AEADKey, tx2: &Transcript) -> Result<Sessi
 
     const SHARED_KEY_LABEL: &'static [u8] = b"shared key";
     let key = AEADKey::new(
-        k2,
+        &k2,
         &SessionKeyInfo {
             domain_separator: SHARED_KEY_LABEL,
-            tx2,
+            tx2: &tx2,
         },
     )?;
     let identifier = session_key_id(&key)?;

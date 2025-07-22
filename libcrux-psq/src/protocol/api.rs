@@ -43,7 +43,7 @@ pub struct Transport {
 impl Transport {
     pub(crate) fn new(tx2: Transcript, k2: AEADKey) -> Result<Self, Error> {
         Ok(Self {
-            session_key: derive_session_key(&k2, &tx2)?,
+            session_key: derive_session_key(k2, tx2)?,
         })
     }
 
