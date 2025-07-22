@@ -172,7 +172,12 @@ impl Initiator {
 
         let ts_ttl = serialize_ts_ttl(&ts, &psk_ttl);
 
-        let signature = C::sign(signing_key, &enc_pq.encode())?;
+        let mut enc_pq_serialized = vec![0u8; enc_pq.tls_serialized_len()];
+        enc_pq
+            .tls_serialize(&mut &mut enc_pq_serialized[..])
+            .map_err(|_| Error::Serialization)?;
+
+        let signature = C::sign(signing_key, &enc_pq_serialized)?;
 
         let mut message = Vec::new();
         message.extend_from_slice(&ts_ttl);

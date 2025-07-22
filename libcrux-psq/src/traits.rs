@@ -3,6 +3,7 @@ use libcrux_hkdf::{expand as hkdf_expand, Algorithm as HKDF_Algorithm};
 use libcrux_hmac::{hmac, Algorithm as HMAC_Algorithm};
 use libcrux_traits::kem::KEM;
 use rand::CryptoRng;
+use tls_codec::{Serialize, Size};
 
 use crate::Error;
 
@@ -49,7 +50,11 @@ pub(crate) mod private {
 /// component using an underlying KEM.
 pub trait PSQ: private::Seal {
     /// The underlying KEM.
-    type InnerKEM: KEM<Ciphertext: Encode, SharedSecret: Encode, EncapsulationKey: Encode>;
+    type InnerKEM: KEM<
+        Ciphertext: Serialize + Size,
+        SharedSecret: Serialize + Size,
+        EncapsulationKey: Serialize + Size,
+    >;
 
     /// Encapsulate a fresh PSQ component.
     fn encapsulate_psq(
@@ -60,7 +65,16 @@ pub trait PSQ: private::Seal {
         let (ikm, enc) =
             Self::InnerKEM::encapsulate(pk, rng).map_err(|_| Error::PSQGenerationError)?;
 
-        let k0 = compute_k0(&pk.encode(), &ikm.encode(), &enc.encode(), sctx)?;
+        let mut pk_serialized = vec![0u8; pk.tls_serialized_len()];
+        pk.tls_serialize(&mut &mut pk_serialized[..]);
+
+        let mut ikm_serialized = vec![0u8; ikm.tls_serialized_len()];
+        ikm.tls_serialize(&mut &mut ikm_serialized[..]);
+
+        let mut enc_serialized = vec![0u8; enc.tls_serialized_len()];
+        enc.tls_serialize(&mut &mut enc_serialized[..]);
+
+        let k0 = compute_k0(&pk_serialized, &ikm_serialized, &enc_serialized, sctx)?;
         let mac = compute_mac(&k0)?;
         let psk = compute_psk(&k0)?;
 
@@ -87,7 +101,22 @@ pub trait PSQ: private::Seal {
         let ik =
             Self::InnerKEM::decapsulate(sk, inner_ctxt).map_err(|_| Error::PSQDerivationError)?;
 
-        let k0 = compute_k0(&pk.encode(), &ik.encode(), &inner_ctxt.encode(), sctx)?;
+        let mut pk_serialized = vec![0u8; pk.tls_serialized_len()];
+        pk.tls_serialize(&mut &mut pk_serialized[..]);
+
+        let mut ikm_serialized = vec![0u8; ikm.tls_serialized_len()];
+        ikm.tls_serialize(&mut &mut ikm_serialized[..]);
+
+        let mut inner_ctxt_serialized = vec![0u8; inner_ctxt.tls_serialized_len()];
+        inner_ctxt.tls_serialize(&mut &mut inner_ctxt_serialized[..]);
+
+        let k0 = compute_k0(
+            &pk_serialized,
+            &ikm_serialized,
+            &inner_ctxt_serialized,
+            sctx,
+        )?;
+
         let recomputed_mac = compute_mac(&k0)?;
 
         if compare(&recomputed_mac, mac) == 0 {
@@ -99,18 +128,19 @@ pub trait PSQ: private::Seal {
 }
 
 /// A PSQ ciphertext, including MAC.
+#[derive(TlsSerialize, TlsDeserialize, TlsSize)]
 pub struct Ciphertext<T: KEM> {
     pub(crate) inner_ctxt: T::Ciphertext,
     pub(crate) mac: Mac,
 }
 
-impl<T: KEM<Ciphertext: Encode>> Encode for Ciphertext<T> {
-    fn encode(&self) -> Vec<u8> {
-        let mut serialized = self.inner_ctxt.encode();
-        serialized.extend_from_slice(&self.mac);
-        serialized
-    }
-}
+// impl<T: KEM<Ciphertext: Encode>> Encode for Ciphertext<T> {
+//     fn encode(&self) -> Vec<u8> {
+//         let mut serialized = self.inner_ctxt.encode();
+//         serialized.extend_from_slice(&self.mac);
+//         serialized
+//     }
+// }
 
 // TODO: Use functions from `secrets` crate instead once that's merged.
 // See:
