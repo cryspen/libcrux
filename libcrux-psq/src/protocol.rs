@@ -2,13 +2,14 @@
 #![allow(missing_docs)]
 
 use api::Error;
-use ecdh::PublicKey;
-use libcrux_ml_kem::mlkem768::MlKem768Ciphertext;
+use dhkem::DHPublicKey;
+use pqkem::PQCiphertext;
 use tls_codec::{TlsDeserialize, TlsSerialize, TlsSize, VLByteSlice, VLBytes};
 
-pub mod ecdh;
+pub mod dhkem;
 pub mod initiator;
 mod keys;
+pub mod pqkem;
 pub mod responder;
 pub mod session;
 mod transcript;
@@ -17,20 +18,20 @@ pub mod api;
 
 #[derive(TlsDeserialize, TlsSize)]
 pub struct Message {
-    pk: PublicKey,
+    pk: DHPublicKey,
     ciphertext: VLBytes,
     tag: [u8; 16],
     aad: VLBytes,
-    pq_encapsulation: Option<MlKem768Ciphertext>,
+    pq_encapsulation: Option<PQCiphertext>,
 }
 
 #[derive(TlsSerialize, TlsSize)]
 pub struct MessageOut<'a> {
-    pk: &'a PublicKey,
+    pk: &'a DHPublicKey,
     ciphertext: VLByteSlice<'a>,
     tag: [u8; 16], // XXX: implement Serialize for &[T; N]
     aad: VLByteSlice<'a>,
-    pq_encapsulation: Option<&'a MlKem768Ciphertext>,
+    pq_encapsulation: Option<&'a PQCiphertext>,
 }
 
 pub(crate) fn write_output(payload: &[u8], out: &mut [u8]) -> Result<usize, Error> {

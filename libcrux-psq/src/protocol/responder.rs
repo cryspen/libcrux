@@ -1,6 +1,5 @@
 use std::{collections::VecDeque, io::Cursor, mem::take};
 
-use libcrux_ml_kem::mlkem768::{decapsulate, MlKem768KeyPair};
 use rand::CryptoRng;
 use tls_codec::{
     Deserialize, Serialize, Size, TlsDeserialize, TlsSerialize, TlsSize, VLByteSlice, VLBytes,
@@ -10,11 +9,12 @@ use crate::protocol::MessageOut;
 
 use super::{
     api::{Error, IntoTransport, Protocol, ToTransportState, Transport},
-    ecdh::{KEMKeyPair, PrivateKey, PublicKey},
+    dhkem::{DHKeyPair, DHPrivateKey, DHPublicKey},
     initiator::InitiatorInnerPayload,
     keys::{
         derive_k0, derive_k1, derive_k2_query_responder, derive_k2_registration_responder, AEADKey,
     },
+    pqkem::PQKeyPair,
     transcript::{tx1, tx2, Transcript},
     write_output, Message,
 };
@@ -30,15 +30,15 @@ pub enum InitiatorOuterPayload {
 pub(crate) struct RespondQueryState {
     pub(crate) tx0: Transcript,
     pub(crate) k0: AEADKey,
-    pub(crate) initiator_ephemeral_ecdh_pk: PublicKey,
+    pub(crate) initiator_ephemeral_ecdh_pk: DHPublicKey,
 }
 
 #[derive(Debug)]
 pub(crate) struct RespondRegistrationState {
     pub(crate) tx1: Transcript,
     pub(crate) k1: AEADKey,
-    pub(crate) initiator_ephemeral_ecdh_pk: PublicKey,
-    pub(crate) initiator_longterm_ecdh_pk: PublicKey,
+    pub(crate) initiator_ephemeral_ecdh_pk: DHPublicKey,
+    pub(crate) initiator_longterm_ecdh_pk: DHPublicKey,
 }
 
 #[derive(Default, Debug)]
@@ -53,10 +53,10 @@ pub(crate) enum ResponderState {
 
 pub struct Responder<'a, Rng: CryptoRng> {
     pub(crate) state: ResponderState,
-    recent_keys: VecDeque<PublicKey>,
+    recent_keys: VecDeque<DHPublicKey>,
     recent_keys_upper_bound: usize,
-    longterm_ecdh_keys: &'a KEMKeyPair,
-    longterm_pq_keys: Option<&'a MlKem768KeyPair>,
+    longterm_ecdh_keys: &'a DHKeyPair,
+    longterm_pq_keys: Option<&'a PQKeyPair>,
     context: &'a [u8],
     aad: &'a [u8],
     rng: Rng,
@@ -76,8 +76,8 @@ pub struct ResponderRegistrationPayloadOut<'a>(VLByteSlice<'a>);
 
 impl<'a, Rng: CryptoRng> Responder<'a, Rng> {
     pub fn new(
-        longterm_ecdh_keys: &'a KEMKeyPair,
-        longterm_pq_keys: Option<&'a MlKem768KeyPair>,
+        longterm_ecdh_keys: &'a DHKeyPair,
+        longterm_pq_keys: Option<&'a PQKeyPair>,
         context: &'a [u8],
         aad: &'a [u8],
         recent_keys_upper_bound: usize,
@@ -99,9 +99,9 @@ impl<'a, Rng: CryptoRng> Responder<'a, Rng> {
         &self,
         tx0: &Transcript,
         k0: &AEADKey,
-        responder_ephemeral_ecdh_pk: &PublicKey,
-        responder_ephemeral_ecdh_sk: &PrivateKey,
-        initiator_ephemeral_ecdh_pk: &PublicKey,
+        responder_ephemeral_ecdh_pk: &DHPublicKey,
+        responder_ephemeral_ecdh_sk: &DHPrivateKey,
+        initiator_ephemeral_ecdh_pk: &DHPublicKey,
     ) -> Result<(Transcript, AEADKey), Error> {
         let tx2 = tx2(tx0, responder_ephemeral_ecdh_pk)?;
         let k2 = derive_k2_query_responder(
@@ -119,10 +119,10 @@ impl<'a, Rng: CryptoRng> Responder<'a, Rng> {
         &self,
         tx1: &Transcript,
         k1: &AEADKey,
-        responder_ephemeral_ecdh_pk: &PublicKey,
-        responder_ephemeral_ecdh_sk: &PrivateKey,
-        initiator_longterm_ecdh_pk: &PublicKey,
-        initiator_ephemeral_ecdh_pk: &PublicKey,
+        responder_ephemeral_ecdh_pk: &DHPublicKey,
+        responder_ephemeral_ecdh_sk: &DHPrivateKey,
+        initiator_longterm_ecdh_pk: &DHPublicKey,
+        initiator_ephemeral_ecdh_pk: &DHPublicKey,
     ) -> Result<(Transcript, AEADKey), Error> {
         let tx2 = tx2(tx1, responder_ephemeral_ecdh_pk)?;
         let k2 = derive_k2_registration_responder(
@@ -167,9 +167,9 @@ impl<'a, Rng: CryptoRng> Responder<'a, Rng> {
             .pq_encapsulation
             .as_ref()
             .zip(self.longterm_pq_keys)
-            .map(|(enc, longterm_pq_keys)| decapsulate(longterm_pq_keys.private_key(), enc));
+            .map(|(enc, longterm_pq_keys)| longterm_pq_keys.sk.decapsulate(enc));
 
-        let responder_pq_pk_opt = self.longterm_pq_keys.map(|keys| keys.public_key());
+        let responder_pq_pk_opt = self.longterm_pq_keys.map(|keys| &keys.pk);
 
         let tx1 = tx1(
             tx0,
@@ -199,8 +199,8 @@ impl<'a, Rng: CryptoRng> Responder<'a, Rng> {
         &mut self,
         payload: &[u8],
         out: &mut [u8],
-        responder_ephemeral_ecdh_sk: PrivateKey,
-        responder_ephemeral_ecdh_pk: PublicKey,
+        responder_ephemeral_ecdh_sk: DHPrivateKey,
+        responder_ephemeral_ecdh_pk: DHPublicKey,
         state: Box<RespondRegistrationState>,
     ) -> Result<usize, Error> {
         let (tx2, mut k2) = self.derive_registration_key(
@@ -235,8 +235,8 @@ impl<'a, Rng: CryptoRng> Responder<'a, Rng> {
         &mut self,
         payload: &[u8],
         out: &mut [u8],
-        responder_ephemeral_ecdh_sk: PrivateKey,
-        responder_ephemeral_ecdh_pk: PublicKey,
+        responder_ephemeral_ecdh_sk: DHPrivateKey,
+        responder_ephemeral_ecdh_pk: DHPublicKey,
         state: Box<RespondQueryState>,
     ) -> Result<usize, Error> {
         let (_tx2, mut k2) = self.derive_query_key(
@@ -270,7 +270,7 @@ impl<'a, Rng: CryptoRng> Responder<'a, Rng> {
 impl<'a, Rng: CryptoRng> Protocol for Responder<'a, Rng> {
     fn write_message(&mut self, payload: &[u8], out: &mut [u8]) -> Result<usize, Error> {
         let mut out_bytes_written = 0;
-        let responder_ephemeral_ecdh_sk = PrivateKey::new(&mut self.rng);
+        let responder_ephemeral_ecdh_sk = DHPrivateKey::new(&mut self.rng);
         let responder_ephemeral_ecdh_pk = responder_ephemeral_ecdh_sk.to_public();
 
         let state = take(&mut self.state);

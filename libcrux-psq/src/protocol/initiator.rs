@@ -1,6 +1,5 @@
 use std::{io::Cursor, mem::take};
 
-use libcrux_ml_kem::mlkem768::{self, MlKem768PublicKey};
 use rand::CryptoRng;
 use tls_codec::{
     Deserialize, Serialize, Size, TlsDeserialize, TlsSerialize, TlsSize, VLByteSlice, VLBytes,
@@ -10,27 +9,28 @@ use crate::protocol::MessageOut;
 
 use super::{
     api::{Error, IntoTransport, Protocol, Transport},
-    ecdh::{KEMKeyPair, PrivateKey, PublicKey},
+    dhkem::{DHKeyPair, DHPrivateKey, DHPublicKey},
     keys::{
         derive_k0, derive_k1, derive_k2_query_initiator, derive_k2_registration_initiator, AEADKey,
     },
+    pqkem::PQPublicKey,
     responder::{ResponderQueryPayload, ResponderRegistrationPayload},
     transcript::{tx1, tx2, Transcript},
     write_output, Message,
 };
 
 pub struct QueryInitiator<'a> {
-    responder_longterm_ecdh_pk: &'a PublicKey,
-    initiator_ephemeral_keys: KEMKeyPair,
+    responder_longterm_ecdh_pk: &'a DHPublicKey,
+    initiator_ephemeral_keys: DHKeyPair,
     tx0: Transcript,
     k0: AEADKey,
     outer_aad: &'a [u8],
 }
 
 pub struct RegistrationInitiator<'a, Rng: CryptoRng> {
-    responder_longterm_ecdh_pk: &'a PublicKey,
-    responder_longterm_pq_pk: Option<&'a MlKem768PublicKey>,
-    initiator_longterm_ecdh_keys: &'a KEMKeyPair,
+    responder_longterm_ecdh_pk: &'a DHPublicKey,
+    responder_longterm_pq_pk: Option<&'a PQPublicKey>,
+    initiator_longterm_ecdh_keys: &'a DHKeyPair,
     inner_aad: &'a [u8],
     outer_aad: &'a [u8],
     rng: Rng,
@@ -51,13 +51,13 @@ pub struct InitiatorInnerPayload(pub VLBytes);
 pub struct InitiatorInnerPayloadOut<'a>(pub VLByteSlice<'a>);
 
 pub struct InitialState {
-    initiator_ephemeral_keys: KEMKeyPair,
+    initiator_ephemeral_keys: DHKeyPair,
     tx0: Transcript,
     k0: AEADKey,
 }
 
 pub struct WaitingState {
-    initiator_ephemeral_ecdh_sk: PrivateKey,
+    initiator_ephemeral_ecdh_sk: DHPrivateKey,
     tx1: Transcript,
     k1: AEADKey,
 }
@@ -79,12 +79,12 @@ pub enum RegistrationInitiatorState {
 impl<'a> QueryInitiator<'a> {
     /// Create a new [`QueryInitiator`].
     pub(crate) fn new(
-        responder_longterm_ecdh_pk: &'a PublicKey,
+        responder_longterm_ecdh_pk: &'a DHPublicKey,
         ctx: &[u8],
         outer_aad: &'a [u8],
         mut rng: impl CryptoRng,
     ) -> Result<Self, Error> {
-        let initiator_ephemeral_keys = KEMKeyPair::new(&mut rng);
+        let initiator_ephemeral_keys = DHKeyPair::new(&mut rng);
 
         let (tx0, k0) = derive_k0(
             responder_longterm_ecdh_pk,
@@ -125,15 +125,15 @@ impl<'a> QueryInitiator<'a> {
 impl<'a, Rng: CryptoRng> RegistrationInitiator<'a, Rng> {
     /// Create a new [`RegistrationInitiator`].
     pub(crate) fn new(
-        initiator_longterm_ecdh_keys: &'a KEMKeyPair,
-        responder_longterm_ecdh_pk: &'a PublicKey,
-        responder_longterm_pq_pk: Option<&'a MlKem768PublicKey>,
+        initiator_longterm_ecdh_keys: &'a DHKeyPair,
+        responder_longterm_ecdh_pk: &'a DHPublicKey,
+        responder_longterm_pq_pk: Option<&'a PQPublicKey>,
         ctx: &[u8],
         inner_aad: &'a [u8],
         outer_aad: &'a [u8],
         mut rng: Rng,
     ) -> Result<Self, Error> {
-        let initiator_ephemeral_keys = KEMKeyPair::new(&mut rng);
+        let initiator_ephemeral_keys = DHKeyPair::new(&mut rng);
 
         let (tx0, k0) = derive_k0(
             responder_longterm_ecdh_pk,
@@ -207,7 +207,7 @@ impl<'a, Rng: CryptoRng> Protocol for RegistrationInitiator<'a, Rng> {
 
         let pq_encaps_pair = self
             .responder_longterm_pq_pk
-            .map(|pk| mlkem768::rand::encapsulate(pk, &mut self.rng));
+            .map(|pk| pk.encapsulate(&mut self.rng));
 
         let (pq_encapsulation, pq_shared_secret) =
             if let Some((pq_encaps, pq_shared_secret)) = pq_encaps_pair {

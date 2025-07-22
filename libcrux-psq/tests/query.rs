@@ -1,6 +1,4 @@
-use libcrux_ml_kem::mlkem768;
-use libcrux_psq::protocol::{api::Protocol, ecdh::KEMKeyPair, *};
-use rand::RngCore;
+use libcrux_psq::protocol::{api::Protocol, dhkem::DHKeyPair, pqkem::PQKeyPair, *};
 
 #[test]
 fn query() {
@@ -14,11 +12,9 @@ fn query() {
     let mut payload_buf_initiator = vec![0u8; 4096];
 
     // External setup
-    let responder_ecdh_keys = KEMKeyPair::new(&mut rng);
+    let responder_ecdh_keys = DHKeyPair::new(&mut rng);
 
-    let mut pq_randomness = [0u8; libcrux_ml_kem::KEY_GENERATION_SEED_SIZE];
-    rng.fill_bytes(&mut pq_randomness);
-    let responder_pq_keys = mlkem768::generate_key_pair(pq_randomness);
+    let responder_pq_keys = PQKeyPair::new(&mut rng);
 
     // Setup initiator
     let mut initiator = api::Builder::new(rand::rng())

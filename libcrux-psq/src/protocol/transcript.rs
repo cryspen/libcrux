@@ -1,11 +1,12 @@
-use libcrux_ml_kem::mlkem768::{MlKem768Ciphertext, MlKem768PublicKey};
 use tls_codec::{Serialize, SerializeBytes, TlsSerialize, TlsSerializeBytes, TlsSize};
 
 pub const TX0_DOMAIN_SEP: u8 = 0;
 pub const TX1_DOMAIN_SEP: u8 = 1;
 pub const TX2_DOMAIN_SEP: u8 = 2;
 
-use super::{api::Error, ecdh::PublicKey};
+use crate::protocol::pqkem::PQCiphertext;
+
+use super::{api::Error, dhkem::DHPublicKey, pqkem::PQPublicKey};
 use libcrux_sha2::{Digest, SHA256_LENGTH};
 
 /// The initial transcript hash.
@@ -51,14 +52,14 @@ impl AsRef<[u8]> for Transcript {
 // tx0 = hash(0 | ctx | g^s | g^x)
 pub(crate) fn tx0(
     context: &[u8],
-    responder_pk: &PublicKey,
-    initiator_pk: &PublicKey,
+    responder_pk: &DHPublicKey,
+    initiator_pk: &DHPublicKey,
 ) -> Result<Transcript, Error> {
     #[derive(TlsSerialize, TlsSize)]
     struct Transcript0Inputs<'a, 'b, 'c> {
         context: &'a [u8],
-        responder_pk: &'b PublicKey,
-        initiator_pk: &'c PublicKey,
+        responder_pk: &'b DHPublicKey,
+        initiator_pk: &'c DHPublicKey,
     }
 
     Transcript::new(&Transcript0Inputs {
@@ -71,15 +72,15 @@ pub(crate) fn tx0(
 // tx1 = hash(1 | tx0 | g^c | pkS | encap(pkS, SS))
 pub(crate) fn tx1(
     tx0: &Transcript,
-    initiator_longterm_pk: &PublicKey,
-    responder_pq_pk: Option<&MlKem768PublicKey>,
-    pq_encaps: Option<&MlKem768Ciphertext>,
+    initiator_longterm_pk: &DHPublicKey,
+    responder_pq_pk: Option<&PQPublicKey>,
+    pq_encaps: Option<&PQCiphertext>,
 ) -> Result<Transcript, Error> {
     #[derive(TlsSerialize, TlsSize)]
     struct Transcript1Inputs<'a, 'b, 'c> {
-        initiator_longterm_pk: &'a PublicKey,
-        responder_pq_pk: Option<&'b MlKem768PublicKey>,
-        pq_encaps: Option<&'c MlKem768Ciphertext>,
+        initiator_longterm_pk: &'a DHPublicKey,
+        responder_pq_pk: Option<&'b PQPublicKey>,
+        pq_encaps: Option<&'c PQCiphertext>,
     }
 
     Transcript::add_hash::<TX1_DOMAIN_SEP>(
@@ -96,7 +97,7 @@ pub(crate) fn tx1(
 // Query Mode:        tx2 = hash(2 | tx0 | g^y)
 pub(crate) fn tx2(
     prev_tx: &Transcript,
-    responder_ephemeral_pk: &PublicKey,
+    responder_ephemeral_pk: &DHPublicKey,
 ) -> Result<Transcript, Error> {
     Transcript::add_hash::<TX2_DOMAIN_SEP>(Some(prev_tx), responder_ephemeral_pk)
 }

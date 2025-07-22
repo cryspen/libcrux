@@ -1,7 +1,7 @@
-use libcrux_ml_kem::mlkem768;
 use libcrux_psq::protocol::{
     api::{IntoTransport, Protocol},
-    ecdh::KEMKeyPair,
+    dhkem::DHKeyPair,
+    pqkem::PQKeyPair,
     *,
 };
 
@@ -17,10 +17,10 @@ fn registration(pq: bool) {
     let mut payload_buf_initiator = vec![0u8; 4096];
 
     // External setup
-    let responder_pq_keys = mlkem768::rand::generate_key_pair(&mut rng);
+    let responder_pq_keys = PQKeyPair::new(&mut rng);
 
-    let responder_ecdh_keys = KEMKeyPair::new(&mut rng);
-    let initiator_ecdh_keys = KEMKeyPair::new(&mut rng);
+    let responder_ecdh_keys = DHKeyPair::new(&mut rng);
+    let initiator_ecdh_keys = DHKeyPair::new(&mut rng);
 
     // Setup initiator
     let mut initiator = api::Builder::new(rand::rng())
@@ -31,7 +31,7 @@ fn registration(pq: bool) {
         .peer_longterm_ecdh_pk(&responder_ecdh_keys.pk);
 
     if pq {
-        initiator = initiator.peer_longterm_pq_pk(responder_pq_keys.public_key());
+        initiator = initiator.peer_longterm_pq_pk(&responder_pq_keys.pk);
     }
 
     let mut initiator = initiator.build_registration_initiator().unwrap();

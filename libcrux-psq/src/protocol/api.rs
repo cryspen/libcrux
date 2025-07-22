@@ -2,7 +2,6 @@ use std::io::Cursor;
 
 use rand::CryptoRng;
 
-use libcrux_ml_kem::mlkem768::{MlKem768KeyPair, MlKem768PublicKey};
 use tls_codec::{
     Deserialize, Serialize, Size, TlsDeserialize, TlsSerialize, TlsSize, VLByteSlice, VLBytes,
 };
@@ -10,9 +9,10 @@ use tls_codec::{
 use crate::protocol::write_output;
 
 use super::{
-    ecdh::{KEMKeyPair, PublicKey},
+    dhkem::{DHKeyPair, DHPublicKey},
     initiator::{QueryInitiator, RegistrationInitiator},
     keys::{derive_session_key, AEADKey},
+    pqkem::{PQKeyPair, PQPublicKey},
     responder::Responder,
     session::{SessionKey, SESSION_ID_LENGTH},
     transcript::Transcript,
@@ -130,10 +130,10 @@ pub struct Builder<'a, Rng: CryptoRng> {
     context: &'a [u8],
     inner_aad: &'a [u8],
     outer_aad: &'a [u8],
-    longterm_ecdh_keys: Option<&'a KEMKeyPair>,
-    longterm_pq_keys: Option<&'a MlKem768KeyPair>,
-    peer_longterm_ecdh_pk: Option<&'a PublicKey>,
-    peer_longterm_pq_pk: Option<&'a MlKem768PublicKey>,
+    longterm_ecdh_keys: Option<&'a DHKeyPair>,
+    longterm_pq_keys: Option<&'a PQKeyPair>,
+    peer_longterm_ecdh_pk: Option<&'a DHPublicKey>,
+    peer_longterm_pq_pk: Option<&'a PQPublicKey>,
     recent_keys_upper_bound: Option<usize>,
 }
 
@@ -174,25 +174,25 @@ impl<'a, Rng: CryptoRng> Builder<'a, Rng> {
     }
 
     /// Set the long-term ECDH key pair.
-    pub fn longterm_ecdh_keys(mut self, longterm_ecdh_keys: &'a KEMKeyPair) -> Self {
+    pub fn longterm_ecdh_keys(mut self, longterm_ecdh_keys: &'a DHKeyPair) -> Self {
         self.longterm_ecdh_keys = Some(longterm_ecdh_keys);
         self
     }
 
     /// Set the long-term PQ key pair.
-    pub fn longterm_pq_keys(mut self, longterm_pq_keys: &'a MlKem768KeyPair) -> Self {
+    pub fn longterm_pq_keys(mut self, longterm_pq_keys: &'a PQKeyPair) -> Self {
         self.longterm_pq_keys = Some(longterm_pq_keys);
         self
     }
 
     /// Set the peer's long-term ECDH public key.
-    pub fn peer_longterm_ecdh_pk(mut self, peer_longterm_ecdh_pk: &'a PublicKey) -> Self {
+    pub fn peer_longterm_ecdh_pk(mut self, peer_longterm_ecdh_pk: &'a DHPublicKey) -> Self {
         self.peer_longterm_ecdh_pk = Some(peer_longterm_ecdh_pk);
         self
     }
 
     /// Set the peer's long-term PQ public key.
-    pub fn peer_longterm_pq_pk(mut self, peer_longterm_pq_pk: &'a MlKem768PublicKey) -> Self {
+    pub fn peer_longterm_pq_pk(mut self, peer_longterm_pq_pk: &'a PQPublicKey) -> Self {
         self.peer_longterm_pq_pk = Some(peer_longterm_pq_pk);
         self
     }

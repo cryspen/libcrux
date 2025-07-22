@@ -1,10 +1,10 @@
 use criterion::{criterion_group, criterion_main, BatchSize, Criterion};
 
-use libcrux_ml_kem::mlkem768::{self, MlKem768KeyPair};
 use libcrux_psq::protocol::{
     api::{Builder, Protocol},
-    ecdh::KEMKeyPair,
+    dhkem::DHKeyPair,
     initiator::QueryInitiator,
+    pqkem::PQKeyPair,
     responder::Responder,
 };
 use rand::CryptoRng;
@@ -17,8 +17,8 @@ fn query<const PQ: bool>(c: &mut Criterion) {
     let aad_responder = b"Test Data R";
 
     // External setup
-    let responder_ecdh_keys = KEMKeyPair::new(&mut rng);
-    let responder_pq_keys = mlkem768::rand::generate_key_pair(&mut rng);
+    let responder_ecdh_keys = DHKeyPair::new(&mut rng);
+    let responder_pq_keys = PQKeyPair::new(&mut rng);
 
     // x25519
 
@@ -236,8 +236,8 @@ fn query_responder<'a, const PQ: bool>(
     rng: impl CryptoRng,
     ctx: &'a [u8],
     aad_responder: &'a [u8],
-    responder_ecdh_keys: &'a KEMKeyPair,
-    responder_pq_keys: &'a MlKem768KeyPair,
+    responder_ecdh_keys: &'a DHKeyPair,
+    responder_pq_keys: &'a PQKeyPair,
 ) -> Responder<'a, impl CryptoRng> {
     let mut responder = Builder::new(rng)
         .context(ctx)
@@ -255,15 +255,15 @@ fn query_initiator<'a, const PQ: bool>(
     rng: impl CryptoRng,
     ctx: &'a [u8],
     aad_initiator: &'a [u8],
-    responder_ecdh_keys: &'a KEMKeyPair,
-    responder_pq_keys: &'a MlKem768KeyPair,
+    responder_ecdh_keys: &'a DHKeyPair,
+    responder_pq_keys: &'a PQKeyPair,
 ) -> QueryInitiator<'a> {
     let mut builder = Builder::new(rng)
         .outer_aad(aad_initiator)
         .context(ctx)
         .peer_longterm_ecdh_pk(&responder_ecdh_keys.pk);
     if PQ {
-        builder = builder.peer_longterm_pq_pk(responder_pq_keys.public_key());
+        builder = builder.peer_longterm_pq_pk(&responder_pq_keys.pk);
     }
     builder.build_query_initiator().unwrap()
 }
