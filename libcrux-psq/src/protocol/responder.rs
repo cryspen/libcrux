@@ -361,8 +361,8 @@ impl<'a, Rng: CryptoRng> Protocol for Responder<'a, Rng> {
 }
 
 impl<'a, Rng: CryptoRng> IntoTransport for Responder<'a, Rng> {
-    fn into_transport_mode(mut self) -> Result<Transport, Error> {
-        let ResponderState::ToTransport(state) = take(&mut self.state) else {
+    fn into_transport_mode(self) -> Result<Transport, Error> {
+        let ResponderState::ToTransport(state) = self.state else {
             return Err(Error::ResponderState);
         };
 

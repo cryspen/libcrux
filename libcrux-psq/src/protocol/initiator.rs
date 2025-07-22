@@ -309,8 +309,8 @@ impl<'a, Rng: CryptoRng> Protocol for RegistrationInitiator<'a, Rng> {
 }
 
 impl<'a, Rng: CryptoRng> IntoTransport for RegistrationInitiator<'a, Rng> {
-    fn into_transport_mode(mut self) -> Result<Transport, Error> {
-        let RegistrationInitiatorState::ToTransport(state) = take(&mut self.state) else {
+    fn into_transport_mode(self) -> Result<Transport, Error> {
+        let RegistrationInitiatorState::ToTransport(state) = self.state else {
             return Err(Error::InitiatorState);
         };
 
