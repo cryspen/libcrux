@@ -47,13 +47,17 @@ impl AEADKey {
         ))
     }
 
-    fn increment_nonce(&mut self) {
+    fn increment_nonce(&mut self) -> Result<(), Error> {
+        if self.1 == [0xff; NONCE_LEN] {
+            return Err(Error::CryptoError);
+        }
         let mut buf = [0u8; 16];
         buf[16 - NONCE_LEN..].copy_from_slice(self.1.as_slice());
         let mut nonce = u128::from_be_bytes(buf);
         nonce += 1;
         let buf = nonce.to_be_bytes();
         self.1.copy_from_slice(&buf[16 - NONCE_LEN..]);
+        Ok(())
     }
 
     pub(crate) fn encrypt(
@@ -64,11 +68,11 @@ impl AEADKey {
     ) -> Result<[u8; 16], crate::protocol::api::Error> {
         let mut tag = [0u8; 16];
 
+        self.increment_nonce()?;
+
         // XXX: We could do better if we'd have an inplace API here.
         let _ = encrypt_detached(&self.0, payload, ciphertext, &mut tag, aad, &self.1)
             .map_err(|_| Error::CryptoError)?;
-
-        self.increment_nonce();
 
         Ok(tag)
     }
@@ -92,11 +96,11 @@ impl AEADKey {
         tag: &[u8; 16],
         aad: &[u8],
     ) -> Result<Vec<u8>, Error> {
+        self.increment_nonce()?;
         let mut plaintext = vec![0u8; ciphertext.len()];
+
         let _ = decrypt_detached(&self.0, &mut plaintext, ciphertext, tag, aad, &self.1)
             .map_err(|_| Error::CryptoError)?;
-
-        self.increment_nonce();
 
         Ok(plaintext)
     }
