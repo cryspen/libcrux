@@ -51,8 +51,8 @@ impl From<arrayref::UpdateError> for UpdateError {
 }
 
 #[macro_export]
-macro_rules! impl_digest_trait {
-    ($type:ty => $incremental_state:ty, $len:expr) => {
+macro_rules! impl_hash_trait {
+    ($type:ty => $len:expr) => {
         impl $crate::digest::slice::Hash for $type {
             fn hash(
                 digest: &mut [u8],
@@ -66,6 +66,13 @@ macro_rules! impl_digest_trait {
                     .map_err($crate::digest::slice::HashError::from)
             }
         }
+
+    };
+}
+
+#[macro_export]
+macro_rules! impl_digest_incremental_trait {
+    ($type:ty => $incremental_state:ty, $len:expr) => {
         impl $crate::digest::slice::DigestIncremental for $type {
             type IncrementalState = $incremental_state;
 
@@ -95,4 +102,6 @@ macro_rules! impl_digest_trait {
         }
     };
 }
-pub use impl_digest_trait;
+
+pub use impl_hash_trait;
+pub use impl_digest_incremental_trait;

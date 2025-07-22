@@ -150,7 +150,8 @@ macro_rules! impl_hash {
                 $reset(state.0.as_mut());
             }
         }
-        libcrux_traits::digest::slice::impl_digest_trait!($name => $state_name, $digest_size);
+        libcrux_traits::digest::slice::impl_hash_trait!($name => $digest_size);
+        libcrux_traits::digest::slice::impl_digest_incremental_trait!($name => $state_name, $digest_size);
 
     };
 }

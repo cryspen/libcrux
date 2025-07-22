@@ -1,5 +1,6 @@
 use cavp::*;
 use libcrux_sha3::*;
+use libcrux_traits::digest::owned::Hash;
 
 macro_rules! sha3_test {
     ($file:ident, $digest:ty, $algorithm:expr) => {
@@ -14,22 +15,22 @@ macro_rules! sha3_test {
             for test in &tv.tests {
                 eprintln!("test {c}");
                 c += 1;
-                let my_digest: $digest = sha3($algorithm, &test.msg[0..test.msg_length / 8]);
+                let my_digest: $digest = $algorithm(&test.msg[0..test.msg_length / 8]).unwrap();
                 assert_eq!(&my_digest, &test.digest[..]);
             }
         }
     };
 }
 
-sha3_test!(SHA3_224LongMsg, Sha3_224Digest, Algorithm::Sha224);
-sha3_test!(SHA3_256LongMsg, Sha3_256Digest, Algorithm::Sha256);
-sha3_test!(SHA3_384LongMsg, Sha3_384Digest, Algorithm::Sha384);
-sha3_test!(SHA3_512LongMsg, Sha3_512Digest, Algorithm::Sha512);
+sha3_test!(SHA3_224LongMsg, Sha3_224Digest, Sha3_224::hash);
+sha3_test!(SHA3_256LongMsg, Sha3_256Digest, Sha3_256::hash);
+sha3_test!(SHA3_384LongMsg, Sha3_384Digest, Sha3_384::hash);
+sha3_test!(SHA3_512LongMsg, Sha3_512Digest, Sha3_512::hash);
 
-sha3_test!(SHA3_224ShortMsg, Sha3_224Digest, Algorithm::Sha224);
-sha3_test!(SHA3_256ShortMsg, Sha3_256Digest, Algorithm::Sha256);
-sha3_test!(SHA3_384ShortMsg, Sha3_384Digest, Algorithm::Sha384);
-sha3_test!(SHA3_512ShortMsg, Sha3_512Digest, Algorithm::Sha512);
+sha3_test!(SHA3_224ShortMsg, Sha3_224Digest, Sha3_224::hash);
+sha3_test!(SHA3_256ShortMsg, Sha3_256Digest, Sha3_256::hash);
+sha3_test!(SHA3_384ShortMsg, Sha3_384Digest, Sha3_384::hash);
+sha3_test!(SHA3_512ShortMsg, Sha3_512Digest, Sha3_512::hash);
 
 macro_rules! shake_test {
     ($file:ident, $shake:expr) => {

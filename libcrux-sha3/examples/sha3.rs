@@ -36,6 +36,7 @@ struct Args {
 }
 
 fn main() {
+    use libcrux_traits::digest::owned::Hash;
     let args = Args::parse();
 
     let data = args.input.as_bytes();
@@ -45,10 +46,10 @@ fn main() {
     let mut digest = String::new();
     for _ in 0..args.iterations {
         digest = match variant {
-            "sha224" => hex::encode(sha224(data)),
-            "sha256" => hex::encode(sha256(data)),
-            "sha384" => hex::encode(sha384(data)),
-            "sha512" => hex::encode(sha512(data)),
+            "sha224" => hex::encode(Sha3_224::hash(data).unwrap()),
+            "sha256" => hex::encode(Sha3_256::hash(data).unwrap()),
+            "sha384" => hex::encode(Sha3_384::hash(data).unwrap()),
+            "sha512" => hex::encode(Sha3_512::hash(data).unwrap()),
             "shake128" => {
                 let mut digest = vec![0u8; args.out_len];
                 shake128_ema(&mut digest, data);
@@ -64,7 +65,7 @@ fn main() {
                 "Unsupported or unknown variant: \"{}\".\nSupported variants are: sha224, sha256, sha384, sha512, shake128, shake256.\n",
                 unknown_variant
             );
-                hex::encode(sha256(args.input.as_bytes()))
+                hex::encode(Sha3_256::hash(args.input.as_bytes()).unwrap())
             }
         };
     }
