@@ -18,6 +18,7 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+jobs:
   extract:
     if: ${{ github.event_name != 'merge_group' }}
     runs-on: ubuntu-latest
