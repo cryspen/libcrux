@@ -13,10 +13,10 @@ jobs:
   get-hax-ref:
     runs-on: ubuntu-latest
     outputs:
-      hax_ref: $
+      hax_ref: ${{ steps.step1.outputs.hax_ref }}
     steps:
       - uses: actions/checkout@v4
-      - name: Get hax ref
+      - id: step1
         run: |
           # use hax from the commit at which hax-lib is pinned in the Cargo.toml of libcrux.
           HAX_VERSION="$(cargo metadata --format-version=1 | jq -r '.packages[] | select(.name=="hax-lib") | .version')"
