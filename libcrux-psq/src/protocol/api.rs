@@ -28,6 +28,7 @@ pub enum Error {
     ResponderState,
     TransportState,
     OutputBufferShort,
+    PayloadTooLong,
     OtherError,
 }
 
@@ -66,6 +67,10 @@ struct TransportMessage {
 
 impl Protocol for Transport {
     fn write_message(&mut self, payload: &[u8], out: &mut [u8]) -> Result<usize, Error> {
+        // We match the maximum payload length of Noise.
+        if payload.len() > 65535 {
+            return Err(Error::PayloadTooLong);
+        }
         let mut ciphertext = vec![0u8; payload.len()];
         let tag = self
             .session_key
