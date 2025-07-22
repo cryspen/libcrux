@@ -6,6 +6,7 @@ pub const SESSION_ID_LENGTH: usize = 32;
 /// The length of a sessin key in bytes.
 pub const SESSION_KEY_LENGTH: usize = 32;
 
+// XXX: Session storage to be implemented (cf. https://github.com/cryspen/libcrux/issues/1077)
 pub struct SessionKey {
     pub(crate) identifier: [u8; SESSION_ID_LENGTH],
     pub(crate) key: AEADKey,
