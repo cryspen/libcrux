@@ -19,20 +19,20 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  get-hax-rev:
-    uses: ./.github/workflows/get-hax-rev.yml
+  get-hax-ref:
+    uses: ./.github/workflows/get-hax-ref.yml
 
   extract:
     if: ${{ github.event_name != 'merge_group' }}
     runs-on: ubuntu-latest
     needs:
-      - get-hax-rev
+      - get-hax-ref
 
     steps:
       - uses: actions/checkout@v4
       - uses: hacspec/hax-actions@main
         with:
-          hax_reference: ${{ needs.get-hax-rev.outputs.hax_lib }}
+          hax_reference: ${{ needs.get-hax-ref.outputs.hax_ref }}
           fstar: v2025.03.25
 
       - name: 🏃 Extract ML-DSA crate
@@ -50,14 +50,14 @@ jobs:
   lax:
     runs-on: ubuntu-latest
     needs:
-      - get-hax-rev
+      - get-hax-ref
       - extract
     if: ${{ github.event_name != 'merge_group' }}
     steps:
       - uses: actions/checkout@v4
       - uses: hacspec/hax-actions@main
         with:
-          hax_reference: ${{ needs.get-hax-rev.outputs.hax_lib }}
+          hax_reference: ${{ needs.get-hax-ref.outputs.hax_ref }}
           fstar: v2025.03.25
 
       - uses: actions/download-artifact@v4
@@ -73,6 +73,7 @@ jobs:
     runs-on: self-hosted
     if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}
     needs:
+      - get-hax-ref
       - extract
     steps:
       - uses: actions/checkout@v4
@@ -80,7 +81,7 @@ jobs:
         with:
           repository: cryspen/hax
           path: hax
-          ref: ${{ github.event.inputs.hax_rev || 'main' }}
+          ref: ${{ needs.get-hax-ref.outputs.hax_ref }}
       - name: ⤵ Install hax
         run: |
           nix profile install ./hax
@@ -98,7 +99,7 @@ jobs:
         
   mldsa-extract-hax-status:
     if: ${{ always() }}
-    needs: [get-hax-rev, extract]
+    needs: [get-hax-ref, extract]
     runs-on: ubuntu-latest
     steps:
       - name: Successful
@@ -110,7 +111,7 @@ jobs:
 
   mldsa-lax-hax-status:
     if: ${{ always() }}
-    needs: [get-hax-rev, lax]
+    needs: [get-hax-ref, lax]
     runs-on: ubuntu-latest
     steps:
       - name: Successful

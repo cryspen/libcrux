@@ -8,11 +8,12 @@ jobs:
   get-hax-rev:
     runs-on: ubuntu-latest
     outputs:
-      hax_rev: $
+      hax_ref: $
     steps:
       - uses: actions/checkout@v4
-      - name: Get hax rev
+      - name: Get hax ref
         run: |
           # use hax from the commit at which hax-lib is pinned in the Cargo.toml of libcrux.
           HAX_VERSION="$(cargo metadata --format-version=1 | jq -r '.packages[] | select(.name=="hax-lib") | .version')"
-          echo "hax_rev=hax-lib-v$VERSION" >> "$GITHUB_OUTPUT"
+          echo "hax_ref=hax-lib-v$VERSION" >> "$GITHUB_OUTPUT"
+          echo "Using hax $VERSION"
