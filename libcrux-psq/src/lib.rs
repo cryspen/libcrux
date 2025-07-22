@@ -10,6 +10,10 @@ use std::array::TryFromSliceError;
 #[derive(Debug)]
 /// PSQ Errors.
 pub enum Error {
+    /// An error during serialization.
+    Serialization,
+    /// The Initiator message was stale
+    TimestampElapsed,
     /// An invalid public key was provided
     InvalidPublicKey,
     /// An invalid private key was provided
@@ -75,6 +79,7 @@ const PSK_LENGTH: usize = 32;
 type Psk = [u8; PSK_LENGTH];
 
 pub mod cred;
+pub mod protocol;
 pub mod psk_registration;
 
 #[cfg(feature = "classic-mceliece")]
