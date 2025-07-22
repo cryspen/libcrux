@@ -31,7 +31,7 @@ impl<'a> Blake2sBuilder<'a, &'a ()> {
     }
 
     /// Constructs the [`Blake2s`] hasher for unkeyed hashes and dynamic digest length.
-    pub fn build_var_digest_len(self, digest_length: u8) -> Result<Blake2s<ConstKeyLen<0>>, Error> {
+    pub fn build_var_digest_len(self, digest_length: u8) -> Result<Blake2sSliceHasher, Error> {
         if digest_length < 1 || digest_length as usize > MAX_LEN {
             return Err(Error::InvalidDigestLength);
         }
@@ -65,13 +65,14 @@ impl<'a> Blake2sBuilder<'a, &'a ()> {
         Ok(Blake2s {
             state: malloc_raw(kk, key),
             _phantom: PhantomData,
-        })
+        }
+        .into())
     }
 
     /// Constructs the [`Blake2s`] hasher for unkeyed hashes and constant digest length.
     pub fn build_const_digest_len<const OUT_LEN: usize>(
         self,
-    ) -> Result<Blake2s<ConstKeyLenConstDigestLen<0, OUT_LEN>>, Error> {
+    ) -> Result<Blake2sHasher<OUT_LEN>, Error> {
         if OUT_LEN < 1 || OUT_LEN > MAX_LEN {
             return Err(Error::InvalidDigestLength);
         }
@@ -106,7 +107,8 @@ impl<'a> Blake2sBuilder<'a, &'a ()> {
         Ok(Blake2s {
             state: malloc_raw(kk, key),
             _phantom: PhantomData,
-        })
+        }
+        .into())
     }
 }
 
