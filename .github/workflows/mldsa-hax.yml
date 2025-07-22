@@ -30,8 +30,6 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-      - uses: ./.github/workflows/get-hax-rev.yml
-        id: get-hax-rev
       - uses: hacspec/hax-actions@main
         with:
           hax_reference: ${{ needs.get-hax-rev.outputs.hax_lib }}
