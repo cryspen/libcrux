@@ -1,6 +1,5 @@
 use super::*;
 use libcrux_hacl_rs::prelude::*;
-use libcrux_traits::digest::arrayref::Hash;
 
 /// The different Sha2 algorithms.
 #[derive(Clone, Copy, Debug)]
@@ -40,44 +39,6 @@ impl Algorithm {
             Algorithm::Sha512 => <Sha512 as Hash>::hash(digest, payload),
         }
     }
-}
-
-/// SHA2 224
-/// Will panic if `payload` is longer than `u32::MAX` to ensure that hacl-rs can
-/// process it.
-#[inline(always)]
-pub fn sha224(payload: &[u8]) -> Result<[u8; SHA224_LENGTH], HashError> {
-    let mut digest = [0u8; SHA224_LENGTH];
-    Sha224::hash(&mut digest, payload).map(|_| digest)
-}
-
-/// SHA2 256
-/// Will panic if `payload` is longer than `u32::MAX` to ensure that hacl-rs can
-/// process it.
-#[inline(always)]
-pub fn sha256(payload: &[u8]) -> Result<[u8; SHA256_LENGTH], HashError> {
-    let mut digest = [0u8; SHA256_LENGTH];
-    Sha256::hash(&mut digest, payload).map(|_| digest)
-}
-
-/// SHA2 384
-/// Will panic if `payload` is longer than `u32::MAX` to ensure that hacl-rs can
-/// process it.
-#[inline(always)]
-pub fn sha384(payload: &[u8]) -> Result<[u8; SHA384_LENGTH], HashError> {
-    let mut digest = [0u8; SHA384_LENGTH];
-    Sha384::hash(&mut digest, payload).map(|_| digest)
-}
-
-pub use libcrux_traits::digest::arrayref::HashError;
-
-/// SHA2 512
-/// Will panic if `payload` is longer than `u32::MAX` to ensure that hacl-rs can
-/// process it.
-#[inline(always)]
-pub fn sha512(payload: &[u8]) -> Result<[u8; SHA512_LENGTH], HashError> {
-    let mut digest = [0u8; SHA512_LENGTH];
-    Sha512::hash(&mut digest, payload).map(|_| digest)
 }
 
 // Streaming API - This is the recommended one.
