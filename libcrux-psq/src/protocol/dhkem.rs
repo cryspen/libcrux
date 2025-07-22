@@ -1,9 +1,7 @@
 //! Diffie-Hellman KEM type wrappers
 //!
 //! This module provides wrappers around KEM types, assuming a DH-KEM
-//! style API (for now). In the future this module should become
-//! obsolete, since we can use libcrux KEM trait implementers
-//! directly. (cf. https://github.com/cryspen/libcrux/issues/1035)
+//! style API.
 use libcrux_ecdh::{secret_to_public, Algorithm};
 use rand::CryptoRng;
 use tls_codec::{TlsDeserialize, TlsDeserializeBytes, TlsSerialize, TlsSerializeBytes, TlsSize};
