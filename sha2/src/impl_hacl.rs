@@ -1,6 +1,6 @@
 use super::*;
 use libcrux_hacl_rs::prelude::*;
-use libcrux_traits::digest::arrayref::Digest;
+use libcrux_traits::digest::arrayref::Hash;
 
 /// The different Sha2 algorithms.
 #[derive(Clone, Copy, Debug)]
@@ -31,13 +31,13 @@ impl Algorithm {
         &self,
         payload: &[u8],
         digest: &mut [u8],
-    ) -> Result<(), libcrux_traits::digest::slice::HashError> {
-        use libcrux_traits::digest::slice::Digest;
+    ) -> Result<usize, libcrux_traits::digest::slice::HashError> {
+        use libcrux_traits::digest::slice::Hash;
         match self {
-            Algorithm::Sha224 => <Sha224 as Digest>::hash(digest, payload),
-            Algorithm::Sha256 => <Sha256 as Digest>::hash(digest, payload),
-            Algorithm::Sha384 => <Sha384 as Digest>::hash(digest, payload),
-            Algorithm::Sha512 => <Sha512 as Digest>::hash(digest, payload),
+            Algorithm::Sha224 => <Sha224 as Hash>::hash(digest, payload),
+            Algorithm::Sha256 => <Sha256 as Hash>::hash(digest, payload),
+            Algorithm::Sha384 => <Sha384 as Hash>::hash(digest, payload),
+            Algorithm::Sha512 => <Sha512 as Hash>::hash(digest, payload),
         }
     }
 }
@@ -103,10 +103,7 @@ macro_rules! impl_hash {
                 Self($malloc())
             }
         }
-
-
-        impl libcrux_traits::digest::arrayref::Digest<$digest_size> for $name {
-            type IncrementalState = $state_name;
+        impl libcrux_traits::digest::arrayref::Hash<$digest_size> for $name {
             /// Return the digest for the given input byte slice, in immediate mode.
             /// Will return an error if `payload` is longer than `u32::MAX` to ensure that hacl-rs can
             /// process it.
@@ -120,6 +117,11 @@ macro_rules! impl_hash {
 
                 Ok(())
             }
+
+
+        }
+        impl libcrux_traits::digest::arrayref::DigestIncremental<$digest_size> for $name {
+            type IncrementalState = $state_name;
 
             /// Add the `payload` to the digest.
             /// Will panic if `payload` is longer than `u32::MAX` to ensure that hacl-rs can

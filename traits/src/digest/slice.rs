@@ -1,24 +1,25 @@
 use super::arrayref;
 
-pub trait Digest {
-    type IncrementalState: Default;
-
+pub trait Hash {
     /// Oneshot API
-    fn hash(digest: &mut [u8], payload: &[u8]) -> Result<(), HashError>;
+    fn hash(digest: &mut [u8], payload: &[u8]) -> Result<usize, HashError>;
+}
+pub trait DigestIncremental {
+    type IncrementalState: Default;
 
     fn update(state: &mut Self::IncrementalState, payload: &[u8]) -> Result<(), UpdateError>;
 
-    fn finish(state: &mut Self::IncrementalState, digest: &mut [u8]) -> Result<(), FinishError>;
+    fn finish(state: &mut Self::IncrementalState, digest: &mut [u8]) -> Result<usize, FinishError>;
 
     fn reset(state: &mut Self::IncrementalState);
 }
 
 pub enum FinishError {
-    IncorrectDigestLength,
+    InvalidDigestLength,
 }
 
 pub enum HashError {
-    IncorrectDigestLength,
+    InvalidDigestLength,
     PayloadTooLong,
 }
 
@@ -46,41 +47,44 @@ impl From<arrayref::UpdateError> for UpdateError {
 #[macro_export]
 macro_rules! impl_digest_trait {
     ($type:ty => $incremental_state:ty, $len:expr) => {
-        impl $crate::digest::slice::Digest for $type {
-            type IncrementalState = $incremental_state;
-
+        impl $crate::digest::slice::Hash for $type {
             fn hash(
                 digest: &mut [u8],
                 payload: &[u8],
-            ) -> Result<(), $crate::digest::slice::HashError> {
+            ) -> Result<usize, $crate::digest::slice::HashError> {
                 let digest: &mut [u8; $len] = digest
                     .try_into()
-                    .map_err(|_| $crate::digest::slice::HashError::IncorrectDigestLength)?;
-                <Self as $crate::digest::arrayref::Digest<$len>>::hash(digest, payload)
+                    .map_err(|_| $crate::digest::slice::HashError::InvalidDigestLength)?;
+                <Self as $crate::digest::arrayref::Hash<$len>>::hash(digest, payload)
+                    .map(|_| $len)
                     .map_err($crate::digest::slice::HashError::from)
             }
+        }
+        impl $crate::digest::slice::DigestIncremental for $type {
+            type IncrementalState = $incremental_state;
+
             fn update(
                 state: &mut Self::IncrementalState,
                 payload: &[u8],
             ) -> Result<(), $crate::digest::slice::UpdateError> {
-                <Self as $crate::digest::arrayref::Digest<$len>>::update(state, payload)
+                <Self as $crate::digest::arrayref::DigestIncremental<$len>>::update(state, payload)
                     .map_err($crate::digest::slice::UpdateError::from)
             }
 
             fn finish(
                 state: &mut Self::IncrementalState,
                 digest: &mut [u8],
-            ) -> Result<(), $crate::digest::slice::FinishError> {
+            ) -> Result<usize, $crate::digest::slice::FinishError> {
                 let digest: &mut [u8; $len] = digest
                     .try_into()
-                    .map_err(|_| $crate::digest::slice::FinishError::IncorrectDigestLength)?;
-                <Self as $crate::digest::arrayref::Digest<$len>>::finish(state, digest);
+                    .map_err(|_| $crate::digest::slice::FinishError::InvalidDigestLength)?;
+                <Self as $crate::digest::arrayref::DigestIncremental<$len>>::finish(state, digest);
 
-                Ok(())
+                Ok($len)
             }
 
             fn reset(state: &mut Self::IncrementalState) {
-                <Self as $crate::digest::arrayref::Digest<$len>>::reset(state);
+                <Self as $crate::digest::arrayref::DigestIncremental<$len>>::reset(state);
             }
         }
     };
