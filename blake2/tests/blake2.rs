@@ -1,7 +1,4 @@
-use libcrux_blake2::{
-    Blake2bBuilder, Blake2bHasher, Blake2bSliceHasher, Blake2sBuilder, Blake2sHasher,
-    Blake2sSliceHasher,
-};
+use libcrux_blake2::{Blake2bBuilder, Blake2sBuilder};
 
 #[test]
 fn test_blake2b() {
