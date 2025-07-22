@@ -20,7 +20,7 @@ concurrency:
 
 jobs:
   get-hax-rev:
-      - uses: ./.github/workflows/get-hax-rev.yml
+    uses: ./.github/workflows/get-hax-rev.yml
 
   extract:
     if: ${{ github.event_name != 'merge_group' }}
