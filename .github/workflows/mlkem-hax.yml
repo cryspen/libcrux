@@ -80,7 +80,7 @@ jobs:
         with:
           repository: cryspen/hax
           path: hax
-          refe: ${{ needs.get-hax-ref.outputs.hax_ref }}
+          ref: ${{ needs.get-hax-ref.outputs.hax_ref }}
       - name: ⤵ Install hax
         run: |
           nix profile install ./hax

@@ -15,5 +15,5 @@ jobs:
         run: |
           # use hax from the commit at which hax-lib is pinned in the Cargo.toml of libcrux.
           HAX_VERSION="$(cargo metadata --format-version=1 | jq -r '.packages[] | select(.name=="hax-lib") | .version')"
-          echo "hax_ref=hax-lib-v$HAX_VERSION" >> "$GITHUB_OUTPUT"
+          echo "hax_ref=hax-lib-v$HAX_VERSION" >> $GITHUB_OUTPUT
           echo "Using hax $HAX_VERSION"
