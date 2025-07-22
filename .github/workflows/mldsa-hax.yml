@@ -25,7 +25,7 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-      - uses: ./github/workflows/get-hax-rev.yml
+      - uses: ./.github/workflows/get-hax-rev.yml
         id: get-hax-rev
       - uses: hacspec/hax-actions@main
         with:
@@ -51,7 +51,7 @@ jobs:
     if: ${{ github.event_name != 'merge_group' }}
     steps:
       - uses: actions/checkout@v4
-      - uses: ./github/workflows/get-hax-rev.yml
+      - uses: ./.github/workflows/get-hax-rev.yml
         id: get-hax-rev
       - uses: hacspec/hax-actions@main
         with:
