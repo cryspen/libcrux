@@ -5,7 +5,7 @@ mod blake2s;
 mod error;
 
 pub use blake2b::{Blake2b, Blake2bBuilder, Blake2bHasher, Blake2bSliceHasher};
-pub use blake2s::{Blake2s, Blake2sBuilder};
+pub use blake2s::{Blake2s, Blake2sBuilder, Blake2sHasher, Blake2sSliceHasher};
 pub use error::Error;
 
 /// Type that holds the constants in case both key length and digest length are known at compile
