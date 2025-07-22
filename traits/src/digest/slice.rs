@@ -5,7 +5,7 @@ pub trait Hash {
     fn hash(digest: &mut [u8], payload: &[u8]) -> Result<usize, HashError>;
 }
 pub trait DigestIncremental {
-    type IncrementalState: Default;
+    type IncrementalState;
 
     fn update(state: &mut Self::IncrementalState, payload: &[u8]) -> Result<(), UpdateError>;
 
@@ -14,10 +14,12 @@ pub trait DigestIncremental {
     fn reset(state: &mut Self::IncrementalState);
 }
 
+#[derive(Debug)]
 pub enum FinishError {
     InvalidDigestLength,
 }
 
+#[derive(Debug)]
 pub enum HashError {
     InvalidDigestLength,
     PayloadTooLong,

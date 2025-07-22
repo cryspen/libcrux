@@ -1,5 +1,42 @@
-use libcrux_blake2::{Blake2bBuilder, Blake2sBuilder};
+use libcrux_blake2::{Blake2bBuilder, Blake2bHasher, Blake2bSliceHasher, Blake2sBuilder};
 
+#[test]
+fn test_blake2b_trait() {
+    let mut hasher: Blake2bHasher<32> = Blake2bBuilder::new_unkeyed()
+        .build_const_digest_len()
+        .unwrap()
+        .into();
+    let mut got_hash = [0; 32];
+
+    // test unkeyed, with const key and digest len
+    let expected_hash = b"\xe9\xed\x14\x1d\xf1\xce\xbf\xc8\x9e\x46\x6c\xe0\x89\xee\xdd\x4f\x12\x5a\xa7\x57\x15\x01\xa0\xaf\x87\x1f\xab\x60\x59\x71\x17\xb7";
+    hasher.update(b"this is a test").unwrap();
+    hasher.finish(&mut got_hash);
+
+    assert_eq!(&got_hash, expected_hash);
+
+    hasher.reset();
+    hasher.update(b"this is a test").unwrap();
+    hasher.finish(&mut got_hash);
+
+    assert_eq!(&got_hash, expected_hash);
+
+    let mut hasher: Blake2bSliceHasher = Blake2bBuilder::new_unkeyed()
+        .build_var_digest_len(32)
+        .unwrap()
+        .into();
+
+    hasher.update(b"this is a test").unwrap();
+    hasher.finish(&mut got_hash).unwrap();
+
+    assert_eq!(&got_hash, expected_hash);
+
+    hasher.reset();
+    hasher.update(b"this is a test").unwrap();
+    hasher.finish(&mut got_hash).unwrap();
+
+    assert_eq!(&got_hash, expected_hash);
+}
 #[test]
 fn test_blake2b() {
     let mut got_hash = [0; 32];

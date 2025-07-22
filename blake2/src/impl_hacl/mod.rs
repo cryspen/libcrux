@@ -4,7 +4,7 @@ mod blake2b;
 mod blake2s;
 mod error;
 
-pub use blake2b::{Blake2b, Blake2bBuilder};
+pub use blake2b::{Blake2b, Blake2bBuilder, Blake2bHasher, Blake2bSliceHasher};
 pub use blake2s::{Blake2s, Blake2sBuilder};
 pub use error::Error;
 

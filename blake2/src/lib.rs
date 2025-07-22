@@ -10,4 +10,6 @@ mod hacl {
 
 mod impl_hacl;
 
-pub use impl_hacl::{Blake2b, Blake2bBuilder, Blake2s, Blake2sBuilder, Error};
+pub use impl_hacl::{
+    Blake2b, Blake2bBuilder, Blake2bHasher, Blake2bSliceHasher, Blake2s, Blake2sBuilder, Error,
+};

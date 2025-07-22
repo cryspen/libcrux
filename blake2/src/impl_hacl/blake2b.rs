@@ -469,12 +469,12 @@ impl Blake2b<Dynamic> {
     }
 }
 
-struct Blake2sHash<T> {
+pub struct Blake2bHash<T> {
     _phantom: PhantomData<T>,
 }
 
 impl<const OUT_SIZE: usize> libcrux_traits::digest::arrayref::DigestIncremental<OUT_SIZE>
-    for Blake2sHash<ConstKeyLenConstDigestLen<0, OUT_SIZE>>
+    for Blake2bHash<ConstKeyLenConstDigestLen<0, OUT_SIZE>>
 {
     type IncrementalState = Box<[state_t]>;
 
@@ -504,7 +504,27 @@ impl<const OUT_SIZE: usize> libcrux_traits::digest::arrayref::DigestIncremental<
     }
 }
 
-impl libcrux_traits::digest::slice::DigestIncremental for Blake2sHash<ConstKeyLen<0>> {
+// TODO: consistent naming
+pub type Blake2bHasher<const N: usize> =
+    libcrux_traits::digest::Hasher<N, Blake2bHash<ConstKeyLenConstDigestLen<0, N>>>;
+pub type Blake2bSliceHasher = libcrux_traits::digest::SliceHasher<Blake2bHash<ConstKeyLen<0>>>;
+
+impl<const N: usize> From<Blake2b<ConstKeyLenConstDigestLen<0, N>>> for Blake2bHasher<N> {
+    fn from(hasher: Blake2b<ConstKeyLenConstDigestLen<0, N>>) -> Self {
+        Self {
+            state: hasher.state,
+        }
+    }
+}
+impl From<Blake2b<ConstKeyLen<0>>> for Blake2bSliceHasher {
+    fn from(hasher: Blake2b<ConstKeyLen<0>>) -> Self {
+        Self {
+            state: hasher.state,
+        }
+    }
+}
+
+impl libcrux_traits::digest::slice::DigestIncremental for Blake2bHash<ConstKeyLen<0>> {
     type IncrementalState = Box<[state_t]>;
 
     fn update(

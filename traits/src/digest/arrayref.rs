@@ -11,7 +11,7 @@ pub enum UpdateError {
 }
 
 pub trait DigestIncremental<const OUTPUT_LEN: usize> {
-    type IncrementalState: Default;
+    type IncrementalState;
 
     fn update(state: &mut Self::IncrementalState, payload: &[u8]) -> Result<(), UpdateError>;
 
