@@ -165,6 +165,7 @@ pub(super) fn derive_session_key(k2: AEADKey, tx2: Transcript) -> Result<Session
     Ok(SessionKey { key, identifier })
 }
 
+// skChannel = KDF(skCS, "channel key" | pk_binder | channel_counter)
 pub(super) fn derive_channel_key(session: &Session) -> Result<AEADKey, Error> {
     #[derive(TlsSerializeBytes, TlsSize)]
     struct ChannelKeyInfo {
