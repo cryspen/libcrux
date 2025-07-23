@@ -89,6 +89,13 @@ macro_rules! impl_hash {
         #[allow(non_camel_case_types)]
         pub struct $name;
 
+        impl $name {
+
+            pub fn new() -> $hasher_name {
+                Default::default()
+    }
+        }
+
         pub type $hasher_name = libcrux_traits::digest::Hasher<$digest_size, $name>;
 
         pub struct $state_name($state);
