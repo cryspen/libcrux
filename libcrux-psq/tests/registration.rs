@@ -92,14 +92,19 @@ fn registration(pq: bool) {
     let mut i_transport = initiator.into_transport_mode().unwrap();
     let mut r_transport = responder.into_transport_mode().unwrap();
 
+    let (channel_no_i, mut channel_i) = i_transport.make_channel().unwrap();
+    let (channel_no_r, mut channel_r) = r_transport.make_channel().unwrap();
+
+    assert_eq!(channel_no_i, channel_no_r);
+
     let app_data_i = b"Derived session hey".as_slice();
     let app_data_r = b"Derived session ho".as_slice();
 
-    let len_i = i_transport
+    let len_i = channel_i
         .write_message(app_data_i, &mut msg_channel)
         .unwrap();
 
-    let (len_r_deserialized, len_r_payload) = r_transport
+    let (len_r_deserialized, len_r_payload) = channel_r
         .read_message(&msg_channel, &mut payload_buf_responder)
         .unwrap();
 
@@ -108,11 +113,11 @@ fn registration(pq: bool) {
     assert_eq!(len_r_payload, app_data_i.len());
     assert_eq!(&payload_buf_responder[0..len_r_payload], app_data_i);
 
-    let len_r = r_transport
+    let len_r = channel_r
         .write_message(app_data_r, &mut msg_channel)
         .unwrap();
 
-    let (len_i_deserialized, len_i_payload) = i_transport
+    let (len_i_deserialized, len_i_payload) = channel_i
         .read_message(&msg_channel, &mut payload_buf_initiator)
         .unwrap();
 

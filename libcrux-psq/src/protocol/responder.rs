@@ -377,13 +377,13 @@ impl<'a, Rng: CryptoRng> IntoTransport for Responder<'a, Rng> {
             return Err(Error::ResponderState);
         };
 
-        let responder_pq_pk = self.longterm_pq_keys.map(|key_pair| key_pair.pk.clone());
+        let responder_pq_pk = self.longterm_pq_keys.map(|key_pair| &key_pair.pk);
 
         Session::new(
             state.tx2,
             state.k2,
-            initiator_ecdh_pk,
-            self.longterm_ecdh_keys.pk,
+            &initiator_ecdh_pk,
+            &self.longterm_ecdh_keys.pk,
             responder_pq_pk,
         )
     }

@@ -617,12 +617,13 @@ fn registration<const PQ: bool>(c: &mut Criterion) {
                         .read_message(&msg_channel, &mut payload_buf_initiator)
                         .unwrap();
 
-                    let initiator = initiator.into_transport_mode().unwrap();
+                    let mut initiator = initiator.into_transport_mode().unwrap();
+                    let (_channel_no, channel) = initiator.make_channel().unwrap();
                     let payload = randombytes(4096);
-                    (initiator, msg_channel, payload)
+                    (channel, msg_channel, payload)
                 },
-                |(initiator, msg_channel, payload)| {
-                    let _ = initiator.write_message(payload, msg_channel).unwrap();
+                |(channel, msg_channel, payload)| {
+                    let _ = channel.write_message(payload, msg_channel).unwrap();
                 },
                 BatchSize::SmallInput,
             )
@@ -676,15 +677,19 @@ fn registration<const PQ: bool>(c: &mut Criterion) {
                         .unwrap();
 
                     let mut initiator = initiator.into_transport_mode().unwrap();
-                    let _ = initiator
+
+                    let (_channel_no, mut initiator_channel) = initiator.make_channel().unwrap();
+
+                    let _ = initiator_channel
                         .write_message(&randombytes(4096), &mut msg_channel)
                         .unwrap();
 
-                    let responder = responder.into_transport_mode().unwrap();
-                    (responder, msg_channel, payload_buf_responder)
+                    let mut responder = responder.into_transport_mode().unwrap();
+                    let (_channel_no, responder_channel) = responder.make_channel().unwrap();
+                    (responder_channel, msg_channel, payload_buf_responder)
                 },
-                |(responder, msg_channel, payload_buf_responder)| {
-                    let _ = responder
+                |(responder_channel, msg_channel, payload_buf_responder)| {
+                    let _ = responder_channel
                         .read_message(msg_channel, payload_buf_responder)
                         .unwrap();
                 },

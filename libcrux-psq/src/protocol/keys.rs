@@ -1,27 +1,26 @@
 use libcrux_chacha20poly1305::{decrypt_detached, encrypt_detached, KEY_LEN, NONCE_LEN};
 use libcrux_hkdf::Algorithm;
-use tls_codec::{Deserialize, Serialize, SerializeBytes, TlsSerializeBytes, TlsSize};
+use tls_codec::{
+    Deserialize, Serialize, SerializeBytes, TlsDeserialize, TlsSerialize, TlsSerializeBytes,
+    TlsSize,
+};
 
-use crate::protocol::pqkem::PQSharedSecret;
+use crate::protocol::{api::PK_BINDER_LEN, pqkem::PQSharedSecret};
 
 use super::{
-    api::Error,
+    api::{serialize_error, Error, Session},
     dhkem::{DHPrivateKey, DHPublicKey, DHSharedSecret},
     session::{SessionKey, SESSION_ID_LENGTH},
     transcript::{self, Transcript},
 };
 
-#[derive(Default, Clone, TlsSerializeBytes, TlsSize)]
+#[derive(Default, Clone, TlsSerialize, TlsDeserialize, TlsSerializeBytes, TlsSize)]
 pub struct AEADKey([u8; KEY_LEN], #[tls_codec(skip)] [u8; NONCE_LEN]);
 
 impl std::fmt::Debug for AEADKey {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_tuple("AEADKey").field(&"***").finish()
     }
-}
-
-fn serialize_error(e: tls_codec::Error) -> Error {
-    Error::Serialize(e)
 }
 
 impl AEADKey {
@@ -134,7 +133,7 @@ fn session_key_id(key: &AEADKey) -> Result<[u8; SESSION_ID_LENGTH], Error> {
     let prk = libcrux_hkdf::extract(
         Algorithm::Sha256,
         [],
-        key.tls_serialize().map_err(serialize_error)?,
+        SerializeBytes::tls_serialize(&key).map_err(serialize_error)?,
     )
     .map_err(|_| Error::CryptoError)?;
 
@@ -146,7 +145,7 @@ fn session_key_id(key: &AEADKey) -> Result<[u8; SESSION_ID_LENGTH], Error> {
     )
 }
 
-// skCS = KDF(K2, "shared secret" | tx2)
+// skCS = KDF(K2, "session secret" | tx2)
 pub(super) fn derive_session_key(k2: AEADKey, tx2: Transcript) -> Result<SessionKey, Error> {
     #[derive(TlsSerializeBytes, TlsSize)]
     struct SessionKeyInfo<'a> {
@@ -154,16 +153,37 @@ pub(super) fn derive_session_key(k2: AEADKey, tx2: Transcript) -> Result<Session
         tx2: &'a Transcript,
     }
 
-    const SHARED_KEY_LABEL: &'static [u8] = b"shared key";
+    const SESSION_KEY_LABEL: &'static [u8] = b"session key";
     let key = AEADKey::new(
         &k2,
         &SessionKeyInfo {
-            domain_separator: SHARED_KEY_LABEL,
+            domain_separator: SESSION_KEY_LABEL,
             tx2: &tx2,
         },
     )?;
     let identifier = session_key_id(&key)?;
     Ok(SessionKey { key, identifier })
+}
+
+pub(super) fn derive_channel_key(session: &Session) -> Result<AEADKey, Error> {
+    #[derive(TlsSerializeBytes, TlsSize)]
+    struct ChannelKeyInfo {
+        domain_separator: &'static [u8],
+        pk_binder: [u8; PK_BINDER_LEN],
+        counter: u32,
+    }
+
+    const CHANNEL_KEY_LABEL: &'static [u8] = b"channel key";
+    AEADKey::new(
+        &session.session_key.key,
+        &ChannelKeyInfo {
+            domain_separator: CHANNEL_KEY_LABEL,
+            pk_binder: session.pk_binder.clone(),
+            counter: session.channel_counter,
+        }
+        .tls_serialize()
+        .map_err(serialize_error)?,
+    )
 }
 
 // K0 = KDF(g^xs, tx0)

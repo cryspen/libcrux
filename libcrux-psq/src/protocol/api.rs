@@ -1,9 +1,11 @@
 use std::io::Cursor;
 
+use libcrux_hkdf::Algorithm;
 use rand::CryptoRng;
 
 use tls_codec::{
-    Deserialize, Serialize, Size, TlsDeserialize, TlsSerialize, TlsSize, VLByteSlice, VLBytes,
+    Deserialize, Serialize, SerializeBytes, Size, TlsDeserialize, TlsSerialize, TlsSize,
+    VLByteSlice, VLBytes,
 };
 
 use crate::protocol::write_output;
@@ -11,12 +13,16 @@ use crate::protocol::write_output;
 use super::{
     dhkem::{DHKeyPair, DHPublicKey},
     initiator::{QueryInitiator, RegistrationInitiator},
-    keys::{derive_session_key, AEADKey},
+    keys::{derive_channel_key, derive_session_key, AEADKey},
     pqkem::{PQKeyPair, PQPublicKey},
     responder::Responder,
     session::{SessionKey, SESSION_ID_LENGTH},
     transcript::Transcript,
 };
+
+pub(crate) fn serialize_error(e: tls_codec::Error) -> Error {
+    Error::Serialize(e)
+}
 
 #[derive(Debug)]
 pub enum Error {
@@ -29,6 +35,7 @@ pub enum Error {
     TransportState,
     OutputBufferShort,
     PayloadTooLong,
+    Storage,
     OtherError,
 }
 
@@ -39,27 +46,110 @@ pub(crate) struct ToTransportState {
     pub(crate) initiator_ecdh_pk: Option<DHPublicKey>,
 }
 
+pub(crate) const PK_BINDER_LEN: usize = 8;
+
+#[derive(TlsSerialize, TlsDeserialize, TlsSize)]
 pub struct Session {
-    session_key: SessionKey,
-    initiator_ecdh_pk: DHPublicKey,
-    responder_ecdh_pk: DHPublicKey,
-    responder_pq_pk: Option<PQPublicKey>,
+    pub(crate) session_key: SessionKey,
+    pub(crate) pk_binder: [u8; PK_BINDER_LEN],
+    pub(crate) channel_counter: u32,
+}
+
+// pkBinder = KDF(skCS, g^c | g^s | [pkS])
+fn derive_pk_binder(
+    key: &SessionKey,
+    initiator_ecdh_pk: &DHPublicKey,
+    responder_ecdh_pk: &DHPublicKey,
+    responder_pq_pk: Option<&PQPublicKey>,
+) -> Result<[u8; PK_BINDER_LEN], Error> {
+    #[derive(TlsSerialize, TlsSize)]
+    struct PkBinderInfo<'a> {
+        initiator_ecdh_pk: &'a DHPublicKey,
+        responder_ecdh_pk: &'a DHPublicKey,
+        responder_pq_pk: Option<&'a PQPublicKey>,
+    }
+
+    let info = PkBinderInfo {
+        initiator_ecdh_pk,
+        responder_ecdh_pk,
+        responder_pq_pk,
+    };
+    let mut info_buf = vec![0u8; info.tls_serialized_len()];
+    info.tls_serialize(&mut &mut info_buf[..])
+        .map_err(serialize_error)?;
+
+    let prk = libcrux_hkdf::extract(
+        Algorithm::Sha256,
+        [],
+        SerializeBytes::tls_serialize(&key.key).map_err(serialize_error)?,
+    )
+    .map_err(|_| Error::CryptoError)?;
+
+    Ok(
+        libcrux_hkdf::expand(Algorithm::Sha256, prk, info_buf, PK_BINDER_LEN)
+            .map_err(|_| Error::CryptoError)?
+            .try_into()
+            .map_err(|_| Error::CryptoError)?, // We don't expect this to fail, unless HDKF gave us the wrong output length
+    )
 }
 
 impl Session {
     pub(crate) fn new(
         tx2: Transcript,
         k2: AEADKey,
-        initiator_ecdh_pk: DHPublicKey,
-        responder_ecdh_pk: DHPublicKey,
-        responder_pq_pk: Option<PQPublicKey>,
+        initiator_ecdh_pk: &DHPublicKey,
+        responder_ecdh_pk: &DHPublicKey,
+        responder_pq_pk: Option<&PQPublicKey>,
     ) -> Result<Self, Error> {
-        Ok(Self {
-            session_key: derive_session_key(k2, tx2)?,
+        let session_key = derive_session_key(k2, tx2)?;
+        let pk_binder = derive_pk_binder(
+            &session_key,
             initiator_ecdh_pk,
             responder_ecdh_pk,
             responder_pq_pk,
+        )?;
+        Ok(Self {
+            session_key,
+            pk_binder,
+            channel_counter: 0,
         })
+    }
+
+    // XXX: tls_serialize should not be called directly, since it does
+    // not consume `Session`. This opens the possiblity for nonce
+    // re-use by deserializing a stale `Session` since the original
+    // could be used after serialization.
+    pub fn serialize(self, out: &mut [u8]) -> Result<usize, Error> {
+        self.tls_serialize(&mut &mut out[..])
+            .map_err(serialize_error)
+    }
+
+    pub fn deserialize(
+        bytes: &[u8],
+        initiator_ecdh_pk: &DHPublicKey,
+        responder_ecdh_pk: &DHPublicKey,
+        responder_pq_pk: Option<&PQPublicKey>,
+    ) -> Result<Self, Error> {
+        let session =
+            Session::tls_deserialize(&mut Cursor::new(bytes)).map_err(|e| Error::Deserialize(e))?;
+
+        if derive_pk_binder(
+            &session.session_key,
+            initiator_ecdh_pk,
+            responder_ecdh_pk,
+            responder_pq_pk,
+        )? == session.pk_binder
+        {
+            Ok(session)
+        } else {
+            Err(Error::Storage)
+        }
+    }
+
+    pub fn make_channel(&mut self) -> Result<(u32, Channel), Error> {
+        let channel = Channel::new(&self)?;
+        self.channel_counter += 1;
+        Ok((self.channel_counter - 1, channel))
     }
 
     pub fn id(&self) -> &[u8; SESSION_ID_LENGTH] {
@@ -79,17 +169,26 @@ struct TransportMessage {
     tag: [u8; 16],
 }
 
-impl Protocol for Session {
+pub struct Channel {
+    channel_key: AEADKey,
+}
+
+impl Channel {
+    fn new(session: &Session) -> Result<Self, Error> {
+        Ok(Self {
+            channel_key: derive_channel_key(session)?,
+        })
+    }
+}
+
+impl Protocol for Channel {
     fn write_message(&mut self, payload: &[u8], out: &mut [u8]) -> Result<usize, Error> {
         // We match the maximum payload length of Noise.
         if payload.len() > 65535 {
             return Err(Error::PayloadTooLong);
         }
         let mut ciphertext = vec![0u8; payload.len()];
-        let tag = self
-            .session_key
-            .key
-            .encrypt(payload, &[], &mut ciphertext)?;
+        let tag = self.channel_key.encrypt(payload, &[], &mut ciphertext)?;
         let message = TransportMessageOut {
             ciphertext: VLByteSlice(ciphertext.as_ref()),
             tag,
@@ -106,10 +205,9 @@ impl Protocol for Session {
 
         let bytes_deserialized = message.tls_serialized_len();
 
-        let payload =
-            self.session_key
-                .key
-                .decrypt(message.ciphertext.as_slice(), &message.tag, &[])?;
+        let payload = self
+            .channel_key
+            .decrypt(message.ciphertext.as_slice(), &message.tag, &[])?;
 
         let out_bytes_written = write_output(&payload, out)?;
 
