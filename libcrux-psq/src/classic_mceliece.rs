@@ -11,6 +11,7 @@ use classic_mceliece_rust::{
 use libcrux_traits::kem::{KEMError, KeyPair, KEM};
 use tls_codec::{Deserialize, Serialize, Size, VLByteSlice, VLBytes};
 
+const MCELIECE460896F_CIPHERTEXT_LEN: usize = 156;
 use crate::traits::*;
 
 /// A wrapper around the `classic_mceliece_rust` type `Ciphertext`.
@@ -33,9 +34,9 @@ impl Deserialize for Ciphertext {
         // let array = GenericArray<u8, Ciphertext::EncappedKeySize>::from(bytes_deserialized);
         // let ciphertext =  Ciphertext::from_bytes(&array)?;
         // ```
-        Ok(Ciphertext(Ct::from(<[u8; 156]>::try_from(
-            bytes_deserialized.as_slice(),
-        )?)))
+        Ok(Ciphertext(Ct::from(
+            <[u8; MCELIECE460896F_CIPHERTEXT_LEN]>::try_from(bytes_deserialized.as_slice())?,
+        )))
     }
 }
 
