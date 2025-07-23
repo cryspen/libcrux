@@ -86,6 +86,115 @@ impl_hash_traits!(Sha3_256, Sha3_256Hasher, SHA3_256_LEN, portable::sha256);
 impl_hash_traits!(Sha3_384, Sha3_384Hasher, SHA3_384_LEN, portable::sha384);
 impl_hash_traits!(Sha3_512, Sha3_512Hasher, SHA3_512_LEN, portable::sha512);
 
+impl From<Algorithm> for u32 {
+    fn from(v: Algorithm) -> u32 {
+        match v {
+            Algorithm::Sha224 => 1,
+            Algorithm::Sha256 => 2,
+            Algorithm::Sha384 => 3,
+            Algorithm::Sha512 => 4,
+        }
+    }
+}
+
+/// Returns the output size of a digest.
+pub const fn digest_size(mode: Algorithm) -> usize {
+    match mode {
+        Algorithm::Sha224 => 28,
+        Algorithm::Sha256 => 32,
+        Algorithm::Sha384 => 48,
+        Algorithm::Sha512 => 64,
+    }
+}
+
+/// SHA3
+pub fn hash<const LEN: usize>(algorithm: Algorithm, payload: &[u8]) -> [u8; LEN] {
+    debug_assert!(payload.len() <= u32::MAX as usize);
+
+    let mut out = [0u8; LEN];
+    match algorithm {
+        Algorithm::Sha224 => portable::sha224(&mut out, payload),
+        Algorithm::Sha256 => portable::sha256(&mut out, payload),
+        Algorithm::Sha384 => portable::sha384(&mut out, payload),
+        Algorithm::Sha512 => portable::sha512(&mut out, payload),
+    }
+    out
+}
+
+/// SHA3
+pub use hash as sha3;
+
+/// SHA3 224
+#[inline(always)]
+pub fn sha224(data: &[u8]) -> Sha3_224Digest {
+    let mut out = [0u8; 28];
+    sha224_ema(&mut out, data);
+    out
+}
+
+/// SHA3 224
+///
+/// Preconditions:
+/// - `digest.len() == 28`
+#[inline(always)]
+pub fn sha224_ema(digest: &mut [u8], payload: &[u8]) {
+    debug_assert!(payload.len() <= u32::MAX as usize);
+    debug_assert!(digest.len() == 28);
+
+    portable::sha224(digest, payload)
+}
+
+/// SHA3 256
+#[inline(always)]
+pub fn sha256(data: &[u8]) -> Sha3_256Digest {
+    let mut out = [0u8; 32];
+    sha256_ema(&mut out, data);
+    out
+}
+
+/// SHA3 256
+#[inline(always)]
+pub fn sha256_ema(digest: &mut [u8], payload: &[u8]) {
+    debug_assert!(payload.len() <= u32::MAX as usize);
+    debug_assert!(digest.len() == 32);
+
+    portable::sha256(digest, payload)
+}
+
+/// SHA3 384
+#[inline(always)]
+pub fn sha384(data: &[u8]) -> Sha3_384Digest {
+    let mut out = [0u8; 48];
+    sha384_ema(&mut out, data);
+    out
+}
+
+/// SHA3 384
+#[inline(always)]
+pub fn sha384_ema(digest: &mut [u8], payload: &[u8]) {
+    debug_assert!(payload.len() <= u32::MAX as usize);
+    debug_assert!(digest.len() == 48);
+
+    portable::sha384(digest, payload)
+}
+
+/// SHA3 512
+#[inline(always)]
+pub fn sha512(data: &[u8]) -> Sha3_512Digest {
+    let mut out = [0u8; 64];
+    sha512_ema(&mut out, data);
+    out
+}
+
+/// SHA3 512
+#[inline(always)]
+pub fn sha512_ema(digest: &mut [u8], payload: &[u8]) {
+    debug_assert!(payload.len() <= u32::MAX as usize);
+    debug_assert!(digest.len() == 64);
+
+    portable::sha512(digest, payload)
+}
+
 /// SHAKE 128
 ///
 /// Note that the output length `BYTES` must fit into 32 bit. If it is longer,
