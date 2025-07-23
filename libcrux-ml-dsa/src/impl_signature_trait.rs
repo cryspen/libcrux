@@ -32,18 +32,21 @@ macro_rules! impl_signature_trait {
             const SIGNATURE_LEN: usize = crate::ml_dsa_generic::$module::SIGNATURE_SIZE;
 
             // XXX: implementing owned trait directly because there is no arrayref equivalent
-            // TODO: randomness
             // TODO: these should appear as consts in trait def
-            impl owned::Signature<VERIFICATION_KEY_LEN, SIGNING_KEY_LEN, SIGNATURE_LEN> for $name {
+            impl owned::Signature<VERIFICATION_KEY_LEN, SIGNING_KEY_LEN, SIGNATURE_LEN>
+                for super::Signer<$name>
+            {
+                type Config = super::Randomness;
                 fn sign(
                     payload: &[u8],
                     private_key: &[u8; SIGNING_KEY_LEN],
+                    randomness: super::Randomness,
                 ) -> Result<[u8; SIGNATURE_LEN], owned::SignError> {
                     crate::ml_dsa_generic::multiplexing::$module::sign(
                         private_key,
                         payload,
                         &[],
-                        todo!("randomness"),
+                        randomness,
                     )
                     .map(|sig| sig.value)
                     .map_err(owned::SignError::from)
@@ -66,6 +69,12 @@ macro_rules! impl_signature_trait {
         pub use $module::$name;
     };
 }
+pub struct Signer<T> {
+    _phantom_data: core::marker::PhantomData<T>,
+}
+
+type Randomness = [u8; 32];
+
 impl_signature_trait!(MlDsa44, ml_dsa_44, "A struct representing ML-DSA 44");
 impl_signature_trait!(MlDsa65, ml_dsa_65, "A struct representing ML-DSA 65");
 impl_signature_trait!(MlDsa87, ml_dsa_87, "A struct representing ML-DSA 87");

@@ -4,11 +4,13 @@ pub trait Signature<
     const SIGNATURE_LEN: usize,
 >
 {
+    type Config;
     // TODO: should this be called `private_key` or `sk`?
     fn sign(
         payload: &[u8],
         private_key: &[u8; PRIVATE_KEY_LEN],
         signature: &mut [u8; SIGNATURE_LEN],
+        config: Self::Config,
     ) -> Result<(), SignError>;
     fn verify(
         payload: &[u8],
