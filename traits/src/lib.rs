@@ -20,4 +20,5 @@ pub trait Digest<const HASH_LEN: usize> {
     fn reset(&mut self);
 }
 
+pub mod aead;
 pub mod kem;
