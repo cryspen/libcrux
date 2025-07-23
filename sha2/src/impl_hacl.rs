@@ -41,6 +41,46 @@ impl Algorithm {
     }
 }
 
+/// SHA2 224
+/// Will panic if `payload` is longer than `u32::MAX` to ensure that hacl-rs can
+/// process it.
+#[inline(always)]
+pub fn sha224(payload: &[u8]) -> [u8; SHA224_LENGTH] {
+    let mut digest = [0u8; SHA224_LENGTH];
+    Sha224Hasher::hash(&mut digest, payload).unwrap();
+    digest
+}
+
+/// SHA2 256
+/// Will panic if `payload` is longer than `u32::MAX` to ensure that hacl-rs can
+/// process it.
+#[inline(always)]
+pub fn sha256(payload: &[u8]) -> [u8; SHA256_LENGTH] {
+    let mut digest = [0u8; SHA256_LENGTH];
+    Sha256Hasher::hash(&mut digest, payload).unwrap();
+    digest
+}
+
+/// SHA2 384
+/// Will panic if `payload` is longer than `u32::MAX` to ensure that hacl-rs can
+/// process it.
+#[inline(always)]
+pub fn sha384(payload: &[u8]) -> [u8; SHA384_LENGTH] {
+    let mut digest = [0u8; SHA384_LENGTH];
+    Sha384Hasher::hash(&mut digest, payload).unwrap();
+    digest
+}
+
+/// SHA2 512
+/// Will panic if `payload` is longer than `u32::MAX` to ensure that hacl-rs can
+/// process it.
+#[inline(always)]
+pub fn sha512(payload: &[u8]) -> [u8; SHA512_LENGTH] {
+    let mut digest = [0u8; SHA512_LENGTH];
+    Sha512Hasher::hash(&mut digest, payload).unwrap();
+    digest
+}
+
 // Streaming API - This is the recommended one.
 // For implementations based on hacl_rs (over hacl-c)
 macro_rules! impl_hash {
