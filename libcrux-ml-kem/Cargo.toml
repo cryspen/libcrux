@@ -31,12 +31,19 @@ libcrux-platform = { version = "0.0.2", path = "../sys/platform" }
 libcrux-sha3 = { version = "0.0.3", path = "../libcrux-sha3" }
 libcrux-intrinsics = { version = "0.0.3", path = "../libcrux-intrinsics" }
 libcrux-secrets = { version = "0.0.3", path = "../secrets" }
+libcrux-traits = { version = "0.0.3", path = "../traits" }
 hax-lib.workspace = true
+tls_codec = { version = "0.4.2", features = [
+    "derive",
+], default-features = false, optional = true }
 
 [features]
 # By default all variants and std are enabled.
 default = ["default-no-std", "std"]
 default-no-std = ["mlkem512", "mlkem768", "mlkem1024", "rand"]
+
+# Serialization & Deserialization using tls_codec
+codec = ["dep:tls_codec"]
 
 # Hardware features can be force enabled.
 # It is not recommended to use these. This crate performs CPU feature detection
@@ -56,7 +63,7 @@ kyber = []
 rand = ["dep:rand"]
 
 # std support
-std = ["alloc", "rand/std"]
+std = ["alloc", "rand/std", "tls_codec/std"]
 alloc = []
 
 # Incremental encapsulation API
@@ -71,6 +78,9 @@ serde_json = { version = "1.0" }
 serde = { version = "1.0", features = ["derive"] }
 hex = { version = "0.4.3", features = ["serde"] }
 criterion = "0.6"
+libcrux-traits = { version = "0.0.3", path = "../traits", features = [
+    "generic-tests",
+] }
 
 [[bench]]
 name = "ml-kem"

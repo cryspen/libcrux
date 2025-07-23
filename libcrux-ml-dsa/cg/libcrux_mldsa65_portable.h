@@ -7,8 +7,8 @@
  * Charon: bb62a9b39db4ea8c6d536fe61b7d26663751bf3c
  * Eurydice: 46cef5d58a855ed049fa89bfe99c959b5d9d0d4b
  * Karamel: 39cb85a718da8ae4a724d31b08f9134ca9311336
- * F*: 71d8221589d4d438af3706d89cb653cf53e18aab
- * Libcrux: 82b7a4b7638a8c50ce5f5493d6ad7e434701b450
+ * F*: 4b3fc11774003a6ff7c09500ecb5f0145ca6d862
+ * Libcrux: b54a2f8eacb847bfe456abe6b195dc94bf464dda
  */
 
 #ifndef __libcrux_mldsa65_portable_H
@@ -1323,6 +1323,47 @@ libcrux_ml_dsa_simd_portable_rejection_sample_less_than_eta_equals_4_e9(
       randomness, out);
 }
 
+#define LIBCRUX_ML_DSA_SIMD_PORTABLE_ENCODING_GAMMA1_SERIALIZE_WHEN_GAMMA1_IS_2_POW_19_GAMMA1 \
+  ((int32_t)1 << 19U)
+
+static KRML_MUSTINLINE void
+libcrux_ml_dsa_simd_portable_encoding_gamma1_serialize_when_gamma1_is_2_pow_19(
+    libcrux_ml_dsa_simd_portable_vector_type_Coefficients *simd_unit,
+    Eurydice_slice serialized) {
+  for (size_t i = (size_t)0U;
+       i < Eurydice_slice_len(
+               Eurydice_array_to_slice((size_t)8U, simd_unit->values, int32_t),
+               int32_t) /
+               (size_t)2U;
+       i++) {
+    size_t i0 = i;
+    Eurydice_slice coefficients =
+        Eurydice_array_to_subslice2(simd_unit->values, i0 * (size_t)2U,
+                                    i0 * (size_t)2U + (size_t)2U, int32_t);
+    int32_t coefficient0 =
+        LIBCRUX_ML_DSA_SIMD_PORTABLE_ENCODING_GAMMA1_SERIALIZE_WHEN_GAMMA1_IS_2_POW_19_GAMMA1 -
+        Eurydice_slice_index(coefficients, (size_t)0U, int32_t, int32_t *);
+    int32_t coefficient1 =
+        LIBCRUX_ML_DSA_SIMD_PORTABLE_ENCODING_GAMMA1_SERIALIZE_WHEN_GAMMA1_IS_2_POW_19_GAMMA1 -
+        Eurydice_slice_index(coefficients, (size_t)1U, int32_t, int32_t *);
+    Eurydice_slice_index(serialized, (size_t)5U * i0, uint8_t, uint8_t *) =
+        (uint8_t)coefficient0;
+    Eurydice_slice_index(serialized, (size_t)5U * i0 + (size_t)1U, uint8_t,
+                         uint8_t *) = (uint8_t)(coefficient0 >> 8U);
+    Eurydice_slice_index(serialized, (size_t)5U * i0 + (size_t)2U, uint8_t,
+                         uint8_t *) = (uint8_t)(coefficient0 >> 16U);
+    size_t uu____0 = (size_t)5U * i0 + (size_t)2U;
+    Eurydice_slice_index(serialized, uu____0, uint8_t, uint8_t *) =
+        (uint32_t)Eurydice_slice_index(serialized, uu____0, uint8_t,
+                                       uint8_t *) |
+        (uint32_t)(uint8_t)(coefficient1 << 4U);
+    Eurydice_slice_index(serialized, (size_t)5U * i0 + (size_t)3U, uint8_t,
+                         uint8_t *) = (uint8_t)(coefficient1 >> 4U);
+    Eurydice_slice_index(serialized, (size_t)5U * i0 + (size_t)4U, uint8_t,
+                         uint8_t *) = (uint8_t)(coefficient1 >> 12U);
+  }
+}
+
 #define LIBCRUX_ML_DSA_SIMD_PORTABLE_ENCODING_GAMMA1_SERIALIZE_WHEN_GAMMA1_IS_2_POW_17_GAMMA1 \
   ((int32_t)1 << 17U)
 
@@ -1388,61 +1429,19 @@ libcrux_ml_dsa_simd_portable_encoding_gamma1_serialize_when_gamma1_is_2_pow_17(
   }
 }
 
-#define LIBCRUX_ML_DSA_SIMD_PORTABLE_ENCODING_GAMMA1_SERIALIZE_WHEN_GAMMA1_IS_2_POW_19_GAMMA1 \
-  ((int32_t)1 << 19U)
-
-static KRML_MUSTINLINE void
-libcrux_ml_dsa_simd_portable_encoding_gamma1_serialize_when_gamma1_is_2_pow_19(
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients *simd_unit,
-    Eurydice_slice serialized) {
-  for (size_t i = (size_t)0U;
-       i < Eurydice_slice_len(
-               Eurydice_array_to_slice((size_t)8U, simd_unit->values, int32_t),
-               int32_t) /
-               (size_t)2U;
-       i++) {
-    size_t i0 = i;
-    Eurydice_slice coefficients =
-        Eurydice_array_to_subslice2(simd_unit->values, i0 * (size_t)2U,
-                                    i0 * (size_t)2U + (size_t)2U, int32_t);
-    int32_t coefficient0 =
-        LIBCRUX_ML_DSA_SIMD_PORTABLE_ENCODING_GAMMA1_SERIALIZE_WHEN_GAMMA1_IS_2_POW_19_GAMMA1 -
-        Eurydice_slice_index(coefficients, (size_t)0U, int32_t, int32_t *);
-    int32_t coefficient1 =
-        LIBCRUX_ML_DSA_SIMD_PORTABLE_ENCODING_GAMMA1_SERIALIZE_WHEN_GAMMA1_IS_2_POW_19_GAMMA1 -
-        Eurydice_slice_index(coefficients, (size_t)1U, int32_t, int32_t *);
-    Eurydice_slice_index(serialized, (size_t)5U * i0, uint8_t, uint8_t *) =
-        (uint8_t)coefficient0;
-    Eurydice_slice_index(serialized, (size_t)5U * i0 + (size_t)1U, uint8_t,
-                         uint8_t *) = (uint8_t)(coefficient0 >> 8U);
-    Eurydice_slice_index(serialized, (size_t)5U * i0 + (size_t)2U, uint8_t,
-                         uint8_t *) = (uint8_t)(coefficient0 >> 16U);
-    size_t uu____0 = (size_t)5U * i0 + (size_t)2U;
-    Eurydice_slice_index(serialized, uu____0, uint8_t, uint8_t *) =
-        (uint32_t)Eurydice_slice_index(serialized, uu____0, uint8_t,
-                                       uint8_t *) |
-        (uint32_t)(uint8_t)(coefficient1 << 4U);
-    Eurydice_slice_index(serialized, (size_t)5U * i0 + (size_t)3U, uint8_t,
-                         uint8_t *) = (uint8_t)(coefficient1 >> 4U);
-    Eurydice_slice_index(serialized, (size_t)5U * i0 + (size_t)4U, uint8_t,
-                         uint8_t *) = (uint8_t)(coefficient1 >> 12U);
-  }
-}
-
 static KRML_MUSTINLINE void
 libcrux_ml_dsa_simd_portable_encoding_gamma1_serialize(
     libcrux_ml_dsa_simd_portable_vector_type_Coefficients *simd_unit,
     Eurydice_slice serialized, size_t gamma1_exponent) {
-  switch ((uint8_t)gamma1_exponent) {
+  void *uu____0 = (void *)0U;
+  switch (gamma1_exponent) {
     case 17U: {
-      libcrux_ml_dsa_simd_portable_encoding_gamma1_serialize_when_gamma1_is_2_pow_17(
-          simd_unit, serialized);
       break;
     }
     case 19U: {
       libcrux_ml_dsa_simd_portable_encoding_gamma1_serialize_when_gamma1_is_2_pow_19(
           simd_unit, serialized);
-      break;
+      return;
     }
     default: {
       KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__,
@@ -1450,6 +1449,8 @@ libcrux_ml_dsa_simd_portable_encoding_gamma1_serialize(
       KRML_HOST_EXIT(255U);
     }
   }
+  libcrux_ml_dsa_simd_portable_encoding_gamma1_serialize_when_gamma1_is_2_pow_17(
+      simd_unit, serialized);
 }
 
 /**
@@ -1461,6 +1462,56 @@ static inline void libcrux_ml_dsa_simd_portable_gamma1_serialize_e9(
     Eurydice_slice serialized, size_t gamma1_exponent) {
   libcrux_ml_dsa_simd_portable_encoding_gamma1_serialize(simd_unit, serialized,
                                                          gamma1_exponent);
+}
+
+#define LIBCRUX_ML_DSA_SIMD_PORTABLE_ENCODING_GAMMA1_DESERIALIZE_WHEN_GAMMA1_IS_2_POW_19_GAMMA1 \
+  ((int32_t)1 << 19U)
+
+#define LIBCRUX_ML_DSA_SIMD_PORTABLE_ENCODING_GAMMA1_DESERIALIZE_WHEN_GAMMA1_IS_2_POW_19_GAMMA1_TIMES_2_BITMASK \
+  ((LIBCRUX_ML_DSA_SIMD_PORTABLE_ENCODING_GAMMA1_DESERIALIZE_WHEN_GAMMA1_IS_2_POW_19_GAMMA1                     \
+    << 1U) -                                                                                                    \
+   (int32_t)1)
+
+static KRML_MUSTINLINE void
+libcrux_ml_dsa_simd_portable_encoding_gamma1_deserialize_when_gamma1_is_2_pow_19(
+    Eurydice_slice serialized,
+    libcrux_ml_dsa_simd_portable_vector_type_Coefficients *simd_unit) {
+  for (size_t i = (size_t)0U;
+       i < Eurydice_slice_len(serialized, uint8_t) / (size_t)5U; i++) {
+    size_t i0 = i;
+    Eurydice_slice bytes = Eurydice_slice_subslice2(
+        serialized, i0 * (size_t)5U, i0 * (size_t)5U + (size_t)5U, uint8_t);
+    int32_t coefficient0 =
+        (int32_t)Eurydice_slice_index(bytes, (size_t)0U, uint8_t, uint8_t *);
+    coefficient0 =
+        coefficient0 |
+        (int32_t)Eurydice_slice_index(bytes, (size_t)1U, uint8_t, uint8_t *)
+            << 8U;
+    coefficient0 =
+        coefficient0 |
+        (int32_t)Eurydice_slice_index(bytes, (size_t)2U, uint8_t, uint8_t *)
+            << 16U;
+    coefficient0 =
+        coefficient0 &
+        LIBCRUX_ML_DSA_SIMD_PORTABLE_ENCODING_GAMMA1_DESERIALIZE_WHEN_GAMMA1_IS_2_POW_19_GAMMA1_TIMES_2_BITMASK;
+    int32_t coefficient1 =
+        (int32_t)Eurydice_slice_index(bytes, (size_t)2U, uint8_t, uint8_t *) >>
+        4U;
+    coefficient1 =
+        coefficient1 |
+        (int32_t)Eurydice_slice_index(bytes, (size_t)3U, uint8_t, uint8_t *)
+            << 4U;
+    coefficient1 =
+        coefficient1 |
+        (int32_t)Eurydice_slice_index(bytes, (size_t)4U, uint8_t, uint8_t *)
+            << 12U;
+    simd_unit->values[(size_t)2U * i0] =
+        LIBCRUX_ML_DSA_SIMD_PORTABLE_ENCODING_GAMMA1_DESERIALIZE_WHEN_GAMMA1_IS_2_POW_19_GAMMA1 -
+        coefficient0;
+    simd_unit->values[(size_t)2U * i0 + (size_t)1U] =
+        LIBCRUX_ML_DSA_SIMD_PORTABLE_ENCODING_GAMMA1_DESERIALIZE_WHEN_GAMMA1_IS_2_POW_19_GAMMA1 -
+        coefficient1;
+  }
 }
 
 #define LIBCRUX_ML_DSA_SIMD_PORTABLE_ENCODING_GAMMA1_DESERIALIZE_WHEN_GAMMA1_IS_2_POW_17_GAMMA1 \
@@ -1550,71 +1601,20 @@ libcrux_ml_dsa_simd_portable_encoding_gamma1_deserialize_when_gamma1_is_2_pow_17
   }
 }
 
-#define LIBCRUX_ML_DSA_SIMD_PORTABLE_ENCODING_GAMMA1_DESERIALIZE_WHEN_GAMMA1_IS_2_POW_19_GAMMA1 \
-  ((int32_t)1 << 19U)
-
-#define LIBCRUX_ML_DSA_SIMD_PORTABLE_ENCODING_GAMMA1_DESERIALIZE_WHEN_GAMMA1_IS_2_POW_19_GAMMA1_TIMES_2_BITMASK \
-  ((LIBCRUX_ML_DSA_SIMD_PORTABLE_ENCODING_GAMMA1_DESERIALIZE_WHEN_GAMMA1_IS_2_POW_19_GAMMA1                     \
-    << 1U) -                                                                                                    \
-   (int32_t)1)
-
-static KRML_MUSTINLINE void
-libcrux_ml_dsa_simd_portable_encoding_gamma1_deserialize_when_gamma1_is_2_pow_19(
-    Eurydice_slice serialized,
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients *simd_unit) {
-  for (size_t i = (size_t)0U;
-       i < Eurydice_slice_len(serialized, uint8_t) / (size_t)5U; i++) {
-    size_t i0 = i;
-    Eurydice_slice bytes = Eurydice_slice_subslice2(
-        serialized, i0 * (size_t)5U, i0 * (size_t)5U + (size_t)5U, uint8_t);
-    int32_t coefficient0 =
-        (int32_t)Eurydice_slice_index(bytes, (size_t)0U, uint8_t, uint8_t *);
-    coefficient0 =
-        coefficient0 |
-        (int32_t)Eurydice_slice_index(bytes, (size_t)1U, uint8_t, uint8_t *)
-            << 8U;
-    coefficient0 =
-        coefficient0 |
-        (int32_t)Eurydice_slice_index(bytes, (size_t)2U, uint8_t, uint8_t *)
-            << 16U;
-    coefficient0 =
-        coefficient0 &
-        LIBCRUX_ML_DSA_SIMD_PORTABLE_ENCODING_GAMMA1_DESERIALIZE_WHEN_GAMMA1_IS_2_POW_19_GAMMA1_TIMES_2_BITMASK;
-    int32_t coefficient1 =
-        (int32_t)Eurydice_slice_index(bytes, (size_t)2U, uint8_t, uint8_t *) >>
-        4U;
-    coefficient1 =
-        coefficient1 |
-        (int32_t)Eurydice_slice_index(bytes, (size_t)3U, uint8_t, uint8_t *)
-            << 4U;
-    coefficient1 =
-        coefficient1 |
-        (int32_t)Eurydice_slice_index(bytes, (size_t)4U, uint8_t, uint8_t *)
-            << 12U;
-    simd_unit->values[(size_t)2U * i0] =
-        LIBCRUX_ML_DSA_SIMD_PORTABLE_ENCODING_GAMMA1_DESERIALIZE_WHEN_GAMMA1_IS_2_POW_19_GAMMA1 -
-        coefficient0;
-    simd_unit->values[(size_t)2U * i0 + (size_t)1U] =
-        LIBCRUX_ML_DSA_SIMD_PORTABLE_ENCODING_GAMMA1_DESERIALIZE_WHEN_GAMMA1_IS_2_POW_19_GAMMA1 -
-        coefficient1;
-  }
-}
-
 static KRML_MUSTINLINE void
 libcrux_ml_dsa_simd_portable_encoding_gamma1_deserialize(
     Eurydice_slice serialized,
     libcrux_ml_dsa_simd_portable_vector_type_Coefficients *out,
     size_t gamma1_exponent) {
-  switch ((uint8_t)gamma1_exponent) {
+  void *uu____0 = (void *)0U;
+  switch (gamma1_exponent) {
     case 17U: {
-      libcrux_ml_dsa_simd_portable_encoding_gamma1_deserialize_when_gamma1_is_2_pow_17(
-          serialized, out);
       break;
     }
     case 19U: {
       libcrux_ml_dsa_simd_portable_encoding_gamma1_deserialize_when_gamma1_is_2_pow_19(
           serialized, out);
-      break;
+      return;
     }
     default: {
       KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__,
@@ -1622,6 +1622,8 @@ libcrux_ml_dsa_simd_portable_encoding_gamma1_deserialize(
       KRML_HOST_EXIT(255U);
     }
   }
+  libcrux_ml_dsa_simd_portable_encoding_gamma1_deserialize_when_gamma1_is_2_pow_17(
+      serialized, out);
 }
 
 /**
@@ -1945,54 +1947,33 @@ static KRML_MUSTINLINE void libcrux_ml_dsa_simd_portable_encoding_t0_serialize(
   Eurydice_slice_index(serialized, (size_t)0U, uint8_t, uint8_t *) =
       (uint8_t)coefficient0;
   Eurydice_slice_index(serialized, (size_t)1U, uint8_t, uint8_t *) =
-      (uint8_t)(coefficient0 >> 8U);
-  size_t uu____0 = (size_t)1U;
-  Eurydice_slice_index(serialized, uu____0, uint8_t, uint8_t *) =
-      (uint32_t)Eurydice_slice_index(serialized, uu____0, uint8_t, uint8_t *) |
+      (uint32_t)(uint8_t)(coefficient0 >> 8U) |
       (uint32_t)(uint8_t)(coefficient1 << 5U);
   Eurydice_slice_index(serialized, (size_t)2U, uint8_t, uint8_t *) =
       (uint8_t)(coefficient1 >> 3U);
   Eurydice_slice_index(serialized, (size_t)3U, uint8_t, uint8_t *) =
-      (uint8_t)(coefficient1 >> 11U);
-  size_t uu____1 = (size_t)3U;
-  Eurydice_slice_index(serialized, uu____1, uint8_t, uint8_t *) =
-      (uint32_t)Eurydice_slice_index(serialized, uu____1, uint8_t, uint8_t *) |
+      (uint32_t)(uint8_t)(coefficient1 >> 11U) |
       (uint32_t)(uint8_t)(coefficient2 << 2U);
   Eurydice_slice_index(serialized, (size_t)4U, uint8_t, uint8_t *) =
-      (uint8_t)(coefficient2 >> 6U);
-  size_t uu____2 = (size_t)4U;
-  Eurydice_slice_index(serialized, uu____2, uint8_t, uint8_t *) =
-      (uint32_t)Eurydice_slice_index(serialized, uu____2, uint8_t, uint8_t *) |
+      (uint32_t)(uint8_t)(coefficient2 >> 6U) |
       (uint32_t)(uint8_t)(coefficient3 << 7U);
   Eurydice_slice_index(serialized, (size_t)5U, uint8_t, uint8_t *) =
       (uint8_t)(coefficient3 >> 1U);
   Eurydice_slice_index(serialized, (size_t)6U, uint8_t, uint8_t *) =
-      (uint8_t)(coefficient3 >> 9U);
-  size_t uu____3 = (size_t)6U;
-  Eurydice_slice_index(serialized, uu____3, uint8_t, uint8_t *) =
-      (uint32_t)Eurydice_slice_index(serialized, uu____3, uint8_t, uint8_t *) |
+      (uint32_t)(uint8_t)(coefficient3 >> 9U) |
       (uint32_t)(uint8_t)(coefficient4 << 4U);
   Eurydice_slice_index(serialized, (size_t)7U, uint8_t, uint8_t *) =
       (uint8_t)(coefficient4 >> 4U);
   Eurydice_slice_index(serialized, (size_t)8U, uint8_t, uint8_t *) =
-      (uint8_t)(coefficient4 >> 12U);
-  size_t uu____4 = (size_t)8U;
-  Eurydice_slice_index(serialized, uu____4, uint8_t, uint8_t *) =
-      (uint32_t)Eurydice_slice_index(serialized, uu____4, uint8_t, uint8_t *) |
+      (uint32_t)(uint8_t)(coefficient4 >> 12U) |
       (uint32_t)(uint8_t)(coefficient5 << 1U);
   Eurydice_slice_index(serialized, (size_t)9U, uint8_t, uint8_t *) =
-      (uint8_t)(coefficient5 >> 7U);
-  size_t uu____5 = (size_t)9U;
-  Eurydice_slice_index(serialized, uu____5, uint8_t, uint8_t *) =
-      (uint32_t)Eurydice_slice_index(serialized, uu____5, uint8_t, uint8_t *) |
+      (uint32_t)(uint8_t)(coefficient5 >> 7U) |
       (uint32_t)(uint8_t)(coefficient6 << 6U);
   Eurydice_slice_index(serialized, (size_t)10U, uint8_t, uint8_t *) =
       (uint8_t)(coefficient6 >> 2U);
   Eurydice_slice_index(serialized, (size_t)11U, uint8_t, uint8_t *) =
-      (uint8_t)(coefficient6 >> 10U);
-  size_t uu____6 = (size_t)11U;
-  Eurydice_slice_index(serialized, uu____6, uint8_t, uint8_t *) =
-      (uint32_t)Eurydice_slice_index(serialized, uu____6, uint8_t, uint8_t *) |
+      (uint32_t)(uint8_t)(coefficient6 >> 10U) |
       (uint32_t)(uint8_t)(coefficient7 << 3U);
   Eurydice_slice_index(serialized, (size_t)12U, uint8_t, uint8_t *) =
       (uint8_t)(coefficient7 >> 5U);
@@ -5985,12 +5966,12 @@ for libcrux_ml_dsa::hash_functions::portable::Shake256)#2}
 /**
 A monomorphic instance of libcrux_ml_dsa.hash_functions.portable.shake256_5c
 with const generics
-- OUTPUT_LENGTH= 576
+- OUTPUT_LENGTH= 640
 */
 static KRML_MUSTINLINE void
-libcrux_ml_dsa_hash_functions_portable_shake256_5c_1b(Eurydice_slice input,
+libcrux_ml_dsa_hash_functions_portable_shake256_5c_c8(Eurydice_slice input,
                                                       uint8_t *out) {
-  libcrux_ml_dsa_hash_functions_portable_shake256_1b(input, out);
+  libcrux_ml_dsa_hash_functions_portable_shake256_c8(input, out);
 }
 
 /**
@@ -6000,12 +5981,12 @@ for libcrux_ml_dsa::hash_functions::portable::Shake256)#2}
 /**
 A monomorphic instance of libcrux_ml_dsa.hash_functions.portable.shake256_5c
 with const generics
-- OUTPUT_LENGTH= 640
+- OUTPUT_LENGTH= 576
 */
 static KRML_MUSTINLINE void
-libcrux_ml_dsa_hash_functions_portable_shake256_5c_c8(Eurydice_slice input,
+libcrux_ml_dsa_hash_functions_portable_shake256_5c_1b(Eurydice_slice input,
                                                       uint8_t *out) {
-  libcrux_ml_dsa_hash_functions_portable_shake256_c8(input, out);
+  libcrux_ml_dsa_hash_functions_portable_shake256_1b(input, out);
 }
 
 /**
@@ -6017,14 +5998,9 @@ libcrux_ml_dsa_hash_functions_portable_Shake256 with const generics
 static KRML_MUSTINLINE void libcrux_ml_dsa_sample_sample_mask_ring_element_2e(
     uint8_t *seed, libcrux_ml_dsa_polynomial_PolynomialRingElement_e8 *result,
     size_t gamma1_exponent) {
-  switch ((uint8_t)gamma1_exponent) {
+  void *uu____0 = (void *)0U;
+  switch (gamma1_exponent) {
     case 17U: {
-      uint8_t out[576U] = {0U};
-      libcrux_ml_dsa_hash_functions_portable_shake256_5c_1b(
-          Eurydice_array_to_slice((size_t)66U, seed, uint8_t), out);
-      libcrux_ml_dsa_encoding_gamma1_deserialize_5b(
-          gamma1_exponent, Eurydice_array_to_slice((size_t)576U, out, uint8_t),
-          result);
       break;
     }
     case 19U: {
@@ -6034,7 +6010,7 @@ static KRML_MUSTINLINE void libcrux_ml_dsa_sample_sample_mask_ring_element_2e(
       libcrux_ml_dsa_encoding_gamma1_deserialize_5b(
           gamma1_exponent, Eurydice_array_to_slice((size_t)640U, out, uint8_t),
           result);
-      break;
+      return;
     }
     default: {
       KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__,
@@ -6042,6 +6018,12 @@ static KRML_MUSTINLINE void libcrux_ml_dsa_sample_sample_mask_ring_element_2e(
       KRML_HOST_EXIT(255U);
     }
   }
+  uint8_t out[576U] = {0U};
+  libcrux_ml_dsa_hash_functions_portable_shake256_5c_1b(
+      Eurydice_array_to_slice((size_t)66U, seed, uint8_t), out);
+  libcrux_ml_dsa_encoding_gamma1_deserialize_5b(
+      gamma1_exponent, Eurydice_array_to_slice((size_t)576U, out, uint8_t),
+      result);
 }
 
 /**
@@ -6071,7 +6053,7 @@ static KRML_MUSTINLINE void libcrux_ml_dsa_sample_sample_mask_vector_67(
       Eurydice_array_to_slice((size_t)64U, seed, uint8_t),
       (uint32_t)domain_separator[0U] + 3U, seed3);
   domain_separator[0U] = (uint32_t)domain_separator[0U] + 4U;
-  switch ((uint8_t)gamma1_exponent) {
+  switch (gamma1_exponent) {
     case 17U: {
       uint8_t out0[576U] = {0U};
       uint8_t out1[576U] = {0U};

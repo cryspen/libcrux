@@ -38,6 +38,10 @@ fn encrypt_checks(
         return Err(AeadError::CiphertextTooShort);
     }
 
+    if detached && (ctxt.len() as u64) < (ptxt.len() as u64) {
+        return Err(AeadError::CiphertextTooShort);
+    }
+
     Ok((ptxt_len, aad_len))
 }
 
