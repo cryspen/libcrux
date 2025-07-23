@@ -2,9 +2,6 @@
 
 libcrux is a formally verified cryptographic library in Rust. 
 
-## Publications
-Libcrux was introduced in [this article](https://github.com/hacspec/hacspec/blob/master/rwc2023-abstract.pdf).
-
 ## Minimum Supported Rust Version (MSRV)
 
 The default feature set has a MSRV of `1.78.0`. `no_std` environments
@@ -37,6 +34,9 @@ As a quick indicator of overall verification status, subcrates in this workspace
 In every case, please refer to the more detailed notes on verification in each
 sub-crate to learn more about what has (or has not) been verified in the
 particular case.
+
+## Publications
+Libcrux was introduced in [this article](https://github.com/hacspec/hacspec/blob/master/rwc2023-abstract.pdf) at [RWC 2023](https://rwc.iacr.org/2023/).
 
 [architecture]: ./Architecture.md
 [hacspec]: https://hacspec.org
