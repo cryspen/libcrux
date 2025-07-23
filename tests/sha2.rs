@@ -1,3 +1,5 @@
+use libcrux_traits::Digest as _;
+
 // XXX: The tests in here are failing in wasm for some reason.
 
 // #[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
@@ -5,7 +7,7 @@
 fn sha256_kat_streaming() {
     let mut digest = libcrux::digest::Sha2_256::new();
     let mut d = [0u8; 32];
-    digest.update(b"libcrux sha2 256 tests").unwrap();
+    digest.update(b"libcrux sha2 256 tests");
     digest.finish(&mut d);
 
     let expected = "8683520e19e5b33db33c8fb90918c0c96fcdfd9a17c695ce0f0ea2eaa0c95956";
@@ -24,10 +26,10 @@ fn sha256_kat_oneshot() {
 #[test]
 fn sha2_clone() {
     let mut hasher_224 = libcrux::digest::Sha2_224::new();
-    hasher_224.update(b"test 224").unwrap();
+    hasher_224.update(b"test 224");
     let mut hasher224_2 = hasher_224.clone();
-    hasher_224.update(b"more 224").unwrap();
-    hasher224_2.update(b"more 224").unwrap();
+    hasher_224.update(b"more 224");
+    hasher224_2.update(b"more 224");
     let mut digest = [0u8; 28];
     let mut digest_2 = [0u8; 28];
     hasher_224.finish(&mut digest);
@@ -37,10 +39,10 @@ fn sha2_clone() {
     assert_eq!(digest, libcrux::digest::sha2_224(b"test 224more 224"));
 
     let mut hasher_256 = libcrux::digest::Sha2_256::new();
-    hasher_256.update(b"test 256").unwrap();
+    hasher_256.update(b"test 256");
     let mut hasher256_2 = hasher_256.clone();
-    hasher_256.update(b"more 256").unwrap();
-    hasher256_2.update(b"more 256").unwrap();
+    hasher_256.update(b"more 256");
+    hasher256_2.update(b"more 256");
     let mut digest = [0u8; 32];
     let mut digest_2 = [0u8; 32];
     hasher_256.finish(&mut digest);
@@ -50,10 +52,10 @@ fn sha2_clone() {
     assert_eq!(digest, libcrux::digest::sha2_256(b"test 256more 256"));
 
     let mut hasher_384 = libcrux::digest::Sha2_384::new();
-    hasher_384.update(b"test 384").unwrap();
+    hasher_384.update(b"test 384");
     let mut hasher384_2 = hasher_384.clone();
-    hasher_384.update(b"more 384").unwrap();
-    hasher384_2.update(b"more 384").unwrap();
+    hasher_384.update(b"more 384");
+    hasher384_2.update(b"more 384");
     let mut digest = [0u8; 48];
     let mut digest_2 = [0u8; 48];
     hasher_384.finish(&mut digest);
@@ -63,10 +65,10 @@ fn sha2_clone() {
     assert_eq!(digest, libcrux::digest::sha2_384(b"test 384more 384"));
 
     let mut hasher_512 = libcrux::digest::Sha2_512::new();
-    hasher_512.update(b"test 512").unwrap();
+    hasher_512.update(b"test 512");
     let mut hasher512_2 = hasher_512.clone();
-    hasher_512.update(b"more 512").unwrap();
-    hasher512_2.update(b"more 512").unwrap();
+    hasher_512.update(b"more 512");
+    hasher512_2.update(b"more 512");
     let mut digest = [0u8; 64];
     let mut digest_2 = [0u8; 64];
     hasher_512.finish(&mut digest);
