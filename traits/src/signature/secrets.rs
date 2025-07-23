@@ -22,15 +22,14 @@ impl<
         const PUBLIC_KEY_LEN: usize,
         const PRIVATE_KEY_LEN: usize,
         const SIGNATURE_LEN: usize,
-        T: super::arrayref::Signature<PUBLIC_KEY_LEN, PRIVATE_KEY_LEN, SIGNATURE_LEN>,
+        T: super::owned::Signature<PUBLIC_KEY_LEN, PRIVATE_KEY_LEN, SIGNATURE_LEN>,
     > Signature<PUBLIC_KEY_LEN, PRIVATE_KEY_LEN, SIGNATURE_LEN> for T
 {
     fn sign(
         payload: &[u8],
         private_key: &[U8; PRIVATE_KEY_LEN],
     ) -> Result<[u8; SIGNATURE_LEN], SignError> {
-        let mut signature = [0; SIGNATURE_LEN];
-        Self::sign(payload, private_key.declassify_ref(), &mut signature).map(|_| signature)
+        Self::sign(payload, private_key.declassify_ref())
     }
     fn verify(
         payload: &[u8],
