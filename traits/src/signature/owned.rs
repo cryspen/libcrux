@@ -1,4 +1,4 @@
-use super::arrayref::{SignError, VerifyError};
+pub use super::arrayref::{SignError, VerifyError};
 
 pub trait Signature<
     const PUBLIC_KEY_LEN: usize,
