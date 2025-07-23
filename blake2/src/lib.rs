@@ -10,7 +10,5 @@ mod hacl {
 
 mod impl_hacl;
 
-pub use impl_hacl::{
-    Blake2b, Blake2bBuilder, Blake2bHasher, Blake2bSliceHasher, Blake2s, Blake2sBuilder,
-    Blake2sHasher, Blake2sSliceHasher, Error,
-};
+mod impl_digest_trait;
+pub use impl_hacl::{Blake2b, Blake2bBuilder, Blake2s, Blake2sBuilder, Error};

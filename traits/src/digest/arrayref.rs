@@ -1,11 +1,11 @@
 #[derive(Debug)]
 pub enum HashError {
-    PayloadTooLong,
+    InvalidPayloadLength,
 }
 
 #[derive(Debug)]
 pub enum UpdateError {
-    PayloadTooLong,
+    InvalidPayloadLength,
     MaximumLengthExceeded,
     Unknown,
 }

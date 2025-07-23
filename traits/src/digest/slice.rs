@@ -17,17 +17,18 @@ pub trait DigestIncremental {
 #[derive(Debug)]
 pub enum FinishError {
     InvalidDigestLength,
+    Unknown,
 }
 
 #[derive(Debug)]
 pub enum HashError {
     InvalidDigestLength,
-    PayloadTooLong,
+    InvalidPayloadLength,
 }
 
 #[derive(Debug)]
 pub enum UpdateError {
-    PayloadTooLong,
+    InvalidPayloadLength,
     MaximumLengthExceeded,
     Unknown,
 }
@@ -35,7 +36,7 @@ pub enum UpdateError {
 impl From<arrayref::HashError> for HashError {
     fn from(e: arrayref::HashError) -> Self {
         match e {
-            arrayref::HashError::PayloadTooLong => Self::PayloadTooLong,
+            arrayref::HashError::InvalidPayloadLength => Self::InvalidPayloadLength,
         }
     }
 }
@@ -43,7 +44,7 @@ impl From<arrayref::HashError> for HashError {
 impl From<arrayref::UpdateError> for UpdateError {
     fn from(e: arrayref::UpdateError) -> Self {
         match e {
-            arrayref::UpdateError::PayloadTooLong => Self::PayloadTooLong,
+            arrayref::UpdateError::InvalidPayloadLength => Self::InvalidPayloadLength,
             arrayref::UpdateError::MaximumLengthExceeded => Self::MaximumLengthExceeded,
             arrayref::UpdateError::Unknown => Self::Unknown,
         }

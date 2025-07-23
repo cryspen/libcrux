@@ -33,7 +33,7 @@ impl<'a> Blake2bBuilder<'a, &'a ()> {
     }
 
     /// Constructs the [`Blake2b`] hasher for unkeyed hashes and dynamic digest length.
-    pub fn build_var_digest_len(self, digest_length: u8) -> Result<Blake2bSliceHasher, Error> {
+    pub fn build_var_digest_len(self, digest_length: u8) -> Result<Blake2b<ConstKeyLen<0>>, Error> {
         if digest_length < 1 || digest_length as usize > MAX_LEN {
             return Err(Error::InvalidDigestLength);
         }
@@ -67,14 +67,13 @@ impl<'a> Blake2bBuilder<'a, &'a ()> {
         Ok(Blake2b {
             state: malloc_raw(kk, key),
             _phantom: PhantomData,
-        }
-        .into())
+        })
     }
 
     /// Constructs the [`Blake2b`] hasher for unkeyed hashes and constant digest length.
     pub fn build_const_digest_len<const OUT_LEN: usize>(
         self,
-    ) -> Result<Blake2bHasher<OUT_LEN>, Error> {
+    ) -> Result<Blake2b<ConstKeyLenConstDigestLen<0, OUT_LEN>>, Error> {
         if OUT_LEN < 1 || OUT_LEN > MAX_LEN {
             return Err(Error::InvalidDigestLength);
         }
@@ -109,8 +108,7 @@ impl<'a> Blake2bBuilder<'a, &'a ()> {
         Ok(Blake2b {
             state: malloc_raw(kk, key),
             _phantom: PhantomData,
-        }
-        .into())
+        })
     }
 }
 
@@ -468,91 +466,5 @@ impl Blake2b<Dynamic> {
 
         reset(&mut self.state);
         Ok(())
-    }
-}
-
-impl<const OUT_SIZE: usize> libcrux_traits::digest::arrayref::DigestIncremental<OUT_SIZE>
-    for Blake2b<ConstKeyLenConstDigestLen<0, OUT_SIZE>>
-{
-    type IncrementalState = Box<[state_t]>;
-
-    fn update(
-        state: &mut Self::IncrementalState,
-        chunk: &[u8],
-    ) -> Result<(), libcrux_traits::digest::arrayref::UpdateError> {
-        if chunk.len() > (u32::MAX as usize) {
-            return Err(libcrux_traits::digest::arrayref::UpdateError::PayloadTooLong);
-        }
-
-        match update0(state.as_mut(), chunk, chunk.len() as u32) {
-            error_code::Success => Ok(()),
-            error_code::MaximumLengthExceeded => {
-                Err(libcrux_traits::digest::arrayref::UpdateError::MaximumLengthExceeded)
-            }
-            _ => Err(libcrux_traits::digest::arrayref::UpdateError::Unknown),
-        }
-    }
-
-    fn finish(state: &mut Self::IncrementalState, dst: &mut [u8; OUT_SIZE]) {
-        digest(state, dst);
-    }
-
-    fn reset(state: &mut Self::IncrementalState) {
-        reset(state)
-    }
-}
-
-// TODO: consistent naming
-pub type Blake2bHasher<const N: usize> =
-    libcrux_traits::digest::Hasher<N, Blake2b<ConstKeyLenConstDigestLen<0, N>>>;
-pub type Blake2bSliceHasher = libcrux_traits::digest::SliceHasher<Blake2b<ConstKeyLen<0>>>;
-
-impl<const N: usize> From<Blake2b<ConstKeyLenConstDigestLen<0, N>>> for Blake2bHasher<N> {
-    fn from(hasher: Blake2b<ConstKeyLenConstDigestLen<0, N>>) -> Self {
-        Self {
-            state: hasher.state,
-        }
-    }
-}
-impl From<Blake2b<ConstKeyLen<0>>> for Blake2bSliceHasher {
-    fn from(hasher: Blake2b<ConstKeyLen<0>>) -> Self {
-        Self {
-            state: hasher.state,
-        }
-    }
-}
-
-impl libcrux_traits::digest::slice::DigestIncremental for Blake2b<ConstKeyLen<0>> {
-    type IncrementalState = Box<[state_t]>;
-
-    fn update(
-        state: &mut Self::IncrementalState,
-        chunk: &[u8],
-    ) -> Result<(), libcrux_traits::digest::slice::UpdateError> {
-        if chunk.len() > (u32::MAX as usize) {
-            return Err(libcrux_traits::digest::slice::UpdateError::PayloadTooLong);
-        }
-
-        match update0(state.as_mut(), chunk, chunk.len() as u32) {
-            error_code::Success => Ok(()),
-            error_code::MaximumLengthExceeded => {
-                Err(libcrux_traits::digest::slice::UpdateError::MaximumLengthExceeded)
-            }
-            _ => Err(libcrux_traits::digest::slice::UpdateError::Unknown),
-        }
-    }
-    fn finish(
-        state: &mut Self::IncrementalState,
-        dst: &mut [u8],
-    ) -> Result<usize, libcrux_traits::digest::slice::FinishError> {
-        let digest_len = state[0].block_state.snd;
-        if dst.len() < digest_len as usize {
-            return Err(libcrux_traits::digest::slice::FinishError::InvalidDigestLength);
-        }
-
-        Ok(digest(state, dst) as usize)
-    }
-    fn reset(state: &mut Self::IncrementalState) {
-        reset(state)
     }
 }

@@ -10,13 +10,13 @@ fn test_blake2b() {
         .build_const_digest_len()
         .unwrap();
     hasher.update(b"this is a test").unwrap();
-    hasher.finish(&mut got_hash);
+    hasher.finalize(&mut got_hash);
 
     assert_eq!(&got_hash, expected_hash);
 
     hasher.reset();
     hasher.update(b"this is a test").unwrap();
-    hasher.finish(&mut got_hash);
+    hasher.finalize(&mut got_hash);
 
     assert_eq!(&got_hash, expected_hash);
 
@@ -25,13 +25,13 @@ fn test_blake2b() {
         .build_var_digest_len(32)
         .unwrap();
     hasher.update(b"this is a test").unwrap();
-    hasher.finish(&mut got_hash).unwrap();
+    hasher.finalize(&mut got_hash).unwrap();
 
     assert_eq!(&got_hash, expected_hash);
 
     hasher.reset();
     hasher.update(b"this is a test").unwrap();
-    hasher.finish(&mut got_hash).unwrap();
+    hasher.finalize(&mut got_hash).unwrap();
 
     assert_eq!(&got_hash, expected_hash);
 
@@ -109,7 +109,7 @@ fn test_blake2b() {
         .build_const_digest_len()
         .unwrap();
     hasher.update(b"this is a test").unwrap();
-    hasher.finish(&mut got_hash);
+    hasher.finalize(&mut got_hash);
     let expected_hash = b"\x61\xa5\x48\xf2\xde\x1c\x31\x8b\xa9\x1d\x52\x07\x00\x78\x61\x01\x0f\x69\xa4\x3e\xc6\x63\xfe\x48\x7d\x84\x03\x28\x2c\x93\x4e\xa7\x25\xdc\x0b\xb1\x72\x25\x6a\xc9\x96\x25\xad\x64\xcc\xa6\xa2\xc4\xd6\x1c\x65\x0a\x35\xaf\xab\x47\x87\xdc\x67\x8e\x19\x07\x1e\xf9";
 
     assert_eq!(&got_hash, expected_hash);
@@ -125,13 +125,13 @@ fn test_blake2s() {
         .build_const_digest_len()
         .unwrap();
     hasher.update(b"this is a test").unwrap();
-    hasher.finish(&mut got_hash);
+    hasher.finalize(&mut got_hash);
 
     assert_eq!(&got_hash, expected_hash);
 
     hasher.reset();
     hasher.update(b"this is a test").unwrap();
-    hasher.finish(&mut got_hash);
+    hasher.finalize(&mut got_hash);
 
     assert_eq!(&got_hash, expected_hash);
 
@@ -141,13 +141,13 @@ fn test_blake2s() {
         .build_var_digest_len(32)
         .unwrap();
     hasher.update(b"this is a test").unwrap();
-    hasher.finish(&mut got_hash).unwrap();
+    hasher.finalize(&mut got_hash).unwrap();
 
     assert_eq!(&got_hash, expected_hash);
 
     hasher.reset();
     hasher.update(b"this is a test").unwrap();
-    hasher.finish(&mut got_hash).unwrap();
+    hasher.finalize(&mut got_hash).unwrap();
 
     assert_eq!(&got_hash, expected_hash);
 
