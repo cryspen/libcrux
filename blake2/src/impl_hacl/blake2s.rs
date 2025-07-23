@@ -322,7 +322,7 @@ impl<'a, T> Blake2sBuilder<'a, T> {
 
 /// A hasher struct for the Blake2s (optionally keyed) hash function.
 pub struct Blake2s<T> {
-    pub(crate) state: Box<[state_t]>,
+    state: Box<[state_t]>,
     _phantom: PhantomData<T>,
 }
 
