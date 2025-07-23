@@ -6,9 +6,11 @@ pub trait Signature<
     const SIGNATURE_LEN: usize,
 >
 {
+    type Config;
     fn sign(
         payload: &[u8],
         private_key: &[u8; PRIVATE_KEY_LEN],
+        config: Self::Config,
     ) -> Result<[u8; SIGNATURE_LEN], SignError>;
     fn verify(
         payload: &[u8],
@@ -24,12 +26,15 @@ impl<
         T: super::arrayref::Signature<PUBLIC_KEY_LEN, PRIVATE_KEY_LEN, SIGNATURE_LEN>,
     > Signature<PUBLIC_KEY_LEN, PRIVATE_KEY_LEN, SIGNATURE_LEN> for T
 {
+    type Config =
+        <T as super::arrayref::Signature<PUBLIC_KEY_LEN, PRIVATE_KEY_LEN, SIGNATURE_LEN>>::Config;
     fn sign(
         payload: &[u8],
         private_key: &[u8; PRIVATE_KEY_LEN],
+        config: Self::Config,
     ) -> Result<[u8; SIGNATURE_LEN], SignError> {
         let mut signature = [0; SIGNATURE_LEN];
-        Self::sign(payload, private_key, &mut signature).map(|_| signature)
+        Self::sign(payload, private_key, &mut signature, config).map(|_| signature)
     }
     fn verify(
         payload: &[u8],

@@ -1,5 +1,11 @@
 pub trait Signature {
-    fn sign(payload: &[u8], private_key: &[u8], signature: &mut [u8]) -> Result<(), SignError>;
+    type Config;
+    fn sign(
+        payload: &[u8],
+        private_key: &[u8],
+        signature: &mut [u8],
+        config: Self::Config,
+    ) -> Result<(), SignError>;
     fn verify(payload: &[u8], public_key: &[u8], signature: &[u8]) -> Result<(), VerifyError>;
 }
 
@@ -36,12 +42,14 @@ impl From<super::arrayref::VerifyError> for VerifyError {
 
 #[macro_export]
 macro_rules! impl_signature_slice_trait {
-    ($type:ty => $pk_len:expr, $sk_len:expr, $sig_len:expr) => {
+    ($type:ty => $pk_len:expr, $sk_len:expr, $sig_len:expr, $config:ty, $config_param:ident) => {
         impl $crate::signature::slice::Signature for $type {
+            type Config = $config;
             fn sign(
                 payload: &[u8],
                 private_key: &[u8],
                 signature: &mut [u8],
+                $config_param: $config
             ) -> Result<(), $crate::signature::slice::SignError> {
                 let private_key: &[u8; $sk_len] = private_key
                     .try_into()
@@ -55,6 +63,7 @@ macro_rules! impl_signature_slice_trait {
                     payload,
                     private_key,
                     signature,
+                    $config_param
                 )
                 .map_err($crate::signature::slice::SignError::from)
             }
@@ -63,7 +72,7 @@ macro_rules! impl_signature_slice_trait {
                 public_key: &[u8],
                 signature: &[u8],
             ) -> Result<(), $crate::signature::slice::VerifyError> {
-                let public_key: &[u8; $sk_len] = public_key
+                let public_key: &[u8; $pk_len] = public_key
                     .try_into()
                     .map_err(|_| $crate::signature::slice::VerifyError::InvalidPublicKeyLength)?;
 
