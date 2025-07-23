@@ -16,7 +16,7 @@ bench = false # so libtest doesn't eat the arguments to criterion
 
 [dependencies]
 libcrux-traits = { version = "0.0.3", path = "../traits" }
-libcrux-kem = { version = "=0.0.3", path = "../libcrux-kem" }
+libcrux-kem = { version = "=0.0.3", path = "../libcrux-kem", features = ["codec"]}
 libcrux-chacha20poly1305 = { version = "0.0.3", path = "../chacha20poly1305" }
 libcrux-hkdf = { version = "=0.0.3", path = "../libcrux-hkdf" }
 libcrux-hmac = { version = "=0.0.3", path = "../libcrux-hmac" }
@@ -34,6 +34,7 @@ libcrux-ml-kem = { version = "0.0.3", path = "../libcrux-ml-kem", features = [
 ] }
 libcrux-ed25519 = { version = "0.0.3", path = "../ed25519", features = [
     "rand",
+    "codec",
 ] }
 tls_codec = { version = "0.4.2", features = ["derive"] }
 
