@@ -20,6 +20,7 @@ libcrux-sha3 = { version = "0.0.3", path = "../libcrux-sha3" }
 libcrux-intrinsics = { version = "0.0.3", path = "../libcrux-intrinsics" }
 libcrux-platform = { version = "0.0.2", path = "../sys/platform" }
 libcrux-macros = { version = "=0.0.3", path = "../macros" }
+libcrux-traits = { version = "=0.0.3", path = "../traits/" }
 hax-lib.workspace = true
 
 [dev-dependencies]

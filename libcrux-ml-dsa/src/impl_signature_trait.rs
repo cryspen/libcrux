@@ -1,0 +1,71 @@
+use libcrux_traits::signature::owned;
+
+impl From<crate::SigningError> for owned::SignError {
+    fn from(e: crate::SigningError) -> Self {
+        match e {
+            crate::SigningError::RejectionSamplingError => todo!(),
+            crate::SigningError::ContextTooLongError => todo!(),
+        }
+    }
+}
+impl From<crate::VerificationError> for owned::VerifyError {
+    fn from(e: crate::VerificationError) -> Self {
+        match e {
+            crate::VerificationError::MalformedHintError => todo!(),
+            crate::VerificationError::SignerResponseExceedsBoundError => todo!(),
+            crate::VerificationError::CommitmentHashesDontMatchError => todo!(),
+            crate::VerificationError::VerificationContextTooLongError => todo!(),
+        }
+    }
+}
+
+macro_rules! impl_signature_trait {
+    ($name:ident, $module:ident, $doc:expr) => {
+        mod $module {
+            use libcrux_traits::signature::owned;
+            #[doc = $doc]
+            pub struct $name;
+
+            const VERIFICATION_KEY_LEN: usize =
+                crate::ml_dsa_generic::$module::VERIFICATION_KEY_SIZE;
+            const SIGNING_KEY_LEN: usize = crate::ml_dsa_generic::$module::SIGNING_KEY_SIZE;
+            const SIGNATURE_LEN: usize = crate::ml_dsa_generic::$module::SIGNATURE_SIZE;
+
+            // XXX: implementing owned trait directly because there is no arrayref equivalent
+            // TODO: randomness
+            // TODO: these should appear as consts in trait def
+            impl owned::Signature<VERIFICATION_KEY_LEN, SIGNING_KEY_LEN, SIGNATURE_LEN> for $name {
+                fn sign(
+                    payload: &[u8],
+                    private_key: &[u8; SIGNING_KEY_LEN],
+                ) -> Result<[u8; SIGNATURE_LEN], owned::SignError> {
+                    crate::ml_dsa_generic::multiplexing::$module::sign(
+                        private_key,
+                        payload,
+                        &[],
+                        todo!("randomness"),
+                    )
+                    .map(|sig| sig.value)
+                    .map_err(owned::SignError::from)
+                }
+                fn verify(
+                    payload: &[u8],
+                    public_key: &[u8; VERIFICATION_KEY_LEN],
+                    signature: &[u8; SIGNATURE_LEN],
+                ) -> Result<(), owned::VerifyError> {
+                    crate::ml_dsa_generic::multiplexing::$module::verify(
+                        public_key,
+                        payload,
+                        &[],
+                        signature,
+                    )
+                    .map_err(owned::VerifyError::from)
+                }
+            }
+        }
+        pub use $module::$name;
+    };
+}
+impl_signature_trait!(MlDsa44, ml_dsa_44, "A struct representing ML-DSA 44");
+impl_signature_trait!(MlDsa65, ml_dsa_65, "A struct representing ML-DSA 65");
+impl_signature_trait!(MlDsa87, ml_dsa_87, "A struct representing ML-DSA 87");
