@@ -4,34 +4,68 @@
 //! `mceliece460896f`) as the underlying KEM.
 
 use classic_mceliece_rust::{
-    decapsulate_boxed, encapsulate_boxed, keypair_boxed, Ciphertext, PublicKey, SecretKey,
-    SharedSecret,
+    decapsulate_boxed, encapsulate_boxed, keypair_boxed, Ciphertext as Ct, PublicKey as Pk,
+    SecretKey, SharedSecret as Ss,
 };
 
 use libcrux_traits::kem::{KEMError, KeyPair, KEM};
+use tls_codec::{Deserialize, Serialize, Size};
 
 use crate::traits::*;
 
+/// A wrapper around the `classic_mceliece_rust` type `Ciphertext`.
+pub struct Ciphertext(Ct);
+impl Serialize for Ciphertext {
+    fn tls_serialize<W: std::io::Write>(&self, writer: &mut W) -> Result<usize, tls_codec::Error> {
+        todo!()
+    }
+}
+
+impl Deserialize for Ciphertext {
+    fn tls_deserialize<R: std::io::Read>(bytes: &mut R) -> Result<Self, tls_codec::Error>
+    where
+        Self: Sized,
+    {
+        todo!()
+    }
+}
+
+impl Size for Ciphertext {
+    fn tls_serialized_len(&self) -> usize {
+        todo!()
+    }
+}
+
+/// A wrapper around the `classic_mceliece_rust` type `PublicKey`.
+pub struct PublicKey<'a>(Pk<'a>);
+
+impl<'a> Size for PublicKey<'a> {
+    fn tls_serialized_len(&self) -> usize {
+        todo!()
+    }
+}
+impl<'a> Serialize for PublicKey<'a> {
+    fn tls_serialize<W: std::io::Write>(&self, writer: &mut W) -> Result<usize, tls_codec::Error> {
+        todo!()
+    }
+}
+
+/// A wrapper around the `classic_mceliece_rust` type `SharedSecret`.
+pub struct SharedSecret<'a>(Ss<'a>);
+
+impl<'a> Size for SharedSecret<'a> {
+    fn tls_serialized_len(&self) -> usize {
+        todo!()
+    }
+}
+impl<'a> Serialize for SharedSecret<'a> {
+    fn tls_serialize<W: std::io::Write>(&self, writer: &mut W) -> Result<usize, tls_codec::Error> {
+        todo!()
+    }
+}
+
 /// A code-based KEM based on the McEliece cryptosystem.
 pub struct ClassicMcEliece;
-
-impl Encode for PublicKey<'_> {
-    fn encode(&self) -> Vec<u8> {
-        self.as_ref().to_vec()
-    }
-}
-
-impl Encode for SharedSecret<'_> {
-    fn encode(&self) -> Vec<u8> {
-        self.as_ref().to_vec()
-    }
-}
-
-impl Encode for Ciphertext {
-    fn encode(&self) -> Vec<u8> {
-        self.as_ref().to_vec()
-    }
-}
 
 impl private::Seal for ClassicMcEliece {}
 
@@ -81,7 +115,7 @@ impl KEM for ClassicMcEliece {
     ) -> Result<KeyPair<SecretKey<'static>, PublicKey<'static>>, KEMError> {
         let mut rng = McElieceRng::new(rng);
         let (pk, sk) = keypair_boxed(&mut rng);
-        Ok((sk, pk))
+        Ok((sk, PublicKey(pk)))
     }
 
     /// Encapsulate a shared secret towards a given encapsulation key.
@@ -90,8 +124,8 @@ impl KEM for ClassicMcEliece {
         rng: &mut impl rand::CryptoRng,
     ) -> Result<(Self::SharedSecret, Self::Ciphertext), KEMError> {
         let mut rng = McElieceRng::new(rng);
-        let (enc, ss) = encapsulate_boxed(ek, &mut rng);
-        Ok((ss, enc))
+        let (enc, ss) = encapsulate_boxed(&ek.0, &mut rng);
+        Ok((SharedSecret(ss), Ciphertext(enc)))
     }
 
     /// Decapsulate a shared secret.
@@ -99,8 +133,8 @@ impl KEM for ClassicMcEliece {
         dk: &Self::DecapsulationKey,
         ctxt: &Self::Ciphertext,
     ) -> Result<Self::SharedSecret, KEMError> {
-        let ss = decapsulate_boxed(ctxt, dk);
-        Ok(ss)
+        let ss = decapsulate_boxed(&ctxt.0, dk);
+        Ok(SharedSecret(ss))
     }
 }
 

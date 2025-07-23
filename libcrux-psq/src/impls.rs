@@ -8,7 +8,8 @@
 //!   KEM *does not provide post-quantum security*. We include it for
 //!   testing and benchmarking.
 
-use crate::traits::*;
+#[allow(unused_imports)] // XXX: We do use it in the macro below.
+use crate::traits::PSQ;
 use libcrux_kem::{Ct, PrivateKey, PublicKey, Ss};
 use libcrux_traits::kem::{KEMError, KeyPair, KEM};
 
@@ -72,23 +73,23 @@ libcrux_impl!(
     "A hybrid post-quantum KEM combining X25519 and ML-KEM 768"
 );
 
-impl Encode for PublicKey {
-    fn encode(&self) -> Vec<u8> {
-        self.encode()
-    }
-}
+// impl Encode for PublicKey {
+//     fn encode(&self) -> Vec<u8> {
+//         self.encode()
+//     }
+// }
 
-impl Encode for Ct {
-    fn encode(&self) -> Vec<u8> {
-        self.encode()
-    }
-}
+// impl Encode for Ct {
+//     fn encode(&self) -> Vec<u8> {
+//         self.encode()
+//     }
+// }
 
-impl Encode for Ss {
-    fn encode(&self) -> Vec<u8> {
-        self.encode()
-    }
-}
+// impl Encode for Ss {
+//     fn encode(&self) -> Vec<u8> {
+//         self.encode()
+//     }
+// }
 
 #[cfg(test)]
 mod tests {
