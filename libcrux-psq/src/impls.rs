@@ -8,8 +8,6 @@
 //!   KEM *does not provide post-quantum security*. We include it for
 //!   testing and benchmarking.
 
-#[allow(unused_imports)] // XXX: We do use it in the macro below.
-use crate::traits::PSQ;
 use libcrux_kem::{Ct, PrivateKey, PublicKey, Ss};
 use libcrux_traits::kem::{KEMError, KeyPair, KEM};
 
@@ -78,6 +76,7 @@ mod tests {
     #![allow(non_snake_case)]
     use super::*;
 
+    use crate::traits::PSQ;
     macro_rules! libcrux_test {
         ($alg:ident) => {
             #[test]
