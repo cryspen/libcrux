@@ -41,12 +41,6 @@ pub trait Authenticator {
         signature: &Self::Signature,
         message: &[u8],
     ) -> Result<(), Error>;
-
-    // /// Deserialize a verification key.
-    // fn deserialize_credential(bytes: &[u8]) -> Result<Self::Credential, Error>;
-
-    // /// Deserialize a signature.
-    // fn deserialize_signature(bytes: &[u8]) -> Result<Self::Signature, Error>;
 }
 
 /// A no-op authenticator that does nothing.
@@ -73,14 +67,6 @@ impl Authenticator for NoAuth {
     ) -> Result<(), Error> {
         Ok(())
     }
-
-    // fn deserialize_credential(_bytes: &[u8]) -> Result<Self::VerificationKey, Error> {
-    //     Ok([0; 0])
-    // }
-
-    // fn deserialize_signature(_bytes: &[u8]) -> Result<Self::Signature, Error> {
-    //     Ok([0; 0])
-    // }
 
     fn validate_credential(
         _credential: Self::Credential,
@@ -123,15 +109,6 @@ impl Authenticator for Ed25519 {
         libcrux_ed25519::verify(message, verification_key.as_ref(), signature)
             .map_err(|_| Error::CredError)
     }
-
-    // /// CAUTION: This does not perform validation of the verification key.
-    // fn deserialize_credential(bytes: &[u8]) -> Result<Self::VerificationKey, Error> {
-    //     bytes.try_into().map_err(|_| Error::CredError)
-    // }
-
-    // fn deserialize_signature(bytes: &[u8]) -> Result<Self::Signature, Error> {
-    //     bytes.try_into().map_err(|_| Error::CredError)
-    // }
 
     fn validate_credential(
         credential: Self::Credential,

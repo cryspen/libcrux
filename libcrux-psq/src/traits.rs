@@ -22,27 +22,6 @@ type Mac = [u8; MAC_LENGTH];
 /// A post-quantum shared secret component.
 pub type PSQComponent = [u8; PSQ_COMPONENT_LENGTH];
 
-// /// A common trait for encoding structures into byte vectors.
-// pub trait Encode {
-//     // TODO: This can only become proper `no_std` once we get slices
-//     // of the backing datastructure from `libcrux_kem`.
-//     // See: https://github.com/cryspen/libcrux/issues/817
-//     /// Encodes self into a byte vector.
-//     ///
-//     /// This encoding needs to be unique.
-//     fn encode(&self) -> Vec<u8>;
-// }
-
-// /// Generic decode trait.
-// pub trait Decode {
-//     /// Decode bytes to Self
-//     ///
-//     /// Returns Self and the number of bytes consumed from `bytes`.
-//     fn decode(bytes: &[u8]) -> Result<(Self, usize), Error>
-//     where
-//         Self: Sized;
-// }
-
 pub(crate) mod private {
     pub trait Seal {}
 }
@@ -151,14 +130,6 @@ pub struct Ciphertext<
     pub(crate) inner_ctxt: T::Ciphertext,
     pub(crate) mac: Mac,
 }
-
-// impl<T: KEM<Ciphertext: Encode>> Encode for Ciphertext<T> {
-//     fn encode(&self) -> Vec<u8> {
-//         let mut serialized = self.inner_ctxt.encode();
-//         serialized.extend_from_slice(&self.mac);
-//         serialized
-//     }
-// }
 
 // TODO: Use functions from `secrets` crate instead once that's merged.
 // See:
