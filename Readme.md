@@ -1,6 +1,6 @@
 # libcrux - the formally verified crypto library
 
-libcrux is a formally verified cryptographic library in Rust. 
+libcrux is a formally verified cryptographic library in Rust.
 
 ## Minimum Supported Rust Version (MSRV)
 
