@@ -66,7 +66,6 @@ macro_rules! impl_hash_trait {
                     .map_err($crate::digest::slice::HashError::from)
             }
         }
-
     };
 }
 
@@ -103,5 +102,5 @@ macro_rules! impl_digest_incremental_trait {
     };
 }
 
-pub use impl_hash_trait;
 pub use impl_digest_incremental_trait;
+pub use impl_hash_trait;
