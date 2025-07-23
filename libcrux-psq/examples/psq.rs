@@ -1,25 +1,22 @@
 use std::{
     backtrace,
-    io::{Read, Write},
     net::{TcpListener, TcpStream},
     time::Duration,
 };
 
 use clap::Parser;
 use libcrux_psq::{
-    cred::{Authenticator, Ed25519},
+    cred::Ed25519,
     impls::MlKem768,
     psk_registration::{Initiator, InitiatorMsg, Responder, ResponderMsg},
-    traits::{Decode, Encode},
 };
 use libcrux_traits::kem::KEM;
-
-/// This is hardcoded for ML-KEM 768, for ClassicMcEliece it would be `524160`.
-const RESPONDER_PK_LEN: usize = 1184;
+use tls_codec::{Deserialize, Serialize, Size};
 
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
 enum Error {
     InvalidArguments,
+    Codec,
     Psq,
     Io,
     Kem,
@@ -28,6 +25,14 @@ enum Error {
 fn print_bt() {
     let bt = backtrace::Backtrace::capture();
     log::error!("{bt}");
+}
+
+impl From<tls_codec::Error> for Error {
+    fn from(value: tls_codec::Error) -> Self {
+        log::error!("TLSCodec error: {value:?}");
+        print_bt();
+        Self::Codec
+    }
 }
 
 impl From<std::io::Error> for Error {
@@ -123,15 +128,11 @@ fn initiator(host: String, port: u16, ctx: String) -> Result<(), Error> {
         let (sk, pk) = libcrux_ed25519::generate_key_pair(&mut rng).unwrap();
 
         // Send the public key to the responder
-        stream.write_all(pk.as_ref())?;
+        pk.tls_serialize(&mut stream)?;
 
         // Get the responder's public key.
-        let mut responder_pk = [0u8; RESPONDER_PK_LEN];
-        stream.read_exact(&mut responder_pk)?;
-        let responder_pk = <libcrux_psq::impls::MlKem768 as KEM>::EncapsulationKey::decode(
-            libcrux_kem::Algorithm::MlKem768,
-            &responder_pk,
-        )?;
+        let responder_pk =
+            <libcrux_psq::impls::MlKem768 as KEM>::EncapsulationKey::tls_deserialize(&mut stream)?;
 
         (sk, pk, responder_pk)
     };
@@ -143,24 +144,22 @@ fn initiator(host: String, port: u16, ctx: String) -> Result<(), Error> {
         Duration::from_secs(3600),
         &responder_pk,
         sk.as_ref(),
-        credential.as_ref(),
+        &credential,
         &mut rng,
     )
     .unwrap();
-    let encoded_msg = msg.encode();
-    log::trace!("sending {} bytes for initiator msg", encoded_msg.len());
-    stream.write_all(&(encoded_msg.len() as u64).to_be_bytes())?;
-    stream.write_all(&encoded_msg)?;
+    log::trace!(
+        "sending {} bytes for initiator msg",
+        msg.tls_serialized_len()
+    );
+    msg.tls_serialize(&mut stream)?;
 
     // Read the response
-    let mut msg_size = [0u8; 8];
-    stream.read_exact(&mut msg_size)?;
-    let msg_size = u64::from_be_bytes(msg_size);
-    log::trace!("reading {} bytes for responder msg", msg_size);
-
-    let mut responder_msg = vec![0u8; msg_size as usize];
-    stream.read_exact(&mut responder_msg)?;
-    let (responder_msg, _) = ResponderMsg::decode(&responder_msg)?;
+    let responder_msg = ResponderMsg::tls_deserialize(&mut stream)?;
+    log::trace!(
+        "read {} bytes for responder msg",
+        responder_msg.tls_serialized_len()
+    );
 
     // Finish the handshake
     let psk = state.complete_handshake(&responder_msg)?;
@@ -190,29 +189,22 @@ fn responder(host: String, port: u16, ctx: String, handle: String) -> Result<(),
         // Setup before running PSQ
         let (initiator_credential, sk, pk) = {
             // Read and store the initiator identity.
-            let mut initiator_credential = [0u8; Ed25519::CRED_LEN];
-            stream.read_exact(&mut initiator_credential)?;
+            let initiator_credential =
+                libcrux_ed25519::VerificationKey::tls_deserialize(&mut stream)?;
 
             // Generate the responder key pair.
             let mut rng = rand::rng();
             let (sk, pk) = MlKem768::generate_key_pair(&mut rng).unwrap();
 
             // Send the public key to the initiator.
-            stream.write_all(&pk.encode())?;
+            let _bytes_written = pk.tls_serialize(&mut stream)?;
 
             (initiator_credential, sk, pk)
         };
 
         // Read the initial PSQ message.
-        // First the length as u64.
-        let mut msg_size = [0u8; 8];
-        stream.read_exact(&mut msg_size)?;
-        let msg_size = u64::from_be_bytes(msg_size);
-        log::trace!("reading {} bytes for initiator msg", msg_size);
-
-        let mut msg = vec![0u8; msg_size as usize];
-        stream.read_exact(&mut msg)?;
-        let (msg, _) = InitiatorMsg::<MlKem768>::decode(&msg)?;
+        let msg = InitiatorMsg::<MlKem768>::tls_deserialize(&mut stream)?;
+        log::trace!("read {} bytes for initiator msg", msg.tls_serialized_len());
 
         let (psk, msg) = Responder::send::<Ed25519, MlKem768>(
             handle.as_bytes(),
@@ -225,10 +217,7 @@ fn responder(host: String, port: u16, ctx: String, handle: String) -> Result<(),
         )?;
 
         // Send the message back.
-        let encoded_msg = msg.encode();
-        let msg_size = (encoded_msg.len() as u64).to_be_bytes();
-        stream.write_all(&msg_size)?;
-        stream.write_all(&encoded_msg)?;
+        let _bytes_written = msg.tls_serialize(&mut stream)?;
 
         log::debug!(
             "Registered psk for: {}",
