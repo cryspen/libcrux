@@ -9,7 +9,7 @@ use classic_mceliece_rust::{
 };
 
 use libcrux_traits::kem::{KEMError, KeyPair, KEM};
-use tls_codec::{Deserialize, Serialize, Size};
+use tls_codec::{Deserialize, Serialize, Size, VLByteSlice, VLBytes};
 
 use crate::traits::*;
 
@@ -17,7 +17,7 @@ use crate::traits::*;
 pub struct Ciphertext(Ct);
 impl Serialize for Ciphertext {
     fn tls_serialize<W: std::io::Write>(&self, writer: &mut W) -> Result<usize, tls_codec::Error> {
-        todo!()
+        VLByteSlice(self.0.as_ref()).tls_serialize(writer)
     }
 }
 
@@ -26,13 +26,22 @@ impl Deserialize for Ciphertext {
     where
         Self: Sized,
     {
-        todo!()
+        let bytes_deserialized = VLBytes::tls_deserialize(bytes)?;
+        // XXX: This is the expected length of the ciphertext for mceliece460896f.
+        // If we didn't want to hardcode this, we'd have to pull in `generic-array` as a dependency and do something like
+        // ```
+        // let array = GenericArray<u8, Ciphertext::EncappedKeySize>::from(bytes_deserialized);
+        // let ciphertext =  Ciphertext::from_bytes(&array)?;
+        // ```
+        Ok(Ciphertext(Ct::from(<[u8; 156]>::try_from(
+            bytes_deserialized.as_slice(),
+        )?)))
     }
 }
 
 impl Size for Ciphertext {
     fn tls_serialized_len(&self) -> usize {
-        todo!()
+        VLByteSlice(self.0.as_ref()).tls_serialized_len()
     }
 }
 
@@ -41,12 +50,12 @@ pub struct PublicKey<'a>(Pk<'a>);
 
 impl<'a> Size for PublicKey<'a> {
     fn tls_serialized_len(&self) -> usize {
-        todo!()
+        VLByteSlice(self.0.as_ref()).tls_serialized_len()
     }
 }
 impl<'a> Serialize for PublicKey<'a> {
     fn tls_serialize<W: std::io::Write>(&self, writer: &mut W) -> Result<usize, tls_codec::Error> {
-        todo!()
+        VLByteSlice(self.0.as_ref()).tls_serialize(writer)
     }
 }
 
@@ -55,12 +64,12 @@ pub struct SharedSecret<'a>(Ss<'a>);
 
 impl<'a> Size for SharedSecret<'a> {
     fn tls_serialized_len(&self) -> usize {
-        todo!()
+        VLByteSlice(self.0.as_ref()).tls_serialized_len()
     }
 }
 impl<'a> Serialize for SharedSecret<'a> {
     fn tls_serialize<W: std::io::Write>(&self, writer: &mut W) -> Result<usize, tls_codec::Error> {
-        todo!()
+        VLByteSlice(self.0.as_ref()).tls_serialize(writer)
     }
 }
 

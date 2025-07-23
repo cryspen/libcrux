@@ -506,4 +506,49 @@ mod tests {
         );
         assert_eq!(handled_psk_initiator.psk, handled_psk_responder.psk);
     }
+
+    #[test]
+    #[cfg(feature = "classic-mceliece")]
+    fn registration_ed25519_classic_mceliece() {
+        use crate::classic_mceliece::ClassicMcEliece;
+
+        let mut rng = rand::rng();
+        let (receiver_pqsk, receiver_pqpk) =
+            crate::classic_mceliece::ClassicMcEliece::generate_key_pair(&mut rng).unwrap();
+        let (sk, pk) = libcrux_ed25519::generate_key_pair(&mut rng).unwrap();
+
+        let sctx = b"test context";
+        let psk_handle = b"test handle";
+        let (initiator, initiator_msg) =
+            Initiator::send_initial_message::<Ed25519, ClassicMcEliece>(
+                sctx,
+                Duration::from_secs(3600),
+                &receiver_pqpk,
+                sk.as_ref(),
+                &pk,
+                &mut rng,
+            )
+            .unwrap();
+
+        let (handled_psk_responder, respone_msg) = Responder::send::<Ed25519, ClassicMcEliece>(
+            psk_handle,
+            Duration::from_secs(3600),
+            sctx,
+            &receiver_pqpk,
+            &receiver_pqsk,
+            &pk,
+            &initiator_msg,
+        )
+        .unwrap();
+
+        assert_eq!(handled_psk_responder.psk_handle, psk_handle);
+
+        let handled_psk_initiator = initiator.complete_handshake(&respone_msg).unwrap();
+
+        assert_eq!(
+            handled_psk_initiator.psk_handle,
+            handled_psk_responder.psk_handle
+        );
+        assert_eq!(handled_psk_initiator.psk, handled_psk_responder.psk);
+    }
 }
