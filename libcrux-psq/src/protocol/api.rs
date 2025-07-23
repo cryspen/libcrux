@@ -36,15 +36,29 @@ pub enum Error {
 pub(crate) struct ToTransportState {
     pub(crate) tx2: Transcript,
     pub(crate) k2: AEADKey,
+    pub(crate) initiator_ecdh_pk: Option<DHPublicKey>,
 }
 
-pub struct Transport {
+pub struct Session {
     session_key: SessionKey,
+    initiator_ecdh_pk: DHPublicKey,
+    responder_ecdh_pk: DHPublicKey,
+    responder_pq_pk: Option<PQPublicKey>,
 }
-impl Transport {
-    pub(crate) fn new(tx2: Transcript, k2: AEADKey) -> Result<Self, Error> {
+
+impl Session {
+    pub(crate) fn new(
+        tx2: Transcript,
+        k2: AEADKey,
+        initiator_ecdh_pk: DHPublicKey,
+        responder_ecdh_pk: DHPublicKey,
+        responder_pq_pk: Option<PQPublicKey>,
+    ) -> Result<Self, Error> {
         Ok(Self {
             session_key: derive_session_key(k2, tx2)?,
+            initiator_ecdh_pk,
+            responder_ecdh_pk,
+            responder_pq_pk,
         })
     }
 
@@ -65,7 +79,7 @@ struct TransportMessage {
     tag: [u8; 16],
 }
 
-impl Protocol for Transport {
+impl Protocol for Session {
     fn write_message(&mut self, payload: &[u8], out: &mut [u8]) -> Result<usize, Error> {
         // We match the maximum payload length of Noise.
         if payload.len() > 65535 {
@@ -104,7 +118,7 @@ impl Protocol for Transport {
 }
 
 pub trait IntoTransport {
-    fn into_transport_mode(self) -> Result<Transport, Error>;
+    fn into_transport_mode(self) -> Result<Session, Error>;
     fn is_handshake_finished(&self) -> bool;
 }
 

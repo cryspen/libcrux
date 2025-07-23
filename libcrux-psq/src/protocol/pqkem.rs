@@ -9,7 +9,7 @@ use libcrux_ml_kem::{
 use rand::CryptoRng;
 use tls_codec::{TlsDeserialize, TlsSerialize, TlsSerializeBytes, TlsSize};
 
-#[derive(TlsSerialize, TlsSize)]
+#[derive(Clone, TlsSerialize, TlsSize)]
 pub struct PQPublicKey(MlKem768PublicKey);
 pub struct PQPrivateKey(MlKem768PrivateKey);
 pub struct PQKeyPair {

@@ -8,7 +8,7 @@ use tls_codec::{
 use crate::protocol::MessageOut;
 
 use super::{
-    api::{Error, IntoTransport, Protocol, ToTransportState, Transport},
+    api::{Error, IntoTransport, Protocol, Session, ToTransportState},
     dhkem::{DHKeyPair, DHPrivateKey, DHPublicKey},
     initiator::InitiatorInnerPayload,
     keys::{
@@ -226,7 +226,14 @@ impl<'a, Rng: CryptoRng> Responder<'a, Rng> {
         let out_len = out_msg
             .tls_serialize(&mut &mut out[..])
             .map_err(Error::Serialize)?;
-        self.state = ResponderState::ToTransport(ToTransportState { tx2, k2 }.into());
+        self.state = ResponderState::ToTransport(
+            ToTransportState {
+                tx2,
+                k2,
+                initiator_ecdh_pk: Some(state.initiator_longterm_ecdh_pk.clone()),
+            }
+            .into(),
+        );
 
         Ok(out_len)
     }
@@ -361,12 +368,24 @@ impl<'a, Rng: CryptoRng> Protocol for Responder<'a, Rng> {
 }
 
 impl<'a, Rng: CryptoRng> IntoTransport for Responder<'a, Rng> {
-    fn into_transport_mode(self) -> Result<Transport, Error> {
-        let ResponderState::ToTransport(state) = self.state else {
+    fn into_transport_mode(self) -> Result<Session, Error> {
+        let ResponderState::ToTransport(mut state) = self.state else {
             return Err(Error::ResponderState);
         };
 
-        Transport::new(state.tx2, state.k2)
+        let Some(initiator_ecdh_pk) = take(&mut state.initiator_ecdh_pk) else {
+            return Err(Error::ResponderState);
+        };
+
+        let responder_pq_pk = self.longterm_pq_keys.map(|key_pair| key_pair.pk.clone());
+
+        Session::new(
+            state.tx2,
+            state.k2,
+            initiator_ecdh_pk,
+            self.longterm_ecdh_keys.pk,
+            responder_pq_pk,
+        )
     }
 
     fn is_handshake_finished(&self) -> bool {
