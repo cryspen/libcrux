@@ -3,7 +3,7 @@ macro_rules! impl_signature_trait {
         #[allow(non_camel_case_types)]
         pub type $alias = Signer<libcrux_sha2::$digest_alg_name>;
 
-        impl arrayref::SignWithAux<&Nonce, $sk_len, $sig_len> for $alias {
+        impl arrayref::Sign<&Nonce, $sk_len, $sig_len> for $alias {
             fn sign(
                 payload: &[u8],
                 private_key: &[u8; $sk_len],
@@ -20,7 +20,7 @@ macro_rules! impl_signature_trait {
                 .map_err(|_| todo!())
             }
         }
-        impl arrayref::VerifyWithAux<&(), $pk_len, $sig_len> for $alias {
+        impl arrayref::Verify<&(), $pk_len, $sig_len> for $alias {
             fn verify(
                 payload: &[u8],
                 public_key: &[u8; $pk_len],
