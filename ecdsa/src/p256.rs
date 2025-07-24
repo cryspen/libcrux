@@ -20,7 +20,7 @@ pub struct Signature {
 }
 
 /// An ECDSA P-256 nonce
-pub struct Nonce(pub(super) [u8; 32]);
+pub struct Nonce([u8; 32]);
 
 /// An ECDSA P-256 private key
 pub struct PrivateKey([u8; 32]);
