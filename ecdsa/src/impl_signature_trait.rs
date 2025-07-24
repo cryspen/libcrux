@@ -39,7 +39,8 @@ macro_rules! impl_signature_trait {
                 .map_err(|_| todo!())
             }
         }
-        libcrux_traits::impl_signature_slice_trait!($alias => $pk_len, $sk_len, $sig_len, &Nonce, nonce, &(), _aux);
+        libcrux_traits::impl_signature_slice_trait!($alias => $sk_len, $sig_len, &Nonce, nonce);
+        libcrux_traits::impl_verify_slice_trait!($alias => $pk_len, $sig_len, &(), _aux);
         // TODO: owned and secrets traits not appearing in docs
     };
 }
