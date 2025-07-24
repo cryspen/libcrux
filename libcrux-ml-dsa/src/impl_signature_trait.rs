@@ -79,18 +79,21 @@ pub struct Signer<T> {
 
 type Randomness = [u8; 32];
 
+#[cfg(feature = "mldsa44")]
 impl_signature_trait!(
     MlDsa44,
     ml_dsa_44,
     MlDsa44Signer,
     "A struct representing ML-DSA 44"
 );
+#[cfg(feature = "mldsa65")]
 impl_signature_trait!(
     MlDsa65,
     ml_dsa_65,
     MlDsa65Signer,
     "A struct representing ML-DSA 65"
 );
+#[cfg(feature = "mldsa87")]
 impl_signature_trait!(
     MlDsa87,
     ml_dsa_87,
