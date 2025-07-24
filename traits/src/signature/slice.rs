@@ -46,7 +46,7 @@ impl From<super::arrayref::VerifyError> for VerifyError {
 
 #[macro_export]
 macro_rules! impl_signature_slice_trait {
-    ($type:ty => $pk_len:expr, $sk_len:expr, $sig_len:expr, $sign_aux:ty, $sign_aux_param:ident, $verify_aux:ty, $verify_aux_param:ident) => {
+    ($type:ty => $pk_len:expr, $sk_len:expr, $sig_len:expr, $sign_aux:ty, $sign_aux_param:tt, $verify_aux:ty, $verify_aux_param:tt) => {
         impl $crate::signature::slice::Signature<$sign_aux, $verify_aux> for $type {
             fn sign(
                 payload: &[u8],
