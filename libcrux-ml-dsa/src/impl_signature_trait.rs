@@ -35,33 +35,33 @@ macro_rules! impl_signature_trait {
 
             // XXX: implementing owned trait directly because there is no arrayref equivalent
             // TODO: for docs, these should appear as consts in trait def
-            impl owned::Sign<super::Randomness, SIGNING_KEY_LEN, SIGNATURE_LEN> for $alias {
+            impl owned::Sign<(&[u8], super::Randomness), SIGNING_KEY_LEN, SIGNATURE_LEN> for $alias {
                 fn sign(
                     payload: &[u8],
                     private_key: &[u8; SIGNING_KEY_LEN],
-                    randomness: super::Randomness,
+                    (context, randomness): (&[u8], super::Randomness),
                 ) -> Result<[u8; SIGNATURE_LEN], owned::SignError> {
                     crate::ml_dsa_generic::multiplexing::$module::sign(
                         private_key,
                         payload,
-                        &[],
+                        context,
                         randomness,
                     )
                     .map(|sig| sig.value)
                     .map_err(owned::SignError::from)
                 }
             }
-            impl arrayref::Verify<&(), VERIFICATION_KEY_LEN, SIGNATURE_LEN> for $alias {
+            impl arrayref::Verify<&[u8], VERIFICATION_KEY_LEN, SIGNATURE_LEN> for $alias {
                 fn verify(
                     payload: &[u8],
                     public_key: &[u8; VERIFICATION_KEY_LEN],
                     signature: &[u8; SIGNATURE_LEN],
-                    _aux: &(),
+                    context: &[u8],
                 ) -> Result<(), owned::VerifyError> {
                     crate::ml_dsa_generic::multiplexing::$module::verify(
                         public_key,
                         payload,
-                        &[],
+                        context,
                         signature,
                     )
                     .map_err(arrayref::VerifyError::from)
