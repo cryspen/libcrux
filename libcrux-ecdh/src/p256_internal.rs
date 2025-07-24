@@ -8,7 +8,14 @@ use super::Error;
 
 pub struct PrivateKey(pub [u8; 32]);
 
+#[cfg(feature = "codec")]
+use tls_codec::{TlsDeserialize, TlsSerialize, TlsSize};
+
+#[cfg(feature = "codec")]
+extern crate std;
+
 #[derive(Debug)]
+#[cfg_attr(feature = "codec", derive(TlsSize, TlsSerialize, TlsDeserialize))]
 pub struct PublicKey(pub [u8; 64]);
 
 /// Output of a scalar multiplication between a public key and a secret key.
@@ -16,6 +23,7 @@ pub struct PublicKey(pub [u8; 64]);
 /// This value is NOT (!) safe for use as a key and needs to be processed in a round of key
 /// derivation, to ensure both that the output is uniformly random and that unkown key share
 /// attacks can not happen.
+#[cfg_attr(feature = "codec", derive(TlsSize, TlsSerialize, TlsDeserialize))]
 pub struct SharedSecret(pub [u8; 64]);
 
 impl From<&[u8; 64]> for PublicKey {

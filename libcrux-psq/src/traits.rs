@@ -3,6 +3,7 @@ use libcrux_hkdf::{expand as hkdf_expand, Algorithm as HKDF_Algorithm};
 use libcrux_hmac::{hmac, Algorithm as HMAC_Algorithm};
 use libcrux_traits::kem::KEM;
 use rand::CryptoRng;
+use tls_codec::{Deserialize, Serialize, Size, TlsDeserialize, TlsSerialize, TlsSize};
 
 use crate::Error;
 
@@ -21,27 +22,6 @@ type Mac = [u8; MAC_LENGTH];
 /// A post-quantum shared secret component.
 pub type PSQComponent = [u8; PSQ_COMPONENT_LENGTH];
 
-/// A common trait for encoding structures into byte vectors.
-pub trait Encode {
-    // TODO: This can only become proper `no_std` once we get slices
-    // of the backing datastructure from `libcrux_kem`.
-    // See: https://github.com/cryspen/libcrux/issues/817
-    /// Encodes self into a byte vector.
-    ///
-    /// This encoding needs to be unique.
-    fn encode(&self) -> Vec<u8>;
-}
-
-/// Generic decode trait.
-pub trait Decode {
-    /// Decode bytes to Self
-    ///
-    /// Returns Self and the number of bytes consumed from `bytes`.
-    fn decode(bytes: &[u8]) -> Result<(Self, usize), Error>
-    where
-        Self: Sized;
-}
-
 pub(crate) mod private {
     pub trait Seal {}
 }
@@ -49,7 +29,11 @@ pub(crate) mod private {
 /// component using an underlying KEM.
 pub trait PSQ: private::Seal {
     /// The underlying KEM.
-    type InnerKEM: KEM<Ciphertext: Encode, SharedSecret: Encode, EncapsulationKey: Encode>;
+    type InnerKEM: KEM<
+        Ciphertext: Deserialize + Serialize + Size,
+        SharedSecret: Serialize + Size,
+        EncapsulationKey: Serialize + Size,
+    >;
 
     /// Encapsulate a fresh PSQ component.
     fn encapsulate_psq(
@@ -60,7 +44,22 @@ pub trait PSQ: private::Seal {
         let (ikm, enc) =
             Self::InnerKEM::encapsulate(pk, rng).map_err(|_| Error::PSQGenerationError)?;
 
-        let k0 = compute_k0(&pk.encode(), &ikm.encode(), &enc.encode(), sctx)?;
+        let mut pk_serialized = vec![0u8; pk.tls_serialized_len()];
+        let _ = pk
+            .tls_serialize(&mut &mut pk_serialized[..])
+            .map_err(|_| Error::Serialization)?;
+
+        let mut ikm_serialized = vec![0u8; ikm.tls_serialized_len()];
+        let _ = ikm
+            .tls_serialize(&mut &mut ikm_serialized[..])
+            .map_err(|_| Error::Serialization)?;
+
+        let mut enc_serialized = vec![0u8; enc.tls_serialized_len()];
+        let _ = enc
+            .tls_serialize(&mut &mut enc_serialized[..])
+            .map_err(|_| Error::Serialization)?;
+
+        let k0 = compute_k0(&pk_serialized, &ikm_serialized, &enc_serialized, sctx)?;
         let mac = compute_mac(&k0)?;
         let psk = compute_psk(&k0)?;
 
@@ -84,10 +83,31 @@ pub trait PSQ: private::Seal {
     ) -> Result<PSQComponent, Error> {
         let Ciphertext { inner_ctxt, mac } = enc;
 
-        let ik =
+        let ikm =
             Self::InnerKEM::decapsulate(sk, inner_ctxt).map_err(|_| Error::PSQDerivationError)?;
 
-        let k0 = compute_k0(&pk.encode(), &ik.encode(), &inner_ctxt.encode(), sctx)?;
+        let mut pk_serialized = vec![0u8; pk.tls_serialized_len()];
+        let _ = pk
+            .tls_serialize(&mut &mut pk_serialized[..])
+            .map_err(|_| Error::Serialization)?;
+
+        let mut ikm_serialized = vec![0u8; ikm.tls_serialized_len()];
+        let _ = ikm
+            .tls_serialize(&mut &mut ikm_serialized[..])
+            .map_err(|_| Error::Serialization)?;
+
+        let mut inner_ctxt_serialized = vec![0u8; inner_ctxt.tls_serialized_len()];
+        let _ = inner_ctxt
+            .tls_serialize(&mut &mut inner_ctxt_serialized[..])
+            .map_err(|_| Error::Serialization)?;
+
+        let k0 = compute_k0(
+            &pk_serialized,
+            &ikm_serialized,
+            &inner_ctxt_serialized,
+            sctx,
+        )?;
+
         let recomputed_mac = compute_mac(&k0)?;
 
         if compare(&recomputed_mac, mac) == 0 {
@@ -99,17 +119,16 @@ pub trait PSQ: private::Seal {
 }
 
 /// A PSQ ciphertext, including MAC.
-pub struct Ciphertext<T: KEM> {
+#[derive(TlsSerialize, TlsDeserialize, TlsSize)]
+pub struct Ciphertext<
+    T: KEM<
+        Ciphertext: Deserialize + Serialize + Size,
+        SharedSecret: Serialize + Size,
+        EncapsulationKey: Serialize + Size,
+    >,
+> {
     pub(crate) inner_ctxt: T::Ciphertext,
     pub(crate) mac: Mac,
-}
-
-impl<T: KEM<Ciphertext: Encode>> Encode for Ciphertext<T> {
-    fn encode(&self) -> Vec<u8> {
-        let mut serialized = self.inner_ctxt.encode();
-        serialized.extend_from_slice(&self.mac);
-        serialized
-    }
 }
 
 // TODO: Use functions from `secrets` crate instead once that's merged.

@@ -24,12 +24,17 @@ libcrux-curve25519 = { version = "=0.0.3", path = "../curve25519", default-featu
 libcrux-p256 = { version = "=0.0.3", path = "../p256", default-features = false }
 libcrux-traits = { version = "=0.0.3", path = "../traits" }
 rand = { version = "0.9", default-features = false }
+tls_codec = { version = "0.4.2", features = [
+    "derive",
+],  optional = true }
 
 [features]
 default = ["std"]
 std = ["rand/std", "libcrux-ecdh/std", "libcrux-ml-kem/std"]
 tests = []                                                   # Expose functions for testing.
 pre-verification = []
+# Encoding and decoding with TLSCodec
+codec = ["dep:tls_codec","libcrux-ml-kem/codec", "libcrux-ecdh/codec"]
 
 [dev-dependencies]
 libcrux-kem = { path = "./", features = ["tests"] }

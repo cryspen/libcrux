@@ -4,15 +4,15 @@
 //! PQ-PSK between an initiator and a responder.
 
 use libcrux_chacha20poly1305::{decrypt_detached, encrypt_detached, KEY_LEN, NONCE_LEN, TAG_LEN};
-use libcrux_kem::Ct;
 use libcrux_traits::kem::KEM;
 use rand::CryptoRng;
-use std::time::{Duration, SystemTime};
+use std::{
+    io::Cursor,
+    time::{Duration, SystemTime},
+};
+use tls_codec::{Deserialize, Serialize, Size, TlsDeserialize, TlsSerialize, TlsSize};
 
-#[cfg(feature = "classic-mceliece")]
-use crate::classic_mceliece::ClassicMcEliece;
-
-use crate::{cred::Authenticator, impls::MlKem768, traits::*, Error, Psk};
+use crate::{cred::Authenticator, traits::*, Error, Psk};
 
 const PSK_REGISTRATION_CONTEXT: &[u8] = b"PSK-Registration";
 const PSK_LENGTH: usize = 32;
@@ -24,114 +24,29 @@ const AEAD_KEY_LENGTH: usize = KEY_LEN;
 
 const TS_TTL_LEN: usize = 28;
 
+#[derive(TlsSerialize, TlsDeserialize, TlsSize)]
 struct AeadMac {
     tag: [u8; TAG_LEN],
     ctxt: Vec<u8>,
 }
 
-impl Encode for AeadMac {
-    fn encode(&self) -> Vec<u8> {
-        let mut out = vec![];
-
-        out.extend_from_slice(self.tag.as_ref());
-        out.extend_from_slice(&self.ctxt);
-
-        out
-    }
-}
-
-impl Decode for AeadMac {
-    fn decode(bytes: &[u8]) -> Result<(Self, usize), Error> {
-        let tag = <[u8; TAG_LEN]>::try_from(&bytes[0..16]).map_err(|_| Error::Decoding)?;
-        let ctxt = bytes[16..].to_vec();
-
-        let out = Self { tag, ctxt };
-        let len = 16 + out.ctxt.len();
-
-        Ok((out, len))
-    }
-}
-
 /// The Initiator's message to the responder.
-pub struct InitiatorMsg<T: KEM> {
+#[derive(TlsSerialize, TlsDeserialize, TlsSize)]
+pub struct InitiatorMsg<
+    T: KEM<
+        Ciphertext: Deserialize + Serialize + Size,
+        SharedSecret: Serialize + Size,
+        EncapsulationKey: Serialize + Size,
+    >,
+> {
     encapsulation: Ciphertext<T>,
     aead_mac: AeadMac,
 }
 
-impl<T: KEM<Ciphertext: Encode>> Encode for InitiatorMsg<T> {
-    fn encode(&self) -> Vec<u8> {
-        let mut out = vec![];
-
-        out.extend_from_slice(&self.encapsulation.encode());
-        out.extend_from_slice(&self.aead_mac.encode());
-
-        out
-    }
-}
-
-#[cfg(feature = "classic-mceliece")]
-impl Decode for InitiatorMsg<ClassicMcEliece> {
-    fn decode(bytes: &[u8]) -> Result<(Self, usize), Error> {
-        let mut ct = [0u8; 156];
-        let (ct_bytes, rest) = bytes.split_at(156);
-        let (mac_bytes, aead_bytes) = rest.split_at(32);
-        ct.copy_from_slice(ct_bytes);
-        let ct = classic_mceliece_rust::Ciphertext::from(ct);
-        let mut mac = [0u8; MAC_LENGTH];
-        mac.copy_from_slice(mac_bytes);
-
-        let (aead_mac, _len) = AeadMac::decode(aead_bytes)?;
-
-        let out = Self {
-            encapsulation: Ciphertext::<ClassicMcEliece> {
-                inner_ctxt: ct,
-                mac,
-            },
-            aead_mac,
-        };
-
-        Ok((out, bytes.len()))
-    }
-}
-
-impl Decode for InitiatorMsg<MlKem768> {
-    fn decode(bytes: &[u8]) -> Result<(Self, usize), Error> {
-        let ct = Ct::decode(libcrux_kem::Algorithm::MlKem768, &bytes[0..1088]).unwrap();
-        let mut mac = [0u8; MAC_LENGTH];
-        mac.copy_from_slice(&bytes[1088..1088 + 32]);
-
-        let (aead_mac, _len) = AeadMac::decode(&bytes[1088 + 32..])?;
-
-        let out = Self {
-            encapsulation: Ciphertext::<MlKem768> {
-                inner_ctxt: ct,
-                mac,
-            },
-            aead_mac,
-        };
-
-        Ok((out, bytes.len()))
-    }
-}
-
 /// The Responder's message to the initiator.
+#[derive(TlsSize, TlsSerialize, TlsDeserialize)]
 pub struct ResponderMsg {
     aead_mac: AeadMac,
-}
-
-impl Encode for ResponderMsg {
-    fn encode(&self) -> Vec<u8> {
-        self.aead_mac.encode()
-    }
-}
-
-impl Decode for ResponderMsg {
-    fn decode(bytes: &[u8]) -> Result<(Self, usize), Error> {
-        let (aead_mac, read) = AeadMac::decode(bytes)?;
-        let out = Self { aead_mac };
-
-        Ok((out, read))
-    }
 }
 
 /// A finished PSK with an attached storage handle.
@@ -172,18 +87,27 @@ impl Initiator {
 
         let ts_ttl = serialize_ts_ttl(&ts, &psk_ttl);
 
-        let signature = C::sign(signing_key, &enc_pq.encode())?;
+        let mut enc_pq_serialized = vec![0u8; enc_pq.tls_serialized_len()];
+        enc_pq
+            .tls_serialize(&mut &mut enc_pq_serialized[..])
+            .map_err(|_| Error::Serialization)?;
+
+        let signature = C::sign(signing_key, &enc_pq_serialized)?;
 
         let mut message = Vec::new();
         message.extend_from_slice(&ts_ttl);
-        message.extend_from_slice(signature.as_ref());
-        message.extend_from_slice(credential.as_ref());
+        let _ = signature
+            .tls_serialize(&mut &mut message)
+            .map_err(|_| Error::Serialization)?;
+        let _ = credential
+            .tls_serialize(&mut &mut message)
+            .map_err(|_| Error::Serialization)?;
 
         let mut ctxt = message.clone();
         let mut tag = [0u8; TAG_LEN];
         let _ = encrypt_detached(
             &initiator_key,
-            &mut message,
+            &message,
             &mut ctxt,
             &mut tag,
             b"",
@@ -200,7 +124,7 @@ impl Initiator {
         ))
     }
 
-    /// Receive the responder's respone and derive a PSK under the
+    /// Receive the responder's response and derive a PSK under the
     /// given handle.
     pub fn complete_handshake(
         &self,
@@ -251,15 +175,6 @@ fn deserialize_ts(bytes: &[u8]) -> Result<(u64, u32), Error> {
     Ok((ts_seconds, ts_subsec_millis))
 }
 
-fn deserialize_sig_cred<C: Authenticator>(
-    bytes: &[u8],
-) -> Result<(C::Signature, C::Credential), Error> {
-    let (sig_bytes, cred_bytes) = bytes.split_at(C::SIG_LEN);
-    let signature = C::deserialize_signature(sig_bytes)?;
-    let credential = C::deserialize_credential(cred_bytes)?;
-    Ok((signature, credential))
-}
-
 impl Responder {
     /// On successful decapsulation of the PQ-PrePSK, send the response.
     pub fn send<C: Authenticator, T: PSQ>(
@@ -284,16 +199,21 @@ impl Responder {
             &initiator_iv,
         )?;
 
+        let mut encapsulation_serialized =
+            vec![0u8; initiator_message.encapsulation.tls_serialized_len()];
+        initiator_message
+            .encapsulation
+            .tls_serialize(&mut &mut encapsulation_serialized[..])
+            .map_err(|_| Error::Serialization)?;
+
         let (ts_bytes, sig_cred_bytes) = msg_bytes.split_at(TS_TTL_LEN);
-        let (signature, credential) = deserialize_sig_cred::<C>(sig_cred_bytes)?;
+        let mut sig_cred_cursor = Cursor::new(sig_cred_bytes);
+        let signature =
+            C::Signature::tls_deserialize(&mut sig_cred_cursor).map_err(|_| Error::Decoding)?;
+        let credential =
+            C::Credential::tls_deserialize(&mut sig_cred_cursor).map_err(|_| Error::Decoding)?;
         let verification_key = C::validate_credential(credential, client_certificate)?;
-        if C::verify(
-            &verification_key,
-            &signature,
-            &initiator_message.encapsulation.encode(),
-        )
-        .is_err()
-        {
+        if C::verify(&verification_key, &signature, &encapsulation_serialized).is_err() {
             return Err(Error::RegistrationError);
         }
 
@@ -444,7 +364,7 @@ mod tests {
             Duration::from_secs(3600),
             &receiver_pqpk,
             sk.as_ref(),
-            pk.as_ref(),
+            &pk,
             &mut rng,
         )
         .unwrap();
@@ -455,7 +375,52 @@ mod tests {
             sctx,
             &receiver_pqpk,
             &receiver_pqsk,
-            pk.as_ref(),
+            &pk,
+            &initiator_msg,
+        )
+        .unwrap();
+
+        assert_eq!(handled_psk_responder.psk_handle, psk_handle);
+
+        let handled_psk_initiator = initiator.complete_handshake(&respone_msg).unwrap();
+
+        assert_eq!(
+            handled_psk_initiator.psk_handle,
+            handled_psk_responder.psk_handle
+        );
+        assert_eq!(handled_psk_initiator.psk, handled_psk_responder.psk);
+    }
+
+    #[test]
+    #[cfg(feature = "classic-mceliece")]
+    fn registration_ed25519_classic_mceliece() {
+        use crate::classic_mceliece::ClassicMcEliece;
+
+        let mut rng = rand::rng();
+        let (receiver_pqsk, receiver_pqpk) =
+            crate::classic_mceliece::ClassicMcEliece::generate_key_pair(&mut rng).unwrap();
+        let (sk, pk) = libcrux_ed25519::generate_key_pair(&mut rng).unwrap();
+
+        let sctx = b"test context";
+        let psk_handle = b"test handle";
+        let (initiator, initiator_msg) =
+            Initiator::send_initial_message::<Ed25519, ClassicMcEliece>(
+                sctx,
+                Duration::from_secs(3600),
+                &receiver_pqpk,
+                sk.as_ref(),
+                &pk,
+                &mut rng,
+            )
+            .unwrap();
+
+        let (handled_psk_responder, respone_msg) = Responder::send::<Ed25519, ClassicMcEliece>(
+            psk_handle,
+            Duration::from_secs(3600),
+            sctx,
+            &receiver_pqpk,
+            &receiver_pqsk,
+            &pk,
             &initiator_msg,
         )
         .unwrap();

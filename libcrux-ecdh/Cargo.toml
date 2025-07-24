@@ -19,10 +19,14 @@ libcrux-curve25519 = { version = "=0.0.3", path = "../curve25519" }
 libcrux-p256 = { version = "=0.0.3", path = "../p256", features = [
     "expose-hacl",
 ] }
+tls_codec = { version = "0.4.2", features = [
+    "derive",
+], optional = true }
 
 [features]
 default = ["std"]
 std = ["rand/std"]
+codec = ["dep:tls_codec"]
 
 [dev-dependencies]
 rand_core = { version = "0.9", features = ["os_rng"] }

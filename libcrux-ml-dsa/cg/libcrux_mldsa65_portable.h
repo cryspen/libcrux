@@ -8,7 +8,7 @@
  * Eurydice: 46cef5d58a855ed049fa89bfe99c959b5d9d0d4b
  * Karamel: 39cb85a718da8ae4a724d31b08f9134ca9311336
  * F*: 4b3fc11774003a6ff7c09500ecb5f0145ca6d862
- * Libcrux: 5d995158df9cb7834d818be995d380e9ccd7572e
+ * Libcrux: b54a2f8eacb847bfe456abe6b195dc94bf464dda
  */
 
 #ifndef __libcrux_mldsa65_portable_H
@@ -1947,54 +1947,33 @@ static KRML_MUSTINLINE void libcrux_ml_dsa_simd_portable_encoding_t0_serialize(
   Eurydice_slice_index(serialized, (size_t)0U, uint8_t, uint8_t *) =
       (uint8_t)coefficient0;
   Eurydice_slice_index(serialized, (size_t)1U, uint8_t, uint8_t *) =
-      (uint8_t)(coefficient0 >> 8U);
-  size_t uu____0 = (size_t)1U;
-  Eurydice_slice_index(serialized, uu____0, uint8_t, uint8_t *) =
-      (uint32_t)Eurydice_slice_index(serialized, uu____0, uint8_t, uint8_t *) |
+      (uint32_t)(uint8_t)(coefficient0 >> 8U) |
       (uint32_t)(uint8_t)(coefficient1 << 5U);
   Eurydice_slice_index(serialized, (size_t)2U, uint8_t, uint8_t *) =
       (uint8_t)(coefficient1 >> 3U);
   Eurydice_slice_index(serialized, (size_t)3U, uint8_t, uint8_t *) =
-      (uint8_t)(coefficient1 >> 11U);
-  size_t uu____1 = (size_t)3U;
-  Eurydice_slice_index(serialized, uu____1, uint8_t, uint8_t *) =
-      (uint32_t)Eurydice_slice_index(serialized, uu____1, uint8_t, uint8_t *) |
+      (uint32_t)(uint8_t)(coefficient1 >> 11U) |
       (uint32_t)(uint8_t)(coefficient2 << 2U);
   Eurydice_slice_index(serialized, (size_t)4U, uint8_t, uint8_t *) =
-      (uint8_t)(coefficient2 >> 6U);
-  size_t uu____2 = (size_t)4U;
-  Eurydice_slice_index(serialized, uu____2, uint8_t, uint8_t *) =
-      (uint32_t)Eurydice_slice_index(serialized, uu____2, uint8_t, uint8_t *) |
+      (uint32_t)(uint8_t)(coefficient2 >> 6U) |
       (uint32_t)(uint8_t)(coefficient3 << 7U);
   Eurydice_slice_index(serialized, (size_t)5U, uint8_t, uint8_t *) =
       (uint8_t)(coefficient3 >> 1U);
   Eurydice_slice_index(serialized, (size_t)6U, uint8_t, uint8_t *) =
-      (uint8_t)(coefficient3 >> 9U);
-  size_t uu____3 = (size_t)6U;
-  Eurydice_slice_index(serialized, uu____3, uint8_t, uint8_t *) =
-      (uint32_t)Eurydice_slice_index(serialized, uu____3, uint8_t, uint8_t *) |
+      (uint32_t)(uint8_t)(coefficient3 >> 9U) |
       (uint32_t)(uint8_t)(coefficient4 << 4U);
   Eurydice_slice_index(serialized, (size_t)7U, uint8_t, uint8_t *) =
       (uint8_t)(coefficient4 >> 4U);
   Eurydice_slice_index(serialized, (size_t)8U, uint8_t, uint8_t *) =
-      (uint8_t)(coefficient4 >> 12U);
-  size_t uu____4 = (size_t)8U;
-  Eurydice_slice_index(serialized, uu____4, uint8_t, uint8_t *) =
-      (uint32_t)Eurydice_slice_index(serialized, uu____4, uint8_t, uint8_t *) |
+      (uint32_t)(uint8_t)(coefficient4 >> 12U) |
       (uint32_t)(uint8_t)(coefficient5 << 1U);
   Eurydice_slice_index(serialized, (size_t)9U, uint8_t, uint8_t *) =
-      (uint8_t)(coefficient5 >> 7U);
-  size_t uu____5 = (size_t)9U;
-  Eurydice_slice_index(serialized, uu____5, uint8_t, uint8_t *) =
-      (uint32_t)Eurydice_slice_index(serialized, uu____5, uint8_t, uint8_t *) |
+      (uint32_t)(uint8_t)(coefficient5 >> 7U) |
       (uint32_t)(uint8_t)(coefficient6 << 6U);
   Eurydice_slice_index(serialized, (size_t)10U, uint8_t, uint8_t *) =
       (uint8_t)(coefficient6 >> 2U);
   Eurydice_slice_index(serialized, (size_t)11U, uint8_t, uint8_t *) =
-      (uint8_t)(coefficient6 >> 10U);
-  size_t uu____6 = (size_t)11U;
-  Eurydice_slice_index(serialized, uu____6, uint8_t, uint8_t *) =
-      (uint32_t)Eurydice_slice_index(serialized, uu____6, uint8_t, uint8_t *) |
+      (uint32_t)(uint8_t)(coefficient6 >> 10U) |
       (uint32_t)(uint8_t)(coefficient7 << 3U);
   Eurydice_slice_index(serialized, (size_t)12U, uint8_t, uint8_t *) =
       (uint8_t)(coefficient7 >> 5U);

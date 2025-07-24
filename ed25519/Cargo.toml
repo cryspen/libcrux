@@ -16,8 +16,9 @@ libcrux-sha2 = { version = "=0.0.3", path = "../sha2", features = [
     "expose-hacl",
 ] }
 libcrux-macros = { version = "=0.0.3", path = "../macros" }
-rand_core = { version = "0.9", optional = true }
 libcrux-traits = { version = "=0.0.3", path = "../traits" }
+rand_core = { version = "0.9", optional = true }
+tls_codec = { version = "0.4.2", features = ["derive"], optional = true }
 
 [dev-dependencies]
 rand = { version = "0.9" }
@@ -25,3 +26,4 @@ wycheproof = "0.6.0"
 
 [features]
 rand = ["dep:rand_core"]
+codec = ["tls_codec/std"]
