@@ -1,6 +1,6 @@
 pub use super::arrayref::{SignError, VerifyError};
 
-pub trait SignWithAux<SignAux, const PRIVATE_KEY_LEN: usize, const SIGNATURE_LEN: usize> {
+pub trait Sign<SignAux, const PRIVATE_KEY_LEN: usize, const SIGNATURE_LEN: usize> {
     fn sign(
         payload: &[u8],
         private_key: &[u8; PRIVATE_KEY_LEN],
@@ -12,8 +12,8 @@ impl<
         SignAux,
         const PRIVATE_KEY_LEN: usize,
         const SIGNATURE_LEN: usize,
-        T: super::arrayref::SignWithAux<SignAux, PRIVATE_KEY_LEN, SIGNATURE_LEN>,
-    > SignWithAux<SignAux, PRIVATE_KEY_LEN, SIGNATURE_LEN> for T
+        T: super::arrayref::Sign<SignAux, PRIVATE_KEY_LEN, SIGNATURE_LEN>,
+    > Sign<SignAux, PRIVATE_KEY_LEN, SIGNATURE_LEN> for T
 {
     fn sign(
         payload: &[u8],
@@ -21,7 +21,7 @@ impl<
         aux: SignAux,
     ) -> Result<[u8; SIGNATURE_LEN], SignError> {
         let mut signature = [0; SIGNATURE_LEN];
-        <Self as super::arrayref::SignWithAux<SignAux, PRIVATE_KEY_LEN, SIGNATURE_LEN>>::sign(
+        <Self as super::arrayref::Sign<SignAux, PRIVATE_KEY_LEN, SIGNATURE_LEN>>::sign(
             payload,
             private_key,
             &mut signature,
@@ -32,7 +32,7 @@ impl<
 }
 
 // No auxiliary information
-pub trait Sign<const PRIVATE_KEY_LEN: usize, const SIGNATURE_LEN: usize> {
+pub trait SignNoAux<const PRIVATE_KEY_LEN: usize, const SIGNATURE_LEN: usize> {
     fn sign(
         payload: &[u8],
         private_key: &[u8; PRIVATE_KEY_LEN],
@@ -43,17 +43,13 @@ impl<
         'a,
         const PRIVATE_KEY_LEN: usize,
         const SIGNATURE_LEN: usize,
-        T: SignWithAux<&'a (), PRIVATE_KEY_LEN, SIGNATURE_LEN>,
-    > Sign<PRIVATE_KEY_LEN, SIGNATURE_LEN> for T
+        T: Sign<&'a (), PRIVATE_KEY_LEN, SIGNATURE_LEN>,
+    > SignNoAux<PRIVATE_KEY_LEN, SIGNATURE_LEN> for T
 {
     fn sign(
         payload: &[u8],
         private_key: &[u8; PRIVATE_KEY_LEN],
     ) -> Result<[u8; SIGNATURE_LEN], SignError> {
-        <Self as SignWithAux<&'a (), PRIVATE_KEY_LEN, SIGNATURE_LEN>>::sign(
-            payload,
-            private_key,
-            &(),
-        )
+        <Self as Sign<&'a (), PRIVATE_KEY_LEN, SIGNATURE_LEN>>::sign(payload, private_key, &())
     }
 }

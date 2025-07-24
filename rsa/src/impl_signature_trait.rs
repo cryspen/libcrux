@@ -8,7 +8,7 @@ macro_rules! impl_signature_trait {
         #[allow(non_camel_case_types)]
         pub type $alias = Signer<$name, $digest_alg>;
 
-        impl arrayref::SignWithAux<(&[u8], &[u8; $bytes]), $bytes, $bytes> for $alias {
+        impl arrayref::Sign<(&[u8], &[u8; $bytes]), $bytes, $bytes> for $alias {
             fn sign(
                 payload: &[u8],
                 private_key: &[u8; $bytes],
@@ -31,7 +31,7 @@ macro_rules! impl_signature_trait {
                 .map_err(|_| todo!())
             }
         }
-        impl arrayref::VerifyWithAux<u32, $bytes, $bytes> for $alias {
+        impl arrayref::Verify<u32, $bytes, $bytes> for $alias {
             fn verify(
                 payload: &[u8],
                 public_key: &[u8; $bytes],
