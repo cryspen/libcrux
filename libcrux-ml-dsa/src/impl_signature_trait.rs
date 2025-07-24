@@ -35,6 +35,8 @@ macro_rules! impl_signature_trait {
 
             // XXX: implementing owned trait directly because there is no arrayref equivalent
             // TODO: for docs, these should appear as consts in trait def
+            /// It is the responsibility of the caller to ensure  that the `rand` argument is actually
+            /// random.
             impl owned::Sign<(&[u8], super::Randomness), SIGNING_KEY_LEN, SIGNATURE_LEN> for $alias {
                 fn sign(
                     payload: &[u8],
