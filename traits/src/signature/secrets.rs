@@ -1,4 +1,4 @@
-use super::arrayref::SignError;
+use super::owned::SignError;
 use libcrux_secrets::{DeclassifyRef, U8};
 
 pub trait Sign<SignAux, const PRIVATE_KEY_LEN: usize, const SIGNATURE_LEN: usize> {
