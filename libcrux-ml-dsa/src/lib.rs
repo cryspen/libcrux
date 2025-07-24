@@ -39,3 +39,6 @@ pub mod ml_dsa_65;
 
 #[cfg(feature = "mldsa87")]
 pub mod ml_dsa_87;
+
+mod impl_signature_trait;
+pub use impl_signature_trait::*;

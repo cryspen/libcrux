@@ -8,8 +8,8 @@ pub struct PublicKey<const LEN: usize> {
 
 /// An RSA Private Key that is `LEN` bytes long.
 pub struct PrivateKey<const LEN: usize> {
-    pk: PublicKey<LEN>,
-    d: [u8; LEN],
+    pub(crate) pk: PublicKey<LEN>,
+    pub(crate) d: [u8; LEN],
 }
 
 impl<const LEN: usize> alloc::fmt::Debug for PrivateKey<LEN> {
@@ -60,8 +60,8 @@ impl alloc::fmt::Debug for VarLenPrivateKey<'_> {
 
 /// An RSA Private Key backed by slices. Use if the length is not known at compile time.
 pub struct VarLenPrivateKey<'a> {
-    pk: VarLenPublicKey<'a>,
-    d: &'a [u8],
+    pub(crate) pk: VarLenPublicKey<'a>,
+    pub(crate) d: &'a [u8],
 }
 
 impl<'a> VarLenPrivateKey<'a> {
