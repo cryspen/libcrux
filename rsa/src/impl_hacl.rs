@@ -24,7 +24,7 @@ impl<const LEN: usize> alloc::fmt::Debug for PrivateKey<LEN> {
 /// An RSA Public Key backed by a slice. Use if the length is not known at compile time.
 #[derive(Debug, Clone)]
 pub struct VarLenPublicKey<'a> {
-    n: &'a [u8],
+    pub(super) n: &'a [u8],
 }
 
 impl<'a> TryFrom<&'a [u8]> for VarLenPublicKey<'a> {
