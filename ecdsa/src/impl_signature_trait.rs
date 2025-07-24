@@ -1,8 +1,10 @@
 macro_rules! impl_signature_trait {
-    ($digest_alg_name:ident, $pk_len:literal, $sk_len:literal, $sig_len:literal) => {
+    ($digest_alg_name:ident, $pk_len:literal, $sk_len:literal, $sig_len:literal, $alias:ident) => {
         pub struct $digest_alg_name;
+        #[allow(non_camel_case_types)]
+        pub type $alias = Signer<$digest_alg_name>;
 
-        impl arrayref::SignatureAux<&Nonce, &(), $pk_len, $sk_len, $sig_len> for Signer<$digest_alg_name> {
+        impl arrayref::SignWithAux<&Nonce, $sk_len, $sig_len> for $alias {
             fn sign(
                 payload: &[u8],
                 private_key: &[u8; $sk_len],
@@ -18,6 +20,8 @@ macro_rules! impl_signature_trait {
                 )
                 .map_err(|_| todo!())
             }
+        }
+        impl arrayref::VerifyWithAux<&(), $pk_len, $sig_len> for $alias {
             fn verify(
                 payload: &[u8],
                 public_key: &[u8; $pk_len],
@@ -35,7 +39,8 @@ macro_rules! impl_signature_trait {
                 .map_err(|_| todo!())
             }
         }
-        libcrux_traits::impl_signature_slice_trait!(Signer<$digest_alg_name> => $pk_len, $sk_len, $sig_len, &Nonce, nonce, &(), _aux);
+        libcrux_traits::impl_signature_slice_trait!($alias => $pk_len, $sk_len, $sig_len, &Nonce, nonce, &(), _aux);
+        // TODO: owned and secrets traits not appearing in docs
     };
 }
 
@@ -47,7 +52,7 @@ pub mod p256 {
         _phantom_data: core::marker::PhantomData<T>,
     }
 
-    impl_signature_trait!(Sha256, 64, 32, 64);
-    impl_signature_trait!(Sha384, 64, 32, 64);
-    impl_signature_trait!(Sha512, 64, 32, 64);
+    impl_signature_trait!(Sha256, 64, 32, 64, Signer_Sha2_256);
+    impl_signature_trait!(Sha384, 64, 32, 64, Signer_Sha2_384);
+    impl_signature_trait!(Sha512, 64, 32, 64, Signer_Sha2_512);
 }
