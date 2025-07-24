@@ -2,7 +2,7 @@ macro_rules! impl_signature_trait {
     ($digest_alg_name:ident, $pk_len:literal, $sk_len:literal, $sig_len:literal) => {
         pub struct $digest_alg_name;
 
-        impl arrayref::Signature<&Nonce, $pk_len, $sk_len, $sig_len> for Signer<$digest_alg_name> {
+        impl arrayref::Signature<&Nonce, &(), $pk_len, $sk_len, $sig_len> for Signer<$digest_alg_name> {
             fn sign(
                 payload: &[u8],
                 private_key: &[u8; $sk_len],
@@ -22,6 +22,7 @@ macro_rules! impl_signature_trait {
                 payload: &[u8],
                 public_key: &[u8; $pk_len],
                 signature: &[u8; $sig_len],
+                _aux: &(),
             ) -> Result<(), arrayref::VerifyError> {
 
                 crate::p256::_verify_internal(
@@ -34,7 +35,7 @@ macro_rules! impl_signature_trait {
                 .map_err(|_| todo!())
             }
         }
-        libcrux_traits::impl_signature_slice_trait!(Signer<$digest_alg_name> => $pk_len, $sk_len, $sig_len, &Nonce, nonce);
+        libcrux_traits::impl_signature_slice_trait!(Signer<$digest_alg_name> => $pk_len, $sk_len, $sig_len, &Nonce, nonce, &(), _aux);
     };
 }
 

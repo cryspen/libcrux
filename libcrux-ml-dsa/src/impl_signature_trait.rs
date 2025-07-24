@@ -36,6 +36,7 @@ macro_rules! impl_signature_trait {
             impl
                 owned::Signature<
                     super::Randomness,
+                    &(),
                     VERIFICATION_KEY_LEN,
                     SIGNING_KEY_LEN,
                     SIGNATURE_LEN,
@@ -59,6 +60,7 @@ macro_rules! impl_signature_trait {
                     payload: &[u8],
                     public_key: &[u8; VERIFICATION_KEY_LEN],
                     signature: &[u8; SIGNATURE_LEN],
+                    _aux: &(),
                 ) -> Result<(), owned::VerifyError> {
                     crate::ml_dsa_generic::multiplexing::$module::verify(
                         public_key,

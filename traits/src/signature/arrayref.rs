@@ -1,5 +1,6 @@
 pub trait Signature<
-    Config,
+    SignAux,
+    VerifyAux,
     const PUBLIC_KEY_LEN: usize,
     const PRIVATE_KEY_LEN: usize,
     const SIGNATURE_LEN: usize,
@@ -10,12 +11,13 @@ pub trait Signature<
         payload: &[u8],
         private_key: &[u8; PRIVATE_KEY_LEN],
         signature: &mut [u8; SIGNATURE_LEN],
-        config: Config,
+        sign_aux: SignAux,
     ) -> Result<(), SignError>;
     fn verify(
         payload: &[u8],
         public_key: &[u8; PUBLIC_KEY_LEN],
         signature: &[u8; SIGNATURE_LEN],
+        verify_aux: VerifyAux,
     ) -> Result<(), VerifyError>;
 }
 
