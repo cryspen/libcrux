@@ -1,7 +1,8 @@
 pub use super::arrayref::{SignError, VerifyError};
 
 pub trait Signature<
-    Config,
+    SignAux,
+    VerifyAux,
     const PUBLIC_KEY_LEN: usize,
     const PRIVATE_KEY_LEN: usize,
     const SIGNATURE_LEN: usize,
@@ -10,42 +11,52 @@ pub trait Signature<
     fn sign(
         payload: &[u8],
         private_key: &[u8; PRIVATE_KEY_LEN],
-        config: Config,
+        aux: SignAux,
     ) -> Result<[u8; SIGNATURE_LEN], SignError>;
     fn verify(
         payload: &[u8],
         public_key: &[u8; PUBLIC_KEY_LEN],
         signature: &[u8; SIGNATURE_LEN],
+        aux: VerifyAux,
     ) -> Result<(), VerifyError>;
 }
 
 impl<
-        Config,
+        SignAux,
+        VerifyAux,
         const PUBLIC_KEY_LEN: usize,
         const PRIVATE_KEY_LEN: usize,
         const SIGNATURE_LEN: usize,
-        T: super::arrayref::Signature<Config, PUBLIC_KEY_LEN, PRIVATE_KEY_LEN, SIGNATURE_LEN>,
-    > Signature<Config, PUBLIC_KEY_LEN, PRIVATE_KEY_LEN, SIGNATURE_LEN> for T
+        T: super::arrayref::Signature<
+            SignAux,
+            VerifyAux,
+            PUBLIC_KEY_LEN,
+            PRIVATE_KEY_LEN,
+            SIGNATURE_LEN,
+        >,
+    > Signature<SignAux, VerifyAux, PUBLIC_KEY_LEN, PRIVATE_KEY_LEN, SIGNATURE_LEN> for T
 {
     fn sign(
         payload: &[u8],
         private_key: &[u8; PRIVATE_KEY_LEN],
-        config: Config,
+        aux: SignAux,
     ) -> Result<[u8; SIGNATURE_LEN], SignError> {
         let mut signature = [0; SIGNATURE_LEN];
         <Self as super::arrayref::Signature<
-            Config,
+            SignAux,
+            VerifyAux,
             PUBLIC_KEY_LEN,
             PRIVATE_KEY_LEN,
             SIGNATURE_LEN,
-        >>::sign(payload, private_key, &mut signature, config)
+        >>::sign(payload, private_key, &mut signature, aux)
         .map(|_| signature)
     }
     fn verify(
         payload: &[u8],
         public_key: &[u8; PUBLIC_KEY_LEN],
         signature: &[u8; SIGNATURE_LEN],
+        aux: VerifyAux,
     ) -> Result<(), VerifyError> {
-        Self::verify(payload, public_key, signature)
+        Self::verify(payload, public_key, signature, aux)
     }
 }

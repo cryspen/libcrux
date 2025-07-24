@@ -7,7 +7,9 @@ macro_rules! impl_signature_trait {
     ($name:ident, $bytes:literal, $digest_alg:ident) => {
         pub struct $name;
 
-        impl arrayref::Signature<&[u8], $bytes, $bytes, $bytes> for Signer<$name, $digest_alg> {
+        impl arrayref::Signature<&[u8], u32, $bytes, $bytes, $bytes>
+            for Signer<$name, $digest_alg>
+        {
             fn sign(
                 payload: &[u8],
                 private_key: &[u8; $bytes],
@@ -21,21 +23,22 @@ macro_rules! impl_signature_trait {
                     salt,
                     signature,
                 )
-                .map_err(|e| todo!())
+                .map_err(|_| todo!())
             }
             fn verify(
                 payload: &[u8],
                 public_key: &[u8; $bytes],
                 signature: &[u8; $bytes],
+                salt_len: u32,
             ) -> Result<(), arrayref::VerifyError> {
                 verify_varlen(
                     crate::DigestAlgorithm::$digest_alg,
                     &VarLenPublicKey::try_from(public_key.as_ref()).unwrap(),
                     payload,
-                    todo!("need the salt length here"),
+                    salt_len,
                     signature,
                 )
-                .map_err(|e| todo!())
+                .map_err(|_| todo!())
             }
         }
     };
