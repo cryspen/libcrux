@@ -65,10 +65,10 @@ impl From<super::arrayref::VerifyError> for VerifyError {
     }
 }
 
-/// Requires the with_aux variants of the arrayref traits be implemented
+/// Implements [`SignWithAux`] for any [`arrayref::SignWithAux`](crate::signature::arrayref::SignWithAux)
 #[macro_export]
 macro_rules! impl_signature_slice_trait {
-    ($type:ty => $pk_len:expr, $sk_len:expr, $sig_len:expr, $sign_aux:ty, $sign_aux_param:tt, $verify_aux:ty, $verify_aux_param:tt) => {
+    ($type:ty => $sk_len:expr, $sig_len:expr, $sign_aux:ty, $sign_aux_param:tt) => {
         impl $crate::signature::slice::SignWithAux<$sign_aux> for $type {
             fn sign(
                 payload: &[u8],
@@ -85,13 +85,19 @@ macro_rules! impl_signature_slice_trait {
                 })?;
 
                 <$type as $crate::signature::arrayref::SignWithAux<
-                                    $sign_aux,
-                                    $sk_len,
-                                    $sig_len,
-                                >>::sign(payload, private_key, signature, $sign_aux_param)
-                                .map_err($crate::signature::slice::SignError::from)
+                                            $sign_aux,
+                                            $sk_len,
+                                            $sig_len,
+                                        >>::sign(payload, private_key, signature, $sign_aux_param)
+                                        .map_err($crate::signature::slice::SignError::from)
             }
         }
+    }
+}
+/// Implements [`VerifyWithAux`] for any [`arrayref::VerifyWithAux`](crate::signature::arrayref::VerifyWithAux)
+#[macro_export]
+macro_rules! impl_verify_slice_trait {
+    ($type:ty => $pk_len:expr, $sig_len:expr, $verify_aux:ty, $verify_aux_param:tt) => {
         impl $crate::signature::slice::VerifyWithAux<$verify_aux> for $type {
             fn verify(
                 payload: &[u8],
@@ -118,3 +124,4 @@ macro_rules! impl_signature_slice_trait {
     };
 }
 pub use impl_signature_slice_trait;
+pub use impl_verify_slice_trait;
