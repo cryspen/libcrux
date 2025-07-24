@@ -7,18 +7,24 @@ macro_rules! impl_signature_trait {
     ($name:ident, $bytes:literal, $digest_alg:ident) => {
         pub struct $name;
 
-        impl arrayref::Signature<&[u8], u32, $bytes, $bytes, $bytes>
+        impl arrayref::Signature<(&[u8], &[u8; $bytes]), u32, $bytes, $bytes, $bytes>
             for Signer<$name, $digest_alg>
         {
             fn sign(
                 payload: &[u8],
                 private_key: &[u8; $bytes],
                 signature: &mut [u8; $bytes],
-                salt: &[u8],
+                (salt, public_key): (&[u8], &[u8; $bytes]),
             ) -> Result<(), arrayref::SignError> {
+                // NOTE: succeeds if the length of public_key ($bytes) is 256, 384, 512, 768, 1024
+                let pk = VarLenPublicKey::try_from(public_key.as_ref()).unwrap();
+                let sk = VarLenPrivateKey {
+                    pk,
+                    d: private_key.as_ref(),
+                };
                 sign_varlen(
                     crate::DigestAlgorithm::$digest_alg,
-                    todo!("need the private key with the public key here"),
+                    &sk,
                     payload,
                     salt,
                     signature,
