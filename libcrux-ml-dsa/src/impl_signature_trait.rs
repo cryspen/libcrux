@@ -20,11 +20,13 @@ impl From<crate::VerificationError> for owned::VerifyError {
 }
 
 macro_rules! impl_signature_trait {
-    ($name:ident, $module:ident, $doc:expr) => {
+    ($name:ident, $module:ident, $alias:ident, $doc:expr) => {
         mod $module {
-            use libcrux_traits::signature::owned;
+            use libcrux_traits::signature::{arrayref, owned};
             #[doc = $doc]
             pub struct $name;
+
+            pub type $alias = super::Signer<$name>;
 
             const VERIFICATION_KEY_LEN: usize =
                 crate::ml_dsa_generic::$module::VERIFICATION_KEY_SIZE;
@@ -32,16 +34,8 @@ macro_rules! impl_signature_trait {
             const SIGNATURE_LEN: usize = crate::ml_dsa_generic::$module::SIGNATURE_SIZE;
 
             // XXX: implementing owned trait directly because there is no arrayref equivalent
-            // TODO: these should appear as consts in trait def
-            impl
-                owned::SignatureAux<
-                    super::Randomness,
-                    &(),
-                    VERIFICATION_KEY_LEN,
-                    SIGNING_KEY_LEN,
-                    SIGNATURE_LEN,
-                > for super::Signer<$name>
-            {
+            // TODO: for docs, these should appear as consts in trait def
+            impl owned::SignWithAux<super::Randomness, SIGNING_KEY_LEN, SIGNATURE_LEN> for $alias {
                 fn sign(
                     payload: &[u8],
                     private_key: &[u8; SIGNING_KEY_LEN],
@@ -56,6 +50,8 @@ macro_rules! impl_signature_trait {
                     .map(|sig| sig.value)
                     .map_err(owned::SignError::from)
                 }
+            }
+            impl arrayref::VerifyWithAux<&(), VERIFICATION_KEY_LEN, SIGNATURE_LEN> for $alias {
                 fn verify(
                     payload: &[u8],
                     public_key: &[u8; VERIFICATION_KEY_LEN],
@@ -71,8 +67,10 @@ macro_rules! impl_signature_trait {
                     .map_err(owned::VerifyError::from)
                 }
             }
+
+            // TODO: secrets trait not appearing in docs
         }
-        pub use $module::$name;
+        pub use $module::{$alias, $name};
     };
 }
 pub struct Signer<T> {
@@ -81,6 +79,21 @@ pub struct Signer<T> {
 
 type Randomness = [u8; 32];
 
-impl_signature_trait!(MlDsa44, ml_dsa_44, "A struct representing ML-DSA 44");
-impl_signature_trait!(MlDsa65, ml_dsa_65, "A struct representing ML-DSA 65");
-impl_signature_trait!(MlDsa87, ml_dsa_87, "A struct representing ML-DSA 87");
+impl_signature_trait!(
+    MlDsa44,
+    ml_dsa_44,
+    MlDsa44Signer,
+    "A struct representing ML-DSA 44"
+);
+impl_signature_trait!(
+    MlDsa65,
+    ml_dsa_65,
+    MlDsa65Signer,
+    "A struct representing ML-DSA 65"
+);
+impl_signature_trait!(
+    MlDsa87,
+    ml_dsa_87,
+    MlDsa87Signer,
+    "A struct representing ML-DSA 87"
+);
