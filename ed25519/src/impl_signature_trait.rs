@@ -49,4 +49,5 @@ impl VerifyWithAux<&(), PUBLIC_KEY_LEN, SIGNATURE_LEN> for Signer {
     }
 }
 
-libcrux_traits::signature::slice::impl_signature_slice_trait!(Signer => PUBLIC_KEY_LEN, PRIVATE_KEY_LEN, SIGNATURE_LEN, &(), _aux, &(), _aux);
+libcrux_traits::signature::slice::impl_signature_slice_trait!(Signer => PRIVATE_KEY_LEN, SIGNATURE_LEN, &(), _aux);
+libcrux_traits::signature::slice::impl_verify_slice_trait!(Signer => PUBLIC_KEY_LEN, SIGNATURE_LEN, &(), _aux);
