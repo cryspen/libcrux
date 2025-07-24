@@ -33,10 +33,14 @@ macro_rules! impl_signature_trait {
 
             // XXX: implementing owned trait directly because there is no arrayref equivalent
             // TODO: these should appear as consts in trait def
-            impl owned::Signature<VERIFICATION_KEY_LEN, SIGNING_KEY_LEN, SIGNATURE_LEN>
-                for super::Signer<$name>
+            impl
+                owned::Signature<
+                    super::Randomness,
+                    VERIFICATION_KEY_LEN,
+                    SIGNING_KEY_LEN,
+                    SIGNATURE_LEN,
+                > for super::Signer<$name>
             {
-                type Config = super::Randomness;
                 fn sign(
                     payload: &[u8],
                     private_key: &[u8; SIGNING_KEY_LEN],

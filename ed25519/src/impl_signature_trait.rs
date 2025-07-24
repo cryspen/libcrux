@@ -6,13 +6,12 @@ const PUBLIC_KEY_LEN: usize = 32;
 const PRIVATE_KEY_LEN: usize = 32;
 const SIGNATURE_LEN: usize = 64;
 
-impl Signature<PUBLIC_KEY_LEN, PRIVATE_KEY_LEN, SIGNATURE_LEN> for Signer {
-    type Config = ();
+impl Signature<&(), PUBLIC_KEY_LEN, PRIVATE_KEY_LEN, SIGNATURE_LEN> for Signer {
     fn sign(
         payload: &[u8],
         private_key: &[u8; PRIVATE_KEY_LEN],
         signature: &mut [u8; SIGNATURE_LEN],
-        _config: (),
+        _config: &(),
     ) -> Result<(), SignError> {
         crate::hacl::ed25519::sign(
             signature,
@@ -47,4 +46,4 @@ impl Signature<PUBLIC_KEY_LEN, PRIVATE_KEY_LEN, SIGNATURE_LEN> for Signer {
     }
 }
 
-libcrux_traits::signature::slice::impl_signature_slice_trait!(Signer => PUBLIC_KEY_LEN, PRIVATE_KEY_LEN, SIGNATURE_LEN, (), _config);
+libcrux_traits::signature::slice::impl_signature_slice_trait!(Signer => PUBLIC_KEY_LEN, PRIVATE_KEY_LEN, SIGNATURE_LEN, &(), _config);
