@@ -85,11 +85,11 @@ macro_rules! impl_signature_slice_trait {
                 })?;
 
                 <$type as $crate::signature::arrayref::SignWithAux<
-                            $sign_aux,
-                            $sk_len,
-                            $sig_len,
-                        >>::sign(payload, private_key, signature, $sign_aux_param)
-                        .map_err($crate::signature::slice::SignError::from)
+                                    $sign_aux,
+                                    $sk_len,
+                                    $sig_len,
+                                >>::sign(payload, private_key, signature, $sign_aux_param)
+                                .map_err($crate::signature::slice::SignError::from)
             }
         }
         impl $crate::signature::slice::VerifyWithAux<$verify_aux> for $type {
