@@ -2,6 +2,7 @@
 
 extern crate alloc;
 
+// TODO: remove the old `Digest` trait defined here
 /// A Hash algorithm returning hashes of length `HASH_LEN`.
 pub trait Digest<const HASH_LEN: usize> {
     /// Writes the digest for the given input byte slice, into `digest` in immediate mode.
@@ -20,4 +21,5 @@ pub trait Digest<const HASH_LEN: usize> {
     fn reset(&mut self);
 }
 
+pub mod digest;
 pub mod kem;
