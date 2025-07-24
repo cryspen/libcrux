@@ -35,7 +35,7 @@ macro_rules! impl_signature_trait {
 
             // XXX: implementing owned trait directly because there is no arrayref equivalent
             // TODO: for docs, these should appear as consts in trait def
-            impl owned::SignWithAux<super::Randomness, SIGNING_KEY_LEN, SIGNATURE_LEN> for $alias {
+            impl owned::Sign<super::Randomness, SIGNING_KEY_LEN, SIGNATURE_LEN> for $alias {
                 fn sign(
                     payload: &[u8],
                     private_key: &[u8; SIGNING_KEY_LEN],
@@ -51,7 +51,7 @@ macro_rules! impl_signature_trait {
                     .map_err(owned::SignError::from)
                 }
             }
-            impl arrayref::VerifyWithAux<&(), VERIFICATION_KEY_LEN, SIGNATURE_LEN> for $alias {
+            impl arrayref::Verify<&(), VERIFICATION_KEY_LEN, SIGNATURE_LEN> for $alias {
                 fn verify(
                     payload: &[u8],
                     public_key: &[u8; VERIFICATION_KEY_LEN],
