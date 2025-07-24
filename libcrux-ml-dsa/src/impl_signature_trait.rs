@@ -1,4 +1,4 @@
-use libcrux_traits::signature::owned;
+use libcrux_traits::signature::{arrayref, owned};
 
 impl From<crate::SigningError> for owned::SignError {
     fn from(e: crate::SigningError) -> Self {
@@ -8,7 +8,7 @@ impl From<crate::SigningError> for owned::SignError {
         }
     }
 }
-impl From<crate::VerificationError> for owned::VerifyError {
+impl From<crate::VerificationError> for arrayref::VerifyError {
     fn from(e: crate::VerificationError) -> Self {
         match e {
             crate::VerificationError::MalformedHintError => todo!(),
@@ -64,7 +64,7 @@ macro_rules! impl_signature_trait {
                         &[],
                         signature,
                     )
-                    .map_err(owned::VerifyError::from)
+                    .map_err(arrayref::VerifyError::from)
                 }
             }
 
