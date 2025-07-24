@@ -1,16 +1,37 @@
-pub trait SignatureAux<SignAux, VerifyAux> {
+pub trait SignWithAux<SignAux> {
     fn sign(
         payload: &[u8],
         private_key: &[u8],
         signature: &mut [u8],
         aux: SignAux,
     ) -> Result<(), SignError>;
+}
+pub trait VerifyWithAux<VerifyAux> {
     fn verify(
         payload: &[u8],
         public_key: &[u8],
         signature: &[u8],
         aux: VerifyAux,
     ) -> Result<(), VerifyError>;
+}
+
+pub trait Sign {
+    fn sign(payload: &[u8], private_key: &[u8], signature: &mut [u8]) -> Result<(), SignError>;
+}
+
+impl<'a, T: SignWithAux<&'a ()>> Sign for T {
+    fn sign(payload: &[u8], private_key: &[u8], signature: &mut [u8]) -> Result<(), SignError> {
+        <Self as SignWithAux<&()>>::sign(payload, private_key, signature, &())
+    }
+}
+
+pub trait Verify {
+    fn verify(payload: &[u8], public_key: &[u8], signature: &[u8]) -> Result<(), VerifyError>;
+}
+impl<'a, T: VerifyWithAux<&'a ()>> Verify for T {
+    fn verify(payload: &[u8], public_key: &[u8], signature: &[u8]) -> Result<(), VerifyError> {
+        <Self as VerifyWithAux<&()>>::verify(payload, public_key, signature, &())
+    }
 }
 
 #[derive(Debug, PartialEq, Eq)]
@@ -44,10 +65,11 @@ impl From<super::arrayref::VerifyError> for VerifyError {
     }
 }
 
+/// Requires the with_aux variants of the arrayref traits be implemented
 #[macro_export]
 macro_rules! impl_signature_slice_trait {
     ($type:ty => $pk_len:expr, $sk_len:expr, $sig_len:expr, $sign_aux:ty, $sign_aux_param:tt, $verify_aux:ty, $verify_aux_param:tt) => {
-        impl $crate::signature::slice::SignatureAux<$sign_aux, $verify_aux> for $type {
+        impl $crate::signature::slice::SignWithAux<$sign_aux> for $type {
             fn sign(
                 payload: &[u8],
                 private_key: &[u8],
@@ -62,15 +84,15 @@ macro_rules! impl_signature_slice_trait {
                     $crate::signature::slice::SignError::InvalidSignatureBufferLength
                 })?;
 
-                <$type as $crate::signature::arrayref::SignatureAux<
-                    $sign_aux,
-                    $verify_aux,
-                    $pk_len,
-                    $sk_len,
-                    $sig_len,
-                >>::sign(payload, private_key, signature, $sign_aux_param)
-                .map_err($crate::signature::slice::SignError::from)
+                <$type as $crate::signature::arrayref::SignWithAux<
+                            $sign_aux,
+                            $sk_len,
+                            $sig_len,
+                        >>::sign(payload, private_key, signature, $sign_aux_param)
+                        .map_err($crate::signature::slice::SignError::from)
             }
+        }
+        impl $crate::signature::slice::VerifyWithAux<$verify_aux> for $type {
             fn verify(
                 payload: &[u8],
                 public_key: &[u8],
@@ -85,11 +107,9 @@ macro_rules! impl_signature_slice_trait {
                     $crate::signature::slice::VerifyError::InvalidSignatureBufferLength
                 })?;
 
-                <$type as $crate::signature::arrayref::SignatureAux<
-                    $sign_aux,
+                <$type as $crate::signature::arrayref::VerifyWithAux<
                     $verify_aux,
                     $pk_len,
-                    $sk_len,
                     $sig_len,
                 >>::verify(payload, public_key, signature, $verify_aux_param)
                 .map_err($crate::signature::slice::VerifyError::from)

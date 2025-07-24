@@ -321,7 +321,7 @@ fn run_wycheproof() {
 
 #[test]
 fn test_traits() {
-    use libcrux_traits::signature::arrayref::*;
+    use libcrux_traits::signature::owned::SignWithAux;
 
     use libcrux_rsa::{digest_alg::*, pss_bits::*};
 
@@ -329,11 +329,7 @@ fn test_traits() {
     let private_key: &[u8; 768] = todo!();
     let signature: &mut [u8; 768] = todo!();
     let (salt, public_key): (&[u8], &[u8; 768]) = todo!();
-    libcrux_rsa::Signer::<Bits6144, Sha2_256>::sign(
-        payload,
-        private_key,
-        signature,
-        (salt, public_key),
-    )
-    .unwrap();
+    let signature =
+        libcrux_rsa::Signer::<Bits6144, Sha2_256>::sign(payload, private_key, (salt, public_key))
+            .unwrap();
 }
