@@ -34,7 +34,7 @@ macro_rules! impl_signature_trait {
             // XXX: implementing owned trait directly because there is no arrayref equivalent
             // TODO: these should appear as consts in trait def
             impl
-                owned::Signature<
+                owned::SignatureAux<
                     super::Randomness,
                     &(),
                     VERIFICATION_KEY_LEN,

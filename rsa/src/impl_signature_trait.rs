@@ -5,7 +5,7 @@ use libcrux_traits::signature::arrayref;
 // $bytes is pk_len, sk_len and sig_len
 macro_rules! impl_signature_trait {
     ($name:ident, $bytes:literal, $digest_alg:ident) => {
-        impl arrayref::Signature<(&[u8], &[u8; $bytes]), u32, $bytes, $bytes, $bytes>
+        impl arrayref::SignatureAux<(&[u8], &[u8; $bytes]), u32, $bytes, $bytes, $bytes>
             for Signer<$name, $digest_alg>
         {
             fn sign(
