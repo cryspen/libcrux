@@ -1,4 +1,4 @@
-use libcrux_traits::signature::arrayref::{SignError, Signature, VerifyError};
+use libcrux_traits::signature::arrayref::{SignError, SignatureAux, VerifyError};
 
 pub struct Signer;
 
@@ -6,7 +6,7 @@ const PUBLIC_KEY_LEN: usize = 32;
 const PRIVATE_KEY_LEN: usize = 32;
 const SIGNATURE_LEN: usize = 64;
 
-impl Signature<&(), &(), PUBLIC_KEY_LEN, PRIVATE_KEY_LEN, SIGNATURE_LEN> for Signer {
+impl SignatureAux<&(), &(), PUBLIC_KEY_LEN, PRIVATE_KEY_LEN, SIGNATURE_LEN> for Signer {
     fn sign(
         payload: &[u8],
         private_key: &[u8; PRIVATE_KEY_LEN],

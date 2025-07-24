@@ -1,4 +1,4 @@
-pub trait Signature<SignAux, VerifyAux> {
+pub trait SignatureAux<SignAux, VerifyAux> {
     fn sign(
         payload: &[u8],
         private_key: &[u8],
@@ -47,7 +47,7 @@ impl From<super::arrayref::VerifyError> for VerifyError {
 #[macro_export]
 macro_rules! impl_signature_slice_trait {
     ($type:ty => $pk_len:expr, $sk_len:expr, $sig_len:expr, $sign_aux:ty, $sign_aux_param:tt, $verify_aux:ty, $verify_aux_param:tt) => {
-        impl $crate::signature::slice::Signature<$sign_aux, $verify_aux> for $type {
+        impl $crate::signature::slice::SignatureAux<$sign_aux, $verify_aux> for $type {
             fn sign(
                 payload: &[u8],
                 private_key: &[u8],
@@ -62,7 +62,7 @@ macro_rules! impl_signature_slice_trait {
                     $crate::signature::slice::SignError::InvalidSignatureBufferLength
                 })?;
 
-                <$type as $crate::signature::arrayref::Signature<
+                <$type as $crate::signature::arrayref::SignatureAux<
                     $sign_aux,
                     $verify_aux,
                     $pk_len,
@@ -85,7 +85,7 @@ macro_rules! impl_signature_slice_trait {
                     $crate::signature::slice::VerifyError::InvalidSignatureBufferLength
                 })?;
 
-                <$type as $crate::signature::arrayref::Signature<
+                <$type as $crate::signature::arrayref::SignatureAux<
                     $sign_aux,
                     $verify_aux,
                     $pk_len,

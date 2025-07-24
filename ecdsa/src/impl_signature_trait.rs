@@ -2,7 +2,7 @@ macro_rules! impl_signature_trait {
     ($digest_alg_name:ident, $pk_len:literal, $sk_len:literal, $sig_len:literal) => {
         pub struct $digest_alg_name;
 
-        impl arrayref::Signature<&Nonce, &(), $pk_len, $sk_len, $sig_len> for Signer<$digest_alg_name> {
+        impl arrayref::SignatureAux<&Nonce, &(), $pk_len, $sk_len, $sig_len> for Signer<$digest_alg_name> {
             fn sign(
                 payload: &[u8],
                 private_key: &[u8; $sk_len],
