@@ -1,8 +1,7 @@
 macro_rules! impl_signature_trait {
     ($digest_alg_name:ident, $pk_len:literal, $sk_len:literal, $sig_len:literal, $alias:ident) => {
-        pub struct $digest_alg_name;
         #[allow(non_camel_case_types)]
-        pub type $alias = Signer<$digest_alg_name>;
+        pub type $alias = Signer<libcrux_sha2::$digest_alg_name>;
 
         impl arrayref::SignWithAux<&Nonce, $sk_len, $sig_len> for $alias {
             fn sign(
