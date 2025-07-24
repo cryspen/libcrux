@@ -1,11 +1,4 @@
-pub trait SignatureAux<
-    SignAux,
-    VerifyAux,
-    const PUBLIC_KEY_LEN: usize,
-    const PRIVATE_KEY_LEN: usize,
-    const SIGNATURE_LEN: usize,
->
-{
+pub trait SignWithAux<SignAux, const PRIVATE_KEY_LEN: usize, const SIGNATURE_LEN: usize> {
     // TODO: should this be called `private_key` or `sk`?
     fn sign(
         payload: &[u8],
@@ -13,6 +6,9 @@ pub trait SignatureAux<
         signature: &mut [u8; SIGNATURE_LEN],
         sign_aux: SignAux,
     ) -> Result<(), SignError>;
+}
+
+pub trait VerifyWithAux<VerifyAux, const PUBLIC_KEY_LEN: usize, const SIGNATURE_LEN: usize> {
     fn verify(
         payload: &[u8],
         public_key: &[u8; PUBLIC_KEY_LEN],
@@ -33,12 +29,7 @@ pub enum VerifyError {
 }
 
 // No auxiliary information
-pub trait Sign<
-    const PUBLIC_KEY_LEN: usize,
-    const PRIVATE_KEY_LEN: usize,
-    const SIGNATURE_LEN: usize,
->
-{
+pub trait Sign<const PRIVATE_KEY_LEN: usize, const SIGNATURE_LEN: usize> {
     fn sign(
         payload: &[u8],
         private_key: &[u8; PRIVATE_KEY_LEN],
@@ -48,18 +39,17 @@ pub trait Sign<
 
 impl<
         'a,
-        const PUBLIC_KEY_LEN: usize,
         const PRIVATE_KEY_LEN: usize,
         const SIGNATURE_LEN: usize,
-        T: SignatureAux<&'a (), &'a (), PUBLIC_KEY_LEN, PRIVATE_KEY_LEN, SIGNATURE_LEN>,
-    > Sign<PUBLIC_KEY_LEN, PRIVATE_KEY_LEN, SIGNATURE_LEN> for T
+        T: SignWithAux<&'a (), PRIVATE_KEY_LEN, SIGNATURE_LEN>,
+    > Sign<PRIVATE_KEY_LEN, SIGNATURE_LEN> for T
 {
     fn sign(
         payload: &[u8],
         private_key: &[u8; PRIVATE_KEY_LEN],
         signature: &mut [u8; SIGNATURE_LEN],
     ) -> Result<(), SignError> {
-        <Self as SignatureAux<&'a (), &'a (), PUBLIC_KEY_LEN, PRIVATE_KEY_LEN, SIGNATURE_LEN>>::sign(
+        <Self as SignWithAux<&'a (), PRIVATE_KEY_LEN, SIGNATURE_LEN>>::sign(
             payload,
             private_key,
             signature,
@@ -69,12 +59,7 @@ impl<
 }
 
 // No auxiliary information
-pub trait Verify<
-    const PUBLIC_KEY_LEN: usize,
-    const PRIVATE_KEY_LEN: usize,
-    const SIGNATURE_LEN: usize,
->
-{
+pub trait Verify<const PUBLIC_KEY_LEN: usize, const SIGNATURE_LEN: usize> {
     fn verify(
         payload: &[u8],
         public_key: &[u8; PUBLIC_KEY_LEN],
@@ -85,17 +70,20 @@ pub trait Verify<
 impl<
         'a,
         const PUBLIC_KEY_LEN: usize,
-        const PRIVATE_KEY_LEN: usize,
         const SIGNATURE_LEN: usize,
-        T: SignatureAux<&'a (), &'a (), PUBLIC_KEY_LEN, PRIVATE_KEY_LEN, SIGNATURE_LEN>,
-    > Verify<PUBLIC_KEY_LEN, PRIVATE_KEY_LEN, SIGNATURE_LEN> for T
+        T: VerifyWithAux<&'a (), PUBLIC_KEY_LEN, SIGNATURE_LEN>,
+    > Verify<PUBLIC_KEY_LEN, SIGNATURE_LEN> for T
 {
     fn verify(
         payload: &[u8],
         public_key: &[u8; PUBLIC_KEY_LEN],
         signature: &[u8; SIGNATURE_LEN],
     ) -> Result<(), VerifyError> {
-        <Self as SignatureAux<&'a (), &'a (), PUBLIC_KEY_LEN, PRIVATE_KEY_LEN, SIGNATURE_LEN>>::verify(
-    payload, public_key, signature, &())
+        <Self as VerifyWithAux<&'a (), PUBLIC_KEY_LEN, SIGNATURE_LEN>>::verify(
+            payload,
+            public_key,
+            signature,
+            &(),
+        )
     }
 }
