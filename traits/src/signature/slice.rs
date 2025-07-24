@@ -1,10 +1,9 @@
-pub trait Signature {
-    type Config;
+pub trait Signature<Config> {
     fn sign(
         payload: &[u8],
         private_key: &[u8],
         signature: &mut [u8],
-        config: Self::Config,
+        config: Config,
     ) -> Result<(), SignError>;
     fn verify(payload: &[u8], public_key: &[u8], signature: &[u8]) -> Result<(), VerifyError>;
 }
@@ -43,13 +42,12 @@ impl From<super::arrayref::VerifyError> for VerifyError {
 #[macro_export]
 macro_rules! impl_signature_slice_trait {
     ($type:ty => $pk_len:expr, $sk_len:expr, $sig_len:expr, $config:ty, $config_param:ident) => {
-        impl $crate::signature::slice::Signature for $type {
-            type Config = $config;
+        impl $crate::signature::slice::Signature<$config> for $type {
             fn sign(
                 payload: &[u8],
                 private_key: &[u8],
                 signature: &mut [u8],
-                $config_param: $config
+                $config_param: $config,
             ) -> Result<(), $crate::signature::slice::SignError> {
                 let private_key: &[u8; $sk_len] = private_key
                     .try_into()
@@ -59,12 +57,12 @@ macro_rules! impl_signature_slice_trait {
                     $crate::signature::slice::SignError::InvalidSignatureBufferLength
                 })?;
 
-                <$type as $crate::signature::arrayref::Signature<$pk_len, $sk_len, $sig_len>>::sign(
-                    payload,
-                    private_key,
-                    signature,
-                    $config_param
-                )
+                <$type as $crate::signature::arrayref::Signature<
+                    $config,
+                    $pk_len,
+                    $sk_len,
+                    $sig_len,
+                >>::sign(payload, private_key, signature, $config_param)
                 .map_err($crate::signature::slice::SignError::from)
             }
             fn verify(
@@ -80,9 +78,12 @@ macro_rules! impl_signature_slice_trait {
                     $crate::signature::slice::VerifyError::InvalidSignatureBufferLength
                 })?;
 
-                <$type as $crate::signature::arrayref::Signature<$pk_len, $sk_len, $sig_len>>::verify(
-                    payload, public_key, signature,
-                )
+                <$type as $crate::signature::arrayref::Signature<
+                    $config,
+                    $pk_len,
+                    $sk_len,
+                    $sig_len,
+                >>::verify(payload, public_key, signature)
                 .map_err($crate::signature::slice::VerifyError::from)
             }
         }
