@@ -1,7 +1,7 @@
 use super::arrayref::SignError;
 use libcrux_secrets::{DeclassifyRef, U8};
 
-pub trait SignWithAux<SignAux, const PRIVATE_KEY_LEN: usize, const SIGNATURE_LEN: usize> {
+pub trait Sign<SignAux, const PRIVATE_KEY_LEN: usize, const SIGNATURE_LEN: usize> {
     fn sign(
         payload: &[u8],
         private_key: &[U8; PRIVATE_KEY_LEN],
@@ -13,8 +13,8 @@ impl<
         SignAux,
         const PRIVATE_KEY_LEN: usize,
         const SIGNATURE_LEN: usize,
-        T: super::owned::SignWithAux<SignAux, PRIVATE_KEY_LEN, SIGNATURE_LEN>,
-    > SignWithAux<SignAux, PRIVATE_KEY_LEN, SIGNATURE_LEN> for T
+        T: super::owned::Sign<SignAux, PRIVATE_KEY_LEN, SIGNATURE_LEN>,
+    > Sign<SignAux, PRIVATE_KEY_LEN, SIGNATURE_LEN> for T
 {
     fn sign(
         payload: &[u8],
