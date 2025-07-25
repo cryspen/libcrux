@@ -416,7 +416,7 @@ pub(crate) fn decapsulate<
     hax_lib::fstar!(
         "assert_norm (pow2 32 == 0x100000000);
         assert (v (sz 32) < pow2 32);
-        assert (i4.f_PRF_pre (sz 32) $to_hash);
+        assert (i1.f_PRF_pre (sz 32) $to_hash);
         lemma_slice_append $to_hash $implicit_rejection_value ${ciphertext}.f_value"
     );
     let implicit_rejection_shared_secret: [u8; SHARED_SECRET_SIZE] = Hasher::PRF(&to_hash);
