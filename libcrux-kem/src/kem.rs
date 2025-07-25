@@ -51,6 +51,14 @@ use libcrux_sha3 as sha3;
 
 use libcrux_ml_kem::{mlkem1024, mlkem512, mlkem768};
 
+#[cfg(feature = "codec")]
+use std::format;
+#[cfg(feature = "codec")]
+use tls_codec::{TlsDeserialize, TlsSerialize, TlsSize};
+
+#[cfg(feature = "codec")]
+extern crate std;
+
 // TODO: These functions are currently exposed simply in order to make NIST KAT
 // testing possible without an implementation of the NIST AES-CTR DRBG. Remove them
 // (and change the visibility of the exported functions to pub(crate)) the
@@ -198,6 +206,7 @@ pub enum PrivateKey {
 }
 
 /// An ML-KEM768-x25519 public key.
+#[cfg_attr(feature = "codec", derive(TlsSize, TlsSerialize, TlsDeserialize))]
 pub struct X25519MlKem768Draft00PublicKey {
     pub mlkem: MlKem768PublicKey,
     pub x25519: X25519PublicKey,
@@ -228,6 +237,7 @@ impl X25519MlKem768Draft00PublicKey {
 }
 
 /// An X-Wing public key.
+#[cfg_attr(feature = "codec", derive(TlsSize, TlsSerialize, TlsDeserialize))]
 pub struct XWingKemDraft06PublicKey {
     pub pk_m: MlKem768PublicKey,
     pub pk_x: X25519PublicKey,
@@ -258,6 +268,8 @@ impl XWingKemDraft06PublicKey {
 }
 
 /// A KEM public key.
+#[cfg_attr(feature = "codec", derive(TlsSize, TlsSerialize, TlsDeserialize))]
+#[repr(u8)]
 pub enum PublicKey {
     X25519(X25519PublicKey),
     P256(P256PublicKey),
@@ -269,6 +281,8 @@ pub enum PublicKey {
 }
 
 /// A KEM ciphertext
+#[cfg_attr(feature = "codec", derive(TlsSize, TlsSerialize, TlsDeserialize))]
+#[repr(u8)]
 pub enum Ct {
     X25519(X25519PublicKey),
     P256(P256PublicKey),
@@ -372,6 +386,8 @@ impl Ct {
 }
 
 /// A KEM shared secret
+#[cfg_attr(feature = "codec", derive(TlsSize, TlsSerialize, TlsDeserialize))]
+#[repr(u8)]
 pub enum Ss {
     X25519(X25519SharedSecret),
     P256(P256SharedSecret),
@@ -1018,6 +1034,7 @@ mod xwing {
 
     libcrux_traits::kem::slice::impl_trait!(XWing => EK_LEN, DK_LEN, CT_LEN, SS_LEN, RAND_KEYGEN_LEN, RAND_ENCAPS_LEN);
 
+    #[cfg_attr(feature = "codec", derive(TlsSize, TlsSerialize, TlsDeserialize))]
     pub struct XWingSharedSecret {
         pub(super) value: [u8; 32],
     }
