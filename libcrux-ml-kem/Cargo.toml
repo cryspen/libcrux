@@ -77,7 +77,7 @@ rand = { version = "0.9", features = ["thread_rng"] }
 serde_json = { version = "1.0" }
 serde = { version = "1.0", features = ["derive"] }
 hex = { version = "0.4.3", features = ["serde"] }
-criterion = "0.6"
+criterion = "0.7"
 libcrux-traits = { version = "0.0.3", path = "../traits", features = [
     "generic-tests",
 ] }
