@@ -335,7 +335,7 @@ let layer_bound_factor (step_by:usize) : n:nat{n <= 4} =
     | _ -> 0
 "#
 )]
-#[hax_lib::fstar::options("--z3rlimit 600 --split_queries always")]
+#[hax_lib::fstar::options("--z3rlimit 800 --split_queries always")]
 #[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
 #[hax_lib::requires(fstar!(r#"
     (v $STEP_BY > 0) /\
