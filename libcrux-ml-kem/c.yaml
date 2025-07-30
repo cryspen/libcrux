@@ -178,6 +178,7 @@ files:
   - name: libcrux_core
     private:
       monomorphizations_of:
+        - [ Eurydice, "*" ]
         - [ core, "*"]
         - [ libcrux_secrets, "*"]
         - [ libcrux_ml_kem, types, "*"]
