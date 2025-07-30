@@ -1,6 +1,6 @@
 This code was generated with the following revisions:
 Charon: db3cdfe594e342a8000d5fec3a8e6476cf128d11
-Eurydice: 53888c38132c02faf932a070da09cbcb067d5b96
+Eurydice: b95ecc739532a44e3bd92479373a1338c1f7f034
 Karamel: 734ff7e181dedba2cb4107abd47574b35be86219
 F*: 0c4b790fd608bccfc332d3ff1e9b29c9be8b0595
-Libcrux: 85ef3af5e4511668b215821a564d6537be61d44c
+Libcrux: c1d4f4c345cfc92a716898e6e2779310dff89f58
