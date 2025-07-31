@@ -8,5 +8,8 @@ mod hacl {
 }
 
 mod impl_hacl;
+mod impl_signature_trait;
 
 pub use impl_hacl::*;
+
+pub use impl_signature_trait::*;
