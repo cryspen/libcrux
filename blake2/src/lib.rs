@@ -10,4 +10,5 @@ mod hacl {
 
 mod impl_hacl;
 
+mod impl_digest_trait;
 pub use impl_hacl::{Blake2b, Blake2bBuilder, Blake2s, Blake2sBuilder, Error};

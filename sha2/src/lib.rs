@@ -23,6 +23,8 @@ pub mod hacl;
 /// The implementation of our types using that hacl code
 mod impl_hacl;
 
+mod impl_digest_trait;
+
 /// use it if we want to use hacl
 pub use impl_hacl::*;
 
