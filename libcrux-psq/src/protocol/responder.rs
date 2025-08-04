@@ -230,7 +230,7 @@ impl<'a, Rng: CryptoRng> Responder<'a, Rng> {
             ToTransportState {
                 tx2,
                 k2,
-                initiator_ecdh_pk: Some(state.initiator_longterm_ecdh_pk.clone()),
+                initiator_ecdh_pk: Some(state.initiator_longterm_ecdh_pk),
             }
             .into(),
         );
