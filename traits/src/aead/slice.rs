@@ -130,7 +130,7 @@ impl core::fmt::Display for DecryptError {
     }
 }
 
-#[cfg(feature = "error_in_core")]
+#[cfg(feature = "error-in-core")]
 /// Here we implement the Error trait. This has only been added to core relatively recently, so we
 /// are hiding that behind a feature.
 mod error_in_core {
