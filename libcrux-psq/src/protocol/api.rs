@@ -35,6 +35,7 @@ pub enum Error {
     TransportState,
     OutputBufferShort,
     PayloadTooLong,
+    ChannelError,
     Storage,
     OtherError,
     IdentifierMismatch,
@@ -184,7 +185,10 @@ impl Session {
 
     pub fn channel(&mut self) -> Result<Channel, Error> {
         let channel = Channel::new(&self, matches!(self.principal, SessionPrincipal::Initiator))?;
-        self.channel_counter += 1;
+        self.channel_counter = self
+            .channel_counter
+            .checked_add(1)
+            .ok_or(Error::ChannelError)?;
         Ok(channel)
     }
 
