@@ -130,8 +130,8 @@ impl Session {
         })
     }
 
-    // XXX: tls_serialize should not be called directly, since it does
-    // not consume `Session`. This opens the possiblity for nonce
+    // WARN: tls_serialize should not be called directly, since it does
+    // not consume `Session`. This opens the possibility for nonce
     // re-use by deserializing a stale `Session` since the original
     // could be used after serialization.
     pub fn serialize(self, out: &mut [u8]) -> Result<usize, Error> {
