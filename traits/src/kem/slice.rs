@@ -220,10 +220,10 @@ impl core::fmt::Display for DecapsError {
     }
 }
 
-#[cfg(feature = "error_in_core")]
+#[cfg(feature = "error-in-core")]
 /// Here we implement the Error trait. This has only been added to core relatively recently, so we
 /// are hiding that behind a feature.
-mod error_in_core_impls {
+mod error_in_core {
     impl core::error::Error for super::KeyGenError {}
     impl core::error::Error for super::EncapsError {}
     impl core::error::Error for super::DecapsError {}
