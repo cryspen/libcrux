@@ -126,13 +126,14 @@ struct K0Ikm<'a> {
     g_xs: &'a DHSharedSecret,
 }
 
-const SESSION_KEY_INFO: &[u8] = b"shared key id";
+const SESSION_KEY_INFO: &[u8] = b"session key id";
+const SESSION_KEY_SALT: &[u8] = b"session key salt";
 
 // id_skCS = KDF(skCS, "shared key id")
 fn session_key_id(key: &AEADKey) -> Result<[u8; SESSION_ID_LENGTH], Error> {
     let prk = libcrux_hkdf::extract(
         Algorithm::Sha256,
-        [],
+        SESSION_KEY_SALT,
         SerializeBytes::tls_serialize(&key).map_err(serialize_error)?,
     )
     .map_err(|_| Error::CryptoError)?;
