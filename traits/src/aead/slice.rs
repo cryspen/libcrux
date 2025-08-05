@@ -36,13 +36,22 @@ pub trait Aead {
 pub enum EncryptError {
     /// The ciphertext buffer has the wrong length.
     WrongCiphertextLength,
+
     /// The plaintext is too long for this algorithm or implementation.
     PlaintextTooLong,
+
     /// The AAD is too long for this algorithm or implementation.
     AadTooLong,
+
+    /// The key has the wrong length.
     WrongKeyLength,
+
+    /// The tag has the wrong length.
     WrongTagLength,
+
+    /// The nonce has the wrong length.
     WrongNonceLength,
+
     /// An unknown error occurred during encryption.
     Unknown,
 }
@@ -53,15 +62,25 @@ pub enum DecryptError {
     /// The authentication tag is invalid; the ciphertext has been tampered with
     /// or the key/nonce/aad is incorrect.
     InvalidTag,
+
     /// The plaintext buffer has the wrong length.
     WrongPlaintextLength,
+
     /// The plaintext is too long for this algorithm or implementation.
     PlaintextTooLong,
+
     /// The AAD is too long for this algorithm or implementation.
     AadTooLong,
+
+    /// The key has the wrong length.
     WrongKeyLength,
+
+    /// The tag has the wrong length.
     WrongTagLength,
+
+    /// The nonce has the wrong length.
     WrongNonceLength,
+
     /// An unknown error occurred during decryption.
     Unknown,
 }
