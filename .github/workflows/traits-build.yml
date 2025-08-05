@@ -74,12 +74,12 @@ jobs:
         run: |
           rustc --print=cfg
           cargo build --verbose $RUST_TARGET_FLAG
-          cargo build --verbose $RUST_TARGET_FLAG -F error_in_core
+          cargo build --verbose $RUST_TARGET_FLAG -F error-in-core
 
       - name: 🔨 Build Release
         run: |
           cargo build --verbose --release $RUST_TARGET_FLAG
-          cargo build --verbose --release $RUST_TARGET_FLAG -F error_in_core
+          cargo build --verbose --release $RUST_TARGET_FLAG -F error-in-core
 
       # TODO: https://github.com/cryspen/libcrux/issues/717
       - name: 🏃🏻 Asan MacOS
