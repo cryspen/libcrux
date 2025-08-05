@@ -17,6 +17,8 @@ error-in-core = []
 check-secret-independence = ["libcrux-secrets/check-secret-independence"]
 # expose tests that are generic over the traits
 generic-tests = []
+# whether or not the alloc crate is used
+alloc = []
 
 [dependencies]
 rand = { version = "0.9", default-features = false }

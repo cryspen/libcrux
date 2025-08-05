@@ -19,6 +19,7 @@ pub trait Aead<const KEY_LEN: usize, const TAG_LEN: usize, const NONCE_LEN: usiz
     ) -> Result<([u8; MSG_LEN], [u8; TAG_LEN]), EncryptError>;
 
     /// Encrypt a plaintext message, producing a ciphertext and an authentication tag.
+    #[cfg(feature = "alloc")]
     fn encrypt_to_vec(
         key: &[u8; KEY_LEN],
         nonce: &[u8; NONCE_LEN],
@@ -36,6 +37,7 @@ pub trait Aead<const KEY_LEN: usize, const TAG_LEN: usize, const NONCE_LEN: usiz
     ) -> Result<[u8; MSG_LEN], DecryptError>;
 
     /// Decrypt a ciphertext, verifying its authenticity.
+    #[cfg(feature = "alloc")]
     fn decrypt_to_vec(
         key: &[u8; KEY_LEN],
         nonce: &[u8; NONCE_LEN],
@@ -65,6 +67,7 @@ impl<
             .map(|()| (ciphertext, tag))
     }
 
+    #[cfg(feature = "alloc")]
     fn encrypt_to_vec(
         key: &[u8; KEY_LEN],
         nonce: &[u8; NONCE_LEN],
@@ -90,6 +93,7 @@ impl<
         Self::decrypt(&mut plaintext, key, nonce, aad, ciphertext, tag).map(|()| plaintext)
     }
 
+    #[cfg(feature = "alloc")]
     fn decrypt_to_vec(
         key: &[u8; KEY_LEN],
         nonce: &[u8; NONCE_LEN],
