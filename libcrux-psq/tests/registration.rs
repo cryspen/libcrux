@@ -93,9 +93,10 @@ fn registration(pq: bool) {
     let mut r_transport = responder.into_session().unwrap();
 
     // test serialization, deserialization
-    i_transport.serialize(&mut msg_channel).unwrap();
+    let mut session_storage = vec![0u8; 4096];
+    i_transport.serialize(&mut session_storage).unwrap();
     let mut i_transport = Session::deserialize(
-        &msg_channel,
+        &session_storage,
         &initiator_ecdh_keys.pk,
         &responder_ecdh_keys.pk,
         pq.then_some(&responder_pq_keys.pk),
