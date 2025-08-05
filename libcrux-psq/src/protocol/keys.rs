@@ -5,7 +5,7 @@ use tls_codec::{
     TlsSize,
 };
 
-use crate::protocol::{api::PK_BINDER_LEN, pqkem::PQSharedSecret};
+use crate::protocol::pqkem::PQSharedSecret;
 
 use super::{
     api::{serialize_error, Error, Session},
@@ -173,9 +173,9 @@ const R2I_CHANNEL_KEY_LABEL: &'static [u8] = b"r2i channel key";
 // skChannelr2i = KDF(skCS, "r2i channel key" | pk_binder | channel_counter)
 fn derive_channel_key<const IS_INITIATOR: bool>(session: &Session) -> Result<AEADKey, Error> {
     #[derive(TlsSerializeBytes, TlsSize)]
-    struct ChannelKeyInfo {
+    struct ChannelKeyInfo<'a> {
         domain_separator: &'static [u8],
-        pk_binder: [u8; PK_BINDER_LEN],
+        pk_binder: &'a [u8],
         counter: u64,
     }
 
@@ -187,7 +187,7 @@ fn derive_channel_key<const IS_INITIATOR: bool>(session: &Session) -> Result<AEA
             } else {
                 R2I_CHANNEL_KEY_LABEL
             },
-            pk_binder: session.pk_binder.clone(),
+            pk_binder: session.pk_binder.as_slice(),
             counter: session.channel_counter,
         }
         .tls_serialize()
