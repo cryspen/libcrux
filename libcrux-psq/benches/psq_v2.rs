@@ -1,7 +1,7 @@
 use criterion::{criterion_group, criterion_main, BatchSize, Criterion};
 
 use libcrux_psq::protocol::{
-    api::{Builder, IntoTransport, Protocol},
+    api::{Builder, IntoSession, Protocol},
     dhkem::DHKeyPair,
     initiator::{QueryInitiator, RegistrationInitiator},
     pqkem::PQKeyPair,
@@ -508,7 +508,7 @@ fn registration<const PQ: bool>(c: &mut Criterion) {
                     responder
                 },
                 |responder| {
-                    let _ = responder.into_transport_mode();
+                    let _ = responder.into_session();
                 },
                 BatchSize::SmallInput,
             )
@@ -564,7 +564,7 @@ fn registration<const PQ: bool>(c: &mut Criterion) {
                     initiator
                 },
                 |initiator| {
-                    let _ = initiator.into_transport_mode();
+                    let _ = initiator.into_session();
                 },
                 BatchSize::SmallInput,
             )
@@ -617,8 +617,8 @@ fn registration<const PQ: bool>(c: &mut Criterion) {
                         .read_message(&msg_channel, &mut payload_buf_initiator)
                         .unwrap();
 
-                    let mut initiator = initiator.into_transport_mode().unwrap();
-                    let (_channel_no, channel) = initiator.make_channel().unwrap();
+                    let mut initiator = initiator.into_session().unwrap();
+                    let (_channel_no, channel) = initiator.channel().unwrap();
                     let payload = randombytes(4096);
                     (channel, msg_channel, payload)
                 },
@@ -676,16 +676,16 @@ fn registration<const PQ: bool>(c: &mut Criterion) {
                         .read_message(&msg_channel, &mut payload_buf_initiator)
                         .unwrap();
 
-                    let mut initiator = initiator.into_transport_mode().unwrap();
+                    let mut initiator = initiator.into_session().unwrap();
 
-                    let (_channel_no, mut initiator_channel) = initiator.make_channel().unwrap();
+                    let (_channel_no, mut initiator_channel) = initiator.channel().unwrap();
 
                     let _ = initiator_channel
                         .write_message(&randombytes(4096), &mut msg_channel)
                         .unwrap();
 
-                    let mut responder = responder.into_transport_mode().unwrap();
-                    let (_channel_no, responder_channel) = responder.make_channel().unwrap();
+                    let mut responder = responder.into_session().unwrap();
+                    let (_channel_no, responder_channel) = responder.channel().unwrap();
                     (responder_channel, msg_channel, payload_buf_responder)
                 },
                 |(responder_channel, msg_channel, payload_buf_responder)| {

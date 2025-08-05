@@ -161,7 +161,7 @@ impl Session {
         }
     }
 
-    pub fn make_channel(&mut self) -> Result<Channel, Error> {
+    pub fn channel(&mut self) -> Result<Channel, Error> {
         let channel = Channel::new(&self, matches!(self.principal, SessionPrincipal::Initiator))?;
         self.channel_counter += 1;
         Ok(channel)
@@ -253,8 +253,8 @@ impl Protocol for Channel {
     }
 }
 
-pub trait IntoTransport {
-    fn into_transport_mode(self) -> Result<Session, Error>;
+pub trait IntoSession {
+    fn into_session(self) -> Result<Session, Error>;
     fn is_handshake_finished(&self) -> bool;
 }
 

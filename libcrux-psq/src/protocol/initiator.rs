@@ -8,7 +8,7 @@ use tls_codec::{
 use crate::protocol::MessageOut;
 
 use super::{
-    api::{Error, IntoTransport, Protocol, Session, ToTransportState},
+    api::{Error, IntoSession, Protocol, Session, ToTransportState},
     dhkem::{DHKeyPair, DHPrivateKey, DHPublicKey},
     keys::{
         derive_k0, derive_k1, derive_k2_query_initiator, derive_k2_registration_initiator, AEADKey,
@@ -310,8 +310,8 @@ impl<'a, Rng: CryptoRng> Protocol for RegistrationInitiator<'a, Rng> {
     }
 }
 
-impl<'a, Rng: CryptoRng> IntoTransport for RegistrationInitiator<'a, Rng> {
-    fn into_transport_mode(self) -> Result<Session, Error> {
+impl<'a, Rng: CryptoRng> IntoSession for RegistrationInitiator<'a, Rng> {
+    fn into_session(self) -> Result<Session, Error> {
         let RegistrationInitiatorState::ToTransport(state) = self.state else {
             return Err(Error::InitiatorState);
         };

@@ -8,7 +8,7 @@ use tls_codec::{
 use crate::protocol::MessageOut;
 
 use super::{
-    api::{Error, IntoTransport, Protocol, Session, ToTransportState},
+    api::{Error, IntoSession, Protocol, Session, ToTransportState},
     dhkem::{DHKeyPair, DHPrivateKey, DHPublicKey},
     initiator::InitiatorInnerPayload,
     keys::{
@@ -367,8 +367,8 @@ impl<'a, Rng: CryptoRng> Protocol for Responder<'a, Rng> {
     }
 }
 
-impl<'a, Rng: CryptoRng> IntoTransport for Responder<'a, Rng> {
-    fn into_transport_mode(self) -> Result<Session, Error> {
+impl<'a, Rng: CryptoRng> IntoSession for Responder<'a, Rng> {
+    fn into_session(self) -> Result<Session, Error> {
         let ResponderState::ToTransport(mut state) = self.state else {
             return Err(Error::ResponderState);
         };

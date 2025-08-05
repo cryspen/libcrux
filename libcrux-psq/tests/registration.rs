@@ -1,5 +1,5 @@
 use libcrux_psq::protocol::{
-    api::{IntoTransport, Protocol, Session},
+    api::{IntoSession, Protocol, Session},
     dhkem::DHKeyPair,
     pqkem::PQKeyPair,
     *,
@@ -89,8 +89,8 @@ fn registration(pq: bool) {
     assert!(initiator.is_handshake_finished());
     assert!(responder.is_handshake_finished());
 
-    let i_transport = initiator.into_transport_mode().unwrap();
-    let mut r_transport = responder.into_transport_mode().unwrap();
+    let i_transport = initiator.into_session().unwrap();
+    let mut r_transport = responder.into_session().unwrap();
 
     // test serialization, deserialization
     i_transport.serialize(&mut msg_channel).unwrap();
@@ -102,8 +102,8 @@ fn registration(pq: bool) {
     )
     .unwrap();
 
-    let mut channel_i = i_transport.make_channel().unwrap();
-    let mut channel_r = r_transport.make_channel().unwrap();
+    let mut channel_i = i_transport.channel().unwrap();
+    let mut channel_r = r_transport.channel().unwrap();
 
     assert_eq!(channel_i.identifier(), channel_r.identifier());
 
