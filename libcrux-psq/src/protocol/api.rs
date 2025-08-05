@@ -57,6 +57,25 @@ pub(crate) enum SessionPrincipal {
 }
 
 #[derive(TlsSerialize, TlsDeserialize, TlsSize)]
+/// A long-term session derived from the final handshake state.
+///
+/// Allows the creation of up to `u64::MAX` distinct, bi-directional
+/// secure `Channel`s between initiator and responder, via
+/// `Session::channel`.
+///
+/// The `Session` can be stored using `Session::serialize` and loaded
+/// using `Session::deserialize`, which expects references to the same
+/// public keys that were used in session creation to succeed.
+///
+/// **Warning**: Session state must only be stored and loaded using
+/// `Session::serialize` and `Session::deserialize`.  While `Session`
+/// implements `tls_codec::{Serialize, Deserialize}`, the associated
+/// methods should not be called directly, since they do not consume the
+/// `Session`. This opens up the possibility of continual use of a session
+/// that has also been serialized. If the serialized session is then
+/// deserialized, the deserialized version is stale and using it to
+/// re-derive `Channel`s will result in nonce re-use with the potential
+/// for loss of confidentiality.
 pub struct Session {
     pub(crate) principal: SessionPrincipal,
     pub(crate) session_key: SessionKey,
@@ -139,6 +158,8 @@ impl Session {
             .map_err(serialize_error)
     }
 
+    // XXX: Use `tls_codec::conditional_deserializable` to implement
+    // the validation.
     pub fn deserialize(
         bytes: &[u8],
         initiator_ecdh_pk: &DHPublicKey,
@@ -186,6 +207,14 @@ struct TransportMessage {
     tag: [u8; 16],
 }
 
+/// A secure channel derived from a long-term session.
+///
+/// Each channel derived from a session is identified by a monotonically
+/// increasing `u64`. The channel identifier is included in every
+/// `TransportMessage` sent on the channel.
+///
+/// Receiving a `TransportMessage` without matching channel identifier
+/// results in an error.
 pub struct Channel {
     send_key: AEADKey,
     recv_key: AEADKey,
