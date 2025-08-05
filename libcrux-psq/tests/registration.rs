@@ -102,10 +102,10 @@ fn registration(pq: bool) {
     )
     .unwrap();
 
-    let (channel_no_i, mut channel_i) = i_transport.make_channel().unwrap();
-    let (channel_no_r, mut channel_r) = r_transport.make_channel().unwrap();
+    let mut channel_i = i_transport.make_channel().unwrap();
+    let mut channel_r = r_transport.make_channel().unwrap();
 
-    assert_eq!(channel_no_i, channel_no_r);
+    assert_eq!(channel_i.identifier(), channel_r.identifier());
 
     let app_data_i = b"Derived session hey".as_slice();
     let app_data_r = b"Derived session ho".as_slice();

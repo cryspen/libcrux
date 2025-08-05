@@ -165,26 +165,41 @@ pub(super) fn derive_session_key(k2: AEADKey, tx2: Transcript) -> Result<Session
     Ok(SessionKey { key, identifier })
 }
 
-// skChannel = KDF(skCS, "channel key" | pk_binder | channel_counter)
-pub(super) fn derive_channel_key(session: &Session) -> Result<AEADKey, Error> {
+const I2R_CHANNEL_KEY_LABEL: &'static [u8] = b"i2r channel key";
+const R2I_CHANNEL_KEY_LABEL: &'static [u8] = b"r2i channel key";
+
+// skChanneli2r = KDF(skCS, "i2r channel key" | pk_binder | channel_counter)
+// skChannelr2i = KDF(skCS, "r2i channel key" | pk_binder | channel_counter)
+fn derive_channel_key<const IS_INITIATOR: bool>(session: &Session) -> Result<AEADKey, Error> {
     #[derive(TlsSerializeBytes, TlsSize)]
     struct ChannelKeyInfo {
         domain_separator: &'static [u8],
         pk_binder: [u8; PK_BINDER_LEN],
-        counter: u32,
+        counter: u64,
     }
 
-    const CHANNEL_KEY_LABEL: &'static [u8] = b"channel key";
     AEADKey::new(
         &session.session_key.key,
         &ChannelKeyInfo {
-            domain_separator: CHANNEL_KEY_LABEL,
+            domain_separator: if IS_INITIATOR {
+                I2R_CHANNEL_KEY_LABEL
+            } else {
+                R2I_CHANNEL_KEY_LABEL
+            },
             pk_binder: session.pk_binder.clone(),
             counter: session.channel_counter,
         }
         .tls_serialize()
         .map_err(serialize_error)?,
     )
+}
+
+pub(super) fn derive_i2r_channel_key(session: &Session) -> Result<AEADKey, Error> {
+    derive_channel_key::<true>(session)
+}
+
+pub(super) fn derive_r2i_channel_key(session: &Session) -> Result<AEADKey, Error> {
+    derive_channel_key::<false>(session)
 }
 
 // K0 = KDF(g^xs, tx0)

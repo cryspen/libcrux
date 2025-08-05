@@ -322,6 +322,7 @@ impl<'a, Rng: CryptoRng> IntoTransport for RegistrationInitiator<'a, Rng> {
             &self.initiator_longterm_ecdh_keys.pk,
             &self.responder_longterm_ecdh_pk,
             self.responder_longterm_pq_pk,
+            true,
         )
     }
 

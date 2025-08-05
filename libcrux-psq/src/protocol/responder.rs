@@ -385,6 +385,7 @@ impl<'a, Rng: CryptoRng> IntoTransport for Responder<'a, Rng> {
             &initiator_ecdh_pk,
             &self.longterm_ecdh_keys.pk,
             responder_pq_pk,
+            false,
         )
     }
 

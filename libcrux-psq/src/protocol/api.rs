@@ -13,7 +13,7 @@ use crate::protocol::write_output;
 use super::{
     dhkem::{DHKeyPair, DHPublicKey},
     initiator::{QueryInitiator, RegistrationInitiator},
-    keys::{derive_channel_key, derive_session_key, AEADKey},
+    keys::{derive_i2r_channel_key, derive_r2i_channel_key, derive_session_key, AEADKey},
     pqkem::{PQKeyPair, PQPublicKey},
     responder::Responder,
     session::{SessionKey, SESSION_ID_LENGTH},
@@ -37,6 +37,7 @@ pub enum Error {
     PayloadTooLong,
     Storage,
     OtherError,
+    IdentifierMismatch,
 }
 
 #[derive(Debug)]
@@ -49,10 +50,18 @@ pub(crate) struct ToTransportState {
 pub(crate) const PK_BINDER_LEN: usize = 8;
 
 #[derive(TlsSerialize, TlsDeserialize, TlsSize)]
+#[repr(u8)]
+pub(crate) enum SessionPrincipal {
+    Initiator,
+    Responder,
+}
+
+#[derive(TlsSerialize, TlsDeserialize, TlsSize)]
 pub struct Session {
+    pub(crate) principal: SessionPrincipal,
     pub(crate) session_key: SessionKey,
     pub(crate) pk_binder: [u8; PK_BINDER_LEN],
-    pub(crate) channel_counter: u32,
+    pub(crate) channel_counter: u64,
 }
 
 // pkBinder = KDF(skCS, g^c | g^s | [pkS])
@@ -100,6 +109,7 @@ impl Session {
         initiator_ecdh_pk: &DHPublicKey,
         responder_ecdh_pk: &DHPublicKey,
         responder_pq_pk: Option<&PQPublicKey>,
+        is_initiator: bool,
     ) -> Result<Self, Error> {
         let session_key = derive_session_key(k2, tx2)?;
         let pk_binder = derive_pk_binder(
@@ -109,6 +119,11 @@ impl Session {
             responder_pq_pk,
         )?;
         Ok(Self {
+            principal: if is_initiator {
+                SessionPrincipal::Initiator
+            } else {
+                SessionPrincipal::Responder
+            },
             session_key,
             pk_binder,
             channel_counter: 0,
@@ -146,38 +161,56 @@ impl Session {
         }
     }
 
-    pub fn make_channel(&mut self) -> Result<(u32, Channel), Error> {
-        let channel = Channel::new(&self)?;
+    pub fn make_channel(&mut self) -> Result<Channel, Error> {
+        let channel = Channel::new(&self, matches!(self.principal, SessionPrincipal::Initiator))?;
         self.channel_counter += 1;
-        Ok((self.channel_counter - 1, channel))
+        Ok(channel)
     }
 
-    pub fn id(&self) -> &[u8; SESSION_ID_LENGTH] {
+    pub fn identifier(&self) -> &[u8; SESSION_ID_LENGTH] {
         &self.session_key.identifier
     }
 }
 
 #[derive(TlsSerialize, TlsSize)]
 struct TransportMessageOut<'a> {
+    nonce: u64,
     ciphertext: VLByteSlice<'a>,
     tag: [u8; 16],
 }
 
 #[derive(TlsDeserialize, TlsSize)]
 struct TransportMessage {
+    nonce: u64,
     ciphertext: VLBytes,
     tag: [u8; 16],
 }
 
 pub struct Channel {
-    channel_key: AEADKey,
+    send_key: AEADKey,
+    recv_key: AEADKey,
+    identifier: u64,
 }
 
 impl Channel {
-    fn new(session: &Session) -> Result<Self, Error> {
-        Ok(Self {
-            channel_key: derive_channel_key(session)?,
-        })
+    fn new(session: &Session, is_initiator: bool) -> Result<Self, Error> {
+        if is_initiator {
+            Ok(Self {
+                send_key: derive_i2r_channel_key(session)?,
+                recv_key: derive_r2i_channel_key(session)?,
+                identifier: session.channel_counter,
+            })
+        } else {
+            Ok(Self {
+                send_key: derive_r2i_channel_key(session)?,
+                recv_key: derive_i2r_channel_key(session)?,
+                identifier: session.channel_counter,
+            })
+        }
+    }
+
+    pub fn identifier(&self) -> u64 {
+        self.identifier
     }
 }
 
@@ -188,8 +221,9 @@ impl Protocol for Channel {
             return Err(Error::PayloadTooLong);
         }
         let mut ciphertext = vec![0u8; payload.len()];
-        let tag = self.channel_key.encrypt(payload, &[], &mut ciphertext)?;
+        let tag = self.send_key.encrypt(payload, &[], &mut ciphertext)?;
         let message = TransportMessageOut {
+            nonce: self.identifier,
             ciphertext: VLByteSlice(ciphertext.as_ref()),
             tag,
         };
@@ -203,10 +237,14 @@ impl Protocol for Channel {
         let message = TransportMessage::tls_deserialize(&mut Cursor::new(message))
             .map_err(|e| Error::Deserialize(e))?;
 
+        if self.identifier != message.nonce {
+            return Err(Error::IdentifierMismatch);
+        }
+
         let bytes_deserialized = message.tls_serialized_len();
 
         let payload = self
-            .channel_key
+            .recv_key
             .decrypt(message.ciphertext.as_slice(), &message.tag, &[])?;
 
         let out_bytes_written = write_output(&payload, out)?;
