@@ -1,5 +1,5 @@
 use libcrux_psq::protocol::{
-    api::{IntoTransport, Protocol},
+    api::{IntoSession, Protocol, Session},
     dhkem::DHKeyPair,
     pqkem::PQKeyPair,
     *,
@@ -89,17 +89,33 @@ fn registration(pq: bool) {
     assert!(initiator.is_handshake_finished());
     assert!(responder.is_handshake_finished());
 
-    let mut i_transport = initiator.into_transport_mode().unwrap();
-    let mut r_transport = responder.into_transport_mode().unwrap();
+    let i_transport = initiator.into_session().unwrap();
+    let mut r_transport = responder.into_session().unwrap();
+
+    // test serialization, deserialization
+    let mut session_storage = vec![0u8; 4096];
+    i_transport.serialize(&mut session_storage).unwrap();
+    let mut i_transport = Session::deserialize(
+        &session_storage,
+        &initiator_ecdh_keys.pk,
+        &responder_ecdh_keys.pk,
+        pq.then_some(&responder_pq_keys.pk),
+    )
+    .unwrap();
+
+    let mut channel_i = i_transport.channel().unwrap();
+    let mut channel_r = r_transport.channel().unwrap();
+
+    assert_eq!(channel_i.identifier(), channel_r.identifier());
 
     let app_data_i = b"Derived session hey".as_slice();
     let app_data_r = b"Derived session ho".as_slice();
 
-    let len_i = i_transport
+    let len_i = channel_i
         .write_message(app_data_i, &mut msg_channel)
         .unwrap();
 
-    let (len_r_deserialized, len_r_payload) = r_transport
+    let (len_r_deserialized, len_r_payload) = channel_r
         .read_message(&msg_channel, &mut payload_buf_responder)
         .unwrap();
 
@@ -108,11 +124,11 @@ fn registration(pq: bool) {
     assert_eq!(len_r_payload, app_data_i.len());
     assert_eq!(&payload_buf_responder[0..len_r_payload], app_data_i);
 
-    let len_r = r_transport
+    let len_r = channel_r
         .write_message(app_data_r, &mut msg_channel)
         .unwrap();
 
-    let (len_i_deserialized, len_i_payload) = i_transport
+    let (len_i_deserialized, len_i_payload) = channel_i
         .read_message(&msg_channel, &mut payload_buf_initiator)
         .unwrap();
 
