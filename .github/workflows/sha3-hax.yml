@@ -23,6 +23,8 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  # NOTE: This always runs, even if the `hax_ref` workflow input is provided.
+  # TODO: Move this reusable workflow to a standalone action
   get-hax-ref:
     uses: ./.github/workflows/get-hax-ref.yml
 
