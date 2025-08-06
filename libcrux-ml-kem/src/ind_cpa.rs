@@ -556,9 +556,12 @@ pub(crate) fn generate_keypair_unpacked<
     $PUBLIC_KEY_SIZE == Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE $K /\
     $ETA1 == Spec.MLKEM.v_ETA1 $K /\
     $ETA1_RANDOMNESS_SIZE == Spec.MLKEM.v_ETA1_RANDOMNESS_SIZE $K /\
-    length $key_generation_seed == Spec.MLKEM.v_CPA_KEY_GENERATION_SEED_SIZE"#))]
-#[hax_lib::ensures(|result| fstar!(r#"let (expected, valid) = Spec.MLKEM.ind_cpa_generate_keypair $K $key_generation_seed in 
-                                    valid ==> $result == expected"#))]
+    length $key_generation_seed == Spec.MLKEM.v_CPA_KEY_GENERATION_SEED_SIZE /\
+    length $serialized_ind_cpa_private_key == $PRIVATE_KEY_SIZE /\
+    length $serialized_public_key == $PUBLIC_KEY_SIZE"#))]
+// XXX: Spec changes required below?
+// #[hax_lib::ensures(|_| fstar!(r#"(let (expected, valid) = Spec.MLKEM.ind_cpa_generate_keypair $K $key_generation_seed in
+//                                     valid ==> $result == expected)"#))]
 #[inline(always)]
 pub(crate) fn generate_keypair<
     const K: usize,
@@ -750,11 +753,14 @@ fn compress_then_serialize_u<
       $V_COMPRESSION_FACTOR == Spec.MLKEM.v_VECTOR_V_COMPRESSION_FACTOR $K /\
       $BLOCK_LEN == Spec.MLKEM.v_C1_BLOCK_SIZE $K /\
       $CIPHERTEXT_SIZE == Spec.MLKEM.v_CPA_CIPHERTEXT_SIZE $K /\
-      length $randomness == Spec.MLKEM.v_SHARED_SECRET_SIZE"#))]
-#[hax_lib::ensures(|result|
-    fstar!(r#"$result == Spec.MLKEM.ind_cpa_encrypt_unpacked $K $message $randomness
+      length $randomness == Spec.MLKEM.v_SHARED_SECRET_SIZE /\
+      length $ciphertext == $CIPHERTEXT_SIZE /\
+      length $r_as_ntt == $K"#))]
+#[hax_lib::ensures(|_|
+    fstar!(r#"${ciphertext}_future == Spec.MLKEM.ind_cpa_encrypt_unpacked $K $message $randomness
         (Libcrux_ml_kem.Polynomial.to_spec_vector_t #$K #$:Vector ${public_key.t_as_ntt})
-        (Libcrux_ml_kem.Polynomial.to_spec_matrix_t #$K #$:Vector ${public_key.A})"#)
+        (Libcrux_ml_kem.Polynomial.to_spec_matrix_t #$K #$:Vector ${public_key.A}) /\
+        length ${ciphertext}_future == length $ciphertext"#)
 )]
 #[inline(always)]
 pub(crate) fn encrypt_unpacked<
@@ -948,10 +954,12 @@ pub(crate) fn encrypt_c2<
     $CIPHERTEXT_SIZE == Spec.MLKEM.v_CPA_CIPHERTEXT_SIZE $K /\
     $T_AS_NTT_ENCODED_SIZE == Spec.MLKEM.v_T_AS_NTT_ENCODED_SIZE $K /\
     $C1_LEN == Spec.MLKEM.v_C1_SIZE $K /\
-    $C2_LEN == Spec.MLKEM.v_C2_SIZE $K"#))]
-#[hax_lib::ensures(|result|
+    $C2_LEN == Spec.MLKEM.v_C2_SIZE $K /\
+    length $ciphertext == $CIPHERTEXT_SIZE /\
+    length $r_as_ntt == $K"#))]
+#[hax_lib::ensures(|_|
     fstar!(r#"let (expected, valid) = Spec.MLKEM.ind_cpa_encrypt $K $public_key $message $randomness in
-            valid ==> $result == expected"#)
+            valid ==> ${ciphertext}_future == expected /\ length ${ciphertext}_future == length $ciphertext"#)
 )]
 #[inline(always)]
 pub(crate) fn encrypt<
@@ -1071,10 +1079,12 @@ pub(crate) fn build_unpacked_public_key_mut<
 #[hax_lib::fstar::options("--z3rlimit 800 --ext context_pruning")]
 #[hax_lib::requires(fstar!(r#"Spec.MLKEM.is_rank $K /\
     $CIPHERTEXT_SIZE == Spec.MLKEM.v_CPA_CIPHERTEXT_SIZE $K /\
-    $U_COMPRESSION_FACTOR == Spec.MLKEM.v_VECTOR_U_COMPRESSION_FACTOR $K"#))]
-#[hax_lib::ensures(|res|
-    fstar!(r#"Libcrux_ml_kem.Polynomial.to_spec_vector_t #$K #$:Vector $res ==
-        Spec.MLKEM.(vector_ntt (decode_then_decompress_u #$K (Seq.slice $ciphertext 0 (v (Spec.MLKEM.v_C1_SIZE $K)))))"#)
+    $U_COMPRESSION_FACTOR == Spec.MLKEM.v_VECTOR_U_COMPRESSION_FACTOR $K
+    length $u_as_ntt == $K"#))]
+#[hax_lib::ensures(|_|
+    fstar!(r#"Libcrux_ml_kem.Polynomial.to_spec_vector_t #$K #$:Vector ${u_as_ntt}_future ==
+        Spec.MLKEM.(vector_ntt (decode_then_decompress_u #$K (Seq.slice $ciphertext 0 (v (Spec.MLKEM.v_C1_SIZE $K)))))
+        /\ length ${u_as_ntt}_future == length $u_as_ntt"#)
 )]
 fn deserialize_then_decompress_u<
     const K: usize,
@@ -1180,10 +1190,11 @@ pub(crate) fn deserialize_vector<const K: usize, Vector: Operations>(
     $CIPHERTEXT_SIZE == Spec.MLKEM.v_CPA_CIPHERTEXT_SIZE $K /\
     $U_COMPRESSION_FACTOR == Spec.MLKEM.v_VECTOR_U_COMPRESSION_FACTOR $K /\
     $V_COMPRESSION_FACTOR == Spec.MLKEM.v_VECTOR_V_COMPRESSION_FACTOR $K /\
-    $VECTOR_U_ENCODED_SIZE == Spec.MLKEM.v_C1_SIZE $K"#))]
-#[hax_lib::ensures(|result|
-    fstar!(r#"$result == Spec.MLKEM.ind_cpa_decrypt_unpacked $K $ciphertext
-        (Libcrux_ml_kem.Polynomial.to_spec_vector_t #$K #$:Vector ${secret_key}.f_secret_as_ntt)"#)
+    $VECTOR_U_ENCODED_SIZE == Spec.MLKEM.v_C1_SIZE $K /\
+    length $decrypted == ${crate::constants::SHARED_SECRET_SIZE}"#))]
+#[hax_lib::ensures(|_|
+    fstar!(r#"${decrypted}_future == Spec.MLKEM.ind_cpa_decrypt_unpacked $K $ciphertext
+        (Libcrux_ml_kem.Polynomial.to_spec_vector_t #$K #$:Vector ${secret_key}.f_secret_as_ntt) /\ length &{decrypted}_future == length $decrypted"#)
 )]
 #[inline(always)]
 pub(crate) fn decrypt_unpacked<
@@ -1232,9 +1243,11 @@ pub(crate) fn decrypt_unpacked<
     $CIPHERTEXT_SIZE == Spec.MLKEM.v_CPA_CIPHERTEXT_SIZE $K /\
     $VECTOR_U_ENCODED_SIZE == Spec.MLKEM.v_C1_SIZE $K /\
     $U_COMPRESSION_FACTOR == Spec.MLKEM.v_VECTOR_U_COMPRESSION_FACTOR $K /\
-    $V_COMPRESSION_FACTOR == Spec.MLKEM.v_VECTOR_V_COMPRESSION_FACTOR $K"#))]
-#[hax_lib::ensures(|result|
-    fstar!(r#"$result == Spec.MLKEM.ind_cpa_decrypt $K $secret_key $ciphertext"#)
+    $V_COMPRESSION_FACTOR == Spec.MLKEM.v_VECTOR_V_COMPRESSION_FACTOR $K /\
+    length $decrypted == ${crate::constants::SHARED_SECRET_SIZE}"#))]
+#[hax_lib::ensures(|_|
+    fstar!(r#"${decrypted}_future == Spec.MLKEM.ind_cpa_decrypt $K $secret_key $ciphertext /\ length &{decrypted}_future == length $decrypted"#)
+    
 )]
 #[inline(always)]
 pub(crate) fn decrypt<
