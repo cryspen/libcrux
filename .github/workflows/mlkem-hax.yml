@@ -27,7 +27,6 @@ concurrency:
 
 jobs:
   get-hax-ref:
-    if: ${{ github.event.inputs.hax_ref == '' }}
     uses: ./.github/workflows/get-hax-ref.yml
 
   extract:
