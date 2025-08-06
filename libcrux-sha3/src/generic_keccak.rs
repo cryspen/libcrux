@@ -61,7 +61,7 @@ impl<const N: usize, T: KeccakItem<N>> KeccakState<N, T> {
     }
 
     #[inline(always)]
-    fn theta_rho(&mut self) {
+    fn theta(&mut self) -> [T; 5] {
         let c: [T; 5] = [
             T::xor5(
                 self[(0, 0)],
@@ -100,13 +100,14 @@ impl<const N: usize, T: KeccakItem<N>> KeccakState<N, T> {
             ),
         ];
         #[allow(clippy::identity_op)]
-        let t: [T; 5] = [
+        [
             T::rotate_left1_and_xor(c[(0 + 4) % 5], c[(0 + 1) % 5]),
             T::rotate_left1_and_xor(c[(1 + 4) % 5], c[(1 + 1) % 5]),
             T::rotate_left1_and_xor(c[(2 + 4) % 5], c[(2 + 1) % 5]),
             T::rotate_left1_and_xor(c[(3 + 4) % 5], c[(3 + 1) % 5]),
             T::rotate_left1_and_xor(c[(4 + 4) % 5], c[(4 + 1) % 5]),
-        ];
+        ]
+    }
 
     #[inline(always)]
     #[hax_lib::fstar::replace_body("assert true")]
@@ -116,25 +117,21 @@ impl<const N: usize, T: KeccakItem<N>> KeccakState<N, T> {
         self.set(2, 0, T::xor_and_rotate::<3, 61>(self[(2, 0)], t[0]));
         self.set(3, 0, T::xor_and_rotate::<41, 23>(self[(3, 0)], t[0]));
         self.set(4, 0, T::xor_and_rotate::<18, 46>(self[(4, 0)], t[0]));
-
         self.set(0, 1, T::xor_and_rotate::<1, 63>(self[(0, 1)], t[1]));
         self.set(1, 1, T::xor_and_rotate::<44, 20>(self[(1, 1)], t[1]));
         self.set(2, 1, T::xor_and_rotate::<10, 54>(self[(2, 1)], t[1]));
         self.set(3, 1, T::xor_and_rotate::<45, 19>(self[(3, 1)], t[1]));
         self.set(4, 1, T::xor_and_rotate::<2, 62>(self[(4, 1)], t[1]));
-
         self.set(0, 2, T::xor_and_rotate::<62, 2>(self[(0, 2)], t[2]));
         self.set(1, 2, T::xor_and_rotate::<6, 58>(self[(1, 2)], t[2]));
         self.set(2, 2, T::xor_and_rotate::<43, 21>(self[(2, 2)], t[2]));
         self.set(3, 2, T::xor_and_rotate::<15, 49>(self[(3, 2)], t[2]));
         self.set(4, 2, T::xor_and_rotate::<61, 3>(self[(4, 2)], t[2]));
-
         self.set(0, 3, T::xor_and_rotate::<28, 36>(self[(0, 3)], t[3]));
         self.set(1, 3, T::xor_and_rotate::<55, 9>(self[(1, 3)], t[3]));
         self.set(2, 3, T::xor_and_rotate::<25, 39>(self[(2, 3)], t[3]));
         self.set(3, 3, T::xor_and_rotate::<21, 43>(self[(3, 3)], t[3]));
         self.set(4, 3, T::xor_and_rotate::<56, 8>(self[(4, 3)], t[3]));
-
         self.set(0, 4, T::xor_and_rotate::<27, 37>(self[(0, 4)], t[4]));
         self.set(1, 4, T::xor_and_rotate::<20, 44>(self[(1, 4)], t[4]));
         self.set(2, 4, T::xor_and_rotate::<39, 25>(self[(2, 4)], t[4]));
@@ -199,7 +196,8 @@ impl<const N: usize, T: KeccakItem<N>> KeccakState<N, T> {
     #[inline(always)]
     fn keccakf1600(&mut self) {
         for i in 0..24 {
-            self.theta_rho();
+            let t = self.theta();
+            self.rho(t);
             self.pi();
             self.chi();
             self.iota(i);
