@@ -201,7 +201,7 @@ pub(crate) fn shift_right<const SHIFT_BY: i32>(vec: &mut PortableVector) {
                 (fun x -> if x >=. (mk_i16 3329) then x -! (mk_i16 3329) else x) (${vec}.f_elements)"#))]
 pub(crate) fn cond_subtract_3329(vec: &mut PortableVector) {
     #[cfg(hax)]
-    let _vec0 = *(vec).clone();
+    let _vec0 = vec.clone();
     for i in 0..FIELD_ELEMENTS_IN_VECTOR {
         hax_lib::loop_invariant!(|i: usize| {
             fstar!(
@@ -283,7 +283,7 @@ pub(crate) fn barrett_reduce_element(value: FieldElement) -> FieldElement {
                            (v (Seq.index ${vec}.f_elements i) % 3329))"#)))]
 pub(crate) fn barrett_reduce(vec: &mut PortableVector) {
     #[cfg(hax)]
-    let _vec0 = (*vec).clone();
+    let _vec0 = vec.clone();
     for i in 0..FIELD_ELEMENTS_IN_VECTOR {
         hax_lib::loop_invariant!(|i: usize| {
             fstar!(
