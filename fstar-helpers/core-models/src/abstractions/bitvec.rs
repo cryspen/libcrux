@@ -343,6 +343,7 @@ pub mod int_vec_interp {
                         #[hax_lib::opaque]
                         #[hax_lib::lemma]
                         #[hax_lib::fstar::smt_pat(BitVec::[< to_ $name >](BitVec::[<from_ $name>](x)))]
+                        #[allow(dead_code)]
                         pub fn lemma_cancel_iv(x: $name) -> Proof<{
                             hax_lib::eq(BitVec::[< to_ $name >](BitVec::[<from_ $name>](x)), x)
                         }> {}
@@ -351,6 +352,7 @@ pub mod int_vec_interp {
                         #[hax_lib::opaque]
                         #[hax_lib::lemma]
                         #[hax_lib::fstar::smt_pat(BitVec::[< from_ $name >](BitVec::[<to_ $name>](x)))]
+                        #[allow(dead_code)]
                         pub fn lemma_cancel_bv(x: BitVec<$n>) -> Proof<{
                             hax_lib::eq(BitVec::[< from_ $name >](BitVec::[<to_ $name>](x)), x)
                         }> {}
