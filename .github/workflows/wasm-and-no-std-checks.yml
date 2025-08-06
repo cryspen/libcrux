@@ -1,0 +1,36 @@
+name: wasm and no_std check
+
+on:
+  merge_group:
+  pull_request:
+    branches: ["main", "dev"]
+  workflow_dispatch:
+
+jobs:
+  no-std-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install target
+        run: rustup target add thumbv7em-none-eabihf
+
+      - name: Check no_std compatibility
+        env:
+          RUST_TARGET_FLAG: '--target thumbv7em-none-eabihf'
+        run: |
+          ./no-std-build.sh
+
+  wasm-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install target
+        run: rustup target add wasm32-unknown-unknown
+
+      - name: Check wasm compatibility
+        env:
+          RUST_TARGET_FLAG: '--target wasm32-unknown-unknown'
+        run: |
+          ./no-std-build.sh

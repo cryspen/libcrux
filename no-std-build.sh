@@ -3,8 +3,6 @@
 set -e
 set -x
 
-RUST_TARGET_FLAG=--target=thumbv7em-none-eabihf
-
 # Check no_std compatibility for crates that support it by default
 cargo build \
   -p libcrux-chacha20poly1305 \
