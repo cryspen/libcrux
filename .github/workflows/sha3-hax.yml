@@ -9,6 +9,11 @@ on:
     - cron: "0 0 * * *"
 
   workflow_dispatch:
+    inputs:
+      hax_ref:
+        description: "The hax revision you want this job to use"
+        required: false
+        type: string
 
 env:
   CARGO_TERM_COLOR: always
@@ -30,7 +35,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: hacspec/hax-actions@main
         with:
-          hax_reference: ${{ needs.get-hax-ref.outputs.hax_ref }}
+          hax_reference: ${{ github.event.inputs.hax_ref || needs.get-hax-ref.outputs.hax_ref }}
           fstar: v2025.02.17
 
       - name: 🏃 Extract SHA3 crate
