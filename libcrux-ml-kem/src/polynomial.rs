@@ -223,7 +223,7 @@ fn poly_barrett_reduce<Vector: Operations>(myself: &mut PolynomialRingElement<Ve
 #[inline(always)]
 #[hax_lib::fstar::options("--z3rlimit 300")]
 #[hax_lib::requires(fstar!(r#"is_bounded_poly (pow2 12 - 1) ${myself}"#))]
-#[hax_lib::ensures(|result| fstar!(r#"is_bounded_poly 3328 ${result}"#))]
+#[hax_lib::ensures(|_| fstar!(r#"is_bounded_poly 3328 ${b}_future"#))]
 fn subtract_reduce<Vector: Operations>(
     myself: &PolynomialRingElement<Vector>,
     b: &mut PolynomialRingElement<Vector>,
@@ -292,7 +292,7 @@ fn subtract_reduce<Vector: Operations>(
 #[hax_lib::requires(fstar!(r#"
     is_bounded_poly 3328 ${myself} /\ 
     is_bounded_poly 3328 ${message}"#))]
-#[hax_lib::ensures(|output| fstar!("is_bounded_poly 3328 ${output}"))]
+#[hax_lib::ensures(|_| fstar!("is_bounded_poly 3328 ${result}_future"))]
 fn add_message_error_reduce<Vector: Operations>(
     myself: &PolynomialRingElement<Vector>,
     message: &PolynomialRingElement<Vector>,
@@ -377,7 +377,7 @@ fn add_message_error_reduce<Vector: Operations>(
 #[inline(always)]
 #[hax_lib::fstar::options("--z3rlimit 400 --split_queries always")]
 #[hax_lib::requires(fstar!("is_bounded_poly 7 ${error}"))]
-#[hax_lib::ensures(|result| fstar!(r#"is_bounded_poly 3328 ${myself}_future"#))]
+#[hax_lib::ensures(|_| fstar!(r#"is_bounded_poly 3328 ${myself}_future"#))]
 fn add_error_reduce<Vector: Operations>(
     myself: &mut PolynomialRingElement<Vector>,
     error: &PolynomialRingElement<Vector>,
@@ -432,8 +432,8 @@ fn add_error_reduce<Vector: Operations>(
 }
 
 #[inline(always)]
-#[hax_lib::ensures(|result| fstar!(r#"Spec.Utils.is_i16b_array 3328 (i1.f_to_i16_array ${result}) /\
-                (forall i. i < 16 ==> ((v (Seq.index (i1.f_to_i16_array ${result}) i) % 3329)==
+#[hax_lib::ensures(|_| fstar!(r#"Spec.Utils.is_i16b_array 3328 (i1.f_to_i16_array ${vector}_future) /\
+                (forall i. i < 16 ==> ((v (Seq.index (i1.f_to_i16_array ${vector}_future) i) % 3329)==
                                        (v (Seq.index (i1.f_to_i16_array ${vector}) i) * 1353 * 169) % 3329))"#))]
 fn to_standard_domain<T: Operations>(vector: &mut T) {
     T::montgomery_multiply_by_constant(vector, MONTGOMERY_R_SQUARED_MOD_FIELD_MODULUS as i16);
@@ -442,7 +442,7 @@ fn to_standard_domain<T: Operations>(vector: &mut T) {
 #[inline(always)]
 #[hax_lib::fstar::options("--z3rlimit 300 --split_queries always")]
 #[hax_lib::requires(fstar!(r#"is_bounded_poly #$:Vector 3328 ${error}"#))]
-#[hax_lib::ensures(|result| fstar!(r#"is_bounded_poly 3328 ${myself}_future"#))]
+#[hax_lib::ensures(|_| fstar!(r#"is_bounded_poly 3328 ${myself}_future"#))]
 fn add_standard_error_reduce<Vector: Operations>(
     myself: &mut PolynomialRingElement<Vector>,
     error: &PolynomialRingElement<Vector>,
@@ -632,7 +632,7 @@ impl<Vector: Operations> PolynomialRingElement<Vector> {
 
     #[inline(always)]
     #[requires(fstar!(r#"is_bounded_poly (pow2 12 - 1) self"#))]
-    #[ensures(|result| fstar!(r#"is_bounded_poly 3328 ${result}"#))]
+    #[ensures(|_| fstar!(r#"is_bounded_poly 3328 ${b}_future"#))]
     pub(crate) fn subtract_reduce(&self, b: &mut Self) {
         subtract_reduce(self, b)
     }
@@ -640,7 +640,7 @@ impl<Vector: Operations> PolynomialRingElement<Vector> {
     #[inline(always)]
     #[requires(fstar!(r#"is_bounded_poly 3328 self /\ 
                          is_bounded_poly 3328 ${message}"#))]
-    #[ensures(|output| fstar!(r#"is_bounded_poly 3328 ${output}"#))]
+    #[ensures(|_| fstar!(r#"is_bounded_poly 3328 ${result}_future"#))]
     pub(crate) fn add_message_error_reduce(
         &self,
         message: &Self,
