@@ -19,7 +19,7 @@ jobs:
         env:
           RUST_TARGET_FLAG: '--target thumbv7em-none-eabihf'
         run: |
-          ./no-std-check.sh
+          ./no-std-build.sh
 
   wasm-check:
     runs-on: ubuntu-latest
@@ -33,4 +33,4 @@ jobs:
         env:
           RUST_TARGET_FLAG: '--target wasm32-unknown-unknown'
         run: |
-          ./no-std-check.sh
+          ./no-std-build.sh
