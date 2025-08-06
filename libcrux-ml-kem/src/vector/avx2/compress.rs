@@ -123,8 +123,8 @@ pub(crate) fn decompress_1(a: Vec256) -> Vec256 {
     arithmetic::sub(&mut z, &a);
 
     hax_lib::fstar!(
-        r#"assert(forall i. Seq.index (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 $s) i == mk_i16 0 \/ 
-                            Seq.index (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 $s) i == mk_i16 (-1))"#
+        r#"assert(forall i. Seq.index (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 $z) i == mk_i16 0 \/ 
+                            Seq.index (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 $z) i == mk_i16 (-1))"#
     );
 
     bitwise_and_with_constant(z, 1665)
