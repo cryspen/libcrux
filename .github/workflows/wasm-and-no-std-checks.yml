@@ -1,4 +1,4 @@
-name: Libcrux - wasm and no_std check
+name: wasm and no_std check
 
 on:
   merge_group:
