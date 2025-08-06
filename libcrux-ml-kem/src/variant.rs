@@ -11,19 +11,21 @@ use crate::{constants::CPA_PKE_KEY_GENERATION_SEED_SIZE, hash_functions::Hash};
 /// cf. FIPS 203, Appendix C
 #[hax_lib::attributes]
 pub(crate) trait Variant {
-    #[requires(shared_secret.len() == 32)]
-    #[ensures(|res| fstar!(r#"$res == $shared_secret"#))] // We only have post-conditions for ML-KEM, not Kyber
+    #[requires(hax_lib::Prop::from(shared_secret.len() == 32) & hax_lib::Prop::from(out.len() == 32))]
+    #[ensures(|_| fstar!(r#"${out}_future == $shared_secret /\ Seq.length ${out}_future == Seq.length $out"#))] // We only have post-conditions for ML-KEM, not Kyber
     fn kdf<const K: usize, const CIPHERTEXT_SIZE: usize, Hasher: Hash>(
         shared_secret: &[u8],
         ciphertext: &[u8; CIPHERTEXT_SIZE],
         out: &mut [u8],
     );
-    #[requires(randomness.len() == 32)]
-    #[ensures(|res| fstar!(r#"$res == $randomness"#))] // We only have post-conditions for ML-KEM, not Kyber
+
+    #[requires(hax_lib::Prop::from(randomness.len() == 32) & hax_lib::Prop::from(out.len() == 32))]
+    #[ensures(|_| fstar!(r#"${out}_future == $randomness /\ Seq.length ${out}_future == Seq.length $out"#))] // We only have post-conditions for ML-KEM, not Kyber
     fn entropy_preprocess<const K: usize, Hasher: Hash>(randomness: &[u8], out: &mut [u8]);
-    #[requires(seed.len() == 32)]
-    #[ensures(|res| fstar!(r#"Seq.length $seed == 32 ==> $res == Spec.Utils.v_G
-        (Seq.append $seed (Seq.create 1 (cast $K <: u8)))"#)
+
+    #[requires(hax_lib::Prop::from(seed.len() == 32) & hax_lib::Prop::from(out.len() == 64))]
+    #[ensures(|_| fstar!(r#"(Seq.length $seed == 32 ==> ${out}_future == Spec.Utils.v_G
+        (Seq.append $seed (Seq.create 1 (cast $K <: u8))))  /\ Seq.length ${out}_future == Seq.length $out"#)
     )]
     fn cpa_keygen_seed<const K: usize, Hasher: Hash>(seed: &[u8], out: &mut [u8]);
 }
@@ -77,8 +79,8 @@ pub(crate) struct MlKem {}
 #[hax_lib::attributes]
 impl Variant for MlKem {
     #[inline(always)]
-    #[requires(shared_secret.len() == 32)]
-    #[ensures(|res| fstar!(r#"$res == $shared_secret"#))]
+    #[requires(hax_lib::Prop::from(shared_secret.len() == 32) & hax_lib::Prop::from(out.len() == 32))]
+    #[ensures(|_| fstar!(r#"${out}_future == $shared_secret /\ Seq.length ${out}_future == Seq.length $out"#))] // We only have post-conditions for ML-KEM, not Kyber
     fn kdf<const K: usize, const CIPHERTEXT_SIZE: usize, Hasher: Hash>(
         shared_secret: &[u8],
         _: &[u8; CIPHERTEXT_SIZE],
@@ -88,16 +90,16 @@ impl Variant for MlKem {
     }
 
     #[inline(always)]
-    #[requires(randomness.len() == 32)]
-    #[ensures(|res| fstar!(r#"$res == $randomness"#))]
+    #[requires(hax_lib::Prop::from(randomness.len() == 32) & hax_lib::Prop::from(out.len() == 32))]
+    #[ensures(|_| fstar!(r#"${out}_future == $randomness /\ Seq.length ${out}_future == Seq.length $out"#))] // We only have post-conditions for ML-KEM, not
     fn entropy_preprocess<const K: usize, Hasher: Hash>(randomness: &[u8], out: &mut [u8]) {
         out.copy_from_slice(randomness);
     }
 
     #[inline(always)]
-    #[requires(key_generation_seed.len() == 32)]
-    #[ensures(|res| fstar!(r#"Seq.length $key_generation_seed == 32 ==> $res == Spec.Utils.v_G
-        (Seq.append $key_generation_seed (Seq.create 1 (cast $K <: u8)))"#)
+    #[requires(hax_lib::Prop::from(key_generation_seed.len() == 32) & hax_lib::Prop::from(out.len() == 64))]
+    #[ensures(|_| fstar!(r#"(Seq.length $key_generation_seed == 32 ==> ${out}_future == Spec.Utils.v_G
+        (Seq.append $key_generation_seed (Seq.create 1 (cast $K <: u8))))  /\ Seq.length ${out}_future == Seq.length $out"#)
     )]
     fn cpa_keygen_seed<const K: usize, Hasher: Hash>(key_generation_seed: &[u8], out: &mut [u8]) {
         let mut seed = [0u8; CPA_PKE_KEY_GENERATION_SEED_SIZE + 1];
