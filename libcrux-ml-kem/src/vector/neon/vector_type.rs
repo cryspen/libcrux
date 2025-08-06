@@ -8,14 +8,14 @@ pub struct SIMD128Vector {
 }
 
 #[inline(always)]
-#[hax_lib::ensures(|result| fstar!("${result} == repr ${v}"))]
+#[hax_lib::ensures(|_| fstar!("${out}_future == repr ${v}"))]
 pub(crate) fn to_i16_array(v: &SIMD128Vector, out: &mut [i16; 16]) {
     _vst1q_s16(&mut out[0..8], v.low);
     _vst1q_s16(&mut out[8..16], v.high);
 }
 
 #[inline(always)]
-#[hax_lib::ensures(|result| fstar!("repr ${result} == $array"))]
+#[hax_lib::ensures(|_| fstar!("repr ${out}_future == $array"))]
 pub(crate) fn from_i16_array(array: &[i16], out: &mut SIMD128Vector) {
     out.low = _vld1q_s16(&array[0..8]);
     out.high = _vld1q_s16(&array[8..16]);
