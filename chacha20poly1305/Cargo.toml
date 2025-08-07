@@ -16,6 +16,7 @@ libcrux-poly1305 = { version = "=0.0.3", path = "../poly1305/", features = [
 ] }
 libcrux-hacl-rs = { version = "=0.0.3", path = "../hacl-rs/" }
 libcrux-macros = { version = "=0.0.3", path = "../macros" }
+libcrux-traits = { version = "=0.0.3", path = "../traits" }
 
 [dev-dependencies]
 hex = { version = "0.4.3", features = ["serde"] }
