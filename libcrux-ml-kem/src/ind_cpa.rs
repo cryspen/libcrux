@@ -43,18 +43,24 @@ pub(crate) mod unpacked {
 
     /// An unpacked ML-KEM IND-CPA Public Key
     #[derive(Clone)]
-    pub(crate) struct IndCpaPublicKeyUnpacked<const K: usize, Vector: Operations> {
+    pub(crate) struct IndCpaPublicKeyUnpacked<
+        const K: usize,
+        const K_SQUARED: usize,
+        Vector: Operations,
+    > {
         pub(crate) t_as_ntt: [PolynomialRingElement<Vector>; K],
         pub(crate) seed_for_A: [u8; 32],
-        pub(crate) A: [[PolynomialRingElement<Vector>; K]; K],
+        pub(crate) A: [PolynomialRingElement<Vector>; K_SQUARED],
     }
 
-    impl<const K: usize, Vector: Operations> Default for IndCpaPublicKeyUnpacked<K, Vector> {
+    impl<const K: usize, const K_SQUARED: usize, Vector: Operations> Default
+        for IndCpaPublicKeyUnpacked<K, K_SQUARED, Vector>
+    {
         fn default() -> Self {
             Self {
                 t_as_ntt: [PolynomialRingElement::<Vector>::ZERO(); K],
                 seed_for_A: [0u8; 32],
-                A: [[PolynomialRingElement::<Vector>::ZERO(); K]; K],
+                A: [PolynomialRingElement::<Vector>::ZERO(); K_SQUARED],
             }
         }
     }
@@ -455,6 +461,7 @@ fn sample_vector_cbd_then_ntt<
 #[inline(always)]
 pub(crate) fn generate_keypair_unpacked<
     const K: usize,
+    const K_SQUARED: usize,
     const ETA1: usize,
     const ETA1_RANDOMNESS_SIZE: usize,
     const PRF_OUTPUT_SIZE1: usize,
@@ -464,7 +471,7 @@ pub(crate) fn generate_keypair_unpacked<
 >(
     key_generation_seed: &[u8],
     private_key: &mut IndCpaPrivateKeyUnpacked<K, Vector>,
-    public_key: &mut IndCpaPublicKeyUnpacked<K, Vector>,
+    public_key: &mut IndCpaPublicKeyUnpacked<K, K_SQUARED, Vector>,
     scratch: &mut PolynomialRingElement<Vector>,
 ) {
     // (ρ,σ) := G(d) for Kyber, (ρ,σ) := G(d || K) for ML-KEM
@@ -555,6 +562,7 @@ pub(crate) fn generate_keypair_unpacked<
 #[inline(always)]
 pub(crate) fn generate_keypair<
     const K: usize,
+    const K_SQUARED: usize,
     const PRIVATE_KEY_SIZE: usize,
     const PUBLIC_KEY_SIZE: usize,
     const ETA1: usize,
@@ -575,6 +583,7 @@ pub(crate) fn generate_keypair<
 
     generate_keypair_unpacked::<
         K,
+        K_SQUARED,
         ETA1,
         ETA1_RANDOMNESS_SIZE,
         PRF_OUTPUT_SIZE1,
@@ -588,7 +597,7 @@ pub(crate) fn generate_keypair<
         scratch,
     );
 
-    serialize_unpacked_secret_key::<K, PRIVATE_KEY_SIZE, PUBLIC_KEY_SIZE, Vector>(
+    serialize_unpacked_secret_key::<K, K_SQUARED, PRIVATE_KEY_SIZE, PUBLIC_KEY_SIZE, Vector>(
         &public_key,
         &private_key,
         serialized_ind_cpa_private_key,
@@ -600,11 +609,12 @@ pub(crate) fn generate_keypair<
 /// Serialize the secret key from the unpacked key pair generation.
 pub(crate) fn serialize_unpacked_secret_key<
     const K: usize,
+    const K_SQUARED: usize,
     const PRIVATE_KEY_SIZE: usize,
     const PUBLIC_KEY_SIZE: usize,
     Vector: Operations,
 >(
-    public_key: &IndCpaPublicKeyUnpacked<K, Vector>,
+    public_key: &IndCpaPublicKeyUnpacked<K, K_SQUARED, Vector>,
     private_key: &IndCpaPrivateKeyUnpacked<K, Vector>,
     serialized_private_key: &mut [u8],
     serialized_public_key: &mut [u8],
@@ -749,6 +759,7 @@ fn compress_then_serialize_u<
 #[inline(always)]
 pub(crate) fn encrypt_unpacked<
     const K: usize,
+    const K_SQUARED: usize,
     const CIPHERTEXT_SIZE: usize,
     const T_AS_NTT_ENCODED_SIZE: usize,
     const C1_LEN: usize,
@@ -765,7 +776,7 @@ pub(crate) fn encrypt_unpacked<
     Vector: Operations,
     Hasher: Hash,
 >(
-    public_key: &IndCpaPublicKeyUnpacked<K, Vector>,
+    public_key: &IndCpaPublicKeyUnpacked<K, K_SQUARED, Vector>,
     message: &[u8; SHARED_SECRET_SIZE],
     randomness: &[u8],
     ciphertext: &mut [u8],
@@ -775,6 +786,7 @@ pub(crate) fn encrypt_unpacked<
 ) {
     encrypt_c1::<
         K,
+        K_SQUARED,
         C1_LEN,
         U_COMPRESSION_FACTOR,
         BLOCK_LEN,
@@ -808,6 +820,7 @@ pub(crate) fn encrypt_unpacked<
 #[inline(always)]
 pub(crate) fn encrypt_c1<
     const K: usize,
+    const K_SQUARED: usize,
     const C1_LEN: usize,
     const U_COMPRESSION_FACTOR: usize,
     const BLOCK_LEN: usize,
@@ -821,7 +834,7 @@ pub(crate) fn encrypt_c1<
     Hasher: Hash,
 >(
     randomness: &[u8],
-    matrix: &[[PolynomialRingElement<Vector>; K]; K],
+    matrix: &[PolynomialRingElement<Vector>; K_SQUARED],
     ciphertext: &mut [u8], // C1_LEN
     r_as_ntt: &mut [PolynomialRingElement<Vector>],
     error_2: &mut PolynomialRingElement<Vector>,
@@ -850,7 +863,8 @@ pub(crate) fn encrypt_c1<
     //     e1[i] := CBD_{η2}(PRF(r,N))
     //     N := N + 1
     // end for
-    let mut error_1 = from_fn(|_i| PolynomialRingElement::<Vector>::ZERO());
+    let mut error_1: [PolynomialRingElement<Vector>; K] =
+        from_fn(|_i| PolynomialRingElement::<Vector>::ZERO());
     let mut sampling_buffer = [0i16; 256];
     let domain_separator =
         sample_ring_element_cbd::<K, ETA2_RANDOMNESS_SIZE, ETA2, PRF_OUTPUT_SIZE2, Vector, Hasher>(
@@ -873,7 +887,7 @@ pub(crate) fn encrypt_c1<
 
     // u := NTT^{-1}(AˆT ◦ rˆ) + e_1
     let mut u = from_fn(|_i| PolynomialRingElement::<Vector>::ZERO());
-    compute_vector_u(matrix, &r_as_ntt, &error_1, &mut u, scratch);
+    compute_vector_u::<K, Vector>(matrix, &r_as_ntt, &error_1, &mut u, scratch);
 
     // c_1 := Encode_{du}(Compress_q(u,d_u))
     compress_then_serialize_u::<K, C1_LEN, U_COMPRESSION_FACTOR, BLOCK_LEN, Vector>(
@@ -942,6 +956,7 @@ pub(crate) fn encrypt_c2<
 #[inline(always)]
 pub(crate) fn encrypt<
     const K: usize,
+    const K_SQUARED: usize,
     const CIPHERTEXT_SIZE: usize,
     const T_AS_NTT_ENCODED_SIZE: usize,
     const C1_LEN: usize,
@@ -968,8 +983,8 @@ pub(crate) fn encrypt<
 ) {
     hax_lib::fstar!(r#"reveal_opaque (`%Spec.MLKEM.ind_cpa_encrypt) Spec.MLKEM.ind_cpa_encrypt"#);
     // XXX: Can we pass this in?
-    let mut unpacked_public_key = IndCpaPublicKeyUnpacked::<K, Vector>::default();
-    build_unpacked_public_key_mut::<K, T_AS_NTT_ENCODED_SIZE, Vector, Hasher>(
+    let mut unpacked_public_key = IndCpaPublicKeyUnpacked::<K, K_SQUARED, Vector>::default();
+    build_unpacked_public_key_mut::<K, K_SQUARED, T_AS_NTT_ENCODED_SIZE, Vector, Hasher>(
         public_key,
         &mut unpacked_public_key,
     );
@@ -977,6 +992,7 @@ pub(crate) fn encrypt<
     // After unpacking the public key we can now call the unpacked decryption.
     encrypt_unpacked::<
         K,
+        K_SQUARED,
         CIPHERTEXT_SIZE,
         T_AS_NTT_ENCODED_SIZE,
         C1_LEN,
@@ -1017,12 +1033,13 @@ pub(crate) fn encrypt<
     valid ==> Libcrux_ml_kem.Polynomial.to_spec_matrix_t #$K #$:Vector ${unpacked_public_key_future.A} == Spec.MLKEM.matrix_transpose matrix_A_as_ntt)"#)}})]
 pub(crate) fn build_unpacked_public_key_mut<
     const K: usize,
+    const K_SQUARED: usize,
     const T_AS_NTT_ENCODED_SIZE: usize,
     Vector: Operations,
     Hasher: Hash,
 >(
     public_key: &[u8],
-    unpacked_public_key: &mut IndCpaPublicKeyUnpacked<K, Vector>,
+    unpacked_public_key: &mut IndCpaPublicKeyUnpacked<K, K_SQUARED, Vector>,
 ) {
     // tˆ := Decode_12(pk)
     deserialize_ring_elements_reduced::<K, Vector>(
