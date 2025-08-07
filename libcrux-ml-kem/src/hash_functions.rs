@@ -318,8 +318,8 @@ pub(crate) mod avx2 {
                     &input[0],
                     out0,
                     out1,
-                    &mut dummy0,
-                    &mut dummy1,
+                    &mut dummy0[..out_len],
+                    &mut dummy1[..out_len],
                 );
             }
             3 => {
@@ -333,7 +333,7 @@ pub(crate) mod avx2 {
                     out0,
                     out1,
                     out2,
-                    &mut dummy1,
+                    &mut dummy1[..out_len],
                 );
             }
             4 => {
