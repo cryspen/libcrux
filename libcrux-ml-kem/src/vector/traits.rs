@@ -255,9 +255,6 @@ pub fn montgomery_multiply_fe<T: Operations>(v: &mut T, fer: i16) {
 #[hax_lib::requires(fstar!(r#"forall i. let x = Seq.index (i1._super_12682756204189288427.f_repr ${vec}) i in
                                       (x == mk_i16 0 \/ x == mk_i16 1)"#))]
 #[inline(always)]
-#[hax_lib::requires(fstar!(r#"forall (i:nat). i < 16 ==>
-                                    (let x = Seq.index (f_repr ${vec}) i in
-                                     (x == mk_i16 0 \/ x == mk_i16 1))"#))]
 pub fn decompress_1<T: Operations>(vec: &mut T) {
     hax_lib::fstar!(
         r#"assert(forall i. let x = Seq.index (i1._super_12682756204189288427.f_repr ${vec}) i in
@@ -265,7 +262,7 @@ pub fn decompress_1<T: Operations>(vec: &mut T) {
     );
     hax_lib::fstar!(
         r#"assert(forall i. i < 16 ==>
-                                      Spec.Utils.is_intb (pow2 15 - 1) 
+                                      Spec.Utils.is_intb (pow2 15 - 1)
                                         (0 - v (Seq.index (i1._super_12682756204189288427.f_repr ${vec}) i)))"#
     );
 
