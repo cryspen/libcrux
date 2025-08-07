@@ -2,6 +2,7 @@
 use super::{constants::*, ind_cca::*, types::*, *};
 
 const RANK: usize = 4;
+const RANK_SQUARED: usize = RANK * RANK;
 #[cfg(any(feature = "incremental", eurydice))]
 const RANKED_BYTES_PER_RING_ELEMENT: usize = RANK * BITS_PER_RING_ELEMENT / 8;
 const T_AS_NTT_ENCODED_SIZE: usize =
@@ -22,6 +23,9 @@ const ETA1: usize = 2;
 const ETA1_RANDOMNESS_SIZE: usize = ETA1 * 64;
 const ETA2: usize = 2;
 const ETA2_RANDOMNESS_SIZE: usize = ETA2 * 64;
+
+const PRF_OUTPUT_SIZE1: usize = ETA1_RANDOMNESS_SIZE * RANK;
+const PRF_OUTPUT_SIZE2: usize = ETA2_RANDOMNESS_SIZE * RANK;
 
 const IMPLICIT_REJECTION_HASH_INPUT_SIZE: usize = SHARED_SECRET_SIZE + CPA_PKE_CIPHERTEXT_SIZE;
 
@@ -104,6 +108,7 @@ macro_rules! instantiate {
                         CPA_PKE_PUBLIC_KEY_SIZE,
                         ETA1,
                         ETA1_RANDOMNESS_SIZE,
+                        PRF_OUTPUT_SIZE1,
                     >(&randomness)
 
             }
@@ -113,12 +118,14 @@ macro_rules! instantiate {
                 randomness: [u8; KEY_GENERATION_SEED_SIZE],
             ) -> MlKem1024KeyPair {
                     p::generate_keypair::<
-                        RANK,
+                RANK,
+                RANK_SQUARED,
                         CPA_PKE_SECRET_KEY_SIZE,
                         SECRET_KEY_SIZE,
                         CPA_PKE_PUBLIC_KEY_SIZE,
                         ETA1,
                         ETA1_RANDOMNESS_SIZE,
+                        PRF_OUTPUT_SIZE1,
                     >(&randomness)
 
             }
@@ -133,7 +140,8 @@ macro_rules! instantiate {
                 randomness: [u8; SHARED_SECRET_SIZE],
             ) -> (MlKem1024Ciphertext, MlKemSharedSecret) {
                     p::encapsulate::<
-                        RANK,
+                RANK,
+                RANK_SQUARED,
                         CPA_PKE_CIPHERTEXT_SIZE,
                         CPA_PKE_PUBLIC_KEY_SIZE,
                         T_AS_NTT_ENCODED_SIZE,
@@ -146,6 +154,8 @@ macro_rules! instantiate {
                         ETA1_RANDOMNESS_SIZE,
                         ETA2,
                         ETA2_RANDOMNESS_SIZE,
+                        PRF_OUTPUT_SIZE1,
+                        PRF_OUTPUT_SIZE2,
                     >(public_key, &randomness)
 
             }
@@ -162,7 +172,8 @@ macro_rules! instantiate {
                 randomness: [u8; SHARED_SECRET_SIZE],
             ) -> (MlKem1024Ciphertext, MlKemSharedSecret) {
                     p::kyber_encapsulate::<
-                        RANK,
+                RANK,
+                RANK_SQUARED,
                         CPA_PKE_CIPHERTEXT_SIZE,
                         CPA_PKE_PUBLIC_KEY_SIZE,
                         T_AS_NTT_ENCODED_SIZE,
@@ -175,6 +186,8 @@ macro_rules! instantiate {
                         ETA1_RANDOMNESS_SIZE,
                         ETA2,
                         ETA2_RANDOMNESS_SIZE,
+                        PRF_OUTPUT_SIZE1,
+                        PRF_OUTPUT_SIZE2,
                     >(public_key, &randomness)
 
             }
@@ -188,7 +201,8 @@ macro_rules! instantiate {
                 ciphertext: &MlKem1024Ciphertext,
             ) -> MlKemSharedSecret {
                     p::decapsulate::<
-                        RANK,
+                RANK,
+                RANK_SQUARED,
                         SECRET_KEY_SIZE,
                         CPA_PKE_SECRET_KEY_SIZE,
                         CPA_PKE_PUBLIC_KEY_SIZE,
@@ -203,6 +217,8 @@ macro_rules! instantiate {
                         ETA1_RANDOMNESS_SIZE,
                         ETA2,
                         ETA2_RANDOMNESS_SIZE,
+                        PRF_OUTPUT_SIZE1,
+                        PRF_OUTPUT_SIZE2,
                         IMPLICIT_REJECTION_HASH_INPUT_SIZE,
                     >(private_key, ciphertext)
 
@@ -234,6 +250,8 @@ macro_rules! instantiate {
                         ETA1_RANDOMNESS_SIZE,
                         ETA2,
                         ETA2_RANDOMNESS_SIZE,
+                        PRF_OUTPUT_SIZE1,
+                        PRF_OUTPUT_SIZE2,
                         IMPLICIT_REJECTION_HASH_INPUT_SIZE,
                     >(private_key, ciphertext)
 
@@ -245,10 +263,10 @@ macro_rules! instantiate {
 
                 /// An Unpacked ML-KEM 1024 Public key
                 pub type MlKem1024PublicKeyUnpacked =
-                    p::unpacked::MlKemPublicKeyUnpacked<RANK>;
+                    p::unpacked::MlKemPublicKeyUnpacked<RANK, RANK_SQUARED>;
 
                 /// Am Unpacked ML-KEM 1024 Key pair
-                pub type MlKem1024KeyPairUnpacked = p::unpacked::MlKemKeyPairUnpacked<RANK>;
+                pub type MlKem1024KeyPairUnpacked = p::unpacked::MlKemKeyPairUnpacked<RANK, RANK_SQUARED>;
 
                 /// Create a new, empty unpacked key.
                 pub fn init_key_pair() -> MlKem1024KeyPairUnpacked {
@@ -301,7 +319,7 @@ macro_rules! instantiate {
 
                 /// Get an unpacked key from a private key.
                 pub fn key_pair_from_private_mut(private_key: &MlKem1024PrivateKey, key_pair: &mut MlKem1024KeyPairUnpacked) {
-                    p::unpacked::keypair_from_private_key::<RANK, SECRET_KEY_SIZE, CPA_PKE_SECRET_KEY_SIZE, CPA_PKE_PUBLIC_KEY_SIZE, T_AS_NTT_ENCODED_SIZE>(private_key, key_pair);
+                    p::unpacked::keypair_from_private_key::<RANK, RANK_SQUARED, SECRET_KEY_SIZE, CPA_PKE_SECRET_KEY_SIZE, CPA_PKE_PUBLIC_KEY_SIZE, T_AS_NTT_ENCODED_SIZE>(private_key, key_pair);
                 }
 
                 /// Get the unpacked public key.
@@ -310,7 +328,8 @@ macro_rules! instantiate {
                     unpacked_public_key: &mut MlKem1024PublicKeyUnpacked,
                 ) {
                         p::unpacked::unpack_public_key::<
-                            RANK,
+                    RANK,
+                    RANK_SQUARED,
                             T_AS_NTT_ENCODED_SIZE,
                             CPA_PKE_PUBLIC_KEY_SIZE,
                         >(public_key, unpacked_public_key)
@@ -332,12 +351,14 @@ macro_rules! instantiate {
                     key_pair: &mut MlKem1024KeyPairUnpacked,
                 ) {
                         p::unpacked::generate_keypair::<
-                            RANK,
+                    RANK,
+                    RANK_SQUARED,
                             CPA_PKE_SECRET_KEY_SIZE,
                             SECRET_KEY_SIZE,
                             CPA_PKE_PUBLIC_KEY_SIZE,
                             ETA1,
                             ETA1_RANDOMNESS_SIZE,
+                            PRF_OUTPUT_SIZE1,
                         >(randomness, key_pair)
 
                 }
@@ -367,7 +388,8 @@ macro_rules! instantiate {
                     randomness: [u8; SHARED_SECRET_SIZE],
                 ) -> (MlKem1024Ciphertext, MlKemSharedSecret) {
                         p::unpacked::encapsulate::<
-                            RANK,
+                    RANK,
+                    RANK_SQUARED,
                             CPA_PKE_CIPHERTEXT_SIZE,
                             CPA_PKE_PUBLIC_KEY_SIZE,
                             T_AS_NTT_ENCODED_SIZE,
@@ -380,6 +402,8 @@ macro_rules! instantiate {
                             ETA1_RANDOMNESS_SIZE,
                             ETA2,
                             ETA2_RANDOMNESS_SIZE,
+                            PRF_OUTPUT_SIZE1,
+                            PRF_OUTPUT_SIZE2,
                         >(public_key, &randomness)
 
                 }
@@ -394,7 +418,8 @@ macro_rules! instantiate {
                     ciphertext: &MlKem1024Ciphertext,
                 ) -> MlKemSharedSecret {
                         p::unpacked::decapsulate::<
-                            RANK,
+                    RANK,
+                    RANK_SQUARED,
                             SECRET_KEY_SIZE,
                             CPA_PKE_SECRET_KEY_SIZE,
                             CPA_PKE_PUBLIC_KEY_SIZE,
@@ -409,6 +434,8 @@ macro_rules! instantiate {
                             ETA1_RANDOMNESS_SIZE,
                             ETA2,
                             ETA2_RANDOMNESS_SIZE,
+                            PRF_OUTPUT_SIZE1,
+                            PRF_OUTPUT_SIZE2,
                             IMPLICIT_REJECTION_HASH_INPUT_SIZE,
                         >(private_key, ciphertext)
 
@@ -465,11 +492,13 @@ pub fn generate_key_pair(
 ) -> MlKemKeyPair<SECRET_KEY_SIZE, CPA_PKE_PUBLIC_KEY_SIZE> {
     multiplexing::generate_keypair::<
         RANK,
+        RANK_SQUARED,
         CPA_PKE_SECRET_KEY_SIZE,
         SECRET_KEY_SIZE,
         CPA_PKE_PUBLIC_KEY_SIZE,
         ETA1,
         ETA1_RANDOMNESS_SIZE,
+        PRF_OUTPUT_SIZE1,
     >(&randomness)
 }
 
@@ -491,6 +520,7 @@ pub fn encapsulate(
 ) -> (MlKem1024Ciphertext, MlKemSharedSecret) {
     multiplexing::encapsulate::<
         RANK,
+        RANK_SQUARED,
         CPA_PKE_CIPHERTEXT_SIZE,
         CPA_PKE_PUBLIC_KEY_SIZE,
         T_AS_NTT_ENCODED_SIZE,
@@ -503,6 +533,8 @@ pub fn encapsulate(
         ETA1_RANDOMNESS_SIZE,
         ETA2,
         ETA2_RANDOMNESS_SIZE,
+        PRF_OUTPUT_SIZE1,
+        PRF_OUTPUT_SIZE2,
     >(public_key, &randomness)
 }
 
@@ -522,6 +554,7 @@ pub fn decapsulate(
 ) -> MlKemSharedSecret {
     multiplexing::decapsulate::<
         RANK,
+        RANK_SQUARED,
         SECRET_KEY_SIZE,
         CPA_PKE_SECRET_KEY_SIZE,
         CPA_PKE_PUBLIC_KEY_SIZE,
@@ -536,6 +569,8 @@ pub fn decapsulate(
         ETA1_RANDOMNESS_SIZE,
         ETA2,
         ETA2_RANDOMNESS_SIZE,
+        PRF_OUTPUT_SIZE1,
+        PRF_OUTPUT_SIZE2,
         IMPLICIT_REJECTION_HASH_INPUT_SIZE,
     >(private_key, ciphertext)
 }
@@ -615,7 +650,8 @@ pub(crate) mod kyber {
             CPA_PKE_PUBLIC_KEY_SIZE,
             ETA1,
             ETA1_RANDOMNESS_SIZE,
-        >(randomness)
+            PRF_OUTPUT_SIZE1,
+        >(&randomness)
     }
 
     /// Encapsulate Kyber 1024
@@ -641,7 +677,9 @@ pub(crate) mod kyber {
             ETA1_RANDOMNESS_SIZE,
             ETA2,
             ETA2_RANDOMNESS_SIZE,
-        >(public_key, randomness)
+            PRF_OUTPUT_SIZE1,
+            PRF_OUTPUT_SIZE2,
+        >(public_key, &randomness)
     }
 
     /// Decapsulate Kyber 1024
@@ -669,6 +707,8 @@ pub(crate) mod kyber {
             ETA1_RANDOMNESS_SIZE,
             ETA2,
             ETA2_RANDOMNESS_SIZE,
+            PRF_OUTPUT_SIZE1,
+            PRF_OUTPUT_SIZE2,
             IMPLICIT_REJECTION_HASH_INPUT_SIZE,
         >(private_key, ciphertext)
     }

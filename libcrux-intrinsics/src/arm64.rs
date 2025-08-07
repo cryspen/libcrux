@@ -66,6 +66,11 @@ pub fn _vsubq_s16(lhs: int16x8_t, rhs: int16x8_t) -> int16x8_t {
 }
 
 #[inline(always)]
+pub fn _vnegq_s16(vec: int16x8_t) -> int16x8_t {
+    unsafe { vnegq_s16(vec) }
+}
+
+#[inline(always)]
 pub fn _vmulq_n_s16(v: int16x8_t, c: i16) -> int16x8_t {
     unsafe { vmulq_n_s16(v, c) }
 }
