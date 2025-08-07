@@ -85,14 +85,15 @@ pub(crate) fn serialize_1(v: &PortableVector, out: &mut [u8]) {
         | ((v.elements[6].as_u8()) << 6)
         | ((v.elements[7].as_u8()) << 7))
         .declassify();
-    out[1] = (v.elements[8].as_u8())
+    out[1] = ((v.elements[8].as_u8())
         | ((v.elements[9].as_u8()) << 1)
         | ((v.elements[10].as_u8()) << 2)
         | ((v.elements[11].as_u8()) << 3)
         | ((v.elements[12].as_u8()) << 4)
         | ((v.elements[13].as_u8()) << 5)
         | ((v.elements[14].as_u8()) << 6)
-        | ((v.elements[15].as_u8()) << 7).declassify();
+        | ((v.elements[15].as_u8()) << 7))
+        .declassify();
 }
 
 //deserialize_1_bit_vec_lemma
@@ -176,7 +177,7 @@ pub(crate) fn serialize_4_int(v: &[I16]) -> (u8, u8, u8, u8) {
     let result2 = ((v[5].as_u8()) << 4) | (v[4].as_u8());
     let result3 = ((v[7].as_u8()) << 4) | (v[6].as_u8());
     (
-        result0.desclassify(),
+        result0.declassify(),
         result1.declassify(),
         result2.declassify(),
         result3.declassify(),

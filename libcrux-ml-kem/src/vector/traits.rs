@@ -243,3 +243,37 @@ pub trait Operations: Copy + Clone + Repr {
     )]
     fn rej_sample(a: &[u8], out: &mut [i16]) -> usize;
 }
+
+// hax does not support trait with default implementations, so we use the following pattern
+#[hax_lib::requires(fstar!(r#"Spec.Utils.is_i16b 1664 $fer"#))]
+#[inline(always)]
+pub fn montgomery_multiply_fe<T: Operations>(v: &mut T, fer: i16) {
+    T::montgomery_multiply_by_constant(v, fer)
+}
+
+#[hax_lib::fstar::options("--z3rlimit 200 --split_queries always")]
+#[hax_lib::requires(fstar!(r#"forall i. let x = Seq.index (i1._super_12682756204189288427.f_repr ${vec}) i in
+                                      (x == mk_i16 0 \/ x == mk_i16 1)"#))]
+#[inline(always)]
+#[hax_lib::requires(fstar!(r#"forall (i:nat). i < 16 ==>
+                                    (let x = Seq.index (f_repr ${vec}) i in
+                                     (x == mk_i16 0 \/ x == mk_i16 1))"#))]
+pub fn decompress_1<T: Operations>(vec: &mut T) {
+    hax_lib::fstar!(
+        r#"assert(forall i. let x = Seq.index (i1._super_12682756204189288427.f_repr ${vec}) i in
+                                      ((0 - v x) == 0 \/ (0 - v x) == -1))"#
+    );
+    hax_lib::fstar!(
+        r#"assert(forall i. i < 16 ==>
+                                      Spec.Utils.is_intb (pow2 15 - 1) 
+                                        (0 - v (Seq.index (i1._super_12682756204189288427.f_repr ${vec}) i)))"#
+    );
+
+    T::negate(vec);
+    hax_lib::fstar!(
+        r#"assert(forall i. Seq.index (i1._super_12682756204189288427.f_repr ${vec}) i == mk_i16 0 \/
+                                      Seq.index (i1._super_12682756204189288427.f_repr ${vec}) i == mk_i16 (-1))"#
+    );
+    hax_lib::fstar!(r#"assert (i1.f_bitwise_and_with_constant_pre ${vec} (mk_i16 1665))"#);
+    T::bitwise_and_with_constant(vec, 1665);
+}

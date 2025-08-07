@@ -112,7 +112,9 @@ pub(crate) fn sub(lhs: &mut PortableVector, rhs: &PortableVector) {
       - v (Seq.index ${vec}.f_elements i))"#))]
 pub(crate) fn negate(vec: &mut PortableVector) {
     for i in 0..FIELD_ELEMENTS_IN_VECTOR {
-        vec.elements[i] = -vec.elements[i];
+        // XXX: secret integers don't implement `std::ops::Neg`
+        // see https://github.com/cryspen/libcrux/issues/1089
+        vec.elements[i] = 0.classify() - vec.elements[i];
     }
 }
 
