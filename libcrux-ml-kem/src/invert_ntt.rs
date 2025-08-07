@@ -187,7 +187,7 @@ pub(crate) fn inv_ntt_layer_int_vec_step_reduce<Vector: Operations>(
     zeta_r: i16,
 ) {
     *scratch = b.clone();
-    Vector::sub(scratch, &a);
+    Vector::sub(scratch, a);
     Vector::add(a, b);
     Vector::barrett_reduce(a);
     montgomery_multiply_fe::<Vector>(scratch, zeta_r);
@@ -211,7 +211,6 @@ pub(crate) fn invert_ntt_at_layer_4_plus<Vector: Operations>(
     for _round in 0..(128 >> layer) {
         *zeta_i -= 1;
 
-        // XXX: split_at_mut this
         let (a, rest) = remaining_elements.split_at_mut(step_vec);
         let (b, rest) = rest.split_at_mut(step_vec);
         remaining_elements = rest;

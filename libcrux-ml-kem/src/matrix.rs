@@ -123,7 +123,7 @@ pub(crate) fn compute_ring_element_v<const K: usize, Vector: Operations>(
 ) {
     for i in 0..K {
         t_as_ntt[i].ntt_multiply(&r_as_ntt[i], scratch);
-        result.add_to_ring_element::<K>(&scratch);
+        result.add_to_ring_element::<K>(scratch);
     }
 
     invert_ntt_montgomery::<K, Vector>(result, &mut scratch.coefficients[0]);

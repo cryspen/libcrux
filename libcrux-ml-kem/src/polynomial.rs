@@ -358,7 +358,7 @@ fn add_message_error_reduce<Vector: Operations>(
             "#
         );
 
-        Vector::add(&mut result.coefficients[i], &scratch);
+        Vector::add(&mut result.coefficients[i], scratch);
         hax_lib::fstar!("assert(is_bounded_vector 9984 ${result}.f_coefficients[ sz i ])");
 
         Vector::barrett_reduce(&mut result.coefficients[i]);
