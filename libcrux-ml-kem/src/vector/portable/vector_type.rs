@@ -19,16 +19,16 @@ pub fn zero() -> PortableVector {
 }
 
 #[inline(always)]
-#[hax_lib::ensures(|result| fstar!(r#"${result} == ${x}.f_elements"#))]
-pub fn to_i16_array(x: PortableVector, out: &mut [i16; 16]) {
+#[hax_lib::ensures(|_| fstar!(r#"${out}_future == ${x}.f_elements"#))]
+pub fn to_i16_array(x: &PortableVector, out: &mut [i16; 16]) {
     *out = x.elements.declassify();
 }
 
 #[inline(always)]
 #[hax_lib::requires(array.len() == 16)]
-#[hax_lib::ensures(|result| fstar!(r#"${result}.f_elements == $array"#))]
-pub fn from_i16_array(array: &[I16], out: &mut PortableVector) {
-    out.elements = array[0..16].try_into().unwrap();
+#[hax_lib::ensures(|_| fstar!(r#"${out}_future.f_elements == $array"#))]
+pub fn from_i16_array(array: &[i16], out: &mut PortableVector) {
+    out.elements.copy_from_slice(&array[0..16]);
 }
 
 #[inline(always)]
