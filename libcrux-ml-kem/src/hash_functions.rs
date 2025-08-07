@@ -587,7 +587,7 @@ pub(crate) mod neon {
                 let (out0, rest) = outputs.split_at_mut(out_len);
                 let (out1, out2) = rest.split_at_mut(out_len);
                 x2::shake256(&input[0], &input[1], out0, out1);
-                x2::shake256(&input[2], &input[0], out2, &mut dummy);
+                x2::shake256(&input[2], &input[0], out2, &mut dummy[..out_len]);
             }
             4 => {
                 let (out0, rest) = outputs.split_at_mut(out_len);
