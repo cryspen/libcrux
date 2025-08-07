@@ -47,11 +47,11 @@ pub(crate) fn serialize_4(v: &SIMD128Vector, out: &mut [u8]) {
 
 #[inline(always)]
 pub(crate) fn deserialize_4(v: &[u8], out: &mut SIMD128Vector) {
-    let tmp = &mut PortableVector::ZERO();
-    PortableVector::deserialize_4(v, tmp);
+    let mut tmp = PortableVector::ZERO();
+    PortableVector::deserialize_4(v, &mut tmp);
 
-    let input_i16s = &mut [0i16; 16];
-    PortableVector::to_i16_array(tmp, input_i16s);
+    let mut input_i16s = [0i16; 16];
+    PortableVector::to_i16_array(&tmp, &mut input_i16s);
 
     out.low = _vld1q_s16(&input_i16s[0..8]);
     out.high = _vld1q_s16(&input_i16s[8..16]);
@@ -61,22 +61,22 @@ pub(crate) fn deserialize_4(v: &[u8], out: &mut SIMD128Vector) {
 pub(crate) fn serialize_5(v: &SIMD128Vector, out: &mut [u8]) {
     debug_assert!(out.len() == 10);
 
-    let out_i16s = &mut [0i16; 16];
-    to_i16_array(&v, out_i16s);
+    let mut out_i16s = [0i16; 16];
+    to_i16_array(&v, &mut out_i16s);
 
-    let tmp = &mut PortableVector::ZERO();
-    PortableVector::from_i16_array(out_i16s, tmp);
+    let mut tmp = PortableVector::ZERO();
+    PortableVector::from_i16_array(&out_i16s, &mut tmp);
 
-    PortableVector::serialize_5(tmp, out);
+    PortableVector::serialize_5(&mut tmp, out);
 }
 
 #[inline(always)]
 pub(crate) fn deserialize_5(v: &[u8], out: &mut SIMD128Vector) {
-    let tmp = &mut PortableVector::ZERO();
-    PortableVector::deserialize_5(v, tmp);
+    let mut tmp = PortableVector::ZERO();
+    PortableVector::deserialize_5(v, &mut tmp);
 
-    let input_i16s = &mut [0i16; 16];
-    PortableVector::to_i16_array(tmp, input_i16s);
+    let mut input_i16s = [0i16; 16];
+    PortableVector::to_i16_array(&tmp, &mut input_i16s);
 
     out.low = _vld1q_s16(&input_i16s[0..8]);
     out.high = _vld1q_s16(&input_i16s[8..16]);
@@ -114,11 +114,11 @@ pub(crate) fn serialize_10(v: &SIMD128Vector, out: &mut [u8]) {
 
 #[inline(always)]
 pub(crate) fn deserialize_10(v: &[u8], out: &mut SIMD128Vector) {
-    let tmp = &mut PortableVector::ZERO();
-    PortableVector::deserialize_10(v, tmp);
+    let mut tmp = PortableVector::ZERO();
+    PortableVector::deserialize_10(v, &mut tmp);
 
-    let input_i16s = &mut [0i16; 16];
-    PortableVector::to_i16_array(tmp, input_i16s);
+    let mut input_i16s = [0i16; 16];
+    PortableVector::to_i16_array(&tmp, &mut input_i16s);
 
     out.low = _vld1q_s16(&input_i16s[0..8]);
     out.high = _vld1q_s16(&input_i16s[8..16]);
@@ -128,22 +128,22 @@ pub(crate) fn deserialize_10(v: &[u8], out: &mut SIMD128Vector) {
 pub(crate) fn serialize_11(v: &SIMD128Vector, out: &mut [u8]) {
     debug_assert!(out.len() == 22);
 
-    let out_i16s = &mut [0i16; 16];
-    to_i16_array(&v, out_i16s);
+    let mut out_i16s = [0i16; 16];
+    to_i16_array(&v, &mut out_i16s);
 
-    let tmp = &mut PortableVector::ZERO();
-    PortableVector::from_i16_array(out_i16s, tmp);
+    let mut tmp = PortableVector::ZERO();
+    PortableVector::from_i16_array(&out_i16s, &mut tmp);
 
-    PortableVector::serialize_11(tmp, out);
+    PortableVector::serialize_11(&tmp, out);
 }
 
 #[inline(always)]
 pub(crate) fn deserialize_11(v: &[u8], out: &mut SIMD128Vector) {
-    let tmp = &mut PortableVector::ZERO();
-    PortableVector::deserialize_11(v, tmp);
+    let mut tmp = PortableVector::ZERO();
+    PortableVector::deserialize_11(v, &mut tmp);
 
-    let input_i16s = &mut [0i16; 16];
-    PortableVector::to_i16_array(tmp, input_i16s);
+    let mut input_i16s = [0i16; 16];
+    PortableVector::to_i16_array(&tmp, &mut input_i16s);
 
     out.low = _vld1q_s16(&input_i16s[0..8]);
     out.high = _vld1q_s16(&input_i16s[8..16]);
