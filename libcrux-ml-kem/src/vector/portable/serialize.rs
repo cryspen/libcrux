@@ -73,24 +73,26 @@ val serialize_1_lemma (inputs: Libcrux_ml_kem.Vector.Portable.Vector_type.t_Port
   (ensures bit_vec_of_int_t_array (${serialize_1} inputs) 8 == bit_vec_of_int_t_array inputs.f_elements 1)
 "))]
 #[inline(always)]
-pub(crate) fn serialize_1(v: PortableVector) -> [U8; 2] {
-    let result0 = (v.elements[0].as_u8())
+pub(crate) fn serialize_1(v: PortableVector, out: &mut [u8]) {
+    debug_assert!(out.len() == 2);
+
+    out[0] = ((v.elements[0].as_u8())
         | ((v.elements[1].as_u8()) << 1)
         | ((v.elements[2].as_u8()) << 2)
         | ((v.elements[3].as_u8()) << 3)
         | ((v.elements[4].as_u8()) << 4)
         | ((v.elements[5].as_u8()) << 5)
         | ((v.elements[6].as_u8()) << 6)
-        | ((v.elements[7].as_u8()) << 7);
-    let result1 = (v.elements[8].as_u8())
+        | ((v.elements[7].as_u8()) << 7))
+        .declassify();
+    out[1] = (v.elements[8].as_u8())
         | ((v.elements[9].as_u8()) << 1)
         | ((v.elements[10].as_u8()) << 2)
         | ((v.elements[11].as_u8()) << 3)
         | ((v.elements[12].as_u8()) << 4)
         | ((v.elements[13].as_u8()) << 5)
         | ((v.elements[14].as_u8()) << 6)
-        | ((v.elements[15].as_u8()) << 7);
-    [result0, result1]
+        | ((v.elements[15].as_u8()) << 7).declassify();
 }
 
 //deserialize_1_bit_vec_lemma
@@ -145,41 +147,40 @@ let deserialize_1_lemma inputs =
      ${v.len() == 2}
 "#))]
 #[inline(always)]
-pub(crate) fn deserialize_1(v: &[U8]) -> PortableVector {
-    let result0 = (v[0] & 0x1).as_i16();
-    let result1 = ((v[0] >> 1) & 0x1).as_i16();
-    let result2 = ((v[0] >> 2) & 0x1).as_i16();
-    let result3 = ((v[0] >> 3) & 0x1).as_i16();
-    let result4 = ((v[0] >> 4) & 0x1).as_i16();
-    let result5 = ((v[0] >> 5) & 0x1).as_i16();
-    let result6 = ((v[0] >> 6) & 0x1).as_i16();
-    let result7 = ((v[0] >> 7) & 0x1).as_i16();
-    let result8 = (v[1] & 0x1).as_i16();
-    let result9 = ((v[1] >> 1) & 0x1).as_i16();
-    let result10 = ((v[1] >> 2) & 0x1).as_i16();
-    let result11 = ((v[1] >> 3) & 0x1).as_i16();
-    let result12 = ((v[1] >> 4) & 0x1).as_i16();
-    let result13 = ((v[1] >> 5) & 0x1).as_i16();
-    let result14 = ((v[1] >> 6) & 0x1).as_i16();
-    let result15 = ((v[1] >> 7) & 0x1).as_i16();
-    PortableVector {
-        elements: [
-            result0, result1, result2, result3, result4, result5, result6, result7, result8,
-            result9, result10, result11, result12, result13, result14, result15,
-        ],
-    }
+pub(crate) fn deserialize_1(v: &[U8], out: &mut PortableVector) {
+    out.elements[0] = (v[0] & 0x1).as_i16();
+    out.elements[1] = ((v[0] >> 1) & 0x1).as_i16();
+    out.elements[2] = ((v[0] >> 2) & 0x1).as_i16();
+    out.elements[3] = ((v[0] >> 3) & 0x1).as_i16();
+    out.elements[4] = ((v[0] >> 4) & 0x1).as_i16();
+    out.elements[5] = ((v[0] >> 5) & 0x1).as_i16();
+    out.elements[6] = ((v[0] >> 6) & 0x1).as_i16();
+    out.elements[7] = ((v[0] >> 7) & 0x1).as_i16();
+    out.elements[8] = (v[1] & 0x1).as_i16();
+    out.elements[9] = ((v[1] >> 1) & 0x1).as_i16();
+    out.elements[10] = ((v[1] >> 2) & 0x1).as_i16();
+    out.elements[11] = ((v[1] >> 3) & 0x1).as_i16();
+    out.elements[12] = ((v[1] >> 4) & 0x1).as_i16();
+    out.elements[13] = ((v[1] >> 5) & 0x1).as_i16();
+    out.elements[14] = ((v[1] >> 6) & 0x1).as_i16();
+    out.elements[15] = ((v[1] >> 7) & 0x1).as_i16();
 }
 
 #[inline(always)]
 #[hax_lib::requires(fstar!(r#"
      ${v.len() == 8}
 "#))]
-pub(crate) fn serialize_4_int(v: &[I16]) -> (U8, U8, U8, U8) {
+pub(crate) fn serialize_4_int(v: &[I16]) -> (u8, u8, u8, u8) {
     let result0 = ((v[1].as_u8()) << 4) | (v[0].as_u8());
     let result1 = ((v[3].as_u8()) << 4) | (v[2].as_u8());
     let result2 = ((v[5].as_u8()) << 4) | (v[4].as_u8());
     let result3 = ((v[7].as_u8()) << 4) | (v[6].as_u8());
-    (result0, result1, result2, result3)
+    (
+        result0.desclassify(),
+        result1.declassify(),
+        result2.declassify(),
+        result3.declassify(),
+    )
 }
 
 #[cfg_attr(
@@ -222,19 +223,10 @@ val serialize_4_lemma (inputs: Libcrux_ml_kem.Vector.Portable.Vector_type.t_Port
   (ensures bit_vec_of_int_t_array (${serialize_4} inputs) 8 == bit_vec_of_int_t_array inputs.f_elements 4)
 "))]
 #[inline(always)]
-pub(crate) fn serialize_4(v: PortableVector) -> [U8; 8] {
-    let result0_3 = serialize_4_int(&v.elements[0..8]);
-    let result4_7 = serialize_4_int(&v.elements[8..16]);
-    [
-        result0_3.0,
-        result0_3.1,
-        result0_3.2,
-        result0_3.3,
-        result4_7.0,
-        result4_7.1,
-        result4_7.2,
-        result4_7.3,
-    ]
+pub(crate) fn serialize_4(v: PortableVector, out: &mut [u8]) {
+    debug_assert!(out.len() == 8);
+    (out[0], out[1], out[2], out[3]) = serialize_4_int(&v.elements[0..8]);
+    (out[4], out[5], out[6], out[7]) = serialize_4_int(&v.elements[8..16]);
 }
 
 #[inline(always)]
@@ -312,37 +304,53 @@ let deserialize_4_lemma inputs =
      ${bytes.len() == 8}
 "#))]
 #[inline(always)]
-pub(crate) fn deserialize_4(bytes: &[U8]) -> PortableVector {
-    let v0_7 = deserialize_4_int(&bytes[0..4]);
-    let v8_15 = deserialize_4_int(&bytes[4..8]);
-    PortableVector {
-        elements: [
-            v0_7.0, v0_7.1, v0_7.2, v0_7.3, v0_7.4, v0_7.5, v0_7.6, v0_7.7, v8_15.0, v8_15.1,
-            v8_15.2, v8_15.3, v8_15.4, v8_15.5, v8_15.6, v8_15.7,
-        ],
-    }
+pub(crate) fn deserialize_4(bytes: &[U8], out: &mut PortableVector) {
+    (
+        out.elements[0],
+        out.elements[1],
+        out.elements[2],
+        out.elements[3],
+        out.elements[4],
+        out.elements[5],
+        out.elements[6],
+        out.elements[7],
+    ) = deserialize_4_int(&bytes[0..4]);
+    (
+        out.elements[8],
+        out.elements[9],
+        out.elements[10],
+        out.elements[11],
+        out.elements[12],
+        out.elements[13],
+        out.elements[14],
+        out.elements[15],
+    ) = deserialize_4_int(&bytes[4..8]);
 }
 
 #[inline(always)]
 #[hax_lib::requires(fstar!(r#"
      ${v.len() == 8}
 "#))]
-pub(crate) fn serialize_5_int(v: &[I16]) -> (U8, U8, U8, U8, U8) {
+pub(crate) fn serialize_5_int(v: &[I16]) -> (u8, u8, u8, u8, u8) {
     let r0 = (v[0] | v[1] << 5).as_u8();
     let r1 = (v[1] >> 3 | v[2] << 2 | v[3] << 7).as_u8();
     let r2 = (v[3] >> 1 | v[4] << 4).as_u8();
     let r3 = (v[4] >> 4 | v[5] << 1 | v[6] << 6).as_u8();
     let r4 = (v[6] >> 2 | v[7] << 3).as_u8();
-    (r0, r1, r2, r3, r4)
+    (
+        r0.declassify(),
+        r1.declassify(),
+        r2.declassify(),
+        r3.declassify(),
+        r4.declassify(),
+    )
 }
 
 #[inline(always)]
-pub(crate) fn serialize_5(v: PortableVector) -> [U8; 10] {
-    let r0_4 = serialize_5_int(&v.elements[0..8]);
-    let r5_9 = serialize_5_int(&v.elements[8..16]);
-    [
-        r0_4.0, r0_4.1, r0_4.2, r0_4.3, r0_4.4, r5_9.0, r5_9.1, r5_9.2, r5_9.3, r5_9.4,
-    ]
+pub(crate) fn serialize_5(v: PortableVector, out: &mut [u8]) {
+    debug_assert!(out.len() == 10);
+    (out[0], out[1], out[2], out[3], out[4]) = serialize_5_int(&v.elements[0..8]);
+    (out[5], out[6], out[7], out[8], out[9]) = serialize_5_int(&v.elements[8..16]);
 }
 
 #[inline(always)]
@@ -365,28 +373,46 @@ pub(crate) fn deserialize_5_int(bytes: &[U8]) -> (I16, I16, I16, I16, I16, I16, 
      ${bytes.len() == 10}
 "#))]
 #[inline(always)]
-pub(crate) fn deserialize_5(bytes: &[U8]) -> PortableVector {
-    let v0_7 = deserialize_5_int(&bytes[0..5]);
-    let v8_15 = deserialize_5_int(&bytes[5..10]);
-    PortableVector {
-        elements: [
-            v0_7.0, v0_7.1, v0_7.2, v0_7.3, v0_7.4, v0_7.5, v0_7.6, v0_7.7, v8_15.0, v8_15.1,
-            v8_15.2, v8_15.3, v8_15.4, v8_15.5, v8_15.6, v8_15.7,
-        ],
-    }
+pub(crate) fn deserialize_5(bytes: &[U8], out: &mut PortableVector) {
+    (
+        out.elements[0],
+        out.elements[1],
+        out.elements[2],
+        out.elements[3],
+        out.elements[4],
+        out.elements[5],
+        out.elements[6],
+        out.elements[7],
+    ) = deserialize_5_int(&bytes[0..5]);
+    (
+        out.elements[8],
+        out.elements[9],
+        out.elements[10],
+        out.elements[11],
+        out.elements[12],
+        out.elements[13],
+        out.elements[14],
+        out.elements[15],
+    ) = deserialize_5_int(&bytes[5..10]);
 }
 
 #[inline(always)]
 #[hax_lib::requires(fstar!(r#"
      ${v.len() == 4}
 "#))]
-pub(crate) fn serialize_10_int(v: &[I16]) -> (U8, U8, U8, U8, U8) {
+pub(crate) fn serialize_10_int(v: &[I16]) -> (u8, u8, u8, u8, u8) {
     let r0 = (v[0] & 0xFF).as_u8();
     let r1 = ((v[1] & 0x3F).as_u8()) << 2 | ((v[0] >> 8) & 0x03).as_u8();
     let r2 = ((v[2] & 0x0F).as_u8()) << 4 | ((v[1] >> 6) & 0x0F).as_u8();
     let r3 = ((v[3] & 0x03).as_u8()) << 6 | ((v[2] >> 4) & 0x3F).as_u8();
     let r4 = ((v[3] >> 2) & 0xFF).as_u8();
-    (r0, r1, r2, r3, r4)
+    (
+        r0.declassify(),
+        r1.declassify(),
+        r2.declassify(),
+        r3.declassify(),
+        r4.declassify(),
+    )
 }
 
 #[cfg_attr(
@@ -429,15 +455,12 @@ let serialize_10_lemma inputs =
     )
 )]
 #[inline(always)]
-pub(crate) fn serialize_10(v: PortableVector) -> [U8; 20] {
-    let r0_4 = serialize_10_int(&v.elements[0..4]);
-    let r5_9 = serialize_10_int(&v.elements[4..8]);
-    let r10_14 = serialize_10_int(&v.elements[8..12]);
-    let r15_19 = serialize_10_int(&v.elements[12..16]);
-    [
-        r0_4.0, r0_4.1, r0_4.2, r0_4.3, r0_4.4, r5_9.0, r5_9.1, r5_9.2, r5_9.3, r5_9.4, r10_14.0,
-        r10_14.1, r10_14.2, r10_14.3, r10_14.4, r15_19.0, r15_19.1, r15_19.2, r15_19.3, r15_19.4,
-    ]
+pub(crate) fn serialize_10(v: PortableVector, out: &mut [u8]) {
+    debug_assert!(out.len() == 20);
+    (out[0], out[1], out[2], out[3], out[4]) = serialize_10_int(&v.elements[0..4]);
+    (out[5], out[6], out[7], out[8], out[9]) = serialize_10_int(&v.elements[4..8]);
+    (out[10], out[11], out[12], out[13], out[14]) = serialize_10_int(&v.elements[8..12]);
+    (out[15], out[16], out[17], out[18], out[19]) = serialize_10_int(&v.elements[12..16]);
 }
 
 #[inline(always)]
@@ -516,22 +539,34 @@ let deserialize_10_lemma inputs =
      ${bytes.len() == 20}
 "#))]
 #[inline(always)]
-pub(crate) fn deserialize_10(bytes: &[U8]) -> PortableVector {
-    let v0_7 = deserialize_10_int(&bytes[0..10]);
-    let v8_15 = deserialize_10_int(&bytes[10..20]);
-    PortableVector {
-        elements: [
-            v0_7.0, v0_7.1, v0_7.2, v0_7.3, v0_7.4, v0_7.5, v0_7.6, v0_7.7, v8_15.0, v8_15.1,
-            v8_15.2, v8_15.3, v8_15.4, v8_15.5, v8_15.6, v8_15.7,
-        ],
-    }
+pub(crate) fn deserialize_10(bytes: &[U8], out: &mut PortableVector) {
+    (
+        out.elements[0],
+        out.elements[1],
+        out.elements[2],
+        out.elements[3],
+        out.elements[4],
+        out.elements[5],
+        out.elements[6],
+        out.elements[7],
+    ) = deserialize_10_int(&bytes[0..10]);
+    (
+        out.elements[8],
+        out.elements[9],
+        out.elements[10],
+        out.elements[11],
+        out.elements[12],
+        out.elements[13],
+        out.elements[14],
+        out.elements[15],
+    ) = deserialize_10_int(&bytes[10..20]);
 }
 
 #[inline(always)]
 #[hax_lib::requires(fstar!(r#"
      ${v.len() == 8}
 "#))]
-pub(crate) fn serialize_11_int(v: &[I16]) -> (U8, U8, U8, U8, U8, U8, U8, U8, U8, U8, U8) {
+pub(crate) fn serialize_11_int(v: &[I16]) -> (u8, u8, u8, u8, u8, u8, u8, u8, u8, u8, u8) {
     let r0 = v[0].as_u8();
     let r1 = ((v[1] & 0x1F).as_u8()) << 3 | ((v[0] >> 8).as_u8());
     let r2 = ((v[2] & 0x3).as_u8()) << 6 | ((v[1] >> 5).as_u8());
@@ -543,18 +578,31 @@ pub(crate) fn serialize_11_int(v: &[I16]) -> (U8, U8, U8, U8, U8, U8, U8, U8, U8
     let r8 = ((v[6] & 0x3F).as_u8()) << 2 | (v[5] >> 9).as_u8();
     let r9 = ((v[7] & 0x7).as_u8()) << 5 | (v[6] >> 6).as_u8();
     let r10 = (v[7] >> 3).as_u8();
-    (r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10)
+    (
+        r0.declassify(),
+        r1.declassify(),
+        r2.declassify(),
+        r3.declassify(),
+        r4.declassify(),
+        r5.declassify(),
+        r6.declassify(),
+        r7.declassify(),
+        r8.declassify(),
+        r9.declassify(),
+        r10.declassify(),
+    )
 }
 
 #[inline(always)]
-pub(crate) fn serialize_11(v: PortableVector) -> [U8; 22] {
-    let r0_10 = serialize_11_int(&v.elements[0..8]);
-    let r11_21 = serialize_11_int(&v.elements[8..16]);
-    [
-        r0_10.0, r0_10.1, r0_10.2, r0_10.3, r0_10.4, r0_10.5, r0_10.6, r0_10.7, r0_10.8, r0_10.9,
-        r0_10.10, r11_21.0, r11_21.1, r11_21.2, r11_21.3, r11_21.4, r11_21.5, r11_21.6, r11_21.7,
-        r11_21.8, r11_21.9, r11_21.10,
-    ]
+pub(crate) fn serialize_11(v: PortableVector, out: &mut [u8]) {
+    debug_assert!(out.len() == 22);
+    (
+        out[0], out[1], out[2], out[3], out[4], out[5], out[6], out[7], out[8], out[9], out[10],
+    ) = serialize_11_int(&v.elements[0..8]);
+    (
+        out[11], out[12], out[13], out[14], out[15], out[16], out[17], out[18], out[19], out[20],
+        out[21],
+    ) = serialize_11_int(&v.elements[8..16]);
 }
 
 #[inline(always)]
@@ -579,26 +627,38 @@ pub(crate) fn deserialize_11_int(bytes: &[U8]) -> (I16, I16, I16, I16, I16, I16,
      ${bytes.len() == 22}
 "#))]
 #[inline(always)]
-pub(crate) fn deserialize_11(bytes: &[U8]) -> PortableVector {
-    let v0_7 = deserialize_11_int(&bytes[0..11]);
-    let v8_15 = deserialize_11_int(&bytes[11..22]);
-    PortableVector {
-        elements: [
-            v0_7.0, v0_7.1, v0_7.2, v0_7.3, v0_7.4, v0_7.5, v0_7.6, v0_7.7, v8_15.0, v8_15.1,
-            v8_15.2, v8_15.3, v8_15.4, v8_15.5, v8_15.6, v8_15.7,
-        ],
-    }
+pub(crate) fn deserialize_11(bytes: &[U8], out: &mut PortableVector) {
+    (
+        out.elements[0],
+        out.elements[1],
+        out.elements[2],
+        out.elements[3],
+        out.elements[4],
+        out.elements[5],
+        out.elements[6],
+        out.elements[7],
+    ) = deserialize_11_int(&bytes[0..11]);
+    (
+        out.elements[8],
+        out.elements[9],
+        out.elements[10],
+        out.elements[11],
+        out.elements[12],
+        out.elements[13],
+        out.elements[14],
+        out.elements[15],
+    ) = deserialize_11_int(&bytes[11..22]);
 }
 
 #[inline(always)]
 #[hax_lib::requires(fstar!(r#"
      ${v.len() == 2}
 "#))]
-pub(crate) fn serialize_12_int(v: &[I16]) -> (U8, U8, U8) {
+pub(crate) fn serialize_12_int(v: &[I16]) -> (u8, u8, u8) {
     let r0 = (v[0] & 0xFF).as_u8();
     let r1 = ((v[0] >> 8) | ((v[1] & 0x0F) << 4)).as_u8();
     let r2 = ((v[1] >> 4) & 0xFF).as_u8();
-    (r0, r1, r2)
+    (r0.declassify(), r1.declassify(), r2.declassify())
 }
 
 #[cfg_attr(
@@ -641,20 +701,16 @@ let serialize_12_lemma inputs =
     )
 )]
 #[inline(always)]
-pub(crate) fn serialize_12(v: PortableVector) -> [U8; 24] {
-    let r0_2 = serialize_12_int(&v.elements[0..2]);
-    let r3_5 = serialize_12_int(&v.elements[2..4]);
-    let r6_8 = serialize_12_int(&v.elements[4..6]);
-    let r9_11 = serialize_12_int(&v.elements[6..8]);
-    let r12_14 = serialize_12_int(&v.elements[8..10]);
-    let r15_17 = serialize_12_int(&v.elements[10..12]);
-    let r18_20 = serialize_12_int(&v.elements[12..14]);
-    let r21_23 = serialize_12_int(&v.elements[14..16]);
-    [
-        r0_2.0, r0_2.1, r0_2.2, r3_5.0, r3_5.1, r3_5.2, r6_8.0, r6_8.1, r6_8.2, r9_11.0, r9_11.1,
-        r9_11.2, r12_14.0, r12_14.1, r12_14.2, r15_17.0, r15_17.1, r15_17.2, r18_20.0, r18_20.1,
-        r18_20.2, r21_23.0, r21_23.1, r21_23.2,
-    ]
+pub(crate) fn serialize_12(v: PortableVector, out: &mut [u8]) {
+    debug_assert!(out.len() == 24);
+    (out[0], out[1], out[2]) = serialize_12_int(&v.elements[0..2]);
+    (out[3], out[4], out[5]) = serialize_12_int(&v.elements[2..4]);
+    (out[6], out[7], out[8]) = serialize_12_int(&v.elements[4..6]);
+    (out[9], out[10], out[11]) = serialize_12_int(&v.elements[6..8]);
+    (out[12], out[13], out[14]) = serialize_12_int(&v.elements[8..10]);
+    (out[15], out[16], out[17]) = serialize_12_int(&v.elements[10..12]);
+    (out[18], out[19], out[20]) = serialize_12_int(&v.elements[12..14]);
+    (out[21], out[22], out[23]) = serialize_12_int(&v.elements[14..16]);
 }
 
 #[inline(always)]
@@ -730,19 +786,13 @@ let deserialize_12_lemma inputs =
      ${bytes.len() == 24}
 "#))]
 #[inline(always)]
-pub(crate) fn deserialize_12(bytes: &[U8]) -> PortableVector {
-    let v0_1 = deserialize_12_int(&bytes[0..3]);
-    let v2_3 = deserialize_12_int(&bytes[3..6]);
-    let v4_5 = deserialize_12_int(&bytes[6..9]);
-    let v6_7 = deserialize_12_int(&bytes[9..12]);
-    let v8_9 = deserialize_12_int(&bytes[12..15]);
-    let v10_11 = deserialize_12_int(&bytes[15..18]);
-    let v12_13 = deserialize_12_int(&bytes[18..21]);
-    let v14_15 = deserialize_12_int(&bytes[21..24]);
-    PortableVector {
-        elements: [
-            v0_1.0, v0_1.1, v2_3.0, v2_3.1, v4_5.0, v4_5.1, v6_7.0, v6_7.1, v8_9.0, v8_9.1,
-            v10_11.0, v10_11.1, v12_13.0, v12_13.1, v14_15.0, v14_15.1,
-        ],
-    }
+pub(crate) fn deserialize_12(bytes: &[U8], out: &mut PortableVector) {
+    (out.elements[0], out.elements[1]) = deserialize_12_int(&bytes[0..3]);
+    (out.elements[2], out.elements[3]) = deserialize_12_int(&bytes[3..6]);
+    (out.elements[4], out.elements[5]) = deserialize_12_int(&bytes[6..9]);
+    (out.elements[6], out.elements[7]) = deserialize_12_int(&bytes[9..12]);
+    (out.elements[8], out.elements[9]) = deserialize_12_int(&bytes[12..15]);
+    (out.elements[10], out.elements[11]) = deserialize_12_int(&bytes[15..18]);
+    (out.elements[12], out.elements[13]) = deserialize_12_int(&bytes[18..21]);
+    (out.elements[14], out.elements[15]) = deserialize_12_int(&bytes[21..24]);
 }

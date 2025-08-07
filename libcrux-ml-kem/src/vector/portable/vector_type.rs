@@ -20,27 +20,23 @@ pub fn zero() -> PortableVector {
 
 #[inline(always)]
 #[hax_lib::ensures(|result| fstar!(r#"${result} == ${x}.f_elements"#))]
-pub fn to_i16_array(x: PortableVector) -> [I16; 16] {
-    x.elements
+pub fn to_i16_array(x: PortableVector, out: &mut [i16; 16]) {
+    *out = x.elements.declassify();
 }
 
 #[inline(always)]
 #[hax_lib::requires(array.len() == 16)]
 #[hax_lib::ensures(|result| fstar!(r#"${result}.f_elements == $array"#))]
-pub fn from_i16_array(array: &[I16]) -> PortableVector {
-    PortableVector {
-        elements: array[0..16].try_into().unwrap(),
-    }
+pub fn from_i16_array(array: &[I16], out: &mut PortableVector) {
+    out.elements = array[0..16].try_into().unwrap();
 }
 
 #[inline(always)]
 #[hax_lib::requires(array.len() >= 32)]
-pub(super) fn from_bytes(array: &[U8]) -> PortableVector {
-    let mut elements = [I16(0); FIELD_ELEMENTS_IN_VECTOR];
+pub(super) fn from_bytes(array: &[U8], out: &mut PortableVector) {
     for i in 0..FIELD_ELEMENTS_IN_VECTOR {
-        elements[i] = (array[2 * i].as_i16()) << 8 | array[2 * i + 1].as_i16();
+        out.elements[i] = (array[2 * i].as_i16()) << 8 | array[2 * i + 1].as_i16();
     }
-    PortableVector { elements }
 }
 
 #[inline(always)]

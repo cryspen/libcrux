@@ -56,10 +56,9 @@ pub(crate) fn get_n_least_significant_bits(n: u8, value: U32) -> U32 {
 #[hax_lib::ensures(|result| fstar!(r#"forall i. i < 16 ==> 
     (v (Seq.index ${result}.f_elements i) == 
      v (Seq.index ${lhs}.f_elements i) + v (Seq.index ${rhs}.f_elements i))"#))]
-pub fn add(mut lhs: PortableVector, rhs: &PortableVector) -> PortableVector {
+pub fn add(lhs: &mut PortableVector, rhs: &PortableVector) {
     #[cfg(hax)]
-    let _lhs0 = lhs;
-
+    let _lhs0 = (*lhs).clone();
     for i in 0..FIELD_ELEMENTS_IN_VECTOR {
         hax_lib::loop_invariant!(|i: usize| {
             fstar!(
@@ -77,8 +76,6 @@ pub fn add(mut lhs: PortableVector, rhs: &PortableVector) -> PortableVector {
         "assert (forall i. v (Seq.index ${lhs}.f_elements i) ==
     			          v (Seq.index ${_lhs0}.f_elements i) + v (Seq.index ${rhs}.f_elements i))"
     );
-
-    lhs
 }
 
 #[inline(always)]
@@ -87,10 +84,9 @@ pub fn add(mut lhs: PortableVector, rhs: &PortableVector) -> PortableVector {
 #[hax_lib::ensures(|result| fstar!(r#"forall i. i < 16 ==> 
     (v (Seq.index ${result}.f_elements i) == 
      v (Seq.index ${lhs}.f_elements i) - v (Seq.index ${rhs}.f_elements i))"#))]
-pub fn sub(mut lhs: PortableVector, rhs: &PortableVector) -> PortableVector {
+pub fn sub(lhs: &mut PortableVector, rhs: &PortableVector) {
     #[cfg(hax)]
-    let _lhs0 = lhs;
-
+    let _lhs0 = (*lhs).clone();
     for i in 0..FIELD_ELEMENTS_IN_VECTOR {
         hax_lib::loop_invariant!(|i: usize| {
             fstar!(
@@ -108,8 +104,12 @@ pub fn sub(mut lhs: PortableVector, rhs: &PortableVector) -> PortableVector {
         "assert (forall i. v (Seq.index ${lhs}.f_elements i) ==
     			          v (Seq.index ${_lhs0}.f_elements i) - v (Seq.index ${rhs}.f_elements i))"
     );
+}
 
-    lhs
+pub fn negate(vec: &mut PortableVector) {
+    for i in 0..FIELD_ELEMENTS_IN_VECTOR {
+        vec.elements[i] = -vec.elements[i];
+    }
 }
 
 #[inline(always)]
@@ -118,10 +118,9 @@ pub fn sub(mut lhs: PortableVector, rhs: &PortableVector) -> PortableVector {
 #[hax_lib::ensures(|result| fstar!(r#"forall i. i < 16 ==> 
     (v (Seq.index ${result}.f_elements i) == 
      v (Seq.index ${vec}.f_elements i) * v c)"#))]
-pub fn multiply_by_constant(mut vec: PortableVector, c: i16) -> PortableVector {
+pub fn multiply_by_constant(vec: &mut PortableVector, c: i16) {
     #[cfg(hax)]
-    let _vec0 = vec;
-
+    let _vec0 = (*vec).clone();
     for i in 0..FIELD_ELEMENTS_IN_VECTOR {
         hax_lib::loop_invariant!(|i: usize| {
             fstar!(
@@ -139,16 +138,13 @@ pub fn multiply_by_constant(mut vec: PortableVector, c: i16) -> PortableVector {
         "assert (forall i. v (Seq.index ${vec}.f_elements i) ==
     			          v (Seq.index ${_vec0}.f_elements i) * v c)"
     );
-
-    vec
 }
 
 #[inline(always)]
 #[hax_lib::ensures(|result| fstar!(r#"${result}.f_elements == Spec.Utils.map_array (fun x -> x &. c) (${vec}.f_elements)"#))]
-pub fn bitwise_and_with_constant(mut vec: PortableVector, c: i16) -> PortableVector {
+pub fn bitwise_and_with_constant(vec: &mut PortableVector, c: i16) {
     #[cfg(hax)]
-    let _vec0 = vec;
-
+    let _vec0 = (*vec).clone();
     for i in 0..FIELD_ELEMENTS_IN_VECTOR {
         hax_lib::loop_invariant!(|i: usize| {
             fstar!(
@@ -165,18 +161,15 @@ pub fn bitwise_and_with_constant(mut vec: PortableVector, c: i16) -> PortableVec
     hax_lib::fstar!(
         r#"Seq.lemma_eq_intro ${vec}.f_elements (Spec.Utils.map_array (fun x -> x &. c) ${_vec0}.f_elements)"#
     );
-
-    vec
 }
 
 #[inline(always)]
 #[hax_lib::requires(SHIFT_BY >= 0 && SHIFT_BY < 16)]
 #[hax_lib::ensures(|result| fstar!(r#"(v_SHIFT_BY >=. (mk_i32 0) /\ v_SHIFT_BY <. (mk_i32 16)) ==> 
         ${result}.f_elements == Spec.Utils.map_array (fun x -> x >>! ${SHIFT_BY}) (${vec}.f_elements)"#))]
-pub fn shift_right<const SHIFT_BY: i32>(mut vec: PortableVector) -> PortableVector {
+pub fn shift_right<const SHIFT_BY: i32>(vec: &mut PortableVector) {
     #[cfg(hax)]
-    let _vec0 = vec;
-
+    let _vec0 = (*vec).clone();
     for i in 0..FIELD_ELEMENTS_IN_VECTOR {
         hax_lib::loop_invariant!(|i: usize| {
             fstar!(
@@ -193,8 +186,6 @@ pub fn shift_right<const SHIFT_BY: i32>(mut vec: PortableVector) -> PortableVect
     hax_lib::fstar!(
         r#"Seq.lemma_eq_intro ${vec}.f_elements (Spec.Utils.map_array (fun x -> x >>! ${SHIFT_BY}) ${_vec0}.f_elements)"#
     );
-
-    vec
 }
 
 /// Note: This function is not secret independent
@@ -204,10 +195,9 @@ pub fn shift_right<const SHIFT_BY: i32>(mut vec: PortableVector) -> PortableVect
 #[hax_lib::requires(fstar!(r#"Spec.Utils.is_i16b_array (pow2 12 - 1) ${vec}.f_elements"#))]
 #[hax_lib::ensures(|result| fstar!(r#"${result}.f_elements == Spec.Utils.map_array 
                 (fun x -> if x >=. (mk_i16 3329) then x -! (mk_i16 3329) else x) (${vec}.f_elements)"#))]
-pub fn cond_subtract_3329(mut vec: PortableVector) -> PortableVector {
+pub fn cond_subtract_3329(vec: &mut PortableVector) {
     #[cfg(hax)]
-    let _vec0 = vec;
-
+    let _vec0 = *(vec).clone();
     for i in 0..FIELD_ELEMENTS_IN_VECTOR {
         hax_lib::loop_invariant!(|i: usize| {
             fstar!(
@@ -227,8 +217,6 @@ pub fn cond_subtract_3329(mut vec: PortableVector) -> PortableVector {
         r#"Seq.lemma_eq_intro ${vec}.f_elements (Spec.Utils.map_array 
                             (fun x -> if x >=. (mk_i16 3329) then x -! (mk_i16 3329) else x) ${_vec0}.f_elements)"#
     );
-
-    vec
 }
 
 /// Signed Barrett Reduction
@@ -289,10 +277,9 @@ pub(crate) fn barrett_reduce_element(value: FieldElement) -> FieldElement {
 #[cfg_attr(hax, hax_lib::ensures(|result| fstar!(r#"Spec.Utils.is_i16b_array 3328 ${result}.f_elements /\
                 (forall i. (v (Seq.index ${result}.f_elements i) % 3329) == 
                            (v (Seq.index ${vec}.f_elements i) % 3329))"#)))]
-pub(crate) fn barrett_reduce(mut vec: PortableVector) -> PortableVector {
+pub(crate) fn barrett_reduce(vec: &mut PortableVector) {
     #[cfg(hax)]
-    let _vec0 = vec;
-
+    let _vec0 = (*vec).clone();
     for i in 0..FIELD_ELEMENTS_IN_VECTOR {
         hax_lib::loop_invariant!(|i: usize| {
             fstar!(
@@ -315,7 +302,6 @@ pub(crate) fn barrett_reduce(mut vec: PortableVector) -> PortableVector {
                          assert (forall j. j < v i + 1 ==> Spec.Utils.is_i16b 3328 (Seq.index vec.f_elements j))"#
         );
     }
-    vec
 }
 
 /// Signed Montgomery Reduction
@@ -465,9 +451,9 @@ Spec.Utils.is_i16b_array 3328 ${result}.f_elements /\
 (forall i. i < 16 ==> 
     (v (Seq.index ${result}.f_elements i) % 3329 == 
        (v (Seq.index ${vec}.f_elements i) * v c * 169) %3329))"#)))]
-pub(crate) fn montgomery_multiply_by_constant(mut vec: PortableVector, c: I16) -> PortableVector {
-    let _vec0 = vec;
-
+pub(crate) fn montgomery_multiply_by_constant(vec: &mut PortableVector, c: I16) {
+    #[cfg(hax)]
+    let _vec0 = (*vec).clone();
     for i in 0..FIELD_ELEMENTS_IN_VECTOR {
         hax_lib::loop_invariant!(|i: usize| {
             fstar!(
@@ -482,7 +468,6 @@ pub(crate) fn montgomery_multiply_by_constant(mut vec: PortableVector, c: I16) -
 
         vec.elements[i] = montgomery_multiply_fe_by_fer(vec.elements[i], c)
     }
-    vec
 }
 
 #[hax_lib::fstar::options("--z3rlimit 300")]
@@ -493,7 +478,8 @@ pub(crate) fn montgomery_multiply_by_constant(mut vec: PortableVector, c: I16) -
                                         (v y >= 0 /\ v y <= 3328 /\ (v y % 3329 == v x % 3329)))"#))]
 #[inline(always)]
 pub(crate) fn to_unsigned_representative(a: PortableVector) -> PortableVector {
-    let t = shift_right::<15>(a);
+    let mut t = a.clone();
+    shift_right::<15>(&mut t);
 
     hax_lib::fstar!(
         r#"
@@ -503,7 +489,7 @@ pub(crate) fn to_unsigned_representative(a: PortableVector) -> PortableVector {
     "#
     );
 
-    let fm = bitwise_and_with_constant(t, FIELD_MODULUS);
+    bitwise_and_with_constant(&mut t, FIELD_MODULUS);
 
     hax_lib::fstar!(
         r#"
@@ -513,5 +499,5 @@ pub(crate) fn to_unsigned_representative(a: PortableVector) -> PortableVector {
     "#
     );
 
-    add(a, &fm)
+    add(&mut a, &fm)
 }

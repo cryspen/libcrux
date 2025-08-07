@@ -118,10 +118,12 @@ pub(crate) fn validate_public_key<
         &mut deserialized_pk,
     );
     let mut public_key_serialized = [0u8; PUBLIC_KEY_SIZE];
+    let mut scratch = Vector::ZERO();
     serialize_public_key_mut::<K, PUBLIC_KEY_SIZE, Vector>(
         &deserialized_pk,
         &public_key[ranked_bytes_per_ring_element(K)..],
         &mut public_key_serialized,
+        &mut scratch
     );
 
     *public_key == public_key_serialized
@@ -206,7 +208,7 @@ pub(crate) fn generate_keypair<
 
     let mut ind_cpa_private_key = [0u8; CPA_PRIVATE_KEY_SIZE];
     let mut public_key = [0u8; PUBLIC_KEY_SIZE];
-
+    let mut scratch = PolynomialRingElement::<Vector>::ZERO();
     crate::ind_cpa::generate_keypair::<
         K,
         CPA_PRIVATE_KEY_SIZE,
@@ -221,6 +223,7 @@ pub(crate) fn generate_keypair<
         ind_cpa_keypair_randomness,
         &mut ind_cpa_private_key,
         &mut public_key,
+        &mut scratch
     );
 
     let mut secret_key_serialized = [0u8; PRIVATE_KEY_SIZE];
@@ -296,6 +299,7 @@ pub(crate) fn encapsulate<
     let mut r_as_ntt: [PolynomialRingElement<Vector>; K] =
         core::array::from_fn(|_i| PolynomialRingElement::<Vector>::ZERO());
     let mut error_2 = PolynomialRingElement::<Vector>::ZERO();
+    let mut scratch = PolynomialRingElement::<Vector>::ZERO();
     crate::ind_cpa::encrypt::<
         K,
         CIPHERTEXT_SIZE,
@@ -320,6 +324,7 @@ pub(crate) fn encapsulate<
         &mut ciphertext,
         &mut r_as_ntt,
         &mut error_2,
+        &mut scratch
     );
 
     let ciphertext = MlKemCiphertext::from(ciphertext);
@@ -391,6 +396,8 @@ pub(crate) fn decapsulate<
             (length ${private_key}.f_value))"#
     );
     let mut decrypted = [0u8; 32];
+    let mut scratch = PolynomialRingElement::<Vector>::ZERO();
+
     crate::ind_cpa::decrypt::<
         K,
         CIPHERTEXT_SIZE,
@@ -398,7 +405,7 @@ pub(crate) fn decapsulate<
         VECTOR_U_COMPRESSION_FACTOR,
         VECTOR_V_COMPRESSION_FACTOR,
         Vector,
-    >(ind_cpa_secret_key, &ciphertext.value, &mut decrypted);
+        >(ind_cpa_secret_key, &ciphertext.value, &mut decrypted, &mut scratch);
 
     let mut to_hash: [u8; SHARED_SECRET_SIZE + H_DIGEST_SIZE] = into_padded_array(&decrypted);
     hax_lib::fstar!(r#"eq_intro (Seq.slice $to_hash 0 32) $decrypted"#);
@@ -464,6 +471,7 @@ pub(crate) fn decapsulate<
         &mut expected_ciphertext,
         &mut r_as_ntt,
         &mut error_2,
+        &mut scratch
     );
 
     let mut implicit_rejection_shared_secret_kdf = [0u8; SHARED_SECRET_SIZE];
@@ -592,10 +600,12 @@ pub(crate) mod unpacked {
             &self,
             serialized: &mut MlKemPublicKey<PUBLIC_KEY_SIZE>,
         ) {
+            let mut scratch = Vector::ZERO();
             serialize_public_key_mut::<K, PUBLIC_KEY_SIZE, Vector>(
                 &self.ind_cpa_public_key.t_as_ntt,
                 &self.ind_cpa_public_key.seed_for_A,
                 &mut serialized.value,
+                &mut scratch
             );
         }
 
@@ -616,10 +626,12 @@ pub(crate) mod unpacked {
         )]
         pub fn serialized<const PUBLIC_KEY_SIZE: usize>(&self) -> MlKemPublicKey<PUBLIC_KEY_SIZE> {
             let mut public_key = [0u8; PUBLIC_KEY_SIZE];
+            let mut scratch = Vector::ZERO();
             serialize_public_key_mut::<K, PUBLIC_KEY_SIZE, Vector>(
                 &self.ind_cpa_public_key.t_as_ntt,
                 &self.ind_cpa_public_key.seed_for_A,
                 &mut public_key,
+                &mut scratch
             );
             MlKemPublicKey::from(public_key)
         }
@@ -791,7 +803,7 @@ pub(crate) mod unpacked {
         ) {
             let mut ind_cpa_private_key = [0u8; CPA_PRIVATE_KEY_SIZE];
             let mut ind_cpa_public_key = [0u8; PUBLIC_KEY_SIZE];
-
+            let mut scratch = Vector::ZERO();
             ind_cpa::serialize_unpacked_secret_key::<
                 K,
                 CPA_PRIVATE_KEY_SIZE,
@@ -802,6 +814,7 @@ pub(crate) mod unpacked {
                 &self.private_key.ind_cpa_private_key,
                 &mut ind_cpa_private_key,
                 &mut ind_cpa_public_key,
+                &mut scratch
             );
 
             serialize_kem_secret_key_mut::<K, PRIVATE_KEY_SIZE, PortableHash>(
@@ -924,7 +937,7 @@ pub(crate) mod unpacked {
     ) {
         let ind_cpa_keypair_randomness = &randomness[0..CPA_PKE_KEY_GENERATION_SEED_SIZE];
         let implicit_rejection_value = &randomness[CPA_PKE_KEY_GENERATION_SEED_SIZE..];
-
+        let mut scratch = PolynomialRingElement::<Vector>::ZERO();
         generate_keypair_unpacked::<
             K,
             ETA1,
@@ -937,6 +950,7 @@ pub(crate) mod unpacked {
             ind_cpa_keypair_randomness,
             &mut out.private_key.ind_cpa_private_key,
             &mut out.public_key.ind_cpa_public_key,
+            &mut scratch
         );
 
         #[allow(non_snake_case)]
@@ -964,10 +978,12 @@ pub(crate) mod unpacked {
         out.public_key.ind_cpa_public_key.A = A;
 
         let mut pk_serialized = [0u8; PUBLIC_KEY_SIZE];
+        let mut scratch = Vector::ZERO();
         serialize_public_key_mut::<K, PUBLIC_KEY_SIZE, Vector>(
             &out.public_key.ind_cpa_public_key.t_as_ntt,
             &out.public_key.ind_cpa_public_key.seed_for_A,
             &mut pk_serialized,
+            &mut scratch
         );
         Hasher::H(&pk_serialized, &mut out.public_key.public_key_hash);
         out.private_key.implicit_rejection_value = implicit_rejection_value.try_into().unwrap();
@@ -1024,6 +1040,7 @@ pub(crate) mod unpacked {
         let mut r_as_ntt: [PolynomialRingElement<Vector>; K] =
             from_fn(|_i| PolynomialRingElement::<Vector>::ZERO());
         let mut error_2 = PolynomialRingElement::<Vector>::ZERO();
+        let mut scratch = PolynomialRingElement::<Vector>::ZERO();
         ind_cpa::encrypt_unpacked::<
             K,
             CIPHERTEXT_SIZE,
@@ -1048,6 +1065,7 @@ pub(crate) mod unpacked {
             &mut ciphertext,
             &mut r_as_ntt,
             &mut error_2,
+            &mut scratch
         );
         let mut shared_secret_array = [0u8; SHARED_SECRET_SIZE];
         shared_secret_array.copy_from_slice(shared_secret);
@@ -1132,6 +1150,8 @@ pub(crate) mod unpacked {
         assert (v (Spec.MLKEM.v_C2_SIZE $K) == 32 * v (Spec.MLKEM.v_VECTOR_V_COMPRESSION_FACTOR $K))"#
         );
         let mut decrypted = [0u8; SHARED_SECRET_SIZE];
+
+        let mut scratch = PolynomialRingElement::<Vector>::ZERO();
         ind_cpa::decrypt_unpacked::<
             K,
             CIPHERTEXT_SIZE,
@@ -1143,6 +1163,7 @@ pub(crate) mod unpacked {
             &key_pair.private_key.ind_cpa_private_key,
             &ciphertext.value,
             &mut decrypted,
+            &mut scratch
         );
 
         let mut to_hash: [u8; SHARED_SECRET_SIZE + H_DIGEST_SIZE] = into_padded_array(&decrypted);
@@ -1197,6 +1218,7 @@ pub(crate) mod unpacked {
             &mut expected_ciphertext,
             &mut r_as_ntt,
             &mut error_2,
+            &mut scratch
         );
 
         let selector =
