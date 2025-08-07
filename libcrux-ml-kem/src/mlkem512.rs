@@ -24,6 +24,9 @@ const ETA1_RANDOMNESS_SIZE: usize = ETA1 * 64;
 const ETA2: usize = 2;
 const ETA2_RANDOMNESS_SIZE: usize = ETA2 * 64;
 
+const PRF_OUTPUT_SIZE1: usize = ETA1_RANDOMNESS_SIZE * RANK;
+const PRF_OUTPUT_SIZE2: usize = ETA2_RANDOMNESS_SIZE * RANK;
+
 const IMPLICIT_REJECTION_HASH_INPUT_SIZE: usize = SHARED_SECRET_SIZE + CPA_PKE_CIPHERTEXT_SIZE;
 
 /// The ML-KEM 512 algorithms
@@ -103,6 +106,7 @@ macro_rules! instantiate {
                         CPA_PKE_PUBLIC_KEY_SIZE,
                         ETA1,
                         ETA1_RANDOMNESS_SIZE,
+                        PRF_OUTPUT_SIZE1,
                     >(&randomness)
 
             }
@@ -120,6 +124,7 @@ macro_rules! instantiate {
                         CPA_PKE_PUBLIC_KEY_SIZE,
                         ETA1,
                         ETA1_RANDOMNESS_SIZE,
+                        PRF_OUTPUT_SIZE1,
                     >(&randomness)
             }
             /// Encapsulate ML-KEM 512
@@ -147,6 +152,8 @@ macro_rules! instantiate {
                         ETA1_RANDOMNESS_SIZE,
                         ETA2,
                         ETA2_RANDOMNESS_SIZE,
+                        PRF_OUTPUT_SIZE1,
+                        PRF_OUTPUT_SIZE2,
                     >(public_key, &randomness)
 
             }
@@ -176,6 +183,8 @@ macro_rules! instantiate {
                         ETA1_RANDOMNESS_SIZE,
                         ETA2,
                         ETA2_RANDOMNESS_SIZE,
+                        PRF_OUTPUT_SIZE1,
+                        PRF_OUTPUT_SIZE2,
                     >(public_key, &randomness)
             }
 
@@ -203,6 +212,8 @@ macro_rules! instantiate {
                         ETA1_RANDOMNESS_SIZE,
                         ETA2,
                         ETA2_RANDOMNESS_SIZE,
+                        PRF_OUTPUT_SIZE1,
+                        PRF_OUTPUT_SIZE2,
                         IMPLICIT_REJECTION_HASH_INPUT_SIZE,
                     >(private_key, ciphertext)
 
@@ -234,6 +245,8 @@ macro_rules! instantiate {
                     ETA1_RANDOMNESS_SIZE,
                     ETA2,
                     ETA2_RANDOMNESS_SIZE,
+                    PRF_OUTPUT_SIZE1,
+                    PRF_OUTPUT_SIZE2,
                     IMPLICIT_REJECTION_HASH_INPUT_SIZE,
                 >(private_key, ciphertext)
             }
@@ -335,6 +348,7 @@ macro_rules! instantiate {
                             CPA_PKE_PUBLIC_KEY_SIZE,
                             ETA1,
                             ETA1_RANDOMNESS_SIZE,
+                            PRF_OUTPUT_SIZE1,
                         >(randomness, key_pair);
 
                 }
@@ -377,6 +391,8 @@ macro_rules! instantiate {
                             ETA1_RANDOMNESS_SIZE,
                             ETA2,
                             ETA2_RANDOMNESS_SIZE,
+                            PRF_OUTPUT_SIZE1,
+                            PRF_OUTPUT_SIZE2,
                         >(public_key, &randomness)
 
                 }
@@ -406,6 +422,8 @@ macro_rules! instantiate {
                             ETA1_RANDOMNESS_SIZE,
                             ETA2,
                             ETA2_RANDOMNESS_SIZE,
+                            PRF_OUTPUT_SIZE1,
+                            PRF_OUTPUT_SIZE2,
                             IMPLICIT_REJECTION_HASH_INPUT_SIZE,
                         >(private_key, ciphertext)
 
@@ -465,6 +483,7 @@ pub fn generate_key_pair(randomness: [u8; KEY_GENERATION_SEED_SIZE]) -> MlKem512
         CPA_PKE_PUBLIC_KEY_SIZE,
         ETA1,
         ETA1_RANDOMNESS_SIZE,
+        PRF_OUTPUT_SIZE1,
     >(&randomness)
 }
 
@@ -498,6 +517,8 @@ pub fn encapsulate(
         ETA1_RANDOMNESS_SIZE,
         ETA2,
         ETA2_RANDOMNESS_SIZE,
+        PRF_OUTPUT_SIZE1,
+        PRF_OUTPUT_SIZE2,
     >(public_key, &randomness)
 }
 
@@ -531,6 +552,8 @@ pub fn decapsulate(
         ETA1_RANDOMNESS_SIZE,
         ETA2,
         ETA2_RANDOMNESS_SIZE,
+        PRF_OUTPUT_SIZE1,
+        PRF_OUTPUT_SIZE2,
         IMPLICIT_REJECTION_HASH_INPUT_SIZE,
     >(private_key, ciphertext)
 }
@@ -560,7 +583,7 @@ pub mod rand {
         let mut randomness = [0u8; KEY_GENERATION_SEED_SIZE];
         rng.fill_bytes(&mut randomness);
 
-        super::generate_key_pair(randomness)
+        super::generate_key_pair(&randomness)
     }
 
     /// Encapsulate ML-KEM 512
@@ -576,7 +599,7 @@ pub mod rand {
         let mut randomness = [0u8; SHARED_SECRET_SIZE];
         rng.fill_bytes(&mut randomness);
 
-        super::encapsulate(public_key, randomness)
+        super::encapsulate(public_key, &randomness)
     }
 }
 
@@ -608,7 +631,8 @@ pub(crate) mod kyber {
             CPA_PKE_PUBLIC_KEY_SIZE,
             ETA1,
             ETA1_RANDOMNESS_SIZE,
-        >(randomness)
+            PRF_OUTPUT_SIZE1,
+        >(&randomness)
     }
 
     /// Encapsulate Kyber 512
@@ -634,7 +658,9 @@ pub(crate) mod kyber {
             ETA1_RANDOMNESS_SIZE,
             ETA2,
             ETA2_RANDOMNESS_SIZE,
-        >(public_key, randomness)
+            PRF_OUTPUT_SIZE1,
+            PRF_OUTPUT_SIZE2,
+        >(public_key, &randomness)
     }
 
     /// Decapsulate Kyber 512
@@ -662,6 +688,8 @@ pub(crate) mod kyber {
             ETA1_RANDOMNESS_SIZE,
             ETA2,
             ETA2_RANDOMNESS_SIZE,
+            PRF_OUTPUT_SIZE1,
+            PRF_OUTPUT_SIZE2,
             IMPLICIT_REJECTION_HASH_INPUT_SIZE,
         >(private_key, ciphertext)
     }

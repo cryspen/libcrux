@@ -74,7 +74,7 @@ fn ZERO<Vector: Operations>() -> PolynomialRingElement<Vector> {
 
 #[inline(always)]
 #[hax_lib::requires(VECTORS_IN_RING_ELEMENT * 16 <= a.len())]
-fn from_i16_array<Vector: Operations>(a: &[i16], result: &mut PolynomialRingElement<Vector>){
+fn from_i16_array<Vector: Operations>(a: &[i16], result: &mut PolynomialRingElement<Vector>) {
     for i in 0..VECTORS_IN_RING_ELEMENT {
         result.coefficients[i] = Vector::from_i16_array(&a[i * 16..(i + 1) * 16]);
     }
@@ -308,11 +308,12 @@ fn subtract_reduce<Vector: Operations>(
 fn add_message_error_reduce<Vector: Operations>(
     myself: &PolynomialRingElement<Vector>,
     message: &PolynomialRingElement<Vector>,
-    mut result: PolynomialRingElement<Vector>,
-) -> PolynomialRingElement<Vector> {
+    result: &mut PolynomialRingElement<Vector>,
+) {
     #[cfg(hax)]
     let _result = result.coefficients;
 
+    // Using `hax_lib::fstar::verification_status(lax)` works but produces an error while extracting
     for i in 0..VECTORS_IN_RING_ELEMENT {
         hax_lib::loop_invariant!(|i: usize| fstar!(
             r#"
@@ -383,7 +384,6 @@ fn add_message_error_reduce<Vector: Operations>(
         "#
         );
     }
-    result
 }
 
 #[inline(always)]
@@ -658,8 +658,8 @@ impl<Vector: Operations> PolynomialRingElement<Vector> {
     #[requires(fstar!(r#"is_bounded_poly 3328 self /\ 
                          is_bounded_poly 3328 ${message}"#))]
     #[ensures(|output| fstar!(r#"is_bounded_poly 3328 ${output}"#))]
-    pub(crate) fn add_message_error_reduce(&self, message: &Self, result: Self) -> Self {
-        add_message_error_reduce(self, message, result)
+    pub(crate) fn add_message_error_reduce(&self, message: &Self, result: &mut Self) {
+        add_message_error_reduce(self, message, result);
     }
 
     #[inline(always)]
