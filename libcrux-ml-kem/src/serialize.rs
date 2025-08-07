@@ -35,7 +35,7 @@ pub(super) fn compress_then_serialize_message<Vector: Operations>(
         to_unsigned_field_modulus(&re.coefficients[i], scratch);
         Vector::compress_1(scratch);
 
-        Vector::serialize_1(*scratch, &mut serialized[2 * i..2 * i + 2]);
+        Vector::serialize_1(scratch, &mut serialized[2 * i..2 * i + 2]);
     }
 }
 
@@ -80,7 +80,7 @@ pub(super) fn serialize_uncompressed_ring_element<Vector: Operations>(
 
         to_unsigned_field_modulus(&re.coefficients[i], scratch);
 
-        Vector::serialize_12(*scratch, &mut serialized[24 * i..24 * i + 24]);
+        Vector::serialize_12(scratch, &mut serialized[24 * i..24 * i + 24]);
     }
 }
 
@@ -176,7 +176,7 @@ fn compress_then_serialize_10<const OUT_LEN: usize, Vector: Operations>(
         to_unsigned_field_modulus(&re.coefficients[i], scratch);
         Vector::compress::<10>(scratch);
 
-        Vector::serialize_10(*scratch, &mut serialized[20 * i..20 * i + 20]);
+        Vector::serialize_10(scratch, &mut serialized[20 * i..20 * i + 20]);
     }
 }
 
@@ -193,7 +193,7 @@ fn compress_then_serialize_11<const OUT_LEN: usize, Vector: Operations>(
         *scratch = Vector::to_unsigned_representative(re.coefficients[i]);
         Vector::compress::<11>(scratch);
 
-        Vector::serialize_11(*scratch, &mut serialized[22 * i..22 * i + 22]);
+        Vector::serialize_11(scratch, &mut serialized[22 * i..22 * i + 22]);
     }
 }
 
@@ -252,7 +252,7 @@ fn compress_then_serialize_4<Vector: Operations>(
         to_unsigned_field_modulus(&re.coefficients[i], scratch);
         Vector::compress::<4>(scratch);
 
-        Vector::serialize_4(*scratch, &mut serialized[8 * i..8 * i + 8]);
+        Vector::serialize_4(scratch, &mut serialized[8 * i..8 * i + 8]);
     }
 }
 
@@ -273,7 +273,7 @@ fn compress_then_serialize_5<Vector: Operations>(
         *scratch = Vector::to_unsigned_representative(re.coefficients[i]);
         Vector::compress::<5>(scratch);
 
-        Vector::serialize_5(*scratch, &mut serialized[10 * i..10 * i + 10]);
+        Vector::serialize_5(scratch, &mut serialized[10 * i..10 * i + 10]);
     }
 }
 

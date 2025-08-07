@@ -13,7 +13,7 @@ pub const BARRETT_R: i32 = 1 << BARRETT_SHIFT;
 #[hax_lib::attributes]
 pub trait Repr: Copy + Clone {
     #[requires(true)]
-    fn repr(a: Self) -> [i16; 16];
+    fn repr(&self) -> [i16; 16];
 }
 
 #[cfg(any(eurydice, not(hax)))]
@@ -51,7 +51,7 @@ pub trait Operations: Copy + Clone + Repr {
 
     #[requires(true)]
     #[ensures(|result| fstar!(r#"f_repr $x == $result"#))]
-    fn to_i16_array(x: Self, out: &mut [i16; 16]);
+    fn to_i16_array(x: &Self, out: &mut [i16; 16]);
 
     #[requires(array.len() >= 32)]
     fn from_bytes(array: &[u8], out: &mut Self);
@@ -62,7 +62,7 @@ pub trait Operations: Copy + Clone + Repr {
 
     // Basic arithmetic
     #[requires(spec::add_pre(&lhs.repr(), &rhs.repr()))]
-    #[ensures(|result| spec::add_post(&lhs.repr(), &rhs.repr(), &result.repr()))]
+    #[ensures(|()| spec::add_post(&lhs.repr(), &rhs.repr(), &future(lhs).repr()))]
     fn add(lhs: &mut Self, rhs: &Self);
 
     #[requires(fstar!(r#"forall i. i < 16 ==> 
@@ -194,36 +194,36 @@ pub trait Operations: Copy + Clone + Repr {
     // Serialization and deserialization
     #[requires(fstar!(r#"Spec.MLKEM.serialize_pre 1 (f_repr $a)"#))]
     #[ensures(|result| fstar!(r#"Spec.MLKEM.serialize_pre 1 (f_repr $a) ==> Spec.MLKEM.serialize_post 1 (f_repr $a) $result"#))]
-    fn serialize_1(a: Self, out: &mut [u8]);
+    fn serialize_1(a: &Self, out: &mut [u8]);
     #[requires(a.len() == 2)]
     #[ensures(|result| fstar!(r#"sz (Seq.length $a) =. sz 2 ==> Spec.MLKEM.deserialize_post 1 $a (f_repr $result)"#))]
     fn deserialize_1(a: &[u8], out: &mut Self);
 
     #[requires(fstar!(r#"Spec.MLKEM.serialize_pre 4 (f_repr $a)"#))]
     #[ensures(|result| fstar!(r#"Spec.MLKEM.serialize_pre 4 (f_repr $a) ==> Spec.MLKEM.serialize_post 4 (f_repr $a) $result"#))]
-    fn serialize_4(a: Self, out: &mut [u8]);
+    fn serialize_4(a: &Self, out: &mut [u8]);
     #[requires(a.len() == 8)]
     #[ensures(|result| fstar!(r#"sz (Seq.length $a) =. sz 8 ==> Spec.MLKEM.deserialize_post 4 $a (f_repr $result)"#))]
     fn deserialize_4(a: &[u8], out: &mut Self);
 
-    fn serialize_5(a: Self, out: &mut [u8]);
+    fn serialize_5(a: &Self, out: &mut [u8]);
     #[requires(a.len() == 10)]
     fn deserialize_5(a: &[u8], out: &mut Self);
 
     #[requires(fstar!(r#"Spec.MLKEM.serialize_pre 10 (f_repr $a)"#))]
     #[ensures(|result| fstar!(r#"Spec.MLKEM.serialize_pre 10 (f_repr $a) ==> Spec.MLKEM.serialize_post 10 (f_repr $a) $result"#))]
-    fn serialize_10(a: Self, out: &mut [u8]);
+    fn serialize_10(a: &Self, out: &mut [u8]);
     #[requires(a.len() == 20)]
     #[ensures(|result| fstar!(r#"sz (Seq.length $a) =. sz 20 ==> Spec.MLKEM.deserialize_post 10 $a (f_repr $result)"#))]
     fn deserialize_10(a: &[u8], out: &mut Self);
 
-    fn serialize_11(a: Self, out: &mut [u8]);
+    fn serialize_11(a: &Self, out: &mut [u8]);
     #[requires(a.len() == 22)]
     fn deserialize_11(a: &[u8], out: &mut Self);
 
     #[requires(fstar!(r#"Spec.MLKEM.serialize_pre 12 (f_repr $a)"#))]
     #[ensures(|result| fstar!(r#"Spec.MLKEM.serialize_pre 12 (f_repr $a) ==> Spec.MLKEM.serialize_post 12 (f_repr $a) $result"#))]
-    fn serialize_12(a: Self, out: &mut [u8]);
+    fn serialize_12(a: &Self, out: &mut [u8]);
     #[requires(a.len() == 24)]
     #[ensures(|result| fstar!(r#"sz (Seq.length $a) =. sz 24 ==> Spec.MLKEM.deserialize_post 12 $a (f_repr $result)"#))]
     fn deserialize_12(a: &[u8], out: &mut Self);

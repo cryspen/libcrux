@@ -3,7 +3,7 @@ use crate::vector::FIELD_MODULUS;
 use libcrux_intrinsics::arm64::*;
 
 #[inline(always)]
-pub(crate) fn compress_1(mut v: SIMD128Vector) -> SIMD128Vector {
+pub(crate) fn compress_1(v: &mut SIMD128Vector) {
     // This is what we are trying to do in portable:
     // let shifted: i16 = 1664 - (fe as i16);
     // let mask = shifted >> 15;
@@ -29,8 +29,6 @@ pub(crate) fn compress_1(mut v: SIMD128Vector) -> SIMD128Vector {
     v.high = _vreinterpretq_s16_u16(_vshrq_n_u16::<15>(_vreinterpretq_u16_s16(
         shifted_positive_in_range,
     )));
-
-    v
 }
 
 #[inline(always)]
@@ -64,7 +62,7 @@ fn compress_int32x4_t<const COEFFICIENT_BITS: i32>(v: _uint32x4_t) -> _uint32x4_
 }
 
 #[inline(always)]
-pub(crate) fn compress<const COEFFICIENT_BITS: i32>(mut v: SIMD128Vector) -> SIMD128Vector {
+pub(crate) fn compress<const COEFFICIENT_BITS: i32>(v: &mut SIMD128Vector) {
     // This is what we are trying to do in portable:
     // let mut compressed = (fe as u64) << coefficient_bits;
     // compressed += 1664 as u64;
@@ -90,7 +88,6 @@ pub(crate) fn compress<const COEFFICIENT_BITS: i32>(mut v: SIMD128Vector) -> SIM
 
     v.low = _vandq_s16(low, mask);
     v.high = _vandq_s16(high, mask);
-    v
 }
 
 #[inline(always)]
@@ -104,16 +101,17 @@ fn decompress_uint32x4_t<const COEFFICIENT_BITS: i32>(v: _uint32x4_t) -> _uint32
 }
 
 #[inline(always)]
-pub fn decompress_1(a: SIMD128Vector) -> SIMD128Vector {
-    let z = ZERO();
-    let s = super::arithmetic::sub(z, &a);
-    super::arithmetic::bitwise_and_with_constant(s, 1665)
+pub(crate) fn decompress_1(a: SIMD128Vector) -> SIMD128Vector {
+    let mut z = ZERO();
+    super::arithmetic::sub(&mut z, &a);
+    super::arithmetic::bitwise_and_with_constant(&mut z, 1665);
+    z
 }
 
 #[inline(always)]
 pub(crate) fn decompress_ciphertext_coefficient<const COEFFICIENT_BITS: i32>(
-    mut v: SIMD128Vector,
-) -> SIMD128Vector {
+    v: &mut SIMD128Vector,
+) {
     let mask16 = _vdupq_n_u32(0xffff);
     let low0 = _vandq_u32(_vreinterpretq_u32_s16(v.low), mask16);
     let low1 = _vshrq_n_u32::<16>(_vreinterpretq_u32_s16(v.low));
@@ -127,5 +125,4 @@ pub(crate) fn decompress_ciphertext_coefficient<const COEFFICIENT_BITS: i32>(
 
     v.low = _vtrn1q_s16(_vreinterpretq_s16_u32(low0), _vreinterpretq_s16_u32(low1));
     v.high = _vtrn1q_s16(_vreinterpretq_s16_u32(high0), _vreinterpretq_s16_u32(high1));
-    v
 }

@@ -4,12 +4,12 @@ use libcrux_intrinsics::arm64::*;
 
 #[inline(always)]
 pub(crate) fn ntt_layer_1_step(
-    mut v: SIMD128Vector,
+    v: &mut SIMD128Vector,
     zeta1: i16,
     zeta2: i16,
     zeta3: i16,
     zeta4: i16,
-) -> SIMD128Vector {
+) {
     // This is what we are trying to do, pointwise for every pair of elements:
     // let t = simd::Vector::montgomery_multiply_fe_by_fer(b, zeta_r);
     // b = simd::Vector::sub(a, &t);
@@ -37,11 +37,10 @@ pub(crate) fn ntt_layer_1_step(
         _vreinterpretq_s32_s16(a),
         _vreinterpretq_s32_s16(b),
     ));
-    v
 }
 
 #[inline(always)]
-pub(crate) fn ntt_layer_2_step(mut v: SIMD128Vector, zeta1: i16, zeta2: i16) -> SIMD128Vector {
+pub(crate) fn ntt_layer_2_step(v: &mut SIMD128Vector, zeta1: i16, zeta2: i16) {
     // This is what we are trying to do for every four elements:
     // let t = simd::Vector::montgomery_multiply_fe_by_fer(b, zeta_r);
     // b = simd::Vector::sub(a, &t);
@@ -69,11 +68,10 @@ pub(crate) fn ntt_layer_2_step(mut v: SIMD128Vector, zeta1: i16, zeta2: i16) -> 
         _vreinterpretq_s64_s16(a),
         _vreinterpretq_s64_s16(b),
     ));
-    v
 }
 
 #[inline(always)]
-pub(crate) fn ntt_layer_3_step(mut v: SIMD128Vector, zeta: i16) -> SIMD128Vector {
+pub(crate) fn ntt_layer_3_step(v: &mut SIMD128Vector, zeta: i16) {
     // This is what we are trying to do for every four elements:
     // let t = simd::Vector::montgomery_multiply_fe_by_fer(b, zeta_r);
     // b = simd::Vector::sub(a, &t);
@@ -83,17 +81,16 @@ pub(crate) fn ntt_layer_3_step(mut v: SIMD128Vector, zeta: i16) -> SIMD128Vector
     let t = montgomery_multiply_int16x8_t(v.high, zeta);
     v.high = _vsubq_s16(v.low, t);
     v.low = _vaddq_s16(v.low, t);
-    v
 }
 
 #[inline(always)]
 pub(crate) fn inv_ntt_layer_1_step(
-    mut v: SIMD128Vector,
+    v: &mut SIMD128Vector,
     zeta1: i16,
     zeta2: i16,
     zeta3: i16,
     zeta4: i16,
-) -> SIMD128Vector {
+) {
     // This is what we are trying to do for every two elements:
     //let a_minus_b = simd::Vector::sub(b, &a);
     //a = simd::Vector::add(a, &b);
@@ -125,11 +122,10 @@ pub(crate) fn inv_ntt_layer_1_step(
         _vreinterpretq_s32_s16(a),
         _vreinterpretq_s32_s16(b),
     ));
-    v
 }
 
 #[inline(always)]
-pub(crate) fn inv_ntt_layer_2_step(mut v: SIMD128Vector, zeta1: i16, zeta2: i16) -> SIMD128Vector {
+pub(crate) fn inv_ntt_layer_2_step(v: &mut SIMD128Vector, zeta1: i16, zeta2: i16) {
     // This is what we are trying to do for every four elements:
     //let a_minus_b = simd::Vector::sub(b, &a);
     //a = simd::Vector::add(a, &b);
@@ -160,11 +156,10 @@ pub(crate) fn inv_ntt_layer_2_step(mut v: SIMD128Vector, zeta1: i16, zeta2: i16)
         _vreinterpretq_s64_s16(a),
         _vreinterpretq_s64_s16(b),
     ));
-    v
 }
 
 #[inline(always)]
-pub(crate) fn inv_ntt_layer_3_step(mut v: SIMD128Vector, zeta: i16) -> SIMD128Vector {
+pub(crate) fn inv_ntt_layer_3_step(v: &mut SIMD128Vector, zeta: i16) {
     // This is what we are trying to do for every four elements:
     //let a_minus_b = simd::Vector::sub(b, &a);
     //a = simd::Vector::add(a, &b);
@@ -173,20 +168,21 @@ pub(crate) fn inv_ntt_layer_3_step(mut v: SIMD128Vector, zeta: i16) -> SIMD128Ve
 
     let zeta = _vdupq_n_s16(zeta);
     let b_minus_a = _vsubq_s16(v.high, v.low);
+
     v.low = _vaddq_s16(v.low, v.high);
     v.high = montgomery_multiply_int16x8_t(b_minus_a, zeta);
-    v
 }
 
 #[inline(always)]
 pub(crate) fn ntt_multiply(
     lhs: &SIMD128Vector,
     rhs: &SIMD128Vector,
+    out: &mut SIMD128Vector,
     zeta1: i16,
     zeta2: i16,
     zeta3: i16,
     zeta4: i16,
-) -> SIMD128Vector {
+) {
     // This is what we are trying to do for pairs of two elements:
     // montgomery_reduce(a0 * b0 + montgomery_reduce(a1 * b1) * zeta),
     // montgomery_reduce(a0 * b1 + a1 * b0)
@@ -234,11 +230,6 @@ pub(crate) fn ntt_multiply(
 
     let indexes: [u8; 16] = [0, 1, 2, 3, 8, 9, 10, 11, 4, 5, 6, 7, 12, 13, 14, 15];
     let index = _vld1q_u8(&indexes);
-    let low2 = _vreinterpretq_s16_u8(_vqtbl1q_u8(_vreinterpretq_u8_s16(low1), index));
-    let high2 = _vreinterpretq_s16_u8(_vqtbl1q_u8(_vreinterpretq_u8_s16(high1), index));
-
-    SIMD128Vector {
-        low: low2,
-        high: high2,
-    }
+    out.low = _vreinterpretq_s16_u8(_vqtbl1q_u8(_vreinterpretq_u8_s16(low1), index));
+    out.high = _vreinterpretq_s16_u8(_vqtbl1q_u8(_vreinterpretq_u8_s16(high1), index));
 }

@@ -3,41 +3,42 @@ use crate::vector::{traits::INVERSE_OF_MODULUS_MOD_MONTGOMERY_R, FIELD_MODULUS};
 use libcrux_intrinsics::arm64::*;
 
 #[inline(always)]
-pub(crate) fn add(mut lhs: SIMD128Vector, rhs: &SIMD128Vector) -> SIMD128Vector {
+pub(crate) fn add(lhs: &mut SIMD128Vector, rhs: &SIMD128Vector) {
     lhs.low = _vaddq_s16(lhs.low, rhs.low);
     lhs.high = _vaddq_s16(lhs.high, rhs.high);
-    lhs
 }
 
 #[inline(always)]
-pub(crate) fn sub(mut lhs: SIMD128Vector, rhs: &SIMD128Vector) -> SIMD128Vector {
+pub(crate) fn sub(lhs: &mut SIMD128Vector, rhs: &SIMD128Vector) {
     lhs.low = _vsubq_s16(lhs.low, rhs.low);
     lhs.high = _vsubq_s16(lhs.high, rhs.high);
-    lhs
 }
 
 #[inline(always)]
-pub(crate) fn multiply_by_constant(mut v: SIMD128Vector, c: i16) -> SIMD128Vector {
+pub(crate) fn negate(vec: &mut SIMD128Vector) {
+    vec.low = _vnegq_s16(vec.low);
+    vec.high = _vnegq_s16(vec.high);
+}
+
+#[inline(always)]
+pub(crate) fn multiply_by_constant(v: &mut SIMD128Vector, c: i16) {
     v.low = _vmulq_n_s16(v.low, c);
     v.high = _vmulq_n_s16(v.high, c);
-    v
 }
 
 #[inline(always)]
-pub(crate) fn bitwise_and_with_constant(mut v: SIMD128Vector, c: i16) -> SIMD128Vector {
+pub(crate) fn bitwise_and_with_constant(v: &mut SIMD128Vector, c: i16) {
     let c = _vdupq_n_s16(c);
     v.low = _vandq_s16(v.low, c);
     v.high = _vandq_s16(v.high, c);
-    v
 }
 
 #[inline(always)]
-pub(crate) fn shift_right<const SHIFT_BY: i32>(mut v: SIMD128Vector) -> SIMD128Vector {
+pub(crate) fn shift_right<const SHIFT_BY: i32>(v: &mut SIMD128Vector) {
     // Should find special cases of this
     // e.g when doing a right shift just to propagate signed bits, use vclezq_s32 instead
     v.low = _vshrq_n_s16::<SHIFT_BY>(v.low);
     v.high = _vshrq_n_s16::<SHIFT_BY>(v.high);
-    v
 }
 
 // #[inline(always)]
@@ -48,7 +49,7 @@ pub(crate) fn shift_right<const SHIFT_BY: i32>(mut v: SIMD128Vector) -> SIMD128V
 // }
 
 #[inline(always)]
-pub(crate) fn cond_subtract_3329(mut v: SIMD128Vector) -> SIMD128Vector {
+pub(crate) fn cond_subtract_3329(v: &mut SIMD128Vector) {
     let c = _vdupq_n_s16(3329);
     let m0 = _vcgeq_s16(v.low, c);
     let m1 = _vcgeq_s16(v.high, c);
@@ -56,7 +57,6 @@ pub(crate) fn cond_subtract_3329(mut v: SIMD128Vector) -> SIMD128Vector {
     let c1 = _vandq_s16(c, _vreinterpretq_s16_u16(m1));
     v.low = _vsubq_s16(v.low, c0);
     v.high = _vsubq_s16(v.high, c1);
-    v
 }
 
 const BARRETT_MULTIPLIER: i16 = 20159;
@@ -77,7 +77,7 @@ pub(crate) fn barrett_reduce_int16x8_t(v: _int16x8_t) -> _int16x8_t {
 }
 
 #[inline(always)]
-pub(crate) fn barrett_reduce(mut v: SIMD128Vector) -> SIMD128Vector {
+pub(crate) fn barrett_reduce(v: &mut SIMD128Vector) {
     //let pv = crate::simd::portable::from_i16_array(to_i16_array(v));
     //from_i16_array(crate::simd::portable::to_i16_array(crate::simd::portable::barrett_reduce(pv)))
 
@@ -88,7 +88,6 @@ pub(crate) fn barrett_reduce(mut v: SIMD128Vector) -> SIMD128Vector {
 
     v.low = barrett_reduce_int16x8_t(v.low);
     v.high = barrett_reduce_int16x8_t(v.high);
-    v
 }
 
 #[inline(always)]
@@ -138,15 +137,16 @@ pub(crate) fn montgomery_multiply_int16x8_t(v: _int16x8_t, c: _int16x8_t) -> _in
 }
 
 #[inline(always)]
-pub(crate) fn montgomery_multiply_by_constant(mut v: SIMD128Vector, c: i16) -> SIMD128Vector {
+pub(crate) fn montgomery_multiply_by_constant(v: &mut SIMD128Vector, c: i16) {
     v.low = montgomery_multiply_by_constant_int16x8_t(v.low, c);
     v.high = montgomery_multiply_by_constant_int16x8_t(v.high, c);
-    v
 }
 
 #[inline(always)]
-pub(crate) fn to_unsigned_representative(a: SIMD128Vector) -> SIMD128Vector {
-    let t = shift_right::<15>(a);
-    let fm = bitwise_and_with_constant(t, FIELD_MODULUS);
-    add(a, &fm)
+pub(crate) fn to_unsigned_representative(mut a: SIMD128Vector) -> SIMD128Vector {
+    let mut t = a.clone();
+    shift_right::<15>(&mut t);
+    bitwise_and_with_constant(&mut t, FIELD_MODULUS);
+    add(&mut a, &t);
+    a
 }

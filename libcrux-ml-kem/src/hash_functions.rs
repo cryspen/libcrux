@@ -486,25 +486,21 @@ pub(crate) mod neon {
         fstar!(r#"$result == Spec.Utils.v_G $input"#))
     ]
     #[inline(always)]
-    fn G(input: &[u8]) -> [u8] {
-        let mut digest = [0u8];
-        libcrux_sha3::neon::sha512(&mut digest, input);
-        digest
+    fn G(input: &[u8], output: &mut [u8]) {
+        libcrux_sha3::neon::sha512(output, input);
     }
 
     #[hax_lib::ensures(|result|
         fstar!(r#"$result == Spec.Utils.v_H $input"#))
     ]
     #[inline(always)]
-    fn H(input: &[u8]) -> [u8] {
-        let mut digest = [0u8];
-        libcrux_sha3::neon::sha256(&mut digest, input);
-        digest
+    fn H(input: &[u8], output: &mut [u8]) {
+        libcrux_sha3::neon::sha256(output, input);
     }
 
     #[hax_lib::requires(fstar!(r#"v $LEN < pow2 32"#))]
-    #[hax_lib::ensures(|result|
-        fstar!(r#"$result == Spec.Utils.v_PRF $LEN $input"#))
+    #[hax_lib::ensures(|()|
+        fstar!(r#"$out_future == Spec.Utils.v_PRF $LEN $input"#))
     ]
     #[inline(always)]
     fn PRF<const LEN: usize>(input: &[u8], out: &mut [u8]) {
@@ -513,8 +509,8 @@ pub(crate) mod neon {
     }
 
     #[hax_lib::requires(fstar!(r#"v $LEN < pow2 32 /\ (v $K == 2 \/ v $K == 3 \/ v $K == 4)"#))]
-    #[hax_lib::ensures(|result|
-        fstar!(r#"$result == Spec.Utils.v_PRFxN $K $LEN $input"#))
+    #[hax_lib::ensures(|()|
+        fstar!(r#"$outputs_future == Spec.Utils.v_PRFxN $K $LEN $input"#))
     ]
     #[inline(always)]
     fn PRFxN(input: &[[u8; 33]], outputs: &mut [u8], out_len: usize) {
@@ -550,22 +546,19 @@ pub(crate) mod neon {
     }
 
     #[inline(always)]
-    fn shake128_init_absorb_final<const K: usize>(input: &[[u8; 34]; K]) -> Simd128Hash {
-        debug_assert!(K == 2 || K == 3 || K == 4);
+    fn shake128_init_absorb_final(input: &[[u8; 34]]) -> Simd128Hash {
+        debug_assert!(input.len() == 2 || input.len() == 3 || input.len() == 4);
+
         let mut state = [x2::incremental::init(), x2::incremental::init()];
-        match K as u8 {
-            2 => {
-                x2::incremental::shake128_absorb_final(&mut state[0], &input[0], &input[1]);
-            }
-            3 => {
-                x2::incremental::shake128_absorb_final(&mut state[0], &input[0], &input[1]);
-                x2::incremental::shake128_absorb_final(&mut state[1], &input[2], &input[2]);
-            }
-            4 => {
-                x2::incremental::shake128_absorb_final(&mut state[0], &input[0], &input[1]);
-                x2::incremental::shake128_absorb_final(&mut state[1], &input[2], &input[3]);
-            }
-            _ => unreachable!("This function can only called be called with N = 2, 3, 4"),
+
+        if input.len() == 2 {
+            x2::incremental::shake128_absorb_final(&mut state[0], &input[0], &input[1]);
+        } else if input.len() == 3 {
+            x2::incremental::shake128_absorb_final(&mut state[0], &input[0], &input[1]);
+            x2::incremental::shake128_absorb_final(&mut state[1], &input[2], &input[2]);
+        } else if input.len() == 4 {
+            x2::incremental::shake128_absorb_final(&mut state[0], &input[0], &input[1]);
+            x2::incremental::shake128_absorb_final(&mut state[1], &input[2], &input[3]);
         }
 
         Simd128Hash {
@@ -574,135 +567,112 @@ pub(crate) mod neon {
     }
 
     #[inline(always)]
-    fn shake128_squeeze_first_three_blocks<const K: usize>(
+    fn shake128_squeeze_first_three_blocks(
         st: &mut Simd128Hash,
-    ) -> [[u8; THREE_BLOCKS]; K] {
-        debug_assert!(K == 2 || K == 3 || K == 4);
+        outputs: &mut [[u8; THREE_BLOCKS]],
+    ) {
+        let len = outputs.len();
+        debug_assert!(len == 2 || len == 3 || len == 4);
 
-        let mut out = [[0u8; THREE_BLOCKS]; K];
-        let mut out0 = [0u8; THREE_BLOCKS];
-        let mut out1 = [0u8; THREE_BLOCKS];
-        let mut out2 = [0u8; THREE_BLOCKS];
-        let mut out3 = [0u8; THREE_BLOCKS];
+        let (out0, rem) = outputs.split_at_mut(1);
+        let (out1, rem) = rem.split_at_mut(1);
 
-        match K as u8 {
-            2 => {
-                x2::incremental::shake128_squeeze_first_three_blocks(
-                    &mut st.shake128_state[0],
-                    &mut out0,
-                    &mut out1,
-                );
-                out[0] = out0;
-                out[1] = out1;
-            }
-            3 => {
-                x2::incremental::shake128_squeeze_first_three_blocks(
-                    &mut st.shake128_state[0],
-                    &mut out0,
-                    &mut out1,
-                );
-                x2::incremental::shake128_squeeze_first_three_blocks(
-                    &mut st.shake128_state[1],
-                    &mut out2,
-                    &mut out3,
-                );
-                out[0] = out0;
-                out[1] = out1;
-                out[2] = out2;
-            }
-            4 => {
-                x2::incremental::shake128_squeeze_first_three_blocks(
-                    &mut st.shake128_state[0],
-                    &mut out0,
-                    &mut out1,
-                );
-                x2::incremental::shake128_squeeze_first_three_blocks(
-                    &mut st.shake128_state[1],
-                    &mut out2,
-                    &mut out3,
-                );
-                out[0] = out0;
-                out[1] = out1;
-                out[2] = out2;
-                out[3] = out3;
-            }
-            _ => unreachable!("This function can only called be called with N = 2, 3, 4"),
+        if len == 2 {
+            x2::incremental::shake128_squeeze_first_three_blocks(
+                &mut st.shake128_state[0],
+                &mut out0[0],
+                &mut out1[0],
+            );
+        } else if len == 3 {
+            let mut tmp = [0u8; THREE_BLOCKS];
+            let (out2, _) = rem.split_at_mut(1);
+
+            x2::incremental::shake128_squeeze_first_three_blocks(
+                &mut st.shake128_state[0],
+                &mut out0[0],
+                &mut out1[0],
+            );
+            x2::incremental::shake128_squeeze_first_three_blocks(
+                &mut st.shake128_state[1],
+                &mut out2[0],
+                &mut tmp,
+            );
+        } else if len == 4 {
+            let (out2, out3) = rem.split_at_mut(1);
+
+            x2::incremental::shake128_squeeze_first_three_blocks(
+                &mut st.shake128_state[0],
+                &mut out0[0],
+                &mut out1[0],
+            );
+            x2::incremental::shake128_squeeze_first_three_blocks(
+                &mut st.shake128_state[1],
+                &mut out2[0],
+                &mut out3[0],
+            );
         }
-        out
     }
 
     #[inline(always)]
-    fn shake128_squeeze_next_block<const K: usize>(st: &mut Simd128Hash) -> [[u8; BLOCK_SIZE]; K] {
-        debug_assert!(K == 2 || K == 3 || K == 4);
+    fn shake128_squeeze_next_block(st: &mut Simd128Hash, outputs: &mut [[u8; BLOCK_SIZE]]) {
+        let len = outputs.len();
+        debug_assert!(len == 2 || len == 3 || len == 4);
 
-        let mut out = [[0u8; BLOCK_SIZE]; K];
-        let mut out0 = [0u8; BLOCK_SIZE];
-        let mut out1 = [0u8; BLOCK_SIZE];
-        let mut out2 = [0u8; BLOCK_SIZE];
-        let mut out3 = [0u8; BLOCK_SIZE];
+        let (out0, rem) = outputs.split_at_mut(1);
+        let (out1, rem) = rem.split_at_mut(1);
 
-        match K as u8 {
-            2 => {
-                x2::incremental::shake128_squeeze_next_block(
-                    &mut st.shake128_state[0],
-                    &mut out0,
-                    &mut out1,
-                );
-                out[0] = out0;
-                out[1] = out1;
-            }
-            3 => {
-                x2::incremental::shake128_squeeze_next_block(
-                    &mut st.shake128_state[0],
-                    &mut out0,
-                    &mut out1,
-                );
-                x2::incremental::shake128_squeeze_next_block(
-                    &mut st.shake128_state[1],
-                    &mut out2,
-                    &mut out3,
-                );
-                out[0] = out0;
-                out[1] = out1;
-                out[2] = out2;
-            }
-            4 => {
-                x2::incremental::shake128_squeeze_next_block(
-                    &mut st.shake128_state[0],
-                    &mut out0,
-                    &mut out1,
-                );
-                x2::incremental::shake128_squeeze_next_block(
-                    &mut st.shake128_state[1],
-                    &mut out2,
-                    &mut out3,
-                );
-                out[0] = out0;
-                out[1] = out1;
-                out[2] = out2;
-                out[3] = out3;
-            }
-            _ => unreachable!("This function is only called with N = 2, 3, 4"),
+        if len == 2 {
+            x2::incremental::shake128_squeeze_next_block(
+                &mut st.shake128_state[0],
+                &mut out0[0],
+                &mut out1[0],
+            );
+        } else if len == 3 {
+            let mut tmp = [0u8; THREE_BLOCKS];
+            let (out2, _) = rem.split_at_mut(1);
+
+            x2::incremental::shake128_squeeze_next_block(
+                &mut st.shake128_state[0],
+                &mut out0[0],
+                &mut out1[0],
+            );
+            x2::incremental::shake128_squeeze_next_block(
+                &mut st.shake128_state[1],
+                &mut out2[0],
+                &mut tmp,
+            );
+        } else if len == 4 {
+            let (out2, out3) = rem.split_at_mut(1);
+
+            x2::incremental::shake128_squeeze_next_block(
+                &mut st.shake128_state[0],
+                &mut out0[0],
+                &mut out1[0],
+            );
+            x2::incremental::shake128_squeeze_next_block(
+                &mut st.shake128_state[1],
+                &mut out2[0],
+                &mut out3[0],
+            );
         }
-        out
     }
 
     #[hax_lib::attributes]
-    impl<const K: usize> Hash<K> for Simd128Hash {
+    impl Hash for Simd128Hash {
         #[ensures(|out|
             fstar!(r#"$out == Spec.Utils.v_G $input"#))
         ]
         #[inline(always)]
-        fn G(input: &[u8]) -> [u8] {
-            G(input)
+        fn G(input: &[u8], output: &mut [u8]) {
+            G(input, output)
         }
 
         #[ensures(|out|
             fstar!(r#"$out == Spec.Utils.v_H $input"#))
         ]
         #[inline(always)]
-        fn H(input: &[u8]) -> [u8] {
-            H(input)
+        fn H(input: &[u8], output: &mut [u8]) {
+            H(input, output)
         }
 
         #[requires(fstar!(r#"v $LEN < pow2 32"#))]
@@ -722,23 +692,23 @@ pub(crate) mod neon {
                 $out == Spec.Utils.v_PRFxN $K $LEN $input"#))
         ]
         #[inline(always)]
-        fn PRFxN<const LEN: usize>(input: &[[u8; 33]; K]) -> [[u8; LEN]; K] {
-            PRFxN::<K, LEN>(input[..])
+        fn PRFxN(input: &[[u8; 33]], outputs: &mut [u8], out_len: usize) {
+            PRFxN(input, outputs, out_len)
         }
 
         #[inline(always)]
-        fn shake128_init_absorb_final(input: &[[u8; 34]; K]) -> Self {
+        fn shake128_init_absorb_final(input: &[[u8; 34]]) -> Self {
             shake128_init_absorb_final(input)
         }
 
         #[inline(always)]
-        fn shake128_squeeze_first_three_blocks(&mut self) -> [[u8; THREE_BLOCKS]; K] {
-            shake128_squeeze_first_three_blocks(self)
+        fn shake128_squeeze_first_three_blocks(&mut self, output: &mut [[u8; THREE_BLOCKS]]) {
+            shake128_squeeze_first_three_blocks(self, output);
         }
 
         #[inline(always)]
-        fn shake128_squeeze_next_block(&mut self) -> [[u8; BLOCK_SIZE]; K] {
-            shake128_squeeze_next_block(self)
+        fn shake128_squeeze_next_block(&mut self, output: &mut [[u8; BLOCK_SIZE]]) {
+            shake128_squeeze_next_block(self, output);
         }
     }
 }
