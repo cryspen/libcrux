@@ -936,8 +936,7 @@ pub(crate) mod unpacked {
                     Seq.index (Seq.index $ind_cpa_a k) (v $i))"#
                     )
                 });
-                *matrix::entry_mut::<K, Vector>(&mut A, i, j) =
-                    matrix::entry::<K, Vector>(ind_cpa_a, j, i).clone();
+                A[i * K + j] = matrix::entry::<K, Vector>(ind_cpa_a, j, i).clone();
             }
         }
         A

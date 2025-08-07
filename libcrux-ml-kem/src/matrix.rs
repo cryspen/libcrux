@@ -14,16 +14,17 @@ pub(crate) fn entry<const K: usize, Vector: Operations>(
     &matrix[i * K + j]
 }
 
-pub(crate) fn entry_mut<const K: usize, Vector: Operations>(
-    matrix: &mut [PolynomialRingElement<Vector>],
-    i: usize,
-    j: usize,
-) -> &mut PolynomialRingElement<Vector> {
-    debug_assert!(matrix.len() == K * K);
-    debug_assert!(i < K);
-    debug_assert!(j < K);
-    &mut matrix[i * K + j]
-}
+//XXX: This would be nice to have, but hax can't handle it (2025-08-07).
+// pub(crate) fn entry_mut<const K: usize, Vector: Operations>(
+//     matrix: &mut [PolynomialRingElement<Vector>],
+//     i: usize,
+//     j: usize,
+// ) -> &mut PolynomialRingElement<Vector> {
+//     debug_assert!(matrix.len() == K * K);
+//     debug_assert!(i < K);
+//     debug_assert!(j < K);
+//     &mut matrix[i * K + j]
+// }
 
 #[inline(always)]
 #[allow(non_snake_case)]
@@ -55,9 +56,9 @@ pub(crate) fn sample_matrix_A<const K: usize, Vector: Operations, Hasher: Hash>(
             for (j, sample) in out.into_iter().enumerate() {
                 // A[i][j] = A_transpose[j][i]
                 if transpose {
-                    PolynomialRingElement::from_i16_array(&sample[..256], entry_mut::<K, Vector>(A_transpose, j,i));
+                    PolynomialRingElement::from_i16_array(&sample[..256], &mut A_transpose[j * K + i]);
                 } else {
-                    PolynomialRingElement::from_i16_array(&sample[..256], entry_mut::<K, Vector>(A_transpose, i, j)); // XXX: in this case we might want to copy all of sample at once
+                    PolynomialRingElement::from_i16_array(&sample[..256], &mut A_transpose[i * K + j]); // XXX: in this case we might want to copy all of sample at once
                 }
             }
         }
