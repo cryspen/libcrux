@@ -197,16 +197,17 @@ pub(crate) fn ntt_at_layer_3<Vector: Operations>(
         (v (Seq.index (Libcrux_ml_kem.Vector.Traits.f_to_i16_array $a) i) +
         v (Seq.index (Libcrux_ml_kem.Vector.Traits.f_to_i16_array t) i))))"#))]
 fn ntt_layer_int_vec_step<Vector: Operations>(
-    a: &mut Vector,
-    b: &mut Vector,
+    coefficients: &mut [Vector; VECTORS_IN_RING_ELEMENT],
+    a: usize,
+    b: usize,
     scratch: &mut Vector,
     zeta_r: i16,
 ) {
-    *scratch = b.clone(); // XXX: Two copies here may not be necessary.
+    *scratch = coefficients[b].clone(); // XXX: Two copies here may not be necessary.
     montgomery_multiply_fe::<Vector>(scratch, zeta_r);
-    *b = a.clone();
-    Vector::add(a, scratch);
-    Vector::sub(b, scratch);
+    coefficients[b] = coefficients[a];
+    Vector::add(&mut coefficients[a], scratch);
+    Vector::sub(&mut coefficients[b], scratch);
 }
 
 #[inline(always)]
@@ -232,16 +233,19 @@ pub(crate) fn ntt_at_layer_4_plus<Vector: Operations>(
     let step_vec = step / 16; //FIELD_ELEMENTS_IN_VECTOR;
     let _zeta_i_init = *zeta_i;
 
-    // For every round, split off two `step_vec` sized slices from the front.
-    let mut remaining_elements = &mut re.coefficients[..];
-    for _round in 0..(128 >> layer) {
+    for round in 0..(128 >> layer) {
         *zeta_i += 1;
 
-        let (a, rest) = remaining_elements.split_at_mut(step_vec);
-        let (b, rest) = rest.split_at_mut(step_vec);
-        remaining_elements = rest;
+        let a_offset = round * 2 * step_vec;
+        let b_offset = a_offset + step_vec;
         for j in 0..step_vec {
-            ntt_layer_int_vec_step(&mut a[j], &mut b[j], scratch, zeta(*zeta_i));
+            ntt_layer_int_vec_step(
+                &mut re.coefficients,
+                a_offset + j,
+                b_offset + j,
+                scratch,
+                zeta(*zeta_i),
+            );
         }
     }
 }

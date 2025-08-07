@@ -210,7 +210,6 @@ pub(crate) fn invert_ntt_at_layer_4_plus<Vector: Operations>(
     let step = 1 << layer;
     let step_vec = step / FIELD_ELEMENTS_IN_VECTOR;
 
-    // For every round, split off two `step_vec` sized slices from the front.
     for round in 0..(128 >> layer) {
         *zeta_i -= 1;
 
