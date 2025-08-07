@@ -303,7 +303,6 @@ pub(crate) fn encapsulate<
         core::array::from_fn(|_i| PolynomialRingElement::<Vector>::ZERO());
     let mut error_2 = PolynomialRingElement::<Vector>::ZERO();
     let mut scratch = PolynomialRingElement::<Vector>::ZERO();
-    let mut scratch_b = Vector::ZERO();
     crate::ind_cpa::encrypt::<
         K,
         K_SQUARED,
@@ -330,7 +329,6 @@ pub(crate) fn encapsulate<
         &mut r_as_ntt,
         &mut error_2,
         &mut scratch,
-        &mut scratch_b,
     );
 
     let mut shared_secret_array = [0u8; 32];
@@ -407,7 +405,6 @@ pub(crate) fn decapsulate<
     );
     let mut decrypted = [0u8; 32];
     let mut scratch = PolynomialRingElement::<Vector>::ZERO();
-    let mut scratch_b = Vector::ZERO();
 
     crate::ind_cpa::decrypt::<
         K,
@@ -421,7 +418,6 @@ pub(crate) fn decapsulate<
         &ciphertext.value,
         &mut decrypted,
         &mut scratch,
-        &mut scratch_b,
     );
 
     let mut to_hash: [u8; SHARED_SECRET_SIZE + H_DIGEST_SIZE] = into_padded_array(&decrypted);
@@ -490,7 +486,6 @@ pub(crate) fn decapsulate<
         &mut r_as_ntt,
         &mut error_2,
         &mut scratch,
-        &mut scratch_b,
     );
 
     let mut implicit_rejection_shared_secret_kdf = [0u8; SHARED_SECRET_SIZE];
@@ -1086,7 +1081,6 @@ pub(crate) mod unpacked {
             from_fn(|_i| PolynomialRingElement::<Vector>::ZERO());
         let mut error_2 = PolynomialRingElement::<Vector>::ZERO();
         let mut scratch = PolynomialRingElement::<Vector>::ZERO();
-        let mut scratch_b = Vector::ZERO();
         ind_cpa::encrypt_unpacked::<
             K,
             K_SQUARED,
@@ -1113,7 +1107,6 @@ pub(crate) mod unpacked {
             &mut r_as_ntt,
             &mut error_2,
             &mut scratch,
-            &mut scratch_b,
         );
         let mut shared_secret_array = [0u8; SHARED_SECRET_SIZE];
         shared_secret_array.copy_from_slice(shared_secret);
@@ -1201,7 +1194,6 @@ pub(crate) mod unpacked {
         let mut decrypted = [0u8; SHARED_SECRET_SIZE];
 
         let mut scratch = PolynomialRingElement::<Vector>::ZERO();
-        let mut scratch_b = Vector::ZERO();
 
         ind_cpa::decrypt_unpacked::<
             K,
@@ -1215,7 +1207,6 @@ pub(crate) mod unpacked {
             &ciphertext.value,
             &mut decrypted,
             &mut scratch,
-            &mut scratch_b,
         );
 
         let mut to_hash: [u8; SHARED_SECRET_SIZE + H_DIGEST_SIZE] = into_padded_array(&decrypted);
@@ -1272,7 +1263,6 @@ pub(crate) mod unpacked {
             &mut r_as_ntt,
             &mut error_2,
             &mut scratch,
-            &mut scratch_b,
         );
 
         let selector =

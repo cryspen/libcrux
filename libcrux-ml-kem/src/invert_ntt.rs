@@ -184,15 +184,14 @@ pub(crate) fn inv_ntt_layer_int_vec_step_reduce<Vector: Operations>(
     coefficients: &mut [Vector; VECTORS_IN_RING_ELEMENT],
     a: usize,
     b: usize,
-    scratch_a: &mut Vector,
-    scratch_b: &mut Vector,
+    scratch: &mut PolynomialRingElement<Vector>,
     zeta_r: i16,
 ) {
-    *scratch_a = coefficients[a].clone();
-    *scratch_b = coefficients[b].clone();
+    scratch.coefficients[0] = coefficients[a].clone();
+    scratch.coefficients[1] = coefficients[b].clone();
 
-    Vector::add(&mut coefficients[a], scratch_b);
-    Vector::sub(&mut coefficients[b], scratch_a);
+    Vector::add(&mut coefficients[a], &scratch.coefficients[1]);
+    Vector::sub(&mut coefficients[b], &scratch.coefficients[0]);
     Vector::barrett_reduce(&mut coefficients[a]);
     montgomery_multiply_fe::<Vector>(&mut coefficients[b], zeta_r);
 }
@@ -204,8 +203,7 @@ pub(crate) fn invert_ntt_at_layer_4_plus<Vector: Operations>(
     zeta_i: &mut usize,
     re: &mut PolynomialRingElement<Vector>,
     layer: usize,
-    scratch_a: &mut Vector,
-    scratch_b: &mut Vector,
+    scratch: &mut PolynomialRingElement<Vector>,
 ) {
     let step = 1 << layer;
     let step_vec = step / FIELD_ELEMENTS_IN_VECTOR;
@@ -221,8 +219,7 @@ pub(crate) fn invert_ntt_at_layer_4_plus<Vector: Operations>(
                 &mut re.coefficients,
                 a_offset + j,
                 b_offset + j,
-                scratch_a,
-                scratch_b,
+                scratch,
                 zeta(*zeta_i),
             );
         }
@@ -234,8 +231,7 @@ pub(crate) fn invert_ntt_at_layer_4_plus<Vector: Operations>(
 #[hax_lib::requires(fstar!(r#"invert_ntt_re_range_1 $re"#))]
 pub(crate) fn invert_ntt_montgomery<const K: usize, Vector: Operations>(
     re: &mut PolynomialRingElement<Vector>,
-    scratch_a: &mut Vector,
-    scratch_b: &mut Vector,
+    scratch: &mut PolynomialRingElement<Vector>,
 ) {
     // We only ever call this function after matrix/vector multiplication
     hax_debug_assert!(to_i16_array(re)
@@ -247,10 +243,10 @@ pub(crate) fn invert_ntt_montgomery<const K: usize, Vector: Operations>(
     invert_ntt_at_layer_1(&mut zeta_i, re);
     invert_ntt_at_layer_2(&mut zeta_i, re);
     invert_ntt_at_layer_3(&mut zeta_i, re);
-    invert_ntt_at_layer_4_plus(&mut zeta_i, re, 4, scratch_a, scratch_b);
-    invert_ntt_at_layer_4_plus(&mut zeta_i, re, 5, scratch_a, scratch_b);
-    invert_ntt_at_layer_4_plus(&mut zeta_i, re, 6, scratch_a, scratch_b);
-    invert_ntt_at_layer_4_plus(&mut zeta_i, re, 7, scratch_a, scratch_b);
+    invert_ntt_at_layer_4_plus(&mut zeta_i, re, 4, scratch);
+    invert_ntt_at_layer_4_plus(&mut zeta_i, re, 5, scratch);
+    invert_ntt_at_layer_4_plus(&mut zeta_i, re, 6, scratch);
+    invert_ntt_at_layer_4_plus(&mut zeta_i, re, 7, scratch);
 
     hax_debug_assert!(
         to_i16_array(re)[0].abs() < 128 * (K as i16) * FIELD_MODULUS

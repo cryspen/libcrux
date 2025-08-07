@@ -89,14 +89,13 @@ pub(crate) fn compute_message<const K: usize, Vector: Operations>(
     u_as_ntt: &[PolynomialRingElement<Vector>; K],
     result: &mut PolynomialRingElement<Vector>,
     scratch: &mut PolynomialRingElement<Vector>,
-    scratch_b: &mut Vector,
 ) {
     for i in 0..K {
         secret_as_ntt[i].ntt_multiply(&u_as_ntt[i], scratch);
         result.add_to_ring_element::<K>(scratch);
     }
 
-    invert_ntt_montgomery::<K, Vector>(result, &mut scratch.coefficients[0], scratch_b);
+    invert_ntt_montgomery::<K, Vector>(result, scratch);
     v.subtract_reduce(result);
 }
 
@@ -121,14 +120,13 @@ pub(crate) fn compute_ring_element_v<const K: usize, Vector: Operations>(
     message: &PolynomialRingElement<Vector>,
     result: &mut PolynomialRingElement<Vector>,
     scratch: &mut PolynomialRingElement<Vector>,
-    scratch_b: &mut Vector,
 ) {
     for i in 0..K {
         t_as_ntt[i].ntt_multiply(&r_as_ntt[i], scratch);
         result.add_to_ring_element::<K>(scratch);
     }
 
-    invert_ntt_montgomery::<K, Vector>(result, &mut scratch.coefficients[0], scratch_b);
+    invert_ntt_montgomery::<K, Vector>(result, scratch);
     error_2.add_message_error_reduce(message, result, &mut scratch.coefficients[0]);
 }
 
@@ -155,7 +153,6 @@ pub(crate) fn compute_vector_u<const K: usize, Vector: Operations>(
     error_1: &[PolynomialRingElement<Vector>],
     result: &mut [PolynomialRingElement<Vector>],
     scratch: &mut PolynomialRingElement<Vector>,
-    scratch_b: &mut Vector,
 ) {
     debug_assert!(a_as_ntt.len() == K * K);
     debug_assert!(r_as_ntt.len() == K);
@@ -167,7 +164,7 @@ pub(crate) fn compute_vector_u<const K: usize, Vector: Operations>(
             result[i].add_to_ring_element::<K>(scratch);
         }
 
-        invert_ntt_montgomery::<K, Vector>(&mut result[i], &mut scratch.coefficients[0], scratch_b);
+        invert_ntt_montgomery::<K, Vector>(&mut result[i], scratch);
         result[i].add_error_reduce(&error_1[i]);
     }
 }
