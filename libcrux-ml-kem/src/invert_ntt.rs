@@ -253,5 +253,5 @@ pub(crate) fn invert_ntt_montgomery<const K: usize, Vector: Operations>(
         .skip(2)
         .all(|(i, coefficient)| coefficient.abs() < (128 / (1 << i.ilog2())) * FIELD_MODULUS));
 
-    re.poly_barrett_reduce()
+    re.poly_barrett_reduce();
 }

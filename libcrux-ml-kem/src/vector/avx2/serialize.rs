@@ -6,7 +6,7 @@ use crate::vector::portable::PortableVector;
 #[hax_lib::fstar::options("--ext context_pruning --compat_pre_core 0")]
 #[hax_lib::requires(fstar!(r#"forall i. i % 16 >= 1 ==> vector i == 0"#))]
 #[hax_lib::ensures(|result| fstar!(r#"forall i. bit_vec_of_int_t_array $result 8 i == $vector (i * 16)"#))]
-pub(crate) fn serialize_1(vector: Vec256) -> [u8; 2] {
+pub(crate) fn serialize_1(vector: &Vec256, out: &mut [u8]) {
     // Suppose |vector| is laid out as follows (superscript number indicates the
     // corresponding bit is duplicated that many times):
     //
@@ -18,7 +18,7 @@ pub(crate) fn serialize_1(vector: Vec256) -> [u8; 2] {
     //
     // a₀0¹⁵ b₀0¹⁵ c₀0¹⁵ d₀0¹⁵ | e₀0¹⁵ f₀0¹⁵ g₀0¹⁵ h₀0¹⁵ | ↩
     // i₀0¹⁵ j₀0¹⁵ k₀0¹⁵ l₀0¹⁵ | m₀0¹⁵ n₀0¹⁵ o₀0¹⁵ p₀0¹⁵
-    let lsb_to_msb = mm256_slli_epi16::<15>(vector);
+    let lsb_to_msb = mm256_slli_epi16::<15>(*vector);
 
     // Get the first 8 16-bit elements ...
     let low_msbs = mm256_castsi256_si128(lsb_to_msb);
@@ -64,15 +64,14 @@ let bits_packed' = BitVec.Intrinsics.mm_movemask_epi8_bv msbs in
     // significant bit from each element and collate them into two bytes.
     let bits_packed = mm_movemask_epi8(msbs);
 
-    let result = [bits_packed as u8, (bits_packed >> 8) as u8];
+    out[0] = bits_packed as u8;
+    out[1] = (bits_packed >> 8) as u8;
 
     hax_lib::fstar!(
         r#"
 assert (forall (i: nat {i < 8}). get_bit ($bits_packed >>! (mk_i32 8) <: i32) (sz i) == get_bit $bits_packed (sz (i + 8)))
 "#
     );
-
-    result
 }
 
 #[inline(always)]
@@ -86,7 +85,7 @@ assert (forall (i: nat {i < 8}). get_bit ($bits_packed >>! (mk_i32 8) <: i32) (s
 "#
 ))]
 #[hax_lib::fstar::before("#restart-solver")]
-pub(crate) fn deserialize_1(bytes: &[u8]) -> Vec256 {
+pub(crate) fn deserialize_1(bytes: &[u8], out: &mut Vec256) {
     #[hax_lib::ensures(|coefficients| fstar!(
         r#"forall (i:nat{i < 256}).
       $coefficients i
@@ -157,7 +156,7 @@ pub(crate) fn deserialize_1(bytes: &[u8]) -> Vec256 {
         mm256_srli_epi16::<15>(coefficients_in_msb)
     }
 
-    deserialize_1_u8s(bytes[0], bytes[1])
+    *out = deserialize_1_u8s(bytes[0], bytes[1]);
 }
 
 /// `mm256_concat_pairs_n(n, x)` is then a sequence of 32 bits packets
@@ -182,7 +181,7 @@ fn mm256_concat_pairs_n(n: u8, x: Vec256) -> Vec256 {
 )]
 #[hax_lib::ensures(|r| fstar!(r#"forall (i: nat{i < 64}). bit_vec_of_int_t_array $r 8 i == $vector ((i/4) * 16 + i%4)"#))]
 #[inline(always)]
-pub(crate) fn serialize_4(vector: Vec256) -> [u8; 8] {
+pub(crate) fn serialize_4(vector: &Vec256, out: &mut [u8]) {
     let mut serialized = [0u8; 16];
 
     // If |vector| is laid out as follows:
@@ -193,7 +192,7 @@ pub(crate) fn serialize_4(vector: Vec256) -> [u8; 8] {
     // as follows:
     //
     // 0x00_00_00_BA 0x00_00_00_DC | 0x00_00_00_FE 0x00_00_00_HG | ...
-    let adjacent_2_combined = mm256_concat_pairs_n(4, vector);
+    let adjacent_2_combined = mm256_concat_pairs_n(4, *vector);
 
     // Recall that |adjacent_2_combined| goes as follows:
     //
@@ -230,7 +229,7 @@ assert (forall (i: nat{i < 64}). $combined i == bit_vec_of_int_t_array serialize
 "#
     );
 
-    serialized[0..8].try_into().unwrap()
+    out.copy_from_slice(&serialized[0..8]);
 }
 
 #[inline(always)]
@@ -240,7 +239,7 @@ assert (forall (i: nat{i < 64}). $combined i == bit_vec_of_int_t_array serialize
                else let j = (i / 16) * 4 + i % 16 in
                      bit_vec_of_int_t_array ($bytes <: t_Array _ (sz 8)) 8 j)"#))]
 #[hax_lib::fstar::before("#restart-solver")]
-pub(crate) fn deserialize_4(bytes: &[u8]) -> Vec256 {
+pub(crate) fn deserialize_4(bytes: &[u8], out: &mut Vec256) {
     #[hax_lib::ensures(|coefficients| fstar!(
         r#"forall (i:nat{i < 256}).
       $coefficients i
@@ -343,13 +342,13 @@ pub(crate) fn deserialize_4(bytes: &[u8]) -> Vec256 {
         mm256_and_si256(coefficients_in_lsb, mm256_set1_epi16((1 << 4) - 1))
     }
 
-    deserialize_4_u8s(
+    *out = deserialize_4_u8s(
         bytes[0], bytes[1], bytes[2], bytes[3], bytes[4], bytes[5], bytes[6], bytes[7],
-    )
+    );
 }
 
 #[inline(always)]
-pub(crate) fn serialize_5(vector: Vec256) -> [u8; 10] {
+pub(crate) fn serialize_5(vector: &Vec256, out: &mut [u8]) {
     let mut serialized = [0u8; 32];
 
     // If |vector| is laid out as follows (superscript number indicates the
@@ -365,7 +364,7 @@ pub(crate) fn serialize_5(vector: Vec256) -> [u8; 10] {
     // 0²²f₄f₃f₂f₁f₀e₄e₃e₂e₁e₀ 0²²h₄h₃h₂h₁h₀g₄g₃g₂g₁g₀ | ↩
     // ....
     let adjacent_2_combined = mm256_madd_epi16(
-        vector,
+        *vector,
         mm256_set_epi16(
             1 << 5,
             1,
@@ -442,7 +441,7 @@ pub(crate) fn serialize_5(vector: Vec256) -> [u8; 10] {
     let upper_8 = mm256_extracti128_si256::<1>(adjacent_8_combined);
     mm_storeu_bytes_si128(&mut serialized[5..21], upper_8);
 
-    serialized[0..10].try_into().unwrap()
+    out.copy_from_slice(&serialized[0..10]);
 }
 
 /// We cannot model `mm256_inserti128_si256` on its own: it produces a
@@ -463,7 +462,7 @@ fn mm256_si256_from_two_si128(lower: Vec128, upper: Vec128) -> Vec256 {
 
 #[inline(always)]
 #[hax_lib::requires(fstar!(r#"Seq.length bytes == 10"#))]
-pub(crate) fn deserialize_5(bytes: &[u8]) -> Vec256 {
+pub(crate) fn deserialize_5(bytes: &[u8], out: &mut Vec256) {
     let coefficients = mm_set_epi8(
         bytes[9] as i8,
         bytes[8] as i8,
@@ -514,14 +513,14 @@ pub(crate) fn deserialize_5(bytes: &[u8]) -> Vec256 {
             1 << 11,
         ),
     );
-    mm256_srli_epi16::<11>(coefficients)
+    *out = mm256_srli_epi16::<11>(coefficients);
 }
 
 #[inline(always)]
 #[hax_lib::fstar::options("--ext context_pruning --split_queries always")]
 #[hax_lib::requires(fstar!(r#"forall (i: nat{i < 256}). i % 16 < 10 || vector i = 0"#))]
 #[hax_lib::ensures(|r| fstar!(r#"forall (i: nat{i < 160}). bit_vec_of_int_t_array r 8 i == vector ((i/10) * 16 + i%10)"#))]
-pub(crate) fn serialize_10(vector: Vec256) -> [u8; 20] {
+pub(crate) fn serialize_10(vector: &Vec256, out: &mut [u8]) {
     #[hax_lib::fstar::options("--ext context_pruning --split_queries always")]
     #[hax_lib::requires(fstar!(r#"forall (i: nat{i < 256}). i % 16 < 10 || vector i = 0"#))]
     #[hax_lib::ensures(|(lower_8, upper_8)| fstar!(
@@ -600,13 +599,13 @@ pub(crate) fn serialize_10(vector: Vec256) -> [u8; 20] {
         (lower_8, upper_8)
     }
 
-    let (lower_8, upper_8) = serialize_10_vec(vector);
+    let (lower_8, upper_8) = serialize_10_vec(*vector);
 
     let mut serialized = [0u8; 32];
     mm_storeu_bytes_si128(&mut serialized[0..16], lower_8);
     mm_storeu_bytes_si128(&mut serialized[10..26], upper_8);
 
-    serialized[0..20].try_into().unwrap()
+    out.copy_from_slice(&serialized[0..20]);
 }
 
 #[inline(always)]
@@ -615,7 +614,7 @@ pub(crate) fn serialize_10(vector: Vec256) -> [u8; 20] {
   $result i = (if i % 16 >= 10 then 0
                else let j = (i / 16) * 10 + i % 16 in
                      bit_vec_of_int_t_array ($bytes <: t_Array _ (sz 20)) 8 j)"#))]
-pub(crate) fn deserialize_10(bytes: &[u8]) -> Vec256 {
+pub(crate) fn deserialize_10(bytes: &[u8], out: &mut Vec256) {
     #[inline(always)]
     #[hax_lib::ensures(|coefficients| fstar!(r#"
 forall (i: nat {i < 256}).
@@ -676,34 +675,41 @@ assert_norm(BitVec.Utils.forall256 (fun i ->
 
     let lower_coefficients = &bytes[0..16];
     let upper_coefficients = &bytes[4..20];
-    deserialize_10_vec(
+    *out = deserialize_10_vec(
         mm_loadu_si128(lower_coefficients),
         mm_loadu_si128(upper_coefficients),
-    )
+    );
 }
 
 #[inline(always)]
 #[hax_lib::fstar::verification_status(lax)]
-pub(crate) fn serialize_11(vector: Vec256) -> [u8; 22] {
+pub(crate) fn serialize_11(vector: &Vec256, out: &mut [u8]) {
     let mut array = [0i16; 16];
-    mm256_storeu_si256_i16(&mut array, vector);
-    let input = PortableVector::from_i16_array(&array);
-    PortableVector::serialize_11(input)
+    mm256_storeu_si256_i16(&mut array, *vector);
+
+    let mut tmp = PortableVector::ZERO();
+    PortableVector::from_i16_array(&array, &mut tmp);
+
+    PortableVector::serialize_11(&tmp, out);
 }
 
 #[inline(always)]
 #[hax_lib::fstar::verification_status(lax)]
-pub(crate) fn deserialize_11(bytes: &[u8]) -> Vec256 {
-    let output = PortableVector::deserialize_11(bytes);
-    let array = PortableVector::to_i16_array(output);
-    mm256_loadu_si256_i16(&array)
+pub(crate) fn deserialize_11(bytes: &[u8], out: &mut Vec256) {
+    let mut tmp = PortableVector::ZERO();
+    PortableVector::deserialize_11(bytes, &mut tmp);
+
+    let mut array = [0i16; 16];
+    PortableVector::to_i16_array(&tmp, &mut array);
+
+    *out = mm256_loadu_si256_i16(&array);
 }
 
 #[inline(always)]
 #[hax_lib::fstar::options("--ext context_pruning --split_queries always")]
 #[hax_lib::requires(fstar!(r#"forall (i: nat{i < 256}). i % 16 < 12 || vector i = 0"#))]
 #[hax_lib::ensures(|r| fstar!(r#"forall (i: nat{i < 192}). bit_vec_of_int_t_array r 8 i == vector ((i/12) * 16 + i%12)"#))]
-pub(crate) fn serialize_12(vector: Vec256) -> [u8; 24] {
+pub(crate) fn serialize_12(vector: &Vec256, out: &mut [u8]) {
     #[inline(always)]
     #[hax_lib::fstar::options("--ext context_pruning --split_queries always")]
     #[hax_lib::requires(fstar!(r#"forall (i: nat{i < 256}). i % 16 < 12 || vector i = 0"#))]
@@ -742,11 +748,11 @@ pub(crate) fn serialize_12(vector: Vec256) -> [u8; 24] {
     }
 
     let mut serialized = [0u8; 32];
-    let (lower_8, upper_8) = serialize_12_vec(vector);
+    let (lower_8, upper_8) = serialize_12_vec(*vector);
     mm_storeu_bytes_si128(&mut serialized[0..16], lower_8);
     mm_storeu_bytes_si128(&mut serialized[12..28], upper_8);
 
-    serialized[0..24].try_into().unwrap()
+    out.copy_from_slice(&serialized[0..24]);
 }
 
 #[inline(always)]
@@ -755,7 +761,7 @@ pub(crate) fn serialize_12(vector: Vec256) -> [u8; 24] {
   $result i = (if i % 16 >= 12 then 0
                else let j = (i / 16) * 12 + i % 16 in
                      bit_vec_of_int_t_array ($bytes <: t_Array _ (sz 24)) 8 j)"#))]
-pub(crate) fn deserialize_12(bytes: &[u8]) -> Vec256 {
+pub(crate) fn deserialize_12(bytes: &[u8], out: &mut Vec256) {
     #[inline(always)]
     #[hax_lib::ensures(|coefficients| fstar!(r#"
 forall (i: nat {i < 256}).
@@ -814,5 +820,5 @@ assert_norm(BitVec.Utils.forall256 (fun i ->
     }
     let lower_coefficients = mm_loadu_si128(&bytes[0..16]);
     let upper_coefficients = mm_loadu_si128(&bytes[8..24]);
-    deserialize_12_vec(lower_coefficients, upper_coefficients)
+    *out = deserialize_12_vec(lower_coefficients, upper_coefficients);
 }

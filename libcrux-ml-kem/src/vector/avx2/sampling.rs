@@ -15,7 +15,8 @@ pub(crate) fn rejection_sample(input: &[u8], output: &mut [i16]) -> usize {
     // The input bytes can be interpreted as a sequence of serialized
     // 12-bit (i.e. uncompressed) coefficients. Not all coefficients may be
     // less than FIELD_MODULUS though.
-    let potential_coefficients = deserialize_12(input);
+    let mut potential_coefficients = mm256_setzero_si256();
+    deserialize_12(input, &mut potential_coefficients);
 
     // Suppose we view |potential_coefficients| as follows (grouping 64-bit elements):
     //
@@ -29,7 +30,8 @@ pub(crate) fn rejection_sample(input: &[u8], output: &mut [i16]) -> usize {
     // Since every bit in each lane is either 0 or 1, we only need one bit from
     // each lane in the register to tell us what coefficients to keep and what
     // to throw-away. Combine all the bits (there are 16) into two bytes.
-    let good = serialize_1(compare_with_field_modulus);
+    let mut good = [0u8; 2];
+    serialize_1(&compare_with_field_modulus, &mut good);
     hax_lib::fstar!(
         r#"assert (v (cast (${good}.[ sz 0 ] <: u8) <: usize) < 256);
         assert (v (cast (${good}.[ sz 1 ] <: u8) <: usize) < 256);

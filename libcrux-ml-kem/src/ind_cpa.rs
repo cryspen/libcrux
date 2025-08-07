@@ -20,7 +20,7 @@ use crate::{
     },
     utils::{into_padded_array, prf_input_inc},
     variant::Variant,
-    vector::Operations,
+    vector::{portable::PortableVector, Operations},
 };
 
 /// Types for the unpacked API.
@@ -914,7 +914,7 @@ pub(crate) fn encrypt_c2<
     // v := NTT^{−1}(tˆT ◦ rˆ) + e_2 + Decompress_q(Decode_1(m),1)
     let mut message_as_ring_element = PolynomialRingElement::<Vector>::ZERO();
     deserialize_then_decompress_message(message, &mut message_as_ring_element);
-    let mut v = PolynomialRingElement::<Vector>::ZERO();
+    let mut v = PolynomialRingElement::ZERO();
     compute_ring_element_v(
         t_as_ntt,
         r_as_ntt,

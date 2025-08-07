@@ -298,7 +298,7 @@ pub(crate) fn encapsulate<
     Hasher::G(&to_hash, &mut hashed);
     let (shared_secret, pseudorandomness) = hashed.split_at(SHARED_SECRET_SIZE);
 
-    let mut ciphertext = [0u8; CIPHERTEXT_SIZE];
+    let mut ciphertext = MlKemCiphertext::default();
     let mut r_as_ntt: [PolynomialRingElement<Vector>; K] =
         core::array::from_fn(|_i| PolynomialRingElement::<Vector>::ZERO());
     let mut error_2 = PolynomialRingElement::<Vector>::ZERO();
@@ -325,15 +325,18 @@ pub(crate) fn encapsulate<
         public_key.as_slice(),
         &processed_randomness,
         pseudorandomness,
-        &mut ciphertext,
+        &mut ciphertext.value,
         &mut r_as_ntt,
         &mut error_2,
         &mut scratch,
     );
 
     let mut shared_secret_array = [0u8; 32];
-    Scheme::kdf::<K, CIPHERTEXT_SIZE, Hasher>(shared_secret, &ciphertext, &mut shared_secret_array);
-    let ciphertext = MlKemCiphertext::from(ciphertext);
+    Scheme::kdf::<K, CIPHERTEXT_SIZE, Hasher>(
+        shared_secret,
+        &ciphertext.value,
+        &mut shared_secret_array,
+    );
     (ciphertext, shared_secret_array)
 }
 
