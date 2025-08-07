@@ -13,7 +13,7 @@ pub const BARRETT_R: i32 = 1 << BARRETT_SHIFT;
 #[hax_lib::attributes]
 pub trait Repr: Copy + Clone {
     #[requires(true)]
-    fn repr(&self) -> [i16; 16];
+    fn repr(a: Self) -> [i16; 16];
 }
 
 #[cfg(any(eurydice, not(hax)))]
@@ -133,6 +133,12 @@ pub trait Operations: Copy + Clone + Repr {
             v $COEFFICIENT_BITS == 11) ==>
                 (forall (i:nat). i < 16 ==> bounded (Seq.index (f_repr $result) i) (v $COEFFICIENT_BITS))"#))]
     fn compress<const COEFFICIENT_BITS: i32>(a: &mut Self);
+
+    #[hax_lib::requires(fstar!(r#"forall (i:nat). i < 16 ==>
+                                    (let x = Seq.index (f_repr ${a}) i in 
+                                     (x == mk_i16 0 \/ x == mk_i16 1))"#))]
+    fn decompress_1(a: Self) -> Self;
+
     #[requires(fstar!(r#"(v $COEFFICIENT_BITS == 4 \/
         v $COEFFICIENT_BITS == 5 \/
         v $COEFFICIENT_BITS == 10 \/

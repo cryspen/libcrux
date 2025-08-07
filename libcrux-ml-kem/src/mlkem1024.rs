@@ -600,7 +600,7 @@ pub mod rand {
         let mut randomness = [0u8; KEY_GENERATION_SEED_SIZE];
         rng.fill_bytes(&mut randomness);
 
-        super::generate_key_pair(&randomness)
+        super::generate_key_pair(randomness)
     }
 
     /// Encapsulate ML-KEM 1024
@@ -616,7 +616,7 @@ pub mod rand {
         let mut randomness = [0u8; SHARED_SECRET_SIZE];
         rng.fill_bytes(&mut randomness);
 
-        super::encapsulate(public_key, &randomness)
+        super::encapsulate(public_key, randomness)
     }
 }
 

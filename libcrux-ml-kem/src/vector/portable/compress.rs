@@ -231,9 +231,7 @@ pub(crate) fn compress<const COEFFICIENT_BITS: i32>(a: &mut PortableVector) {
         (let res_i = v (Seq.index ${result}.f_elements i) in
          res_i == 0 \/ res_i == 1665)"#))]
 #[inline(always)]
-pub(crate) fn decompress_1(a: PortableVector) -> PortableVector {
-    let z = zero();
-
+pub(crate) fn decompress_1(mut a: PortableVector) -> PortableVector {
     hax_lib::fstar!("assert(forall i. Seq.index ${z}.f_elements i == mk_i16 0)");
     hax_lib::fstar!(
         r#"assert(forall i. let x = Seq.index ${a}.f_elements i in 
@@ -245,21 +243,21 @@ pub(crate) fn decompress_1(a: PortableVector) -> PortableVector {
                                         (0 - v (Seq.index ${a}.f_elements i)))"#
     );
 
-    let s = sub(z, &a);
+    negate(&mut a);
 
     hax_lib::fstar!(
         r#"assert(forall i. Seq.index ${s}.f_elements i == mk_i16 0 \/ 
                                       Seq.index ${s}.f_elements i == mk_i16 (-1))"#
     );
 
-    let res = bitwise_and_with_constant(s, 1665);
+    bitwise_and_with_constant(&mut a, 1665);
 
     hax_lib::fstar!(
         r#"assert(forall i. Seq.index ${res}.f_elements i == mk_i16 0 \/ 
                                       Seq.index ${res}.f_elements i == mk_i16 1665)"#
     );
 
-    res
+    a
 }
 
 #[inline(always)]
