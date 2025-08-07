@@ -27,7 +27,9 @@ fn vec_zero() -> SIMD256Vector {
 #[inline(always)]
 #[hax_lib::fstar::verification_status(panic_free)]
 #[hax_lib::ensures(|_| fstar!(r#"${out}_future == repr ${vector}"#))]
-fn vec_to_i16_array(vector: &Vec256, out: &mut [i16; 16]) {
+fn vec_to_i16_array(vector: &Vec256, out: &mut [i16]) {
+    debug_assert!(out.len() >= 16);
+
     mm256_storeu_si256_i16(out, *vector);
 }
 
@@ -258,7 +260,7 @@ impl Operations for SIMD256Vector {
 
     #[ensures(|_| fstar!(r#"${out}_future == impl.f_repr $x"#))]
     #[inline(always)]
-    fn to_i16_array(x: &Self, out: &mut [i16; 16]) {
+    fn to_i16_array(x: &Self, out: &mut [i16]) {
         vec_to_i16_array(&x.elements, out);
     }
 

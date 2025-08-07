@@ -43,7 +43,7 @@ impl Operations for SIMD128Vector {
     }
 
     #[ensures(|out| fstar!(r#"out == impl.f_repr $x"#))]
-    fn to_i16_array(x: &Self, out: &mut [i16; 16]) {
+    fn to_i16_array(x: &Self, out: &mut [i16]) {
         to_i16_array(x, out)
     }
 

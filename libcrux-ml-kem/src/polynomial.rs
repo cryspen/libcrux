@@ -80,10 +80,7 @@ fn to_i16_array<Vector: Operations>(re: PolynomialRingElement<Vector>, out: &mut
 
     for i in 0..re.coefficients.len() {
         hax_lib::loop_invariant!(|_i: usize| out.len() == _out_len);
-        Vector::to_i16_array(
-            &re.coefficients[i],
-            &mut out[i * 16..(i + 1) * 16].try_into().unwrap(),
-        );
+        Vector::to_i16_array(&re.coefficients[i], &mut out[i * 16..(i + 1) * 16]);
     }
 }
 

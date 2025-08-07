@@ -9,7 +9,9 @@ pub struct SIMD128Vector {
 
 #[inline(always)]
 #[hax_lib::ensures(|_| fstar!("${out}_future == repr ${v}"))]
-pub(crate) fn to_i16_array(v: &SIMD128Vector, out: &mut [i16; 16]) {
+pub(crate) fn to_i16_array(v: &SIMD128Vector, out: &mut [i16]) {
+    debug_assert!(out.len() >= 16);
+
     _vst1q_s16(&mut out[0..8], v.low);
     _vst1q_s16(&mut out[8..16], v.high);
 }

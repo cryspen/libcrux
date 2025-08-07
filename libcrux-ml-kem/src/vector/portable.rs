@@ -129,7 +129,7 @@ impl Operations for PortableVector {
     }
 
     #[ensures(|_| fstar!(r#"${out}_future == impl.f_repr $x"#))]
-    fn to_i16_array(x: &Self, out: &mut [i16; 16]) {
+    fn to_i16_array(x: &Self, out: &mut [i16]) {
         to_i16_array(x, out)
     }
 

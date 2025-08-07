@@ -1194,7 +1194,7 @@ pub(crate) fn deserialize_vector<const K: usize, Vector: Operations>(
     length $decrypted == ${crate::constants::SHARED_SECRET_SIZE}"#))]
 #[hax_lib::ensures(|_|
     fstar!(r#"${decrypted}_future == Spec.MLKEM.ind_cpa_decrypt_unpacked $K $ciphertext
-        (Libcrux_ml_kem.Polynomial.to_spec_vector_t #$K #$:Vector ${secret_key}.f_secret_as_ntt) /\ length &{decrypted}_future == length $decrypted"#)
+        (Libcrux_ml_kem.Polynomial.to_spec_vector_t #$K #$:Vector ${secret_key}.f_secret_as_ntt) /\ length ${decrypted}_future == length $decrypted"#)
 )]
 #[inline(always)]
 pub(crate) fn decrypt_unpacked<
@@ -1209,7 +1209,6 @@ pub(crate) fn decrypt_unpacked<
     ciphertext: &[u8; CIPHERTEXT_SIZE],
     decrypted: &mut [u8],
     scratch: &mut PolynomialRingElement<Vector>,
-   
 ) {
     // u := Decompress_q(Decode_{d_u}(c), d_u)
     let mut u_as_ntt = from_fn(|_| PolynomialRingElement::<Vector>::ZERO());
@@ -1234,7 +1233,6 @@ pub(crate) fn decrypt_unpacked<
         &u_as_ntt,
         &mut message,
         scratch,
-   
     );
     compress_then_serialize_message(&message, decrypted, &mut scratch.coefficients[0]);
 }
@@ -1248,8 +1246,7 @@ pub(crate) fn decrypt_unpacked<
     $V_COMPRESSION_FACTOR == Spec.MLKEM.v_VECTOR_V_COMPRESSION_FACTOR $K /\
     length $decrypted == ${crate::constants::SHARED_SECRET_SIZE}"#))]
 #[hax_lib::ensures(|_|
-    fstar!(r#"${decrypted}_future == Spec.MLKEM.ind_cpa_decrypt $K $secret_key $ciphertext /\ length &{decrypted}_future == length $decrypted"#)
-    
+    fstar!(r#"${decrypted}_future == Spec.MLKEM.ind_cpa_decrypt $K $secret_key $ciphertext /\ length ${decrypted}_future == length $decrypted"#)
 )]
 #[inline(always)]
 pub(crate) fn decrypt<
@@ -1279,5 +1276,5 @@ pub(crate) fn decrypt<
         U_COMPRESSION_FACTOR,
         V_COMPRESSION_FACTOR,
         Vector,
-        >(&secret_key_unpacked, ciphertext, decrypted, scratch);
+    >(&secret_key_unpacked, ciphertext, decrypted, scratch);
 }

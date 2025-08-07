@@ -20,8 +20,10 @@ pub fn zero() -> PortableVector {
 
 #[inline(always)]
 #[hax_lib::ensures(|_| fstar!(r#"${out}_future == ${x}.f_elements"#))]
-pub fn to_i16_array(x: &PortableVector, out: &mut [i16; 16]) {
-    *out = x.elements.declassify();
+pub fn to_i16_array(x: &PortableVector, out: &mut [i16]) {
+    debug_assert!(out.len() >= 16);
+
+    out[0..16].copy_from_slice(&x.elements.declassify());
 }
 
 #[inline(always)]

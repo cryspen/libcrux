@@ -51,7 +51,7 @@ pub trait Operations: Copy + Clone + Repr {
 
     #[requires(true)]
     #[ensures(|_| fstar!(r#"f_repr $x == ${out}_future"#))]
-    fn to_i16_array(x: &Self, out: &mut [i16; 16]);
+    fn to_i16_array(x: &Self, out: &mut [i16]);
 
     #[requires(array.len() >= 32)]
     fn from_bytes(array: &[u8], out: &mut Self);
