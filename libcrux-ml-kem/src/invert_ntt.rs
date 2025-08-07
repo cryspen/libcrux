@@ -1,6 +1,6 @@
 use crate::{
     hax_utils::hax_debug_assert,
-    polynomial::{zeta, PolynomialRingElement},
+    polynomial::{zeta, PolynomialRingElement, VECTORS_IN_RING_ELEMENT},
     vector::{traits::montgomery_multiply_fe, Operations, FIELD_ELEMENTS_IN_VECTOR},
 };
 
@@ -181,17 +181,20 @@ pub(crate) fn invert_ntt_at_layer_3<Vector: Operations>(
     Spec.Utils.is_i16b_array 28296 (Libcrux_ml_kem.Vector.Traits.f_to_i16_array
         (Libcrux_ml_kem.Vector.Traits.f_add $a $b))"#))]
 pub(crate) fn inv_ntt_layer_int_vec_step_reduce<Vector: Operations>(
-    a: &mut Vector,
-    b: &mut Vector,
-    scratch: &mut Vector,
+    coefficients: &mut [Vector; VECTORS_IN_RING_ELEMENT],
+    a: usize,
+    b: usize,
+    scratch_a: &mut Vector,
+    scratch_b: &mut Vector,
     zeta_r: i16,
 ) {
-    *scratch = b.clone();
-    Vector::sub(scratch, a);
-    Vector::add(a, b);
-    Vector::barrett_reduce(a);
-    montgomery_multiply_fe::<Vector>(scratch, zeta_r);
-    *b = scratch.clone();
+    *scratch_a = coefficients[a].clone();
+    *scratch_b = coefficients[b].clone();
+
+    Vector::add(&mut coefficients[a], scratch_b);
+    Vector::sub(&mut coefficients[b], scratch_a);
+    Vector::barrett_reduce(&mut coefficients[a]);
+    montgomery_multiply_fe::<Vector>(&mut coefficients[b], zeta_r);
 }
 
 #[inline(always)]
@@ -201,21 +204,28 @@ pub(crate) fn invert_ntt_at_layer_4_plus<Vector: Operations>(
     zeta_i: &mut usize,
     re: &mut PolynomialRingElement<Vector>,
     layer: usize,
-    scratch: &mut Vector,
+    scratch_a: &mut Vector,
+    scratch_b: &mut Vector,
 ) {
     let step = 1 << layer;
     let step_vec = step / FIELD_ELEMENTS_IN_VECTOR;
 
     // For every round, split off two `step_vec` sized slices from the front.
-    let mut remaining_elements = &mut re.coefficients[..];
-    for _round in 0..(128 >> layer) {
+    for round in 0..(128 >> layer) {
         *zeta_i -= 1;
 
-        let (a, rest) = remaining_elements.split_at_mut(step_vec);
-        let (b, rest) = rest.split_at_mut(step_vec);
-        remaining_elements = rest;
+        let a_offset = round * 2 * step_vec;
+        let b_offset = a_offset + step_vec;
+
         for j in 0..step_vec {
-            inv_ntt_layer_int_vec_step_reduce(&mut a[j], &mut b[j], scratch, zeta(*zeta_i));
+            inv_ntt_layer_int_vec_step_reduce(
+                &mut re.coefficients,
+                a_offset + j,
+                b_offset + j,
+                scratch_a,
+                scratch_b,
+                zeta(*zeta_i),
+            );
         }
     }
 }
@@ -225,7 +235,8 @@ pub(crate) fn invert_ntt_at_layer_4_plus<Vector: Operations>(
 #[hax_lib::requires(fstar!(r#"invert_ntt_re_range_1 $re"#))]
 pub(crate) fn invert_ntt_montgomery<const K: usize, Vector: Operations>(
     re: &mut PolynomialRingElement<Vector>,
-    scratch: &mut Vector,
+    scratch_a: &mut Vector,
+    scratch_b: &mut Vector,
 ) {
     // We only ever call this function after matrix/vector multiplication
     hax_debug_assert!(to_i16_array(re)
@@ -237,10 +248,10 @@ pub(crate) fn invert_ntt_montgomery<const K: usize, Vector: Operations>(
     invert_ntt_at_layer_1(&mut zeta_i, re);
     invert_ntt_at_layer_2(&mut zeta_i, re);
     invert_ntt_at_layer_3(&mut zeta_i, re);
-    invert_ntt_at_layer_4_plus(&mut zeta_i, re, 4, scratch);
-    invert_ntt_at_layer_4_plus(&mut zeta_i, re, 5, scratch);
-    invert_ntt_at_layer_4_plus(&mut zeta_i, re, 6, scratch);
-    invert_ntt_at_layer_4_plus(&mut zeta_i, re, 7, scratch);
+    invert_ntt_at_layer_4_plus(&mut zeta_i, re, 4, scratch_a, scratch_b);
+    invert_ntt_at_layer_4_plus(&mut zeta_i, re, 5, scratch_a, scratch_b);
+    invert_ntt_at_layer_4_plus(&mut zeta_i, re, 6, scratch_a, scratch_b);
+    invert_ntt_at_layer_4_plus(&mut zeta_i, re, 7, scratch_a, scratch_b);
 
     hax_debug_assert!(
         to_i16_array(re)[0].abs() < 128 * (K as i16) * FIELD_MODULUS
