@@ -292,7 +292,7 @@ impl Operations for SIMD256Vector {
     }
 
     fn negate(vec: &mut Self) {
-        vec.elements = mm256_sign_epi32(vec.elements, mm256_set1_epi32(-1));
+        vec.elements = mm256_sign_epi16(vec.elements, mm256_set1_epi16(-1));
     }
 
     #[requires(fstar!(r#"forall i. i < 16 ==> 
