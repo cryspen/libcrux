@@ -147,6 +147,11 @@ impl Initiator {
 
         Ok(RegisteredPsk { psk, psk_handle })
     }
+
+    /// Derives a PSK from the initiator's PQ-PrePSK, if initialized.
+    pub fn derive_unregistered_psk(&self) -> Result<Psk, Error> {
+        derive_psk(&self.k_pq)
+    }
 }
 
 fn serialize_ts_ttl(ts: &Duration, psk_ttl: &Duration) -> [u8; TS_TTL_LEN] {
