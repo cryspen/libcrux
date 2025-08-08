@@ -156,8 +156,8 @@ impl Initiator {
 
     /// Returns the unregisterd PSK.
     /// This is computed while generating the inital message.
-    pub fn unregistered_psk(&self) -> Psk {
-        self.unregistered_psk
+    pub fn unregistered_psk(&self) -> &Psk {
+        &self.unregistered_psk
     }
 }
 
