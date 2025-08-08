@@ -8,7 +8,7 @@ use tls_codec::{
 use crate::protocol::MessageOut;
 
 use super::{
-    api::{Error, IntoTransport, Protocol, Transport},
+    api::{Error, IntoSession, Protocol, Session, ToTransportState},
     dhkem::{DHKeyPair, DHPrivateKey, DHPublicKey},
     keys::{
         derive_k0, derive_k1, derive_k2_query_initiator, derive_k2_registration_initiator, AEADKey,
@@ -45,30 +45,25 @@ pub enum InitiatorOuterPayloadOut<'a> {
 }
 
 #[derive(TlsDeserialize, TlsSize)]
-pub struct InitiatorInnerPayload(pub VLBytes);
+pub(crate) struct InitiatorInnerPayload(pub VLBytes);
 
 #[derive(TlsSerialize, TlsSize)]
-pub struct InitiatorInnerPayloadOut<'a>(pub VLByteSlice<'a>);
+pub(crate) struct InitiatorInnerPayloadOut<'a>(pub VLByteSlice<'a>);
 
-pub struct InitialState {
+pub(crate) struct InitialState {
     initiator_ephemeral_keys: DHKeyPair,
     tx0: Transcript,
     k0: AEADKey,
 }
 
-pub struct WaitingState {
+pub(crate) struct WaitingState {
     initiator_ephemeral_ecdh_sk: DHPrivateKey,
     tx1: Transcript,
     k1: AEADKey,
 }
 
-pub struct ToTransportState {
-    tx2: Transcript,
-    k2: AEADKey,
-}
-
 #[derive(Default)]
-pub enum RegistrationInitiatorState {
+pub(crate) enum RegistrationInitiatorState {
     #[default]
     InProgress, // A placeholder while computing the next state
     Initial(Box<InitialState>),
@@ -302,19 +297,33 @@ impl<'a, Rng: CryptoRng> Protocol for RegistrationInitiator<'a, Rng> {
 
         let out_bytes_written = write_output(registration_response.0.as_slice(), out)?;
 
-        self.state = RegistrationInitiatorState::ToTransport(ToTransportState { tx2, k2 }.into());
+        self.state = RegistrationInitiatorState::ToTransport(
+            ToTransportState {
+                tx2,
+                k2,
+                initiator_ecdh_pk: None,
+            }
+            .into(),
+        );
 
         Ok((bytes_deserialized, out_bytes_written))
     }
 }
 
-impl<'a, Rng: CryptoRng> IntoTransport for RegistrationInitiator<'a, Rng> {
-    fn into_transport_mode(self) -> Result<Transport, Error> {
+impl<'a, Rng: CryptoRng> IntoSession for RegistrationInitiator<'a, Rng> {
+    fn into_session(self) -> Result<Session, Error> {
         let RegistrationInitiatorState::ToTransport(state) = self.state else {
             return Err(Error::InitiatorState);
         };
 
-        Transport::new(state.tx2, state.k2)
+        Session::new(
+            state.tx2,
+            state.k2,
+            &self.initiator_longterm_ecdh_keys.pk,
+            &self.responder_longterm_ecdh_pk,
+            self.responder_longterm_pq_pk,
+            true,
+        )
     }
 
     fn is_handshake_finished(&self) -> bool {

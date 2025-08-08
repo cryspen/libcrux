@@ -1,4 +1,6 @@
 //! This module provides a trait for a generic authenticator.
+use tls_codec::{Deserialize, Serialize};
+
 use crate::Error;
 
 /// A generic authentication primitive.
@@ -10,13 +12,13 @@ use crate::Error;
 /// identity.
 pub trait Authenticator {
     /// The authenticator's signature objects.
-    type Signature: AsRef<[u8]>;
+    type Signature: Serialize + Deserialize;
     /// The authenticator's signing key objects.
     type SigningKey;
     /// The authenticator's verification key objects.
     type VerificationKey;
     /// The client's credential.
-    type Credential: AsRef<[u8]>;
+    type Credential: Serialize + Deserialize;
     /// Information necessary to validate the credential.
     type Certificate;
     /// Length (in bytes) of a serialized credential key.
@@ -39,12 +41,6 @@ pub trait Authenticator {
         signature: &Self::Signature,
         message: &[u8],
     ) -> Result<(), Error>;
-
-    /// Deserialize a verification key.
-    fn deserialize_credential(bytes: &[u8]) -> Result<Self::Credential, Error>;
-
-    /// Deserialize a signature.
-    fn deserialize_signature(bytes: &[u8]) -> Result<Self::Signature, Error>;
 }
 
 /// A no-op authenticator that does nothing.
@@ -72,14 +68,6 @@ impl Authenticator for NoAuth {
         Ok(())
     }
 
-    fn deserialize_credential(_bytes: &[u8]) -> Result<Self::VerificationKey, Error> {
-        Ok([0; 0])
-    }
-
-    fn deserialize_signature(_bytes: &[u8]) -> Result<Self::Signature, Error> {
-        Ok([0; 0])
-    }
-
     fn validate_credential(
         _credential: Self::Credential,
         _certificate: &Self::Certificate,
@@ -99,7 +87,7 @@ impl Authenticator for Ed25519 {
 
     type SigningKey = [u8; 32];
 
-    type VerificationKey = [u8; 32];
+    type VerificationKey = libcrux_ed25519::VerificationKey;
 
     type Credential = Self::VerificationKey;
 
@@ -118,16 +106,8 @@ impl Authenticator for Ed25519 {
         signature: &Self::Signature,
         message: &[u8],
     ) -> Result<(), Error> {
-        libcrux_ed25519::verify(message, verification_key, signature).map_err(|_| Error::CredError)
-    }
-
-    /// CAUTION: This does not perform validation of the verification key.
-    fn deserialize_credential(bytes: &[u8]) -> Result<Self::VerificationKey, Error> {
-        bytes.try_into().map_err(|_| Error::CredError)
-    }
-
-    fn deserialize_signature(bytes: &[u8]) -> Result<Self::Signature, Error> {
-        bytes.try_into().map_err(|_| Error::CredError)
+        libcrux_ed25519::verify(message, verification_key.as_ref(), signature)
+            .map_err(|_| Error::CredError)
     }
 
     fn validate_credential(
@@ -136,7 +116,7 @@ impl Authenticator for Ed25519 {
     ) -> Result<Self::VerificationKey, Error> {
         // We only check that the out of band key is the same as the
         // key that is provided as the credential.
-        (credential == *cert)
+        (credential.as_ref() == cert.as_ref())
             .then_some(credential)
             .ok_or(Error::CredError)
     }

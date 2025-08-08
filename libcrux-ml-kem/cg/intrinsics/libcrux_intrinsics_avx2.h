@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: 2024 Cryspen Sarl <info@cryspen.com>
+ * SPDX-FileCopyrightText: 2024-2025 Cryspen Sarl <info@cryspen.com>
  *
  * SPDX-License-Identifier: Apache-2.0
  */
@@ -11,7 +11,7 @@
 extern "C" {
 #endif
 
-#include "eurydice_glue.h"
+#include "../eurydice_glue.h"
 #include "immintrin.h"
 
 typedef __m128i core_core_arch_x86___m128i;
