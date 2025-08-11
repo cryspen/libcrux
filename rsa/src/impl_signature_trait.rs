@@ -28,7 +28,12 @@ macro_rules! impl_signature_trait {
                     salt,
                     signature,
                 )
-                .map_err(|_| todo!())
+                .map_err(|e| match e {
+                    // TODO: is this correct?
+                    crate::Error::MessageTooLarge => arrayref::SignError::InvalidPayloadLength,
+                    _ => arrayref::SignError::LibraryError,
+
+                })
             }
         }
         impl arrayref::Verify<u32, $bytes, $bytes> for $alias {
@@ -45,7 +50,13 @@ macro_rules! impl_signature_trait {
                     salt_len,
                     signature,
                 )
-                .map_err(|_| todo!())
+                .map_err(|e| match e {
+                    // TODO: is this correct?
+                    crate::Error::InvalidSignatureLength => arrayref::VerifyError::InvalidSignature,
+                    crate::Error::MessageTooLarge => arrayref::VerifyError::InvalidPayloadLength,
+                    _ => arrayref::VerifyError::LibraryError,
+
+                })
             }
         }
 
