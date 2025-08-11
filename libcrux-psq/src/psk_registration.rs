@@ -60,6 +60,7 @@ pub struct RegisteredPsk {
 /// The protocol initiator.
 pub struct Initiator {
     k_pq: [u8; 32],
+    unregistered_psk: Psk,
 }
 
 /// The protocol responder.
@@ -78,6 +79,7 @@ impl Initiator {
         rng: &mut impl CryptoRng,
     ) -> Result<(Self, InitiatorMsg<T::InnerKEM>), Error> {
         let (k_pq, enc_pq) = T::encapsulate_psq(pqpk_responder, sctx, rng)?;
+        let unregistered_psk = derive_psk(&k_pq)?;
         let (initiator_iv, initiator_key, _receiver_iv, _receiver_key) = derive_cipherstate(&k_pq)?;
 
         let now = SystemTime::now();
@@ -116,7 +118,10 @@ impl Initiator {
         let aead_mac = AeadMac { tag, ctxt };
 
         Ok((
-            Self { k_pq },
+            Self {
+                k_pq,
+                unregistered_psk,
+            },
             InitiatorMsg {
                 encapsulation: enc_pq,
                 aead_mac,
@@ -143,9 +148,16 @@ impl Initiator {
             &responder_iv,
         )?;
 
-        let psk = derive_psk(&self.k_pq)?;
+        Ok(RegisteredPsk {
+            psk: self.unregistered_psk,
+            psk_handle,
+        })
+    }
 
-        Ok(RegisteredPsk { psk, psk_handle })
+    /// Returns the unregisterd PSK.
+    /// This is computed while generating the inital message.
+    pub fn unregistered_psk(&self) -> &Psk {
+        &self.unregistered_psk
     }
 }
 
@@ -311,6 +323,63 @@ mod tests {
     };
 
     use super::*;
+
+    #[test]
+    fn test_matching_psk_derivation() {
+        let mut rng = rand::rng();
+        let (receiver_pqsk, receiver_pqpk) = MlKem768::generate_key_pair(&mut rng).unwrap();
+
+        let sctx = b"test context";
+        let psk_handle = b"test handle";
+        let (initiator, initiator_msg) = Initiator::send_initial_message::<NoAuth, MlKem768>(
+            sctx,
+            Duration::from_secs(3600),
+            &receiver_pqpk,
+            &[0; 0],
+            &[0; 0],
+            &mut rng,
+        )
+        .unwrap();
+
+        let (handled_psk_responder, respone_msg) = Responder::send::<NoAuth, MlKem768>(
+            psk_handle,
+            Duration::from_secs(3600),
+            sctx,
+            &receiver_pqpk,
+            &receiver_pqsk,
+            &[],
+            &initiator_msg,
+        )
+        .unwrap();
+
+        assert_eq!(handled_psk_responder.psk_handle, psk_handle);
+
+        let expected_initiator_psk = {
+            let (_initiator_iv, _initiator_key, responder_iv, responder_key) =
+                derive_cipherstate(&initiator.k_pq).unwrap();
+            let mut psk_handle = respone_msg.aead_mac.ctxt.clone();
+            let _ = decrypt_detached(
+                &responder_key,
+                &mut psk_handle,
+                &respone_msg.aead_mac.ctxt,
+                &respone_msg.aead_mac.tag,
+                b"",
+                &responder_iv,
+            )
+            .unwrap();
+            derive_psk(&initiator.k_pq).unwrap()
+        };
+
+        let handled_psk_initiator = initiator.complete_handshake(&respone_msg).unwrap();
+
+        assert_eq!(handled_psk_initiator.psk, expected_initiator_psk);
+
+        assert_eq!(
+            handled_psk_initiator.psk_handle,
+            handled_psk_responder.psk_handle
+        );
+        assert_eq!(handled_psk_initiator.psk, handled_psk_responder.psk);
+    }
 
     #[test]
     fn registration_no_auth_mlkem768() {
