@@ -115,11 +115,11 @@ macro_rules! impl_verify_slice_trait {
                 })?;
 
                 <$type as $crate::signature::arrayref::Verify<
-                            $verify_aux,
-                            $pk_len,
-                            $sig_len,
-                        >>::verify(payload, public_key, signature, $verify_aux_param)
-                        .map_err($crate::signature::slice::VerifyError::from)
+                                    $verify_aux,
+                                    $pk_len,
+                                    $sig_len,
+                                >>::verify(payload, public_key, signature, $verify_aux_param)
+                                .map_err($crate::signature::slice::VerifyError::from)
             }
         }
     };
