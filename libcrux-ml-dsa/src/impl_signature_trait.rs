@@ -1,20 +1,26 @@
-use libcrux_traits::signature::{arrayref, owned};
+use libcrux_traits::signature::arrayref;
 
-impl From<crate::SigningError> for owned::SignError {
+impl From<crate::SigningError> for arrayref::SignError {
     fn from(e: crate::SigningError) -> Self {
         match e {
-            crate::SigningError::RejectionSamplingError => todo!(),
-            crate::SigningError::ContextTooLongError => todo!(),
+            crate::SigningError::RejectionSamplingError => arrayref::SignError::LibraryError,
+            crate::SigningError::ContextTooLongError => arrayref::SignError::LibraryError,
         }
     }
 }
 impl From<crate::VerificationError> for arrayref::VerifyError {
     fn from(e: crate::VerificationError) -> Self {
         match e {
-            crate::VerificationError::MalformedHintError => todo!(),
-            crate::VerificationError::SignerResponseExceedsBoundError => todo!(),
-            crate::VerificationError::CommitmentHashesDontMatchError => todo!(),
-            crate::VerificationError::VerificationContextTooLongError => todo!(),
+            crate::VerificationError::MalformedHintError => arrayref::VerifyError::LibraryError,
+            crate::VerificationError::SignerResponseExceedsBoundError => {
+                arrayref::VerifyError::LibraryError
+            }
+            crate::VerificationError::CommitmentHashesDontMatchError => {
+                arrayref::VerifyError::LibraryError
+            }
+            crate::VerificationError::VerificationContextTooLongError => {
+                arrayref::VerifyError::LibraryError
+            }
         }
     }
 }
