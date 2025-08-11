@@ -2,41 +2,13 @@ pub mod arrayref;
 pub mod owned;
 pub mod slice;
 
-#[derive(Clone)]
-pub struct SliceHasher<D: slice::DigestIncremental> {
-    pub state: D::IncrementalState,
-}
-impl<D: slice::DigestIncremental> Default for SliceHasher<D>
-where
-    D::IncrementalState: Default,
-{
-    fn default() -> Self {
-        Self {
-            state: Default::default(),
-        }
-    }
-}
-
-impl<D: slice::DigestIncremental> SliceHasher<D> {
-    pub fn update(&mut self, payload: &[u8]) -> Result<(), slice::UpdateError> {
-        D::update(&mut self.state, payload)
-    }
-    pub fn reset(&mut self) {
-        D::reset(&mut self.state)
-    }
-    pub fn finish(&mut self, digest: &mut [u8]) -> Result<usize, slice::FinishError> {
-        D::finish(&mut self.state, digest)
-    }
-}
-
-impl<D: slice::DigestIncremental + slice::Hash> SliceHasher<D> {
-    pub fn hash(digest: &mut [u8], payload: &[u8]) -> Result<usize, slice::HashError> {
-        D::hash(digest, payload)
-    }
+// TODO: rename
+pub trait DigestBase {
+    type IncrementalState;
 }
 
 #[derive(Clone)]
-pub struct Hasher<const N: usize, D: arrayref::DigestIncremental<N>> {
+pub struct Hasher<const N: usize, D: DigestBase> {
     pub state: D::IncrementalState,
 }
 
@@ -48,6 +20,13 @@ where
         Self {
             state: Default::default(),
         }
+    }
+}
+
+impl<const N: usize, D: DigestBase + slice::Hash> Hasher<N, D> {
+    // TODO: rename
+    pub fn hash_into_slice(digest: &mut [u8], payload: &[u8]) -> Result<usize, slice::HashError> {
+        D::hash(digest, payload)
     }
 }
 
@@ -68,7 +47,7 @@ impl<const N: usize, D: arrayref::DigestIncremental<N>> Hasher<N, D> {
 }
 
 // XXX: can't implement this for something that doesn't implement DigestIncremental
-impl<const N: usize, D: arrayref::DigestIncremental<N> + arrayref::Hash<N>> Hasher<N, D> {
+impl<const N: usize, D: DigestBase + arrayref::Hash<N>> Hasher<N, D> {
     pub fn hash(digest: &mut [u8; N], payload: &[u8]) -> Result<(), arrayref::HashError> {
         D::hash(digest, payload)
     }

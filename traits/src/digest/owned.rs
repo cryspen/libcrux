@@ -7,9 +7,7 @@ pub trait Hash<const OUTPUT_LEN: usize> {
     fn hash(payload: &[u8]) -> Result<[u8; OUTPUT_LEN], HashError>;
 }
 
-pub trait DigestIncremental<const OUTPUT_LEN: usize> {
-    type IncrementalState;
-
+pub trait DigestIncremental<const OUTPUT_LEN: usize>: super::DigestBase {
     fn update(state: &mut Self::IncrementalState, payload: &[u8]) -> Result<(), UpdateError>;
 
     fn finish(state: &mut Self::IncrementalState) -> [u8; OUTPUT_LEN];
@@ -26,8 +24,6 @@ impl<const OUTPUT_LEN: usize, D: arrayref::Hash<OUTPUT_LEN>> Hash<OUTPUT_LEN> fo
 impl<const OUTPUT_LEN: usize, D: arrayref::DigestIncremental<OUTPUT_LEN>>
     DigestIncremental<OUTPUT_LEN> for D
 {
-    type IncrementalState = D::IncrementalState;
-
     fn update(state: &mut Self::IncrementalState, payload: &[u8]) -> Result<(), UpdateError> {
         Self::update(state, payload)
     }

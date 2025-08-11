@@ -2,8 +2,13 @@ use crate::*;
 
 macro_rules! impl_hash_traits {
     ($type:ident, $hasher:ident, $len:expr, $method:expr) => {
-        /// TODO: doc comment
+        #[doc = concat!("A struct that implements [`libcrux_traits::digest`] traits.")]
+        #[doc = concat!("\n\n")]
+        #[doc = concat!("[`",stringify!($hasher), "`] is a convenient hasher for this struct.")]
         pub struct $type;
+
+        #[doc = concat!("A hasher for [`",stringify!($type), "`].")]
+        pub type $hasher = libcrux_traits::digest::Hasher<$len, $type>;
 
         impl libcrux_traits::digest::arrayref::Hash<$len> for $type {
             #[inline(always)]
@@ -11,8 +16,9 @@ macro_rules! impl_hash_traits {
                 digest: &mut [u8; $len],
                 payload: &[u8],
             ) -> Result<(), libcrux_traits::digest::arrayref::HashError> {
-                // TODO: return error
-                debug_assert!(payload.len() <= u32::MAX as usize);
+                if payload.len() > u32::MAX as usize {
+                    return Err(libcrux_traits::digest::arrayref::HashError::InvalidPayloadLength);
+                }
 
                 $method(digest, payload);
 

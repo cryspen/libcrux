@@ -10,9 +10,7 @@ pub enum UpdateError {
     Unknown,
 }
 
-pub trait DigestIncremental<const OUTPUT_LEN: usize> {
-    type IncrementalState;
-
+pub trait DigestIncremental<const OUTPUT_LEN: usize>: super::DigestBase {
     fn update(state: &mut Self::IncrementalState, payload: &[u8]) -> Result<(), UpdateError>;
 
     fn finish(state: &mut Self::IncrementalState, digest: &mut [u8; OUTPUT_LEN]);
