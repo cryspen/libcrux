@@ -2,7 +2,7 @@ use crate::impl_hacl::*;
 
 use libcrux_traits::Digest;
 
-use libcrux_traits::digest::{arrayref, slice, DigestBase};
+use libcrux_traits::digest::{arrayref, slice, DigestBase, UpdateError};
 
 // Streaming API - This is the recommended one.
 // For implementations based on hacl_rs (over hacl-c)
@@ -35,18 +35,23 @@ macro_rules! impl_hash {
         }
         impl DigestBase for $name {
             type IncrementalState = $state_name;
-        }
-        impl arrayref::DigestIncremental<$digest_size> for $name {
-
             /// Add the `payload` to the digest.
             /// Will panic if `payload` is longer than `u32::MAX` to ensure that hacl-rs can
             /// process it.
             #[inline(always)]
             fn update(state: &mut Self::IncrementalState, payload: &[u8])
-            -> Result<(), arrayref::UpdateError> {
+            -> Result<(), UpdateError> {
                 state.update(payload);
                 Ok(())
             }
+            /// Reset the digest state.
+            #[inline(always)]
+            fn reset(state: &mut Self::IncrementalState) {
+                state.reset()
+            }
+        }
+        impl arrayref::DigestIncremental<$digest_size> for $name {
+
 
             /// Get the digest.
             ///
@@ -57,11 +62,6 @@ macro_rules! impl_hash {
                 state.finish (digest);
             }
 
-            /// Reset the digest state.
-            #[inline(always)]
-            fn reset(state: &mut Self::IncrementalState) {
-                state.reset()
-            }
         }
         slice::impl_hash_trait!($name => $digest_size);
         slice::impl_digest_incremental_trait!($name => $state_name, $digest_size);
