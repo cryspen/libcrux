@@ -1,13 +1,14 @@
-use libcrux_traits::signature::arrayref;
+use libcrux_traits::signature::{arrayref, owned};
 
-impl From<crate::SigningError> for arrayref::SignError {
+impl From<crate::SigningError> for owned::SignError {
     fn from(e: crate::SigningError) -> Self {
         match e {
-            crate::SigningError::RejectionSamplingError => arrayref::SignError::LibraryError,
-            crate::SigningError::ContextTooLongError => arrayref::SignError::LibraryError,
+            crate::SigningError::RejectionSamplingError => owned::SignError::LibraryError,
+            crate::SigningError::ContextTooLongError => owned::SignError::LibraryError,
         }
     }
 }
+
 impl From<crate::VerificationError> for arrayref::VerifyError {
     fn from(e: crate::VerificationError) -> Self {
         match e {
@@ -28,7 +29,8 @@ impl From<crate::VerificationError> for arrayref::VerifyError {
 macro_rules! impl_signature_trait {
     ($name:ident, $module:ident, $alias:ident, $doc:expr) => {
         mod $module {
-            use libcrux_traits::signature::{arrayref, owned};
+            use super::*;
+
             #[doc = $doc]
             pub struct $name;
 
@@ -65,7 +67,7 @@ macro_rules! impl_signature_trait {
                     public_key: &[u8; VERIFICATION_KEY_LEN],
                     signature: &[u8; SIGNATURE_LEN],
                     context: &[u8],
-                ) -> Result<(), owned::VerifyError> {
+                ) -> Result<(), arrayref::VerifyError> {
                     crate::ml_dsa_generic::multiplexing::$module::verify(
                         public_key,
                         payload,
