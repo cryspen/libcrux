@@ -26,7 +26,6 @@ macro_rules! impl_hash {
             /// process it.
             #[inline(always)]
             fn hash(digest: &mut [u8; $digest_size], payload: &[u8]) -> Result<(), arrayref::HashError> {
-                debug_assert!(digest.len() == $digest_size);
                 <$state_name>::hash(digest, payload);
 
                 Ok(())
