@@ -686,7 +686,7 @@ pub(crate) mod neon {
                 &mut out1[0],
             );
         } else if len == 3 {
-            let mut tmp = [0u8; THREE_BLOCKS];
+            let mut tmp = [0u8; BLOCK_SIZE];
             let (out2, _) = rem.split_at_mut(1);
 
             x2::incremental::shake128_squeeze_next_block(
