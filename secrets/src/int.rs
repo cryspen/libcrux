@@ -384,7 +384,7 @@ mod aarch64 {
 }
 
 #[cfg(test)]
-mod select_tests {
+mod select {
     extern crate std;
     use core::fmt::Debug;
 
@@ -393,7 +393,7 @@ mod select_tests {
 
     fn test<T: Default + Copy + PartialEq + Eq + Debug>(rng: &mut impl RngCore)
     where
-        [T]: Fill + Select,
+        [T]: Fill + Scalar,
     {
         let selector: bool = rng.random();
         let selector = if selector { 0 } else { rng.next_u32() as u8 };
@@ -432,7 +432,7 @@ mod select_tests {
 }
 
 #[cfg(test)]
-mod swap_tests {
+mod swap {
     extern crate std;
     use core::fmt::Debug;
 
@@ -468,10 +468,10 @@ mod swap_tests {
         const ITERATIONS: usize = 1_000;
 
         for _ in 0..ITERATIONS {
-            test::<u8>(&mut rng);
-            test::<u16>(&mut rng);
-            test::<u32>(&mut rng);
-            test::<u64>(&mut rng);
+            test::<U8>(&mut rng);
+            test::<U16>(&mut rng);
+            test::<U32>(&mut rng);
+            test::<U64>(&mut rng);
         }
     }
 }
