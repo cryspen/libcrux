@@ -321,15 +321,27 @@ fn run_wycheproof() {
 
 #[test]
 fn test_traits() {
-    use libcrux_traits::signature::owned::SignWithAux;
+    use libcrux_traits::signature::{arrayref::Verify, owned::Sign};
 
     use libcrux_rsa::{digest_alg::*, pss_bits::*};
 
-    let payload: &[u8] = todo!();
-    let private_key: &[u8; 768] = todo!();
-    let signature: &mut [u8; 768] = todo!();
-    let (salt, public_key): (&[u8], &[u8; 768]) = todo!();
-    let signature =
-        libcrux_rsa::Signer::<Bits6144, Sha2_256>::sign(payload, private_key, (salt, public_key))
-            .unwrap();
+    let public_key = PublicKey::from(MODULUS);
+    let private_key = PrivateKey::<256>::from_components(MODULUS, PRIVATE_EXPONENT);
+    let salt = [1, 2, 3, 4, 5];
+    let msg = [7, 8, 9, 10];
+    let signature = libcrux_rsa::Signer::<Bits2048, Sha2_256>::sign(
+        &msg,
+        private_key.d(),
+        (&salt, public_key.n()),
+    )
+    .unwrap();
+    eprintln!("signature: {:x?}", signature);
+
+    libcrux_rsa::Signer::<Bits2048, Sha2_256>::verify(
+        &msg,
+        public_key.n(),
+        &signature,
+        salt.len() as u32,
+    )
+    .unwrap();
 }
