@@ -274,3 +274,158 @@ impl_encode_ops!(i16, 2);
 impl_encode_ops!(i32, 4);
 impl_encode_ops!(i64, 8);
 impl_encode_ops!(i128, 16);
+
+#[cfg(target_arch = "aarch64")]
+mod aarch64 {
+    use core::arch::asm;
+
+    use super::*;
+
+    macro_rules! select64 {
+        ($lhs:expr, $rhs:expr, $selector:expr) => {
+            // Using https://developer.arm.com/documentation/ddi0602/2021-12/Base-Instructions/CSEL--Conditional-Select-
+            #[allow(unsafe_code)]
+            unsafe {
+                asm! {
+                    "cmp {cond:w}, 0",
+                    "csel {lhs:x}, {rhs:x}, {lhs:x}, NE",
+                    cond = in(reg) $selector,
+                    lhs = inlateout(reg) *$lhs,
+                    rhs = in(reg) *$rhs,
+                    options(pure, nomem, nostack),
+                };
+            }
+        };
+    }
+
+    macro_rules! select32 {
+        ($lhs:expr, $rhs:expr, $selector:expr) => {
+            // Using https://developer.arm.com/documentation/ddi0602/2021-12/Base-Instructions/CSEL--Conditional-Select-
+            #[allow(unsafe_code)]
+            unsafe {
+                asm! {
+                    "cmp {cond:w}, 0",
+                    "csel {lhs:w}, {rhs:w}, {lhs:w}, NE",
+                    cond = in(reg) $selector,
+                    lhs = inlateout(reg) *$lhs,
+                    rhs = in(reg) *$rhs,
+                    options(pure, nomem, nostack),
+                };
+            }
+        };
+    }
+
+    impl Select for U8 {
+        #[inline]
+        fn select(&mut self, other: &Self, selector: u8) {
+            select32!(self.0, other.0, selector);
+        }
+    }
+
+    impl Select for U16 {
+        #[inline]
+        fn select(&mut self, other: &Self, selector: u8) {
+            select32!(self.0, other.0, selector);
+        }
+    }
+
+    impl Select for U32 {
+        #[inline]
+        fn select(&mut self, other: &Self, selector: u8) {
+            select32!(self.0, other.0, selector);
+        }
+    }
+
+    impl Select for U64 {
+        #[inline]
+        fn select(&mut self, other: &Self, selector: u8) {
+            select64!(self.0, other.0, selector);
+        }
+    }
+
+    impl<T: Select> Select for [T] {
+        #[inline]
+        fn select(&mut self, other: &Self, selector: u8) {
+            for (lhs, rhs) in self.iter_mut().zip(other.iter()) {
+                lhs.select(rhs, selector);
+            }
+        }
+    }
+
+    macro_rules! swap64 {
+        ($lhs:expr, $rhs:expr, $selector:expr) => {
+            // Using https://developer.arm.com/documentation/ddi0602/2021-12/Base-Instructions/CSEL--Conditional-Select-
+            #[allow(unsafe_code)]
+            unsafe {
+                asm! {
+                    "cmp {cond:w}, 0",
+                    "csel {tmp}, {b:x}, {a:x}, NE",
+                    "csel {b:x}, {a:x}, {b:x}, NE",
+                    "mov {a:x}, {tmp}",
+                    cond = in(reg) $selector,
+                    a = inout(reg) *$lhs,
+                    b = inout(reg) *$rhs,
+                    tmp = out(reg) _,
+                    options(pure, nomem, nostack),
+                };
+            }
+        };
+    }
+
+    macro_rules! swap32 {
+        ($lhs:expr, $rhs:expr, $selector:expr) => {
+            // Using https://developer.arm.com/documentation/ddi0602/2021-12/Base-Instructions/CSEL--Conditional-Select-
+            #[allow(unsafe_code)]
+            unsafe {
+                asm! {
+                    "cmp {cond:w}, 0",
+                    "csel {tmp}, {b:w}, {a:w}, NE",
+                    "csel {b:w}, {a:w}, {b:w}, NE",
+                    "mov {a:w}, {tmp}",
+                    cond = in(reg) $selector,
+                    a = inout(reg) *$lhs,
+                    b = inout(reg) *$rhs,
+                    tmp = out(reg) _,
+                    options(pure, nomem, nostack),
+                };
+            }
+        };
+    }
+
+    impl Swap for U8 {
+        #[inline]
+        fn cswap(&mut self, other: &mut Self, selector: u8) {
+            swap32!(self.0, other.0, selector);
+        }
+    }
+
+    impl Swap for U16 {
+        #[inline]
+        fn cswap(&mut self, other: &mut Self, selector: u8) {
+            swap32!(self.0, other.0, selector);
+        }
+    }
+
+    impl Swap for U32 {
+        #[inline]
+        fn cswap(&mut self, other: &mut Self, selector: u8) {
+            swap32!(self.0, other.0, selector);
+        }
+    }
+
+    impl Swap for U64 {
+        #[inline]
+        fn cswap(&mut self, other: &mut Self, selector: u8) {
+            swap64!(self.0, other.0, selector);
+        }
+    }
+
+    impl<T: Swap> Swap for [T] {
+        #[inline]
+        fn cswap(&mut self, other: &mut Self, selector: u8) {
+            for (lhs, rhs) in self.iter_mut().zip(other.iter_mut()) {
+                lhs.cswap(rhs, selector);
+            }
+        }
+    }
+}
