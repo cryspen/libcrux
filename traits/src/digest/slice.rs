@@ -8,13 +8,13 @@ pub trait DigestIncremental: super::DigestBase {
     fn finish(state: &mut Self::IncrementalState, digest: &mut [u8]) -> Result<usize, FinishError>;
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub enum FinishError {
     InvalidDigestLength,
     Unknown,
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub enum HashError {
     InvalidDigestLength,
     InvalidPayloadLength,
