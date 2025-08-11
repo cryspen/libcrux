@@ -1,4 +1,4 @@
-use libcrux_traits::signature::arrayref::{SignError, Sign, VerifyError, Verify};
+use libcrux_traits::signature::arrayref::{Sign, SignError, Verify, VerifyError};
 
 pub struct Signer;
 
