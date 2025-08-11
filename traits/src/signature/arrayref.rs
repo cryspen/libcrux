@@ -20,12 +20,14 @@ pub trait Verify<VerifyAux, const PUBLIC_KEY_LEN: usize, const SIGNATURE_LEN: us
 #[derive(Debug, PartialEq, Eq)]
 pub enum SignError {
     InvalidPayloadLength,
+    LibraryError,
 }
 
 #[derive(Debug, PartialEq, Eq)]
 pub enum VerifyError {
     InvalidSignature,
     InvalidPayloadLength,
+    LibraryError,
 }
 
 // No auxiliary information

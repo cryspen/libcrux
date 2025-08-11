@@ -1,3 +1,5 @@
+use libcrux_traits::signature::arrayref;
+
 macro_rules! impl_signature_trait {
     ($digest_alg_name:ident, $pk_len:literal, $sk_len:literal, $sig_len:literal, $alias:ident) => {
         #[allow(non_camel_case_types)]
@@ -17,7 +19,7 @@ macro_rules! impl_signature_trait {
                     nonce,
                     signature,
                 )
-                .map_err(|_| todo!())
+                .map_err(|_| arrayref::SignError::LibraryError)
             }
         }
         impl arrayref::Verify<&(), $pk_len, $sig_len> for $alias {
@@ -35,7 +37,11 @@ macro_rules! impl_signature_trait {
                     <&[u8; 32]>::try_from(&signature[32..]).unwrap(),
                     public_key,
                 )
-                .map_err(|_| todo!())
+                .map_err(|e| match e {
+                    crate::Error::InvalidSignature => arrayref::VerifyError::InvalidSignature,
+                    _ => arrayref::VerifyError::LibraryError,
+
+                })
             }
         }
         libcrux_traits::impl_signature_slice_trait!($alias => $sk_len, $sig_len, &Nonce, nonce);
@@ -46,8 +52,9 @@ macro_rules! impl_signature_trait {
 
 pub mod p256 {
 
+    use super::*;
+
     use crate::p256::Nonce;
-    use libcrux_traits::signature::arrayref;
     pub struct Signer<T> {
         _phantom_data: core::marker::PhantomData<T>,
     }
