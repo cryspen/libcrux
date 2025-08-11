@@ -4,9 +4,7 @@ pub trait Hash {
     /// Oneshot API
     fn hash(digest: &mut [u8], payload: &[u8]) -> Result<usize, HashError>;
 }
-pub trait DigestIncremental {
-    type IncrementalState;
-
+pub trait DigestIncremental: super::DigestBase {
     fn update(state: &mut Self::IncrementalState, payload: &[u8]) -> Result<(), UpdateError>;
 
     fn finish(state: &mut Self::IncrementalState, digest: &mut [u8]) -> Result<usize, FinishError>;
@@ -74,8 +72,37 @@ macro_rules! impl_hash_trait {
 macro_rules! impl_digest_incremental_trait {
     ($type:ty => $incremental_state:ty, $len:expr) => {
         impl $crate::digest::slice::DigestIncremental for $type {
-            type IncrementalState = $incremental_state;
+            fn update(
+                state: &mut Self::IncrementalState,
+                payload: &[u8],
+            ) -> Result<(), $crate::digest::slice::UpdateError> {
+                <Self as $crate::digest::arrayref::DigestIncremental<$len>>::update(state, payload)
+                    .map_err($crate::digest::slice::UpdateError::from)
+            }
 
+            fn finish(
+                state: &mut Self::IncrementalState,
+                digest: &mut [u8],
+            ) -> Result<usize, $crate::digest::slice::FinishError> {
+                let digest: &mut [u8; $len] = digest
+                    .try_into()
+                    .map_err(|_| $crate::digest::slice::FinishError::InvalidDigestLength)?;
+                <Self as $crate::digest::arrayref::DigestIncremental<$len>>::finish(state, digest);
+
+                Ok($len)
+            }
+
+            fn reset(state: &mut Self::IncrementalState) {
+                <Self as $crate::digest::arrayref::DigestIncremental<$len>>::reset(state);
+            }
+        }
+    };
+}
+
+#[macro_export]
+macro_rules! impl_digest_incremental_trait_blanket {
+    ($type:ty => $incremental_state:ty, $len:ident) => {
+        impl<const $len: usize> $crate::digest::slice::DigestIncremental for $type {
             fn update(
                 state: &mut Self::IncrementalState,
                 payload: &[u8],
@@ -104,4 +131,5 @@ macro_rules! impl_digest_incremental_trait {
 }
 
 pub use impl_digest_incremental_trait;
+pub use impl_digest_incremental_trait_blanket;
 pub use impl_hash_trait;

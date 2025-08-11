@@ -2,16 +2,21 @@ use crate::impl_hacl::*;
 
 use libcrux_traits::Digest;
 
-use libcrux_traits::digest::{arrayref, slice};
+use libcrux_traits::digest::{arrayref, slice, DigestBase};
 
 // Streaming API - This is the recommended one.
 // For implementations based on hacl_rs (over hacl-c)
 macro_rules! impl_hash {
     ($hasher_name:ident, $name:ident, $state_name:ty, $digest_size:literal) => {
         #[derive(Clone, Default)]
+
+        #[doc = concat!("A struct that implements [`libcrux_traits::digest`] traits.")]
+        #[doc = concat!("\n\n")]
+        #[doc = concat!("[`",stringify!($hasher_name), "`] is a convenient hasher for this struct.")]
         #[allow(non_camel_case_types)]
         pub struct $name;
 
+        #[doc = concat!("A hasher for [`",stringify!($name), "`].")]
         pub type $hasher_name = libcrux_traits::digest::Hasher<$digest_size, $name>;
 
 
@@ -29,8 +34,10 @@ macro_rules! impl_hash {
 
 
         }
-        impl arrayref::DigestIncremental<$digest_size> for $name {
+        impl DigestBase for $name {
             type IncrementalState = $state_name;
+        }
+        impl arrayref::DigestIncremental<$digest_size> for $name {
 
             /// Add the `payload` to the digest.
             /// Will panic if `payload` is longer than `u32::MAX` to ensure that hacl-rs can

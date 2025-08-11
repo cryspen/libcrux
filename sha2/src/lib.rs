@@ -30,3 +30,5 @@ pub use impl_hacl::*;
 
 /// Re-export the `Digest` trait.
 pub use libcrux_traits::Digest;
+
+pub use impl_digest_trait::*;

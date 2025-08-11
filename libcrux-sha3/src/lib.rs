@@ -10,6 +10,8 @@ mod simd;
 
 mod generic_keccak;
 mod impl_digest_trait;
+pub use impl_digest_trait::*;
+
 mod traits;
 
 pub(crate) const SHA3_224_LEN: usize = 28;
