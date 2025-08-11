@@ -2,7 +2,7 @@ use crate::impl_hacl::*;
 use libcrux_traits::digest::{arrayref, slice, DigestBase, Hasher, UpdateError};
 
 macro_rules! impl_digest_traits {
-    ($out_size:ident, $type:ty, $blake2:ty) => {
+    ($out_size:ident, $type:ty, $blake2:ty, $hasher:ty) => {
         impl<const $out_size: usize> DigestBase for $type {
             type IncrementalState = $blake2;
 
@@ -38,6 +38,12 @@ macro_rules! impl_digest_traits {
                 state.finalize(dst)
             }
         }
+
+        impl<const $out_size: usize> From<$blake2> for $hasher {
+            fn from(state: $blake2) -> Self {
+                Self { state }
+            }
+        }
     };
 }
 
@@ -49,7 +55,8 @@ pub struct Blake2bHash<const OUT_SIZE: usize>;
 impl_digest_traits!(
     OUT_SIZE,
     Blake2bHash<OUT_SIZE>,
-    Blake2b<ConstKeyLenConstDigestLen<0, OUT_SIZE>>
+    Blake2b<ConstKeyLenConstDigestLen<0, OUT_SIZE>>,
+    Blake2bHasher<OUT_SIZE>
 );
 
 /// A hasher for [`Blake2bHash`].
@@ -62,7 +69,8 @@ pub struct Blake2sHash<const OUT_SIZE: usize>;
 impl_digest_traits!(
     OUT_SIZE,
     Blake2sHash<OUT_SIZE>,
-    Blake2s<ConstKeyLenConstDigestLen<0, OUT_SIZE>>
+    Blake2s<ConstKeyLenConstDigestLen<0, OUT_SIZE>>,
+    Blake2sHasher<OUT_SIZE>
 );
 
 /// A hasher for [`Blake2sHash`].
