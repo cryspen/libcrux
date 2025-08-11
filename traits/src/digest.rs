@@ -2,7 +2,7 @@ pub mod arrayref;
 pub mod owned;
 pub mod slice;
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub enum UpdateError {
     InvalidPayloadLength,
     MaximumLengthExceeded,

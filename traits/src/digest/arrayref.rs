@@ -1,9 +1,9 @@
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub enum HashError {
     InvalidPayloadLength,
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub enum UpdateError {
     InvalidPayloadLength,
     MaximumLengthExceeded,
