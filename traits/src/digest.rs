@@ -64,7 +64,6 @@ impl<const N: usize, D: arrayref::DigestIncremental<N>> Hasher<N, D> {
     }
 }
 
-// XXX: can't implement this for something that doesn't implement DigestIncremental
 impl<const N: usize, D: DigestBase + arrayref::Hash<N>> Hasher<N, D> {
     pub fn hash(digest: &mut [u8; N], payload: &[u8]) -> Result<(), arrayref::HashError> {
         D::hash(digest, payload)
