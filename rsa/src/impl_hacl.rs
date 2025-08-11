@@ -8,8 +8,8 @@ pub struct PublicKey<const LEN: usize> {
 
 /// An RSA Private Key that is `LEN` bytes long.
 pub struct PrivateKey<const LEN: usize> {
-    pub(crate) pk: PublicKey<LEN>,
-    pub(crate) d: [u8; LEN],
+    pk: PublicKey<LEN>,
+    d: [u8; LEN],
 }
 
 impl<const LEN: usize> alloc::fmt::Debug for PrivateKey<LEN> {
