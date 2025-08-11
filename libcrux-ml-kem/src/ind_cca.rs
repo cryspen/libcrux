@@ -450,7 +450,7 @@ pub(crate) fn decapsulate<
         lemma_slice_append $to_hash $implicit_rejection_value ${ciphertext}.f_value"
     );
     let mut implicit_rejection_shared_secret = [0u8; SHARED_SECRET_SIZE];
-    Hasher::PRF::<32>(&to_hash, &mut implicit_rejection_shared_secret);
+    Hasher::PRF::<SHARED_SECRET_SIZE>(&to_hash, &mut implicit_rejection_shared_secret);
 
     hax_lib::fstar!(
         "assert ($implicit_rejection_shared_secret == Spec.Utils.v_PRF (sz 32) $to_hash);
@@ -1231,7 +1231,7 @@ pub(crate) mod unpacked {
             "lemma_slice_append $to_hash ${key_pair}.f_private_key.f_implicit_rejection_value ${ciphertext}.f_value"
         );
         let mut implicit_rejection_shared_secret = [0u8; SHARED_SECRET_SIZE];
-        Hasher::PRF::<32>(&to_hash, &mut implicit_rejection_shared_secret);
+        Hasher::PRF::<SHARED_SECRET_SIZE>(&to_hash, &mut implicit_rejection_shared_secret);
 
         let mut expected_ciphertext = [0u8; CIPHERTEXT_SIZE];
         let mut r_as_ntt: [PolynomialRingElement<Vector>; K] =

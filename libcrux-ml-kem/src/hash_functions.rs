@@ -119,6 +119,7 @@ pub(crate) mod portable {
     ]
     #[inline(always)]
     fn PRF<const LEN: usize>(input: &[u8], out: &mut [u8]) {
+        debug_assert!(out.len() == LEN);
         portable::shake256(out, input);
     }
 
@@ -280,6 +281,7 @@ pub(crate) mod avx2 {
     ]
     #[inline(always)]
     fn PRF<const LEN: usize>(input: &[u8], out: &mut [u8]) {
+        debug_assert!(out.len() == LEN);
         portable::shake256(out, input);
     }
 
@@ -554,6 +556,7 @@ pub(crate) mod neon {
     ]
     #[inline(always)]
     fn PRF<const LEN: usize>(input: &[u8], out: &mut [u8]) {
+        debug_assert!(out.len() == LEN);
         let mut dummy = [0u8; LEN];
         x2::shake256(input, input, out, &mut dummy);
     }

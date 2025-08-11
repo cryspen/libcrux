@@ -887,7 +887,7 @@ pub(crate) fn encrypt_c1<
         assert ($prf_input == Seq.append $randomness (Seq.create 1 $domain_separator))"
     );
     let mut prf_output = [0u8; ETA2_RANDOMNESS_SIZE];
-    Hasher::PRF::<32>(&prf_input, &mut prf_output);
+    Hasher::PRF::<ETA2_RANDOMNESS_SIZE>(&prf_input, &mut prf_output);
     sample_from_binomial_distribution::<ETA2, Vector>(&prf_output, &mut sampling_buffer);
     PolynomialRingElement::from_i16_array(&sampling_buffer, error_2);
 
