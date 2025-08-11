@@ -39,6 +39,7 @@ pub enum SignError {
     InvalidPrivateKeyLength,
     InvalidSignatureBufferLength,
     InvalidPayloadLength,
+    LibraryError,
 }
 
 #[derive(Debug, PartialEq, Eq)]
@@ -47,12 +48,14 @@ pub enum VerifyError {
     InvalidPublicKeyLength,
     InvalidSignatureBufferLength,
     InvalidSignature,
+    LibraryError,
 }
 
 impl From<super::arrayref::SignError> for SignError {
     fn from(e: super::arrayref::SignError) -> Self {
         match e {
             super::arrayref::SignError::InvalidPayloadLength => Self::InvalidPayloadLength,
+            super::arrayref::SignError::LibraryError => Self::LibraryError,
         }
     }
 }
@@ -61,6 +64,7 @@ impl From<super::arrayref::VerifyError> for VerifyError {
         match e {
             super::arrayref::VerifyError::InvalidSignature => Self::InvalidSignature,
             super::arrayref::VerifyError::InvalidPayloadLength => Self::InvalidPayloadLength,
+            super::arrayref::VerifyError::LibraryError => Self::LibraryError,
         }
     }
 }
