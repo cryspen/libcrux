@@ -34,8 +34,15 @@ fn _veorq_n_u64(a: u64, c: u64) -> u64 {
 }
 
 #[inline(always)]
+#[hax_lib::requires(
+    start < usize::MAX / 2 &&
+    RATE < 192 &&
+    RATE <= blocks.len() && 
+    RATE % 8 == 0 &&
+    start + RATE <= blocks.len()
+)]
 pub(crate) fn load_block<const RATE: usize>(state: &mut [u64; 25], blocks: &[u8], start: usize) {
-    debug_assert!(start + RATE <= blocks.len() && RATE % 8 == 0);
+    debug_assert!(start <= blocks.len() - RATE && RATE % 8 == 0);
 
     // First load the block, then xor it with the state
     // Note: combining the two loops below reduces performance for large inputs,
@@ -60,6 +67,13 @@ pub(crate) fn load_block<const RATE: usize>(state: &mut [u64; 25], blocks: &[u8]
 }
 
 #[inline(always)]
+#[hax_lib::requires(
+    start < usize::MAX / 2 &&
+    RATE < 192 &&
+    RATE % 8 == 0 &&
+    len < RATE &&
+    start + len <= blocks.len()
+)]
 pub(crate) fn load_last<const RATE: usize, const DELIMITER: u8>(
     state: &mut [u64; 25],
     blocks: &[u8],
@@ -76,6 +90,35 @@ pub(crate) fn load_last<const RATE: usize, const DELIMITER: u8>(
     load_block::<RATE>(state, &buffer, 0);
 }
 
+// #[inline(always)]
+// #[hax_lib::requires(
+//     start < out.len() &&
+//     len < out.len() &&
+//     start <= out.len() - len &&
+//     start + len <= out.len()
+// )]
+// pub(crate) fn store_block<const RATE: usize>(
+//     s: &[u64; 25],
+//     out: &mut [u8],
+//     start: usize,
+//     len: usize,
+// ) {
+//     let octets = len / 8;
+//     // start + 8 * i + 8
+//     // start + len + 8
+//     for i in 0..octets {
+//         out[start + 8 * i..start + 8 * i + 8]
+//             .copy_from_slice(&get_ij(s, i / 5, i % 5).to_le_bytes());
+//     }
+// 
+//     let remaining = len % 8;
+//     if remaining > 0 {
+//         out[start + len - remaining..start + len]
+//             .copy_from_slice(&get_ij(s, octets / 5, octets % 5).to_le_bytes()[0..remaining]);
+//     }
+// }
+
+
 #[inline(always)]
 pub(crate) fn store_block<const RATE: usize>(
     s: &[u64; 25],
@@ -85,14 +128,18 @@ pub(crate) fn store_block<const RATE: usize>(
 ) {
     let octets = len / 8;
     for i in 0..octets {
-        out[start + 8 * i..start + 8 * i + 8]
-            .copy_from_slice(&get_ij(s, i / 5, i % 5).to_le_bytes());
+        let value = get_ij(s, i / 5, i % 5);
+        let bytes = value.to_le_bytes();
+        let out_pos = start + 8 * i;
+        out[out_pos..out_pos + 8].copy_from_slice(&bytes);
     }
 
     let remaining = len % 8;
     if remaining > 0 {
-        out[start + len - remaining..start + len]
-            .copy_from_slice(&get_ij(s, octets / 5, octets % 5).to_le_bytes()[0..remaining]);
+        let value = get_ij(s, octets / 5, octets % 5);
+        let bytes = value.to_le_bytes();
+        let out_pos = start + len - remaining;
+        out[out_pos..out_pos + remaining].copy_from_slice(&bytes[..remaining]);
     }
 }
 
@@ -142,7 +189,7 @@ impl Absorb<1> for KeccakState<1, u64> {
     }
 }
 
-impl Squeeze1<u64> for KeccakState<1, u64> {
+impl Squeeze<u64> for KeccakState<1, u64> {
     fn squeeze<const RATE: usize>(&self, out: &mut [u8], start: usize, len: usize) {
         store_block::<RATE>(&self.st, out, start, len);
     }
