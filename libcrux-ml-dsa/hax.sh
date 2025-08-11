@@ -8,6 +8,8 @@ function extract_all() {
     
     extract fstar-helpers/core-models into fstar
 
+    extract traits into fstar
+
     extract libcrux-intrinsics \
         -C --features simd128,simd256 ";" \
         into fstar --z3rlimit 80
