@@ -1,21 +1,25 @@
 use crate::impl_hacl::*;
-use libcrux_traits::digest::{arrayref, slice, DigestBase, Hasher};
+use libcrux_traits::digest::{arrayref, slice, DigestBase, Hasher, UpdateError};
 
 macro_rules! impl_digest_traits {
     ($out_size:ident, $type:ty, $blake2:ty) => {
         impl<const $out_size: usize> DigestBase for $type {
             type IncrementalState = $blake2;
+
+            fn update(state: &mut Self::IncrementalState, chunk: &[u8]) -> Result<(), UpdateError> {
+                // XXX: maps all known errors returned by this function
+                state.update(chunk).map_err(|e| match e {
+                    Error::InvalidChunkLength => UpdateError::InvalidPayloadLength,
+                    Error::MaximumLengthExceeded => UpdateError::MaximumLengthExceeded,
+                    _ => UpdateError::Unknown,
+                })
+            }
+            fn reset(state: &mut Self::IncrementalState) {
+                state.reset()
+            }
         }
 
         impl<const $out_size: usize> slice::DigestIncremental for $type {
-            fn update(
-                state: &mut Self::IncrementalState,
-                payload: &[u8],
-            ) -> Result<(), slice::UpdateError> {
-                <Self as arrayref::DigestIncremental<$out_size>>::update(state, payload)
-                    .map_err(slice::UpdateError::from)
-            }
-
             fn finish(
                 state: &mut Self::IncrementalState,
                 digest: &mut [u8],
@@ -27,31 +31,11 @@ macro_rules! impl_digest_traits {
 
                 Ok($out_size)
             }
-
-            fn reset(state: &mut Self::IncrementalState) {
-                <Self as arrayref::DigestIncremental<$out_size>>::reset(state);
-            }
         }
 
         impl<const $out_size: usize> arrayref::DigestIncremental<$out_size> for $type {
-            fn update(
-                state: &mut Self::IncrementalState,
-                chunk: &[u8],
-            ) -> Result<(), arrayref::UpdateError> {
-                // XXX: maps all known errors returned by this function
-                state.update(chunk).map_err(|e| match e {
-                    Error::InvalidChunkLength => arrayref::UpdateError::InvalidPayloadLength,
-                    Error::MaximumLengthExceeded => arrayref::UpdateError::MaximumLengthExceeded,
-                    _ => arrayref::UpdateError::Unknown,
-                })
-            }
-
             fn finish(state: &mut Self::IncrementalState, dst: &mut [u8; $out_size]) {
                 state.finalize(dst)
-            }
-
-            fn reset(state: &mut Self::IncrementalState) {
-                state.reset()
             }
         }
     };
