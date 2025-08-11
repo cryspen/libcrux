@@ -43,6 +43,7 @@ macro_rules! instantiate {
             #[cfg(feature = "kyber")]
             pub(crate) fn kyber_generate_keypair<
                 const K: usize,
+                const K_SQUARED: usize,
                 const CPA_PRIVATE_KEY_SIZE: usize,
                 const PRIVATE_KEY_SIZE: usize,
                 const PUBLIC_KEY_SIZE: usize,
@@ -54,6 +55,7 @@ macro_rules! instantiate {
             ) -> MlKemKeyPair<PRIVATE_KEY_SIZE, PUBLIC_KEY_SIZE> {
                 crate::ind_cca::generate_keypair::<
                     K,
+                    K_SQUARED,
                     CPA_PRIVATE_KEY_SIZE,
                     PRIVATE_KEY_SIZE,
                     PUBLIC_KEY_SIZE,
@@ -119,6 +121,7 @@ macro_rules! instantiate {
             #[cfg(feature = "kyber")]
             pub(crate) fn kyber_encapsulate<
                 const K: usize,
+                const K_SQUARED: usize,
                 const CIPHERTEXT_SIZE: usize,
                 const PUBLIC_KEY_SIZE: usize,
                 const T_AS_NTT_ENCODED_SIZE: usize,
@@ -131,12 +134,15 @@ macro_rules! instantiate {
                 const ETA1_RANDOMNESS_SIZE: usize,
                 const ETA2: usize,
                 const ETA2_RANDOMNESS_SIZE: usize,
+                const PRF_OUTPUT_SIZE1: usize,
+                const PRF_OUTPUT_SIZE2: usize,
             >(
                 public_key: &MlKemPublicKey<PUBLIC_KEY_SIZE>,
                 randomness: &[u8; SHARED_SECRET_SIZE],
             ) -> (MlKemCiphertext<CIPHERTEXT_SIZE>, MlKemSharedSecret) {
                 crate::ind_cca::encapsulate::<
                     K,
+                    K_SQUARED,
                     CIPHERTEXT_SIZE,
                     PUBLIC_KEY_SIZE,
                     T_AS_NTT_ENCODED_SIZE,
@@ -149,6 +155,8 @@ macro_rules! instantiate {
                     ETA1_RANDOMNESS_SIZE,
                     ETA2,
                     ETA2_RANDOMNESS_SIZE,
+                    PRF_OUTPUT_SIZE1,
+                    PRF_OUTPUT_SIZE2,
                     $vector,
                     $hash,
                     crate::variant::Kyber,
@@ -216,6 +224,7 @@ macro_rules! instantiate {
             #[cfg(feature = "kyber")]
             pub fn kyber_decapsulate<
                 const K: usize,
+                const K_SQUARED: usize,
                 const SECRET_KEY_SIZE: usize,
                 const CPA_SECRET_KEY_SIZE: usize,
                 const PUBLIC_KEY_SIZE: usize,
@@ -230,6 +239,8 @@ macro_rules! instantiate {
                 const ETA1_RANDOMNESS_SIZE: usize,
                 const ETA2: usize,
                 const ETA2_RANDOMNESS_SIZE: usize,
+                const PRF_OUTPUT_SIZE1: usize,
+                const PRF_OUTPUT_SIZE2: usize,
                 const IMPLICIT_REJECTION_HASH_INPUT_SIZE: usize,
             >(
                 private_key: &MlKemPrivateKey<SECRET_KEY_SIZE>,
@@ -237,6 +248,7 @@ macro_rules! instantiate {
             ) -> MlKemSharedSecret {
                 crate::ind_cca::decapsulate::<
                     K,
+                    K_SQUARED,
                     SECRET_KEY_SIZE,
                     CPA_SECRET_KEY_SIZE,
                     PUBLIC_KEY_SIZE,
@@ -251,6 +263,8 @@ macro_rules! instantiate {
                     ETA1_RANDOMNESS_SIZE,
                     ETA2,
                     ETA2_RANDOMNESS_SIZE,
+                    PRF_OUTPUT_SIZE1,
+                    PRF_OUTPUT_SIZE2,
                     IMPLICIT_REJECTION_HASH_INPUT_SIZE,
                     $vector,
                     $hash,

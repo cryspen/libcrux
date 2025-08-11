@@ -627,7 +627,7 @@ pub(crate) mod kyber {
             ETA1,
             ETA1_RANDOMNESS_SIZE,
             PRF_OUTPUT_SIZE1,
-        >(&randomness)
+        >(randomness)
     }
 
     /// Encapsulate Kyber 768
@@ -656,7 +656,7 @@ pub(crate) mod kyber {
             ETA2_RANDOMNESS_SIZE,
             PRF_OUTPUT_SIZE1,
             PRF_OUTPUT_SIZE2,
-        >(public_key, &randomness)
+        >(public_key, randomness)
     }
 
     /// Decapsulate ML-KEM 768
@@ -703,7 +703,7 @@ pub(crate) mod kyber {
 ///
 /// // USE ONLY CRYPTOGRAPHICALLY SECURE RANDOMNESS OR `generate`
 /// let randomness = [0x13; 64];
-/// let key_pair = KeyPairBytes::from_seed(&randomness);
+/// let key_pair = KeyPairBytes::from_seed(randomness);
 ///
 /// // Get pk1 and pk2 to send to the other party.
 /// let pk1 = key_pair.pk1();

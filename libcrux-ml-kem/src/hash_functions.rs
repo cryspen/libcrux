@@ -313,6 +313,7 @@ pub(crate) mod avx2 {
         match input.len() as u8 {
             2 => {
                 let (out0, out1) = outputs.split_at_mut(out_len);
+
                 x4::shake256(
                     &input[0],
                     &input[1],

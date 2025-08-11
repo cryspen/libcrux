@@ -103,6 +103,7 @@ macro_rules! instantiate {
             ) -> MlKem1024KeyPair {
                     p::kyber_generate_keypair::<
                         RANK,
+                        RANK_SQUARED,
                         CPA_PKE_SECRET_KEY_SIZE,
                         SECRET_KEY_SIZE,
                         CPA_PKE_PUBLIC_KEY_SIZE,
@@ -118,8 +119,8 @@ macro_rules! instantiate {
                 randomness: [u8; KEY_GENERATION_SEED_SIZE],
             ) -> MlKem1024KeyPair {
                     p::generate_keypair::<
-                RANK,
-                RANK_SQUARED,
+                        RANK,
+                        RANK_SQUARED,
                         CPA_PKE_SECRET_KEY_SIZE,
                         SECRET_KEY_SIZE,
                         CPA_PKE_PUBLIC_KEY_SIZE,
@@ -236,6 +237,7 @@ macro_rules! instantiate {
             ) -> MlKemSharedSecret {
                     p::kyber_decapsulate::<
                         RANK,
+                        RANK_SQUARED,
                         SECRET_KEY_SIZE,
                         CPA_PKE_SECRET_KEY_SIZE,
                         CPA_PKE_PUBLIC_KEY_SIZE,
@@ -645,13 +647,14 @@ pub(crate) mod kyber {
     ) -> MlKemKeyPair<SECRET_KEY_SIZE, CPA_PKE_PUBLIC_KEY_SIZE> {
         multiplexing::kyber_generate_keypair::<
             RANK,
+            RANK_SQUARED,
             CPA_PKE_SECRET_KEY_SIZE,
             SECRET_KEY_SIZE,
             CPA_PKE_PUBLIC_KEY_SIZE,
             ETA1,
             ETA1_RANDOMNESS_SIZE,
             PRF_OUTPUT_SIZE1,
-        >(&randomness)
+        >(randomness)
     }
 
     /// Encapsulate Kyber 1024
@@ -665,6 +668,7 @@ pub(crate) mod kyber {
     ) -> (MlKem1024Ciphertext, MlKemSharedSecret) {
         multiplexing::kyber_encapsulate::<
             RANK,
+            RANK_SQUARED,
             CPA_PKE_CIPHERTEXT_SIZE,
             CPA_PKE_PUBLIC_KEY_SIZE,
             T_AS_NTT_ENCODED_SIZE,
@@ -679,7 +683,7 @@ pub(crate) mod kyber {
             ETA2_RANDOMNESS_SIZE,
             PRF_OUTPUT_SIZE1,
             PRF_OUTPUT_SIZE2,
-        >(public_key, &randomness)
+        >(public_key, randomness)
     }
 
     /// Decapsulate Kyber 1024
@@ -693,6 +697,7 @@ pub(crate) mod kyber {
     ) -> MlKemSharedSecret {
         multiplexing::kyber_decapsulate::<
             RANK,
+            RANK_SQUARED,
             SECRET_KEY_SIZE,
             CPA_PKE_SECRET_KEY_SIZE,
             CPA_PKE_PUBLIC_KEY_SIZE,

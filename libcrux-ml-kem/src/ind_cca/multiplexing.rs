@@ -82,6 +82,7 @@ pub(crate) fn validate_private_key<
 #[cfg(feature = "kyber")]
 pub(crate) fn kyber_generate_keypair<
     const K: usize,
+    const K_SQUARED: usize,
     const CPA_PRIVATE_KEY_SIZE: usize,
     const PRIVATE_KEY_SIZE: usize,
     const PUBLIC_KEY_SIZE: usize,
@@ -95,6 +96,7 @@ pub(crate) fn kyber_generate_keypair<
     if libcrux_platform::simd256_support() {
         kyber_generate_keypair_avx2::<
             K,
+            K_SQUARED,
             CPA_PRIVATE_KEY_SIZE,
             PRIVATE_KEY_SIZE,
             PUBLIC_KEY_SIZE,
@@ -105,6 +107,7 @@ pub(crate) fn kyber_generate_keypair<
     } else if libcrux_platform::simd128_support() {
         kyber_generate_keypair_neon::<
             K,
+            K_SQUARED,
             CPA_PRIVATE_KEY_SIZE,
             PRIVATE_KEY_SIZE,
             PUBLIC_KEY_SIZE,
@@ -115,6 +118,7 @@ pub(crate) fn kyber_generate_keypair<
     } else {
         instantiations::portable::kyber_generate_keypair::<
             K,
+            K_SQUARED,
             CPA_PRIVATE_KEY_SIZE,
             PRIVATE_KEY_SIZE,
             PUBLIC_KEY_SIZE,
@@ -183,6 +187,7 @@ pub(crate) fn generate_keypair<
 #[cfg(feature = "kyber")]
 pub(crate) fn kyber_encapsulate<
     const K: usize,
+    const K_SQUARED: usize,
     const CIPHERTEXT_SIZE: usize,
     const PUBLIC_KEY_SIZE: usize,
     const T_AS_NTT_ENCODED_SIZE: usize,
@@ -204,6 +209,7 @@ pub(crate) fn kyber_encapsulate<
     if libcrux_platform::simd256_support() {
         kyber_encapsulate_avx2::<
             K,
+            K_SQUARED,
             CIPHERTEXT_SIZE,
             PUBLIC_KEY_SIZE,
             T_AS_NTT_ENCODED_SIZE,
@@ -222,6 +228,7 @@ pub(crate) fn kyber_encapsulate<
     } else if libcrux_platform::simd128_support() {
         kyber_encapsulate_neon::<
             K,
+            K_SQUARED,
             CIPHERTEXT_SIZE,
             PUBLIC_KEY_SIZE,
             T_AS_NTT_ENCODED_SIZE,
@@ -240,6 +247,7 @@ pub(crate) fn kyber_encapsulate<
     } else {
         instantiations::portable::kyber_encapsulate::<
             K,
+            K_SQUARED,
             CIPHERTEXT_SIZE,
             PUBLIC_KEY_SIZE,
             T_AS_NTT_ENCODED_SIZE,
@@ -355,6 +363,7 @@ pub(crate) fn encapsulate<
 #[cfg(feature = "kyber")]
 pub(crate) fn kyber_decapsulate<
     const K: usize,
+    const K_SQUARED: usize,
     const SECRET_KEY_SIZE: usize,
     const CPA_SECRET_KEY_SIZE: usize,
     const PUBLIC_KEY_SIZE: usize,
@@ -379,6 +388,7 @@ pub(crate) fn kyber_decapsulate<
     if libcrux_platform::simd256_support() {
         kyber_decapsulate_avx2::<
             K,
+            K_SQUARED,
             SECRET_KEY_SIZE,
             CPA_SECRET_KEY_SIZE,
             PUBLIC_KEY_SIZE,
@@ -400,6 +410,7 @@ pub(crate) fn kyber_decapsulate<
     } else if libcrux_platform::simd128_support() {
         kyber_decapsulate_neon::<
             K,
+            K_SQUARED,
             SECRET_KEY_SIZE,
             CPA_SECRET_KEY_SIZE,
             PUBLIC_KEY_SIZE,
@@ -421,6 +432,7 @@ pub(crate) fn kyber_decapsulate<
     } else {
         instantiations::portable::kyber_decapsulate::<
             K,
+            K_SQUARED,
             SECRET_KEY_SIZE,
             CPA_SECRET_KEY_SIZE,
             PUBLIC_KEY_SIZE,

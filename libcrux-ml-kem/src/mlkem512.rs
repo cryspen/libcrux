@@ -101,8 +101,8 @@ macro_rules! instantiate {
                 randomness: [u8; KEY_GENERATION_SEED_SIZE],
             ) -> MlKem512KeyPair {
                     p::generate_keypair::<
-                RANK,
-                RANK_SQUARED,
+                        RANK,
+                        RANK_SQUARED,
                         CPA_PKE_SECRET_KEY_SIZE,
                         SECRET_KEY_SIZE,
                         CPA_PKE_PUBLIC_KEY_SIZE,
@@ -120,8 +120,8 @@ macro_rules! instantiate {
                 randomness: [u8; KEY_GENERATION_SEED_SIZE],
             ) -> MlKem512KeyPair {
                 p::kyber_generate_keypair::<
-                                RANK,
-                RANK_SQUARED,
+                        RANK,
+                        RANK_SQUARED,
                         CPA_PKE_SECRET_KEY_SIZE,
                         SECRET_KEY_SIZE,
                         CPA_PKE_PUBLIC_KEY_SIZE,
@@ -139,11 +139,9 @@ macro_rules! instantiate {
                 public_key: &MlKem512PublicKey,
                 randomness: [u8; SHARED_SECRET_SIZE],
             ) -> (MlKem512Ciphertext, MlKemSharedSecret) {
-
-
                     p::encapsulate::<
-                RANK,
-                RANK_SQUARED,
+                        RANK,
+                        RANK_SQUARED,
                         CPA_PKE_CIPHERTEXT_SIZE,
                         CPA_PKE_PUBLIC_KEY_SIZE,
                         T_AS_NTT_ENCODED_SIZE,
@@ -159,7 +157,6 @@ macro_rules! instantiate {
                         PRF_OUTPUT_SIZE1,
                         PRF_OUTPUT_SIZE2,
                     >(public_key, &randomness)
-
             }
 
             /// Encapsulate Kyber 512
@@ -175,6 +172,7 @@ macro_rules! instantiate {
             ) -> (MlKem512Ciphertext, MlKemSharedSecret) {
                     p::kyber_encapsulate::<
                         RANK,
+                        RANK_SQUARED,
                         CPA_PKE_CIPHERTEXT_SIZE,
                         CPA_PKE_PUBLIC_KEY_SIZE,
                         T_AS_NTT_ENCODED_SIZE,
@@ -327,8 +325,8 @@ macro_rules! instantiate {
                     unpacked_public_key: &mut MlKem512PublicKeyUnpacked,
                 ) {
                         p::unpacked::unpack_public_key::<
-                    RANK,
-                    RANK_SQUARED,
+                            RANK,
+                            RANK_SQUARED,
                             T_AS_NTT_ENCODED_SIZE,
                             CPA_PKE_PUBLIC_KEY_SIZE,
                         >(public_key, unpacked_public_key)
@@ -349,8 +347,8 @@ macro_rules! instantiate {
                     key_pair: &mut MlKem512KeyPairUnpacked,
                 ) {
                     p::unpacked::generate_keypair::<
-                                            RANK,
-RANK_SQUARED,
+                        RANK,
+                        RANK_SQUARED,
                         CPA_PKE_SECRET_KEY_SIZE,
                         SECRET_KEY_SIZE,
                         CPA_PKE_PUBLIC_KEY_SIZE,
@@ -639,14 +637,14 @@ pub(crate) mod kyber {
     pub fn generate_key_pair(randomness: [u8; KEY_GENERATION_SEED_SIZE]) -> MlKem512KeyPair {
         multiplexing::kyber_generate_keypair::<
             RANK,
-            CPA_PKE_RANK_SQUARED,
+            RANK_SQUARED,
             CPA_PKE_SECRET_KEY_SIZE,
             SECRET_KEY_SIZE,
             CPA_PKE_PUBLIC_KEY_SIZE,
             ETA1,
             ETA1_RANDOMNESS_SIZE,
             PRF_OUTPUT_SIZE1,
-        >(&randomness)
+        >(randomness)
     }
 
     /// Encapsulate Kyber 512
@@ -660,6 +658,7 @@ pub(crate) mod kyber {
     ) -> (MlKem512Ciphertext, MlKemSharedSecret) {
         multiplexing::kyber_encapsulate::<
             RANK,
+            RANK_SQUARED,
             CPA_PKE_CIPHERTEXT_SIZE,
             CPA_PKE_PUBLIC_KEY_SIZE,
             T_AS_NTT_ENCODED_SIZE,
@@ -674,7 +673,7 @@ pub(crate) mod kyber {
             ETA2_RANDOMNESS_SIZE,
             PRF_OUTPUT_SIZE1,
             PRF_OUTPUT_SIZE2,
-        >(public_key, &randomness)
+        >(public_key, randomness)
     }
 
     /// Decapsulate Kyber 512

@@ -77,6 +77,7 @@ pub(crate) fn generate_keypair<
 #[cfg_attr(not(hax), target_feature(enable = "avx2"))]
 unsafe fn kyber_generate_keypair_avx2<
     const K: usize,
+    const K_SQUARED: usize,
     const CPA_PRIVATE_KEY_SIZE: usize,
     const PRIVATE_KEY_SIZE: usize,
     const PUBLIC_KEY_SIZE: usize,
@@ -88,6 +89,7 @@ unsafe fn kyber_generate_keypair_avx2<
 ) -> MlKemKeyPair<PRIVATE_KEY_SIZE, PUBLIC_KEY_SIZE> {
     crate::ind_cca::generate_keypair::<
         K,
+        K_SQUARED,
         CPA_PRIVATE_KEY_SIZE,
         PRIVATE_KEY_SIZE,
         PUBLIC_KEY_SIZE,
@@ -104,6 +106,7 @@ unsafe fn kyber_generate_keypair_avx2<
 #[cfg(feature = "kyber")]
 pub(crate) fn kyber_generate_keypair<
     const K: usize,
+    const K_SQUARED: usize,
     const CPA_PRIVATE_KEY_SIZE: usize,
     const PRIVATE_KEY_SIZE: usize,
     const PUBLIC_KEY_SIZE: usize,
@@ -116,6 +119,7 @@ pub(crate) fn kyber_generate_keypair<
     unsafe {
         kyber_generate_keypair_avx2::<
             K,
+            K_SQUARED,
             CPA_PRIVATE_KEY_SIZE,
             PRIVATE_KEY_SIZE,
             PUBLIC_KEY_SIZE,
@@ -204,6 +208,7 @@ pub(crate) fn validate_private_key_only<const K: usize, const SECRET_KEY_SIZE: u
 #[cfg_attr(not(hax), target_feature(enable = "avx2"))]
 unsafe fn kyber_encapsulate_avx2<
     const K: usize,
+    const K_SQUARED: usize,
     const CIPHERTEXT_SIZE: usize,
     const PUBLIC_KEY_SIZE: usize,
     const T_AS_NTT_ENCODED_SIZE: usize,
@@ -224,6 +229,7 @@ unsafe fn kyber_encapsulate_avx2<
 ) -> (MlKemCiphertext<CIPHERTEXT_SIZE>, MlKemSharedSecret) {
     crate::ind_cca::encapsulate::<
         K,
+        K_SQUARED,
         CIPHERTEXT_SIZE,
         PUBLIC_KEY_SIZE,
         T_AS_NTT_ENCODED_SIZE,
@@ -248,6 +254,7 @@ unsafe fn kyber_encapsulate_avx2<
 #[cfg(feature = "kyber")]
 pub(crate) fn kyber_encapsulate<
     const K: usize,
+    const K_SQUARED: usize,
     const CIPHERTEXT_SIZE: usize,
     const PUBLIC_KEY_SIZE: usize,
     const T_AS_NTT_ENCODED_SIZE: usize,
@@ -269,6 +276,7 @@ pub(crate) fn kyber_encapsulate<
     unsafe {
         kyber_encapsulate_avx2::<
             K,
+            K_SQUARED,
             CIPHERTEXT_SIZE,
             PUBLIC_KEY_SIZE,
             T_AS_NTT_ENCODED_SIZE,
@@ -408,6 +416,7 @@ pub(crate) fn encapsulate<
 #[cfg_attr(not(hax), target_feature(enable = "avx2"))]
 unsafe fn kyber_decapsulate_avx2<
     const K: usize,
+    const K_SQUARED: usize,
     const SECRET_KEY_SIZE: usize,
     const CPA_SECRET_KEY_SIZE: usize,
     const PUBLIC_KEY_SIZE: usize,
@@ -431,6 +440,7 @@ unsafe fn kyber_decapsulate_avx2<
 ) -> MlKemSharedSecret {
     crate::ind_cca::decapsulate::<
         K,
+        K_SQUARED,
         SECRET_KEY_SIZE,
         CPA_SECRET_KEY_SIZE,
         PUBLIC_KEY_SIZE,
@@ -458,6 +468,7 @@ unsafe fn kyber_decapsulate_avx2<
 #[cfg(feature = "kyber")]
 pub fn kyber_decapsulate<
     const K: usize,
+    const K_SQUARED: usize,
     const SECRET_KEY_SIZE: usize,
     const CPA_SECRET_KEY_SIZE: usize,
     const PUBLIC_KEY_SIZE: usize,
@@ -482,6 +493,7 @@ pub fn kyber_decapsulate<
     unsafe {
         kyber_decapsulate_avx2::<
             K,
+            K_SQUARED,
             SECRET_KEY_SIZE,
             CPA_SECRET_KEY_SIZE,
             PUBLIC_KEY_SIZE,
