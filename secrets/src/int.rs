@@ -134,7 +134,7 @@ mod portable {
         core::hint::black_box(((!(selector as u64)).wrapping_add(1) >> 63) & 1)
     }
 
-    impl Select for [U8] {
+    impl Select for [u8] {
         fn select(&mut self, other: &Self, selector: u8) {
             let mask = (is_non_zero(selector) as u8).wrapping_sub(1);
             for i in 0..self.len() {
@@ -143,7 +143,16 @@ mod portable {
         }
     }
 
-    impl Select for [U16] {
+    #[cfg(feature = "check-secret-independence")]
+    impl Select for [U8] {
+        fn select(&mut self, other: &Self, selector: u8) {
+            let lhs = self.declassify_ref_mut();
+            let rhs = other.declassify_ref();
+            lhs.select(rhs, selector);
+        }
+    }
+
+    impl Select for [u16] {
         fn select(&mut self, other: &Self, selector: u8) {
             let mask = (is_non_zero(selector) as u16).wrapping_sub(1);
             for i in 0..self.len() {
@@ -152,7 +161,16 @@ mod portable {
         }
     }
 
-    impl Select for [U32] {
+    #[cfg(feature = "check-secret-independence")]
+    impl Select for [U16] {
+        fn select(&mut self, other: &Self, selector: u8) {
+            let lhs = self.declassify_ref_mut();
+            let rhs = other.declassify_ref();
+            lhs.select(rhs, selector);
+        }
+    }
+
+    impl Select for [u32] {
         fn select(&mut self, other: &Self, selector: u8) {
             let mask = (is_non_zero(selector) as u32).wrapping_sub(1);
             for i in 0..self.len() {
@@ -161,12 +179,30 @@ mod portable {
         }
     }
 
-    impl Select for [U64] {
+    #[cfg(feature = "check-secret-independence")]
+    impl Select for [U32] {
+        fn select(&mut self, other: &Self, selector: u8) {
+            let lhs = self.declassify_ref_mut();
+            let rhs = other.declassify_ref();
+            lhs.select(rhs, selector);
+        }
+    }
+
+    impl Select for [u64] {
         fn select(&mut self, other: &Self, selector: u8) {
             let mask = (is_non_zero(selector) as u64).wrapping_sub(1);
             for i in 0..self.len() {
                 self[i] = (self[i] & mask) | (other[i] & !mask);
             }
+        }
+    }
+
+    #[cfg(feature = "check-secret-independence")]
+    impl Select for [U64] {
+        fn select(&mut self, other: &Self, selector: u8) {
+            let lhs = self.declassify_ref_mut();
+            let rhs = other.declassify_ref();
+            lhs.select(rhs, selector);
         }
     }
 
@@ -176,38 +212,77 @@ mod portable {
                 ((((!($selector as u64)).wrapping_add(1) >> 63) & 1) as $t).wrapping_sub(1),
             );
             for (lhs, rhs) in $lhs.iter_mut().zip($rhs.iter_mut()) {
-                let dummy = !mask & (*lhs.declassify() ^ *rhs.declassify());
-                *lhs ^= dummy.classify();
-                *rhs ^= dummy.classify();
+                let dummy = !mask & (*lhs ^ *rhs);
+                *lhs ^= dummy;
+                *rhs ^= dummy;
             }
         };
     }
 
-    impl Swap for [U8] {
+    impl Swap for [u8] {
         #[inline]
         fn cswap(&mut self, other: &mut Self, selector: u8) {
             swap!(u8, self, other, selector);
         }
     }
 
-    impl Swap for [U16] {
+    #[cfg(feature = "check-secret-independence")]
+    impl Swap for [U8] {
+        #[inline]
+        fn cswap(&mut self, other: &mut Self, selector: u8) {
+            let lhs = self.declassify_ref_mut();
+            let rhs = other.declassify_ref_mut();
+            swap!(u8, lhs, rhs, selector);
+        }
+    }
+
+    impl Swap for [u16] {
         #[inline]
         fn cswap(&mut self, other: &mut Self, selector: u8) {
             swap!(u16, self, other, selector);
         }
     }
 
-    impl Swap for [U32] {
+    #[cfg(feature = "check-secret-independence")]
+    impl Swap for [U16] {
+        #[inline]
+        fn cswap(&mut self, other: &mut Self, selector: u8) {
+            let lhs = self.declassify_ref_mut();
+            let rhs = other.declassify_ref_mut();
+            swap!(u16, lhs, rhs, selector);
+        }
+    }
+
+    impl Swap for [u32] {
         #[inline]
         fn cswap(&mut self, other: &mut Self, selector: u8) {
             swap!(u32, self, other, selector);
         }
     }
+    #[cfg(feature = "check-secret-independence")]
+    impl Swap for [U32] {
+        #[inline]
+        fn cswap(&mut self, other: &mut Self, selector: u8) {
+            let lhs = self.declassify_ref_mut();
+            let rhs = other.declassify_ref_mut();
+            swap!(u32, lhs, rhs, selector);
+        }
+    }
 
-    impl Swap for [U64] {
+    impl Swap for [u64] {
         #[inline]
         fn cswap(&mut self, other: &mut Self, selector: u8) {
             swap!(u64, self, other, selector);
+        }
+    }
+
+    #[cfg(feature = "check-secret-independence")]
+    impl Swap for [U64] {
+        #[inline]
+        fn cswap(&mut self, other: &mut Self, selector: u8) {
+            let lhs = self.declassify_ref_mut();
+            let rhs = other.declassify_ref_mut();
+            swap!(u64, lhs, rhs, selector);
         }
     }
 }
@@ -252,39 +327,71 @@ mod aarch64 {
         };
     }
 
+    impl Select for u8 {
+        #[inline]
+        fn select(&mut self, other: &Self, selector: u8) {
+            select32!(self, other, selector);
+        }
+    }
+
+    #[cfg(feature = "check-secret-independence")]
     impl Select for U8 {
         #[inline]
         fn select(&mut self, other: &Self, selector: u8) {
             let lhs = self.declassify_ref_mut();
             let rhs = other.declassify_ref();
-            select32!(lhs, rhs, selector);
+            lhs.select(other, selector);
         }
     }
 
+    impl Select for u16 {
+        #[inline]
+        fn select(&mut self, other: &Self, selector: u8) {
+            select32!(self, other, selector);
+        }
+    }
+
+    #[cfg(feature = "check-secret-independence")]
     impl Select for U16 {
         #[inline]
         fn select(&mut self, other: &Self, selector: u8) {
             let lhs = self.declassify_ref_mut();
             let rhs = other.declassify_ref();
-            select32!(lhs, rhs, selector);
+            lhs.select(other, selector);
         }
     }
 
+    impl Select for u32 {
+        #[inline]
+        fn select(&mut self, other: &Self, selector: u8) {
+            select32!(self, other, selector);
+        }
+    }
+
+    #[cfg(feature = "check-secret-independence")]
     impl Select for U32 {
         #[inline]
         fn select(&mut self, other: &Self, selector: u8) {
             let lhs = self.declassify_ref_mut();
             let rhs = other.declassify_ref();
-            select32!(lhs, rhs, selector);
+            lhs.select(other, selector);
         }
     }
 
+    impl Select for u64 {
+        #[inline]
+        fn select(&mut self, other: &Self, selector: u8) {
+            select64!(self, other, selector);
+        }
+    }
+
+    #[cfg(feature = "check-secret-independence")]
     impl Select for U64 {
         #[inline]
         fn select(&mut self, other: &Self, selector: u8) {
             let lhs = self.declassify_ref_mut();
             let rhs = other.declassify_ref();
-            select64!(lhs, rhs, selector);
+            lhs.select(other, selector);
         }
     }
 
@@ -337,39 +444,71 @@ mod aarch64 {
         };
     }
 
+    impl Swap for u8 {
+        #[inline]
+        fn cswap(&mut self, other: &mut Self, selector: u8) {
+            swap32!(self, other, selector);
+        }
+    }
+
+    #[cfg(feature = "check-secret-independence")]
     impl Swap for U8 {
         #[inline]
         fn cswap(&mut self, other: &mut Self, selector: u8) {
             let lhs = self.declassify_ref_mut();
             let rhs = other.declassify_ref_mut();
-            swap32!(lhs, rhs, selector);
+            lhs.swap(rhs, selector);
         }
     }
 
+    impl Swap for u16 {
+        #[inline]
+        fn cswap(&mut self, other: &mut Self, selector: u8) {
+            swap32!(self, other, selector);
+        }
+    }
+
+    #[cfg(feature = "check-secret-independence")]
     impl Swap for U16 {
         #[inline]
         fn cswap(&mut self, other: &mut Self, selector: u8) {
             let lhs = self.declassify_ref_mut();
             let rhs = other.declassify_ref_mut();
-            swap32!(lhs, rhs, selector);
+            lhs.swap(rhs, selector);
         }
     }
 
+    impl Swap for u32 {
+        #[inline]
+        fn cswap(&mut self, other: &mut Self, selector: u8) {
+            swap32!(self, other, selector);
+        }
+    }
+
+    #[cfg(feature = "check-secret-independence")]
     impl Swap for U32 {
         #[inline]
         fn cswap(&mut self, other: &mut Self, selector: u8) {
             let lhs = self.declassify_ref_mut();
             let rhs = other.declassify_ref_mut();
-            swap32!(lhs, rhs, selector);
+            lhs.swap(rhs, selector);
         }
     }
 
+    impl Swap for u64 {
+        #[inline]
+        fn cswap(&mut self, other: &mut Self, selector: u8) {
+            swap64!(self, other, selector);
+        }
+    }
+
+    #[cfg(feature = "check-secret-independence")]
     impl Swap for U64 {
         #[inline]
         fn cswap(&mut self, other: &mut Self, selector: u8) {
             let lhs = self.declassify_ref_mut();
             let rhs = other.declassify_ref_mut();
-            swap64!(lhs, rhs, selector);
+            lhs.swap(rhs, selector);
         }
     }
 
@@ -391,9 +530,9 @@ mod select {
     use super::*;
     use rand::{rng, Fill, Rng, RngCore};
 
-    fn test<T: Default + Copy + PartialEq + Eq + Debug>(rng: &mut impl RngCore)
+    fn test<T: Classify + Default + Copy + PartialEq + Eq + Debug>(rng: &mut impl RngCore)
     where
-        [T]: Fill + Scalar,
+        [T]: Fill + Select,
     {
         let selector: bool = rng.random();
         let selector = if selector { 0 } else { rng.next_u32() as u8 };
@@ -429,6 +568,49 @@ mod select {
             test::<u64>(&mut rng);
         }
     }
+
+    #[test]
+    #[cfg(feature = "check-secret-independence")]
+    fn correctness_secret() {
+        macro_rules! secret_test {
+            ($ty:ty, $rng:expr) => {{
+                let selector: bool = $rng.random();
+                let selector = if selector { 0 } else { $rng.next_u32() as u8 };
+                let mut lhs = [<$ty>::default(); 256];
+                $rng.fill(&mut lhs);
+                let mut rhs = [<$ty>::default(); 256];
+                $rng.fill(&mut rhs);
+
+                let expected = if selector == 0 {
+                    lhs.clone()
+                } else {
+                    rhs.clone()
+                };
+
+                let mut lhs = lhs.classify();
+                let rhs = rhs.classify();
+
+                lhs.select(&rhs, selector);
+
+                assert_eq!(
+                    lhs.declassify(),
+                    expected,
+                    "\nother: {:?}\nselector: {}\n",
+                    rhs.declassify(),
+                    selector
+                );
+            }};
+        }
+        let mut rng = rng();
+        const ITERATIONS: usize = 1_000;
+
+        for _ in 0..ITERATIONS {
+            secret_test!(u8, rng);
+            secret_test!(u16, rng);
+            secret_test!(u32, rng);
+            secret_test!(u64, rng);
+        }
+    }
 }
 
 #[cfg(test)]
@@ -439,6 +621,7 @@ mod swap {
     use super::*;
     use rand::{rng, Fill, Rng, RngCore};
 
+    /// Test swap on public integers.
     fn test<T: Default + Copy + PartialEq + Eq + Debug>(rng: &mut impl RngCore)
     where
         [T]: Fill + Swap,
@@ -468,10 +651,58 @@ mod swap {
         const ITERATIONS: usize = 1_000;
 
         for _ in 0..ITERATIONS {
-            test::<U8>(&mut rng);
-            test::<U16>(&mut rng);
-            test::<U32>(&mut rng);
-            test::<U64>(&mut rng);
+            test::<u8>(&mut rng);
+            test::<u16>(&mut rng);
+            test::<u32>(&mut rng);
+            test::<u64>(&mut rng);
+        }
+    }
+
+    /// Test swap on secret integers.
+    #[test]
+    #[cfg(feature = "check-secret-independence")]
+    fn correctness_secret() {
+        macro_rules! secret_test {
+            ($ty:ty, $rng:expr) => {{
+                let selector: bool = $rng.random();
+                let selector = if selector { 0 } else { $rng.next_u32() as u8 };
+                let mut lhs = [<$ty>::default(); 256];
+                $rng.fill(&mut lhs);
+                let mut rhs = [<$ty>::default(); 256];
+                $rng.fill(&mut rhs);
+
+                let (expected_lhs, expected_rhs) = if selector == 0 {
+                    (lhs.clone(), rhs.clone())
+                } else {
+                    (rhs.clone(), lhs.clone())
+                };
+
+                let mut lhs = lhs.classify();
+                let mut rhs = rhs.classify();
+                lhs.cswap(&mut rhs, selector);
+
+                assert_eq!(
+                    lhs.declassify(),
+                    expected_lhs,
+                    "\nlhs / selector: {}\n",
+                    selector
+                );
+                assert_eq!(
+                    rhs.declassify(),
+                    expected_rhs,
+                    "\nrhs / selector: {}\n",
+                    selector
+                );
+            }};
+        }
+        let mut rng = rng();
+        const ITERATIONS: usize = 1_000;
+
+        for _ in 0..ITERATIONS {
+            secret_test!(u8, rng);
+            secret_test!(u16, rng);
+            secret_test!(u32, rng);
+            secret_test!(u64, rng);
         }
     }
 }
