@@ -95,6 +95,13 @@ impl core::fmt::Display for VerifyError {
     }
 }
 
+#[cfg(feature = "error_in_core")]
+mod error_in_core {
+
+    impl core::error::Error for super::SignError {}
+    impl core::error::Error for super::VerifyError {}
+}
+
 impl From<super::arrayref::SignError> for SignError {
     fn from(e: super::arrayref::SignError) -> Self {
         match e {
