@@ -11,6 +11,7 @@ pub mod signers {
                 #[doc = $doc]
                 pub struct $name;
 
+                #[doc = concat!("An ", stringify!($module), " signer.")]
                 pub type $alias = super::Signer<$name>;
 
                 const VERIFICATION_KEY_LEN: usize =
@@ -20,7 +21,7 @@ pub mod signers {
 
                 // XXX: implementing owned trait directly because there is no arrayref equivalent
                 // TODO: for docs, these should appear as consts in trait def
-                /// It is the responsibility of the caller to ensure  that the `rand` argument is actually
+                /// It is the responsibility of the caller to ensure  that the `randomness` argument is actually
                 /// random.
                 impl owned::Sign<(&[u8], super::Randomness), SIGNING_KEY_LEN, SIGNATURE_LEN>
                     for $alias
@@ -59,6 +60,7 @@ pub mod signers {
             pub use $module::{$alias, $name};
         };
     }
+    /// A convenience struct for signature functionality.
     pub struct Signer<T> {
         _phantom_data: core::marker::PhantomData<T>,
     }
@@ -70,20 +72,20 @@ pub mod signers {
         MlDsa44,
         ml_dsa_44,
         MlDsa44Signer,
-        "A struct representing ML-DSA 44"
+        "A struct representing ML-DSA 44."
     );
     #[cfg(feature = "mldsa65")]
     impl_signature_trait!(
         MlDsa65,
         ml_dsa_65,
         MlDsa65Signer,
-        "A struct representing ML-DSA 65"
+        "A struct representing ML-DSA 65."
     );
     #[cfg(feature = "mldsa87")]
     impl_signature_trait!(
         MlDsa87,
         ml_dsa_87,
         MlDsa87Signer,
-        "A struct representing ML-DSA 87"
+        "A struct representing ML-DSA 87."
     );
 }
