@@ -57,8 +57,7 @@ macro_rules! impl_signature_trait {
                     signature,
                 )
                 .map_err(|e| match e {
-                    // TODO: is this correct?
-                    crate::Error::InvalidSignatureLength => arrayref::VerifyError::InvalidSignature,
+                    crate::Error::InvalidSignatureLength => arrayref::VerifyError::InvalidSignatureBufferLength,
                     crate::Error::MessageTooLarge => arrayref::VerifyError::InvalidPayloadLength,
                     _ => arrayref::VerifyError::LibraryError,
 
