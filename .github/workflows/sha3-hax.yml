@@ -102,7 +102,6 @@ jobs:
       - name: 🏃 Lax SHA3 crate (portable)
         working-directory: libcrux-sha3
         run: ./hax.py prove --admit
-
   sha3-extract-hax-status:
     if: ${{ always() }}
     needs: [get-hax-ref, extract]
