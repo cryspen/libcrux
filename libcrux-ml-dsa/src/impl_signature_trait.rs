@@ -60,7 +60,9 @@ pub mod signers {
             pub use $module::{$alias, $name};
         };
     }
-    /// A convenience struct for signature functionality.
+
+    // TODO: rename `T`
+    /// A convenience struct for signature scheme functionality.
     pub struct Signer<T> {
         _phantom_data: core::marker::PhantomData<T>,
     }
