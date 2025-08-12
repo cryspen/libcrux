@@ -6,6 +6,8 @@ pub use super::owned::SignError;
 use libcrux_secrets::{DeclassifyRef, U8};
 
 /// A signer. This trait makes use of types suitable for checking secret independence.
+///
+/// The `SignAux` type is auxiliary information required for signing.
 pub trait Sign<SignAux, const SIGNING_KEY_LEN: usize, const SIGNATURE_LEN: usize> {
     /// Sign a payload using a provided signature key. Required auxiliary information is provided using
     /// the `aux` argument.

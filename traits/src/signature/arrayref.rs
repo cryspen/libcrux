@@ -3,6 +3,8 @@
 
 /// A signer. This trait is the most low-level and mostly used in the implementation of other, more
 /// usable APIs on top. This trait takes array references as arguments.
+///
+/// The `SignAux` type is auxiliary information required for signing.
 pub trait Sign<SignAux, const SIGNING_KEY_LEN: usize, const SIGNATURE_LEN: usize> {
     /// Sign a payload using a provided signature key. Required auxiliary information is provided using
     /// the `aux` argument.
@@ -15,6 +17,8 @@ pub trait Sign<SignAux, const SIGNING_KEY_LEN: usize, const SIGNATURE_LEN: usize
 }
 
 /// A verifier. This trait takes array references as arguments.
+///
+/// The `VerifyAux` type is auxiliary information required for verification.
 pub trait Verify<VerifyAux, const VERIFICATION_KEY_LEN: usize, const SIGNATURE_LEN: usize> {
     /// Verify a payload using a provided verification key. Required auxiliary information is provided using
     /// the `aux` argument.

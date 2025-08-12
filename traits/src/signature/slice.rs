@@ -2,6 +2,8 @@
 //! are provided as slices, and the results are written to mutable slices.
 
 /// A signer. This trait takes slices as arguments.
+///
+/// The `SignAux` type is auxiliary information required for signing.
 pub trait Sign<SignAux> {
     /// Sign a payload using a provided signature key. Required auxiliary information is provided using
     /// the `aux` argument.
@@ -14,6 +16,8 @@ pub trait Sign<SignAux> {
 }
 
 /// A verifier. This trait takes slices as arguments.
+///
+/// The `VerifyAux` type is auxiliary information required for verification.
 pub trait Verify<VerifyAux> {
     /// Verify a payload using a provided verification key. Required auxiliary information is provided using
     /// the `aux` argument.
