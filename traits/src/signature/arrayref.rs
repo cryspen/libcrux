@@ -19,14 +19,19 @@ pub trait Verify<VerifyAux, const PUBLIC_KEY_LEN: usize, const SIGNATURE_LEN: us
 
 #[derive(Debug, PartialEq, Eq)]
 pub enum SignError {
+    /// The length of the provided payload is invalid.
     InvalidPayloadLength,
+    /// Indicates a library error.
     LibraryError,
 }
 
 #[derive(Debug, PartialEq, Eq)]
 pub enum VerifyError {
+    /// The provided signature is invalid.
     InvalidSignature,
+    /// The length of the provided payload is invalid.
     InvalidPayloadLength,
+    /// Indicates a library error.
     LibraryError,
 }
 
