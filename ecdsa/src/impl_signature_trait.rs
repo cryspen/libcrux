@@ -30,13 +30,13 @@ macro_rules! impl_signature_trait {
                 Ok(())
             }
         }
-        impl arrayref::Verify<&(), PK_LEN, SIG_LEN> for $alias {
+        impl arrayref::Verify<(), PK_LEN, SIG_LEN> for $alias {
             #[inline(always)]
             fn verify(
                 payload: &[u8],
                 public_key: &[u8; PK_LEN],
                 signature: &[u8; SIG_LEN],
-                _aux: &(),
+                _aux: (),
             ) -> Result<(), arrayref::VerifyError> {
 
                 let result = libcrux_p256::$verify_fn(
@@ -53,7 +53,7 @@ macro_rules! impl_signature_trait {
             }
         }
         libcrux_traits::impl_signature_slice_trait!($alias => SK_LEN, SIG_LEN, &Nonce, nonce);
-        libcrux_traits::impl_verify_slice_trait!($alias => PK_LEN, SIG_LEN, &(), _aux);
+        libcrux_traits::impl_verify_slice_trait!($alias => PK_LEN, SIG_LEN, (), _aux);
         // TODO: owned and secrets traits not appearing in docs
     };
 }

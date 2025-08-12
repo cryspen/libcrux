@@ -19,18 +19,18 @@ pub trait SignNoAux {
     fn sign(payload: &[u8], private_key: &[u8], signature: &mut [u8]) -> Result<(), SignError>;
 }
 
-impl<'a, T: Sign<&'a ()>> SignNoAux for T {
+impl<T: Sign<()>> SignNoAux for T {
     fn sign(payload: &[u8], private_key: &[u8], signature: &mut [u8]) -> Result<(), SignError> {
-        <Self as Sign<&()>>::sign(payload, private_key, signature, &())
+        <Self as Sign<()>>::sign(payload, private_key, signature, ())
     }
 }
 
 pub trait VerifyNoAux {
     fn verify(payload: &[u8], public_key: &[u8], signature: &[u8]) -> Result<(), VerifyError>;
 }
-impl<'a, T: Verify<&'a ()>> VerifyNoAux for T {
+impl<'a, T: Verify<()>> VerifyNoAux for T {
     fn verify(payload: &[u8], public_key: &[u8], signature: &[u8]) -> Result<(), VerifyError> {
-        <Self as Verify<&()>>::verify(payload, public_key, signature, &())
+        <Self as Verify<()>>::verify(payload, public_key, signature, ())
     }
 }
 
