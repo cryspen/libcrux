@@ -2,7 +2,7 @@ use super::impl_hacl::*;
 
 use libcrux_traits::signature::arrayref;
 
-// $bytes is pk_len, sk_len and sig_len
+// $bytes is vk_len, sk_len and sig_len
 macro_rules! impl_signature_trait {
     ($bits:literal, $bytes:literal, $digest_alg:ident, $alias:ident) => {
         #[allow(non_camel_case_types)]
@@ -17,15 +17,15 @@ macro_rules! impl_signature_trait {
         impl arrayref::Sign<(&[u8], &[u8; $bytes]), $bytes, $bytes> for $alias {
             fn sign(
                 payload: &[u8],
-                private_key: &[u8; $bytes],
+                signing_key: &[u8; $bytes],
                 signature: &mut [u8; $bytes],
-                (salt, public_key): (&[u8], &[u8; $bytes]),
+                (salt, verification_key): (&[u8], &[u8; $bytes]),
             ) -> Result<(), arrayref::SignError> {
-                // NOTE: succeeds if the length of public_key ($bytes) is 256, 384, 512, 768, 1024
-                let pk = VarLenPublicKey::try_from(public_key.as_ref()).unwrap();
+                // NOTE: succeeds if the length of verification_key ($bytes) is 256, 384, 512, 768, 1024
+                let pk = VarLenPublicKey::try_from(verification_key.as_ref()).unwrap();
                 let sk = VarLenPrivateKey {
                     pk,
-                    d: private_key.as_ref(),
+                    d: signing_key.as_ref(),
                 };
                 sign_varlen(
                     crate::DigestAlgorithm::$digest_alg,
@@ -45,13 +45,13 @@ macro_rules! impl_signature_trait {
         impl arrayref::Verify<u32, $bytes, $bytes> for $alias {
             fn verify(
                 payload: &[u8],
-                public_key: &[u8; $bytes],
+                verification_key: &[u8; $bytes],
                 signature: &[u8; $bytes],
                 salt_len: u32,
             ) -> Result<(), arrayref::VerifyError> {
                 verify_varlen(
                     crate::DigestAlgorithm::$digest_alg,
-                    &VarLenPublicKey::try_from(public_key.as_ref()).unwrap(),
+                    &VarLenPublicKey::try_from(verification_key.as_ref()).unwrap(),
                     payload,
                     salt_len,
                     signature,
