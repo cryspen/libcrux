@@ -6,6 +6,7 @@ macro_rules! impl_signature_trait {
         pub type $alias = Signer<libcrux_sha2::$digest_alg_name>;
 
         impl arrayref::Sign<&Nonce, $sk_len, $sig_len> for $alias {
+            #[inline(always)]
             fn sign(
                 payload: &[u8],
                 private_key: &[u8; $sk_len],
@@ -26,6 +27,7 @@ macro_rules! impl_signature_trait {
             }
         }
         impl arrayref::Verify<&(), $pk_len, $sig_len> for $alias {
+            #[inline(always)]
             fn verify(
                 payload: &[u8],
                 public_key: &[u8; $pk_len],
