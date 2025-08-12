@@ -3,7 +3,6 @@
 
 /// A signer. This trait takes slices as arguments.
 pub trait Sign<SignAux> {
-    // TODO: improve comment
     /// Sign a payload using a provided signature key. Required auxiliary information is provided using
     /// the `aux` argument.
     fn sign(
