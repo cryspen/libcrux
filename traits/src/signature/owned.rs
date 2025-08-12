@@ -1,4 +1,4 @@
-pub use super::arrayref::{SignError, VerifyError};
+pub use super::arrayref::SignError;
 
 pub trait Sign<SignAux, const PRIVATE_KEY_LEN: usize, const SIGNATURE_LEN: usize> {
     fn sign(
