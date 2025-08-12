@@ -136,6 +136,9 @@ impl From<super::arrayref::VerifyError> for VerifyError {
     fn from(e: super::arrayref::VerifyError) -> Self {
         match e {
             super::arrayref::VerifyError::InvalidSignature => Self::InvalidSignature,
+            super::arrayref::VerifyError::InvalidSignatureBufferLength => {
+                Self::InvalidSignatureBufferLength
+            }
             super::arrayref::VerifyError::InvalidPayloadLength => Self::InvalidPayloadLength,
             super::arrayref::VerifyError::LibraryError => Self::LibraryError,
         }

@@ -51,6 +51,8 @@ impl core::fmt::Display for SignError {
 pub enum VerifyError {
     /// The provided signature is invalid.
     InvalidSignature,
+    /// The length of the provided signature buffer is invalid.
+    InvalidSignatureBufferLength,
     /// The length of the provided payload is invalid.
     InvalidPayloadLength,
     /// Indicates a library error.
@@ -61,6 +63,9 @@ impl core::fmt::Display for VerifyError {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         let text = match self {
             VerifyError::InvalidSignature => "the provided signature is invalid",
+            VerifyError::InvalidSignatureBufferLength => {
+                "the length of the provided signature buffer is invalid"
+            }
             VerifyError::InvalidPayloadLength => "the length of the provided payload is invalid",
             VerifyError::LibraryError => "indicates a library error",
         };
