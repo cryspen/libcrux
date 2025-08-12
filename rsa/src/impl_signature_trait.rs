@@ -66,7 +66,7 @@ macro_rules! impl_signature_trait {
             }
         }
 
-        libcrux_traits::impl_signature_slice_trait!($alias => $bytes, $bytes, (&[u8], &[u8; $bytes]), (salt, public_key));
+        libcrux_traits::impl_signature_slice_trait!($alias => $bytes, $bytes, (&[u8], &[u8; $bytes]), (salt, verification_key));
         libcrux_traits::impl_verify_slice_trait!($alias => $bytes, $bytes,  u32, salt_len);
 
         // TODO: owned and secrets traits not appearing in docs
