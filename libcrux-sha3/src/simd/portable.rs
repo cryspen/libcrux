@@ -5,7 +5,7 @@ use crate::{generic_keccak::KeccakState, traits::*};
 #[inline(always)]
 fn rotate_left<const LEFT: i32, const RIGHT: i32>(x: u64) -> u64 {
     debug_assert!(LEFT + RIGHT == 64);
-    u64::rotate_left(x, LEFT as u32)
+    x.rotate_left(LEFT as u32)
 }
 
 #[inline(always)]

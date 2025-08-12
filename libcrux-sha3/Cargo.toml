@@ -29,7 +29,6 @@ harness = false
 
 [dev-dependencies]
 criterion = "0.7.0"
-hax-lib.workspace = true
 hex = "0.4.3"
 rand = "0.9"
 cavp = { version = "0.0.2", path = "../cavp" }

@@ -57,7 +57,7 @@ class extractAction(argparse.Action):
             cargo_args = []
         else:
             cargo_args = ["-C", "--features", "simd128,simd256", ";"]
-        
+
         cargo_hax_into = [
             "cargo",
             "hax",
@@ -114,7 +114,7 @@ class extractAction(argparse.Action):
             "--z3rlimit",
             "80",
         ]
-        hax_env = {"RUSTFLAGS": "-C debug-assertions=off"}
+        hax_env = {}
         shell(
             cargo_hax_into,
             cwd=".",

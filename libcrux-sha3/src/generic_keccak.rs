@@ -26,22 +26,9 @@ pub(crate) mod simd256;
 /// Portable specific implementations.
 pub(crate) mod portable;
 
-// TODO: The Copy and Clone traits should be able to be derived,
-// but the hax extraction does not type check correctly.
-#[derive(Copy)]
+#[derive(Copy, Clone)]
 pub(crate) struct KeccakState<const N: usize, T: KeccakItem<N>> {
     pub(crate) st: [T; 25],
-}
-
-impl<const N: usize, T: KeccakItem<N>> Clone for KeccakState<N, T>
-where
-    T: Clone,
-{
-    fn clone(&self) -> Self {
-        Self {
-            st: self.st.clone(),
-        }
-    }
 }
 
 #[hax_lib::attributes]
@@ -117,21 +104,25 @@ impl<const N: usize, T: KeccakItem<N>> KeccakState<N, T> {
         self.set(2, 0, T::xor_and_rotate::<3, 61>(self[(2, 0)], t[0]));
         self.set(3, 0, T::xor_and_rotate::<41, 23>(self[(3, 0)], t[0]));
         self.set(4, 0, T::xor_and_rotate::<18, 46>(self[(4, 0)], t[0]));
+
         self.set(0, 1, T::xor_and_rotate::<1, 63>(self[(0, 1)], t[1]));
         self.set(1, 1, T::xor_and_rotate::<44, 20>(self[(1, 1)], t[1]));
         self.set(2, 1, T::xor_and_rotate::<10, 54>(self[(2, 1)], t[1]));
         self.set(3, 1, T::xor_and_rotate::<45, 19>(self[(3, 1)], t[1]));
         self.set(4, 1, T::xor_and_rotate::<2, 62>(self[(4, 1)], t[1]));
+
         self.set(0, 2, T::xor_and_rotate::<62, 2>(self[(0, 2)], t[2]));
         self.set(1, 2, T::xor_and_rotate::<6, 58>(self[(1, 2)], t[2]));
         self.set(2, 2, T::xor_and_rotate::<43, 21>(self[(2, 2)], t[2]));
         self.set(3, 2, T::xor_and_rotate::<15, 49>(self[(3, 2)], t[2]));
         self.set(4, 2, T::xor_and_rotate::<61, 3>(self[(4, 2)], t[2]));
+
         self.set(0, 3, T::xor_and_rotate::<28, 36>(self[(0, 3)], t[3]));
         self.set(1, 3, T::xor_and_rotate::<55, 9>(self[(1, 3)], t[3]));
         self.set(2, 3, T::xor_and_rotate::<25, 39>(self[(2, 3)], t[3]));
         self.set(3, 3, T::xor_and_rotate::<21, 43>(self[(3, 3)], t[3]));
         self.set(4, 3, T::xor_and_rotate::<56, 8>(self[(4, 3)], t[3]));
+
         self.set(0, 4, T::xor_and_rotate::<27, 37>(self[(0, 4)], t[4]));
         self.set(1, 4, T::xor_and_rotate::<20, 44>(self[(1, 4)], t[4]));
         self.set(2, 4, T::xor_and_rotate::<39, 25>(self[(2, 4)], t[4]));
