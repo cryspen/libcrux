@@ -4,8 +4,8 @@ pub mod signers {
     use libcrux_traits::signature::arrayref;
 
     const SIG_LEN: usize = 64;
-    const PK_LEN: usize = 64;
-    const SK_LEN: usize = 32;
+    const VERIFICATION_KEY_LEN: usize = 64;
+    const SIGNING_KEY_LEN: usize = 32;
 
     macro_rules! impl_signature_trait {
     ($digest_alg_name:ident, $alias:ident, $sign_fn:ident, $verify_fn:ident) => {
@@ -13,11 +13,11 @@ pub mod signers {
         #[doc = concat!("A signer using [`libcrux_sha2::", stringify!($digest_alg_name),"`].")]
         pub type $alias = Signer<libcrux_sha2::$digest_alg_name>;
 
-        impl arrayref::Sign<&Nonce, SK_LEN, SIG_LEN> for $alias {
+        impl arrayref::Sign<&Nonce, SIGNING_KEY_LEN, SIG_LEN> for $alias {
             #[inline(always)]
             fn sign(
                 payload: &[u8],
-                private_key: &[u8; SK_LEN],
+                signing_key: &[u8; SIGNING_KEY_LEN],
                 signature: &mut [u8; SIG_LEN],
                 nonce: &Nonce,
             ) -> Result<(), arrayref::SignError> {
@@ -25,7 +25,7 @@ pub mod signers {
                     signature,
                     payload.len().try_into().map_err(|_| arrayref::SignError::InvalidPayloadLength)?,
                     payload,
-                    private_key,
+                    signing_key,
                     &nonce.0,
                 );
                 if !result {
@@ -34,11 +34,11 @@ pub mod signers {
                 Ok(())
             }
         }
-        impl arrayref::Verify<(), PK_LEN, SIG_LEN> for $alias {
+        impl arrayref::Verify<(), VERIFICATION_KEY_LEN, SIG_LEN> for $alias {
             #[inline(always)]
             fn verify(
                 payload: &[u8],
-                public_key: &[u8; PK_LEN],
+                verification_key: &[u8; VERIFICATION_KEY_LEN],
                 signature: &[u8; SIG_LEN],
                 _aux: (),
             ) -> Result<(), arrayref::VerifyError> {
@@ -46,7 +46,7 @@ pub mod signers {
                 let result = libcrux_p256::$verify_fn(
                     payload.len().try_into().map_err(|_| arrayref::VerifyError::InvalidPayloadLength)?,
                     payload,
-                    public_key,
+                    verification_key,
                     <&[u8; 32]>::try_from(&signature[0..32]).unwrap(),
                     <&[u8; 32]>::try_from(&signature[32..]).unwrap(),
                 );
@@ -56,8 +56,8 @@ pub mod signers {
                 Ok(())
             }
         }
-        libcrux_traits::impl_signature_slice_trait!($alias => SK_LEN, SIG_LEN, &Nonce, nonce);
-        libcrux_traits::impl_verify_slice_trait!($alias => PK_LEN, SIG_LEN, (), _aux);
+        libcrux_traits::impl_signature_slice_trait!($alias => SIGNING_KEY_LEN, SIG_LEN, &Nonce, nonce);
+        libcrux_traits::impl_verify_slice_trait!($alias => VERIFICATION_KEY_LEN, SIG_LEN, (), _aux);
         // TODO: owned and secrets traits not appearing in docs
     };
 }
