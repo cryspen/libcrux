@@ -10,6 +10,7 @@ pub mod signers {
     macro_rules! impl_signature_trait {
     ($digest_alg_name:ident, $alias:ident, $sign_fn:ident, $verify_fn:ident) => {
         #[allow(non_camel_case_types)]
+        #[doc = concat!("A signer using [`libcrux_sha2::", stringify!($digest_alg_name),"`].")]
         pub type $alias = Signer<libcrux_sha2::$digest_alg_name>;
 
         impl arrayref::Sign<&Nonce, SK_LEN, SIG_LEN> for $alias {
@@ -62,12 +63,17 @@ pub mod signers {
 }
 
     pub mod p256 {
+        //! [`libcrux_traits::signature`] APIs for p256.
 
         use super::*;
 
         use crate::p256::Nonce;
-        pub struct Signer<T> {
-            _phantom_data: core::marker::PhantomData<T>,
+
+        /// A convenience struct for signature scheme functionality.
+        ///
+        /// The `DigestAlg` types that are accepted are [`Sha256`](libcrux_sha2::Sha256), [`Sha384`](libcrux_sha2::Sha384), and [`Sha512`](libcrux_sha2::Sha512).
+        pub struct Signer<DigestAlg> {
+            _phantom_data: core::marker::PhantomData<DigestAlg>,
         }
 
         impl_signature_trait!(
