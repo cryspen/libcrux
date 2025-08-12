@@ -64,10 +64,9 @@ pub mod signers {
         };
     }
 
-    // TODO: rename `T`
     /// A convenience struct for signature scheme functionality.
-    pub struct Signer<T> {
-        _phantom_data: core::marker::PhantomData<T>,
+    pub struct Signer<Implementation> {
+        _phantom_data: core::marker::PhantomData<Implementation>,
     }
 
     type Randomness = [u8; 32];
