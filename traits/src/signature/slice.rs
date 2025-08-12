@@ -36,18 +36,27 @@ impl<'a, T: Verify<&'a ()>> VerifyNoAux for T {
 
 #[derive(Debug, PartialEq, Eq)]
 pub enum SignError {
+    /// The length of the provided private key is invalid.
     InvalidPrivateKeyLength,
+    /// The length of the provided signature buffer is invalid.
     InvalidSignatureBufferLength,
+    /// The length of the provided payload is invalid.
     InvalidPayloadLength,
+    /// Indicates a library error.
     LibraryError,
 }
 
 #[derive(Debug, PartialEq, Eq)]
 pub enum VerifyError {
+    /// The length of the provided payload is invalid.
     InvalidPayloadLength,
+    /// The length of the provided public key is invalid.
     InvalidPublicKeyLength,
+    /// The length of the provided signature buffer is invalid.
     InvalidSignatureBufferLength,
+    /// The provided signature is invalid.
     InvalidSignature,
+    /// Indicates a library error.
     LibraryError,
 }
 
