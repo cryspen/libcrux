@@ -1,16 +1,20 @@
 use libcrux_traits::signature::arrayref;
 
+const SIG_LEN: usize = 64;
+const PK_LEN: usize = 64;
+const SK_LEN: usize = 32;
+
 macro_rules! impl_signature_trait {
-    ($digest_alg_name:ident, $pk_len:literal, $sk_len:literal, $sig_len:literal, $alias:ident, $sign_fn:ident, $verify_fn:ident) => {
+    ($digest_alg_name:ident, $alias:ident, $sign_fn:ident, $verify_fn:ident) => {
         #[allow(non_camel_case_types)]
         pub type $alias = Signer<libcrux_sha2::$digest_alg_name>;
 
-        impl arrayref::Sign<&Nonce, $sk_len, $sig_len> for $alias {
+        impl arrayref::Sign<&Nonce, SK_LEN, SIG_LEN> for $alias {
             #[inline(always)]
             fn sign(
                 payload: &[u8],
-                private_key: &[u8; $sk_len],
-                signature: &mut [u8; $sig_len],
+                private_key: &[u8; SK_LEN],
+                signature: &mut [u8; SIG_LEN],
                 nonce: &Nonce,
             ) -> Result<(), arrayref::SignError> {
                 let result = libcrux_p256::$sign_fn(
@@ -26,12 +30,12 @@ macro_rules! impl_signature_trait {
                 Ok(())
             }
         }
-        impl arrayref::Verify<&(), $pk_len, $sig_len> for $alias {
+        impl arrayref::Verify<&(), PK_LEN, SIG_LEN> for $alias {
             #[inline(always)]
             fn verify(
                 payload: &[u8],
-                public_key: &[u8; $pk_len],
-                signature: &[u8; $sig_len],
+                public_key: &[u8; PK_LEN],
+                signature: &[u8; SIG_LEN],
                 _aux: &(),
             ) -> Result<(), arrayref::VerifyError> {
 
@@ -48,8 +52,8 @@ macro_rules! impl_signature_trait {
                 Ok(())
             }
         }
-        libcrux_traits::impl_signature_slice_trait!($alias => $sk_len, $sig_len, &Nonce, nonce);
-        libcrux_traits::impl_verify_slice_trait!($alias => $pk_len, $sig_len, &(), _aux);
+        libcrux_traits::impl_signature_slice_trait!($alias => SK_LEN, SIG_LEN, &Nonce, nonce);
+        libcrux_traits::impl_verify_slice_trait!($alias => PK_LEN, SIG_LEN, &(), _aux);
         // TODO: owned and secrets traits not appearing in docs
     };
 }
@@ -65,27 +69,18 @@ pub mod p256 {
 
     impl_signature_trait!(
         Sha256,
-        64,
-        32,
-        64,
         Signer_Sha2_256,
         ecdsa_sign_p256_sha2,
         ecdsa_verif_p256_sha2
     );
     impl_signature_trait!(
         Sha384,
-        64,
-        32,
-        64,
         Signer_Sha2_384,
         ecdsa_sign_p256_sha384,
         ecdsa_verif_p256_sha384
     );
     impl_signature_trait!(
         Sha512,
-        64,
-        32,
-        64,
         Signer_Sha2_512,
         ecdsa_sign_p256_sha512,
         ecdsa_verif_p256_sha512
