@@ -1,7 +1,7 @@
 use libcrux_traits::signature::arrayref;
 
 macro_rules! impl_signature_trait {
-    ($digest_alg_name:ident, $pk_len:literal, $sk_len:literal, $sig_len:literal, $alias:ident) => {
+    ($digest_alg_name:ident, $pk_len:literal, $sk_len:literal, $sig_len:literal, $alias:ident, $sign_fn:ident, $verify_fn:ident) => {
         #[allow(non_camel_case_types)]
         pub type $alias = Signer<libcrux_sha2::$digest_alg_name>;
 
@@ -12,14 +12,17 @@ macro_rules! impl_signature_trait {
                 signature: &mut [u8; $sig_len],
                 nonce: &Nonce,
             ) -> Result<(), arrayref::SignError> {
-                crate::p256::_sign_internal(
-                    crate::DigestAlgorithm::$digest_alg_name,
+                let result = libcrux_p256::$sign_fn(
+                    signature,
+                    payload.len().try_into().map_err(|_| arrayref::SignError::InvalidPayloadLength)?,
                     payload,
                     private_key,
-                    nonce,
-                    signature,
-                )
-                .map_err(|_| arrayref::SignError::LibraryError)
+                    &nonce.0,
+                );
+                if !result {
+                    return Err(arrayref::SignError::LibraryError);
+                }
+                Ok(())
             }
         }
         impl arrayref::Verify<&(), $pk_len, $sig_len> for $alias {
@@ -30,18 +33,17 @@ macro_rules! impl_signature_trait {
                 _aux: &(),
             ) -> Result<(), arrayref::VerifyError> {
 
-                crate::p256::_verify_internal(
-                    crate::DigestAlgorithm::$digest_alg_name,
+                let result = libcrux_p256::$verify_fn(
+                    payload.len().try_into().map_err(|_| arrayref::VerifyError::InvalidPayloadLength)?,
                     payload,
+                    public_key,
                     <&[u8; 32]>::try_from(&signature[0..32]).unwrap(),
                     <&[u8; 32]>::try_from(&signature[32..]).unwrap(),
-                    public_key,
-                )
-                .map_err(|e| match e {
-                    crate::Error::InvalidSignature => arrayref::VerifyError::InvalidSignature,
-                    _ => arrayref::VerifyError::LibraryError,
-
-                })
+                );
+                if !result {
+                    return Err(arrayref::VerifyError::LibraryError);
+                }
+                Ok(())
             }
         }
         libcrux_traits::impl_signature_slice_trait!($alias => $sk_len, $sig_len, &Nonce, nonce);
@@ -59,7 +61,31 @@ pub mod p256 {
         _phantom_data: core::marker::PhantomData<T>,
     }
 
-    impl_signature_trait!(Sha256, 64, 32, 64, Signer_Sha2_256);
-    impl_signature_trait!(Sha384, 64, 32, 64, Signer_Sha2_384);
-    impl_signature_trait!(Sha512, 64, 32, 64, Signer_Sha2_512);
+    impl_signature_trait!(
+        Sha256,
+        64,
+        32,
+        64,
+        Signer_Sha2_256,
+        ecdsa_sign_p256_sha2,
+        ecdsa_verif_p256_sha2
+    );
+    impl_signature_trait!(
+        Sha384,
+        64,
+        32,
+        64,
+        Signer_Sha2_384,
+        ecdsa_sign_p256_sha384,
+        ecdsa_verif_p256_sha384
+    );
+    impl_signature_trait!(
+        Sha512,
+        64,
+        32,
+        64,
+        Signer_Sha2_512,
+        ecdsa_sign_p256_sha512,
+        ecdsa_verif_p256_sha512
+    );
 }
