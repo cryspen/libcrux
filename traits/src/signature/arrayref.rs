@@ -1,22 +1,35 @@
+//! This module contains the traits and related errors for signing and verification where arguments
+//! are provided as array references, and outputs are written to mutable array references.
+
+/// A signer. This trait is the most low-level and mostly used in the implementation of other, more
+/// usable APIs on top. This trait takes array references as arguments.
 pub trait Sign<SignAux, const PRIVATE_KEY_LEN: usize, const SIGNATURE_LEN: usize> {
     // TODO: should this be called `private_key` or `sk`?
+    /// Sign a payload using a provided signature key. Required auxiliary information is provided using
+    /// the `aux` argument.
     fn sign(
         payload: &[u8],
         private_key: &[u8; PRIVATE_KEY_LEN],
         signature: &mut [u8; SIGNATURE_LEN],
+        // TODO: rename
         sign_aux: SignAux,
     ) -> Result<(), SignError>;
 }
 
+/// A verifier. This trait takes array references as arguments.
 pub trait Verify<VerifyAux, const PUBLIC_KEY_LEN: usize, const SIGNATURE_LEN: usize> {
+    /// Verify a payload using a provided verification key. Required auxiliary information is provided using
+    /// the `aux` argument.
     fn verify(
         payload: &[u8],
         public_key: &[u8; PUBLIC_KEY_LEN],
         signature: &[u8; SIGNATURE_LEN],
+        // TODO: rename
         verify_aux: VerifyAux,
     ) -> Result<(), VerifyError>;
 }
 
+/// Error indicating that signing failed.
 #[derive(Debug, PartialEq, Eq)]
 pub enum SignError {
     /// The length of the provided payload is invalid.
@@ -36,6 +49,7 @@ impl core::fmt::Display for SignError {
     }
 }
 
+/// Error indicating that verification failed.
 #[derive(Debug, PartialEq, Eq)]
 pub enum VerifyError {
     /// The provided signature is invalid.
@@ -65,8 +79,9 @@ mod error_in_core {
     impl core::error::Error for super::VerifyError {}
 }
 
-// No auxiliary information
+/// A signer that does not require auxiliary information. This trait takes array references as arguments.
 pub trait SignNoAux<const PRIVATE_KEY_LEN: usize, const SIGNATURE_LEN: usize> {
+    /// Sign a payload using a provided signature key.
     fn sign(
         payload: &[u8],
         private_key: &[u8; PRIVATE_KEY_LEN],
@@ -94,8 +109,9 @@ impl<
     }
 }
 
-// No auxiliary information
+/// A verifier that does not require auxiliary information. This trait takes array references as arguments.
 pub trait VerifyNoAux<const PUBLIC_KEY_LEN: usize, const SIGNATURE_LEN: usize> {
+    /// Verify a payload using a provided verification key.
     fn verify(
         payload: &[u8],
         public_key: &[u8; PUBLIC_KEY_LEN],

@@ -1,4 +1,11 @@
+//! This module contains the traits and related errors for signing and verification where arguments
+//! are provided as slices, and the results are written to mutable slices.
+
+/// A signer. This trait takes slices as arguments.
 pub trait Sign<SignAux> {
+    // TODO: improve comment
+    /// Sign a payload using a provided signature key. Required auxiliary information is provided using
+    /// the `aux` argument.
     fn sign(
         payload: &[u8],
         private_key: &[u8],
@@ -6,7 +13,11 @@ pub trait Sign<SignAux> {
         aux: SignAux,
     ) -> Result<(), SignError>;
 }
+
+/// A verifier. This trait takes slices as arguments.
 pub trait Verify<VerifyAux> {
+    /// Verify a payload using a provided verification key. Required auxiliary information is provided using
+    /// the `aux` argument.
     fn verify(
         payload: &[u8],
         public_key: &[u8],
@@ -15,7 +26,9 @@ pub trait Verify<VerifyAux> {
     ) -> Result<(), VerifyError>;
 }
 
+/// A signer that does not require auxiliary information. This trait takes slices as arguments.
 pub trait SignNoAux {
+    /// Sign a payload using a provided signature key.
     fn sign(payload: &[u8], private_key: &[u8], signature: &mut [u8]) -> Result<(), SignError>;
 }
 
@@ -25,7 +38,9 @@ impl<T: Sign<()>> SignNoAux for T {
     }
 }
 
+/// A verifier that does not require auxiliary information. This trait takes slices as arguments.
 pub trait VerifyNoAux {
+    /// Verify a payload using a provided verification key.
     fn verify(payload: &[u8], public_key: &[u8], signature: &[u8]) -> Result<(), VerifyError>;
 }
 impl<'a, T: Verify<()>> VerifyNoAux for T {
@@ -34,6 +49,7 @@ impl<'a, T: Verify<()>> VerifyNoAux for T {
     }
 }
 
+/// Error indicating that signing failed.
 #[derive(Debug, PartialEq, Eq)]
 pub enum SignError {
     /// The length of the provided private key is invalid.
@@ -63,6 +79,7 @@ impl core::fmt::Display for SignError {
     }
 }
 
+/// Error indicating that verification failed.
 #[derive(Debug, PartialEq, Eq)]
 pub enum VerifyError {
     /// The length of the provided payload is invalid.
