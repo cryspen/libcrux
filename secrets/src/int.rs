@@ -340,7 +340,7 @@ mod aarch64 {
         fn select(&mut self, other: &Self, selector: u8) {
             let lhs = self.declassify_ref_mut();
             let rhs = other.declassify_ref();
-            lhs.select(other, selector);
+            lhs.select(rhs, selector);
         }
     }
 
@@ -357,7 +357,7 @@ mod aarch64 {
         fn select(&mut self, other: &Self, selector: u8) {
             let lhs = self.declassify_ref_mut();
             let rhs = other.declassify_ref();
-            lhs.select(other, selector);
+            lhs.select(rhs, selector);
         }
     }
 
@@ -374,7 +374,7 @@ mod aarch64 {
         fn select(&mut self, other: &Self, selector: u8) {
             let lhs = self.declassify_ref_mut();
             let rhs = other.declassify_ref();
-            lhs.select(other, selector);
+            lhs.select(rhs, selector);
         }
     }
 
@@ -391,7 +391,7 @@ mod aarch64 {
         fn select(&mut self, other: &Self, selector: u8) {
             let lhs = self.declassify_ref_mut();
             let rhs = other.declassify_ref();
-            lhs.select(other, selector);
+            lhs.select(rhs, selector);
         }
     }
 
@@ -457,7 +457,7 @@ mod aarch64 {
         fn cswap(&mut self, other: &mut Self, selector: u8) {
             let lhs = self.declassify_ref_mut();
             let rhs = other.declassify_ref_mut();
-            lhs.swap(rhs, selector);
+            lhs.cswap(rhs, selector);
         }
     }
 
@@ -474,7 +474,7 @@ mod aarch64 {
         fn cswap(&mut self, other: &mut Self, selector: u8) {
             let lhs = self.declassify_ref_mut();
             let rhs = other.declassify_ref_mut();
-            lhs.swap(rhs, selector);
+            lhs.cswap(rhs, selector);
         }
     }
 
@@ -491,7 +491,7 @@ mod aarch64 {
         fn cswap(&mut self, other: &mut Self, selector: u8) {
             let lhs = self.declassify_ref_mut();
             let rhs = other.declassify_ref_mut();
-            lhs.swap(rhs, selector);
+            lhs.cswap(rhs, selector);
         }
     }
 
@@ -508,7 +508,7 @@ mod aarch64 {
         fn cswap(&mut self, other: &mut Self, selector: u8) {
             let lhs = self.declassify_ref_mut();
             let rhs = other.declassify_ref_mut();
-            lhs.swap(rhs, selector);
+            lhs.cswap(rhs, selector);
         }
     }
 
