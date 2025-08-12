@@ -58,6 +58,13 @@ impl core::fmt::Display for VerifyError {
     }
 }
 
+#[cfg(feature = "error_in_core")]
+mod error_in_core {
+
+    impl core::error::Error for super::SignError {}
+    impl core::error::Error for super::VerifyError {}
+}
+
 // No auxiliary information
 pub trait SignNoAux<const PRIVATE_KEY_LEN: usize, const SIGNATURE_LEN: usize> {
     fn sign(
