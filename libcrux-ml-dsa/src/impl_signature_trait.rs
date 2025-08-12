@@ -20,7 +20,6 @@ pub mod signers {
                 const SIGNATURE_LEN: usize = crate::ml_dsa_generic::$module::SIGNATURE_SIZE;
 
                 // XXX: implementing owned trait directly because there is no arrayref equivalent
-                // TODO: for docs, these should appear as consts in trait def
                 /// It is the responsibility of the caller to ensure  that the `randomness` argument is actually
                 /// random.
                 impl owned::Sign<(&[u8], super::Randomness), SIGNING_KEY_LEN, SIGNATURE_LEN>
