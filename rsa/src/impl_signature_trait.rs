@@ -4,9 +4,15 @@ use libcrux_traits::signature::arrayref;
 
 // $bytes is pk_len, sk_len and sig_len
 macro_rules! impl_signature_trait {
-    ($name:ident, $bytes:literal, $digest_alg:ident, $alias:ident) => {
+    ($bits:literal, $bytes:literal, $digest_alg:ident, $alias:ident) => {
         #[allow(non_camel_case_types)]
-        pub type $alias = Signer<$name, $digest_alg>;
+        // TODO: include in docs that this is an RSA signer? 
+        #[doc = concat!("A signer using the [`", stringify!($digest_alg),"`] algorithm, ")]
+        #[doc = concat!("with a signature length of ", stringify!($bits)," bits ")]
+        #[doc = concat!("(", stringify!($bytes)," bytes) ")]
+        #[doc = concat!("and a key length of ", stringify!($bits)," bits ")]
+        #[doc = concat!("(", stringify!($bytes)," bytes).")]
+        pub type $alias = Signer<$bits, $digest_alg>;
 
         impl arrayref::Sign<(&[u8], &[u8; $bytes]), $bytes, $bytes> for $alias {
             fn sign(
@@ -69,40 +75,41 @@ macro_rules! impl_signature_trait {
     };
 }
 
-pub mod pss_bits {
-    pub struct Bits2048;
-    pub struct Bits3072;
-    pub struct Bits4096;
-    pub struct Bits6144;
-    pub struct Bits8192;
+pub mod signers {
+    //! Interfaces for [`libcrux_traits::signature`] traits.
+
+    pub mod digest_alg {
+        //! Structs representing digest algorithms.
+        pub struct Sha2_256;
+        pub struct Sha2_384;
+        pub struct Sha2_512;
+    }
+    use digest_alg::*;
+
+    /// A convenience struct for signing and verifying signatures.
+    ///
+    /// The valid types for `Alg` are found in [`digest_alg`]. The valid values for `BITS` are
+    /// 2048, 3072, 4096, 6144, and 8192.
+    pub struct Signer<const BITS: usize, Alg> {
+        _phantom_data_alg: core::marker::PhantomData<Alg>,
+    }
+    use super::*;
+
+    impl_signature_trait!(2048, 256, Sha2_256, Signer_2048_Sha2_256);
+    impl_signature_trait!(3072, 384, Sha2_256, Signer_3072_Sha2_256);
+    impl_signature_trait!(4096, 512, Sha2_256, Signer_4096_Sha2_256);
+    impl_signature_trait!(6144, 768, Sha2_256, Signer_6144_Sha2_256);
+    impl_signature_trait!(8192, 1024, Sha2_256, Signer_8192_Sha2_256);
+
+    impl_signature_trait!(2048, 256, Sha2_384, Signer_2048_Sha2_384);
+    impl_signature_trait!(3072, 384, Sha2_384, Signer_3072_Sha2_384);
+    impl_signature_trait!(4096, 512, Sha2_384, Signer_4096_Sha2_384);
+    impl_signature_trait!(6144, 768, Sha2_384, Signer_6144_Sha2_384);
+    impl_signature_trait!(8192, 1024, Sha2_384, Signer_8192_Sha2_384);
+
+    impl_signature_trait!(2048, 256, Sha2_512, Signer_2048_Sha2_512);
+    impl_signature_trait!(3072, 384, Sha2_512, Signer_3072_Sha2_512);
+    impl_signature_trait!(4096, 512, Sha2_512, Signer_4096_Sha2_512);
+    impl_signature_trait!(6144, 768, Sha2_512, Signer_6144_Sha2_512);
+    impl_signature_trait!(8192, 1024, Sha2_512, Signer_8192_Sha2_512);
 }
-use pss_bits::*;
-
-pub mod digest_alg {
-    pub struct Sha2_256;
-    pub struct Sha2_384;
-    pub struct Sha2_512;
-}
-use digest_alg::*;
-
-pub struct Signer<Bits, Alg> {
-    _phantom_data_bits: core::marker::PhantomData<Bits>,
-    _phantom_data_alg: core::marker::PhantomData<Alg>,
-}
-impl_signature_trait!(Bits2048, 256, Sha2_256, Signer_2048_Sha2_256);
-impl_signature_trait!(Bits3072, 384, Sha2_256, Signer_3072_Sha2_256);
-impl_signature_trait!(Bits4096, 512, Sha2_256, Signer_4096_Sha2_256);
-impl_signature_trait!(Bits6144, 768, Sha2_256, Signer_6144_Sha2_256);
-impl_signature_trait!(Bits8192, 1024, Sha2_256, Signer_8192_Sha2_256);
-
-impl_signature_trait!(Bits2048, 256, Sha2_384, Signer_2048_Sha2_384);
-impl_signature_trait!(Bits3072, 384, Sha2_384, Signer_3072_Sha2_384);
-impl_signature_trait!(Bits4096, 512, Sha2_384, Signer_4096_Sha2_384);
-impl_signature_trait!(Bits6144, 768, Sha2_384, Signer_6144_Sha2_384);
-impl_signature_trait!(Bits8192, 1024, Sha2_384, Signer_8192_Sha2_384);
-
-impl_signature_trait!(Bits2048, 256, Sha2_512, Signer_2048_Sha2_512);
-impl_signature_trait!(Bits3072, 384, Sha2_512, Signer_3072_Sha2_512);
-impl_signature_trait!(Bits4096, 512, Sha2_512, Signer_4096_Sha2_512);
-impl_signature_trait!(Bits6144, 768, Sha2_512, Signer_6144_Sha2_512);
-impl_signature_trait!(Bits8192, 1024, Sha2_512, Signer_8192_Sha2_512);
