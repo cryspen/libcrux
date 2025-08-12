@@ -26,22 +26,9 @@ pub(crate) mod simd256;
 /// Portable specific implementations.
 pub(crate) mod portable;
 
-// TODO: The Copy and Clone traits should be able to be derived,
-// but the hax extraction does not type check correctly.
-#[derive(Copy)]
+#[derive(Copy, Clone)]
 pub(crate) struct KeccakState<const N: usize, T: KeccakItem<N>> {
     pub(crate) st: [T; 25],
-}
-
-impl<const N: usize, T: KeccakItem<N>> Clone for KeccakState<N, T>
-where
-    T: Clone,
-{
-    fn clone(&self) -> Self {
-        Self {
-            st: self.st.clone(),
-        }
-    }
 }
 
 #[hax_lib::attributes]

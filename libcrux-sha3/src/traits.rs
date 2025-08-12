@@ -2,13 +2,13 @@ use hax_lib;
 
 // XXX: These should be default functions on `KeccakItem`, but hax doesn't
 //      support that yet. cryspen/hax#888
-#[cfg_attr(hax, hax_lib::requires(i < 5 && j < 5))]
+#[hax_lib::requires(i < 5 && j < 5)]
 #[inline(always)]
 pub(crate) fn get_ij<const N: usize, T: KeccakItem<N>>(arr: &[T; 25], i: usize, j: usize) -> &T {
     &arr[5 * j + i]
 }
 
-#[cfg_attr(hax, hax_lib::requires(i < 5 && j < 5))]
+#[hax_lib::requires(i < 5 && j < 5)]
 #[inline(always)]
 pub(crate) fn set_ij<const N: usize, T: KeccakItem<N>>(
     arr: &mut [T; 25],
