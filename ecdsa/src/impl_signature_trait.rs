@@ -1,10 +1,13 @@
-use libcrux_traits::signature::arrayref;
+pub mod signers {
+    //! [`libcrux_traits::signature`] APIs.
 
-const SIG_LEN: usize = 64;
-const PK_LEN: usize = 64;
-const SK_LEN: usize = 32;
+    use libcrux_traits::signature::arrayref;
 
-macro_rules! impl_signature_trait {
+    const SIG_LEN: usize = 64;
+    const PK_LEN: usize = 64;
+    const SK_LEN: usize = 32;
+
+    macro_rules! impl_signature_trait {
     ($digest_alg_name:ident, $alias:ident, $sign_fn:ident, $verify_fn:ident) => {
         #[allow(non_camel_case_types)]
         pub type $alias = Signer<libcrux_sha2::$digest_alg_name>;
@@ -58,31 +61,32 @@ macro_rules! impl_signature_trait {
     };
 }
 
-pub mod p256 {
+    pub mod p256 {
 
-    use super::*;
+        use super::*;
 
-    use crate::p256::Nonce;
-    pub struct Signer<T> {
-        _phantom_data: core::marker::PhantomData<T>,
+        use crate::p256::Nonce;
+        pub struct Signer<T> {
+            _phantom_data: core::marker::PhantomData<T>,
+        }
+
+        impl_signature_trait!(
+            Sha256,
+            Signer_Sha2_256,
+            ecdsa_sign_p256_sha2,
+            ecdsa_verif_p256_sha2
+        );
+        impl_signature_trait!(
+            Sha384,
+            Signer_Sha2_384,
+            ecdsa_sign_p256_sha384,
+            ecdsa_verif_p256_sha384
+        );
+        impl_signature_trait!(
+            Sha512,
+            Signer_Sha2_512,
+            ecdsa_sign_p256_sha512,
+            ecdsa_verif_p256_sha512
+        );
     }
-
-    impl_signature_trait!(
-        Sha256,
-        Signer_Sha2_256,
-        ecdsa_sign_p256_sha2,
-        ecdsa_verif_p256_sha2
-    );
-    impl_signature_trait!(
-        Sha384,
-        Signer_Sha2_384,
-        ecdsa_sign_p256_sha384,
-        ecdsa_verif_p256_sha384
-    );
-    impl_signature_trait!(
-        Sha512,
-        Signer_Sha2_512,
-        ecdsa_sign_p256_sha512,
-        ecdsa_verif_p256_sha512
-    );
 }
