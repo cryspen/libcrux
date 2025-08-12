@@ -1,5 +1,6 @@
 #[cfg_attr(hax, hax_lib::exclude)]
-mod trait_impl {
+pub mod signers {
+    //! [`libcrux_traits::signature`] APIs.
     use libcrux_traits::signature::{arrayref, owned};
 
     macro_rules! impl_signature_trait {
@@ -86,5 +87,3 @@ mod trait_impl {
         "A struct representing ML-DSA 87"
     );
 }
-
-pub use trait_impl::*;
