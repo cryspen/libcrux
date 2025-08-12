@@ -28,11 +28,11 @@ pub mod signers {
                 {
                     fn sign(
                         payload: &[u8],
-                        private_key: &[u8; SIGNING_KEY_LEN],
+                        signing_key: &[u8; SIGNING_KEY_LEN],
                         (context, randomness): (&[u8], super::Randomness),
                     ) -> Result<[u8; SIGNATURE_LEN], owned::SignError> {
                         crate::ml_dsa_generic::multiplexing::$module::sign(
-                            private_key,
+                            signing_key,
                             payload,
                             context,
                             randomness,
@@ -44,12 +44,15 @@ pub mod signers {
                 impl arrayref::Verify<&[u8], VERIFICATION_KEY_LEN, SIGNATURE_LEN> for $alias {
                     fn verify(
                         payload: &[u8],
-                        public_key: &[u8; VERIFICATION_KEY_LEN],
+                        verification_key: &[u8; VERIFICATION_KEY_LEN],
                         signature: &[u8; SIGNATURE_LEN],
                         context: &[u8],
                     ) -> Result<(), arrayref::VerifyError> {
                         crate::ml_dsa_generic::multiplexing::$module::verify(
-                            public_key, payload, context, signature,
+                            verification_key,
+                            payload,
+                            context,
+                            signature,
                         )
                         .map_err(|_| arrayref::VerifyError::LibraryError)
                     }

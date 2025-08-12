@@ -3,25 +3,24 @@
 
 /// A signer. This trait is the most low-level and mostly used in the implementation of other, more
 /// usable APIs on top. This trait takes array references as arguments.
-pub trait Sign<SignAux, const PRIVATE_KEY_LEN: usize, const SIGNATURE_LEN: usize> {
-    // TODO: should this be called `private_key` or `sk`?
+pub trait Sign<SignAux, const SIGNING_KEY_LEN: usize, const SIGNATURE_LEN: usize> {
     /// Sign a payload using a provided signature key. Required auxiliary information is provided using
     /// the `aux` argument.
     fn sign(
         payload: &[u8],
-        private_key: &[u8; PRIVATE_KEY_LEN],
+        signing_key: &[u8; SIGNING_KEY_LEN],
         signature: &mut [u8; SIGNATURE_LEN],
         aux: SignAux,
     ) -> Result<(), SignError>;
 }
 
 /// A verifier. This trait takes array references as arguments.
-pub trait Verify<VerifyAux, const PUBLIC_KEY_LEN: usize, const SIGNATURE_LEN: usize> {
+pub trait Verify<VerifyAux, const VERIFICATION_KEY_LEN: usize, const SIGNATURE_LEN: usize> {
     /// Verify a payload using a provided verification key. Required auxiliary information is provided using
     /// the `aux` argument.
     fn verify(
         payload: &[u8],
-        public_key: &[u8; PUBLIC_KEY_LEN],
+        verification_key: &[u8; VERIFICATION_KEY_LEN],
         signature: &[u8; SIGNATURE_LEN],
         aux: VerifyAux,
     ) -> Result<(), VerifyError>;
@@ -78,29 +77,29 @@ mod error_in_core {
 }
 
 /// A signer that does not require auxiliary information. This trait takes array references as arguments.
-pub trait SignNoAux<const PRIVATE_KEY_LEN: usize, const SIGNATURE_LEN: usize> {
+pub trait SignNoAux<const SIGNING_KEY_LEN: usize, const SIGNATURE_LEN: usize> {
     /// Sign a payload using a provided signature key.
     fn sign(
         payload: &[u8],
-        private_key: &[u8; PRIVATE_KEY_LEN],
+        signing_key: &[u8; SIGNING_KEY_LEN],
         signature: &mut [u8; SIGNATURE_LEN],
     ) -> Result<(), SignError>;
 }
 
 impl<
-        const PRIVATE_KEY_LEN: usize,
+        const SIGNING_KEY_LEN: usize,
         const SIGNATURE_LEN: usize,
-        T: Sign<(), PRIVATE_KEY_LEN, SIGNATURE_LEN>,
-    > SignNoAux<PRIVATE_KEY_LEN, SIGNATURE_LEN> for T
+        T: Sign<(), SIGNING_KEY_LEN, SIGNATURE_LEN>,
+    > SignNoAux<SIGNING_KEY_LEN, SIGNATURE_LEN> for T
 {
     fn sign(
         payload: &[u8],
-        private_key: &[u8; PRIVATE_KEY_LEN],
+        signing_key: &[u8; SIGNING_KEY_LEN],
         signature: &mut [u8; SIGNATURE_LEN],
     ) -> Result<(), SignError> {
-        <Self as Sign<(), PRIVATE_KEY_LEN, SIGNATURE_LEN>>::sign(
+        <Self as Sign<(), SIGNING_KEY_LEN, SIGNATURE_LEN>>::sign(
             payload,
-            private_key,
+            signing_key,
             signature,
             (),
         )
@@ -108,29 +107,29 @@ impl<
 }
 
 /// A verifier that does not require auxiliary information. This trait takes array references as arguments.
-pub trait VerifyNoAux<const PUBLIC_KEY_LEN: usize, const SIGNATURE_LEN: usize> {
+pub trait VerifyNoAux<const VERIFICATION_KEY_LEN: usize, const SIGNATURE_LEN: usize> {
     /// Verify a payload using a provided verification key.
     fn verify(
         payload: &[u8],
-        public_key: &[u8; PUBLIC_KEY_LEN],
+        verification_key: &[u8; VERIFICATION_KEY_LEN],
         signature: &[u8; SIGNATURE_LEN],
     ) -> Result<(), VerifyError>;
 }
 
 impl<
-        const PUBLIC_KEY_LEN: usize,
+        const VERIFICATION_KEY_LEN: usize,
         const SIGNATURE_LEN: usize,
-        T: Verify<(), PUBLIC_KEY_LEN, SIGNATURE_LEN>,
-    > VerifyNoAux<PUBLIC_KEY_LEN, SIGNATURE_LEN> for T
+        T: Verify<(), VERIFICATION_KEY_LEN, SIGNATURE_LEN>,
+    > VerifyNoAux<VERIFICATION_KEY_LEN, SIGNATURE_LEN> for T
 {
     fn verify(
         payload: &[u8],
-        public_key: &[u8; PUBLIC_KEY_LEN],
+        verification_key: &[u8; VERIFICATION_KEY_LEN],
         signature: &[u8; SIGNATURE_LEN],
     ) -> Result<(), VerifyError> {
-        <Self as Verify<(), PUBLIC_KEY_LEN, SIGNATURE_LEN>>::verify(
+        <Self as Verify<(), VERIFICATION_KEY_LEN, SIGNATURE_LEN>>::verify(
             payload,
-            public_key,
+            verification_key,
             signature,
             (),
         )

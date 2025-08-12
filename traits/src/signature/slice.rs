@@ -8,7 +8,7 @@ pub trait Sign<SignAux> {
     /// the `aux` argument.
     fn sign(
         payload: &[u8],
-        private_key: &[u8],
+        signing_key: &[u8],
         signature: &mut [u8],
         aux: SignAux,
     ) -> Result<(), SignError>;
@@ -20,7 +20,7 @@ pub trait Verify<VerifyAux> {
     /// the `aux` argument.
     fn verify(
         payload: &[u8],
-        public_key: &[u8],
+        verification_key: &[u8],
         signature: &[u8],
         aux: VerifyAux,
     ) -> Result<(), VerifyError>;
@@ -29,31 +29,36 @@ pub trait Verify<VerifyAux> {
 /// A signer that does not require auxiliary information. This trait takes slices as arguments.
 pub trait SignNoAux {
     /// Sign a payload using a provided signature key.
-    fn sign(payload: &[u8], private_key: &[u8], signature: &mut [u8]) -> Result<(), SignError>;
+    fn sign(payload: &[u8], signing_key: &[u8], signature: &mut [u8]) -> Result<(), SignError>;
 }
 
 impl<T: Sign<()>> SignNoAux for T {
-    fn sign(payload: &[u8], private_key: &[u8], signature: &mut [u8]) -> Result<(), SignError> {
-        <Self as Sign<()>>::sign(payload, private_key, signature, ())
+    fn sign(payload: &[u8], signing_key: &[u8], signature: &mut [u8]) -> Result<(), SignError> {
+        <Self as Sign<()>>::sign(payload, signing_key, signature, ())
     }
 }
 
 /// A verifier that does not require auxiliary information. This trait takes slices as arguments.
 pub trait VerifyNoAux {
     /// Verify a payload using a provided verification key.
-    fn verify(payload: &[u8], public_key: &[u8], signature: &[u8]) -> Result<(), VerifyError>;
+    fn verify(payload: &[u8], verification_key: &[u8], signature: &[u8])
+        -> Result<(), VerifyError>;
 }
 impl<'a, T: Verify<()>> VerifyNoAux for T {
-    fn verify(payload: &[u8], public_key: &[u8], signature: &[u8]) -> Result<(), VerifyError> {
-        <Self as Verify<()>>::verify(payload, public_key, signature, ())
+    fn verify(
+        payload: &[u8],
+        verification_key: &[u8],
+        signature: &[u8],
+    ) -> Result<(), VerifyError> {
+        <Self as Verify<()>>::verify(payload, verification_key, signature, ())
     }
 }
 
 /// Error indicating that signing failed.
 #[derive(Debug, PartialEq, Eq)]
 pub enum SignError {
-    /// The length of the provided private key is invalid.
-    InvalidPrivateKeyLength,
+    /// The length of the provided signing key is invalid.
+    InvalidSigningKeyLength,
     /// The length of the provided signature buffer is invalid.
     InvalidSignatureBufferLength,
     /// The length of the provided payload is invalid.
@@ -65,8 +70,8 @@ pub enum SignError {
 impl core::fmt::Display for SignError {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         let text = match self {
-            SignError::InvalidPrivateKeyLength => {
-                "the length of the provided private key is invalid"
+            SignError::InvalidSigningKeyLength => {
+                "the length of the provided signing key is invalid"
             }
             SignError::InvalidSignatureBufferLength => {
                 "the length of the provided signature buffer is invalid"
@@ -84,8 +89,8 @@ impl core::fmt::Display for SignError {
 pub enum VerifyError {
     /// The length of the provided payload is invalid.
     InvalidPayloadLength,
-    /// The length of the provided public key is invalid.
-    InvalidPublicKeyLength,
+    /// The length of the provided verification key is invalid.
+    InvalidVerificationKeyLength,
     /// The length of the provided signature buffer is invalid.
     InvalidSignatureBufferLength,
     /// The provided signature is invalid.
@@ -98,8 +103,8 @@ impl core::fmt::Display for VerifyError {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         let text = match self {
             VerifyError::InvalidSignature => "the provided signature is invalid",
-            VerifyError::InvalidPublicKeyLength => {
-                "the length of the provided public key is invalid"
+            VerifyError::InvalidVerificationKeyLength => {
+                "the length of the provided verification key is invalid"
             }
             VerifyError::InvalidSignatureBufferLength => {
                 "the length of the provided signature buffer is invalid"
@@ -144,13 +149,13 @@ macro_rules! impl_signature_slice_trait {
         impl $crate::signature::slice::Sign<$sign_aux> for $type {
             fn sign(
                 payload: &[u8],
-                private_key: &[u8],
+                signing_key: &[u8],
                 signature: &mut [u8],
                 $sign_aux_param: $sign_aux,
             ) -> Result<(), $crate::signature::slice::SignError> {
-                let private_key: &[u8; $sk_len] = private_key
+                let signing_key: &[u8; $sk_len] = signing_key
                     .try_into()
-                    .map_err(|_| $crate::signature::slice::SignError::InvalidPrivateKeyLength)?;
+                    .map_err(|_| $crate::signature::slice::SignError::InvalidSigningKeyLength)?;
 
                 let signature: &mut [u8; $sig_len] = signature.try_into().map_err(|_| {
                     $crate::signature::slice::SignError::InvalidSignatureBufferLength
@@ -158,7 +163,7 @@ macro_rules! impl_signature_slice_trait {
 
                 <$type as $crate::signature::arrayref::Sign<$sign_aux, $sk_len, $sig_len>>::sign(
                     payload,
-                    private_key,
+                    signing_key,
                     signature,
                     $sign_aux_param,
                 )
@@ -170,17 +175,17 @@ macro_rules! impl_signature_slice_trait {
 /// Implements [`Verify`] for any [`arrayref::Verify`](crate::signature::arrayref::Verify)
 #[macro_export]
 macro_rules! impl_verify_slice_trait {
-    ($type:ty => $pk_len:expr, $sig_len:expr, $verify_aux:ty, $verify_aux_param:tt) => {
+    ($type:ty => $vk_len:expr, $sig_len:expr, $verify_aux:ty, $verify_aux_param:tt) => {
         impl $crate::signature::slice::Verify<$verify_aux> for $type {
             fn verify(
                 payload: &[u8],
-                public_key: &[u8],
+                verification_key: &[u8],
                 signature: &[u8],
                 $verify_aux_param: $verify_aux,
             ) -> Result<(), $crate::signature::slice::VerifyError> {
-                let public_key: &[u8; $pk_len] = public_key
+                let verification_key: &[u8; $vk_len] = verification_key
                     .try_into()
-                    .map_err(|_| $crate::signature::slice::VerifyError::InvalidPublicKeyLength)?;
+                    .map_err(|_| $crate::signature::slice::VerifyError::InvalidVerificationKeyLength)?;
 
                 let signature: &[u8; $sig_len] = signature.try_into().map_err(|_| {
                     $crate::signature::slice::VerifyError::InvalidSignatureBufferLength
@@ -188,9 +193,9 @@ macro_rules! impl_verify_slice_trait {
 
                 <$type as $crate::signature::arrayref::Verify<
                                     $verify_aux,
-                                    $pk_len,
+                                    $vk_len,
                                     $sig_len,
-                                >>::verify(payload, public_key, signature, $verify_aux_param)
+                                >>::verify(payload, verification_key, signature, $verify_aux_param)
                                 .map_err($crate::signature::slice::VerifyError::from)
             }
         }
