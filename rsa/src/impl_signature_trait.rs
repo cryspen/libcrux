@@ -6,7 +6,6 @@ use libcrux_traits::signature::arrayref;
 macro_rules! impl_signature_trait {
     ($bits:literal, $bytes:literal, $digest_alg:ident, $alias:ident) => {
         #[allow(non_camel_case_types)]
-        // TODO: include in docs that this is an RSA signer?
         #[doc = concat!("A signer using the [`", stringify!($digest_alg),"`] algorithm, ")]
         #[doc = concat!("with a signature length of ", stringify!($bits)," bits ")]
         #[doc = concat!("(", stringify!($bytes)," bytes) ")]

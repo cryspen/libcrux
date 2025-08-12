@@ -3,6 +3,8 @@
 pub use super::arrayref::SignError;
 
 /// A signer that returns values instead of writing results to `&mut` arguments.
+///
+/// The `SignAux` type is auxiliary information required for signing.
 pub trait Sign<SignAux, const SIGNING_KEY_LEN: usize, const SIGNATURE_LEN: usize> {
     /// Sign a payload using a provided signature key. Required auxiliary information is provided using
     /// the `aux` argument.
