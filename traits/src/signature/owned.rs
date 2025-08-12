@@ -1,6 +1,11 @@
+//! This module contains the trait and related errors for signers that take array references as arguments and return values as arrays.
+
 pub use super::arrayref::SignError;
 
+/// A signer that returns values instead of writing results to `&mut` arguments.
 pub trait Sign<SignAux, const PRIVATE_KEY_LEN: usize, const SIGNATURE_LEN: usize> {
+    /// Sign a payload using a provided signature key. Required auxiliary information is provided using
+    /// the `aux` argument.
     fn sign(
         payload: &[u8],
         private_key: &[u8; PRIVATE_KEY_LEN],
@@ -32,7 +37,9 @@ impl<
 }
 
 // No auxiliary information
+/// A signer that does not require auxiliary information. This trait returns values instead of writing results to `&mut` arguments.
 pub trait SignNoAux<const PRIVATE_KEY_LEN: usize, const SIGNATURE_LEN: usize> {
+    /// Sign a payload using a provided signature key.
     fn sign(
         payload: &[u8],
         private_key: &[u8; PRIVATE_KEY_LEN],
