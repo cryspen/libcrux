@@ -228,14 +228,12 @@ let store_block (v_RATE: usize) (s: t_Array u64 (mk_usize 25)) (out: t_Slice u8)
           let out_pos:usize = start +! (mk_usize 8 *! i <: usize) in
           assume (out_pos <. out_len);
           assume (out_pos <=. out_len -! (mk_usize 8));
+          assume (out_pos +! mk_usize 8 <=. out_len);
           assume (out_pos >=. mk_usize 0);
           let range: Core.Ops.Range.t_Range usize = { 
             Core.Ops.Range.f_start = out_pos; 
             Core.Ops.Range.f_end = out_pos +! mk_usize 8 
           } in
-          assume (out_pos >=. mk_usize 0);
-          assume (out_pos +! mk_usize 8 <=. out_len);
-          assume (out_pos <=. out_pos +! mk_usize 8);
           assume (Core.Ops.Index.f_index_pre out range);
           let out:t_Slice u8 =
             Rust_primitives.Hax.Monomorphized_update_at.update_at_range 

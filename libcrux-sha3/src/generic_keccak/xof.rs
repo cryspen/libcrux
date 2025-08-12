@@ -1,6 +1,6 @@
 use crate::{
     generic_keccak::KeccakState,
-    traits::{Absorb, KeccakItem, Squeeze1},
+    traits::{Absorb, KeccakItem, Squeeze},
 };
 
 /// The internal keccak state that can also buffer inputs to absorb.
@@ -131,7 +131,12 @@ impl<const PARALLEL_LANES: usize, const RATE: usize, STATE: KeccakItem<PARALLEL_
     /// If `consumed > 0` is returned, `self.buf` contains a full block to be
     /// loaded.
     // Note: consciously not inlining this function to avoid using too much stack
-    #[hax_lib::requires(PARALLEL_LANES > 0 && self.buf_len < RATE)]
+    // #[hax_lib::fstar::options("--fuel 5")]
+    #[hax_lib::requires(
+        PARALLEL_LANES > 0 && 
+        self.buf_len <= RATE && 
+        RATE < usize::MAX
+    )]
     pub(crate) fn fill_buffer(&mut self, inputs: &[&[u8]; PARALLEL_LANES]) -> usize {
         let input_len = inputs[0].len();
 
@@ -187,7 +192,7 @@ impl<const RATE: usize, STATE: KeccakItem<1>> KeccakXofState<1, RATE, STATE> {
     #[inline(always)]
     pub(crate) fn squeeze(&mut self, out: &mut [u8])
     where
-        KeccakState<1, STATE>: Squeeze1<STATE>,
+        KeccakState<1, STATE>: Squeeze<STATE>,
     {
         if self.sponge {
             // If we called `squeeze` before, call f1600 first.
