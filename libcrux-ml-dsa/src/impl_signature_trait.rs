@@ -1,31 +1,6 @@
 #[cfg_attr(hax, hax_lib::exclude)]
 mod trait_impl {
     use libcrux_traits::signature::{arrayref, owned};
-    impl From<crate::SigningError> for owned::SignError {
-        fn from(e: crate::SigningError) -> Self {
-            match e {
-                crate::SigningError::RejectionSamplingError => owned::SignError::LibraryError,
-                crate::SigningError::ContextTooLongError => owned::SignError::LibraryError,
-            }
-        }
-    }
-
-    impl From<crate::VerificationError> for arrayref::VerifyError {
-        fn from(e: crate::VerificationError) -> Self {
-            match e {
-                crate::VerificationError::MalformedHintError => arrayref::VerifyError::LibraryError,
-                crate::VerificationError::SignerResponseExceedsBoundError => {
-                    arrayref::VerifyError::LibraryError
-                }
-                crate::VerificationError::CommitmentHashesDontMatchError => {
-                    arrayref::VerifyError::LibraryError
-                }
-                crate::VerificationError::VerificationContextTooLongError => {
-                    arrayref::VerifyError::LibraryError
-                }
-            }
-        }
-    }
 
     macro_rules! impl_signature_trait {
         ($name:ident, $module:ident, $alias:ident, $doc:expr) => {
@@ -61,7 +36,7 @@ mod trait_impl {
                             randomness,
                         )
                         .map(|sig| sig.value)
-                        .map_err(owned::SignError::from)
+                        .map_err(|_| owned::SignError::LibraryError)
                     }
                 }
                 impl arrayref::Verify<&[u8], VERIFICATION_KEY_LEN, SIGNATURE_LEN> for $alias {
@@ -74,7 +49,7 @@ mod trait_impl {
                         crate::ml_dsa_generic::multiplexing::$module::verify(
                             public_key, payload, context, signature,
                         )
-                        .map_err(arrayref::VerifyError::from)
+                        .map_err(|_| arrayref::VerifyError::LibraryError)
                     }
                 }
 
