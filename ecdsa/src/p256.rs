@@ -10,8 +10,6 @@ use crate::DigestAlgorithm;
 
 use super::Error;
 
-pub use crate::impl_signature_trait::p256::*;
-
 /// A P-256 Signature
 #[derive(Clone, Default)]
 pub struct Signature {
@@ -20,7 +18,7 @@ pub struct Signature {
 }
 
 /// An ECDSA P-256 nonce
-pub struct Nonce([u8; 32]);
+pub struct Nonce(pub(super) [u8; 32]);
 
 /// An ECDSA P-256 private key
 pub struct PrivateKey([u8; 32]);
@@ -269,8 +267,24 @@ fn _sign(
     nonce: &Nonce,
 ) -> Result<Signature, Error> {
     let mut signature = [0u8; 64];
+    let len = u32_len(payload)?;
 
-    _sign_internal(hash, payload, private_key.as_ref(), nonce, &mut signature)?;
+    let success = match hash {
+        DigestAlgorithm::Sha256 => {
+            ecdsa_sign_p256_sha2(&mut signature, len, payload, private_key.as_ref(), &nonce.0)
+        }
+        DigestAlgorithm::Sha384 => {
+            ecdsa_sign_p256_sha384(&mut signature, len, payload, private_key.as_ref(), &nonce.0)
+        }
+        DigestAlgorithm::Sha512 => {
+            ecdsa_sign_p256_sha512(&mut signature, len, payload, private_key.as_ref(), &nonce.0)
+        }
+        libcrux_sha2::Algorithm::Sha224 => return Err(Error::UnsupportedHash),
+    };
+
+    if !success {
+        return Err(Error::SigningError);
+    }
 
     Ok(Signature {
         r: signature[..32]
@@ -280,35 +294,6 @@ fn _sign(
             .try_into()
             .map_err(|_| Error::SigningError)?,
     })
-}
-
-pub(super) fn _sign_internal(
-    hash: DigestAlgorithm,
-    payload: &[u8],
-    private_key: &[u8; 32],
-    nonce: &Nonce,
-    signature: &mut [u8; 64],
-) -> Result<(), Error> {
-    let len = u32_len(payload)?;
-
-    let success = match hash {
-        DigestAlgorithm::Sha256 => {
-            ecdsa_sign_p256_sha2(signature, len, payload, private_key, &nonce.0)
-        }
-        DigestAlgorithm::Sha384 => {
-            ecdsa_sign_p256_sha384(signature, len, payload, private_key, &nonce.0)
-        }
-        DigestAlgorithm::Sha512 => {
-            ecdsa_sign_p256_sha512(signature, len, payload, private_key, &nonce.0)
-        }
-        libcrux_sha2::Algorithm::Sha224 => return Err(Error::UnsupportedHash),
-    };
-
-    if !success {
-        return Err(Error::SigningError);
-    }
-
-    Ok(())
 }
 
 fn u32_len(bytes: &[u8]) -> Result<u32, Error> {
@@ -351,27 +336,17 @@ pub fn verify(
     signature: &Signature,
     public_key: &PublicKey,
 ) -> Result<(), Error> {
-    _verify_internal(hash, payload, &signature.r, &signature.s, &public_key.0)
-}
-
-pub(super) fn _verify_internal(
-    hash: DigestAlgorithm,
-    payload: &[u8],
-    signature_r: &[u8; 32],
-    signature_s: &[u8; 32],
-    public_key: &[u8; 64],
-) -> Result<(), Error> {
     let len = u32_len(payload)?;
 
     let success = match hash {
         libcrux_sha2::Algorithm::Sha256 => {
-            ecdsa_verif_p256_sha2(len, payload, public_key, signature_r, signature_s)
+            ecdsa_verif_p256_sha2(len, payload, &public_key.0, &signature.r, &signature.s)
         }
         libcrux_sha2::Algorithm::Sha384 => {
-            ecdsa_verif_p256_sha384(len, payload, public_key, signature_r, signature_s)
+            ecdsa_verif_p256_sha384(len, payload, &public_key.0, &signature.r, &signature.s)
         }
         libcrux_sha2::Algorithm::Sha512 => {
-            ecdsa_verif_p256_sha512(len, payload, public_key, signature_r, signature_s)
+            ecdsa_verif_p256_sha512(len, payload, &public_key.0, &signature.r, &signature.s)
         }
         libcrux_sha2::Algorithm::Sha224 => return Err(Error::UnsupportedHash),
     };
