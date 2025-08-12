@@ -76,7 +76,7 @@ macro_rules! impl_signature_trait {
 }
 
 pub mod signers {
-    //! Interfaces for [`libcrux_traits::signature`] traits.
+    //! [`libcrux_traits::signature`] APIs.
 
     pub mod digest_alg {
         //! Structs representing digest algorithms.
