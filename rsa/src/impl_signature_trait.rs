@@ -86,7 +86,7 @@ pub mod signers {
     }
     use digest_alg::*;
 
-    /// A convenience struct for signature functionality.
+    /// A convenience struct for signature scheme functionality.
     ///
     /// The valid types for `Alg` are found in [`digest_alg`]. The valid values for `BITS` are
     /// 2048, 3072, 4096, 6144, and 8192.
