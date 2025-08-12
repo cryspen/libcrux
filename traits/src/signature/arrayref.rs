@@ -25,6 +25,17 @@ pub enum SignError {
     LibraryError,
 }
 
+impl core::fmt::Display for SignError {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        let text = match self {
+            SignError::InvalidPayloadLength => "the length of the provided payload is invalid",
+            SignError::LibraryError => "indicates a library error",
+        };
+
+        f.write_str(text)
+    }
+}
+
 #[derive(Debug, PartialEq, Eq)]
 pub enum VerifyError {
     /// The provided signature is invalid.
@@ -33,6 +44,18 @@ pub enum VerifyError {
     InvalidPayloadLength,
     /// Indicates a library error.
     LibraryError,
+}
+
+impl core::fmt::Display for VerifyError {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        let text = match self {
+            VerifyError::InvalidSignature => "the provided signature is invalid",
+            VerifyError::InvalidPayloadLength => "the length of the provided payload is invalid",
+            VerifyError::LibraryError => "indicates a library error",
+        };
+
+        f.write_str(text)
+    }
 }
 
 // No auxiliary information
