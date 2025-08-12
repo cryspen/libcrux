@@ -64,7 +64,11 @@ pub mod signers {
         };
     }
 
+    // List structs in doc comment if enabled.
     /// A convenience struct for signature scheme functionality.
+    #[cfg_attr(feature = "mldsa44", doc = "\n - [`MlDsa44`]")]
+    #[cfg_attr(feature = "mldsa65", doc = "\n - [`MlDsa65`]")]
+    #[cfg_attr(feature = "mldsa87", doc = "\n - [`MlDsa87`]")]
     pub struct Signer<Implementation> {
         _phantom_data: core::marker::PhantomData<Implementation>,
     }
