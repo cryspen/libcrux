@@ -11,8 +11,7 @@ pub trait Sign<SignAux, const PRIVATE_KEY_LEN: usize, const SIGNATURE_LEN: usize
         payload: &[u8],
         private_key: &[u8; PRIVATE_KEY_LEN],
         signature: &mut [u8; SIGNATURE_LEN],
-        // TODO: rename
-        sign_aux: SignAux,
+        aux: SignAux,
     ) -> Result<(), SignError>;
 }
 
@@ -24,8 +23,7 @@ pub trait Verify<VerifyAux, const PUBLIC_KEY_LEN: usize, const SIGNATURE_LEN: us
         payload: &[u8],
         public_key: &[u8; PUBLIC_KEY_LEN],
         signature: &[u8; SIGNATURE_LEN],
-        // TODO: rename
-        verify_aux: VerifyAux,
+        aux: VerifyAux,
     ) -> Result<(), VerifyError>;
 }
 
