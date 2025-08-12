@@ -35,7 +35,6 @@ macro_rules! impl_signature_trait {
                     signature,
                 )
                 .map_err(|e| match e {
-                    // TODO: is this correct?
                     crate::Error::MessageTooLarge => arrayref::SignError::InvalidPayloadLength,
                     _ => arrayref::SignError::LibraryError,
 
