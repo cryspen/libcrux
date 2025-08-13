@@ -211,10 +211,10 @@ mod portable {
             let mask = core::hint::black_box(
                 ((((!($selector as u64)).wrapping_add(1) >> 63) & 1) as $t).wrapping_sub(1),
             );
-            for (lhs, rhs) in $lhs.iter_mut().zip($rhs.iter_mut()) {
-                let dummy = !mask & (*lhs ^ *rhs);
-                *lhs ^= dummy;
-                *rhs ^= dummy;
+            for i in 0..$lhs.len() {
+                let dummy = !mask & ($lhs[i] ^ $rhs[i]);
+                $lhs[i] ^= dummy;
+                $rhs[i] ^= dummy;
             }
         };
     }
@@ -222,6 +222,7 @@ mod portable {
     impl Swap for [u8] {
         #[inline]
         fn cswap(&mut self, other: &mut Self, selector: u8) {
+            debug_assert_eq!(self.len(), other.len());
             swap!(u8, self, other, selector);
         }
     }
@@ -230,6 +231,7 @@ mod portable {
     impl Swap for [U8] {
         #[inline]
         fn cswap(&mut self, other: &mut Self, selector: u8) {
+            debug_assert_eq!(self.len(), other.len());
             let lhs = self.declassify_ref_mut();
             let rhs = other.declassify_ref_mut();
             swap!(u8, lhs, rhs, selector);
@@ -239,6 +241,7 @@ mod portable {
     impl Swap for [u16] {
         #[inline]
         fn cswap(&mut self, other: &mut Self, selector: u8) {
+            debug_assert_eq!(self.len(), other.len());
             swap!(u16, self, other, selector);
         }
     }
@@ -247,6 +250,7 @@ mod portable {
     impl Swap for [U16] {
         #[inline]
         fn cswap(&mut self, other: &mut Self, selector: u8) {
+            debug_assert_eq!(self.len(), other.len());
             let lhs = self.declassify_ref_mut();
             let rhs = other.declassify_ref_mut();
             swap!(u16, lhs, rhs, selector);
@@ -256,6 +260,7 @@ mod portable {
     impl Swap for [u32] {
         #[inline]
         fn cswap(&mut self, other: &mut Self, selector: u8) {
+            debug_assert_eq!(self.len(), other.len());
             swap!(u32, self, other, selector);
         }
     }
@@ -263,6 +268,7 @@ mod portable {
     impl Swap for [U32] {
         #[inline]
         fn cswap(&mut self, other: &mut Self, selector: u8) {
+            debug_assert_eq!(self.len(), other.len());
             let lhs = self.declassify_ref_mut();
             let rhs = other.declassify_ref_mut();
             swap!(u32, lhs, rhs, selector);
@@ -272,6 +278,7 @@ mod portable {
     impl Swap for [u64] {
         #[inline]
         fn cswap(&mut self, other: &mut Self, selector: u8) {
+            debug_assert_eq!(self.len(), other.len());
             swap!(u64, self, other, selector);
         }
     }
@@ -280,6 +287,7 @@ mod portable {
     impl Swap for [U64] {
         #[inline]
         fn cswap(&mut self, other: &mut Self, selector: u8) {
+            debug_assert_eq!(self.len(), other.len());
             let lhs = self.declassify_ref_mut();
             let rhs = other.declassify_ref_mut();
             swap!(u64, lhs, rhs, selector);
@@ -398,8 +406,9 @@ mod aarch64 {
     impl<T: Select> Select for [T] {
         #[inline]
         fn select(&mut self, other: &Self, selector: u8) {
-            for (lhs, rhs) in self.iter_mut().zip(other.iter()) {
-                lhs.select(rhs, selector);
+            debug_assert_eq!(self.len(), other.len());
+            for i in 0..self.len() {
+                (&mut self[i]).select(&other[i], selector);
             }
         }
     }
@@ -515,8 +524,8 @@ mod aarch64 {
     impl<T: Swap> Swap for [T] {
         #[inline]
         fn cswap(&mut self, other: &mut Self, selector: u8) {
-            for (lhs, rhs) in self.iter_mut().zip(other.iter_mut()) {
-                lhs.cswap(rhs, selector);
+            for i in 0..self.len() {
+                (&mut self[i]).cswap(&mut other[i], selector);
             }
         }
     }
