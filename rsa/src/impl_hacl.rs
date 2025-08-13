@@ -3,13 +3,13 @@ use crate::Error;
 /// An RSA Public Key that is `LEN` bytes long.
 #[derive(Debug, Clone)]
 pub struct PublicKey<const LEN: usize> {
-    n: [u8; LEN],
+    pub(crate) n: [u8; LEN],
 }
 
 /// An RSA Private Key that is `LEN` bytes long.
 pub struct PrivateKey<const LEN: usize> {
-    pk: PublicKey<LEN>,
-    d: [u8; LEN],
+    pub(crate) pk: PublicKey<LEN>,
+    pub(crate) d: [u8; LEN],
 }
 
 impl<const LEN: usize> alloc::fmt::Debug for PrivateKey<LEN> {
@@ -24,7 +24,7 @@ impl<const LEN: usize> alloc::fmt::Debug for PrivateKey<LEN> {
 /// An RSA Public Key backed by a slice. Use if the length is not known at compile time.
 #[derive(Debug, Clone)]
 pub struct VarLenPublicKey<'a> {
-    n: &'a [u8],
+    pub(crate) n: &'a [u8],
 }
 
 impl<'a> TryFrom<&'a [u8]> for VarLenPublicKey<'a> {
