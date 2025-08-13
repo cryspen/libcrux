@@ -21,11 +21,10 @@ pub fn encrypt<'a>(
     aad: &[u8],
     nonce: &[u8; NONCE_LEN],
 ) -> Result<(&'a [u8], &'a [u8; TAG_LEN]), AeadError> {
-    let subkey = hchacha20(key, &nonce[0..16].try_into().unwrap());
-
+    let mut subkey = [0u8; KEY_LEN];
     let mut new_nonce = [0u8; super::NONCE_LEN];
-    new_nonce[4..].copy_from_slice(&nonce[16..]);
 
+    derive(key, nonce, &mut subkey, &mut new_nonce);
     super::encrypt(&subkey, ptxt, ctxt, aad, &new_nonce)
 }
 
@@ -38,16 +37,30 @@ pub fn decrypt<'a>(
     aad: &[u8],
     nonce: &[u8; NONCE_LEN],
 ) -> Result<&'a [u8], AeadError> {
-    let subkey = hchacha20(key, &nonce[0..16].try_into().unwrap());
-
+    let mut subkey = [0u8; KEY_LEN];
     let mut new_nonce = [0u8; super::NONCE_LEN];
-    new_nonce[4..].copy_from_slice(&nonce[16..]);
 
+    derive(key, nonce, &mut subkey, &mut new_nonce);
     super::decrypt(&subkey, ptxt, ctxt, aad, &new_nonce)
 }
 
+/// Derive the nonce and subkey
+#[inline(always)]
+pub(crate) fn derive(
+    key_in: &[u8; KEY_LEN],
+    nonce_in: &[u8; NONCE_LEN],
+    key_out: &mut [u8; KEY_LEN],
+    nonce_out: &mut [u8; 12],
+) {
+    let (nonce_16, nonce_8) = nonce_in.split_at(16);
+    let nonce_16: &[u8; 16] = nonce_16.try_into().unwrap();
+
+    hchacha20(key_in, &nonce_16, key_out);
+    nonce_out[4..].copy_from_slice(&nonce_8);
+}
+
 /// Convert the `key` and `nonce` into the subkey.
-fn hchacha20(key: &[u8; 32], nonce: &[u8; 16]) -> [u8; 32] {
+fn hchacha20(key: &[u8; 32], nonce: &[u8; 16], out: &mut [u8; 32]) {
     // Set up the state
     let mut state = [0u32; 16];
     state[..4].copy_from_slice(&chacha20_constants);
@@ -63,25 +76,28 @@ fn hchacha20(key: &[u8; 32], nonce: &[u8; 16]) -> [u8; 32] {
 
     rounds(&mut state);
 
-    let mut out = [0u8; 32];
     for (i, out_chunk) in out[..16].chunks_exact_mut(4).enumerate() {
         out_chunk.copy_from_slice(&state[i].to_le_bytes());
     }
     for (i, out_chunk) in out[16..].chunks_exact_mut(4).enumerate() {
         out_chunk.copy_from_slice(&state[12 + i].to_le_bytes());
     }
-
-    out
 }
 
 #[cfg(test)]
 mod tests {
     extern crate std;
 
+    use crate::KEY_LEN;
+
     use super::hchacha20;
 
     #[test]
     fn state() {
+        let mut k = [0u8; KEY_LEN];
+        let expected_k =
+            hex::decode("82413b4227b27bfed30e42508a877d73a0f9e4d58a74a853c12ec41326d3ecdc")
+                .unwrap();
         let key = hex::decode("000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f")
             .unwrap()
             .try_into()
@@ -90,10 +106,8 @@ mod tests {
             .unwrap()
             .try_into()
             .unwrap();
-        let k = hchacha20(&key, &nonce);
-        let expected_k =
-            hex::decode("82413b4227b27bfed30e42508a877d73a0f9e4d58a74a853c12ec41326d3ecdc")
-                .unwrap();
+
+        hchacha20(&key, &nonce, &mut k);
         assert_eq!(&k, expected_k.as_slice());
     }
 
