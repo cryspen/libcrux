@@ -6,11 +6,12 @@
 /// The `SignAux` type is auxiliary information required for signing.
 pub trait Sign {
     type SignAux<'a>;
+    type SigningKey<'a>;
     /// Sign a payload using a provided signature key. Required auxiliary information is provided using
     /// the `aux` argument.
     fn sign(
         payload: &[u8],
-        signing_key: &[u8],
+        signing_key: Self::SigningKey<'_>,
         signature: &mut [u8],
         aux: Self::SignAux<'_>,
     ) -> Result<(), SignError>;
@@ -155,14 +156,15 @@ impl From<super::arrayref::VerifyError> for VerifyError {
 /// Implements [`Sign`] for any [`arrayref::Sign`](crate::signature::arrayref::Sign)
 #[macro_export]
 macro_rules! impl_signature_slice_trait {
-    ($type:ty => $sk_len:expr, $sig_len:expr, $sign_aux:ty, $sign_aux_param:tt) => {
+    ($type:ty => $sk_len:expr, $sig_len:expr, $sign_aux:ty, $sign_aux_param:tt, $signing_key:ty) => {
         impl $crate::signature::slice::Sign for $type {
             type SignAux<'a> =
                 <$type as $crate::signature::arrayref::Sign<$sk_len, $sig_len>>::SignAux<'a>;
+            type SigningKey<'a> = $signing_key;
 
             fn sign(
                 payload: &[u8],
-                signing_key: &[u8],
+                signing_key: Self::SigningKey<'_>,
                 signature: &mut [u8],
                 $sign_aux_param: $sign_aux,
             ) -> Result<(), $crate::signature::slice::SignError> {
