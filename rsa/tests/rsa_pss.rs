@@ -329,12 +329,9 @@ fn test_traits() {
     let private_key = PrivateKey::<256>::from_components(MODULUS, PRIVATE_EXPONENT);
     let salt = [1, 2, 3, 4, 5];
     let msg = [7, 8, 9, 10];
-    let signature = libcrux_rsa::signers::Signer::<2048, Sha2_256>::sign(
-        &msg,
-        private_key.d(),
-        (&salt, public_key.n()),
-    )
-    .unwrap();
+    let signature =
+        libcrux_rsa::signers::Signer::<2048, Sha2_256>::sign(&msg, (&private_key).into(), &salt)
+            .unwrap();
     eprintln!("signature: {:x?}", signature);
 
     libcrux_rsa::signers::Signer::<2048, Sha2_256>::verify(
