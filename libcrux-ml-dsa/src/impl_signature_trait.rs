@@ -22,9 +22,8 @@ pub mod signers {
                 // XXX: implementing owned trait directly because there is no arrayref equivalent
                 /// It is the responsibility of the caller to ensure  that the `randomness` argument is actually
                 /// random.
-                impl owned::Sign<(&[u8], super::Randomness), SIGNING_KEY_LEN, SIGNATURE_LEN>
-                    for $alias
-                {
+                impl owned::Sign<SIGNING_KEY_LEN, SIGNATURE_LEN> for $alias {
+                    type SignAux<'a> = (&'a [u8], super::Randomness);
                     fn sign(
                         payload: &[u8],
                         signing_key: &[u8; SIGNING_KEY_LEN],
@@ -40,7 +39,8 @@ pub mod signers {
                         .map_err(|_| owned::SignError::LibraryError)
                     }
                 }
-                impl arrayref::Verify<&[u8], VERIFICATION_KEY_LEN, SIGNATURE_LEN> for $alias {
+                impl arrayref::Verify<VERIFICATION_KEY_LEN, SIGNATURE_LEN> for $alias {
+                    type VerifyAux<'a> = &'a [u8];
                     fn verify(
                         payload: &[u8],
                         verification_key: &[u8; VERIFICATION_KEY_LEN],

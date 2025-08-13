@@ -13,7 +13,8 @@ pub mod signers {
         #[doc = concat!("A signer using [`libcrux_sha2::", stringify!($digest_alg_name),"`].")]
         pub type $alias = Signer<libcrux_sha2::$digest_alg_name>;
 
-        impl arrayref::Sign<&Nonce, SIGNING_KEY_LEN, SIG_LEN> for $alias {
+        impl arrayref::Sign<SIGNING_KEY_LEN, SIG_LEN> for $alias {
+            type SignAux<'a> = &'a Nonce;
             #[inline(always)]
             fn sign(
                 payload: &[u8],
@@ -34,7 +35,8 @@ pub mod signers {
                 Ok(())
             }
         }
-        impl arrayref::Verify<(), VERIFICATION_KEY_LEN, SIG_LEN> for $alias {
+        impl arrayref::Verify<VERIFICATION_KEY_LEN, SIG_LEN> for $alias {
+            type VerifyAux<'a> = ();
             #[inline(always)]
             fn verify(
                 payload: &[u8],

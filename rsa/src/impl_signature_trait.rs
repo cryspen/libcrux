@@ -13,7 +13,9 @@ macro_rules! impl_signature_trait {
         #[doc = concat!("(", stringify!($bytes)," bytes).")]
         pub type $alias = Signer<$bits, $digest_alg>;
 
-        impl arrayref::Sign<(&[u8], &[u8; $bytes]), $bytes, $bytes> for $alias {
+        impl arrayref::Sign<$bytes, $bytes> for $alias {
+
+            type SignAux<'a> = (&'a [u8], &'a [u8; $bytes]);
             fn sign(
                 payload: &[u8],
                 signing_key: &[u8; $bytes],
@@ -40,7 +42,9 @@ macro_rules! impl_signature_trait {
                 })
             }
         }
-        impl arrayref::Verify<u32, $bytes, $bytes> for $alias {
+        impl arrayref::Verify<$bytes, $bytes> for $alias {
+            type VerifyAux<'a> = u32;
+
             fn verify(
                 payload: &[u8],
                 verification_key: &[u8; $bytes],
