@@ -5,9 +5,9 @@
 ///
 /// The `SignAux` type is auxiliary information required for signing.
 pub trait Sign {
+    type SignAux<'a>;
     /// Sign a payload using a provided signature key. Required auxiliary information is provided using
     /// the `aux` argument.
-    type SignAux<'a>;
     fn sign(
         payload: &[u8],
         signing_key: &[u8],
@@ -20,9 +20,9 @@ pub trait Sign {
 ///
 /// The `VerifyAux` type is auxiliary information required for verification.
 pub trait Verify {
+    type VerifyAux<'a>;
     /// Verify a payload using a provided verification key. Required auxiliary information is provided using
     /// the `aux` argument.
-    type VerifyAux<'a>;
     fn verify(
         payload: &[u8],
         verification_key: &[u8],
