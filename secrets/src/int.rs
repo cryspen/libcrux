@@ -304,7 +304,7 @@ mod aarch64 {
                     cond = in(reg) $selector,
                     lhs = inlateout(reg) *$lhs,
                     rhs = in(reg) *$rhs,
-                    options(pure, nomem, nostack),
+                    options(nostack),
                 };
             }
         };
@@ -321,7 +321,7 @@ mod aarch64 {
                     cond = in(reg) $selector,
                     lhs = inlateout(reg) *$lhs,
                     rhs = in(reg) *$rhs,
-                    options(pure, nomem, nostack),
+                    options(nostack),
                 };
             }
         };
@@ -418,7 +418,7 @@ mod aarch64 {
                     a = inout(reg) *$lhs,
                     b = inout(reg) *$rhs,
                     tmp = out(reg) _,
-                    options(pure, nomem, nostack),
+                    options(nostack),
                 };
             }
         };
@@ -438,7 +438,7 @@ mod aarch64 {
                     a = inout(reg) *$lhs,
                     b = inout(reg) *$rhs,
                     tmp = out(reg) _,
-                    options(pure, nomem, nostack),
+                    options(nostack),
                 };
             }
         };
