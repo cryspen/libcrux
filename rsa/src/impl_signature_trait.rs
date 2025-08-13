@@ -1,6 +1,63 @@
 use super::impl_hacl::*;
 
-use libcrux_traits::signature::arrayref;
+use libcrux_traits::signature::{arrayref, slice};
+
+/// An RSA Public Key that is `LEN` bytes long, backed by array references.
+#[derive(Debug, Clone)]
+pub struct PublicKeyBorrow<'a, const LEN: usize> {
+    n: &'a [u8; LEN],
+}
+
+/// An RSA Private Key that is `LEN` bytes long, backed by array references.
+pub struct PrivateKeyBorrow<'a, const LEN: usize> {
+    pk: PublicKeyBorrow<'a, LEN>,
+    d: &'a [u8; LEN],
+}
+
+impl<'a, const LEN: usize> alloc::fmt::Debug for PrivateKeyBorrow<'a, LEN> {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        f.debug_struct("PrivateKey")
+            .field("pk", &self.pk)
+            .field("d", &"****")
+            .finish()
+    }
+}
+
+// TODO: `From` trait, or different method?
+// TODO: implement these only as certain key lengths?
+impl<'a, const LEN: usize> From<&'a PublicKey<LEN>> for PublicKeyBorrow<'a, LEN> {
+    #[inline(always)]
+    fn from(pk: &'a PublicKey<LEN>) -> PublicKeyBorrow<'a, LEN> {
+        PublicKeyBorrow { n: &pk.n }
+    }
+}
+impl<'a, const LEN: usize> From<&'a PrivateKey<LEN>> for PrivateKeyBorrow<'a, LEN> {
+    #[inline(always)]
+    fn from(sk: &'a PrivateKey<LEN>) -> PrivateKeyBorrow<'a, LEN> {
+        PrivateKeyBorrow {
+            pk: (&sk.pk).into(),
+            d: &sk.d,
+        }
+    }
+}
+impl<'a, const LEN: usize> PublicKeyBorrow<'a, LEN> {
+    #[inline(always)]
+    /// Returns the slice-based public key
+    pub fn as_var_len(&'a self) -> VarLenPublicKey<'a> {
+        VarLenPublicKey { n: self.n.as_ref() }
+    }
+}
+
+impl<'a, const LEN: usize> PrivateKeyBorrow<'a, LEN> {
+    #[inline(always)]
+    /// Returns the slice-based private key
+    pub fn as_var_len(&'a self) -> VarLenPrivateKey<'a> {
+        VarLenPrivateKey {
+            pk: self.pk.as_var_len(),
+            d: self.d.as_ref(),
+        }
+    }
+}
 
 // $bytes is vk_len, sk_len and sig_len
 macro_rules! impl_signature_trait {
@@ -15,23 +72,17 @@ macro_rules! impl_signature_trait {
 
         impl arrayref::Sign<$bytes, $bytes> for $alias {
 
-            type SignAux<'a> = (&'a [u8], &'a [u8; $bytes]);
-            type SigningKey<'a, const LEN: usize> = &'a [u8; $bytes];
+            type SignAux<'a> = &'a [u8];
+            type SigningKey<'a, const LEN: usize> = PrivateKeyBorrow<'a, LEN>;
             fn sign(
                 payload: &[u8],
-                signing_key: &[u8; $bytes],
+                signing_key: PrivateKeyBorrow<'_, $bytes>,
                 signature: &mut [u8; $bytes],
-                (salt, verification_key): (&[u8], &[u8; $bytes]),
+                salt: &[u8],
             ) -> Result<(), arrayref::SignError> {
-                // NOTE: succeeds if the length of verification_key ($bytes) is 256, 384, 512, 768, 1024
-                let pk = VarLenPublicKey::try_from(verification_key.as_ref()).unwrap();
-                let sk = VarLenPrivateKey {
-                    pk,
-                    d: signing_key.as_ref(),
-                };
                 sign_varlen(
                     crate::DigestAlgorithm::$digest_alg,
-                    &sk,
+                    &signing_key.as_var_len(),
                     payload,
                     salt,
                     signature,
@@ -68,7 +119,34 @@ macro_rules! impl_signature_trait {
             }
         }
 
-        libcrux_traits::impl_signature_slice_trait!($alias => $bytes, $bytes, (&[u8], &[u8; $bytes]), (salt, verification_key), &'a [u8; $bytes]);
+        // manual implementation of sign slice trait
+        impl slice::Sign for $alias {
+
+            type SignAux<'a> = &'a [u8];
+            type SigningKey<'a> = VarLenPrivateKey<'a>;
+            fn sign(
+                payload: &[u8],
+                signing_key: VarLenPrivateKey<'_>,
+                signature: &mut [u8],
+                salt: &[u8],
+            ) -> Result<(), slice::SignError> {
+                sign_varlen(
+
+                    crate::DigestAlgorithm::$digest_alg,
+                    &signing_key,
+                    payload,
+                    salt,
+                    signature,
+                )
+                .map_err(|e| match e {
+                    crate::Error::MessageTooLarge => slice::SignError::InvalidPayloadLength,
+                    _ => slice::SignError::LibraryError,
+
+                })
+            }
+        }
+
+
         libcrux_traits::impl_verify_slice_trait!($alias => $bytes, $bytes,  u32, salt_len);
 
         // TODO: owned and secrets traits not appearing in docs

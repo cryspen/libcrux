@@ -153,7 +153,8 @@ impl From<super::arrayref::VerifyError> for VerifyError {
     }
 }
 
-/// Implements [`Sign`] for any [`arrayref::Sign`](crate::signature::arrayref::Sign)
+/// Implements [`Sign`] for any [`arrayref::Sign`](crate::signature::arrayref::Sign) where the
+/// signing key is an array reference
 #[macro_export]
 macro_rules! impl_signature_slice_trait {
     ($type:ty => $sk_len:expr, $sig_len:expr, $sign_aux:ty, $sign_aux_param:tt, $signing_key:ty) => {
