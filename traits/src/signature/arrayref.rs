@@ -5,28 +5,30 @@
 /// usable APIs on top. This trait takes array references as arguments.
 ///
 /// The `SignAux` type is auxiliary information required for signing.
-pub trait Sign<SignAux, const SIGNING_KEY_LEN: usize, const SIGNATURE_LEN: usize> {
+pub trait Sign<const SIGNING_KEY_LEN: usize, const SIGNATURE_LEN: usize> {
     /// Sign a payload using a provided signature key. Required auxiliary information is provided using
     /// the `aux` argument.
+    type SignAux<'a>;
     fn sign(
         payload: &[u8],
         signing_key: &[u8; SIGNING_KEY_LEN],
         signature: &mut [u8; SIGNATURE_LEN],
-        aux: SignAux,
+        aux: Self::SignAux<'_>,
     ) -> Result<(), SignError>;
 }
 
 /// A verifier. This trait takes array references as arguments.
 ///
 /// The `VerifyAux` type is auxiliary information required for verification.
-pub trait Verify<VerifyAux, const VERIFICATION_KEY_LEN: usize, const SIGNATURE_LEN: usize> {
+pub trait Verify<const VERIFICATION_KEY_LEN: usize, const SIGNATURE_LEN: usize> {
     /// Verify a payload using a provided verification key. Required auxiliary information is provided using
     /// the `aux` argument.
+    type VerifyAux<'a>;
     fn verify(
         payload: &[u8],
         verification_key: &[u8; VERIFICATION_KEY_LEN],
         signature: &[u8; SIGNATURE_LEN],
-        aux: VerifyAux,
+        aux: Self::VerifyAux<'_>,
     ) -> Result<(), VerifyError>;
 }
 
@@ -85,6 +87,8 @@ mod error_in_core {
     impl core::error::Error for super::VerifyError {}
 }
 
+/*
+
 /// A signer that does not require auxiliary information. This trait takes array references as arguments.
 pub trait SignNoAux<const SIGNING_KEY_LEN: usize, const SIGNATURE_LEN: usize> {
     /// Sign a payload using a provided signature key.
@@ -98,7 +102,7 @@ pub trait SignNoAux<const SIGNING_KEY_LEN: usize, const SIGNATURE_LEN: usize> {
 impl<
         const SIGNING_KEY_LEN: usize,
         const SIGNATURE_LEN: usize,
-        T: Sign<(), SIGNING_KEY_LEN, SIGNATURE_LEN>,
+        T: Sign< SIGNING_KEY_LEN, SIGNATURE_LEN>,
     > SignNoAux<SIGNING_KEY_LEN, SIGNATURE_LEN> for T
 {
     fn sign(
@@ -144,3 +148,4 @@ impl<
         )
     }
 }
+*/

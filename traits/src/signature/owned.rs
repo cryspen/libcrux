@@ -5,30 +5,31 @@ pub use super::arrayref::SignError;
 /// A signer that returns values instead of writing results to `&mut` arguments.
 ///
 /// The `SignAux` type is auxiliary information required for signing.
-pub trait Sign<SignAux, const SIGNING_KEY_LEN: usize, const SIGNATURE_LEN: usize> {
+pub trait Sign<const SIGNING_KEY_LEN: usize, const SIGNATURE_LEN: usize> {
     /// Sign a payload using a provided signature key. Required auxiliary information is provided using
     /// the `aux` argument.
+    type SignAux<'a>;
     fn sign(
         payload: &[u8],
         signing_key: &[u8; SIGNING_KEY_LEN],
-        aux: SignAux,
+        aux: Self::SignAux<'_>,
     ) -> Result<[u8; SIGNATURE_LEN], SignError>;
 }
 
 impl<
-        SignAux,
         const SIGNING_KEY_LEN: usize,
         const SIGNATURE_LEN: usize,
-        T: super::arrayref::Sign<SignAux, SIGNING_KEY_LEN, SIGNATURE_LEN>,
-    > Sign<SignAux, SIGNING_KEY_LEN, SIGNATURE_LEN> for T
+        T: super::arrayref::Sign<SIGNING_KEY_LEN, SIGNATURE_LEN>,
+    > Sign<SIGNING_KEY_LEN, SIGNATURE_LEN> for T
 {
+    type SignAux<'a> = <Self as super::arrayref::Sign<SIGNING_KEY_LEN, SIGNATURE_LEN>>::SignAux<'a>;
     fn sign(
         payload: &[u8],
         signing_key: &[u8; SIGNING_KEY_LEN],
-        aux: SignAux,
+        aux: Self::SignAux<'_>,
     ) -> Result<[u8; SIGNATURE_LEN], SignError> {
         let mut signature = [0; SIGNATURE_LEN];
-        <Self as super::arrayref::Sign<SignAux, SIGNING_KEY_LEN, SIGNATURE_LEN>>::sign(
+        <Self as super::arrayref::Sign<SIGNING_KEY_LEN, SIGNATURE_LEN>>::sign(
             payload,
             signing_key,
             &mut signature,
@@ -38,6 +39,7 @@ impl<
     }
 }
 
+/*
 // No auxiliary information
 /// A signer that does not require auxiliary information. This trait returns values instead of writing results to `&mut` arguments.
 pub trait SignNoAux<const SIGNING_KEY_LEN: usize, const SIGNATURE_LEN: usize> {
@@ -61,3 +63,4 @@ impl<
         <Self as Sign<(), SIGNING_KEY_LEN, SIGNATURE_LEN>>::sign(payload, signing_key, ())
     }
 }
+*/
