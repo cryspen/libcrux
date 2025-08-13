@@ -6,9 +6,9 @@
 ///
 /// The `SignAux` type is auxiliary information required for signing.
 pub trait Sign<const SIGNING_KEY_LEN: usize, const SIGNATURE_LEN: usize> {
+    type SignAux<'a>;
     /// Sign a payload using a provided signature key. Required auxiliary information is provided using
     /// the `aux` argument.
-    type SignAux<'a>;
     fn sign(
         payload: &[u8],
         signing_key: &[u8; SIGNING_KEY_LEN],
@@ -21,9 +21,9 @@ pub trait Sign<const SIGNING_KEY_LEN: usize, const SIGNATURE_LEN: usize> {
 ///
 /// The `VerifyAux` type is auxiliary information required for verification.
 pub trait Verify<const VERIFICATION_KEY_LEN: usize, const SIGNATURE_LEN: usize> {
+    type VerifyAux<'a>;
     /// Verify a payload using a provided verification key. Required auxiliary information is provided using
     /// the `aux` argument.
-    type VerifyAux<'a>;
     fn verify(
         payload: &[u8],
         verification_key: &[u8; VERIFICATION_KEY_LEN],
