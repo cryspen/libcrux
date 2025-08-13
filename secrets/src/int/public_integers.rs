@@ -38,8 +38,8 @@ impl<T> Declassify for T {
     }
 }
 
-// Immutable references can be classified (identity)
-impl<'a, T: Scalar> ClassifyRef for &'a T {
+// Classify any reference (identity)
+impl<'a, T> ClassifyRef for &'a T {
     type ClassifiedRef = &'a T;
     #[inline(always)]
     fn classify_ref(self) -> &'a T {
@@ -47,101 +47,11 @@ impl<'a, T: Scalar> ClassifyRef for &'a T {
     }
 }
 
-// Immutable references can be declassified (identity)
-impl<'a, T: Scalar> DeclassifyRef for &'a T {
+// Delassify any reference (identity)
+impl<'a, T> DeclassifyRef for &'a T {
     type DeclassifiedRef = &'a T;
     #[inline(always)]
     fn declassify_ref(self) -> &'a T {
-        self
-    }
-}
-
-// Mutable references to scalars can be classified (identity)
-impl<'a, T: Scalar> ClassifyRefMut for &'a mut T {
-    type ClassifiedRefMut = &'a mut T;
-    #[inline(always)]
-    fn classify_ref_mut(self) -> &'a mut T {
-        self
-    }
-}
-
-// Mutable references to scalars can be declassified (identity)
-impl<'a, T: Scalar> DeclassifyRefMut for &'a mut T {
-    type DeclassifiedRefMut = &'a mut T;
-    #[inline(always)]
-    fn declassify_ref_mut(self) -> &'a mut T {
-        self
-    }
-}
-
-// Immutable references to slices can be classified (identity)
-impl<'a, T: Scalar> ClassifyRef for &'a [T] {
-    type ClassifiedRef = &'a [T];
-    #[inline(always)]
-    fn classify_ref(self) -> &'a [T] {
-        self
-    }
-}
-
-// Immutable references to slices can be declassified (identity)
-impl<'a, T: Scalar> DeclassifyRef for &'a [T] {
-    type DeclassifiedRef = &'a [T];
-    #[inline(always)]
-    fn declassify_ref(self) -> &'a [T] {
-        self
-    }
-}
-
-// Mutable references to scalars can be classified (identity)
-impl<'a, T: Scalar> ClassifyRefMut for &'a mut [T] {
-    type ClassifiedRefMut = &'a mut [T];
-    #[inline(always)]
-    fn classify_ref_mut(self) -> &'a mut [T] {
-        self
-    }
-}
-
-// Mutable references to scalars can be declassified (identity)
-impl<'a, T: Scalar> DeclassifyRefMut for &'a mut [T] {
-    type DeclassifiedRefMut = &'a mut [T];
-    #[inline(always)]
-    fn declassify_ref_mut(self) -> &'a mut [T] {
-        self
-    }
-}
-
-// Immutable references to arrays can be classified (identity)
-impl<'a, T: Scalar, const N: usize> ClassifyRef for &'a [T; N] {
-    type ClassifiedRef = &'a [T; N];
-    #[inline(always)]
-    fn classify_ref(self) -> &'a [T; N] {
-        self
-    }
-}
-
-// Immutable references to arrays can be classified (identity)
-impl<'a, T: Scalar, const N: usize> DeclassifyRef for &'a [T; N] {
-    type DeclassifiedRef = &'a [T; N];
-    #[inline(always)]
-    fn declassify_ref(self) -> &'a [T; N] {
-        self
-    }
-}
-
-// Mutable references to arrays can be classified (identity)
-impl<'a, T: Scalar, const N: usize> ClassifyRefMut for &'a mut [T; N] {
-    type ClassifiedRefMut = &'a mut [T; N];
-    #[inline(always)]
-    fn classify_ref_mut(self) -> &'a mut [T; N] {
-        self
-    }
-}
-
-// Mutable references to arrays can be declassified (identity)
-impl<'a, T: Scalar, const N: usize> DeclassifyRefMut for &'a mut [T; N] {
-    type DeclassifiedRefMut = &'a mut [T; N];
-    #[inline(always)]
-    fn declassify_ref_mut(self) -> &'a mut [T; N] {
         self
     }
 }
