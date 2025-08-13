@@ -7,11 +7,13 @@
 /// The `SignAux` type is auxiliary information required for signing.
 pub trait Sign<const SIGNING_KEY_LEN: usize, const SIGNATURE_LEN: usize> {
     type SignAux<'a>;
+
+    type SigningKey<'a, const LEN: usize>;
     /// Sign a payload using a provided signature key. Required auxiliary information is provided using
     /// the `aux` argument.
     fn sign(
         payload: &[u8],
-        signing_key: &[u8; SIGNING_KEY_LEN],
+        signing_key: Self::SigningKey<'_, SIGNING_KEY_LEN>,
         signature: &mut [u8; SIGNATURE_LEN],
         aux: Self::SignAux<'_>,
     ) -> Result<(), SignError>;
