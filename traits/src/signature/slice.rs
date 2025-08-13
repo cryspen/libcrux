@@ -47,7 +47,7 @@ pub trait VerifyNoAux {
     fn verify(payload: &[u8], verification_key: &[u8], signature: &[u8])
         -> Result<(), VerifyError>;
 }
-impl<'a, T: Verify<()>> VerifyNoAux for T {
+impl<T: Verify<()>> VerifyNoAux for T {
     fn verify(
         payload: &[u8],
         verification_key: &[u8],
