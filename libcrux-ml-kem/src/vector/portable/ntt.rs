@@ -404,8 +404,8 @@ pub(crate) fn ntt_multiply_binomials(
             let aj = Seq.index lhs.f_elements (2 * i + 1) in
             let bi = Seq.index rhs.f_elements (2 * i) in
             let bj = Seq.index rhs.f_elements (2 * i + 1) in
-            let oi = Seq.index result.f_elements (2 * i) in
-            let oj = Seq.index result.f_elements (2 * i + 1) in
+            let oi = Seq.index out_future.f_elements (2 * i) in
+            let oj = Seq.index out_future.f_elements (2 * i + 1) in
             ((v oi % 3329) == (((v ai * v bi + (v aj * v bj * (Seq.index zetas i) * 169)) * 169) % 3329)) /\
             ((v oj % 3329) == (((v ai * v bj + v aj * v bi) * 169) % 3329)))))"#))]
 pub(crate) fn ntt_multiply(

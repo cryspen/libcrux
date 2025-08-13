@@ -187,7 +187,7 @@ pub(crate) fn ntt_at_layer_3<Vector: Operations>(
 
 #[inline(always)]
 #[hax_lib::requires(fstar!(r#"Spec.Utils.is_i16b 1664 $zeta_r /\
-    (let t = ${Vector::montgomery_multiply_by_constant} $b $zeta_r in
+    (let t = f_montgomery_multiply_by_constant (Seq.index $coefficients (v $b)) $zeta_r in
     (forall i. i < 16 ==>
         Spec.Utils.is_intb (pow2 15 - 1)
         (v (Seq.index (Libcrux_ml_kem.Vector.Traits.f_to_i16_array $a) i) -
