@@ -16,6 +16,7 @@ macro_rules! impl_signature_trait {
         impl arrayref::Sign<$bytes, $bytes> for $alias {
 
             type SignAux<'a> = (&'a [u8], &'a [u8; $bytes]);
+            type SigningKey<'a, const LEN: usize> = &'a [u8; $bytes];
             fn sign(
                 payload: &[u8],
                 signing_key: &[u8; $bytes],
@@ -67,7 +68,7 @@ macro_rules! impl_signature_trait {
             }
         }
 
-        libcrux_traits::impl_signature_slice_trait!($alias => $bytes, $bytes, (&[u8], &[u8; $bytes]), (salt, verification_key));
+        libcrux_traits::impl_signature_slice_trait!($alias => $bytes, $bytes, (&[u8], &[u8; $bytes]), (salt, verification_key), &'a [u8; $bytes]);
         libcrux_traits::impl_verify_slice_trait!($alias => $bytes, $bytes,  u32, salt_len);
 
         // TODO: owned and secrets traits not appearing in docs
