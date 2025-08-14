@@ -10,7 +10,9 @@ use libcrux_secrets::{DeclassifyRef, U8};
 ///
 /// The `SignAux` type is auxiliary information required for signing.
 pub trait Sign<const SIGNING_KEY_LEN: usize, const SIGNATURE_LEN: usize> {
+    /// Auxiliary information needed for signing.
     type SignAux<'a>;
+    /// The signing key.
     type SigningKey<'a, const LEN: usize>;
     /// Sign a payload using a provided signature key. Required auxiliary information is provided using
     /// the `aux` argument.
