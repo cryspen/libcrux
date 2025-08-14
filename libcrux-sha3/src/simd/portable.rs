@@ -94,34 +94,6 @@ pub(crate) fn load_last<const RATE: usize, const DELIMITER: u8>(
     load_block::<RATE>(state, &buffer, 0);
 }
 
-// #[inline(always)]
-// #[hax_lib::requires(
-//     start < out.len() &&
-//     len < out.len() &&
-//     start <= out.len() - len &&
-//     start + len <= out.len()
-// )]
-// pub(crate) fn store_block<const RATE: usize>(
-//     s: &[u64; 25],
-//     out: &mut [u8],
-//     start: usize,
-//     len: usize,
-// ) {
-//     let octets = len / 8;
-//     // start + 8 * i + 8
-//     // start + len + 8
-//     for i in 0..octets {
-//         out[start + 8 * i..start + 8 * i + 8]
-//             .copy_from_slice(&get_ij(s, i / 5, i % 5).to_le_bytes());
-//     }
-//
-//     let remaining = len % 8;
-//     if remaining > 0 {
-//         out[start + len - remaining..start + len]
-//             .copy_from_slice(&get_ij(s, octets / 5, octets % 5).to_le_bytes()[0..remaining]);
-//     }
-// }
-
 #[inline(always)]
 #[hax_lib::requires(
     len < 192 &&
