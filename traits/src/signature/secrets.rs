@@ -6,7 +6,6 @@ pub use super::owned::SignError;
 use libcrux_secrets::{DeclassifyRef, U8};
 
 // TODO: declassify signing key
-/*
 /// A signer. This trait makes use of types suitable for checking secret independence.
 ///
 /// The `SignAux` type is auxiliary information required for signing.
@@ -25,12 +24,15 @@ pub trait Sign<const SIGNING_KEY_LEN: usize, const SIGNATURE_LEN: usize> {
 impl<
         const SIGNING_KEY_LEN: usize,
         const SIGNATURE_LEN: usize,
-        T: super::owned::Sign<SIGNING_KEY_LEN, SIGNATURE_LEN>,
+        T: for<'a> super::owned::Sign<
+            SIGNING_KEY_LEN,
+            SIGNATURE_LEN,
+            SigningKey<'a, SIGNING_KEY_LEN> = &'a [u8; SIGNING_KEY_LEN],
+        >,
     > Sign<SIGNING_KEY_LEN, SIGNATURE_LEN> for T
 {
     type SignAux<'a> = <Self as super::owned::Sign<SIGNING_KEY_LEN, SIGNATURE_LEN>>::SignAux<'a>;
-    type SigningKey<'a, const LEN: usize> =
-        <Self as super::arrayref::Sign<SIGNING_KEY_LEN, SIGNATURE_LEN>>::SigningKey<'a, LEN>;
+    type SigningKey<'a, const LEN: usize> = &'a [U8; SIGNING_KEY_LEN];
 
     fn sign(
         payload: &[u8],
@@ -40,7 +42,6 @@ impl<
         Self::sign(payload, signing_key.declassify_ref(), aux)
     }
 }
-*/
 /*
 /// A signer that does not require auxiliary information. This trait makes use of types suitable for checking secret independence.
 pub trait SignNoAux<const SIGNING_KEY_LEN: usize, const SIGNATURE_LEN: usize> {
