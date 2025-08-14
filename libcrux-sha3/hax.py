@@ -113,8 +113,6 @@ class extractAction(argparse.Action):
             "fstar",
             "--z3rlimit",
             "80",
-            "--interfaces",
-            interface_include,
         ]
         hax_env = {"RUSTFLAGS": "-C debug-assertions=off"}
         shell(
