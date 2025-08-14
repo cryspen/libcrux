@@ -83,17 +83,17 @@ pub trait Operations: Copy + Clone + Repr {
 
     // Bitwise operations
     #[requires(true)]
-    #[ensures(|_| fstar!(r#"f_repr ${v}_future == Spec.Utils.map_array (fun x -> x &. $c) (f_repr $v)"#))]
-    fn bitwise_and_with_constant(v: &mut Self, c: i16);
+    #[ensures(|_| fstar!(r#"f_repr vec_future == Spec.Utils.map_array (fun x -> x &. $c) (f_repr $vec)"#))]
+    fn bitwise_and_with_constant(vec: &mut Self, c: i16);
 
     #[requires(SHIFT_BY >= 0 && SHIFT_BY < 16)]
-    #[ensures(|_| fstar!(r#"(v_SHIFT_BY >=. (mk_i32 0) /\ v_SHIFT_BY <. (mk_i32 16)) ==> f_repr ${v}_future == Spec.Utils.map_array (fun x -> x >>! ${SHIFT_BY}) (f_repr $v)"#))]
-    fn shift_right<const SHIFT_BY: i32>(v: &mut Self);
+    #[ensures(|_| fstar!(r#"(v_SHIFT_BY >=. (mk_i32 0) /\ v_SHIFT_BY <. (mk_i32 16)) ==> f_repr vec_future == Spec.Utils.map_array (fun x -> x >>! ${SHIFT_BY}) (f_repr $vec)"#))]
+    fn shift_right<const SHIFT_BY: i32>(vec: &mut Self);
 
     // Modular operations
-    #[requires(fstar!(r#"Spec.Utils.is_i16b_array (pow2 12 - 1) (f_repr $v)"#))]
-    #[ensures(|_| fstar!(r#"f_repr ${v}_future == Spec.Utils.map_array (fun x -> if x >=. (mk_i16 3329) then x -! (mk_i16 3329) else x) (f_repr $v)"#))]
-    fn cond_subtract_3329(v: &mut Self);
+    #[requires(fstar!(r#"Spec.Utils.is_i16b_array (pow2 12 - 1) (f_repr $vec)"#))]
+    #[ensures(|_| fstar!(r#"f_repr vec_future == Spec.Utils.map_array (fun x -> if x >=. (mk_i16 3329) then x -! (mk_i16 3329) else x) (f_repr $vec)"#))]
+    fn cond_subtract_3329(vec: &mut Self);
 
     #[requires(fstar!(r#"Spec.Utils.is_i16b_array 28296 (f_repr $vector)"#))]
     #[ensures(|_| fstar!(r#"Spec.Utils.is_i16b_array 3328 (f_repr ${vector}_future) /\
@@ -101,17 +101,17 @@ pub trait Operations: Copy + Clone + Repr {
                            (v (Seq.index (f_repr ${vector})i) % 3329))"#))]
     fn barrett_reduce(vector: &mut Self);
 
-    #[requires(fstar!(r#"Spec.Utils.is_i16b 1664 constant"#))]
-    #[ensures(|_| fstar!(r#"Spec.Utils.is_i16b_array 3328 (f_repr ${v}_future) /\
-                (forall i. i < 16 ==> ((v (Seq.index (f_repr ${v}_future) i) % 3329)==
-                                       (v (Seq.index (f_repr ${v}) i) * v ${c} * 169) % 3329))"#))]
+    #[requires(fstar!(r#"Spec.Utils.is_i16b 1664 c"#))]
+    #[ensures(|_| fstar!(r#"Spec.Utils.is_i16b_array 3328 (f_repr vec_future) /\
+                (forall i. i < 16 ==> ((v (Seq.index (f_repr vec_future) i) % 3329)==
+                                       (v (Seq.index (f_repr ${vec}) i) * v ${c} * 169) % 3329))"#))]
 
-    fn montgomery_multiply_by_constant(v: &mut Self, c: i16);
+    fn montgomery_multiply_by_constant(vec: &mut Self, c: i16);
 
     #[requires(fstar!(r#"Spec.Utils.is_i16b_array 3328 (f_repr a)"#))]
-    #[ensures(|_| fstar!(r#"forall (i:nat). i < 16 ==>
+    #[ensures(|result| fstar!(r#"forall (i:nat). i < 16 ==>
                                 (let x = Seq.index (f_repr ${a}) i in
-                                 let y = Seq.index (f_repr ${a}_future) i in
+                                 let y = Seq.index (f_repr result) i in
                                  (v y >= 0 /\ v y <= 3328 /\ (v y % 3329 == v x % 3329)))"#))]
     fn to_unsigned_representative(a: Self) -> Self;
 
@@ -191,22 +191,22 @@ pub trait Operations: Copy + Clone + Repr {
     );
 
     // Serialization and deserialization
-    #[requires(fstar!(r#"Spec.MLKEM.serialize_pre 1 (impl.f_repr $a) /\ Seq.length $out == 2"#))]
-    #[ensures(|_| fstar!(r#"(Spec.MLKEM.serialize_pre 1 (impl.f_repr $a) ==> Spec.MLKEM.serialize_post 1 (impl.f_repr $a) ${out}_future)
+    #[requires(fstar!(r#"Spec.MLKEM.serialize_pre 1 (f_repr $a) /\ Seq.length $out == 2"#))]
+    #[ensures(|_| fstar!(r#"(Spec.MLKEM.serialize_pre 1 (f_repr $a) ==> Spec.MLKEM.serialize_post 1 (f_repr $a) ${out}_future)
                         /\ Seq.length ${out}_future == Seq.length $out"#))]
     fn serialize_1(a: &Self, out: &mut [u8]);
 
     #[requires(a.len() == 2)]
-    #[ensures(|_| fstar!(r#"sz (Seq.length $a) =. sz 2 ==> Spec.MLKEM.deserialize_post 1 $a (impl.f_repr ${out}_future)"#))]
+    #[ensures(|_| fstar!(r#"sz (Seq.length $a) =. sz 2 ==> Spec.MLKEM.deserialize_post 1 $a (f_repr ${out}_future)"#))]
     fn deserialize_1(a: &[u8], out: &mut Self);
 
-    #[requires(fstar!(r#"Spec.MLKEM.serialize_pre 4 (impl.f_repr $a) /\ Seq.length $out == 8"#))]
-    #[ensures(|_| fstar!(r#"(Spec.MLKEM.serialize_pre 4 (impl.f_repr $a) ==> Spec.MLKEM.serialize_post 4 (impl.f_repr $a) ${out}_future)
+    #[requires(fstar!(r#"Spec.MLKEM.serialize_pre 4 (f_repr $a) /\ Seq.length $out == 8"#))]
+    #[ensures(|_| fstar!(r#"(Spec.MLKEM.serialize_pre 4 (f_repr $a) ==> Spec.MLKEM.serialize_post 4 (f_repr $a) ${out}_future)
                          /\ Seq.length ${out}_future == Seq.length $out"#))]
     fn serialize_4(a: &Self, out: &mut [u8]);
 
     #[requires(a.len() == 8)]
-    #[ensures(|_| fstar!(r#"sz (Seq.length $a) =. sz 8 ==> Spec.MLKEM.deserialize_post 4 $a (impl.f_repr ${out}_future)"#))]
+    #[ensures(|_| fstar!(r#"sz (Seq.length $a) =. sz 8 ==> Spec.MLKEM.deserialize_post 4 $a (f_repr ${out}_future)"#))]
     fn deserialize_4(a: &[u8], out: &mut Self);
 
     fn serialize_5(a: &Self, out: &mut [u8]);
@@ -214,13 +214,13 @@ pub trait Operations: Copy + Clone + Repr {
     #[requires(a.len() == 10)]
     fn deserialize_5(a: &[u8], out: &mut Self);
 
-    #[requires(fstar!(r#"Spec.MLKEM.serialize_pre 10 (impl.f_repr $a) /\ Seq.length $out == 20"#))]
-    #[ensures(|_| fstar!(r#"(Spec.MLKEM.serialize_pre 10 (impl.f_repr $a) ==> Spec.MLKEM.serialize_post 10 (impl.f_repr $a) ${out}_future)
+    #[requires(fstar!(r#"Spec.MLKEM.serialize_pre 10 (f_repr $a) /\ Seq.length $out == 20"#))]
+    #[ensures(|_| fstar!(r#"(Spec.MLKEM.serialize_pre 10 (f_repr $a) ==> Spec.MLKEM.serialize_post 10 (f_repr $a) ${out}_future)
                          /\ Seq.length ${out}_future == Seq.length $out"#))]
     fn serialize_10(a: &Self, out: &mut [u8]);
 
     #[requires(a.len() == 20)]
-    #[ensures(|_| fstar!(r#"sz (Seq.length $a) =. sz 20 ==> Spec.MLKEM.deserialize_post 10 $a (impl.f_repr ${out}_future)"#))]
+    #[ensures(|_| fstar!(r#"sz (Seq.length $a) =. sz 20 ==> Spec.MLKEM.deserialize_post 10 $a (f_repr ${out}_future)"#))]
     fn deserialize_10(a: &[u8], out: &mut Self);
 
     fn serialize_11(a: &Self, out: &mut [u8]);
@@ -228,13 +228,13 @@ pub trait Operations: Copy + Clone + Repr {
     #[requires(a.len() == 22)]
     fn deserialize_11(a: &[u8], out: &mut Self);
 
-    #[requires(fstar!(r#"Spec.MLKEM.serialize_pre 12 (impl.f_repr $a) /\ Seq.length $out == 24"#))]
-    #[ensures(|_| fstar!(r#"(Spec.MLKEM.serialize_pre 12 (impl.f_repr $a) ==> Spec.MLKEM.serialize_post 12 (impl.f_repr $a) ${out}_future)
+    #[requires(fstar!(r#"Spec.MLKEM.serialize_pre 12 (f_repr $a) /\ Seq.length $out == 24"#))]
+    #[ensures(|_| fstar!(r#"(Spec.MLKEM.serialize_pre 12 (f_repr $a) ==> Spec.MLKEM.serialize_post 12 (f_repr $a) ${out}_future)
                          /\ Seq.length ${out}_future == Seq.length $out"#))]
     fn serialize_12(a: &Self, out: &mut [u8]);
 
     #[requires(a.len() == 24)]
-    #[ensures(|_| fstar!(r#"sz (Seq.length $a) =. sz 24 ==> Spec.MLKEM.deserialize_post 12 $a (impl.f_repr ${out}_future)"#))]
+    #[ensures(|_| fstar!(r#"sz (Seq.length $a) =. sz 24 ==> Spec.MLKEM.deserialize_post 12 $a (f_repr ${out}_future)"#))]
     fn deserialize_12(a: &[u8], out: &mut Self);
 
     #[requires(a.len() == 24 && out.len() == 16)]
@@ -252,25 +252,25 @@ pub fn montgomery_multiply_fe<T: Operations>(v: &mut T, fer: i16) {
 }
 
 #[hax_lib::fstar::options("--z3rlimit 200 --split_queries always")]
-#[hax_lib::requires(fstar!(r#"forall i. let x = Seq.index (i1._super_12682756204189288427.f_repr ${vec}) i in
+#[hax_lib::requires(fstar!(r#"forall i. let x = Seq.index (i0._super_16084754032855797384.f_repr ${vec}) i in
                                       (x == mk_i16 0 \/ x == mk_i16 1)"#))]
 #[inline(always)]
 pub fn decompress_1<T: Operations>(vec: &mut T) {
     hax_lib::fstar!(
-        r#"assert(forall i. let x = Seq.index (i1._super_12682756204189288427.f_repr ${vec}) i in
+        r#"assert(forall i. let x = Seq.index (i0._super_16084754032855797384.f_repr ${vec}) i in
                                       ((0 - v x) == 0 \/ (0 - v x) == -1))"#
     );
     hax_lib::fstar!(
         r#"assert(forall i. i < 16 ==>
                                       Spec.Utils.is_intb (pow2 15 - 1)
-                                        (0 - v (Seq.index (i1._super_12682756204189288427.f_repr ${vec}) i)))"#
+                                        (0 - v (Seq.index (i0._super_16084754032855797384.f_repr ${vec}) i)))"#
     );
 
     T::negate(vec);
     hax_lib::fstar!(
-        r#"assert(forall i. Seq.index (i1._super_12682756204189288427.f_repr ${vec}) i == mk_i16 0 \/
-                                      Seq.index (i1._super_12682756204189288427.f_repr ${vec}) i == mk_i16 (-1))"#
+        r#"assert(forall i. Seq.index (i0._super_16084754032855797384.f_repr ${vec}) i == mk_i16 0 \/
+                                      Seq.index (i0._super_16084754032855797384.f_repr ${vec}) i == mk_i16 (-1))"#
     );
-    hax_lib::fstar!(r#"assert (i1.f_bitwise_and_with_constant_pre ${vec} (mk_i16 1665))"#);
+    hax_lib::fstar!(r#"assert (i0.f_bitwise_and_with_constant_pre ${vec} (mk_i16 1665))"#);
     T::bitwise_and_with_constant(vec, 1665);
 }

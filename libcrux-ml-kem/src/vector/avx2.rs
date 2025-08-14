@@ -69,7 +69,7 @@ fn compress_1(vector: &mut Vec256) {
     v $COEFFICIENT_BITS == 5 \/
     v $COEFFICIENT_BITS == 10 \/
     v $COEFFICIENT_BITS == 11) ==>
-        (forall (i:nat). i < 16 ==> bounded (Seq.index (repr ${vector}_futur) i) (v $COEFFICIENT_BITS))"#))]
+        (forall (i:nat). i < 16 ==> bounded (Seq.index (repr ${vector}_future) i) (v $COEFFICIENT_BITS))"#))]
 fn compress<const COEFFICIENT_BITS: i32>(vector: &mut Vec256) {
     compress::compress_ciphertext_coefficient::<COEFFICIENT_BITS>(vector);
 }

@@ -369,7 +369,8 @@ val v_H (input: t_Slice u8) : t_Array u8 (sz 32)
 val v_PRF (v_LEN: usize{v v_LEN < pow2 32}) (input: t_Slice u8) : t_Array u8 v_LEN
 
 val v_PRFxN (r:usize{v r == 2 \/ v r == 3 \/ v r == 4}) (v_LEN: usize{4 * v v_LEN < pow2 32})
-  (input: t_Array (t_Array u8 (sz 33)) r) : t_Array u8 (v_LEN *. r)
+  (input: t_Array (t_Array u8 (sz 33)) r) : 
+  t_Array u8 (v_LEN *. r)
 
 val v_J (input: t_Slice u8) : t_Array u8 (sz 32)
 
