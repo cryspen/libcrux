@@ -125,8 +125,9 @@ impl_cast_ops!(I128);
 
 #[cfg(not(any(target_arch = "aarch64")))]
 mod portable {
-    use super::*;
     use super::{Select, Swap};
+    #[cfg(feature = "check-secret-independence")]
+    use crate::{traits::*, U16, U32, U64, U8};
 
     // Don't inline this to avoid that the compiler optimizes this out.
     #[inline(never)]
