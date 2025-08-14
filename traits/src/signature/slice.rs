@@ -5,7 +5,9 @@
 ///
 /// The `SignAux` type is auxiliary information required for signing.
 pub trait Sign {
+    /// Auxiliary information needed for signing.
     type SignAux<'a>;
+    /// The signing key.
     type SigningKey<'a>;
     /// Sign a payload using a provided signature key. Required auxiliary information is provided using
     /// the `aux` argument.
@@ -21,8 +23,9 @@ pub trait Sign {
 ///
 /// The `VerifyAux` type is auxiliary information required for verification.
 pub trait Verify {
+    /// Auxiliary information needed for verification.
     type VerifyAux<'a>;
-    /// Verify a payload using a provided verification key. Required auxiliary information is provided using
+    /// Verify a signature using a provided verification key. Required auxiliary information is provided using
     /// the `aux` argument.
     fn verify(
         payload: &[u8],
@@ -47,7 +50,7 @@ impl<T: Sign<()>> SignNoAux for T {
 
 /// A verifier that does not require auxiliary information. This trait takes slices as arguments.
 pub trait VerifyNoAux {
-    /// Verify a payload using a provided verification key.
+    /// Verify a signature using a provided verification key.
     fn verify(payload: &[u8], verification_key: &[u8], signature: &[u8])
         -> Result<(), VerifyError>;
 }
@@ -159,10 +162,15 @@ impl From<super::arrayref::VerifyError> for VerifyError {
 macro_rules! impl_signature_slice_trait {
     ($type:ty => $sk_len:expr, $sig_len:expr, $sign_aux:ty, $sign_aux_param:tt, $signing_key:ty) => {
         impl $crate::signature::slice::Sign for $type {
+            #[doc = "Auxiliary information needed for signing: "]
+            #[doc = concat!("`",stringify!($sign_aux_param),"`")]
+            #[doc = ". If the type is `()`, then no auxiliary information is required.\n\n"]
             type SignAux<'a> =
                 <$type as $crate::signature::arrayref::Sign<$sk_len, $sig_len>>::SignAux<'a>;
             type SigningKey<'a> = $signing_key;
 
+            #[doc = "Sign a payload using a provided signing key and "]
+            #[doc = concat!("`",stringify!($sign_aux_param),"`.")]
             fn sign(
                 payload: &[u8],
                 signing_key: Self::SigningKey<'_>,
@@ -192,8 +200,14 @@ macro_rules! impl_signature_slice_trait {
 #[macro_export]
 macro_rules! impl_verify_slice_trait {
     ($type:ty => $vk_len:expr, $sig_len:expr, $verify_aux:ty, $verify_aux_param:tt) => {
+        /// The [`mod@slice`] version of the Verify trait.
         impl $crate::signature::slice::Verify for $type {
+            #[doc = "Auxiliary information needed for verification: "]
+            #[doc = concat!("`",stringify!($verify_aux_param),"`")]
+            #[doc = ". If the type is `()`, then no auxiliary information is required.\n\n"]
             type VerifyAux<'a> = $verify_aux;
+            #[doc = "Verify a signature using a provided verification key and "]
+            #[doc = concat!("`",stringify!($verify_aux_param),"`.")]
             fn verify(
                 payload: &[u8],
                 verification_key: &[u8],
