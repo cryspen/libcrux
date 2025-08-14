@@ -380,8 +380,7 @@ mod select {
     where
         [T]: Fill + Select,
     {
-        let selector: bool = rng.random();
-        let selector = if selector { 0 } else { 1 };
+        let selector: u8 = rng.random::<u8>() & 1;
         // XXX: Setting `selector` as follows will break the selection in release mode on `aarch64`.
         // let selector = if selector { 0 } else { rng.next_u32() as u8 };
         let mut lhs = [T::default(); 256];
@@ -422,10 +421,9 @@ mod select {
     fn correctness_secret() {
         macro_rules! secret_test {
             ($ty:ty, $rng:expr) => {{
-                let selector: bool = $rng.random();
+                let selector: u8 = $rng.random::<u8>() & 1;
                 // XXX: Setting `selector` as follows will break the selection in release mode on `aarch64`.
                 // let selector = if selector { 0 } else { rng.next_u32() as u8 };
-                let selector = if selector { 0 } else { 1 };
                 let mut lhs = [<$ty>::default(); 256];
                 $rng.fill(&mut lhs);
                 let mut rhs = [<$ty>::default(); 256];
@@ -476,8 +474,7 @@ mod swap {
     where
         [T]: Fill + Swap,
     {
-        let selector: bool = rng.random();
-        let selector = if selector { 0 } else { 1 };
+        let selector = rng.random::<u8>() & 1;
         // XXX: Setting `selector` as follows will break the swap in release mode on `aarch64`.
         // let selector = if selector { 0 } else { rng.next_u32() as u8 };
         let mut lhs = [T::default(); 256];
@@ -516,8 +513,7 @@ mod swap {
     fn correctness_secret() {
         macro_rules! secret_test {
             ($ty:ty, $rng:expr) => {{
-                let selector: bool = $rng.random();
-                let selector = if selector { 0 } else { 1 };
+                let selector = $rng.random::<u8>() & 1;
                 // XXX: Setting `selector` as follows will break the swap in release mode on `aarch64`.
                 // let selector = if selector { 0 } else { $rng.next_u32() as u8 };
                 let mut lhs = [<$ty>::default(); 256];
