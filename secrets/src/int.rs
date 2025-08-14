@@ -135,77 +135,34 @@ mod portable {
         core::hint::black_box(((!(selector as u64)).wrapping_add(1) >> 63) & 1)
     }
 
-    impl Select for [u8] {
-        fn select(&mut self, other: &Self, selector: u8) {
-            let mask = (is_non_zero(selector) as u8).wrapping_sub(1);
-            for i in 0..self.len() {
-                self[i] = (self[i] & mask) | (other[i] & !mask);
+    /// This macro implements `Select` for public integer type
+    /// `&[$ty]` and its secret version `&[$secret_ty]`.
+    macro_rules! impl_select {
+        ($ty:ty, $secret_ty:ty) => {
+            impl Select for [$ty] {
+                fn select(&mut self, other: &Self, selector: u8) {
+                    let mask = (is_non_zero(selector) as $ty).wrapping_sub(1);
+                    for i in 0..self.len() {
+                        self[i] = (self[i] & mask) | (other[i] & !mask);
+                    }
+                }
             }
-        }
-    }
 
-    #[cfg(feature = "check-secret-independence")]
-    impl Select for [U8] {
-        fn select(&mut self, other: &Self, selector: u8) {
-            let lhs = self.declassify_ref_mut();
-            let rhs = other.declassify_ref();
-            lhs.select(rhs, selector);
-        }
-    }
-
-    impl Select for [u16] {
-        fn select(&mut self, other: &Self, selector: u8) {
-            let mask = (is_non_zero(selector) as u16).wrapping_sub(1);
-            for i in 0..self.len() {
-                self[i] = (self[i] & mask) | (other[i] & !mask);
+            #[cfg(feature = "check-secret-independence")]
+            impl Select for [$secret_ty] {
+                fn select(&mut self, other: &Self, selector: u8) {
+                    let lhs = self.declassify_ref_mut();
+                    let rhs = other.declassify_ref();
+                    lhs.select(rhs, selector);
+                }
             }
-        }
+        };
     }
 
-    #[cfg(feature = "check-secret-independence")]
-    impl Select for [U16] {
-        fn select(&mut self, other: &Self, selector: u8) {
-            let lhs = self.declassify_ref_mut();
-            let rhs = other.declassify_ref();
-            lhs.select(rhs, selector);
-        }
-    }
-
-    impl Select for [u32] {
-        fn select(&mut self, other: &Self, selector: u8) {
-            let mask = (is_non_zero(selector) as u32).wrapping_sub(1);
-            for i in 0..self.len() {
-                self[i] = (self[i] & mask) | (other[i] & !mask);
-            }
-        }
-    }
-
-    #[cfg(feature = "check-secret-independence")]
-    impl Select for [U32] {
-        fn select(&mut self, other: &Self, selector: u8) {
-            let lhs = self.declassify_ref_mut();
-            let rhs = other.declassify_ref();
-            lhs.select(rhs, selector);
-        }
-    }
-
-    impl Select for [u64] {
-        fn select(&mut self, other: &Self, selector: u8) {
-            let mask = (is_non_zero(selector) as u64).wrapping_sub(1);
-            for i in 0..self.len() {
-                self[i] = (self[i] & mask) | (other[i] & !mask);
-            }
-        }
-    }
-
-    #[cfg(feature = "check-secret-independence")]
-    impl Select for [U64] {
-        fn select(&mut self, other: &Self, selector: u8) {
-            let lhs = self.declassify_ref_mut();
-            let rhs = other.declassify_ref();
-            lhs.select(rhs, selector);
-        }
-    }
+    impl_select!(u8, U8);
+    impl_select!(u16, U16);
+    impl_select!(u32, U32);
+    impl_select!(u64, U64);
 
     macro_rules! swap {
         ($t:ty, $lhs:expr, $rhs:expr, $selector:expr) => {
@@ -220,80 +177,35 @@ mod portable {
         };
     }
 
-    impl Swap for [u8] {
-        #[inline]
-        fn cswap(&mut self, other: &mut Self, selector: u8) {
-            debug_assert_eq!(self.len(), other.len());
-            swap!(u8, self, other, selector);
-        }
+    /// This macro implements `Swap` for public integer type
+    /// `&[$ty]` and its secret version `&[$secret_ty]`.
+    macro_rules! impl_swap {
+        ($ty:ty, $secret_ty:ty) => {
+            impl Swap for [$ty] {
+                #[inline]
+                fn cswap(&mut self, other: &mut Self, selector: u8) {
+                    debug_assert_eq!(self.len(), other.len());
+                    swap!($ty, self, other, selector);
+                }
+            }
+
+            #[cfg(feature = "check-secret-independence")]
+            impl Swap for [$secret_ty] {
+                #[inline]
+                fn cswap(&mut self, other: &mut Self, selector: u8) {
+                    debug_assert_eq!(self.len(), other.len());
+                    let lhs = self.declassify_ref_mut();
+                    let rhs = other.declassify_ref_mut();
+                    swap!($ty, lhs, rhs, selector);
+                }
+            }
+        };
     }
 
-    #[cfg(feature = "check-secret-independence")]
-    impl Swap for [U8] {
-        #[inline]
-        fn cswap(&mut self, other: &mut Self, selector: u8) {
-            debug_assert_eq!(self.len(), other.len());
-            let lhs = self.declassify_ref_mut();
-            let rhs = other.declassify_ref_mut();
-            swap!(u8, lhs, rhs, selector);
-        }
-    }
-
-    impl Swap for [u16] {
-        #[inline]
-        fn cswap(&mut self, other: &mut Self, selector: u8) {
-            debug_assert_eq!(self.len(), other.len());
-            swap!(u16, self, other, selector);
-        }
-    }
-
-    #[cfg(feature = "check-secret-independence")]
-    impl Swap for [U16] {
-        #[inline]
-        fn cswap(&mut self, other: &mut Self, selector: u8) {
-            debug_assert_eq!(self.len(), other.len());
-            let lhs = self.declassify_ref_mut();
-            let rhs = other.declassify_ref_mut();
-            swap!(u16, lhs, rhs, selector);
-        }
-    }
-
-    impl Swap for [u32] {
-        #[inline]
-        fn cswap(&mut self, other: &mut Self, selector: u8) {
-            debug_assert_eq!(self.len(), other.len());
-            swap!(u32, self, other, selector);
-        }
-    }
-    #[cfg(feature = "check-secret-independence")]
-    impl Swap for [U32] {
-        #[inline]
-        fn cswap(&mut self, other: &mut Self, selector: u8) {
-            debug_assert_eq!(self.len(), other.len());
-            let lhs = self.declassify_ref_mut();
-            let rhs = other.declassify_ref_mut();
-            swap!(u32, lhs, rhs, selector);
-        }
-    }
-
-    impl Swap for [u64] {
-        #[inline]
-        fn cswap(&mut self, other: &mut Self, selector: u8) {
-            debug_assert_eq!(self.len(), other.len());
-            swap!(u64, self, other, selector);
-        }
-    }
-
-    #[cfg(feature = "check-secret-independence")]
-    impl Swap for [U64] {
-        #[inline]
-        fn cswap(&mut self, other: &mut Self, selector: u8) {
-            debug_assert_eq!(self.len(), other.len());
-            let lhs = self.declassify_ref_mut();
-            let rhs = other.declassify_ref_mut();
-            swap!(u64, lhs, rhs, selector);
-        }
-    }
+    impl_swap!(u8, U8);
+    impl_swap!(u16, U16);
+    impl_swap!(u32, U32);
+    impl_swap!(u64, U64);
 }
 
 #[cfg(target_arch = "aarch64")]
@@ -336,72 +248,29 @@ mod aarch64 {
         };
     }
 
-    impl Select for u8 {
-        #[inline]
-        fn select(&mut self, other: &Self, selector: u8) {
-            select32!(self, other, selector);
-        }
-    }
+    /// This macro implements `Select` for public integer type `$ty`
+    /// and its secret version `$secret_ty`. `$select` should be one
+    /// of `select32` and `select64`, determining the used register
+    /// width.
+    macro_rules! impl_select {
+        ($ty:ty, $secret_ty:ty, $select: ident) => {
+            impl Select for $ty {
+                #[inline]
+                fn select(&mut self, other: &Self, selector: u8) {
+                    $select!(self, other, selector);
+                }
+            }
 
-    #[cfg(feature = "check-secret-independence")]
-    impl Select for U8 {
-        #[inline]
-        fn select(&mut self, other: &Self, selector: u8) {
-            let lhs = self.declassify_ref_mut();
-            let rhs = other.declassify_ref();
-            lhs.select(rhs, selector);
-        }
-    }
-
-    impl Select for u16 {
-        #[inline]
-        fn select(&mut self, other: &Self, selector: u8) {
-            select32!(self, other, selector);
-        }
-    }
-
-    #[cfg(feature = "check-secret-independence")]
-    impl Select for U16 {
-        #[inline]
-        fn select(&mut self, other: &Self, selector: u8) {
-            let lhs = self.declassify_ref_mut();
-            let rhs = other.declassify_ref();
-            lhs.select(rhs, selector);
-        }
-    }
-
-    impl Select for u32 {
-        #[inline]
-        fn select(&mut self, other: &Self, selector: u8) {
-            select32!(self, other, selector);
-        }
-    }
-
-    #[cfg(feature = "check-secret-independence")]
-    impl Select for U32 {
-        #[inline]
-        fn select(&mut self, other: &Self, selector: u8) {
-            let lhs = self.declassify_ref_mut();
-            let rhs = other.declassify_ref();
-            lhs.select(rhs, selector);
-        }
-    }
-
-    impl Select for u64 {
-        #[inline]
-        fn select(&mut self, other: &Self, selector: u8) {
-            select64!(self, other, selector);
-        }
-    }
-
-    #[cfg(feature = "check-secret-independence")]
-    impl Select for U64 {
-        #[inline]
-        fn select(&mut self, other: &Self, selector: u8) {
-            let lhs = self.declassify_ref_mut();
-            let rhs = other.declassify_ref();
-            lhs.select(rhs, selector);
-        }
+            #[cfg(feature = "check-secret-independence")]
+            impl Select for $secret_ty {
+                #[inline]
+                fn select(&mut self, other: &Self, selector: u8) {
+                    let lhs = self.declassify_ref_mut();
+                    let rhs = other.declassify_ref();
+                    lhs.select(rhs, selector);
+                }
+            }
+        };
     }
 
     impl<T: Select> Select for [T] {
@@ -413,6 +282,11 @@ mod aarch64 {
             }
         }
     }
+
+    impl_select!(u8, U8, select32);
+    impl_select!(u16, U16, select32);
+    impl_select!(u32, U32, select32);
+    impl_select!(u64, U64, select64);
 
     macro_rules! swap64 {
         ($lhs:expr, $rhs:expr, $selector:expr) => {
@@ -454,73 +328,35 @@ mod aarch64 {
         };
     }
 
-    impl Swap for u8 {
-        #[inline]
-        fn cswap(&mut self, other: &mut Self, selector: u8) {
-            swap32!(self, other, selector);
-        }
+    /// This macro implements `Swap` for public integer type
+    /// `$ty` and its secret version `$secret_ty`. `$swap` should be one
+    /// of `swap32` and `swap64`, determining the used register
+    /// width.
+    macro_rules! impl_swap {
+        ($ty:ty, $secret_ty:ty, $swap:ident) => {
+            impl Swap for $ty {
+                #[inline]
+                fn cswap(&mut self, other: &mut Self, selector: u8) {
+                    $swap!(self, other, selector);
+                }
+            }
+
+            #[cfg(feature = "check-secret-independence")]
+            impl Swap for $secret_ty {
+                #[inline]
+                fn cswap(&mut self, other: &mut Self, selector: u8) {
+                    let lhs = self.declassify_ref_mut();
+                    let rhs = other.declassify_ref_mut();
+                    lhs.cswap(rhs, selector);
+                }
+            }
+        };
     }
 
-    #[cfg(feature = "check-secret-independence")]
-    impl Swap for U8 {
-        #[inline]
-        fn cswap(&mut self, other: &mut Self, selector: u8) {
-            let lhs = self.declassify_ref_mut();
-            let rhs = other.declassify_ref_mut();
-            lhs.cswap(rhs, selector);
-        }
-    }
-
-    impl Swap for u16 {
-        #[inline]
-        fn cswap(&mut self, other: &mut Self, selector: u8) {
-            swap32!(self, other, selector);
-        }
-    }
-
-    #[cfg(feature = "check-secret-independence")]
-    impl Swap for U16 {
-        #[inline]
-        fn cswap(&mut self, other: &mut Self, selector: u8) {
-            let lhs = self.declassify_ref_mut();
-            let rhs = other.declassify_ref_mut();
-            lhs.cswap(rhs, selector);
-        }
-    }
-
-    impl Swap for u32 {
-        #[inline]
-        fn cswap(&mut self, other: &mut Self, selector: u8) {
-            swap32!(self, other, selector);
-        }
-    }
-
-    #[cfg(feature = "check-secret-independence")]
-    impl Swap for U32 {
-        #[inline]
-        fn cswap(&mut self, other: &mut Self, selector: u8) {
-            let lhs = self.declassify_ref_mut();
-            let rhs = other.declassify_ref_mut();
-            lhs.cswap(rhs, selector);
-        }
-    }
-
-    impl Swap for u64 {
-        #[inline]
-        fn cswap(&mut self, other: &mut Self, selector: u8) {
-            swap64!(self, other, selector);
-        }
-    }
-
-    #[cfg(feature = "check-secret-independence")]
-    impl Swap for U64 {
-        #[inline]
-        fn cswap(&mut self, other: &mut Self, selector: u8) {
-            let lhs = self.declassify_ref_mut();
-            let rhs = other.declassify_ref_mut();
-            lhs.cswap(rhs, selector);
-        }
-    }
+    impl_swap!(u8, U8, swap32);
+    impl_swap!(u16, U16, swap32);
+    impl_swap!(u32, U32, swap32);
+    impl_swap!(u64, U64, swap64);
 
     impl<T: Swap> Swap for [T] {
         #[inline]
