@@ -43,29 +43,3 @@ impl<
         .map(|_| signature)
     }
 }
-
-/*
-// No auxiliary information
-/// A signer that does not require auxiliary information. This trait returns values instead of writing results to `&mut` arguments.
-pub trait SignNoAux<const SIGNING_KEY_LEN: usize, const SIGNATURE_LEN: usize> {
-    /// Sign a payload using a provided signature key.
-    fn sign(
-        payload: &[u8],
-        signing_key: &[u8; SIGNING_KEY_LEN],
-    ) -> Result<[u8; SIGNATURE_LEN], SignError>;
-}
-
-impl<
-        const SIGNING_KEY_LEN: usize,
-        const SIGNATURE_LEN: usize,
-        T: Sign<(), SIGNING_KEY_LEN, SIGNATURE_LEN>,
-    > SignNoAux<SIGNING_KEY_LEN, SIGNATURE_LEN> for T
-{
-    fn sign(
-        payload: &[u8],
-        signing_key: &[u8; SIGNING_KEY_LEN],
-    ) -> Result<[u8; SIGNATURE_LEN], SignError> {
-        <Self as Sign<(), SIGNING_KEY_LEN, SIGNATURE_LEN>>::sign(payload, signing_key, ())
-    }
-}
-*/

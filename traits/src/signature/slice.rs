@@ -35,36 +35,6 @@ pub trait Verify {
     ) -> Result<(), VerifyError>;
 }
 
-/*
-/// A signer that does not require auxiliary information. This trait takes slices as arguments.
-pub trait SignNoAux {
-    /// Sign a payload using a provided signature key.
-    fn sign(payload: &[u8], signing_key: &[u8], signature: &mut [u8]) -> Result<(), SignError>;
-}
-
-impl<T: Sign<()>> SignNoAux for T {
-    fn sign(payload: &[u8], signing_key: &[u8], signature: &mut [u8]) -> Result<(), SignError> {
-        <Self as Sign<()>>::sign(payload, signing_key, signature, ())
-    }
-}
-
-/// A verifier that does not require auxiliary information. This trait takes slices as arguments.
-pub trait VerifyNoAux {
-    /// Verify a signature using a provided verification key.
-    fn verify(payload: &[u8], verification_key: &[u8], signature: &[u8])
-        -> Result<(), VerifyError>;
-}
-impl<T: Verify<()>> VerifyNoAux for T {
-    fn verify(
-        payload: &[u8],
-        verification_key: &[u8],
-        signature: &[u8],
-    ) -> Result<(), VerifyError> {
-        <Self as Verify<()>>::verify(payload, verification_key, signature, ())
-    }
-}
-*/
-
 /// Error indicating that signing failed.
 #[derive(Debug, PartialEq, Eq)]
 pub enum SignError {
