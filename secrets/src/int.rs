@@ -131,17 +131,23 @@ mod portable {
 
     // Don't inline this to avoid that the compiler optimizes this out.
     #[inline(never)]
-    fn is_non_zero(selector: u8) -> u64 {
+    fn is_non_zero_32(selector: u8) -> u32 {
+        core::hint::black_box(((!(selector as u32)).wrapping_add(1) >> 31) & 1)
+    }
+
+    // Don't inline this to avoid that the compiler optimizes this out.
+    #[inline(never)]
+    fn is_non_zero_64(selector: u8) -> u64 {
         core::hint::black_box(((!(selector as u64)).wrapping_add(1) >> 63) & 1)
     }
 
     /// This macro implements `Select` for public integer type
     /// `&[$ty]` and its secret version `&[$secret_ty]`.
     macro_rules! impl_select {
-        ($ty:ty, $secret_ty:ty) => {
+        ($ty:ty, $secret_ty:ty, $is_non_zero:ident) => {
             impl Select for [$ty] {
                 fn select(&mut self, other: &Self, selector: u8) {
-                    let mask = (is_non_zero(selector) as $ty).wrapping_sub(1);
+                    let mask = ($is_non_zero(selector) as $ty).wrapping_sub(1);
                     for i in 0..self.len() {
                         self[i] = (self[i] & mask) | (other[i] & !mask);
                     }
@@ -159,12 +165,12 @@ mod portable {
         };
     }
 
-    impl_select!(u8, U8);
-    impl_select!(u16, U16);
-    impl_select!(u32, U32);
-    impl_select!(u64, U64);
+    impl_select!(u8, U8, is_non_zero_32);
+    impl_select!(u16, U16, is_non_zero_32);
+    impl_select!(u32, U32, is_non_zero_32);
+    impl_select!(u64, U64, is_non_zero_64);
 
-    macro_rules! swap {
+    macro_rules! swap64 {
         ($t:ty, $lhs:expr, $rhs:expr, $selector:expr) => {
             let mask = core::hint::black_box(
                 ((((!($selector as u64)).wrapping_add(1) >> 63) & 1) as $t).wrapping_sub(1),
@@ -177,15 +183,28 @@ mod portable {
         };
     }
 
+    macro_rules! swap32 {
+        ($t:ty, $lhs:expr, $rhs:expr, $selector:expr) => {
+            let mask = core::hint::black_box(
+                ((((!($selector as u32)).wrapping_add(1) >> 31) & 1) as $t).wrapping_sub(1),
+            );
+            for i in 0..$lhs.len() {
+                let dummy = !mask & ($lhs[i] ^ $rhs[i]);
+                $lhs[i] ^= dummy;
+                $rhs[i] ^= dummy;
+            }
+        };
+    }
+
     /// This macro implements `Swap` for public integer type
     /// `&[$ty]` and its secret version `&[$secret_ty]`.
     macro_rules! impl_swap {
-        ($ty:ty, $secret_ty:ty) => {
+        ($ty:ty, $secret_ty:ty, $swap:ident) => {
             impl Swap for [$ty] {
                 #[inline]
                 fn cswap(&mut self, other: &mut Self, selector: u8) {
                     debug_assert_eq!(self.len(), other.len());
-                    swap!($ty, self, other, selector);
+                    $swap!($ty, self, other, selector);
                 }
             }
 
@@ -196,16 +215,16 @@ mod portable {
                     debug_assert_eq!(self.len(), other.len());
                     let lhs = self.declassify_ref_mut();
                     let rhs = other.declassify_ref_mut();
-                    swap!($ty, lhs, rhs, selector);
+                    $swap!($ty, lhs, rhs, selector);
                 }
             }
         };
     }
 
-    impl_swap!(u8, U8);
-    impl_swap!(u16, U16);
-    impl_swap!(u32, U32);
-    impl_swap!(u64, U64);
+    impl_swap!(u8, U8, swap32);
+    impl_swap!(u16, U16, swap32);
+    impl_swap!(u32, U32, swap32);
+    impl_swap!(u64, U64, swap64);
 }
 
 #[cfg(target_arch = "aarch64")]
