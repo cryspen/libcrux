@@ -26,12 +26,12 @@ pub(crate) mod simd256;
 /// Portable specific implementations.
 pub(crate) mod portable;
 
-#[cfg_attr(hax, hax_lib::opaque)]
-#[derive(Clone, Copy)]
+#[derive(Copy, Clone)]
 pub(crate) struct KeccakState<const N: usize, T: KeccakItem<N>> {
     pub(crate) st: [T; 25],
 }
 
+#[hax_lib::attributes]
 impl<const N: usize, T: KeccakItem<N>> KeccakState<N, T> {
     /// Create a new Shake128 x4 state.
     #[inline(always)]
@@ -42,12 +42,13 @@ impl<const N: usize, T: KeccakItem<N>> KeccakState<N, T> {
     }
 
     /// Set element `[i, j] = v`.
+    #[hax_lib::requires(i < 5 && j < 5)]
     fn set(&mut self, i: usize, j: usize, v: T) {
         set_ij(&mut self.st, i, j, v);
     }
 
     #[inline(always)]
-    fn theta_rho(&mut self) {
+    fn theta(&mut self) -> [T; 5] {
         let c: [T; 5] = [
             T::xor5(
                 self[(0, 0)],
@@ -86,38 +87,38 @@ impl<const N: usize, T: KeccakItem<N>> KeccakState<N, T> {
             ),
         ];
         #[allow(clippy::identity_op)]
-        let t: [T; 5] = [
+        [
             T::rotate_left1_and_xor(c[(0 + 4) % 5], c[(0 + 1) % 5]),
             T::rotate_left1_and_xor(c[(1 + 4) % 5], c[(1 + 1) % 5]),
             T::rotate_left1_and_xor(c[(2 + 4) % 5], c[(2 + 1) % 5]),
             T::rotate_left1_and_xor(c[(3 + 4) % 5], c[(3 + 1) % 5]),
             T::rotate_left1_and_xor(c[(4 + 4) % 5], c[(4 + 1) % 5]),
-        ];
+        ]
+    }
 
+    #[inline(always)]
+    #[hax_lib::fstar::replace_body("assert true")]
+    fn rho(&mut self, t: [T; 5]) {
         self.set(0, 0, T::xor(self[(0, 0)], t[0]));
         self.set(1, 0, T::xor_and_rotate::<36, 28>(self[(1, 0)], t[0]));
         self.set(2, 0, T::xor_and_rotate::<3, 61>(self[(2, 0)], t[0]));
         self.set(3, 0, T::xor_and_rotate::<41, 23>(self[(3, 0)], t[0]));
         self.set(4, 0, T::xor_and_rotate::<18, 46>(self[(4, 0)], t[0]));
-
         self.set(0, 1, T::xor_and_rotate::<1, 63>(self[(0, 1)], t[1]));
         self.set(1, 1, T::xor_and_rotate::<44, 20>(self[(1, 1)], t[1]));
         self.set(2, 1, T::xor_and_rotate::<10, 54>(self[(2, 1)], t[1]));
         self.set(3, 1, T::xor_and_rotate::<45, 19>(self[(3, 1)], t[1]));
         self.set(4, 1, T::xor_and_rotate::<2, 62>(self[(4, 1)], t[1]));
-
         self.set(0, 2, T::xor_and_rotate::<62, 2>(self[(0, 2)], t[2]));
         self.set(1, 2, T::xor_and_rotate::<6, 58>(self[(1, 2)], t[2]));
         self.set(2, 2, T::xor_and_rotate::<43, 21>(self[(2, 2)], t[2]));
         self.set(3, 2, T::xor_and_rotate::<15, 49>(self[(3, 2)], t[2]));
         self.set(4, 2, T::xor_and_rotate::<61, 3>(self[(4, 2)], t[2]));
-
         self.set(0, 3, T::xor_and_rotate::<28, 36>(self[(0, 3)], t[3]));
         self.set(1, 3, T::xor_and_rotate::<55, 9>(self[(1, 3)], t[3]));
         self.set(2, 3, T::xor_and_rotate::<25, 39>(self[(2, 3)], t[3]));
         self.set(3, 3, T::xor_and_rotate::<21, 43>(self[(3, 3)], t[3]));
         self.set(4, 3, T::xor_and_rotate::<56, 8>(self[(4, 3)], t[3]));
-
         self.set(0, 4, T::xor_and_rotate::<27, 37>(self[(0, 4)], t[4]));
         self.set(1, 4, T::xor_and_rotate::<20, 44>(self[(1, 4)], t[4]));
         self.set(2, 4, T::xor_and_rotate::<39, 25>(self[(2, 4)], t[4]));
@@ -126,6 +127,7 @@ impl<const N: usize, T: KeccakItem<N>> KeccakState<N, T> {
     }
 
     #[inline(always)]
+    #[hax_lib::fstar::replace_body("assert true")]
     fn pi(&mut self) {
         let old = *self;
 
@@ -156,6 +158,7 @@ impl<const N: usize, T: KeccakItem<N>> KeccakState<N, T> {
     }
 
     #[inline(always)]
+    #[hax_lib::fstar::replace_body("assert true")]
     fn chi(&mut self) {
         let old = *self;
 
@@ -172,6 +175,7 @@ impl<const N: usize, T: KeccakItem<N>> KeccakState<N, T> {
     }
 
     #[inline(always)]
+    #[hax_lib::requires(i < ROUNDCONSTANTS.len())]
     fn iota(&mut self, i: usize) {
         self.set(0, 0, T::xor_constant(self[(0, 0)], ROUNDCONSTANTS[i]));
     }
@@ -179,7 +183,8 @@ impl<const N: usize, T: KeccakItem<N>> KeccakState<N, T> {
     #[inline(always)]
     fn keccakf1600(&mut self) {
         for i in 0..24 {
-            self.theta_rho();
+            let t = self.theta();
+            self.rho(t);
             self.pi();
             self.chi();
             self.iota(i);
@@ -211,10 +216,12 @@ impl<const N: usize, T: KeccakItem<N>> KeccakState<N, T> {
     }
 }
 
+#[hax_lib::attributes]
 impl<const N: usize, T: KeccakItem<N>> Index<(usize, usize)> for KeccakState<N, T> {
     type Output = T;
 
     /// Get element `[i, j]`.
+    #[hax_lib::requires(index.0 < 5 && index.1 < 5)]
     fn index(&self, index: (usize, usize)) -> &Self::Output {
         get_ij(&self.st, index.0, index.1)
     }
