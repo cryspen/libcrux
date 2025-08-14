@@ -96,10 +96,13 @@ macro_rules! impl_signature_trait {
         #[doc = concat!("(", stringify!($bytes)," bytes).")]
         pub type $alias = Signer<$bits, $digest_alg>;
 
+        /// The [`arrayref`] version of the Sign trait.
         impl arrayref::Sign<$bytes, $bytes> for $alias {
 
+            /// The salt, provided as a `&'a [u8]`.
             type SignAux<'a> = &'a [u8];
             type SigningKey<'a, const LEN: usize> = PrivateKeyBorrow<'a, LEN>;
+            /// Sign a payload using a provided signing key and `salt`.
             fn sign(
                 payload: &[u8],
                 signing_key: PrivateKeyBorrow<'_, $bytes>,
@@ -120,9 +123,11 @@ macro_rules! impl_signature_trait {
                 })
             }
         }
+        /// The [`arrayref`] version of the Verify trait.
         impl arrayref::Verify<$bytes, $bytes> for $alias {
             type VerifyAux<'a> = u32;
 
+            /// Verify a signature using a provided verification key and `salt_len`.
             fn verify(
                 payload: &[u8],
                 verification_key: &[u8; $bytes],
@@ -146,10 +151,13 @@ macro_rules! impl_signature_trait {
         }
 
         // manual implementation of sign slice trait
+        /// The [`mod@slice`] version of the Sign trait.
         impl slice::Sign for $alias {
 
+            /// The salt, provided as a `&'a [u8]`.
             type SignAux<'a> = &'a [u8];
             type SigningKey<'a> = VarLenPrivateKey<'a>;
+            /// Sign a payload using a provided signing key and `salt`.
             fn sign(
                 payload: &[u8],
                 signing_key: VarLenPrivateKey<'_>,
@@ -173,10 +181,13 @@ macro_rules! impl_signature_trait {
         }
 
         // manual implementation of secrets trait
+        /// The [`secrets`] version of the Sign trait, which uses [`libcrux_secrets`] types.
         impl secrets::Sign<$bytes, $bytes> for $alias {
+            /// The salt, provided as a `&'a [u8]`.
             type SignAux<'a> = &'a [u8];
             type SigningKey<'a, const LEN: usize> = PrivateKeyBorrowClassified<'a, $bytes>;
 
+            /// Sign a payload using a provided signing key and `salt`.
             fn sign(
                 payload: &[u8],
                 signing_key: PrivateKeyBorrowClassified<'_, $bytes>,
