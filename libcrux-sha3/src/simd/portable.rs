@@ -35,14 +35,16 @@ fn _veorq_n_u64(a: u64, c: u64) -> u64 {
 
 #[inline(always)]
 #[hax_lib::requires(
-    start < usize::MAX / 2 &&
     RATE < 192 &&
-    RATE <= blocks.len() && 
     RATE % 8 == 0 &&
+    RATE <= blocks.len() &&
+    start <= blocks.len() &&
+    start <= blocks.len() - RATE &&
     start + RATE <= blocks.len()
 )]
 pub(crate) fn load_block<const RATE: usize>(state: &mut [u64; 25], blocks: &[u8], start: usize) {
-    debug_assert!(start <= blocks.len() - RATE && RATE % 8 == 0);
+    debug_assert!(start + RATE <= blocks.len());
+    debug_assert!(RATE % 8 == 0);
 
     // First load the block, then xor it with the state
     // Note: combining the two loops below reduces performance for large inputs,
@@ -68,10 +70,12 @@ pub(crate) fn load_block<const RATE: usize>(state: &mut [u64; 25], blocks: &[u8]
 
 #[inline(always)]
 #[hax_lib::requires(
-    start < usize::MAX / 2 &&
     RATE < 192 &&
     RATE % 8 == 0 &&
     len < RATE &&
+    len < blocks.len() &&
+    start <= blocks.len() &&
+    start <= blocks.len() - len &&
     start + len <= blocks.len()
 )]
 pub(crate) fn load_last<const RATE: usize, const DELIMITER: u8>(
@@ -110,7 +114,7 @@ pub(crate) fn load_last<const RATE: usize, const DELIMITER: u8>(
 //         out[start + 8 * i..start + 8 * i + 8]
 //             .copy_from_slice(&get_ij(s, i / 5, i % 5).to_le_bytes());
 //     }
-// 
+//
 //     let remaining = len % 8;
 //     if remaining > 0 {
 //         out[start + len - remaining..start + len]
@@ -118,8 +122,14 @@ pub(crate) fn load_last<const RATE: usize, const DELIMITER: u8>(
 //     }
 // }
 
-
 #[inline(always)]
+#[hax_lib::requires(
+    len < 192 &&
+    len <= out.len() &&
+    start <= out.len() &&
+    start <= out.len() - len &&
+    start + len <= out.len()
+)]
 pub(crate) fn store_block<const RATE: usize>(
     s: &[u64; 25],
     out: &mut [u8],
@@ -127,10 +137,20 @@ pub(crate) fn store_block<const RATE: usize>(
     len: usize,
 ) {
     let octets = len / 8;
+    hax_lib::fstar!("assert (8 * v $octets <= v $len)");
     for i in 0..octets {
+        hax_lib::loop_invariant!(|i: usize| { fstar!("v $start + v $len <= Seq.length $out") });
+        hax_lib::fstar!("assert (v $i < v $octets)");
+        hax_lib::fstar!("assert (v $i + 1 <= v $octets)");
+        hax_lib::fstar!("assert (8 * (v $i + 1) <= 8 * v $octets)");
+        hax_lib::fstar!("assert (8 * v $octets <= v $len)");
+        hax_lib::fstar!("assert (v $start + 8 * (v $i + 1) <= v $start + v $len)");
+        hax_lib::fstar!("assert (v $start + v $len <= Seq.length $out)");
         let value = get_ij(s, i / 5, i % 5);
         let bytes = value.to_le_bytes();
         let out_pos = start + 8 * i;
+        hax_lib::fstar!("assert (v $out_pos + 8 <= Seq.length $out)");
+        hax_lib::fstar!("assert (v $start + 8 * v $i + 8 <= v $start + v $len)");
         out[out_pos..out_pos + 8].copy_from_slice(&bytes);
     }
 
@@ -139,6 +159,9 @@ pub(crate) fn store_block<const RATE: usize>(
         let value = get_ij(s, octets / 5, octets % 5);
         let bytes = value.to_le_bytes();
         let out_pos = start + len - remaining;
+        hax_lib::fstar!("assert (v $start + v $len <= Seq.length $out)");
+        hax_lib::fstar!("assert (v $out_pos + v $remaining == v $start + v $len)");
+        hax_lib::fstar!("assert (v $out_pos + v $remaining <= Seq.length $out)");
         out[out_pos..out_pos + remaining].copy_from_slice(&bytes[..remaining]);
     }
 }
@@ -174,11 +197,29 @@ impl KeccakItem<1> for u64 {
     }
 }
 
+#[hax_lib::attributes]
 impl Absorb<1> for KeccakState<1, u64> {
+    #[hax_lib::requires(
+        RATE < 192 &&
+        RATE % 8 == 0 &&
+        RATE <= input[0].len() &&
+        start <= input[0].len() &&
+        start <= input[0].len() - RATE &&
+        start + RATE <= input[0].len()
+    )]
     fn load_block<const RATE: usize>(&mut self, input: &[&[u8]; 1], start: usize) {
         load_block::<RATE>(&mut self.st, input[0], start);
     }
 
+    #[hax_lib::requires(
+        RATE < 192 &&
+        RATE % 8 == 0 &&
+        len < RATE &&
+        len < input[0].len() &&
+        start <= input[0].len() &&
+        start <= input[0].len() - len &&
+        start + len <= input[0].len()
+    )]
     fn load_last<const RATE: usize, const DELIMITER: u8>(
         &mut self,
         input: &[&[u8]; 1],
@@ -189,7 +230,15 @@ impl Absorb<1> for KeccakState<1, u64> {
     }
 }
 
+#[hax_lib::attributes]
 impl Squeeze<u64> for KeccakState<1, u64> {
+    #[hax_lib::requires(
+        len < 192 &&
+        len <= out.len() &&
+        start <= out.len() &&
+        start <= out.len() - len &&
+        start + len <= out.len()
+    )]
     fn squeeze<const RATE: usize>(&self, out: &mut [u8], start: usize, len: usize) {
         store_block::<RATE>(&self.st, out, start, len);
     }
