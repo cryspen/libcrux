@@ -1,6 +1,7 @@
 use super::impl_hacl::*;
 
-use libcrux_traits::signature::{arrayref, slice};
+use libcrux_secrets::{DeclassifyRef, U8};
+use libcrux_traits::signature::{arrayref, owned, secrets, slice};
 
 /// An RSA Public Key that is `LEN` bytes long, backed by array references.
 #[derive(Debug, Clone)]
@@ -12,6 +13,31 @@ pub struct PublicKeyBorrow<'a, const LEN: usize> {
 pub struct PrivateKeyBorrow<'a, const LEN: usize> {
     pk: PublicKeyBorrow<'a, LEN>,
     d: &'a [u8; LEN],
+}
+
+/// An RSA Private Key that is `LEN` bytes long, backed by array references.
+/// the private key is represented using [`type@libcrux_secrets::U8`], as a `&'a [U8; LEN]`.
+pub struct PrivateKeyBorrowClassified<'a, const LEN: usize> {
+    pk: PublicKeyBorrow<'a, LEN>,
+    d: &'a [U8; LEN],
+}
+
+impl<'a, const LEN: usize> PrivateKeyBorrowClassified<'a, LEN> {
+    /// Constructor for the private key based on `n` and `d`.
+    pub fn from_components(n: &'a [u8; LEN], d: &'a [U8; LEN]) -> Self {
+        Self {
+            pk: PublicKeyBorrow { n },
+            d,
+        }
+    }
+}
+impl<'a, const LEN: usize> alloc::fmt::Debug for PrivateKeyBorrowClassified<'a, LEN> {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        f.debug_struct("PrivateKey")
+            .field("pk", &self.pk)
+            .field("d", &"****")
+            .finish()
+    }
 }
 
 impl<'a, const LEN: usize> alloc::fmt::Debug for PrivateKeyBorrow<'a, LEN> {
@@ -146,10 +172,36 @@ macro_rules! impl_signature_trait {
             }
         }
 
+        // manual implementation of secrets trait
+        impl secrets::Sign<$bytes, $bytes> for $alias {
+            type SignAux<'a> = &'a [u8];
+            type SigningKey<'a, const LEN: usize> = PrivateKeyBorrowClassified<'a, $bytes>;
+
+            fn sign(
+                payload: &[u8],
+                signing_key: PrivateKeyBorrowClassified<'_, $bytes>,
+                salt: &[u8],
+
+            ) -> Result<[u8; $bytes], secrets::SignError> {
+
+                // XXX: This transformation is not done by implementing
+                // `libcrux_secrets::Classify` for the key, because the implementation would conflict
+                // with the existing `impl<T> Classify for T` in
+                // libcrux_secrets::int::public_integers.
+                let declassified = PrivateKeyBorrow {
+                    pk: signing_key.pk,
+                    d: signing_key.d.declassify_ref(),
+                };
+
+                <Self as owned::Sign<$bytes, $bytes>>::sign(payload, declassified, salt)
+            }
+
+        }
+
 
         libcrux_traits::impl_verify_slice_trait!($alias => $bytes, $bytes,  u32, salt_len);
 
-        // TODO: owned and secrets traits not appearing in docs
+        // TODO: owned trait not appearing in docs
 
 
     };
