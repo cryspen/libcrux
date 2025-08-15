@@ -69,12 +69,14 @@ pub(crate) mod alloc {
     #[inline(always)]
     pub(crate) fn generate_keypair<
         const K: usize,
+        const K_SQUARED: usize,
         const CPA_PRIVATE_KEY_SIZE: usize,
         const PRIVATE_KEY_SIZE: usize,
         const PUBLIC_KEY_SIZE: usize,
         const BYTES_PER_RING_ELEMENT: usize,
         const ETA1: usize,
         const ETA1_RANDOMNESS_SIZE: usize,
+        const PRF_OUTPUT_SIZE1: usize,
     >(
         randomness: [u8; KEY_GENERATION_SEED_SIZE],
     ) -> Box<dyn Keys> {
@@ -84,34 +86,40 @@ pub(crate) mod alloc {
             let keys = unsafe {
                 generate_keypair_avx2::<
                     K,
+                    K_SQUARED,
                     CPA_PRIVATE_KEY_SIZE,
                     PRIVATE_KEY_SIZE,
                     PUBLIC_KEY_SIZE,
                     BYTES_PER_RING_ELEMENT,
                     ETA1,
                     ETA1_RANDOMNESS_SIZE,
+                    PRF_OUTPUT_SIZE1,
                 >(randomness)
             };
             Box::new(keys)
         } else if libcrux_platform::simd128_support() {
             Box::new(generate_keypair_neon::<
                 K,
+                K_SQUARED,
                 CPA_PRIVATE_KEY_SIZE,
                 PRIVATE_KEY_SIZE,
                 PUBLIC_KEY_SIZE,
                 BYTES_PER_RING_ELEMENT,
                 ETA1,
                 ETA1_RANDOMNESS_SIZE,
+                PRF_OUTPUT_SIZE1,
             >(randomness))
         } else {
             Box::new(portable::generate_keypair::<
                 K,
+                K_SQUARED,
                 CPA_PRIVATE_KEY_SIZE,
                 PRIVATE_KEY_SIZE,
                 PUBLIC_KEY_SIZE,
                 BYTES_PER_RING_ELEMENT,
                 ETA1,
                 ETA1_RANDOMNESS_SIZE,
+                PRF_OUTPUT_SIZE1,
             >(randomness))
         }
     }
@@ -119,6 +127,7 @@ pub(crate) mod alloc {
     #[inline(always)]
     pub(crate) fn encapsulate1<
         const K: usize,
+        const K_SQUARED: usize,
         const CIPHERTEXT_SIZE: usize,
         const C1_SIZE: usize,
         const VECTOR_U_COMPRESSION_FACTOR: usize,
@@ -127,6 +136,8 @@ pub(crate) mod alloc {
         const ETA1_RANDOMNESS_SIZE: usize,
         const ETA2: usize,
         const ETA2_RANDOMNESS_SIZE: usize,
+        const PRF_OUTPUT_SIZE1: usize,
+        const PRF_OUTPUT_SIZE2: usize,
     >(
         public_key_part: &PublicKey1,
         randomness: [u8; SHARED_SECRET_SIZE],
@@ -141,6 +152,7 @@ pub(crate) mod alloc {
             let (c, s, ss) = unsafe {
                 encapsulate1_avx2::<
                     K,
+                    K_SQUARED,
                     CIPHERTEXT_SIZE,
                     C1_SIZE,
                     VECTOR_U_COMPRESSION_FACTOR,
@@ -149,12 +161,15 @@ pub(crate) mod alloc {
                     ETA1_RANDOMNESS_SIZE,
                     ETA2,
                     ETA2_RANDOMNESS_SIZE,
+                    PRF_OUTPUT_SIZE1,
+                    PRF_OUTPUT_SIZE2,
                 >(public_key_part, randomness)
             };
             (c, Box::new(s), ss)
         } else if libcrux_platform::simd128_support() {
             let (c, s, ss) = encapsulate1_neon::<
                 K,
+                K_SQUARED,
                 CIPHERTEXT_SIZE,
                 C1_SIZE,
                 VECTOR_U_COMPRESSION_FACTOR,
@@ -163,11 +178,14 @@ pub(crate) mod alloc {
                 ETA1_RANDOMNESS_SIZE,
                 ETA2,
                 ETA2_RANDOMNESS_SIZE,
+                PRF_OUTPUT_SIZE1,
+                PRF_OUTPUT_SIZE2,
             >(public_key_part, randomness);
             (c, Box::new(s), ss)
         } else {
             let (c, s, ss) = portable::encapsulate1::<
                 K,
+                K_SQUARED,
                 CIPHERTEXT_SIZE,
                 C1_SIZE,
                 VECTOR_U_COMPRESSION_FACTOR,
@@ -176,6 +194,8 @@ pub(crate) mod alloc {
                 ETA1_RANDOMNESS_SIZE,
                 ETA2,
                 ETA2_RANDOMNESS_SIZE,
+                PRF_OUTPUT_SIZE1,
+                PRF_OUTPUT_SIZE2,
             >(public_key_part, randomness);
             (c, Box::new(s), ss)
         }
@@ -226,6 +246,7 @@ pub(crate) mod alloc {
     #[inline(always)]
     pub(crate) fn decapsulate<
         const K: usize,
+        const K_SQUARED: usize,
         const SECRET_KEY_SIZE: usize,
         const CPA_SECRET_KEY_SIZE: usize,
         const PUBLIC_KEY_SIZE: usize,
@@ -240,6 +261,8 @@ pub(crate) mod alloc {
         const ETA1_RANDOMNESS_SIZE: usize,
         const ETA2: usize,
         const ETA2_RANDOMNESS_SIZE: usize,
+        const PRF_OUTPUT_SIZE1: usize,
+        const PRF_OUTPUT_SIZE2: usize,
         const IMPLICIT_REJECTION_HASH_INPUT_SIZE: usize,
     >(
         private_key: &dyn Keys,
@@ -254,6 +277,7 @@ pub(crate) mod alloc {
             unsafe {
                 decapsulate_avx2::<
                     K,
+                    K_SQUARED,
                     SECRET_KEY_SIZE,
                     CPA_SECRET_KEY_SIZE,
                     PUBLIC_KEY_SIZE,
@@ -268,6 +292,8 @@ pub(crate) mod alloc {
                     ETA1_RANDOMNESS_SIZE,
                     ETA2,
                     ETA2_RANDOMNESS_SIZE,
+                    PRF_OUTPUT_SIZE1,
+                    PRF_OUTPUT_SIZE2,
                     IMPLICIT_REJECTION_HASH_INPUT_SIZE,
                 >(private_key, ciphertext1, ciphertext2)
             }
@@ -275,6 +301,7 @@ pub(crate) mod alloc {
             let private_key = as_neon_keypair(private_key.as_any());
             decapsulate_neon::<
                 K,
+                K_SQUARED,
                 SECRET_KEY_SIZE,
                 CPA_SECRET_KEY_SIZE,
                 PUBLIC_KEY_SIZE,
@@ -289,12 +316,15 @@ pub(crate) mod alloc {
                 ETA1_RANDOMNESS_SIZE,
                 ETA2,
                 ETA2_RANDOMNESS_SIZE,
+                PRF_OUTPUT_SIZE1,
+                PRF_OUTPUT_SIZE2,
                 IMPLICIT_REJECTION_HASH_INPUT_SIZE,
             >(private_key, ciphertext1, ciphertext2)
         } else {
             let private_key = portable::as_keypair(private_key.as_any());
             portable::decapsulate::<
                 K,
+                K_SQUARED,
                 SECRET_KEY_SIZE,
                 CPA_SECRET_KEY_SIZE,
                 PUBLIC_KEY_SIZE,
@@ -309,6 +339,8 @@ pub(crate) mod alloc {
                 ETA1_RANDOMNESS_SIZE,
                 ETA2,
                 ETA2_RANDOMNESS_SIZE,
+                PRF_OUTPUT_SIZE1,
+                PRF_OUTPUT_SIZE2,
                 IMPLICIT_REJECTION_HASH_INPUT_SIZE,
             >(private_key, ciphertext1, ciphertext2)
         }
@@ -318,6 +350,7 @@ pub(crate) mod alloc {
 #[inline(always)]
 pub(crate) fn generate_keypair<
     const K: usize,
+    const K_SQUARED: usize,
     const PK2_LEN: usize,
     const CPA_PRIVATE_KEY_SIZE: usize,
     const PRIVATE_KEY_SIZE: usize,
@@ -325,6 +358,7 @@ pub(crate) fn generate_keypair<
     const BYTES_PER_RING_ELEMENT: usize,
     const ETA1: usize,
     const ETA1_RANDOMNESS_SIZE: usize,
+    const PRF_OUTPUT_SIZE1: usize,
 >(
     randomness: [u8; KEY_GENERATION_SEED_SIZE],
     key_pair: &mut [u8],
@@ -335,6 +369,7 @@ pub(crate) fn generate_keypair<
         unsafe {
             generate_keypair_serialized_avx2::<
                 K,
+                K_SQUARED,
                 PK2_LEN,
                 CPA_PRIVATE_KEY_SIZE,
                 PRIVATE_KEY_SIZE,
@@ -342,11 +377,13 @@ pub(crate) fn generate_keypair<
                 BYTES_PER_RING_ELEMENT,
                 ETA1,
                 ETA1_RANDOMNESS_SIZE,
+                PRF_OUTPUT_SIZE1,
             >(randomness, key_pair)
         }
     } else if libcrux_platform::simd128_support() {
         generate_keypair_serialized_neon::<
             K,
+            K_SQUARED,
             PK2_LEN,
             CPA_PRIVATE_KEY_SIZE,
             PRIVATE_KEY_SIZE,
@@ -354,10 +391,12 @@ pub(crate) fn generate_keypair<
             BYTES_PER_RING_ELEMENT,
             ETA1,
             ETA1_RANDOMNESS_SIZE,
+            PRF_OUTPUT_SIZE1,
         >(randomness, key_pair)
     } else {
         portable::generate_keypair_serialized::<
             K,
+            K_SQUARED,
             PK2_LEN,
             CPA_PRIVATE_KEY_SIZE,
             PRIVATE_KEY_SIZE,
@@ -365,6 +404,7 @@ pub(crate) fn generate_keypair<
             BYTES_PER_RING_ELEMENT,
             ETA1,
             ETA1_RANDOMNESS_SIZE,
+            PRF_OUTPUT_SIZE1,
         >(randomness, key_pair)
     }
 }
@@ -372,6 +412,7 @@ pub(crate) fn generate_keypair<
 #[inline(always)]
 pub(crate) fn generate_keypair_compressed<
     const K: usize,
+    const K_SQUARED: usize,
     const PK2_LEN: usize,
     const CPA_PRIVATE_KEY_SIZE: usize,
     const PRIVATE_KEY_SIZE: usize,
@@ -379,6 +420,7 @@ pub(crate) fn generate_keypair_compressed<
     const BYTES_PER_RING_ELEMENT: usize,
     const ETA1: usize,
     const ETA1_RANDOMNESS_SIZE: usize,
+    const PRF_OUTPUT_SIZE1: usize,
     const KEYPAIR_LEN: usize,
 >(
     randomness: [u8; KEY_GENERATION_SEED_SIZE],
@@ -390,6 +432,7 @@ pub(crate) fn generate_keypair_compressed<
         unsafe {
             generate_keypair_compressed_avx2::<
                 K,
+                K_SQUARED,
                 PK2_LEN,
                 CPA_PRIVATE_KEY_SIZE,
                 PRIVATE_KEY_SIZE,
@@ -397,12 +440,14 @@ pub(crate) fn generate_keypair_compressed<
                 BYTES_PER_RING_ELEMENT,
                 ETA1,
                 ETA1_RANDOMNESS_SIZE,
+                PRF_OUTPUT_SIZE1,
                 KEYPAIR_LEN,
             >(randomness, key_pair)
         }
     } else if libcrux_platform::simd128_support() {
         generate_keypair_compressed_neon::<
             K,
+            K_SQUARED,
             PK2_LEN,
             CPA_PRIVATE_KEY_SIZE,
             PRIVATE_KEY_SIZE,
@@ -410,11 +455,13 @@ pub(crate) fn generate_keypair_compressed<
             BYTES_PER_RING_ELEMENT,
             ETA1,
             ETA1_RANDOMNESS_SIZE,
+            PRF_OUTPUT_SIZE1,
             KEYPAIR_LEN,
         >(randomness, key_pair)
     } else {
         portable::generate_keypair_compressed::<
             K,
+            K_SQUARED,
             PK2_LEN,
             CPA_PRIVATE_KEY_SIZE,
             PRIVATE_KEY_SIZE,
@@ -422,6 +469,7 @@ pub(crate) fn generate_keypair_compressed<
             BYTES_PER_RING_ELEMENT,
             ETA1,
             ETA1_RANDOMNESS_SIZE,
+            PRF_OUTPUT_SIZE1,
             KEYPAIR_LEN,
         >(randomness, key_pair)
     }
@@ -466,6 +514,7 @@ pub(crate) fn validate_pk_bytes<const K: usize, const PK_LEN: usize>(
 #[inline(always)]
 pub(crate) fn encapsulate1<
     const K: usize,
+    const K_SQUARED: usize,
     const CIPHERTEXT_SIZE: usize,
     const C1_SIZE: usize,
     const VECTOR_U_COMPRESSION_FACTOR: usize,
@@ -474,6 +523,8 @@ pub(crate) fn encapsulate1<
     const ETA1_RANDOMNESS_SIZE: usize,
     const ETA2: usize,
     const ETA2_RANDOMNESS_SIZE: usize,
+    const PRF_OUTPUT_SIZE1: usize,
+    const PRF_OUTPUT_SIZE2: usize,
 >(
     public_key_part: &PublicKey1,
     randomness: [u8; SHARED_SECRET_SIZE],
@@ -486,6 +537,7 @@ pub(crate) fn encapsulate1<
         unsafe {
             encapsulate1_serialized_avx2::<
                 K,
+                K_SQUARED,
                 CIPHERTEXT_SIZE,
                 C1_SIZE,
                 VECTOR_U_COMPRESSION_FACTOR,
@@ -494,11 +546,14 @@ pub(crate) fn encapsulate1<
                 ETA1_RANDOMNESS_SIZE,
                 ETA2,
                 ETA2_RANDOMNESS_SIZE,
+                PRF_OUTPUT_SIZE1,
+                PRF_OUTPUT_SIZE2,
             >(public_key_part, randomness, state, shared_secret)
         }
     } else if libcrux_platform::simd128_support() {
         encapsulate1_serialized_neon::<
             K,
+            K_SQUARED,
             CIPHERTEXT_SIZE,
             C1_SIZE,
             VECTOR_U_COMPRESSION_FACTOR,
@@ -507,10 +562,13 @@ pub(crate) fn encapsulate1<
             ETA1_RANDOMNESS_SIZE,
             ETA2,
             ETA2_RANDOMNESS_SIZE,
+            PRF_OUTPUT_SIZE1,
+            PRF_OUTPUT_SIZE2,
         >(public_key_part, randomness, state, shared_secret)
     } else {
         portable::encapsulate1_serialized::<
             K,
+            K_SQUARED,
             CIPHERTEXT_SIZE,
             C1_SIZE,
             VECTOR_U_COMPRESSION_FACTOR,
@@ -519,6 +577,8 @@ pub(crate) fn encapsulate1<
             ETA1_RANDOMNESS_SIZE,
             ETA2,
             ETA2_RANDOMNESS_SIZE,
+            PRF_OUTPUT_SIZE1,
+            PRF_OUTPUT_SIZE2,
         >(public_key_part, randomness, state, shared_secret)
     }
 }
@@ -568,6 +628,7 @@ pub(crate) fn encapsulate2<
 #[inline(always)]
 pub(crate) fn decapsulate<
     const K: usize,
+    const K_SQUARED: usize,
     const PK2_LEN: usize,
     const SECRET_KEY_SIZE: usize,
     const CPA_SECRET_KEY_SIZE: usize,
@@ -583,6 +644,8 @@ pub(crate) fn decapsulate<
     const ETA1_RANDOMNESS_SIZE: usize,
     const ETA2: usize,
     const ETA2_RANDOMNESS_SIZE: usize,
+    const PRF_OUTPUT_SIZE1: usize,
+    const PRF_OUTPUT_SIZE2: usize,
     const IMPLICIT_REJECTION_HASH_INPUT_SIZE: usize,
 >(
     private_key: &[u8],
@@ -595,6 +658,7 @@ pub(crate) fn decapsulate<
         unsafe {
             decapsulate_incremental_key_avx2::<
                 K,
+                K_SQUARED,
                 PK2_LEN,
                 SECRET_KEY_SIZE,
                 CPA_SECRET_KEY_SIZE,
@@ -610,12 +674,15 @@ pub(crate) fn decapsulate<
                 ETA1_RANDOMNESS_SIZE,
                 ETA2,
                 ETA2_RANDOMNESS_SIZE,
+                PRF_OUTPUT_SIZE1,
+                PRF_OUTPUT_SIZE2,
                 IMPLICIT_REJECTION_HASH_INPUT_SIZE,
             >(private_key, ciphertext1, ciphertext2)
         }
     } else if libcrux_platform::simd128_support() {
         decapsulate_incremental_key_neon::<
             K,
+            K_SQUARED,
             PK2_LEN,
             SECRET_KEY_SIZE,
             CPA_SECRET_KEY_SIZE,
@@ -631,11 +698,14 @@ pub(crate) fn decapsulate<
             ETA1_RANDOMNESS_SIZE,
             ETA2,
             ETA2_RANDOMNESS_SIZE,
+            PRF_OUTPUT_SIZE1,
+            PRF_OUTPUT_SIZE2,
             IMPLICIT_REJECTION_HASH_INPUT_SIZE,
         >(private_key, ciphertext1, ciphertext2)
     } else {
         portable::decapsulate_incremental_key::<
             K,
+            K_SQUARED,
             PK2_LEN,
             SECRET_KEY_SIZE,
             CPA_SECRET_KEY_SIZE,
@@ -651,6 +721,8 @@ pub(crate) fn decapsulate<
             ETA1_RANDOMNESS_SIZE,
             ETA2,
             ETA2_RANDOMNESS_SIZE,
+            PRF_OUTPUT_SIZE1,
+            PRF_OUTPUT_SIZE2,
             IMPLICIT_REJECTION_HASH_INPUT_SIZE,
         >(private_key, ciphertext1, ciphertext2)
     }
@@ -659,6 +731,7 @@ pub(crate) fn decapsulate<
 #[inline(always)]
 pub(crate) fn decapsulate_compressed<
     const K: usize,
+    const K_SQUARED: usize,
     const PK2_LEN: usize,
     const SECRET_KEY_SIZE: usize,
     const CPA_SECRET_KEY_SIZE: usize,
@@ -674,6 +747,8 @@ pub(crate) fn decapsulate_compressed<
     const ETA1_RANDOMNESS_SIZE: usize,
     const ETA2: usize,
     const ETA2_RANDOMNESS_SIZE: usize,
+    const PRF_OUTPUT_SIZE1: usize,
+    const PRF_OUTPUT_SIZE2: usize,
     const IMPLICIT_REJECTION_HASH_INPUT_SIZE: usize,
 >(
     private_key: &[u8; SECRET_KEY_SIZE],
@@ -686,6 +761,7 @@ pub(crate) fn decapsulate_compressed<
         unsafe {
             decapsulate_compressed_key_avx2::<
                 K,
+                K_SQUARED,
                 PK2_LEN,
                 SECRET_KEY_SIZE,
                 CPA_SECRET_KEY_SIZE,
@@ -701,12 +777,15 @@ pub(crate) fn decapsulate_compressed<
                 ETA1_RANDOMNESS_SIZE,
                 ETA2,
                 ETA2_RANDOMNESS_SIZE,
+                PRF_OUTPUT_SIZE1,
+                PRF_OUTPUT_SIZE2,
                 IMPLICIT_REJECTION_HASH_INPUT_SIZE,
             >(private_key, ciphertext1, ciphertext2)
         }
     } else if libcrux_platform::simd128_support() {
         decapsulate_compressed_key_neon::<
             K,
+            K_SQUARED,
             PK2_LEN,
             SECRET_KEY_SIZE,
             CPA_SECRET_KEY_SIZE,
@@ -722,11 +801,14 @@ pub(crate) fn decapsulate_compressed<
             ETA1_RANDOMNESS_SIZE,
             ETA2,
             ETA2_RANDOMNESS_SIZE,
+            PRF_OUTPUT_SIZE1,
+            PRF_OUTPUT_SIZE2,
             IMPLICIT_REJECTION_HASH_INPUT_SIZE,
         >(private_key, ciphertext1, ciphertext2)
     } else {
         portable::decapsulate_compressed_key::<
             K,
+            K_SQUARED,
             PK2_LEN,
             SECRET_KEY_SIZE,
             CPA_SECRET_KEY_SIZE,
@@ -742,6 +824,8 @@ pub(crate) fn decapsulate_compressed<
             ETA1_RANDOMNESS_SIZE,
             ETA2,
             ETA2_RANDOMNESS_SIZE,
+            PRF_OUTPUT_SIZE1,
+            PRF_OUTPUT_SIZE2,
             IMPLICIT_REJECTION_HASH_INPUT_SIZE,
         >(private_key, ciphertext1, ciphertext2)
     }
