@@ -42,6 +42,7 @@ while [ $# -gt 0 ]; do
         --out) out="$2"; shift ;;
         --glue) glue="$2"; shift ;;
         --mlkem768) features="${features} --cargo-arg=--no-default-features --cargo-arg=--features=mlkem768" ;;
+        --moz) features="${features} --cargo-arg=--no-default-features --cargo-arg=--features=mlkem768 --cargo-arg=--features=mlkem1024" ;;
         --kyber768) features="${features} --cargo-arg=--features=kyber" ;;
         --no-glue) eurydice_glue=0 ;;
         --no-karamel_include) karamel_include=0 ;;

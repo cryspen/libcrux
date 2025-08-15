@@ -50,21 +50,6 @@ file(GLOB SOURCES
     ${PROJECT_SOURCE_DIR}/libcrux_mlkem768_portable.c
     ${PROJECT_SOURCE_DIR}/libcrux_mlkem1024_portable.c
 )
-file(GLOB SOURCES_vec128
-    ${PROJECT_SOURCE_DIR}/libcrux_mlkem_neon.c
-    ${PROJECT_SOURCE_DIR}/libcrux_mlkem512_neon.c
-    ${PROJECT_SOURCE_DIR}/libcrux_mlkem768_neon.c
-    ${PROJECT_SOURCE_DIR}/libcrux_mlkem1024_neon.c
-    ${PROJECT_SOURCE_DIR}/libcrux_sha3_neon.c
-)
-file(GLOB SOURCES_vec256
-    ${PROJECT_SOURCE_DIR}/libcrux_mlkem_avx2.c
-    ${PROJECT_SOURCE_DIR}/libcrux_mlkem512_avx2.c
-    ${PROJECT_SOURCE_DIR}/libcrux_mlkem768_avx2.c
-    ${PROJECT_SOURCE_DIR}/libcrux_mlkem1024_avx2.c
-    ${PROJECT_SOURCE_DIR}/libcrux_sha3_avx2.c
-)
-
 if(${CMAKE_SYSTEM_NAME} MATCHES Linux)
     add_compile_options(
         -fPIC
@@ -113,41 +98,41 @@ if(DEFINED ENV{LIBCRUX_UNPACKED})
     add_compile_definitions(LIBCRUX_UNPACKED)
 endif(DEFINED ENV{LIBCRUX_UNPACKED})
 
-# Get gtests
-include(FetchContent)
-FetchContent_Declare(googletest
-    GIT_REPOSITORY https://github.com/google/googletest.git
-    GIT_TAG v1.16.0
-)
+# # Get gtests
+# include(FetchContent)
+# FetchContent_Declare(googletest
+#     GIT_REPOSITORY https://github.com/google/googletest.git
+#     GIT_TAG v1.16.0
+# )
 
-# For Windows: Prevent overriding the parent project's compiler/linker settings
-set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
-FetchContent_MakeAvailable(googletest)
+# # For Windows: Prevent overriding the parent project's compiler/linker settings
+# set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+# FetchContent_MakeAvailable(googletest)
 
-# Get nlohmann json
-FetchContent_Declare(json
-    GIT_REPOSITORY https://github.com/nlohmann/json.git
-    GIT_TAG v3.11.3
-)
-FetchContent_MakeAvailable(json)
+# # Get nlohmann json
+# FetchContent_Declare(json
+#     GIT_REPOSITORY https://github.com/nlohmann/json.git
+#     GIT_TAG v3.11.3
+# )
+# FetchContent_MakeAvailable(json)
 
-add_executable(ml_kem_test
-    ${PROJECT_SOURCE_DIR}/tests/mlkem768.cc
-)
-target_link_libraries(ml_kem_test PRIVATE
-    ml_kem_static
-    gtest_main
-    nlohmann_json::nlohmann_json
-)
+# add_executable(ml_kem_test
+#     ${PROJECT_SOURCE_DIR}/tests/mlkem768.cc
+# )
+# target_link_libraries(ml_kem_test PRIVATE
+#     ml_kem_static
+#     gtest_main
+#     nlohmann_json::nlohmann_json
+# )
 
-add_executable(sha3_test
-    ${PROJECT_SOURCE_DIR}/tests/sha3.cc
-)
-target_link_libraries(sha3_test PRIVATE
-    ml_kem_static
-    gtest_main
-    nlohmann_json::nlohmann_json
-)
+# add_executable(sha3_test
+#     ${PROJECT_SOURCE_DIR}/tests/sha3.cc
+# )
+# target_link_libraries(sha3_test PRIVATE
+#     ml_kem_static
+#     gtest_main
+#     nlohmann_json::nlohmann_json
+# )
 
 # --- Benchmarks
 if(DEFINED ENV{LIBCRUX_BENCHMARKS})
