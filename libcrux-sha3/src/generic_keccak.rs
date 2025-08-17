@@ -196,6 +196,7 @@ impl<const N: usize, T: KeccakItem<N>> KeccakState<N, T> {
     }
 
     #[inline(always)]
+    #[hax_lib::requires(fstar!("i1.f_load_block_pre v_RATE self blocks start"))]
     fn absorb_block<const RATE: usize>(&mut self, blocks: &[&[u8]; N], start: usize)
     where
         Self: Absorb<N>,
@@ -208,6 +209,7 @@ impl<const N: usize, T: KeccakItem<N>> KeccakState<N, T> {
     }
 
     #[inline(always)]
+    #[hax_lib::requires(fstar!("i1.f_load_last_pre v_RATE v_DELIM self last start len"))]
     pub(crate) fn absorb_final<const RATE: usize, const DELIM: u8>(
         &mut self,
         last: &[&[u8]; N],

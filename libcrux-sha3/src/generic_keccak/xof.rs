@@ -133,31 +133,32 @@ impl<const PARALLEL_LANES: usize, const RATE: usize, STATE: KeccakItem<PARALLEL_
     // Note: consciously not inlining this function to avoid using too much stack
     // #[hax_lib::fstar::options("--fuel 5")]
     #[hax_lib::requires(
-        PARALLEL_LANES > 0 && 
-        self.buf_len <= RATE && 
-        RATE < usize::MAX
+        PARALLEL_LANES == 1 && // TODO: Generalize for the parallel case
+        self.buf_len <= RATE &&
+        self.buf_len <= usize::MAX - inputs[0].len() &&
+        self.buf_len <= usize::MAX - RATE
     )]
     pub(crate) fn fill_buffer(&mut self, inputs: &[&[u8]; PARALLEL_LANES]) -> usize {
         let input_len = inputs[0].len();
 
-        // Nothing buffered, buffer full, or no input
-        if self.buf_len == 0 || self.buf_len >= RATE || input_len == 0 {
-            return 0;
-        }
+        // Check if we have enough data when combining the internal buffer and the input.
+        if self.buf_len > 0 && self.buf_len + input_len >= RATE {
+            let consumed = RATE - self.buf_len;
 
-        // Remaining space to complete a full block
-        let need = RATE - self.buf_len;
-        if input_len < need {
-            return 0;
-        }
+            #[cfg(hax)]
+            let start = self.buf_len; // ghost variable for F* proof
 
-        let end = RATE; // buf_len + need == RATE
-        #[allow(clippy::needless_range_loop)]
-        for i in 0..PARALLEL_LANES {
-            self.buf[i][self.buf_len..end].copy_from_slice(&inputs[i][..need]);
+            #[allow(clippy::needless_range_loop)]
+            for i in 0..PARALLEL_LANES {
+                hax_lib::loop_invariant!(|_: usize| { self.buf_len == start });
+                self.buf[i][self.buf_len..].copy_from_slice(&inputs[i][..consumed]);
+            }
+
+            self.buf_len += consumed;
+            consumed
+        } else {
+            0
         }
-        self.buf_len = end;
-        need
     }
 
     /// Absorb a final block.
