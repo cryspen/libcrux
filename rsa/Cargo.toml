@@ -12,6 +12,7 @@ repository.workspace = true
 
 [features]
 expose-hacl = []
+check-secret-independence = ["libcrux-secrets/check-secret-independence"]
 
 [dependencies]
 libcrux-hacl-rs = { version = "=0.0.3", path = "../hacl-rs/" }
