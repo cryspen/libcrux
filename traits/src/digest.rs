@@ -4,6 +4,9 @@ pub mod arrayref;
 pub mod owned;
 pub mod slice;
 
+#[cfg(feature = "generic-tests")]
+pub mod tests;
+
 /// Error indicating that updating the digest state failed.
 #[derive(Debug, PartialEq)]
 pub enum UpdateError {
