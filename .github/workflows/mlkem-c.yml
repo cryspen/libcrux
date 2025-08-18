@@ -20,7 +20,7 @@ jobs:
     if: ${{ github.event_name != 'pull_request' }}
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: dorny/paths-filter@v3
         id: changes
         with:
@@ -62,7 +62,7 @@ jobs:
         working-directory: libcrux-ml-kem
         shell: bash
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Extract C++
         run: |
@@ -106,7 +106,7 @@ jobs:
           name: c-extraction-ml-kem
           path: ~/mlkem-c-extraction
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Diff Extraction C++
         run: |
