@@ -49,8 +49,7 @@ impl<'a, const LEN: usize> alloc::fmt::Debug for PrivateKeyBorrow<'a, LEN> {
     }
 }
 
-// TODO: `From` trait, or different method?
-// TODO: implement these only as certain key lengths?
+// NOTE: implemented for all values of LEN
 impl<'a, const LEN: usize> From<&'a PublicKey<LEN>> for PublicKeyBorrow<'a, LEN> {
     #[inline(always)]
     fn from(pk: &'a PublicKey<LEN>) -> PublicKeyBorrow<'a, LEN> {
