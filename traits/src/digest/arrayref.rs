@@ -9,6 +9,22 @@ pub enum HashError {
     InvalidPayloadLength,
 }
 
+impl core::fmt::Display for HashError {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        let text = match self {
+            HashError::InvalidPayloadLength => "the length of the provided payload is invalid",
+        };
+
+        f.write_str(text)
+    }
+}
+
+#[cfg(feature = "error-in-core")]
+mod error_in_core {
+
+    impl core::error::Error for super::HashError {}
+}
+
 /// A trait for incremental hashing, where the output is written into a provided buffer.
 pub trait DigestIncremental<const OUTPUT_LEN: usize>: super::DigestIncrementalBase {
     /// Writes the digest into `digest`.

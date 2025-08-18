@@ -18,6 +18,24 @@ pub enum UpdateError {
     Unknown,
 }
 
+impl core::fmt::Display for UpdateError {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        let text = match self {
+            UpdateError::InvalidPayloadLength => "the length of the provided payload is invalid",
+            UpdateError::MaximumLengthExceeded => "the maximum input length is exceeded",
+            UpdateError::Unknown => "indicates an unknown error",
+        };
+
+        f.write_str(text)
+    }
+}
+
+#[cfg(feature = "error-in-core")]
+mod error_in_core {
+
+    impl core::error::Error for super::UpdateError {}
+}
+
 /// Base trait for incremental functionality.
 ///
 /// Traits that are built on top of this trait:

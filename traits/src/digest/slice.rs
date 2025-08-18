@@ -26,6 +26,19 @@ pub enum FinishError {
     Unknown,
 }
 
+impl core::fmt::Display for FinishError {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        let text = match self {
+            FinishError::InvalidDigestLength => {
+                "the length of the provided digest buffer is invalid"
+            }
+            FinishError::Unknown => "indicates an unknown error",
+        };
+
+        f.write_str(text)
+    }
+}
+
 /// Error indicating that hashing failed.
 #[derive(Debug, PartialEq)]
 pub enum HashError {
@@ -33,6 +46,24 @@ pub enum HashError {
     InvalidDigestLength,
     /// The length of the provided payload is invalid.
     InvalidPayloadLength,
+}
+
+impl core::fmt::Display for HashError {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        let text = match self {
+            HashError::InvalidDigestLength => "the length of the provided digest buffer is invalid",
+            HashError::InvalidPayloadLength => "the length of the provided payload is invalid",
+        };
+
+        f.write_str(text)
+    }
+}
+
+#[cfg(feature = "error-in-core")]
+mod error_in_core {
+
+    impl core::error::Error for super::HashError {}
+    impl core::error::Error for super::FinishError {}
 }
 
 impl From<arrayref::HashError> for HashError {
