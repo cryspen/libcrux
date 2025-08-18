@@ -3,18 +3,6 @@ use super::impl_hacl::*;
 use libcrux_secrets::U8;
 use libcrux_traits::signature::{arrayref, owned, secrets, slice};
 
-#[cfg(feature = "check-secret-independence")]
-impl<'a> libcrux_secrets::Declassify for VarLenPrivateKey<'a, U8> {
-    type Declassified = VarLenPrivateKey<'a, u8>;
-    fn declassify(self) -> Self::Declassified {
-        use libcrux_secrets::DeclassifyRef;
-        VarLenPrivateKey {
-            pk: self.pk,
-            d: self.d.declassify_ref(),
-        }
-    }
-}
-
 // $bytes is vk_len, sk_len and sig_len
 macro_rules! impl_signature_trait {
     ($bits:literal, $bytes:literal, $digest_alg:ident, $alias:ident) => {
