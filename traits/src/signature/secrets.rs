@@ -2,8 +2,8 @@
 //! arguments and return results instead of writing to a mutable reference. Secret values use the
 //! types from [libcrux-secrets](libcrux_secrets).
 //!
-pub use super::owned::SignError;
 pub use super::arrayref::Verify;
+pub use super::owned::SignError;
 use libcrux_secrets::{DeclassifyRef, U8};
 
 /// A signer. This trait makes use of types suitable for checking secret independence.
