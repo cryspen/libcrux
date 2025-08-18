@@ -7,12 +7,12 @@ pub struct PublicKey<const LEN: usize> {
 }
 
 /// An RSA Private Key that is `LEN` bytes long.
-pub struct PrivateKey<const LEN: usize> {
+pub struct PrivateKey<const LEN: usize, PrivateKeyByte> {
     pub(crate) pk: PublicKey<LEN>,
-    pub(crate) d: [u8; LEN],
+    pub(crate) d: [PrivateKeyByte; LEN],
 }
 
-impl<const LEN: usize> alloc::fmt::Debug for PrivateKey<LEN> {
+impl<const LEN: usize, PrivateKeyByte> alloc::fmt::Debug for PrivateKey<LEN, PrivateKeyByte> {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         f.debug_struct("PrivateKey")
             .field("pk", &self.pk)
@@ -49,7 +49,7 @@ impl VarLenPublicKey<'_> {
         self.n
     }
 }
-impl alloc::fmt::Debug for VarLenPrivateKey<'_> {
+impl<PrivateKeyByte> alloc::fmt::Debug for VarLenPrivateKey<'_, PrivateKeyByte> {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         f.debug_struct("PrivateKey")
             .field("pk", &self.pk)
@@ -59,39 +59,47 @@ impl alloc::fmt::Debug for VarLenPrivateKey<'_> {
 }
 
 /// An RSA Private Key backed by slices. Use if the length is not known at compile time.
-pub struct VarLenPrivateKey<'a> {
+pub struct VarLenPrivateKey<'a, PrivateKeyByte> {
     pub(crate) pk: VarLenPublicKey<'a>,
-    pub(crate) d: &'a [u8],
+    pub(crate) d: &'a [PrivateKeyByte],
 }
 
-impl<'a> VarLenPrivateKey<'a> {
-    /// Constructor for the private key based on `n` and `d`.
-    pub fn from_components(n: &'a [u8], d: &'a [u8]) -> Result<Self, Error> {
-        if n.len() != d.len() {
-            return Err(Error::KeyLengthMismatch);
+macro_rules! impl_var_len_private_key {
+    ($sk_byte:ty) => {
+        impl<'a> VarLenPrivateKey<'a, $sk_byte> {
+            /// Constructor for the private key based on `n` and `d`.
+            pub fn from_components(n: &'a [u8], d: &'a [$sk_byte]) -> Result<Self, Error> {
+                if n.len() != d.len() {
+                    return Err(Error::KeyLengthMismatch);
+                }
+
+                Ok(Self {
+                    pk: n.try_into()?,
+                    d,
+                })
+            }
+
+            /// Returns the public key of the private key.
+            pub fn pk(&self) -> &VarLenPublicKey<'_> {
+                &self.pk
+            }
+
+            /// Returns the length of the keys
+            pub fn key_len(&self) -> usize {
+                self.d.len()
+            }
+
+            /// Returns the private exponent of the keys
+            pub fn d(&self) -> &[$sk_byte] {
+                self.d
+            }
         }
-
-        Ok(Self {
-            pk: n.try_into()?,
-            d,
-        })
-    }
-
-    /// Returns the public key of the private key.
-    pub fn pk(&self) -> &VarLenPublicKey<'_> {
-        &self.pk
-    }
-
-    /// Returns the length of the keys
-    pub fn key_len(&self) -> usize {
-        self.d.len()
-    }
-
-    /// Returns the private exponent of the keys
-    pub fn d(&self) -> &[u8] {
-        self.d
-    }
+    };
 }
+
+impl_var_len_private_key!(u8);
+#[cfg(feature = "check-secret-independence")]
+impl_var_len_private_key!(libcrux_secrets::U8);
 
 const E_BITS: u32 = 17;
 const E: [u8; 3] = [1, 0, 1];
@@ -104,9 +112,19 @@ fn hacl_hash_alg(alg: crate::DigestAlgorithm) -> libcrux_hacl_rs::streaming_type
     }
 }
 
+#[cfg(feature = "check-secret-independence")]
+impl<'a, const LEN: usize> libcrux_secrets::DeclassifyRef
+    for &'a PrivateKey<LEN, libcrux_secrets::U8>
+{
+    type DeclassifiedRef = &'a PrivateKey<LEN, u8>;
+    fn declassify_ref(self) -> Self::DeclassifiedRef {
+        unsafe { core::mem::transmute(self) }
+    }
+}
+
 // next up: generate these in macros
 
-macro_rules! impl_rsapss {
+macro_rules! impl_rsapss_base {
     ($sign_fn:ident, $verify_fn:ident, $bits:literal, $bytes:literal) => {
         impl From<[u8; $bytes]> for PublicKey<$bytes> {
             fn from(n: [u8; $bytes]) -> Self {
@@ -126,39 +144,8 @@ macro_rules! impl_rsapss {
             }
         }
 
-        impl PrivateKey<$bytes> {
-            /// Constructor for the private key based on `n` and `d`.
-            pub fn from_components(n: [u8; $bytes], d: [u8; $bytes]) -> Self {
-                Self { pk: n.into(), d }
-            }
-
-            /// Returns the public key of the private key.
-            pub fn pk(&self) -> &PublicKey<$bytes> {
-                &self.pk
-            }
-
-            /// Returns the slice-based private key
-            pub fn as_var_len(&self) -> VarLenPrivateKey<'_> {
-                VarLenPrivateKey {
-                    pk: self.pk.as_var_len(),
-                    d: &self.d,
-                }
-            }
-
-            /// Returns the private exponent as bytes.
-            pub fn d(&self) -> &[u8; $bytes] {
-                &self.d
-            }
-        }
-
         impl<'a> From<&'a PublicKey<$bytes>> for VarLenPublicKey<'a> {
             fn from(value: &'a PublicKey<$bytes>) -> Self {
-                value.as_var_len()
-            }
-        }
-
-        impl<'a> From<&'a PrivateKey<$bytes>> for VarLenPrivateKey<'a> {
-            fn from(value: &'a PrivateKey<$bytes>) -> Self {
                 value.as_var_len()
             }
         }
@@ -172,7 +159,7 @@ macro_rules! impl_rsapss {
         /// - `salt_len` exceeds `u32::MAX - alg.hash_len() - 8`
         pub fn $sign_fn(
             alg: crate::DigestAlgorithm,
-            sk: &PrivateKey<$bytes>,
+            sk: &PrivateKey<$bytes, u8>,
             msg: &[u8],
             salt: &[u8],
             sig: &mut [u8; $bytes],
@@ -199,11 +186,61 @@ macro_rules! impl_rsapss {
     };
 }
 
-impl_rsapss!(sign_2048, verify_2048, 2048, 256);
-impl_rsapss!(sign_3072, verify_3072, 3072, 384);
-impl_rsapss!(sign_4096, verify_4096, 4096, 512);
-impl_rsapss!(sign_6144, verify_6144, 6144, 768);
-impl_rsapss!(sign_8192, verify_8192, 8192, 1024);
+macro_rules! impl_rsapss_private {
+    ($sign_fn:ident, $verify_fn:ident, $bits:literal, $bytes:literal, $sk_byte:ty) => {
+        impl PrivateKey<$bytes, $sk_byte> {
+            /// Constructor for the private key based on `n` and `d`.
+            pub fn from_components(n: [u8; $bytes], d: [$sk_byte; $bytes]) -> Self {
+                Self { pk: n.into(), d }
+            }
+
+            /// Returns the public key of the private key.
+            pub fn pk(&self) -> &PublicKey<$bytes> {
+                &self.pk
+            }
+
+            /// Returns the slice-based private key
+            pub fn as_var_len(&self) -> VarLenPrivateKey<'_, $sk_byte> {
+                VarLenPrivateKey {
+                    pk: self.pk.as_var_len(),
+                    d: &self.d,
+                }
+            }
+
+            /// Returns the private exponent as bytes.
+            pub fn d(&self) -> &[$sk_byte; $bytes] {
+                &self.d
+            }
+        }
+
+        impl<'a> From<&'a PrivateKey<$bytes, $sk_byte>> for VarLenPrivateKey<'a, $sk_byte> {
+            fn from(value: &'a PrivateKey<$bytes, $sk_byte>) -> Self {
+                value.as_var_len()
+            }
+        }
+    };
+}
+
+impl_rsapss_base!(sign_2048, verify_2048, 2048, 256);
+impl_rsapss_base!(sign_3072, verify_3072, 3072, 384);
+impl_rsapss_base!(sign_4096, verify_4096, 4096, 512);
+impl_rsapss_base!(sign_6144, verify_6144, 6144, 768);
+impl_rsapss_base!(sign_8192, verify_8192, 8192, 1024);
+impl_rsapss_private!(sign_2048, verify_2048, 2048, 256, u8);
+impl_rsapss_private!(sign_3072, verify_3072, 3072, 384, u8);
+impl_rsapss_private!(sign_4096, verify_4096, 4096, 512, u8);
+impl_rsapss_private!(sign_6144, verify_6144, 6144, 768, u8);
+impl_rsapss_private!(sign_8192, verify_8192, 8192, 1024, u8);
+
+#[cfg(feature = "check-secret-independence")]
+mod secret_integer_impl {
+    use super::*;
+    impl_rsapss_private!(sign_2048, verify_2048, 2048, 256, libcrux_secrets::U8);
+    impl_rsapss_private!(sign_3072, verify_3072, 3072, 384, libcrux_secrets::U8);
+    impl_rsapss_private!(sign_4096, verify_4096, 4096, 512, libcrux_secrets::U8);
+    impl_rsapss_private!(sign_6144, verify_6144, 6144, 768, libcrux_secrets::U8);
+    impl_rsapss_private!(sign_8192, verify_8192, 8192, 1024, libcrux_secrets::U8);
+}
 
 /// Computes a signature over `msg` using `sk` and writes it to `sig`.
 /// Returns `Ok(())` on success.
@@ -215,7 +252,7 @@ impl_rsapss!(sign_8192, verify_8192, 8192, 1024);
 /// - the length of `sig` does not match the length of `sk`
 pub fn sign(
     alg: crate::DigestAlgorithm,
-    sk: &VarLenPrivateKey<'_>,
+    sk: &VarLenPrivateKey<'_, u8>,
     msg: &[u8],
     salt: &[u8],
     sig: &mut [u8],
@@ -270,7 +307,7 @@ pub fn verify(
 ///   - follows from the check that messages are shorter than `u32::MAX`.
 pub fn sign_varlen(
     alg: crate::DigestAlgorithm,
-    sk: &VarLenPrivateKey<'_>,
+    sk: &VarLenPrivateKey<'_, u8>,
     msg: &[u8],
     salt: &[u8],
     sig: &mut [u8],
