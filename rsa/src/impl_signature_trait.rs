@@ -1,5 +1,6 @@
 use super::impl_hacl::*;
 
+#[cfg(feature = "check-secret-independence")]
 use libcrux_secrets::{DeclassifyRef, U8};
 use libcrux_traits::signature::{arrayref, owned, secrets, slice};
 
@@ -15,13 +16,29 @@ pub struct PrivateKeyBorrow<'a, const LEN: usize> {
     d: &'a [u8; LEN],
 }
 
+#[cfg(feature = "check-secret-independence")]
+impl<'a, const LEN: usize> libcrux_secrets::Declassify for PrivateKeyBorrowClassified<'a, LEN> {
+    type Declassified = PrivateKeyBorrow<'a, LEN>;
+    fn declassify(self) -> Self::Declassified {
+        PrivateKeyBorrow {
+            pk: self.pk,
+            d: self.d.declassify_ref(),
+        }
+    }
+}
+
 /// An RSA Private Key that is `LEN` bytes long, backed by array references.
 /// the private key is represented using [`type@libcrux_secrets::U8`], as a `&'a [U8; LEN]`.
+#[cfg(feature = "check-secret-independence")]
 pub struct PrivateKeyBorrowClassified<'a, const LEN: usize> {
     pk: PublicKeyBorrow<'a, LEN>,
     d: &'a [U8; LEN],
 }
 
+#[cfg(not(feature = "check-secret-independence"))]
+pub type PrivateKeyBorrowClassified<'a, const LEN: usize> = PrivateKeyBorrow<'a, LEN>;
+
+#[cfg(feature = "check-secret-independence")]
 impl<'a, const LEN: usize> PrivateKeyBorrowClassified<'a, LEN> {
     /// Constructor for the private key based on `n` and `d`.
     pub fn from_components(n: &'a [u8; LEN], d: &'a [U8; LEN]) -> Self {
@@ -31,6 +48,8 @@ impl<'a, const LEN: usize> PrivateKeyBorrowClassified<'a, LEN> {
         }
     }
 }
+
+#[cfg(feature = "check-secret-independence")]
 impl<'a, const LEN: usize> alloc::fmt::Debug for PrivateKeyBorrowClassified<'a, LEN> {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         f.debug_struct("PrivateKey")
@@ -194,14 +213,13 @@ macro_rules! impl_signature_trait {
 
             ) -> Result<[u8; $bytes], secrets::SignError> {
 
+                use libcrux_secrets::Declassify;
+
                 // XXX: This transformation is not done by implementing
                 // `libcrux_secrets::Classify` for the key, because the implementation would conflict
                 // with the existing `impl<T> Classify for T` in
                 // libcrux_secrets::int::public_integers.
-                let declassified = PrivateKeyBorrow {
-                    pk: signing_key.pk,
-                    d: signing_key.d.declassify_ref(),
-                };
+                let declassified = signing_key.declassify();
 
                 <Self as owned::Sign<$bytes, $bytes>>::sign(payload, declassified, salt)
             }
