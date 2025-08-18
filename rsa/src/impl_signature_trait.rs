@@ -1,104 +1,16 @@
 use super::impl_hacl::*;
 
-#[cfg(feature = "check-secret-independence")]
-use libcrux_secrets::{DeclassifyRef, U8};
+use libcrux_secrets::U8;
 use libcrux_traits::signature::{arrayref, owned, secrets, slice};
 
-/// An RSA Public Key that is `LEN` bytes long, backed by array references.
-#[derive(Debug, Clone)]
-pub struct PublicKeyBorrow<'a, const LEN: usize> {
-    n: &'a [u8; LEN],
-}
-
-/// An RSA Private Key that is `LEN` bytes long, backed by array references.
-pub struct PrivateKeyBorrow<'a, const LEN: usize> {
-    pk: PublicKeyBorrow<'a, LEN>,
-    d: &'a [u8; LEN],
-}
-
 #[cfg(feature = "check-secret-independence")]
-impl<'a, const LEN: usize> libcrux_secrets::Declassify for PrivateKeyBorrowClassified<'a, LEN> {
-    type Declassified = PrivateKeyBorrow<'a, LEN>;
+impl<'a> libcrux_secrets::Declassify for VarLenPrivateKey<'a, U8> {
+    type Declassified = VarLenPrivateKey<'a, u8>;
     fn declassify(self) -> Self::Declassified {
-        PrivateKeyBorrow {
+        use libcrux_secrets::DeclassifyRef;
+        VarLenPrivateKey {
             pk: self.pk,
             d: self.d.declassify_ref(),
-        }
-    }
-}
-
-/// An RSA Private Key that is `LEN` bytes long, backed by array references.
-/// the private key is represented using [`type@libcrux_secrets::U8`], as a `&'a [U8; LEN]`.
-#[cfg(feature = "check-secret-independence")]
-pub struct PrivateKeyBorrowClassified<'a, const LEN: usize> {
-    pk: PublicKeyBorrow<'a, LEN>,
-    d: &'a [U8; LEN],
-}
-
-#[cfg(not(feature = "check-secret-independence"))]
-pub type PrivateKeyBorrowClassified<'a, const LEN: usize> = PrivateKeyBorrow<'a, LEN>;
-
-#[cfg(feature = "check-secret-independence")]
-impl<'a, const LEN: usize> PrivateKeyBorrowClassified<'a, LEN> {
-    /// Constructor for the private key based on `n` and `d`.
-    pub fn from_components(n: &'a [u8; LEN], d: &'a [U8; LEN]) -> Self {
-        Self {
-            pk: PublicKeyBorrow { n },
-            d,
-        }
-    }
-}
-
-#[cfg(feature = "check-secret-independence")]
-impl<'a, const LEN: usize> alloc::fmt::Debug for PrivateKeyBorrowClassified<'a, LEN> {
-    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
-        f.debug_struct("PrivateKey")
-            .field("pk", &self.pk)
-            .field("d", &"****")
-            .finish()
-    }
-}
-
-impl<'a, const LEN: usize> alloc::fmt::Debug for PrivateKeyBorrow<'a, LEN> {
-    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
-        f.debug_struct("PrivateKey")
-            .field("pk", &self.pk)
-            .field("d", &"****")
-            .finish()
-    }
-}
-
-// NOTE: implemented for all values of LEN
-impl<'a, const LEN: usize> From<&'a PublicKey<LEN>> for PublicKeyBorrow<'a, LEN> {
-    #[inline(always)]
-    fn from(pk: &'a PublicKey<LEN>) -> PublicKeyBorrow<'a, LEN> {
-        PublicKeyBorrow { n: &pk.n }
-    }
-}
-impl<'a, const LEN: usize> From<&'a PrivateKey<LEN>> for PrivateKeyBorrow<'a, LEN> {
-    #[inline(always)]
-    fn from(sk: &'a PrivateKey<LEN>) -> PrivateKeyBorrow<'a, LEN> {
-        PrivateKeyBorrow {
-            pk: (&sk.pk).into(),
-            d: &sk.d,
-        }
-    }
-}
-impl<'a, const LEN: usize> PublicKeyBorrow<'a, LEN> {
-    #[inline(always)]
-    /// Returns the slice-based public key
-    pub fn as_var_len(&'a self) -> VarLenPublicKey<'a> {
-        VarLenPublicKey { n: self.n.as_ref() }
-    }
-}
-
-impl<'a, const LEN: usize> PrivateKeyBorrow<'a, LEN> {
-    #[inline(always)]
-    /// Returns the slice-based private key
-    pub fn as_var_len(&'a self) -> VarLenPrivateKey<'a> {
-        VarLenPrivateKey {
-            pk: self.pk.as_var_len(),
-            d: self.d.as_ref(),
         }
     }
 }
@@ -119,11 +31,11 @@ macro_rules! impl_signature_trait {
 
             /// The salt, provided as a `&'a [u8]`.
             type SignAux<'a> = &'a [u8];
-            type SigningKey<'a, const LEN: usize> = PrivateKeyBorrow<'a, LEN>;
+            type SigningKey<'a, const LEN: usize> = &'a PrivateKey<LEN, u8>;
             /// Sign a payload using a provided signing key and `salt`.
             fn sign(
                 payload: &[u8],
-                signing_key: PrivateKeyBorrow<'_, $bytes>,
+                signing_key: &PrivateKey<$bytes, u8>,
                 signature: &mut [u8; $bytes],
                 salt: &[u8],
             ) -> Result<(), arrayref::SignError> {
@@ -174,11 +86,11 @@ macro_rules! impl_signature_trait {
 
             /// The salt, provided as a `&'a [u8]`.
             type SignAux<'a> = &'a [u8];
-            type SigningKey<'a> = VarLenPrivateKey<'a>;
+            type SigningKey<'a> = VarLenPrivateKey<'a, u8>;
             /// Sign a payload using a provided signing key and `salt`.
             fn sign(
                 payload: &[u8],
-                signing_key: VarLenPrivateKey<'_>,
+                signing_key: VarLenPrivateKey<'_, u8>,
                 signature: &mut [u8],
                 salt: &[u8],
             ) -> Result<(), slice::SignError> {
@@ -203,21 +115,20 @@ macro_rules! impl_signature_trait {
         impl secrets::Sign<$bytes, $bytes> for $alias {
             /// The salt, provided as a `&'a [u8]`.
             type SignAux<'a> = &'a [u8];
-            type SigningKey<'a, const LEN: usize> = PrivateKeyBorrowClassified<'a, $bytes>;
+            type SigningKey<'a, const LEN: usize> = &'a PrivateKey<$bytes, U8>;
 
             /// Sign a payload using a provided signing key and `salt`.
             fn sign(
                 payload: &[u8],
-                signing_key: PrivateKeyBorrowClassified<'_, $bytes>,
+                signing_key: &PrivateKey<$bytes, U8>,
                 salt: &[u8],
 
             ) -> Result<[u8; $bytes], secrets::SignError> {
 
-                use libcrux_secrets::Declassify;
+                use libcrux_secrets::DeclassifyRef;
 
-                let declassified = signing_key.declassify();
+                <Self as owned::Sign<_, _>>::sign(payload, signing_key.declassify_ref(), salt)
 
-                <Self as owned::Sign<$bytes, $bytes>>::sign(payload, declassified, salt)
             }
 
         }
