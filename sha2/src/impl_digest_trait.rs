@@ -27,6 +27,9 @@ macro_rules! impl_hash {
             #[inline(always)]
             fn hash(digest: &mut [u8; $digest_size], payload: &[u8]) -> Result<(), arrayref::HashError> {
 
+                if payload.len() > u32::MAX as usize {
+                    return Err(arrayref::HashError::InvalidPayloadLength);
+                }
                 <$state_name>::hash(digest, payload);
 
                 Ok(())
@@ -42,6 +45,9 @@ macro_rules! impl_hash {
             #[inline(always)]
             fn update(state: &mut Self::IncrementalState, payload: &[u8])
             -> Result<(), UpdateError> {
+                if payload.len() > u32::MAX as usize {
+                    return Err(UpdateError::InvalidPayloadLength);
+                }
                 state.update(payload);
                 Ok(())
             }
