@@ -9,7 +9,7 @@ pub enum HashError {
     InvalidPayloadLength,
 }
 
-pub trait DigestIncremental<const OUTPUT_LEN: usize>: super::DigestBase {
+pub trait DigestIncremental<const OUTPUT_LEN: usize>: super::DigestIncrementalBase {
     /// Writes the digest into `digest`.
     ///
     /// Note that the digest state can be continued to be used, to extend the digest.

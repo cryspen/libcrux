@@ -1,9 +1,9 @@
 use crate::impl_hacl::*;
-use libcrux_traits::digest::{arrayref, slice, DigestBase, Hasher, UpdateError};
+use libcrux_traits::digest::{arrayref, slice, DigestIncrementalBase, Hasher, UpdateError};
 
 macro_rules! impl_digest_traits {
     ($out_size:ident, $type:ty, $blake2:ty, $hasher:ty) => {
-        impl<const $out_size: usize> DigestBase for $type {
+        impl<const $out_size: usize> DigestIncrementalBase for $type {
             type IncrementalState = $blake2;
 
             fn update(state: &mut Self::IncrementalState, chunk: &[u8]) -> Result<(), UpdateError> {

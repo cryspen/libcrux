@@ -11,7 +11,7 @@ pub trait Hash<const OUTPUT_LEN: usize> {
     fn hash(payload: &[u8]) -> Result<[u8; OUTPUT_LEN], HashError>;
 }
 
-pub trait DigestIncremental<const OUTPUT_LEN: usize>: super::DigestBase {
+pub trait DigestIncremental<const OUTPUT_LEN: usize>: super::DigestIncrementalBase {
     /// Returns the digest as an array.
     ///
     /// Note that the digest state can be continued to be used, to extend the digest.

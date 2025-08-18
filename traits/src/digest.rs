@@ -15,14 +15,13 @@ pub enum UpdateError {
     Unknown,
 }
 
-// TODO: rename to `DigestIncrementalBase`
 /// Base trait for incremental functionality.
 ///
 /// Traits that are built on top of this trait:
 /// - [`slice::DigestIncremental`]
 /// - [`arrayref::DigestIncremental`]
 /// - [`owned::DigestIncremental`]
-pub trait DigestBase {
+pub trait DigestIncrementalBase {
     /// The digest state.
     type IncrementalState;
     /// Reset the digest state.
@@ -33,7 +32,7 @@ pub trait DigestBase {
 
 #[derive(Clone)]
 /// A hasher that maintains the incremental state.
-pub struct Hasher<const N: usize, D: DigestBase> {
+pub struct Hasher<const N: usize, D: DigestIncrementalBase> {
     pub state: D::IncrementalState,
 }
 
@@ -48,7 +47,7 @@ where
     }
 }
 
-impl<const N: usize, D: DigestBase + slice::Hash> Hasher<N, D> {
+impl<const N: usize, D: DigestIncrementalBase + slice::Hash> Hasher<N, D> {
     /// Oneshot API. Hash into a digest buffer, provided as a `&mut [u8]` slice.
     pub fn hash_slice(digest: &mut [u8], payload: &[u8]) -> Result<usize, slice::HashError> {
         D::hash(digest, payload)
@@ -62,7 +61,7 @@ impl<const N: usize, D: slice::DigestIncremental> Hasher<N, D> {
     }
 }
 
-impl<const N: usize, D: DigestBase> Hasher<N, D> {
+impl<const N: usize, D: DigestIncrementalBase> Hasher<N, D> {
     /// Update the digest state with the `payload`.
     pub fn update(&mut self, payload: &[u8]) -> Result<(), UpdateError> {
         D::update(&mut self.state, payload)
@@ -84,7 +83,7 @@ impl<const N: usize, D: arrayref::DigestIncremental<N>> Hasher<N, D> {
     }
 }
 
-impl<const N: usize, D: DigestBase + arrayref::Hash<N>> Hasher<N, D> {
+impl<const N: usize, D: DigestIncrementalBase + arrayref::Hash<N>> Hasher<N, D> {
     /// Oneshot API. Hash into a digest buffer, provided as a `&mut [u8; N]` array reference.
     pub fn hash(digest: &mut [u8; N], payload: &[u8]) -> Result<(), arrayref::HashError> {
         D::hash(digest, payload)
