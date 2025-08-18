@@ -12,7 +12,7 @@ macro_rules! impl_hash {
 
         #[doc = concat!("A struct that implements [`libcrux_traits::digest`] traits.")]
         #[doc = concat!("\n\n")]
-        #[doc = concat!("[`",stringify!($hasher_name), "`] is a convenient hasher for this struct.")]
+        #[doc = concat!("[`",stringify!($hasher_name), "`] is a convenience hasher for this struct.")]
         #[allow(non_camel_case_types)]
         pub struct $name;
 
@@ -26,6 +26,7 @@ macro_rules! impl_hash {
             /// process it.
             #[inline(always)]
             fn hash(digest: &mut [u8; $digest_size], payload: &[u8]) -> Result<(), arrayref::HashError> {
+
                 <$state_name>::hash(digest, payload);
 
                 Ok(())
@@ -36,7 +37,7 @@ macro_rules! impl_hash {
         impl DigestIncrementalBase for $name {
             type IncrementalState = $state_name;
             /// Add the `payload` to the digest.
-            /// Will panic if `payload` is longer than `u32::MAX` to ensure that hacl-rs can
+            /// Will return an error if `payload` is longer than `u32::MAX` to ensure that hacl-rs can
             /// process it.
             #[inline(always)]
             fn update(state: &mut Self::IncrementalState, payload: &[u8])
@@ -52,11 +53,6 @@ macro_rules! impl_hash {
         }
         impl arrayref::DigestIncremental<$digest_size> for $name {
 
-
-            /// Get the digest.
-            ///
-            /// Note that the digest state can be continued to be used, to extend the
-            /// digest.
             #[inline(always)]
             fn finish(state: &mut Self::IncrementalState, digest: &mut [u8; $digest_size]) {
                 state.finish (digest);

@@ -31,8 +31,9 @@ pub trait DigestIncrementalBase {
 }
 
 #[derive(Clone)]
-/// A hasher that maintains the incremental state.
+/// A hasher that maintains the incremental digest state.
 pub struct Hasher<const N: usize, D: DigestIncrementalBase> {
+    /// The digest state.
     pub state: D::IncrementalState,
 }
 

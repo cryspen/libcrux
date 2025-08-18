@@ -49,7 +49,7 @@ macro_rules! impl_digest_traits {
 
 /// A struct that implements [`libcrux_traits::digest`] traits.
 ///
-/// [`Blake2bHasher`] is a convenient hasher for this struct.
+/// [`Blake2bHasher`] is a convenience hasher for this struct.
 pub struct Blake2bHash<const OUT_SIZE: usize>;
 
 impl_digest_traits!(
@@ -64,7 +64,7 @@ pub type Blake2bHasher<const OUT_SIZE: usize> = Hasher<OUT_SIZE, Blake2bHash<OUT
 
 /// A struct that implements [`libcrux_traits::digest`] traits.
 ///
-/// [`Blake2sHasher`] is a convenient hasher for this struct.
+/// [`Blake2sHasher`] is a convenience hasher for this struct.
 pub struct Blake2sHash<const OUT_SIZE: usize>;
 impl_digest_traits!(
     OUT_SIZE,
