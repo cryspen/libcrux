@@ -5,7 +5,6 @@
 pub use super::owned::SignError;
 use libcrux_secrets::{DeclassifyRef, U8};
 
-// TODO: declassify signing key
 /// A signer. This trait makes use of types suitable for checking secret independence.
 ///
 /// The `SignAux` type is auxiliary information required for signing.
