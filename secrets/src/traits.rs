@@ -138,21 +138,3 @@ impl Scalar for core::arch::aarch64::uint64x1_t {}
 
 #[cfg(target_arch = "aarch64")]
 impl Scalar for core::arch::aarch64::uint64x2_t {}
-
-/// Best effort constant time swapping of values.
-pub trait Swap {
-    /// Depending on `selector`, keep everything as is, or swap `self` and `other`.
-    ///
-    /// If `selector == 0`, the values are unchanged, otherwise swap.
-    fn cswap(&mut self, other: &mut Self, selector: u8);
-}
-
-/// Best effort constant time selection of values.
-pub trait Select {
-    /// Select `self` or `other`, depending on `selector`.
-    /// The selected value will be in `self`.
-    ///
-    /// If `selector != 0`, select `other`, otherwise
-    /// `self` is unchanged.
-    fn select(&mut self, other: &Self, selector: u8);
-}

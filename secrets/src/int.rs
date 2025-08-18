@@ -123,11 +123,31 @@ impl_cast_ops!(I64);
 #[cfg(not(eurydice))]
 impl_cast_ops!(I128);
 
+/// Best effort constant time swapping of values.
+pub trait Swap {
+    /// Depending on `selector`, keep everything as is, or swap `self` and `other`.
+    ///
+    /// If `selector == 0`, the values are unchanged, otherwise swap.
+    fn cswap(&mut self, other: &mut Self, selector: U8);
+}
+
+/// Best effort constant time selection of values.
+pub trait Select {
+    /// Select `self` or `other`, depending on `selector`.
+    /// The selected value will be in `self`.
+    ///
+    /// If `selector != 0`, select `other`, otherwise
+    /// `self` is unchanged.
+    fn select(&mut self, other: &Self, selector: U8);
+}
+
 #[cfg(not(any(target_arch = "aarch64")))]
 mod portable {
     use super::{Select, Swap};
+    use crate::traits::Declassify;
+    use crate::U8;
     #[cfg(feature = "check-secret-independence")]
-    use crate::{traits::*, U16, U32, U64, U8};
+    use crate::{traits::*, U16, U32, U64};
 
     // Don't inline this to avoid that the compiler optimizes this out.
     #[inline(never)]
@@ -146,8 +166,8 @@ mod portable {
     macro_rules! impl_select {
         ($ty:ty, $secret_ty:ty, $is_non_zero:ident) => {
             impl Select for [$ty] {
-                fn select(&mut self, other: &Self, selector: u8) {
-                    let mask = ($is_non_zero(selector) as $ty).wrapping_sub(1);
+                fn select(&mut self, other: &Self, selector: crate::U8) {
+                    let mask = ($is_non_zero(selector.declassify()) as $ty).wrapping_sub(1);
                     for i in 0..self.len() {
                         self[i] = (self[i] & mask) | (other[i] & !mask);
                     }
@@ -156,7 +176,7 @@ mod portable {
 
             #[cfg(feature = "check-secret-independence")]
             impl Select for [$secret_ty] {
-                fn select(&mut self, other: &Self, selector: u8) {
+                fn select(&mut self, other: &Self, selector: crate::U8) {
                     let lhs = self.declassify_ref_mut();
                     let rhs = other.declassify_ref();
                     lhs.select(rhs, selector);
@@ -202,20 +222,20 @@ mod portable {
         ($ty:ty, $secret_ty:ty, $swap:ident) => {
             impl Swap for [$ty] {
                 #[inline]
-                fn cswap(&mut self, other: &mut Self, selector: u8) {
+                fn cswap(&mut self, other: &mut Self, selector: U8) {
                     debug_assert_eq!(self.len(), other.len());
-                    $swap!($ty, self, other, selector);
+                    $swap!($ty, self, other, selector.declassify());
                 }
             }
 
             #[cfg(feature = "check-secret-independence")]
             impl Swap for [$secret_ty] {
                 #[inline]
-                fn cswap(&mut self, other: &mut Self, selector: u8) {
+                fn cswap(&mut self, other: &mut Self, selector: U8) {
                     debug_assert_eq!(self.len(), other.len());
                     let lhs = self.declassify_ref_mut();
                     let rhs = other.declassify_ref_mut();
-                    $swap!($ty, lhs, rhs, selector);
+                    $swap!($ty, lhs, rhs, selector.declassify());
                 }
             }
         };
@@ -275,15 +295,15 @@ mod aarch64 {
         ($ty:ty, $secret_ty:ty, $select: ident) => {
             impl Select for $ty {
                 #[inline]
-                fn select(&mut self, other: &Self, selector: u8) {
-                    $select!(self, other, selector);
+                fn select(&mut self, other: &Self, selector: U8) {
+                    $select!(self, other, selector.declassify());
                 }
             }
 
             #[cfg(feature = "check-secret-independence")]
             impl Select for $secret_ty {
                 #[inline]
-                fn select(&mut self, other: &Self, selector: u8) {
+                fn select(&mut self, other: &Self, selector: U8) {
                     let lhs = self.declassify_ref_mut();
                     let rhs = other.declassify_ref();
                     lhs.select(rhs, selector);
@@ -294,7 +314,7 @@ mod aarch64 {
 
     impl<T: Select> Select for [T] {
         #[inline]
-        fn select(&mut self, other: &Self, selector: u8) {
+        fn select(&mut self, other: &Self, selector: U8) {
             debug_assert_eq!(self.len(), other.len());
             for i in 0..self.len() {
                 (&mut self[i]).select(&other[i], selector);
@@ -355,15 +375,15 @@ mod aarch64 {
         ($ty:ty, $secret_ty:ty, $swap:ident) => {
             impl Swap for $ty {
                 #[inline]
-                fn cswap(&mut self, other: &mut Self, selector: u8) {
-                    $swap!(self, other, selector);
+                fn cswap(&mut self, other: &mut Self, selector: U8) {
+                    $swap!(self, other, selector.declassify());
                 }
             }
 
             #[cfg(feature = "check-secret-independence")]
             impl Swap for $secret_ty {
                 #[inline]
-                fn cswap(&mut self, other: &mut Self, selector: u8) {
+                fn cswap(&mut self, other: &mut Self, selector: U8) {
                     let lhs = self.declassify_ref_mut();
                     let rhs = other.declassify_ref_mut();
                     lhs.cswap(rhs, selector);
@@ -379,7 +399,7 @@ mod aarch64 {
 
     impl<T: Swap> Swap for [T] {
         #[inline]
-        fn cswap(&mut self, other: &mut Self, selector: u8) {
+        fn cswap(&mut self, other: &mut Self, selector: U8) {
             for i in 0..self.len() {
                 (&mut self[i]).cswap(&mut other[i], selector);
             }
@@ -413,7 +433,7 @@ mod select {
             rhs.clone()
         };
 
-        lhs.select(&rhs, selector);
+        lhs.select(&rhs, selector.classify());
 
         assert_eq!(
             lhs, expected,
@@ -457,7 +477,7 @@ mod select {
                 let mut lhs = lhs.classify();
                 let rhs = rhs.classify();
 
-                lhs.select(&rhs, selector);
+                lhs.select(&rhs, selector.classify());
 
                 assert_eq!(
                     lhs.declassify(),
@@ -507,7 +527,7 @@ mod swap {
             (rhs.clone(), lhs.clone())
         };
 
-        lhs.cswap(&mut rhs, selector);
+        lhs.cswap(&mut rhs, selector.classify());
 
         assert_eq!(lhs, expected_lhs, "\nlhs / selector: {}\n", selector);
         assert_eq!(rhs, expected_rhs, "\nrhs / selector: {}\n", selector);
@@ -548,7 +568,7 @@ mod swap {
 
                 let mut lhs = lhs.classify();
                 let mut rhs = rhs.classify();
-                lhs.cswap(&mut rhs, selector);
+                lhs.cswap(&mut rhs, selector.classify());
 
                 assert_eq!(
                     lhs.declassify(),
