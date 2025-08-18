@@ -321,24 +321,89 @@ fn run_wycheproof() {
 
 #[test]
 fn test_traits() {
-    use libcrux_traits::signature::{arrayref::Verify, owned::Sign};
-
     use libcrux_rsa::signers::digest_alg::*;
 
     let public_key = PublicKey::from(MODULUS);
     let private_key = PrivateKey::<256>::from_components(MODULUS, PRIVATE_EXPONENT);
     let salt = [1, 2, 3, 4, 5];
     let msg = [7, 8, 9, 10];
-    let signature =
-        libcrux_rsa::signers::Signer::<2048, Sha2_256>::sign(&msg, (&private_key).into(), &salt)
-            .unwrap();
-    eprintln!("signature: {:x?}", signature);
+    // arrayref
+    {
+        use libcrux_traits::signature::arrayref::*;
+        let mut signature = [0; 256];
+        libcrux_rsa::signers::Signer::<2048, Sha2_256>::sign(
+            &msg,
+            (&private_key).into(),
+            &mut signature,
+            &salt,
+        )
+        .unwrap();
+        eprintln!("signature: {:x?}", signature);
 
-    libcrux_rsa::signers::Signer::<2048, Sha2_256>::verify(
-        &msg,
-        public_key.n(),
-        &signature,
-        salt.len() as u32,
-    )
-    .unwrap();
+        libcrux_rsa::signers::Signer::<2048, Sha2_256>::verify(
+            &msg,
+            public_key.n(),
+            &signature,
+            salt.len() as u32,
+        )
+        .unwrap();
+    }
+    // slice
+    {
+        use libcrux_traits::signature::slice::*;
+        let mut signature = [0; 256];
+        libcrux_rsa::signers::Signer::<2048, Sha2_256>::sign(
+            &msg,
+            (&private_key).into(),
+            &mut signature,
+            &salt,
+        )
+        .unwrap();
+        eprintln!("signature: {:x?}", signature);
+
+        libcrux_rsa::signers::Signer::<2048, Sha2_256>::verify(
+            &msg,
+            public_key.n(),
+            &signature,
+            salt.len() as u32,
+        )
+        .unwrap();
+    }
+
+    // owned
+    {
+        use libcrux_traits::signature::owned::*;
+        let signature = libcrux_rsa::signers::Signer::<2048, Sha2_256>::sign(
+            &msg,
+            (&private_key).into(),
+            &salt,
+        )
+        .unwrap();
+        eprintln!("signature: {:x?}", signature);
+
+        libcrux_rsa::signers::Signer::<2048, Sha2_256>::verify(
+            &msg,
+            public_key.n(),
+            &signature,
+            salt.len() as u32,
+        )
+        .unwrap();
+    }
+    // secrets
+    {
+        let private_key =
+            libcrux_rsa::PrivateKeyBorrowClassified::from_components(&MODULUS, &PRIVATE_EXPONENT);
+        use libcrux_traits::signature::secrets::*;
+        let signature =
+            libcrux_rsa::signers::Signer::<2048, Sha2_256>::sign(&msg, private_key, &salt).unwrap();
+        eprintln!("signature: {:x?}", signature);
+
+        libcrux_rsa::signers::Signer::<2048, Sha2_256>::verify(
+            &msg,
+            public_key.n(),
+            &signature,
+            salt.len() as u32,
+        )
+        .unwrap();
+    }
 }
