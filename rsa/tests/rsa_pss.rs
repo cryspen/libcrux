@@ -391,11 +391,16 @@ fn test_traits() {
     }
     // secrets
     {
-        let private_key =
-            libcrux_rsa::PrivateKeyBorrowClassified::from_components(&MODULUS, &PRIVATE_EXPONENT);
+        use libcrux_secrets::Classify;
+
+        let private_key = libcrux_rsa::ClassifiedPrivateKey::<256>::from_components(
+            MODULUS,
+            PRIVATE_EXPONENT.classify(),
+        );
         use libcrux_traits::signature::secrets::*;
         let signature =
-            libcrux_rsa::signers::Signer::<2048, Sha2_256>::sign(&msg, private_key, &salt).unwrap();
+            libcrux_rsa::signers::Signer::<2048, Sha2_256>::sign(&msg, &private_key, &salt)
+                .unwrap();
         eprintln!("signature: {:x?}", signature);
 
         libcrux_rsa::signers::Signer::<2048, Sha2_256>::verify(
