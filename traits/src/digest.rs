@@ -1,7 +1,10 @@
+//! This module provides common interface traits for digest/hashing functionality.
+
 pub mod arrayref;
 pub mod owned;
 pub mod slice;
 
+/// Error indicating that updating the digest state failed.
 #[derive(Debug, PartialEq)]
 pub enum UpdateError {
     /// The length of the provided payload is invalid.
@@ -12,16 +15,24 @@ pub enum UpdateError {
     Unknown,
 }
 
-// TODO: rename
+// TODO: rename to `DigestIncrementalBase`
+/// Base trait for incremental functionality.
+///
+/// Traits that are built on top of this trait:
+/// - [`slice::DigestIncremental`]
+/// - [`arrayref::DigestIncremental`]
+/// - [`owned::DigestIncremental`]
 pub trait DigestBase {
+    /// The digest state.
     type IncrementalState;
     /// Reset the digest state.
     fn reset(state: &mut Self::IncrementalState);
-    /// Add the `payload` to the digest.
+    /// Update the digest state with the `payload`.
     fn update(state: &mut Self::IncrementalState, payload: &[u8]) -> Result<(), UpdateError>;
 }
 
 #[derive(Clone)]
+/// A hasher that maintains the incremental state.
 pub struct Hasher<const N: usize, D: DigestBase> {
     pub state: D::IncrementalState,
 }
@@ -38,28 +49,32 @@ where
 }
 
 impl<const N: usize, D: DigestBase + slice::Hash> Hasher<N, D> {
-    // TODO: rename
+    /// Oneshot API. Hash into a digest buffer, provided as a `&mut [u8]` slice.
     pub fn hash_slice(digest: &mut [u8], payload: &[u8]) -> Result<usize, slice::HashError> {
         D::hash(digest, payload)
     }
 }
 
 impl<const N: usize, D: slice::DigestIncremental> Hasher<N, D> {
-    pub fn finish_slice(&mut self, payload: &mut [u8]) -> Result<usize, slice::FinishError> {
-        D::finish(&mut self.state, payload)
+    /// Finalize and write into a digest buffer, provided as a `&mut [u8]` slice.
+    pub fn finish_slice(&mut self, digest: &mut [u8]) -> Result<usize, slice::FinishError> {
+        D::finish(&mut self.state, digest)
     }
 }
 
 impl<const N: usize, D: DigestBase> Hasher<N, D> {
+    /// Update the digest state with the `payload`.
     pub fn update(&mut self, payload: &[u8]) -> Result<(), UpdateError> {
         D::update(&mut self.state, payload)
     }
+    /// Reset the digest state.
     pub fn reset(&mut self) {
         D::reset(&mut self.state)
     }
 }
 
 impl<const N: usize, D: arrayref::DigestIncremental<N>> Hasher<N, D> {
+    /// Finalize and write into a digest buffer, provided as a `&mut [u8; N]` array reference.
     pub fn finish(&mut self, digest: &mut [u8; N]) {
         D::finish(&mut self.state, digest)
     }
@@ -70,6 +85,7 @@ impl<const N: usize, D: arrayref::DigestIncremental<N>> Hasher<N, D> {
 }
 
 impl<const N: usize, D: DigestBase + arrayref::Hash<N>> Hasher<N, D> {
+    /// Oneshot API. Hash into a digest buffer, provided as a `&mut [u8; N]` array reference.
     pub fn hash(digest: &mut [u8; N], payload: &[u8]) -> Result<(), arrayref::HashError> {
         D::hash(digest, payload)
     }

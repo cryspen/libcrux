@@ -1,3 +1,6 @@
+//! This module contains the trait and related errors for hashers that take slices as
+//! arguments and write the results to mutable slices.
+
 use super::arrayref;
 
 pub trait Hash {
@@ -11,15 +14,21 @@ pub trait DigestIncremental: super::DigestBase {
     fn finish(state: &mut Self::IncrementalState, digest: &mut [u8]) -> Result<usize, FinishError>;
 }
 
+/// Error indicating that finalizing failed.
 #[derive(Debug, PartialEq)]
 pub enum FinishError {
+    /// The length of the provided digest buffer is invalid.
     InvalidDigestLength,
+    /// Unknown error.
     Unknown,
 }
 
+/// Error indicating that hashing failed.
 #[derive(Debug, PartialEq)]
 pub enum HashError {
+    /// The length of the provided digest buffer is invalid.
     InvalidDigestLength,
+    /// The length of the provided payload is invalid.
     InvalidPayloadLength,
 }
 
@@ -32,6 +41,7 @@ impl From<arrayref::HashError> for HashError {
 }
 
 #[macro_export]
+/// Implements [`Hash`] for any [`arrayref::Hash`].
 macro_rules! impl_hash_trait {
     ($type:ty => $len:expr) => {
         impl $crate::digest::slice::Hash for $type {
@@ -51,6 +61,7 @@ macro_rules! impl_hash_trait {
 }
 
 #[macro_export]
+/// Implements [`DigestIncremental`] for any [`arrayref::DigestIncremental`].
 macro_rules! impl_digest_incremental_trait {
     ($type:ty => $incremental_state:ty, $len:expr) => {
         impl $crate::digest::slice::DigestIncremental for $type {

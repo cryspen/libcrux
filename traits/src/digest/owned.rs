@@ -1,3 +1,7 @@
+//! This module contains the traits and related errors for hashers that take array references as
+//! arguments and return values as arrays.
+//!
+
 use super::arrayref;
 
 pub use arrayref::HashError;

@@ -1,5 +1,11 @@
+//! This module contains the traits and related errors for hashers that take array references as
+//! arguments and write the outputs to mutable array references.
+//!
+
 #[derive(Debug, PartialEq)]
+/// Error indicating that hashing failed.
 pub enum HashError {
+    /// The length of the provided payload is invalid.
     InvalidPayloadLength,
 }
 
