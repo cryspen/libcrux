@@ -1,7 +1,7 @@
 #[cfg_attr(hax, hax_lib::exclude)]
 pub mod signers {
     //! [`libcrux_traits::signature`] APIs.
-    use libcrux_traits::signature::{arrayref, owned};
+    use libcrux_traits::signature::owned;
 
     macro_rules! impl_signature_trait {
         ($name:ident, $module:ident, $alias:ident, $doc:expr) => {
@@ -41,21 +41,21 @@ pub mod signers {
                         .map_err(|_| owned::SignError::LibraryError)
                     }
                 }
-                impl arrayref::Verify<VERIFICATION_KEY_LEN, SIGNATURE_LEN> for $alias {
+                impl owned::Verify<VERIFICATION_KEY_LEN, SIGNATURE_LEN> for $alias {
                     type VerifyAux<'a> = &'a [u8];
                     fn verify(
                         payload: &[u8],
                         verification_key: &[u8; VERIFICATION_KEY_LEN],
                         signature: &[u8; SIGNATURE_LEN],
                         context: &[u8],
-                    ) -> Result<(), arrayref::VerifyError> {
+                    ) -> Result<(), owned::VerifyError> {
                         crate::ml_dsa_generic::multiplexing::$module::verify(
                             verification_key,
                             payload,
                             context,
                             signature,
                         )
-                        .map_err(|_| arrayref::VerifyError::LibraryError)
+                        .map_err(|_| owned::VerifyError::LibraryError)
                     }
                 }
 
