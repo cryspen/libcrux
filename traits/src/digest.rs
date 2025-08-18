@@ -4,15 +4,20 @@ pub mod slice;
 
 #[derive(Debug, PartialEq)]
 pub enum UpdateError {
+    /// The length of the provided payload is invalid.
     InvalidPayloadLength,
+    ///The maximum input length is exceeded.
     MaximumLengthExceeded,
+    /// Unknown error.
     Unknown,
 }
 
 // TODO: rename
 pub trait DigestBase {
     type IncrementalState;
+    /// Reset the digest state.
     fn reset(state: &mut Self::IncrementalState);
+    /// Add the `payload` to the digest.
     fn update(state: &mut Self::IncrementalState, payload: &[u8]) -> Result<(), UpdateError>;
 }
 

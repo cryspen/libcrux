@@ -3,11 +3,14 @@ use super::arrayref;
 pub use arrayref::{HashError, UpdateError};
 
 pub trait Hash<const OUTPUT_LEN: usize> {
-    /// Oneshot API
+    /// Returns the digest for the given input byte slice, as an array, in immediate mode.
     fn hash(payload: &[u8]) -> Result<[u8; OUTPUT_LEN], HashError>;
 }
 
 pub trait DigestIncremental<const OUTPUT_LEN: usize>: super::DigestBase {
+    /// Returns the digest as an array.
+    ///
+    /// Note that the digest state can be continued to be used, to extend the digest.
     fn finish(state: &mut Self::IncrementalState) -> [u8; OUTPUT_LEN];
 }
 
