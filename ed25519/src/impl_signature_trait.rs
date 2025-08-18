@@ -10,9 +10,12 @@ pub mod signers {
     const SIGNING_KEY_LEN: usize = 32;
     const SIGNATURE_LEN: usize = 64;
 
+    /// The [`arrayref`](libcrux_traits::signature::arrayref) version of the Sign trait.
     impl Sign<SIGNING_KEY_LEN, SIGNATURE_LEN> for Signer {
+        /// No auxiliary information is required for signing.
         type SignAux<'a> = ();
         type SigningKey<'a, const LEN: usize> = &'a [u8; SIGNING_KEY_LEN];
+        /// Sign a payload with a provided signing key.
         fn sign(
             payload: &[u8],
             signing_key: &[u8; SIGNING_KEY_LEN],
@@ -32,9 +35,13 @@ pub mod signers {
             Ok(())
         }
     }
+
+    /// The [`arrayref`](libcrux_traits::signature::arrayref) version of the Verify trait.
     impl Verify<VERIFICATION_KEY_LEN, SIGNATURE_LEN> for Signer {
+        /// No auxiliary information is required for verification.
         type VerifyAux<'a> = ();
 
+        /// Verify a signature using a provided verification key.
         fn verify(
             payload: &[u8],
             verification_key: &[u8; VERIFICATION_KEY_LEN],
