@@ -113,6 +113,18 @@ fn hacl_hash_alg(alg: crate::DigestAlgorithm) -> libcrux_hacl_rs::streaming_type
 }
 
 #[cfg(feature = "check-secret-independence")]
+impl<'a> libcrux_secrets::Declassify for VarLenPrivateKey<'a, U8> {
+    type Declassified = VarLenPrivateKey<'a, u8>;
+    fn declassify(self) -> Self::Declassified {
+        use libcrux_secrets::DeclassifyRef;
+        VarLenPrivateKey {
+            pk: self.pk,
+            d: self.d.declassify_ref(),
+        }
+    }
+}
+
+#[cfg(feature = "check-secret-independence")]
 impl<'a, const LEN: usize> libcrux_secrets::DeclassifyRef
     for &'a PrivateKey<LEN, libcrux_secrets::U8>
 {
