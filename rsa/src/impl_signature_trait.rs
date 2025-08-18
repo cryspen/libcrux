@@ -14,7 +14,7 @@ macro_rules! impl_signature_trait {
         #[doc = concat!("(", stringify!($bytes)," bytes).")]
         pub type $alias = Signer<$bits, $digest_alg>;
 
-        /// The [`arrayref`](libcrux_traits::signature::arrayref} version of the Sign trait.
+        /// The [`arrayref`](libcrux_traits::signature::arrayref) version of the Sign trait.
         impl arrayref::Sign<$bytes, $bytes> for $alias {
 
             /// The salt, provided as a `&'a [u8]`.

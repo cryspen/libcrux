@@ -20,12 +20,16 @@ pub mod signers {
                 const SIGNATURE_LEN: usize = crate::ml_dsa_generic::$module::SIGNATURE_SIZE;
 
                 // XXX: implementing owned trait directly because there is no arrayref equivalent
+                /// The [`owned`](libcrux_traits::signature::owned) version of the Sign trait.
+                ///
                 /// It is the responsibility of the caller to ensure  that the `randomness` argument is actually
                 /// random.
                 impl owned::Sign<SIGNING_KEY_LEN, SIGNATURE_LEN> for $alias {
+                    /// The `(context, randomness)` required for signing.
                     type SignAux<'a> = (&'a [u8], super::Randomness);
                     type SigningKey<'a, const LEN: usize> = &'a [u8; SIGNING_KEY_LEN];
 
+                    /// Sign a payload using a provided signing key, context, and randomness.
                     fn sign(
                         payload: &[u8],
                         signing_key: &[u8; SIGNING_KEY_LEN],
@@ -41,8 +45,12 @@ pub mod signers {
                         .map_err(|_| owned::SignError::LibraryError)
                     }
                 }
+                /// The [`owned`](libcrux_traits::signature::owned) version of the Verify trait.
                 impl owned::Verify<VERIFICATION_KEY_LEN, SIGNATURE_LEN> for $alias {
+                    /// The `context` required for verification.
                     type VerifyAux<'a> = &'a [u8];
+
+                    /// Verify a signature using a provided verification key and context.
                     fn verify(
                         payload: &[u8],
                         verification_key: &[u8; VERIFICATION_KEY_LEN],
