@@ -1,4 +1,4 @@
-use super::impl_hacl::*;
+use super::impl_hacl::{generic_keys, *};
 
 use libcrux_secrets::U8;
 use libcrux_traits::signature::{arrayref, owned, secrets, slice};
@@ -19,11 +19,11 @@ macro_rules! impl_signature_trait {
 
             /// The salt, provided as a `&'a [u8]`.
             type SignAux<'a> = &'a [u8];
-            type SigningKey<'a, const LEN: usize> = &'a PrivateKey<LEN, u8>;
+            type SigningKey<'a, const LEN: usize> = &'a generic_keys::PrivateKey<LEN, u8>;
             /// Sign a payload using a provided signing key and `salt`.
             fn sign(
                 payload: &[u8],
-                signing_key: &PrivateKey<$bytes, u8>,
+                signing_key: &generic_keys::PrivateKey<$bytes, u8>,
                 signature: &mut [u8; $bytes],
                 salt: &[u8],
             ) -> Result<(), arrayref::SignError> {
@@ -74,11 +74,11 @@ macro_rules! impl_signature_trait {
 
             /// The salt, provided as a `&'a [u8]`.
             type SignAux<'a> = &'a [u8];
-            type SigningKey<'a> = VarLenPrivateKey<'a, u8>;
+            type SigningKey<'a> = generic_keys::VarLenPrivateKey<'a, u8>;
             /// Sign a payload using a provided signing key and `salt`.
             fn sign(
                 payload: &[u8],
-                signing_key: VarLenPrivateKey<'_, u8>,
+                signing_key: generic_keys::VarLenPrivateKey<'_, u8>,
                 signature: &mut [u8],
                 salt: &[u8],
             ) -> Result<(), slice::SignError> {
@@ -103,12 +103,12 @@ macro_rules! impl_signature_trait {
         impl secrets::Sign<$bytes, $bytes> for $alias {
             /// The salt, provided as a `&'a [u8]`.
             type SignAux<'a> = &'a [u8];
-            type SigningKey<'a, const LEN: usize> = &'a PrivateKey<$bytes, U8>;
+            type SigningKey<'a, const LEN: usize> = &'a generic_keys::PrivateKey<$bytes, U8>;
 
             /// Sign a payload using a provided signing key and `salt`.
             fn sign(
                 payload: &[u8],
-                signing_key: &PrivateKey<$bytes, U8>,
+                signing_key: &generic_keys::PrivateKey<$bytes, U8>,
                 salt: &[u8],
 
             ) -> Result<[u8; $bytes], secrets::SignError> {

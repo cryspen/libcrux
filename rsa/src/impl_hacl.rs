@@ -6,13 +6,33 @@ pub struct PublicKey<const LEN: usize> {
     pub(crate) n: [u8; LEN],
 }
 
-/// An RSA Private Key that is `LEN` bytes long.
-pub struct PrivateKey<const LEN: usize, PrivateKeyByte> {
-    pub(crate) pk: PublicKey<LEN>,
-    pub(crate) d: [PrivateKeyByte; LEN],
+/// Generic key types.
+pub mod generic_keys {
+    use super::*;
+
+    /// A generic RSA Private Key that is `LEN` bytes long.
+    pub struct PrivateKey<const LEN: usize, PrivateKeyByte> {
+        pub(crate) pk: PublicKey<LEN>,
+        pub(crate) d: [PrivateKeyByte; LEN],
+    }
+    /// An RSA Private Key backed by slices. Use if the length is not known at compile time.
+    pub struct VarLenPrivateKey<'a, PrivateKeyByte> {
+        pub(crate) pk: VarLenPublicKey<'a>,
+        pub(crate) d: &'a [PrivateKeyByte],
+    }
 }
 
-impl<const LEN: usize, PrivateKeyByte> alloc::fmt::Debug for PrivateKey<LEN, PrivateKeyByte> {
+/// An RSA Private Key that is `LEN` bytes long.
+pub type PrivateKey<const LEN: usize> = generic_keys::PrivateKey<LEN, u8>;
+
+/// An RSA Private Key that is `LEN` bytes long, where `d` is backed by an array of
+/// [`type@libcrux_secrets::U8`].
+pub type ClassifiedPrivateKey<const LEN: usize> =
+    generic_keys::PrivateKey<LEN, libcrux_secrets::U8>;
+
+impl<const LEN: usize, PrivateKeyByte> alloc::fmt::Debug
+    for generic_keys::PrivateKey<LEN, PrivateKeyByte>
+{
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         f.debug_struct("PrivateKey")
             .field("pk", &self.pk)
@@ -49,7 +69,7 @@ impl VarLenPublicKey<'_> {
         self.n
     }
 }
-impl<PrivateKeyByte> alloc::fmt::Debug for VarLenPrivateKey<'_, PrivateKeyByte> {
+impl<PrivateKeyByte> alloc::fmt::Debug for generic_keys::VarLenPrivateKey<'_, PrivateKeyByte> {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         f.debug_struct("PrivateKey")
             .field("pk", &self.pk)
@@ -59,14 +79,14 @@ impl<PrivateKeyByte> alloc::fmt::Debug for VarLenPrivateKey<'_, PrivateKeyByte> 
 }
 
 /// An RSA Private Key backed by slices. Use if the length is not known at compile time.
-pub struct VarLenPrivateKey<'a, PrivateKeyByte> {
-    pub(crate) pk: VarLenPublicKey<'a>,
-    pub(crate) d: &'a [PrivateKeyByte],
-}
+pub type VarLenPrivateKey<'a> = generic_keys::VarLenPrivateKey<'a, u8>;
+
+/// An RSA Private Key where `d` is backed by an array of of [`type@libcrux_secrets::U8`]. Use if the length is not known at compile time.
+pub type ClassifiedVarLenPrivateKey<'a> = generic_keys::VarLenPrivateKey<'a, libcrux_secrets::U8>;
 
 macro_rules! impl_var_len_private_key {
     ($sk_byte:ty) => {
-        impl<'a> VarLenPrivateKey<'a, $sk_byte> {
+        impl<'a> generic_keys::VarLenPrivateKey<'a, $sk_byte> {
             /// Constructor for the private key based on `n` and `d`.
             pub fn from_components(n: &'a [u8], d: &'a [$sk_byte]) -> Result<Self, Error> {
                 if n.len() != d.len() {
@@ -113,11 +133,11 @@ fn hacl_hash_alg(alg: crate::DigestAlgorithm) -> libcrux_hacl_rs::streaming_type
 }
 
 #[cfg(feature = "check-secret-independence")]
-impl<'a> libcrux_secrets::Declassify for VarLenPrivateKey<'a, U8> {
-    type Declassified = VarLenPrivateKey<'a, u8>;
+impl<'a> libcrux_secrets::Declassify for generic_keys::VarLenPrivateKey<'a, libcrux_secrets::U8> {
+    type Declassified = generic_keys::VarLenPrivateKey<'a, u8>;
     fn declassify(self) -> Self::Declassified {
         use libcrux_secrets::DeclassifyRef;
-        VarLenPrivateKey {
+        generic_keys::VarLenPrivateKey {
             pk: self.pk,
             d: self.d.declassify_ref(),
         }
@@ -126,9 +146,9 @@ impl<'a> libcrux_secrets::Declassify for VarLenPrivateKey<'a, U8> {
 
 #[cfg(feature = "check-secret-independence")]
 impl<'a, const LEN: usize> libcrux_secrets::DeclassifyRef
-    for &'a PrivateKey<LEN, libcrux_secrets::U8>
+    for &'a generic_keys::PrivateKey<LEN, libcrux_secrets::U8>
 {
-    type DeclassifiedRef = &'a PrivateKey<LEN, u8>;
+    type DeclassifiedRef = &'a generic_keys::PrivateKey<LEN, u8>;
     fn declassify_ref(self) -> Self::DeclassifiedRef {
         unsafe { core::mem::transmute(self) }
     }
@@ -171,7 +191,7 @@ macro_rules! impl_rsapss_base {
         /// - `salt_len` exceeds `u32::MAX - alg.hash_len() - 8`
         pub fn $sign_fn(
             alg: crate::DigestAlgorithm,
-            sk: &PrivateKey<$bytes, u8>,
+            sk: &generic_keys::PrivateKey<$bytes, u8>,
             msg: &[u8],
             salt: &[u8],
             sig: &mut [u8; $bytes],
@@ -200,7 +220,7 @@ macro_rules! impl_rsapss_base {
 
 macro_rules! impl_rsapss_private {
     ($sign_fn:ident, $verify_fn:ident, $bits:literal, $bytes:literal, $sk_byte:ty) => {
-        impl PrivateKey<$bytes, $sk_byte> {
+        impl generic_keys::PrivateKey<$bytes, $sk_byte> {
             /// Constructor for the private key based on `n` and `d`.
             pub fn from_components(n: [u8; $bytes], d: [$sk_byte; $bytes]) -> Self {
                 Self { pk: n.into(), d }
@@ -212,8 +232,8 @@ macro_rules! impl_rsapss_private {
             }
 
             /// Returns the slice-based private key
-            pub fn as_var_len(&self) -> VarLenPrivateKey<'_, $sk_byte> {
-                VarLenPrivateKey {
+            pub fn as_var_len(&self) -> generic_keys::VarLenPrivateKey<'_, $sk_byte> {
+                generic_keys::VarLenPrivateKey {
                     pk: self.pk.as_var_len(),
                     d: &self.d,
                 }
@@ -225,8 +245,10 @@ macro_rules! impl_rsapss_private {
             }
         }
 
-        impl<'a> From<&'a PrivateKey<$bytes, $sk_byte>> for VarLenPrivateKey<'a, $sk_byte> {
-            fn from(value: &'a PrivateKey<$bytes, $sk_byte>) -> Self {
+        impl<'a> From<&'a generic_keys::PrivateKey<$bytes, $sk_byte>>
+            for generic_keys::VarLenPrivateKey<'a, $sk_byte>
+        {
+            fn from(value: &'a generic_keys::PrivateKey<$bytes, $sk_byte>) -> Self {
                 value.as_var_len()
             }
         }
@@ -264,7 +286,7 @@ mod secret_integer_impl {
 /// - the length of `sig` does not match the length of `sk`
 pub fn sign(
     alg: crate::DigestAlgorithm,
-    sk: &VarLenPrivateKey<'_, u8>,
+    sk: &generic_keys::VarLenPrivateKey<'_, u8>,
     msg: &[u8],
     salt: &[u8],
     sig: &mut [u8],
@@ -319,7 +341,7 @@ pub fn verify(
 ///   - follows from the check that messages are shorter than `u32::MAX`.
 pub fn sign_varlen(
     alg: crate::DigestAlgorithm,
-    sk: &VarLenPrivateKey<'_, u8>,
+    sk: &generic_keys::VarLenPrivateKey<'_, u8>,
     msg: &[u8],
     salt: &[u8],
     sig: &mut [u8],
