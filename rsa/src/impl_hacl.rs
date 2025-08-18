@@ -2,6 +2,7 @@ use crate::Error;
 
 /// An RSA Public Key that is `LEN` bytes long.
 #[derive(Debug, Clone)]
+#[repr(transparent)]
 pub struct PublicKey<const LEN: usize> {
     pub(crate) n: [u8; LEN],
 }
