@@ -3,13 +3,6 @@ pub enum HashError {
     InvalidPayloadLength,
 }
 
-#[derive(Debug, PartialEq)]
-pub enum UpdateError {
-    InvalidPayloadLength,
-    MaximumLengthExceeded,
-    Unknown,
-}
-
 pub trait DigestIncremental<const OUTPUT_LEN: usize>: super::DigestBase {
     /// Writes the digest into `digest`.
     ///

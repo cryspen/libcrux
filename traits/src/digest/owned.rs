@@ -1,6 +1,6 @@
 use super::arrayref;
 
-pub use arrayref::{HashError, UpdateError};
+pub use arrayref::HashError;
 
 pub trait Hash<const OUTPUT_LEN: usize> {
     /// Returns the digest for the given input byte slice, as an array, in immediate mode.
