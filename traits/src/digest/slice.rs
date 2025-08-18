@@ -3,10 +3,13 @@
 
 use super::arrayref;
 
+/// A trait for oneshot hashing, where the output is written to a provided slice.
 pub trait Hash {
     /// Writes the digest for the given input byte slice, into `digest` in immediate mode.
     fn hash(digest: &mut [u8], payload: &[u8]) -> Result<usize, HashError>;
 }
+
+/// A trait for incremental hashing, where the output is written to a provided slice.
 pub trait DigestIncremental: super::DigestIncrementalBase {
     /// Writes the digest into `digest`.
     ///

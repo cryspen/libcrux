@@ -6,11 +6,13 @@ use super::arrayref;
 
 pub use arrayref::HashError;
 
+/// A trait for oneshot hashing, where the output is returned as an array.
 pub trait Hash<const OUTPUT_LEN: usize> {
     /// Returns the digest for the given input byte slice, as an array, in immediate mode.
     fn hash(payload: &[u8]) -> Result<[u8; OUTPUT_LEN], HashError>;
 }
 
+/// A trait for incremental hashing, where the output is returned as an array.
 pub trait DigestIncremental<const OUTPUT_LEN: usize>: super::DigestIncrementalBase {
     /// Returns the digest as an array.
     ///
