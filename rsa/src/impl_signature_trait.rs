@@ -215,10 +215,6 @@ macro_rules! impl_signature_trait {
 
                 use libcrux_secrets::Declassify;
 
-                // XXX: This transformation is not done by implementing
-                // `libcrux_secrets::Classify` for the key, because the implementation would conflict
-                // with the existing `impl<T> Classify for T` in
-                // libcrux_secrets::int::public_integers.
                 let declassified = signing_key.declassify();
 
                 <Self as owned::Sign<$bytes, $bytes>>::sign(payload, declassified, salt)
