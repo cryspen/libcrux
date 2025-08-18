@@ -17,10 +17,32 @@ pub mod generic_keys {
         pub(crate) pk: PublicKey<LEN>,
         pub(crate) d: [PrivateKeyByte; LEN],
     }
+    #[cfg(feature = "check-secret-independence")]
+    impl<'a, const LEN: usize> libcrux_secrets::DeclassifyRef
+        for &'a generic_keys::PrivateKey<LEN, libcrux_secrets::U8>
+    {
+        type DeclassifiedRef = &'a generic_keys::PrivateKey<LEN, u8>;
+        fn declassify_ref(self) -> Self::DeclassifiedRef {
+            unsafe { core::mem::transmute(self) }
+        }
+    }
+
     /// An RSA Private Key backed by slices. Use if the length is not known at compile time.
     pub struct VarLenPrivateKey<'a, PrivateKeyByte> {
         pub(crate) pk: VarLenPublicKey<'a>,
         pub(crate) d: &'a [PrivateKeyByte],
+    }
+
+    #[cfg(feature = "check-secret-independence")]
+    impl<'a> libcrux_secrets::Declassify for generic_keys::VarLenPrivateKey<'a, libcrux_secrets::U8> {
+        type Declassified = generic_keys::VarLenPrivateKey<'a, u8>;
+        fn declassify(self) -> Self::Declassified {
+            use libcrux_secrets::DeclassifyRef;
+            generic_keys::VarLenPrivateKey {
+                pk: self.pk,
+                d: self.d.declassify_ref(),
+            }
+        }
     }
 }
 
@@ -131,28 +153,6 @@ fn hacl_hash_alg(alg: crate::DigestAlgorithm) -> libcrux_hacl_rs::streaming_type
         crate::DigestAlgorithm::Sha2_256 => libcrux_hacl_rs::streaming_types::hash_alg::SHA2_256,
         crate::DigestAlgorithm::Sha2_384 => libcrux_hacl_rs::streaming_types::hash_alg::SHA2_384,
         crate::DigestAlgorithm::Sha2_512 => libcrux_hacl_rs::streaming_types::hash_alg::SHA2_512,
-    }
-}
-
-#[cfg(feature = "check-secret-independence")]
-impl<'a> libcrux_secrets::Declassify for generic_keys::VarLenPrivateKey<'a, libcrux_secrets::U8> {
-    type Declassified = generic_keys::VarLenPrivateKey<'a, u8>;
-    fn declassify(self) -> Self::Declassified {
-        use libcrux_secrets::DeclassifyRef;
-        generic_keys::VarLenPrivateKey {
-            pk: self.pk,
-            d: self.d.declassify_ref(),
-        }
-    }
-}
-
-#[cfg(feature = "check-secret-independence")]
-impl<'a, const LEN: usize> libcrux_secrets::DeclassifyRef
-    for &'a generic_keys::PrivateKey<LEN, libcrux_secrets::U8>
-{
-    type DeclassifiedRef = &'a generic_keys::PrivateKey<LEN, u8>;
-    fn declassify_ref(self) -> Self::DeclassifiedRef {
-        unsafe { core::mem::transmute(self) }
     }
 }
 
