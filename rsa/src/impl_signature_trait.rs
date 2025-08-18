@@ -14,7 +14,7 @@ macro_rules! impl_signature_trait {
         #[doc = concat!("(", stringify!($bytes)," bytes).")]
         pub type $alias = Signer<$bits, $digest_alg>;
 
-        /// The [`arrayref`] version of the Sign trait.
+        /// The [`arrayref`](libcrux_traits::signature::arrayref} version of the Sign trait.
         impl arrayref::Sign<$bytes, $bytes> for $alias {
 
             /// The salt, provided as a `&'a [u8]`.
@@ -41,7 +41,7 @@ macro_rules! impl_signature_trait {
                 })
             }
         }
-        /// The [`arrayref`] version of the Verify trait.
+        /// The [`arrayref`](libcrux_traits::signature::arrayref) version of the Verify trait.
         impl arrayref::Verify<$bytes, $bytes> for $alias {
             type VerifyAux<'a> = u32;
 
@@ -69,7 +69,7 @@ macro_rules! impl_signature_trait {
         }
 
         // manual implementation of sign slice trait
-        /// The [`mod@slice`] version of the Sign trait.
+        /// The [`slice`](libcrux_traits::signature::slice) version of the Sign trait.
         impl slice::Sign for $alias {
 
             /// The salt, provided as a `&'a [u8]`.
@@ -94,12 +94,13 @@ macro_rules! impl_signature_trait {
                     crate::Error::MessageTooLarge => slice::SignError::InvalidPayloadLength,
                     _ => slice::SignError::LibraryError,
 
+
                 })
             }
         }
 
         // manual implementation of secrets trait
-        /// The [`secrets`] version of the Sign trait, which uses [`libcrux_secrets`] types.
+        /// The [`secrets`](libcrux_traits::signature::secrets) version of the Sign trait, which uses [`libcrux_secrets`] types.
         impl secrets::Sign<$bytes, $bytes> for $alias {
             /// The salt, provided as a `&'a [u8]`.
             type SignAux<'a> = &'a [u8];
