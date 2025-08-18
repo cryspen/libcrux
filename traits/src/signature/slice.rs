@@ -126,11 +126,11 @@ impl From<super::arrayref::VerifyError> for VerifyError {
     }
 }
 
-/// Implements [`Sign`] for any [`arrayref::Sign`](crate::signature::arrayref::Sign) where the
-/// signing key is an array reference
+/// Implements [`Sign`] for any [`arrayref::Sign`](crate::signature::arrayref::Sign)
 #[macro_export]
 macro_rules! impl_signature_slice_trait {
     ($type:ty => $sk_len:expr, $sig_len:expr, $sign_aux:ty, $sign_aux_param:tt, $signing_key:ty) => {
+        /// The [`slice`](libcrux_traits::signature::slice) version of the Sign trait.
         impl $crate::signature::slice::Sign for $type {
             #[doc = "Auxiliary information needed for signing: "]
             #[doc = concat!("`",stringify!($sign_aux_param),"`")]
@@ -170,7 +170,7 @@ macro_rules! impl_signature_slice_trait {
 #[macro_export]
 macro_rules! impl_verify_slice_trait {
     ($type:ty => $vk_len:expr, $sig_len:expr, $verify_aux:ty, $verify_aux_param:tt) => {
-        /// The [`mod@slice`] version of the Verify trait.
+        /// The [`slice`](libcrux_traits::signature::slice) version of the Verify trait.
         impl $crate::signature::slice::Verify for $type {
             #[doc = "Auxiliary information needed for verification: "]
             #[doc = concat!("`",stringify!($verify_aux_param),"`")]

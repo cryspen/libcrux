@@ -13,9 +13,12 @@ pub mod signers {
         #[doc = concat!("A signer using [`libcrux_sha2::", stringify!($digest_alg_name),"`].")]
         pub type $alias = Signer<libcrux_sha2::$digest_alg_name>;
 
+        /// The [`arrayref`](libcrux_traits::signature::arrayref) version of the Sign trait.
         impl arrayref::Sign<SIGNING_KEY_LEN, SIG_LEN> for $alias {
+            /// The nonce needed for signing.
             type SignAux<'a> = &'a Nonce;
             type SigningKey<'a, const LEN: usize> = &'a [u8; SIGNING_KEY_LEN];
+            /// Sign a payload using a provided signing key and `nonce`.
             #[inline(always)]
             fn sign(
                 payload: &[u8],
@@ -36,9 +39,13 @@ pub mod signers {
                 Ok(())
             }
         }
+
+        /// The [`arrayref`](libcrux_traits::signature::arrayref) version of the Verify trait.
         impl arrayref::Verify<VERIFICATION_KEY_LEN, SIG_LEN> for $alias {
+            /// No auxiliary information is required for verification.
             type VerifyAux<'a> = ();
             #[inline(always)]
+            /// Verify a signature using a provided verification key.
             fn verify(
                 payload: &[u8],
                 verification_key: &[u8; VERIFICATION_KEY_LEN],
