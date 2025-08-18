@@ -11,6 +11,7 @@ pub mod generic_keys {
     use super::*;
 
     /// A generic RSA Private Key that is `LEN` bytes long.
+    #[repr(C)]
     pub struct PrivateKey<const LEN: usize, PrivateKeyByte> {
         pub(crate) pk: PublicKey<LEN>,
         pub(crate) d: [PrivateKeyByte; LEN],
