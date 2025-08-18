@@ -1,7 +1,7 @@
 //! This module contains the trait and related errors for signers that take array references as arguments and return values as arrays.
 
-pub use super::arrayref::SignError;
 pub use super::arrayref::Verify;
+pub use super::arrayref::{SignError, VerifyError};
 
 /// A signer that returns values instead of writing results to `&mut` arguments.
 ///

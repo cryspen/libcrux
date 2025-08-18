@@ -3,7 +3,7 @@
 //! types from [libcrux-secrets](libcrux_secrets).
 //!
 pub use super::arrayref::Verify;
-pub use super::owned::SignError;
+pub use super::owned::{SignError, VerifyError};
 use libcrux_secrets::{DeclassifyRef, U8};
 
 /// A signer. This trait makes use of types suitable for checking secret independence.
