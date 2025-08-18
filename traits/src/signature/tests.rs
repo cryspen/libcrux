@@ -1,8 +1,9 @@
-// NOTE: sign_aux, verify_aux, and signing_key are passed in as arguments. signing_key cannot
+// NOTE: sign_aux, verify_aux, signing_key and verification_key are passed in as arguments. signing_key and
+// verification_key cannot
 // necessarily be constructed from an array, and the values of sign_aux and verify_aux may be
 // connected (e.g., sign_aux may be the salt, and verify_aux may be the salt_len).
 /// Generic test for the [`arrayref`](super::arrayref) traits.
-pub fn simple<
+pub fn simple_arrayref<
     'b,
     const SIGNING_KEY_LEN: usize,
     const VERIFICATION_KEY_LEN: usize,
@@ -20,9 +21,9 @@ pub fn simple<
     sign_aux: SignAux,
     verify_aux: VerifyAux,
     signing_key: SigningKey,
+    verification_key: &[u8; VERIFICATION_KEY_LEN],
 ) {
     let payload = [0u8; 20];
-    let verification_key = &[1u8; VERIFICATION_KEY_LEN];
 
     let mut signature = [0; SIGNATURE_LEN];
 
