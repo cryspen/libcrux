@@ -1,4 +1,4 @@
-use libcrux_psq::protocol::{api::Protocol, dhkem::DHKeyPair, pqkem::PQKeyPair, *};
+use libcrux_psq::protocol::{api::Channel, dhkem::DHKeyPair, pqkem::PQKeyPair, *};
 
 #[test]
 fn query() {

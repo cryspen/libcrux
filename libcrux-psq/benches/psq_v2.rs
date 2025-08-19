@@ -1,7 +1,7 @@
 use criterion::{criterion_group, criterion_main, BatchSize, Criterion};
 
 use libcrux_psq::protocol::{
-    api::{Builder, IntoSession, Protocol},
+    api::{Builder, Channel, IntoSession},
     dhkem::DHKeyPair,
     initiator::{QueryInitiator, RegistrationInitiator},
     pqkem::PQKeyPair,
