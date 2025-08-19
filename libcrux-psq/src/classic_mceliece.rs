@@ -5,16 +5,16 @@
 
 use classic_mceliece_rust::{
     decapsulate_boxed, encapsulate_boxed, keypair_boxed, Ciphertext as Ct, PublicKey as Pk,
-    SecretKey, SharedSecret as Ss,
+    SecretKey as Sk, SharedSecret as Ss,
 };
 
-use libcrux_traits::kem::{KEMError, KeyPair, KEM};
-use tls_codec::{Deserialize, Serialize, Size, VLByteSlice, VLBytes};
+use libcrux_traits::kem::{KEMError, KeyPair as KEMKeyPair, KEM};
+use tls_codec::{Deserialize, Serialize, SerializeBytes, Size, VLByteSlice, VLBytes};
 
 const MCELIECE460896F_CIPHERTEXT_LEN: usize = 156;
 
 /// A wrapper around the `classic_mceliece_rust` type `Ciphertext`.
-pub struct Ciphertext(Ct);
+pub struct Ciphertext(pub(crate) Ct);
 impl Serialize for Ciphertext {
     fn tls_serialize<W: std::io::Write>(&self, writer: &mut W) -> Result<usize, tls_codec::Error> {
         VLByteSlice(self.0.as_ref()).tls_serialize(writer)
@@ -46,7 +46,26 @@ impl Size for Ciphertext {
 }
 
 /// A wrapper around the `classic_mceliece_rust` type `PublicKey`.
-pub struct PublicKey<'a>(Pk<'a>);
+pub struct PublicKey<'a>(pub(crate) Pk<'a>);
+
+/// A wrapper around the `classic_mceliece_rust` type `SecretKey`.
+pub struct SecretKey<'a>(pub(crate) Sk<'a>);
+
+pub struct KeyPair<'a> {
+    pub(crate) pk: PublicKey<'a>,
+    pub(crate) sk: SecretKey<'a>,
+}
+
+impl KeyPair<'static> {
+    fn generate_key_pair(rng: &mut impl rand::CryptoRng) -> Self {
+        let mut rng = McElieceRng::new(rng);
+        let (pk, sk) = keypair_boxed(&mut rng);
+        Self {
+            pk: PublicKey(pk),
+            sk: SecretKey(sk),
+        }
+    }
+}
 
 impl<'a> Size for PublicKey<'a> {
     fn tls_serialized_len(&self) -> usize {
@@ -59,14 +78,21 @@ impl<'a> Serialize for PublicKey<'a> {
     }
 }
 
-/// A wrapper around the `classic_mceliece_rust` type `SharedSecret`.
-pub struct SharedSecret<'a>(Ss<'a>);
-
 impl<'a> Size for SharedSecret<'a> {
     fn tls_serialized_len(&self) -> usize {
         VLByteSlice(self.0.as_ref()).tls_serialized_len()
     }
 }
+
+impl<'a> SerializeBytes for SharedSecret<'a> {
+    fn tls_serialize(&self) -> Result<Vec<u8>, tls_codec::Error> {
+        SerializeBytes::tls_serialize(&self.0.as_ref())
+    }
+}
+
+/// A wrapper around the `classic_mceliece_rust` type `SharedSecret`.
+pub struct SharedSecret<'a>(pub(crate) Ss<'a>);
+
 impl<'a> Serialize for SharedSecret<'a> {
     fn tls_serialize<W: std::io::Write>(&self, writer: &mut W) -> Result<usize, tls_codec::Error> {
         VLByteSlice(self.0.as_ref()).tls_serialize(writer)
@@ -81,12 +107,12 @@ impl crate::legacy::traits::private::Seal for ClassicMcEliece {}
 
 // This is only here because `classic-mceliece-rust` still depends on
 // `rand` version `0.8.0`.
-struct McElieceRng<'a, T: rand::CryptoRng> {
+pub(crate) struct McElieceRng<'a, T: rand::CryptoRng> {
     inner_rng: &'a mut T,
 }
 
 impl<'a, T: rand::CryptoRng> McElieceRng<'a, T> {
-    fn new(inner_rng: &'a mut T) -> Self {
+    pub(crate) fn new(inner_rng: &'a mut T) -> Self {
         Self { inner_rng }
     }
 }
@@ -117,12 +143,12 @@ impl KEM for ClassicMcEliece {
     /// The KEM's encapsulation key.
     type EncapsulationKey = PublicKey<'static>;
     /// The KEM's decapsulation key.
-    type DecapsulationKey = SecretKey<'static>;
+    type DecapsulationKey = Sk<'static>;
 
     /// Generate a pair of encapsulation and decapsulation keys.
     fn generate_key_pair(
         rng: &mut impl rand::CryptoRng,
-    ) -> Result<KeyPair<SecretKey<'static>, PublicKey<'static>>, KEMError> {
+    ) -> Result<KEMKeyPair<Sk<'static>, PublicKey<'static>>, KEMError> {
         let mut rng = McElieceRng::new(rng);
         let (pk, sk) = keypair_boxed(&mut rng);
         Ok((sk, PublicKey(pk)))

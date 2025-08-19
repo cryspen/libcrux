@@ -261,14 +261,14 @@ pub(super) fn derive_k1(
     k0: &AEADKey,
     own_longterm_key: &DHPrivateKey,
     peer_longterm_pk: &DHPublicKey,
-    pq_shared_secret: &Option<PQSharedSecret>,
+    pq_shared_secret: Option<PQSharedSecret<'_>>,
     tx1: &Transcript,
 ) -> Result<AEADKey, HandshakeError> {
     #[derive(TlsSerializeBytes, TlsSize)]
     struct K1Ikm<'a, 'b, 'c> {
         k0: &'a AEADKey,
         ecdh_shared_secret: &'b DHSharedSecret,
-        pq_shared_secret: &'c Option<PQSharedSecret>,
+        pq_shared_secret: Option<PQSharedSecret<'c>>,
     }
 
     let ecdh_shared_secret = DHSharedSecret::derive(own_longterm_key, peer_longterm_pk)?;

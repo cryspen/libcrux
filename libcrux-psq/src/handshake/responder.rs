@@ -168,10 +168,10 @@ impl<'a, Rng: CryptoRng> Responder<'a, Rng> {
         let pq_shared_secret = initiator_inner_message
             .pq_encapsulation
             .as_ref()
-            .zip(self.longterm_pq_keys)
+            .zip(self.longterm_pq_keys.as_ref())
             .map(|(enc, longterm_pq_keys)| longterm_pq_keys.private_key().decapsulate(enc));
 
-        let responder_pq_pk_opt = self.longterm_pq_keys.as_ref().map(|keys| keys.public_key());
+        let responder_pq_pk_opt = self.longterm_pq_keys.map(|keys| keys.public_key());
 
         let tx1 = tx1(
             tx0,
@@ -184,7 +184,7 @@ impl<'a, Rng: CryptoRng> Responder<'a, Rng> {
             k0,
             &self.longterm_ecdh_keys.sk,
             &initiator_inner_message.pk,
-            &pq_shared_secret,
+            pq_shared_secret,
             &tx1,
         )?;
 
