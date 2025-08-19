@@ -125,7 +125,7 @@ impl<'a, Rng: CryptoRng> Channel<Error> for RegistrationInitiator<'a, Rng> {
             &state.k0,
             &self.initiator_longterm_ecdh_keys.sk,
             self.responder_longterm_ecdh_pk,
-            &pq_shared_secret,
+            pq_shared_secret,
             &tx1,
         )?;
 
