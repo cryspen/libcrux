@@ -52,11 +52,31 @@ pub(crate) trait KeccakItem<const N: usize>: Clone + Copy {
 }
 
 /// Trait to load new bytes into the state.
+#[hax_lib::attributes]
 pub(crate) trait Absorb<const N: usize> {
     /// Absorb a block
+    #[hax_lib::requires(
+        N > 0 &&
+        RATE < 192 &&
+        RATE % 8 == 0 &&
+        RATE <= input[0].len() &&
+        start <= input[0].len() &&
+        start <= input[0].len() - RATE &&
+        start + RATE <= input[0].len()
+    )]
     fn load_block<const RATE: usize>(&mut self, input: &[&[u8]; N], start: usize);
 
     /// Absorb the last block (may be partial)
+    #[hax_lib::requires(
+        N > 0 &&
+        RATE < 192 &&
+        RATE % 8 == 0 &&
+        len < RATE &&
+        len < input[0].len() &&
+        start <= input[0].len() &&
+        start <= input[0].len() - len &&
+        start + len <= input[0].len()
+    )]
     fn load_last<const RATE: usize, const DELIMITER: u8>(
         &mut self,
         input: &[&[u8]; N],
