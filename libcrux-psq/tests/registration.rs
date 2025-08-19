@@ -1,8 +1,7 @@
-use libcrux_psq::protocol::{
-    api::{Channel, IntoSession, Session},
-    dhkem::DHKeyPair,
-    pqkem::PQKeyPair,
-    *,
+use libcrux_psq::{
+    handshake::{dhkem::DHKeyPair, pqkem::PQKeyPair, *},
+    session::Session,
+    traits::*,
 };
 
 fn registration(pq: bool) {
@@ -23,7 +22,7 @@ fn registration(pq: bool) {
     let initiator_ecdh_keys = DHKeyPair::new(&mut rng);
 
     // Setup initiator
-    let mut initiator = api::Builder::new(rand::rng())
+    let mut initiator = builder::Builder::new(rand::rng())
         .outer_aad(aad_initiator_outer)
         .inner_aad(aad_initiator_inner)
         .context(ctx)
@@ -37,7 +36,7 @@ fn registration(pq: bool) {
     let mut initiator = initiator.build_registration_initiator().unwrap();
 
     // Setup responder
-    let mut builder = api::Builder::new(rand::rng())
+    let mut builder = builder::Builder::new(rand::rng())
         .context(ctx)
         .outer_aad(aad_responder)
         .longterm_ecdh_keys(&responder_ecdh_keys)
@@ -103,8 +102,8 @@ fn registration(pq: bool) {
     )
     .unwrap();
 
-    let mut channel_i = i_transport.channel().unwrap();
-    let mut channel_r = r_transport.channel().unwrap();
+    let mut channel_i = i_transport.transport_channel().unwrap();
+    let mut channel_r = r_transport.transport_channel().unwrap();
 
     assert_eq!(channel_i.identifier(), channel_r.identifier());
 

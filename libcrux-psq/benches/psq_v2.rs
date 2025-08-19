@@ -1,11 +1,14 @@
 use criterion::{criterion_group, criterion_main, BatchSize, Criterion};
 
-use libcrux_psq::protocol::{
-    api::{Builder, Channel, IntoSession},
-    dhkem::DHKeyPair,
-    initiator::{QueryInitiator, RegistrationInitiator},
-    pqkem::PQKeyPair,
-    responder::Responder,
+use libcrux_psq::{
+    handshake::{
+        builder::Builder,
+        dhkem::DHKeyPair,
+        initiator::{query::QueryInitiator, registration::RegistrationInitiator},
+        pqkem::PQKeyPair,
+        responder::Responder,
+    },
+    traits::{Channel, IntoSession},
 };
 use rand::CryptoRng;
 
@@ -618,7 +621,7 @@ fn registration<const PQ: bool>(c: &mut Criterion) {
                         .unwrap();
 
                     let mut initiator = initiator.into_session().unwrap();
-                    let (_channel_no, channel) = initiator.channel().unwrap();
+                    let channel = initiator.transport_channel().unwrap();
                     let payload = randombytes(4096);
                     (channel, msg_channel, payload)
                 },
@@ -678,14 +681,14 @@ fn registration<const PQ: bool>(c: &mut Criterion) {
 
                     let mut initiator = initiator.into_session().unwrap();
 
-                    let (_channel_no, mut initiator_channel) = initiator.channel().unwrap();
+                    let mut initiator_channel = initiator.transport_channel().unwrap();
 
                     let _ = initiator_channel
                         .write_message(&randombytes(4096), &mut msg_channel)
                         .unwrap();
 
                     let mut responder = responder.into_session().unwrap();
-                    let (_channel_no, responder_channel) = responder.channel().unwrap();
+                    let responder_channel = responder.transport_channel().unwrap();
                     (responder_channel, msg_channel, payload_buf_responder)
                 },
                 |(responder_channel, msg_channel, payload_buf_responder)| {

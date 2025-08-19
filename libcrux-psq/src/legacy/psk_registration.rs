@@ -12,7 +12,7 @@ use std::{
 };
 use tls_codec::{Deserialize, Serialize, Size, TlsDeserialize, TlsSerialize, TlsSize};
 
-use crate::{cred::Authenticator, traits::*, Error, Psk};
+use super::{cred::Authenticator, traits::*, Error, Psk};
 
 const PSK_REGISTRATION_CONTEXT: &[u8] = b"PSK-Registration";
 const PSK_LENGTH: usize = 32;
@@ -317,7 +317,7 @@ fn derive_key_iv(psk: &[u8; 32], info: &[u8]) -> Result<([u8; NONCE_LEN], [u8; K
 mod tests {
     use std::time::Duration;
 
-    use crate::{
+    use crate::legacy::{
         cred::{Ed25519, NoAuth},
         impls::MlKem768,
     };
@@ -463,11 +463,11 @@ mod tests {
     #[test]
     #[cfg(feature = "classic-mceliece")]
     fn registration_ed25519_classic_mceliece() {
-        use crate::classic_mceliece::ClassicMcEliece;
+        use crate::legacy::classic_mceliece::ClassicMcEliece;
 
         let mut rng = rand::rng();
         let (receiver_pqsk, receiver_pqpk) =
-            crate::classic_mceliece::ClassicMcEliece::generate_key_pair(&mut rng).unwrap();
+            crate::legacy::classic_mceliece::ClassicMcEliece::generate_key_pair(&mut rng).unwrap();
         let (sk, pk) = libcrux_ed25519::generate_key_pair(&mut rng).unwrap();
 
         let sctx = b"test context";
