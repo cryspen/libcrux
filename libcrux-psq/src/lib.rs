@@ -12,3 +12,6 @@ pub mod traits;
 
 #[cfg(feature = "legacy")]
 pub mod legacy;
+
+#[cfg(feature = "classic-mceliece")]
+pub mod classic_mceliece;
