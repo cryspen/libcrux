@@ -12,7 +12,6 @@ use libcrux_traits::kem::{KEMError, KeyPair, KEM};
 use tls_codec::{Deserialize, Serialize, Size, VLByteSlice, VLBytes};
 
 const MCELIECE460896F_CIPHERTEXT_LEN: usize = 156;
-use crate::traits::*;
 
 /// A wrapper around the `classic_mceliece_rust` type `Ciphertext`.
 pub struct Ciphertext(Ct);
@@ -77,7 +76,7 @@ impl<'a> Serialize for SharedSecret<'a> {
 /// A code-based KEM based on the McEliece cryptosystem.
 pub struct ClassicMcEliece;
 
-impl private::Seal for ClassicMcEliece {}
+impl crate::legacy::traits::private::Seal for ClassicMcEliece {}
 
 // This is only here because `classic-mceliece-rust` still depends on
 // `rand` version `0.8.0`.
@@ -148,13 +147,15 @@ impl KEM for ClassicMcEliece {
     }
 }
 
-impl PSQ for ClassicMcEliece {
+impl crate::legacy::traits::PSQ for ClassicMcEliece {
     type InnerKEM = Self;
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    use crate::legacy::traits::PSQ;
 
     #[test]
     fn simple_classic_mceliece() {

@@ -22,7 +22,7 @@ macro_rules! libcrux_impl {
             }
         }
 
-        impl crate::traits::private::Seal for $alg {}
+        impl super::traits::private::Seal for $alg {}
 
         impl KEM for $alg {
             type Ciphertext = Ct;
@@ -51,7 +51,7 @@ macro_rules! libcrux_impl {
             }
         }
 
-        impl crate::traits::PSQ for $alg {
+        impl super::traits::PSQ for $alg {
             type InnerKEM = Self;
         }
     };
@@ -76,7 +76,7 @@ mod tests {
     #![allow(non_snake_case)]
     use super::*;
 
-    use crate::traits::PSQ;
+    use crate::legacy::traits::PSQ;
     macro_rules! libcrux_test {
         ($alg:ident) => {
             #[test]

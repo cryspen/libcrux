@@ -1,5 +1,5 @@
 use classic_mceliece_rust::{decapsulate_boxed, encapsulate_boxed};
-use libcrux_psq::traits::PSQ;
+use libcrux_psq::legacy::traits::PSQ;
 use libcrux_traits::kem::KEM;
 use std::time::Duration;
 
@@ -166,15 +166,15 @@ pub fn psq_encaps(c: &mut Criterion) {
             });
         };
     }
-    encaps_bench!("libcrux ML-KEM-768", libcrux_psq::impls::MlKem768);
-    encaps_bench!("libcrux X25519", libcrux_psq::impls::X25519);
+    encaps_bench!("libcrux ML-KEM-768", libcrux_psq::legacy::impls::MlKem768);
+    encaps_bench!("libcrux X25519", libcrux_psq::legacy::impls::X25519);
     encaps_bench!(
         "libcrux XWingKemDraft06",
-        libcrux_psq::impls::XWingKemDraft06
+        libcrux_psq::legacy::impls::XWingKemDraft06
     );
     encaps_bench!(
         "classic_mceliece_rust (mceliece460896f)",
-        libcrux_psq::classic_mceliece::ClassicMcEliece
+        libcrux_psq::legacy::classic_mceliece::ClassicMcEliece
     );
 }
 
@@ -212,15 +212,15 @@ pub fn psq_decaps(c: &mut Criterion) {
             });
         };
     }
-    decaps_bench!("libcrux ML-KEM-768", libcrux_psq::impls::MlKem768);
-    decaps_bench!("libcrux X25519", libcrux_psq::impls::X25519);
+    decaps_bench!("libcrux ML-KEM-768", libcrux_psq::legacy::impls::MlKem768);
+    decaps_bench!("libcrux X25519", libcrux_psq::legacy::impls::X25519);
     decaps_bench!(
         "libcrux XWingKemDraft06",
-        libcrux_psq::impls::XWingKemDraft06
+        libcrux_psq::legacy::impls::XWingKemDraft06
     );
     decaps_bench!(
         "classic_mceliece_rust (mceliece460896f)",
-        libcrux_psq::classic_mceliece::ClassicMcEliece
+        libcrux_psq::legacy::classic_mceliece::ClassicMcEliece
     );
 }
 
