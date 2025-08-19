@@ -22,7 +22,7 @@ use super::{InitiatorInnerPayloadOut, InitiatorOuterPayloadOut};
 
 pub struct RegistrationInitiator<'a, Rng: CryptoRng> {
     responder_longterm_ecdh_pk: &'a DHPublicKey,
-    responder_longterm_pq_pk: Option<&'a PQPublicKey>,
+    responder_longterm_pq_pk: Option<PQPublicKey<'a>>,
     initiator_longterm_ecdh_keys: &'a DHKeyPair,
     inner_aad: &'a [u8],
     outer_aad: &'a [u8],
@@ -56,7 +56,7 @@ impl<'a, Rng: CryptoRng> RegistrationInitiator<'a, Rng> {
     pub(crate) fn new(
         initiator_longterm_ecdh_keys: &'a DHKeyPair,
         responder_longterm_ecdh_pk: &'a DHPublicKey,
-        responder_longterm_pq_pk: Option<&'a PQPublicKey>,
+        responder_longterm_pq_pk: Option<PQPublicKey<'a>>,
         ctx: &[u8],
         inner_aad: &'a [u8],
         outer_aad: &'a [u8],
@@ -104,6 +104,7 @@ impl<'a, Rng: CryptoRng> Channel<Error> for RegistrationInitiator<'a, Rng> {
 
         let pq_encaps_pair = self
             .responder_longterm_pq_pk
+            .as_ref()
             .map(|pk| pk.encapsulate(&mut self.rng));
 
         let (pq_encapsulation, pq_shared_secret) =

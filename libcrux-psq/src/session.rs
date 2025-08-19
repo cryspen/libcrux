@@ -104,13 +104,13 @@ fn derive_pk_binder(
     key: &SessionKey,
     initiator_ecdh_pk: &DHPublicKey,
     responder_ecdh_pk: &DHPublicKey,
-    responder_pq_pk: Option<&PQPublicKey>,
+    responder_pq_pk: Option<PQPublicKey<'_>>,
 ) -> Result<[u8; PK_BINDER_LEN], SessionError> {
     #[derive(TlsSerialize, TlsSize)]
     struct PkBinderInfo<'a> {
         initiator_ecdh_pk: &'a DHPublicKey,
         responder_ecdh_pk: &'a DHPublicKey,
-        responder_pq_pk: Option<&'a PQPublicKey>,
+        responder_pq_pk: Option<PQPublicKey<'a>>,
     }
 
     let info = PkBinderInfo {
@@ -148,7 +148,7 @@ impl Session {
         k2: AEADKey,
         initiator_ecdh_pk: &DHPublicKey,
         responder_ecdh_pk: &DHPublicKey,
-        responder_pq_pk: Option<&PQPublicKey>,
+        responder_pq_pk: Option<PQPublicKey<'_>>,
         is_initiator: bool,
     ) -> Result<Self, SessionError> {
         let session_key = derive_session_key(k2, tx2)?;
@@ -192,7 +192,7 @@ impl Session {
         bytes: &[u8],
         initiator_ecdh_pk: &DHPublicKey,
         responder_ecdh_pk: &DHPublicKey,
-        responder_pq_pk: Option<&PQPublicKey>,
+        responder_pq_pk: Option<PQPublicKey<'_>>,
     ) -> Result<Self, SessionError> {
         let session = Session::tls_deserialize(&mut Cursor::new(bytes))
             .map_err(|e| SessionError::Deserialize(e))?;

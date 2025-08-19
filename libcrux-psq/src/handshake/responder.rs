@@ -58,7 +58,7 @@ pub struct Responder<'a, Rng: CryptoRng> {
     recent_keys: VecDeque<DHPublicKey>,
     recent_keys_upper_bound: usize,
     longterm_ecdh_keys: &'a DHKeyPair,
-    longterm_pq_keys: Option<&'a PQKeyPair>,
+    longterm_pq_keys: Option<PQKeyPair<'a>>,
     context: &'a [u8],
     aad: &'a [u8],
     rng: Rng,
@@ -79,7 +79,7 @@ pub struct ResponderRegistrationPayloadOut<'a>(VLByteSlice<'a>);
 impl<'a, Rng: CryptoRng> Responder<'a, Rng> {
     pub fn new(
         longterm_ecdh_keys: &'a DHKeyPair,
-        longterm_pq_keys: Option<&'a PQKeyPair>,
+        longterm_pq_keys: Option<PQKeyPair<'a>>,
         context: &'a [u8],
         aad: &'a [u8],
         recent_keys_upper_bound: usize,
@@ -169,9 +169,9 @@ impl<'a, Rng: CryptoRng> Responder<'a, Rng> {
             .pq_encapsulation
             .as_ref()
             .zip(self.longterm_pq_keys)
-            .map(|(enc, longterm_pq_keys)| longterm_pq_keys.sk.decapsulate(enc));
+            .map(|(enc, longterm_pq_keys)| longterm_pq_keys.private_key().decapsulate(enc));
 
-        let responder_pq_pk_opt = self.longterm_pq_keys.map(|keys| &keys.pk);
+        let responder_pq_pk_opt = self.longterm_pq_keys.as_ref().map(|keys| keys.public_key());
 
         let tx1 = tx1(
             tx0,
@@ -380,7 +380,7 @@ impl<'a, Rng: CryptoRng> IntoSession for Responder<'a, Rng> {
             return Err(SessionError::IntoSession);
         };
 
-        let responder_pq_pk = self.longterm_pq_keys.map(|key_pair| &key_pair.pk);
+        let responder_pq_pk = self.longterm_pq_keys.map(|key_pair| key_pair.public_key());
 
         Session::new(
             state.tx2,

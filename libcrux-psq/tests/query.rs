@@ -1,5 +1,5 @@
 use libcrux_psq::{
-    handshake::{builder, dhkem::DHKeyPair, pqkem::PQKeyPair},
+    handshake::{builder, dhkem::DHKeyPair},
     traits::*,
 };
 
@@ -17,7 +17,7 @@ fn query() {
     // External setup
     let responder_ecdh_keys = DHKeyPair::new(&mut rng);
 
-    let responder_pq_keys = PQKeyPair::new(&mut rng);
+    let responder_pq_keys = libcrux_ml_kem::mlkem768::rand::generate_key_pair(&mut rng);
 
     // Setup initiator
     let mut initiator = builder::Builder::new(rand::rng())
