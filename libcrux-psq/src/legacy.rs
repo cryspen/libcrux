@@ -72,8 +72,6 @@ impl From<TryFromSliceError> for Error {
 const PSK_LENGTH: usize = 32;
 type Psk = [u8; PSK_LENGTH];
 
-#[cfg(feature = "classic-mceliece")]
-pub mod classic_mceliece;
 pub mod cred;
 pub mod impls;
 pub mod psk_registration;

@@ -76,6 +76,7 @@ impl<'a> Serialize for SharedSecret<'a> {
 /// A code-based KEM based on the McEliece cryptosystem.
 pub struct ClassicMcEliece;
 
+#[cfg(feature = "legacy")]
 impl crate::legacy::traits::private::Seal for ClassicMcEliece {}
 
 // This is only here because `classic-mceliece-rust` still depends on
@@ -147,6 +148,7 @@ impl KEM for ClassicMcEliece {
     }
 }
 
+#[cfg(feature = "legacy")]
 impl crate::legacy::traits::PSQ for ClassicMcEliece {
     type InnerKEM = Self;
 }
@@ -154,10 +156,10 @@ impl crate::legacy::traits::PSQ for ClassicMcEliece {
 #[cfg(test)]
 mod tests {
     use super::*;
-
     use crate::legacy::traits::PSQ;
 
     #[test]
+    #[cfg(feature = "legacy")]
     fn simple_classic_mceliece() {
         let mut rng = rand::rng();
         let (sk, pk) = ClassicMcEliece::generate_key_pair(&mut rng).unwrap();

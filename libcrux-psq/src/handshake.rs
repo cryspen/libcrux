@@ -113,8 +113,8 @@
 //! )
 //! .unwrap();
 //!
-//! let mut channel_i = i_transport.channel().unwrap();
-//! let mut channel_r = r_transport.channel().unwrap();
+//! let mut channel_i = i_transport.transport_channel().unwrap();
+//! let mut channel_r = r_transport.transport_channel().unwrap();
 //!
 //! assert_eq!(channel_i.identifier(), channel_r.identifier());
 //!

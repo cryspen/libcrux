@@ -463,11 +463,11 @@ mod tests {
     #[test]
     #[cfg(feature = "classic-mceliece")]
     fn registration_ed25519_classic_mceliece() {
-        use crate::legacy::classic_mceliece::ClassicMcEliece;
+        use crate::classic_mceliece::ClassicMcEliece;
 
         let mut rng = rand::rng();
         let (receiver_pqsk, receiver_pqpk) =
-            crate::legacy::classic_mceliece::ClassicMcEliece::generate_key_pair(&mut rng).unwrap();
+            crate::classic_mceliece::ClassicMcEliece::generate_key_pair(&mut rng).unwrap();
         let (sk, pk) = libcrux_ed25519::generate_key_pair(&mut rng).unwrap();
 
         let sctx = b"test context";

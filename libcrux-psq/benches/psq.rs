@@ -174,7 +174,7 @@ pub fn psq_encaps(c: &mut Criterion) {
     );
     encaps_bench!(
         "classic_mceliece_rust (mceliece460896f)",
-        libcrux_psq::legacy::classic_mceliece::ClassicMcEliece
+        libcrux_psq::classic_mceliece::ClassicMcEliece
     );
 }
 
@@ -220,7 +220,7 @@ pub fn psq_decaps(c: &mut Criterion) {
     );
     decaps_bench!(
         "classic_mceliece_rust (mceliece460896f)",
-        libcrux_psq::legacy::classic_mceliece::ClassicMcEliece
+        libcrux_psq::classic_mceliece::ClassicMcEliece
     );
 }
 
