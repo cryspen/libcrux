@@ -74,7 +74,7 @@ pub(crate) trait Absorb<const N: usize> {
 #[hax_lib::fstar::replace(
     interface,
     "
-class t_Squeeze1 (v_Self: Type0) (v_T: Type0) = {
+class t_Squeeze (v_Self: Type0) (v_T: Type0) = {
   f_squeeze_pre:v_RATE: usize -> v_Self -> t_Slice u8 -> usize -> usize -> Type0;
   f_squeeze_post:v_RATE: usize -> v_Self -> t_Slice u8 -> usize -> usize -> t_Slice u8 -> Type0;
   f_squeeze:v_RATE: usize -> x0: v_Self -> x1: t_Slice u8 -> x2: usize -> x3: usize
@@ -84,9 +84,13 @@ class t_Squeeze1 (v_Self: Type0) (v_T: Type0) = {
 }
 "
 )]
-pub(crate) trait Squeeze1<T: KeccakItem<1>> {
+pub(crate) trait Squeeze<T: KeccakItem<1>> {
     fn squeeze<const RATE: usize>(&self, out: &mut [u8], start: usize, len: usize);
 }
+
+// TODO: Renaming the squeeze functions of the Squeeze2 and Squeeze4 Trait is currently
+// necessary because F* will not find the correct pre conditions otherwise. This is
+// most likely fixed when doing full type checking.
 
 /// Trait to squeeze bytes out of the state.
 ///

@@ -1,5 +1,3 @@
-#![allow(unused_unsafe)]
-
 #[cfg(all(target_arch = "x86", not(hax)))]
 pub use core::arch::x86::*;
 #[cfg(all(target_arch = "x86_64", not(hax)))]

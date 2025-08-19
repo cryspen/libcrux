@@ -5,7 +5,7 @@ use crate::{generic_keccak::KeccakState, traits::*};
 #[inline(always)]
 fn rotate_left<const LEFT: i32, const RIGHT: i32>(x: u64) -> u64 {
     debug_assert!(LEFT + RIGHT == 64);
-    u64::rotate_left(x, LEFT as u32)
+    x.rotate_left(LEFT as u32)
 }
 
 #[inline(always)]
@@ -142,7 +142,7 @@ impl Absorb<1> for KeccakState<1, u64> {
     }
 }
 
-impl Squeeze1<u64> for KeccakState<1, u64> {
+impl Squeeze<u64> for KeccakState<1, u64> {
     fn squeeze<const RATE: usize>(&self, out: &mut [u8], start: usize, len: usize) {
         store_block::<RATE>(&self.st, out, start, len);
     }
