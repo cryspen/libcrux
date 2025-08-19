@@ -1,6 +1,6 @@
 use crate::{
     generic_keccak::KeccakState,
-    traits::{Absorb, KeccakItem, Squeeze},
+    traits::{Absorb, KeccakItem, Squeeze1},
 };
 
 /// The internal keccak state that can also buffer inputs to absorb.
@@ -183,7 +183,7 @@ impl<const RATE: usize, STATE: KeccakItem<1>> KeccakXofState<1, RATE, STATE> {
     #[inline(always)]
     pub(crate) fn squeeze(&mut self, out: &mut [u8])
     where
-        KeccakState<1, STATE>: Squeeze<STATE>,
+        KeccakState<1, STATE>: Squeeze1<STATE>,
     {
         if self.sponge {
             // If we called `squeeze` before, call f1600 first.

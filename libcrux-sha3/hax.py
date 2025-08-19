@@ -57,7 +57,7 @@ class extractAction(argparse.Action):
             cargo_args = []
         else:
             cargo_args = ["-C", "--features", "simd128,simd256", ";"]
-        
+
         cargo_hax_into = [
             "cargo",
             "hax",

@@ -142,7 +142,7 @@ impl Absorb<1> for KeccakState<1, u64> {
     }
 }
 
-impl Squeeze<u64> for KeccakState<1, u64> {
+impl Squeeze1<u64> for KeccakState<1, u64> {
     fn squeeze<const RATE: usize>(&self, out: &mut [u8], start: usize, len: usize) {
         store_block::<RATE>(&self.st, out, start, len);
     }
