@@ -16,7 +16,6 @@ macro_rules! impl_signature_trait {
 
         /// The [`arrayref`](libcrux_traits::signature::arrayref) version of the Sign trait.
         impl arrayref::Sign<$bytes, $bytes> for $alias {
-
             /// The salt, provided as a `&'a [u8]`.
             type SignAux<'a> = &'a [u8];
             type SigningKey<'a, const LEN: usize> = &'a generic_keys::PrivateKey<LEN, u8>;
@@ -37,7 +36,6 @@ macro_rules! impl_signature_trait {
                 .map_err(|e| match e {
                     crate::Error::MessageTooLarge => arrayref::SignError::InvalidPayloadLength,
                     _ => arrayref::SignError::LibraryError,
-
                 })
             }
         }
@@ -60,10 +58,11 @@ macro_rules! impl_signature_trait {
                     signature,
                 )
                 .map_err(|e| match e {
-                    crate::Error::InvalidSignatureLength => arrayref::VerifyError::InvalidSignatureBufferLength,
+                    crate::Error::InvalidSignatureLength => {
+                        arrayref::VerifyError::InvalidSignatureBufferLength
+                    }
                     crate::Error::MessageTooLarge => arrayref::VerifyError::InvalidPayloadLength,
                     _ => arrayref::VerifyError::LibraryError,
-
                 })
             }
         }
@@ -71,7 +70,6 @@ macro_rules! impl_signature_trait {
         // manual implementation of sign slice trait
         /// The [`slice`](libcrux_traits::signature::slice) version of the Sign trait.
         impl slice::Sign for $alias {
-
             /// The salt, provided as a `&'a [u8]`.
             type SignAux<'a> = &'a [u8];
             type SigningKey<'a> = generic_keys::VarLenPrivateKey<'a, u8>;
@@ -83,7 +81,6 @@ macro_rules! impl_signature_trait {
                 salt: &[u8],
             ) -> Result<(), slice::SignError> {
                 sign_varlen(
-
                     crate::DigestAlgorithm::$digest_alg,
                     &signing_key,
                     payload,
@@ -93,8 +90,6 @@ macro_rules! impl_signature_trait {
                 .map_err(|e| match e {
                     crate::Error::MessageTooLarge => slice::SignError::InvalidPayloadLength,
                     _ => slice::SignError::LibraryError,
-
-
                 })
             }
         }
@@ -111,22 +106,16 @@ macro_rules! impl_signature_trait {
                 payload: &[u8],
                 signing_key: &generic_keys::PrivateKey<$bytes, U8>,
                 salt: &[u8],
-
             ) -> Result<[u8; $bytes], secrets::SignError> {
-
                 use libcrux_secrets::DeclassifyRef;
 
                 <Self as owned::Sign<_, _>>::sign(payload, signing_key.declassify_ref(), salt)
-
             }
-
         }
-
 
         libcrux_traits::impl_verify_slice_trait!($alias => $bytes, $bytes,  u32, salt_len);
 
         // TODO: owned trait not appearing in docs
-
 
     };
 }
