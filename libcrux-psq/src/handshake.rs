@@ -34,7 +34,7 @@
 //! let mut payload_buf_initiator = vec![0u8; 4096];
 //!
 //! // External setup
-//! let responder_pq_keys = PQKeyPair::new(&mut rng);
+//! let responder_pq_keys = libcrux_ml_kem::mlkem768::rand::generate_key_pair(&mut rng);
 //!
 //! let responder_ecdh_keys = DHKeyPair::new(&mut rng);
 //! let initiator_ecdh_keys = DHKeyPair::new(&mut rng);
@@ -46,7 +46,7 @@
 //!     .context(ctx)
 //!     .longterm_ecdh_keys(&initiator_ecdh_keys)
 //!     .peer_longterm_ecdh_pk(&responder_ecdh_keys.pk)
-//!     .peer_longterm_pq_pk(&responder_pq_keys.pk)
+//!     .peer_longterm_pq_pk(responder_pq_keys.public_key())
 //!     .build_registration_initiator().unwrap();
 //!
 //! // Setup responder
@@ -109,7 +109,7 @@
 //!     &msg_channel,
 //!     &initiator_ecdh_keys.pk,
 //!     &responder_ecdh_keys.pk,
-//!     Some(&responder_pq_keys.pk),
+//!     Some(responder_pq_keys.public_key().into()),
 //! )
 //! .unwrap();
 //!

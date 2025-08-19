@@ -14,9 +14,9 @@ pub struct Builder<'a, Rng: CryptoRng> {
     inner_aad: &'a [u8],
     outer_aad: &'a [u8],
     longterm_ecdh_keys: Option<&'a DHKeyPair>,
-    longterm_pq_keys: Option<&'a PQKeyPair>,
+    longterm_pq_keys: Option<PQKeyPair<'a>>,
     peer_longterm_ecdh_pk: Option<&'a DHPublicKey>,
-    peer_longterm_pq_pk: Option<&'a PQPublicKey>,
+    peer_longterm_pq_pk: Option<PQPublicKey<'a>>,
     recent_keys_upper_bound: Option<usize>,
 }
 
@@ -63,8 +63,8 @@ impl<'a, Rng: CryptoRng> Builder<'a, Rng> {
     }
 
     /// Set the long-term PQ key pair.
-    pub fn longterm_pq_keys(mut self, longterm_pq_keys: &'a PQKeyPair) -> Self {
-        self.longterm_pq_keys = Some(longterm_pq_keys);
+    pub fn longterm_pq_keys(mut self, longterm_pq_keys: impl Into<PQKeyPair<'a>>) -> Self {
+        self.longterm_pq_keys = Some(longterm_pq_keys.into());
         self
     }
 
@@ -75,8 +75,8 @@ impl<'a, Rng: CryptoRng> Builder<'a, Rng> {
     }
 
     /// Set the peer's long-term PQ public key.
-    pub fn peer_longterm_pq_pk(mut self, peer_longterm_pq_pk: &'a PQPublicKey) -> Self {
-        self.peer_longterm_pq_pk = Some(peer_longterm_pq_pk);
+    pub fn peer_longterm_pq_pk(mut self, peer_longterm_pq_pk: impl Into<PQPublicKey<'a>>) -> Self {
+        self.peer_longterm_pq_pk = Some(peer_longterm_pq_pk.into());
         self
     }
 

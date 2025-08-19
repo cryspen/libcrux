@@ -1,57 +1,115 @@
 use libcrux_ml_kem::{
     mlkem768::{
-        decapsulate,
-        rand::{encapsulate, generate_key_pair},
-        MlKem768Ciphertext, MlKem768PrivateKey, MlKem768PublicKey,
+        decapsulate, rand::encapsulate, MlKem768Ciphertext, MlKem768KeyPair, MlKem768PrivateKey,
+        MlKem768PublicKey,
     },
     MlKemSharedSecret,
 };
 use rand::CryptoRng;
 use tls_codec::{TlsDeserialize, TlsSerialize, TlsSerializeBytes, TlsSize};
 
-#[derive(TlsSerialize, TlsSize)]
+#[derive(TlsSerialize, TlsSize, Copy, Clone)]
+#[repr(u8)]
 /// A PQ-KEM public key
-pub struct PQPublicKey(MlKem768PublicKey);
+pub enum PQPublicKey<'a> {
+    MlKem768(&'a MlKem768PublicKey),
+}
+
+impl<'a> From<&'a MlKem768PublicKey> for PQPublicKey<'a> {
+    fn from(value: &'a MlKem768PublicKey) -> Self {
+        Self::MlKem768(value)
+    }
+}
 
 /// A PQ-KEM private key
-pub struct PQPrivateKey(MlKem768PrivateKey);
+pub enum PQPrivateKey<'a> {
+    MlKem768(&'a MlKem768PrivateKey),
+}
+
+impl<'a> From<&'a MlKem768PrivateKey> for PQPrivateKey<'a> {
+    fn from(value: &'a MlKem768PrivateKey) -> Self {
+        Self::MlKem768(value)
+    }
+}
 
 /// Wrapper type for PQ-KEM key pairs
-pub struct PQKeyPair {
-    pub pk: PQPublicKey,
-    pub(crate) sk: PQPrivateKey,
+#[derive(Copy, Clone)]
+pub enum PQKeyPair<'a> {
+    MlKem768 {
+        pk: &'a MlKem768PublicKey,
+        sk: &'a MlKem768PrivateKey,
+    },
+}
+
+impl<'a> From<&'a MlKem768KeyPair> for PQKeyPair<'a> {
+    fn from(value: &'a MlKem768KeyPair) -> Self {
+        Self::MlKem768 {
+            pk: value.public_key(),
+            sk: value.private_key(),
+        }
+    }
 }
 
 #[derive(TlsSerialize, TlsDeserialize, TlsSize)]
+#[repr(u8)]
 /// A PQ-KEM key encapsulation
-pub struct PQCiphertext(MlKem768Ciphertext);
+pub enum PQCiphertext {
+    MlKem768(MlKem768Ciphertext),
+}
+
+impl From<MlKem768Ciphertext> for PQCiphertext {
+    fn from(value: MlKem768Ciphertext) -> Self {
+        Self::MlKem768(value)
+    }
+}
 
 #[derive(TlsSerializeBytes, TlsSize)]
 /// A PQ-KEM shared secret
-pub struct PQSharedSecret(MlKemSharedSecret);
+#[repr(u8)]
+pub enum PQSharedSecret {
+    MlKem768(MlKemSharedSecret),
+}
 
-impl PQPublicKey {
+impl From<MlKemSharedSecret> for PQSharedSecret {
+    fn from(value: MlKemSharedSecret) -> Self {
+        Self::MlKem768(value)
+    }
+}
+
+impl<'a> PQPublicKey<'a> {
     /// Encapsulate a PQ-shared secret towards the given PQ-KEM public key
     pub(crate) fn encapsulate(&self, rng: &mut impl CryptoRng) -> (PQCiphertext, PQSharedSecret) {
-        let (ciphertext, shared_secret) = encapsulate(&self.0, rng);
-        (PQCiphertext(ciphertext), PQSharedSecret(shared_secret))
+        match &self {
+            PQPublicKey::MlKem768(ml_kem_public_key) => {
+                let (ciphertext, shared_secret) = encapsulate(ml_kem_public_key, rng);
+                (ciphertext.into(), shared_secret.into())
+            }
+        }
     }
 }
 
-impl PQPrivateKey {
+impl<'a> PQPrivateKey<'a> {
     /// Decapsulate a PQ-shared secret from an encapsulation
-    pub(crate) fn decapsulate(&self, enc: &PQCiphertext) -> PQSharedSecret {
-        PQSharedSecret(decapsulate(&self.0, &enc.0))
+    pub(crate) fn decapsulate(self, enc: &PQCiphertext) -> PQSharedSecret {
+        match (self, enc) {
+            (
+                PQPrivateKey::MlKem768(ml_kem_private_key),
+                PQCiphertext::MlKem768(ml_kem_ciphertext),
+            ) => decapsulate(ml_kem_private_key, ml_kem_ciphertext).into(),
+        }
     }
 }
 
-impl PQKeyPair {
-    /// Generate a new PQ-KEM key pair
-    pub fn new(rng: &mut impl CryptoRng) -> Self {
-        let (sk, pk) = generate_key_pair(rng).into_parts();
-        PQKeyPair {
-            pk: PQPublicKey(pk),
-            sk: PQPrivateKey(sk),
+impl<'a> PQKeyPair<'a> {
+    pub(crate) fn private_key(self) -> PQPrivateKey<'a> {
+        match self {
+            PQKeyPair::MlKem768 { sk, .. } => sk.into(),
+        }
+    }
+
+    pub fn public_key(self) -> PQPublicKey<'a> {
+        match self {
+            PQKeyPair::MlKem768 { pk, .. } => pk.into(),
         }
     }
 }

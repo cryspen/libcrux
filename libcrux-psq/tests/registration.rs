@@ -1,5 +1,5 @@
 use libcrux_psq::{
-    handshake::{dhkem::DHKeyPair, pqkem::PQKeyPair, *},
+    handshake::{dhkem::DHKeyPair, *},
     session::Session,
     traits::*,
 };
@@ -16,7 +16,7 @@ fn registration(pq: bool) {
     let mut payload_buf_initiator = vec![0u8; 4096];
 
     // External setup
-    let responder_pq_keys = PQKeyPair::new(&mut rng);
+    let responder_pq_keys = libcrux_ml_kem::mlkem768::rand::generate_key_pair(&mut rng);
 
     let responder_ecdh_keys = DHKeyPair::new(&mut rng);
     let initiator_ecdh_keys = DHKeyPair::new(&mut rng);
@@ -30,7 +30,7 @@ fn registration(pq: bool) {
         .peer_longterm_ecdh_pk(&responder_ecdh_keys.pk);
 
     if pq {
-        initiator = initiator.peer_longterm_pq_pk(&responder_pq_keys.pk);
+        initiator = initiator.peer_longterm_pq_pk(responder_pq_keys.public_key());
     }
 
     let mut initiator = initiator.build_registration_initiator().unwrap();
@@ -98,7 +98,7 @@ fn registration(pq: bool) {
         &session_storage,
         &initiator_ecdh_keys.pk,
         &responder_ecdh_keys.pk,
-        pq.then_some(&responder_pq_keys.pk),
+        pq.then_some(responder_pq_keys.public_key().into()),
     )
     .unwrap();
 
