@@ -79,7 +79,7 @@ const PSK_LENGTH: usize = 32;
 type Psk = [u8; PSK_LENGTH];
 
 pub mod cred;
-pub mod protocol;
+pub mod handshake;
 pub mod psk_registration;
 
 #[cfg(feature = "classic-mceliece")]

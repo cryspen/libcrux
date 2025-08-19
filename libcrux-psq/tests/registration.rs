@@ -1,5 +1,5 @@
 use libcrux_psq::protocol::{
-    api::{IntoSession, Protocol, Session},
+    api::{Channel, IntoSession, Session},
     dhkem::DHKeyPair,
     pqkem::PQKeyPair,
     *,
