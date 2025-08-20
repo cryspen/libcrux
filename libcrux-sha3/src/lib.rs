@@ -24,7 +24,7 @@ pub type Sha3_384Digest = [u8; 48];
 pub type Sha3_512Digest = [u8; 64];
 
 /// The Digest Algorithm.
-#[cfg_attr(not(eurydice), derive(Copy, Clone, Debug, PartialEq))]
+#[cfg_attr(not(eurydice), derive(Clone, Copy, Debug, PartialEq))]
 #[repr(u32)]
 pub enum Algorithm {
     /// SHA3 224
@@ -40,7 +40,9 @@ pub enum Algorithm {
     Sha512 = 4,
 }
 
+#[hax_lib::attributes]
 impl From<u32> for Algorithm {
+    #[hax_lib::requires(v <= 4)]
     fn from(v: u32) -> Algorithm {
         match v {
             1 => Algorithm::Sha224,

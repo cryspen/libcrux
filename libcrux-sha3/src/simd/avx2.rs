@@ -241,7 +241,7 @@ impl Absorb<4> for KeccakState<4, Vec256> {
 }
 
 impl Squeeze4<Vec256> for KeccakState<4, Vec256> {
-    fn squeeze<const RATE: usize>(
+    fn squeeze4<const RATE: usize>(
         &self,
         out0: &mut [u8],
         out1: &mut [u8],
