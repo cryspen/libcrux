@@ -160,6 +160,7 @@ pub enum HandshakeError {
     OutputBufferShort,
     PayloadTooLong,
     ChannelError,
+    UnsupportedCiphersuite,
     Storage,
     OtherError,
     IdentifierMismatch,

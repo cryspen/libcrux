@@ -461,7 +461,6 @@ mod tests {
     }
 
     #[test]
-    #[cfg(feature = "classic-mceliece")]
     fn registration_ed25519_classic_mceliece() {
         use crate::classic_mceliece::ClassicMcEliece;
 

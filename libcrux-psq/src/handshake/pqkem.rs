@@ -13,12 +13,14 @@ use crate::classic_mceliece::{
     Ciphertext, KeyPair, McElieceRng, PublicKey, SecretKey, SharedSecret,
 };
 
+use super::HandshakeError;
+
 #[derive(TlsSerialize, TlsSize)]
 #[repr(u8)]
 /// A PQ-KEM public key
 pub enum PQPublicKey<'a> {
     MlKem768(&'a MlKem768PublicKey),
-    ClassicMcEliece(PublicKey<'a>),
+    ClassicMcEliece(&'a PublicKey),
 }
 
 impl<'a> From<&'a MlKem768PublicKey> for PQPublicKey<'a> {
@@ -27,8 +29,8 @@ impl<'a> From<&'a MlKem768PublicKey> for PQPublicKey<'a> {
     }
 }
 
-impl<'a> From<PublicKey<'a>> for PQPublicKey<'a> {
-    fn from(value: PublicKey<'a>) -> Self {
+impl<'a> From<&'a PublicKey> for PQPublicKey<'a> {
+    fn from(value: &'a PublicKey) -> Self {
         Self::ClassicMcEliece(value)
     }
 }
@@ -36,7 +38,7 @@ impl<'a> From<PublicKey<'a>> for PQPublicKey<'a> {
 /// A PQ-KEM private key
 pub enum PQPrivateKey<'a> {
     MlKem768(&'a MlKem768PrivateKey),
-    ClassicMcEliece(SecretKey<'a>),
+    ClassicMcEliece(&'a SecretKey),
 }
 
 impl<'a> From<&'a MlKem768PrivateKey> for PQPrivateKey<'a> {
@@ -44,9 +46,8 @@ impl<'a> From<&'a MlKem768PrivateKey> for PQPrivateKey<'a> {
         Self::MlKem768(value)
     }
 }
-
-impl<'a> From<SecretKey<'a>> for PQPrivateKey<'a> {
-    fn from(value: SecretKey<'a>) -> Self {
+impl<'a> From<&'a SecretKey> for PQPrivateKey<'a> {
+    fn from(value: &'a SecretKey) -> Self {
         Self::ClassicMcEliece(value)
     }
 }
@@ -58,8 +59,8 @@ pub enum PQKeyPair<'a> {
         sk: &'a MlKem768PrivateKey,
     },
     ClassicMcEliece {
-        pk: PublicKey<'a>,
-        sk: SecretKey<'a>,
+        pk: &'a PublicKey,
+        sk: &'a SecretKey,
     },
 }
 
@@ -71,12 +72,11 @@ impl<'a> From<&'a MlKem768KeyPair> for PQKeyPair<'a> {
         }
     }
 }
-
-impl<'a> From<KeyPair<'a>> for PQKeyPair<'a> {
-    fn from(value: KeyPair<'a>) -> Self {
+impl<'a> From<&'a KeyPair> for PQKeyPair<'a> {
+    fn from(value: &'a KeyPair) -> Self {
         Self::ClassicMcEliece {
-            pk: value.pk,
-            sk: value.sk,
+            pk: &value.pk,
+            sk: &value.sk,
         }
     }
 }
@@ -94,7 +94,6 @@ impl From<MlKem768Ciphertext> for PQCiphertext {
         Self::MlKem768(value)
     }
 }
-
 impl From<Ciphertext> for PQCiphertext {
     fn from(value: Ciphertext) -> Self {
         Self::ClassicMcEliece(value)
@@ -114,7 +113,6 @@ impl From<MlKemSharedSecret> for PQSharedSecret<'_> {
         Self::MlKem768(value)
     }
 }
-
 impl<'a> From<SharedSecret<'a>> for PQSharedSecret<'a> {
     fn from(value: SharedSecret<'a>) -> Self {
         Self::ClassicMcEliece(value)
@@ -140,34 +138,39 @@ impl<'a> PQPublicKey<'a> {
 
 impl<'a> PQPrivateKey<'a> {
     /// Decapsulate a PQ-shared secret from an encapsulation
-    pub(crate) fn decapsulate(self, enc: &PQCiphertext) -> PQSharedSecret {
+    pub(crate) fn decapsulate(
+        &self,
+        enc: &PQCiphertext,
+    ) -> Result<PQSharedSecret<'static>, HandshakeError> {
         match (self, enc) {
             (
                 PQPrivateKey::MlKem768(ml_kem_private_key),
                 PQCiphertext::MlKem768(ml_kem_ciphertext),
-            ) => decapsulate(ml_kem_private_key, ml_kem_ciphertext).into(),
+            ) => Ok(decapsulate(ml_kem_private_key, ml_kem_ciphertext).into()),
             (
                 PQPrivateKey::ClassicMcEliece(secret_key),
                 PQCiphertext::ClassicMcEliece(ciphertext),
-            ) => SharedSecret(decapsulate_boxed(&ciphertext.0, &secret_key.0)).into(),
+            ) => Ok(SharedSecret(decapsulate_boxed(&ciphertext.0, &secret_key.0)).into()),
             (PQPrivateKey::MlKem768(_), PQCiphertext::ClassicMcEliece(_))
-            | (PQPrivateKey::ClassicMcEliece(_), PQCiphertext::MlKem768(_)) => panic!(), // Incompatible KEM / ciphertext
+            | (PQPrivateKey::ClassicMcEliece(_), PQCiphertext::MlKem768(_)) => {
+                Err(HandshakeError::UnsupportedCiphersuite)
+            } // Incompatible KEM / ciphertext
         }
     }
 }
 
 impl<'a> PQKeyPair<'a> {
-    pub(crate) fn private_key(self) -> PQPrivateKey<'a> {
+    pub(crate) fn private_key(&self) -> PQPrivateKey<'a> {
         match self {
-            PQKeyPair::MlKem768 { sk, .. } => sk.into(),
-            PQKeyPair::ClassicMcEliece { sk, .. } => sk.into(),
+            PQKeyPair::MlKem768 { sk, .. } => PQPrivateKey::MlKem768(*sk),
+            PQKeyPair::ClassicMcEliece { sk, .. } => PQPrivateKey::ClassicMcEliece(*sk),
         }
     }
 
-    pub fn public_key(self) -> PQPublicKey<'a> {
+    pub fn public_key(&self) -> PQPublicKey<'a> {
         match self {
-            PQKeyPair::MlKem768 { pk, .. } => pk.into(),
-            PQKeyPair::ClassicMcEliece { pk, .. } => pk.into(),
+            PQKeyPair::MlKem768 { pk, .. } => PQPublicKey::MlKem768(*pk),
+            PQKeyPair::ClassicMcEliece { pk, .. } => PQPublicKey::ClassicMcEliece(*pk),
         }
     }
 }

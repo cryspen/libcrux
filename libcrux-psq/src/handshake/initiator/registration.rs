@@ -102,14 +102,10 @@ impl<'a, Rng: CryptoRng> Channel<Error> for RegistrationInitiator<'a, Rng> {
             return Ok(0);
         };
 
-        let pq_encaps_pair = self
-            .responder_longterm_pq_pk
-            .as_ref()
-            .map(|pk| pk.encapsulate(&mut self.rng));
-
         let (pq_encapsulation, pq_shared_secret) =
-            if let Some((pq_encaps, pq_shared_secret)) = pq_encaps_pair {
-                (Some(pq_encaps), Some(pq_shared_secret))
+            if let Some(ref responder_longterm_pq_pk) = self.responder_longterm_pq_pk {
+                let (encaps, shared_secret) = responder_longterm_pq_pk.encapsulate(&mut self.rng);
+                (Some(encaps), Some(shared_secret))
             } else {
                 (None, None)
             };
@@ -117,7 +113,7 @@ impl<'a, Rng: CryptoRng> Channel<Error> for RegistrationInitiator<'a, Rng> {
         let tx1 = tx1(
             &state.tx0,
             &self.initiator_longterm_ecdh_keys.pk,
-            self.responder_longterm_pq_pk,
+            self.responder_longterm_pq_pk.as_ref(),
             pq_encapsulation.as_ref(),
         )?;
 
@@ -224,7 +220,7 @@ impl<'a, Rng: CryptoRng> IntoSession for RegistrationInitiator<'a, Rng> {
             state.k2,
             &self.initiator_longterm_ecdh_keys.pk,
             &self.responder_longterm_ecdh_pk,
-            self.responder_longterm_pq_pk,
+            self.responder_longterm_pq_pk.as_ref(),
             true,
         )
     }
