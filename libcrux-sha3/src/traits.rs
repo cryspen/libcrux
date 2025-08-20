@@ -88,9 +88,9 @@ pub(crate) trait Squeeze1<T: KeccakItem<1>> {
     fn squeeze<const RATE: usize>(&self, out: &mut [u8], start: usize, len: usize);
 }
 
-// TODO: Renaming the squeeze functions of the Squeeze2 and Squeeze4 Trait is currently
-// necessary because F* will not find the correct pre conditions otherwise. This is
-// most likely fixed when doing full type checking.
+// Renaming the squeeze functions of the Squeeze2 and Squeeze4 Trait is currently
+// necessary because F* will not find the correct function, pre and post conditions otherwise.
+// Check the follwoing issue: https://github.com/cryspen/hax/issues/1595
 
 /// Trait to squeeze bytes out of the state.
 ///
