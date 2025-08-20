@@ -46,18 +46,21 @@ impl Size for Ciphertext {
 }
 
 /// A wrapper around the `classic_mceliece_rust` type `PublicKey`.
-pub struct PublicKey<'a>(pub(crate) Pk<'a>);
+pub struct PublicKey(pub(crate) Pk<'static>);
 
 /// A wrapper around the `classic_mceliece_rust` type `SecretKey`.
-pub struct SecretKey<'a>(pub(crate) Sk<'a>);
+pub struct SecretKey(pub(crate) Sk<'static>);
 
-pub struct KeyPair<'a> {
-    pub(crate) pk: PublicKey<'a>,
-    pub(crate) sk: SecretKey<'a>,
+/// A key pair wrapper type.
+pub struct KeyPair {
+    /// Public key
+    pub pk: PublicKey,
+    pub(crate) sk: SecretKey,
 }
 
-impl KeyPair<'static> {
-    fn generate_key_pair(rng: &mut impl rand::CryptoRng) -> Self {
+impl KeyPair {
+    /// Generate a new key pair.
+    pub fn generate_key_pair(rng: &mut impl rand::CryptoRng) -> Self {
         let mut rng = McElieceRng::new(rng);
         let (pk, sk) = keypair_boxed(&mut rng);
         Self {
@@ -67,17 +70,27 @@ impl KeyPair<'static> {
     }
 }
 
-impl<'a> Size for PublicKey<'a> {
+impl Size for PublicKey {
     fn tls_serialized_len(&self) -> usize {
         VLByteSlice(self.0.as_ref()).tls_serialized_len()
     }
 }
-impl<'a> Serialize for PublicKey<'a> {
+impl Serialize for PublicKey {
+    fn tls_serialize<W: std::io::Write>(&self, writer: &mut W) -> Result<usize, tls_codec::Error> {
+        VLByteSlice(self.0.as_ref()).tls_serialize(writer)
+    }
+}
+impl<'a> Serialize for &'a PublicKey {
     fn tls_serialize<W: std::io::Write>(&self, writer: &mut W) -> Result<usize, tls_codec::Error> {
         VLByteSlice(self.0.as_ref()).tls_serialize(writer)
     }
 }
 
+impl<'a> Size for &'a PublicKey {
+    fn tls_serialized_len(&self) -> usize {
+        VLByteSlice(self.0.as_ref()).tls_serialized_len()
+    }
+}
 impl<'a> Size for SharedSecret<'a> {
     fn tls_serialized_len(&self) -> usize {
         VLByteSlice(self.0.as_ref()).tls_serialized_len()
@@ -141,14 +154,14 @@ impl KEM for ClassicMcEliece {
     /// The KEM's shared secret.
     type SharedSecret = SharedSecret<'static>;
     /// The KEM's encapsulation key.
-    type EncapsulationKey = PublicKey<'static>;
+    type EncapsulationKey = PublicKey;
     /// The KEM's decapsulation key.
     type DecapsulationKey = Sk<'static>;
 
     /// Generate a pair of encapsulation and decapsulation keys.
     fn generate_key_pair(
         rng: &mut impl rand::CryptoRng,
-    ) -> Result<KEMKeyPair<Sk<'static>, PublicKey<'static>>, KEMError> {
+    ) -> Result<KEMKeyPair<Sk<'static>, PublicKey>, KEMError> {
         let mut rng = McElieceRng::new(rng);
         let (pk, sk) = keypair_boxed(&mut rng);
         Ok((sk, PublicKey(pk)))

@@ -165,18 +165,25 @@ impl<'a, Rng: CryptoRng> Responder<'a, Rng> {
         k0: &AEADKey,
         initiator_inner_message: &HandshakeMessage,
     ) -> Result<(InitiatorInnerPayload, Transcript, AEADKey), Error> {
-        let pq_shared_secret = initiator_inner_message
-            .pq_encapsulation
-            .as_ref()
-            .zip(self.longterm_pq_keys.as_ref())
-            .map(|(enc, longterm_pq_keys)| longterm_pq_keys.private_key().decapsulate(enc));
+        let pq_shared_secret = match (
+            initiator_inner_message.pq_encapsulation.as_ref(),
+            self.longterm_pq_keys.as_ref(),
+        ) {
+            (None, None) | (None, Some(_)) => None,
+            (Some(_), None) => return Err(Error::UnsupportedCiphersuite),
+            (Some(encapsulation), Some(longterm_pq_keys)) => {
+                let sk = longterm_pq_keys.private_key();
+                let shared_secret = sk.decapsulate(encapsulation)?;
+                Some(shared_secret)
+            }
+        };
 
-        let responder_pq_pk_opt = self.longterm_pq_keys.map(|keys| keys.public_key());
+        let responder_pq_pk_opt = self.longterm_pq_keys.as_ref().map(|keys| keys.public_key());
 
         let tx1 = tx1(
             tx0,
             &initiator_inner_message.pk,
-            responder_pq_pk_opt,
+            responder_pq_pk_opt.as_ref(),
             initiator_inner_message.pq_encapsulation.as_ref(),
         )?;
 
@@ -351,20 +358,31 @@ impl<'a, Rng: CryptoRng> Channel<Error> for Responder<'a, Rng> {
 
             InitiatorOuterPayload::Registration(initiator_inner_message) => {
                 // Decrypt the inner message payload.
-                let (initiator_inner_payload, tx1, k1) =
-                    self.decrypt_inner_message(&tx0, &k0, &initiator_inner_message)?;
-                // We're ready to respond to the registration message.
-                self.state = ResponderState::RespondRegistration(
-                    RespondRegistrationState {
-                        tx1,
-                        k1,
-                        initiator_ephemeral_ecdh_pk: initiator_outer_message.pk,
-                        initiator_longterm_ecdh_pk: initiator_inner_message.pk,
+                match self.decrypt_inner_message(&tx0, &k0, &initiator_inner_message) {
+                    Ok((initiator_inner_payload, tx1, k1)) => {
+                        // We're ready to respond to the registration message.
+                        self.state = ResponderState::RespondRegistration(
+                            RespondRegistrationState {
+                                tx1,
+                                k1,
+                                initiator_ephemeral_ecdh_pk: initiator_outer_message.pk,
+                                initiator_longterm_ecdh_pk: initiator_inner_message.pk,
+                            }
+                            .into(),
+                        );
+                        let out_bytes_written =
+                            write_output(initiator_inner_payload.0.as_slice(), out)?;
+                        Ok((bytes_deserialized, out_bytes_written))
                     }
-                    .into(),
-                );
-                let out_bytes_written = write_output(initiator_inner_payload.0.as_slice(), out)?;
-                Ok((bytes_deserialized, out_bytes_written))
+                    Err(Error::UnsupportedCiphersuite) => {
+                        // We can't deal with this message and ignore it.
+                        self.state = ResponderState::Initial;
+
+                        Ok((bytes_deserialized, 0))
+                    }
+
+                    Err(e) => Err(e),
+                }
             }
         }
     }
@@ -387,7 +405,7 @@ impl<'a, Rng: CryptoRng> IntoSession for Responder<'a, Rng> {
             state.k2,
             &initiator_ecdh_pk,
             &self.longterm_ecdh_keys.pk,
-            responder_pq_pk,
+            responder_pq_pk.as_ref(),
             false,
         )
     }

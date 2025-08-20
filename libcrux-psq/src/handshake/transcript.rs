@@ -72,14 +72,14 @@ pub(crate) fn tx0(
 pub(crate) fn tx1(
     tx0: &Transcript,
     initiator_longterm_pk: &DHPublicKey,
-    responder_pq_pk: Option<PQPublicKey<'_>>,
+    responder_pq_pk: Option<&PQPublicKey<'_>>,
     pq_encaps: Option<&PQCiphertext>,
 ) -> Result<Transcript, Error> {
     #[derive(TlsSerialize, TlsSize)]
-    struct Transcript1Inputs<'a, 'b, 'c> {
+    struct Transcript1Inputs<'a> {
         initiator_longterm_pk: &'a DHPublicKey,
-        responder_pq_pk: Option<PQPublicKey<'b>>,
-        pq_encaps: Option<&'c PQCiphertext>,
+        responder_pq_pk: Option<&'a PQPublicKey<'a>>,
+        pq_encaps: Option<&'a PQCiphertext>,
     }
 
     Transcript::add_hash::<TX1_DOMAIN_SEP>(
