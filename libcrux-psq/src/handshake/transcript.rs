@@ -4,9 +4,8 @@ pub const TX0_DOMAIN_SEP: u8 = 0;
 pub const TX1_DOMAIN_SEP: u8 = 1;
 pub const TX2_DOMAIN_SEP: u8 = 2;
 
-use crate::protocol::pqkem::PQCiphertext;
-
-use super::{api::Error, dhkem::DHPublicKey, pqkem::PQPublicKey};
+use super::{dhkem::DHPublicKey, pqkem::PQPublicKey};
+use crate::handshake::{pqkem::PQCiphertext, HandshakeError as Error};
 use libcrux_sha2::{Digest, SHA256_LENGTH};
 
 /// The initial transcript hash.
@@ -73,14 +72,14 @@ pub(crate) fn tx0(
 pub(crate) fn tx1(
     tx0: &Transcript,
     initiator_longterm_pk: &DHPublicKey,
-    responder_pq_pk: Option<&PQPublicKey>,
+    responder_pq_pk: Option<&PQPublicKey<'_>>,
     pq_encaps: Option<&PQCiphertext>,
 ) -> Result<Transcript, Error> {
     #[derive(TlsSerialize, TlsSize)]
-    struct Transcript1Inputs<'a, 'b, 'c> {
+    struct Transcript1Inputs<'a> {
         initiator_longterm_pk: &'a DHPublicKey,
-        responder_pq_pk: Option<&'b PQPublicKey>,
-        pq_encaps: Option<&'c PQCiphertext>,
+        responder_pq_pk: Option<&'a PQPublicKey<'a>>,
+        pq_encaps: Option<&'a PQCiphertext>,
     }
 
     Transcript::add_hash::<TX1_DOMAIN_SEP>(
