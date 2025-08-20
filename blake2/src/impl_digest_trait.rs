@@ -7,7 +7,7 @@ macro_rules! impl_digest_traits {
             type IncrementalState = $blake2;
 
             fn update(state: &mut Self::IncrementalState, chunk: &[u8]) -> Result<(), UpdateError> {
-                // XXX: maps all known errors returned by this function
+                // maps all known errors returned by this function
                 state.update(chunk).map_err(|e| match e {
                     Error::InvalidChunkLength => UpdateError::InvalidPayloadLength,
                     Error::MaximumLengthExceeded => UpdateError::MaximumLengthExceeded,
