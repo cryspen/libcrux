@@ -32,7 +32,7 @@ jobs:
     runs-on: ubuntu-latest
     name: Build on ubuntu-22.04 s390x
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: uraimo/run-on-arch-action@v3
         name: Run
         id: runcmd
