@@ -1,0 +1,20 @@
+diff --git a/inc/symcrypt.h b/inc/symcrypt.h
+index bd34490..d0600a3 100644
+--- a/inc/symcrypt.h
++++ b/inc/symcrypt.h
+@@ -8113,9 +8113,12 @@ typedef const SYMCRYPT_MLKEM_PARAMS * PCSYMCRYPT_MLKEM_PARAMS;
+ // Currently supported ML-KEM parameters
+ // NOTE - support for these structs may be removed in future versions of SymCrypt
+ // as standards change. Only use these parameters for prototyping
+-extern const PCSYMCRYPT_MLKEM_PARAMS    SymCryptMlKemParamsDraft203MlKem512;
+-extern const PCSYMCRYPT_MLKEM_PARAMS    SymCryptMlKemParamsDraft203MlKem768;
+-extern const PCSYMCRYPT_MLKEM_PARAMS    SymCryptMlKemParamsDraft203MlKem1024;
++// extern const PCSYMCRYPT_MLKEM_PARAMS    SymCryptMlKemParamsDraft203MlKem512;
++// extern const PCSYMCRYPT_MLKEM_PARAMS    SymCryptMlKemParamsDraft203MlKem768;
++// extern const PCSYMCRYPT_MLKEM_PARAMS    SymCryptMlKemParamsDraft203MlKem1024;
++__declspec(dllimport) extern const PCSYMCRYPT_MLKEM_PARAMS    SymCryptMlKemParamsDraft203MlKem512;
++__declspec(dllimport) extern const PCSYMCRYPT_MLKEM_PARAMS    SymCryptMlKemParamsDraft203MlKem768;
++__declspec(dllimport) extern const PCSYMCRYPT_MLKEM_PARAMS    SymCryptMlKemParamsDraft203MlKem1024;
+ 
+ PSYMCRYPT_MLKEMKEY
+ SYMCRYPT_CALL
