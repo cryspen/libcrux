@@ -17,6 +17,11 @@ on:
         description: "The hax revision you want this job to use"
         required: false
         type: string
+      ssh_debug:
+        description: "Enable SSH debug session with upterm"
+        required: false
+        type: boolean
+        default: false
 
 env:
   CARGO_TERM_COLOR: always
@@ -105,6 +110,14 @@ jobs:
       - name: 🏃 Prove ML-DSA crate
         working-directory: libcrux-ml-dsa
         run: ./hax.sh prove
+
+      - name: Setup upterm session
+        uses: lhotari/action-upterm@v1
+        if: ${{ failure() || inputs.ssh_debug }}
+        with:
+          limit-access-to-actor: true
+          limit-access-to-users: clementblaudeau,franziskuskiefer,jschneider-bensch,karthikbhargavan,keks,maximebuyse,W95Psp,wysiwys
+          wait-timeout-minutes: 5
         
   mldsa-extract-hax-status:
     if: ${{ always() }}
