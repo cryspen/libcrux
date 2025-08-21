@@ -107,13 +107,21 @@ jobs:
           name: fstar-extractions
           path: .
 
+      - name: Setup upterm session
+        uses: lhotari/action-upterm@v1
+        if: ${{ inputs.ssh_debug }}
+        with:
+          limit-access-to-actor: true
+          limit-access-to-users: clementblaudeau,franziskuskiefer,jschneider-bensch,karthikbhargavan,keks,maximebuyse,W95Psp,wysiwys
+          wait-timeout-minutes: 30
+
       - name: 🏃 Prove ML-DSA crate
         working-directory: libcrux-ml-dsa
         run: ./hax.sh prove
 
       - name: Setup upterm session
         uses: lhotari/action-upterm@v1
-        if: ${{ failure() || inputs.ssh_debug }}
+        if: ${{ failure() }}
         with:
           limit-access-to-actor: true
           limit-access-to-users: clementblaudeau,franziskuskiefer,jschneider-bensch,karthikbhargavan,keks,maximebuyse,W95Psp,wysiwys
