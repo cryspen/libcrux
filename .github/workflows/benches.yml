@@ -1,0 +1,277 @@
+name: Test Comment Action
+
+on:
+  merge_group:
+  pull_request:
+    branches: ["main", "dev"]
+  workflow_dispatch:
+  push:
+    branches: ["main"]
+
+jobs:
+  bench-mlkem:
+    strategy:
+      fail-fast: true
+      matrix:
+        bits: [32, 64]
+        os:
+          - macos-13
+          - macos-latest
+          - ubuntu-latest
+          - windows-latest
+        exclude:
+          # There's no such thing as 32-bit macOS
+          - bits: 32
+            os: "macos-latest"
+          - bits: 32
+            os: "macos-13"
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: bash
+        working-directory: libcrux-ml-kem
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          repository: 'cryspen/libcrux'
+
+      # set up rust env
+
+      - name: Update dependencies
+        run: cargo update
+
+      - run: echo "RUST_TARGET_FLAG=" > $GITHUB_ENV
+        if: ${{ matrix.bits == 64 }}
+
+      - name: 🛠️ Setup Ubuntu x86
+        if: ${{ matrix.bits == 32 &&  matrix.os == 'ubuntu-latest' }}
+        run: |
+          rustup target add i686-unknown-linux-gnu
+          sudo apt-get update
+          sudo apt-get install -y gcc-multilib g++-multilib
+
+      - name: 🛠️ Setup macOS
+        if: ${{  matrix.os == 'macos-latest' }}
+        run: |
+          rustup target add aarch64-apple-darwin
+
+      # Set up 32 bit systems
+
+      - name: 🛠️ Config Windows x86
+        run: echo "RUST_TARGET_FLAG=--target=i686-pc-windows-msvc" > $GITHUB_ENV
+        if: ${{ matrix.bits == 32 && matrix.os == 'windows-latest' }}
+
+      - name: 🛠️ Config Linux x86
+        run: |
+          echo "RUST_TARGET_FLAG=--target=i686-unknown-linux-gnu" > $GITHUB_ENV
+        if: ${{ matrix.bits == 32 && matrix.os == 'ubuntu-latest' }}
+
+      # run benchmarks
+
+      - name: 🏃🏻‍♀️ Benchmarks
+        run: cargo bench --verbose $RUST_TARGET_FLAG -- --output-format bencher | tee bench.txt
+
+      # extract benchmark json
+
+      - name: Extract benchmarks
+        uses: cryspen/benchmark-data-extract-transform@v2
+        with:
+          name: ML-KEM Benchmark
+          tool: 'cargo'
+          os: ${{ matrix.os }}_${{ matrix.bits }}
+          output-file-path: libcrux-ml-kem/bench.txt
+          data-out-path: benchdata-mlkem-${{matrix.os}}-${{matrix.bits}}.json
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: benchdata-mlkem-${{matrix.os}}-${{matrix.bits}}.json
+          path: benchdata-mlkem-${{matrix.os}}-${{matrix.bits}}.json
+
+  bench-mldsa:
+    strategy:
+      fail-fast: true
+      matrix:
+        bits: [32, 64]
+        os:
+          - macos-13
+          - macos-latest
+          - ubuntu-latest
+          - windows-latest
+        exclude:
+          # There's no such thing as 32-bit macOS
+          - bits: 32
+            os: "macos-latest"
+          - bits: 32
+            os: "macos-13"
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: bash
+        working-directory: libcrux-ml-dsa
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          repository: 'cryspen/libcrux'
+
+      # set up rust env
+
+      - name: Update dependencies
+        run: cargo update
+
+      - run: echo "RUST_TARGET_FLAG=" > $GITHUB_ENV
+        if: ${{ matrix.bits == 64 }}
+
+      - name: 🛠️ Setup Ubuntu x86
+        if: ${{ matrix.bits == 32 &&  matrix.os == 'ubuntu-latest' }}
+        run: |
+          rustup target add i686-unknown-linux-gnu
+          sudo apt-get update
+          sudo apt-get install -y gcc-multilib g++-multilib
+
+      - name: 🛠️ Setup macOS
+        if: ${{  matrix.os == 'macos-latest' }}
+        run: |
+          rustup target add aarch64-apple-darwin
+
+      # Set up 32 bit systems
+
+      - name: 🛠️ Config Windows x86
+        run: echo "RUST_TARGET_FLAG=--target=i686-pc-windows-msvc" > $GITHUB_ENV
+        if: ${{ matrix.bits == 32 && matrix.os == 'windows-latest' }}
+
+      - name: 🛠️ Config Linux x86
+        run: |
+          echo "RUST_TARGET_FLAG=--target=i686-unknown-linux-gnu" > $GITHUB_ENV
+        if: ${{ matrix.bits == 32 && matrix.os == 'ubuntu-latest' }}
+
+      # run benchmarks
+
+      - name: 🏃🏻‍♀️ Benchmarks
+        run: cargo bench --bench manual44 --bench manual65 --bench manual87 --verbose $RUST_TARGET_FLAG -- --output-format bencher | tee bench.txt
+
+      # extract benchmark json
+
+      - name: Extract benchmarks
+        uses: cryspen/benchmark-data-extract-transform@v2
+        with:
+          name: ML-DSA Benchmark
+          tool: 'cargo'
+          os: ${{ matrix.os }}_${{ matrix.bits }}
+          output-file-path: libcrux-ml-dsa/bench.txt
+          data-out-path: benchdata-mldsa-${{matrix.os}}-${{matrix.bits}}.json
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: benchdata-mldsa-${{matrix.os}}-${{matrix.bits}}.json
+          path: benchdata-mldsa-${{matrix.os}}-${{matrix.bits}}.json
+
+  merge:
+    runs-on: ubuntu-latest
+    needs: [bench-mlkem, bench-mldsa]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          repository: 'cryspen/libcrux'
+
+      - run: mkdir benchdata
+      - uses: actions/download-artifact@v5
+        with:
+          pattern: benchdata-*.json
+          path: benchdata/
+          merge-multiple: true
+
+      - name: Join per-run data
+        run: |
+          jq -s add benchdata/benchdata-mlkem-* > benchdata-mlkem.json
+          jq -s add benchdata/benchdata-mldsa-* > benchdata-mldsa.json
+
+      # check if the PR branch is on a fork. if it is, post comments.
+      # otherwise, generate page and merge it.
+      - name: Set IS_FORK environment variable
+        run: echo "IS_FORK=${{ github.event.pull_request.head.repo.fork }}" >> $GITHUB_ENV
+
+      # if not a fork, use page generation action
+      - name: Upload ML-DSA benchmarks
+        if: env.IS_FORK == 'false'
+        uses: cryspen/benchmark-upload-and-plot-action@v3
+        with:
+          name: ML-DSA Benchmark
+          input-data-path: benchdata-mldsa.json
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          gh-repository: github.com/${{ github.repository }}
+          group-by: label,keySize,os
+          schema: implementation,keySize,label,hardware,os
+          auto-push: false
+          fail-on-alert: true
+          alert-threshold: 200%
+
+      - name: Upload ML-KEM benchmarks
+        if: env.IS_FORK == 'false'
+        uses: cryspen/benchmark-upload-and-plot-action@v3
+        with:
+          name: ML-KEM Benchmark
+          input-data-path: benchdata-mlkem.json
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          gh-repository: github.com/${{ github.repository }}
+          group-by: os,keySize
+          schema: category,keySize,name,platform,api,os
+          auto-push: false
+          fail-on-alert: true
+          alert-threshold: 200%
+
+      # if a fork, use comment-based action
+      - uses: cryspen/benchmark-comment-and-plot-action@main
+        if: env.IS_FORK == 'true'
+        with:
+          id: mldsa
+          gh-repository: cryspen/libcrux
+          group-by: label,keySize,os
+          schema: implementation,keySize,label,hardware,os
+          input-data-path: benchdata-mldsa.json
+          name: ML-DSA Benchmark
+          output-md: report-mldsa.md
+
+      - name: TODO remove previous checkout
+        run: rm -rf benchmark-data-repository
+
+      - uses: cryspen/benchmark-comment-and-plot-action@main
+        if: env.IS_FORK == 'true'
+        with:
+          id: mlkem
+          gh-repository: cryspen/libcrux
+          group-by: os,keySize
+          schema: category,keySize,name,platform,api,os
+          input-data-path: benchdata-mlkem.json
+          name: ML-KEM Benchmark
+          output-md: report-mlkem.md
+
+      - name: Build comment
+        if: env.IS_FORK == 'true'
+        run: |
+          BASE_HASH="${{ github.event.pull_request.base.sha }}"
+          BASE_HASH_SHORT=$(echo "${{ github.event.pull_request.base.sha }}" | cut -c1-7)
+
+          PR_HEAD_HASH="${{ github.event.pull_request.head.sha }}"
+          PR_HEAD_HASH_SHORT=$(echo "${{ github.event.pull_request.head.sha }}" | cut -c1-7)
+
+          PR_COMMIT_URL="${{ github.server_url }}/${{ github.repository }}/commit/${PR_HEAD_HASH}"
+          BASE_COMMIT_URL="${{ github.server_url }}/${{ github.repository }}/commit/${BASE_HASH}"
+
+          cat >comment.md <<EOF
+          *beep boop, I am the benchmark bot*
+
+          Comparing PR commit [$PR_HEAD_HASH_SHORT]($PR_COMMIT_URL) against baseline [$BASE_HASH_SHORT]($BASE_COMMIT_URL).
+
+          # Benchmark Report
+          
+          $(cat report-mlkem.md)
+
+          $(cat report-mldsa.md)
+          EOF
+      - uses: mshick/add-pr-comment@v2
+        if: env.IS_FORK == 'true'
+        with:
+          message-path: comment.md
+
