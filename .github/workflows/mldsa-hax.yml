@@ -108,7 +108,7 @@ jobs:
           path: .
 
       - name: Setup upterm session
-        uses: lhotari/action-upterm@v1
+        uses: w95psp/action-upterm@main
         if: ${{ inputs.ssh_debug }}
         with:
           limit-access-to-actor: true
@@ -120,7 +120,7 @@ jobs:
         run: ./hax.sh prove
 
       - name: Setup upterm session
-        uses: lhotari/action-upterm@v1
+        uses: w95psp/action-upterm@main
         if: ${{ failure() }}
         with:
           limit-access-to-actor: true
