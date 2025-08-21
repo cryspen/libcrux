@@ -152,13 +152,17 @@ mod portable {
     // Don't inline this to avoid that the compiler optimizes this out.
     #[inline(never)]
     fn is_non_zero_32(selector: u8) -> u32 {
-        core::hint::black_box(((!(selector as u32)).wrapping_add(1) >> 31) & 1)
+        core::hint::black_box(
+            ((!(core::hint::black_box(selector) as u32)).wrapping_add(1) >> 31) & 1,
+        )
     }
 
     // Don't inline this to avoid that the compiler optimizes this out.
     #[inline(never)]
     fn is_non_zero_64(selector: u8) -> u64 {
-        core::hint::black_box(((!(selector as u64)).wrapping_add(1) >> 63) & 1)
+        core::hint::black_box(
+            ((!(core::hint::black_box(selector) as u64)).wrapping_add(1) >> 63) & 1,
+        )
     }
 
     /// This macro implements `Select` for public integer type
@@ -206,7 +210,8 @@ mod portable {
     macro_rules! swap32 {
         ($t:ty, $lhs:expr, $rhs:expr, $selector:expr) => {
             let mask = core::hint::black_box(
-                ((((!($selector as u32)).wrapping_add(1) >> 31) & 1) as $t).wrapping_sub(1),
+                ((((!(core::hint::black_box($selector) as u32)).wrapping_add(1) >> 31) & 1) as $t)
+                    .wrapping_sub(1),
             );
             for i in 0..$lhs.len() {
                 let dummy = !mask & ($lhs[i] ^ $rhs[i]);
