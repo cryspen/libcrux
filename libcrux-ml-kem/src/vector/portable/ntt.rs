@@ -3,7 +3,7 @@ use super::vector_type::*;
 use libcrux_secrets::*;
 
 #[inline(always)]
-#[hax_lib::fstar::before(interface, "[@@ \"opaque_to_smt\"]")]
+#[hax_lib::fstar::before("[@@ \"opaque_to_smt\"]")]
 #[hax_lib::requires(fstar!(r#"v i < 16 /\ v j < 16 /\ v i <> v j /\ 
                             Spec.Utils.is_i16b 1664 $zeta  /\
                             Spec.Utils.is_i16b_array (11207 + 6 * 3328) vec.f_elements /\
@@ -118,7 +118,7 @@ pub(crate) fn ntt_layer_3_step(mut vec: PortableVector, zeta: i16) -> PortableVe
 }
 
 #[inline(always)]
-#[hax_lib::fstar::before(interface, "[@@ \"opaque_to_smt\"]")]
+#[hax_lib::fstar::before("[@@ \"opaque_to_smt\"]")]
 #[hax_lib::requires(fstar!(r#"v i < 16 /\ v j < 16 /\  v i <> v j /\ 
                         Spec.Utils.is_i16b 1664 $zeta /\
                         Spec.Utils.is_i16b_array (4*3328) ${vec}.f_elements"#))]
@@ -267,23 +267,30 @@ pub(crate) fn inv_ntt_layer_3_step(mut vec: PortableVector, zeta: i16) -> Portab
 #[hax_lib::fstar::options(
     "--z3rlimit 250 --split_queries always --query_stats --ext context_prune"
 )]
-#[hax_lib::fstar::before(interface, "[@@ \"opaque_to_smt\"]")]
+#[hax_lib::fstar::before(interface, r#"
+    let ntt_multiply_binomials_post
+      (a b: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
+      (zeta: i16)
+      (i: usize{v i < 8})
+      (out_future: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) =
+            let ai = Seq.index a.f_elements (2 * v i) in
+            let aj = Seq.index a.f_elements (2 * v i + 1) in
+            let bi = Seq.index b.f_elements (2 * v i) in
+            let bj = Seq.index b.f_elements (2 * v i + 1) in
+            let oi = Seq.index out_future.f_elements (2 * v i) in
+            let oj = Seq.index out_future.f_elements (2 * v i + 1) in
+            ((v oi % 3329) == (((v ai * v bi + (v aj * v bj * v zeta * 169)) * 169) % 3329)) /\
+            ((v oj % 3329) == (((v ai * v bj + v aj * v bi) * 169) % 3329))
+"#)]
+#[hax_lib::fstar::before("[@@ \"opaque_to_smt\"]")]
 #[hax_lib::requires(fstar!(r#"v i < 8 /\ Spec.Utils.is_i16b 1664 $zeta /\
         Spec.Utils.is_i16b_array 3328 ${a}.f_elements /\
         Spec.Utils.is_i16b_array 3328 ${b}.f_elements /\
         Spec.Utils.is_i16b_array 3328 ${out}.f_elements "#))]
 #[hax_lib::ensures(|()| fstar!(r#"
         Spec.Utils.is_i16b_array 3328 ${out}_future.f_elements /\
-        (forall k. (k <> 2 * v $i /\ k <> 2 * v $i + 1) ==> 
-                    Seq.index ${out}_future.f_elements k == Seq.index ${out}.f_elements k) /\                 
-        (let ai = Seq.index ${a}.f_elements (2 * v $i) in
-         let aj = Seq.index ${a}.f_elements (2 * v $i + 1) in
-         let bi = Seq.index ${b}.f_elements (2 * v $i) in
-         let bj = Seq.index ${b}.f_elements (2 * v $i + 1) in
-         let oi = Seq.index out_future.f_elements (2 * v $i) in
-         let oj = Seq.index out_future.f_elements (2 * v $i + 1) in
-         ((v oi % 3329) == (((v ai * v bi + (v aj * v bj * v zeta * 169)) * 169) % 3329)) /\
-         ((v oj % 3329) == (((v ai * v bj + v aj * v bi) * 169) % 3329)))"#))]
+        Spec.Utils.modifies2_16 ${out}.f_elements ${out}_future.f_elements (sz 2 *! $i) ((sz 2 *! $i) +! sz 1) /\
+        ntt_multiply_binomials_post ${a} ${b} ${zeta} ${i} ${out}_future"#))]
 pub(crate) fn ntt_multiply_binomials(
     a: &PortableVector,
     b: &PortableVector,
@@ -400,24 +407,33 @@ pub(crate) fn ntt_multiply_binomials(
 }
 
 #[inline(always)]
-#[hax_lib::fstar::options("--z3rlimit 1000")]
+#[hax_lib::fstar::options("--z3rlimit 800 --split_queries always")]
 #[hax_lib::requires(fstar!(r#"Spec.Utils.is_i16b 1664 $zeta0 /\
         Spec.Utils.is_i16b 1664 $zeta1 /\
         Spec.Utils.is_i16b 1664 $zeta2 /\
         Spec.Utils.is_i16b 1664 $zeta3 /\
         Spec.Utils.is_i16b_array 3328 ${lhs}.f_elements /\
         Spec.Utils.is_i16b_array 3328 ${rhs}.f_elements "#))]
-#[hax_lib::ensures(|result| fstar!(r#"Spec.Utils.is_i16b_array 3328 ${result}.f_elements /\
-          (let zetas = Seq.seq_of_list [v zeta0; - v zeta0; v zeta1; - v zeta1; v zeta2; - v zeta2; v zeta3; - v zeta3] in
-          (forall (i:nat). i < 8 ==>
-           (let ai = Seq.index lhs.f_elements (2 * i) in
-            let aj = Seq.index lhs.f_elements (2 * i + 1) in
-            let bi = Seq.index rhs.f_elements (2 * i) in
-            let bj = Seq.index rhs.f_elements (2 * i + 1) in
-            let oi = Seq.index result.f_elements (2 * i) in
-            let oj = Seq.index result.f_elements (2 * i + 1) in
-            ((v oi % 3329) == (((v ai * v bi + (v aj * v bj * (Seq.index zetas i) * 169)) * 169) % 3329)) /\
-            ((v oj % 3329) == (((v ai * v bj + v aj * v bi) * 169) % 3329)))))"#))]
+#[hax_lib::ensures(|result| fstar!(r#"
+        Spec.Utils.is_i16b_array 3328 ${result}.f_elements /\
+        (let nzeta0:i16 = Core.Ops.Arith.f_neg zeta0 in
+         let nzeta1:i16 = Core.Ops.Arith.f_neg zeta1 in
+         let nzeta2:i16 = Core.Ops.Arith.f_neg zeta2 in
+         let nzeta3:i16 = Core.Ops.Arith.f_neg zeta3 in
+         let zetas =
+            Seq.seq_of_list [
+                zeta0;
+                nzeta0;
+                zeta1;
+                nzeta1;
+                zeta2;
+                nzeta2;
+                zeta3;
+                nzeta3
+            ]
+         in
+         Spec.Utils.forall8 (fun i -> ntt_multiply_binomials_post ${lhs} ${rhs} (Seq.index zetas i) (sz i) $result))
+"#))]
 pub(crate) fn ntt_multiply(
     lhs: &PortableVector,
     rhs: &PortableVector,

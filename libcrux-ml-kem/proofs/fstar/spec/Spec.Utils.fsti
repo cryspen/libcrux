@@ -621,6 +621,47 @@ let modifies2_8 #t
     ((v i <> 6 /\ v j <> 6)  ==> Seq.index a 6 == Seq.index b 6) /\
     ((v i <> 7 /\ v j <> 7)  ==> Seq.index a 7 == Seq.index b 7)
 
+let modifies1_16 #t
+    (a b: t_Array t (sz 16))
+    (i:usize{v i < 16}) = 
+//    normalize_term (forall8 (fun j -> (v i <> j) ==> Seq.index a j == Seq.index b j))
+    (v i <> 0  ==> Seq.index a 0 == Seq.index b 0) /\
+    (v i <> 1  ==> Seq.index a 1 == Seq.index b 1) /\
+    (v i <> 2  ==> Seq.index a 2 == Seq.index b 2) /\
+    (v i <> 3  ==> Seq.index a 3 == Seq.index b 3) /\
+    (v i <> 4  ==> Seq.index a 4 == Seq.index b 4) /\
+    (v i <> 5  ==> Seq.index a 5 == Seq.index b 5) /\
+    (v i <> 6  ==> Seq.index a 6 == Seq.index b 6) /\
+    (v i <> 7  ==> Seq.index a 7 == Seq.index b 7) /\
+    (v i <> 8  ==> Seq.index a 8 == Seq.index b 8) /\
+    (v i <> 9  ==> Seq.index a 9 == Seq.index b 9) /\
+    (v i <> 10 ==> Seq.index a 10 == Seq.index b 10) /\
+    (v i <> 11 ==> Seq.index a 11 == Seq.index b 11) /\
+    (v i <> 12 ==> Seq.index a 12 == Seq.index b 12) /\
+    (v i <> 13 ==> Seq.index a 13 == Seq.index b 13) /\
+    (v i <> 14 ==> Seq.index a 14 == Seq.index b 14) /\
+    (v i <> 15 ==> Seq.index a 15 == Seq.index b 15)
+
+let modifies2_16 #t
+    (a b: t_Array t (sz 16))
+    (i:usize{v i < 16}) (j:usize{v j < 16}) =
+    ((v i <> 0  /\ v j <> 0)  ==> Seq.index a 0 == Seq.index b 0) /\
+    ((v i <> 1  /\ v j <> 1)  ==> Seq.index a 1 == Seq.index b 1) /\
+    ((v i <> 2  /\ v j <> 2)  ==> Seq.index a 2 == Seq.index b 2) /\
+    ((v i <> 3  /\ v j <> 3)  ==> Seq.index a 3 == Seq.index b 3) /\
+    ((v i <> 4  /\ v j <> 4)  ==> Seq.index a 4 == Seq.index b 4) /\
+    ((v i <> 5  /\ v j <> 5)  ==> Seq.index a 5 == Seq.index b 5) /\
+    ((v i <> 6  /\ v j <> 6)  ==> Seq.index a 6 == Seq.index b 6) /\
+    ((v i <> 7  /\ v j <> 7)  ==> Seq.index a 7 == Seq.index b 7) /\
+    ((v i <> 8  /\ v j <> 8)  ==> Seq.index a 8 == Seq.index b 8) /\
+    ((v i <> 9  /\ v j <> 9)  ==> Seq.index a 9 == Seq.index b 9) /\
+    ((v i <> 10 /\ v j <> 10) ==> Seq.index a 10 == Seq.index b 10) /\
+    ((v i <> 11 /\ v j <> 11) ==> Seq.index a 11 == Seq.index b 11) /\
+    ((v i <> 12 /\ v j <> 12) ==> Seq.index a 12 == Seq.index b 12) /\
+    ((v i <> 13 /\ v j <> 13) ==> Seq.index a 13 == Seq.index b 13) /\
+    ((v i <> 14 /\ v j <> 14) ==> Seq.index a 14 == Seq.index b 14) /\
+    ((v i <> 15 /\ v j <> 15) ==> Seq.index a 15 == Seq.index b 15)
+
 let modifies1_32 #t
         (a b: t_Array t (mk_usize 32))
         (j:usize{v j < 32}) =
