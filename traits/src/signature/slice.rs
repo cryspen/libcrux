@@ -1,19 +1,19 @@
 //! This module contains the traits and related errors for signing and verification where arguments
 //! are provided as slices, and the results are written to mutable slices.
 
+use libcrux_secrets::U8;
+
 /// A signer. This trait takes slices as arguments.
 ///
 /// The `SignAux` type is auxiliary information required for signing.
 pub trait Sign {
     /// Auxiliary information needed for signing.
     type SignAux<'a>;
-    /// The signing key.
-    type SigningKey<'a>;
     /// Sign a payload using a provided signature key. Required auxiliary information is provided using
     /// the `aux` argument.
     fn sign(
         payload: &[u8],
-        signing_key: Self::SigningKey<'_>,
+        signing_key: &[U8],
         signature: &mut [u8],
         aux: Self::SignAux<'_>,
     ) -> Result<(), SignError>;
@@ -129,7 +129,7 @@ impl From<super::arrayref::VerifyError> for VerifyError {
 /// Implements [`Sign`] for any [`arrayref::Sign`](crate::signature::arrayref::Sign)
 #[macro_export]
 macro_rules! impl_signature_slice_trait {
-    ($type:ty => $sk_len:expr, $sig_len:expr, $sign_aux:ty, $sign_aux_param:tt, $signing_key:ty) => {
+    ($type:ty => $sk_len:expr, $sig_len:expr, $sign_aux:ty, $sign_aux_param:tt, $byte:ty) => {
         /// The [`slice`](libcrux_traits::signature::slice) version of the Sign trait.
         impl $crate::signature::slice::Sign for $type {
             #[doc = "Auxiliary information needed for signing: "]
@@ -137,17 +137,16 @@ macro_rules! impl_signature_slice_trait {
             #[doc = ". If the type is `()`, then no auxiliary information is required.\n\n"]
             type SignAux<'a> =
                 <$type as $crate::signature::arrayref::Sign<$sk_len, $sig_len>>::SignAux<'a>;
-            type SigningKey<'a> = $signing_key;
 
             #[doc = "Sign a payload using a provided signing key and "]
             #[doc = concat!("`",stringify!($sign_aux_param),"`.")]
             fn sign(
                 payload: &[u8],
-                signing_key: Self::SigningKey<'_>,
+                signing_key: &[$byte],
                 signature: &mut [u8],
                 $sign_aux_param: $sign_aux,
             ) -> Result<(), $crate::signature::slice::SignError> {
-                let signing_key: &[u8; $sk_len] = signing_key
+                let signing_key: &[$byte; $sk_len] = signing_key
                     .try_into()
                     .map_err(|_| $crate::signature::slice::SignError::InvalidSigningKeyLength)?;
 

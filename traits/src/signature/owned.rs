@@ -2,6 +2,7 @@
 
 pub use super::arrayref::Verify;
 pub use super::arrayref::{SignError, VerifyError};
+use libcrux_secrets::U8;
 
 /// A signer that returns values instead of writing results to `&mut` arguments.
 ///
@@ -10,12 +11,11 @@ pub trait Sign<const SIGNING_KEY_LEN: usize, const SIGNATURE_LEN: usize> {
     /// Auxiliary information needed for signing.
     type SignAux<'a>;
     /// The signing key.
-    type SigningKey<'a, const LEN: usize>;
     /// Sign a payload using a provided signature key. Required auxiliary information is provided using
     /// the `aux` argument.
     fn sign(
         payload: &[u8],
-        signing_key: Self::SigningKey<'_, SIGNING_KEY_LEN>,
+        signing_key: &[U8; SIGNING_KEY_LEN],
         aux: Self::SignAux<'_>,
     ) -> Result<[u8; SIGNATURE_LEN], SignError>;
 }
@@ -27,11 +27,9 @@ impl<
     > Sign<SIGNING_KEY_LEN, SIGNATURE_LEN> for T
 {
     type SignAux<'a> = <Self as super::arrayref::Sign<SIGNING_KEY_LEN, SIGNATURE_LEN>>::SignAux<'a>;
-    type SigningKey<'a, const LEN: usize> =
-        <Self as super::arrayref::Sign<SIGNING_KEY_LEN, SIGNATURE_LEN>>::SigningKey<'a, LEN>;
     fn sign(
         payload: &[u8],
-        signing_key: Self::SigningKey<'_, SIGNING_KEY_LEN>,
+        signing_key: &[U8; SIGNING_KEY_LEN],
         aux: Self::SignAux<'_>,
     ) -> Result<[u8; SIGNATURE_LEN], SignError> {
         let mut signature = [0; SIGNATURE_LEN];
