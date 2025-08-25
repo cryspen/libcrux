@@ -12,9 +12,12 @@ use libcrux_secrets::U8;
 // make these associated types. That would mean that we'd have to define them separately for all
 // implementations.
 
-pub struct Key<Algo: Aead>(Algo, Algo::Key);
-pub struct Tag<Algo: Aead>(Algo, Algo::Tag);
-pub struct Nonce<Algo: Aead>(Algo, Algo::Nonce);
+#[repr(transparent)]
+pub struct Key<Algo: Aead>(Algo::Key);
+#[repr(transparent)]
+pub struct Tag<Algo: Aead>(Algo::Tag);
+#[repr(transparent)]
+pub struct Nonce<Algo: Aead>(Algo::Nonce);
 
 /// An Authenticated Encryption with Associated Data (AEAD) scheme. This trait
 /// is low-level and is mostly used for implementing other, more usable APIs.
@@ -61,44 +64,144 @@ impl<Algo: Aead> Key<Algo> {
     ) -> Result<(), EncryptError> {
         Algo::encrypt(ciphertext, tag, self, nonce, aad, plaintext)
     }
-}
 
-impl<
-        const KEY_LEN: usize,
-        const TAG_LEN: usize,
-        const NONCE_LEN: usize,
-        Algo: super::arrayref::Aead<KEY_LEN, TAG_LEN, NONCE_LEN>,
-    > Aead for Algo
-{
-    type Key = [U8; KEY_LEN];
-
-    type Tag = [u8; TAG_LEN];
-
-    type Nonce = [u8; NONCE_LEN];
-
-    fn encrypt(
-        ciphertext: &mut [u8],
-        tag: &mut Tag<Self>,
-        key: &Key<Self>,
-        nonce: &Nonce<Self>,
-        aad: &[u8],
-        plaintext: &[U8],
-    ) -> Result<(), EncryptError> {
-        <Algo as super::arrayref::Aead<KEY_LEN, TAG_LEN, NONCE_LEN>>::encrypt(
-            ciphertext, &mut tag.1, &key.1, &nonce.1, aad, plaintext,
-        )
-    }
-
-    fn decrypt(
+    pub fn decrypt(
+        &self,
         plaintext: &mut [U8],
-        key: &Key<Self>,
-        nonce: &Nonce<Self>,
+        nonce: &Nonce<Algo>,
         aad: &[u8],
         ciphertext: &[u8],
-        tag: &Tag<Self>,
+        tag: &Tag<Algo>,
     ) -> Result<(), DecryptError> {
-        <Algo as super::arrayref::Aead<KEY_LEN, TAG_LEN, NONCE_LEN>>::decrypt(
-            plaintext, &key.1, &nonce.1, aad, ciphertext, &tag.1,
-        )
+        Algo::decrypt(plaintext, self, nonce, aad, ciphertext, tag)
+    }
+}
+
+#[macro_export]
+macro_rules! impl_aead_typed_owned {
+    ($ty:ty, $keylen:expr, $taglen:expr, $noncelen:expr) => {
+        impl $crate::aead::typed_owned::Aead for $ty {
+            type Key = [$crate::libcrux_secrets::U8; $keylen];
+
+            type Tag = [u8; $taglen];
+
+            type Nonce = [u8; $noncelen];
+
+            fn encrypt(
+                ciphertext: &mut [u8],
+                tag: &mut $crate::aead::typed_owned::Tag<Self>,
+                key: &$crate::aead::typed_owned::Key<Self>,
+                nonce: &$crate::aead::typed_owned::Nonce<Self>,
+                aad: &[u8],
+                plaintext: &[$crate::libcrux_secrets::U8],
+            ) -> Result<(), EncryptError> {
+                <$ty as $crate::aead::arrayref::Aead<$keylen, $taglen, $noncelen>>::encrypt(
+                    ciphertext,
+                    tag.as_mut(),
+                    key.as_ref(),
+                    nonce.as_ref(),
+                    aad,
+                    plaintext,
+                )
+            }
+
+            fn decrypt(
+                plaintext: &mut [$crate::libcrux_secrets::U8],
+                key: &$crate::aead::typed_owned::Key<Self>,
+                nonce: &$crate::aead::typed_owned::Nonce<Self>,
+                aad: &[u8],
+                ciphertext: &[u8],
+                tag: &$crate::aead::typed_owned::Tag<Self>,
+            ) -> Result<(), DecryptError> {
+                <$ty as $crate::aead::arrayref::Aead<$keylen, $taglen, $noncelen>>::decrypt(
+                    plaintext,
+                    key.as_ref(),
+                    nonce.as_ref(),
+                    aad,
+                    ciphertext,
+                    tag.as_ref(),
+                )
+            }
+        }
+    };
+}
+
+pub use impl_aead_typed_owned;
+
+impl<const L: usize, Algo: Aead<Key = [U8; L]>> From<[U8; L]> for Key<Algo> {
+    fn from(bytes: Algo::Key) -> Self {
+        Self(bytes)
+    }
+}
+
+impl<const L: usize, Algo: Aead<Key = [U8; L]>> From<&[U8; L]> for &Key<Algo> {
+    fn from(bytes: &Algo::Key) -> Self {
+        unsafe { core::mem::transmute(bytes) }
+    }
+}
+
+impl<Algo: Aead> AsRef<Algo::Key> for Key<Algo> {
+    fn as_ref(&self) -> &Algo::Key {
+        &self.0
+    }
+}
+
+impl<Algo: Aead> AsMut<Algo::Key> for Key<Algo> {
+    fn as_mut(&mut self) -> &mut Algo::Key {
+        &mut self.0
+    }
+}
+
+impl<const L: usize, Algo: Aead<Tag = [u8; L]>> From<[u8; L]> for Tag<Algo> {
+    fn from(bytes: Algo::Tag) -> Self {
+        Self(bytes)
+    }
+}
+
+impl<const L: usize, Algo: Aead<Tag = [U8; L]>> From<&[u8; L]> for &Tag<Algo> {
+    fn from(bytes: &Algo::Tag) -> Self {
+        unsafe { core::mem::transmute(bytes) }
+    }
+}
+
+impl<const L: usize, Algo: Aead<Tag = [U8; L]>> From<&mut [u8; L]> for &mut Tag<Algo> {
+    fn from(bytes: &mut Algo::Tag) -> Self {
+        unsafe { core::mem::transmute(bytes) }
+    }
+}
+
+impl<Algo: Aead> AsRef<Algo::Tag> for Tag<Algo> {
+    fn as_ref(&self) -> &Algo::Tag {
+        &self.0
+    }
+}
+
+impl<Algo: Aead> AsMut<Algo::Tag> for Tag<Algo> {
+    fn as_mut(&mut self) -> &mut Algo::Tag {
+        &mut self.0
+    }
+}
+
+impl<const L: usize, Algo: Aead<Nonce = [u8; L]>> From<[u8; L]> for Nonce<Algo> {
+    fn from(bytes: Algo::Nonce) -> Self {
+        Self(bytes)
+    }
+}
+
+impl<const L: usize, Algo: Aead<Nonce = [U8; L]>> From<&[u8; L]> for &Nonce<Algo> {
+    fn from(bytes: &Algo::Nonce) -> Self {
+        unsafe { core::mem::transmute(bytes) }
+    }
+}
+
+impl<Algo: Aead> AsRef<Algo::Nonce> for Nonce<Algo> {
+    fn as_ref(&self) -> &Algo::Nonce {
+        &self.0
+    }
+}
+
+impl<Algo: Aead> AsMut<Algo::Nonce> for Nonce<Algo> {
+    fn as_mut(&mut self) -> &mut Algo::Nonce {
+        &mut self.0
     }
 }
