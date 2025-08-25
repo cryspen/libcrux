@@ -178,6 +178,7 @@ files:
   - name: libcrux_core
     private:
       monomorphizations_of:
+        - [ Eurydice, "*" ]
         - [ core, "*"]
         - [ libcrux_secrets, "*"]
         - [ libcrux_ml_kem, types, "*"]
@@ -201,14 +202,20 @@ files:
   - name: libcrux_mlkem512_avx2
     api:
       - [libcrux_ml_kem, mlkem512, avx2]
+    internal:
+      - [libcrux_ml_kem, mlkem512, avx2, unpacked]
 
   - name: libcrux_mlkem512_neon
     api:
       - [libcrux_ml_kem, mlkem512, neon]
+    internal:
+      - [libcrux_ml_kem, mlkem512, neon, unpacked]
 
   - name: libcrux_mlkem512_portable
     api:
       - [libcrux_ml_kem, mlkem512, portable]
+    internal:
+      - [libcrux_ml_kem, mlkem512, portable, unpacked]
 
   # This one contains common definitions like types, etc.
   - name: libcrux_mlkem512
@@ -220,14 +227,20 @@ files:
   - name: libcrux_mlkem768_avx2
     api:
       - [libcrux_ml_kem, mlkem768, avx2]
+    internal:
+      - [libcrux_ml_kem, mlkem768, avx2, unpacked]
 
   - name: libcrux_mlkem768_neon
     api:
       - [libcrux_ml_kem, mlkem768, neon]
+    internal:
+      - [libcrux_ml_kem, mlkem768, neon, unpacked]
 
   - name: libcrux_mlkem768_portable
     api:
       - [libcrux_ml_kem, mlkem768, portable]
+    internal:
+      - [libcrux_ml_kem, mlkem768, portable, unpacked]
 
   # This one contains common definitions like types, etc.
   - name: libcrux_mlkem768
@@ -239,14 +252,20 @@ files:
   - name: libcrux_mlkem1024_avx2
     api:
       - [libcrux_ml_kem, mlkem1024, avx2]
+    internal:
+      - [libcrux_ml_kem, mlkem1024, avx2, unpacked]
 
   - name: libcrux_mlkem1024_neon
     api:
       - [libcrux_ml_kem, mlkem1024, neon]
+    internal:
+      - [libcrux_ml_kem, mlkem1024, neon, unpacked]
 
   - name: libcrux_mlkem1024_portable
     api:
       - [libcrux_ml_kem, mlkem1024, portable]
+    internal:
+      - [libcrux_ml_kem, mlkem1024, portable, unpacked]
 
   # This one contains common definitions like types, etc.
   - name: libcrux_mlkem1024
