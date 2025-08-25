@@ -9,7 +9,10 @@
 mod simd;
 
 mod generic_keccak;
+
+#[cfg(not(eurydice))]
 mod impl_digest_trait;
+#[cfg(not(eurydice))]
 pub use impl_digest_trait::*;
 
 mod traits;
