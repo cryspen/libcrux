@@ -323,18 +323,6 @@ fn ntt_at_layer_2(re: &mut [Coefficients; SIMD_UNITS_IN_RING_ELEMENT]) {
 }
 
 #[inline(always)]
-#[hax_lib::fstar::before(
-    r#"
-let layer_bound_factor (step_by:usize) : n:nat{n <= 4} =
-    match step_by with
-    | MkInt 1 -> 4
-    | MkInt 2 -> 3
-    | MkInt 4 -> 2
-    | MkInt 8 -> 1
-    | MkInt 16 -> 0
-    | _ -> 0
-"#
-)]
 #[hax_lib::fstar::options("--z3rlimit 600 --split_queries always")]
 #[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
 #[hax_lib::requires(fstar!(r#"
@@ -357,6 +345,61 @@ let layer_bound_factor (step_by:usize) : n:nat{n <= 4} =
 fn outer_3_plus<const OFFSET: usize, const STEP_BY: usize, const ZETA: i32>(
     re: &mut [Coefficients; SIMD_UNITS_IN_RING_ELEMENT],
 ) {
+    // Refactoring the code to have the loop body separately verified is good for proof performance.
+    // So we factor out the loop body in a `round` function similarly to the other NTT layers.
+    #[inline(always)]
+    #[hax_lib::fstar::before(
+        r#"
+    let layer_bound_factor (step_by:usize) : n:nat{n <= 4} =
+        match step_by with
+        | MkInt 1 -> 4
+        | MkInt 2 -> 3
+        | MkInt 4 -> 2
+        | MkInt 8 -> 1
+        | MkInt 16 -> 0
+        | _ -> 0
+    "#
+    )]
+    #[hax_lib::fstar::options("--z3rlimit 300 --split_queries always")]
+    #[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
+    #[hax_lib::requires(fstar!(r#"
+        v $step_by > 0 /\
+        v $index + v $step_by < v $SIMD_UNITS_IN_RING_ELEMENT /\
+        Spec.Utils.is_i32b_array_opaque 
+                    (v $NTT_BASE_BOUND + ((layer_bound_factor $step_by) * v $FIELD_MAX)) 
+                    (Seq.index ${re} (v $index)).f_values /\
+        Spec.Utils.is_i32b_array_opaque 
+                    (v $NTT_BASE_BOUND + ((layer_bound_factor $step_by) * v $FIELD_MAX)) 
+                    (Seq.index ${re} (v $index + v $step_by)).f_values /\
+        Spec.Utils.is_i32b 4190208 $zeta
+    "#))]
+    #[hax_lib::ensures(|_| fstar!(r#"
+        Spec.Utils.modifies2_32 ${re} ${re}_future $index (${index + step_by}) /\
+        Spec.Utils.is_i32b_array_opaque 
+                    (v $NTT_BASE_BOUND + ((layer_bound_factor $step_by + 1) * v $FIELD_MAX)) 
+                    (Seq.index ${re}_future (v $index)).f_values /\
+        Spec.Utils.is_i32b_array_opaque 
+                    (v $NTT_BASE_BOUND + ((layer_bound_factor $step_by + 1) * v $FIELD_MAX)) 
+                    (Seq.index ${re}_future (v $index + v step_by)).f_values
+    "#))]
+    fn round(
+        re: &mut [Coefficients; SIMD_UNITS_IN_RING_ELEMENT],
+        index: usize,
+        step_by: usize,
+        zeta: i32,
+    ) {
+        hax_lib::fstar!(
+            "reveal_opaque (`%Spec.Utils.is_i32b_array_opaque) (Spec.Utils.is_i32b_array_opaque)"
+        );
+        let mut tmp = re[index + step_by];
+        montgomery_multiply_by_constant(&mut tmp, zeta);
+
+        re[index + step_by] = re[index];
+
+        arithmetic::subtract(&mut re[index + step_by], &tmp);
+        arithmetic::add(&mut re[index], &tmp);
+    }
+
     #[cfg(hax)]
     let orig_re = re.clone();
 
@@ -372,20 +415,7 @@ fn outer_3_plus<const OFFSET: usize, const STEP_BY: usize, const ZETA: i32>(
                     (Seq.index ${re} i).f_values))
         "#
         ));
-
-        let mut tmp = re[j + STEP_BY];
-        montgomery_multiply_by_constant(&mut tmp, ZETA);
-
-        re[j + STEP_BY] = re[j];
-
-        arithmetic::subtract(&mut re[j + STEP_BY], &tmp);
-        arithmetic::add(&mut re[j], &tmp);
-
-        hax_lib::fstar!(
-            r#"
-        assert ((v ${NTT_BASE_BOUND} + ((layer_bound_factor v_STEP_BY) * v $FIELD_MAX)) + (v $FIELD_MAX) 
-                == (v ${NTT_BASE_BOUND} + ((layer_bound_factor v_STEP_BY + 1) * v $FIELD_MAX)))"#
-        );
+        round(re, j, STEP_BY, ZETA);
     }
 }
 
