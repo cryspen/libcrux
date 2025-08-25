@@ -1,0 +1,68 @@
+pub mod signers {
+    //! [`libcrux_traits::signature`] APIs.
+
+    use libcrux_traits::signature::arrayref::{Sign, SignError, Verify, VerifyError};
+
+    /// A convenience struct for signature scheme functionality.
+    pub struct Signer;
+
+    const VERIFICATION_KEY_LEN: usize = 32;
+    const SIGNING_KEY_LEN: usize = 32;
+    const SIGNATURE_LEN: usize = 64;
+
+    /// The [`arrayref`](libcrux_traits::signature::arrayref) version of the Sign trait.
+    impl Sign<SIGNING_KEY_LEN, SIGNATURE_LEN> for Signer {
+        /// No auxiliary information is required for signing.
+        type SignAux<'a> = ();
+        /// Sign a payload with a provided signing key.
+        fn sign(
+            payload: &[u8],
+            signing_key: &[u8; SIGNING_KEY_LEN],
+            signature: &mut [u8; SIGNATURE_LEN],
+            _aux: (),
+        ) -> Result<(), SignError> {
+            crate::hacl::ed25519::sign(
+                signature,
+                signing_key,
+                payload
+                    .len()
+                    .try_into()
+                    .map_err(|_| SignError::InvalidPayloadLength)?,
+                payload,
+            );
+
+            Ok(())
+        }
+    }
+
+    /// The [`arrayref`](libcrux_traits::signature::arrayref) version of the Verify trait.
+    impl Verify<VERIFICATION_KEY_LEN, SIGNATURE_LEN> for Signer {
+        /// No auxiliary information is required for verification.
+        type VerifyAux<'a> = ();
+
+        /// Verify a signature using a provided verification key.
+        fn verify(
+            payload: &[u8],
+            verification_key: &[u8; VERIFICATION_KEY_LEN],
+            signature: &[u8; SIGNATURE_LEN],
+            _aux: (),
+        ) -> Result<(), VerifyError> {
+            if crate::hacl::ed25519::verify(
+                verification_key,
+                payload
+                    .len()
+                    .try_into()
+                    .map_err(|_| VerifyError::InvalidPayloadLength)?,
+                payload,
+                signature,
+            ) {
+                Ok(())
+            } else {
+                Err(VerifyError::InvalidSignature)
+            }
+        }
+    }
+
+    libcrux_traits::signature::slice::impl_signature_slice_trait!(Signer => SIGNING_KEY_LEN, SIGNATURE_LEN, (), _aux, u8);
+    libcrux_traits::signature::slice::impl_verify_slice_trait!(Signer => VERIFICATION_KEY_LEN, SIGNATURE_LEN, (), _aux);
+}
