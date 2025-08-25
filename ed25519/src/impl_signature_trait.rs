@@ -14,7 +14,6 @@ pub mod signers {
     impl Sign<SIGNING_KEY_LEN, SIGNATURE_LEN> for Signer {
         /// No auxiliary information is required for signing.
         type SignAux<'a> = ();
-        type SigningKey<'a, const LEN: usize> = &'a [u8; SIGNING_KEY_LEN];
         /// Sign a payload with a provided signing key.
         fn sign(
             payload: &[u8],
@@ -64,6 +63,6 @@ pub mod signers {
         }
     }
 
-    libcrux_traits::signature::slice::impl_signature_slice_trait!(Signer => SIGNING_KEY_LEN, SIGNATURE_LEN, (), _aux, &'a [u8; SIGNING_KEY_LEN]);
+    libcrux_traits::signature::slice::impl_signature_slice_trait!(Signer => SIGNING_KEY_LEN, SIGNATURE_LEN, (), _aux, u8);
     libcrux_traits::signature::slice::impl_verify_slice_trait!(Signer => VERIFICATION_KEY_LEN, SIGNATURE_LEN, (), _aux);
 }
