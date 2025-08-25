@@ -10,17 +10,12 @@ pub fn simple_arrayref<
     const SIGNATURE_LEN: usize,
     SignAux,
     VerifyAux,
-    SigningKey,
-    Signer: super::arrayref::Sign<
-            SIGNING_KEY_LEN,
-            SIGNATURE_LEN,
-            SignAux<'b> = SignAux,
-            SigningKey<'b, SIGNING_KEY_LEN> = SigningKey,
-        > + super::arrayref::Verify<VERIFICATION_KEY_LEN, SIGNATURE_LEN, VerifyAux<'b> = VerifyAux>,
+    Signer: super::arrayref::Sign<SIGNING_KEY_LEN, SIGNATURE_LEN, SignAux<'b> = SignAux>
+        + super::arrayref::Verify<VERIFICATION_KEY_LEN, SIGNATURE_LEN, VerifyAux<'b> = VerifyAux>,
 >(
     sign_aux: SignAux,
     verify_aux: VerifyAux,
-    signing_key: SigningKey,
+    signing_key: &[libcrux_secrets::U8; SIGNING_KEY_LEN],
     verification_key: &[u8; VERIFICATION_KEY_LEN],
 ) {
     let payload = [0u8; 20];
