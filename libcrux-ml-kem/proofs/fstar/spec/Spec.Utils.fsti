@@ -599,7 +599,6 @@ let forall32 (p:(x:nat{x < 32} -> Type0)) =
 let modifies1_8 #t
     (a b: t_Array t (sz 8))
     (i:usize{v i < 8}) = 
-//    normalize_term (forall8 (fun j -> (v i <> j) ==> Seq.index a j == Seq.index b j))
     ((v i <> 0)  ==> Seq.index a 0 == Seq.index b 0) /\
     ((v i <> 1)  ==> Seq.index a 1 == Seq.index b 1) /\
     ((v i <> 2)  ==> Seq.index a 2 == Seq.index b 2) /\
@@ -624,7 +623,6 @@ let modifies2_8 #t
 let modifies1_16 #t
     (a b: t_Array t (sz 16))
     (i:usize{v i < 16}) = 
-//    normalize_term (forall8 (fun j -> (v i <> j) ==> Seq.index a j == Seq.index b j))
     (v i <> 0  ==> Seq.index a 0 == Seq.index b 0) /\
     (v i <> 1  ==> Seq.index a 1 == Seq.index b 1) /\
     (v i <> 2  ==> Seq.index a 2 == Seq.index b 2) /\
@@ -703,8 +701,6 @@ let modifies1_32 #t
 let modifies2_32 #t
         (a b: t_Array t (mk_usize 32))
         (i j:(n:usize{v n < 32})) =
-    // TODO: find some way to expand this from a smaller spec, e.g.:
-    // normalize_term (Spec.Utils.forall32 (fun x -> v j <> x ==> Seq.index a x == Seq.index b x))
     ((v i <> 0  /\ v j <> 0)  ==> Seq.index a 0 == Seq.index b 0) /\
     ((v i <> 1  /\ v j <> 1)  ==> Seq.index a 1 == Seq.index b 1) /\
     ((v i <> 2  /\ v j <> 2)  ==> Seq.index a 2 == Seq.index b 2) /\
@@ -741,7 +737,6 @@ let modifies2_32 #t
 let modifies_range_32 #t
         (a b: t_Array t (mk_usize 32))
         (i:usize{v i < 32}) (j:usize{v j <= 32 /\ v i <= v j}) =
-//    normalize_term (forall32 (fun k -> ((v i > k \/ k >= v j)   ==> Seq.index a k == Seq.index b k)))
     ((v i > 0 \/ 0 >= v j)   ==> Seq.index a 0 == Seq.index b 0) /\
     ((v i > 1 \/ 1 >= v j)   ==> Seq.index a 1 == Seq.index b 1) /\
     ((v i > 2 \/ 2 >= v j)   ==> Seq.index a 2 == Seq.index b 2) /\

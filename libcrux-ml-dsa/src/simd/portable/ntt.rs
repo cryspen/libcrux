@@ -345,6 +345,8 @@ fn ntt_at_layer_2(re: &mut [Coefficients; SIMD_UNITS_IN_RING_ELEMENT]) {
 fn outer_3_plus<const OFFSET: usize, const STEP_BY: usize, const ZETA: i32>(
     re: &mut [Coefficients; SIMD_UNITS_IN_RING_ELEMENT],
 ) {
+    // Refactoring the code to have the loop body separately verified is good for proof performance.
+    // So we factor out the loop body in a `round` function similarly to the other NTT layers.
     #[inline(always)]
     #[hax_lib::fstar::before(
         r#"
@@ -414,13 +416,6 @@ fn outer_3_plus<const OFFSET: usize, const STEP_BY: usize, const ZETA: i32>(
         "#
         ));
         round(re, j, STEP_BY, ZETA);
-        // let mut tmp = re[j + STEP_BY];
-        // montgomery_multiply_by_constant(&mut tmp, ZETA);
-
-        // re[j + STEP_BY] = re[j];
-
-        // arithmetic::subtract(&mut re[j + STEP_BY], &tmp);
-        // arithmetic::add(&mut re[j], &tmp);
     }
 }
 
