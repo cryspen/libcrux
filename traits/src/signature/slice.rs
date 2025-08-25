@@ -6,6 +6,8 @@ use libcrux_secrets::U8;
 /// A signer. This trait takes slices as arguments.
 ///
 /// The `SignAux` type is auxiliary information required for signing.
+///
+/// Returns the numbmer of bytes written.
 pub trait Sign {
     /// Auxiliary information needed for signing.
     type SignAux<'a>;
@@ -16,7 +18,7 @@ pub trait Sign {
         signing_key: &[U8],
         signature: &mut [u8],
         aux: Self::SignAux<'_>,
-    ) -> Result<(), SignError>;
+    ) -> Result<usize, SignError>;
 }
 
 /// A verifier. This trait takes slices as arguments.
@@ -145,14 +147,15 @@ macro_rules! impl_signature_slice_trait {
                 signing_key: &[$byte],
                 signature: &mut [u8],
                 $sign_aux_param: $sign_aux,
-            ) -> Result<(), $crate::signature::slice::SignError> {
+            ) -> Result<usize, $crate::signature::slice::SignError> {
                 let signing_key: &[$byte; $sk_len] = signing_key
                     .try_into()
                     .map_err(|_| $crate::signature::slice::SignError::InvalidSigningKeyLength)?;
 
-                let signature: &mut [u8; $sig_len] = signature.try_into().map_err(|_| {
-                    $crate::signature::slice::SignError::InvalidSignatureBufferLength
-                })?;
+                // get the first $sig_len elements
+                let signature: &mut [u8; $sig_len] = signature
+                    .first_chunk_mut()
+                    .ok_or($crate::signature::slice::SignError::InvalidSignatureBufferLength)?;
 
                 <$type as $crate::signature::arrayref::Sign<$sk_len, $sig_len>>::sign(
                     payload,
@@ -160,6 +163,7 @@ macro_rules! impl_signature_slice_trait {
                     signature,
                     $sign_aux_param,
                 )
+                .map(|_| $sk_len)
                 .map_err($crate::signature::slice::SignError::from)
             }
         }
