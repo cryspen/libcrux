@@ -27,7 +27,6 @@ pub mod signers {
                 impl owned::Sign<SIGNING_KEY_LEN, SIGNATURE_LEN> for $alias {
                     /// The `(context, randomness)` required for signing.
                     type SignAux<'a> = (&'a [u8], super::Randomness);
-                    type SigningKey<'a, const LEN: usize> = &'a [u8; SIGNING_KEY_LEN];
 
                     /// Sign a payload using a provided signing key, context, and randomness.
                     fn sign(
