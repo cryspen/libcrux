@@ -72,6 +72,12 @@ mod impl_chachapoly {
     }
 
     libcrux_traits::aead::slice::impl_aead_slice_trait!(ChaCha20Poly1305 => KEY_LEN, TAG_LEN, NONCE_LEN);
+    libcrux_traits::aead::typed_owned::impl_aead_typed_owned!(
+        ChaCha20Poly1305,
+        KEY_LEN,
+        TAG_LEN,
+        NONCE_LEN
+    );
 }
 
 mod impl_xchachapoly {
@@ -112,4 +118,33 @@ mod impl_xchachapoly {
     }
 
     libcrux_traits::aead::slice::impl_aead_slice_trait!(XChaCha20Poly1305 => KEY_LEN, TAG_LEN, XNONCE_LEN);
+    libcrux_traits::aead::typed_owned::impl_aead_typed_owned!(
+        XChaCha20Poly1305,
+        KEY_LEN,
+        TAG_LEN,
+        XNONCE_LEN
+    );
+}
+
+#[cfg(test)]
+mod tests {
+    use libcrux_traits::aead::typed_owned;
+    type Key = typed_owned::Key<super::ChaCha20Poly1305>;
+    type Nonce = typed_owned::Nonce<super::ChaCha20Poly1305>;
+    type Tag = typed_owned::Tag<super::ChaCha20Poly1305>;
+
+    #[test]
+    fn test_key_centric_owned() {
+        let k: Key = [0; 32].into();
+        let nonce: Nonce = [0; 12].into();
+        let mut tag: Tag = [0; 16].into();
+
+        let pt = b"the quick brown fox jumps over the lazy dog";
+        let mut ct = [0; 43];
+        let mut pt_out = [0; 43];
+
+        k.encrypt(&mut ct, &mut tag, &nonce, b"", pt).unwrap();
+        k.decrypt(&mut pt_out, &nonce, b"", &ct, &tag).unwrap();
+        assert_eq!(pt, &pt_out);
+    }
 }
