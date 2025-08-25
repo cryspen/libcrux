@@ -347,7 +347,7 @@ fn outer_3_plus<const OFFSET: usize, const STEP_BY: usize, const ZETA: i32>(
 ) {
     #[inline(always)]
     #[hax_lib::fstar::before(
-    r#"
+        r#"
     let layer_bound_factor (step_by:usize) : n:nat{n <= 4} =
         match step_by with
         | MkInt 1 -> 4
@@ -380,19 +380,23 @@ fn outer_3_plus<const OFFSET: usize, const STEP_BY: usize, const ZETA: i32>(
                     (v $NTT_BASE_BOUND + ((layer_bound_factor $step_by + 1) * v $FIELD_MAX)) 
                     (Seq.index ${re}_future (v $index + v step_by)).f_values
     "#))]
-    fn round(re: &mut [Coefficients; SIMD_UNITS_IN_RING_ELEMENT], index: usize, step_by:usize, zeta: i32) {
+    fn round(
+        re: &mut [Coefficients; SIMD_UNITS_IN_RING_ELEMENT],
+        index: usize,
+        step_by: usize,
+        zeta: i32,
+    ) {
         hax_lib::fstar!(
             "reveal_opaque (`%Spec.Utils.is_i32b_array_opaque) (Spec.Utils.is_i32b_array_opaque)"
         );
-        let mut tmp = re[index+step_by];
+        let mut tmp = re[index + step_by];
         montgomery_multiply_by_constant(&mut tmp, zeta);
 
-        re[index+step_by] = re[index];
+        re[index + step_by] = re[index];
 
-        arithmetic::subtract(&mut re[index+step_by], &tmp);
+        arithmetic::subtract(&mut re[index + step_by], &tmp);
         arithmetic::add(&mut re[index], &tmp);
     }
-
 
     #[cfg(hax)]
     let orig_re = re.clone();
@@ -417,7 +421,6 @@ fn outer_3_plus<const OFFSET: usize, const STEP_BY: usize, const ZETA: i32>(
 
         // arithmetic::subtract(&mut re[j + STEP_BY], &tmp);
         // arithmetic::add(&mut re[j], &tmp);
-
     }
 }
 

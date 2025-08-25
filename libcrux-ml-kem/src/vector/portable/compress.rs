@@ -212,7 +212,8 @@ pub(crate) fn compress<const COEFFICIENT_BITS: i32>(mut a: PortableVector) -> Po
                       v (cast (${a}.f_elements.[ sz j ]) <: u16) < v (cast ($FIELD_MODULUS) <: u16))) /\
                     (forall (j:nat). j < v $i ==> v (${a}.f_elements.[ sz j ] <: i16) >= 0 /\
                      v (${a}.f_elements.[ sz j ] <: i16) < pow2 (v $COEFFICIENT_BITS)))"#
-        )});
+            )
+        });
 
         a.elements[i] =
             compress_ciphertext_coefficient(COEFFICIENT_BITS as u8, a.elements[i].as_u16())

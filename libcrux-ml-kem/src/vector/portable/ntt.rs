@@ -267,7 +267,9 @@ pub(crate) fn inv_ntt_layer_3_step(mut vec: PortableVector, zeta: i16) -> Portab
 #[hax_lib::fstar::options(
     "--z3rlimit 250 --split_queries always --query_stats --ext context_prune"
 )]
-#[hax_lib::fstar::before(interface, r#"
+#[hax_lib::fstar::before(
+    interface,
+    r#"
     let ntt_multiply_binomials_post
       (a b: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
       (zeta: i16)
@@ -281,7 +283,8 @@ pub(crate) fn inv_ntt_layer_3_step(mut vec: PortableVector, zeta: i16) -> Portab
             let oj = Seq.index out_future.f_elements (2 * v i + 1) in
             ((v oi % 3329) == (((v ai * v bi + (v aj * v bj * v zeta * 169)) * 169) % 3329)) /\
             ((v oj % 3329) == (((v ai * v bj + v aj * v bi) * 169) % 3329))
-"#)]
+"#
+)]
 #[hax_lib::fstar::before("[@@ \"opaque_to_smt\"]")]
 #[hax_lib::requires(fstar!(r#"v i < 8 /\ Spec.Utils.is_i16b 1664 $zeta /\
         Spec.Utils.is_i16b_array 3328 ${a}.f_elements /\
