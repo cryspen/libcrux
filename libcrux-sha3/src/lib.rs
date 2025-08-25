@@ -9,7 +9,18 @@
 mod simd;
 
 mod generic_keccak;
+
+#[cfg(not(eurydice))]
+mod impl_digest_trait;
+#[cfg(not(eurydice))]
+pub use impl_digest_trait::*;
+
 mod traits;
+
+pub(crate) const SHA3_224_LEN: usize = 28;
+pub(crate) const SHA3_256_LEN: usize = 32;
+pub(crate) const SHA3_384_LEN: usize = 48;
+pub(crate) const SHA3_512_LEN: usize = 64;
 
 /// A SHA3 224 Digest
 pub type Sha3_224Digest = [u8; 28];
