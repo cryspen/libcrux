@@ -19,7 +19,7 @@ pub mod signers {
                 const SIGNING_KEY_LEN: usize = crate::ml_dsa_generic::$module::SIGNING_KEY_SIZE;
                 const SIGNATURE_LEN: usize = crate::ml_dsa_generic::$module::SIGNATURE_SIZE;
 
-                // XXX: implementing owned trait directly because there is no arrayref equivalent
+                // NOTE: implementing owned trait directly because there is no arrayref equivalent
                 /// The [`owned`](libcrux_traits::signature::owned) version of the Sign trait.
                 ///
                 /// It is the responsibility of the caller to ensure  that the `randomness` argument is actually
@@ -64,8 +64,6 @@ pub mod signers {
                         .map_err(|_| owned::VerifyError::LibraryError)
                     }
                 }
-
-                // TODO: secrets trait not appearing in docs
             }
             pub use $module::{$alias, $name};
         };
