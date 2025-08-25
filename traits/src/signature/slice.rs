@@ -7,7 +7,7 @@ use libcrux_secrets::U8;
 ///
 /// The `SignAux` type is auxiliary information required for signing.
 ///
-/// Returns the numbmer of bytes written.
+/// Returns the number of bytes written.
 pub trait Sign {
     /// Auxiliary information needed for signing.
     type SignAux<'a>;
