@@ -5,10 +5,10 @@
  *
  * This code was generated with the following revisions:
  * Charon: 0ea51402a88c38d63f6f815fbe5a6dddb14cf16b
- * Eurydice: ac1a7e957d0dbcab6ae1a948e08b7a16b557851d
+ * Eurydice: 3c77f1ac8116257d0c416fdac562edfa178b860b
  * Karamel: 354791911c6b40d15a41cda7a0e3560da1cf31a1
  * F*: f3a2732c1984b520b1f1d48a22e7dd9f8d14a3a2
- * Libcrux: d21c4cc2a58bda0db52962f7b838e8bde470f16b
+ * Libcrux: b894d22937e1239a34ec32e0ebf3d6f8892331a0
  */
 
 #ifndef libcrux_mlkem1024_H
@@ -69,11 +69,9 @@ extern "C" {
   (LIBCRUX_ML_KEM_CONSTANTS_SHARED_SECRET_SIZE +                    \
    LIBCRUX_ML_KEM_MLKEM1024_CPA_PKE_CIPHERTEXT_SIZE)
 
-typedef libcrux_ml_kem_types_MlKemPrivateKey_83
-    libcrux_ml_kem_mlkem1024_MlKem1024PrivateKey;
+typedef Eurydice_arr_17 libcrux_ml_kem_mlkem1024_MlKem1024PrivateKey;
 
-typedef libcrux_ml_kem_types_MlKemPublicKey_64
-    libcrux_ml_kem_mlkem1024_MlKem1024PublicKey;
+typedef Eurydice_arr_00 libcrux_ml_kem_mlkem1024_MlKem1024PublicKey;
 
 #define LIBCRUX_ML_KEM_MLKEM1024_RANKED_BYTES_PER_RING_ELEMENT \
   (LIBCRUX_ML_KEM_MLKEM1024_RANK *                             \

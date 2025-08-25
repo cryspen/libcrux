@@ -5,10 +5,10 @@
  *
  * This code was generated with the following revisions:
  * Charon: 0ea51402a88c38d63f6f815fbe5a6dddb14cf16b
- * Eurydice: ac1a7e957d0dbcab6ae1a948e08b7a16b557851d
+ * Eurydice: 3c77f1ac8116257d0c416fdac562edfa178b860b
  * Karamel: 354791911c6b40d15a41cda7a0e3560da1cf31a1
  * F*: f3a2732c1984b520b1f1d48a22e7dd9f8d14a3a2
- * Libcrux: d21c4cc2a58bda0db52962f7b838e8bde470f16b
+ * Libcrux: b894d22937e1239a34ec32e0ebf3d6f8892331a0
  */
 
 #ifndef libcrux_mlkem1024_portable_H
@@ -29,9 +29,8 @@ extern "C" {
  The input is a reference to an [`MlKem1024PrivateKey`] and an
  [`MlKem1024Ciphertext`].
 */
-void libcrux_ml_kem_mlkem1024_portable_decapsulate(
-    libcrux_ml_kem_types_MlKemPrivateKey_83 *private_key,
-    libcrux_ml_kem_mlkem1024_MlKem1024Ciphertext *ciphertext, uint8_t ret[32U]);
+Eurydice_arr_60 libcrux_ml_kem_mlkem1024_portable_decapsulate(
+    Eurydice_arr_17 *private_key, Eurydice_arr_00 *ciphertext);
 
 /**
  Encapsulate ML-KEM 1024
@@ -40,15 +39,15 @@ void libcrux_ml_kem_mlkem1024_portable_decapsulate(
  The input is a reference to an [`MlKem1024PublicKey`] and
  [`SHARED_SECRET_SIZE`] bytes of `randomness`.
 */
-tuple_fa libcrux_ml_kem_mlkem1024_portable_encapsulate(
-    libcrux_ml_kem_types_MlKemPublicKey_64 *public_key,
-    uint8_t randomness[32U]);
+tuple_2b libcrux_ml_kem_mlkem1024_portable_encapsulate(
+    Eurydice_arr_00 *public_key, Eurydice_arr_60 randomness);
 
 /**
  Generate ML-KEM 1024 Key Pair
 */
 libcrux_ml_kem_mlkem1024_MlKem1024KeyPair
-libcrux_ml_kem_mlkem1024_portable_generate_key_pair(uint8_t randomness[64U]);
+libcrux_ml_kem_mlkem1024_portable_generate_key_pair(
+    libcrux_sha3_Sha3_512Digest randomness);
 
 /**
  Validate a private key.
@@ -56,8 +55,7 @@ libcrux_ml_kem_mlkem1024_portable_generate_key_pair(uint8_t randomness[64U]);
  Returns `true` if valid, and `false` otherwise.
 */
 bool libcrux_ml_kem_mlkem1024_portable_validate_private_key(
-    libcrux_ml_kem_types_MlKemPrivateKey_83 *private_key,
-    libcrux_ml_kem_mlkem1024_MlKem1024Ciphertext *ciphertext);
+    Eurydice_arr_17 *private_key, Eurydice_arr_00 *ciphertext);
 
 /**
  Validate the private key only.
@@ -65,7 +63,7 @@ bool libcrux_ml_kem_mlkem1024_portable_validate_private_key(
  Returns `true` if valid, and `false` otherwise.
 */
 bool libcrux_ml_kem_mlkem1024_portable_validate_private_key_only(
-    libcrux_ml_kem_types_MlKemPrivateKey_83 *private_key);
+    Eurydice_arr_17 *private_key);
 
 /**
  Validate a public key.
@@ -73,7 +71,7 @@ bool libcrux_ml_kem_mlkem1024_portable_validate_private_key_only(
  Returns `true` if valid, and `false` otherwise.
 */
 bool libcrux_ml_kem_mlkem1024_portable_validate_public_key(
-    libcrux_ml_kem_types_MlKemPublicKey_64 *public_key);
+    Eurydice_arr_00 *public_key);
 
 #if defined(__cplusplus)
 }
