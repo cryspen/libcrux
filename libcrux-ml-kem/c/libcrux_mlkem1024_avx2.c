@@ -11,15 +11,14 @@
  * Libcrux: 85ef3af5e4511668b215821a564d6537be61d44c
  */
 
-
 #include "libcrux_mlkem1024_avx2.h"
 
-#include "libcrux_core.h"
 #include "internal/libcrux_mlkem_avx2.h"
+#include "libcrux_core.h"
 
 /**
-A monomorphic instance of libcrux_ml_kem.ind_cca.instantiations.avx2.decapsulate_avx2
-with const generics
+A monomorphic instance of
+libcrux_ml_kem.ind_cca.instantiations.avx2.decapsulate_avx2 with const generics
 - K= 4
 - SECRET_KEY_SIZE= 3168
 - CPA_SECRET_KEY_SIZE= 1536
@@ -37,13 +36,9 @@ with const generics
 - ETA2_RANDOMNESS_SIZE= 128
 - IMPLICIT_REJECTION_HASH_INPUT_SIZE= 1600
 */
-static void
-decapsulate_avx2_e0(
-  libcrux_ml_kem_types_MlKemPrivateKey_83 *private_key,
-  libcrux_ml_kem_types_MlKemCiphertext_64 *ciphertext,
-  uint8_t ret[32U]
-)
-{
+static void decapsulate_avx2_e0(
+    libcrux_ml_kem_types_MlKemPrivateKey_83 *private_key,
+    libcrux_ml_kem_types_MlKemCiphertext_64 *ciphertext, uint8_t ret[32U]) {
   libcrux_ml_kem_ind_cca_decapsulate_a10(private_key, ciphertext, ret);
 }
 
@@ -67,13 +62,9 @@ with const generics
 - ETA2_RANDOMNESS_SIZE= 128
 - IMPLICIT_REJECTION_HASH_INPUT_SIZE= 1600
 */
-static void
-decapsulate_e0(
-  libcrux_ml_kem_types_MlKemPrivateKey_83 *private_key,
-  libcrux_ml_kem_types_MlKemCiphertext_64 *ciphertext,
-  uint8_t ret[32U]
-)
-{
+static void decapsulate_e0(libcrux_ml_kem_types_MlKemPrivateKey_83 *private_key,
+                           libcrux_ml_kem_types_MlKemCiphertext_64 *ciphertext,
+                           uint8_t ret[32U]) {
   decapsulate_avx2_e0(private_key, ciphertext, ret);
 }
 
@@ -81,21 +72,18 @@ decapsulate_e0(
  Decapsulate ML-KEM 1024
 
  Generates an [`MlKemSharedSecret`].
- The input is a reference to an [`MlKem1024PrivateKey`] and an [`MlKem1024Ciphertext`].
+ The input is a reference to an [`MlKem1024PrivateKey`] and an
+ [`MlKem1024Ciphertext`].
 */
-void
-libcrux_ml_kem_mlkem1024_avx2_decapsulate(
-  libcrux_ml_kem_types_MlKemPrivateKey_83 *private_key,
-  libcrux_ml_kem_types_MlKemCiphertext_64 *ciphertext,
-  uint8_t ret[32U]
-)
-{
+void libcrux_ml_kem_mlkem1024_avx2_decapsulate(
+    libcrux_ml_kem_types_MlKemPrivateKey_83 *private_key,
+    libcrux_ml_kem_types_MlKemCiphertext_64 *ciphertext, uint8_t ret[32U]) {
   decapsulate_e0(private_key, ciphertext, ret);
 }
 
 /**
-A monomorphic instance of libcrux_ml_kem.ind_cca.instantiations.avx2.encapsulate_avx2
-with const generics
+A monomorphic instance of
+libcrux_ml_kem.ind_cca.instantiations.avx2.encapsulate_avx2 with const generics
 - K= 4
 - CIPHERTEXT_SIZE= 1568
 - PUBLIC_KEY_SIZE= 1568
@@ -110,9 +98,8 @@ with const generics
 - ETA2= 2
 - ETA2_RANDOMNESS_SIZE= 128
 */
-static tuple_fa
-encapsulate_avx2_8f(libcrux_ml_kem_types_MlKemPublicKey_64 *public_key, uint8_t *randomness)
-{
+static tuple_fa encapsulate_avx2_8f(
+    libcrux_ml_kem_types_MlKemPublicKey_64 *public_key, uint8_t *randomness) {
   return libcrux_ml_kem_ind_cca_encapsulate_700(public_key, randomness);
 }
 
@@ -133,9 +120,8 @@ with const generics
 - ETA2= 2
 - ETA2_RANDOMNESS_SIZE= 128
 */
-static tuple_fa
-encapsulate_8f(libcrux_ml_kem_types_MlKemPublicKey_64 *public_key, uint8_t *randomness)
-{
+static tuple_fa encapsulate_8f(
+    libcrux_ml_kem_types_MlKemPublicKey_64 *public_key, uint8_t *randomness) {
   return encapsulate_avx2_8f(public_key, randomness);
 }
 
@@ -143,15 +129,12 @@ encapsulate_8f(libcrux_ml_kem_types_MlKemPublicKey_64 *public_key, uint8_t *rand
  Encapsulate ML-KEM 1024
 
  Generates an ([`MlKem1024Ciphertext`], [`MlKemSharedSecret`]) tuple.
- The input is a reference to an [`MlKem1024PublicKey`] and [`SHARED_SECRET_SIZE`]
- bytes of `randomness`.
+ The input is a reference to an [`MlKem1024PublicKey`] and
+ [`SHARED_SECRET_SIZE`] bytes of `randomness`.
 */
-tuple_fa
-libcrux_ml_kem_mlkem1024_avx2_encapsulate(
-  libcrux_ml_kem_types_MlKemPublicKey_64 *public_key,
-  uint8_t randomness[32U]
-)
-{
+tuple_fa libcrux_ml_kem_mlkem1024_avx2_encapsulate(
+    libcrux_ml_kem_types_MlKemPublicKey_64 *public_key,
+    uint8_t randomness[32U]) {
   return encapsulate_8f(public_key, randomness);
 }
 
@@ -159,8 +142,9 @@ libcrux_ml_kem_mlkem1024_avx2_encapsulate(
  Portable generate key pair.
 */
 /**
-A monomorphic instance of libcrux_ml_kem.ind_cca.instantiations.avx2.generate_keypair_avx2
-with const generics
+A monomorphic instance of
+libcrux_ml_kem.ind_cca.instantiations.avx2.generate_keypair_avx2 with const
+generics
 - K= 4
 - CPA_PRIVATE_KEY_SIZE= 1536
 - PRIVATE_KEY_SIZE= 3168
@@ -168,14 +152,14 @@ with const generics
 - ETA1= 2
 - ETA1_RANDOMNESS_SIZE= 128
 */
-static libcrux_ml_kem_mlkem1024_MlKem1024KeyPair generate_keypair_avx2_b4(uint8_t *randomness)
-{
+static libcrux_ml_kem_mlkem1024_MlKem1024KeyPair generate_keypair_avx2_b4(
+    uint8_t *randomness) {
   return libcrux_ml_kem_ind_cca_generate_keypair_bb0(randomness);
 }
 
 /**
-A monomorphic instance of libcrux_ml_kem.ind_cca.instantiations.avx2.generate_keypair
-with const generics
+A monomorphic instance of
+libcrux_ml_kem.ind_cca.instantiations.avx2.generate_keypair with const generics
 - K= 4
 - CPA_PRIVATE_KEY_SIZE= 1536
 - PRIVATE_KEY_SIZE= 3168
@@ -183,8 +167,8 @@ with const generics
 - ETA1= 2
 - ETA1_RANDOMNESS_SIZE= 128
 */
-static libcrux_ml_kem_mlkem1024_MlKem1024KeyPair generate_keypair_b4(uint8_t *randomness)
-{
+static libcrux_ml_kem_mlkem1024_MlKem1024KeyPair generate_keypair_b4(
+    uint8_t *randomness) {
   return generate_keypair_avx2_b4(randomness);
 }
 
@@ -192,40 +176,36 @@ static libcrux_ml_kem_mlkem1024_MlKem1024KeyPair generate_keypair_b4(uint8_t *ra
  Generate ML-KEM 1024 Key Pair
 */
 libcrux_ml_kem_mlkem1024_MlKem1024KeyPair
-libcrux_ml_kem_mlkem1024_avx2_generate_key_pair(uint8_t randomness[64U])
-{
+libcrux_ml_kem_mlkem1024_avx2_generate_key_pair(uint8_t randomness[64U]) {
   return generate_keypair_b4(randomness);
 }
 
 /**
-A monomorphic instance of libcrux_ml_kem.ind_cca.instantiations.avx2.validate_private_key_avx2
-with const generics
+A monomorphic instance of
+libcrux_ml_kem.ind_cca.instantiations.avx2.validate_private_key_avx2 with const
+generics
 - K= 4
 - SECRET_KEY_SIZE= 3168
 - CIPHERTEXT_SIZE= 1568
 */
-static bool
-validate_private_key_avx2_6b(
-  libcrux_ml_kem_types_MlKemPrivateKey_83 *private_key,
-  libcrux_ml_kem_types_MlKemCiphertext_64 *ciphertext
-)
-{
-  return libcrux_ml_kem_ind_cca_validate_private_key_b9(private_key, ciphertext);
+static bool validate_private_key_avx2_6b(
+    libcrux_ml_kem_types_MlKemPrivateKey_83 *private_key,
+    libcrux_ml_kem_types_MlKemCiphertext_64 *ciphertext) {
+  return libcrux_ml_kem_ind_cca_validate_private_key_b9(private_key,
+                                                        ciphertext);
 }
 
 /**
-A monomorphic instance of libcrux_ml_kem.ind_cca.instantiations.avx2.validate_private_key
-with const generics
+A monomorphic instance of
+libcrux_ml_kem.ind_cca.instantiations.avx2.validate_private_key with const
+generics
 - K= 4
 - SECRET_KEY_SIZE= 3168
 - CIPHERTEXT_SIZE= 1568
 */
-static bool
-validate_private_key_6b(
-  libcrux_ml_kem_types_MlKemPrivateKey_83 *private_key,
-  libcrux_ml_kem_types_MlKemCiphertext_64 *ciphertext
-)
-{
+static bool validate_private_key_6b(
+    libcrux_ml_kem_types_MlKemPrivateKey_83 *private_key,
+    libcrux_ml_kem_types_MlKemCiphertext_64 *ciphertext) {
   return validate_private_key_avx2_6b(private_key, ciphertext);
 }
 
@@ -234,12 +214,9 @@ validate_private_key_6b(
 
  Returns `true` if valid, and `false` otherwise.
 */
-bool
-libcrux_ml_kem_mlkem1024_avx2_validate_private_key(
-  libcrux_ml_kem_types_MlKemPrivateKey_83 *private_key,
-  libcrux_ml_kem_types_MlKemCiphertext_64 *ciphertext
-)
-{
+bool libcrux_ml_kem_mlkem1024_avx2_validate_private_key(
+    libcrux_ml_kem_types_MlKemPrivateKey_83 *private_key,
+    libcrux_ml_kem_types_MlKemCiphertext_64 *ciphertext) {
   return validate_private_key_6b(private_key, ciphertext);
 }
 
@@ -247,14 +224,14 @@ libcrux_ml_kem_mlkem1024_avx2_validate_private_key(
  Private key validation
 */
 /**
-A monomorphic instance of libcrux_ml_kem.ind_cca.instantiations.avx2.validate_private_key_only
-with const generics
+A monomorphic instance of
+libcrux_ml_kem.ind_cca.instantiations.avx2.validate_private_key_only with const
+generics
 - K= 4
 - SECRET_KEY_SIZE= 3168
 */
-static KRML_MUSTINLINE bool
-validate_private_key_only_44(libcrux_ml_kem_types_MlKemPrivateKey_83 *private_key)
-{
+static KRML_MUSTINLINE bool validate_private_key_only_44(
+    libcrux_ml_kem_types_MlKemPrivateKey_83 *private_key) {
   return libcrux_ml_kem_ind_cca_validate_private_key_only_5e(private_key);
 }
 
@@ -263,33 +240,30 @@ validate_private_key_only_44(libcrux_ml_kem_types_MlKemPrivateKey_83 *private_ke
 
  Returns `true` if valid, and `false` otherwise.
 */
-bool
-libcrux_ml_kem_mlkem1024_avx2_validate_private_key_only(
-  libcrux_ml_kem_types_MlKemPrivateKey_83 *private_key
-)
-{
+bool libcrux_ml_kem_mlkem1024_avx2_validate_private_key_only(
+    libcrux_ml_kem_types_MlKemPrivateKey_83 *private_key) {
   return validate_private_key_only_44(private_key);
 }
 
 /**
-A monomorphic instance of libcrux_ml_kem.ind_cca.instantiations.avx2.validate_public_key_avx2
-with const generics
+A monomorphic instance of
+libcrux_ml_kem.ind_cca.instantiations.avx2.validate_public_key_avx2 with const
+generics
 - K= 4
 - PUBLIC_KEY_SIZE= 1568
 */
-static bool validate_public_key_avx2_44(uint8_t *public_key)
-{
+static bool validate_public_key_avx2_44(uint8_t *public_key) {
   return libcrux_ml_kem_ind_cca_validate_public_key_78(public_key);
 }
 
 /**
-A monomorphic instance of libcrux_ml_kem.ind_cca.instantiations.avx2.validate_public_key
-with const generics
+A monomorphic instance of
+libcrux_ml_kem.ind_cca.instantiations.avx2.validate_public_key with const
+generics
 - K= 4
 - PUBLIC_KEY_SIZE= 1568
 */
-static bool validate_public_key_44(uint8_t *public_key)
-{
+static bool validate_public_key_44(uint8_t *public_key) {
   return validate_public_key_avx2_44(public_key);
 }
 
@@ -298,11 +272,7 @@ static bool validate_public_key_44(uint8_t *public_key)
 
  Returns `true` if valid, and `false` otherwise.
 */
-bool
-libcrux_ml_kem_mlkem1024_avx2_validate_public_key(
-  libcrux_ml_kem_types_MlKemPublicKey_64 *public_key
-)
-{
+bool libcrux_ml_kem_mlkem1024_avx2_validate_public_key(
+    libcrux_ml_kem_types_MlKemPublicKey_64 *public_key) {
   return validate_public_key_44(public_key->value);
 }
-
