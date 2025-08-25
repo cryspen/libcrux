@@ -25,19 +25,19 @@ pub mod signers {
                 /// It is the responsibility of the caller to ensure  that the `randomness` argument is actually
                 /// random.
                 impl owned::Sign<SIGNING_KEY_LEN, SIGNATURE_LEN> for $alias {
-                    /// The `(context, randomness)` required for signing.
-                    type SignAux<'a> = (&'a [u8], super::Randomness);
+                    /// The `randomness` required for signing.
+                    type SignAux<'a> = super::Randomness;
 
                     /// Sign a payload using a provided signing key, context, and randomness.
                     fn sign(
                         payload: &[u8],
                         signing_key: &[u8; SIGNING_KEY_LEN],
-                        (context, randomness): (&[u8], super::Randomness),
+                        randomness: super::Randomness,
                     ) -> Result<[u8; SIGNATURE_LEN], owned::SignError> {
                         crate::ml_dsa_generic::multiplexing::$module::sign(
                             signing_key,
                             payload,
-                            context,
+                            &[],
                             randomness,
                         )
                         .map(|sig| sig.value)
@@ -46,20 +46,19 @@ pub mod signers {
                 }
                 /// The [`owned`](libcrux_traits::signature::owned) version of the Verify trait.
                 impl owned::Verify<VERIFICATION_KEY_LEN, SIGNATURE_LEN> for $alias {
-                    /// The `context` required for verification.
-                    type VerifyAux<'a> = &'a [u8];
+                    type VerifyAux<'a> = ();
 
                     /// Verify a signature using a provided verification key and context.
                     fn verify(
                         payload: &[u8],
                         verification_key: &[u8; VERIFICATION_KEY_LEN],
                         signature: &[u8; SIGNATURE_LEN],
-                        context: &[u8],
+                        _aux: (),
                     ) -> Result<(), owned::VerifyError> {
                         crate::ml_dsa_generic::multiplexing::$module::verify(
                             verification_key,
                             payload,
-                            context,
+                            &[],
                             signature,
                         )
                         .map_err(|_| owned::VerifyError::LibraryError)
