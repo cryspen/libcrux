@@ -71,7 +71,6 @@ pub mod signers {
             }
             libcrux_traits::impl_signature_slice_trait!($alias => SIGNING_KEY_LEN, SIG_LEN, &Nonce, nonce, u8);
             libcrux_traits::impl_verify_slice_trait!($alias => VERIFICATION_KEY_LEN, SIG_LEN, (), _aux);
-            // TODO: owned and secrets traits not appearing in docs
         };
     }
 
