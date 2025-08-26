@@ -364,7 +364,7 @@ impl<'a, Algo: Aead> Tag<'a, Algo> {
 }
 
 impl<'a, Algo: Aead> AsRef<[u8]> for Tag<'a, Algo> {
-    fn as_ref(&self) -> &[U8] {
+    fn as_ref(&self) -> &[u8] {
         self.1
     }
 }
@@ -410,13 +410,13 @@ impl<'a, Algo> Nonce<'a, Algo> {
 }
 
 impl<'a, Algo: Aead> AsRef<[u8]> for Nonce<'a, Algo> {
-    fn as_ref(&self) -> &[U8] {
+    fn as_ref(&self) -> &[u8] {
         self.1
     }
 }
 
 impl<'a, Algo: Aead> AsMut<[u8]> for TagMut<'a, Algo> {
-    fn as_mut(&mut self) -> &mut [U8] {
+    fn as_mut(&mut self) -> &mut [u8] {
         self.1
     }
 }

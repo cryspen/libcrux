@@ -158,13 +158,13 @@ impl<const L: usize, Algo: Aead<Tag = [u8; L]>> From<[u8; L]> for Tag<Algo> {
     }
 }
 
-impl<const L: usize, Algo: Aead<Tag = [U8; L]>> From<&[u8; L]> for &Tag<Algo> {
+impl<const L: usize, Algo: Aead<Tag = [u8; L]>> From<&[u8; L]> for &Tag<Algo> {
     fn from(bytes: &Algo::Tag) -> Self {
         unsafe { core::mem::transmute(bytes) }
     }
 }
 
-impl<const L: usize, Algo: Aead<Tag = [U8; L]>> From<&mut [u8; L]> for &mut Tag<Algo> {
+impl<const L: usize, Algo: Aead<Tag = [u8; L]>> From<&mut [u8; L]> for &mut Tag<Algo> {
     fn from(bytes: &mut Algo::Tag) -> Self {
         unsafe { core::mem::transmute(bytes) }
     }
@@ -188,7 +188,7 @@ impl<const L: usize, Algo: Aead<Nonce = [u8; L]>> From<[u8; L]> for Nonce<Algo> 
     }
 }
 
-impl<const L: usize, Algo: Aead<Nonce = [U8; L]>> From<&[u8; L]> for &Nonce<Algo> {
+impl<const L: usize, Algo: Aead<Nonce = [u8; L]>> From<&[u8; L]> for &Nonce<Algo> {
     fn from(bytes: &Algo::Nonce) -> Self {
         unsafe { core::mem::transmute(bytes) }
     }
