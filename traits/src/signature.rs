@@ -1,0 +1,8 @@
+//! This module provides common interface traits for signature scheme implementations.
+
+pub mod arrayref;
+pub mod owned;
+pub mod slice;
+
+#[cfg(feature = "generic-tests")]
+pub mod tests;
