@@ -88,13 +88,6 @@ pub mod signers {
 
         use crate::p256::Nonce;
 
-        /// A convenience struct for signature scheme functionality.
-        ///
-        /// The `DigestAlg` types that are accepted are [`Sha256`](libcrux_sha2::Sha256), [`Sha384`](libcrux_sha2::Sha384), and [`Sha512`](libcrux_sha2::Sha512).
-        pub struct Signer<DigestAlg> {
-            _phantom_data: core::marker::PhantomData<DigestAlg>,
-        }
-
         impl_signature_trait!(
             Sha256,
             Signer_Sha2_256,
