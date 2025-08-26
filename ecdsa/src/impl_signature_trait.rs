@@ -11,16 +11,16 @@ pub mod signers {
     macro_rules! impl_signature_trait {
         (
             $digest_alg_name:ident,
-            $alias:ident,
+            $name:ident,
             $sign_fn:ident,
             $verify_fn:ident
         ) => {
             #[allow(non_camel_case_types)]
             #[doc = concat!("A signer using [`libcrux_sha2::", stringify!($digest_alg_name),"`].")]
-            pub type $alias = Signer<libcrux_sha2::$digest_alg_name>;
+            pub struct $name;
 
             /// The [`arrayref`](libcrux_traits::signature::arrayref) version of the Sign trait.
-            impl arrayref::Sign<SIGNING_KEY_LEN, VERIFICATION_KEY_LEN, SIG_LEN, RAND_KEYGEN_LEN> for $alias {
+            impl arrayref::Sign<SIGNING_KEY_LEN, VERIFICATION_KEY_LEN, SIG_LEN, RAND_KEYGEN_LEN> for $name {
                 /// The nonce needed for signing.
                 type SignAux<'a> = &'a Nonce;
                 /// Sign a payload using a provided signing key and `nonce`.
@@ -77,7 +77,7 @@ pub mod signers {
                 }
             }
             libcrux_traits::impl_signature_slice_trait!(
-                $alias => SIGNING_KEY_LEN, VERIFICATION_KEY_LEN, SIG_LEN, RAND_KEYGEN_LEN, &Nonce, nonce, (), _aux, u8);
+                $name => SIGNING_KEY_LEN, VERIFICATION_KEY_LEN, SIG_LEN, RAND_KEYGEN_LEN, &Nonce, nonce, (), _aux, u8);
         };
     }
 
