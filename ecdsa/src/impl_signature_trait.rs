@@ -3,9 +3,10 @@ pub mod signers {
 
     use libcrux_traits::signature::arrayref;
 
-    const SIG_LEN: usize = 64;
-    const VERIFICATION_KEY_LEN: usize = 64;
     const SIGNING_KEY_LEN: usize = 32;
+    const VERIFICATION_KEY_LEN: usize = 64;
+    const SIG_LEN: usize = 64;
+    const RAND_KEYGEN_LEN: usize = 32;
 
     macro_rules! impl_signature_trait {
         (
@@ -19,7 +20,7 @@ pub mod signers {
             pub type $alias = Signer<libcrux_sha2::$digest_alg_name>;
 
             /// The [`arrayref`](libcrux_traits::signature::arrayref) version of the Sign trait.
-            impl arrayref::Sign<SIGNING_KEY_LEN, VERIFICATION_KEY_LEN, SIG_LEN> for $alias {
+            impl arrayref::Sign<SIGNING_KEY_LEN, VERIFICATION_KEY_LEN, SIG_LEN, RAND_KEYGEN_LEN> for $alias {
                 /// The nonce needed for signing.
                 type SignAux<'a> = &'a Nonce;
                 /// Sign a payload using a provided signing key and `nonce`.
@@ -64,9 +65,19 @@ pub mod signers {
                     }
                     Ok(())
                 }
+                fn keygen(signing_key: &mut [u8; SIGNING_KEY_LEN], verification_key: &mut [u8; VERIFICATION_KEY_LEN], randomness: [u8; RAND_KEYGEN_LEN]) -> Result<(), arrayref::KeyGenError> {
+                    use libcrux_traits::kem::arrayref::*;
+
+                    libcrux_p256::P256::keygen(verification_key, signing_key, &randomness)
+                        .map_err(|e| match e {
+                            libcrux_traits::kem::arrayref::KeyGenError::InvalidRandomness => arrayref::KeyGenError::InvalidRandomness,
+
+                            libcrux_traits::kem::arrayref::KeyGenError::Unknown => arrayref::KeyGenError::LibraryError,
+                        })
+                }
             }
             libcrux_traits::impl_signature_slice_trait!(
-                $alias => SIGNING_KEY_LEN, VERIFICATION_KEY_LEN, SIG_LEN, &Nonce, nonce, (), _aux, u8);
+                $alias => SIGNING_KEY_LEN, VERIFICATION_KEY_LEN, SIG_LEN, RAND_KEYGEN_LEN, &Nonce, nonce, (), _aux, u8);
         };
     }
 

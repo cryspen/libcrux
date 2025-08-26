@@ -11,6 +11,7 @@ pub trait Sign<
     const SIGNING_KEY_LEN: usize,
     const VERIFICATION_KEY_LEN: usize,
     const SIGNATURE_LEN: usize,
+    const RAND_KEYGEN_LEN: usize,
 >
 {
     /// Auxiliary information needed for signing.
@@ -33,6 +34,11 @@ pub trait Sign<
         signature: &[u8; SIGNATURE_LEN],
         aux: Self::VerifyAux<'_>,
     ) -> Result<(), VerifyError>;
+    fn keygen(
+        signing_key: &mut [U8; SIGNING_KEY_LEN],
+        verification_key: &mut [u8; VERIFICATION_KEY_LEN],
+        randomness: [U8; RAND_KEYGEN_LEN],
+    ) -> Result<(), KeyGenError>;
 }
 
 /// Error indicating that signing failed.
@@ -83,9 +89,30 @@ impl core::fmt::Display for VerifyError {
     }
 }
 
+#[derive(Debug)]
+pub enum KeyGenError {
+    /// Error generating key with provided randomness
+    InvalidRandomness,
+
+    /// Indicates a library error
+    LibraryError,
+}
+
+impl core::fmt::Display for KeyGenError {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        let text = match self {
+            Self::InvalidRandomness => "error generating key with provided randomness",
+            Self::LibraryError => "indicates a library error",
+        };
+
+        f.write_str(text)
+    }
+}
+
 #[cfg(feature = "error_in_core")]
 mod error_in_core {
 
     impl core::error::Error for super::SignError {}
     impl core::error::Error for super::VerifyError {}
+    impl core::error::Error for super::KeyGenError {}
 }
