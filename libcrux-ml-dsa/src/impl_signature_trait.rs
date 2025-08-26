@@ -40,7 +40,7 @@ pub mod signers {
                 #[doc = concat!("An ", stringify!($module), " signer.\n\n")]
                 /// The `context` can be defined using the [`Context`] trait.
                 pub struct $name<T: Context> {
-                    _context: std::marker::PhantomData<T>,
+                    _context: core::marker::PhantomData<T>,
                 }
 
                 const VERIFICATION_KEY_LEN: usize =
