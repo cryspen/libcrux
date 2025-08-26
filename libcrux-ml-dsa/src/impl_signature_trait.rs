@@ -3,16 +3,45 @@ pub mod signers {
     //! [`libcrux_traits::signature`] APIs.
     use libcrux_traits::signature::owned;
 
+    /// A trait representing the context used for ML-DSA signing and verification.
+    ///
+    /// Can be implemented using the convenience macro [`impl_context`].
+    pub trait Context {
+        /// Return the context.
+        fn context() -> &'static [u8];
+    }
+
+    #[macro_export]
+    /// A convenience macro for implementing the [`Context`] trait.
+    /// The `$context` must be provided as a `&'static [u8]`.
+    ///
+    /// Usage:
+    /// ```rust
+    /// use libcrux_ml_dsa::signers::{Context, impl_context};
+    /// impl_context!(AppContext, b"context");
+    /// ```
+    macro_rules! impl_context {
+        ($name:ident, $context:expr) => {
+            pub struct $name;
+            impl Context for $name {
+                fn context() -> &'static [u8] {
+                    $context
+                }
+            }
+        };
+    }
+    pub use impl_context;
+
     macro_rules! impl_signature_trait {
-        ($name:ident, $module:ident, $alias:ident, $doc:expr) => {
+        ($module:ident, $name:tt) => {
             mod $module {
                 use super::*;
 
-                #[doc = $doc]
-                pub struct $name;
-
-                #[doc = concat!("An ", stringify!($module), " signer.")]
-                pub type $alias = super::Signer<$name>;
+                #[doc = concat!("An ", stringify!($module), " signer.\n\n")]
+                /// The `context` can be defined using the [`Context`] trait.
+                pub struct $name<T: Context> {
+                    _context: std::marker::PhantomData<T>,
+                }
 
                 const VERIFICATION_KEY_LEN: usize =
                     crate::ml_dsa_generic::$module::VERIFICATION_KEY_SIZE;
@@ -24,7 +53,9 @@ pub mod signers {
                 ///
                 /// It is the responsibility of the caller to ensure  that the `randomness` argument is actually
                 /// random.
-                impl owned::Sign<SIGNING_KEY_LEN, VERIFICATION_KEY_LEN, SIGNATURE_LEN> for $alias {
+                impl<T: Context> owned::Sign<SIGNING_KEY_LEN, VERIFICATION_KEY_LEN, SIGNATURE_LEN>
+                    for $name<T>
+                {
                     /// The `randomness` required for signing.
                     type SignAux<'a> = super::Randomness;
 
@@ -37,7 +68,7 @@ pub mod signers {
                         crate::ml_dsa_generic::multiplexing::$module::sign(
                             signing_key,
                             payload,
-                            &[],
+                            T::context(),
                             randomness,
                         )
                         .map(|sig| sig.value)
@@ -55,47 +86,23 @@ pub mod signers {
                         crate::ml_dsa_generic::multiplexing::$module::verify(
                             verification_key,
                             payload,
-                            &[],
+                            T::context(),
                             signature,
                         )
                         .map_err(|_| owned::VerifyError::LibraryError)
                     }
                 }
             }
-            pub use $module::{$alias, $name};
+            pub use $module::$name;
         };
-    }
-
-    // List structs in doc comment if enabled.
-    /// A convenience struct for signature scheme functionality.
-    #[cfg_attr(feature = "mldsa44", doc = "\n - [`MlDsa44`]")]
-    #[cfg_attr(feature = "mldsa65", doc = "\n - [`MlDsa65`]")]
-    #[cfg_attr(feature = "mldsa87", doc = "\n - [`MlDsa87`]")]
-    pub struct Signer<Implementation> {
-        _phantom_data: core::marker::PhantomData<Implementation>,
     }
 
     type Randomness = [u8; 32];
 
     #[cfg(feature = "mldsa44")]
-    impl_signature_trait!(
-        MlDsa44,
-        ml_dsa_44,
-        MlDsa44Signer,
-        "A struct representing ML-DSA 44."
-    );
+    impl_signature_trait!(ml_dsa_44, MlDsa44Signer);
     #[cfg(feature = "mldsa65")]
-    impl_signature_trait!(
-        MlDsa65,
-        ml_dsa_65,
-        MlDsa65Signer,
-        "A struct representing ML-DSA 65."
-    );
+    impl_signature_trait!(ml_dsa_65, MlDsa65Signer);
     #[cfg(feature = "mldsa87")]
-    impl_signature_trait!(
-        MlDsa87,
-        ml_dsa_87,
-        MlDsa87Signer,
-        "A struct representing ML-DSA 87."
-    );
+    impl_signature_trait!(ml_dsa_87, MlDsa87Signer);
 }
