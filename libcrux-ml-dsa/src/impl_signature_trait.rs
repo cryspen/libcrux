@@ -53,8 +53,13 @@ pub mod signers {
                 ///
                 /// It is the responsibility of the caller to ensure  that the `randomness` argument is actually
                 /// random.
-                impl<T: Context> owned::Sign<SIGNING_KEY_LEN, VERIFICATION_KEY_LEN, SIGNATURE_LEN>
-                    for $name<T>
+                impl<T: Context>
+                    owned::Sign<
+                        SIGNING_KEY_LEN,
+                        VERIFICATION_KEY_LEN,
+                        SIGNATURE_LEN,
+                        RAND_KEYGEN_LEN,
+                    > for $name<T>
                 {
                     /// The `randomness` required for signing.
                     type SignAux<'a> = super::Randomness;
@@ -91,13 +96,30 @@ pub mod signers {
                         )
                         .map_err(|_| owned::VerifyError::LibraryError)
                     }
+                    fn keygen(
+                        randomness: Randomness,
+                    ) -> Result<
+                        ([u8; SIGNING_KEY_LEN], [u8; VERIFICATION_KEY_LEN]),
+                        owned::KeyGenError,
+                    > {
+                        let mut signing_key = [0u8; SIGNING_KEY_LEN];
+                        let mut verification_key = [0u8; VERIFICATION_KEY_LEN];
+                        crate::ml_dsa_generic::multiplexing::$module::generate_key_pair(
+                            randomness,
+                            &mut signing_key,
+                            &mut verification_key,
+                        );
+
+                        Ok((signing_key, verification_key))
+                    }
                 }
             }
             pub use $module::$name;
         };
     }
 
-    type Randomness = [u8; 32];
+    const RAND_KEYGEN_LEN: usize = 32;
+    type Randomness = [u8; RAND_KEYGEN_LEN];
 
     #[cfg(feature = "mldsa44")]
     impl_signature_trait!(ml_dsa_44, MlDsa44Signer);

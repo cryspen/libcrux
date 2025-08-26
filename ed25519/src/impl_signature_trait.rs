@@ -1,7 +1,7 @@
 pub mod signers {
     //! [`libcrux_traits::signature`] APIs.
 
-    use libcrux_traits::signature::arrayref::{Sign, SignError, VerifyError};
+    use libcrux_traits::signature::arrayref::{KeyGenError, Sign, SignError, VerifyError};
 
     /// A convenience struct for signature scheme functionality.
     pub struct Signer;
@@ -9,9 +9,10 @@ pub mod signers {
     const VERIFICATION_KEY_LEN: usize = 32;
     const SIGNING_KEY_LEN: usize = 32;
     const SIGNATURE_LEN: usize = 64;
+    const RAND_KEYGEN_LEN: usize = SIGNING_KEY_LEN;
 
     /// The [`arrayref`](libcrux_traits::signature::arrayref) version of the Sign trait.
-    impl Sign<SIGNING_KEY_LEN, VERIFICATION_KEY_LEN, SIGNATURE_LEN> for Signer {
+    impl Sign<SIGNING_KEY_LEN, VERIFICATION_KEY_LEN, SIGNATURE_LEN, RAND_KEYGEN_LEN> for Signer {
         /// No auxiliary information is required for signing.
         type SignAux<'a> = ();
         /// Sign a payload with a provided signing key.
@@ -57,8 +58,19 @@ pub mod signers {
                 Err(VerifyError::InvalidSignature)
             }
         }
+        fn keygen(
+            signing_key: &mut [u8; SIGNING_KEY_LEN],
+            verification_key: &mut [u8; VERIFICATION_KEY_LEN],
+            randomness: [u8; SIGNING_KEY_LEN],
+        ) -> Result<(), KeyGenError> {
+            signing_key.copy_from_slice(randomness.as_ref());
+
+            crate::secret_to_public(verification_key, signing_key);
+
+            Ok(())
+        }
     }
 
     libcrux_traits::signature::slice::impl_signature_slice_trait!(
-        Signer => SIGNING_KEY_LEN, VERIFICATION_KEY_LEN, SIGNATURE_LEN, (), _aux, (), _aux, u8);
+        Signer => SIGNING_KEY_LEN, VERIFICATION_KEY_LEN, SIGNATURE_LEN, RAND_KEYGEN_LEN, (), _aux, (), _aux, u8);
 }
