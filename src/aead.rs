@@ -11,6 +11,7 @@
 //! 128-bit SIMD implementation is used.
 //! In any other case the portable implementation is used.
 
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub enum Aead {
     ChaCha20Poly1305,
     XChaCha20Poly1305,
@@ -20,12 +21,18 @@ impl Multiplexes<libcrux_chacha20poly1305::ChaCha20Poly1305> for Aead {
     fn mux_algo(&self) -> Option<libcrux_chacha20poly1305::ChaCha20Poly1305> {
         matches!(self, Self::ChaCha20Poly1305).then_some(libcrux_chacha20poly1305::ChaCha20Poly1305)
     }
+    fn wrap_algo(_algo: libcrux_chacha20poly1305::ChaCha20Poly1305) -> Self {
+        Self::ChaCha20Poly1305
+    }
 }
 
 impl Multiplexes<libcrux_chacha20poly1305::XChaCha20Poly1305> for Aead {
     fn mux_algo(&self) -> Option<libcrux_chacha20poly1305::XChaCha20Poly1305> {
         matches!(self, Self::XChaCha20Poly1305)
             .then_some(libcrux_chacha20poly1305::XChaCha20Poly1305)
+    }
+    fn wrap_algo(_algo: libcrux_chacha20poly1305::XChaCha20Poly1305) -> Self {
+        Self::XChaCha20Poly1305
     }
 }
 
@@ -53,27 +60,32 @@ impl libcrux_traits::aead::typed_refs::Aead for Aead {
         nonce: libcrux_traits::aead::typed_refs::Nonce<'a, Self>,
         aad: &[u8],
         plaintext: &[libcrux_traits::libcrux_secrets::U8],
-    ) -> Result<(), libcrux_traits::aead::slice::EncryptError> {
+    ) -> Result<
+        libcrux_traits::aead::typed_refs::Tag<'a, Self>,
+        libcrux_traits::aead::typed_refs::EncryptError,
+    > {
         match self {
             Aead::ChaCha20Poly1305 => {
-                let key =
-                    Self::mux_key(key).ok_or(libcrux_traits::aead::slice::EncryptError::Unknown)?;
+                let key = Self::mux_key(key)
+                    .ok_or(libcrux_traits::aead::typed_refs::EncryptError::Unknown)?;
                 let tag = Self::mux_tag_mut(tag)
-                    .ok_or(libcrux_traits::aead::slice::EncryptError::Unknown)?;
+                    .ok_or(libcrux_traits::aead::typed_refs::EncryptError::Unknown)?;
                 let nonce = Self::mux_nonce(nonce)
-                    .ok_or(libcrux_traits::aead::slice::EncryptError::Unknown)?;
+                    .ok_or(libcrux_traits::aead::typed_refs::EncryptError::Unknown)?;
                 libcrux_chacha20poly1305::ChaCha20Poly1305
                     .encrypt(ciphertext, tag, key, nonce, aad, plaintext)
+                    .map(Self::wrap_tag)
             }
             Aead::XChaCha20Poly1305 => {
-                let key =
-                    Self::mux_key(key).ok_or(libcrux_traits::aead::slice::EncryptError::Unknown)?;
+                let key = Self::mux_key(key)
+                    .ok_or(libcrux_traits::aead::typed_refs::EncryptError::Unknown)?;
                 let tag = Self::mux_tag_mut(tag)
-                    .ok_or(libcrux_traits::aead::slice::EncryptError::Unknown)?;
+                    .ok_or(libcrux_traits::aead::typed_refs::EncryptError::Unknown)?;
                 let nonce = Self::mux_nonce(nonce)
-                    .ok_or(libcrux_traits::aead::slice::EncryptError::Unknown)?;
+                    .ok_or(libcrux_traits::aead::typed_refs::EncryptError::Unknown)?;
                 libcrux_chacha20poly1305::XChaCha20Poly1305
                     .encrypt(ciphertext, tag, key, nonce, aad, plaintext)
+                    .map(Self::wrap_tag)
             }
         }
     }
@@ -86,25 +98,25 @@ impl libcrux_traits::aead::typed_refs::Aead for Aead {
         aad: &[u8],
         ciphertext: &[u8],
         tag: libcrux_traits::aead::typed_refs::Tag<'a, Self>,
-    ) -> Result<(), libcrux_traits::aead::slice::DecryptError> {
+    ) -> Result<(), libcrux_traits::aead::typed_refs::DecryptError> {
         match self {
             Aead::ChaCha20Poly1305 => {
-                let key =
-                    Self::mux_key(key).ok_or(libcrux_traits::aead::slice::DecryptError::Unknown)?;
-                let tag =
-                    Self::mux_tag(tag).ok_or(libcrux_traits::aead::slice::DecryptError::Unknown)?;
+                let key = Self::mux_key(key)
+                    .ok_or(libcrux_traits::aead::typed_refs::DecryptError::Unknown)?;
+                let tag = Self::mux_tag(tag)
+                    .ok_or(libcrux_traits::aead::typed_refs::DecryptError::Unknown)?;
                 let nonce = Self::mux_nonce(nonce)
-                    .ok_or(libcrux_traits::aead::slice::DecryptError::Unknown)?;
+                    .ok_or(libcrux_traits::aead::typed_refs::DecryptError::Unknown)?;
                 libcrux_chacha20poly1305::ChaCha20Poly1305
                     .decrypt(plaintext, key, nonce, aad, ciphertext, tag)
             }
             Aead::XChaCha20Poly1305 => {
-                let key =
-                    Self::mux_key(key).ok_or(libcrux_traits::aead::slice::DecryptError::Unknown)?;
-                let tag =
-                    Self::mux_tag(tag).ok_or(libcrux_traits::aead::slice::DecryptError::Unknown)?;
+                let key = Self::mux_key(key)
+                    .ok_or(libcrux_traits::aead::typed_refs::DecryptError::Unknown)?;
+                let tag = Self::mux_tag(tag)
+                    .ok_or(libcrux_traits::aead::typed_refs::DecryptError::Unknown)?;
                 let nonce = Self::mux_nonce(nonce)
-                    .ok_or(libcrux_traits::aead::slice::DecryptError::Unknown)?;
+                    .ok_or(libcrux_traits::aead::typed_refs::DecryptError::Unknown)?;
                 libcrux_chacha20poly1305::XChaCha20Poly1305
                     .decrypt(plaintext, key, nonce, aad, ciphertext, tag)
             }
@@ -728,26 +740,29 @@ pub fn decrypt_detached(
 #[cfg(test)]
 mod tests {
     use libcrux_traits::aead::typed_refs;
+    use typed_refs::AeadExt as _;
 
-    type Key<'a> = typed_refs::Key<'a, crate::aead::Aead>;
-    type Nonce<'a> = typed_refs::Nonce<'a, crate::aead::Aead>;
-    type Tag<'a> = typed_refs::Tag<'a, crate::aead::Aead>;
+    use super::Aead;
 
     #[test]
-    fn test_key_centric_owned() {
-        let k = [0; 32];
-        let nonce = [0; 12];
+    fn test_key_centric_multiplexed() {
+        let algo = Aead::ChaCha20Poly1305;
+
+        algo.new_key(&[0; 33]).expect_err("length should mismatch");
+
         let mut tag = [0; 16];
 
-        let algo = crate::aead::Aead::ChaCha20Poly1305;
+        let key = algo.new_key(&[0; 32]).expect("length should match");
+        let nonce = algo.new_nonce(&[0; 12]).expect("length should match");
+        let tag = algo.new_tag_mut(&mut tag).expect("length should match");
 
-        // TOOO: figure ou API for creating multiplexed keys and nonces and test that this works
-        //     let pt = b"the quick brown fox jumps over the lazy dog";
-        //     let mut ct = [0; 43];
-        //     let mut pt_out = [0; 43];
-        //
-        //     k.encrypt(&mut ct, &mut tag, &nonce, b"", pt).unwrap();
-        //     k.decrypt(&mut pt_out, &nonce, b"", &ct, &tag).unwrap();
-        //     assert_eq!(pt, &pt_out);
+        let pt = b"the quick brown fox jumps over the lazy dog";
+        let mut ct = [0; 43];
+        let mut pt_out = [0; 43];
+
+        let tag = key.encrypt(&mut ct, tag, nonce, b"", pt).unwrap();
+
+        key.decrypt(&mut pt_out, nonce, b"", &ct, tag).unwrap();
+        assert_eq!(pt, &pt_out);
     }
 }
