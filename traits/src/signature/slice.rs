@@ -8,7 +8,7 @@ use libcrux_secrets::U8;
 /// The `SignAux` type is auxiliary information required for signing.
 ///
 /// Returns the number of bytes written.
-pub trait Sign {
+pub trait Sign<const RAND_KEYGEN_LEN: usize> {
     /// Auxiliary information needed for signing.
     type SignAux<'a>;
     /// Sign a payload using a provided signature key. Required auxiliary information is provided using
@@ -29,6 +29,11 @@ pub trait Sign {
         signature: &[u8],
         aux: Self::VerifyAux<'_>,
     ) -> Result<(), VerifyError>;
+    fn keygen(
+        signing_key: &mut [U8],
+        verification_key: &mut [u8],
+        randomness: [U8; RAND_KEYGEN_LEN],
+    ) -> Result<(), KeyGenError>;
 }
 
 /// Error indicating that signing failed.
@@ -94,11 +99,42 @@ impl core::fmt::Display for VerifyError {
     }
 }
 
+/// Error generating key with provided randomness
+#[derive(Debug)]
+pub enum KeyGenError {
+    /// Error generating key with provided randomness
+    InvalidRandomness,
+    /// The length of the provided signing key buffer is invalid.
+    InvalidSigningKeyBufferLength,
+    /// The length of the provided verification key buffer is invalid.
+    InvalidVerificationKeyBufferLength,
+    /// Indicates a library error
+    LibraryError,
+}
+
+impl core::fmt::Display for KeyGenError {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        let text = match self {
+            KeyGenError::InvalidRandomness => "error generating key with the provided randomness",
+            KeyGenError::InvalidSigningKeyBufferLength => {
+                "the length of the provided signing key buffer is invalid"
+            }
+            KeyGenError::InvalidVerificationKeyBufferLength => {
+                "the length of the provided verification key buffer is invalid"
+            }
+            KeyGenError::LibraryError => "indicates a library error",
+        };
+
+        f.write_str(text)
+    }
+}
+
 #[cfg(feature = "error_in_core")]
 mod error_in_core {
 
     impl core::error::Error for super::SignError {}
     impl core::error::Error for super::VerifyError {}
+    impl core::error::Error for super::KeyGenError {}
 }
 
 impl From<super::arrayref::SignError> for SignError {
@@ -122,19 +158,30 @@ impl From<super::arrayref::VerifyError> for VerifyError {
     }
 }
 
+impl From<super::arrayref::KeyGenError> for KeyGenError {
+    fn from(e: super::arrayref::KeyGenError) -> Self {
+        match e {
+            super::arrayref::KeyGenError::InvalidRandomness => Self::InvalidRandomness,
+            super::arrayref::KeyGenError::LibraryError => Self::LibraryError,
+        }
+    }
+}
+
 /// Implements [`Sign`] for any [`arrayref::Sign`](crate::signature::arrayref::Sign)
 #[macro_export]
 macro_rules! impl_signature_slice_trait {
-    ($type:ty => $sk_len:expr, $vk_len:expr, $sig_len:expr, $sign_aux:ty, $sign_aux_param:tt, $verify_aux:ty, $verify_aux_param:tt, $byte:ty) => {
+    ($type:ty => $sk_len:expr, $vk_len:expr, $sig_len:expr, $rand_keygen_len:expr, $sign_aux:ty, $sign_aux_param:tt, $verify_aux:ty, $verify_aux_param:tt, $byte:ty) => {
         /// The [`slice`](libcrux_traits::signature::slice) version of the Sign trait.
-        impl $crate::signature::slice::Sign for $type {
+        impl $crate::signature::slice::Sign<$rand_keygen_len> for $type {
             #[doc = "Auxiliary information needed for signing: "]
             #[doc = concat!("`",stringify!($sign_aux_param),"`")]
             #[doc = ". If the type is `()`, then no auxiliary information is required.\n\n"]
-            type SignAux<'a> =
-                <$type as $crate::signature::arrayref::Sign<$sk_len, $vk_len, $sig_len>>::SignAux<
-                    'a,
-                >;
+            type SignAux<'a> = <$type as $crate::signature::arrayref::Sign<
+                $sk_len,
+                $vk_len,
+                $sig_len,
+                $rand_keygen_len,
+            >>::SignAux<'a>;
 
             #[doc = "Sign a payload using a provided signing key and "]
             #[doc = concat!("`",stringify!($sign_aux_param),"`.")]
@@ -153,12 +200,12 @@ macro_rules! impl_signature_slice_trait {
                     .first_chunk_mut()
                     .ok_or($crate::signature::slice::SignError::InvalidSignatureBufferLength)?;
 
-                <$type as $crate::signature::arrayref::Sign<$sk_len, $vk_len, $sig_len>>::sign(
-                    payload,
-                    signing_key,
-                    signature,
-                    $sign_aux_param,
-                )
+                <$type as $crate::signature::arrayref::Sign<
+                    $sk_len,
+                    $vk_len,
+                    $sig_len,
+                    $rand_keygen_len,
+                >>::sign(payload, signing_key, signature, $sign_aux_param)
                 .map(|_| $sk_len)
                 .map_err($crate::signature::slice::SignError::from)
             }
@@ -169,6 +216,7 @@ macro_rules! impl_signature_slice_trait {
                 $sk_len,
                 $vk_len,
                 $sig_len,
+                $rand_keygen_len,
             >>::VerifyAux<'a>;
             #[doc = "Verify a signature using a provided verification key and "]
             #[doc = concat!("`",stringify!($verify_aux_param),"`.")]
@@ -187,13 +235,34 @@ macro_rules! impl_signature_slice_trait {
                     $crate::signature::slice::VerifyError::InvalidSignatureBufferLength
                 })?;
 
-                <$type as $crate::signature::arrayref::Sign<$sk_len, $vk_len, $sig_len>>::verify(
-                    payload,
-                    verification_key,
-                    signature,
-                    $verify_aux_param,
-                )
+                <$type as $crate::signature::arrayref::Sign<
+                    $sk_len,
+                    $vk_len,
+                    $sig_len,
+                    $rand_keygen_len,
+                >>::verify(payload, verification_key, signature, $verify_aux_param)
                 .map_err($crate::signature::slice::VerifyError::from)
+            }
+
+            fn keygen(
+                signing_key: &mut [$byte],
+                verification_key: &mut [$byte],
+                randomness: [$byte; $rand_keygen_len],
+            ) -> Result<(), $crate::signature::slice::KeyGenError> {
+                let signing_key: &mut [u8; $sk_len] = signing_key.try_into().map_err(|_| {
+                    $crate::signature::slice::KeyGenError::InvalidSigningKeyBufferLength
+                })?;
+                let verification_key: &mut [u8; $vk_len] =
+                    verification_key.try_into().map_err(|_| {
+                        $crate::signature::slice::KeyGenError::InvalidVerificationKeyBufferLength
+                    })?;
+                <$type as $crate::signature::arrayref::Sign<
+                    $sk_len,
+                    $vk_len,
+                    $sig_len,
+                    $rand_keygen_len,
+                >>::keygen(signing_key, verification_key, randomness)
+                .map_err($crate::signature::slice::KeyGenError::from)
             }
         }
     };
