@@ -24,7 +24,7 @@ pub mod signers {
                 ///
                 /// It is the responsibility of the caller to ensure  that the `randomness` argument is actually
                 /// random.
-                impl owned::Sign<SIGNING_KEY_LEN, SIGNATURE_LEN> for $alias {
+                impl owned::Sign<SIGNING_KEY_LEN, VERIFICATION_KEY_LEN, SIGNATURE_LEN> for $alias {
                     /// The `randomness` required for signing.
                     type SignAux<'a> = super::Randomness;
 
@@ -43,9 +43,6 @@ pub mod signers {
                         .map(|sig| sig.value)
                         .map_err(|_| owned::SignError::LibraryError)
                     }
-                }
-                /// The [`owned`](libcrux_traits::signature::owned) version of the Verify trait.
-                impl owned::Verify<VERIFICATION_KEY_LEN, SIGNATURE_LEN> for $alias {
                     type VerifyAux<'a> = ();
 
                     /// Verify a signature using a provided verification key and context.

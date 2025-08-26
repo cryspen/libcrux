@@ -7,7 +7,12 @@ use libcrux_secrets::U8;
 /// usable APIs on top. This trait takes array references as arguments.
 ///
 /// The `SignAux` type is auxiliary information required for signing.
-pub trait Sign<const SIGNING_KEY_LEN: usize, const SIGNATURE_LEN: usize> {
+pub trait Sign<
+    const SIGNING_KEY_LEN: usize,
+    const VERIFICATION_KEY_LEN: usize,
+    const SIGNATURE_LEN: usize,
+>
+{
     /// Auxiliary information needed for signing.
     type SignAux<'a>;
     /// Sign a payload using a provided signature key. Required auxiliary information is provided using
@@ -18,12 +23,6 @@ pub trait Sign<const SIGNING_KEY_LEN: usize, const SIGNATURE_LEN: usize> {
         signature: &mut [u8; SIGNATURE_LEN],
         aux: Self::SignAux<'_>,
     ) -> Result<(), SignError>;
-}
-
-/// A verifier. This trait takes array references as arguments.
-///
-/// The `VerifyAux` type is auxiliary information required for verification.
-pub trait Verify<const VERIFICATION_KEY_LEN: usize, const SIGNATURE_LEN: usize> {
     /// Auxiliary information needed for verification.
     type VerifyAux<'a>;
     /// Verify a signature using a provided verification key. Required auxiliary information is provided using
