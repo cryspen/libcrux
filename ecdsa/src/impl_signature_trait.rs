@@ -19,7 +19,7 @@ pub mod signers {
             pub type $alias = Signer<libcrux_sha2::$digest_alg_name>;
 
             /// The [`arrayref`](libcrux_traits::signature::arrayref) version of the Sign trait.
-            impl arrayref::Sign<SIGNING_KEY_LEN, SIG_LEN> for $alias {
+            impl arrayref::Sign<SIGNING_KEY_LEN, VERIFICATION_KEY_LEN, SIG_LEN> for $alias {
                 /// The nonce needed for signing.
                 type SignAux<'a> = &'a Nonce;
                 /// Sign a payload using a provided signing key and `nonce`.
@@ -42,10 +42,6 @@ pub mod signers {
                     }
                     Ok(())
                 }
-            }
-
-            /// The [`arrayref`](libcrux_traits::signature::arrayref) version of the Verify trait.
-            impl arrayref::Verify<VERIFICATION_KEY_LEN, SIG_LEN> for $alias {
                 /// No auxiliary information is required for verification.
                 type VerifyAux<'a> = ();
                 #[inline(always)]
@@ -69,8 +65,8 @@ pub mod signers {
                     Ok(())
                 }
             }
-            libcrux_traits::impl_signature_slice_trait!($alias => SIGNING_KEY_LEN, SIG_LEN, &Nonce, nonce, u8);
-            libcrux_traits::impl_verify_slice_trait!($alias => VERIFICATION_KEY_LEN, SIG_LEN, (), _aux);
+            libcrux_traits::impl_signature_slice_trait!(
+                $alias => SIGNING_KEY_LEN, VERIFICATION_KEY_LEN, SIG_LEN, &Nonce, nonce, (), _aux, u8);
         };
     }
 
