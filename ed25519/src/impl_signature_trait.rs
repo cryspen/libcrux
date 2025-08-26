@@ -1,7 +1,7 @@
 pub mod signers {
     //! [`libcrux_traits::signature`] APIs.
 
-    use libcrux_traits::signature::arrayref::{Sign, SignError, Verify, VerifyError};
+    use libcrux_traits::signature::arrayref::{Sign, SignError, VerifyError};
 
     /// A convenience struct for signature scheme functionality.
     pub struct Signer;
@@ -11,7 +11,7 @@ pub mod signers {
     const SIGNATURE_LEN: usize = 64;
 
     /// The [`arrayref`](libcrux_traits::signature::arrayref) version of the Sign trait.
-    impl Sign<SIGNING_KEY_LEN, SIGNATURE_LEN> for Signer {
+    impl Sign<SIGNING_KEY_LEN, VERIFICATION_KEY_LEN, SIGNATURE_LEN> for Signer {
         /// No auxiliary information is required for signing.
         type SignAux<'a> = ();
         /// Sign a payload with a provided signing key.
@@ -33,10 +33,6 @@ pub mod signers {
 
             Ok(())
         }
-    }
-
-    /// The [`arrayref`](libcrux_traits::signature::arrayref) version of the Verify trait.
-    impl Verify<VERIFICATION_KEY_LEN, SIGNATURE_LEN> for Signer {
         /// No auxiliary information is required for verification.
         type VerifyAux<'a> = ();
 
@@ -63,6 +59,6 @@ pub mod signers {
         }
     }
 
-    libcrux_traits::signature::slice::impl_signature_slice_trait!(Signer => SIGNING_KEY_LEN, SIGNATURE_LEN, (), _aux, u8);
-    libcrux_traits::signature::slice::impl_verify_slice_trait!(Signer => VERIFICATION_KEY_LEN, SIGNATURE_LEN, (), _aux);
+    libcrux_traits::signature::slice::impl_signature_slice_trait!(
+        Signer => SIGNING_KEY_LEN, VERIFICATION_KEY_LEN, SIGNATURE_LEN, (), _aux, (), _aux, u8);
 }

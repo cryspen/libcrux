@@ -10,8 +10,13 @@ pub fn simple_arrayref<
     const SIGNATURE_LEN: usize,
     SignAux,
     VerifyAux,
-    Signer: super::arrayref::Sign<SIGNING_KEY_LEN, SIGNATURE_LEN, SignAux<'b> = SignAux>
-        + super::arrayref::Verify<VERIFICATION_KEY_LEN, SIGNATURE_LEN, VerifyAux<'b> = VerifyAux>,
+    Signer: super::arrayref::Sign<
+        SIGNING_KEY_LEN,
+        VERIFICATION_KEY_LEN,
+        SIGNATURE_LEN,
+        SignAux<'b> = SignAux,
+        VerifyAux<'b> = VerifyAux,
+    >,
 >(
     sign_aux: SignAux,
     verify_aux: VerifyAux,
