@@ -1,3 +1,4 @@
+#[cfg(not(eurydice))]
 #[cfg_attr(hax, hax_lib::exclude)]
 pub mod signers {
     //! [`libcrux_traits::signature`] APIs.
