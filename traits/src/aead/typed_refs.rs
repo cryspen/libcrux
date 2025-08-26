@@ -16,13 +16,13 @@ pub enum EncryptError {
     /// The AAD is too long for this algorithm or implementation.
     AadTooLong,
 
-    /// The key has the wrong length.
+    /// The key is for the wrong algorithm.
     WrongKey,
 
-    /// The tag has the wrong length.
+    /// The tag is for the wrong algorithm.
     WrongTag,
 
-    /// The nonce has the wrong length.
+    /// The nonce is for the wrong algorithm.
     WrongNonce,
 
     /// An unknown error occurred during encryption.
@@ -45,13 +45,13 @@ pub enum DecryptError {
     /// The AAD is too long for this algorithm or implementation.
     AadTooLong,
 
-    /// The key has the wrong length.
+    /// The key is for the wrong algorithm.
     WrongKey,
 
-    /// The tag has the wrong length.
+    /// The tag is for the wrong algorithm.
     WrongTag,
 
-    /// The nonce has the wrong length.
+    /// The nonce is for the wrong algorithm.
     WrongNonce,
 
     /// An unknown error occurred during decryption.
@@ -129,12 +129,23 @@ impl core::fmt::Display for DecryptError {
 // make these associated types. That would mean that we'd have to define them separately for all
 // implementations.
 
+/// A Key with the given algorithm. The bytes are borrowed. Contains a marker for which
+/// algorith the key is to be used with.
 #[derive(Clone, Copy)]
 pub struct Key<'a, Algo>(Algo, &'a [U8]);
+
+/// A tag with the given algorithm. The bytes are borrowed. Contains a marker for which
+/// algorith the key is to be used with.
 #[derive(Clone, Copy)]
 pub struct Tag<'a, Algo>(Algo, &'a [u8]);
+
+/// A mutable tag with the given algorithm. The bytes are borrowed mutably. Contains a marker
+/// for which algorith the key is to be used with.
 pub struct TagMut<'a, Algo>(Algo, &'a mut [u8]);
 #[derive(Clone, Copy)]
+
+/// A nonce with the given algorithm. The bytes are borrowed. Contains a marker for which
+/// algorith the key is to be used with.
 pub struct Nonce<'a, Algo>(Algo, &'a [u8]);
 
 impl<'a, Algo: Aead + core::fmt::Debug> core::fmt::Debug for Key<'a, Algo> {
@@ -179,10 +190,15 @@ pub trait Aead: Copy + PartialEq {
     ) -> Result<(), DecryptError>;
 }
 
+/// Provides convenience functions. Has a blanket impl for all Aead.
 pub trait AeadExt: Aead {
+    /// Creates a new key given the algorithm.
     fn new_key(self, key: &[U8]) -> Result<Key<Self>, WrongLengthError>;
+    /// Creates a new tag given the algorithm.
     fn new_tag(self, tag: &[u8]) -> Result<Tag<Self>, WrongLengthError>;
+    /// Creates a new mutable tag given the algorithm.
     fn new_tag_mut(self, tag_mut: &mut [u8]) -> Result<TagMut<Self>, WrongLengthError>;
+    /// Creates a new nonce given the algorithm.
     fn new_nonce(self, nonce: &[u8]) -> Result<Nonce<Self>, WrongLengthError>;
 }
 
@@ -312,12 +328,15 @@ impl<
 pub struct WrongLengthError;
 
 impl<'a, Algo: Aead> Key<'a, Algo> {
+    /// Creates a new key for the provided algorithm. Checks that the length is correct.
     pub fn new_for_algo(algo: Algo, key: &'a [U8]) -> Result<Self, WrongLengthError> {
         (key.len() == algo.key_len())
             .then_some(Key(algo, key))
             .ok_or(WrongLengthError)
     }
 
+    /// Performs AEAD encryption. If algo is multiplexed, it checks that the algorithms specified
+    /// in the key, nonce and tag are consistent.
     pub fn encrypt(
         &self,
         ciphertext: &mut [u8],
@@ -330,6 +349,8 @@ impl<'a, Algo: Aead> Key<'a, Algo> {
             .encrypt(ciphertext, tag, *self, nonce, aad, plaintext)
     }
 
+    /// Performs AEAD decryption. If algo is multiplexed, it checks that the algorithms specified
+    /// in the key, nonce and tag are consistent.
     pub fn decrypt(
         &self,
         plaintext: &mut [U8],
@@ -350,12 +371,14 @@ impl<'a, Algo: Aead> AsRef<[U8]> for Key<'a, Algo> {
 }
 
 impl<'a, Algo> Key<'a, Algo> {
+    /// Returns the algorithm this key should be used in
     pub fn algo(&self) -> &Algo {
         &self.0
     }
 }
 
 impl<'a, Algo: Aead> Tag<'a, Algo> {
+    /// Creates a new tag for the provided algorithm. Checks that the length is correct.
     pub fn new_for_algo(algo: Algo, tag: &'a [u8]) -> Result<Self, WrongLengthError> {
         (tag.len() == algo.tag_len())
             .then_some(Tag(algo, tag))
@@ -370,12 +393,14 @@ impl<'a, Algo: Aead> AsRef<[u8]> for Tag<'a, Algo> {
 }
 
 impl<'a, Algo> Tag<'a, Algo> {
+    /// Returns the algorithm this tag should be used in
     pub fn algo(&self) -> &Algo {
         &self.0
     }
 }
 
 impl<'a, Algo: Aead> TagMut<'a, Algo> {
+    /// Creates a new mutable tag for the provided algorithm. Checks that the length is correct.
     pub fn new_for_algo(algo: Algo, tag: &'a mut [u8]) -> Result<Self, WrongLengthError> {
         (tag.len() == algo.tag_len())
             .then_some(TagMut(algo, tag))
@@ -390,12 +415,14 @@ impl<'a, Algo: Aead> From<TagMut<'a, Algo>> for Tag<'a, Algo> {
 }
 
 impl<'a, Algo> TagMut<'a, Algo> {
+    /// Returns the algorithm this mutable tag should be used in
     pub fn algo(&self) -> &Algo {
         &self.0
     }
 }
 
 impl<'a, Algo: Aead> Nonce<'a, Algo> {
+    /// Creates a new nonce for the provided algorithm. Checks that the length is correct.
     pub fn new_for_algo(algo: Algo, nonce: &'a [u8]) -> Result<Self, WrongLengthError> {
         (nonce.len() == algo.nonce_len())
             .then_some(Nonce(algo, nonce))
@@ -404,6 +431,7 @@ impl<'a, Algo: Aead> Nonce<'a, Algo> {
 }
 
 impl<'a, Algo> Nonce<'a, Algo> {
+    /// Returns the algorithm this nonce should be used in
     pub fn algo(&self) -> &Algo {
         &self.0
     }
@@ -421,42 +449,56 @@ impl<'a, Algo: Aead> AsMut<[u8]> for TagMut<'a, Algo> {
     }
 }
 
+/// This trait is implemented by the multiplexing enum, once per actual algorithm.
+/// It allows users (and internal code) to convert between structs with the actual algorithm and
+/// the multiplexing enum.
 pub trait Multiplexes<Algo>: Aead + Sized {
+    /// If self is actually algorithm `Algo`, return that.
     fn mux_algo(&self) -> Option<Algo>;
+
+    /// Create a new multiplexed algorithm value that has `algo` as actual algorithm.
     fn wrap_algo(algo: Algo) -> Self;
 
+    /// Tries unwrapping the algorithm in a key
     fn mux_key<'a>(key: Key<'a, Self>) -> Option<Key<'a, Algo>> {
         let Key(algo, bytes) = key;
         algo.mux_algo().map(|algo| Key(algo, bytes))
     }
 
+    /// Wraps the algorithm in a key
     fn wrap_key<'a>(k: Key<'a, Algo>) -> Key<'a, Self> {
         Key(Self::wrap_algo(k.0), k.1)
     }
 
+    /// Tries unwrapping the algorithm in a tag
     fn mux_tag<'a>(tag: Tag<'a, Self>) -> Option<Tag<'a, Algo>> {
         let Tag(algo, bytes) = tag;
         algo.mux_algo().map(|algo| Tag(algo, bytes))
     }
 
+    /// Wraps the algorithm in a tag
     fn wrap_tag<'a>(tag: Tag<'a, Algo>) -> Tag<'a, Self> {
         Tag(Self::wrap_algo(tag.0), tag.1)
     }
 
+    /// Tries unwrapping the algorithm in a mutable tag
     fn mux_tag_mut<'a>(tag: TagMut<'a, Self>) -> Option<TagMut<'a, Algo>> {
         let TagMut(algo, bytes) = tag;
         algo.mux_algo().map(|algo| TagMut(algo, bytes))
     }
 
+    /// Wraps the algorithm in a mutable tag
     fn wrap_tag_mut<'a>(tag: TagMut<'a, Algo>) -> TagMut<'a, Self> {
         TagMut(Self::wrap_algo(tag.0), tag.1)
     }
 
+    /// Tries unwrapping the algorithm in a nonce
     fn mux_nonce<'a>(nonce: Nonce<'a, Self>) -> Option<Nonce<'a, Algo>> {
         let Nonce(algo, bytes) = nonce;
         algo.mux_algo().map(|algo| Nonce(algo, bytes))
     }
 
+    /// Wraps the algorithm in a nonce
     fn wrap_nonce<'a>(nonce: Nonce<'a, Algo>) -> Nonce<'a, Self> {
         Nonce(Self::wrap_algo(nonce.0), nonce.1)
     }
