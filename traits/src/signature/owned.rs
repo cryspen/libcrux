@@ -34,8 +34,12 @@ pub trait Sign<
         signature: &[u8; SIGNATURE_LEN],
         aux: Self::VerifyAux<'_>,
     ) -> Result<(), VerifyError>;
+    /// Generate a pair of signing and verification keys.
+    ///
+    /// It is the responsibility of the caller to ensure  that the `rand` argument is actually
+    /// random.
     fn keygen(
-        randomness: [U8; RAND_KEYGEN_LEN],
+        rand: [U8; RAND_KEYGEN_LEN],
     ) -> Result<([U8; SIGNING_KEY_LEN], [u8; VERIFICATION_KEY_LEN]), KeyGenError>;
 }
 

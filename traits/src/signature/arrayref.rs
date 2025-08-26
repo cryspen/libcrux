@@ -34,10 +34,14 @@ pub trait Sign<
         signature: &[u8; SIGNATURE_LEN],
         aux: Self::VerifyAux<'_>,
     ) -> Result<(), VerifyError>;
+    /// Generate a pair of signing and verification keys.
+    ///
+    /// It is the responsibility of the caller to ensure  that the `rand` argument is actually
+    /// random.
     fn keygen(
         signing_key: &mut [U8; SIGNING_KEY_LEN],
         verification_key: &mut [u8; VERIFICATION_KEY_LEN],
-        randomness: [U8; RAND_KEYGEN_LEN],
+        rand: [U8; RAND_KEYGEN_LEN],
     ) -> Result<(), KeyGenError>;
 }
 
@@ -90,11 +94,12 @@ impl core::fmt::Display for VerifyError {
 }
 
 #[derive(Debug)]
+/// Error generating key with provided randomness.
 pub enum KeyGenError {
-    /// Error generating key with provided randomness
+    /// Error generating key with provided randomness.
     InvalidRandomness,
 
-    /// Indicates a library error
+    /// Indicates a library error.
     LibraryError,
 }
 
