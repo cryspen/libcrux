@@ -1,6 +1,6 @@
 /*
  * SPDX-FileCopyrightText: 2024 Eurydice Contributors
- * SPDX-FileCopyrightText: 2025 Cryspen Sarl <info@cryspen.com>
+ * SPDX-FileCopyrightText: 2024-2025 Cryspen Sarl <info@cryspen.com>
  *
  * SPDX-License-Identifier: MIT or Apache-2.0
  */

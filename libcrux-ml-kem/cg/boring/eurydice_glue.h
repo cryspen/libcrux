@@ -12,7 +12,8 @@
 // TODO(crbug.com/404286922): Use designated initializers instead of /*name=*/
 // comments when switching to C++20.
 
-#pragma once
+#ifndef EURYDICE_HEADER_EURYDICE_GLUE_H
+#define EURYDICE_HEADER_EURYDICE_GLUE_H
 
 #include <inttypes.h>
 #include <stdbool.h>
@@ -31,8 +32,8 @@
 
 // In order to be compatible with C++17 we need to work around the fact that we
 // can not use designated initializers. This is an issue for unions. The
-// folowing defines `KRML_UNION_CONSTRUCTOR` for this purpose.
-// This is used in union definions such as
+// following defines `KRML_UNION_CONSTRUCTOR` for this purpose.
+// This is used in union definitions such as
 // ```c
 // typedef struct Result_s {
 //  uint8_t tag;
@@ -204,3 +205,5 @@ static inline uint64_t core_num__u64_9__rotate_left(uint64_t value,
                                                     uint32_t shift) {
   return CRYPTO_rotl_u64(value, shift);
 }
+
+#endif /* EURYDICE_HEADER_EURYDICE_GLUE_H */
