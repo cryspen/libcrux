@@ -6,9 +6,9 @@
  * This code was generated with the following revisions:
  * Charon: 0ea51402a88c38d63f6f815fbe5a6dddb14cf16b
  * Eurydice: 3c77f1ac8116257d0c416fdac562edfa178b860b
- * Karamel: 354791911c6b40d15a41cda7a0e3560da1cf31a1
+ * Karamel: b2cba1e3f23fd7a54cf0b515f95089cfba8d39c3
  * F*: f3a2732c1984b520b1f1d48a22e7dd9f8d14a3a2
- * Libcrux: b894d22937e1239a34ec32e0ebf3d6f8892331a0
+ * Libcrux: c03a2450e05a21ae0aa53a715add84a7b759c4f4
  */
 
 #ifndef libcrux_mlkem1024_H
