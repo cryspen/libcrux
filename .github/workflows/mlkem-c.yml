@@ -67,7 +67,7 @@ jobs:
       - name: Extract C++
         run: |
           export HOME=/home/user
-          ./boring.sh --no-clean
+          ./boring.sh
 
       - name: Extract C
         run: |
