@@ -22,5 +22,6 @@ pub trait Digest<const HASH_LEN: usize> {
 }
 
 pub mod aead;
+#[cfg(not(eurydice))]
 pub mod digest;
 pub mod kem;
