@@ -8,7 +8,7 @@
  * Eurydice: 3c77f1ac8116257d0c416fdac562edfa178b860b
  * Karamel: b2cba1e3f23fd7a54cf0b515f95089cfba8d39c3
  * F*: f3a2732c1984b520b1f1d48a22e7dd9f8d14a3a2
- * Libcrux: c03a2450e05a21ae0aa53a715add84a7b759c4f4
+ * Libcrux: e8559e89862ec3b3110d5c297735d28534aaef54
  */
 
 #include "libcrux_sha3_portable.h"
@@ -3293,16 +3293,7 @@ with const generics
 - RATE= 136
 */
 Eurydice_arr_3d libcrux_sha3_generic_keccak_xof_zero_block_35_c6(void) {
-  return (KRML_CLITERAL(Eurydice_arr_3d){
-      .data = {0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-               0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-               0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-               0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-               0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-               0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-               0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-               0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-               0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U}});
+  return (KRML_CLITERAL(Eurydice_arr_3d){.data = {0U}});
 }
 
 /**
@@ -3627,18 +3618,7 @@ with const generics
 - RATE= 168
 */
 Eurydice_arr_27 libcrux_sha3_generic_keccak_xof_zero_block_35_c60(void) {
-  return (KRML_CLITERAL(Eurydice_arr_27){
-      .data = {0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-               0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-               0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-               0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-               0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-               0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-               0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-               0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-               0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-               0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-               0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U}});
+  return (KRML_CLITERAL(Eurydice_arr_27){.data = {0U}});
 }
 
 /**

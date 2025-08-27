@@ -8,7 +8,7 @@
  * Eurydice: 3c77f1ac8116257d0c416fdac562edfa178b860b
  * Karamel: b2cba1e3f23fd7a54cf0b515f95089cfba8d39c3
  * F*: f3a2732c1984b520b1f1d48a22e7dd9f8d14a3a2
- * Libcrux: c03a2450e05a21ae0aa53a715add84a7b759c4f4
+ * Libcrux: e8559e89862ec3b3110d5c297735d28534aaef54
  */
 
 #include "internal/libcrux_mlkem_portable.h"
@@ -611,11 +611,7 @@ Eurydice_arr_e2 libcrux_ml_kem_vector_portable_deserialize_11_b8(
 KRML_MUSTINLINE Eurydice_arr_e2
 libcrux_ml_kem_vector_portable_vector_type_zero(void) {
   return libcrux_secrets_int_public_integers_classify_27_3a(
-      (KRML_CLITERAL(Eurydice_arr_e2){
-          .data = {(int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0}}));
+      (KRML_CLITERAL(Eurydice_arr_e2){.data = {0U}}));
 }
 
 /**
@@ -2769,12 +2765,10 @@ with const generics
 */
 libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_af
 libcrux_ml_kem_ind_cca_unpacked_default_30_d0(void) {
-  return (KRML_CLITERAL(
-      libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_af){
-      .ind_cpa_public_key = default_8b_d0(),
-      .public_key_hash = {.data = {0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U}}});
+  return (
+      KRML_CLITERAL(libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_af){
+          .ind_cpa_public_key = default_8b_d0(),
+          .public_key_hash = {.data = {0U}}});
 }
 
 /**
@@ -6413,12 +6407,10 @@ with const generics
 */
 libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_d4
 libcrux_ml_kem_ind_cca_unpacked_default_30_a0(void) {
-  return (KRML_CLITERAL(
-      libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_d4){
-      .ind_cpa_public_key = default_8b_a0(),
-      .public_key_hash = {.data = {0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U}}});
+  return (
+      KRML_CLITERAL(libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_d4){
+          .ind_cpa_public_key = default_8b_a0(),
+          .public_key_hash = {.data = {0U}}});
 }
 
 /**
@@ -9001,12 +8993,10 @@ with const generics
 */
 libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_a0
 libcrux_ml_kem_ind_cca_unpacked_default_30_1b(void) {
-  return (KRML_CLITERAL(
-      libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_a0){
-      .ind_cpa_public_key = default_8b_1b(),
-      .public_key_hash = {.data = {0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U}}});
+  return (
+      KRML_CLITERAL(libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_a0){
+          .ind_cpa_public_key = default_8b_1b(),
+          .public_key_hash = {.data = {0U}}});
 }
 
 /**
