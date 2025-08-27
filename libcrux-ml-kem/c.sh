@@ -64,8 +64,6 @@ fi
 
 # TODO: add LIBCRUX_ENABLE_SIMD128=1 LIBCRUX_ENABLE_SIMD256=1 charon invocations
 if [[ "$no_charon" = 0 ]]; then
-    # Because of a Charon bug we have to clean the sha3 crate.
-    cargo clean -p libcrux-sha3
     rm -rf ../libcrux_ml_kem.llbc ../libcrux_sha3.llbc ../libcrux_secrets.llbc
     echo "Running charon (secrets) ..."
     (cd ../secrets && RUSTFLAGS="--cfg eurydice" $CHARON_HOME/bin/charon --remove-associated-types '*' --translate-all-methods)
@@ -74,6 +72,8 @@ if [[ "$no_charon" = 0 ]]; then
         echo "Suggestion: rm -rf ../target or cargo clean"
         exit 1
     fi
+    # Because of a Charon bug we have to clean the sha3 crate.
+    cargo clean -p libcrux-sha3
     echo "Running charon (sha3) ..."
     (cd ../libcrux-sha3 && RUSTFLAGS="--cfg eurydice" $CHARON_HOME/bin/charon --remove-associated-types '*' --rustc-arg=-Cdebug-assertions=no)
     if ! [[ -f ../libcrux_sha3.llbc ]]; then
