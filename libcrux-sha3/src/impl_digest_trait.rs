@@ -1,5 +1,10 @@
 use crate::*;
 
+const SHA3_224_LEN: usize = 28;
+const SHA3_256_LEN: usize = 32;
+const SHA3_384_LEN: usize = 48;
+const SHA3_512_LEN: usize = 64;
+
 macro_rules! impl_hash_traits {
     ($type:ident, $hasher:ident, $len:expr, $method:expr) => {
         #[doc = concat!("A struct that implements [`libcrux_traits::digest`] traits.")]
