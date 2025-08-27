@@ -57,6 +57,11 @@ if [[ "$portable_only" = 1 ]]; then
     export LIBCRUX_DISABLE_SIMD128=1
 fi
 
+
+if [[ "$clean" = 1 ]]; then
+    cargo clean
+fi
+
 # TODO: add LIBCRUX_ENABLE_SIMD128=1 LIBCRUX_ENABLE_SIMD256=1 charon invocations
 if [[ "$no_charon" = 0 ]]; then
     # Because of a Charon bug we have to clean the sha3 crate.
