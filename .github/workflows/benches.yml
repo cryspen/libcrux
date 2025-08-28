@@ -15,16 +15,16 @@ jobs:
       matrix:
         bits: [32, 64]
         os:
-          - macos-13
-          - macos-latest
+          #- macos-13
+          #- macos-latest
           - ubuntu-latest
-          - windows-latest
-        exclude:
-          # There's no such thing as 32-bit macOS
-          - bits: 32
-            os: "macos-latest"
-          - bits: 32
-            os: "macos-13"
+          #- windows-latest
+        #exclude:
+        #  # There's no such thing as 32-bit macOS
+        #  - bits: 32
+        #    os: "macos-latest"
+        #  - bits: 32
+        #    os: "macos-13"
     runs-on: ${{ matrix.os }}
     defaults:
       run:
@@ -94,16 +94,16 @@ jobs:
       matrix:
         bits: [32, 64]
         os:
-          - macos-13
-          - macos-latest
+          #- macos-13
+          #- macos-latest
           - ubuntu-latest
-          - windows-latest
-        exclude:
-          # There's no such thing as 32-bit macOS
-          - bits: 32
-            os: "macos-latest"
-          - bits: 32
-            os: "macos-13"
+          #- windows-latest
+        #exclude:
+        #  # There's no such thing as 32-bit macOS
+        #  - bits: 32
+        #    os: "macos-latest"
+        #  - bits: 32
+        #    os: "macos-13"
     runs-on: ${{ matrix.os }}
     defaults:
       run:
