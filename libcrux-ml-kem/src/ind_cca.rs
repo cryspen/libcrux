@@ -805,6 +805,7 @@ pub(crate) mod unpacked {
     }
 
     #[hax_lib::fstar::options("--z3rlimit 200")]
+    #[hax_lib::fstar::before(r#"[@ "opaque_to_smt"]"#)]
     #[hax_lib::ensures(|result|
         fstar!(r#"forall (i: nat). i < v $K ==>
             (forall (j: nat). j < v $K ==>
@@ -852,7 +853,7 @@ pub(crate) mod unpacked {
 
     /// Generate Unpacked Keys
     #[inline(always)]
-    #[hax_lib::fstar::options("--z3rlimit 1500 --ext context_pruning --z3refresh")]
+    #[hax_lib::fstar::options("--z3rlimit 300 --ext context_pruning --split_queries always")]
     #[hax_lib::requires(fstar!(r#"Spec.MLKEM.is_rank $K /\
         $ETA1_RANDOMNESS_SIZE == Spec.MLKEM.v_ETA1_RANDOMNESS_SIZE $K /\
         $ETA1 == Spec.MLKEM.v_ETA1 $K /\
@@ -1012,7 +1013,7 @@ pub(crate) mod unpacked {
 
     // Decapsulate with Unpacked Private Key
     #[inline(always)]
-    #[hax_lib::fstar::options("--z3rlimit 200 --ext context_pruning --z3refresh")]
+    #[hax_lib::fstar::options("--z3rlimit 200 --ext context_pruning")]
     #[hax_lib::requires(fstar!(r#"Spec.MLKEM.is_rank $K /\
         $ETA1 == Spec.MLKEM.v_ETA1 $K /\
         $ETA1_RANDOMNESS_SIZE == Spec.MLKEM.v_ETA1_RANDOMNESS_SIZE $K /\

@@ -127,7 +127,7 @@ pub(crate) fn serialize_public_key_mut<
 
 /// Call [`serialize_uncompressed_ring_element`] for each ring element.
 #[inline(always)]
-#[hax_lib::fstar::options("--z3rlimit 1000 --ext context_pruning --z3refresh")]
+#[hax_lib::fstar::options("--z3rlimit 1000 --ext context_pruning")]
 #[hax_lib::requires(fstar!(r#"Spec.MLKEM.is_rank $K /\
     ${out.len()} == Spec.MLKEM.v_RANKED_BYTES_PER_RING_ELEMENT $K /\
     (forall (i:nat). i < v $K ==>
@@ -183,7 +183,7 @@ pub(crate) fn serialize_vector<const K: usize, Vector: Operations>(
 /// Sample a vector of ring elements from a centered binomial distribution.
 #[inline(always)]
 #[hax_lib::fstar::options(
-    "--max_fuel 15 --z3rlimit 1500 --ext context_pruning --z3refresh --split_queries always"
+    "--max_fuel 15 --z3rlimit 1500 --ext context_pruning --split_queries always"
 )]
 #[cfg_attr(
     hax,
@@ -301,7 +301,7 @@ fn sample_ring_element_cbd<
 /// convert them into their NTT representations.
 #[inline(always)]
 #[hax_lib::fstar::options(
-    "--max_fuel 25 --z3rlimit 2500 --ext context_pruning --z3refresh --split_queries always"
+    "--max_fuel 25 --z3rlimit 2500 --ext context_pruning --split_queries always"
 )]
 #[cfg_attr(hax, hax_lib::fstar::before(r#"let sample_vector_cbd_then_ntt_helper_2
       (v_K v_ETA v_ETA_RANDOMNESS_SIZE: usize)
@@ -450,7 +450,8 @@ fn sample_vector_cbd_then_ntt<
 /// The NIST FIPS 203 standard can be found at
 /// <https://csrc.nist.gov/pubs/fips/203/ipd>.
 #[allow(non_snake_case)]
-#[hax_lib::fstar::options("--z3rlimit 500 --ext context_pruning --z3refresh")]
+#[hax_lib::fstar::before(r#"[@ "opaque_to_smt"]"#)]
+#[hax_lib::fstar::options("--z3rlimit 500 --ext context_pruning")]
 #[hax_lib::requires(fstar!(r#"Spec.MLKEM.is_rank $K /\
     $ETA1_RANDOMNESS_SIZE == Spec.MLKEM.v_ETA1_RANDOMNESS_SIZE $K /\
     $ETA1 == Spec.MLKEM.v_ETA1 $K /\
@@ -602,7 +603,7 @@ pub(crate) fn serialize_unpacked_secret_key<
 }
 
 /// Call [`compress_then_serialize_ring_element_u`] on each ring element.
-#[hax_lib::fstar::options("--z3rlimit 1500 --ext context_pruning --z3refresh")]
+#[hax_lib::fstar::options("--z3rlimit 1500 --ext context_pruning")]
 #[hax_lib::requires(fstar!(r#"Spec.MLKEM.is_rank $K /\
     $OUT_LEN == Spec.MLKEM.v_C1_SIZE $K /\
     $COMPRESSION_FACTOR == Spec.MLKEM.v_VECTOR_U_COMPRESSION_FACTOR $K /\
@@ -706,7 +707,7 @@ fn compress_then_serialize_u<
 /// The NIST FIPS 203 standard can be found at
 /// <https://csrc.nist.gov/pubs/fips/203/ipd>.
 #[allow(non_snake_case)]
-#[hax_lib::fstar::options("--z3rlimit 800 --ext context_pruning --z3refresh")]
+#[hax_lib::fstar::options("--z3rlimit 800 --ext context_pruning")]
 #[hax_lib::requires(fstar!(r#"Spec.MLKEM.is_rank $K /\
       $ETA1 == Spec.MLKEM.v_ETA1 $K /\
       $ETA1_RANDOMNESS_SIZE == Spec.MLKEM.v_ETA1_RANDOMNESS_SIZE $K /\

@@ -7,8 +7,8 @@
  * Charon: bb62a9b39db4ea8c6d536fe61b7d26663751bf3c
  * Eurydice: 46cef5d58a855ed049fa89bfe99c959b5d9d0d4b
  * Karamel: 39cb85a718da8ae4a724d31b08f9134ca9311336
- * F*: 4b3fc11774003a6ff7c09500ecb5f0145ca6d862
- * Libcrux: b54a2f8eacb847bfe456abe6b195dc94bf464dda
+ * F*: unset
+ * Libcrux: c9823353edf245785e103a69312b21cca741967a
  */
 
 #ifndef __libcrux_mldsa65_portable_H
@@ -2220,6 +2220,18 @@ libcrux_ml_dsa_simd_portable_arithmetic_montgomery_multiply_by_constant(
   }
 }
 
+static KRML_MUSTINLINE void libcrux_ml_dsa_simd_portable_ntt_outer_3_plus_round(
+    libcrux_ml_dsa_simd_portable_vector_type_Coefficients *re, size_t index,
+    size_t step_by, int32_t zeta) {
+  libcrux_ml_dsa_simd_portable_vector_type_Coefficients tmp =
+      re[index + step_by];
+  libcrux_ml_dsa_simd_portable_arithmetic_montgomery_multiply_by_constant(&tmp,
+                                                                          zeta);
+  re[index + step_by] = re[index];
+  libcrux_ml_dsa_simd_portable_arithmetic_subtract(&re[index + step_by], &tmp);
+  libcrux_ml_dsa_simd_portable_arithmetic_add(&re[index], &tmp);
+}
+
 /**
 A monomorphic instance of libcrux_ml_dsa.simd.portable.ntt.outer_3_plus
 with const generics
@@ -2231,14 +2243,8 @@ static KRML_MUSTINLINE void libcrux_ml_dsa_simd_portable_ntt_outer_3_plus_99(
     libcrux_ml_dsa_simd_portable_vector_type_Coefficients *re) {
   for (size_t i = (size_t)0U; i < (size_t)0U + (size_t)16U; i++) {
     size_t j = i;
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients tmp =
-        re[j + (size_t)16U];
-    libcrux_ml_dsa_simd_portable_arithmetic_montgomery_multiply_by_constant(
-        &tmp, (int32_t)25847);
-    re[j + (size_t)16U] = re[j];
-    libcrux_ml_dsa_simd_portable_arithmetic_subtract(&re[j + (size_t)16U],
-                                                     &tmp);
-    libcrux_ml_dsa_simd_portable_arithmetic_add(&re[j], &tmp);
+    libcrux_ml_dsa_simd_portable_ntt_outer_3_plus_round(re, j, (size_t)16U,
+                                                        (int32_t)25847);
   }
 }
 
@@ -2258,13 +2264,8 @@ static KRML_MUSTINLINE void libcrux_ml_dsa_simd_portable_ntt_outer_3_plus_990(
     libcrux_ml_dsa_simd_portable_vector_type_Coefficients *re) {
   for (size_t i = (size_t)0U; i < (size_t)0U + (size_t)8U; i++) {
     size_t j = i;
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients tmp =
-        re[j + (size_t)8U];
-    libcrux_ml_dsa_simd_portable_arithmetic_montgomery_multiply_by_constant(
-        &tmp, (int32_t)-2608894);
-    re[j + (size_t)8U] = re[j];
-    libcrux_ml_dsa_simd_portable_arithmetic_subtract(&re[j + (size_t)8U], &tmp);
-    libcrux_ml_dsa_simd_portable_arithmetic_add(&re[j], &tmp);
+    libcrux_ml_dsa_simd_portable_ntt_outer_3_plus_round(re, j, (size_t)8U,
+                                                        (int32_t)-2608894);
   }
 }
 
@@ -2279,13 +2280,8 @@ static KRML_MUSTINLINE void libcrux_ml_dsa_simd_portable_ntt_outer_3_plus_7a(
     libcrux_ml_dsa_simd_portable_vector_type_Coefficients *re) {
   for (size_t i = (size_t)16U; i < (size_t)16U + (size_t)8U; i++) {
     size_t j = i;
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients tmp =
-        re[j + (size_t)8U];
-    libcrux_ml_dsa_simd_portable_arithmetic_montgomery_multiply_by_constant(
-        &tmp, (int32_t)-518909);
-    re[j + (size_t)8U] = re[j];
-    libcrux_ml_dsa_simd_portable_arithmetic_subtract(&re[j + (size_t)8U], &tmp);
-    libcrux_ml_dsa_simd_portable_arithmetic_add(&re[j], &tmp);
+    libcrux_ml_dsa_simd_portable_ntt_outer_3_plus_round(re, j, (size_t)8U,
+                                                        (int32_t)-518909);
   }
 }
 
@@ -2306,13 +2302,8 @@ static KRML_MUSTINLINE void libcrux_ml_dsa_simd_portable_ntt_outer_3_plus_991(
     libcrux_ml_dsa_simd_portable_vector_type_Coefficients *re) {
   for (size_t i = (size_t)0U; i < (size_t)0U + (size_t)4U; i++) {
     size_t j = i;
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients tmp =
-        re[j + (size_t)4U];
-    libcrux_ml_dsa_simd_portable_arithmetic_montgomery_multiply_by_constant(
-        &tmp, (int32_t)237124);
-    re[j + (size_t)4U] = re[j];
-    libcrux_ml_dsa_simd_portable_arithmetic_subtract(&re[j + (size_t)4U], &tmp);
-    libcrux_ml_dsa_simd_portable_arithmetic_add(&re[j], &tmp);
+    libcrux_ml_dsa_simd_portable_ntt_outer_3_plus_round(re, j, (size_t)4U,
+                                                        (int32_t)237124);
   }
 }
 
@@ -2327,13 +2318,8 @@ static KRML_MUSTINLINE void libcrux_ml_dsa_simd_portable_ntt_outer_3_plus_a8(
     libcrux_ml_dsa_simd_portable_vector_type_Coefficients *re) {
   for (size_t i = (size_t)8U; i < (size_t)8U + (size_t)4U; i++) {
     size_t j = i;
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients tmp =
-        re[j + (size_t)4U];
-    libcrux_ml_dsa_simd_portable_arithmetic_montgomery_multiply_by_constant(
-        &tmp, (int32_t)-777960);
-    re[j + (size_t)4U] = re[j];
-    libcrux_ml_dsa_simd_portable_arithmetic_subtract(&re[j + (size_t)4U], &tmp);
-    libcrux_ml_dsa_simd_portable_arithmetic_add(&re[j], &tmp);
+    libcrux_ml_dsa_simd_portable_ntt_outer_3_plus_round(re, j, (size_t)4U,
+                                                        (int32_t)-777960);
   }
 }
 
@@ -2348,13 +2334,8 @@ static KRML_MUSTINLINE void libcrux_ml_dsa_simd_portable_ntt_outer_3_plus_7a0(
     libcrux_ml_dsa_simd_portable_vector_type_Coefficients *re) {
   for (size_t i = (size_t)16U; i < (size_t)16U + (size_t)4U; i++) {
     size_t j = i;
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients tmp =
-        re[j + (size_t)4U];
-    libcrux_ml_dsa_simd_portable_arithmetic_montgomery_multiply_by_constant(
-        &tmp, (int32_t)-876248);
-    re[j + (size_t)4U] = re[j];
-    libcrux_ml_dsa_simd_portable_arithmetic_subtract(&re[j + (size_t)4U], &tmp);
-    libcrux_ml_dsa_simd_portable_arithmetic_add(&re[j], &tmp);
+    libcrux_ml_dsa_simd_portable_ntt_outer_3_plus_round(re, j, (size_t)4U,
+                                                        (int32_t)-876248);
   }
 }
 
@@ -2369,13 +2350,8 @@ static KRML_MUSTINLINE void libcrux_ml_dsa_simd_portable_ntt_outer_3_plus_d9(
     libcrux_ml_dsa_simd_portable_vector_type_Coefficients *re) {
   for (size_t i = (size_t)24U; i < (size_t)24U + (size_t)4U; i++) {
     size_t j = i;
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients tmp =
-        re[j + (size_t)4U];
-    libcrux_ml_dsa_simd_portable_arithmetic_montgomery_multiply_by_constant(
-        &tmp, (int32_t)466468);
-    re[j + (size_t)4U] = re[j];
-    libcrux_ml_dsa_simd_portable_arithmetic_subtract(&re[j + (size_t)4U], &tmp);
-    libcrux_ml_dsa_simd_portable_arithmetic_add(&re[j], &tmp);
+    libcrux_ml_dsa_simd_portable_ntt_outer_3_plus_round(re, j, (size_t)4U,
+                                                        (int32_t)466468);
   }
 }
 
@@ -2398,13 +2374,8 @@ static KRML_MUSTINLINE void libcrux_ml_dsa_simd_portable_ntt_outer_3_plus_992(
     libcrux_ml_dsa_simd_portable_vector_type_Coefficients *re) {
   for (size_t i = (size_t)0U; i < (size_t)0U + (size_t)2U; i++) {
     size_t j = i;
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients tmp =
-        re[j + (size_t)2U];
-    libcrux_ml_dsa_simd_portable_arithmetic_montgomery_multiply_by_constant(
-        &tmp, (int32_t)1826347);
-    re[j + (size_t)2U] = re[j];
-    libcrux_ml_dsa_simd_portable_arithmetic_subtract(&re[j + (size_t)2U], &tmp);
-    libcrux_ml_dsa_simd_portable_arithmetic_add(&re[j], &tmp);
+    libcrux_ml_dsa_simd_portable_ntt_outer_3_plus_round(re, j, (size_t)2U,
+                                                        (int32_t)1826347);
   }
 }
 
@@ -2419,13 +2390,8 @@ static KRML_MUSTINLINE void libcrux_ml_dsa_simd_portable_ntt_outer_3_plus_6b(
     libcrux_ml_dsa_simd_portable_vector_type_Coefficients *re) {
   for (size_t i = (size_t)4U; i < (size_t)4U + (size_t)2U; i++) {
     size_t j = i;
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients tmp =
-        re[j + (size_t)2U];
-    libcrux_ml_dsa_simd_portable_arithmetic_montgomery_multiply_by_constant(
-        &tmp, (int32_t)2353451);
-    re[j + (size_t)2U] = re[j];
-    libcrux_ml_dsa_simd_portable_arithmetic_subtract(&re[j + (size_t)2U], &tmp);
-    libcrux_ml_dsa_simd_portable_arithmetic_add(&re[j], &tmp);
+    libcrux_ml_dsa_simd_portable_ntt_outer_3_plus_round(re, j, (size_t)2U,
+                                                        (int32_t)2353451);
   }
 }
 
@@ -2440,13 +2406,8 @@ static KRML_MUSTINLINE void libcrux_ml_dsa_simd_portable_ntt_outer_3_plus_a80(
     libcrux_ml_dsa_simd_portable_vector_type_Coefficients *re) {
   for (size_t i = (size_t)8U; i < (size_t)8U + (size_t)2U; i++) {
     size_t j = i;
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients tmp =
-        re[j + (size_t)2U];
-    libcrux_ml_dsa_simd_portable_arithmetic_montgomery_multiply_by_constant(
-        &tmp, (int32_t)-359251);
-    re[j + (size_t)2U] = re[j];
-    libcrux_ml_dsa_simd_portable_arithmetic_subtract(&re[j + (size_t)2U], &tmp);
-    libcrux_ml_dsa_simd_portable_arithmetic_add(&re[j], &tmp);
+    libcrux_ml_dsa_simd_portable_ntt_outer_3_plus_round(re, j, (size_t)2U,
+                                                        (int32_t)-359251);
   }
 }
 
@@ -2461,13 +2422,8 @@ static KRML_MUSTINLINE void libcrux_ml_dsa_simd_portable_ntt_outer_3_plus_95(
     libcrux_ml_dsa_simd_portable_vector_type_Coefficients *re) {
   for (size_t i = (size_t)12U; i < (size_t)12U + (size_t)2U; i++) {
     size_t j = i;
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients tmp =
-        re[j + (size_t)2U];
-    libcrux_ml_dsa_simd_portable_arithmetic_montgomery_multiply_by_constant(
-        &tmp, (int32_t)-2091905);
-    re[j + (size_t)2U] = re[j];
-    libcrux_ml_dsa_simd_portable_arithmetic_subtract(&re[j + (size_t)2U], &tmp);
-    libcrux_ml_dsa_simd_portable_arithmetic_add(&re[j], &tmp);
+    libcrux_ml_dsa_simd_portable_ntt_outer_3_plus_round(re, j, (size_t)2U,
+                                                        (int32_t)-2091905);
   }
 }
 
@@ -2482,13 +2438,8 @@ static KRML_MUSTINLINE void libcrux_ml_dsa_simd_portable_ntt_outer_3_plus_7a1(
     libcrux_ml_dsa_simd_portable_vector_type_Coefficients *re) {
   for (size_t i = (size_t)16U; i < (size_t)16U + (size_t)2U; i++) {
     size_t j = i;
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients tmp =
-        re[j + (size_t)2U];
-    libcrux_ml_dsa_simd_portable_arithmetic_montgomery_multiply_by_constant(
-        &tmp, (int32_t)3119733);
-    re[j + (size_t)2U] = re[j];
-    libcrux_ml_dsa_simd_portable_arithmetic_subtract(&re[j + (size_t)2U], &tmp);
-    libcrux_ml_dsa_simd_portable_arithmetic_add(&re[j], &tmp);
+    libcrux_ml_dsa_simd_portable_ntt_outer_3_plus_round(re, j, (size_t)2U,
+                                                        (int32_t)3119733);
   }
 }
 
@@ -2503,13 +2454,8 @@ static KRML_MUSTINLINE void libcrux_ml_dsa_simd_portable_ntt_outer_3_plus_de(
     libcrux_ml_dsa_simd_portable_vector_type_Coefficients *re) {
   for (size_t i = (size_t)20U; i < (size_t)20U + (size_t)2U; i++) {
     size_t j = i;
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients tmp =
-        re[j + (size_t)2U];
-    libcrux_ml_dsa_simd_portable_arithmetic_montgomery_multiply_by_constant(
-        &tmp, (int32_t)-2884855);
-    re[j + (size_t)2U] = re[j];
-    libcrux_ml_dsa_simd_portable_arithmetic_subtract(&re[j + (size_t)2U], &tmp);
-    libcrux_ml_dsa_simd_portable_arithmetic_add(&re[j], &tmp);
+    libcrux_ml_dsa_simd_portable_ntt_outer_3_plus_round(re, j, (size_t)2U,
+                                                        (int32_t)-2884855);
   }
 }
 
@@ -2524,13 +2470,8 @@ static KRML_MUSTINLINE void libcrux_ml_dsa_simd_portable_ntt_outer_3_plus_d90(
     libcrux_ml_dsa_simd_portable_vector_type_Coefficients *re) {
   for (size_t i = (size_t)24U; i < (size_t)24U + (size_t)2U; i++) {
     size_t j = i;
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients tmp =
-        re[j + (size_t)2U];
-    libcrux_ml_dsa_simd_portable_arithmetic_montgomery_multiply_by_constant(
-        &tmp, (int32_t)3111497);
-    re[j + (size_t)2U] = re[j];
-    libcrux_ml_dsa_simd_portable_arithmetic_subtract(&re[j + (size_t)2U], &tmp);
-    libcrux_ml_dsa_simd_portable_arithmetic_add(&re[j], &tmp);
+    libcrux_ml_dsa_simd_portable_ntt_outer_3_plus_round(re, j, (size_t)2U,
+                                                        (int32_t)3111497);
   }
 }
 
@@ -2545,13 +2486,8 @@ static KRML_MUSTINLINE void libcrux_ml_dsa_simd_portable_ntt_outer_3_plus_3b(
     libcrux_ml_dsa_simd_portable_vector_type_Coefficients *re) {
   for (size_t i = (size_t)28U; i < (size_t)28U + (size_t)2U; i++) {
     size_t j = i;
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients tmp =
-        re[j + (size_t)2U];
-    libcrux_ml_dsa_simd_portable_arithmetic_montgomery_multiply_by_constant(
-        &tmp, (int32_t)2680103);
-    re[j + (size_t)2U] = re[j];
-    libcrux_ml_dsa_simd_portable_arithmetic_subtract(&re[j + (size_t)2U], &tmp);
-    libcrux_ml_dsa_simd_portable_arithmetic_add(&re[j], &tmp);
+    libcrux_ml_dsa_simd_portable_ntt_outer_3_plus_round(re, j, (size_t)2U,
+                                                        (int32_t)2680103);
   }
 }
 
@@ -2578,13 +2514,8 @@ static KRML_MUSTINLINE void libcrux_ml_dsa_simd_portable_ntt_outer_3_plus_993(
     libcrux_ml_dsa_simd_portable_vector_type_Coefficients *re) {
   for (size_t i = (size_t)0U; i < (size_t)0U + (size_t)1U; i++) {
     size_t j = i;
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients tmp =
-        re[j + (size_t)1U];
-    libcrux_ml_dsa_simd_portable_arithmetic_montgomery_multiply_by_constant(
-        &tmp, (int32_t)2725464);
-    re[j + (size_t)1U] = re[j];
-    libcrux_ml_dsa_simd_portable_arithmetic_subtract(&re[j + (size_t)1U], &tmp);
-    libcrux_ml_dsa_simd_portable_arithmetic_add(&re[j], &tmp);
+    libcrux_ml_dsa_simd_portable_ntt_outer_3_plus_round(re, j, (size_t)1U,
+                                                        (int32_t)2725464);
   }
 }
 
@@ -2599,13 +2530,8 @@ static KRML_MUSTINLINE void libcrux_ml_dsa_simd_portable_ntt_outer_3_plus_1c(
     libcrux_ml_dsa_simd_portable_vector_type_Coefficients *re) {
   for (size_t i = (size_t)2U; i < (size_t)2U + (size_t)1U; i++) {
     size_t j = i;
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients tmp =
-        re[j + (size_t)1U];
-    libcrux_ml_dsa_simd_portable_arithmetic_montgomery_multiply_by_constant(
-        &tmp, (int32_t)1024112);
-    re[j + (size_t)1U] = re[j];
-    libcrux_ml_dsa_simd_portable_arithmetic_subtract(&re[j + (size_t)1U], &tmp);
-    libcrux_ml_dsa_simd_portable_arithmetic_add(&re[j], &tmp);
+    libcrux_ml_dsa_simd_portable_ntt_outer_3_plus_round(re, j, (size_t)1U,
+                                                        (int32_t)1024112);
   }
 }
 
@@ -2620,13 +2546,8 @@ static KRML_MUSTINLINE void libcrux_ml_dsa_simd_portable_ntt_outer_3_plus_6b0(
     libcrux_ml_dsa_simd_portable_vector_type_Coefficients *re) {
   for (size_t i = (size_t)4U; i < (size_t)4U + (size_t)1U; i++) {
     size_t j = i;
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients tmp =
-        re[j + (size_t)1U];
-    libcrux_ml_dsa_simd_portable_arithmetic_montgomery_multiply_by_constant(
-        &tmp, (int32_t)-1079900);
-    re[j + (size_t)1U] = re[j];
-    libcrux_ml_dsa_simd_portable_arithmetic_subtract(&re[j + (size_t)1U], &tmp);
-    libcrux_ml_dsa_simd_portable_arithmetic_add(&re[j], &tmp);
+    libcrux_ml_dsa_simd_portable_ntt_outer_3_plus_round(re, j, (size_t)1U,
+                                                        (int32_t)-1079900);
   }
 }
 
@@ -2641,13 +2562,8 @@ static KRML_MUSTINLINE void libcrux_ml_dsa_simd_portable_ntt_outer_3_plus_44(
     libcrux_ml_dsa_simd_portable_vector_type_Coefficients *re) {
   for (size_t i = (size_t)6U; i < (size_t)6U + (size_t)1U; i++) {
     size_t j = i;
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients tmp =
-        re[j + (size_t)1U];
-    libcrux_ml_dsa_simd_portable_arithmetic_montgomery_multiply_by_constant(
-        &tmp, (int32_t)3585928);
-    re[j + (size_t)1U] = re[j];
-    libcrux_ml_dsa_simd_portable_arithmetic_subtract(&re[j + (size_t)1U], &tmp);
-    libcrux_ml_dsa_simd_portable_arithmetic_add(&re[j], &tmp);
+    libcrux_ml_dsa_simd_portable_ntt_outer_3_plus_round(re, j, (size_t)1U,
+                                                        (int32_t)3585928);
   }
 }
 
@@ -2662,13 +2578,8 @@ static KRML_MUSTINLINE void libcrux_ml_dsa_simd_portable_ntt_outer_3_plus_a81(
     libcrux_ml_dsa_simd_portable_vector_type_Coefficients *re) {
   for (size_t i = (size_t)8U; i < (size_t)8U + (size_t)1U; i++) {
     size_t j = i;
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients tmp =
-        re[j + (size_t)1U];
-    libcrux_ml_dsa_simd_portable_arithmetic_montgomery_multiply_by_constant(
-        &tmp, (int32_t)-549488);
-    re[j + (size_t)1U] = re[j];
-    libcrux_ml_dsa_simd_portable_arithmetic_subtract(&re[j + (size_t)1U], &tmp);
-    libcrux_ml_dsa_simd_portable_arithmetic_add(&re[j], &tmp);
+    libcrux_ml_dsa_simd_portable_ntt_outer_3_plus_round(re, j, (size_t)1U,
+                                                        (int32_t)-549488);
   }
 }
 
@@ -2683,13 +2594,8 @@ static KRML_MUSTINLINE void libcrux_ml_dsa_simd_portable_ntt_outer_3_plus_1f(
     libcrux_ml_dsa_simd_portable_vector_type_Coefficients *re) {
   for (size_t i = (size_t)10U; i < (size_t)10U + (size_t)1U; i++) {
     size_t j = i;
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients tmp =
-        re[j + (size_t)1U];
-    libcrux_ml_dsa_simd_portable_arithmetic_montgomery_multiply_by_constant(
-        &tmp, (int32_t)-1119584);
-    re[j + (size_t)1U] = re[j];
-    libcrux_ml_dsa_simd_portable_arithmetic_subtract(&re[j + (size_t)1U], &tmp);
-    libcrux_ml_dsa_simd_portable_arithmetic_add(&re[j], &tmp);
+    libcrux_ml_dsa_simd_portable_ntt_outer_3_plus_round(re, j, (size_t)1U,
+                                                        (int32_t)-1119584);
   }
 }
 
@@ -2704,13 +2610,8 @@ static KRML_MUSTINLINE void libcrux_ml_dsa_simd_portable_ntt_outer_3_plus_950(
     libcrux_ml_dsa_simd_portable_vector_type_Coefficients *re) {
   for (size_t i = (size_t)12U; i < (size_t)12U + (size_t)1U; i++) {
     size_t j = i;
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients tmp =
-        re[j + (size_t)1U];
-    libcrux_ml_dsa_simd_portable_arithmetic_montgomery_multiply_by_constant(
-        &tmp, (int32_t)2619752);
-    re[j + (size_t)1U] = re[j];
-    libcrux_ml_dsa_simd_portable_arithmetic_subtract(&re[j + (size_t)1U], &tmp);
-    libcrux_ml_dsa_simd_portable_arithmetic_add(&re[j], &tmp);
+    libcrux_ml_dsa_simd_portable_ntt_outer_3_plus_round(re, j, (size_t)1U,
+                                                        (int32_t)2619752);
   }
 }
 
@@ -2725,13 +2626,8 @@ static KRML_MUSTINLINE void libcrux_ml_dsa_simd_portable_ntt_outer_3_plus_3b0(
     libcrux_ml_dsa_simd_portable_vector_type_Coefficients *re) {
   for (size_t i = (size_t)14U; i < (size_t)14U + (size_t)1U; i++) {
     size_t j = i;
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients tmp =
-        re[j + (size_t)1U];
-    libcrux_ml_dsa_simd_portable_arithmetic_montgomery_multiply_by_constant(
-        &tmp, (int32_t)-2108549);
-    re[j + (size_t)1U] = re[j];
-    libcrux_ml_dsa_simd_portable_arithmetic_subtract(&re[j + (size_t)1U], &tmp);
-    libcrux_ml_dsa_simd_portable_arithmetic_add(&re[j], &tmp);
+    libcrux_ml_dsa_simd_portable_ntt_outer_3_plus_round(re, j, (size_t)1U,
+                                                        (int32_t)-2108549);
   }
 }
 
@@ -2746,13 +2642,8 @@ static KRML_MUSTINLINE void libcrux_ml_dsa_simd_portable_ntt_outer_3_plus_7a2(
     libcrux_ml_dsa_simd_portable_vector_type_Coefficients *re) {
   for (size_t i = (size_t)16U; i < (size_t)16U + (size_t)1U; i++) {
     size_t j = i;
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients tmp =
-        re[j + (size_t)1U];
-    libcrux_ml_dsa_simd_portable_arithmetic_montgomery_multiply_by_constant(
-        &tmp, (int32_t)-2118186);
-    re[j + (size_t)1U] = re[j];
-    libcrux_ml_dsa_simd_portable_arithmetic_subtract(&re[j + (size_t)1U], &tmp);
-    libcrux_ml_dsa_simd_portable_arithmetic_add(&re[j], &tmp);
+    libcrux_ml_dsa_simd_portable_ntt_outer_3_plus_round(re, j, (size_t)1U,
+                                                        (int32_t)-2118186);
   }
 }
 
@@ -2767,13 +2658,8 @@ static KRML_MUSTINLINE void libcrux_ml_dsa_simd_portable_ntt_outer_3_plus_e4(
     libcrux_ml_dsa_simd_portable_vector_type_Coefficients *re) {
   for (size_t i = (size_t)18U; i < (size_t)18U + (size_t)1U; i++) {
     size_t j = i;
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients tmp =
-        re[j + (size_t)1U];
-    libcrux_ml_dsa_simd_portable_arithmetic_montgomery_multiply_by_constant(
-        &tmp, (int32_t)-3859737);
-    re[j + (size_t)1U] = re[j];
-    libcrux_ml_dsa_simd_portable_arithmetic_subtract(&re[j + (size_t)1U], &tmp);
-    libcrux_ml_dsa_simd_portable_arithmetic_add(&re[j], &tmp);
+    libcrux_ml_dsa_simd_portable_ntt_outer_3_plus_round(re, j, (size_t)1U,
+                                                        (int32_t)-3859737);
   }
 }
 
@@ -2788,13 +2674,8 @@ static KRML_MUSTINLINE void libcrux_ml_dsa_simd_portable_ntt_outer_3_plus_de0(
     libcrux_ml_dsa_simd_portable_vector_type_Coefficients *re) {
   for (size_t i = (size_t)20U; i < (size_t)20U + (size_t)1U; i++) {
     size_t j = i;
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients tmp =
-        re[j + (size_t)1U];
-    libcrux_ml_dsa_simd_portable_arithmetic_montgomery_multiply_by_constant(
-        &tmp, (int32_t)-1399561);
-    re[j + (size_t)1U] = re[j];
-    libcrux_ml_dsa_simd_portable_arithmetic_subtract(&re[j + (size_t)1U], &tmp);
-    libcrux_ml_dsa_simd_portable_arithmetic_add(&re[j], &tmp);
+    libcrux_ml_dsa_simd_portable_ntt_outer_3_plus_round(re, j, (size_t)1U,
+                                                        (int32_t)-1399561);
   }
 }
 
@@ -2809,13 +2690,8 @@ static KRML_MUSTINLINE void libcrux_ml_dsa_simd_portable_ntt_outer_3_plus_05(
     libcrux_ml_dsa_simd_portable_vector_type_Coefficients *re) {
   for (size_t i = (size_t)22U; i < (size_t)22U + (size_t)1U; i++) {
     size_t j = i;
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients tmp =
-        re[j + (size_t)1U];
-    libcrux_ml_dsa_simd_portable_arithmetic_montgomery_multiply_by_constant(
-        &tmp, (int32_t)-3277672);
-    re[j + (size_t)1U] = re[j];
-    libcrux_ml_dsa_simd_portable_arithmetic_subtract(&re[j + (size_t)1U], &tmp);
-    libcrux_ml_dsa_simd_portable_arithmetic_add(&re[j], &tmp);
+    libcrux_ml_dsa_simd_portable_ntt_outer_3_plus_round(re, j, (size_t)1U,
+                                                        (int32_t)-3277672);
   }
 }
 
@@ -2830,13 +2706,8 @@ static KRML_MUSTINLINE void libcrux_ml_dsa_simd_portable_ntt_outer_3_plus_d91(
     libcrux_ml_dsa_simd_portable_vector_type_Coefficients *re) {
   for (size_t i = (size_t)24U; i < (size_t)24U + (size_t)1U; i++) {
     size_t j = i;
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients tmp =
-        re[j + (size_t)1U];
-    libcrux_ml_dsa_simd_portable_arithmetic_montgomery_multiply_by_constant(
-        &tmp, (int32_t)1757237);
-    re[j + (size_t)1U] = re[j];
-    libcrux_ml_dsa_simd_portable_arithmetic_subtract(&re[j + (size_t)1U], &tmp);
-    libcrux_ml_dsa_simd_portable_arithmetic_add(&re[j], &tmp);
+    libcrux_ml_dsa_simd_portable_ntt_outer_3_plus_round(re, j, (size_t)1U,
+                                                        (int32_t)1757237);
   }
 }
 
@@ -2851,13 +2722,8 @@ static KRML_MUSTINLINE void libcrux_ml_dsa_simd_portable_ntt_outer_3_plus_3a(
     libcrux_ml_dsa_simd_portable_vector_type_Coefficients *re) {
   for (size_t i = (size_t)26U; i < (size_t)26U + (size_t)1U; i++) {
     size_t j = i;
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients tmp =
-        re[j + (size_t)1U];
-    libcrux_ml_dsa_simd_portable_arithmetic_montgomery_multiply_by_constant(
-        &tmp, (int32_t)-19422);
-    re[j + (size_t)1U] = re[j];
-    libcrux_ml_dsa_simd_portable_arithmetic_subtract(&re[j + (size_t)1U], &tmp);
-    libcrux_ml_dsa_simd_portable_arithmetic_add(&re[j], &tmp);
+    libcrux_ml_dsa_simd_portable_ntt_outer_3_plus_round(re, j, (size_t)1U,
+                                                        (int32_t)-19422);
   }
 }
 
@@ -2872,13 +2738,8 @@ static KRML_MUSTINLINE void libcrux_ml_dsa_simd_portable_ntt_outer_3_plus_3b1(
     libcrux_ml_dsa_simd_portable_vector_type_Coefficients *re) {
   for (size_t i = (size_t)28U; i < (size_t)28U + (size_t)1U; i++) {
     size_t j = i;
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients tmp =
-        re[j + (size_t)1U];
-    libcrux_ml_dsa_simd_portable_arithmetic_montgomery_multiply_by_constant(
-        &tmp, (int32_t)4010497);
-    re[j + (size_t)1U] = re[j];
-    libcrux_ml_dsa_simd_portable_arithmetic_subtract(&re[j + (size_t)1U], &tmp);
-    libcrux_ml_dsa_simd_portable_arithmetic_add(&re[j], &tmp);
+    libcrux_ml_dsa_simd_portable_ntt_outer_3_plus_round(re, j, (size_t)1U,
+                                                        (int32_t)4010497);
   }
 }
 
@@ -2893,13 +2754,8 @@ static KRML_MUSTINLINE void libcrux_ml_dsa_simd_portable_ntt_outer_3_plus_a0(
     libcrux_ml_dsa_simd_portable_vector_type_Coefficients *re) {
   for (size_t i = (size_t)30U; i < (size_t)30U + (size_t)1U; i++) {
     size_t j = i;
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients tmp =
-        re[j + (size_t)1U];
-    libcrux_ml_dsa_simd_portable_arithmetic_montgomery_multiply_by_constant(
-        &tmp, (int32_t)280005);
-    re[j + (size_t)1U] = re[j];
-    libcrux_ml_dsa_simd_portable_arithmetic_subtract(&re[j + (size_t)1U], &tmp);
-    libcrux_ml_dsa_simd_portable_arithmetic_add(&re[j], &tmp);
+    libcrux_ml_dsa_simd_portable_ntt_outer_3_plus_round(re, j, (size_t)1U,
+                                                        (int32_t)280005);
   }
 }
 
