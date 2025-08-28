@@ -250,6 +250,7 @@ jobs:
           output-md: report-mlkem.md
 
       - name: Build comment
+        id: build_comment
         if: env.IS_FORK == 'true'
         run: |
           BASE_HASH="${{ github.event.pull_request.base.sha }}"
@@ -261,7 +262,7 @@ jobs:
           PR_COMMIT_URL="${{ github.server_url }}/${{ github.repository }}/commit/${PR_HEAD_HASH}"
           BASE_COMMIT_URL="${{ github.server_url }}/${{ github.repository }}/commit/${BASE_HASH}"
 
-          cat >comment.md <<EOF
+          cat >$GITHUB_OUTPUT <<EOF
           *beep boop, I am the benchmark bot*
 
           Comparing PR commit [$PR_HEAD_HASH_SHORT]($PR_COMMIT_URL) against baseline [$BASE_HASH_SHORT]($BASE_COMMIT_URL).
@@ -272,8 +273,18 @@ jobs:
 
           $(cat report-mldsa.md)
           EOF
-      - uses: mshick/add-pr-comment@v2
+
+      - name: Post comment to PR
         if: env.IS_FORK == 'true'
+        uses: actions/github-script@v7
+        env:
+          COMMENT_BODY: ${{ steps.read_comment.outputs.body }}
         with:
-          message-path: comment.md
+          script: |
+            github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: process.env.COMMENT_BODY
+            });
 
