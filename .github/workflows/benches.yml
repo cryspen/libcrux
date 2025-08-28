@@ -209,6 +209,9 @@ jobs:
           fail-on-alert: true
           alert-threshold: 200%
 
+      - name: TODO remove previous checkout
+        run: rm -rf benchmark-data-repository
+
       - name: Upload ML-KEM benchmarks
         if: env.IS_FORK == 'false'
         uses: cryspen/benchmark-upload-and-plot-action@v3
@@ -234,9 +237,6 @@ jobs:
           input-data-path: benchdata-mldsa.json
           name: ML-DSA Benchmark
           output-md: report-mldsa.md
-
-      - name: TODO remove previous checkout
-        run: rm -rf benchmark-data-repository
 
       - uses: cryspen/benchmark-comment-and-plot-action@main
         if: env.IS_FORK == 'true'
