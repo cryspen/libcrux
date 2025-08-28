@@ -24,7 +24,7 @@ jobs:
         bits: [32, 64]
         os:
           - macos-13 # Intel mac
-          - macos-latest # macos-14 m1
+          - macos-latest # macos-15 on apple silicon
           - ubuntu-latest
           - windows-latest
         exclude:
@@ -42,7 +42,7 @@ jobs:
         working-directory: libcrux-ecdh
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - run: echo "RUST_TARGET_FLAG=" > $GITHUB_ENV
         if: ${{ matrix.bits == 64 }}
@@ -56,11 +56,6 @@ jobs:
           rustup target add i686-unknown-linux-gnu
           sudo apt-get update
           sudo apt-get install -y gcc-multilib g++-multilib
-
-      - name: 🛠️ Setup Ubuntu x64
-        if: ${{ matrix.bits == 64 &&  matrix.os == 'ubuntu-latest' }}
-        run: |
-          rustup target add aarch64-unknown-linux-gnu
 
       # Set up 32 bit systems
 

@@ -13,9 +13,10 @@ on:
 
   workflow_dispatch:
     inputs:
-      hax_rev:
+      hax_ref:
         description: "The hax revision you want this job to use"
-        default: "main"
+        required: false
+        type: string
 
 env:
   CARGO_TERM_COLOR: always
@@ -25,15 +26,22 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  # NOTE: This always runs, even if the `hax_ref` workflow input is provided.
+  # TODO: Move this reusable workflow to a standalone action
+  get-hax-ref:
+    uses: ./.github/workflows/get-hax-ref.yml
+
   extract:
     if: ${{ github.event_name != 'merge_group' }}
     runs-on: ubuntu-latest
+    needs:
+      - get-hax-ref
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: hacspec/hax-actions@main
         with:
-          hax_reference: ${{ github.event.inputs.hax_rev || 'main' }}
+          hax_reference: ${{ github.event.inputs.hax_ref || needs.get-hax-ref.outputs.hax_ref }}
           fstar: v2025.03.25
 
       - name: 🏃 Extract ML-DSA crate
@@ -51,16 +59,17 @@ jobs:
   lax:
     runs-on: ubuntu-latest
     needs:
+      - get-hax-ref
       - extract
     if: ${{ github.event_name != 'merge_group' }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: hacspec/hax-actions@main
         with:
-          hax_reference: ${{ github.event.inputs.hax_rev || 'main' }}
+          hax_reference: ${{ github.event.inputs.hax_ref || needs.get-hax-ref.outputs.hax_ref }}
           fstar: v2025.03.25
 
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v5
         with:
           name: fstar-extractions
           path: .
@@ -73,21 +82,22 @@ jobs:
     runs-on: self-hosted
     if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}
     needs:
+      - get-hax-ref
       - extract
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
+      - uses: actions/checkout@v5
         with:
           repository: cryspen/hax
           path: hax
-          ref: ${{ github.event.inputs.hax_rev || 'main' }}
+          ref: ${{ github.event.inputs.hax_ref || needs.get-hax-ref.outputs.hax_ref }}
       - name: ⤵ Install hax
         run: |
           nix profile install ./hax
       - name: ⤵ Install FStar
         run: nix profile install github:FStarLang/FStar/v2025.02.17
 
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v5
         with:
           name: fstar-extractions
           path: .
@@ -98,7 +108,7 @@ jobs:
         
   mldsa-extract-hax-status:
     if: ${{ always() }}
-    needs: [extract]
+    needs: [get-hax-ref, extract]
     runs-on: ubuntu-latest
     steps:
       - name: Successful
@@ -110,7 +120,7 @@ jobs:
 
   mldsa-lax-hax-status:
     if: ${{ always() }}
-    needs: [lax]
+    needs: [get-hax-ref, lax]
     runs-on: ubuntu-latest
     steps:
       - name: Successful

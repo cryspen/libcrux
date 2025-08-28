@@ -1,10 +1,15 @@
 name: ML-DSA - Benchmark
 
 on:
+  # run benchmarks and fail on regression
   merge_group:
+  # run on PR but skip
   pull_request:
     branches: ["main", "dev"]
   workflow_dispatch:
+  # run benchmarks once merged and push data
+  push:
+    branches: ["main"]
 
 env:
   CARGO_TERM_COLOR: always
@@ -39,7 +44,7 @@ jobs:
         working-directory: libcrux-ml-dsa
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - run: echo "RUST_TARGET_FLAG=" > $GITHUB_ENV
         if: ${{ matrix.bits == 64 }}
@@ -50,11 +55,6 @@ jobs:
           rustup target add i686-unknown-linux-gnu
           sudo apt-get update
           sudo apt-get install -y gcc-multilib g++-multilib
-
-      - name: 🛠️ Setup Ubuntu x64
-        if: ${{ matrix.bits == 64 &&  matrix.os == 'ubuntu-latest' }}
-        run: |
-          rustup target add aarch64-unknown-linux-gnu
 
       - name: 🛠️ Setup macOS
         if: ${{  matrix.os == 'macos-latest' }}
@@ -87,11 +87,10 @@ jobs:
           data-out-path: libcrux-ml-dsa/bench-processed.json
 
       - name: Upload benchmarks
-        uses: cryspen/benchmark-upload-and-plot-action@v2
+        uses: cryspen/benchmark-upload-and-plot-action@v3
         with:
           name: ML-DSA Benchmark
           input-data-path: libcrux-ml-dsa/bench-processed.json
-          benchmark-data-dir-path: dev/bench/mldsa
           github-token: ${{ secrets.GITHUB_TOKEN }}
           gh-repository: github.com/${{ github.repository }}
           group-by: label,keySize,os

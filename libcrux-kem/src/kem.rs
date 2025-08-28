@@ -51,6 +51,14 @@ use libcrux_sha3 as sha3;
 
 use libcrux_ml_kem::{mlkem1024, mlkem512, mlkem768};
 
+#[cfg(feature = "codec")]
+use std::format;
+#[cfg(feature = "codec")]
+use tls_codec::{TlsDeserialize, TlsSerialize, TlsSize};
+
+#[cfg(feature = "codec")]
+extern crate std;
+
 // TODO: These functions are currently exposed simply in order to make NIST KAT
 // testing possible without an implementation of the NIST AES-CTR DRBG. Remove them
 // (and change the visibility of the exported functions to pub(crate)) the
@@ -68,6 +76,13 @@ pub mod deterministic {
     pub use libcrux_ml_kem::mlkem768::encapsulate as mlkem768_encapsulate_derand;
     pub use libcrux_ml_kem::mlkem768::generate_key_pair as mlkem768_generate_keypair_derand;
 }
+
+pub use libcrux_curve25519::X25519;
+pub use libcrux_ml_kem::mlkem1024::MlKem1024;
+pub use libcrux_ml_kem::mlkem512::MlKem512;
+pub use libcrux_ml_kem::mlkem768::MlKem768;
+pub use libcrux_p256::P256;
+pub use xwing::XWing;
 
 use libcrux_ml_kem::MlKemSharedSecret;
 pub use libcrux_ml_kem::{
@@ -191,6 +206,7 @@ pub enum PrivateKey {
 }
 
 /// An ML-KEM768-x25519 public key.
+#[cfg_attr(feature = "codec", derive(TlsSize, TlsSerialize, TlsDeserialize))]
 pub struct X25519MlKem768Draft00PublicKey {
     pub mlkem: MlKem768PublicKey,
     pub x25519: X25519PublicKey,
@@ -221,6 +237,7 @@ impl X25519MlKem768Draft00PublicKey {
 }
 
 /// An X-Wing public key.
+#[cfg_attr(feature = "codec", derive(TlsSize, TlsSerialize, TlsDeserialize))]
 pub struct XWingKemDraft06PublicKey {
     pub pk_m: MlKem768PublicKey,
     pub pk_x: X25519PublicKey,
@@ -251,6 +268,8 @@ impl XWingKemDraft06PublicKey {
 }
 
 /// A KEM public key.
+#[cfg_attr(feature = "codec", derive(TlsSize, TlsSerialize, TlsDeserialize))]
+#[repr(u8)]
 pub enum PublicKey {
     X25519(X25519PublicKey),
     P256(P256PublicKey),
@@ -262,6 +281,8 @@ pub enum PublicKey {
 }
 
 /// A KEM ciphertext
+#[cfg_attr(feature = "codec", derive(TlsSize, TlsSerialize, TlsDeserialize))]
+#[repr(u8)]
 pub enum Ct {
     X25519(X25519PublicKey),
     P256(P256PublicKey),
@@ -365,6 +386,8 @@ impl Ct {
 }
 
 /// A KEM shared secret
+#[cfg_attr(feature = "codec", derive(TlsSize, TlsSerialize, TlsDeserialize))]
+#[repr(u8)]
 pub enum Ss {
     X25519(X25519SharedSecret),
     P256(P256SharedSecret),
@@ -883,6 +906,135 @@ mod xwing {
 
     use super::*;
 
+    const MLKEM768_EK_LEN: usize = libcrux_ml_kem::mlkem768::MlKem768PublicKey::len();
+    const MLKEM768_DK_LEN: usize = libcrux_ml_kem::mlkem768::MlKem768PrivateKey::len();
+    const MLKEM768_CT_LEN: usize = libcrux_ml_kem::mlkem768::MlKem768Ciphertext::len();
+    const MLKEM768_SS_LEN: usize = libcrux_ml_kem::SHARED_SECRET_SIZE;
+    const MLKEM768_RAND_KEYGEN_LEN: usize = libcrux_ml_kem::KEY_GENERATION_SEED_SIZE;
+    const MLKEM768_RAND_ENCAPS_LEN: usize = MLKEM768_SS_LEN;
+
+    const X25519_EK_LEN: usize = libcrux_curve25519::EK_LEN;
+    const X25519_DK_LEN: usize = libcrux_curve25519::DK_LEN;
+    const X25519_CT_LEN: usize = X25519_EK_LEN;
+    const X25519_RAND_KEYGEN_LEN: usize = X25519_DK_LEN;
+    const X25519_RAND_ENCAPS_LEN: usize = X25519_DK_LEN;
+
+    const EK_LEN: usize = MLKEM768_EK_LEN + X25519_EK_LEN;
+    const DK_LEN: usize = MLKEM768_DK_LEN + X25519_DK_LEN;
+    const CT_LEN: usize = MLKEM768_CT_LEN + X25519_CT_LEN;
+    const SS_LEN: usize = 32;
+    const RAND_KEYGEN_LEN: usize = 32; // gets expanded later
+    const RAND_ENCAPS_LEN: usize = MLKEM768_RAND_ENCAPS_LEN + X25519_RAND_ENCAPS_LEN;
+
+    use libcrux_curve25519::X25519;
+    use libcrux_ml_kem::mlkem768::MlKem768;
+
+    pub struct XWing;
+
+    impl
+        libcrux_traits::kem::arrayref::Kem<
+            EK_LEN,
+            DK_LEN,
+            CT_LEN,
+            SS_LEN,
+            RAND_KEYGEN_LEN,
+            RAND_ENCAPS_LEN,
+        > for XWing
+    {
+        fn keygen(
+            ek: &mut [u8; EK_LEN],
+            dk: &mut [u8; DK_LEN],
+            rand: &[u8; RAND_KEYGEN_LEN],
+        ) -> Result<(), libcrux_traits::kem::owned::KeyGenError> {
+            let expanded: [u8; MLKEM768_RAND_KEYGEN_LEN + X25519_RAND_KEYGEN_LEN] =
+                libcrux_sha3::shake256(rand);
+
+            let (rand_m, rand_x) = expanded.split_at(MLKEM768_RAND_KEYGEN_LEN);
+            let rand_m: &[u8; MLKEM768_RAND_KEYGEN_LEN] = rand_m.try_into().unwrap();
+            let rand_x: &[u8; X25519_RAND_KEYGEN_LEN] = rand_x.try_into().unwrap();
+
+            let (ek_m, ek_x) = ek.split_at_mut(MLKEM768_EK_LEN);
+            let ek_m: &mut [u8; MLKEM768_EK_LEN] = ek_m.try_into().unwrap();
+            let ek_x: &mut [u8; X25519_EK_LEN] = ek_x.try_into().unwrap();
+
+            let (dk_m, dk_x) = dk.split_at_mut(MLKEM768_DK_LEN);
+            let dk_m: &mut [u8; MLKEM768_DK_LEN] = dk_m.try_into().unwrap();
+            let dk_x: &mut [u8; X25519_DK_LEN] = dk_x.try_into().unwrap();
+
+            MlKem768::keygen(ek_m, dk_m, rand_m)?;
+            X25519::keygen(ek_x, dk_x, rand_x)?;
+
+            Ok(())
+        }
+
+        fn encaps(
+            ct: &mut [u8; CT_LEN],
+            ss: &mut [u8; SS_LEN],
+            ek: &[u8; EK_LEN],
+            rand: &[u8; RAND_ENCAPS_LEN],
+        ) -> Result<(), libcrux_traits::kem::owned::EncapsError> {
+            let (rand_m, rand_x) = rand.split_at(MLKEM768_RAND_ENCAPS_LEN);
+            let rand_m: &[u8; MLKEM768_RAND_ENCAPS_LEN] = rand_m.try_into().unwrap();
+            let rand_x: &[u8; X25519_RAND_ENCAPS_LEN] = rand_x.try_into().unwrap();
+
+            let (ek_m, ek_x) = ek.split_at(MLKEM768_EK_LEN);
+            let ek_m: &[u8; MLKEM768_EK_LEN] = ek_m.try_into().unwrap();
+            let ek_x: &[u8; X25519_EK_LEN] = ek_x.try_into().unwrap();
+
+            let (ct_m, ct_x) = ct.split_at_mut(MLKEM768_CT_LEN);
+            let ct_m: &mut [u8; MLKEM768_CT_LEN] = ct_m.try_into().unwrap();
+            let ct_x: &mut [u8; X25519_CT_LEN] = ct_x.try_into().unwrap();
+
+            let mut hash_buffer = [0u8; 32 + 32 + X25519_CT_LEN + X25519_EK_LEN + 6];
+            hash_buffer[96..128].copy_from_slice(ek_x);
+            hash_buffer[128..134].copy_from_slice(&[0x5c, 0x2e, 0x2f, 0x2f, 0x5e, 0x5c]);
+
+            let ss_m: &mut [u8; 32] = (&mut hash_buffer[0..32]).try_into().unwrap();
+            MlKem768::encaps(ct_m, ss_m, ek_m, rand_m)?;
+
+            let ss_x: &mut [u8; 32] = (&mut hash_buffer[32..64]).try_into().unwrap();
+            X25519::encaps(ct_x, ss_x, ek_x, rand_x)?;
+            hash_buffer[64..96].copy_from_slice(ct_x);
+            sha3::sha256_ema(ss, &hash_buffer);
+
+            Ok(())
+        }
+
+        fn decaps(
+            ss: &mut [u8; SS_LEN],
+            ct: &[u8; CT_LEN],
+            dk: &[u8; DK_LEN],
+        ) -> Result<(), libcrux_traits::kem::owned::DecapsError> {
+            let (dk_m, dk_x) = dk.split_at(MLKEM768_DK_LEN);
+            let dk_m: &[u8; MLKEM768_DK_LEN] = dk_m.try_into().unwrap();
+            let dk_x: &[u8; X25519_DK_LEN] = dk_x.try_into().unwrap();
+
+            let (ct_m, ct_x) = ct.split_at(MLKEM768_CT_LEN);
+            let ct_m: &[u8; MLKEM768_CT_LEN] = ct_m.try_into().unwrap();
+            let ct_x: &[u8; X25519_CT_LEN] = ct_x.try_into().unwrap();
+
+            let mut ek_x = [0u8; X25519_EK_LEN];
+            libcrux_curve25519::secret_to_public(&mut ek_x, dk_x);
+
+            let mut hash_buffer = [0u8; 32 + 32 + X25519_CT_LEN + X25519_EK_LEN + 6];
+            hash_buffer[64..96].copy_from_slice(ct_x);
+            hash_buffer[96..128].copy_from_slice(&ek_x);
+            hash_buffer[128..134].copy_from_slice(&[0x5c, 0x2e, 0x2f, 0x2f, 0x5e, 0x5c]);
+
+            let ss_m: &mut [u8; 32] = (&mut hash_buffer[0..32]).try_into().unwrap();
+            MlKem768::decaps(ss_m, ct_m, dk_m)?;
+
+            let ss_x: &mut [u8; 32] = (&mut hash_buffer[32..64]).try_into().unwrap();
+            X25519::decaps(ss_x, ct_x, dk_x)?;
+            sha3::sha256_ema(ss, &hash_buffer);
+
+            Ok(())
+        }
+    }
+
+    libcrux_traits::kem::slice::impl_trait!(XWing => EK_LEN, DK_LEN, CT_LEN, SS_LEN, RAND_KEYGEN_LEN, RAND_ENCAPS_LEN);
+
+    #[cfg_attr(feature = "codec", derive(TlsSize, TlsSerialize, TlsDeserialize))]
     pub struct XWingSharedSecret {
         pub(super) value: [u8; 32],
     }

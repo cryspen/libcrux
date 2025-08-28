@@ -1,13 +1,14 @@
 [package]
 name = "libcrux-hmac"
-version = "0.0.3-alpha.1"
+version = "0.0.3"
+description = "Libcrux HMAC implementation"
+readme = "Readme.md"
+
 authors.workspace = true
 license.workspace = true
 homepage.workspace = true
 edition.workspace = true
 repository.workspace = true
-readme.workspace = true
-description = "Libcrux HMAC implementation"
 
 [lib]
 path = "src/hmac.rs"
@@ -16,8 +17,8 @@ path = "src/hmac.rs"
 expose-hacl = []
 
 [dependencies]
-libcrux-hacl-rs = { version = "=0.0.2", path = "../hacl-rs/" }
-libcrux-sha2 = { version = "=0.0.3-alpha.1", path = "../sha2", features = [
+libcrux-hacl-rs = { version = "=0.0.3", path = "../hacl-rs/" }
+libcrux-sha2 = { version = "=0.0.3", path = "../sha2", features = [
     "expose-hacl",
 ] }
-libcrux-macros = { version = "=0.0.2", path = "../macros" }
+libcrux-macros = { version = "=0.0.3", path = "../macros" }

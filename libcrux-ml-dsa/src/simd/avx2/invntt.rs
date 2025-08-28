@@ -5,9 +5,11 @@ use libcrux_intrinsics::avx2::*;
 
 #[inline(always)]
 #[allow(unsafe_code)]
+#[hax_lib::fstar::verification_status(lax)]
 pub(crate) fn invert_ntt_montgomery(re: &mut AVX2RingElement) {
     #[cfg_attr(not(hax), target_feature(enable = "avx2"))]
     #[allow(unsafe_code)]
+    #[hax_lib::fstar::verification_status(lax)]
     unsafe fn inv_inner(re: &mut AVX2RingElement) {
         invert_ntt_at_layer_0(re);
         invert_ntt_at_layer_1(re);
@@ -25,9 +27,7 @@ pub(crate) fn invert_ntt_montgomery(re: &mut AVX2RingElement) {
             // - Divide the elements by 256 and
             // - Convert the elements form montgomery domain to the standard domain.
             const FACTOR: i32 = 41_978;
-            re[i] = AVX2SIMDUnit {
-                value: arithmetic::montgomery_multiply_by_constant(re[i].value, FACTOR),
-            };
+            re[i].value = arithmetic::montgomery_multiply_by_constant(re[i].value, FACTOR);
         }
     }
 
@@ -35,6 +35,30 @@ pub(crate) fn invert_ntt_montgomery(re: &mut AVX2RingElement) {
 }
 
 #[inline(always)]
+#[hax_lib::fstar::before(r"open Spec.MLDSA.Ntt")]
+#[hax_lib::fstar::before(r"open Spec.Intrinsics")]
+#[hax_lib::fstar::before(r"open Spec.Utils")]
+#[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
+#[hax_lib::ensures(|(a, b)| fstar!(r#"
+let nre0, nre1 = ${a}.f_value, ${b}.f_value in
+let re0, re1 = ${simd_unit0}, ${simd_unit1} in
+(to_i32x8 nre0 (mk_u64 0), to_i32x8 nre0 (mk_u64 1)) ==
+ inv_ntt_step $zeta00 (to_i32x8 re0 (mk_u64 0), to_i32x8 re0 (mk_u64 1)) /\
+(to_i32x8 nre0 (mk_u64 2), to_i32x8 nre0 (mk_u64 3)) ==
+ inv_ntt_step $zeta01 (to_i32x8 re0 (mk_u64 2), to_i32x8 re0 (mk_u64 3)) /\
+(to_i32x8 nre0 (mk_u64 4), to_i32x8 nre0 (mk_u64 5)) ==
+ inv_ntt_step $zeta02 (to_i32x8 re0 (mk_u64 4), to_i32x8 re0 (mk_u64 5)) /\
+(to_i32x8 nre0 (mk_u64 6), to_i32x8 nre0 (mk_u64 7)) ==
+ inv_ntt_step $zeta03 (to_i32x8 re0 (mk_u64 6), to_i32x8 re0 (mk_u64 7)) /\
+(to_i32x8 nre1 (mk_u64 0), to_i32x8 nre1 (mk_u64 1)) ==
+ inv_ntt_step $zeta10 (to_i32x8 re1 (mk_u64 0), to_i32x8 re1 (mk_u64 1)) /\
+(to_i32x8 nre1 (mk_u64 2), to_i32x8 nre1 (mk_u64 3)) ==
+ inv_ntt_step $zeta11 (to_i32x8 re1 (mk_u64 2), to_i32x8 re1 (mk_u64 3)) /\
+(to_i32x8 nre1 (mk_u64 4), to_i32x8 nre1 (mk_u64 5)) ==
+ inv_ntt_step $zeta12 (to_i32x8 re1 (mk_u64 4), to_i32x8 re1 (mk_u64 5)) /\
+(to_i32x8 nre1 (mk_u64 6), to_i32x8 nre1 (mk_u64 7)) ==
+ inv_ntt_step $zeta13 (to_i32x8 re1 (mk_u64 6), to_i32x8 re1 (mk_u64 7))
+"#))]
 fn simd_unit_invert_ntt_at_layer_0(
     simd_unit0: Vec256,
     simd_unit1: Vec256,
@@ -78,6 +102,27 @@ fn simd_unit_invert_ntt_at_layer_0(
 }
 
 #[inline(always)]
+#[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
+#[hax_lib::ensures(|(a, b)| fstar!(r#"
+let nre0, nre1 = ${a}.f_value, ${b}.f_value in
+let re0, re1 = ${simd_unit0}, ${simd_unit1} in
+(to_i32x8 nre0 (mk_u64 0), to_i32x8 nre0 (mk_u64 2)) ==
+inv_ntt_step zeta00 (to_i32x8 re0 (mk_u64 0), to_i32x8 re0 (mk_u64 2)) /\
+(to_i32x8 nre0 (mk_u64 1), to_i32x8 nre0 (mk_u64 3)) ==
+inv_ntt_step zeta00 (to_i32x8 re0 (mk_u64 1), to_i32x8 re0 (mk_u64 3)) /\
+(to_i32x8 nre0 (mk_u64 4), to_i32x8 nre0 (mk_u64 6)) ==
+inv_ntt_step zeta01 (to_i32x8 re0 (mk_u64 4), to_i32x8 re0 (mk_u64 6)) /\
+(to_i32x8 nre0 (mk_u64 5), to_i32x8 nre0 (mk_u64 7)) ==
+inv_ntt_step zeta01 (to_i32x8 re0 (mk_u64 5), to_i32x8 re0 (mk_u64 7)) /\
+(to_i32x8 nre1 (mk_u64 0), to_i32x8 nre1 (mk_u64 2)) ==
+inv_ntt_step zeta10 (to_i32x8 re1 (mk_u64 0), to_i32x8 re1 (mk_u64 2)) /\
+(to_i32x8 nre1 (mk_u64 1), to_i32x8 nre1 (mk_u64 3)) ==
+inv_ntt_step zeta10 (to_i32x8 re1 (mk_u64 1), to_i32x8 re1 (mk_u64 3)) /\
+(to_i32x8 nre1 (mk_u64 4), to_i32x8 nre1 (mk_u64 6)) ==
+inv_ntt_step zeta11 (to_i32x8 re1 (mk_u64 4), to_i32x8 re1 (mk_u64 6)) /\
+(to_i32x8 nre1 (mk_u64 5), to_i32x8 nre1 (mk_u64 7)) ==
+inv_ntt_step zeta11 (to_i32x8 re1 (mk_u64 5), to_i32x8 re1 (mk_u64 7))
+"#))]
 fn simd_unit_invert_ntt_at_layer_1(
     simd_unit0: Vec256,
     simd_unit1: Vec256,
@@ -110,6 +155,27 @@ fn simd_unit_invert_ntt_at_layer_1(
 }
 
 #[inline(always)]
+#[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
+#[hax_lib::ensures(|(a, b)| fstar!(r#"
+let nre0, nre1 = ${a}.f_value, ${b}.f_value in
+let re0, re1 = ${simd_unit0}, ${simd_unit1} in
+(to_i32x8 nre0 (mk_u64 0), to_i32x8 nre0 (mk_u64 4)) ==
+ inv_ntt_step zeta0 (to_i32x8 re0 (mk_u64 0), to_i32x8 re0 (mk_u64 4)) /\
+(to_i32x8 nre0 (mk_u64 1), to_i32x8 nre0 (mk_u64 5)) ==
+ inv_ntt_step zeta0 (to_i32x8 re0 (mk_u64 1), to_i32x8 re0 (mk_u64 5)) /\
+(to_i32x8 nre0 (mk_u64 2), to_i32x8 nre0 (mk_u64 6)) ==
+ inv_ntt_step zeta0 (to_i32x8 re0 (mk_u64 2), to_i32x8 re0 (mk_u64 6)) /\
+(to_i32x8 nre0 (mk_u64 3), to_i32x8 nre0 (mk_u64 7)) ==
+ inv_ntt_step zeta0 (to_i32x8 re0 (mk_u64 3), to_i32x8 re0 (mk_u64 7)) /\
+(to_i32x8 nre1 (mk_u64 0), to_i32x8 nre1 (mk_u64 4)) ==
+ inv_ntt_step zeta1 (to_i32x8 re1 (mk_u64 0), to_i32x8 re1 (mk_u64 4)) /\
+(to_i32x8 nre1 (mk_u64 1), to_i32x8 nre1 (mk_u64 5)) ==
+ inv_ntt_step zeta1 (to_i32x8 re1 (mk_u64 1), to_i32x8 re1 (mk_u64 5)) /\
+(to_i32x8 nre1 (mk_u64 2), to_i32x8 nre1 (mk_u64 6)) ==
+ inv_ntt_step zeta1 (to_i32x8 re1 (mk_u64 2), to_i32x8 re1 (mk_u64 6)) /\
+(to_i32x8 nre1 (mk_u64 3), to_i32x8 nre1 (mk_u64 7)) ==
+ inv_ntt_step zeta1 (to_i32x8 re1 (mk_u64 3), to_i32x8 re1 (mk_u64 7))
+"#))]
 fn simd_unit_invert_ntt_at_layer_2(
     simd_unit0: Vec256,
     simd_unit1: Vec256,
@@ -139,8 +205,39 @@ fn simd_unit_invert_ntt_at_layer_2(
 
 #[cfg_attr(not(hax), target_feature(enable = "avx2"))]
 #[allow(unsafe_code)]
+#[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
+#[hax_lib::ensures(|result| fstar!(r#"
+norm [primops; iota; delta_namespace [ `%zeta_r; `%Spec.Utils.forall4; `%Spec.Utils.forall16 ]] (
+   Spec.Utils.forall16 (fun i ->
+     let  nre = ${re}_future in
+     let  re0 = Seq.index $re (i * 2) in
+     let  re1 = Seq.index $re (i * 2 + 1) in
+     let nre0 = Seq.index nre (i * 2) in
+     let nre1 = Seq.index nre (i * 2 + 1) in
+     Spec.Utils.forall4 (fun j ->
+       let zeta0 = zeta_r (255 - (i * 8 + j)) in
+       let zeta1 = zeta_r (255 - (i * 8 + j + 4)) in
+       let j0 = j * 2 in
+       let j1 = j0 + 1 in
+       (to_i32x8 nre0.f_value (mk_u64 j0), to_i32x8 nre0.f_value (mk_u64 j1)) ==
+        inv_ntt_step (mk_int zeta0) (to_i32x8 re0.f_value (mk_u64 j0), to_i32x8 re0.f_value (mk_u64 j1)) /\
+       (to_i32x8 nre1.f_value (mk_u64 j0), to_i32x8 nre1.f_value (mk_u64 j1)) ==
+        inv_ntt_step (mk_int zeta1) (to_i32x8 re1.f_value (mk_u64 j0), to_i32x8 re1.f_value (mk_u64 j1))
+     )
+   )
+)
+"#))]
 unsafe fn invert_ntt_at_layer_0(re: &mut AVX2RingElement) {
     #[inline(always)]
+    #[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
+    #[hax_lib::requires(index < 31)]
+    #[hax_lib::ensures(|result| fstar!(r#"
+      let r = ${re}_future in
+         modifies2_32 $re r $index ($index +! mk_int 1)
+      /\ ( let (a, b) = simd_unit_invert_ntt_at_layer_0_ (Seq.index re (v $index)).f_value (Seq.index re (v $index + 1)).f_value 
+                            $zeta00 $zeta01 $zeta02 $zeta03 $zeta10 $zeta11 $zeta12 $zeta13 in
+           Seq.index r (v $index) == a /\ Seq.index r (v $index + 1) == b)
+    "#))]
     fn round(
         re: &mut AVX2RingElement,
         index: usize,
@@ -219,8 +316,41 @@ unsafe fn invert_ntt_at_layer_0(re: &mut AVX2RingElement) {
 
 #[allow(unsafe_code)]
 #[cfg_attr(not(hax), target_feature(enable = "avx2"))]
+#[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
+#[hax_lib::ensures(|result| fstar!(r#"
+norm [primops; iota; delta_namespace [ `%zeta_r; `%Spec.Utils.forall4; `%Spec.Utils.forall16 ]] (
+   Spec.Utils.forall16 (fun i ->
+     let  nre = ${re}_future in
+     let  re0 = Seq.index $re (i * 2) in
+     let  re1 = Seq.index $re (i * 2 + 1) in
+     let nre0 = Seq.index nre (i * 2) in
+     let nre1 = Seq.index nre (i * 2 + 1) in
+     Spec.Utils.forall4 (fun j ->
+         let zeta0 = zeta_r (127 - (i * 4 + j / 2)) in
+         let zeta1 = zeta_r (127 - (i * 4 + j / 2 + 2)) in
+         let j0 = match j with
+           | 0 -> 0 | 1 -> 1
+           | 2 -> 4 | 3 -> 5
+         in
+         let j1 = j0 + 2 in
+         (to_i32x8 nre0.f_value (mk_u64 j0), to_i32x8 nre0.f_value (mk_u64 j1)) ==
+          inv_ntt_step (mk_int zeta0) (to_i32x8 re0.f_value (mk_u64 j0), to_i32x8 re0.f_value (mk_u64 j1)) /\
+         (to_i32x8 nre1.f_value (mk_u64 j0), to_i32x8 nre1.f_value (mk_u64 j1)) ==
+          inv_ntt_step (mk_int zeta1) (to_i32x8 re1.f_value (mk_u64 j0), to_i32x8 re1.f_value (mk_u64 j1))
+     )
+   )
+)
+"#))]
 unsafe fn invert_ntt_at_layer_1(re: &mut AVX2RingElement) {
     #[inline(always)]
+    #[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
+    #[hax_lib::requires(index < 31)]
+    #[hax_lib::ensures(|result| fstar!(r#"
+      let r = ${re}_future in
+         modifies2_32 re r $index ($index +! mk_int 1)
+      /\ ( let (a, b) = simd_unit_invert_ntt_at_layer_1_ (Seq.index re (v $index)).f_value (Seq.index re (v $index + 1)).f_value $zeta_00 $zeta_01 $zeta_10 $zeta_11 in
+           Seq.index r (v $index) == a /\ Seq.index r (v $index + 1) == b)
+    "#))]
     fn round(
         re: &mut AVX2RingElement,
         index: usize,
@@ -259,8 +389,40 @@ unsafe fn invert_ntt_at_layer_1(re: &mut AVX2RingElement) {
 
 #[cfg_attr(not(hax), target_feature(enable = "avx2"))]
 #[allow(unsafe_code)]
+#[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
+#[hax_lib::ensures(|result| fstar!(r#"
+norm [primops; iota; delta_namespace [ `%zeta_r; `%Spec.Utils.forall4; `%Spec.Utils.forall16 ]] (
+   Spec.Utils.forall16 (fun i ->
+     let  nre = ${re}_future in
+     let  re0 = Seq.index $re (i * 2) in
+     let  re1 = Seq.index $re (i * 2 + 1) in
+     let nre0 = Seq.index nre (i * 2) in
+     let nre1 = Seq.index nre (i * 2 + 1) in
+     Spec.Utils.forall4 (fun j ->
+        let zeta0 = zeta_r (63 - (i * 2)) in
+        let zeta1 = zeta_r (63 - (i * 2 + 1)) in
+        let j0 = j in
+        let j1 = j0 + 4 in
+        (to_i32x8 nre0.f_value (mk_u64 j0), to_i32x8 nre0.f_value (mk_u64 j1)) ==
+        inv_ntt_step (mk_int zeta0)
+          (to_i32x8 re0.f_value (mk_u64 j0), to_i32x8 re0.f_value (mk_u64 j1)) /\
+        (to_i32x8 nre1.f_value (mk_u64 j0), to_i32x8 nre1.f_value (mk_u64 j1)) ==
+        inv_ntt_step (mk_int zeta1)
+          (to_i32x8 re1.f_value (mk_u64 j0), to_i32x8 re1.f_value (mk_u64 j1))
+     )
+   )
+)
+"#))]
 unsafe fn invert_ntt_at_layer_2(re: &mut AVX2RingElement) {
     #[inline(always)]
+    #[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
+    #[hax_lib::requires(index < 31)]
+    #[hax_lib::ensures(|result| fstar!(r#"
+      let r = ${re}_future in
+         modifies2_32 re r $index ($index +! mk_int 1)
+      /\ ( let (a, b) = simd_unit_invert_ntt_at_layer_2_ (Seq.index re (v $index)).f_value (Seq.index re (v $index + 1)).f_value $zeta1 $zeta2 in
+           Seq.index r (v $index) == a /\ Seq.index r (v $index + 1) == b)
+    "#))]
     fn round(re: &mut AVX2RingElement, index: usize, zeta1: i32, zeta2: i32) {
         (re[index], re[index + 1]) =
             simd_unit_invert_ntt_at_layer_2(re[index].value, re[index + 1].value, zeta1, zeta2);
@@ -285,10 +447,44 @@ unsafe fn invert_ntt_at_layer_2(re: &mut AVX2RingElement) {
 }
 
 #[inline(always)]
+#[hax_lib::fstar::before(
+    r#"
+unfold let (∈) (x: nat) ((l, r): (nat & nat)) = x >= l && x < r
+unfold let outer_3_plus_inv_pointwise  (offset: nat) (step_by: nat {offset + step_by * 2 <= 32}) (zeta: i32)
+    (current_j: nat {current_j ∈ (offset, offset + step_by + 1)})
+    (re nre: t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32)) (j: nat{j < 32})
+= let interval1 = (offset, current_j) in
+  let interval2 = (offset + step_by, current_j + step_by) in
+  if j ∈ interval1 then 
+    let  re_j = (Seq.index  re j).f_value in
+    let nre_j = (Seq.index nre j).f_value in
+    let  re_j'= (Seq.index  re (j + step_by)).f_value in
+    let nre_j'= (Seq.index nre (j + step_by)).f_value in
+    forall i. (to_i32x8 nre_j i, to_i32x8 nre_j' i) == inv_ntt_step zeta (to_i32x8 re_j i, to_i32x8 re_j' i)
+  else if j ∈ interval2 then True
+  else Seq.index nre j == Seq.index re j
+
+let outer_3_plus_inv
+    (offset: nat) (step_by: nat {offset + step_by * 2 <= 32}) (zeta: i32)
+    (current_j: nat {current_j ∈ (offset, offset + step_by + 1)})
+    (re nre: t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32))
+= forall j. outer_3_plus_inv_pointwise offset step_by zeta current_j re nre j
+"#
+)]
+#[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
+#[hax_lib::requires(fstar!("v $OFFSET + v $STEP_BY * 2 <= 32"))]
+#[hax_lib::ensures(|result| fstar!(r#"
+    outer_3_plus_inv (v $OFFSET) (v $STEP_BY) v_ZETA (v $OFFSET + v $STEP_BY) $re ${re}_future
+"#))]
 fn outer_3_plus<const OFFSET: usize, const STEP_BY: usize, const ZETA: i32>(
     re: &mut AVX2RingElement,
 ) {
+    #[cfg(hax)]
+    let _re0 = re.clone();
     for j in OFFSET..OFFSET + STEP_BY {
+        hax_lib::loop_invariant!(|j: usize| fstar!(
+            r#"outer_3_plus_inv (v $OFFSET) (v $STEP_BY) $ZETA (v $j) $_re0 $re"#
+        ));
         let a_minus_b = mm256_sub_epi32(re[j + STEP_BY].value, re[j].value);
         re[j] = AVX2SIMDUnit {
             value: mm256_add_epi32(re[j].value, re[j + STEP_BY].value),
@@ -296,11 +492,35 @@ fn outer_3_plus<const OFFSET: usize, const STEP_BY: usize, const ZETA: i32>(
         re[j + STEP_BY] = AVX2SIMDUnit {
             value: arithmetic::montgomery_multiply_by_constant(a_minus_b, ZETA),
         };
+        hax_lib::fstar!("assert (outer_3_plus_inv_pointwise (v $OFFSET) (v $STEP_BY) $ZETA (v $OFFSET + v $STEP_BY) ${_re0} ${re} (v j + v $STEP_BY))");
+        ()
     }
 }
 
 #[cfg_attr(not(hax), target_feature(enable = "avx2"))]
 #[allow(unsafe_code)]
+#[hax_lib::fstar::before(r#"
+let invert_ntt_outer_3_plus_spec
+  (layer: nat {layer >= 3 && layer <= 7})
+  (re nre: t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32))
+  = let zeta_rank = pow2 (8 - layer) - 1 in
+    let step_by   = pow2 (layer - 3) in
+    let gap       = pow2 (layer - 2) in
+    let n         = pow2 (7 - layer) in
+    Spec.Utils.forall32 (fun j -> j < n ==> begin
+                    let zeta = mk_i32 (zeta_r (zeta_rank - j)) in
+                    let j = j * gap in
+                    let  re_j = (Seq.index  re j).f_value in
+                    let nre_j = (Seq.index nre j).f_value in
+                    let  re_j'= (Seq.index  re (j + step_by)).f_value in
+                    let nre_j'= (Seq.index nre (j + step_by)).f_value in
+                    forall i. (to_i32x8 nre_j i, to_i32x8 nre_j' i) == inv_ntt_step zeta (to_i32x8 re_j i, to_i32x8 re_j' i)
+                  end)
+"#)]
+#[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
+#[hax_lib::ensures(|result| fstar!(r#"
+norm [primops; iota; delta_namespace [ `%zeta_r; `%Spec.Utils.forall32 ]] (invert_ntt_outer_3_plus_spec 3 $re ${re}_future)
+"#))]
 unsafe fn invert_ntt_at_layer_3(re: &mut AVX2RingElement) {
     const STEP: usize = 8; // 1 << LAYER;
     const STEP_BY: usize = 1; // step / COEFFICIENTS_IN_SIMD_UNIT;
@@ -325,6 +545,10 @@ unsafe fn invert_ntt_at_layer_3(re: &mut AVX2RingElement) {
 
 #[cfg_attr(not(hax), target_feature(enable = "avx2"))]
 #[allow(unsafe_code)]
+#[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
+#[hax_lib::ensures(|result| fstar!(r#"
+norm [primops; iota; delta_namespace [ `%zeta_r; `%Spec.Utils.forall32 ]] (invert_ntt_outer_3_plus_spec 4 $re ${re}_future)
+"#))]
 unsafe fn invert_ntt_at_layer_4(re: &mut AVX2RingElement) {
     const STEP: usize = 16; // 1 << LAYER;
     const STEP_BY: usize = 2; // step / COEFFICIENTS_IN_SIMD_UNIT;
@@ -341,6 +565,10 @@ unsafe fn invert_ntt_at_layer_4(re: &mut AVX2RingElement) {
 
 #[cfg_attr(not(hax), target_feature(enable = "avx2"))]
 #[allow(unsafe_code)]
+#[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
+#[hax_lib::ensures(|result| fstar!(r#"
+norm [primops; iota; delta_namespace [ `%zeta_r; `%Spec.Utils.forall32 ]] (invert_ntt_outer_3_plus_spec 5 $re ${re}_future)
+"#))]
 unsafe fn invert_ntt_at_layer_5(re: &mut AVX2RingElement) {
     const STEP: usize = 32; // 1 << LAYER;
     const STEP_BY: usize = 4; // step / COEFFICIENTS_IN_SIMD_UNIT;
@@ -353,6 +581,10 @@ unsafe fn invert_ntt_at_layer_5(re: &mut AVX2RingElement) {
 
 #[cfg_attr(not(hax), target_feature(enable = "avx2"))]
 #[allow(unsafe_code)]
+#[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
+#[hax_lib::ensures(|result| fstar!(r#"
+norm [primops; iota; delta_namespace [ `%zeta_r; `%Spec.Utils.forall32 ]] (invert_ntt_outer_3_plus_spec 6 $re ${re}_future)
+"#))]
 unsafe fn invert_ntt_at_layer_6(re: &mut AVX2RingElement) {
     const STEP: usize = 64; // 1 << LAYER;
     const STEP_BY: usize = 8; // step / COEFFICIENTS_IN_SIMD_UNIT;
@@ -363,6 +595,10 @@ unsafe fn invert_ntt_at_layer_6(re: &mut AVX2RingElement) {
 
 #[cfg_attr(not(hax), target_feature(enable = "avx2"))]
 #[allow(unsafe_code)]
+#[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
+#[hax_lib::ensures(|result| fstar!(r#"
+norm [primops; iota; delta_namespace [ `%zeta_r; `%Spec.Utils.forall32 ]] (invert_ntt_outer_3_plus_spec 7 $re ${re}_future)
+"#))]
 unsafe fn invert_ntt_at_layer_7(re: &mut AVX2RingElement) {
     const STEP: usize = 128; // 1 << LAYER;
     const STEP_BY: usize = 16; // step / COEFFICIENTS_IN_SIMD_UNIT;

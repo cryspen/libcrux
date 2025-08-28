@@ -1,8 +1,8 @@
 [package]
 name = "libcrux-traits"
 description = "Traits for cryptographic algorithms"
+version = "0.0.3"
 
-version = "0.0.3-alpha.1"
 authors.workspace = true
 license.workspace = true
 homepage.workspace = true
@@ -10,5 +10,16 @@ edition.workspace = true
 repository.workspace = true
 readme.workspace = true
 
+[features]
+# core::error::Error is still pretty recent, so we only implement it for our errors behind a feature
+error-in-core = []
+# enables checking of secret-independence
+check-secret-independence = ["libcrux-secrets/check-secret-independence"]
+# expose tests that are generic over the traits
+generic-tests = []
+# whether or not the alloc crate is used
+alloc = []
+
 [dependencies]
 rand = { version = "0.9", default-features = false }
+libcrux-secrets = { version = "=0.0.3", path = "../secrets" }

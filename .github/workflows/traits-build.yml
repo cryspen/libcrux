@@ -1,0 +1,99 @@
+name: Traits - Build
+
+on:
+  merge_group:
+  push:
+    branches: ["main", "dev"]
+  pull_request:
+    branches: ["main", "dev", "*"]
+  workflow_dispatch:
+
+env:
+  CARGO_TERM_COLOR: always
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    if: ${{ github.event_name != 'merge_group' }}
+    strategy:
+      fail-fast: false
+      matrix:
+        bits: [32, 64]
+        os:
+          - macos-13 # Intel mac
+          - macos-latest # macos-15 on apple silicon
+          - ubuntu-latest
+          - windows-latest
+        exclude:
+          - bits: 32
+            os: "macos-latest"
+          - bits: 32
+            os: "macos-13"
+          - bits: 32 # FIXME: Linking isn't working here yet for hacl #42
+            os: "windows-latest"
+
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: bash
+        working-directory: traits
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - run: echo "RUST_TARGET_FLAG=" > $GITHUB_ENV
+        if: ${{ matrix.bits == 64 }}
+
+      - name: 🛠️ Setup Rust Nightly
+        run: rustup toolchain install nightly-2024-12-14
+
+      - name: 🛠️ Setup Ubuntu x86
+        if: ${{ matrix.bits == 32 &&  matrix.os == 'ubuntu-latest' }}
+        run: |
+          rustup target add i686-unknown-linux-gnu
+          sudo apt-get update
+          sudo apt-get install -y gcc-multilib g++-multilib
+
+      # Set up 32 bit systems
+
+      - name: 🛠️ Config Windows x86
+        run: echo "RUST_TARGET_FLAG=--target=i686-pc-windows-msvc" > $GITHUB_ENV
+        if: ${{ matrix.bits == 32 && matrix.os == 'windows-latest' }}
+
+      - name: 🛠️ Config Linux x86
+        run: |
+          echo "RUST_TARGET_FLAG=--target=i686-unknown-linux-gnu" > $GITHUB_ENV
+        if: ${{ matrix.bits == 32 && matrix.os == 'ubuntu-latest' }}
+
+      # Build ...
+
+      - name: 🔨 Build
+        run: |
+          rustc --print=cfg
+          cargo build --verbose $RUST_TARGET_FLAG
+          cargo build --verbose $RUST_TARGET_FLAG -F error-in-core
+
+      - name: 🔨 Build Release
+        run: |
+          cargo build --verbose --release $RUST_TARGET_FLAG
+          cargo build --verbose --release $RUST_TARGET_FLAG -F error-in-core
+
+      # TODO: https://github.com/cryspen/libcrux/issues/717
+      - name: 🏃🏻 Asan MacOS
+        if: ${{ matrix.os == 'macos-latest' }}
+        run: RUSTDOCFLAGS=-Zsanitizer=address RUSTFLAGS=-Zsanitizer=address cargo +nightly-2024-12-14 test --release --target aarch64-apple-darwin
+
+  traits-build-status:
+    if: ${{ always() }}
+    needs: [build]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Successful
+        if: ${{ !(contains(needs.*.result, 'failure')) }} 
+        run: exit 0 
+      - name: Failing
+        if: ${{ (contains(needs.*.result, 'failure')) }} 
+        run: exit 1 

@@ -1,0 +1,65 @@
+name: SHA3 - hax
+
+on:
+  merge_group:
+  pull_request:
+    branches: ["dev", "main"]
+
+  schedule:
+    - cron: "0 0 * * *"
+
+  workflow_dispatch:
+    inputs:
+      hax_ref:
+        description: "The hax revision you want this job to use"
+        required: false
+        type: string
+
+env:
+  CARGO_TERM_COLOR: always
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # NOTE: This always runs, even if the `hax_ref` workflow input is provided.
+  # TODO: Move this reusable workflow to a standalone action
+  get-hax-ref:
+    uses: ./.github/workflows/get-hax-ref.yml
+
+  extract:
+    runs-on: ubuntu-latest
+    needs:
+      - get-hax-ref
+
+    steps:
+      - uses: actions/checkout@v5
+      - uses: hacspec/hax-actions@main
+        with:
+          hax_reference: ${{ github.event.inputs.hax_ref || needs.get-hax-ref.outputs.hax_ref }}
+          fstar: v2025.02.17
+
+      - name: 🏃 Extract SHA3 crate
+        working-directory: libcrux-sha3
+        run: ./hax.py extract
+
+      - name: ↑ Upload F* extraction
+        uses: actions/upload-artifact@v4
+        with:
+          name: fstar-extractions
+          path: "**/proofs/fstar"
+          include-hidden-files: true
+          if-no-files-found: error
+  
+  sha3-extract-hax-status:
+    if: ${{ always() }}
+    needs: [get-hax-ref, extract]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Successful
+        if: ${{ !(contains(needs.*.result, 'failure')) }} 
+        run: exit 0 
+      - name: Failing
+        if: ${{ (contains(needs.*.result, 'failure')) }} 
+        run: exit 1 

@@ -4,8 +4,58 @@ open FStar.Mul
 open Core
 
 include Spec.Utils
-
+open Spec.Intrinsics
+  
 let v_FIELD_MODULUS: i32 = mk_i32 8380417
+
+[@@ "opaque_to_smt"]
+let mod_q a = a % 8380417
+
+let i32_mul (x:i32) (y:i32) =
+  mul_mod_opaque (cast_mod_opaque x <: i64) (cast_mod_opaque y <: i64)
+
+[@@ "opaque_to_smt"]
+let mont_mul (x:i32) (y:i32) : i32 =
+  let product : i64 = i32_mul x y in
+  let hi : i32 = cast_mod_opaque (shift_right_opaque product (mk_i32 32)) in
+  let low : i32 = cast_mod_opaque product in
+  let k : i32 = cast_mod_opaque (i32_mul low (mk_i32 58728449)) in
+  let c : i32 = cast_mod_opaque (shift_right_opaque (i32_mul k (mk_i32 8380417)) (mk_i32 32)) in
+  sub_mod_opaque hi c  
+
+[@@ "opaque_to_smt"]
+let barrett_red (x:i32) : i32 =
+  let q = shift_right_opaque (add_mod_opaque x (shift_left (mk_i32 1) (mk_i32 22))) (mk_i32 23) in
+  sub_mod_opaque x (mul_mod_opaque q v_FIELD_MODULUS)
+
+let decompose_spec (gamma2:i32{gamma2 == mk_i32 95232 \/ gamma2 == mk_i32 261888}) (r:i32) : (i32 & i32) =
+  let r = if r <. mk_i32 0 then add_mod r v_FIELD_MODULUS else r in
+  let ceil_of_r_by_128 = shift_right_opaque (add_mod_opaque r (mk_i32 127)) (mk_i32 7)  in
+  let r1 =
+    if v gamma2 = 95232 then
+      let result = mul_mod_opaque ceil_of_r_by_128 (mk_i32 11275) in
+      let result = add_mod_opaque result (mk_i32 1 <<! mk_i32 23 <: i32) in
+      let result = shift_right_opaque result (mk_i32 24) in
+      let mask = sub_mod_opaque (mk_i32 43) result in
+      let mask = shift_right_opaque mask (mk_i32 31) in
+      let not_result = result ^. mask in
+      result &. not_result
+    else 
+      let result = mul_mod_opaque ceil_of_r_by_128 (mk_i32 1025) in
+      let result = add_mod_opaque result (mk_i32 1 <<! mk_i32 21 <: i32) in
+      let result = shift_right_opaque result (mk_i32 22) in
+      result &. (mk_i32 15) in
+  let alpha = gamma2 *! (mk_i32 2) in
+  let r0_tmp = mul_mod_opaque r1 alpha in
+  let r0_tmp = sub_mod_opaque r r0_tmp in
+  let mask = sub_mod_opaque (mk_i32 ((v v_FIELD_MODULUS - 1) /2)) r0_tmp in
+  let mask = shift_right_opaque mask (mk_i32 31) in
+  let field_modulus_and_mask = mask &. v_FIELD_MODULUS in
+  let r0 = sub_mod_opaque r0_tmp field_modulus_and_mask in
+  (r0, r1)
+     
+    
+
 
 let v_BITS_IN_LOWER_PART_OF_T: usize = mk_usize 13
 
@@ -16,8 +66,9 @@ let is_gamma2 (g:range_t I32) = g == v v_GAMMA2_V261_888 \/ g == v v_GAMMA2_V95_
 type gamma2 = g:range_t I32{is_gamma2 g}
 
 let power2round (t:range_t I32) : (range_t I32 & range_t I32) =
-  let t0 = mod_p (t % v v_FIELD_MODULUS) (pow2 (v v_BITS_IN_LOWER_PART_OF_T)) in
-  let t1 = ((t % v v_FIELD_MODULUS) - t0) / pow2 (v v_BITS_IN_LOWER_PART_OF_T) in
+  let representative = t % v v_FIELD_MODULUS in
+  let t0 = mod_p  representative (pow2 (v v_BITS_IN_LOWER_PART_OF_T)) in
+  let t1 = (representative - t0) / pow2 (v v_BITS_IN_LOWER_PART_OF_T) in
   (t0, t1)
 
 let decompose (g:gamma2) (r:range_t I32) : (range_t I32 & range_t I32 & bool) =
@@ -153,3 +204,4 @@ let rejection_sample_coefficient_lemma (randomness:Seq.seq u8) (i:usize{v i < (S
     (((mk_i32 (pow2 16) *. b2') +. (mk_i32 (pow2 8) *. b1)) +. b0))
 
 #pop-options
+

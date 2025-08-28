@@ -87,8 +87,8 @@ define FINDLIBS
         : "if there is a [proofs/fstar/extraction] subfolder, then that s a F* library" ; \
         print_if_exists "$$path/proofs/fstar/extraction" ; \
         : "Maybe the [proof-libs] folder of hax is around?" ; \
-        MAYBE_PROOF_LIBS=$$(realpath -q "$$path/../proof-libs/fstar") ; \
-        if [ $$? -eq 0 ]; then \
+		MAYBE_PROOF_LIBS=$$(realpath -q "$$path/proof-libs/fstar" || realpath -q "$$path/../proof-libs/fstar") ; \
+		if [ -n "$$MAYBE_PROOF_LIBS" ]; then \
             print_if_exists "$$MAYBE_PROOF_LIBS/core" ; \
             print_if_exists "$$MAYBE_PROOF_LIBS/rust_primitives" ; \
         fi ; \
@@ -100,7 +100,7 @@ endef
 export FINDLIBS
 
 FSTAR_INCLUDE_DIRS_EXTRA ?=
-FINDLIBS_OUTPUT := $(shell bash -c '${FINDLIBS}')
+FINDLIBS_OUTPUT ?= $(shell bash -c '${FINDLIBS}')
 FSTAR_INCLUDE_DIRS = $(FSTAR_INCLUDE_DIRS_EXTRA) $(FINDLIBS_OUTPUT)
 
 # Make sure FSTAR_INCLUDE_DIRS has the `proof-libs`, print hints and
@@ -128,10 +128,16 @@ all-keep-going:
 	$(Q)rm -f .depend
 	$(Q)$(MAKE) --keep-going .depend hax.fst.config.json verify
 
-# If no any F* file is detected, we run hax
+# Only run code extraction for build targets, not for 'clean'.
+all all-keep-going:
 ifeq "$(wildcard *.fst *fsti)" ""
-$(shell cargo hax into fstar)
+	$(shell cargo hax into fstar)
 endif
+	$(Q)rm -f .depend
+all:
+	$(Q)$(MAKE) .depend hax.fst.config.json verify
+all-keep-going:
+	$(Q)$(MAKE) --keep-going .depend hax.fst.config.json verify
 
 # By default, we process all the files in the current directory
 ROOTS ?= $(wildcard *.fst *fsti)
@@ -174,6 +180,7 @@ target "all" "Verify every F* files (stops whenever an F* fails first)"
 target "all-keep-going" "Verify every F* files (tries as many F* module as possible)"
 target "" ""
 target "run/${ANSI_COLOR_TONE}<MyModule.fst>  " 'Runs F* on `MyModule.fst` only'
+target "check/${ANSI_COLOR_TONE}<MyModule.fst>  " 'Typecheck up to `MyModule.fst`'
 target "" ""
 target "vscode" 'Generates a `hax.fst.config.json` file'
 target "${ANSI_COLOR_TONE}<MyModule.fst>${ANSI_COLOR_BLUE}-in   " 'Useful for Emacs, outputs the F* prefix command to be used'
@@ -216,6 +223,9 @@ run/%: | .depend $(HINT_DIR) $(CACHE_DIR)
 	${HEADER}
 	$(Q)$(FSTAR) $(OTHERFLAGS) $(@:run/%=%)
 
+check/%: | .depend $(HINT_DIR) $(CACHE_DIR) $(HACL_HOME)
+	$(Q)$(MAKE) "${CACHE_DIR}/$(@:check/%=%).checked"
+
 VERIFIED_CHECKED = $(addsuffix .checked, $(addprefix $(CACHE_DIR)/,$(ROOTS)))
 ADMIT_CHECKED = $(addsuffix .checked, $(addprefix $(CACHE_DIR)/,$(ADMIT_MODULES)))
 
@@ -253,9 +263,11 @@ vscode:
 	$(Q)rm -f .depend
 	$(Q)$(MAKE) hax.fst.config.json
 
+
+.PHONY: clean
 SHELL=bash
 
 # Clean target
 clean:
 	rm -rf $(CACHE_DIR)/*
-	rm *.fst
+	rm -f *.fst *.fsti *.hints *.smt2

@@ -1,3 +1,12 @@
+#[cfg(feature = "codec")]
+use tls_codec::{TlsDeserialize, TlsSerialize, TlsSize};
+
+#[cfg(feature = "codec")]
+extern crate std;
+
+#[cfg(feature = "codec")]
+use std::format;
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Error {
     SigningError,
@@ -6,7 +15,8 @@ pub enum Error {
 }
 
 /// An Ed25519 public, verification key
-#[derive(Default)]
+#[derive(Default, Clone, Copy)]
+#[cfg_attr(feature = "codec", derive(TlsSerialize, TlsDeserialize, TlsSize))]
 pub struct VerificationKey {
     value: [u8; 32],
 }

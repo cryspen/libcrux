@@ -2,6 +2,8 @@
 
 extern crate alloc;
 
+// NOTE: This Digest trait and the new `digest` trait APIs overlap to some extent.
+// See issue #1039
 /// A Hash algorithm returning hashes of length `HASH_LEN`.
 pub trait Digest<const HASH_LEN: usize> {
     /// Writes the digest for the given input byte slice, into `digest` in immediate mode.
@@ -20,4 +22,6 @@ pub trait Digest<const HASH_LEN: usize> {
     fn reset(&mut self);
 }
 
+pub mod aead;
+pub mod digest;
 pub mod kem;

@@ -24,7 +24,7 @@ jobs:
         bits: [32, 64]
         os:
           - macos-13 # Intel mac
-          - macos-latest # macos-14 m1
+          - macos-latest # macos-15 on apple silicon
           - ubuntu-latest
           - windows-latest
         exclude:
@@ -40,7 +40,7 @@ jobs:
         working-directory: sys/platform
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Update dependencies
         run: cargo update
