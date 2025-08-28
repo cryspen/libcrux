@@ -262,17 +262,19 @@ jobs:
           PR_COMMIT_URL="${{ github.server_url }}/${{ github.repository }}/commit/${PR_HEAD_HASH}"
           BASE_COMMIT_URL="${{ github.server_url }}/${{ github.repository }}/commit/${BASE_HASH}"
 
-          cat >$GITHUB_OUTPUT <<EOF
+          cat >"$GITHUB_OUTPUT" <<ACTUALEOF
+          body<<EOF
           *beep boop, I am the benchmark bot*
 
           Comparing PR commit [$PR_HEAD_HASH_SHORT]($PR_COMMIT_URL) against baseline [$BASE_HASH_SHORT]($BASE_COMMIT_URL).
 
           # Benchmark Report
-          
+
           $(cat report-mlkem.md)
 
           $(cat report-mldsa.md)
           EOF
+          ACTUALEOF
 
       - name: Post comment to PR
         if: env.IS_FORK == 'true'
@@ -287,4 +289,3 @@ jobs:
               issue_number: context.issue.number,
               body: process.env.COMMENT_BODY
             });
-
