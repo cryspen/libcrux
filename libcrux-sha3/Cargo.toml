@@ -16,12 +16,14 @@ bench = false # so libtest doesn't eat the arguments to criterion
 [dependencies]
 libcrux-platform = { version = "0.0.2", path = "../sys/platform" }
 libcrux-intrinsics = { version = "0.0.3", path = "../libcrux-intrinsics" }
-libcrux-traits = { version = "=0.0.3", path = "../traits/" }
+libcrux-traits = { version = "=0.0.3", path = "../traits/", optional = true }
 hax-lib.workspace = true
 
 [features]
+default = ["digest-traits"]
 simd128 = ["libcrux-intrinsics/simd128"]
 simd256 = ["libcrux-intrinsics/simd256"]
+digest-traits = ["libcrux-traits"]
 
 [[bench]]
 name = "sha3"

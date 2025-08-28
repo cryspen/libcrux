@@ -98,9 +98,10 @@ class extractAction(argparse.Action):
         if args.portable:
             # For portable-only: exclude all SIMD implementations
             include_str = "+** -**::avx2::** -**::neon::** -**::simd::** -**::simd128::** -**::simd256::** +**::simd::portable::**"
-            cargo_args = []
+            cargo_args = ["-C", "--no-default-features", ";"]
         else:
             include_str = "+**"
+            cargo_args = ["-C", "--no-default-features", "--features", "simd128,simd256", ";"]
 
         interface_include = "+**"
         cargo_hax_into = [
