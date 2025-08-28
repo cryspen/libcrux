@@ -130,7 +130,7 @@ use crate::hacl::aesgcm;
 use crate::hacl::chacha20_poly1305;
 
 use libcrux_platform::{aes_ni_support, simd128_support, simd256_support};
-use libcrux_traits::aead::typed_refs::{Aead as _, Multiplexes};
+use libcrux_traits::aead::typed_refs::Multiplexes;
 
 use crate::std::vec::Vec;
 
