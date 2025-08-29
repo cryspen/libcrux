@@ -5154,9 +5154,8 @@ static KRML_MUSTINLINE void libcrux_ml_kem_ind_cpa_generate_keypair_unpacked_22(
         libcrux_ml_kem_ind_cpa_generate_keypair_unpacked_call_mut_73_22(&lvalue,
                                                                         i);
   }
-  LowStar_Ignore_ignore(libcrux_ml_kem_ind_cpa_sample_vector_cbd_then_ntt_b4(
-                            error_as_ntt, prf_input, domain_separator),
-                        uint8_t, void *);
+  libcrux_ml_kem_ind_cpa_sample_vector_cbd_then_ntt_b4(error_as_ntt, prf_input,
+                                                       domain_separator);
   libcrux_ml_kem_matrix_compute_As_plus_e_ab(
       public_key->t_as_ntt, public_key->A, private_key->secret_as_ntt,
       error_as_ntt);
