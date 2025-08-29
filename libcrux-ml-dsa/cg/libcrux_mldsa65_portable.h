@@ -77,10 +77,20 @@ typedef int32_t libcrux_ml_dsa_constants_Gamma2;
 static inline int32_t libcrux_ml_dsa_constants_beta(
     size_t ones_in_verifier_challenge, libcrux_ml_dsa_constants_Eta eta) {
   size_t eta_val;
-  if (eta == libcrux_ml_dsa_constants_Eta_Two) {
-    eta_val = (size_t)2U;
-  } else {
-    eta_val = (size_t)4U;
+  switch (eta) {
+    case libcrux_ml_dsa_constants_Eta_Two: {
+      eta_val = (size_t)2U;
+      break;
+    }
+    case libcrux_ml_dsa_constants_Eta_Four: {
+      eta_val = (size_t)4U;
+      break;
+    }
+    default: {
+      KRML_HOST_EPRINTF("KaRaMeL incomplete match at %s:%d\n", __FILE__,
+                        __LINE__);
+      KRML_HOST_EXIT(253U);
+    }
   }
   return (int32_t)(ones_in_verifier_challenge * eta_val);
 }
@@ -176,8 +186,18 @@ static inline libcrux_ml_dsa_constants_Eta libcrux_ml_dsa_constants_clone_54(
 
 static KRML_MUSTINLINE size_t
 libcrux_ml_dsa_encoding_error_chunk_size(libcrux_ml_dsa_constants_Eta eta) {
-  if (!(eta == libcrux_ml_dsa_constants_Eta_Two)) {
-    return (size_t)4U;
+  switch (eta) {
+    case libcrux_ml_dsa_constants_Eta_Two: {
+      break;
+    }
+    case libcrux_ml_dsa_constants_Eta_Four: {
+      return (size_t)4U;
+    }
+    default: {
+      KRML_HOST_EPRINTF("KaRaMeL incomplete match at %s:%d\n", __FILE__,
+                        __LINE__);
+      KRML_HOST_EXIT(253U);
+    }
   }
   return (size_t)3U;
 }
@@ -1798,10 +1818,20 @@ libcrux_ml_dsa_simd_portable_encoding_error_serialize(
     libcrux_ml_dsa_simd_portable_vector_type_Coefficients *simd_unit,
     Eurydice_slice serialized) {
   void *uu____0 = (void *)0U;
-  if (!(eta == libcrux_ml_dsa_constants_Eta_Two)) {
-    libcrux_ml_dsa_simd_portable_encoding_error_serialize_when_eta_is_4(
-        simd_unit, serialized);
-    return;
+  switch (eta) {
+    case libcrux_ml_dsa_constants_Eta_Two: {
+      break;
+    }
+    case libcrux_ml_dsa_constants_Eta_Four: {
+      libcrux_ml_dsa_simd_portable_encoding_error_serialize_when_eta_is_4(
+          simd_unit, serialized);
+      return;
+    }
+    default: {
+      KRML_HOST_EPRINTF("KaRaMeL incomplete match at %s:%d\n", __FILE__,
+                        __LINE__);
+      KRML_HOST_EXIT(253U);
+    }
   }
   libcrux_ml_dsa_simd_portable_encoding_error_serialize_when_eta_is_2(
       simd_unit, serialized);
@@ -1889,10 +1919,20 @@ libcrux_ml_dsa_simd_portable_encoding_error_deserialize(
     libcrux_ml_dsa_constants_Eta eta, Eurydice_slice serialized,
     libcrux_ml_dsa_simd_portable_vector_type_Coefficients *out) {
   void *uu____0 = (void *)0U;
-  if (!(eta == libcrux_ml_dsa_constants_Eta_Two)) {
-    libcrux_ml_dsa_simd_portable_encoding_error_deserialize_when_eta_is_4(
-        serialized, out);
-    return;
+  switch (eta) {
+    case libcrux_ml_dsa_constants_Eta_Two: {
+      break;
+    }
+    case libcrux_ml_dsa_constants_Eta_Four: {
+      libcrux_ml_dsa_simd_portable_encoding_error_deserialize_when_eta_is_4(
+          serialized, out);
+      return;
+    }
+    default: {
+      KRML_HOST_EPRINTF("KaRaMeL incomplete match at %s:%d\n", __FILE__,
+                        __LINE__);
+      KRML_HOST_EXIT(253U);
+    }
   }
   libcrux_ml_dsa_simd_portable_encoding_error_deserialize_when_eta_is_2(
       serialized, out);
@@ -4341,9 +4381,19 @@ static KRML_MUSTINLINE bool
 libcrux_ml_dsa_sample_rejection_sample_less_than_eta_37(
     libcrux_ml_dsa_constants_Eta eta, Eurydice_slice randomness,
     size_t *sampled, int32_t *out) {
-  if (!(eta == libcrux_ml_dsa_constants_Eta_Two)) {
-    return libcrux_ml_dsa_sample_rejection_sample_less_than_eta_equals_4_5b(
-        randomness, sampled, out);
+  switch (eta) {
+    case libcrux_ml_dsa_constants_Eta_Two: {
+      break;
+    }
+    case libcrux_ml_dsa_constants_Eta_Four: {
+      return libcrux_ml_dsa_sample_rejection_sample_less_than_eta_equals_4_37(
+          randomness, sampled, out);
+    }
+    default: {
+      KRML_HOST_EPRINTF("KaRaMeL incomplete match at %s:%d\n", __FILE__,
+                        __LINE__);
+      KRML_HOST_EXIT(253U);
+    }
   }
   return libcrux_ml_dsa_sample_rejection_sample_less_than_eta_equals_2_37(
       randomness, sampled, out);
