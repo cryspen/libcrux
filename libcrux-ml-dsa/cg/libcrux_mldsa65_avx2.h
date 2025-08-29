@@ -874,9 +874,19 @@ KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE __m256i
 libcrux_ml_dsa_simd_avx2_encoding_error_deserialize_to_unsigned(
     libcrux_ml_dsa_constants_Eta eta, Eurydice_slice serialized) {
-  if (!(eta == libcrux_ml_dsa_constants_Eta_Two)) {
-    return libcrux_ml_dsa_simd_avx2_encoding_error_deserialize_to_unsigned_when_eta_is_4(
-        serialized);
+  switch (eta) {
+    case libcrux_ml_dsa_constants_Eta_Two: {
+      break;
+    }
+    case libcrux_ml_dsa_constants_Eta_Four: {
+      return libcrux_ml_dsa_simd_avx2_encoding_error_deserialize_to_unsigned_when_eta_is_4(
+          serialized);
+    }
+    default: {
+      KRML_HOST_EPRINTF("KaRaMeL incomplete match at %s:%d\n", __FILE__,
+                        __LINE__);
+      KRML_HOST_EXIT(253U);
+    }
   }
   return libcrux_ml_dsa_simd_avx2_encoding_error_deserialize_to_unsigned_when_eta_is_2(
       serialized);
@@ -1574,10 +1584,20 @@ static KRML_MUSTINLINE void libcrux_ml_dsa_simd_avx2_encoding_error_serialize(
     libcrux_ml_dsa_constants_Eta eta, __m256i *simd_unit,
     Eurydice_slice serialized) {
   void *uu____0 = (void *)0U;
-  if (!(eta == libcrux_ml_dsa_constants_Eta_Two)) {
-    libcrux_ml_dsa_simd_avx2_encoding_error_serialize_when_eta_is_4(simd_unit,
-                                                                    serialized);
-    return;
+  switch (eta) {
+    case libcrux_ml_dsa_constants_Eta_Two: {
+      break;
+    }
+    case libcrux_ml_dsa_constants_Eta_Four: {
+      libcrux_ml_dsa_simd_avx2_encoding_error_serialize_when_eta_is_4(
+          simd_unit, serialized);
+      return;
+    }
+    default: {
+      KRML_HOST_EPRINTF("KaRaMeL incomplete match at %s:%d\n", __FILE__,
+                        __LINE__);
+      KRML_HOST_EXIT(253U);
+    }
   }
   libcrux_ml_dsa_simd_avx2_encoding_error_serialize_when_eta_is_2(simd_unit,
                                                                   serialized);
@@ -1601,10 +1621,20 @@ static KRML_MUSTINLINE void libcrux_ml_dsa_simd_avx2_encoding_error_deserialize(
       libcrux_ml_dsa_simd_avx2_encoding_error_deserialize_to_unsigned(
           eta, serialized);
   int32_t eta_v;
-  if (eta == libcrux_ml_dsa_constants_Eta_Two) {
-    eta_v = (int32_t)2;
-  } else {
-    eta_v = (int32_t)4;
+  switch (eta) {
+    case libcrux_ml_dsa_constants_Eta_Two: {
+      eta_v = (int32_t)2;
+      break;
+    }
+    case libcrux_ml_dsa_constants_Eta_Four: {
+      eta_v = (int32_t)4;
+      break;
+    }
+    default: {
+      KRML_HOST_EPRINTF("KaRaMeL incomplete match at %s:%d\n", __FILE__,
+                        __LINE__);
+      KRML_HOST_EXIT(253U);
+    }
   }
   out[0U] = libcrux_intrinsics_avx2_mm256_sub_epi32(
       libcrux_intrinsics_avx2_mm256_set1_epi32(eta_v), unsigned0);
@@ -3622,9 +3652,19 @@ static KRML_MUSTINLINE bool
 libcrux_ml_dsa_sample_rejection_sample_less_than_eta_64(
     libcrux_ml_dsa_constants_Eta eta, Eurydice_slice randomness,
     size_t *sampled, int32_t *out) {
-  if (!(eta == libcrux_ml_dsa_constants_Eta_Two)) {
-    return libcrux_ml_dsa_sample_rejection_sample_less_than_eta_equals_4_21(
-        randomness, sampled, out);
+  switch (eta) {
+    case libcrux_ml_dsa_constants_Eta_Two: {
+      break;
+    }
+    case libcrux_ml_dsa_constants_Eta_Four: {
+      return libcrux_ml_dsa_sample_rejection_sample_less_than_eta_equals_4_64(
+          randomness, sampled, out);
+    }
+    default: {
+      KRML_HOST_EPRINTF("KaRaMeL incomplete match at %s:%d\n", __FILE__,
+                        __LINE__);
+      KRML_HOST_EXIT(253U);
+    }
   }
   return libcrux_ml_dsa_sample_rejection_sample_less_than_eta_equals_2_64(
       randomness, sampled, out);
