@@ -406,8 +406,8 @@ static KRML_MUSTINLINE void libcrux_ml_kem_utils_into_padded_array_9e(
   uint8_t out[32U] = {0U};
   uint8_t *uu____0 = out;
   Eurydice_slice_copy(
-      Eurydice_array_to_subslice2(uu____0, (size_t)0U,
-                                  Eurydice_slice_len(slice, uint8_t), uint8_t),
+      Eurydice_array_to_subslice3(
+          uu____0, (size_t)0U, Eurydice_slice_len(slice, uint8_t), uint8_t *),
       slice, uint8_t);
   memcpy(ret, out, (size_t)32U * sizeof(uint8_t));
 }
@@ -629,8 +629,8 @@ static KRML_MUSTINLINE void libcrux_ml_kem_utils_into_padded_array_c8(
   uint8_t out[33U] = {0U};
   uint8_t *uu____0 = out;
   Eurydice_slice_copy(
-      Eurydice_array_to_subslice2(uu____0, (size_t)0U,
-                                  Eurydice_slice_len(slice, uint8_t), uint8_t),
+      Eurydice_array_to_subslice3(
+          uu____0, (size_t)0U, Eurydice_slice_len(slice, uint8_t), uint8_t *),
       slice, uint8_t);
   memcpy(ret, out, (size_t)33U * sizeof(uint8_t));
 }
@@ -648,8 +648,8 @@ static KRML_MUSTINLINE void libcrux_ml_kem_utils_into_padded_array_b6(
   uint8_t out[34U] = {0U};
   uint8_t *uu____0 = out;
   Eurydice_slice_copy(
-      Eurydice_array_to_subslice2(uu____0, (size_t)0U,
-                                  Eurydice_slice_len(slice, uint8_t), uint8_t),
+      Eurydice_array_to_subslice3(
+          uu____0, (size_t)0U, Eurydice_slice_len(slice, uint8_t), uint8_t *),
       slice, uint8_t);
   memcpy(ret, out, (size_t)34U * sizeof(uint8_t));
 }
@@ -681,8 +681,8 @@ static KRML_MUSTINLINE void libcrux_ml_kem_utils_into_padded_array_15(
   uint8_t out[1120U] = {0U};
   uint8_t *uu____0 = out;
   Eurydice_slice_copy(
-      Eurydice_array_to_subslice2(uu____0, (size_t)0U,
-                                  Eurydice_slice_len(slice, uint8_t), uint8_t),
+      Eurydice_array_to_subslice3(
+          uu____0, (size_t)0U, Eurydice_slice_len(slice, uint8_t), uint8_t *),
       slice, uint8_t);
   memcpy(ret, out, (size_t)1120U * sizeof(uint8_t));
 }
@@ -700,8 +700,8 @@ static KRML_MUSTINLINE void libcrux_ml_kem_utils_into_padded_array_24(
   uint8_t out[64U] = {0U};
   uint8_t *uu____0 = out;
   Eurydice_slice_copy(
-      Eurydice_array_to_subslice2(uu____0, (size_t)0U,
-                                  Eurydice_slice_len(slice, uint8_t), uint8_t),
+      Eurydice_array_to_subslice3(
+          uu____0, (size_t)0U, Eurydice_slice_len(slice, uint8_t), uint8_t *),
       slice, uint8_t);
   memcpy(ret, out, (size_t)64U * sizeof(uint8_t));
 }
