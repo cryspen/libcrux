@@ -205,6 +205,7 @@ impl<const N: usize, T: KeccakItem<N>> KeccakState<N, T> {
         Self: Absorb<N>,
     {
         debug_assert!(N > 0 && len < RATE);
+        debug_assert!(last.iter().all(|buf| buf.len() == last[0].len()));
 
         self.load_last::<RATE, DELIM>(last, start, len);
         self.keccakf1600()
