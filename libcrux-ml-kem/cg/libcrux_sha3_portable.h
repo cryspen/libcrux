@@ -201,7 +201,8 @@ static KRML_MUSTINLINE void libcrux_sha3_simd_portable_load_block_f8(
     Result_15 dst;
     Eurydice_slice_to_array2(
         &dst,
-        Eurydice_slice_subslice2(blocks, offset, offset + (size_t)8U, uint8_t),
+        Eurydice_slice_subslice3(blocks, offset, offset + (size_t)8U,
+                                 uint8_t *),
         Eurydice_slice, uint8_t[8U], TryFromSliceError);
     unwrap_26_68(dst, uu____0);
     state_flat[i0] = core_num__u64__from_le_bytes(uu____0);
@@ -1591,14 +1592,12 @@ with const generics
 static KRML_MUSTINLINE void libcrux_sha3_simd_portable_load_last_96(
     uint64_t *state, Eurydice_slice blocks, size_t start, size_t len) {
   uint8_t buffer[72U] = {0U};
-  Eurydice_slice uu____0 =
-      Eurydice_array_to_subslice2(buffer, (size_t)0U, len, uint8_t);
   Eurydice_slice_copy(
-      uu____0, Eurydice_slice_subslice2(blocks, start, start + len, uint8_t),
-      uint8_t);
+      Eurydice_array_to_subslice3(buffer, (size_t)0U, len, uint8_t *),
+      Eurydice_slice_subslice3(blocks, start, start + len, uint8_t *), uint8_t);
   buffer[len] = 6U;
-  size_t uu____1 = (size_t)72U - (size_t)1U;
-  buffer[uu____1] = (uint32_t)buffer[uu____1] | 128U;
+  size_t uu____0 = (size_t)72U - (size_t)1U;
+  buffer[uu____0] = (uint32_t)buffer[uu____0] | 128U;
   libcrux_sha3_simd_portable_load_block_f8(
       state, Eurydice_array_to_slice((size_t)72U, buffer, uint8_t), (size_t)0U);
 }
@@ -1650,9 +1649,9 @@ static KRML_MUSTINLINE void libcrux_sha3_simd_portable_store_block_f8(
   size_t octets = len / (size_t)8U;
   for (size_t i = (size_t)0U; i < octets; i++) {
     size_t i0 = i;
-    Eurydice_slice uu____0 =
-        Eurydice_slice_subslice2(out, start + (size_t)8U * i0,
-                                 start + (size_t)8U * i0 + (size_t)8U, uint8_t);
+    Eurydice_slice uu____0 = Eurydice_slice_subslice3(
+        out, start + (size_t)8U * i0, start + (size_t)8U * i0 + (size_t)8U,
+        uint8_t *);
     uint8_t ret[8U];
     core_num__u64__to_le_bytes(
         libcrux_sha3_traits_get_ij_04(s, i0 / (size_t)5U, i0 % (size_t)5U)[0U],
@@ -1662,8 +1661,8 @@ static KRML_MUSTINLINE void libcrux_sha3_simd_portable_store_block_f8(
   }
   size_t remaining = len % (size_t)8U;
   if (remaining > (size_t)0U) {
-    Eurydice_slice uu____1 = Eurydice_slice_subslice2(
-        out, start + len - remaining, start + len, uint8_t);
+    Eurydice_slice uu____1 = Eurydice_slice_subslice3(
+        out, start + len - remaining, start + len, uint8_t *);
     uint8_t ret[8U];
     core_num__u64__to_le_bytes(
         libcrux_sha3_traits_get_ij_04(s, octets / (size_t)5U,
@@ -1671,7 +1670,7 @@ static KRML_MUSTINLINE void libcrux_sha3_simd_portable_store_block_f8(
         ret);
     Eurydice_slice_copy(
         uu____1,
-        Eurydice_array_to_subslice2(ret, (size_t)0U, remaining, uint8_t),
+        Eurydice_array_to_subslice3(ret, (size_t)0U, remaining, uint8_t *),
         uint8_t);
   }
 }
@@ -1755,7 +1754,8 @@ static KRML_MUSTINLINE void libcrux_sha3_simd_portable_load_block_5b(
     Result_15 dst;
     Eurydice_slice_to_array2(
         &dst,
-        Eurydice_slice_subslice2(blocks, offset, offset + (size_t)8U, uint8_t),
+        Eurydice_slice_subslice3(blocks, offset, offset + (size_t)8U,
+                                 uint8_t *),
         Eurydice_slice, uint8_t[8U], TryFromSliceError);
     unwrap_26_68(dst, uu____0);
     state_flat[i0] = core_num__u64__from_le_bytes(uu____0);
@@ -1814,14 +1814,12 @@ with const generics
 static KRML_MUSTINLINE void libcrux_sha3_simd_portable_load_last_ad(
     uint64_t *state, Eurydice_slice blocks, size_t start, size_t len) {
   uint8_t buffer[136U] = {0U};
-  Eurydice_slice uu____0 =
-      Eurydice_array_to_subslice2(buffer, (size_t)0U, len, uint8_t);
   Eurydice_slice_copy(
-      uu____0, Eurydice_slice_subslice2(blocks, start, start + len, uint8_t),
-      uint8_t);
+      Eurydice_array_to_subslice3(buffer, (size_t)0U, len, uint8_t *),
+      Eurydice_slice_subslice3(blocks, start, start + len, uint8_t *), uint8_t);
   buffer[len] = 6U;
-  size_t uu____1 = (size_t)136U - (size_t)1U;
-  buffer[uu____1] = (uint32_t)buffer[uu____1] | 128U;
+  size_t uu____0 = (size_t)136U - (size_t)1U;
+  buffer[uu____0] = (uint32_t)buffer[uu____0] | 128U;
   libcrux_sha3_simd_portable_load_block_5b(
       state, Eurydice_array_to_slice((size_t)136U, buffer, uint8_t),
       (size_t)0U);
@@ -1874,9 +1872,9 @@ static KRML_MUSTINLINE void libcrux_sha3_simd_portable_store_block_5b(
   size_t octets = len / (size_t)8U;
   for (size_t i = (size_t)0U; i < octets; i++) {
     size_t i0 = i;
-    Eurydice_slice uu____0 =
-        Eurydice_slice_subslice2(out, start + (size_t)8U * i0,
-                                 start + (size_t)8U * i0 + (size_t)8U, uint8_t);
+    Eurydice_slice uu____0 = Eurydice_slice_subslice3(
+        out, start + (size_t)8U * i0, start + (size_t)8U * i0 + (size_t)8U,
+        uint8_t *);
     uint8_t ret[8U];
     core_num__u64__to_le_bytes(
         libcrux_sha3_traits_get_ij_04(s, i0 / (size_t)5U, i0 % (size_t)5U)[0U],
@@ -1886,8 +1884,8 @@ static KRML_MUSTINLINE void libcrux_sha3_simd_portable_store_block_5b(
   }
   size_t remaining = len % (size_t)8U;
   if (remaining > (size_t)0U) {
-    Eurydice_slice uu____1 = Eurydice_slice_subslice2(
-        out, start + len - remaining, start + len, uint8_t);
+    Eurydice_slice uu____1 = Eurydice_slice_subslice3(
+        out, start + len - remaining, start + len, uint8_t *);
     uint8_t ret[8U];
     core_num__u64__to_le_bytes(
         libcrux_sha3_traits_get_ij_04(s, octets / (size_t)5U,
@@ -1895,7 +1893,7 @@ static KRML_MUSTINLINE void libcrux_sha3_simd_portable_store_block_5b(
         ret);
     Eurydice_slice_copy(
         uu____1,
-        Eurydice_array_to_subslice2(ret, (size_t)0U, remaining, uint8_t),
+        Eurydice_array_to_subslice3(ret, (size_t)0U, remaining, uint8_t *),
         uint8_t);
   }
 }
@@ -1973,14 +1971,12 @@ with const generics
 static KRML_MUSTINLINE void libcrux_sha3_simd_portable_load_last_ad0(
     uint64_t *state, Eurydice_slice blocks, size_t start, size_t len) {
   uint8_t buffer[136U] = {0U};
-  Eurydice_slice uu____0 =
-      Eurydice_array_to_subslice2(buffer, (size_t)0U, len, uint8_t);
   Eurydice_slice_copy(
-      uu____0, Eurydice_slice_subslice2(blocks, start, start + len, uint8_t),
-      uint8_t);
+      Eurydice_array_to_subslice3(buffer, (size_t)0U, len, uint8_t *),
+      Eurydice_slice_subslice3(blocks, start, start + len, uint8_t *), uint8_t);
   buffer[len] = 31U;
-  size_t uu____1 = (size_t)136U - (size_t)1U;
-  buffer[uu____1] = (uint32_t)buffer[uu____1] | 128U;
+  size_t uu____0 = (size_t)136U - (size_t)1U;
+  buffer[uu____0] = (uint32_t)buffer[uu____0] | 128U;
   libcrux_sha3_simd_portable_load_block_5b(
       state, Eurydice_array_to_slice((size_t)136U, buffer, uint8_t),
       (size_t)0U);
@@ -2096,7 +2092,8 @@ static KRML_MUSTINLINE void libcrux_sha3_simd_portable_load_block_3a(
     Result_15 dst;
     Eurydice_slice_to_array2(
         &dst,
-        Eurydice_slice_subslice2(blocks, offset, offset + (size_t)8U, uint8_t),
+        Eurydice_slice_subslice3(blocks, offset, offset + (size_t)8U,
+                                 uint8_t *),
         Eurydice_slice, uint8_t[8U], TryFromSliceError);
     unwrap_26_68(dst, uu____0);
     state_flat[i0] = core_num__u64__from_le_bytes(uu____0);
@@ -2120,14 +2117,12 @@ with const generics
 static KRML_MUSTINLINE void libcrux_sha3_simd_portable_load_last_c6(
     uint64_t *state, Eurydice_slice blocks, size_t start, size_t len) {
   uint8_t buffer[168U] = {0U};
-  Eurydice_slice uu____0 =
-      Eurydice_array_to_subslice2(buffer, (size_t)0U, len, uint8_t);
   Eurydice_slice_copy(
-      uu____0, Eurydice_slice_subslice2(blocks, start, start + len, uint8_t),
-      uint8_t);
+      Eurydice_array_to_subslice3(buffer, (size_t)0U, len, uint8_t *),
+      Eurydice_slice_subslice3(blocks, start, start + len, uint8_t *), uint8_t);
   buffer[len] = 31U;
-  size_t uu____1 = (size_t)168U - (size_t)1U;
-  buffer[uu____1] = (uint32_t)buffer[uu____1] | 128U;
+  size_t uu____0 = (size_t)168U - (size_t)1U;
+  buffer[uu____0] = (uint32_t)buffer[uu____0] | 128U;
   libcrux_sha3_simd_portable_load_block_3a(
       state, Eurydice_array_to_slice((size_t)168U, buffer, uint8_t),
       (size_t)0U);
@@ -2192,9 +2187,9 @@ static KRML_MUSTINLINE void libcrux_sha3_simd_portable_store_block_3a(
   size_t octets = len / (size_t)8U;
   for (size_t i = (size_t)0U; i < octets; i++) {
     size_t i0 = i;
-    Eurydice_slice uu____0 =
-        Eurydice_slice_subslice2(out, start + (size_t)8U * i0,
-                                 start + (size_t)8U * i0 + (size_t)8U, uint8_t);
+    Eurydice_slice uu____0 = Eurydice_slice_subslice3(
+        out, start + (size_t)8U * i0, start + (size_t)8U * i0 + (size_t)8U,
+        uint8_t *);
     uint8_t ret[8U];
     core_num__u64__to_le_bytes(
         libcrux_sha3_traits_get_ij_04(s, i0 / (size_t)5U, i0 % (size_t)5U)[0U],
@@ -2204,8 +2199,8 @@ static KRML_MUSTINLINE void libcrux_sha3_simd_portable_store_block_3a(
   }
   size_t remaining = len % (size_t)8U;
   if (remaining > (size_t)0U) {
-    Eurydice_slice uu____1 = Eurydice_slice_subslice2(
-        out, start + len - remaining, start + len, uint8_t);
+    Eurydice_slice uu____1 = Eurydice_slice_subslice3(
+        out, start + len - remaining, start + len, uint8_t *);
     uint8_t ret[8U];
     core_num__u64__to_le_bytes(
         libcrux_sha3_traits_get_ij_04(s, octets / (size_t)5U,
@@ -2213,7 +2208,7 @@ static KRML_MUSTINLINE void libcrux_sha3_simd_portable_store_block_3a(
         ret);
     Eurydice_slice_copy(
         uu____1,
-        Eurydice_array_to_subslice2(ret, (size_t)0U, remaining, uint8_t),
+        Eurydice_array_to_subslice3(ret, (size_t)0U, remaining, uint8_t *),
         uint8_t);
   }
 }
@@ -2344,7 +2339,8 @@ static KRML_MUSTINLINE void libcrux_sha3_simd_portable_load_block_2c(
     Result_15 dst;
     Eurydice_slice_to_array2(
         &dst,
-        Eurydice_slice_subslice2(blocks, offset, offset + (size_t)8U, uint8_t),
+        Eurydice_slice_subslice3(blocks, offset, offset + (size_t)8U,
+                                 uint8_t *),
         Eurydice_slice, uint8_t[8U], TryFromSliceError);
     unwrap_26_68(dst, uu____0);
     state_flat[i0] = core_num__u64__from_le_bytes(uu____0);
@@ -2403,14 +2399,12 @@ with const generics
 static KRML_MUSTINLINE void libcrux_sha3_simd_portable_load_last_1e(
     uint64_t *state, Eurydice_slice blocks, size_t start, size_t len) {
   uint8_t buffer[144U] = {0U};
-  Eurydice_slice uu____0 =
-      Eurydice_array_to_subslice2(buffer, (size_t)0U, len, uint8_t);
   Eurydice_slice_copy(
-      uu____0, Eurydice_slice_subslice2(blocks, start, start + len, uint8_t),
-      uint8_t);
+      Eurydice_array_to_subslice3(buffer, (size_t)0U, len, uint8_t *),
+      Eurydice_slice_subslice3(blocks, start, start + len, uint8_t *), uint8_t);
   buffer[len] = 6U;
-  size_t uu____1 = (size_t)144U - (size_t)1U;
-  buffer[uu____1] = (uint32_t)buffer[uu____1] | 128U;
+  size_t uu____0 = (size_t)144U - (size_t)1U;
+  buffer[uu____0] = (uint32_t)buffer[uu____0] | 128U;
   libcrux_sha3_simd_portable_load_block_2c(
       state, Eurydice_array_to_slice((size_t)144U, buffer, uint8_t),
       (size_t)0U);
@@ -2463,9 +2457,9 @@ static KRML_MUSTINLINE void libcrux_sha3_simd_portable_store_block_2c(
   size_t octets = len / (size_t)8U;
   for (size_t i = (size_t)0U; i < octets; i++) {
     size_t i0 = i;
-    Eurydice_slice uu____0 =
-        Eurydice_slice_subslice2(out, start + (size_t)8U * i0,
-                                 start + (size_t)8U * i0 + (size_t)8U, uint8_t);
+    Eurydice_slice uu____0 = Eurydice_slice_subslice3(
+        out, start + (size_t)8U * i0, start + (size_t)8U * i0 + (size_t)8U,
+        uint8_t *);
     uint8_t ret[8U];
     core_num__u64__to_le_bytes(
         libcrux_sha3_traits_get_ij_04(s, i0 / (size_t)5U, i0 % (size_t)5U)[0U],
@@ -2475,8 +2469,8 @@ static KRML_MUSTINLINE void libcrux_sha3_simd_portable_store_block_2c(
   }
   size_t remaining = len % (size_t)8U;
   if (remaining > (size_t)0U) {
-    Eurydice_slice uu____1 = Eurydice_slice_subslice2(
-        out, start + len - remaining, start + len, uint8_t);
+    Eurydice_slice uu____1 = Eurydice_slice_subslice3(
+        out, start + len - remaining, start + len, uint8_t *);
     uint8_t ret[8U];
     core_num__u64__to_le_bytes(
         libcrux_sha3_traits_get_ij_04(s, octets / (size_t)5U,
@@ -2484,7 +2478,7 @@ static KRML_MUSTINLINE void libcrux_sha3_simd_portable_store_block_2c(
         ret);
     Eurydice_slice_copy(
         uu____1,
-        Eurydice_array_to_subslice2(ret, (size_t)0U, remaining, uint8_t),
+        Eurydice_array_to_subslice3(ret, (size_t)0U, remaining, uint8_t *),
         uint8_t);
   }
 }
@@ -2568,7 +2562,8 @@ static KRML_MUSTINLINE void libcrux_sha3_simd_portable_load_block_7a(
     Result_15 dst;
     Eurydice_slice_to_array2(
         &dst,
-        Eurydice_slice_subslice2(blocks, offset, offset + (size_t)8U, uint8_t),
+        Eurydice_slice_subslice3(blocks, offset, offset + (size_t)8U,
+                                 uint8_t *),
         Eurydice_slice, uint8_t[8U], TryFromSliceError);
     unwrap_26_68(dst, uu____0);
     state_flat[i0] = core_num__u64__from_le_bytes(uu____0);
@@ -2627,14 +2622,12 @@ with const generics
 static KRML_MUSTINLINE void libcrux_sha3_simd_portable_load_last_7c(
     uint64_t *state, Eurydice_slice blocks, size_t start, size_t len) {
   uint8_t buffer[104U] = {0U};
-  Eurydice_slice uu____0 =
-      Eurydice_array_to_subslice2(buffer, (size_t)0U, len, uint8_t);
   Eurydice_slice_copy(
-      uu____0, Eurydice_slice_subslice2(blocks, start, start + len, uint8_t),
-      uint8_t);
+      Eurydice_array_to_subslice3(buffer, (size_t)0U, len, uint8_t *),
+      Eurydice_slice_subslice3(blocks, start, start + len, uint8_t *), uint8_t);
   buffer[len] = 6U;
-  size_t uu____1 = (size_t)104U - (size_t)1U;
-  buffer[uu____1] = (uint32_t)buffer[uu____1] | 128U;
+  size_t uu____0 = (size_t)104U - (size_t)1U;
+  buffer[uu____0] = (uint32_t)buffer[uu____0] | 128U;
   libcrux_sha3_simd_portable_load_block_7a(
       state, Eurydice_array_to_slice((size_t)104U, buffer, uint8_t),
       (size_t)0U);
@@ -2687,9 +2680,9 @@ static KRML_MUSTINLINE void libcrux_sha3_simd_portable_store_block_7a(
   size_t octets = len / (size_t)8U;
   for (size_t i = (size_t)0U; i < octets; i++) {
     size_t i0 = i;
-    Eurydice_slice uu____0 =
-        Eurydice_slice_subslice2(out, start + (size_t)8U * i0,
-                                 start + (size_t)8U * i0 + (size_t)8U, uint8_t);
+    Eurydice_slice uu____0 = Eurydice_slice_subslice3(
+        out, start + (size_t)8U * i0, start + (size_t)8U * i0 + (size_t)8U,
+        uint8_t *);
     uint8_t ret[8U];
     core_num__u64__to_le_bytes(
         libcrux_sha3_traits_get_ij_04(s, i0 / (size_t)5U, i0 % (size_t)5U)[0U],
@@ -2699,8 +2692,8 @@ static KRML_MUSTINLINE void libcrux_sha3_simd_portable_store_block_7a(
   }
   size_t remaining = len % (size_t)8U;
   if (remaining > (size_t)0U) {
-    Eurydice_slice uu____1 = Eurydice_slice_subslice2(
-        out, start + len - remaining, start + len, uint8_t);
+    Eurydice_slice uu____1 = Eurydice_slice_subslice3(
+        out, start + len - remaining, start + len, uint8_t *);
     uint8_t ret[8U];
     core_num__u64__to_le_bytes(
         libcrux_sha3_traits_get_ij_04(s, octets / (size_t)5U,
@@ -2708,7 +2701,7 @@ static KRML_MUSTINLINE void libcrux_sha3_simd_portable_store_block_7a(
         ret);
     Eurydice_slice_copy(
         uu____1,
-        Eurydice_array_to_subslice2(ret, (size_t)0U, remaining, uint8_t),
+        Eurydice_array_to_subslice3(ret, (size_t)0U, remaining, uint8_t *),
         uint8_t);
   }
 }
@@ -3122,11 +3115,11 @@ static inline size_t libcrux_sha3_generic_keccak_xof_fill_buffer_35_c6(
         size_t i0 = i;
         Eurydice_slice uu____0 = Eurydice_array_to_subslice_from(
             (size_t)136U, self->buf[i0], self->buf_len, uint8_t, size_t,
-            Eurydice_derefed_slice);
+            uint8_t[]);
         Eurydice_slice_copy(
             uu____0,
             Eurydice_slice_subslice_to(inputs[i0], consumed, uint8_t, size_t,
-                                       Eurydice_derefed_slice),
+                                       uint8_t[]),
             uint8_t);
       }
       self->buf_len = self->buf_len + consumed;
@@ -3215,13 +3208,12 @@ static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_xof_absorb_35_c6(
     size_t input_len = Eurydice_slice_len(inputs[0U], uint8_t);
     for (size_t i = (size_t)0U; i < (size_t)1U; i++) {
       size_t i0 = i;
-      Eurydice_slice uu____0 = Eurydice_array_to_subslice2(
-          self->buf[i0], self->buf_len, self->buf_len + input_remainder_len,
-          uint8_t);
-      Eurydice_slice_copy(uu____0,
+      Eurydice_slice_copy(Eurydice_array_to_subslice3(
+                              self->buf[i0], self->buf_len,
+                              self->buf_len + input_remainder_len, uint8_t *),
                           Eurydice_slice_subslice_from(
                               inputs[i0], input_len - input_remainder_len,
-                              uint8_t, size_t, Eurydice_derefed_slice),
+                              uint8_t, size_t, uint8_t[]),
                           uint8_t);
     }
     self->buf_len = self->buf_len + input_remainder_len;
@@ -3464,11 +3456,11 @@ static inline size_t libcrux_sha3_generic_keccak_xof_fill_buffer_35_c60(
         size_t i0 = i;
         Eurydice_slice uu____0 = Eurydice_array_to_subslice_from(
             (size_t)168U, self->buf[i0], self->buf_len, uint8_t, size_t,
-            Eurydice_derefed_slice);
+            uint8_t[]);
         Eurydice_slice_copy(
             uu____0,
             Eurydice_slice_subslice_to(inputs[i0], consumed, uint8_t, size_t,
-                                       Eurydice_derefed_slice),
+                                       uint8_t[]),
             uint8_t);
       }
       self->buf_len = self->buf_len + consumed;
@@ -3557,13 +3549,12 @@ static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_xof_absorb_35_c60(
     size_t input_len = Eurydice_slice_len(inputs[0U], uint8_t);
     for (size_t i = (size_t)0U; i < (size_t)1U; i++) {
       size_t i0 = i;
-      Eurydice_slice uu____0 = Eurydice_array_to_subslice2(
-          self->buf[i0], self->buf_len, self->buf_len + input_remainder_len,
-          uint8_t);
-      Eurydice_slice_copy(uu____0,
+      Eurydice_slice_copy(Eurydice_array_to_subslice3(
+                              self->buf[i0], self->buf_len,
+                              self->buf_len + input_remainder_len, uint8_t *),
                           Eurydice_slice_subslice_from(
                               inputs[i0], input_len - input_remainder_len,
-                              uint8_t, size_t, Eurydice_derefed_slice),
+                              uint8_t, size_t, uint8_t[]),
                           uint8_t);
     }
     self->buf_len = self->buf_len + input_remainder_len;
