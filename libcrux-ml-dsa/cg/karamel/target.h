@@ -2,13 +2,13 @@
  * Licensed under the Apache 2.0 and MIT Licenses.
  *
  * SPDX-FileCopyrightText: 2024 INRIA and Microsoft Corporation
- * SPDX-FileCopyrightText: 2024 Cryspen Sarl <info@cryspen.com>
+ * SPDX-FileCopyrightText: 2024-2025 Cryspen Sarl <info@cryspen.com>
  *
  * SPDX-License-Identifier: MIT or Apache-2.0
  */
 
-#ifndef __KRML_TARGET_H
-#define __KRML_TARGET_H
+#ifndef KRML_HEADER_TARGET_H
+#define KRML_HEADER_TARGET_H
 
 #ifndef KRML_HOST_PRINTF
 #define KRML_HOST_PRINTF printf
@@ -18,7 +18,7 @@
      (defined(__cplusplus) && __cplusplus > 199711L)) &&           \
     (!defined(KRML_HOST_EPRINTF))
 #define KRML_HOST_EPRINTF(...) fprintf(stderr, __VA_ARGS__)
-#elif !(defined KRML_HOST_EPRINTF) && defined(_MSC_VER)
+#elif !defined(KRML_HOST_EPRINTF) && defined(_MSC_VER)
 #define KRML_HOST_EPRINTF(...) fprintf(stderr, __VA_ARGS__)
 #endif
 
