@@ -6344,12 +6344,11 @@ with const generics
 */
 KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_63
-libcrux_ml_kem_ind_cca_unpacked_default_09_ab(void) {
-  libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_63 lit;
-  lit.ind_cpa_public_key = libcrux_ml_kem_ind_cpa_unpacked_default_8d_ab();
-  uint8_t repeat_expression[32U] = {0U};
-  memcpy(lit.public_key_hash, repeat_expression, (size_t)32U * sizeof(uint8_t));
-  return lit;
+libcrux_ml_kem_ind_cca_unpacked_default_30_ab(void) {
+  return (libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_63{
+      libcrux_ml_kem_ind_cpa_unpacked_default_8b_ab(),
+      {0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
+       0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U}});
 }
 
 /**
@@ -6366,12 +6365,9 @@ with const generics
 KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE
     libcrux_ml_kem_mlkem768_avx2_unpacked_MlKem768KeyPairUnpacked
-    libcrux_ml_kem_ind_cca_unpacked_default_53_ab(void) {
-  libcrux_ml_kem_ind_cca_unpacked_MlKemPrivateKeyUnpacked_63 uu____0;
-  uu____0.ind_cpa_private_key = libcrux_ml_kem_ind_cpa_unpacked_default_1a_ab();
-  uint8_t repeat_expression[32U] = {0U};
-  memcpy(uu____0.implicit_rejection_value, repeat_expression,
-         (size_t)32U * sizeof(uint8_t));
+    libcrux_ml_kem_ind_cca_unpacked_default_7b_ab(void) {
+  libcrux_ml_kem_ind_cca_unpacked_MlKemPrivateKeyUnpacked_63 uu____0 = {
+      libcrux_ml_kem_ind_cpa_unpacked_default_70_ab(), {0U}};
   return (libcrux_ml_kem_mlkem768_avx2_unpacked_MlKem768KeyPairUnpacked{
       uu____0, libcrux_ml_kem_ind_cca_unpacked_default_30_ab()});
 }

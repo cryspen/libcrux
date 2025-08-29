@@ -773,10 +773,9 @@ typedef struct libcrux_ml_dsa_simd_portable_vector_type_Coefficients_s {
 
 static KRML_MUSTINLINE libcrux_ml_dsa_simd_portable_vector_type_Coefficients
 libcrux_ml_dsa_simd_portable_vector_type_zero(void) {
-  libcrux_ml_dsa_simd_portable_vector_type_Coefficients lit;
-  int32_t repeat_expression[8U] = {0U};
-  memcpy(lit.values, repeat_expression, (size_t)8U * sizeof(int32_t));
-  return lit;
+  return (libcrux_ml_dsa_simd_portable_vector_type_Coefficients{
+      {(int32_t)0, (int32_t)0, (int32_t)0, (int32_t)0, (int32_t)0, (int32_t)0,
+       (int32_t)0, (int32_t)0}});
 }
 
 /**
@@ -4906,12 +4905,7 @@ static KRML_MUSTINLINE void libcrux_ml_dsa_samplex4_matrix_flat_63(
   uint8_t rand_stack1[840U] = {0U};
   uint8_t rand_stack2[840U] = {0U};
   uint8_t rand_stack3[840U] = {0U};
-  int32_t tmp_stack[4U][263U];
-  memset(tmp_stack[0U], 0U, 263U * sizeof(int32_t));
-  memset(tmp_stack[1U], 0U, 263U * sizeof(int32_t));
-  memset(tmp_stack[2U], 0U, 263U * sizeof(int32_t));
-  int32_t repeat_expression[263U] = {0U};
-  memcpy(tmp_stack[3U], repeat_expression, (size_t)263U * sizeof(int32_t));
+  int32_t tmp_stack[4U][263U] = {{0U}};
   for (size_t i = (size_t)0U;
        i < Eurydice_slice_len(
                matrix, libcrux_ml_dsa_polynomial_PolynomialRingElement_e8) /
