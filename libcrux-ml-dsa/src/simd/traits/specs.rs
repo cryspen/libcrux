@@ -1,4 +1,3 @@
-
 use hax_lib::*;
 
 pub(crate) const PRIME: u32 = 8380417;
