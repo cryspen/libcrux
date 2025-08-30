@@ -5,7 +5,6 @@ use crate::{
 
 /// The internal keccak state that can also buffer inputs to absorb.
 /// This is used in the general xof APIs.
-#[cfg_attr(hax, hax_lib::opaque)]
 pub(crate) struct KeccakXofState<
     const PARALLEL_LANES: usize,
     const RATE: usize,
@@ -23,6 +22,7 @@ pub(crate) struct KeccakXofState<
     sponge: bool,
 }
 
+#[hax_lib::attributes]
 impl<const PARALLEL_LANES: usize, const RATE: usize, STATE: KeccakItem<PARALLEL_LANES>>
     KeccakXofState<PARALLEL_LANES, RATE, STATE>
 {
