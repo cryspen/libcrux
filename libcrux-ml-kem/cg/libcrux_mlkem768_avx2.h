@@ -6,9 +6,9 @@
  * This code was generated with the following revisions:
  * Charon: d02f05ccb8b90d1312b8caa446003ba9f6ad13a0
  * Eurydice: 657e10870ab75432c50542cf5d9ec94e640c528d
- * Karamel: 354791911c6b40d15a41cda7a0e3560da1cf31a1
+ * Karamel: 80f5435f2fc505973c469a4afcc8d875cddd0d8b
  * F*: 5643e656b989aca7629723653a2570c7df6252b9-dirty
- * Libcrux: 9491ad7ebabaca9ceda67e012c4e203dc22a33ec
+ * Libcrux: fb8e86b06fffb444c2031381285e69884422bde5
  */
 
 #ifndef libcrux_mlkem768_avx2_H
@@ -6345,9 +6345,7 @@ KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_63
 libcrux_ml_kem_ind_cca_unpacked_default_30_ab(void) {
   return (libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_63{
-      libcrux_ml_kem_ind_cpa_unpacked_default_8b_ab(),
-      {0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-       0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U}});
+      libcrux_ml_kem_ind_cpa_unpacked_default_8b_ab(), {0U}});
 }
 
 /**
