@@ -55,7 +55,7 @@ jobs:
       - name: Extract C
         run: |
           export HOME=/home/user
-          ./c.sh --no-glue
+          ./c.sh --config cg.yaml --mlkem768 --no-unrolling --out c --clean
 
       - name: Upload C extraction
         uses: actions/upload-artifact@v4

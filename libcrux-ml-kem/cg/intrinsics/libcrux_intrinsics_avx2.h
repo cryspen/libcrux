@@ -11,7 +11,6 @@
 extern "C" {
 #endif
 
-#include "../eurydice_glue.h"
 #include "immintrin.h"
 
 typedef __m128i core_core_arch_x86___m128i;
