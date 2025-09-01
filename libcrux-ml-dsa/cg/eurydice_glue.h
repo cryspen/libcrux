@@ -273,14 +273,14 @@ static KRML_MUSTINLINE uint64_t core_num__u64__rotate_left(uint64_t x0,
        : (KRML_CLITERAL(ret_t){EURYDICE_CFIELD(.tag =) 1, \
                                EURYDICE_CFIELD(.f0 =)(iter_ptr)->start++}))
 
-#define core_iter_range___core__iter__traits__iterator__Iterator_A__for_core__ops__range__Range_A__TraitClause_0___6__next \
+#define core_iter_range__core__iter__traits__iterator__Iterator_A__for_core__ops__range__Range_A__TraitClause_0___next \
   Eurydice_range_iter_next
 
 // See note in karamel/lib/Inlining.ml if you change this
 #define Eurydice_into_iter(x, t, _ret_t, _) (x)
-#define core_iter_traits_collect___core__iter__traits__collect__IntoIterator_Clause1_Item__I__for_I__1__into_iter \
+#define core_iter_traits_collect__core__iter__traits__collect__IntoIterator_Clause1_Item__I__for_I__into_iter \
   Eurydice_into_iter
-#define core_iter_traits_collect___core__iter__traits__collect__IntoIterator_Clause1_Item__I__for_I___into_iter \
+#define core_iter_traits_collect__core__iter__traits__collect__IntoIterator_Clause1_Item__I__for_I__into_iter \
   Eurydice_into_iter
 
 // Option
@@ -300,13 +300,13 @@ static KRML_MUSTINLINE uint8_t Eurydice_shr_pv_u8(uint8_t *p, int32_t v) {
 }
 
 static KRML_MUSTINLINE uint8_t
-core_ops_bit___core__ops__bit__BitAnd_u8__u8__for___a__u8___46__bitand(
+core_ops_bit__core__ops__bit__BitAnd_u8__u8__for___a__u8___bitand(
     uint8_t *x0, uint8_t x1) {
   return Eurydice_bitand_pv_u8(x0, x1);
 }
 
 static KRML_MUSTINLINE uint8_t
-core_ops_bit___core__ops__bit__Shr_i32__u8__for___a__u8___792__shr(uint8_t *x0,
+core_ops_bit__core__ops__bit__Shr_i32__u8__for___a__u8___shr(uint8_t *x0,
                                                                    int32_t x1) {
   return Eurydice_shr_pv_u8(x0, x1);
 }
