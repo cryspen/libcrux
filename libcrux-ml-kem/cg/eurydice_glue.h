@@ -115,7 +115,7 @@ typedef struct {
 // Previous version above does not work when t is an array type (as usual). Will
 // be deprecated soon.
 #define Eurydice_slice_subslice3(s, start, end, t_ptr)                         \
-  EURYDICE_SLICE((t_ptr)s.ptr, start, end)
+  EURYDICE_SLICE((t_ptr)s.ptr, (start), (end))
 
 #define Eurydice_slice_subslice_to(s, subslice_end_pos, t, _0, _1) \
   EURYDICE_SLICE((t *)s.ptr, 0, subslice_end_pos)
@@ -135,7 +135,7 @@ typedef struct {
 
 // Same as above, variant for when start and end are statically known
 #define Eurydice_array_to_subslice3(x, start, end, t_ptr)                      \
-  EURYDICE_SLICE((t_ptr)x, start, end)
+  EURYDICE_SLICE((t_ptr)x, (start), (end))
 // The following functions convert an array into a slice.
 
 #define Eurydice_array_to_subslice_to(_size, x, r, t, _range_t, _0) \
