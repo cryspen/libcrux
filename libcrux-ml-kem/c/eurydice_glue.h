@@ -506,12 +506,3 @@ typedef struct {
 
 #define EURYDICE_VEC_INDEX(v, i, t) &((t *)v->ptr)[i]
 #define EURYDICE_VEC_LEN(v, t) (v)->len
-
-/* TODO: remove GCC-isms */
-
-#define EURYDICE_REPLACE(ptr, new_v, t) \
-  ({                                    \
-    t old_v = *ptr;                     \
-    *ptr = new_v;                       \
-    old_v;                              \
-  })
