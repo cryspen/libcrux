@@ -4,15 +4,15 @@
  * SPDX-License-Identifier: MIT or Apache-2.0
  *
  * This code was generated with the following revisions:
- * Charon: bb62a9b39db4ea8c6d536fe61b7d26663751bf3c
- * Eurydice: 46cef5d58a855ed049fa89bfe99c959b5d9d0d4b
- * Karamel: 39cb85a718da8ae4a724d31b08f9134ca9311336
- * F*: 71d8221589d4d438af3706d89cb653cf53e18aab
- * Libcrux: 2c599f178b4f57a0e370d7894593d927f9736c07
+ * Charon: d02f05ccb8b90d1312b8caa446003ba9f6ad13a0
+ * Eurydice: 657e10870ab75432c50542cf5d9ec94e640c528d
+ * Karamel: 80f5435f2fc505973c469a4afcc8d875cddd0d8b
+ * F*: 5643e656b989aca7629723653a2570c7df6252b9-dirty
+ * Libcrux: 444f7d1df3e7c0f5cb9a298346984b2c50dfc323
  */
 
-#ifndef __libcrux_ct_ops_H
-#define __libcrux_ct_ops_H
+#ifndef libcrux_ct_ops_H
+#define libcrux_ct_ops_H
 
 #include "eurydice_glue.h"
 
@@ -29,7 +29,7 @@ static KRML_NOINLINE uint8_t
 libcrux_ml_kem_constant_time_ops_inz(uint8_t value) {
   uint16_t value0 = (uint16_t)value;
   uint8_t result =
-      (uint8_t)((uint32_t)core_num__u16_7__wrapping_add(~value0, 1U) >> 8U);
+      (uint8_t)((uint32_t)core_num__u16__wrapping_add(~value0, 1U) >> 8U);
   return (uint32_t)result & 1U;
 }
 
@@ -68,7 +68,7 @@ libcrux_ml_kem_constant_time_ops_compare_ciphertexts_in_constant_time(
 static KRML_NOINLINE void libcrux_ml_kem_constant_time_ops_select_ct(
     Eurydice_slice lhs, Eurydice_slice rhs, uint8_t selector,
     uint8_t ret[32U]) {
-  uint8_t mask = core_num__u8_6__wrapping_sub(
+  uint8_t mask = core_num__u8__wrapping_sub(
       libcrux_ml_kem_constant_time_ops_is_non_zero(selector), 1U);
   uint8_t out[32U] = {0U};
   for (size_t i = (size_t)0U; i < LIBCRUX_ML_KEM_CONSTANTS_SHARED_SECRET_SIZE;
@@ -108,5 +108,5 @@ libcrux_ml_kem_constant_time_ops_compare_ciphertexts_select_shared_secret_in_con
 }
 #endif
 
-#define __libcrux_ct_ops_H_DEFINED
-#endif
+#define libcrux_ct_ops_H_DEFINED
+#endif /* libcrux_ct_ops_H */
