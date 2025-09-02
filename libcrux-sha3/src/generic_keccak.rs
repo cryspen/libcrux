@@ -191,6 +191,8 @@ impl<const N: usize, T: KeccakItem<N>> KeccakState<N, T> {
     where
         Self: Absorb<N>,
     {
+        debug_assert!(blocks.iter().all(|buf| buf.len() == blocks[0].len()));
+
         self.load_block::<RATE>(blocks, start);
         self.keccakf1600()
     }
