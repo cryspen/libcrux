@@ -433,11 +433,9 @@ with const generics
 - SIZE= 2400
 */
 static inline libcrux_ml_kem_types_MlKemPrivateKey_d9
-libcrux_ml_kem_types_default_24_28(void) {
-  libcrux_ml_kem_types_MlKemPrivateKey_d9 lit;
-  uint8_t repeat_expression[2400U] = {0U};
-  memcpy(lit.value, repeat_expression, (size_t)2400U * sizeof(uint8_t));
-  return lit;
+libcrux_ml_kem_types_default_d3_28(void) {
+  return (
+      KRML_CLITERAL(libcrux_ml_kem_types_MlKemPrivateKey_d9){.value = {0U}});
 }
 
 /**

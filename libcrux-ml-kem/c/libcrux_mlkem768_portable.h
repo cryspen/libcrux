@@ -133,8 +133,8 @@ static KRML_MUSTINLINE libcrux_ml_kem_vector_portable_vector_type_PortableVector
 libcrux_ml_kem_vector_portable_vector_type_zero(void) {
   libcrux_ml_kem_vector_portable_vector_type_PortableVector lit;
   int16_t ret[16U];
-  int16_t repeat_expression[16U] = {0U};
-  libcrux_secrets_int_public_integers_classify_57_46(repeat_expression, ret);
+  int16_t buf[16U] = {0U};
+  libcrux_secrets_int_public_integers_classify_27_46(buf, ret);
   memcpy(lit.elements, ret, (size_t)16U * sizeof(int16_t));
   return lit;
 }
@@ -5787,12 +5787,11 @@ with const generics
 - K= 3
 */
 static KRML_MUSTINLINE libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_a0
-libcrux_ml_kem_ind_cca_unpacked_default_09_1b(void) {
-  libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_a0 lit;
-  lit.ind_cpa_public_key = libcrux_ml_kem_ind_cpa_unpacked_default_8d_1b();
-  uint8_t repeat_expression[32U] = {0U};
-  memcpy(lit.public_key_hash, repeat_expression, (size_t)32U * sizeof(uint8_t));
-  return lit;
+libcrux_ml_kem_ind_cca_unpacked_default_30_1b(void) {
+  return (
+      KRML_CLITERAL(libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_a0){
+          .ind_cpa_public_key = libcrux_ml_kem_ind_cpa_unpacked_default_8b_1b(),
+          .public_key_hash = {0U}});
 }
 
 /**
@@ -5808,12 +5807,10 @@ with const generics
 */
 static KRML_MUSTINLINE
     libcrux_ml_kem_mlkem768_portable_unpacked_MlKem768KeyPairUnpacked
-    libcrux_ml_kem_ind_cca_unpacked_default_53_1b(void) {
-  libcrux_ml_kem_ind_cca_unpacked_MlKemPrivateKeyUnpacked_a0 uu____0;
-  uu____0.ind_cpa_private_key = libcrux_ml_kem_ind_cpa_unpacked_default_1a_1b();
-  uint8_t repeat_expression[32U] = {0U};
-  memcpy(uu____0.implicit_rejection_value, repeat_expression,
-         (size_t)32U * sizeof(uint8_t));
+    libcrux_ml_kem_ind_cca_unpacked_default_7b_1b(void) {
+  libcrux_ml_kem_ind_cca_unpacked_MlKemPrivateKeyUnpacked_a0 uu____0 = {
+      .ind_cpa_private_key = libcrux_ml_kem_ind_cpa_unpacked_default_70_1b(),
+      .implicit_rejection_value = {0U}};
   return (KRML_CLITERAL(
       libcrux_ml_kem_mlkem768_portable_unpacked_MlKem768KeyPairUnpacked){
       .private_key = uu____0,

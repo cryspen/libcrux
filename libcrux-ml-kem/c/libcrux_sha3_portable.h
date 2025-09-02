@@ -3243,9 +3243,9 @@ static inline size_t libcrux_sha3_generic_keccak_xof_absorb_full_35_c6(
   if (input_consumed > (size_t)0U) {
     Eurydice_slice borrowed[1U];
     for (size_t i = (size_t)0U; i < (size_t)1U; i++) {
-      uint8_t repeat_expression[136U] = {0U};
-      borrowed[i] = core_array___Array_T__N__23__as_slice(
-          (size_t)136U, repeat_expression, uint8_t, Eurydice_slice);
+      uint8_t buf[136U] = {0U};
+      borrowed[i] = core_array___Array_T__N___as_slice((size_t)136U, buf,
+                                                       uint8_t, Eurydice_slice);
     }
     for (size_t i = (size_t)0U; i < (size_t)1U; i++) {
       size_t i0 = i;
@@ -3354,9 +3354,9 @@ static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_xof_absorb_final_35_9e(
   libcrux_sha3_generic_keccak_xof_absorb_35_c6(self, inputs);
   Eurydice_slice borrowed[1U];
   for (size_t i = (size_t)0U; i < (size_t)1U; i++) {
-    uint8_t repeat_expression[136U] = {0U};
-    borrowed[i] = core_array___Array_T__N__23__as_slice(
-        (size_t)136U, repeat_expression, uint8_t, Eurydice_slice);
+    uint8_t buf[136U] = {0U};
+    borrowed[i] = core_array___Array_T__N___as_slice((size_t)136U, buf, uint8_t,
+                                                     Eurydice_slice);
   }
   for (size_t i = (size_t)0U; i < (size_t)1U; i++) {
     size_t i0 = i;
@@ -3399,8 +3399,7 @@ with const generics
 */
 static inline void libcrux_sha3_generic_keccak_xof_zero_block_35_c6(
     uint8_t ret[136U]) {
-  uint8_t repeat_expression[136U] = {0U};
-  memcpy(ret, repeat_expression, (size_t)136U * sizeof(uint8_t));
+  memset(ret, 0U, 136U * sizeof(uint8_t));
 }
 
 /**
@@ -3584,9 +3583,9 @@ static inline size_t libcrux_sha3_generic_keccak_xof_absorb_full_35_c60(
   if (input_consumed > (size_t)0U) {
     Eurydice_slice borrowed[1U];
     for (size_t i = (size_t)0U; i < (size_t)1U; i++) {
-      uint8_t repeat_expression[168U] = {0U};
-      borrowed[i] = core_array___Array_T__N__23__as_slice(
-          (size_t)168U, repeat_expression, uint8_t, Eurydice_slice);
+      uint8_t buf[168U] = {0U};
+      borrowed[i] = core_array___Array_T__N___as_slice((size_t)168U, buf,
+                                                       uint8_t, Eurydice_slice);
     }
     for (size_t i = (size_t)0U; i < (size_t)1U; i++) {
       size_t i0 = i;
@@ -3692,9 +3691,9 @@ static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_xof_absorb_final_35_9e0(
   libcrux_sha3_generic_keccak_xof_absorb_35_c60(self, inputs);
   Eurydice_slice borrowed[1U];
   for (size_t i = (size_t)0U; i < (size_t)1U; i++) {
-    uint8_t repeat_expression[168U] = {0U};
-    borrowed[i] = core_array___Array_T__N__23__as_slice(
-        (size_t)168U, repeat_expression, uint8_t, Eurydice_slice);
+    uint8_t buf[168U] = {0U};
+    borrowed[i] = core_array___Array_T__N___as_slice((size_t)168U, buf, uint8_t,
+                                                     Eurydice_slice);
   }
   for (size_t i = (size_t)0U; i < (size_t)1U; i++) {
     size_t i0 = i;
@@ -3734,8 +3733,7 @@ with const generics
 */
 static inline void libcrux_sha3_generic_keccak_xof_zero_block_35_c60(
     uint8_t ret[168U]) {
-  uint8_t repeat_expression[168U] = {0U};
-  memcpy(ret, repeat_expression, (size_t)168U * sizeof(uint8_t));
+  memset(ret, 0U, 168U * sizeof(uint8_t));
 }
 
 /**
