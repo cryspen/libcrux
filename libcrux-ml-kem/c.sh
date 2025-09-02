@@ -52,6 +52,9 @@ while [ $# -gt 0 ]; do
     shift
 done
 
+# we will cd to a subdirectory later. We need to resolve the path, because relative paths won't bw valid anymore.
+glue=$(abspath "$glue")
+
 if [[ "$portable_only" = 1 ]]; then
     export LIBCRUX_DISABLE_SIMD256=1
     export LIBCRUX_DISABLE_SIMD128=1
