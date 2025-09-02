@@ -2397,13 +2397,23 @@ typedef uint8_t libcrux_sha3_Sha3_512Digest[64U];
  Returns the output size of a digest.
 */
 static inline size_t libcrux_sha3_digest_size(libcrux_sha3_Algorithm mode) {
-  if (!(mode == libcrux_sha3_Algorithm_Sha224)) {
-    if (mode == libcrux_sha3_Algorithm_Sha256) {
+  switch (mode) {
+    case libcrux_sha3_Algorithm_Sha224: {
+      break;
+    }
+    case libcrux_sha3_Algorithm_Sha256: {
       return (size_t)32U;
-    } else if (mode == libcrux_sha3_Algorithm_Sha384) {
+    }
+    case libcrux_sha3_Algorithm_Sha384: {
       return (size_t)48U;
-    } else {
+    }
+    case libcrux_sha3_Algorithm_Sha512: {
       return (size_t)64U;
+    }
+    default: {
+      KRML_HOST_EPRINTF("KaRaMeL incomplete match at %s:%d\n", __FILE__,
+                        __LINE__);
+      KRML_HOST_EXIT(253U);
     }
   }
   return (size_t)28U;
@@ -3837,14 +3847,24 @@ libcrux_sha3_portable_clone_fe(
 This function found in impl {core::convert::From<libcrux_sha3::Algorithm> for
 u32}
 */
-static inline uint32_t libcrux_sha3_from_eb(libcrux_sha3_Algorithm v) {
-  if (!(v == libcrux_sha3_Algorithm_Sha224)) {
-    if (v == libcrux_sha3_Algorithm_Sha256) {
+static inline uint32_t libcrux_sha3_from_6c(libcrux_sha3_Algorithm v) {
+  switch (v) {
+    case libcrux_sha3_Algorithm_Sha224: {
+      break;
+    }
+    case libcrux_sha3_Algorithm_Sha256: {
       return 2U;
-    } else if (v == libcrux_sha3_Algorithm_Sha384) {
+    }
+    case libcrux_sha3_Algorithm_Sha384: {
       return 3U;
-    } else {
+    }
+    case libcrux_sha3_Algorithm_Sha512: {
       return 4U;
+    }
+    default: {
+      KRML_HOST_EPRINTF("KaRaMeL incomplete match at %s:%d\n", __FILE__,
+                        __LINE__);
+      KRML_HOST_EXIT(253U);
     }
   }
   return 1U;
