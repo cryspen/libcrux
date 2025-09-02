@@ -118,6 +118,11 @@ typedef struct {
 #define Eurydice_slice_subslice2(s, start, end, t) \
   EURYDICE_SLICE((t *)s.ptr, (start), (end))
 
+// Previous version above does not work when t is an array type (as usual). Will
+// be deprecated soon.
+#define Eurydice_slice_subslice3(s, start, end, t_ptr)                         \
+  EURYDICE_SLICE((t_ptr)s.ptr, (start), (end))
+
 #define Eurydice_slice_subslice_to(s, subslice_end_pos, t, _0, _1) \
   EURYDICE_SLICE((t *)s.ptr, 0, subslice_end_pos)
 
@@ -134,6 +139,10 @@ typedef struct {
 #define Eurydice_array_to_subslice2(x, start, end, t) \
   EURYDICE_SLICE((t *)x, (start), (end))
 
+// Same as above, variant for when start and end are statically known
+#define Eurydice_array_to_subslice3(x, start, end, t_ptr)                      \
+  EURYDICE_SLICE((t_ptr)x, (start), (end))
+
 #define Eurydice_array_repeat(dst, len, init, t) \
   ERROR "should've been desugared"
 
@@ -148,10 +157,10 @@ typedef struct {
 #define Eurydice_slice_copy(dst, src, t) \
   memcpy(dst.ptr, src.ptr, dst.len * sizeof(t))
 
-#define core_array___Array_T__N__23__as_slice(len_, ptr_, t, _ret_t) \
+#define core_array___Array_T__N___as_slice(len_, ptr_, t, _ret_t) \
   KRML_CLITERAL(Eurydice_slice) { ptr_, len_ }
 
-#define core_array___core__clone__Clone_for__Array_T__N___20__clone( \
+#define core_array__core__clone__Clone_for__Array_T__N___clone( \
     len, src, dst, elem_type, _ret_t)                                \
   (memcpy(dst, src, len * sizeof(elem_type)))
 #define TryFromSliceError uint8_t
