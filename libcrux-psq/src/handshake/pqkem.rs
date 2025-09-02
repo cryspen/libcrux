@@ -162,15 +162,15 @@ impl<'a> PQPrivateKey<'a> {
 impl<'a> PQKeyPair<'a> {
     pub(crate) fn private_key(&self) -> PQPrivateKey<'a> {
         match self {
-            PQKeyPair::MlKem768 { sk, .. } => PQPrivateKey::MlKem768(*sk),
-            PQKeyPair::ClassicMcEliece { sk, .. } => PQPrivateKey::ClassicMcEliece(*sk),
+            PQKeyPair::MlKem768 { sk, .. } => PQPrivateKey::MlKem768(sk),
+            PQKeyPair::ClassicMcEliece { sk, .. } => PQPrivateKey::ClassicMcEliece(sk),
         }
     }
 
     pub fn public_key(&self) -> PQPublicKey<'a> {
         match self {
-            PQKeyPair::MlKem768 { pk, .. } => PQPublicKey::MlKem768(*pk),
-            PQKeyPair::ClassicMcEliece { pk, .. } => PQPublicKey::ClassicMcEliece(*pk),
+            PQKeyPair::MlKem768 { pk, .. } => PQPublicKey::MlKem768(pk),
+            PQKeyPair::ClassicMcEliece { pk, .. } => PQPublicKey::ClassicMcEliece(pk),
         }
     }
 }

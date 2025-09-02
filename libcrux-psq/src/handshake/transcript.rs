@@ -26,13 +26,13 @@ impl Transcript {
         hasher.update(
             old_transcript
                 .tls_serialize()
-                .map_err(|e| Error::Serialize(e))?
+                .map_err(Error::Serialize)?
                 .as_slice(),
         );
         hasher.update(
             input
                 .tls_serialize_detached()
-                .map_err(|e| Error::Serialize(e))?
+                .map_err(Error::Serialize)?
                 .as_slice(),
         );
 

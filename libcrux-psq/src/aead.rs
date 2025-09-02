@@ -30,7 +30,7 @@ impl AEADKey {
         let prk = libcrux_hkdf::extract(
             Algorithm::Sha256,
             [],
-            ikm.tls_serialize().map_err(|e| AEADError::Serialize(e))?,
+            ikm.tls_serialize().map_err(AEADError::Serialize)?,
         )
         .map_err(|_| AEADError::CryptoError)?;
 
@@ -38,7 +38,7 @@ impl AEADKey {
             libcrux_hkdf::expand(
                 Algorithm::Sha256,
                 prk,
-                info.tls_serialize().map_err(|e| AEADError::Serialize(e))?,
+                info.tls_serialize().map_err(AEADError::Serialize)?,
                 KEY_LEN,
             )
             .map_err(|_| AEADError::CryptoError)?
@@ -132,7 +132,7 @@ impl AEADKey {
     ) -> Result<T, AEADError> {
         let payload_serialized_buf = self.decrypt(ciphertext, tag, aad)?;
 
-        T::tls_deserialize_exact(&payload_serialized_buf).map_err(|e| AEADError::Deserialize(e))
+        T::tls_deserialize_exact(&payload_serialized_buf).map_err(AEADError::Deserialize)
     }
 }
 impl AsRef<[u8; KEY_LEN]> for AEADKey {

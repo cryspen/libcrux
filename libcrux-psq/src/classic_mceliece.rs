@@ -80,13 +80,13 @@ impl Serialize for PublicKey {
         VLByteSlice(self.0.as_ref()).tls_serialize(writer)
     }
 }
-impl<'a> Serialize for &'a PublicKey {
+impl Serialize for &PublicKey {
     fn tls_serialize<W: std::io::Write>(&self, writer: &mut W) -> Result<usize, tls_codec::Error> {
         VLByteSlice(self.0.as_ref()).tls_serialize(writer)
     }
 }
 
-impl<'a> Size for &'a PublicKey {
+impl Size for &PublicKey {
     fn tls_serialized_len(&self) -> usize {
         VLByteSlice(self.0.as_ref()).tls_serialized_len()
     }

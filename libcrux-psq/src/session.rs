@@ -120,21 +120,19 @@ fn derive_pk_binder(
     };
     let mut info_buf = vec![0u8; info.tls_serialized_len()];
     info.tls_serialize(&mut &mut info_buf[..])
-        .map_err(|e| SessionError::Serialize(e))?;
+        .map_err(SessionError::Serialize)?;
 
     let prk = libcrux_hkdf::extract(
         Algorithm::Sha256,
         [],
-        SerializeBytes::tls_serialize(&key.key).map_err(|e| SessionError::Serialize(e))?,
+        SerializeBytes::tls_serialize(&key.key).map_err(SessionError::Serialize)?,
     )
     .map_err(|_| SessionError::CryptoError)?;
 
-    Ok(
-        libcrux_hkdf::expand(Algorithm::Sha256, prk, info_buf, PK_BINDER_LEN)
-            .map_err(|_| SessionError::CryptoError)?
-            .try_into()
-            .map_err(|_| SessionError::CryptoError)?, // We don't expect this to fail, unless HDKF gave us the wrong output length
-    )
+    libcrux_hkdf::expand(Algorithm::Sha256, prk, info_buf, PK_BINDER_LEN)
+        .map_err(|_| SessionError::CryptoError)?
+        .try_into()
+        .map_err(|_| SessionError::CryptoError)
 }
 
 impl Session {
@@ -178,7 +176,7 @@ impl Session {
     /// could be used after serialization.
     pub fn serialize(self, out: &mut [u8]) -> Result<usize, SessionError> {
         self.tls_serialize(&mut &mut out[..])
-            .map_err(|e| SessionError::Serialize(e))
+            .map_err(SessionError::Serialize)
     }
 
     /// Deserialize a session state.
@@ -194,8 +192,8 @@ impl Session {
         responder_ecdh_pk: &DHPublicKey,
         responder_pq_pk: Option<PQPublicKey<'_>>,
     ) -> Result<Self, SessionError> {
-        let session = Session::tls_deserialize(&mut Cursor::new(bytes))
-            .map_err(|e| SessionError::Deserialize(e))?;
+        let session =
+            Session::tls_deserialize(&mut Cursor::new(bytes)).map_err(SessionError::Deserialize)?;
 
         if derive_pk_binder(
             &session.session_key,
@@ -216,7 +214,7 @@ impl Session {
     /// messages AEAD encrypted under a fresh channel key derived from the
     /// long-term session key.
     pub fn transport_channel(&mut self) -> Result<Transport, SessionError> {
-        let channel = Transport::new(&self, matches!(self.principal, SessionPrincipal::Initiator))?;
+        let channel = Transport::new(self, matches!(self.principal, SessionPrincipal::Initiator))?;
         self.channel_counter = self
             .channel_counter
             .checked_add(1)

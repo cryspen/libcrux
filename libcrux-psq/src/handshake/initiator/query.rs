@@ -114,7 +114,7 @@ impl<'a> Channel<Error> for QueryInitiator<'a> {
         message_bytes: &[u8],
         out: &mut [u8],
     ) -> Result<(usize, usize), Error> {
-        let msg = HandshakeMessage::tls_deserialize(&mut Cursor::new(&message_bytes[..]))
+        let msg = HandshakeMessage::tls_deserialize(&mut Cursor::new(message_bytes))
             .map_err(Error::Deserialize)?;
 
         let result = self.read_response(&msg)?;
