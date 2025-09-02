@@ -10,7 +10,7 @@ pub mod handshake;
 pub mod session;
 pub mod traits;
 
-#[cfg(feature = "legacy")]
-pub mod legacy;
+#[cfg(feature = "v1")]
+pub mod v1;
 
 pub mod classic_mceliece;

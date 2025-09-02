@@ -317,7 +317,7 @@ fn derive_key_iv(psk: &[u8; 32], info: &[u8]) -> Result<([u8; NONCE_LEN], [u8; K
 mod tests {
     use std::time::Duration;
 
-    use crate::legacy::{
+    use crate::v1::{
         cred::{Ed25519, NoAuth},
         impls::MlKem768,
     };

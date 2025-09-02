@@ -76,7 +76,7 @@ mod tests {
     #![allow(non_snake_case)]
     use super::*;
 
-    use crate::legacy::traits::PSQ;
+    use crate::v1::traits::PSQ;
     macro_rules! libcrux_test {
         ($alg:ident) => {
             #[test]
