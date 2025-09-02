@@ -316,7 +316,7 @@ impl<'a, Rng: CryptoRng> Channel<Error> for Responder<'a, Rng> {
         message_bytes: &[u8],
         out: &mut [u8],
     ) -> Result<(usize, usize), Error> {
-        if !matches!(self.state, ResponderState::Initial {}) {
+        if !matches!(self.state, ResponderState::Initial) {
             return Ok((0, 0));
         }
 

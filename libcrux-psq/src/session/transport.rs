@@ -93,12 +93,12 @@ impl Channel<Error> for Transport {
 
         message
             .tls_serialize(&mut &mut out[..])
-            .map_err(|e| Error::Serialize(e))
+            .map_err(Error::Serialize)
     }
 
     fn read_message(&mut self, message: &[u8], out: &mut [u8]) -> Result<(usize, usize), Error> {
         let message = TransportMessage::tls_deserialize(&mut Cursor::new(message))
-            .map_err(|e| Error::Deserialize(e))?;
+            .map_err(Error::Deserialize)?;
 
         if self.channel_identifier != message.channel_identifier {
             return Err(Error::IdentifierMismatch);
@@ -119,8 +119,8 @@ impl Channel<Error> for Transport {
     }
 }
 
-const I2R_CHANNEL_KEY_LABEL: &'static [u8] = b"i2r channel key";
-const R2I_CHANNEL_KEY_LABEL: &'static [u8] = b"r2i channel key";
+const I2R_CHANNEL_KEY_LABEL: &[u8] = b"i2r channel key";
+const R2I_CHANNEL_KEY_LABEL: &[u8] = b"r2i channel key";
 
 // skChanneli2r = KDF(skCS, "i2r channel key" | pk_binder | channel_counter)
 // skChannelr2i = KDF(skCS, "r2i channel key" | pk_binder | channel_counter)
@@ -144,7 +144,7 @@ fn derive_channel_key<const IS_INITIATOR: bool>(session: &Session) -> Result<AEA
             counter: session.channel_counter,
         }
         .tls_serialize()
-        .map_err(|e| Error::Serialize(e))?,
+        .map_err(Error::Serialize)?,
     )
     .map_err(|e| e.into())
 }

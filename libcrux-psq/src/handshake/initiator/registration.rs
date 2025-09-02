@@ -95,8 +95,6 @@ impl<'a, Rng: CryptoRng> RegistrationInitiator<'a, Rng> {
 
 impl<'a, Rng: CryptoRng> Channel<Error> for RegistrationInitiator<'a, Rng> {
     fn write_message(&mut self, payload: &[u8], out: &mut [u8]) -> Result<usize, Error> {
-        let out_bytes_written;
-
         let RegistrationInitiatorState::Initial(mut state) = take(&mut self.state) else {
             // If we're not in the initial state, we write nothing
             return Ok(0);
@@ -146,7 +144,7 @@ impl<'a, Rng: CryptoRng> Channel<Error> for RegistrationInitiator<'a, Rng> {
             pq_encapsulation: None,
         };
 
-        out_bytes_written = msg
+        let out_bytes_written = msg
             .tls_serialize(&mut &mut out[..])
             .map_err(Error::Serialize)?;
 
@@ -219,7 +217,7 @@ impl<'a, Rng: CryptoRng> IntoSession for RegistrationInitiator<'a, Rng> {
             state.tx2,
             state.k2,
             &self.initiator_longterm_ecdh_keys.pk,
-            &self.responder_longterm_ecdh_pk,
+            self.responder_longterm_ecdh_pk,
             self.responder_longterm_pq_pk.as_ref(),
             true,
         )

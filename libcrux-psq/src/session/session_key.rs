@@ -30,16 +30,14 @@ fn session_key_id(key: &AEADKey) -> Result<[u8; SESSION_ID_LENGTH], Error> {
     let prk = libcrux_hkdf::extract(
         Algorithm::Sha256,
         SESSION_KEY_SALT,
-        SerializeBytes::tls_serialize(&key).map_err(|e| Error::Serialize(e))?,
+        SerializeBytes::tls_serialize(&key).map_err(Error::Serialize)?,
     )
     .map_err(|_| Error::CryptoError)?;
 
-    Ok(
-        libcrux_hkdf::expand(Algorithm::Sha256, prk, SESSION_KEY_INFO, SESSION_ID_LENGTH)
-            .map_err(|_| Error::CryptoError)?
-            .try_into()
-            .map_err(|_| Error::CryptoError)?, // We don't expect this to fail, unless HDKF gave us the wrong output length
-    )
+    libcrux_hkdf::expand(Algorithm::Sha256, prk, SESSION_KEY_INFO, SESSION_ID_LENGTH)
+        .map_err(|_| Error::CryptoError)?
+        .try_into()
+        .map_err(|_| Error::CryptoError)
 }
 
 // skCS = KDF(K2, "session secret" | tx2)
@@ -50,7 +48,7 @@ pub(super) fn derive_session_key(k2: AEADKey, tx2: Transcript) -> Result<Session
         tx2: &'a Transcript,
     }
 
-    const SESSION_KEY_LABEL: &'static [u8] = b"session key";
+    const SESSION_KEY_LABEL: &[u8] = b"session key";
     let key = AEADKey::new(
         &k2,
         &SessionKeyInfo {
