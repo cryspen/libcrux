@@ -91,6 +91,15 @@ impl<T: Sub, V: Into<Secret<T>>> Sub<V> for Secret<T> {
     }
 }
 
+// Negate secret values
+impl<T: Neg> Neg for Secret<T> {
+    type Output = Secret<T::Output>;
+
+    fn neg(self) -> Self::Output {
+        self.0.neg().into()
+    }
+}
+
 // Multiply secret values
 impl<T: Mul, V: Into<Secret<T>>> Mul<V> for Secret<T> {
     type Output = Secret<T::Output>;
