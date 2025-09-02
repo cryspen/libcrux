@@ -120,7 +120,7 @@ typedef struct {
 
 // Previous version above does not work when t is an array type (as usual). Will
 // be deprecated soon.
-#define Eurydice_slice_subslice3(s, start, end, t_ptr)                         \
+#define Eurydice_slice_subslice3(s, start, end, t_ptr) \
   EURYDICE_SLICE((t_ptr)s.ptr, (start), (end))
 
 #define Eurydice_slice_subslice_to(s, subslice_end_pos, t, _0, _1) \
@@ -140,7 +140,7 @@ typedef struct {
   EURYDICE_SLICE((t *)x, (start), (end))
 
 // Same as above, variant for when start and end are statically known
-#define Eurydice_array_to_subslice3(x, start, end, t_ptr)                      \
+#define Eurydice_array_to_subslice3(x, start, end, t_ptr) \
   EURYDICE_SLICE((t_ptr)x, (start), (end))
 
 #define Eurydice_array_repeat(dst, len, init, t) \
@@ -161,13 +161,18 @@ typedef struct {
   KRML_CLITERAL(Eurydice_slice) { ptr_, len_ }
 
 #define core_array__core__clone__Clone_for__Array_T__N___clone( \
-    len, src, dst, elem_type, _ret_t)                                \
+    len, src, dst, elem_type, _ret_t)                           \
   (memcpy(dst, src, len * sizeof(elem_type)))
 #define TryFromSliceError uint8_t
 #define core_array_TryFromSliceError uint8_t
 
-#define Eurydice_array_eq(sz, a1, a2, t, _) \
+#define Eurydice_array_eq(sz, a1, a2, t) \
   (memcmp(a1, a2, sz * sizeof(t)) == 0)
+
+// core::cmp::PartialEq<&0 (@Slice<U>)> for @Array<T, N>
+#define Eurydice_array_eq_slice(sz, a1, s2, t, _)                              \
+  (memcmp(a1, (s2)->ptr, sz * sizeof(t)) == 0)
+
 #define core_array_equality___core__cmp__PartialEq__Array_U__N___for__Array_T__N____eq( \
     sz, a1, a2, t, _, _ret_t)                                                           \
   Eurydice_array_eq(sz, a1, a2, t, _)
@@ -470,4 +475,3 @@ static inline char *malloc_and_init(size_t sz, char *init) {
 
 #define Eurydice_box_new_array(len, ptr, t, t_dst) \
   ((t_dst)(malloc_and_init(len * sizeof(t), (char *)(ptr))))
-
