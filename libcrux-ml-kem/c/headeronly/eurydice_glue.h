@@ -254,49 +254,49 @@ typedef char Eurydice_derefed_slice[];
 extern "C" {
 #endif
 
-static inline void core_num__u32_8__to_be_bytes(uint32_t src, uint8_t dst[4]) {
+static inline void core_num__u32__to_be_bytes(uint32_t src, uint8_t dst[4]) {
   // TODO: why not store32_be?
   uint32_t x = htobe32(src);
   memcpy(dst, &x, 4);
 }
 
-static inline void core_num__u32_8__to_le_bytes(uint32_t src, uint8_t dst[4]) {
+static inline void core_num__u32__to_le_bytes(uint32_t src, uint8_t dst[4]) {
   store32_le(dst, src);
 }
 
-static inline uint32_t core_num__u32_8__from_le_bytes(uint8_t buf[4]) {
+static inline uint32_t core_num__u32__from_le_bytes(uint8_t buf[4]) {
   return load32_le(buf);
 }
 
-static inline void core_num__u64_9__to_le_bytes(uint64_t v, uint8_t buf[8]) {
+static inline void core_num__u64__to_le_bytes(uint64_t v, uint8_t buf[8]) {
   store64_le(buf, v);
 }
 
-static inline uint64_t core_num__u64_9__from_le_bytes(uint8_t buf[8]) {
+static inline uint64_t core_num__u64__from_le_bytes(uint8_t buf[8]) {
   return load64_le(buf);
 }
 
 static inline int64_t
-core_convert_num___core__convert__From_i32__for_i64__59__from(int32_t x) {
+core_convert_num___core__convert__From_i32__for_i64__from(int32_t x) {
   return x;
 }
 
 static inline uint64_t
-core_convert_num___core__convert__From_u8__for_u64__66__from(uint8_t x) {
+core_convert_num___core__convert__From_u8__for_u64__from(uint8_t x) {
   return x;
 }
 
 static inline uint64_t
-core_convert_num___core__convert__From_u16__for_u64__70__from(uint16_t x) {
+core_convert_num___core__convert__From_u16__for_u64__from(uint16_t x) {
   return x;
 }
 
 static inline size_t
-core_convert_num___core__convert__From_u16__for_usize__96__from(uint16_t x) {
+core_convert_num___core__convert__From_u16__for_usize__from(uint16_t x) {
   return x;
 }
 
-static inline uint32_t core_num__u8_6__count_ones(uint8_t x0) {
+static inline uint32_t core_num__u8__count_ones(uint8_t x0) {
 #ifdef _MSC_VER
   return __popcnt(x0);
 #else
@@ -304,7 +304,7 @@ static inline uint32_t core_num__u8_6__count_ones(uint8_t x0) {
 #endif
 }
 
-static inline uint32_t core_num__i32_2__count_ones(int32_t x0) {
+static inline uint32_t core_num__i32__count_ones(int32_t x0) {
 #ifdef _MSC_VER
   return __popcnt(x0);
 #else
@@ -312,7 +312,7 @@ static inline uint32_t core_num__i32_2__count_ones(int32_t x0) {
 #endif
 }
 
-static inline size_t core_cmp_impls___core__cmp__Ord_for_usize__59__min(
+static inline size_t core_cmp_impls___core__cmp__Ord_for_usize__min(
     size_t a, size_t b) {
   if (a <= b)
     return a;
@@ -321,17 +321,17 @@ static inline size_t core_cmp_impls___core__cmp__Ord_for_usize__59__min(
 }
 
 // unsigned overflow wraparound semantics in C
-static inline uint16_t core_num__u16_7__wrapping_add(uint16_t x, uint16_t y) {
+static inline uint16_t core_num__u16__wrapping_add(uint16_t x, uint16_t y) {
   return x + y;
 }
-static inline uint8_t core_num__u8_6__wrapping_sub(uint8_t x, uint8_t y) {
+static inline uint8_t core_num__u8__wrapping_sub(uint8_t x, uint8_t y) {
   return x - y;
 }
-static inline uint64_t core_num__u64_9__rotate_left(uint64_t x0, uint32_t x1) {
+static inline uint64_t core_num__u64__rotate_left(uint64_t x0, uint32_t x1) {
   return (x0 << x1 | x0 >> (64 - x1));
 }
 
-static inline void core_ops_arith__i32_319__add_assign(int32_t *x0,
+static inline void core_ops_arith__i32__add_assign(int32_t *x0,
                                                        int32_t *x1) {
   *x0 = *x0 + *x1;
 }
