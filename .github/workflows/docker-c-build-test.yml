@@ -55,7 +55,7 @@ jobs:
       - name: Extract C
         run: |
           export HOME=/home/user
-          ./c.sh --config cg.yaml --mlkem768 --no-unrolling --out c --clean --no-glue
+          ./c.sh --config cg.yaml --mlkem768 --no-unrolling --out c --clean --glue c/headeronly/eurydice_glue.h
       - name: Upload C extraction
         uses: actions/upload-artifact@v4
         with:

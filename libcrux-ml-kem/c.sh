@@ -135,7 +135,7 @@ $EURYDICE_HOME/eurydice --config ../$config -funroll-loops $unrolling \
 --header header.txt $cpp17 ../../libcrux_ml_kem.llbc ../../libcrux_sha3.llbc ../../libcrux_secrets.llbc
 
 if [[ "$eurydice_glue" = 1 ]]; then
-    cp $EURYDICE_HOME/include/eurydice_glue.h .
+    cp "$glue" .
 fi
 
 if [[ "$karamel_include" = 1 ]]; then
