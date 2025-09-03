@@ -11,3 +11,12 @@ we've provided a [Python3 script](git-hooks/pre-commit.py) that serves as a Git 
 
 In addition to Python3, you will also need to install [rustfmt](https://github.com/rust-lang/rustfmt) and the [black](https://github.com/psf/black) formatter to use this hook. Once they're installed, simply
 run `./git-hooks/setup.py` in the project root directory.
+
+### Hax Guidelines
+- Always use the **same version** of the `hax-lib` Cargo dependency throughout the entire workspace. Inconsistencies can lead to build or verification issues (see [issue #1125](https://github.com/cryspen/libcrux/issues/1125)).
+- This repository uses a [Makefile](./fstar-helpers/Makefile.generic) for F\* verification, which relies on Cargo and the workspace's version of `hax-lib` to locate F\* libraries. Specifically, those under the [`proof-libs` directory in hax-lib](https://github.com/cryspen/hax/tree/main/hax-lib/proof-libs).
+- If you need to work with a specific version of `hax-lib` or `proof-libs`, update the `hax-lib` dependency in the workspace's `Cargo.toml`.  
+  You may use a [path dependency](https://doc.rust-lang.org/cargo/reference/specifying-dependencies.html#specifying-path-dependencies), or a [Git dependency](https://doc.rust-lang.org/cargo/reference/specifying-dependencies.html#specifying-dependencies-from-git-repositories) for development purposes.
+- If your pull request includes such a non-default dependency (e.g., a Git or path-based reference), **please mention it clearly in the PR description**.
+- Using a non-[crates.io](https://doc.rust-lang.org/cargo/reference/specifying-dependencies.html#specifying-dependencies-from-cratesio) dependency in a PR is acceptable for development. However, **before merging**, the dependency must be updated to point to a released version of `hax`.
+- If a new `hax` release is required for your PR to be merged, please [open an issue on the hax repository](https://github.com/cryspen/hax/issues/new?title=Release%20request&body=For%20libcrux%20PR%20%23XX,%20I%20need%20a%20release%20of%20hax.) to request it.
