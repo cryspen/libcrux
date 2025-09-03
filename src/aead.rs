@@ -57,12 +57,12 @@ impl libcrux_traits::aead::typed_refs::Aead for Aead {
         &self,
         ciphertext: &mut [u8],
         tag: libcrux_traits::aead::typed_refs::TagMut<'a, Self>,
-        key: libcrux_traits::aead::typed_refs::Key<'a, Self>,
-        nonce: libcrux_traits::aead::typed_refs::Nonce<'a, Self>,
+        key: libcrux_traits::aead::typed_refs::KeyRef<'a, Self>,
+        nonce: libcrux_traits::aead::typed_refs::NonceRef<'a, Self>,
         aad: &[u8],
         plaintext: &[libcrux_traits::libcrux_secrets::U8],
     ) -> Result<
-        libcrux_traits::aead::typed_refs::Tag<'a, Self>,
+        libcrux_traits::aead::typed_refs::TagRef<'a, Self>,
         libcrux_traits::aead::typed_refs::EncryptError,
     > {
         match self {
@@ -94,11 +94,11 @@ impl libcrux_traits::aead::typed_refs::Aead for Aead {
     fn decrypt<'a>(
         &self,
         plaintext: &mut [libcrux_traits::libcrux_secrets::U8],
-        key: libcrux_traits::aead::typed_refs::Key<'a, Self>,
-        nonce: libcrux_traits::aead::typed_refs::Nonce<'a, Self>,
+        key: libcrux_traits::aead::typed_refs::KeyRef<'a, Self>,
+        nonce: libcrux_traits::aead::typed_refs::NonceRef<'a, Self>,
         aad: &[u8],
         ciphertext: &[u8],
-        tag: libcrux_traits::aead::typed_refs::Tag<'a, Self>,
+        tag: libcrux_traits::aead::typed_refs::TagRef<'a, Self>,
     ) -> Result<(), libcrux_traits::aead::typed_refs::DecryptError> {
         match self {
             Aead::ChaCha20Poly1305 => {

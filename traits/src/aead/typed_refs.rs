@@ -132,12 +132,12 @@ impl core::fmt::Display for DecryptError {
 /// A Key with the given algorithm. The bytes are borrowed. Contains a marker for which
 /// algorith the key is to be used with.
 #[derive(Clone, Copy)]
-pub struct Key<'a, Algo>(Algo, &'a [U8]);
+pub struct KeyRef<'a, Algo>(Algo, &'a [U8]);
 
 /// A tag with the given algorithm. The bytes are borrowed. Contains a marker for which
 /// algorith the key is to be used with.
 #[derive(Clone, Copy)]
-pub struct Tag<'a, Algo>(Algo, &'a [u8]);
+pub struct TagRef<'a, Algo>(Algo, &'a [u8]);
 
 /// A mutable tag with the given algorithm. The bytes are borrowed mutably. Contains a marker
 /// for which algorith the key is to be used with.
@@ -146,9 +146,9 @@ pub struct TagMut<'a, Algo>(Algo, &'a mut [u8]);
 
 /// A nonce with the given algorithm. The bytes are borrowed. Contains a marker for which
 /// algorith the key is to be used with.
-pub struct Nonce<'a, Algo>(Algo, &'a [u8]);
+pub struct NonceRef<'a, Algo>(Algo, &'a [u8]);
 
-impl<'a, Algo: Aead + core::fmt::Debug> core::fmt::Debug for Key<'a, Algo> {
+impl<'a, Algo: Aead + core::fmt::Debug> core::fmt::Debug for KeyRef<'a, Algo> {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         f.debug_tuple("Key").field(&self.0).field(&"***").finish()
     }
@@ -171,39 +171,39 @@ pub trait Aead: Copy + PartialEq {
         &self,
         ciphertext: &mut [u8],
         tag: TagMut<'a, Self>,
-        key: Key<'a, Self>,
-        nonce: Nonce<'a, Self>,
+        key: KeyRef<'a, Self>,
+        nonce: NonceRef<'a, Self>,
         aad: &[u8],
         plaintext: &[U8],
-    ) -> Result<Tag<'a, Self>, EncryptError>;
+    ) -> Result<TagRef<'a, Self>, EncryptError>;
 
     /// Decrypt a ciphertext, verifying its authenticity.
     /// The arguments `plaintext` and `ciphertext` must have the same length.
     fn decrypt<'a>(
         &self,
         plaintext: &mut [U8],
-        key: Key<'a, Self>,
-        nonce: Nonce<'a, Self>,
+        key: KeyRef<'a, Self>,
+        nonce: NonceRef<'a, Self>,
         aad: &[u8],
         ciphertext: &[u8],
-        tag: Tag<'a, Self>,
+        tag: TagRef<'a, Self>,
     ) -> Result<(), DecryptError>;
 
     /// Creates a new key given the algorithm.
-    fn new_key<'a>(self, key: &'a [U8]) -> Result<Key<'a, Self>, WrongLengthError> {
-        Key::new_for_algo(self, key)
+    fn new_key<'a>(self, key: &'a [U8]) -> Result<KeyRef<'a, Self>, WrongLengthError> {
+        KeyRef::new_for_algo(self, key)
     }
     /// Creates a new tag given the algorithm.
-    fn new_tag<'a>(self, tag: &'a [u8]) -> Result<Tag<'a, Self>, WrongLengthError> {
-        Tag::new_for_algo(self, tag)
+    fn new_tag<'a>(self, tag: &'a [u8]) -> Result<TagRef<'a, Self>, WrongLengthError> {
+        TagRef::new_for_algo(self, tag)
     }
     /// Creates a new mutable tag given the algorithm.
     fn new_tag_mut<'a>(self, tag_mut: &'a mut [u8]) -> Result<TagMut<'a, Self>, WrongLengthError> {
         TagMut::new_for_algo(self, tag_mut)
     }
     /// Creates a new nonce given the algorithm.
-    fn new_nonce<'a>(self, nonce: &'a [u8]) -> Result<Nonce<'a, Self>, WrongLengthError> {
-        Nonce::new_for_algo(self, nonce)
+    fn new_nonce<'a>(self, nonce: &'a [u8]) -> Result<NonceRef<'a, Self>, WrongLengthError> {
+        NonceRef::new_for_algo(self, nonce)
     }
 }
 
@@ -235,11 +235,11 @@ impl<
         &self,
         ciphertext: &mut [u8],
         mut tag: TagMut<'a, Self>,
-        key: Key<'a, Self>,
-        nonce: Nonce<'a, Self>,
+        key: KeyRef<'a, Self>,
+        nonce: NonceRef<'a, Self>,
         aad: &[u8],
         plaintext: &[U8],
-    ) -> Result<Tag<'a, Self>, EncryptError> {
+    ) -> Result<TagRef<'a, Self>, EncryptError> {
         if key.algo() != self {
             return Err(EncryptError::WrongKey);
         }
@@ -270,17 +270,17 @@ impl<
             plaintext,
         )
         .map_err(EncryptError::from)
-        .map(|_| Tag::from(tag))
+        .map(|_| TagRef::from(tag))
     }
 
     fn decrypt<'a>(
         &self,
         plaintext: &mut [U8],
-        key: Key<'a, Self>,
-        nonce: Nonce<'a, Self>,
+        key: KeyRef<'a, Self>,
+        nonce: NonceRef<'a, Self>,
         aad: &[u8],
         ciphertext: &[u8],
-        tag: Tag<'a, Self>,
+        tag: TagRef<'a, Self>,
     ) -> Result<(), DecryptError> {
         if key.algo() != self {
             return Err(DecryptError::WrongKey);
@@ -317,11 +317,11 @@ impl<
 #[derive(Debug, Clone, Copy)]
 pub struct WrongLengthError;
 
-impl<'a, Algo: Aead> Key<'a, Algo> {
+impl<'a, Algo: Aead> KeyRef<'a, Algo> {
     /// Creates a new key for the provided algorithm. Checks that the length is correct.
     pub fn new_for_algo(algo: Algo, key: &'a [U8]) -> Result<Self, WrongLengthError> {
         (key.len() == algo.key_len())
-            .then_some(Key(algo, key))
+            .then_some(KeyRef(algo, key))
             .ok_or(WrongLengthError)
     }
 
@@ -331,10 +331,10 @@ impl<'a, Algo: Aead> Key<'a, Algo> {
         &self,
         ciphertext: &mut [u8],
         tag: TagMut<'a, Algo>,
-        nonce: Nonce<'a, Algo>,
+        nonce: NonceRef<'a, Algo>,
         aad: &[u8],
         plaintext: &[U8],
-    ) -> Result<Tag<'a, Algo>, EncryptError> {
+    ) -> Result<TagRef<'a, Algo>, EncryptError> {
         self.0
             .encrypt(ciphertext, tag, *self, nonce, aad, plaintext)
     }
@@ -344,45 +344,45 @@ impl<'a, Algo: Aead> Key<'a, Algo> {
     pub fn decrypt(
         &self,
         plaintext: &mut [U8],
-        nonce: Nonce<'a, Algo>,
+        nonce: NonceRef<'a, Algo>,
         aad: &[u8],
         ciphertext: &[u8],
-        tag: Tag<'a, Algo>,
+        tag: TagRef<'a, Algo>,
     ) -> Result<(), DecryptError> {
         self.0
             .decrypt(plaintext, *self, nonce, aad, ciphertext, tag)
     }
 }
 
-impl<'a, Algo: Aead> AsRef<[U8]> for Key<'a, Algo> {
+impl<'a, Algo: Aead> AsRef<[U8]> for KeyRef<'a, Algo> {
     fn as_ref(&self) -> &[U8] {
         self.1
     }
 }
 
-impl<'a, Algo> Key<'a, Algo> {
+impl<'a, Algo> KeyRef<'a, Algo> {
     /// Returns the algorithm this key should be used in
     pub fn algo(&self) -> &Algo {
         &self.0
     }
 }
 
-impl<'a, Algo: Aead> Tag<'a, Algo> {
+impl<'a, Algo: Aead> TagRef<'a, Algo> {
     /// Creates a new tag for the provided algorithm. Checks that the length is correct.
     pub fn new_for_algo(algo: Algo, tag: &'a [u8]) -> Result<Self, WrongLengthError> {
         (tag.len() == algo.tag_len())
-            .then_some(Tag(algo, tag))
+            .then_some(TagRef(algo, tag))
             .ok_or(WrongLengthError)
     }
 }
 
-impl<'a, Algo: Aead> AsRef<[u8]> for Tag<'a, Algo> {
+impl<'a, Algo: Aead> AsRef<[u8]> for TagRef<'a, Algo> {
     fn as_ref(&self) -> &[u8] {
         self.1
     }
 }
 
-impl<'a, Algo> Tag<'a, Algo> {
+impl<'a, Algo> TagRef<'a, Algo> {
     /// Returns the algorithm this tag should be used in
     pub fn algo(&self) -> &Algo {
         &self.0
@@ -398,9 +398,9 @@ impl<'a, Algo: Aead> TagMut<'a, Algo> {
     }
 }
 
-impl<'a, Algo: Aead> From<TagMut<'a, Algo>> for Tag<'a, Algo> {
+impl<'a, Algo: Aead> From<TagMut<'a, Algo>> for TagRef<'a, Algo> {
     fn from(tag: TagMut<'a, Algo>) -> Self {
-        Tag(tag.0, tag.1)
+        TagRef(tag.0, tag.1)
     }
 }
 
@@ -411,23 +411,23 @@ impl<'a, Algo> TagMut<'a, Algo> {
     }
 }
 
-impl<'a, Algo: Aead> Nonce<'a, Algo> {
+impl<'a, Algo: Aead> NonceRef<'a, Algo> {
     /// Creates a new nonce for the provided algorithm. Checks that the length is correct.
     pub fn new_for_algo(algo: Algo, nonce: &'a [u8]) -> Result<Self, WrongLengthError> {
         (nonce.len() == algo.nonce_len())
-            .then_some(Nonce(algo, nonce))
+            .then_some(NonceRef(algo, nonce))
             .ok_or(WrongLengthError)
     }
 }
 
-impl<'a, Algo> Nonce<'a, Algo> {
+impl<'a, Algo> NonceRef<'a, Algo> {
     /// Returns the algorithm this nonce should be used in
     pub fn algo(&self) -> &Algo {
         &self.0
     }
 }
 
-impl<'a, Algo: Aead> AsRef<[u8]> for Nonce<'a, Algo> {
+impl<'a, Algo: Aead> AsRef<[u8]> for NonceRef<'a, Algo> {
     fn as_ref(&self) -> &[u8] {
         self.1
     }
@@ -450,25 +450,25 @@ pub trait Multiplexes<Algo>: Aead + Sized {
     fn wrap_algo(algo: Algo) -> Self;
 
     /// Tries unwrapping the algorithm in a key
-    fn mux_key<'a>(key: Key<'a, Self>) -> Option<Key<'a, Algo>> {
-        let Key(algo, bytes) = key;
-        algo.mux_algo().map(|algo| Key(algo, bytes))
+    fn mux_key<'a>(key: KeyRef<'a, Self>) -> Option<KeyRef<'a, Algo>> {
+        let KeyRef(algo, bytes) = key;
+        algo.mux_algo().map(|algo| KeyRef(algo, bytes))
     }
 
     /// Wraps the algorithm in a key
-    fn wrap_key<'a>(k: Key<'a, Algo>) -> Key<'a, Self> {
-        Key(Self::wrap_algo(k.0), k.1)
+    fn wrap_key<'a>(k: KeyRef<'a, Algo>) -> KeyRef<'a, Self> {
+        KeyRef(Self::wrap_algo(k.0), k.1)
     }
 
     /// Tries unwrapping the algorithm in a tag
-    fn mux_tag<'a>(tag: Tag<'a, Self>) -> Option<Tag<'a, Algo>> {
-        let Tag(algo, bytes) = tag;
-        algo.mux_algo().map(|algo| Tag(algo, bytes))
+    fn mux_tag<'a>(tag: TagRef<'a, Self>) -> Option<TagRef<'a, Algo>> {
+        let TagRef(algo, bytes) = tag;
+        algo.mux_algo().map(|algo| TagRef(algo, bytes))
     }
 
     /// Wraps the algorithm in a tag
-    fn wrap_tag<'a>(tag: Tag<'a, Algo>) -> Tag<'a, Self> {
-        Tag(Self::wrap_algo(tag.0), tag.1)
+    fn wrap_tag<'a>(tag: TagRef<'a, Algo>) -> TagRef<'a, Self> {
+        TagRef(Self::wrap_algo(tag.0), tag.1)
     }
 
     /// Tries unwrapping the algorithm in a mutable tag
@@ -483,13 +483,13 @@ pub trait Multiplexes<Algo>: Aead + Sized {
     }
 
     /// Tries unwrapping the algorithm in a nonce
-    fn mux_nonce<'a>(nonce: Nonce<'a, Self>) -> Option<Nonce<'a, Algo>> {
-        let Nonce(algo, bytes) = nonce;
-        algo.mux_algo().map(|algo| Nonce(algo, bytes))
+    fn mux_nonce<'a>(nonce: NonceRef<'a, Self>) -> Option<NonceRef<'a, Algo>> {
+        let NonceRef(algo, bytes) = nonce;
+        algo.mux_algo().map(|algo| NonceRef(algo, bytes))
     }
 
     /// Wraps the algorithm in a nonce
-    fn wrap_nonce<'a>(nonce: Nonce<'a, Algo>) -> Nonce<'a, Self> {
-        Nonce(Self::wrap_algo(nonce.0), nonce.1)
+    fn wrap_nonce<'a>(nonce: NonceRef<'a, Algo>) -> NonceRef<'a, Self> {
+        NonceRef(Self::wrap_algo(nonce.0), nonce.1)
     }
 }
