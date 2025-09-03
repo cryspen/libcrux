@@ -52,26 +52,34 @@ while [ $# -gt 0 ]; do
     shift
 done
 
+# we will cd to a subdirectory later. We need to resolve the path, because relative paths won't bw valid anymore.
+glue=$(realpath "$glue")
+
 if [[ "$portable_only" = 1 ]]; then
     export LIBCRUX_DISABLE_SIMD256=1
     export LIBCRUX_DISABLE_SIMD128=1
 fi
 
+
+if [[ "$clean" = 1 ]]; then
+    cargo clean
+fi
+
 # TODO: add LIBCRUX_ENABLE_SIMD128=1 LIBCRUX_ENABLE_SIMD256=1 charon invocations
 if [[ "$no_charon" = 0 ]]; then
-    # Because of a Charon bug we have to clean the sha3 crate.
-    cargo clean -p libcrux-sha3
-    rm -rf ../libcrux_ml_kem.llbc ../libcrux_sha3.llbc
-    echo "Running charon (sha3) ..."
-    (cd ../libcrux-sha3 && RUSTFLAGS="--cfg eurydice" $CHARON_HOME/bin/charon --remove-associated-types '*' --rustc-arg=-Cdebug-assertions=no)
-    if ! [[ -f ../libcrux_sha3.llbc ]]; then
+    rm -rf ../libcrux_ml_kem.llbc ../libcrux_sha3.llbc ../libcrux_secrets.llbc
+    echo "Running charon (secrets) ..."
+    (cd ../secrets && RUSTFLAGS="--cfg eurydice" $CHARON_HOME/bin/charon --remove-associated-types '*' --translate-all-methods)
+    if ! [[ -f ../libcrux_secrets.llbc ]]; then
         echo "😱😱😱 You are the victim of this bug: https://hacspec.zulipchat.com/#narrow/stream/433829-Circus/topic/charon.20declines.20to.20generate.20an.20llbc.20file"
         echo "Suggestion: rm -rf ../target or cargo clean"
         exit 1
     fi
-    echo "Running charon (secrets) ..."
-    (cd ../secrets && RUSTFLAGS="--cfg eurydice" $CHARON_HOME/bin/charon --remove-associated-types '*' --translate-all-methods)
-    if ! [[ -f ../libcrux_secrets.llbc ]]; then
+    # Because of a Charon bug we have to clean the sha3 crate.
+    cargo clean -p libcrux-sha3
+    echo "Running charon (sha3) ..."
+    (cd ../libcrux-sha3 && RUSTFLAGS="--cfg eurydice" $CHARON_HOME/bin/charon --remove-associated-types '*' --rustc-arg=-Cdebug-assertions=no)
+    if ! [[ -f ../libcrux_sha3.llbc ]]; then
         echo "😱😱😱 You are the victim of this bug: https://hacspec.zulipchat.com/#narrow/stream/433829-Circus/topic/charon.20declines.20to.20generate.20an.20llbc.20file"
         echo "Suggestion: rm -rf ../target or cargo clean"
         exit 1
@@ -89,7 +97,7 @@ cd $out
 # Note that we can not extract for all platforms on any platform right now.
 # Make sure to keep files from other platforms.
 if [[ "$clean" = 1 ]]; then
-    rm -rf *.c *.h
+    rm -rf libcrux_*.c libcrux_*.h
     rm -rf internal/*.h
 fi
 
@@ -130,7 +138,7 @@ $EURYDICE_HOME/eurydice --config ../$config -funroll-loops $unrolling \
 --header header.txt $cpp17 ../../libcrux_ml_kem.llbc ../../libcrux_sha3.llbc ../../libcrux_secrets.llbc
 
 if [[ "$eurydice_glue" = 1 ]]; then
-    cp $EURYDICE_HOME/include/eurydice_glue.h .
+    cp "$glue" .
 fi
 
 if [[ "$karamel_include" = 1 ]]; then

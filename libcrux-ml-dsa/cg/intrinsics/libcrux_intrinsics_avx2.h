@@ -1,11 +1,11 @@
 /*
- * SPDX-FileCopyrightText: 2024 Cryspen Sarl <info@cryspen.com>
+ * SPDX-FileCopyrightText: 2024-2025 Cryspen Sarl <info@cryspen.com>
  *
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#ifndef __libcrux_intrinsics_avx2_H
-#define __libcrux_intrinsics_avx2_H
+#ifndef LIBCRUX_HEADER_LIBCRUX_INTRINSICS_AVX2_H
+#define LIBCRUX_HEADER_LIBCRUX_INTRINSICS_AVX2_H
 
 #if defined(__cplusplus)
 extern "C" {
@@ -272,5 +272,5 @@ typedef __m256i core_core_arch_x86___m256i;
 }
 #endif
 
-#define __libcrux_intrinsics_avx2_H_DEFINED
-#endif
+#define LIBCRUX_HEADER_LIBCRUX_INTRINSICS_AVX2_H_DEFINED
+#endif /* LIBCRUX_HEADER_LIBCRUX_INTRINSICS_AVX2_H */

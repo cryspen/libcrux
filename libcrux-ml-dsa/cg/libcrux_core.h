@@ -4,15 +4,15 @@
  * SPDX-License-Identifier: MIT or Apache-2.0
  *
  * This code was generated with the following revisions:
- * Charon: bb62a9b39db4ea8c6d536fe61b7d26663751bf3c
- * Eurydice: 46cef5d58a855ed049fa89bfe99c959b5d9d0d4b
- * Karamel: 39cb85a718da8ae4a724d31b08f9134ca9311336
- * F*: 4b3fc11774003a6ff7c09500ecb5f0145ca6d862
- * Libcrux: b54a2f8eacb847bfe456abe6b195dc94bf464dda
+ * Charon: d02f05ccb8b90d1312b8caa446003ba9f6ad13a0
+ * Eurydice: 657e10870ab75432c50542cf5d9ec94e640c528d
+ * Karamel: 80f5435f2fc505973c469a4afcc8d875cddd0d8b
+ * F*: 5643e656b989aca7629723653a2570c7df6252b9-dirty
+ * Libcrux: fb8e86b06fffb444c2031381285e69884422bde5
  */
 
-#ifndef __libcrux_core_H
-#define __libcrux_core_H
+#ifndef libcrux_core_H
+#define libcrux_core_H
 
 #include "eurydice_glue.h"
 
@@ -41,21 +41,21 @@ typedef struct Option_08_s {
   size_t f0;
 } Option_08;
 
-static inline uint32_t core_num__i32_2__count_ones(int32_t x0);
+static inline uint32_t core_num__i32__count_ones(int32_t x0);
 
-static inline uint64_t core_num__u64_9__from_le_bytes(uint8_t x0[8U]);
+static inline uint64_t core_num__u64__from_le_bytes(uint8_t x0[8U]);
 
-static inline uint64_t core_num__u64_9__rotate_left(uint64_t x0, uint32_t x1);
+static inline uint64_t core_num__u64__rotate_left(uint64_t x0, uint32_t x1);
 
-static inline void core_num__u64_9__to_le_bytes(uint64_t x0, uint8_t x1[8U]);
-
-static inline uint8_t
-core_ops_bit___core__ops__bit__BitAnd_u8__u8__for___a__u8___46__bitand(
-    uint8_t *x0, uint8_t x1);
+static inline void core_num__u64__to_le_bytes(uint64_t x0, uint8_t x1[8U]);
 
 static inline uint8_t
-core_ops_bit___core__ops__bit__Shr_i32__u8__for___a__u8___792__shr(uint8_t *x0,
-                                                                   int32_t x1);
+core_ops_bit__core__ops__bit__BitAnd_u8__u8__for___a__u8___bitand(uint8_t *x0,
+                                                                  uint8_t x1);
+
+static inline uint8_t
+core_ops_bit__core__ops__bit__Shr_i32__u8__for___a__u8___shr(uint8_t *x0,
+                                                             int32_t x1);
 
 /**
 A monomorphic instance of libcrux_ml_dsa.types.MLDSASignature
@@ -70,14 +70,14 @@ typedef struct libcrux_ml_dsa_types_MLDSASignature_8f_s {
  A reference to the raw byte array.
 */
 /**
-This function found in impl {libcrux_ml_dsa::types::MLDSASignature<SIZE>#4}
+This function found in impl {libcrux_ml_dsa::types::MLDSASignature<SIZE>}
 */
 /**
-A monomorphic instance of libcrux_ml_dsa.types.as_ref_8f
+A monomorphic instance of libcrux_ml_dsa.types.as_ref_c5
 with const generics
 - SIZE= 3309
 */
-static inline uint8_t *libcrux_ml_dsa_types_as_ref_8f_fa(
+static inline uint8_t *libcrux_ml_dsa_types_as_ref_c5_fa(
     libcrux_ml_dsa_types_MLDSASignature_8f *self) {
   return self->value;
 }
@@ -95,15 +95,14 @@ typedef struct libcrux_ml_dsa_types_MLDSAVerificationKey_ea_s {
  A reference to the raw byte array.
 */
 /**
-This function found in impl
-{libcrux_ml_dsa::types::MLDSAVerificationKey<SIZE>#2}
+This function found in impl {libcrux_ml_dsa::types::MLDSAVerificationKey<SIZE>}
 */
 /**
-A monomorphic instance of libcrux_ml_dsa.types.as_ref_66
+A monomorphic instance of libcrux_ml_dsa.types.as_ref_7f
 with const generics
 - SIZE= 1952
 */
-static inline uint8_t *libcrux_ml_dsa_types_as_ref_66_97(
+static inline uint8_t *libcrux_ml_dsa_types_as_ref_7f_97(
     libcrux_ml_dsa_types_MLDSAVerificationKey_ea *self) {
   return self->value;
 }
@@ -209,19 +208,16 @@ typedef struct Result_53_s {
  Init with zero
 */
 /**
-This function found in impl {libcrux_ml_dsa::types::MLDSASignature<SIZE>#4}
+This function found in impl {libcrux_ml_dsa::types::MLDSASignature<SIZE>}
 */
 /**
-A monomorphic instance of libcrux_ml_dsa.types.zero_8f
+A monomorphic instance of libcrux_ml_dsa.types.zero_c5
 with const generics
 - SIZE= 3309
 */
 static inline libcrux_ml_dsa_types_MLDSASignature_8f
-libcrux_ml_dsa_types_zero_8f_fa(void) {
-  libcrux_ml_dsa_types_MLDSASignature_8f lit;
-  uint8_t repeat_expression[3309U] = {0U};
-  memcpy(lit.value, repeat_expression, (size_t)3309U * sizeof(uint8_t));
-  return lit;
+libcrux_ml_dsa_types_zero_c5_fa(void) {
+  return (libcrux_ml_dsa_types_MLDSASignature_8f{{0U}});
 }
 
 /**
@@ -239,16 +235,15 @@ typedef struct libcrux_ml_dsa_types_MLDSAKeyPair_06_s {
  Build
 */
 /**
-This function found in impl
-{libcrux_ml_dsa::types::MLDSAVerificationKey<SIZE>#2}
+This function found in impl {libcrux_ml_dsa::types::MLDSAVerificationKey<SIZE>}
 */
 /**
-A monomorphic instance of libcrux_ml_dsa.types.new_66
+A monomorphic instance of libcrux_ml_dsa.types.new_7f
 with const generics
 - SIZE= 1952
 */
 static inline libcrux_ml_dsa_types_MLDSAVerificationKey_ea
-libcrux_ml_dsa_types_new_66_97(uint8_t value[1952U]) {
+libcrux_ml_dsa_types_new_7f_97(uint8_t value[1952U]) {
   /* Passing arrays by value in Rust generates a copy in C */
   uint8_t copy_of_value[1952U];
   memcpy(copy_of_value, value, (size_t)1952U * sizeof(uint8_t));
@@ -328,5 +323,5 @@ static inline void unwrap_26_68(Result_15 self, uint8_t ret[8U]) {
   }
 }
 
-#define __libcrux_core_H_DEFINED
-#endif
+#define libcrux_core_H_DEFINED
+#endif /* libcrux_core_H */

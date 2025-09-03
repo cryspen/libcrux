@@ -39,7 +39,4 @@ if [[ -n "$BORINGSSL_HOME" ]]; then
     # We use special files here.
     cp cg/boring/eurydice_glue.h $BORINGSSL_HOME/third_party/libcrux/
     cp -r cg/boring/karamel $BORINGSSL_HOME/third_party/libcrux/
-
-    libcrux_rev=$(git rev-parse HEAD)
-    echo "libcrux: $libcrux_rev" >> $BORINGSSL_HOME/third_party/libcrux/code_gen.txt
 fi
