@@ -118,6 +118,11 @@ typedef struct {
 #define Eurydice_slice_subslice2(s, start, end, t) \
   EURYDICE_SLICE((t *)s.ptr, (start), (end))
 
+// Previous version above does not work when t is an array type (as usual). Will
+// be deprecated soon.
+#define Eurydice_slice_subslice3(s, start, end, t_ptr) \
+  EURYDICE_SLICE((t_ptr)s.ptr, (start), (end))
+
 #define Eurydice_slice_subslice_to(s, subslice_end_pos, t, _0, _1) \
   EURYDICE_SLICE((t *)s.ptr, 0, subslice_end_pos)
 
@@ -134,6 +139,10 @@ typedef struct {
 #define Eurydice_array_to_subslice2(x, start, end, t) \
   EURYDICE_SLICE((t *)x, (start), (end))
 
+// Same as above, variant for when start and end are statically known
+#define Eurydice_array_to_subslice3(x, start, end, t_ptr) \
+  EURYDICE_SLICE((t_ptr)x, (start), (end))
+
 #define Eurydice_array_repeat(dst, len, init, t) \
   ERROR "should've been desugared"
 
@@ -148,17 +157,22 @@ typedef struct {
 #define Eurydice_slice_copy(dst, src, t) \
   memcpy(dst.ptr, src.ptr, dst.len * sizeof(t))
 
-#define core_array___Array_T__N__23__as_slice(len_, ptr_, t, _ret_t) \
+#define core_array___Array_T__N___as_slice(len_, ptr_, t, _ret_t) \
   KRML_CLITERAL(Eurydice_slice) { ptr_, len_ }
 
-#define core_array___core__clone__Clone_for__Array_T__N___20__clone( \
-    len, src, dst, elem_type, _ret_t)                                \
+#define core_array__core__clone__Clone_for__Array_T__N___clone( \
+    len, src, dst, elem_type, _ret_t)                           \
   (memcpy(dst, src, len * sizeof(elem_type)))
 #define TryFromSliceError uint8_t
 #define core_array_TryFromSliceError uint8_t
 
-#define Eurydice_array_eq(sz, a1, a2, t, _) \
+#define Eurydice_array_eq(sz, a1, a2, t) \
   (memcmp(a1, a2, sz * sizeof(t)) == 0)
+
+// core::cmp::PartialEq<&0 (@Slice<U>)> for @Array<T, N>
+#define Eurydice_array_eq_slice(sz, a1, s2, t, _)                              \
+  (memcmp(a1, (s2)->ptr, sz * sizeof(t)) == 0)
+
 #define core_array_equality___core__cmp__PartialEq__Array_U__N___for__Array_T__N____eq( \
     sz, a1, a2, t, _, _ret_t)                                                           \
   Eurydice_array_eq(sz, a1, a2, t, _)
@@ -240,49 +254,49 @@ typedef char Eurydice_derefed_slice[];
 extern "C" {
 #endif
 
-static inline void core_num__u32_8__to_be_bytes(uint32_t src, uint8_t dst[4]) {
+static inline void core_num__u32__to_be_bytes(uint32_t src, uint8_t dst[4]) {
   // TODO: why not store32_be?
   uint32_t x = htobe32(src);
   memcpy(dst, &x, 4);
 }
 
-static inline void core_num__u32_8__to_le_bytes(uint32_t src, uint8_t dst[4]) {
+static inline void core_num__u32__to_le_bytes(uint32_t src, uint8_t dst[4]) {
   store32_le(dst, src);
 }
 
-static inline uint32_t core_num__u32_8__from_le_bytes(uint8_t buf[4]) {
+static inline uint32_t core_num__u32__from_le_bytes(uint8_t buf[4]) {
   return load32_le(buf);
 }
 
-static inline void core_num__u64_9__to_le_bytes(uint64_t v, uint8_t buf[8]) {
+static inline void core_num__u64__to_le_bytes(uint64_t v, uint8_t buf[8]) {
   store64_le(buf, v);
 }
 
-static inline uint64_t core_num__u64_9__from_le_bytes(uint8_t buf[8]) {
+static inline uint64_t core_num__u64__from_le_bytes(uint8_t buf[8]) {
   return load64_le(buf);
 }
 
 static inline int64_t
-core_convert_num___core__convert__From_i32__for_i64__59__from(int32_t x) {
+core_convert_num___core__convert__From_i32__for_i64__from(int32_t x) {
   return x;
 }
 
 static inline uint64_t
-core_convert_num___core__convert__From_u8__for_u64__66__from(uint8_t x) {
+core_convert_num___core__convert__From_u8__for_u64__from(uint8_t x) {
   return x;
 }
 
 static inline uint64_t
-core_convert_num___core__convert__From_u16__for_u64__70__from(uint16_t x) {
+core_convert_num___core__convert__From_u16__for_u64__from(uint16_t x) {
   return x;
 }
 
 static inline size_t
-core_convert_num___core__convert__From_u16__for_usize__96__from(uint16_t x) {
+core_convert_num___core__convert__From_u16__for_usize__from(uint16_t x) {
   return x;
 }
 
-static inline uint32_t core_num__u8_6__count_ones(uint8_t x0) {
+static inline uint32_t core_num__u8__count_ones(uint8_t x0) {
 #ifdef _MSC_VER
   return __popcnt(x0);
 #else
@@ -290,7 +304,7 @@ static inline uint32_t core_num__u8_6__count_ones(uint8_t x0) {
 #endif
 }
 
-static inline uint32_t core_num__i32_2__count_ones(int32_t x0) {
+static inline uint32_t core_num__i32__count_ones(int32_t x0) {
 #ifdef _MSC_VER
   return __popcnt(x0);
 #else
@@ -298,7 +312,7 @@ static inline uint32_t core_num__i32_2__count_ones(int32_t x0) {
 #endif
 }
 
-static inline size_t core_cmp_impls___core__cmp__Ord_for_usize__59__min(
+static inline size_t core_cmp_impls___core__cmp__Ord_for_usize__min(
     size_t a, size_t b) {
   if (a <= b)
     return a;
@@ -307,17 +321,17 @@ static inline size_t core_cmp_impls___core__cmp__Ord_for_usize__59__min(
 }
 
 // unsigned overflow wraparound semantics in C
-static inline uint16_t core_num__u16_7__wrapping_add(uint16_t x, uint16_t y) {
+static inline uint16_t core_num__u16__wrapping_add(uint16_t x, uint16_t y) {
   return x + y;
 }
-static inline uint8_t core_num__u8_6__wrapping_sub(uint8_t x, uint8_t y) {
+static inline uint8_t core_num__u8__wrapping_sub(uint8_t x, uint8_t y) {
   return x - y;
 }
-static inline uint64_t core_num__u64_9__rotate_left(uint64_t x0, uint32_t x1) {
+static inline uint64_t core_num__u64__rotate_left(uint64_t x0, uint32_t x1) {
   return (x0 << x1 | x0 >> (64 - x1));
 }
 
-static inline void core_ops_arith__i32_319__add_assign(int32_t *x0,
+static inline void core_ops_arith__i32__add_assign(int32_t *x0,
                                                        int32_t *x1) {
   *x0 = *x0 + *x1;
 }
@@ -461,57 +475,3 @@ static inline char *malloc_and_init(size_t sz, char *init) {
 
 #define Eurydice_box_new_array(len, ptr, t, t_dst) \
   ((t_dst)(malloc_and_init(len * sizeof(t), (char *)(ptr))))
-
-// VECTORS (ANCIENT, POSSIBLY UNTESTED)
-
-/* For now these are passed by value -- three words. We could conceivably change
- * the representation to heap-allocate this struct and only pass around the
- * pointer (one word). */
-typedef struct {
-  void *ptr;
-  size_t len;        /* the number of elements */
-  size_t alloc_size; /* the size of the allocation, in number of BYTES */
-} Eurydice_vec_s, *Eurydice_vec;
-
-/* Here, we set everything to zero rather than use a non-standard GCC
- * statement-expression -- this suitably initializes ptr to NULL and len and
- * size to 0. */
-#define EURYDICE_VEC_NEW(_) calloc(1, sizeof(Eurydice_vec_s))
-#define EURYDICE_VEC_PUSH(v, x, t)                                        \
-  do {                                                                    \
-    /* Grow the vector if capacity has been reached. */                   \
-    if (v->len == v->alloc_size / sizeof(t)) {                            \
-      /* Assuming that this does not exceed SIZE_MAX, because code proven \
-       * correct by Aeneas. Would this even happen in practice? */        \
-      size_t new_size;                                                    \
-      if (v->alloc_size == 0)                                             \
-        new_size = 8 * sizeof(t);                                         \
-      else if (v->alloc_size <= SIZE_MAX / 2)                             \
-        /* TODO: discuss growth policy */                                 \
-        new_size = 2 * v->alloc_size;                                     \
-      else                                                                \
-        new_size = (SIZE_MAX / sizeof(t)) * sizeof(t);                    \
-      v->ptr = realloc(v->ptr, new_size);                                 \
-      v->alloc_size = new_size;                                           \
-    }                                                                     \
-    ((t *)v->ptr)[v->len] = x;                                            \
-    v->len++;                                                             \
-  } while (0)
-
-#define EURYDICE_VEC_DROP(v, t) \
-  do {                          \
-    free(v->ptr);               \
-    free(v);                    \
-  } while (0)
-
-#define EURYDICE_VEC_INDEX(v, i, t) &((t *)v->ptr)[i]
-#define EURYDICE_VEC_LEN(v, t) (v)->len
-
-/* TODO: remove GCC-isms */
-
-#define EURYDICE_REPLACE(ptr, new_v, t) \
-  ({                                    \
-    t old_v = *ptr;                     \
-    *ptr = new_v;                       \
-    old_v;                              \
-  })

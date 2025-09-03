@@ -52,6 +52,9 @@ while [ $# -gt 0 ]; do
     shift
 done
 
+# we will cd to a subdirectory later. We need to resolve the path, because relative paths won't bw valid anymore.
+glue=$(realpath "$glue")
+
 if [[ "$portable_only" = 1 ]]; then
     export LIBCRUX_DISABLE_SIMD256=1
     export LIBCRUX_DISABLE_SIMD128=1
@@ -94,7 +97,7 @@ cd $out
 # Note that we can not extract for all platforms on any platform right now.
 # Make sure to keep files from other platforms.
 if [[ "$clean" = 1 ]]; then
-    rm -rf *.c *.h
+    rm -rf libcrux_*.c libcrux_*.h
     rm -rf internal/*.h
 fi
 
@@ -135,7 +138,7 @@ $EURYDICE_HOME/eurydice --config ../$config -funroll-loops $unrolling \
 --header header.txt $cpp17 ../../libcrux_ml_kem.llbc ../../libcrux_sha3.llbc ../../libcrux_secrets.llbc
 
 if [[ "$eurydice_glue" = 1 ]]; then
-    cp $EURYDICE_HOME/include/eurydice_glue.h .
+    cp "$glue" .
 fi
 
 if [[ "$karamel_include" = 1 ]]; then
