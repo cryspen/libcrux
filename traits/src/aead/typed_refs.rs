@@ -142,14 +142,14 @@ pub struct KeyRef<'a, Algo> {
 #[derive(Clone, Copy)]
 pub struct TagRef<'a, Algo> {
     algorithm: Algo,
-    tag: &'a [u8],
+    tag: &'a [U8],
 }
 
 /// A mutable tag with the given algorithm. The bytes are borrowed mutably. Contains a marker
 /// for which algorith the key is to be used with.
 pub struct TagMut<'a, Algo> {
     algorithm: Algo,
-    tag: &'a mut [u8],
+    tag: &'a mut [U8],
 }
 #[derive(Clone, Copy)]
 
@@ -157,7 +157,7 @@ pub struct TagMut<'a, Algo> {
 /// algorith the key is to be used with.
 pub struct NonceRef<'a, Algo> {
     algorithm: Algo,
-    nonce: &'a [u8],
+    nonce: &'a [U8],
 }
 
 impl<'a, Algo: Aead + core::fmt::Debug> core::fmt::Debug for KeyRef<'a, Algo> {
@@ -209,15 +209,15 @@ pub trait Aead: Copy + PartialEq {
         KeyRef::new_for_algo(self, key)
     }
     /// Creates a new tag given the algorithm.
-    fn new_tag<'a>(self, tag: &'a [u8]) -> Result<TagRef<'a, Self>, WrongLengthError> {
+    fn new_tag<'a>(self, tag: &'a [U8]) -> Result<TagRef<'a, Self>, WrongLengthError> {
         TagRef::new_for_algo(self, tag)
     }
     /// Creates a new mutable tag given the algorithm.
-    fn new_tag_mut<'a>(self, tag_mut: &'a mut [u8]) -> Result<TagMut<'a, Self>, WrongLengthError> {
+    fn new_tag_mut<'a>(self, tag_mut: &'a mut [U8]) -> Result<TagMut<'a, Self>, WrongLengthError> {
         TagMut::new_for_algo(self, tag_mut)
     }
     /// Creates a new nonce given the algorithm.
-    fn new_nonce<'a>(self, nonce: &'a [u8]) -> Result<NonceRef<'a, Self>, WrongLengthError> {
+    fn new_nonce<'a>(self, nonce: &'a [U8]) -> Result<NonceRef<'a, Self>, WrongLengthError> {
         NonceRef::new_for_algo(self, nonce)
     }
 }
@@ -228,8 +228,8 @@ impl<
         const NONCE_LEN: usize,
         Algo: super::typed_owned::Aead<
                 Key = [U8; KEY_LEN],
-                Tag = [u8; TAG_LEN],
-                Nonce = [u8; NONCE_LEN],
+                Tag = [U8; TAG_LEN],
+                Nonce = [U8; NONCE_LEN],
             > + Copy
             + PartialEq,
     > Aead for Algo
@@ -268,10 +268,10 @@ impl<
         // now we expect the lengths to be correct, so later mismatches are unknown errors
         let key: &[U8; KEY_LEN] = key.as_ref().try_into().map_err(|_| EncryptError::Unknown)?;
 
-        let tag_raw: &mut [u8; TAG_LEN] =
+        let tag_raw: &mut [U8; TAG_LEN] =
             tag.as_mut().try_into().map_err(|_| EncryptError::Unknown)?;
 
-        let nonce: &[u8; NONCE_LEN] = nonce
+        let nonce: &[U8; NONCE_LEN] = nonce
             .as_ref()
             .try_into()
             .map_err(|_| EncryptError::Unknown)?;
@@ -309,9 +309,9 @@ impl<
         // now we expect the lengths to be correct, so later mismatches are unknown errors
         let key: &[U8; KEY_LEN] = key.as_ref().try_into().map_err(|_| DecryptError::Unknown)?;
 
-        let tag: &[u8; TAG_LEN] = tag.as_ref().try_into().map_err(|_| DecryptError::Unknown)?;
+        let tag: &[U8; TAG_LEN] = tag.as_ref().try_into().map_err(|_| DecryptError::Unknown)?;
 
-        let nonce: &[u8; NONCE_LEN] = nonce
+        let nonce: &[U8; NONCE_LEN] = nonce
             .as_ref()
             .try_into()
             .map_err(|_| DecryptError::Unknown)?;
@@ -386,7 +386,7 @@ impl<'a, Algo> KeyRef<'a, Algo> {
 
 impl<'a, Algo: Aead> TagRef<'a, Algo> {
     /// Creates a new tag for the provided algorithm. Checks that the length is correct.
-    pub fn new_for_algo(algo: Algo, tag: &'a [u8]) -> Result<Self, WrongLengthError> {
+    pub fn new_for_algo(algo: Algo, tag: &'a [U8]) -> Result<Self, WrongLengthError> {
         (tag.len() == algo.tag_len())
             .then_some(TagRef {
                 algorithm: algo,
@@ -396,8 +396,8 @@ impl<'a, Algo: Aead> TagRef<'a, Algo> {
     }
 }
 
-impl<'a, Algo: Aead> AsRef<[u8]> for TagRef<'a, Algo> {
-    fn as_ref(&self) -> &[u8] {
+impl<'a, Algo: Aead> AsRef<[U8]> for TagRef<'a, Algo> {
+    fn as_ref(&self) -> &[U8] {
         self.tag
     }
 }
@@ -411,7 +411,7 @@ impl<'a, Algo> TagRef<'a, Algo> {
 
 impl<'a, Algo: Aead> TagMut<'a, Algo> {
     /// Creates a new mutable tag for the provided algorithm. Checks that the length is correct.
-    pub fn new_for_algo(algo: Algo, tag: &'a mut [u8]) -> Result<Self, WrongLengthError> {
+    pub fn new_for_algo(algo: Algo, tag: &'a mut [U8]) -> Result<Self, WrongLengthError> {
         (tag.len() == algo.tag_len())
             .then_some(TagMut {
                 algorithm: algo,
@@ -439,7 +439,7 @@ impl<'a, Algo> TagMut<'a, Algo> {
 
 impl<'a, Algo: Aead> NonceRef<'a, Algo> {
     /// Creates a new nonce for the provided algorithm. Checks that the length is correct.
-    pub fn new_for_algo(algo: Algo, nonce: &'a [u8]) -> Result<Self, WrongLengthError> {
+    pub fn new_for_algo(algo: Algo, nonce: &'a [U8]) -> Result<Self, WrongLengthError> {
         (nonce.len() == algo.nonce_len())
             .then_some(NonceRef {
                 algorithm: algo,
@@ -456,14 +456,14 @@ impl<'a, Algo> NonceRef<'a, Algo> {
     }
 }
 
-impl<'a, Algo: Aead> AsRef<[u8]> for NonceRef<'a, Algo> {
-    fn as_ref(&self) -> &[u8] {
+impl<'a, Algo: Aead> AsRef<[U8]> for NonceRef<'a, Algo> {
+    fn as_ref(&self) -> &[U8] {
         self.nonce
     }
 }
 
-impl<'a, Algo: Aead> AsMut<[u8]> for TagMut<'a, Algo> {
-    fn as_mut(&mut self) -> &mut [u8] {
+impl<'a, Algo: Aead> AsMut<[U8]> for TagMut<'a, Algo> {
+    fn as_mut(&mut self) -> &mut [U8] {
         self.tag
     }
 }
