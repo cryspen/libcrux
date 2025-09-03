@@ -79,6 +79,10 @@ fn key_expansion<T: AESState>(key: &[u8]) -> ExtendedKey<T, NUM_KEYS> {
     keyex[14].aes_keygen_assist0::<0x40>(&prev1);
     keyex[14].key_expansion_step(&prev0);
 
+    for i in 0..NUM_KEYS {
+        print(&format!("{i}"), &keyex[i]);
+    }
+
     keyex
 }
 
