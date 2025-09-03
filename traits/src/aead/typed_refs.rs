@@ -175,7 +175,7 @@ pub trait Aead: Copy + PartialEq {
         nonce: NonceRef<'a, Self>,
         aad: &[u8],
         plaintext: &[U8],
-    ) -> Result<TagRef<'a, Self>, EncryptError>;
+    ) -> Result<(), EncryptError>;
 
     /// Decrypt a ciphertext, verifying its authenticity.
     /// The arguments `plaintext` and `ciphertext` must have the same length.
@@ -239,7 +239,7 @@ impl<
         nonce: NonceRef<'a, Self>,
         aad: &[u8],
         plaintext: &[U8],
-    ) -> Result<TagRef<'a, Self>, EncryptError> {
+    ) -> Result<(), EncryptError> {
         if key.algo() != self {
             return Err(EncryptError::WrongKey);
         }
@@ -270,7 +270,6 @@ impl<
             plaintext,
         )
         .map_err(EncryptError::from)
-        .map(|_| TagRef::from(tag))
     }
 
     fn decrypt<'a>(
@@ -334,7 +333,7 @@ impl<'a, Algo: Aead> KeyRef<'a, Algo> {
         nonce: NonceRef<'a, Algo>,
         aad: &[u8],
         plaintext: &[U8],
-    ) -> Result<TagRef<'a, Algo>, EncryptError> {
+    ) -> Result<(), EncryptError> {
         self.0
             .encrypt(ciphertext, tag, *self, nonce, aad, plaintext)
     }

@@ -176,18 +176,19 @@ mod tests {
     fn test_key_centric_refs() {
         use typed_refs::Aead as _;
 
-        let mut tag = [0; 16];
+        let mut tag_bytes = [0; 16];
 
         let algo = super::ChaCha20Poly1305;
         let key = algo.new_key(&[0; 32]).unwrap();
-        let tag = algo.new_tag_mut(&mut tag).unwrap();
+        let tag = algo.new_tag_mut(&mut tag_bytes).unwrap();
         let nonce = algo.new_nonce(&[0; 12]).unwrap();
 
         let pt = b"the quick brown fox jumps over the lazy dog";
         let mut ct = [0; 43];
         let mut pt_out = [0; 43];
 
-        let tag = key.encrypt(&mut ct, tag, nonce, b"", pt).unwrap();
+        key.encrypt(&mut ct, tag, nonce, b"", pt).unwrap();
+        let tag = algo.new_tag(&tag_bytes).unwrap();
         key.decrypt(&mut pt_out, nonce, b"", &ct, tag).unwrap();
         assert_eq!(pt, &pt_out);
     }

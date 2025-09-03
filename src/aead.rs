@@ -61,10 +61,7 @@ impl libcrux_traits::aead::typed_refs::Aead for Aead {
         nonce: libcrux_traits::aead::typed_refs::NonceRef<'a, Self>,
         aad: &[u8],
         plaintext: &[libcrux_traits::libcrux_secrets::U8],
-    ) -> Result<
-        libcrux_traits::aead::typed_refs::TagRef<'a, Self>,
-        libcrux_traits::aead::typed_refs::EncryptError,
-    > {
+    ) -> Result<(), libcrux_traits::aead::typed_refs::EncryptError> {
         match self {
             Aead::ChaCha20Poly1305 => {
                 let key = Self::mux_key(key)
@@ -75,7 +72,6 @@ impl libcrux_traits::aead::typed_refs::Aead for Aead {
                     .ok_or(libcrux_traits::aead::typed_refs::EncryptError::WrongNonce)?;
                 libcrux_chacha20poly1305::ChaCha20Poly1305
                     .encrypt(ciphertext, tag, key, nonce, aad, plaintext)
-                    .map(Self::wrap_tag)
             }
             Aead::XChaCha20Poly1305 => {
                 let key = Self::mux_key(key)
@@ -86,7 +82,6 @@ impl libcrux_traits::aead::typed_refs::Aead for Aead {
                     .ok_or(libcrux_traits::aead::typed_refs::EncryptError::WrongNonce)?;
                 libcrux_chacha20poly1305::XChaCha20Poly1305
                     .encrypt(ciphertext, tag, key, nonce, aad, plaintext)
-                    .map(Self::wrap_tag)
             }
         }
     }
@@ -751,18 +746,20 @@ mod tests {
 
         algo.new_key(&[0; 33]).expect_err("length should mismatch");
 
-        let mut tag = [0; 16];
+        let mut tag_bytes = [0; 16];
 
         let key = algo.new_key(&[0; 32]).expect("length should match");
         let nonce = algo.new_nonce(&[0; 12]).expect("length should match");
-        let tag = algo.new_tag_mut(&mut tag).expect("length should match");
+        let tag = algo
+            .new_tag_mut(&mut tag_bytes)
+            .expect("length should match");
 
         let pt = b"the quick brown fox jumps over the lazy dog";
         let mut ct = [0; 43];
         let mut pt_out = [0; 43];
 
-        let tag = key.encrypt(&mut ct, tag, nonce, b"", pt).unwrap();
-
+        key.encrypt(&mut ct, tag, nonce, b"", pt).unwrap();
+        let tag = algo.new_tag(&tag_bytes).unwrap();
         key.decrypt(&mut pt_out, nonce, b"", &ct, tag).unwrap();
         assert_eq!(pt, &pt_out);
     }
