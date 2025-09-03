@@ -83,9 +83,9 @@ macro_rules! impl_aead_typed_owned {
         impl $crate::aead::typed_owned::Aead for $ty {
             type Key = [$crate::libcrux_secrets::U8; $keylen];
 
-            type Tag = [u8; $taglen];
+            type Tag = [$crate::libcrux_secrets::U8; $taglen];
 
-            type Nonce = [u8; $noncelen];
+            type Nonce = [$crate::libcrux_secrets::U8; $noncelen];
 
             fn encrypt(
                 ciphertext: &mut [u8],
@@ -152,19 +152,19 @@ impl<Algo: Aead> AsMut<Algo::Key> for Key<Algo> {
     }
 }
 
-impl<const L: usize, Algo: Aead<Tag = [u8; L]>> From<[u8; L]> for Tag<Algo> {
+impl<const L: usize, Algo: Aead<Tag = [U8; L]>> From<[U8; L]> for Tag<Algo> {
     fn from(bytes: Algo::Tag) -> Self {
         Self(bytes)
     }
 }
 
-impl<const L: usize, Algo: Aead<Tag = [u8; L]>> From<&[u8; L]> for &Tag<Algo> {
+impl<const L: usize, Algo: Aead<Tag = [U8; L]>> From<&[U8; L]> for &Tag<Algo> {
     fn from(bytes: &Algo::Tag) -> Self {
         unsafe { core::mem::transmute(bytes) }
     }
 }
 
-impl<const L: usize, Algo: Aead<Tag = [u8; L]>> From<&mut [u8; L]> for &mut Tag<Algo> {
+impl<const L: usize, Algo: Aead<Tag = [U8; L]>> From<&mut [U8; L]> for &mut Tag<Algo> {
     fn from(bytes: &mut Algo::Tag) -> Self {
         unsafe { core::mem::transmute(bytes) }
     }
@@ -182,13 +182,13 @@ impl<Algo: Aead> AsMut<Algo::Tag> for Tag<Algo> {
     }
 }
 
-impl<const L: usize, Algo: Aead<Nonce = [u8; L]>> From<[u8; L]> for Nonce<Algo> {
+impl<const L: usize, Algo: Aead<Nonce = [U8; L]>> From<[U8; L]> for Nonce<Algo> {
     fn from(bytes: Algo::Nonce) -> Self {
         Self(bytes)
     }
 }
 
-impl<const L: usize, Algo: Aead<Nonce = [u8; L]>> From<&[u8; L]> for &Nonce<Algo> {
+impl<const L: usize, Algo: Aead<Nonce = [U8; L]>> From<&[U8; L]> for &Nonce<Algo> {
     fn from(bytes: &Algo::Nonce) -> Self {
         unsafe { core::mem::transmute(bytes) }
     }
