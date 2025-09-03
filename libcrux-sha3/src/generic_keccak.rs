@@ -97,32 +97,43 @@ impl<const N: usize, T: KeccakItem<N>> KeccakState<N, T> {
     }
 
     #[inline(always)]
-    #[hax_lib::fstar::replace_body("assert true")]
-    fn rho(&mut self, t: [T; 5]) {
+    fn rho_0(&mut self, t: [T; 5]) {
         self.set(0, 0, T::xor(self[(0, 0)], t[0]));
         self.set(1, 0, T::xor_and_rotate::<36, 28>(self[(1, 0)], t[0]));
         self.set(2, 0, T::xor_and_rotate::<3, 61>(self[(2, 0)], t[0]));
         self.set(3, 0, T::xor_and_rotate::<41, 23>(self[(3, 0)], t[0]));
         self.set(4, 0, T::xor_and_rotate::<18, 46>(self[(4, 0)], t[0]));
+    }
 
+    #[inline(always)]
+    fn rho_1(&mut self, t: [T; 5]) {
         self.set(0, 1, T::xor_and_rotate::<1, 63>(self[(0, 1)], t[1]));
         self.set(1, 1, T::xor_and_rotate::<44, 20>(self[(1, 1)], t[1]));
         self.set(2, 1, T::xor_and_rotate::<10, 54>(self[(2, 1)], t[1]));
         self.set(3, 1, T::xor_and_rotate::<45, 19>(self[(3, 1)], t[1]));
         self.set(4, 1, T::xor_and_rotate::<2, 62>(self[(4, 1)], t[1]));
+    }
 
+    #[inline(always)]
+    fn rho_2(&mut self, t: [T; 5]) {
         self.set(0, 2, T::xor_and_rotate::<62, 2>(self[(0, 2)], t[2]));
         self.set(1, 2, T::xor_and_rotate::<6, 58>(self[(1, 2)], t[2]));
         self.set(2, 2, T::xor_and_rotate::<43, 21>(self[(2, 2)], t[2]));
         self.set(3, 2, T::xor_and_rotate::<15, 49>(self[(3, 2)], t[2]));
         self.set(4, 2, T::xor_and_rotate::<61, 3>(self[(4, 2)], t[2]));
+    }
 
+    #[inline(always)]
+    fn rho_3(&mut self, t: [T; 5]) {
         self.set(0, 3, T::xor_and_rotate::<28, 36>(self[(0, 3)], t[3]));
         self.set(1, 3, T::xor_and_rotate::<55, 9>(self[(1, 3)], t[3]));
         self.set(2, 3, T::xor_and_rotate::<25, 39>(self[(2, 3)], t[3]));
         self.set(3, 3, T::xor_and_rotate::<21, 43>(self[(3, 3)], t[3]));
         self.set(4, 3, T::xor_and_rotate::<56, 8>(self[(4, 3)], t[3]));
+    }
 
+    #[inline(always)]
+    fn rho_4(&mut self, t: [T; 5]) {
         self.set(0, 4, T::xor_and_rotate::<27, 37>(self[(0, 4)], t[4]));
         self.set(1, 4, T::xor_and_rotate::<20, 44>(self[(1, 4)], t[4]));
         self.set(2, 4, T::xor_and_rotate::<39, 25>(self[(2, 4)], t[4]));
@@ -131,29 +142,51 @@ impl<const N: usize, T: KeccakItem<N>> KeccakState<N, T> {
     }
 
     #[inline(always)]
-    #[hax_lib::fstar::replace_body("assert true")]
-    fn pi(&mut self) {
-        let old = *self;
+    fn rho(&mut self, t: [T; 5]) {
+        self.rho_0(t);
+        self.rho_1(t);
+        self.rho_2(t);
+        self.rho_3(t);
+        self.rho_4(t);
+    }
 
+    #[inline(always)]
+    fn pi_0(&mut self, old: KeccakState<N, T>) {
         self.set(1, 0, old[(0, 3)]);
         self.set(2, 0, old[(0, 1)]);
         self.set(3, 0, old[(0, 4)]);
         self.set(4, 0, old[(0, 2)]);
+    }
+
+    #[inline(always)]
+    fn pi_1(&mut self, old: KeccakState<N, T>) {
         self.set(0, 1, old[(1, 1)]);
         self.set(1, 1, old[(1, 4)]);
         self.set(2, 1, old[(1, 2)]);
         self.set(3, 1, old[(1, 0)]);
         self.set(4, 1, old[(1, 3)]);
+    }
+
+    #[inline(always)]
+    fn pi_2(&mut self, old: KeccakState<N, T>) {
         self.set(0, 2, old[(2, 2)]);
         self.set(1, 2, old[(2, 0)]);
         self.set(2, 2, old[(2, 3)]);
         self.set(3, 2, old[(2, 1)]);
         self.set(4, 2, old[(2, 4)]);
+    }
+
+    #[inline(always)]
+    fn pi_3(&mut self, old: KeccakState<N, T>) {
         self.set(0, 3, old[(3, 3)]);
         self.set(1, 3, old[(3, 1)]);
         self.set(2, 3, old[(3, 4)]);
         self.set(3, 3, old[(3, 2)]);
         self.set(4, 3, old[(3, 0)]);
+    }
+
+    #[inline(always)]
+    fn pi_4(&mut self, old: KeccakState<N, T>) {
         self.set(0, 4, old[(4, 4)]);
         self.set(1, 4, old[(4, 2)]);
         self.set(2, 4, old[(4, 0)]);
@@ -163,6 +196,17 @@ impl<const N: usize, T: KeccakItem<N>> KeccakState<N, T> {
 
     #[inline(always)]
     #[hax_lib::fstar::replace_body("assert true")]
+    fn pi(&mut self) {
+        let old: KeccakState<N, T> = *self;
+
+        self.pi_0(old);
+        self.pi_1(old);
+        self.pi_2(old);
+        self.pi_3(old);
+        self.pi_4(old);
+    }
+
+    #[inline(always)]
     fn chi(&mut self) {
         let old = *self;
 
