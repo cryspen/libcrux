@@ -2,7 +2,7 @@
 //! Encryption with Associated Data (AEAD) scheme that takes array references
 //! as arguments and writes outputs to mutable array references.
 
-use super::arrayref::*;
+use super::{arrayref::*, consts::AeadConsts};
 use libcrux_secrets::U8;
 
 // These are the types for the arguments to AEAD. I wonder if it makes sense to do stuff like
@@ -25,7 +25,7 @@ pub struct Nonce<Algo: Aead>(Algo::Nonce);
 /// Some implementors of this trait may impose stronger restrictions on the inputs than described
 /// here. Check the documentation of the types implementing this trait to make sure which inputs
 /// are valid.
-pub trait Aead: Sized {
+pub trait Aead: Sized + AeadConsts {
     type Key;
     type Tag;
     type Nonce;
