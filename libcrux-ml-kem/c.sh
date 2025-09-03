@@ -97,7 +97,7 @@ cd $out
 # Note that we can not extract for all platforms on any platform right now.
 # Make sure to keep files from other platforms.
 if [[ "$clean" = 1 ]]; then
-    rm -rf *.c *.h
+    rm -rf libcrux_*.c libcrux_*.h
     rm -rf internal/*.h
 fi
 
