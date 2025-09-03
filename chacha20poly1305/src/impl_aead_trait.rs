@@ -154,7 +154,7 @@ mod tests {
 
     #[test]
     fn test_key_centric_refs() {
-        use typed_refs::AeadExt as _;
+        use typed_refs::Aead as _;
 
         let mut tag = [0; 16];
 
