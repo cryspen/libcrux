@@ -8,9 +8,6 @@ use libcrux_sha3::neon::x2::incremental::{
     init, shake256_absorb_final, shake256_squeeze_first_block,
 };
 
-const DIGEST_LEN_SHAKE256: usize = 136;
-const STRING_LEN_SHAKE256: usize = DIGEST_LEN_SHAKE256 * 2;
-
 #[test]
 fn sha3_shake256_incremental() {
     // Test squeezing 1 block (136 bytes for SHAKE256, not 168)
