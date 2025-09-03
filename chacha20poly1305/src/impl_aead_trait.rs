@@ -17,7 +17,17 @@ pub struct ChaCha20Poly1305;
 pub struct XChaCha20Poly1305;
 
 mod impl_chachapoly {
+    use libcrux_traits::aead::consts::AeadConsts;
+
     use super::*;
+
+    impl AeadConsts for ChaCha20Poly1305 {
+        const KEY_LEN: usize = KEY_LEN;
+
+        const TAG_LEN: usize = TAG_LEN;
+
+        const NONCE_LEN: usize = NONCE_LEN;
+    }
 
     impl Aead<KEY_LEN, TAG_LEN, NONCE_LEN> for ChaCha20Poly1305 {
         fn encrypt(
@@ -83,9 +93,19 @@ mod impl_chachapoly {
 }
 
 mod impl_xchachapoly {
+    use libcrux_traits::aead::consts::AeadConsts;
+
     use crate::xchacha20_poly1305::NONCE_LEN as XNONCE_LEN;
 
     use super::*;
+
+    impl AeadConsts for XChaCha20Poly1305 {
+        const KEY_LEN: usize = KEY_LEN;
+
+        const TAG_LEN: usize = TAG_LEN;
+
+        const NONCE_LEN: usize = XNONCE_LEN;
+    }
 
     impl Aead<KEY_LEN, TAG_LEN, XNONCE_LEN> for XChaCha20Poly1305 {
         fn encrypt(
