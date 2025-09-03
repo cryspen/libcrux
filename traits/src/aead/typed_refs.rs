@@ -188,30 +188,20 @@ pub trait Aead: Copy + PartialEq {
         ciphertext: &[u8],
         tag: Tag<'a, Self>,
     ) -> Result<(), DecryptError>;
-}
 
-/// Provides convenience functions. Has a blanket impl for all Aead.
-pub trait AeadExt: Aead {
     /// Creates a new key given the algorithm.
-    fn new_key<'a>(self, key: &'a [U8]) -> Result<Key<'a, Self>, WrongLengthError>;
-    /// Creates a new tag given the algorithm.
-    fn new_tag<'a>(self, tag: &'a [u8]) -> Result<Tag<'a, Self>, WrongLengthError>;
-    /// Creates a new mutable tag given the algorithm.
-    fn new_tag_mut<'a>(self, tag_mut: &'a mut [u8]) -> Result<TagMut<'a, Self>, WrongLengthError>;
-    /// Creates a new nonce given the algorithm.
-    fn new_nonce<'a>(self, nonce: &'a [u8]) -> Result<Nonce<'a, Self>, WrongLengthError>;
-}
-
-impl<Algo: Aead> AeadExt for Algo {
     fn new_key<'a>(self, key: &'a [U8]) -> Result<Key<'a, Self>, WrongLengthError> {
         Key::new_for_algo(self, key)
     }
+    /// Creates a new tag given the algorithm.
     fn new_tag<'a>(self, tag: &'a [u8]) -> Result<Tag<'a, Self>, WrongLengthError> {
         Tag::new_for_algo(self, tag)
     }
+    /// Creates a new mutable tag given the algorithm.
     fn new_tag_mut<'a>(self, tag_mut: &'a mut [u8]) -> Result<TagMut<'a, Self>, WrongLengthError> {
         TagMut::new_for_algo(self, tag_mut)
     }
+    /// Creates a new nonce given the algorithm.
     fn new_nonce<'a>(self, nonce: &'a [u8]) -> Result<Nonce<'a, Self>, WrongLengthError> {
         Nonce::new_for_algo(self, nonce)
     }

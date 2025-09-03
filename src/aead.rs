@@ -741,7 +741,7 @@ pub fn decrypt_detached(
 #[cfg(test)]
 mod tests {
     use libcrux_traits::aead::typed_refs;
-    use typed_refs::AeadExt as _;
+    use typed_refs::Aead as _;
 
     use super::Aead;
 
