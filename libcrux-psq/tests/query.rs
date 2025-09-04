@@ -1,4 +1,7 @@
-use libcrux_psq::protocol::{api::Protocol, dhkem::DHKeyPair, pqkem::PQKeyPair, *};
+use libcrux_psq::{
+    handshake::{builder, dhkem::DHKeyPair},
+    traits::*,
+};
 
 #[test]
 fn query() {
@@ -14,10 +17,10 @@ fn query() {
     // External setup
     let responder_ecdh_keys = DHKeyPair::new(&mut rng);
 
-    let responder_pq_keys = PQKeyPair::new(&mut rng);
+    let responder_pq_keys = libcrux_ml_kem::mlkem768::rand::generate_key_pair(&mut rng);
 
     // Setup initiator
-    let mut initiator = api::Builder::new(rand::rng())
+    let mut initiator = builder::Builder::new(rand::rng())
         .outer_aad(aad_initiator)
         .context(ctx)
         .peer_longterm_ecdh_pk(&responder_ecdh_keys.pk)
@@ -25,7 +28,7 @@ fn query() {
         .unwrap();
 
     // Setup responder
-    let mut responder = api::Builder::new(rand::rng())
+    let mut responder = builder::Builder::new(rand::rng())
         .context(ctx)
         .outer_aad(aad_responder)
         .longterm_ecdh_keys(&responder_ecdh_keys)
