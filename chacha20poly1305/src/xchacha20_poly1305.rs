@@ -7,6 +7,25 @@ use crate::{
     hacl::chacha20::{chacha20_constants, rounds},
     AeadError, KEY_LEN, TAG_LEN,
 };
+use libcrux_traits::aead::{typed_owned, typed_refs};
+
+pub use crate::impl_aead_trait::XChaCha20Poly1305;
+
+/// An owned XChaCha20Poly1305 key.
+pub type Key = typed_owned::Key<XChaCha20Poly1305>;
+/// An owned XChaCha20Poly1305 tag.
+pub type Tag = typed_owned::Tag<XChaCha20Poly1305>;
+/// An owned XChaCha20Poly1305 nonce.
+pub type Nonce = typed_owned::Nonce<XChaCha20Poly1305>;
+
+/// A referece to a XChaCha20Poly1305 key.
+pub type KeyRef<'a> = typed_refs::KeyRef<'a, XChaCha20Poly1305>;
+/// A referece to a XChaCha20Poly1305 tag.
+pub type TagRef<'a> = typed_refs::TagRef<'a, XChaCha20Poly1305>;
+/// A mutable referece to a XChaCha20Poly1305 tag.
+pub type TagMut<'a> = typed_refs::TagMut<'a, XChaCha20Poly1305>;
+/// A referece to a XChaCha20Poly1305 nonce.
+pub type NonceRef<'a> = typed_refs::NonceRef<'a, XChaCha20Poly1305>;
 
 /// Length of the XChaCha nonce.
 pub const NONCE_LEN: usize = 24;
