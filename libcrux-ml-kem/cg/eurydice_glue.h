@@ -114,7 +114,7 @@ typedef struct {
 
 // Previous version above does not work when t is an array type (as usual). Will
 // be deprecated soon.
-#define Eurydice_slice_subslice3(s, start, end, t_ptr)                         \
+#define Eurydice_slice_subslice3(s, start, end, t_ptr) \
   EURYDICE_SLICE((t_ptr)s.ptr, (start), (end))
 
 #define Eurydice_slice_subslice_to(s, subslice_end_pos, t, _0, _1) \
@@ -134,7 +134,7 @@ typedef struct {
   EURYDICE_SLICE((t *)x, (start), (end))
 
 // Same as above, variant for when start and end are statically known
-#define Eurydice_array_to_subslice3(x, start, end, t_ptr)                      \
+#define Eurydice_array_to_subslice3(x, start, end, t_ptr) \
   EURYDICE_SLICE((t_ptr)x, (start), (end))
 // The following functions convert an array into a slice.
 
@@ -149,23 +149,22 @@ typedef struct {
 
 // Distinguished support for some PartialEq trait implementations
 //
-#define Eurydice_slice_eq(src1, src2, t, _)                                    \
-  ((src1)->len == (src2)->len &&                                               \
+#define Eurydice_slice_eq(src1, src2, t, _) \
+  ((src1)->len == (src2)->len &&            \
    !memcmp((src1)->ptr, (src2)->ptr, (src1)->len * sizeof(t)))
 
 #define core_array___Array_T__N___as_slice(len_, ptr_, t, _ret_t) \
   KRML_CLITERAL(Eurydice_slice) { ptr_, len_ }
 
 #define core_array__core__clone__Clone_for__Array_T__N___clone( \
-    len, src, dst, elem_type, _ret_t)                                \
+    len, src, dst, elem_type, _ret_t)                           \
   (memcpy(dst, src, len * sizeof(elem_type)))
 #define TryFromSliceError uint8_t
 
-#define Eurydice_array_eq(sz, a1, a2, t) \
-  (memcmp(a1, a2, sz * sizeof(t)) == 0)
+#define Eurydice_array_eq(sz, a1, a2, t) (memcmp(a1, a2, sz * sizeof(t)) == 0)
 
 // core::cmp::PartialEq<&0 (@Slice<U>)> for @Array<T, N>
-#define Eurydice_array_eq_slice(sz, a1, s2, t, _)                              \
+#define Eurydice_array_eq_slice(sz, a1, s2, t, _) \
   (memcmp(a1, (s2)->ptr, sz * sizeof(t)) == 0)
 
 #define core_array_equality___core__cmp__PartialEq__Array_U__N___for__Array_T__N____eq( \
@@ -214,7 +213,7 @@ static KRML_MUSTINLINE void Eurydice_slice_to_array3(uint8_t *dst_tag,
 // CORE STUFF (conversions, endianness, ...)
 
 static KRML_MUSTINLINE void core_num__u64__to_le_bytes(uint64_t v,
-                                                         uint8_t buf[8]) {
+                                                       uint8_t buf[8]) {
   store64_le(buf, v);
 }
 static KRML_MUSTINLINE uint64_t core_num__u64__from_le_bytes(uint8_t buf[8]) {
@@ -235,16 +234,16 @@ static KRML_MUSTINLINE uint32_t core_num__u8__count_ones(uint8_t x0) {
 
 // unsigned overflow wraparound semantics in C
 static KRML_MUSTINLINE uint16_t core_num__u16__wrapping_add(uint16_t x,
-                                                              uint16_t y) {
+                                                            uint16_t y) {
   return x + y;
 }
 static KRML_MUSTINLINE uint8_t core_num__u8__wrapping_sub(uint8_t x,
-                                                            uint8_t y) {
+                                                          uint8_t y) {
   return x - y;
 }
 
 static KRML_MUSTINLINE uint64_t core_num__u64__rotate_left(uint64_t x0,
-                                                             uint32_t x1) {
+                                                           uint32_t x1) {
   return (x0 << x1 | x0 >> (64 - x1));
 }
 

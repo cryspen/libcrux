@@ -166,11 +166,10 @@ typedef struct {
 #define TryFromSliceError uint8_t
 #define core_array_TryFromSliceError uint8_t
 
-#define Eurydice_array_eq(sz, a1, a2, t) \
-  (memcmp(a1, a2, sz * sizeof(t)) == 0)
+#define Eurydice_array_eq(sz, a1, a2, t) (memcmp(a1, a2, sz * sizeof(t)) == 0)
 
 // core::cmp::PartialEq<&0 (@Slice<U>)> for @Array<T, N>
-#define Eurydice_array_eq_slice(sz, a1, s2, t, _)                              \
+#define Eurydice_array_eq_slice(sz, a1, s2, t, _) \
   (memcmp(a1, (s2)->ptr, sz * sizeof(t)) == 0)
 
 #define core_array_equality___core__cmp__PartialEq__Array_U__N___for__Array_T__N____eq( \
@@ -276,13 +275,13 @@ static inline uint64_t core_num__u64__from_le_bytes(uint8_t buf[8]) {
   return load64_le(buf);
 }
 
-static inline int64_t
-core_convert_num___core__convert__From_i32__for_i64__from(int32_t x) {
+static inline int64_t core_convert_num___core__convert__From_i32__for_i64__from(
+    int32_t x) {
   return x;
 }
 
-static inline uint64_t
-core_convert_num___core__convert__From_u8__for_u64__from(uint8_t x) {
+static inline uint64_t core_convert_num___core__convert__From_u8__for_u64__from(
+    uint8_t x) {
   return x;
 }
 
@@ -312,8 +311,8 @@ static inline uint32_t core_num__i32__count_ones(int32_t x0) {
 #endif
 }
 
-static inline size_t core_cmp_impls___core__cmp__Ord_for_usize__min(
-    size_t a, size_t b) {
+static inline size_t core_cmp_impls___core__cmp__Ord_for_usize__min(size_t a,
+                                                                    size_t b) {
   if (a <= b)
     return a;
   else
@@ -331,8 +330,7 @@ static inline uint64_t core_num__u64__rotate_left(uint64_t x0, uint32_t x1) {
   return (x0 << x1 | x0 >> (64 - x1));
 }
 
-static inline void core_ops_arith__i32__add_assign(int32_t *x0,
-                                                       int32_t *x1) {
+static inline void core_ops_arith__i32__add_assign(int32_t *x0, int32_t *x1) {
   *x0 = *x0 + *x1;
 }
 
