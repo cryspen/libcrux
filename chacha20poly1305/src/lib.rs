@@ -1,6 +1,21 @@
 #![no_std]
 
+use libcrux_traits::aead::{typed_owned, typed_refs};
+
 pub mod xchacha20_poly1305;
+
+mod hacl {
+    pub(crate) use libcrux_poly1305::hacl::mac_poly1305;
+
+    pub(crate) mod aead_chacha20poly1305;
+    pub(crate) mod chacha20;
+}
+
+mod impl_aead_trait;
+mod impl_hacl;
+
+pub use impl_aead_trait::ChaCha20Poly1305;
+pub use impl_hacl::*;
 
 /// The length of ChaCha20-Poly1305 keys.
 pub const KEY_LEN: usize = 32;
@@ -10,6 +25,22 @@ pub const TAG_LEN: usize = 16;
 
 /// The length of ChaCha20-Poly1305 nonces.
 pub const NONCE_LEN: usize = 12;
+
+/// An owned ChaCha20Poly1305 key.
+pub type Key = typed_owned::Key<ChaCha20Poly1305>;
+/// An owned ChaCha20Poly1305 tag.
+pub type Tag = typed_owned::Tag<ChaCha20Poly1305>;
+/// An owned ChaCha20Poly1305 nonce.
+pub type Nonce = typed_owned::Nonce<ChaCha20Poly1305>;
+
+/// A referece to a ChaCha20Poly1305 key.
+pub type KeyRef<'a> = typed_refs::KeyRef<'a, ChaCha20Poly1305>;
+/// A referece to a ChaCha20Poly1305 tag.
+pub type TagRef<'a> = typed_refs::TagRef<'a, ChaCha20Poly1305>;
+/// A mutable referece to a ChaCha20Poly1305 tag.
+pub type TagMut<'a> = typed_refs::TagMut<'a, ChaCha20Poly1305>;
+/// A referece to a ChaCha20Poly1305 nonce.
+pub type NonceRef<'a> = typed_refs::NonceRef<'a, ChaCha20Poly1305>;
 
 /// Describes the error conditions of the  ChaCha20-Poly1305 AEAD.
 #[derive(Debug)]
@@ -78,17 +109,3 @@ impl core::fmt::Display for MacError {
         f.write_str(msg)
     }
 }
-
-mod hacl {
-    pub(crate) use libcrux_poly1305::hacl::mac_poly1305;
-
-    pub(crate) mod aead_chacha20poly1305;
-    pub(crate) mod chacha20;
-}
-
-mod impl_aead_trait;
-mod impl_hacl;
-
-pub use impl_aead_trait::ChaCha20Poly1305;
-pub use impl_aead_trait::XChaCha20Poly1305;
-pub use impl_hacl::*;
