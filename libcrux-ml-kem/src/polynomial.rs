@@ -232,7 +232,7 @@ fn poly_barrett_reduce<Vector: Operations>(myself: &mut PolynomialRingElement<Ve
 }
 
 #[inline(always)]
-#[hax_lib::fstar::options("--z3rlimit 300")]
+#[hax_lib::fstar::options("--z3rlimit 300 --split_queries true")]
 #[hax_lib::requires(fstar!(r#"is_bounded_poly (pow2 12 - 1) ${myself}"#))]
 #[hax_lib::ensures(|result| fstar!(r#"is_bounded_poly 3328 ${result}"#))]
 fn subtract_reduce<Vector: Operations>(
@@ -541,20 +541,8 @@ fn add_standard_error_reduce<Vector: Operations>(
 ///
 /// The NIST FIPS 203 standard can be found at
 /// <https://csrc.nist.gov/pubs/fips/203/ipd>.
-// TODO: Remove or replace with something that works and is useful for the proof.
-// #[cfg_attr(hax, hax_lib::requires(
-//     hax_lib::forall(|i:usize|
-//         hax_lib::implies(i < COEFFICIENTS_IN_RING_ELEMENT, ||
-//             (lhs.coefficients[i] >= 0 && lhs.coefficients[i] < 4096) &&
-//             (rhs.coefficients[i].abs() <= FIELD_MODULUS)
-
-// ))))]
-// #[cfg_attr(hax, hax_lib::ensures(|result|
-//     hax_lib::forall(|i:usize|
-//         hax_lib::implies(i < result.coefficients.len(), ||
-//                 result.coefficients[i].abs() <= FIELD_MODULUS
-// ))))]
 #[inline(always)]
+#[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
 #[hax_lib::fstar::options("--z3rlimit 300 --split_queries always")]
 #[hax_lib::requires(fstar!(r#"is_bounded_poly 3328 ${myself} /\
                               is_bounded_poly 3328 ${rhs}"#))]
