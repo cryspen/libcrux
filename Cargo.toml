@@ -30,7 +30,7 @@ members = [
     "p256",
     "blake2",
     "secrets",
-    "fstar-helpers/core-models",
+    "fstar-helpers/core-models-intrinsics",
     "test-utils",
 ]
 

@@ -1,5 +1,5 @@
 [package]
-name = "core-models"
+name = "core-models-intrinsics"
 description = "Models of the Rust core library"
 version = "0.0.3"
 readme = "readme.md"
