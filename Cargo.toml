@@ -32,6 +32,7 @@ members = [
     "secrets",
     "fstar-helpers/core-models",
     "test-utils",
+    "crates/primitives/aead",
 ]
 
 [workspace.package]

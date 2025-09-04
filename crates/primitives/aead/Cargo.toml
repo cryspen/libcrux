@@ -1,0 +1,20 @@
+[package]
+name = "libcrux-aead"
+description = "Formally verified AEAD library"
+version = "0.0.3"
+readme = "Readme.md"
+
+authors.workspace = true
+license.workspace = true
+homepage.workspace = true
+edition.workspace = true
+repository.workspace = true
+
+[dependencies]
+libcrux-chacha20poly1305 = { version = "0.0.3", path = "../../../chacha20poly1305", optional = true }
+libcrux-traits = { version = "0.0.3", path = "../../../traits", optional = true }
+
+[features]
+default = ["chacha20poly1305", "xchacha20poly1305"]
+chacha20poly1305 = ["dep:libcrux-chacha20poly1305", "dep:libcrux-traits"]
+xchacha20poly1305 = ["dep:libcrux-chacha20poly1305", "dep:libcrux-traits"]
