@@ -181,25 +181,26 @@ compute_implicit_rejection_shared_secret(uint8_t *ciphertext,
 
 TEST(MlKem768TestPortable, ConsistencyTest)
 {
-    uint8_t randomness[64];
+    libcrux_sha3_Sha3_512Digest randomness;;
     for (int i = 0; i < 64; i++)
     {
-        randomness[i] = 13;
+        randomness.data[i] = 13;
     }
     auto key_pair = libcrux_ml_kem_mlkem768_portable_generate_key_pair(randomness);
     //  cout << "key pair.pk: " << bytes_to_hex(bytes(key_pair.pk.value, key_pair.pk.value + 16U)) << endl;
     //  cout << "key pair.sk: " << bytes_to_hex(bytes(key_pair.sk.value, key_pair.sk.value + 16U)) << endl;
 
-    auto ctxt = libcrux_ml_kem_mlkem768_portable_encapsulate(&key_pair.pk, randomness);
+    Eurydice_arr_60 randomness32;
+    memcpy(randomness32.data, randomness.data, 32);
+    auto ctxt = libcrux_ml_kem_mlkem768_portable_encapsulate(&key_pair.pk, randomness32);
 
     // cout << "ctxt: " << bytes_to_hex(bytes(ctxt.fst.value, ctxt.fst.value + 16U)) << endl;
 
-    uint8_t sharedSecret2[LIBCRUX_ML_KEM_CONSTANTS_SHARED_SECRET_SIZE];
-    libcrux_ml_kem_mlkem768_portable_decapsulate(&key_pair.sk, &ctxt.fst, sharedSecret2);
+    Eurydice_arr_60 sharedSecret2 = libcrux_ml_kem_mlkem768_portable_decapsulate(&key_pair.sk, &ctxt.fst);
 
     EXPECT_EQ(0,
-              memcmp(ctxt.snd,
-                     sharedSecret2,
+              memcmp(ctxt.snd.data,
+                     sharedSecret2.data,
                      LIBCRUX_ML_KEM_CONSTANTS_SHARED_SECRET_SIZE));
 }
 

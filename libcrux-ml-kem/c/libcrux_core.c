@@ -4,11 +4,11 @@
  * SPDX-License-Identifier: MIT or Apache-2.0
  *
  * This code was generated with the following revisions:
- * Charon: 0ea51402a88c38d63f6f815fbe5a6dddb14cf16b
- * Eurydice: 3c77f1ac8116257d0c416fdac562edfa178b860b
- * Karamel: 354791911c6b40d15a41cda7a0e3560da1cf31a1
- * F*: f3a2732c1984b520b1f1d48a22e7dd9f8d14a3a2
- * Libcrux: b894d22937e1239a34ec32e0ebf3d6f8892331a0
+ * Charon: 667d2fc98984ff7f3df989c2367e6c1fa4a000e7
+ * Eurydice: 564ce891b07fd4aefe7d5ccd78e61400b4ac4a2b
+ * Karamel: 06a6d2fb3a547d11c9f6dbec26f1f9b5e0dbf411
+ * F*: 0c4b790fd608bccfc332d3ff1e9b29c9be8b0595
+ * Libcrux: c03a2450e05a21ae0aa53a715add84a7b759c4f4
  */
 
 #include "internal/libcrux_core.h"
@@ -101,36 +101,6 @@ This function found in impl {libcrux_secrets::traits::Classify<T> for T}
 */
 /**
 A monomorphic instance of libcrux_secrets.int.public_integers.classify_27
-with types int16_t
-
-*/
-int16_t libcrux_secrets_int_public_integers_classify_27_39(int16_t self) {
-  return self;
-}
-
-/**
-This function found in impl {libcrux_secrets::traits::Declassify<T> for T}
-*/
-/**
-A monomorphic instance of libcrux_secrets.int.public_integers.declassify_d8
-with types uint8_t
-
-*/
-static KRML_MUSTINLINE uint8_t declassify_d8_90(uint8_t self) { return self; }
-
-/**
-This function found in impl {libcrux_secrets::int::CastOps for u8}
-*/
-int16_t libcrux_secrets_int_as_i16_59(uint8_t self) {
-  return libcrux_secrets_int_public_integers_classify_27_39(
-      (int16_t)declassify_d8_90(self));
-}
-
-/**
-This function found in impl {libcrux_secrets::traits::Classify<T> for T}
-*/
-/**
-A monomorphic instance of libcrux_secrets.int.public_integers.classify_27
 with types uint8_t
 
 */
@@ -157,11 +127,33 @@ uint8_t libcrux_secrets_int_as_u8_f5(int16_t self) {
 }
 
 /**
-This function found in impl {libcrux_secrets::int::CastOps for i16}
+This function found in impl {libcrux_secrets::traits::Classify<T> for T}
 */
-int16_t libcrux_secrets_int_as_i16_f5(int16_t self) {
+/**
+A monomorphic instance of libcrux_secrets.int.public_integers.classify_27
+with types int16_t
+
+*/
+int16_t libcrux_secrets_int_public_integers_classify_27_39(int16_t self) {
+  return self;
+}
+
+/**
+This function found in impl {libcrux_secrets::traits::Declassify<T> for T}
+*/
+/**
+A monomorphic instance of libcrux_secrets.int.public_integers.declassify_d8
+with types uint8_t
+
+*/
+static KRML_MUSTINLINE uint8_t declassify_d8_90(uint8_t self) { return self; }
+
+/**
+This function found in impl {libcrux_secrets::int::CastOps for u8}
+*/
+int16_t libcrux_secrets_int_as_i16_59(uint8_t self) {
   return libcrux_secrets_int_public_integers_classify_27_39(
-      libcrux_secrets_int_public_integers_declassify_d8_39(self));
+      (int16_t)declassify_d8_90(self));
 }
 
 /**
@@ -321,270 +313,11 @@ int16_t libcrux_secrets_int_as_i16_b8(uint32_t self) {
 }
 
 /**
-This function found in impl {core::default::Default for
-libcrux_ml_kem::types::MlKemPrivateKey<SIZE>}
+This function found in impl {libcrux_secrets::int::CastOps for i16}
 */
-/**
-A monomorphic instance of libcrux_ml_kem.types.default_d3
-with const generics
-- SIZE= 1632
-*/
-Eurydice_arr_7f0 libcrux_ml_kem_types_default_d3_2a(void) {
-  return (KRML_CLITERAL(Eurydice_arr_7f0){
-      .data = {
-          0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-          0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-          0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-          0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-          0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-          0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-          0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-          0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-          0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-          0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-          0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-          0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-          0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-          0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-          0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-          0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-          0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-          0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-          0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-          0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-          0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-          0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-          0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-          0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-          0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-          0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-          0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-          0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-          0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-          0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-          0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-          0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-          0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-          0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-          0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-          0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-          0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-          0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-          0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-          0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-          0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-          0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-          0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-          0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-          0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-          0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-          0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-          0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-          0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-          0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-          0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-          0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-          0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-          0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-          0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-          0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-          0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-          0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-          0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-          0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-          0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-          0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-          0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-          0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-          0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-          0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-          0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-          0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-          0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-          0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-          0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-          0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-          0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-          0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-          0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-          0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-          0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-          0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-          0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-          0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-          0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-          0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-          0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-          0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-          0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-          0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-          0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-          0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-          0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-          0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-          0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-          0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-          0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-          0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-          0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-          0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U}});
-}
-
-/**
-This function found in impl {core::convert::From<@Array<u8, SIZE>> for
-libcrux_ml_kem::types::MlKemPublicKey<SIZE>}
-*/
-/**
-A monomorphic instance of libcrux_ml_kem.types.from_fd
-with const generics
-- SIZE= 800
-*/
-Eurydice_arr_30 libcrux_ml_kem_types_from_fd_4d(Eurydice_arr_30 value) {
-  return value;
-}
-
-/**
-This function found in impl
-{libcrux_ml_kem::types::MlKemKeyPair<PRIVATE_KEY_SIZE, PUBLIC_KEY_SIZE>}
-*/
-/**
-A monomorphic instance of libcrux_ml_kem.types.from_17
-with const generics
-- PRIVATE_KEY_SIZE= 1632
-- PUBLIC_KEY_SIZE= 800
-*/
-libcrux_ml_kem_types_MlKemKeyPair_3e libcrux_ml_kem_types_from_17_fa(
-    Eurydice_arr_7f0 sk, Eurydice_arr_30 pk) {
-  return (
-      KRML_CLITERAL(libcrux_ml_kem_types_MlKemKeyPair_3e){.sk = sk, .pk = pk});
-}
-
-/**
-This function found in impl {core::convert::From<@Array<u8, SIZE>> for
-libcrux_ml_kem::types::MlKemPrivateKey<SIZE>}
-*/
-/**
-A monomorphic instance of libcrux_ml_kem.types.from_77
-with const generics
-- SIZE= 1632
-*/
-Eurydice_arr_7f0 libcrux_ml_kem_types_from_77_2a(Eurydice_arr_7f0 value) {
-  return value;
-}
-
-/**
-This function found in impl {core::convert::From<@Array<u8, SIZE>> for
-libcrux_ml_kem::types::MlKemCiphertext<SIZE>}
-*/
-/**
-A monomorphic instance of libcrux_ml_kem.types.from_e0
-with const generics
-- SIZE= 768
-*/
-Eurydice_arr_56 libcrux_ml_kem_types_from_e0_d0(Eurydice_arr_56 value) {
-  return value;
-}
-
-/**
-This function found in impl {libcrux_ml_kem::types::MlKemPublicKey<SIZE>}
-*/
-/**
-A monomorphic instance of libcrux_ml_kem.types.as_slice_e6
-with const generics
-- SIZE= 800
-*/
-Eurydice_arr_30 *libcrux_ml_kem_types_as_slice_e6_4d(Eurydice_arr_30 *self) {
-  return self;
-}
-
-/**
-This function found in impl {libcrux_ml_kem::types::MlKemCiphertext<SIZE>}
-*/
-/**
-A monomorphic instance of libcrux_ml_kem.types.as_slice_a9
-with const generics
-- SIZE= 768
-*/
-Eurydice_arr_56 *libcrux_ml_kem_types_as_slice_a9_d0(Eurydice_arr_56 *self) {
-  return self;
-}
-
-/**
-A monomorphic instance of libcrux_ml_kem.utils.prf_input_inc
-with const generics
-- K= 2
-*/
-uint8_t libcrux_ml_kem_utils_prf_input_inc_fd(Eurydice_arr_cf *prf_inputs,
-                                              uint8_t domain_separator) {
-  KRML_MAYBE_FOR2(i, (size_t)0U, (size_t)2U, (size_t)1U, size_t i0 = i;
-                  prf_inputs->data[i0].data[32U] = domain_separator;
-                  domain_separator = (uint32_t)domain_separator + 1U;);
-  return domain_separator;
-}
-
-/**
-This function found in impl {core::convert::AsRef<@Slice<u8>> for
-libcrux_ml_kem::types::MlKemCiphertext<SIZE>}
-*/
-/**
-A monomorphic instance of libcrux_ml_kem.types.as_ref_d3
-with const generics
-- SIZE= 768
-*/
-Eurydice_slice libcrux_ml_kem_types_as_ref_d3_d0(Eurydice_arr_56 *self) {
-  return Eurydice_array_to_slice((size_t)768U, self, uint8_t);
-}
-
-/**
- Pad the `slice` with `0`s at the end.
-*/
-/**
-A monomorphic instance of libcrux_ml_kem.utils.into_padded_array
-with const generics
-- LEN= 800
-*/
-Eurydice_arr_30 libcrux_ml_kem_utils_into_padded_array_4d(
-    Eurydice_slice slice) {
-  Eurydice_arr_30 out = {.data = {0U}};
-  Eurydice_arr_30 *uu____0 = &out;
-  Eurydice_slice_copy(
-      Eurydice_array_to_subslice3(
-          uu____0, (size_t)0U, Eurydice_slice_len(slice, uint8_t), uint8_t *),
-      slice, uint8_t);
-  return out;
-}
-
-/**
- Unpack an incoming private key into it's different parts.
-
- We have this here in types to extract into a common core for C.
-*/
-/**
-A monomorphic instance of libcrux_ml_kem.types.unpack_private_key
-with const generics
-- CPA_SECRET_KEY_SIZE= 768
-- PUBLIC_KEY_SIZE= 800
-*/
-Eurydice_slice_uint8_t_x4 libcrux_ml_kem_types_unpack_private_key_0c(
-    Eurydice_slice private_key) {
-  Eurydice_slice_uint8_t_x2 uu____0 = Eurydice_slice_split_at(
-      private_key, (size_t)768U, uint8_t, Eurydice_slice_uint8_t_x2);
-  Eurydice_slice ind_cpa_secret_key = uu____0.fst;
-  Eurydice_slice secret_key0 = uu____0.snd;
-  Eurydice_slice_uint8_t_x2 uu____1 = Eurydice_slice_split_at(
-      secret_key0, (size_t)800U, uint8_t, Eurydice_slice_uint8_t_x2);
-  Eurydice_slice ind_cpa_public_key = uu____1.fst;
-  Eurydice_slice secret_key = uu____1.snd;
-  Eurydice_slice_uint8_t_x2 uu____2 = Eurydice_slice_split_at(
-      secret_key, LIBCRUX_ML_KEM_CONSTANTS_H_DIGEST_SIZE, uint8_t,
-      Eurydice_slice_uint8_t_x2);
-  Eurydice_slice ind_cpa_public_key_hash = uu____2.fst;
-  Eurydice_slice implicit_rejection_value = uu____2.snd;
-  return (
-      KRML_CLITERAL(Eurydice_slice_uint8_t_x4){.fst = ind_cpa_secret_key,
-                                               .snd = ind_cpa_public_key,
-                                               .thd = ind_cpa_public_key_hash,
-                                               .f3 = implicit_rejection_value});
+int16_t libcrux_secrets_int_as_i16_f5(int16_t self) {
+  return libcrux_secrets_int_public_integers_classify_27_39(
+      libcrux_secrets_int_public_integers_declassify_d8_39(self));
 }
 
 /**
@@ -946,25 +679,6 @@ Eurydice_slice_uint8_t_x4 libcrux_ml_kem_types_unpack_private_key_1f(
 }
 
 /**
- Pad the `slice` with `0`s at the end.
-*/
-/**
-A monomorphic instance of libcrux_ml_kem.utils.into_padded_array
-with const generics
-- LEN= 32
-*/
-Eurydice_arr_60 libcrux_ml_kem_utils_into_padded_array_9e(
-    Eurydice_slice slice) {
-  Eurydice_arr_60 out = {.data = {0U}};
-  Eurydice_arr_60 *uu____0 = &out;
-  Eurydice_slice_copy(
-      Eurydice_array_to_subslice3(
-          uu____0, (size_t)0U, Eurydice_slice_len(slice, uint8_t), uint8_t *),
-      slice, uint8_t);
-  return out;
-}
-
-/**
 This function found in impl {core::default::Default for
 libcrux_ml_kem::types::MlKemPrivateKey<SIZE>}
 */
@@ -1163,25 +877,6 @@ Eurydice_arr_ea libcrux_ml_kem_types_from_77_28(Eurydice_arr_ea value) {
 }
 
 /**
-This function found in impl {core::result::Result<T, E>[TraitClause@0,
-TraitClause@1]}
-*/
-/**
-A monomorphic instance of core.result.unwrap_26
-with types Eurydice_arr uint8_t[[$32size_t]], core_array_TryFromSliceError
-
-*/
-Eurydice_arr_60 core_result_unwrap_26_07(core_result_Result_95 self) {
-  if (self.tag == core_result_Ok) {
-    return self.val.case_Ok;
-  } else {
-    KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__,
-                      "unwrap not Ok");
-    KRML_HOST_EXIT(255U);
-  }
-}
-
-/**
 This function found in impl {core::convert::From<@Array<u8, SIZE>> for
 libcrux_ml_kem::types::MlKemCiphertext<SIZE>}
 */
@@ -1232,44 +927,6 @@ uint8_t libcrux_ml_kem_utils_prf_input_inc_e0(Eurydice_arr_46 *prf_inputs,
 }
 
 /**
- Pad the `slice` with `0`s at the end.
-*/
-/**
-A monomorphic instance of libcrux_ml_kem.utils.into_padded_array
-with const generics
-- LEN= 33
-*/
-Eurydice_arr_3e libcrux_ml_kem_utils_into_padded_array_c8(
-    Eurydice_slice slice) {
-  Eurydice_arr_3e out = {.data = {0U}};
-  Eurydice_arr_3e *uu____0 = &out;
-  Eurydice_slice_copy(
-      Eurydice_array_to_subslice3(
-          uu____0, (size_t)0U, Eurydice_slice_len(slice, uint8_t), uint8_t *),
-      slice, uint8_t);
-  return out;
-}
-
-/**
- Pad the `slice` with `0`s at the end.
-*/
-/**
-A monomorphic instance of libcrux_ml_kem.utils.into_padded_array
-with const generics
-- LEN= 34
-*/
-Eurydice_arr_480 libcrux_ml_kem_utils_into_padded_array_b6(
-    Eurydice_slice slice) {
-  Eurydice_arr_480 out = {.data = {0U}};
-  Eurydice_arr_480 *uu____0 = &out;
-  Eurydice_slice_copy(
-      Eurydice_array_to_subslice3(
-          uu____0, (size_t)0U, Eurydice_slice_len(slice, uint8_t), uint8_t *),
-      slice, uint8_t);
-  return out;
-}
-
-/**
 This function found in impl {core::convert::AsRef<@Slice<u8>> for
 libcrux_ml_kem::types::MlKemCiphertext<SIZE>}
 */
@@ -1290,29 +947,10 @@ A monomorphic instance of libcrux_ml_kem.utils.into_padded_array
 with const generics
 - LEN= 1120
 */
-Eurydice_arr_48 libcrux_ml_kem_utils_into_padded_array_15(
+Eurydice_arr_480 libcrux_ml_kem_utils_into_padded_array_15(
     Eurydice_slice slice) {
-  Eurydice_arr_48 out = {.data = {0U}};
-  Eurydice_arr_48 *uu____0 = &out;
-  Eurydice_slice_copy(
-      Eurydice_array_to_subslice3(
-          uu____0, (size_t)0U, Eurydice_slice_len(slice, uint8_t), uint8_t *),
-      slice, uint8_t);
-  return out;
-}
-
-/**
- Pad the `slice` with `0`s at the end.
-*/
-/**
-A monomorphic instance of libcrux_ml_kem.utils.into_padded_array
-with const generics
-- LEN= 64
-*/
-libcrux_sha3_Sha3_512Digest libcrux_ml_kem_utils_into_padded_array_24(
-    Eurydice_slice slice) {
-  libcrux_sha3_Sha3_512Digest out = {.data = {0U}};
-  libcrux_sha3_Sha3_512Digest *uu____0 = &out;
+  Eurydice_arr_480 out = {.data = {0U}};
+  Eurydice_arr_480 *uu____0 = &out;
   Eurydice_slice_copy(
       Eurydice_array_to_subslice3(
           uu____0, (size_t)0U, Eurydice_slice_len(slice, uint8_t), uint8_t *),
@@ -1354,6 +992,425 @@ Eurydice_slice_uint8_t_x4 libcrux_ml_kem_types_unpack_private_key_b4(
 }
 
 /**
+ Pad the `slice` with `0`s at the end.
+*/
+/**
+A monomorphic instance of libcrux_ml_kem.utils.into_padded_array
+with const generics
+- LEN= 32
+*/
+Eurydice_arr_60 libcrux_ml_kem_utils_into_padded_array_9e(
+    Eurydice_slice slice) {
+  Eurydice_arr_60 out = {.data = {0U}};
+  Eurydice_arr_60 *uu____0 = &out;
+  Eurydice_slice_copy(
+      Eurydice_array_to_subslice3(
+          uu____0, (size_t)0U, Eurydice_slice_len(slice, uint8_t), uint8_t *),
+      slice, uint8_t);
+  return out;
+}
+
+/**
+This function found in impl {core::default::Default for
+libcrux_ml_kem::types::MlKemPrivateKey<SIZE>}
+*/
+/**
+A monomorphic instance of libcrux_ml_kem.types.default_d3
+with const generics
+- SIZE= 1632
+*/
+Eurydice_arr_7f libcrux_ml_kem_types_default_d3_2a(void) {
+  return (KRML_CLITERAL(Eurydice_arr_7f){
+      .data = {
+          0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
+          0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
+          0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
+          0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
+          0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
+          0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
+          0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
+          0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
+          0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
+          0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
+          0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
+          0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
+          0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
+          0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
+          0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
+          0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
+          0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
+          0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
+          0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
+          0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
+          0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
+          0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
+          0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
+          0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
+          0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
+          0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
+          0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
+          0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
+          0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
+          0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
+          0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
+          0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
+          0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
+          0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
+          0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
+          0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
+          0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
+          0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
+          0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
+          0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
+          0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
+          0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
+          0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
+          0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
+          0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
+          0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
+          0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
+          0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
+          0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
+          0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
+          0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
+          0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
+          0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
+          0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
+          0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
+          0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
+          0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
+          0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
+          0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
+          0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
+          0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
+          0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
+          0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
+          0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
+          0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
+          0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
+          0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
+          0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
+          0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
+          0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
+          0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
+          0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
+          0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
+          0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
+          0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
+          0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
+          0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
+          0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
+          0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
+          0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
+          0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
+          0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
+          0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
+          0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
+          0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
+          0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
+          0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
+          0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
+          0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
+          0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
+          0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
+          0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
+          0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
+          0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
+          0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
+          0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U}});
+}
+
+/**
+This function found in impl {core::convert::From<@Array<u8, SIZE>> for
+libcrux_ml_kem::types::MlKemPublicKey<SIZE>}
+*/
+/**
+A monomorphic instance of libcrux_ml_kem.types.from_fd
+with const generics
+- SIZE= 800
+*/
+Eurydice_arr_30 libcrux_ml_kem_types_from_fd_4d(Eurydice_arr_30 value) {
+  return value;
+}
+
+/**
+This function found in impl
+{libcrux_ml_kem::types::MlKemKeyPair<PRIVATE_KEY_SIZE, PUBLIC_KEY_SIZE>}
+*/
+/**
+A monomorphic instance of libcrux_ml_kem.types.from_17
+with const generics
+- PRIVATE_KEY_SIZE= 1632
+- PUBLIC_KEY_SIZE= 800
+*/
+libcrux_ml_kem_types_MlKemKeyPair_3e libcrux_ml_kem_types_from_17_fa(
+    Eurydice_arr_7f sk, Eurydice_arr_30 pk) {
+  return (
+      KRML_CLITERAL(libcrux_ml_kem_types_MlKemKeyPair_3e){.sk = sk, .pk = pk});
+}
+
+/**
+This function found in impl {core::convert::From<@Array<u8, SIZE>> for
+libcrux_ml_kem::types::MlKemPrivateKey<SIZE>}
+*/
+/**
+A monomorphic instance of libcrux_ml_kem.types.from_77
+with const generics
+- SIZE= 1632
+*/
+Eurydice_arr_7f libcrux_ml_kem_types_from_77_2a(Eurydice_arr_7f value) {
+  return value;
+}
+
+/**
+This function found in impl {core::result::Result<T, E>[TraitClause@0,
+TraitClause@1]}
+*/
+/**
+A monomorphic instance of core.result.unwrap_26
+with types Eurydice_arr uint8_t[[$32size_t]], core_array_TryFromSliceError
+
+*/
+Eurydice_arr_60 core_result_unwrap_26_07(core_result_Result_95 self) {
+  if (self.tag == core_result_Ok) {
+    return self.val.case_Ok;
+  } else {
+    KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__,
+                      "unwrap not Ok");
+    KRML_HOST_EXIT(255U);
+  }
+}
+
+/**
+This function found in impl {core::convert::From<@Array<u8, SIZE>> for
+libcrux_ml_kem::types::MlKemCiphertext<SIZE>}
+*/
+/**
+A monomorphic instance of libcrux_ml_kem.types.from_e0
+with const generics
+- SIZE= 768
+*/
+Eurydice_arr_56 libcrux_ml_kem_types_from_e0_d0(Eurydice_arr_56 value) {
+  return value;
+}
+
+/**
+This function found in impl {libcrux_ml_kem::types::MlKemPublicKey<SIZE>}
+*/
+/**
+A monomorphic instance of libcrux_ml_kem.types.as_slice_e6
+with const generics
+- SIZE= 800
+*/
+Eurydice_arr_30 *libcrux_ml_kem_types_as_slice_e6_4d(Eurydice_arr_30 *self) {
+  return self;
+}
+
+/**
+This function found in impl {libcrux_ml_kem::types::MlKemCiphertext<SIZE>}
+*/
+/**
+A monomorphic instance of libcrux_ml_kem.types.as_slice_a9
+with const generics
+- SIZE= 768
+*/
+Eurydice_arr_56 *libcrux_ml_kem_types_as_slice_a9_d0(Eurydice_arr_56 *self) {
+  return self;
+}
+
+/**
+A monomorphic instance of libcrux_ml_kem.utils.prf_input_inc
+with const generics
+- K= 2
+*/
+uint8_t libcrux_ml_kem_utils_prf_input_inc_fd(Eurydice_arr_cf *prf_inputs,
+                                              uint8_t domain_separator) {
+  KRML_MAYBE_FOR2(i, (size_t)0U, (size_t)2U, (size_t)1U, size_t i0 = i;
+                  prf_inputs->data[i0].data[32U] = domain_separator;
+                  domain_separator = (uint32_t)domain_separator + 1U;);
+  return domain_separator;
+}
+
+/**
+ Pad the `slice` with `0`s at the end.
+*/
+/**
+A monomorphic instance of libcrux_ml_kem.utils.into_padded_array
+with const generics
+- LEN= 33
+*/
+Eurydice_arr_3e libcrux_ml_kem_utils_into_padded_array_c8(
+    Eurydice_slice slice) {
+  Eurydice_arr_3e out = {.data = {0U}};
+  Eurydice_arr_3e *uu____0 = &out;
+  Eurydice_slice_copy(
+      Eurydice_array_to_subslice3(
+          uu____0, (size_t)0U, Eurydice_slice_len(slice, uint8_t), uint8_t *),
+      slice, uint8_t);
+  return out;
+}
+
+/**
+ Pad the `slice` with `0`s at the end.
+*/
+/**
+A monomorphic instance of libcrux_ml_kem.utils.into_padded_array
+with const generics
+- LEN= 34
+*/
+Eurydice_arr_48 libcrux_ml_kem_utils_into_padded_array_b6(
+    Eurydice_slice slice) {
+  Eurydice_arr_48 out = {.data = {0U}};
+  Eurydice_arr_48 *uu____0 = &out;
+  Eurydice_slice_copy(
+      Eurydice_array_to_subslice3(
+          uu____0, (size_t)0U, Eurydice_slice_len(slice, uint8_t), uint8_t *),
+      slice, uint8_t);
+  return out;
+}
+
+/**
+This function found in impl {core::convert::AsRef<@Slice<u8>> for
+libcrux_ml_kem::types::MlKemCiphertext<SIZE>}
+*/
+/**
+A monomorphic instance of libcrux_ml_kem.types.as_ref_d3
+with const generics
+- SIZE= 768
+*/
+Eurydice_slice libcrux_ml_kem_types_as_ref_d3_d0(Eurydice_arr_56 *self) {
+  return Eurydice_array_to_slice((size_t)768U, self, uint8_t);
+}
+
+/**
+ Pad the `slice` with `0`s at the end.
+*/
+/**
+A monomorphic instance of libcrux_ml_kem.utils.into_padded_array
+with const generics
+- LEN= 800
+*/
+Eurydice_arr_30 libcrux_ml_kem_utils_into_padded_array_4d(
+    Eurydice_slice slice) {
+  Eurydice_arr_30 out = {.data = {0U}};
+  Eurydice_arr_30 *uu____0 = &out;
+  Eurydice_slice_copy(
+      Eurydice_array_to_subslice3(
+          uu____0, (size_t)0U, Eurydice_slice_len(slice, uint8_t), uint8_t *),
+      slice, uint8_t);
+  return out;
+}
+
+/**
+ Pad the `slice` with `0`s at the end.
+*/
+/**
+A monomorphic instance of libcrux_ml_kem.utils.into_padded_array
+with const generics
+- LEN= 64
+*/
+libcrux_sha3_Sha3_512Digest libcrux_ml_kem_utils_into_padded_array_24(
+    Eurydice_slice slice) {
+  libcrux_sha3_Sha3_512Digest out = {.data = {0U}};
+  libcrux_sha3_Sha3_512Digest *uu____0 = &out;
+  Eurydice_slice_copy(
+      Eurydice_array_to_subslice3(
+          uu____0, (size_t)0U, Eurydice_slice_len(slice, uint8_t), uint8_t *),
+      slice, uint8_t);
+  return out;
+}
+
+/**
+ Unpack an incoming private key into it's different parts.
+
+ We have this here in types to extract into a common core for C.
+*/
+/**
+A monomorphic instance of libcrux_ml_kem.types.unpack_private_key
+with const generics
+- CPA_SECRET_KEY_SIZE= 768
+- PUBLIC_KEY_SIZE= 800
+*/
+Eurydice_slice_uint8_t_x4 libcrux_ml_kem_types_unpack_private_key_0c(
+    Eurydice_slice private_key) {
+  Eurydice_slice_uint8_t_x2 uu____0 = Eurydice_slice_split_at(
+      private_key, (size_t)768U, uint8_t, Eurydice_slice_uint8_t_x2);
+  Eurydice_slice ind_cpa_secret_key = uu____0.fst;
+  Eurydice_slice secret_key0 = uu____0.snd;
+  Eurydice_slice_uint8_t_x2 uu____1 = Eurydice_slice_split_at(
+      secret_key0, (size_t)800U, uint8_t, Eurydice_slice_uint8_t_x2);
+  Eurydice_slice ind_cpa_public_key = uu____1.fst;
+  Eurydice_slice secret_key = uu____1.snd;
+  Eurydice_slice_uint8_t_x2 uu____2 = Eurydice_slice_split_at(
+      secret_key, LIBCRUX_ML_KEM_CONSTANTS_H_DIGEST_SIZE, uint8_t,
+      Eurydice_slice_uint8_t_x2);
+  Eurydice_slice ind_cpa_public_key_hash = uu____2.fst;
+  Eurydice_slice implicit_rejection_value = uu____2.snd;
+  return (
+      KRML_CLITERAL(Eurydice_slice_uint8_t_x4){.fst = ind_cpa_secret_key,
+                                               .snd = ind_cpa_public_key,
+                                               .thd = ind_cpa_public_key_hash,
+                                               .f3 = implicit_rejection_value});
+}
+
+/**
+This function found in impl {core::result::Result<T, E>[TraitClause@0,
+TraitClause@1]}
+*/
+/**
+A monomorphic instance of core.result.unwrap_26
+with types Eurydice_arr uint8_t[[$24size_t]], core_array_TryFromSliceError
+
+*/
+Eurydice_arr_6d core_result_unwrap_26_a9(core_result_Result_16 self) {
+  if (self.tag == core_result_Ok) {
+    return self.val.case_Ok;
+  } else {
+    KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__,
+                      "unwrap not Ok");
+    KRML_HOST_EXIT(255U);
+  }
+}
+
+/**
+This function found in impl {core::result::Result<T, E>[TraitClause@0,
+TraitClause@1]}
+*/
+/**
+A monomorphic instance of core.result.unwrap_26
+with types Eurydice_arr uint8_t[[$20size_t]], core_array_TryFromSliceError
+
+*/
+Eurydice_arr_dc core_result_unwrap_26_51(core_result_Result_6e self) {
+  if (self.tag == core_result_Ok) {
+    return self.val.case_Ok;
+  } else {
+    KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__,
+                      "unwrap not Ok");
+    KRML_HOST_EXIT(255U);
+  }
+}
+
+/**
+This function found in impl {core::result::Result<T, E>[TraitClause@0,
+TraitClause@1]}
+*/
+/**
+A monomorphic instance of core.result.unwrap_26
+with types Eurydice_arr uint8_t[[$10size_t]], core_array_TryFromSliceError
+
+*/
+Eurydice_arr_77 core_result_unwrap_26_3d(core_result_Result_1c self) {
+  if (self.tag == core_result_Ok) {
+    return self.val.case_Ok;
+  } else {
+    KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__,
+                      "unwrap not Ok");
+    KRML_HOST_EXIT(255U);
+  }
+}
+
+/**
 This function found in impl {libcrux_secrets::traits::Declassify<T> for T}
 */
 /**
@@ -1376,6 +1433,19 @@ with types Eurydice_arr uint8_t[[$20size_t]]
 */
 Eurydice_arr_dc libcrux_secrets_int_public_integers_declassify_d8_89(
     Eurydice_arr_dc self) {
+  return self;
+}
+
+/**
+This function found in impl {libcrux_secrets::traits::Declassify<T> for T}
+*/
+/**
+A monomorphic instance of libcrux_secrets.int.public_integers.declassify_d8
+with types Eurydice_arr uint8_t[[$10size_t]]
+
+*/
+Eurydice_arr_77 libcrux_secrets_int_public_integers_declassify_d8_ed(
+    Eurydice_arr_77 self) {
   return self;
 }
 
@@ -1438,11 +1508,25 @@ This function found in impl {libcrux_secrets::traits::Declassify<T> for T}
 */
 /**
 A monomorphic instance of libcrux_secrets.int.public_integers.declassify_d8
-with types Eurydice_arr uint8_t[[$22size_t]]
+with types Eurydice_arr int16_t[[$16size_t]]
 
 */
-Eurydice_arr_f3 libcrux_secrets_int_public_integers_declassify_d8_a9(
-    Eurydice_arr_f3 self) {
+Eurydice_arr_e2 libcrux_secrets_int_public_integers_declassify_d8_3a(
+    Eurydice_arr_e2 self) {
+  return self;
+}
+
+/**
+This function found in impl {libcrux_secrets::traits::ClassifyRef<&'a (T)> for
+&'a (T)}
+*/
+/**
+A monomorphic instance of libcrux_secrets.int.public_integers.classify_ref_c5
+with types Eurydice_slice uint8_t
+
+*/
+Eurydice_slice *libcrux_secrets_int_public_integers_classify_ref_c5_ba(
+    Eurydice_slice *self) {
   return self;
 }
 
@@ -1451,11 +1535,11 @@ This function found in impl {libcrux_secrets::traits::Declassify<T> for T}
 */
 /**
 A monomorphic instance of libcrux_secrets.int.public_integers.declassify_d8
-with types Eurydice_arr uint8_t[[$10size_t]]
+with types Eurydice_arr uint8_t[[$22size_t]]
 
 */
-Eurydice_arr_77 libcrux_secrets_int_public_integers_declassify_d8_ed(
-    Eurydice_arr_77 self) {
+Eurydice_arr_f3 libcrux_secrets_int_public_integers_declassify_d8_a9(
+    Eurydice_arr_f3 self) {
   return self;
 }
 
@@ -1490,33 +1574,6 @@ Eurydice_arr_e2 core_result_unwrap_26_0e(core_result_Result_20 self) {
                       "unwrap not Ok");
     KRML_HOST_EXIT(255U);
   }
-}
-
-/**
-This function found in impl {libcrux_secrets::traits::Declassify<T> for T}
-*/
-/**
-A monomorphic instance of libcrux_secrets.int.public_integers.declassify_d8
-with types Eurydice_arr int16_t[[$16size_t]]
-
-*/
-Eurydice_arr_e2 libcrux_secrets_int_public_integers_declassify_d8_3a(
-    Eurydice_arr_e2 self) {
-  return self;
-}
-
-/**
-This function found in impl {libcrux_secrets::traits::ClassifyRef<&'a (T)> for
-&'a (T)}
-*/
-/**
-A monomorphic instance of libcrux_secrets.int.public_integers.classify_ref_c5
-with types Eurydice_slice uint8_t
-
-*/
-Eurydice_slice *libcrux_secrets_int_public_integers_classify_ref_c5_ba(
-    Eurydice_slice *self) {
-  return self;
 }
 
 /**
