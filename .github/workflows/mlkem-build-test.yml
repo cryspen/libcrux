@@ -29,8 +29,6 @@ jobs:
         exclude:
           - bits: 32
             os: "macos-latest"
-          - bits: 32
-            os: "macos-13"
 
     runs-on: ${{ matrix.os }}
     defaults:
