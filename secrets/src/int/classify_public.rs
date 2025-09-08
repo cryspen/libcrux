@@ -3,10 +3,7 @@
 /// We define no-ops here and force inlining, to ensure that these are free.
 use crate::traits::*;
 
-// TODO: remove hax exemptions once this is supported
-
 // Immutable references to slices can be classified
-#[cfg(not(hax))]
 impl<'a, T: Scalar> ClassifyRef for &'a [T] {
     type ClassifiedRef = &'a [T];
     #[inline(always)]
@@ -16,7 +13,6 @@ impl<'a, T: Scalar> ClassifyRef for &'a [T] {
 }
 
 // Immutable references to slices can be declassified
-#[cfg(not(hax))]
 impl<'a, T: Scalar> DeclassifyRef for &'a [T] {
     type DeclassifiedRef = &'a [T];
     fn declassify_ref(self) -> &'a [T] {
@@ -25,7 +21,6 @@ impl<'a, T: Scalar> DeclassifyRef for &'a [T] {
 }
 
 // Classify any mutable reference (identity)
-#[cfg(not(hax))]
 impl<'a, T> ClassifyRefMut for &'a mut T {
     type ClassifiedRefMut = &'a mut T;
     #[inline(always)]
@@ -35,7 +30,6 @@ impl<'a, T> ClassifyRefMut for &'a mut T {
 }
 
 // Declassify any mutable reference (identity)
-#[cfg(not(hax))]
 impl<'a, T> DeclassifyRefMut for &'a mut T {
     type DeclassifiedRefMut = &'a mut T;
     #[inline(always)]
