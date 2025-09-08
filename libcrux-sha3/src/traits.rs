@@ -90,7 +90,7 @@ pub(crate) trait Squeeze1<T: KeccakItem<1>> {
 
 // Renaming the squeeze functions of the Squeeze2 and Squeeze4 Trait is currently
 // necessary because F* will not find the correct function, pre and post conditions otherwise.
-// Check the follwoing issue: https://github.com/cryspen/hax/issues/1595
+// Check the following issue: https://github.com/cryspen/hax/issues/1595
 
 /// Trait to squeeze bytes out of the state.
 ///

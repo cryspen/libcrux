@@ -10,9 +10,9 @@ mod simd;
 
 mod generic_keccak;
 
-#[cfg(all(not(eurydice), feature = "digest-traits"))]
+#[cfg(not(hax))]
 mod impl_digest_trait;
-#[cfg(all(not(eurydice), feature = "digest-traits"))]
+#[cfg(not(hax))]
 pub use impl_digest_trait::*;
 
 mod traits;

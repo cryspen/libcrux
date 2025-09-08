@@ -2,8 +2,12 @@ name: SHA3 - hax
 
 on:
   merge_group:
+    paths:
+      - "libcrux-sha3/**"
   pull_request:
     branches: ["dev", "main"]
+    paths:
+      - "libcrux-sha3/**"
 
   schedule:
     - cron: "0 0 * * *"
@@ -98,30 +102,18 @@ jobs:
       - name: 🏃 Lax SHA3 crate (portable)
         working-directory: libcrux-sha3
         run: ./hax.py prove --admit
-        
+
   sha3-extract-hax-status:
     if: ${{ always() }}
     needs: [get-hax-ref, extract]
     runs-on: ubuntu-latest
     steps:
       - name: Successful
-        if: ${{ !(contains(needs.*.result, 'failure')) }} 
-        run: exit 0 
+        if: ${{ !(contains(needs.*.result, 'failure')) }}
+        run: exit 0
       - name: Failing
-        if: ${{ (contains(needs.*.result, 'failure')) }} 
-        run: exit 1 
-
-  sha3-extract-portable-hax-status:
-    if: ${{ always() }}
-    needs: [get-hax-ref, extract-portable]
-    runs-on: ubuntu-latest
-    steps:
-      - name: Successful
-        if: ${{ !(contains(needs.*.result, 'failure')) }} 
-        run: exit 0 
-      - name: Failing
-        if: ${{ (contains(needs.*.result, 'failure')) }} 
-        run: exit 1 
+        if: ${{ (contains(needs.*.result, 'failure')) }}
+        run: exit 1
 
   sha3-lax-portable-hax-status:
     if: ${{ always() }}
@@ -129,8 +121,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Successful
-        if: ${{ !(contains(needs.*.result, 'failure')) }} 
-        run: exit 0 
+        if: ${{ !(contains(needs.*.result, 'failure')) }}
+        run: exit 0
       - name: Failing
-        if: ${{ (contains(needs.*.result, 'failure')) }} 
-        run: exit 1 
+        if: ${{ (contains(needs.*.result, 'failure')) }}
+        run: exit 1
