@@ -222,7 +222,6 @@ jobs:
 
       # if a fork, use comment-based action
       - uses: cryspen/benchmark-comment-and-plot-action@main
-        if: env.IS_FORK == 'true'
         with:
           id: mldsa
           gh-repository: cryspen/libcrux
@@ -233,7 +232,6 @@ jobs:
           output-md: report-mldsa.md
 
       - uses: cryspen/benchmark-comment-and-plot-action@main
-        if: env.IS_FORK == 'true'
         with:
           id: mlkem
           gh-repository: cryspen/libcrux
@@ -245,7 +243,6 @@ jobs:
 
       - name: Build comment
         id: build_comment
-        if: env.IS_FORK == 'true'
         run: |
           BASE_HASH="${{ github.event.pull_request.base.sha }}"
           BASE_HASH_SHORT=$(echo "${{ github.event.pull_request.base.sha }}" | cut -c1-7)
@@ -271,7 +268,6 @@ jobs:
           ACTUALEOF
 
       - name: Post comment to PR
-        if: env.IS_FORK == 'true'
         uses: actions/github-script@v7
         env:
           COMMENT_BODY: ${{ steps.read_comment.outputs.body }}
