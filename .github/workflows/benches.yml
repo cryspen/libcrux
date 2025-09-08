@@ -169,7 +169,7 @@ jobs:
 
   merge:
     permissions:
-      pull-requests: write
+      issues: write
     runs-on: ubuntu-latest
     needs: [bench-mlkem, bench-mldsa]
     steps:
