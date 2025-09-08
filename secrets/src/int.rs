@@ -1,7 +1,7 @@
 use crate::traits::*;
 
 #[cfg(feature = "check-secret-independence")]
-mod classify;
+mod classify_secret;
 // If the feature "check-secret-independence" is set, we use secret integers
 #[cfg(feature = "check-secret-independence")]
 mod secret_integers;
@@ -9,6 +9,8 @@ mod secret_integers;
 pub use secret_integers::*;
 
 // If the feature "check-secret-independence" is not set, we use public integers
+#[cfg(not(feature = "check-secret-independence"))]
+mod classify_public;
 #[cfg(not(feature = "check-secret-independence"))]
 mod public_integers;
 #[cfg(not(feature = "check-secret-independence"))]
