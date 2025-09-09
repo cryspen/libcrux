@@ -76,8 +76,8 @@ pub(crate) fn derive(
     let (nonce_16, nonce_8) = nonce_in.split_at(16);
     let nonce_16: &[u8; 16] = nonce_16.try_into().unwrap();
 
-    hchacha20(key_in, &nonce_16, key_out);
-    nonce_out[4..].copy_from_slice(&nonce_8);
+    hchacha20(key_in, nonce_16, key_out);
+    nonce_out[4..].copy_from_slice(nonce_8);
 }
 
 /// Convert the `key` and `nonce` into the subkey.

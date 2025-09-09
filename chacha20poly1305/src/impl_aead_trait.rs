@@ -142,7 +142,7 @@ mod impl_xchachapoly {
             let mut new_nonce = [0u8; super::NONCE_LEN];
 
             crate::xchacha20_poly1305::derive(key, nonce, &mut subkey, &mut new_nonce);
-            ChaCha20Poly1305::decrypt(plaintext, &subkey, &new_nonce, &aad, ciphertext, tag)
+            ChaCha20Poly1305::decrypt(plaintext, &subkey, &new_nonce, aad, ciphertext, tag)
         }
     }
 
