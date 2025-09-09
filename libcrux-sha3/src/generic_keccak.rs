@@ -246,8 +246,7 @@ impl<const N: usize, T: KeccakItem<N>> KeccakState<N, T> {
         RATE % 8 == 0 &&
         RATE <= blocks[0].len() &&
         start <= blocks[0].len() &&
-        start <= blocks[0].len() - RATE &&
-        start + RATE <= blocks[0].len()
+        start <= blocks[0].len() - RATE
     )]
     fn absorb_block<const RATE: usize>(&mut self, blocks: &[&[u8]; N], start: usize)
     where

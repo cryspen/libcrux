@@ -38,9 +38,7 @@ fn _veorq_n_u64(a: u64, c: u64) -> u64 {
     RATE < 192 &&
     RATE % 8 == 0 &&
     RATE <= blocks.len() &&
-    start <= blocks.len() &&
-    start <= blocks.len() - RATE &&
-    start + RATE <= blocks.len()
+    start <= blocks.len() - RATE
 )]
 pub(crate) fn load_block<const RATE: usize>(state: &mut [u64; 25], blocks: &[u8], start: usize) {
     debug_assert!(start + RATE <= blocks.len());
@@ -102,6 +100,7 @@ pub(crate) fn load_last<const RATE: usize, const DELIMITER: u8>(
     start <= out.len() - len &&
     start + len <= out.len()
 )]
+#[hax_lib::ensures(|_| future(out).len() == out.len())]
 pub(crate) fn store_block<const RATE: usize>(
     s: &[u64; 25],
     out: &mut [u8],
@@ -109,9 +108,12 @@ pub(crate) fn store_block<const RATE: usize>(
     len: usize,
 ) {
     let octets = len / 8;
-    hax_lib::fstar!("assert (8 * v $octets <= v $len)");
+
+    #[cfg(hax)]
+    let out_len = out.len(); // ghost variable
+
     for i in 0..octets {
-        hax_lib::loop_invariant!(|i: usize| { fstar!("v $start + v $len <= Seq.length $out") });
+        hax_lib::loop_invariant!(|i: usize| out.len() == out_len);
         hax_lib::fstar!("assert (v $i < v $octets)");
         hax_lib::fstar!("assert (v $i + 1 <= v $octets)");
         hax_lib::fstar!("assert (8 * (v $i + 1) <= 8 * v $octets)");
@@ -211,6 +213,7 @@ impl Squeeze<u64> for KeccakState<1, u64> {
         start <= out.len() - len &&
         start + len <= out.len()
     )]
+    #[hax_lib::ensures(|_| future(out).len() == out.len())]
     fn squeeze<const RATE: usize>(&self, out: &mut [u8], start: usize, len: usize) {
         store_block::<RATE>(&self.st, out, start, len);
     }

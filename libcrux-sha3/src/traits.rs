@@ -56,26 +56,24 @@ pub(crate) trait KeccakItem<const N: usize>: Clone + Copy {
 pub(crate) trait Absorb<const N: usize> {
     /// Absorb a block
     #[hax_lib::requires(
-        N > 0 &&
+        N != 0 &&
         RATE < 192 &&
         RATE % 8 == 0 &&
         RATE <= input[0].len() &&
         start <= input[0].len() &&
-        start <= input[0].len() - RATE &&
-        start + RATE <= input[0].len()
+        start <= input[0].len() - RATE
     )]
     fn load_block<const RATE: usize>(&mut self, input: &[&[u8]; N], start: usize);
 
     /// Absorb the last block (may be partial)
     #[hax_lib::requires(
-        N > 0 &&
+        N != 0 &&
         RATE < 192 &&
         RATE % 8 == 0 &&
         len < RATE &&
         len < input[0].len() &&
         start <= input[0].len() &&
-        start <= input[0].len() - len &&
-        start + len <= input[0].len()
+        start <= input[0].len() - len
     )]
     fn load_last<const RATE: usize, const DELIMITER: u8>(
         &mut self,
@@ -95,16 +93,48 @@ pub(crate) trait Absorb<const N: usize> {
     interface,
     "
 class t_Squeeze (v_Self: Type0) (v_T: Type0) = {
-  f_squeeze_pre:v_RATE: usize -> v_Self -> t_Slice u8 -> usize -> usize -> Type0;
-  f_squeeze_post:v_RATE: usize -> v_Self -> t_Slice u8 -> usize -> usize -> t_Slice u8 -> Type0;
+  // TODO: This super variable is problematic and makes typecheck fail
+  // [@@@ FStar.Tactics.Typeclasses.no_method]_super_18390613159176269294:t_KeccakItem v_T (mk_usize 1);
+  f_squeeze_pre:v_RATE: usize -> self_: v_Self -> out: t_Slice u8 -> start: usize -> len: usize
+    -> pred:
+      Type0
+        { len <. mk_usize 192 && len <=. (Core.Slice.impl__len #u8 out <: usize) &&
+          start <=. (Core.Slice.impl__len #u8 out <: usize) &&
+          start <=. ((Core.Slice.impl__len #u8 out <: usize) -! len <: usize) &&
+          (start +! len <: usize) <=. (Core.Slice.impl__len #u8 out <: usize) ==>
+          pred };
+  f_squeeze_post:
+      v_RATE: usize ->
+      self_: v_Self ->
+      out: t_Slice u8 ->
+      start: usize ->
+      len: usize ->
+      out_future: t_Slice u8
+    -> pred:
+      Type0
+        { pred ==>
+          (Core.Slice.impl__len #u8 out_future <: usize) =. (Core.Slice.impl__len #u8 out <: usize)
+        };
   f_squeeze:v_RATE: usize -> x0: v_Self -> x1: t_Slice u8 -> x2: usize -> x3: usize
     -> Prims.Pure (t_Slice u8)
         (f_squeeze_pre v_RATE x0 x1 x2 x3)
         (fun result -> f_squeeze_post v_RATE x0 x1 x2 x3 result)
 }
+// TODO: See above
+// [@@ FStar.Tactics.Typeclasses.tcinstance]
+// let _ = fun (v_Self:Type0) (v_T:Type0) {|i: t_Squeeze v_Self v_T|} -> i._super_18390613159176269294
 "
 )]
+// #[hax_lib::attributes]
 pub(crate) trait Squeeze<T: KeccakItem<1>> {
+    // #[hax_lib::requires(
+    //     len < 192 &&
+    //     len <= out.len() &&
+    //     start <= out.len() &&
+    //     start <= out.len() - len &&
+    //     start + len <= out.len()
+    // )]
+    // #[hax_lib::ensures(|_| future(out).len() == out.len())]
     fn squeeze<const RATE: usize>(&self, out: &mut [u8], start: usize, len: usize);
 }
 
