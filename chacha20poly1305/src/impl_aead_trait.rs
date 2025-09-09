@@ -83,7 +83,14 @@ mod impl_chachapoly {
         }
     }
 
+    // Implements the traits in libcrux_traits::aead::slice based on
+    // libcrux_traits::aead::arrayref:Aead.
+    // This way we can use slices as keys, tags and nonces instead of array references.
     libcrux_traits::aead::slice::impl_aead_slice_trait!(ChaCha20Poly1305 => KEY_LEN, TAG_LEN, NONCE_LEN);
+
+    // Implements the traits in libcrux_traits::aead::typed_owned based on
+    // libcrux_traits::aead::arrayref:Aead.
+    // This way we can use the user-facing key-centric APIs.
     libcrux_traits::aead::typed_owned::impl_aead_typed_owned!(
         ChaCha20Poly1305,
         KEY_LEN,

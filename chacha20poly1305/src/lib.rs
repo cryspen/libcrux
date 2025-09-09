@@ -1,3 +1,66 @@
+//! This crate implements the ChaCha20Poly1305 AEAD algorithm, as well as the extended nonce
+//! variant XChaCha20Poly1305.
+//!
+//! To encrypt something using ChaCha20Poly1305, use:
+//!
+//! ```rust
+//! # fn main(){
+//! # let key_bytes = [0u8; 32];
+//! # const MSG_LEN: usize = 19;
+//! #
+//! use libcrux_chacha20poly1305::*;
+//! use libcrux_traits::aead::typed_owned::Aead as _;
+//!
+//! let msg: &[u8; MSG_LEN] = b"squeamish ossifrage";
+//! let mut ciphertext = [0u8; MSG_LEN];
+//! let mut tag = Tag::from([0u8; TAG_LEN]);
+//!
+//! let key = Key::from(key_bytes);
+//! let nonce = Nonce::from([123u8; NONCE_LEN]);
+//!
+//! key.encrypt(&mut ciphertext, &mut tag, &nonce, &[/* no aad */], msg)
+//!     .expect("Encryption error");
+//!
+//! // Ciphertext and tag contain encrypted data
+//! assert_eq!(
+//!     ciphertext,
+//!     [ 181, 223,  66, 115, 105, 181,  98, 178,
+//!       247, 139, 196, 238, 169, 225, 143,  94,
+//!       174, 123, 232 ]
+//! );
+//! assert_eq!(
+//!     tag.as_ref(),
+//!     &[ 155, 112, 155, 212, 133, 38, 145, 115,
+//!         27, 221, 245, 237, 125, 28,  22, 101 ]
+//! );
+//! # }
+//! ```
+//!
+//! and to decrypt, do
+//!
+//! ```rust
+//! # fn main(){
+//! # let key_bytes  = [0u8; 32];
+//! # let ciphertext = [181, 223,  66, 115, 105, 181,  98, 178, 247, 139, 196, 238, 169, 225, 143,  94, 174, 123, 232];
+//! # let tag_bytes  = [155, 112, 155, 212, 133,  38, 145, 115,  27, 221, 245, 237, 125,  28,  22, 101];
+//! # const MSG_LEN: usize = 19;
+//! #
+//! use libcrux_chacha20poly1305::*;
+//! use libcrux_traits::aead::typed_owned::Aead as _;
+//!
+//! let mut plaintext = [0u8; MSG_LEN];
+//! let mut tag = Tag::from(tag_bytes);
+//!
+//! let key = Key::from(key_bytes);
+//! let nonce = Nonce::from([123u8; NONCE_LEN]);
+//!
+//! key.decrypt(&mut plaintext, &nonce, &[/* no aad */], &ciphertext, &tag)
+//!     .expect("Encryption error");
+//!
+//! assert_eq!(&plaintext, b"squeamish ossifrage");
+//! # }
+//! ```
+
 #![no_std]
 
 use libcrux_traits::aead::{typed_owned, typed_refs};
@@ -33,13 +96,13 @@ pub type Tag = typed_owned::Tag<ChaCha20Poly1305>;
 /// An owned ChaCha20Poly1305 nonce.
 pub type Nonce = typed_owned::Nonce<ChaCha20Poly1305>;
 
-/// A referece to a ChaCha20Poly1305 key.
+/// A reference to a ChaCha20Poly1305 key.
 pub type KeyRef<'a> = typed_refs::KeyRef<'a, ChaCha20Poly1305>;
-/// A referece to a ChaCha20Poly1305 tag.
+/// A reference to a ChaCha20Poly1305 tag.
 pub type TagRef<'a> = typed_refs::TagRef<'a, ChaCha20Poly1305>;
-/// A mutable referece to a ChaCha20Poly1305 tag.
+/// A mutable reference to a ChaCha20Poly1305 tag.
 pub type TagMut<'a> = typed_refs::TagMut<'a, ChaCha20Poly1305>;
-/// A referece to a ChaCha20Poly1305 nonce.
+/// A reference to a ChaCha20Poly1305 nonce.
 pub type NonceRef<'a> = typed_refs::NonceRef<'a, ChaCha20Poly1305>;
 
 /// Describes the error conditions of the  ChaCha20-Poly1305 AEAD.

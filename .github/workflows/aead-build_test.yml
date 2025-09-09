@@ -4,8 +4,10 @@ on:
   merge_group:
   push:
     branches: ["main", "dev"]
+    paths: ['crates/primitives/aead', 'chacha20poly1305', 'traits/src/aead']
   pull_request:
     branches: ["main", "dev", "*"]
+    paths: ['crates/primitives/aead', 'chacha20poly1305', 'traits/src/aead']
   workflow_dispatch:
 
 env:
@@ -16,6 +18,24 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  build-intel-mac:
+    if: ${{ github.event_name != 'merge_group' }}
+    runs-on: macos-13
+    defaults:
+      run:
+        shell: bash
+        working-directory: crates/primitives/aead
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: 🛠️ Setup Rust Nightly
+        run: rustup toolchain install nightly-2024-12-14
+
+      - name: 🔨 Build
+        run: |
+          rustc --print=cfg
+          cargo build --verbose $RUST_TARGET_FLAG
+
   build:
     if: ${{ github.event_name != 'merge_group' }}
     strategy:
@@ -23,15 +43,12 @@ jobs:
       matrix:
         bits: [32, 64]
         os:
-          - macos-13 # Intel mac
           - macos-latest # macos-15 on apple silicon
           - ubuntu-latest
           - windows-latest
         exclude:
           - bits: 32
             os: "macos-latest"
-          - bits: 32
-            os: "macos-13"
           - bits: 32 # FIXME: Linking isn't working here yet for hacl #42
             os: "windows-latest"
 

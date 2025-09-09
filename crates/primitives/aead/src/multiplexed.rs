@@ -5,25 +5,28 @@ use libcrux_traits::{
     libcrux_secrets::U8,
 };
 
-/// A multiplexed AEAD.
+/// A multiplexed AEAD, allowing algorithm selection at run time.
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum Aead {
+    /// The ChaCha20Poly1305 AEAD algorithm.
     #[cfg(feature = "chacha20poly1305")]
     ChaCha20Poly1305,
+
+    /// The XChaCha20Poly1305 AEAD algorithm.
     #[cfg(feature = "xchacha20poly1305")]
     XChaCha20Poly1305,
 }
 
-/// A referece to a multiplexed AEAD key.
+/// A reference to a multiplexed AEAD key.
 #[cfg(any(feature = "chacha20poly1305", feature = "xchacha20poly1305"))]
 pub type KeyRef<'a> = aead::typed_refs::KeyRef<'a, Aead>;
-/// A referece to a multiplexed AEAD tag.
+/// A reference to a multiplexed AEAD tag.
 #[cfg(any(feature = "chacha20poly1305", feature = "xchacha20poly1305"))]
 pub type TagRef<'a> = aead::typed_refs::TagRef<'a, Aead>;
-/// A mutable referece to a multiplexed AEAD tag.
+/// A mutable reference to a multiplexed AEAD tag.
 #[cfg(any(feature = "chacha20poly1305", feature = "xchacha20poly1305"))]
 pub type TagMut<'a> = aead::typed_refs::TagMut<'a, Aead>;
-/// A referece to a multiplexed AEAD nonce.
+/// A reference to a multiplexed AEAD nonce.
 #[cfg(any(feature = "chacha20poly1305", feature = "xchacha20poly1305"))]
 pub type NonceRef<'a> = aead::typed_refs::NonceRef<'a, Aead>;
 
