@@ -21,7 +21,7 @@ macro_rules! wycheproof_verify_test {
         #[test]
         fn $name() {
             let katfile_path = Path::new("tests").join("wycheproof").join(format!(
-                "mldsa_{}_standard_verify_test.json",
+                "mldsa_{}_verify_test.json",
                 $parameter_set
             ));
             let katfile = File::open(katfile_path).expect("Could not open KAT file.");

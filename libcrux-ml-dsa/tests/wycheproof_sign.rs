@@ -1,6 +1,7 @@
 // This module tests the implementation against the Wycheproof signing
 // test vectors for the final version of the ML-DSA standard, added in
 // commit
+// TODO: add current commit
 // [https://github.com/C2SP/wycheproof/pull/112/commits/8e7fa6f87e6993d7b613cf48b46512a32df8084a].
 //
 // This set of test vectors does not cover the pre-hashed variants of
@@ -27,7 +28,7 @@ macro_rules! wycheproof_sign_test {
         fn $name() {
             let katfile_path = Path::new("tests")
                 .join("wycheproof")
-                .join(format!("mldsa_{}_standard_sign_test.json", $parameter_set));
+                .join(format!("mldsa_{}_sign_noseed_test.json", $parameter_set));
             let katfile = File::open(katfile_path).expect("Could not open KAT file.");
             let reader = BufReader::new(katfile);
 
