@@ -11,14 +11,12 @@
 //     let model: sign_schema = serde_json::from_str(&json).unwrap();
 // }
 
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 
 #[derive(PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct SignSchema {
     algorithm: String,
-
-    generator_version: String,
 
     header: Vec<String>,
 
@@ -55,6 +53,13 @@ pub struct BoundaryCondition {
 
 #[derive(PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
+pub struct Source {
+    name: String,
+    version: String,
+}
+
+#[derive(PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct TestGroup {
     #[serde(rename = "type")]
     test_group_type: Type,
@@ -62,6 +67,8 @@ pub struct TestGroup {
     private_key: String,
 
     tests: Vec<Test>,
+
+    source: Source,
 }
 
 #[derive(PartialEq, Serialize, Deserialize)]
@@ -102,7 +109,7 @@ pub enum Flag {
 
     #[serde(rename = "InvalidContext")]
     InvalidContext,
-    
+
     #[serde(rename = "ManySteps")]
     ManySteps,
 
