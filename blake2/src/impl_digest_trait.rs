@@ -54,17 +54,20 @@ macro_rules! impl_digest_traits {
                 digest: &mut [u8; $out_size],
                 payload: &[u8],
             ) -> Result<(), arrayref::HashError> {
+                // Initialize a new incremental hasher
                 let mut hasher = <$hasher>::new().map_err(|e| match e {
                     InitializeError::InvalidDigestLength => {
                         arrayref::HashError::InvalidDigestLength
                     }
                     InitializeError::Unknown => arrayref::HashError::Unknown,
                 })?;
+                // Update the hasher with the payload
                 hasher.update(payload).map_err(|e| match e {
                     UpdateError::InvalidPayloadLength => arrayref::HashError::InvalidPayloadLength,
                     UpdateError::MaximumLengthExceeded => arrayref::HashError::InvalidPayloadLength,
                     UpdateError::Unknown => arrayref::HashError::Unknown,
                 })?;
+                // Finalize and write to digest
                 hasher.finish(digest);
 
                 Ok(())
