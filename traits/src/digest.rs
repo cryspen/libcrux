@@ -44,7 +44,7 @@ mod error_in_core {
 /// - [`owned::DigestIncremental`]
 pub trait DigestIncrementalBase {
     /// The digest state.
-    type IncrementalState;
+    type IncrementalState: Default;
     /// Reset the digest state.
     fn reset(state: &mut Self::IncrementalState);
     /// Update the digest state with the `payload`.
@@ -58,10 +58,7 @@ pub struct Hasher<const N: usize, D: DigestIncrementalBase> {
     pub state: D::IncrementalState,
 }
 
-impl<const N: usize, D: arrayref::DigestIncremental<N>> Default for Hasher<N, D>
-where
-    D::IncrementalState: Default,
-{
+impl<const N: usize, D: DigestIncrementalBase> Default for Hasher<N, D> {
     fn default() -> Self {
         Self {
             state: Default::default(),

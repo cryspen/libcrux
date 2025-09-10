@@ -2,7 +2,12 @@ use crate::impl_hacl::*;
 use libcrux_traits::digest::{arrayref, slice, DigestIncrementalBase, Hasher, UpdateError};
 
 macro_rules! impl_digest_traits {
-    ($out_size:ident, $type:ty, $blake2:ty, $hasher:ty) => {
+    ($out_size:ident, $type:ty, $blake2:ty, $hasher:ty, $builder:ty) => {
+        impl<const $out_size: usize> Default for $blake2 {
+            fn default() -> Self {
+                <$builder>::new_unkeyed().build_const_digest_len().unwrap()
+            }
+        }
         impl<const $out_size: usize> DigestIncrementalBase for $type {
             type IncrementalState = $blake2;
 
@@ -50,13 +55,15 @@ macro_rules! impl_digest_traits {
 /// A struct that implements [`libcrux_traits::digest`] traits.
 ///
 /// [`Blake2bHasher`] is a convenience hasher for this struct.
+#[derive(Default)]
 pub struct Blake2bHash<const OUT_SIZE: usize>;
 
 impl_digest_traits!(
     OUT_SIZE,
     Blake2bHash<OUT_SIZE>,
     Blake2b<ConstKeyLenConstDigestLen<0, OUT_SIZE>>,
-    Blake2bHasher<OUT_SIZE>
+    Blake2bHasher<OUT_SIZE>,
+    Blake2bBuilder<'_, &_>
 );
 
 /// A hasher for [`Blake2bHash`].
@@ -70,7 +77,8 @@ impl_digest_traits!(
     OUT_SIZE,
     Blake2sHash<OUT_SIZE>,
     Blake2s<ConstKeyLenConstDigestLen<0, OUT_SIZE>>,
-    Blake2sHasher<OUT_SIZE>
+    Blake2sHasher<OUT_SIZE>,
+    Blake2sBuilder<'_, &_>
 );
 
 /// A hasher for [`Blake2sHash`].
