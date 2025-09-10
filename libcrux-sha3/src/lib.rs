@@ -10,9 +10,9 @@ mod simd;
 
 mod generic_keccak;
 
-#[cfg(not(hax))]
+#[cfg(not(any(hax, eurydice)))]
 mod impl_digest_trait;
-#[cfg(not(hax))]
+#[cfg(not(any(hax, eurydice)))]
 pub use impl_digest_trait::*;
 
 mod traits;
