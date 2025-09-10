@@ -1,10 +1,13 @@
 use crate::{
     constants::{Eta, Gamma2},
-    simd::traits::{Operations, COEFFICIENTS_IN_SIMD_UNIT, SIMD_UNITS_IN_RING_ELEMENT},
+    simd::traits::{Operations, SIMD_UNITS_IN_RING_ELEMENT},
 };
 
 #[cfg(not(eurydice))]
 use crate::simd::traits::Repr;
+
+#[cfg(hax)]
+use crate::simd::traits::COEFFICIENTS_IN_SIMD_UNIT;
 
 mod arithmetic;
 mod encoding;
