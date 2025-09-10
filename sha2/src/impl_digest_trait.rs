@@ -2,7 +2,9 @@ use crate::impl_hacl::*;
 
 use libcrux_traits::Digest;
 
-use libcrux_traits::digest::{arrayref, slice, DigestIncrementalBase, UpdateError};
+use libcrux_traits::digest::{
+    arrayref, slice, DigestIncrementalBase, InitializeError, UpdateError,
+};
 
 // Streaming API - This is the recommended one.
 // For implementations based on hacl_rs (over hacl-c)
@@ -39,6 +41,11 @@ macro_rules! impl_hash {
         }
         impl DigestIncrementalBase for $name {
             type IncrementalState = $state_name;
+
+            /// Initialize a new incremental state.
+            fn new() -> Result<Self::IncrementalState, InitializeError> {
+                Ok(Self::IncrementalState::default())
+            }
             /// Add the `payload` to the digest.
             /// Will return an error if `payload` is longer than `u32::MAX` to ensure that hacl-rs can
             /// process it.
