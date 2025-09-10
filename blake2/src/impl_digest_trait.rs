@@ -89,6 +89,7 @@ pub type Blake2bHasher<const OUT_SIZE: usize> = Hasher<OUT_SIZE, Blake2bHash<OUT
 /// A struct that implements [`libcrux_traits::digest`] traits.
 ///
 /// [`Blake2sHasher`] is a convenience hasher for this struct.
+#[derive(Default)]
 pub struct Blake2sHash<const OUT_SIZE: usize>;
 impl_digest_traits!(
     OUT_SIZE,
