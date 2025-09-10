@@ -1,10 +1,13 @@
 use crate::{
     constants::{Eta, Gamma2},
-    simd::traits::{Operations, COEFFICIENTS_IN_SIMD_UNIT, SIMD_UNITS_IN_RING_ELEMENT},
+    simd::traits::{Operations, SIMD_UNITS_IN_RING_ELEMENT},
 };
 
 #[cfg(not(eurydice))]
 use crate::simd::traits::Repr;
+
+#[cfg(hax)]
+use crate::simd::traits::COEFFICIENTS_IN_SIMD_UNIT;
 
 mod arithmetic;
 mod encoding;
@@ -18,6 +21,7 @@ pub(crate) use vector_type::{AVX2RingElement, Vec256 as AVX2SIMDUnit};
 
 #[cfg(not(eurydice))]
 impl Repr for AVX2SIMDUnit {
+    #[cfg(hax)]
     fn repr(&self) -> [i32; COEFFICIENTS_IN_SIMD_UNIT] {
         let mut result = [0i32; COEFFICIENTS_IN_SIMD_UNIT];
         vector_type::to_coefficient_array(self, &mut result);

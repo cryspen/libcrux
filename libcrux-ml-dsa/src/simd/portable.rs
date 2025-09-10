@@ -24,6 +24,7 @@ use super::traits::COEFFICIENTS_IN_SIMD_UNIT;
 
 #[cfg(not(eurydice))]
 impl Repr for Coefficients {
+    #[cfg(hax)]
     fn repr(&self) -> [i32; COEFFICIENTS_IN_SIMD_UNIT] {
         self.values
     }
