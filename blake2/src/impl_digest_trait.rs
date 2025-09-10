@@ -44,6 +44,23 @@ macro_rules! impl_digest_traits {
             }
         }
 
+        impl<const $out_size: usize> arrayref::Hash<$out_size> for $type {
+            fn hash(
+                digest: &mut [u8; $out_size],
+                payload: &[u8],
+            ) -> Result<(), arrayref::HashError> {
+                let mut hasher = <$hasher>::default();
+                hasher.update(payload).map_err(|e| match e {
+                    UpdateError::InvalidPayloadLength => arrayref::HashError::InvalidPayloadLength,
+                    UpdateError::MaximumLengthExceeded => arrayref::HashError::InvalidPayloadLength,
+                    UpdateError::Unknown => arrayref::HashError::Unknown,
+                })?;
+                hasher.finish(digest);
+
+                Ok(())
+            }
+        }
+
         impl<const $out_size: usize> From<$blake2> for $hasher {
             fn from(state: $blake2) -> Self {
                 Self { state }
