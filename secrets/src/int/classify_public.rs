@@ -1,9 +1,11 @@
-/// This file defines functions for classifying and declassifying various types.
-/// We give definitions for all conversions so that they can be tested.
-/// We define no-ops here and force inlining, to ensure that these are free.
+//! This module defines functions for classifying and declassifying various types.
+//! We give definitions for all conversions so that they can be tested.
+//! We define no-ops here and force inlining, to ensure that these are free.
+
 use crate::traits::*;
 
-// TODO: remove hax exemptions once this is supported
+// TODO: Remove hax exemptions once this is supported.
+//       See https://github.com/cryspen/hax/issues/1674.
 
 // Immutable references to slices can be classified
 #[cfg(not(hax))]
@@ -19,6 +21,7 @@ impl<'a, T: Scalar> ClassifyRef for &'a [T] {
 #[cfg(not(hax))]
 impl<'a, T: Scalar> DeclassifyRef for &'a [T] {
     type DeclassifiedRef = &'a [T];
+    #[inline(always)]
     fn declassify_ref(self) -> &'a [T] {
         self
     }
