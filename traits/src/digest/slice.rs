@@ -73,6 +73,7 @@ impl From<arrayref::HashError> for HashError {
     fn from(e: arrayref::HashError) -> Self {
         match e {
             arrayref::HashError::InvalidPayloadLength => Self::InvalidPayloadLength,
+            arrayref::HashError::InvalidDigestLength => Self::InvalidDigestLength,
             arrayref::HashError::Unknown => Self::Unknown,
         }
     }

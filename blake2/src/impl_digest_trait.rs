@@ -1,16 +1,21 @@
 use crate::impl_hacl::*;
-use libcrux_traits::digest::{arrayref, slice, DigestIncrementalBase, Hasher, UpdateError};
+use libcrux_traits::digest::{
+    arrayref, slice, DigestIncrementalBase, Hasher, InitializeError, UpdateError,
+};
 
 macro_rules! impl_digest_traits {
     ($out_size:ident, $type:ty, $blake2:ty, $hasher:ty, $builder:ty) => {
-        impl<const $out_size: usize> Default for $blake2 {
-            fn default() -> Self {
-                <$builder>::new_unkeyed().build_const_digest_len().unwrap()
-            }
-        }
         impl<const $out_size: usize> DigestIncrementalBase for $type {
             type IncrementalState = $blake2;
 
+            fn new() -> Result<Self::IncrementalState, InitializeError> {
+                <$builder>::new_unkeyed()
+                    .build_const_digest_len()
+                    .map_err(|e| match e {
+                        Error::InvalidDigestLength => InitializeError::InvalidDigestLength,
+                        _ => InitializeError::Unknown,
+                    })
+            }
             fn update(state: &mut Self::IncrementalState, chunk: &[u8]) -> Result<(), UpdateError> {
                 // maps all known errors returned by this function
                 state.update(chunk).map_err(|e| match e {
@@ -49,7 +54,12 @@ macro_rules! impl_digest_traits {
                 digest: &mut [u8; $out_size],
                 payload: &[u8],
             ) -> Result<(), arrayref::HashError> {
-                let mut hasher = <$hasher>::default();
+                let mut hasher = <$hasher>::new().map_err(|e| match e {
+                    InitializeError::InvalidDigestLength => {
+                        arrayref::HashError::InvalidDigestLength
+                    }
+                    InitializeError::Unknown => arrayref::HashError::Unknown,
+                })?;
                 hasher.update(payload).map_err(|e| match e {
                     UpdateError::InvalidPayloadLength => arrayref::HashError::InvalidPayloadLength,
                     UpdateError::MaximumLengthExceeded => arrayref::HashError::InvalidPayloadLength,
@@ -72,7 +82,6 @@ macro_rules! impl_digest_traits {
 /// A struct that implements [`libcrux_traits::digest`] traits.
 ///
 /// [`Blake2bHasher`] is a convenience hasher for this struct.
-#[derive(Default)]
 pub struct Blake2bHash<const OUT_SIZE: usize>;
 
 impl_digest_traits!(
@@ -89,7 +98,6 @@ pub type Blake2bHasher<const OUT_SIZE: usize> = Hasher<OUT_SIZE, Blake2bHash<OUT
 /// A struct that implements [`libcrux_traits::digest`] traits.
 ///
 /// [`Blake2sHasher`] is a convenience hasher for this struct.
-#[derive(Default)]
 pub struct Blake2sHash<const OUT_SIZE: usize>;
 impl_digest_traits!(
     OUT_SIZE,
