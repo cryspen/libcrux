@@ -1,4 +1,7 @@
-use libcrux_blake2::{Blake2bBuilder, Blake2bHasher, Blake2sBuilder, Blake2sHasher};
+use libcrux_blake2::{
+    Blake2bBuilder, Blake2bHash, Blake2bHasher, Blake2sBuilder, Blake2sHash, Blake2sHasher,
+    RuntimeDigestLen,
+};
 
 #[test]
 fn test_blake2b() {
@@ -227,14 +230,24 @@ fn test_digest_traits_2s() {
 
     // test unkeyed, with const key and digest len
     let expected_hash = b"\xf2\x01\x46\xc0\x54\xf9\xdd\x6b\x67\x64\xb6\xc0\x93\x57\xf7\xcd\x75\x51\xdf\xbc\xba\x54\x59\x72\xa4\xc8\x16\x6d\xf8\xaf\xde\x60";
-    let mut hasher: Blake2sHasher<_> = Blake2sBuilder::new_unkeyed()
-        .build_const_digest_len()
-        .unwrap()
-        .into();
+    let mut hasher = Blake2sHasher::new().unwrap();
     hasher.update(b"this is a test").unwrap();
     hasher.finish(&mut got_hash);
 
     assert_eq!(&got_hash, expected_hash);
+    // compare to result from oneshot hasher
+    assert_eq!(
+        &Blake2sHasher::<32>::hash_to_owned(b"this is a test").unwrap(),
+        expected_hash
+    );
+
+    // compare to result from varlen hasher
+    use libcrux_traits::digest::typed_refs::*;
+    let mut digest = [0; 32];
+    let algo = Blake2sHash::<RuntimeDigestLen>::default();
+    let digest_mut = DigestMut::new_for_algo(algo, &mut digest).unwrap();
+    algo.hash(digest_mut, b"this is a test").unwrap();
+    assert_eq!(&digest, expected_hash);
 
     let mut too_short = vec![0; 31];
     let err = hasher.finish_slice(&mut too_short).unwrap_err();
@@ -256,14 +269,15 @@ fn test_digest_traits_2b() {
 
     // test unkeyed, with const key and digest len
     let expected_hash = b"\xe9\xed\x14\x1d\xf1\xce\xbf\xc8\x9e\x46\x6c\xe0\x89\xee\xdd\x4f\x12\x5a\xa7\x57\x15\x01\xa0\xaf\x87\x1f\xab\x60\x59\x71\x17\xb7";
-    let mut hasher: Blake2bHasher<_> = Blake2bBuilder::new_unkeyed()
-        .build_const_digest_len()
-        .unwrap()
-        .into();
+    let mut hasher = Blake2bHasher::new().unwrap();
     hasher.update(b"this is a test").unwrap();
     hasher.finish(&mut got_hash);
 
     assert_eq!(&got_hash, expected_hash);
+    assert_eq!(
+        &Blake2bHasher::<32>::hash_to_owned(b"this is a test").unwrap(),
+        expected_hash
+    );
 
     let mut too_short = vec![0; 31];
     let err = hasher.finish_slice(&mut too_short).unwrap_err();

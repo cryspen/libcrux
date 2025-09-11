@@ -1,0 +1,23 @@
+[package]
+description = "Formally verified digest library"
+name = "libcrux-digest"
+readme = "Readme.md"
+version = "0.0.3"
+
+authors.workspace = true
+edition.workspace = true
+homepage.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+libcrux-blake2 = { version = "0.0.3", path = "../../../blake2", optional = true }
+libcrux-sha2 = { version = "0.0.3", path = "../../../sha2", optional = true }
+libcrux-sha3 = { version = "0.0.3", path = "../../../libcrux-sha3", optional = true }
+libcrux-traits = { version = "0.0.3", path = "../../../traits", optional = true }
+
+[features]
+blake2 = ["dep:libcrux-blake2", "dep:libcrux-traits"]
+default = ["blake2", "sha2", "sha3"]
+sha2 = ["dep:libcrux-sha2", "dep:libcrux-traits"]
+sha3 = ["dep:libcrux-sha3", "dep:libcrux-traits"]
