@@ -98,7 +98,6 @@ jobs:
       # Benchmarks
       - name: 🔨 Build Benchmarks
         run: |
-          cargo clean
           cargo bench --no-run
   
   mldsa-build-test-status:

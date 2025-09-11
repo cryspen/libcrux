@@ -200,6 +200,9 @@ impl<const N: usize, T: KeccakItem<N>> KeccakState<N, T> {
     where
         Self: Absorb<N>,
     {
+        #[cfg(not(eurydice))]
+        debug_assert!(blocks.iter().all(|buf| buf.len() == blocks[0].len()));
+
         self.load_block::<RATE>(blocks, start);
         self.keccakf1600()
     }
@@ -214,6 +217,9 @@ impl<const N: usize, T: KeccakItem<N>> KeccakState<N, T> {
         Self: Absorb<N>,
     {
         debug_assert!(N > 0 && len < RATE);
+
+        #[cfg(not(eurydice))]
+        debug_assert!(last.iter().all(|buf| buf.len() == last[0].len()));
 
         self.load_last::<RATE, DELIM>(last, start, len);
         self.keccakf1600()
