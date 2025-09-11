@@ -1,9 +1,11 @@
 use crate::generic_keccak::{self, portable::keccak1};
+use hax_lib;
 
 use generic_keccak::KeccakState as GenericState;
 
 /// The Keccak state for the incremental API.
 #[derive(Clone, Copy)]
+#[hax_lib::fstar::before(interface, "open Libcrux_sha3.Simd.Portable")]
 pub struct KeccakState {
     state: GenericState<1, u64>,
 }
@@ -50,7 +52,19 @@ pub mod incremental {
     mod private {
         pub trait Sealed {}
 
+        #[hax_lib::fstar::replace(
+            "
+[@@ FStar.Tactics.Typeclasses.tcinstance]
+let impl_1__from__private: t_Sealed t_Shake128Xof = { __marker_trait_t_Sealed = () }
+        "
+        )]
         impl Sealed for super::Shake128Xof {}
+        #[hax_lib::fstar::replace(
+            "
+[@@ FStar.Tactics.Typeclasses.tcinstance]
+let impl__from__private: t_Sealed t_Shake256Xof = { __marker_trait_t_Sealed = () }
+        "
+        )]
         impl Sealed for super::Shake256Xof {}
     }
     use super::*;

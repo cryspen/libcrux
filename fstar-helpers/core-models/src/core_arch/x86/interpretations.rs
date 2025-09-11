@@ -98,7 +98,7 @@ pub mod int_vec {
     }
 
     pub fn _mm_mullo_epi16(a: i16x8, b: i16x8) -> i16x8 {
-        i16x8::from_fn(|i| (a[i].overflowing_mul(b[i]).0))
+        i16x8::from_fn(|i| a[i].overflowing_mul(b[i]).0)
     }
 
     pub fn _mm256_cmpgt_epi16(a: i16x16, b: i16x16) -> i16x16 {
@@ -152,16 +152,16 @@ pub mod int_vec {
 
     #[hax_lib::fstar::options("--z3rlimit 200")]
     pub fn _mm_mulhi_epi16(a: i16x8, b: i16x8) -> i16x8 {
-        i16x8::from_fn(|i| (((a[i] as i32) * (b[i] as i32) >> 16) as i16))
+        i16x8::from_fn(|i| ((a[i] as i32) * (b[i] as i32) >> 16) as i16)
     }
 
     pub fn _mm256_mullo_epi32(a: i32x8, b: i32x8) -> i32x8 {
-        i32x8::from_fn(|i| (a[i].overflowing_mul(b[i]).0))
+        i32x8::from_fn(|i| a[i].overflowing_mul(b[i]).0)
     }
 
     #[hax_lib::fstar::verification_status(lax)]
     pub fn _mm256_mulhi_epi16(a: i16x16, b: i16x16) -> i16x16 {
-        i16x16::from_fn(|i| (((a[i] as i32) * (b[i] as i32) >> 16) as i16))
+        i16x16::from_fn(|i| ((a[i] as i32) * (b[i] as i32) >> 16) as i16)
     }
 
     pub fn _mm256_mul_epu32(a: u32x8, b: u32x8) -> u64x4 {
