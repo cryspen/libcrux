@@ -12,14 +12,44 @@ impl<Algo> DigestMut<'_, Algo> {
 #[derive(Debug, Clone, Copy)]
 pub struct WrongLengthError;
 
+#[derive(Debug, Clone, Copy)]
+pub enum HashError {
+    InvalidDigestLength,
+    WrongDigest,
+    InvalidPayloadLength,
+    Unknown,
+}
+
+impl From<super::slice::HashError> for HashError {
+    fn from(e: super::slice::HashError) -> Self {
+        match e {
+            super::slice::HashError::InvalidDigestLength => HashError::InvalidDigestLength,
+            super::slice::HashError::InvalidPayloadLength => HashError::InvalidPayloadLength,
+            super::slice::HashError::Unknown => HashError::Unknown,
+        }
+    }
+}
+impl From<super::arrayref::HashError> for HashError {
+    fn from(e: super::arrayref::HashError) -> Self {
+        match e {
+            super::arrayref::HashError::InvalidDigestLength => HashError::InvalidDigestLength,
+            super::arrayref::HashError::InvalidPayloadLength => HashError::InvalidPayloadLength,
+            super::arrayref::HashError::Unknown => HashError::Unknown,
+        }
+    }
+}
+
 impl<'a, Algo: Hash> DigestMut<'a, Algo> {
     pub fn new_for_algo(algo: Algo, digest: &'a mut [u8]) -> Result<Self, WrongLengthError> {
-        (digest.len() == algo.digest_len())
-            .then_some(DigestMut {
-                algorithm: algo,
-                digest,
-            })
-            .ok_or(WrongLengthError)
+        // check that digest length matches, if available
+        if !algo.digest_len_is_valid(digest.len()) {
+            return Err(WrongLengthError);
+        }
+
+        Ok(DigestMut {
+            algorithm: algo,
+            digest,
+        })
     }
 }
 
@@ -30,13 +60,9 @@ impl<Algo> AsMut<[u8]> for DigestMut<'_, Algo> {
 }
 
 pub trait Hash: Copy + PartialEq {
-    fn digest_len(&self) -> usize;
+    fn digest_len_is_valid(&self, len: usize) -> bool;
 
-    fn hash<'a>(
-        &self,
-        digest: DigestMut<'a, Self>,
-        payload: &[u8],
-    ) -> Result<(), super::slice::HashError>;
+    fn hash<'a>(&self, digest: DigestMut<'a, Self>, payload: &[u8]) -> Result<(), HashError>;
 }
 
 impl<
@@ -44,25 +70,18 @@ impl<
         Algo: super::typed_owned::Hash<Digest = [u8; DIGEST_LEN]> + Copy + PartialEq,
     > Hash for Algo
 {
-    fn digest_len(&self) -> usize {
-        DIGEST_LEN
+    fn digest_len_is_valid(&self, digest_len: usize) -> bool {
+        digest_len == DIGEST_LEN
     }
-    fn hash<'a>(
-        &self,
-        mut digest: DigestMut<'a, Self>,
-        payload: &[u8],
-    ) -> Result<(), super::slice::HashError> {
-        if self.digest_len() != digest.digest.len() {
-            return Err(todo!());
+    fn hash<'a>(&self, mut digest: DigestMut<'a, Self>, payload: &[u8]) -> Result<(), HashError> {
+        if DIGEST_LEN != digest.digest.len() {
+            return Err(HashError::InvalidDigestLength);
         }
 
-        let digest: &mut [u8; DIGEST_LEN] = digest
-            .as_mut()
-            .try_into()
-            .map_err(|_| super::slice::HashError::Unknown)?;
+        let digest: &mut [u8; DIGEST_LEN] =
+            digest.as_mut().try_into().map_err(|_| HashError::Unknown)?;
 
-        <Self as super::typed_owned::Hash>::hash(digest.into(), payload)
-            .map_err(super::slice::HashError::from)
+        <Self as super::typed_owned::Hash>::hash(digest.into(), payload).map_err(HashError::from)
     }
 }
 
