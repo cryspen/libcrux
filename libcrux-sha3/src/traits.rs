@@ -1,4 +1,5 @@
 use hax_lib;
+use hax_lib::int::*;
 
 // XXX: These should be default functions on `KeccakItem`, but hax doesn't
 //      support that yet. cryspen/hax#888
@@ -59,9 +60,7 @@ pub(crate) trait Absorb<const N: usize> {
         N != 0 &&
         RATE < 192 &&
         RATE % 8 == 0 &&
-        RATE <= input[0].len() &&
-        start <= input[0].len() &&
-        start <= input[0].len() - RATE
+        start.to_int() + RATE.to_int() <= input[0].len().to_int()
     )]
     fn load_block<const RATE: usize>(&mut self, input: &[&[u8]; N], start: usize);
 

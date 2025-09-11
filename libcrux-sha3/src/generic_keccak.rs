@@ -195,7 +195,6 @@ impl<const N: usize, T: KeccakItem<N>> KeccakState<N, T> {
     }
 
     #[inline(always)]
-    #[hax_lib::fstar::replace_body("assert true")]
     fn pi(&mut self) {
         let old: KeccakState<N, T> = *self;
 

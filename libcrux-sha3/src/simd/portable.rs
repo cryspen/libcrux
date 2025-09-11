@@ -1,5 +1,7 @@
 //! A portable SHA3 implementation using the generic implementation.
 
+use hax_lib::int::*;
+
 use crate::{generic_keccak::KeccakState, traits::*};
 
 #[inline(always)]
@@ -37,8 +39,7 @@ fn _veorq_n_u64(a: u64, c: u64) -> u64 {
 #[hax_lib::requires(
     RATE < 192 &&
     RATE % 8 == 0 &&
-    RATE <= blocks.len() &&
-    start <= blocks.len() - RATE
+    start.to_int() + RATE.to_int() <= blocks.len().to_int()
 )]
 pub(crate) fn load_block<const RATE: usize>(state: &mut [u64; 25], blocks: &[u8], start: usize) {
     debug_assert!(start + RATE <= blocks.len());
