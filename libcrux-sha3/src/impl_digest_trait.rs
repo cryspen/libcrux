@@ -10,6 +10,7 @@ macro_rules! impl_hash_traits {
         #[doc = concat!("A struct that implements [`libcrux_traits::digest`] traits.")]
         #[doc = concat!("\n\n")]
         #[doc = concat!("[`",stringify!($hasher), "`] is a convenient hasher for this struct.")]
+        #[derive(Clone, Copy, Default, PartialEq)]
         pub struct $type;
 
         #[doc = concat!("A hasher for [`",stringify!($type), "`].")]
@@ -30,6 +31,10 @@ macro_rules! impl_hash_traits {
                 Ok(())
             }
         }
+        impl libcrux_traits::digest::consts::HashConsts for $type {
+            const DIGEST_SIZE: usize = $len;
+        }
+        libcrux_traits::digest::typed_owned::impl_hash_typed_owned!($type, $len);
     };
 }
 
