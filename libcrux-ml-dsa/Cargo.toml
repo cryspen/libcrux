@@ -2,13 +2,13 @@
 name = "libcrux-ml-dsa"
 description = "Libcrux ML-DSA implementation"
 version = "0.0.3"
+readme = "README.md"
 
 authors.workspace = true
 license.workspace = true
 homepage.workspace = true
 edition.workspace = true
 repository.workspace = true
-readme.workspace = true
 
 [lib]
 bench = false # so libtest doesn't eat the arguments to criterion
