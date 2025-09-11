@@ -4,6 +4,10 @@ pub mod arrayref;
 pub mod owned;
 pub mod slice;
 
+pub mod consts;
+pub mod typed_owned;
+pub mod typed_refs;
+
 #[cfg(feature = "generic-tests")]
 pub mod tests;
 
