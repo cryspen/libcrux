@@ -1,3 +1,6 @@
+#[cfg(hax)]
+use hax_lib::{int::*};
+
 use crate::{
     generic_keccak::KeccakState,
     traits::{Absorb, KeccakItem, Squeeze},
@@ -41,44 +44,44 @@ impl<const PARALLEL_LANES: usize, const RATE: usize, STATE: KeccakItem<PARALLEL_
         }
     }
 
-    /// Absorb
+    /// Consume the internal buffer and the required amount of the input to pad to
+    /// `RATE`.
     ///
-    /// This function takes any number of bytes to absorb and buffers if it's not enough.
-    /// The function assumes that all input slices in `inputs` have the same length.
-    ///
-    /// Only a multiple of `RATE` blocks are absorbed.
-    /// For the remaining bytes [`absorb_final`] needs to be called.
-    ///
-    /// This works best with relatively small `inputs`.
-    #[inline(always)]
+    /// Returns the `consumed` bytes from `inputs` if there's enough buffered
+    /// content to consume, and `0` otherwise.
+    /// If `consumed > 0` is returned, `self.buf` contains a full block to be
+    /// loaded.
+    // Note: consciously not inlining this function to avoid using too much stack
+    // #[hax_lib::fstar::options("--fuel 5")]
     #[hax_lib::requires(
-        PARALLEL_LANES == 1 &&
-        RATE != 0 &&
-        RATE < 192 &&
-        self.buf_len <= RATE &&
-        self.buf_len <= usize::MAX - inputs[0].len()
+        PARALLEL_LANES == 1 && // TODO: Generalize for the parallel case
+        self.buf_len < RATE &&
+        self.buf_len.to_int() + inputs[0].len().to_int() <= usize::MAX.to_int()
     )]
-    pub(crate) fn absorb(&mut self, inputs: &[&[u8]; PARALLEL_LANES])
-    where
-        KeccakState<PARALLEL_LANES, STATE>: Absorb<PARALLEL_LANES>,
-    {
-        let input_remainder_len = self.absorb_full(inputs);
+    #[hax_lib::ensures(|result|
+        (result == 0 && future(self).buf_len == self.buf_len) ||
+        (result > 0 && future(self).buf_len == RATE && result == RATE - self.buf_len)
+    )]
+    pub(crate) fn fill_buffer(&mut self, inputs: &[&[u8]; PARALLEL_LANES]) -> usize {
+        let input_len = inputs[0].len();
 
-        // ... buffer the rest if there's not enough input (left).
-        if input_remainder_len > 0 {
-            debug_assert!(
-                self.buf_len == 0  // We consumed everything (or it was empty all along).
-                 || self.buf_len + input_remainder_len <= RATE
-            );
+        // Check if we have enough data when combining the internal buffer and the input.
+        if self.buf_len > 0 && self.buf_len + input_len >= RATE {
+            let consumed = RATE - self.buf_len;
 
-            let input_len = inputs[0].len();
+            #[cfg(hax)]
+            let start = self.buf_len; // ghost variable for F* proof
 
             #[allow(clippy::needless_range_loop)]
             for i in 0..PARALLEL_LANES {
-                self.buf[i][self.buf_len..self.buf_len + input_remainder_len]
-                    .copy_from_slice(&inputs[i][input_len - input_remainder_len..]);
+                hax_lib::loop_invariant!(|_: usize| { self.buf_len == start });
+                self.buf[i][self.buf_len..].copy_from_slice(&inputs[i][..consumed]);
             }
-            self.buf_len += input_remainder_len;
+
+            self.buf_len = RATE;
+            consumed
+        } else {
+            0
         }
     }
 
@@ -88,8 +91,7 @@ impl<const PARALLEL_LANES: usize, const RATE: usize, STATE: KeccakItem<PARALLEL_
         RATE < 192 &&
         RATE % 8 == 0 &&
         self.buf_len < RATE &&
-        self.buf_len <= usize::MAX - inputs[0].len() &&
-        self.buf_len <= usize::MAX - RATE
+        self.buf_len.to_int() + inputs[0].len().to_int() <= usize::MAX.to_int()
     )]
     pub(crate) fn absorb_full(&mut self, inputs: &[&[u8]; PARALLEL_LANES]) -> usize
     where
@@ -136,35 +138,58 @@ impl<const PARALLEL_LANES: usize, const RATE: usize, STATE: KeccakItem<PARALLEL_
         // end = input_consumed + num_blocks * RATE
         // ==> end <= input_consumed + i * RATE for all i in [0, num_blocks]
         // ==> end <= input_consumed + (i - 1) * RATE + RATE for all i in [0, num_blocks]
-        hax_lib::assert!(end <= inputs[0].len());
-        hax_lib::assert!(input_consumed + num_blocks * RATE <= end);
-        hax_lib::assert!(input_consumed + num_blocks * RATE <= inputs[0].len());
+        // hax_lib::assert!(end <= inputs[0].len());
+        // hax_lib::assert!(input_consumed + num_blocks * RATE <= end);
+        // hax_lib::assert!(input_consumed.to_int() + num_blocks.to_int() * RATE.to_int() <= inputs[0].len().to_int());
+        
+        hax_lib::fstar!(
+        r#"
+  let lemma_input_rate_bounds (i: usize) 
+    : Lemma
+        (requires i <. num_blocks)
+        (ensures v input_consumed + v i * v v_RATE + v v_RATE <= v (Core.Slice.impl__len #u8 (inputs.[ mk_usize 0 ])))
+  =
+    let rec lemma_monotonic_offset_bound_nat (a: nat) (i: nat) (n: nat) (rate: nat)
+      : Lemma
+          (requires i < n && rate > 0)
+          (ensures a + i * rate + rate <= a + n * rate)
+          (decreases n)
+      =
+        if n = 0 then
+          ()
+        else if i = n - 1 then
+          ()
+        else
+          lemma_monotonic_offset_bound_nat a i (n - 1) rate
+    in
+    
+    let lemma_total_bound ()
+      : Lemma
+          (ensures v input_consumed + v num_blocks * v v_RATE <= v (Core.Slice.impl__len #u8 (inputs.[ mk_usize 0 ])))
+      = 
+        ()
+    in
+
+    lemma_monotonic_offset_bound_nat (v input_consumed) (v i) (v num_blocks) (v v_RATE);
+    lemma_total_bound ();
+    ()
+  in
+        "#);
 
         for i in 0..num_blocks {
-            hax_lib::loop_invariant!(|i: usize| self.buf_len == buf_len);
+            // hax_lib::loop_invariant!(|i: usize| self.buf_len == buf_len);
+            // hax_lib::assert!(i < num_blocks);
+            // hax_lib::assert!(input_consumed.to_int() + num_blocks.to_int() * RATE.to_int() <= inputs[0].len().to_int());
+            // hax_lib::assert!(i <= num_blocks - 1);
+            // hax_lib::assert!(input_consumed + (num_blocks - 1) * RATE + RATE <= inputs[0].len());
+            // hax_lib::assert!(input_consumed + (num_blocks - 1) * RATE <= inputs[0].len() - RATE);
+            // hax_lib::assert!((num_blocks - 1) * RATE <= inputs[0].len() - RATE - input_consumed);
+            // hax_lib::fstar!("Hax_lib.v_assert ((v i * v v_RATE) + v input_consumed < v v_end)");
 
-            hax_lib::assert!(i < num_blocks);
-            hax_lib::assert!(input_consumed + (num_blocks) * RATE <= inputs[0].len());
-
-            hax_lib::assert!(i <= num_blocks - 1);
-            hax_lib::assert!(input_consumed + (num_blocks - 1) * RATE + RATE <= inputs[0].len());
-            hax_lib::assert!(input_consumed + (num_blocks - 1) * RATE <= inputs[0].len() - RATE);
-            hax_lib::assert!((num_blocks - 1) * RATE <= inputs[0].len() - RATE - input_consumed);
-
-            hax_lib::fstar!("Hax_lib.v_assert ((v i * v v_RATE) + v input_consumed < v v_end)");
+            hax_lib::fstar!("lemma_input_rate_bounds $i");
             let start = i * RATE + input_consumed;
-            hax_lib::assert!(i * RATE + input_consumed == start);
-
-            hax_lib::assert!(i <= num_blocks - 1);
-            // hax_lib::assert!(i * RATE <= (num_blocks - 1) * RATE);
-
-            // ASSERTS BELOW FAIL VERIFICATION
-            hax_lib::assert!(i * RATE <= inputs[0].len() - RATE - input_consumed);
-            hax_lib::assert!(i * RATE + input_consumed <= inputs[0].len() - RATE);
-
-            // GOAL: Strictest load_block pre condition
-            hax_lib::assert!(start <= inputs[0].len() - RATE);
-
+            
+            hax_lib::assert!(start + RATE <= inputs[0].len());
             self.inner.load_block::<RATE>(inputs, start);
             self.inner.keccakf1600();
         }
@@ -172,45 +197,44 @@ impl<const PARALLEL_LANES: usize, const RATE: usize, STATE: KeccakItem<PARALLEL_
         remainder
     }
 
-    /// Consume the internal buffer and the required amount of the input to pad to
-    /// `RATE`.
+    /// Absorb
     ///
-    /// Returns the `consumed` bytes from `inputs` if there's enough buffered
-    /// content to consume, and `0` otherwise.
-    /// If `consumed > 0` is returned, `self.buf` contains a full block to be
-    /// loaded.
-    // Note: consciously not inlining this function to avoid using too much stack
-    // #[hax_lib::fstar::options("--fuel 5")]
+    /// This function takes any number of bytes to absorb and buffers if it's not enough.
+    /// The function assumes that all input slices in `inputs` have the same length.
+    ///
+    /// Only a multiple of `RATE` blocks are absorbed.
+    /// For the remaining bytes [`absorb_final`] needs to be called.
+    ///
+    /// This works best with relatively small `inputs`.
+    #[inline(always)]
     #[hax_lib::requires(
         PARALLEL_LANES == 1 && // TODO: Generalize for the parallel case
+        RATE < 192 &&
+        RATE % 8 == 0 &&
         self.buf_len < RATE &&
-        self.buf_len <= usize::MAX - inputs[0].len() &&
-        self.buf_len <= usize::MAX - RATE
+        self.buf_len.to_int() + inputs[0].len().to_int() <= usize::MAX.to_int()
     )]
-    #[hax_lib::ensures(|result|
-        (result == 0 && future(self).buf_len == self.buf_len) ||
-        (result > 0 && future(self).buf_len == RATE && result == RATE - self.buf_len)
-    )]
-    pub(crate) fn fill_buffer(&mut self, inputs: &[&[u8]; PARALLEL_LANES]) -> usize {
-        let input_len = inputs[0].len();
+    pub(crate) fn absorb(&mut self, inputs: &[&[u8]; PARALLEL_LANES])
+    where
+        KeccakState<PARALLEL_LANES, STATE>: Absorb<PARALLEL_LANES>,
+    {
+        let input_remainder_len = self.absorb_full(inputs);
 
-        // Check if we have enough data when combining the internal buffer and the input.
-        if self.buf_len > 0 && self.buf_len + input_len >= RATE {
-            let consumed = RATE - self.buf_len;
+        // ... buffer the rest if there's not enough input (left).
+        if input_remainder_len > 0 {
+            // debug_assert!(
+            //     self.buf_len == 0  // We consumed everything (or it was empty all along).
+            //      || self.buf_len + input_remainder_len <= RATE
+            // );
 
-            #[cfg(hax)]
-            let start = self.buf_len; // ghost variable for F* proof
+            let input_len = inputs[0].len();
 
             #[allow(clippy::needless_range_loop)]
             for i in 0..PARALLEL_LANES {
-                hax_lib::loop_invariant!(|_: usize| { self.buf_len == start });
-                self.buf[i][self.buf_len..].copy_from_slice(&inputs[i][..consumed]);
+                self.buf[i][self.buf_len..self.buf_len + input_remainder_len]
+                    .copy_from_slice(&inputs[i][input_len - input_remainder_len..]);
             }
-
-            self.buf_len = RATE;
-            consumed
-        } else {
-            0
+            self.buf_len += input_remainder_len;
         }
     }
 
