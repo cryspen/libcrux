@@ -319,23 +319,34 @@ let impl_1__absorb_full
           lemma_input_rate_bounds i;
           let start:usize = (i *! v_RATE <: usize) +! input_consumed in
           assert (start +! v_RATE <=. (Core.Slice.impl__len #u8 (inputs.[ mk_usize 0 ])));
-          // let self:t_KeccakXofState v_PARALLEL_LANES v_RATE v_STATE =
-          //   {
-          //     self with
-          //     f_inner
-          //     =
-          //     Libcrux_sha3.Traits.f_load_block #(Libcrux_sha3.Generic_keccak.t_KeccakState
-          //           v_PARALLEL_LANES v_STATE)
+
+          // let _ = Libcrux_sha3.Traits.f_load_block_pre 
+          //       #(Libcrux_sha3.Generic_keccak.t_KeccakState v_PARALLEL_LANES v_STATE)
           //       #v_PARALLEL_LANES
           //       #FStar.Tactics.Typeclasses.solve
           //       v_RATE
           //       self.f_inner
           //       inputs
           //       start
-          //   }
-          //   <:
-          //   t_KeccakXofState v_PARALLEL_LANES v_RATE v_STATE
           // in
+
+          let self:t_KeccakXofState v_PARALLEL_LANES v_RATE v_STATE =
+            {
+              self with
+              f_inner
+              =
+              Libcrux_sha3.Traits.f_load_block #(Libcrux_sha3.Generic_keccak.t_KeccakState
+                    v_PARALLEL_LANES v_STATE)
+                #v_PARALLEL_LANES
+                #FStar.Tactics.Typeclasses.solve
+                v_RATE
+                self.f_inner
+                inputs
+                start
+            }
+            <:
+            t_KeccakXofState v_PARALLEL_LANES v_RATE v_STATE
+          in
           let self:t_KeccakXofState v_PARALLEL_LANES v_RATE v_STATE =
             {
               self with
