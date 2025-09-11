@@ -1,20 +1,26 @@
 #[cfg(feature = "blake2")]
 pub mod blake2 {
 
-    pub use libcrux_blake2::{Blake2bHasher, Blake2sHasher};
+    pub use libcrux_blake2::{
+        Blake2bHash as Blake2b, Blake2bHasher, Blake2sHash as Blake2s, Blake2sHasher,
+    };
 }
 
 #[cfg(feature = "sha2")]
 pub mod sha2 {
 
     pub use libcrux_sha2::{
-        Sha224Hasher as Sha2_224Hasher, Sha256Hasher as Sha2_256Hasher,
-        Sha384Hasher as Sha2_384Hasher, Sha512Hasher as Sha2_512Hasher,
+        Sha224Hash as Sha2_224, Sha224Hasher as Sha2_224Hasher, Sha256Hash as Sha2_256,
+        Sha256Hasher as Sha2_256Hasher, Sha384Hash as Sha2_384, Sha384Hasher as Sha2_384Hasher,
+        Sha512Hash as Sha2_512, Sha512Hasher as Sha2_512Hasher,
     };
 }
 
 #[cfg(feature = "sha3")]
 pub mod sha3 {
 
-    pub use libcrux_sha3::{Sha3_224Hasher, Sha3_256Hasher, Sha3_384Hasher, Sha3_512Hasher};
+    pub use libcrux_sha3::{
+        Sha3_224, Sha3_224Hasher, Sha3_256, Sha3_256Hasher, Sha3_384, Sha3_384Hasher, Sha3_512,
+        Sha3_512Hasher,
+    };
 }
