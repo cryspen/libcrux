@@ -1,8 +1,13 @@
+mod multiplexed;
+
+pub use multiplexed::*;
+
 #[cfg(feature = "blake2")]
 pub mod blake2 {
 
     pub use libcrux_blake2::{
         Blake2bHash as Blake2b, Blake2bHasher, Blake2sHash as Blake2s, Blake2sHasher,
+        ConstDigestLen, RuntimeDigestLen,
     };
 }
 

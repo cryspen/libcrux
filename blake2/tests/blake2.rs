@@ -1,4 +1,7 @@
-use libcrux_blake2::{Blake2bBuilder, Blake2bHasher, Blake2sBuilder, Blake2sHasher};
+use libcrux_blake2::{
+    Blake2bBuilder, Blake2bHash, Blake2bHasher, Blake2sBuilder, Blake2sHash, Blake2sHasher,
+    RuntimeDigestLen,
+};
 
 #[test]
 fn test_blake2b() {
@@ -237,6 +240,14 @@ fn test_digest_traits_2s() {
         &Blake2sHasher::<32>::hash_to_owned(b"this is a test").unwrap(),
         expected_hash
     );
+
+    // compare to result from varlen hasher
+    use libcrux_traits::digest::typed_refs::*;
+    let mut digest = [0; 32];
+    let algo = Blake2sHash::<RuntimeDigestLen>::default();
+    let digest_mut = DigestMut::new_for_algo(algo, &mut digest).unwrap();
+    algo.hash(digest_mut, b"this is a test").unwrap();
+    assert_eq!(&digest, expected_hash);
 
     let mut too_short = vec![0; 31];
     let err = hasher.finish_slice(&mut too_short).unwrap_err();
