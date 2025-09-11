@@ -178,3 +178,60 @@ mod sha3_impl {
     impl_mux!(sha3, Sha3_384);
     impl_mux!(sha3, Sha3_512);
 }
+#[cfg(any(feature = "sha2", feature = "sha3", feature = "blake2"))]
+#[cfg(test)]
+mod tests {
+
+    use libcrux_traits::digest::typed_refs;
+    use typed_refs::Hash as _;
+
+    use super::HashAlgorithm;
+
+    #[test]
+    #[cfg(feature = "sha2")]
+    fn test_multiplexed_sha2_hash() {
+        let algo = HashAlgorithm::Sha2_224;
+        let _digest = algo
+            .new_digest(&mut [0; 32])
+            .expect_err("length should mismatch");
+
+        let mut digest = [0; 28];
+        let digest_mut = algo.new_digest(&mut digest).expect("length should match");
+        algo.hash(digest_mut, b"data").unwrap();
+
+        // TODO: check hash
+    }
+    #[test]
+    #[cfg(feature = "sha3")]
+    fn test_multiplexed_sha3_hash() {
+        let algo = HashAlgorithm::Sha3_224;
+        let _digest = algo
+            .new_digest(&mut [0; 32])
+            .expect_err("length should mismatch");
+
+        let mut digest = [0; 28];
+        let digest_mut = algo.new_digest(&mut digest).expect("length should match");
+        algo.hash(digest_mut, b"data").unwrap();
+
+        // TODO: check hash
+    }
+    #[test]
+    #[cfg(feature = "blake2")]
+    fn test_multiplexed_blake2_hash() {
+        let algo = HashAlgorithm::Blake2b;
+        let _digest = algo
+            .new_digest(&mut [0; 65])
+            .expect_err("length should be invalid");
+        let _digest = algo
+            .new_digest(&mut [0; 0])
+            .expect_err("length should be invalid");
+
+        let mut digest = [0; 1];
+        let digest_mut = algo
+            .new_digest(&mut digest)
+            .expect("length should be valid");
+        algo.hash(digest_mut, b"data").unwrap();
+
+        // TODO: check hash
+    }
+}
