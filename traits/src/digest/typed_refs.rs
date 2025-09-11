@@ -1,3 +1,4 @@
+#[derive(Debug)]
 pub struct DigestMut<'a, Algo> {
     algorithm: Algo,
     digest: &'a mut [u8],
