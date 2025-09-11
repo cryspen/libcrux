@@ -63,6 +63,10 @@ pub trait Hash: Copy + PartialEq {
     fn digest_len_is_valid(&self, len: usize) -> bool;
 
     fn hash<'a>(&self, digest: DigestMut<'a, Self>, payload: &[u8]) -> Result<(), HashError>;
+
+    fn new_digest<'a>(self, digest: &'a mut [u8]) -> Result<DigestMut<'a, Self>, WrongLengthError> {
+        DigestMut::new_for_algo(self, digest)
+    }
 }
 
 impl<
