@@ -15,6 +15,21 @@ use crate::classic_mceliece::{
 
 use super::HandshakeError;
 
+/// A PSQ PQ key pair.
+pub trait PQKeyPairTrait {}
+
+/// A PSQ PQ encapsulation key.
+pub trait PQEncapsulationKeyTrait {}
+
+/// A PSQ PQ decapsulation key.
+pub trait PQDecapsulationKeyTrait {}
+
+impl PQEncapsulationKeyTrait for MlKem768PublicKey {}
+impl PQDecapsulationKeyTrait for MlKem768PrivateKey {}
+impl PQKeyPairTrait for MlKem768KeyPair {}
+
+// --- FIXME: We can probably get rid of the rest of this file
+
 #[derive(TlsSerialize, TlsSize)]
 #[repr(u8)]
 /// A PQ-KEM public key

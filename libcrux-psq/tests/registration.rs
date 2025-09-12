@@ -1,10 +1,15 @@
 use libcrux_psq::{
-    handshake::{dhkem::DHKeyPair, *},
+    ciphersuites::{
+        Ciphersuite, QueryCiphersuite, RegistrationCiphersuite, X25519McElieceChachaPolyHkdfSha256,
+        X25519Mlkem768ChachaPolyHkdfSha256,
+    },
+    handshake::{builder2 as builder, dhkem::DHKeyPair},
     session::Session,
     traits::*,
 };
+use rand::rngs::ThreadRng;
 
-fn registration_ml_kem(pq: bool) {
+fn registration_ml_kem(pq: bool, ciphersuite: Ciphersuite) {
     let mut rng = rand::rng();
     let ctx = b"Test Context";
     let aad_initiator_outer = b"Test Data I Outer";
@@ -22,7 +27,9 @@ fn registration_ml_kem(pq: bool) {
     let initiator_ecdh_keys = DHKeyPair::new(&mut rng);
 
     // Setup initiator
-    let mut initiator = builder::Builder::new(rand::rng())
+    let builder =
+        builder::Builder::<ThreadRng, X25519Mlkem768ChachaPolyHkdfSha256>::new(rand::rng());
+    let mut initiator = builder
         .outer_aad(aad_initiator_outer)
         .inner_aad(aad_initiator_inner)
         .context(ctx)
@@ -36,11 +43,12 @@ fn registration_ml_kem(pq: bool) {
     let mut initiator = initiator.build_registration_initiator().unwrap();
 
     // Setup responder
-    let mut builder = builder::Builder::new(rand::rng())
-        .context(ctx)
-        .outer_aad(aad_responder)
-        .longterm_ecdh_keys(&responder_ecdh_keys)
-        .recent_keys_upper_bound(30);
+    let mut builder =
+        builder::Builder::<ThreadRng, X25519Mlkem768ChachaPolyHkdfSha256>::new(rand::rng())
+            .context(ctx)
+            .outer_aad(aad_responder)
+            .longterm_ecdh_keys(&responder_ecdh_keys)
+            .recent_keys_upper_bound(30);
     if pq {
         builder = builder.longterm_pq_keys(&responder_pq_keys);
     }
@@ -154,12 +162,13 @@ fn registration_classic_mceliece(pq: bool) {
     let initiator_ecdh_keys = DHKeyPair::new(&mut rng);
 
     // Setup initiator
-    let mut initiator = builder::Builder::new(rand::rng())
-        .outer_aad(aad_initiator_outer)
-        .inner_aad(aad_initiator_inner)
-        .context(ctx)
-        .longterm_ecdh_keys(&initiator_ecdh_keys)
-        .peer_longterm_ecdh_pk(&responder_ecdh_keys.pk);
+    let mut initiator =
+        builder::Builder::<ThreadRng, X25519McElieceChachaPolyHkdfSha256>::new(rand::rng())
+            .outer_aad(aad_initiator_outer)
+            .inner_aad(aad_initiator_inner)
+            .context(ctx)
+            .longterm_ecdh_keys(&initiator_ecdh_keys)
+            .peer_longterm_ecdh_pk(&responder_ecdh_keys.pk);
 
     if pq {
         initiator = initiator.peer_longterm_pq_pk(&responder_pq_keys.pk);
@@ -168,11 +177,12 @@ fn registration_classic_mceliece(pq: bool) {
     let mut initiator = initiator.build_registration_initiator().unwrap();
 
     // Setup responder
-    let mut builder = builder::Builder::new(rand::rng())
-        .context(ctx)
-        .outer_aad(aad_responder)
-        .longterm_ecdh_keys(&responder_ecdh_keys)
-        .recent_keys_upper_bound(30);
+    let mut builder =
+        builder::Builder::<ThreadRng, X25519McElieceChachaPolyHkdfSha256>::new(rand::rng())
+            .context(ctx)
+            .outer_aad(aad_responder)
+            .longterm_ecdh_keys(&responder_ecdh_keys)
+            .recent_keys_upper_bound(30);
     if pq {
         builder = builder.longterm_pq_keys(&responder_pq_keys);
     }
@@ -270,12 +280,22 @@ fn registration_classic_mceliece(pq: bool) {
 
 #[test]
 fn registration_pq_ml_kem() {
-    registration_ml_kem(true);
+    registration_ml_kem(
+        true,
+        Ciphersuite::RegistrationCiphersuite(
+            RegistrationCiphersuite::X25519Mlkem768ChachaPolyHkdfSha256,
+        ),
+    );
 }
 
 #[test]
 fn registration_classic_ml_kem() {
-    registration_ml_kem(false);
+    registration_ml_kem(
+        false,
+        Ciphersuite::RegistrationCiphersuite(
+            RegistrationCiphersuite::X25519Mlkem768ChachaPolyHkdfSha256, // XXX
+        ),
+    );
 }
 
 #[test]

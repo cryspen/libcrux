@@ -19,7 +19,7 @@
 //!     handshake::{
 //!         pqkem::PQKeyPair,
 //!         dhkem::DHKeyPair,
-//!         builder::Builder
+//!         builder2::Builder
 //!     }
 //! };
 //!
@@ -190,6 +190,7 @@ pub mod responder;
 pub(crate) mod transcript;
 
 pub mod builder;
+pub mod builder2;
 
 #[derive(Debug)]
 pub(crate) struct ToTransportState {

@@ -6,6 +6,8 @@
 #![deny(missing_docs)]
 
 pub(crate) mod aead;
+
+pub mod ciphersuites;
 pub mod handshake;
 pub mod session;
 pub mod traits;

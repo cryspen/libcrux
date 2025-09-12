@@ -1,7 +1,12 @@
 use libcrux_psq::{
-    handshake::{builder, dhkem::DHKeyPair},
+    ciphersuites::{
+        self, Ciphersuite, QueryCiphersuite, X25519ChachaPolyHkdfSha256,
+        X25519Mlkem768ChachaPolyHkdfSha256,
+    },
+    handshake::{builder2 as builder, dhkem::DHKeyPair, initiator::query::QueryInitiator},
     traits::*,
 };
+use rand::rngs::ThreadRng;
 
 #[test]
 fn query() {
@@ -14,28 +19,32 @@ fn query() {
     let mut payload_buf_responder = vec![0u8; 4096];
     let mut payload_buf_initiator = vec![0u8; 4096];
 
+    // let ciphersuite = Ciphersuite::QueryCiphersuite(QueryCiphersuite::X25519ChachaPolyHkdfSha256);
+
     // External setup
     let responder_ecdh_keys = DHKeyPair::new(&mut rng);
 
     let responder_pq_keys = libcrux_ml_kem::mlkem768::rand::generate_key_pair(&mut rng);
 
     // Setup initiator
-    let mut initiator = builder::Builder::new(rand::rng())
-        .outer_aad(aad_initiator)
-        .context(ctx)
-        .peer_longterm_ecdh_pk(&responder_ecdh_keys.pk)
-        .build_query_initiator()
-        .unwrap();
+    let mut initiator =
+        builder::Builder::<ThreadRng, X25519Mlkem768ChachaPolyHkdfSha256>::new(rand::rng())
+            .outer_aad(aad_initiator)
+            .context(ctx)
+            .peer_longterm_ecdh_pk(&responder_ecdh_keys.pk)
+            .build_query_initiator()
+            .unwrap();
 
     // Setup responder
-    let mut responder = builder::Builder::new(rand::rng())
-        .context(ctx)
-        .outer_aad(aad_responder)
-        .longterm_ecdh_keys(&responder_ecdh_keys)
-        .longterm_pq_keys(&responder_pq_keys)
-        .recent_keys_upper_bound(30)
-        .build_responder()
-        .unwrap();
+    let mut responder =
+        builder::Builder::<ThreadRng, X25519Mlkem768ChachaPolyHkdfSha256>::new(rand::rng())
+            .context(ctx)
+            .outer_aad(aad_responder)
+            .longterm_ecdh_keys(&responder_ecdh_keys)
+            .longterm_pq_keys(&responder_pq_keys)
+            .recent_keys_upper_bound(30)
+            .build_responder()
+            .unwrap();
 
     // Send first message
     let query_payload_initiator = b"Query_init";
