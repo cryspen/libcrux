@@ -39,17 +39,19 @@ Apache-2.0 and MIT.
 #### Extracted C Code
 
 Some crates contain scripts and configuration for extracting C code from the
-Rust code, possibly including the C code. Relative to the crate root, the
-structure we aim to use is
+Rust code, and possibly a pre-extracted C version of the crate.
+Relative to the crate root, the structure we aim to use is:
 
 ```
-Cargo.toml -- we are at the crate root
+/Cargo.toml -- we are at the crate root
 /extracts/
 /extracts/$name/extract.sh   -- the script that extracts the code
 /extracts/$name/extract.yaml -- the eurydice config for the extraction
 /extracts/$name/out/         -- the extracted code
 /extracts/$name/...          -- per-extraction extra data
 ```
+
+where `$name` identifies a C extraction in a particular configuration.
 
 ## Coding style
 

@@ -64,6 +64,11 @@ cargo depgraph --workspace-only --all-deps |
 >      - i.e. lines of "$dependency $dependent" - we want the dependencies to come before
 >   - `tsort` performs topological sorting
 >
+> Requires [cargo-depgraph] and [graphviz] to be installed. On Linux you probably want to install graphviz through your distribution.
+>
+> [cargo-depgraph]: https://github.com/jplatte/cargo-depgraph
+> [graphviz]: https://graphviz.org/download/
+>
 > </details>
 
 ## Releasing a Crate
