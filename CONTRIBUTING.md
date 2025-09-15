@@ -49,7 +49,7 @@ Relative to the crate root, the structure we aim to use is:
 /extracts/
 /extracts/$name/extract.sh   -- the script that extracts the code
 /extracts/$name/extract.yaml -- the eurydice config for the extraction
-/extracts/$name/out/         -- the extracted code
+/extracts/$name/generated/   -- the extracted code
 /extracts/$name/...          -- per-extraction extra data
 ```
 
