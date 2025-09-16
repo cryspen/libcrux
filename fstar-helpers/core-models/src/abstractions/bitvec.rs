@@ -337,23 +337,6 @@ pub mod int_vec_interp {
                                 BitVec::[< from_ $name >](iv)
                             }
                         }
-
-                        #[doc = concat!("Lemma that asserts that applying ", stringify!(BitVec::<$n>::from)," and then ", stringify!($name::from), " is the identity.")]
-                        #[hax_lib::fstar::before("[@@ $SIMPLIFICATION_LEMMA ]")]
-                        #[hax_lib::opaque]
-                        #[hax_lib::lemma]
-                        #[hax_lib::fstar::smt_pat(BitVec::[< to_ $name >](BitVec::[<from_ $name>](x)))]
-                        pub fn lemma_cancel_iv(x: $name) -> Proof<{
-                            hax_lib::eq(BitVec::[< to_ $name >](BitVec::[<from_ $name>](x)), x)
-                        }> {}
-                        #[doc = concat!("Lemma that asserts that applying ", stringify!($name::from)," and then ", stringify!(BitVec::<$n>::from), " is the identity.")]
-                        #[hax_lib::fstar::before("[@@ $SIMPLIFICATION_LEMMA ]")]
-                        #[hax_lib::opaque]
-                        #[hax_lib::lemma]
-                        #[hax_lib::fstar::smt_pat(BitVec::[< from_ $name >](BitVec::[<to_ $name>](x)))]
-                        pub fn lemma_cancel_bv(x: BitVec<$n>) -> Proof<{
-                            hax_lib::eq(BitVec::[< from_ $name >](BitVec::[<to_ $name>](x)), x)
-                        }> {}
                     };
                 }
             )*
