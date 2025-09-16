@@ -72,8 +72,6 @@ pub mod sha3 {
     //!
     //! let digest = Sha3_224::hash(b"test data").unwrap();
 
-    pub use libcrux_sha3::{
-        Sha3_224, Sha3_224Hasher, Sha3_256, Sha3_256Hasher, Sha3_384, Sha3_384Hasher, Sha3_512,
-        Sha3_512Hasher,
-    };
+    // TODO: also re-export the `Hasher` type aliases here?
+    pub use libcrux_sha3::{Sha3_224, Sha3_256, Sha3_384, Sha3_512};
 }
