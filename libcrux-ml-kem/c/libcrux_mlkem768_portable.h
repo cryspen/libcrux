@@ -7,8 +7,8 @@
  * Charon: 667d2fc98984ff7f3df989c2367e6c1fa4a000e7
  * Eurydice: 2381cbc416ef2ad0b561c362c500bc84f36b6785
  * Karamel: 80f5435f2fc505973c469a4afcc8d875cddd0d8b
- * F*: 71d8221589d4d438af3706d89cb653cf53e18aab
- * Libcrux: ae00be9b55b2f9a172105512ea707a265f5bdd6e
+ * F*: 5643e656b989aca7629723653a2570c7df6252b9-dirty
+ * Libcrux: 4ac47ff7dc66c7048ccaaffa01b3a60cf30935e8
  */
 
 #ifndef libcrux_mlkem768_portable_H
@@ -115,7 +115,7 @@ libcrux_ml_kem::vector::portable::vector_type::PortableVector}
 static inline libcrux_ml_kem_vector_portable_vector_type_PortableVector
 libcrux_ml_kem_vector_portable_from_i16_array_b8(Eurydice_slice array) {
   return libcrux_ml_kem_vector_portable_vector_type_from_i16_array(
-      libcrux_secrets_int_public_integers_classify_ref_c5_03(&array)[0U]);
+      libcrux_secrets_int_classify_public_classify_ref_9b_39(array));
 }
 
 typedef struct int16_t_x8_s {
@@ -982,7 +982,7 @@ libcrux_ml_kem_vector_portable_serialize_deserialize_1(Eurydice_slice v) {
 static inline libcrux_ml_kem_vector_portable_vector_type_PortableVector
 libcrux_ml_kem_vector_portable_deserialize_1(Eurydice_slice a) {
   return libcrux_ml_kem_vector_portable_serialize_deserialize_1(
-      libcrux_secrets_int_public_integers_classify_ref_c5_ba(&a)[0U]);
+      libcrux_secrets_int_classify_public_classify_ref_9b_90(a));
 }
 
 /**
@@ -1124,7 +1124,7 @@ libcrux_ml_kem_vector_portable_serialize_deserialize_4(Eurydice_slice bytes) {
 static inline libcrux_ml_kem_vector_portable_vector_type_PortableVector
 libcrux_ml_kem_vector_portable_deserialize_4(Eurydice_slice a) {
   return libcrux_ml_kem_vector_portable_serialize_deserialize_4(
-      libcrux_secrets_int_public_integers_classify_ref_c5_ba(&a)[0U]);
+      libcrux_secrets_int_classify_public_classify_ref_9b_90(a));
 }
 
 /**
@@ -1324,7 +1324,7 @@ libcrux_ml_kem_vector_portable_serialize_deserialize_10(Eurydice_slice bytes) {
 static inline libcrux_ml_kem_vector_portable_vector_type_PortableVector
 libcrux_ml_kem_vector_portable_deserialize_10(Eurydice_slice a) {
   return libcrux_ml_kem_vector_portable_serialize_deserialize_10(
-      libcrux_secrets_int_public_integers_classify_ref_c5_ba(&a)[0U]);
+      libcrux_secrets_int_classify_public_classify_ref_9b_90(a));
 }
 
 /**
@@ -1479,7 +1479,7 @@ libcrux_ml_kem_vector_portable_serialize_deserialize_12(Eurydice_slice bytes) {
 static inline libcrux_ml_kem_vector_portable_vector_type_PortableVector
 libcrux_ml_kem_vector_portable_deserialize_12(Eurydice_slice a) {
   return libcrux_ml_kem_vector_portable_serialize_deserialize_12(
-      libcrux_secrets_int_public_integers_classify_ref_c5_ba(&a)[0U]);
+      libcrux_secrets_int_classify_public_classify_ref_9b_90(a));
 }
 
 /**
