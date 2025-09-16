@@ -14,12 +14,14 @@
 //! See below for an example of the registration handshake:
 //! ```rust
 //! use libcrux_psq::{
+//!     aead::*,
 //!     session::Session,
 //!     traits::*,
 //!     handshake::{
 //!         pqkem::PQKeyPair,
 //!         dhkem::DHKeyPair,
-//!         builder::Builder
+//!         builder::BuilderContext,
+//!         ciphersuite::*,
 //!     }
 //! };
 //!
@@ -39,24 +41,37 @@
 //! let responder_ecdh_keys = DHKeyPair::new(&mut rng);
 //! let initiator_ecdh_keys = DHKeyPair::new(&mut rng);
 //!
+//!
 //! // Setup initiator
-//! let mut initiator = Builder::new(rand::rng())
+//! let initiator_ciphersuite = CiphersuiteBuilder::new()
+//!     .aead(AEAD::ChaChaPoly1305)
+//!     .peer_longterm_ecdh_pk(&responder_ecdh_keys.pk)
+//!     .longterm_ecdh_keys(&initiator_ecdh_keys)
+//!     .peer_longterm_pq_pk(responder_pq_keys.public_key())
+//!     .build_registration_initiator_ciphersuite()
+//!     .unwrap();
+//!
+//! let mut initiator = BuilderContext::new(rand::rng())
 //!     .outer_aad(aad_initiator_outer)
 //!     .inner_aad(aad_initiator_inner)
 //!     .context(ctx)
-//!     .longterm_ecdh_keys(&initiator_ecdh_keys)
-//!     .peer_longterm_ecdh_pk(&responder_ecdh_keys.pk)
-//!     .peer_longterm_pq_pk(responder_pq_keys.public_key())
-//!     .build_registration_initiator().unwrap();
+//!     .build_registration_initiator(initiator_ciphersuite)
+//!     .unwrap();
 //!
 //! // Setup responder
-//! let mut responder = Builder::new(rand::rng())
+//! let responder_ciphersuite = CiphersuiteBuilder::new()
+//!     .aead(AEAD::ChaChaPoly1305)
+//!     .longterm_ecdh_keys(&responder_ecdh_keys)
+//!     .longterm_pq_keys(&responder_pq_keys)
+//!     .build_responder_ciphersuite()
+//!     .unwrap();
+//!
+//! let mut responder = BuilderContext::new(rand::rng())
 //!     .context(ctx)
 //!     .outer_aad(aad_responder)
-//!     .longterm_ecdh_keys(&responder_ecdh_keys)
 //!     .recent_keys_upper_bound(30)
-//!     .longterm_pq_keys(&responder_pq_keys)
-//!     .build_responder().unwrap();
+//!     .build_responder(responder_ciphersuite)
+//!     .unwrap();
 //!
 //! // Send first message
 //! let registration_payload_initiator = b"Registration_init";
@@ -177,19 +192,23 @@ impl From<AEADError> for HandshakeError {
 }
 
 use dhkem::{DHPrivateKey, DHPublicKey, DHSharedSecret};
-use pqkem::{PQCiphertext, PQSharedSecret};
-use tls_codec::{TlsDeserialize, TlsSerialize, TlsSerializeBytes, TlsSize, VLByteSlice, VLBytes};
+// use pqkem::{PQCiphertext, PQSharedSecret};
+use tls_codec::{
+    Deserialize, Serialize, SerializeBytes, TlsDeserialize, TlsSerialize, TlsSerializeBytes,
+    TlsSize, VLByteSlice, VLBytes,
+};
 use transcript::Transcript;
 
 use crate::aead::{AEADError, AEADKey};
 
 pub mod dhkem;
 pub mod initiator;
-pub mod pqkem;
+// pub mod pqkem;
 pub mod responder;
 pub(crate) mod transcript;
 
 pub mod builder;
+pub mod ciphersuite;
 
 #[derive(Debug)]
 pub(crate) struct ToTransportState {
@@ -200,7 +219,7 @@ pub(crate) struct ToTransportState {
 
 #[derive(TlsDeserialize, TlsSize)]
 /// A PSQ handshake message.
-pub struct HandshakeMessage {
+pub struct HandshakeMessage<T: Deserialize> {
     /// A Diffie-Hellman KEM public key
     pk: DHPublicKey,
     /// The AEAD-encrypted message payload
@@ -210,17 +229,17 @@ pub struct HandshakeMessage {
     /// Associated data, covered by the AEAD message authentication tag
     aad: VLBytes,
     /// An optional post-quantum key encapsulation
-    pq_encapsulation: Option<PQCiphertext>,
+    pq_encapsulation: Option<T>,
 }
 
 #[derive(TlsSerialize, TlsSize)]
 /// A PSQ handshake message. (Serialization helper)
-pub struct HandshakeMessageOut<'a> {
+pub struct HandshakeMessageOut<'a, T: Serialize> {
     pk: &'a DHPublicKey,
     ciphertext: VLByteSlice<'a>,
     tag: [u8; 16], // XXX: implement Serialize for &[T; N]
     aad: VLByteSlice<'a>,
-    pq_encapsulation: Option<&'a PQCiphertext>,
+    pq_encapsulation: Option<&'a T>,
 }
 
 pub(crate) fn write_output(payload: &[u8], out: &mut [u8]) -> Result<usize, HandshakeError> {
@@ -258,18 +277,18 @@ pub(super) fn derive_k0(
 }
 
 // K1 = KDF(K0 | g^cs | SS, tx1)
-pub(super) fn derive_k1(
+pub(super) fn derive_k1<T: SerializeBytes>(
     k0: &AEADKey,
     own_longterm_key: &DHPrivateKey,
     peer_longterm_pk: &DHPublicKey,
-    pq_shared_secret: Option<PQSharedSecret<'_>>,
+    pq_shared_secret: Option<T>,
     tx1: &Transcript,
 ) -> Result<AEADKey, HandshakeError> {
     #[derive(TlsSerializeBytes, TlsSize)]
-    struct K1Ikm<'a, 'b, 'c> {
+    struct K1Ikm<'a, 'b, T: SerializeBytes> {
         k0: &'a AEADKey,
         ecdh_shared_secret: &'b DHSharedSecret,
-        pq_shared_secret: Option<PQSharedSecret<'c>>,
+        pq_shared_secret: Option<T>,
     }
 
     let ecdh_shared_secret = DHSharedSecret::derive(own_longterm_key, peer_longterm_pk)?;

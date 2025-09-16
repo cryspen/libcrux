@@ -8,6 +8,7 @@ mod transport;
 use std::io::Cursor;
 
 use libcrux_hkdf::Algorithm;
+use libcrux_traits::kem::KEM;
 use session_key::{derive_session_key, SessionKey, SESSION_ID_LENGTH};
 use tls_codec::{
     Deserialize, Serialize, SerializeBytes, Size, TlsDeserialize, TlsSerialize, TlsSize,
@@ -16,7 +17,7 @@ use transport::Transport;
 
 use crate::{
     aead::{AEADError, AEADKey},
-    handshake::{dhkem::DHPublicKey, pqkem::PQPublicKey, transcript::Transcript},
+    handshake::{dhkem::DHPublicKey, transcript::Transcript},
 };
 
 /// Session related errors
@@ -100,17 +101,23 @@ pub struct Session {
 }
 
 // pkBinder = KDF(skCS, g^c | g^s | [pkS])
-fn derive_pk_binder(
+fn derive_pk_binder<T>(
     key: &SessionKey,
     initiator_ecdh_pk: &DHPublicKey,
     responder_ecdh_pk: &DHPublicKey,
-    responder_pq_pk: Option<&PQPublicKey<'_>>,
-) -> Result<[u8; PK_BINDER_LEN], SessionError> {
+    responder_pq_pk: Option<&T>,
+) -> Result<[u8; PK_BINDER_LEN], SessionError>
+where
+    Option<&T>: Serialize + Size,
+{
     #[derive(TlsSerialize, TlsSize)]
-    struct PkBinderInfo<'a> {
+    struct PkBinderInfo<'a, T>
+    where
+        &'a T: Serialize + Size,
+    {
         initiator_ecdh_pk: &'a DHPublicKey,
         responder_ecdh_pk: &'a DHPublicKey,
-        responder_pq_pk: Option<&'a PQPublicKey<'a>>,
+        responder_pq_pk: Option<&'a T>,
     }
 
     let info = PkBinderInfo {
@@ -141,12 +148,12 @@ impl Session {
     /// This will derive the long-term session key, and compute a binder tying
     /// the session key to any long-term public key material that was used during the
     /// handshake.
-    pub(crate) fn new(
+    pub(crate) fn new<T: Serialize>(
         tx2: Transcript,
         k2: AEADKey,
         initiator_ecdh_pk: &DHPublicKey,
         responder_ecdh_pk: &DHPublicKey,
-        responder_pq_pk: Option<&PQPublicKey<'_>>,
+        responder_pq_pk: Option<&T>,
         is_initiator: bool,
     ) -> Result<Self, SessionError> {
         let session_key = derive_session_key(k2, tx2)?;
@@ -186,11 +193,11 @@ impl Session {
     /// session key.
     // XXX: Use `tls_codec::conditional_deserializable` to implement
     // the validation.
-    pub fn deserialize(
+    pub fn deserialize<T: Deserialize + Serialize>(
         bytes: &[u8],
         initiator_ecdh_pk: &DHPublicKey,
         responder_ecdh_pk: &DHPublicKey,
-        responder_pq_pk: Option<PQPublicKey<'_>>,
+        responder_pq_pk: Option<T>,
     ) -> Result<Self, SessionError> {
         let session =
             Session::tls_deserialize(&mut Cursor::new(bytes)).map_err(SessionError::Deserialize)?;

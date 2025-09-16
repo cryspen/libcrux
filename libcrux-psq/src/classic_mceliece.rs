@@ -13,6 +13,12 @@ use tls_codec::{Deserialize, Serialize, SerializeBytes, Size, VLByteSlice, VLByt
 
 const MCELIECE460896F_CIPHERTEXT_LEN: usize = 156;
 
+const MCELIECE460896F_EK_LEN: usize = 524160;
+const MCELIECE460896F_DK_LEN: usize = 13608;
+const MCELIECE460896F_SS_LEN: usize = 32;
+const MCELIECE460896F_RAND_KEYGEN_LEN: usize = 156;
+const MCELIECE460896F_RAND_ENCAPS_LEN: usize = 156;
+
 /// A wrapper around the `classic_mceliece_rust` type `Ciphertext`.
 pub struct Ciphertext(pub(crate) Ct);
 impl Serialize for Ciphertext {
