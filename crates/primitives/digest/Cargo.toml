@@ -1,5 +1,5 @@
 [package]
-description = "Formally verified AEAD library"
+description = "Formally verified digest library"
 name = "libcrux-digest"
 readme = "Readme.md"
 version = "0.0.3"
