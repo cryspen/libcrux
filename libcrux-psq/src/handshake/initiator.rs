@@ -1,4 +1,4 @@
-use tls_codec::{TlsDeserialize, TlsSerialize, TlsSize, VLByteSlice, VLBytes};
+use tls_codec::{Serialize, TlsDeserialize, TlsSerialize, TlsSize, VLByteSlice, VLBytes};
 
 use super::HandshakeMessageOut;
 
@@ -7,9 +7,9 @@ pub mod registration;
 
 #[derive(TlsSerialize, TlsSize)]
 #[repr(u8)]
-pub enum InitiatorOuterPayloadOut<'a> {
+pub enum InitiatorOuterPayloadOut<'a, T: Serialize> {
     Query(VLByteSlice<'a>),
-    Registration(HandshakeMessageOut<'a>),
+    Registration(HandshakeMessageOut<'a, T>),
 }
 
 #[derive(TlsDeserialize, TlsSize)]

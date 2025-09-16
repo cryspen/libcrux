@@ -71,7 +71,7 @@ impl<'a> QueryInitiator<'a> {
 
     fn read_response(
         &self,
-        responder_msg: &HandshakeMessage,
+        responder_msg: &HandshakeMessage<()>,
     ) -> Result<ResponderQueryPayload, Error> {
         let tx2 = tx2(&self.tx0, &responder_msg.pk)?;
 

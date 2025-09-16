@@ -1,5 +1,6 @@
 use libcrux_psq::{
-    handshake::{dhkem::DHKeyPair, *},
+    aead::AEAD,
+    handshake::{ciphersuite::CiphersuiteBuilder, dhkem::DHKeyPair, *},
     session::Session,
     traits::*,
 };
@@ -22,29 +23,45 @@ fn registration_ml_kem(pq: bool) {
     let initiator_ecdh_keys = DHKeyPair::new(&mut rng);
 
     // Setup initiator
-    let mut initiator = builder::Builder::new(rand::rng())
+
+    let mut initiator_ciphersuite = CiphersuiteBuilder::new()
+        .aead(AEAD::ChaChaPoly1305)
+        .peer_longterm_ecdh_pk(&responder_ecdh_keys.pk)
+        .longterm_ecdh_keys(&initiator_ecdh_keys);
+
+    if pq {
+        initiator_ciphersuite =
+            initiator_ciphersuite.peer_longterm_pq_pk(responder_pq_keys.public_key());
+    }
+
+    let initiator_ciphersuite = initiator_ciphersuite
+        .build_registration_initiator_ciphersuite()
+        .unwrap();
+
+    let mut initiator = builder::BuilderContext::new(rand::rng())
         .outer_aad(aad_initiator_outer)
         .inner_aad(aad_initiator_inner)
         .context(ctx)
-        .longterm_ecdh_keys(&initiator_ecdh_keys)
-        .peer_longterm_ecdh_pk(&responder_ecdh_keys.pk);
-
-    if pq {
-        initiator = initiator.peer_longterm_pq_pk(responder_pq_keys.public_key());
-    }
-
-    let mut initiator = initiator.build_registration_initiator().unwrap();
+        .build_registration_initiator(initiator_ciphersuite)
+        .unwrap();
 
     // Setup responder
-    let mut builder = builder::Builder::new(rand::rng())
+    let mut responder_ciphersuite = CiphersuiteBuilder::new()
+        .aead(AEAD::ChaChaPoly1305)
+        .longterm_ecdh_keys(&responder_ecdh_keys);
+
+    if pq {
+        responder_ciphersuite = responder_ciphersuite.longterm_pq_keys(&responder_pq_keys);
+    }
+
+    let responder_ciphersuite = responder_ciphersuite.build_responder_ciphersuite().unwrap();
+
+    let mut responder = builder::BuilderContext::new(rand::rng())
         .context(ctx)
         .outer_aad(aad_responder)
-        .longterm_ecdh_keys(&responder_ecdh_keys)
-        .recent_keys_upper_bound(30);
-    if pq {
-        builder = builder.longterm_pq_keys(&responder_pq_keys);
-    }
-    let mut responder = builder.build_responder().unwrap();
+        .recent_keys_upper_bound(30)
+        .build_responder(responder_ciphersuite)
+        .unwrap();
 
     // Send first message
     let registration_payload_initiator = b"Registration_init";
@@ -153,30 +170,43 @@ fn registration_classic_mceliece(pq: bool) {
     let responder_ecdh_keys = DHKeyPair::new(&mut rng);
     let initiator_ecdh_keys = DHKeyPair::new(&mut rng);
 
-    // Setup initiator
-    let mut initiator = builder::Builder::new(rand::rng())
+    let mut initiator_ciphersuite = CiphersuiteBuilder::new()
+        .aead(AEAD::ChaChaPoly1305)
+        .peer_longterm_ecdh_pk(&responder_ecdh_keys.pk)
+        .longterm_ecdh_keys(&initiator_ecdh_keys);
+
+    if pq {
+        initiator_ciphersuite = initiator_ciphersuite.peer_longterm_pq_pk(&responder_pq_keys.pk);
+    }
+
+    let initiator_ciphersuite = initiator_ciphersuite
+        .build_registration_initiator_ciphersuite()
+        .unwrap();
+
+    let mut initiator = builder::BuilderContext::new(rand::rng())
         .outer_aad(aad_initiator_outer)
         .inner_aad(aad_initiator_inner)
         .context(ctx)
-        .longterm_ecdh_keys(&initiator_ecdh_keys)
-        .peer_longterm_ecdh_pk(&responder_ecdh_keys.pk);
-
-    if pq {
-        initiator = initiator.peer_longterm_pq_pk(&responder_pq_keys.pk);
-    }
-
-    let mut initiator = initiator.build_registration_initiator().unwrap();
+        .build_registration_initiator(initiator_ciphersuite)
+        .unwrap();
 
     // Setup responder
-    let mut builder = builder::Builder::new(rand::rng())
+    let mut responder_ciphersuite = CiphersuiteBuilder::new()
+        .aead(AEAD::ChaChaPoly1305)
+        .longterm_ecdh_keys(&responder_ecdh_keys);
+
+    if pq {
+        responder_ciphersuite = responder_ciphersuite.longterm_pq_keys(&responder_pq_keys);
+    }
+
+    let responder_ciphersuite = responder_ciphersuite.build_responder_ciphersuite().unwrap();
+
+    let mut responder = builder::BuilderContext::new(rand::rng())
         .context(ctx)
         .outer_aad(aad_responder)
-        .longterm_ecdh_keys(&responder_ecdh_keys)
-        .recent_keys_upper_bound(30);
-    if pq {
-        builder = builder.longterm_pq_keys(&responder_pq_keys);
-    }
-    let mut responder = builder.build_responder().unwrap();
+        .recent_keys_upper_bound(30)
+        .build_responder(responder_ciphersuite)
+        .unwrap();
 
     // Send first message
     let registration_payload_initiator = b"Registration_init";

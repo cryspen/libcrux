@@ -7,15 +7,15 @@ use tls_codec::{
 
 use crate::{
     aead::AEADKey,
+    handshake::ciphersuite::ResponderCiphersuite,
     session::{Session, SessionError},
     traits::{Channel, IntoSession},
 };
 
 use super::{
     derive_k0, derive_k1,
-    dhkem::{DHKeyPair, DHPrivateKey, DHPublicKey, DHSharedSecret},
+    dhkem::{DHPrivateKey, DHPublicKey, DHSharedSecret},
     initiator::InitiatorInnerPayload,
-    pqkem::PQKeyPair,
     transcript::{tx1, tx2, Transcript},
     write_output, HandshakeError as Error, HandshakeMessage, HandshakeMessageOut, K2IkmQuery,
     K2IkmRegistration, ToTransportState,
@@ -23,9 +23,9 @@ use super::{
 
 #[derive(TlsDeserialize, TlsSize)]
 #[repr(u8)]
-pub enum InitiatorOuterPayload {
+pub enum InitiatorOuterPayload<T: Deserialize> {
     Query(VLBytes),
-    Registration(HandshakeMessage),
+    Registration(HandshakeMessage<T>),
 }
 
 #[derive(Debug)]
@@ -53,12 +53,11 @@ pub(crate) enum ResponderState {
     ToTransport(Box<ToTransportState>),
 }
 
-pub struct Responder<'a, Rng: CryptoRng> {
+pub struct Responder<'a, Rng: CryptoRng, C: ResponderCiphersuite> {
     pub(crate) state: ResponderState,
+    ciphersuite: C,
     recent_keys: VecDeque<DHPublicKey>,
     recent_keys_upper_bound: usize,
-    longterm_ecdh_keys: &'a DHKeyPair,
-    longterm_pq_keys: Option<PQKeyPair<'a>>,
     context: &'a [u8],
     aad: &'a [u8],
     rng: Rng,
@@ -76,10 +75,9 @@ pub struct ResponderRegistrationPayload(pub VLBytes);
 #[derive(TlsSerialize, TlsSize)]
 pub struct ResponderRegistrationPayloadOut<'a>(VLByteSlice<'a>);
 
-impl<'a, Rng: CryptoRng> Responder<'a, Rng> {
+impl<'a, Rng: CryptoRng, C: ResponderCiphersuite> Responder<'a, Rng, C> {
     pub fn new(
-        longterm_ecdh_keys: &'a DHKeyPair,
-        longterm_pq_keys: Option<PQKeyPair<'a>>,
+        ciphersuite: C,
         context: &'a [u8],
         aad: &'a [u8],
         recent_keys_upper_bound: usize,
@@ -87,8 +85,7 @@ impl<'a, Rng: CryptoRng> Responder<'a, Rng> {
     ) -> Self {
         Self {
             state: ResponderState::Initial {},
-            longterm_ecdh_keys,
-            longterm_pq_keys,
+            ciphersuite,
             context,
             aad,
             rng,
@@ -110,7 +107,7 @@ impl<'a, Rng: CryptoRng> Responder<'a, Rng> {
             k0,
             initiator_ephemeral_ecdh_pk,
             responder_ephemeral_ecdh_sk,
-            &self.longterm_ecdh_keys.sk,
+            &self.ciphersuite.longterm_ecdh_keys.sk,
             &tx2,
         )?;
 
@@ -140,12 +137,12 @@ impl<'a, Rng: CryptoRng> Responder<'a, Rng> {
 
     fn decrypt_outer_message(
         &self,
-        initiator_outer_message: &HandshakeMessage,
-    ) -> Result<(InitiatorOuterPayload, Transcript, AEADKey), Error> {
+        initiator_outer_message: &HandshakeMessage<C::Ciphertext>,
+    ) -> Result<(InitiatorOuterPayload<C::Ciphertext>, Transcript, AEADKey), Error> {
         let (tx0, mut k0) = derive_k0(
             &initiator_outer_message.pk,
-            &self.longterm_ecdh_keys.pk,
-            &self.longterm_ecdh_keys.sk,
+            &self.ciphersuite.longterm_ecdh_keys.pk,
+            &self.ciphersuite.longterm_ecdh_keys.sk,
             self.context,
             true,
         )?;
@@ -163,11 +160,11 @@ impl<'a, Rng: CryptoRng> Responder<'a, Rng> {
         &self,
         tx0: &Transcript,
         k0: &AEADKey,
-        initiator_inner_message: &HandshakeMessage,
+        initiator_inner_message: &HandshakeMessage<C::Ciphertext>,
     ) -> Result<(InitiatorInnerPayload, Transcript, AEADKey), Error> {
         let pq_shared_secret = match (
             initiator_inner_message.pq_encapsulation.as_ref(),
-            self.longterm_pq_keys.as_ref(),
+            self.ciphersuite.longterm_pq_keys.as_ref(),
         ) {
             (None, None) | (None, Some(_)) => None,
             (Some(_), None) => return Err(Error::UnsupportedCiphersuite),
@@ -178,7 +175,11 @@ impl<'a, Rng: CryptoRng> Responder<'a, Rng> {
             }
         };
 
-        let responder_pq_pk_opt = self.longterm_pq_keys.as_ref().map(|keys| keys.public_key());
+        let responder_pq_pk_opt = self
+            .ciphersuite
+            .longterm_pq_keys
+            .as_ref()
+            .map(|keys| keys.public_key());
 
         let tx1 = tx1(
             tx0,
@@ -189,7 +190,7 @@ impl<'a, Rng: CryptoRng> Responder<'a, Rng> {
 
         let mut k1 = derive_k1(
             k0,
-            &self.longterm_ecdh_keys.sk,
+            &self.ciphersuite.longterm_ecdh_keys.sk,
             &initiator_inner_message.pk,
             pq_shared_secret,
             &tx1,
@@ -283,7 +284,7 @@ impl<'a, Rng: CryptoRng> Responder<'a, Rng> {
     }
 }
 
-impl<'a, Rng: CryptoRng> Channel<Error> for Responder<'a, Rng> {
+impl<'a, Rng: CryptoRng, C: ResponderCiphersuite> Channel<Error> for Responder<'a, Rng, C> {
     fn write_message(&mut self, payload: &[u8], out: &mut [u8]) -> Result<usize, Error> {
         let mut out_bytes_written = 0;
         let responder_ephemeral_ecdh_sk = DHPrivateKey::new(&mut self.rng);
@@ -388,7 +389,7 @@ impl<'a, Rng: CryptoRng> Channel<Error> for Responder<'a, Rng> {
     }
 }
 
-impl<'a, Rng: CryptoRng> IntoSession for Responder<'a, Rng> {
+impl<'a, Rng: CryptoRng, C: ResponderCiphersuite> IntoSession for Responder<'a, Rng, C> {
     fn into_session(self) -> Result<Session, SessionError> {
         let ResponderState::ToTransport(mut state) = self.state else {
             return Err(SessionError::IntoSession);
@@ -398,13 +399,16 @@ impl<'a, Rng: CryptoRng> IntoSession for Responder<'a, Rng> {
             return Err(SessionError::IntoSession);
         };
 
-        let responder_pq_pk = self.longterm_pq_keys.map(|key_pair| key_pair.public_key());
+        let responder_pq_pk = self
+            .ciphersuite
+            .longterm_pq_keys
+            .map(|key_pair| key_pair.public_key());
 
         Session::new(
             state.tx2,
             state.k2,
             &initiator_ecdh_pk,
-            &self.longterm_ecdh_keys.pk,
+            &self.ciphersuite.longterm_ecdh_keys.pk,
             responder_pq_pk.as_ref(),
             false,
         )

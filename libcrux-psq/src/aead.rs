@@ -6,6 +6,11 @@ use tls_codec::{
     TlsSize,
 };
 
+/// The AEAD to be used.
+pub enum AEAD {
+    ChaChaPoly1305,
+}
+
 #[derive(Default, Clone, TlsSerialize, TlsDeserialize, TlsSerializeBytes, TlsSize)]
 pub struct AEADKey([u8; KEY_LEN], #[tls_codec(skip)] [u8; NONCE_LEN]);
 

@@ -3,9 +3,9 @@
 //! This crate implements a protocol for establishing and mutually
 //! registering a PQ-PSK between an initiator and a responder.
 
-#![deny(missing_docs)]
+#![warn(missing_docs)]
 
-pub(crate) mod aead;
+pub mod aead;
 pub mod handshake;
 pub mod session;
 pub mod traits;
@@ -13,4 +13,5 @@ pub mod traits;
 #[cfg(feature = "v1")]
 pub mod v1;
 
+#[cfg(feature = "classic-mceliece")]
 pub mod classic_mceliece;
