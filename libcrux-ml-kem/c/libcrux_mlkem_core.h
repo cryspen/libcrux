@@ -7,8 +7,8 @@
  * Charon: 667d2fc98984ff7f3df989c2367e6c1fa4a000e7
  * Eurydice: 2381cbc416ef2ad0b561c362c500bc84f36b6785
  * Karamel: 80f5435f2fc505973c469a4afcc8d875cddd0d8b
- * F*: 71d8221589d4d438af3706d89cb653cf53e18aab
- * Libcrux: ae00be9b55b2f9a172105512ea707a265f5bdd6e
+ * F*: 5643e656b989aca7629723653a2570c7df6252b9-dirty
+ * Libcrux: 4ac47ff7dc66c7048ccaaffa01b3a60cf30935e8
  */
 
 #ifndef libcrux_mlkem_core_H
@@ -821,30 +821,30 @@ static KRML_MUSTINLINE void libcrux_secrets_int_public_integers_classify_27_46(
 }
 
 /**
-This function found in impl {libcrux_secrets::traits::ClassifyRef<&'a (T)> for
-&'a (T)}
+This function found in impl {libcrux_secrets::traits::ClassifyRef<&'a
+(@Slice<T>)> for &'a (@Slice<T>)}
 */
 /**
-A monomorphic instance of libcrux_secrets.int.public_integers.classify_ref_c5
-with types Eurydice_slice uint8_t
+A monomorphic instance of libcrux_secrets.int.classify_public.classify_ref_9b
+with types uint8_t
 
 */
-static KRML_MUSTINLINE Eurydice_slice *
-libcrux_secrets_int_public_integers_classify_ref_c5_ba(Eurydice_slice *self) {
+static KRML_MUSTINLINE Eurydice_slice
+libcrux_secrets_int_classify_public_classify_ref_9b_90(Eurydice_slice self) {
   return self;
 }
 
 /**
-This function found in impl {libcrux_secrets::traits::ClassifyRef<&'a (T)> for
-&'a (T)}
+This function found in impl {libcrux_secrets::traits::ClassifyRef<&'a
+(@Slice<T>)> for &'a (@Slice<T>)}
 */
 /**
-A monomorphic instance of libcrux_secrets.int.public_integers.classify_ref_c5
-with types Eurydice_slice int16_t
+A monomorphic instance of libcrux_secrets.int.classify_public.classify_ref_9b
+with types int16_t
 
 */
-static KRML_MUSTINLINE Eurydice_slice *
-libcrux_secrets_int_public_integers_classify_ref_c5_03(Eurydice_slice *self) {
+static KRML_MUSTINLINE Eurydice_slice
+libcrux_secrets_int_classify_public_classify_ref_9b_39(Eurydice_slice self) {
   return self;
 }
 
