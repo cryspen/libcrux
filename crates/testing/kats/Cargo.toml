@@ -1,0 +1,15 @@
+[package]
+name = "libcrux-kats"
+
+readme = "Readme.md"
+version = "0.0.3"
+
+authors.workspace = true
+edition.workspace = true
+homepage.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+
+[features]
