@@ -1,21 +1,20 @@
 mod schema;
 pub use schema::*;
 
-pub struct VerifyTest {
-    pub schema: VerifySchema,
+pub struct MlDsaVerifyTest {
+    pub schema: MlDsaVerifySchema,
 }
 
 macro_rules! impl_parameter_set {
     ($name:ident, $parameter_set:literal) => {
-        impl VerifyTest {
+        impl MlDsaVerifyTest {
             pub fn $name() -> Self {
                 let data: &str = include_str!(concat!(
                     "../../wycheproof/mldsa_",
                     $parameter_set,
                     "_verify_test.json"
                 ));
-                let schema: VerifySchema =
-                    serde_json::from_str(data).expect("Could not deserialize KAT file.");
+                let schema = serde_json::from_str(data).expect("Could not deserialize KAT file.");
 
                 Self { schema }
             }
