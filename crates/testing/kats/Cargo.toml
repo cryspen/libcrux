@@ -11,13 +11,11 @@ license.workspace = true
 repository.workspace = true
 
 [dependencies]
-libcrux-ml-dsa = { version = "0.0.3", path = "../../../libcrux-ml-dsa", optional = true }
-
 # TODO: feature-gate
 hex = { version = "0.4.3", features = ["serde"] }
 serde_json = { version = "1.0" }
 serde = { version = "1.0", features = ["derive"] }
 
 [features]
-mldsa = ["dep:libcrux-ml-dsa"]
+mldsa = []
 wycheproof = []
