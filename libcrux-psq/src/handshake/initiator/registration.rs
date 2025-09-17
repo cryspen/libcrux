@@ -6,7 +6,7 @@ use tls_codec::{Deserialize, Serialize, Size, VLByteSlice};
 use crate::{
     aead::AEADKey,
     handshake::{
-        ciphersuite::InitiatorCiphersuite,
+        ciphersuite::{CiphersuiteBase, InitiatorCiphersuite},
         derive_k0, derive_k1,
         dhkem::{DHKeyPair, DHPrivateKey, DHPublicKey, DHSharedSecret},
         responder::ResponderRegistrationPayload,
@@ -101,11 +101,15 @@ impl<'a, Rng: CryptoRng, Ciphersuite: InitiatorCiphersuite> Channel<Error>
         let (pq_encapsulation, pq_shared_secret) =
             self.ciphersuite.pq_encapsulate(&mut self.rng)?;
 
+        let pq_encapsulation_serialized = pq_encapsulation
+            .tls_serialize_detached()
+            .map_err(|e| Error::OutputBufferShort)?;
+
         let tx1 = tx1::<Ciphersuite>(
             &state.tx0,
             self.ciphersuite.own_ecdh_encapsulation_key(),
             self.ciphersuite.peer_pq_encapsulation_key(),
-            pq_encapsulation.as_ref(),
+            &pq_encapsulation_serialized,
         )?;
 
         let mut k1 = derive_k1::<Ciphersuite>(
@@ -119,23 +123,22 @@ impl<'a, Rng: CryptoRng, Ciphersuite: InitiatorCiphersuite> Channel<Error>
         let inner_payload = InitiatorInnerPayloadOut(VLByteSlice(payload));
         let (inner_ciphertext, inner_tag) = k1.serialize_encrypt(&inner_payload, self.inner_aad)?;
 
-        let outer_payload =
-            InitiatorOuterPayloadOut::Registration(HandshakeMessageOut::<Ciphersuite> {
-                pk: &self.ciphersuite.own_ecdh_encapsulation_key(),
-                ciphertext: VLByteSlice(&inner_ciphertext),
-                tag: inner_tag,
-                aad: VLByteSlice(self.inner_aad),
-                pq_encapsulation: pq_encapsulation,
-            });
+        let outer_payload = InitiatorOuterPayloadOut::Registration(HandshakeMessageOut {
+            pk: &self.ciphersuite.own_ecdh_encapsulation_key(),
+            ciphertext: VLByteSlice(&inner_ciphertext),
+            tag: inner_tag,
+            aad: VLByteSlice(self.inner_aad),
+            pq_encapsulation: VLByteSlice(&pq_encapsulation_serialized),
+        });
         let (outer_ciphertext, outer_tag) =
             state.k0.serialize_encrypt(&outer_payload, self.outer_aad)?;
 
-        let msg = HandshakeMessageOut::<Ciphersuite> {
+        let msg = HandshakeMessageOut {
             pk: &state.initiator_ephemeral_keys.pk,
             ciphertext: VLByteSlice(&outer_ciphertext),
             tag: outer_tag,
             aad: VLByteSlice(self.outer_aad),
-            pq_encapsulation: None,
+            pq_encapsulation: VLByteSlice(&[]),
         };
 
         let out_bytes_written = msg
@@ -166,7 +169,7 @@ impl<'a, Rng: CryptoRng, Ciphersuite: InitiatorCiphersuite> Channel<Error>
 
         // Deserialize the message.
         let responder_msg =
-            HandshakeMessage::<Ciphersuite>::tls_deserialize(&mut Cursor::new(&message_bytes))
+            HandshakeMessage::tls_deserialize(&mut Cursor::new(&message_bytes))
                 .map_err(Error::Deserialize)?;
         let bytes_deserialized = responder_msg.tls_serialized_len();
 

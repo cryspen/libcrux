@@ -1,6 +1,7 @@
 use libcrux_psq::{
-    aead::AEAD,
-    handshake::{builder, ciphersuite::CiphersuiteBuilder, dhkem::DHKeyPair},
+    handshake::{
+        builder, ciphersuite::ResponderX25519MlKem768ChaChaPolyHkdfSha256, dhkem::DHKeyPair,
+    },
     traits::*,
 };
 
@@ -21,31 +22,22 @@ fn query() {
     let responder_pq_keys = libcrux_ml_kem::mlkem768::rand::generate_key_pair(&mut rng);
 
     // Setup initiator
-    let initiator_ciphersuite = CiphersuiteBuilder::new()
-        .aead(AEAD::ChaChaPoly1305)
-        .peer_longterm_ecdh_pk(&responder_ecdh_keys.pk)
-        .build_query_initiator_ciphersuite()
-        .unwrap();
-
     let mut initiator = builder::BuilderContext::new(rand::rng())
         .outer_aad(aad_initiator)
         .context(ctx)
-        .build_query_initiator(initiator_ciphersuite)
+        .build_query_initiator(&responder_ecdh_keys.pk)
         .unwrap();
 
     // Setup responder
-    let responder_ciphersuite = CiphersuiteBuilder::new()
-        .aead(AEAD::ChaChaPoly1305)
-        .longterm_ecdh_keys(&responder_ecdh_keys)
-        .longterm_pq_keys(&responder_pq_keys)
-        .build_responder_ciphersuite()
-        .unwrap();
-
     let mut responder = builder::BuilderContext::new(rand::rng())
         .context(ctx)
         .outer_aad(aad_responder)
         .recent_keys_upper_bound(30)
-        .build_responder(responder_ciphersuite)
+        .build_responder(ResponderX25519MlKem768ChaChaPolyHkdfSha256 {
+            longterm_ecdh_keys: &responder_ecdh_keys,
+            longterm_pq_encapsulation_key: responder_pq_keys.public_key(),
+            longterm_pq_decapsulation_key: responder_pq_keys.private_key(),
+        })
         .unwrap();
 
     // Send first message

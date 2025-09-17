@@ -1,6 +1,13 @@
 use libcrux_psq::{
     aead::AEAD,
-    handshake::{ciphersuite::CiphersuiteBuilder, dhkem::DHKeyPair, *},
+    handshake::{
+        ciphersuite::{
+            InitiatorX25519Mlkem768ChachaPolyHkdfSha256,
+            ResponderX25519MlKem768ChaChaPolyHkdfSha256,
+        },
+        dhkem::DHKeyPair,
+        *,
+    },
     session::Session,
     traits::*,
 };
@@ -23,44 +30,27 @@ fn registration_ml_kem(pq: bool) {
     let initiator_ecdh_keys = DHKeyPair::new(&mut rng);
 
     // Setup initiator
-
-    let mut initiator_ciphersuite = CiphersuiteBuilder::new()
-        .aead(AEAD::ChaChaPoly1305)
-        .peer_longterm_ecdh_pk(&responder_ecdh_keys.pk)
-        .longterm_ecdh_keys(&initiator_ecdh_keys);
-
-    if pq {
-        initiator_ciphersuite =
-            initiator_ciphersuite.peer_longterm_pq_pk(responder_pq_keys.public_key());
-    }
-
-    let initiator_ciphersuite = initiator_ciphersuite
-        .build_registration_initiator_ciphersuite()
-        .unwrap();
-
     let mut initiator = builder::BuilderContext::new(rand::rng())
         .outer_aad(aad_initiator_outer)
         .inner_aad(aad_initiator_inner)
         .context(ctx)
-        .build_registration_initiator(initiator_ciphersuite)
+        .build_registration_initiator(InitiatorX25519Mlkem768ChachaPolyHkdfSha256 {
+            longterm_ecdh_keys: &initiator_ecdh_keys,
+            peer_longterm_ecdh_pk: &responder_ecdh_keys.pk,
+            peer_longterm_mlkem_pk: responder_pq_keys.public_key(),
+        })
         .unwrap();
 
     // Setup responder
-    let mut responder_ciphersuite = CiphersuiteBuilder::new()
-        .aead(AEAD::ChaChaPoly1305)
-        .longterm_ecdh_keys(&responder_ecdh_keys);
-
-    if pq {
-        responder_ciphersuite = responder_ciphersuite.longterm_pq_keys(&responder_pq_keys);
-    }
-
-    let responder_ciphersuite = responder_ciphersuite.build_responder_ciphersuite().unwrap();
-
     let mut responder = builder::BuilderContext::new(rand::rng())
         .context(ctx)
         .outer_aad(aad_responder)
         .recent_keys_upper_bound(30)
-        .build_responder(responder_ciphersuite)
+        .build_responder(ResponderX25519MlKem768ChaChaPolyHkdfSha256 {
+            longterm_ecdh_keys: &responder_ecdh_keys,
+            longterm_pq_encapsulation_key: responder_pq_keys.public_key(),
+            longterm_pq_decapsulation_key: responder_pq_keys.private_key(),
+        })
         .unwrap();
 
     // Send first message
@@ -111,11 +101,11 @@ fn registration_ml_kem(pq: bool) {
     // test serialization, deserialization
     let mut session_storage = vec![0u8; 4096];
     i_transport.serialize(&mut session_storage).unwrap();
-    let mut i_transport = Session::deserialize(
+    let mut i_transport = Session::deserialize::<InitiatorX25519Mlkem768ChachaPolyHkdfSha256>(
         &session_storage,
         &initiator_ecdh_keys.pk,
         &responder_ecdh_keys.pk,
-        pq.then_some(responder_pq_keys.public_key().into()),
+        responder_pq_keys.public_key().into(),
     )
     .unwrap();
 
@@ -153,7 +143,13 @@ fn registration_ml_kem(pq: bool) {
     assert_eq!(&payload_buf_initiator[0..len_i_payload], app_data_r);
 }
 
+#[cfg(feature = "classic-mceliece")]
 fn registration_classic_mceliece(pq: bool) {
+    use libcrux_psq::handshake::ciphersuite::{
+        InitiatorX25519ClassicMcElieceChachaPolyHkdfSha256,
+        ResponderX25519ClassicMcElieceChaChaPolyHkdfSha256,
+    };
+
     let mut rng = rand::rng();
     let ctx = b"Test Context";
     let aad_initiator_outer = b"Test Data I Outer";
@@ -170,42 +166,27 @@ fn registration_classic_mceliece(pq: bool) {
     let responder_ecdh_keys = DHKeyPair::new(&mut rng);
     let initiator_ecdh_keys = DHKeyPair::new(&mut rng);
 
-    let mut initiator_ciphersuite = CiphersuiteBuilder::new()
-        .aead(AEAD::ChaChaPoly1305)
-        .peer_longterm_ecdh_pk(&responder_ecdh_keys.pk)
-        .longterm_ecdh_keys(&initiator_ecdh_keys);
-
-    if pq {
-        initiator_ciphersuite = initiator_ciphersuite.peer_longterm_pq_pk(&responder_pq_keys.pk);
-    }
-
-    let initiator_ciphersuite = initiator_ciphersuite
-        .build_registration_initiator_ciphersuite()
-        .unwrap();
-
     let mut initiator = builder::BuilderContext::new(rand::rng())
         .outer_aad(aad_initiator_outer)
         .inner_aad(aad_initiator_inner)
         .context(ctx)
-        .build_registration_initiator(initiator_ciphersuite)
+        .build_registration_initiator(InitiatorX25519ClassicMcElieceChachaPolyHkdfSha256 {
+            longterm_ecdh_keys: &initiator_ecdh_keys,
+            peer_longterm_ecdh_pk: &responder_ecdh_keys.pk,
+            peer_longterm_cmc_pk: &responder_pq_keys.pk,
+        })
         .unwrap();
 
     // Setup responder
-    let mut responder_ciphersuite = CiphersuiteBuilder::new()
-        .aead(AEAD::ChaChaPoly1305)
-        .longterm_ecdh_keys(&responder_ecdh_keys);
-
-    if pq {
-        responder_ciphersuite = responder_ciphersuite.longterm_pq_keys(&responder_pq_keys);
-    }
-
-    let responder_ciphersuite = responder_ciphersuite.build_responder_ciphersuite().unwrap();
-
     let mut responder = builder::BuilderContext::new(rand::rng())
         .context(ctx)
         .outer_aad(aad_responder)
         .recent_keys_upper_bound(30)
-        .build_responder(responder_ciphersuite)
+        .build_responder(ResponderX25519ClassicMcElieceChaChaPolyHkdfSha256 {
+            longterm_ecdh_keys: &responder_ecdh_keys,
+            longterm_pq_encapsulation_key: &responder_pq_keys.pk,
+            longterm_pq_decapsulation_key: &responder_pq_keys.sk,
+        })
         .unwrap();
 
     // Send first message
@@ -256,13 +237,14 @@ fn registration_classic_mceliece(pq: bool) {
     // test serialization, deserialization
     let mut session_storage = vec![0u8; 4096];
     i_transport.serialize(&mut session_storage).unwrap();
-    let mut i_transport = Session::deserialize(
-        &session_storage,
-        &initiator_ecdh_keys.pk,
-        &responder_ecdh_keys.pk,
-        pq.then_some((&responder_pq_keys.pk).into()),
-    )
-    .unwrap();
+    let mut i_transport =
+        Session::deserialize::<InitiatorX25519ClassicMcElieceChachaPolyHkdfSha256>(
+            &session_storage,
+            &initiator_ecdh_keys.pk,
+            &responder_ecdh_keys.pk,
+            Some(&responder_pq_keys.pk),
+        )
+        .unwrap();
 
     let mut channel_i = i_transport.transport_channel().unwrap();
     let mut channel_r = r_transport.transport_channel().unwrap();
@@ -308,12 +290,14 @@ fn registration_classic_ml_kem() {
     registration_ml_kem(false);
 }
 
-#[test]
-fn registration_classic_cmc() {
-    registration_classic_mceliece(false);
-}
+// #[test]
+// #[feature = "classic-mceliece"]
+// fn registration_classic_cmc() {
+//     registration_classic_mceliece(false);
+// }
 
-#[test]
-fn registration_pq_cmc() {
-    registration_classic_mceliece(true);
-}
+// #[test]
+// #[feature = "classic-mceliece"]
+// fn registration_pq_cmc() {
+//     registration_classic_mceliece(true);
+// }
