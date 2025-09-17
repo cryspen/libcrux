@@ -71,7 +71,7 @@ unsafe extern "C" {
 }
 unsafe extern "C" {
     pub fn jade_scalarmult_curve25519_amd64_ref5_base(r: *mut u8, k: *mut u8)
-    -> ::core::ffi::c_int;
+        -> ::core::ffi::c_int;
 }
 unsafe extern "C" {
     pub fn jade_scalarmult_curve25519_amd64_mulx(
@@ -82,7 +82,7 @@ unsafe extern "C" {
 }
 unsafe extern "C" {
     pub fn jade_scalarmult_curve25519_amd64_mulx_base(r: *mut u8, k: *mut u8)
-    -> ::core::ffi::c_int;
+        -> ::core::ffi::c_int;
 }
 unsafe extern "C" {
     pub fn jade_hash_sha3_224_amd64_ref(

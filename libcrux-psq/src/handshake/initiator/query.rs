@@ -95,9 +95,7 @@ impl<'a> QueryInitiator<'a> {
 
 impl<'a> Channel<Error> for QueryInitiator<'a> {
     fn write_message(&mut self, payload: &[u8], out: &mut [u8]) -> Result<usize, Error> {
-        let outer_payload = InitiatorOuterPayloadOut::Query(
-            VLByteSlice(payload),
-        );
+        let outer_payload = InitiatorOuterPayloadOut::Query(VLByteSlice(payload));
         let (ciphertext, tag) = self.k0.serialize_encrypt(&outer_payload, self.outer_aad)?;
 
         let msg = HandshakeMessageOut {
