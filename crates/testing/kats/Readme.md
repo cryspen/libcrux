@@ -5,7 +5,7 @@ This crate provides KAT test vectors for:
     - sign (`noseed`)
     - verify
 
-⚠️ NOTE: This crate serves as an internal testing dependency to other `libcrux`
+⚠️ NOTE: This crate serves as an internal testing dependency for other `libcrux`
 crates, and is not intended to be used directly.
 
 ## Source
