@@ -1,6 +1,6 @@
 use rand::CryptoRng;
 
-use crate::handshake::ciphersuite::{InitiatorCiphersuite, ResponderCiphersuite};
+use crate::handshake::{ciphersuite::{InitiatorCiphersuite, ResponderCiphersuite}, dhkem::DHPublicKey, initiator::query::QueryInitiator};
 
 use super::{
     initiator::registration::RegistrationInitiator,
@@ -72,22 +72,18 @@ impl<'a, Rng: CryptoRng> BuilderContext<'a, Rng> {
     ///
     /// This requires that a `responder_ecdh_pk` is set.
     /// It also uses the `context` and `outer_aad`.
-    // pub fn build_query_initiator(
-    //     self,
-    //     ciphersuite: QueryInitiatorCiphersuite<'a>,
-    // ) -> Result<QueryInitiator<'a>, Error> {
-    //     let QueryInitiatorCiphersuite {
-    //         peer_longterm_ecdh_pk,
-    //         ..
-    //     } = ciphersuite;
+    pub fn build_query_initiator(
+        self,
+        peer_longterm_ecdh_pk: &'a DHPublicKey,
+    ) -> Result<QueryInitiator<'a>, Error> {
 
-    //     QueryInitiator::new(
-    //         peer_longterm_ecdh_pk,
-    //         self.context,
-    //         self.outer_aad,
-    //         self.rng,
-    //     )
-    // }
+        QueryInitiator::new(
+            peer_longterm_ecdh_pk,
+            self.context,
+            self.outer_aad,
+            self.rng,
+        )
+    }
 
     /// Build a new [`RegistrationInitiator`].
     ///

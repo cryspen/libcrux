@@ -104,16 +104,13 @@ fn derive_pk_binder<T: CiphersuiteBase>(
     key: &SessionKey,
     initiator_ecdh_pk: &DHPublicKey,
     responder_ecdh_pk: &DHPublicKey,
-    responder_pq_pk: Option<&T::EncapsulationKey>,
+    responder_pq_pk: Option<T::EncapsulationKeyRef>,
 ) -> Result<[u8; PK_BINDER_LEN], SessionError> {
     #[derive(TlsSerialize, TlsSize)]
-    struct PkBinderInfo<'a, T: CiphersuiteBase>
-    where
-        &'a <T as CiphersuiteBase>::EncapsulationKey: Size + Serialize,
-    {
+    struct PkBinderInfo<'a, T: CiphersuiteBase> {
         initiator_ecdh_pk: &'a DHPublicKey,
         responder_ecdh_pk: &'a DHPublicKey,
-        responder_pq_pk: Option<&'a T::EncapsulationKey>,
+        responder_pq_pk: Option<T::EncapsulationKeyRef>,
     }
 
     let info = PkBinderInfo::<T> {
@@ -149,7 +146,7 @@ impl Session {
         k2: AEADKey,
         initiator_ecdh_pk: &DHPublicKey,
         responder_ecdh_pk: &DHPublicKey,
-        responder_pq_pk: Option<&T::EncapsulationKey>,
+        responder_pq_pk: Option<T::EncapsulationKeyRef>,
         is_initiator: bool,
     ) -> Result<Self, SessionError> {
         let session_key = derive_session_key(k2, tx2)?;
@@ -193,7 +190,7 @@ impl Session {
         bytes: &[u8],
         initiator_ecdh_pk: &DHPublicKey,
         responder_ecdh_pk: &DHPublicKey,
-        responder_pq_pk: Option<&T::EncapsulationKey>,
+        responder_pq_pk: Option<T::EncapsulationKeyRef>,
     ) -> Result<Self, SessionError> {
         let session =
             Session::tls_deserialize(&mut Cursor::new(bytes)).map_err(SessionError::Deserialize)?;

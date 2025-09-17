@@ -1,4 +1,6 @@
-use tls_codec::{Serialize, SerializeBytes, Size, TlsSerialize, TlsSerializeBytes, TlsSize};
+use tls_codec::{
+    Serialize, SerializeBytes, Size, TlsSerialize, TlsSerializeBytes, TlsSize, VLBytes,
+};
 
 pub const TX0_DOMAIN_SEP: u8 = 0;
 pub const TX1_DOMAIN_SEP: u8 = 1;
@@ -13,13 +15,13 @@ use libcrux_sha2::{Digest, SHA256_LENGTH};
 pub struct Transcript([u8; SHA256_LENGTH]);
 
 impl Transcript {
-    fn new(initial_input: &impl Serialize) -> Result<Self, Error> {
+    fn new(initial_input: impl Serialize) -> Result<Self, Error> {
         Self::add_hash::<TX0_DOMAIN_SEP>(None, initial_input)
     }
 
     fn add_hash<const DOMAIN_SEPARATOR: u8>(
         old_transcript: Option<&Transcript>,
-        input: &impl Serialize,
+        input: impl Serialize,
     ) -> Result<Transcript, Error> {
         let mut hasher = libcrux_sha2::Sha256::new();
         hasher.update(&[DOMAIN_SEPARATOR]);
@@ -72,23 +74,19 @@ pub(crate) fn tx0(
 pub(crate) fn tx1<Ciphersuite: CiphersuiteBase>(
     tx0: &Transcript,
     initiator_longterm_pk: &DHPublicKey,
-    responder_pq_pk: Option<&Ciphersuite::EncapsulationKey>,
-    pq_encaps: Option<&Ciphersuite::Ciphertext>,
+    responder_pq_pk: Option<Ciphersuite::EncapsulationKeyRef>,
+    pq_encaps: &[u8],
 ) -> Result<Transcript, Error> {
     #[derive(TlsSerialize, TlsSize)]
-    struct Transcript1Inputs<'a, Ciphersuite: CiphersuiteBase>
-    where
-        &'a <Ciphersuite as CiphersuiteBase>::EncapsulationKey: Serialize + Size,
-        &'a <Ciphersuite as CiphersuiteBase>::Ciphertext: Serialize + Size,
-    {
+    struct Transcript1Inputs<'a, Ciphersuite: CiphersuiteBase> {
         initiator_longterm_pk: &'a DHPublicKey,
-        responder_pq_pk: Option<&'a Ciphersuite::EncapsulationKey>,
-        pq_encaps: Option<&'a Ciphersuite::Ciphertext>,
+        responder_pq_pk: Option<Ciphersuite::EncapsulationKeyRef>,
+        pq_encaps: &'a [u8],
     }
 
     Transcript::add_hash::<TX1_DOMAIN_SEP>(
         Some(tx0),
-        &Transcript1Inputs::<Ciphersuite> {
+        Transcript1Inputs::<Ciphersuite> {
             initiator_longterm_pk,
             pq_encaps,
             responder_pq_pk,

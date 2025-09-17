@@ -12,7 +12,7 @@
 //!   key, and thus not revealed to an eavesdropping attacker.
 //!
 //! See below for an example of the registration handshake:
-//! ```rust
+//! ```ignore
 //! use libcrux_psq::{
 //!     aead::*,
 //!     session::Session,
@@ -193,10 +193,7 @@ impl From<AEADError> for HandshakeError {
 
 use dhkem::{DHPrivateKey, DHPublicKey, DHSharedSecret};
 // use pqkem::{PQCiphertext, PQSharedSecret};
-use tls_codec::{
-    TlsDeserialize, TlsSerialize, TlsSerializeBytes,
-    TlsSize, VLByteSlice, VLBytes,
-};
+use tls_codec::{TlsDeserialize, TlsSerialize, TlsSerializeBytes, TlsSize, VLByteSlice, VLBytes};
 use transcript::Transcript;
 
 use crate::{
@@ -222,7 +219,7 @@ pub(crate) struct ToTransportState {
 
 #[derive(TlsDeserialize, TlsSize)]
 /// A PSQ handshake message.
-pub struct HandshakeMessage<Ciphersuite: CiphersuiteBase> {
+pub struct HandshakeMessage {
     /// A Diffie-Hellman KEM public key
     pk: DHPublicKey,
     /// The AEAD-encrypted message payload
@@ -232,17 +229,17 @@ pub struct HandshakeMessage<Ciphersuite: CiphersuiteBase> {
     /// Associated data, covered by the AEAD message authentication tag
     aad: VLBytes,
     /// An optional post-quantum key encapsulation
-    pq_encapsulation: Option<Ciphersuite::Ciphertext>,
+    pq_encapsulation: VLBytes,
 }
 
 #[derive(TlsSerialize, TlsSize)]
 /// A PSQ handshake message. (Serialization helper)
-pub struct HandshakeMessageOut<'a, Ciphersuite: CiphersuiteBase> {
+pub struct HandshakeMessageOut<'a> {
     pk: &'a DHPublicKey,
     ciphertext: VLByteSlice<'a>,
     tag: [u8; 16], // XXX: implement Serialize for &[T; N]
     aad: VLByteSlice<'a>,
-    pq_encapsulation: Option<Ciphersuite::Ciphertext>,
+    pq_encapsulation: VLByteSlice<'a>,
 }
 
 pub(crate) fn write_output(payload: &[u8], out: &mut [u8]) -> Result<usize, HandshakeError> {

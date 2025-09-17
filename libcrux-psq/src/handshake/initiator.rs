@@ -9,9 +9,9 @@ pub mod registration;
 
 #[derive(TlsSerialize, TlsSize)]
 #[repr(u8)]
-pub enum InitiatorOuterPayloadOut<'a, Ciphersuite: CiphersuiteBase> {
+pub enum InitiatorOuterPayloadOut<'a> {
     Query(VLByteSlice<'a>),
-    Registration(HandshakeMessageOut<'a, Ciphersuite>),
+    Registration(HandshakeMessageOut<'a>),
 }
 
 #[derive(TlsDeserialize, TlsSize)]
