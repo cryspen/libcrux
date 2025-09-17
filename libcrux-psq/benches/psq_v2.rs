@@ -1,11 +1,14 @@
 use criterion::{criterion_group, criterion_main, BatchSize, Criterion};
 
-use libcrux_psq::protocol::{
-    api::{Builder, IntoSession, Protocol},
-    dhkem::DHKeyPair,
-    initiator::{QueryInitiator, RegistrationInitiator},
-    pqkem::PQKeyPair,
-    responder::Responder,
+use libcrux_psq::{
+    handshake::{
+        builder::Builder,
+        dhkem::DHKeyPair,
+        initiator::{query::QueryInitiator, registration::RegistrationInitiator},
+        pqkem::PQKeyPair,
+        responder::Responder,
+    },
+    traits::{Channel, IntoSession},
 };
 use rand::CryptoRng;
 
@@ -27,7 +30,7 @@ fn query<const PQ: bool>(c: &mut Criterion) {
 
     // External setup
     let responder_ecdh_keys = DHKeyPair::new(&mut rng);
-    let responder_pq_keys = PQKeyPair::new(&mut rng);
+    let responder_pq_keys = libcrux_ml_kem::mlkem768::rand::generate_key_pair(&mut rng);
 
     // x25519
 
@@ -49,7 +52,7 @@ fn query<const PQ: bool>(c: &mut Criterion) {
         ctx,
         aad_responder,
         &responder_ecdh_keys,
-        &responder_pq_keys,
+        (&responder_pq_keys).into(),
     );
     c.bench_function(&format!("[Query] Responder setup {ciphersuite}"), |b| {
         b.iter_batched(
@@ -60,7 +63,7 @@ fn query<const PQ: bool>(c: &mut Criterion) {
                     ctx,
                     aad_responder,
                     &responder_ecdh_keys,
-                    &responder_pq_keys,
+                    (&responder_pq_keys).into(),
                 );
             },
             BatchSize::SmallInput,
@@ -115,7 +118,7 @@ fn query<const PQ: bool>(c: &mut Criterion) {
                         ctx,
                         aad_responder,
                         &responder_ecdh_keys,
-                        &responder_pq_keys,
+                        (&responder_pq_keys).into(),
                     );
 
                     (responder, msg_channel, payload_buf_responder)
@@ -150,7 +153,7 @@ fn query<const PQ: bool>(c: &mut Criterion) {
                     ctx,
                     aad_responder,
                     &responder_ecdh_keys,
-                    &responder_pq_keys,
+                    (&responder_pq_keys).into(),
                 );
 
                 let (_len_r_deserialized, _len_r_payload) = responder
@@ -190,7 +193,7 @@ fn query<const PQ: bool>(c: &mut Criterion) {
                     ctx,
                     aad_responder,
                     &responder_ecdh_keys,
-                    &responder_pq_keys,
+                    (&responder_pq_keys).into(),
                 );
 
                 let (_len_r_deserialized, _len_r_payload) = responder
@@ -224,7 +227,7 @@ fn registration<const PQ: bool>(c: &mut Criterion) {
 
     // External setup
     let responder_ecdh_keys = DHKeyPair::new(&mut rng);
-    let responder_pq_keys = PQKeyPair::new(&mut rng);
+    let responder_pq_keys = libcrux_ml_kem::mlkem768::rand::generate_key_pair(&mut rng);
     let initiator_ecdh_keys = DHKeyPair::new(&mut rng);
 
     // x25519
@@ -236,7 +239,7 @@ fn registration<const PQ: bool>(c: &mut Criterion) {
         aad_initiator_outer,
         aad_initiator_inner,
         &responder_ecdh_keys,
-        &responder_pq_keys,
+        (&responder_pq_keys).into(),
         &initiator_ecdh_keys,
     );
     c.bench_function(&format!("[Registration] Initiator setup"), |b| {
@@ -249,7 +252,7 @@ fn registration<const PQ: bool>(c: &mut Criterion) {
                     aad_initiator_outer,
                     aad_initiator_inner,
                     &responder_ecdh_keys,
-                    &responder_pq_keys,
+                    (&responder_pq_keys).into(),
                     &initiator_ecdh_keys,
                 );
             },
@@ -263,7 +266,7 @@ fn registration<const PQ: bool>(c: &mut Criterion) {
         ctx,
         aad_responder,
         &responder_ecdh_keys,
-        &responder_pq_keys,
+        (&responder_pq_keys).into(),
     );
     c.bench_function(
         &format!("[Registration] Responder setup {ciphersuite}"),
@@ -276,7 +279,7 @@ fn registration<const PQ: bool>(c: &mut Criterion) {
                         ctx,
                         aad_responder,
                         &responder_ecdh_keys,
-                        &responder_pq_keys,
+                        (&responder_pq_keys).into(),
                     );
                 },
                 BatchSize::SmallInput,
@@ -300,7 +303,7 @@ fn registration<const PQ: bool>(c: &mut Criterion) {
                         aad_initiator_outer,
                         aad_initiator_inner,
                         &responder_ecdh_keys,
-                        &responder_pq_keys,
+                        (&responder_pq_keys).into(),
                         &initiator_ecdh_keys,
                     );
 
@@ -332,7 +335,7 @@ fn registration<const PQ: bool>(c: &mut Criterion) {
                         aad_initiator_outer,
                         aad_initiator_inner,
                         &responder_ecdh_keys,
-                        &responder_pq_keys,
+                        (&responder_pq_keys).into(),
                         &initiator_ecdh_keys,
                     );
 
@@ -346,7 +349,7 @@ fn registration<const PQ: bool>(c: &mut Criterion) {
                         ctx,
                         aad_responder,
                         &responder_ecdh_keys,
-                        &responder_pq_keys,
+                        (&responder_pq_keys).into(),
                     );
 
                     (responder, msg_channel, payload_buf_responder)
@@ -376,7 +379,7 @@ fn registration<const PQ: bool>(c: &mut Criterion) {
                         aad_initiator_outer,
                         aad_initiator_inner,
                         &responder_ecdh_keys,
-                        &responder_pq_keys,
+                        (&responder_pq_keys).into(),
                         &initiator_ecdh_keys,
                     );
 
@@ -390,7 +393,7 @@ fn registration<const PQ: bool>(c: &mut Criterion) {
                         ctx,
                         aad_responder,
                         &responder_ecdh_keys,
-                        &responder_pq_keys,
+                        (&responder_pq_keys).into(),
                     );
 
                     let (_len_r_deserialized, _len_r_payload) = responder
@@ -426,7 +429,7 @@ fn registration<const PQ: bool>(c: &mut Criterion) {
                         aad_initiator_outer,
                         aad_initiator_inner,
                         &responder_ecdh_keys,
-                        &responder_pq_keys,
+                        (&responder_pq_keys).into(),
                         &initiator_ecdh_keys,
                     );
 
@@ -440,7 +443,7 @@ fn registration<const PQ: bool>(c: &mut Criterion) {
                         ctx,
                         aad_responder,
                         &responder_ecdh_keys,
-                        &responder_pq_keys,
+                        (&responder_pq_keys).into(),
                     );
 
                     let (_len_r_deserialized, _len_r_payload) = responder
@@ -479,7 +482,7 @@ fn registration<const PQ: bool>(c: &mut Criterion) {
                         aad_initiator_outer,
                         aad_initiator_inner,
                         &responder_ecdh_keys,
-                        &responder_pq_keys,
+                        (&responder_pq_keys).into(),
                         &initiator_ecdh_keys,
                     );
 
@@ -493,7 +496,7 @@ fn registration<const PQ: bool>(c: &mut Criterion) {
                         ctx,
                         aad_responder,
                         &responder_ecdh_keys,
-                        &responder_pq_keys,
+                        (&responder_pq_keys).into(),
                     );
 
                     let (_len_r_deserialized, _len_r_payload) = responder
@@ -531,7 +534,7 @@ fn registration<const PQ: bool>(c: &mut Criterion) {
                         aad_initiator_outer,
                         aad_initiator_inner,
                         &responder_ecdh_keys,
-                        &responder_pq_keys,
+                        (&responder_pq_keys).into(),
                         &initiator_ecdh_keys,
                     );
 
@@ -545,7 +548,7 @@ fn registration<const PQ: bool>(c: &mut Criterion) {
                         ctx,
                         aad_responder,
                         &responder_ecdh_keys,
-                        &responder_pq_keys,
+                        (&responder_pq_keys).into(),
                     );
 
                     let (_len_r_deserialized, _len_r_payload) = responder
@@ -587,7 +590,7 @@ fn registration<const PQ: bool>(c: &mut Criterion) {
                         aad_initiator_outer,
                         aad_initiator_inner,
                         &responder_ecdh_keys,
-                        &responder_pq_keys,
+                        (&responder_pq_keys).into(),
                         &initiator_ecdh_keys,
                     );
 
@@ -601,7 +604,7 @@ fn registration<const PQ: bool>(c: &mut Criterion) {
                         ctx,
                         aad_responder,
                         &responder_ecdh_keys,
-                        &responder_pq_keys,
+                        (&responder_pq_keys).into(),
                     );
 
                     let (_len_r_deserialized, _len_r_payload) = responder
@@ -618,7 +621,7 @@ fn registration<const PQ: bool>(c: &mut Criterion) {
                         .unwrap();
 
                     let mut initiator = initiator.into_session().unwrap();
-                    let (_channel_no, channel) = initiator.channel().unwrap();
+                    let channel = initiator.transport_channel().unwrap();
                     let payload = randombytes(4096);
                     (channel, msg_channel, payload)
                 },
@@ -646,7 +649,7 @@ fn registration<const PQ: bool>(c: &mut Criterion) {
                         aad_initiator_outer,
                         aad_initiator_inner,
                         &responder_ecdh_keys,
-                        &responder_pq_keys,
+                        (&responder_pq_keys).into(),
                         &initiator_ecdh_keys,
                     );
 
@@ -660,7 +663,7 @@ fn registration<const PQ: bool>(c: &mut Criterion) {
                         ctx,
                         aad_responder,
                         &responder_ecdh_keys,
-                        &responder_pq_keys,
+                        (&responder_pq_keys).into(),
                     );
 
                     let (_len_r_deserialized, _len_r_payload) = responder
@@ -678,14 +681,14 @@ fn registration<const PQ: bool>(c: &mut Criterion) {
 
                     let mut initiator = initiator.into_session().unwrap();
 
-                    let (_channel_no, mut initiator_channel) = initiator.channel().unwrap();
+                    let mut initiator_channel = initiator.transport_channel().unwrap();
 
                     let _ = initiator_channel
                         .write_message(&randombytes(4096), &mut msg_channel)
                         .unwrap();
 
                     let mut responder = responder.into_session().unwrap();
-                    let (_channel_no, responder_channel) = responder.channel().unwrap();
+                    let responder_channel = responder.transport_channel().unwrap();
                     (responder_channel, msg_channel, payload_buf_responder)
                 },
                 |(responder_channel, msg_channel, payload_buf_responder)| {
@@ -705,7 +708,7 @@ fn build_responder<'a, const PQ: bool>(
     ctx: &'a [u8],
     aad_responder: &'a [u8],
     responder_ecdh_keys: &'a DHKeyPair,
-    responder_pq_keys: &'a PQKeyPair,
+    responder_pq_keys: PQKeyPair<'a>,
 ) -> Responder<'a, impl CryptoRng> {
     let mut responder = Builder::new(rng)
         .context(ctx)
@@ -713,7 +716,7 @@ fn build_responder<'a, const PQ: bool>(
         .longterm_ecdh_keys(responder_ecdh_keys)
         .recent_keys_upper_bound(30);
     if PQ {
-        responder = responder.longterm_pq_keys(&responder_pq_keys);
+        responder = responder.longterm_pq_keys(responder_pq_keys);
     }
     responder.build_responder().unwrap()
 }
@@ -740,7 +743,7 @@ fn registration_initiator<'a, const PQ: bool>(
     aad_initiator_outer: &'a [u8],
     aad_initiator_inner: &'a [u8],
     responder_ecdh_keys: &'a DHKeyPair,
-    responder_pq_keys: &'a PQKeyPair,
+    responder_pq_keys: PQKeyPair<'a>,
     initiator_ecdh_keys: &'a DHKeyPair,
 ) -> RegistrationInitiator<'a, impl CryptoRng> {
     let mut builder = Builder::new(rng)
@@ -750,7 +753,7 @@ fn registration_initiator<'a, const PQ: bool>(
         .peer_longterm_ecdh_pk(&responder_ecdh_keys.pk)
         .longterm_ecdh_keys(initiator_ecdh_keys);
     if PQ {
-        builder = builder.peer_longterm_pq_pk(&responder_pq_keys.pk);
+        builder = builder.peer_longterm_pq_pk(responder_pq_keys.public_key());
     }
     builder.build_registration_initiator().unwrap()
 }
