@@ -28,6 +28,10 @@ hex = { version = "0.4.3", features = ["serde"] }
 serde_json = { version = "1.0" }
 serde = { version = "1.0", features = ["derive"] }
 criterion = "0.7"
+libcrux-kats = { version = "0.0.3", path = "../crates/testing/kats", features = [
+    "mldsa",
+    "wycheproof",
+] }
 
 # This doesn't build on intel macos.
 [target.'cfg(not(all(target_os = "macos", target_arch = "x86_64")))'.dev-dependencies]
