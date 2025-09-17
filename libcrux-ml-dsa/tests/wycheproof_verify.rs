@@ -8,15 +8,15 @@
 
 use libcrux_ml_dsa::{ml_dsa_44, ml_dsa_65, ml_dsa_87, MLDSASignature, MLDSAVerificationKey};
 
-use libcrux_kats::wycheproof::mldsa::{verify_schema::*, MlDsaVerifyTest};
+use libcrux_kats::wycheproof::mldsa::{verify_schema::*, MlDsaVerifyTests};
 
 macro_rules! wycheproof_verify_test {
     ($name:ident, $test_name:ident, $verification_key_object:ty, $signature_object:ty, $verify:expr) => {
         #[test]
         fn $name() {
-            let katfile_serialized = MlDsaVerifyTest::$test_name();
+            let katfile_serialized = MlDsaVerifyTests::$test_name();
 
-            for test_group in katfile_serialized.schema.test_groups {
+            for test_group in katfile_serialized.test_groups {
                 let verification_key_bytes = test_group.public_key;
                 if verification_key_bytes.len() != <$verification_key_object>::len() {
                     // If the verification key size in the KAT does not match the
