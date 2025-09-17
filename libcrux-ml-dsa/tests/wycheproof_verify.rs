@@ -6,32 +6,19 @@
 // This set of test vectors does not cover the pre-hashed variants of
 // ML-DSA.
 
-use serde_json;
-
-use hex;
-
-use std::{fs::File, io::BufReader, path::Path};
 
 use libcrux_ml_dsa::{ml_dsa_44, ml_dsa_65, ml_dsa_87, MLDSASignature, MLDSAVerificationKey};
 
-include!("wycheproof/verify_schema.rs");
+use libcrux_kats::wycheproof::mldsa_verify::*;
 
 macro_rules! wycheproof_verify_test {
-    ($name:ident, $parameter_set:literal, $verification_key_object:ty, $signature_object:ty, $verify:expr) => {
+    ($name:ident, $test_name:ident, $verification_key_object:ty, $signature_object:ty, $verify:expr) => {
         #[test]
         fn $name() {
-            let katfile_path = Path::new("tests").join("wycheproof").join(format!(
-                "mldsa_{}_verify_test.json",
-                $parameter_set
-            ));
-            let katfile = File::open(katfile_path).expect("Could not open KAT file.");
-            let reader = BufReader::new(katfile);
+            let katfile_serialized = VerifyTest::$test_name();
 
-            let katfile_serialized: VerifySchema =
-                serde_json::from_reader(reader).expect("Could not deserialize KAT file.");
-
-            for test_group in katfile_serialized.test_groups {
-                let verification_key_bytes = hex::decode(test_group.public_key).unwrap();
+            for test_group in katfile_serialized.schema.test_groups {
+                let verification_key_bytes = test_group.public_key;
                 if verification_key_bytes.len() != <$verification_key_object>::len() {
                     // If the verification key size in the KAT does not match the
                     // verification key size in our implementation, ensure that the KAT
@@ -49,9 +36,9 @@ macro_rules! wycheproof_verify_test {
                     MLDSAVerificationKey::new(verification_key_bytes.try_into().unwrap());
 
                 for test in test_group.tests {
-                    let message = hex::decode(test.msg).unwrap();
-                    let context = hex::decode(test.ctx).unwrap();
-                    let signature_bytes = hex::decode(test.sig).unwrap();
+                    let message = test.msg;
+                    let context = test.ctx;
+                    let signature_bytes = test.sig;
                     if signature_bytes.len() != <$signature_object>::len() {
                         // If the signature size in the KAT does not match the
                         // signature size in our implementation, ensure that the KAT
@@ -67,8 +54,8 @@ macro_rules! wycheproof_verify_test {
                         $verify(&verification_key, &message, &context, &signature);
 
                     match test.result {
-                        Result::Valid => assert!(verification_result.is_ok()),
-                        Result::Invalid => assert!(verification_result.is_err()),
+                        VerifyResult::Valid => assert!(verification_result.is_ok()),
+                        VerifyResult::Invalid => assert!(verification_result.is_err()),
                     }
                 }
             }
@@ -80,7 +67,7 @@ macro_rules! wycheproof_verify_test {
 
 wycheproof_verify_test!(
     wycheproof_verify_44,
-    44,
+    verify_44,
     ml_dsa_44::MLDSA44VerificationKey,
     ml_dsa_44::MLDSA44Signature,
     ml_dsa_44::verify
@@ -88,7 +75,7 @@ wycheproof_verify_test!(
 
 wycheproof_verify_test!(
     wycheproof_verify_44_portable,
-    44,
+    verify_44,
     ml_dsa_44::MLDSA44VerificationKey,
     ml_dsa_44::MLDSA44Signature,
     ml_dsa_44::portable::verify
@@ -97,7 +84,7 @@ wycheproof_verify_test!(
 #[cfg(feature = "simd128")]
 wycheproof_verify_test!(
     wycheproof_verify_44_simd128,
-    44,
+    verify_44,
     ml_dsa_44::MLDSA44VerificationKey,
     ml_dsa_44::MLDSA44Signature,
     ml_dsa_44::neon::verify
@@ -106,7 +93,7 @@ wycheproof_verify_test!(
 #[cfg(feature = "simd256")]
 wycheproof_verify_test!(
     wycheproof_verify_44_simd256,
-    44,
+    verify_44,
     ml_dsa_44::MLDSA44VerificationKey,
     ml_dsa_44::MLDSA44Signature,
     ml_dsa_44::avx2::verify
@@ -116,7 +103,7 @@ wycheproof_verify_test!(
 
 wycheproof_verify_test!(
     wycheproof_verify_65,
-    65,
+    verify_65,
     ml_dsa_65::MLDSA65VerificationKey,
     ml_dsa_65::MLDSA65Signature,
     ml_dsa_65::verify
@@ -124,7 +111,7 @@ wycheproof_verify_test!(
 
 wycheproof_verify_test!(
     wycheproof_verify_65_portable,
-    65,
+    verify_65,
     ml_dsa_65::MLDSA65VerificationKey,
     ml_dsa_65::MLDSA65Signature,
     ml_dsa_65::portable::verify
@@ -133,7 +120,7 @@ wycheproof_verify_test!(
 #[cfg(feature = "simd128")]
 wycheproof_verify_test!(
     wycheproof_verify_65_simd128,
-    65,
+    verify_65,
     ml_dsa_65::MLDSA65VerificationKey,
     ml_dsa_65::MLDSA65Signature,
     ml_dsa_65::neon::verify
@@ -142,7 +129,7 @@ wycheproof_verify_test!(
 #[cfg(feature = "simd256")]
 wycheproof_verify_test!(
     wycheproof_verify_65_simd256,
-    65,
+    verify_65,
     ml_dsa_65::MLDSA65VerificationKey,
     ml_dsa_65::MLDSA65Signature,
     ml_dsa_65::avx2::verify
@@ -152,7 +139,7 @@ wycheproof_verify_test!(
 
 wycheproof_verify_test!(
     wycheproof_verify_87,
-    87,
+    verify_87,
     ml_dsa_87::MLDSA87VerificationKey,
     ml_dsa_87::MLDSA87Signature,
     ml_dsa_87::verify
@@ -160,7 +147,7 @@ wycheproof_verify_test!(
 
 wycheproof_verify_test!(
     wycheproof_verify_87_portable,
-    87,
+    verify_87,
     ml_dsa_87::MLDSA87VerificationKey,
     ml_dsa_87::MLDSA87Signature,
     ml_dsa_87::portable::verify
@@ -169,7 +156,7 @@ wycheproof_verify_test!(
 #[cfg(feature = "simd128")]
 wycheproof_verify_test!(
     wycheproof_verify_87_simd128,
-    87,
+    verify_87,
     ml_dsa_87::MLDSA87VerificationKey,
     ml_dsa_87::MLDSA87Signature,
     ml_dsa_87::neon::verify
@@ -178,7 +165,7 @@ wycheproof_verify_test!(
 #[cfg(feature = "simd256")]
 wycheproof_verify_test!(
     wycheproof_verify_87_simd256,
-    87,
+    verify_87,
     ml_dsa_87::MLDSA87VerificationKey,
     ml_dsa_87::MLDSA87Signature,
     ml_dsa_87::avx2::verify
