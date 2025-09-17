@@ -1,3 +1,21 @@
+//! Wycheproof ML-DSA Known Answer Tests
+//!
+//! The JSON files for ML-DSA were taken from <https://github.com/C2SP/wycheproof>, as of commit [b51abcfb8dafa5316791e57cf48512a2147d9671](https://github.com/C2SP/wycheproof/tree/b51abcfb8dafa5316791e57cf48512a2147d9671)
+//!
+//! ### Example usage
+//! ```rust
+//! use libcrux_kats::wycheproof::mldsa::{ParameterSet, MlDsaSignTests};
+//!
+//! // load the tests for the ML-DSA-44 parameter set
+//! let signing_tests = MlDsaSignTests::load(ParameterSet::MlDsa44);
+//!
+//! for test_group in signing_tests.test_groups {
+//!     for test in test_group.tests {
+//!         // ...
+//!     }
+//! }
+//! ```
+
 pub mod sign_schema;
 
 pub mod verify_schema;
