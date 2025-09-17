@@ -1,6 +1,10 @@
 use rand::CryptoRng;
 
-use crate::handshake::{ciphersuite::{InitiatorCiphersuite, ResponderCiphersuite}, dhkem::DHPublicKey, initiator::query::QueryInitiator};
+use crate::handshake::{
+    ciphersuite::{InitiatorCiphersuite, ResponderCiphersuite},
+    dhkem::DHPublicKey,
+    initiator::query::QueryInitiator,
+};
 
 use super::{
     initiator::registration::RegistrationInitiator,
@@ -76,7 +80,6 @@ impl<'a, Rng: CryptoRng> BuilderContext<'a, Rng> {
         self,
         peer_longterm_ecdh_pk: &'a DHPublicKey,
     ) -> Result<QueryInitiator<'a>, Error> {
-
         QueryInitiator::new(
             peer_longterm_ecdh_pk,
             self.context,

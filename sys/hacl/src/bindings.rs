@@ -250,7 +250,7 @@ pub struct Hacl_Hash_SHA3_state_t_s {
 pub type Hacl_Hash_SHA3_state_t = Hacl_Hash_SHA3_state_t_s;
 unsafe extern "C" {
     pub fn Hacl_Hash_SHA3_get_alg(s: *mut Hacl_Hash_SHA3_state_t)
-    -> Spec_Hash_Definitions_hash_alg;
+        -> Spec_Hash_Definitions_hash_alg;
 }
 unsafe extern "C" {
     pub fn Hacl_Hash_SHA3_malloc(a: Spec_Hash_Definitions_hash_alg) -> *mut Hacl_Hash_SHA3_state_t;

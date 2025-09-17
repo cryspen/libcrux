@@ -168,9 +168,8 @@ impl<'a, Rng: CryptoRng, Ciphersuite: InitiatorCiphersuite> Channel<Error>
         };
 
         // Deserialize the message.
-        let responder_msg =
-            HandshakeMessage::tls_deserialize(&mut Cursor::new(&message_bytes))
-                .map_err(Error::Deserialize)?;
+        let responder_msg = HandshakeMessage::tls_deserialize(&mut Cursor::new(&message_bytes))
+            .map_err(Error::Deserialize)?;
         let bytes_deserialized = responder_msg.tls_serialized_len();
 
         // Derive K2
