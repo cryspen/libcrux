@@ -16,17 +16,17 @@ use serde::{Deserialize, Serialize};
 #[derive(PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct MlDsaVerifyTests {
-    algorithm: String,
+    pub algorithm: String,
 
-    generator_version: String,
+    pub generator_version: String,
 
-    header: Vec<String>,
+    pub header: Vec<String>,
 
-    notes: Notes,
+    pub notes: Notes,
 
-    number_of_tests: i64,
+    pub number_of_tests: i64,
 
-    schema: String,
+    pub schema: String,
 
     pub test_groups: Vec<TestGroup>,
 }
@@ -34,38 +34,38 @@ pub struct MlDsaVerifyTests {
 #[derive(PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "PascalCase")]
 pub struct Notes {
-    boundary_condition: BoundaryCondition,
+    pub boundary_condition: BoundaryCondition,
 
-    incorrect_public_key_length: BoundaryCondition,
+    pub incorrect_public_key_length: BoundaryCondition,
 
-    incorrect_signature_length: BoundaryCondition,
+    pub incorrect_signature_length: BoundaryCondition,
 
-    invalid_hints_encoding: BoundaryCondition,
+    pub invalid_hints_encoding: BoundaryCondition,
 
-    invalid_private_key: BoundaryCondition,
+    pub invalid_private_key: BoundaryCondition,
 
-    many_steps: BoundaryCondition,
+    pub many_steps: BoundaryCondition,
 
-    modified_signature: BoundaryCondition,
+    pub modified_signature: BoundaryCondition,
 
-    valid_signature: BoundaryCondition,
+    pub valid_signature: BoundaryCondition,
 
-    zero_public_key: BoundaryCondition,
+    pub zero_public_key: BoundaryCondition,
 }
 
 #[derive(PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct BoundaryCondition {
-    bug_type: String,
+    pub bug_type: String,
 
-    description: String,
+    pub description: String,
 }
 
 #[derive(PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct TestGroup {
     #[serde(rename = "type")]
-    test_group_type: Type,
+    pub test_group_type: Type,
 
     #[serde(with = "hex::serde")]
     pub public_key: Vec<u8>,
