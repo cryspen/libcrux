@@ -7,7 +7,7 @@
 // This set of test vectors does not cover the pre-hashed variants of
 // ML-DSA.
 
-use libcrux_kats::wycheproof::mldsa_sign::*;
+use libcrux_kats::wycheproof::mldsa::{sign_schema::*, MlDsaSignTest};
 use libcrux_ml_dsa::{
     ml_dsa_44::{self, MLDSA44SigningKey},
     ml_dsa_65::{self, MLDSA65SigningKey},
