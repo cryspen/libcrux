@@ -4,21 +4,19 @@
 // extern crate serde_derive;
 // extern crate serde_json;
 //
-// use generated_module::verify_schema;
+// use generated_module::sign_schema;
 //
 // fn main() {
 //     let json = r#"{"answer": 42}"#;
-//     let model: verify_schema = serde_json::from_str(&json).unwrap();
+//     let model: sign_schema = serde_json::from_str(&json).unwrap();
 // }
 
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 
 #[derive(PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct VerifySchema {
+pub struct SignSchema {
     algorithm: String,
-
-    generator_version: String,
 
     header: Vec<String>,
 
@@ -28,7 +26,7 @@ pub struct VerifySchema {
 
     schema: String,
 
-    test_groups: Vec<TestGroup>,
+    pub test_groups: Vec<TestGroup>,
 }
 
 #[derive(PartialEq, Serialize, Deserialize)]
@@ -36,21 +34,13 @@ pub struct VerifySchema {
 pub struct Notes {
     boundary_condition: BoundaryCondition,
 
-    incorrect_public_key_length: BoundaryCondition,
-
-    incorrect_signature_length: BoundaryCondition,
-
-    invalid_hints_encoding: BoundaryCondition,
+    incorrect_private_key_length: BoundaryCondition,
 
     invalid_private_key: BoundaryCondition,
 
     many_steps: BoundaryCondition,
 
-    modified_signature: BoundaryCondition,
-
     valid_signature: BoundaryCondition,
-
-    zero_public_key: BoundaryCondition,
 }
 
 #[derive(PartialEq, Serialize, Deserialize)]
@@ -63,19 +53,29 @@ pub struct BoundaryCondition {
 
 #[derive(PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
+pub struct Source {
+    name: String,
+    version: String,
+}
+
+#[derive(PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct TestGroup {
     #[serde(rename = "type")]
     test_group_type: Type,
 
-    public_key: String,
+    #[serde(with = "hex::serde")]
+    pub private_key: Vec<u8>,
 
-    tests: Vec<Test>,
+    pub tests: Vec<Test>,
+
+    source: Source,
 }
 
 #[derive(PartialEq, Serialize, Deserialize)]
 pub enum Type {
-    #[serde(rename = "MlDsaVerify")]
-    MlDsaVerify,
+    #[serde(rename = "MlDsaSign")]
+    MlDsaSign,
 }
 
 #[derive(PartialEq, Serialize, Deserialize)]
@@ -85,16 +85,19 @@ pub struct Test {
 
     comment: String,
 
-    msg: String,
+    #[serde(with = "hex::serde")]
+    pub msg: Vec<u8>,
 
     #[serde(default)]
-    ctx: String,
+    #[serde(with = "hex::serde")]
+    pub ctx: Vec<u8>,
 
-    sig: String,
+    #[serde(with = "hex::serde")]
+    pub sig: Vec<u8>,
 
-    result: Result,
+    pub result: SignResult,
 
-    flags: Vec<Flag>,
+    pub flags: Vec<Flag>,
 }
 
 #[derive(PartialEq, Serialize, Deserialize)]
@@ -102,37 +105,25 @@ pub enum Flag {
     #[serde(rename = "BoundaryCondition")]
     BoundaryCondition,
 
-    #[serde(rename = "IncorrectPublicKeyLength")]
-    IncorrectPublicKeyLength,
-
-    #[serde(rename = "IncorrectSignatureLength")]
-    IncorrectSignatureLength,
-
-    #[serde(rename = "InvalidHintsEncoding")]
-    InvalidHintsEncoding,
+    #[serde(rename = "IncorrectPrivateKeyLength")]
+    IncorrectPrivateKeyLength,
 
     #[serde(rename = "InvalidPrivateKey")]
     InvalidPrivateKey,
 
     #[serde(rename = "InvalidContext")]
     InvalidContext,
-    
+
     #[serde(rename = "ManySteps")]
     ManySteps,
 
-    #[serde(rename = "ModifiedSignature")]
-    ModifiedSignature,
-
     #[serde(rename = "ValidSignature")]
     ValidSignature,
-
-    #[serde(rename = "ZeroPublicKey")]
-    ZeroPublicKey,
 }
 
 #[derive(PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
-pub enum Result {
+pub enum SignResult {
     Invalid,
 
     Valid,
