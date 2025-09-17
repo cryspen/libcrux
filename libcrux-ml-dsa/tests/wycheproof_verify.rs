@@ -8,13 +8,13 @@
 
 use libcrux_ml_dsa::{ml_dsa_44, ml_dsa_65, ml_dsa_87, MLDSASignature, MLDSAVerificationKey};
 
-use libcrux_kats::wycheproof::mldsa::{verify_schema::*, MlDsaVerifyTests};
+use libcrux_kats::wycheproof::mldsa::{verify_schema::*, MlDsaVerifyTests, ParameterSet};
 
 macro_rules! wycheproof_verify_test {
-    ($name:ident, $test_name:ident, $verification_key_object:ty, $signature_object:ty, $verify:expr) => {
+    ($name:ident, $test_name:expr, $verification_key_object:ty, $signature_object:ty, $verify:expr) => {
         #[test]
         fn $name() {
-            let katfile_serialized = MlDsaVerifyTests::$test_name();
+            let katfile_serialized = MlDsaVerifyTests::load($test_name);
 
             for test_group in katfile_serialized.test_groups {
                 let verification_key_bytes = test_group.public_key;
@@ -66,7 +66,7 @@ macro_rules! wycheproof_verify_test {
 
 wycheproof_verify_test!(
     wycheproof_verify_44,
-    verify_44,
+    ParameterSet::MlDsa44,
     ml_dsa_44::MLDSA44VerificationKey,
     ml_dsa_44::MLDSA44Signature,
     ml_dsa_44::verify
@@ -74,7 +74,7 @@ wycheproof_verify_test!(
 
 wycheproof_verify_test!(
     wycheproof_verify_44_portable,
-    verify_44,
+    ParameterSet::MlDsa44,
     ml_dsa_44::MLDSA44VerificationKey,
     ml_dsa_44::MLDSA44Signature,
     ml_dsa_44::portable::verify
@@ -83,7 +83,7 @@ wycheproof_verify_test!(
 #[cfg(feature = "simd128")]
 wycheproof_verify_test!(
     wycheproof_verify_44_simd128,
-    verify_44,
+    ParameterSet::MlDsa44,
     ml_dsa_44::MLDSA44VerificationKey,
     ml_dsa_44::MLDSA44Signature,
     ml_dsa_44::neon::verify
@@ -92,7 +92,7 @@ wycheproof_verify_test!(
 #[cfg(feature = "simd256")]
 wycheproof_verify_test!(
     wycheproof_verify_44_simd256,
-    verify_44,
+    ParameterSet::MlDsa44,
     ml_dsa_44::MLDSA44VerificationKey,
     ml_dsa_44::MLDSA44Signature,
     ml_dsa_44::avx2::verify
@@ -102,7 +102,7 @@ wycheproof_verify_test!(
 
 wycheproof_verify_test!(
     wycheproof_verify_65,
-    verify_65,
+    ParameterSet::MlDsa65,
     ml_dsa_65::MLDSA65VerificationKey,
     ml_dsa_65::MLDSA65Signature,
     ml_dsa_65::verify
@@ -110,7 +110,7 @@ wycheproof_verify_test!(
 
 wycheproof_verify_test!(
     wycheproof_verify_65_portable,
-    verify_65,
+    ParameterSet::MlDsa65,
     ml_dsa_65::MLDSA65VerificationKey,
     ml_dsa_65::MLDSA65Signature,
     ml_dsa_65::portable::verify
@@ -119,7 +119,7 @@ wycheproof_verify_test!(
 #[cfg(feature = "simd128")]
 wycheproof_verify_test!(
     wycheproof_verify_65_simd128,
-    verify_65,
+    ParameterSet::MlDsa65,
     ml_dsa_65::MLDSA65VerificationKey,
     ml_dsa_65::MLDSA65Signature,
     ml_dsa_65::neon::verify
@@ -128,7 +128,7 @@ wycheproof_verify_test!(
 #[cfg(feature = "simd256")]
 wycheproof_verify_test!(
     wycheproof_verify_65_simd256,
-    verify_65,
+    ParameterSet::MlDsa65,
     ml_dsa_65::MLDSA65VerificationKey,
     ml_dsa_65::MLDSA65Signature,
     ml_dsa_65::avx2::verify
@@ -138,7 +138,7 @@ wycheproof_verify_test!(
 
 wycheproof_verify_test!(
     wycheproof_verify_87,
-    verify_87,
+    ParameterSet::MlDsa87,
     ml_dsa_87::MLDSA87VerificationKey,
     ml_dsa_87::MLDSA87Signature,
     ml_dsa_87::verify
@@ -146,7 +146,7 @@ wycheproof_verify_test!(
 
 wycheproof_verify_test!(
     wycheproof_verify_87_portable,
-    verify_87,
+    ParameterSet::MlDsa87,
     ml_dsa_87::MLDSA87VerificationKey,
     ml_dsa_87::MLDSA87Signature,
     ml_dsa_87::portable::verify
@@ -155,7 +155,7 @@ wycheproof_verify_test!(
 #[cfg(feature = "simd128")]
 wycheproof_verify_test!(
     wycheproof_verify_87_simd128,
-    verify_87,
+    ParameterSet::MlDsa87,
     ml_dsa_87::MLDSA87VerificationKey,
     ml_dsa_87::MLDSA87Signature,
     ml_dsa_87::neon::verify
@@ -164,7 +164,7 @@ wycheproof_verify_test!(
 #[cfg(feature = "simd256")]
 wycheproof_verify_test!(
     wycheproof_verify_87_simd256,
-    verify_87,
+    ParameterSet::MlDsa87,
     ml_dsa_87::MLDSA87VerificationKey,
     ml_dsa_87::MLDSA87Signature,
     ml_dsa_87::avx2::verify
