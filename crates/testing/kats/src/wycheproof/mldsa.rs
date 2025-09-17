@@ -21,9 +21,7 @@ macro_rules! impl_sign_noseed {
                     $parameter_set,
                     "_sign_noseed_test.json"
                 ));
-                let schema = serde_json::from_str(data).expect("Could not deserialize KAT file.");
-
-                schema
+                serde_json::from_str(data).expect("Could not deserialize KAT file.")
             }
         }
     };
@@ -42,9 +40,7 @@ macro_rules! impl_verify {
                     $parameter_set,
                     "_verify_test.json"
                 ));
-                let schema = serde_json::from_str(data).expect("Could not deserialize KAT file.");
-
-                schema
+                serde_json::from_str(data).expect("Could not deserialize KAT file.")
             }
         }
     };
