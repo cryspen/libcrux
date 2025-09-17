@@ -1,20 +1,8 @@
-// Example code that deserializes and serializes the model.
-// extern crate serde;
-// #[macro_use]
-// extern crate serde_derive;
-// extern crate serde_json;
-//
-// use generated_module::sign_schema;
-//
-// fn main() {
-//     let json = r#"{"answer": 42}"#;
-//     let model: sign_schema = serde_json::from_str(&json).unwrap();
-// }
-
 use serde::{Deserialize, Serialize};
 
 #[derive(PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
+/// Sign tests for ML-DSA (`noseed`)
 pub struct MlDsaSignTests {
     pub algorithm: String,
 

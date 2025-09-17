@@ -1,20 +1,8 @@
-// Example code that deserializes and serializes the model.
-// extern crate serde;
-// #[macro_use]
-// extern crate serde_derive;
-// extern crate serde_json;
-//
-// use generated_module::verify_schema;
-//
-// fn main() {
-//     let json = r#"{"answer": 42}"#;
-//     let model: verify_schema = serde_json::from_str(&json).unwrap();
-// }
-
 use serde::{Deserialize, Serialize};
 
 #[derive(PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
+/// Verify tests for ML-DSA
 pub struct MlDsaVerifyTests {
     pub algorithm: String,
 

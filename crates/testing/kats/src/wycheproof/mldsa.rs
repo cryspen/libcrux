@@ -5,7 +5,7 @@ pub mod verify_schema;
 pub use sign_schema::MlDsaSignTests;
 pub use verify_schema::MlDsaVerifyTests;
 
-// TODO: name
+/// Parameter sets for ML-DSA
 pub enum ParameterSet {
     MlDsa44,
     MlDsa65,
@@ -55,6 +55,7 @@ impl_verify!(verify_65, 65);
 impl_verify!(verify_87, 87);
 
 impl MlDsaSignTests {
+    /// Load the [`MlDsaSignTests`] for the given [`ParameterSet`].
     pub fn load(parameter_set: ParameterSet) -> Self {
         match parameter_set {
             ParameterSet::MlDsa44 => Self::sign_44(),
@@ -64,6 +65,7 @@ impl MlDsaSignTests {
     }
 }
 impl MlDsaVerifyTests {
+    /// Load the [`MlDsaVerifyTests`] for the given [`ParameterSet`].
     pub fn load(parameter_set: ParameterSet) -> Self {
         match parameter_set {
             ParameterSet::MlDsa44 => Self::verify_44(),
