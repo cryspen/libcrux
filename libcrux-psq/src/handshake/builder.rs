@@ -3,8 +3,7 @@ use rand::CryptoRng;
 use crate::handshake::ciphersuite::{InitiatorCiphersuite, ResponderCiphersuite};
 
 use super::{
-    dhkem::{DHKeyPair, DHPublicKey},
-    initiator::{query::QueryInitiator, registration::RegistrationInitiator},
+    initiator::registration::RegistrationInitiator,
     // pqkem::{PQKeyPair, PQPublicKey},
     responder::Responder,
     HandshakeError as Error,

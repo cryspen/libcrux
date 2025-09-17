@@ -6,6 +6,7 @@ use tls_codec::{Deserialize, Serialize, Size, VLByteSlice};
 use crate::{
     aead::AEADKey,
     handshake::{
+        ciphersuite::InitiatorX25519ChachaPolyHkdfSha256,
         derive_k0,
         dhkem::{DHKeyPair, DHPrivateKey, DHPublicKey, DHSharedSecret},
         responder::ResponderQueryPayload,
@@ -71,7 +72,7 @@ impl<'a> QueryInitiator<'a> {
 
     fn read_response(
         &self,
-        responder_msg: &HandshakeMessage<()>,
+        responder_msg: &HandshakeMessage<InitiatorX25519ChachaPolyHkdfSha256>,
     ) -> Result<ResponderQueryPayload, Error> {
         let tx2 = tx2(&self.tx0, &responder_msg.pk)?;
 
@@ -94,10 +95,10 @@ impl<'a> QueryInitiator<'a> {
 
 impl<'a> Channel<Error> for QueryInitiator<'a> {
     fn write_message(&mut self, payload: &[u8], out: &mut [u8]) -> Result<usize, Error> {
-        let outer_payload = InitiatorOuterPayloadOut::Query(VLByteSlice(payload));
+        let outer_payload = InitiatorOuterPayloadOut::<InitiatorX25519ChachaPolyHkdfSha256>::Query(VLByteSlice(payload));
         let (ciphertext, tag) = self.k0.serialize_encrypt(&outer_payload, self.outer_aad)?;
 
-        let msg = HandshakeMessageOut {
+        let msg = HandshakeMessageOut::<InitiatorX25519ChachaPolyHkdfSha256> {
             pk: &self.initiator_ephemeral_keys.pk,
             ciphertext: VLByteSlice(&ciphertext),
             tag,
@@ -114,8 +115,10 @@ impl<'a> Channel<Error> for QueryInitiator<'a> {
         message_bytes: &[u8],
         out: &mut [u8],
     ) -> Result<(usize, usize), Error> {
-        let msg = HandshakeMessage::tls_deserialize(&mut Cursor::new(message_bytes))
-            .map_err(Error::Deserialize)?;
+        let msg = HandshakeMessage::<InitiatorX25519ChachaPolyHkdfSha256>::tls_deserialize(
+            &mut Cursor::new(message_bytes),
+        )
+        .map_err(Error::Deserialize)?;
 
         let result = self.read_response(&msg)?;
         let out_bytes_written = write_output(result.0.as_slice(), out)?;

@@ -1,11 +1,11 @@
-use tls_codec::{Serialize, SerializeBytes, TlsSerialize, TlsSerializeBytes, TlsSize};
+use tls_codec::{Serialize, SerializeBytes, Size, TlsSerialize, TlsSerializeBytes, TlsSize};
 
 pub const TX0_DOMAIN_SEP: u8 = 0;
 pub const TX1_DOMAIN_SEP: u8 = 1;
 pub const TX2_DOMAIN_SEP: u8 = 2;
 
 use super::dhkem::DHPublicKey;
-use crate::handshake::HandshakeError as Error;
+use crate::handshake::{ciphersuite::CiphersuiteBase, HandshakeError as Error};
 use libcrux_sha2::{Digest, SHA256_LENGTH};
 
 /// The initial transcript hash.
@@ -55,10 +55,10 @@ pub(crate) fn tx0(
     initiator_pk: &DHPublicKey,
 ) -> Result<Transcript, Error> {
     #[derive(TlsSerialize, TlsSize)]
-    struct Transcript0Inputs<'a, 'b, 'c> {
+    struct Transcript0Inputs<'a> {
         context: &'a [u8],
-        responder_pk: &'b DHPublicKey,
-        initiator_pk: &'c DHPublicKey,
+        responder_pk: &'a DHPublicKey,
+        initiator_pk: &'a DHPublicKey,
     }
 
     Transcript::new(&Transcript0Inputs {
@@ -68,23 +68,27 @@ pub(crate) fn tx0(
     })
 }
 
-// tx1 = hash(1 | tx0 | g^c | pkS | encap(pkS, SS))
-pub(crate) fn tx1<E, P: Serialize>(
+// tx1 = hash(1 | tx0 | g^c | [pkS] | [encap(pkS, SS)])
+pub(crate) fn tx1<Ciphersuite: CiphersuiteBase>(
     tx0: &Transcript,
     initiator_longterm_pk: &DHPublicKey,
-    responder_pq_pk: Option<&P>,
-    pq_encaps: Option<&E>,
+    responder_pq_pk: Option<&Ciphersuite::EncapsulationKey>,
+    pq_encaps: Option<&Ciphersuite::Ciphertext>,
 ) -> Result<Transcript, Error> {
     #[derive(TlsSerialize, TlsSize)]
-    struct Transcript1Inputs<'a, E, P: Serialize> {
+    struct Transcript1Inputs<'a, Ciphersuite: CiphersuiteBase>
+    where
+        &'a <Ciphersuite as CiphersuiteBase>::EncapsulationKey: Serialize + Size,
+        &'a <Ciphersuite as CiphersuiteBase>::Ciphertext: Serialize + Size,
+    {
         initiator_longterm_pk: &'a DHPublicKey,
-        responder_pq_pk: Option<&'a P>,
-        pq_encaps: Option<&'a E>,
+        responder_pq_pk: Option<&'a Ciphersuite::EncapsulationKey>,
+        pq_encaps: Option<&'a Ciphersuite::Ciphertext>,
     }
 
     Transcript::add_hash::<TX1_DOMAIN_SEP>(
         Some(tx0),
-        &Transcript1Inputs {
+        &Transcript1Inputs::<Ciphersuite> {
             initiator_longterm_pk,
             pq_encaps,
             responder_pq_pk,

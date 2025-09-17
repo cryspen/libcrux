@@ -8,7 +8,6 @@ mod transport;
 use std::io::Cursor;
 
 use libcrux_hkdf::Algorithm;
-use libcrux_traits::kem::KEM;
 use session_key::{derive_session_key, SessionKey, SESSION_ID_LENGTH};
 use tls_codec::{
     Deserialize, Serialize, SerializeBytes, Size, TlsDeserialize, TlsSerialize, TlsSize,
@@ -17,7 +16,7 @@ use transport::Transport;
 
 use crate::{
     aead::{AEADError, AEADKey},
-    handshake::{dhkem::DHPublicKey, transcript::Transcript},
+    handshake::{ciphersuite::CiphersuiteBase, dhkem::DHPublicKey, transcript::Transcript},
 };
 
 /// Session related errors
@@ -101,26 +100,23 @@ pub struct Session {
 }
 
 // pkBinder = KDF(skCS, g^c | g^s | [pkS])
-fn derive_pk_binder<T>(
+fn derive_pk_binder<T: CiphersuiteBase>(
     key: &SessionKey,
     initiator_ecdh_pk: &DHPublicKey,
     responder_ecdh_pk: &DHPublicKey,
-    responder_pq_pk: Option<&T>,
-) -> Result<[u8; PK_BINDER_LEN], SessionError>
-where
-    Option<&T>: Serialize + Size,
-{
+    responder_pq_pk: Option<&T::EncapsulationKey>,
+) -> Result<[u8; PK_BINDER_LEN], SessionError> {
     #[derive(TlsSerialize, TlsSize)]
-    struct PkBinderInfo<'a, T>
+    struct PkBinderInfo<'a, T: CiphersuiteBase>
     where
-        &'a T: Serialize + Size,
+        &'a <T as CiphersuiteBase>::EncapsulationKey: Size + Serialize,
     {
         initiator_ecdh_pk: &'a DHPublicKey,
         responder_ecdh_pk: &'a DHPublicKey,
-        responder_pq_pk: Option<&'a T>,
+        responder_pq_pk: Option<&'a T::EncapsulationKey>,
     }
 
-    let info = PkBinderInfo {
+    let info = PkBinderInfo::<T> {
         initiator_ecdh_pk,
         responder_ecdh_pk,
         responder_pq_pk,
@@ -148,16 +144,16 @@ impl Session {
     /// This will derive the long-term session key, and compute a binder tying
     /// the session key to any long-term public key material that was used during the
     /// handshake.
-    pub(crate) fn new<T: Serialize>(
+    pub(crate) fn new<T: CiphersuiteBase>(
         tx2: Transcript,
         k2: AEADKey,
         initiator_ecdh_pk: &DHPublicKey,
         responder_ecdh_pk: &DHPublicKey,
-        responder_pq_pk: Option<&T>,
+        responder_pq_pk: Option<&T::EncapsulationKey>,
         is_initiator: bool,
     ) -> Result<Self, SessionError> {
         let session_key = derive_session_key(k2, tx2)?;
-        let pk_binder = derive_pk_binder(
+        let pk_binder = derive_pk_binder::<T>(
             &session_key,
             initiator_ecdh_pk,
             responder_ecdh_pk,
@@ -193,20 +189,20 @@ impl Session {
     /// session key.
     // XXX: Use `tls_codec::conditional_deserializable` to implement
     // the validation.
-    pub fn deserialize<T: Deserialize + Serialize>(
+    pub fn deserialize<T: CiphersuiteBase>(
         bytes: &[u8],
         initiator_ecdh_pk: &DHPublicKey,
         responder_ecdh_pk: &DHPublicKey,
-        responder_pq_pk: Option<T>,
+        responder_pq_pk: Option<&T::EncapsulationKey>,
     ) -> Result<Self, SessionError> {
         let session =
             Session::tls_deserialize(&mut Cursor::new(bytes)).map_err(SessionError::Deserialize)?;
 
-        if derive_pk_binder(
+        if derive_pk_binder::<T>(
             &session.session_key,
             initiator_ecdh_pk,
             responder_ecdh_pk,
-            responder_pq_pk.as_ref(),
+            responder_pq_pk,
         )? == session.pk_binder
         {
             Ok(session)

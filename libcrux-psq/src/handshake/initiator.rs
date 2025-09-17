@@ -1,4 +1,6 @@
-use tls_codec::{Serialize, TlsDeserialize, TlsSerialize, TlsSize, VLByteSlice, VLBytes};
+use tls_codec::{TlsDeserialize, TlsSerialize, TlsSize, VLByteSlice, VLBytes};
+
+use crate::handshake::ciphersuite::CiphersuiteBase;
 
 use super::HandshakeMessageOut;
 
@@ -7,9 +9,9 @@ pub mod registration;
 
 #[derive(TlsSerialize, TlsSize)]
 #[repr(u8)]
-pub enum InitiatorOuterPayloadOut<'a, T: Serialize> {
+pub enum InitiatorOuterPayloadOut<'a, Ciphersuite: CiphersuiteBase> {
     Query(VLByteSlice<'a>),
-    Registration(HandshakeMessageOut<'a, T>),
+    Registration(HandshakeMessageOut<'a, Ciphersuite>),
 }
 
 #[derive(TlsDeserialize, TlsSize)]
