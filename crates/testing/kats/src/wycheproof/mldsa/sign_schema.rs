@@ -16,15 +16,15 @@ use serde::{Deserialize, Serialize};
 #[derive(PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct MlDsaSignTests {
-    algorithm: String,
+    pub algorithm: String,
 
-    header: Vec<String>,
+    pub header: Vec<String>,
 
-    notes: Notes,
+    pub notes: Notes,
 
-    number_of_tests: i64,
+    pub number_of_tests: i64,
 
-    schema: String,
+    pub schema: String,
 
     pub test_groups: Vec<TestGroup>,
 }
@@ -32,44 +32,44 @@ pub struct MlDsaSignTests {
 #[derive(PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "PascalCase")]
 pub struct Notes {
-    boundary_condition: BoundaryCondition,
+    pub boundary_condition: BoundaryCondition,
 
-    incorrect_private_key_length: BoundaryCondition,
+    pub incorrect_private_key_length: BoundaryCondition,
 
-    invalid_private_key: BoundaryCondition,
+    pub invalid_private_key: BoundaryCondition,
 
-    many_steps: BoundaryCondition,
+    pub many_steps: BoundaryCondition,
 
-    valid_signature: BoundaryCondition,
+    pub valid_signature: BoundaryCondition,
 }
 
 #[derive(PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct BoundaryCondition {
-    bug_type: String,
+    pub bug_type: String,
 
-    description: String,
+    pub description: String,
 }
 
 #[derive(PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Source {
-    name: String,
-    version: String,
+    pub name: String,
+    pub version: String,
 }
 
 #[derive(PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct TestGroup {
     #[serde(rename = "type")]
-    test_group_type: Type,
+    pub test_group_type: Type,
 
     #[serde(with = "hex::serde")]
     pub private_key: Vec<u8>,
 
     pub tests: Vec<Test>,
 
-    source: Source,
+    pub source: Source,
 }
 
 #[derive(PartialEq, Serialize, Deserialize)]
@@ -81,9 +81,9 @@ pub enum Type {
 #[derive(PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Test {
-    tc_id: i64,
+    pub tc_id: i64,
 
-    comment: String,
+    pub comment: String,
 
     #[serde(with = "hex::serde")]
     pub msg: Vec<u8>,
