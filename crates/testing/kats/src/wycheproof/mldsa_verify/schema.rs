@@ -15,7 +15,7 @@ use serde::{Deserialize, Serialize};
 
 #[derive(PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct VerifySchema {
+pub struct MlDsaVerifySchema {
     algorithm: String,
 
     generator_version: String,

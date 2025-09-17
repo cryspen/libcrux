@@ -15,7 +15,7 @@ use serde::{Deserialize, Serialize};
 
 #[derive(PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct SignSchema {
+pub struct MlDsaSignSchema {
     algorithm: String,
 
     header: Vec<String>,

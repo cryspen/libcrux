@@ -15,7 +15,7 @@ macro_rules! wycheproof_verify_test {
     ($name:ident, $test_name:ident, $verification_key_object:ty, $signature_object:ty, $verify:expr) => {
         #[test]
         fn $name() {
-            let katfile_serialized = VerifyTest::$test_name();
+            let katfile_serialized = MlDsaVerifyTest::$test_name();
 
             for test_group in katfile_serialized.schema.test_groups {
                 let verification_key_bytes = test_group.public_key;

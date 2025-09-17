@@ -19,7 +19,7 @@ macro_rules! wycheproof_sign_test {
     ($name:ident, $test_name:ident, $signing_key_type:ty, $sign:expr) => {
         #[test]
         fn $name() {
-            let katfile_serialized = SignTest::$test_name();
+            let katfile_serialized = MlDsaSignTest::$test_name();
 
             let signing_randomness = [0u8; 32];
 
