@@ -163,7 +163,7 @@ jobs:
 
   merge:
     permissions:
-      issues: write
+      pull-requests: write
     runs-on: ubuntu-latest
     needs: [bench-mlkem, bench-mldsa]
     steps:
@@ -254,7 +254,7 @@ jobs:
           BASE_COMMIT_URL="${{ github.server_url }}/${{ github.repository }}/commit/${BASE_HASH}"
 
           cat >"$GITHUB_OUTPUT" <<ACTUALEOF
-          body<<EOF
+          comment_body<<EOF
           *beep boop, I am the benchmark bot*
 
           Comparing PR commit [$PR_HEAD_HASH_SHORT]($PR_COMMIT_URL) against baseline [$BASE_HASH_SHORT]($BASE_COMMIT_URL).
@@ -270,7 +270,7 @@ jobs:
       - name: Post comment to PR
         uses: actions/github-script@v7
         env:
-          COMMENT_BODY: ${{ steps.read_comment.outputs.body }}
+          COMMENT_BODY: ${{ steps.build_comment.outputs.comment_body }}
         with:
           script: |
             github.rest.issues.createComment({
