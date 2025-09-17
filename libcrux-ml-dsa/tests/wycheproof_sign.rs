@@ -7,7 +7,7 @@
 // This set of test vectors does not cover the pre-hashed variants of
 // ML-DSA.
 
-use libcrux_kats::wycheproof::mldsa::{sign_schema::*, MlDsaSignTest};
+use libcrux_kats::wycheproof::mldsa::{sign_schema::*, MlDsaSignTests};
 use libcrux_ml_dsa::{
     ml_dsa_44::{self, MLDSA44SigningKey},
     ml_dsa_65::{self, MLDSA65SigningKey},
@@ -19,11 +19,11 @@ macro_rules! wycheproof_sign_test {
     ($name:ident, $test_name:ident, $signing_key_type:ty, $sign:expr) => {
         #[test]
         fn $name() {
-            let katfile_serialized = MlDsaSignTest::$test_name();
+            let katfile_serialized = MlDsaSignTests::$test_name();
 
             let signing_randomness = [0u8; 32];
 
-            for test_group in katfile_serialized.schema.test_groups {
+            for test_group in katfile_serialized.test_groups {
                 let signing_key_bytes = test_group.private_key;
                 if signing_key_bytes.len() != <$signing_key_type>::len() {
                     // If the signing key size in the KAT does not match the
