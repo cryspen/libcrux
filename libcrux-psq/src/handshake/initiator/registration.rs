@@ -1,6 +1,5 @@
 use std::{io::Cursor, mem::take};
 
-use libcrux_traits::kem::KEM;
 use rand::CryptoRng;
 use tls_codec::{Deserialize, Serialize, Size, VLByteSlice};
 
@@ -21,8 +20,8 @@ use crate::{
 
 use super::{InitiatorInnerPayloadOut, InitiatorOuterPayloadOut};
 
-pub struct RegistrationInitiator<'a, Rng: CryptoRng, C: InitiatorCiphersuite> {
-    ciphersuite: C,
+pub struct RegistrationInitiator<'a, Rng: CryptoRng, Ciphersuite: InitiatorCiphersuite> {
+    ciphersuite: Ciphersuite,
     inner_aad: &'a [u8],
     outer_aad: &'a [u8],
     rng: Rng,
@@ -50,10 +49,12 @@ pub(crate) enum RegistrationInitiatorState {
     ToTransport(Box<ToTransportState>),
 }
 
-impl<'a, Rng: CryptoRng, T: InitiatorCiphersuite> RegistrationInitiator<'a, Rng, T> {
+impl<'a, Rng: CryptoRng, Ciphersuite: InitiatorCiphersuite>
+    RegistrationInitiator<'a, Rng, Ciphersuite>
+{
     /// Create a new [`RegistrationInitiator`].
     pub(crate) fn new(
-        ciphersuite: T,
+        ciphersuite: Ciphersuite,
         ctx: &[u8],
         inner_aad: &'a [u8],
         outer_aad: &'a [u8],
@@ -88,8 +89,8 @@ impl<'a, Rng: CryptoRng, T: InitiatorCiphersuite> RegistrationInitiator<'a, Rng,
     }
 }
 
-impl<'a, Rng: CryptoRng, C: InitiatorCiphersuite> Channel<Error>
-    for RegistrationInitiator<'a, Rng, C>
+impl<'a, Rng: CryptoRng, Ciphersuite: InitiatorCiphersuite> Channel<Error>
+    for RegistrationInitiator<'a, Rng, Ciphersuite>
 {
     fn write_message(&mut self, payload: &[u8], out: &mut [u8]) -> Result<usize, Error> {
         let RegistrationInitiatorState::Initial(mut state) = take(&mut self.state) else {
@@ -100,14 +101,14 @@ impl<'a, Rng: CryptoRng, C: InitiatorCiphersuite> Channel<Error>
         let (pq_encapsulation, pq_shared_secret) =
             self.ciphersuite.pq_encapsulate(&mut self.rng)?;
 
-        let tx1 = tx1(
+        let tx1 = tx1::<Ciphersuite>(
             &state.tx0,
-            &self.ciphersuite.initiator_longterm_ecdh_keys.pk,
-            self.ciphersuite.responder_longterm_pq_pk,
+            self.ciphersuite.own_ecdh_encapsulation_key(),
+            self.ciphersuite.peer_pq_encapsulation_key(),
             pq_encapsulation.as_ref(),
         )?;
 
-        let mut k1 = derive_k1(
+        let mut k1 = derive_k1::<Ciphersuite>(
             &state.k0,
             &self.ciphersuite.own_ecdh_decapsulation_key(),
             self.ciphersuite.peer_ecdh_encapsulation_key(),
@@ -118,17 +119,18 @@ impl<'a, Rng: CryptoRng, C: InitiatorCiphersuite> Channel<Error>
         let inner_payload = InitiatorInnerPayloadOut(VLByteSlice(payload));
         let (inner_ciphertext, inner_tag) = k1.serialize_encrypt(&inner_payload, self.inner_aad)?;
 
-        let outer_payload = InitiatorOuterPayloadOut::Registration(HandshakeMessageOut {
-            pk: &self.ciphersuite.own_ecdh_encapsulation_key(),
-            ciphertext: VLByteSlice(&inner_ciphertext),
-            tag: inner_tag,
-            aad: VLByteSlice(self.inner_aad),
-            pq_encapsulation: pq_encapsulation.as_ref(),
-        });
+        let outer_payload =
+            InitiatorOuterPayloadOut::Registration(HandshakeMessageOut::<Ciphersuite> {
+                pk: &self.ciphersuite.own_ecdh_encapsulation_key(),
+                ciphertext: VLByteSlice(&inner_ciphertext),
+                tag: inner_tag,
+                aad: VLByteSlice(self.inner_aad),
+                pq_encapsulation: pq_encapsulation,
+            });
         let (outer_ciphertext, outer_tag) =
             state.k0.serialize_encrypt(&outer_payload, self.outer_aad)?;
 
-        let msg = HandshakeMessageOut {
+        let msg = HandshakeMessageOut::<Ciphersuite> {
             pk: &state.initiator_ephemeral_keys.pk,
             ciphertext: VLByteSlice(&outer_ciphertext),
             tag: outer_tag,
@@ -163,8 +165,9 @@ impl<'a, Rng: CryptoRng, C: InitiatorCiphersuite> Channel<Error>
         };
 
         // Deserialize the message.
-        let responder_msg = HandshakeMessage::tls_deserialize(&mut Cursor::new(&message_bytes))
-            .map_err(Error::Deserialize)?;
+        let responder_msg =
+            HandshakeMessage::<Ciphersuite>::tls_deserialize(&mut Cursor::new(&message_bytes))
+                .map_err(Error::Deserialize)?;
         let bytes_deserialized = responder_msg.tls_serialized_len();
 
         // Derive K2
@@ -172,7 +175,7 @@ impl<'a, Rng: CryptoRng, C: InitiatorCiphersuite> Channel<Error>
         let mut k2 = derive_k2_registration_initiator(
             &state.k1,
             &tx2,
-            &self.initiator_longterm_ecdh_keys.sk,
+            self.ciphersuite.own_ecdh_decapsulation_key(),
             &state.initiator_ephemeral_ecdh_sk,
             &responder_msg.pk,
         )?;
@@ -199,20 +202,20 @@ impl<'a, Rng: CryptoRng, C: InitiatorCiphersuite> Channel<Error>
     }
 }
 
-impl<'a, Rng: CryptoRng, C: InitiatorCiphersuite> IntoSession
-    for RegistrationInitiator<'a, Rng, C>
+impl<'a, Rng: CryptoRng, Ciphersuite: InitiatorCiphersuite> IntoSession
+    for RegistrationInitiator<'a, Rng, Ciphersuite>
 {
     fn into_session(self) -> Result<Session, SessionError> {
         let RegistrationInitiatorState::ToTransport(state) = self.state else {
             return Err(SessionError::IntoSession);
         };
 
-        Session::new(
+        Session::new::<Ciphersuite>(
             state.tx2,
             state.k2,
-            &self.initiator_longterm_ecdh_keys.pk,
-            self.ciphersuite.responder_longterm_ecdh_pk,
-            self.ciphersuite.responder_longterm_pq_pk,
+            self.ciphersuite.own_ecdh_encapsulation_key(),
+            self.ciphersuite.peer_ecdh_encapsulation_key(),
+            self.ciphersuite.peer_pq_encapsulation_key(),
             true,
         )
     }

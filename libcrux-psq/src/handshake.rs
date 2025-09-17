@@ -194,12 +194,15 @@ impl From<AEADError> for HandshakeError {
 use dhkem::{DHPrivateKey, DHPublicKey, DHSharedSecret};
 // use pqkem::{PQCiphertext, PQSharedSecret};
 use tls_codec::{
-    Deserialize, Serialize, SerializeBytes, TlsDeserialize, TlsSerialize, TlsSerializeBytes,
+    TlsDeserialize, TlsSerialize, TlsSerializeBytes,
     TlsSize, VLByteSlice, VLBytes,
 };
 use transcript::Transcript;
 
-use crate::aead::{AEADError, AEADKey};
+use crate::{
+    aead::{AEADError, AEADKey},
+    handshake::ciphersuite::CiphersuiteBase,
+};
 
 pub mod dhkem;
 pub mod initiator;
@@ -219,7 +222,7 @@ pub(crate) struct ToTransportState {
 
 #[derive(TlsDeserialize, TlsSize)]
 /// A PSQ handshake message.
-pub struct HandshakeMessage<T: Deserialize> {
+pub struct HandshakeMessage<Ciphersuite: CiphersuiteBase> {
     /// A Diffie-Hellman KEM public key
     pk: DHPublicKey,
     /// The AEAD-encrypted message payload
@@ -229,17 +232,17 @@ pub struct HandshakeMessage<T: Deserialize> {
     /// Associated data, covered by the AEAD message authentication tag
     aad: VLBytes,
     /// An optional post-quantum key encapsulation
-    pq_encapsulation: Option<T>,
+    pq_encapsulation: Option<Ciphersuite::Ciphertext>,
 }
 
 #[derive(TlsSerialize, TlsSize)]
 /// A PSQ handshake message. (Serialization helper)
-pub struct HandshakeMessageOut<'a, T: Serialize> {
+pub struct HandshakeMessageOut<'a, Ciphersuite: CiphersuiteBase> {
     pk: &'a DHPublicKey,
     ciphertext: VLByteSlice<'a>,
     tag: [u8; 16], // XXX: implement Serialize for &[T; N]
     aad: VLByteSlice<'a>,
-    pq_encapsulation: Option<&'a T>,
+    pq_encapsulation: Option<Ciphersuite::Ciphertext>,
 }
 
 pub(crate) fn write_output(payload: &[u8], out: &mut [u8]) -> Result<usize, HandshakeError> {
@@ -277,24 +280,24 @@ pub(super) fn derive_k0(
 }
 
 // K1 = KDF(K0 | g^cs | SS, tx1)
-pub(super) fn derive_k1<T: SerializeBytes>(
+pub(super) fn derive_k1<T: CiphersuiteBase>(
     k0: &AEADKey,
     own_longterm_key: &DHPrivateKey,
     peer_longterm_pk: &DHPublicKey,
-    pq_shared_secret: Option<T>,
+    pq_shared_secret: Option<T::SharedSecret>,
     tx1: &Transcript,
 ) -> Result<AEADKey, HandshakeError> {
     #[derive(TlsSerializeBytes, TlsSize)]
-    struct K1Ikm<'a, 'b, T: SerializeBytes> {
+    struct K1Ikm<'a, T: CiphersuiteBase> {
         k0: &'a AEADKey,
-        ecdh_shared_secret: &'b DHSharedSecret,
-        pq_shared_secret: Option<T>,
+        ecdh_shared_secret: &'a DHSharedSecret,
+        pq_shared_secret: Option<T::SharedSecret>,
     }
 
     let ecdh_shared_secret = DHSharedSecret::derive(own_longterm_key, peer_longterm_pk)?;
 
     AEADKey::new(
-        &K1Ikm {
+        &K1Ikm::<T> {
             k0,
             ecdh_shared_secret: &ecdh_shared_secret,
             pq_shared_secret,
