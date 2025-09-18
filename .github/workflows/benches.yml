@@ -1,8 +1,8 @@
-name: Test Comment Action
+name: Benchmark ML-KEM and ML-DSA
 
 on:
   merge_group:
-  pull_request:
+  pull_request_target:
     branches: ["main", "dev"]
   workflow_dispatch:
   push:
