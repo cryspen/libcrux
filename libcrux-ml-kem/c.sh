@@ -71,7 +71,7 @@ if [[ "$no_charon" = 0 ]]; then
     RUSTFLAGS="--cfg eurydice" $CHARON_HOME/bin/charon --preset eurydice --include \
         secrets --include sha3 --rustc-arg=-Cdebug-assertions=no \
         --include 'core::num::*::BITS' --include 'core::num::*::MAX' \
-        --include 'libcrux::secrets::*' \
+        --include 'libcrux_secrets::*' --include 'libcrux_sha3::*' \
        $features
     # echo "Running charon (secrets) ..."
     # (cd ../secrets && RUSTFLAGS="--cfg eurydice" $CHARON_HOME/bin/charon --remove-associated-types '*' --translate-all-methods)

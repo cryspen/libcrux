@@ -8,7 +8,7 @@
  * Eurydice: 2381cbc416ef2ad0b561c362c500bc84f36b6785
  * Karamel: 80f5435f2fc505973c469a4afcc8d875cddd0d8b
  * F*: 71d8221589d4d438af3706d89cb653cf53e18aab
- * Libcrux: ae00be9b55b2f9a172105512ea707a265f5bdd6e
+ * Libcrux: 166eab5075753a9e2d2f95b01c823557acc5c0fa
  */
 
 #ifndef libcrux_sha3_avx2_H
@@ -56,6 +56,7 @@ with const generics
 KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE __m256i
 libcrux_sha3_simd_avx2_rotate_left_76(__m256i x) {
+  EURYDICE_ASSERT((int32_t)1 + (int32_t)63 == (int32_t)64, "panic!");
   return libcrux_intrinsics_avx2_mm256_xor_si256(
       libcrux_intrinsics_avx2_mm256_slli_epi64((int32_t)1, x, __m256i),
       libcrux_intrinsics_avx2_mm256_srli_epi64((int32_t)63, x, __m256i));
@@ -202,6 +203,10 @@ with const generics
 KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE void libcrux_sha3_simd_avx2_load_block_3a(
     __m256i *state, Eurydice_slice *blocks, size_t offset) {
+  Eurydice_slice_len(blocks[0U], uint8_t);
+  KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__,
+                    "panic!");
+  KRML_HOST_EXIT(255U);
   for (size_t i = (size_t)0U; i < (size_t)168U / (size_t)32U; i++) {
     size_t i4 = i;
     size_t start = offset + (size_t)32U * i4;
@@ -502,6 +507,7 @@ with const generics
 KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE __m256i
 libcrux_sha3_simd_avx2_rotate_left_02(__m256i x) {
+  EURYDICE_ASSERT((int32_t)36 + (int32_t)28 == (int32_t)64, "panic!");
   return libcrux_intrinsics_avx2_mm256_xor_si256(
       libcrux_intrinsics_avx2_mm256_slli_epi64((int32_t)36, x, __m256i),
       libcrux_intrinsics_avx2_mm256_srli_epi64((int32_t)28, x, __m256i));
@@ -545,6 +551,7 @@ with const generics
 KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE __m256i
 libcrux_sha3_simd_avx2_rotate_left_ac(__m256i x) {
+  EURYDICE_ASSERT((int32_t)3 + (int32_t)61 == (int32_t)64, "panic!");
   return libcrux_intrinsics_avx2_mm256_xor_si256(
       libcrux_intrinsics_avx2_mm256_slli_epi64((int32_t)3, x, __m256i),
       libcrux_intrinsics_avx2_mm256_srli_epi64((int32_t)61, x, __m256i));
@@ -588,6 +595,7 @@ with const generics
 KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE __m256i
 libcrux_sha3_simd_avx2_rotate_left_020(__m256i x) {
+  EURYDICE_ASSERT((int32_t)41 + (int32_t)23 == (int32_t)64, "panic!");
   return libcrux_intrinsics_avx2_mm256_xor_si256(
       libcrux_intrinsics_avx2_mm256_slli_epi64((int32_t)41, x, __m256i),
       libcrux_intrinsics_avx2_mm256_srli_epi64((int32_t)23, x, __m256i));
@@ -631,6 +639,7 @@ with const generics
 KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE __m256i
 libcrux_sha3_simd_avx2_rotate_left_a9(__m256i x) {
+  EURYDICE_ASSERT((int32_t)18 + (int32_t)46 == (int32_t)64, "panic!");
   return libcrux_intrinsics_avx2_mm256_xor_si256(
       libcrux_intrinsics_avx2_mm256_slli_epi64((int32_t)18, x, __m256i),
       libcrux_intrinsics_avx2_mm256_srli_epi64((int32_t)46, x, __m256i));
@@ -703,6 +712,7 @@ with const generics
 KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE __m256i
 libcrux_sha3_simd_avx2_rotate_left_58(__m256i x) {
+  EURYDICE_ASSERT((int32_t)44 + (int32_t)20 == (int32_t)64, "panic!");
   return libcrux_intrinsics_avx2_mm256_xor_si256(
       libcrux_intrinsics_avx2_mm256_slli_epi64((int32_t)44, x, __m256i),
       libcrux_intrinsics_avx2_mm256_srli_epi64((int32_t)20, x, __m256i));
@@ -746,6 +756,7 @@ with const generics
 KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE __m256i
 libcrux_sha3_simd_avx2_rotate_left_e0(__m256i x) {
+  EURYDICE_ASSERT((int32_t)10 + (int32_t)54 == (int32_t)64, "panic!");
   return libcrux_intrinsics_avx2_mm256_xor_si256(
       libcrux_intrinsics_avx2_mm256_slli_epi64((int32_t)10, x, __m256i),
       libcrux_intrinsics_avx2_mm256_srli_epi64((int32_t)54, x, __m256i));
@@ -789,6 +800,7 @@ with const generics
 KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE __m256i
 libcrux_sha3_simd_avx2_rotate_left_63(__m256i x) {
+  EURYDICE_ASSERT((int32_t)45 + (int32_t)19 == (int32_t)64, "panic!");
   return libcrux_intrinsics_avx2_mm256_xor_si256(
       libcrux_intrinsics_avx2_mm256_slli_epi64((int32_t)45, x, __m256i),
       libcrux_intrinsics_avx2_mm256_srli_epi64((int32_t)19, x, __m256i));
@@ -832,6 +844,7 @@ with const generics
 KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE __m256i
 libcrux_sha3_simd_avx2_rotate_left_6a(__m256i x) {
+  EURYDICE_ASSERT((int32_t)2 + (int32_t)62 == (int32_t)64, "panic!");
   return libcrux_intrinsics_avx2_mm256_xor_si256(
       libcrux_intrinsics_avx2_mm256_slli_epi64((int32_t)2, x, __m256i),
       libcrux_intrinsics_avx2_mm256_srli_epi64((int32_t)62, x, __m256i));
@@ -875,6 +888,7 @@ with const generics
 KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE __m256i
 libcrux_sha3_simd_avx2_rotate_left_ab(__m256i x) {
+  EURYDICE_ASSERT((int32_t)62 + (int32_t)2 == (int32_t)64, "panic!");
   return libcrux_intrinsics_avx2_mm256_xor_si256(
       libcrux_intrinsics_avx2_mm256_slli_epi64((int32_t)62, x, __m256i),
       libcrux_intrinsics_avx2_mm256_srli_epi64((int32_t)2, x, __m256i));
@@ -918,6 +932,7 @@ with const generics
 KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE __m256i
 libcrux_sha3_simd_avx2_rotate_left_5b(__m256i x) {
+  EURYDICE_ASSERT((int32_t)6 + (int32_t)58 == (int32_t)64, "panic!");
   return libcrux_intrinsics_avx2_mm256_xor_si256(
       libcrux_intrinsics_avx2_mm256_slli_epi64((int32_t)6, x, __m256i),
       libcrux_intrinsics_avx2_mm256_srli_epi64((int32_t)58, x, __m256i));
@@ -961,6 +976,7 @@ with const generics
 KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE __m256i
 libcrux_sha3_simd_avx2_rotate_left_6f(__m256i x) {
+  EURYDICE_ASSERT((int32_t)43 + (int32_t)21 == (int32_t)64, "panic!");
   return libcrux_intrinsics_avx2_mm256_xor_si256(
       libcrux_intrinsics_avx2_mm256_slli_epi64((int32_t)43, x, __m256i),
       libcrux_intrinsics_avx2_mm256_srli_epi64((int32_t)21, x, __m256i));
@@ -1004,6 +1020,7 @@ with const generics
 KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE __m256i
 libcrux_sha3_simd_avx2_rotate_left_62(__m256i x) {
+  EURYDICE_ASSERT((int32_t)15 + (int32_t)49 == (int32_t)64, "panic!");
   return libcrux_intrinsics_avx2_mm256_xor_si256(
       libcrux_intrinsics_avx2_mm256_slli_epi64((int32_t)15, x, __m256i),
       libcrux_intrinsics_avx2_mm256_srli_epi64((int32_t)49, x, __m256i));
@@ -1047,6 +1064,7 @@ with const generics
 KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE __m256i
 libcrux_sha3_simd_avx2_rotate_left_23(__m256i x) {
+  EURYDICE_ASSERT((int32_t)61 + (int32_t)3 == (int32_t)64, "panic!");
   return libcrux_intrinsics_avx2_mm256_xor_si256(
       libcrux_intrinsics_avx2_mm256_slli_epi64((int32_t)61, x, __m256i),
       libcrux_intrinsics_avx2_mm256_srli_epi64((int32_t)3, x, __m256i));
@@ -1090,6 +1108,7 @@ with const generics
 KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE __m256i
 libcrux_sha3_simd_avx2_rotate_left_37(__m256i x) {
+  EURYDICE_ASSERT((int32_t)28 + (int32_t)36 == (int32_t)64, "panic!");
   return libcrux_intrinsics_avx2_mm256_xor_si256(
       libcrux_intrinsics_avx2_mm256_slli_epi64((int32_t)28, x, __m256i),
       libcrux_intrinsics_avx2_mm256_srli_epi64((int32_t)36, x, __m256i));
@@ -1133,6 +1152,7 @@ with const generics
 KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE __m256i
 libcrux_sha3_simd_avx2_rotate_left_bb(__m256i x) {
+  EURYDICE_ASSERT((int32_t)55 + (int32_t)9 == (int32_t)64, "panic!");
   return libcrux_intrinsics_avx2_mm256_xor_si256(
       libcrux_intrinsics_avx2_mm256_slli_epi64((int32_t)55, x, __m256i),
       libcrux_intrinsics_avx2_mm256_srli_epi64((int32_t)9, x, __m256i));
@@ -1176,6 +1196,7 @@ with const generics
 KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE __m256i
 libcrux_sha3_simd_avx2_rotate_left_b9(__m256i x) {
+  EURYDICE_ASSERT((int32_t)25 + (int32_t)39 == (int32_t)64, "panic!");
   return libcrux_intrinsics_avx2_mm256_xor_si256(
       libcrux_intrinsics_avx2_mm256_slli_epi64((int32_t)25, x, __m256i),
       libcrux_intrinsics_avx2_mm256_srli_epi64((int32_t)39, x, __m256i));
@@ -1219,6 +1240,7 @@ with const generics
 KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE __m256i
 libcrux_sha3_simd_avx2_rotate_left_54(__m256i x) {
+  EURYDICE_ASSERT((int32_t)21 + (int32_t)43 == (int32_t)64, "panic!");
   return libcrux_intrinsics_avx2_mm256_xor_si256(
       libcrux_intrinsics_avx2_mm256_slli_epi64((int32_t)21, x, __m256i),
       libcrux_intrinsics_avx2_mm256_srli_epi64((int32_t)43, x, __m256i));
@@ -1262,6 +1284,7 @@ with const generics
 KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE __m256i
 libcrux_sha3_simd_avx2_rotate_left_4c(__m256i x) {
+  EURYDICE_ASSERT((int32_t)56 + (int32_t)8 == (int32_t)64, "panic!");
   return libcrux_intrinsics_avx2_mm256_xor_si256(
       libcrux_intrinsics_avx2_mm256_slli_epi64((int32_t)56, x, __m256i),
       libcrux_intrinsics_avx2_mm256_srli_epi64((int32_t)8, x, __m256i));
@@ -1305,6 +1328,7 @@ with const generics
 KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE __m256i
 libcrux_sha3_simd_avx2_rotate_left_ce(__m256i x) {
+  EURYDICE_ASSERT((int32_t)27 + (int32_t)37 == (int32_t)64, "panic!");
   return libcrux_intrinsics_avx2_mm256_xor_si256(
       libcrux_intrinsics_avx2_mm256_slli_epi64((int32_t)27, x, __m256i),
       libcrux_intrinsics_avx2_mm256_srli_epi64((int32_t)37, x, __m256i));
@@ -1348,6 +1372,7 @@ with const generics
 KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE __m256i
 libcrux_sha3_simd_avx2_rotate_left_77(__m256i x) {
+  EURYDICE_ASSERT((int32_t)20 + (int32_t)44 == (int32_t)64, "panic!");
   return libcrux_intrinsics_avx2_mm256_xor_si256(
       libcrux_intrinsics_avx2_mm256_slli_epi64((int32_t)20, x, __m256i),
       libcrux_intrinsics_avx2_mm256_srli_epi64((int32_t)44, x, __m256i));
@@ -1391,6 +1416,7 @@ with const generics
 KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE __m256i
 libcrux_sha3_simd_avx2_rotate_left_25(__m256i x) {
+  EURYDICE_ASSERT((int32_t)39 + (int32_t)25 == (int32_t)64, "panic!");
   return libcrux_intrinsics_avx2_mm256_xor_si256(
       libcrux_intrinsics_avx2_mm256_slli_epi64((int32_t)39, x, __m256i),
       libcrux_intrinsics_avx2_mm256_srli_epi64((int32_t)25, x, __m256i));
@@ -1434,6 +1460,7 @@ with const generics
 KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE __m256i
 libcrux_sha3_simd_avx2_rotate_left_af(__m256i x) {
+  EURYDICE_ASSERT((int32_t)8 + (int32_t)56 == (int32_t)64, "panic!");
   return libcrux_intrinsics_avx2_mm256_xor_si256(
       libcrux_intrinsics_avx2_mm256_slli_epi64((int32_t)8, x, __m256i),
       libcrux_intrinsics_avx2_mm256_srli_epi64((int32_t)56, x, __m256i));
@@ -1477,6 +1504,7 @@ with const generics
 KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE __m256i
 libcrux_sha3_simd_avx2_rotate_left_fd(__m256i x) {
+  EURYDICE_ASSERT((int32_t)14 + (int32_t)50 == (int32_t)64, "panic!");
   return libcrux_intrinsics_avx2_mm256_xor_si256(
       libcrux_intrinsics_avx2_mm256_slli_epi64((int32_t)14, x, __m256i),
       libcrux_intrinsics_avx2_mm256_srli_epi64((int32_t)50, x, __m256i));
@@ -1826,20 +1854,35 @@ KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_chi_80_a6(
     libcrux_sha3_generic_keccak_KeccakState_55 *self) {
   libcrux_sha3_generic_keccak_KeccakState_55 old = self[0U];
-  for (size_t i0 = (size_t)0U; i0 < (size_t)5U; i0++) {
-    size_t i1 = i0;
-    for (size_t i = (size_t)0U; i < (size_t)5U; i++) {
-      size_t j = i;
-      libcrux_sha3_generic_keccak_set_80_a6(
-          self, i1, j,
-          libcrux_sha3_simd_avx2_and_not_xor_b0(
-              libcrux_sha3_generic_keccak_index_c2_a6(self,
-                                                      (size_t_x2{i1, j}))[0U],
-              libcrux_sha3_generic_keccak_index_c2_a6(
-                  &old, (size_t_x2{i1, (j + (size_t)2U) % (size_t)5U}))[0U],
-              libcrux_sha3_generic_keccak_index_c2_a6(
-                  &old, (size_t_x2{i1, (j + (size_t)1U) % (size_t)5U}))[0U]));
+  core_ops_range_Range_08 iter =
+      core_iter_traits_collect__core__iter__traits__collect__IntoIterator_Clause1_Item__I__for_I__into_iter(
+          (core_ops_range_Range_08{(size_t)0U, (size_t)5U}),
+          core_ops_range_Range_08, size_t, core_ops_range_Range_08);
+  while (true) {
+    Option_08 uu____0 =
+        core_iter_range__core__iter__traits__iterator__Iterator_A__for_core__ops__range__Range_A__TraitClause_0___next(
+            &iter, size_t, Option_08);
+    if (uu____0.tag == None) {
+      return;
+    } else {
+      size_t i0 = uu____0.f0;
+      for (size_t i = (size_t)0U; i < (size_t)5U; i++) {
+        size_t j = i;
+        libcrux_sha3_generic_keccak_set_80_a6(
+            self, i0, j,
+            libcrux_sha3_simd_avx2_and_not_xor_b0(
+                libcrux_sha3_generic_keccak_index_c2_a6(self,
+                                                        (size_t_x2{i0, j}))[0U],
+                libcrux_sha3_generic_keccak_index_c2_a6(
+                    &old, (size_t_x2{i0, (j + (size_t)2U) % (size_t)5U}))[0U],
+                libcrux_sha3_generic_keccak_index_c2_a6(
+                    &old, (size_t_x2{i0, (j + (size_t)1U) % (size_t)5U}))[0U]));
+      }
+      continue;
     }
+    KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__,
+                      "panic!");
+    KRML_HOST_EXIT(255U);
   }
 }
 
@@ -1907,6 +1950,8 @@ KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_absorb_final_80_fb(
     libcrux_sha3_generic_keccak_KeccakState_55 *self, Eurydice_slice *last,
     size_t start, size_t len) {
+  EURYDICE_ASSERT(!!((size_t)4U > (size_t)0U), "assert failure");
+  EURYDICE_ASSERT(len < (size_t)168U, "panic!");
   libcrux_sha3_simd_avx2_load_last_8f_c6(self, last, start, len);
   libcrux_sha3_generic_keccak_keccakf1600_80_a6(self);
 }
@@ -1933,6 +1978,10 @@ with const generics
 KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE void libcrux_sha3_simd_avx2_load_block_5b(
     __m256i *state, Eurydice_slice *blocks, size_t offset) {
+  Eurydice_slice_len(blocks[0U], uint8_t);
+  KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__,
+                    "panic!");
+  KRML_HOST_EXIT(255U);
   for (size_t i = (size_t)0U; i < (size_t)136U / (size_t)32U; i++) {
     size_t i4 = i;
     size_t start = offset + (size_t)32U * i4;
@@ -2118,6 +2167,8 @@ KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_absorb_final_80_fb0(
     libcrux_sha3_generic_keccak_KeccakState_55 *self, Eurydice_slice *last,
     size_t start, size_t len) {
+  EURYDICE_ASSERT(!!((size_t)4U > (size_t)0U), "assert failure");
+  EURYDICE_ASSERT(len < (size_t)136U, "panic!");
   libcrux_sha3_simd_avx2_load_last_8f_ad(self, last, start, len);
   libcrux_sha3_generic_keccak_keccakf1600_80_a6(self);
 }
@@ -2134,6 +2185,175 @@ libcrux_sha3_avx2_x4_incremental_shake256_absorb_final(
   Eurydice_slice uu____1[4U] = {data0, data1, data2, data3};
   libcrux_sha3_generic_keccak_absorb_final_80_fb0(
       uu____0, uu____1, (size_t)0U, Eurydice_slice_len(data0, uint8_t));
+}
+
+/**
+A monomorphic instance of libcrux_sha3.simd.avx2.store_block
+with const generics
+- RATE= 136
+*/
+KRML_ATTRIBUTE_TARGET("avx2")
+static KRML_MUSTINLINE void libcrux_sha3_simd_avx2_store_block_5b(
+    __m256i *s, Eurydice_slice out0, Eurydice_slice out1, Eurydice_slice out2,
+    Eurydice_slice out3, size_t start, size_t len) {
+  size_t chunks = len / (size_t)32U;
+  core_ops_range_Range_08 iter =
+      core_iter_traits_collect__core__iter__traits__collect__IntoIterator_Clause1_Item__I__for_I__into_iter(
+          (core_ops_range_Range_08{(size_t)0U, chunks}),
+          core_ops_range_Range_08, size_t, core_ops_range_Range_08);
+  while (true) {
+    Option_08 uu____0 =
+        core_iter_range__core__iter__traits__iterator__Iterator_A__for_core__ops__range__Range_A__TraitClause_0___next(
+            &iter, size_t, Option_08);
+    if (uu____0.tag == None) {
+      size_t rem = len % (size_t)32U;
+      if (rem > (size_t)0U) {
+        size_t start0 = start + (size_t)32U * chunks;
+        uint8_t u8s[32U] = {0U};
+        size_t chunks8 = rem / (size_t)8U;
+        for (size_t i0 = (size_t)0U; i0 < chunks8; i0++) {
+          size_t k = i0;
+          size_t i = ((size_t)4U * chunks + k) / (size_t)5U;
+          size_t j = ((size_t)4U * chunks + k) % (size_t)5U;
+          libcrux_intrinsics_avx2_mm256_storeu_si256_u8(
+              Eurydice_array_to_slice((size_t)32U, u8s, uint8_t),
+              libcrux_sha3_traits_get_ij_a6(s, i, j)[0U]);
+          Eurydice_slice_copy(
+              Eurydice_slice_subslice3(out0, start0 + (size_t)8U * k,
+                                       start0 + (size_t)8U * (k + (size_t)1U),
+                                       uint8_t *),
+              Eurydice_array_to_subslice3(u8s, (size_t)0U, (size_t)8U,
+                                          uint8_t *),
+              uint8_t);
+          Eurydice_slice_copy(
+              Eurydice_slice_subslice3(out1, start0 + (size_t)8U * k,
+                                       start0 + (size_t)8U * (k + (size_t)1U),
+                                       uint8_t *),
+              Eurydice_array_to_subslice3(u8s, (size_t)8U, (size_t)16U,
+                                          uint8_t *),
+              uint8_t);
+          Eurydice_slice_copy(
+              Eurydice_slice_subslice3(out2, start0 + (size_t)8U * k,
+                                       start0 + (size_t)8U * (k + (size_t)1U),
+                                       uint8_t *),
+              Eurydice_array_to_subslice3(u8s, (size_t)16U, (size_t)24U,
+                                          uint8_t *),
+              uint8_t);
+          Eurydice_slice_copy(
+              Eurydice_slice_subslice3(out3, start0 + (size_t)8U * k,
+                                       start0 + (size_t)8U * (k + (size_t)1U),
+                                       uint8_t *),
+              Eurydice_array_to_subslice3(u8s, (size_t)24U, (size_t)32U,
+                                          uint8_t *),
+              uint8_t);
+        }
+        size_t rem8 = rem % (size_t)8U;
+        if (rem8 > (size_t)0U) {
+          size_t i = ((size_t)4U * chunks + chunks8) / (size_t)5U;
+          size_t j = ((size_t)4U * chunks + chunks8) % (size_t)5U;
+          libcrux_intrinsics_avx2_mm256_storeu_si256_u8(
+              Eurydice_array_to_slice((size_t)32U, u8s, uint8_t),
+              libcrux_sha3_traits_get_ij_a6(s, i, j)[0U]);
+          Eurydice_slice_copy(
+              Eurydice_slice_subslice3(out0, start0 + len - rem8, start0 + len,
+                                       uint8_t *),
+              Eurydice_array_to_subslice3(u8s, (size_t)0U, rem, uint8_t *),
+              uint8_t);
+          Eurydice_slice_copy(
+              Eurydice_slice_subslice3(out1, start0 + len - rem8, start0 + len,
+                                       uint8_t *),
+              Eurydice_array_to_subslice3(u8s, (size_t)8U, (size_t)8U + rem,
+                                          uint8_t *),
+              uint8_t);
+          Eurydice_slice_copy(
+              Eurydice_slice_subslice3(out2, start0 + len - rem8, start0 + len,
+                                       uint8_t *),
+              Eurydice_array_to_subslice3(u8s, (size_t)16U, (size_t)16U + rem,
+                                          uint8_t *),
+              uint8_t);
+          Eurydice_slice_copy(
+              Eurydice_slice_subslice3(out3, start0 + len - rem8, start0 + len,
+                                       uint8_t *),
+              Eurydice_array_to_subslice3(u8s, (size_t)24U, (size_t)24U + rem,
+                                          uint8_t *),
+              uint8_t);
+        }
+      }
+      return;
+    } else {
+      size_t i = uu____0.f0;
+      size_t i0 = (size_t)4U * i / (size_t)5U;
+      size_t j0 = (size_t)4U * i % (size_t)5U;
+      size_t i1 = ((size_t)4U * i + (size_t)1U) / (size_t)5U;
+      size_t j1 = ((size_t)4U * i + (size_t)1U) % (size_t)5U;
+      size_t i2 = ((size_t)4U * i + (size_t)2U) / (size_t)5U;
+      size_t j2 = ((size_t)4U * i + (size_t)2U) % (size_t)5U;
+      size_t i3 = ((size_t)4U * i + (size_t)3U) / (size_t)5U;
+      size_t j3 = ((size_t)4U * i + (size_t)3U) % (size_t)5U;
+      __m256i v0l = libcrux_intrinsics_avx2_mm256_permute2x128_si256(
+          (int32_t)32, libcrux_sha3_traits_get_ij_a6(s, i0, j0)[0U],
+          libcrux_sha3_traits_get_ij_a6(s, i2, j2)[0U], __m256i);
+      __m256i v1h = libcrux_intrinsics_avx2_mm256_permute2x128_si256(
+          (int32_t)32, libcrux_sha3_traits_get_ij_a6(s, i1, j1)[0U],
+          libcrux_sha3_traits_get_ij_a6(s, i3, j3)[0U], __m256i);
+      __m256i v2l = libcrux_intrinsics_avx2_mm256_permute2x128_si256(
+          (int32_t)49, libcrux_sha3_traits_get_ij_a6(s, i0, j0)[0U],
+          libcrux_sha3_traits_get_ij_a6(s, i2, j2)[0U], __m256i);
+      __m256i v3h = libcrux_intrinsics_avx2_mm256_permute2x128_si256(
+          (int32_t)49, libcrux_sha3_traits_get_ij_a6(s, i1, j1)[0U],
+          libcrux_sha3_traits_get_ij_a6(s, i3, j3)[0U], __m256i);
+      __m256i v0 = libcrux_intrinsics_avx2_mm256_unpacklo_epi64(v0l, v1h);
+      __m256i v1 = libcrux_intrinsics_avx2_mm256_unpackhi_epi64(v0l, v1h);
+      __m256i v2 = libcrux_intrinsics_avx2_mm256_unpacklo_epi64(v2l, v3h);
+      __m256i v3 = libcrux_intrinsics_avx2_mm256_unpackhi_epi64(v2l, v3h);
+      libcrux_intrinsics_avx2_mm256_storeu_si256_u8(
+          Eurydice_slice_subslice3(out0, start + (size_t)32U * i,
+                                   start + (size_t)32U * (i + (size_t)1U),
+                                   uint8_t *),
+          v0);
+      libcrux_intrinsics_avx2_mm256_storeu_si256_u8(
+          Eurydice_slice_subslice3(out1, start + (size_t)32U * i,
+                                   start + (size_t)32U * (i + (size_t)1U),
+                                   uint8_t *),
+          v1);
+      libcrux_intrinsics_avx2_mm256_storeu_si256_u8(
+          Eurydice_slice_subslice3(out2, start + (size_t)32U * i,
+                                   start + (size_t)32U * (i + (size_t)1U),
+                                   uint8_t *),
+          v2);
+      libcrux_intrinsics_avx2_mm256_storeu_si256_u8(
+          Eurydice_slice_subslice3(out3, start + (size_t)32U * i,
+                                   start + (size_t)32U * (i + (size_t)1U),
+                                   uint8_t *),
+          v3);
+      continue;
+    }
+    KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__,
+                      "panic!");
+    KRML_HOST_EXIT(255U);
+  }
+}
+
+/**
+This function found in impl
+{libcrux_sha3::traits::Squeeze4<core::core_arch::x86::__m256i> for
+libcrux_sha3::generic_keccak::KeccakState<core::core_arch::x86::__m256i,
+4usize>[core::marker::Sized<core::core_arch::x86::__m256i>,
+libcrux_sha3::simd::avx2::{libcrux_sha3::traits::KeccakItem<4usize> for
+core::core_arch::x86::__m256i}]}
+*/
+/**
+A monomorphic instance of libcrux_sha3.simd.avx2.squeeze4_17
+with const generics
+- RATE= 136
+*/
+KRML_ATTRIBUTE_TARGET("avx2")
+static inline void libcrux_sha3_simd_avx2_squeeze4_17_5b(
+    libcrux_sha3_generic_keccak_KeccakState_55 *self, Eurydice_slice out0,
+    Eurydice_slice out1, Eurydice_slice out2, Eurydice_slice out3, size_t start,
+    size_t len) {
+  libcrux_sha3_simd_avx2_store_block_5b(self->st, out0, out1, out2, out3, start,
+                                        len);
 }
 
 /**
@@ -2175,153 +2395,6 @@ static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_absorb_block_80_97(
 }
 
 /**
-A monomorphic instance of libcrux_sha3.simd.avx2.store_block
-with const generics
-- RATE= 136
-*/
-KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE void libcrux_sha3_simd_avx2_store_block_5b(
-    __m256i *s, Eurydice_slice out0, Eurydice_slice out1, Eurydice_slice out2,
-    Eurydice_slice out3, size_t start, size_t len) {
-  size_t chunks = len / (size_t)32U;
-  for (size_t i = (size_t)0U; i < chunks; i++) {
-    size_t i4 = i;
-    size_t i0 = (size_t)4U * i4 / (size_t)5U;
-    size_t j0 = (size_t)4U * i4 % (size_t)5U;
-    size_t i1 = ((size_t)4U * i4 + (size_t)1U) / (size_t)5U;
-    size_t j1 = ((size_t)4U * i4 + (size_t)1U) % (size_t)5U;
-    size_t i2 = ((size_t)4U * i4 + (size_t)2U) / (size_t)5U;
-    size_t j2 = ((size_t)4U * i4 + (size_t)2U) % (size_t)5U;
-    size_t i3 = ((size_t)4U * i4 + (size_t)3U) / (size_t)5U;
-    size_t j3 = ((size_t)4U * i4 + (size_t)3U) % (size_t)5U;
-    __m256i v0l = libcrux_intrinsics_avx2_mm256_permute2x128_si256(
-        (int32_t)32, libcrux_sha3_traits_get_ij_a6(s, i0, j0)[0U],
-        libcrux_sha3_traits_get_ij_a6(s, i2, j2)[0U], __m256i);
-    __m256i v1h = libcrux_intrinsics_avx2_mm256_permute2x128_si256(
-        (int32_t)32, libcrux_sha3_traits_get_ij_a6(s, i1, j1)[0U],
-        libcrux_sha3_traits_get_ij_a6(s, i3, j3)[0U], __m256i);
-    __m256i v2l = libcrux_intrinsics_avx2_mm256_permute2x128_si256(
-        (int32_t)49, libcrux_sha3_traits_get_ij_a6(s, i0, j0)[0U],
-        libcrux_sha3_traits_get_ij_a6(s, i2, j2)[0U], __m256i);
-    __m256i v3h = libcrux_intrinsics_avx2_mm256_permute2x128_si256(
-        (int32_t)49, libcrux_sha3_traits_get_ij_a6(s, i1, j1)[0U],
-        libcrux_sha3_traits_get_ij_a6(s, i3, j3)[0U], __m256i);
-    __m256i v0 = libcrux_intrinsics_avx2_mm256_unpacklo_epi64(v0l, v1h);
-    __m256i v1 = libcrux_intrinsics_avx2_mm256_unpackhi_epi64(v0l, v1h);
-    __m256i v2 = libcrux_intrinsics_avx2_mm256_unpacklo_epi64(v2l, v3h);
-    __m256i v3 = libcrux_intrinsics_avx2_mm256_unpackhi_epi64(v2l, v3h);
-    libcrux_intrinsics_avx2_mm256_storeu_si256_u8(
-        Eurydice_slice_subslice3(out0, start + (size_t)32U * i4,
-                                 start + (size_t)32U * (i4 + (size_t)1U),
-                                 uint8_t *),
-        v0);
-    libcrux_intrinsics_avx2_mm256_storeu_si256_u8(
-        Eurydice_slice_subslice3(out1, start + (size_t)32U * i4,
-                                 start + (size_t)32U * (i4 + (size_t)1U),
-                                 uint8_t *),
-        v1);
-    libcrux_intrinsics_avx2_mm256_storeu_si256_u8(
-        Eurydice_slice_subslice3(out2, start + (size_t)32U * i4,
-                                 start + (size_t)32U * (i4 + (size_t)1U),
-                                 uint8_t *),
-        v2);
-    libcrux_intrinsics_avx2_mm256_storeu_si256_u8(
-        Eurydice_slice_subslice3(out3, start + (size_t)32U * i4,
-                                 start + (size_t)32U * (i4 + (size_t)1U),
-                                 uint8_t *),
-        v3);
-  }
-  size_t rem = len % (size_t)32U;
-  if (rem > (size_t)0U) {
-    size_t start0 = start + (size_t)32U * chunks;
-    uint8_t u8s[32U] = {0U};
-    size_t chunks8 = rem / (size_t)8U;
-    for (size_t i0 = (size_t)0U; i0 < chunks8; i0++) {
-      size_t k = i0;
-      size_t i = ((size_t)4U * chunks + k) / (size_t)5U;
-      size_t j = ((size_t)4U * chunks + k) % (size_t)5U;
-      libcrux_intrinsics_avx2_mm256_storeu_si256_u8(
-          Eurydice_array_to_slice((size_t)32U, u8s, uint8_t),
-          libcrux_sha3_traits_get_ij_a6(s, i, j)[0U]);
-      Eurydice_slice_copy(
-          Eurydice_slice_subslice3(out0, start0 + (size_t)8U * k,
-                                   start0 + (size_t)8U * (k + (size_t)1U),
-                                   uint8_t *),
-          Eurydice_array_to_subslice3(u8s, (size_t)0U, (size_t)8U, uint8_t *),
-          uint8_t);
-      Eurydice_slice_copy(
-          Eurydice_slice_subslice3(out1, start0 + (size_t)8U * k,
-                                   start0 + (size_t)8U * (k + (size_t)1U),
-                                   uint8_t *),
-          Eurydice_array_to_subslice3(u8s, (size_t)8U, (size_t)16U, uint8_t *),
-          uint8_t);
-      Eurydice_slice_copy(
-          Eurydice_slice_subslice3(out2, start0 + (size_t)8U * k,
-                                   start0 + (size_t)8U * (k + (size_t)1U),
-                                   uint8_t *),
-          Eurydice_array_to_subslice3(u8s, (size_t)16U, (size_t)24U, uint8_t *),
-          uint8_t);
-      Eurydice_slice_copy(
-          Eurydice_slice_subslice3(out3, start0 + (size_t)8U * k,
-                                   start0 + (size_t)8U * (k + (size_t)1U),
-                                   uint8_t *),
-          Eurydice_array_to_subslice3(u8s, (size_t)24U, (size_t)32U, uint8_t *),
-          uint8_t);
-    }
-    size_t rem8 = rem % (size_t)8U;
-    if (rem8 > (size_t)0U) {
-      size_t i = ((size_t)4U * chunks + chunks8) / (size_t)5U;
-      size_t j = ((size_t)4U * chunks + chunks8) % (size_t)5U;
-      libcrux_intrinsics_avx2_mm256_storeu_si256_u8(
-          Eurydice_array_to_slice((size_t)32U, u8s, uint8_t),
-          libcrux_sha3_traits_get_ij_a6(s, i, j)[0U]);
-      Eurydice_slice_copy(
-          Eurydice_slice_subslice3(out0, start0 + len - rem8, start0 + len,
-                                   uint8_t *),
-          Eurydice_array_to_subslice3(u8s, (size_t)0U, rem, uint8_t *),
-          uint8_t);
-      Eurydice_slice_copy(Eurydice_slice_subslice3(out1, start0 + len - rem8,
-                                                   start0 + len, uint8_t *),
-                          Eurydice_array_to_subslice3(
-                              u8s, (size_t)8U, (size_t)8U + rem, uint8_t *),
-                          uint8_t);
-      Eurydice_slice_copy(Eurydice_slice_subslice3(out2, start0 + len - rem8,
-                                                   start0 + len, uint8_t *),
-                          Eurydice_array_to_subslice3(
-                              u8s, (size_t)16U, (size_t)16U + rem, uint8_t *),
-                          uint8_t);
-      Eurydice_slice_copy(Eurydice_slice_subslice3(out3, start0 + len - rem8,
-                                                   start0 + len, uint8_t *),
-                          Eurydice_array_to_subslice3(
-                              u8s, (size_t)24U, (size_t)24U + rem, uint8_t *),
-                          uint8_t);
-    }
-  }
-}
-
-/**
-This function found in impl
-{libcrux_sha3::traits::Squeeze4<core::core_arch::x86::__m256i> for
-libcrux_sha3::generic_keccak::KeccakState<core::core_arch::x86::__m256i,
-4usize>[core::marker::Sized<core::core_arch::x86::__m256i>,
-libcrux_sha3::simd::avx2::{libcrux_sha3::traits::KeccakItem<4usize> for
-core::core_arch::x86::__m256i}]}
-*/
-/**
-A monomorphic instance of libcrux_sha3.simd.avx2.squeeze4_17
-with const generics
-- RATE= 136
-*/
-KRML_ATTRIBUTE_TARGET("avx2")
-static inline void libcrux_sha3_simd_avx2_squeeze4_17_5b(
-    libcrux_sha3_generic_keccak_KeccakState_55 *self, Eurydice_slice out0,
-    Eurydice_slice out1, Eurydice_slice out2, Eurydice_slice out3, size_t start,
-    size_t len) {
-  libcrux_sha3_simd_avx2_store_block_5b(self->st, out0, out1, out2, out3, start,
-                                        len);
-}
-
-/**
 A monomorphic instance of libcrux_sha3.generic_keccak.simd256.keccak4
 with const generics
 - RATE= 136
@@ -2331,36 +2404,77 @@ KRML_ATTRIBUTE_TARGET("avx2")
 static inline void libcrux_sha3_generic_keccak_simd256_keccak4_ad(
     Eurydice_slice *data, Eurydice_slice out0, Eurydice_slice out1,
     Eurydice_slice out2, Eurydice_slice out3) {
+  size_t uu____0 = Eurydice_slice_len(out0, uint8_t);
+  if (uu____0 == Eurydice_slice_len(out1, uint8_t)) {
+    size_t uu____1 = Eurydice_slice_len(out0, uint8_t);
+    if (uu____1 == Eurydice_slice_len(out2, uint8_t)) {
+      size_t uu____2 = Eurydice_slice_len(out0, uint8_t);
+      if (uu____2 == Eurydice_slice_len(out3, uint8_t)) {
+      }
+    }
+  }
+  KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__,
+                    "panic!");
+  KRML_HOST_EXIT(255U);
+  size_t uu____3 = Eurydice_slice_len(data[0U], uint8_t);
+  if (uu____3 == Eurydice_slice_len(data[1U], uint8_t)) {
+    size_t uu____4 = Eurydice_slice_len(data[0U], uint8_t);
+    if (uu____4 == Eurydice_slice_len(data[2U], uint8_t)) {
+      size_t uu____5 = Eurydice_slice_len(data[0U], uint8_t);
+      if (uu____5 == Eurydice_slice_len(data[3U], uint8_t)) {
+      }
+    }
+  }
+  KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__,
+                    "panic!");
+  KRML_HOST_EXIT(255U);
   libcrux_sha3_generic_keccak_KeccakState_55 s =
       libcrux_sha3_generic_keccak_new_80_a6();
   size_t data_len = Eurydice_slice_len(data[0U], uint8_t);
-  for (size_t i = (size_t)0U; i < data_len / (size_t)136U; i++) {
-    size_t i0 = i;
-    libcrux_sha3_generic_keccak_absorb_block_80_97(&s, data, i0 * (size_t)136U);
-  }
-  size_t rem = data_len % (size_t)136U;
-  libcrux_sha3_generic_keccak_absorb_final_80_fb0(&s, data, data_len - rem,
-                                                  rem);
-  size_t outlen = Eurydice_slice_len(out0, uint8_t);
-  size_t blocks = outlen / (size_t)136U;
-  size_t last = outlen - outlen % (size_t)136U;
-  if (blocks == (size_t)0U) {
-    libcrux_sha3_simd_avx2_squeeze4_17_5b(&s, out0, out1, out2, out3,
-                                          (size_t)0U, outlen);
-  } else {
-    libcrux_sha3_simd_avx2_squeeze4_17_5b(&s, out0, out1, out2, out3,
-                                          (size_t)0U, (size_t)136U);
-    for (size_t i = (size_t)1U; i < blocks; i++) {
-      size_t i0 = i;
-      libcrux_sha3_generic_keccak_keccakf1600_80_a6(&s);
-      libcrux_sha3_simd_avx2_squeeze4_17_5b(&s, out0, out1, out2, out3,
-                                            i0 * (size_t)136U, (size_t)136U);
+  core_ops_range_Range_08 iter =
+      core_iter_traits_collect__core__iter__traits__collect__IntoIterator_Clause1_Item__I__for_I__into_iter(
+          (core_ops_range_Range_08{(size_t)0U, data_len / (size_t)136U}),
+          core_ops_range_Range_08, size_t, core_ops_range_Range_08);
+  while (true) {
+    Option_08 uu____6 =
+        core_iter_range__core__iter__traits__iterator__Iterator_A__for_core__ops__range__Range_A__TraitClause_0___next(
+            &iter, size_t, Option_08);
+    if (uu____6.tag == None) {
+      size_t rem = data_len % (size_t)136U;
+      libcrux_sha3_generic_keccak_absorb_final_80_fb0(&s, data, data_len - rem,
+                                                      rem);
+      size_t outlen = Eurydice_slice_len(out0, uint8_t);
+      size_t blocks = outlen / (size_t)136U;
+      size_t last = outlen - outlen % (size_t)136U;
+      if (blocks == (size_t)0U) {
+        libcrux_sha3_simd_avx2_squeeze4_17_5b(&s, out0, out1, out2, out3,
+                                              (size_t)0U, outlen);
+        return;
+      } else {
+        libcrux_sha3_simd_avx2_squeeze4_17_5b(&s, out0, out1, out2, out3,
+                                              (size_t)0U, (size_t)136U);
+        for (size_t i = (size_t)1U; i < blocks; i++) {
+          size_t i0 = i;
+          libcrux_sha3_generic_keccak_keccakf1600_80_a6(&s);
+          libcrux_sha3_simd_avx2_squeeze4_17_5b(
+              &s, out0, out1, out2, out3, i0 * (size_t)136U, (size_t)136U);
+        }
+        if (last < outlen) {
+          libcrux_sha3_generic_keccak_keccakf1600_80_a6(&s);
+          libcrux_sha3_simd_avx2_squeeze4_17_5b(&s, out0, out1, out2, out3,
+                                                last, outlen - last);
+        }
+        return;
+      }
+    } else {
+      size_t i = uu____6.f0;
+      libcrux_sha3_generic_keccak_absorb_block_80_97(&s, data,
+                                                     i * (size_t)136U);
+      continue;
     }
-    if (last < outlen) {
-      libcrux_sha3_generic_keccak_keccakf1600_80_a6(&s);
-      libcrux_sha3_simd_avx2_squeeze4_17_5b(&s, out0, out1, out2, out3, last,
-                                            outlen - last);
-    }
+    KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__,
+                      "panic!");
+    KRML_HOST_EXIT(255U);
   }
 }
 
@@ -2419,118 +2533,140 @@ static KRML_MUSTINLINE void libcrux_sha3_simd_avx2_store_block_3a(
     __m256i *s, Eurydice_slice out0, Eurydice_slice out1, Eurydice_slice out2,
     Eurydice_slice out3, size_t start, size_t len) {
   size_t chunks = len / (size_t)32U;
-  for (size_t i = (size_t)0U; i < chunks; i++) {
-    size_t i4 = i;
-    size_t i0 = (size_t)4U * i4 / (size_t)5U;
-    size_t j0 = (size_t)4U * i4 % (size_t)5U;
-    size_t i1 = ((size_t)4U * i4 + (size_t)1U) / (size_t)5U;
-    size_t j1 = ((size_t)4U * i4 + (size_t)1U) % (size_t)5U;
-    size_t i2 = ((size_t)4U * i4 + (size_t)2U) / (size_t)5U;
-    size_t j2 = ((size_t)4U * i4 + (size_t)2U) % (size_t)5U;
-    size_t i3 = ((size_t)4U * i4 + (size_t)3U) / (size_t)5U;
-    size_t j3 = ((size_t)4U * i4 + (size_t)3U) % (size_t)5U;
-    __m256i v0l = libcrux_intrinsics_avx2_mm256_permute2x128_si256(
-        (int32_t)32, libcrux_sha3_traits_get_ij_a6(s, i0, j0)[0U],
-        libcrux_sha3_traits_get_ij_a6(s, i2, j2)[0U], __m256i);
-    __m256i v1h = libcrux_intrinsics_avx2_mm256_permute2x128_si256(
-        (int32_t)32, libcrux_sha3_traits_get_ij_a6(s, i1, j1)[0U],
-        libcrux_sha3_traits_get_ij_a6(s, i3, j3)[0U], __m256i);
-    __m256i v2l = libcrux_intrinsics_avx2_mm256_permute2x128_si256(
-        (int32_t)49, libcrux_sha3_traits_get_ij_a6(s, i0, j0)[0U],
-        libcrux_sha3_traits_get_ij_a6(s, i2, j2)[0U], __m256i);
-    __m256i v3h = libcrux_intrinsics_avx2_mm256_permute2x128_si256(
-        (int32_t)49, libcrux_sha3_traits_get_ij_a6(s, i1, j1)[0U],
-        libcrux_sha3_traits_get_ij_a6(s, i3, j3)[0U], __m256i);
-    __m256i v0 = libcrux_intrinsics_avx2_mm256_unpacklo_epi64(v0l, v1h);
-    __m256i v1 = libcrux_intrinsics_avx2_mm256_unpackhi_epi64(v0l, v1h);
-    __m256i v2 = libcrux_intrinsics_avx2_mm256_unpacklo_epi64(v2l, v3h);
-    __m256i v3 = libcrux_intrinsics_avx2_mm256_unpackhi_epi64(v2l, v3h);
-    libcrux_intrinsics_avx2_mm256_storeu_si256_u8(
-        Eurydice_slice_subslice3(out0, start + (size_t)32U * i4,
-                                 start + (size_t)32U * (i4 + (size_t)1U),
-                                 uint8_t *),
-        v0);
-    libcrux_intrinsics_avx2_mm256_storeu_si256_u8(
-        Eurydice_slice_subslice3(out1, start + (size_t)32U * i4,
-                                 start + (size_t)32U * (i4 + (size_t)1U),
-                                 uint8_t *),
-        v1);
-    libcrux_intrinsics_avx2_mm256_storeu_si256_u8(
-        Eurydice_slice_subslice3(out2, start + (size_t)32U * i4,
-                                 start + (size_t)32U * (i4 + (size_t)1U),
-                                 uint8_t *),
-        v2);
-    libcrux_intrinsics_avx2_mm256_storeu_si256_u8(
-        Eurydice_slice_subslice3(out3, start + (size_t)32U * i4,
-                                 start + (size_t)32U * (i4 + (size_t)1U),
-                                 uint8_t *),
-        v3);
-  }
-  size_t rem = len % (size_t)32U;
-  if (rem > (size_t)0U) {
-    size_t start0 = start + (size_t)32U * chunks;
-    uint8_t u8s[32U] = {0U};
-    size_t chunks8 = rem / (size_t)8U;
-    for (size_t i0 = (size_t)0U; i0 < chunks8; i0++) {
-      size_t k = i0;
-      size_t i = ((size_t)4U * chunks + k) / (size_t)5U;
-      size_t j = ((size_t)4U * chunks + k) % (size_t)5U;
+  core_ops_range_Range_08 iter =
+      core_iter_traits_collect__core__iter__traits__collect__IntoIterator_Clause1_Item__I__for_I__into_iter(
+          (core_ops_range_Range_08{(size_t)0U, chunks}),
+          core_ops_range_Range_08, size_t, core_ops_range_Range_08);
+  while (true) {
+    Option_08 uu____0 =
+        core_iter_range__core__iter__traits__iterator__Iterator_A__for_core__ops__range__Range_A__TraitClause_0___next(
+            &iter, size_t, Option_08);
+    if (uu____0.tag == None) {
+      size_t rem = len % (size_t)32U;
+      if (rem > (size_t)0U) {
+        size_t start0 = start + (size_t)32U * chunks;
+        uint8_t u8s[32U] = {0U};
+        size_t chunks8 = rem / (size_t)8U;
+        for (size_t i0 = (size_t)0U; i0 < chunks8; i0++) {
+          size_t k = i0;
+          size_t i = ((size_t)4U * chunks + k) / (size_t)5U;
+          size_t j = ((size_t)4U * chunks + k) % (size_t)5U;
+          libcrux_intrinsics_avx2_mm256_storeu_si256_u8(
+              Eurydice_array_to_slice((size_t)32U, u8s, uint8_t),
+              libcrux_sha3_traits_get_ij_a6(s, i, j)[0U]);
+          Eurydice_slice_copy(
+              Eurydice_slice_subslice3(out0, start0 + (size_t)8U * k,
+                                       start0 + (size_t)8U * (k + (size_t)1U),
+                                       uint8_t *),
+              Eurydice_array_to_subslice3(u8s, (size_t)0U, (size_t)8U,
+                                          uint8_t *),
+              uint8_t);
+          Eurydice_slice_copy(
+              Eurydice_slice_subslice3(out1, start0 + (size_t)8U * k,
+                                       start0 + (size_t)8U * (k + (size_t)1U),
+                                       uint8_t *),
+              Eurydice_array_to_subslice3(u8s, (size_t)8U, (size_t)16U,
+                                          uint8_t *),
+              uint8_t);
+          Eurydice_slice_copy(
+              Eurydice_slice_subslice3(out2, start0 + (size_t)8U * k,
+                                       start0 + (size_t)8U * (k + (size_t)1U),
+                                       uint8_t *),
+              Eurydice_array_to_subslice3(u8s, (size_t)16U, (size_t)24U,
+                                          uint8_t *),
+              uint8_t);
+          Eurydice_slice_copy(
+              Eurydice_slice_subslice3(out3, start0 + (size_t)8U * k,
+                                       start0 + (size_t)8U * (k + (size_t)1U),
+                                       uint8_t *),
+              Eurydice_array_to_subslice3(u8s, (size_t)24U, (size_t)32U,
+                                          uint8_t *),
+              uint8_t);
+        }
+        size_t rem8 = rem % (size_t)8U;
+        if (rem8 > (size_t)0U) {
+          size_t i = ((size_t)4U * chunks + chunks8) / (size_t)5U;
+          size_t j = ((size_t)4U * chunks + chunks8) % (size_t)5U;
+          libcrux_intrinsics_avx2_mm256_storeu_si256_u8(
+              Eurydice_array_to_slice((size_t)32U, u8s, uint8_t),
+              libcrux_sha3_traits_get_ij_a6(s, i, j)[0U]);
+          Eurydice_slice_copy(
+              Eurydice_slice_subslice3(out0, start0 + len - rem8, start0 + len,
+                                       uint8_t *),
+              Eurydice_array_to_subslice3(u8s, (size_t)0U, rem, uint8_t *),
+              uint8_t);
+          Eurydice_slice_copy(
+              Eurydice_slice_subslice3(out1, start0 + len - rem8, start0 + len,
+                                       uint8_t *),
+              Eurydice_array_to_subslice3(u8s, (size_t)8U, (size_t)8U + rem,
+                                          uint8_t *),
+              uint8_t);
+          Eurydice_slice_copy(
+              Eurydice_slice_subslice3(out2, start0 + len - rem8, start0 + len,
+                                       uint8_t *),
+              Eurydice_array_to_subslice3(u8s, (size_t)16U, (size_t)16U + rem,
+                                          uint8_t *),
+              uint8_t);
+          Eurydice_slice_copy(
+              Eurydice_slice_subslice3(out3, start0 + len - rem8, start0 + len,
+                                       uint8_t *),
+              Eurydice_array_to_subslice3(u8s, (size_t)24U, (size_t)24U + rem,
+                                          uint8_t *),
+              uint8_t);
+        }
+      }
+      return;
+    } else {
+      size_t i = uu____0.f0;
+      size_t i0 = (size_t)4U * i / (size_t)5U;
+      size_t j0 = (size_t)4U * i % (size_t)5U;
+      size_t i1 = ((size_t)4U * i + (size_t)1U) / (size_t)5U;
+      size_t j1 = ((size_t)4U * i + (size_t)1U) % (size_t)5U;
+      size_t i2 = ((size_t)4U * i + (size_t)2U) / (size_t)5U;
+      size_t j2 = ((size_t)4U * i + (size_t)2U) % (size_t)5U;
+      size_t i3 = ((size_t)4U * i + (size_t)3U) / (size_t)5U;
+      size_t j3 = ((size_t)4U * i + (size_t)3U) % (size_t)5U;
+      __m256i v0l = libcrux_intrinsics_avx2_mm256_permute2x128_si256(
+          (int32_t)32, libcrux_sha3_traits_get_ij_a6(s, i0, j0)[0U],
+          libcrux_sha3_traits_get_ij_a6(s, i2, j2)[0U], __m256i);
+      __m256i v1h = libcrux_intrinsics_avx2_mm256_permute2x128_si256(
+          (int32_t)32, libcrux_sha3_traits_get_ij_a6(s, i1, j1)[0U],
+          libcrux_sha3_traits_get_ij_a6(s, i3, j3)[0U], __m256i);
+      __m256i v2l = libcrux_intrinsics_avx2_mm256_permute2x128_si256(
+          (int32_t)49, libcrux_sha3_traits_get_ij_a6(s, i0, j0)[0U],
+          libcrux_sha3_traits_get_ij_a6(s, i2, j2)[0U], __m256i);
+      __m256i v3h = libcrux_intrinsics_avx2_mm256_permute2x128_si256(
+          (int32_t)49, libcrux_sha3_traits_get_ij_a6(s, i1, j1)[0U],
+          libcrux_sha3_traits_get_ij_a6(s, i3, j3)[0U], __m256i);
+      __m256i v0 = libcrux_intrinsics_avx2_mm256_unpacklo_epi64(v0l, v1h);
+      __m256i v1 = libcrux_intrinsics_avx2_mm256_unpackhi_epi64(v0l, v1h);
+      __m256i v2 = libcrux_intrinsics_avx2_mm256_unpacklo_epi64(v2l, v3h);
+      __m256i v3 = libcrux_intrinsics_avx2_mm256_unpackhi_epi64(v2l, v3h);
       libcrux_intrinsics_avx2_mm256_storeu_si256_u8(
-          Eurydice_array_to_slice((size_t)32U, u8s, uint8_t),
-          libcrux_sha3_traits_get_ij_a6(s, i, j)[0U]);
-      Eurydice_slice_copy(
-          Eurydice_slice_subslice3(out0, start0 + (size_t)8U * k,
-                                   start0 + (size_t)8U * (k + (size_t)1U),
+          Eurydice_slice_subslice3(out0, start + (size_t)32U * i,
+                                   start + (size_t)32U * (i + (size_t)1U),
                                    uint8_t *),
-          Eurydice_array_to_subslice3(u8s, (size_t)0U, (size_t)8U, uint8_t *),
-          uint8_t);
-      Eurydice_slice_copy(
-          Eurydice_slice_subslice3(out1, start0 + (size_t)8U * k,
-                                   start0 + (size_t)8U * (k + (size_t)1U),
-                                   uint8_t *),
-          Eurydice_array_to_subslice3(u8s, (size_t)8U, (size_t)16U, uint8_t *),
-          uint8_t);
-      Eurydice_slice_copy(
-          Eurydice_slice_subslice3(out2, start0 + (size_t)8U * k,
-                                   start0 + (size_t)8U * (k + (size_t)1U),
-                                   uint8_t *),
-          Eurydice_array_to_subslice3(u8s, (size_t)16U, (size_t)24U, uint8_t *),
-          uint8_t);
-      Eurydice_slice_copy(
-          Eurydice_slice_subslice3(out3, start0 + (size_t)8U * k,
-                                   start0 + (size_t)8U * (k + (size_t)1U),
-                                   uint8_t *),
-          Eurydice_array_to_subslice3(u8s, (size_t)24U, (size_t)32U, uint8_t *),
-          uint8_t);
-    }
-    size_t rem8 = rem % (size_t)8U;
-    if (rem8 > (size_t)0U) {
-      size_t i = ((size_t)4U * chunks + chunks8) / (size_t)5U;
-      size_t j = ((size_t)4U * chunks + chunks8) % (size_t)5U;
+          v0);
       libcrux_intrinsics_avx2_mm256_storeu_si256_u8(
-          Eurydice_array_to_slice((size_t)32U, u8s, uint8_t),
-          libcrux_sha3_traits_get_ij_a6(s, i, j)[0U]);
-      Eurydice_slice_copy(
-          Eurydice_slice_subslice3(out0, start0 + len - rem8, start0 + len,
+          Eurydice_slice_subslice3(out1, start + (size_t)32U * i,
+                                   start + (size_t)32U * (i + (size_t)1U),
                                    uint8_t *),
-          Eurydice_array_to_subslice3(u8s, (size_t)0U, rem, uint8_t *),
-          uint8_t);
-      Eurydice_slice_copy(Eurydice_slice_subslice3(out1, start0 + len - rem8,
-                                                   start0 + len, uint8_t *),
-                          Eurydice_array_to_subslice3(
-                              u8s, (size_t)8U, (size_t)8U + rem, uint8_t *),
-                          uint8_t);
-      Eurydice_slice_copy(Eurydice_slice_subslice3(out2, start0 + len - rem8,
-                                                   start0 + len, uint8_t *),
-                          Eurydice_array_to_subslice3(
-                              u8s, (size_t)16U, (size_t)16U + rem, uint8_t *),
-                          uint8_t);
-      Eurydice_slice_copy(Eurydice_slice_subslice3(out3, start0 + len - rem8,
-                                                   start0 + len, uint8_t *),
-                          Eurydice_array_to_subslice3(
-                              u8s, (size_t)24U, (size_t)24U + rem, uint8_t *),
-                          uint8_t);
+          v1);
+      libcrux_intrinsics_avx2_mm256_storeu_si256_u8(
+          Eurydice_slice_subslice3(out2, start + (size_t)32U * i,
+                                   start + (size_t)32U * (i + (size_t)1U),
+                                   uint8_t *),
+          v2);
+      libcrux_intrinsics_avx2_mm256_storeu_si256_u8(
+          Eurydice_slice_subslice3(out3, start + (size_t)32U * i,
+                                   start + (size_t)32U * (i + (size_t)1U),
+                                   uint8_t *),
+          v3);
+      continue;
     }
+    KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__,
+                      "panic!");
+    KRML_HOST_EXIT(255U);
   }
 }
 
@@ -2670,46 +2806,6 @@ libcrux_sha3_avx2_x4_incremental_shake256_squeeze_next_block(
     Eurydice_slice out1, Eurydice_slice out2, Eurydice_slice out3) {
   libcrux_sha3_generic_keccak_simd256_squeeze_next_block_81_5b(
       s, out0, out1, out2, out3, (size_t)0U);
-}
-
-/**
-This function found in impl
-{libcrux_sha3::generic_keccak::KeccakState<core::core_arch::x86::__m256i,
-4usize>[core::marker::Sized<core::core_arch::x86::__m256i>,
-libcrux_sha3::simd::avx2::{libcrux_sha3::traits::KeccakItem<4usize> for
-core::core_arch::x86::__m256i}]}
-*/
-/**
-A monomorphic instance of
-libcrux_sha3.generic_keccak.simd256.squeeze_first_three_blocks_81 with const
-generics
-- RATE= 168
-*/
-KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE void
-libcrux_sha3_generic_keccak_simd256_squeeze_first_three_blocks_81_3a(
-    libcrux_sha3_generic_keccak_KeccakState_55 *self, Eurydice_slice out0,
-    Eurydice_slice out1, Eurydice_slice out2, Eurydice_slice out3) {
-  libcrux_sha3_simd_avx2_squeeze4_17_3a(self, out0, out1, out2, out3,
-                                        (size_t)0U, (size_t)168U);
-  libcrux_sha3_generic_keccak_keccakf1600_80_a6(self);
-  libcrux_sha3_simd_avx2_squeeze4_17_3a(self, out0, out1, out2, out3,
-                                        (size_t)168U, (size_t)168U);
-  libcrux_sha3_generic_keccak_keccakf1600_80_a6(self);
-  libcrux_sha3_simd_avx2_squeeze4_17_3a(
-      self, out0, out1, out2, out3, (size_t)2U * (size_t)168U, (size_t)168U);
-}
-
-/**
- Squeeze three blocks
-*/
-KRML_ATTRIBUTE_TARGET("avx2")
-static KRML_MUSTINLINE void
-libcrux_sha3_avx2_x4_incremental_shake128_squeeze_first_three_blocks(
-    libcrux_sha3_generic_keccak_KeccakState_55 *s, Eurydice_slice out0,
-    Eurydice_slice out1, Eurydice_slice out2, Eurydice_slice out3) {
-  libcrux_sha3_generic_keccak_simd256_squeeze_first_three_blocks_81_3a(
-      s, out0, out1, out2, out3);
 }
 
 #define libcrux_sha3_avx2_H_DEFINED

@@ -7,8 +7,8 @@
  * Charon: 667d2fc98984ff7f3df989c2367e6c1fa4a000e7
  * Eurydice: 2381cbc416ef2ad0b561c362c500bc84f36b6785
  * Karamel: 80f5435f2fc505973c469a4afcc8d875cddd0d8b
- * F*: 5643e656b989aca7629723653a2570c7df6252b9-dirty
- * Libcrux: 4ac47ff7dc66c7048ccaaffa01b3a60cf30935e8
+ * F*: 71d8221589d4d438af3706d89cb653cf53e18aab
+ * Libcrux: 166eab5075753a9e2d2f95b01c823557acc5c0fa
  */
 
 #ifndef libcrux_mlkem_core_H
@@ -25,6 +25,21 @@ typedef struct core_ops_range_Range_08_s {
   size_t start;
   size_t end;
 } core_ops_range_Range_08;
+
+#define None 0
+#define Some 1
+
+typedef uint8_t Option_08_tags;
+
+/**
+A monomorphic instance of core.option.Option
+with types size_t
+
+*/
+typedef struct Option_08_s {
+  Option_08_tags tag;
+  size_t f0;
+} Option_08;
 
 static inline uint16_t core_num__u16__wrapping_add(uint16_t x0, uint16_t x1);
 
