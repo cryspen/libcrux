@@ -9,8 +9,7 @@ mod digest_size_support {
     // a marker trait indicating whether something is supported
     pub(super) trait SupportsLen<const LEN: usize> {}
 
-    // this helps us implement SupportsLen for more than one number with little code
-
+    // this helps us implement SupportsLen for more than one number
     macro_rules! support_out_lens {
     ($ty:ty, $($supported:expr),*) => {
         $( impl SupportsLen<$supported> for $ty {})*
