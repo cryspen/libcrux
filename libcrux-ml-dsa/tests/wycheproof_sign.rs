@@ -1,8 +1,5 @@
 // This module tests the implementation against the Wycheproof signing
-// test vectors for the final version of the ML-DSA standard, added in
-// commit
-// TODO: add current commit
-// [https://github.com/C2SP/wycheproof/pull/112/commits/8e7fa6f87e6993d7b613cf48b46512a32df8084a].
+// test vectors for the final version of the ML-DSA standard.
 //
 // This set of test vectors does not cover the pre-hashed variants of
 // ML-DSA.
