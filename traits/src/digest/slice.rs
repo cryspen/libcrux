@@ -46,6 +46,8 @@ pub enum HashError {
     InvalidDigestLength,
     /// The length of the provided payload is invalid.
     InvalidPayloadLength,
+    /// Unknown error.
+    Unknown,
 }
 
 impl core::fmt::Display for HashError {
@@ -53,6 +55,7 @@ impl core::fmt::Display for HashError {
         let text = match self {
             HashError::InvalidDigestLength => "the length of the provided digest buffer is invalid",
             HashError::InvalidPayloadLength => "the length of the provided payload is invalid",
+            HashError::Unknown => "indicates an unknown error",
         };
 
         f.write_str(text)
@@ -70,6 +73,8 @@ impl From<arrayref::HashError> for HashError {
     fn from(e: arrayref::HashError) -> Self {
         match e {
             arrayref::HashError::InvalidPayloadLength => Self::InvalidPayloadLength,
+            arrayref::HashError::InvalidDigestLength => Self::InvalidDigestLength,
+            arrayref::HashError::Unknown => Self::Unknown,
         }
     }
 }
