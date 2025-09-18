@@ -1,5 +1,5 @@
 // This module tests the implementation against the Wycheproof verification
-// test vectors for the final version of the ML-DSA standard.
+// test vectors for the final version of the ML-DSA standard (see `libcrux-kats` crate).
 //
 // This set of test vectors does not cover the pre-hashed variants of
 // ML-DSA.
