@@ -2,6 +2,7 @@
 //! We give definitions for all conversions so that they can be tested.
 //! We define no-ops here and force inlining, to ensure that these are free.
 
+#[cfg(not(hax))]
 use crate::traits::*;
 
 // TODO: Remove hax exemptions once this is supported.
