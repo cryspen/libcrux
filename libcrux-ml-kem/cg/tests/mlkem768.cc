@@ -208,24 +208,24 @@ TEST(MlKem768TestPortable, NISTKnownAnswerTest)
             libcrux_ml_kem_mlkem768_portable_generate_key_pair(kat.key_generation_seed.data());
 
         uint8_t pk_hash[32];
-        libcrux_sha3_sha256(
+        libcrux_sha3_portable_sha256(
             mk_slice(key_pair.pk.value,
                      LIBCRUX_ML_KEM_MLKEM768_CPA_PKE_PUBLIC_KEY_SIZE),
-            pk_hash);
+            mk_slice(pk_hash, 32));
         EXPECT_EQ(0, memcmp(pk_hash, kat.sha3_256_hash_of_public_key.data(), 32));
 
         uint8_t sk_hash[32];
-        libcrux_sha3_sha256(
-            mk_slice(key_pair.sk.value, LIBCRUX_ML_KEM_MLKEM768_SECRET_KEY_SIZE), sk_hash);
+        libcrux_sha3_portable_sha256(
+            mk_slice(key_pair.sk.value, LIBCRUX_ML_KEM_MLKEM768_SECRET_KEY_SIZE), mk_slice(sk_hash, 32));
         EXPECT_EQ(0, memcmp(sk_hash, kat.sha3_256_hash_of_secret_key.data(), 32));
 
         auto ctxt = libcrux_ml_kem_mlkem768_portable_encapsulate(
             &key_pair.pk, kat.encapsulation_seed.data());
         uint8_t ct_hash[32];
-        libcrux_sha3_sha256(
+        libcrux_sha3_portable_sha256(
             mk_slice(ctxt.fst.value,
                      LIBCRUX_ML_KEM_MLKEM768_CPA_PKE_CIPHERTEXT_SIZE),
-            ct_hash);
+            mk_slice(ct_hash, 32));
         EXPECT_EQ(0, memcmp(ct_hash, kat.sha3_256_hash_of_ciphertext.data(), 32));
         EXPECT_EQ(0,
                   memcmp(ctxt.snd,
@@ -367,24 +367,24 @@ TEST(MlKem768TestAvx2, NISTKnownAnswerTest)
         auto key_pair = libcrux_ml_kem_mlkem768_avx2_generate_key_pair(kat.key_generation_seed.data());
 
         uint8_t pk_hash[32];
-        libcrux_sha3_sha256(
+        libcrux_sha3_portable_sha256(
             mk_slice(key_pair.pk.value,
                      LIBCRUX_ML_KEM_MLKEM768_CPA_PKE_PUBLIC_KEY_SIZE),
-            pk_hash);
+            mk_slice(pk_hash, 32));
         EXPECT_EQ(0, memcmp(pk_hash, kat.sha3_256_hash_of_public_key.data(), 32));
 
         uint8_t sk_hash[32];
-        libcrux_sha3_sha256(
-            mk_slice(key_pair.sk.value, LIBCRUX_ML_KEM_MLKEM768_SECRET_KEY_SIZE), sk_hash);
+        libcrux_sha3_portable_sha256(
+            mk_slice(key_pair.sk.value, LIBCRUX_ML_KEM_MLKEM768_SECRET_KEY_SIZE), mk_slice(sk_hash, 32));
         EXPECT_EQ(0, memcmp(sk_hash, kat.sha3_256_hash_of_secret_key.data(), 32));
 
         auto ctxt = libcrux_ml_kem_mlkem768_avx2_encapsulate(
             &key_pair.pk, kat.encapsulation_seed.data());
         uint8_t ct_hash[32];
-        libcrux_sha3_sha256(
+        libcrux_sha3_portable_sha256(
             mk_slice(ctxt.fst.value,
                      LIBCRUX_ML_KEM_MLKEM768_CPA_PKE_CIPHERTEXT_SIZE),
-            ct_hash);
+            mk_slice(ct_hash, 32));
         EXPECT_EQ(0, memcmp(ct_hash, kat.sha3_256_hash_of_ciphertext.data(), 32));
         EXPECT_EQ(0,
                   memcmp(ctxt.snd,

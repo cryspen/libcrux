@@ -45,8 +45,11 @@ TEST(Sha3Test, ConsistencyTest)
     Eurydice_slice input;
     input.ptr = (void*) message;
     input.len = message_size;
+    Eurydice_slice digest_slice;
+    digest_slice.ptr = (void*) digest;
+    digest_slice.len = 32;
 
-    libcrux_sha3_sha256(input,digest);
+    libcrux_sha3_portable_sha256(input, digest_slice);
 
     bytes expected_digest = from_hex(
       "1af17a664e3fa8e419b8ba05c2a173169df76162a5a286e0c405b460d478f7ef");
