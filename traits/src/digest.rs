@@ -44,11 +44,17 @@ mod error_in_core {
 /// - [`owned::DigestIncremental`]
 pub trait DigestIncrementalBase {
     /// The digest state.
-    type IncrementalState;
+    type IncrementalState: InitializeDigestState;
     /// Reset the digest state.
     fn reset(state: &mut Self::IncrementalState);
     /// Update the digest state with the `payload`.
     fn update(state: &mut Self::IncrementalState, payload: &[u8]) -> Result<(), UpdateError>;
+}
+
+/// Base trait for digest state initialization.
+pub trait InitializeDigestState {
+    /// Initialize a new incremental digest state.
+    fn new() -> Self;
 }
 
 #[derive(Clone)]
@@ -91,6 +97,13 @@ impl<const N: usize, D: DigestIncrementalBase> Hasher<N, D> {
     /// Reset the digest state.
     pub fn reset(&mut self) {
         D::reset(&mut self.state)
+    }
+
+    /// Initialize a hasher.
+    pub fn new() -> Self {
+        Self {
+            state: D::IncrementalState::new(),
+        }
     }
 }
 
