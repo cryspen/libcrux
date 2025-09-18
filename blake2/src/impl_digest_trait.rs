@@ -1,9 +1,133 @@
 use crate::impl_hacl::*;
 use libcrux_traits::digest::{arrayref, slice, DigestIncrementalBase, Hasher, UpdateError};
 
+// Implements sets of allowed digest sizes
+mod digest_size_support {
+    pub(super) struct Blake2bOutSupport;
+    pub(super) struct Blake2sOutSupport;
+
+    // a marker trait indicating whether something is supported
+    pub(super) trait SupportsLen<const LEN: usize> {}
+
+    // this helps us implement SupportsLen for more than one number
+    macro_rules! support_out_lens {
+    ($ty:ty, $($supported:expr),*) => {
+        $( impl SupportsLen<$supported> for $ty {})*
+    };
+}
+    support_out_lens!(
+        Blake2bOutSupport,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30,
+        31,
+        32,
+        33,
+        34,
+        35,
+        36,
+        37,
+        38,
+        39,
+        40,
+        41,
+        42,
+        43,
+        44,
+        45,
+        46,
+        47,
+        48,
+        49,
+        50,
+        51,
+        52,
+        53,
+        54,
+        55,
+        56,
+        57,
+        58,
+        59,
+        60,
+        61,
+        62,
+        63,
+        64
+    );
+    support_out_lens!(
+        Blake2sOutSupport,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30,
+        31,
+        32
+    );
+}
+
+use digest_size_support::{Blake2bOutSupport, Blake2sOutSupport, SupportsLen};
+
 macro_rules! impl_digest_traits {
-    ($out_size:ident, $type:ty, $blake2:ty, $hasher:ty) => {
-        impl<const $out_size: usize> DigestIncrementalBase for $type {
+    ($out_size:ident, $type:ty, $blake2:ty, $hasher:ty, $set:ident) => {
+        impl<const $out_size: usize> DigestIncrementalBase for $type
+        where
+            // implement for supported digest lengths only
+            $set: SupportsLen<$out_size>,
+        {
             type IncrementalState = $blake2;
 
             fn update(state: &mut Self::IncrementalState, chunk: &[u8]) -> Result<(), UpdateError> {
@@ -19,7 +143,11 @@ macro_rules! impl_digest_traits {
             }
         }
 
-        impl<const $out_size: usize> slice::DigestIncremental for $type {
+        impl<const $out_size: usize> slice::DigestIncremental for $type
+        where
+            // implement for supported digest lengths only
+            $set: SupportsLen<$out_size>,
+        {
             fn finish(
                 state: &mut Self::IncrementalState,
                 digest: &mut [u8],
@@ -33,13 +161,21 @@ macro_rules! impl_digest_traits {
             }
         }
 
-        impl<const $out_size: usize> arrayref::DigestIncremental<$out_size> for $type {
+        impl<const $out_size: usize> arrayref::DigestIncremental<$out_size> for $type
+        where
+            // implement for supported digest lengths only
+            $set: SupportsLen<$out_size>,
+        {
             fn finish(state: &mut Self::IncrementalState, dst: &mut [u8; $out_size]) {
                 state.finalize(dst)
             }
         }
 
-        impl<const $out_size: usize> From<$blake2> for $hasher {
+        impl<const $out_size: usize> From<$blake2> for $hasher
+        where
+            // implement for supported digest lengths only
+            $set: SupportsLen<$out_size>,
+        {
             fn from(state: $blake2) -> Self {
                 Self { state }
             }
@@ -56,7 +192,8 @@ impl_digest_traits!(
     OUT_SIZE,
     Blake2bHash<OUT_SIZE>,
     Blake2b<ConstKeyLenConstDigestLen<0, OUT_SIZE>>,
-    Blake2bHasher<OUT_SIZE>
+    Blake2bHasher<OUT_SIZE>,
+    Blake2bOutSupport
 );
 
 /// A hasher for [`Blake2bHash`].
@@ -70,7 +207,8 @@ impl_digest_traits!(
     OUT_SIZE,
     Blake2sHash<OUT_SIZE>,
     Blake2s<ConstKeyLenConstDigestLen<0, OUT_SIZE>>,
-    Blake2sHasher<OUT_SIZE>
+    Blake2sHasher<OUT_SIZE>,
+    Blake2sOutSupport
 );
 
 /// A hasher for [`Blake2sHash`].
