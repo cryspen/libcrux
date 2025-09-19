@@ -1,3 +1,5 @@
+#![no_std]
+
 mod aes_ctr;
 mod aes_generic;
 mod gf128_generic;
