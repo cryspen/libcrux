@@ -102,6 +102,7 @@ mod test {
         gf128::<crate::platform::portable::FieldElement>(&KEY, &INPUT, &mut computed);
         for i in 0..16 {
             if computed[i] != EXPECTED[i] {
+                #[cfg(feature = "std")]
                 println!(
                     "mismatch at {}: expected is {}, computed is {}",
                     i, EXPECTED[i], computed[i]
@@ -118,6 +119,7 @@ mod test {
         gf128::<crate::platform::neon::FieldElement>(&KEY, &INPUT, &mut computed);
         for i in 0..16 {
             if computed[i] != EXPECTED[i] {
+                #[cfg(feature = "std")]
                 println!(
                     "mismatch at {}: expected is {}, computed is {}",
                     i, EXPECTED[i], computed[i]

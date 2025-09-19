@@ -25,6 +25,7 @@ default = ["rand"]  # XXX: remove rand here when cleaning up
 simd128 = []
 simd256 = []
 rand = ["dep:rand"]
+std = []
 
 [[bench]]
 name = "aesgcm"

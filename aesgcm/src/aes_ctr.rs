@@ -118,6 +118,7 @@ mod test {
         aes128_ctr_xor_block(&ctx, 2, &INPUT[16..32], &mut computed[16..32]);
         for i in 0..32 {
             if computed[i] != EXPECTED[i] {
+                #[cfg(feature = "std")]
                 println!(
                     "mismatch at {}: expected is {}, computed is {}",
                     i, EXPECTED[i], computed[i]
@@ -136,6 +137,7 @@ mod test {
         aes128_ctr_xor_block(&ctx, 2, &INPUT[16..32], &mut computed[16..32]);
         for i in 0..32 {
             if computed[i] != EXPECTED[i] {
+                #[cfg(feature = "std")]
                 println!(
                     "mismatch at {}: expected is {}, computed is {}",
                     i, EXPECTED[i], computed[i]
@@ -151,6 +153,7 @@ mod test {
         aes128_ctr_encrypt::<platform::portable::State>(&KEY, &NONCE, 1, &INPUT, &mut computed);
         for i in 0..32 {
             if computed[i] != EXPECTED[i] {
+                #[cfg(feature = "std")]
                 println!(
                     "mismatch at {}: expected is {}, computed is {}",
                     i, EXPECTED[i], computed[i]
@@ -167,6 +170,7 @@ mod test {
         aes128_ctr_encrypt::<platform::neon::State>(&KEY, &NONCE, 1, &INPUT, &mut computed);
         for i in 0..32 {
             if computed[i] != EXPECTED[i] {
+                #[cfg(feature = "std")]
                 println!(
                     "mismatch at {}: expected is {}, computed is {}",
                     i, EXPECTED[i], computed[i]
