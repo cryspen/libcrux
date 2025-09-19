@@ -62,17 +62,11 @@ fn key_expansion<T: AESState>(key: &[u8]) -> ExtendedKey<T, NUM_KEYS> {
     }
 
     expansion_step256!(2, 0x01);
-    expansion_step256!(3, 0x01);
     expansion_step256!(4, 0x02);
-    expansion_step256!(5, 0x02);
     expansion_step256!(6, 0x04);
-    expansion_step256!(7, 0x04);
     expansion_step256!(8, 0x08);
-    expansion_step256!(9, 0x08);
     expansion_step256!(10, 0x10);
-    expansion_step256!(11, 0x10);
     expansion_step256!(12, 0x20);
-    expansion_step256!(13, 0x20);
 
     let prev0 = keyex[12].clone();
     let prev1 = keyex[13].clone();
