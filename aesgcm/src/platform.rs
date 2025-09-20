@@ -1,12 +1,15 @@
-pub mod portable;
+//! Traits for platform dependent implementations
+
+pub(crate) mod portable;
 
 #[cfg(all(target_arch = "aarch64", target_feature = "aes"))]
-pub mod neon;
+pub(crate) mod neon;
 
 #[cfg(target_arch = "x86_64")] // ENABLE: target_feature="aes"
-pub mod intel_ni;
+pub(crate) mod intel_ni;
 
-pub trait AESState: Clone + core::fmt::Debug {
+/// The AES state.
+pub(crate) trait AESState: Clone + core::fmt::Debug {
     fn new() -> Self;
     fn load_block(&mut self, b: &[u8]);
     fn store_block(&self, out: &mut [u8]);
@@ -20,7 +23,8 @@ pub trait AESState: Clone + core::fmt::Debug {
     fn key_expansion_step(&mut self, prev: &Self);
 }
 
-pub trait GF128FieldElement {
+/// A gf128 field element.
+pub(crate) trait GF128FieldElement {
     fn zero() -> Self;
     fn load_element(bytes: &[u8]) -> Self;
     fn store_element(&self, bytes: &mut [u8]);

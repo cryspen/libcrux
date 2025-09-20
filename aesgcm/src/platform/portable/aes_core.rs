@@ -1,9 +1,13 @@
 #![allow(clippy::needless_range_loop)]
 
-use crate::aes_generic::AES_BLOCK_LEN;
+use crate::aes::AES_BLOCK_LEN;
+
+#[cfg(test)]
+mod test;
 
 pub(crate) type State = [u16; 8];
 
+#[inline]
 fn new_state() -> State {
     [0u16; 8]
 }
@@ -149,6 +153,7 @@ fn xnor(a: u16, b: u16) -> u16 {
     !(a ^ b)
 }
 
+#[inline]
 fn sub_bytes_state(st: &mut State) {
     let u0 = st[7];
     let u1 = st[6];
@@ -311,6 +316,7 @@ fn shift_row_u16(input: u16) -> u16 {
         | ((input & 0x0888) << 4)
 }
 
+#[inline]
 fn shift_rows_state(st: &mut State) {
     st[0] = shift_row_u16(st[0]);
     st[1] = shift_row_u16(st[1]);
@@ -350,6 +356,7 @@ fn xor_key1_state(st: &mut State, k: &State) {
     st[7] ^= k[7];
 }
 
+#[inline]
 fn aes_enc(st: &mut State, key: &State) {
     sub_bytes_state(st);
     shift_rows_state(st);
@@ -357,6 +364,7 @@ fn aes_enc(st: &mut State, key: &State) {
     xor_key1_state(st, key)
 }
 
+#[inline]
 fn aes_enc_last(st: &mut State, key: &State) {
     sub_bytes_state(st);
     shift_rows_state(st);
@@ -374,6 +382,7 @@ fn aes_keygen_assisti(rcon: u8, i: usize, u: u16) -> u16 {
     n ^ (u3 >> 4)
 }
 
+#[inline]
 fn aes_keygen_assist(next: &mut State, prev: &State, rcon: u8) {
     next.copy_from_slice(prev);
     sub_bytes_state(next);
@@ -388,6 +397,7 @@ fn aes_keygen_assist(next: &mut State, prev: &State, rcon: u8) {
     next[7] = aes_keygen_assisti(rcon, 7, next[7]);
 }
 
+#[inline]
 fn aes_keygen_assist0(next: &mut State, prev: &State, rcon: u8) {
     aes_keygen_assist(next, prev, rcon);
 
@@ -409,6 +419,7 @@ fn aes_keygen_assist0(next: &mut State, prev: &State, rcon: u8) {
     next[7] = aux(next[7]);
 }
 
+#[inline]
 fn aes_keygen_assist1(next: &mut State, prev: &State) {
     aes_keygen_assist(next, prev, 0);
 
@@ -436,6 +447,7 @@ fn key_expand1(p: u16, n: u16) -> u16 {
     n ^ p
 }
 
+#[inline]
 fn key_expansion_step(next: &mut State, prev: &State) {
     next[0] = key_expand1(prev[0], next[0]);
     next[1] = key_expand1(prev[1], next[1]);
@@ -448,16 +460,19 @@ fn key_expansion_step(next: &mut State, prev: &State) {
 }
 
 impl crate::platform::AESState for State {
+    #[inline]
     fn new() -> Self {
         new_state()
     }
 
+    #[inline]
     fn load_block(&mut self, b: &[u8]) {
         debug_assert!(b.len() == 16);
 
         transpose_u8x16(b.try_into().unwrap(), self);
     }
 
+    #[inline]
     fn store_block(&self, out: &mut [u8]) {
         debug_assert!(out.len() == AES_BLOCK_LEN, "out.len() = {}", out.len());
 
@@ -476,30 +491,33 @@ impl crate::platform::AESState for State {
         }
     }
 
+    #[inline]
     fn xor_key(&mut self, key: &Self) {
         xor_key1_state(self, key);
     }
 
+    #[inline]
     fn aes_enc(&mut self, key: &Self) {
         aes_enc(self, key);
     }
 
+    #[inline]
     fn aes_enc_last(&mut self, key: &Self) {
         aes_enc_last(self, key);
     }
 
+    #[inline]
     fn aes_keygen_assist0<const RCON: i32>(&mut self, prev: &Self) {
         aes_keygen_assist0(self, prev, RCON as u8);
     }
 
+    #[inline]
     fn aes_keygen_assist1(&mut self, prev: &Self) {
         aes_keygen_assist1(self, prev);
     }
 
+    #[inline]
     fn key_expansion_step(&mut self, prev: &Self) {
         key_expansion_step(self, prev)
     }
 }
-
-#[cfg(test)]
-mod test;
