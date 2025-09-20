@@ -1,29 +1,31 @@
+
+/// A portable gf128 field element.
 pub(crate) type FieldElement = u128;
 
-#[inline(always)]
+#[inline]
 fn zero() -> FieldElement {
     0
 }
 
-#[inline(always)]
+#[inline]
 fn load_element(bytes: &[u8]) -> FieldElement {
     debug_assert!(bytes.len() == 16);
 
     u128::from_be_bytes(bytes.try_into().unwrap())
 }
 
-#[inline(always)]
+#[inline]
 fn store_element(element: &FieldElement, bytes: &mut [u8]) {
     debug_assert!(bytes.len() == 16);
     bytes.copy_from_slice(&u128::to_be_bytes(*element));
 }
 
-#[inline(always)]
+#[inline]
 fn add(element: &FieldElement, other: &FieldElement) -> FieldElement {
     element ^ other
 }
 
-#[inline(always)]
+#[inline]
 fn ith_bit_mask(elem: &FieldElement, i: usize) -> FieldElement {
     debug_assert!(i < 128);
 
@@ -37,13 +39,13 @@ fn ith_bit_mask(elem: &FieldElement, i: usize) -> FieldElement {
 
 const IRRED: FieldElement = 0xE100_0000_0000_0000_0000_0000_0000_0000;
 
-#[inline(always)]
+#[inline]
 fn mul_x(elem: &mut FieldElement) {
     let mask = ith_bit_mask(elem, 127);
     *elem = (*elem >> 1) ^ (IRRED & mask)
 }
 
-#[inline(always)]
+#[inline]
 fn mul_step(x: &FieldElement, y: &mut FieldElement, i: usize, result: &mut FieldElement) {
     debug_assert!(i < 128);
     let mask = ith_bit_mask(x, i);
@@ -51,7 +53,7 @@ fn mul_step(x: &FieldElement, y: &mut FieldElement, i: usize, result: &mut Field
     mul_x(y);
 }
 
-#[inline(always)]
+#[inline]
 fn mul(x: &FieldElement, y: &FieldElement) -> FieldElement {
     let mut result = 0;
     let mut multiplicand = *y;
@@ -62,27 +64,27 @@ fn mul(x: &FieldElement, y: &FieldElement) -> FieldElement {
 }
 
 impl crate::platform::GF128FieldElement for FieldElement {
-    #[inline(always)]
+    #[inline]
     fn zero() -> Self {
         zero()
     }
 
-    #[inline(always)]
+    #[inline]
     fn load_element(bytes: &[u8]) -> Self {
         load_element(bytes)
     }
 
-    #[inline(always)]
+    #[inline]
     fn store_element(&self, bytes: &mut [u8]) {
         store_element(self, bytes);
     }
 
-    #[inline(always)]
+    #[inline]
     fn add(&mut self, other: &Self) {
         *self = add(self, other);
     }
 
-    #[inline(always)]
+    #[inline]
     fn mul(&mut self, other: &Self) {
         *self = mul(self, other)
     }

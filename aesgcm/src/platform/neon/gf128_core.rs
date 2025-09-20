@@ -1,26 +1,32 @@
 use libcrux_intrinsics::arm64::*;
 
+/// A Neon gf128 field element
 #[derive(Clone, Copy)]
-pub struct FieldElement(pub u128);
+pub(crate) struct FieldElement(pub(crate) u128);
 
+#[inline]
 fn zero() -> FieldElement {
     FieldElement(0)
 }
 
+#[inline]
 fn load_element(b: &[u8]) -> FieldElement {
     debug_assert!(b.len() == 16);
     FieldElement(u128::from_be_bytes(b.try_into().unwrap()))
 }
 
+#[inline]
 fn store_element(element: &FieldElement, bytes: &mut [u8]) {
     debug_assert!(bytes.len() == 16);
     bytes.copy_from_slice(&element.0.to_be_bytes());
 }
 
+#[inline]
 fn add(element: &mut FieldElement, other: &FieldElement) {
     element.0 ^= other.0;
 }
 
+#[inline]
 fn mul_wide(element: &FieldElement, other: &FieldElement) -> (FieldElement, FieldElement) {
     let l0 = element.0 as u64;
     let h0 = (element.0 >> 64) as u64;
@@ -41,6 +47,7 @@ fn mul_wide(element: &FieldElement, other: &FieldElement) -> (FieldElement, Fiel
     (FieldElement(high), FieldElement(low))
 }
 
+#[inline]
 fn reduce(high: &FieldElement, low: &FieldElement) -> FieldElement {
     let high = (high.0 << 1) ^ (low.0 >> 127);
     let low = low.0 << 1;
@@ -50,28 +57,34 @@ fn reduce(high: &FieldElement, low: &FieldElement) -> FieldElement {
     FieldElement(x1_x0 ^ high)
 }
 
+#[inline]
 fn mul(x: &mut FieldElement, y: &FieldElement) {
     let (high, low) = mul_wide(x, y);
     *x = reduce(&high, &low);
 }
 
 impl crate::platform::GF128FieldElement for FieldElement {
+    #[inline]
     fn zero() -> Self {
         zero()
     }
 
+    #[inline]
     fn load_element(b: &[u8]) -> Self {
         load_element(b)
     }
 
+    #[inline]
     fn store_element(&self, b: &mut [u8]) {
         store_element(self, b);
     }
 
+    #[inline]
     fn add(&mut self, other: &Self) {
         add(self, other);
     }
 
+    #[inline]
     fn mul(&mut self, other: &Self) {
         mul(self, other)
     }
