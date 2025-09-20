@@ -1,6 +1,6 @@
 use crate::{
+    aes_gcm_128::GCM_KEY_LEN,
     ctr::Aes128CtrContext,
-    aes_gcm_128::KEY_LEN,
     platform::{self, AESState},
     NONCE_LEN,
 };
@@ -23,7 +23,7 @@ pub(crate) fn aes128_ctr_encrypt<T: AESState>(
     out: &mut [u8],
 ) {
     debug_assert!(nonce.len() == NONCE_LEN);
-    debug_assert!(key.len() == KEY_LEN);
+    debug_assert!(key.len() == GCM_KEY_LEN);
     debug_assert!(inp.len() == out.len());
     let ctx = Aes128CtrContext::<T>::init(key, nonce);
     ctx.update(ctr, inp, out);
