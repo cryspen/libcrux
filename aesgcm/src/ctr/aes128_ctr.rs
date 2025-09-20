@@ -1,7 +1,9 @@
+//! AES128 ctr mode, generic over the platform [`AESState`].
+
 use core::array::from_fn;
 
 use super::AesCtrContext;
-use crate::{aes_gcm_128::KEY_LEN, aes_generic::*, platform::AESState, NONCE_LEN};
+use crate::{aes_gcm_128::KEY_LEN, aes::*, platform::AESState, NONCE_LEN};
 
 pub(super) const NUM_KEYS: usize = 11;
 
@@ -9,6 +11,7 @@ pub(super) const NUM_KEYS: usize = 11;
 pub(crate) type Aes128CtrContext<T> = AesCtrContext<T, NUM_KEYS>;
 
 impl<T: AESState> Aes128CtrContext<T> {
+    #[inline]
     pub(crate) fn init(key: &[u8], nonce: &[u8]) -> Self {
         debug_assert!(nonce.len() == NONCE_LEN);
         debug_assert!(key.len() == KEY_LEN);
@@ -22,18 +25,21 @@ impl<T: AESState> Aes128CtrContext<T> {
         }
     }
 
+    #[inline]
     pub(crate) fn set_nonce(&mut self, nonce: &[u8]) {
         debug_assert!(nonce.len() == NONCE_LEN);
 
         self.aes_ctr_set_nonce(nonce);
     }
 
+    #[inline]
     pub(crate) fn key_block(&self, ctr: u32, out: &mut [u8]) {
         debug_assert!(out.len() == KEY_LEN);
 
         self.aes_ctr_key_block(ctr, out);
     }
 
+    #[inline]
     pub(crate) fn update(&self, ctr: u32, inp: &[u8], out: &mut [u8]) {
         debug_assert!(inp.len() == out.len());
 
@@ -42,6 +48,7 @@ impl<T: AESState> Aes128CtrContext<T> {
 }
 
 /// 128 - Key expansion
+#[inline]
 fn key_expansion<T: AESState>(key: &[u8]) -> ExtendedKey<T, NUM_KEYS> {
     debug_assert!(key.len() == KEY_LEN);
 
@@ -50,9 +57,11 @@ fn key_expansion<T: AESState>(key: &[u8]) -> ExtendedKey<T, NUM_KEYS> {
 
     macro_rules! expansion_step128 {
         ($i:expr,$rcon:expr) => {
-            let prev = keyex[$i - 1].clone();
-            keyex[$i].aes_keygen_assist0::<$rcon>(&prev);
-            keyex[$i].key_expansion_step(&prev);
+            // For hax we could clone here instead.
+            // let prev = keyex[$i - 1].clone();
+            let (prev, current) = keyex.split_at_mut($i);
+            current[0].aes_keygen_assist0::<$rcon>(&prev[$i - 1]);
+            current[0].key_expansion_step(&prev[$i - 1]);
         };
     }
 
@@ -68,33 +77,4 @@ fn key_expansion<T: AESState>(key: &[u8]) -> ExtendedKey<T, NUM_KEYS> {
     expansion_step128!(10, 0x36);
 
     keyex
-}
-
-#[cfg(test)]
-pub(crate) mod test_utils {
-    use super::*;
-
-    pub(crate) fn aes128_ctr_xor_block<T: AESState>(
-        ctx: &Aes128CtrContext<T>,
-        ctr: u32,
-        inp: &[u8],
-        out: &mut [u8],
-    ) {
-        debug_assert!(inp.len() == out.len() && inp.len() <= 16);
-        ctx.aes_ctr_xor_block(ctr, inp, out);
-    }
-
-    pub(crate) fn aes128_ctr_encrypt<T: AESState>(
-        key: &[u8],
-        nonce: &[u8],
-        ctr: u32,
-        inp: &[u8],
-        out: &mut [u8],
-    ) {
-        debug_assert!(nonce.len() == NONCE_LEN);
-        debug_assert!(key.len() == KEY_LEN);
-        debug_assert!(inp.len() == out.len());
-        let ctx = Aes128CtrContext::<T>::init(key, nonce);
-        ctx.update(ctr, inp, out);
-    }
 }

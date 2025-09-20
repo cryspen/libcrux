@@ -1,28 +1,34 @@
 use core::arch::x86_64::*;
 
-// A lot of the code below is shared with NEON. Refactor!
+// XXX: A lot of the code below is shared with NEON. Refactor!
 
+/// An avx2 gf128 field element.
 #[derive(Clone, Copy)]
-pub struct FieldElement(pub u128);
+pub(super) struct FieldElement(pub(super) u128);
 
+#[inline]
 fn zero() -> FieldElement {
     FieldElement(0)
 }
 
+#[inline]
 fn load_elem(b: &[u8]) -> FieldElement {
     debug_assert!(b.len() == 16);
     FieldElement(u128::from_be_bytes(b.try_into().unwrap()))
 }
 
+#[inline]
 fn store_elem(elem: &FieldElement, b: &mut [u8]) {
     debug_assert!(b.len() == 16);
     b.copy_from_slice(&elem.0.to_be_bytes());
 }
 
+#[inline]
 fn add(elem: &FieldElement, other: &FieldElement) -> FieldElement {
     FieldElement((*elem).0 ^ (*other).0)
 }
 
+#[inline]
 fn mul_wide(elem: &FieldElement, other: &FieldElement) -> (FieldElement, FieldElement) {
     let lhs: __m128i = unsafe { std::mem::transmute((*elem).0) };
     let rhs: __m128i = unsafe { std::mem::transmute((*other).0) };
@@ -41,6 +47,7 @@ fn mul_wide(elem: &FieldElement, other: &FieldElement) -> (FieldElement, FieldEl
     (FieldElement(low128), FieldElement(high128))
 }
 
+#[inline]
 fn reduce(high: &FieldElement, low: &FieldElement) -> FieldElement {
     let high = ((*high).0 << 1) ^ ((*low).0 >> 127);
     let low = (*low).0 << 1;
@@ -50,28 +57,34 @@ fn reduce(high: &FieldElement, low: &FieldElement) -> FieldElement {
     FieldElement(x1_x0 ^ high)
 }
 
+#[inline]
 fn mul(x: &FieldElement, y: &FieldElement) -> FieldElement {
     let (high, low) = mul_wide(x, y);
     reduce(&high, &low)
 }
 
 impl crate::platform::GF128FieldElement for FieldElement {
+    #[inline]
     fn zero() -> Self {
         zero()
     }
 
+    #[inline]
     fn load_elem(b: &[u8]) -> Self {
         load_elem(b)
     }
 
+    #[inline]
     fn store_elem(&self, b: &mut [u8]) {
         store_elem(self, b);
     }
 
+    #[inline]
     fn add(&mut self, other: &Self) {
         *self = add(self, other);
     }
 
+    #[inline]
     fn mul(&mut self, other: &Self) {
         *self = mul(self, other)
     }

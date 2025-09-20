@@ -1,9 +1,9 @@
 #![allow(clippy::needless_range_loop)]
 
 use crate::{
-    aes_ctr::Aes128CtrContext,
-    aes_generic::AES_BLOCK_LEN,
-    gf128_generic::GF128State,
+    aes::AES_BLOCK_LEN,
+    ctr::Aes128CtrContext,
+    gf128::GF128State,
     platform::{AESState, GF128FieldElement},
     DecryptError, NONCE_LEN, TAG_LEN,
 };
@@ -18,9 +18,9 @@ pub(crate) struct State<T: AESState, U: GF128FieldElement> {
     pub(crate) tag_mix: [u8; TAG_LEN],
 }
 
-impl<T: AESState, U: GF128FieldElement> State<T, U> {
+impl<T: AESState, U: GF128FieldElement> super::State for State<T, U> {
     /// Initialize the state
-    pub(crate) fn init(key: &[u8]) -> Self {
+    fn init(key: &[u8]) -> Self {
         debug_assert!(key.len() == KEY_LEN);
 
         let nonce = [0u8; NONCE_LEN];
@@ -38,20 +38,14 @@ impl<T: AESState, U: GF128FieldElement> State<T, U> {
         }
     }
 
-    pub(crate) fn set_nonce(&mut self, nonce: &[u8]) {
+    fn set_nonce(&mut self, nonce: &[u8]) {
         debug_assert!(nonce.len() == NONCE_LEN);
 
         self.aes_state.set_nonce(nonce);
         self.aes_state.key_block(1, &mut self.tag_mix);
     }
 
-    pub(crate) fn encrypt(
-        &mut self,
-        aad: &[u8],
-        plaintext: &[u8],
-        ciphertext: &mut [u8],
-        tag: &mut [u8],
-    ) {
+    fn encrypt(&mut self, aad: &[u8], plaintext: &[u8], ciphertext: &mut [u8], tag: &mut [u8]) {
         debug_assert!(ciphertext.len() == plaintext.len());
         debug_assert!(plaintext.len() / AES_BLOCK_LEN <= u32::MAX as usize);
         debug_assert!(tag.len() == TAG_LEN);
@@ -73,7 +67,7 @@ impl<T: AESState, U: GF128FieldElement> State<T, U> {
         }
     }
 
-    pub(crate) fn decrypt(
+    fn decrypt(
         &mut self,
         aad: &[u8],
         ciphertext: &[u8],

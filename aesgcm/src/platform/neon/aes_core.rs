@@ -1,23 +1,29 @@
 use core::arch::aarch64::*;
 
+/// The Neon state
 pub(crate) type State = uint8x16_t;
 
+#[inline]
 fn new_state() -> State {
     unsafe { vdupq_n_u8(0) }
 }
 
+#[inline]
 fn xor_key1_state(st: &mut State, k: &State) {
     unsafe { *st = veorq_u8(*st, *k) }
 }
 
+#[inline]
 fn aes_enc(st: &mut State, key: &State) {
     unsafe { *st = veorq_u8(vaesmcq_u8(vaeseq_u8(*st, vdupq_n_u8(0))), *key) }
 }
 
+#[inline]
 fn aes_enc_last(st: &mut State, key: &State) {
     unsafe { *st = veorq_u8(vaeseq_u8(*st, vdupq_n_u8(0)), *key) }
 }
 
+#[inline]
 fn aes_keygen_assist(next: &mut State, prev: &State, rcon: u8) {
     unsafe {
         let st = vaeseq_u8(*prev, vdupq_n_u8(0));
@@ -34,16 +40,19 @@ fn aes_keygen_assist(next: &mut State, prev: &State, rcon: u8) {
     }
 }
 
+#[inline]
 fn aes_keygen_assist0(next: &mut State, prev: &State, rcon: u8) {
     aes_keygen_assist(next, prev, rcon);
     unsafe { *next = vreinterpretq_u8_u32(vdupq_laneq_u32(vreinterpretq_u32_u8(*next), 3)) }
 }
 
+#[inline]
 fn aes_keygen_assist1(next: &mut State, prev: &State) {
     aes_keygen_assist(next, prev, 0);
     unsafe { *next = vreinterpretq_u8_u32(vdupq_laneq_u32(vreinterpretq_u32_u8(*next), 2)) }
 }
 
+#[inline]
 fn key_expansion_step(next: &mut State, prev: &State) {
     unsafe {
         let zero = vdupq_n_u32(0);
@@ -56,20 +65,24 @@ fn key_expansion_step(next: &mut State, prev: &State) {
 }
 
 impl crate::platform::AESState for State {
+    #[inline]
     fn new() -> Self {
         new_state()
     }
 
+    #[inline]
     fn load_block(&mut self, b: &[u8]) {
         debug_assert!(b.len() == 16);
         unsafe { *self = vld1q_u8(b.as_ptr()) };
     }
 
+    #[inline]
     fn store_block(&self, out: &mut [u8]) {
         debug_assert!(out.len() == 16);
         unsafe { vst1q_u8(out.as_mut_ptr(), *self) }
     }
 
+    #[inline]
     fn xor_block(&self, inp: &[u8], out: &mut [u8]) {
         debug_assert!(inp.len() == out.len() && inp.len() <= 16);
         let inp_vec = unsafe { vld1q_u8(inp.as_ptr()) };
@@ -77,26 +90,32 @@ impl crate::platform::AESState for State {
         unsafe { vst1q_u8(out.as_mut_ptr(), out_vec) }
     }
 
+    #[inline]
     fn xor_key(&mut self, key: &Self) {
         xor_key1_state(self, key);
     }
 
+    #[inline]
     fn aes_enc(&mut self, key: &Self) {
         aes_enc(self, key);
     }
 
+    #[inline]
     fn aes_enc_last(&mut self, key: &Self) {
         aes_enc_last(self, key);
     }
 
+    #[inline]
     fn aes_keygen_assist0<const RCON: i32>(&mut self, prev: &Self) {
         aes_keygen_assist0(self, prev, RCON as u8);
     }
 
+    #[inline]
     fn aes_keygen_assist1(&mut self, prev: &Self) {
         aes_keygen_assist1(self, prev);
     }
 
+    #[inline]
     fn key_expansion_step(&mut self, prev: &Self) {
         key_expansion_step(self, prev)
     }

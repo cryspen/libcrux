@@ -1,37 +1,46 @@
 use core::arch::x86_64::*;
 
-pub(crate) type State = __m128i;
+/// The avx2 state.
+pub(super) type State = __m128i;
 
+#[inline]
 fn new_state() -> State {
     unsafe { _mm_setzero_si128() }
 }
 
+#[inline]
 fn xor_key1_state(st: &mut State, k: &State) {
     unsafe { *st = _mm_xor_si128(*st, *k) }
 }
 
+#[inline]
 fn aes_enc(st: &mut State, key: &State) {
     unsafe { *st = _mm_aesenc_si128(*st, *key) }
 }
 
+#[inline]
 fn aes_enc_last(st: &mut State, key: &State) {
     unsafe { *st = _mm_aesenclast_si128(*st, *key) }
 }
 
+#[inline]
 fn aes_keygen_assist<const RCON: i32>(next: &mut State, prev: &State) {
     unsafe { *next = _mm_aeskeygenassist_si128::<RCON>(*prev) }
 }
 
+#[inline]
 fn aes_keygen_assist0<const RCON: i32>(next: &mut State, prev: &State) {
     aes_keygen_assist::<RCON>(next, prev);
     unsafe { *next = _mm_shuffle_epi32(*next, 0xff) }
 }
 
+#[inline]
 fn aes_keygen_assist1(next: &mut State, prev: &State) {
     aes_keygen_assist::<0>(next, prev);
     unsafe { *next = _mm_shuffle_epi32(*next, 0xaa) }
 }
 
+#[inline]
 fn key_expansion_step(next: &mut State, prev: &State) {
     unsafe {
         let p0 = _mm_xor_si128(*prev, _mm_slli_si128(*prev, 4));
@@ -42,20 +51,24 @@ fn key_expansion_step(next: &mut State, prev: &State) {
 }
 
 impl crate::platform::AESState for State {
+    #[inline]
     fn new() -> Self {
         new_state()
     }
 
+    #[inline]
     fn load_block(&mut self, b: &[u8]) {
         debug_assert!(b.len() == 16);
         unsafe { *self = _mm_loadu_si128(b.as_ptr() as *const __m128i) };
     }
 
+    #[inline]
     fn store_block(&self, out: &mut [u8]) {
         debug_assert!(out.len() == 16);
         unsafe { _mm_storeu_si128(out.as_mut_ptr() as *mut __m128i, *self) }
     }
 
+    #[inline]
     fn xor_block(&self, inp: &[u8], out: &mut [u8]) {
         debug_assert!(inp.len() == out.len() && inp.len() <= 16);
         let inp_vec = unsafe { _mm_loadu_si128(inp.as_ptr() as *const __m128i) };
@@ -63,27 +76,33 @@ impl crate::platform::AESState for State {
         unsafe { _mm_storeu_si128(out.as_mut_ptr() as *mut __m128i, out_vec) }
     }
 
+    #[inline]
     fn xor_key(&mut self, key: &Self) {
         xor_key1_state(self, key);
     }
 
+    #[inline]
     fn aes_enc(&mut self, key: &Self) {
         aes_enc(self, key);
         (self, key);
     }
 
+    #[inline]
     fn aes_enc_last(&mut self, key: &Self) {
         aes_enc_last(self, key);
     }
 
+    #[inline]
     fn aes_keygen_assist0<const RCON: i32>(&mut self, prev: &Self) {
         aes_keygen_assist0::<RCON>(self, prev);
     }
 
+    #[inline]
     fn aes_keygen_assist1(&mut self, prev: &Self) {
         aes_keygen_assist1(self, prev);
     }
 
+    #[inline]
     fn key_expansion_step(&mut self, prev: &Self) {
         key_expansion_step(self, prev)
     }

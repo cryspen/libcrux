@@ -14,7 +14,7 @@ pub fn fmt(x: usize) -> String {
 }
 
 macro_rules! impl_comp {
-    ($fun:ident, $portable_fun:expr, $neon_fun:expr, $intel_fun:expr, $rustcrypto_fun:expr) => {
+    ($fun:ident, $keylen:literal, $portable_fun:expr, $neon_fun:expr, $intel_fun:expr, $rustcrypto_fun:expr) => {
         // Comparing libcrux performance for different payload sizes and other implementations.
         fn $fun(c: &mut Criterion) {
             const PAYLOAD_SIZES: [usize; 3] = [128, 1024, 1024 * 1024 * 10];
@@ -31,7 +31,7 @@ macro_rules! impl_comp {
                         b.iter_batched(
                             || {
                                 (
-                                    randombytes(16),
+                                    randombytes($keylen),
                                     randombytes(12),
                                     randombytes(32),
                                     randombytes(*payload_size),
@@ -62,7 +62,7 @@ macro_rules! impl_comp {
                         b.iter_batched(
                             || {
                                 (
-                                    randombytes(16),
+                                    randombytes($keylen),
                                     randombytes(12),
                                     randombytes(32),
                                     randombytes(*payload_size),
@@ -86,7 +86,7 @@ macro_rules! impl_comp {
                         b.iter_batched(
                             || {
                                 (
-                                    randombytes(16),
+                                    randombytes($keylen),
                                     randombytes(12),
                                     randombytes(32),
                                     randombytes(*payload_size),
@@ -109,7 +109,7 @@ macro_rules! impl_comp {
                         b.iter_batched(
                             || {
                                 (
-                                    randombytes(16),
+                                    randombytes($keylen),
                                     randombytes(12),
                                     randombytes(32),
                                     randombytes(*payload_size),
@@ -137,10 +137,8 @@ macro_rules! impl_comp {
 }
 
 use aes_gcm::{
-    aead::{Aead, AeadCore, KeyInit, OsRng},
-    Aes128Gcm,
-    Key, // Or `Aes128Gcm`
-    Nonce,
+    aead::{Aead, KeyInit, Payload},
+    Aes128Gcm, Aes256Gcm,
 };
 use rand::RngCore;
 
@@ -148,26 +146,51 @@ fn rustcrypto_aes128_gcm_encrypt(
     key: &[u8],
     nonce: &[u8],
     aad: &[u8],
-    plain: &[u8],
+    msg: &[u8],
     ciphertext: &mut [u8],
     tag: &mut [u8],
 ) {
     let cipher = Aes128Gcm::new(key.into());
-    let ctxt = cipher.encrypt(nonce.into(), plain).unwrap();
-    ciphertext.copy_from_slice(&ctxt[0..plain.len()]);
-    tag.copy_from_slice(&ctxt[plain.len()..]);
+    let ctxt = cipher.encrypt(nonce.into(), Payload { msg, aad }).unwrap();
+    ciphertext.copy_from_slice(&ctxt[0..msg.len()]);
+    tag.copy_from_slice(&ctxt[msg.len()..]);
+}
+
+// XXX: We could work with the traits here, but this is quicker for now.
+fn rustcrypto_aes256_gcm_encrypt(
+    key: &[u8],
+    nonce: &[u8],
+    aad: &[u8],
+    msg: &[u8],
+    ciphertext: &mut [u8],
+    tag: &mut [u8],
+) {
+    let cipher = Aes256Gcm::new(key.into());
+    let ctxt = cipher.encrypt(nonce.into(), Payload { msg, aad }).unwrap();
+    ciphertext.copy_from_slice(&ctxt[0..msg.len()]);
+    tag.copy_from_slice(&ctxt[msg.len()..]);
 }
 
 impl_comp!(
     AES128_GCM,
-    libcrux_aesgcm::portable::aes128_gcm_encrypt,
-    libcrux_aesgcm::neon::aes128_gcm_encrypt,
-    libcrux_aesgcm::intel_ni::aes128_gcm_encrypt,
+    16,
+    libcrux_aesgcm::portable::aes_gcm_128::encrypt,
+    libcrux_aesgcm::neon::aes_gcm_128::encrypt,
+    libcrux_aesgcm::intel_ni::aes_gcm_128::encrypt,
     rustcrypto_aes128_gcm_encrypt
+);
+impl_comp!(
+    AES256_GCM,
+    32,
+    libcrux_aesgcm::portable::aes_gcm_256::encrypt,
+    libcrux_aesgcm::neon::aes_gcm_256::encrypt,
+    libcrux_aesgcm::intel_ni::aes_gcm_256::encrypt,
+    rustcrypto_aes256_gcm_encrypt
 );
 
 fn benchmarks(c: &mut Criterion) {
     AES128_GCM(c);
+    AES256_GCM(c);
 }
 
 criterion_group!(benches, benchmarks);

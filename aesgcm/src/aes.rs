@@ -1,3 +1,5 @@
+//! The AES block cipher function.
+
 use crate::platform::*;
 
 pub(crate) type ExtendedKey<T, const NUM_KEYS: usize> = [T; NUM_KEYS];
@@ -10,6 +12,8 @@ pub(crate) type ExtendedKey<T, const NUM_KEYS: usize> = [T; NUM_KEYS];
 /// AES block size
 pub(crate) const AES_BLOCK_LEN: usize = 16;
 
+/// The AES block cipher function.
+#[inline]
 pub(crate) fn block_cipher<T: AESState, const NUM_KEYS: usize>(
     st: &mut T,
     keyex: &ExtendedKey<T, NUM_KEYS>,
