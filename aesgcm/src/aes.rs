@@ -19,8 +19,11 @@ pub(crate) fn block_cipher<T: AESState, const NUM_KEYS: usize>(
     keyex: &ExtendedKey<T, NUM_KEYS>,
 ) {
     st.xor_key(&keyex[0]);
+
+    #[allow(clippy::needless_range_loop)]
     for i in 1..NUM_KEYS - 1 {
         st.aes_enc(&keyex[i]);
     }
+
     st.aes_enc_last(&keyex[NUM_KEYS - 1]);
 }
