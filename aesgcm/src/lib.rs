@@ -5,6 +5,7 @@ mod ctr;
 mod gf128;
 mod platform;
 
+mod aes_gcm;
 mod aes_gcm_128;
 mod aes_gcm_256;
 

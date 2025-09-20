@@ -3,7 +3,7 @@
 use core::array::from_fn;
 
 use super::AesCtrContext;
-use crate::{aes_gcm_128::KEY_LEN, aes::*, platform::AESState, NONCE_LEN};
+use crate::{aes::*, aes_gcm_128::GCM_KEY_LEN, platform::AESState, NONCE_LEN};
 
 pub(super) const NUM_KEYS: usize = 11;
 
@@ -14,7 +14,7 @@ impl<T: AESState> Aes128CtrContext<T> {
     #[inline]
     pub(crate) fn init(key: &[u8], nonce: &[u8]) -> Self {
         debug_assert!(nonce.len() == NONCE_LEN);
-        debug_assert!(key.len() == KEY_LEN);
+        debug_assert!(key.len() == GCM_KEY_LEN);
 
         let mut ctr_nonce = [0u8; 16];
         ctr_nonce[0..12].copy_from_slice(nonce);
@@ -34,7 +34,7 @@ impl<T: AESState> Aes128CtrContext<T> {
 
     #[inline]
     pub(crate) fn key_block(&self, ctr: u32, out: &mut [u8]) {
-        debug_assert!(out.len() == KEY_LEN);
+        debug_assert!(out.len() == GCM_KEY_LEN);
 
         self.aes_ctr_key_block(ctr, out);
     }
@@ -50,7 +50,7 @@ impl<T: AESState> Aes128CtrContext<T> {
 /// 128 - Key expansion
 #[inline]
 fn key_expansion<T: AESState>(key: &[u8]) -> ExtendedKey<T, NUM_KEYS> {
-    debug_assert!(key.len() == KEY_LEN);
+    debug_assert!(key.len() == GCM_KEY_LEN);
 
     let mut keyex = from_fn(|_| T::new());
     keyex[0].load_block(key);

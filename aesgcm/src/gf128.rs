@@ -37,7 +37,7 @@ impl<T: GF128FieldElement> GF128State<T> {
 
     #[inline]
     pub(crate) fn update_blocks(&mut self, input: &[u8]) {
-        debug_assert!(input.len() % 16 == 0);
+        debug_assert!(input.len().is_multiple_of(AES_BLOCK_LEN));
 
         let blocks = input.len() / AES_BLOCK_LEN;
         for i in 0..blocks {
