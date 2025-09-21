@@ -1,5 +1,5 @@
 [package]
-name = "libcrux-aesgcm"
+name = "libcrux_aesgcm"
 version.workspace = true
 authors.workspace = true
 license.workspace = true
@@ -32,6 +32,7 @@ name = "aesgcm"
 harness = false
 
 [dev-dependencies]
+libcrux_aesgcm = { version = "*", features = ["std"], path = "." }
 cavp = { version = "0.0.2", path = "../cavp" }
 criterion = "0.5.1"
 hex = "0.4.3"

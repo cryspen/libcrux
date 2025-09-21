@@ -1,7 +1,7 @@
 use core::arch::x86_64::*;
 
 /// The avx2 state.
-pub(super) type State = __m128i;
+pub(crate) type State = __m128i;
 
 #[inline]
 fn new_state() -> State {
@@ -59,21 +59,30 @@ impl crate::platform::AESState for State {
     #[inline]
     fn load_block(&mut self, b: &[u8]) {
         debug_assert!(b.len() == 16);
+
         unsafe { *self = _mm_loadu_si128(b.as_ptr() as *const __m128i) };
     }
 
     #[inline]
     fn store_block(&self, out: &mut [u8]) {
         debug_assert!(out.len() == 16);
-        unsafe { _mm_storeu_si128(out.as_mut_ptr() as *mut __m128i, *self) }
+
+        unsafe { _mm_storeu_si128(out.as_mut_ptr() as *mut __m128i, *self) };
     }
 
     #[inline]
-    fn xor_block(&self, inp: &[u8], out: &mut [u8]) {
-        debug_assert!(inp.len() == out.len() && inp.len() <= 16);
-        let inp_vec = unsafe { _mm_loadu_si128(inp.as_ptr() as *const __m128i) };
+    fn xor_block(&self, input: &[u8], out: &mut [u8]) {
+        debug_assert!(input.len() == out.len() && input.len() <= 16);
+        // XXX: hot-fix to have enough input and output here.
+        let mut block_in = [0u8; 16];
+        let mut block_out = [0u8; 16];
+        block_in[0..input.len()].copy_from_slice(input);
+
+        let inp_vec = unsafe { _mm_loadu_si128(block_in.as_ptr() as *const __m128i) };
         let out_vec = unsafe { _mm_xor_si128(inp_vec, *self) };
-        unsafe { _mm_storeu_si128(out.as_mut_ptr() as *mut __m128i, out_vec) }
+        unsafe { _mm_storeu_si128(block_out.as_mut_ptr() as *mut __m128i, out_vec) };
+
+        out.copy_from_slice(&block_out[0..out.len()]);
     }
 
     #[inline]
@@ -108,6 +117,7 @@ impl crate::platform::AESState for State {
     }
 }
 
+#[cfg(feature = "std")]
 #[test]
 fn test() {
     unsafe {
@@ -116,10 +126,13 @@ fn test() {
         let w = _mm_slli_si128(x, 4);
         let mut z: [i32; 4] = [0; 4];
         _mm_storeu_si128(z.as_mut_ptr() as *mut __m128i, x);
-        println!("{:?}", z);
+
+        std::eprintln!("{:?}", z);
         _mm_storeu_si128(z.as_mut_ptr() as *mut __m128i, w);
-        println!("shift right 4 {:?}", z);
+
+        std::eprintln!("shift right 4 {:?}", z);
         _mm_storeu_si128(z.as_mut_ptr() as *mut __m128i, y);
-        println!("shuffle aa {:?}", z);
+
+        std::eprintln!("shuffle aa {:?}", z);
     }
 }

@@ -2,10 +2,10 @@
 
 pub(crate) mod portable;
 
-#[cfg(all(target_arch = "aarch64", target_feature = "aes"))]
+#[cfg(feature = "simd128")]
 pub(crate) mod neon;
 
-#[cfg(target_arch = "x86_64")] // ENABLE: target_feature="aes"
+#[cfg(feature = "simd256")]
 pub(crate) mod intel_ni;
 
 /// The AES state.

@@ -53,7 +53,7 @@ fn test_ctr_block() {
     for i in 0..32 {
         if computed[i] != EXPECTED[i] {
             #[cfg(feature = "std")]
-            println!(
+            std::eprintln!(
                 "mismatch at {}: expected is {}, computed is {}",
                 i, EXPECTED[i], computed[i]
             );
@@ -72,7 +72,7 @@ fn test_ctr_block_neon() {
     for i in 0..32 {
         if computed[i] != EXPECTED[i] {
             #[cfg(feature = "std")]
-            println!(
+            std::eprintln!(
                 "mismatch at {}: expected is {}, computed is {}",
                 i, EXPECTED[i], computed[i]
             );
@@ -88,7 +88,7 @@ fn test_ctr_encrypt() {
     for i in 0..32 {
         if computed[i] != EXPECTED[i] {
             #[cfg(feature = "std")]
-            println!(
+            std::eprintln!(
                 "mismatch at {}: expected is {}, computed is {}",
                 i, EXPECTED[i], computed[i]
             );
@@ -105,7 +105,7 @@ fn test_ctr_encrypt_neon() {
     for i in 0..32 {
         if computed[i] != EXPECTED[i] {
             #[cfg(feature = "std")]
-            println!(
+            std::eprintln!(
                 "mismatch at {}: expected is {}, computed is {}",
                 i, EXPECTED[i], computed[i]
             );
@@ -114,14 +114,14 @@ fn test_ctr_encrypt_neon() {
     }
 }
 
-#[cfg(target_arch = "x86_64")] // ENABLE: target_feature="aes"
+#[cfg(all(feature = "simd256", feature = "std"))]
 #[test]
 fn test_ctr_encrypt_intel() {
     let mut computed: [u8; 32] = [0u8; 32];
     aes128_ctr_encrypt::<platform::intel_ni::State>(&KEY, &NONCE, 1, &INPUT, &mut computed);
     for i in 0..32 {
         if computed[i] != EXPECTED[i] {
-            println!(
+            std::eprintln!(
                 "mismatch at {}: expected is {}, computed is {}",
                 i, EXPECTED[i], computed[i]
             );

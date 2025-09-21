@@ -12,12 +12,14 @@ fn zero() -> FieldElement {
 #[inline]
 fn load_element(b: &[u8]) -> FieldElement {
     debug_assert!(b.len() == 16);
+
     FieldElement(u128::from_be_bytes(b.try_into().unwrap()))
 }
 
 #[inline]
 fn store_element(element: &FieldElement, bytes: &mut [u8]) {
     debug_assert!(bytes.len() == 16);
+
     bytes.copy_from_slice(&element.0.to_be_bytes());
 }
 

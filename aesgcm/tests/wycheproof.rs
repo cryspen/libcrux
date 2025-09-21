@@ -55,6 +55,7 @@ fn test() {
         if test_group.key_size == 128 {
             for test in test_group.tests {
                 println!("  Test AES-GCM 128 {}", test.tc_id);
+
                 // Multiplexing
                 run::<16, libcrux_aesgcm::AesGcm128>(&test);
 
