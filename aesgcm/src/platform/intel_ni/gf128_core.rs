@@ -4,7 +4,7 @@ use core::arch::x86_64::*;
 
 /// An avx2 gf128 field element.
 #[derive(Clone, Copy)]
-pub(super) struct FieldElement(pub(super) u128);
+pub(crate) struct FieldElement(pub(super) u128);
 
 #[inline]
 fn zero() -> FieldElement {
@@ -12,14 +12,16 @@ fn zero() -> FieldElement {
 }
 
 #[inline]
-fn load_elem(b: &[u8]) -> FieldElement {
+fn load_element(b: &[u8]) -> FieldElement {
     debug_assert!(b.len() == 16);
+
     FieldElement(u128::from_be_bytes(b.try_into().unwrap()))
 }
 
 #[inline]
-fn store_elem(elem: &FieldElement, b: &mut [u8]) {
+fn store_element(elem: &FieldElement, b: &mut [u8]) {
     debug_assert!(b.len() == 16);
+
     b.copy_from_slice(&elem.0.to_be_bytes());
 }
 
@@ -30,8 +32,8 @@ fn add(elem: &FieldElement, other: &FieldElement) -> FieldElement {
 
 #[inline]
 fn mul_wide(elem: &FieldElement, other: &FieldElement) -> (FieldElement, FieldElement) {
-    let lhs: __m128i = unsafe { std::mem::transmute((*elem).0) };
-    let rhs: __m128i = unsafe { std::mem::transmute((*other).0) };
+    let lhs: __m128i = unsafe { core::mem::transmute((*elem).0) };
+    let rhs: __m128i = unsafe { core::mem::transmute((*other).0) };
     let low = unsafe { _mm_clmulepi64_si128(lhs, rhs, 0x11) };
     let mid0 = unsafe { _mm_clmulepi64_si128(lhs, rhs, 0x10) };
     let mid1 = unsafe { _mm_clmulepi64_si128(lhs, rhs, 0x01) };
@@ -42,8 +44,8 @@ fn mul_wide(elem: &FieldElement, other: &FieldElement) -> (FieldElement, FieldEl
     let low = unsafe { _mm_xor_si128(low, m0) };
     let high = unsafe { _mm_xor_si128(high, m1) };
 
-    let low128: u128 = unsafe { std::mem::transmute(low) };
-    let high128: u128 = unsafe { std::mem::transmute(high) };
+    let low128: u128 = unsafe { core::mem::transmute(low) };
+    let high128: u128 = unsafe { core::mem::transmute(high) };
     (FieldElement(low128), FieldElement(high128))
 }
 
@@ -70,13 +72,13 @@ impl crate::platform::GF128FieldElement for FieldElement {
     }
 
     #[inline]
-    fn load_elem(b: &[u8]) -> Self {
-        load_elem(b)
+    fn load_element(b: &[u8]) -> Self {
+        load_element(b)
     }
 
     #[inline]
-    fn store_elem(&self, b: &mut [u8]) {
-        store_elem(self, b);
+    fn store_element(&self, b: &mut [u8]) {
+        store_element(self, b);
     }
 
     #[inline]
@@ -90,14 +92,15 @@ impl crate::platform::GF128FieldElement for FieldElement {
     }
 }
 
+#[cfg(feature = "std")]
 #[test]
 fn test_transmute() {
     let x = 1u128 << 64 ^ 2u128;
-    let xv: __m128i = unsafe { std::mem::transmute(x) };
+    let xv: __m128i = unsafe { core::mem::transmute(x) };
     let xv: __m128i = unsafe { _mm_slli_si128(xv, 8) };
-    let x: u128 = unsafe { std::mem::transmute(xv) };
-    println!("trans {:x}", x);
+    let x: u128 = unsafe { core::mem::transmute(xv) };
+    std::eprintln!("trans {:x}", x);
     let mut u64s = [0u64; 2];
     unsafe { _mm_storeu_si128(u64s.as_mut_ptr() as *mut __m128i, xv) };
-    println!("store {:?}", u64s)
+    std::eprintln!("store {:?}", u64s)
 }

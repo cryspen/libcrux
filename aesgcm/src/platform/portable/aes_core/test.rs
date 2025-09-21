@@ -694,13 +694,13 @@ fn test_transpose() {
             if get_bit_u8(&x, i, j) != get_bit_u16(&y, i, j) {
                 #[cfg(feature = "std")]
                 {
-                    println!("x[{},{}] = {}", i, j, get_bit_u8(&x, i, j));
-                    println!("y[{},{}] = {}", i, j, get_bit_u16(&y, i, j));
+                    std::eprintln!("x[{},{}] = {}", i, j, get_bit_u8(&x, i, j));
+                    std::eprintln!("y[{},{}] = {}", i, j, get_bit_u16(&y, i, j));
                 }
                 assert!(false);
             } else {
                 #[cfg(feature = "std")]
-                println!("transpose ok: {},{}", i, j);
+                std::eprintln!("transpose ok: {},{}", i, j);
             }
         }
     }
@@ -711,13 +711,13 @@ fn test_transpose() {
             if get_bit_u8(&x, i, j) != get_bit_u8(&z, i, j) {
                 #[cfg(feature = "std")]
                 {
-                    println!("x[{},{}] = {}", i, j, get_bit_u8(&x, i, j));
-                    println!("z[{},{}] = {}", i, j, get_bit_u8(&z, i, j));
+                    std::eprintln!("x[{},{}] = {}", i, j, get_bit_u8(&x, i, j));
+                    std::eprintln!("z[{},{}] = {}", i, j, get_bit_u8(&z, i, j));
                 }
                 assert!(false);
             } else {
                 #[cfg(feature = "std")]
-                println!("inv-transpose ok: {},{}", i, j);
+                std::eprintln!("inv-transpose ok: {},{}", i, j);
             }
         }
     }
@@ -736,11 +736,11 @@ fn test_sbox() {
         transpose_u16x8(&y, &mut w);
         if w[0] != sbox_fwd(i as u8) {
             #[cfg(feature = "std")]
-            println!("sbox[{}] = {}, should be {}", i, w[0], sbox_fwd(i as u8));
+            std::eprintln!("sbox[{}] = {}, should be {}", i, w[0], sbox_fwd(i as u8));
             assert!(false);
         } else {
             #[cfg(feature = "std")]
-            println!("sbox ok {}", i)
+            std::eprintln!("sbox ok {}", i)
         }
     }
 }
@@ -758,7 +758,7 @@ fn test_sbox_inv() {
         transpose_u16x8(&y, &mut w);
         if w[0] != sbox_inv(i as u8) {
             #[cfg(feature = "std")]
-            println!(
+            std::eprintln!(
                 "sbox_inv[{}] = {}, should be {}",
                 i,
                 w[0],
@@ -767,7 +767,7 @@ fn test_sbox_inv() {
             assert!(false);
         } else {
             #[cfg(feature = "std")]
-            println!("sbox inv ok {}", i)
+            std::eprintln!("sbox inv ok {}", i)
         }
     }
 }

@@ -36,7 +36,7 @@ fn test_gf128() {
     for i in 0..16 {
         if computed[i] != EXPECTED[i] {
             #[cfg(feature = "std")]
-            println!(
+            std::eprintln!(
                 "mismatch at {}: expected is {}, computed is {}",
                 i, EXPECTED[i], computed[i]
             );
@@ -53,7 +53,7 @@ fn test_gf128_neon() {
     for i in 0..16 {
         if computed[i] != EXPECTED[i] {
             #[cfg(feature = "std")]
-            println!(
+            std::eprintln!(
                 "mismatch at {}: expected is {}, computed is {}",
                 i, EXPECTED[i], computed[i]
             );
@@ -62,14 +62,14 @@ fn test_gf128_neon() {
     }
 }
 
-#[cfg(target_arch = "x86_64")] // ENABLE: target_feature="aes"
+#[cfg(all(feature = "simd256", feature = "std"))]
 #[test]
 fn test_gf128_intel() {
     let mut computed: [u8; 16] = [0u8; 16];
     gf128::<crate::platform::intel_ni::FieldElement>(&KEY, &INPUT, &mut computed);
     for i in 0..16 {
         if computed[i] != EXPECTED[i] {
-            println!(
+            std::eprintln!(
                 "mismatch at {}: expected is {}, computed is {}",
                 i, EXPECTED[i], computed[i]
             );

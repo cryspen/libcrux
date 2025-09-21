@@ -1,5 +1,8 @@
 #![no_std]
 
+#[cfg(feature = "std")]
+extern crate std;
+
 mod aes;
 mod ctr;
 mod gf128;
@@ -55,19 +58,19 @@ pub struct AesGcm256 {}
 pub struct PortableAesGcm256 {}
 
 /// Neon AES-GCM 256.
-#[cfg(all(target_arch = "aarch64", target_feature = "aes"))]
+#[cfg(feature = "simd128")]
 pub struct NeonAesGcm256 {}
 
 /// Neon AES-GCM 256.
-#[cfg(not(all(target_arch = "aarch64", target_feature = "aes")))]
+#[cfg(not(feature = "simd128"))]
 pub type NeonAesGcm256 = PortableAesGcm256;
 
 /// AES-NI AES-GCM 256.
-#[cfg(target_arch = "x86_64")]
+#[cfg(feature = "simd256")]
 pub struct X64AesGcm256 {}
 
 /// AES-NI AES-GCM 256.
-#[cfg(not(target_arch = "x86_64"))]
+#[cfg(not(feature = "simd256"))]
 pub type X64AesGcm256 = PortableAesGcm256;
 
 /// Tag length.
@@ -85,7 +88,6 @@ pub(crate) fn encrypt<S: State>(
     ciphertext: &mut [u8],
     tag: &mut [u8],
 ) {
-    // XXX: debug_assert!(key.len() == KEY_LEN);
     debug_assert!(nonce.len() == NONCE_LEN);
     debug_assert!(tag.len() == TAG_LEN);
 
@@ -103,7 +105,6 @@ pub(crate) fn decrypt<S: State>(
     tag: &[u8],
     plaintext: &mut [u8],
 ) -> Result<(), DecryptError> {
-    // XXX: debug_assert!(key.len() == KEY_LEN);
     debug_assert!(nonce.len() == NONCE_LEN);
     debug_assert!(tag.len() == TAG_LEN);
 
@@ -158,10 +159,86 @@ pub mod portable {
     pub_mod!(r"AES-GCM 256 ", aes_gcm_256, crate::aes_gcm_256::State<platform::portable::State, platform::portable::FieldElement>);
 }
 
-#[cfg(all(target_arch = "aarch64", target_feature = "aes"))]
+#[cfg(feature = "simd128")]
 pub mod neon {
     pub_mod!(r"AES-GCM 128 ", aes_gcm_128, crate::aes_gcm_128::State<platform::neon::State, platform::neon::FieldElement>);
     pub_mod!(r"AES-GCM 256 ", aes_gcm_256, crate::aes_gcm_256::State<platform::neon::State, platform::neon::FieldElement>);
+}
+
+#[cfg(feature = "simd256")]
+pub mod x64 {
+    // Here we don't use the `pub_mod` macro becaus we need to add target features
+    // onto the functions.
+    macro_rules! x64_pub_mod {
+        ($variant_comment:literal, $mod_name:ident, $state:ty) => {
+            #[doc = $variant_comment]
+            pub mod $mod_name {
+                use crate::$mod_name::KEY_LEN;
+                use crate::{platform, DecryptError};
+
+                type State = $state;
+
+                #[doc = $variant_comment]
+                /// encrypt.
+                pub fn encrypt(
+                    key: &[u8],
+                    nonce: &[u8],
+                    aad: &[u8],
+                    plaintext: &[u8],
+                    ciphertext: &mut [u8],
+                    tag: &mut [u8],
+                ) {
+                    debug_assert!(key.len() == KEY_LEN);
+
+                    #[inline]
+                    #[target_feature(enable = "avx2", enable = "aes")]
+                    unsafe fn inner(
+                        key: &[u8],
+                        nonce: &[u8],
+                        aad: &[u8],
+                        plaintext: &[u8],
+                        ciphertext: &mut [u8],
+                        tag: &mut [u8],
+                    ) {
+                        crate::encrypt::<State>(key, nonce, aad, plaintext, ciphertext, tag);
+                    }
+
+                    unsafe { inner(key, nonce, aad, plaintext, ciphertext, tag) };
+                }
+
+                #[doc = $variant_comment]
+                /// decrypt.
+                pub fn decrypt(
+                    key: &[u8],
+                    nonce: &[u8],
+                    aad: &[u8],
+                    ciphertext: &[u8],
+                    tag: &[u8],
+                    plaintext: &mut [u8],
+                ) -> Result<(), DecryptError> {
+                    debug_assert!(key.len() == KEY_LEN);
+
+                    #[inline]
+                    #[target_feature(enable = "avx2", enable = "aes")]
+                    unsafe fn inner(
+                        key: &[u8],
+                        nonce: &[u8],
+                        aad: &[u8],
+                        ciphertext: &[u8],
+                        tag: &[u8],
+                        plaintext: &mut [u8],
+                    ) -> Result<(), DecryptError> {
+                        crate::decrypt::<State>(key, nonce, aad, ciphertext, tag, plaintext)
+                    }
+
+                    unsafe { inner(key, nonce, aad, ciphertext, tag, plaintext) }
+                }
+            }
+        };
+    }
+
+    x64_pub_mod!(r"AES-GCM 128 ", aes_gcm_128, crate::aes_gcm_128::State<platform::portable::State, platform::intel_ni::FieldElement>);
+    x64_pub_mod!(r"AES-GCM 256 ", aes_gcm_256, crate::aes_gcm_256::State<platform::intel_ni::State, platform::intel_ni::FieldElement>);
 }
 
 /// Macro to implement the different structs and multiplexing.
@@ -185,12 +262,14 @@ macro_rules! api {
                     aad: &[u8],
                     plaintext: &[u8],
                 ) -> Result<(), EncryptError> {
-                    if libcrux_platform::simd128_support() && libcrux_platform::aes_ni_support() {
-                        $neon::encrypt(ciphertext, tag, key, nonce, aad, plaintext)
-                    } else if libcrux_platform::simd256_support()
+                    // SIMD256 needs to come first because SIMD128 is true for
+                    // x64 as well, but we don't actually implement it.
+                    if libcrux_platform::simd256_support() && libcrux_platform::aes_ni_support() {
+                        $x64::encrypt(ciphertext, tag, key, nonce, aad, plaintext)
+                    } else if libcrux_platform::simd128_support()
                         && libcrux_platform::aes_ni_support()
                     {
-                        $x64::encrypt(ciphertext, tag, key, nonce, aad, plaintext)
+                        $neon::encrypt(ciphertext, tag, key, nonce, aad, plaintext)
                     } else {
                         $portable::encrypt(ciphertext, tag, key, nonce, aad, plaintext)
                     }
@@ -204,12 +283,14 @@ macro_rules! api {
                     ciphertext: &[u8],
                     tag: &Tag,
                 ) -> Result<(), DecryptError> {
-                    if libcrux_platform::simd128_support() && libcrux_platform::aes_ni_support() {
-                        $neon::decrypt(plaintext, key, nonce, aad, ciphertext, tag)
-                    } else if libcrux_platform::simd256_support()
+                    // SIMD256 needs to come first because SIMD128 is true for
+                    // x64 as well, but we don't actually implement it.
+                    if libcrux_platform::simd256_support() && libcrux_platform::aes_ni_support() {
+                        $x64::decrypt(plaintext, key, nonce, aad, ciphertext, tag)
+                    } else if libcrux_platform::simd128_support()
                         && libcrux_platform::aes_ni_support()
                     {
-                        $x64::decrypt(plaintext, key, nonce, aad, ciphertext, tag)
+                        $neon::decrypt(plaintext, key, nonce, aad, ciphertext, tag)
                     } else {
                         $portable::decrypt(plaintext, key, nonce, aad, ciphertext, tag)
                     }
@@ -242,7 +323,7 @@ macro_rules! api {
                 }
             }
 
-            #[cfg(all(target_arch = "aarch64", target_feature = "aes"))]
+            #[cfg(feature = "simd128")]
             impl Aead<KEY_LEN, TAG_LEN, NONCE_LEN> for $neon {
                 fn encrypt(
                     ciphertext: &mut [u8],
@@ -265,6 +346,33 @@ macro_rules! api {
                     tag: &Tag,
                 ) -> Result<(), DecryptError> {
                     neon::$variant::decrypt(key, nonce, aad, ciphertext, tag, plaintext)
+                        .map_err(|_| DecryptError::InvalidTag)
+                }
+            }
+
+            #[cfg(feature = "simd256")]
+            impl Aead<KEY_LEN, TAG_LEN, NONCE_LEN> for $x64 {
+                fn encrypt(
+                    ciphertext: &mut [u8],
+                    tag: &mut Tag,
+                    key: &Key,
+                    nonce: &Nonce,
+                    aad: &[u8],
+                    plaintext: &[u8],
+                ) -> Result<(), EncryptError> {
+                    x64::$variant::encrypt(key, nonce, aad, plaintext, ciphertext, tag);
+                    Ok(())
+                }
+
+                fn decrypt(
+                    plaintext: &mut [u8],
+                    key: &Key,
+                    nonce: &Nonce,
+                    aad: &[u8],
+                    ciphertext: &[u8],
+                    tag: &Tag,
+                ) -> Result<(), DecryptError> {
+                    x64::$variant::decrypt(key, nonce, aad, ciphertext, tag, plaintext)
                         .map_err(|_| DecryptError::InvalidTag)
                 }
             }

@@ -176,7 +176,7 @@ impl_comp!(
     16,
     libcrux_aesgcm::portable::aes_gcm_128::encrypt,
     libcrux_aesgcm::neon::aes_gcm_128::encrypt,
-    libcrux_aesgcm::intel_ni::aes_gcm_128::encrypt,
+    libcrux_aesgcm::x64::aes_gcm_128::encrypt,
     rustcrypto_aes128_gcm_encrypt
 );
 impl_comp!(
@@ -184,7 +184,7 @@ impl_comp!(
     32,
     libcrux_aesgcm::portable::aes_gcm_256::encrypt,
     libcrux_aesgcm::neon::aes_gcm_256::encrypt,
-    libcrux_aesgcm::intel_ni::aes_gcm_256::encrypt,
+    libcrux_aesgcm::x64::aes_gcm_256::encrypt,
     rustcrypto_aes256_gcm_encrypt
 );
 
