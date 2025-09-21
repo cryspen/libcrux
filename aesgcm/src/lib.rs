@@ -1,4 +1,5 @@
 #![no_std]
+#![deny(unsafe_code)]
 
 #[cfg(feature = "std")]
 extern crate std;
@@ -192,6 +193,7 @@ pub mod x64 {
 
                     #[inline]
                     #[target_feature(enable = "avx2", enable = "aes")]
+                    #[allow(unsafe_code)]
                     unsafe fn inner(
                         key: &[u8],
                         nonce: &[u8],
@@ -203,7 +205,10 @@ pub mod x64 {
                         crate::encrypt::<State>(key, nonce, aad, plaintext, ciphertext, tag);
                     }
 
-                    unsafe { inner(key, nonce, aad, plaintext, ciphertext, tag) };
+                    #[allow(unsafe_code)]
+                    unsafe {
+                        inner(key, nonce, aad, plaintext, ciphertext, tag)
+                    };
                 }
 
                 #[doc = $variant_comment]
@@ -220,6 +225,7 @@ pub mod x64 {
 
                     #[inline]
                     #[target_feature(enable = "avx2", enable = "aes")]
+                    #[allow(unsafe_code)]
                     unsafe fn inner(
                         key: &[u8],
                         nonce: &[u8],
@@ -231,7 +237,10 @@ pub mod x64 {
                         crate::decrypt::<State>(key, nonce, aad, ciphertext, tag, plaintext)
                     }
 
-                    unsafe { inner(key, nonce, aad, ciphertext, tag, plaintext) }
+                    #[allow(unsafe_code)]
+                    unsafe {
+                        inner(key, nonce, aad, ciphertext, tag, plaintext)
+                    }
                 }
             }
         };

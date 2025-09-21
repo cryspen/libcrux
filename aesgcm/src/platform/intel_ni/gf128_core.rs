@@ -1,10 +1,32 @@
 use core::arch::x86_64::*;
 
+use libcrux_intrinsics::avx2::{
+    mm_clmulepi64_si128, mm_slli_si128, mm_srli_si128, mm_unpackhi_epi64, mm_unpacklo_epi64,
+    mm_xor_si128,
+};
+
 // XXX: A lot of the code below is shared with NEON. Refactor!
 
 /// An avx2 gf128 field element.
 #[derive(Clone, Copy)]
+#[repr(transparent)]
 pub(crate) struct FieldElement(pub(super) u128);
+
+impl FieldElement {
+    /// Transmute `u128` and `__m128i`.
+    #[inline]
+    #[allow(unsafe_code)]
+    fn transmute(&self) -> __m128i {
+        unsafe { core::mem::transmute(self.0) }
+    }
+
+    /// Convert a vec to self.
+    #[inline]
+    #[allow(unsafe_code)]
+    fn from_vec128(vec: __m128i) -> Self {
+        unsafe { core::mem::transmute(vec) }
+    }
+}
 
 #[inline]
 fn zero() -> FieldElement {
@@ -68,39 +90,40 @@ fn mul_wide(elem: &FieldElement, other: &FieldElement) -> (FieldElement, FieldEl
     // The Karatsuba trick computes the middle term using the other two products:
     // (a_lo*b_hi ^ a_hi*b_lo) = (a_lo^a_hi)*(b_lo^b_hi) ^ a_lo*b_lo ^ a_hi*b_hi
 
-    let a: __m128i = unsafe { core::mem::transmute(elem.0) };
-    let b: __m128i = unsafe { core::mem::transmute(other.0) };
+    let a: __m128i = elem.transmute();
+    let b: __m128i = other.transmute();
 
     // 1. Calculate the low and high 128-bit parts of the product in parallel.
     //    p_lo = a_lo * b_lo
-    let p_lo = unsafe { _mm_clmulepi64_si128(a, b, 0x00) };
+    let p_lo = mm_clmulepi64_si128::<0x00>(a, b);
     //    p_hi = a_hi * b_hi
-    let p_hi = unsafe { _mm_clmulepi64_si128(a, b, 0x11) };
+    let p_hi = mm_clmulepi64_si128::<0x11>(a, b);
 
     // 2. Calculate the middle term using the third multiplication.
     //    First, prepare the operands (a_lo^a_hi) and (b_lo^b_hi).
     //    Using unpack instructions is an alternative to shuffling.
-    let a_xor = unsafe { _mm_xor_si128(_mm_unpackhi_epi64(a, a), _mm_unpacklo_epi64(a, a)) };
-    let b_xor = unsafe { _mm_xor_si128(_mm_unpackhi_epi64(b, b), _mm_unpacklo_epi64(b, b)) };
+    let a_xor = mm_xor_si128(mm_unpackhi_epi64(a, a), mm_unpacklo_epi64(a, a));
+    let b_xor = mm_xor_si128(mm_unpackhi_epi64(b, b), mm_unpacklo_epi64(b, b));
 
     // Multiply the low 64-bit parts of the XORed results.
     // p_mid_prod = (a_lo^a_hi) * (b_lo^b_hi)
-    let p_mid_prod = unsafe { _mm_clmulepi64_si128(a_xor, b_xor, 0x00) };
+    let p_mid_prod = mm_clmulepi64_si128::<0x00>(a_xor, b_xor);
 
     // Finish computing the middle term by XORing with p_lo and p_hi.
-    let p_mid = unsafe { _mm_xor_si128(_mm_xor_si128(p_mid_prod, p_lo), p_hi) };
+    let p_mid = mm_xor_si128(mm_xor_si128(p_mid_prod, p_lo), p_hi);
 
     // 3. Combine the parts to get the final 256-bit result.
     //    The middle part is XORed at a 64-bit offset.
     //    res_low  = p_lo ^ (p_mid << 64)
     //    res_high = p_hi ^ (p_mid >> 64)
-    let res_low = unsafe { _mm_xor_si128(p_lo, _mm_slli_si128(p_mid, 8)) };
-    let res_high = unsafe { _mm_xor_si128(p_hi, _mm_srli_si128(p_mid, 8)) };
+    let res_low = mm_xor_si128(p_lo, mm_slli_si128::<8>(p_mid));
+    let res_high = mm_xor_si128(p_hi, mm_srli_si128::<8>(p_mid));
 
     // The original function returned (high_part, low_part). We maintain that order.
-    let high_part: u128 = unsafe { core::mem::transmute(res_high) };
-    let low_part: u128 = unsafe { core::mem::transmute(res_low) };
-    (FieldElement(high_part), FieldElement(low_part))
+    (
+        FieldElement::from_vec128(res_high),
+        FieldElement::from_vec128(res_low),
+    )
 }
 
 #[inline]
@@ -146,6 +169,7 @@ impl crate::platform::GF128FieldElement for FieldElement {
     }
 }
 
+#[allow(unsafe_code)]
 #[cfg(feature = "std")]
 #[test]
 fn test_transmute() {
