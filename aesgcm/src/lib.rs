@@ -237,7 +237,7 @@ pub mod x64 {
         };
     }
 
-    x64_pub_mod!(r"AES-GCM 128 ", aes_gcm_128, crate::aes_gcm_128::State<platform::portable::State, platform::intel_ni::FieldElement>);
+    x64_pub_mod!(r"AES-GCM 128 ", aes_gcm_128, crate::aes_gcm_128::State<platform::intel_ni::State, platform::intel_ni::FieldElement>);
     x64_pub_mod!(r"AES-GCM 256 ", aes_gcm_256, crate::aes_gcm_256::State<platform::intel_ni::State, platform::intel_ni::FieldElement>);
 }
 
