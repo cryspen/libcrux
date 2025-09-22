@@ -24,7 +24,7 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v5
     - name: HPKE Benchmarks
       run: cargo bench manual_benches
     - name: HPKE Rust Crypto Benchmarks
