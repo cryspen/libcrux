@@ -3,8 +3,8 @@ use serde::{Deserialize, Serialize};
 
 #[derive(PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-/// Sign tests for ML-DSA (`noseed`)
-pub struct MlDsaSignTestsNoSeed {
+/// Sign tests for ML-DSA (`seed`)
+pub struct MlDsaSignTestsWithSeed {
     /// the primitive tested in the test file
     pub algorithm: String,
 
@@ -27,9 +27,9 @@ pub struct TestGroup {
     #[serde(rename = "type")]
     pub test_group_type: Type,
 
-    /// Encoded ML-DSA private key
+    /// 32-byte seed that generated the private key
     #[serde(with = "hex::serde")]
-    pub private_key: Vec<u8>,
+    pub private_seed: [u8; 32],
 
     pub tests: Vec<Test>,
 
