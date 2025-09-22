@@ -261,7 +261,6 @@ macro_rules! pqcp_api {
                     .map_err(|_| PQCPError::Encapsulation)
             }
 
-            #[cfg(feature = "rand")]
             #[doc = "Decapsulate ML-KEM "]
             #[doc = $variant]
             #[doc = " shared secret"]
