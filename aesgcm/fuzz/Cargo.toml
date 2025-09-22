@@ -15,7 +15,7 @@ path = ".."
 
 [[bin]]
 name = "encrypt128"
-path = "fuzz_targets/encrypt.rs"
+path = "fuzz_targets/encrypt128.rs"
 test = false
 doc = false
 bench = false

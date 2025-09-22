@@ -168,7 +168,7 @@ pub mod neon {
 
 #[cfg(feature = "simd256")]
 pub mod x64 {
-    // Here we don't use the `pub_mod` macro becaus we need to add target features
+    // Here we don't use the `pub_mod` macro because we need to add target features
     // onto the functions.
     macro_rules! x64_pub_mod {
         ($variant_comment:literal, $mod_name:ident, $state:ty) => {
