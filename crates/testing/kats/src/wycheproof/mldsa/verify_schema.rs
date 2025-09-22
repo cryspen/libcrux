@@ -4,14 +4,17 @@ use serde::{Deserialize, Serialize};
 #[serde(rename_all = "camelCase")]
 /// Verify tests for ML-DSA
 pub struct MlDsaVerifyTests {
+    /// the primitive tested in the test file
     pub algorithm: String,
 
     pub generator_version: String,
 
+    /// additional documentation
     pub header: Vec<String>,
 
     pub notes: Notes,
 
+    /// the number of test vectors in this test
     pub number_of_tests: i64,
 
     pub schema: String,
@@ -55,6 +58,7 @@ pub struct TestGroup {
     #[serde(rename = "type")]
     pub test_group_type: Type,
 
+    /// Encoded ML-DSA public key
     #[serde(with = "hex::serde")]
     pub public_key: Vec<u8>,
 
@@ -70,21 +74,28 @@ pub enum Type {
 #[derive(PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Test {
+    /// Identifier of the test case
     pub tc_id: i64,
 
+    /// A brief description of the test case
     pub comment: String,
 
+    /// The message to verify
     #[serde(with = "hex::serde")]
     pub msg: Vec<u8>,
 
+    /// [optional] The additional context string (empty if not provided)
     #[serde(default, with = "hex::serde")]
     pub ctx: Vec<u8>,
 
+    /// The encoded signature
     #[serde(with = "hex::serde")]
     pub sig: Vec<u8>,
 
+    /// Test result
     pub result: VerifyResult,
 
+    /// A list of flags
     pub flags: Vec<Flag>,
 }
 
