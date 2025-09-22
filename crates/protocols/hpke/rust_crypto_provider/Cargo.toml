@@ -34,7 +34,7 @@ rand_old = { version = "0.8", package = "rand", default-features = false }
 rand_chacha = { version = "0.3", default-features = false }
 
 [dev-dependencies]
-criterion = { version = "0.5", features = ["html_reports"] }
+criterion = { version = "0.7", features = ["html_reports"] }
 rand = { version = "0.9" }
 
 [features]
