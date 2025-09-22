@@ -69,7 +69,7 @@ impl_verify!(verify_65, 65);
 impl_verify!(verify_87, 87);
 
 impl MlDsaSignTestsNoSeed {
-    /// Load the [`MlDsaSignTests`] for the given [`ParameterSet`].
+    /// Load the [`MlDsaSignTestsNoSeed`] for the given [`ParameterSet`].
     pub fn load(parameter_set: ParameterSet) -> Self {
         match parameter_set {
             ParameterSet::MlDsa44 => Self::sign_44(),
