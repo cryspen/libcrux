@@ -1,4 +1,92 @@
 #![doc = include_str!("../Readme.md")]
+//! # Examples
+//!
+//! Oneshot HPKE encryption.
+//!
+//! ```
+//! use hpke_rs::{*, hpke_types::*};
+//! use hpke_rs_libcrux::HpkeLibcrux;
+//! use hpke_rs_crypto::{HpkeCrypto, RngCore};
+//!
+//! // Set up hpke mode.
+//! let mut hpke = Hpke::<HpkeLibcrux>::new(Mode::Base, KemAlgorithm::DhKem25519,
+//!    KdfAlgorithm::HkdfSha256, AeadAlgorithm::ChaCha20Poly1305);
+//!
+//! // Generate keys. The other parties public key must be received in some way.
+//! let (sk_r, pk_r) = hpke.generate_key_pair().unwrap().into_keys();
+//! let (sk_s, pk_s) = hpke.generate_key_pair().unwrap().into_keys();
+//!
+//! // Set the input. Only `plain_text` is required
+//! let info = b"HPKE demo info";
+//! let aad = b"HPKE demo aad";
+//! let plaintext = b"HPKE demo plain text";
+//! let exporter_context = b"HPKE demo exporter context";
+//!
+//! // We don't use authentication or PSKs here.
+//! let psk = None;
+//! let psk_id = None;
+//! let sk_s = None;
+//! let pk_s = None;
+//!
+//! // Encrypt the `plaintext` to the receiver.
+//! let (enc, ctxt) = hpke
+//!     .seal(&pk_r, info, aad, plaintext, psk, psk_id, sk_s)
+//!     .unwrap();
+//!
+//! // Decrypt the ciphertext on the receiver.
+//! let ptxt = hpke
+//!     .open(&enc, &sk_r, info, aad, &ctxt, psk, psk_id, pk_s)
+//!     .unwrap();
+//!
+//! assert_eq!(ptxt, plaintext);
+//! ```
+//!
+//! Encryption context.
+//!
+//! ```
+//! use hpke_rs::{*, hpke_types::*};
+//! use hpke_rs_libcrux::HpkeLibcrux;
+//! use hpke_rs_crypto::{HpkeCrypto, RngCore};
+//!
+//! // Set up hpke mode.
+//! let mut hpke = Hpke::<HpkeLibcrux>::new(Mode::Base, KemAlgorithm::DhKem25519,
+//!    KdfAlgorithm::HkdfSha256, AeadAlgorithm::ChaCha20Poly1305);
+//!
+//! // Generate keys. The other parties public key must be received in some way.
+//! let (sk_r, pk_r) = hpke.generate_key_pair().unwrap().into_keys();
+//! let (sk_s, pk_s) = hpke.generate_key_pair().unwrap().into_keys();
+//!
+//! // Set the input. Only `plain_text` is required
+//! let info = b"HPKE demo info";
+//! let aad = b"HPKE demo aad";
+//! let plaintext = b"HPKE demo plain text";
+//! let exporter_context = b"HPKE demo exporter context";
+//!
+//! // We don't use authentication or PSKs here.
+//! let psk = None;
+//! let psk_id = None;
+//! let sk_s = None;
+//! let pk_s = None;
+//!
+//! // Set up the context on both sides.
+//! let (enc, mut sender_context) = hpke
+//!     .setup_sender(&pk_r, info, psk, psk_id, sk_s)
+//!     .unwrap();
+//!
+//! // Share `enc` with the receiver.
+//! let mut receiver_context = hpke
+//!     .setup_receiver(&enc, &sk_r, info, psk, psk_id, pk_s)
+//!     .unwrap();
+//!
+//! // Encrypt the plaintext to the receiver, using the context.
+//! let ctxt = sender_context.seal(aad, plaintext).unwrap();
+//!
+//! // Decrypt the ciphertext on the receiver, using the context.
+//! let ptxt = receiver_context.open(aad, &ctxt).unwrap();
+//!
+//! assert_eq!(ptxt, plaintext);
+//! ```
+
 #![forbid(unsafe_code, unused_must_use, unstable_features)]
 #![deny(
     trivial_casts,
