@@ -1,0 +1,28 @@
+[package]
+name = "libcrux_aesgcm-fuzz"
+version = "0.0.0"
+publish = false
+edition = "2021"
+
+[package.metadata]
+cargo-fuzz = true
+
+[dependencies]
+libfuzzer-sys = "0.4"
+
+[dependencies.libcrux_aesgcm]
+path = ".."
+
+[[bin]]
+name = "encrypt128"
+path = "fuzz_targets/encrypt.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "encrypt256"
+path = "fuzz_targets/encrypt256.rs"
+test = false
+doc = false
+bench = false
