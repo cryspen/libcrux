@@ -24,7 +24,7 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
     - name: Run tests all features
       run: cargo test --verbose --no-default-features --all-features
       # Release
@@ -78,13 +78,11 @@ jobs:
           - target: aarch64-apple-ios
             rust: stable
     steps:
-      - uses: actions/checkout@v1
-      - uses: actions-rs/toolchain@v1
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
         with:
           toolchain: ${{ matrix.rust }}
           target: ${{ matrix.target }}
-          profile: minimal
-          override: true
       - run: ${{ matrix.deps }}
       - run: cargo build --target ${{ matrix.target }}
       - run: cargo build --target ${{ matrix.target }} --release
@@ -98,12 +96,11 @@ jobs:
           - ubuntu-latest
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       - name: Install latest nightly
-        uses: actions-rs/toolchain@v1
+        uses: dtolnay/rust-toolchain@stable
         with:
           toolchain: nightly
-          default: true
       - uses: actions-rs/install@v0.1
         with:
           crate: cargo-fuzz
@@ -114,14 +111,13 @@ jobs:
   no-std-check:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       # we use a target that lacks a pre-compiled libstd to check if any dependency is using libstd
       - name: Install stable toolchain
-        uses: actions-rs/toolchain@v1
+        uses: dtolnay/rust-toolchain@stable
         with:
           toolchain: stable
-          target: thumbv7em-none-eabihf
-          default: true
+          targets: thumbv7em-none-eabihf
       - name: build crates in no-std mode
         run: cargo check --target thumbv7em-none-eabihf
         working-directory: no-std-support-check
