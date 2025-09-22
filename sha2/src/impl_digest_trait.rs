@@ -2,13 +2,15 @@ use crate::impl_hacl::*;
 
 use libcrux_traits::Digest;
 
-use libcrux_traits::digest::{arrayref, slice, DigestIncrementalBase, UpdateError};
+use libcrux_traits::digest::{
+    arrayref, consts, slice, typed_owned, DigestIncrementalBase, InitializeError, UpdateError,
+};
 
 // Streaming API - This is the recommended one.
 // For implementations based on hacl_rs (over hacl-c)
 macro_rules! impl_hash {
     ($hasher_name:ident, $name:ident, $state_name:ty, $digest_size:literal) => {
-        #[derive(Clone, Default)]
+        #[derive(Clone, Copy, Default, PartialEq)]
 
         #[doc = concat!("A struct that implements [`libcrux_traits::digest`] traits.")]
         #[doc = concat!("\n\n")]
@@ -39,6 +41,11 @@ macro_rules! impl_hash {
         }
         impl DigestIncrementalBase for $name {
             type IncrementalState = $state_name;
+
+            /// Initialize a new incremental state.
+            fn new() -> Result<Self::IncrementalState, InitializeError> {
+                Ok(Self::IncrementalState::default())
+            }
             /// Add the `payload` to the digest.
             /// Will return an error if `payload` is longer than `u32::MAX` to ensure that hacl-rs can
             /// process it.
@@ -67,6 +74,11 @@ macro_rules! impl_hash {
         }
         slice::impl_hash_trait!($name => $digest_size);
         slice::impl_digest_incremental_trait!($name => $state_name, $digest_size);
+
+        impl consts::HashConsts for $name {
+            const DIGEST_SIZE: usize = $digest_size;
+        }
+        typed_owned::impl_hash_typed_owned!($name, $digest_size);
 
     };
 }

@@ -4,6 +4,10 @@ pub mod arrayref;
 pub mod owned;
 pub mod slice;
 
+pub mod consts;
+pub mod typed_owned;
+pub mod typed_refs;
+
 #[cfg(feature = "generic-tests")]
 pub mod tests;
 
@@ -14,6 +18,15 @@ pub enum UpdateError {
     InvalidPayloadLength,
     ///The maximum input length is exceeded.
     MaximumLengthExceeded,
+    /// Unknown error.
+    Unknown,
+}
+
+/// Error indicating that initializing the digest state failed.
+#[derive(Debug, PartialEq)]
+pub enum InitializeError {
+    /// The provided digest length is invalid.
+    InvalidDigestLength,
     /// Unknown error.
     Unknown,
 }
@@ -30,9 +43,21 @@ impl core::fmt::Display for UpdateError {
     }
 }
 
+impl core::fmt::Display for InitializeError {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        let text = match self {
+            InitializeError::InvalidDigestLength => "the provided digest length is invalid",
+            InitializeError::Unknown => "indicates an unknown error",
+        };
+
+        f.write_str(text)
+    }
+}
+
 #[cfg(feature = "error-in-core")]
 mod error_in_core {
 
+    impl core::error::Error for super::InitializeError {}
     impl core::error::Error for super::UpdateError {}
 }
 
@@ -45,6 +70,8 @@ mod error_in_core {
 pub trait DigestIncrementalBase {
     /// The digest state.
     type IncrementalState;
+    /// Initialize a new digest state.
+    fn new() -> Result<Self::IncrementalState, InitializeError>;
     /// Reset the digest state.
     fn reset(state: &mut Self::IncrementalState);
     /// Update the digest state with the `payload`.
@@ -58,21 +85,11 @@ pub struct Hasher<const N: usize, D: DigestIncrementalBase> {
     pub state: D::IncrementalState,
 }
 
-impl<const N: usize, D: arrayref::DigestIncremental<N>> Default for Hasher<N, D>
-where
-    D::IncrementalState: Default,
-{
+impl<const N: usize, D: DigestIncrementalBase<IncrementalState: Default>> Default for Hasher<N, D> {
     fn default() -> Self {
         Self {
             state: Default::default(),
         }
-    }
-}
-
-impl<const N: usize, D: DigestIncrementalBase + slice::Hash> Hasher<N, D> {
-    /// Oneshot API. Hash into a digest buffer, provided as a `&mut [u8]` slice.
-    pub fn hash_slice(digest: &mut [u8], payload: &[u8]) -> Result<usize, slice::HashError> {
-        D::hash(digest, payload)
     }
 }
 
@@ -84,6 +101,11 @@ impl<const N: usize, D: slice::DigestIncremental> Hasher<N, D> {
 }
 
 impl<const N: usize, D: DigestIncrementalBase> Hasher<N, D> {
+    /// Initialize a new hasher.
+    pub fn new() -> Result<Self, InitializeError> {
+        D::new().map(|state| Self { state })
+    }
+
     /// Update the digest state with the `payload`.
     pub fn update(&mut self, payload: &[u8]) -> Result<(), UpdateError> {
         D::update(&mut self.state, payload)
@@ -102,6 +124,13 @@ impl<const N: usize, D: arrayref::DigestIncremental<N>> Hasher<N, D> {
     /// owned version of `finish()`
     pub fn finish_to_owned(&mut self) -> [u8; N] {
         <D as owned::DigestIncremental<N>>::finish(&mut self.state)
+    }
+}
+
+impl<const N: usize, D: DigestIncrementalBase + slice::Hash> Hasher<N, D> {
+    /// Oneshot API. Hash into a digest buffer, provided as a `&mut [u8]` slice.
+    pub fn hash_slice(digest: &mut [u8], payload: &[u8]) -> Result<usize, slice::HashError> {
+        D::hash(digest, payload)
     }
 }
 
