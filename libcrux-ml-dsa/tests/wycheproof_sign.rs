@@ -4,16 +4,16 @@
 // This set of test vectors does not cover the pre-hashed variants of
 // ML-DSA.
 
-use libcrux_kats::wycheproof::mldsa::{sign_noseed_schema, ParameterSet};
+use libcrux_kats::wycheproof::mldsa::{sign_noseed_schema, sign_seed_schema, ParameterSet};
 use libcrux_ml_dsa::{
     ml_dsa_44::{self, MLDSA44SigningKey},
     ml_dsa_65::{self, MLDSA65SigningKey},
     ml_dsa_87::{self, MLDSA87SigningKey},
-    MLDSASigningKey, SigningError,
+    MLDSAKeyPair, MLDSASigningKey, SigningError,
 };
 
 macro_rules! wycheproof_sign_test {
-    ($name:ident, $test_name:expr, $signing_key_type:ty, $sign:expr) => {
+    ($name:ident, $test_name:expr, $signing_key_type:ty, $sign:expr, $generate:expr) => {
         mod $name {
             use super::*;
             #[test]
@@ -60,6 +60,36 @@ macro_rules! wycheproof_sign_test {
                     }
                 }
             }
+            #[test]
+            fn with_seed() {
+                use sign_seed_schema::*;
+                let katfile_serialized = MlDsaSignTestsWithSeed::load($test_name);
+
+                let signing_randomness = [0u8; 32];
+
+                for test_group in katfile_serialized.test_groups {
+                    let MLDSAKeyPair { signing_key, .. } = $generate(test_group.private_seed);
+
+                    for test in test_group.tests {
+                        let message = test.msg;
+                        let context = test.ctx;
+
+                        let signature = $sign(&signing_key, &message, &context, signing_randomness);
+
+                        if let Err(SigningError::ContextTooLongError) = signature {
+                            assert!(test.result == SignResult::Invalid)
+                        }
+
+                        if test.result == SignResult::Valid {
+                            assert_eq!(signature.unwrap().as_slice(), test.sig.as_slice());
+                        }
+                        // TODO: else, the generated signature is invalid; we can
+                        // check that our own implementation agrees with this judgement,
+                        // using the verification key.
+                        // This is being tracked in https://github.com/cryspen/libcrux/issues/340
+                    }
+                }
+            }
         }
     };
 }
@@ -70,14 +100,16 @@ wycheproof_sign_test!(
     wycheproof_sign_44,
     ParameterSet::MlDsa44,
     MLDSA44SigningKey,
-    ml_dsa_44::sign
+    ml_dsa_44::sign,
+    ml_dsa_44::generate_key_pair
 );
 
 wycheproof_sign_test!(
     wycheproof_sign_44_portable,
     ParameterSet::MlDsa44,
     MLDSA44SigningKey,
-    ml_dsa_44::portable::sign
+    ml_dsa_44::portable::sign,
+    ml_dsa_44::portable::generate_key_pair
 );
 
 #[cfg(feature = "simd128")]
@@ -85,7 +117,8 @@ wycheproof_sign_test!(
     wycheproof_sign_44_simd128,
     ParameterSet::MlDsa44,
     MLDSA44SigningKey,
-    ml_dsa_44::neon::sign
+    ml_dsa_44::neon::sign,
+    ml_dsa_44::neon::generate_key_pair
 );
 
 #[cfg(feature = "simd256")]
@@ -93,7 +126,8 @@ wycheproof_sign_test!(
     wycheproof_sign_44_simd256,
     ParameterSet::MlDsa44,
     MLDSA44SigningKey,
-    ml_dsa_44::avx2::sign
+    ml_dsa_44::avx2::sign,
+    ml_dsa_44::avx2::generate_key_pair
 );
 
 // 65
@@ -102,14 +136,16 @@ wycheproof_sign_test!(
     wycheproof_sign_65,
     ParameterSet::MlDsa65,
     MLDSA65SigningKey,
-    ml_dsa_65::sign
+    ml_dsa_65::sign,
+    ml_dsa_65::generate_key_pair
 );
 
 wycheproof_sign_test!(
     wycheproof_sign_65_portable,
     ParameterSet::MlDsa65,
     MLDSA65SigningKey,
-    ml_dsa_65::portable::sign
+    ml_dsa_65::portable::sign,
+    ml_dsa_65::portable::generate_key_pair
 );
 
 #[cfg(feature = "simd128")]
@@ -117,7 +153,8 @@ wycheproof_sign_test!(
     wycheproof_sign_65_simd128,
     ParameterSet::MlDsa65,
     MLDSA65SigningKey,
-    ml_dsa_65::neon::sign
+    ml_dsa_65::neon::sign,
+    ml_dsa_65::neon::generate_key_pair
 );
 
 #[cfg(feature = "simd256")]
@@ -125,7 +162,8 @@ wycheproof_sign_test!(
     wycheproof_sign_65_simd256,
     ParameterSet::MlDsa65,
     MLDSA65SigningKey,
-    ml_dsa_65::avx2::sign
+    ml_dsa_65::avx2::sign,
+    ml_dsa_65::avx2::generate_key_pair
 );
 
 // 87
@@ -134,14 +172,16 @@ wycheproof_sign_test!(
     wycheproof_sign_87,
     ParameterSet::MlDsa87,
     MLDSA87SigningKey,
-    ml_dsa_87::sign
+    ml_dsa_87::sign,
+    ml_dsa_87::generate_key_pair
 );
 
 wycheproof_sign_test!(
     wycheproof_sign_87_portable,
     ParameterSet::MlDsa87,
     MLDSA87SigningKey,
-    ml_dsa_87::portable::sign
+    ml_dsa_87::portable::sign,
+    ml_dsa_87::portable::generate_key_pair
 );
 
 #[cfg(feature = "simd128")]
@@ -149,7 +189,8 @@ wycheproof_sign_test!(
     wycheproof_sign_87_simd128,
     ParameterSet::MlDsa87,
     MLDSA87SigningKey,
-    ml_dsa_87::neon::sign
+    ml_dsa_87::neon::sign,
+    ml_dsa_87::neon::generate_key_pair
 );
 
 #[cfg(feature = "simd256")]
@@ -157,5 +198,6 @@ wycheproof_sign_test!(
     wycheproof_sign_87_simd256,
     ParameterSet::MlDsa87,
     MLDSA87SigningKey,
-    ml_dsa_87::avx2::sign
+    ml_dsa_87::avx2::sign,
+    ml_dsa_87::avx2::generate_key_pair
 );
