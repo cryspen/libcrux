@@ -234,7 +234,9 @@ macro_rules! pqcp_api {
 
             #[doc = "Encapsulate ML-KEM "]
             #[doc = $variant]
-            #[doc = " shared secret (randomness generated externally)"]
+            #[doc = " shared secret (randomness generated externally)
+
+Does not perform public key validation."]
             pub fn crypto_kem_enc_derand(
                 ct: &mut [u8; CPA_PKE_CIPHERTEXT_SIZE],
                 ss: &mut [u8; SHARED_SECRET_SIZE],
@@ -248,7 +250,9 @@ macro_rules! pqcp_api {
             #[cfg(feature = "rand")]
             #[doc = "Encapsulate ML-KEM "]
             #[doc = $variant]
-            #[doc = " shared secret (randomness generated internally)"]
+            #[doc = " shared secret (randomness generated internally)
+
+Does not perform public key validation."]
             pub fn crypto_kem_enc(
                 ct: &mut [u8; CPA_PKE_CIPHERTEXT_SIZE],
                 ss: &mut [u8; SHARED_SECRET_SIZE],
@@ -263,7 +267,9 @@ macro_rules! pqcp_api {
 
             #[doc = "Decapsulate ML-KEM "]
             #[doc = $variant]
-            #[doc = " shared secret"]
+            #[doc = " shared secret
+
+Does not perform private key validation."]
             pub fn crypto_kem_dec(
                 ss: &mut [u8; SHARED_SECRET_SIZE],
                 ct: &[u8; CPA_PKE_CIPHERTEXT_SIZE],
@@ -289,7 +295,7 @@ macro_rules! pqcp_unpacked_api {
             #[doc = " Key Pair in \"unpacked\" form (randomness generated externally)"]
             pub fn crypto_kem_keypair_derand_struct(
                 key_pair: &mut $sk_type_unpacked,
-                randomness: [u8; KEY_GENERATION_SEED_SIZE],
+                coins: [u8; KEY_GENERATION_SEED_SIZE],
             ) {
                 generate_key_pair_mut(randomness, key_pair)
             }
