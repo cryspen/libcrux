@@ -4,14 +4,13 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#ifndef __libcrux_intrinsics_avx2_H
-#define __libcrux_intrinsics_avx2_H
+#ifndef LIBCRUX_HEADER_LIBCRUX_INTRINSICS_AVX2_H
+#define LIBCRUX_HEADER_LIBCRUX_INTRINSICS_AVX2_H
 
 #if defined(__cplusplus)
 extern "C" {
 #endif
 
-#include "../eurydice_glue.h"
 #include "immintrin.h"
 
 typedef __m128i core_core_arch_x86___m128i;
@@ -211,5 +210,5 @@ typedef __m256i core_core_arch_x86___m256i;
 }
 #endif
 
-#define __libcrux_intrinsics_avx2_H_DEFINED
-#endif
+#define LIBCRUX_HEADER_LIBCRUX_INTRINSICS_AVX2_H_DEFINED
+#endif /* LIBCRUX_HEADER_LIBCRUX_INTRINSICS_AVX2_H */

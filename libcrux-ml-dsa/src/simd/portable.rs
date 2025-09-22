@@ -20,10 +20,12 @@ use arithmetic::shift_left_then_reduce;
 pub(crate) use vector_type::Coefficients as PortableSIMDUnit;
 use vector_type::Coefficients;
 
+#[cfg(hax)]
 use super::traits::COEFFICIENTS_IN_SIMD_UNIT;
 
 #[cfg(not(eurydice))]
 impl Repr for Coefficients {
+    #[cfg(hax)]
     fn repr(&self) -> [i32; COEFFICIENTS_IN_SIMD_UNIT] {
         self.values
     }

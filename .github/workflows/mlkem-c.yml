@@ -20,7 +20,7 @@ jobs:
     if: ${{ github.event_name != 'pull_request' }}
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: dorny/paths-filter@v3
         id: changes
         with:
@@ -62,7 +62,7 @@ jobs:
         working-directory: libcrux-ml-kem
         shell: bash
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Extract C++
         run: |
@@ -72,7 +72,7 @@ jobs:
       - name: Extract C
         run: |
           export HOME=/home/user
-          ./c.sh --config cg.yaml --mlkem768 --no-unrolling --out c
+          ./c.sh --config cg.yaml --mlkem768 --no-unrolling --out c --clean --no-glue
 
       - name: Upload C++ extraction
         uses: actions/upload-artifact@v4
@@ -97,16 +97,16 @@ jobs:
       run:
         shell: bash
     steps:
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v5
         with:
           name: cpp-extraction-ml-kem
           path: ~/mlkem-cpp-extraction
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v5
         with:
           name: c-extraction-ml-kem
           path: ~/mlkem-c-extraction
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Diff Extraction C++
         run: |
@@ -134,7 +134,7 @@ jobs:
       run:
         shell: bash
     steps:
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v5
         with:
           name: c-extraction-ml-kem
 
@@ -171,7 +171,7 @@ jobs:
       run:
         shell: bash
     steps:
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v5
         with:
           name: cpp-extraction-ml-kem
 

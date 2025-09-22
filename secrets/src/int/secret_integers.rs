@@ -1,6 +1,6 @@
 //! This module defines classification and declassification over secret integers
 //! These implementations are meant to be used when feature `check-secret-independence` is set
-use super::classify::*;
+use super::classify_secret::*;
 use crate::traits::*;
 use core::ops::*;
 
@@ -88,6 +88,15 @@ impl<T: Sub, V: Into<Secret<T>>> Sub<V> for Secret<T> {
     type Output = Secret<T::Output>;
     fn sub(self, rhs: V) -> Self::Output {
         self.0.sub(rhs.into().0).into()
+    }
+}
+
+// Negate secret values
+impl<T: Neg> Neg for Secret<T> {
+    type Output = Secret<T::Output>;
+
+    fn neg(self) -> Self::Output {
+        self.0.neg().into()
     }
 }
 

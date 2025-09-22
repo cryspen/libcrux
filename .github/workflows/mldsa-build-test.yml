@@ -40,7 +40,7 @@ jobs:
         working-directory: libcrux-ml-dsa
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Update dependencies
         run: cargo update
@@ -98,7 +98,6 @@ jobs:
       # Benchmarks
       - name: 🔨 Build Benchmarks
         run: |
-          cargo clean
           cargo bench --no-run
   
   mldsa-build-test-status:

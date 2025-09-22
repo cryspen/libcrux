@@ -100,7 +100,7 @@ endef
 export FINDLIBS
 
 FSTAR_INCLUDE_DIRS_EXTRA ?=
-FINDLIBS_OUTPUT := $(shell bash -c '${FINDLIBS}')
+FINDLIBS_OUTPUT ?= $(shell bash -c '${FINDLIBS}')
 FSTAR_INCLUDE_DIRS = $(FSTAR_INCLUDE_DIRS_EXTRA) $(FINDLIBS_OUTPUT)
 
 # Make sure FSTAR_INCLUDE_DIRS has the `proof-libs`, print hints and
@@ -128,10 +128,16 @@ all-keep-going:
 	$(Q)rm -f .depend
 	$(Q)$(MAKE) --keep-going .depend hax.fst.config.json verify
 
-# If no any F* file is detected, we run hax
+# Only run code extraction for build targets, not for 'clean'.
+all all-keep-going:
 ifeq "$(wildcard *.fst *fsti)" ""
-$(shell cargo hax into fstar)
+	$(shell cargo hax into fstar)
 endif
+	$(Q)rm -f .depend
+all:
+	$(Q)$(MAKE) .depend hax.fst.config.json verify
+all-keep-going:
+	$(Q)$(MAKE) --keep-going .depend hax.fst.config.json verify
 
 # By default, we process all the files in the current directory
 ROOTS ?= $(wildcard *.fst *fsti)
@@ -257,9 +263,11 @@ vscode:
 	$(Q)rm -f .depend
 	$(Q)$(MAKE) hax.fst.config.json
 
+
+.PHONY: clean
 SHELL=bash
 
 # Clean target
 clean:
 	rm -rf $(CACHE_DIR)/*
-	rm *.fst
+	rm -f *.fst *.fsti *.hints *.smt2

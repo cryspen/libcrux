@@ -53,13 +53,15 @@ class extractAction(argparse.Action):
         # Extract intrinsics interfaces
         include_str = "+:**"
         interface_include = "+**"
+        if args.portable:
+            cargo_args = []
+        else:
+            cargo_args = ["-C", "--features", "simd128,simd256", ";"]
+
         cargo_hax_into = [
             "cargo",
             "hax",
-            "-C",
-            "--features",
-            "simd128,simd256",
-            ";",
+        ] + cargo_args + [
             "into",
             "-i",
             include_str,
@@ -93,26 +95,25 @@ class extractAction(argparse.Action):
         )
 
         # Extract sha3
-        includes = [
-            "+** -**::avx2::** -**::neon::**"
-        ]
-        include_str = " ".join(includes)
+        if args.portable:
+            # For portable-only: exclude all SIMD implementations
+            include_str = "+** -**::avx2::** -**::neon::** -**::simd::** -**::simd128::** -**::simd256::** +**::simd::portable::**"
+            cargo_args = []
+        else:
+            include_str = "+**"
+            cargo_args = ["-C", "--features", "simd128,simd256", ";"]
+
         interface_include = "+**"
         cargo_hax_into = [
             "cargo",
             "hax",
-            "-C",
-            "--features",
-            "simd128,simd256",
-            ";",
+        ] + cargo_args + [
             "into",
             "-i",
             include_str,
             "fstar",
             "--z3rlimit",
             "80",
-            "--interfaces",
-            interface_include,
         ]
         hax_env = {}
         shell(
@@ -133,6 +134,21 @@ class proveAction(argparse.Action):
         return None
 
 
+class cleanAction(argparse.Action):
+
+    def __call__(self, parser, args, values, option_string=None) -> None:
+        extraction_dir = "proofs/fstar/extraction"
+
+        if not os.path.exists(extraction_dir):
+            print(f"Directory {extraction_dir} does not exist, nothing to clean.")
+            return None
+
+        print(f"Cleaning {extraction_dir}...")
+        shell(["make", "-C", extraction_dir, "clean"])
+        print("Clean completed.")
+        return None
+
+
 def parse_arguments():
     parser = argparse.ArgumentParser(
         description="Libcrux prove script. "
@@ -142,6 +158,11 @@ def parse_arguments():
 
     extract_parser = subparsers.add_parser(
         "extract", help="Extract the F* code for the proofs."
+    )
+    extract_parser.add_argument(
+        "--portable",
+        help="Extract only portable implementations (exclude SIMD variants).",
+        action="store_true",
     )
     extract_parser.add_argument("extract", nargs="*", action=extractAction)
 
@@ -164,6 +185,10 @@ def parse_arguments():
         nargs="*",
         action=proveAction,
     )
+    clean_parser = subparsers.add_parser(
+        "clean", help="Clean generated files from proofs/fstar/extraction directory."
+    )
+    clean_parser.add_argument("clean", nargs="*", action=cleanAction)
 
     if len(sys.argv) == 1:
         parser.print_help(sys.stderr)

@@ -22,7 +22,7 @@ jobs:
       id-token: write
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Log in to the Container registry
         uses: docker/login-action@v3
@@ -50,13 +50,12 @@ jobs:
         working-directory: libcrux-ml-kem
         shell: bash
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Extract C
         run: |
           export HOME=/home/user
-          ./c.sh --no-glue
-
+          ./c.sh --config cg.yaml --mlkem768 --no-unrolling --out c --clean --no-glue
       - name: Upload C extraction
         uses: actions/upload-artifact@v4
         with:
@@ -74,7 +73,7 @@ jobs:
         working-directory: libcrux-ml-kem
         shell: bash
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Extract C (header only)
         run: |
@@ -98,7 +97,7 @@ jobs:
         working-directory: libcrux-ml-dsa
         shell: bash
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Extract C (header only)
         run: |
@@ -127,7 +126,7 @@ jobs:
       run:
         shell: bash
     steps:
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v5
         with:
           name: c-extraction
           
@@ -164,7 +163,7 @@ jobs:
       run:
         shell: bash
     steps:
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v5
         with:
           name: header-only-c-extraction-ml-kem
 
@@ -196,7 +195,7 @@ jobs:
       run:
         shell: bash
     steps:
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v5
         with:
           name: header-only-c-extraction-ml-dsa
 

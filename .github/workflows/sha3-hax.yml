@@ -2,8 +2,12 @@ name: SHA3 - hax
 
 on:
   merge_group:
+    paths:
+      - "libcrux-sha3/**"
   pull_request:
     branches: ["dev", "main"]
+    paths:
+      - "libcrux-sha3/**"
 
   schedule:
     - cron: "0 0 * * *"
@@ -34,7 +38,7 @@ jobs:
       - get-hax-ref
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: hacspec/hax-actions@main
         with:
           hax_reference: ${{ github.event.inputs.hax_ref || needs.get-hax-ref.outputs.hax_ref }}
@@ -44,22 +48,81 @@ jobs:
         working-directory: libcrux-sha3
         run: ./hax.py extract
 
-      - name: ↑ Upload F* extraction
+      - name: ↑ Upload F* extraction (standard)
         uses: actions/upload-artifact@v4
         with:
-          name: fstar-extractions
+          name: fstar-extractions-standard
           path: "**/proofs/fstar"
           include-hidden-files: true
           if-no-files-found: error
-  
+
+  extract-portable:
+    if: ${{ github.event_name != 'merge_group' }}
+    runs-on: ubuntu-latest
+    needs:
+      - get-hax-ref
+
+    steps:
+      - uses: actions/checkout@v5
+      - uses: hacspec/hax-actions@main
+        with:
+          hax_reference: ${{ github.event.inputs.hax_ref || needs.get-hax-ref.outputs.hax_ref }}
+          fstar: v2025.02.17
+
+      - name: 🏃 Extract SHA3 crate (portable)
+        working-directory: libcrux-sha3
+        run: ./hax.py extract --portable
+
+      - name: ↑ Upload F* extraction (portable)
+        uses: actions/upload-artifact@v4
+        with:
+          name: fstar-extractions-portable
+          path: "**/proofs/fstar"
+          include-hidden-files: true
+          if-no-files-found: error
+
+  lax-portable:
+    runs-on: ubuntu-latest
+    needs:
+      - get-hax-ref
+      - extract-portable
+    if: ${{ github.event_name != 'merge_group' }}
+    steps:
+      - uses: actions/checkout@v5
+      - uses: hacspec/hax-actions@main
+        with:
+          hax_reference: ${{ github.event.inputs.hax_ref || needs.get-hax-ref.outputs.hax_ref }}
+          fstar: v2025.02.17
+
+      - uses: actions/download-artifact@v5
+        with:
+          name: fstar-extractions-portable
+          path: .
+
+      - name: 🏃 Lax SHA3 crate (portable)
+        working-directory: libcrux-sha3
+        run: ./hax.py prove --admit
+
   sha3-extract-hax-status:
     if: ${{ always() }}
     needs: [get-hax-ref, extract]
     runs-on: ubuntu-latest
     steps:
       - name: Successful
-        if: ${{ !(contains(needs.*.result, 'failure')) }} 
-        run: exit 0 
+        if: ${{ !(contains(needs.*.result, 'failure')) }}
+        run: exit 0
       - name: Failing
-        if: ${{ (contains(needs.*.result, 'failure')) }} 
-        run: exit 1 
+        if: ${{ (contains(needs.*.result, 'failure')) }}
+        run: exit 1
+
+  sha3-lax-portable-hax-status:
+    if: ${{ always() }}
+    needs: [get-hax-ref, lax-portable]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Successful
+        if: ${{ !(contains(needs.*.result, 'failure')) }}
+        run: exit 0
+      - name: Failing
+        if: ${{ (contains(needs.*.result, 'failure')) }}
+        run: exit 1

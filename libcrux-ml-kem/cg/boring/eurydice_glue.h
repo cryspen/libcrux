@@ -1,17 +1,27 @@
 /*
  * SPDX-FileCopyrightText: 2024 Eurydice Contributors
- * SPDX-FileCopyrightText: 2025 Cryspen Sarl <info@cryspen.com>
+ * SPDX-FileCopyrightText: 2024 - 2025 Cryspen Sarl <info@cryspen.com>
  *
  * SPDX-License-Identifier: MIT or Apache-2.0
  */
 
-#pragma once
+// Note that the Rust code must check, either at runtime or with verification,
+// that any arithmetic in this file does overflow, underflow, or run out of
+// bounds.
+//
+// TODO(crbug.com/404286922): Use designated initializers instead of /*name=*/
+// comments when switching to C++20.
+
+#ifndef EURYDICE_HEADER_EURYDICE_GLUE_H
+#define EURYDICE_HEADER_EURYDICE_GLUE_H
 
 #include <inttypes.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+#include <utility>
 
 #ifdef _MSC_VER
 // For __popcnt
@@ -20,11 +30,20 @@
 
 #include "karamel/target.h"
 
-// C++ HELPERS
-
-#if defined(__cplusplus)
-
-#include <utility>
+// In order to be compatible with C++17 we need to work around the fact that we
+// can not use designated initializers. This is an issue for unions. The
+// following defines `KRML_UNION_CONSTRUCTOR` for this purpose.
+// This is used in union definitions such as
+// ```c
+// typedef struct Result_s {
+//  uint8_t tag;
+//  union U {
+//    int16_t case_Ok[16U];
+//    uint8_t case_Err;
+//  } val;
+//  KRML_UNION_CONSTRUCTOR(Result_s)
+//} Result_0a;
+// ```
 
 #ifndef __cpp_lib_type_identity
 template <class T>
@@ -45,8 +64,6 @@ using std::type_identity_t;
   }                                                            \
   T() = default;
 
-#endif
-
 // GENERAL-PURPOSE STUFF
 
 #define LowStar_Ignore_ignore(e, t, _ret_t) ((void)e)
@@ -61,38 +78,19 @@ using std::type_identity_t;
 //   arithmetic based on the type of the address)
 // - if you need to use `len` for a C style function (e.g. memcpy, memcmp), you
 //   need to multiply it by sizeof t, where t is the type of the elements.
-//
-// EURYDICE_SLICE computes `NULL + start`. If your compiler is ok with that,
-// using a `NULL` in `ptr` is ok. If you need to support older compilers that
-// do not support arithemtic operations on `NULL`, ensure that `NULL` is never
-// used here.
 typedef struct {
   void *ptr;
   size_t len;
 } Eurydice_slice;
-
-#if defined(__cplusplus)
-#define KRML_CLITERAL(type) type
-#else
-#define KRML_CLITERAL(type) (type)
-#endif
-
-#if defined(__cplusplus) && defined(__cpp_designated_initializers) || \
-    !(defined(__cplusplus))
-#define EURYDICE_CFIELD(X) X
-#else
-#define EURYDICE_CFIELD(X)
-#endif
 
 // Helper macro to create a slice out of a pointer x, a start index in x
 // (included), and an end index in x (excluded). The argument x must be suitably
 // cast to something that can decay (see remark above about how pointer
 // arithmetic works in C), meaning either pointer or array type.
 #define EURYDICE_SLICE(x, start, end) \
-  (KRML_CLITERAL(Eurydice_slice){(void *)(x + start), end - start})
+  (Eurydice_slice{(void *)(x + start), end - start})
 
 // Slice length
-#define EURYDICE_SLICE_LEN(s, _) (s).len
 #define Eurydice_slice_len(s, _) (s).len
 
 // This macro is a pain because in case the dereferenced element type is an
@@ -104,25 +102,20 @@ typedef struct {
 
 // The following functions get sub slices from a slice.
 
-#define Eurydice_slice_subslice(s, r, t, _0, _1) \
-  EURYDICE_SLICE((t *)s.ptr, r.start, r.end)
-
 // Variant for when the start and end indices are statically known (i.e., the
 // range argument `r` is a literal).
 #define Eurydice_slice_subslice2(s, start, end, t) \
   EURYDICE_SLICE((t *)s.ptr, (start), (end))
 
 #define Eurydice_slice_subslice_to(s, subslice_end_pos, t, _0, _1) \
-  EURYDICE_SLICE((t *)s.ptr, 0, subslice_end_pos)
+  EURYDICE_SLICE((t *)s.ptr, 0, (subslice_end_pos))
 
 #define Eurydice_slice_subslice_from(s, subslice_start_pos, t, _0, _1) \
-  EURYDICE_SLICE((t *)s.ptr, subslice_start_pos, s.len)
+  EURYDICE_SLICE((t *)s.ptr, (subslice_start_pos), s.len)
 
-#define Eurydice_array_to_slice(end, x, t) \
-  EURYDICE_SLICE(x, 0,                     \
-                 end) /* x is already at an array type, no need for cast */
-#define Eurydice_array_to_subslice(_arraylen, x, r, t, _0, _1) \
-  EURYDICE_SLICE((t *)x, r.start, r.end)
+#define Eurydice_array_to_slice(end, x, _t)             \
+  /* x is already at an array type, no need for cast */ \
+  EURYDICE_SLICE(x, 0, end)
 
 // Same as above, variant for when start and end are statically known
 #define Eurydice_array_to_subslice2(x, start, end, t) \
@@ -135,20 +128,23 @@ typedef struct {
 #define Eurydice_array_to_subslice_from(size, x, r, t, _range_t, _0) \
   EURYDICE_SLICE((t *)x, r, size)
 
-// Copy a slice with memcopy
+// Copy a slice with memcpy
 #define Eurydice_slice_copy(dst, src, t) \
   memcpy(dst.ptr, src.ptr, dst.len * sizeof(t))
 
 #define core_array___Array_T__N__23__as_slice(len_, ptr_, t, _ret_t) \
-  KRML_CLITERAL(Eurydice_slice) { ptr_, len_ }
+  Eurydice_slice { ptr_, len_ }
 
 #define core_array___core__clone__Clone_for__Array_T__N___20__clone( \
     len, src, dst, elem_type, _ret_t)                                \
   (memcpy(dst, src, len * sizeof(elem_type)))
 #define TryFromSliceError uint8_t
 
+// Compare two arrays with `memcmp`.
 #define Eurydice_array_eq(sz, a1, a2, t, _) \
   (memcmp(a1, a2, sz * sizeof(t)) == 0)
+
+// Map Rust core equality functions to `Eurydice_array_eq`.
 #define core_array_equality___core__cmp__PartialEq__Array_U__N___for__Array_T__N____eq( \
     sz, a1, a2, t, _, _ret_t)                                                           \
   Eurydice_array_eq(sz, a1, a2, t, _)
@@ -156,29 +152,21 @@ typedef struct {
     sz, a1, a2, t, _, _ret_t)                                                               \
   Eurydice_array_eq(sz, a1, ((a2)->ptr), t, _)
 
-#define Eurydice_slice_split_at(slice, mid, element_type, ret_t)          \
-  KRML_CLITERAL(ret_t) {                                                  \
-    EURYDICE_CFIELD(.fst =)                                               \
-    EURYDICE_SLICE((element_type *)(slice).ptr, 0, mid),                  \
-        EURYDICE_CFIELD(.snd =)                                           \
-            EURYDICE_SLICE((element_type *)(slice).ptr, mid, (slice).len) \
-  }
-
-#define Eurydice_slice_split_at_mut(slice, mid, element_type, ret_t)  \
-  KRML_CLITERAL(ret_t) {                                              \
-    EURYDICE_CFIELD(.fst =)                                           \
-    KRML_CLITERAL(Eurydice_slice){EURYDICE_CFIELD(.ptr =)(slice.ptr), \
-                                  EURYDICE_CFIELD(.len =) mid},       \
-        EURYDICE_CFIELD(.snd =) KRML_CLITERAL(Eurydice_slice) {       \
-      EURYDICE_CFIELD(.ptr =)                                         \
-      ((char *)slice.ptr + mid * sizeof(element_type)),               \
-          EURYDICE_CFIELD(.len =)(slice.len - mid)                    \
-    }                                                                 \
+// Rust `split_at` on arrays and slices to generate two slices.
+#define Eurydice_slice_split_at(slice, mid, element_type, ret_t)      \
+  ret_t {                                                             \
+    /* .fst = */ EURYDICE_SLICE((element_type *)(slice).ptr, 0, mid), \
+        /* .snd = */ EURYDICE_SLICE((element_type *)(slice).ptr, mid, \
+                                    (slice).len)                      \
   }
 
 // Conversion of slice to an array, rewritten (by Eurydice) to name the
 // destination array, since arrays are not values in C.
 // N.B.: see note in karamel/lib/Inlining.ml if you change this.
+// This is generated from Rust code such as `let array: [T; N] =
+// slice[a..b].try_into().unwrap()`, where a slice is copied into a fixed sized
+// array. Because this may always fail, `dst` is a result type and the value is
+// written into the `dst->val.case_Ok`.
 #define Eurydice_slice_to_array2(dst, src, _0, t_arr, _1)                 \
   Eurydice_slice_to_array3(&(dst)->tag, (char *)&(dst)->val.case_Ok, src, \
                            sizeof(t_arr))
@@ -198,10 +186,6 @@ static inline uint64_t core_num__u64_9__from_le_bytes(uint8_t buf[8]) {
   return CRYPTO_load_u64_le(buf);
 }
 
-static inline uint32_t core_num__u32_8__from_le_bytes(uint8_t buf[4]) {
-  return CRYPTO_load_u32_le(buf);
-}
-
 static inline uint32_t core_num__u8_6__count_ones(uint8_t x0) {
 #ifdef _MSC_VER
   return __popcnt(x0);
@@ -217,23 +201,9 @@ static inline uint16_t core_num__u16_7__wrapping_add(uint16_t x, uint16_t y) {
 static inline uint8_t core_num__u8_6__wrapping_sub(uint8_t x, uint8_t y) {
   return x - y;
 }
-static inline uint64_t core_num__u64_9__rotate_left(uint64_t x0, uint32_t x1) {
-  return (x0 << x1 | x0 >> (64 - x1));
+static inline uint64_t core_num__u64_9__rotate_left(uint64_t value,
+                                                    uint32_t shift) {
+  return CRYPTO_rotl_u64(value, shift);
 }
 
-// ITERATORS
-
-#define Eurydice_range_iter_next(iter_ptr, t, ret_t)      \
-  (((iter_ptr)->start >= (iter_ptr)->end)                 \
-       ? (KRML_CLITERAL(ret_t){EURYDICE_CFIELD(.tag =) 0, \
-                               EURYDICE_CFIELD(.f0 =) 0}) \
-       : (KRML_CLITERAL(ret_t){EURYDICE_CFIELD(.tag =) 1, \
-                               EURYDICE_CFIELD(.f0 =)(iter_ptr)->start++}))
-
-#define core_iter_range___core__iter__traits__iterator__Iterator_A__for_core__ops__range__Range_A__TraitClause_0___6__next \
-  Eurydice_range_iter_next
-
-// See note in karamel/lib/Inlining.ml if you change this
-#define Eurydice_into_iter(x, t, _ret_t, _) (x)
-#define core_iter_traits_collect___core__iter__traits__collect__IntoIterator_Clause1_Item__I__for_I__1__into_iter \
-  Eurydice_into_iter
+#endif /* EURYDICE_HEADER_EURYDICE_GLUE_H */
