@@ -13,7 +13,7 @@ use libcrux_ml_dsa::{
 };
 
 macro_rules! wycheproof_sign_test {
-    ($name:ident, $test_name:expr, $signing_key_type:ty, $sign:expr, $generate:expr) => {
+    ($name:ident, $test_name:expr, $signing_key_type:ty, $sign:expr, $generate:expr, $verify:expr) => {
         mod $name {
             use super::*;
             #[test]
@@ -53,10 +53,6 @@ macro_rules! wycheproof_sign_test {
                         if test.result == SignResult::Valid {
                             assert_eq!(signature.unwrap().as_slice(), test.sig.as_slice());
                         }
-                        // TODO: else, the generated signature is invalid; we can
-                        // check that our own implementation agrees with this judgement,
-                        // but in order to do so we'd need the verification key.
-                        // This is being tracked in https://github.com/cryspen/libcrux/issues/340
                     }
                 }
             }
@@ -68,7 +64,10 @@ macro_rules! wycheproof_sign_test {
                 let signing_randomness = [0u8; 32];
 
                 for test_group in katfile_serialized.test_groups {
-                    let MLDSAKeyPair { signing_key, .. } = $generate(test_group.private_seed);
+                    let MLDSAKeyPair {
+                        signing_key,
+                        verification_key,
+                    } = $generate(test_group.private_seed);
 
                     for test in test_group.tests {
                         let message = test.msg;
@@ -80,13 +79,18 @@ macro_rules! wycheproof_sign_test {
                             assert!(test.result == SignResult::Invalid)
                         }
 
-                        if test.result == SignResult::Valid {
-                            assert_eq!(signature.unwrap().as_slice(), test.sig.as_slice());
+                        if let Ok(signature) = signature {
+                            if test.result == SignResult::Valid {
+                                // check that the signature matches the expected signature
+                                assert_eq!(signature.as_slice(), test.sig.as_slice());
+                            } else if test.result == SignResult::Invalid {
+                                // if a signature is generated, but it is invalid,
+                                // check that our own implementation agrees with this judgement,
+                                let verification_result =
+                                    $verify(&verification_key, &message, &context, &signature);
+                                assert!(verification_result.is_err());
+                            }
                         }
-                        // TODO: else, the generated signature is invalid; we can
-                        // check that our own implementation agrees with this judgement,
-                        // using the verification key.
-                        // This is being tracked in https://github.com/cryspen/libcrux/issues/340
                     }
                 }
             }
@@ -101,7 +105,8 @@ wycheproof_sign_test!(
     ParameterSet::MlDsa44,
     MLDSA44SigningKey,
     ml_dsa_44::sign,
-    ml_dsa_44::generate_key_pair
+    ml_dsa_44::generate_key_pair,
+    ml_dsa_44::verify
 );
 
 wycheproof_sign_test!(
@@ -109,7 +114,8 @@ wycheproof_sign_test!(
     ParameterSet::MlDsa44,
     MLDSA44SigningKey,
     ml_dsa_44::portable::sign,
-    ml_dsa_44::portable::generate_key_pair
+    ml_dsa_44::portable::generate_key_pair,
+    ml_dsa_44::portable::verify
 );
 
 #[cfg(feature = "simd128")]
@@ -118,7 +124,8 @@ wycheproof_sign_test!(
     ParameterSet::MlDsa44,
     MLDSA44SigningKey,
     ml_dsa_44::neon::sign,
-    ml_dsa_44::neon::generate_key_pair
+    ml_dsa_44::neon::generate_key_pair,
+    ml_dsa_44::neon::verify
 );
 
 #[cfg(feature = "simd256")]
@@ -127,7 +134,8 @@ wycheproof_sign_test!(
     ParameterSet::MlDsa44,
     MLDSA44SigningKey,
     ml_dsa_44::avx2::sign,
-    ml_dsa_44::avx2::generate_key_pair
+    ml_dsa_44::avx2::generate_key_pair,
+    ml_dsa_44::avx2::verify
 );
 
 // 65
@@ -137,7 +145,8 @@ wycheproof_sign_test!(
     ParameterSet::MlDsa65,
     MLDSA65SigningKey,
     ml_dsa_65::sign,
-    ml_dsa_65::generate_key_pair
+    ml_dsa_65::generate_key_pair,
+    ml_dsa_65::verify
 );
 
 wycheproof_sign_test!(
@@ -145,7 +154,8 @@ wycheproof_sign_test!(
     ParameterSet::MlDsa65,
     MLDSA65SigningKey,
     ml_dsa_65::portable::sign,
-    ml_dsa_65::portable::generate_key_pair
+    ml_dsa_65::portable::generate_key_pair,
+    ml_dsa_65::portable::verify
 );
 
 #[cfg(feature = "simd128")]
@@ -154,7 +164,8 @@ wycheproof_sign_test!(
     ParameterSet::MlDsa65,
     MLDSA65SigningKey,
     ml_dsa_65::neon::sign,
-    ml_dsa_65::neon::generate_key_pair
+    ml_dsa_65::neon::generate_key_pair,
+    ml_dsa_65::neon::verify
 );
 
 #[cfg(feature = "simd256")]
@@ -163,7 +174,8 @@ wycheproof_sign_test!(
     ParameterSet::MlDsa65,
     MLDSA65SigningKey,
     ml_dsa_65::avx2::sign,
-    ml_dsa_65::avx2::generate_key_pair
+    ml_dsa_65::avx2::generate_key_pair,
+    ml_dsa_65::avx2::verify
 );
 
 // 87
@@ -173,7 +185,8 @@ wycheproof_sign_test!(
     ParameterSet::MlDsa87,
     MLDSA87SigningKey,
     ml_dsa_87::sign,
-    ml_dsa_87::generate_key_pair
+    ml_dsa_87::generate_key_pair,
+    ml_dsa_87::verify
 );
 
 wycheproof_sign_test!(
@@ -181,7 +194,8 @@ wycheproof_sign_test!(
     ParameterSet::MlDsa87,
     MLDSA87SigningKey,
     ml_dsa_87::portable::sign,
-    ml_dsa_87::portable::generate_key_pair
+    ml_dsa_87::portable::generate_key_pair,
+    ml_dsa_87::portable::verify
 );
 
 #[cfg(feature = "simd128")]
@@ -190,7 +204,8 @@ wycheproof_sign_test!(
     ParameterSet::MlDsa87,
     MLDSA87SigningKey,
     ml_dsa_87::neon::sign,
-    ml_dsa_87::neon::generate_key_pair
+    ml_dsa_87::neon::generate_key_pair,
+    ml_dsa_87::neon::verify
 );
 
 #[cfg(feature = "simd256")]
@@ -199,5 +214,6 @@ wycheproof_sign_test!(
     ParameterSet::MlDsa87,
     MLDSA87SigningKey,
     ml_dsa_87::avx2::sign,
-    ml_dsa_87::avx2::generate_key_pair
+    ml_dsa_87::avx2::generate_key_pair,
+    ml_dsa_87::avx2::verify
 );
