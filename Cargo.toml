@@ -1,6 +1,7 @@
 [workspace]
 members = [
     "aesgcm",
+    "aesgcm/fuzz",
     "sys/hacl",
     "sys/libjade",
     "sys/platform",
