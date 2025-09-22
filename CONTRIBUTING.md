@@ -22,7 +22,8 @@ crates:
 /crates/utils/           -- miscellaneous crates
 /crates/utils/macros     -- the `libcrux-macros` crate
 /crates/utils/secrets    -- the `libcrux-secrets` crate
-/crates/utils/test-utils -- the `libcrux-test-utils` crate
+/crates/testing/kats     -- the `libcrux-kats` crate
+/crates/testing/test-utils -- the `libcrux-test-utils` crate
 /crates/sys/...          -- the sys crates
 ```
 
