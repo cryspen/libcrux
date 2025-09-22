@@ -13,18 +13,18 @@ While many old crates do not yet follow the new structure, please use it for new
 crates:
 
 ```
-/crates/                 -- contains all crates except `libcrux`
-/crates/primitives       -- contains crypto primitive crates
-/crates/primitives/aead  -- the crate `libcrux-aead`
-/crates/algorithms       -- contains crypto algorithm crates
+/crates/                   -- contains all crates except `libcrux`
+/crates/primitives         -- contains crypto primitive crates
+/crates/primitives/aead    -- the crate `libcrux-aead`
+/crates/algorithms         -- contains crypto algorithm crates
 /crates/algorithms/chacha20poly1305 -- the crate `libcrux-chacha20poly1305`
-/crates/specs/           -- specification crates
-/crates/utils/           -- miscellaneous crates
-/crates/utils/macros     -- the `libcrux-macros` crate
-/crates/utils/secrets    -- the `libcrux-secrets` crate
-/crates/testing/kats     -- the `libcrux-kats` crate
+/crates/specs/             -- specification crates
+/crates/utils/             -- miscellaneous crates
+/crates/utils/macros       -- the `libcrux-macros` crate
+/crates/utils/secrets      -- the `libcrux-secrets` crate
+/crates/testing/kats       -- the `libcrux-kats` crate
 /crates/testing/test-utils -- the `libcrux-test-utils` crate
-/crates/sys/...          -- the sys crates
+/crates/sys/...            -- the sys crates
 ```
 
 ### Per-Crate Structure
