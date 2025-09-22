@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 #[derive(PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 /// Sign tests for ML-DSA (`noseed`)
-pub struct MlDsaSignTests {
+pub struct MlDsaSignTestsNoSeed {
     /// the primitive tested in the test file
     pub algorithm: String,
 

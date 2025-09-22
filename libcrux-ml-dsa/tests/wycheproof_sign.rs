@@ -4,7 +4,7 @@
 // This set of test vectors does not cover the pre-hashed variants of
 // ML-DSA.
 
-use libcrux_kats::wycheproof::mldsa::{sign_schema::*, MlDsaSignTests, ParameterSet};
+use libcrux_kats::wycheproof::mldsa::{sign_noseed_schema::*, MlDsaSignTestsNoSeed, ParameterSet};
 use libcrux_ml_dsa::{
     ml_dsa_44::{self, MLDSA44SigningKey},
     ml_dsa_65::{self, MLDSA65SigningKey},
@@ -12,11 +12,11 @@ use libcrux_ml_dsa::{
     MLDSASigningKey, SigningError,
 };
 
-macro_rules! wycheproof_sign_test {
+macro_rules! wycheproof_sign_noseed_test {
     ($name:ident, $test_name:expr, $signing_key_type:ty, $sign:expr) => {
         #[test]
         fn $name() {
-            let katfile_serialized = MlDsaSignTests::load($test_name);
+            let katfile_serialized = MlDsaSignTestsNoSeed::load($test_name);
 
             let signing_randomness = [0u8; 32];
 
@@ -62,14 +62,14 @@ macro_rules! wycheproof_sign_test {
 
 // 44
 
-wycheproof_sign_test!(
+wycheproof_sign_noseed_test!(
     wycheproof_sign_44,
     ParameterSet::MlDsa44,
     MLDSA44SigningKey,
     ml_dsa_44::sign
 );
 
-wycheproof_sign_test!(
+wycheproof_sign_noseed_test!(
     wycheproof_sign_44_portable,
     ParameterSet::MlDsa44,
     MLDSA44SigningKey,
@@ -77,7 +77,7 @@ wycheproof_sign_test!(
 );
 
 #[cfg(feature = "simd128")]
-wycheproof_sign_test!(
+wycheproof_sign_noseed_test!(
     wycheproof_sign_44_simd128,
     ParameterSet::MlDsa44,
     MLDSA44SigningKey,
@@ -85,7 +85,7 @@ wycheproof_sign_test!(
 );
 
 #[cfg(feature = "simd256")]
-wycheproof_sign_test!(
+wycheproof_sign_noseed_test!(
     wycheproof_sign_44_simd256,
     ParameterSet::MlDsa44,
     MLDSA44SigningKey,
@@ -94,14 +94,14 @@ wycheproof_sign_test!(
 
 // 65
 
-wycheproof_sign_test!(
+wycheproof_sign_noseed_test!(
     wycheproof_sign_65,
     ParameterSet::MlDsa65,
     MLDSA65SigningKey,
     ml_dsa_65::sign
 );
 
-wycheproof_sign_test!(
+wycheproof_sign_noseed_test!(
     wycheproof_sign_65_portable,
     ParameterSet::MlDsa65,
     MLDSA65SigningKey,
@@ -109,7 +109,7 @@ wycheproof_sign_test!(
 );
 
 #[cfg(feature = "simd128")]
-wycheproof_sign_test!(
+wycheproof_sign_noseed_test!(
     wycheproof_sign_65_simd128,
     ParameterSet::MlDsa65,
     MLDSA65SigningKey,
@@ -117,7 +117,7 @@ wycheproof_sign_test!(
 );
 
 #[cfg(feature = "simd256")]
-wycheproof_sign_test!(
+wycheproof_sign_noseed_test!(
     wycheproof_sign_65_simd256,
     ParameterSet::MlDsa65,
     MLDSA65SigningKey,
@@ -126,14 +126,14 @@ wycheproof_sign_test!(
 
 // 87
 
-wycheproof_sign_test!(
+wycheproof_sign_noseed_test!(
     wycheproof_sign_87,
     ParameterSet::MlDsa87,
     MLDSA87SigningKey,
     ml_dsa_87::sign
 );
 
-wycheproof_sign_test!(
+wycheproof_sign_noseed_test!(
     wycheproof_sign_87_portable,
     ParameterSet::MlDsa87,
     MLDSA87SigningKey,
@@ -141,7 +141,7 @@ wycheproof_sign_test!(
 );
 
 #[cfg(feature = "simd128")]
-wycheproof_sign_test!(
+wycheproof_sign_noseed_test!(
     wycheproof_sign_87_simd128,
     ParameterSet::MlDsa87,
     MLDSA87SigningKey,
@@ -149,7 +149,7 @@ wycheproof_sign_test!(
 );
 
 #[cfg(feature = "simd256")]
-wycheproof_sign_test!(
+wycheproof_sign_noseed_test!(
     wycheproof_sign_87_simd256,
     ParameterSet::MlDsa87,
     MLDSA87SigningKey,
