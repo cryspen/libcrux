@@ -11,15 +11,9 @@ description = "Libcrux ML-KEM & Kyber implementations"
 exclude = [
     "/tests",
     "/implementation_notes.pdf",
-    "/c",
+    "/extracts",
     "/proofs",
-    "/c.sh",
-    "/c.yaml",
     "/hax.py",
-    "/cg",
-    "/c-nss.sh",
-    "/c.sh",
-    "/boring.sh",
 ]
 
 [lib]

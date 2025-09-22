@@ -16,12 +16,16 @@ if [[ -z "$KRML_HOME" ]]; then
     exit 1
 fi
 
+extract_root=$(pwd)
+mlkem_root=$(realpath ../../)
+repo_root=$(realpath ../../../)
+
 portable_only=0
 no_hacl=0
 no_charon=0
 clean=0
-config=c.yaml
-out=c
+config=$extract_root/extract.yaml
+out=generated
 glue=$EURYDICE_HOME/include/eurydice_glue.h
 features=""
 eurydice_glue=1
@@ -52,14 +56,14 @@ while [ $# -gt 0 ]; do
     shift
 done
 
-# we will cd to a subdirectory later. We need to resolve the path, because relative paths won't bw valid anymore.
+# we will cd to a subdirectory later. We need to resolve paths, because relative paths won't bw valid anymore.
 glue=$(realpath "$glue")
+config=$(realpath "$config")
 
 if [[ "$portable_only" = 1 ]]; then
     export LIBCRUX_DISABLE_SIMD256=1
     export LIBCRUX_DISABLE_SIMD128=1
 fi
-
 
 if [[ "$clean" = 1 ]]; then
     cargo clean
@@ -67,10 +71,10 @@ fi
 
 # TODO: add LIBCRUX_ENABLE_SIMD128=1 LIBCRUX_ENABLE_SIMD256=1 charon invocations
 if [[ "$no_charon" = 0 ]]; then
-    rm -rf ../libcrux_ml_kem.llbc ../libcrux_sha3.llbc ../libcrux_secrets.llbc
+    rm -rf $repo_root/libcrux_ml_kem.llbc $repo_root/libcrux_sha3.llbc $repo_root/libcrux_secrets.llbc
     echo "Running charon (secrets) ..."
-    (cd ../secrets && RUSTFLAGS="--cfg eurydice" $CHARON_HOME/bin/charon --remove-associated-types '*' --translate-all-methods)
-    if ! [[ -f ../libcrux_secrets.llbc ]]; then
+    (cd $repo_root/secrets && RUSTFLAGS="--cfg eurydice" $CHARON_HOME/bin/charon --remove-associated-types '*' --translate-all-methods)
+    if ! [[ -f $repo_root/libcrux_secrets.llbc ]]; then
         echo "😱😱😱 You are the victim of this bug: https://hacspec.zulipchat.com/#narrow/stream/433829-Circus/topic/charon.20declines.20to.20generate.20an.20llbc.20file"
         echo "Suggestion: rm -rf ../target or cargo clean"
         exit 1
@@ -78,10 +82,10 @@ if [[ "$no_charon" = 0 ]]; then
     # Because of a Charon bug we have to clean the sha3 crate.
     cargo clean -p libcrux-sha3
     echo "Running charon (sha3) ..."
-    (cd ../libcrux-sha3 && RUSTFLAGS="--cfg eurydice" $CHARON_HOME/bin/charon --remove-associated-types '*' --rustc-arg=-Cdebug-assertions=no)
-    if ! [[ -f ../libcrux_sha3.llbc ]]; then
+    (cd $repo_root/libcrux-sha3 && RUSTFLAGS="--cfg eurydice" $CHARON_HOME/bin/charon --remove-associated-types '*' --rustc-arg=-Cdebug-assertions=no)
+    if ! [[ -f $repo_root/libcrux_sha3.llbc ]]; then
         echo "😱😱😱 You are the victim of this bug: https://hacspec.zulipchat.com/#narrow/stream/433829-Circus/topic/charon.20declines.20to.20generate.20an.20llbc.20file"
-        echo "Suggestion: rm -rf ../target or cargo clean"
+        echo "Suggestion: rm -rf $repo_root/target or cargo clean"
         exit 1
     fi
     echo "Running charon (ml-kem) ..."
@@ -131,11 +135,15 @@ echo " */" >> header.txt
 
 # Run eurydice to extract the C code
 echo "Running eurydice ..."
-echo $EURYDICE_HOME/eurydice --config ../$config -funroll-loops $unrolling \
---header header.txt $cpp17 ../../libcrux_ml_kem.llbc ../../libcrux_sha3.llbc ../../libcrux_secrets.llbc
+echo $EURYDICE_HOME/eurydice \
+    --config "$config" -funroll-loops $unrolling \
+    --header header.txt $cpp17 \
+    "$repo_root/libcrux_ml_kem.llbc" "$repo_root/libcrux_sha3.llbc" "$repo_root/libcrux_secrets.llbc"
 
-$EURYDICE_HOME/eurydice --config ../$config -funroll-loops $unrolling \
---header header.txt $cpp17 ../../libcrux_ml_kem.llbc ../../libcrux_sha3.llbc ../../libcrux_secrets.llbc
+$EURYDICE_HOME/eurydice \
+    --config "$config" -funroll-loops $unrolling \
+    --header header.txt $cpp17 \
+    "$repo_root/libcrux_ml_kem.llbc" "$repo_root/libcrux_sha3.llbc" "$repo_root/libcrux_secrets.llbc"
 
 if [[ "$eurydice_glue" = 1 ]]; then
     cp "$glue" .
@@ -144,7 +152,7 @@ fi
 if [[ "$karamel_include" = 1 ]]; then
     echo "Copying karamel/include ..."
     mkdir -p karamel
-    cp -R $KRML_HOME/include karamel/
+    cp -R "$KRML_HOME/include" karamel/
 fi
 
 if [[ "$format" = 1 ]]; then
