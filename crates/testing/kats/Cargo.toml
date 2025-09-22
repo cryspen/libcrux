@@ -1,6 +1,7 @@
 [package]
 name = "libcrux-kats"
 
+publish = false
 readme = "Readme.md"
 version = "0.0.3"
 
