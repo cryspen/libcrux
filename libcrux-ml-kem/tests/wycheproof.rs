@@ -1,6 +1,6 @@
 use libcrux_kats::wycheproof::mlkem::schema::*;
 
-use libcrux_ml_kem::MlKemCiphertext;
+use libcrux_ml_kem::{MlKemCiphertext, MlKemPublicKey};
 
 macro_rules! wycheproof_test {
     ($name:ident, $parameter_set:expr, $module:path) => {
@@ -15,6 +15,8 @@ macro_rules! wycheproof_test {
 
                 for test_group in katfile.keygen_and_decaps_tests($parameter_set) {
                     for test in &test_group.tests {
+                        // TODO: handle Strcmp case
+
                         // generate key pair
                         let key_pair = generate_key_pair(test.seed.clone());
 
@@ -40,12 +42,29 @@ macro_rules! wycheproof_test {
                         assert_eq!(test.result, MlKemResult::Valid);
                     }
                 }
-                /*
-                #[test]
-                fn wycheproof_encaps() {
-                    // TODO: implement encaps tests with `ML-KEM.Encaps_internal` m input
+            }
+            #[test]
+            fn wycheproof_encaps() {
+                use $module::*;
+                let katfile = MlKemTests::load();
+
+                for test_group in katfile.encaps_tests($parameter_set) {
+                    for test in &test_group.tests {
+                        // all tests have an Invalid results and a `ModulusOverflow` flag
+                        assert_eq!(test.result, MlKemResult::Invalid);
+                        assert_eq!(test.flags, vec!["ModulusOverflow".to_string()]);
+                        // convert to encapsulation key
+                        let bytes: [u8; _] = test
+                            .encapsulation_key
+                            .clone()
+                            .try_into()
+                            .expect("invalid length");
+                        let encapsulation_key: MlKemPublicKey<_> = bytes.into();
+
+                        // validate the key (should fail for ModulusOverflow cases)
+                        assert!(!validate_public_key(&encapsulation_key));
+                    }
                 }
-                */
             }
         }
     };
