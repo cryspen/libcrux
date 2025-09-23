@@ -11,8 +11,8 @@
  * Libcrux: 35bec222e83d1dca70618f1d2f37bbb4b2a0a012
  */
 
-#ifndef internal_libcrux_sha3_internal_H
-#define internal_libcrux_sha3_internal_H
+#ifndef libcrux_sha3_internal_H
+#define libcrux_sha3_internal_H
 
 #include "eurydice_glue.h"
 
@@ -20,19 +20,16 @@
 extern "C" {
 #endif
 
-#include "../libcrux_sha3_internal.h"
+#define libcrux_sha3_Algorithm_Sha224 1
+#define libcrux_sha3_Algorithm_Sha256 2
+#define libcrux_sha3_Algorithm_Sha384 3
+#define libcrux_sha3_Algorithm_Sha512 4
 
-typedef uint8_t libcrux_sha3_Sha3_512Digest[64U];
-
-typedef uint8_t libcrux_sha3_Sha3_384Digest[48U];
-
-typedef uint8_t libcrux_sha3_Sha3_256Digest[32U];
-
-typedef uint8_t libcrux_sha3_Sha3_224Digest[28U];
+typedef uint8_t libcrux_sha3_Algorithm;
 
 #if defined(__cplusplus)
 }
 #endif
 
-#define internal_libcrux_sha3_internal_H_DEFINED
-#endif /* internal_libcrux_sha3_internal_H */
+#define libcrux_sha3_internal_H_DEFINED
+#endif /* libcrux_sha3_internal_H */

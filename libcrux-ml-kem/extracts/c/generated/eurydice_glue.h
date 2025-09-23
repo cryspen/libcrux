@@ -156,7 +156,7 @@ typedef struct {
   KRML_CLITERAL(Eurydice_slice) { ptr_, len_ }
 
 #define core_array__core__clone__Clone_for__Array_T__N___clone( \
-    len, src, dst, elem_type, _ret_t)                                \
+    len, src, dst, elem_type, _ret_t)                           \
   (memcpy(dst, src, len * sizeof(elem_type)))
 #define TryFromSliceError uint8_t
 #define core_array_TryFromSliceError uint8_t
@@ -306,8 +306,8 @@ static inline uint32_t core_num__i32__count_ones(int32_t x0) {
 #endif
 }
 
-static inline size_t core_cmp_impls___core__cmp__Ord_for_usize___min(
-    size_t a, size_t b) {
+static inline size_t core_cmp_impls___core__cmp__Ord_for_usize___min(size_t a,
+                                                                     size_t b) {
   if (a <= b)
     return a;
   else
@@ -325,8 +325,7 @@ static inline uint64_t core_num__u64__rotate_left(uint64_t x0, uint32_t x1) {
   return (x0 << x1 | x0 >> (64 - x1));
 }
 
-static inline void core_ops_arith__i32__add_assign(int32_t *x0,
-                                                       int32_t *x1) {
+static inline void core_ops_arith__i32__add_assign(int32_t *x0, int32_t *x1) {
   *x0 = *x0 + *x1;
 }
 
