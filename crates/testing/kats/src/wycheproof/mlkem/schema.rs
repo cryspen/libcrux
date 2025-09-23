@@ -77,7 +77,7 @@ pub struct MlKemTest {
     /// Identifier of the test case
     pub tc_id: i64,
 
-    pub flags: Vec<Flag>,
+    pub flags: Vec<String>,
 
     /// The d || z seed
     #[serde(with = "hex::serde")]
@@ -108,7 +108,7 @@ pub struct MlKemEncapsTest {
     /// Identifier of the test case
     pub tc_id: i64,
 
-    pub flags: Vec<Flag>,
+    pub flags: Vec<String>,
 
     /// The encapsulation key
     #[serde(rename = "ek")]
@@ -133,19 +133,12 @@ pub struct MlKemEncapsTest {
     pub result: MlKemResult,
 }
 
-#[derive(PartialEq, Serialize, Deserialize)]
-pub enum Flag {
-    #[serde(rename = "ModulusOverflow")]
-    ModulusOverflow,
-
-    Strcmp,
-}
-
 #[derive(PartialEq, Serialize, Deserialize, Debug)]
 #[serde(rename_all = "snake_case")]
 pub enum MlKemResult {
     Invalid,
 
     Valid,
+
     Acceptable,
 }

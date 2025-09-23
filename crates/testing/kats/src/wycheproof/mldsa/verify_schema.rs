@@ -75,40 +75,7 @@ pub struct Test {
     pub result: VerifyResult,
 
     /// A list of flags
-    pub flags: Vec<Flag>,
-}
-
-#[derive(PartialEq, Serialize, Deserialize)]
-pub enum Flag {
-    #[serde(rename = "BoundaryCondition")]
-    BoundaryCondition,
-
-    #[serde(rename = "IncorrectPublicKeyLength")]
-    IncorrectPublicKeyLength,
-
-    #[serde(rename = "IncorrectSignatureLength")]
-    IncorrectSignatureLength,
-
-    #[serde(rename = "InvalidHintsEncoding")]
-    InvalidHintsEncoding,
-
-    #[serde(rename = "InvalidPrivateKey")]
-    InvalidPrivateKey,
-
-    #[serde(rename = "InvalidContext")]
-    InvalidContext,
-
-    #[serde(rename = "ManySteps")]
-    ManySteps,
-
-    #[serde(rename = "ModifiedSignature")]
-    ModifiedSignature,
-
-    #[serde(rename = "ValidSignature")]
-    ValidSignature,
-
-    #[serde(rename = "ZeroPublicKey")]
-    ZeroPublicKey,
+    pub flags: Vec<String>,
 }
 
 #[derive(PartialEq, Serialize, Deserialize)]

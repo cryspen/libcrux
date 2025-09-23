@@ -25,7 +25,7 @@ macro_rules! wycheproof_verify_test {
                     assert_eq!(test_group.tests.len(), 1);
                     assert!(test_group.tests[0]
                         .flags
-                        .contains(&Flag::IncorrectPublicKeyLength));
+                        .contains(&"IncorrectPublicKeyLength".into()));
 
                     continue;
                 }
@@ -41,7 +41,7 @@ macro_rules! wycheproof_verify_test {
                         // signature size in our implementation, ensure that the KAT
                         // signature has a corresponding flag set staring that its length
                         // is incorrect.
-                        assert!(test.flags.contains(&Flag::IncorrectSignatureLength));
+                        assert!(test.flags.contains(&"IncorrectSignatureLength".into()));
 
                         continue;
                     }
