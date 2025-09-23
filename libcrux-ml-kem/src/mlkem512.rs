@@ -38,7 +38,8 @@ crate::impl_kem_trait!(
 );
 
 // Provide the (packed) PQCP APIs
-pqcp_api!(MlKem512, "512");
+#[cfg(feature = "pqcp")]
+crate::pqcp::pqcp_api!("use libcrux_ml_kem::mlkem512::pqcp::*;", MlKem512, " 512 ");
 
 /// An ML-KEM 512 Ciphertext
 pub type MlKem512Ciphertext = MlKemCiphertext<CPA_PKE_CIPHERTEXT_SIZE>;
@@ -251,13 +252,14 @@ macro_rules! instantiate {
                 /// Am Unpacked ML-KEM 512 Key pair
                 pub type MlKem512KeyPairUnpacked = p::unpacked::MlKemKeyPairUnpacked<RANK>;
 
-                pqcp_unpacked_api!(
+                #[cfg(feature = "pqcp")]
+                crate::pqcp::pqcp_unpacked_api!(
                     MlKem512KeyPairUnpacked,
                     MlKem512PublicKeyUnpacked,
                     MlKem512PrivateKey,
                     MlKem512PublicKey,
                     MlKem512Ciphertext,
-                    "512"
+                    " 512 "
                 );
 
                 /// Create a new, empty unpacked key.

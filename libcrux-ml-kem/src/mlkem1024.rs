@@ -37,7 +37,12 @@ crate::impl_kem_trait!(
 );
 
 // Provide the (packed) PQCP APIs
-pqcp_api!(MlKem1024, "1024");
+#[cfg(feature = "pqcp")]
+crate::pqcp::pqcp_api!(
+    "use libcrux_ml_kem::mlkem1024::pqcp::*;",
+    MlKem1024,
+    " 1024 "
+);
 
 /// An ML-KEM 1024 Ciphertext
 pub type MlKem1024Ciphertext = MlKemCiphertext<CPA_PKE_CIPHERTEXT_SIZE>;
@@ -253,13 +258,14 @@ macro_rules! instantiate {
                 /// Am Unpacked ML-KEM 1024 Key pair
                 pub type MlKem1024KeyPairUnpacked = p::unpacked::MlKemKeyPairUnpacked<RANK>;
 
-                pqcp_unpacked_api!(
+                #[cfg(feature = "pqcp")]
+                crate::pqcp::pqcp_unpacked_api!(
                     MlKem1024KeyPairUnpacked,
                     MlKem1024PublicKeyUnpacked,
                     MlKem1024PrivateKey,
                     MlKem1024PublicKey,
                     MlKem1024Ciphertext,
-                    "1024"
+                    " 1024 "
                 );
 
                 /// Create a new, empty unpacked key.

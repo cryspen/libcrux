@@ -45,7 +45,8 @@ crate::impl_kem_trait!(
 );
 
 // Provide the (packed) PQCP APIs
-pqcp_api!(MlKem768, "768");
+#[cfg(feature = "pqcp")]
+crate::pqcp::pqcp_api!("use libcrux_ml_kem::mlkem768::pqcp::*;", MlKem768, " 768 ");
 
 /// An ML-KEM 768 Ciphertext
 pub type MlKem768Ciphertext = MlKemCiphertext<CPA_PKE_CIPHERTEXT_SIZE>;
@@ -252,13 +253,14 @@ macro_rules! instantiate {
                 /// Am Unpacked ML-KEM 768 Key pair
                 pub type MlKem768KeyPairUnpacked = p::unpacked::MlKemKeyPairUnpacked<RANK>;
 
-                pqcp_unpacked_api!(
+                #[cfg(feature = "pqcp")]
+                crate::pqcp::pqcp_unpacked_api!(
                     MlKem768KeyPairUnpacked,
                     MlKem768PublicKeyUnpacked,
                     MlKem768PrivateKey,
                     MlKem768PublicKey,
                     MlKem768Ciphertext,
-                    "768"
+                    " 768 "
                 );
 
                 /// Create a new, empty unpacked key.
