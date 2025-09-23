@@ -1,33 +1,5 @@
+pub use super::super::schema_common::*;
 use serde::{Deserialize, Serialize};
-
-#[derive(PartialEq, Serialize, Deserialize)]
-#[serde(rename_all = "PascalCase")]
-pub struct Notes {
-    pub boundary_condition: BoundaryCondition,
-
-    pub incorrect_private_key_length: BoundaryCondition,
-
-    pub invalid_private_key: BoundaryCondition,
-
-    pub many_steps: BoundaryCondition,
-
-    pub valid_signature: BoundaryCondition,
-}
-
-#[derive(PartialEq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct Source {
-    pub name: String,
-    pub version: String,
-}
-
-#[derive(PartialEq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct BoundaryCondition {
-    pub bug_type: String,
-
-    pub description: String,
-}
 
 #[derive(PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]

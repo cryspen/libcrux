@@ -11,6 +11,7 @@
 //     let model: mlkem_schema = serde_json::from_str(&json).unwrap();
 // }
 
+pub use super::super::schema_common::*;
 use serde::{Deserialize, Serialize};
 
 #[derive(PartialEq, Serialize, Deserialize)]
@@ -25,22 +26,6 @@ pub struct MlKemTests {
     pub notes: Notes,
 
     pub test_groups: Vec<TestGroup>,
-}
-
-#[derive(PartialEq, Serialize, Deserialize)]
-#[serde(rename_all = "PascalCase")]
-pub struct Notes {
-    pub strcmp: ModulusOverflow,
-
-    pub modulus_overflow: ModulusOverflow,
-}
-
-#[derive(PartialEq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct ModulusOverflow {
-    pub bug_type: String,
-
-    pub description: String,
 }
 
 #[derive(PartialEq, Serialize, Deserialize, Clone, Copy)]
@@ -73,13 +58,6 @@ pub struct MlKemEncapsTestGroup {
     pub parameter_set: ParameterSet,
 
     pub tests: Vec<MlKemEncapsTest>,
-}
-
-#[derive(PartialEq, Serialize, Deserialize)]
-pub struct Source {
-    pub name: String,
-
-    pub version: String,
 }
 
 /// Test for encaps

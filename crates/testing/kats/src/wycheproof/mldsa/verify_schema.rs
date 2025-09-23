@@ -1,3 +1,4 @@
+pub use super::super::schema_common::*;
 use serde::{Deserialize, Serialize};
 
 #[derive(PartialEq, Serialize, Deserialize)]
@@ -20,28 +21,6 @@ pub struct MlDsaVerifyTests {
     pub schema: String,
 
     pub test_groups: Vec<TestGroup>,
-}
-
-#[derive(PartialEq, Serialize, Deserialize)]
-#[serde(rename_all = "PascalCase")]
-pub struct Notes {
-    pub boundary_condition: BoundaryCondition,
-
-    pub incorrect_public_key_length: BoundaryCondition,
-
-    pub incorrect_signature_length: BoundaryCondition,
-
-    pub invalid_hints_encoding: BoundaryCondition,
-
-    pub invalid_private_key: BoundaryCondition,
-
-    pub many_steps: BoundaryCondition,
-
-    pub modified_signature: BoundaryCondition,
-
-    pub valid_signature: BoundaryCondition,
-
-    pub zero_public_key: BoundaryCondition,
 }
 
 #[derive(PartialEq, Serialize, Deserialize)]
