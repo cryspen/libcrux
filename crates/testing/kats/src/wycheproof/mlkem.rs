@@ -8,10 +8,10 @@ impl schema::MlKemTests {
         serde_json::from_str(data).expect("Could not deserialize KAT file.")
     }
 
-    pub fn keygen_and_decaps_tests<'a>(
-        &'a self,
+    pub fn keygen_and_decaps_tests(
+        &self,
         parameter_set: MlKemParameterSet,
-    ) -> impl Iterator<Item = &'a MlKemTestGroup> {
+    ) -> impl Iterator<Item = &MlKemTestGroup> {
         self.test_groups
             .iter()
             .filter_map(|g| {
@@ -23,10 +23,10 @@ impl schema::MlKemTests {
             })
             .filter(move |g| g.parameter_set == parameter_set)
     }
-    pub fn encaps_tests<'a>(
-        &'a self,
+    pub fn encaps_tests(
+        &self,
         parameter_set: MlKemParameterSet,
-    ) -> impl Iterator<Item = &'a MlKemEncapsTestGroup> {
+    ) -> impl Iterator<Item = &MlKemEncapsTestGroup> {
         self.test_groups
             .iter()
             .filter_map(|g| {
