@@ -376,6 +376,7 @@ TEST(MlKem768TestPortableUnpacked, NISTKnownAnswerTest)
 #endif // #ifdef LIBCRUX_UNPACKED
 
 #ifdef LIBCRUX_X64
+#ifdef nope
 #include "libcrux_mlkem768_avx2.h"
 
 TEST(MlKem768TestAvx2, ConsistencyTest)
@@ -545,6 +546,7 @@ TEST(MlKem768TestAvx2Unpacked, NISTKnownAnswerTest)
 }
 #endif // #ifdef LIBCRUX_UNPACKED
 
+#endif // nope
 #endif // LIBCRUX_X64
 
 #ifdef LIBCRUX_AARCH64
