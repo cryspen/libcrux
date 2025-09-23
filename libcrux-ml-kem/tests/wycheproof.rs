@@ -11,9 +11,9 @@ macro_rules! wycheproof_test {
             fn wycheproof_keygen_and_decaps() {
                 use $module::*;
 
-                let katfile = MlKemTests::load();
+                let katfile = MlKemTests::load($parameter_set);
 
-                for test_group in katfile.keygen_and_decaps_tests($parameter_set) {
+                for test_group in katfile.keygen_and_decaps_tests() {
                     for test in &test_group.tests {
                         // TODO: handle Strcmp case
 
@@ -46,9 +46,9 @@ macro_rules! wycheproof_test {
             #[test]
             fn wycheproof_encaps() {
                 use $module::*;
-                let katfile = MlKemTests::load();
+                let katfile = MlKemTests::load($parameter_set);
 
-                for test_group in katfile.encaps_tests($parameter_set) {
+                for test_group in katfile.encaps_tests() {
                     for test in &test_group.tests {
                         // all tests have an Invalid results and a `ModulusOverflow` flag
                         assert_eq!(test.result, MlKemResult::Invalid);
