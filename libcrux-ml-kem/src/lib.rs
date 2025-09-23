@@ -175,6 +175,7 @@ cfg_kyber! {
     }
 }
 
+#[cfg(not(hax))]
 macro_rules! impl_kem_trait {
     ($variant:ty, $pk:ty, $sk:ty, $ct:ty) => {
         impl
@@ -237,4 +238,5 @@ macro_rules! impl_kem_trait {
     };
 }
 
+#[cfg(not(hax))]
 use impl_kem_trait;
