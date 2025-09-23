@@ -1,26 +1,6 @@
 use serde::{Deserialize, Serialize};
 
 #[derive(PartialEq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-/// Sign tests for ML-DSA (`noseed`)
-pub struct MlDsaSignTests {
-    /// the primitive tested in the test file
-    pub algorithm: String,
-
-    /// additional documentation
-    pub header: Vec<String>,
-
-    pub notes: Notes,
-
-    /// the number of test vectors in this test
-    pub number_of_tests: i64,
-
-    pub schema: String,
-
-    pub test_groups: Vec<TestGroup>,
-}
-
-#[derive(PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "PascalCase")]
 pub struct Notes {
     pub boundary_condition: BoundaryCondition,
@@ -36,14 +16,6 @@ pub struct Notes {
 
 #[derive(PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct BoundaryCondition {
-    pub bug_type: String,
-
-    pub description: String,
-}
-
-#[derive(PartialEq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
 pub struct Source {
     pub name: String,
     pub version: String,
@@ -51,23 +23,10 @@ pub struct Source {
 
 #[derive(PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct TestGroup {
-    #[serde(rename = "type")]
-    pub test_group_type: Type,
+pub struct BoundaryCondition {
+    pub bug_type: String,
 
-    /// Encoded ML-DSA private key
-    #[serde(with = "hex::serde")]
-    pub private_key: Vec<u8>,
-
-    pub tests: Vec<Test>,
-
-    pub source: Source,
-}
-
-#[derive(PartialEq, Serialize, Deserialize)]
-pub enum Type {
-    #[serde(rename = "MlDsaSign")]
-    MlDsaSign,
+    pub description: String,
 }
 
 #[derive(PartialEq, Serialize, Deserialize)]
