@@ -101,7 +101,7 @@ pub struct MlKemTest {
 
     pub flags: Vec<Flag>,
 
-    /// The d | z seed
+    /// The d || z seed
     #[serde(with = "hex::serde")]
     pub seed: [u8; 64],
 
