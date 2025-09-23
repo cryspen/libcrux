@@ -190,7 +190,7 @@ jobs:
       # if not a fork, use page generation action
       - name: Upload ML-DSA benchmarks
         if: env.IS_FORK == 'false'
-        uses: cryspen/benchmark-upload-and-plot-action@v3
+        uses: cryspen/benchmark-upload-and-plot-action@keks/handle-pull_request_target-events
         with:
           name: ML-DSA Benchmark
           input-data-path: benchdata-mldsa.json
