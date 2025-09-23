@@ -44,14 +44,30 @@ pub struct ModulusOverflow {
 }
 
 #[derive(PartialEq, Serialize, Deserialize)]
+pub enum TestGroupType {
+    MLKEMTest,
+    MLKEMEncapsTest,
+}
+
+#[derive(PartialEq, Serialize, Deserialize)]
+pub enum MlKemParameterSet {
+    #[serde(rename = "ML-KEM-512")]
+    MlKem512,
+    #[serde(rename = "ML-KEM-768")]
+    MlKem768,
+    #[serde(rename = "ML-KEM-1024")]
+    MlKem1024,
+}
+
+#[derive(PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct TestGroup {
     #[serde(rename = "type")]
-    pub test_group_type: String,
+    pub test_group_type: TestGroupType,
 
     pub source: Source,
 
-    pub parameter_set: String,
+    pub parameter_set: MlKemParameterSet,
 
     pub tests: Vec<Test>,
 }
