@@ -49,7 +49,7 @@ pub struct MlKemTestGroup {
     pub tests: Vec<MlKemTest>,
 }
 
-/// Test group for enccaps
+/// Test group for encaps
 #[derive(PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct MlKemEncapsTestGroup {
