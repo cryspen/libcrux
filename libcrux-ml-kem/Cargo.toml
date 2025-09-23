@@ -75,6 +75,9 @@ criterion = "0.7"
 libcrux-traits = { version = "0.0.3", path = "../traits", features = [
     "generic-tests",
 ] }
+libcrux-kats = { version = "0.0.3", path = "../crates/testing/kats", features = [
+    "mlkem"
+] }
 
 [[bench]]
 name = "ml-kem"
