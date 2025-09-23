@@ -35,7 +35,7 @@ jobs:
       should-run: ${{ steps.changes.outputs.changes != '[]' }}
   build:
     needs: [setup]
-    if: ${{ github.event_name != 'merge_group' && setup.should-run }}
+    if: ${{ github.event_name != 'merge_group' && needs.setup.outputs.should-run == 'true' }}
     strategy:
       fail-fast: false
       matrix:
