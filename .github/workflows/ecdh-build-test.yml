@@ -136,7 +136,9 @@ jobs:
   
   ecdh-build-test-status:
     if: ${{ always() }}
-    needs: [setup, build]
+    needs:
+      - setup
+      - build
     runs-on: ubuntu-latest
     steps:
       - name: Successful
