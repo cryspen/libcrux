@@ -29,7 +29,7 @@ jobs:
             p256:
               - "p256/**"
             ecdh:
-              - "ecdh/**"
+              - "libcrux-ecdh/**"
     outputs:
       # run if any of the filters found changed files
       should-run: ${{ steps.changes.outputs.changes != '[]' }}
