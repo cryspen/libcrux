@@ -4,10 +4,8 @@ on:
   merge_group:
   push:
     branches: ["main", "dev"]
-    paths: ["curve25519", "p256", "ecdh"]
   pull_request:
     branches: ["main", "dev", "*"]
-    paths: ["curve25519", "p256", "ecdh"]
   workflow_dispatch:
 
 env:
@@ -18,8 +16,26 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  setup:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: dorny/paths-filter@v3
+        id: changes
+        with:
+          filters: |
+            curve25519:
+              - "curve25519/**"
+            p256:
+              - "p256/**"
+            ecdh:
+              - "ecdh/**"
+    outputs:
+      # run if any of the filters found changed files
+      should-run: ${{ steps.changes.outputs.changes != '[]' }}
   build:
-    if: ${{ github.event_name != 'merge_group' }}
+    needs: [setup]
+    if: ${{ github.event_name != 'merge_group' && setup.should-run }}
     strategy:
       fail-fast: false
       matrix:
@@ -120,7 +136,7 @@ jobs:
   
   ecdh-build-test-status:
     if: ${{ always() }}
-    needs: [build]
+    needs: [setup, build]
     runs-on: ubuntu-latest
     steps:
       - name: Successful
