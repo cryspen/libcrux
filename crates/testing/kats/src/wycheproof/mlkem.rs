@@ -1,3 +1,21 @@
+//! Wycheproof ML-KEM Known Answer Tests
+//!
+//! The JSON file for ML-KEM was taken from <https://github.com/C2SP/wycheproof>, as of commit [b51abcfb8dafa5316791e57cf48512a2147d9671](https://github.com/C2SP/wycheproof/tree/b51abcfb8dafa5316791e57cf48512a2147d9671)
+//!
+//! ### Example usage
+//! ```rust
+//! use libcrux_kats::wycheproof::mlkem::{MlKemParameterSet, MlKemTests};
+//!
+//! // load the tests for the ML-KEM-512 parameter set
+//! let tests = MlKemTests::load();
+//!
+//! for test_group in tests.keygen_and_decaps_tests(MlKemParameterSet::MlKem512) {
+//!     for test in &test_group.tests {
+//!         // ...
+//!     }
+//! }
+//! ```
+
 pub mod schema;
 
 pub use schema::*;
