@@ -35,6 +35,10 @@ macro_rules! wycheproof_test {
 
                         // compare shared secret
                         assert_eq!(shared_secret_from_decapsulate, test.shared_secret.as_ref());
+
+                        // assert result is valid
+                        assert_eq!(test.result, MlKemResult::Valid);
+
                     }
                 }
                 /*

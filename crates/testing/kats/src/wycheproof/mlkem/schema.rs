@@ -163,7 +163,7 @@ pub enum Flag {
     Strcmp,
 }
 
-#[derive(PartialEq, Serialize, Deserialize)]
+#[derive(PartialEq, Serialize, Deserialize, Debug)]
 #[serde(rename_all = "snake_case")]
 pub enum MlKemResult {
     Invalid,
