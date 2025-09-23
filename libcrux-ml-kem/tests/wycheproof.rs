@@ -38,7 +38,6 @@ macro_rules! wycheproof_test {
 
                         // assert result is valid
                         assert_eq!(test.result, MlKemResult::Valid);
-
                     }
                 }
                 /*
@@ -54,25 +53,17 @@ macro_rules! wycheproof_test {
 
 // multiplexing API
 #[cfg(feature = "mlkem512")]
-wycheproof_test!(
-    ml_kem_512,
-    MlKemParameterSet::MlKem512,
-    libcrux_ml_kem::mlkem512
-);
+wycheproof_test!(ml_kem_512, ParameterSet::MlKem512, libcrux_ml_kem::mlkem512);
 
 // multiplexing API
 #[cfg(feature = "mlkem768")]
-wycheproof_test!(
-    ml_kem_768,
-    MlKemParameterSet::MlKem768,
-    libcrux_ml_kem::mlkem768
-);
+wycheproof_test!(ml_kem_768, ParameterSet::MlKem768, libcrux_ml_kem::mlkem768);
 
 // multiplexing API
 #[cfg(feature = "mlkem1024")]
 wycheproof_test!(
     ml_kem_1024,
-    MlKemParameterSet::MlKem1024,
+    ParameterSet::MlKem1024,
     libcrux_ml_kem::mlkem1024
 );
 
@@ -80,7 +71,7 @@ wycheproof_test!(
 #[cfg(feature = "mlkem512")]
 wycheproof_test!(
     ml_kem_512_portable,
-    MlKemParameterSet::MlKem512,
+    ParameterSet::MlKem512,
     libcrux_ml_kem::mlkem512::portable
 );
 
@@ -88,7 +79,7 @@ wycheproof_test!(
 #[cfg(feature = "mlkem768")]
 wycheproof_test!(
     ml_kem_768_portable,
-    MlKemParameterSet::MlKem768,
+    ParameterSet::MlKem768,
     libcrux_ml_kem::mlkem768::portable
 );
 
@@ -96,6 +87,6 @@ wycheproof_test!(
 #[cfg(feature = "mlkem1024")]
 wycheproof_test!(
     ml_kem_1024_portable,
-    MlKemParameterSet::MlKem1024,
+    ParameterSet::MlKem1024,
     libcrux_ml_kem::mlkem1024::portable
 );

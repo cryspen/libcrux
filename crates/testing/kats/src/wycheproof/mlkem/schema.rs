@@ -44,7 +44,7 @@ pub struct ModulusOverflow {
 }
 
 #[derive(PartialEq, Serialize, Deserialize, Clone, Copy)]
-pub enum MlKemParameterSet {
+pub enum ParameterSet {
     #[serde(rename = "ML-KEM-512")]
     MlKem512,
     #[serde(rename = "ML-KEM-768")]
@@ -59,7 +59,7 @@ pub enum MlKemParameterSet {
 pub struct MlKemTestGroup {
     pub source: Source,
 
-    pub parameter_set: MlKemParameterSet,
+    pub parameter_set: ParameterSet,
 
     pub tests: Vec<MlKemTest>,
 }
@@ -70,7 +70,7 @@ pub struct MlKemTestGroup {
 pub struct MlKemEncapsTestGroup {
     pub source: Source,
 
-    pub parameter_set: MlKemParameterSet,
+    pub parameter_set: ParameterSet,
 
     pub tests: Vec<MlKemEncapsTest>,
 }

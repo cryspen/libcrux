@@ -4,12 +4,12 @@
 //!
 //! ### Example usage
 //! ```rust
-//! use libcrux_kats::wycheproof::mlkem::{MlKemParameterSet, MlKemTests};
+//! use libcrux_kats::wycheproof::mlkem::{ParameterSet, MlKemTests};
 //!
 //! // load the tests for the ML-KEM-512 parameter set
 //! let tests = MlKemTests::load();
 //!
-//! for test_group in tests.keygen_and_decaps_tests(MlKemParameterSet::MlKem512) {
+//! for test_group in tests.keygen_and_decaps_tests(ParameterSet::MlKem512) {
 //!     for test in &test_group.tests {
 //!         // ...
 //!     }
@@ -28,7 +28,7 @@ impl schema::MlKemTests {
 
     pub fn keygen_and_decaps_tests(
         &self,
-        parameter_set: MlKemParameterSet,
+        parameter_set: ParameterSet,
     ) -> impl Iterator<Item = &MlKemTestGroup> {
         self.test_groups
             .iter()
@@ -43,7 +43,7 @@ impl schema::MlKemTests {
     }
     pub fn encaps_tests(
         &self,
-        parameter_set: MlKemParameterSet,
+        parameter_set: ParameterSet,
     ) -> impl Iterator<Item = &MlKemEncapsTestGroup> {
         self.test_groups
             .iter()
