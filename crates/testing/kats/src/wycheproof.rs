@@ -5,3 +5,5 @@ pub mod mldsa;
 
 #[cfg(feature = "mlkem")]
 pub mod mlkem;
+
+pub mod schema_common;
