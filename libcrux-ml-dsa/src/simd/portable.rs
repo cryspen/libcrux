@@ -28,8 +28,7 @@ impl Repr for Coefficients {
 }
 
 #[cfg(any(eurydice, not(hax)))]
-impl Repr for Coefficients {
-}
+impl Repr for Coefficients {}
 
 impl Operations for Coefficients {
     fn zero() -> Coefficients {
