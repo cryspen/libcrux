@@ -66,6 +66,9 @@ incremental = []
 # Checking secret independence
 check-secret-independence = ["libcrux-secrets/check-secret-independence"]
 
+# PQCP Common APIs
+pqcp = []
+
 [dev-dependencies]
 rand = { version = "0.9", features = ["thread_rng"] }
 serde_json = { version = "1.0" }
@@ -93,7 +96,7 @@ name = "keygen"
 required-features = ["mlkem768"]
 
 [package.metadata."docs.rs"]
-features = ["kyber"]
+features = ["kyber", "pqcp"]
 rustdoc-args = ["--cfg", "doc_cfg"]
 
 [lints.rust]
