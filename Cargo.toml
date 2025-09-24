@@ -14,7 +14,6 @@ members = [
     "libcrux-intrinsics",
     "libcrux-kem",
     "libcrux-hmac",
-    "libcrux-hkdf",
     "libcrux-ecdh",
     "libcrux-psq",
     "macros",
@@ -32,8 +31,10 @@ members = [
     "secrets",
     "fstar-helpers/core-models",
     "test-utils",
+    "crates/algorithms/hkdf",
     "crates/primitives/aead",
     "crates/testing/kats",
+    "hacl-rs",
 ]
 
 [workspace.package]
@@ -87,7 +88,7 @@ libcrux-chacha20poly1305 = { version = "=0.0.3", path = "chacha20poly1305" }
 libcrux-hacl-rs = { version = "=0.0.3", path = "hacl-rs" }
 libcrux-hacl = { version = "=0.0.2", path = "sys/hacl" }
 libcrux-platform = { version = "=0.0.2", path = "sys/platform" }
-libcrux-hkdf = { version = "=0.0.3", path = "libcrux-hkdf" }
+libcrux-hkdf = { version = "=0.0.3", path = "crates/algorithms/hkdf" }
 libcrux-hmac = { version = "=0.0.3", path = "libcrux-hmac" }
 libcrux-sha2 = { version = "=0.0.3", path = "sha2" }
 libcrux-ed25519 = { version = "=0.0.3", path = "ed25519" }
