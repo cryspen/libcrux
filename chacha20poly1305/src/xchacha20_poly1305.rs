@@ -5,8 +5,29 @@
 
 use crate::{
     hacl::chacha20::{chacha20_constants, rounds},
-    AeadError, KEY_LEN, TAG_LEN,
+    AeadError,
 };
+use libcrux_traits::aead::{typed_owned, typed_refs};
+
+pub use crate::{KEY_LEN, TAG_LEN};
+
+pub use crate::impl_aead_trait::XChaCha20Poly1305;
+
+/// An owned XChaCha20Poly1305 key.
+pub type Key = typed_owned::Key<XChaCha20Poly1305>;
+/// An owned XChaCha20Poly1305 tag.
+pub type Tag = typed_owned::Tag<XChaCha20Poly1305>;
+/// An owned XChaCha20Poly1305 nonce.
+pub type Nonce = typed_owned::Nonce<XChaCha20Poly1305>;
+
+/// A reference to a XChaCha20Poly1305 key.
+pub type KeyRef<'a> = typed_refs::KeyRef<'a, XChaCha20Poly1305>;
+/// A reference to a XChaCha20Poly1305 tag.
+pub type TagRef<'a> = typed_refs::TagRef<'a, XChaCha20Poly1305>;
+/// A mutable reference to a XChaCha20Poly1305 tag.
+pub type TagMut<'a> = typed_refs::TagMut<'a, XChaCha20Poly1305>;
+/// A reference to a XChaCha20Poly1305 nonce.
+pub type NonceRef<'a> = typed_refs::NonceRef<'a, XChaCha20Poly1305>;
 
 /// Length of the XChaCha nonce.
 pub const NONCE_LEN: usize = 24;
@@ -55,8 +76,8 @@ pub(crate) fn derive(
     let (nonce_16, nonce_8) = nonce_in.split_at(16);
     let nonce_16: &[u8; 16] = nonce_16.try_into().unwrap();
 
-    hchacha20(key_in, &nonce_16, key_out);
-    nonce_out[4..].copy_from_slice(&nonce_8);
+    hchacha20(key_in, nonce_16, key_out);
+    nonce_out[4..].copy_from_slice(nonce_8);
 }
 
 /// Convert the `key` and `nonce` into the subkey.

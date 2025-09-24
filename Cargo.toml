@@ -32,6 +32,8 @@ members = [
     "secrets",
     "fstar-helpers/core-models",
     "test-utils",
+    "crates/primitives/aead",
+    "crates/testing/kats",
 ]
 
 [workspace.package]
@@ -47,7 +49,7 @@ readme = "Readme.md"
 allow-branch = ["main"]
 
 [workspace.dependencies]
-hax-lib = { version = "0.3.2" }
+hax-lib = { version = "0.3.4" }
 
 [package]
 name = "libcrux"
@@ -81,6 +83,7 @@ libcrux-platform = { version = "=0.0.2", path = "sys/platform" }
 
 [dependencies]
 libcrux-traits = { version = "=0.0.3", path = "traits" }
+libcrux-chacha20poly1305 = { version = "=0.0.3", path = "chacha20poly1305" }
 libcrux-hacl-rs = { version = "=0.0.3", path = "hacl-rs" }
 libcrux-hacl = { version = "=0.0.2", path = "sys/hacl" }
 libcrux-platform = { version = "=0.0.2", path = "sys/platform" }

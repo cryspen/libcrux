@@ -47,6 +47,7 @@
             cp -r ${eurydice}/include $out
           '';
           FSTAR_HOME = fstar.packages.${system}.default;
+          HAX_HOME = hax;
           KRML_HOME = karamel;
 
           CHARON_REV = charon.rev or "dirty";
@@ -238,6 +239,7 @@
             pkgs.clang_18
             pkgs.openssl
             pkgs.pkg-config
+            pkgs.jq
             fstar.packages.${system}.default
           ];
           inputsFrom = [ packages.ml-kem ];

@@ -1,0 +1,1 @@
+../../cpp_header_only/generated/spdx-header.txt

@@ -188,7 +188,7 @@ impl Absorb<2> for KeccakState<2, uint64x2_t> {
 }
 
 impl Squeeze2<uint64x2_t> for KeccakState<2, uint64x2_t> {
-    fn squeeze<const RATE: usize>(
+    fn squeeze2<const RATE: usize>(
         &self,
         out0: &mut [u8],
         out1: &mut [u8],
