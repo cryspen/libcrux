@@ -1,6 +1,7 @@
 pub use super::super::schema_common::*;
 use serde::{Deserialize, Serialize};
 
+pub type Notes = std::collections::HashMap<Flag, NotesEntry>;
 #[derive(PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 /// Verify tests for ML-DSA
@@ -75,7 +76,21 @@ pub struct Test {
     pub result: VerifyResult,
 
     /// A list of flags
-    pub flags: Vec<String>,
+    pub flags: Vec<Flag>,
+}
+
+#[derive(Hash, PartialEq, Eq, Debug, Serialize, Deserialize)]
+pub enum Flag {
+    BoundaryCondition,
+    IncorrectPublicKeyLength,
+    IncorrectSignatureLength,
+    InvalidHintsEncoding,
+    InvalidPrivateKey,
+    InvalidContext,
+    ManySteps,
+    ModifiedSignature,
+    ValidSignature,
+    ZeroPublicKey,
 }
 
 #[derive(PartialEq, Serialize, Deserialize)]

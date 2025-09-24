@@ -34,7 +34,7 @@ macro_rules! wycheproof_sign_test {
                         assert_eq!(test_group.tests.len(), 1);
                         assert!(test_group.tests[0]
                             .flags
-                            .contains(&"IncorrectPrivateKeyLength".into()));
+                            .contains(&Flag::IncorrectPrivateKeyLength));
 
                         continue;
                     }

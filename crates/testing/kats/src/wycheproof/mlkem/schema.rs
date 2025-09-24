@@ -14,6 +14,8 @@
 pub use super::super::schema_common::*;
 use serde::{Deserialize, Serialize};
 
+pub type Notes = std::collections::HashMap<Flag, NotesEntry>;
+
 #[derive(PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct MlKemTests {
@@ -77,7 +79,7 @@ pub struct MlKemTest {
     /// Identifier of the test case
     pub tc_id: i64,
 
-    pub flags: Vec<String>,
+    pub flags: Vec<Flag>,
 
     /// The d || z seed
     #[serde(with = "hex::serde")]
@@ -108,7 +110,7 @@ pub struct MlKemEncapsTest {
     /// Identifier of the test case
     pub tc_id: i64,
 
-    pub flags: Vec<String>,
+    pub flags: Vec<Flag>,
 
     /// The encapsulation key
     #[serde(rename = "ek")]
@@ -133,12 +135,17 @@ pub struct MlKemEncapsTest {
     pub result: MlKemResult,
 }
 
+#[derive(Hash, PartialEq, Eq, Debug, Serialize, Deserialize)]
+pub enum Flag {
+    ModulusOverflow,
+    Strcmp,
+}
+
 #[derive(PartialEq, Serialize, Deserialize, Debug)]
 #[serde(rename_all = "snake_case")]
 pub enum MlKemResult {
     Invalid,
 
     Valid,
-
     Acceptable,
 }

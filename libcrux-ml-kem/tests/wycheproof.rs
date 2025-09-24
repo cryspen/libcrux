@@ -50,7 +50,7 @@ macro_rules! wycheproof_test {
                     for test in &test_group.tests {
                         // all tests have an Invalid results and a `ModulusOverflow` flag
                         assert_eq!(test.result, MlKemResult::Invalid);
-                        assert_eq!(test.flags, vec!["ModulusOverflow".to_string()]);
+                        assert_eq!(test.flags, vec![Flag::ModulusOverflow]);
                         // convert to encapsulation key
                         let bytes: [u8; _] = test
                             .encapsulation_key

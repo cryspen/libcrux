@@ -10,8 +10,6 @@ pub struct Source {
     pub version: String,
 }
 
-pub type Notes = std::collections::HashMap<String, NotesEntry>;
-
 #[derive(PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct NotesEntry {
