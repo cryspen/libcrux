@@ -35,6 +35,7 @@ members = [
     "crates/primitives/aead",
     "crates/testing/kats",
     "hacl-rs",
+    "crates/primitives/kdf",
 ]
 
 [workspace.package]
