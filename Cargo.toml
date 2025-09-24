@@ -132,6 +132,7 @@ experimental = []                    # Expose experimental APIs.
 lto = "fat"
 codegen-units = 1
 panic = "abort"
+strip = true
 
 # XXX: Not needed anymore, but nice for test speed
 # [profile.dev.package."libcrux-ml-dsa"]
