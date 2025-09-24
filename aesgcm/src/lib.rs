@@ -86,10 +86,10 @@ pub struct X64AesGcm256;
 pub type X64AesGcm256 = PortableAesGcm256;
 
 /// Tag length.
-pub(crate) const TAG_LEN: usize = 16;
+pub const TAG_LEN: usize = 16;
 
 /// Nonce length.
-pub(crate) const NONCE_LEN: usize = 12;
+pub const NONCE_LEN: usize = 12;
 
 /// Generic AES-GCM encrypt.
 pub(crate) fn encrypt<S: State>(

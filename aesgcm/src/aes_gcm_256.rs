@@ -10,7 +10,7 @@ use crate::{
 };
 
 /// Key length.
-pub(crate) const KEY_LEN: usize = 32;
+pub const KEY_LEN: usize = 32;
 pub(crate) const GCM_KEY_LEN: usize = 16;
 
 /// The AES-GCM 256 state
