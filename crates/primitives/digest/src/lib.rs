@@ -15,16 +15,19 @@ pub use libcrux_traits::digest::Hasher;
 pub mod blake2 {
     //! ```rust
     //! use libcrux_digest::blake2::*;
+    //! use libcrux_traits::digest::arrayref::Hash as _;
     //! let mut digest = [0; 32];
-    //! let mut hasher = Blake2bBuilder::new_unkeyed()
-    //!     .build_const_digest_len()
-    //!     .unwrap();
-    //! hasher.update(b"this is a test").unwrap();
-    //! hasher.finalize(&mut digest);
+    //! Blake2bHash::hash(&mut digest, b"test data").unwrap();
     //! ```
-    pub use libcrux_blake2::{
-        Blake2bBuilder, Blake2bHash, Blake2bHasher, Blake2sBuilder, Blake2sHash, Blake2sHasher,
-    };
+    //!
+    //! ```rust
+    //! use libcrux_digest::blake2::*;
+    //! let mut digest = [0; 32];
+    //! let mut hasher = Blake2bHasher::new();
+    //! hasher.update(b"test data").unwrap();
+    //! hasher.finish(&mut digest);
+    //! ```
+    pub use libcrux_blake2::{Blake2bHash, Blake2bHasher, Blake2sHash, Blake2sHasher};
 }
 
 #[cfg(feature = "sha2")]
