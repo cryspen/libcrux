@@ -8,7 +8,7 @@ macro_rules! wycheproof_test {
             use super::*;
 
             #[test]
-            fn wycheproof_keygen_and_decaps() {
+            fn keygen_and_decaps() {
                 use $module::*;
 
                 let katfile = MlKemTests::load($parameter_set);
@@ -42,7 +42,7 @@ macro_rules! wycheproof_test {
                 }
             }
             #[test]
-            fn wycheproof_encaps() {
+            fn encaps() {
                 use $module::*;
                 let katfile = MlKemTests::load($parameter_set);
 
