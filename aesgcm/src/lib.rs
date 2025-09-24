@@ -47,9 +47,9 @@ pub struct NeonAesGcm128 {}
 pub type NeonAesGcm128 = PortableAesGcm128;
 
 /// AES-NI AES-GCM 128.
-#[cfg(target_arch = "x86_64")]
+#[cfg(feature = "simd256")]
 pub struct X64AesGcm128 {}
-#[cfg(not(target_arch = "x86_64"))]
+#[cfg(not(feature = "simd256"))]
 pub type X64AesGcm128 = PortableAesGcm128;
 
 /// AES-GCM 256.
