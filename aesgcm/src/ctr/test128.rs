@@ -126,7 +126,7 @@ fn test_ctr_encrypt_neon() {
 #[test]
 fn test_ctr_encrypt_intel() {
     let mut computed: [u8; 32] = [0u8; 32];
-    aes128_ctr_encrypt::<platform::intel_ni::State>(&KEY, &NONCE, 1, &INPUT, &mut computed);
+    aes128_ctr_encrypt::<platform::x64::State>(&KEY, &NONCE, 1, &INPUT, &mut computed);
     for i in 0..32 {
         if computed[i] != EXPECTED[i] {
             std::eprintln!(
