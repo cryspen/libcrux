@@ -15,8 +15,6 @@ macro_rules! wycheproof_test {
 
                 for test_group in katfile.keygen_and_decaps_tests() {
                     for test in &test_group.tests {
-                        // TODO: handle Strcmp case
-
                         // generate key pair
                         let key_pair = generate_key_pair(test.seed.clone());
 
