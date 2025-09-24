@@ -55,7 +55,9 @@ fn test_ctr_block() {
             #[cfg(feature = "std")]
             std::eprintln!(
                 "mismatch at {}: expected is {}, computed is {}",
-                i, EXPECTED[i], computed[i]
+                i,
+                EXPECTED[i],
+                computed[i]
             );
             assert!(false);
         }
@@ -74,7 +76,9 @@ fn test_ctr_block_neon() {
             #[cfg(feature = "std")]
             std::eprintln!(
                 "mismatch at {}: expected is {}, computed is {}",
-                i, EXPECTED[i], computed[i]
+                i,
+                EXPECTED[i],
+                computed[i]
             );
             assert!(false);
         }
@@ -90,7 +94,9 @@ fn test_ctr_encrypt() {
             #[cfg(feature = "std")]
             std::eprintln!(
                 "mismatch at {}: expected is {}, computed is {}",
-                i, EXPECTED[i], computed[i]
+                i,
+                EXPECTED[i],
+                computed[i]
             );
             assert!(false);
         }
@@ -107,7 +113,9 @@ fn test_ctr_encrypt_neon() {
             #[cfg(feature = "std")]
             std::eprintln!(
                 "mismatch at {}: expected is {}, computed is {}",
-                i, EXPECTED[i], computed[i]
+                i,
+                EXPECTED[i],
+                computed[i]
             );
             assert!(false);
         }
@@ -123,7 +131,9 @@ fn test_ctr_encrypt_intel() {
         if computed[i] != EXPECTED[i] {
             std::eprintln!(
                 "mismatch at {}: expected is {}, computed is {}",
-                i, EXPECTED[i], computed[i]
+                i,
+                EXPECTED[i],
+                computed[i]
             );
             assert!(false);
         }

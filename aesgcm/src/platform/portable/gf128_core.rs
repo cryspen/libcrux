@@ -1,4 +1,3 @@
-
 /// A portable gf128 field element.
 pub(crate) type FieldElement = u128;
 
