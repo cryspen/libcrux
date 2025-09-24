@@ -66,7 +66,10 @@ impl<T: AESState, const NUM_KEYS: usize> AesCtrContext<T, NUM_KEYS> {
     #[inline]
     fn aes_ctr_xor_blocks(&self, ctr: u32, input: &[u8], out: &mut [u8]) {
         debug_assert!(input.len() == out.len() && input.len().is_multiple_of(AES_BLOCK_LEN));
-        debug_assert!(input.len() / AES_BLOCK_LEN < u32::MAX as usize);
+        // If input.len() / AES_BLOCK_LEN == u32::MAX - 1 and we start with
+        // ctr == 2 then we'll wrap to 0 below and we'll repeat the initial key
+        // block
+        debug_assert!(input.len() / AES_BLOCK_LEN < (u32::MAX - 1) as usize);
 
         let blocks = input.len() / AES_BLOCK_LEN;
         for i in 0..blocks {

@@ -14,8 +14,8 @@ fn main() {
         // We enable simd128 on all aarch64 builds.
         println!("cargo:rustc-cfg=feature=\"simd128\"");
     }
-    let simd126_possible = target_arch == "x86_64";
-    if (simd126_possible || enable_simd256) && !disable_simd256 {
+    let simd256_possible = target_arch == "x86_64";
+    if (simd256_possible || enable_simd256) && !disable_simd256 {
         // We enable simd256 on all x86_64 builds.
         // Note that this doesn't mean the required CPU features are available.
         // But the compiler will support them and the runtime checks ensure that

@@ -8,31 +8,26 @@ use libcrux_intrinsics::arm64::{
 pub(crate) type State = _uint8x16_t;
 
 #[inline]
-#[target_feature(enable = "neon")]
 fn new_state() -> State {
     _vdupq_n_u8(0)
 }
 
 #[inline]
-#[target_feature(enable = "neon")]
 fn xor_key1_state(st: &mut State, k: &State) {
     *st = _veorq_u8(*st, *k);
 }
 
 #[inline]
-#[target_feature(enable = "neon")]
 fn aes_enc(st: &mut State, key: &State) {
     *st = _veorq_u8(_vaesmcq_u8(_vaeseq_u8(*st, _vdupq_n_u8(0))), *key);
 }
 
 #[inline]
-#[target_feature(enable = "neon")]
 fn aes_enc_last(st: &mut State, key: &State) {
     *st = _veorq_u8(_vaeseq_u8(*st, _vdupq_n_u8(0)), *key)
 }
 
 #[inline]
-#[target_feature(enable = "neon")]
 fn aes_keygen_assist(next: &mut State, prev: &State, rcon: u8) {
     let st = _vaeseq_u8(*prev, _vdupq_n_u8(0));
     let mut tmp = [0u8; 16];
@@ -48,21 +43,18 @@ fn aes_keygen_assist(next: &mut State, prev: &State, rcon: u8) {
 }
 
 #[inline]
-#[target_feature(enable = "neon")]
 fn aes_keygen_assist0(next: &mut State, prev: &State, rcon: u8) {
     aes_keygen_assist(next, prev, rcon);
     *next = _vreinterpretq_u8_u32(_vdupq_laneq_u32::<3>(_vreinterpretq_u32_u8(*next)))
 }
 
 #[inline]
-#[target_feature(enable = "neon")]
 fn aes_keygen_assist1(next: &mut State, prev: &State) {
     aes_keygen_assist(next, prev, 0);
     *next = _vreinterpretq_u8_u32(_vdupq_laneq_u32::<2>(_vreinterpretq_u32_u8(*next)));
 }
 
 #[inline]
-#[target_feature(enable = "neon")]
 fn key_expansion_step(next: &mut State, prev: &State) {
     let zero = _vdupq_n_u32(0);
     let prev0 = _vreinterpretq_u32_u8(*prev);
@@ -74,9 +66,8 @@ fn key_expansion_step(next: &mut State, prev: &State) {
 
 impl crate::platform::AESState for State {
     #[inline]
-    #[allow(unsafe_code)]
     fn new() -> Self {
-        unsafe { new_state() }
+        new_state()
     }
 
     #[inline]
@@ -92,7 +83,6 @@ impl crate::platform::AESState for State {
     }
 
     #[inline]
-    #[allow(unsafe_code)]
     fn xor_block(&self, input: &[u8], out: &mut [u8]) {
         debug_assert!(input.len() == out.len() && input.len() <= 16);
         // XXX: hot-fix to have enough input and output here.
@@ -102,45 +92,39 @@ impl crate::platform::AESState for State {
         block_in[0..input.len()].copy_from_slice(input);
 
         let inp_vec = _vld1q_u8(&block_in);
-        let out_vec = unsafe { _veorq_u8(inp_vec, *self) };
+        let out_vec = _veorq_u8(inp_vec, *self);
         _vst1q_u8(&mut block_out, out_vec);
 
         out.copy_from_slice(&block_out[0..out.len()]);
     }
 
     #[inline]
-    #[allow(unsafe_code)]
     fn xor_key(&mut self, key: &Self) {
-        unsafe { xor_key1_state(self, key) };
+        xor_key1_state(self, key);
     }
 
     #[inline]
-    #[allow(unsafe_code)]
     fn aes_enc(&mut self, key: &Self) {
-        unsafe { aes_enc(self, key) };
+        aes_enc(self, key);
     }
 
     #[inline]
-    #[allow(unsafe_code)]
     fn aes_enc_last(&mut self, key: &Self) {
-        unsafe { aes_enc_last(self, key) };
+        aes_enc_last(self, key);
     }
 
     #[inline]
-    #[allow(unsafe_code)]
     fn aes_keygen_assist0<const RCON: i32>(&mut self, prev: &Self) {
-        unsafe { aes_keygen_assist0(self, prev, RCON as u8) };
+        aes_keygen_assist0(self, prev, RCON as u8);
     }
 
     #[inline]
-    #[allow(unsafe_code)]
     fn aes_keygen_assist1(&mut self, prev: &Self) {
-        unsafe { aes_keygen_assist1(self, prev) };
+        aes_keygen_assist1(self, prev);
     }
 
     #[inline]
-    #[allow(unsafe_code)]
     fn key_expansion_step(&mut self, prev: &Self) {
-        unsafe { key_expansion_step(self, prev) }
+        key_expansion_step(self, prev);
     }
 }
