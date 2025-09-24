@@ -70,7 +70,7 @@ fn test_gf128_neon() {
 #[test]
 fn test_gf128_intel() {
     let mut computed: [u8; 16] = [0u8; 16];
-    gf128::<crate::platform::intel_ni::FieldElement>(&KEY, &INPUT, &mut computed);
+    gf128::<crate::platform::x64::FieldElement>(&KEY, &INPUT, &mut computed);
     for i in 0..16 {
         if computed[i] != EXPECTED[i] {
             std::eprintln!(
