@@ -13,3 +13,4 @@ repository.workspace = true
 [dependencies]
 libcrux-hkdf = { version = "0.0.3", path = "../../algorithms/hkdf" }
 libcrux-hmac = { version = "0.0.3", path = "../../../libcrux-hmac" }
+libcrux-blake2 = { version = "0.0.3", path = "../../../blake2" }

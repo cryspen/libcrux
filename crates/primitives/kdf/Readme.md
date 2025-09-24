@@ -5,4 +5,4 @@ This crate provides an interface to the key derivation functions (KDFs) implemen
 We currently support:
 
 * Extract-then-Expand: HKDF
-* PRF: HMAC
+* PRF: HMAC, Blake2
