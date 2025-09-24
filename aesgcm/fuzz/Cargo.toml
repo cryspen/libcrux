@@ -1,8 +1,8 @@
 [package]
-name = "libcrux-aesgcm-fuzz"
-version = "0.0.0"
-publish = false
 edition = "2021"
+name = "libcrux-aesgcm-fuzz"
+publish = false
+version = "0.0.0"
 
 [package.metadata]
 cargo-fuzz = true
@@ -14,15 +14,15 @@ libfuzzer-sys = "0.4"
 path = ".."
 
 [[bin]]
+bench = false
+doc = false
 name = "encrypt128"
 path = "fuzz_targets/encrypt128.rs"
 test = false
-doc = false
-bench = false
 
 [[bin]]
+bench = false
+doc = false
 name = "encrypt256"
 path = "fuzz_targets/encrypt256.rs"
 test = false
-doc = false
-bench = false
