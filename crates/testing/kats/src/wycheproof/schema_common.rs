@@ -1,4 +1,5 @@
-//! Structs based on schemas/common.json
+//! Structs based on
+//! [`schemas/common.json`](https://github.com/C2SP/wycheproof/blob/cd136e97040de0842c3a198670b1c5e4f423c940/schemas/common.json)
 
 use serde::{Deserialize, Serialize};
 
