@@ -112,6 +112,9 @@ mod utils;
 mod variant;
 mod vector;
 
+#[cfg(feature = "pqcp")]
+pub(crate) mod pqcp;
+
 #[cfg(feature = "mlkem512")]
 #[cfg_attr(docsrs, doc(cfg(feature = "mlkem512")))]
 pub mod mlkem512;

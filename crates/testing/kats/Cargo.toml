@@ -1,0 +1,20 @@
+[package]
+name = "libcrux-kats"
+
+publish = false
+readme = "Readme.md"
+version = "0.0.3"
+
+authors.workspace = true
+edition.workspace = true
+homepage.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+hex = { version = "0.4.3", features = ["serde"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = { version = "1.0" }
+
+[features]
+mldsa = []

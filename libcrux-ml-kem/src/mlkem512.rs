@@ -41,6 +41,10 @@ crate::impl_kem_trait!(
     MlKem512Ciphertext
 );
 
+// Provide the (packed) PQCP APIs
+#[cfg(feature = "pqcp")]
+crate::pqcp::pqcp_api!("use libcrux_ml_kem::mlkem512::pqcp::*;", MlKem512, " 512 ");
+
 /// An ML-KEM 512 Ciphertext
 pub type MlKem512Ciphertext = MlKemCiphertext<CPA_PKE_CIPHERTEXT_SIZE>;
 /// An ML-KEM 512 Private key
@@ -130,6 +134,7 @@ macro_rules! instantiate {
                         PRF_OUTPUT_SIZE1,
                     >(&randomness)
             }
+
             /// Encapsulate ML-KEM 512
             ///
             /// Generates an ([`MlKem512Ciphertext`], [`MlKemSharedSecret`]) tuple.
@@ -265,6 +270,16 @@ macro_rules! instantiate {
                 /// Am Unpacked ML-KEM 512 Key pair
                 pub type MlKem512KeyPairUnpacked = p::unpacked::MlKemKeyPairUnpacked<RANK, RANK_SQUARED>;
 
+                #[cfg(feature = "pqcp")]
+                crate::pqcp::pqcp_unpacked_api!(
+                    MlKem512KeyPairUnpacked,
+                    MlKem512PublicKeyUnpacked,
+                    MlKem512PrivateKey,
+                    MlKem512PublicKey,
+                    MlKem512Ciphertext,
+                    " 512 "
+                );
+
                 /// Create a new, empty unpacked key.
                 pub fn init_key_pair() -> MlKem512KeyPairUnpacked {
                     MlKem512KeyPairUnpacked::default()
@@ -381,8 +396,6 @@ macro_rules! instantiate {
                     public_key: &MlKem512PublicKeyUnpacked,
                     randomness: [u8; SHARED_SECRET_SIZE],
                 ) -> (MlKem512Ciphertext, MlKemSharedSecret) {
-
-
                         p::unpacked::encapsulate::<
                     RANK,
                     RANK_SQUARED,

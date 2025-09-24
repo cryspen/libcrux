@@ -1,6 +1,6 @@
 # Extraction into C code
 
-The folders `./c` and `./cg` contain C code extracted from `libcrux-ml-kem`.
+The subfolders of `./extracts/` contain C code extracted from `libcrux-ml-kem`.
 
 The C code is generated from Rust using [Charon], [Eurydice] and
 [KaRaMeL]. Charon translates the Rust crate to Low-Level Borrow
@@ -17,8 +17,11 @@ opam install --yes ocamlfind visitors menhir ppx_deriving_yojson core_unix sedle
 ```
 
 Now you're ready to install the tools.
+
 ### Set tool directories
+
 Set the directories where tool repositories should be cloned and tools should be built in. Setting these environment variables is important for the extraction script `c.sh`.
+
 ```bash
 export CHARON_HOME=$HOME/charon
 export KRML_HOME=$HOME/karamel
@@ -26,6 +29,7 @@ export EURYDICE_HOME=$HOME/eurydice
 ```
 
 ### Charon
+
 ```bash
 git clone https://github.com/AeneasVerif/charon.git $CHARON_HOME
 cd $CHARON_HOME
@@ -33,6 +37,7 @@ make
 ```
 
 ### KaRaMeL
+
 ```bash
 git clone https://github.com/FStarLang/karamel.git $KRML_HOME
 cd $KRML_HOME
@@ -48,23 +53,29 @@ make
 
 ## Generating C code
 
-The [c.sh](../c.sh) bash script drives the extraction, using the
-[c.yaml](../c.yaml) configuration file, which configures the Eurydice
-translation.
-
-To generate a header-only version, use [boring.sh](../boring.sh)
-instead, which internally runs [c.sh](../c.sh) with a header-only
-configuration found in [cg.yaml](../cg.yaml).
+Each extraction has a script `extract.sh` for extracting the code. They all make
+use of the `extracts/common/c.sh` script, but use it with different arguments.
+Each extraction also comes with an `extract.yaml` configuration file, which
+configures the Eurydice translation.
 
 While running the commands separately is possible, it is not
 recommended because the script sets all necessary configuration flags.
 
+We maintain the following extraction configurations:
+
+- `c_header_only`: header-only C code
+- `cpp_header_only`: header-only C++ code
+
+For the `c_header_only` and `cpp_header_only` extractions we also keep the
+extracted code in the repository so users don't need to extract it themselves.
+
 ## Build
 
-Make sure to use `CC=clang CXX=clang++` when benchmarking on Linux to get full performance.
+Make sure to use `CC=clang CXX=clang++` when benchmarking on Linux to get full
+performance.
 
 ```bash
-cd ./c               # or ./cg, if you want to build header-only
+cd extracts/c_header_only # or extracts/cpp_header_only if you want to build C++
 cmake -B build
 cmake --build build
 ```
