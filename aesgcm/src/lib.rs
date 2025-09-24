@@ -38,38 +38,38 @@ pub(crate) trait State {
 pub struct DecryptError();
 
 /// AES-GCM 128.
-#[derive(Clone, Copy, PartialEq)]
+#[derive(Clone, Copy, PartialEq, Eq)]
 pub struct AesGcm128;
 
 /// Portable AES-GCM 128.
-#[derive(Clone, Copy, PartialEq)]
+#[derive(Clone, Copy, PartialEq, Eq)]
 pub struct PortableAesGcm128;
 
 /// Neon AES-GCM 128.
 #[cfg(feature = "simd128")]
-#[derive(Clone, Copy, PartialEq)]
+#[derive(Clone, Copy, PartialEq, Eq)]
 pub struct NeonAesGcm128;
 #[cfg(not(feature = "simd128"))]
 pub type NeonAesGcm128 = PortableAesGcm128;
 
 /// AES-NI AES-GCM 128.
 #[cfg(feature = "simd256")]
-#[derive(Clone, Copy, PartialEq)]
+#[derive(Clone, Copy, PartialEq, Eq)]
 pub struct X64AesGcm128;
 #[cfg(not(feature = "simd256"))]
 pub type X64AesGcm128 = PortableAesGcm128;
 
 /// AES-GCM 256.
-#[derive(Clone, Copy, PartialEq)]
+#[derive(Clone, Copy, PartialEq, Eq)]
 pub struct AesGcm256;
 
 /// Portable AES-GCM 256.
-#[derive(Clone, Copy, PartialEq)]
+#[derive(Clone, Copy, PartialEq, Eq)]
 pub struct PortableAesGcm256;
 
 /// Neon AES-GCM 256.
 #[cfg(feature = "simd128")]
-#[derive(Clone, Copy, PartialEq)]
+#[derive(Clone, Copy, PartialEq, Eq)]
 pub struct NeonAesGcm256;
 
 /// Neon AES-GCM 256.
@@ -77,7 +77,7 @@ pub struct NeonAesGcm256;
 pub type NeonAesGcm256 = PortableAesGcm256;
 
 /// AES-NI AES-GCM 256.
-#[derive(Clone, Copy, PartialEq)]
+#[derive(Clone, Copy, PartialEq, Eq)]
 #[cfg(feature = "simd256")]
 pub struct X64AesGcm256;
 
