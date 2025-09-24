@@ -49,7 +49,7 @@ fn store_element(elem: &FieldElement, b: &mut [u8]) {
 
 #[inline]
 fn add(elem: &FieldElement, other: &FieldElement) -> FieldElement {
-    FieldElement((*elem).0 ^ (*other).0)
+    FieldElement(elem.0 ^ other.0)
 }
 
 // #[inline]
@@ -128,8 +128,8 @@ fn mul_wide(elem: &FieldElement, other: &FieldElement) -> (FieldElement, FieldEl
 
 #[inline]
 fn reduce(high: &FieldElement, low: &FieldElement) -> FieldElement {
-    let high = ((*high).0 << 1) ^ ((*low).0 >> 127);
-    let low = (*low).0 << 1;
+    let high = (high.0 << 1) ^ (low.0 >> 127);
+    let low = low.0 << 1;
     let x0_0 = low << 64;
     let x1_x0 = low ^ (x0_0 << 63) ^ (x0_0 << 62) ^ (x0_0 << 57);
     let x1_x0 = x1_x0 ^ (x1_x0 >> 1) ^ (x1_x0 >> 2) ^ (x1_x0 >> 7);
