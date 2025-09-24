@@ -427,6 +427,12 @@ pub mod avx {
     pub fn _mm256_set1_epi16(_: i16) -> __m256i {
         unimplemented!()
     }
+
+    /// [Intel Documentation](https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm256_set1_epi8)
+    #[hax_lib::opaque]
+    pub fn _mm256_set1_epi8(_: i8) -> __m256i {
+        unimplemented!()
+    }
 }
 pub use avx2::*;
 pub mod avx2 {
@@ -502,6 +508,12 @@ pub mod avx2 {
     /// [Intel Documentation](https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm256_sign_epi32)
     #[hax_lib::opaque]
     pub fn _mm256_sign_epi32(_: __m256i, _: __m256i) -> __m256i {
+        unimplemented!()
+    }
+
+    /// [Intel Documentation](https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm256_sign_epi16)
+    #[hax_lib::opaque]
+    pub fn _mm256_sign_epi16(_: __m256i, _: __m256i) -> __m256i {
         unimplemented!()
     }
 
