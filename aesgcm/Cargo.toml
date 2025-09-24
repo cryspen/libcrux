@@ -21,7 +21,7 @@ libcrux-traits.workspace = true
 rand = { version = "0.9", optional = true }
 
 [features]
-default = ["rand"]  # XXX: remove rand here when cleaning up
+default = []
 simd128 = []
 simd256 = []
 rand = ["dep:rand"]
