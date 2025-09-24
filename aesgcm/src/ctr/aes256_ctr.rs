@@ -3,7 +3,7 @@
 use core::array::from_fn;
 
 use super::AesCtrContext;
-use crate::{aes_gcm_256::KEY_LEN, aes::*, platform::AESState, NONCE_LEN};
+use crate::{aes::*, aes_gcm_256::KEY_LEN, platform::AESState, NONCE_LEN};
 
 pub(crate) const NUM_KEYS: usize = 15;
 

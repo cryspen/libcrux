@@ -38,7 +38,9 @@ fn test_gf128() {
             #[cfg(feature = "std")]
             std::eprintln!(
                 "mismatch at {}: expected is {}, computed is {}",
-                i, EXPECTED[i], computed[i]
+                i,
+                EXPECTED[i],
+                computed[i]
             );
             assert!(false);
         }
@@ -55,7 +57,9 @@ fn test_gf128_neon() {
             #[cfg(feature = "std")]
             std::eprintln!(
                 "mismatch at {}: expected is {}, computed is {}",
-                i, EXPECTED[i], computed[i]
+                i,
+                EXPECTED[i],
+                computed[i]
             );
             assert!(false);
         }
@@ -71,7 +75,9 @@ fn test_gf128_intel() {
         if computed[i] != EXPECTED[i] {
             std::eprintln!(
                 "mismatch at {}: expected is {}, computed is {}",
-                i, EXPECTED[i], computed[i]
+                i,
+                EXPECTED[i],
+                computed[i]
             );
             assert!(false);
         }
