@@ -260,6 +260,48 @@ pub mod sse2 {
     pub fn _mm_movemask_epi8(_: __m128i) -> i32 {
         unimplemented!()
     }
+
+    /// [Intel Documentation](https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm_unpacklo_epi64)
+    #[hax_lib::opaque]
+    pub fn _mm_unpacklo_epi64(_: __m128i, _: __m128i) -> __m128i {
+        unimplemented!()
+    }
+
+    /// [Intel Documentation](https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm_unpackhi_epi64)
+    #[hax_lib::opaque]
+    pub fn _mm_unpackhi_epi64(_: __m128i, _: __m128i) -> __m128i {
+        unimplemented!()
+    }
+
+    /// [Intel Documentation](https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm_shuffle_epi32)
+    #[hax_lib::opaque]
+    pub fn _mm_shuffle_epi32<const IMM8: i32>(_: __m128i) -> __m128i {
+        unimplemented!()
+    }
+
+    /// [Intel Documentation](https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm_srli_si128)
+    #[hax_lib::opaque]
+    pub fn _mm_srli_si128<const IMM8: i32>(_: __m128i) -> __m128i {
+        unimplemented!()
+    }
+
+    /// [Intel Documentation](https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm_slli_si128)
+    #[hax_lib::opaque]
+    pub fn _mm_slli_si128<const IMM8: i32>(_: __m128i) -> __m128i {
+        unimplemented!()
+    }
+
+    /// [Intel Documentation](https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm_xor_si128)
+    #[hax_lib::opaque]
+    pub fn _mm_xor_si128(_: __m128i, _: __m128i) -> __m128i {
+        unimplemented!()
+    }
+
+    /// [Intel Documentation](https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm_setzero_si128)
+    #[hax_lib::opaque]
+    pub fn _mm_setzero_si128() -> __m128i {
+        unimplemented!()
+    }
 }
 
 pub use avx::*;
@@ -696,6 +738,34 @@ pub mod avx2 {
     }
 }
 
+pub use other::*;
+pub mod other {
+    use super::*;
+
+    /// [Intel Documentation](https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm_aeskeygenassist_si128)
+    #[hax_lib::opaque]
+    pub fn _mm_aeskeygenassist_si128(_: __m128i, _: i32) -> __m128i {
+        unimplemented!()
+    }
+
+    /// [Intel Documentation](https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm_aesenclast_si128)
+    #[hax_lib::opaque]
+    pub fn _mm_aesenclast_si128(_: __m128i, _: __m128i) -> __m128i {
+        unimplemented!()
+    }
+
+    /// [Intel Documentation](https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm_aesenc_si128)
+    #[hax_lib::opaque]
+    pub fn _mm_aesenc_si128(_: __m128i, _: __m128i) -> __m128i {
+        unimplemented!()
+    }
+
+    /// [Intel Documentation](https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm_clmulepi64_si128)
+    #[hax_lib::opaque]
+    pub fn _mm_clmulepi64_si128(_: __m128i, _: __m128i, _: i32) -> __m128i {
+        unimplemented!()
+    }
+}
 /// Rewrite lemmas
 const _: () = {
     #[hax_lib::fstar::before("[@@ $REWRITE_RULE ]")]
