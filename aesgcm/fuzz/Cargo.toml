@@ -1,5 +1,5 @@
 [package]
-name = "libcrux_aesgcm-fuzz"
+name = "libcrux-aesgcm-fuzz"
 version = "0.0.0"
 publish = false
 edition = "2021"
@@ -10,7 +10,7 @@ cargo-fuzz = true
 [dependencies]
 libfuzzer-sys = "0.4"
 
-[dependencies.libcrux_aesgcm]
+[dependencies.libcrux-aesgcm]
 path = ".."
 
 [[bin]]
