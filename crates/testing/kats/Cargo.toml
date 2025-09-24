@@ -18,3 +18,4 @@ serde_json = { version = "1.0" }
 
 [features]
 mldsa = []
+mlkem = []
