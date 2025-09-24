@@ -13,7 +13,7 @@ mod aes_gcm;
 mod aes_gcm_128;
 mod aes_gcm_256;
 
-use libcrux_traits::aead::{arrayref, consts, typed_owned};
+use libcrux_traits::aead::{arrayref, consts, slice, typed_owned};
 
 // TODO: should this trait be re-exported here?
 pub use libcrux_traits::aead::arrayref::Aead;
@@ -290,6 +290,10 @@ macro_rules! api {
             pub type Tag = [u8; TAG_LEN];
             pub type Nonce = [u8; NONCE_LEN];
 
+            // implement `libcrux_traits` slice trait
+            slice::impl_aead_slice_trait!($multiplexing => KEY_LEN, TAG_LEN, NONCE_LEN);
+
+            // implement `libcrux_traits` public API traits
             impl_traits_public_api!($multiplexing, KEY_LEN, TAG_LEN, NONCE_LEN);
 
             impl arrayref::Aead<KEY_LEN, TAG_LEN, NONCE_LEN> for $multiplexing {
@@ -336,6 +340,10 @@ macro_rules! api {
                 }
             }
 
+            // implement `libcrux_traits` slice trait
+            slice::impl_aead_slice_trait!($portable => KEY_LEN, TAG_LEN, NONCE_LEN);
+
+            // implement `libcrux_traits` public API traits
             impl_traits_public_api!($portable, KEY_LEN, TAG_LEN, NONCE_LEN);
 
             impl arrayref::Aead<KEY_LEN, TAG_LEN, NONCE_LEN> for $portable {
@@ -364,6 +372,11 @@ macro_rules! api {
                 }
             }
 
+            // implement `libcrux_traits` slice trait
+            #[cfg(feature = "simd128")]
+            slice::impl_aead_slice_trait!($neon => KEY_LEN, TAG_LEN, NONCE_LEN);
+
+            // implement `libcrux_traits` public API traits
             #[cfg(feature = "simd128")]
             impl_traits_public_api!($neon, KEY_LEN, TAG_LEN, NONCE_LEN);
 
@@ -394,6 +407,11 @@ macro_rules! api {
                 }
             }
 
+            // implement `libcrux_traits` slice trait
+            #[cfg(feature = "simd256")]
+            slice::impl_aead_slice_trait!($x64 => KEY_LEN, TAG_LEN, NONCE_LEN);
+
+            // implement `libcrux_traits` public API traits
             #[cfg(feature = "simd256")]
             impl_traits_public_api!($x64, KEY_LEN, TAG_LEN, NONCE_LEN);
 
