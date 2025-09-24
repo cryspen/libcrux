@@ -11,7 +11,7 @@ pub mod hacl;
 
 mod impl_hacl;
 
-pub use impl_hacl::{HkdfSha2_256, HkdfSha2_384, HkdfSha2_512};
+pub use impl_hacl::{sha2_256, sha2_384, sha2_512, HkdfSha2_256, HkdfSha2_384, HkdfSha2_512};
 
 pub trait HkdfMode<const HASH_LEN: usize> {
     /// The hash algorithm used in this HKDF mode.

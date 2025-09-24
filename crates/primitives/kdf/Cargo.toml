@@ -1,0 +1,14 @@
+[package]
+name = "libcrux-kdf"
+description = "Formally verified KDF library"
+version = "0.0.3"
+readme = "Readme.md"
+
+authors.workspace = true
+license.workspace = true
+homepage.workspace = true
+edition.workspace = true
+repository.workspace = true
+
+[dependencies]
+libcrux-hkdf = { version = "0.0.3", path = "../../algorithms/hkdf" }
