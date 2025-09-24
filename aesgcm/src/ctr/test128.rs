@@ -64,7 +64,7 @@ fn test_ctr_block() {
     }
 }
 
-#[cfg(all(target_arch = "aarch64", target_feature = "aes"))]
+#[cfg(feature = "simd128")]
 #[test]
 fn test_ctr_block_neon() {
     let mut computed: [u8; 32] = [0u8; 32];
@@ -103,7 +103,7 @@ fn test_ctr_encrypt() {
     }
 }
 
-#[cfg(all(target_arch = "aarch64", target_feature = "aes"))]
+#[cfg(feature = "simd128")]
 #[test]
 fn test_ctr_encrypt_neon() {
     let mut computed: [u8; 32] = [0u8; 32];
