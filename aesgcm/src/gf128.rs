@@ -13,7 +13,7 @@ pub(crate) struct GF128State<T: GF128FieldElement> {
     r: T,
 }
 
-const KEY_LEN: usize = 16;
+const KEY_LEN: usize = AES_BLOCK_LEN;
 
 impl<T: GF128FieldElement> GF128State<T> {
     #[inline]

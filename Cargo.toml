@@ -55,6 +55,7 @@ allow-branch = ["main"]
 hax-lib = { version = "0.3.4" }
 libcrux-intrinsics = { version = "=0.0.3", path = "libcrux-intrinsics" }
 libcrux-aesgcm = { version = "=0.0.2", path = "aesgcm" }
+libcrux-chacha20poly1305 = { version = "=0.0.3", path = "chacha20poly1305" }
 libcrux-traits = { version = "=0.0.3", path = "traits" }
 libcrux-hacl-rs = { version = "=0.0.3", path = "hacl-rs" }
 libcrux-hacl = { version = "=0.0.2", path = "sys/hacl" }
@@ -99,7 +100,7 @@ libcrux-platform = { version = "=0.0.2", path = "sys/platform" }
 
 [dependencies]
 libcrux-hacl-rs.workspace = true
-libcrux-chacha20poly1305 = { version = "=0.0.3", path = "chacha20poly1305" }
+libcrux-chacha20poly1305.workspace = true
 libcrux-ml-kem.workspace = true
 libcrux-traits.workspace = true
 libcrux-hacl.workspace = true

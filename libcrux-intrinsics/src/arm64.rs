@@ -172,16 +172,14 @@ pub fn _vreinterpretq_u32_s32(a: int32x4_t) -> uint32x4_t {
     unsafe { vreinterpretq_u32_s32(a) }
 }
 
-#[inline]
-#[target_feature(enable = "neon")]
+#[inline(always)]
 pub fn _vreinterpretq_u32_u8(a: uint8x16_t) -> uint32x4_t {
-    vreinterpretq_u32_u8(a)
+    unsafe { vreinterpretq_u32_u8(a) }
 }
 
-#[inline]
-#[target_feature(enable = "neon")]
+#[inline(always)]
 pub fn _vreinterpretq_u8_u32(a: uint32x4_t) -> uint8x16_t {
-    vreinterpretq_u8_u32(a)
+    unsafe { vreinterpretq_u8_u32(a) }
 }
 
 #[inline(always)]
@@ -284,7 +282,7 @@ pub fn _vld1q_u8(ptr: &[u8]) -> uint8x16_t {
     unsafe { vld1q_u8(ptr.as_ptr()) }
 }
 
-#[inline]
+#[inline(always)]
 pub fn _vld1q_u32(ptr: &[u32]) -> uint32x4_t {
     unsafe { vld1q_u32(ptr.as_ptr()) }
 }
@@ -395,15 +393,13 @@ pub fn _vrax1q_u64(a: uint64x2_t, b: uint64x2_t) -> uint64x2_t {
 }
 
 #[inline]
-#[target_feature(enable = "neon")]
 pub fn _veorq_u32(a: uint32x4_t, b: uint32x4_t) -> uint32x4_t {
-    veorq_u32(a, b)
+    unsafe { veorq_u32(a, b) }
 }
 
 #[inline]
-#[target_feature(enable = "neon")]
 pub fn _vextq_u32<const N: i32>(a: uint32x4_t, b: uint32x4_t) -> uint32x4_t {
-    vextq_u32(a, b, N)
+    unsafe { vextq_u32(a, b, N) }
 }
 
 #[inline(always)]
@@ -470,9 +466,8 @@ pub fn _vmull_p64(a: u64, b: u64) -> u128 {
 }
 
 #[inline]
-#[target_feature(enable = "neon")]
 pub fn _veorq_u8(a: uint8x16_t, b: uint8x16_t) -> uint8x16_t {
-    veorq_u8(a, b)
+    unsafe { veorq_u8(a, b) }
 }
 
 #[inline]
@@ -486,13 +481,11 @@ pub fn _vaeseq_u8(data: uint8x16_t, key: uint8x16_t) -> uint8x16_t {
 }
 
 #[inline]
-#[target_feature(enable = "neon")]
 pub fn _vdupq_n_u8(value: u8) -> uint8x16_t {
-    vdupq_n_u8(value)
+    unsafe { vdupq_n_u8(value) }
 }
 
 #[inline]
-#[target_feature(enable = "neon")]
 pub fn _vdupq_laneq_u32<const N: i32>(a: uint32x4_t) -> uint32x4_t {
-    vdupq_laneq_u32(a, N)
+    unsafe { vdupq_laneq_u32(a, N) }
 }

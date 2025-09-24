@@ -41,9 +41,9 @@ pub struct AesGcm128 {}
 pub struct PortableAesGcm128 {}
 
 /// Neon AES-GCM 128.
-#[cfg(all(target_arch = "aarch64", target_feature = "aes"))]
+#[cfg(feature = "simd128")]
 pub struct NeonAesGcm128 {}
-#[cfg(not(all(target_arch = "aarch64", target_feature = "aes")))]
+#[cfg(not(feature = "simd128"))]
 pub type NeonAesGcm128 = PortableAesGcm128;
 
 /// AES-NI AES-GCM 128.
@@ -246,8 +246,8 @@ pub mod x64 {
         };
     }
 
-    x64_pub_mod!(r"AES-GCM 128 ", aes_gcm_128, crate::aes_gcm_128::State<platform::intel_ni::State, platform::intel_ni::FieldElement>);
-    x64_pub_mod!(r"AES-GCM 256 ", aes_gcm_256, crate::aes_gcm_256::State<platform::intel_ni::State, platform::intel_ni::FieldElement>);
+    x64_pub_mod!(r"AES-GCM 128 ", aes_gcm_128, crate::aes_gcm_128::State<platform::x64::State, platform::x64::FieldElement>);
+    x64_pub_mod!(r"AES-GCM 256 ", aes_gcm_256, crate::aes_gcm_256::State<platform::x64::State, platform::x64::FieldElement>);
 }
 
 /// Macro to implement the different structs and multiplexing.
