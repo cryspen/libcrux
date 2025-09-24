@@ -4,4 +4,5 @@ pub trait Prf<OutMut, Key, Message> {
     fn eval(out: OutMut, k: Key, msg: Message) -> Result<(), Self::Error>;
 }
 
+mod blake2;
 mod hmac;
