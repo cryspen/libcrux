@@ -45,11 +45,12 @@ pub struct AesGcm128;
 #[derive(Clone, Copy, PartialEq, Eq)]
 pub struct PortableAesGcm128;
 
-/// Neon AES-GCM 128.
 #[cfg(feature = "simd128")]
 #[derive(Clone, Copy, PartialEq, Eq)]
+/// Neon AES-GCM 128.
 pub struct NeonAesGcm128;
 #[cfg(not(feature = "simd128"))]
+/// Neon AES-GCM 128.
 pub type NeonAesGcm128 = PortableAesGcm128;
 
 /// AES-NI AES-GCM 128.
