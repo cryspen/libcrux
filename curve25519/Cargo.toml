@@ -14,6 +14,11 @@ repository.workspace = true
 libcrux-hacl-rs = { version = "=0.0.3", path = "../hacl-rs/" }
 libcrux-macros = { version = "=0.0.3", path = "../macros" }
 libcrux-traits = { version = "=0.0.3", path = "../traits" }
+libcrux-secrets = { version = "=0.0.3", path = "../secrets"}
+
+[features]
+# Checking secret independence
+check-secret-independence = ["libcrux-secrets/check-secret-independence"]
 
 [dev-dependencies]
 libcrux-traits = { version = "0.0.3", path = "../traits", features = [
