@@ -94,8 +94,8 @@ jobs:
 
       - name: Diff Extraction
         run: |
-          libcrux-ml-kem/headers_kill_revs.sh libcrux-ml-dsa/cg
-          libcrux-ml-kem/headers_kill_revs.sh ~/mldsa-c-extraction
+          libcrux-ml-kem/extracts/common/headers_kill_revs.sh libcrux-ml-dsa/cg
+          libcrux-ml-kem/extracts/common/headers_kill_revs.sh ~/mldsa-c-extraction
           diff -r libcrux-ml-dsa/cg ~/mldsa-c-extraction
 
   build-header-only:
