@@ -58,7 +58,7 @@ pub trait InitializeDigestState {
 }
 
 #[derive(Clone)]
-/// A generic hasher that maintains the incremental digest state.
+/// A generic hasher. This hasher maintains the incremental digest state.
 pub struct Hasher<const N: usize, D: DigestIncrementalBase> {
     /// The digest state.
     pub state: D::IncrementalState,
