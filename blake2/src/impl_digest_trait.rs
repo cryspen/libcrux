@@ -1,5 +1,7 @@
 use crate::impl_hacl::*;
-use libcrux_traits::digest::{arrayref, slice, DigestIncrementalBase, Hasher, UpdateError};
+use libcrux_traits::digest::{
+    arrayref, slice, DigestIncrementalBase, Hasher, InitializeDigestState, UpdateError,
+};
 
 // Implements sets of allowed digest sizes
 mod digest_size_support {
@@ -122,7 +124,19 @@ mod digest_size_support {
 use digest_size_support::{Blake2bOutSupport, Blake2sOutSupport, SupportsLen};
 
 macro_rules! impl_digest_traits {
-    ($out_size:ident, $type:ty, $blake2:ty, $hasher:ty, $set:ident) => {
+    ($out_size:ident, $type:ty, $blake2:ty, $hasher:ty, $set:ident, $builder:ty) => {
+        impl<const $out_size: usize> InitializeDigestState for $blake2
+        where
+            // implement for supported digest lengths only
+            $set: SupportsLen<$out_size>,
+        {
+            fn new() -> Self {
+                <$builder>::new_unkeyed()
+                    .build_const_digest_len()
+                    .expect("trait was implemented for invalid digest size")
+                    .into()
+            }
+        }
         impl<const $out_size: usize> DigestIncrementalBase for $type
         where
             // implement for supported digest lengths only
@@ -193,7 +207,8 @@ impl_digest_traits!(
     Blake2bHash<OUT_SIZE>,
     Blake2b<ConstKeyLenConstDigestLen<0, OUT_SIZE>>,
     Blake2bHasher<OUT_SIZE>,
-    Blake2bOutSupport
+    Blake2bOutSupport,
+    Blake2bBuilder<'_, &()>
 );
 
 /// A hasher for [`Blake2bHash`].
@@ -208,7 +223,8 @@ impl_digest_traits!(
     Blake2sHash<OUT_SIZE>,
     Blake2s<ConstKeyLenConstDigestLen<0, OUT_SIZE>>,
     Blake2sHasher<OUT_SIZE>,
-    Blake2sOutSupport
+    Blake2sOutSupport,
+    Blake2sBuilder<'_, &()>
 );
 
 /// A hasher for [`Blake2sHash`].
