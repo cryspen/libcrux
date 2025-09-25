@@ -19,6 +19,10 @@ pub trait ECDHOwned<const RAND_LEN: usize, const SECRET_LEN: usize, const PUBLIC
 
     /// Derive a Diffie-Hellman shared secret from a public and a
     /// secret value.
+    ///
+    /// This value is NOT (!) safe for use as a key and needs to be processed in a round of key
+    /// derivation, to ensure both that the output is uniformly random and that unkown key share
+    /// attacks can not happen.
     fn derive_ecdh(
         public: &[u8; PUBLIC_LEN],
         secret: &[U8; SECRET_LEN],

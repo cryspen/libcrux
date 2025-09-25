@@ -16,6 +16,10 @@ pub trait ECDHSlice {
 
     /// Derive a Diffie-Hellman shared secret from a public and a
     /// secret value.
+    ///
+    /// This value is NOT (!) safe for use as a key and needs to be processed in a round of key
+    /// derivation, to ensure both that the output is uniformly random and that unkown key share
+    /// attacks can not happen.
     fn derive_ecdh(derived: &mut [U8], public: &[u8], secret: &[U8]) -> Result<(), ECDHError>;
 
     /// Check the validity of a Diffie-Hellman secret value.
