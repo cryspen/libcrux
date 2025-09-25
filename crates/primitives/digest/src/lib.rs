@@ -29,8 +29,7 @@
 //!     let mut digest = [0; 32];
 //!
 //!     let mut hasher = Blake2bHasher::new();
-//!     hasher.update(b"data").unwrap();
-//!     hasher.update(b"more data").unwrap();
+//!     hasher.update(b"test data").unwrap();
 //!     hasher.finish(&mut digest);
 //! }
 //!
