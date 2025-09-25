@@ -13,6 +13,9 @@ mod aes_gcm;
 mod aes_gcm_128;
 mod aes_gcm_256;
 
+use libcrux_traits::aead::{arrayref, consts, slice, typed_owned};
+
+// TODO: should this trait be re-exported here?
 pub use libcrux_traits::aead::arrayref::Aead;
 
 /// Trait for an AES State.
@@ -35,40 +38,48 @@ pub(crate) trait State {
 pub struct DecryptError();
 
 /// AES-GCM 128.
-pub struct AesGcm128 {}
+#[derive(Clone, Copy, PartialEq, Eq)]
+pub struct AesGcm128;
 
 /// Portable AES-GCM 128.
-pub struct PortableAesGcm128 {}
+#[derive(Clone, Copy, PartialEq, Eq)]
+pub struct PortableAesGcm128;
 
 /// Neon AES-GCM 128.
 #[cfg(feature = "simd128")]
-pub struct NeonAesGcm128 {}
+#[derive(Clone, Copy, PartialEq, Eq)]
+pub struct NeonAesGcm128;
 #[cfg(not(feature = "simd128"))]
 pub type NeonAesGcm128 = PortableAesGcm128;
 
 /// AES-NI AES-GCM 128.
 #[cfg(feature = "simd256")]
-pub struct X64AesGcm128 {}
+#[derive(Clone, Copy, PartialEq, Eq)]
+pub struct X64AesGcm128;
 #[cfg(not(feature = "simd256"))]
 pub type X64AesGcm128 = PortableAesGcm128;
 
 /// AES-GCM 256.
-pub struct AesGcm256 {}
+#[derive(Clone, Copy, PartialEq, Eq)]
+pub struct AesGcm256;
 
 /// Portable AES-GCM 256.
-pub struct PortableAesGcm256 {}
+#[derive(Clone, Copy, PartialEq, Eq)]
+pub struct PortableAesGcm256;
 
 /// Neon AES-GCM 256.
 #[cfg(feature = "simd128")]
-pub struct NeonAesGcm256 {}
+#[derive(Clone, Copy, PartialEq, Eq)]
+pub struct NeonAesGcm256;
 
 /// Neon AES-GCM 256.
 #[cfg(not(feature = "simd128"))]
 pub type NeonAesGcm256 = PortableAesGcm256;
 
 /// AES-NI AES-GCM 256.
+#[derive(Clone, Copy, PartialEq, Eq)]
 #[cfg(feature = "simd256")]
-pub struct X64AesGcm256 {}
+pub struct X64AesGcm256;
 
 /// AES-NI AES-GCM 256.
 #[cfg(not(feature = "simd256"))]
@@ -250,6 +261,23 @@ pub mod x64 {
     x64_pub_mod!(r"AES-GCM 256 ", aes_gcm_256, crate::aes_gcm_256::State<platform::x64::State, platform::x64::FieldElement>);
 }
 
+/// Macro to implement the libcrux_traits public API traits
+///
+/// For the blanket impl of `typed_refs::Aead` to take place,
+/// the `$type` must implement `Copy` and `PartialEq`.
+macro_rules! impl_traits_public_api {
+    ($type:ty, $keylen:expr, $taglen:expr, $noncelen:expr ) => {
+        // prerequisite for typed_owned::Aead
+        impl consts::AeadConsts for $type {
+            const KEY_LEN: usize = KEY_LEN;
+            const TAG_LEN: usize = TAG_LEN;
+            const NONCE_LEN: usize = NONCE_LEN;
+        }
+        // implement typed_owned::Aead
+        typed_owned::impl_aead_typed_owned!($type, KEY_LEN, TAG_LEN, NONCE_LEN);
+    };
+}
+
 /// Macro to implement the different structs and multiplexing.
 macro_rules! api {
     ($mod_name:ident, $variant:ident, $multiplexing:ty, $portable:ident, $neon:ident, $x64:ident) => {
@@ -262,127 +290,167 @@ macro_rules! api {
             pub type Tag = [u8; TAG_LEN];
             pub type Nonce = [u8; NONCE_LEN];
 
-            impl Aead<KEY_LEN, TAG_LEN, NONCE_LEN> for $multiplexing {
-                fn encrypt(
-                    ciphertext: &mut [u8],
-                    tag: &mut Tag,
-                    key: &Key,
-                    nonce: &Nonce,
-                    aad: &[u8],
-                    plaintext: &[u8],
-                ) -> Result<(), EncryptError> {
-                    // SIMD256 needs to come first because SIMD128 is true for
-                    // x64 as well, but we don't actually implement it.
-                    if libcrux_platform::simd256_support() && libcrux_platform::aes_ni_support() {
-                        $x64::encrypt(ciphertext, tag, key, nonce, aad, plaintext)
-                    } else if libcrux_platform::simd128_support()
-                        && libcrux_platform::aes_ni_support()
-                    {
-                        $neon::encrypt(ciphertext, tag, key, nonce, aad, plaintext)
-                    } else {
-                        $portable::encrypt(ciphertext, tag, key, nonce, aad, plaintext)
-                    }
-                }
+            mod _libcrux_traits_apis_multiplex {
+                use super::*;
 
-                fn decrypt(
-                    plaintext: &mut [u8],
-                    key: &Key,
-                    nonce: &Nonce,
-                    aad: &[u8],
-                    ciphertext: &[u8],
-                    tag: &Tag,
-                ) -> Result<(), DecryptError> {
-                    // SIMD256 needs to come first because SIMD128 is true for
-                    // x64 as well, but we don't actually implement it.
-                    if libcrux_platform::simd256_support() && libcrux_platform::aes_ni_support() {
-                        $x64::decrypt(plaintext, key, nonce, aad, ciphertext, tag)
-                    } else if libcrux_platform::simd128_support()
-                        && libcrux_platform::aes_ni_support()
-                    {
-                        $neon::decrypt(plaintext, key, nonce, aad, ciphertext, tag)
-                    } else {
-                        $portable::decrypt(plaintext, key, nonce, aad, ciphertext, tag)
+                // implement `libcrux_traits` slice trait
+                slice::impl_aead_slice_trait!($multiplexing => KEY_LEN, TAG_LEN, NONCE_LEN);
+
+                // implement `libcrux_traits` public API traits
+                impl_traits_public_api!($multiplexing, KEY_LEN, TAG_LEN, NONCE_LEN);
+
+                impl arrayref::Aead<KEY_LEN, TAG_LEN, NONCE_LEN> for $multiplexing {
+                    fn encrypt(
+                        ciphertext: &mut [u8],
+                        tag: &mut Tag,
+                        key: &Key,
+                        nonce: &Nonce,
+                        aad: &[u8],
+                        plaintext: &[u8],
+                    ) -> Result<(), EncryptError> {
+                        // SIMD256 needs to come first because SIMD128 is true for
+                        // x64 as well, but we don't actually implement it.
+                        if libcrux_platform::simd256_support() && libcrux_platform::aes_ni_support() {
+                            $x64::encrypt(ciphertext, tag, key, nonce, aad, plaintext)
+                        } else if libcrux_platform::simd128_support()
+                            && libcrux_platform::aes_ni_support()
+                        {
+                            $neon::encrypt(ciphertext, tag, key, nonce, aad, plaintext)
+                        } else {
+                            $portable::encrypt(ciphertext, tag, key, nonce, aad, plaintext)
+                        }
+                    }
+
+                    fn decrypt(
+                        plaintext: &mut [u8],
+                        key: &Key,
+                        nonce: &Nonce,
+                        aad: &[u8],
+                        ciphertext: &[u8],
+                        tag: &Tag,
+                    ) -> Result<(), DecryptError> {
+                        // SIMD256 needs to come first because SIMD128 is true for
+                        // x64 as well, but we don't actually implement it.
+                        if libcrux_platform::simd256_support() && libcrux_platform::aes_ni_support() {
+                            $x64::decrypt(plaintext, key, nonce, aad, ciphertext, tag)
+                        } else if libcrux_platform::simd128_support()
+                            && libcrux_platform::aes_ni_support()
+                        {
+                            $neon::decrypt(plaintext, key, nonce, aad, ciphertext, tag)
+                        } else {
+                            $portable::decrypt(plaintext, key, nonce, aad, ciphertext, tag)
+                        }
                     }
                 }
             }
 
-            impl Aead<KEY_LEN, TAG_LEN, NONCE_LEN> for $portable {
-                fn encrypt(
-                    ciphertext: &mut [u8],
-                    tag: &mut Tag,
-                    key: &Key,
-                    nonce: &Nonce,
-                    aad: &[u8],
-                    plaintext: &[u8],
-                ) -> Result<(), EncryptError> {
-                    portable::$variant::encrypt(key, nonce, aad, plaintext, ciphertext, tag);
-                    Ok(())
-                }
+            mod _libcrux_traits_apis_portable {
+                use super::*;
 
-                fn decrypt(
-                    plaintext: &mut [u8],
-                    key: &Key,
-                    nonce: &Nonce,
-                    aad: &[u8],
-                    ciphertext: &[u8],
-                    tag: &Tag,
-                ) -> Result<(), DecryptError> {
-                    portable::$variant::decrypt(key, nonce, aad, ciphertext, tag, plaintext)
-                        .map_err(|_| DecryptError::InvalidTag)
+                // implement `libcrux_traits` slice trait
+                slice::impl_aead_slice_trait!($portable => KEY_LEN, TAG_LEN, NONCE_LEN);
+
+                // implement `libcrux_traits` public API traits
+                impl_traits_public_api!($portable, KEY_LEN, TAG_LEN, NONCE_LEN);
+
+                impl arrayref::Aead<KEY_LEN, TAG_LEN, NONCE_LEN> for $portable {
+                    fn encrypt(
+                        ciphertext: &mut [u8],
+                        tag: &mut Tag,
+                        key: &Key,
+                        nonce: &Nonce,
+                        aad: &[u8],
+                        plaintext: &[u8],
+                    ) -> Result<(), EncryptError> {
+                        portable::$variant::encrypt(key, nonce, aad, plaintext, ciphertext, tag);
+                        Ok(())
+                    }
+
+                    fn decrypt(
+                        plaintext: &mut [u8],
+                        key: &Key,
+                        nonce: &Nonce,
+                        aad: &[u8],
+                        ciphertext: &[u8],
+                        tag: &Tag,
+                    ) -> Result<(), DecryptError> {
+                        portable::$variant::decrypt(key, nonce, aad, ciphertext, tag, plaintext)
+                            .map_err(|_| DecryptError::InvalidTag)
+                    }
                 }
             }
 
             #[cfg(feature = "simd128")]
-            impl Aead<KEY_LEN, TAG_LEN, NONCE_LEN> for $neon {
-                fn encrypt(
-                    ciphertext: &mut [u8],
-                    tag: &mut Tag,
-                    key: &Key,
-                    nonce: &Nonce,
-                    aad: &[u8],
-                    plaintext: &[u8],
-                ) -> Result<(), EncryptError> {
-                    neon::$variant::encrypt(key, nonce, aad, plaintext, ciphertext, tag);
-                    Ok(())
-                }
+            mod _libcrux_traits_apis_neon {
+                use super::*;
 
-                fn decrypt(
-                    plaintext: &mut [u8],
-                    key: &Key,
-                    nonce: &Nonce,
-                    aad: &[u8],
-                    ciphertext: &[u8],
-                    tag: &Tag,
-                ) -> Result<(), DecryptError> {
-                    neon::$variant::decrypt(key, nonce, aad, ciphertext, tag, plaintext)
-                        .map_err(|_| DecryptError::InvalidTag)
+                // implement `libcrux_traits` slice trait
+                slice::impl_aead_slice_trait!($neon => KEY_LEN, TAG_LEN, NONCE_LEN);
+
+                // implement `libcrux_traits` public API traits
+                impl_traits_public_api!($neon, KEY_LEN, TAG_LEN, NONCE_LEN);
+
+                impl arrayref::Aead<KEY_LEN, TAG_LEN, NONCE_LEN> for $neon {
+                    fn encrypt(
+                        ciphertext: &mut [u8],
+                        tag: &mut Tag,
+                        key: &Key,
+                        nonce: &Nonce,
+                        aad: &[u8],
+                        plaintext: &[u8],
+                    ) -> Result<(), EncryptError> {
+                        neon::$variant::encrypt(key, nonce, aad, plaintext, ciphertext, tag);
+                        Ok(())
+                    }
+
+                    fn decrypt(
+                        plaintext: &mut [u8],
+                        key: &Key,
+                        nonce: &Nonce,
+                        aad: &[u8],
+                        ciphertext: &[u8],
+                        tag: &Tag,
+                    ) -> Result<(), DecryptError> {
+                        neon::$variant::decrypt(key, nonce, aad, ciphertext, tag, plaintext)
+                            .map_err(|_| DecryptError::InvalidTag)
+                    }
                 }
             }
 
             #[cfg(feature = "simd256")]
-            impl Aead<KEY_LEN, TAG_LEN, NONCE_LEN> for $x64 {
-                fn encrypt(
-                    ciphertext: &mut [u8],
-                    tag: &mut Tag,
-                    key: &Key,
-                    nonce: &Nonce,
-                    aad: &[u8],
-                    plaintext: &[u8],
-                ) -> Result<(), EncryptError> {
-                    x64::$variant::encrypt(key, nonce, aad, plaintext, ciphertext, tag);
-                    Ok(())
-                }
+            mod _libcrux_traits_api_x64 {
+                use super::*;
 
-                fn decrypt(
-                    plaintext: &mut [u8],
-                    key: &Key,
-                    nonce: &Nonce,
-                    aad: &[u8],
-                    ciphertext: &[u8],
-                    tag: &Tag,
-                ) -> Result<(), DecryptError> {
-                    x64::$variant::decrypt(key, nonce, aad, ciphertext, tag, plaintext)
-                        .map_err(|_| DecryptError::InvalidTag)
+                // implement `libcrux_traits` slice trait
+                slice::impl_aead_slice_trait!($x64 => KEY_LEN, TAG_LEN, NONCE_LEN);
+
+                // implement `libcrux_traits` public API traits
+                impl_traits_public_api!($x64, KEY_LEN, TAG_LEN, NONCE_LEN);
+
+                impl arrayref::Aead<KEY_LEN, TAG_LEN, NONCE_LEN> for $x64 {
+                    fn encrypt(
+                        ciphertext: &mut [u8],
+                        tag: &mut Tag,
+                        key: &Key,
+                        nonce: &Nonce,
+                        aad: &[u8],
+                        plaintext: &[u8],
+                    ) -> Result<(), EncryptError> {
+                        x64::$variant::encrypt(key, nonce, aad, plaintext, ciphertext, tag);
+                        Ok(())
+                    }
+
+                    fn decrypt(
+                        plaintext: &mut [u8],
+                        key: &Key,
+                        nonce: &Nonce,
+                        aad: &[u8],
+                        ciphertext: &[u8],
+                        tag: &Tag,
+                    ) -> Result<(), DecryptError> {
+                        x64::$variant::decrypt(key, nonce, aad, ciphertext, tag, plaintext)
+                            .map_err(|_| DecryptError::InvalidTag)
+                    }
                 }
             }
         }
