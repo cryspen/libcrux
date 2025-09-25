@@ -88,6 +88,30 @@ macro_rules! impl_hkdf {
                 ))
             }
 
+            /// HKDF expand using the pre-key material `prk` and `info`.
+            /// The output is written to `okm`.
+            ///
+            /// Returns nothing on success.
+            /// Returns [`Error::OkmTooLarge`] if the requested `OKM_LEN` is large.
+            /// Returns [`Error::ArgumentsTooLarge`] if one of `prk` or `info` is longer than
+            /// [`u32::MAX`] bytes.
+            #[inline(always)]
+            pub fn expand_slice(okm: &mut [u8], prk: &[u8], info: &[u8]) -> Result<(), Error> {
+                if okm.len() > 255 * $hash_len {
+                    // Output size is too large. HACL doesn't catch this.
+                    return Err(Error::OkmTooLarge);
+                }
+
+                Ok(crate::hacl::$expand(
+                    okm,
+                    prk,
+                    checked_u32(prk.len())?,
+                    info,
+                    checked_u32(info.len())?,
+                    checked_u32(okm.len())?,
+                ))
+            }
+
             /// HKDF expand using the pre-key material `prk` and `info`. The output length
             /// is defined by the parameter `okm_len`.
             ///
