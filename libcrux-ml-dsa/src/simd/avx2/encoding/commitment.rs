@@ -1,8 +1,5 @@
 use libcrux_intrinsics::avx2::*;
 
-#[cfg(hax)]
-use core_models::abstractions::bitvec::{bitvec_postprocess_norm, BitVec};
-
 #[hax_lib::ensures(|result| fstar!(r#"
       let open Spec.Intrinsics in
       forall (i: nat {i < 48}).

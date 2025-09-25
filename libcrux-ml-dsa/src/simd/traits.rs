@@ -29,10 +29,9 @@ pub(crate) trait Repr: Copy + Clone {
     fn repr(&self) -> [i32; COEFFICIENTS_IN_SIMD_UNIT];
 }
 
-#[cfg(any(eurydice, not(hax)))]
+#[cfg(not(hax))]
 pub trait Repr {}
 
-#[cfg(not(eurydice))]
 #[hax_lib::attributes]
 pub(crate) trait Operations: Copy + Clone + Repr {
     #[hax_lib::requires(true)]
