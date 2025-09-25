@@ -269,12 +269,12 @@ macro_rules! impl_traits_public_api {
     ($type:ty, $keylen:expr, $taglen:expr, $noncelen:expr ) => {
         // prerequisite for typed_owned::Aead
         impl consts::AeadConsts for $type {
-            const KEY_LEN: usize = KEY_LEN;
-            const TAG_LEN: usize = TAG_LEN;
-            const NONCE_LEN: usize = NONCE_LEN;
+            const KEY_LEN: usize = $keylen;
+            const TAG_LEN: usize = $taglen;
+            const NONCE_LEN: usize = $noncelen;
         }
         // implement typed_owned::Aead
-        typed_owned::impl_aead_typed_owned!($type, KEY_LEN, TAG_LEN, NONCE_LEN);
+        typed_owned::impl_aead_typed_owned!($type, $keylen, $taglen, $noncelen);
     };
 }
 
