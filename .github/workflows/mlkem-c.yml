@@ -192,12 +192,20 @@ jobs:
           cmake -B build
           cmake --build build
 
-      - name: 🏃🏻‍♀️ Test
-        run: ./build/ml_kem_test
+      - name: 🏃🏻‍♀️ Test 768
+        run: ./build/ml_kem_test768
         if: ${{ matrix.os != 'windows-latest' }}
 
-      - name: 🏃🏻‍♀️ Test
-        run: ./build/Debug/ml_kem_test
+      - name: 🏃🏻‍♀️ Test 768
+        run: ./build/Debug/ml_kem_test768
+        if: ${{ matrix.os == 'windows-latest' }}
+
+      - name: 🏃🏻‍♀️ Test 1024
+        run: ./build/ml_kem_test1024
+        if: ${{ matrix.os != 'windows-latest' }}
+
+      - name: 🏃🏻‍♀️ Test 1024
+        run: ./build/Debug/ml_kem_test1024
         if: ${{ matrix.os == 'windows-latest' }}
 
   build-c-header-only:
