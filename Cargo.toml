@@ -1,7 +1,5 @@
 [workspace]
 members = [
-    "aesgcm",
-    "aesgcm/fuzz",
     "sys/hacl",
     "sys/libjade",
     "sys/platform",
@@ -37,6 +35,8 @@ members = [
     "crates/primitives/aead",
     "crates/primitives/digest",
     "crates/testing/kats",
+    "crates/algorithms/aesgcm",
+    "crates/algorithms/aesgcm/fuzz",
 ]
 
 [workspace.package]
@@ -54,7 +54,7 @@ allow-branch = ["main"]
 [workspace.dependencies]
 hax-lib = { version = "0.3.4" }
 libcrux-intrinsics = { version = "=0.0.3", path = "libcrux-intrinsics" }
-libcrux-aesgcm = { version = "=0.0.2", path = "aesgcm" }
+libcrux-aesgcm = { version = "=0.0.2", path = "crates/algorithms/aesgcm" }
 libcrux-chacha20poly1305 = { version = "=0.0.3", path = "chacha20poly1305" }
 libcrux-traits = { version = "=0.0.3", path = "traits" }
 libcrux-hacl-rs = { version = "=0.0.3", path = "hacl-rs" }

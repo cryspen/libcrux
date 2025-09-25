@@ -33,7 +33,7 @@ name = "aesgcm"
 
 [dev-dependencies]
 aes-gcm = "0.10.3"
-cavp = { version = "0.0.2", path = "../cavp" }
+cavp = { version = "0.0.2", path = "../../../cavp" }
 criterion = "0.5.1"
 hex = "0.4.3"
 libcrux-aesgcm = { version = "*", features = ["std"], path = "." }

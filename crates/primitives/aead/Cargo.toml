@@ -1,13 +1,13 @@
 [package]
-name = "libcrux-aead"
 description = "Formally verified AEAD library"
-version = "0.0.3"
+name = "libcrux-aead"
 readme = "Readme.md"
+version = "0.0.3"
 
 authors.workspace = true
-license.workspace = true
-homepage.workspace = true
 edition.workspace = true
+homepage.workspace = true
+license.workspace = true
 repository.workspace = true
 
 [dependencies]
@@ -15,6 +15,6 @@ libcrux-chacha20poly1305 = { version = "0.0.3", path = "../../../chacha20poly130
 libcrux-traits = { version = "0.0.3", path = "../../../traits", optional = true }
 
 [features]
-default = ["chacha20poly1305", "xchacha20poly1305"]
 chacha20poly1305 = ["dep:libcrux-chacha20poly1305", "dep:libcrux-traits"]
+default = ["chacha20poly1305", "xchacha20poly1305"]
 xchacha20poly1305 = ["dep:libcrux-chacha20poly1305", "dep:libcrux-traits"]
