@@ -85,8 +85,8 @@ let rec mul_succ_le (k n d: nat)
 #[hax_lib::requires(
     RATE != 0 &&
     RATE <= 200 &&
-    RATE % 8 == 0 /* &&
-    data.len() + RATE <= usize::MAX */
+    RATE % 8 == 0 &&
+    (RATE % 32 == 8 || RATE % 32 == 16)
 )]
 #[hax_lib::ensures(|_|
     future(out).len() == out.len())

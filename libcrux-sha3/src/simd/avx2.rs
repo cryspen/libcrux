@@ -1,9 +1,19 @@
 use crate::{generic_keccak::KeccakState, traits::*};
 use libcrux_intrinsics::avx2::*;
 
+#[cfg(hax)]
+use hax_lib::int::*;
+
 #[inline(always)]
+#[hax_lib::requires(
+    LEFT.to_int() + RIGHT.to_int() == 64.to_int() &&
+    RIGHT > 0 &&
+    RIGHT < 64
+)]
 fn rotate_left<const LEFT: i32, const RIGHT: i32>(x: Vec256) -> Vec256 {
     debug_assert!(LEFT + RIGHT == 64);
+    debug_assert!(RIGHT > 0);
+    debug_assert!(RIGHT < 64);
     // This could be done more efficiently, if the shift values are multiples of 8.
     // However, in SHA-3 this function is only called twice with such inputs (8/56).
     mm256_xor_si256(mm256_slli_epi64::<LEFT>(x), mm256_srli_epi64::<RIGHT>(x))
@@ -23,6 +33,11 @@ fn _vrax1q_u64(a: Vec256, b: Vec256) -> Vec256 {
 }
 
 #[inline(always)]
+#[hax_lib::requires(
+    LEFT.to_int() + RIGHT.to_int() == 64.to_int() &&
+    RIGHT > 0 &&
+    RIGHT < 64
+)]
 fn _vxarq_u64<const LEFT: i32, const RIGHT: i32>(a: Vec256, b: Vec256) -> Vec256 {
     let ab = mm256_xor_si256(a, b);
     rotate_left::<LEFT, RIGHT>(ab)
@@ -41,12 +56,24 @@ fn _veorq_n_u64(a: Vec256, c: u64) -> Vec256 {
 }
 
 #[inline(always)]
+#[hax_lib::requires(
+    RATE <= 200 &&
+    RATE % 8 == 0 &&
+    (RATE % 32 == 8 || RATE % 32 == 16) &&
+    offset.to_int() + RATE.to_int() <= blocks[0].len().to_int() &&
+    blocks[0].len() == blocks[1].len() &&
+    blocks[0].len() == blocks[2].len() &&
+    blocks[0].len() == blocks[3].len()
+)]
 pub(crate) fn load_block<const RATE: usize>(
     state: &mut [Vec256; 25],
     blocks: &[&[u8]; 4],
     offset: usize,
 ) {
-    debug_assert!(RATE <= blocks[0].len() && RATE % 8 == 0 && (RATE % 32 == 8 || RATE % 32 == 16));
+    debug_assert!(offset + RATE <= blocks[0].len());
+    debug_assert!(RATE % 8 == 0);
+    debug_assert!(RATE % 32 == 8 || RATE % 32 == 16);
+
     for i in 0..RATE / 32 {
         let start = offset + 32 * i;
         let v0 = mm256_loadu_si256_u8(&blocks[0][start..start + 32]);
@@ -104,6 +131,16 @@ pub(crate) fn load_block<const RATE: usize>(
 }
 
 #[inline(always)]
+#[hax_lib::requires(
+    RATE <= 200 &&
+    RATE % 8 == 0 &&
+    (RATE % 32 == 8 || RATE % 32 == 16) &&
+    len < RATE &&
+    start.to_int() + len.to_int() <= blocks[0].len().to_int() &&
+    blocks[0].len() == blocks[1].len() &&
+    blocks[0].len() == blocks[2].len() &&
+    blocks[0].len() == blocks[3].len()
+)]
 pub(crate) fn load_last<const RATE: usize, const DELIMITER: u8>(
     state: &mut [Vec256; 25],
     blocks: &[&[u8]; 4],
@@ -130,6 +167,19 @@ pub(crate) fn load_last<const RATE: usize, const DELIMITER: u8>(
 }
 
 #[inline(always)]
+#[hax_lib::requires(
+    len <= 200 &&
+    start.to_int() + len.to_int() <= out0.len().to_int() &&
+    out0.len() == out1.len() &&
+    out0.len() == out2.len() &&
+    out0.len() == out3.len()
+)]
+#[hax_lib::ensures(|_|
+    future(out0).len() == out0.len() &&
+    future(out1).len() == out1.len() &&
+    future(out2).len() == out2.len() &&
+    future(out3).len() == out3.len()
+)]
 pub(crate) fn store_block<const RATE: usize>(
     s: &[Vec256; 25],
     out0: &mut [u8],
@@ -140,7 +190,17 @@ pub(crate) fn store_block<const RATE: usize>(
     len: usize,
 ) {
     let chunks = len / 32;
+
+    #[cfg(hax)]
+    let (out0_len, out1_len, out2_len, out3_len) = (out0.len(), out1.len(), out2.len(), out3.len());
+
     for i in 0..chunks {
+        #[cfg(hax)]
+        hax_lib::loop_invariant!(|_: usize| out0.len() == out0_len
+            && out1.len() == out1_len
+            && out2.len() == out2_len
+            && out3.len() == out3_len);
+
         let i0 = (4 * i) / 5;
         let j0 = (4 * i) % 5;
         let i1 = (4 * i + 1) / 5;
@@ -150,8 +210,7 @@ pub(crate) fn store_block<const RATE: usize>(
         let i3 = (4 * i + 3) / 5;
         let j3 = (4 * i + 3) % 5;
 
-        let v0l = mm256_permute2x128_si256::<0x20>(*get_ij(s, i0, j0), *get_ij(s, i2, j2));
-        // 0 0 2 2
+        let v0l = mm256_permute2x128_si256::<0x20>(*get_ij(s, i0, j0), *get_ij(s, i2, j2)); // 0 0 2 2
         let v1h = mm256_permute2x128_si256::<0x20>(*get_ij(s, i1, j1), *get_ij(s, i3, j3)); // 1 1 3 3
         let v2l = mm256_permute2x128_si256::<0x31>(*get_ij(s, i0, j0), *get_ij(s, i2, j2)); // 0 0 2 2
         let v3h = mm256_permute2x128_si256::<0x31>(*get_ij(s, i1, j1), *get_ij(s, i3, j3)); // 1 1 3 3
@@ -161,39 +220,61 @@ pub(crate) fn store_block<const RATE: usize>(
         let v2 = mm256_unpacklo_epi64(v2l, v3h); // 0 1 2 3
         let v3 = mm256_unpackhi_epi64(v2l, v3h); // 0 1 2 3
 
-        mm256_storeu_si256_u8(&mut out0[start + 32 * i..start + 32 * (i + 1)], v0);
-        mm256_storeu_si256_u8(&mut out1[start + 32 * i..start + 32 * (i + 1)], v1);
-        mm256_storeu_si256_u8(&mut out2[start + 32 * i..start + 32 * (i + 1)], v2);
-        mm256_storeu_si256_u8(&mut out3[start + 32 * i..start + 32 * (i + 1)], v3);
+        let base = start + 32 * i;
+        let limit = base + 32;
+
+        mm256_storeu_si256_u8(&mut out0[base..limit], v0);
+        mm256_storeu_si256_u8(&mut out1[base..limit], v1);
+        mm256_storeu_si256_u8(&mut out2[base..limit], v2);
+        mm256_storeu_si256_u8(&mut out3[base..limit], v3);
     }
 
     let rem = len % 32;
     if rem > 0 {
-        let start = start + 32 * chunks;
-        let mut u8s = [0u8; 32];
+        let mut tmp = [0u8; 32];
         let chunks8 = rem / 8;
+
         for k in 0..chunks8 {
-            let i = (4 * chunks + k) / 5;
-            let j = (4 * chunks + k) % 5;
-            mm256_storeu_si256_u8(&mut u8s, *get_ij(s, i, j));
-            out0[start + 8 * k..start + 8 * (k + 1)].copy_from_slice(&u8s[0..8]);
-            out1[start + 8 * k..start + 8 * (k + 1)].copy_from_slice(&u8s[8..16]);
-            out2[start + 8 * k..start + 8 * (k + 1)].copy_from_slice(&u8s[16..24]);
-            out3[start + 8 * k..start + 8 * (k + 1)].copy_from_slice(&u8s[24..32]);
+            hax_lib::loop_invariant!(|_: usize| out0.len() == out0_len
+                && out1.len() == out1_len
+                && out2.len() == out2_len
+                && out3.len() == out3_len);
+
+            let idx = 4 * chunks + k;
+            let i = idx / 5;
+            let j = idx % 5;
+
+            mm256_storeu_si256_u8(&mut tmp, *get_ij(s, i, j));
+
+            let base = start + 32 * chunks + 8 * k;
+            let limit = base + 8;
+
+            out0[base..limit].copy_from_slice(&tmp[0..8]);
+            out1[base..limit].copy_from_slice(&tmp[8..16]);
+            out2[base..limit].copy_from_slice(&tmp[16..24]);
+            out3[base..limit].copy_from_slice(&tmp[24..32]);
         }
+
         let rem8 = rem % 8;
         if rem8 > 0 {
-            let i = (4 * chunks + chunks8) / 5;
-            let j = (4 * chunks + chunks8) % 5;
-            mm256_storeu_si256_u8(&mut u8s, *get_ij(s, i, j));
-            out0[start + len - rem8..start + len].copy_from_slice(&u8s[0..rem]);
-            out1[start + len - rem8..start + len].copy_from_slice(&u8s[8..8 + rem]);
-            out2[start + len - rem8..start + len].copy_from_slice(&u8s[16..16 + rem]);
-            out3[start + len - rem8..start + len].copy_from_slice(&u8s[24..24 + rem]);
+            let idx = 4 * chunks + chunks8;
+            let i = idx / 5;
+            let j = idx % 5;
+
+            mm256_storeu_si256_u8(&mut tmp, *get_ij(s, i, j));
+
+            let limit = start + len;
+            let base = limit - rem8;
+
+            out0[base..limit].copy_from_slice(&tmp[0..rem8]);
+            out1[base..limit].copy_from_slice(&tmp[8..8 + rem8]);
+            out2[base..limit].copy_from_slice(&tmp[16..16 + rem8]);
+            out3[base..limit].copy_from_slice(&tmp[24..24 + rem8]);
         }
     }
 }
 
+#[hax_lib::attributes]
 impl KeccakItem<4> for Vec256 {
     #[inline(always)]
     fn zero() -> Self {
@@ -208,6 +289,11 @@ impl KeccakItem<4> for Vec256 {
         _vrax1q_u64(a, b)
     }
     #[inline(always)]
+    #[hax_lib::requires(
+        LEFT.to_int() + RIGHT.to_int() == 64.to_int() &&
+        RIGHT > 0 &&
+        RIGHT < 64
+    )]
     fn xor_and_rotate<const LEFT: i32, const RIGHT: i32>(a: Self, b: Self) -> Self {
         _vxarq_u64::<LEFT, RIGHT>(a, b)
     }
@@ -225,11 +311,31 @@ impl KeccakItem<4> for Vec256 {
     }
 }
 
+#[hax_lib::attributes]
 impl Absorb<4> for KeccakState<4, Vec256> {
+    #[hax_lib::requires(
+        RATE <= 200 &&
+        RATE % 8 == 0 &&
+        (RATE % 32 == 8 || RATE % 32 == 16) &&
+        start.to_int() + RATE.to_int() <= input[0].len().to_int() &&
+        input[0].len() == input[1].len() &&
+        input[0].len() == input[2].len() &&
+        input[0].len() == input[3].len()
+    )]
     fn load_block<const RATE: usize>(&mut self, input: &[&[u8]; 4], start: usize) {
         load_block::<RATE>(&mut self.st, input, start);
     }
 
+    #[hax_lib::requires(
+        RATE <= 200 &&
+        RATE % 8 == 0 &&
+        (RATE % 32 == 8 || RATE % 32 == 16) &&
+        len < RATE &&
+        start.to_int() + len.to_int() <= input[0].len().to_int() &&
+        input[0].len() == input[1].len() &&
+        input[0].len() == input[2].len() &&
+        input[0].len() == input[3].len()
+    )]
     fn load_last<const RATE: usize, const DELIMITER: u8>(
         &mut self,
         input: &[&[u8]; 4],
@@ -240,7 +346,21 @@ impl Absorb<4> for KeccakState<4, Vec256> {
     }
 }
 
+#[hax_lib::attributes]
 impl Squeeze4<Vec256> for KeccakState<4, Vec256> {
+    #[hax_lib::requires(
+        len <= 200 &&
+        start.to_int() + len.to_int() <= out0.len().to_int() &&
+        out0.len() == out1.len() &&
+        out0.len() == out2.len() &&
+        out0.len() == out3.len()
+    )]
+    #[hax_lib::ensures(|_|
+        future(out0).len() == out0.len() &&
+        future(out1).len() == out1.len() &&
+        future(out2).len() == out2.len() &&
+        future(out3).len() == out3.len()
+    )]
     fn squeeze4<const RATE: usize>(
         &self,
         out0: &mut [u8],

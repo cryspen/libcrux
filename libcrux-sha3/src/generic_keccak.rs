@@ -242,12 +242,17 @@ impl<const N: usize, T: KeccakItem<N>> KeccakState<N, T> {
     }
 
     #[inline(always)]
-    #[hax_lib::requires(
-        N > 0 &&
-        RATE <= 200 &&
-        RATE % 8 == 0 &&
-        start.to_int() + RATE.to_int() <= blocks[0].len().to_int()
-    )]
+    #[hax_lib::requires(fstar!(r#"
+        $N <>. mk_usize 0 /\
+        $RATE <=. mk_usize 200 /\
+        $RATE %! mk_usize 8 =. mk_usize 0 /\
+        ($RATE %! mk_usize 32 =. mk_usize 8 || $RATE %! mk_usize 32 =. mk_usize 16) /\
+        v $start + v $RATE <= v (Core.Slice.impl__len #u8 (blocks.[ mk_usize 0 ])) /\
+        (forall i. i <. v_N ==> 
+          (Core.Slice.impl__len #u8 (blocks.[ mk_usize 0 ])) =.
+          (Core.Slice.impl__len #u8 (blocks.[ i ]))
+        )
+    "#))]
     fn absorb_block<const RATE: usize>(&mut self, blocks: &[&[u8]; N], start: usize)
     where
         Self: Absorb<N>,
@@ -260,13 +265,18 @@ impl<const N: usize, T: KeccakItem<N>> KeccakState<N, T> {
     }
 
     #[inline(always)]
-    #[hax_lib::requires(
-        N > 0 &&
-        RATE <= 200 &&
-        RATE % 8 == 0 &&
-        len < RATE &&
-        start.to_int() + len.to_int() <= last[0].len().to_int()
-    )]
+    #[hax_lib::requires(fstar!(r#"
+        $N <>. mk_usize 0 /\
+        $RATE <=. mk_usize 200 /\
+        $RATE %! mk_usize 8 =. mk_usize 0 /\
+        ($RATE %! mk_usize 32 =. mk_usize 8 || $RATE %! mk_usize 32 =. mk_usize 16) /\
+        $len <. $RATE /\
+        v $start + v $len <= v (Core.Slice.impl__len #u8 (last.[ mk_usize 0 ])) /\
+        (forall i. i <. v_N ==> 
+          (Core.Slice.impl__len #u8 (last.[ mk_usize 0 ])) =.
+          (Core.Slice.impl__len #u8 (last.[ i ]))
+        )
+    "#))]
     pub(crate) fn absorb_final<const RATE: usize, const DELIM: u8>(
         &mut self,
         last: &[&[u8]; N],

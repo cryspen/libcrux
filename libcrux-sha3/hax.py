@@ -55,6 +55,8 @@ class extractAction(argparse.Action):
         interface_include = "+**"
         if args.portable:
             cargo_args = []
+        elif args.avx2:
+            cargo_args = ["-C", "--features", "simd256", ";"]
         else:
             cargo_args = ["-C", "--features", "simd128,simd256", ";"]
 
@@ -94,10 +96,27 @@ class extractAction(argparse.Action):
             env=hax_env,
         )
 
+        # Extract Core models
+        cargo_hax_into = [
+            "cargo",
+            "hax",
+            "into",
+            "fstar",
+        ]
+        hax_env = {}
+        shell(
+            cargo_hax_into,
+            cwd="../fstar-helpers/core-models",
+            env=hax_env,
+        )
+
         # Extract sha3
         if args.portable:
             # For portable-only: exclude all SIMD implementations
-            include_str = "+** -**::avx2::** -**::neon::** -**::simd::** -**::simd128::** -**::simd256::** +**::simd::portable::**"
+            include_str = "+** -**::avx2::** -**::neon::** -**::simd128::** -**::simd256::**"
+            cargo_args = []
+        elif args.avx2:
+            include_str = "+** -**::neon::** -**::simd128::**"
             cargo_args = []
         else:
             include_str = "+**"
@@ -162,6 +181,11 @@ def parse_arguments():
     extract_parser.add_argument(
         "--portable",
         help="Extract only portable implementations (exclude SIMD variants).",
+        action="store_true",
+    )
+    extract_parser.add_argument(
+        "--avx2",
+        help="Extract only portable and AVX2 implementations (exclude NEON variant).",
         action="store_true",
     )
     extract_parser.add_argument("extract", nargs="*", action=extractAction)

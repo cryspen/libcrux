@@ -71,7 +71,12 @@ pub(crate) fn keccak_xof_state_inv<
 >(
     xof: &KeccakXofState<PARALLEL_LANES, RATE, STATE>,
 ) -> bool {
-    RATE != 0 && RATE <= 200 && RATE % 8 == 0 && xof.buf_len <= RATE
+    PARALLEL_LANES == 1
+        && RATE != 0
+        && RATE <= 200
+        && RATE % 8 == 0
+        && (RATE % 32 == 8 || RATE % 32 == 16)
+        && xof.buf_len <= RATE
 }
 
 #[hax_lib::attributes]
@@ -89,6 +94,7 @@ impl<const PARALLEL_LANES: usize, const RATE: usize, STATE: KeccakItem<PARALLEL_
         PARALLEL_LANES == 1 && // TODO: Generalize for the parallel case
         RATE != 0 &&
         RATE <= 200 &&
+        (RATE % 32 == 8 || RATE % 32 == 16) &&
         RATE % 8 == 0
     )]
     #[hax_lib::ensures(|result|
