@@ -4,6 +4,8 @@ pub use libcrux_hacl_rs::curve25519_51 as hacl;
 
 mod impl_hacl;
 
+pub mod ecdh_api;
+
 pub use impl_hacl::{ecdh, secret_to_public};
 
 /// The length of Curve25519 secret keys.
