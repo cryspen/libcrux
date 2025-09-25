@@ -5,7 +5,7 @@ use super::arrayref;
 
 pub use arrayref::{DecapsError, EncapsError, KeyGenError};
 
-/// A Key Encapsulation Mechanismd (KEM) that returns values insteaf of writing the results to
+/// A Key Encapsulation Mechanismd (KEM) that returns values instead of writing the results to
 /// `&mut` arguments.
 pub trait Kem<
     const EK_LEN: usize,
