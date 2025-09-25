@@ -22,6 +22,7 @@ libcrux-traits = { version = "=0.0.3", path = "../traits/" }
 [dev-dependencies]
 criterion = "0.7"
 rand = "0.9"
+libcrux-traits = { version = "=0.0.3", path = "../traits/", features = ["generic-tests"] }
 
 [[bench]]
 name = "blake2"

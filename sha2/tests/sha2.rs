@@ -91,3 +91,11 @@ fn test_digest_traits() {
 
     assert_eq!(hex::encode(d), expected);
 }
+
+#[test]
+fn traits_generic_tests() {
+    libcrux_traits::digest::tests::simple::<28, libcrux_sha2::Sha224Hash>();
+    libcrux_traits::digest::tests::simple::<32, libcrux_sha2::Sha256Hash>();
+    libcrux_traits::digest::tests::simple::<48, libcrux_sha2::Sha384Hash>();
+    libcrux_traits::digest::tests::simple::<64, libcrux_sha2::Sha512Hash>();
+}
