@@ -6,4 +6,5 @@ pub use libcrux_hkdf::expand;
 pub use libcrux_hkdf::extract;
 pub use libcrux_hkdf::hkdf;
 pub use libcrux_hkdf::Algorithm;
-pub use libcrux_hkdf::Error;
+pub use libcrux_hkdf::ExpandError;
+pub use libcrux_hkdf::ExtractError;

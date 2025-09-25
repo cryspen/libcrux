@@ -1,5 +1,4 @@
 use libcrux_chacha20poly1305::{decrypt_detached, encrypt_detached, KEY_LEN, NONCE_LEN};
-use libcrux_hkdf::Algorithm;
 use tls_codec::{
     Deserialize, Serialize, SerializeBytes, TlsDeserialize, TlsSerialize, TlsSerializeBytes,
     TlsSize,
@@ -25,23 +24,17 @@ impl std::fmt::Debug for AEADKey {
 
 impl AEADKey {
     fn new(ikm: &impl SerializeBytes, info: &impl SerializeBytes) -> Result<AEADKey, Error> {
-        let prk = libcrux_hkdf::extract(
-            Algorithm::Sha256,
-            [],
-            ikm.tls_serialize().map_err(serialize_error)?,
+        let mut key = [0; KEY_LEN];
+        libcrux_hkdf::sha2_256::hkdf(
+            &mut key,
+            &[],
+            &ikm.tls_serialize().map_err(serialize_error)?,
+            &info.tls_serialize().map_err(serialize_error)?,
         )
         .map_err(|_| Error::CryptoError)?;
 
         Ok(AEADKey(
-            libcrux_hkdf::expand(
-                Algorithm::Sha256,
-                prk,
-                info.tls_serialize().map_err(serialize_error)?,
-                KEY_LEN,
-            )
-            .map_err(|_| Error::CryptoError)?
-            .try_into()
-            .map_err(|_| Error::CryptoError)?, // We don't expect this to fail, unless HDKF gave us the wrong output length,
+            key.try_into().map_err(|_| Error::CryptoError)?, // We don't expect this to fail, unless HDKF gave us the wrong output length,
             [0u8; NONCE_LEN],
         ))
     }
@@ -131,18 +124,18 @@ const SESSION_KEY_SALT: &[u8] = b"session key salt";
 
 // id_skCS = KDF(skCS, "shared key id")
 fn session_key_id(key: &AEADKey) -> Result<[u8; SESSION_ID_LENGTH], Error> {
-    let prk = libcrux_hkdf::extract(
-        Algorithm::Sha256,
+    let mut session_id = [0; SESSION_ID_LENGTH];
+
+    libcrux_hkdf::sha2_256::hkdf(
+        &mut session_id,
         SESSION_KEY_SALT,
-        SerializeBytes::tls_serialize(&key).map_err(serialize_error)?,
+        &SerializeBytes::tls_serialize(&key).map_err(serialize_error)?,
+        SESSION_KEY_INFO,
     )
     .map_err(|_| Error::CryptoError)?;
 
     Ok(
-        libcrux_hkdf::expand(Algorithm::Sha256, prk, SESSION_KEY_INFO, SESSION_ID_LENGTH)
-            .map_err(|_| Error::CryptoError)?
-            .try_into()
-            .map_err(|_| Error::CryptoError)?, // We don't expect this to fail, unless HDKF gave us the wrong output length
+        session_id.try_into().map_err(|_| Error::CryptoError)?, // We don't expect this to fail, unless HDKF gave us the wrong output length
     )
 }
 
