@@ -1,4 +1,6 @@
-use libcrux_blake2::{Blake2bBuilder, Blake2bHasher, Blake2sBuilder, Blake2sHasher};
+use libcrux_blake2::{
+    Blake2bBuilder, Blake2bHash, Blake2bHasher, Blake2sBuilder, Blake2sHash, Blake2sHasher,
+};
 #[test]
 fn test_blake2b() {
     let mut got_hash = [0; 32];
@@ -271,4 +273,10 @@ fn test_digest_traits_2b() {
         err,
         libcrux_traits::digest::slice::FinishError::InvalidDigestLength
     );
+}
+
+#[test]
+fn traits_generic_tests() {
+    libcrux_traits::digest::tests::simple::<32, Blake2sHash<32>>();
+    libcrux_traits::digest::tests::simple::<32, Blake2bHash<32>>();
 }
