@@ -1,8 +1,6 @@
 use libcrux_traits::kem::arrayref::*;
 
-// The two kinds of data that are actually there
-const SCALAR_LEN: usize = 32;
-const POINT_LEN: usize = 64;
+use super::{POINT_LEN, SCALAR_LEN};
 
 // The sorts of data that the Kem trait needs
 const EK_LEN: usize = POINT_LEN;
