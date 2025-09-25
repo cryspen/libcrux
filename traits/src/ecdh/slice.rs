@@ -1,32 +1,54 @@
-// TODO: Docs
+//! This module contains the trait and related errors for an ECDH
+//! implementation that takes slices as arguments and writes outputs
+//! to mutable slices.
 
 use super::arrayref;
 use libcrux_secrets::U8;
 
 pub trait ECDHSlice {
+    /// Generate a Diffie-Hellman secret value.
+    /// It is the responsibility of the caller to ensure  that the `rand` argument is actually
+    /// random.
     fn generate_secret(secret: &mut [U8], rand: &[U8]) -> Result<(), ECDHError>;
+
+    /// Derive a Diffie-Hellman public value from a secret value.
     fn secret_to_public(public: &mut [u8], secret: &[U8]) -> Result<(), ECDHError>;
+
+    /// Derive a Diffie-Hellman shared secret from a public and a
+    /// secret value.
     fn derive_ecdh(derived: &mut [U8], public: &[u8], secret: &[U8]) -> Result<(), ECDHError>;
+
+    /// Check the validity of a Diffie-Hellman secret value.
     fn validate_secret(secret: &[U8]) -> Result<(), ECDHError>;
 }
 
 #[derive(Debug)]
+/// An error detailing which slice argument was of invalid length.
 pub enum InvalidLengthError {
+    /// The `rand` slice was of invalid length.
     Rand,
+    /// The `secret` slice was of invalid length.
     Secret,
+    /// The `public` slice was of invalid length.
     Public,
 }
 
 #[derive(Debug)]
 pub enum ECDHError {
+    /// An error during secret value generation.
     GenerateSecret,
+    /// An error derivation of a public value from a secret value.
     SecretToPublic,
+    /// An error derivation of Diffie-Hellman shared secret.
     Derive,
+    /// A Diffie-Hellman secret value was found to be invalid.
     ValidateSecret,
+    /// An error indicating that a slice argument was of invalid length.
     InvalidLength(InvalidLengthError),
 }
 
-/// Implements [`ECDHSlice`] for any [`arrayref::ECDHArrayref`]
+/// Implements [`ECDHSlice`] for any `$ty : arrayref::ECDHArrayref`
+/// with the given array bounds.
 #[macro_export]
 macro_rules! impl_ecdh_slice_trait {
     ($type:ty => $rand_len:expr, $sk_len:expr, $pk_len:expr) => {
