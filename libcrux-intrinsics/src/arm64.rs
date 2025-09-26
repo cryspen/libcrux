@@ -4,6 +4,7 @@ use core::arch::aarch64::*;
 pub type _int16x8_t = int16x8_t;
 pub type _uint32x4_t = uint32x4_t;
 pub type _uint64x2_t = uint64x2_t;
+pub type _uint8x16_t = uint8x16_t;
 
 #[inline(always)]
 pub fn _vdupq_n_s16(i: i16) -> int16x8_t {
@@ -172,6 +173,16 @@ pub fn _vreinterpretq_u32_s32(a: int32x4_t) -> uint32x4_t {
 }
 
 #[inline(always)]
+pub fn _vreinterpretq_u32_u8(a: uint8x16_t) -> uint32x4_t {
+    unsafe { vreinterpretq_u32_u8(a) }
+}
+
+#[inline(always)]
+pub fn _vreinterpretq_u8_u32(a: uint32x4_t) -> uint8x16_t {
+    unsafe { vreinterpretq_u8_u32(a) }
+}
+
+#[inline(always)]
 pub fn _vshrq_n_u32<const N: i32>(a: uint32x4_t) -> uint32x4_t {
     unsafe { vshrq_n_u32::<N>(a) }
 }
@@ -270,6 +281,12 @@ pub fn _vmlal_high_s16(a: int32x4_t, b: int16x8_t, c: int16x8_t) -> int32x4_t {
 pub fn _vld1q_u8(ptr: &[u8]) -> uint8x16_t {
     unsafe { vld1q_u8(ptr.as_ptr()) }
 }
+
+#[inline(always)]
+pub fn _vld1q_u32(ptr: &[u32]) -> uint32x4_t {
+    unsafe { vld1q_u32(ptr.as_ptr()) }
+}
+
 #[inline(always)]
 pub fn _vreinterpretq_u8_s16(a: int16x8_t) -> uint8x16_t {
     unsafe { vreinterpretq_u8_s16(a) }
@@ -351,6 +368,7 @@ pub fn _vld1q_u16(ptr: &[u16]) -> uint16x8_t {
 pub fn _vcleq_s16(a: int16x8_t, b: int16x8_t) -> uint16x8_t {
     unsafe { vcleq_s16(a, b) }
 }
+
 #[inline(always)]
 pub fn _vaddvq_u16(a: uint16x8_t) -> u16 {
     unsafe { vaddvq_u16(a) }
@@ -372,6 +390,16 @@ pub fn _vrax1q_u64(a: uint64x2_t, b: uint64x2_t) -> uint64x2_t {
         target_feature = "sha3"
     )))]
     _veorq_u64(a, _veorq_u64(_vshlq_n_u64::<1>(b), _vshrq_n_u64::<63>(b)))
+}
+
+#[inline]
+pub fn _veorq_u32(a: uint32x4_t, b: uint32x4_t) -> uint32x4_t {
+    unsafe { veorq_u32(a, b) }
+}
+
+#[inline]
+pub fn _vextq_u32<const N: i32>(a: uint32x4_t, b: uint32x4_t) -> uint32x4_t {
+    unsafe { vextq_u32(a, b, N) }
 }
 
 #[inline(always)]
@@ -430,4 +458,34 @@ pub fn _vbcaxq_u64(a: uint64x2_t, b: uint64x2_t, c: uint64x2_t) -> uint64x2_t {
         target_feature = "sha3"
     )))]
     _veorq_u64(a, _vbicq_u64(b, c))
+}
+
+#[inline(always)]
+pub fn _vmull_p64(a: u64, b: u64) -> u128 {
+    unsafe { vmull_p64(a, b) }
+}
+
+#[inline]
+pub fn _veorq_u8(a: uint8x16_t, b: uint8x16_t) -> uint8x16_t {
+    unsafe { veorq_u8(a, b) }
+}
+
+#[inline]
+pub fn _vaesmcq_u8(data: uint8x16_t) -> uint8x16_t {
+    unsafe { vaesmcq_u8(data) }
+}
+
+#[inline]
+pub fn _vaeseq_u8(data: uint8x16_t, key: uint8x16_t) -> uint8x16_t {
+    unsafe { vaeseq_u8(data, key) }
+}
+
+#[inline]
+pub fn _vdupq_n_u8(value: u8) -> uint8x16_t {
+    unsafe { vdupq_n_u8(value) }
+}
+
+#[inline]
+pub fn _vdupq_laneq_u32<const N: i32>(a: uint32x4_t) -> uint32x4_t {
+    unsafe { vdupq_laneq_u32(a, N) }
 }

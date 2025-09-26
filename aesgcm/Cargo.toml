@@ -1,0 +1,45 @@
+[package]
+name = "libcrux_aesgcm"
+version.workspace = true
+authors.workspace = true
+license.workspace = true
+homepage.workspace = true
+edition.workspace = true
+repository.workspace = true
+readme = "README.md"
+description = "Libcrux AES-GCM implementation"
+exclude = []
+
+[lib]
+bench = false # so libtest doesn't eat the arguments to criterion
+
+[dependencies]
+libcrux-platform.workspace = true
+libcrux-intrinsics.workspace = true
+libcrux-traits.workspace = true
+
+rand = { version = "0.9", optional = true }
+
+[features]
+default = ["rand"]  # XXX: remove rand here when cleaning up
+simd128 = []
+simd256 = []
+rand = ["dep:rand"]
+std = []
+
+[[bench]]
+name = "aesgcm"
+harness = false
+
+[dev-dependencies]
+libcrux_aesgcm = { version = "*", features = ["std"], path = "." }
+cavp = { version = "0.0.2", path = "../cavp" }
+criterion = "0.5.1"
+hex = "0.4.3"
+pretty_env_logger = "0.5.0"
+rand_core = { version = "0.6" }
+aes-gcm = "0.10.3"
+wycheproof = "0.6.0"
+
+[lints.rust]
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(hax)', 'cfg(eurydice)'] }
