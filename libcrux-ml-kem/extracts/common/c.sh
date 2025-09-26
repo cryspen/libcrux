@@ -46,6 +46,7 @@ while [ $# -gt 0 ]; do
         --out) out="$2"; shift ;;
         --glue) glue="$2"; shift ;;
         --mlkem768) features="${features} --cargo-arg=--no-default-features --cargo-arg=--features=mlkem768" ;;
+        --mlkem768-1024) features="${features} --cargo-arg=--no-default-features --cargo-arg=--features=mlkem768 --cargo-arg=--features=mlkem1024" ;;
         --kyber768) features="${features} --cargo-arg=--features=kyber" ;;
         --no-glue) eurydice_glue=0 ;;
         --no-karamel_include) karamel_include=0 ;;
@@ -76,7 +77,7 @@ if [[ "$no_charon" = 0 ]]; then
     (cd $repo_root/secrets && RUSTFLAGS="--cfg eurydice" $CHARON_HOME/bin/charon --remove-associated-types '*' --translate-all-methods)
     if ! [[ -f $repo_root/libcrux_secrets.llbc ]]; then
         echo "😱😱😱 You are the victim of this bug: https://hacspec.zulipchat.com/#narrow/stream/433829-Circus/topic/charon.20declines.20to.20generate.20an.20llbc.20file"
-        echo "Suggestion: rm -rf ../target or cargo clean"
+        echo "Suggestion: rm -rf $repo_root/target or cargo clean"
         exit 1
     fi
     # Because of a Charon bug we have to clean the sha3 crate.
