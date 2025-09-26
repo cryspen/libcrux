@@ -5,25 +5,27 @@ use tls_codec::{
     Deserialize, Serialize, Size, TlsDeserialize, TlsSerialize, TlsSize, VLByteSlice, VLBytes,
 };
 
-use crate::protocol::MessageOut;
+use crate::{
+    aead::AEADKey,
+    handshake::ciphersuite::{CiphersuiteBase, ResponderCiphersuite},
+    session::{Session, SessionError},
+    traits::{Channel, IntoSession},
+};
 
 use super::{
-    api::{Error, IntoSession, Protocol, Session, ToTransportState},
-    dhkem::{DHKeyPair, DHPrivateKey, DHPublicKey},
+    derive_k0, derive_k1,
+    dhkem::{DHPrivateKey, DHPublicKey, DHSharedSecret},
     initiator::InitiatorInnerPayload,
-    keys::{
-        derive_k0, derive_k1, derive_k2_query_responder, derive_k2_registration_responder, AEADKey,
-    },
-    pqkem::PQKeyPair,
     transcript::{tx1, tx2, Transcript},
-    write_output, Message,
+    write_output, HandshakeError as Error, HandshakeMessage, HandshakeMessageOut, K2IkmQuery,
+    K2IkmRegistration, ToTransportState,
 };
 
 #[derive(TlsDeserialize, TlsSize)]
 #[repr(u8)]
 pub enum InitiatorOuterPayload {
     Query(VLBytes),
-    Registration(Message),
+    Registration(HandshakeMessage),
 }
 
 #[derive(Debug)]
@@ -51,12 +53,11 @@ pub(crate) enum ResponderState {
     ToTransport(Box<ToTransportState>),
 }
 
-pub struct Responder<'a, Rng: CryptoRng> {
+pub struct Responder<'a, Rng: CryptoRng, Ciphersuite: ResponderCiphersuite> {
     pub(crate) state: ResponderState,
+    ciphersuite: Ciphersuite,
     recent_keys: VecDeque<DHPublicKey>,
     recent_keys_upper_bound: usize,
-    longterm_ecdh_keys: &'a DHKeyPair,
-    longterm_pq_keys: Option<&'a PQKeyPair>,
     context: &'a [u8],
     aad: &'a [u8],
     rng: Rng,
@@ -74,10 +75,9 @@ pub struct ResponderRegistrationPayload(pub VLBytes);
 #[derive(TlsSerialize, TlsSize)]
 pub struct ResponderRegistrationPayloadOut<'a>(VLByteSlice<'a>);
 
-impl<'a, Rng: CryptoRng> Responder<'a, Rng> {
+impl<'a, Rng: CryptoRng, Ciphersuite: ResponderCiphersuite> Responder<'a, Rng, Ciphersuite> {
     pub fn new(
-        longterm_ecdh_keys: &'a DHKeyPair,
-        longterm_pq_keys: Option<&'a PQKeyPair>,
+        ciphersuite: Ciphersuite,
         context: &'a [u8],
         aad: &'a [u8],
         recent_keys_upper_bound: usize,
@@ -85,8 +85,7 @@ impl<'a, Rng: CryptoRng> Responder<'a, Rng> {
     ) -> Self {
         Self {
             state: ResponderState::Initial {},
-            longterm_ecdh_keys,
-            longterm_pq_keys,
+            ciphersuite,
             context,
             aad,
             rng,
@@ -108,7 +107,7 @@ impl<'a, Rng: CryptoRng> Responder<'a, Rng> {
             k0,
             initiator_ephemeral_ecdh_pk,
             responder_ephemeral_ecdh_sk,
-            &self.longterm_ecdh_keys.sk,
+            self.ciphersuite.own_ecdh_decapsulation_key(),
             &tx2,
         )?;
 
@@ -138,12 +137,12 @@ impl<'a, Rng: CryptoRng> Responder<'a, Rng> {
 
     fn decrypt_outer_message(
         &self,
-        initiator_outer_message: &Message,
+        initiator_outer_message: &HandshakeMessage,
     ) -> Result<(InitiatorOuterPayload, Transcript, AEADKey), Error> {
         let (tx0, mut k0) = derive_k0(
             &initiator_outer_message.pk,
-            &self.longterm_ecdh_keys.pk,
-            &self.longterm_ecdh_keys.sk,
+            self.ciphersuite.own_ecdh_encapsulation_key(),
+            self.ciphersuite.own_ecdh_decapsulation_key(),
             self.context,
             true,
         )?;
@@ -161,28 +160,45 @@ impl<'a, Rng: CryptoRng> Responder<'a, Rng> {
         &self,
         tx0: &Transcript,
         k0: &AEADKey,
-        initiator_inner_message: &Message,
+        initiator_inner_message: &HandshakeMessage,
     ) -> Result<(InitiatorInnerPayload, Transcript, AEADKey), Error> {
-        let pq_shared_secret = initiator_inner_message
-            .pq_encapsulation
-            .as_ref()
-            .zip(self.longterm_pq_keys)
-            .map(|(enc, longterm_pq_keys)| longterm_pq_keys.sk.decapsulate(enc));
+        let pq_encapsulation = Option::<Ciphersuite::Ciphertext>::tls_deserialize(
+            &mut Cursor::new(initiator_inner_message.pq_encapsulation.as_ref()),
+        )
+        .map_err(|_| Error::UnsupportedCiphersuite)?;
+        let pq_shared_secret = self.ciphersuite.pq_decapsulate(pq_encapsulation.as_ref())?;
 
-        let responder_pq_pk_opt = self.longterm_pq_keys.map(|keys| &keys.pk);
+        // let pq_shared_secret = match (
+        //     initiator_inner_message.pq_encapsulation.as_ref(),
+        //     self.ciphersuite.longterm_pq_keys.as_ref(),
+        // ) {
+        //     (None, None) | (None, Some(_)) => None,
+        //     (Some(_), None) => return Err(Error::UnsupportedCiphersuite),
+        //     (Some(encapsulation), Some(longterm_pq_keys)) => {
+        //         let sk = longterm_pq_keys.private_key();
+        //         let shared_secret = sk.decapsulate(encapsulation)?;
+        //         Some(shared_secret)
+        //     }
+        // };
 
-        let tx1 = tx1(
+        // let responder_pq_pk_opt = self
+        //     .ciphersuite
+        //     .longterm_pq_keys
+        //     .as_ref()
+        //     .map(|keys| keys.public_key());
+
+        let tx1 = tx1::<Ciphersuite>(
             tx0,
             &initiator_inner_message.pk,
-            responder_pq_pk_opt,
+            self.ciphersuite.own_pq_encapsulation_key(),
             initiator_inner_message.pq_encapsulation.as_ref(),
         )?;
 
-        let mut k1 = derive_k1(
+        let mut k1 = derive_k1::<Ciphersuite>(
             k0,
-            &self.longterm_ecdh_keys.sk,
+            self.ciphersuite.own_ecdh_decapsulation_key(),
             &initiator_inner_message.pk,
-            &pq_shared_secret,
+            pq_shared_secret,
             &tx1,
         )?;
 
@@ -215,17 +231,18 @@ impl<'a, Rng: CryptoRng> Responder<'a, Rng> {
         let outer_payload = ResponderRegistrationPayloadOut(VLByteSlice(payload));
         let (ciphertext, tag) = k2.serialize_encrypt(&outer_payload, self.aad)?;
 
-        let out_msg = MessageOut {
+        let out_msg = HandshakeMessageOut {
             pk: &responder_ephemeral_ecdh_pk,
             ciphertext: VLByteSlice(&ciphertext),
             tag,
             aad: VLByteSlice(self.aad),
-            pq_encapsulation: None,
+            pq_encapsulation: VLByteSlice(&[]),
         };
 
         let out_len = out_msg
             .tls_serialize(&mut &mut out[..])
             .map_err(Error::Serialize)?;
+
         self.state = ResponderState::ToTransport(
             ToTransportState {
                 tx2,
@@ -257,12 +274,12 @@ impl<'a, Rng: CryptoRng> Responder<'a, Rng> {
         let outer_payload = ResponderQueryPayloadOut(VLByteSlice(payload));
         let (ciphertext, tag) = k2.serialize_encrypt(&outer_payload, self.aad)?;
 
-        let out_msg = MessageOut {
+        let out_msg = HandshakeMessageOut {
             pk: &responder_ephemeral_ecdh_pk,
             ciphertext: VLByteSlice(&ciphertext),
             tag,
             aad: VLByteSlice(self.aad),
-            pq_encapsulation: None,
+            pq_encapsulation: VLByteSlice(&[]),
         };
 
         out_msg
@@ -274,7 +291,9 @@ impl<'a, Rng: CryptoRng> Responder<'a, Rng> {
     }
 }
 
-impl<'a, Rng: CryptoRng> Protocol for Responder<'a, Rng> {
+impl<'a, Rng: CryptoRng, Ciphersuite: ResponderCiphersuite> Channel<Error>
+    for Responder<'a, Rng, Ciphersuite>
+{
     fn write_message(&mut self, payload: &[u8], out: &mut [u8]) -> Result<usize, Error> {
         let mut out_bytes_written = 0;
         let responder_ephemeral_ecdh_sk = DHPrivateKey::new(&mut self.rng);
@@ -307,13 +326,14 @@ impl<'a, Rng: CryptoRng> Protocol for Responder<'a, Rng> {
         message_bytes: &[u8],
         out: &mut [u8],
     ) -> Result<(usize, usize), Error> {
-        if !matches!(self.state, ResponderState::Initial {}) {
+        if !matches!(self.state, ResponderState::Initial) {
             return Ok((0, 0));
         }
 
         // Deserialize the outer message.
-        let initiator_outer_message = Message::tls_deserialize(&mut Cursor::new(&message_bytes))
-            .map_err(Error::Deserialize)?;
+        let initiator_outer_message =
+            HandshakeMessage::tls_deserialize(&mut Cursor::new(&message_bytes))
+                .map_err(Error::Deserialize)?;
         let bytes_deserialized = initiator_outer_message.tls_serialized_len();
 
         // Check that the ephemeral key was not in the most recent keys.
@@ -348,43 +368,54 @@ impl<'a, Rng: CryptoRng> Protocol for Responder<'a, Rng> {
 
             InitiatorOuterPayload::Registration(initiator_inner_message) => {
                 // Decrypt the inner message payload.
-                let (initiator_inner_payload, tx1, k1) =
-                    self.decrypt_inner_message(&tx0, &k0, &initiator_inner_message)?;
-                // We're ready to respond to the registration message.
-                self.state = ResponderState::RespondRegistration(
-                    RespondRegistrationState {
-                        tx1,
-                        k1,
-                        initiator_ephemeral_ecdh_pk: initiator_outer_message.pk,
-                        initiator_longterm_ecdh_pk: initiator_inner_message.pk,
+                match self.decrypt_inner_message(&tx0, &k0, &initiator_inner_message) {
+                    Ok((initiator_inner_payload, tx1, k1)) => {
+                        // We're ready to respond to the registration message.
+                        self.state = ResponderState::RespondRegistration(
+                            RespondRegistrationState {
+                                tx1,
+                                k1,
+                                initiator_ephemeral_ecdh_pk: initiator_outer_message.pk,
+                                initiator_longterm_ecdh_pk: initiator_inner_message.pk,
+                            }
+                            .into(),
+                        );
+                        let out_bytes_written =
+                            write_output(initiator_inner_payload.0.as_slice(), out)?;
+                        Ok((bytes_deserialized, out_bytes_written))
                     }
-                    .into(),
-                );
-                let out_bytes_written = write_output(initiator_inner_payload.0.as_slice(), out)?;
-                Ok((bytes_deserialized, out_bytes_written))
+                    Err(Error::UnsupportedCiphersuite) => {
+                        // We can't deal with this message and ignore it.
+                        self.state = ResponderState::Initial;
+
+                        Ok((bytes_deserialized, 0))
+                    }
+
+                    Err(e) => Err(e),
+                }
             }
         }
     }
 }
 
-impl<'a, Rng: CryptoRng> IntoSession for Responder<'a, Rng> {
-    fn into_session(self) -> Result<Session, Error> {
+impl<'a, Rng: CryptoRng, Ciphersuite: ResponderCiphersuite> IntoSession
+    for Responder<'a, Rng, Ciphersuite>
+{
+    fn into_session(self) -> Result<Session, SessionError> {
         let ResponderState::ToTransport(mut state) = self.state else {
-            return Err(Error::ResponderState);
+            return Err(SessionError::IntoSession);
         };
 
         let Some(initiator_ecdh_pk) = take(&mut state.initiator_ecdh_pk) else {
-            return Err(Error::ResponderState);
+            return Err(SessionError::IntoSession);
         };
 
-        let responder_pq_pk = self.longterm_pq_keys.map(|key_pair| &key_pair.pk);
-
-        Session::new(
+        Session::new::<Ciphersuite>(
             state.tx2,
             state.k2,
             &initiator_ecdh_pk,
-            &self.longterm_ecdh_keys.pk,
-            responder_pq_pk,
+            self.ciphersuite.own_ecdh_encapsulation_key(),
+            self.ciphersuite.own_pq_encapsulation_key(),
             false,
         )
     }
@@ -392,4 +423,38 @@ impl<'a, Rng: CryptoRng> IntoSession for Responder<'a, Rng> {
     fn is_handshake_finished(&self) -> bool {
         matches!(self.state, ResponderState::ToTransport { .. })
     }
+}
+
+// K2 = KDF(K1 | g^cy | g^xy, tx2)
+pub(super) fn derive_k2_registration_responder(
+    k1: &AEADKey,
+    tx2: &Transcript,
+    initiator_longterm_pk: &DHPublicKey,
+    initiator_ephemeral_pk: &DHPublicKey,
+    responder_ephemeral_sk: &DHPrivateKey,
+) -> Result<AEADKey, Error> {
+    let responder_ikm = K2IkmRegistration {
+        k1,
+        g_cy: &DHSharedSecret::derive(responder_ephemeral_sk, initiator_longterm_pk)?,
+        g_xy: &DHSharedSecret::derive(responder_ephemeral_sk, initiator_ephemeral_pk)?,
+    };
+
+    Ok(AEADKey::new(&responder_ikm, tx2)?)
+}
+
+// K2 = KDF(K0 | g^xs | g^xy, tx2)
+pub(super) fn derive_k2_query_responder(
+    k0: &AEADKey,
+    initiator_ephemeral_ecdh_pk: &DHPublicKey,
+    responder_ephemeral_ecdh_sk: &DHPrivateKey,
+    responder_longterm_ecdh_sk: &DHPrivateKey,
+    tx2: &Transcript,
+) -> Result<AEADKey, Error> {
+    let responder_ikm = K2IkmQuery {
+        k0,
+        g_xs: &DHSharedSecret::derive(responder_longterm_ecdh_sk, initiator_ephemeral_ecdh_pk)?,
+        g_xy: &DHSharedSecret::derive(responder_ephemeral_ecdh_sk, initiator_ephemeral_ecdh_pk)?,
+    };
+
+    AEADKey::new(&responder_ikm, tx2).map_err(|e| e.into())
 }
