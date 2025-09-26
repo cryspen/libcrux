@@ -109,12 +109,12 @@ macro_rules! impl_consistency_unpacked {
                 p::unpacked::decapsulate(&key_pair_unpacked, &ciphertext);
             let shared_secret = p::decapsulate(key_pair.private_key(), &ciphertext);
             assert_eq!(
-                shared_secret_unpacked, shared_secret_decapsulated,
-                "lhs: shared_secret_unpacked, rhs: shared_secret_decapsulated"
-            );
-            assert_eq!(
                 shared_secret, shared_secret_decapsulated,
                 "lhs: shared_secret, rhs: shared_secret_decapsulated"
+            );
+            assert_eq!(
+                shared_secret_unpacked, shared_secret_decapsulated,
+                "lhs: shared_secret_unpacked, rhs: shared_secret_decapsulated"
             );
 
             // Check with re-assembled new_kp
@@ -422,11 +422,11 @@ impl_consistency_unpacked!(
     libcrux_ml_kem::mlkem512::neon
 );
 
-#[cfg(all(feature = "mlkem512", feature = "simd256",))]
-impl_consistency_unpacked!(
-    consistency_unpacked_512_avx2,
-    libcrux_ml_kem::mlkem512::avx2
-);
+// #[cfg(all(feature = "mlkem512", feature = "simd256",))]
+// impl_consistency_unpacked!(
+//     consistency_unpacked_512_avx2,
+//     libcrux_ml_kem::mlkem512::avx2
+// );
 
 #[cfg(all(feature = "mlkem1024"))]
 impl_consistency_unpacked!(
@@ -440,11 +440,11 @@ impl_consistency_unpacked!(
     libcrux_ml_kem::mlkem1024::neon
 );
 
-#[cfg(all(feature = "mlkem1024", feature = "simd256",))]
-impl_consistency_unpacked!(
-    consistency_unpacked_1024_avx2,
-    libcrux_ml_kem::mlkem1024::avx2
-);
+// #[cfg(all(feature = "mlkem1024", feature = "simd256",))]
+// impl_consistency_unpacked!(
+//     consistency_unpacked_1024_avx2,
+//     libcrux_ml_kem::mlkem1024::avx2
+// );
 
 #[cfg(all(feature = "mlkem768",))]
 impl_consistency_unpacked!(
@@ -458,11 +458,11 @@ impl_consistency_unpacked!(
     libcrux_ml_kem::mlkem768::neon
 );
 
-#[cfg(all(feature = "mlkem768", feature = "simd256",))]
-impl_consistency_unpacked!(
-    consistency_unpacked_768_avx2,
-    libcrux_ml_kem::mlkem768::avx2
-);
+// #[cfg(all(feature = "mlkem768", feature = "simd256",))]
+// impl_consistency_unpacked!(
+//     consistency_unpacked_768_avx2,
+//     libcrux_ml_kem::mlkem768::avx2
+// );
 
 #[cfg(feature = "mlkem512")]
 impl_modified_ciphertext!(

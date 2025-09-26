@@ -41,7 +41,9 @@ pub trait IncrementalKeyPair {
     fn pk2_bytes(&self, bytes: &mut [u8]);
 }
 
-impl<const K: usize, Vector: Operations> IncrementalKeyPair for MlKemKeyPairUnpacked<K, Vector> {
+impl<const K: usize, const K_SQUARED: usize, Vector: Operations> IncrementalKeyPair
+    for MlKemKeyPairUnpacked<K, K_SQUARED, Vector>
+{
     fn pk1_bytes(&self, bytes: &mut [u8]) -> Result<(), Error> {
         debug_assert!(bytes.len() >= 64);
         if bytes.len() < 64 {
@@ -55,7 +57,12 @@ impl<const K: usize, Vector: Operations> IncrementalKeyPair for MlKemKeyPairUnpa
     }
 
     fn pk2_bytes(&self, bytes: &mut [u8]) {
-        serialize_vector(&self.public_key.ind_cpa_public_key.t_as_ntt, bytes);
+        let mut scratch = Vector::ZERO();
+        serialize_vector(
+            &self.public_key.ind_cpa_public_key.t_as_ntt,
+            bytes,
+            &mut scratch,
+        );
     }
 }
 
@@ -118,7 +125,7 @@ impl<const LEN: usize> PublicKey2<LEN> {
         &self,
     ) -> [PolynomialRingElement<Vector>; K] {
         let mut out = from_fn(|_| PolynomialRingElement::<Vector>::ZERO());
-        deserialize_vector(&self.t_as_ntt, &mut out);
+        deserialize_vector::<K, Vector>(&self.t_as_ntt, &mut out);
         out
     }
 }
@@ -132,7 +139,9 @@ pub(crate) mod alloc {
     pub trait Keys: IncrementalKeyPair {
         fn as_any(&self) -> &dyn Any;
     }
-    impl<const K: usize, Vector: Operations + 'static> Keys for MlKemKeyPairUnpacked<K, Vector> {
+    impl<const K: usize, const K_SQUARED: usize, Vector: Operations + 'static> Keys
+        for MlKemKeyPairUnpacked<K, K_SQUARED, Vector>
+    {
         fn as_any(&self) -> &dyn Any {
             self
         }
@@ -220,7 +229,8 @@ impl<const K: usize, Vector: Operations> EncapsState<K, Vector> {
         vec_from_bytes(&bytes[offset..], &mut r_as_ntt);
         offset += vec_len_bytes::<K, Vector>();
 
-        let error2 = PolynomialRingElement::<Vector>::from_bytes(&bytes[offset..]);
+        let mut error2 = PolynomialRingElement::<Vector>::ZERO();
+        PolynomialRingElement::<Vector>::from_bytes(&bytes[offset..], &mut error2);
         offset += PolynomialRingElement::<Vector>::num_bytes();
 
         let mut randomness = [0u8; 32];
@@ -243,8 +253,10 @@ impl<const K: usize, Vector: Operations> EncapsState<K, Vector> {
 // === Implementations
 
 /// Convert [`MlKemPublicKeyUnpacked`] to a [`PublicKey1`]
-impl<const K: usize, Vector: Operations> From<&MlKemPublicKeyUnpacked<K, Vector>> for PublicKey1 {
-    fn from(pk: &MlKemPublicKeyUnpacked<K, Vector>) -> Self {
+impl<const K: usize, const K_SQUARED: usize, Vector: Operations>
+    From<&MlKemPublicKeyUnpacked<K, K_SQUARED, Vector>> for PublicKey1
+{
+    fn from(pk: &MlKemPublicKeyUnpacked<K, K_SQUARED, Vector>) -> Self {
         Self {
             seed: pk.ind_cpa_public_key.seed_for_A,
             hash: pk.public_key_hash,
@@ -253,14 +265,19 @@ impl<const K: usize, Vector: Operations> From<&MlKemPublicKeyUnpacked<K, Vector>
 }
 
 /// Convert [`MlKemPublicKeyUnpacked`] to a [`PublicKey2`].
-impl<const K: usize, const LEN: usize, Vector: Operations> From<&MlKemPublicKeyUnpacked<K, Vector>>
-    for PublicKey2<LEN>
+impl<const K: usize, const K_SQUARED: usize, const LEN: usize, Vector: Operations>
+    From<&MlKemPublicKeyUnpacked<K, K_SQUARED, Vector>> for PublicKey2<LEN>
 {
-    fn from(pk: &MlKemPublicKeyUnpacked<K, Vector>) -> Self {
+    fn from(pk: &MlKemPublicKeyUnpacked<K, K_SQUARED, Vector>) -> Self {
+        let mut scratch = Vector::ZERO();
         let mut out = Self {
             t_as_ntt: [0u8; LEN],
         };
-        serialize_vector(&pk.ind_cpa_public_key.t_as_ntt, &mut out.t_as_ntt);
+        serialize_vector(
+            &pk.ind_cpa_public_key.t_as_ntt,
+            &mut out.t_as_ntt,
+            &mut scratch,
+        );
         out
     }
 }
@@ -290,17 +307,18 @@ impl<const LEN: usize> From<&[u8; LEN]> for PublicKey2<LEN> {
 }
 
 // The key pair struct that we (de)serialize.
-pub struct KeyPair<const K: usize, const PK2_LEN: usize, Vector: Operations> {
+pub struct KeyPair<const K: usize, const K_SQUARED: usize, const PK2_LEN: usize, Vector: Operations>
+{
     pk1: PublicKey1,
     pk2: PublicKey2<PK2_LEN>,
     sk: MlKemPrivateKeyUnpacked<K, Vector>,
-    matrix: [[PolynomialRingElement<Vector>; K]; K],
+    matrix: [PolynomialRingElement<Vector>; K_SQUARED],
 }
 
-impl<const K: usize, const PK2_LEN: usize, Vector: Operations> From<MlKemKeyPairUnpacked<K, Vector>>
-    for KeyPair<K, PK2_LEN, Vector>
+impl<const K: usize, const K_SQUARED: usize, const PK2_LEN: usize, Vector: Operations>
+    From<MlKemKeyPairUnpacked<K, K_SQUARED, Vector>> for KeyPair<K, K_SQUARED, PK2_LEN, Vector>
 {
-    fn from(kp: MlKemKeyPairUnpacked<K, Vector>) -> Self {
+    fn from(kp: MlKemKeyPairUnpacked<K, K_SQUARED, Vector>) -> Self {
         KeyPair {
             pk1: PublicKey1::from(kp.public_key()),
             pk2: PublicKey2::from(kp.public_key()),
@@ -310,12 +328,12 @@ impl<const K: usize, const PK2_LEN: usize, Vector: Operations> From<MlKemKeyPair
     }
 }
 
-impl<const K: usize, const PK2_LEN: usize, Vector: Operations> From<KeyPair<K, PK2_LEN, Vector>>
-    for MlKemKeyPairUnpacked<K, Vector>
+impl<const K: usize, const K_SQUARED: usize, const PK2_LEN: usize, Vector: Operations>
+    From<KeyPair<K, K_SQUARED, PK2_LEN, Vector>> for MlKemKeyPairUnpacked<K, K_SQUARED, Vector>
 {
-    fn from(value: KeyPair<K, PK2_LEN, Vector>) -> Self {
+    fn from(value: KeyPair<K, K_SQUARED, PK2_LEN, Vector>) -> Self {
         let mut t_as_ntt = from_fn(|_| PolynomialRingElement::<Vector>::ZERO());
-        deserialize_vector(&value.pk2.t_as_ntt, &mut t_as_ntt);
+        deserialize_vector::<K, Vector>(&value.pk2.t_as_ntt, &mut t_as_ntt);
 
         MlKemKeyPairUnpacked {
             private_key: value.sk,
@@ -339,7 +357,9 @@ fn write(out: &mut [u8], value: &[u8], offset: &mut usize) {
     *offset = new_offset;
 }
 
-impl<const K: usize, const PK2_LEN: usize, Vector: Operations> KeyPair<K, PK2_LEN, Vector> {
+impl<const K: usize, const K_SQUARED: usize, const PK2_LEN: usize, Vector: Operations>
+    KeyPair<K, K_SQUARED, PK2_LEN, Vector>
+{
     /// Get [`PublicKey1`] as bytes.
     pub fn pk1_bytes(&self, pk1: &mut [u8]) -> Result<(), Error> {
         debug_assert!(pk1.len() >= PublicKey1::len());
@@ -400,8 +420,8 @@ impl<const K: usize, const PK2_LEN: usize, Vector: Operations> KeyPair<K, PK2_LE
         write(key, &self.sk.implicit_rejection_value, &mut offset);
 
         // Matrix
-        for i in 0..self.matrix.len() {
-            vec_to_bytes(&self.matrix[i], &mut key[offset..]);
+        for i in 0..K {
+            vec_to_bytes(&self.matrix[i * K..(i + 1) * K], &mut key[offset..]);
             offset += vec_len_bytes::<K, Vector>();
         }
 
@@ -418,10 +438,15 @@ impl<const K: usize, const PK2_LEN: usize, Vector: Operations> KeyPair<K, PK2_LE
         &self,
         key: &mut [u8; KEY_SIZE],
     ) {
+        let mut scratch = Vector::ZERO();
         // Write the private key.
         // This is a manual version of serialize_kem_secret_key_mut that skips
         // the hash.
-        serialize_vector(&self.sk.ind_cpa_private_key.secret_as_ntt, key);
+        serialize_vector(
+            &self.sk.ind_cpa_private_key.secret_as_ntt,
+            key,
+            &mut scratch,
+        );
         let mut offset = VEC_SIZE;
 
         // ek = t | ⍴
@@ -462,9 +487,9 @@ impl<const K: usize, const PK2_LEN: usize, Vector: Operations> KeyPair<K, PK2_LE
         offset += sk.implicit_rejection_value.len();
 
         // Matrix
-        let mut matrix = [[PolynomialRingElement::<Vector>::ZERO(); K]; K];
-        for i in 0..matrix.len() {
-            vec_from_bytes(&key[offset..], &mut matrix[i]);
+        let mut matrix = [PolynomialRingElement::<Vector>::ZERO(); K_SQUARED];
+        for i in 0..K {
+            vec_from_bytes(&key[offset..], &mut matrix[i * K..(i + 1) * K]);
             offset += vec_len_bytes::<K, Vector>();
         }
 
