@@ -17,11 +17,14 @@ let lemma_add_i (lhs rhs: t_Vec256) (i:nat): Lemma
 #[hax_lib::ensures(|_| fstar!(r#"forall i. i < 16 ==>
     v (get_lane ${lhs}_future i) == (v (get_lane $lhs i) + v (get_lane $rhs i))"#))]
 pub(crate) fn add(lhs: &mut Vec256, rhs: &Vec256) {
+    #[cfg(hax)]
+    let lhs_orig = lhs.clone();
+
     *lhs = mm256_add_epi16(*lhs, *rhs);
 
     hax_lib::fstar!(
-        r#"assert (forall i. get_lane result i == get_lane lhs i +. get_lane rhs i);
-                     assert (forall i. v (get_lane result i) == v (get_lane lhs i) + v (get_lane rhs i))"#
+        r#"assert (forall i. get_lane $lhs i == get_lane $lhs_orig i +. get_lane $rhs i);
+                     assert (forall i. v (get_lane $lhs i) == v (get_lane $lhs_orig i) + v (get_lane $rhs i))"#
     );
 }
 
@@ -39,11 +42,14 @@ let lemma_sub_i (lhs rhs: t_Vec256) (i:nat):  Lemma
 #[hax_lib::ensures(|_| fstar!(r#"forall i. i < 16 ==>
     v (get_lane ${lhs}_future i) == (v (get_lane $lhs i) - v (get_lane $rhs i))"#))]
 pub(crate) fn sub(lhs: &mut Vec256, rhs: &Vec256) {
+    #[cfg(hax)]
+    let lhs_orig = lhs.clone();
+
     *lhs = mm256_sub_epi16(*lhs, *rhs);
 
     hax_lib::fstar!(
-        r#"assert (forall i. get_lane result i == get_lane lhs i -. get_lane rhs i);
-                     assert (forall i. v (get_lane result i) == v (get_lane lhs i) - v (get_lane rhs i))"#
+        r#"assert (forall i. get_lane $lhs i == get_lane $lhs_orig i -. get_lane $rhs i);
+                     assert (forall i. v (get_lane $lhs i) == v (get_lane $lhs_orig i) - v (get_lane $rhs i))"#
     );
 }
 

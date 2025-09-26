@@ -232,8 +232,8 @@ pub(crate) fn compress<const COEFFICIENT_BITS: i32>(a: &mut PortableVector) {
 #[hax_lib::fstar::options("--z3rlimit 200 --split_queries always")]
 #[hax_lib::requires(fstar!(r#"forall i. let x = Seq.index ${a}.f_elements i in 
                                         (x == mk_i16 0 \/ x == mk_i16 1)"#))]
-#[hax_lib::ensures(|_| fstar!(r#"forall (i:nat). i < 16 ==> 
-        (let res_i = v (Seq.index ${a}_future.f_elements i) in
+#[hax_lib::ensures(|result| fstar!(r#"forall (i:nat). i < 16 ==> 
+        (let res_i = v (Seq.index ${result}.f_elements i) in
          res_i == 0 \/ res_i == 1665)"#))]
 #[inline(always)]
 pub(crate) fn decompress_1(mut a: PortableVector) -> PortableVector {

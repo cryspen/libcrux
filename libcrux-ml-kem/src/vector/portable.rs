@@ -36,14 +36,14 @@ fn serialize_1(a: &PortableVector, out: &mut [u8]) {
     hax_lib::fstar!(
         r#"assert (forall i. Rust_primitives.bounded (Seq.index ${a}.f_elements i) 1)"#
     );
-    hax_lib::fstar!(r#"Libcrux_ml_kem.Vector.Portable.Serialize.serialize_1_lemma $a"#);
+    hax_lib::fstar!(r#"Libcrux_ml_kem.Vector.Portable.Serialize.serialize_1_lemma $a $out"#);
     serialize::serialize_1(a, out)
 }
 
 #[hax_lib::requires(a.len() == 2)]
 #[hax_lib::ensures(|_| fstar!(r#"sz (Seq.length $a) =. sz 2 ==> Spec.MLKEM.deserialize_post 1 $a (impl.f_repr ${out}_future)"#))]
 fn deserialize_1(a: &[u8], out: &mut PortableVector) {
-    hax_lib::fstar!(r#"Libcrux_ml_kem.Vector.Portable.Serialize.deserialize_1_lemma $a"#);
+    hax_lib::fstar!(r#"Libcrux_ml_kem.Vector.Portable.Serialize.deserialize_1_lemma $a $out"#);
     serialize::deserialize_1(a.classify_ref(), out)
 }
 
@@ -54,14 +54,14 @@ fn serialize_4(a: &PortableVector, out: &mut [u8]) {
     hax_lib::fstar!(
         r#"assert (forall i. Rust_primitives.bounded (Seq.index ${a}.f_elements i) 4)"#
     );
-    hax_lib::fstar!(r#"Libcrux_ml_kem.Vector.Portable.Serialize.serialize_4_lemma $a"#);
+    hax_lib::fstar!(r#"Libcrux_ml_kem.Vector.Portable.Serialize.serialize_4_lemma $a $out"#);
     serialize::serialize_4(a, out)
 }
 
 #[hax_lib::requires(a.len() == 8)]
 #[hax_lib::ensures(|out| fstar!(r#"sz (Seq.length $a) =. sz 8 ==> Spec.MLKEM.deserialize_post 4 $a (impl.f_repr ${out}_future)"#))]
 fn deserialize_4(a: &[u8], out: &mut PortableVector) {
-    hax_lib::fstar!(r#"Libcrux_ml_kem.Vector.Portable.Serialize.deserialize_4_lemma $a"#);
+    hax_lib::fstar!(r#"Libcrux_ml_kem.Vector.Portable.Serialize.deserialize_4_lemma $a $out"#);
     serialize::deserialize_4(a.classify_ref(), out)
 }
 
@@ -78,14 +78,14 @@ fn deserialize_5(a: &[u8], out: &mut PortableVector) {
 #[hax_lib::ensures(|out| fstar!(r#"(Spec.MLKEM.serialize_pre 10 (impl.f_repr $a) ==> Spec.MLKEM.serialize_post 10 (impl.f_repr $a) ${out}_future)
                                     /\ Seq.length ${out}_future == Seq.length $out"#))]
 fn serialize_10(a: &PortableVector, out: &mut [u8]) {
-    hax_lib::fstar!(r#"Libcrux_ml_kem.Vector.Portable.Serialize.serialize_10_lemma $a"#);
+    hax_lib::fstar!(r#"Libcrux_ml_kem.Vector.Portable.Serialize.serialize_10_lemma $a $out"#);
     serialize::serialize_10(a, out)
 }
 
 #[hax_lib::requires(a.len() == 20)]
 #[hax_lib::ensures(|_| fstar!(r#"sz (Seq.length $a) =. sz 20 ==> Spec.MLKEM.deserialize_post 10 $a (impl.f_repr ${out}_future)"#))]
 fn deserialize_10(a: &[u8], out: &mut PortableVector) {
-    hax_lib::fstar!(r#"Libcrux_ml_kem.Vector.Portable.Serialize.deserialize_10_lemma $a"#);
+    hax_lib::fstar!(r#"Libcrux_ml_kem.Vector.Portable.Serialize.deserialize_10_lemma $a $out"#);
     serialize::deserialize_10(a.classify_ref(), out)
 }
 
@@ -102,14 +102,14 @@ fn deserialize_11(a: &[u8], out: &mut PortableVector) {
 #[hax_lib::ensures(|out| fstar!(r#"(Spec.MLKEM.serialize_pre 12 (impl.f_repr $a) ==> Spec.MLKEM.serialize_post 12 (impl.f_repr $a) ${out}_future)
                                     /\ Seq.length ${out}_future == Seq.length $out"#))]
 fn serialize_12(a: &PortableVector, out: &mut [u8]) {
-    hax_lib::fstar!(r#"Libcrux_ml_kem.Vector.Portable.Serialize.serialize_12_lemma $a"#);
+    hax_lib::fstar!(r#"Libcrux_ml_kem.Vector.Portable.Serialize.serialize_12_lemma $a $out"#);
     serialize::serialize_12(a, out)
 }
 
 #[hax_lib::requires(a.len() == 24)]
 #[hax_lib::ensures(|out| fstar!(r#"sz (Seq.length $a) =. sz 24 ==> Spec.MLKEM.deserialize_post 12 $a (impl.f_repr ${out}_future)"#))]
 fn deserialize_12(a: &[u8], out: &mut PortableVector) {
-    hax_lib::fstar!(r#"Libcrux_ml_kem.Vector.Portable.Serialize.deserialize_12_lemma $a"#);
+    hax_lib::fstar!(r#"Libcrux_ml_kem.Vector.Portable.Serialize.deserialize_12_lemma $a $out"#);
     serialize::deserialize_12(a.classify_ref(), out)
 }
 
@@ -180,44 +180,44 @@ impl Operations for PortableVector {
         multiply_by_constant(vec, c)
     }
 
-    #[ensures(|_| fstar!(r#"impl.f_repr ${v}_future == Spec.Utils.map_array (fun x -> x &. c) (impl.f_repr $v)"#))]
-    fn bitwise_and_with_constant(v: &mut Self, c: i16) {
-        bitwise_and_with_constant(v, c)
+    #[ensures(|_| fstar!(r#"impl.f_repr ${vec}_future == Spec.Utils.map_array (fun x -> x &. c) (impl.f_repr $vec)"#))]
+    fn bitwise_and_with_constant(vec: &mut Self, c: i16) {
+        bitwise_and_with_constant(vec, c)
     }
 
     #[requires(SHIFT_BY >= 0 && SHIFT_BY < 16)]
-    #[ensures(|_| fstar!(r#"(v_SHIFT_BY >=. (mk_i32 0) /\ v_SHIFT_BY <. (mk_i32 16)) ==> impl.f_repr ${v}_future == Spec.Utils.map_array (fun x -> x >>! ${SHIFT_BY}) (impl.f_repr $v)"#))]
-    fn shift_right<const SHIFT_BY: i32>(v: &mut Self) {
-        shift_right::<{ SHIFT_BY }>(v)
+    #[ensures(|_| fstar!(r#"(v_SHIFT_BY >=. (mk_i32 0) /\ v_SHIFT_BY <. (mk_i32 16)) ==> impl.f_repr ${vec}_future == Spec.Utils.map_array (fun x -> x >>! ${SHIFT_BY}) (impl.f_repr $vec)"#))]
+    fn shift_right<const SHIFT_BY: i32>(vec: &mut Self) {
+        shift_right::<{ SHIFT_BY }>(vec)
     }
 
-    #[requires(fstar!(r#"Spec.Utils.is_i16b_array (pow2 12 - 1) (impl.f_repr $v)"#))]
-    #[ensures(|_| fstar!(r#"impl.f_repr ${v}_future == Spec.Utils.map_array (fun x -> if x >=. (mk_i16 3329) then x -! (mk_i16 3329) else x) (impl.f_repr $v)"#))]
-    fn cond_subtract_3329(v: &mut Self) {
-        cond_subtract_3329(v)
+    #[requires(fstar!(r#"Spec.Utils.is_i16b_array (pow2 12 - 1) (impl.f_repr $vec)"#))]
+    #[ensures(|_| fstar!(r#"impl.f_repr ${vec}_future == Spec.Utils.map_array (fun x -> if x >=. (mk_i16 3329) then x -! (mk_i16 3329) else x) (impl.f_repr $vec)"#))]
+    fn cond_subtract_3329(vec: &mut Self) {
+        cond_subtract_3329(vec)
     }
 
-    #[requires(fstar!(r#"Spec.Utils.is_i16b_array 28296 (impl.f_repr ${v})"#))]
-    #[ensures(|_| fstar!(r#"Spec.Utils.is_i16b_array 3328 (impl.f_repr ${v}_future) /\
-                (forall i. (v (Seq.index (impl.f_repr ${v}_future) i) % 3329) == 
-                           (v (Seq.index (impl.f_repr ${v})i) % 3329))"#))]
+    #[requires(fstar!(r#"Spec.Utils.is_i16b_array 28296 (impl.f_repr ${vec})"#))]
+    #[ensures(|_| fstar!(r#"Spec.Utils.is_i16b_array 3328 (impl.f_repr ${vec}_future) /\
+                (forall i. (v (Seq.index (impl.f_repr ${vec}_future) i) % 3329) == 
+                           (v (Seq.index (impl.f_repr ${vec})i) % 3329))"#))]
 
-    fn barrett_reduce(v: &mut Self) {
-        barrett_reduce(v)
+    fn barrett_reduce(vec: &mut Self) {
+        barrett_reduce(vec)
     }
 
     #[requires(fstar!(r#"Spec.Utils.is_i16b 1664 $r"#))]
-    #[ensures(|_| fstar!(r#"Spec.Utils.is_i16b_array 3328 (impl.f_repr ${v}_future) /\
-                (forall i. i < 16 ==> ((v (Seq.index (impl.f_repr ${v}_future) i) % 3329)==
-                                       (v (Seq.index (impl.f_repr $v) i) * v $r * 169) % 3329))"#))]
-    fn montgomery_multiply_by_constant(v: &mut Self, r: i16) {
-        montgomery_multiply_by_constant(v, r.classify())
+    #[ensures(|_| fstar!(r#"Spec.Utils.is_i16b_array 3328 (impl.f_repr ${vec}_future) /\
+                (forall i. i < 16 ==> ((v (Seq.index (impl.f_repr ${vec}_future) i) % 3329)==
+                                       (v (Seq.index (impl.f_repr $vec) i) * v $r * 169) % 3329))"#))]
+    fn montgomery_multiply_by_constant(vec: &mut Self, r: i16) {
+        montgomery_multiply_by_constant(vec, r.classify())
     }
 
     #[requires(fstar!(r#"Spec.Utils.is_i16b_array 3328 (impl.f_repr $a)"#))]
-    #[ensures(|_| fstar!(r#"forall (i:nat). i < 16 ==>
+    #[ensures(|result| fstar!(r#"forall (i:nat). i < 16 ==>
                                 (let x = Seq.index (impl.f_repr ${a}) i in
-                                 let y = Seq.index (impl.f_repr ${a}_future) i in
+                                 let y = Seq.index (impl.f_repr ${result}) i in
                                  (v y >= 0 /\ v y <= 3328 /\ (v y % 3329 == v x % 3329)))"#))]
     fn to_unsigned_representative(a: Self) -> Self {
         to_unsigned_representative(a)

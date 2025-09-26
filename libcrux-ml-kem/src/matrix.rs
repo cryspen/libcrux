@@ -29,12 +29,14 @@ pub(crate) fn entry<const K: usize, Vector: Operations>(
 #[inline(always)]
 #[allow(non_snake_case)]
 #[hax_lib::fstar::verification_status(panic_free)]
-#[hax_lib::requires(fstar!(r#"Spec.MLKEM.is_rank $K"#))]
+#[hax_lib::requires(fstar!(r#"Spec.MLKEM.is_rank $K /\
+    Seq.length ${A_transpose} == v $K * v $K"#))]
 #[hax_lib::ensures(|res|
     fstar!(r#"let (matrix_A, valid) = Spec.MLKEM.sample_matrix_A_ntt (Seq.slice $seed 0 32) in
+        Seq.length ${A_transpose}_future == v $K * v $K /\
         valid ==> (
         if $transpose then Libcrux_ml_kem.Polynomial.to_spec_matrix_t ${A_transpose}_future == matrix_A
-        else Libcrux_ml_kem.Polynomial.to_spec_matrix_t ${A_transpose}_future == Spec.MLKEM.matrix_transpose matrix_A)"#)
+        else Libcrux_ml_kem.Polynomial.to_spec_matrix_t (${A_transpose}_future <: t_Array _ ($K *! $K)) == Spec.MLKEM.matrix_transpose matrix_A)"#)
 )]
 pub(crate) fn sample_matrix_A<const K: usize, Vector: Operations, Hasher: Hash>(
     A_transpose: &mut [PolynomialRingElement<Vector>],
@@ -135,14 +137,19 @@ pub(crate) fn compute_ring_element_v<const K: usize, Vector: Operations>(
 #[hax_lib::fstar::verification_status(lax)]
 #[hax_lib::requires(fstar!(r#"
     Spec.MLKEM.is_rank $K /\
+    Seq.length $a_as_ntt == v $K /\
+    Seq.length $r_as_ntt == v $K /\
+    Seq.length $error_1 == v $K /\
+    Seq.length $result == v $K /\
     (forall (i:nat). i < v $K ==>
         Libcrux_ml_kem.Polynomial.is_bounded_poly 7 (Seq.index ${error_1} i))"#))]
 #[hax_lib::ensures(|_|
     fstar!(r#"let open Libcrux_ml_kem.Polynomial in
-        let a_spec = to_spec_matrix_t $a_as_ntt in
-        let r_spec = to_spec_vector_t $r_as_ntt in
-        let e_spec = to_spec_vector_t $error_1 in
-        let res_spec = to_spec_vector_t ${result}_future in
+        let a_spec = to_spec_matrix_t ($a_as_ntt <: t_Array _ $K) in
+        let r_spec = to_spec_vector_t ($r_as_ntt <: t_Array _ $K) in
+        let e_spec = to_spec_vector_t ($error_1 <: t_Array _ $K) in
+        let res_spec = to_spec_vector_t (${result}_future <: t_Array _ $K) in
+        Seq.length ${result}_future == v $K /\
         res_spec == Spec.MLKEM.(vector_add (vector_inv_ntt (matrix_vector_mul_ntt a_spec r_spec)) e_spec) /\
         (forall (i:nat). i < v $K ==>
             Libcrux_ml_kem.Polynomial.is_bounded_poly 3328 (Seq.index ${result}_future i))"#)

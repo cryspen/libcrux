@@ -13,7 +13,7 @@ use crate::{
            {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
            (re: Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) =
        forall (i:nat). i < 16 ==> Spec.Utils.is_i16b_array_opaque 3328
-               (Libcrux_ml_kem.Vector.Traits.f_to_i16_array (re.f_coefficients.[ sz i ]))"
+               (Libcrux_ml_kem.Vector.Traits.f_repr (re.f_coefficients.[ sz i ]))"
 )]
 #[hax_lib::fstar::before(
     interface,
@@ -22,7 +22,7 @@ use crate::{
          {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
          (re: Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) =
        forall (i:nat). i < 16 ==> Spec.Utils.is_i16b_array_opaque (4 * 3328)
-            (Libcrux_ml_kem.Vector.Traits.f_to_i16_array (re.f_coefficients.[ sz i ]))"
+            (Libcrux_ml_kem.Vector.Traits.f_repr (re.f_coefficients.[ sz i ]))"
 )]
 #[hax_lib::requires(fstar!(r#"v ${*zeta_i} == 128 /\
     invert_ntt_re_range_1 $re"#))]
@@ -43,16 +43,16 @@ pub(crate) fn invert_ntt_at_layer_1<Vector: Operations>(
                 r#"v zeta_i == v $_zeta_i_init - v $round * 4 /\
           (v round < 16 ==> (forall (i:nat). (i >= v round /\ i < 16) ==>
             Spec.Utils.is_i16b_array_opaque (4 * 3328)
-              (Libcrux_ml_kem.Vector.Traits.f_to_i16_array (re.f_coefficients.[ sz i ])))) /\
+              (Libcrux_ml_kem.Vector.Traits.f_repr (re.f_coefficients.[ sz i ])))) /\
           (forall (i:nat). i < v $round ==> Spec.Utils.is_i16b_array_opaque 3328
-              (Libcrux_ml_kem.Vector.Traits.f_to_i16_array (re.f_coefficients.[ sz i ])))"#
+              (Libcrux_ml_kem.Vector.Traits.f_repr (re.f_coefficients.[ sz i ])))"#
             )
         });
         *zeta_i -= 1;
         hax_lib::fstar!(
             r#"reveal_opaque (`%Spec.Utils.is_i16b_array_opaque) 
                         (Spec.Utils.is_i16b_array_opaque (4*3328) 
-                        (Libcrux_ml_kem.Vector.Traits.f_to_i16_array (re.f_coefficients.[ round ])))"#
+                        (Libcrux_ml_kem.Vector.Traits.f_repr (re.f_coefficients.[ round ])))"#
         );
         Vector::inv_ntt_layer_1_step(
             &mut re.coefficients[round],
@@ -65,11 +65,11 @@ pub(crate) fn invert_ntt_at_layer_1<Vector: Operations>(
         hax_lib::fstar!(
             r#"reveal_opaque (`%Spec.Utils.is_i16b_array_opaque) 
                         (Spec.Utils.is_i16b_array_opaque 3328 
-                        (Libcrux_ml_kem.Vector.Traits.f_to_i16_array (re.f_coefficients.[ round ])))"#
+                        (Libcrux_ml_kem.Vector.Traits.f_repr (re.f_coefficients.[ round ])))"#
         );
         hax_lib::fstar!(
             "assert (Spec.Utils.is_i16b_array_opaque 3328
-            (Libcrux_ml_kem.Vector.Traits.f_to_i16_array (re.f_coefficients.[ $round ])))"
+            (Libcrux_ml_kem.Vector.Traits.f_repr (re.f_coefficients.[ $round ])))"
         );
     }
 }
@@ -94,16 +94,16 @@ pub(crate) fn invert_ntt_at_layer_2<Vector: Operations>(
                 r#"v zeta_i == v $_zeta_i_init - v $round * 2 /\
           (v round < 16 ==> (forall (i:nat). (i >= v round /\ i < 16) ==>
             Spec.Utils.is_i16b_array_opaque 3328
-              (Libcrux_ml_kem.Vector.Traits.f_to_i16_array (re.f_coefficients.[ sz i ])))) /\
+              (Libcrux_ml_kem.Vector.Traits.f_repr (re.f_coefficients.[ sz i ])))) /\
           (forall (i:nat). i < v $round ==> Spec.Utils.is_i16b_array_opaque 3328
-              (Libcrux_ml_kem.Vector.Traits.f_to_i16_array (re.f_coefficients.[ sz i ])))"#
+              (Libcrux_ml_kem.Vector.Traits.f_repr (re.f_coefficients.[ sz i ])))"#
             )
         });
         *zeta_i -= 1;
         hax_lib::fstar!(
             r#"reveal_opaque (`%Spec.Utils.is_i16b_array_opaque) 
                         (Spec.Utils.is_i16b_array_opaque 3328 
-                        (Libcrux_ml_kem.Vector.Traits.f_to_i16_array (re.f_coefficients.[ round ])))"#
+                        (Libcrux_ml_kem.Vector.Traits.f_repr (re.f_coefficients.[ round ])))"#
         );
 
         Vector::inv_ntt_layer_2_step(
@@ -115,11 +115,11 @@ pub(crate) fn invert_ntt_at_layer_2<Vector: Operations>(
         hax_lib::fstar!(
             r#"reveal_opaque (`%Spec.Utils.is_i16b_array_opaque) 
                         (Spec.Utils.is_i16b_array_opaque 3328 
-                        (Libcrux_ml_kem.Vector.Traits.f_to_i16_array (re.f_coefficients.[ round ])))"#
+                        (Libcrux_ml_kem.Vector.Traits.f_repr (re.f_coefficients.[ round ])))"#
         );
         hax_lib::fstar!(
             "assert (Spec.Utils.is_i16b_array_opaque 3328
-            (Libcrux_ml_kem.Vector.Traits.f_to_i16_array (re.f_coefficients.[ $round ])))"
+            (Libcrux_ml_kem.Vector.Traits.f_repr (re.f_coefficients.[ $round ])))"
         );
     }
 }
@@ -144,26 +144,26 @@ pub(crate) fn invert_ntt_at_layer_3<Vector: Operations>(
                 r#"v zeta_i == v $_zeta_i_init - v $round /\
           (v round < 16 ==> (forall (i:nat). (i >= v round /\ i < 16) ==>
             Spec.Utils.is_i16b_array_opaque 3328
-              (Libcrux_ml_kem.Vector.Traits.f_to_i16_array (re.f_coefficients.[ sz i ])))) /\
+              (Libcrux_ml_kem.Vector.Traits.f_repr (re.f_coefficients.[ sz i ])))) /\
           (forall (i:nat). i < v $round ==> Spec.Utils.is_i16b_array_opaque 3328
-              (Libcrux_ml_kem.Vector.Traits.f_to_i16_array (re.f_coefficients.[ sz i ])))"#
+              (Libcrux_ml_kem.Vector.Traits.f_repr (re.f_coefficients.[ sz i ])))"#
             )
         });
         *zeta_i -= 1;
         hax_lib::fstar!(
             r#"reveal_opaque (`%Spec.Utils.is_i16b_array_opaque) 
                         (Spec.Utils.is_i16b_array_opaque 3328 
-                        (Libcrux_ml_kem.Vector.Traits.f_to_i16_array (re.f_coefficients.[ round ])))"#
+                        (Libcrux_ml_kem.Vector.Traits.f_repr (re.f_coefficients.[ round ])))"#
         );
         Vector::inv_ntt_layer_3_step(&mut re.coefficients[round], zeta(*zeta_i));
         hax_lib::fstar!(
             "reveal_opaque (`%Spec.Utils.is_i16b_array_opaque) 
             (Spec.Utils.is_i16b_array_opaque 3328 
-            (Libcrux_ml_kem.Vector.Traits.f_to_i16_array (re.f_coefficients.[ round ])))"
+            (Libcrux_ml_kem.Vector.Traits.f_repr (re.f_coefficients.[ round ])))"
         );
         hax_lib::fstar!(
             "assert (Spec.Utils.is_i16b_array_opaque 3328
-            (Libcrux_ml_kem.Vector.Traits.f_to_i16_array (re.f_coefficients.[ $round ])))"
+            (Libcrux_ml_kem.Vector.Traits.f_repr (re.f_coefficients.[ $round ])))"
         );
     }
 }
@@ -172,13 +172,13 @@ pub(crate) fn invert_ntt_at_layer_3<Vector: Operations>(
 #[hax_lib::requires(fstar!(r#"Spec.Utils.is_i16b 1664 $zeta_r /\
     (forall i. i < 16 ==>
         Spec.Utils.is_intb (pow2 15 - 1)
-        (v (Seq.index (Libcrux_ml_kem.Vector.Traits.f_to_i16_array $b) i) -
-        v (Seq.index (Libcrux_ml_kem.Vector.Traits.f_to_i16_array $a) i))) /\
+        (v (Seq.index (i0._super_16084754032855797384.f_repr $b) i) -
+        v (Seq.index (i0._super_16084754032855797384.f_repr $a) i))) /\
     (forall i. i < 16 ==>
         Spec.Utils.is_intb (pow2 15 - 1)
-        (v (Seq.index (Libcrux_ml_kem.Vector.Traits.f_to_i16_array $a) i) +
-        v (Seq.index (Libcrux_ml_kem.Vector.Traits.f_to_i16_array $b) i))) /\
-    Spec.Utils.is_i16b_array 28296 (Libcrux_ml_kem.Vector.Traits.f_to_i16_array
+        (v (Seq.index (i0._super_16084754032855797384.f_repr $a) i) +
+        v (Seq.index (i0._super_16084754032855797384.f_repr $b) i))) /\
+    Spec.Utils.is_i16b_array 28296 (i0._super_16084754032855797384.f_repr
         (Libcrux_ml_kem.Vector.Traits.f_add $a $b))"#))]
 pub(crate) fn inv_ntt_layer_int_vec_step_reduce<Vector: Operations>(
     coefficients: &mut [Vector; VECTORS_IN_RING_ELEMENT],

@@ -83,7 +83,7 @@ fn serialize_kem_secret_key_mut<const K: usize, const SERIALIZED_KEY_LEN: usize,
                             (v #usize_inttype (Spec.MLKEM.v_CPA_PRIVATE_KEY_SIZE $K +!
                                             Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE $K +!
                                             Libcrux_ml_kem.Constants.v_H_DIGEST_SIZE))
-            `Seq.equal` Libcrux_ml_kem.Hash_functions.f_H #$:Hasher #$K $public_key);
+            `Seq.equal` Spec.Utils.v_H $public_key);
     assert (Seq.slice serialized (v #usize_inttype (Spec.MLKEM.v_CPA_PRIVATE_KEY_SIZE $K +!
                                             Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE $K +!
                                             Libcrux_ml_kem.Constants.v_H_DIGEST_SIZE))
@@ -92,7 +92,7 @@ fn serialize_kem_secret_key_mut<const K: usize, const SERIALIZED_KEY_LEN: usize,
                                             Libcrux_ml_kem.Constants.v_H_DIGEST_SIZE +!
                                             Spec.MLKEM.v_SHARED_SECRET_SIZE))
             == $implicit_rejection_value);
-    lemma_slice_append_4 serialized $private_key $public_key (Libcrux_ml_kem.Hash_functions.f_H #$:Hasher #$K $public_key) $implicit_rejection_value"
+    lemma_slice_append_4 serialized $private_key $public_key (Spec.Utils.v_H $public_key) $implicit_rejection_value"
     );
 }
 
@@ -446,7 +446,6 @@ pub(crate) fn decapsulate<
     hax_lib::fstar!(
         "assert_norm (pow2 32 == 0x100000000);
         assert (v (sz 32) < pow2 32);
-        assert (i1.f_PRF_pre (sz 32) $to_hash);
         lemma_slice_append $to_hash $implicit_rejection_value ${ciphertext}.f_value"
     );
     let mut implicit_rejection_shared_secret = [0u8; SHARED_SECRET_SIZE];
@@ -899,8 +898,8 @@ pub(crate) mod unpacked {
     #[hax_lib::ensures(|result|
         fstar!(r#"forall (i: nat). i < v $K ==>
             (forall (j: nat). j < v $K ==>
-                Seq.index (Seq.index $result i) j ==
-                    Seq.index (Seq.index $ind_cpa_a j) i)"#))
+                Seq.index $result (i * v $K + j) ==
+                    Seq.index $ind_cpa_a (j * v $K + i))"#))
     ]
     #[inline(always)]
     fn transpose_a<const K: usize, const K_SQUARED: usize, Vector: Operations>(
@@ -922,19 +921,17 @@ pub(crate) mod unpacked {
                 fstar!(
                     r#"forall (j: nat). j < v $i ==>
             (forall (k: nat). k < v $K ==>
-                Seq.index (Seq.index $A j) k ==
-                    Seq.index (Seq.index $ind_cpa_a k) j)"#
+                Seq.index $A (j * v $K +  k) ==
+                    Seq.index $ind_cpa_a (k * v $K + j))"#
                 )
             });
             let _a_i = A;
             for j in 0..K {
                 hax_lib::loop_invariant!(|j: usize| {
                     fstar!(
-                        r#"(forall (k: nat). k < v $i ==>
-                    Seq.index $A k == Seq.index $_a_i k) /\
-                (forall (k: nat). k < v $j ==>
-                  Seq.index (Seq.index $A (v $i)) k ==
-                    Seq.index (Seq.index $ind_cpa_a k) (v $i))"#
+                        r#"(forall (k: nat). k < v $j ==>
+                  Seq.index $A (v $i * v $K + k) ==
+                    Seq.index $ind_cpa_a (k * v $K + v $i))"#
                     )
                 });
                 A[i * K + j] = matrix::entry::<K, Vector>(ind_cpa_a, j, i).clone();

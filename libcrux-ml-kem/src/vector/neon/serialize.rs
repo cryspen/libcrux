@@ -67,7 +67,7 @@ pub(crate) fn serialize_5(v: &SIMD128Vector, out: &mut [u8]) {
     let mut tmp = PortableVector::ZERO();
     PortableVector::from_i16_array(&out_i16s, &mut tmp);
 
-    PortableVector::serialize_5(&mut tmp, out);
+    PortableVector::serialize_5(&tmp, out);
 }
 
 #[inline(always)]

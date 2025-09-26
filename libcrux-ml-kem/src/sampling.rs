@@ -253,11 +253,10 @@ fn sample_from_binomial_distribution_3<Vector: Operations>(
 #[inline(always)]
 #[hax_lib::fstar::verification_status(panic_free)]
 #[hax_lib::requires((ETA == 2 || ETA == 3) && randomness.len() == ETA * 64)]
-#[hax_lib::ensures(|_| fstar!(r#"(forall (i:nat). i < 8 ==> Libcrux_ml_kem.Ntt.ntt_layer_7_pre
-    (${output}_future.f_coefficients.[ sz i ]) (${output}_future.f_coefficients.[ sz i +! sz 8 ])) /\
-    Libcrux_ml_kem.Polynomial.is_bounded_poly 7 ${output}_future /\
-    Libcrux_ml_kem.Polynomial.to_spec_poly_t #$:Vector ${output}_future ==
-        Spec.MLKEM.sample_poly_cbd $ETA $randomness"#))]
+#[hax_lib::ensures(|_| fstar!(r#"
+    Spec.Utils.is_i16b_array 7 ${output}_future /\
+    createi (sz 256) (fun i -> Spec.MLKEM.Math.to_spec_fe (Seq.index ${output}_future (v i))) == 
+    Spec.MLKEM.sample_poly_cbd $ETA $randomness"#))]
 pub(super) fn sample_from_binomial_distribution<const ETA: usize, Vector: Operations>(
     randomness: &[u8],
     output: &mut [i16; 256],

@@ -228,13 +228,16 @@ pub(crate) fn serialize_vector<const K: usize, Vector: Operations>(
     $ETA2_RANDOMNESS_SIZE == Spec.MLKEM.v_ETA2_RANDOMNESS_SIZE $K /\
     $ETA2 == Spec.MLKEM.v_ETA2 $K /\
     v $domain_separator < 2 * v $K /\
+    Seq.length ${error_1} == v $K /\
     range (v $domain_separator + v $K) u8_inttype"#))]
-#[hax_lib::ensures(|ds|
+#[hax_lib::ensures(|ds| {
+    let error_1_future = future(error_1);
     fstar!(r#"v $ds == v $domain_separator + v $K /\
+              Seq.length ${error_1_future} == v $K /\
               (forall i. i < v $K ==> 
-                Libcrux_ml_kem.Polynomial.is_bounded_poly 7 (Seq.index ${error_1} i))/\
-               Libcrux_ml_kem.Polynomial.to_spec_vector_t #$K #$:Vector $error_1 ==
-               Spec.MLKEM.sample_vector_cbd2 #$K (Seq.slice $prf_input 0 32) (sz (v $domain_separator))"#)
+                Libcrux_ml_kem.Polynomial.is_bounded_poly 7 (Seq.index ${error_1_future} i))/\
+               Libcrux_ml_kem.Polynomial.to_spec_vector_t #$K #$:Vector ${error_1_future} ==
+               Spec.MLKEM.sample_vector_cbd2 #$K (Seq.slice $prf_input 0 32) (sz (v $domain_separator))"#)}
 )]
 fn sample_ring_element_cbd<
     const K: usize,
@@ -1080,7 +1083,7 @@ pub(crate) fn build_unpacked_public_key_mut<
 #[hax_lib::fstar::options("--z3rlimit 800 --ext context_pruning")]
 #[hax_lib::requires(fstar!(r#"Spec.MLKEM.is_rank $K /\
     $CIPHERTEXT_SIZE == Spec.MLKEM.v_CPA_CIPHERTEXT_SIZE $K /\
-    $U_COMPRESSION_FACTOR == Spec.MLKEM.v_VECTOR_U_COMPRESSION_FACTOR $K
+    $U_COMPRESSION_FACTOR == Spec.MLKEM.v_VECTOR_U_COMPRESSION_FACTOR $K /\
     length $u_as_ntt == $K"#))]
 #[hax_lib::ensures(|_|
     fstar!(r#"Libcrux_ml_kem.Polynomial.to_spec_vector_t #$K #$:Vector ${u_as_ntt}_future ==

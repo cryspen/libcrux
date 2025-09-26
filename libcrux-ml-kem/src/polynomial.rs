@@ -42,8 +42,8 @@ let to_spec_vector_t (#r:Spec.MLKEM.rank) (#v_Vector: Type0)
     createi r (fun i -> to_spec_poly_t #v_Vector (m.[i]))
 let to_spec_matrix_t (#r:Spec.MLKEM.rank) (#v_Vector: Type0)
     {| i2: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
-    (m:t_Array (t_Array (t_PolynomialRingElement v_Vector) r) r) : Spec.MLKEM.matrix r =
-    createi r (fun i -> to_spec_vector_t #r #v_Vector (m.[i]))
+    (m:t_Array (t_PolynomialRingElement v_Vector) (r *! r)) : Spec.MLKEM.matrix r =
+    createi r (fun i -> to_spec_vector_t #r #v_Vector (Seq.slice m (v r * v i) (v r * v i + v r)))
 
 let is_bounded_vector (#v_Vector: Type0)
       {| i0: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
@@ -248,31 +248,31 @@ fn subtract_reduce<Vector: Operations>(
         Vector::montgomery_multiply_by_constant(&mut b.coefficients[i], 1441);
         hax_lib::fstar!(
             r#"
-            assert (is_bounded_vector 3328 ${myself}.f_coefficients.[ sz i ]);
+            assert (is_bounded_vector 3328 ${myself}.f_coefficients.[ i ]);
             assert (is_bounded_vector (pow2 12 - 1) (${myself}.f_coefficients.[ i ]));
             assert_norm (pow2 12 - 1 == 4095);
             Spec.Utils.lemma_sub_intb_forall 4095 3328;
             assert (forall j. Spec.Utils.is_intb 7423
                 (v (Seq.index (i0._super_16084754032855797384.f_repr ${myself}.f_coefficients.[ i ]) j) -
-                 v (Seq.index (i0._super_16084754032855797384.f_repr ${myself}.f_coefficients.[ sz i ]) j)));
+                 v (Seq.index (i0._super_16084754032855797384.f_repr ${myself}.f_coefficients.[ i ]) j)));
             assert_norm (7423 <= pow2 15 - 1);
             Spec.Utils.lemma_intb_le 7423 (pow2 15 - 1);
             Spec.Utils.lemma_intb_le 7423 28296;
             assert (forall j. Spec.Utils.is_intb (pow2 15 - 1) 
                 (v (Seq.index (i0._super_16084754032855797384.f_repr ${myself}.f_coefficients.[ i ]) j) -
-                 v (Seq.index (i0._super_16084754032855797384.f_repr ${myself}.f_coefficients.[ sz i ]) j)));
+                 v (Seq.index (i0._super_16084754032855797384.f_repr ${myself}.f_coefficients.[ i ]) j)));
             assert (forall j. Spec.Utils.is_intb 28296 
                 (v (Seq.index (i0._super_16084754032855797384.f_repr ${myself}.f_coefficients.[ i ]) j) -
-                 v (Seq.index (i0._super_16084754032855797384.f_repr ${myself}.f_coefficients.[ sz i ]) j)))
+                 v (Seq.index (i0._super_16084754032855797384.f_repr ${myself}.f_coefficients.[ i ]) j)))
         "#
         );
 
         Vector::sub(&mut b.coefficients[i], &myself.coefficients[i]);
         Vector::negate(&mut b.coefficients[i]);
-        hax_lib::fstar!("assert (is_bounded_vector 28296 ${myself}.f_coefficients.[ sz i ])");
+        hax_lib::fstar!("assert (is_bounded_vector 28296 ${myself}.f_coefficients.[ i ])");
 
         Vector::barrett_reduce(&mut b.coefficients[i]);
-        hax_lib::fstar!("assert (is_bounded_vector 3328 ${myself}.f_coefficients.[ sz i ])");
+        hax_lib::fstar!("assert (is_bounded_vector 3328 ${myself}.f_coefficients.[ i ])");
 
         hax_lib::fstar!(
             r#"
@@ -344,22 +344,22 @@ fn add_message_error_reduce<Vector: Operations>(
                 Spec.Utils.lemma_intb_le 9984 (pow2 15 - 1);
                 Spec.Utils.lemma_intb_le 9984 28296;
                 assert (forall j. Spec.Utils.is_intb 9984 
-                    (v (Seq.index (i0._super_16084754032855797384.f_repr ${result}.f_coefficients.[ sz i ]) j) +
+                    (v (Seq.index (i0._super_16084754032855797384.f_repr ${result}.f_coefficients.[ i ]) j) +
                     v (Seq.index (i0._super_16084754032855797384.f_repr ${scratch}) j)));
                 assert (forall j. Spec.Utils.is_intb 28296 
-                    (v (Seq.index (i0._super_16084754032855797384.f_repr ${result}.f_coefficients.[ sz i ]) j) +
+                    (v (Seq.index (i0._super_16084754032855797384.f_repr ${result}.f_coefficients.[ i ]) j) +
                     v (Seq.index (i0._super_16084754032855797384.f_repr ${scratch}) j)));
                 assert (forall j. Spec.Utils.is_intb (pow2 15 - 1)
-                    (v (Seq.index (i0._super_16084754032855797384.f_repr ${result}.f_coefficients.[ sz i ]) j) +
+                    (v (Seq.index (i0._super_16084754032855797384.f_repr ${result}.f_coefficients.[ i ]) j) +
                     v (Seq.index (i0._super_16084754032855797384.f_repr ${scratch}) j)))
             "#
         );
 
         Vector::add(&mut result.coefficients[i], scratch);
-        hax_lib::fstar!("assert(is_bounded_vector 9984 ${result}.f_coefficients[ sz i ])");
+        hax_lib::fstar!("assert(is_bounded_vector 9984 ${result}.f_coefficients.[ i ])");
 
         Vector::barrett_reduce(&mut result.coefficients[i]);
-        hax_lib::fstar!("assert(is_bounded_vector 3328 ${result}.f_coefficients[ sz i ])");
+        hax_lib::fstar!("assert(is_bounded_vector 3328 ${result}.f_coefficients.[ i ])");
 
         hax_lib::fstar!(
             r#"
@@ -394,33 +394,33 @@ fn add_error_reduce<Vector: Operations>(
 
         hax_lib::fstar!(
             r#"
-              assert (is_bounded_vector 3328 ${myself}.f_coefficients.[ sz j ]);
+              assert (is_bounded_vector 3328 ${myself}.f_coefficients.[ j ]);
               assert (is_bounded_vector 7 (error.f_coefficients.[ j ]));
               Spec.Utils.lemma_add_intb_forall 3328 7;
               assert (forall i. Spec.Utils.is_intb 3335 
-                (v (Seq.index (i0._super_16084754032855797384.f_repr ${myself}.f_coefficients.[ sz j ]) i) +
+                (v (Seq.index (i0._super_16084754032855797384.f_repr ${myself}.f_coefficients.[ j ]) i) +
                  v (Seq.index (i0._super_16084754032855797384.f_repr ${error}.f_coefficients.[ j ]) i)));
               assert_norm (3335 <= pow2 15 - 1);
               Spec.Utils.lemma_intb_le 3335 (pow2 15 - 1);
               Spec.Utils.lemma_intb_le 3335 28296;
               assert (forall i. Spec.Utils.is_intb (pow2 15 - 1) 
-                (v (Seq.index (i0._super_16084754032855797384.f_repr ${myself}.f_coefficients.[ sz j ]) i) +
+                (v (Seq.index (i0._super_16084754032855797384.f_repr ${myself}.f_coefficients.[ j ]) i) +
                 v (Seq.index (i0._super_16084754032855797384.f_repr ${error}.f_coefficients.[ j ]) i)));
               assert (forall i. Spec.Utils.is_intb 28296 
-                (v (Seq.index (i0._super_16084754032855797384.f_repr ${myself}.f_coefficients.[ sz j ]) i) +
+                (v (Seq.index (i0._super_16084754032855797384.f_repr ${myself}.f_coefficients.[ j ]) i) +
                 v (Seq.index (i0._super_16084754032855797384.f_repr ${error}.f_coefficients.[ j ]) i)))
             "#
         );
 
         Vector::add(&mut myself.coefficients[j], &error.coefficients[j]);
-        hax_lib::fstar!("assert(is_bounded_vector 3335 ${myself}.f_coefficients.[ sz j ])");
+        hax_lib::fstar!("assert(is_bounded_vector 3335 ${myself}.f_coefficients.[ j ])");
 
         Vector::barrett_reduce(&mut myself.coefficients[j]);
-        hax_lib::fstar!("assert(is_bounded_vector 3328 ${myself}.f_coefficients.[ sz j ])");
+        hax_lib::fstar!("assert(is_bounded_vector 3328 ${myself}.f_coefficients.[ j ])");
 
         hax_lib::fstar!(
             r#"
-            assert (forall i. (i > v $j /\ i < 16) ==> ${myself}.f_coefficients.[ sz i ] == ${_myself}.[ sz i]);
+            assert (forall i. (i > v $j /\ i < 16) ==> ${myself}.f_coefficients.[ sz i ] == ${_myself}.[ sz i ]);
             assert (forall i. i < v $j ==> is_bounded_vector 3328 ${myself}.f_coefficients.[ sz i ]);
             assert (forall i. i <= v $j ==> is_bounded_vector 3328 ${myself}.f_coefficients.[ sz i ])
         "#
@@ -462,29 +462,29 @@ fn add_standard_error_reduce<Vector: Operations>(
         hax_lib::fstar!(
             r#"
           Spec.Utils.pow2_more_values 15;
-          assert (is_bounded_vector 3328 ${myself}.f_coefficients.[ sz j ]);
+          assert (is_bounded_vector 3328 ${myself}.f_coefficients.[ j ]);
           assert (is_bounded_vector 3328 (error.f_coefficients.[ j ]));
           Spec.Utils.lemma_add_intb_forall 3328 3328;
           assert (forall i. Spec.Utils.is_intb 6656 
-            (v (Seq.index (i0._super_16084754032855797384.f_repr ${myself}.f_coefficients.[ sz j ]) i) +
+            (v (Seq.index (i0._super_16084754032855797384.f_repr ${myself}.f_coefficients.[ j ]) i) +
              v (Seq.index (i0._super_16084754032855797384.f_repr ${error}.f_coefficients.[ j ]) i)));
           assert_norm (6656 <= pow2 15 - 1);
           Spec.Utils.lemma_intb_le 6656 (pow2 15 - 1);
           Spec.Utils.lemma_intb_le 6656 28296;
           assert (forall i. Spec.Utils.is_intb (pow2 15 - 1) 
-            (v (Seq.index (i0._super_16084754032855797384.f_repr ${myself}.f_coefficients.[ sz j ]) i) +
+            (v (Seq.index (i0._super_16084754032855797384.f_repr ${myself}.f_coefficients.[ j ]) i) +
             v (Seq.index (i0._super_16084754032855797384.f_repr ${error}.f_coefficients.[ j ]) i)));
           assert (forall i. Spec.Utils.is_intb 28296 
-            (v (Seq.index (i0._super_16084754032855797384.f_repr ${myself}.f_coefficients.[ sz j ]) i) +
+            (v (Seq.index (i0._super_16084754032855797384.f_repr ${myself}.f_coefficients.[ j ]) i) +
             v (Seq.index (i0._super_16084754032855797384.f_repr ${error}.f_coefficients.[ j ]) i)))
         "#
         );
 
         Vector::add(&mut myself.coefficients[j], &error.coefficients[j]);
-        hax_lib::fstar!("assert(is_bounded_vector 6656 ${myself}.f_coefficients.[ sz j ])");
+        hax_lib::fstar!("assert(is_bounded_vector 6656 ${myself}.f_coefficients.[ j ])");
 
         Vector::barrett_reduce(&mut myself.coefficients[j]);
-        hax_lib::fstar!("assert(is_bounded_vector 3328 ${myself}.f_coefficients.[ sz j ])");
+        hax_lib::fstar!("assert(is_bounded_vector 3328 ${myself}.f_coefficients.[ j ])");
 
         hax_lib::fstar!(
             r#"
