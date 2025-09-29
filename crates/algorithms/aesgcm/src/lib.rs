@@ -88,52 +88,81 @@ pub(crate) trait State {
 pub struct DecryptError();
 
 pub(crate) mod implementations {
+
+    #[cfg(doc)]
+    use super::{aes_gcm_128, aes_gcm_256};
+
     /// AES-GCM 128.
+    ///
+    /// For details on usage, see [`aes_gcm_128`].
     #[derive(Clone, Copy, PartialEq, Eq)]
     pub struct AesGcm128;
 
     /// Portable AES-GCM 128.
+    ///
+    /// For details on usage, see [`aes_gcm_128`].
     #[derive(Clone, Copy, PartialEq, Eq)]
     pub struct PortableAesGcm128;
 
     #[cfg(feature = "simd128")]
     #[derive(Clone, Copy, PartialEq, Eq)]
     /// Neon AES-GCM 128.
+    ///
+    /// For details on usage, see [`aes_gcm_128`].
     pub struct NeonAesGcm128;
     #[cfg(not(feature = "simd128"))]
     /// Neon AES-GCM 128.
+    ///
+    /// For details on usage, see [`aes_gcm_128`].
     pub type NeonAesGcm128 = PortableAesGcm128;
 
     /// AES-NI AES-GCM 128.
+    ///
+    /// For details on usage, see [`aes_gcm_128`].
     #[cfg(feature = "simd256")]
     #[derive(Clone, Copy, PartialEq, Eq)]
     pub struct X64AesGcm128;
     #[cfg(not(feature = "simd256"))]
+    /// AES-NI AES-GCM 128.
+    ///
+    /// For details on usage, see [`aes_gcm_128`].
     pub type X64AesGcm128 = PortableAesGcm128;
 
     /// AES-GCM 256.
+    ///
+    /// For details on usage, see [`aes_gcm_256`].
     #[derive(Clone, Copy, PartialEq, Eq)]
     pub struct AesGcm256;
 
     /// Portable AES-GCM 256.
+    ///
+    /// For details on usage, see [`aes_gcm_256`].
     #[derive(Clone, Copy, PartialEq, Eq)]
     pub struct PortableAesGcm256;
 
     /// Neon AES-GCM 256.
+    ///
+    /// For details on usage, see [`aes_gcm_256`].
     #[cfg(feature = "simd128")]
     #[derive(Clone, Copy, PartialEq, Eq)]
     pub struct NeonAesGcm256;
 
     /// Neon AES-GCM 256.
+    ///
+    /// For details on usage, see [`aes_gcm_256`].
     #[cfg(not(feature = "simd128"))]
     pub type NeonAesGcm256 = PortableAesGcm256;
 
     /// AES-NI AES-GCM 256.
+    ///
+    /// For details on usage, see [`aes_gcm_256`].
     #[derive(Clone, Copy, PartialEq, Eq)]
     #[cfg(feature = "simd256")]
     pub struct X64AesGcm256;
 
     /// AES-NI AES-GCM 256.
+    ///
+    /// For details on usage, see [`aes_gcm_256`].
     #[cfg(not(feature = "simd256"))]
     pub type X64AesGcm256 = PortableAesGcm256;
 }
