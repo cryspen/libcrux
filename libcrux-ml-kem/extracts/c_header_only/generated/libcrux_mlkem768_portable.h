@@ -4,11 +4,11 @@
  * SPDX-License-Identifier: MIT or Apache-2.0
  *
  * This code was generated with the following revisions:
- * Charon: 667d2fc98984ff7f3df989c2367e6c1fa4a000e7
- * Eurydice: 2381cbc416ef2ad0b561c362c500bc84f36b6785
- * Karamel: 80f5435f2fc505973c469a4afcc8d875cddd0d8b
- * F*: 71d8221589d4d438af3706d89cb653cf53e18aab
- * Libcrux: 9a5f81a8f50860163288543598709ac7e476efb9
+ * Charon: 3275bf4ad9dc8c25965dc5da6122653fc43c4287
+ * Eurydice: d3b14228e2b5fe8710ec7efae31e4de2c96ed20d
+ * Karamel: 095cdb73f246711f93f99a159ceca37cd2c227e1
+ * F*: 4b3fc11774003a6ff7c09500ecb5f0145ca6d862
+ * Libcrux: e7177c5e2aaff2c316f02504fa62fc60a18464e3
  */
 
 #ifndef libcrux_mlkem768_portable_H
@@ -24,7 +24,7 @@ extern "C" {
 #include "libcrux_mlkem_core.h"
 #include "libcrux_sha3_portable.h"
 
-static KRML_MUSTINLINE void libcrux_ml_kem_hash_functions_portable_G(
+static inline void libcrux_ml_kem_hash_functions_portable_G(
     Eurydice_slice input, uint8_t ret[64U]) {
   uint8_t digest[64U] = {0U};
   libcrux_sha3_portable_sha512(
@@ -32,7 +32,7 @@ static KRML_MUSTINLINE void libcrux_ml_kem_hash_functions_portable_G(
   memcpy(ret, digest, (size_t)64U * sizeof(uint8_t));
 }
 
-static KRML_MUSTINLINE void libcrux_ml_kem_hash_functions_portable_H(
+static inline void libcrux_ml_kem_hash_functions_portable_H(
     Eurydice_slice input, uint8_t ret[32U]) {
   uint8_t digest[32U] = {0U};
   libcrux_sha3_portable_sha256(
@@ -2605,7 +2605,7 @@ A monomorphic instance of libcrux_ml_kem.hash_functions.portable.G_4a
 with const generics
 - K= 3
 */
-static KRML_MUSTINLINE void libcrux_ml_kem_hash_functions_portable_G_4a_e0(
+static inline void libcrux_ml_kem_hash_functions_portable_G_4a_e0(
     Eurydice_slice input, uint8_t ret[64U]) {
   libcrux_ml_kem_hash_functions_portable_G(input, ret);
 }
@@ -2615,7 +2615,7 @@ A monomorphic instance of libcrux_ml_kem.hash_functions.portable.PRF
 with const generics
 - LEN= 32
 */
-static KRML_MUSTINLINE void libcrux_ml_kem_hash_functions_portable_PRF_9e(
+static inline void libcrux_ml_kem_hash_functions_portable_PRF_9e(
     Eurydice_slice input, uint8_t ret[32U]) {
   uint8_t digest[32U] = {0U};
   libcrux_sha3_portable_shake256(
@@ -2633,7 +2633,7 @@ with const generics
 - K= 3
 - LEN= 32
 */
-static KRML_MUSTINLINE void libcrux_ml_kem_hash_functions_portable_PRF_4a_41(
+static inline void libcrux_ml_kem_hash_functions_portable_PRF_4a_41(
     Eurydice_slice input, uint8_t ret[32U]) {
   libcrux_ml_kem_hash_functions_portable_PRF_9e(input, ret);
 }
@@ -2766,7 +2766,7 @@ libcrux_ml_kem.hash_functions.portable.shake128_init_absorb_final with const
 generics
 - K= 3
 */
-static KRML_MUSTINLINE libcrux_ml_kem_hash_functions_portable_PortableHash_88
+static inline libcrux_ml_kem_hash_functions_portable_PortableHash_88
 libcrux_ml_kem_hash_functions_portable_shake128_init_absorb_final_e0(
     uint8_t (*input)[34U]) {
   libcrux_ml_kem_hash_functions_portable_PortableHash_88 shake128_state;
@@ -2795,7 +2795,7 @@ libcrux_ml_kem.hash_functions.portable.shake128_init_absorb_final_4a with const
 generics
 - K= 3
 */
-static KRML_MUSTINLINE libcrux_ml_kem_hash_functions_portable_PortableHash_88
+static inline libcrux_ml_kem_hash_functions_portable_PortableHash_88
 libcrux_ml_kem_hash_functions_portable_shake128_init_absorb_final_4a_e0(
     uint8_t (*input)[34U]) {
   return libcrux_ml_kem_hash_functions_portable_shake128_init_absorb_final_e0(
@@ -2808,7 +2808,7 @@ libcrux_ml_kem.hash_functions.portable.shake128_squeeze_first_three_blocks with
 const generics
 - K= 3
 */
-static KRML_MUSTINLINE void
+static inline void
 libcrux_ml_kem_hash_functions_portable_shake128_squeeze_first_three_blocks_e0(
     libcrux_ml_kem_hash_functions_portable_PortableHash_88 *st,
     uint8_t ret[3U][504U]) {
@@ -2832,7 +2832,7 @@ libcrux_ml_kem.hash_functions.portable.shake128_squeeze_first_three_blocks_4a
 with const generics
 - K= 3
 */
-static KRML_MUSTINLINE void
+static inline void
 libcrux_ml_kem_hash_functions_portable_shake128_squeeze_first_three_blocks_4a_e0(
     libcrux_ml_kem_hash_functions_portable_PortableHash_88 *self,
     uint8_t ret[3U][504U]) {
@@ -2930,7 +2930,7 @@ libcrux_ml_kem.hash_functions.portable.shake128_squeeze_next_block with const
 generics
 - K= 3
 */
-static KRML_MUSTINLINE void
+static inline void
 libcrux_ml_kem_hash_functions_portable_shake128_squeeze_next_block_e0(
     libcrux_ml_kem_hash_functions_portable_PortableHash_88 *st,
     uint8_t ret[3U][168U]) {
@@ -2954,7 +2954,7 @@ libcrux_ml_kem.hash_functions.portable.shake128_squeeze_next_block_4a with const
 generics
 - K= 3
 */
-static KRML_MUSTINLINE void
+static inline void
 libcrux_ml_kem_hash_functions_portable_shake128_squeeze_next_block_4a_e0(
     libcrux_ml_kem_hash_functions_portable_PortableHash_88 *self,
     uint8_t ret[3U][168U]) {
@@ -3286,7 +3286,7 @@ with const generics
 - K= 3
 - LEN= 128
 */
-static KRML_MUSTINLINE void libcrux_ml_kem_hash_functions_portable_PRFxN_41(
+static inline void libcrux_ml_kem_hash_functions_portable_PRFxN_41(
     uint8_t (*input)[33U], uint8_t ret[3U][128U]) {
   uint8_t out[3U][128U] = {{0U}};
   for (size_t i = (size_t)0U; i < (size_t)3U; i++) {
@@ -3308,7 +3308,7 @@ with const generics
 - K= 3
 - LEN= 128
 */
-static KRML_MUSTINLINE void libcrux_ml_kem_hash_functions_portable_PRFxN_4a_41(
+static inline void libcrux_ml_kem_hash_functions_portable_PRFxN_4a_41(
     uint8_t (*input)[33U], uint8_t ret[3U][128U]) {
   libcrux_ml_kem_hash_functions_portable_PRFxN_41(input, ret);
 }
@@ -3572,7 +3572,7 @@ A monomorphic instance of libcrux_ml_kem.hash_functions.portable.PRF
 with const generics
 - LEN= 128
 */
-static KRML_MUSTINLINE void libcrux_ml_kem_hash_functions_portable_PRF_a6(
+static inline void libcrux_ml_kem_hash_functions_portable_PRF_a6(
     Eurydice_slice input, uint8_t ret[128U]) {
   uint8_t digest[128U] = {0U};
   libcrux_sha3_portable_shake256(
@@ -3590,7 +3590,7 @@ with const generics
 - K= 3
 - LEN= 128
 */
-static KRML_MUSTINLINE void libcrux_ml_kem_hash_functions_portable_PRF_4a_410(
+static inline void libcrux_ml_kem_hash_functions_portable_PRF_4a_410(
     Eurydice_slice input, uint8_t ret[128U]) {
   libcrux_ml_kem_hash_functions_portable_PRF_a6(input, ret);
 }
@@ -4379,7 +4379,7 @@ A monomorphic instance of libcrux_ml_kem.hash_functions.portable.H_4a
 with const generics
 - K= 3
 */
-static KRML_MUSTINLINE void libcrux_ml_kem_hash_functions_portable_H_4a_e0(
+static inline void libcrux_ml_kem_hash_functions_portable_H_4a_e0(
     Eurydice_slice input, uint8_t ret[32U]) {
   libcrux_ml_kem_hash_functions_portable_H(input, ret);
 }
