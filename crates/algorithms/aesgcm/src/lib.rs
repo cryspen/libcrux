@@ -348,3 +348,8 @@ pub(crate) mod x64 {
 pub use aes_gcm_128::KEY_LEN as AES_GCM_128_KEY_LEN;
 #[doc(inline)]
 pub use aes_gcm_256::KEY_LEN as AES_GCM_256_KEY_LEN;
+
+pub mod traits {
+    pub use libcrux_traits::aead::consts::AeadConsts;
+    pub use libcrux_traits::aead::typed_refs::Aead;
+}
