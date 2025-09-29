@@ -9,7 +9,7 @@ use crate::{
     DecryptError, NONCE_LEN, TAG_LEN,
 };
 
-/// Key length.
+/// AES-GCM 256 key length.
 pub const KEY_LEN: usize = 32;
 pub(crate) const GCM_KEY_LEN: usize = 16;
 

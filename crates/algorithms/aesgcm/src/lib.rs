@@ -167,19 +167,19 @@ macro_rules! pub_mod {
     };
 }
 
-pub mod portable {
+pub(crate) mod portable {
     pub_mod!(r"AES-GCM 128 ", aes_gcm_128, crate::aes_gcm_128::State<platform::portable::State, platform::portable::FieldElement>);
     pub_mod!(r"AES-GCM 256 ", aes_gcm_256, crate::aes_gcm_256::State<platform::portable::State, platform::portable::FieldElement>);
 }
 
 #[cfg(feature = "simd128")]
-pub mod neon {
+pub(crate) mod neon {
     pub_mod!(r"AES-GCM 128 ", aes_gcm_128, crate::aes_gcm_128::State<platform::neon::State, platform::neon::FieldElement>);
     pub_mod!(r"AES-GCM 256 ", aes_gcm_256, crate::aes_gcm_256::State<platform::neon::State, platform::neon::FieldElement>);
 }
 
 #[cfg(feature = "simd256")]
-pub mod x64 {
+pub(crate) mod x64 {
     // Here we don't use the `pub_mod` macro because we need to add target features
     // onto the functions.
     macro_rules! x64_pub_mod {
@@ -475,3 +475,6 @@ api!(
     NeonAesGcm256,
     X64AesGcm256
 );
+
+pub use aes_gcm_128::KEY_LEN as AES_GCM_128_KEY_LEN;
+pub use aes_gcm_256::KEY_LEN as AES_GCM_256_KEY_LEN;
