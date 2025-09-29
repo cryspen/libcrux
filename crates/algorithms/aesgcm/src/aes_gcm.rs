@@ -103,3 +103,26 @@ macro_rules! aesgcm {
 }
 
 pub(crate) use aesgcm;
+
+/// Helper module for implementing platform-specific modules
+macro_rules! platform_mod {
+    ($implementation:ident, $alg_name:literal) => {
+        pub use crate::implementations::$implementation;
+        #[doc = concat!("An owned key for ",$alg_name, ".")]
+        pub type Key = libcrux_traits::aead::typed_owned::Key<$implementation>;
+        #[doc = concat!("An owned tag for ",$alg_name, ".")]
+        pub type Tag = libcrux_traits::aead::typed_owned::Tag<$implementation>;
+        #[doc = concat!("An owned nonce for ",$alg_name, ".")]
+        pub type Nonce = libcrux_traits::aead::typed_owned::Nonce<$implementation>;
+        #[doc = concat!("A reference to a key for ",$alg_name, ".")]
+        pub type KeyRef<'a> = libcrux_traits::aead::typed_refs::KeyRef<'a, $implementation>;
+        #[doc = concat!("A reference to a tag for ",$alg_name, ".")]
+        pub type TagRef<'a> = libcrux_traits::aead::typed_refs::TagRef<'a, $implementation>;
+        #[doc = concat!("A mutable reference to a tag for ",$alg_name, ".")]
+        pub type TagMut<'a> = libcrux_traits::aead::typed_refs::TagMut<'a, $implementation>;
+        #[doc = concat!("A reference to a nonce for ",$alg_name, ".")]
+        pub type NonceRef<'a> = libcrux_traits::aead::typed_refs::NonceRef<'a, $implementation>;
+    };
+}
+
+pub(crate) use platform_mod;
