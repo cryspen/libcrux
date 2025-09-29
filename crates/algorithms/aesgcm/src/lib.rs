@@ -1,5 +1,9 @@
 #![no_std]
 #![deny(unsafe_code)]
+//! Usage:
+//! ```rust
+//! use libcrux_aesgcm::
+//! ```
 
 #[cfg(feature = "std")]
 extern crate std;
@@ -10,13 +14,10 @@ mod gf128;
 mod platform;
 
 mod aes_gcm;
-mod aes_gcm_128;
-mod aes_gcm_256;
+pub mod aes_gcm_128;
+pub mod aes_gcm_256;
 
 use libcrux_traits::aead::{arrayref, consts, slice, typed_owned};
-
-// TODO: should this trait be re-exported here?
-pub use libcrux_traits::aead::arrayref::Aead;
 
 /// Trait for an AES State.
 /// Implemented for 128 and 256.
@@ -37,54 +38,57 @@ pub(crate) trait State {
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct DecryptError();
 
-/// AES-GCM 128.
-#[derive(Clone, Copy, PartialEq, Eq)]
-pub struct AesGcm128;
+pub(crate) mod implementations {
+    /// AES-GCM 128.
+    #[derive(Clone, Copy, PartialEq, Eq)]
+    pub struct AesGcm128;
 
-/// Portable AES-GCM 128.
-#[derive(Clone, Copy, PartialEq, Eq)]
-pub struct PortableAesGcm128;
+    /// Portable AES-GCM 128.
+    #[derive(Clone, Copy, PartialEq, Eq)]
+    pub struct PortableAesGcm128;
 
-#[cfg(feature = "simd128")]
-#[derive(Clone, Copy, PartialEq, Eq)]
-/// Neon AES-GCM 128.
-pub struct NeonAesGcm128;
-#[cfg(not(feature = "simd128"))]
-/// Neon AES-GCM 128.
-pub type NeonAesGcm128 = PortableAesGcm128;
+    #[cfg(feature = "simd128")]
+    #[derive(Clone, Copy, PartialEq, Eq)]
+    /// Neon AES-GCM 128.
+    pub struct NeonAesGcm128;
+    #[cfg(not(feature = "simd128"))]
+    /// Neon AES-GCM 128.
+    pub type NeonAesGcm128 = PortableAesGcm128;
 
-/// AES-NI AES-GCM 128.
-#[cfg(feature = "simd256")]
-#[derive(Clone, Copy, PartialEq, Eq)]
-pub struct X64AesGcm128;
-#[cfg(not(feature = "simd256"))]
-pub type X64AesGcm128 = PortableAesGcm128;
+    /// AES-NI AES-GCM 128.
+    #[cfg(feature = "simd256")]
+    #[derive(Clone, Copy, PartialEq, Eq)]
+    pub struct X64AesGcm128;
+    #[cfg(not(feature = "simd256"))]
+    pub type X64AesGcm128 = PortableAesGcm128;
 
-/// AES-GCM 256.
-#[derive(Clone, Copy, PartialEq, Eq)]
-pub struct AesGcm256;
+    /// AES-GCM 256.
+    #[derive(Clone, Copy, PartialEq, Eq)]
+    pub struct AesGcm256;
 
-/// Portable AES-GCM 256.
-#[derive(Clone, Copy, PartialEq, Eq)]
-pub struct PortableAesGcm256;
+    /// Portable AES-GCM 256.
+    #[derive(Clone, Copy, PartialEq, Eq)]
+    pub struct PortableAesGcm256;
 
-/// Neon AES-GCM 256.
-#[cfg(feature = "simd128")]
-#[derive(Clone, Copy, PartialEq, Eq)]
-pub struct NeonAesGcm256;
+    /// Neon AES-GCM 256.
+    #[cfg(feature = "simd128")]
+    #[derive(Clone, Copy, PartialEq, Eq)]
+    pub struct NeonAesGcm256;
 
-/// Neon AES-GCM 256.
-#[cfg(not(feature = "simd128"))]
-pub type NeonAesGcm256 = PortableAesGcm256;
+    /// Neon AES-GCM 256.
+    #[cfg(not(feature = "simd128"))]
+    pub type NeonAesGcm256 = PortableAesGcm256;
 
-/// AES-NI AES-GCM 256.
-#[derive(Clone, Copy, PartialEq, Eq)]
-#[cfg(feature = "simd256")]
-pub struct X64AesGcm256;
+    /// AES-NI AES-GCM 256.
+    #[derive(Clone, Copy, PartialEq, Eq)]
+    #[cfg(feature = "simd256")]
+    pub struct X64AesGcm256;
 
-/// AES-NI AES-GCM 256.
-#[cfg(not(feature = "simd256"))]
-pub type X64AesGcm256 = PortableAesGcm256;
+    /// AES-NI AES-GCM 256.
+    #[cfg(not(feature = "simd256"))]
+    pub type X64AesGcm256 = PortableAesGcm256;
+}
+use implementations::*;
 
 /// Tag length.
 pub const TAG_LEN: usize = 16;
@@ -476,5 +480,7 @@ api!(
     X64AesGcm256
 );
 
+#[doc(inline)]
 pub use aes_gcm_128::KEY_LEN as AES_GCM_128_KEY_LEN;
+#[doc(inline)]
 pub use aes_gcm_256::KEY_LEN as AES_GCM_256_KEY_LEN;
