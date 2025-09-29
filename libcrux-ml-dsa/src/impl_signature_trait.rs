@@ -114,6 +114,69 @@ pub mod signers {
                         Ok((signing_key, verification_key))
                     }
                 }
+                // key centric APIs
+                // manual implementation because of Context
+                impl<T: Context> libcrux_traits::signature::key_centric_owned::SignTypes for $name<T> {
+                    type SigningKey = [u8; SIGNING_KEY_LEN];
+                    type VerificationKey = [u8; VERIFICATION_KEY_LEN];
+                    type Signature = [u8; SIGNATURE_LEN];
+                    type Randomness = [u8; RAND_KEYGEN_LEN];
+                }
+
+                impl<T: Context> libcrux_traits::signature::key_centric_owned::Sign for $name<T> {
+                    type SignAux<'a> = <$name<T> as libcrux_traits::signature::owned::Sign<
+                        SIGNING_KEY_LEN,
+                        VERIFICATION_KEY_LEN,
+                        SIGNATURE_LEN,
+                        RAND_KEYGEN_LEN,
+                    >>::SignAux<'a>;
+                    fn sign(
+                        payload: &[u8],
+                        signing_key: &Self::SigningKey,
+                        aux: Self::SignAux<'_>,
+                    ) -> Result<Self::Signature, libcrux_traits::signature::owned::SignError>
+                    {
+                        <$name<T> as libcrux_traits::signature::owned::Sign<
+                            SIGNING_KEY_LEN,
+                            VERIFICATION_KEY_LEN,
+                            SIGNATURE_LEN,
+                            RAND_KEYGEN_LEN,
+                        >>::sign(payload, signing_key, aux)
+                    }
+                    type VerifyAux<'a> = <$name<T> as libcrux_traits::signature::owned::Sign<
+                        SIGNING_KEY_LEN,
+                        VERIFICATION_KEY_LEN,
+                        SIGNATURE_LEN,
+                        RAND_KEYGEN_LEN,
+                    >>::VerifyAux<'a>;
+
+                    fn verify(
+                        payload: &[u8],
+                        verification_key: &Self::VerificationKey,
+                        signature: &Self::Signature,
+                        aux: Self::VerifyAux<'_>,
+                    ) -> Result<(), libcrux_traits::signature::owned::VerifyError> {
+                        <$name<T> as libcrux_traits::signature::owned::Sign<
+                            SIGNING_KEY_LEN,
+                            VERIFICATION_KEY_LEN,
+                            SIGNATURE_LEN,
+                            RAND_KEYGEN_LEN,
+                        >>::verify(payload, verification_key, signature, aux)
+                    }
+                    fn keygen(
+                        rand: Self::Randomness,
+                    ) -> Result<
+                        (Self::SigningKey, Self::VerificationKey),
+                        libcrux_traits::signature::owned::KeyGenError,
+                    > {
+                        <$name<T> as libcrux_traits::signature::owned::Sign<
+                            SIGNING_KEY_LEN,
+                            VERIFICATION_KEY_LEN,
+                            SIGNATURE_LEN,
+                            RAND_KEYGEN_LEN,
+                        >>::keygen(rand)
+                    }
+                }
             }
             pub use $module::$name;
         };

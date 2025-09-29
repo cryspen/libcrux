@@ -73,4 +73,13 @@ pub mod signers {
 
     libcrux_traits::signature::slice::impl_signature_slice_trait!(
         Signer => SIGNING_KEY_LEN, VERIFICATION_KEY_LEN, SIGNATURE_LEN, RAND_KEYGEN_LEN, (), _aux, (), _aux, u8);
+
+    // key centric APIs
+    libcrux_traits::signature::key_centric_owned::impl_key_centric_owned!(
+        Signer,
+        SIGNING_KEY_LEN,
+        VERIFICATION_KEY_LEN,
+        SIGNATURE_LEN,
+        RAND_KEYGEN_LEN
+    );
 }

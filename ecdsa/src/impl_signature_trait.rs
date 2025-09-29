@@ -78,6 +78,15 @@ pub mod signers {
             }
             libcrux_traits::impl_signature_slice_trait!(
                 $name => SIGNING_KEY_LEN, VERIFICATION_KEY_LEN, SIG_LEN, RAND_KEYGEN_LEN, &Nonce, nonce, (), _aux, u8);
+
+            // key centric APIs
+            libcrux_traits::signature::key_centric_owned::impl_key_centric_owned!(
+                $name,
+                SIGNING_KEY_LEN,
+                VERIFICATION_KEY_LEN,
+                SIG_LEN,
+                RAND_KEYGEN_LEN
+            );
         };
     }
 
