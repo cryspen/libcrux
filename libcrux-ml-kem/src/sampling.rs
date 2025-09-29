@@ -50,9 +50,15 @@ fn sample_from_uniform_distribution_next<Vector: Operations, const K: usize, con
     for i in 0..K {
         for r in 0..N / 24 {
             if sampled_coefficients[i] < COEFFICIENTS_IN_RING_ELEMENT {
+                // XXX: We need to use these temporaries to work around a Eurydice
+                //      bug. (see https://github.com/AeneasVerif/eurydice/issues/285)
+                let randomness_i = &randomness[i];
+                let out_i = &mut out[i];
+                let sampled_coefficients_i = sampled_coefficients[i];
+
                 let sampled = Vector::rej_sample(
-                    &randomness[i][r * 24..(r * 24) + 24],
-                    &mut out[i][sampled_coefficients[i]..sampled_coefficients[i] + 16],
+                    &randomness_i[r * 24..(r * 24) + 24],
+                    &mut out_i[sampled_coefficients_i..sampled_coefficients_i + 16],
                 );
                 sampled_coefficients[i] += sampled;
             }
