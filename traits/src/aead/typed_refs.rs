@@ -4,6 +4,8 @@
 
 use libcrux_secrets::U8;
 
+use super::slice::KeyGenError;
+
 /// Error that can occur during encryption.
 #[derive(Debug, PartialEq, Eq)]
 pub enum EncryptError {
@@ -130,15 +132,22 @@ impl core::fmt::Display for DecryptError {
 // implementations.
 
 /// A Key with the given algorithm. The bytes are borrowed. Contains a marker for which
-/// algorith the key is to be used with.
+/// algorithm the key is to be used with.
 #[derive(Clone, Copy)]
 pub struct KeyRef<'a, Algo> {
     algorithm: Algo,
     key: &'a [U8],
 }
 
+/// A Key with the given algorithm. The bytes are borrowed mutably. Contains a marker for
+/// which algorithm the key is to be used with.
+pub struct KeyRefMut<'a, Algo> {
+    algorithm: Algo,
+    key: &'a mut [U8],
+}
+
 /// A tag with the given algorithm. The bytes are borrowed. Contains a marker for which
-/// algorith the key is to be used with.
+/// algorithm the key is to be used with.
 #[derive(Clone, Copy)]
 pub struct TagRef<'a, Algo> {
     algorithm: Algo,
@@ -146,15 +155,15 @@ pub struct TagRef<'a, Algo> {
 }
 
 /// A mutable tag with the given algorithm. The bytes are borrowed mutably. Contains a marker
-/// for which algorith the key is to be used with.
+/// for which algorithm the key is to be used with.
 pub struct TagMut<'a, Algo> {
     algorithm: Algo,
     tag: &'a mut [U8],
 }
-#[derive(Clone, Copy)]
 
 /// A nonce with the given algorithm. The bytes are borrowed. Contains a marker for which
-/// algorith the key is to be used with.
+/// algorithm the key is to be used with.
+#[derive(Clone, Copy)]
 pub struct NonceRef<'a, Algo> {
     algorithm: Algo,
     nonce: &'a [U8],
@@ -179,6 +188,8 @@ pub trait Aead: Copy + PartialEq {
     fn key_len(&self) -> usize;
     fn tag_len(&self) -> usize;
     fn nonce_len(&self) -> usize;
+
+    fn keygen<'a>(&self, key: &mut KeyRefMut<'a, Self>, rand: &[U8]) -> Result<(), KeyGenError>;
 
     /// Encrypt a plaintext message, producing a ciphertext and an authentication tag.
     /// The arguments `plaintext` and `ciphertext` must have the same length.
@@ -230,6 +241,7 @@ impl<
                 Key = [U8; KEY_LEN],
                 Tag = [U8; TAG_LEN],
                 Nonce = [U8; NONCE_LEN],
+                Rand = [U8; KEY_LEN],
             > + Copy
             + PartialEq,
     > Aead for Algo
@@ -244,6 +256,16 @@ impl<
 
     fn nonce_len(&self) -> usize {
         NONCE_LEN
+    }
+
+    fn keygen<'a>(&self, key: &mut KeyRefMut<'a, Self>, rand: &[U8]) -> Result<(), KeyGenError> {
+        if rand.len() < KEY_LEN {
+            return Err(KeyGenError::InsufficientRandomness);
+        }
+
+        key.key.copy_from_slice(rand);
+
+        Ok(())
     }
 
     fn encrypt<'a>(
@@ -377,7 +399,20 @@ impl<'a, Algo: Aead> AsRef<[U8]> for KeyRef<'a, Algo> {
     }
 }
 
+impl<'a, Algo: Aead> AsMut<[U8]> for KeyRefMut<'a, Algo> {
+    fn as_mut(&mut self) -> &mut [U8] {
+        self.key
+    }
+}
+
 impl<'a, Algo> KeyRef<'a, Algo> {
+    /// Returns the algorithm this key should be used in
+    pub fn algo(&self) -> &Algo {
+        &self.algorithm
+    }
+}
+
+impl<'a, Algo> KeyRefMut<'a, Algo> {
     /// Returns the algorithm this key should be used in
     pub fn algo(&self) -> &Algo {
         &self.algorithm
