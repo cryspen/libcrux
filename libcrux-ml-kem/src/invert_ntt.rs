@@ -187,8 +187,8 @@ pub(crate) fn inv_ntt_layer_int_vec_step_reduce<Vector: Operations>(
     scratch: &mut PolynomialRingElement<Vector>,
     zeta_r: i16,
 ) {
-    scratch.coefficients[0] = coefficients[a].clone();
-    scratch.coefficients[1] = coefficients[b].clone();
+    scratch.coefficients[0] = coefficients[a];
+    scratch.coefficients[1] = coefficients[b];
 
     Vector::add(&mut coefficients[a], &scratch.coefficients[1]);
     Vector::sub(&mut coefficients[b], &scratch.coefficients[0]);

@@ -334,7 +334,7 @@ fn add_message_error_reduce<Vector: Operations>(
             "#
         );
 
-        *scratch = myself.coefficients[i].clone(); // XXX: Need this?
+        *scratch = myself.coefficients[i]; // XXX: Need this?
         Vector::add(scratch, &message.coefficients[i]);
         hax_lib::fstar!("assert(is_bounded_vector 6656 ${scratch})");
 
