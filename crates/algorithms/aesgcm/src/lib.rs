@@ -1,8 +1,55 @@
 #![no_std]
 #![deny(unsafe_code)]
-//! Usage:
+//! Encrypting:
 //! ```rust
-//! use libcrux_aesgcm::
+//! let key_bytes = [0u8; 16];
+//! const MSG_LEN: usize = 19;
+//!
+//! use libcrux_aesgcm::{NONCE_LEN, TAG_LEN, aes_gcm_128::{Key, Tag, Nonce}};
+//!
+//! let msg: &[u8; MSG_LEN] = b"squeamish ossifrage";
+//! let mut ciphertext = [0u8; MSG_LEN];
+//! let mut tag = Tag::from([0u8; TAG_LEN]);
+//!
+//! let key = Key::from(key_bytes);
+//! let nonce = Nonce::from([123u8; NONCE_LEN]);
+//!
+//! key.encrypt(&mut ciphertext, &mut tag, &nonce, &[/* no aad */], msg)
+//!     .expect("Encryption error");
+//!
+//! // Ciphertext and tag contain encrypted data
+//! assert_eq!(
+//!     ciphertext,
+//!     [ 148, 21, 176, 171, 116, 92, 185, 194,
+//!       20, 107, 190, 106, 221, 127, 17, 61,
+//!       209, 13, 108]
+//! );
+//!  assert_eq!(
+//!     tag.as_ref(),
+//!     &[18, 229, 81, 170, 108, 76, 43, 130, 90,
+//!       229, 213, 74, 112, 243, 44, 221],
+//! );
+//! ```
+//! Decrypting:
+//! ```rust
+//! let key_bytes  = [0u8; 16];
+//! let ciphertext = [148, 21, 176, 171, 116, 92, 185, 194, 20, 107, 190, 106, 221, 127, 17, 61, 209, 13, 108];
+//! let tag_bytes = [18, 229, 81, 170, 108, 76, 43, 130, 90, 229, 213, 74, 112, 243, 44, 221];
+//! const MSG_LEN: usize = 19;
+//!
+//! use libcrux_aesgcm::{NONCE_LEN, TAG_LEN, aes_gcm_128::{Key, Tag, Nonce}};
+//!
+//! let mut plaintext = [0u8; MSG_LEN];
+//! let mut tag = Tag::from(tag_bytes);
+//!
+//! let key = Key::from(key_bytes);
+//! let nonce = Nonce::from([123u8; NONCE_LEN]);
+//!
+//! key.decrypt(&mut plaintext, &nonce,  &[/* no aad */], &ciphertext, &tag)
+//!     .expect("Decryption error");
+//!
+//! assert_eq!(&plaintext, b"squeamish ossifrage");
+//!
 //! ```
 
 #[cfg(feature = "std")]
