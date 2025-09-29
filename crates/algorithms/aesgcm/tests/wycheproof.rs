@@ -1,11 +1,10 @@
-use libcrux_aesgcm::Aead;
 use wycheproof::{aead::Test, TestResult};
 
 #[test]
 fn test() {
     let test_set = wycheproof::aead::TestSet::load(wycheproof::aead::TestName::AesGcm).unwrap();
 
-    fn run<const KEY_LEN: usize, Cipher: Aead<KEY_LEN, 16, 12>>(test: &Test) {
+    fn run<const KEY_LEN: usize, Cipher: libcrux_traits::aead::arrayref::Aead<KEY_LEN, 16, 12>>(test: &Test) {
         let mut ciphertext = vec![0u8; test.pt.len()];
         let mut plaintext = vec![0u8; test.pt.len()];
         let mut tag = [0u8; 16];

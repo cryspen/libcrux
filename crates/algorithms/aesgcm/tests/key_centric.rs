@@ -2,7 +2,7 @@ use libcrux_traits::aead::consts;
 use libcrux_traits::aead::typed_owned;
 use libcrux_traits::aead::typed_refs;
 
-use libcrux_aesgcm::AesGcm128;
+use libcrux_aesgcm::aes_gcm_128::AesGcm128;
 
 type Key = typed_owned::Key<AesGcm128>;
 type Nonce = typed_owned::Nonce<AesGcm128>;

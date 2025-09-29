@@ -1,4 +1,4 @@
-use libcrux_aesgcm::Aead;
+use libcrux_traits::aead::arrayref::Aead;
 
 fn main() {
     const PAYLOAD_SIZES: usize = 3045;

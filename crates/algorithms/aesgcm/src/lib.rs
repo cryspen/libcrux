@@ -135,7 +135,7 @@ pub(crate) mod implementations {
     #[cfg(not(feature = "simd256"))]
     pub type X64AesGcm256 = PortableAesGcm256;
 }
-use implementations::*;
+pub use implementations::*;
 
 /// Tag length.
 pub const TAG_LEN: usize = 16;
