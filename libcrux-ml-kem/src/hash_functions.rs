@@ -96,7 +96,7 @@ pub(crate) mod portable {
         fstar!(r#"Seq.length ${output}_future == Seq.length ${output} /\
             ${output}_future == Spec.Utils.v_G $input"#))
     ]
-    #[inline(always)]
+    #[inline]
     fn G(input: &[u8], output: &mut [u8]) {
         portable::sha512(output, input);
     }
@@ -106,7 +106,7 @@ pub(crate) mod portable {
         fstar!(r#"Seq.length ${output}_future == Seq.length ${output} /\
             ${output}_future == Spec.Utils.v_H $input"#))
     ]
-    #[inline(always)]
+    #[inline]
     fn H(input: &[u8], output: &mut [u8]) {
         portable::sha256(output, input);
     }
@@ -117,7 +117,7 @@ pub(crate) mod portable {
         fstar!(r#"Seq.length ${out}_future == Seq.length ${out} /\
             ${out}_future == Spec.Utils.v_PRF $LEN $input"#))
     ]
-    #[inline(always)]
+    #[inline]
     fn PRF<const LEN: usize>(input: &[u8], out: &mut [u8]) {
         debug_assert!(out.len() == LEN);
         portable::shake256(out, input);
@@ -132,14 +132,14 @@ pub(crate) mod portable {
          (4 * v $out_len < pow2 32) /\
          Seq.length ${outputs}_future == Seq.length ${outputs} /\
          ${outputs}_future == Spec.Utils.v_PRFxN (sz k) $out_len $input)"#))]
-    #[inline(always)]
+    #[inline]
     fn PRFxN(input: &[[u8; 33]], outputs: &mut [u8], out_len: usize) {
         for i in 0..input.len() {
             portable::shake256(&mut outputs[i * out_len..(i + 1) * out_len], &input[i]);
         }
     }
 
-    #[inline(always)]
+    #[inline]
     fn shake128_init_absorb_final(input: &[[u8; 34]]) -> PortableHash {
         debug_assert!(input.len() == 2 || input.len() == 3 || input.len() == 4);
 
@@ -151,7 +151,7 @@ pub(crate) mod portable {
         PortableHash { shake128_state }
     }
 
-    #[inline(always)]
+    #[inline]
     fn shake128_squeeze_first_three_blocks(
         st: &mut PortableHash,
         outputs: &mut [[u8; THREE_BLOCKS]],
@@ -166,7 +166,7 @@ pub(crate) mod portable {
         }
     }
 
-    #[inline(always)]
+    #[inline]
     fn shake128_squeeze_next_block(st: &mut PortableHash, outputs: &mut [[u8; BLOCK_SIZE]]) {
         debug_assert!(outputs.len() == 2 || outputs.len() == 3 || outputs.len() == 4);
 
@@ -181,7 +181,7 @@ pub(crate) mod portable {
         #[ensures(|_|
             fstar!(r#"${output}_future == Spec.Utils.v_G $input"#))
         ]
-        #[inline(always)]
+        #[inline]
         fn G(input: &[u8], output: &mut [u8]) {
             G(input, output)
         }
@@ -190,7 +190,7 @@ pub(crate) mod portable {
         #[ensures(|_|
             fstar!(r#"${output}_future == Spec.Utils.v_H $input"#))
         ]
-        #[inline(always)]
+        #[inline]
         fn H(input: &[u8], output: &mut [u8]) {
             H(input, output)
         }
@@ -200,7 +200,7 @@ pub(crate) mod portable {
             // We need to repeat the pre-condition here because of https://github.com/hacspec/hax/issues/784
             fstar!(r#"v $LEN < pow2 32 ==> ${out}_future == Spec.Utils.v_PRF $LEN $input"#))
         ]
-        #[inline(always)]
+        #[inline]
         fn PRF<const LEN: usize>(input: &[u8], out: &mut [u8]) {
             PRF::<LEN>(input, out)
         }
@@ -214,7 +214,7 @@ pub(crate) mod portable {
              (4 * v $out_len < pow2 32) /\
              Seq.length ${outputs}_future == Seq.length ${outputs} /\
              ${outputs}_future == Spec.Utils.v_PRFxN (sz k) $out_len $input)"#))]
-        #[inline(always)]
+        #[inline]
         fn PRFxN(input: &[[u8; 33]], outputs: &mut [u8], out_len: usize) {
             PRFxN(input, outputs, out_len)
         }
