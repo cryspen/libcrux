@@ -1,16 +1,8 @@
-use libcrux_traits::aead::consts;
-use libcrux_traits::aead::typed_owned;
-use libcrux_traits::aead::typed_refs;
-
-use libcrux_aesgcm::aes_gcm_128::AesGcm128;
-
-type Key = typed_owned::Key<AesGcm128>;
-type Nonce = typed_owned::Nonce<AesGcm128>;
-type Tag = typed_owned::Tag<AesGcm128>;
+use libcrux_aesgcm::aes_gcm_128::{AesGcm128, Key, Nonce, Tag};
 
 #[test]
 fn test_key_centric_owned() {
-    use consts::AeadConsts as _;
+    use libcrux_aesgcm::traits::AeadConsts as _;
 
     let k: Key = [0; AesGcm128::KEY_LEN].into();
     let nonce: Nonce = [0; AesGcm128::NONCE_LEN].into();
@@ -27,8 +19,7 @@ fn test_key_centric_owned() {
 
 #[test]
 fn test_key_centric_refs() {
-    use consts::AeadConsts as _;
-    use typed_refs::Aead as _;
+    use libcrux_aesgcm::traits::{Aead as _, AeadConsts as _};
 
     let algo = AesGcm128;
 
