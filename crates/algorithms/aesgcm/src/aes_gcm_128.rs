@@ -1,5 +1,6 @@
 //! AES-GCM 128
 //!
+//! ## Owned key-centric API
 //! ```rust
 //! // multiplexed API
 //! use libcrux_aesgcm::traits::AeadConsts as _;
@@ -12,24 +13,25 @@
 //! let k: Key = [0; AesGcm128::KEY_LEN].into();
 //! let nonce: Nonce = [0; AesGcm128::NONCE_LEN].into();
 //! let mut tag: Tag = [0; AesGcm128::TAG_LEN].into();
-
+//!
 //! let pt = b"the quick brown fox jumps over the lazy dog";
 //! let mut ct = [0; 43];
 //! let mut pt_out = [0; 43];
-
+//!
 //! k.encrypt(&mut ct, &mut tag, &nonce, b"", pt).unwrap();
 //! k.decrypt(&mut pt_out, &nonce, b"", &ct, &tag).unwrap();
 //! assert_eq!(pt, &pt_out);
 //! ```
 //!
+//! ## Refs key-centric API
 //! ```rust
 //! use libcrux_aesgcm::traits::{AeadConsts as _, Aead as _};
 //! // multiplexed API
 //! use libcrux_aesgcm::aes_gcm_128::AesGcm128;
 //! // or:
-//! // use libcrux_aesgcm::aes_gcm_128::portable::PortableAesGcm128;
-//! // use libcrux_aesgcm::aes_gcm_128::neon::NeonAesGcm128;
-//! // use libcrux_aesgcm::aes_gcm_128::x64::X64AesGcm128;
+//! // use libcrux_aesgcm::aes_gcm_128::portable::PortableAesGcm128 as AesGcm128;
+//! // use libcrux_aesgcm::aes_gcm_128::neon::NeonAesGcm128 as AesGcm128;
+//! // use libcrux_aesgcm::aes_gcm_128::x64::X64AesGcm128 as AesGcm128;
 //!
 //! let algo = AesGcm128;
 //!
@@ -77,15 +79,30 @@ use super::aes_gcm::platform_mod;
 platform_mod!(AesGcm128, "AES-GCM 128");
 
 pub mod portable {
+    //! Portable implementation of AES-GCM 128.
+    //!
+    //! For usage see [`aes_gcm_128`].
     use super::*;
+    #[cfg(doc)]
+    use crate::aes_gcm_128;
     platform_mod!(PortableAesGcm128, "portable AES-GCM 128");
 }
 pub mod neon {
+    //! Neon implementation of AES-GCM 128.
+    //!
+    //! For usage see [`aes_gcm_128`].
     use super::*;
+    #[cfg(doc)]
+    use crate::aes_gcm_128;
     platform_mod!(NeonAesGcm128, "neon AES-GCM 128");
 }
 
 pub mod x64 {
+    //! x64 implementation of AES-GCM 128.
+    //!
+    //! For usage see [`aes_gcm_128`].
     use super::*;
+    #[cfg(doc)]
+    use crate::aes_gcm_128;
     platform_mod!(X64AesGcm128, "x64 AES-GCM 128");
 }

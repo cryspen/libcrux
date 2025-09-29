@@ -1,5 +1,6 @@
 //! AES-GCM 256
 //!
+//! ## Owned key-centric API
 //! ```rust
 //! use libcrux_aesgcm::traits::AeadConsts as _;
 //! // multiplexed API
@@ -22,14 +23,15 @@
 //! assert_eq!(pt, &pt_out);
 //! ```
 //!
+//! ## Refs key-centric API
 //! ```rust
 //! use libcrux_aesgcm::traits::{AeadConsts as _, Aead as _};
 //! // multiplexed API
 //! use libcrux_aesgcm::aes_gcm_256::AesGcm256;
 //! // or:
-//! // use libcrux_aesgcm::aes_gcm_256::portable::PortableAesGcm256;
-//! // use libcrux_aesgcm::aes_gcm_256::neon::NeonAesGcm256;
-//! // use libcrux_aesgcm::aes_gcm_256::x64::X64AesGcm256;
+//! // use libcrux_aesgcm::aes_gcm_256::portable::PortableAesGcm256 as AesGcm256;
+//! // use libcrux_aesgcm::aes_gcm_256::neon::NeonAesGcm256 as AesGcm256;
+//! // use libcrux_aesgcm::aes_gcm_256::x64::X64AesGcm256 as AesGcm256;
 //!
 //! let algo = AesGcm256;
 //!
@@ -77,15 +79,30 @@ use super::aes_gcm::platform_mod;
 platform_mod!(AesGcm256, "AES-GCM 256");
 
 pub mod portable {
+    //! Portable implementation of AES-GCM 256.
+    //!
+    //! For usage see [`aes_gcm_256`].
     use super::*;
+    #[cfg(doc)]
+    use crate::aes_gcm_256;
     platform_mod!(PortableAesGcm256, "portable AES-GCM 256");
 }
 pub mod neon {
+    //! Neon implementation of AES-GCM 256.
+    //!
+    //! For usage see [`aes_gcm_256`].
     use super::*;
+    #[cfg(doc)]
+    use crate::aes_gcm_256;
     platform_mod!(NeonAesGcm256, "neon AES-GCM 256");
 }
 
 pub mod x64 {
+    //! x64 implementation of AES-GCM 256.
+    //!
+    //! For usage see [`aes_gcm_256`].
     use super::*;
+    #[cfg(doc)]
+    use crate::aes_gcm_256;
     platform_mod!(X64AesGcm256, "x64 AES-GCM 256");
 }
