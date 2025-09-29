@@ -6,6 +6,7 @@ pub struct SigningKeyRef<'a, Algorithm> {
     _marker: core::marker::PhantomData<Algorithm>,
 }
 
+#[derive(Debug)]
 pub enum FromBytesError {
     InvalidLength,
 }

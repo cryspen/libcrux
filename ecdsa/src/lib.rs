@@ -31,3 +31,6 @@ pub(crate) const RAND_LIMIT: usize = 100;
 
 mod impl_signature_trait;
 pub use impl_signature_trait::*;
+
+pub use libcrux_traits::signature::key_centric_owned::{KeyPair, SigningKey, VerificationKey};
+pub use libcrux_traits::signature::key_centric_refs::{SigningKeyRef, VerificationKeyRef};

@@ -1,10 +1,16 @@
 use libcrux_secrets::U8;
 
+pub trait SignConsts {
+    const SIGNING_KEY_LEN: usize;
+    const VERIFICATION_KEY_LEN: usize;
+    const SIGNATURE_LEN: usize;
+    const KEYGEN_RANDOMNESS_LEN: usize;
+}
 pub trait SignTypes {
     type SigningKey;
     type VerificationKey;
     type Signature;
-    type Randomness;
+    type KeyGenRandomness;
 }
 
 pub trait Sign: SignTypes {
@@ -34,7 +40,7 @@ pub trait Sign: SignTypes {
     /// It is the responsibility of the caller to ensure  that the `rand` argument is actually
     /// random.
     fn keygen(
-        rand: Self::Randomness,
+        rand: Self::KeyGenRandomness,
     ) -> Result<(Self::SigningKey, Self::VerificationKey), KeyGenError>;
 }
 
@@ -52,7 +58,7 @@ pub struct KeyPair<Algorithm: SignTypes> {
 }
 
 impl<Algorithm: Sign> KeyPair<Algorithm> {
-    pub fn generate_key_pair(randomness: Algorithm::Randomness) -> Result<Self, KeyGenError> {
+    pub fn generate_key_pair(randomness: Algorithm::KeyGenRandomness) -> Result<Self, KeyGenError> {
         Algorithm::keygen(randomness).map(|(signing_key, verification_key)| KeyPair {
             signing_key: SigningKey { key: signing_key },
             verification_key: VerificationKey {
@@ -61,9 +67,13 @@ impl<Algorithm: Sign> KeyPair<Algorithm> {
         })
     }
 }
-impl<'a, Algorithm: Sign<SignAux<'a> = ()>> SigningKey<Algorithm> {
-    pub fn sign(&self, payload: &[u8]) -> Result<Algorithm::Signature, SignError> {
-        Algorithm::sign(payload, &self.key, ())
+impl<'a, Algorithm: Sign> SigningKey<Algorithm> {
+    pub fn sign(
+        &self,
+        payload: &[u8],
+        aux: Algorithm::SignAux<'_>,
+    ) -> Result<Algorithm::Signature, SignError> {
+        Algorithm::sign(payload, &self.key, aux)
     }
 }
 
@@ -84,11 +94,18 @@ pub use super::owned::{KeyGenError, SignError, VerifyError};
 #[macro_export]
 macro_rules! impl_key_centric_owned {
     ($ty:ty, $signing_key_len:expr, $verification_key_len:expr, $signature_len:expr, $rand_keygen_len:expr) => {
+        impl $crate::signature::key_centric_owned::SignConsts for $ty {
+            const SIGNING_KEY_LEN: usize = $signing_key_len;
+            const VERIFICATION_KEY_LEN: usize = $verification_key_len;
+            const SIGNATURE_LEN: usize = $signature_len;
+            const KEYGEN_RANDOMNESS_LEN: usize = $rand_keygen_len;
+        }
+
         impl $crate::signature::key_centric_owned::SignTypes for $ty {
             type SigningKey = [$crate::libcrux_secrets::U8; $signing_key_len];
             type VerificationKey = [$crate::libcrux_secrets::U8; $verification_key_len];
             type Signature = [$crate::libcrux_secrets::U8; $signature_len];
-            type Randomness = [$crate::libcrux_secrets::U8; $rand_keygen_len];
+            type KeyGenRandomness = [$crate::libcrux_secrets::U8; $rand_keygen_len];
         }
 
         impl $crate::signature::key_centric_owned::Sign for $ty {
@@ -131,7 +148,7 @@ macro_rules! impl_key_centric_owned {
                 >>::verify(payload, verification_key, signature, aux)
             }
             fn keygen(
-                rand: Self::Randomness,
+                rand: Self::KeyGenRandomness,
             ) -> Result<
                 (Self::SigningKey, Self::VerificationKey),
                 $crate::signature::owned::KeyGenError,

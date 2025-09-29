@@ -116,11 +116,17 @@ pub mod signers {
                 }
                 // key centric APIs
                 // manual implementation because of Context
+                impl<T: Context> libcrux_traits::signature::key_centric_owned::SignConsts for $name<T> {
+                    const SIGNING_KEY_LEN: usize = SIGNING_KEY_LEN;
+                    const VERIFICATION_KEY_LEN: usize = VERIFICATION_KEY_LEN;
+                    const SIGNATURE_LEN: usize =  SIGNATURE_LEN;
+                    const KEYGEN_RANDOMNESS_LEN: usize  = RAND_KEYGEN_LEN;
+                }
                 impl<T: Context> libcrux_traits::signature::key_centric_owned::SignTypes for $name<T> {
                     type SigningKey = [u8; SIGNING_KEY_LEN];
                     type VerificationKey = [u8; VERIFICATION_KEY_LEN];
                     type Signature = [u8; SIGNATURE_LEN];
-                    type Randomness = [u8; RAND_KEYGEN_LEN];
+                    type KeyGenRandomness = [u8; RAND_KEYGEN_LEN];
                 }
 
                 impl<T: Context> libcrux_traits::signature::key_centric_owned::Sign for $name<T> {
@@ -164,7 +170,7 @@ pub mod signers {
                         >>::verify(payload, verification_key, signature, aux)
                     }
                     fn keygen(
-                        rand: Self::Randomness,
+                        rand: Self::KeyGenRandomness,
                     ) -> Result<
                         (Self::SigningKey, Self::VerificationKey),
                         libcrux_traits::signature::owned::KeyGenError,
