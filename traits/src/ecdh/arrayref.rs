@@ -13,13 +13,13 @@ pub trait ECDHArrayref<const RAND_LEN: usize, const SECRET_LEN: usize, const PUB
     fn generate_secret(
         secret: &mut [U8; SECRET_LEN],
         rand: &[U8; RAND_LEN],
-    ) -> Result<(), ECDHError>;
+    ) -> Result<(), GenerateSecretError>;
 
     /// Derive a Diffie-Hellman public value from a secret value.
     fn secret_to_public(
         public: &mut [u8; PUBLIC_LEN],
         secret: &[U8; SECRET_LEN],
-    ) -> Result<(), ECDHError>;
+    ) -> Result<(), SecretToPublicError>;
 
     /// Derive a Diffie-Hellman shared secret from a public and a
     /// secret value.
@@ -31,10 +31,49 @@ pub trait ECDHArrayref<const RAND_LEN: usize, const SECRET_LEN: usize, const PUB
         derived: &mut [U8; PUBLIC_LEN],
         public: &[u8; PUBLIC_LEN],
         secret: &[U8; SECRET_LEN],
-    ) -> Result<(), ECDHError>;
+    ) -> Result<(), DeriveError>;
 
     /// Check the validity of a Diffie-Hellman secret value.
-    fn validate_secret(secret: &[U8; SECRET_LEN]) -> Result<(), ECDHError>;
+    fn validate_secret(secret: &[U8; SECRET_LEN]) -> Result<(), ValidateSecretError>;
+}
+
+#[derive(Debug)]
+/// An error during secret value generation.
+pub enum GenerateSecretError {
+    /// Error generating secret value with provided randomness
+    InvalidRandomness,
+
+    /// An unknown error occurred
+    Unknown,
+}
+
+#[derive(Debug)]
+/// An error during derivation of a public value from a secret value.
+pub enum SecretToPublicError {
+    /// Secret value was invalid
+    InvalidSecret,
+    /// An unknown error occurred
+    Unknown,
+}
+
+#[derive(Debug)]
+/// An error derivation of Diffie-Hellman shared secret.
+pub enum DeriveError {
+    /// Public value was invalid
+    InvalidPublic,
+    /// Secret value was invalid
+    InvalidSecret,
+    /// An unknown error occurred
+    Unknown,
+}
+
+#[derive(Debug)]
+/// A Diffie-Hellman secret value was found to be invalid.
+pub enum ValidateSecretError {
+    /// Secret value was invalid
+    InvalidSecret,
+    /// An unknown error occurred
+    Unknown,
 }
 
 #[derive(Debug)]
@@ -49,15 +88,47 @@ pub enum ECDHError {
     ValidateSecret,
 }
 
-impl core::fmt::Display for ECDHError {
+impl core::fmt::Display for GenerateSecretError {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         let text = match self {
-            ECDHError::GenerateSecret => "error generating ECDH secret value",
-            ECDHError::SecretToPublic => {
-                "error transforming secret ECDH value to public ECDH value"
+            GenerateSecretError::InvalidRandomness => {
+                "error generating secret value with provided randomness"
             }
-            ECDHError::Derive => "error deriving ECDH shared secret",
-            ECDHError::ValidateSecret => "invalid ECDH secret value",
+            GenerateSecretError::Unknown => "an unknown error occured",
+        };
+
+        f.write_str(text)
+    }
+}
+
+impl core::fmt::Display for SecretToPublicError {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        let text = match self {
+            SecretToPublicError::InvalidSecret => "secret value is invalid",
+            SecretToPublicError::Unknown => "an unknown error occured",
+        };
+
+        f.write_str(text)
+    }
+}
+
+impl core::fmt::Display for DeriveError {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        let text = match self {
+            DeriveError::InvalidPublic => "public value is invalid",
+            DeriveError::InvalidSecret => "secret value is invalid",
+            DeriveError::Unknown => "an unknown error occured",
+        };
+
+        f.write_str(text)
+    }
+}
+
+impl core::fmt::Display for ValidateSecretError {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        let text = match self {
+            ValidateSecretError::InvalidSecret => "secret value is invalid",
+            ValidateSecretError::Unknown => "an unknown error occured",
         };
 
         f.write_str(text)
@@ -68,5 +139,8 @@ impl core::fmt::Display for ECDHError {
 /// Here we implement the Error trait. This has only been added to core relatively recently, so we
 /// are hiding that behind a feature.
 mod error_in_core {
-    impl core::error::Error for super::ECDHError {}
+    impl core::error::Error for super::GenerateSecretError {}
+    impl core::error::Error for super::SecretToPublicError {}
+    impl core::error::Error for super::DeriveError {}
+    impl core::error::Error for super::ValidateSecretError {}
 }

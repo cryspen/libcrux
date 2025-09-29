@@ -3,7 +3,7 @@
 //! returns owned arrays.
 
 use super::arrayref;
-use super::arrayref::ECDHError;
+use super::arrayref::{DeriveError, GenerateSecretError, SecretToPublicError, ValidateSecretError};
 
 use libcrux_secrets::{Classify, U8};
 
@@ -12,10 +12,11 @@ pub trait ECDHOwned<const RAND_LEN: usize, const SECRET_LEN: usize, const PUBLIC
     /// Generate a Diffie-Hellman secret value.
     /// It is the responsibility of the caller to ensure  that the `rand` argument is actually
     /// random.
-    fn generate_secret(rand: &[U8; RAND_LEN]) -> Result<[U8; SECRET_LEN], ECDHError>;
+    fn generate_secret(rand: &[U8; RAND_LEN]) -> Result<[U8; SECRET_LEN], GenerateSecretError>;
 
     /// Derive a Diffie-Hellman public value from a secret value.
-    fn secret_to_public(secret: &[U8; SECRET_LEN]) -> Result<[u8; PUBLIC_LEN], ECDHError>;
+    fn secret_to_public(secret: &[U8; SECRET_LEN])
+        -> Result<[u8; PUBLIC_LEN], SecretToPublicError>;
 
     /// Derive a Diffie-Hellman shared secret from a public and a
     /// secret value.
@@ -26,10 +27,10 @@ pub trait ECDHOwned<const RAND_LEN: usize, const SECRET_LEN: usize, const PUBLIC
     fn derive_ecdh(
         public: &[u8; PUBLIC_LEN],
         secret: &[U8; SECRET_LEN],
-    ) -> Result<[U8; PUBLIC_LEN], ECDHError>;
+    ) -> Result<[U8; PUBLIC_LEN], DeriveError>;
 
     /// Check the validity of a Diffie-Hellman secret value.
-    fn validate_secret(secret: &[U8; SECRET_LEN]) -> Result<(), ECDHError>;
+    fn validate_secret(secret: &[U8; SECRET_LEN]) -> Result<(), ValidateSecretError>;
 }
 
 impl<
@@ -39,7 +40,7 @@ impl<
         T: arrayref::ECDHArrayref<RAND_LEN, SECRET_LEN, PUBLIC_LEN>,
     > ECDHOwned<RAND_LEN, SECRET_LEN, PUBLIC_LEN> for T
 {
-    fn generate_secret(rand: &[U8; RAND_LEN]) -> Result<[U8; SECRET_LEN], ECDHError> {
+    fn generate_secret(rand: &[U8; RAND_LEN]) -> Result<[U8; SECRET_LEN], GenerateSecretError> {
         let mut secret = [0u8; SECRET_LEN].classify();
         <Self as arrayref::ECDHArrayref<RAND_LEN, SECRET_LEN, PUBLIC_LEN>>::generate_secret(
             &mut secret,
@@ -48,7 +49,9 @@ impl<
         Ok(secret)
     }
 
-    fn secret_to_public(secret: &[U8; SECRET_LEN]) -> Result<[u8; PUBLIC_LEN], ECDHError> {
+    fn secret_to_public(
+        secret: &[U8; SECRET_LEN],
+    ) -> Result<[u8; PUBLIC_LEN], SecretToPublicError> {
         let mut public = [0u8; PUBLIC_LEN];
         <Self as arrayref::ECDHArrayref<RAND_LEN, SECRET_LEN, PUBLIC_LEN>>::secret_to_public(
             &mut public,
@@ -60,7 +63,7 @@ impl<
     fn derive_ecdh(
         public: &[u8; PUBLIC_LEN],
         secret: &[U8; SECRET_LEN],
-    ) -> Result<[U8; PUBLIC_LEN], ECDHError> {
+    ) -> Result<[U8; PUBLIC_LEN], DeriveError> {
         let mut derived = [0u8; PUBLIC_LEN].classify();
         <Self as arrayref::ECDHArrayref<RAND_LEN, SECRET_LEN, PUBLIC_LEN>>::derive_ecdh(
             &mut derived,
@@ -70,7 +73,7 @@ impl<
         Ok(derived)
     }
 
-    fn validate_secret(secret: &[U8; SECRET_LEN]) -> Result<(), ECDHError> {
+    fn validate_secret(secret: &[U8; SECRET_LEN]) -> Result<(), ValidateSecretError> {
         <Self as arrayref::ECDHArrayref<RAND_LEN, SECRET_LEN, PUBLIC_LEN>>::validate_secret(secret)
     }
 }
