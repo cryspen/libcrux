@@ -4,11 +4,11 @@
  * SPDX-License-Identifier: MIT or Apache-2.0
  *
  * This code was generated with the following revisions:
- * Charon: 667d2fc98984ff7f3df989c2367e6c1fa4a000e7
- * Eurydice: 2381cbc416ef2ad0b561c362c500bc84f36b6785
- * Karamel: 80f5435f2fc505973c469a4afcc8d875cddd0d8b
- * F*: 71d8221589d4d438af3706d89cb653cf53e18aab
- * Libcrux: 4433a17f91aab0789f083de6c7fe08493e5998c8
+ * Charon: 3275bf4ad9dc8c25965dc5da6122653fc43c4287
+ * Eurydice: d3b14228e2b5fe8710ec7efae31e4de2c96ed20d
+ * Karamel: 095cdb73f246711f93f99a159ceca37cd2c227e1
+ * F*: 4b3fc11774003a6ff7c09500ecb5f0145ca6d862
+ * Libcrux: 2c2ff0e7ab8a33ae4dd193d06cd3eaa3bc9f75ab
  */
 
 #include "internal/libcrux_mlkem_portable.h"
