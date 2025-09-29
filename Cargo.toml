@@ -33,7 +33,8 @@ members = [
     "fstar-helpers/core-models",
     "test-utils",
     "crates/primitives/aead",
-    "crates/testing/kats",
+    "crates/primitives/signature",
+    "crates/testing/kats", 
 ]
 
 [workspace.package]
