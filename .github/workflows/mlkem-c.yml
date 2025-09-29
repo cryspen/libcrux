@@ -93,12 +93,12 @@ jobs:
     steps:
       - uses: actions/checkout@v5
 
-      - name: Extract C
+      - name: Extract C (header only)
         run: |
           export HOME=/home/user
           ./extract.sh
 
-      - name: Upload C extraction
+      - name: Upload C extraction (header only)
         uses: actions/upload-artifact@v4
         with:
           name: c-ho-extraction-ml-kem
