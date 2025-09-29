@@ -262,7 +262,11 @@ fn sample_ring_element_cbd<
         "sample_ring_element_cbd_helper_1 $K $prf_inputs $prf_input $_domain_separator_init"
     );
     let mut prf_outputs = [0u8; PRF_OUTPUT_SIZE];
-    Hasher::PRFxN(&prf_inputs[..], &mut prf_outputs, ETA2_RANDOMNESS_SIZE);
+    Hasher::PRFxN(
+        prf_inputs.as_slice(),
+        &mut prf_outputs,
+        ETA2_RANDOMNESS_SIZE,
+    );
     for i in 0..K {
         hax_lib::loop_invariant!(|i: usize| {
             fstar!(
