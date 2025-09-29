@@ -180,7 +180,7 @@ pub(crate) fn decrypt<S: State>(
 }
 
 /// Macro to instantiate the different variants, both 128/256 and platforms.
-macro_rules! pub_mod {
+macro_rules! pub_crate_mod {
     ($variant_comment:literal, $mod_name:ident, $state:ty) => {
         #[doc = $variant_comment]
         pub mod $mod_name {
@@ -221,21 +221,21 @@ macro_rules! pub_mod {
 }
 
 pub(crate) mod portable {
-    pub_mod!(r"AES-GCM 128 ", aes_gcm_128, crate::aes_gcm_128::State<platform::portable::State, platform::portable::FieldElement>);
-    pub_mod!(r"AES-GCM 256 ", aes_gcm_256, crate::aes_gcm_256::State<platform::portable::State, platform::portable::FieldElement>);
+    pub_crate_mod!(r"AES-GCM 128 ", aes_gcm_128, crate::aes_gcm_128::State<platform::portable::State, platform::portable::FieldElement>);
+    pub_crate_mod!(r"AES-GCM 256 ", aes_gcm_256, crate::aes_gcm_256::State<platform::portable::State, platform::portable::FieldElement>);
 }
 
 #[cfg(feature = "simd128")]
 pub(crate) mod neon {
-    pub_mod!(r"AES-GCM 128 ", aes_gcm_128, crate::aes_gcm_128::State<platform::neon::State, platform::neon::FieldElement>);
-    pub_mod!(r"AES-GCM 256 ", aes_gcm_256, crate::aes_gcm_256::State<platform::neon::State, platform::neon::FieldElement>);
+    pub_crate_mod!(r"AES-GCM 128 ", aes_gcm_128, crate::aes_gcm_128::State<platform::neon::State, platform::neon::FieldElement>);
+    pub_crate_mod!(r"AES-GCM 256 ", aes_gcm_256, crate::aes_gcm_256::State<platform::neon::State, platform::neon::FieldElement>);
 }
 
 #[cfg(feature = "simd256")]
 pub(crate) mod x64 {
-    // Here we don't use the `pub_mod` macro because we need to add target features
+    // Here we don't use the `pub_crate_mod` macro because we need to add target features
     // onto the functions.
-    macro_rules! x64_pub_mod {
+    macro_rules! x64_pub_crate_mod {
         ($variant_comment:literal, $mod_name:ident, $state:ty) => {
             #[doc = $variant_comment]
             pub mod $mod_name {
@@ -311,8 +311,8 @@ pub(crate) mod x64 {
         };
     }
 
-    x64_pub_mod!(r"AES-GCM 128 ", aes_gcm_128, crate::aes_gcm_128::State<platform::x64::State, platform::x64::FieldElement>);
-    x64_pub_mod!(r"AES-GCM 256 ", aes_gcm_256, crate::aes_gcm_256::State<platform::x64::State, platform::x64::FieldElement>);
+    x64_pub_crate_mod!(r"AES-GCM 128 ", aes_gcm_128, crate::aes_gcm_128::State<platform::x64::State, platform::x64::FieldElement>);
+    x64_pub_crate_mod!(r"AES-GCM 256 ", aes_gcm_256, crate::aes_gcm_256::State<platform::x64::State, platform::x64::FieldElement>);
 }
 
 #[doc(inline)]
