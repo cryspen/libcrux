@@ -347,7 +347,10 @@ pub(crate) mod avx2 {
                     &input[0], &input[1], &input[2], &input[3], out0, out1, out2, out3,
                 );
             }
+            #[cfg(not(eurydice))]
             _ => unreachable!("This function must only be called with N = 2, 3, 4"),
+            #[cfg(eurydice)]
+            _ => unreachable!(),
         }
     }
 
@@ -372,7 +375,10 @@ pub(crate) mod avx2 {
                     &mut state, &input[0], &input[1], &input[2], &input[3],
                 );
             }
+            #[cfg(not(eurydice))]
             _ => unreachable!("This function must only be called with N = 2, 3, 4"),
+            #[cfg(eurydice)]
+            _ => unreachable!(),
         }
 
         Simd256Hash {
@@ -413,7 +419,10 @@ pub(crate) mod avx2 {
                 outputs[2] = out2;
                 outputs[3] = out3;
             }
+            #[cfg(not(eurydice))]
             _ => unreachable!("This function must only be called with N = 2, 3, 4"),
+            #[cfg(eurydice)]
+            _ => unreachable!(),
         }
     }
 
@@ -447,7 +456,10 @@ pub(crate) mod avx2 {
                 outputs[2] = out2;
                 outputs[3] = out3;
             }
+            #[cfg(not(eurydice))]
             _ => unreachable!("This function is only called with 2, 3, 4"),
+            #[cfg(eurydice)]
+            _ => unreachable!(),
         }
     }
 
@@ -600,7 +612,10 @@ pub(crate) mod neon {
                 x2::shake256(&input[0], &input[1], out0, out1);
                 x2::shake256(&input[2], &input[3], out2, out3);
             }
+            #[cfg(not(eurydice))]
             _ => unreachable!("This function must only be called with N = 2, 3, 4"),
+            #[cfg(eurydice)]
+            _ => unreachable!(),
         }
     }
 
