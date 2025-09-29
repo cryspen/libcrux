@@ -170,17 +170,19 @@ pub mod signers {
                         >>::verify(payload, verification_key, signature, aux)
                     }
                     fn keygen(
-                        rand: Self::KeyGenRandomness,
+                        rng: &mut impl libcrux_traits::rand::CryptoRng,
                     ) -> Result<
                         (Self::SigningKey, Self::VerificationKey),
-                        libcrux_traits::signature::owned::KeyGenError,
+                        libcrux_traits::signature::key_centric_owned::KeyGenError,
                     > {
+                        let mut randomness = [0; RAND_KEYGEN_LEN];
+                        rng.fill_bytes(&mut randomness);
                         <$name<T> as libcrux_traits::signature::owned::Sign<
                             SIGNING_KEY_LEN,
                             VERIFICATION_KEY_LEN,
                             SIGNATURE_LEN,
                             RAND_KEYGEN_LEN,
-                        >>::keygen(rand)
+                        >>::keygen(randomness)
                     }
                 }
             }

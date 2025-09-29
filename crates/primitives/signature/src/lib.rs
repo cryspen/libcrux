@@ -6,7 +6,6 @@ pub use libcrux_traits::signature::{
 
 #[cfg(feature = "ecdsa")]
 pub mod ecdsa {
-    // TODO: better randomness in examples?
     pub mod p256 {
         //! ```rust
         //! use libcrux_signature::ecdsa::p256::{P256Signer as P256, Sha2_512, Nonce};
@@ -19,7 +18,7 @@ pub mod ecdsa {
         //!
         //! // generate a new signature keypair from random bytes
         //! let KeyPair { signing_key, verification_key } =
-        //! KeyPair::<P256<Sha2_512>>::generate_key_pair([1; 32]).unwrap();
+        //! KeyPair::<P256<Sha2_512>>::generate_key_pair(&mut rng.unwrap_mut()).unwrap();
         //!
         //! // sign
         //! let signature = signing_key.sign(b"payload", &nonce).unwrap();
@@ -39,9 +38,11 @@ pub mod ed25519 {
     //! use libcrux_signature::ed25519::Ed25519;
     //! use libcrux_signature::{KeyPair, SigningKey, VerificationKey};
     //!
+    //! use rand::TryRngCore;
+    //! let mut rng = rand::rngs::OsRng;
     //! // generate a new signature keypair from random bytes
     //! let KeyPair { signing_key, verification_key }
-    //!     = KeyPair::<Ed25519>::generate_key_pair([1; 32]).unwrap();
+    //!     = KeyPair::<Ed25519>::generate_key_pair(&mut rng.unwrap_mut()).unwrap();
     //!
     //! // sign
     //! let signature = signing_key.sign(b"payload", ()).unwrap();
@@ -60,10 +61,13 @@ pub mod mldsa {
     //!
     //! // set application context
     //! impl_context!(AppContext, b"context");
+
+    //! use rand::TryRngCore;
+    //! let mut rng = rand::rngs::OsRng;
     //!
     //! // generate a new signature keypair from random bytes
     //! let KeyPair { signing_key, verification_key }
-    //!     = KeyPair::<MlDsa44<AppContext>>::generate_key_pair([1; 32]).unwrap();
+    //!     = KeyPair::<MlDsa44<AppContext>>::generate_key_pair(&mut rng.unwrap_mut()).unwrap();
     //!
     //! // sign
     //! let signature = signing_key.sign(b"payload", [2; 32]).unwrap();

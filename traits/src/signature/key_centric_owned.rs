@@ -36,11 +36,8 @@ pub trait Sign: SignTypes {
         aux: Self::VerifyAux<'_>,
     ) -> Result<(), VerifyError>;
     /// Generate a pair of signing and verification keys.
-    ///
-    /// It is the responsibility of the caller to ensure  that the `rand` argument is actually
-    /// random.
     fn keygen(
-        rand: Self::KeyGenRandomness,
+        rand: &mut impl rand::CryptoRng,
     ) -> Result<(Self::SigningKey, Self::VerificationKey), KeyGenError>;
 }
 
@@ -58,8 +55,8 @@ pub struct KeyPair<Algorithm: SignTypes> {
 }
 
 impl<Algorithm: Sign> KeyPair<Algorithm> {
-    pub fn generate_key_pair(randomness: Algorithm::KeyGenRandomness) -> Result<Self, KeyGenError> {
-        Algorithm::keygen(randomness).map(|(signing_key, verification_key)| KeyPair {
+    pub fn generate_key_pair(rng: &mut impl rand::CryptoRng) -> Result<Self, KeyGenError> {
+        Algorithm::keygen(rng).map(|(signing_key, verification_key)| KeyPair {
             signing_key: SigningKey { key: signing_key },
             verification_key: VerificationKey {
                 key: verification_key,
@@ -148,17 +145,19 @@ macro_rules! impl_key_centric_owned {
                 >>::verify(payload, verification_key, signature, aux)
             }
             fn keygen(
-                rand: Self::KeyGenRandomness,
+                rng: &mut impl $crate::rand::CryptoRng,
             ) -> Result<
                 (Self::SigningKey, Self::VerificationKey),
                 $crate::signature::owned::KeyGenError,
             > {
+                let mut randomness = [0; $rand_keygen_len];
+                rng.fill_bytes(&mut randomness);
                 <$ty as $crate::signature::owned::Sign<
                     $signing_key_len,
                     $verification_key_len,
                     $signature_len,
                     $rand_keygen_len,
-                >>::keygen(rand)
+                >>::keygen(randomness)
             }
         }
     };
