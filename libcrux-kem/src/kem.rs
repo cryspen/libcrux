@@ -902,7 +902,9 @@ pub fn key_gen_derand(alg: Algorithm, seed: &[u8]) -> Result<(PrivateKey, Public
 
 /// The XWing KEM combiner with ML-KEM 768 and x25519
 mod xwing {
+    use libcrux_curve25519::ecdh_api::*;
     use libcrux_ecdh::X25519PrivateKey;
+    use libcrux_secrets::*;
 
     use super::*;
 
@@ -962,7 +964,16 @@ mod xwing {
             let dk_x: &mut [u8; X25519_DK_LEN] = dk_x.try_into().unwrap();
 
             MlKem768::keygen(ek_m, dk_m, rand_m)?;
-            X25519::keygen(ek_x, dk_x, rand_x)?;
+
+            <X25519 as EcdhArrayref<X25519_RAND_KEYGEN_LEN, X25519_DK_LEN, X25519_EK_LEN>>::generate_secret(
+                dk_x.classify_ref_mut(),
+                rand_x.classify_ref(),
+            ).map_err(|_| libcrux_traits::kem::owned::KeyGenError::InvalidRandomness)?;
+
+            <X25519 as EcdhArrayref<X25519_RAND_ENCAPS_LEN, X25519_DK_LEN, X25519_EK_LEN>>::secret_to_public(
+                ek_x,
+                dk_x.classify_ref()
+            ).map_err(|_| libcrux_traits::kem::owned::KeyGenError::Unknown)?;
 
             Ok(())
         }
@@ -993,7 +1004,24 @@ mod xwing {
             MlKem768::encaps(ct_m, ss_m, ek_m, rand_m)?;
 
             let ss_x: &mut [u8; 32] = (&mut hash_buffer[32..64]).try_into().unwrap();
-            X25519::encaps(ct_x, ss_x, ek_x, rand_x)?;
+
+            let mut ephemeral_secret_x = [0u8; X25519_DK_LEN];
+            <X25519 as EcdhArrayref<X25519_RAND_ENCAPS_LEN, X25519_DK_LEN, X25519_EK_LEN>>::generate_secret(
+                ephemeral_secret_x.classify_ref_mut(),
+                rand_x.classify_ref(),
+            ).map_err(|_| libcrux_traits::kem::owned::EncapsError::InvalidRandomness)?;
+
+            <X25519 as EcdhArrayref<X25519_RAND_ENCAPS_LEN, X25519_DK_LEN, X25519_EK_LEN>>::secret_to_public(
+                ct_x,
+                ephemeral_secret_x.classify_ref(),
+            ).map_err(|_| libcrux_traits::kem::owned::EncapsError::Unknown)?;
+
+            <X25519 as EcdhArrayref<X25519_RAND_ENCAPS_LEN, X25519_DK_LEN, X25519_EK_LEN>>::derive_ecdh(
+                ss_x.classify_ref_mut(),
+                ek_x,
+                ephemeral_secret_x.classify_ref(),
+            ).map_err(|_| libcrux_traits::kem::owned::EncapsError::InvalidEncapsKey)?;
+
             hash_buffer[64..96].copy_from_slice(ct_x);
             sha3::sha256_ema(ss, &hash_buffer);
 
@@ -1025,7 +1053,12 @@ mod xwing {
             MlKem768::decaps(ss_m, ct_m, dk_m)?;
 
             let ss_x: &mut [u8; 32] = (&mut hash_buffer[32..64]).try_into().unwrap();
-            X25519::decaps(ss_x, ct_x, dk_x)?;
+            <X25519 as EcdhArrayref<X25519_RAND_ENCAPS_LEN, X25519_DK_LEN, X25519_EK_LEN>>::derive_ecdh(
+            ss_x.classify_ref_mut(),
+            ct_x,
+            dk_x.classify_ref(),
+            ).map_err(|_| libcrux_traits::kem::owned::DecapsError::Unknown)?;
+
             sha3::sha256_ema(ss, &hash_buffer);
 
             Ok(())
