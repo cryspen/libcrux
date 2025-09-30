@@ -15,14 +15,12 @@ fuzz_target!(|data: &[u8]| {
     let aad = &data[16 + 12..16 + 12 + 5];
 
     let mut ctxt = vec![0u8; data.len()];
-    let mut tag = [0u8; 16];
-    libcrux_aesgcm::PortableAesGcm128::encrypt(
-        &mut ctxt,
-        &mut tag,
-        key.try_into().unwrap(),
-        nonce.try_into().unwrap(),
-        aad,
-        &data,
-    )
-    .unwrap();
+    let mut tag_bytes = [0u8; 16];
+    let algo = libcrux_aesgcm::PortableAesGcm128;
+
+    let key = algo.new_key(key).unwrap();
+    let nonce = algo.new_nonce(nonce).unwrap();
+    let tag = algo.new_tag_mut(&mut tag_bytes).unwrap();
+
+    key.encrypt(&mut ctxt, tag, nonce, &aad, &data).unwrap();
 });
