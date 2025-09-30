@@ -1,3 +1,4 @@
+use libcrux_traits::aead::{slice::KeyGenError, typed_refs::KeyMut};
 #[cfg(any(feature = "chacha20poly1305", feature = "xchacha20poly1305"))]
 use libcrux_traits::{
     aead,
@@ -67,6 +68,25 @@ impl aead::typed_refs::Aead for Aead {
             Aead::ChaCha20Poly1305 => 12,
             #[cfg(feature = "xchacha20poly1305")]
             Aead::XChaCha20Poly1305 => 24,
+        }
+    }
+
+    fn keygen<'a>(&self, key: KeyMut<'a, Self>, rand: &[u8]) -> Result<(), KeyGenError> {
+        match *self {
+            #[cfg(feature = "chacha20poly1305")]
+            Aead::ChaCha20Poly1305 => {
+                use crate::chacha20poly1305::ChaCha20Poly1305;
+
+                let key = Self::mux_key_mut(key).ok_or(KeyGenError::WrongKeyLength)?;
+                ChaCha20Poly1305.keygen(key, rand)
+            }
+            #[cfg(feature = "xchacha20poly1305")]
+            Aead::XChaCha20Poly1305 => {
+                use crate::xchacha20poly1305::XChaCha20Poly1305;
+
+                let key = Self::mux_key_mut(key).ok_or(KeyGenError::WrongKeyLength)?;
+                XChaCha20Poly1305.keygen(key, rand)
+            }
         }
     }
 
