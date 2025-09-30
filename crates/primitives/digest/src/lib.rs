@@ -12,7 +12,7 @@
 //! ```
 //! fn main() {
 //!     use libcrux_digest::blake2::*;
-//!     use libcrux_traits::digest::arrayref::Hash as _;
+//!     use libcrux_digest::Hash as _;
 //!     let mut digest = [0; 32];
 //!     Blake2bHash::hash(&mut digest, b"test data").unwrap();
 //! }
@@ -36,16 +36,16 @@
 //! ```
 
 #[cfg(any(feature = "sha2", feature = "sha3", feature = "blake2"))]
-pub use libcrux_traits::digest::Hasher;
+pub use libcrux_traits::digest::{arrayref::Hash, Hasher};
 
 #[cfg(feature = "blake2")]
 pub mod blake2 {
     //! Blake2 digest implementations.
     //!
-    //! Usage example for [`Blake2bHash`] with [`libcrux_traits::digest::arrayref::Hash`]:
+    //! Usage example for [`Blake2bHash`] with [`Hash`]:
     //! ```rust
     //! use libcrux_digest::blake2::*;
-    //! use libcrux_traits::digest::arrayref::Hash as _;
+    //! use libcrux_digest::Hash as _;
     //! let mut digest = [0; 32];
     //! Blake2bHash::hash(&mut digest, b"test data").unwrap();
     //! ```
@@ -67,19 +67,12 @@ pub mod blake2 {
 pub mod sha2 {
     //! Sha2 digest implementations.
     //!
-    //! Usage example for [`Sha2_224`] with [`libcrux_traits::digest::arrayref::Hash`]:
+    //! Usage example for [`Sha2_224`] with [`Hash`]:
     //! ```rust
     //! use libcrux_digest::sha2::*;
-    //! use libcrux_traits::digest::arrayref::Hash as _;
+    //! use libcrux_digest::Hash as _;
     //! let mut digest = [0; 28];
     //! Sha2_224::hash(&mut digest, b"test data").unwrap();
-    //! ```
-    //!
-    //! ```rust
-    //! use libcrux_digest::sha2::*;
-    //! use libcrux_traits::digest::owned::Hash as _;
-    //!
-    //! let digest = Sha2_224::hash(b"test data").unwrap();
     //! ```
     //!
     //! Usage example for [`Sha2_224Hasher`]:
@@ -103,10 +96,10 @@ pub mod sha2 {
 pub mod sha3 {
     //! Sha3 digest implementations.
     //!
-    //! Usage example for [`Sha3_224`] with [`libcrux_traits::digest::arrayref::Hash`]:
+    //! Usage example for [`Sha3_224`] with [`Hash`]:
     //! ```rust
     //! use libcrux_digest::sha3::*;
-    //! use libcrux_traits::digest::arrayref::Hash as _;
+    //! use libcrux_digest::Hash as _;
     //! let mut digest = [0; 28];
     //! Sha3_224::hash(&mut digest, b"test data").unwrap();
     //! ```
