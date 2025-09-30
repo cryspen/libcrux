@@ -48,36 +48,36 @@ fn test() {
                 println!("  Test AES-GCM 128 {}", test.tc_id);
 
                 // Multiplexing
-                run(&test, libcrux_aesgcm::AesGcm128);
+                run(&test, libcrux_aesgcm::AesGcm128 {});
 
                 // Portable
-                run(&test, libcrux_aesgcm::PortableAesGcm128);
+                run(&test, libcrux_aesgcm::PortableAesGcm128 {});
 
                 // Neon
                 #[cfg(all(target_arch = "aarch64", target_feature = "aes"))]
-                run(&test, libcrux_aesgcm::NeonAesGcm128);
+                run(&test, libcrux_aesgcm::NeonAesGcm128 {});
 
                 // x64
                 #[cfg(all(target_arch = "x86_64"))]
-                run(&test, libcrux_aesgcm::X64AesGcm128);
+                run(&test, libcrux_aesgcm::X64AesGcm128 {});
             }
         } else if test_group.key_size == 256 {
             for test in test_group.tests {
                 println!("  Test AES-GCM 256 {}", test.tc_id);
 
                 // Multiplexing
-                run(&test, libcrux_aesgcm::AesGcm256);
+                run(&test, libcrux_aesgcm::AesGcm256 {});
 
                 // Portable
-                run(&test, libcrux_aesgcm::PortableAesGcm256);
+                run(&test, libcrux_aesgcm::PortableAesGcm256 {});
 
                 // Neon
                 #[cfg(all(target_arch = "aarch64", target_feature = "aes"))]
-                run(&test, libcrux_aesgcm::NeonAesGcm256);
+                run(&test, libcrux_aesgcm::NeonAesGcm256 {});
 
                 // x64
                 #[cfg(all(target_arch = "x86_64"))]
-                run(&test, libcrux_aesgcm::X64AesGcm256);
+                run(&test, libcrux_aesgcm::X64AesGcm256 {});
             }
         }
     }
