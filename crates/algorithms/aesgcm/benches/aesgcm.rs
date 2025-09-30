@@ -14,7 +14,7 @@ pub fn fmt(x: usize) -> String {
 }
 
 macro_rules! impl_comp {
-    ($fun:ident, $keylen:literal, $portable_fun:expr, $neon_fun:expr, $intel_fun:expr, $rustcrypto_fun:expr) => {
+    ($fun:ident, $keylen:literal, $portable:path, $portable_alg:ident, $neon:path, $neon_alg:ident, $intel:path, $intel_alg:ident, $rustcrypto_fun:expr) => {
         // Comparing libcrux performance for different payload sizes and other implementations.
         fn $fun(c: &mut Criterion) {
             const PAYLOAD_SIZES: [usize; 3] = [128, 1024, 1024 * 1024 * 10];
@@ -39,15 +39,16 @@ macro_rules! impl_comp {
                             },
                             |(key, nonce, aad, payload)| {
                                 let mut ciphertext = vec![0; *payload_size];
-                                let mut tag = [0u8; 16];
-                                $portable_fun(
-                                    &key,
-                                    &nonce,
-                                    &aad,
-                                    &payload,
-                                    &mut ciphertext,
-                                    &mut tag,
-                                );
+                                let mut tag_bytes = [0u8; 16];
+                                use libcrux_aesgcm::Aead;
+                                use $portable::*;
+                                let algo = $portable_alg;
+
+                                let k = algo.new_key(&key).unwrap();
+                                let nonce = algo.new_nonce(&nonce).unwrap();
+                                let tag = algo.new_tag_mut(&mut tag_bytes).unwrap();
+                                k.encrypt(&mut ciphertext, tag, nonce, &aad, &payload)
+                                    .unwrap();
                             },
                             BatchSize::SmallInput,
                         )
@@ -70,12 +71,21 @@ macro_rules! impl_comp {
                             },
                             |(key, nonce, aad, payload)| {
                                 let mut ciphertext = vec![0; *payload_size];
-                                let mut tag = [0u8; 16];
-                                $neon_fun(&key, &nonce, &aad, &payload, &mut ciphertext, &mut tag);
+                                let mut tag_bytes = [0u8; 16];
+                                use libcrux_aesgcm::Aead;
+                                use $neon::*;
+                                let algo = $neon_alg;
+
+                                let k = algo.new_key(&key).unwrap();
+                                let nonce = algo.new_nonce(&nonce).unwrap();
+                                let tag = algo.new_tag_mut(&mut tag_bytes).unwrap();
+                                k.encrypt(&mut ciphertext, tag, nonce, &aad, &payload)
+                                    .unwrap();
                             },
                             BatchSize::SmallInput,
                         )
                     },
+                    a,
                 );
 
                 #[cfg(all(target_arch = "x86_64"))] // ENABLE: target_feature="aes"
@@ -94,8 +104,16 @@ macro_rules! impl_comp {
                             },
                             |(key, nonce, aad, payload)| {
                                 let mut ciphertext = vec![0; *payload_size];
-                                let mut tag = [0u8; 16];
-                                $intel_fun(&key, &nonce, &aad, &payload, &mut ciphertext, &mut tag);
+                                let mut tag_bytes = [0u8; 16];
+                                use libcrux_aesgcm::Aead;
+                                use $intel::*;
+                                let algo = $intel_alg;
+
+                                let k = algo.new_key(&key).unwrap();
+                                let nonce = algo.new_nonce(&nonce).unwrap();
+                                let tag = algo.new_tag_mut(&mut tag_bytes).unwrap();
+                                k.encrypt(&mut ciphertext, tag, nonce, &aad, &payload)
+                                    .unwrap();
                             },
                             BatchSize::SmallInput,
                         )
@@ -174,17 +192,23 @@ fn rustcrypto_aes256_gcm_encrypt(
 impl_comp!(
     AES128_GCM,
     16,
-    libcrux_aesgcm::portable::aes_gcm_128::encrypt,
-    libcrux_aesgcm::neon::aes_gcm_128::encrypt,
-    libcrux_aesgcm::x64::aes_gcm_128::encrypt,
+    libcrux_aesgcm::aes_gcm_128::portable,
+    PortableAesGcm128,
+    libcrux_aesgcm::aes_gcm_128::neon,
+    NeonAesGcm128,
+    libcrux_aesgcm::aes_gcm_128::x64,
+    X64AesGcm128,
     rustcrypto_aes128_gcm_encrypt
 );
 impl_comp!(
     AES256_GCM,
     32,
-    libcrux_aesgcm::portable::aes_gcm_256::encrypt,
-    libcrux_aesgcm::neon::aes_gcm_256::encrypt,
-    libcrux_aesgcm::x64::aes_gcm_256::encrypt,
+    libcrux_aesgcm::aes_gcm_256::portable,
+    PortableAesGcm256,
+    libcrux_aesgcm::aes_gcm_256::neon,
+    NeonAesGcm256,
+    libcrux_aesgcm::aes_gcm_256::x64,
+    X64AesGcm256,
     rustcrypto_aes256_gcm_encrypt
 );
 
