@@ -1,7 +1,7 @@
 // structs for typed_owned
 use libcrux_aesgcm::{
-    aes_gcm_128::{AesGcm128, Key, Nonce, Tag},
-    AeadConsts as _,
+    aes_gcm_128::{Key, Nonce, Tag},
+    AeadConsts as _, AesGcm128,
 };
 
 fn main() {

@@ -10,7 +10,7 @@
 //! ```rust
 //! use libcrux_aesgcm::AeadConsts as _;
 //! // multiplexed API
-//! use libcrux_aesgcm::aes_gcm_256::{AesGcm256, Key, Tag, Nonce};
+//! use libcrux_aesgcm::{AesGcm256, aes_gcm_256::{Key, Tag, Nonce}};
 //! // or:
 //! // use libcrux_aesgcm::aes_gcm_256::portable::{Key, Tag, Nonce};
 //! // use libcrux_aesgcm::aes_gcm_256::neon::{Key, Tag, Nonce};
@@ -33,7 +33,7 @@
 //! ```rust
 //! use libcrux_aesgcm::{AeadConsts as _, Aead as _};
 //! // multiplexed API
-//! use libcrux_aesgcm::aes_gcm_256::AesGcm256;
+//! use libcrux_aesgcm::AesGcm256;
 //! // or:
 //! // use libcrux_aesgcm::aes_gcm_256::portable::PortableAesGcm256 as AesGcm256;
 //! // use libcrux_aesgcm::aes_gcm_256::neon::NeonAesGcm256 as AesGcm256;

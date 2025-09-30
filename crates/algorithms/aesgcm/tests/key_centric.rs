@@ -1,4 +1,7 @@
-use libcrux_aesgcm::aes_gcm_128::{AesGcm128, Key, Nonce, Tag};
+use libcrux_aesgcm::{
+    aes_gcm_128::{Key, Nonce, Tag},
+    AesGcm128,
+};
 
 #[test]
 fn test_key_centric_owned() {

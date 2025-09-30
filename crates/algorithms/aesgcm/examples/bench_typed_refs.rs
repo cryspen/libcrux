@@ -1,5 +1,5 @@
 // structs for typed_owned
-use libcrux_aesgcm::{aes_gcm_128::AesGcm128, Aead as _, AeadConsts as _};
+use libcrux_aesgcm::{Aead as _, AeadConsts as _, AesGcm128};
 
 fn main() {
     const PAYLOAD_SIZES: usize = 3045;

@@ -107,7 +107,7 @@ pub(crate) use aesgcm;
 /// Helper module for implementing platform-specific modules
 macro_rules! platform_mod {
     ($implementation:ident, $alg_name:literal) => {
-        pub use crate::implementations::$implementation;
+        use crate::implementations::$implementation;
         #[doc = concat!("An owned key for ",$alg_name, ".")]
         pub type Key = libcrux_traits::aead::typed_owned::Key<$implementation>;
         #[doc = concat!("An owned tag for ",$alg_name, ".")]
