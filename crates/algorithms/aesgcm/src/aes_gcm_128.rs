@@ -81,28 +81,32 @@ platform_mod!(AesGcm128, "AES-GCM 128");
 pub mod portable {
     //! Portable implementation of AES-GCM 128.
     //!
-    //! For usage see [`aes_gcm_128`].
+    //! For usage examples see [`aes_gcm_128`].
     use super::*;
     #[cfg(doc)]
     use crate::aes_gcm_128;
-    platform_mod!(PortableAesGcm128, "portable AES-GCM 128");
+    platform_mod!(PortableAesGcm128, "AES-GCM 128 (portable)");
 }
 pub mod neon {
     //! Neon implementation of AES-GCM 128.
     //!
-    //! For usage see [`aes_gcm_128`].
+    //! This module must only be used when ARM AES instructions are available.
+    //!
+    //! For usage examples see [`aes_gcm_128`].
     use super::*;
     #[cfg(doc)]
     use crate::aes_gcm_128;
-    platform_mod!(NeonAesGcm128, "neon AES-GCM 128");
+    platform_mod!(NeonAesGcm128, "AES-GCM 128 (neon)");
 }
 
 pub mod x64 {
     //! x64 implementation of AES-GCM 128.
     //!
-    //! For usage see [`aes_gcm_128`].
+    //! This module must only be used when AES-NI instructions are available.
+    //!
+    //! For usage examples see [`aes_gcm_128`].
     use super::*;
     #[cfg(doc)]
     use crate::aes_gcm_128;
-    platform_mod!(X64AesGcm128, "x64 AES-GCM 128");
+    platform_mod!(X64AesGcm128, "AES-GCM 128 (x64)");
 }

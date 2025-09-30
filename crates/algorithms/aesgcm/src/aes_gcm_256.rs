@@ -81,28 +81,32 @@ platform_mod!(AesGcm256, "AES-GCM 256");
 pub mod portable {
     //! Portable implementation of AES-GCM 256.
     //!
-    //! For usage see [`aes_gcm_256`].
+    //! For usage examples see [`aes_gcm_256`].
     use super::*;
     #[cfg(doc)]
     use crate::aes_gcm_256;
-    platform_mod!(PortableAesGcm256, "portable AES-GCM 256");
+    platform_mod!(PortableAesGcm256, "AES-GCM 256 (portable)");
 }
 pub mod neon {
     //! Neon implementation of AES-GCM 256.
     //!
-    //! For usage see [`aes_gcm_256`].
+    //! This module must only be used when ARM AES instructions are available.
+    //!
+    //! For usage examples see [`aes_gcm_256`].
     use super::*;
     #[cfg(doc)]
     use crate::aes_gcm_256;
-    platform_mod!(NeonAesGcm256, "neon AES-GCM 256");
+    platform_mod!(NeonAesGcm256, "AES-GCM 256 (neon)");
 }
 
 pub mod x64 {
     //! x64 implementation of AES-GCM 256.
     //!
-    //! For usage see [`aes_gcm_256`].
+    //! This module must only be used when AES-NI instructions are available.
+    //!
+    //! For usage examples see [`aes_gcm_256`].
     use super::*;
     #[cfg(doc)]
     use crate::aes_gcm_256;
-    platform_mod!(X64AesGcm256, "x64 AES-GCM 256");
+    platform_mod!(X64AesGcm256, "AES-GCM 256 (x64)");
 }
