@@ -1,4 +1,4 @@
-pub use libcrux_traits::ecdh::{arrayref::ECDHArrayref, owned::ECDHOwned, slice::ECDHSlice};
+pub use libcrux_traits::ecdh::{arrayref::EcdhArrayref, owned::EcdhOwned, slice::EcdhSlice};
 
 use crate::clamp;
 
@@ -10,7 +10,7 @@ const PUBLIC_LEN: usize = EK_LEN;
 
 use libcrux_secrets::{Classify, Declassify, DeclassifyRef, DeclassifyRefMut, U8};
 
-impl libcrux_traits::ecdh::arrayref::ECDHArrayref<RAND_LEN, SECRET_LEN, PUBLIC_LEN> for X25519 {
+impl libcrux_traits::ecdh::arrayref::EcdhArrayref<RAND_LEN, SECRET_LEN, PUBLIC_LEN> for X25519 {
     fn generate_secret(
         secret: &mut [U8; SECRET_LEN],
         rand: &[U8; RAND_LEN],

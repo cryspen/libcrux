@@ -6,7 +6,7 @@ use libcrux_secrets::U8;
 
 /// An Elliptic Curve Diffie-Hellman (ECDH) key exchange. This trait is the most low-level and mostly used in the
 /// implementation of other, more usabe APIs on top.
-pub trait ECDHArrayref<const RAND_LEN: usize, const SECRET_LEN: usize, const PUBLIC_LEN: usize> {
+pub trait EcdhArrayref<const RAND_LEN: usize, const SECRET_LEN: usize, const PUBLIC_LEN: usize> {
     /// Generate a Diffie-Hellman secret value.
     /// It is the responsibility of the caller to ensure  that the `rand` argument is actually
     /// random.

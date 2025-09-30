@@ -5,7 +5,7 @@
 use super::arrayref;
 use libcrux_secrets::U8;
 
-pub trait ECDHSlice {
+pub trait EcdhSlice {
     /// Generate a Diffie-Hellman secret value.
     /// It is the responsibility of the caller to ensure  that the `rand` argument is actually
     /// random.
@@ -26,12 +26,12 @@ pub trait ECDHSlice {
     fn validate_secret(secret: &[U8]) -> Result<(), ValidateSecretError>;
 }
 
-/// Implements [`ECDHSlice`] for any `$ty : arrayref::ECDHArrayref`
+/// Implements [`EcdhSlice`] for any `$ty : arrayref::EcdhArrayref`
 /// with the given array bounds.
 #[macro_export]
 macro_rules! impl_ecdh_slice_trait {
     ($type:ty => $rand_len:expr, $sk_len:expr, $pk_len:expr) => {
-        impl $crate::ecdh::slice::ECDHSlice for $type {
+        impl $crate::ecdh::slice::EcdhSlice for $type {
             fn generate_secret(secret: &mut [U8], rand: &[U8]) -> Result<(), $crate::ecdh::slice::GenerateSecretError> {
                 let secret: &mut [U8; $sk_len] = secret
                 .try_into()
@@ -43,7 +43,7 @@ macro_rules! impl_ecdh_slice_trait {
                 .map_err(|_|
                     $crate::ecdh::slice::GenerateSecretError::InvalidRandomnessLength)?;
 
-                <$type as $crate::ecdh::arrayref::ECDHArrayref<$rand_len, $sk_len, $pk_len>>::generate_secret(secret, rand)
+                <$type as $crate::ecdh::arrayref::EcdhArrayref<$rand_len, $sk_len, $pk_len>>::generate_secret(secret, rand)
                 .map_err($crate::ecdh::slice::GenerateSecretError::from)
             }
 
@@ -58,7 +58,7 @@ macro_rules! impl_ecdh_slice_trait {
                 .map_err(|_|
                     $crate::ecdh::slice::SecretToPublicError::InvalidPublicLength)?;
 
-                <$type as $crate::ecdh::arrayref::ECDHArrayref<$rand_len, $sk_len, $pk_len>>::secret_to_public(public, secret)
+                <$type as $crate::ecdh::arrayref::EcdhArrayref<$rand_len, $sk_len, $pk_len>>::secret_to_public(public, secret)
                 .map_err($crate::ecdh::slice::SecretToPublicError::from)
             }
 
@@ -78,7 +78,7 @@ macro_rules! impl_ecdh_slice_trait {
                 .map_err(|_|
                     $crate::ecdh::slice::DeriveError::InvalidPublicLength)?;
 
-                <$type as $crate::ecdh::arrayref::ECDHArrayref<$rand_len, $sk_len, $pk_len>>::derive_ecdh(derived, public, secret)
+                <$type as $crate::ecdh::arrayref::EcdhArrayref<$rand_len, $sk_len, $pk_len>>::derive_ecdh(derived, public, secret)
                 .map_err($crate::ecdh::slice::DeriveError::from)
             }
 
@@ -88,7 +88,7 @@ macro_rules! impl_ecdh_slice_trait {
                 .map_err(|_|
                     $crate::ecdh::slice::ValidateSecretError::InvalidSecretLength)?;
 
-                <$type as $crate::ecdh::arrayref::ECDHArrayref<$rand_len, $sk_len, $pk_len>>::validate_secret(secret)
+                <$type as $crate::ecdh::arrayref::EcdhArrayref<$rand_len, $sk_len, $pk_len>>::validate_secret(secret)
                 .map_err($crate::ecdh::slice::ValidateSecretError::from)
             }
         }

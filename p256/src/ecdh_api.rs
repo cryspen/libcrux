@@ -4,11 +4,11 @@ const RAND_LEN: usize = SCALAR_LEN;
 const SECRET_LEN: usize = SCALAR_LEN;
 const PUBLIC_LEN: usize = POINT_LEN;
 
-pub use libcrux_traits::ecdh::{arrayref::ECDHArrayref, owned::ECDHOwned, slice::ECDHSlice};
+pub use libcrux_traits::ecdh::{arrayref::EcdhArrayref, owned::EcdhOwned, slice::EcdhSlice};
 
 use libcrux_secrets::{Declassify, DeclassifyRef, DeclassifyRefMut, U8};
 
-impl libcrux_traits::ecdh::arrayref::ECDHArrayref<RAND_LEN, SECRET_LEN, PUBLIC_LEN>
+impl libcrux_traits::ecdh::arrayref::EcdhArrayref<RAND_LEN, SECRET_LEN, PUBLIC_LEN>
     for super::P256
 {
     fn generate_secret(
@@ -16,7 +16,7 @@ impl libcrux_traits::ecdh::arrayref::ECDHArrayref<RAND_LEN, SECRET_LEN, PUBLIC_L
         rand: &[U8; RAND_LEN],
     ) -> Result<(), libcrux_traits::ecdh::arrayref::GenerateSecretError> {
         secret.copy_from_slice(rand);
-        <Self as libcrux_traits::ecdh::arrayref::ECDHArrayref<RAND_LEN, SECRET_LEN, PUBLIC_LEN>>::validate_secret(secret).map_err(|_| libcrux_traits::ecdh::arrayref::GenerateSecretError::Unknown)
+        <Self as libcrux_traits::ecdh::arrayref::EcdhArrayref<RAND_LEN, SECRET_LEN, PUBLIC_LEN>>::validate_secret(secret).map_err(|_| libcrux_traits::ecdh::arrayref::GenerateSecretError::Unknown)
     }
 
     fn secret_to_public(
