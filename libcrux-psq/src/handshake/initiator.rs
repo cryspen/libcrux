@@ -1,7 +1,5 @@
 use tls_codec::{TlsDeserialize, TlsSerialize, TlsSize, VLByteSlice, VLBytes};
 
-use crate::handshake::ciphersuite::CiphersuiteBase;
-
 use super::HandshakeMessageOut;
 
 pub mod query;

@@ -1,7 +1,7 @@
 use rand::CryptoRng;
 
 use crate::handshake::{
-    ciphersuite::{InitiatorCiphersuite, ResponderCiphersuite},
+    ciphersuite::{InitiatorCiphersuiteTrait, ResponderCiphersuiteTrait},
     dhkem::DHPublicKey,
     initiator::query::QueryInitiator,
 };
@@ -94,7 +94,7 @@ impl<'a, Rng: CryptoRng> BuilderContext<'a, Rng> {
     /// is set.
     /// It also uses the `context`, `inner_aad`, `outer_aad`, and
     /// `peer_longterm_pq_pk`.
-    pub fn build_registration_initiator<C: InitiatorCiphersuite>(
+    pub fn build_registration_initiator<C: InitiatorCiphersuiteTrait>(
         self,
         ciphersuite: C,
     ) -> Result<RegistrationInitiator<'a, Rng, C>, Error> {
@@ -111,7 +111,7 @@ impl<'a, Rng: CryptoRng> BuilderContext<'a, Rng> {
     ///
     /// This requires that a `longterm_ecdh_keys`, and `recent_keys_upper_bound` is set.
     /// It also uses the `context`, `outer_aad`, and `longterm_pq_keys`.
-    pub fn build_responder<C: ResponderCiphersuite>(
+    pub fn build_responder<C: ResponderCiphersuiteTrait>(
         self,
         ciphersuite: C,
     ) -> Result<Responder<'a, Rng, C>, Error> {

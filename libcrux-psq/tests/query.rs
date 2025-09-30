@@ -1,13 +1,47 @@
+use libcrux_ml_kem::mlkem768::MlKem768KeyPair;
+#[cfg(feature = "classic-mceliece")]
+use libcrux_psq::classic_mceliece::KeyPair;
 use libcrux_psq::{
     handshake::{
-        builder, ciphersuite::ResponderX25519MlKem768ChaChaPolyHkdfSha256, dhkem::DHKeyPair,
+        builder,
+        ciphersuite::{CiphersuiteBuilder, CiphersuiteName},
+        dhkem::DHKeyPair,
     },
     traits::*,
 };
 
-#[test]
-fn query() {
-    let mut rng = rand::rng();
+use rand::rngs::ThreadRng;
+
+struct CommonSetup {
+    pub rng: ThreadRng,
+    pub responder_mlkem_keys: MlKem768KeyPair,
+    #[cfg(feature = "classic-mceliece")]
+    pub responder_cmc_keys: KeyPair,
+    pub responder_ecdh_keys: DHKeyPair,
+}
+
+impl CommonSetup {
+    fn new() -> Self {
+        let mut rng = rand::rng();
+        let responder_mlkem_keys = libcrux_ml_kem::mlkem768::rand::generate_key_pair(&mut rng);
+        #[cfg(feature = "classic-mceliece")]
+        let responder_cmc_keys =
+            libcrux_psq::classic_mceliece::KeyPair::generate_key_pair(&mut rng);
+
+        let responder_ecdh_keys = DHKeyPair::new(&mut rng);
+
+        CommonSetup {
+            rng,
+            responder_mlkem_keys,
+            #[cfg(feature = "classic-mceliece")]
+            responder_cmc_keys,
+            responder_ecdh_keys,
+        }
+    }
+}
+
+fn query(responder_ciphersuite_id: CiphersuiteName) {
+    let mut setup = CommonSetup::new();
     let ctx = b"Test Context";
     let aad_initiator = b"Test Data I";
     let aad_responder = b"Test Data R";
@@ -16,28 +50,35 @@ fn query() {
     let mut payload_buf_responder = vec![0u8; 4096];
     let mut payload_buf_initiator = vec![0u8; 4096];
 
-    // External setup
-    let responder_ecdh_keys = DHKeyPair::new(&mut rng);
-
-    let responder_pq_keys = libcrux_ml_kem::mlkem768::rand::generate_key_pair(&mut rng);
-
     // Setup initiator
-    let mut initiator = builder::BuilderContext::new(rand::rng())
+    let mut initiator = builder::BuilderContext::new(&mut setup.rng)
         .outer_aad(aad_initiator)
         .context(ctx)
-        .build_query_initiator(&responder_ecdh_keys.pk)
+        .build_query_initiator(&setup.responder_ecdh_keys.pk)
         .unwrap();
 
     // Setup responder
-    let mut responder = builder::BuilderContext::new(rand::rng())
+    #[allow(unused_mut)] // we need it mutable for the CMC case
+    let mut responder_cbuilder = CiphersuiteBuilder::new()
+        .longterm_ecdh_keys(&setup.responder_ecdh_keys)
+        .longterm_mlkem_encapsulation_key(setup.responder_mlkem_keys.public_key())
+        .longterm_mlkem_decapsulation_key(setup.responder_mlkem_keys.private_key());
+
+    #[cfg(feature = "classic-mceliece")]
+    {
+        responder_cbuilder = responder_cbuilder
+            .longterm_cmc_encapsulation_key(&setup.responder_cmc_keys.pk)
+            .longterm_cmc_decapsulation_key(&setup.responder_cmc_keys.sk);
+    }
+    let responder_ciphersuite = responder_cbuilder
+        .finish_responder(responder_ciphersuite_id)
+        .unwrap();
+
+    let mut responder = builder::BuilderContext::new(&mut setup.rng)
         .context(ctx)
         .outer_aad(aad_responder)
         .recent_keys_upper_bound(30)
-        .build_responder(ResponderX25519MlKem768ChaChaPolyHkdfSha256 {
-            longterm_ecdh_keys: &responder_ecdh_keys,
-            longterm_pq_encapsulation_key: responder_pq_keys.public_key(),
-            longterm_pq_decapsulation_key: responder_pq_keys.private_key(),
-        })
+        .build_responder(responder_ciphersuite)
         .unwrap();
 
     // Send first message
@@ -77,4 +118,12 @@ fn query() {
         &payload_buf_initiator[0..len_i_payload],
         query_payload_responder
     );
+}
+
+#[test]
+fn compatibility_query() {
+    query(CiphersuiteName::X25519ChachaPolyHkdfSha256);
+    query(CiphersuiteName::X25519Mlkem768ChachaPolyHkdfSha256);
+    #[cfg(feature = "classic-mceliece")]
+    query(CiphersuiteName::X25519ClassicMcElieceChachaPolyHkdfSha256);
 }

@@ -8,10 +8,12 @@ use tls_codec::{
 
 /// The AEAD to be used.
 pub enum AEAD {
+    /// The ChaCha20Poly1205 AEAD
     ChaChaPoly1305,
 }
 
 #[derive(Default, Clone, TlsSerialize, TlsDeserialize, TlsSerializeBytes, TlsSize)]
+/// An AEAD key.
 pub struct AEADKey([u8; KEY_LEN], #[tls_codec(skip)] [u8; NONCE_LEN]);
 
 impl std::fmt::Debug for AEADKey {
@@ -21,9 +23,13 @@ impl std::fmt::Debug for AEADKey {
 }
 
 /// Errors arising in the creation or use of AEAD keys
+#[derive(Debug)]
 pub enum AEADError {
+    /// An error occurred in the underlying AEAD implementation.
     CryptoError,
+    /// An error during serialization.
     Serialize(tls_codec::Error),
+    /// An error during deserialization.
     Deserialize(tls_codec::Error),
 }
 

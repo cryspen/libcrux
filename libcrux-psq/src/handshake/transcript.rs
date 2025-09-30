@@ -1,6 +1,4 @@
-use tls_codec::{
-    Serialize, SerializeBytes, Size, TlsSerialize, TlsSerializeBytes, TlsSize, VLBytes,
-};
+use tls_codec::{Serialize, SerializeBytes, TlsSerialize, TlsSerializeBytes, TlsSize};
 
 pub const TX0_DOMAIN_SEP: u8 = 0;
 pub const TX1_DOMAIN_SEP: u8 = 1;

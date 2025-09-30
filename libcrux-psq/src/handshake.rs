@@ -215,6 +215,7 @@ pub(crate) struct ToTransportState {
     pub(crate) tx2: Transcript,
     pub(crate) k2: AEADKey,
     pub(crate) initiator_ecdh_pk: Option<DHPublicKey>,
+    pub(crate) pq: bool,
 }
 
 #[derive(TlsDeserialize, TlsSize)]

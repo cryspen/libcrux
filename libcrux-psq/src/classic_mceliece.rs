@@ -55,6 +55,7 @@ pub struct SecretKey(pub(crate) Sk<'static>);
 pub struct KeyPair {
     /// Public key
     pub pk: PublicKey,
+    /// Secret Key
     pub sk: SecretKey,
 }
 

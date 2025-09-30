@@ -6,7 +6,7 @@ use tls_codec::{Deserialize, Serialize, Size, VLByteSlice};
 use crate::{
     aead::AEADKey,
     handshake::{
-        ciphersuite::{CiphersuiteBase, InitiatorCiphersuite},
+        ciphersuite::InitiatorCiphersuiteTrait,
         derive_k0, derive_k1,
         dhkem::{DHKeyPair, DHPrivateKey, DHPublicKey, DHSharedSecret},
         responder::ResponderRegistrationPayload,
@@ -20,7 +20,7 @@ use crate::{
 
 use super::{InitiatorInnerPayloadOut, InitiatorOuterPayloadOut};
 
-pub struct RegistrationInitiator<'a, Rng: CryptoRng, Ciphersuite: InitiatorCiphersuite> {
+pub struct RegistrationInitiator<'a, Rng: CryptoRng, Ciphersuite: InitiatorCiphersuiteTrait> {
     ciphersuite: Ciphersuite,
     inner_aad: &'a [u8],
     outer_aad: &'a [u8],
@@ -49,7 +49,7 @@ pub(crate) enum RegistrationInitiatorState {
     ToTransport(Box<ToTransportState>),
 }
 
-impl<'a, Rng: CryptoRng, Ciphersuite: InitiatorCiphersuite>
+impl<'a, Rng: CryptoRng, Ciphersuite: InitiatorCiphersuiteTrait>
     RegistrationInitiator<'a, Rng, Ciphersuite>
 {
     /// Create a new [`RegistrationInitiator`].
@@ -89,7 +89,7 @@ impl<'a, Rng: CryptoRng, Ciphersuite: InitiatorCiphersuite>
     }
 }
 
-impl<'a, Rng: CryptoRng, Ciphersuite: InitiatorCiphersuite> Channel<Error>
+impl<'a, Rng: CryptoRng, Ciphersuite: InitiatorCiphersuiteTrait> Channel<Error>
     for RegistrationInitiator<'a, Rng, Ciphersuite>
 {
     fn write_message(&mut self, payload: &[u8], out: &mut [u8]) -> Result<usize, Error> {
@@ -103,7 +103,7 @@ impl<'a, Rng: CryptoRng, Ciphersuite: InitiatorCiphersuite> Channel<Error>
 
         let pq_encapsulation_serialized = pq_encapsulation
             .tls_serialize_detached()
-            .map_err(|e| Error::OutputBufferShort)?;
+            .map_err(|_e| Error::OutputBufferShort)?;
 
         let tx1 = tx1::<Ciphersuite>(
             &state.tx0,
@@ -120,6 +120,8 @@ impl<'a, Rng: CryptoRng, Ciphersuite: InitiatorCiphersuite> Channel<Error>
             &tx1,
         )?;
 
+        eprintln!("Intitiator tx1: {tx1:?}");
+        eprintln!("Intitiator k1: {k1:?}");
         let inner_payload = InitiatorInnerPayloadOut(VLByteSlice(payload));
         let (inner_ciphertext, inner_tag) = k1.serialize_encrypt(&inner_payload, self.inner_aad)?;
 
@@ -196,6 +198,7 @@ impl<'a, Rng: CryptoRng, Ciphersuite: InitiatorCiphersuite> Channel<Error>
                 tx2,
                 k2,
                 initiator_ecdh_pk: None,
+                pq: self.ciphersuite.is_pq(),
             }
             .into(),
         );
@@ -204,7 +207,7 @@ impl<'a, Rng: CryptoRng, Ciphersuite: InitiatorCiphersuite> Channel<Error>
     }
 }
 
-impl<'a, Rng: CryptoRng, Ciphersuite: InitiatorCiphersuite> IntoSession
+impl<'a, Rng: CryptoRng, Ciphersuite: InitiatorCiphersuiteTrait> IntoSession
     for RegistrationInitiator<'a, Rng, Ciphersuite>
 {
     fn into_session(self) -> Result<Session, SessionError> {

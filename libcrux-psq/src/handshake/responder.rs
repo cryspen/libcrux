@@ -7,7 +7,7 @@ use tls_codec::{
 
 use crate::{
     aead::AEADKey,
-    handshake::ciphersuite::{CiphersuiteBase, ResponderCiphersuite},
+    handshake::ciphersuite::ResponderCiphersuiteTrait,
     session::{Session, SessionError},
     traits::{Channel, IntoSession},
 };
@@ -41,6 +41,7 @@ pub(crate) struct RespondRegistrationState {
     pub(crate) k1: AEADKey,
     pub(crate) initiator_ephemeral_ecdh_pk: DHPublicKey,
     pub(crate) initiator_longterm_ecdh_pk: DHPublicKey,
+    pub(crate) pq: bool,
 }
 
 #[derive(Default, Debug)]
@@ -53,7 +54,7 @@ pub(crate) enum ResponderState {
     ToTransport(Box<ToTransportState>),
 }
 
-pub struct Responder<'a, Rng: CryptoRng, Ciphersuite: ResponderCiphersuite> {
+pub struct Responder<'a, Rng: CryptoRng, Ciphersuite: ResponderCiphersuiteTrait> {
     pub(crate) state: ResponderState,
     ciphersuite: Ciphersuite,
     recent_keys: VecDeque<DHPublicKey>,
@@ -75,7 +76,7 @@ pub struct ResponderRegistrationPayload(pub VLBytes);
 #[derive(TlsSerialize, TlsSize)]
 pub struct ResponderRegistrationPayloadOut<'a>(VLByteSlice<'a>);
 
-impl<'a, Rng: CryptoRng, Ciphersuite: ResponderCiphersuite> Responder<'a, Rng, Ciphersuite> {
+impl<'a, Rng: CryptoRng, Ciphersuite: ResponderCiphersuiteTrait> Responder<'a, Rng, Ciphersuite> {
     pub fn new(
         ciphersuite: Ciphersuite,
         context: &'a [u8],
@@ -161,7 +162,7 @@ impl<'a, Rng: CryptoRng, Ciphersuite: ResponderCiphersuite> Responder<'a, Rng, C
         tx0: &Transcript,
         k0: &AEADKey,
         initiator_inner_message: &HandshakeMessage,
-    ) -> Result<(InitiatorInnerPayload, Transcript, AEADKey), Error> {
+    ) -> Result<(InitiatorInnerPayload, Transcript, AEADKey, bool), Error> {
         let pq_encapsulation = Option::<Ciphersuite::Ciphertext>::tls_deserialize(
             &mut Cursor::new(initiator_inner_message.pq_encapsulation.as_ref()),
         )
@@ -190,7 +191,11 @@ impl<'a, Rng: CryptoRng, Ciphersuite: ResponderCiphersuite> Responder<'a, Rng, C
         let tx1 = tx1::<Ciphersuite>(
             tx0,
             &initiator_inner_message.pk,
-            self.ciphersuite.own_pq_encapsulation_key(),
+            if pq_encapsulation.is_some() {
+                self.ciphersuite.own_pq_encapsulation_key()
+            } else {
+                None
+            },
             initiator_inner_message.pq_encapsulation.as_ref(),
         )?;
 
@@ -202,13 +207,16 @@ impl<'a, Rng: CryptoRng, Ciphersuite: ResponderCiphersuite> Responder<'a, Rng, C
             &tx1,
         )?;
 
+        eprintln!("Responder tx1: {tx1:?}");
+        eprintln!("Responder k1: {k1:?}");
+
         let inner_payload: InitiatorInnerPayload = k1.decrypt_deserialize(
             initiator_inner_message.ciphertext.as_slice(),
             &initiator_inner_message.tag,
             initiator_inner_message.aad.as_slice(),
         )?;
 
-        Ok((inner_payload, tx1, k1))
+        Ok((inner_payload, tx1, k1, pq_encapsulation.is_some()))
     }
 
     fn registration(
@@ -248,6 +256,7 @@ impl<'a, Rng: CryptoRng, Ciphersuite: ResponderCiphersuite> Responder<'a, Rng, C
                 tx2,
                 k2,
                 initiator_ecdh_pk: Some(state.initiator_longterm_ecdh_pk),
+                pq: state.pq,
             }
             .into(),
         );
@@ -291,7 +300,7 @@ impl<'a, Rng: CryptoRng, Ciphersuite: ResponderCiphersuite> Responder<'a, Rng, C
     }
 }
 
-impl<'a, Rng: CryptoRng, Ciphersuite: ResponderCiphersuite> Channel<Error>
+impl<'a, Rng: CryptoRng, Ciphersuite: ResponderCiphersuiteTrait> Channel<Error>
     for Responder<'a, Rng, Ciphersuite>
 {
     fn write_message(&mut self, payload: &[u8], out: &mut [u8]) -> Result<usize, Error> {
@@ -369,7 +378,7 @@ impl<'a, Rng: CryptoRng, Ciphersuite: ResponderCiphersuite> Channel<Error>
             InitiatorOuterPayload::Registration(initiator_inner_message) => {
                 // Decrypt the inner message payload.
                 match self.decrypt_inner_message(&tx0, &k0, &initiator_inner_message) {
-                    Ok((initiator_inner_payload, tx1, k1)) => {
+                    Ok((initiator_inner_payload, tx1, k1, pq)) => {
                         // We're ready to respond to the registration message.
                         self.state = ResponderState::RespondRegistration(
                             RespondRegistrationState {
@@ -377,6 +386,7 @@ impl<'a, Rng: CryptoRng, Ciphersuite: ResponderCiphersuite> Channel<Error>
                                 k1,
                                 initiator_ephemeral_ecdh_pk: initiator_outer_message.pk,
                                 initiator_longterm_ecdh_pk: initiator_inner_message.pk,
+                                pq,
                             }
                             .into(),
                         );
@@ -398,7 +408,7 @@ impl<'a, Rng: CryptoRng, Ciphersuite: ResponderCiphersuite> Channel<Error>
     }
 }
 
-impl<'a, Rng: CryptoRng, Ciphersuite: ResponderCiphersuite> IntoSession
+impl<'a, Rng: CryptoRng, Ciphersuite: ResponderCiphersuiteTrait> IntoSession
     for Responder<'a, Rng, Ciphersuite>
 {
     fn into_session(self) -> Result<Session, SessionError> {
@@ -415,7 +425,11 @@ impl<'a, Rng: CryptoRng, Ciphersuite: ResponderCiphersuite> IntoSession
             state.k2,
             &initiator_ecdh_pk,
             self.ciphersuite.own_ecdh_encapsulation_key(),
-            self.ciphersuite.own_pq_encapsulation_key(),
+            if state.pq {
+                self.ciphersuite.own_pq_encapsulation_key()
+            } else {
+                None
+            },
             false,
         )
     }
