@@ -8,13 +8,23 @@
 //!
 //! ## Basic API
 //!
-//! For example, to hash a payload using Blake2b:
+//! For example, to hash a payload using Blake2b (with [`Hash`](crate::Hash)):
 //! ```
 //! fn main() {
 //!     use libcrux_digest::blake2::*;
 //!     use libcrux_digest::Hash as _;
 //!     let mut digest = [0; 32];
 //!     Blake2b::hash(&mut digest, b"test data").unwrap();
+//! }
+//!
+//! ```
+
+//! Or to hash a payload using Blake2b (with [`HashOwned`](crate::HashOwned)):
+//! ```
+//! fn main() {
+//!     use libcrux_digest::blake2::*;
+//!     use libcrux_digest::HashOwned as _;
+//!     let digest: [u8; 32] = Blake2b::hash(b"test data").unwrap();
 //! }
 //!
 //! ```
@@ -34,7 +44,7 @@
 //! ```
 
 #[cfg(any(feature = "sha2", feature = "sha3", feature = "blake2"))]
-pub use libcrux_traits::digest::{arrayref::Hash, Hasher};
+pub use libcrux_traits::digest::{arrayref::Hash, owned::Hash as HashOwned, Hasher};
 
 #[cfg(feature = "blake2")]
 pub mod blake2 {
