@@ -6,6 +6,10 @@
 //! - `neon`
 //! - `portable`
 //!
+//! See [`EncryptError`](libcrux_traits::aead::arrayref::EncryptError),
+//! [`DecryptError`](libcrux_traits::aead::arrayref::DecryptError)
+//! for errors.
+//!
 //! ## Owned key-centric API
 //! ```rust
 //! use libcrux_aesgcm::AeadConsts as _;
