@@ -21,13 +21,11 @@
 //!
 //! ## Incremental digest API
 //!
-//! For example, to hash a payload using Blake2b:
+//! To hash a payload using Blake2b:
 //! ```
 //! fn main() {
 //!     use libcrux_digest::blake2::*;
-//!
 //!     let mut digest = [0; 32];
-//!
 //!     let mut hasher = Blake2bHasher::new();
 //!     hasher.update(b"test data").unwrap();
 //!     hasher.finish(&mut digest);
