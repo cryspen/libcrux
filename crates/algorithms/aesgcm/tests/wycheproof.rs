@@ -4,38 +4,30 @@ use wycheproof::{aead::Test, TestResult};
 fn test() {
     let test_set = wycheproof::aead::TestSet::load(wycheproof::aead::TestName::AesGcm).unwrap();
 
-    fn run<const KEY_LEN: usize, Cipher: libcrux_traits::aead::arrayref::Aead<KEY_LEN, 16, 12>>(test: &Test) {
+    fn run<Cipher: libcrux_aesgcm::Aead>(test: &Test, cipher: Cipher) {
         let mut ciphertext = vec![0u8; test.pt.len()];
         let mut plaintext = vec![0u8; test.pt.len()];
-        let mut tag = [0u8; 16];
+        let mut tag_bytes = [0u8; 16];
 
-        Cipher::encrypt(
-            &mut ciphertext,
-            &mut tag,
-            test.key.as_ref().try_into().unwrap(),
-            test.nonce.as_ref().try_into().unwrap(),
-            &test.aad,
-            &test.pt,
-        )
-        .unwrap();
-        Cipher::decrypt(
-            &mut plaintext,
-            test.key.as_ref().try_into().unwrap(),
-            test.nonce.as_ref().try_into().unwrap(),
-            &test.aad,
-            &ciphertext,
-            tag.as_ref().try_into().unwrap(),
-        )
-        .unwrap();
+        let key = cipher.new_key(&test.key).unwrap();
+        let nonce = cipher.new_nonce(&test.nonce).unwrap();
+        let tag = cipher.new_tag_mut(&mut tag_bytes).unwrap();
+
+        key.encrypt(&mut ciphertext, tag, nonce, &test.aad, &test.pt)
+            .unwrap();
+
+        let tag = cipher.new_tag(&tag_bytes).unwrap();
+        key.decrypt(&mut plaintext, nonce, &test.aad, &ciphertext, tag)
+            .unwrap();
 
         assert_eq!(plaintext.as_slice(), test.pt.as_slice());
 
         if test.result == TestResult::Valid {
             assert_eq!(test.ct.as_slice(), &ciphertext);
-            assert_eq!(test.tag.as_slice(), &tag);
+            assert_eq!(test.tag.as_slice(), tag.as_ref());
         } else {
-            let ct_ok = test.ct.as_slice() == &ciphertext;
-            let tag_ok = test.tag.as_slice() == &tag;
+            let ct_ok = test.ct.as_slice() == ciphertext;
+            let tag_ok = test.tag.as_slice() == tag.as_ref();
             assert!(!ct_ok || !tag_ok);
         }
     }
@@ -56,36 +48,36 @@ fn test() {
                 println!("  Test AES-GCM 128 {}", test.tc_id);
 
                 // Multiplexing
-                run::<16, libcrux_aesgcm::AesGcm128>(&test);
+                run(&test, libcrux_aesgcm::AesGcm128);
 
                 // Portable
-                run::<16, libcrux_aesgcm::PortableAesGcm128>(&test);
+                run(&test, libcrux_aesgcm::PortableAesGcm128);
 
                 // Neon
                 #[cfg(all(target_arch = "aarch64", target_feature = "aes"))]
-                run::<16, libcrux_aesgcm::NeonAesGcm128>(&test);
+                run(&test, libcrux_aesgcm::NeonAesGcm128);
 
                 // x64
                 #[cfg(all(target_arch = "x86_64"))]
-                run::<16, libcrux_aesgcm::X64AesGcm128>(&test);
+                run(&test, libcrux_aesgcm::X64AesGcm128);
             }
         } else if test_group.key_size == 256 {
             for test in test_group.tests {
                 println!("  Test AES-GCM 256 {}", test.tc_id);
 
                 // Multiplexing
-                run::<32, libcrux_aesgcm::AesGcm256>(&test);
+                run(&test, libcrux_aesgcm::AesGcm256);
 
                 // Portable
-                run::<32, libcrux_aesgcm::PortableAesGcm256>(&test);
+                run(&test, libcrux_aesgcm::PortableAesGcm256);
 
                 // Neon
                 #[cfg(all(target_arch = "aarch64", target_feature = "aes"))]
-                run::<32, libcrux_aesgcm::NeonAesGcm256>(&test);
+                run(&test, libcrux_aesgcm::NeonAesGcm256);
 
                 // x64
                 #[cfg(all(target_arch = "x86_64"))]
-                run::<32, libcrux_aesgcm::X64AesGcm256>(&test);
+                run(&test, libcrux_aesgcm::X64AesGcm256);
             }
         }
     }
