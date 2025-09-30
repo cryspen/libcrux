@@ -64,7 +64,11 @@ alloc = []
 incremental = []
 
 # Checking secret independence
-check-secret-independence = ["libcrux-secrets/check-secret-independence"]
+check-secret-independence = [
+    "libcrux-secrets/check-secret-independence",
+    "libcrux-traits/check-secret-independence",
+]
+
 
 # PQCP Common APIs
 pqcp = []
@@ -79,7 +83,7 @@ libcrux-traits = { version = "0.0.3", path = "../traits", features = [
     "generic-tests",
 ] }
 libcrux-kats = { version = "0.0.3", path = "../crates/testing/kats", features = [
-    "mlkem"
+    "mlkem",
 ] }
 
 [[bench]]
