@@ -39,7 +39,7 @@ jobs:
     defaults:
       run:
         shell: bash
-        working-directory: crates/algorithms/kem
+        working-directory: crates/primitives/kem
 
     steps:
       - uses: actions/checkout@v5
