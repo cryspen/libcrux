@@ -33,7 +33,7 @@ jobs:
     defaults:
       run:
         shell: bash
-        working-directory: aesgcm
+        working-directory: crates/algorithms/aesgcm
 
     steps:
       - uses: actions/checkout@v5
@@ -124,7 +124,7 @@ jobs:
     defaults:
       run:
         shell: bash
-        working-directory: aesgcm
+        working-directory: crates/algorithms/aesgcm
 
     steps:
       - uses: actions/checkout@v5
@@ -149,7 +149,7 @@ jobs:
     defaults:
       run:
         shell: bash
-        working-directory: aesgcm
+        working-directory: crates/algorithms/aesgcm
 
     steps:
       - uses: actions/checkout@v5
