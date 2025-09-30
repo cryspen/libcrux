@@ -40,7 +40,7 @@ pub use libcrux_traits::digest::{arrayref::Hash, Hasher};
 pub mod blake2 {
     //! Blake2 digest implementations.
     //!
-    //! Usage example for [`Blake2bHash`] with [`Hash`]:
+    //! Usage example for [`Blake2bHash`] with [`Hash`](crate::Hash):
     //! ```rust
     //! use libcrux_digest::blake2::*;
     //! use libcrux_digest::Hash as _;
@@ -65,7 +65,7 @@ pub mod blake2 {
 pub mod sha2 {
     //! Sha2 digest implementations.
     //!
-    //! Usage example for [`Sha2_224`] with [`Hash`]:
+    //! Usage example for [`Sha2_224`] with [`Hash`](crate::Hash):
     //! ```rust
     //! use libcrux_digest::sha2::*;
     //! use libcrux_digest::Hash as _;
@@ -94,7 +94,7 @@ pub mod sha2 {
 pub mod sha3 {
     //! Sha3 digest implementations.
     //!
-    //! Usage example for [`Sha3_224`] with [`Hash`]:
+    //! Usage example for [`Sha3_224`] with [`Hash`](crate::Hash):
     //! ```rust
     //! use libcrux_digest::sha3::*;
     //! use libcrux_digest::Hash as _;
