@@ -8,7 +8,7 @@
 //!
 //! ## Basic API
 //!
-//! For example, to hash a payload using Blake2b (with [`Hash`](crate::Hash)):
+//! For example, to hash a payload using Blake2b (with [`Hash`]):
 //! ```
 //! fn main() {
 //!     use libcrux_digest::blake2::*;
@@ -19,7 +19,7 @@
 //!
 //! ```
 
-//! Or to hash a payload using Blake2b (with [`HashOwned`](crate::HashOwned)):
+//! Or to hash a payload using Blake2b (with [`HashOwned`]):
 //! ```
 //! fn main() {
 //!     use libcrux_digest::blake2::*;
