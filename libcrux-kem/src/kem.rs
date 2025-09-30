@@ -964,11 +964,8 @@ mod xwing {
 
             MlKem768::keygen(ek_m, dk_m, rand_m)?;
 
-            X25519::generate_secret(dk_x, rand_x)
+            X25519::generate_pair(ek_x, dk_x, rand_x)
                 .map_err(|_| libcrux_traits::kem::owned::KeyGenError::InvalidRandomness)?;
-
-            X25519::secret_to_public(ek_x, dk_x)
-                .map_err(|_| libcrux_traits::kem::owned::KeyGenError::Unknown)?;
 
             Ok(())
         }
@@ -1001,11 +998,8 @@ mod xwing {
             let ss_x: &mut [u8; 32] = (&mut hash_buffer[32..64]).try_into().unwrap();
 
             let mut ephemeral_secret_x = [0u8; X25519_DK_LEN];
-            X25519::generate_secret(&mut ephemeral_secret_x, rand_x)
+            X25519::generate_pair(ct_x, &mut ephemeral_secret_x, rand_x)
                 .map_err(|_| libcrux_traits::kem::owned::EncapsError::InvalidRandomness)?;
-
-            X25519::secret_to_public(ct_x, &ephemeral_secret_x)
-                .map_err(|_| libcrux_traits::kem::owned::EncapsError::Unknown)?;
 
             X25519::derive_ecdh(ss_x, ek_x, &ephemeral_secret_x)
                 .map_err(|_| libcrux_traits::kem::owned::EncapsError::InvalidEncapsKey)?;
