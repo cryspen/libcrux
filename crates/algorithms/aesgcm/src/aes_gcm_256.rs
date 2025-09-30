@@ -1,5 +1,11 @@
 //! AES-GCM 256
 //!
+//! Multiplexed AES-GCM.
+//! The implementation used is determined automatically at runtime.
+//! - `x64`
+//! - `neon`
+//! - `portable`
+//!
 //! ## Owned key-centric API
 //! ```rust
 //! use libcrux_aesgcm::traits::AeadConsts as _;
