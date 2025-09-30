@@ -59,7 +59,7 @@ fn test_ctr_block() {
                 EXPECTED[i],
                 computed[i]
             );
-            assert!(false);
+            panic!();
         }
     }
 }
@@ -80,7 +80,7 @@ fn test_ctr_block_neon() {
                 EXPECTED[i],
                 computed[i]
             );
-            assert!(false);
+            panic!();
         }
     }
 }
@@ -98,7 +98,7 @@ fn test_ctr_encrypt() {
                 EXPECTED[i],
                 computed[i]
             );
-            assert!(false);
+            panic!();
         }
     }
 }
@@ -117,7 +117,7 @@ fn test_ctr_encrypt_neon() {
                 EXPECTED[i],
                 computed[i]
             );
-            assert!(false);
+            panic!();
         }
     }
 }
@@ -135,7 +135,7 @@ fn test_ctr_encrypt_intel() {
                 EXPECTED[i],
                 computed[i]
             );
-            assert!(false);
+            panic!();
         }
     }
 }

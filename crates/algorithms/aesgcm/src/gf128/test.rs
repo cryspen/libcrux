@@ -42,7 +42,7 @@ fn test_gf128() {
                 EXPECTED[i],
                 computed[i]
             );
-            assert!(false);
+            panic!();
         }
     }
 }
@@ -61,7 +61,7 @@ fn test_gf128_neon() {
                 EXPECTED[i],
                 computed[i]
             );
-            assert!(false);
+            panic!();
         }
     }
 }
@@ -79,7 +79,7 @@ fn test_gf128_intel() {
                 EXPECTED[i],
                 computed[i]
             );
-            assert!(false);
+            panic!();
         }
     }
 }

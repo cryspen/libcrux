@@ -697,7 +697,7 @@ fn test_transpose() {
                     std::eprintln!("x[{},{}] = {}", i, j, get_bit_u8(&x, i, j));
                     std::eprintln!("y[{},{}] = {}", i, j, get_bit_u16(&y, i, j));
                 }
-                assert!(false);
+                panic!();
             } else {
                 #[cfg(feature = "std")]
                 std::eprintln!("transpose ok: {},{}", i, j);
@@ -714,7 +714,7 @@ fn test_transpose() {
                     std::eprintln!("x[{},{}] = {}", i, j, get_bit_u8(&x, i, j));
                     std::eprintln!("z[{},{}] = {}", i, j, get_bit_u8(&z, i, j));
                 }
-                assert!(false);
+                panic!();
             } else {
                 #[cfg(feature = "std")]
                 std::eprintln!("inv-transpose ok: {},{}", i, j);
@@ -734,10 +734,10 @@ fn test_sbox() {
         transpose_u8x16(&x, &mut y);
         sub_bytes_state(&mut y);
         transpose_u16x8(&y, &mut w);
-        if w[0] != sbox_fwd(i as u8) {
+        if w[0] != sbox_fwd(i) {
             #[cfg(feature = "std")]
-            std::eprintln!("sbox[{}] = {}, should be {}", i, w[0], sbox_fwd(i as u8));
-            assert!(false);
+            std::eprintln!("sbox[{}] = {}, should be {}", i, w[0], sbox_fwd(i));
+            panic!();
         } else {
             #[cfg(feature = "std")]
             std::eprintln!("sbox ok {}", i)
@@ -756,15 +756,10 @@ fn test_sbox_inv() {
         transpose_u8x16(&x, &mut y);
         sub_bytes_inv_state(&mut y);
         transpose_u16x8(&y, &mut w);
-        if w[0] != sbox_inv(i as u8) {
+        if w[0] != sbox_inv(i) {
             #[cfg(feature = "std")]
-            std::eprintln!(
-                "sbox_inv[{}] = {}, should be {}",
-                i,
-                w[0],
-                sbox_inv(i as u8)
-            );
-            assert!(false);
+            std::eprintln!("sbox_inv[{}] = {}, should be {}", i, w[0], sbox_inv(i));
+            panic!();
         } else {
             #[cfg(feature = "std")]
             std::eprintln!("sbox inv ok {}", i)
