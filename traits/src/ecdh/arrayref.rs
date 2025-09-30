@@ -76,18 +76,6 @@ pub enum ValidateSecretError {
     Unknown,
 }
 
-#[derive(Debug)]
-pub enum ECDHError {
-    /// An error during secret value generation.
-    GenerateSecret,
-    /// An error derivation of a public value from a secret value.
-    SecretToPublic,
-    /// An error derivation of Diffie-Hellman shared secret.
-    Derive,
-    /// A Diffie-Hellman secret value was found to be invalid.
-    ValidateSecret,
-}
-
 impl core::fmt::Display for GenerateSecretError {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         let text = match self {
