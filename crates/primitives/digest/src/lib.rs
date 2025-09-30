@@ -14,7 +14,7 @@
 //!     use libcrux_digest::blake2::*;
 //!     use libcrux_digest::Hash as _;
 //!     let mut digest = [0; 32];
-//!     Blake2bHash::hash(&mut digest, b"test data").unwrap();
+//!     Blake2b::hash(&mut digest, b"test data").unwrap();
 //! }
 //!
 //! ```
@@ -40,12 +40,12 @@ pub use libcrux_traits::digest::{arrayref::Hash, Hasher};
 pub mod blake2 {
     //! Blake2 digest implementations.
     //!
-    //! Usage example for [`Blake2bHash`] with [`Hash`](crate::Hash):
+    //! Usage example for [`Blake2b`] with [`Hash`](crate::Hash):
     //! ```rust
     //! use libcrux_digest::blake2::*;
     //! use libcrux_digest::Hash as _;
     //! let mut digest = [0; 32];
-    //! Blake2bHash::hash(&mut digest, b"test data").unwrap();
+    //! Blake2b::hash(&mut digest, b"test data").unwrap();
     //! ```
     //!
     //! Usage example for [`Blake2bHasher`]:
@@ -58,7 +58,9 @@ pub mod blake2 {
     //! ```
     //!
     //! The structs in this module are re-exported from [`libcrux_blake2`].
-    pub use libcrux_blake2::{Blake2bHash, Blake2bHasher, Blake2sHash, Blake2sHasher};
+    pub use libcrux_blake2::{
+        Blake2bHash as Blake2b, Blake2bHasher, Blake2sHash as Blake2s, Blake2sHasher,
+    };
 }
 
 #[cfg(feature = "sha2")]
