@@ -9,7 +9,7 @@ pub mod ecdh_api;
 #[cfg(feature = "kem-api")]
 pub mod kem_api;
 
-pub use impl_hacl::ecdh;
+pub use impl_hacl::{ecdh, secret_to_public};
 
 /// The length of Curve25519 secret keys.
 pub const DK_LEN: usize = 32;
