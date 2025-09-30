@@ -60,7 +60,7 @@ jobs:
       image: ${{ needs.setup.outputs.image }}
     defaults:
       run:
-        working-directory: libcrux-ml-dsa
+        working-directory: crates/algorithms/ml-dsa
         shell: bash
     steps:
       - uses: actions/checkout@v5

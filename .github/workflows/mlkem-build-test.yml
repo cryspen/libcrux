@@ -34,7 +34,7 @@ jobs:
     defaults:
       run:
         shell: bash
-        working-directory: libcrux-ml-kem
+        working-directory: crates/algorithms/ml-kem
 
     steps:
       - uses: actions/checkout@v5
@@ -100,25 +100,25 @@ jobs:
 
       # Test SHA3
       - name: 🏃🏻‍♀️ SHA3 Test
-        working-directory: libcrux-sha3
+        working-directory: crates/algorithms/sha3
         run: |
           cargo clean
           cargo test --verbose $RUST_TARGET_FLAG
 
       - name: 🏃🏻‍♀️ SHA3 Test Release
-        working-directory: libcrux-sha3
+        working-directory: crates/algorithms/sha3
         run: |
           cargo clean
           cargo test --release --verbose $RUST_TARGET_FLAG
 
       - name: 🏃🏻‍♀️ SHA3 Test Portable
-        working-directory: libcrux-sha3
+        working-directory: crates/algorithms/sha3
         run: |
           cargo clean
           LIBCRUX_DISABLE_SIMD128=1 LIBCRUX_DISABLE_SIMD256=1 cargo test --verbose $RUST_TARGET_FLAG
 
       - name: 🏃🏻‍♀️ SHA3 Test Portable Release
-        working-directory: libcrux-sha3
+        working-directory: crates/algorithms/sha3
         run: |
           cargo clean
           LIBCRUX_DISABLE_SIMD128=1 LIBCRUX_DISABLE_SIMD256=1 cargo test --verbose --release $RUST_TARGET_FLAG
@@ -169,7 +169,7 @@ jobs:
     defaults:
       run:
         shell: bash
-        working-directory: libcrux-ml-kem
+        working-directory: crates/algorithms/ml-kem
 
     steps:
       - uses: actions/checkout@v5
@@ -207,7 +207,7 @@ jobs:
     defaults:
       run:
         shell: bash
-        working-directory: libcrux-ml-kem
+        working-directory: crates/algorithms/ml-kem
 
     steps:
       - uses: actions/checkout@v5

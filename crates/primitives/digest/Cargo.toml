@@ -11,10 +11,10 @@ license.workspace = true
 repository.workspace = true
 
 [dependencies]
-libcrux-blake2 = { version = "0.0.3", path = "../../../blake2", optional = true }
-libcrux-sha2 = { version = "0.0.3", path = "../../../sha2", optional = true }
-libcrux-sha3 = { version = "0.0.3", path = "../../../libcrux-sha3", optional = true }
-libcrux-traits = { version = "0.0.3", path = "../../../traits", optional = true }
+libcrux-blake2 = { version = "0.0.3", path = "../../algorithms/blake2", optional = true }
+libcrux-sha2 = { version = "0.0.3", path = "../../algorithms/sha2", optional = true }
+libcrux-sha3 = { version = "0.0.3", path = "../../algorithms/sha3", optional = true }
+libcrux-traits = { version = "0.0.3", path = "../../utils/traits", optional = true }
 
 [features]
 blake2 = ["dep:libcrux-blake2", "dep:libcrux-traits"]

@@ -39,7 +39,7 @@ jobs:
     defaults:
       run:
         shell: bash
-        working-directory: libcrux-kem
+        working-directory: crates/algorithms/kem
 
     steps:
       - uses: actions/checkout@v5
