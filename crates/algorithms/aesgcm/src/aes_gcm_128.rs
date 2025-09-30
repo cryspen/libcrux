@@ -85,7 +85,7 @@ use super::aes_gcm::platform_mod;
 platform_mod!(AesGcm128, "AES-GCM 128");
 
 pub mod portable {
-    //! Portable implementation of AES-GCM 128.
+    //! A portable, bit-sliced implementation of AES-GCM 128.
     //!
     //! For usage examples see [`aes_gcm_128`].
     use super::*;
@@ -94,7 +94,7 @@ pub mod portable {
     platform_mod!(PortableAesGcm128, "AES-GCM 128 (portable)");
 }
 pub mod neon {
-    //! Neon implementation of AES-GCM 128.
+    //! An Aarch64-optimised implementation of AES-GCM 128 using the AES instructions.
     //!
     //! This module must only be used when ARM AES instructions are available.
     //!
@@ -106,7 +106,7 @@ pub mod neon {
 }
 
 pub mod x64 {
-    //! x64 implementation of AES-GCM 128.
+    //! An x64-optimised implementation of AES-GCM 128 using AES-NI.
     //!
     //! This module must only be used when AES-NI instructions are available.
     //!
