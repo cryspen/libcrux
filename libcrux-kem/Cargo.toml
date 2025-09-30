@@ -23,7 +23,6 @@ libcrux-ecdh = { version = "=0.0.3", path = "../libcrux-ecdh", default-features 
 libcrux-curve25519 = { version = "=0.0.3", path = "../curve25519", default-features = false }
 libcrux-p256 = { version = "=0.0.3", path = "../p256", default-features = false }
 libcrux-traits = { version = "=0.0.3", path = "../traits" }
-libcrux-secrets = { version = "=0.0.3", path = "../secrets" }
 rand = { version = "0.9", default-features = false }
 tls_codec = { version = "0.4.2", features = [
     "derive",
