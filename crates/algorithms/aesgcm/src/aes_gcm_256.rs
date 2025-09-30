@@ -12,6 +12,8 @@
 //! // multiplexed API
 //! use libcrux_aesgcm::{AesGcm256, aes_gcm_256::{Key, Tag, Nonce}};
 //! // or:
+//! // platform-specific
+//! // only use these directly after performing runtime checks for the necessary CPU features
 //! // use libcrux_aesgcm::aes_gcm_256::portable::{Key, Tag, Nonce};
 //! // use libcrux_aesgcm::aes_gcm_256::neon::{Key, Tag, Nonce};
 //! // use libcrux_aesgcm::aes_gcm_256::x64::{Key, Tag, Nonce};
@@ -35,6 +37,8 @@
 //! // multiplexed API
 //! use libcrux_aesgcm::AesGcm256;
 //! // or:
+//! // platform-specific
+//! // only use these directly after performing runtime checks for the necessary CPU features
 //! // use libcrux_aesgcm::aes_gcm_256::portable::PortableAesGcm256 as AesGcm256;
 //! // use libcrux_aesgcm::aes_gcm_256::neon::NeonAesGcm256 as AesGcm256;
 //! // use libcrux_aesgcm::aes_gcm_256::x64::X64AesGcm256 as AesGcm256;

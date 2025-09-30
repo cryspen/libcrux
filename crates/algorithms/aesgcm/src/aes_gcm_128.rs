@@ -12,6 +12,8 @@
 //! use libcrux_aesgcm::AeadConsts as _;
 //! use libcrux_aesgcm::{AesGcm128, aes_gcm_128::{Key, Tag, Nonce}};
 //! // or:
+//! // platform-specific
+//! // only use these directly after performing runtime checks for the necessary CPU features
 //! // use libcrux_aesgcm::aes_gcm_128::portable::{Key, Tag, Nonce}};
 //! // use libcrux_aesgcm::aes_gcm_128::neon::{Key, Tag, Nonce}};
 //! // use libcrux_aesgcm::aes_gcm_128::x64::{Key, Tag, Nonce}};
@@ -35,6 +37,8 @@
 //! // multiplexed API
 //! use libcrux_aesgcm::AesGcm128;
 //! // or:
+//! // platform-specific
+//! // only use these directly after performing runtime checks for the necessary CPU features
 //! // use libcrux_aesgcm::aes_gcm_128::portable::PortableAesGcm128 as AesGcm128;
 //! // use libcrux_aesgcm::aes_gcm_128::neon::NeonAesGcm128 as AesGcm128;
 //! // use libcrux_aesgcm::aes_gcm_128::x64::X64AesGcm128 as AesGcm128;
