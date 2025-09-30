@@ -44,7 +44,7 @@ jobs:
           fstar: v2025.02.17
 
       - name: 🏃 Extract ML-KEM crate
-        working-directory: libcrux-ml-kem
+        working-directory: crates/algorithms/ml-kem
         run: ./hax.py extract
 
       - name: ↑ Upload F* extraction
@@ -74,7 +74,7 @@ jobs:
           name: fstar-extractions
           path: .
       - name: 🏃 Lax ML-KEM crate
-        working-directory: libcrux-ml-kem
+        working-directory: crates/algorithms/ml-kem
         run: ./hax.py prove --admit
 
   prove:
@@ -102,7 +102,7 @@ jobs:
           path: .
 
       - name: 🏃 Prove ML-KEM crate
-        working-directory: libcrux-ml-kem
+        working-directory: crates/algorithms/ml-kem
         run: FSTAR_HOME=~/.nix-profile ./hax.py prove
   
   mlkem-extract-hax-status:

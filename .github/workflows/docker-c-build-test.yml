@@ -47,7 +47,7 @@ jobs:
       image: ${{ needs.build-and-push-image.outputs.image }}
     defaults:
       run:
-        working-directory: libcrux-ml-kem/extracts/c_header_only
+        working-directory: crates/algorithms/kem/extracts/c_header_only
         shell: bash
     steps:
       - uses: actions/checkout@v5
@@ -70,7 +70,7 @@ jobs:
       image: ${{ needs.build-and-push-image.outputs.image }}
     defaults:
       run:
-        working-directory: libcrux-ml-kem/extracts/cpp_header_only
+        working-directory: crates/algorithms/kem/extracts/cpp_header_only
         shell: bash
     steps:
       - uses: actions/checkout@v5
@@ -94,7 +94,7 @@ jobs:
       image: ${{ needs.build-and-push-image.outputs.image }}
     defaults:
       run:
-        working-directory: libcrux-ml-dsa
+        working-directory: crates/algorithms/dsa
         shell: bash
     steps:
       - uses: actions/checkout@v5

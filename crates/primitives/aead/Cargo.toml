@@ -11,8 +11,8 @@ edition.workspace = true
 repository.workspace = true
 
 [dependencies]
-libcrux-chacha20poly1305 = { version = "0.0.3", path = "../../../chacha20poly1305", optional = true }
-libcrux-traits = { version = "0.0.3", path = "../../../traits", optional = true }
+libcrux-chacha20poly1305 = { version = "0.0.3", path = "../../algorithms/chacha20poly1305", optional = true }
+libcrux-traits = { version = "0.0.3", path = "../../utils/traits", optional = true }
 
 [features]
 default = ["chacha20poly1305", "xchacha20poly1305"]

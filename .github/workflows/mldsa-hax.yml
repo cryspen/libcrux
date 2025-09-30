@@ -45,7 +45,7 @@ jobs:
           fstar: v2025.03.25
 
       - name: 🏃 Extract ML-DSA crate
-        working-directory: libcrux-ml-dsa
+        working-directory: crates/algorithms/ml-dsa
         run: ./hax.sh extract
 
       - name: ↑ Upload F* extraction
@@ -75,7 +75,7 @@ jobs:
           path: .
 
       - name: 🏃 Lax ML-DSA crate
-        working-directory: libcrux-ml-dsa
+        working-directory: crates/algorithms/ml-dsa
         run: ./hax.sh prove --admit
   
   prove:
@@ -103,7 +103,7 @@ jobs:
           path: .
 
       - name: 🏃 Prove ML-DSA crate
-        working-directory: libcrux-ml-dsa
+        working-directory: crates/algorithms/ml-dsa
         run: ./hax.sh prove
         
   mldsa-extract-hax-status:

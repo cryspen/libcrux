@@ -39,7 +39,7 @@ jobs:
     defaults:
       run:
         shell: bash
-        working-directory: traits
+        working-directory: crates/utils/traits
 
     steps:
       - uses: actions/checkout@v5

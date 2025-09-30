@@ -1,0 +1,29 @@
+[package]
+name = "libcrux-blake2"
+description = "Formally verified blake2 hash library"
+version = "0.0.3"
+readme = "Readme.md"
+
+authors.workspace = true
+license.workspace = true
+homepage.workspace = true
+edition.workspace = true
+repository.workspace = true
+
+[features]
+std = []
+default = ["std"]
+
+[dependencies]
+libcrux-hacl-rs = { version = "=0.0.3", path = "../../utils/hacl-rs" }
+libcrux-macros = { version = "=0.0.3", path = "../../utils/macros" }
+libcrux-traits = { version = "=0.0.3", path = "../../utils/traits/" }
+
+[dev-dependencies]
+criterion = "0.7"
+rand = "0.9"
+libcrux-traits = { version = "=0.0.3", path = "../../utils/traits/", features = ["generic-tests"] }
+
+[[bench]]
+name = "blake2"
+harness = false

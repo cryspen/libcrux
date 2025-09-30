@@ -1,40 +1,41 @@
 [workspace]
 members = [
-    "sys/hacl",
-    "sys/libjade",
-    "sys/platform",
-    "sys/pqclean",
-    "sys/lib25519",
+    "crates/sys/hacl",
+    "crates/sys/libjade",
+    "crates/sys/platform",
+    "crates/sys/pqclean",
+    "crates/sys/lib25519",
     "benchmarks",
     "fuzz",
-    "libcrux-ml-kem",
-    "libcrux-ml-kem/fuzz",
-    "libcrux-sha3",
-    "libcrux-ml-dsa",
-    "libcrux-intrinsics",
-    "libcrux-kem",
-    "libcrux-hmac",
-    "libcrux-hkdf",
-    "libcrux-ecdh",
+    "crates/algorithms/ml-kem",
+    "crates/algorithms/ml-kem/fuzz",
+    "crates/algorithms/sha3",
+    "crates/algorithms/ml-dsa",
+    "crates/utils/libcrux-intrinsics",
+    "crates/primitives/kem",
+    "crates/algorithms/hmac",
+    "crates/algorithms/hkdf",
+    "crates/primitives/ecdh",
     "libcrux-psq",
-    "macros",
+    "crates/utils/macros",
     "cavp",
-    "traits",
-    "sha2",
-    "ed25519",
-    "curve25519",
-    "poly1305",
-    "chacha20poly1305",
-    "rsa",
-    "ecdsa",
-    "p256",
-    "blake2",
-    "secrets",
+    "crates/utils/traits",
+    "crates/algorithms/sha2",
+    "crates/algorithms/ed25519",
+    "crates/algorithms/curve25519",
+    "crates/algorithms/poly1305",
+    "crates/algorithms/chacha20poly1305",
+    "crates/algorithms/rsa",
+    "crates/algorithms/ecdsa",
+    "crates/algorithms/p256",
+    "crates/algorithms/blake2",
+    "crates/utils/secrets",
     "fstar-helpers/core-models",
     "test-utils",
     "crates/primitives/aead",
     "crates/primitives/digest",
     "crates/testing/kats",
+    "crates/utils/hacl-rs",
 ]
 
 [workspace.package]
@@ -80,21 +81,21 @@ crate-type = ["staticlib", "cdylib", "lib"]
 bench = false                               # so libtest doesn't eat the arguments for criterion
 
 [build-dependencies]
-libcrux-platform = { version = "=0.0.2", path = "sys/platform" }
+libcrux-platform = { version = "=0.0.2", path = "crates/sys/platform" }
 
 [dependencies]
-libcrux-traits = { version = "=0.0.3", path = "traits" }
-libcrux-chacha20poly1305 = { version = "=0.0.3", path = "chacha20poly1305" }
-libcrux-hacl-rs = { version = "=0.0.3", path = "hacl-rs" }
-libcrux-hacl = { version = "=0.0.2", path = "sys/hacl" }
-libcrux-platform = { version = "=0.0.2", path = "sys/platform" }
-libcrux-hkdf = { version = "=0.0.3", path = "libcrux-hkdf" }
-libcrux-hmac = { version = "=0.0.3", path = "libcrux-hmac" }
-libcrux-sha2 = { version = "=0.0.3", path = "sha2" }
-libcrux-ed25519 = { version = "=0.0.3", path = "ed25519" }
-libcrux-ecdh = { version = "=0.0.3", path = "libcrux-ecdh" }
-libcrux-ml-kem = { version = "=0.0.3", path = "libcrux-ml-kem" }
-libcrux-kem = { version = "=0.0.3", path = "libcrux-kem" }
+libcrux-traits = { version = "=0.0.3", path = "crates/utils/traits" }
+libcrux-chacha20poly1305 = { version = "=0.0.3", path = "crates/algorithms/chacha20poly1305" }
+libcrux-hacl-rs = { version = "=0.0.3", path = "crates/utils/hacl-rs" }
+libcrux-hacl = { version = "=0.0.2", path = "crates/sys/hacl" }
+libcrux-platform = { version = "=0.0.2", path = "crates/sys/platform" }
+libcrux-hkdf = { version = "=0.0.3", path = "crates/algorithms/hkdf" }
+libcrux-hmac = { version = "=0.0.3", path = "crates/algorithms/hmac" }
+libcrux-sha2 = { version = "=0.0.3", path = "crates/algorithms/sha2" }
+libcrux-ed25519 = { version = "=0.0.3", path = "crates/algorithms/ed25519" }
+libcrux-ecdh = { version = "=0.0.3", path = "crates/primitives/ecdh" }
+libcrux-ml-kem = { version = "=0.0.3", path = "crates/algorithms/ml-kem" }
+libcrux-kem = { version = "=0.0.3", path = "crates/primitives/kem" }
 rand = { version = "0.9" }
 log = { version = "0.4", optional = true }
 # WASM API

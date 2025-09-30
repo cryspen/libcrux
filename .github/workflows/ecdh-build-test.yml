@@ -39,7 +39,7 @@ jobs:
     defaults:
       run:
         shell: bash
-        working-directory: libcrux-ecdh
+        working-directory: crates/primitives/ecdh
 
     steps:
       - uses: actions/checkout@v5
