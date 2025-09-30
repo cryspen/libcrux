@@ -174,4 +174,4 @@ fn generate_ecdh_pair(
     Ok(())
 }
 
-libcrux_traits::kem::slice::impl_trait!(X25519 => EK_LEN, DK_LEN, EK_LEN, EK_LEN, DK_LEN, DK_LEN);
+libcrux_traits::kem::slice::impl_trait!(X25519 => EK_LEN, DK_LEN, EK_LEN, SHARED_SECRET_LEN, DK_LEN, DK_LEN);
