@@ -20,8 +20,6 @@ mod aes_gcm;
 pub mod aes_gcm_128;
 pub mod aes_gcm_256;
 
-use libcrux_traits::aead::{arrayref, consts, slice, typed_owned};
-
 /// Trait for an AES State.
 /// Implemented for 128 and 256.
 pub(crate) trait State {
@@ -303,8 +301,6 @@ pub use aes_gcm_128::KEY_LEN as AES_GCM_128_KEY_LEN;
 #[doc(inline)]
 pub use aes_gcm_256::KEY_LEN as AES_GCM_256_KEY_LEN;
 
-/// Traits for the public API.
-pub mod traits {
-    pub use libcrux_traits::aead::consts::AeadConsts;
-    pub use libcrux_traits::aead::typed_refs::Aead;
-}
+// traits re-exports
+pub use libcrux_traits::aead::consts::AeadConsts;
+pub use libcrux_traits::aead::typed_refs::Aead;

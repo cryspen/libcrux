@@ -8,7 +8,7 @@
 //!
 //! ## Owned key-centric API
 //! ```rust
-//! use libcrux_aesgcm::traits::AeadConsts as _;
+//! use libcrux_aesgcm::AeadConsts as _;
 //! // multiplexed API
 //! use libcrux_aesgcm::aes_gcm_256::{AesGcm256, Key, Tag, Nonce};
 //! // or:
@@ -31,7 +31,7 @@
 //!
 //! ## Refs key-centric API
 //! ```rust
-//! use libcrux_aesgcm::traits::{AeadConsts as _, Aead as _};
+//! use libcrux_aesgcm::{AeadConsts as _, Aead as _};
 //! // multiplexed API
 //! use libcrux_aesgcm::aes_gcm_256::AesGcm256;
 //! // or:

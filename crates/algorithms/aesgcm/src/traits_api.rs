@@ -1,4 +1,6 @@
-use crate::*;
+use crate::{aes_gcm_128, aes_gcm_256, implementations::*, NONCE_LEN, TAG_LEN};
+
+use libcrux_traits::aead::{arrayref, consts, slice, typed_owned};
 
 /// Macro to implement the libcrux_traits public API traits
 ///
@@ -101,7 +103,7 @@ macro_rules! api {
                         aad: &[u8],
                         plaintext: &[u8],
                     ) -> Result<(), EncryptError> {
-                        portable::$variant::encrypt(key, nonce, aad, plaintext, ciphertext, tag);
+                        crate::portable::$variant::encrypt(key, nonce, aad, plaintext, ciphertext, tag);
                         Ok(())
                     }
 
@@ -113,7 +115,7 @@ macro_rules! api {
                         ciphertext: &[u8],
                         tag: &Tag,
                     ) -> Result<(), DecryptError> {
-                        portable::$variant::decrypt(key, nonce, aad, ciphertext, tag, plaintext)
+                        crate::portable::$variant::decrypt(key, nonce, aad, ciphertext, tag, plaintext)
                             .map_err(|_| DecryptError::InvalidTag)
                     }
                 }
@@ -138,7 +140,7 @@ macro_rules! api {
                         aad: &[u8],
                         plaintext: &[u8],
                     ) -> Result<(), EncryptError> {
-                        neon::$variant::encrypt(key, nonce, aad, plaintext, ciphertext, tag);
+                        crate::neon::$variant::encrypt(key, nonce, aad, plaintext, ciphertext, tag);
                         Ok(())
                     }
 
@@ -150,7 +152,7 @@ macro_rules! api {
                         ciphertext: &[u8],
                         tag: &Tag,
                     ) -> Result<(), DecryptError> {
-                        neon::$variant::decrypt(key, nonce, aad, ciphertext, tag, plaintext)
+                        crate::neon::$variant::decrypt(key, nonce, aad, ciphertext, tag, plaintext)
                             .map_err(|_| DecryptError::InvalidTag)
                     }
                 }
@@ -175,7 +177,7 @@ macro_rules! api {
                         aad: &[u8],
                         plaintext: &[u8],
                     ) -> Result<(), EncryptError> {
-                        x64::$variant::encrypt(key, nonce, aad, plaintext, ciphertext, tag);
+                        crate::x64::$variant::encrypt(key, nonce, aad, plaintext, ciphertext, tag);
                         Ok(())
                     }
 
@@ -187,7 +189,7 @@ macro_rules! api {
                         ciphertext: &[u8],
                         tag: &Tag,
                     ) -> Result<(), DecryptError> {
-                        x64::$variant::decrypt(key, nonce, aad, ciphertext, tag, plaintext)
+                        crate::x64::$variant::decrypt(key, nonce, aad, ciphertext, tag, plaintext)
                             .map_err(|_| DecryptError::InvalidTag)
                     }
                 }
