@@ -18,6 +18,16 @@ pub trait EcdhOwned<const RAND_LEN: usize, const SECRET_LEN: usize, const PUBLIC
     fn secret_to_public(secret: &[U8; SECRET_LEN])
         -> Result<[u8; PUBLIC_LEN], SecretToPublicError>;
 
+    /// Generate a Diffie-Hellman secret value and derive the
+    /// corresponding public value in one step.
+    fn generate_pair(
+        rand: &[U8; RAND_LEN],
+    ) -> Result<([u8; PUBLIC_LEN], [U8; SECRET_LEN]), GenerateSecretError> {
+        let secret = Self::generate_secret(rand)?;
+        let public = Self::secret_to_public(&secret).map_err(|_| GenerateSecretError::Unknown)?;
+        Ok((public, secret))
+    }
+
     /// Derive a Diffie-Hellman shared secret from a public and a
     /// secret value.
     ///

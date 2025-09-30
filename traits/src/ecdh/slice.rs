@@ -14,6 +14,17 @@ pub trait EcdhSlice {
     /// Derive a Diffie-Hellman public value from a secret value.
     fn secret_to_public(public: &mut [u8], secret: &[U8]) -> Result<(), SecretToPublicError>;
 
+    /// Generate a Diffie-Hellman secret value and derive the
+    /// corresponding public value in one step.
+    fn generate_pair(
+        public: &mut [u8],
+        secret: &mut [U8],
+        rand: &[U8],
+    ) -> Result<(), GenerateSecretError> {
+        Self::generate_secret(secret, rand)?;
+        Self::secret_to_public(public, secret).map_err(|_| GenerateSecretError::Unknown)
+    }
+
     /// Derive a Diffie-Hellman shared secret from a public and a
     /// secret value.
     ///
