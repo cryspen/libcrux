@@ -40,6 +40,7 @@ macro_rules! api {
                 // implement `libcrux_traits` public API traits
                 impl_traits_public_api!($multiplexing, KEY_LEN, TAG_LEN, NONCE_LEN);
 
+                /// The plaintext length must be equal to the ciphertext length.
                 impl arrayref::Aead<KEY_LEN, TAG_LEN, NONCE_LEN> for $multiplexing {
                     fn encrypt(
                         ciphertext: &mut [u8],
@@ -53,6 +54,9 @@ macro_rules! api {
                             return Err(EncryptError::PlaintextTooLong);
                         }
 
+                        if ciphertext.len() != plaintext.len() {
+                            return Err(EncryptError::WrongCiphertextLength);
+                        }
                         // SIMD256 needs to come first because SIMD128 is true for
                         // x64 as well, but we don't actually implement it.
                         if libcrux_platform::simd256_support() && libcrux_platform::aes_ni_support() {
@@ -76,6 +80,9 @@ macro_rules! api {
                     ) -> Result<(), DecryptError> {
                         if plaintext.len() / crate::aes::AES_BLOCK_LEN >= (u32::MAX - 1) as usize {
                             return Err(DecryptError::PlaintextTooLong);
+                        }
+                        if ciphertext.len() != plaintext.len() {
+                            return Err(DecryptError::WrongPlaintextLength);
                         }
                         // SIMD256 needs to come first because SIMD128 is true for
                         // x64 as well, but we don't actually implement it.
@@ -101,6 +108,7 @@ macro_rules! api {
                 // implement `libcrux_traits` public API traits
                 impl_traits_public_api!($portable, KEY_LEN, TAG_LEN, NONCE_LEN);
 
+                /// The plaintext length must be equal to the ciphertext length.
                 impl arrayref::Aead<KEY_LEN, TAG_LEN, NONCE_LEN> for $portable {
                     fn encrypt(
                         ciphertext: &mut [u8],
@@ -114,6 +122,9 @@ macro_rules! api {
                             return Err(EncryptError::PlaintextTooLong);
                         }
 
+                        if ciphertext.len() != plaintext.len() {
+                            return Err(EncryptError::WrongCiphertextLength);
+                        }
                         crate::portable::$variant::encrypt(key, nonce, aad, plaintext, ciphertext, tag);
                         Ok(())
                     }
@@ -128,6 +139,9 @@ macro_rules! api {
                     ) -> Result<(), DecryptError> {
                         if plaintext.len() / crate::aes::AES_BLOCK_LEN >= (u32::MAX - 1) as usize {
                             return Err(DecryptError::PlaintextTooLong);
+                        }
+                        if ciphertext.len() != plaintext.len() {
+                            return Err(DecryptError::WrongPlaintextLength);
                         }
                         crate::portable::$variant::decrypt(key, nonce, aad, ciphertext, tag, plaintext)
                             .map_err(|_| DecryptError::InvalidTag)
@@ -145,6 +159,7 @@ macro_rules! api {
                 // implement `libcrux_traits` public API traits
                 impl_traits_public_api!($neon, KEY_LEN, TAG_LEN, NONCE_LEN);
 
+                /// The plaintext length must be equal to the ciphertext length.
                 impl arrayref::Aead<KEY_LEN, TAG_LEN, NONCE_LEN> for $neon {
                     fn encrypt(
                         ciphertext: &mut [u8],
@@ -158,6 +173,9 @@ macro_rules! api {
                             return Err(EncryptError::PlaintextTooLong);
                         }
 
+                        if ciphertext.len() != plaintext.len() {
+                            return Err(EncryptError::WrongCiphertextLength);
+                        }
                         crate::neon::$variant::encrypt(key, nonce, aad, plaintext, ciphertext, tag);
                         Ok(())
                     }
@@ -172,6 +190,9 @@ macro_rules! api {
                     ) -> Result<(), DecryptError> {
                         if plaintext.len() / crate::aes::AES_BLOCK_LEN >= (u32::MAX - 1) as usize {
                             return Err(DecryptError::PlaintextTooLong);
+                        }
+                        if ciphertext.len() != plaintext.len() {
+                            return Err(DecryptError::WrongPlaintextLength);
                         }
                         crate::neon::$variant::decrypt(key, nonce, aad, ciphertext, tag, plaintext)
                             .map_err(|_| DecryptError::InvalidTag)
@@ -189,6 +210,7 @@ macro_rules! api {
                 // implement `libcrux_traits` public API traits
                 impl_traits_public_api!($x64, KEY_LEN, TAG_LEN, NONCE_LEN);
 
+                /// The plaintext length must be equal to the ciphertext length.
                 impl arrayref::Aead<KEY_LEN, TAG_LEN, NONCE_LEN> for $x64 {
                     fn encrypt(
                         ciphertext: &mut [u8],
@@ -200,6 +222,9 @@ macro_rules! api {
                     ) -> Result<(), EncryptError> {
                         if plaintext.len() / crate::aes::AES_BLOCK_LEN >= (u32::MAX - 1) as usize {
                             return Err(EncryptError::PlaintextTooLong);
+                        }
+                        if ciphertext.len() != plaintext.len() {
+                            return Err(EncryptError::WrongCiphertextLength);
                         }
                         crate::x64::$variant::encrypt(key, nonce, aad, plaintext, ciphertext, tag);
                         Ok(())
@@ -215,6 +240,9 @@ macro_rules! api {
                     ) -> Result<(), DecryptError> {
                         if plaintext.len() / crate::aes::AES_BLOCK_LEN >= (u32::MAX - 1) as usize {
                             return Err(DecryptError::PlaintextTooLong);
+                        }
+                        if ciphertext.len() != plaintext.len() {
+                            return Err(DecryptError::WrongPlaintextLength);
                         }
                         crate::x64::$variant::decrypt(key, nonce, aad, ciphertext, tag, plaintext)
                             .map_err(|_| DecryptError::InvalidTag)
