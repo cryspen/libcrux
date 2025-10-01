@@ -3,7 +3,9 @@
 //! returns owned arrays.
 
 use super::arrayref;
-use super::arrayref::{DeriveError, GenerateSecretError, SecretToPublicError, ValidateSecretError};
+pub use super::arrayref::{
+    DeriveError, GenerateSecretError, SecretToPublicError, ValidateSecretError,
+};
 
 use libcrux_secrets::{Classify, U8};
 

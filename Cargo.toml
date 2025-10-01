@@ -34,7 +34,7 @@ members = [
     "test-utils",
     "crates/primitives/aead",
     "crates/primitives/digest",
-    "crates/testing/kats",
+    "crates/testing/kats", "crates/primitives/ecdh",
 ]
 
 [workspace.package]

@@ -1,0 +1,22 @@
+[package]
+authors.workspace = true
+edition.workspace = true
+homepage.workspace = true
+license.workspace = true
+name = "libcrux-ecdh-new"
+readme.workspace = true
+repository.workspace = true
+version.workspace = true
+
+[dependencies]
+libcrux-curve25519 = { version = "0.0.3", path = "../../../curve25519", optional = true }
+libcrux-p256 = { version = "0.0.3", path = "../../../p256", optional = true }
+libcrux-traits = { version = "0.0.3", path = "../../../traits", optional = true }
+
+[features]
+default = ["curve25519", "p256"]
+p256 = ["dep:libcrux-p256", "dep:libcrux-traits"]
+curve25519 = ["dep:libcrux-curve25519", "dep:libcrux-traits"]
+
+[dev-dependencies]
+rand = "0.9"
