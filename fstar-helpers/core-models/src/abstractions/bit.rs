@@ -34,7 +34,9 @@
 /// Represent a bit: `0` or `1`.
 #[derive(Copy, Clone, Eq, PartialEq, Debug)]
 pub enum Bit {
+    /// Represents the bit value `0`.
     Zero,
+    /// Represents the bit value `1`.
     One,
 }
 
@@ -111,6 +113,10 @@ impl Bit {
         }
     }
 
+    /// Extracts the `nth` bit from the given integer `x`.
+    ///
+    /// This function treats the integer as a two's complement representation
+    /// and returns the bit at position `nth` (0-indexed from the least significant bit).
     pub fn of_int<T: Into<i128> + MachineInteger>(x: T, nth: u32) -> Bit {
         let x: i128 = x.into();
         if x >= 0 {

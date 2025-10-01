@@ -76,6 +76,7 @@
 //!
 #![allow(clippy::too_many_arguments)]
 
+/// Interpretations and additional models for x86 SIMD operations.
 pub mod interpretations;
 use crate::abstractions::{bit::*, bitvec::*, funarr::*};
 
@@ -171,8 +172,10 @@ pub type __m128i = BitVec<128>;
 pub type __m256 = __m256i;
 
 pub use ssse3::*;
+/// SSSE3 (Supplemental Streaming SIMD Extensions 3) instruction models.
 pub mod ssse3 {
     use super::*;
+    /// Shuffle bytes in a 128-bit vector according to control bytes in indexes.
     #[hax_lib::opaque]
     pub fn _mm_shuffle_epi8(vector: __m128i, indexes: __m128i) -> __m128i {
         let indexes = indexes.to_vec().try_into().unwrap();
@@ -180,6 +183,7 @@ pub mod ssse3 {
     }
 }
 pub use sse2::*;
+/// SSE2 (Streaming SIMD Extensions 2) instruction models.
 pub mod sse2 {
     /// This intrinsics is not extracted via hax currently since it cannot hanlde raw pointers.
     /// [Intel Documentation](https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm_loadu_si128&ig_expand=4106)
@@ -195,6 +199,7 @@ pub mod sse2 {
     }
 
     use super::*;
+    /// Set packed 8-bit integers in a 128-bit vector with the supplied values.
     #[hax_lib::opaque]
     pub fn _mm_set_epi8(
         _e15: i8,
@@ -263,6 +268,7 @@ pub mod sse2 {
 }
 
 pub use avx::*;
+/// AVX (Advanced Vector Extensions) instruction models.
 pub mod avx {
     /// This intrinsics is not extracted via hax currently since it cannot hanlde raw pointers.
     /// [Intel Documentation](https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm256_storeu_si256)
@@ -332,6 +338,7 @@ pub mod avx {
     }
 
     pub use super::*;
+    /// Cast a 256-bit integer vector to a 128-bit integer vector, extracting the lower 128 bits.
     pub fn _mm256_castsi256_si128(vector: __m256i) -> __m128i {
         BitVec::from_fn(|i| vector[i])
     }
@@ -429,6 +436,7 @@ pub mod avx {
     }
 }
 pub use avx2::*;
+/// AVX2 (Advanced Vector Extensions 2) instruction models.
 pub mod avx2 {
     use super::*;
 
@@ -925,9 +933,11 @@ let ${_rw_mm256_mullo_epi16_shifts} = e___e_rw_mm256_mullo_epi16_shifts'
     }
 };
 
+/// Extra helper functions for SIMD operations not directly corresponding to intrinsics.
 pub mod extra {
     use super::*;
 
+    /// Variable left shift packed 32-bit integers in a 256-bit vector using counts from an array.
     pub fn mm256_sllv_epi32_u32_array(
         vector: BitVec<256>,
         counts: FunArray<8, u32>,
@@ -935,6 +945,7 @@ pub mod extra {
         vector.chunked_shift::<32, 8>(FunArray::from_fn(|i| counts[i] as i128))
     }
 
+    /// Variable left shift packed 32-bit integers in a 256-bit vector using individual shift counts.
     pub fn mm256_sllv_epi32_u32(
         vector: BitVec<256>,
         b7: u32,
@@ -962,6 +973,7 @@ pub mod extra {
         )
     }
 
+    /// Variable right shift packed 32-bit integers in a 256-bit vector using counts from an array.
     pub fn mm256_srlv_epi32_u32_array(
         vector: BitVec<256>,
         counts: FunArray<8, u32>,
@@ -969,6 +981,7 @@ pub mod extra {
         vector.chunked_shift::<32, 8>(FunArray::from_fn(|i| -(counts[i] as i128)))
     }
 
+    /// Variable right shift packed 32-bit integers in a 256-bit vector using individual shift counts.
     pub fn mm256_srlv_epi32_u32(
         vector: BitVec<256>,
         b7: u32,
@@ -996,6 +1009,7 @@ pub mod extra {
         )
     }
 
+    /// Permute packed 32-bit integers in a 256-bit vector using indices from an array.
     pub fn mm256_permutevar8x32_epi32_u32_array(
         a: BitVec<256>,
         b: FunArray<8, u32>,
@@ -1007,6 +1021,7 @@ pub mod extra {
         })
     }
 
+    /// Permute packed 32-bit integers in a 256-bit vector using individual indices.
     pub fn mm256_permutevar8x32_epi32_u32(
         vector: BitVec<256>,
         b7: u32,
@@ -1034,6 +1049,7 @@ pub mod extra {
         )
     }
 
+    /// Shuffle bytes in a 128-bit vector using indices from an array.
     pub fn mm_shuffle_epi8_u8_array(vector: BitVec<128>, indexes: FunArray<16, u8>) -> BitVec<128> {
         BitVec::from_fn(|i| {
             let nth = i / 8;
@@ -1047,6 +1063,7 @@ pub mod extra {
         })
     }
 
+    /// Shuffle bytes in a 128-bit vector using individual byte indices.
     pub fn mm_shuffle_epi8_u8(
         vector: BitVec<128>,
         b15: u8,
@@ -1088,6 +1105,7 @@ pub mod extra {
         mm_shuffle_epi8_u8_array(vector, indexes)
     }
 
+    /// Shuffle bytes in a 256-bit vector using indices from an array.
     pub fn mm256_shuffle_epi8_i8_array(
         vector: BitVec<256>,
         indexes: FunArray<32, i8>,
@@ -1104,6 +1122,7 @@ pub mod extra {
         })
     }
 
+    /// Shuffle bytes in a 256-bit vector using individual byte indices.
     pub fn mm256_shuffle_epi8_i8(
         vector: BitVec<256>,
         byte31: i8,
@@ -1177,6 +1196,7 @@ pub mod extra {
         mm256_shuffle_epi8_i8_array(vector, indexes)
     }
 
+    /// Multiply packed 16-bit integers and shift left by individual shift amounts.
     pub fn mm256_mullo_epi16_shifts(
         vector: __m256i,
         s15: u8,
@@ -1217,6 +1237,7 @@ pub mod extra {
         });
         mm256_mullo_epi16_shifts_array(vector, shifts)
     }
+    /// Multiply packed 16-bit integers and shift left by shift amounts from an array.
     pub fn mm256_mullo_epi16_shifts_array(vector: __m256i, shifts: FunArray<16, u8>) -> __m256i {
         BitVec::from_fn(|i| {
             let nth_bit = i % 16;
@@ -1232,6 +1253,7 @@ pub mod extra {
         })
     }
 
+    /// Store 128-bit integer vector to unaligned byte array.
     #[hax_lib::exclude]
     pub fn mm_storeu_bytes_si128(output: &mut [u8], vector: BitVec<128>) {
         output.copy_from_slice(&vector.to_vec()[..]);
