@@ -116,7 +116,6 @@ impl core::fmt::Display for KeyGenError {
 
 #[cfg(feature = "error-in-core")]
 mod error_in_core {
-
     impl core::error::Error for super::SignError {}
     impl core::error::Error for super::VerifyError {}
     impl core::error::Error for super::KeyGenError {}

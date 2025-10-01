@@ -71,7 +71,6 @@ pub mod signers {
                     libcrux_p256::P256::keygen(verification_key, signing_key, &randomness)
                         .map_err(|e| match e {
                             libcrux_traits::kem::arrayref::KeyGenError::InvalidRandomness => arrayref::KeyGenError::InvalidRandomness,
-
                             libcrux_traits::kem::arrayref::KeyGenError::Unknown => arrayref::KeyGenError::LibraryError,
                         })
                 }
