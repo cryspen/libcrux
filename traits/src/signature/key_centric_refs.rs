@@ -43,12 +43,7 @@ impl<
     pub fn sign(
         &self,
         payload: &[u8],
-        aux: <Algorithm as super::owned::Sign<
-            SIGNING_KEY_LEN,
-            VERIFICATION_KEY_LEN,
-            SIGNATURE_LEN,
-            RAND_KEYGEN_LEN,
-        >>::SignAux<'_>,
+        aux: <Algorithm as super::key_centric_owned::SignTypes>::SignAux<'_>,
     ) -> Result<Algorithm::Signature, SignError> {
         let key: &[U8; SIGNING_KEY_LEN] = self
             .key

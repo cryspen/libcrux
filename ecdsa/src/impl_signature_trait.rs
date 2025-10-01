@@ -19,8 +19,6 @@ pub mod signers {
 
             /// The [`arrayref`](libcrux_traits::signature::arrayref) version of the Sign trait.
             impl arrayref::Sign<SIGNING_KEY_LEN, VERIFICATION_KEY_LEN, SIG_LEN, RAND_KEYGEN_LEN> for Signer<$name> {
-                /// The nonce needed for signing.
-                type SignAux<'a> = &'a Nonce;
                 /// Sign a payload using a provided signing key and `nonce`.
                 #[inline(always)]
                 fn sign(
@@ -74,12 +72,13 @@ pub mod signers {
                 Signer<$name> => SIGNING_KEY_LEN, VERIFICATION_KEY_LEN, SIG_LEN, RAND_KEYGEN_LEN, &Nonce, nonce, u8);
 
             // key centric APIs
-            libcrux_traits::signature::key_centric_owned::impl_key_centric_owned!(
+            libcrux_traits::signature::key_centric_owned::impl_sign_types!(
                 Signer<$name>,
                 SIGNING_KEY_LEN,
                 VERIFICATION_KEY_LEN,
                 SIG_LEN,
-                RAND_KEYGEN_LEN
+                RAND_KEYGEN_LEN,
+                &'a Nonce
             );
 
         };

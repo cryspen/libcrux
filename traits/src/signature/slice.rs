@@ -1,6 +1,7 @@
 //! This module contains the traits and related errors for signing and verification where arguments
 //! are provided as slices, and the results are written to mutable slices.
 
+use super::key_centric_owned::SignTypes;
 use libcrux_secrets::U8;
 
 /// A signer. This trait takes slices as arguments.
@@ -8,9 +9,7 @@ use libcrux_secrets::U8;
 /// The `SignAux` type is auxiliary information required for signing.
 ///
 /// Returns the number of bytes written.
-pub trait Sign<const RAND_KEYGEN_LEN: usize> {
-    /// Auxiliary information needed for signing.
-    type SignAux<'a>;
+pub trait Sign<const RAND_KEYGEN_LEN: usize>: Sized + SignTypes {
     /// Sign a payload using a provided signature key. Required auxiliary information is provided using
     /// the `aux` argument.
     fn sign(
@@ -170,16 +169,6 @@ macro_rules! impl_signature_slice_trait {
     ($type:ty => $sk_len:expr, $vk_len:expr, $sig_len:expr, $rand_keygen_len:expr, $sign_aux:ty, $sign_aux_param:tt, $byte:ty) => {
         /// The [`slice`](libcrux_traits::signature::slice) version of the Sign trait.
         impl $crate::signature::slice::Sign<$rand_keygen_len> for $type {
-            #[doc = "Auxiliary information needed for signing: "]
-            #[doc = concat!("`",stringify!($sign_aux_param),"`")]
-            #[doc = ". If the type is `()`, then no auxiliary information is required.\n\n"]
-            type SignAux<'a> = <$type as $crate::signature::arrayref::Sign<
-                $sk_len,
-                $vk_len,
-                $sig_len,
-                $rand_keygen_len,
-            >>::SignAux<'a>;
-
             #[doc = "Sign a payload using a provided signing key and "]
             #[doc = concat!("`",stringify!($sign_aux_param),"`.")]
             fn sign(
