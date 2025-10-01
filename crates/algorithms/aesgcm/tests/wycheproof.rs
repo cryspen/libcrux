@@ -54,11 +54,11 @@ fn test() {
                 run(&test, libcrux_aesgcm::PortableAesGcm128 {});
 
                 // Neon
-                #[cfg(all(target_arch = "aarch64", target_feature = "aes"))]
+                #[cfg(feature = "simd128")]
                 run(&test, libcrux_aesgcm::NeonAesGcm128 {});
 
                 // x64
-                #[cfg(all(target_arch = "x86_64"))]
+                #[cfg(feature = "simd256")]
                 run(&test, libcrux_aesgcm::X64AesGcm128 {});
             }
         } else if test_group.key_size == 256 {
@@ -72,11 +72,11 @@ fn test() {
                 run(&test, libcrux_aesgcm::PortableAesGcm256 {});
 
                 // Neon
-                #[cfg(all(target_arch = "aarch64", target_feature = "aes"))]
+                #[cfg(feature = "simd128")]
                 run(&test, libcrux_aesgcm::NeonAesGcm256 {});
 
                 // x64
-                #[cfg(all(target_arch = "x86_64"))]
+                #[cfg(feature = "simd256")]
                 run(&test, libcrux_aesgcm::X64AesGcm256 {});
             }
         }
