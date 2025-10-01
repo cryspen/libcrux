@@ -47,29 +47,27 @@
 use super::{DK_LEN, EK_LEN, X25519};
 use libcrux_hkdf::HkdfMode;
 use libcrux_secrets::{ClassifyRef as _, ClassifyRefMut as _};
-use libcrux_traits::ecdh::arrayref::EcdhArrayref;
 pub use libcrux_traits::kem::arrayref::Kem;
+use libcrux_traits::{
+    ecdh::arrayref::EcdhArrayref,
+    kem::arrayref::{DecapsError, EncapsError, KeyGenError},
+};
 
 /// An internal error that occurs during DHKEM operations.
 enum DhKemError {
-    GenerateKeyPair,
     Hkdf,
 }
 
 pub const SHARED_SECRET_LEN: usize = 32;
 
-impl libcrux_traits::kem::arrayref::Kem<DK_LEN, EK_LEN, EK_LEN, SHARED_SECRET_LEN, DK_LEN, DK_LEN>
-    for X25519
-{
+impl Kem<DK_LEN, EK_LEN, EK_LEN, SHARED_SECRET_LEN, DK_LEN, DK_LEN> for X25519 {
     fn keygen(
         ek: &mut [u8; DK_LEN],
         dk: &mut [u8; EK_LEN],
         rand: &[u8; DK_LEN],
-    ) -> Result<(), libcrux_traits::kem::arrayref::KeyGenError> {
-        generate_ecdh_pair(ek, dk, rand)
-            .map_err(|_| libcrux_traits::kem::arrayref::KeyGenError::Unknown)?;
-
-        Ok(())
+    ) -> Result<(), KeyGenError> {
+        X25519::generate_pair(ek, dk.classify_ref_mut(), rand.classify_ref())
+            .map_err(|_| KeyGenError::InvalidRandomness)
     }
 
     fn encaps(
@@ -77,46 +75,37 @@ impl libcrux_traits::kem::arrayref::Kem<DK_LEN, EK_LEN, EK_LEN, SHARED_SECRET_LE
         ss: &mut [u8; SHARED_SECRET_LEN],
         ek: &[u8; EK_LEN],
         rand: &[u8; DK_LEN],
-    ) -> Result<(), libcrux_traits::kem::arrayref::EncapsError> {
+    ) -> Result<(), EncapsError> {
         let mut ephemeral_secret = [0u8; DK_LEN];
 
-        generate_ecdh_pair(ct, &mut ephemeral_secret, rand)
-            .map_err(|_| libcrux_traits::kem::arrayref::EncapsError::Unknown)?;
+        X25519::generate_pair(ct, ephemeral_secret.classify_ref_mut(), rand.classify_ref())
+            .map_err(|_| EncapsError::InvalidRandomness)?;
 
         let mut derived_ecdh = [0u8; EK_LEN];
-        <X25519 as EcdhArrayref<DK_LEN, DK_LEN, EK_LEN>>::derive_ecdh(
+        X25519::derive_ecdh(
             derived_ecdh.classify_ref_mut(),
             ek,
             ephemeral_secret.classify_ref(),
         )
-        .map_err(|_| libcrux_traits::kem::arrayref::EncapsError::InvalidEncapsKey)?;
+        .map_err(|_| EncapsError::InvalidEncapsKey)?;
 
-        extract_and_expand(ct, ss, ek, derived_ecdh)
-            .map_err(|_| libcrux_traits::kem::arrayref::EncapsError::Unknown)
+        extract_and_expand(ct, ss, ek, derived_ecdh).map_err(|_| EncapsError::Unknown)
     }
 
     fn decaps(
         ss: &mut [u8; SHARED_SECRET_LEN],
         ct: &[u8; DK_LEN],
         dk: &[u8; EK_LEN],
-    ) -> Result<(), libcrux_traits::kem::arrayref::DecapsError> {
+    ) -> Result<(), DecapsError> {
         let mut derived_ecdh = [0u8; EK_LEN];
-        <X25519 as EcdhArrayref<DK_LEN, DK_LEN, EK_LEN>>::derive_ecdh(
-            derived_ecdh.classify_ref_mut(),
-            ct,
-            dk.classify_ref(),
-        )
-        .map_err(|_| libcrux_traits::kem::arrayref::DecapsError::InvalidCiphertext)?;
+        X25519::derive_ecdh(derived_ecdh.classify_ref_mut(), ct, dk.classify_ref())
+            .map_err(|_| DecapsError::InvalidCiphertext)?;
 
         let mut ek = [0u8; EK_LEN];
-        <X25519 as EcdhArrayref<DK_LEN, DK_LEN, EK_LEN>>::secret_to_public(
-            &mut ek,
-            dk.classify_ref(),
-        )
-        .map_err(|_| libcrux_traits::kem::arrayref::DecapsError::InvalidDecapsKey)?;
+        X25519::secret_to_public(&mut ek, dk.classify_ref())
+            .map_err(|_| DecapsError::InvalidDecapsKey)?;
 
-        extract_and_expand(ct, ss, &ek, derived_ecdh)
-            .map_err(|_| libcrux_traits::kem::arrayref::DecapsError::Unknown)
+        extract_and_expand(ct, ss, &ek, derived_ecdh).map_err(|_| DecapsError::Unknown)
     }
 }
 
@@ -157,21 +146,6 @@ fn extract_and_expand<const SHARED_SECRET_LEN: usize>(
 
     libcrux_hkdf::HkdfSha2_256::expand(ss, eae_prk.as_slice(), &labeled_info)
         .map_err(|_| DhKemError::Hkdf)
-}
-
-fn generate_ecdh_pair(
-    ek: &mut [u8; 32],
-    dk: &mut [u8; 32],
-    rand: &[u8; 32],
-) -> Result<(), DhKemError> {
-    <X25519 as EcdhArrayref<DK_LEN, DK_LEN, EK_LEN>>::generate_secret(
-        dk.classify_ref_mut(),
-        rand.classify_ref(),
-    )
-    .map_err(|_| DhKemError::GenerateKeyPair)?;
-    <X25519 as EcdhArrayref<DK_LEN, DK_LEN, EK_LEN>>::secret_to_public(ek, dk.classify_ref())
-        .map_err(|_| DhKemError::GenerateKeyPair)?;
-    Ok(())
 }
 
 libcrux_traits::kem::slice::impl_trait!(X25519 => EK_LEN, DK_LEN, EK_LEN, SHARED_SECRET_LEN, DK_LEN, DK_LEN);
