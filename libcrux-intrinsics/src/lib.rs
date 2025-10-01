@@ -1,7 +1,13 @@
+//! Platform-specific SIMD intrinsics for libcrux.
+//!
+//! This crate provides SIMD intrinsics for ARM64 (128-bit) and x86_64 (256-bit) architectures.
+//! It includes both real implementations for actual hardware and dummy implementations for extraction.
+
 #![no_std]
 #[cfg(all(feature = "simd128", not(hax)))]
 pub mod arm64;
 #[cfg(all(feature = "simd256", not(hax)))]
+/// AVX2 intrinsics for x86_64 256-bit SIMD operations
 pub mod avx2;
 
 // When extracting F* we only want dummy files here.
