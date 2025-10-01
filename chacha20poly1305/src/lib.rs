@@ -5,18 +5,19 @@
 //!
 //! ```rust
 //! # fn main(){
-//! # let key_bytes = [0u8; 32];
+//! # use libcrux_secrets::{Classify, ClassifyRef, Declassify, U8};
+//! # let key_bytes = [0u8.classify(); 32];
 //! # const MSG_LEN: usize = 19;
 //! #
 //! use libcrux_chacha20poly1305::*;
 //! use libcrux_traits::aead::typed_owned::Aead as _;
 //!
-//! let msg: &[u8; MSG_LEN] = b"squeamish ossifrage";
+//! let msg: &[U8; MSG_LEN] = b"squeamish ossifrage".classify_ref();
 //! let mut ciphertext = [0u8; MSG_LEN];
-//! let mut tag = Tag::from([0u8; TAG_LEN]);
+//! let mut tag = Tag::from([0u8.classify(); TAG_LEN]);
 //!
 //! let key = Key::from(key_bytes);
-//! let nonce = Nonce::from([123u8; NONCE_LEN]);
+//! let nonce = Nonce::from([123u8.classify(); NONCE_LEN]);
 //!
 //! key.encrypt(&mut ciphertext, &mut tag, &nonce, &[/* no aad */], msg)
 //!     .expect("Encryption error");
@@ -29,7 +30,7 @@
 //!       174, 123, 232 ]
 //! );
 //! assert_eq!(
-//!     tag.as_ref(),
+//!     &tag.as_ref().declassify(),
 //!     &[ 155, 112, 155, 212, 133, 38, 145, 115,
 //!         27, 221, 245, 237, 125, 28,  22, 101 ]
 //! );
@@ -40,24 +41,25 @@
 //!
 //! ```rust
 //! # fn main(){
-//! # let key_bytes  = [0u8; 32];
+//! # use libcrux_secrets::{Classify, Declassify, DeclassifyRef};
+//! # let key_bytes  = [0u8; 32].classify();
 //! # let ciphertext = [181, 223,  66, 115, 105, 181,  98, 178, 247, 139, 196, 238, 169, 225, 143,  94, 174, 123, 232];
-//! # let tag_bytes  = [155, 112, 155, 212, 133,  38, 145, 115,  27, 221, 245, 237, 125,  28,  22, 101];
+//! # let tag_bytes  = [155, 112, 155, 212, 133,  38, 145, 115,  27, 221, 245, 237, 125,  28,  22, 101].classify();
 //! # const MSG_LEN: usize = 19;
 //! #
 //! use libcrux_chacha20poly1305::*;
 //! use libcrux_traits::aead::typed_owned::Aead as _;
 //!
-//! let mut plaintext = [0u8; MSG_LEN];
+//! let mut plaintext = [0u8.classify(); MSG_LEN];
 //! let mut tag = Tag::from(tag_bytes);
 //!
 //! let key = Key::from(key_bytes);
-//! let nonce = Nonce::from([123u8; NONCE_LEN]);
+//! let nonce = Nonce::from([123u8.classify(); NONCE_LEN]);
 //!
 //! key.decrypt(&mut plaintext, &nonce, &[/* no aad */], &ciphertext, &tag)
 //!     .expect("Encryption error");
 //!
-//! assert_eq!(&plaintext, b"squeamish ossifrage");
+//! assert_eq!(plaintext.declassify_ref(), b"squeamish ossifrage");
 //! # }
 //! ```
 
