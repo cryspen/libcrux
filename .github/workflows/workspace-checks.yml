@@ -26,6 +26,11 @@ jobs:
       - name: 🧹 Cargo fmt
         run: cargo fmt --all -- --check
 
+      - name: 🧐 Cargo check
+        env:
+          RUSTFLAGS: "-D missing_docs"
+        run: cargo check --workspace
+
   fmt-status:
     if: ${{ always() }}
     needs: [fmt]
