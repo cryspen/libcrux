@@ -22,7 +22,7 @@ pub mod signers {
     /// impl_context!(AppContext, b"context");
     /// ```
     macro_rules! impl_context {
-        ($name:ident, $context:expr) => {
+        ($name:ident, $context:literal) => {
             pub struct $name;
             impl Context for $name {
                 fn context() -> &'static [u8] {
