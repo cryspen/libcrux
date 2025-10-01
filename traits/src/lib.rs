@@ -1,3 +1,9 @@
+//! libcrux-traits provides cryptographic traits for AEAD, digest, ECDH, and KEM algorithms.
+//!
+//! This crate defines generic interfaces for various cryptographic primitives, allowing
+//! different implementations to be used interchangeably. It includes both low-level array-based
+//! traits and higher-level slice-based traits for easier integration.
+
 #![no_std]
 
 extern crate alloc;
@@ -22,6 +28,7 @@ pub trait Digest<const HASH_LEN: usize> {
     fn reset(&mut self);
 }
 
+/// Authenticated Encryption with Associated Data (AEAD) traits and implementations.
 pub mod aead;
 pub mod digest;
 pub mod ecdh;

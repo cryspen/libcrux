@@ -1,5 +1,9 @@
 use super::arrayref::*;
 
+/// A simple test function that exercises basic AEAD encrypt/decrypt functionality.
+///
+/// This function performs a round-trip encryption and decryption operation using
+/// the provided AEAD implementation and verifies that the original plaintext is recovered.
 pub fn simple<
     const KEY_LEN: usize,
     const TAG_LEN: usize,

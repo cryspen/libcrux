@@ -12,10 +12,15 @@ use libcrux_secrets::U8;
 // make these associated types. That would mean that we'd have to define them separately for all
 // implementations.
 
+/// A cryptographic key wrapper that ensures type safety for specific AEAD algorithms.
 #[repr(transparent)]
 pub struct Key<Algo: Aead>(Algo::Key);
+
+/// An authentication tag wrapper that ensures type safety for specific AEAD algorithms.
 #[repr(transparent)]
 pub struct Tag<Algo: Aead>(Algo::Tag);
+
+/// A nonce wrapper that ensures type safety for specific AEAD algorithms.
 #[repr(transparent)]
 pub struct Nonce<Algo: Aead>(Algo::Nonce);
 
@@ -26,8 +31,11 @@ pub struct Nonce<Algo: Aead>(Algo::Nonce);
 /// here. Check the documentation of the types implementing this trait to make sure which inputs
 /// are valid.
 pub trait Aead: Sized + AeadConsts {
+    /// The key type used by this AEAD algorithm.
     type Key;
+    /// The authentication tag type used by this AEAD algorithm.
     type Tag;
+    /// The nonce type used by this AEAD algorithm.
     type Nonce;
 
     /// Encrypt a plaintext message, producing a ciphertext and an authentication tag.
@@ -54,6 +62,9 @@ pub trait Aead: Sized + AeadConsts {
 }
 
 impl<Algo: Aead> Key<Algo> {
+    /// Encrypt a plaintext message using this key, producing a ciphertext and authentication tag.
+    ///
+    /// The arguments `plaintext` and `ciphertext` must have the same length.
     pub fn encrypt(
         &self,
         ciphertext: &mut [u8],
@@ -65,6 +76,9 @@ impl<Algo: Aead> Key<Algo> {
         Algo::encrypt(ciphertext, tag, self, nonce, aad, plaintext)
     }
 
+    /// Decrypt a ciphertext using this key, verifying its authenticity and producing the plaintext.
+    ///
+    /// The arguments `plaintext` and `ciphertext` must have the same length.
     pub fn decrypt(
         &self,
         plaintext: &mut [U8],
@@ -77,6 +91,10 @@ impl<Algo: Aead> Key<Algo> {
     }
 }
 
+/// Macro to implement the typed owned AEAD trait for a given type with specified key, tag, and nonce lengths.
+///
+/// This macro generates the necessary trait implementation that bridges between the typed owned
+/// interface and the array reference interface.
 #[macro_export]
 macro_rules! impl_aead_typed_owned {
     ($ty:ty, $keylen:expr, $taglen:expr, $noncelen:expr) => {

@@ -5,6 +5,10 @@
 use super::arrayref;
 use libcrux_secrets::U8;
 
+/// Elliptic Curve Diffie-Hellman (ECDH) operations using slice-based arguments.
+///
+/// This trait provides a slice-based interface for ECDH operations, allowing
+/// for flexible buffer sizes while maintaining type safety through length validation.
 pub trait EcdhSlice {
     /// Generate a Diffie-Hellman secret value.
     /// It is the responsibility of the caller to ensure  that the `rand` argument is actually
