@@ -83,7 +83,6 @@ macro_rules! impl_comp {
                             BatchSize::SmallInput,
                         )
                     },
-                    a,
                 );
 
                 #[cfg(all(target_arch = "x86_64"))] // ENABLE: target_feature="aes"
