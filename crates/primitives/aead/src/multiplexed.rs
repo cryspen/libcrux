@@ -1,9 +1,9 @@
+use libcrux_secrets::U8;
 use libcrux_traits::aead::{slice::KeyGenError, typed_refs::KeyMut};
 #[cfg(any(feature = "chacha20poly1305", feature = "xchacha20poly1305"))]
 use libcrux_traits::{
     aead,
     aead::typed_refs::{DecryptError, EncryptError, Multiplexes},
-    libcrux_secrets::U8,
 };
 
 /// A multiplexed AEAD, allowing algorithm selection at run time.
@@ -71,7 +71,7 @@ impl aead::typed_refs::Aead for Aead {
         }
     }
 
-    fn keygen<'a>(&self, key: KeyMut<'a, Self>, rand: &[u8]) -> Result<(), KeyGenError> {
+    fn keygen<'a>(&self, key: KeyMut<'a, Self>, rand: &[U8]) -> Result<(), KeyGenError> {
         match *self {
             #[cfg(feature = "chacha20poly1305")]
             Aead::ChaCha20Poly1305 => {

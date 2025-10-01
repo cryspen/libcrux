@@ -5,7 +5,7 @@
 //!
 //! ```rust
 //! # fn main(){
-//! # use libcrux_secrets::{Classify, ClassifyRef, Declassify, U8};
+//! # use libcrux_secrets::{Classify, ClassifyRef, Declassify, DeclassifyRef, U8};
 //! # let key_bytes = [0u8.classify(); 32];
 //! # const MSG_LEN: usize = 19;
 //! #
