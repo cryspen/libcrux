@@ -12,7 +12,7 @@ pub trait Sign<
     const VERIFICATION_KEY_LEN: usize,
     const SIGNATURE_LEN: usize,
     const RAND_KEYGEN_LEN: usize,
->
+>: Sized
 {
     /// Auxiliary information needed for signing.
     type SignAux<'a>;

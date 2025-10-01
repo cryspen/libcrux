@@ -114,6 +114,25 @@ pub mod signers {
                         Ok((signing_key, verification_key))
                     }
                 }
+                impl<T: Context> libcrux_traits::signature::key_centric_owned::SignTypes for $name<T> {
+                    type SigningKey = [u8; SIGNING_KEY_LEN];
+                    type VerificationKey = [u8; VERIFICATION_KEY_LEN];
+                    type Signature = [u8; SIGNATURE_LEN];
+                    type KeyGenRandomness = [u8; RAND_KEYGEN_LEN];
+                    type SignAux<'a> = <$name<T> as libcrux_traits::signature::owned::Sign<
+                        SIGNING_KEY_LEN,
+                        VERIFICATION_KEY_LEN,
+                        SIGNATURE_LEN,
+                        RAND_KEYGEN_LEN,
+                    >>::SignAux<'a>;
+                    type VerifyAux<'a> = <$name<T> as libcrux_traits::signature::owned::Sign<
+                        SIGNING_KEY_LEN,
+                        VERIFICATION_KEY_LEN,
+                        SIGNATURE_LEN,
+                        RAND_KEYGEN_LEN,
+                    >>::VerifyAux<'a>;
+                }
+
             }
             pub use $module::$name;
         };
