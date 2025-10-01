@@ -77,10 +77,10 @@ jobs:
       - name: 🔨 Build
         run: |
           rustc --print=cfg
-          cargo build --verbose $RUST_TARGET_FLAG
+          cargo build --lib --examples --benches --verbose $RUST_TARGET_FLAG
 
       - name: 🔨 Build Release
-        run: cargo build --verbose --release $RUST_TARGET_FLAG
+        run: cargo build --lib --examples --benches --verbose --release $RUST_TARGET_FLAG
 
       - name: 🏃🏻 Asan MacOS
         if: ${{ matrix.os == 'macos-latest' }}
@@ -135,7 +135,7 @@ jobs:
       - name: 🔨 Build
         run: |
           rustc --print=cfg
-          cargo build --verbose
+          cargo build --lib --examples --benches --verbose
 
   fuzz:
     strategy:
