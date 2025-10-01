@@ -36,8 +36,8 @@ impl<
         const RAND_KEYGEN_LEN: usize,
         Algorithm: SignTypes<
                 SigningKey = [U8; SIGNING_KEY_LEN],
-                VerificationKey = [U8; VERIFICATION_KEY_LEN],
-                Signature = [U8; SIGNATURE_LEN],
+                VerificationKey = [u8; VERIFICATION_KEY_LEN],
+                Signature = [u8; SIGNATURE_LEN],
                 KeyGenRandomness = [U8; RAND_KEYGEN_LEN],
             > + super::owned::Sign<
                 SIGNING_KEY_LEN,
@@ -63,8 +63,8 @@ impl<
         const RAND_KEYGEN_LEN: usize,
         Algorithm: super::key_centric_owned::SignTypes<
                 SigningKey = [U8; SIGNING_KEY_LEN],
-                VerificationKey = [U8; VERIFICATION_KEY_LEN],
-                Signature = [U8; SIGNATURE_LEN],
+                VerificationKey = [u8; VERIFICATION_KEY_LEN],
+                Signature = [u8; SIGNATURE_LEN],
                 KeyGenRandomness = [U8; RAND_KEYGEN_LEN],
             > + super::owned::Sign<
                 SIGNING_KEY_LEN,
@@ -90,8 +90,8 @@ impl<
         const RAND_KEYGEN_LEN: usize,
         Algorithm: super::key_centric_owned::SignTypes<
                 SigningKey = [U8; SIGNING_KEY_LEN],
-                VerificationKey = [U8; VERIFICATION_KEY_LEN],
-                Signature = [U8; SIGNATURE_LEN],
+                VerificationKey = [u8; VERIFICATION_KEY_LEN],
+                Signature = [u8; SIGNATURE_LEN],
                 KeyGenRandomness = [U8; RAND_KEYGEN_LEN],
             > + super::owned::Sign<
                 SIGNING_KEY_LEN,
@@ -122,8 +122,8 @@ macro_rules! impl_sign_types {
     ($ty:ty, $signing_key_len:expr, $verification_key_len:expr, $signature_len:expr, $rand_keygen_len:expr, $sign_aux:ty) => {
         impl $crate::signature::key_centric_owned::SignTypes for $ty {
             type SigningKey = [$crate::libcrux_secrets::U8; $signing_key_len];
-            type VerificationKey = [$crate::libcrux_secrets::U8; $verification_key_len];
-            type Signature = [$crate::libcrux_secrets::U8; $signature_len];
+            type VerificationKey = [u8; $verification_key_len];
+            type Signature = [u8; $signature_len];
             type KeyGenRandomness = [$crate::libcrux_secrets::U8; $rand_keygen_len];
             type SignAux<'a> = $sign_aux;
         }
@@ -139,10 +139,10 @@ impl<const L: usize, Algorithm: SignTypes<SigningKey = [U8; L]>> From<[U8; L]>
     }
 }
 
-impl<const L: usize, Algorithm: SignTypes<VerificationKey = [U8; L]>> From<[U8; L]>
+impl<const L: usize, Algorithm: SignTypes<VerificationKey = [u8; L]>> From<[u8; L]>
     for VerificationKey<Algorithm>
 {
-    fn from(bytes: [U8; L]) -> Self {
+    fn from(bytes: [u8; L]) -> Self {
         Self { key: bytes }
     }
 }

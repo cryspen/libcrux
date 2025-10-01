@@ -16,8 +16,8 @@ pub trait Sign<
     Sized
     + SignTypes<
         SigningKey = [U8; SIGNING_KEY_LEN],
-        VerificationKey = [U8; VERIFICATION_KEY_LEN],
-        Signature = [U8; SIGNATURE_LEN],
+        VerificationKey = [u8; VERIFICATION_KEY_LEN],
+        Signature = [u8; SIGNATURE_LEN],
         KeyGenRandomness = [U8; RAND_KEYGEN_LEN],
     >
 {
@@ -44,9 +44,10 @@ pub trait Sign<
         rand: [U8; RAND_KEYGEN_LEN],
     ) -> Result<([U8; SIGNING_KEY_LEN], [u8; VERIFICATION_KEY_LEN]), KeyGenError>;
     fn generate_key_pair(rng: &mut impl rand::CryptoRng) -> Result<KeyPair<Self>, KeyGenError> {
+        use libcrux_secrets::Classify;
         let mut rand = [0; RAND_KEYGEN_LEN];
         rng.fill_bytes(&mut rand);
-        Self::keygen(rand).map(|(signing_key, verification_key)| {
+        Self::keygen(rand.classify()).map(|(signing_key, verification_key)| {
             KeyPair::from_keys(signing_key, verification_key)
         })
     }
@@ -64,8 +65,8 @@ impl<
                 RAND_KEYGEN_LEN,
             > + SignTypes<
                 SigningKey = [U8; SIGNING_KEY_LEN],
-                VerificationKey = [U8; VERIFICATION_KEY_LEN],
-                Signature = [U8; SIGNATURE_LEN],
+                VerificationKey = [u8; VERIFICATION_KEY_LEN],
+                Signature = [u8; SIGNATURE_LEN],
                 KeyGenRandomness = [U8; RAND_KEYGEN_LEN],
             >,
     > Sign<SIGNING_KEY_LEN, VERIFICATION_KEY_LEN, SIGNATURE_LEN, RAND_KEYGEN_LEN> for T
