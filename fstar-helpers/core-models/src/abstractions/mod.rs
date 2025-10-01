@@ -22,4 +22,5 @@
 
 pub mod bit;
 pub mod bitvec;
+/// Functional array abstraction with fixed-size arrays and F* integration.
 pub mod funarr;

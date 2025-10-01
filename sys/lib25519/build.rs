@@ -1,3 +1,7 @@
+//! Build script for lib25519 FFI bindings.
+//!
+//! This script configures linking to the lib25519 C library and its dependencies.
+
 use std::env;
 
 fn main() {

@@ -1,4 +1,10 @@
+//! Benchmark utilities for libcrux performance testing.
+//!
+//! This crate provides utility functions for benchmarking cryptographic operations.
+
+/// Utility functions for benchmarking
 pub mod util {
+    /// Generate random bytes for testing
     pub fn randombytes(n: usize) -> Vec<u8> {
         use rand::rngs::OsRng;
         use rand::TryRngCore;
@@ -8,12 +14,14 @@ pub mod util {
         bytes
     }
 
+    /// Format byte count with appropriate units (KB, MB, GB)
     pub fn fmt(x: usize) -> String {
         let base = (x as f64).log(1024f64).floor() as usize;
         let suffix = ["", "KB", "MB", "GB"];
         format!("{} {}", x >> (10 * base), suffix[base])
     }
 
+    /// Convert hex string to byte vector
     pub fn hex_str_to_bytes(val: &str) -> Vec<u8> {
         let b: Result<Vec<u8>, std::num::ParseIntError> = (0..val.len())
             .step_by(2)
@@ -22,6 +30,7 @@ pub mod util {
         b.expect("Error parsing hex string")
     }
 
+    /// Convert hex string to fixed-size array
     pub fn hex_str_to_array<A>(val: &str) -> A
     where
         A: Default + AsMut<[u8]>,

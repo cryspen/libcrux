@@ -29,8 +29,10 @@
 // We test functions with const generics, the macro generate a test per possible (const generic) control value.
 #![recursion_limit = "2048"]
 pub mod abstractions;
+/// X86 architecture-specific functions and types modeled in pure Rust.
 pub mod core_arch;
 
 pub use core_arch as arch;
 
+/// Helper functions and utilities for working with core models.
 pub mod helpers;

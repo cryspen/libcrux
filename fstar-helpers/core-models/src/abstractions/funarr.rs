@@ -87,6 +87,10 @@ impl<const N: u64, T> FunArray<N, T> {
 macro_rules! impl_pointwise {
     ($n:literal, $($i:literal)*) => {
         impl<T: Copy> FunArray<$n, T> {
+            /// Creates a pointwise copy of the array elements.
+            ///
+            /// This method reconstructs the array by applying an identity function
+            /// to each element, effectively creating a new array with the same values.
             pub fn pointwise(self) -> Self {
                 Self::from_fn(|i| match i {
                     $($i => self[$i],)*

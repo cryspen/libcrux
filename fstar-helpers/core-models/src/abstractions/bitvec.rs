@@ -102,6 +102,10 @@ const _: () = ();
 macro_rules! impl_pointwise {
     ($n:literal, $($i:literal)*) => {
         impl BitVec<$n> {
+            /// Creates a pointwise copy of the bit vector elements.
+            ///
+            /// This method reconstructs the bit vector by applying an identity function
+            /// to each bit, effectively creating a new bit vector with the same values.
             pub fn pointwise(self) -> Self {
                 Self::from_fn(|i| match i {
                     $($i => self[$i],)*
@@ -241,6 +245,10 @@ pub fn bitvec_postprocess_norm() {}
 
 #[hax_lib::attributes]
 impl<const N: u64> BitVec<N> {
+    /// Performs chunked shift operations on the bit vector.
+    ///
+    /// Divides the bit vector into chunks of size `CHUNK` and applies shift operations
+    /// specified in the `shl` array to each chunk.
     #[hax_lib::requires(CHUNK > 0 && CHUNK.to_int() * SHIFTS.to_int() == N.to_int())]
     pub fn chunked_shift<const CHUNK: u64, const SHIFTS: u64>(
         self,
@@ -355,6 +363,7 @@ pub mod int_vec_interp {
 		     u32x4 [u32; 4], u64x2 [u64; 2], u16x8 [u16; 8]);
 
     impl i64x4 {
+        /// Converts an `i64x4` into an `i32x8` by splitting each 64-bit integer into two 32-bit integers.
         pub fn into_i32x8(self) -> i32x8 {
             i32x8::from_fn(|i| {
                 let value = *self.get(i / 2);
@@ -364,6 +373,7 @@ pub mod int_vec_interp {
     }
 
     impl i32x8 {
+        /// Converts an `i32x8` into an `i64x4` by combining pairs of 32-bit integers into 64-bit integers.
         pub fn into_i64x4(self) -> i64x4 {
             i64x4::from_fn(|i| {
                 let low = *self.get(2 * i) as u32 as u64;

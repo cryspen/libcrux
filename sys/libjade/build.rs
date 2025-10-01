@@ -1,3 +1,8 @@
+//! Build script for libjade FFI bindings.
+//!
+//! This script configures compilation and binding generation for the libjade library,
+//! a collection of high-assurance cryptographic software components.
+
 use std::{env, path::Path};
 
 macro_rules! svec {
@@ -128,6 +133,7 @@ struct Platform {
     simd256: bool,
 }
 
+/// Main build script entry point
 pub fn main() {
     // Get ENV variables
     let home_dir = env::var("CARGO_MANIFEST_DIR").unwrap();

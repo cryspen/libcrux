@@ -176,8 +176,11 @@ impl<'a, Algo: Aead + core::fmt::Debug> core::fmt::Debug for KeyRef<'a, Algo> {
 /// here. Check the documentation of the types implementing this trait to make sure which inputs
 /// are valid.
 pub trait Aead: Copy + PartialEq {
+    /// Returns the key length in bytes for this AEAD algorithm.
     fn key_len(&self) -> usize;
+    /// Returns the authentication tag length in bytes for this AEAD algorithm.
     fn tag_len(&self) -> usize;
+    /// Returns the nonce length in bytes for this AEAD algorithm.
     fn nonce_len(&self) -> usize;
 
     /// Encrypt a plaintext message, producing a ciphertext and an authentication tag.
@@ -328,6 +331,7 @@ impl<
     }
 }
 
+/// Error indicating that a buffer has the wrong length for the expected algorithm parameters.
 #[derive(Debug, Clone, Copy)]
 pub struct WrongLengthError;
 

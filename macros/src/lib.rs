@@ -22,6 +22,7 @@ fn brace(ts: TokenStream) -> TokenTree {
     TokenTree::Group(proc_macro::Group::new(Delimiter::Brace, ts))
 }
 
+/// A procedural macro that unrolls a for loop at compile time.
 #[proc_macro]
 pub fn unroll_for(ts: TokenStream) -> TokenStream {
     let mut i = ts.into_iter();

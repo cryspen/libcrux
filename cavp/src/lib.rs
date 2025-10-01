@@ -1,3 +1,8 @@
+//! CAVP (Cryptographic Algorithm Validation Program) test vector parser.
+//!
+//! This crate provides functionality to read and parse CAVP test vectors
+//! for various cryptographic algorithms including SHA3 and SHAKE.
+
 use core::fmt;
 use std::{
     fs::File,
@@ -19,14 +24,18 @@ pub fn read_string<Ty: Tv>(tv: &str) -> Result<TestVector<Ty>, Error> {
 /// Errors
 #[derive(Debug, Clone, Copy)]
 pub enum Error {
+    /// Failed to open the test vector file
     FileOpen,
+    /// Failed to read or parse test vector data
     Read,
 }
 
 /// A CAVP test vector.
 #[derive(Debug, Clone, Default)]
 pub struct TestVector<TestType: Tv> {
+    /// Header information for the test vector
     pub header: TestType::H,
+    /// Collection of individual test cases
     pub tests: Vec<TestType::T>,
 }
 
@@ -123,7 +132,9 @@ use helper::*;
 pub struct Sha3Test {
     /// Note that `msg_length` is not necessary the same as `msg.len()`
     pub msg_length: usize,
+    /// Input message bytes
     pub msg: Vec<u8>,
+    /// Expected SHA3 digest output
     pub digest: Vec<u8>,
 }
 
@@ -131,6 +142,7 @@ pub struct Sha3Test {
 #[derive(Debug, Clone, Default)]
 pub struct Sha3Header {}
 
+/// SHA3 test vector type
 #[derive(Debug, Clone, Default)]
 pub struct Sha3 {}
 impl Tv for Sha3 {
@@ -181,7 +193,9 @@ impl Test for Sha3Test {
 pub struct ShakeMsgTest {
     /// Note that `msg_length` is not necessary the same as `msg.len()`
     pub msg_length: usize,
+    /// Input message bytes
     pub msg: Vec<u8>,
+    /// Expected SHAKE digest output
     pub digest: Vec<u8>,
 }
 

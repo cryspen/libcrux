@@ -9,21 +9,30 @@ pub mod int_vec {
     #[allow(unused)]
     use crate::core_arch::x86;
 
+    /// Broadcast 32-bit integer `x` to all elements of a 256-bit vector
     pub fn _mm256_set1_epi32(x: i32) -> i32x8 {
         i32x8::from_fn(|_| x)
     }
 
+    /// Multiply two 32-bit integers and return the 64-bit result
     pub fn i32_extended64_mul(x: i32, y: i32) -> i64 {
         (x as i64) * (y as i64)
     }
 
+    /// Multiply pairs of 32-bit integers and return 64-bit products
+    ///
+    /// Multiplies the low 32-bit integers from each 64-bit element in x and y
     pub fn _mm256_mul_epi32(x: i32x8, y: i32x8) -> i64x4 {
         i64x4::from_fn(|i| i32_extended64_mul(x[i * 2], y[i * 2]))
     }
+    /// Subtract 32-bit integers in y from corresponding elements in x
     pub fn _mm256_sub_epi32(x: i32x8, y: i32x8) -> i32x8 {
         i32x8::from_fn(|i| x[i].wrapping_sub(y[i]))
     }
 
+    /// Shuffle 32-bit integers within 128-bit lanes using immediate control
+    ///
+    /// CONTROL specifies which elements to select for each position
     pub fn _mm256_shuffle_epi32<const CONTROL: i32>(x: i32x8) -> i32x8 {
         let indexes: FunArray<4, u64> = FunArray::from_fn(|i| ((CONTROL >> i * 2) % 4) as u64);
         i32x8::from_fn(|i| {
@@ -35,25 +44,33 @@ pub mod int_vec {
         })
     }
 
+    /// Blend 32-bit integers from x and y using immediate control mask
+    ///
+    /// CONTROL bits determine whether to select from x (0) or y (1) for each element
     pub fn _mm256_blend_epi32<const CONTROL: i32>(x: i32x8, y: i32x8) -> i32x8 {
         i32x8::from_fn(|i| if (CONTROL >> i) % 2 == 0 { x[i] } else { y[i] })
     }
 
+    /// Return a 256-bit vector with all bits set to zero
     pub fn _mm256_setzero_si256() -> BitVec<256> {
         BitVec::from_fn(|_| Bit::Zero)
     }
+    /// Set 256-bit vector from two 128-bit vectors (hi in upper lane, lo in lower lane)
     pub fn _mm256_set_m128i(hi: BitVec<128>, lo: BitVec<128>) -> BitVec<256> {
         BitVec::from_fn(|i| if i < 128 { lo[i] } else { hi[i - 128] })
     }
 
+    /// Broadcast 16-bit integer to all elements of a 256-bit vector
     pub fn _mm256_set1_epi16(a: i16) -> i16x16 {
         i16x16::from_fn(|_| a)
     }
 
+    /// Broadcast 16-bit integer to all elements of a 128-bit vector
     pub fn _mm_set1_epi16(a: i16) -> i16x8 {
         i16x8::from_fn(|_| a)
     }
 
+    /// Set 128-bit vector from four 32-bit integers (in reverse order)
     pub fn _mm_set_epi32(e3: i32, e2: i32, e1: i32, e0: i32) -> i32x4 {
         i32x4::from_fn(|i| match i {
             0 => e0,
@@ -63,21 +80,28 @@ pub mod int_vec {
             _ => unreachable!(),
         })
     }
+    /// Add 16-bit integers in 128-bit vectors with wrapping
     pub fn _mm_add_epi16(a: i16x8, b: i16x8) -> i16x8 {
         i16x8::from_fn(|i| a[i].wrapping_add(b[i]))
     }
+    /// Add 16-bit integers in 256-bit vectors with wrapping
     pub fn _mm256_add_epi16(a: i16x16, b: i16x16) -> i16x16 {
         i16x16::from_fn(|i| a[i].wrapping_add(b[i]))
     }
 
+    /// Add 32-bit integers in 256-bit vectors with wrapping
     pub fn _mm256_add_epi32(a: i32x8, b: i32x8) -> i32x8 {
         i32x8::from_fn(|i| a[i].wrapping_add(b[i]))
     }
 
+    /// Add 64-bit integers in 256-bit vectors with wrapping
     pub fn _mm256_add_epi64(a: i64x4, b: i64x4) -> i64x4 {
         i64x4::from_fn(|i| a[i].wrapping_add(b[i]))
     }
 
+    /// Compute absolute value of 32-bit integers in 256-bit vector
+    ///
+    /// Special case: i32::MIN returns i32::MIN (unchanged)
     pub fn _mm256_abs_epi32(a: i32x8) -> i32x8 {
         i32x8::from_fn(|i| {
             // See `_mm256_abs_epi32_min`: if the item is `i32::MIN`, the intrinsics returns `i32::MIN`, untouched.
@@ -89,30 +113,46 @@ pub mod int_vec {
         })
     }
 
+    /// Subtract 16-bit integers in 256-bit vectors with wrapping
     pub fn _mm256_sub_epi16(a: i16x16, b: i16x16) -> i16x16 {
         i16x16::from_fn(|i| a[i].wrapping_sub(b[i]))
     }
 
+    /// Subtract 16-bit integers in 128-bit vectors with wrapping
     pub fn _mm_sub_epi16(a: i16x8, b: i16x8) -> i16x8 {
         i16x8::from_fn(|i| a[i].wrapping_sub(b[i]))
     }
 
+    /// Multiply 16-bit integers and return low 16 bits of results
     pub fn _mm_mullo_epi16(a: i16x8, b: i16x8) -> i16x8 {
         i16x8::from_fn(|i| a[i].overflowing_mul(b[i]).0)
     }
 
+    /// Compare 16-bit integers for greater-than and return mask
+    ///
+    /// Returns -1 (all bits set) for true, 0 for false
     pub fn _mm256_cmpgt_epi16(a: i16x16, b: i16x16) -> i16x16 {
         i16x16::from_fn(|i| if a[i] > b[i] { -1 } else { 0 })
     }
 
+    /// Compare 32-bit integers for greater-than and return mask
+    ///
+    /// Returns -1 (all bits set) for true, 0 for false
     pub fn _mm256_cmpgt_epi32(a: i32x8, b: i32x8) -> i32x8 {
         i32x8::from_fn(|i| if a[i] > b[i] { -1 } else { 0 })
     }
 
+    /// Compare 32-bit integers for equality and return mask
+    ///
+    /// Returns -1 (all bits set) for true, 0 for false
     pub fn _mm256_cmpeq_epi32(a: i32x8, b: i32x8) -> i32x8 {
         i32x8::from_fn(|i| if a[i] == b[i] { -1 } else { 0 })
     }
 
+    /// Apply sign of 32-bit integers in b to corresponding elements in a
+    ///
+    /// Returns: -a[i] if b[i] < 0, a[i] if b[i] > 0, 0 if b[i] == 0
+    /// Special case: i32::MIN returns i32::MIN when negated
     pub fn _mm256_sign_epi32(a: i32x8, b: i32x8) -> i32x8 {
         i32x8::from_fn(|i| {
             if b[i] < 0 {
@@ -130,14 +170,23 @@ pub mod int_vec {
         })
     }
 
+    /// Cast 256-bit integer vector to single-precision floating point vector
+    ///
+    /// This is a no-op cast that doesn't change the bit representation
     pub fn _mm256_castsi256_ps(a: BitVec<256>) -> BitVec<256> {
         a
     }
 
+    /// Cast 256-bit single-precision floating point vector to integer vector
+    ///
+    /// This is a no-op cast that doesn't change the bit representation
     pub fn _mm256_castps_si256(a: BitVec<256>) -> BitVec<256> {
         a
     }
 
+    /// Create mask from most significant bits of 32-bit elements
+    ///
+    /// Sets bit i in result if element i has its sign bit set
     pub fn _mm256_movemask_ps(a: i32x8) -> i32 {
         let a0: i32 = if a[0] < 0 { 1 } else { 0 };
         let a1 = if a[1] < 0 { 2 } else { 0 };
@@ -150,24 +199,29 @@ pub mod int_vec {
         a0 + a1 + a2 + a3 + a4 + a5 + a6 + a7
     }
 
+    /// Multiply 16-bit integers and return high 16 bits of results
     #[hax_lib::fstar::options("--z3rlimit 200")]
     pub fn _mm_mulhi_epi16(a: i16x8, b: i16x8) -> i16x8 {
         i16x8::from_fn(|i| ((a[i] as i32) * (b[i] as i32) >> 16) as i16)
     }
 
+    /// Multiply 32-bit integers and return low 32 bits of results
     pub fn _mm256_mullo_epi32(a: i32x8, b: i32x8) -> i32x8 {
         i32x8::from_fn(|i| a[i].overflowing_mul(b[i]).0)
     }
 
+    /// Multiply 16-bit integers and return high 16 bits of results (256-bit version)
     #[hax_lib::fstar::verification_status(lax)]
     pub fn _mm256_mulhi_epi16(a: i16x16, b: i16x16) -> i16x16 {
         i16x16::from_fn(|i| ((a[i] as i32) * (b[i] as i32) >> 16) as i16)
     }
 
+    /// Multiply pairs of unsigned 32-bit integers and return 64-bit products
     pub fn _mm256_mul_epu32(a: u32x8, b: u32x8) -> u64x4 {
         u64x4::from_fn(|i| (a[i * 2] as u64) * (b[i * 2] as u64))
     }
 
+    /// Compute bitwise AND of two 256-bit vectors
     pub fn _mm256_and_si256(a: BitVec<256>, b: BitVec<256>) -> BitVec<256> {
         BitVec::from_fn(|i| match (a[i], b[i]) {
             (Bit::One, Bit::One) => Bit::One,
@@ -175,6 +229,7 @@ pub mod int_vec {
         })
     }
 
+    /// Compute bitwise OR of two 256-bit vectors
     pub fn _mm256_or_si256(a: BitVec<256>, b: BitVec<256>) -> BitVec<256> {
         BitVec::from_fn(|i| match (a[i], b[i]) {
             (Bit::Zero, Bit::Zero) => Bit::Zero,
@@ -182,6 +237,9 @@ pub mod int_vec {
         })
     }
 
+    /// Test whether the bitwise AND of two 256-bit vectors is all zeros
+    ///
+    /// Returns 1 if (a AND b) is all zeros, 0 otherwise
     pub fn _mm256_testz_si256(a: BitVec<256>, b: BitVec<256>) -> i32 {
         let c = BitVec::<256>::from_fn(|i| match (a[i], b[i]) {
             (Bit::One, Bit::One) => Bit::One,
@@ -195,6 +253,7 @@ pub mod int_vec {
         }
     }
 
+    /// Compute bitwise XOR of two 256-bit vectors
     pub fn _mm256_xor_si256(a: BitVec<256>, b: BitVec<256>) -> BitVec<256> {
         BitVec::from_fn(|i| match (a[i], b[i]) {
             (Bit::Zero, Bit::Zero) => Bit::Zero,
@@ -203,6 +262,9 @@ pub mod int_vec {
         })
     }
 
+    /// Shift 16-bit integers right by immediate count with sign extension
+    ///
+    /// If shift count > 15, fills with sign bit
     pub fn _mm256_srai_epi16<const IMM8: i32>(a: i16x16) -> i16x16 {
         i16x16::from_fn(|i| {
             let imm8 = IMM8.rem_euclid(256);
@@ -218,6 +280,7 @@ pub mod int_vec {
         })
     }
 
+    /// Shift right arithmetic packed 32-bit integers by immediate count.
     pub fn _mm256_srai_epi32<const IMM8: i32>(a: i32x8) -> i32x8 {
         i32x8::from_fn(|i| {
             let imm8 = IMM8.rem_euclid(256);
@@ -233,6 +296,7 @@ pub mod int_vec {
         })
     }
 
+    /// Shift right logical packed 16-bit integers by immediate count.
     pub fn _mm256_srli_epi16<const IMM8: i32>(a: i16x16) -> i16x16 {
         i16x16::from_fn(|i| {
             let imm8 = IMM8.rem_euclid(256);
@@ -244,6 +308,7 @@ pub mod int_vec {
         })
     }
 
+    /// Shift right logical packed 32-bit integers by immediate count.
     pub fn _mm256_srli_epi32<const IMM8: i32>(a: i32x8) -> i32x8 {
         i32x8::from_fn(|i| {
             let imm8 = IMM8.rem_euclid(256);
@@ -255,6 +320,7 @@ pub mod int_vec {
         })
     }
 
+    /// Shift right logical packed 64-bit integers by immediate count.
     pub fn _mm_srli_epi64<const IMM8: i32>(a: i64x2) -> i64x2 {
         i64x2::from_fn(|i| {
             let imm8 = IMM8.rem_euclid(256);
@@ -266,6 +332,7 @@ pub mod int_vec {
         })
     }
 
+    /// Shift left logical packed 32-bit integers by immediate count.
     pub fn _mm256_slli_epi32<const IMM8: i32>(a: i32x8) -> i32x8 {
         i32x8::from_fn(|i| {
             let imm8 = IMM8.rem_euclid(256);
@@ -277,11 +344,13 @@ pub mod int_vec {
         })
     }
 
+    /// Permute packed 64-bit integers using immediate control value.
     pub fn _mm256_permute4x64_epi64<const IMM8: i32>(a: i64x4) -> i64x4 {
         let indexes: FunArray<4, u64> = FunArray::from_fn(|i| ((IMM8 >> i * 2) % 4) as u64);
         i64x4::from_fn(|i| a[indexes[i]])
     }
 
+    /// Unpack and interleave high-order 64-bit integers from two vectors.
     pub fn _mm256_unpackhi_epi64(a: i64x4, b: i64x4) -> i64x4 {
         i64x4::from_fn(|i| match i {
             0 => a[1],
@@ -292,6 +361,7 @@ pub mod int_vec {
         })
     }
 
+    /// Unpack and interleave low-order 32-bit integers from two vectors.
     pub fn _mm256_unpacklo_epi32(a: i32x8, b: i32x8) -> i32x8 {
         i32x8::from_fn(|i| match i {
             0 => a[0],
@@ -306,6 +376,7 @@ pub mod int_vec {
         })
     }
 
+    /// Unpack and interleave high-order 32-bit integers from two vectors.
     pub fn _mm256_unpackhi_epi32(a: i32x8, b: i32x8) -> i32x8 {
         i32x8::from_fn(|i| match i {
             0 => a[2],
@@ -320,14 +391,17 @@ pub mod int_vec {
         })
     }
 
+    /// Cast a 128-bit integer vector to a 256-bit integer vector, zeroing the upper 128 bits.
     pub fn _mm256_castsi128_si256(a: BitVec<128>) -> BitVec<256> {
         BitVec::from_fn(|i| if i < 128 { a[i] } else { Bit::Zero })
     }
 
+    /// Convert packed 16-bit integers to packed 32-bit integers with sign extension.
     pub fn _mm256_cvtepi16_epi32(a: i16x8) -> i32x8 {
         i32x8::from_fn(|i| a[i] as i32)
     }
 
+    /// Pack 16-bit integers from two vectors into 8-bit integers with signed saturation.
     pub fn _mm_packs_epi16(a: i16x8, b: i16x8) -> i8x16 {
         i8x16::from_fn(|i| {
             if i < 8 {
@@ -350,6 +424,7 @@ pub mod int_vec {
         })
     }
 
+    /// Pack 32-bit integers from two vectors into 16-bit integers with signed saturation.
     pub fn _mm256_packs_epi32(a: i32x8, b: i32x8) -> i16x16 {
         i16x16::from_fn(|i| {
             if i < 4 {
@@ -388,6 +463,7 @@ pub mod int_vec {
         })
     }
 
+    /// Insert a 128-bit integer into a 256-bit vector at the position specified by immediate.
     pub fn _mm256_inserti128_si256<const IMM8: i32>(a: i128x2, b: i128x1) -> i128x2 {
         i128x2::from_fn(|i| {
             if IMM8 % 2 == 0 {
@@ -406,6 +482,7 @@ pub mod int_vec {
         })
     }
 
+    /// Blend packed 16-bit integers using immediate control mask.
     pub fn _mm256_blend_epi16<const IMM8: i32>(a: i16x16, b: i16x16) -> i16x16 {
         i16x16::from_fn(|i| {
             if (IMM8 >> (i % 8)) % 2 == 0 {
@@ -416,10 +493,12 @@ pub mod int_vec {
         })
     }
 
+    /// Blend packed single-precision floating-point values using mask.
     pub fn _mm256_blendv_ps(a: i32x8, b: i32x8, mask: i32x8) -> i32x8 {
         i32x8::from_fn(|i| if mask[i] < 0 { b[i] } else { a[i] })
     }
 
+    /// Create mask from the most significant bit of each 8-bit element.
     #[hax_lib::fstar::verification_status(lax)]
     pub fn _mm_movemask_epi8(a: i8x16) -> i32 {
         let a0 = if a[0] < 0 { 1 } else { 0 };
@@ -442,6 +521,7 @@ pub mod int_vec {
         a0 + a1 + a2 + a3 + a4 + a5 + a6 + a7 + a8 + a9 + a10 + a11 + a12 + a13 + a14 + a15
     }
 
+    /// Variable right shift packed 64-bit integers.
     pub fn _mm256_srlv_epi64(a: i64x4, b: i64x4) -> i64x4 {
         i64x4::from_fn(|i| {
             if b[i] > 63 || b[i] < 0 {
@@ -452,6 +532,7 @@ pub mod int_vec {
         })
     }
 
+    /// Variable left shift packed 32-bit integers.
     pub fn _mm_sllv_epi32(a: i32x4, b: i32x4) -> i32x4 {
         i32x4::from_fn(|i| {
             if b[i] > 31 || b[i] < 0 {
@@ -462,6 +543,7 @@ pub mod int_vec {
         })
     }
 
+    /// Shift left logical packed 64-bit integers by immediate count.
     pub fn _mm256_slli_epi64<const IMM8: i32>(a: i64x4) -> i64x4 {
         i64x4::from_fn(|i| {
             let imm8 = IMM8 % 256;
@@ -473,6 +555,7 @@ pub mod int_vec {
         })
     }
 
+    /// Shift right logical packed 128-bit integers by immediate count in bytes.
     pub fn _mm256_bsrli_epi128<const IMM8: i32>(a: i128x2) -> i128x2 {
         i128x2::from_fn(|i| {
             let tmp = IMM8 % 256;
@@ -481,6 +564,7 @@ pub mod int_vec {
         })
     }
 
+    /// Compute bitwise AND NOT of two 256-bit vectors.
     pub fn _mm256_andnot_si256(a: BitVec<256>, b: BitVec<256>) -> BitVec<256> {
         BitVec::from_fn(|i| match (a[i], b[i]) {
             (Bit::Zero, Bit::One) => Bit::One,
@@ -488,10 +572,12 @@ pub mod int_vec {
         })
     }
 
+    /// Set packed 64-bit integers with the supplied value.
     pub fn _mm256_set1_epi64x(a: i64) -> i64x4 {
         i64x4::from_fn(|_| a)
     }
 
+    /// Set packed 64-bit integers with the supplied values.
     pub fn _mm256_set_epi64x(e3: i64, e2: i64, e1: i64, e0: i64) -> i64x4 {
         i64x4::from_fn(|i| match i {
             0 => e0,
@@ -502,6 +588,7 @@ pub mod int_vec {
         })
     }
 
+    /// Unpack and interleave low-order 64-bit integers from two vectors.
     pub fn _mm256_unpacklo_epi64(a: i64x4, b: i64x4) -> i64x4 {
         i64x4::from_fn(|i| match i {
             0 => a[0],
@@ -512,6 +599,7 @@ pub mod int_vec {
         })
     }
 
+    /// Permute 128-bit integer lanes using immediate control value.
     pub fn _mm256_permute2x128_si256<const IMM8: i32>(a: i128x2, b: i128x2) -> i128x2 {
         i128x2::from_fn(|i| {
             let control = IMM8 >> (i * 4);

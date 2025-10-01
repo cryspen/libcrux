@@ -56,6 +56,7 @@ mod platform {
     use super::x86::{self as cpu_id, Feature};
 
     // TODO: Check for z14 or z15
+    /// Check whether 128-bit SIMD support is available
     pub fn simd128_support() -> bool {
         #[cfg(all(target_arch = "aarch64", target_os = "macos"))]
         {
@@ -87,6 +88,7 @@ mod platform {
         }
     }
 
+    /// Check whether 256-bit SIMD support is available
     pub fn simd256_support() -> bool {
         #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
         return cpu_id::supported(Feature::avx2);
@@ -95,6 +97,7 @@ mod platform {
         false
     }
 
+    /// Check whether CPU features required for X25519 are supported
     pub fn x25519_support() -> bool {
         #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
         return cpu_id::supported(Feature::bmi2) && cpu_id::supported(Feature::adx);
@@ -103,6 +106,7 @@ mod platform {
         false
     }
 
+    /// Check whether BMI2 and ADX CPU features are supported
     pub fn bmi2_adx_support() -> bool {
         #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
         return cpu_id::supported(Feature::bmi2) && cpu_id::supported(Feature::adx);

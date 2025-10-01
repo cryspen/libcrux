@@ -18,6 +18,7 @@ mod hacl;
 
 /// The generated hacl code
 #[cfg(feature = "expose-hacl")]
+#[allow(missing_docs)]
 pub mod hacl;
 
 /// The implementation of our types using that hacl code
