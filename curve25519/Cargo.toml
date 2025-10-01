@@ -15,8 +15,11 @@ libcrux-hacl-rs = { version = "=0.0.3", path = "../hacl-rs/" }
 libcrux-macros = { version = "=0.0.3", path = "../macros" }
 libcrux-traits = { version = "=0.0.3", path = "../traits" }
 libcrux-secrets = { version = "=0.0.3", path = "../secrets"}
+libcrux-hkdf = { version = "=0.0.3", path = "../libcrux-hkdf", optional = true }
 
 [features]
+kem-api = ["libcrux-hkdf"]
+
 # Checking secret independence
 check-secret-independence = ["libcrux-secrets/check-secret-independence"]
 
@@ -24,3 +27,4 @@ check-secret-independence = ["libcrux-secrets/check-secret-independence"]
 libcrux-traits = { version = "0.0.3", path = "../traits", features = [
     "generic-tests",
 ] }
+rand = { version = "0.9", features = ["thread_rng"] }

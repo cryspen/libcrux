@@ -5,8 +5,8 @@
 //! For ECDH structs, check the [`libcrux_ecdh`] crate.
 //!
 //! Available algorithms:
-//! * [`Algorithm::X25519`]\: x25519 ECDH KEM. Also see [`libcrux::ecdh#x25519`].
-//! * [`Algorithm::Secp256r1`]\: NIST P256 ECDH KEM. Also see [`libcrux::ecdh#P256`].
+//! * [`Algorithm::X25519`]\: x25519 ECDH KEM. Also see [`libcrux_curve25519`].
+//! * [`Algorithm::Secp256r1`]\: NIST P256 ECDH KEM. Also see [`libcrux_p256`].
 //! * [`Algorithm::MlKem512`]\: ML-KEM 512 from [FIPS 203].
 //! * [`Algorithm::MlKem768`]\: ML-KEM 768 from [FIPS 203].
 //! * [`Algorithm::MlKem1024`]\: ML-KEM 1024 from [FIPS 203].
@@ -902,6 +902,7 @@ pub fn key_gen_derand(alg: Algorithm, seed: &[u8]) -> Result<(PrivateKey, Public
 
 /// The XWing KEM combiner with ML-KEM 768 and x25519
 mod xwing {
+    use libcrux_curve25519::ecdh_api::EcdhArrayref;
     use libcrux_ecdh::X25519PrivateKey;
 
     use super::*;
@@ -962,7 +963,9 @@ mod xwing {
             let dk_x: &mut [u8; X25519_DK_LEN] = dk_x.try_into().unwrap();
 
             MlKem768::keygen(ek_m, dk_m, rand_m)?;
-            X25519::keygen(ek_x, dk_x, rand_x)?;
+
+            X25519::generate_pair(ek_x, dk_x, rand_x)
+                .map_err(|_| libcrux_traits::kem::owned::KeyGenError::InvalidRandomness)?;
 
             Ok(())
         }
@@ -993,7 +996,14 @@ mod xwing {
             MlKem768::encaps(ct_m, ss_m, ek_m, rand_m)?;
 
             let ss_x: &mut [u8; 32] = (&mut hash_buffer[32..64]).try_into().unwrap();
-            X25519::encaps(ct_x, ss_x, ek_x, rand_x)?;
+
+            let mut ephemeral_secret_x = [0u8; X25519_DK_LEN];
+            X25519::generate_pair(ct_x, &mut ephemeral_secret_x, rand_x)
+                .map_err(|_| libcrux_traits::kem::owned::EncapsError::InvalidRandomness)?;
+
+            X25519::derive_ecdh(ss_x, ek_x, &ephemeral_secret_x)
+                .map_err(|_| libcrux_traits::kem::owned::EncapsError::InvalidEncapsKey)?;
+
             hash_buffer[64..96].copy_from_slice(ct_x);
             sha3::sha256_ema(ss, &hash_buffer);
 
@@ -1025,7 +1035,9 @@ mod xwing {
             MlKem768::decaps(ss_m, ct_m, dk_m)?;
 
             let ss_x: &mut [u8; 32] = (&mut hash_buffer[32..64]).try_into().unwrap();
-            X25519::decaps(ss_x, ct_x, dk_x)?;
+            X25519::derive_ecdh(ss_x, ct_x, dk_x)
+                .map_err(|_| libcrux_traits::kem::owned::DecapsError::Unknown)?;
+
             sha3::sha256_ema(ss, &hash_buffer);
 
             Ok(())
