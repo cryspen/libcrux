@@ -25,7 +25,7 @@ pub mod ecdsa {
         //! let signature = signing_key.sign(b"payload", &nonce).unwrap();
         //!
         //! // verify
-        //! verification_key.verify(b"payload", &signature, ()).unwrap();
+        //! verification_key.verify(b"payload", &signature).unwrap();
         //! ```
         pub use libcrux_ecdsa::signers::p256::{
             Nonce, Sha2_256, Sha2_384, Sha2_512, Signer as P256Signer,
@@ -49,7 +49,7 @@ pub mod ed25519 {
     //! let signature = signing_key.sign(b"payload", ()).unwrap();
     //!
     //! // verify
-    //! verification_key.verify(b"payload", &signature, ()).unwrap();
+    //! verification_key.verify(b"payload", &signature).unwrap();
     //! ```
     pub use libcrux_ed25519::signers::Signer as Ed25519;
 }
@@ -74,7 +74,7 @@ pub mod mldsa {
     //! let signature = signing_key.sign(b"payload", [2; 32]).unwrap();
     //!
     //! // verify
-    //! verification_key.verify(b"payload", &signature, ()).unwrap();
+    //! verification_key.verify(b"payload", &signature).unwrap();
     //! ```
     //!
     //! ```rust
@@ -85,7 +85,7 @@ pub mod mldsa {
     //! impl_context!(AppContext, b"context");
     //!
     //! // signing key from bytes
-    //! let signing_key = SigningKeyRef::<MlDsa44<AppContext>>::from_bytes([1; MlDsa44::<AppContext>::SIGNING_KEY_LEN].as_ref()).unwrap();
+    //! let signing_key = SigningKeyRef::<MlDsa44<AppContext>>::from_bytes(&[1; 2560]).unwrap();
     //!
     //! // sign with randomness
     //! signing_key.sign(b"payload", [2; 32]).unwrap();
