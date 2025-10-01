@@ -1,3 +1,7 @@
+//! Build script for benchmarks crate.
+//!
+//! This script configures linking to lib25519 if available for benchmark comparisons.
+
 use std::{env, path::Path};
 
 fn main() {

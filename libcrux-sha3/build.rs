@@ -1,3 +1,9 @@
+//! Build script for libcrux-sha3 crate.
+//!
+//! This script configures SIMD features based on the target architecture and environment variables.
+//! It enables simd128 on aarch64 targets and simd256 on x86_64 targets, with override options
+//! available through environment variables.
+
 use std::env;
 
 fn main() {
