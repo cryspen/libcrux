@@ -19,16 +19,9 @@ pub trait Sign<const RAND_KEYGEN_LEN: usize> {
         signature: &mut [u8],
         aux: Self::SignAux<'_>,
     ) -> Result<usize, SignError>;
-    /// Auxiliary information needed for verification.
-    type VerifyAux<'a>;
-    /// Verify a signature using a provided verification key. Required auxiliary information is provided using
-    /// the `aux` argument.
-    fn verify(
-        payload: &[u8],
-        verification_key: &[u8],
-        signature: &[u8],
-        aux: Self::VerifyAux<'_>,
-    ) -> Result<(), VerifyError>;
+    /// Verify a signature using a provided verification key.
+    fn verify(payload: &[u8], verification_key: &[u8], signature: &[u8])
+        -> Result<(), VerifyError>;
     /// Generate a pair of signing and verification keys.
     ///
     /// It is the responsibility of the caller to ensure  that the `rand` argument is actually
@@ -174,7 +167,7 @@ impl From<super::arrayref::KeyGenError> for KeyGenError {
 /// Implements [`Sign`] for any [`arrayref::Sign`](crate::signature::arrayref::Sign)
 #[macro_export]
 macro_rules! impl_signature_slice_trait {
-    ($type:ty => $sk_len:expr, $vk_len:expr, $sig_len:expr, $rand_keygen_len:expr, $sign_aux:ty, $sign_aux_param:tt, $verify_aux:ty, $verify_aux_param:tt, $byte:ty) => {
+    ($type:ty => $sk_len:expr, $vk_len:expr, $sig_len:expr, $rand_keygen_len:expr, $sign_aux:ty, $sign_aux_param:tt, $byte:ty) => {
         /// The [`slice`](libcrux_traits::signature::slice) version of the Sign trait.
         impl $crate::signature::slice::Sign<$rand_keygen_len> for $type {
             #[doc = "Auxiliary information needed for signing: "]
@@ -213,22 +206,11 @@ macro_rules! impl_signature_slice_trait {
                 .map(|_| $sk_len)
                 .map_err($crate::signature::slice::SignError::from)
             }
-            #[doc = "Auxiliary information needed for verification: "]
-            #[doc = concat!("`",stringify!($verify_aux_param),"`")]
-            #[doc = ". If the type is `()`, then no auxiliary information is required.\n\n"]
-            type VerifyAux<'a> = <$type as $crate::signature::arrayref::Sign<
-                $sk_len,
-                $vk_len,
-                $sig_len,
-                $rand_keygen_len,
-            >>::VerifyAux<'a>;
-            #[doc = "Verify a signature using a provided verification key and "]
-            #[doc = concat!("`",stringify!($verify_aux_param),"`.")]
+            #[doc = "Verify a signature using a provided verification key."]
             fn verify(
                 payload: &[u8],
                 verification_key: &[u8],
                 signature: &[u8],
-                $verify_aux_param: $verify_aux,
             ) -> Result<(), $crate::signature::slice::VerifyError> {
                 let verification_key: &[u8; $vk_len] =
                     verification_key.try_into().map_err(|_| {
@@ -244,7 +226,7 @@ macro_rules! impl_signature_slice_trait {
                     $vk_len,
                     $sig_len,
                     $rand_keygen_len,
-                >>::verify(payload, verification_key, signature, $verify_aux_param)
+                >>::verify(payload, verification_key, signature)
                 .map_err($crate::signature::slice::VerifyError::from)
             }
 

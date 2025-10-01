@@ -34,15 +34,12 @@ pub mod signers {
 
             Ok(())
         }
-        /// No auxiliary information is required for verification.
-        type VerifyAux<'a> = ();
 
         /// Verify a signature using a provided verification key.
         fn verify(
             payload: &[u8],
             verification_key: &[u8; VERIFICATION_KEY_LEN],
             signature: &[u8; SIGNATURE_LEN],
-            _aux: (),
         ) -> Result<(), VerifyError> {
             if crate::hacl::ed25519::verify(
                 verification_key,
@@ -73,7 +70,7 @@ pub mod signers {
 
     libcrux_traits::signature::slice::impl_signature_slice_trait!(
         Signer => SIGNING_KEY_LEN,
-        VERIFICATION_KEY_LEN, SIGNATURE_LEN, RAND_KEYGEN_LEN, (), _aux, (), _aux, u8);
+        VERIFICATION_KEY_LEN, SIGNATURE_LEN, RAND_KEYGEN_LEN, (), _aux, u8);
 
     // key centric APIs
     libcrux_traits::signature::key_centric_owned::impl_key_centric_owned!(

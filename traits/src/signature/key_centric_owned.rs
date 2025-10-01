@@ -7,8 +7,6 @@ pub trait SignTypes {
     type KeyGenRandomness;
     /// Auxiliary information needed for signing.
     type SignAux<'a>;
-    /// Auxiliary information needed for verification.
-    type VerifyAux<'a>;
 }
 
 pub struct SigningKey<Algorithm: SignTypes> {
@@ -79,14 +77,8 @@ impl<
         &self,
         payload: &[u8],
         signature: &Algorithm::Signature,
-        aux: <Algorithm as super::owned::Sign<
-            SIGNING_KEY_LEN,
-            VERIFICATION_KEY_LEN,
-            SIGNATURE_LEN,
-            RAND_KEYGEN_LEN,
-        >>::VerifyAux<'_>,
     ) -> Result<(), VerifyError> {
-        Algorithm::verify(payload, &self.key, signature, aux)
+        Algorithm::verify(payload, &self.key, signature)
     }
 }
 
@@ -138,12 +130,6 @@ macro_rules! impl_key_centric_owned {
                 $signature_len,
                 $rand_keygen_len,
             >>::SignAux<'a>;
-            type VerifyAux<'a> = <$ty as $crate::signature::owned::Sign<
-                $signing_key_len,
-                $verification_key_len,
-                $signature_len,
-                $rand_keygen_len,
-            >>::VerifyAux<'a>;
         }
     };
 }

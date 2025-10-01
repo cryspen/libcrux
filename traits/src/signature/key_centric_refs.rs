@@ -97,18 +97,12 @@ impl<
         &self,
         payload: &[u8],
         signature: &Algorithm::Signature,
-        aux: <Algorithm as super::owned::Sign<
-            SIGNING_KEY_LEN,
-            VERIFICATION_KEY_LEN,
-            SIGNATURE_LEN,
-            RAND_KEYGEN_LEN,
-        >>::VerifyAux<'_>,
     ) -> Result<(), VerifyError> {
         let key: &[U8; VERIFICATION_KEY_LEN] = self
             .key
             .try_into()
             .map_err(|_| VerifyError::InvalidVerificationKeyLength)?;
 
-        Algorithm::verify(payload, key, signature, aux).map_err(VerifyError::from)
+        Algorithm::verify(payload, key, signature).map_err(VerifyError::from)
     }
 }
