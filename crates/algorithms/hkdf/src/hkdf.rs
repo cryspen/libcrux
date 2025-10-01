@@ -12,16 +12,16 @@
 //! use libcrux_secrets::{U8, Classify, ClassifyRef, DeclassifyRef};
 //!
 //! // Input key material and salt
-//! let ikm = &[0x0b.classify(); 22]; // 22 bytes of 0x0b
+//! let ikm = &[0x0b; 22].classify(); // 22 bytes of 0x0b
 //! let salt = b"salt".classify_ref();
 //!
 //! // Extract phase: derive pseudorandom key
-//! let mut prk = [0u8.classify(); 32]; // SHA2-256 output length
+//! let mut prk = [0u8; 32].classify(); // SHA2-256 output length
 //! Hkdf::<Sha2_256>::extract(&mut prk, salt, ikm).unwrap();
 //!
 //! // Expand phase: derive keys for different purposes
-//! let mut encrypt_key = [0u8.classify(); 16];
-//! let mut mac_key = [0u8.classify(); 16];
+//! let mut encrypt_key = [0u8; 16].classify();
+//! let mut mac_key = [0u8; 16].classify();
 //!
 //! Hkdf::<Sha2_256>::expand(&mut encrypt_key, &prk, b"encrypt").unwrap();
 //! Hkdf::<Sha2_256>::expand(&mut mac_key, &prk, b"mac").unwrap();
@@ -34,16 +34,16 @@
 //! use libcrux_secrets::{U8, Classify, ClassifyRef, DeclassifyRef};
 //!
 //! // Input key material and salt
-//! let ikm = &[0x0b.classify(); 22];
+//! let ikm = &[0x0b; 22].classify();
 //! let salt = b"salt".classify_ref();
 //!
 //! // Extract phase using SHA2-512
-//! let mut prk = [0u8.classify(); 64]; // SHA2-512 output length
+//! let mut prk = [0u8; 64].classify(); // SHA2-512 output length
 //! extract(Algorithm::Sha512, &mut prk, salt, ikm).unwrap();
 //!
 //! // Expand phase: derive keys for different purposes
-//! let mut encrypt_key = [0u8.classify(); 32];
-//! let mut mac_key = [0u8.classify(); 32];
+//! let mut encrypt_key = [0u8; 32].classify();
+//! let mut mac_key = [0u8; 32].classify();
 //!
 //! expand(Algorithm::Sha512, &mut encrypt_key, &prk, b"encrypt").unwrap();
 //! expand(Algorithm::Sha512, &mut mac_key, &prk, b"mac").unwrap();
@@ -86,14 +86,16 @@ pub fn extract(
     }
 }
 
-/// HKDF extract using the `salt` and the input key material `ikm`.
-/// The result is written to `prk`.
+/// HKDF expand. The argument names match the specification.
+/// The result is written to `okm`.
 /// The `algo` argument is used for dynamic algorithm selection.
 ///
 /// Returns nothing on success.
-/// Returns [`ExtractError::ArgumentTooLong`] if one of `ikm` or `salt` is longer than
+/// Returns [`ExpandError::ArgumentTooLong`] if one of `prk` or `info` is longer than
 /// [`u32::MAX`] bytes.
-/// Returns [`ExpandError::PrkTooShort`] if `prk` is shorter than hash length.
+/// Returns [`ExpandError::PrkTooShort`] if `okm` is shorter than hash length.
+/// Returns [`ExpandError::OutputTooLong`] if `okm` is longer than 255 times the respective hash
+/// length.
 pub fn expand(algo: Algorithm, okm: &mut [U8], prk: &[U8], info: &[u8]) -> Result<(), ExpandError> {
     match algo {
         Algorithm::Sha256 => sha2_256::expand(okm, prk, info),
@@ -102,6 +104,16 @@ pub fn expand(algo: Algorithm, okm: &mut [U8], prk: &[U8], info: &[u8]) -> Resul
     }
 }
 
+/// Full HKDF, i.e. both extract and expand, using the `salt` and the input key material `ikm`.
+/// The argument names match the specification. The result is written to `okm`.
+/// The `algo` argument is used for dynamic algorithm selection.
+///
+/// Returns nothing on success.
+/// Returns [`ExpandError::ArgumentTooLong`] if one of `prk` or `info` is longer than
+/// [`u32::MAX`] bytes.
+/// Returns [`ExpandError::PrkTooShort`] if `okm` is shorter than hash length.
+/// Returns [`ExpandError::OutputTooLong`] if `okm` is longer than 255 times the respective hash
+/// length.
 pub fn hkdf(
     algo: Algorithm,
     okm: &mut [U8],
@@ -116,14 +128,56 @@ pub fn hkdf(
     }
 }
 
+/// Type marker for SHA2-256 hash algorithm.
+///
+/// This struct is used as a type parameter for [`Hkdf<Sha2_256>`] to provide
+/// compile-time selection of the SHA2-256 algorithm for HKDF operations.
+/// SHA2-256 produces 32-byte (256-bit) hash outputs.
 pub struct Sha2_256;
+
+/// Type marker for SHA2-384 hash algorithm.
+///
+/// This struct is used as a type parameter for [`Hkdf<Sha2_384>`] to provide
+/// compile-time selection of the SHA2-384 algorithm for HKDF operations.
+/// SHA2-384 produces 48-byte (384-bit) hash outputs.
 pub struct Sha2_384;
+
+/// Type marker for SHA2-512 hash algorithm.
+///
+/// This struct is used as a type parameter for [`Hkdf<Sha2_512>`] to provide
+/// compile-time selection of the SHA2-512 algorithm for HKDF operations.
+/// SHA2-512 produces 64-byte (512-bit) hash outputs.
 pub struct Sha2_512;
 
+/// HKDF implementation with compile-time algorithm selection.
+///
+/// This struct provides type-safe HKDF operations for a specific hash algorithm
+/// determined at compile time. The algorithm is specified using type markers
+/// like [`Sha2_256`], [`Sha2_384`], or [`Sha2_512`].
+///
+/// The implementation follows RFC 5869 and uses verified cryptographic code
+/// from the HACL* project.
+///
+/// # Type Parameters
+///
+/// * `Algo` - The hash algorithm type marker (e.g., [`Sha2_256`])
+///
+/// # Examples
+///
+/// ```
+/// use libcrux_hkdf::{Hkdf, Sha2_256};
+/// use libcrux_secrets::{U8, Classify, ClassifyRef};
+///
+/// let ikm = &[0x0b; 22].classify();
+/// let salt = b"salt".classify_ref();
+///
+/// let mut prk = [0u8; 32].classify();
+/// Hkdf::<Sha2_256>::extract(&mut prk, salt, ikm).unwrap();
+/// ```
 pub struct Hkdf<Algo>(PhantomData<Algo>);
 
 impl Algorithm {
-    /// Returns the length of the underlying hash function.
+    /// Returns the digest length of the underlying hash function.
     pub const fn hash_len(self) -> usize {
         match self {
             Algorithm::Sha256 => 32,
@@ -133,8 +187,35 @@ impl Algorithm {
     }
 }
 
+/// Generates HKDF implementation modules for specific hash algorithms.
+///
+/// This macro creates a complete HKDF implementation module for a specific SHA algorithm,
+/// including both typed API methods on the [`Hkdf`] struct and standalone module functions.
+/// It generates implementations for extract, expand, and full HKDF operations with both
+/// fixed-size and variable-size array variants.
+///
+/// Parameters:
+///
+/// * `$struct_name` - The path to the hash algorithm type marker (e.g., `crate::Sha2_256`)
+/// * `$name` - The module name to generate (e.g., `sha2_256`)
+/// * `$string_name` - A string literal describing the algorithm (e.g., `"SHA2-256"`)
+/// * `$mode` - The corresponding [`Algorithm`] enum variant (e.g., `Algorithm::Sha256`)
+/// * `$extract` - The name of the HACL extract function (e.g., `extract_sha2_256`)
+/// * `$expand` - The name of the HACL expand function (e.g., `expand_sha2_256`)
+/// * `$hash_len` - The hash output length in bytes as a literal (e.g., `32`)
+///
+///
+/// This generates the `sha2_256` module and implements all HKDF methods for `Hkdf<Sha2_256>`.
 macro_rules! impl_hkdf {
     ($struct_name:path, $name:ident, $string_name:literal, $mode:path, $extract:ident, $expand:ident,$hash_len:literal) => {
+        #[doc = concat!("HKDF implementation for ", $string_name, ".")]
+        ///
+        /// This module provides HKDF (HMAC-based Key Derivation Function) operations
+        /// specifically for the underlying hash algorithm. It includes both standalone
+        /// functions and methods on the typed [`Hkdf`] struct.
+        ///
+        /// The `_fixed` variants work with compile-time known PRK sizes for better type safety,
+        /// while the regular variants accept slices and perform runtime validation.
         pub mod $name {
             use libcrux_secrets::U8;
 
@@ -334,7 +415,7 @@ macro_rules! impl_hkdf {
                 ikm: &[U8],
                 info: &[u8],
             ) -> Result<(), ExpandError> {
-                let mut prk = [0u8.classify(); $hash_len];
+                let mut prk = [0u8; $hash_len].classify();
                 extract(&mut prk, salt, ikm)?;
                 expand(okm, &prk, info)
             }
