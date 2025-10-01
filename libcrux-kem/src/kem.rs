@@ -5,8 +5,8 @@
 //! For ECDH structs, check the [`libcrux_ecdh`] crate.
 //!
 //! Available algorithms:
-//! * [`Algorithm::X25519`]\: x25519 ECDH KEM. Also see [`libcrux::ecdh#x25519`].
-//! * [`Algorithm::Secp256r1`]\: NIST P256 ECDH KEM. Also see [`libcrux::ecdh#P256`].
+//! * [`Algorithm::X25519`]\: x25519 ECDH KEM. Also see [`libcrux_curve25519`].
+//! * [`Algorithm::Secp256r1`]\: NIST P256 ECDH KEM. Also see [`libcrux_p256`].
 //! * [`Algorithm::MlKem512`]\: ML-KEM 512 from [FIPS 203].
 //! * [`Algorithm::MlKem768`]\: ML-KEM 768 from [FIPS 203].
 //! * [`Algorithm::MlKem1024`]\: ML-KEM 1024 from [FIPS 203].
