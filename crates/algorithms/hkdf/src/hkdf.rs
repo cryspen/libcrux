@@ -9,19 +9,19 @@
 //!
 //! ```
 //! use libcrux_hkdf::{Hkdf, Sha2_256};
-//! use libcrux_secrets::{U8, Classify, DeclassifyRef};
+//! use libcrux_secrets::{U8, Classify, ClassifyRef, DeclassifyRef};
 //!
 //! // Input key material and salt
-//! let ikm = &[U8::classify(0x0b); 22]; // 22 bytes of 0x0b
-//! let salt = b"salt".declassify_ref();
+//! let ikm = &[0x0b.classify(); 22]; // 22 bytes of 0x0b
+//! let salt = b"salt".classify_ref();
 //!
 //! // Extract phase: derive pseudorandom key
-//! let mut prk = [U8::classify(0u8); 32]; // SHA2-256 output length
+//! let mut prk = [0u8.classify(); 32]; // SHA2-256 output length
 //! Hkdf::<Sha2_256>::extract(&mut prk, salt, ikm).unwrap();
 //!
 //! // Expand phase: derive keys for different purposes
-//! let mut encrypt_key = [U8::classify(0u8); 16];
-//! let mut mac_key = [U8::classify(0u8); 16];
+//! let mut encrypt_key = [0u8.classify(); 16];
+//! let mut mac_key = [0u8.classify(); 16];
 //!
 //! Hkdf::<Sha2_256>::expand(&mut encrypt_key, &prk, b"encrypt").unwrap();
 //! Hkdf::<Sha2_256>::expand(&mut mac_key, &prk, b"mac").unwrap();
@@ -31,19 +31,19 @@
 //!
 //! ```
 //! use libcrux_hkdf::{extract, expand, Algorithm};
-//! use libcrux_secrets::{U8, Classify, DeclassifyRef};
+//! use libcrux_secrets::{U8, Classify, ClassifyRef, DeclassifyRef};
 //!
 //! // Input key material and salt
-//! let ikm = &[U8::classify(0x0b); 22];
-//! let salt = b"salt".declassify_ref();
+//! let ikm = &[0x0b.classify(); 22];
+//! let salt = b"salt".classify_ref();
 //!
 //! // Extract phase using SHA2-512
-//! let mut prk = [U8::classify(0u8); 64]; // SHA2-512 output length
+//! let mut prk = [0u8.classify(); 64]; // SHA2-512 output length
 //! extract(Algorithm::Sha512, &mut prk, salt, ikm).unwrap();
 //!
 //! // Expand phase: derive keys for different purposes
-//! let mut encrypt_key = [U8::classify(0u8); 32];
-//! let mut mac_key = [U8::classify(0u8); 32];
+//! let mut encrypt_key = [0u8.classify(); 32];
+//! let mut mac_key = [0u8.classify(); 32];
 //!
 //! expand(Algorithm::Sha512, &mut encrypt_key, &prk, b"encrypt").unwrap();
 //! expand(Algorithm::Sha512, &mut mac_key, &prk, b"mac").unwrap();
