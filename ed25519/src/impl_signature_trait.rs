@@ -13,8 +13,6 @@ pub mod signers {
 
     /// The [`arrayref`](libcrux_traits::signature::arrayref) version of the Sign trait.
     impl Sign<SIGNING_KEY_LEN, VERIFICATION_KEY_LEN, SIGNATURE_LEN, RAND_KEYGEN_LEN> for Signer {
-        /// No auxiliary information is required for signing.
-        type SignAux<'a> = ();
         /// Sign a payload with a provided signing key.
         fn sign(
             payload: &[u8],
@@ -73,11 +71,12 @@ pub mod signers {
         VERIFICATION_KEY_LEN, SIGNATURE_LEN, RAND_KEYGEN_LEN, (), _aux, u8);
 
     // key centric APIs
-    libcrux_traits::signature::key_centric_owned::impl_key_centric_owned!(
+    libcrux_traits::signature::key_centric_owned::impl_sign_types!(
         Signer,
         SIGNING_KEY_LEN,
         VERIFICATION_KEY_LEN,
         SIGNATURE_LEN,
-        RAND_KEYGEN_LEN
+        RAND_KEYGEN_LEN,
+        ()
     );
 }

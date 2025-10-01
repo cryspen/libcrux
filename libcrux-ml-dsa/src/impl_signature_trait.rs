@@ -62,8 +62,6 @@ pub mod signers {
                         RAND_KEYGEN_LEN,
                     > for $name<T>
                 {
-                    /// The `randomness` required for signing.
-                    type SignAux<'a> = super::Randomness;
 
                     /// Sign a payload using a provided signing key, context, and randomness.
                     fn sign(
@@ -116,12 +114,8 @@ pub mod signers {
                     type VerificationKey = [u8; VERIFICATION_KEY_LEN];
                     type Signature = [u8; SIGNATURE_LEN];
                     type KeyGenRandomness = [u8; RAND_KEYGEN_LEN];
-                    type SignAux<'a> = <$name<T> as libcrux_traits::signature::owned::Sign<
-                        SIGNING_KEY_LEN,
-                        VERIFICATION_KEY_LEN,
-                        SIGNATURE_LEN,
-                        RAND_KEYGEN_LEN,
-                    >>::SignAux<'a>;
+                    /// The `randomness` required for signing.
+                    type SignAux<'a> = super::Randomness;
                 }
 
             }

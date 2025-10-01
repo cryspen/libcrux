@@ -1,5 +1,11 @@
 use libcrux_secrets::U8;
 
+pub trait SignConsts {
+    const VERIFICATION_KEY_LEN: usize;
+    const SIGNING_KEY_LEN: usize;
+    const SIGNATURE_LEN: usize;
+    const RAND_KEYGEN_LEN: usize;
+}
 pub trait SignTypes {
     type SigningKey;
     type VerificationKey;
@@ -44,12 +50,7 @@ impl<
     pub fn sign(
         &self,
         payload: &[u8],
-        aux: <Algorithm as super::owned::Sign<
-            SIGNING_KEY_LEN,
-            VERIFICATION_KEY_LEN,
-            SIGNATURE_LEN,
-            RAND_KEYGEN_LEN,
-        >>::SignAux<'_>,
+        aux: <Algorithm as super::key_centric_owned::SignTypes>::SignAux<'_>,
     ) -> Result<Algorithm::Signature, SignError> {
         Algorithm::sign(payload, &self.key, aux)
     }
@@ -117,23 +118,18 @@ pub use super::owned::{KeyGenError, SignError, VerifyError};
 
 /// Implement `key_centric_owned` traits based on internal `owned` traits
 #[macro_export]
-macro_rules! impl_key_centric_owned {
-    ($ty:ty, $signing_key_len:expr, $verification_key_len:expr, $signature_len:expr, $rand_keygen_len:expr) => {
+macro_rules! impl_sign_types {
+    ($ty:ty, $signing_key_len:expr, $verification_key_len:expr, $signature_len:expr, $rand_keygen_len:expr, $sign_aux:ty) => {
         impl $crate::signature::key_centric_owned::SignTypes for $ty {
             type SigningKey = [$crate::libcrux_secrets::U8; $signing_key_len];
             type VerificationKey = [$crate::libcrux_secrets::U8; $verification_key_len];
             type Signature = [$crate::libcrux_secrets::U8; $signature_len];
             type KeyGenRandomness = [$crate::libcrux_secrets::U8; $rand_keygen_len];
-            type SignAux<'a> = <$ty as $crate::signature::owned::Sign<
-                $signing_key_len,
-                $verification_key_len,
-                $signature_len,
-                $rand_keygen_len,
-            >>::SignAux<'a>;
+            type SignAux<'a> = $sign_aux;
         }
     };
 }
-pub use impl_key_centric_owned;
+pub use impl_sign_types;
 
 impl<const L: usize, Algorithm: SignTypes<SigningKey = [U8; L]>> From<[U8; L]>
     for SigningKey<Algorithm>

@@ -1,6 +1,7 @@
 //! This module contains the trait and related errors for signers that take array references as arguments and return values as arrays.
 
 pub use super::arrayref::{KeyGenError, SignError, VerifyError};
+use super::key_centric_owned::{KeyPair, SignTypes};
 use libcrux_secrets::U8;
 
 /// A signer that returns values instead of writing results to `&mut` arguments.
@@ -11,10 +12,15 @@ pub trait Sign<
     const VERIFICATION_KEY_LEN: usize,
     const SIGNATURE_LEN: usize,
     const RAND_KEYGEN_LEN: usize,
->
+>:
+    Sized
+    + SignTypes<
+        SigningKey = [U8; SIGNING_KEY_LEN],
+        VerificationKey = [U8; VERIFICATION_KEY_LEN],
+        Signature = [U8; SIGNATURE_LEN],
+        KeyGenRandomness = [U8; RAND_KEYGEN_LEN],
+    >
 {
-    /// Auxiliary information needed for signing.
-    type SignAux<'a>;
     /// The signing key.
     /// Sign a payload using a provided signature key. Required auxiliary information is provided using
     /// the `aux` argument.
@@ -37,6 +43,13 @@ pub trait Sign<
     fn keygen(
         rand: [U8; RAND_KEYGEN_LEN],
     ) -> Result<([U8; SIGNING_KEY_LEN], [u8; VERIFICATION_KEY_LEN]), KeyGenError>;
+    fn generate_key_pair(rng: &mut impl rand::CryptoRng) -> Result<KeyPair<Self>, KeyGenError> {
+        let mut rand = [0; RAND_KEYGEN_LEN];
+        rng.fill_bytes(&mut rand);
+        Self::keygen(rand).map(|(signing_key, verification_key)| {
+            KeyPair::from_keys(signing_key, verification_key)
+        })
+    }
 }
 
 impl<
@@ -45,14 +58,18 @@ impl<
         const SIGNATURE_LEN: usize,
         const RAND_KEYGEN_LEN: usize,
         T: super::arrayref::Sign<
-            SIGNING_KEY_LEN,
-            VERIFICATION_KEY_LEN,
-            SIGNATURE_LEN,
-            RAND_KEYGEN_LEN,
-        >,
+                SIGNING_KEY_LEN,
+                VERIFICATION_KEY_LEN,
+                SIGNATURE_LEN,
+                RAND_KEYGEN_LEN,
+            > + SignTypes<
+                SigningKey = [U8; SIGNING_KEY_LEN],
+                VerificationKey = [U8; VERIFICATION_KEY_LEN],
+                Signature = [U8; SIGNATURE_LEN],
+                KeyGenRandomness = [U8; RAND_KEYGEN_LEN],
+            >,
     > Sign<SIGNING_KEY_LEN, VERIFICATION_KEY_LEN, SIGNATURE_LEN, RAND_KEYGEN_LEN> for T
 {
-    type SignAux<'a> = T::SignAux<'a>;
     fn sign(
         payload: &[u8],
         signing_key: &[U8; SIGNING_KEY_LEN],

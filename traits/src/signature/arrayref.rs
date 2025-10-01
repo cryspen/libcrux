@@ -1,6 +1,7 @@
 //! This module contains the traits and related errors for signing and verification where arguments
 //! are provided as array references, and outputs are written to mutable array references.
 
+use super::key_centric_owned::SignTypes;
 use libcrux_secrets::U8;
 
 /// A signer. This trait is the most low-level and mostly used in the implementation of other, more
@@ -12,10 +13,15 @@ pub trait Sign<
     const VERIFICATION_KEY_LEN: usize,
     const SIGNATURE_LEN: usize,
     const RAND_KEYGEN_LEN: usize,
->: Sized
+>:
+    Sized
+    + SignTypes<
+        SigningKey = [U8; SIGNING_KEY_LEN],
+        VerificationKey = [U8; VERIFICATION_KEY_LEN],
+        Signature = [U8; SIGNATURE_LEN],
+        KeyGenRandomness = [U8; RAND_KEYGEN_LEN],
+    >
 {
-    /// Auxiliary information needed for signing.
-    type SignAux<'a>;
     /// Sign a payload using a provided signature key. Required auxiliary information is provided using
     /// the `aux` argument.
     fn sign(
