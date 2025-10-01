@@ -19,6 +19,7 @@ pub use public_integers::*;
 // A macro defining const constructors for secret/public integers
 macro_rules! impl_new {
     ($name:ident, $t:ty, $st:ty) => {
+        /// Creates a new secret/public integer from a primitive value
         #[allow(non_snake_case)]
         #[inline(always)]
         pub const fn $name(v: $t) -> $st {
@@ -44,18 +45,28 @@ impl_new!(I128, i128, I128);
 
 /// A trait defining cast operations for secret/public integers
 pub trait CastOps {
+    /// Cast to U8
     fn as_u8(self) -> U8;
+    /// Cast to I8
     fn as_i8(self) -> I8;
+    /// Cast to U16
     fn as_u16(self) -> U16;
+    /// Cast to I16
     fn as_i16(self) -> I16;
+    /// Cast to U32
     fn as_u32(self) -> U32;
+    /// Cast to I32
     fn as_i32(self) -> I32;
+    /// Cast to U64
     fn as_u64(self) -> U64;
+    /// Cast to I64
     fn as_i64(self) -> I64;
 
     #[cfg(not(eurydice))]
+    /// Cast to U128
     fn as_u128(self) -> U128;
     #[cfg(not(eurydice))]
+    /// Cast to I128
     fn as_i128(self) -> I128;
 }
 

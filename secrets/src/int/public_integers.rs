@@ -1,17 +1,27 @@
 /// This crate defines classification and declassification over public integers
 /// All functions and types here are transparent (identities) and have no performance impact
 use crate::traits::*;
+/// Public 8-bit signed integer type
 pub type I8 = i8;
+/// Public 8-bit unsigned integer type
 pub type U8 = u8;
+/// Public 16-bit signed integer type
 pub type I16 = i16;
+/// Public 16-bit unsigned integer type
 pub type U16 = u16;
+/// Public 32-bit signed integer type
 pub type I32 = i32;
+/// Public 32-bit unsigned integer type
 pub type U32 = u32;
+/// Public 64-bit signed integer type
 pub type I64 = i64;
+/// Public 64-bit unsigned integer type
 pub type U64 = u64;
 #[cfg(not(eurydice))]
+/// Public 128-bit signed integer type
 pub type I128 = i128;
 #[cfg(not(eurydice))]
+/// Public 128-bit unsigned integer type
 pub type U128 = u128;
 
 /// Construct a public integer (identity)
