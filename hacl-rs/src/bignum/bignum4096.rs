@@ -13,7 +13,7 @@ Write `a + b mod 2^4096` in `res`.
 
   This functions returns the carry.
 
-  The arguments a, b and res are meant to be 4096-bit bignums, i.e. uint64_t[64]
+  The arguments a, b and res are meant to be 4096-bit bignums, i.e. `uint64_t\[64\]`
 */
 pub fn add(a: &[u64], b: &[u64], res: &mut [u64]) -> u64 {
     let mut c: [u64; 1] = [0u64; 1usize];
@@ -45,7 +45,7 @@ Write `a - b mod 2^4096` in `res`.
 
   This functions returns the carry.
 
-  The arguments a, b and res are meant to be 4096-bit bignums, i.e. uint64_t[64]
+  The arguments a, b and res are meant to be 4096-bit bignums, i.e. `uint64_t\[64\]`
 */
 pub fn sub(a: &[u64], b: &[u64], res: &mut [u64]) -> u64 {
     let mut c: [u64; 1] = [0u64; 1usize];
@@ -76,7 +76,7 @@ pub fn sub(a: &[u64], b: &[u64], res: &mut [u64]) -> u64 {
 /**
 Write `(a + b) mod n` in `res`.
 
-  The arguments a, b, n and the outparam res are meant to be 4096-bit bignums, i.e. uint64_t[64].
+  The arguments a, b, n and the outparam res are meant to be 4096-bit bignums, i.e. `uint64_t\[64\]`.
 
   Before calling this function, the caller will need to ensure that the following
   preconditions are observed.
@@ -142,7 +142,7 @@ pub fn add_mod(n: &[u64], a: &[u64], b: &[u64], res: &mut [u64]) {
 /**
 Write `(a - b) mod n` in `res`.
 
-  The arguments a, b, n and the outparam res are meant to be 4096-bit bignums, i.e. uint64_t[64].
+  The arguments a, b, n and the outparam res are meant to be 4096-bit bignums, i.e. `uint64_t\[64\]`.
 
   Before calling this function, the caller will need to ensure that the following
   preconditions are observed.
@@ -209,8 +209,8 @@ pub fn sub_mod(n: &[u64], a: &[u64], b: &[u64], res: &mut [u64]) {
 /**
 Write `a * b` in `res`.
 
-  The arguments a and b are meant to be 4096-bit bignums, i.e. uint64_t[64].
-  The outparam res is meant to be a 8192-bit bignum, i.e. uint64_t[128].
+  The arguments a and b are meant to be 4096-bit bignums, i.e. `uint64_t\[64\]`.
+  The outparam res is meant to be a 8192-bit bignum, i.e. `uint64_t\[128\]`.
 */
 pub fn mul(a: &[u64], b: &[u64], res: &mut [u64]) {
     let mut tmp: [u64; 256] = [0u64; 256usize];
@@ -220,8 +220,8 @@ pub fn mul(a: &[u64], b: &[u64], res: &mut [u64]) {
 /**
 Write `a * a` in `res`.
 
-  The argument a is meant to be a 4096-bit bignum, i.e. uint64_t[64].
-  The outparam res is meant to be a 8192-bit bignum, i.e. uint64_t[128].
+  The argument a is meant to be a 4096-bit bignum, i.e. `uint64_t\[64\]`.
+  The outparam res is meant to be a 8192-bit bignum, i.e. `uint64_t\[128\]`.
 */
 pub fn sqr(a: &[u64], res: &mut [u64]) {
     let mut tmp: [u64; 256] = [0u64; 256usize];
@@ -397,8 +397,8 @@ fn bn_slow_precomp(n: &[u64], mu: u64, r2: &[u64], a: &[u64], res: &mut [u64]) {
 /**
 Write `a mod n` in `res`.
 
-  The argument a is meant to be a 8192-bit bignum, i.e. uint64_t[128].
-  The argument n and the outparam res are meant to be 4096-bit bignums, i.e. uint64_t[64].
+  The argument a is meant to be a 8192-bit bignum, i.e. `uint64_t\[128\]`.
+  The argument n and the outparam res are meant to be 4096-bit bignums, i.e. `uint64_t\[64\]`.
 
   The function returns false if any of the following preconditions are violated,
   true otherwise.
@@ -784,7 +784,7 @@ fn exp_consttime(nBits: u32, n: &[u64], a: &[u64], bBits: u32, b: &[u64], res: &
 /**
 Write `a ^ b mod n` in `res`.
 
-  The arguments a, n and the outparam res are meant to be 4096-bit bignums, i.e. uint64_t[64].
+  The arguments a, n and the outparam res are meant to be 4096-bit bignums, i.e. `uint64_t\[64\]`.
 
   The argument b is a bignum of any size, and bBits is an upper bound on the
   number of significant bits of b. A tighter bound results in faster execution
@@ -815,7 +815,7 @@ pub fn mod_exp_vartime(n: &[u64], a: &[u64], bBits: u32, b: &[u64], res: &mut [u
 /**
 Write `a ^ b mod n` in `res`.
 
-  The arguments a, n and the outparam res are meant to be 4096-bit bignums, i.e. uint64_t[64].
+  The arguments a, n and the outparam res are meant to be 4096-bit bignums, i.e. `uint64_t\[64\]`.
 
   The argument b is a bignum of any size, and bBits is an upper bound on the
   number of significant bits of b. A tighter bound results in faster execution
@@ -846,7 +846,7 @@ pub fn mod_exp_consttime(n: &[u64], a: &[u64], bBits: u32, b: &[u64], res: &mut 
 /**
 Write `a ^ (-1) mod n` in `res`.
 
-  The arguments a, n and the outparam res are meant to be 4096-bit bignums, i.e. uint64_t[64].
+  The arguments a, n and the outparam res are meant to be 4096-bit bignums, i.e. `uint64_t\[64\]`.
 
   Before calling this function, the caller will need to ensure that the following
   preconditions are observed.
@@ -939,7 +939,7 @@ pub fn mod_inv_prime_vartime(n: &[u64], a: &[u64], res: &mut [u64]) -> bool {
 /**
 Heap-allocate and initialize a montgomery context.
 
-  The argument n is meant to be a 4096-bit bignum, i.e. uint64_t[64].
+  The argument n is meant to be a 4096-bit bignum, i.e. `uint64_t\[64\]`.
 
   Before calling this function, the caller will need to ensure that the following
   preconditions are observed.
@@ -971,8 +971,8 @@ pub fn mont_ctx_init(n: &[u64]) -> Box<[super::base::bn_mont_ctx_u64]> {
 /**
 Write `a mod n` in `res`.
 
-  The argument a is meant to be a 8192-bit bignum, i.e. uint64_t[128].
-  The outparam res is meant to be a 4096-bit bignum, i.e. uint64_t[64].
+  The argument a is meant to be a 8192-bit bignum, i.e. `uint64_t\[128\]`.
+  The outparam res is meant to be a 4096-bit bignum, i.e. `uint64_t\[64\]`.
   The argument k is a montgomery context obtained through Hacl_Bignum4096_mont_ctx_init.
 */
 pub fn mod_precomp(k: &[super::base::bn_mont_ctx_u64], a: &[u64], res: &mut [u64]) {
@@ -985,7 +985,7 @@ pub fn mod_precomp(k: &[super::base::bn_mont_ctx_u64], a: &[u64], res: &mut [u64
 /**
 Write `a ^ b mod n` in `res`.
 
-  The arguments a and the outparam res are meant to be 4096-bit bignums, i.e. uint64_t[64].
+  The arguments a and the outparam res are meant to be 4096-bit bignums, i.e. `uint64_t\[64\]`.
   The argument k is a montgomery context obtained through Hacl_Bignum4096_mont_ctx_init.
 
   The argument b is a bignum of any size, and bBits is an upper bound on the
@@ -1017,7 +1017,7 @@ pub fn mod_exp_vartime_precomp(
 /**
 Write `a ^ b mod n` in `res`.
 
-  The arguments a and the outparam res are meant to be 4096-bit bignums, i.e. uint64_t[64].
+  The arguments a and the outparam res are meant to be 4096-bit bignums, i.e. `uint64_t\[64\]`.
   The argument k is a montgomery context obtained through Hacl_Bignum4096_mont_ctx_init.
 
   The argument b is a bignum of any size, and bBits is an upper bound on the
@@ -1049,7 +1049,7 @@ pub fn mod_exp_consttime_precomp(
 /**
 Write `a ^ (-1) mod n` in `res`.
 
-  The argument a and the outparam res are meant to be 4096-bit bignums, i.e. uint64_t[64].
+  The argument a and the outparam res are meant to be 4096-bit bignums, i.e. `uint64_t\[64\]`.
   The argument k is a montgomery context obtained through Hacl_Bignum4096_mont_ctx_init.
 
   Before calling this function, the caller will need to ensure that the following
@@ -1217,7 +1217,7 @@ pub fn bn_to_bytes_le(b: &[u64], res: &mut [u8]) {
 /**
 Returns 2^64 - 1 if a < b, otherwise returns 0.
 
- The arguments a and b are meant to be 4096-bit bignums, i.e. uint64_t[64].
+ The arguments a and b are meant to be 4096-bit bignums, i.e. `uint64_t\[64\]`.
 */
 pub fn lt_mask(a: &[u64], b: &[u64]) -> u64 {
     let mut acc: [u64; 1] = [0u64; 1usize];
@@ -1232,7 +1232,7 @@ pub fn lt_mask(a: &[u64], b: &[u64]) -> u64 {
 /**
 Returns 2^64 - 1 if a = b, otherwise returns 0.
 
- The arguments a and b are meant to be 4096-bit bignums, i.e. uint64_t[64].
+ The arguments a and b are meant to be 4096-bit bignums, i.e. `uint64_t\[64\]`.
 */
 pub fn eq_mask(a: &[u64], b: &[u64]) -> u64 {
     let mut mask: [u64; 1] = [0xFFFFFFFFFFFFFFFFu64; 1usize];
