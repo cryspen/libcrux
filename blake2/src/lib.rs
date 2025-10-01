@@ -1,5 +1,6 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 
+#[allow(missing_docs)]
 mod hacl {
     //! This module contains generated hacl code.
 
