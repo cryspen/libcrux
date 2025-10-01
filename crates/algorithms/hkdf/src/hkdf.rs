@@ -189,10 +189,10 @@ impl Algorithm {
 
 /// Generates HKDF implementation modules for specific hash algorithms.
 ///
-/// This macro creates a complete HKDF implementation module for a specific SHA algorithm,
+/// This macro creates a complete HKDF implementation module for a specific SHA2 algorithm,
 /// including both typed API methods on the [`Hkdf`] struct and standalone module functions.
 /// It generates implementations for extract, expand, and full HKDF operations with both
-/// fixed-size and variable-size array variants.
+/// fixed-size array references and variable-size slice variants.
 ///
 /// Parameters:
 ///
@@ -214,7 +214,7 @@ macro_rules! impl_hkdf {
         /// specifically for the underlying hash algorithm. It includes both standalone
         /// functions and methods on the typed [`Hkdf`] struct.
         ///
-        /// The `_fixed` variants work with compile-time known PRK sizes for better type safety,
+        /// The `_arrayref` variants work with compile-time known PRK sizes for better type safety,
         /// while the regular variants accept slices and perform runtime validation.
         pub mod $name {
             use libcrux_secrets::U8;
@@ -229,12 +229,12 @@ macro_rules! impl_hkdf {
                 /// Returns [`ExtractError::ArgumentTooLong`] if one of `ikm` or `salt` is longer than
                 /// [`u32::MAX`] bytes.
                 #[inline(always)]
-                pub fn extract_fixed(
+                pub fn extract_arrayref(
                     prk: &mut [U8; $hash_len],
                     salt: &[U8],
                     ikm: &[U8],
-                ) -> Result<(), FixedExtractError> {
-                    extract_fixed(prk, salt, ikm)
+                ) -> Result<(), ArrayReferenceExtractError> {
+                    extract_arrayref(prk, salt, ikm)
                 }
 
                 /// HKDF extract using the `salt` and the input key material `ikm`.
@@ -262,17 +262,17 @@ macro_rules! impl_hkdf {
                 /// Returns [`ExpandError::ArgumentTooLong`] if one of `prk` or `info` is longer than
                 /// [`u32::MAX`] bytes.
                 #[inline(always)]
-                pub fn expand_fixed(
+                pub fn expand_arrayref(
                     okm: &mut [U8],
                     prk: &[U8; $hash_len],
                     info: &[u8],
-                ) -> Result<(), FixedExpandError> {
+                ) -> Result<(), ArrayReferenceExpandError> {
                     if okm.len() > 255 * $hash_len {
                         // Output size is too large. HACL doesn't catch this.
-                        return Err(FixedExpandError::OutputTooLong);
+                        return Err(ArrayReferenceExpandError::OutputTooLong);
                     }
 
-                    expand_fixed(okm, prk, info)
+                    expand_arrayref(okm, prk, info)
                 }
 
                 /// HKDF expand using the pre-key material `prk` and `info`.
@@ -317,11 +317,11 @@ macro_rules! impl_hkdf {
             /// Returns [`ExtractError::ArgumentTooLong`] if one of `ikm` or `salt` is longer than
             /// [`u32::MAX`] bytes.
             #[inline(always)]
-            pub fn extract_fixed(
+            pub fn extract_arrayref(
                 prk: &mut [U8; $hash_len],
                 salt: &[U8],
                 ikm: &[U8],
-            ) -> Result<(), FixedExtractError> {
+            ) -> Result<(), ArrayReferenceExtractError> {
                 Ok(crate::hacl::$extract(
                     prk.declassify_ref_mut(),
                     salt.declassify_ref(),
@@ -346,7 +346,7 @@ macro_rules! impl_hkdf {
                 let prk: &mut [U8; $hash_len] =
                     prk.try_into().map_err(|_| ExtractError::Unknown)?;
 
-                extract_fixed(prk, salt, ikm).map_err(ExtractError::from)
+                extract_arrayref(prk, salt, ikm).map_err(ExtractError::from)
             }
 
             /// HKDF expand using the pre-key material `prk` and `info`.
@@ -358,15 +358,15 @@ macro_rules! impl_hkdf {
             /// Returns [`ExpandError::ArgumentTooLong`] if one of `prk` or `info` is longer than
             /// [`u32::MAX`] bytes.
             #[inline(always)]
-            pub fn expand_fixed(
+            pub fn expand_arrayref(
                 mut okm: &mut [U8],
                 prk: &[U8; $hash_len],
                 info: &[u8],
-            ) -> Result<(), FixedExpandError> {
+            ) -> Result<(), ArrayReferenceExpandError> {
                 let okm_len = okm.len();
                 if okm_len > 255 * $hash_len {
                     // Output size is too large. HACL doesn't catch this.
-                    return Err(FixedExpandError::OutputTooLong);
+                    return Err(ArrayReferenceExpandError::OutputTooLong);
                 }
 
                 Ok(crate::hacl::$expand(
@@ -395,7 +395,7 @@ macro_rules! impl_hkdf {
                     .ok_or(ExpandError::PrkTooShort)?;
                 let prk: &[U8; $hash_len] = prk.try_into().map_err(|_| ExpandError::Unknown)?;
 
-                expand_fixed(okm, prk, info).map_err(ExpandError::from)
+                expand_arrayref(okm, prk, info).map_err(ExpandError::from)
             }
 
             /// Full HKDF using the `salt`, input key material `ikm`, `info`.
@@ -458,7 +458,7 @@ fn checked_u32(num: usize) -> Result<u32, ArgumentsTooLongError> {
 }
 
 #[derive(Copy, Clone, Debug, PartialEq)]
-pub enum FixedExtractError {
+pub enum ArrayReferenceExtractError {
     ArgumentTooLong,
     Unknown,
 }
@@ -471,7 +471,7 @@ pub enum ExtractError {
 }
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
-pub enum FixedExpandError {
+pub enum ArrayReferenceExpandError {
     OutputTooLong,
     ArgumentTooLong,
     Unknown,
@@ -488,21 +488,21 @@ pub enum ExpandError {
 #[derive(Copy, Clone, Debug, PartialEq)]
 struct ArgumentsTooLongError;
 
-impl From<FixedExtractError> for ExtractError {
-    fn from(err: FixedExtractError) -> Self {
+impl From<ArrayReferenceExtractError> for ExtractError {
+    fn from(err: ArrayReferenceExtractError) -> Self {
         match err {
-            FixedExtractError::ArgumentTooLong => ExtractError::ArgumentTooLong,
-            FixedExtractError::Unknown => ExtractError::Unknown,
+            ArrayReferenceExtractError::ArgumentTooLong => ExtractError::ArgumentTooLong,
+            ArrayReferenceExtractError::Unknown => ExtractError::Unknown,
         }
     }
 }
 
-impl From<FixedExpandError> for ExpandError {
-    fn from(err: FixedExpandError) -> Self {
+impl From<ArrayReferenceExpandError> for ExpandError {
+    fn from(err: ArrayReferenceExpandError) -> Self {
         match err {
-            FixedExpandError::OutputTooLong => ExpandError::OutputTooLong,
-            FixedExpandError::ArgumentTooLong => ExpandError::ArgumentTooLong,
-            FixedExpandError::Unknown => ExpandError::Unknown,
+            ArrayReferenceExpandError::OutputTooLong => ExpandError::OutputTooLong,
+            ArrayReferenceExpandError::ArgumentTooLong => ExpandError::ArgumentTooLong,
+            ArrayReferenceExpandError::Unknown => ExpandError::Unknown,
         }
     }
 }
@@ -517,14 +517,14 @@ impl From<ExtractError> for ExpandError {
     }
 }
 
-impl From<ArgumentsTooLongError> for FixedExtractError {
+impl From<ArgumentsTooLongError> for ArrayReferenceExtractError {
     fn from(_: ArgumentsTooLongError) -> Self {
-        FixedExtractError::ArgumentTooLong
+        ArrayReferenceExtractError::ArgumentTooLong
     }
 }
-impl From<ArgumentsTooLongError> for FixedExpandError {
+impl From<ArgumentsTooLongError> for ArrayReferenceExpandError {
     fn from(_: ArgumentsTooLongError) -> Self {
-        FixedExpandError::ArgumentTooLong
+        ArrayReferenceExpandError::ArgumentTooLong
     }
 }
 impl From<ArgumentsTooLongError> for ExtractError {
