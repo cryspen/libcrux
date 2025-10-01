@@ -80,14 +80,11 @@ pub mod signers {
                         .map(|sig| sig.value)
                         .map_err(|_| owned::SignError::LibraryError)
                     }
-                    type VerifyAux<'a> = ();
-
                     /// Verify a signature using a provided verification key and context.
                     fn verify(
                         payload: &[u8],
                         verification_key: &[u8; VERIFICATION_KEY_LEN],
                         signature: &[u8; SIGNATURE_LEN],
-                        _aux: (),
                     ) -> Result<(), owned::VerifyError> {
                         crate::ml_dsa_generic::multiplexing::$module::verify(
                             verification_key,
@@ -125,12 +122,6 @@ pub mod signers {
                         SIGNATURE_LEN,
                         RAND_KEYGEN_LEN,
                     >>::SignAux<'a>;
-                    type VerifyAux<'a> = <$name<T> as libcrux_traits::signature::owned::Sign<
-                        SIGNING_KEY_LEN,
-                        VERIFICATION_KEY_LEN,
-                        SIGNATURE_LEN,
-                        RAND_KEYGEN_LEN,
-                    >>::VerifyAux<'a>;
                 }
 
             }

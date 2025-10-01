@@ -23,16 +23,12 @@ pub trait Sign<
         signing_key: &[U8; SIGNING_KEY_LEN],
         aux: Self::SignAux<'_>,
     ) -> Result<[u8; SIGNATURE_LEN], SignError>;
-    /// Auxiliary information needed for verification.
-    type VerifyAux<'a>;
 
-    /// Verify a signature using a provided verification key. Required auxiliary information is provided using
-    /// the `aux` argument.
+    /// Verify a signature using a provided verification key.
     fn verify(
         payload: &[u8],
         verification_key: &[u8; VERIFICATION_KEY_LEN],
         signature: &[u8; SIGNATURE_LEN],
-        aux: Self::VerifyAux<'_>,
     ) -> Result<(), VerifyError>;
     /// Generate a pair of signing and verification keys.
     ///
@@ -65,15 +61,13 @@ impl<
         let mut signature = [0; SIGNATURE_LEN];
         T::sign(payload, signing_key, &mut signature, aux).map(|_| signature)
     }
-    type VerifyAux<'a> = T::VerifyAux<'a>;
 
     fn verify(
         payload: &[u8],
         verification_key: &[u8; VERIFICATION_KEY_LEN],
         signature: &[u8; SIGNATURE_LEN],
-        aux: Self::VerifyAux<'_>,
     ) -> Result<(), VerifyError> {
-        T::verify(payload, verification_key, signature, aux)
+        T::verify(payload, verification_key, signature)
     }
     fn keygen(
         randomness: [U8; RAND_KEYGEN_LEN],

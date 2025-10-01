@@ -41,15 +41,12 @@ pub mod signers {
                     }
                     Ok(())
                 }
-                /// No auxiliary information is required for verification.
-                type VerifyAux<'a> = ();
                 #[inline(always)]
                 /// Verify a signature using a provided verification key.
                 fn verify(
                     payload: &[u8],
                     verification_key: &[u8; VERIFICATION_KEY_LEN],
                     signature: &[u8; SIG_LEN],
-                    _aux: (),
                 ) -> Result<(), arrayref::VerifyError> {
                     let result = libcrux_p256::$verify_fn(
                         payload.len().try_into().map_err(|_| arrayref::VerifyError::InvalidPayloadLength)?,
@@ -74,7 +71,7 @@ pub mod signers {
                 }
             }
             libcrux_traits::impl_signature_slice_trait!(
-                Signer<$name> => SIGNING_KEY_LEN, VERIFICATION_KEY_LEN, SIG_LEN, RAND_KEYGEN_LEN, &Nonce, nonce, (), _aux, u8);
+                Signer<$name> => SIGNING_KEY_LEN, VERIFICATION_KEY_LEN, SIG_LEN, RAND_KEYGEN_LEN, &Nonce, nonce, u8);
 
             // key centric APIs
             libcrux_traits::signature::key_centric_owned::impl_key_centric_owned!(
