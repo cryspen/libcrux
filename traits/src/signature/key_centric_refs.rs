@@ -19,8 +19,8 @@ impl<
         const RAND_KEYGEN_LEN: usize,
         Algorithm: super::key_centric_owned::SignTypes<
                 SigningKey = [U8; SIGNING_KEY_LEN],
-                VerificationKey = [U8; VERIFICATION_KEY_LEN],
-                Signature = [U8; SIGNATURE_LEN],
+                VerificationKey = [u8; VERIFICATION_KEY_LEN],
+                Signature = [u8; SIGNATURE_LEN],
                 KeyGenRandomness = [U8; RAND_KEYGEN_LEN],
             > + super::owned::Sign<
                 SIGNING_KEY_LEN,
@@ -55,7 +55,7 @@ impl<
 }
 
 pub struct VerificationKeyRef<'a, Algorithm> {
-    key: &'a [U8],
+    key: &'a [u8],
     _marker: core::marker::PhantomData<Algorithm>,
 }
 
@@ -67,8 +67,8 @@ impl<
         const RAND_KEYGEN_LEN: usize,
         Algorithm: super::key_centric_owned::SignTypes<
                 SigningKey = [U8; SIGNING_KEY_LEN],
-                VerificationKey = [U8; VERIFICATION_KEY_LEN],
-                Signature = [U8; SIGNATURE_LEN],
+                VerificationKey = [u8; VERIFICATION_KEY_LEN],
+                Signature = [u8; SIGNATURE_LEN],
                 KeyGenRandomness = [U8; RAND_KEYGEN_LEN],
             > + super::owned::Sign<
                 SIGNING_KEY_LEN,
@@ -78,7 +78,7 @@ impl<
             >,
     > VerificationKeyRef<'a, Algorithm>
 {
-    pub fn from_bytes(key: &'a [U8]) -> Result<Self, FromBytesError> {
+    pub fn from_bytes(key: &'a [u8]) -> Result<Self, FromBytesError> {
         if key.len() != VERIFICATION_KEY_LEN {
             return Err(FromBytesError::InvalidLength);
         }
@@ -93,7 +93,7 @@ impl<
         payload: &[u8],
         signature: &Algorithm::Signature,
     ) -> Result<(), VerifyError> {
-        let key: &[U8; VERIFICATION_KEY_LEN] = self
+        let key: &[u8; VERIFICATION_KEY_LEN] = self
             .key
             .try_into()
             .map_err(|_| VerifyError::InvalidVerificationKeyLength)?;

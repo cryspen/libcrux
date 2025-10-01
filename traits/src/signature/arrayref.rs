@@ -17,8 +17,8 @@ pub trait Sign<
     Sized
     + SignTypes<
         SigningKey = [U8; SIGNING_KEY_LEN],
-        VerificationKey = [U8; VERIFICATION_KEY_LEN],
-        Signature = [U8; SIGNATURE_LEN],
+        VerificationKey = [u8; VERIFICATION_KEY_LEN],
+        Signature = [u8; SIGNATURE_LEN],
         KeyGenRandomness = [U8; RAND_KEYGEN_LEN],
     >
 {
