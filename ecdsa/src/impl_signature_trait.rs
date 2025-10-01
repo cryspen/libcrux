@@ -8,19 +8,17 @@ pub mod signers {
     const SIG_LEN: usize = 64;
     const RAND_KEYGEN_LEN: usize = 32;
 
-    macro_rules! impl_signature_trait {
+    macro_rules! impl_signature_traits {
         (
-            $digest_alg_name:ident,
-            $name:ident,
+            $alias:ident,
+            $name:ty,
             $sign_fn:ident,
             $verify_fn:ident
         ) => {
-            #[allow(non_camel_case_types)]
-            #[doc = concat!("A signer using [`libcrux_sha2::", stringify!($digest_alg_name),"`].")]
-            pub struct $name;
+            pub type $alias = Signer<$name>;
 
             /// The [`arrayref`](libcrux_traits::signature::arrayref) version of the Sign trait.
-            impl arrayref::Sign<SIGNING_KEY_LEN, VERIFICATION_KEY_LEN, SIG_LEN, RAND_KEYGEN_LEN> for $name {
+            impl arrayref::Sign<SIGNING_KEY_LEN, VERIFICATION_KEY_LEN, SIG_LEN, RAND_KEYGEN_LEN> for Signer<$name> {
                 /// The nonce needed for signing.
                 type SignAux<'a> = &'a Nonce;
                 /// Sign a payload using a provided signing key and `nonce`.
@@ -76,7 +74,17 @@ pub mod signers {
                 }
             }
             libcrux_traits::impl_signature_slice_trait!(
-                $name => SIGNING_KEY_LEN, VERIFICATION_KEY_LEN, SIG_LEN, RAND_KEYGEN_LEN, &Nonce, nonce, (), _aux, u8);
+                Signer<$name> => SIGNING_KEY_LEN, VERIFICATION_KEY_LEN, SIG_LEN, RAND_KEYGEN_LEN, &Nonce, nonce, (), _aux, u8);
+
+            // key centric APIs
+            libcrux_traits::signature::key_centric_owned::impl_key_centric_owned!(
+                Signer<$name>,
+                SIGNING_KEY_LEN,
+                VERIFICATION_KEY_LEN,
+                SIG_LEN,
+                RAND_KEYGEN_LEN
+            );
+
         };
     }
 
@@ -85,23 +93,31 @@ pub mod signers {
 
         use super::*;
 
-        use crate::p256::Nonce;
+        pub use crate::p256::Nonce;
 
-        impl_signature_trait!(
-            Sha256,
-            Signer_Sha2_256,
+        /// A P256 signer.
+        pub struct Signer<T> {
+            _marker: core::marker::PhantomData<T>,
+        }
+        pub use libcrux_sha2::{Sha256 as Sha2_256, Sha384 as Sha2_384, Sha512 as Sha2_512};
+
+        impl_signature_traits!(
+            Sha2_256Signer,
+            Sha2_256,
             ecdsa_sign_p256_sha2,
             ecdsa_verif_p256_sha2
         );
-        impl_signature_trait!(
-            Sha384,
-            Signer_Sha2_384,
+
+        impl_signature_traits!(
+            Sha2_384Signer,
+            Sha2_384,
             ecdsa_sign_p256_sha384,
             ecdsa_verif_p256_sha384
         );
-        impl_signature_trait!(
-            Sha512,
-            Signer_Sha2_512,
+
+        impl_signature_traits!(
+            Sha2_512Signer,
+            Sha2_512,
             ecdsa_sign_p256_sha512,
             ecdsa_verif_p256_sha512
         );

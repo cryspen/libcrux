@@ -29,3 +29,4 @@ pub mod kem;
 pub mod signature;
 
 pub use libcrux_secrets;
+pub use rand;
