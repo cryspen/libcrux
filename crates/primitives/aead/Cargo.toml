@@ -12,9 +12,14 @@ repository.workspace = true
 
 [dependencies]
 libcrux-chacha20poly1305 = { version = "0.0.3", path = "../../../chacha20poly1305", optional = true }
+libcrux-secrets = { version = "0.0.3", path = "../../../secrets" }
 libcrux-traits = { version = "0.0.3", path = "../../../traits", optional = true }
 
 [features]
 default = ["chacha20poly1305", "xchacha20poly1305"]
 chacha20poly1305 = ["dep:libcrux-chacha20poly1305", "dep:libcrux-traits"]
 xchacha20poly1305 = ["dep:libcrux-chacha20poly1305", "dep:libcrux-traits"]
+check-secret-independence = [
+    "libcrux-secrets/check-secret-independence",
+    "libcrux-traits/check-secret-independence",
+]
