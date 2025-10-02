@@ -1,5 +1,7 @@
 use crate::ecdh::owned::{self, GenerateSecretError, SecretToPublicError};
 
+pub trait EcdhConsts {}
+
 pub trait EcdhTypes {
     type Secret;
     type Public;
@@ -21,10 +23,7 @@ pub struct Public<Algorithm: EcdhTypes> {
 }
 
 impl<Algorithm: Ecdh> Pair<Algorithm> {
-    pub fn generate(
-        &self,
-        rand: Algorithm::Randomness,
-    ) -> Result<Self, owned::GenerateSecretError> {
+    pub fn generate(rand: &Algorithm::Randomness) -> Result<Self, owned::GenerateSecretError> {
         let (public, secret) = Algorithm::generate_pair(&rand)?;
         Ok(Pair { secret, public })
     }
@@ -36,23 +35,12 @@ impl<Algorithm: Ecdh> Pair<Algorithm> {
     pub fn public(&self) -> &Algorithm::Public {
         &self.public
     }
-}
 
-impl<Algorithm: Ecdh> Secret<Algorithm> {
     pub fn derive_ecdh(
         &self,
         public: &Algorithm::Public,
     ) -> Result<Algorithm::Derived, owned::DeriveError> {
-        Algorithm::derive_ecdh(public, &self.secret)
-    }
-}
-
-impl<Algorithm: Ecdh> Public<Algorithm> {
-    pub fn derive_ecdh(
-        &self,
-        secret: &Algorithm::Secret,
-    ) -> Result<Algorithm::Derived, owned::DeriveError> {
-        Algorithm::derive_ecdh(&self.public, secret)
+        Algorithm::derive_ecdh(public, self.secret())
     }
 }
 
@@ -105,20 +93,20 @@ macro_rules! impl_ecdh_key_centric_owned {
                 rand: &Self::Randomness,
             ) -> Result<Self::Secret, $crate::ecdh::owned::GenerateSecretError> {
                 <$ty as $crate::ecdh::owned::EcdhOwned<
-                                                          $randomness_len,
-                                                          $secret_len,
-                                                          $public_len
-                                                        >>::generate_secret(rand)
+                                                                  $randomness_len,
+                                                                  $secret_len,
+                                                                  $public_len
+                                                                >>::generate_secret(rand)
             }
 
             fn secret_to_public(
                 secret: &Self::Secret,
             ) -> Result<Self::Public, $crate::ecdh::owned::SecretToPublicError> {
                 <$ty as $crate::ecdh::owned::EcdhOwned<
-                                                          $randomness_len,
-                                                          $secret_len,
-                                                          $public_len
-                                                        >>::secret_to_public(secret)
+                                                                  $randomness_len,
+                                                                  $secret_len,
+                                                                  $public_len
+                                                                >>::secret_to_public(secret)
             }
 
             fn derive_ecdh(
@@ -126,20 +114,20 @@ macro_rules! impl_ecdh_key_centric_owned {
                 secret: &Self::Secret,
             ) -> Result<Self::Derived, $crate::ecdh::owned::DeriveError> {
                 <$ty as $crate::ecdh::owned::EcdhOwned<
-                                                          $randomness_len,
-                                                          $secret_len,
-                                                          $public_len
-                                                        >>::derive_ecdh(public, secret)
+                                                                  $randomness_len,
+                                                                  $secret_len,
+                                                                  $public_len
+                                                                >>::derive_ecdh(public, secret)
             }
 
             fn validate_secret(
                 secret: &Self::Secret,
             ) -> Result<(), $crate::ecdh::owned::ValidateSecretError> {
                 <$ty as $crate::ecdh::owned::EcdhOwned<
-                                                          $randomness_len,
-                                                          $secret_len,
-                                                          $public_len
-                                                        >>::validate_secret(secret)
+                                                                  $randomness_len,
+                                                                  $secret_len,
+                                                                  $public_len
+                                                                >>::validate_secret(secret)
             }
         }
     };

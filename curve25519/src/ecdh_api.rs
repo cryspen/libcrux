@@ -1,14 +1,21 @@
+use libcrux_traits::ecdh::key_centric_owned::Pair;
 pub use libcrux_traits::ecdh::{arrayref::EcdhArrayref, owned::EcdhOwned, slice::EcdhSlice};
 
 use crate::clamp;
 
 use super::{DK_LEN, EK_LEN, X25519};
 
-const RAND_LEN: usize = DK_LEN;
-const SECRET_LEN: usize = DK_LEN;
-const PUBLIC_LEN: usize = EK_LEN;
+/// Number of bytes of randomness required to generate an ECDH secret.
+pub const RAND_LEN: usize = DK_LEN;
+/// Length in bytes of an ECDH secret value.
+pub const SECRET_LEN: usize = DK_LEN;
+/// Length in bytes of an ECDH public value.
+pub const PUBLIC_LEN: usize = EK_LEN;
 
 use libcrux_secrets::{Classify, Declassify, DeclassifyRef, DeclassifyRefMut, U8};
+
+/// A corresponding pair of ECDH public and secret values over Curve25519.
+pub type X25519Pair = Pair<X25519>;
 
 impl libcrux_traits::ecdh::arrayref::EcdhArrayref<RAND_LEN, SECRET_LEN, PUBLIC_LEN> for X25519 {
     fn generate_secret(
