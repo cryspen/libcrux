@@ -1,3 +1,21 @@
+//! # libcrux-sha2
+//!
+//! A pure Rust implementation of the SHA-2 family of cryptographic hash functions.
+//!
+//! This crate provides implementations for SHA-224, SHA-256, SHA-384, and SHA-512
+//! hash algorithms. The implementation is based on verified HACL* code and provides
+//! both a simple functional API and trait-based interfaces.
+//!
+//! ## Examples
+//!
+//! ```rust
+//! use libcrux_sha2::{sha256, SHA256_LENGTH};
+//!
+//! let data = b"hello world";
+//! let hash = sha256(data);
+//! assert_eq!(hash.len(), SHA256_LENGTH);
+//! ```
+
 #![no_std]
 
 /// The length of a SHA224 hash in bytes.
@@ -26,10 +44,8 @@ mod impl_hacl;
 
 mod impl_digest_trait;
 
-/// use it if we want to use hacl
 pub use impl_hacl::*;
 
-/// Re-export the `Digest` trait.
 pub use libcrux_traits::Digest;
 
 pub use impl_digest_trait::*;

@@ -2,17 +2,21 @@ use super::*;
 use libcrux_hacl_rs::prelude::*;
 use libcrux_traits::Digest;
 
-/// The different Sha2 algorithms.
+/// The different SHA-2 algorithms.
 #[derive(Clone, Copy, Debug)]
 pub enum Algorithm {
+    /// Denotes SHA-224
     Sha224,
+    /// Denotes SHA-256
     Sha256,
+    /// Denotes SHA-384
     Sha384,
+    /// Denotes SHA-512
     Sha512,
 }
 
 impl Algorithm {
-    // The length of the digest by algorithm.
+    /// The length of the digest by algorithm.
     pub const fn hash_len(&self) -> usize {
         match self {
             Algorithm::Sha224 => SHA224_LENGTH,
@@ -37,7 +41,8 @@ impl Algorithm {
     }
 }
 
-/// SHA2 224
+/// Computes the 224-bit SHA-2 hash
+///
 /// Will panic if `payload` is longer than `u32::MAX` to ensure that hacl-rs can
 /// process it.
 #[inline(always)]
@@ -47,7 +52,8 @@ pub fn sha224(payload: &[u8]) -> [u8; SHA224_LENGTH] {
     digest
 }
 
-/// SHA2 256
+/// Computes the 256-bit SHA-2 hash
+///
 /// Will panic if `payload` is longer than `u32::MAX` to ensure that hacl-rs can
 /// process it.
 #[inline(always)]
@@ -57,7 +63,8 @@ pub fn sha256(payload: &[u8]) -> [u8; SHA256_LENGTH] {
     digest
 }
 
-/// SHA2 384
+/// Computes the 384-bit SHA-2 hash
+///
 /// Will panic if `payload` is longer than `u32::MAX` to ensure that hacl-rs can
 /// process it.
 #[inline(always)]
@@ -67,7 +74,8 @@ pub fn sha384(payload: &[u8]) -> [u8; SHA384_LENGTH] {
     digest
 }
 
-/// SHA2 512
+/// Computes the 512-bit SHA-2 hash
+///
 /// Will panic if `payload` is longer than `u32::MAX` to ensure that hacl-rs can
 /// process it.
 #[inline(always)]
@@ -81,6 +89,12 @@ pub fn sha512(payload: &[u8]) -> [u8; SHA512_LENGTH] {
 // For implementations based on hacl_rs (over hacl-c)
 macro_rules! impl_hash {
     ($name:ident, $digest_size:literal, $state:ty, $malloc:expr, $reset:expr, $update:expr, $finish:expr, $copy:expr, $hash:expr) => {
+        #[doc = concat!("A streaming hash digest implementation for ", stringify!($name))]
+        ///
+        ///This struct provides stateful hashing functionality with a digest size of
+        #[doc = concat!( stringify!($digest_size))]
+        /// bytes, allowing data to be processed incrementally through
+        /// multiple `update` calls before finalizing the digest.
         #[allow(non_camel_case_types)]
         pub struct $name {
             state: $state,
