@@ -139,9 +139,11 @@ pub(crate) trait Operations: Copy + Clone + Repr {
     fn t0_deserialize(serialized: &[u8], out: &mut Self);
 
     // t1
-    #[hax_lib::requires(true)]
+    #[hax_lib::requires(specs::t1_serialize_pre(&simd_unit.repr(), out))]
+    #[hax_lib::ensures(|_| specs::t1_serialize_post(&simd_unit.repr(), out, future(out)))]
     fn t1_serialize(simd_unit: &Self, out: &mut [u8]); // out len 10
-    #[hax_lib::requires(true)]
+    #[hax_lib::requires(specs::t1_deserialize_pre(serialized, &out.repr()))]
+    #[hax_lib::ensures(|_| specs::t1_deserialize_post(serialized, &out.repr(), &future(out).repr()))]
     fn t1_deserialize(serialized: &[u8], out: &mut Self);
 
     // NTT
