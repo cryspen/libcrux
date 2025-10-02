@@ -193,3 +193,21 @@ pub(crate) fn compute_hint_post(
 ) -> bool {
     return_value <= 8
 }
+
+pub(crate) fn use_hint_pre(gamma2: Gamma2, simd_unit: &SIMDContent, hint: &SIMDContent) -> Prop {
+    hax_lib::fstar::prop!(
+        r#"
+        (v $gamma2 == v ${crate::constants::GAMMA2_V261_888} \/
+         v $gamma2 == v ${crate::constants::GAMMA2_V95_232}) /\
+        Spec.Utils.is_i32b_array_opaque (v ${FIELD_MAX}) ($simd_unit)"#
+    )
+}
+
+pub(crate) fn use_hint_post(
+    gamma2: Gamma2,
+    simd_unit: &SIMDContent,
+    hint: &SIMDContent,
+    future_hint: &SIMDContent,
+) -> bool {
+    true
+}
