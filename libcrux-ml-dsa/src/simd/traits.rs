@@ -38,8 +38,8 @@ pub(crate) trait Operations: Copy + Clone + Repr {
     #[hax_lib::ensures(|result| specs::zero_post(&result.repr()))]
     fn zero() -> Self;
 
-    #[hax_lib::requires(array.len() == COEFFICIENTS_IN_SIMD_UNIT)]
-    #[hax_lib::ensures(|result| future(out).repr() == array)]
+    #[hax_lib::requires(specs::from_coefficient_array_pre(array, &out.repr()))]
+    #[hax_lib::ensures(|_| specs::from_coefficient_array_post(array, &out.repr(), &future(out).repr()))]
     fn from_coefficient_array(array: &[i32], out: &mut Self);
 
     #[hax_lib::requires(out.len() == COEFFICIENTS_IN_SIMD_UNIT)]
