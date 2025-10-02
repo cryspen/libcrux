@@ -78,6 +78,7 @@
 
         ml-kem = pkgs.callPackage
           ({ lib
+           , clang_18
            , clang-tools_18
            , cmake
            , mold-wrapped
@@ -103,6 +104,7 @@
               inherit src cargoArtifacts;
 
               nativeBuildInputs = [
+                clang_18
                 clang-tools_18
                 # Alias `clang_format` to `clang-format-18`
                 (pkgs.writeShellScriptBin "clang-format-18" ''exec ${clang-tools_18}/bin/clang-format "$@"'')
@@ -124,14 +126,14 @@
                 ./c.sh
                 cd c
                 ${lib.optionalString runBenchmarks "LIBCRUX_BENCHMARKS=1"} \
-                  cmake \
+                  CC=clang CXX=clang++ cmake \
                   -DFETCHCONTENT_SOURCE_DIR_GOOGLETEST=${googletest} \
                   -DFETCHCONTENT_SOURCE_DIR_BENCHMARK=${benchmark} \
                   -DFETCHCONTENT_SOURCE_DIR_JSON=${json} \
                   -DCMAKE_EXE_LINKER_FLAGS="-fuse-ld=mold" \
                   -DCMAKE_SHARED_LINKER_FLAGS="-fuse-ld=mold" \
                   -G "Ninja Multi-Config" -B build
-                cmake --build build --config Release
+                CC=clang CXX=clang++ cmake --build build --config Release
                 rm -rf build/_deps
               '';
               checkPhase = ''
@@ -156,6 +158,7 @@
 
         ml-dsa = pkgs.callPackage
           ({ lib
+           , clang_18
            , clang-tools_18
            , cmake
            , mold-wrapped
@@ -181,6 +184,7 @@
               inherit src cargoArtifacts;
 
               nativeBuildInputs = [
+                clang_18
                 clang-tools_18
                 # Alias `clang_format` to `clang-format-18`
                 (pkgs.writeShellScriptBin "clang-format-18" ''exec ${clang-tools_18}/bin/clang-format "$@"'')
@@ -202,14 +206,14 @@
                 ''}
                 ./boring.sh --no-clean
                 cd cg
-                cmake \
+                CC=clang CXX=clang++ cmake \
                   -DFETCHCONTENT_SOURCE_DIR_GOOGLETEST=${googletest} \
                   -DFETCHCONTENT_SOURCE_DIR_BENCHMARK=${benchmark} \
                   -DFETCHCONTENT_SOURCE_DIR_JSON=${json} \
                   -DCMAKE_EXE_LINKER_FLAGS="-fuse-ld=mold" \
                   -DCMAKE_SHARED_LINKER_FLAGS="-fuse-ld=mold" \
                   -G "Ninja Multi-Config" -B build
-                cmake --build build --config Release
+                CC=clang CXX=clang++ cmake --build build --config Release
                 rm -rf build/_deps
               '';
               checkPhase = ''
