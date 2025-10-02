@@ -1,4 +1,4 @@
-use crate::constants::Gamma2;
+use crate::constants::{Eta, Gamma2};
 use hax_lib::*;
 
 pub(crate) const PRIME: u32 = 8380417;
@@ -343,4 +343,30 @@ pub(crate) fn commitment_serialize_post(
     future_serialized: &[u8],
 ) -> bool {
     future_serialized.len() == serialized.len()
+}
+
+pub(crate) fn error_serialize_pre(eta: Eta, simd_unit: &SIMDContent, serialized: &[u8]) -> bool {
+    true
+}
+
+pub(crate) fn error_serialize_post(
+    eta: Eta,
+    simd_unit: &SIMDContent,
+    serialized: &[u8],
+    future_serialized: &[u8],
+) -> bool {
+    true
+}
+
+pub(crate) fn error_deserialize_pre(eta: Eta, serialized: &[u8], out: &SIMDContent) -> bool {
+    true
+}
+
+pub(crate) fn error_deserialize_post(
+    eta: Eta,
+    serialized: &[u8],
+    out: &SIMDContent,
+    future_out: &SIMDContent,
+) -> bool {
+    true
 }
