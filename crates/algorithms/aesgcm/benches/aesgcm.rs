@@ -1,7 +1,13 @@
 #![allow(non_snake_case)]
 use criterion::{criterion_group, criterion_main, BatchSize, BenchmarkId, Criterion, Throughput};
 
-pub fn randombytes(n: usize) -> Vec<u8> {
+pub fn randombytes<const LEN: usize>() -> [u8; LEN] {
+    let mut bytes = [0u8; LEN];
+    rand::rng().fill_bytes(&mut bytes);
+    bytes
+}
+
+pub fn randombytes_vec(n: usize) -> Vec<u8> {
     let mut bytes = vec![0u8; n];
     rand::rng().fill_bytes(&mut bytes);
     bytes
@@ -14,7 +20,7 @@ pub fn fmt(x: usize) -> String {
 }
 
 macro_rules! impl_comp {
-    ($fun:ident, $keylen:literal, $portable_alg:ident, $neon_alg:ident, $intel_alg:ident, $rustcrypto_fun:expr) => {
+    ($fun:ident, $keylen:expr, $portable:ident, $neon:ident, $intel:ident, $rustcrypto_fun:expr) => {
         // Comparing libcrux performance for different payload sizes and other implementations.
         fn $fun(c: &mut Criterion) {
             const PAYLOAD_SIZES: [usize; 3] = [128, 1024, 1024 * 1024 * 10];
@@ -31,22 +37,21 @@ macro_rules! impl_comp {
                         b.iter_batched(
                             || {
                                 (
-                                    randombytes($keylen),
-                                    randombytes(12),
-                                    randombytes(32),
-                                    randombytes(*payload_size),
+                                    randombytes::<$keylen>(),
+                                    randombytes::<12>(),
+                                    randombytes::<32>(),
+                                    randombytes_vec(*payload_size),
                                 )
                             },
                             |(key, nonce, aad, payload)| {
                                 let mut ciphertext = vec![0; *payload_size];
-                                let mut tag_bytes = [0u8; 16];
-                                use libcrux_aesgcm::{$portable_alg, Aead};
-                                let algo = $portable_alg;
+                                use libcrux_aesgcm::$fun::$portable::{Key, Nonce, Tag};
 
-                                let k = algo.new_key(&key).unwrap();
-                                let nonce = algo.new_nonce(&nonce).unwrap();
-                                let tag = algo.new_tag_mut(&mut tag_bytes).unwrap();
-                                k.encrypt(&mut ciphertext, tag, nonce, &aad, &payload)
+                                let k: Key = key.into();
+                                let nonce: Nonce = nonce.into();
+                                let mut tag: Tag = [0; libcrux_aesgcm::TAG_LEN].into();
+
+                                k.encrypt(&mut ciphertext, &mut tag, &nonce, &aad, &payload)
                                     .unwrap();
                             },
                             BatchSize::SmallInput,
@@ -62,22 +67,21 @@ macro_rules! impl_comp {
                         b.iter_batched(
                             || {
                                 (
-                                    randombytes($keylen),
-                                    randombytes(12),
-                                    randombytes(32),
-                                    randombytes(*payload_size),
+                                    randombytes::<$keylen>(),
+                                    randombytes::<12>(),
+                                    randombytes::<32>(),
+                                    randombytes_vec(*payload_size),
                                 )
                             },
                             |(key, nonce, aad, payload)| {
                                 let mut ciphertext = vec![0; *payload_size];
-                                let mut tag_bytes = [0u8; 16];
-                                use libcrux_aesgcm::{$neon_alg, Aead};
-                                let algo = $neon_alg;
+                                use libcrux_aesgcm::$fun::$neon::{Key, Nonce, Tag};
 
-                                let k = algo.new_key(&key).unwrap();
-                                let nonce = algo.new_nonce(&nonce).unwrap();
-                                let tag = algo.new_tag_mut(&mut tag_bytes).unwrap();
-                                k.encrypt(&mut ciphertext, tag, nonce, &aad, &payload)
+                                let k: Key = key.into();
+                                let nonce: Nonce = nonce.into();
+                                let mut tag: Tag = [0; libcrux_aesgcm::TAG_LEN].into();
+
+                                k.encrypt(&mut ciphertext, &mut tag, &nonce, &aad, &payload)
                                     .unwrap();
                             },
                             BatchSize::SmallInput,
@@ -93,22 +97,21 @@ macro_rules! impl_comp {
                         b.iter_batched(
                             || {
                                 (
-                                    randombytes($keylen),
-                                    randombytes(12),
-                                    randombytes(32),
-                                    randombytes(*payload_size),
+                                    randombytes::<$keylen>(),
+                                    randombytes::<12>(),
+                                    randombytes::<32>(),
+                                    randombytes_vec(*payload_size),
                                 )
                             },
                             |(key, nonce, aad, payload)| {
                                 let mut ciphertext = vec![0; *payload_size];
-                                let mut tag_bytes = [0u8; 16];
-                                use libcrux_aesgcm::{$intel_alg, Aead};
-                                let algo = $intel_alg;
+                                use libcrux_aesgcm::$fun::$intel::{Key, Nonce, Tag};
 
-                                let k = algo.new_key(&key).unwrap();
-                                let nonce = algo.new_nonce(&nonce).unwrap();
-                                let tag = algo.new_tag_mut(&mut tag_bytes).unwrap();
-                                k.encrypt(&mut ciphertext, tag, nonce, &aad, &payload)
+                                let k: Key = key.into();
+                                let nonce: Nonce = nonce.into();
+                                let mut tag: Tag = [0; libcrux_aesgcm::TAG_LEN].into();
+
+                                k.encrypt(&mut ciphertext, &mut tag, &nonce, &aad, &payload)
                                     .unwrap();
                             },
                             BatchSize::SmallInput,
@@ -123,18 +126,18 @@ macro_rules! impl_comp {
                         b.iter_batched(
                             || {
                                 (
-                                    randombytes($keylen),
-                                    randombytes(12),
-                                    randombytes(32),
-                                    randombytes(*payload_size),
+                                    randombytes::<$keylen>(),
+                                    randombytes::<12>(),
+                                    randombytes::<32>(),
+                                    randombytes_vec(*payload_size),
                                 )
                             },
                             |(key, nonce, aad, payload)| {
                                 let mut ciphertext = vec![0; *payload_size];
                                 let mut tag = [0u8; 16];
                                 $rustcrypto_fun(
-                                    &key,
-                                    &nonce,
+                                    key.as_slice(),
+                                    nonce.as_slice(),
                                     &aad,
                                     &payload,
                                     &mut ciphertext,
@@ -186,25 +189,25 @@ fn rustcrypto_aes256_gcm_encrypt(
 }
 
 impl_comp!(
-    AES128_GCM,
+    aes_gcm_128,
     16,
-    PortableAesGcm128,
-    NeonAesGcm128,
-    X64AesGcm128,
+    portable,
+    neon,
+    x64,
     rustcrypto_aes128_gcm_encrypt
 );
 impl_comp!(
-    AES256_GCM,
+    aes_gcm_256,
     32,
-    PortableAesGcm256,
-    NeonAesGcm256,
-    X64AesGcm256,
+    portable,
+    neon,
+    x64,
     rustcrypto_aes256_gcm_encrypt
 );
 
 fn benchmarks(c: &mut Criterion) {
-    AES128_GCM(c);
-    AES256_GCM(c);
+    aes_gcm_128(c);
+    aes_gcm_256(c);
 }
 
 criterion_group!(benches, benchmarks);
