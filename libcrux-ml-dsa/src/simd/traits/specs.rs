@@ -247,3 +247,19 @@ pub(crate) fn shift_left_then_reduce_post<const SHIFT_BY: i32>(
 ) -> bool {
     true
 }
+
+pub(crate) fn power2round_pre(t0: &SIMDContent, t1: &SIMDContent) -> Prop {
+    hax_lib::fstar::prop!(
+        r#"
+        Spec.Utils.is_i32b_array_opaque (v ${FIELD_MAX}) (v $t0)"#
+    )
+}
+
+pub(crate) fn power2round_post(
+    t0: &SIMDContent,
+    t1: &SIMDContent,
+    future_t0: &SIMDContent,
+    future_t1: &SIMDContent,
+) -> bool {
+    true
+}
