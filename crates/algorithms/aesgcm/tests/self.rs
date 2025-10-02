@@ -23,6 +23,7 @@ fn non_matching_lengths() {
 #[cfg(target_pointer_width = "64")]
 fn ptxt_too_long() {
     use libcrux_aesgcm::AeadConsts as _;
+    use libcrux_traits::aead::arrayref::{DecryptError, EncryptError};
 
     let k: Key = [0; AesGcm128::KEY_LEN].into();
     let nonce: Nonce = [0; AesGcm128::NONCE_LEN].into();
@@ -33,8 +34,10 @@ fn ptxt_too_long() {
         unsafe { std::slice::from_raw_parts_mut(8 as *mut u8, u32::MAX as usize * 16) };
 
     // check that encryption returns error
-    k.encrypt(&mut [], &mut tag, &nonce, b"", &pt).unwrap_err();
+    let e = k.encrypt(&mut [], &mut tag, &nonce, b"", &pt).unwrap_err();
+    assert_eq!(e, EncryptError::PlaintextTooLong);
 
     // check that decryption returns error
-    k.decrypt(pt, &nonce, b"", &mut [], &tag).unwrap_err();
+    let e = k.decrypt(pt, &nonce, b"", &mut [], &tag).unwrap_err();
+    assert_eq!(e, DecryptError::PlaintextTooLong);
 }
