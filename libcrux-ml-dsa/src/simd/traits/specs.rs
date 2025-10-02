@@ -299,3 +299,36 @@ pub(crate) fn rejection_sample_less_than_eta_equals_4_post(
 ) -> bool {
     true
 }
+
+pub(crate) fn gamma1_serialize_pre(
+    simd_unit: &SIMDContent,
+    serialized: &[u8],
+    gamma1_exponent: usize,
+) -> bool {
+    true
+}
+
+pub(crate) fn gamma1_serialize_post(
+    simd_unit: &SIMDContent,
+    serialized: &[u8],
+    gamma1_exponent: usize,
+) -> bool {
+    true
+}
+
+pub(crate) fn gamma1_deserialize_pre(
+    serialized: &[u8],
+    out: &SIMDContent,
+    gamma1_exponent: usize,
+) -> bool {
+    true
+}
+
+pub(crate) fn gamma1_deserialize_post(
+    serialized: &[u8],
+    out: &SIMDContent,
+    gamma1_exponent: usize,
+    future_out: &SIMDContent,
+) -> bool {
+    true
+}
