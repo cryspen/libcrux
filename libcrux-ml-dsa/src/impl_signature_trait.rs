@@ -2,7 +2,9 @@
 #[cfg_attr(hax, hax_lib::exclude)]
 pub mod signers {
     //! [`libcrux_traits::signature`] APIs.
-    use libcrux_traits::signature::owned;
+
+    use libcrux_secrets::{Declassify, DeclassifyRef, DeclassifyRefMut, U8};
+    use libcrux_traits::signature::arrayref;
 
     /// A trait representing the context used for ML-DSA signing and verification.
     ///
@@ -23,6 +25,18 @@ pub mod signers {
     /// ```
     macro_rules! impl_context {
         ($name:ident, $context:literal) => {
+            impl_context!(
+                $name,
+                $context,
+                concat!(
+                    "An ML-DSA signing context that contains \"",
+                    stringify!($context),
+                    "\"."
+                )
+            )
+        };
+        ($name:ident, $context:literal, $doc:expr) => {
+            #[doc = $doc]
             pub struct $name;
             impl Context for $name {
                 fn context() -> &'static [u8] {
@@ -55,7 +69,7 @@ pub mod signers {
                 /// It is the responsibility of the caller to ensure  that the `randomness` argument is actually
                 /// random.
                 impl<T: Context>
-                    owned::Sign<
+                    arrayref::Sign<
                         SIGNING_KEY_LEN,
                         VERIFICATION_KEY_LEN,
                         SIGNATURE_LEN,
@@ -66,54 +80,56 @@ pub mod signers {
                     /// Sign a payload using a provided signing key, context, and randomness.
                     fn sign(
                         payload: &[u8],
-                        signing_key: &[u8; SIGNING_KEY_LEN],
+                        signing_key: &[U8; SIGNING_KEY_LEN],
+                        signature: &mut [u8; SIGNATURE_LEN],
                         randomness: super::Randomness,
-                    ) -> Result<[u8; SIGNATURE_LEN], owned::SignError> {
-                        crate::ml_dsa_generic::multiplexing::$module::sign(
-                            signing_key,
+                    ) -> Result<(), arrayref::SignError> {
+                        crate::ml_dsa_generic::multiplexing::$module::sign_mut(
+                            signing_key.declassify_ref(),
                             payload,
                             T::context(),
-                            randomness,
+                            randomness.declassify(),
+                            signature
                         )
-                        .map(|sig| sig.value)
-                        .map_err(|_| owned::SignError::LibraryError)
+                        .map_err(|_| arrayref::SignError::LibraryError)
                     }
                     /// Verify a signature using a provided verification key and context.
                     fn verify(
                         payload: &[u8],
                         verification_key: &[u8; VERIFICATION_KEY_LEN],
                         signature: &[u8; SIGNATURE_LEN],
-                    ) -> Result<(), owned::VerifyError> {
+                    ) -> Result<(), arrayref::VerifyError> {
                         crate::ml_dsa_generic::multiplexing::$module::verify(
                             verification_key,
                             payload,
                             T::context(),
                             signature,
                         )
-                        .map_err(|_| owned::VerifyError::LibraryError)
+                        .map_err(|_| arrayref::VerifyError::LibraryError)
                     }
-                    fn keygen(
-                        randomness: Randomness,
+
+                    fn keygen_derand(
+                        signing_key: &mut [U8; SIGNING_KEY_LEN],
+                        verification_key: &mut [u8; VERIFICATION_KEY_LEN],
+                        randomness: &Randomness,
                     ) -> Result<
-                        ([u8; SIGNING_KEY_LEN], [u8; VERIFICATION_KEY_LEN]),
-                        owned::KeyGenError,
+                        (),
+                        arrayref::KeyGenError,
                     > {
-                        let mut signing_key = [0u8; SIGNING_KEY_LEN];
-                        let mut verification_key = [0u8; VERIFICATION_KEY_LEN];
                         crate::ml_dsa_generic::multiplexing::$module::generate_key_pair(
-                            randomness,
-                            &mut signing_key,
-                            &mut verification_key,
+                            (*randomness).declassify(),
+                             signing_key.declassify_ref_mut(),
+                             verification_key,
                         );
 
-                        Ok((signing_key, verification_key))
+                        Ok(())
                     }
                 }
                 impl<T: Context> libcrux_traits::signature::key_centric_owned::SignTypes for $name<T> {
-                    type SigningKey = [u8; SIGNING_KEY_LEN];
+                    type SigningKey = [U8; SIGNING_KEY_LEN];
                     type VerificationKey = [u8; VERIFICATION_KEY_LEN];
                     type Signature = [u8; SIGNATURE_LEN];
-                    type KeyGenRandomness = [u8; RAND_KEYGEN_LEN];
+                    type KeyGenRandomness = [U8; RAND_KEYGEN_LEN];
                     /// The `randomness` required for signing.
                     type SignAux<'a> = super::Randomness;
                 }
@@ -124,7 +140,7 @@ pub mod signers {
     }
 
     const RAND_KEYGEN_LEN: usize = 32;
-    type Randomness = [u8; RAND_KEYGEN_LEN];
+    type Randomness = [U8; RAND_KEYGEN_LEN];
 
     #[cfg(feature = "mldsa44")]
     impl_signature_trait!(ml_dsa_44, MlDsa44Signer);

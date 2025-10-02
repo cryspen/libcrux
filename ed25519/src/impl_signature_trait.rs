@@ -1,6 +1,7 @@
 pub mod signers {
     //! [`libcrux_traits::signature`] APIs.
 
+    use libcrux_secrets::{DeclassifyRef, U8};
     use libcrux_traits::signature::arrayref::{KeyGenError, Sign, SignError, VerifyError};
 
     /// A convenience struct for signature scheme functionality.
@@ -11,18 +12,17 @@ pub mod signers {
     const SIGNATURE_LEN: usize = 64;
     const RAND_KEYGEN_LEN: usize = SIGNING_KEY_LEN;
 
-    /// The [`arrayref`](libcrux_traits::signature::arrayref) version of the Sign trait.
     impl Sign<SIGNING_KEY_LEN, VERIFICATION_KEY_LEN, SIGNATURE_LEN, RAND_KEYGEN_LEN> for Signer {
         /// Sign a payload with a provided signing key.
         fn sign(
             payload: &[u8],
-            signing_key: &[u8; SIGNING_KEY_LEN],
+            signing_key: &[U8; SIGNING_KEY_LEN],
             signature: &mut [u8; SIGNATURE_LEN],
             _aux: (),
         ) -> Result<(), SignError> {
             crate::hacl::ed25519::sign(
                 signature,
-                signing_key,
+                signing_key.declassify_ref(),
                 payload
                     .len()
                     .try_into()
@@ -53,14 +53,14 @@ pub mod signers {
                 Err(VerifyError::InvalidSignature)
             }
         }
-        fn keygen(
-            signing_key: &mut [u8; SIGNING_KEY_LEN],
-            verification_key: &mut [u8; VERIFICATION_KEY_LEN],
-            randomness: [u8; SIGNING_KEY_LEN],
-        ) -> Result<(), KeyGenError> {
-            signing_key.copy_from_slice(randomness.as_ref());
 
-            crate::secret_to_public(verification_key, signing_key);
+        fn keygen_derand(
+            signing_key: &mut [U8; SIGNING_KEY_LEN],
+            verification_key: &mut [u8; VERIFICATION_KEY_LEN],
+            randomness: &[U8; SIGNING_KEY_LEN],
+        ) -> Result<(), KeyGenError> {
+            *signing_key = *randomness;
+            crate::secret_to_public(verification_key, signing_key.declassify_ref());
 
             Ok(())
         }
@@ -68,7 +68,7 @@ pub mod signers {
 
     libcrux_traits::signature::slice::impl_signature_slice_trait!(
         Signer => SIGNING_KEY_LEN,
-        VERIFICATION_KEY_LEN, SIGNATURE_LEN, RAND_KEYGEN_LEN, (), _aux, u8);
+        VERIFICATION_KEY_LEN, SIGNATURE_LEN, RAND_KEYGEN_LEN, (), _aux);
 
     // key centric APIs
     libcrux_traits::signature::key_centric_owned::impl_sign_types!(
