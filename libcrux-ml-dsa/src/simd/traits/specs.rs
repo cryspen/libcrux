@@ -454,7 +454,18 @@ pub(crate) fn invert_ntt_montgomery_post(
     hax_lib::fstar::prop!(
         r#"
         (forall (i:nat). i < 32 ==> Spec.Utils.is_i32b_array_opaque (v ${FIELD_MAX})
-            (Seq.index ${simd_units}_future i))
+            (Seq.index ${future_simd_units} i))
     "#
     )
+}
+
+pub(crate) fn reduce_pre(simd_units: &[SIMDContent; SIMD_UNITS_IN_RING_ELEMENT]) -> bool {
+    true
+}
+
+pub(crate) fn reduce_post(
+    simd_units: &[SIMDContent; SIMD_UNITS_IN_RING_ELEMENT],
+    future_simd_units: &[SIMDContent; SIMD_UNITS_IN_RING_ELEMENT],
+) -> bool {
+    true
 }
