@@ -275,3 +275,15 @@ pub(crate) fn rejection_sample_less_than_field_modulus_post(
 ) -> bool {
     true
 }
+
+pub(crate) fn rejection_sample_less_than_eta_equals_2_pre(randomness: &[u8], out: &[i32]) -> bool {
+    true
+}
+
+pub(crate) fn rejection_sample_less_than_eta_equals_2_post(
+    randomness: &[u8],
+    out: &[i32],
+    return_value: usize,
+) -> bool {
+    true
+}
