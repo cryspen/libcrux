@@ -72,13 +72,8 @@ pub(crate) trait Operations: Copy + Clone + Repr {
     fn use_hint(gamma2: Gamma2, simd_unit: &Self, hint: &mut Self);
 
     // Modular operations
-    #[hax_lib::requires(fstar!(r#"
-        Spec.Utils.is_i32b_array_opaque (v ${specs::FIELD_MAX}) (${rhs.repr()})"#))]
-    #[hax_lib::ensures(|result| fstar!(r#"
-        Spec.Utils.is_i32b_array_opaque (v ${specs::FIELD_MAX}) (f_repr ${lhs}_future) /\
-        Spec.MLDSA.Math.(forall i. i < 8 ==>
-            mod_q (v (Seq.index (f_repr ${lhs}_future) i)) ==
-            mod_q (v (Seq.index (${lhs.repr()}) i) * v (Seq.index (${rhs.repr()}) i) * 8265825))"#))]
+    #[hax_lib::requires(specs::montgomery_multiply_pre(&lhs.repr(), &rhs.repr()))]
+    #[hax_lib::ensures(|_| specs::montgomery_multiply_post(&lhs.repr(), &rhs.repr(), &future(lhs).repr()))]
     fn montgomery_multiply(lhs: &mut Self, rhs: &Self);
 
     // 261631 is the largest x such that x * pow2 13 <= 2143289343 (the barrett reduce input bound)
