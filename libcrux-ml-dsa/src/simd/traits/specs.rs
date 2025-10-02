@@ -332,3 +332,15 @@ pub(crate) fn gamma1_deserialize_post(
 ) -> bool {
     true
 }
+
+pub(crate) fn commitment_serialize_pre(simd_unit: &SIMDContent, serialized: &[u8]) -> bool {
+    serialized.len() == 4 || serialized.len() == 6
+}
+
+pub(crate) fn commitment_serialize_post(
+    simd_unit: &SIMDContent,
+    serialized: &[u8],
+    future_serialized: &[u8],
+) -> bool {
+    future_serialized.len() == serialized.len()
+}
