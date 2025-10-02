@@ -13,6 +13,8 @@ pub(crate) const NTT_BASE_BOUND: u32 = FIELD_MID;
 
 const COEFFICIENTS_IN_SIMD_UNIT: usize = 8;
 
+const SIMD_UNITS_IN_RING_ELEMENT: usize = 32;
+
 type SIMDContent = [i32; COEFFICIENTS_IN_SIMD_UNIT];
 
 pub(crate) fn int_is_i32(i: Int) -> bool {
@@ -236,8 +238,8 @@ pub(crate) fn montgomery_multiply_post(
 pub(crate) fn shift_left_then_reduce_pre<const SHIFT_BY: i32>(simd_unit: &SIMDContent) -> Prop {
     hax_lib::fstar::prop!(
         r#"v $SHIFT_BY == 13 /\
-        (forall i. i < 8 ==> v (Seq.index (v $simd_unit) i) >= 0 /\
-            v (Seq.index (v $simd_unit) i) <= 261631)"#
+        (forall i. i < 8 ==> v (Seq.index $simd_unit i) >= 0 /\
+            v (Seq.index $simd_unit i) <= 261631)"#
     )
 }
 
@@ -251,7 +253,7 @@ pub(crate) fn shift_left_then_reduce_post<const SHIFT_BY: i32>(
 pub(crate) fn power2round_pre(t0: &SIMDContent, t1: &SIMDContent) -> Prop {
     hax_lib::fstar::prop!(
         r#"
-        Spec.Utils.is_i32b_array_opaque (v ${FIELD_MAX}) (v $t0)"#
+        Spec.Utils.is_i32b_array_opaque (v ${FIELD_MAX}) $t0"#
     )
 }
 
@@ -409,4 +411,27 @@ pub(crate) fn t1_deserialize_post(
     future_out: &SIMDContent,
 ) -> bool {
     true
+}
+
+pub(crate) fn ntt_pre(simd_units: &[SIMDContent; SIMD_UNITS_IN_RING_ELEMENT]) -> Prop {
+    hax_lib::fstar::prop!(
+        r#"
+        (forall (i:nat). i < 32 ==>
+            Spec.Utils.is_i32b_array_opaque
+            (v ${NTT_BASE_BOUND})
+            (Seq.index ${simd_units} i))
+    "#
+    )
+}
+
+pub(crate) fn ntt_post(
+    simd_units: &[SIMDContent; SIMD_UNITS_IN_RING_ELEMENT],
+    future_simd_units: &[SIMDContent; SIMD_UNITS_IN_RING_ELEMENT],
+) -> Prop {
+    hax_lib::fstar::prop!(
+        r#"
+        (forall (i:nat). i < 32 ==> Spec.Utils.is_i32b_array_opaque (v ${FIELD_MAX})
+            (Seq.index ${future_simd_units} i))
+    "#
+    )
 }

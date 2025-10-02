@@ -147,16 +147,10 @@ pub(crate) trait Operations: Copy + Clone + Repr {
     fn t1_deserialize(serialized: &[u8], out: &mut Self);
 
     // NTT
-    #[hax_lib::requires(fstar!(r#"
-        (forall (i:nat). i < 32 ==>
-            Spec.Utils.is_i32b_array_opaque
-            (v ${specs::NTT_BASE_BOUND})
-            (f_repr (Seq.index ${simd_units} i)))
-    "#))]
-    #[hax_lib::ensures(|_| fstar!(r#"
-        (forall (i:nat). i < 32 ==> Spec.Utils.is_i32b_array_opaque (v ${specs::FIELD_MAX})
-            (f_repr (Seq.index ${simd_units}_future i)))
-    "#))]
+    #[hax_lib::requires(specs::ntt_pre(&simd_units.map(|unit| Repr::repr(&unit))))]
+    #[hax_lib::ensures(|_| specs::ntt_post(
+                           &simd_units.map(|unit| Repr::repr(&unit)),
+                           &future(simd_units).map(|unit| Repr::repr(&unit))))]
     fn ntt(simd_units: &mut [Self; SIMD_UNITS_IN_RING_ELEMENT]);
 
     // invert NTT and convert to standard domain
