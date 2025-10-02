@@ -99,7 +99,8 @@ pub(crate) trait Operations: Copy + Clone + Repr {
 
     // Since each coefficient could potentially be sampled with half a byte,
     // we expect `randomness` to hold 4 bytes.
-    #[hax_lib::requires(true)]
+    #[hax_lib::requires(specs::rejection_sample_less_than_eta_equals_2_pre(randomness, out))]
+    #[hax_lib::ensures(|result| specs::rejection_sample_less_than_eta_equals_2_post(randomness, out, result))]
     fn rejection_sample_less_than_eta_equals_2(randomness: &[u8], out: &mut [i32]) -> usize;
 
     #[hax_lib::requires(true)]
