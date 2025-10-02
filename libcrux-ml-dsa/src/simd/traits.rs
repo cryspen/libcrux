@@ -35,7 +35,7 @@ pub trait Repr {}
 #[hax_lib::attributes]
 pub(crate) trait Operations: Copy + Clone + Repr {
     #[hax_lib::requires(true)]
-    #[hax_lib::ensures(|result| result.repr() == [0i32; COEFFICIENTS_IN_SIMD_UNIT])]
+    #[hax_lib::ensures(|result| specs::zero_post(&result.repr()))]
     fn zero() -> Self;
 
     #[hax_lib::requires(array.len() == COEFFICIENTS_IN_SIMD_UNIT)]
