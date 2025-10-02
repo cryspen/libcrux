@@ -123,9 +123,11 @@ pub(crate) trait Operations: Copy + Clone + Repr {
     fn commitment_serialize(simd_unit: &Self, serialized: &mut [u8]);
 
     // Error
-    #[hax_lib::requires(true)]
+    #[hax_lib::requires(specs::error_serialize_pre(eta, &simd_unit.repr(), serialized))]
+    #[hax_lib::ensures(|_| specs::error_serialize_post(eta, &simd_unit.repr(), serialized, future(serialized)))]
     fn error_serialize(eta: Eta, simd_unit: &Self, serialized: &mut [u8]);
-    #[hax_lib::requires(true)]
+    #[hax_lib::requires(specs::error_deserialize_pre(eta, serialized, &out.repr()))]
+    #[hax_lib::ensures(|_| specs::error_deserialize_post(eta, serialized, &out.repr(), &future(out).repr()))]
     fn error_deserialize(eta: Eta, serialized: &[u8], out: &mut Self);
 
     // t0
