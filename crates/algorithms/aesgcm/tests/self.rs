@@ -20,6 +20,7 @@ fn non_matching_lengths() {
 
 // tests that an error is returned if ptxt is too long
 #[test]
+#[cfg(target_pointer_width = "64")]
 fn ptxt_too_long() {
     use libcrux_aesgcm::AeadConsts as _;
 
