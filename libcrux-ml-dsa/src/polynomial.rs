@@ -83,8 +83,8 @@ impl<SIMDUnit: Operations> PolynomialRingElement<SIMDUnit> {
 
     #[inline(always)]
     #[hax_lib::requires(fstar!(r#"forall i.
-        sub_pre (i0._super_i2.f_repr (Seq.index self.f_simd_units i))
-                (i0._super_i2.f_repr (Seq.index rhs.f_simd_units i))"#))]
+        subtract_pre (i0._super_i2.f_repr (Seq.index self.f_simd_units i))
+                     (i0._super_i2.f_repr (Seq.index rhs.f_simd_units i))"#))]
     pub(crate) fn subtract(&mut self, rhs: &Self) {
         #[cfg(hax)]
         let old_self = self.clone();

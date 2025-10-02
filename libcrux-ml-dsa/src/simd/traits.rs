@@ -51,8 +51,8 @@ pub(crate) trait Operations: Copy + Clone + Repr {
     #[hax_lib::ensures(|_| specs::add_post(&lhs.repr(), &rhs.repr(), &future(lhs).repr()))]
     fn add(lhs: &mut Self, rhs: &Self);
 
-    #[hax_lib::requires(specs::sub_pre(&lhs.repr(), &rhs.repr()))]
-    #[hax_lib::ensures(|_| specs::sub_post(&lhs.repr(), &rhs.repr(), &future(lhs).repr()))]
+    #[hax_lib::requires(specs::subtract_pre(&lhs.repr(), &rhs.repr()))]
+    #[hax_lib::ensures(|_| specs::subtract_post(&lhs.repr(), &rhs.repr(), &future(lhs).repr()))]
     fn subtract(lhs: &mut Self, rhs: &Self);
 
     #[hax_lib::requires(fstar!(r#"v $bound > 0 /\
