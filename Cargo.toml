@@ -68,6 +68,7 @@ libcrux-ed25519 = { version = "=0.0.3", path = "ed25519" }
 libcrux-ecdh = { version = "=0.0.3", path = "libcrux-ecdh" }
 libcrux-ml-kem = { version = "=0.0.3", path = "libcrux-ml-kem" }
 libcrux-kem = { version = "=0.0.3", path = "libcrux-kem" }
+libcrux-secrets = { version = "=0.0.3", path = "secrets" }
 
 [package]
 name = "libcrux"

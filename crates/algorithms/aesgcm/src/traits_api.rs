@@ -24,7 +24,9 @@ macro_rules! api {
     ($mod_name:ident, $variant:ident, $multiplexing:ty, $portable:ident, $neon:ident, $x64:ident) => {
         mod $mod_name {
             use super::*;
-            use libcrux_traits::aead::arrayref::{DecryptError, EncryptError};
+            use libcrux_secrets::U8;
+
+            use libcrux_traits::aead::arrayref::{DecryptError, EncryptError, KeyGenError};
             use $variant::KEY_LEN;
 
             pub type Key = [u8; KEY_LEN];
@@ -42,6 +44,11 @@ macro_rules! api {
 
                 /// The plaintext length must be equal to the ciphertext length.
                 impl arrayref::Aead<KEY_LEN, TAG_LEN, NONCE_LEN> for $multiplexing {
+                    fn keygen(key: &mut [u8; KEY_LEN], rand: &[u8; KEY_LEN]) -> Result<(), KeyGenError> {
+                        *key = *rand;
+                        Ok(())
+                    }
+
                     fn encrypt(
                         ciphertext: &mut [u8],
                         tag: &mut Tag,
@@ -110,6 +117,11 @@ macro_rules! api {
 
                 /// The plaintext length must be equal to the ciphertext length.
                 impl arrayref::Aead<KEY_LEN, TAG_LEN, NONCE_LEN> for $portable {
+                    fn keygen(key: &mut [u8; KEY_LEN], rand: &[u8; KEY_LEN]) -> Result<(), KeyGenError> {
+                        *key = *rand;
+                        Ok(())
+                    }
+
                     fn encrypt(
                         ciphertext: &mut [u8],
                         tag: &mut Tag,
@@ -161,6 +173,11 @@ macro_rules! api {
 
                 /// The plaintext length must be equal to the ciphertext length.
                 impl arrayref::Aead<KEY_LEN, TAG_LEN, NONCE_LEN> for $neon {
+                    fn keygen(key: &mut [u8; KEY_LEN], rand: &[u8; KEY_LEN]) -> Result<(), KeyGenError> {
+                        *key = *rand;
+                        Ok(())
+                    }
+
                     fn encrypt(
                         ciphertext: &mut [u8],
                         tag: &mut Tag,
@@ -212,6 +229,11 @@ macro_rules! api {
 
                 /// The plaintext length must be equal to the ciphertext length.
                 impl arrayref::Aead<KEY_LEN, TAG_LEN, NONCE_LEN> for $x64 {
+                    fn keygen(key: &mut [u8; KEY_LEN], rand: &[u8; KEY_LEN]) -> Result<(), KeyGenError> {
+                        *key = *rand;
+                        Ok(())
+                    }
+
                     fn encrypt(
                         ciphertext: &mut [u8],
                         tag: &mut Tag,
