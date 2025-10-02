@@ -1,3 +1,4 @@
+use crate::constants::Gamma2;
 use hax_lib::*;
 
 pub(crate) const PRIME: u32 = 8380417;
@@ -143,4 +144,52 @@ pub(crate) fn infinity_norm_exceeds_post(
     result: bool,
 ) -> bool {
     true
+}
+
+pub(crate) fn decompose_pre(
+    gamma2: Gamma2,
+    simd_unit: &SIMDContent,
+    low: &SIMDContent,
+    high: &SIMDContent,
+) -> Prop {
+    hax_lib::fstar::prop!(
+        r#"
+        (v $gamma2 == v ${crate::constants::GAMMA2_V261_888} \/
+         v $gamma2 == v ${crate::constants::GAMMA2_V95_232}) /\
+        Spec.Utils.is_i32b_array_opaque (v ${FIELD_MAX}) (${simd_unit})"#
+    )
+}
+pub(crate) fn decompose_post(
+    gamma2: Gamma2,
+    simd_unit: &SIMDContent,
+    low: &SIMDContent,
+    high: &SIMDContent,
+    future_low: &SIMDContent,
+    future_high: &SIMDContent,
+) -> bool {
+    true
+}
+
+pub(crate) fn compute_hint_pre(
+    low: &SIMDContent,
+    high: &SIMDContent,
+    gamma2: i32,
+    hint: &SIMDContent,
+) -> Prop {
+    hax_lib::fstar::prop!(
+        r#"
+        (v $gamma2 == v ${crate::constants::GAMMA2_V261_888} \/
+         v $gamma2 == v ${crate::constants::GAMMA2_V95_232})"#
+    )
+}
+
+pub(crate) fn compute_hint_post(
+    low: &SIMDContent,
+    high: &SIMDContent,
+    gamma2: i32,
+    hint: &SIMDContent,
+    future_hint: &SIMDContent,
+    return_value: usize,
+) -> bool {
+    return_value <= 8
 }
