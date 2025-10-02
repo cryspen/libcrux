@@ -161,5 +161,9 @@ pub(crate) trait Operations: Copy + Clone + Repr {
     fn invert_ntt_montgomery(simd_units: &mut [Self; SIMD_UNITS_IN_RING_ELEMENT]);
 
     // Barrett reduce all coefficients
+    #[hax_lib::requires(specs::reduce_pre(&simd_units.map(|unit| Repr::repr(&unit))))]
+    #[hax_lib::ensures(|_| specs::reduce_post(
+        &simd_units.map(|unit| Repr::repr(&unit)),
+        &future(simd_units).map(|unit| Repr::repr(&unit))))]
     fn reduce(simd_units: &mut [Self; SIMD_UNITS_IN_RING_ELEMENT]);
 }
