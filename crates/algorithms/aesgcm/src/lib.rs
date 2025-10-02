@@ -1,8 +1,43 @@
-//! AES-GCM.
+//! # AES-GCM
 //!
-//! This crate provides separate modules for neon and x64.
-//!  - Neon: [`aes_gcm_128::neon`], [`aes_gcm_256::neon`]
-//!  - x64: [`aes_gcm_128::x64`], [`aes_gcm_128::x64`]
+//! This crate implements AES-GCM-128 and AES-GCM-256. The crate provides
+//! optimized implementations for ARM and x86_64 platforms with support
+//! for AES hardware acceleration, as well as a bit-sliced portable
+//! implementation.
+//!
+//! For general use, we provide a platform-multiplexing API via the [`AesGcm128`] and [`AesGcm256`] structs, which selects the most
+//! performant implementation at runtime.
+//! Usage example:
+//!
+//! ```rust
+//! // Multiplexed API
+//! use libcrux_aesgcm::AeadConsts as _;
+//! use libcrux_aesgcm::{AesGcm128, aes_gcm_128::{Key, Tag, Nonce}};
+//! // or:
+//! // platform-specific
+//! // only use these directly after performing runtime checks for the necessary CPU features
+//! // use libcrux_aesgcm::aes_gcm_128::portable::{Key, Tag, Nonce}};
+//! // use libcrux_aesgcm::aes_gcm_128::neon::{Key, Tag, Nonce}};
+//! // use libcrux_aesgcm::aes_gcm_128::x64::{Key, Tag, Nonce}};
+//!
+//! let k: Key = [0; AesGcm128::KEY_LEN].into();
+//! let nonce: Nonce = [0; AesGcm128::NONCE_LEN].into();
+//! let mut tag: Tag = [0; AesGcm128::TAG_LEN].into();
+//!
+//! let pt = b"the quick brown fox jumps over the lazy dog";
+//! let mut ct = [0; 43];
+//! let mut pt_out = [0; 43];
+//!
+//! k.encrypt(&mut ct, &mut tag, &nonce, b"", pt).unwrap();
+//! k.decrypt(&mut pt_out, &nonce, b"", &ct, &tag).unwrap();
+//! assert_eq!(pt, &pt_out);
+//! ```
+//!
+//! Users who want to use a specific implementation directly can access
+//! them in the respective submodules:
+//!  - Portable: [`aes_gcm_128::portable`], [`aes_gcm_256::portable`]
+//!  - ARM NEON: [`aes_gcm_128::neon`], [`aes_gcm_256::neon`]
+//!  - x86_x64: [`aes_gcm_128::x64`], [`aes_gcm_128::x64`]
 //!
 #![no_std]
 #![deny(unsafe_code)]
