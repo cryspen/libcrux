@@ -14,7 +14,6 @@ members = [
     "libcrux-intrinsics",
     "libcrux-kem",
     "libcrux-hmac",
-    "libcrux-hkdf",
     "libcrux-ecdh",
     "libcrux-psq",
     "macros",
@@ -32,11 +31,13 @@ members = [
     "secrets",
     "fstar-helpers/core-models",
     "test-utils",
+    "crates/algorithms/hkdf",
     "crates/primitives/aead",
     "crates/primitives/digest",
     "crates/testing/kats",
     "crates/algorithms/aesgcm",
     "crates/algorithms/aesgcm/fuzz",
+    "hacl-rs",
 ]
 
 [workspace.package]

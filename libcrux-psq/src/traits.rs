@@ -1,5 +1,5 @@
 //! This module provides common traits for PSQ implementations.
-use libcrux_hkdf::{expand as hkdf_expand, Algorithm as HKDF_Algorithm};
+use libcrux_hkdf::sha2_256::expand as hkdf_expand;
 use libcrux_hmac::{hmac, Algorithm as HMAC_Algorithm};
 use libcrux_traits::kem::KEM;
 use rand::CryptoRng;
@@ -159,15 +159,11 @@ fn compare(lhs: &[u8], rhs: &[u8]) -> u8 {
 // See: https://github.com/cryspen/libcrux/issues/767
 //      https://github.com/cryspen/libcrux/issues/820
 fn compute_psk(k0: &[u8]) -> Result<PSQComponent, Error> {
-    let psk: PSQComponent = hkdf_expand(
-        HKDF_Algorithm::Sha256,
-        k0,
-        PSK_CONTEXT,
-        PSQ_COMPONENT_LENGTH,
-    )
-    .map_err(|_| Error::PSQGenerationError)?
-    .try_into()
-    .expect("should receive the correct number of bytes from HKDF");
+    let mut psk = [0; PSQ_COMPONENT_LENGTH];
+    hkdf_expand(&mut psk, k0, PSK_CONTEXT).map_err(|_| Error::PSQGenerationError)?;
+    let psk: PSQComponent = psk
+        .try_into()
+        .expect("should receive the correct number of bytes from HKDF");
     Ok(psk)
 }
 
@@ -178,8 +174,8 @@ fn compute_k0(pqpk: &[u8], ikm: &[u8], enc: &[u8], sctx: &[u8]) -> Result<Vec<u8
     info.extend_from_slice(enc);
     info.extend_from_slice(sctx);
 
-    let k0 = hkdf_expand(HKDF_Algorithm::Sha256, ikm, info, K0_LENGTH)
-        .map_err(|_| Error::PSQDerivationError)?;
+    let mut k0 = vec![0; K0_LENGTH];
+    hkdf_expand(&mut k0, ikm, &info).map_err(|_| Error::PSQDerivationError)?;
 
     Ok(k0)
 }
@@ -187,8 +183,8 @@ fn compute_k0(pqpk: &[u8], ikm: &[u8], enc: &[u8], sctx: &[u8]) -> Result<Vec<u8
 // TODO: This will not be `no_std` until we have incremental HKDF.
 // See: https://github.com/cryspen/libcrux/issues/816
 fn compute_mac(k0: &[u8]) -> Result<Mac, Error> {
-    let km = hkdf_expand(HKDF_Algorithm::Sha256, k0, CONFIRMATION_CONTEXT, KM_LENGTH)
-        .map_err(|_| Error::PSQGenerationError)?;
+    let mut km = [0; KM_LENGTH];
+    hkdf_expand(&mut km, k0, CONFIRMATION_CONTEXT).map_err(|_| Error::PSQGenerationError)?;
 
     let mac: Mac = hmac(HMAC_Algorithm::Sha256, &km, MAC_INPUT, Some(MAC_LENGTH))
         .try_into()
