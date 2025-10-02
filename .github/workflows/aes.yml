@@ -5,7 +5,7 @@ on:
   pull_request:
     branches: ["main", "dev", "*"]
     paths:
-      - "aesgcm/**"
+      - "crates/algorithms/aesgcm/**"
   workflow_dispatch:
 
 env:
