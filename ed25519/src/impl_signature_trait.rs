@@ -26,7 +26,7 @@ pub mod signers {
                 payload
                     .len()
                     .try_into()
-                    .map_err(|_| SignError::InvalidPayloadLength)?,
+                    .map_err(|_| SignError::InvalidArgument)?,
                 payload,
             );
 

@@ -10,24 +10,80 @@ pub mod signers {
     ///
     /// Can be implemented using the convenience macro [`impl_context`].
     pub trait Context {
+        /// This is a buffer of valid size. The validity trait is private, so the users can't
+        /// flag more sizes as valid and circumvent the type safety we established here.
+        #[allow(private_bounds)]
+        type Buf: ValidContextBuf;
+
         /// Return the context.
-        fn context() -> &'static [u8];
+        fn context() -> &'static Self::Buf;
     }
+
+    trait ValidContextBuf {}
+
+    // Implement ValidContextBuf for all sizes 0..=255
+    macro_rules! define_valid_buf {
+        () => {
+            define_valid_buf!(0);
+            define_valid_buf!(1);
+            define_valid_buf!(2, 0);
+            define_valid_buf!(2, 1);
+            define_valid_buf!(2, 2);
+            define_valid_buf!(2, 3);
+            define_valid_buf!(2, 4);
+            define_valid_buf!(2, 5, 0);
+            define_valid_buf!(2, 5, 1);
+            define_valid_buf!(2, 5, 2);
+            define_valid_buf!(2, 5, 3);
+            define_valid_buf!(2, 5, 4);
+            define_valid_buf!(2, 5, 5);
+        };
+        ($num:expr) => {
+            define_valid_buf!($num, 0);
+            define_valid_buf!($num, 1);
+            define_valid_buf!($num, 2);
+            define_valid_buf!($num, 3);
+            define_valid_buf!($num, 4);
+            define_valid_buf!($num, 5);
+            define_valid_buf!($num, 6);
+            define_valid_buf!($num, 7);
+            define_valid_buf!($num, 8);
+            define_valid_buf!($num, 9);
+        };
+        ($num1:expr,$num2:expr) => {
+            define_valid_buf!($num1, $num2, 0);
+            define_valid_buf!($num1, $num2, 1);
+            define_valid_buf!($num1, $num2, 2);
+            define_valid_buf!($num1, $num2, 3);
+            define_valid_buf!($num1, $num2, 4);
+            define_valid_buf!($num1, $num2, 5);
+            define_valid_buf!($num1, $num2, 6);
+            define_valid_buf!($num1, $num2, 7);
+            define_valid_buf!($num1, $num2, 8);
+            define_valid_buf!($num1, $num2, 9);
+        };
+        ($num1:expr,$num2:expr,$num3:expr) => {
+            impl ValidContextBuf for [u8; $num1 * 100 + $num2 * 10 + $num3] {}
+        };
+    }
+
+    define_valid_buf!();
 
     #[macro_export]
     /// A convenience macro for implementing the [`Context`] trait.
-    /// The `$context` must be provided as a `&'static [u8]`.
+    /// The `$context` must be provided as a `&'static [u8; $len]`.
     ///
     /// Usage:
     /// ```rust
     /// use libcrux_ml_dsa::signers::{Context, impl_context};
-    /// impl_context!(AppContext, b"context");
+    /// impl_context!(AppContext, b"context", 7);
     /// ```
     macro_rules! impl_context {
-        ($name:ident, $context:literal) => {
+        ($name:ident, $context:literal,$len:expr) => {
             impl_context!(
                 $name,
                 $context,
+                $len,
                 concat!(
                     "An ML-DSA signing context that contains \"",
                     stringify!($context),
@@ -35,11 +91,12 @@ pub mod signers {
                 )
             )
         };
-        ($name:ident, $context:literal, $doc:expr) => {
+        ($name:ident, $context:literal, $len:expr, $doc:expr) => {
             #[doc = $doc]
             pub struct $name;
             impl Context for $name {
-                fn context() -> &'static [u8] {
+                type Buf = [u8; $len];
+                fn context() -> &'static [u8; $len] {
                     $context
                 }
             }
@@ -68,7 +125,7 @@ pub mod signers {
                 ///
                 /// It is the responsibility of the caller to ensure  that the `randomness` argument is actually
                 /// random.
-                impl<T: Context>
+                impl<const N: usize, T: Context<Buf= [u8;N]>>
                     arrayref::Sign<
                         SIGNING_KEY_LEN,
                         VERIFICATION_KEY_LEN,
@@ -91,7 +148,11 @@ pub mod signers {
                             randomness.declassify(),
                             signature
                         )
-                        .map_err(|_| arrayref::SignError::LibraryError)
+                        .map_err(|err| match err {
+                            crate::types::SigningError::RejectionSamplingError=> arrayref::SignError::InvalidRandomness,
+                            crate::types::SigningError::ContextTooLongError=> arrayref::SignError::InvalidArgument,
+
+                        })
                     }
                     /// Verify a signature using a provided verification key and context.
                     fn verify(
@@ -105,7 +166,13 @@ pub mod signers {
                             T::context(),
                             signature,
                         )
-                        .map_err(|_| arrayref::VerifyError::LibraryError)
+                        .map_err(|err| match err {
+                            crate::types::VerificationError::MalformedHintError=>arrayref::VerifyError::InvalidSignature,
+                            crate::types::VerificationError::SignerResponseExceedsBoundError=>arrayref::VerifyError::InvalidSignature,
+                            crate::types::VerificationError::CommitmentHashesDontMatchError=>arrayref::VerifyError::InvalidSignature,
+                            crate::types::VerificationError::VerificationContextTooLongError=>arrayref::VerifyError::LibraryError,
+
+                        })
                     }
 
                     fn keygen_derand(

@@ -48,7 +48,7 @@ pub mod signers {
                 ) -> Result<(), arrayref::SignError> {
                     let result = libcrux_p256::$sign_fn(
                         signature,
-                        payload.len().try_into().map_err(|_| arrayref::SignError::InvalidPayloadLength)?,
+                        payload.len().try_into().map_err(|_| arrayref::SignError::InvalidArgument)?,
                         payload,
                         signing_key.declassify_ref(),
                         &nonce.0,
@@ -58,8 +58,9 @@ pub mod signers {
                     }
                     Ok(())
                 }
-                #[inline(always)]
+
                 /// Verify a signature using a provided verification key.
+                #[inline(always)]
                 fn verify(
                     payload: &[u8],
                     verification_key: &[u8; VERIFICATION_KEY_LEN],
@@ -77,6 +78,7 @@ pub mod signers {
                     }
                     Ok(())
                 }
+
                 fn keygen_derand(
                     signing_key: &mut [U8; SIGNING_KEY_LEN],
                     verification_key: &mut [u8; VERIFICATION_KEY_LEN],
@@ -94,6 +96,7 @@ pub mod signers {
 
                 }
             }
+
             libcrux_traits::impl_signature_slice_trait!(
                 Signer<$name> => SIGNING_KEY_LEN, VERIFICATION_KEY_LEN, SIG_LEN, RAND_KEYGEN_LEN, &Nonce, nonce);
 
@@ -106,13 +109,11 @@ pub mod signers {
                 RAND_KEYGEN_LEN,
                 &'a Nonce
             );
-
         };
     }
 
+    /// [`libcrux_traits::signature`] APIs for p256.
     pub mod p256 {
-        //! [`libcrux_traits::signature`] APIs for p256.
-
         use super::*;
 
         pub use crate::p256::Nonce;

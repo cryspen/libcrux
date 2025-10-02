@@ -118,8 +118,12 @@ pub trait Sign<
 /// input parameters to internal library errors.
 #[derive(Debug, PartialEq, Eq)]
 pub enum SignError {
-    /// The length of the provided payload is invalid for this signature algorithm.
-    InvalidPayloadLength,
+    /// The the provided argument is invalid for this signature algorithm.
+    /// It could be that the payload is too long.
+    InvalidArgument,
+    /// The random value provided is not suitable. For rejection sampling, try again with new
+    /// randomness.
+    InvalidRandomness,
     /// An internal library error occurred during the signing operation.
     LibraryError,
 }
@@ -127,7 +131,8 @@ pub enum SignError {
 impl core::fmt::Display for SignError {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         let text = match self {
-            SignError::InvalidPayloadLength => "the length of the provided payload is invalid",
+            SignError::InvalidArgument => "a provided argument is invalid",
+            SignError::InvalidRandomness => "the provided randomness is unsuitable",
             SignError::LibraryError => "indicates a library error",
         };
 
@@ -143,8 +148,6 @@ impl core::fmt::Display for SignError {
 pub enum VerifyError {
     /// The provided signature is cryptographically invalid or does not match the payload.
     InvalidSignature,
-    /// The length of the provided signature buffer is invalid for this algorithm.
-    InvalidSignatureBufferLength,
     /// The length of the provided payload is invalid for this signature algorithm.
     InvalidPayloadLength,
     /// An internal library error occurred during verification.
@@ -155,9 +158,6 @@ impl core::fmt::Display for VerifyError {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         let text = match self {
             VerifyError::InvalidSignature => "the provided signature is invalid",
-            VerifyError::InvalidSignatureBufferLength => {
-                "the length of the provided signature buffer is invalid"
-            }
             VerifyError::InvalidPayloadLength => "the length of the provided payload is invalid",
             VerifyError::LibraryError => "indicates a library error",
         };

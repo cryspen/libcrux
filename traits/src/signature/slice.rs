@@ -103,8 +103,12 @@ pub enum SignError {
     InvalidSigningKeyLength,
     /// The length of the provided signature output buffer is invalid.
     InvalidSignatureBufferLength,
-    /// The length of the provided payload is invalid for this signature algorithm.
-    InvalidPayloadLength,
+    /// The the provided argument is invalid for this signature algorithm.
+    /// It could be that the payload is too long.
+    InvalidArgument,
+    /// The random value provided is not suitable. For rejection sampling, try again with new
+    /// randomness.
+    InvalidRandomness,
     /// An internal library error occurred during the signing operation.
     LibraryError,
 }
@@ -118,7 +122,8 @@ impl core::fmt::Display for SignError {
             SignError::InvalidSignatureBufferLength => {
                 "the length of the provided signature buffer is invalid"
             }
-            SignError::InvalidPayloadLength => "the length of the provided payload is invalid",
+            SignError::InvalidArgument => "a provided argument is invalid",
+            SignError::InvalidRandomness => "the provided randomness is unsuitable",
             SignError::LibraryError => "indicates a library error",
         };
 
@@ -206,7 +211,8 @@ mod error_in_core {
 impl From<super::arrayref::SignError> for SignError {
     fn from(e: super::arrayref::SignError) -> Self {
         match e {
-            super::arrayref::SignError::InvalidPayloadLength => Self::InvalidPayloadLength,
+            super::arrayref::SignError::InvalidArgument => Self::InvalidArgument,
+            super::arrayref::SignError::InvalidRandomness => Self::InvalidRandomness,
             super::arrayref::SignError::LibraryError => Self::LibraryError,
         }
     }
@@ -215,9 +221,6 @@ impl From<super::arrayref::VerifyError> for VerifyError {
     fn from(e: super::arrayref::VerifyError) -> Self {
         match e {
             super::arrayref::VerifyError::InvalidSignature => Self::InvalidSignature,
-            super::arrayref::VerifyError::InvalidSignatureBufferLength => {
-                Self::InvalidSignatureBufferLength
-            }
             super::arrayref::VerifyError::InvalidPayloadLength => Self::InvalidPayloadLength,
             super::arrayref::VerifyError::LibraryError => Self::LibraryError,
         }
