@@ -59,16 +59,12 @@ pub(crate) trait Operations: Copy + Clone + Repr {
     #[hax_lib::ensures(|result| specs::infinity_norm_exceeds_post(&simd_unit.repr(), bound, result))]
     fn infinity_norm_exceeds(simd_unit: &Self, bound: i32) -> bool;
 
-    #[hax_lib::requires(fstar!(r#"
-        (v $gamma2 == v ${crate::constants::GAMMA2_V261_888} \/
-         v $gamma2 == v ${crate::constants::GAMMA2_V95_232}) /\
-        Spec.Utils.is_i32b_array_opaque (v ${specs::FIELD_MAX}) (f_repr ${simd_unit})"#))]
+    #[hax_lib::requires(specs::decompose_pre(gamma2, &simd_unit.repr(), &low.repr(), &high.repr()))]
+    #[hax_lib::ensures(|_| specs::decompose_post(gamma2, &simd_unit.repr(), &low.repr(), &high.repr(), &future(low).repr(), &future(high).repr()))]
     fn decompose(gamma2: Gamma2, simd_unit: &Self, low: &mut Self, high: &mut Self);
 
-    #[hax_lib::requires(fstar!(r#"
-        (v $gamma2 == v ${crate::constants::GAMMA2_V261_888} \/
-         v $gamma2 == v ${crate::constants::GAMMA2_V95_232})"#))]
-    #[hax_lib::ensures(|result| result <= 8)]
+    #[hax_lib::requires(specs::compute_hint_pre(&low.repr(), &high.repr(), gamma2, &hint.repr()))]
+    #[hax_lib::ensures(|result| specs::compute_hint_post(&low.repr(), &high.repr(), gamma2, &hint.repr(), &future(hint).repr(), result))]
     fn compute_hint(low: &Self, high: &Self, gamma2: i32, hint: &mut Self) -> usize;
 
     #[hax_lib::requires(fstar!(r#"
