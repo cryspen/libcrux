@@ -211,3 +211,24 @@ pub(crate) fn use_hint_post(
 ) -> bool {
     true
 }
+
+pub(crate) fn montgomery_multiply_pre(lhs: &SIMDContent, rhs: &SIMDContent) -> Prop {
+    hax_lib::fstar::prop!(
+        r#"
+        Spec.Utils.is_i32b_array_opaque (v $FIELD_MAX) $rhs"#
+    )
+}
+
+pub(crate) fn montgomery_multiply_post(
+    lhs: &SIMDContent,
+    rhs: &SIMDContent,
+    future_lhs: &SIMDContent,
+) -> Prop {
+    hax_lib::fstar::prop!(
+        r#"
+        Spec.Utils.is_i32b_array_opaque (v $FIELD_MAX) $future_lhs /\
+        Spec.MLDSA.Math.(forall i. i < 8 ==>
+            mod_q (v (Seq.index ($future_lhs) i)) ==
+            mod_q (v (Seq.index ($lhs) i) * v (Seq.index $rhs i) * 8265825))"#
+    )
+}
