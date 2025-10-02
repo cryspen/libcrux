@@ -82,8 +82,8 @@ pub(crate) trait Operations: Copy + Clone + Repr {
     fn shift_left_then_reduce<const SHIFT_BY: i32>(simd_unit: &mut Self);
 
     // Decomposition operations
-    #[hax_lib::requires(fstar!(r#"
-        Spec.Utils.is_i32b_array_opaque (v ${specs::FIELD_MAX}) (f_repr ${t0})"#))]
+    #[hax_lib::requires(specs::power2round_pre(&t0.repr(), &t1.repr()))]
+    #[hax_lib::ensures(|_| specs::power2round_post(&t0.repr(), &t1.repr(), &future(t0).repr(), &future(t1).repr()))]
     fn power2round(t0: &mut Self, t1: &mut Self);
 
     // Sampling
