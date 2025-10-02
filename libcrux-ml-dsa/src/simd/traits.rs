@@ -118,8 +118,8 @@ pub(crate) trait Operations: Copy + Clone + Repr {
     fn gamma1_deserialize(serialized: &[u8], out: &mut Self, gamma1_exponent: usize);
 
     // Commitment
-    #[hax_lib::requires(serialized.len() == 4 || serialized.len() == 6)]
-    #[hax_lib::ensures(|_| future(serialized).len() == serialized.len())]
+    #[hax_lib::requires(specs::commitment_serialize_pre(&simd_unit.repr(), serialized))]
+    #[hax_lib::ensures(|_| specs::commitment_serialize_post(&simd_unit.repr(), serialized, future(serialized)))]
     fn commitment_serialize(simd_unit: &Self, serialized: &mut [u8]);
 
     // Error
