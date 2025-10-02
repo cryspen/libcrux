@@ -13,12 +13,24 @@ libcrux-ecdsa = { version = "0.0.3", path = "../../../ecdsa", optional = true }
 libcrux-ed25519 = { version = "0.0.3", path = "../../../ed25519", optional = true }
 libcrux-ml-dsa = { version = "0.0.3", path = "../../../libcrux-ml-dsa", optional = true }
 libcrux-traits = { version = "0.0.3", path = "../../../traits", optional = true }
+libcrux-secrets = { version = "0.0.3", path = "../../../secrets", optional = true }
 
 [features]
 default = ["ed25519", "ecdsa", "mldsa"]
-ecdsa = ["dep:libcrux-ecdsa", "dep:libcrux-traits"]
-ed25519 = ["dep:libcrux-ed25519", "dep:libcrux-traits"]
-mldsa = ["dep:libcrux-ml-dsa", "dep:libcrux-traits"]
+
+check-secret-independence = [
+    "libcrux-secrets/check-secret-independence",
+    "libcrux-traits/check-secret-independence",
+    "libcrux-ml-dsa/expose-secret-independence",
+    "libcrux-ed25519/check-secret-independence",
+    "libcrux-ecdsa/check-secret-independence",
+]
+
+ecdsa = ["dep:libcrux-ecdsa", "any"]
+ed25519 = ["dep:libcrux-ed25519", "any"]
+mldsa = ["dep:libcrux-ml-dsa", "any"]
+
+any = ["dep:libcrux-traits", "dep:libcrux-secrets"]
 
 [dev-dependencies]
 rand = "0.9"

@@ -21,6 +21,7 @@ libcrux-intrinsics = { version = "0.0.3", path = "../libcrux-intrinsics" }
 libcrux-platform = { version = "0.0.2", path = "../sys/platform" }
 libcrux-macros = { version = "=0.0.3", path = "../macros" }
 libcrux-traits = { version = "=0.0.3", path = "../traits/" }
+libcrux-secrets = { version = "=0.0.3", path = "../secrets/" }
 hax-lib.workspace = true
 
 [dev-dependencies]
@@ -30,7 +31,7 @@ serde_json = { version = "1.0" }
 serde = { version = "1.0", features = ["derive"] }
 criterion = "0.7"
 libcrux-kats = { version = "0.0.3", path = "../crates/testing/kats", features = [
-    "mldsa"
+    "mldsa",
 ] }
 
 # This doesn't build on intel macos.
@@ -46,6 +47,11 @@ simd128 = ["libcrux-sha3/simd128", "libcrux-intrinsics/simd128"]
 simd256 = ["libcrux-sha3/simd256", "libcrux-intrinsics/simd256"]
 acvp = []                                                        # expose internal API for ACVP testing
 test-utils = []                                                  # exposing internal functions for testing
+
+
+# thid doesn't check the secret independence of the implementation, but sets the
+# exposed API into secret independence checking mode.
+expose-secret-independence = ["libcrux-secrets/check-secret-independence"]
 
 # Features for the different key sizes of ML-DSA
 mldsa44 = []

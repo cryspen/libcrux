@@ -24,7 +24,7 @@ pub fn simple_arrayref<
     let keygen_rand = [1u8; RAND_KEYGEN_LEN].classify();
     let mut signing_key = [0u8; SIGNING_KEY_LEN].classify();
     let mut verification_key = [0u8; VERIFICATION_KEY_LEN];
-    Signer::keygen(&mut signing_key, &mut verification_key, keygen_rand).unwrap();
+    Signer::keygen_derand(&mut signing_key, &mut verification_key, &keygen_rand).unwrap();
 
     let payload = [0u8; 20];
 
