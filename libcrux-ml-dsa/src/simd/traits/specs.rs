@@ -34,6 +34,18 @@ pub(crate) fn from_coefficient_array_post(
     future_out == array
 }
 
+pub(crate) fn to_coefficient_array_pre(value: &SIMDContent, out: &[i32]) -> bool {
+    out.len() == COEFFICIENTS_IN_SIMD_UNIT
+}
+
+pub(crate) fn to_coefficient_array_post(
+    value: &SIMDContent,
+    out: &[i32],
+    future_out: &[i32],
+) -> bool {
+    future_out == value
+}
+
 #[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
 #[hax_lib::fstar::after(r#"
     let bounded_add_pre (a b: t_Array i32 (sz 8)) (b1:nat) (b2:nat):
