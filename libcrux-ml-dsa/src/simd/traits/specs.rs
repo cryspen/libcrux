@@ -129,3 +129,18 @@ pub(crate) fn subtract_post(
         )
     })
 }
+
+pub(crate) fn infinity_norm_exceeds_pre(simd_unit: &SIMDContent, bound: i32) -> Prop {
+    hax_lib::fstar::prop!(
+        r#"v $bound > 0 /\
+        Spec.Utils.is_i32b_array_opaque (v ${FIELD_MAX}) (${simd_unit})"#
+    )
+}
+
+pub(crate) fn infinity_norm_exceeds_post(
+    simd_unit: &SIMDContent,
+    bound: i32,
+    result: bool,
+) -> bool {
+    true
+}
