@@ -28,7 +28,8 @@ pub enum Error {
     P256ECDH(libcrux_ecdh::p256::Error),
     P256ECDSA(p256::ecdsa::Error),
     Ed25519(ed25519::Error),
-    Hkdf(libcrux_hkdf::Error),
+    HkdfExtract(libcrux_hkdf::ExtractError),
+    HkdfExpand(libcrux_hkdf::ExpandError),
 }
 
 impl From<chacha20_poly1305::Error> for Error {
@@ -49,9 +50,15 @@ impl From<libcrux_ecdh::p256::Error> for Error {
     }
 }
 
-impl From<libcrux_hkdf::Error> for Error {
-    fn from(val: libcrux_hkdf::Error) -> Self {
-        Error::Hkdf(val)
+impl From<libcrux_hkdf::ExtractError> for Error {
+    fn from(val: libcrux_hkdf::ExtractError) -> Self {
+        Error::HkdfExtract(val)
+    }
+}
+
+impl From<libcrux_hkdf::ExpandError> for Error {
+    fn from(val: libcrux_hkdf::ExpandError) -> Self {
+        Error::HkdfExpand(val)
     }
 }
 

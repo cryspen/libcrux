@@ -2,7 +2,7 @@ use super::*;
 
 use libcrux_intrinsics::avx2::Vec256;
 
-#[inline]
+#[inline(always)]
 pub(crate) fn keccak4<const RATE: usize, const DELIM: u8>(
     data: &[&[u8]; 4],
     out0: &mut [u8],
@@ -30,16 +30,16 @@ pub(crate) fn keccak4<const RATE: usize, const DELIM: u8>(
     let last = outlen - (outlen % RATE);
 
     if blocks == 0 {
-        s.squeeze::<RATE>(out0, out1, out2, out3, 0, outlen);
+        s.squeeze4::<RATE>(out0, out1, out2, out3, 0, outlen);
     } else {
-        s.squeeze::<RATE>(out0, out1, out2, out3, 0, RATE);
+        s.squeeze4::<RATE>(out0, out1, out2, out3, 0, RATE);
         for i in 1..blocks {
             s.keccakf1600();
-            s.squeeze::<RATE>(out0, out1, out2, out3, i * RATE, RATE);
+            s.squeeze4::<RATE>(out0, out1, out2, out3, i * RATE, RATE);
         }
         if last < outlen {
             s.keccakf1600();
-            s.squeeze::<RATE>(out0, out1, out2, out3, last, outlen - last);
+            s.squeeze4::<RATE>(out0, out1, out2, out3, last, outlen - last);
         }
     }
 }
@@ -55,7 +55,7 @@ impl KeccakState<4, Vec256> {
         start: usize,
     ) {
         self.keccakf1600();
-        self.squeeze::<RATE>(out0, out1, out2, out3, start, RATE);
+        self.squeeze4::<RATE>(out0, out1, out2, out3, start, RATE);
     }
 
     #[inline(always)]
@@ -66,7 +66,7 @@ impl KeccakState<4, Vec256> {
         out2: &mut [u8],
         out3: &mut [u8],
     ) {
-        self.squeeze::<RATE>(out0, out1, out2, out3, 0, RATE);
+        self.squeeze4::<RATE>(out0, out1, out2, out3, 0, RATE);
     }
 
     #[inline(always)]
@@ -77,13 +77,13 @@ impl KeccakState<4, Vec256> {
         out2: &mut [u8],
         out3: &mut [u8],
     ) {
-        self.squeeze::<RATE>(out0, out1, out2, out3, 0, RATE);
+        self.squeeze4::<RATE>(out0, out1, out2, out3, 0, RATE);
 
         self.keccakf1600();
-        self.squeeze::<RATE>(out0, out1, out2, out3, RATE, RATE);
+        self.squeeze4::<RATE>(out0, out1, out2, out3, RATE, RATE);
 
         self.keccakf1600();
-        self.squeeze::<RATE>(out0, out1, out2, out3, 2 * RATE, RATE);
+        self.squeeze4::<RATE>(out0, out1, out2, out3, 2 * RATE, RATE);
     }
 
     #[inline(always)]
@@ -94,18 +94,18 @@ impl KeccakState<4, Vec256> {
         out2: &mut [u8],
         out3: &mut [u8],
     ) {
-        self.squeeze::<RATE>(out0, out1, out2, out3, 0, RATE);
+        self.squeeze4::<RATE>(out0, out1, out2, out3, 0, RATE);
 
         self.keccakf1600();
-        self.squeeze::<RATE>(out0, out1, out2, out3, RATE, RATE);
+        self.squeeze4::<RATE>(out0, out1, out2, out3, RATE, RATE);
 
         self.keccakf1600();
-        self.squeeze::<RATE>(out0, out1, out2, out3, 2 * RATE, RATE);
+        self.squeeze4::<RATE>(out0, out1, out2, out3, 2 * RATE, RATE);
 
         self.keccakf1600();
-        self.squeeze::<RATE>(out0, out1, out2, out3, 3 * RATE, RATE);
+        self.squeeze4::<RATE>(out0, out1, out2, out3, 3 * RATE, RATE);
 
         self.keccakf1600();
-        self.squeeze::<RATE>(out0, out1, out2, out3, 4 * RATE, RATE);
+        self.squeeze4::<RATE>(out0, out1, out2, out3, 4 * RATE, RATE);
     }
 }

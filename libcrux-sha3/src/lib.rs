@@ -10,9 +10,9 @@ mod simd;
 
 mod generic_keccak;
 
-#[cfg(not(eurydice))]
+#[cfg(not(any(hax, eurydice)))]
 mod impl_digest_trait;
-#[cfg(not(eurydice))]
+#[cfg(not(any(hax, eurydice)))]
 pub use impl_digest_trait::*;
 
 mod traits;
@@ -30,7 +30,7 @@ pub type Sha3_384Digest = [u8; 48];
 pub type Sha3_512Digest = [u8; 64];
 
 /// The Digest Algorithm.
-#[cfg_attr(not(eurydice), derive(Copy, Clone, Debug, PartialEq))]
+#[cfg_attr(not(eurydice), derive(Clone, Copy, Debug, PartialEq))]
 #[repr(u32)]
 pub enum Algorithm {
     /// SHA3 224
@@ -46,7 +46,9 @@ pub enum Algorithm {
     Sha512 = 4,
 }
 
+#[hax_lib::attributes]
 impl From<u32> for Algorithm {
+    #[hax_lib::requires(v <= 4)]
     fn from(v: u32) -> Algorithm {
         match v {
             1 => Algorithm::Sha224,
@@ -97,7 +99,7 @@ pub fn hash<const LEN: usize>(algorithm: Algorithm, payload: &[u8]) -> [u8; LEN]
 pub use hash as sha3;
 
 /// SHA3 224
-#[inline(always)]
+#[cfg_attr(not(eurydice), inline(always))]
 pub fn sha224(data: &[u8]) -> Sha3_224Digest {
     let mut out = [0u8; 28];
     sha224_ema(&mut out, data);
@@ -108,7 +110,7 @@ pub fn sha224(data: &[u8]) -> Sha3_224Digest {
 ///
 /// Preconditions:
 /// - `digest.len() == 28`
-#[inline(always)]
+#[cfg_attr(not(eurydice), inline(always))]
 pub fn sha224_ema(digest: &mut [u8], payload: &[u8]) {
     debug_assert!(payload.len() <= u32::MAX as usize);
     debug_assert!(digest.len() == 28);
@@ -117,7 +119,7 @@ pub fn sha224_ema(digest: &mut [u8], payload: &[u8]) {
 }
 
 /// SHA3 256
-#[inline(always)]
+#[cfg_attr(not(eurydice), inline(always))]
 pub fn sha256(data: &[u8]) -> Sha3_256Digest {
     let mut out = [0u8; 32];
     sha256_ema(&mut out, data);
@@ -125,7 +127,7 @@ pub fn sha256(data: &[u8]) -> Sha3_256Digest {
 }
 
 /// SHA3 256
-#[inline(always)]
+#[cfg_attr(not(eurydice), inline(always))]
 pub fn sha256_ema(digest: &mut [u8], payload: &[u8]) {
     debug_assert!(payload.len() <= u32::MAX as usize);
     debug_assert!(digest.len() == 32);
@@ -134,7 +136,7 @@ pub fn sha256_ema(digest: &mut [u8], payload: &[u8]) {
 }
 
 /// SHA3 384
-#[inline(always)]
+#[cfg_attr(not(eurydice), inline(always))]
 pub fn sha384(data: &[u8]) -> Sha3_384Digest {
     let mut out = [0u8; 48];
     sha384_ema(&mut out, data);
@@ -142,7 +144,7 @@ pub fn sha384(data: &[u8]) -> Sha3_384Digest {
 }
 
 /// SHA3 384
-#[inline(always)]
+#[cfg_attr(not(eurydice), inline(always))]
 pub fn sha384_ema(digest: &mut [u8], payload: &[u8]) {
     debug_assert!(payload.len() <= u32::MAX as usize);
     debug_assert!(digest.len() == 48);
@@ -151,7 +153,7 @@ pub fn sha384_ema(digest: &mut [u8], payload: &[u8]) {
 }
 
 /// SHA3 512
-#[inline(always)]
+#[cfg_attr(not(eurydice), inline(always))]
 pub fn sha512(data: &[u8]) -> Sha3_512Digest {
     let mut out = [0u8; 64];
     sha512_ema(&mut out, data);
@@ -159,7 +161,7 @@ pub fn sha512(data: &[u8]) -> Sha3_512Digest {
 }
 
 /// SHA3 512
-#[inline(always)]
+#[cfg_attr(not(eurydice), inline(always))]
 pub fn sha512_ema(digest: &mut [u8], payload: &[u8]) {
     debug_assert!(payload.len() <= u32::MAX as usize);
     debug_assert!(digest.len() == 64);
@@ -171,7 +173,7 @@ pub fn sha512_ema(digest: &mut [u8], payload: &[u8]) {
 ///
 /// Note that the output length `BYTES` must fit into 32 bit. If it is longer,
 /// the output will only return `u32::MAX` bytes.
-#[inline(always)]
+#[cfg_attr(not(eurydice), inline(always))]
 pub fn shake128<const BYTES: usize>(data: &[u8]) -> [u8; BYTES] {
     let mut out = [0u8; BYTES];
     portable::shake128(&mut out, data);
@@ -181,7 +183,7 @@ pub fn shake128<const BYTES: usize>(data: &[u8]) -> [u8; BYTES] {
 /// SHAKE 128
 ///
 /// Writes `out.len()` bytes.
-#[inline(always)]
+#[cfg_attr(not(eurydice), inline(always))]
 pub fn shake128_ema(out: &mut [u8], data: &[u8]) {
     portable::shake128(out, data);
 }
@@ -190,7 +192,7 @@ pub fn shake128_ema(out: &mut [u8], data: &[u8]) {
 ///
 /// Note that the output length `BYTES` must fit into 32 bit. If it is longer,
 /// the output will only return `u32::MAX` bytes.
-#[inline(always)]
+#[cfg_attr(not(eurydice), inline(always))]
 pub fn shake256<const BYTES: usize>(data: &[u8]) -> [u8; BYTES] {
     let mut out = [0u8; BYTES];
     portable::shake256(&mut out, data);
@@ -200,7 +202,7 @@ pub fn shake256<const BYTES: usize>(data: &[u8]) -> [u8; BYTES] {
 /// SHAKE 256
 ///
 /// Writes `out.len()` bytes.
-#[inline(always)]
+#[cfg_attr(not(eurydice), inline(always))]
 pub fn shake256_ema(out: &mut [u8], data: &[u8]) {
     portable::shake256(out, data);
 }

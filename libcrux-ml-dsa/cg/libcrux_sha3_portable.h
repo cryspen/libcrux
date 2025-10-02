@@ -4,11 +4,11 @@
  * SPDX-License-Identifier: MIT or Apache-2.0
  *
  * This code was generated with the following revisions:
- * Charon: d02f05ccb8b90d1312b8caa446003ba9f6ad13a0
- * Eurydice: 657e10870ab75432c50542cf5d9ec94e640c528d
+ * Charon: 667d2fc98984ff7f3df989c2367e6c1fa4a000e7
+ * Eurydice: 2381cbc416ef2ad0b561c362c500bc84f36b6785
  * Karamel: 80f5435f2fc505973c469a4afcc8d875cddd0d8b
- * F*: 5643e656b989aca7629723653a2570c7df6252b9-dirty
- * Libcrux: fb8e86b06fffb444c2031381285e69884422bde5
+ * F*: 71d8221589d4d438af3706d89cb653cf53e18aab
+ * Libcrux: 4433a17f91aab0789f083de6c7fe08493e5998c8
  */
 
 #ifndef libcrux_sha3_portable_H
@@ -109,9 +109,6 @@ typedef struct libcrux_sha3_generic_keccak_KeccakState_17_s {
 typedef libcrux_sha3_generic_keccak_KeccakState_17
     libcrux_sha3_portable_KeccakState;
 
-/**
- Create a new Shake128 x4 state.
-*/
 /**
 This function found in impl {libcrux_sha3::generic_keccak::KeccakState<T,
 N>[TraitClause@0, TraitClause@1]}
@@ -267,9 +264,6 @@ static inline void libcrux_sha3_simd_portable_load_last_a1_c6(
 }
 
 /**
- Get element `[i, j]`.
-*/
-/**
 This function found in impl {core::ops::index::Index<(usize, usize), T> for
 libcrux_sha3::generic_keccak::KeccakState<T, N>[TraitClause@0, TraitClause@1]}
 */
@@ -285,8 +279,93 @@ static inline uint64_t *libcrux_sha3_generic_keccak_index_c2_04(
 }
 
 /**
- Set element `[i, j] = v`.
+This function found in impl {libcrux_sha3::generic_keccak::KeccakState<T,
+N>[TraitClause@0, TraitClause@1]}
 */
+/**
+A monomorphic instance of libcrux_sha3.generic_keccak.theta_80
+with types uint64_t
+with const generics
+- N= 1
+*/
+static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_theta_80_04(
+    libcrux_sha3_generic_keccak_KeccakState_17 *self, uint64_t ret[5U]) {
+  uint64_t c[5U] = {libcrux_sha3_simd_portable_xor5_d2(
+                        libcrux_sha3_generic_keccak_index_c2_04(
+                            self, (size_t_x2{(size_t)0U, (size_t)0U}))[0U],
+                        libcrux_sha3_generic_keccak_index_c2_04(
+                            self, (size_t_x2{(size_t)1U, (size_t)0U}))[0U],
+                        libcrux_sha3_generic_keccak_index_c2_04(
+                            self, (size_t_x2{(size_t)2U, (size_t)0U}))[0U],
+                        libcrux_sha3_generic_keccak_index_c2_04(
+                            self, (size_t_x2{(size_t)3U, (size_t)0U}))[0U],
+                        libcrux_sha3_generic_keccak_index_c2_04(
+                            self, (size_t_x2{(size_t)4U, (size_t)0U}))[0U]),
+                    libcrux_sha3_simd_portable_xor5_d2(
+                        libcrux_sha3_generic_keccak_index_c2_04(
+                            self, (size_t_x2{(size_t)0U, (size_t)1U}))[0U],
+                        libcrux_sha3_generic_keccak_index_c2_04(
+                            self, (size_t_x2{(size_t)1U, (size_t)1U}))[0U],
+                        libcrux_sha3_generic_keccak_index_c2_04(
+                            self, (size_t_x2{(size_t)2U, (size_t)1U}))[0U],
+                        libcrux_sha3_generic_keccak_index_c2_04(
+                            self, (size_t_x2{(size_t)3U, (size_t)1U}))[0U],
+                        libcrux_sha3_generic_keccak_index_c2_04(
+                            self, (size_t_x2{(size_t)4U, (size_t)1U}))[0U]),
+                    libcrux_sha3_simd_portable_xor5_d2(
+                        libcrux_sha3_generic_keccak_index_c2_04(
+                            self, (size_t_x2{(size_t)0U, (size_t)2U}))[0U],
+                        libcrux_sha3_generic_keccak_index_c2_04(
+                            self, (size_t_x2{(size_t)1U, (size_t)2U}))[0U],
+                        libcrux_sha3_generic_keccak_index_c2_04(
+                            self, (size_t_x2{(size_t)2U, (size_t)2U}))[0U],
+                        libcrux_sha3_generic_keccak_index_c2_04(
+                            self, (size_t_x2{(size_t)3U, (size_t)2U}))[0U],
+                        libcrux_sha3_generic_keccak_index_c2_04(
+                            self, (size_t_x2{(size_t)4U, (size_t)2U}))[0U]),
+                    libcrux_sha3_simd_portable_xor5_d2(
+                        libcrux_sha3_generic_keccak_index_c2_04(
+                            self, (size_t_x2{(size_t)0U, (size_t)3U}))[0U],
+                        libcrux_sha3_generic_keccak_index_c2_04(
+                            self, (size_t_x2{(size_t)1U, (size_t)3U}))[0U],
+                        libcrux_sha3_generic_keccak_index_c2_04(
+                            self, (size_t_x2{(size_t)2U, (size_t)3U}))[0U],
+                        libcrux_sha3_generic_keccak_index_c2_04(
+                            self, (size_t_x2{(size_t)3U, (size_t)3U}))[0U],
+                        libcrux_sha3_generic_keccak_index_c2_04(
+                            self, (size_t_x2{(size_t)4U, (size_t)3U}))[0U]),
+                    libcrux_sha3_simd_portable_xor5_d2(
+                        libcrux_sha3_generic_keccak_index_c2_04(
+                            self, (size_t_x2{(size_t)0U, (size_t)4U}))[0U],
+                        libcrux_sha3_generic_keccak_index_c2_04(
+                            self, (size_t_x2{(size_t)1U, (size_t)4U}))[0U],
+                        libcrux_sha3_generic_keccak_index_c2_04(
+                            self, (size_t_x2{(size_t)2U, (size_t)4U}))[0U],
+                        libcrux_sha3_generic_keccak_index_c2_04(
+                            self, (size_t_x2{(size_t)3U, (size_t)4U}))[0U],
+                        libcrux_sha3_generic_keccak_index_c2_04(
+                            self, (size_t_x2{(size_t)4U, (size_t)4U}))[0U])};
+  uint64_t uu____0 = libcrux_sha3_simd_portable_rotate_left1_and_xor_d2(
+      c[((size_t)0U + (size_t)4U) % (size_t)5U],
+      c[((size_t)0U + (size_t)1U) % (size_t)5U]);
+  uint64_t uu____1 = libcrux_sha3_simd_portable_rotate_left1_and_xor_d2(
+      c[((size_t)1U + (size_t)4U) % (size_t)5U],
+      c[((size_t)1U + (size_t)1U) % (size_t)5U]);
+  uint64_t uu____2 = libcrux_sha3_simd_portable_rotate_left1_and_xor_d2(
+      c[((size_t)2U + (size_t)4U) % (size_t)5U],
+      c[((size_t)2U + (size_t)1U) % (size_t)5U]);
+  uint64_t uu____3 = libcrux_sha3_simd_portable_rotate_left1_and_xor_d2(
+      c[((size_t)3U + (size_t)4U) % (size_t)5U],
+      c[((size_t)3U + (size_t)1U) % (size_t)5U]);
+  ret[0U] = uu____0;
+  ret[1U] = uu____1;
+  ret[2U] = uu____2;
+  ret[3U] = uu____3;
+  ret[4U] = libcrux_sha3_simd_portable_rotate_left1_and_xor_d2(
+      c[((size_t)4U + (size_t)4U) % (size_t)5U],
+      c[((size_t)4U + (size_t)1U) % (size_t)5U]);
+}
+
 /**
 This function found in impl {libcrux_sha3::generic_keccak::KeccakState<T,
 N>[TraitClause@0, TraitClause@1]}
@@ -1161,254 +1240,183 @@ This function found in impl {libcrux_sha3::generic_keccak::KeccakState<T,
 N>[TraitClause@0, TraitClause@1]}
 */
 /**
-A monomorphic instance of libcrux_sha3.generic_keccak.theta_rho_80
+A monomorphic instance of libcrux_sha3.generic_keccak.rho_80
 with types uint64_t
 with const generics
 - N= 1
 */
-static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_theta_rho_80_04(
-    libcrux_sha3_generic_keccak_KeccakState_17 *self) {
-  uint64_t c[5U] = {libcrux_sha3_simd_portable_xor5_d2(
-                        libcrux_sha3_generic_keccak_index_c2_04(
-                            self, (size_t_x2{(size_t)0U, (size_t)0U}))[0U],
-                        libcrux_sha3_generic_keccak_index_c2_04(
-                            self, (size_t_x2{(size_t)1U, (size_t)0U}))[0U],
-                        libcrux_sha3_generic_keccak_index_c2_04(
-                            self, (size_t_x2{(size_t)2U, (size_t)0U}))[0U],
-                        libcrux_sha3_generic_keccak_index_c2_04(
-                            self, (size_t_x2{(size_t)3U, (size_t)0U}))[0U],
-                        libcrux_sha3_generic_keccak_index_c2_04(
-                            self, (size_t_x2{(size_t)4U, (size_t)0U}))[0U]),
-                    libcrux_sha3_simd_portable_xor5_d2(
-                        libcrux_sha3_generic_keccak_index_c2_04(
-                            self, (size_t_x2{(size_t)0U, (size_t)1U}))[0U],
-                        libcrux_sha3_generic_keccak_index_c2_04(
-                            self, (size_t_x2{(size_t)1U, (size_t)1U}))[0U],
-                        libcrux_sha3_generic_keccak_index_c2_04(
-                            self, (size_t_x2{(size_t)2U, (size_t)1U}))[0U],
-                        libcrux_sha3_generic_keccak_index_c2_04(
-                            self, (size_t_x2{(size_t)3U, (size_t)1U}))[0U],
-                        libcrux_sha3_generic_keccak_index_c2_04(
-                            self, (size_t_x2{(size_t)4U, (size_t)1U}))[0U]),
-                    libcrux_sha3_simd_portable_xor5_d2(
-                        libcrux_sha3_generic_keccak_index_c2_04(
-                            self, (size_t_x2{(size_t)0U, (size_t)2U}))[0U],
-                        libcrux_sha3_generic_keccak_index_c2_04(
-                            self, (size_t_x2{(size_t)1U, (size_t)2U}))[0U],
-                        libcrux_sha3_generic_keccak_index_c2_04(
-                            self, (size_t_x2{(size_t)2U, (size_t)2U}))[0U],
-                        libcrux_sha3_generic_keccak_index_c2_04(
-                            self, (size_t_x2{(size_t)3U, (size_t)2U}))[0U],
-                        libcrux_sha3_generic_keccak_index_c2_04(
-                            self, (size_t_x2{(size_t)4U, (size_t)2U}))[0U]),
-                    libcrux_sha3_simd_portable_xor5_d2(
-                        libcrux_sha3_generic_keccak_index_c2_04(
-                            self, (size_t_x2{(size_t)0U, (size_t)3U}))[0U],
-                        libcrux_sha3_generic_keccak_index_c2_04(
-                            self, (size_t_x2{(size_t)1U, (size_t)3U}))[0U],
-                        libcrux_sha3_generic_keccak_index_c2_04(
-                            self, (size_t_x2{(size_t)2U, (size_t)3U}))[0U],
-                        libcrux_sha3_generic_keccak_index_c2_04(
-                            self, (size_t_x2{(size_t)3U, (size_t)3U}))[0U],
-                        libcrux_sha3_generic_keccak_index_c2_04(
-                            self, (size_t_x2{(size_t)4U, (size_t)3U}))[0U]),
-                    libcrux_sha3_simd_portable_xor5_d2(
-                        libcrux_sha3_generic_keccak_index_c2_04(
-                            self, (size_t_x2{(size_t)0U, (size_t)4U}))[0U],
-                        libcrux_sha3_generic_keccak_index_c2_04(
-                            self, (size_t_x2{(size_t)1U, (size_t)4U}))[0U],
-                        libcrux_sha3_generic_keccak_index_c2_04(
-                            self, (size_t_x2{(size_t)2U, (size_t)4U}))[0U],
-                        libcrux_sha3_generic_keccak_index_c2_04(
-                            self, (size_t_x2{(size_t)3U, (size_t)4U}))[0U],
-                        libcrux_sha3_generic_keccak_index_c2_04(
-                            self, (size_t_x2{(size_t)4U, (size_t)4U}))[0U])};
-  uint64_t uu____0 = libcrux_sha3_simd_portable_rotate_left1_and_xor_d2(
-      c[((size_t)0U + (size_t)4U) % (size_t)5U],
-      c[((size_t)0U + (size_t)1U) % (size_t)5U]);
-  uint64_t uu____1 = libcrux_sha3_simd_portable_rotate_left1_and_xor_d2(
-      c[((size_t)1U + (size_t)4U) % (size_t)5U],
-      c[((size_t)1U + (size_t)1U) % (size_t)5U]);
-  uint64_t uu____2 = libcrux_sha3_simd_portable_rotate_left1_and_xor_d2(
-      c[((size_t)2U + (size_t)4U) % (size_t)5U],
-      c[((size_t)2U + (size_t)1U) % (size_t)5U]);
-  uint64_t uu____3 = libcrux_sha3_simd_portable_rotate_left1_and_xor_d2(
-      c[((size_t)3U + (size_t)4U) % (size_t)5U],
-      c[((size_t)3U + (size_t)1U) % (size_t)5U]);
-  uint64_t t[5U] = {uu____0, uu____1, uu____2, uu____3,
-                    libcrux_sha3_simd_portable_rotate_left1_and_xor_d2(
-                        c[((size_t)4U + (size_t)4U) % (size_t)5U],
-                        c[((size_t)4U + (size_t)1U) % (size_t)5U])};
+static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_rho_80_04(
+    libcrux_sha3_generic_keccak_KeccakState_17 *self, uint64_t t[5U]) {
   libcrux_sha3_generic_keccak_set_80_04(
       self, (size_t)0U, (size_t)0U,
       libcrux_sha3_simd_portable_xor_d2(
           libcrux_sha3_generic_keccak_index_c2_04(
               self, (size_t_x2{(size_t)0U, (size_t)0U}))[0U],
           t[0U]));
-  libcrux_sha3_generic_keccak_KeccakState_17 *uu____4 = self;
+  libcrux_sha3_generic_keccak_KeccakState_17 *uu____0 = self;
   libcrux_sha3_generic_keccak_set_80_04(
-      uu____4, (size_t)1U, (size_t)0U,
+      uu____0, (size_t)1U, (size_t)0U,
       libcrux_sha3_simd_portable_xor_and_rotate_d2_02(
           libcrux_sha3_generic_keccak_index_c2_04(
               self, (size_t_x2{(size_t)1U, (size_t)0U}))[0U],
           t[0U]));
-  libcrux_sha3_generic_keccak_KeccakState_17 *uu____5 = self;
+  libcrux_sha3_generic_keccak_KeccakState_17 *uu____1 = self;
   libcrux_sha3_generic_keccak_set_80_04(
-      uu____5, (size_t)2U, (size_t)0U,
+      uu____1, (size_t)2U, (size_t)0U,
       libcrux_sha3_simd_portable_xor_and_rotate_d2_ac(
           libcrux_sha3_generic_keccak_index_c2_04(
               self, (size_t_x2{(size_t)2U, (size_t)0U}))[0U],
           t[0U]));
-  libcrux_sha3_generic_keccak_KeccakState_17 *uu____6 = self;
+  libcrux_sha3_generic_keccak_KeccakState_17 *uu____2 = self;
   libcrux_sha3_generic_keccak_set_80_04(
-      uu____6, (size_t)3U, (size_t)0U,
+      uu____2, (size_t)3U, (size_t)0U,
       libcrux_sha3_simd_portable_xor_and_rotate_d2_020(
           libcrux_sha3_generic_keccak_index_c2_04(
               self, (size_t_x2{(size_t)3U, (size_t)0U}))[0U],
           t[0U]));
-  libcrux_sha3_generic_keccak_KeccakState_17 *uu____7 = self;
+  libcrux_sha3_generic_keccak_KeccakState_17 *uu____3 = self;
   libcrux_sha3_generic_keccak_set_80_04(
-      uu____7, (size_t)4U, (size_t)0U,
+      uu____3, (size_t)4U, (size_t)0U,
       libcrux_sha3_simd_portable_xor_and_rotate_d2_a9(
           libcrux_sha3_generic_keccak_index_c2_04(
               self, (size_t_x2{(size_t)4U, (size_t)0U}))[0U],
           t[0U]));
-  libcrux_sha3_generic_keccak_KeccakState_17 *uu____8 = self;
+  libcrux_sha3_generic_keccak_KeccakState_17 *uu____4 = self;
   libcrux_sha3_generic_keccak_set_80_04(
-      uu____8, (size_t)0U, (size_t)1U,
+      uu____4, (size_t)0U, (size_t)1U,
       libcrux_sha3_simd_portable_xor_and_rotate_d2_76(
           libcrux_sha3_generic_keccak_index_c2_04(
               self, (size_t_x2{(size_t)0U, (size_t)1U}))[0U],
           t[1U]));
-  libcrux_sha3_generic_keccak_KeccakState_17 *uu____9 = self;
+  libcrux_sha3_generic_keccak_KeccakState_17 *uu____5 = self;
   libcrux_sha3_generic_keccak_set_80_04(
-      uu____9, (size_t)1U, (size_t)1U,
+      uu____5, (size_t)1U, (size_t)1U,
       libcrux_sha3_simd_portable_xor_and_rotate_d2_58(
           libcrux_sha3_generic_keccak_index_c2_04(
               self, (size_t_x2{(size_t)1U, (size_t)1U}))[0U],
           t[1U]));
-  libcrux_sha3_generic_keccak_KeccakState_17 *uu____10 = self;
+  libcrux_sha3_generic_keccak_KeccakState_17 *uu____6 = self;
   libcrux_sha3_generic_keccak_set_80_04(
-      uu____10, (size_t)2U, (size_t)1U,
+      uu____6, (size_t)2U, (size_t)1U,
       libcrux_sha3_simd_portable_xor_and_rotate_d2_e0(
           libcrux_sha3_generic_keccak_index_c2_04(
               self, (size_t_x2{(size_t)2U, (size_t)1U}))[0U],
           t[1U]));
-  libcrux_sha3_generic_keccak_KeccakState_17 *uu____11 = self;
+  libcrux_sha3_generic_keccak_KeccakState_17 *uu____7 = self;
   libcrux_sha3_generic_keccak_set_80_04(
-      uu____11, (size_t)3U, (size_t)1U,
+      uu____7, (size_t)3U, (size_t)1U,
       libcrux_sha3_simd_portable_xor_and_rotate_d2_63(
           libcrux_sha3_generic_keccak_index_c2_04(
               self, (size_t_x2{(size_t)3U, (size_t)1U}))[0U],
           t[1U]));
-  libcrux_sha3_generic_keccak_KeccakState_17 *uu____12 = self;
+  libcrux_sha3_generic_keccak_KeccakState_17 *uu____8 = self;
   libcrux_sha3_generic_keccak_set_80_04(
-      uu____12, (size_t)4U, (size_t)1U,
+      uu____8, (size_t)4U, (size_t)1U,
       libcrux_sha3_simd_portable_xor_and_rotate_d2_6a(
           libcrux_sha3_generic_keccak_index_c2_04(
               self, (size_t_x2{(size_t)4U, (size_t)1U}))[0U],
           t[1U]));
-  libcrux_sha3_generic_keccak_KeccakState_17 *uu____13 = self;
+  libcrux_sha3_generic_keccak_KeccakState_17 *uu____9 = self;
   libcrux_sha3_generic_keccak_set_80_04(
-      uu____13, (size_t)0U, (size_t)2U,
+      uu____9, (size_t)0U, (size_t)2U,
       libcrux_sha3_simd_portable_xor_and_rotate_d2_ab(
           libcrux_sha3_generic_keccak_index_c2_04(
               self, (size_t_x2{(size_t)0U, (size_t)2U}))[0U],
           t[2U]));
-  libcrux_sha3_generic_keccak_KeccakState_17 *uu____14 = self;
+  libcrux_sha3_generic_keccak_KeccakState_17 *uu____10 = self;
   libcrux_sha3_generic_keccak_set_80_04(
-      uu____14, (size_t)1U, (size_t)2U,
+      uu____10, (size_t)1U, (size_t)2U,
       libcrux_sha3_simd_portable_xor_and_rotate_d2_5b(
           libcrux_sha3_generic_keccak_index_c2_04(
               self, (size_t_x2{(size_t)1U, (size_t)2U}))[0U],
           t[2U]));
-  libcrux_sha3_generic_keccak_KeccakState_17 *uu____15 = self;
+  libcrux_sha3_generic_keccak_KeccakState_17 *uu____11 = self;
   libcrux_sha3_generic_keccak_set_80_04(
-      uu____15, (size_t)2U, (size_t)2U,
+      uu____11, (size_t)2U, (size_t)2U,
       libcrux_sha3_simd_portable_xor_and_rotate_d2_6f(
           libcrux_sha3_generic_keccak_index_c2_04(
               self, (size_t_x2{(size_t)2U, (size_t)2U}))[0U],
           t[2U]));
-  libcrux_sha3_generic_keccak_KeccakState_17 *uu____16 = self;
+  libcrux_sha3_generic_keccak_KeccakState_17 *uu____12 = self;
   libcrux_sha3_generic_keccak_set_80_04(
-      uu____16, (size_t)3U, (size_t)2U,
+      uu____12, (size_t)3U, (size_t)2U,
       libcrux_sha3_simd_portable_xor_and_rotate_d2_62(
           libcrux_sha3_generic_keccak_index_c2_04(
               self, (size_t_x2{(size_t)3U, (size_t)2U}))[0U],
           t[2U]));
-  libcrux_sha3_generic_keccak_KeccakState_17 *uu____17 = self;
+  libcrux_sha3_generic_keccak_KeccakState_17 *uu____13 = self;
   libcrux_sha3_generic_keccak_set_80_04(
-      uu____17, (size_t)4U, (size_t)2U,
+      uu____13, (size_t)4U, (size_t)2U,
       libcrux_sha3_simd_portable_xor_and_rotate_d2_23(
           libcrux_sha3_generic_keccak_index_c2_04(
               self, (size_t_x2{(size_t)4U, (size_t)2U}))[0U],
           t[2U]));
-  libcrux_sha3_generic_keccak_KeccakState_17 *uu____18 = self;
+  libcrux_sha3_generic_keccak_KeccakState_17 *uu____14 = self;
   libcrux_sha3_generic_keccak_set_80_04(
-      uu____18, (size_t)0U, (size_t)3U,
+      uu____14, (size_t)0U, (size_t)3U,
       libcrux_sha3_simd_portable_xor_and_rotate_d2_37(
           libcrux_sha3_generic_keccak_index_c2_04(
               self, (size_t_x2{(size_t)0U, (size_t)3U}))[0U],
           t[3U]));
-  libcrux_sha3_generic_keccak_KeccakState_17 *uu____19 = self;
+  libcrux_sha3_generic_keccak_KeccakState_17 *uu____15 = self;
   libcrux_sha3_generic_keccak_set_80_04(
-      uu____19, (size_t)1U, (size_t)3U,
+      uu____15, (size_t)1U, (size_t)3U,
       libcrux_sha3_simd_portable_xor_and_rotate_d2_bb(
           libcrux_sha3_generic_keccak_index_c2_04(
               self, (size_t_x2{(size_t)1U, (size_t)3U}))[0U],
           t[3U]));
-  libcrux_sha3_generic_keccak_KeccakState_17 *uu____20 = self;
+  libcrux_sha3_generic_keccak_KeccakState_17 *uu____16 = self;
   libcrux_sha3_generic_keccak_set_80_04(
-      uu____20, (size_t)2U, (size_t)3U,
+      uu____16, (size_t)2U, (size_t)3U,
       libcrux_sha3_simd_portable_xor_and_rotate_d2_b9(
           libcrux_sha3_generic_keccak_index_c2_04(
               self, (size_t_x2{(size_t)2U, (size_t)3U}))[0U],
           t[3U]));
-  libcrux_sha3_generic_keccak_KeccakState_17 *uu____21 = self;
+  libcrux_sha3_generic_keccak_KeccakState_17 *uu____17 = self;
   libcrux_sha3_generic_keccak_set_80_04(
-      uu____21, (size_t)3U, (size_t)3U,
+      uu____17, (size_t)3U, (size_t)3U,
       libcrux_sha3_simd_portable_xor_and_rotate_d2_54(
           libcrux_sha3_generic_keccak_index_c2_04(
               self, (size_t_x2{(size_t)3U, (size_t)3U}))[0U],
           t[3U]));
-  libcrux_sha3_generic_keccak_KeccakState_17 *uu____22 = self;
+  libcrux_sha3_generic_keccak_KeccakState_17 *uu____18 = self;
   libcrux_sha3_generic_keccak_set_80_04(
-      uu____22, (size_t)4U, (size_t)3U,
+      uu____18, (size_t)4U, (size_t)3U,
       libcrux_sha3_simd_portable_xor_and_rotate_d2_4c(
           libcrux_sha3_generic_keccak_index_c2_04(
               self, (size_t_x2{(size_t)4U, (size_t)3U}))[0U],
           t[3U]));
-  libcrux_sha3_generic_keccak_KeccakState_17 *uu____23 = self;
+  libcrux_sha3_generic_keccak_KeccakState_17 *uu____19 = self;
   libcrux_sha3_generic_keccak_set_80_04(
-      uu____23, (size_t)0U, (size_t)4U,
+      uu____19, (size_t)0U, (size_t)4U,
       libcrux_sha3_simd_portable_xor_and_rotate_d2_ce(
           libcrux_sha3_generic_keccak_index_c2_04(
               self, (size_t_x2{(size_t)0U, (size_t)4U}))[0U],
           t[4U]));
-  libcrux_sha3_generic_keccak_KeccakState_17 *uu____24 = self;
+  libcrux_sha3_generic_keccak_KeccakState_17 *uu____20 = self;
   libcrux_sha3_generic_keccak_set_80_04(
-      uu____24, (size_t)1U, (size_t)4U,
+      uu____20, (size_t)1U, (size_t)4U,
       libcrux_sha3_simd_portable_xor_and_rotate_d2_77(
           libcrux_sha3_generic_keccak_index_c2_04(
               self, (size_t_x2{(size_t)1U, (size_t)4U}))[0U],
           t[4U]));
-  libcrux_sha3_generic_keccak_KeccakState_17 *uu____25 = self;
+  libcrux_sha3_generic_keccak_KeccakState_17 *uu____21 = self;
   libcrux_sha3_generic_keccak_set_80_04(
-      uu____25, (size_t)2U, (size_t)4U,
+      uu____21, (size_t)2U, (size_t)4U,
       libcrux_sha3_simd_portable_xor_and_rotate_d2_25(
           libcrux_sha3_generic_keccak_index_c2_04(
               self, (size_t_x2{(size_t)2U, (size_t)4U}))[0U],
           t[4U]));
-  libcrux_sha3_generic_keccak_KeccakState_17 *uu____26 = self;
+  libcrux_sha3_generic_keccak_KeccakState_17 *uu____22 = self;
   libcrux_sha3_generic_keccak_set_80_04(
-      uu____26, (size_t)3U, (size_t)4U,
+      uu____22, (size_t)3U, (size_t)4U,
       libcrux_sha3_simd_portable_xor_and_rotate_d2_af(
           libcrux_sha3_generic_keccak_index_c2_04(
               self, (size_t_x2{(size_t)3U, (size_t)4U}))[0U],
           t[4U]));
-  libcrux_sha3_generic_keccak_KeccakState_17 *uu____27 = self;
+  libcrux_sha3_generic_keccak_KeccakState_17 *uu____23 = self;
   libcrux_sha3_generic_keccak_set_80_04(
-      uu____27, (size_t)4U, (size_t)4U,
+      uu____23, (size_t)4U, (size_t)4U,
       libcrux_sha3_simd_portable_xor_and_rotate_d2_fd(
           libcrux_sha3_generic_keccak_index_c2_04(
               self, (size_t_x2{(size_t)4U, (size_t)4U}))[0U],
@@ -1590,7 +1598,12 @@ static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_keccakf1600_80_04(
     libcrux_sha3_generic_keccak_KeccakState_17 *self) {
   for (size_t i = (size_t)0U; i < (size_t)24U; i++) {
     size_t i0 = i;
-    libcrux_sha3_generic_keccak_theta_rho_80_04(self);
+    uint64_t t[5U];
+    libcrux_sha3_generic_keccak_theta_80_04(self, t);
+    libcrux_sha3_generic_keccak_KeccakState_17 *uu____0 = self;
+    uint64_t uu____1[5U];
+    memcpy(uu____1, t, (size_t)5U * sizeof(uint64_t));
+    libcrux_sha3_generic_keccak_rho_80_04(uu____0, uu____1);
     libcrux_sha3_generic_keccak_pi_80_04(self);
     libcrux_sha3_generic_keccak_chi_80_04(self);
     libcrux_sha3_generic_keccak_iota_80_04(self, i0);
@@ -2147,15 +2160,6 @@ typedef libcrux_sha3_generic_keccak_xof_KeccakXofState_e2
     libcrux_sha3_portable_incremental_Shake256Xof;
 
 /**
- Consume the internal buffer and the required amount of the input to pad to
- `RATE`.
-
- Returns the `consumed` bytes from `inputs` if there's enough buffered
- content to consume, and `0` otherwise.
- If `consumed > 0` is returned, `self.buf` contains a full block to be
- loaded.
-*/
-/**
 This function found in impl
 {libcrux_sha3::generic_keccak::xof::KeccakXofState<STATE, PARALLEL_LANES,
 RATE>[TraitClause@0, TraitClause@1]}
@@ -2240,18 +2244,6 @@ static inline size_t libcrux_sha3_generic_keccak_xof_absorb_full_35_c6(
 }
 
 /**
- Absorb
-
- This function takes any number of bytes to absorb and buffers if it's not
- enough. The function assumes that all input slices in `inputs` have the same
- length.
-
- Only a multiple of `RATE` blocks are absorbed.
- For the remaining bytes [`absorb_final`] needs to be called.
-
- This works best with relatively small `inputs`.
-*/
-/**
 This function found in impl
 {libcrux_sha3::generic_keccak::xof::KeccakXofState<STATE, PARALLEL_LANES,
 RATE>[TraitClause@0, TraitClause@1]}
@@ -2298,12 +2290,6 @@ static inline void libcrux_sha3_portable_incremental_absorb_42(
   libcrux_sha3_generic_keccak_xof_absorb_35_c6(self, buf);
 }
 
-/**
- Absorb a final block.
-
- The `inputs` block may be empty. Everything in the `inputs` block beyond
- `RATE` bytes is ignored.
-*/
 /**
 This function found in impl
 {libcrux_sha3::generic_keccak::xof::KeccakXofState<STATE, PARALLEL_LANES,
@@ -2352,9 +2338,6 @@ static inline void libcrux_sha3_portable_incremental_absorb_final_42(
 }
 
 /**
- An all zero block
-*/
-/**
 This function found in impl
 {libcrux_sha3::generic_keccak::xof::KeccakXofState<STATE, PARALLEL_LANES,
 RATE>[TraitClause@0, TraitClause@1]}
@@ -2371,9 +2354,6 @@ static inline void libcrux_sha3_generic_keccak_xof_zero_block_35_c6(
   memset(ret, 0U, 136U * sizeof(uint8_t));
 }
 
-/**
- Generate a new keccak xof state.
-*/
 /**
 This function found in impl
 {libcrux_sha3::generic_keccak::xof::KeccakXofState<STATE, PARALLEL_LANES,
@@ -3288,16 +3268,15 @@ static KRML_MUSTINLINE void libcrux_sha3_portable_sha512(Eurydice_slice digest,
  Preconditions:
  - `digest.len() == 28`
 */
-static KRML_MUSTINLINE void libcrux_sha3_sha224_ema(Eurydice_slice digest,
-                                                    Eurydice_slice payload) {
+static inline void libcrux_sha3_sha224_ema(Eurydice_slice digest,
+                                           Eurydice_slice payload) {
   libcrux_sha3_portable_sha224(digest, payload);
 }
 
 /**
  SHA3 224
 */
-static KRML_MUSTINLINE void libcrux_sha3_sha224(Eurydice_slice data,
-                                                uint8_t ret[28U]) {
+static inline void libcrux_sha3_sha224(Eurydice_slice data, uint8_t ret[28U]) {
   uint8_t out[28U] = {0U};
   libcrux_sha3_sha224_ema(Eurydice_array_to_slice((size_t)28U, out, uint8_t),
                           data);
@@ -3307,16 +3286,15 @@ static KRML_MUSTINLINE void libcrux_sha3_sha224(Eurydice_slice data,
 /**
  SHA3 256
 */
-static KRML_MUSTINLINE void libcrux_sha3_sha256_ema(Eurydice_slice digest,
-                                                    Eurydice_slice payload) {
+static inline void libcrux_sha3_sha256_ema(Eurydice_slice digest,
+                                           Eurydice_slice payload) {
   libcrux_sha3_portable_sha256(digest, payload);
 }
 
 /**
  SHA3 256
 */
-static KRML_MUSTINLINE void libcrux_sha3_sha256(Eurydice_slice data,
-                                                uint8_t ret[32U]) {
+static inline void libcrux_sha3_sha256(Eurydice_slice data, uint8_t ret[32U]) {
   uint8_t out[32U] = {0U};
   libcrux_sha3_sha256_ema(Eurydice_array_to_slice((size_t)32U, out, uint8_t),
                           data);
@@ -3326,16 +3304,15 @@ static KRML_MUSTINLINE void libcrux_sha3_sha256(Eurydice_slice data,
 /**
  SHA3 384
 */
-static KRML_MUSTINLINE void libcrux_sha3_sha384_ema(Eurydice_slice digest,
-                                                    Eurydice_slice payload) {
+static inline void libcrux_sha3_sha384_ema(Eurydice_slice digest,
+                                           Eurydice_slice payload) {
   libcrux_sha3_portable_sha384(digest, payload);
 }
 
 /**
  SHA3 384
 */
-static KRML_MUSTINLINE void libcrux_sha3_sha384(Eurydice_slice data,
-                                                uint8_t ret[48U]) {
+static inline void libcrux_sha3_sha384(Eurydice_slice data, uint8_t ret[48U]) {
   uint8_t out[48U] = {0U};
   libcrux_sha3_sha384_ema(Eurydice_array_to_slice((size_t)48U, out, uint8_t),
                           data);
@@ -3345,16 +3322,15 @@ static KRML_MUSTINLINE void libcrux_sha3_sha384(Eurydice_slice data,
 /**
  SHA3 512
 */
-static KRML_MUSTINLINE void libcrux_sha3_sha512_ema(Eurydice_slice digest,
-                                                    Eurydice_slice payload) {
+static inline void libcrux_sha3_sha512_ema(Eurydice_slice digest,
+                                           Eurydice_slice payload) {
   libcrux_sha3_portable_sha512(digest, payload);
 }
 
 /**
  SHA3 512
 */
-static KRML_MUSTINLINE void libcrux_sha3_sha512(Eurydice_slice data,
-                                                uint8_t ret[64U]) {
+static inline void libcrux_sha3_sha512(Eurydice_slice data, uint8_t ret[64U]) {
   uint8_t out[64U] = {0U};
   libcrux_sha3_sha512_ema(Eurydice_array_to_slice((size_t)64U, out, uint8_t),
                           data);
@@ -3366,8 +3342,8 @@ static KRML_MUSTINLINE void libcrux_sha3_sha512(Eurydice_slice data,
 
  Writes `out.len()` bytes.
 */
-static KRML_MUSTINLINE void libcrux_sha3_shake128_ema(Eurydice_slice out,
-                                                      Eurydice_slice data) {
+static inline void libcrux_sha3_shake128_ema(Eurydice_slice out,
+                                             Eurydice_slice data) {
   libcrux_sha3_portable_shake128(out, data);
 }
 
@@ -3376,8 +3352,8 @@ static KRML_MUSTINLINE void libcrux_sha3_shake128_ema(Eurydice_slice out,
 
  Writes `out.len()` bytes.
 */
-static KRML_MUSTINLINE void libcrux_sha3_shake256_ema(Eurydice_slice out,
-                                                      Eurydice_slice data) {
+static inline void libcrux_sha3_shake256_ema(Eurydice_slice out,
+                                             Eurydice_slice data) {
   libcrux_sha3_portable_shake256(out, data);
 }
 
@@ -3432,15 +3408,6 @@ typedef struct libcrux_sha3_generic_keccak_xof_KeccakXofState_97_s {
 typedef libcrux_sha3_generic_keccak_xof_KeccakXofState_97
     libcrux_sha3_portable_incremental_Shake128Xof;
 
-/**
- Consume the internal buffer and the required amount of the input to pad to
- `RATE`.
-
- Returns the `consumed` bytes from `inputs` if there's enough buffered
- content to consume, and `0` otherwise.
- If `consumed > 0` is returned, `self.buf` contains a full block to be
- loaded.
-*/
 /**
 This function found in impl
 {libcrux_sha3::generic_keccak::xof::KeccakXofState<STATE, PARALLEL_LANES,
@@ -3526,18 +3493,6 @@ static inline size_t libcrux_sha3_generic_keccak_xof_absorb_full_35_c60(
 }
 
 /**
- Absorb
-
- This function takes any number of bytes to absorb and buffers if it's not
- enough. The function assumes that all input slices in `inputs` have the same
- length.
-
- Only a multiple of `RATE` blocks are absorbed.
- For the remaining bytes [`absorb_final`] needs to be called.
-
- This works best with relatively small `inputs`.
-*/
-/**
 This function found in impl
 {libcrux_sha3::generic_keccak::xof::KeccakXofState<STATE, PARALLEL_LANES,
 RATE>[TraitClause@0, TraitClause@1]}
@@ -3581,12 +3536,6 @@ static inline void libcrux_sha3_portable_incremental_absorb_26(
   libcrux_sha3_generic_keccak_xof_absorb_35_c60(self, buf);
 }
 
-/**
- Absorb a final block.
-
- The `inputs` block may be empty. Everything in the `inputs` block beyond
- `RATE` bytes is ignored.
-*/
 /**
 This function found in impl
 {libcrux_sha3::generic_keccak::xof::KeccakXofState<STATE, PARALLEL_LANES,
@@ -3632,9 +3581,6 @@ static inline void libcrux_sha3_portable_incremental_absorb_final_26(
 }
 
 /**
- An all zero block
-*/
-/**
 This function found in impl
 {libcrux_sha3::generic_keccak::xof::KeccakXofState<STATE, PARALLEL_LANES,
 RATE>[TraitClause@0, TraitClause@1]}
@@ -3651,9 +3597,6 @@ static inline void libcrux_sha3_generic_keccak_xof_zero_block_35_c60(
   memset(ret, 0U, 168U * sizeof(uint8_t));
 }
 
-/**
- Generate a new keccak xof state.
-*/
 /**
 This function found in impl
 {libcrux_sha3::generic_keccak::xof::KeccakXofState<STATE, PARALLEL_LANES,
