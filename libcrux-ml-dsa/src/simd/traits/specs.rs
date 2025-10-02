@@ -18,6 +18,10 @@ pub(crate) fn int_is_i32(i: Int) -> bool {
     i <= i32::MAX.to_int() && i >= i32::MIN.to_int()
 }
 
+pub(crate) fn zero_post(result: &SIMDContent) -> bool {
+    *result == [0i32; COEFFICIENTS_IN_SIMD_UNIT]
+}
+
 #[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
 #[hax_lib::fstar::after(r#"
     let bounded_add_pre (a b: t_Array i32 (sz 8)) (b1:nat) (b2:nat):
