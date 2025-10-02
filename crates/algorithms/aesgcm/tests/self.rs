@@ -20,7 +20,6 @@ fn non_matching_lengths() {
 
 // tests that an error is returned if ptxt is too long
 #[test]
-#[cfg(target_pointer_width = "64")]
 fn ptxt_too_long() {
     use libcrux_aesgcm::AeadConsts as _;
 
@@ -30,7 +29,7 @@ fn ptxt_too_long() {
 
     // unsafely create a slice that is too long
     let pt: &mut [u8] =
-        unsafe { std::slice::from_raw_parts_mut(8 as *mut u8, u32::MAX as usize * 16) };
+        unsafe { std::slice::from_raw_parts_mut(8 as *mut u8, (u32::MAX - 1) as usize) };
 
     // check that encryption returns error
     k.encrypt(&mut [], &mut tag, &nonce, b"", &pt).unwrap_err();
