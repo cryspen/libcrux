@@ -232,3 +232,18 @@ pub(crate) fn montgomery_multiply_post(
             mod_q (v (Seq.index ($lhs) i) * v (Seq.index $rhs i) * 8265825))"#
     )
 }
+
+pub(crate) fn shift_left_then_reduce_pre<const SHIFT_BY: i32>(simd_unit: &SIMDContent) -> Prop {
+    hax_lib::fstar::prop!(
+        r#"v $SHIFT_BY == 13 /\
+        (forall i. i < 8 ==> v (Seq.index (v $simd_unit) i) >= 0 /\
+            v (Seq.index (v $simd_unit) i) <= 261631)"#
+    )
+}
+
+pub(crate) fn shift_left_then_reduce_post<const SHIFT_BY: i32>(
+    simd_unit: &SIMDContent,
+    future_simd_unit: &SIMDContent,
+) -> bool {
+    true
+}

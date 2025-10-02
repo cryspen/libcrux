@@ -77,9 +77,8 @@ pub(crate) trait Operations: Copy + Clone + Repr {
     fn montgomery_multiply(lhs: &mut Self, rhs: &Self);
 
     // 261631 is the largest x such that x * pow2 13 <= 2143289343 (the barrett reduce input bound)
-    #[hax_lib::requires(fstar!(r#"v $SHIFT_BY == 13 /\
-        (forall i. i < 8 ==> v (Seq.index (f_repr ${simd_unit}) i) >= 0 /\
-            v (Seq.index (f_repr ${simd_unit}) i) <= 261631)"#))]
+    #[hax_lib::requires(specs::shift_left_then_reduce_pre::<SHIFT_BY>(&simd_unit.repr()))]
+    #[hax_lib::ensures(|_| specs::shift_left_then_reduce_post::<SHIFT_BY>(&simd_unit.repr(), &future(simd_unit).repr()))]
     fn shift_left_then_reduce<const SHIFT_BY: i32>(simd_unit: &mut Self);
 
     // Decomposition operations
