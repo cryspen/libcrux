@@ -3,8 +3,6 @@ use libcrux_aesgcm::{
     AesGcm128,
 };
 
-const AES_BLOCK_LEN: usize = 16;
-
 // tests that an error is returned if ptxt.len() != ctxt.len()
 #[test]
 fn non_matching_lengths() {

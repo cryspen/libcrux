@@ -1,10 +1,4 @@
-//! AES-GCM 128
-//!
-//! Multiplexed AES-GCM.
-//! The implementation used is determined automatically at runtime.
-//! - `x64`
-//! - `neon`
-//! - `portable`
+//! Implementations of AES-GCM 128
 //!
 //! See [`EncryptError`](libcrux_traits::aead::arrayref::EncryptError),
 //! [`DecryptError`](libcrux_traits::aead::arrayref::DecryptError)
