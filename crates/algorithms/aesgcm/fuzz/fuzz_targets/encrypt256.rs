@@ -1,6 +1,7 @@
 #![no_main]
 
-use libcrux_aesgcm::Aead;
+use libcrux_aesgcm::PortableAesGcm256;
+use libcrux_traits::aead::slice::Aead;
 
 use libfuzzer_sys::fuzz_target;
 
@@ -16,11 +17,6 @@ fuzz_target!(|data: &[u8]| {
 
     let mut ctxt = vec![0u8; data.len()];
     let mut tag_bytes = [0u8; 16];
-    let algo = libcrux_aesgcm::PortableAesGcm256;
 
-    let key = algo.new_key(key).unwrap();
-    let nonce = algo.new_nonce(nonce).unwrap();
-    let tag = algo.new_tag_mut(&mut tag_bytes).unwrap();
-
-    key.encrypt(&mut ctxt, tag, nonce, &aad, &data).unwrap();
+    PortableAesGcm256::encrypt(&mut ctxt, &mut tag_bytes, key, nonce, aad, data).unwrap();
 });

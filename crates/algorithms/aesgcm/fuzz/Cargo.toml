@@ -9,6 +9,7 @@ cargo-fuzz = true
 
 [dependencies]
 libfuzzer-sys = "0.4"
+libcrux-traits.workspace = true
 
 [dependencies.libcrux-aesgcm]
 path = ".."
