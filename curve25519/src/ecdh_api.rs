@@ -1,4 +1,4 @@
-use libcrux_traits::ecdh::key_centric_owned::Pair;
+use libcrux_traits::ecdh::typed_owned::Pair;
 pub use libcrux_traits::ecdh::{arrayref::EcdhArrayref, owned::EcdhOwned, slice::EcdhSlice};
 
 use crate::clamp;
@@ -65,4 +65,4 @@ impl libcrux_traits::ecdh::arrayref::EcdhArrayref<RAND_LEN, SECRET_LEN, PUBLIC_L
 }
 
 libcrux_traits::ecdh::slice::impl_ecdh_slice_trait!(X25519 => RAND_LEN, SECRET_LEN, PUBLIC_LEN);
-libcrux_traits::ecdh::key_centric_owned::impl_ecdh_key_centric_owned!(X25519 => RAND_LEN, SECRET_LEN, PUBLIC_LEN, PUBLIC_LEN);
+libcrux_traits::ecdh::typed_owned::impl_ecdh_typed_owned!(X25519 => RAND_LEN, SECRET_LEN, PUBLIC_LEN);

@@ -7,7 +7,7 @@ pub const SECRET_LEN: usize = SCALAR_LEN;
 /// Length in bytes of an ECDH public value.
 pub const PUBLIC_LEN: usize = POINT_LEN;
 
-use libcrux_traits::ecdh::key_centric_owned::Pair;
+use libcrux_traits::ecdh::typed_owned::Pair;
 pub use libcrux_traits::ecdh::{arrayref::EcdhArrayref, owned::EcdhOwned, slice::EcdhSlice};
 
 use libcrux_secrets::{Declassify, DeclassifyRef, DeclassifyRefMut, U8};
@@ -70,4 +70,4 @@ impl libcrux_traits::ecdh::arrayref::EcdhArrayref<RAND_LEN, SECRET_LEN, PUBLIC_L
 }
 
 libcrux_traits::ecdh::slice::impl_ecdh_slice_trait!(super::P256 => RAND_LEN, SECRET_LEN, PUBLIC_LEN);
-libcrux_traits::ecdh::key_centric_owned::impl_ecdh_key_centric_owned!(super::P256 => RAND_LEN, SECRET_LEN, PUBLIC_LEN, PUBLIC_LEN);
+libcrux_traits::ecdh::typed_owned::impl_ecdh_typed_owned!(super::P256 => RAND_LEN, SECRET_LEN, PUBLIC_LEN);
