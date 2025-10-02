@@ -390,3 +390,23 @@ pub(crate) fn t0_deserialize_post(
 ) -> bool {
     true
 }
+
+pub(crate) fn t1_serialize_pre(simd_unit: &SIMDContent, out: &[u8]) -> bool {
+    true
+}
+
+pub(crate) fn t1_serialize_post(simd_unit: &SIMDContent, out: &[u8], future_out: &[u8]) -> bool {
+    true
+}
+
+pub(crate) fn t1_deserialize_pre(serialized: &[u8], out: &SIMDContent) -> bool {
+    true
+}
+
+pub(crate) fn t1_deserialize_post(
+    serialized: &[u8],
+    out: &SIMDContent,
+    future_out: &SIMDContent,
+) -> bool {
+    true
+}
