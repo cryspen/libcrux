@@ -73,7 +73,12 @@ pub trait Operations: Copy + Clone + Repr {
          v (Seq.index (f_repr ${lhs}) i) - v (Seq.index (f_repr ${rhs}) i))"#))]
     fn sub(lhs: &mut Self, rhs: &Self);
 
-    fn negate(vec: &mut Self);
+    #[requires(fstar!(r#"forall i. i < 16 ==> 
+        Spec.Utils.is_intb (pow2 15 - 1) (v (Seq.index (f_repr ${vec}) i))"#))]
+    #[ensures(|_| fstar!(r#"forall i. i < 16 ==> 
+        v (Seq.index (f_repr ${vec}_future) i) == 
+        - (v (Seq.index (f_repr ${vec}) i))"#))]
+   fn negate(vec: &mut Self);
 
     #[requires(fstar!(r#"forall i. i < 16 ==> 
         Spec.Utils.is_intb (pow2 15 - 1) (v (Seq.index (f_repr ${vec}) i) * v $c)"#))]
@@ -193,21 +198,25 @@ pub trait Operations: Copy + Clone + Repr {
 
     // Serialization and deserialization
     #[requires(fstar!(r#"Spec.MLKEM.serialize_pre 1 (f_repr $a) /\ Seq.length $out == 2"#))]
-    #[ensures(|_| fstar!(r#"(Spec.MLKEM.serialize_pre 1 (f_repr $a) ==> Spec.MLKEM.serialize_post 1 (f_repr $a) ${out}_future)
-                        /\ Seq.length ${out}_future == Seq.length $out"#))]
+    #[ensures(|_| fstar!(r#"Seq.length ${out}_future == 2 /\
+        (Spec.MLKEM.serialize_pre 1 (f_repr $a) ==> 
+            Spec.MLKEM.serialize_post 1 (f_repr $a) ${out}_future)"#))]
     fn serialize_1(a: &Self, out: &mut [u8]);
 
     #[requires(a.len() == 2)]
-    #[ensures(|_| fstar!(r#"sz (Seq.length $a) =. sz 2 ==> Spec.MLKEM.deserialize_post 1 $a (f_repr ${out}_future)"#))]
+    #[ensures(|_| fstar!(r#"Seq.length $a == 2 ==> 
+        Spec.MLKEM.deserialize_post 1 $a (f_repr ${out}_future)"#))]
     fn deserialize_1(a: &[u8], out: &mut Self);
 
     #[requires(fstar!(r#"Spec.MLKEM.serialize_pre 4 (f_repr $a) /\ Seq.length $out == 8"#))]
-    #[ensures(|_| fstar!(r#"(Spec.MLKEM.serialize_pre 4 (f_repr $a) ==> Spec.MLKEM.serialize_post 4 (f_repr $a) ${out}_future)
-                         /\ Seq.length ${out}_future == Seq.length $out"#))]
+    #[ensures(|_| fstar!(r#"Seq.length ${out}_future == 8 /\
+        (Spec.MLKEM.serialize_pre 4 (f_repr $a) ==> 
+            Spec.MLKEM.serialize_post 4 (f_repr $a) ${out}_future)"#))]
     fn serialize_4(a: &Self, out: &mut [u8]);
 
     #[requires(a.len() == 8)]
-    #[ensures(|_| fstar!(r#"sz (Seq.length $a) =. sz 8 ==> Spec.MLKEM.deserialize_post 4 $a (f_repr ${out}_future)"#))]
+    #[ensures(|_| fstar!(r#"Seq.length $a == 8 ==> 
+        Spec.MLKEM.deserialize_post 4 $a (f_repr ${out}_future)"#))]
     fn deserialize_4(a: &[u8], out: &mut Self);
 
     fn serialize_5(a: &Self, out: &mut [u8]);
@@ -216,12 +225,14 @@ pub trait Operations: Copy + Clone + Repr {
     fn deserialize_5(a: &[u8], out: &mut Self);
 
     #[requires(fstar!(r#"Spec.MLKEM.serialize_pre 10 (f_repr $a) /\ Seq.length $out == 20"#))]
-    #[ensures(|_| fstar!(r#"(Spec.MLKEM.serialize_pre 10 (f_repr $a) ==> Spec.MLKEM.serialize_post 10 (f_repr $a) ${out}_future)
-                         /\ Seq.length ${out}_future == Seq.length $out"#))]
+    #[ensures(|_| fstar!(r#"Seq.length ${out}_future == 20 /\
+        (Spec.MLKEM.serialize_pre 10 (f_repr $a) ==> 
+            Spec.MLKEM.serialize_post 10 (f_repr $a) ${out}_future)"#))]
     fn serialize_10(a: &Self, out: &mut [u8]);
 
     #[requires(a.len() == 20)]
-    #[ensures(|_| fstar!(r#"sz (Seq.length $a) =. sz 20 ==> Spec.MLKEM.deserialize_post 10 $a (f_repr ${out}_future)"#))]
+    #[ensures(|_| fstar!(r#"Seq.length $a == 20 ==> 
+        Spec.MLKEM.deserialize_post 10 $a (f_repr ${out}_future)"#))]
     fn deserialize_10(a: &[u8], out: &mut Self);
 
     fn serialize_11(a: &Self, out: &mut [u8]);
@@ -230,12 +241,14 @@ pub trait Operations: Copy + Clone + Repr {
     fn deserialize_11(a: &[u8], out: &mut Self);
 
     #[requires(fstar!(r#"Spec.MLKEM.serialize_pre 12 (f_repr $a) /\ Seq.length $out == 24"#))]
-    #[ensures(|_| fstar!(r#"(Spec.MLKEM.serialize_pre 12 (f_repr $a) ==> Spec.MLKEM.serialize_post 12 (f_repr $a) ${out}_future)
-                         /\ Seq.length ${out}_future == Seq.length $out"#))]
+    #[ensures(|_| fstar!(r#"Seq.length ${out}_future == 24 /\
+        (Spec.MLKEM.serialize_pre 12 (f_repr $a) ==> 
+            Spec.MLKEM.serialize_post 12 (f_repr $a) ${out}_future)"#))]
     fn serialize_12(a: &Self, out: &mut [u8]);
 
     #[requires(a.len() == 24)]
-    #[ensures(|_| fstar!(r#"sz (Seq.length $a) =. sz 24 ==> Spec.MLKEM.deserialize_post 12 $a (f_repr ${out}_future)"#))]
+    #[ensures(|_| fstar!(r#"Seq.length $a == 24 ==> 
+        Spec.MLKEM.deserialize_post 12 $a (f_repr ${out}_future)"#))]
     fn deserialize_12(a: &[u8], out: &mut Self);
 
     #[requires(a.len() == 24 && out.len() == 16)]

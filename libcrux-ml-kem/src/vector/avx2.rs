@@ -166,8 +166,9 @@ fn ntt_multiply(
 #[inline(always)]
 #[hax_lib::fstar::verification_status(lax)]
 #[hax_lib::requires(fstar!(r#"Spec.MLKEM.serialize_pre 1 (repr $vector) /\ Seq.length $out == 2"#))]
-#[hax_lib::ensures(|_| fstar!(r#"(Spec.MLKEM.serialize_pre 1 (repr $vector) ==> Spec.MLKEM.serialize_post 1 (repr $vector) ${out}_future)
-                                  /\ Seq.length ${out}_future == Seq.length $out"#))]
+#[hax_lib::ensures(|_| fstar!(r#"Seq.length ${out}_future == 2 /\
+    (Spec.MLKEM.serialize_pre 1 (repr $vector) ==> 
+        Spec.MLKEM.serialize_post 1 (repr $vector) ${out}_future)"#))]
 fn serialize_1(vector: &SIMD256Vector, out: &mut [u8]) {
     serialize::serialize_1(&vector.elements, out);
 }
@@ -183,8 +184,9 @@ fn deserialize_1(bytes: &[u8], out: &mut SIMD256Vector) {
 #[inline(always)]
 #[hax_lib::fstar::verification_status(lax)]
 #[hax_lib::requires(fstar!(r#"Spec.MLKEM.serialize_pre 4 (repr $vector) /\ Seq.length $out == 8"#))]
-#[hax_lib::ensures(|_| fstar!(r#"(Spec.MLKEM.serialize_pre 4 (repr $vector) ==> Spec.MLKEM.serialize_post 4 (repr $vector) ${out}_future)
-                                 /\ Seq.length ${out}_future == Seq.length $out"#))]
+#[hax_lib::ensures(|_| fstar!(r#"Seq.length ${out}_future == 8 /\
+    (Spec.MLKEM.serialize_pre 4 (repr $vector) ==> 
+        Spec.MLKEM.serialize_post 4 (repr $vector) ${out}_future)"#))]
 fn serialize_4(vector: &SIMD256Vector, out: &mut [u8]) {
     serialize::serialize_4(&vector.elements, out)
 }
@@ -200,8 +202,9 @@ fn deserialize_4(bytes: &[u8], out: &mut SIMD256Vector) {
 #[inline(always)]
 #[hax_lib::fstar::verification_status(lax)]
 #[hax_lib::requires(fstar!(r#"Spec.MLKEM.serialize_pre 10 (repr $vector) /\ Seq.length $out == 20"#))]
-#[hax_lib::ensures(|_| fstar!(r#"(Spec.MLKEM.serialize_pre 10 (repr $vector) ==> Spec.MLKEM.serialize_post 10 (repr $vector) ${out}_future)
-                                  /\ Seq.length ${out}_future == Seq.length $out"#))]
+#[hax_lib::ensures(|_| fstar!(r#"Seq.length ${out}_future == 20 /\
+    (Spec.MLKEM.serialize_pre 10 (repr $vector) ==> 
+        Spec.MLKEM.serialize_post 10 (repr $vector) ${out}_future)"#))]
 fn serialize_10(vector: &SIMD256Vector, out: &mut [u8]) {
     serialize::serialize_10(&vector.elements, out);
 }
@@ -209,7 +212,8 @@ fn serialize_10(vector: &SIMD256Vector, out: &mut [u8]) {
 #[inline(always)]
 #[hax_lib::fstar::verification_status(lax)]
 #[hax_lib::requires(bytes.len() == 20)]
-#[hax_lib::ensures(|_| fstar!(r#"sz (Seq.length $bytes) =. sz 20 ==> Spec.MLKEM.deserialize_post 10 $bytes (repr ${out}_future)"#))]
+#[hax_lib::ensures(|_| fstar!(r#"sz (Seq.length $bytes) =. sz 20 ==>
+    Spec.MLKEM.deserialize_post 10 $bytes (repr ${out}_future)"#))]
 fn deserialize_10(bytes: &[u8], out: &mut SIMD256Vector) {
     serialize::deserialize_10(bytes, &mut out.elements);
 }
@@ -217,8 +221,9 @@ fn deserialize_10(bytes: &[u8], out: &mut SIMD256Vector) {
 #[inline(always)]
 #[hax_lib::fstar::verification_status(lax)]
 #[hax_lib::requires(fstar!(r#"Spec.MLKEM.serialize_pre 12 (repr $vector) /\ Seq.length $out == 24"#))]
-#[hax_lib::ensures(|_| fstar!(r#"(Spec.MLKEM.serialize_pre 12 (repr $vector) ==> Spec.MLKEM.serialize_post 12 (repr $vector) ${out}_future)
-                                  /\ Seq.length ${out}_future == Seq.length $out"#))]
+#[hax_lib::ensures(|_| fstar!(r#"Seq.length ${out}_future == 24 /\
+    (Spec.MLKEM.serialize_pre 12 (repr $vector) ==> 
+        Spec.MLKEM.serialize_post 12 (repr $vector) ${out}_future)"#))]
 fn serialize_12(vector: &SIMD256Vector, out: &mut [u8]) {
     serialize::serialize_12(&vector.elements, out);
 }
@@ -311,6 +316,11 @@ impl Operations for SIMD256Vector {
         arithmetic::sub(&mut lhs.elements, &rhs.elements);
     }
 
+    #[requires(fstar!(r#"forall i. i < 16 ==> 
+        Spec.Utils.is_intb (pow2 15 - 1) (v (Seq.index (impl.f_repr ${vec}) i))"#))]
+    #[ensures(|_| fstar!(r#"forall i. i < 16 ==> 
+        v (Seq.index (impl.f_repr ${vec}_future) i) == 
+        - (v (Seq.index (impl.f_repr ${vec}) i))"#))]
     fn negate(vec: &mut Self) {
         vec.elements = mm256_sign_epi16(vec.elements, mm256_set1_epi16(-1));
     }
@@ -482,8 +492,9 @@ impl Operations for SIMD256Vector {
     }
 
     #[requires(fstar!(r#"Spec.MLKEM.serialize_pre 1 (impl.f_repr $vector) /\ Seq.length $out == 2"#))]
-    #[ensures(|_| fstar!(r#"(Spec.MLKEM.serialize_pre 1 (impl.f_repr $vector) ==> Spec.MLKEM.serialize_post 1 (impl.f_repr $vector) ${out}_future)
-                             /\ Seq.length ${out}_future == Seq.length $out"#))]
+    #[ensures(|_| fstar!(r#"Seq.length ${out}_future == 2 /\
+        (Spec.MLKEM.serialize_pre 1 (impl.f_repr $vector) ==> 
+            Spec.MLKEM.serialize_post 1 (impl.f_repr $vector) ${out}_future)"#))]
     #[inline(always)]
     fn serialize_1(vector: &Self, out: &mut [u8]) {
         debug_assert!(out.len() == 2);
@@ -491,15 +502,17 @@ impl Operations for SIMD256Vector {
     }
 
     #[requires(bytes.len() == 2)]
-    #[ensures(|_| fstar!(r#"sz (Seq.length $bytes) =. sz 2 ==> Spec.MLKEM.deserialize_post 1 $bytes (impl.f_repr ${out}_future)"#))]
+    #[ensures(|_| fstar!(r#"Seq.length $bytes == 2 ==> 
+        Spec.MLKEM.deserialize_post 1 $bytes (impl.f_repr ${out}_future)"#))]
     #[inline(always)]
     fn deserialize_1(bytes: &[u8], out: &mut Self) {
         deserialize_1(bytes, out);
     }
 
     #[requires(fstar!(r#"Spec.MLKEM.serialize_pre 4 (impl.f_repr $vector) /\ Seq.length $out == 8"#))]
-    #[ensures(|_| fstar!(r#"(Spec.MLKEM.serialize_pre 4 (impl.f_repr $vector) ==> Spec.MLKEM.serialize_post 4 (impl.f_repr $vector) ${out}_future)
-                            /\ Seq.length ${out}_future == Seq.length $out"#))]
+    #[ensures(|_| fstar!(r#"Seq.length ${out}_future == 8 /\
+        (Spec.MLKEM.serialize_pre 4 (impl.f_repr $vector) ==> 
+            Spec.MLKEM.serialize_post 4 (impl.f_repr $vector) ${out}_future)"#))]
     #[inline(always)]
     fn serialize_4(vector: &Self, out: &mut [u8]) {
         debug_assert!(out.len() == 8);
@@ -507,7 +520,8 @@ impl Operations for SIMD256Vector {
     }
 
     #[requires(bytes.len() == 8)]
-    #[ensures(|_| fstar!(r#"sz (Seq.length $bytes) =. sz 8 ==> Spec.MLKEM.deserialize_post 4 $bytes (impl.f_repr ${out}_future)"#))]
+    #[ensures(|_| fstar!(r#"Seq.length $bytes == 8 ==> 
+        Spec.MLKEM.deserialize_post 4 $bytes (impl.f_repr ${out}_future)"#))]
     #[inline(always)]
     fn deserialize_4(bytes: &[u8], out: &mut Self) {
         deserialize_4(bytes, out);
@@ -527,8 +541,9 @@ impl Operations for SIMD256Vector {
     }
 
     #[requires(fstar!(r#"Spec.MLKEM.serialize_pre 10 (impl.f_repr $vector)/\ Seq.length $out == 20"#))]
-    #[ensures(|_| fstar!(r#"(Spec.MLKEM.serialize_pre 10 (impl.f_repr $vector) ==> Spec.MLKEM.serialize_post 10 (impl.f_repr $vector) ${out}_future)
-                            /\ Seq.length ${out}_future == Seq.length $out"#))]
+    #[ensures(|_| fstar!(r#"Seq.length ${out}_future == 20 /\
+        (Spec.MLKEM.serialize_pre 10 (impl.f_repr $vector) ==> 
+            Spec.MLKEM.serialize_post 10 (impl.f_repr $vector) ${out}_future)"#))]
     #[inline(always)]
     fn serialize_10(vector: &Self, out: &mut [u8]) {
         debug_assert!(out.len() == 20);
@@ -536,7 +551,8 @@ impl Operations for SIMD256Vector {
     }
 
     #[requires(bytes.len() == 20)]
-    #[ensures(|_| fstar!(r#"sz (Seq.length $bytes) =. sz 20 ==> Spec.MLKEM.deserialize_post 10 $bytes (impl.f_repr ${out}_future)"#))]
+    #[ensures(|_| fstar!(r#"Seq.length $bytes == 20 ==> 
+        Spec.MLKEM.deserialize_post 10 $bytes (impl.f_repr ${out}_future)"#))]
     #[inline(always)]
     fn deserialize_10(bytes: &[u8], out: &mut Self) {
         deserialize_10(bytes, out);
@@ -555,8 +571,9 @@ impl Operations for SIMD256Vector {
     }
 
     #[requires(fstar!(r#"Spec.MLKEM.serialize_pre 12 (impl.f_repr $vector) /\ Seq.length $out == 24"#))]
-    #[ensures(|_| fstar!(r#"(Spec.MLKEM.serialize_pre 12 (impl.f_repr $vector) ==> Spec.MLKEM.serialize_post 12 (impl.f_repr $vector) ${out}_future)
-                             /\ Seq.length ${out}_future == Seq.length $out"#))]
+    #[ensures(|_| fstar!(r#"Seq.length ${out}_future == 24 /\
+        (Spec.MLKEM.serialize_pre 12 (impl.f_repr $vector) ==> 
+            Spec.MLKEM.serialize_post 12 (impl.f_repr $vector) ${out}_future)"#))]
     #[inline(always)]
     fn serialize_12(vector: &Self, out: &mut [u8]) {
         debug_assert!(out.len() == 24);
@@ -564,7 +581,8 @@ impl Operations for SIMD256Vector {
     }
 
     #[requires(bytes.len() == 24)]
-    #[ensures(|_| fstar!(r#"sz (Seq.length $bytes) =. sz 24 ==> Spec.MLKEM.deserialize_post 12 $bytes (impl.f_repr ${out}_future)"#))]
+    #[ensures(|_| fstar!(r#"Seq.length $bytes == 24 ==> 
+        Spec.MLKEM.deserialize_post 12 $bytes (impl.f_repr ${out}_future)"#))]
     #[inline(always)]
     fn deserialize_12(bytes: &[u8], out: &mut Self) {
         deserialize_12(bytes, out);

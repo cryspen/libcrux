@@ -29,9 +29,9 @@ impl crate::vector::traits::Repr for PortableVector {
 impl crate::vector::traits::Repr for PortableVector {}
 
 #[hax_lib::requires(fstar!(r#"Spec.MLKEM.serialize_pre 1 (impl.f_repr $a) /\ Seq.length $out == 2"#))]
-#[hax_lib::ensures(|out| fstar!(r#"(Spec.MLKEM.serialize_pre 1 (impl.f_repr $a) ==> 
-                                      Spec.MLKEM.serialize_post 1 (impl.f_repr $a) ${out}_future)
-                                    /\ Seq.length ${out}_future == Seq.length ${out}"#))]
+#[hax_lib::ensures(|out| fstar!(r#"Seq.length ${out}_future == 2 /\
+    (Spec.MLKEM.serialize_pre 1 (impl.f_repr $a) ==> 
+            Spec.MLKEM.serialize_post 1 (impl.f_repr $a) ${out}_future)"#))]
 fn serialize_1(a: &PortableVector, out: &mut [u8]) {
     hax_lib::fstar!(
         r#"assert (forall i. Rust_primitives.bounded (Seq.index ${a}.f_elements i) 1)"#
@@ -41,15 +41,17 @@ fn serialize_1(a: &PortableVector, out: &mut [u8]) {
 }
 
 #[hax_lib::requires(a.len() == 2)]
-#[hax_lib::ensures(|_| fstar!(r#"sz (Seq.length $a) =. sz 2 ==> Spec.MLKEM.deserialize_post 1 $a (impl.f_repr ${out}_future)"#))]
+#[hax_lib::ensures(|_| fstar!(r#"Seq.length $a == 2 ==> 
+    Spec.MLKEM.deserialize_post 1 $a (impl.f_repr ${out}_future)"#))]
 fn deserialize_1(a: &[u8], out: &mut PortableVector) {
     hax_lib::fstar!(r#"Libcrux_ml_kem.Vector.Portable.Serialize.deserialize_1_lemma $a $out"#);
     serialize::deserialize_1(a.classify_ref(), out)
 }
 
 #[hax_lib::requires(fstar!(r#"Spec.MLKEM.serialize_pre 4 (impl.f_repr $a) /\ Seq.length $out == 8"#))]
-#[hax_lib::ensures(|_| fstar!(r#"(Spec.MLKEM.serialize_pre 4 (impl.f_repr $a) ==> Spec.MLKEM.serialize_post 4 (impl.f_repr $a) ${out}_future)
-                             /\ Seq.length ${out}_future == Seq.length ${out}"#))]
+#[hax_lib::ensures(|_| fstar!(r#"Seq.length ${out}_future == 8 /\
+    (Spec.MLKEM.serialize_pre 4 (impl.f_repr $a) ==> 
+        Spec.MLKEM.serialize_post 4 (impl.f_repr $a) ${out}_future)"#))]
 fn serialize_4(a: &PortableVector, out: &mut [u8]) {
     hax_lib::fstar!(
         r#"assert (forall i. Rust_primitives.bounded (Seq.index ${a}.f_elements i) 4)"#
@@ -59,7 +61,8 @@ fn serialize_4(a: &PortableVector, out: &mut [u8]) {
 }
 
 #[hax_lib::requires(a.len() == 8)]
-#[hax_lib::ensures(|out| fstar!(r#"sz (Seq.length $a) =. sz 8 ==> Spec.MLKEM.deserialize_post 4 $a (impl.f_repr ${out}_future)"#))]
+#[hax_lib::ensures(|out| fstar!(r#"Seq.length $a == 8 ==> 
+    Spec.MLKEM.deserialize_post 4 $a (impl.f_repr ${out}_future)"#))]
 fn deserialize_4(a: &[u8], out: &mut PortableVector) {
     hax_lib::fstar!(r#"Libcrux_ml_kem.Vector.Portable.Serialize.deserialize_4_lemma $a $out"#);
     serialize::deserialize_4(a.classify_ref(), out)
@@ -75,15 +78,17 @@ fn deserialize_5(a: &[u8], out: &mut PortableVector) {
 }
 
 #[hax_lib::requires(fstar!(r#"Spec.MLKEM.serialize_pre 10 (impl.f_repr $a) /\ Seq.length $out == 20"#))]
-#[hax_lib::ensures(|out| fstar!(r#"(Spec.MLKEM.serialize_pre 10 (impl.f_repr $a) ==> Spec.MLKEM.serialize_post 10 (impl.f_repr $a) ${out}_future)
-                                    /\ Seq.length ${out}_future == Seq.length $out"#))]
+#[hax_lib::ensures(|out| fstar!(r#"Seq.length ${out}_future == 20 /\
+    (Spec.MLKEM.serialize_pre 10 (impl.f_repr $a) ==> 
+        Spec.MLKEM.serialize_post 10 (impl.f_repr $a) ${out}_future)"#))]
 fn serialize_10(a: &PortableVector, out: &mut [u8]) {
     hax_lib::fstar!(r#"Libcrux_ml_kem.Vector.Portable.Serialize.serialize_10_lemma $a $out"#);
     serialize::serialize_10(a, out)
 }
 
 #[hax_lib::requires(a.len() == 20)]
-#[hax_lib::ensures(|_| fstar!(r#"sz (Seq.length $a) =. sz 20 ==> Spec.MLKEM.deserialize_post 10 $a (impl.f_repr ${out}_future)"#))]
+#[hax_lib::ensures(|_| fstar!(r#"Seq.length $a == 20 ==> 
+    Spec.MLKEM.deserialize_post 10 $a (impl.f_repr ${out}_future)"#))]
 fn deserialize_10(a: &[u8], out: &mut PortableVector) {
     hax_lib::fstar!(r#"Libcrux_ml_kem.Vector.Portable.Serialize.deserialize_10_lemma $a $out"#);
     serialize::deserialize_10(a.classify_ref(), out)
@@ -99,15 +104,17 @@ fn deserialize_11(a: &[u8], out: &mut PortableVector) {
 }
 
 #[hax_lib::requires(fstar!(r#"Spec.MLKEM.serialize_pre 12 (impl.f_repr $a) /\ Seq.length $out == 24"#))]
-#[hax_lib::ensures(|out| fstar!(r#"(Spec.MLKEM.serialize_pre 12 (impl.f_repr $a) ==> Spec.MLKEM.serialize_post 12 (impl.f_repr $a) ${out}_future)
-                                    /\ Seq.length ${out}_future == Seq.length $out"#))]
+#[hax_lib::ensures(|out| fstar!(r#"Seq.length ${out}_future == 24 /\
+    (Spec.MLKEM.serialize_pre 12 (impl.f_repr $a) ==> 
+        Spec.MLKEM.serialize_post 12 (impl.f_repr $a) ${out}_future)"#))]
 fn serialize_12(a: &PortableVector, out: &mut [u8]) {
     hax_lib::fstar!(r#"Libcrux_ml_kem.Vector.Portable.Serialize.serialize_12_lemma $a $out"#);
     serialize::serialize_12(a, out)
 }
 
 #[hax_lib::requires(a.len() == 24)]
-#[hax_lib::ensures(|out| fstar!(r#"sz (Seq.length $a) =. sz 24 ==> Spec.MLKEM.deserialize_post 12 $a (impl.f_repr ${out}_future)"#))]
+#[hax_lib::ensures(|out| fstar!(r#"Seq.length $a == 24 ==> 
+    Spec.MLKEM.deserialize_post 12 $a (impl.f_repr ${out}_future)"#))]
 fn deserialize_12(a: &[u8], out: &mut PortableVector) {
     hax_lib::fstar!(r#"Libcrux_ml_kem.Vector.Portable.Serialize.deserialize_12_lemma $a $out"#);
     serialize::deserialize_12(a.classify_ref(), out)
@@ -167,6 +174,11 @@ impl Operations for PortableVector {
         sub(lhs, rhs)
     }
 
+    #[requires(fstar!(r#"forall i. i < 16 ==> 
+        Spec.Utils.is_intb (pow2 15 - 1) (v (Seq.index ${vec}.f_elements i))"#))]
+    #[ensures(|_| fstar!(r#"forall i. i < 16 ==> 
+        v (Seq.index ${vec}_future.f_elements i) == 
+        - (v (Seq.index ${vec}.f_elements i))"#))]
     fn negate(vec: &mut Self) {
         negate(vec)
     }
@@ -324,27 +336,33 @@ impl Operations for PortableVector {
     }
 
     #[requires(fstar!(r#"Spec.MLKEM.serialize_pre 1 (impl.f_repr $a) /\ Seq.length $out == 2"#))]
-    #[ensures(|_| fstar!(r#"(Spec.MLKEM.serialize_pre 1 (impl.f_repr $a) ==> Spec.MLKEM.serialize_post 1 (impl.f_repr $a) ${out}_future)
-                        /\ Seq.length ${out}_future == Seq.length $out"#))]
+    #[ensures(|_| fstar!(r#"Seq.length ${out}_future == 2 /\ 
+            (Spec.MLKEM.serialize_pre 1 (impl.f_repr $a) ==> 
+                Spec.MLKEM.serialize_post 1 (impl.f_repr $a) ${out}_future)
+                        "#))]
     fn serialize_1(a: &Self, out: &mut [u8]) {
         serialize_1(a, out)
     }
 
     #[requires(a.len() == 2)]
-    #[ensures(|_| fstar!(r#"sz (Seq.length $a) =. sz 2 ==> Spec.MLKEM.deserialize_post 1 $a (impl.f_repr ${out}_future)"#))]
+    #[ensures(|_| fstar!(r#"Seq.length $a == 2 ==> 
+        Spec.MLKEM.deserialize_post 1 $a (impl.f_repr ${out}_future)"#))]
     fn deserialize_1(a: &[u8], out: &mut Self) {
         deserialize_1(a, out)
     }
 
     #[requires(fstar!(r#"Spec.MLKEM.serialize_pre 4 (impl.f_repr $a) /\ Seq.length $out == 8"#))]
-    #[ensures(|_| fstar!(r#"(Spec.MLKEM.serialize_pre 4 (impl.f_repr $a) ==> Spec.MLKEM.serialize_post 4 (impl.f_repr $a) ${out}_future)
-                         /\ Seq.length ${out}_future == Seq.length $out"#))]
+    #[ensures(|_| fstar!(r#"Seq.length ${out}_future == 8 /\
+        (Spec.MLKEM.serialize_pre 4 (impl.f_repr $a) ==> 
+            Spec.MLKEM.serialize_post 4 (impl.f_repr $a) ${out}_future)
+                         "#))]
     fn serialize_4(a: &Self, out: &mut [u8]) {
         serialize_4(a, out)
     }
 
     #[requires(a.len() == 8)]
-    #[ensures(|_| fstar!(r#"sz (Seq.length $a) =. sz 8 ==> Spec.MLKEM.deserialize_post 4 $a (impl.f_repr ${out}_future)"#))]
+    #[ensures(|_| fstar!(r#"Seq.length $a == 8 ==> 
+        Spec.MLKEM.deserialize_post 4 $a (impl.f_repr ${out}_future)"#))]
     fn deserialize_4(a: &[u8], out: &mut Self) {
         deserialize_4(a, out)
     }
@@ -359,14 +377,17 @@ impl Operations for PortableVector {
     }
 
     #[requires(fstar!(r#"Spec.MLKEM.serialize_pre 10 (impl.f_repr $a) /\ Seq.length $out == 20"#))]
-    #[ensures(|_| fstar!(r#"(Spec.MLKEM.serialize_pre 10 (impl.f_repr $a) ==> Spec.MLKEM.serialize_post 10 (impl.f_repr $a) ${out}_future)
-                         /\ Seq.length ${out}_future == Seq.length $out"#))]
+    #[ensures(|_| fstar!(r#"Seq.length ${out}_future == 20 /\
+        (Spec.MLKEM.serialize_pre 10 (impl.f_repr $a) ==> 
+            Spec.MLKEM.serialize_post 10 (impl.f_repr $a) ${out}_future)
+                         "#))]
     fn serialize_10(a: &Self, out: &mut [u8]) {
         serialize_10(a, out)
     }
 
     #[requires(a.len() == 20)]
-    #[ensures(|_| fstar!(r#"sz (Seq.length $a) =. sz 20 ==> Spec.MLKEM.deserialize_post 10 $a (impl.f_repr ${out}_future)"#))]
+    #[ensures(|_| fstar!(r#"Seq.length $a == 20 ==> 
+        Spec.MLKEM.deserialize_post 10 $a (impl.f_repr ${out}_future)"#))]
     fn deserialize_10(a: &[u8], out: &mut Self) {
         deserialize_10(a, out)
     }
@@ -381,14 +402,17 @@ impl Operations for PortableVector {
     }
 
     #[requires(fstar!(r#"Spec.MLKEM.serialize_pre 12 (impl.f_repr $a) /\ Seq.length $out == 24"#))]
-    #[ensures(|_| fstar!(r#"(Spec.MLKEM.serialize_pre 12 (impl.f_repr $a) ==> Spec.MLKEM.serialize_post 12 (impl.f_repr $a) ${out}_future)
-                         /\ Seq.length ${out}_future == Seq.length $out"#))]
+    #[ensures(|_| fstar!(r#"Seq.length ${out}_future == 24 /\ 
+        (Spec.MLKEM.serialize_pre 12 (impl.f_repr $a) ==> 
+            Spec.MLKEM.serialize_post 12 (impl.f_repr $a) ${out}_future)
+                         "#))]
     fn serialize_12(a: &Self, out: &mut [u8]) {
         serialize_12(a, out)
     }
 
     #[requires(a.len() == 24)]
-    #[ensures(|_| fstar!(r#"sz (Seq.length $a) =. sz 24 ==> Spec.MLKEM.deserialize_post 12 $a (impl.f_repr ${out}_future)"#))]
+    #[ensures(|_| fstar!(r#"Seq.length $a == 24 ==> 
+        Spec.MLKEM.deserialize_post 12 $a (impl.f_repr ${out}_future)"#))]
     fn deserialize_12(a: &[u8], out: &mut Self) {
         deserialize_12(a, out)
     }

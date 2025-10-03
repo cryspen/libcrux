@@ -19,6 +19,7 @@ pub fn zero() -> PortableVector {
 }
 
 #[inline(always)]
+#[hax_lib::requires(fstar!(r#"Seq.length ${out} == 16"#))]
 #[hax_lib::ensures(|_| fstar!(r#"${out}_future == ${x}.f_elements"#))]
 pub fn to_i16_array(x: &PortableVector, out: &mut [i16]) {
     debug_assert!(out.len() >= 16);
