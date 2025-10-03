@@ -93,7 +93,8 @@ pub(crate) trait Operations: Copy + Clone + Repr {
 
     // Since each coefficient could potentially be sampled with 3 bytes, we expect
     // `randomness` to hold 24 bytes.
-    #[hax_lib::requires(true)]
+    #[hax_lib::requires(specs::rejection_sample_less_than_field_modulus_pre(randomness, out))]
+    #[hax_lib::ensures(|result| specs::rejection_sample_less_than_field_modulus_post(randomness, out, result))]
     fn rejection_sample_less_than_field_modulus(randomness: &[u8], out: &mut [i32]) -> usize;
 
     // Since each coefficient could potentially be sampled with half a byte,
