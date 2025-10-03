@@ -1,5 +1,3 @@
-use crate::constants::SHARED_SECRET_SIZE;
-
 // These are crude attempts to prevent LLVM from optimizing away the code in this
 // module. This is not guaranteed to work but at the time of writing, achieved
 // its goals.
@@ -111,10 +109,13 @@ pub(crate) fn compare_ciphertexts_in_constant_time(lhs: &[u8], rhs: &[u8]) -> u8
 #[hax_lib::fstar::options("--ifuel 0 --z3rlimit 50")]
 #[hax_lib::requires(
     lhs.len() == rhs.len() &&
-    lhs.len() == SHARED_SECRET_SIZE
+    out.len() == lhs.len()
 )]
-#[hax_lib::ensures(|()| if selector == 0 {out == lhs} else {out == rhs})]
+#[hax_lib::ensures(|()| if selector == 0 {future(out) == lhs} else {future(out) == rhs})]
 fn select_ct(lhs: &[u8], rhs: &[u8], selector: u8, out: &mut [u8]) {
+    #[cfg(hax)]
+    let out_orig: std::vec::Vec<u8> = out.to_vec();
+
     let mask = is_non_zero(selector).wrapping_sub(1);
     hax_lib::fstar!(
         "assert (if $selector = (mk_u8 0) then $mask = ones else $mask = zero);
@@ -122,16 +123,16 @@ fn select_ct(lhs: &[u8], rhs: &[u8], selector: u8, out: &mut [u8]) {
         assert (if $selector = (mk_u8 0) then ~.$mask = zero else ~.$mask = ones)"
     );
 
-    for i in 0..SHARED_SECRET_SIZE {
+    for i in 0..lhs.len() {
         hax_lib::loop_invariant!(|i: usize| {
             fstar!(
-                r#"v $i <= v $SHARED_SECRET_SIZE /\
+                r#"v $i <= v (${lhs.len()}) /\
             (forall j. j < v $i ==> (if ($selector =. (mk_u8 0)) then Seq.index $out j == Seq.index $lhs j else Seq.index $out j == Seq.index $rhs j)) /\
-            (forall j. j >= v $i ==> Seq.index $out j == (mk_u8 0))"#
+            Seq.length ${out} == Seq.length ${out_orig}"#
             )
         });
-        hax_lib::fstar!(r#"assert ((${out}.[ $i ] <: u8) = (mk_u8 0))"#);
         let outi = (lhs[i] & mask) | (rhs[i] & !mask);
+        out[i] = outi;
         hax_lib::fstar!(
             r#"if ($selector = (mk_u8 0)) then (
             logand_lemma (${lhs}.[ $i ] <: u8) $mask;
@@ -141,7 +142,6 @@ fn select_ct(lhs: &[u8], rhs: &[u8], selector: u8, out: &mut [u8]) {
             logor_lemma ((${lhs}.[ $i ] <: u8) &. $mask <: u8) ((${rhs}.[ $i ] <: u8) &. (~.$mask <: u8) <: u8);
             assert ((((${lhs}.[ $i ] <: u8) &. $mask <: u8) |. ((${rhs}.[ $i ] <: u8) &. (~.$mask <: u8) <: u8) <: u8) == (${lhs}.[ $i ] <: u8));
             logor_lemma (${out}.[ $i ] <: u8) (${lhs}.[ $i ] <: u8);
-            assert (((${out}.[ $i ] <: u8) |. (((${lhs}.[ $i ] <: u8) &. $mask <: u8) |. ((${rhs}.[ $i ] <: u8) &. (~.$mask <: u8) <: u8) <: u8) <: u8) == (${lhs}.[ $i ] <: u8));
             assert ($outi = (${lhs}.[ $i ] <: u8))
           )
           else (
@@ -153,11 +153,9 @@ fn select_ct(lhs: &[u8], rhs: &[u8], selector: u8, out: &mut [u8]) {
             assert ((logor zero (${rhs}.[ $i ] <: u8)) == (${rhs}.[ $i ] <: u8));
             assert ((((${lhs}.[ $i ] <: u8) &. $mask <: u8) |. ((${rhs}.[ $i ] <: u8) &. (~.$mask <: u8) <: u8)) == (${rhs}.[ $i ] <: u8));
             logor_lemma (${out}.[ $i ] <: u8) (${rhs}.[ $i ] <: u8);
-            assert (((${out}.[ $i ] <: u8) |. (((${lhs}.[ $i ] <: u8) &. $mask <: u8) |. ((${rhs}.[ $i ] <: u8) &. (~.$mask <: u8) <: u8) <: u8) <: u8) == (${rhs}.[ $i ] <: u8));
             assert ($outi = (${rhs}.[ $i ] <: u8))
           )"#
         );
-        out[i] = outi;
     }
 
     hax_lib::fstar!(
@@ -173,9 +171,9 @@ fn select_ct(lhs: &[u8], rhs: &[u8], selector: u8, out: &mut [u8]) {
 #[inline(never)] // Don't inline this to avoid that the compiler optimizes this out.
 #[hax_lib::requires(
     lhs.len() == rhs.len() &&
-    lhs.len() == SHARED_SECRET_SIZE
+    out.len() == lhs.len()
 )]
-#[hax_lib::ensures(|()| if selector == 0 {out == lhs} else {out == rhs})]
+#[hax_lib::ensures(|()| if selector == 0 {future(out) == lhs} else {future(out) == rhs})]
 pub(crate) fn select_shared_secret_in_constant_time(
     lhs: &[u8],
     rhs: &[u8],
@@ -193,9 +191,9 @@ pub(crate) fn select_shared_secret_in_constant_time(
 #[hax_lib::requires(
     lhs_c.len() == rhs_c.len() &&
     lhs_s.len() == rhs_s.len() &&
-    lhs_s.len() == SHARED_SECRET_SIZE
+    out.len() == lhs_s.len()
 )]
-#[hax_lib::ensures(|()| if lhs_c == rhs_c {out == lhs_s} else {out == rhs_s})]
+#[hax_lib::ensures(|()| if lhs_c == rhs_c {future(out) == lhs_s} else {future(out) == rhs_s})]
 pub(crate) fn compare_ciphertexts_select_shared_secret_in_constant_time(
     lhs_c: &[u8],
     rhs_c: &[u8],

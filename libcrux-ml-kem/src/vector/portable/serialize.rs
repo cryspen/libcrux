@@ -428,11 +428,11 @@ pub(crate) fn serialize_10_int(v: &[I16]) -> (u8, u8, u8, u8, u8) {
         "
 #push-options \"--compat_pre_core 2 --z3rlimit 300 --z3refresh\"
 
-let serialize_10_bit_vec_lemma (v: t_Array i16 (sz 16)) (out: t_Array u8 (sz 4))
+let serialize_10_bit_vec_lemma (v: t_Array i16 (sz 16)) (out: t_Array u8 (sz 20))
   (_: squash (forall i. Rust_primitives.bounded (Seq.index v i) 10))
    : squash (
      let inputs = bit_vec_of_int_t_array v 10 in
-     let outputs = bit_vec_of_int_t_array (serialize_10_ ({ f_elements = v }) out <: t_Array u8 (sz 4)) 8 in
+     let outputs = bit_vec_of_int_t_array (serialize_10_ ({ f_elements = v }) out <: t_Array u8 (sz 20)) 8 in
      (forall (i: nat {i < 160}). inputs i == outputs i)
    ) =
   _ by (Tactics.GetBit.prove_bit_vector_equality' ())
@@ -442,9 +442,9 @@ let serialize_10_bit_vec_lemma (v: t_Array i16 (sz 16)) (out: t_Array u8 (sz 4))
     )
 )]
 #[cfg_attr(hax, hax_lib::fstar::after(interface, "
-val serialize_10_lemma (inputs: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) (out: t_Array u8 (sz 4)) : Lemma
+val serialize_10_lemma (inputs: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) (out: t_Array u8 (sz 20)) : Lemma
   (requires (forall i. Rust_primitives.bounded (Seq.index inputs.f_elements i) 10)) 
-  (ensures bit_vec_of_int_t_array (serialize_10_ inputs out <: t_Array u8 (sz 4)) 8 == bit_vec_of_int_t_array inputs.f_elements 10)
+  (ensures bit_vec_of_int_t_array (serialize_10_ inputs out <: t_Array u8 (sz 20)) 8 == bit_vec_of_int_t_array inputs.f_elements 10)
 "))]
 #[cfg_attr(
     hax,
@@ -454,13 +454,15 @@ val serialize_10_lemma (inputs: Libcrux_ml_kem.Vector.Portable.Vector_type.t_Por
 
 let serialize_10_lemma inputs out =
   serialize_10_bit_vec_lemma inputs.f_elements out ();
-  BitVecEq.bit_vec_equal_intro (bit_vec_of_int_t_array (serialize_10_ inputs out <: t_Array u8 (sz 4)) 8) 
+  BitVecEq.bit_vec_equal_intro (bit_vec_of_int_t_array (serialize_10_ inputs out <: t_Array u8 (sz 20)) 8) 
     (BitVecEq.retype (bit_vec_of_int_t_array inputs.f_elements 10))
 
 #pop-options
 "#
     )
 )]
+#[hax_lib::requires(out.len() == 20)]
+#[hax_lib::ensures(|_| future(out).len() == 20)]
 #[inline(always)]
 pub(crate) fn serialize_10(v: &PortableVector, out: &mut [u8]) {
     debug_assert!(out.len() == 20);
@@ -708,6 +710,8 @@ let serialize_12_lemma inputs out =
 "
     )
 )]
+#[hax_lib::requires(out.len() == 24)]
+#[hax_lib::ensures(|_| future(out).len() == 24)]
 #[inline(always)]
 pub(crate) fn serialize_12(v: &PortableVector, out: &mut [u8]) {
     debug_assert!(out.len() == 24);
