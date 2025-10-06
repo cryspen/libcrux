@@ -175,13 +175,13 @@ pub(crate) fn invert_ntt_at_layer_3<Vector: Operations>(
     let vec_b = Seq.index $coefficients (v $b) in
     (forall i. i < 16 ==>
         Spec.Utils.is_intb (pow2 15 - 1)
-        (v (Seq.index (i0._super_16084754032855797384.f_repr vec_b) i) -
-        v (Seq.index (i0._super_16084754032855797384.f_repr vec_a) i))) /\
+        (v (Seq.index (i0._super_6081346371236564305.f_repr vec_b) i) -
+        v (Seq.index (i0._super_6081346371236564305.f_repr vec_a) i))) /\
     (forall i. i < 16 ==>
         Spec.Utils.is_intb (pow2 15 - 1)
-        (v (Seq.index (i0._super_16084754032855797384.f_repr vec_b) i) +
-        v (Seq.index (i0._super_16084754032855797384.f_repr vec_a) i))) /\
-    Spec.Utils.is_i16b_array 28296 (i0._super_16084754032855797384.f_repr
+        (v (Seq.index (i0._super_6081346371236564305.f_repr vec_b) i) +
+        v (Seq.index (i0._super_6081346371236564305.f_repr vec_a) i))) /\
+    Spec.Utils.is_i16b_array 28296 (i0._super_6081346371236564305.f_repr
         (Libcrux_ml_kem.Vector.Traits.f_add vec_a vec_b)))"#))]
 pub(crate) fn inv_ntt_layer_int_vec_step_reduce<Vector: Operations>(
     coefficients: &mut [Vector; VECTORS_IN_RING_ELEMENT],

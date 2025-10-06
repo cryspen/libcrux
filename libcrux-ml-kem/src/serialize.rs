@@ -9,8 +9,8 @@ use crate::{
 #[hax_lib::fstar::verification_status(panic_free)]
 #[hax_lib::requires(fstar!(r#"Libcrux_ml_kem.Polynomial.is_bounded_vector 3328 $a"#))]
 #[hax_lib::ensures(|_| fstar!(r#"forall (i:nat). i < 16 ==>
-    v (Seq.index (i0._super_16084754032855797384.f_repr ${out}_future) i) >= 0 /\
-    v (Seq.index (i0._super_16084754032855797384.f_repr ${out}_future) i) < v ${crate::vector::FIELD_MODULUS}"#))]
+    v (Seq.index (i0._super_6081346371236564305.f_repr ${out}_future) i) >= 0 /\
+    v (Seq.index (i0._super_6081346371236564305.f_repr ${out}_future) i) < v ${crate::vector::FIELD_MODULUS}"#))]
 pub(super) fn to_unsigned_field_modulus<Vector: Operations>(a: &Vector, out: &mut Vector) {
     *out = Vector::to_unsigned_representative(*a);
 }

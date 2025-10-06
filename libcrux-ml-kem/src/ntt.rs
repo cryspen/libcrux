@@ -193,11 +193,11 @@ pub(crate) fn ntt_at_layer_3<Vector: Operations>(
      let t = i0.f_montgomery_multiply_by_constant vec_b $zeta_r in
     (forall i. i < 16 ==>
         Spec.Utils.is_intb (pow2 15 - 1)
-        (v (Seq.index (i0._super_16084754032855797384.f_repr vec_a) i) -
+        (v (Seq.index (i0._super_6081346371236564305.f_repr vec_a) i) -
         v (Seq.index (Libcrux_ml_kem.Vector.Traits.f_repr t) i))) /\
     (forall i. i < 16 ==>
         Spec.Utils.is_intb (pow2 15 - 1)
-        (v (Seq.index (i0._super_16084754032855797384.f_repr vec_a) i) +
+        (v (Seq.index (i0._super_6081346371236564305.f_repr vec_a) i) +
         v (Seq.index (Libcrux_ml_kem.Vector.Traits.f_repr t) i))))"#))]
 fn ntt_layer_int_vec_step<Vector: Operations>(
     coefficients: &mut [Vector; VECTORS_IN_RING_ELEMENT],

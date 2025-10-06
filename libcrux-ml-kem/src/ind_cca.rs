@@ -550,6 +550,7 @@ pub(crate) mod unpacked {
     /// Generate an unpacked key from a serialized key.
     #[hax_lib::requires(
         fstar!(r#"Spec.MLKEM.is_rank $K /\
+        v $K_SQUARED = v $K * v $K /\
         $PUBLIC_KEY_SIZE == Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE $K /\
         $T_AS_NTT_ENCODED_SIZE == Spec.MLKEM.v_T_AS_NTT_ENCODED_SIZE $K"#)
     )]
@@ -895,6 +896,9 @@ pub(crate) mod unpacked {
     // TODO
     #[hax_lib::fstar::options("--z3rlimit 200")]
     #[hax_lib::fstar::before(r#"[@ "opaque_to_smt"]"#)]
+    #[hax_lib::requires(fstar!(r#"Spec.MLKEM.is_rank $K /\
+        v $K_SQUARED == v $K * v $K /\
+        Seq.length ind_cpa_a == v $K_SQUARED"#))]
     #[hax_lib::ensures(|result|
         fstar!(r#"forall (i: nat). i < v $K ==>
             (forall (j: nat). j < v $K ==>
@@ -944,6 +948,7 @@ pub(crate) mod unpacked {
     #[inline(always)]
     #[hax_lib::fstar::options("--z3rlimit 300 --ext context_pruning --split_queries always")]
     #[hax_lib::requires(fstar!(r#"Spec.MLKEM.is_rank $K /\
+        v $K_SQUARED == v $K * v $K /\
         $ETA1_RANDOMNESS_SIZE == Spec.MLKEM.v_ETA1_RANDOMNESS_SIZE $K /\
         $ETA1 == Spec.MLKEM.v_ETA1 $K /\
         $PUBLIC_KEY_SIZE == Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE $K"#))]
@@ -1029,6 +1034,7 @@ pub(crate) mod unpacked {
     // Encapsulate with Unpacked Public Key
     #[inline(always)]
     #[hax_lib::requires(fstar!(r#"Spec.MLKEM.is_rank $K /\
+        v $K_SQUARED == v $K * v $K /\
         $ETA1 == Spec.MLKEM.v_ETA1 $K /\
         $ETA1_RANDOMNESS_SIZE == Spec.MLKEM.v_ETA1_RANDOMNESS_SIZE $K /\
         $ETA2 == Spec.MLKEM.v_ETA2 $K /\
@@ -1136,6 +1142,7 @@ pub(crate) mod unpacked {
     #[inline(always)]
     #[hax_lib::fstar::options("--z3rlimit 200 --ext context_pruning")]
     #[hax_lib::requires(fstar!(r#"Spec.MLKEM.is_rank $K /\
+        v $K_SQUARED == v $K * v $K /\
         $ETA1 == Spec.MLKEM.v_ETA1 $K /\
         $ETA1_RANDOMNESS_SIZE == Spec.MLKEM.v_ETA1_RANDOMNESS_SIZE $K /\
         $ETA2 == Spec.MLKEM.v_ETA2 $K /\

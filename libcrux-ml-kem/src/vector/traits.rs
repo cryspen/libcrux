@@ -682,24 +682,24 @@ pub fn montgomery_multiply_fe<T: Operations>(v: &mut T, fer: i16) {
 }
 
 #[hax_lib::fstar::options("--z3rlimit 200 --split_queries always")]
-#[hax_lib::requires(fstar!(r#"forall i. let x = Seq.index (i0._super_16084754032855797384.f_repr ${vec}) i in
+#[hax_lib::requires(fstar!(r#"forall i. let x = Seq.index (i0._super_6081346371236564305.f_repr ${vec}) i in
                                        (x == mk_i16 0 \/ x == mk_i16 1)"#))]
 #[inline(always)]
 pub fn decompress_1<T: Operations>(vec: &mut T) {
     hax_lib::fstar!(
-        r#"assert(forall i. let x = Seq.index (i0._super_16084754032855797384.f_repr ${vec}) i in
+        r#"assert(forall i. let x = Seq.index (i0._super_6081346371236564305.f_repr ${vec}) i in
                                       ((0 - v x) == 0 \/ (0 - v x) == -1))"#
     );
     hax_lib::fstar!(
         r#"assert(forall i. i < 16 ==>
                                       Spec.Utils.is_intb (pow2 15 - 1)
-                                        (0 - v (Seq.index (i0._super_16084754032855797384.f_repr ${vec}) i)))"#
+                                        (0 - v (Seq.index (i0._super_6081346371236564305.f_repr ${vec}) i)))"#
     );
 
     T::negate(vec);
     hax_lib::fstar!(
-        r#"assert(forall i. Seq.index (i0._super_16084754032855797384.f_repr ${vec}) i == mk_i16 0 \/
-                                      Seq.index (i0._super_16084754032855797384.f_repr ${vec}) i == mk_i16 (-1))"#
+        r#"assert(forall i. Seq.index (i0._super_6081346371236564305.f_repr ${vec}) i == mk_i16 0 \/
+                                      Seq.index (i0._super_6081346371236564305.f_repr ${vec}) i == mk_i16 (-1))"#
     );
     hax_lib::fstar!(r#"assert (i0.f_bitwise_and_with_constant_pre ${vec} (mk_i16 1665))"#);
     T::bitwise_and_with_constant(vec, 1665);
