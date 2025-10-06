@@ -104,6 +104,28 @@ pub mod signers {
     }
     pub use impl_context;
 
+    impl From<crate::types::SigningError> for arrayref::SignError {
+        fn from(err: crate::types::SigningError) -> Self {
+            use crate::types::SigningError::*;
+            match err {
+                RejectionSamplingError => arrayref::SignError::InvalidRandomness,
+                ContextTooLongError => arrayref::SignError::InvalidArgument,
+            }
+        }
+    }
+    impl From<crate::types::VerificationError> for arrayref::VerifyError {
+        fn from(err: crate::types::VerificationError) -> Self {
+            use crate::types::VerificationError::*;
+
+            match err {
+                MalformedHintError
+                | SignerResponseExceedsBoundError
+                | CommitmentHashesDontMatchError => arrayref::VerifyError::InvalidSignature,
+                VerificationContextTooLongError => arrayref::VerifyError::LibraryError,
+            }
+        }
+    }
+
     macro_rules! impl_signature_trait {
         ($module:ident, $name:tt) => {
             mod $module {
@@ -147,13 +169,7 @@ pub mod signers {
                             randomness.declassify(),
                             signature,
                         )
-                        .map_err(|err| {
-                            use crate::types::SigningError::*;
-                            match err {
-                                RejectionSamplingError => arrayref::SignError::InvalidRandomness,
-                                ContextTooLongError => arrayref::SignError::InvalidArgument,
-                            }
-                        })
+                        .map_err(arrayref::SignError::from)
                     }
                     /// Verify a signature using a provided verification key and context.
                     fn verify(
@@ -167,18 +183,7 @@ pub mod signers {
                             T::context(),
                             signature,
                         )
-                        .map_err(|err| {
-                            use crate::types::VerificationError::*;
-
-                            match err {
-                                MalformedHintError
-                                | SignerResponseExceedsBoundError
-                                | CommitmentHashesDontMatchError => {
-                                    arrayref::VerifyError::InvalidSignature
-                                }
-                                VerificationContextTooLongError => arrayref::VerifyError::LibraryError,
-                            }
-                        })
+                        .map_err(arrayref::VerifyError::from)
                     }
 
                     fn keygen_derand(
