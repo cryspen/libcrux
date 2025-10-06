@@ -72,7 +72,6 @@ pub struct KeyPair<Algorithm: SignTypes> {
 }
 
 impl<
-        'a,
         const SIGNING_KEY_LEN: usize,
         const VERIFICATION_KEY_LEN: usize,
         const SIGNATURE_LEN: usize,

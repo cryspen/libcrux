@@ -144,7 +144,7 @@ impl<
 
         let mut signing_key = [0; SIGNING_KEY_LEN].classify();
         let mut verification_key = [0; VERIFICATION_KEY_LEN];
-        T::keygen_derand(&mut signing_key, &mut verification_key, &randomness)
+        T::keygen_derand(&mut signing_key, &mut verification_key, randomness)
             .map(|_| (signing_key, verification_key))
     }
 }
