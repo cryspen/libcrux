@@ -19,6 +19,7 @@ fn non_matching_lengths() {
 }
 
 // tests that an error is returned if ptxt is too long
+// NOTE: this test is not applicable for pointer widths less than 64.
 #[test]
 #[cfg(target_pointer_width = "64")]
 fn ptxt_too_long() {
