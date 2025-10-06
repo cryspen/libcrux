@@ -68,18 +68,20 @@ let lemma_mul_i (lhs: t_Vec256) (i:nat) (c:i16):  Lemma
     v (get_lane ${vector}_future i) == (v (get_lane $vector i) * v constant)"#))]
 pub(crate) fn multiply_by_constant(vector: &mut Vec256, constant: i16) {
     let cv = mm256_set1_epi16(constant);
-    *vector = mm256_mullo_epi16(*vector, cv);
+    let result = mm256_mullo_epi16(*vector, cv);
 
-    // hax_lib::fstar!(
-    //     r#"Seq.lemma_eq_intro (vec256_as_i16x16 ${result})
-    //                     (Spec.Utils.map_array (fun x -> x *. $constant) (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 $vector))"#
-    // );
+    hax_lib::fstar!(
+        r#"Seq.lemma_eq_intro (vec256_as_i16x16 ${result})
+                        (Spec.Utils.map_array (fun x -> x *. $constant) (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 $vector))"#
+    );
 
-    // hax_lib::fstar!(
-    //     r#"assert (forall i. get_lane result i == get_lane vector i *. constant);
-    //                  assert (forall i. v (get_lane vector i *. constant) == v (get_lane vector i) * v constant);
-    //                  assert (forall i. v (get_lane result i) == v (get_lane vector i) * v constant)"#
-    // );
+    hax_lib::fstar!(
+        r#"assert (forall i. get_lane result i == get_lane vector i *. constant);
+                     assert (forall i. v (get_lane vector i *. constant) == v (get_lane vector i) * v constant);
+                     assert (forall i. v (get_lane result i) == v (get_lane vector i) * v constant)"#
+    );
+
+    *vector = result;
 }
 
 #[inline(always)]
@@ -146,13 +148,15 @@ pub(crate) fn cond_subtract_3329(vector: &mut Vec256) {
         r#"assert (forall i. get_lane $conditional_add_field_modulus i == (get_lane $sign_mask i &. (mk_i16 3329)))"#
     );
 
-    *vector = mm256_add_epi16(v_minus_field_modulus, conditional_add_field_modulus);
+    let result = mm256_add_epi16(v_minus_field_modulus, conditional_add_field_modulus);
 
-    // hax_lib::fstar!(
-    //     r#"assert (forall i. get_lane $result i == (get_lane $v_minus_field_modulus i +. get_lane $conditional_add_field_modulus i));
-    //                  assert (forall i. get_lane $result i == Spec.Utils.cond_sub (get_lane $vector i));
-    //                  assert (forall i. get_lane $result i == (if (get_lane $vector i) >=. (mk_i16 3329) then get_lane $vector i -! (mk_i16 3329) else get_lane $vector i))"#
-    // );
+    hax_lib::fstar!(
+        r#"assert (forall i. get_lane $result i == (get_lane $v_minus_field_modulus i +. get_lane $conditional_add_field_modulus i));
+                     assert (forall i. get_lane $result i == Spec.Utils.cond_sub (get_lane $vector i));
+                     assert (forall i. get_lane $result i == (if (get_lane $vector i) >=. (mk_i16 3329) then get_lane $vector i -! (mk_i16 3329) else get_lane $vector i))"#
+    );
+
+    *vector = result;
 }
 
 const BARRETT_MULTIPLIER: i16 = 20159;
@@ -192,17 +196,19 @@ pub(crate) fn barrett_reduce(vector: &mut Vec256) {
         "assert (forall i. get_lane $quotient_times_field_modulus i ==
                      get_lane $quotient i *. Libcrux_ml_kem.Vector.Traits.v_FIELD_MODULUS)"
     );
-    *vector = mm256_sub_epi16(*vector, quotient_times_field_modulus);
+    let result = mm256_sub_epi16(*vector, quotient_times_field_modulus);
 
-    // hax_lib::fstar!(
-    //     r#"assert (forall i. get_lane $result i ==
-    //                                    get_lane $vector i -.  get_lane $quotient_times_field_modulus i);
-    //                 assert (forall i. get_lane $result i == Spec.Utils.barrett_red (get_lane $vector i));
-    //                 assert (forall i. v (get_lane $result i) % 3329 == v (get_lane $vector i) % 3329);
-    //                 assert (forall i. Spec.Utils.is_i16b 3328 (get_lane $result i));
-    //                 assert (forall (i:nat). i < 16 ==> Spec.Utils.is_i16b 3328 (get_lane $result i));
-    //                 assert (Spec.Utils.is_i16b_array 3328 (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 $result))"#
-    // );
+    hax_lib::fstar!(
+        r#"assert (forall i. get_lane $result i ==
+                                       get_lane $vector i -.  get_lane $quotient_times_field_modulus i);
+                    assert (forall i. get_lane $result i == Spec.Utils.barrett_red (get_lane $vector i));
+                    assert (forall i. v (get_lane $result i) % 3329 == v (get_lane $vector i) % 3329);
+                    assert (forall i. Spec.Utils.is_i16b 3328 (get_lane $result i));
+                    assert (forall (i:nat). i < 16 ==> Spec.Utils.is_i16b 3328 (get_lane $result i));
+                    assert (Spec.Utils.is_i16b_array 3328 (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 $result))"#
+    );
+
+    *vector = result;
 }
 
 #[inline(always)]
@@ -251,20 +257,22 @@ pub(crate) fn montgomery_multiply_by_constant(vector: &mut Vec256, constant: i16
         (cast (((cast (get_lane $vector i) <: i32) *. (cast (get_lane $vec_constant i) <: i32)) >>! (mk_i32 16)) <: i16))"#
     );
 
-    *vector = mm256_sub_epi16(value_high, k_times_modulus);
+    let result = mm256_sub_epi16(value_high, k_times_modulus);
 
-    // hax_lib::fstar!(
-    //     r#"Spec.Utils.lemma_range_at_percent 3329 (pow2 32);
-    //                 assert (v (cast (mk_i16 3329) <: i32) == (3329 @% pow2 32));
-    //                 assert (v (cast (mk_i16 3329) <: i32) == 3329);
-    //                 assert ((cast (mk_i16 3329) <: i32) == (mk_i32 3329));
-    //                 assert (forall i. get_lane $result i == (get_lane $value_high i) -. (get_lane $k_times_modulus i));
-    //                 assert (forall i. get_lane $result i == Spec.Utils.mont_mul_red_i16 (get_lane $vector i) $constant);
-    //                 assert (forall i. Spec.Utils.is_i16b 3328 (get_lane $result i));
-    //                 assert (forall (i:nat). i < 16 ==> Spec.Utils.is_i16b 3328 (get_lane $result i));
-    //                 assert (Spec.Utils.is_i16b_array 3328 (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 $result));
-    //                 assert (forall i. v (get_lane $result i) % 3329 == ((v (get_lane $vector i) * v $constant * 169) % 3329))"#
-    // );
+    hax_lib::fstar!(
+        r#"Spec.Utils.lemma_range_at_percent 3329 (pow2 32);
+                    assert (v (cast (mk_i16 3329) <: i32) == (3329 @% pow2 32));
+                    assert (v (cast (mk_i16 3329) <: i32) == 3329);
+                    assert ((cast (mk_i16 3329) <: i32) == (mk_i32 3329));
+                    assert (forall i. get_lane $result i == (get_lane $value_high i) -. (get_lane $k_times_modulus i));
+                    assert (forall i. get_lane $result i == Spec.Utils.mont_mul_red_i16 (get_lane $vector i) $constant);
+                    assert (forall i. Spec.Utils.is_i16b 3328 (get_lane $result i));
+                    assert (forall (i:nat). i < 16 ==> Spec.Utils.is_i16b 3328 (get_lane $result i));
+                    assert (Spec.Utils.is_i16b_array 3328 (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 $result));
+                    assert (forall i. v (get_lane $result i) % 3329 == ((v (get_lane $vector i) * v $constant * 169) % 3329))"#
+    );
+
+    *vector = result;
 }
 
 #[inline(always)]

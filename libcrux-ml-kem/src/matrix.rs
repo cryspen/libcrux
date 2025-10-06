@@ -3,6 +3,10 @@ use crate::{
     polynomial::PolynomialRingElement, sampling::sample_from_xof, vector::Operations,
 };
 
+#[hax_lib::requires(fstar!(r#"Spec.MLKEM.is_rank $K /\
+                              v i < v $K /\ v j < v $K /\
+                              Seq.length $matrix == v $K * v $K"#))]
+#[hax_lib::ensures(|result| fstar!(r#"result == Seq.index matrix (v $i *  v $K + v $j)"#))]
 pub(crate) fn entry<const K: usize, Vector: Operations>(
     matrix: &[PolynomialRingElement<Vector>],
     i: usize,
@@ -104,7 +108,9 @@ pub(crate) fn compute_message<const K: usize, Vector: Operations>(
 /// Compute InverseNTT(tᵀ ◦ r̂) + e₂ + message
 #[inline(always)]
 #[hax_lib::fstar::verification_status(lax)]
-#[hax_lib::requires(fstar!(r#"Spec.MLKEM.is_rank $K"#))]
+#[hax_lib::requires(fstar!(r#"Spec.MLKEM.is_rank $K /\
+    Seq.length $r_as_ntt == v $K
+"#))]
 #[hax_lib::ensures(|_|
     fstar!(r#"let open Libcrux_ml_kem.Polynomial in
         let tt_spec = to_spec_vector_t $t_as_ntt in
@@ -145,14 +151,18 @@ pub(crate) fn compute_ring_element_v<const K: usize, Vector: Operations>(
         Libcrux_ml_kem.Polynomial.is_bounded_poly 7 (Seq.index ${error_1} i))"#))]
 #[hax_lib::ensures(|_|
     fstar!(r#"let open Libcrux_ml_kem.Polynomial in
-        let a_spec = to_spec_matrix_t ($a_as_ntt <: t_Array _ $K) in
+        Seq.length $a_as_ntt == v $K * v $K /\
+        Seq.length $r_as_ntt == v $K /\
+        Seq.length $error_1 == v $K /\
+        Seq.length $result == v $K /\
+        (let a_spec = to_spec_matrix_t ($a_as_ntt <: t_Array _ ($K *! $K)) in
         let r_spec = to_spec_vector_t ($r_as_ntt <: t_Array _ $K) in
         let e_spec = to_spec_vector_t ($error_1 <: t_Array _ $K) in
         let res_spec = to_spec_vector_t (${result}_future <: t_Array _ $K) in
         Seq.length ${result}_future == v $K /\
         res_spec == Spec.MLKEM.(vector_add (vector_inv_ntt (matrix_vector_mul_ntt a_spec r_spec)) e_spec) /\
         (forall (i:nat). i < v $K ==>
-            Libcrux_ml_kem.Polynomial.is_bounded_poly 3328 (Seq.index ${result}_future i))"#)
+            Libcrux_ml_kem.Polynomial.is_bounded_poly 3328 (Seq.index ${result}_future i)))"#)
 )]
 pub(crate) fn compute_vector_u<const K: usize, Vector: Operations>(
     a_as_ntt: &[PolynomialRingElement<Vector>],
@@ -180,7 +190,8 @@ pub(crate) fn compute_vector_u<const K: usize, Vector: Operations>(
 #[inline(always)]
 #[allow(non_snake_case)]
 #[hax_lib::fstar::verification_status(lax)]
-#[hax_lib::requires(fstar!(r#"Spec.MLKEM.is_rank $K"#))]
+#[hax_lib::requires(fstar!(r#"Spec.MLKEM.is_rank $K /\
+    Seq.length $matrix_A == v $K * v $K"#))]
 #[hax_lib::ensures(|_|
     fstar!(r#"let open Libcrux_ml_kem.Polynomial in
         to_spec_vector_t ${t_as_ntt}_future =

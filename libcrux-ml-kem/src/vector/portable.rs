@@ -135,6 +135,7 @@ impl Operations for PortableVector {
         from_i16_array(array.classify_ref(), out)
     }
 
+    #[requires(out.len() == 16)]
     #[ensures(|_| fstar!(r#"${out}_future == impl.f_repr $x"#))]
     fn to_i16_array(x: &Self, out: &mut [i16]) {
         to_i16_array(x, out)
@@ -418,9 +419,7 @@ impl Operations for PortableVector {
     }
 
     #[requires(a.len() == 24 && out.len() == 16)]
-    #[ensures(|result|
-        fstar!(r#"Seq.length ${out}_future == Seq.length $out /\ v $result <= 16"#)
-    )]
+    #[ensures(|result| result <= 16 && future(out).len() == 16)]
     fn rej_sample(a: &[u8], out: &mut [i16]) -> usize {
         rej_sample(a, out)
     }
