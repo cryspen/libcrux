@@ -49,7 +49,7 @@ acvp = []                                                        # expose intern
 test-utils = []                                                  # exposing internal functions for testing
 
 
-# thid doesn't check the secret independence of the implementation, but sets the
+# This doesn't check the secret independence of the implementation, but sets the
 # exposed API into secret independence checking mode.
 expose-secret-independence = ["libcrux-secrets/check-secret-independence"]
 
