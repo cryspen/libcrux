@@ -12,7 +12,7 @@
 
 pub use super::arrayref::{KeyGenError, SignError, VerifyError};
 use super::key_centric_owned::SignTypes;
-use libcrux_secrets::{Classify, DeclassifyRefMut, U8};
+use libcrux_secrets::{ClassifyRef, U8};
 
 /// Signature trait that returns values instead of writing to output parameters.
 ///
@@ -97,9 +97,9 @@ pub trait Sign<
     fn keygen(
         rng: &mut impl rand::CryptoRng,
     ) -> Result<([U8; SIGNING_KEY_LEN], [u8; VERIFICATION_KEY_LEN]), KeyGenError> {
-        let mut rand = [0u8; RAND_KEYGEN_LEN].classify();
-        rng.fill_bytes(rand.declassify_ref_mut());
-        Self::keygen_derand(&rand)
+        let mut rand = [0u8; RAND_KEYGEN_LEN];
+        rng.fill_bytes(&mut rand);
+        Self::keygen_derand(rand.classify_ref())
     }
 }
 

@@ -11,7 +11,7 @@
 //! - Support for auxiliary signing data through generic associated types
 
 use super::key_centric_owned::SignTypes;
-use libcrux_secrets::{Classify, DeclassifyRefMut, U8};
+use libcrux_secrets::{ClassifyRef, U8};
 
 /// Core signing trait using fixed-size array references.
 ///
@@ -106,9 +106,9 @@ pub trait Sign<
         verification_key: &mut [u8; VERIFICATION_KEY_LEN],
         rng: &mut impl rand::CryptoRng,
     ) -> Result<(), KeyGenError> {
-        let mut rand = [0u8; RAND_KEYGEN_LEN].classify();
-        rng.fill_bytes(rand.declassify_ref_mut());
-        Self::keygen_derand(signing_key, verification_key, &rand)
+        let mut rand = [0u8; RAND_KEYGEN_LEN];
+        rng.fill_bytes(&mut rand);
+        Self::keygen_derand(signing_key, verification_key, rand.classify_ref())
     }
 }
 
