@@ -4,11 +4,11 @@
  * SPDX-License-Identifier: MIT or Apache-2.0
  *
  * This code was generated with the following revisions:
- * Charon: 3275bf4ad9dc8c25965dc5da6122653fc43c4287
- * Eurydice: d3b14228e2b5fe8710ec7efae31e4de2c96ed20d
- * Karamel: 095cdb73f246711f93f99a159ceca37cd2c227e1
+ * Charon:
+ * Eurydice:
+ * Karamel:
  * F*: 4b3fc11774003a6ff7c09500ecb5f0145ca6d862
- * Libcrux: e7177c5e2aaff2c316f02504fa62fc60a18464e3
+ * Libcrux: 88bb93f8cf602f1a2a5e403403836523c8cdff63
  */
 
 #ifndef libcrux_ct_ops_H
@@ -67,10 +67,9 @@ libcrux_ml_kem_constant_time_ops_compare_ciphertexts_in_constant_time(
 */
 static KRML_NOINLINE void libcrux_ml_kem_constant_time_ops_select_ct(
     Eurydice_slice lhs, Eurydice_slice rhs, uint8_t selector,
-    uint8_t ret[32U]) {
+    Eurydice_slice out) {
   uint8_t mask = core_num__u8__wrapping_sub(
       libcrux_ml_kem_constant_time_ops_is_non_zero(selector), 1U);
-  uint8_t out[32U] = {0U};
   for (size_t i = (size_t)0U; i < LIBCRUX_ML_KEM_CONSTANTS_SHARED_SECRET_SIZE;
        i++) {
     size_t i0 = i;
@@ -79,29 +78,26 @@ static KRML_NOINLINE void libcrux_ml_kem_constant_time_ops_select_ct(
          (uint32_t)mask) |
         ((uint32_t)Eurydice_slice_index(rhs, i0, uint8_t, uint8_t *) &
          (uint32_t)~mask);
-    out[i0] = outi;
+    Eurydice_slice_index(out, i0, uint8_t, uint8_t *) = outi;
   }
-  memcpy(ret, out, (size_t)32U * sizeof(uint8_t));
 }
 
 static KRML_NOINLINE void
 libcrux_ml_kem_constant_time_ops_select_shared_secret_in_constant_time(
     Eurydice_slice lhs, Eurydice_slice rhs, uint8_t selector,
-    uint8_t ret[32U]) {
-  libcrux_ml_kem_constant_time_ops_select_ct(lhs, rhs, selector, ret);
+    Eurydice_slice out) {
+  libcrux_ml_kem_constant_time_ops_select_ct(lhs, rhs, selector, out);
 }
 
 static KRML_NOINLINE void
 libcrux_ml_kem_constant_time_ops_compare_ciphertexts_select_shared_secret_in_constant_time(
     Eurydice_slice lhs_c, Eurydice_slice rhs_c, Eurydice_slice lhs_s,
-    Eurydice_slice rhs_s, uint8_t ret[32U]) {
+    Eurydice_slice rhs_s, Eurydice_slice out) {
   uint8_t selector =
       libcrux_ml_kem_constant_time_ops_compare_ciphertexts_in_constant_time(
           lhs_c, rhs_c);
-  uint8_t ret0[32U];
   libcrux_ml_kem_constant_time_ops_select_shared_secret_in_constant_time(
-      lhs_s, rhs_s, selector, ret0);
-  memcpy(ret, ret0, (size_t)32U * sizeof(uint8_t));
+      lhs_s, rhs_s, selector, out);
 }
 
 #if defined(__cplusplus)

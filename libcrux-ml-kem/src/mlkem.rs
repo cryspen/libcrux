@@ -86,12 +86,14 @@ macro_rules! impl_incr_key_size {
             pub fn generate_key_pair(randomness: [u8; KEY_GENERATION_SEED_SIZE]) -> Box<dyn Keys> {
                 multiplexing::alloc::generate_keypair::<
                     RANK,
+                    RANK_SQUARED,
                     CPA_PKE_SECRET_KEY_SIZE,
                     SECRET_KEY_SIZE,
                     CPA_PKE_PUBLIC_KEY_SIZE,
                     RANKED_BYTES_PER_RING_ELEMENT,
                     ETA1,
                     ETA1_RANDOMNESS_SIZE,
+                    PRF_OUTPUT_SIZE1
                 >(randomness)
             }
 
@@ -102,6 +104,7 @@ macro_rules! impl_incr_key_size {
             ) -> (Ciphertext1, Box<dyn State>, [u8; SHARED_SECRET_SIZE]) {
                 multiplexing::alloc::encapsulate1::<
                     RANK,
+                    RANK_SQUARED,
                     CPA_PKE_CIPHERTEXT_SIZE,
                     C1_SIZE,
                     VECTOR_U_COMPRESSION_FACTOR,
@@ -110,6 +113,8 @@ macro_rules! impl_incr_key_size {
                     ETA1_RANDOMNESS_SIZE,
                     ETA2,
                     ETA2_RANDOMNESS_SIZE,
+                    PRF_OUTPUT_SIZE1,
+                    PRF_OUTPUT_SIZE2,
                 >(public_key_part, randomness)
             }
 
@@ -133,6 +138,7 @@ macro_rules! impl_incr_key_size {
             ) -> MlKemSharedSecret {
                 multiplexing::alloc::decapsulate::<
                     RANK,
+                    RANK_SQUARED,
                     SECRET_KEY_SIZE,
                     CPA_PKE_SECRET_KEY_SIZE,
                     CPA_PKE_PUBLIC_KEY_SIZE,
@@ -147,6 +153,8 @@ macro_rules! impl_incr_key_size {
                     ETA1_RANDOMNESS_SIZE,
                     ETA2,
                     ETA2_RANDOMNESS_SIZE,
+                    PRF_OUTPUT_SIZE1,
+                    PRF_OUTPUT_SIZE2,
                     IMPLICIT_REJECTION_HASH_INPUT_SIZE,
                 >(private_key, ciphertext1, ciphertext2)
             }
@@ -218,6 +226,7 @@ macro_rules! impl_incr_key_size {
         pub fn generate_key_pair(randomness: [u8; KEY_GENERATION_SEED_SIZE], key_pair: &mut [u8]) -> Result<(), Error> {
             multiplexing::generate_keypair::<
                 RANK,
+                RANK_SQUARED,
                 RANKED_BYTES_PER_RING_ELEMENT,
                 CPA_PKE_SECRET_KEY_SIZE,
                 SECRET_KEY_SIZE,
@@ -225,6 +234,7 @@ macro_rules! impl_incr_key_size {
                 RANKED_BYTES_PER_RING_ELEMENT,
                 ETA1,
                 ETA1_RANDOMNESS_SIZE,
+                PRF_OUTPUT_SIZE1
             >(randomness, key_pair)
         }
         /// An encoded, compressed, incremental key pair.
@@ -296,6 +306,7 @@ macro_rules! impl_incr_key_size {
         pub fn generate_key_pair_compressed(randomness: [u8; KEY_GENERATION_SEED_SIZE], key_pair: &mut [u8; COMPRESSED_KEYPAIR_LEN]) {
             multiplexing::generate_keypair_compressed::<
                 RANK,
+                RANK_SQUARED,
                 RANKED_BYTES_PER_RING_ELEMENT,
                 CPA_PKE_SECRET_KEY_SIZE,
                 SECRET_KEY_SIZE,
@@ -303,6 +314,7 @@ macro_rules! impl_incr_key_size {
                 RANKED_BYTES_PER_RING_ELEMENT,
                 ETA1,
                 ETA1_RANDOMNESS_SIZE,
+                PRF_OUTPUT_SIZE1,
                 COMPRESSED_KEYPAIR_LEN,
             >(randomness, key_pair)
         }
@@ -351,6 +363,7 @@ macro_rules! impl_incr_key_size {
 
             multiplexing::encapsulate1::<
                 RANK,
+                RANK_SQUARED,
                 CPA_PKE_CIPHERTEXT_SIZE,
                 C1_SIZE,
                 VECTOR_U_COMPRESSION_FACTOR,
@@ -359,6 +372,8 @@ macro_rules! impl_incr_key_size {
                 ETA1_RANDOMNESS_SIZE,
                 ETA2,
                 ETA2_RANDOMNESS_SIZE,
+                PRF_OUTPUT_SIZE1,
+                PRF_OUTPUT_SIZE2,
             >(&public_key_part, randomness, state, shared_secret)
         }
 
@@ -387,6 +402,7 @@ macro_rules! impl_incr_key_size {
 
                 multiplexing::encapsulate1::<
                     RANK,
+                    RANK_SQUARED,
                     CPA_PKE_CIPHERTEXT_SIZE,
                     C1_SIZE,
                     VECTOR_U_COMPRESSION_FACTOR,
@@ -395,6 +411,8 @@ macro_rules! impl_incr_key_size {
                     ETA1_RANDOMNESS_SIZE,
                     ETA2,
                     ETA2_RANDOMNESS_SIZE,
+                    PRF_OUTPUT_SIZE1,
+                    PRF_OUTPUT_SIZE2,
                 >(&public_key_part, randomness, state, shared_secret)
             }
         }
@@ -416,6 +434,7 @@ macro_rules! impl_incr_key_size {
         ) -> Result<MlKemSharedSecret, Error> {
             multiplexing::decapsulate::<
                 RANK,
+                RANK_SQUARED,
                 RANKED_BYTES_PER_RING_ELEMENT,
                 SECRET_KEY_SIZE,
                 CPA_PKE_SECRET_KEY_SIZE,
@@ -431,6 +450,8 @@ macro_rules! impl_incr_key_size {
                 ETA1_RANDOMNESS_SIZE,
                 ETA2,
                 ETA2_RANDOMNESS_SIZE,
+                PRF_OUTPUT_SIZE1,
+                PRF_OUTPUT_SIZE2,
                 IMPLICIT_REJECTION_HASH_INPUT_SIZE,
             >(private_key, ciphertext1, ciphertext2)
         }
@@ -443,6 +464,7 @@ macro_rules! impl_incr_key_size {
         ) -> MlKemSharedSecret {
             multiplexing::decapsulate_compressed::<
                 RANK,
+                RANK_SQUARED,
                 RANKED_BYTES_PER_RING_ELEMENT,
                 SECRET_KEY_SIZE,
                 CPA_PKE_SECRET_KEY_SIZE,
@@ -458,6 +480,8 @@ macro_rules! impl_incr_key_size {
                 ETA1_RANDOMNESS_SIZE,
                 ETA2,
                 ETA2_RANDOMNESS_SIZE,
+                PRF_OUTPUT_SIZE1,
+                PRF_OUTPUT_SIZE2,
                 IMPLICIT_REJECTION_HASH_INPUT_SIZE,
             >(private_key, ciphertext1, ciphertext2)
         }
@@ -471,9 +495,9 @@ macro_rules! impl_incr_platform {
         ///
         /// **PANICS** is the cast fails
         #[cfg(feature = "alloc")]
-        pub(super) fn as_keypair<const K: usize>(
+        pub(super) fn as_keypair<const K: usize, const K_SQUARED: usize>(
             k: &dyn core::any::Any,
-        ) -> &MlKemKeyPairUnpacked<K, $vector> {
+        ) -> &MlKemKeyPairUnpacked<K, K_SQUARED, $vector> {
             k.downcast_ref().unwrap()
         }
 
@@ -488,22 +512,26 @@ macro_rules! impl_incr_platform {
         $(#[$meta])*
         pub(crate) $($unsafe)? fn generate_keypair<
             const K: usize,
+            const K_SQUARED: usize,
             const CPA_PRIVATE_KEY_SIZE: usize,
             const PRIVATE_KEY_SIZE: usize,
             const PUBLIC_KEY_SIZE: usize,
             const BYTES_PER_RING_ELEMENT: usize,
             const ETA1: usize,
             const ETA1_RANDOMNESS_SIZE: usize,
+            const PRF_OUTPUT_SIZE1: usize,
         >(
             randomness: [u8; KEY_GENERATION_SEED_SIZE],
-        ) -> MlKemKeyPairUnpacked<K, $vector> {
+        ) -> MlKemKeyPairUnpacked<K, K_SQUARED, $vector> {
             super::generate_keypair::<
                 K,
+                K_SQUARED,
                 CPA_PRIVATE_KEY_SIZE,
                 PRIVATE_KEY_SIZE,
                 PUBLIC_KEY_SIZE,
                 ETA1,
                 ETA1_RANDOMNESS_SIZE,
+                PRF_OUTPUT_SIZE1,
                 $vector,
                 $hash,
             >(randomness)
@@ -512,6 +540,7 @@ macro_rules! impl_incr_platform {
         $(#[$meta])*
         pub(crate) $($unsafe)? fn generate_keypair_serialized<
             const K: usize,
+            const K_SQUARED: usize,
             const PK2_LEN: usize,
             const CPA_PRIVATE_KEY_SIZE: usize,
             const PRIVATE_KEY_SIZE: usize,
@@ -519,22 +548,25 @@ macro_rules! impl_incr_platform {
             const BYTES_PER_RING_ELEMENT: usize,
             const ETA1: usize,
             const ETA1_RANDOMNESS_SIZE: usize,
+            const PRF_OUTPUT_SIZE1: usize,
         >(
             randomness: [u8; KEY_GENERATION_SEED_SIZE],
             key_pair: &mut [u8],
         ) -> Result<(), Error> {
-            if key_pair.len() < KeyPair::<K, PK2_LEN, $vector>::num_bytes() {
+            if key_pair.len() < KeyPair::<K, K_SQUARED, PK2_LEN, $vector>::num_bytes() {
                 return Err(Error::InvalidOutputLength);
             }
 
             super::generate_keypair_serialized::<
                 K,
+                K_SQUARED,
                 PK2_LEN,
                 CPA_PRIVATE_KEY_SIZE,
                 PRIVATE_KEY_SIZE,
                 PUBLIC_KEY_SIZE,
                 ETA1,
                 ETA1_RANDOMNESS_SIZE,
+                PRF_OUTPUT_SIZE1,
                 $vector,
                 $hash,
             >(randomness, key_pair)
@@ -543,6 +575,7 @@ macro_rules! impl_incr_platform {
         $(#[$meta])*
         pub(crate) $($unsafe)? fn generate_keypair_compressed<
             const K: usize,
+            const K_SQUARED: usize,
             const PK2_LEN: usize,
             const CPA_PRIVATE_KEY_SIZE: usize,
             const PRIVATE_KEY_SIZE: usize,
@@ -550,6 +583,7 @@ macro_rules! impl_incr_platform {
             const BYTES_PER_RING_ELEMENT: usize,
             const ETA1: usize,
             const ETA1_RANDOMNESS_SIZE: usize,
+            const PRF_OUTPUT_SIZE1: usize,
             const COMPRESSED_KEYPAIR_LEN: usize,
         >(
             randomness: [u8; KEY_GENERATION_SEED_SIZE],
@@ -557,12 +591,14 @@ macro_rules! impl_incr_platform {
         ) {
             super::generate_keypair_compressed::<
                 K,
+                K_SQUARED,
                 PK2_LEN,
                 CPA_PRIVATE_KEY_SIZE,
                 PRIVATE_KEY_SIZE,
                 PUBLIC_KEY_SIZE,
                 ETA1,
                 ETA1_RANDOMNESS_SIZE,
+                PRF_OUTPUT_SIZE1,
                 COMPRESSED_KEYPAIR_LEN,
                 $vector,
                 $hash,
@@ -588,6 +624,7 @@ macro_rules! impl_incr_platform {
         $(#[$meta])*
         pub(crate) $($unsafe)? fn encapsulate1<
             const K: usize,
+            const K_SQUARED: usize,
             const CIPHERTEXT_SIZE: usize,
             const C1_SIZE: usize,
             const VECTOR_U_COMPRESSION_FACTOR: usize,
@@ -596,6 +633,8 @@ macro_rules! impl_incr_platform {
             const ETA1_RANDOMNESS_SIZE: usize,
             const ETA2: usize,
             const ETA2_RANDOMNESS_SIZE: usize,
+            const PRF_OUTPUT_SIZE1: usize,
+            const PRF_OUTPUT_SIZE2: usize,
         >(
             public_key_part: &PublicKey1,
             randomness: [u8; SHARED_SECRET_SIZE],
@@ -606,6 +645,7 @@ macro_rules! impl_incr_platform {
         ) {
             super::encapsulate1::<
                 K,
+                K_SQUARED,
                 CIPHERTEXT_SIZE,
                 C1_SIZE,
                 VECTOR_U_COMPRESSION_FACTOR,
@@ -614,6 +654,8 @@ macro_rules! impl_incr_platform {
                 ETA1_RANDOMNESS_SIZE,
                 ETA2,
                 ETA2_RANDOMNESS_SIZE,
+                PRF_OUTPUT_SIZE1,
+                PRF_OUTPUT_SIZE2,
                 $vector,
                 $hash,
             >(public_key_part, randomness)
@@ -622,6 +664,7 @@ macro_rules! impl_incr_platform {
         $(#[$meta])*
         pub(crate) $($unsafe)? fn encapsulate1_serialized<
             const K: usize,
+            const K_SQUARED: usize,
             const CIPHERTEXT_SIZE: usize,
             const C1_SIZE: usize,
             const VECTOR_U_COMPRESSION_FACTOR: usize,
@@ -630,6 +673,8 @@ macro_rules! impl_incr_platform {
             const ETA1_RANDOMNESS_SIZE: usize,
             const ETA2: usize,
             const ETA2_RANDOMNESS_SIZE: usize,
+            const PRF_OUTPUT_SIZE1: usize,
+            const PRF_OUTPUT_SIZE2: usize,
         >(
             public_key_part: &PublicKey1,
             randomness: [u8; SHARED_SECRET_SIZE],
@@ -638,6 +683,7 @@ macro_rules! impl_incr_platform {
         ) -> Result<Ciphertext1<C1_SIZE>, Error> {
             super::encapsulate1_serialized::<
                 K,
+                K_SQUARED,
                 CIPHERTEXT_SIZE,
                 C1_SIZE,
                 VECTOR_U_COMPRESSION_FACTOR,
@@ -646,6 +692,8 @@ macro_rules! impl_incr_platform {
                 ETA1_RANDOMNESS_SIZE,
                 ETA2,
                 ETA2_RANDOMNESS_SIZE,
+                PRF_OUTPUT_SIZE1,
+                PRF_OUTPUT_SIZE2,
                 $vector,
                 $hash,
             >(public_key_part, randomness, state, shared_secret)
@@ -691,6 +739,7 @@ macro_rules! impl_incr_platform {
         $(#[$meta])*
         pub(crate) $($unsafe)? fn decapsulate<
             const K: usize,
+            const K_SQUARED: usize,
             const SECRET_KEY_SIZE: usize,
             const CPA_SECRET_KEY_SIZE: usize,
             const PUBLIC_KEY_SIZE: usize,
@@ -705,14 +754,17 @@ macro_rules! impl_incr_platform {
             const ETA1_RANDOMNESS_SIZE: usize,
             const ETA2: usize,
             const ETA2_RANDOMNESS_SIZE: usize,
+            const PRF_OUTPUT_SIZE1: usize,
+            const PRF_OUTPUT_SIZE2: usize,
             const IMPLICIT_REJECTION_HASH_INPUT_SIZE: usize,
         >(
-            private_key: &MlKemKeyPairUnpacked<K, $vector>,
+            private_key: &MlKemKeyPairUnpacked<K, K_SQUARED, $vector>,
             ciphertext1: &Ciphertext1<C1_SIZE>,
             ciphertext2: &Ciphertext2<C2_SIZE>,
         ) -> MlKemSharedSecret {
             super::decapsulate::<
                 K,
+                K_SQUARED,
                 SECRET_KEY_SIZE,
                 CPA_SECRET_KEY_SIZE,
                 PUBLIC_KEY_SIZE,
@@ -727,6 +779,8 @@ macro_rules! impl_incr_platform {
                 ETA1_RANDOMNESS_SIZE,
                 ETA2,
                 ETA2_RANDOMNESS_SIZE,
+                PRF_OUTPUT_SIZE1,
+                PRF_OUTPUT_SIZE2,
                 IMPLICIT_REJECTION_HASH_INPUT_SIZE,
                 $vector,
                 $hash,
@@ -736,6 +790,7 @@ macro_rules! impl_incr_platform {
         $(#[$meta])*
         pub(crate) $($unsafe)? fn decapsulate_incremental_key<
             const K: usize,
+            const K_SQUARED: usize,
             const PK2_LEN: usize,
             const SECRET_KEY_SIZE: usize,
             const CPA_SECRET_KEY_SIZE: usize,
@@ -751,6 +806,8 @@ macro_rules! impl_incr_platform {
             const ETA1_RANDOMNESS_SIZE: usize,
             const ETA2: usize,
             const ETA2_RANDOMNESS_SIZE: usize,
+            const PRF_OUTPUT_SIZE1: usize,
+            const PRF_OUTPUT_SIZE2: usize,
             const IMPLICIT_REJECTION_HASH_INPUT_SIZE: usize,
         >(
             private_key: &[u8],
@@ -759,6 +816,7 @@ macro_rules! impl_incr_platform {
         ) -> Result<MlKemSharedSecret, Error> {
             super::decapsulate_incremental_key::<
                 K,
+                K_SQUARED,
                 PK2_LEN,
                 SECRET_KEY_SIZE,
                 CPA_SECRET_KEY_SIZE,
@@ -774,6 +832,8 @@ macro_rules! impl_incr_platform {
                 ETA1_RANDOMNESS_SIZE,
                 ETA2,
                 ETA2_RANDOMNESS_SIZE,
+                PRF_OUTPUT_SIZE1,
+                PRF_OUTPUT_SIZE2,
                 IMPLICIT_REJECTION_HASH_INPUT_SIZE,
                 $vector,
                 $hash,
@@ -783,6 +843,7 @@ macro_rules! impl_incr_platform {
         $(#[$meta])*
         pub(crate) $($unsafe)? fn decapsulate_compressed_key<
             const K: usize,
+            const K_SQUARED: usize,
             const PK2_LEN: usize,
             const SECRET_KEY_SIZE: usize,
             const CPA_SECRET_KEY_SIZE: usize,
@@ -798,6 +859,8 @@ macro_rules! impl_incr_platform {
             const ETA1_RANDOMNESS_SIZE: usize,
             const ETA2: usize,
             const ETA2_RANDOMNESS_SIZE: usize,
+            const PRF_OUTPUT_SIZE1: usize,
+            const PRF_OUTPUT_SIZE2: usize,
             const IMPLICIT_REJECTION_HASH_INPUT_SIZE: usize,
         >(
             private_key: &[u8; SECRET_KEY_SIZE],
@@ -806,6 +869,7 @@ macro_rules! impl_incr_platform {
         ) -> MlKemSharedSecret {
             super::decapsulate_compressed_key::<
                 K,
+                K_SQUARED,
                 PK2_LEN,
                 SECRET_KEY_SIZE,
                 CPA_SECRET_KEY_SIZE,
@@ -821,6 +885,8 @@ macro_rules! impl_incr_platform {
                 ETA1_RANDOMNESS_SIZE,
                 ETA2,
                 ETA2_RANDOMNESS_SIZE,
+                PRF_OUTPUT_SIZE1,
+                PRF_OUTPUT_SIZE2,
                 IMPLICIT_REJECTION_HASH_INPUT_SIZE,
                 $vector,
                 $hash,

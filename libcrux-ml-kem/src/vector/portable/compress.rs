@@ -142,10 +142,10 @@ let compress_message_coefficient_range_helper (fe: u16) : Lemma
 #[hax_lib::fstar::options("--fuel 0 --ifuel 0 --z3rlimit 200")]
 #[hax_lib::requires(fstar!(r#"forall (i:nat). i < 16 ==> v (Seq.index ${a}.f_elements i) >= 0 /\
     v (Seq.index ${a}.f_elements i) < 3329"#))]
-#[hax_lib::ensures(|result| fstar!(r#"forall (i:nat). i < 16 ==> 
-    v (${result}.f_elements.[ sz i ] <: i16) >= 0 /\
-    v (${result}.f_elements.[ sz i ] <: i16) < 2"#))]
-pub(crate) fn compress_1(mut a: PortableVector) -> PortableVector {
+#[hax_lib::ensures(|_| fstar!(r#"forall (i:nat). i < 16 ==> 
+    v (${a}_future.f_elements.[ sz i ] <: i16) >= 0 /\
+    v (${a}_future.f_elements.[ sz i ] <: i16) < 2"#))]
+pub(crate) fn compress_1(a: &mut PortableVector) {
     hax_lib::fstar!(
         "assert (forall (i:nat). i < 16 ==> (cast (${a}.f_elements.[ sz i ]) <: u16) <.
         (cast ($FIELD_MODULUS) <: u16))"
@@ -177,8 +177,6 @@ pub(crate) fn compress_1(mut a: PortableVector) -> PortableVector {
         r#"assert (forall (i:nat). i < 16 ==> v (${a}.f_elements.[ sz i ] <: i16) >= 0 /\
         v (${a}.f_elements.[ sz i ] <: i16) < 2)"#
     );
-
-    a
 }
 
 #[inline(always)]
@@ -187,13 +185,13 @@ pub(crate) fn compress_1(mut a: PortableVector) -> PortableVector {
         v $COEFFICIENT_BITS == 5 \/
         v $COEFFICIENT_BITS == 10 \/
         v $COEFFICIENT_BITS == 11) /\
-    (forall (i:nat). i < 16 ==> 
-        (v (Seq.index ${a}.f_elements i) >= 0 /\
-         v (Seq.index ${a}.f_elements i) < 3329))"#))]
-#[hax_lib::ensures(|result| fstar!(r#"forall (i:nat). i < 16 ==> 
-    (v (${result}.f_elements.[ sz i ] <: i16) >= 0 /\
-     v (${result}.f_elements.[ sz i ] <: i16) < pow2 (v $COEFFICIENT_BITS)))"#))]
-pub(crate) fn compress<const COEFFICIENT_BITS: i32>(mut a: PortableVector) -> PortableVector {
+    (forall (i:nat). i < 16 ==>
+        v (Seq.index ${a}.f_elements i) >= 0 /\
+        v (Seq.index ${a}.f_elements i) < 3329)"#))]
+#[hax_lib::ensures(|_| fstar!(r#"forall (i:nat). i < 16 ==> 
+    v (${a}_future.f_elements.[ sz i ] <: i16) >= 0 /\
+    v (${a}_future.f_elements.[ sz i ] <: i16) < pow2 (v $COEFFICIENT_BITS))"#))]
+pub(crate) fn compress<const COEFFICIENT_BITS: i32>(a: &mut PortableVector) {
     hax_lib::fstar!(
         "assert (v (cast ($COEFFICIENT_BITS) <: u8) == v $COEFFICIENT_BITS);
         assert (v (cast ($COEFFICIENT_BITS) <: u32) == v $COEFFICIENT_BITS);
@@ -229,8 +227,6 @@ pub(crate) fn compress<const COEFFICIENT_BITS: i32>(mut a: PortableVector) -> Po
                     (v (${a}.f_elements.[ sz i ] <: i16) >= 0 /\
                      v (${a}.f_elements.[ sz i ] <: i16) < pow2 (v $COEFFICIENT_BITS)))"#
     );
-
-    a
 }
 
 #[hax_lib::fstar::options("--z3rlimit 200 --split_queries always")]
@@ -240,10 +236,7 @@ pub(crate) fn compress<const COEFFICIENT_BITS: i32>(mut a: PortableVector) -> Po
         (let res_i = v (Seq.index ${result}.f_elements i) in
          res_i == 0 \/ res_i == 1665)"#))]
 #[inline(always)]
-pub(crate) fn decompress_1(a: PortableVector) -> PortableVector {
-    let z = zero();
-
-    hax_lib::fstar!("assert(forall i. Seq.index ${z}.f_elements i == mk_i16 0)");
+pub(crate) fn decompress_1(mut a: PortableVector) -> PortableVector {
     hax_lib::fstar!(
         r#"assert(forall i. let x = Seq.index ${a}.f_elements i in 
                                       ((0 - v x) == 0 \/ (0 - v x) == -1))"#
@@ -254,21 +247,21 @@ pub(crate) fn decompress_1(a: PortableVector) -> PortableVector {
                                         (0 - v (Seq.index ${a}.f_elements i)))"#
     );
 
-    let s = sub(z, &a);
+    negate(&mut a);
 
     hax_lib::fstar!(
-        r#"assert(forall i. Seq.index ${s}.f_elements i == mk_i16 0 \/ 
-                                      Seq.index ${s}.f_elements i == mk_i16 (-1))"#
+        r#"assert(forall i. Seq.index ${a}.f_elements i == mk_i16 0 \/ 
+                                      Seq.index ${a}.f_elements i == mk_i16 (-1))"#
     );
 
-    let res = bitwise_and_with_constant(s, 1665);
+    bitwise_and_with_constant(&mut a, 1665);
 
     hax_lib::fstar!(
-        r#"assert(forall i. Seq.index ${res}.f_elements i == mk_i16 0 \/ 
-                                      Seq.index ${res}.f_elements i == mk_i16 1665)"#
+        r#"assert(forall i. Seq.index ${a}.f_elements i == mk_i16 0 \/ 
+                                      Seq.index ${a}.f_elements i == mk_i16 1665)"#
     );
 
-    res
+    a
 }
 
 #[inline(always)]
@@ -279,12 +272,12 @@ pub(crate) fn decompress_1(a: PortableVector) -> PortableVector {
         v $COEFFICIENT_BITS == 11) /\
     (forall (i:nat). i < 16 ==> v (Seq.index ${a}.f_elements i) >= 0 /\
         v (Seq.index ${a}.f_elements i) < pow2 (v $COEFFICIENT_BITS))"#))]
-#[hax_lib::ensures(|result| fstar!(r#"forall (i:nat). i < 16 ==> 
-        (let res_i = v (Seq.index ${result}.f_elements i) in
+#[hax_lib::ensures(|_| fstar!(r#"forall (i:nat). i < 16 ==> 
+        (let res_i = v (Seq.index ${a}_future.f_elements i) in
          res_i >= 0 /\ res_i < v $FIELD_MODULUS)"#))]
 pub(crate) fn decompress_ciphertext_coefficient<const COEFFICIENT_BITS: i32>(
-    mut a: PortableVector,
-) -> PortableVector {
+    a: &mut PortableVector,
+) {
     hax_lib::fstar!(
         "assert_norm (pow2 1 == 2);
         assert_norm (pow2 4 == 16);
@@ -340,6 +333,4 @@ pub(crate) fn decompress_ciphertext_coefficient<const COEFFICIENT_BITS: i32>(
 
         a.elements[i] = decompressed.as_i16();
     }
-
-    a
 }
