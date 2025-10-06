@@ -125,7 +125,7 @@ pub mod signers {
                 ///
                 /// It is the responsibility of the caller to ensure  that the `randomness` argument is actually
                 /// random.
-                impl<const N: usize, T: Context<Buf= [u8;N]>>
+                impl<const N: usize, T: Context<Buf = [u8; N]>>
                     arrayref::Sign<
                         SIGNING_KEY_LEN,
                         VERIFICATION_KEY_LEN,
@@ -133,7 +133,6 @@ pub mod signers {
                         RAND_KEYGEN_LEN,
                     > for $name<T>
                 {
-
                     /// Sign a payload using a provided signing key, context, and randomness.
                     fn sign(
                         payload: &[u8],
@@ -146,12 +145,15 @@ pub mod signers {
                             payload,
                             T::context(),
                             randomness.declassify(),
-                            signature
+                            signature,
                         )
                         .map_err(|err| match err {
-                            crate::types::SigningError::RejectionSamplingError=> arrayref::SignError::InvalidRandomness,
-                            crate::types::SigningError::ContextTooLongError=> arrayref::SignError::InvalidArgument,
-
+                            crate::types::SigningError::RejectionSamplingError => {
+                                arrayref::SignError::InvalidRandomness
+                            }
+                            crate::types::SigningError::ContextTooLongError => {
+                                arrayref::SignError::InvalidArgument
+                            }
                         })
                     }
                     /// Verify a signature using a provided verification key and context.
@@ -167,11 +169,18 @@ pub mod signers {
                             signature,
                         )
                         .map_err(|err| match err {
-                            crate::types::VerificationError::MalformedHintError=>arrayref::VerifyError::InvalidSignature,
-                            crate::types::VerificationError::SignerResponseExceedsBoundError=>arrayref::VerifyError::InvalidSignature,
-                            crate::types::VerificationError::CommitmentHashesDontMatchError=>arrayref::VerifyError::InvalidSignature,
-                            crate::types::VerificationError::VerificationContextTooLongError=>arrayref::VerifyError::LibraryError,
-
+                            crate::types::VerificationError::MalformedHintError => {
+                                arrayref::VerifyError::InvalidSignature
+                            }
+                            crate::types::VerificationError::SignerResponseExceedsBoundError => {
+                                arrayref::VerifyError::InvalidSignature
+                            }
+                            crate::types::VerificationError::CommitmentHashesDontMatchError => {
+                                arrayref::VerifyError::InvalidSignature
+                            }
+                            crate::types::VerificationError::VerificationContextTooLongError => {
+                                arrayref::VerifyError::LibraryError
+                            }
                         })
                     }
 
@@ -179,14 +188,11 @@ pub mod signers {
                         signing_key: &mut [U8; SIGNING_KEY_LEN],
                         verification_key: &mut [u8; VERIFICATION_KEY_LEN],
                         randomness: &Randomness,
-                    ) -> Result<
-                        (),
-                        arrayref::KeyGenError,
-                    > {
+                    ) -> Result<(), arrayref::KeyGenError> {
                         crate::ml_dsa_generic::multiplexing::$module::generate_key_pair(
                             (*randomness).declassify(),
-                             signing_key.declassify_ref_mut(),
-                             verification_key,
+                            signing_key.declassify_ref_mut(),
+                            verification_key,
                         );
 
                         Ok(())
@@ -200,7 +206,6 @@ pub mod signers {
                     /// The `randomness` required for signing.
                     type SignAux<'a> = super::Randomness;
                 }
-
             }
             pub use $module::$name;
         };
