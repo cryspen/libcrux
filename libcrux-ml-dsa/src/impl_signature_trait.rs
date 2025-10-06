@@ -147,12 +147,11 @@ pub mod signers {
                             randomness.declassify(),
                             signature,
                         )
-                        .map_err(|err| match err {
-                            crate::types::SigningError::RejectionSamplingError => {
-                                arrayref::SignError::InvalidRandomness
-                            }
-                            crate::types::SigningError::ContextTooLongError => {
-                                arrayref::SignError::InvalidArgument
+                        .map_err(|err| {
+                            use crate::types::SigningError::*;
+                            match err {
+                                RejectionSamplingError => arrayref::SignError::InvalidRandomness,
+                                ContextTooLongError => arrayref::SignError::InvalidArgument,
                             }
                         })
                     }
@@ -168,18 +167,16 @@ pub mod signers {
                             T::context(),
                             signature,
                         )
-                        .map_err(|err| match err {
-                            crate::types::VerificationError::MalformedHintError => {
-                                arrayref::VerifyError::InvalidSignature
-                            }
-                            crate::types::VerificationError::SignerResponseExceedsBoundError => {
-                                arrayref::VerifyError::InvalidSignature
-                            }
-                            crate::types::VerificationError::CommitmentHashesDontMatchError => {
-                                arrayref::VerifyError::InvalidSignature
-                            }
-                            crate::types::VerificationError::VerificationContextTooLongError => {
-                                arrayref::VerifyError::LibraryError
+                        .map_err(|err| {
+                            use crate::types::VerificationError::*;
+
+                            match err {
+                                MalformedHintError
+                                | SignerResponseExceedsBoundError
+                                | CommitmentHashesDontMatchError => {
+                                    arrayref::VerifyError::InvalidSignature
+                                }
+                                VerificationContextTooLongError => arrayref::VerifyError::LibraryError,
                             }
                         })
                     }
