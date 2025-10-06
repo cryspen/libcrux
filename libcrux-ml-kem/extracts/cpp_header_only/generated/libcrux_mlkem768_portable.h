@@ -4,11 +4,11 @@
  * SPDX-License-Identifier: MIT or Apache-2.0
  *
  * This code was generated with the following revisions:
- * Charon: 3275bf4ad9dc8c25965dc5da6122653fc43c4287
- * Eurydice: d3b14228e2b5fe8710ec7efae31e4de2c96ed20d
- * Karamel: 095cdb73f246711f93f99a159ceca37cd2c227e1
- * F*: 4b3fc11774003a6ff7c09500ecb5f0145ca6d862
- * Libcrux: e7177c5e2aaff2c316f02504fa62fc60a18464e3
+ * Charon: 667d2fc98984ff7f3df989c2367e6c1fa4a000e7
+ * Eurydice: 2381cbc416ef2ad0b561c362c500bc84f36b6785
+ * Karamel: 80f5435f2fc505973c469a4afcc8d875cddd0d8b
+ * F*: 71d8221589d4d438af3706d89cb653cf53e18aab
+ * Libcrux: 68dfed5a4a9e40277f62828471c029afed1ecdcc
  */
 
 #ifndef libcrux_mlkem768_portable_H
@@ -3363,7 +3363,7 @@ libcrux_ml_kem_sampling_sample_from_binomial_distribution_2_ea(
     uint32_t even_bits = random_bits_as_u32 & 1431655765U;
     uint32_t odd_bits = random_bits_as_u32 >> 1U & 1431655765U;
     uint32_t coin_toss_outcomes = even_bits + odd_bits;
-    for (uint32_t i = 0U; i < core_num__u32__BITS / 4U; i++) {
+    for (uint32_t i = 0U; i < 32U / 4U; i++) {
       uint32_t outcome_set = i;
       uint32_t outcome_set0 = outcome_set * 4U;
       int16_t outcome_1 =
