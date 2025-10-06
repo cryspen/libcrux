@@ -1,6 +1,5 @@
 use std::io::Cursor;
 
-use libcrux_hkdf::Algorithm;
 use rand::CryptoRng;
 
 use tls_codec::{
@@ -107,18 +106,17 @@ fn derive_pk_binder(
     info.tls_serialize(&mut &mut info_buf[..])
         .map_err(serialize_error)?;
 
-    let prk = libcrux_hkdf::extract(
-        Algorithm::Sha256,
-        [],
-        SerializeBytes::tls_serialize(&key.key).map_err(serialize_error)?,
+    let mut pk_binder = [0; PK_BINDER_LEN];
+    libcrux_hkdf::sha2_256::hkdf(
+        &mut pk_binder,
+        &[],
+        &SerializeBytes::tls_serialize(&key.key).map_err(serialize_error)?,
+        &info_buf,
     )
     .map_err(|_| Error::CryptoError)?;
 
     Ok(
-        libcrux_hkdf::expand(Algorithm::Sha256, prk, info_buf, PK_BINDER_LEN)
-            .map_err(|_| Error::CryptoError)?
-            .try_into()
-            .map_err(|_| Error::CryptoError)?, // We don't expect this to fail, unless HDKF gave us the wrong output length
+        pk_binder.try_into().map_err(|_| Error::CryptoError)?, // We don't expect this to fail, unless HDKF gave us the wrong output length
     )
 }
 

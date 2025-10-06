@@ -26,9 +26,17 @@ pub struct Nonce<Algo: Aead>(Algo::Nonce);
 /// here. Check the documentation of the types implementing this trait to make sure which inputs
 /// are valid.
 pub trait Aead: Sized + AeadConsts {
+    /// The type containing the key data. Usually an array.
     type Key;
+    /// The type containing the tag data. Usually an array.
     type Tag;
+    /// The type containing the nonce data. Usually an array.
     type Nonce;
+    /// The type containing the randomness to generate a new key. Usually an array.
+    type Rand;
+
+    /// Generate a new key. Consumes the entire randomnes.
+    fn keygen(key: &mut Key<Self>, rand: &Self::Rand) -> Result<(), KeyGenError>;
 
     /// Encrypt a plaintext message, producing a ciphertext and an authentication tag.
     /// The arguments `plaintext` and `ciphertext` must have the same length.
@@ -86,6 +94,16 @@ macro_rules! impl_aead_typed_owned {
             type Tag = [$crate::libcrux_secrets::U8; $taglen];
 
             type Nonce = [$crate::libcrux_secrets::U8; $noncelen];
+
+            type Rand = [$crate::libcrux_secrets::U8; $keylen];
+
+            fn keygen(
+                key: &mut $crate::aead::typed_owned::Key<Self>,
+                rand: &[U8; $keylen],
+            ) -> Result<(), KeyGenError> {
+                *key = $crate::aead::typed_owned::Key::<Self>::from(*rand);
+                Ok(())
+            }
 
             fn encrypt(
                 ciphertext: &mut [u8],
