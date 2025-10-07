@@ -9,12 +9,6 @@
 //! // multiplexed API
 //! use libcrux_aesgcm::AeadConsts as _;
 //! use libcrux_aesgcm::{AesGcm128, aes_gcm_128::{Key, Tag, Nonce}};
-//! // or:
-//! // platform-specific
-//! // only use these directly after performing runtime checks for the necessary CPU features
-//! // use libcrux_aesgcm::aes_gcm_128::portable::{Key, Tag, Nonce}};
-//! // use libcrux_aesgcm::aes_gcm_128::neon::{Key, Tag, Nonce}};
-//! // use libcrux_aesgcm::aes_gcm_128::x64::{Key, Tag, Nonce}};
 //!
 //! let k: Key = [0; AesGcm128::KEY_LEN].into();
 //! let nonce: Nonce = [0; AesGcm128::NONCE_LEN].into();
@@ -37,9 +31,9 @@
 //! // or:
 //! // platform-specific
 //! // only use these directly after performing runtime checks for the necessary CPU features
-//! // use libcrux_aesgcm::aes_gcm_128::portable::PortableAesGcm128 as AesGcm128;
-//! // use libcrux_aesgcm::aes_gcm_128::neon::NeonAesGcm128 as AesGcm128;
-//! // use libcrux_aesgcm::aes_gcm_128::x64::X64AesGcm128 as AesGcm128;
+//! // use libcrux_aesgcm::PortableAesGcm128 as AesGcm128;
+//! // use libcrux_aesgcm::NeonAesGcm128 as AesGcm128;
+//! // use libcrux_aesgcm::X64AesGcm128 as AesGcm128;
 //!
 //! let algo = AesGcm128;
 //!
@@ -85,36 +79,3 @@ aesgcm!(State<T, U>, Aes128CtrContext);
 use super::aes_gcm::platform_mod;
 
 platform_mod!(AesGcm128, "AES-GCM 128");
-
-pub mod portable {
-    //! A portable, bit-sliced implementation of AES-GCM 128.
-    //!
-    //! For usage examples see [`aes_gcm_128`].
-    use super::*;
-    #[cfg(doc)]
-    use crate::aes_gcm_128;
-    platform_mod!(PortableAesGcm128, "AES-GCM 128 (portable)");
-}
-pub mod neon {
-    //! An Aarch64-optimised implementation of AES-GCM 128 using the AES instructions.
-    //!
-    //! This module must only be used when ARM AES instructions are available.
-    //!
-    //! For usage examples see [`aes_gcm_128`].
-    use super::*;
-    #[cfg(doc)]
-    use crate::aes_gcm_128;
-    platform_mod!(NeonAesGcm128, "AES-GCM 128 (neon)");
-}
-
-pub mod x64 {
-    //! An x64-optimised implementation of AES-GCM 128 using AES-NI.
-    //!
-    //! This module must only be used when AES-NI instructions are available.
-    //!
-    //! For usage examples see [`aes_gcm_128`].
-    use super::*;
-    #[cfg(doc)]
-    use crate::aes_gcm_128;
-    platform_mod!(X64AesGcm128, "AES-GCM 128 (x64)");
-}

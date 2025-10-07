@@ -15,12 +15,6 @@
 //! use libcrux_aesgcm::AeadConsts as _;
 //! // multiplexed API
 //! use libcrux_aesgcm::{AesGcm256, aes_gcm_256::{Key, Tag, Nonce}};
-//! // or:
-//! // platform-specific
-//! // only use these directly after performing runtime checks for the necessary CPU features
-//! // use libcrux_aesgcm::aes_gcm_256::portable::{Key, Tag, Nonce};
-//! // use libcrux_aesgcm::aes_gcm_256::neon::{Key, Tag, Nonce};
-//! // use libcrux_aesgcm::aes_gcm_256::x64::{Key, Tag, Nonce};
 //!
 //! let k: Key = [0; AesGcm256::KEY_LEN].into();
 //! let nonce: Nonce = [0; AesGcm256::NONCE_LEN].into();
@@ -43,9 +37,9 @@
 //! // or:
 //! // platform-specific
 //! // only use these directly after performing runtime checks for the necessary CPU features
-//! // use libcrux_aesgcm::aes_gcm_256::portable::PortableAesGcm256 as AesGcm256;
-//! // use libcrux_aesgcm::aes_gcm_256::neon::NeonAesGcm256 as AesGcm256;
-//! // use libcrux_aesgcm::aes_gcm_256::x64::X64AesGcm256 as AesGcm256;
+//! // use libcrux_aesgcm::PortableAesGcm256 as AesGcm256;
+//! // use libcrux_aesgcm::NeonAesGcm256 as AesGcm256;
+//! // use libcrux_aesgcm::X64AesGcm256 as AesGcm256;
 //!
 //! let algo = AesGcm256;
 //!
@@ -91,36 +85,3 @@ aesgcm!(State<T, U>, Aes256CtrContext);
 use super::aes_gcm::platform_mod;
 
 platform_mod!(AesGcm256, "AES-GCM 256");
-
-pub mod portable {
-    //! A portable, bit-sliced implementation of AES-GCM 256.
-    //!
-    //! For usage examples see [`aes_gcm_256`].
-    use super::*;
-    #[cfg(doc)]
-    use crate::aes_gcm_256;
-    platform_mod!(PortableAesGcm256, "AES-GCM 256 (portable)");
-}
-pub mod neon {
-    //! An Aarch64-optimised implementation of AES-GCM 256 using the AES instructions.
-    //!
-    //! This module must only be used when ARM AES instructions are available.
-    //!
-    //! For usage examples see [`aes_gcm_256`].
-    use super::*;
-    #[cfg(doc)]
-    use crate::aes_gcm_256;
-    platform_mod!(NeonAesGcm256, "AES-GCM 256 (neon)");
-}
-
-pub mod x64 {
-    //! An x64-optimised implementation of AES-GCM 256 using AES-NI.
-    //!
-    //! This module must only be used when AES-NI instructions are available.
-    //!
-    //! For usage examples see [`aes_gcm_256`].
-    use super::*;
-    #[cfg(doc)]
-    use crate::aes_gcm_256;
-    platform_mod!(X64AesGcm256, "AES-GCM 256 (x64)");
-}

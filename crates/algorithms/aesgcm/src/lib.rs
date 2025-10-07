@@ -16,12 +16,6 @@
 //! // Multiplexed API
 //! use libcrux_aesgcm::AeadConsts as _;
 //! use libcrux_aesgcm::{AesGcm128, aes_gcm_128::{Key, Tag, Nonce}};
-//! // or:
-//! // platform-specific
-//! // only use these directly after performing runtime checks for the necessary CPU features
-//! // use libcrux_aesgcm::aes_gcm_128::portable::{Key, Tag, Nonce}};
-//! // use libcrux_aesgcm::aes_gcm_128::neon::{Key, Tag, Nonce}};
-//! // use libcrux_aesgcm::aes_gcm_128::x64::{Key, Tag, Nonce}};
 //!
 //! let k: Key = [0; AesGcm128::KEY_LEN].into();
 //! let nonce: Nonce = [0; AesGcm128::NONCE_LEN].into();
@@ -37,11 +31,7 @@
 //! ```
 //!
 //! Users who want to use a specific implementation directly can access
-//! them via the `Key`, `Tag`, and `Nonce` structs in the respective
-//! submodules:
-//!  - Portable: [`aes_gcm_128::portable`], [`aes_gcm_256::portable`]
-//!  - ARM NEON: [`aes_gcm_128::neon`], [`aes_gcm_256::neon`]
-//!  - x86_x64: [`aes_gcm_128::x64`], [`aes_gcm_128::x64`]
+//! them via the generic [`Key`], [`Tag`], and [`Nonce`] structs.
 //!
 //! Access to [lower-level AEAD APIs](libcrux_traits::aead) (mostly for libcrux-internal use) is
 //! available via the following structs:
@@ -98,7 +88,7 @@ pub(crate) mod implementations {
 
     /// Access to [lower-level AEAD APIs](libcrux_traits::aead) for portable AES-GCM 128.
     ///
-    /// For more information on usage, see [`aes_gcm_128::portable`].
+    /// For more information on usage, see [`aes_gcm_128`].
     #[derive(Clone, Copy, PartialEq, Eq)]
     pub struct PortableAesGcm128;
 
@@ -109,7 +99,7 @@ pub(crate) mod implementations {
     /// Should only be used directly after performing runtime checks for the necessary CPU
     /// features.
     ///
-    /// For more information on usage, see [`aes_gcm_128::neon`].
+    /// For more information on usage, see [`aes_gcm_128`].
     pub struct NeonAesGcm128;
     #[cfg(not(feature = "simd128"))]
     /// Access to [lower-level AEAD APIs](libcrux_traits::aead) for portable AES-GCM 128 (no ARM NEON available).
@@ -117,7 +107,7 @@ pub(crate) mod implementations {
     /// Should only be used directly after performing runtime checks for the necessary CPU
     /// features.
     ///
-    /// For more information on usage, see [`aes_gcm_128::neon`].
+    /// For more information on usage, see [`aes_gcm_128`].
     pub type NeonAesGcm128 = PortableAesGcm128;
 
     /// Access to [lower-level AEAD APIs](libcrux_traits::aead) for x86_64 AES-NI optimized AES-GCM 128.
@@ -125,7 +115,7 @@ pub(crate) mod implementations {
     /// Should only be used directly after performing runtime checks for the necessary CPU
     /// features.
     ///
-    /// For more information on usage, see [`aes_gcm_128::x64`].
+    /// For more information on usage, see [`aes_gcm_128`].
     #[cfg(feature = "simd256")]
     #[derive(Clone, Copy, PartialEq, Eq)]
     pub struct X64AesGcm128;
@@ -135,7 +125,7 @@ pub(crate) mod implementations {
     /// Should only be used directly after performing runtime checks for the necessary CPU
     /// features.
     ///
-    /// For more information on usage, see [`aes_gcm_128::x64`].
+    /// For more information on usage, see [`aes_gcm_128`].
     pub type X64AesGcm128 = PortableAesGcm128;
 
     /// Access to [lower-level AEAD APIs](libcrux_traits::aead) for platform-multiplexed AES-GCM 256.
@@ -151,33 +141,33 @@ pub(crate) mod implementations {
 
     /// Access to [lower-level AEAD APIs](libcrux_traits::aead) for portable AES-GCM 256.
     ///
-    /// For more information on usage, see [`aes_gcm_256::portable`].
+    /// For more information on usage, see [`aes_gcm_256`].
     #[derive(Clone, Copy, PartialEq, Eq)]
     pub struct PortableAesGcm256;
 
     /// Access to [lower-level AEAD APIs](libcrux_traits::aead) for ARM Neon optimized AES-GCM 256.
     ///
-    /// For more information on usage, see [`aes_gcm_256::neon`].
+    /// For more information on usage, see [`aes_gcm_256`].
     #[cfg(feature = "simd128")]
     #[derive(Clone, Copy, PartialEq, Eq)]
     pub struct NeonAesGcm256;
 
     /// Access to [lower-level AEAD APIs](libcrux_traits::aead) for portable AES-GCM 256 (no ARM NEON available).
     ///
-    /// For more information on usage, see [`aes_gcm_256::neon`].
+    /// For more information on usage, see [`aes_gcm_256`].
     #[cfg(not(feature = "simd128"))]
     pub type NeonAesGcm256 = PortableAesGcm256;
 
     /// Access to [lower-level AEAD APIs](libcrux_traits::aead) for x86_64 AES-NI optimized AES-GCM 256.
     ///
-    /// For more information on usage, see [`aes_gcm_256::x64`].
+    /// For more information on usage, see [`aes_gcm_256`].
     #[derive(Clone, Copy, PartialEq, Eq)]
     #[cfg(feature = "simd256")]
     pub struct X64AesGcm256;
 
     /// Access to [lower-level AEAD APIs](libcrux_traits::aead) for portable AES-GCM 256 (no AES-NI available).
     ///
-    /// For more information on usage, see [`aes_gcm_256::x64`].
+    /// For more information on usage, see [`aes_gcm_256`].
     #[cfg(not(feature = "simd256"))]
     pub type X64AesGcm256 = PortableAesGcm256;
 }
@@ -391,3 +381,18 @@ pub use aes_gcm_256::KEY_LEN as AES_GCM_256_KEY_LEN;
 // traits re-exports
 pub use libcrux_traits::aead::consts::AeadConsts;
 pub use libcrux_traits::aead::typed_refs::Aead;
+
+// API struct re-exports
+pub use libcrux_traits::aead::typed_owned::Key;
+
+pub use libcrux_traits::aead::typed_owned::Nonce;
+
+pub use libcrux_traits::aead::typed_owned::Tag;
+
+pub use libcrux_traits::aead::typed_refs::KeyRef;
+
+pub use libcrux_traits::aead::typed_refs::TagRef;
+
+pub use libcrux_traits::aead::typed_refs::TagMut;
+
+pub use libcrux_traits::aead::typed_refs::NonceRef;
