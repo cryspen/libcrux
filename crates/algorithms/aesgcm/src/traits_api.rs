@@ -57,13 +57,6 @@ macro_rules! api {
                         aad: &[u8],
                         plaintext: &[u8],
                     ) -> Result<(), EncryptError> {
-                        if plaintext.len() / crate::aes::AES_BLOCK_LEN >= (u32::MAX - 1) as usize {
-                            return Err(EncryptError::PlaintextTooLong);
-                        }
-
-                        if ciphertext.len() != plaintext.len() {
-                            return Err(EncryptError::WrongCiphertextLength);
-                        }
                         // SIMD256 needs to come first because SIMD128 is true for
                         // x64 as well, but we don't actually implement it.
                         if libcrux_platform::simd256_support() && libcrux_platform::aes_ni_support() {
@@ -85,12 +78,6 @@ macro_rules! api {
                         ciphertext: &[u8],
                         tag: &Tag,
                     ) -> Result<(), DecryptError> {
-                        if plaintext.len() / crate::aes::AES_BLOCK_LEN >= (u32::MAX - 1) as usize {
-                            return Err(DecryptError::PlaintextTooLong);
-                        }
-                        if ciphertext.len() != plaintext.len() {
-                            return Err(DecryptError::WrongPlaintextLength);
-                        }
                         // SIMD256 needs to come first because SIMD128 is true for
                         // x64 as well, but we don't actually implement it.
                         if libcrux_platform::simd256_support() && libcrux_platform::aes_ni_support() {
@@ -130,15 +117,7 @@ macro_rules! api {
                         aad: &[u8],
                         plaintext: &[u8],
                     ) -> Result<(), EncryptError> {
-                        if plaintext.len() / crate::aes::AES_BLOCK_LEN >= (u32::MAX - 1) as usize {
-                            return Err(EncryptError::PlaintextTooLong);
-                        }
-
-                        if ciphertext.len() != plaintext.len() {
-                            return Err(EncryptError::WrongCiphertextLength);
-                        }
-                        crate::portable::$variant::encrypt(key, nonce, aad, plaintext, ciphertext, tag);
-                        Ok(())
+                        crate::portable::$variant::encrypt(key, nonce, aad, plaintext, ciphertext, tag)
                     }
 
                     fn decrypt(
@@ -149,14 +128,7 @@ macro_rules! api {
                         ciphertext: &[u8],
                         tag: &Tag,
                     ) -> Result<(), DecryptError> {
-                        if plaintext.len() / crate::aes::AES_BLOCK_LEN >= (u32::MAX - 1) as usize {
-                            return Err(DecryptError::PlaintextTooLong);
-                        }
-                        if ciphertext.len() != plaintext.len() {
-                            return Err(DecryptError::WrongPlaintextLength);
-                        }
                         crate::portable::$variant::decrypt(key, nonce, aad, ciphertext, tag, plaintext)
-                            .map_err(|_| DecryptError::InvalidTag)
                     }
                 }
             }
@@ -186,15 +158,7 @@ macro_rules! api {
                         aad: &[u8],
                         plaintext: &[u8],
                     ) -> Result<(), EncryptError> {
-                        if plaintext.len() / crate::aes::AES_BLOCK_LEN >= (u32::MAX - 1) as usize {
-                            return Err(EncryptError::PlaintextTooLong);
-                        }
-
-                        if ciphertext.len() != plaintext.len() {
-                            return Err(EncryptError::WrongCiphertextLength);
-                        }
-                        crate::neon::$variant::encrypt(key, nonce, aad, plaintext, ciphertext, tag);
-                        Ok(())
+                        crate::neon::$variant::encrypt(key, nonce, aad, plaintext, ciphertext, tag)
                     }
 
                     fn decrypt(
@@ -205,14 +169,7 @@ macro_rules! api {
                         ciphertext: &[u8],
                         tag: &Tag,
                     ) -> Result<(), DecryptError> {
-                        if plaintext.len() / crate::aes::AES_BLOCK_LEN >= (u32::MAX - 1) as usize {
-                            return Err(DecryptError::PlaintextTooLong);
-                        }
-                        if ciphertext.len() != plaintext.len() {
-                            return Err(DecryptError::WrongPlaintextLength);
-                        }
                         crate::neon::$variant::decrypt(key, nonce, aad, ciphertext, tag, plaintext)
-                            .map_err(|_| DecryptError::InvalidTag)
                     }
                 }
             }
@@ -242,14 +199,7 @@ macro_rules! api {
                         aad: &[u8],
                         plaintext: &[u8],
                     ) -> Result<(), EncryptError> {
-                        if plaintext.len() / crate::aes::AES_BLOCK_LEN >= (u32::MAX - 1) as usize {
-                            return Err(EncryptError::PlaintextTooLong);
-                        }
-                        if ciphertext.len() != plaintext.len() {
-                            return Err(EncryptError::WrongCiphertextLength);
-                        }
-                        crate::x64::$variant::encrypt(key, nonce, aad, plaintext, ciphertext, tag);
-                        Ok(())
+                        crate::x64::$variant::encrypt(key, nonce, aad, plaintext, ciphertext, tag)
                     }
 
                     fn decrypt(
@@ -260,14 +210,7 @@ macro_rules! api {
                         ciphertext: &[u8],
                         tag: &Tag,
                     ) -> Result<(), DecryptError> {
-                        if plaintext.len() / crate::aes::AES_BLOCK_LEN >= (u32::MAX - 1) as usize {
-                            return Err(DecryptError::PlaintextTooLong);
-                        }
-                        if ciphertext.len() != plaintext.len() {
-                            return Err(DecryptError::WrongPlaintextLength);
-                        }
                         crate::x64::$variant::decrypt(key, nonce, aad, ciphertext, tag, plaintext)
-                            .map_err(|_| DecryptError::InvalidTag)
                     }
                 }
             }

@@ -80,10 +80,6 @@ pub(crate) trait State {
     ) -> Result<(), DecryptError>;
 }
 
-/// AES-GCM decryption error.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub(crate) struct DecryptError();
-
 pub(crate) mod implementations {
 
     #[cfg(doc)]
@@ -181,6 +177,8 @@ pub const TAG_LEN: usize = 16;
 /// Nonce length.
 pub const NONCE_LEN: usize = 12;
 
+pub use libcrux_traits::aead::arrayref::{DecryptError, EncryptError, KeyGenError};
+
 /// Generic AES-GCM encrypt.
 pub(crate) fn encrypt<S: State>(
     key: &[u8],
@@ -189,13 +187,24 @@ pub(crate) fn encrypt<S: State>(
     plaintext: &[u8],
     ciphertext: &mut [u8],
     tag: &mut [u8],
-) {
+) -> Result<(), EncryptError> {
+    // plaintext length check
+    if plaintext.len() / crate::aes::AES_BLOCK_LEN >= (u32::MAX - 1) as usize {
+        return Err(EncryptError::PlaintextTooLong);
+    }
+
+    // ensure ciphertext and plaintext have same length
+    if ciphertext.len() != plaintext.len() {
+        return Err(EncryptError::WrongCiphertextLength);
+    }
     debug_assert!(nonce.len() == NONCE_LEN);
     debug_assert!(tag.len() == TAG_LEN);
 
     let mut st = S::init(key);
     st.set_nonce(nonce);
     st.encrypt(aad, plaintext, ciphertext, tag);
+
+    Ok(())
 }
 
 /// Generic AES-GCM decrypt.
@@ -207,6 +216,15 @@ pub(crate) fn decrypt<S: State>(
     tag: &[u8],
     plaintext: &mut [u8],
 ) -> Result<(), DecryptError> {
+    // plaintext length check
+    if plaintext.len() / crate::aes::AES_BLOCK_LEN >= (u32::MAX - 1) as usize {
+        return Err(DecryptError::PlaintextTooLong);
+    }
+
+    // ensure ciphertext and plaintext have same length
+    if ciphertext.len() != plaintext.len() {
+        return Err(DecryptError::WrongPlaintextLength);
+    }
     debug_assert!(nonce.len() == NONCE_LEN);
     debug_assert!(tag.len() == TAG_LEN);
 
@@ -221,7 +239,7 @@ macro_rules! pub_crate_mod {
         #[doc = $variant_comment]
         pub mod $mod_name {
             use crate::$mod_name::KEY_LEN;
-            use crate::{platform, DecryptError};
+            use crate::{platform, DecryptError, EncryptError};
 
             type State = $state;
 
@@ -234,9 +252,9 @@ macro_rules! pub_crate_mod {
                 plaintext: &[u8],
                 ciphertext: &mut [u8],
                 tag: &mut [u8],
-            ) {
+            ) -> Result<(), EncryptError> {
                 debug_assert!(key.len() == KEY_LEN);
-                crate::encrypt::<State>(key, nonce, aad, plaintext, ciphertext, tag);
+                crate::encrypt::<State>(key, nonce, aad, plaintext, ciphertext, tag)
             }
 
             #[doc = $variant_comment]
@@ -276,7 +294,7 @@ pub(crate) mod x64 {
             #[doc = $variant_comment]
             pub mod $mod_name {
                 use crate::$mod_name::KEY_LEN;
-                use crate::{platform, DecryptError};
+                use crate::{platform, DecryptError, EncryptError};
 
                 type State = $state;
 
@@ -289,7 +307,7 @@ pub(crate) mod x64 {
                     plaintext: &[u8],
                     ciphertext: &mut [u8],
                     tag: &mut [u8],
-                ) {
+                ) -> Result<(), EncryptError> {
                     debug_assert!(key.len() == KEY_LEN);
 
                     #[inline]
@@ -302,14 +320,14 @@ pub(crate) mod x64 {
                         plaintext: &[u8],
                         ciphertext: &mut [u8],
                         tag: &mut [u8],
-                    ) {
-                        crate::encrypt::<State>(key, nonce, aad, plaintext, ciphertext, tag);
+                    ) -> Result<(), EncryptError> {
+                        crate::encrypt::<State>(key, nonce, aad, plaintext, ciphertext, tag)
                     }
 
                     #[allow(unsafe_code)]
                     unsafe {
                         inner(key, nonce, aad, plaintext, ciphertext, tag)
-                    };
+                    }
                 }
 
                 #[doc = $variant_comment]

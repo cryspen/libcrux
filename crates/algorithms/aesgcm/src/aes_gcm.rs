@@ -95,7 +95,7 @@ macro_rules! aesgcm {
                     self.aes_state.update(2, ciphertext, plaintext);
                     Ok(())
                 } else {
-                    Err(DecryptError())
+                    Err(DecryptError::InvalidTag)
                 }
             }
         }
