@@ -106,15 +106,24 @@ pub(crate) mod implementations {
     #[derive(Clone, Copy, PartialEq, Eq)]
     /// Access to [lower-level AEAD APIs](libcrux_traits::aead) for ARM Neon optimized AES-GCM 128.
     ///
+    /// Should only be used directly after performing runtime checks for the necessary CPU
+    /// features.
+    ///
     /// For more information on usage, see [`aes_gcm_128::neon`].
     pub struct NeonAesGcm128;
     #[cfg(not(feature = "simd128"))]
     /// Access to [lower-level AEAD APIs](libcrux_traits::aead) for portable AES-GCM 128 (no ARM NEON available).
     ///
+    /// Should only be used directly after performing runtime checks for the necessary CPU
+    /// features.
+    ///
     /// For more information on usage, see [`aes_gcm_128::neon`].
     pub type NeonAesGcm128 = PortableAesGcm128;
 
     /// Access to [lower-level AEAD APIs](libcrux_traits::aead) for x86_64 AES-NI optimized AES-GCM 128.
+    ///
+    /// Should only be used directly after performing runtime checks for the necessary CPU
+    /// features.
     ///
     /// For more information on usage, see [`aes_gcm_128::x64`].
     #[cfg(feature = "simd256")]
@@ -122,6 +131,9 @@ pub(crate) mod implementations {
     pub struct X64AesGcm128;
     #[cfg(not(feature = "simd256"))]
     /// Access to [lower-level AEAD APIs](libcrux_traits::aead) for portable AES-GCM 128 (no AES-NI available).
+    ///
+    /// Should only be used directly after performing runtime checks for the necessary CPU
+    /// features.
     ///
     /// For more information on usage, see [`aes_gcm_128::x64`].
     pub type X64AesGcm128 = PortableAesGcm128;
