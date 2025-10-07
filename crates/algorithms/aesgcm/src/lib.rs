@@ -6,20 +6,19 @@
 //! implementation.
 //!
 //! For general use, we provide a platform-multiplexing API via the
-//! `aes_gcm_128::{Key, Tag, Nonce}` and `aes_gcm_256::{Key, Tag,
-//! Nonce}` structs, which selects the most performant implementation at
-//! runtime.
+//! [`AesGcm128Key`] and [`AesGcm256Key`] structs, which selects the most
+//! performant implementation at runtime.
 //!
 //! Usage example:
 //!
 //! ```rust
-//! // Multiplexed API
+//! // Multiplexed owned API
 //! use libcrux_aesgcm::AeadConsts as _;
-//! use libcrux_aesgcm::{AesGcm128, aes_gcm_128::{Key, Tag, Nonce}};
+//! use libcrux_aesgcm::{AesGcm128, AesGcm128Key, AesGcm128Nonce, AesGcm128Tag, NONCE_LEN, TAG_LEN};
 //!
-//! let k: Key = [0; AesGcm128::KEY_LEN].into();
-//! let nonce: Nonce = [0; AesGcm128::NONCE_LEN].into();
-//! let mut tag: Tag = [0; AesGcm128::TAG_LEN].into();
+//! let k: AesGcm128Key = [0; AesGcm128::KEY_LEN].into();
+//! let nonce: AesGcm128Nonce = [0; NONCE_LEN].into();
+//! let mut tag: AesGcm128Tag = [0; TAG_LEN].into();
 //!
 //! let pt = b"the quick brown fox jumps over the lazy dog";
 //! let mut ct = [0; 43];
@@ -30,15 +29,15 @@
 //! assert_eq!(pt, &pt_out);
 //! ```
 //!
-//! Users who want to use a specific implementation directly can access
-//! them via the generic [`Key`], [`Tag`], and [`Nonce`] structs.
+//! We also provide access to [lower-level AEAD
+//! APIs](libcrux_traits::aead) for the platform-multiplexing
+//! implementation with the [`AesGcm128`] and [`AesGcm256`] structs.
 //!
-//! Access to [lower-level AEAD APIs](libcrux_traits::aead) (mostly for libcrux-internal use) is
-//! available via the following structs:
-//! - [`AesGcm128`], [`AesGcm256`] (platform-multiplexing)
-//! - [`PortableAesGcm128`], [`PortableAesGcm256`]
-//! - [`NeonAesGcm128`], [`NeonAesGcm256`]
-//! - [`X64AesGcm128`], [`X64AesGcm256`]
+//! Users who want to use a platform-specific implementation directly can
+//! access them in the submodules `aes_gcm_128::{portable, x64, neon}`.
+//!
+//!
+
 #![no_std]
 #![deny(unsafe_code)]
 #[cfg(feature = "std")]
@@ -52,7 +51,143 @@ mod platform;
 mod traits_api;
 
 mod aes_gcm;
+
+/// Implementations of AES-GCM 128
+///
+/// This module contains implementations of AES-GCM 128:
+/// - [`AesGcm128`]: A platform-multiplexing implementation, which will at
+/// runtime select the most performant implementation among the following for the given
+/// architecture at runtime.
+#[cfg_attr(
+    feature = "simd256",
+    doc = "- [`aes_gcm_128::x64::X64AesGcm128`]: An implementation optimized for x86_64 AES-NI instruction sets."
+)]
+#[cfg_attr(
+    feature = "simd128",
+    doc = "- [`aes_gcm_128::neon::NeonAesGcm128`]: An implementation optimized for ARM NEON instruction sets."
+)]
+/// - [`aes_gcm_128::portable::PortableAesGcm128`]: A portable, bit-sliced implementation.
+///
+/// See [`EncryptError`],
+/// [`DecryptError`](libcrux_traits::aead::arrayref::DecryptError) and
+/// [`KeyGenError`](libcrux_traits::aead::arrayref::DecryptError) for
+/// errors.
+///
+/// The [`libcrux_traits`](libcrux_traits) crate provides two typed APIs for AEADs:
+///
+/// ## Owned key-centric API
+/// This API operates on owned arrays for keys, nonces and tags:
+/// ```rust
+/// // Using the multiplexed implementation.
+/// use libcrux_aesgcm::AeadConsts as _;
+/// use libcrux_aesgcm::{NONCE_LEN, TAG_LEN, aes_gcm_128::{AesGcm128, Key, Tag, Nonce}};
+///
+/// let k: Key = [0; AesGcm128::KEY_LEN].into();
+/// let nonce: Nonce = [0; NONCE_LEN].into();
+/// let mut tag: Tag = [0; TAG_LEN].into();
+///
+/// let pt = b"the quick brown fox jumps over the lazy dog";
+/// let mut ct = [0; 43];
+/// let mut pt_out = [0; 43];
+///
+/// k.encrypt(&mut ct, &mut tag, &nonce, b"", pt).unwrap();
+/// k.decrypt(&mut pt_out, &nonce, b"", &ct, &tag).unwrap();
+/// assert_eq!(pt, &pt_out);
+/// ```
+///
+/// ## Refs key-centric API
+/// This API operates on array references for keys, nonces and tags:
+/// ```rust
+/// // Using the multiplexed API
+/// use libcrux_aesgcm::{AeadConsts as _, Aead as _};
+/// use libcrux_aesgcm::{NONCE_LEN, TAG_LEN, aes_gcm_128::{AesGcm128}};
+///
+/// let algo = AesGcm128;
+///
+/// let mut tag_bytes = [0; TAG_LEN];
+/// let tag = algo.new_tag_mut(&mut tag_bytes).unwrap();
+///
+/// let key = algo.new_key(&[0; AesGcm128::KEY_LEN]).unwrap();
+/// let nonce = algo.new_nonce(&[0; NONCE_LEN]).unwrap();
+///
+/// let pt = b"the quick brown fox jumps over the lazy dog";
+/// let mut ct = [0; 43];
+/// let mut pt_out = [0; 43];
+///
+/// key.encrypt(&mut ct, tag, nonce, b"", pt).unwrap();
+/// let tag = algo.new_tag(&tag_bytes).unwrap();
+/// key.decrypt(&mut pt_out, nonce, b"", &ct, tag).unwrap();
+/// assert_eq!(pt, &pt_out);
+/// ```
 pub mod aes_gcm_128;
+
+/// Implementations of AES-GCM 256
+///
+/// This module contains implementations of AES-GCM 256:
+/// - [`AesGcm256`]: A platform-multiplexing implementation, which will at
+/// runtime select the most performant implementation among the following for the given
+/// architecture at runtime.
+#[cfg_attr(
+    feature = "simd256",
+    doc = "- [`aes_gcm_256::x64::X64AesGcm256`]: An implementation optimized for x86_64 AES-NI instruction sets."
+)]
+#[cfg_attr(
+    feature = "simd128",
+    doc = "- [`aes_gcm_256::neon::NeonAesGcm256`]: An implementation optimized for ARM NEON instruction sets."
+)]
+/// - [`aes_gcm_256::portable::PortableAesGcm256`]: A portable, bit-sliced implementation.
+///
+/// See [`EncryptError`],
+/// [`DecryptError`](libcrux_traits::aead::arrayref::DecryptError) and
+/// [`KeyGenError`](libcrux_traits::aead::arrayref::DecryptError) for
+/// errors.
+///
+/// The [`libcrux_traits`](libcrux_traits) crate provides two typed APIs for AEADs:
+///
+/// ## Owned key-centric API
+/// This API operates on owned arrays for keys, nonces and tags:
+/// ```rust
+/// // Using the multiplexed implementation.
+/// use libcrux_aesgcm::AeadConsts as _;
+/// use libcrux_aesgcm::{NONCE_LEN, TAG_LEN, aes_gcm_256::{AesGcm256, Key, Tag, Nonce}};
+///
+/// let k: Key = [0; AesGcm256::KEY_LEN].into();
+/// let nonce: Nonce = [0; NONCE_LEN].into();
+/// let mut tag: Tag = [0; TAG_LEN].into();
+///
+/// let pt = b"the quick brown fox jumps over the lazy dog";
+/// let mut ct = [0; 43];
+/// let mut pt_out = [0; 43];
+///
+/// k.encrypt(&mut ct, &mut tag, &nonce, b"", pt).unwrap();
+/// k.decrypt(&mut pt_out, &nonce, b"", &ct, &tag).unwrap();
+/// assert_eq!(pt, &pt_out);
+/// ```
+///
+/// ## Refs key-centric API
+/// This API operates on array references for keys, nonces and tags:
+/// ```rust
+/// // Using the multiplexed API
+/// use libcrux_aesgcm::{AeadConsts as _, Aead as _};
+/// use libcrux_aesgcm::{NONCE_LEN, TAG_LEN, aes_gcm_256::{AesGcm256}};
+///
+/// let algo = AesGcm256;
+///
+/// let mut tag_bytes = [0; TAG_LEN];
+/// let tag = algo.new_tag_mut(&mut tag_bytes).unwrap();
+///
+/// let key = algo.new_key(&[0; AesGcm256::KEY_LEN]).unwrap();
+/// let nonce = algo.new_nonce(&[0; NONCE_LEN]).unwrap();
+///
+/// let pt = b"the quick brown fox jumps over the lazy dog";
+/// let mut ct = [0; 43];
+/// let mut pt_out = [0; 43];
+///
+/// key.encrypt(&mut ct, tag, nonce, b"", pt).unwrap();
+/// let tag = algo.new_tag(&tag_bytes).unwrap();
+/// key.decrypt(&mut pt_out, nonce, b"", &ct, tag).unwrap();
+/// assert_eq!(pt, &pt_out);
+/// ```
 pub mod aes_gcm_256;
 
 /// Trait for an AES State.
@@ -171,7 +306,7 @@ pub(crate) mod implementations {
     #[cfg(not(feature = "simd256"))]
     pub type X64AesGcm256 = PortableAesGcm256;
 }
-pub use implementations::*;
+// pub use implementations::*;
 
 /// Tag length.
 pub const TAG_LEN: usize = 16;
@@ -373,26 +508,22 @@ pub(crate) mod x64 {
     x64_pub_crate_mod!(r"AES-GCM 256 ", aes_gcm_256, crate::aes_gcm_256::State<platform::x64::State, platform::x64::FieldElement>);
 }
 
-#[doc(inline)]
-pub use aes_gcm_128::KEY_LEN as AES_GCM_128_KEY_LEN;
-#[doc(inline)]
-pub use aes_gcm_256::KEY_LEN as AES_GCM_256_KEY_LEN;
-
 // traits re-exports
 pub use libcrux_traits::aead::consts::AeadConsts;
 pub use libcrux_traits::aead::typed_refs::Aead;
 
-// API struct re-exports
-pub use libcrux_traits::aead::typed_owned::Key;
+pub use implementations::{AesGcm128, AesGcm256};
 
-pub use libcrux_traits::aead::typed_owned::Nonce;
+#[doc(inline)]
+pub use aes_gcm_128::Key as AesGcm128Key;
+#[doc(inline)]
+pub use aes_gcm_128::Nonce as AesGcm128Nonce;
+#[doc(inline)]
+pub use aes_gcm_128::Tag as AesGcm128Tag;
 
-pub use libcrux_traits::aead::typed_owned::Tag;
-
-pub use libcrux_traits::aead::typed_refs::KeyRef;
-
-pub use libcrux_traits::aead::typed_refs::TagRef;
-
-pub use libcrux_traits::aead::typed_refs::TagMut;
-
-pub use libcrux_traits::aead::typed_refs::NonceRef;
+#[doc(inline)]
+pub use aes_gcm_256::Key as AesGcm256Key;
+#[doc(inline)]
+pub use aes_gcm_256::Nonce as AesGcm256Nonce;
+#[doc(inline)]
+pub use aes_gcm_256::Tag as AesGcm256Tag;

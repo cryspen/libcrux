@@ -64,19 +64,19 @@ fn aes128() {
 
 #[test]
 fn aes128_portable() {
-    test_variant(libcrux_aesgcm::PortableAesGcm128);
+    test_variant(libcrux_aesgcm::aes_gcm_128::portable::PortableAesGcm128);
 }
 
 #[cfg(feature = "simd128")]
 #[test]
 fn aes128_neon() {
-    test_variant(libcrux_aesgcm::NeonAesGcm128);
+    test_variant(libcrux_aesgcm::aes_gcm_128::neon::NeonAesGcm128);
 }
 
 #[cfg(feature = "simd256")]
 #[test]
 fn aes128_x64() {
-    test_variant(libcrux_aesgcm::X64AesGcm128);
+    test_variant(libcrux_aesgcm::aes_gcm_128::x64::X64AesGcm128);
 }
 
 #[test]
@@ -87,17 +87,17 @@ fn aes256() {
 
 #[test]
 fn aes256_portable() {
-    test_variant(libcrux_aesgcm::PortableAesGcm256);
+    test_variant(libcrux_aesgcm::aes_gcm_256::portable::PortableAesGcm256);
 }
 
 #[cfg(feature = "simd128")]
 #[test]
 fn aes256_neon() {
-    test_variant(libcrux_aesgcm::NeonAesGcm256);
+    test_variant(libcrux_aesgcm::aes_gcm_256::portable::NeonAesGcm256);
 }
 
 #[cfg(feature = "simd256")]
 #[test]
 fn aes256_x64() {
-    test_variant(libcrux_aesgcm::X64AesGcm256);
+    test_variant(libcrux_aesgcm::aes_gcm_256::x64::X64AesGcm256);
 }
