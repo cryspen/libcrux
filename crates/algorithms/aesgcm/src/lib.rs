@@ -310,6 +310,7 @@ pub(crate) mod x64 {
                 ) -> Result<(), EncryptError> {
                     debug_assert!(key.len() == KEY_LEN);
 
+                    // due to use of `target_feature`, unsafe is needed here
                     #[inline]
                     #[target_feature(enable = "avx2", enable = "aes")]
                     #[allow(unsafe_code)]
@@ -342,6 +343,7 @@ pub(crate) mod x64 {
                 ) -> Result<(), DecryptError> {
                     debug_assert!(key.len() == KEY_LEN);
 
+                    // due to use of `target_feature`, unsafe is needed here
                     #[inline]
                     #[target_feature(enable = "avx2", enable = "aes")]
                     #[allow(unsafe_code)]
