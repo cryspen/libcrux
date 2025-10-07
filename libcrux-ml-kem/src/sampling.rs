@@ -90,6 +90,8 @@ fn sample_from_uniform_distribution_next<Vector: Operations, const K: usize, con
 
 #[inline(always)]
 #[hax_lib::fstar::verification_status(lax)]
+#[hax_lib::requires(sampled_coefficients.len() == K && out.len() == K)]
+#[hax_lib::ensures(|_| future(sampled_coefficients).len() == K && future(out).len() == K)]
 pub(super) fn sample_from_xof<const K: usize, Vector: Operations, Hasher: Hash>(
     seeds: &[[u8; 34]],
     sampled_coefficients: &mut [usize],

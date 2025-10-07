@@ -295,7 +295,7 @@ mod spec {
         hax_lib::fstar_prop_expr!(
             r#" Spec.Utils.is_i16b 1664 zeta0 /\ Spec.Utils.is_i16b 1664 zeta1 /\ 
                 Spec.Utils.is_i16b 1664 zeta2 /\ Spec.Utils.is_i16b 1664 zeta3 /\
-                Spec.Utils.is_i16b_array 3328 ${vec}"#
+                Spec.Utils.is_i16b_array (4*3328) ${vec}"#
         )
     }
 
