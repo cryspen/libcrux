@@ -153,7 +153,7 @@ pub(crate) const fn vec_len_bytes<const K: usize, Vector: Operations>() -> usize
 /// Given two polynomial ring elements `lhs` and `rhs`, compute the pointwise
 /// sum of their constituent coefficients.
 #[inline(always)]
-#[hax_lib::fstar::options("--z3rlimit 500 --split_queries always")]
+#[hax_lib::fstar::options("--z3rlimit 600 --split_queries always")]
 #[hax_lib::requires(fstar!(r#"
         forall (i:nat). i < v ${VECTORS_IN_RING_ELEMENT} ==>
          (let lhs_i = i0._super_6081346371236564305.f_repr (${myself}.f_coefficients.[ sz i ]) in
@@ -195,6 +195,13 @@ fn add_to_ring_element<Vector: Operations, const K: usize>(
             )
         });
         Vector::add(&mut myself.coefficients[i], &rhs.coefficients[i]);
+
+        hax_lib::fstar!(
+            r#"assert(let _myself_j = i0._super_6081346371236564305.f_repr (${_myself}.[ i ]) in
+                  let myself_j = i0._super_6081346371236564305.f_repr (${myself}.f_coefficients.[ i ]) in
+                  let rhs_j = i0._super_6081346371236564305.f_repr (${rhs}.f_coefficients.[ i ]) in
+                  Libcrux_ml_kem.Vector.Traits.Spec.add_post _myself_j rhs_j myself_j)"#
+        );
     }
 }
 

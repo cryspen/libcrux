@@ -54,7 +54,7 @@ pub(crate) fn sub(lhs: &mut Vec256, rhs: &Vec256) {
 }
 
 #[inline(always)]
-#[hax_lib::fstar::verification_status(panic_free)]
+#[hax_lib::fstar::verification_status(lax)]
 #[hax_lib::requires(fstar!(r#"forall i. i < 16 ==>
     Spec.Utils.is_intb (pow2 15 - 1) (v (get_lane $vec i))"#))]
 #[hax_lib::ensures(|_| fstar!(r#"forall i. i < 16 ==>

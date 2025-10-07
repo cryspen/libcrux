@@ -107,15 +107,34 @@ pub(crate) fn sub(lhs: &mut PortableVector, rhs: &PortableVector) {
 }
 
 #[inline(always)]
+#[hax_lib::requires(fstar!(r#"forall i. i < 16 ==> 
+    Spec.Utils.is_intb (pow2 15 - 1) (v (Seq.index ${vec}.f_elements i))"#))]
 #[hax_lib::ensures(|_| fstar!(r#"forall i. i < 16 ==>
     (v (Seq.index ${vec}_future.f_elements i) ==
       - v (Seq.index ${vec}.f_elements i))"#))]
 pub(crate) fn negate(vec: &mut PortableVector) {
+    #[cfg(hax)]
+    let _vec0 = (*vec).clone();
+
     for i in 0..FIELD_ELEMENTS_IN_VECTOR {
+        hax_lib::loop_invariant!(|i: usize| {
+            fstar!(
+                r#"
+              (forall j. j < v i ==> v (Seq.index ${vec}.f_elements j) ==
+                                     - v (Seq.index ${vec}.f_elements j)) /\
+              (forall j. j >= v i ==> (Seq.index ${vec}.f_elements j) == 
+                                      (Seq.index ${_vec0}.f_elements j))"#
+            )
+        });
+
         // XXX: secret integers don't implement `std::ops::Neg`
         // see https://github.com/cryspen/libcrux/issues/1089
         vec.elements[i] = 0.classify() - vec.elements[i];
     }
+    hax_lib::fstar!(
+        "assert (forall i. v (Seq.index ${vec}.f_elements i) ==
+    			           - v (Seq.index ${_vec0}.f_elements i))"
+    );
 }
 
 #[inline(always)]
