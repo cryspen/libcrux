@@ -54,6 +54,24 @@ pub(crate) fn sub(lhs: &mut Vec256, rhs: &Vec256) {
 }
 
 #[inline(always)]
+#[hax_lib::fstar::verification_status(panic_free)]
+#[hax_lib::requires(fstar!(r#"forall i. i < 16 ==>
+    Spec.Utils.is_intb (pow2 15 - 1) (v (get_lane $vec i))"#))]
+#[hax_lib::ensures(|_| fstar!(r#"forall i. i < 16 ==>
+    v (get_lane ${vec}_future i) == - (v (get_lane $vec i))"#))]
+pub(crate) fn negate(vec: &mut Vec256) {
+    #[cfg(hax)]
+    let vec_orig = vec.clone();
+
+    *vec = mm256_sign_epi16(*vec, mm256_set1_epi16(-1));
+
+    hax_lib::fstar!(
+        r#"assert (forall i. get_lane $vec i == neg (get_lane $vec_orig i));
+           assert (forall i. v (get_lane $vec i) == - v (get_lane $vec_orig i))"#
+    );
+}
+
+#[inline(always)]
 #[hax_lib::fstar::before(
     r#"
 let lemma_mul_i (lhs: t_Vec256) (i:nat) (c:i16):  Lemma

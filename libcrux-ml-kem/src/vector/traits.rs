@@ -20,7 +20,7 @@ pub trait Repr: Copy + Clone {
 pub trait Repr {}
 
 #[cfg(hax)]
-mod spec {
+pub(crate) mod spec {
     pub(crate) fn add_pre(lhs: &[i16; 16], rhs: &[i16; 16]) -> hax_lib::Prop {
         hax_lib::fstar_prop_expr!(
             r#"forall i. i < 16 ==> 
