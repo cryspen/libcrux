@@ -4,11 +4,11 @@
  * SPDX-License-Identifier: MIT or Apache-2.0
  *
  * This code was generated with the following revisions:
- * Charon: 3275bf4ad9dc8c25965dc5da6122653fc43c4287
- * Eurydice: d3b14228e2b5fe8710ec7efae31e4de2c96ed20d
- * Karamel: 095cdb73f246711f93f99a159ceca37cd2c227e1
- * F*: 4b3fc11774003a6ff7c09500ecb5f0145ca6d862
- * Libcrux: 2c2ff0e7ab8a33ae4dd193d06cd3eaa3bc9f75ab
+ * Charon: 667d2fc98984ff7f3df989c2367e6c1fa4a000e7
+ * Eurydice: 2381cbc416ef2ad0b561c362c500bc84f36b6785
+ * Karamel: 80f5435f2fc505973c469a4afcc8d875cddd0d8b
+ * F*: 71d8221589d4d438af3706d89cb653cf53e18aab
+ * Libcrux: 68dfed5a4a9e40277f62828471c029afed1ecdcc
  */
 
 #include "internal/libcrux_mlkem_portable.h"
@@ -17,16 +17,16 @@
 #include "libcrux_core.h"
 #include "libcrux_sha3_portable.h"
 
-KRML_MUSTINLINE void libcrux_ml_kem_hash_functions_portable_G(
-    Eurydice_slice input, uint8_t ret[64U]) {
+inline void libcrux_ml_kem_hash_functions_portable_G(Eurydice_slice input,
+                                                     uint8_t ret[64U]) {
   uint8_t digest[64U] = {0U};
   libcrux_sha3_portable_sha512(
       Eurydice_array_to_slice((size_t)64U, digest, uint8_t), input);
   memcpy(ret, digest, (size_t)64U * sizeof(uint8_t));
 }
 
-KRML_MUSTINLINE void libcrux_ml_kem_hash_functions_portable_H(
-    Eurydice_slice input, uint8_t ret[32U]) {
+inline void libcrux_ml_kem_hash_functions_portable_H(Eurydice_slice input,
+                                                     uint8_t ret[32U]) {
   uint8_t digest[32U] = {0U};
   libcrux_sha3_portable_sha256(
       Eurydice_array_to_slice((size_t)32U, digest, uint8_t), input);
@@ -2181,7 +2181,7 @@ A monomorphic instance of libcrux_ml_kem.hash_functions.portable.H_4a
 with const generics
 - K= 4
 */
-static KRML_MUSTINLINE void H_4a_ac(Eurydice_slice input, uint8_t ret[32U]) {
+static inline void H_4a_ac(Eurydice_slice input, uint8_t ret[32U]) {
   libcrux_ml_kem_hash_functions_portable_H(input, ret);
 }
 
@@ -2320,7 +2320,7 @@ A monomorphic instance of libcrux_ml_kem.hash_functions.portable.G_4a
 with const generics
 - K= 4
 */
-static KRML_MUSTINLINE void G_4a_ac(Eurydice_slice input, uint8_t ret[64U]) {
+static inline void G_4a_ac(Eurydice_slice input, uint8_t ret[64U]) {
   libcrux_ml_kem_hash_functions_portable_G(input, ret);
 }
 
@@ -2364,8 +2364,8 @@ libcrux_ml_kem.hash_functions.portable.shake128_init_absorb_final with const
 generics
 - K= 4
 */
-static KRML_MUSTINLINE PortableHash_44
-shake128_init_absorb_final_ac(uint8_t (*input)[34U]) {
+static inline PortableHash_44 shake128_init_absorb_final_ac(
+    uint8_t (*input)[34U]) {
   PortableHash_44 shake128_state;
   libcrux_sha3_generic_keccak_KeccakState_17 repeat_expression[4U];
   KRML_MAYBE_FOR4(i, (size_t)0U, (size_t)4U, (size_t)1U,
@@ -2391,8 +2391,8 @@ libcrux_ml_kem.hash_functions.portable.shake128_init_absorb_final_4a with const
 generics
 - K= 4
 */
-static KRML_MUSTINLINE PortableHash_44
-shake128_init_absorb_final_4a_ac(uint8_t (*input)[34U]) {
+static inline PortableHash_44 shake128_init_absorb_final_4a_ac(
+    uint8_t (*input)[34U]) {
   return shake128_init_absorb_final_ac(input);
 }
 
@@ -2402,7 +2402,7 @@ libcrux_ml_kem.hash_functions.portable.shake128_squeeze_first_three_blocks with
 const generics
 - K= 4
 */
-static KRML_MUSTINLINE void shake128_squeeze_first_three_blocks_ac(
+static inline void shake128_squeeze_first_three_blocks_ac(
     PortableHash_44 *st, uint8_t ret[4U][504U]) {
   uint8_t out[4U][504U] = {{0U}};
   KRML_MAYBE_FOR4(
@@ -2423,7 +2423,7 @@ libcrux_ml_kem.hash_functions.portable.shake128_squeeze_first_three_blocks_4a
 with const generics
 - K= 4
 */
-static KRML_MUSTINLINE void shake128_squeeze_first_three_blocks_4a_ac(
+static inline void shake128_squeeze_first_three_blocks_4a_ac(
     PortableHash_44 *self, uint8_t ret[4U][504U]) {
   shake128_squeeze_first_three_blocks_ac(self, ret);
 }
@@ -2514,8 +2514,8 @@ libcrux_ml_kem.hash_functions.portable.shake128_squeeze_next_block with const
 generics
 - K= 4
 */
-static KRML_MUSTINLINE void shake128_squeeze_next_block_ac(
-    PortableHash_44 *st, uint8_t ret[4U][168U]) {
+static inline void shake128_squeeze_next_block_ac(PortableHash_44 *st,
+                                                  uint8_t ret[4U][168U]) {
   uint8_t out[4U][168U] = {{0U}};
   KRML_MAYBE_FOR4(
       i, (size_t)0U, (size_t)4U, (size_t)1U, size_t i0 = i;
@@ -2535,8 +2535,8 @@ libcrux_ml_kem.hash_functions.portable.shake128_squeeze_next_block_4a with const
 generics
 - K= 4
 */
-static KRML_MUSTINLINE void shake128_squeeze_next_block_4a_ac(
-    PortableHash_44 *self, uint8_t ret[4U][168U]) {
+static inline void shake128_squeeze_next_block_4a_ac(PortableHash_44 *self,
+                                                     uint8_t ret[4U][168U]) {
   shake128_squeeze_next_block_ac(self, ret);
 }
 
@@ -2778,8 +2778,7 @@ with const generics
 - K= 4
 - LEN= 128
 */
-static KRML_MUSTINLINE void PRFxN_44(uint8_t (*input)[33U],
-                                     uint8_t ret[4U][128U]) {
+static inline void PRFxN_44(uint8_t (*input)[33U], uint8_t ret[4U][128U]) {
   uint8_t out[4U][128U] = {{0U}};
   KRML_MAYBE_FOR4(
       i, (size_t)0U, (size_t)4U, (size_t)1U, size_t i0 = i;
@@ -2799,8 +2798,7 @@ with const generics
 - K= 4
 - LEN= 128
 */
-static KRML_MUSTINLINE void PRFxN_4a_44(uint8_t (*input)[33U],
-                                        uint8_t ret[4U][128U]) {
+static inline void PRFxN_4a_44(uint8_t (*input)[33U], uint8_t ret[4U][128U]) {
   PRFxN_44(input, ret);
 }
 
@@ -2883,7 +2881,7 @@ sample_from_binomial_distribution_2_ea(Eurydice_slice randomness) {
     uint32_t even_bits = random_bits_as_u32 & 1431655765U;
     uint32_t odd_bits = random_bits_as_u32 >> 1U & 1431655765U;
     uint32_t coin_toss_outcomes = even_bits + odd_bits;
-    for (uint32_t i = 0U; i < core_num__u32__BITS / 4U; i++) {
+    for (uint32_t i = 0U; i < 32U / 4U; i++) {
       uint32_t outcome_set = i;
       uint32_t outcome_set0 = outcome_set * 4U;
       int16_t outcome_1 =
@@ -3784,7 +3782,7 @@ A monomorphic instance of libcrux_ml_kem.hash_functions.portable.PRF
 with const generics
 - LEN= 128
 */
-static KRML_MUSTINLINE void PRF_a6(Eurydice_slice input, uint8_t ret[128U]) {
+static inline void PRF_a6(Eurydice_slice input, uint8_t ret[128U]) {
   uint8_t digest[128U] = {0U};
   libcrux_sha3_portable_shake256(
       Eurydice_array_to_slice((size_t)128U, digest, uint8_t), input);
@@ -3801,8 +3799,7 @@ with const generics
 - K= 4
 - LEN= 128
 */
-static KRML_MUSTINLINE void PRF_4a_440(Eurydice_slice input,
-                                       uint8_t ret[128U]) {
+static inline void PRF_4a_440(Eurydice_slice input, uint8_t ret[128U]) {
   PRF_a6(input, ret);
 }
 
@@ -5281,7 +5278,7 @@ A monomorphic instance of libcrux_ml_kem.hash_functions.portable.PRF
 with const generics
 - LEN= 32
 */
-static KRML_MUSTINLINE void PRF_9e(Eurydice_slice input, uint8_t ret[32U]) {
+static inline void PRF_9e(Eurydice_slice input, uint8_t ret[32U]) {
   uint8_t digest[32U] = {0U};
   libcrux_sha3_portable_shake256(
       Eurydice_array_to_slice((size_t)32U, digest, uint8_t), input);
@@ -5298,7 +5295,7 @@ with const generics
 - K= 4
 - LEN= 32
 */
-static KRML_MUSTINLINE void PRF_4a_44(Eurydice_slice input, uint8_t ret[32U]) {
+static inline void PRF_4a_44(Eurydice_slice input, uint8_t ret[32U]) {
   PRF_9e(input, ret);
 }
 
@@ -5579,7 +5576,7 @@ A monomorphic instance of libcrux_ml_kem.hash_functions.portable.H_4a
 with const generics
 - K= 3
 */
-static KRML_MUSTINLINE void H_4a_e0(Eurydice_slice input, uint8_t ret[32U]) {
+static inline void H_4a_e0(Eurydice_slice input, uint8_t ret[32U]) {
   libcrux_ml_kem_hash_functions_portable_H(input, ret);
 }
 
@@ -5718,7 +5715,7 @@ A monomorphic instance of libcrux_ml_kem.hash_functions.portable.G_4a
 with const generics
 - K= 3
 */
-static KRML_MUSTINLINE void G_4a_e0(Eurydice_slice input, uint8_t ret[64U]) {
+static inline void G_4a_e0(Eurydice_slice input, uint8_t ret[64U]) {
   libcrux_ml_kem_hash_functions_portable_G(input, ret);
 }
 
@@ -5762,8 +5759,8 @@ libcrux_ml_kem.hash_functions.portable.shake128_init_absorb_final with const
 generics
 - K= 3
 */
-static KRML_MUSTINLINE PortableHash_88
-shake128_init_absorb_final_e0(uint8_t (*input)[34U]) {
+static inline PortableHash_88 shake128_init_absorb_final_e0(
+    uint8_t (*input)[34U]) {
   PortableHash_88 shake128_state;
   libcrux_sha3_generic_keccak_KeccakState_17 repeat_expression[3U];
   KRML_MAYBE_FOR3(i, (size_t)0U, (size_t)3U, (size_t)1U,
@@ -5789,8 +5786,8 @@ libcrux_ml_kem.hash_functions.portable.shake128_init_absorb_final_4a with const
 generics
 - K= 3
 */
-static KRML_MUSTINLINE PortableHash_88
-shake128_init_absorb_final_4a_e0(uint8_t (*input)[34U]) {
+static inline PortableHash_88 shake128_init_absorb_final_4a_e0(
+    uint8_t (*input)[34U]) {
   return shake128_init_absorb_final_e0(input);
 }
 
@@ -5800,7 +5797,7 @@ libcrux_ml_kem.hash_functions.portable.shake128_squeeze_first_three_blocks with
 const generics
 - K= 3
 */
-static KRML_MUSTINLINE void shake128_squeeze_first_three_blocks_e0(
+static inline void shake128_squeeze_first_three_blocks_e0(
     PortableHash_88 *st, uint8_t ret[3U][504U]) {
   uint8_t out[3U][504U] = {{0U}};
   KRML_MAYBE_FOR3(
@@ -5821,7 +5818,7 @@ libcrux_ml_kem.hash_functions.portable.shake128_squeeze_first_three_blocks_4a
 with const generics
 - K= 3
 */
-static KRML_MUSTINLINE void shake128_squeeze_first_three_blocks_4a_e0(
+static inline void shake128_squeeze_first_three_blocks_4a_e0(
     PortableHash_88 *self, uint8_t ret[3U][504U]) {
   shake128_squeeze_first_three_blocks_e0(self, ret);
 }
@@ -5912,8 +5909,8 @@ libcrux_ml_kem.hash_functions.portable.shake128_squeeze_next_block with const
 generics
 - K= 3
 */
-static KRML_MUSTINLINE void shake128_squeeze_next_block_e0(
-    PortableHash_88 *st, uint8_t ret[3U][168U]) {
+static inline void shake128_squeeze_next_block_e0(PortableHash_88 *st,
+                                                  uint8_t ret[3U][168U]) {
   uint8_t out[3U][168U] = {{0U}};
   KRML_MAYBE_FOR3(
       i, (size_t)0U, (size_t)3U, (size_t)1U, size_t i0 = i;
@@ -5933,8 +5930,8 @@ libcrux_ml_kem.hash_functions.portable.shake128_squeeze_next_block_4a with const
 generics
 - K= 3
 */
-static KRML_MUSTINLINE void shake128_squeeze_next_block_4a_e0(
-    PortableHash_88 *self, uint8_t ret[3U][168U]) {
+static inline void shake128_squeeze_next_block_4a_e0(PortableHash_88 *self,
+                                                     uint8_t ret[3U][168U]) {
   shake128_squeeze_next_block_e0(self, ret);
 }
 
@@ -6120,8 +6117,7 @@ with const generics
 - K= 3
 - LEN= 128
 */
-static KRML_MUSTINLINE void PRFxN_41(uint8_t (*input)[33U],
-                                     uint8_t ret[3U][128U]) {
+static inline void PRFxN_41(uint8_t (*input)[33U], uint8_t ret[3U][128U]) {
   uint8_t out[3U][128U] = {{0U}};
   KRML_MAYBE_FOR3(
       i, (size_t)0U, (size_t)3U, (size_t)1U, size_t i0 = i;
@@ -6141,8 +6137,7 @@ with const generics
 - K= 3
 - LEN= 128
 */
-static KRML_MUSTINLINE void PRFxN_4a_41(uint8_t (*input)[33U],
-                                        uint8_t ret[3U][128U]) {
+static inline void PRFxN_4a_41(uint8_t (*input)[33U], uint8_t ret[3U][128U]) {
   PRFxN_41(input, ret);
 }
 
@@ -6720,8 +6715,7 @@ with const generics
 - K= 3
 - LEN= 128
 */
-static KRML_MUSTINLINE void PRF_4a_410(Eurydice_slice input,
-                                       uint8_t ret[128U]) {
+static inline void PRF_4a_410(Eurydice_slice input, uint8_t ret[128U]) {
   PRF_a6(input, ret);
 }
 
@@ -7460,7 +7454,7 @@ with const generics
 - K= 3
 - LEN= 32
 */
-static KRML_MUSTINLINE void PRF_4a_41(Eurydice_slice input, uint8_t ret[32U]) {
+static inline void PRF_4a_41(Eurydice_slice input, uint8_t ret[32U]) {
   PRF_9e(input, ret);
 }
 
