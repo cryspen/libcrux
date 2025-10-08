@@ -4,11 +4,11 @@
  * SPDX-License-Identifier: MIT or Apache-2.0
  *
  * This code was generated with the following revisions:
- * Charon: 667d2fc98984ff7f3df989c2367e6c1fa4a000e7
- * Eurydice: 564ce891b07fd4aefe7d5ccd78e61400b4ac4a2b
- * Karamel: 06a6d2fb3a547d11c9f6dbec26f1f9b5e0dbf411
- * F*: 0c4b790fd608bccfc332d3ff1e9b29c9be8b0595
- * Libcrux: 2c29684cb507f6883814118541e119ca0f22a61c
+ * Charon: c66a520f7072006af0071eb517002a73d5f3a7d1
+ * Eurydice: 9dae7cbf24d38b7b0eb8e7efd12d662a4ebe1f1a
+ * Karamel: 80f5435f2fc505973c469a4afcc8d875cddd0d8b
+ * F*: f3a2732c1984b520b1f1d48a22e7dd9f8d14a3a2
+ * Libcrux: fba8ff3916a9aa0a3869f2fffea66d8aea07144a
  */
 
 #ifndef libcrux_mlkem512_H
@@ -74,7 +74,7 @@ typedef Eurydice_arr_56 libcrux_ml_kem_mlkem512_MlKem512Ciphertext;
 typedef libcrux_ml_kem_types_MlKemKeyPair_3e
     libcrux_ml_kem_mlkem512_MlKem512KeyPair;
 
-typedef Eurydice_arr_7f libcrux_ml_kem_mlkem512_MlKem512PrivateKey;
+typedef Eurydice_arr_7f0 libcrux_ml_kem_mlkem512_MlKem512PrivateKey;
 
 typedef Eurydice_arr_30 libcrux_ml_kem_mlkem512_MlKem512PublicKey;
 

@@ -11,8 +11,8 @@
  * Libcrux: fba8ff3916a9aa0a3869f2fffea66d8aea07144a
  */
 
-#ifndef libcrux_mlkem512_portable_H
-#define libcrux_mlkem512_portable_H
+#ifndef libcrux_mlkem512_neon_H
+#define libcrux_mlkem512_neon_H
 
 #include "eurydice_glue.h"
 
@@ -29,7 +29,7 @@ extern "C" {
  The input is a reference to an [`MlKem512PrivateKey`] and an
  [`MlKem512Ciphertext`].
 */
-Eurydice_arr_60 libcrux_ml_kem_mlkem512_portable_decapsulate(
+Eurydice_arr_60 libcrux_ml_kem_mlkem512_neon_decapsulate(
     Eurydice_arr_7f0 *private_key, Eurydice_arr_56 *ciphertext);
 
 /**
@@ -39,14 +39,14 @@ Eurydice_arr_60 libcrux_ml_kem_mlkem512_portable_decapsulate(
  The input is a reference to an [`MlKem512PublicKey`] and [`SHARED_SECRET_SIZE`]
  bytes of `randomness`.
 */
-tuple_17 libcrux_ml_kem_mlkem512_portable_encapsulate(
-    Eurydice_arr_30 *public_key, Eurydice_arr_60 randomness);
+tuple_17 libcrux_ml_kem_mlkem512_neon_encapsulate(Eurydice_arr_30 *public_key,
+                                                  Eurydice_arr_60 randomness);
 
 /**
  Generate ML-KEM 512 Key Pair
 */
 libcrux_ml_kem_types_MlKemKeyPair_3e
-libcrux_ml_kem_mlkem512_portable_generate_key_pair(
+libcrux_ml_kem_mlkem512_neon_generate_key_pair(
     libcrux_sha3_Sha3_512Digest randomness);
 
 /**
@@ -54,7 +54,7 @@ libcrux_ml_kem_mlkem512_portable_generate_key_pair(
 
  Returns `true` if valid, and `false` otherwise.
 */
-bool libcrux_ml_kem_mlkem512_portable_validate_private_key(
+bool libcrux_ml_kem_mlkem512_neon_validate_private_key(
     Eurydice_arr_7f0 *private_key, Eurydice_arr_56 *ciphertext);
 
 /**
@@ -62,7 +62,7 @@ bool libcrux_ml_kem_mlkem512_portable_validate_private_key(
 
  Returns `true` if valid, and `false` otherwise.
 */
-bool libcrux_ml_kem_mlkem512_portable_validate_private_key_only(
+bool libcrux_ml_kem_mlkem512_neon_validate_private_key_only(
     Eurydice_arr_7f0 *private_key);
 
 /**
@@ -70,12 +70,12 @@ bool libcrux_ml_kem_mlkem512_portable_validate_private_key_only(
 
  Returns `true` if valid, and `false` otherwise.
 */
-bool libcrux_ml_kem_mlkem512_portable_validate_public_key(
+bool libcrux_ml_kem_mlkem512_neon_validate_public_key(
     Eurydice_arr_30 *public_key);
 
 #if defined(__cplusplus)
 }
 #endif
 
-#define libcrux_mlkem512_portable_H_DEFINED
-#endif /* libcrux_mlkem512_portable_H */
+#define libcrux_mlkem512_neon_H_DEFINED
+#endif /* libcrux_mlkem512_neon_H */

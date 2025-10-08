@@ -4,11 +4,11 @@
  * SPDX-License-Identifier: MIT or Apache-2.0
  *
  * This code was generated with the following revisions:
- * Charon: 667d2fc98984ff7f3df989c2367e6c1fa4a000e7
- * Eurydice: 564ce891b07fd4aefe7d5ccd78e61400b4ac4a2b
- * Karamel: 06a6d2fb3a547d11c9f6dbec26f1f9b5e0dbf411
- * F*: 0c4b790fd608bccfc332d3ff1e9b29c9be8b0595
- * Libcrux: 2c29684cb507f6883814118541e119ca0f22a61c
+ * Charon: c66a520f7072006af0071eb517002a73d5f3a7d1
+ * Eurydice: 9dae7cbf24d38b7b0eb8e7efd12d662a4ebe1f1a
+ * Karamel: 80f5435f2fc505973c469a4afcc8d875cddd0d8b
+ * F*: f3a2732c1984b520b1f1d48a22e7dd9f8d14a3a2
+ * Libcrux: fba8ff3916a9aa0a3869f2fffea66d8aea07144a
  */
 
 #ifndef libcrux_mlkem_portable_H
@@ -37,6 +37,42 @@ Eurydice_arr_60 libcrux_ml_kem_hash_functions_portable_H(Eurydice_slice input);
 #define LIBCRUX_ML_KEM_VECTOR_TRAITS_INVERSE_OF_MODULUS_MOD_MONTGOMERY_R \
   (62209U)
 
+typedef struct int16_t_x8_s {
+  int16_t fst;
+  int16_t snd;
+  int16_t thd;
+  int16_t f3;
+  int16_t f4;
+  int16_t f5;
+  int16_t f6;
+  int16_t f7;
+} int16_t_x8;
+
+int16_t_x8 libcrux_ml_kem_vector_portable_serialize_deserialize_4_int(
+    Eurydice_slice bytes);
+
+Eurydice_arr_e2 libcrux_ml_kem_vector_portable_serialize_deserialize_4(
+    Eurydice_slice bytes);
+
+Eurydice_arr_e2 libcrux_ml_kem_vector_portable_deserialize_4(Eurydice_slice a);
+
+/**
+This function found in impl {libcrux_ml_kem::vector::traits::Operations for
+libcrux_ml_kem::vector::portable::vector_type::PortableVector}
+*/
+Eurydice_arr_e2 libcrux_ml_kem_vector_portable_deserialize_4_b8(
+    Eurydice_slice a);
+
+Eurydice_arr_e2 libcrux_ml_kem_vector_portable_vector_type_to_i16_array(
+    Eurydice_arr_e2 x);
+
+/**
+This function found in impl {libcrux_ml_kem::vector::traits::Operations for
+libcrux_ml_kem::vector::portable::vector_type::PortableVector}
+*/
+Eurydice_arr_e2 libcrux_ml_kem_vector_portable_to_i16_array_b8(
+    Eurydice_arr_e2 x);
+
 Eurydice_arr_e2 libcrux_ml_kem_vector_portable_vector_type_from_i16_array(
     Eurydice_slice array);
 
@@ -46,6 +82,59 @@ libcrux_ml_kem::vector::portable::vector_type::PortableVector}
 */
 Eurydice_arr_e2 libcrux_ml_kem_vector_portable_from_i16_array_b8(
     Eurydice_slice array);
+
+typedef struct uint8_t_x5_s {
+  uint8_t fst;
+  uint8_t snd;
+  uint8_t thd;
+  uint8_t f3;
+  uint8_t f4;
+} uint8_t_x5;
+
+uint8_t_x5 libcrux_ml_kem_vector_portable_serialize_serialize_5_int(
+    Eurydice_slice v);
+
+Eurydice_arr_77 libcrux_ml_kem_vector_portable_serialize_serialize_5(
+    Eurydice_arr_e2 v);
+
+Eurydice_arr_77 libcrux_ml_kem_vector_portable_serialize_5(Eurydice_arr_e2 a);
+
+/**
+This function found in impl {libcrux_ml_kem::vector::traits::Operations for
+libcrux_ml_kem::vector::portable::vector_type::PortableVector}
+*/
+Eurydice_arr_77 libcrux_ml_kem_vector_portable_serialize_5_b8(
+    Eurydice_arr_e2 a);
+
+int16_t_x8 libcrux_ml_kem_vector_portable_serialize_deserialize_5_int(
+    Eurydice_slice bytes);
+
+Eurydice_arr_e2 libcrux_ml_kem_vector_portable_serialize_deserialize_5(
+    Eurydice_slice bytes);
+
+Eurydice_arr_e2 libcrux_ml_kem_vector_portable_deserialize_5(Eurydice_slice a);
+
+/**
+This function found in impl {libcrux_ml_kem::vector::traits::Operations for
+libcrux_ml_kem::vector::portable::vector_type::PortableVector}
+*/
+Eurydice_arr_e2 libcrux_ml_kem_vector_portable_deserialize_5_b8(
+    Eurydice_slice a);
+
+int16_t_x8 libcrux_ml_kem_vector_portable_serialize_deserialize_10_int(
+    Eurydice_slice bytes);
+
+Eurydice_arr_e2 libcrux_ml_kem_vector_portable_serialize_deserialize_10(
+    Eurydice_slice bytes);
+
+Eurydice_arr_e2 libcrux_ml_kem_vector_portable_deserialize_10(Eurydice_slice a);
+
+/**
+This function found in impl {libcrux_ml_kem::vector::traits::Operations for
+libcrux_ml_kem::vector::portable::vector_type::PortableVector}
+*/
+Eurydice_arr_e2 libcrux_ml_kem_vector_portable_deserialize_10_b8(
+    Eurydice_slice a);
 
 typedef struct uint8_t_x11_s {
   uint8_t fst;
@@ -76,17 +165,6 @@ libcrux_ml_kem::vector::portable::vector_type::PortableVector}
 Eurydice_arr_f3 libcrux_ml_kem_vector_portable_serialize_11_b8(
     Eurydice_arr_e2 a);
 
-typedef struct int16_t_x8_s {
-  int16_t fst;
-  int16_t snd;
-  int16_t thd;
-  int16_t f3;
-  int16_t f4;
-  int16_t f5;
-  int16_t f6;
-  int16_t f7;
-} int16_t_x8;
-
 int16_t_x8 libcrux_ml_kem_vector_portable_serialize_deserialize_11_int(
     Eurydice_slice bytes);
 
@@ -101,788 +179,6 @@ libcrux_ml_kem::vector::portable::vector_type::PortableVector}
 */
 Eurydice_arr_e2 libcrux_ml_kem_vector_portable_deserialize_11_b8(
     Eurydice_slice a);
-
-Eurydice_arr_e2 libcrux_ml_kem_vector_portable_vector_type_to_i16_array(
-    Eurydice_arr_e2 x);
-
-/**
-This function found in impl {libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::portable::vector_type::PortableVector}
-*/
-Eurydice_arr_e2 libcrux_ml_kem_vector_portable_to_i16_array_b8(
-    Eurydice_arr_e2 x);
-
-#define LIBCRUX_ML_KEM_VECTOR_REJ_SAMPLE_TABLE_REJECTION_SAMPLE_SHUFFLE_TABLE  \
-  ((KRML_CLITERAL(Eurydice_arr_ef){                                            \
-      .data = {                                                                \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {255U, 255U, 255U, 255U, 255U, 255U, 255U, 255U, 255U,   \
-                       255U, 255U, 255U, 255U, 255U, 255U, 255U}}),            \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {0U, 1U, 255U, 255U, 255U, 255U, 255U, 255U, 255U, 255U, \
-                       255U, 255U, 255U, 255U, 255U, 255U}}),                  \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {2U, 3U, 255U, 255U, 255U, 255U, 255U, 255U, 255U, 255U, \
-                       255U, 255U, 255U, 255U, 255U, 255U}}),                  \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {0U, 1U, 2U, 3U, 255U, 255U, 255U, 255U, 255U, 255U,     \
-                       255U, 255U, 255U, 255U, 255U, 255U}}),                  \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {4U, 5U, 255U, 255U, 255U, 255U, 255U, 255U, 255U, 255U, \
-                       255U, 255U, 255U, 255U, 255U, 255U}}),                  \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {0U, 1U, 4U, 5U, 255U, 255U, 255U, 255U, 255U, 255U,     \
-                       255U, 255U, 255U, 255U, 255U, 255U}}),                  \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {2U, 3U, 4U, 5U, 255U, 255U, 255U, 255U, 255U, 255U,     \
-                       255U, 255U, 255U, 255U, 255U, 255U}}),                  \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {0U, 1U, 2U, 3U, 4U, 5U, 255U, 255U, 255U, 255U, 255U,   \
-                       255U, 255U, 255U, 255U, 255U}}),                        \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {6U, 7U, 255U, 255U, 255U, 255U, 255U, 255U, 255U, 255U, \
-                       255U, 255U, 255U, 255U, 255U, 255U}}),                  \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {0U, 1U, 6U, 7U, 255U, 255U, 255U, 255U, 255U, 255U,     \
-                       255U, 255U, 255U, 255U, 255U, 255U}}),                  \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {2U, 3U, 6U, 7U, 255U, 255U, 255U, 255U, 255U, 255U,     \
-                       255U, 255U, 255U, 255U, 255U, 255U}}),                  \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {0U, 1U, 2U, 3U, 6U, 7U, 255U, 255U, 255U, 255U, 255U,   \
-                       255U, 255U, 255U, 255U, 255U}}),                        \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {4U, 5U, 6U, 7U, 255U, 255U, 255U, 255U, 255U, 255U,     \
-                       255U, 255U, 255U, 255U, 255U, 255U}}),                  \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {0U, 1U, 4U, 5U, 6U, 7U, 255U, 255U, 255U, 255U, 255U,   \
-                       255U, 255U, 255U, 255U, 255U}}),                        \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {2U, 3U, 4U, 5U, 6U, 7U, 255U, 255U, 255U, 255U, 255U,   \
-                       255U, 255U, 255U, 255U, 255U}}),                        \
-          (KRML_CLITERAL(Eurydice_arr_88){.data = {0U, 1U, 2U, 3U, 4U, 5U, 6U, \
-                                                   7U, 255U, 255U, 255U, 255U, \
-                                                   255U, 255U, 255U, 255U}}),  \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {8U, 9U, 255U, 255U, 255U, 255U, 255U, 255U, 255U, 255U, \
-                       255U, 255U, 255U, 255U, 255U, 255U}}),                  \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {0U, 1U, 8U, 9U, 255U, 255U, 255U, 255U, 255U, 255U,     \
-                       255U, 255U, 255U, 255U, 255U, 255U}}),                  \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {2U, 3U, 8U, 9U, 255U, 255U, 255U, 255U, 255U, 255U,     \
-                       255U, 255U, 255U, 255U, 255U, 255U}}),                  \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {0U, 1U, 2U, 3U, 8U, 9U, 255U, 255U, 255U, 255U, 255U,   \
-                       255U, 255U, 255U, 255U, 255U}}),                        \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {4U, 5U, 8U, 9U, 255U, 255U, 255U, 255U, 255U, 255U,     \
-                       255U, 255U, 255U, 255U, 255U, 255U}}),                  \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {0U, 1U, 4U, 5U, 8U, 9U, 255U, 255U, 255U, 255U, 255U,   \
-                       255U, 255U, 255U, 255U, 255U}}),                        \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {2U, 3U, 4U, 5U, 8U, 9U, 255U, 255U, 255U, 255U, 255U,   \
-                       255U, 255U, 255U, 255U, 255U}}),                        \
-          (KRML_CLITERAL(Eurydice_arr_88){.data = {0U, 1U, 2U, 3U, 4U, 5U, 8U, \
-                                                   9U, 255U, 255U, 255U, 255U, \
-                                                   255U, 255U, 255U, 255U}}),  \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {6U, 7U, 8U, 9U, 255U, 255U, 255U, 255U, 255U, 255U,     \
-                       255U, 255U, 255U, 255U, 255U, 255U}}),                  \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {0U, 1U, 6U, 7U, 8U, 9U, 255U, 255U, 255U, 255U, 255U,   \
-                       255U, 255U, 255U, 255U, 255U}}),                        \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {2U, 3U, 6U, 7U, 8U, 9U, 255U, 255U, 255U, 255U, 255U,   \
-                       255U, 255U, 255U, 255U, 255U}}),                        \
-          (KRML_CLITERAL(Eurydice_arr_88){.data = {0U, 1U, 2U, 3U, 6U, 7U, 8U, \
-                                                   9U, 255U, 255U, 255U, 255U, \
-                                                   255U, 255U, 255U, 255U}}),  \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {4U, 5U, 6U, 7U, 8U, 9U, 255U, 255U, 255U, 255U, 255U,   \
-                       255U, 255U, 255U, 255U, 255U}}),                        \
-          (KRML_CLITERAL(Eurydice_arr_88){.data = {0U, 1U, 4U, 5U, 6U, 7U, 8U, \
-                                                   9U, 255U, 255U, 255U, 255U, \
-                                                   255U, 255U, 255U, 255U}}),  \
-          (KRML_CLITERAL(Eurydice_arr_88){.data = {2U, 3U, 4U, 5U, 6U, 7U, 8U, \
-                                                   9U, 255U, 255U, 255U, 255U, \
-                                                   255U, 255U, 255U, 255U}}),  \
-          (KRML_CLITERAL(Eurydice_arr_88){.data = {0U, 1U, 2U, 3U, 4U, 5U, 6U, \
-                                                   7U, 8U, 9U, 255U, 255U,     \
-                                                   255U, 255U, 255U, 255U}}),  \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {10U, 11U, 255U, 255U, 255U, 255U, 255U, 255U, 255U,     \
-                       255U, 255U, 255U, 255U, 255U, 255U, 255U}}),            \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {0U, 1U, 10U, 11U, 255U, 255U, 255U, 255U, 255U, 255U,   \
-                       255U, 255U, 255U, 255U, 255U, 255U}}),                  \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {2U, 3U, 10U, 11U, 255U, 255U, 255U, 255U, 255U, 255U,   \
-                       255U, 255U, 255U, 255U, 255U, 255U}}),                  \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {0U, 1U, 2U, 3U, 10U, 11U, 255U, 255U, 255U, 255U, 255U, \
-                       255U, 255U, 255U, 255U, 255U}}),                        \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {4U, 5U, 10U, 11U, 255U, 255U, 255U, 255U, 255U, 255U,   \
-                       255U, 255U, 255U, 255U, 255U, 255U}}),                  \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {0U, 1U, 4U, 5U, 10U, 11U, 255U, 255U, 255U, 255U, 255U, \
-                       255U, 255U, 255U, 255U, 255U}}),                        \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {2U, 3U, 4U, 5U, 10U, 11U, 255U, 255U, 255U, 255U, 255U, \
-                       255U, 255U, 255U, 255U, 255U}}),                        \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {0U, 1U, 2U, 3U, 4U, 5U, 10U, 11U, 255U, 255U, 255U,     \
-                       255U, 255U, 255U, 255U, 255U}}),                        \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {6U, 7U, 10U, 11U, 255U, 255U, 255U, 255U, 255U, 255U,   \
-                       255U, 255U, 255U, 255U, 255U, 255U}}),                  \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {0U, 1U, 6U, 7U, 10U, 11U, 255U, 255U, 255U, 255U, 255U, \
-                       255U, 255U, 255U, 255U, 255U}}),                        \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {2U, 3U, 6U, 7U, 10U, 11U, 255U, 255U, 255U, 255U, 255U, \
-                       255U, 255U, 255U, 255U, 255U}}),                        \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {0U, 1U, 2U, 3U, 6U, 7U, 10U, 11U, 255U, 255U, 255U,     \
-                       255U, 255U, 255U, 255U, 255U}}),                        \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {4U, 5U, 6U, 7U, 10U, 11U, 255U, 255U, 255U, 255U, 255U, \
-                       255U, 255U, 255U, 255U, 255U}}),                        \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {0U, 1U, 4U, 5U, 6U, 7U, 10U, 11U, 255U, 255U, 255U,     \
-                       255U, 255U, 255U, 255U, 255U}}),                        \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {2U, 3U, 4U, 5U, 6U, 7U, 10U, 11U, 255U, 255U, 255U,     \
-                       255U, 255U, 255U, 255U, 255U}}),                        \
-          (KRML_CLITERAL(Eurydice_arr_88){.data = {0U, 1U, 2U, 3U, 4U, 5U, 6U, \
-                                                   7U, 10U, 11U, 255U, 255U,   \
-                                                   255U, 255U, 255U, 255U}}),  \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {8U, 9U, 10U, 11U, 255U, 255U, 255U, 255U, 255U, 255U,   \
-                       255U, 255U, 255U, 255U, 255U, 255U}}),                  \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {0U, 1U, 8U, 9U, 10U, 11U, 255U, 255U, 255U, 255U, 255U, \
-                       255U, 255U, 255U, 255U, 255U}}),                        \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {2U, 3U, 8U, 9U, 10U, 11U, 255U, 255U, 255U, 255U, 255U, \
-                       255U, 255U, 255U, 255U, 255U}}),                        \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {0U, 1U, 2U, 3U, 8U, 9U, 10U, 11U, 255U, 255U, 255U,     \
-                       255U, 255U, 255U, 255U, 255U}}),                        \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {4U, 5U, 8U, 9U, 10U, 11U, 255U, 255U, 255U, 255U, 255U, \
-                       255U, 255U, 255U, 255U, 255U}}),                        \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {0U, 1U, 4U, 5U, 8U, 9U, 10U, 11U, 255U, 255U, 255U,     \
-                       255U, 255U, 255U, 255U, 255U}}),                        \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {2U, 3U, 4U, 5U, 8U, 9U, 10U, 11U, 255U, 255U, 255U,     \
-                       255U, 255U, 255U, 255U, 255U}}),                        \
-          (KRML_CLITERAL(Eurydice_arr_88){.data = {0U, 1U, 2U, 3U, 4U, 5U, 8U, \
-                                                   9U, 10U, 11U, 255U, 255U,   \
-                                                   255U, 255U, 255U, 255U}}),  \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {6U, 7U, 8U, 9U, 10U, 11U, 255U, 255U, 255U, 255U, 255U, \
-                       255U, 255U, 255U, 255U, 255U}}),                        \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {0U, 1U, 6U, 7U, 8U, 9U, 10U, 11U, 255U, 255U, 255U,     \
-                       255U, 255U, 255U, 255U, 255U}}),                        \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {2U, 3U, 6U, 7U, 8U, 9U, 10U, 11U, 255U, 255U, 255U,     \
-                       255U, 255U, 255U, 255U, 255U}}),                        \
-          (KRML_CLITERAL(Eurydice_arr_88){.data = {0U, 1U, 2U, 3U, 6U, 7U, 8U, \
-                                                   9U, 10U, 11U, 255U, 255U,   \
-                                                   255U, 255U, 255U, 255U}}),  \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {4U, 5U, 6U, 7U, 8U, 9U, 10U, 11U, 255U, 255U, 255U,     \
-                       255U, 255U, 255U, 255U, 255U}}),                        \
-          (KRML_CLITERAL(Eurydice_arr_88){.data = {0U, 1U, 4U, 5U, 6U, 7U, 8U, \
-                                                   9U, 10U, 11U, 255U, 255U,   \
-                                                   255U, 255U, 255U, 255U}}),  \
-          (KRML_CLITERAL(Eurydice_arr_88){.data = {2U, 3U, 4U, 5U, 6U, 7U, 8U, \
-                                                   9U, 10U, 11U, 255U, 255U,   \
-                                                   255U, 255U, 255U, 255U}}),  \
-          (KRML_CLITERAL(Eurydice_arr_88){.data = {0U, 1U, 2U, 3U, 4U, 5U, 6U, \
-                                                   7U, 8U, 9U, 10U, 11U, 255U, \
-                                                   255U, 255U, 255U}}),        \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {12U, 13U, 255U, 255U, 255U, 255U, 255U, 255U, 255U,     \
-                       255U, 255U, 255U, 255U, 255U, 255U, 255U}}),            \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {0U, 1U, 12U, 13U, 255U, 255U, 255U, 255U, 255U, 255U,   \
-                       255U, 255U, 255U, 255U, 255U, 255U}}),                  \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {2U, 3U, 12U, 13U, 255U, 255U, 255U, 255U, 255U, 255U,   \
-                       255U, 255U, 255U, 255U, 255U, 255U}}),                  \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {0U, 1U, 2U, 3U, 12U, 13U, 255U, 255U, 255U, 255U, 255U, \
-                       255U, 255U, 255U, 255U, 255U}}),                        \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {4U, 5U, 12U, 13U, 255U, 255U, 255U, 255U, 255U, 255U,   \
-                       255U, 255U, 255U, 255U, 255U, 255U}}),                  \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {0U, 1U, 4U, 5U, 12U, 13U, 255U, 255U, 255U, 255U, 255U, \
-                       255U, 255U, 255U, 255U, 255U}}),                        \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {2U, 3U, 4U, 5U, 12U, 13U, 255U, 255U, 255U, 255U, 255U, \
-                       255U, 255U, 255U, 255U, 255U}}),                        \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {0U, 1U, 2U, 3U, 4U, 5U, 12U, 13U, 255U, 255U, 255U,     \
-                       255U, 255U, 255U, 255U, 255U}}),                        \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {6U, 7U, 12U, 13U, 255U, 255U, 255U, 255U, 255U, 255U,   \
-                       255U, 255U, 255U, 255U, 255U, 255U}}),                  \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {0U, 1U, 6U, 7U, 12U, 13U, 255U, 255U, 255U, 255U, 255U, \
-                       255U, 255U, 255U, 255U, 255U}}),                        \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {2U, 3U, 6U, 7U, 12U, 13U, 255U, 255U, 255U, 255U, 255U, \
-                       255U, 255U, 255U, 255U, 255U}}),                        \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {0U, 1U, 2U, 3U, 6U, 7U, 12U, 13U, 255U, 255U, 255U,     \
-                       255U, 255U, 255U, 255U, 255U}}),                        \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {4U, 5U, 6U, 7U, 12U, 13U, 255U, 255U, 255U, 255U, 255U, \
-                       255U, 255U, 255U, 255U, 255U}}),                        \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {0U, 1U, 4U, 5U, 6U, 7U, 12U, 13U, 255U, 255U, 255U,     \
-                       255U, 255U, 255U, 255U, 255U}}),                        \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {2U, 3U, 4U, 5U, 6U, 7U, 12U, 13U, 255U, 255U, 255U,     \
-                       255U, 255U, 255U, 255U, 255U}}),                        \
-          (KRML_CLITERAL(Eurydice_arr_88){.data = {0U, 1U, 2U, 3U, 4U, 5U, 6U, \
-                                                   7U, 12U, 13U, 255U, 255U,   \
-                                                   255U, 255U, 255U, 255U}}),  \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {8U, 9U, 12U, 13U, 255U, 255U, 255U, 255U, 255U, 255U,   \
-                       255U, 255U, 255U, 255U, 255U, 255U}}),                  \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {0U, 1U, 8U, 9U, 12U, 13U, 255U, 255U, 255U, 255U, 255U, \
-                       255U, 255U, 255U, 255U, 255U}}),                        \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {2U, 3U, 8U, 9U, 12U, 13U, 255U, 255U, 255U, 255U, 255U, \
-                       255U, 255U, 255U, 255U, 255U}}),                        \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {0U, 1U, 2U, 3U, 8U, 9U, 12U, 13U, 255U, 255U, 255U,     \
-                       255U, 255U, 255U, 255U, 255U}}),                        \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {4U, 5U, 8U, 9U, 12U, 13U, 255U, 255U, 255U, 255U, 255U, \
-                       255U, 255U, 255U, 255U, 255U}}),                        \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {0U, 1U, 4U, 5U, 8U, 9U, 12U, 13U, 255U, 255U, 255U,     \
-                       255U, 255U, 255U, 255U, 255U}}),                        \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {2U, 3U, 4U, 5U, 8U, 9U, 12U, 13U, 255U, 255U, 255U,     \
-                       255U, 255U, 255U, 255U, 255U}}),                        \
-          (KRML_CLITERAL(Eurydice_arr_88){.data = {0U, 1U, 2U, 3U, 4U, 5U, 8U, \
-                                                   9U, 12U, 13U, 255U, 255U,   \
-                                                   255U, 255U, 255U, 255U}}),  \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {6U, 7U, 8U, 9U, 12U, 13U, 255U, 255U, 255U, 255U, 255U, \
-                       255U, 255U, 255U, 255U, 255U}}),                        \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {0U, 1U, 6U, 7U, 8U, 9U, 12U, 13U, 255U, 255U, 255U,     \
-                       255U, 255U, 255U, 255U, 255U}}),                        \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {2U, 3U, 6U, 7U, 8U, 9U, 12U, 13U, 255U, 255U, 255U,     \
-                       255U, 255U, 255U, 255U, 255U}}),                        \
-          (KRML_CLITERAL(Eurydice_arr_88){.data = {0U, 1U, 2U, 3U, 6U, 7U, 8U, \
-                                                   9U, 12U, 13U, 255U, 255U,   \
-                                                   255U, 255U, 255U, 255U}}),  \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {4U, 5U, 6U, 7U, 8U, 9U, 12U, 13U, 255U, 255U, 255U,     \
-                       255U, 255U, 255U, 255U, 255U}}),                        \
-          (KRML_CLITERAL(Eurydice_arr_88){.data = {0U, 1U, 4U, 5U, 6U, 7U, 8U, \
-                                                   9U, 12U, 13U, 255U, 255U,   \
-                                                   255U, 255U, 255U, 255U}}),  \
-          (KRML_CLITERAL(Eurydice_arr_88){.data = {2U, 3U, 4U, 5U, 6U, 7U, 8U, \
-                                                   9U, 12U, 13U, 255U, 255U,   \
-                                                   255U, 255U, 255U, 255U}}),  \
-          (KRML_CLITERAL(Eurydice_arr_88){.data = {0U, 1U, 2U, 3U, 4U, 5U, 6U, \
-                                                   7U, 8U, 9U, 12U, 13U, 255U, \
-                                                   255U, 255U, 255U}}),        \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {10U, 11U, 12U, 13U, 255U, 255U, 255U, 255U, 255U, 255U, \
-                       255U, 255U, 255U, 255U, 255U, 255U}}),                  \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {0U, 1U, 10U, 11U, 12U, 13U, 255U, 255U, 255U, 255U,     \
-                       255U, 255U, 255U, 255U, 255U, 255U}}),                  \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {2U, 3U, 10U, 11U, 12U, 13U, 255U, 255U, 255U, 255U,     \
-                       255U, 255U, 255U, 255U, 255U, 255U}}),                  \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {0U, 1U, 2U, 3U, 10U, 11U, 12U, 13U, 255U, 255U, 255U,   \
-                       255U, 255U, 255U, 255U, 255U}}),                        \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {4U, 5U, 10U, 11U, 12U, 13U, 255U, 255U, 255U, 255U,     \
-                       255U, 255U, 255U, 255U, 255U, 255U}}),                  \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {0U, 1U, 4U, 5U, 10U, 11U, 12U, 13U, 255U, 255U, 255U,   \
-                       255U, 255U, 255U, 255U, 255U}}),                        \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {2U, 3U, 4U, 5U, 10U, 11U, 12U, 13U, 255U, 255U, 255U,   \
-                       255U, 255U, 255U, 255U, 255U}}),                        \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {0U, 1U, 2U, 3U, 4U, 5U, 10U, 11U, 12U, 13U, 255U, 255U, \
-                       255U, 255U, 255U, 255U}}),                              \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {6U, 7U, 10U, 11U, 12U, 13U, 255U, 255U, 255U, 255U,     \
-                       255U, 255U, 255U, 255U, 255U, 255U}}),                  \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {0U, 1U, 6U, 7U, 10U, 11U, 12U, 13U, 255U, 255U, 255U,   \
-                       255U, 255U, 255U, 255U, 255U}}),                        \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {2U, 3U, 6U, 7U, 10U, 11U, 12U, 13U, 255U, 255U, 255U,   \
-                       255U, 255U, 255U, 255U, 255U}}),                        \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {0U, 1U, 2U, 3U, 6U, 7U, 10U, 11U, 12U, 13U, 255U, 255U, \
-                       255U, 255U, 255U, 255U}}),                              \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {4U, 5U, 6U, 7U, 10U, 11U, 12U, 13U, 255U, 255U, 255U,   \
-                       255U, 255U, 255U, 255U, 255U}}),                        \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {0U, 1U, 4U, 5U, 6U, 7U, 10U, 11U, 12U, 13U, 255U, 255U, \
-                       255U, 255U, 255U, 255U}}),                              \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {2U, 3U, 4U, 5U, 6U, 7U, 10U, 11U, 12U, 13U, 255U, 255U, \
-                       255U, 255U, 255U, 255U}}),                              \
-          (KRML_CLITERAL(Eurydice_arr_88){.data = {0U, 1U, 2U, 3U, 4U, 5U, 6U, \
-                                                   7U, 10U, 11U, 12U, 13U,     \
-                                                   255U, 255U, 255U, 255U}}),  \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {8U, 9U, 10U, 11U, 12U, 13U, 255U, 255U, 255U, 255U,     \
-                       255U, 255U, 255U, 255U, 255U, 255U}}),                  \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {0U, 1U, 8U, 9U, 10U, 11U, 12U, 13U, 255U, 255U, 255U,   \
-                       255U, 255U, 255U, 255U, 255U}}),                        \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {2U, 3U, 8U, 9U, 10U, 11U, 12U, 13U, 255U, 255U, 255U,   \
-                       255U, 255U, 255U, 255U, 255U}}),                        \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {0U, 1U, 2U, 3U, 8U, 9U, 10U, 11U, 12U, 13U, 255U, 255U, \
-                       255U, 255U, 255U, 255U}}),                              \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {4U, 5U, 8U, 9U, 10U, 11U, 12U, 13U, 255U, 255U, 255U,   \
-                       255U, 255U, 255U, 255U, 255U}}),                        \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {0U, 1U, 4U, 5U, 8U, 9U, 10U, 11U, 12U, 13U, 255U, 255U, \
-                       255U, 255U, 255U, 255U}}),                              \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {2U, 3U, 4U, 5U, 8U, 9U, 10U, 11U, 12U, 13U, 255U, 255U, \
-                       255U, 255U, 255U, 255U}}),                              \
-          (KRML_CLITERAL(Eurydice_arr_88){.data = {0U, 1U, 2U, 3U, 4U, 5U, 8U, \
-                                                   9U, 10U, 11U, 12U, 13U,     \
-                                                   255U, 255U, 255U, 255U}}),  \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {6U, 7U, 8U, 9U, 10U, 11U, 12U, 13U, 255U, 255U, 255U,   \
-                       255U, 255U, 255U, 255U, 255U}}),                        \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {0U, 1U, 6U, 7U, 8U, 9U, 10U, 11U, 12U, 13U, 255U, 255U, \
-                       255U, 255U, 255U, 255U}}),                              \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {2U, 3U, 6U, 7U, 8U, 9U, 10U, 11U, 12U, 13U, 255U, 255U, \
-                       255U, 255U, 255U, 255U}}),                              \
-          (KRML_CLITERAL(Eurydice_arr_88){.data = {0U, 1U, 2U, 3U, 6U, 7U, 8U, \
-                                                   9U, 10U, 11U, 12U, 13U,     \
-                                                   255U, 255U, 255U, 255U}}),  \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {4U, 5U, 6U, 7U, 8U, 9U, 10U, 11U, 12U, 13U, 255U, 255U, \
-                       255U, 255U, 255U, 255U}}),                              \
-          (KRML_CLITERAL(Eurydice_arr_88){.data = {0U, 1U, 4U, 5U, 6U, 7U, 8U, \
-                                                   9U, 10U, 11U, 12U, 13U,     \
-                                                   255U, 255U, 255U, 255U}}),  \
-          (KRML_CLITERAL(Eurydice_arr_88){.data = {2U, 3U, 4U, 5U, 6U, 7U, 8U, \
-                                                   9U, 10U, 11U, 12U, 13U,     \
-                                                   255U, 255U, 255U, 255U}}),  \
-          (KRML_CLITERAL(Eurydice_arr_88){.data = {0U, 1U, 2U, 3U, 4U, 5U, 6U, \
-                                                   7U, 8U, 9U, 10U, 11U, 12U,  \
-                                                   13U, 255U, 255U}}),         \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {14U, 15U, 255U, 255U, 255U, 255U, 255U, 255U, 255U,     \
-                       255U, 255U, 255U, 255U, 255U, 255U, 255U}}),            \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {0U, 1U, 14U, 15U, 255U, 255U, 255U, 255U, 255U, 255U,   \
-                       255U, 255U, 255U, 255U, 255U, 255U}}),                  \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {2U, 3U, 14U, 15U, 255U, 255U, 255U, 255U, 255U, 255U,   \
-                       255U, 255U, 255U, 255U, 255U, 255U}}),                  \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {0U, 1U, 2U, 3U, 14U, 15U, 255U, 255U, 255U, 255U, 255U, \
-                       255U, 255U, 255U, 255U, 255U}}),                        \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {4U, 5U, 14U, 15U, 255U, 255U, 255U, 255U, 255U, 255U,   \
-                       255U, 255U, 255U, 255U, 255U, 255U}}),                  \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {0U, 1U, 4U, 5U, 14U, 15U, 255U, 255U, 255U, 255U, 255U, \
-                       255U, 255U, 255U, 255U, 255U}}),                        \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {2U, 3U, 4U, 5U, 14U, 15U, 255U, 255U, 255U, 255U, 255U, \
-                       255U, 255U, 255U, 255U, 255U}}),                        \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {0U, 1U, 2U, 3U, 4U, 5U, 14U, 15U, 255U, 255U, 255U,     \
-                       255U, 255U, 255U, 255U, 255U}}),                        \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {6U, 7U, 14U, 15U, 255U, 255U, 255U, 255U, 255U, 255U,   \
-                       255U, 255U, 255U, 255U, 255U, 255U}}),                  \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {0U, 1U, 6U, 7U, 14U, 15U, 255U, 255U, 255U, 255U, 255U, \
-                       255U, 255U, 255U, 255U, 255U}}),                        \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {2U, 3U, 6U, 7U, 14U, 15U, 255U, 255U, 255U, 255U, 255U, \
-                       255U, 255U, 255U, 255U, 255U}}),                        \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {0U, 1U, 2U, 3U, 6U, 7U, 14U, 15U, 255U, 255U, 255U,     \
-                       255U, 255U, 255U, 255U, 255U}}),                        \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {4U, 5U, 6U, 7U, 14U, 15U, 255U, 255U, 255U, 255U, 255U, \
-                       255U, 255U, 255U, 255U, 255U}}),                        \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {0U, 1U, 4U, 5U, 6U, 7U, 14U, 15U, 255U, 255U, 255U,     \
-                       255U, 255U, 255U, 255U, 255U}}),                        \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {2U, 3U, 4U, 5U, 6U, 7U, 14U, 15U, 255U, 255U, 255U,     \
-                       255U, 255U, 255U, 255U, 255U}}),                        \
-          (KRML_CLITERAL(Eurydice_arr_88){.data = {0U, 1U, 2U, 3U, 4U, 5U, 6U, \
-                                                   7U, 14U, 15U, 255U, 255U,   \
-                                                   255U, 255U, 255U, 255U}}),  \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {8U, 9U, 14U, 15U, 255U, 255U, 255U, 255U, 255U, 255U,   \
-                       255U, 255U, 255U, 255U, 255U, 255U}}),                  \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {0U, 1U, 8U, 9U, 14U, 15U, 255U, 255U, 255U, 255U, 255U, \
-                       255U, 255U, 255U, 255U, 255U}}),                        \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {2U, 3U, 8U, 9U, 14U, 15U, 255U, 255U, 255U, 255U, 255U, \
-                       255U, 255U, 255U, 255U, 255U}}),                        \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {0U, 1U, 2U, 3U, 8U, 9U, 14U, 15U, 255U, 255U, 255U,     \
-                       255U, 255U, 255U, 255U, 255U}}),                        \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {4U, 5U, 8U, 9U, 14U, 15U, 255U, 255U, 255U, 255U, 255U, \
-                       255U, 255U, 255U, 255U, 255U}}),                        \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {0U, 1U, 4U, 5U, 8U, 9U, 14U, 15U, 255U, 255U, 255U,     \
-                       255U, 255U, 255U, 255U, 255U}}),                        \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {2U, 3U, 4U, 5U, 8U, 9U, 14U, 15U, 255U, 255U, 255U,     \
-                       255U, 255U, 255U, 255U, 255U}}),                        \
-          (KRML_CLITERAL(Eurydice_arr_88){.data = {0U, 1U, 2U, 3U, 4U, 5U, 8U, \
-                                                   9U, 14U, 15U, 255U, 255U,   \
-                                                   255U, 255U, 255U, 255U}}),  \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {6U, 7U, 8U, 9U, 14U, 15U, 255U, 255U, 255U, 255U, 255U, \
-                       255U, 255U, 255U, 255U, 255U}}),                        \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {0U, 1U, 6U, 7U, 8U, 9U, 14U, 15U, 255U, 255U, 255U,     \
-                       255U, 255U, 255U, 255U, 255U}}),                        \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {2U, 3U, 6U, 7U, 8U, 9U, 14U, 15U, 255U, 255U, 255U,     \
-                       255U, 255U, 255U, 255U, 255U}}),                        \
-          (KRML_CLITERAL(Eurydice_arr_88){.data = {0U, 1U, 2U, 3U, 6U, 7U, 8U, \
-                                                   9U, 14U, 15U, 255U, 255U,   \
-                                                   255U, 255U, 255U, 255U}}),  \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {4U, 5U, 6U, 7U, 8U, 9U, 14U, 15U, 255U, 255U, 255U,     \
-                       255U, 255U, 255U, 255U, 255U}}),                        \
-          (KRML_CLITERAL(Eurydice_arr_88){.data = {0U, 1U, 4U, 5U, 6U, 7U, 8U, \
-                                                   9U, 14U, 15U, 255U, 255U,   \
-                                                   255U, 255U, 255U, 255U}}),  \
-          (KRML_CLITERAL(Eurydice_arr_88){.data = {2U, 3U, 4U, 5U, 6U, 7U, 8U, \
-                                                   9U, 14U, 15U, 255U, 255U,   \
-                                                   255U, 255U, 255U, 255U}}),  \
-          (KRML_CLITERAL(Eurydice_arr_88){.data = {0U, 1U, 2U, 3U, 4U, 5U, 6U, \
-                                                   7U, 8U, 9U, 14U, 15U, 255U, \
-                                                   255U, 255U, 255U}}),        \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {10U, 11U, 14U, 15U, 255U, 255U, 255U, 255U, 255U, 255U, \
-                       255U, 255U, 255U, 255U, 255U, 255U}}),                  \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {0U, 1U, 10U, 11U, 14U, 15U, 255U, 255U, 255U, 255U,     \
-                       255U, 255U, 255U, 255U, 255U, 255U}}),                  \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {2U, 3U, 10U, 11U, 14U, 15U, 255U, 255U, 255U, 255U,     \
-                       255U, 255U, 255U, 255U, 255U, 255U}}),                  \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {0U, 1U, 2U, 3U, 10U, 11U, 14U, 15U, 255U, 255U, 255U,   \
-                       255U, 255U, 255U, 255U, 255U}}),                        \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {4U, 5U, 10U, 11U, 14U, 15U, 255U, 255U, 255U, 255U,     \
-                       255U, 255U, 255U, 255U, 255U, 255U}}),                  \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {0U, 1U, 4U, 5U, 10U, 11U, 14U, 15U, 255U, 255U, 255U,   \
-                       255U, 255U, 255U, 255U, 255U}}),                        \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {2U, 3U, 4U, 5U, 10U, 11U, 14U, 15U, 255U, 255U, 255U,   \
-                       255U, 255U, 255U, 255U, 255U}}),                        \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {0U, 1U, 2U, 3U, 4U, 5U, 10U, 11U, 14U, 15U, 255U, 255U, \
-                       255U, 255U, 255U, 255U}}),                              \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {6U, 7U, 10U, 11U, 14U, 15U, 255U, 255U, 255U, 255U,     \
-                       255U, 255U, 255U, 255U, 255U, 255U}}),                  \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {0U, 1U, 6U, 7U, 10U, 11U, 14U, 15U, 255U, 255U, 255U,   \
-                       255U, 255U, 255U, 255U, 255U}}),                        \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {2U, 3U, 6U, 7U, 10U, 11U, 14U, 15U, 255U, 255U, 255U,   \
-                       255U, 255U, 255U, 255U, 255U}}),                        \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {0U, 1U, 2U, 3U, 6U, 7U, 10U, 11U, 14U, 15U, 255U, 255U, \
-                       255U, 255U, 255U, 255U}}),                              \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {4U, 5U, 6U, 7U, 10U, 11U, 14U, 15U, 255U, 255U, 255U,   \
-                       255U, 255U, 255U, 255U, 255U}}),                        \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {0U, 1U, 4U, 5U, 6U, 7U, 10U, 11U, 14U, 15U, 255U, 255U, \
-                       255U, 255U, 255U, 255U}}),                              \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {2U, 3U, 4U, 5U, 6U, 7U, 10U, 11U, 14U, 15U, 255U, 255U, \
-                       255U, 255U, 255U, 255U}}),                              \
-          (KRML_CLITERAL(Eurydice_arr_88){.data = {0U, 1U, 2U, 3U, 4U, 5U, 6U, \
-                                                   7U, 10U, 11U, 14U, 15U,     \
-                                                   255U, 255U, 255U, 255U}}),  \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {8U, 9U, 10U, 11U, 14U, 15U, 255U, 255U, 255U, 255U,     \
-                       255U, 255U, 255U, 255U, 255U, 255U}}),                  \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {0U, 1U, 8U, 9U, 10U, 11U, 14U, 15U, 255U, 255U, 255U,   \
-                       255U, 255U, 255U, 255U, 255U}}),                        \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {2U, 3U, 8U, 9U, 10U, 11U, 14U, 15U, 255U, 255U, 255U,   \
-                       255U, 255U, 255U, 255U, 255U}}),                        \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {0U, 1U, 2U, 3U, 8U, 9U, 10U, 11U, 14U, 15U, 255U, 255U, \
-                       255U, 255U, 255U, 255U}}),                              \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {4U, 5U, 8U, 9U, 10U, 11U, 14U, 15U, 255U, 255U, 255U,   \
-                       255U, 255U, 255U, 255U, 255U}}),                        \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {0U, 1U, 4U, 5U, 8U, 9U, 10U, 11U, 14U, 15U, 255U, 255U, \
-                       255U, 255U, 255U, 255U}}),                              \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {2U, 3U, 4U, 5U, 8U, 9U, 10U, 11U, 14U, 15U, 255U, 255U, \
-                       255U, 255U, 255U, 255U}}),                              \
-          (KRML_CLITERAL(Eurydice_arr_88){.data = {0U, 1U, 2U, 3U, 4U, 5U, 8U, \
-                                                   9U, 10U, 11U, 14U, 15U,     \
-                                                   255U, 255U, 255U, 255U}}),  \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {6U, 7U, 8U, 9U, 10U, 11U, 14U, 15U, 255U, 255U, 255U,   \
-                       255U, 255U, 255U, 255U, 255U}}),                        \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {0U, 1U, 6U, 7U, 8U, 9U, 10U, 11U, 14U, 15U, 255U, 255U, \
-                       255U, 255U, 255U, 255U}}),                              \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {2U, 3U, 6U, 7U, 8U, 9U, 10U, 11U, 14U, 15U, 255U, 255U, \
-                       255U, 255U, 255U, 255U}}),                              \
-          (KRML_CLITERAL(Eurydice_arr_88){.data = {0U, 1U, 2U, 3U, 6U, 7U, 8U, \
-                                                   9U, 10U, 11U, 14U, 15U,     \
-                                                   255U, 255U, 255U, 255U}}),  \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {4U, 5U, 6U, 7U, 8U, 9U, 10U, 11U, 14U, 15U, 255U, 255U, \
-                       255U, 255U, 255U, 255U}}),                              \
-          (KRML_CLITERAL(Eurydice_arr_88){.data = {0U, 1U, 4U, 5U, 6U, 7U, 8U, \
-                                                   9U, 10U, 11U, 14U, 15U,     \
-                                                   255U, 255U, 255U, 255U}}),  \
-          (KRML_CLITERAL(Eurydice_arr_88){.data = {2U, 3U, 4U, 5U, 6U, 7U, 8U, \
-                                                   9U, 10U, 11U, 14U, 15U,     \
-                                                   255U, 255U, 255U, 255U}}),  \
-          (KRML_CLITERAL(Eurydice_arr_88){.data = {0U, 1U, 2U, 3U, 4U, 5U, 6U, \
-                                                   7U, 8U, 9U, 10U, 11U, 14U,  \
-                                                   15U, 255U, 255U}}),         \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {12U, 13U, 14U, 15U, 255U, 255U, 255U, 255U, 255U, 255U, \
-                       255U, 255U, 255U, 255U, 255U, 255U}}),                  \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {0U, 1U, 12U, 13U, 14U, 15U, 255U, 255U, 255U, 255U,     \
-                       255U, 255U, 255U, 255U, 255U, 255U}}),                  \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {2U, 3U, 12U, 13U, 14U, 15U, 255U, 255U, 255U, 255U,     \
-                       255U, 255U, 255U, 255U, 255U, 255U}}),                  \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {0U, 1U, 2U, 3U, 12U, 13U, 14U, 15U, 255U, 255U, 255U,   \
-                       255U, 255U, 255U, 255U, 255U}}),                        \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {4U, 5U, 12U, 13U, 14U, 15U, 255U, 255U, 255U, 255U,     \
-                       255U, 255U, 255U, 255U, 255U, 255U}}),                  \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {0U, 1U, 4U, 5U, 12U, 13U, 14U, 15U, 255U, 255U, 255U,   \
-                       255U, 255U, 255U, 255U, 255U}}),                        \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {2U, 3U, 4U, 5U, 12U, 13U, 14U, 15U, 255U, 255U, 255U,   \
-                       255U, 255U, 255U, 255U, 255U}}),                        \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {0U, 1U, 2U, 3U, 4U, 5U, 12U, 13U, 14U, 15U, 255U, 255U, \
-                       255U, 255U, 255U, 255U}}),                              \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {6U, 7U, 12U, 13U, 14U, 15U, 255U, 255U, 255U, 255U,     \
-                       255U, 255U, 255U, 255U, 255U, 255U}}),                  \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {0U, 1U, 6U, 7U, 12U, 13U, 14U, 15U, 255U, 255U, 255U,   \
-                       255U, 255U, 255U, 255U, 255U}}),                        \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {2U, 3U, 6U, 7U, 12U, 13U, 14U, 15U, 255U, 255U, 255U,   \
-                       255U, 255U, 255U, 255U, 255U}}),                        \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {0U, 1U, 2U, 3U, 6U, 7U, 12U, 13U, 14U, 15U, 255U, 255U, \
-                       255U, 255U, 255U, 255U}}),                              \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {4U, 5U, 6U, 7U, 12U, 13U, 14U, 15U, 255U, 255U, 255U,   \
-                       255U, 255U, 255U, 255U, 255U}}),                        \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {0U, 1U, 4U, 5U, 6U, 7U, 12U, 13U, 14U, 15U, 255U, 255U, \
-                       255U, 255U, 255U, 255U}}),                              \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {2U, 3U, 4U, 5U, 6U, 7U, 12U, 13U, 14U, 15U, 255U, 255U, \
-                       255U, 255U, 255U, 255U}}),                              \
-          (KRML_CLITERAL(Eurydice_arr_88){.data = {0U, 1U, 2U, 3U, 4U, 5U, 6U, \
-                                                   7U, 12U, 13U, 14U, 15U,     \
-                                                   255U, 255U, 255U, 255U}}),  \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {8U, 9U, 12U, 13U, 14U, 15U, 255U, 255U, 255U, 255U,     \
-                       255U, 255U, 255U, 255U, 255U, 255U}}),                  \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {0U, 1U, 8U, 9U, 12U, 13U, 14U, 15U, 255U, 255U, 255U,   \
-                       255U, 255U, 255U, 255U, 255U}}),                        \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {2U, 3U, 8U, 9U, 12U, 13U, 14U, 15U, 255U, 255U, 255U,   \
-                       255U, 255U, 255U, 255U, 255U}}),                        \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {0U, 1U, 2U, 3U, 8U, 9U, 12U, 13U, 14U, 15U, 255U, 255U, \
-                       255U, 255U, 255U, 255U}}),                              \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {4U, 5U, 8U, 9U, 12U, 13U, 14U, 15U, 255U, 255U, 255U,   \
-                       255U, 255U, 255U, 255U, 255U}}),                        \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {0U, 1U, 4U, 5U, 8U, 9U, 12U, 13U, 14U, 15U, 255U, 255U, \
-                       255U, 255U, 255U, 255U}}),                              \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {2U, 3U, 4U, 5U, 8U, 9U, 12U, 13U, 14U, 15U, 255U, 255U, \
-                       255U, 255U, 255U, 255U}}),                              \
-          (KRML_CLITERAL(Eurydice_arr_88){.data = {0U, 1U, 2U, 3U, 4U, 5U, 8U, \
-                                                   9U, 12U, 13U, 14U, 15U,     \
-                                                   255U, 255U, 255U, 255U}}),  \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {6U, 7U, 8U, 9U, 12U, 13U, 14U, 15U, 255U, 255U, 255U,   \
-                       255U, 255U, 255U, 255U, 255U}}),                        \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {0U, 1U, 6U, 7U, 8U, 9U, 12U, 13U, 14U, 15U, 255U, 255U, \
-                       255U, 255U, 255U, 255U}}),                              \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {2U, 3U, 6U, 7U, 8U, 9U, 12U, 13U, 14U, 15U, 255U, 255U, \
-                       255U, 255U, 255U, 255U}}),                              \
-          (KRML_CLITERAL(Eurydice_arr_88){.data = {0U, 1U, 2U, 3U, 6U, 7U, 8U, \
-                                                   9U, 12U, 13U, 14U, 15U,     \
-                                                   255U, 255U, 255U, 255U}}),  \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {4U, 5U, 6U, 7U, 8U, 9U, 12U, 13U, 14U, 15U, 255U, 255U, \
-                       255U, 255U, 255U, 255U}}),                              \
-          (KRML_CLITERAL(Eurydice_arr_88){.data = {0U, 1U, 4U, 5U, 6U, 7U, 8U, \
-                                                   9U, 12U, 13U, 14U, 15U,     \
-                                                   255U, 255U, 255U, 255U}}),  \
-          (KRML_CLITERAL(Eurydice_arr_88){.data = {2U, 3U, 4U, 5U, 6U, 7U, 8U, \
-                                                   9U, 12U, 13U, 14U, 15U,     \
-                                                   255U, 255U, 255U, 255U}}),  \
-          (KRML_CLITERAL(Eurydice_arr_88){.data = {0U, 1U, 2U, 3U, 4U, 5U, 6U, \
-                                                   7U, 8U, 9U, 12U, 13U, 14U,  \
-                                                   15U, 255U, 255U}}),         \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {10U, 11U, 12U, 13U, 14U, 15U, 255U, 255U, 255U, 255U,   \
-                       255U, 255U, 255U, 255U, 255U, 255U}}),                  \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {0U, 1U, 10U, 11U, 12U, 13U, 14U, 15U, 255U, 255U, 255U, \
-                       255U, 255U, 255U, 255U, 255U}}),                        \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {2U, 3U, 10U, 11U, 12U, 13U, 14U, 15U, 255U, 255U, 255U, \
-                       255U, 255U, 255U, 255U, 255U}}),                        \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {0U, 1U, 2U, 3U, 10U, 11U, 12U, 13U, 14U, 15U, 255U,     \
-                       255U, 255U, 255U, 255U, 255U}}),                        \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {4U, 5U, 10U, 11U, 12U, 13U, 14U, 15U, 255U, 255U, 255U, \
-                       255U, 255U, 255U, 255U, 255U}}),                        \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {0U, 1U, 4U, 5U, 10U, 11U, 12U, 13U, 14U, 15U, 255U,     \
-                       255U, 255U, 255U, 255U, 255U}}),                        \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {2U, 3U, 4U, 5U, 10U, 11U, 12U, 13U, 14U, 15U, 255U,     \
-                       255U, 255U, 255U, 255U, 255U}}),                        \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {0U, 1U, 2U, 3U, 4U, 5U, 10U, 11U, 12U, 13U, 14U, 15U,   \
-                       255U, 255U, 255U, 255U}}),                              \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {6U, 7U, 10U, 11U, 12U, 13U, 14U, 15U, 255U, 255U, 255U, \
-                       255U, 255U, 255U, 255U, 255U}}),                        \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {0U, 1U, 6U, 7U, 10U, 11U, 12U, 13U, 14U, 15U, 255U,     \
-                       255U, 255U, 255U, 255U, 255U}}),                        \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {2U, 3U, 6U, 7U, 10U, 11U, 12U, 13U, 14U, 15U, 255U,     \
-                       255U, 255U, 255U, 255U, 255U}}),                        \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {0U, 1U, 2U, 3U, 6U, 7U, 10U, 11U, 12U, 13U, 14U, 15U,   \
-                       255U, 255U, 255U, 255U}}),                              \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {4U, 5U, 6U, 7U, 10U, 11U, 12U, 13U, 14U, 15U, 255U,     \
-                       255U, 255U, 255U, 255U, 255U}}),                        \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {0U, 1U, 4U, 5U, 6U, 7U, 10U, 11U, 12U, 13U, 14U, 15U,   \
-                       255U, 255U, 255U, 255U}}),                              \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {2U, 3U, 4U, 5U, 6U, 7U, 10U, 11U, 12U, 13U, 14U, 15U,   \
-                       255U, 255U, 255U, 255U}}),                              \
-          (KRML_CLITERAL(Eurydice_arr_88){.data = {0U, 1U, 2U, 3U, 4U, 5U, 6U, \
-                                                   7U, 10U, 11U, 12U, 13U,     \
-                                                   14U, 15U, 255U, 255U}}),    \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {8U, 9U, 10U, 11U, 12U, 13U, 14U, 15U, 255U, 255U, 255U, \
-                       255U, 255U, 255U, 255U, 255U}}),                        \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {0U, 1U, 8U, 9U, 10U, 11U, 12U, 13U, 14U, 15U, 255U,     \
-                       255U, 255U, 255U, 255U, 255U}}),                        \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {2U, 3U, 8U, 9U, 10U, 11U, 12U, 13U, 14U, 15U, 255U,     \
-                       255U, 255U, 255U, 255U, 255U}}),                        \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {0U, 1U, 2U, 3U, 8U, 9U, 10U, 11U, 12U, 13U, 14U, 15U,   \
-                       255U, 255U, 255U, 255U}}),                              \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {4U, 5U, 8U, 9U, 10U, 11U, 12U, 13U, 14U, 15U, 255U,     \
-                       255U, 255U, 255U, 255U, 255U}}),                        \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {0U, 1U, 4U, 5U, 8U, 9U, 10U, 11U, 12U, 13U, 14U, 15U,   \
-                       255U, 255U, 255U, 255U}}),                              \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {2U, 3U, 4U, 5U, 8U, 9U, 10U, 11U, 12U, 13U, 14U, 15U,   \
-                       255U, 255U, 255U, 255U}}),                              \
-          (KRML_CLITERAL(Eurydice_arr_88){.data = {0U, 1U, 2U, 3U, 4U, 5U, 8U, \
-                                                   9U, 10U, 11U, 12U, 13U,     \
-                                                   14U, 15U, 255U, 255U}}),    \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {6U, 7U, 8U, 9U, 10U, 11U, 12U, 13U, 14U, 15U, 255U,     \
-                       255U, 255U, 255U, 255U, 255U}}),                        \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {0U, 1U, 6U, 7U, 8U, 9U, 10U, 11U, 12U, 13U, 14U, 15U,   \
-                       255U, 255U, 255U, 255U}}),                              \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {2U, 3U, 6U, 7U, 8U, 9U, 10U, 11U, 12U, 13U, 14U, 15U,   \
-                       255U, 255U, 255U, 255U}}),                              \
-          (KRML_CLITERAL(Eurydice_arr_88){.data = {0U, 1U, 2U, 3U, 6U, 7U, 8U, \
-                                                   9U, 10U, 11U, 12U, 13U,     \
-                                                   14U, 15U, 255U, 255U}}),    \
-          (KRML_CLITERAL(Eurydice_arr_88){                                     \
-              .data = {4U, 5U, 6U, 7U, 8U, 9U, 10U, 11U, 12U, 13U, 14U, 15U,   \
-                       255U, 255U, 255U, 255U}}),                              \
-          (KRML_CLITERAL(Eurydice_arr_88){.data = {0U, 1U, 4U, 5U, 6U, 7U, 8U, \
-                                                   9U, 10U, 11U, 12U, 13U,     \
-                                                   14U, 15U, 255U, 255U}}),    \
-          (KRML_CLITERAL(Eurydice_arr_88){.data = {2U, 3U, 4U, 5U, 6U, 7U, 8U, \
-                                                   9U, 10U, 11U, 12U, 13U,     \
-                                                   14U, 15U, 255U, 255U}}),    \
-          (KRML_CLITERAL(Eurydice_arr_88){.data = {0U, 1U, 2U, 3U, 4U, 5U, 6U, \
-                                                   7U, 8U, 9U, 10U, 11U, 12U,  \
-                                                   13U, 14U, 15U}})}}))
 
 Eurydice_arr_e2 libcrux_ml_kem_vector_portable_vector_type_zero(void);
 
@@ -1260,59 +556,6 @@ libcrux_ml_kem::vector::portable::vector_type::PortableVector}
 Eurydice_arr_c4 libcrux_ml_kem_vector_portable_serialize_4_b8(
     Eurydice_arr_e2 a);
 
-int16_t_x8 libcrux_ml_kem_vector_portable_serialize_deserialize_4_int(
-    Eurydice_slice bytes);
-
-Eurydice_arr_e2 libcrux_ml_kem_vector_portable_serialize_deserialize_4(
-    Eurydice_slice bytes);
-
-Eurydice_arr_e2 libcrux_ml_kem_vector_portable_deserialize_4(Eurydice_slice a);
-
-/**
-This function found in impl {libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::portable::vector_type::PortableVector}
-*/
-Eurydice_arr_e2 libcrux_ml_kem_vector_portable_deserialize_4_b8(
-    Eurydice_slice a);
-
-typedef struct uint8_t_x5_s {
-  uint8_t fst;
-  uint8_t snd;
-  uint8_t thd;
-  uint8_t f3;
-  uint8_t f4;
-} uint8_t_x5;
-
-uint8_t_x5 libcrux_ml_kem_vector_portable_serialize_serialize_5_int(
-    Eurydice_slice v);
-
-Eurydice_arr_77 libcrux_ml_kem_vector_portable_serialize_serialize_5(
-    Eurydice_arr_e2 v);
-
-Eurydice_arr_77 libcrux_ml_kem_vector_portable_serialize_5(Eurydice_arr_e2 a);
-
-/**
-This function found in impl {libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::portable::vector_type::PortableVector}
-*/
-Eurydice_arr_77 libcrux_ml_kem_vector_portable_serialize_5_b8(
-    Eurydice_arr_e2 a);
-
-int16_t_x8 libcrux_ml_kem_vector_portable_serialize_deserialize_5_int(
-    Eurydice_slice bytes);
-
-Eurydice_arr_e2 libcrux_ml_kem_vector_portable_serialize_deserialize_5(
-    Eurydice_slice bytes);
-
-Eurydice_arr_e2 libcrux_ml_kem_vector_portable_deserialize_5(Eurydice_slice a);
-
-/**
-This function found in impl {libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::portable::vector_type::PortableVector}
-*/
-Eurydice_arr_e2 libcrux_ml_kem_vector_portable_deserialize_5_b8(
-    Eurydice_slice a);
-
 uint8_t_x5 libcrux_ml_kem_vector_portable_serialize_serialize_10_int(
     Eurydice_slice v);
 
@@ -1327,21 +570,6 @@ libcrux_ml_kem::vector::portable::vector_type::PortableVector}
 */
 Eurydice_arr_dc libcrux_ml_kem_vector_portable_serialize_10_b8(
     Eurydice_arr_e2 a);
-
-int16_t_x8 libcrux_ml_kem_vector_portable_serialize_deserialize_10_int(
-    Eurydice_slice bytes);
-
-Eurydice_arr_e2 libcrux_ml_kem_vector_portable_serialize_deserialize_10(
-    Eurydice_slice bytes);
-
-Eurydice_arr_e2 libcrux_ml_kem_vector_portable_deserialize_10(Eurydice_slice a);
-
-/**
-This function found in impl {libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::portable::vector_type::PortableVector}
-*/
-Eurydice_arr_e2 libcrux_ml_kem_vector_portable_deserialize_10_b8(
-    Eurydice_slice a);
 
 typedef struct uint8_t_x3_s {
   uint8_t fst;

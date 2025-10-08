@@ -4,11 +4,11 @@
  * SPDX-License-Identifier: MIT or Apache-2.0
  *
  * This code was generated with the following revisions:
- * Charon: 667d2fc98984ff7f3df989c2367e6c1fa4a000e7
- * Eurydice: 564ce891b07fd4aefe7d5ccd78e61400b4ac4a2b
- * Karamel: 06a6d2fb3a547d11c9f6dbec26f1f9b5e0dbf411
- * F*: 0c4b790fd608bccfc332d3ff1e9b29c9be8b0595
- * Libcrux: 2c29684cb507f6883814118541e119ca0f22a61c
+ * Charon: c66a520f7072006af0071eb517002a73d5f3a7d1
+ * Eurydice: 9dae7cbf24d38b7b0eb8e7efd12d662a4ebe1f1a
+ * Karamel: 80f5435f2fc505973c469a4afcc8d875cddd0d8b
+ * F*: f3a2732c1984b520b1f1d48a22e7dd9f8d14a3a2
+ * Libcrux: fba8ff3916a9aa0a3869f2fffea66d8aea07144a
  */
 
 #include "internal/libcrux_mlkem_portable.h"
@@ -83,6 +83,88 @@ int16_t libcrux_ml_kem_polynomial_zeta(size_t i) {
   return ZETAS_TIMES_MONTGOMERY_R.data[i];
 }
 
+KRML_MUSTINLINE int16_t_x8
+libcrux_ml_kem_vector_portable_serialize_deserialize_4_int(
+    Eurydice_slice bytes) {
+  int16_t v0 = libcrux_secrets_int_as_i16_59(
+      (uint32_t)Eurydice_slice_index(bytes, (size_t)0U, uint8_t, uint8_t *) &
+      15U);
+  int16_t v1 = libcrux_secrets_int_as_i16_59(
+      (uint32_t)Eurydice_slice_index(bytes, (size_t)0U, uint8_t, uint8_t *) >>
+          4U &
+      15U);
+  int16_t v2 = libcrux_secrets_int_as_i16_59(
+      (uint32_t)Eurydice_slice_index(bytes, (size_t)1U, uint8_t, uint8_t *) &
+      15U);
+  int16_t v3 = libcrux_secrets_int_as_i16_59(
+      (uint32_t)Eurydice_slice_index(bytes, (size_t)1U, uint8_t, uint8_t *) >>
+          4U &
+      15U);
+  int16_t v4 = libcrux_secrets_int_as_i16_59(
+      (uint32_t)Eurydice_slice_index(bytes, (size_t)2U, uint8_t, uint8_t *) &
+      15U);
+  int16_t v5 = libcrux_secrets_int_as_i16_59(
+      (uint32_t)Eurydice_slice_index(bytes, (size_t)2U, uint8_t, uint8_t *) >>
+          4U &
+      15U);
+  int16_t v6 = libcrux_secrets_int_as_i16_59(
+      (uint32_t)Eurydice_slice_index(bytes, (size_t)3U, uint8_t, uint8_t *) &
+      15U);
+  int16_t v7 = libcrux_secrets_int_as_i16_59(
+      (uint32_t)Eurydice_slice_index(bytes, (size_t)3U, uint8_t, uint8_t *) >>
+          4U &
+      15U);
+  return (KRML_CLITERAL(int16_t_x8){.fst = v0,
+                                    .snd = v1,
+                                    .thd = v2,
+                                    .f3 = v3,
+                                    .f4 = v4,
+                                    .f5 = v5,
+                                    .f6 = v6,
+                                    .f7 = v7});
+}
+
+KRML_MUSTINLINE Eurydice_arr_e2
+libcrux_ml_kem_vector_portable_serialize_deserialize_4(Eurydice_slice bytes) {
+  int16_t_x8 v0_7 = libcrux_ml_kem_vector_portable_serialize_deserialize_4_int(
+      Eurydice_slice_subslice3(bytes, (size_t)0U, (size_t)4U, uint8_t *));
+  int16_t_x8 v8_15 = libcrux_ml_kem_vector_portable_serialize_deserialize_4_int(
+      Eurydice_slice_subslice3(bytes, (size_t)4U, (size_t)8U, uint8_t *));
+  return (KRML_CLITERAL(Eurydice_arr_e2){
+      .data = {v0_7.fst, v0_7.snd, v0_7.thd, v0_7.f3, v0_7.f4, v0_7.f5, v0_7.f6,
+               v0_7.f7, v8_15.fst, v8_15.snd, v8_15.thd, v8_15.f3, v8_15.f4,
+               v8_15.f5, v8_15.f6, v8_15.f7}});
+}
+
+Eurydice_arr_e2 libcrux_ml_kem_vector_portable_deserialize_4(Eurydice_slice a) {
+  return libcrux_ml_kem_vector_portable_serialize_deserialize_4(
+      libcrux_secrets_int_public_integers_classify_ref_c5_ba(&a)[0U]);
+}
+
+/**
+This function found in impl {libcrux_ml_kem::vector::traits::Operations for
+libcrux_ml_kem::vector::portable::vector_type::PortableVector}
+*/
+Eurydice_arr_e2 libcrux_ml_kem_vector_portable_deserialize_4_b8(
+    Eurydice_slice a) {
+  return libcrux_ml_kem_vector_portable_deserialize_4(a);
+}
+
+KRML_MUSTINLINE Eurydice_arr_e2
+libcrux_ml_kem_vector_portable_vector_type_to_i16_array(Eurydice_arr_e2 x) {
+  return x;
+}
+
+/**
+This function found in impl {libcrux_ml_kem::vector::traits::Operations for
+libcrux_ml_kem::vector::portable::vector_type::PortableVector}
+*/
+Eurydice_arr_e2 libcrux_ml_kem_vector_portable_to_i16_array_b8(
+    Eurydice_arr_e2 x) {
+  return libcrux_secrets_int_public_integers_declassify_d8_3a(
+      libcrux_ml_kem_vector_portable_vector_type_to_i16_array(x));
+}
+
 KRML_MUSTINLINE Eurydice_arr_e2
 libcrux_ml_kem_vector_portable_vector_type_from_i16_array(
     Eurydice_slice array) {
@@ -101,6 +183,231 @@ Eurydice_arr_e2 libcrux_ml_kem_vector_portable_from_i16_array_b8(
     Eurydice_slice array) {
   return libcrux_ml_kem_vector_portable_vector_type_from_i16_array(
       libcrux_secrets_int_public_integers_classify_ref_c5_03(&array)[0U]);
+}
+
+KRML_MUSTINLINE uint8_t_x5
+libcrux_ml_kem_vector_portable_serialize_serialize_5_int(Eurydice_slice v) {
+  uint8_t r0 = libcrux_secrets_int_as_u8_f5(
+      Eurydice_slice_index(v, (size_t)0U, int16_t, int16_t *) |
+      Eurydice_slice_index(v, (size_t)1U, int16_t, int16_t *) << 5U);
+  uint8_t r1 = libcrux_secrets_int_as_u8_f5(
+      (Eurydice_slice_index(v, (size_t)1U, int16_t, int16_t *) >> 3U |
+       Eurydice_slice_index(v, (size_t)2U, int16_t, int16_t *) << 2U) |
+      Eurydice_slice_index(v, (size_t)3U, int16_t, int16_t *) << 7U);
+  uint8_t r2 = libcrux_secrets_int_as_u8_f5(
+      Eurydice_slice_index(v, (size_t)3U, int16_t, int16_t *) >> 1U |
+      Eurydice_slice_index(v, (size_t)4U, int16_t, int16_t *) << 4U);
+  uint8_t r3 = libcrux_secrets_int_as_u8_f5(
+      (Eurydice_slice_index(v, (size_t)4U, int16_t, int16_t *) >> 4U |
+       Eurydice_slice_index(v, (size_t)5U, int16_t, int16_t *) << 1U) |
+      Eurydice_slice_index(v, (size_t)6U, int16_t, int16_t *) << 6U);
+  uint8_t r4 = libcrux_secrets_int_as_u8_f5(
+      Eurydice_slice_index(v, (size_t)6U, int16_t, int16_t *) >> 2U |
+      Eurydice_slice_index(v, (size_t)7U, int16_t, int16_t *) << 3U);
+  return (KRML_CLITERAL(uint8_t_x5){
+      .fst = r0, .snd = r1, .thd = r2, .f3 = r3, .f4 = r4});
+}
+
+KRML_MUSTINLINE Eurydice_arr_77
+libcrux_ml_kem_vector_portable_serialize_serialize_5(Eurydice_arr_e2 v) {
+  uint8_t_x5 r0_4 = libcrux_ml_kem_vector_portable_serialize_serialize_5_int(
+      Eurydice_array_to_subslice3(&v, (size_t)0U, (size_t)8U, int16_t *));
+  uint8_t_x5 r5_9 = libcrux_ml_kem_vector_portable_serialize_serialize_5_int(
+      Eurydice_array_to_subslice3(&v, (size_t)8U, (size_t)16U, int16_t *));
+  return (KRML_CLITERAL(Eurydice_arr_77){
+      .data = {r0_4.fst, r0_4.snd, r0_4.thd, r0_4.f3, r0_4.f4, r5_9.fst,
+               r5_9.snd, r5_9.thd, r5_9.f3, r5_9.f4}});
+}
+
+Eurydice_arr_77 libcrux_ml_kem_vector_portable_serialize_5(Eurydice_arr_e2 a) {
+  return libcrux_secrets_int_public_integers_declassify_d8_ed(
+      libcrux_ml_kem_vector_portable_serialize_serialize_5(a));
+}
+
+/**
+This function found in impl {libcrux_ml_kem::vector::traits::Operations for
+libcrux_ml_kem::vector::portable::vector_type::PortableVector}
+*/
+Eurydice_arr_77 libcrux_ml_kem_vector_portable_serialize_5_b8(
+    Eurydice_arr_e2 a) {
+  return libcrux_ml_kem_vector_portable_serialize_5(a);
+}
+
+KRML_MUSTINLINE int16_t_x8
+libcrux_ml_kem_vector_portable_serialize_deserialize_5_int(
+    Eurydice_slice bytes) {
+  int16_t v0 = libcrux_secrets_int_as_i16_59(
+      (uint32_t)Eurydice_slice_index(bytes, (size_t)0U, uint8_t, uint8_t *) &
+      31U);
+  int16_t v1 = libcrux_secrets_int_as_i16_59(
+      ((uint32_t)Eurydice_slice_index(bytes, (size_t)1U, uint8_t, uint8_t *) &
+       3U) << 3U |
+      (uint32_t)Eurydice_slice_index(bytes, (size_t)0U, uint8_t, uint8_t *) >>
+          5U);
+  int16_t v2 = libcrux_secrets_int_as_i16_59(
+      (uint32_t)Eurydice_slice_index(bytes, (size_t)1U, uint8_t, uint8_t *) >>
+          2U &
+      31U);
+  int16_t v3 = libcrux_secrets_int_as_i16_59(
+      ((uint32_t)Eurydice_slice_index(bytes, (size_t)2U, uint8_t, uint8_t *) &
+       15U)
+          << 1U |
+      (uint32_t)Eurydice_slice_index(bytes, (size_t)1U, uint8_t, uint8_t *) >>
+          7U);
+  int16_t v4 = libcrux_secrets_int_as_i16_59(
+      ((uint32_t)Eurydice_slice_index(bytes, (size_t)3U, uint8_t, uint8_t *) &
+       1U) << 4U |
+      (uint32_t)Eurydice_slice_index(bytes, (size_t)2U, uint8_t, uint8_t *) >>
+          4U);
+  int16_t v5 = libcrux_secrets_int_as_i16_59(
+      (uint32_t)Eurydice_slice_index(bytes, (size_t)3U, uint8_t, uint8_t *) >>
+          1U &
+      31U);
+  int16_t v6 = libcrux_secrets_int_as_i16_59(
+      ((uint32_t)Eurydice_slice_index(bytes, (size_t)4U, uint8_t, uint8_t *) &
+       7U) << 2U |
+      (uint32_t)Eurydice_slice_index(bytes, (size_t)3U, uint8_t, uint8_t *) >>
+          6U);
+  int16_t v7 = libcrux_secrets_int_as_i16_59(
+      (uint32_t)Eurydice_slice_index(bytes, (size_t)4U, uint8_t, uint8_t *) >>
+      3U);
+  return (KRML_CLITERAL(int16_t_x8){.fst = v0,
+                                    .snd = v1,
+                                    .thd = v2,
+                                    .f3 = v3,
+                                    .f4 = v4,
+                                    .f5 = v5,
+                                    .f6 = v6,
+                                    .f7 = v7});
+}
+
+KRML_MUSTINLINE Eurydice_arr_e2
+libcrux_ml_kem_vector_portable_serialize_deserialize_5(Eurydice_slice bytes) {
+  int16_t_x8 v0_7 = libcrux_ml_kem_vector_portable_serialize_deserialize_5_int(
+      Eurydice_slice_subslice3(bytes, (size_t)0U, (size_t)5U, uint8_t *));
+  int16_t_x8 v8_15 = libcrux_ml_kem_vector_portable_serialize_deserialize_5_int(
+      Eurydice_slice_subslice3(bytes, (size_t)5U, (size_t)10U, uint8_t *));
+  return (KRML_CLITERAL(Eurydice_arr_e2){
+      .data = {v0_7.fst, v0_7.snd, v0_7.thd, v0_7.f3, v0_7.f4, v0_7.f5, v0_7.f6,
+               v0_7.f7, v8_15.fst, v8_15.snd, v8_15.thd, v8_15.f3, v8_15.f4,
+               v8_15.f5, v8_15.f6, v8_15.f7}});
+}
+
+Eurydice_arr_e2 libcrux_ml_kem_vector_portable_deserialize_5(Eurydice_slice a) {
+  return libcrux_ml_kem_vector_portable_serialize_deserialize_5(
+      libcrux_secrets_int_public_integers_classify_ref_c5_ba(&a)[0U]);
+}
+
+/**
+This function found in impl {libcrux_ml_kem::vector::traits::Operations for
+libcrux_ml_kem::vector::portable::vector_type::PortableVector}
+*/
+Eurydice_arr_e2 libcrux_ml_kem_vector_portable_deserialize_5_b8(
+    Eurydice_slice a) {
+  return libcrux_ml_kem_vector_portable_deserialize_5(a);
+}
+
+KRML_MUSTINLINE int16_t_x8
+libcrux_ml_kem_vector_portable_serialize_deserialize_10_int(
+    Eurydice_slice bytes) {
+  int16_t r0 = libcrux_secrets_int_as_i16_f5(
+      (libcrux_secrets_int_as_i16_59(
+           Eurydice_slice_index(bytes, (size_t)1U, uint8_t, uint8_t *)) &
+       (int16_t)3)
+          << 8U |
+      (libcrux_secrets_int_as_i16_59(
+           Eurydice_slice_index(bytes, (size_t)0U, uint8_t, uint8_t *)) &
+       (int16_t)255));
+  int16_t r1 = libcrux_secrets_int_as_i16_f5(
+      (libcrux_secrets_int_as_i16_59(
+           Eurydice_slice_index(bytes, (size_t)2U, uint8_t, uint8_t *)) &
+       (int16_t)15)
+          << 6U |
+      libcrux_secrets_int_as_i16_59(
+          Eurydice_slice_index(bytes, (size_t)1U, uint8_t, uint8_t *)) >>
+          2U);
+  int16_t r2 = libcrux_secrets_int_as_i16_f5(
+      (libcrux_secrets_int_as_i16_59(
+           Eurydice_slice_index(bytes, (size_t)3U, uint8_t, uint8_t *)) &
+       (int16_t)63)
+          << 4U |
+      libcrux_secrets_int_as_i16_59(
+          Eurydice_slice_index(bytes, (size_t)2U, uint8_t, uint8_t *)) >>
+          4U);
+  int16_t r3 = libcrux_secrets_int_as_i16_f5(
+      libcrux_secrets_int_as_i16_59(
+          Eurydice_slice_index(bytes, (size_t)4U, uint8_t, uint8_t *))
+          << 2U |
+      libcrux_secrets_int_as_i16_59(
+          Eurydice_slice_index(bytes, (size_t)3U, uint8_t, uint8_t *)) >>
+          6U);
+  int16_t r4 = libcrux_secrets_int_as_i16_f5(
+      (libcrux_secrets_int_as_i16_59(
+           Eurydice_slice_index(bytes, (size_t)6U, uint8_t, uint8_t *)) &
+       (int16_t)3)
+          << 8U |
+      (libcrux_secrets_int_as_i16_59(
+           Eurydice_slice_index(bytes, (size_t)5U, uint8_t, uint8_t *)) &
+       (int16_t)255));
+  int16_t r5 = libcrux_secrets_int_as_i16_f5(
+      (libcrux_secrets_int_as_i16_59(
+           Eurydice_slice_index(bytes, (size_t)7U, uint8_t, uint8_t *)) &
+       (int16_t)15)
+          << 6U |
+      libcrux_secrets_int_as_i16_59(
+          Eurydice_slice_index(bytes, (size_t)6U, uint8_t, uint8_t *)) >>
+          2U);
+  int16_t r6 = libcrux_secrets_int_as_i16_f5(
+      (libcrux_secrets_int_as_i16_59(
+           Eurydice_slice_index(bytes, (size_t)8U, uint8_t, uint8_t *)) &
+       (int16_t)63)
+          << 4U |
+      libcrux_secrets_int_as_i16_59(
+          Eurydice_slice_index(bytes, (size_t)7U, uint8_t, uint8_t *)) >>
+          4U);
+  int16_t r7 = libcrux_secrets_int_as_i16_f5(
+      libcrux_secrets_int_as_i16_59(
+          Eurydice_slice_index(bytes, (size_t)9U, uint8_t, uint8_t *))
+          << 2U |
+      libcrux_secrets_int_as_i16_59(
+          Eurydice_slice_index(bytes, (size_t)8U, uint8_t, uint8_t *)) >>
+          6U);
+  return (KRML_CLITERAL(int16_t_x8){.fst = r0,
+                                    .snd = r1,
+                                    .thd = r2,
+                                    .f3 = r3,
+                                    .f4 = r4,
+                                    .f5 = r5,
+                                    .f6 = r6,
+                                    .f7 = r7});
+}
+
+KRML_MUSTINLINE Eurydice_arr_e2
+libcrux_ml_kem_vector_portable_serialize_deserialize_10(Eurydice_slice bytes) {
+  int16_t_x8 v0_7 = libcrux_ml_kem_vector_portable_serialize_deserialize_10_int(
+      Eurydice_slice_subslice3(bytes, (size_t)0U, (size_t)10U, uint8_t *));
+  int16_t_x8 v8_15 =
+      libcrux_ml_kem_vector_portable_serialize_deserialize_10_int(
+          Eurydice_slice_subslice3(bytes, (size_t)10U, (size_t)20U, uint8_t *));
+  return (KRML_CLITERAL(Eurydice_arr_e2){
+      .data = {v0_7.fst, v0_7.snd, v0_7.thd, v0_7.f3, v0_7.f4, v0_7.f5, v0_7.f6,
+               v0_7.f7, v8_15.fst, v8_15.snd, v8_15.thd, v8_15.f3, v8_15.f4,
+               v8_15.f5, v8_15.f6, v8_15.f7}});
+}
+
+Eurydice_arr_e2 libcrux_ml_kem_vector_portable_deserialize_10(
+    Eurydice_slice a) {
+  return libcrux_ml_kem_vector_portable_serialize_deserialize_10(
+      libcrux_secrets_int_public_integers_classify_ref_c5_ba(&a)[0U]);
+}
+
+/**
+This function found in impl {libcrux_ml_kem::vector::traits::Operations for
+libcrux_ml_kem::vector::portable::vector_type::PortableVector}
+*/
+Eurydice_arr_e2 libcrux_ml_kem_vector_portable_deserialize_10_b8(
+    Eurydice_slice a) {
+  return libcrux_ml_kem_vector_portable_deserialize_10(a);
 }
 
 KRML_MUSTINLINE uint8_t_x11
@@ -302,28 +609,9 @@ Eurydice_arr_e2 libcrux_ml_kem_vector_portable_deserialize_11_b8(
 }
 
 KRML_MUSTINLINE Eurydice_arr_e2
-libcrux_ml_kem_vector_portable_vector_type_to_i16_array(Eurydice_arr_e2 x) {
-  return x;
-}
-
-/**
-This function found in impl {libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::portable::vector_type::PortableVector}
-*/
-Eurydice_arr_e2 libcrux_ml_kem_vector_portable_to_i16_array_b8(
-    Eurydice_arr_e2 x) {
-  return libcrux_secrets_int_public_integers_declassify_d8_3a(
-      libcrux_ml_kem_vector_portable_vector_type_to_i16_array(x));
-}
-
-KRML_MUSTINLINE Eurydice_arr_e2
 libcrux_ml_kem_vector_portable_vector_type_zero(void) {
   return libcrux_secrets_int_public_integers_classify_27_3a(
-      (KRML_CLITERAL(Eurydice_arr_e2){
-          .data = {(int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0}}));
+      (KRML_CLITERAL(Eurydice_arr_e2){.data = {0U}}));
 }
 
 /**
@@ -1224,195 +1512,6 @@ Eurydice_arr_c4 libcrux_ml_kem_vector_portable_serialize_4_b8(
   return libcrux_ml_kem_vector_portable_serialize_4(a);
 }
 
-KRML_MUSTINLINE int16_t_x8
-libcrux_ml_kem_vector_portable_serialize_deserialize_4_int(
-    Eurydice_slice bytes) {
-  int16_t v0 = libcrux_secrets_int_as_i16_59(
-      (uint32_t)Eurydice_slice_index(bytes, (size_t)0U, uint8_t, uint8_t *) &
-      15U);
-  int16_t v1 = libcrux_secrets_int_as_i16_59(
-      (uint32_t)Eurydice_slice_index(bytes, (size_t)0U, uint8_t, uint8_t *) >>
-          4U &
-      15U);
-  int16_t v2 = libcrux_secrets_int_as_i16_59(
-      (uint32_t)Eurydice_slice_index(bytes, (size_t)1U, uint8_t, uint8_t *) &
-      15U);
-  int16_t v3 = libcrux_secrets_int_as_i16_59(
-      (uint32_t)Eurydice_slice_index(bytes, (size_t)1U, uint8_t, uint8_t *) >>
-          4U &
-      15U);
-  int16_t v4 = libcrux_secrets_int_as_i16_59(
-      (uint32_t)Eurydice_slice_index(bytes, (size_t)2U, uint8_t, uint8_t *) &
-      15U);
-  int16_t v5 = libcrux_secrets_int_as_i16_59(
-      (uint32_t)Eurydice_slice_index(bytes, (size_t)2U, uint8_t, uint8_t *) >>
-          4U &
-      15U);
-  int16_t v6 = libcrux_secrets_int_as_i16_59(
-      (uint32_t)Eurydice_slice_index(bytes, (size_t)3U, uint8_t, uint8_t *) &
-      15U);
-  int16_t v7 = libcrux_secrets_int_as_i16_59(
-      (uint32_t)Eurydice_slice_index(bytes, (size_t)3U, uint8_t, uint8_t *) >>
-          4U &
-      15U);
-  return (KRML_CLITERAL(int16_t_x8){.fst = v0,
-                                    .snd = v1,
-                                    .thd = v2,
-                                    .f3 = v3,
-                                    .f4 = v4,
-                                    .f5 = v5,
-                                    .f6 = v6,
-                                    .f7 = v7});
-}
-
-KRML_MUSTINLINE Eurydice_arr_e2
-libcrux_ml_kem_vector_portable_serialize_deserialize_4(Eurydice_slice bytes) {
-  int16_t_x8 v0_7 = libcrux_ml_kem_vector_portable_serialize_deserialize_4_int(
-      Eurydice_slice_subslice3(bytes, (size_t)0U, (size_t)4U, uint8_t *));
-  int16_t_x8 v8_15 = libcrux_ml_kem_vector_portable_serialize_deserialize_4_int(
-      Eurydice_slice_subslice3(bytes, (size_t)4U, (size_t)8U, uint8_t *));
-  return (KRML_CLITERAL(Eurydice_arr_e2){
-      .data = {v0_7.fst, v0_7.snd, v0_7.thd, v0_7.f3, v0_7.f4, v0_7.f5, v0_7.f6,
-               v0_7.f7, v8_15.fst, v8_15.snd, v8_15.thd, v8_15.f3, v8_15.f4,
-               v8_15.f5, v8_15.f6, v8_15.f7}});
-}
-
-Eurydice_arr_e2 libcrux_ml_kem_vector_portable_deserialize_4(Eurydice_slice a) {
-  return libcrux_ml_kem_vector_portable_serialize_deserialize_4(
-      libcrux_secrets_int_public_integers_classify_ref_c5_ba(&a)[0U]);
-}
-
-/**
-This function found in impl {libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::portable::vector_type::PortableVector}
-*/
-Eurydice_arr_e2 libcrux_ml_kem_vector_portable_deserialize_4_b8(
-    Eurydice_slice a) {
-  return libcrux_ml_kem_vector_portable_deserialize_4(a);
-}
-
-KRML_MUSTINLINE uint8_t_x5
-libcrux_ml_kem_vector_portable_serialize_serialize_5_int(Eurydice_slice v) {
-  uint8_t r0 = libcrux_secrets_int_as_u8_f5(
-      Eurydice_slice_index(v, (size_t)0U, int16_t, int16_t *) |
-      Eurydice_slice_index(v, (size_t)1U, int16_t, int16_t *) << 5U);
-  uint8_t r1 = libcrux_secrets_int_as_u8_f5(
-      (Eurydice_slice_index(v, (size_t)1U, int16_t, int16_t *) >> 3U |
-       Eurydice_slice_index(v, (size_t)2U, int16_t, int16_t *) << 2U) |
-      Eurydice_slice_index(v, (size_t)3U, int16_t, int16_t *) << 7U);
-  uint8_t r2 = libcrux_secrets_int_as_u8_f5(
-      Eurydice_slice_index(v, (size_t)3U, int16_t, int16_t *) >> 1U |
-      Eurydice_slice_index(v, (size_t)4U, int16_t, int16_t *) << 4U);
-  uint8_t r3 = libcrux_secrets_int_as_u8_f5(
-      (Eurydice_slice_index(v, (size_t)4U, int16_t, int16_t *) >> 4U |
-       Eurydice_slice_index(v, (size_t)5U, int16_t, int16_t *) << 1U) |
-      Eurydice_slice_index(v, (size_t)6U, int16_t, int16_t *) << 6U);
-  uint8_t r4 = libcrux_secrets_int_as_u8_f5(
-      Eurydice_slice_index(v, (size_t)6U, int16_t, int16_t *) >> 2U |
-      Eurydice_slice_index(v, (size_t)7U, int16_t, int16_t *) << 3U);
-  return (KRML_CLITERAL(uint8_t_x5){
-      .fst = r0, .snd = r1, .thd = r2, .f3 = r3, .f4 = r4});
-}
-
-KRML_MUSTINLINE Eurydice_arr_77
-libcrux_ml_kem_vector_portable_serialize_serialize_5(Eurydice_arr_e2 v) {
-  uint8_t_x5 r0_4 = libcrux_ml_kem_vector_portable_serialize_serialize_5_int(
-      Eurydice_array_to_subslice3(&v, (size_t)0U, (size_t)8U, int16_t *));
-  uint8_t_x5 r5_9 = libcrux_ml_kem_vector_portable_serialize_serialize_5_int(
-      Eurydice_array_to_subslice3(&v, (size_t)8U, (size_t)16U, int16_t *));
-  return (KRML_CLITERAL(Eurydice_arr_77){
-      .data = {r0_4.fst, r0_4.snd, r0_4.thd, r0_4.f3, r0_4.f4, r5_9.fst,
-               r5_9.snd, r5_9.thd, r5_9.f3, r5_9.f4}});
-}
-
-Eurydice_arr_77 libcrux_ml_kem_vector_portable_serialize_5(Eurydice_arr_e2 a) {
-  return libcrux_secrets_int_public_integers_declassify_d8_ed(
-      libcrux_ml_kem_vector_portable_serialize_serialize_5(a));
-}
-
-/**
-This function found in impl {libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::portable::vector_type::PortableVector}
-*/
-Eurydice_arr_77 libcrux_ml_kem_vector_portable_serialize_5_b8(
-    Eurydice_arr_e2 a) {
-  return libcrux_ml_kem_vector_portable_serialize_5(a);
-}
-
-KRML_MUSTINLINE int16_t_x8
-libcrux_ml_kem_vector_portable_serialize_deserialize_5_int(
-    Eurydice_slice bytes) {
-  int16_t v0 = libcrux_secrets_int_as_i16_59(
-      (uint32_t)Eurydice_slice_index(bytes, (size_t)0U, uint8_t, uint8_t *) &
-      31U);
-  int16_t v1 = libcrux_secrets_int_as_i16_59(
-      ((uint32_t)Eurydice_slice_index(bytes, (size_t)1U, uint8_t, uint8_t *) &
-       3U) << 3U |
-      (uint32_t)Eurydice_slice_index(bytes, (size_t)0U, uint8_t, uint8_t *) >>
-          5U);
-  int16_t v2 = libcrux_secrets_int_as_i16_59(
-      (uint32_t)Eurydice_slice_index(bytes, (size_t)1U, uint8_t, uint8_t *) >>
-          2U &
-      31U);
-  int16_t v3 = libcrux_secrets_int_as_i16_59(
-      ((uint32_t)Eurydice_slice_index(bytes, (size_t)2U, uint8_t, uint8_t *) &
-       15U)
-          << 1U |
-      (uint32_t)Eurydice_slice_index(bytes, (size_t)1U, uint8_t, uint8_t *) >>
-          7U);
-  int16_t v4 = libcrux_secrets_int_as_i16_59(
-      ((uint32_t)Eurydice_slice_index(bytes, (size_t)3U, uint8_t, uint8_t *) &
-       1U) << 4U |
-      (uint32_t)Eurydice_slice_index(bytes, (size_t)2U, uint8_t, uint8_t *) >>
-          4U);
-  int16_t v5 = libcrux_secrets_int_as_i16_59(
-      (uint32_t)Eurydice_slice_index(bytes, (size_t)3U, uint8_t, uint8_t *) >>
-          1U &
-      31U);
-  int16_t v6 = libcrux_secrets_int_as_i16_59(
-      ((uint32_t)Eurydice_slice_index(bytes, (size_t)4U, uint8_t, uint8_t *) &
-       7U) << 2U |
-      (uint32_t)Eurydice_slice_index(bytes, (size_t)3U, uint8_t, uint8_t *) >>
-          6U);
-  int16_t v7 = libcrux_secrets_int_as_i16_59(
-      (uint32_t)Eurydice_slice_index(bytes, (size_t)4U, uint8_t, uint8_t *) >>
-      3U);
-  return (KRML_CLITERAL(int16_t_x8){.fst = v0,
-                                    .snd = v1,
-                                    .thd = v2,
-                                    .f3 = v3,
-                                    .f4 = v4,
-                                    .f5 = v5,
-                                    .f6 = v6,
-                                    .f7 = v7});
-}
-
-KRML_MUSTINLINE Eurydice_arr_e2
-libcrux_ml_kem_vector_portable_serialize_deserialize_5(Eurydice_slice bytes) {
-  int16_t_x8 v0_7 = libcrux_ml_kem_vector_portable_serialize_deserialize_5_int(
-      Eurydice_slice_subslice3(bytes, (size_t)0U, (size_t)5U, uint8_t *));
-  int16_t_x8 v8_15 = libcrux_ml_kem_vector_portable_serialize_deserialize_5_int(
-      Eurydice_slice_subslice3(bytes, (size_t)5U, (size_t)10U, uint8_t *));
-  return (KRML_CLITERAL(Eurydice_arr_e2){
-      .data = {v0_7.fst, v0_7.snd, v0_7.thd, v0_7.f3, v0_7.f4, v0_7.f5, v0_7.f6,
-               v0_7.f7, v8_15.fst, v8_15.snd, v8_15.thd, v8_15.f3, v8_15.f4,
-               v8_15.f5, v8_15.f6, v8_15.f7}});
-}
-
-Eurydice_arr_e2 libcrux_ml_kem_vector_portable_deserialize_5(Eurydice_slice a) {
-  return libcrux_ml_kem_vector_portable_serialize_deserialize_5(
-      libcrux_secrets_int_public_integers_classify_ref_c5_ba(&a)[0U]);
-}
-
-/**
-This function found in impl {libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::portable::vector_type::PortableVector}
-*/
-Eurydice_arr_e2 libcrux_ml_kem_vector_portable_deserialize_5_b8(
-    Eurydice_slice a) {
-  return libcrux_ml_kem_vector_portable_deserialize_5(a);
-}
-
 KRML_MUSTINLINE uint8_t_x5
 libcrux_ml_kem_vector_portable_serialize_serialize_10_int(Eurydice_slice v) {
   uint8_t r0 = libcrux_secrets_int_as_u8_f5(
@@ -1474,109 +1573,6 @@ libcrux_ml_kem::vector::portable::vector_type::PortableVector}
 Eurydice_arr_dc libcrux_ml_kem_vector_portable_serialize_10_b8(
     Eurydice_arr_e2 a) {
   return libcrux_ml_kem_vector_portable_serialize_10(a);
-}
-
-KRML_MUSTINLINE int16_t_x8
-libcrux_ml_kem_vector_portable_serialize_deserialize_10_int(
-    Eurydice_slice bytes) {
-  int16_t r0 = libcrux_secrets_int_as_i16_f5(
-      (libcrux_secrets_int_as_i16_59(
-           Eurydice_slice_index(bytes, (size_t)1U, uint8_t, uint8_t *)) &
-       (int16_t)3)
-          << 8U |
-      (libcrux_secrets_int_as_i16_59(
-           Eurydice_slice_index(bytes, (size_t)0U, uint8_t, uint8_t *)) &
-       (int16_t)255));
-  int16_t r1 = libcrux_secrets_int_as_i16_f5(
-      (libcrux_secrets_int_as_i16_59(
-           Eurydice_slice_index(bytes, (size_t)2U, uint8_t, uint8_t *)) &
-       (int16_t)15)
-          << 6U |
-      libcrux_secrets_int_as_i16_59(
-          Eurydice_slice_index(bytes, (size_t)1U, uint8_t, uint8_t *)) >>
-          2U);
-  int16_t r2 = libcrux_secrets_int_as_i16_f5(
-      (libcrux_secrets_int_as_i16_59(
-           Eurydice_slice_index(bytes, (size_t)3U, uint8_t, uint8_t *)) &
-       (int16_t)63)
-          << 4U |
-      libcrux_secrets_int_as_i16_59(
-          Eurydice_slice_index(bytes, (size_t)2U, uint8_t, uint8_t *)) >>
-          4U);
-  int16_t r3 = libcrux_secrets_int_as_i16_f5(
-      libcrux_secrets_int_as_i16_59(
-          Eurydice_slice_index(bytes, (size_t)4U, uint8_t, uint8_t *))
-          << 2U |
-      libcrux_secrets_int_as_i16_59(
-          Eurydice_slice_index(bytes, (size_t)3U, uint8_t, uint8_t *)) >>
-          6U);
-  int16_t r4 = libcrux_secrets_int_as_i16_f5(
-      (libcrux_secrets_int_as_i16_59(
-           Eurydice_slice_index(bytes, (size_t)6U, uint8_t, uint8_t *)) &
-       (int16_t)3)
-          << 8U |
-      (libcrux_secrets_int_as_i16_59(
-           Eurydice_slice_index(bytes, (size_t)5U, uint8_t, uint8_t *)) &
-       (int16_t)255));
-  int16_t r5 = libcrux_secrets_int_as_i16_f5(
-      (libcrux_secrets_int_as_i16_59(
-           Eurydice_slice_index(bytes, (size_t)7U, uint8_t, uint8_t *)) &
-       (int16_t)15)
-          << 6U |
-      libcrux_secrets_int_as_i16_59(
-          Eurydice_slice_index(bytes, (size_t)6U, uint8_t, uint8_t *)) >>
-          2U);
-  int16_t r6 = libcrux_secrets_int_as_i16_f5(
-      (libcrux_secrets_int_as_i16_59(
-           Eurydice_slice_index(bytes, (size_t)8U, uint8_t, uint8_t *)) &
-       (int16_t)63)
-          << 4U |
-      libcrux_secrets_int_as_i16_59(
-          Eurydice_slice_index(bytes, (size_t)7U, uint8_t, uint8_t *)) >>
-          4U);
-  int16_t r7 = libcrux_secrets_int_as_i16_f5(
-      libcrux_secrets_int_as_i16_59(
-          Eurydice_slice_index(bytes, (size_t)9U, uint8_t, uint8_t *))
-          << 2U |
-      libcrux_secrets_int_as_i16_59(
-          Eurydice_slice_index(bytes, (size_t)8U, uint8_t, uint8_t *)) >>
-          6U);
-  return (KRML_CLITERAL(int16_t_x8){.fst = r0,
-                                    .snd = r1,
-                                    .thd = r2,
-                                    .f3 = r3,
-                                    .f4 = r4,
-                                    .f5 = r5,
-                                    .f6 = r6,
-                                    .f7 = r7});
-}
-
-KRML_MUSTINLINE Eurydice_arr_e2
-libcrux_ml_kem_vector_portable_serialize_deserialize_10(Eurydice_slice bytes) {
-  int16_t_x8 v0_7 = libcrux_ml_kem_vector_portable_serialize_deserialize_10_int(
-      Eurydice_slice_subslice3(bytes, (size_t)0U, (size_t)10U, uint8_t *));
-  int16_t_x8 v8_15 =
-      libcrux_ml_kem_vector_portable_serialize_deserialize_10_int(
-          Eurydice_slice_subslice3(bytes, (size_t)10U, (size_t)20U, uint8_t *));
-  return (KRML_CLITERAL(Eurydice_arr_e2){
-      .data = {v0_7.fst, v0_7.snd, v0_7.thd, v0_7.f3, v0_7.f4, v0_7.f5, v0_7.f6,
-               v0_7.f7, v8_15.fst, v8_15.snd, v8_15.thd, v8_15.f3, v8_15.f4,
-               v8_15.f5, v8_15.f6, v8_15.f7}});
-}
-
-Eurydice_arr_e2 libcrux_ml_kem_vector_portable_deserialize_10(
-    Eurydice_slice a) {
-  return libcrux_ml_kem_vector_portable_serialize_deserialize_10(
-      libcrux_secrets_int_public_integers_classify_ref_c5_ba(&a)[0U]);
-}
-
-/**
-This function found in impl {libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::portable::vector_type::PortableVector}
-*/
-Eurydice_arr_e2 libcrux_ml_kem_vector_portable_deserialize_10_b8(
-    Eurydice_slice a) {
-  return libcrux_ml_kem_vector_portable_deserialize_10(a);
 }
 
 KRML_MUSTINLINE uint8_t_x3
@@ -1863,151 +1859,7 @@ const generics
 static KRML_MUSTINLINE Eurydice_arr_ec
 shake128_squeeze_first_three_blocks_ac(Eurydice_arr_180 *st) {
   Eurydice_arr_ec out = {
-      .data = {
-          (KRML_CLITERAL(Eurydice_arr_b0){
-              .data =
-                  {0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U}}),
-          (KRML_CLITERAL(Eurydice_arr_b0){
-              .data =
-                  {0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U}}),
-          (KRML_CLITERAL(Eurydice_arr_b0){
-              .data =
-                  {0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U}}),
-          (KRML_CLITERAL(Eurydice_arr_b0){
-              .data = {
-                  0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                  0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                  0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                  0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                  0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                  0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                  0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                  0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                  0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                  0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                  0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                  0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                  0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                  0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                  0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                  0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                  0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                  0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                  0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                  0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                  0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                  0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                  0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                  0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                  0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                  0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                  0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                  0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                  0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                  0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                  0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                  0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                  0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                  0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U}})}};
+      .data = {{.data = {0U}}, {.data = {0U}}, {.data = {0U}}, {.data = {0U}}}};
   KRML_MAYBE_FOR4(
       i, (size_t)0U, (size_t)4U, (size_t)1U, size_t i0 = i;
       libcrux_sha3_portable_incremental_shake128_squeeze_first_three_blocks(
@@ -2121,62 +1973,7 @@ generics
 static KRML_MUSTINLINE Eurydice_arr_a6
 shake128_squeeze_next_block_ac(Eurydice_arr_180 *st) {
   Eurydice_arr_a6 out = {
-      .data = {(KRML_CLITERAL(Eurydice_arr_27){
-                   .data = {0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U}}),
-               (KRML_CLITERAL(Eurydice_arr_27){
-                   .data = {0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U}}),
-               (KRML_CLITERAL(Eurydice_arr_27){
-                   .data = {0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U}}),
-               (KRML_CLITERAL(Eurydice_arr_27){
-                   .data = {0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U}})}};
+      .data = {{.data = {0U}}, {.data = {0U}}, {.data = {0U}}, {.data = {0U}}}};
   KRML_MAYBE_FOR4(
       i, (size_t)0U, (size_t)4U, (size_t)1U, size_t i0 = i;
       libcrux_sha3_portable_incremental_shake128_squeeze_next_block(
@@ -2361,235 +2158,7 @@ static KRML_MUSTINLINE Eurydice_arr_0d
 sample_from_xof_2b1(Eurydice_arr_78 *seeds) {
   Eurydice_arr_33 sampled_coefficients = {.data = {0U}};
   Eurydice_arr_8a out = {
-      .data = {
-          (KRML_CLITERAL(Eurydice_arr_a00){
-              .data =
-                  {(int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0}}),
-          (KRML_CLITERAL(Eurydice_arr_a00){
-              .data =
-                  {(int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0}}),
-          (KRML_CLITERAL(Eurydice_arr_a00){
-              .data =
-                  {(int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0}}),
-          (KRML_CLITERAL(Eurydice_arr_a00){
-              .data = {
-                  (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                  (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                  (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                  (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                  (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                  (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                  (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                  (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                  (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                  (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                  (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                  (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                  (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                  (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                  (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                  (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                  (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                  (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                  (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                  (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                  (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                  (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                  (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                  (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                  (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                  (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                  (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                  (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                  (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                  (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                  (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                  (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                  (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                  (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                  (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                  (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                  (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                  (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                  (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                  (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                  (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                  (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                  (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                  (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                  (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                  (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                  (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                  (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                  (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                  (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                  (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                  (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                  (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                  (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                  (int16_t)0, (int16_t)0}})}};
+      .data = {{.data = {0U}}, {.data = {0U}}, {.data = {0U}}, {.data = {0U}}}};
   Eurydice_arr_180 xof_state =
       libcrux_ml_kem_hash_functions_portable_shake128_init_absorb_final_4a_ac(
           seeds);
@@ -2623,18 +2192,18 @@ generics
 - K= 4
 */
 static KRML_MUSTINLINE void sample_matrix_A_2b1(Eurydice_arr_950 *A_transpose,
-                                                Eurydice_arr_48 *seed,
+                                                Eurydice_arr_480 *seed,
                                                 bool transpose) {
   KRML_MAYBE_FOR4(
       i0, (size_t)0U, (size_t)4U, (size_t)1U, size_t i1 = i0;
-      Eurydice_arr_78 seeds; Eurydice_arr_48 repeat_expression[4U];
+      Eurydice_arr_78 seeds; Eurydice_arr_480 repeat_expression[4U];
       KRML_MAYBE_FOR4(
           i, (size_t)0U, (size_t)4U, (size_t)1U,
           repeat_expression[i] =
               core_array__core__clone__Clone_for__Array_T__N___clone(
-                  (size_t)34U, seed, uint8_t, Eurydice_arr_48););
+                  (size_t)34U, seed, uint8_t, Eurydice_arr_480););
       memcpy(seeds.data, repeat_expression,
-             (size_t)4U * sizeof(Eurydice_arr_48));
+             (size_t)4U * sizeof(Eurydice_arr_480));
       KRML_MAYBE_FOR4(i, (size_t)0U, (size_t)4U, (size_t)1U, size_t j = i;
                       seeds.data[j].data[32U] = (uint8_t)i1;
                       seeds.data[j].data[33U] = (uint8_t)j;);
@@ -2692,7 +2261,7 @@ void libcrux_ml_kem_ind_cca_unpacked_unpack_public_key_30(
   unpacked_public_key->ind_cpa_public_key.seed_for_A = uu____1;
   Eurydice_arr_950 *uu____2 = &unpacked_public_key->ind_cpa_public_key.A;
   /* original Rust expression is not an lvalue in C */
-  Eurydice_arr_48 lvalue = libcrux_ml_kem_utils_into_padded_array_b6(
+  Eurydice_arr_480 lvalue = libcrux_ml_kem_utils_into_padded_array_b6(
       Eurydice_array_to_subslice_from((size_t)1568U, public_key, (size_t)1536U,
                                       uint8_t, size_t, uint8_t[]));
   sample_matrix_A_2b1(uu____2, &lvalue, false);
@@ -3078,7 +2647,7 @@ static KRML_MUSTINLINE void build_unpacked_public_key_mut_3f1(
       public_key, (size_t)1536U, uint8_t, size_t, uint8_t[]);
   Eurydice_arr_950 *uu____1 = &unpacked_public_key->A;
   /* original Rust expression is not an lvalue in C */
-  Eurydice_arr_48 lvalue = libcrux_ml_kem_utils_into_padded_array_b6(seed);
+  Eurydice_arr_480 lvalue = libcrux_ml_kem_utils_into_padded_array_b6(seed);
   sample_matrix_A_2b1(uu____1, &lvalue, false);
 }
 
@@ -3196,12 +2765,10 @@ with const generics
 */
 libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_af
 libcrux_ml_kem_ind_cca_unpacked_default_30_d0(void) {
-  return (KRML_CLITERAL(
-      libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_af){
-      .ind_cpa_public_key = default_8b_d0(),
-      .public_key_hash = {.data = {0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U}}});
+  return (
+      KRML_CLITERAL(libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_af){
+          .ind_cpa_public_key = default_8b_d0(),
+          .public_key_hash = {.data = {0U}}});
 }
 
 /**
@@ -3271,50 +2838,7 @@ with const generics
 */
 static KRML_MUSTINLINE Eurydice_arr_cc0 PRFxN_44(Eurydice_arr_65 *input) {
   Eurydice_arr_cc0 out = {
-      .data = {(KRML_CLITERAL(Eurydice_arr_d1){
-                   .data = {0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U}}),
-               (KRML_CLITERAL(Eurydice_arr_d1){
-                   .data = {0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U}}),
-               (KRML_CLITERAL(Eurydice_arr_d1){
-                   .data = {0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U}}),
-               (KRML_CLITERAL(Eurydice_arr_d1){
-                   .data = {0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U}})}};
+      .data = {{.data = {0U}}, {.data = {0U}}, {.data = {0U}}, {.data = {0U}}}};
   KRML_MAYBE_FOR4(
       i, (size_t)0U, (size_t)4U, (size_t)1U, size_t i0 = i;
       libcrux_sha3_portable_shake256(
@@ -3977,7 +3501,7 @@ static KRML_MUSTINLINE void generate_keypair_unpacked_1c1(
   Eurydice_slice seed_for_secret_and_error = uu____0.snd;
   Eurydice_arr_950 *uu____1 = &public_key->A;
   /* original Rust expression is not an lvalue in C */
-  Eurydice_arr_48 lvalue0 =
+  Eurydice_arr_480 lvalue0 =
       libcrux_ml_kem_utils_into_padded_array_b6(seed_for_A);
   sample_matrix_A_2b1(uu____1, &lvalue0, true);
   Eurydice_arr_3e prf_input =
@@ -6084,80 +5608,7 @@ const generics
 */
 static KRML_MUSTINLINE Eurydice_arr_45
 shake128_squeeze_first_three_blocks_fd(Eurydice_arr_73 *st) {
-  Eurydice_arr_45 out = {
-      .data = {
-          (KRML_CLITERAL(Eurydice_arr_b0){
-              .data =
-                  {0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U}}),
-          (KRML_CLITERAL(Eurydice_arr_b0){
-              .data = {
-                  0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                  0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                  0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                  0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                  0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                  0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                  0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                  0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                  0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                  0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                  0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                  0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                  0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                  0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                  0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                  0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                  0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                  0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                  0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                  0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                  0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                  0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                  0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                  0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                  0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                  0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                  0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                  0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                  0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                  0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                  0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                  0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                  0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                  0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U}})}};
+  Eurydice_arr_45 out = {.data = {{.data = {0U}}, {.data = {0U}}}};
   KRML_MAYBE_FOR2(
       i, (size_t)0U, (size_t)2U, (size_t)1U, size_t i0 = i;
       libcrux_sha3_portable_incremental_shake128_squeeze_first_three_blocks(
@@ -6270,35 +5721,7 @@ generics
 */
 static KRML_MUSTINLINE Eurydice_arr_a9
 shake128_squeeze_next_block_fd(Eurydice_arr_73 *st) {
-  Eurydice_arr_a9 out = {
-      .data = {(KRML_CLITERAL(Eurydice_arr_27){
-                   .data = {0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U}}),
-               (KRML_CLITERAL(Eurydice_arr_27){
-                   .data = {0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U}})}};
+  Eurydice_arr_a9 out = {.data = {{.data = {0U}}, {.data = {0U}}}};
   KRML_MAYBE_FOR2(
       i, (size_t)0U, (size_t)2U, (size_t)1U, size_t i0 = i;
       libcrux_sha3_portable_incremental_shake128_squeeze_next_block(
@@ -6432,122 +5855,7 @@ generics
 static KRML_MUSTINLINE Eurydice_arr_270
 sample_from_xof_2b0(Eurydice_arr_340 *seeds) {
   Eurydice_arr_fb sampled_coefficients = {.data = {0U}};
-  Eurydice_arr_04 out = {
-      .data = {
-          (KRML_CLITERAL(Eurydice_arr_a00){
-              .data =
-                  {(int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0}}),
-          (KRML_CLITERAL(Eurydice_arr_a00){
-              .data = {
-                  (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                  (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                  (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                  (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                  (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                  (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                  (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                  (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                  (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                  (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                  (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                  (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                  (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                  (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                  (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                  (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                  (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                  (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                  (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                  (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                  (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                  (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                  (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                  (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                  (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                  (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                  (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                  (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                  (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                  (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                  (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                  (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                  (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                  (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                  (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                  (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                  (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                  (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                  (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                  (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                  (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                  (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                  (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                  (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                  (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                  (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                  (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                  (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                  (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                  (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                  (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                  (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                  (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                  (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                  (int16_t)0, (int16_t)0}})}};
+  Eurydice_arr_04 out = {.data = {{.data = {0U}}, {.data = {0U}}}};
   Eurydice_arr_73 xof_state =
       libcrux_ml_kem_hash_functions_portable_shake128_init_absorb_final_4a_fd(
           seeds);
@@ -6580,19 +5888,19 @@ libcrux_ml_kem_hash_functions_portable_PortableHash[[$2size_t]] with const
 generics
 - K= 2
 */
-static KRML_MUSTINLINE void sample_matrix_A_2b0(Eurydice_arr_e21 *A_transpose,
-                                                Eurydice_arr_48 *seed,
+static KRML_MUSTINLINE void sample_matrix_A_2b0(Eurydice_arr_e20 *A_transpose,
+                                                Eurydice_arr_480 *seed,
                                                 bool transpose) {
   KRML_MAYBE_FOR2(
       i0, (size_t)0U, (size_t)2U, (size_t)1U, size_t i1 = i0;
-      Eurydice_arr_340 seeds; Eurydice_arr_48 repeat_expression[2U];
+      Eurydice_arr_340 seeds; Eurydice_arr_480 repeat_expression[2U];
       KRML_MAYBE_FOR2(
           i, (size_t)0U, (size_t)2U, (size_t)1U,
           repeat_expression[i] =
               core_array__core__clone__Clone_for__Array_T__N___clone(
-                  (size_t)34U, seed, uint8_t, Eurydice_arr_48););
+                  (size_t)34U, seed, uint8_t, Eurydice_arr_480););
       memcpy(seeds.data, repeat_expression,
-             (size_t)2U * sizeof(Eurydice_arr_48));
+             (size_t)2U * sizeof(Eurydice_arr_480));
       KRML_MAYBE_FOR2(i, (size_t)0U, (size_t)2U, (size_t)1U, size_t j = i;
                       seeds.data[j].data[32U] = (uint8_t)i1;
                       seeds.data[j].data[33U] = (uint8_t)j;);
@@ -6648,9 +5956,9 @@ void libcrux_ml_kem_ind_cca_unpacked_unpack_public_key_73(
       libcrux_ml_kem_utils_into_padded_array_9e(Eurydice_array_to_subslice_from(
           (size_t)800U, public_key, (size_t)768U, uint8_t, size_t, uint8_t[]));
   unpacked_public_key->ind_cpa_public_key.seed_for_A = uu____1;
-  Eurydice_arr_e21 *uu____2 = &unpacked_public_key->ind_cpa_public_key.A;
+  Eurydice_arr_e20 *uu____2 = &unpacked_public_key->ind_cpa_public_key.A;
   /* original Rust expression is not an lvalue in C */
-  Eurydice_arr_48 lvalue =
+  Eurydice_arr_480 lvalue =
       libcrux_ml_kem_utils_into_padded_array_b6(Eurydice_array_to_subslice_from(
           (size_t)800U, public_key, (size_t)768U, uint8_t, size_t, uint8_t[]));
   sample_matrix_A_2b0(uu____2, &lvalue, false);
@@ -6849,9 +6157,9 @@ with const generics
 */
 void libcrux_ml_kem_ind_cca_serialize_kem_secret_key_mut_30(
     Eurydice_slice private_key, Eurydice_slice public_key,
-    Eurydice_slice implicit_rejection_value, Eurydice_arr_7f *serialized) {
+    Eurydice_slice implicit_rejection_value, Eurydice_arr_7f0 *serialized) {
   size_t pointer = (size_t)0U;
-  Eurydice_arr_7f *uu____0 = serialized;
+  Eurydice_arr_7f0 *uu____0 = serialized;
   size_t uu____1 = pointer;
   size_t uu____2 = pointer;
   Eurydice_slice_copy(
@@ -6860,7 +6168,7 @@ void libcrux_ml_kem_ind_cca_serialize_kem_secret_key_mut_30(
           uint8_t *),
       private_key, uint8_t);
   pointer = pointer + Eurydice_slice_len(private_key, uint8_t);
-  Eurydice_arr_7f *uu____3 = serialized;
+  Eurydice_arr_7f0 *uu____3 = serialized;
   size_t uu____4 = pointer;
   size_t uu____5 = pointer;
   Eurydice_slice_copy(
@@ -6877,7 +6185,7 @@ void libcrux_ml_kem_ind_cca_serialize_kem_secret_key_mut_30(
   Eurydice_slice_copy(
       uu____6, Eurydice_array_to_slice((size_t)32U, &lvalue, uint8_t), uint8_t);
   pointer = pointer + LIBCRUX_ML_KEM_CONSTANTS_H_DIGEST_SIZE;
-  Eurydice_arr_7f *uu____7 = serialized;
+  Eurydice_arr_7f0 *uu____7 = serialized;
   size_t uu____8 = pointer;
   size_t uu____9 = pointer;
   Eurydice_slice_copy(
@@ -6904,7 +6212,7 @@ libcrux_ml_kem_vector_portable_vector_type_PortableVector with const generics
 */
 void libcrux_ml_kem_ind_cca_unpacked_serialized_private_key_mut_11_6d(
     libcrux_ml_kem_mlkem512_portable_unpacked_MlKem512KeyPairUnpacked *self,
-    Eurydice_arr_7f *serialized) {
+    Eurydice_arr_7f0 *serialized) {
   libcrux_ml_kem_utils_extraction_helper_Keypair512 uu____0 =
       serialize_unpacked_secret_key_86(&self->public_key.ind_cpa_public_key,
                                        &self->private_key.ind_cpa_private_key);
@@ -6932,9 +6240,9 @@ libcrux_ml_kem_vector_portable_vector_type_PortableVector with const generics
 - PRIVATE_KEY_SIZE= 1632
 - PUBLIC_KEY_SIZE= 800
 */
-Eurydice_arr_7f libcrux_ml_kem_ind_cca_unpacked_serialized_private_key_11_6d(
+Eurydice_arr_7f0 libcrux_ml_kem_ind_cca_unpacked_serialized_private_key_11_6d(
     libcrux_ml_kem_mlkem512_portable_unpacked_MlKem512KeyPairUnpacked *self) {
-  Eurydice_arr_7f sk = libcrux_ml_kem_types_default_d3_2a();
+  Eurydice_arr_7f0 sk = libcrux_ml_kem_types_default_d3_2a();
   libcrux_ml_kem_ind_cca_unpacked_serialized_private_key_mut_11_6d(self, &sk);
   return sk;
 }
@@ -6978,9 +6286,9 @@ static KRML_MUSTINLINE void build_unpacked_public_key_mut_3f0(
   deserialize_ring_elements_reduced_a0(uu____0, &unpacked_public_key->t_as_ntt);
   Eurydice_slice seed = Eurydice_slice_subslice_from(
       public_key, (size_t)768U, uint8_t, size_t, uint8_t[]);
-  Eurydice_arr_e21 *uu____1 = &unpacked_public_key->A;
+  Eurydice_arr_e20 *uu____1 = &unpacked_public_key->A;
   /* original Rust expression is not an lvalue in C */
-  Eurydice_arr_48 lvalue = libcrux_ml_kem_utils_into_padded_array_b6(seed);
+  Eurydice_arr_480 lvalue = libcrux_ml_kem_utils_into_padded_array_b6(seed);
   sample_matrix_A_2b0(uu____1, &lvalue, false);
 }
 
@@ -6998,7 +6306,7 @@ with const generics
 - T_AS_NTT_ENCODED_SIZE= 768
 */
 void libcrux_ml_kem_ind_cca_unpacked_keys_from_private_key_d1(
-    Eurydice_arr_7f *private_key,
+    Eurydice_arr_7f0 *private_key,
     libcrux_ml_kem_mlkem512_portable_unpacked_MlKem512KeyPairUnpacked
         *key_pair) {
   Eurydice_slice_uint8_t_x4 uu____0 =
@@ -7099,12 +6407,10 @@ with const generics
 */
 libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_d4
 libcrux_ml_kem_ind_cca_unpacked_default_30_a0(void) {
-  return (KRML_CLITERAL(
-      libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_d4){
-      .ind_cpa_public_key = default_8b_a0(),
-      .public_key_hash = {.data = {0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U}}});
+  return (
+      KRML_CLITERAL(libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_d4){
+          .ind_cpa_public_key = default_8b_a0(),
+          .public_key_hash = {.data = {0U}}});
 }
 
 /**
@@ -7173,38 +6479,7 @@ with const generics
 - LEN= 192
 */
 static KRML_MUSTINLINE Eurydice_arr_a80 PRFxN_49(Eurydice_arr_cf *input) {
-  Eurydice_arr_a80 out = {
-      .data = {
-          (KRML_CLITERAL(Eurydice_arr_f2){
-              .data = {0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                       0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                       0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                       0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                       0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                       0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                       0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                       0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                       0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                       0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                       0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                       0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                       0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                       0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U}}),
-          (KRML_CLITERAL(Eurydice_arr_f2){
-              .data = {0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                       0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                       0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                       0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                       0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                       0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                       0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                       0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                       0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                       0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                       0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                       0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                       0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                       0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U}})}};
+  Eurydice_arr_a80 out = {.data = {{.data = {0U}}, {.data = {0U}}}};
   KRML_MAYBE_FOR2(
       i, (size_t)0U, (size_t)2U, (size_t)1U, size_t i0 = i;
       libcrux_sha3_portable_shake256(
@@ -7344,7 +6619,7 @@ with const generics
 - K= 2
 */
 static KRML_MUSTINLINE void compute_As_plus_e_a0(
-    Eurydice_arr_270 *t_as_ntt, Eurydice_arr_e21 *matrix_A,
+    Eurydice_arr_270 *t_as_ntt, Eurydice_arr_e20 *matrix_A,
     Eurydice_arr_270 *s_as_ntt, Eurydice_arr_270 *error_as_ntt) {
   for (size_t i = (size_t)0U;
        i < Eurydice_slice_len(
@@ -7431,9 +6706,9 @@ static KRML_MUSTINLINE void generate_keypair_unpacked_1c0(
       uint8_t, Eurydice_slice_uint8_t_x2);
   Eurydice_slice seed_for_A = uu____0.fst;
   Eurydice_slice seed_for_secret_and_error = uu____0.snd;
-  Eurydice_arr_e21 *uu____1 = &public_key->A;
+  Eurydice_arr_e20 *uu____1 = &public_key->A;
   /* original Rust expression is not an lvalue in C */
-  Eurydice_arr_48 lvalue0 =
+  Eurydice_arr_480 lvalue0 =
       libcrux_ml_kem_utils_into_padded_array_b6(seed_for_A);
   sample_matrix_A_2b0(uu____1, &lvalue0, true);
   Eurydice_arr_3e prf_input =
@@ -7499,13 +6774,13 @@ with types libcrux_ml_kem_vector_portable_vector_type_PortableVector
 with const generics
 - K= 2
 */
-static Eurydice_arr_e21 transpose_a_a0(Eurydice_arr_e21 ind_cpa_a) {
-  Eurydice_arr_e21 arr_struct;
+static Eurydice_arr_e20 transpose_a_a0(Eurydice_arr_e20 ind_cpa_a) {
+  Eurydice_arr_e20 arr_struct;
   KRML_MAYBE_FOR2(i, (size_t)0U, (size_t)2U, (size_t)1U,
                   /* original Rust expression is not an lvalue in C */
                   void *lvalue = (void *)0U;
                   arr_struct.data[i] = call_mut_7b_a0(&lvalue););
-  Eurydice_arr_e21 A = arr_struct;
+  Eurydice_arr_e20 A = arr_struct;
   KRML_MAYBE_FOR2(
       i0, (size_t)0U, (size_t)2U, (size_t)1U, size_t i1 = i0; KRML_MAYBE_FOR2(
           i, (size_t)0U, (size_t)2U, (size_t)1U, size_t j = i;
@@ -7542,7 +6817,7 @@ void libcrux_ml_kem_ind_cca_unpacked_generate_keypair_150(
   generate_keypair_unpacked_1c0(ind_cpa_keypair_randomness,
                                 &out->private_key.ind_cpa_private_key,
                                 &out->public_key.ind_cpa_public_key);
-  Eurydice_arr_e21 A = transpose_a_a0(out->public_key.ind_cpa_public_key.A);
+  Eurydice_arr_e20 A = transpose_a_a0(out->public_key.ind_cpa_public_key.A);
   out->public_key.ind_cpa_public_key.A = A;
   Eurydice_arr_30 pk_serialized = serialize_public_key_64(
       &out->public_key.ind_cpa_public_key.t_as_ntt,
@@ -7584,10 +6859,10 @@ libcrux_ml_kem_polynomial_PolynomialRingElement
 libcrux_ml_kem_vector_portable_vector_type_PortableVector
 
 */
-typedef struct tuple_710_s {
+typedef struct tuple_71_s {
   Eurydice_arr_270 fst;
   Eurydice_arr_b9 snd;
-} tuple_710;
+} tuple_71;
 
 /**
 This function found in impl {core::ops::function::FnMut<(usize),
@@ -7644,29 +6919,7 @@ with const generics
 - LEN= 128
 */
 static KRML_MUSTINLINE Eurydice_arr_a01 PRFxN_490(Eurydice_arr_cf *input) {
-  Eurydice_arr_a01 out = {
-      .data = {(KRML_CLITERAL(Eurydice_arr_d1){
-                   .data = {0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U}}),
-               (KRML_CLITERAL(Eurydice_arr_d1){
-                   .data = {0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U}})}};
+  Eurydice_arr_a01 out = {.data = {{.data = {0U}}, {.data = {0U}}}};
   KRML_MAYBE_FOR2(
       i, (size_t)0U, (size_t)2U, (size_t)1U, size_t i0 = i;
       libcrux_sha3_portable_shake256(
@@ -7781,7 +7034,7 @@ with const generics
 - K= 2
 */
 static KRML_MUSTINLINE Eurydice_arr_270
-compute_vector_u_a0(Eurydice_arr_e21 *a_as_ntt, Eurydice_arr_270 *r_as_ntt,
+compute_vector_u_a0(Eurydice_arr_e20 *a_as_ntt, Eurydice_arr_270 *r_as_ntt,
                     Eurydice_arr_270 *error_1) {
   Eurydice_arr_270 arr_struct;
   KRML_MAYBE_FOR2(i, (size_t)0U, (size_t)2U, (size_t)1U,
@@ -7895,9 +7148,9 @@ generics
 - ETA2= 2
 - ETA2_RANDOMNESS_SIZE= 128
 */
-static KRML_MUSTINLINE tuple_710 encrypt_c1_850(Eurydice_slice randomness,
-                                                Eurydice_arr_e21 *matrix,
-                                                Eurydice_slice ciphertext) {
+static KRML_MUSTINLINE tuple_71 encrypt_c1_850(Eurydice_slice randomness,
+                                               Eurydice_arr_e20 *matrix,
+                                               Eurydice_slice ciphertext) {
   Eurydice_arr_3e prf_input =
       libcrux_ml_kem_utils_into_padded_array_c8(randomness);
   Eurydice_arr_270 arr_struct0;
@@ -7923,7 +7176,7 @@ static KRML_MUSTINLINE tuple_710 encrypt_c1_850(Eurydice_slice randomness,
       Eurydice_array_to_slice((size_t)128U, &prf_output, uint8_t));
   Eurydice_arr_270 u = compute_vector_u_a0(matrix, &r_as_ntt, &error_1);
   compress_then_serialize_u_6d(u, ciphertext);
-  return (KRML_CLITERAL(tuple_710){.fst = r_as_ntt, .snd = error_2});
+  return (KRML_CLITERAL(tuple_71){.fst = r_as_ntt, .snd = error_2});
 }
 
 /**
@@ -8043,7 +7296,7 @@ static KRML_MUSTINLINE Eurydice_arr_56 encrypt_unpacked_2a0(
     libcrux_ml_kem_ind_cpa_unpacked_IndCpaPublicKeyUnpacked_d4 *public_key,
     Eurydice_arr_60 *message, Eurydice_slice randomness) {
   Eurydice_arr_56 ciphertext = {.data = {0U}};
-  tuple_710 uu____0 =
+  tuple_71 uu____0 =
       encrypt_c1_850(randomness, &public_key->A,
                      Eurydice_array_to_subslice3(&ciphertext, (size_t)0U,
                                                  (size_t)640U, uint8_t *));
@@ -8441,7 +7694,7 @@ with const generics
 - SECRET_KEY_SIZE= 1632
 */
 bool libcrux_ml_kem_ind_cca_validate_private_key_only_30(
-    Eurydice_arr_7f *private_key) {
+    Eurydice_arr_7f0 *private_key) {
   Eurydice_arr_60 t = H_4a_fd(Eurydice_array_to_subslice3(
       private_key, (size_t)384U * (size_t)2U,
       (size_t)768U * (size_t)2U + (size_t)32U, uint8_t *));
@@ -8467,7 +7720,7 @@ with const generics
 - CIPHERTEXT_SIZE= 768
 */
 bool libcrux_ml_kem_ind_cca_validate_private_key_fb(
-    Eurydice_arr_7f *private_key, Eurydice_arr_56 *_ciphertext) {
+    Eurydice_arr_7f0 *private_key, Eurydice_arr_56 *_ciphertext) {
   return libcrux_ml_kem_ind_cca_validate_private_key_only_30(private_key);
 }
 
@@ -8498,10 +7751,10 @@ with const generics
 - K= 2
 - SERIALIZED_KEY_LEN= 1632
 */
-static KRML_MUSTINLINE Eurydice_arr_7f serialize_kem_secret_key_30(
+static KRML_MUSTINLINE Eurydice_arr_7f0 serialize_kem_secret_key_30(
     Eurydice_slice private_key, Eurydice_slice public_key,
     Eurydice_slice implicit_rejection_value) {
-  Eurydice_arr_7f out = {.data = {0U}};
+  Eurydice_arr_7f0 out = {.data = {0U}};
   libcrux_ml_kem_ind_cca_serialize_kem_secret_key_mut_30(
       private_key, public_key, implicit_rejection_value, &out);
   return out;
@@ -8541,11 +7794,11 @@ libcrux_ml_kem_ind_cca_generate_keypair_150(
       generate_keypair_ea0(ind_cpa_keypair_randomness);
   Eurydice_arr_56 ind_cpa_private_key = uu____0.fst;
   Eurydice_arr_30 public_key = uu____0.snd;
-  Eurydice_arr_7f secret_key_serialized = serialize_kem_secret_key_30(
+  Eurydice_arr_7f0 secret_key_serialized = serialize_kem_secret_key_30(
       Eurydice_array_to_slice((size_t)768U, &ind_cpa_private_key, uint8_t),
       Eurydice_array_to_slice((size_t)800U, &public_key, uint8_t),
       implicit_rejection_value);
-  Eurydice_arr_7f private_key =
+  Eurydice_arr_7f0 private_key =
       libcrux_ml_kem_types_from_77_2a(secret_key_serialized);
   return libcrux_ml_kem_types_from_17_fa(
       private_key, libcrux_ml_kem_types_from_fd_4d(public_key));
@@ -8749,7 +8002,7 @@ libcrux_ml_kem_variant_MlKem with const generics
 - IMPLICIT_REJECTION_HASH_INPUT_SIZE= 800
 */
 Eurydice_arr_60 libcrux_ml_kem_ind_cca_decapsulate_620(
-    Eurydice_arr_7f *private_key, Eurydice_arr_56 *ciphertext) {
+    Eurydice_arr_7f0 *private_key, Eurydice_arr_56 *ciphertext) {
   Eurydice_slice_uint8_t_x4 uu____0 =
       libcrux_ml_kem_types_unpack_private_key_0c(
           Eurydice_array_to_slice((size_t)1632U, private_key, uint8_t));
@@ -8872,115 +8125,7 @@ const generics
 static KRML_MUSTINLINE Eurydice_arr_35
 shake128_squeeze_first_three_blocks_e0(Eurydice_arr_e4 *st) {
   Eurydice_arr_35 out = {
-      .data = {
-          (KRML_CLITERAL(Eurydice_arr_b0){
-              .data =
-                  {0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U}}),
-          (KRML_CLITERAL(Eurydice_arr_b0){
-              .data =
-                  {0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U}}),
-          (KRML_CLITERAL(Eurydice_arr_b0){
-              .data = {
-                  0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                  0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                  0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                  0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                  0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                  0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                  0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                  0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                  0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                  0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                  0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                  0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                  0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                  0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                  0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                  0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                  0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                  0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                  0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                  0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                  0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                  0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                  0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                  0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                  0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                  0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                  0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                  0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                  0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                  0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                  0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                  0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                  0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                  0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U}})}};
+      .data = {{.data = {0U}}, {.data = {0U}}, {.data = {0U}}}};
   KRML_MAYBE_FOR3(
       i, (size_t)0U, (size_t)3U, (size_t)1U, size_t i0 = i;
       libcrux_sha3_portable_incremental_shake128_squeeze_first_three_blocks(
@@ -9094,48 +8239,7 @@ generics
 static KRML_MUSTINLINE Eurydice_arr_d6
 shake128_squeeze_next_block_e0(Eurydice_arr_e4 *st) {
   Eurydice_arr_d6 out = {
-      .data = {(KRML_CLITERAL(Eurydice_arr_27){
-                   .data = {0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U}}),
-               (KRML_CLITERAL(Eurydice_arr_27){
-                   .data = {0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U}}),
-               (KRML_CLITERAL(Eurydice_arr_27){
-                   .data = {0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U}})}};
+      .data = {{.data = {0U}}, {.data = {0U}}, {.data = {0U}}}};
   KRML_MAYBE_FOR3(
       i, (size_t)0U, (size_t)3U, (size_t)1U, size_t i0 = i;
       libcrux_sha3_portable_incremental_shake128_squeeze_next_block(
@@ -9270,178 +8374,7 @@ static KRML_MUSTINLINE Eurydice_arr_c41
 sample_from_xof_2b(Eurydice_arr_84 *seeds) {
   Eurydice_arr_c8 sampled_coefficients = {.data = {0U}};
   Eurydice_arr_d4 out = {
-      .data = {
-          (KRML_CLITERAL(Eurydice_arr_a00){
-              .data =
-                  {(int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0}}),
-          (KRML_CLITERAL(Eurydice_arr_a00){
-              .data =
-                  {(int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                   (int16_t)0, (int16_t)0}}),
-          (KRML_CLITERAL(Eurydice_arr_a00){
-              .data = {
-                  (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                  (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                  (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                  (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                  (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                  (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                  (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                  (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                  (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                  (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                  (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                  (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                  (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                  (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                  (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                  (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                  (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                  (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                  (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                  (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                  (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                  (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                  (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                  (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                  (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                  (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                  (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                  (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                  (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                  (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                  (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                  (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                  (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                  (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                  (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                  (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                  (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                  (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                  (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                  (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                  (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                  (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                  (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                  (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                  (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                  (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                  (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                  (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                  (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                  (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                  (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                  (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                  (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                  (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-                  (int16_t)0, (int16_t)0}})}};
+      .data = {{.data = {0U}}, {.data = {0U}}, {.data = {0U}}}};
   Eurydice_arr_e4 xof_state =
       libcrux_ml_kem_hash_functions_portable_shake128_init_absorb_final_4a_e0(
           seeds);
@@ -9475,18 +8408,18 @@ generics
 - K= 3
 */
 static KRML_MUSTINLINE void sample_matrix_A_2b(Eurydice_arr_aa *A_transpose,
-                                               Eurydice_arr_48 *seed,
+                                               Eurydice_arr_480 *seed,
                                                bool transpose) {
   KRML_MAYBE_FOR3(
       i0, (size_t)0U, (size_t)3U, (size_t)1U, size_t i1 = i0;
-      Eurydice_arr_84 seeds; Eurydice_arr_48 repeat_expression[3U];
+      Eurydice_arr_84 seeds; Eurydice_arr_480 repeat_expression[3U];
       KRML_MAYBE_FOR3(
           i, (size_t)0U, (size_t)3U, (size_t)1U,
           repeat_expression[i] =
               core_array__core__clone__Clone_for__Array_T__N___clone(
-                  (size_t)34U, seed, uint8_t, Eurydice_arr_48););
+                  (size_t)34U, seed, uint8_t, Eurydice_arr_480););
       memcpy(seeds.data, repeat_expression,
-             (size_t)3U * sizeof(Eurydice_arr_48));
+             (size_t)3U * sizeof(Eurydice_arr_480));
       KRML_MAYBE_FOR3(i, (size_t)0U, (size_t)3U, (size_t)1U, size_t j = i;
                       seeds.data[j].data[32U] = (uint8_t)i1;
                       seeds.data[j].data[33U] = (uint8_t)j;);
@@ -9544,7 +8477,7 @@ void libcrux_ml_kem_ind_cca_unpacked_unpack_public_key_0a(
   unpacked_public_key->ind_cpa_public_key.seed_for_A = uu____1;
   Eurydice_arr_aa *uu____2 = &unpacked_public_key->ind_cpa_public_key.A;
   /* original Rust expression is not an lvalue in C */
-  Eurydice_arr_48 lvalue = libcrux_ml_kem_utils_into_padded_array_b6(
+  Eurydice_arr_480 lvalue = libcrux_ml_kem_utils_into_padded_array_b6(
       Eurydice_array_to_subslice_from((size_t)1184U, public_key, (size_t)1152U,
                                       uint8_t, size_t, uint8_t[]));
   sample_matrix_A_2b(uu____2, &lvalue, false);
@@ -9941,7 +8874,7 @@ static KRML_MUSTINLINE void build_unpacked_public_key_mut_3f(
       public_key, (size_t)1152U, uint8_t, size_t, uint8_t[]);
   Eurydice_arr_aa *uu____1 = &unpacked_public_key->A;
   /* original Rust expression is not an lvalue in C */
-  Eurydice_arr_48 lvalue = libcrux_ml_kem_utils_into_padded_array_b6(seed);
+  Eurydice_arr_480 lvalue = libcrux_ml_kem_utils_into_padded_array_b6(seed);
   sample_matrix_A_2b(uu____1, &lvalue, false);
 }
 
@@ -10060,12 +8993,10 @@ with const generics
 */
 libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_a0
 libcrux_ml_kem_ind_cca_unpacked_default_30_1b(void) {
-  return (KRML_CLITERAL(
-      libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_a0){
-      .ind_cpa_public_key = default_8b_1b(),
-      .public_key_hash = {.data = {0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                                   0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U}}});
+  return (
+      KRML_CLITERAL(libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_a0){
+          .ind_cpa_public_key = default_8b_1b(),
+          .public_key_hash = {.data = {0U}}});
 }
 
 /**
@@ -10135,39 +9066,7 @@ with const generics
 */
 static KRML_MUSTINLINE Eurydice_arr_db PRFxN_41(Eurydice_arr_46 *input) {
   Eurydice_arr_db out = {
-      .data = {(KRML_CLITERAL(Eurydice_arr_d1){
-                   .data = {0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U}}),
-               (KRML_CLITERAL(Eurydice_arr_d1){
-                   .data = {0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U}}),
-               (KRML_CLITERAL(Eurydice_arr_d1){
-                   .data = {0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U}})}};
+      .data = {{.data = {0U}}, {.data = {0U}}, {.data = {0U}}}};
   KRML_MAYBE_FOR3(
       i, (size_t)0U, (size_t)3U, (size_t)1U, size_t i0 = i;
       libcrux_sha3_portable_shake256(
@@ -10385,7 +9284,7 @@ static KRML_MUSTINLINE void generate_keypair_unpacked_1c(
   Eurydice_slice seed_for_secret_and_error = uu____0.snd;
   Eurydice_arr_aa *uu____1 = &public_key->A;
   /* original Rust expression is not an lvalue in C */
-  Eurydice_arr_48 lvalue0 =
+  Eurydice_arr_480 lvalue0 =
       libcrux_ml_kem_utils_into_padded_array_b6(seed_for_A);
   sample_matrix_A_2b(uu____1, &lvalue0, true);
   Eurydice_arr_3e prf_input =
@@ -11167,7 +10066,7 @@ Eurydice_arr_60 libcrux_ml_kem_ind_cca_unpacked_decapsulate_51(
       Eurydice_slice_uint8_t_x2);
   Eurydice_slice shared_secret = uu____1.fst;
   Eurydice_slice pseudorandomness = uu____1.snd;
-  Eurydice_arr_480 to_hash =
+  Eurydice_arr_48 to_hash =
       libcrux_ml_kem_utils_into_padded_array_15(Eurydice_array_to_slice(
           (size_t)32U, &key_pair->private_key.implicit_rejection_value,
           uint8_t));
@@ -11610,7 +10509,7 @@ Eurydice_arr_60 libcrux_ml_kem_ind_cca_decapsulate_62(
       Eurydice_slice_uint8_t_x2);
   Eurydice_slice shared_secret0 = uu____1.fst;
   Eurydice_slice pseudorandomness = uu____1.snd;
-  Eurydice_arr_480 to_hash =
+  Eurydice_arr_48 to_hash =
       libcrux_ml_kem_utils_into_padded_array_15(implicit_rejection_value);
   Eurydice_slice uu____2 = Eurydice_array_to_subslice_from(
       (size_t)1120U, &to_hash, LIBCRUX_ML_KEM_CONSTANTS_SHARED_SECRET_SIZE,

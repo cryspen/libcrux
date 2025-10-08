@@ -4,11 +4,11 @@
  * SPDX-License-Identifier: MIT or Apache-2.0
  *
  * This code was generated with the following revisions:
- * Charon: 667d2fc98984ff7f3df989c2367e6c1fa4a000e7
- * Eurydice: 564ce891b07fd4aefe7d5ccd78e61400b4ac4a2b
- * Karamel: 06a6d2fb3a547d11c9f6dbec26f1f9b5e0dbf411
- * F*: 0c4b790fd608bccfc332d3ff1e9b29c9be8b0595
- * Libcrux: 2c29684cb507f6883814118541e119ca0f22a61c
+ * Charon: c66a520f7072006af0071eb517002a73d5f3a7d1
+ * Eurydice: 9dae7cbf24d38b7b0eb8e7efd12d662a4ebe1f1a
+ * Karamel: 80f5435f2fc505973c469a4afcc8d875cddd0d8b
+ * F*: f3a2732c1984b520b1f1d48a22e7dd9f8d14a3a2
+ * Libcrux: fba8ff3916a9aa0a3869f2fffea66d8aea07144a
  */
 
 #ifndef libcrux_sha3_portable_H
@@ -22,6 +22,32 @@ extern "C" {
 
 #include "libcrux_core.h"
 #include "libcrux_sha3_internal.h"
+
+#define LIBCRUX_SHA3_GENERIC_KECCAK_CONSTANTS_ROUNDCONSTANTS        \
+  ((KRML_CLITERAL(Eurydice_arr_a7){.data = {1ULL,                   \
+                                            32898ULL,               \
+                                            9223372036854808714ULL, \
+                                            9223372039002292224ULL, \
+                                            32907ULL,               \
+                                            2147483649ULL,          \
+                                            9223372039002292353ULL, \
+                                            9223372036854808585ULL, \
+                                            138ULL,                 \
+                                            136ULL,                 \
+                                            2147516425ULL,          \
+                                            2147483658ULL,          \
+                                            2147516555ULL,          \
+                                            9223372036854775947ULL, \
+                                            9223372036854808713ULL, \
+                                            9223372036854808579ULL, \
+                                            9223372036854808578ULL, \
+                                            9223372036854775936ULL, \
+                                            32778ULL,               \
+                                            9223372039002259466ULL, \
+                                            9223372039002292353ULL, \
+                                            9223372036854808704ULL, \
+                                            2147483649ULL,          \
+                                            9223372039002292232ULL}}))
 
 /**
 This function found in impl {libcrux_sha3::traits::KeccakItem<1usize> for u64}
@@ -74,32 +100,6 @@ uint64_t libcrux_sha3_simd_portable_xor_constant_d2(uint64_t a, uint64_t c);
 This function found in impl {libcrux_sha3::traits::KeccakItem<1usize> for u64}
 */
 uint64_t libcrux_sha3_simd_portable_xor_d2(uint64_t a, uint64_t b);
-
-#define LIBCRUX_SHA3_GENERIC_KECCAK_CONSTANTS_ROUNDCONSTANTS        \
-  ((KRML_CLITERAL(Eurydice_arr_a7){.data = {1ULL,                   \
-                                            32898ULL,               \
-                                            9223372036854808714ULL, \
-                                            9223372039002292224ULL, \
-                                            32907ULL,               \
-                                            2147483649ULL,          \
-                                            9223372039002292353ULL, \
-                                            9223372036854808585ULL, \
-                                            138ULL,                 \
-                                            136ULL,                 \
-                                            2147516425ULL,          \
-                                            2147483658ULL,          \
-                                            2147516555ULL,          \
-                                            9223372036854775947ULL, \
-                                            9223372036854808713ULL, \
-                                            9223372036854808579ULL, \
-                                            9223372036854808578ULL, \
-                                            9223372036854775936ULL, \
-                                            32778ULL,               \
-                                            9223372039002259466ULL, \
-                                            9223372039002292353ULL, \
-                                            9223372036854808704ULL, \
-                                            2147483649ULL,          \
-                                            9223372039002292232ULL}}))
 
 typedef struct size_t_x2_s {
   size_t fst;
@@ -2166,6 +2166,16 @@ libcrux_sha3_Algorithm libcrux_sha3_from_29(uint32_t v);
 A monomorphic instance of Eurydice.arr
 with types libcrux_sha3_portable_KeccakState
 with const generics
+- $2size_t
+*/
+typedef struct Eurydice_arr_73_s {
+  Eurydice_arr_26 data[2U];
+} Eurydice_arr_73;
+
+/**
+A monomorphic instance of Eurydice.arr
+with types libcrux_sha3_portable_KeccakState
+with const generics
 - $4size_t
 */
 typedef struct Eurydice_arr_180_s {
@@ -2183,14 +2193,12 @@ typedef struct Eurydice_arr_e4_s {
 } Eurydice_arr_e4;
 
 /**
-A monomorphic instance of Eurydice.arr
-with types libcrux_sha3_portable_KeccakState
+A monomorphic instance of libcrux_sha3.generic_keccak.KeccakState
+with types core_core_arch_arm_shared_neon_uint64x2_t
 with const generics
 - $2size_t
 */
-typedef struct Eurydice_arr_73_s {
-  Eurydice_arr_26 data[2U];
-} Eurydice_arr_73;
+typedef Eurydice_arr_fe libcrux_sha3_generic_keccak_KeccakState_bb;
 
 #if defined(__cplusplus)
 }

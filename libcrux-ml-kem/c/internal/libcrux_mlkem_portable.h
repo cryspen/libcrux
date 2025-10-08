@@ -4,11 +4,11 @@
  * SPDX-License-Identifier: MIT or Apache-2.0
  *
  * This code was generated with the following revisions:
- * Charon: 667d2fc98984ff7f3df989c2367e6c1fa4a000e7
- * Eurydice: 564ce891b07fd4aefe7d5ccd78e61400b4ac4a2b
- * Karamel: 06a6d2fb3a547d11c9f6dbec26f1f9b5e0dbf411
- * F*: 0c4b790fd608bccfc332d3ff1e9b29c9be8b0595
- * Libcrux: 2c29684cb507f6883814118541e119ca0f22a61c
+ * Charon: c66a520f7072006af0071eb517002a73d5f3a7d1
+ * Eurydice: 9dae7cbf24d38b7b0eb8e7efd12d662a4ebe1f1a
+ * Karamel: 80f5435f2fc505973c469a4afcc8d875cddd0d8b
+ * F*: f3a2732c1984b520b1f1d48a22e7dd9f8d14a3a2
+ * Libcrux: fba8ff3916a9aa0a3869f2fffea66d8aea07144a
  */
 
 #ifndef internal_libcrux_mlkem_portable_H
@@ -509,9 +509,9 @@ libcrux_ml_kem_vector_portable_vector_type_PortableVector[[$2size_t]] with const
 generics
 - $2size_t
 */
-typedef struct Eurydice_arr_e21_s {
+typedef struct Eurydice_arr_e20_s {
   Eurydice_arr_270 data[2U];
-} Eurydice_arr_e21;
+} Eurydice_arr_e20;
 
 /**
 A monomorphic instance of
@@ -522,7 +522,7 @@ libcrux_ml_kem_vector_portable_vector_type_PortableVector with const generics
 typedef struct libcrux_ml_kem_ind_cpa_unpacked_IndCpaPublicKeyUnpacked_d4_s {
   Eurydice_arr_270 t_as_ntt;
   Eurydice_arr_60 seed_for_A;
-  Eurydice_arr_e21 A;
+  Eurydice_arr_e20 A;
 } libcrux_ml_kem_ind_cpa_unpacked_IndCpaPublicKeyUnpacked_d4;
 
 /**
@@ -670,7 +670,7 @@ with const generics
 */
 void libcrux_ml_kem_ind_cca_serialize_kem_secret_key_mut_30(
     Eurydice_slice private_key, Eurydice_slice public_key,
-    Eurydice_slice implicit_rejection_value, Eurydice_arr_7f *serialized);
+    Eurydice_slice implicit_rejection_value, Eurydice_arr_7f0 *serialized);
 
 /**
 This function found in impl
@@ -688,7 +688,7 @@ libcrux_ml_kem_vector_portable_vector_type_PortableVector with const generics
 */
 void libcrux_ml_kem_ind_cca_unpacked_serialized_private_key_mut_11_6d(
     libcrux_ml_kem_mlkem512_portable_unpacked_MlKem512KeyPairUnpacked *self,
-    Eurydice_arr_7f *serialized);
+    Eurydice_arr_7f0 *serialized);
 
 /**
 This function found in impl
@@ -704,7 +704,7 @@ libcrux_ml_kem_vector_portable_vector_type_PortableVector with const generics
 - PRIVATE_KEY_SIZE= 1632
 - PUBLIC_KEY_SIZE= 800
 */
-Eurydice_arr_7f libcrux_ml_kem_ind_cca_unpacked_serialized_private_key_11_6d(
+Eurydice_arr_7f0 libcrux_ml_kem_ind_cca_unpacked_serialized_private_key_11_6d(
     libcrux_ml_kem_mlkem512_portable_unpacked_MlKem512KeyPairUnpacked *self);
 
 /**
@@ -721,7 +721,7 @@ with const generics
 - T_AS_NTT_ENCODED_SIZE= 768
 */
 void libcrux_ml_kem_ind_cca_unpacked_keys_from_private_key_d1(
-    Eurydice_arr_7f *private_key,
+    Eurydice_arr_7f0 *private_key,
     libcrux_ml_kem_mlkem512_portable_unpacked_MlKem512KeyPairUnpacked
         *key_pair);
 
@@ -850,7 +850,7 @@ with const generics
 - SECRET_KEY_SIZE= 1632
 */
 bool libcrux_ml_kem_ind_cca_validate_private_key_only_30(
-    Eurydice_arr_7f *private_key);
+    Eurydice_arr_7f0 *private_key);
 
 /**
  Validate an ML-KEM private key.
@@ -868,7 +868,7 @@ with const generics
 - CIPHERTEXT_SIZE= 768
 */
 bool libcrux_ml_kem_ind_cca_validate_private_key_fb(
-    Eurydice_arr_7f *private_key, Eurydice_arr_56 *_ciphertext);
+    Eurydice_arr_7f0 *private_key, Eurydice_arr_56 *_ciphertext);
 
 /**
  Packed API
@@ -942,7 +942,7 @@ libcrux_ml_kem_variant_MlKem with const generics
 - IMPLICIT_REJECTION_HASH_INPUT_SIZE= 800
 */
 Eurydice_arr_60 libcrux_ml_kem_ind_cca_decapsulate_620(
-    Eurydice_arr_7f *private_key, Eurydice_arr_56 *ciphertext);
+    Eurydice_arr_7f0 *private_key, Eurydice_arr_56 *ciphertext);
 
 /**
 A monomorphic instance of Eurydice.arr

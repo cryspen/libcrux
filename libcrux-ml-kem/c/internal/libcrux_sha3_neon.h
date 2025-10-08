@@ -11,8 +11,8 @@
  * Libcrux: fba8ff3916a9aa0a3869f2fffea66d8aea07144a
  */
 
-#ifndef libcrux_sha3_internal_H
-#define libcrux_sha3_internal_H
+#ifndef internal_libcrux_sha3_neon_H
+#define internal_libcrux_sha3_neon_H
 
 #include "eurydice_glue.h"
 
@@ -20,16 +20,22 @@
 extern "C" {
 #endif
 
-#define libcrux_sha3_Algorithm_Sha224 1
-#define libcrux_sha3_Algorithm_Sha256 2
-#define libcrux_sha3_Algorithm_Sha384 3
-#define libcrux_sha3_Algorithm_Sha512 4
+#include "../libcrux_sha3_neon.h"
+#include "libcrux_core.h"
 
-typedef uint8_t libcrux_sha3_Algorithm;
+/**
+A monomorphic instance of Eurydice.arr
+with types libcrux_sha3_neon_x2_incremental_KeccakState
+with const generics
+- $2size_t
+*/
+typedef struct Eurydice_arr_54_s {
+  Eurydice_arr_fe data[2U];
+} Eurydice_arr_54;
 
 #if defined(__cplusplus)
 }
 #endif
 
-#define libcrux_sha3_internal_H_DEFINED
-#endif /* libcrux_sha3_internal_H */
+#define internal_libcrux_sha3_neon_H_DEFINED
+#endif /* internal_libcrux_sha3_neon_H */
