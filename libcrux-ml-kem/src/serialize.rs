@@ -31,7 +31,7 @@ pub(super) fn compress_then_serialize_message<Vector: Operations>(
 ) {
     for i in 0..16 {
         hax_lib::loop_invariant!(|i: usize| {
-            fstar!("v $i < 16 ==> Libcrux_ml_kem.Polynomial.is_bounded_poly 3328 $re")
+            fstar!(r#"Seq.length $serialized == v ${crate::constants::SHARED_SECRET_SIZE}"#)
         });
         hax_lib::fstar!(r#"assert (2 * v $i + 2 <= 32)"#);
         to_unsigned_field_modulus(&re.coefficients[i], scratch);
@@ -58,6 +58,7 @@ pub(super) fn deserialize_then_decompress_message<Vector: Operations>(
 }
 
 #[inline(always)]
+#[hax_lib::fstar::before(r#"#set-options "--z3rlimit 200"#)]
 #[hax_lib::fstar::verification_status(panic_free)]
 #[hax_lib::requires(fstar!(r#"Libcrux_ml_kem.Polynomial.is_bounded_poly 3328 $re /\ 
     Seq.length $serialized == v ${crate::constants::BYTES_PER_RING_ELEMENT}"#))]
@@ -75,10 +76,7 @@ pub(super) fn serialize_uncompressed_ring_element<Vector: Operations>(
     hax_lib::fstar!(r#"assert_norm (pow2 12 == 4096)"#);
     for i in 0..VECTORS_IN_RING_ELEMENT {
         hax_lib::loop_invariant!(|i: usize| {
-            fstar!(
-                r#"v $i >= 0 /\ v $i <= 16 /\
-            v $i < 16 ==> Libcrux_ml_kem.Polynomial.is_bounded_poly 3328 $re"#
-            )
+            fstar!(r#"Seq.length $serialized == v ${crate::constants::BYTES_PER_RING_ELEMENT}"#)
         });
         hax_lib::fstar!(r#"assert (24 * v $i + 24 <= 384)"#);
 
@@ -155,6 +153,12 @@ pub(super) fn deserialize_ring_elements_reduced<const K: usize, Vector: Operatio
             .chunks_exact(BYTES_PER_RING_ELEMENT)
             .enumerate()
         {
+            hax_lib::loop_invariant!(|i: usize| {
+                fstar!(
+                    r#"Seq.length ${deserialized_pk}_future == v v_K"#
+                )
+            });
+
             deserialize_to_reduced_ring_element(ring_element, &mut deserialized_pk[i]);
         }
     };
@@ -174,12 +178,7 @@ fn compress_then_serialize_10<const OUT_LEN: usize, Vector: Operations>(
     debug_assert!(serialized.len() == OUT_LEN);
     hax_lib::fstar!(r#"assert_norm (pow2 10 == 1024)"#);
     for i in 0..VECTORS_IN_RING_ELEMENT {
-        hax_lib::loop_invariant!(|i: usize| {
-            fstar!(
-                r#"v $i >= 0 /\ v $i <= 16 /\
-            v $i < 16 ==> Libcrux_ml_kem.Polynomial.is_bounded_poly 3328 $re"#
-            )
-        });
+        hax_lib::loop_invariant!(|i: usize| { fstar!(r#"Seq.length $serialized == v $OUT_LEN"#) });
         hax_lib::fstar!(r#"assert (20 * v $i + 20 <= 320)"#);
         to_unsigned_field_modulus(&re.coefficients[i], scratch);
         Vector::compress::<10>(scratch);
@@ -223,11 +222,6 @@ pub(super) fn compress_then_serialize_ring_element_u<
     serialized: &mut [u8],
     scratch: &mut Vector,
 ) {
-    hax_lib::fstar!(
-        r#"assert (
-        (v (cast $COMPRESSION_FACTOR <: u32) == 10) \/
-        (v (cast $COMPRESSION_FACTOR <: u32) == 11))"#
-    );
     match COMPRESSION_FACTOR as u32 {
         10 => compress_then_serialize_10::<OUT_LEN, Vector>(re, serialized, scratch),
         11 => compress_then_serialize_11::<OUT_LEN, Vector>(re, serialized, scratch),
@@ -250,13 +244,7 @@ fn compress_then_serialize_4<Vector: Operations>(
     hax_lib::fstar!(r#"assert_norm (pow2 4 == 16)"#);
     for i in 0..VECTORS_IN_RING_ELEMENT {
         // NOTE: Using `$serialized` in loop_invariant doesn't work here
-        hax_lib::loop_invariant!(|i: usize| {
-            fstar!(
-                r#"v $i >= 0 /\ v $i <= 16 /\
-            v $i < 16 ==> (Seq.length serialized == 128 /\ 
-                           Libcrux_ml_kem.Polynomial.is_bounded_poly 3328 $re)"#
-            )
-        });
+        hax_lib::loop_invariant!(|i: usize| { fstar!(r#"Seq.length serialized == 128 "#) });
         hax_lib::fstar!(r#"assert (8 * v $i + 8 <= 128)"#);
         to_unsigned_field_modulus(&re.coefficients[i], scratch);
         Vector::compress::<4>(scratch);

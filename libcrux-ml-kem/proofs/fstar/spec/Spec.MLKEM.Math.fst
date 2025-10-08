@@ -275,7 +275,7 @@ let byte_decode_then_decompress (d: dT {d <> 12}) (b:t_Array u8 (sz (32 * d))): 
 let serialize_pre
   (d1: dT)
   (coefficients: t_Array i16 (sz 16))
-  = forall i. i < 16 ==> bounded (Seq.index coefficients i) d1
+  = forall i. bounded (Seq.index coefficients i) d1
 
 // TODO: this is an alternative version of byte_encode
 //   rename to encoded bytes
