@@ -58,7 +58,7 @@ pub(super) fn deserialize_then_decompress_message<Vector: Operations>(
 }
 
 #[inline(always)]
-#[hax_lib::fstar::before(r#"#set-options "--z3rlimit 200"#)]
+#[hax_lib::fstar::before(r#"#set-options "--z3rlimit 200""#)]
 #[hax_lib::fstar::verification_status(panic_free)]
 #[hax_lib::requires(fstar!(r#"Libcrux_ml_kem.Polynomial.is_bounded_poly 3328 $re /\ 
     Seq.length $serialized == v ${crate::constants::BYTES_PER_RING_ELEMENT}"#))]
