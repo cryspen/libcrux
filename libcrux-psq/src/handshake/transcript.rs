@@ -5,7 +5,7 @@ pub const TX1_DOMAIN_SEP: u8 = 1;
 pub const TX2_DOMAIN_SEP: u8 = 2;
 
 use super::dhkem::DHPublicKey;
-use crate::handshake::{ciphersuite::traits::CiphersuiteBase, HandshakeError as Error};
+use crate::handshake::{ciphersuite::types::DynamicEncapsulationKeyRef, HandshakeError as Error};
 use libcrux_sha2::{Digest, SHA256_LENGTH};
 
 /// The initial transcript hash.
@@ -69,22 +69,22 @@ pub(crate) fn tx0(
 }
 
 // tx1 = hash(1 | tx0 | g^c | [pkS] | [encap(pkS, SS)])
-pub(crate) fn tx1<Ciphersuite: CiphersuiteBase>(
+pub(crate) fn tx1(
     tx0: &Transcript,
     initiator_longterm_pk: &DHPublicKey,
-    responder_pq_pk: Option<Ciphersuite::EncapsulationKeyRef>,
+    responder_pq_pk: Option<DynamicEncapsulationKeyRef>,
     pq_encaps: &[u8],
 ) -> Result<Transcript, Error> {
     #[derive(TlsSerialize, TlsSize)]
-    struct Transcript1Inputs<'a, Ciphersuite: CiphersuiteBase> {
+    struct Transcript1Inputs<'a> {
         initiator_longterm_pk: &'a DHPublicKey,
-        responder_pq_pk: Option<Ciphersuite::EncapsulationKeyRef>,
+        responder_pq_pk: Option<DynamicEncapsulationKeyRef<'a>>,
         pq_encaps: &'a [u8],
     }
 
     Transcript::add_hash::<TX1_DOMAIN_SEP>(
         Some(tx0),
-        Transcript1Inputs::<Ciphersuite> {
+        Transcript1Inputs {
             initiator_longterm_pk,
             pq_encaps,
             responder_pq_pk,

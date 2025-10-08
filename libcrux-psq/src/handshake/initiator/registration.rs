@@ -6,7 +6,9 @@ use tls_codec::{Deserialize, Serialize, Size, VLByteSlice};
 use crate::{
     aead::AEADKey,
     handshake::{
-        ciphersuite::traits::InitiatorCiphersuiteTrait,
+        ciphersuite::{
+            initiator::InitiatorCiphersuite, traits::CiphersuiteBase, types::DynamicCiphertext,
+        },
         derive_k0, derive_k1,
         dhkem::{DHKeyPair, DHPrivateKey, DHPublicKey, DHSharedSecret},
         responder::ResponderRegistrationPayload,
@@ -20,8 +22,8 @@ use crate::{
 
 use super::{InitiatorInnerPayloadOut, InitiatorOuterPayloadOut};
 
-pub struct RegistrationInitiator<'a, Rng: CryptoRng, Ciphersuite: InitiatorCiphersuiteTrait> {
-    ciphersuite: Ciphersuite,
+pub struct RegistrationInitiator<'a, Rng: CryptoRng> {
+    ciphersuite: InitiatorCiphersuite<'a>,
     inner_aad: &'a [u8],
     outer_aad: &'a [u8],
     rng: Rng,
@@ -49,12 +51,10 @@ pub(crate) enum RegistrationInitiatorState {
     ToTransport(Box<ToTransportState>),
 }
 
-impl<'a, Rng: CryptoRng, Ciphersuite: InitiatorCiphersuiteTrait>
-    RegistrationInitiator<'a, Rng, Ciphersuite>
-{
+impl<'a, Rng: CryptoRng> RegistrationInitiator<'a, Rng> {
     /// Create a new [`RegistrationInitiator`].
     pub(crate) fn new(
-        ciphersuite: Ciphersuite,
+        ciphersuite: InitiatorCiphersuite<'a>,
         ctx: &[u8],
         inner_aad: &'a [u8],
         outer_aad: &'a [u8],
@@ -89,9 +89,7 @@ impl<'a, Rng: CryptoRng, Ciphersuite: InitiatorCiphersuiteTrait>
     }
 }
 
-impl<'a, Rng: CryptoRng, Ciphersuite: InitiatorCiphersuiteTrait> Channel<Error>
-    for RegistrationInitiator<'a, Rng, Ciphersuite>
-{
+impl<'a, Rng: CryptoRng> Channel<Error> for RegistrationInitiator<'a, Rng> {
     fn write_message(&mut self, payload: &[u8], out: &mut [u8]) -> Result<usize, Error> {
         let RegistrationInitiatorState::Initial(mut state) = take(&mut self.state) else {
             // If we're not in the initial state, we write nothing
@@ -105,14 +103,16 @@ impl<'a, Rng: CryptoRng, Ciphersuite: InitiatorCiphersuiteTrait> Channel<Error>
             .tls_serialize_detached()
             .map_err(|_e| Error::OutputBufferShort)?;
 
-        let tx1 = tx1::<Ciphersuite>(
+        eprintln!("Initiator {pq_encapsulation_serialized:?}");
+
+        let tx1 = tx1(
             &state.tx0,
             self.ciphersuite.own_ecdh_encapsulation_key(),
             self.ciphersuite.peer_pq_encapsulation_key(),
             &pq_encapsulation_serialized,
         )?;
 
-        let mut k1 = derive_k1::<Ciphersuite>(
+        let mut k1 = derive_k1(
             &state.k0,
             &self.ciphersuite.own_ecdh_decapsulation_key(),
             self.ciphersuite.peer_ecdh_encapsulation_key(),
@@ -120,8 +120,6 @@ impl<'a, Rng: CryptoRng, Ciphersuite: InitiatorCiphersuiteTrait> Channel<Error>
             &tx1,
         )?;
 
-        eprintln!("Intitiator tx1: {tx1:?}");
-        eprintln!("Intitiator k1: {k1:?}");
         let inner_payload = InitiatorInnerPayloadOut(VLByteSlice(payload));
         let (inner_ciphertext, inner_tag) = k1.serialize_encrypt(&inner_payload, self.inner_aad)?;
 
@@ -131,6 +129,7 @@ impl<'a, Rng: CryptoRng, Ciphersuite: InitiatorCiphersuiteTrait> Channel<Error>
             tag: inner_tag,
             aad: VLByteSlice(self.inner_aad),
             pq_encapsulation: VLByteSlice(&pq_encapsulation_serialized),
+            ciphersuite: self.ciphersuite.name(),
         });
         let (outer_ciphertext, outer_tag) =
             state.k0.serialize_encrypt(&outer_payload, self.outer_aad)?;
@@ -141,6 +140,7 @@ impl<'a, Rng: CryptoRng, Ciphersuite: InitiatorCiphersuiteTrait> Channel<Error>
             tag: outer_tag,
             aad: VLByteSlice(self.outer_aad),
             pq_encapsulation: VLByteSlice(&[]),
+            ciphersuite: self.ciphersuite.name(),
         };
 
         let out_bytes_written = msg
@@ -207,15 +207,13 @@ impl<'a, Rng: CryptoRng, Ciphersuite: InitiatorCiphersuiteTrait> Channel<Error>
     }
 }
 
-impl<'a, Rng: CryptoRng, Ciphersuite: InitiatorCiphersuiteTrait> IntoSession
-    for RegistrationInitiator<'a, Rng, Ciphersuite>
-{
+impl<'a, Rng: CryptoRng> IntoSession for RegistrationInitiator<'a, Rng> {
     fn into_session(self) -> Result<Session, SessionError> {
         let RegistrationInitiatorState::ToTransport(state) = self.state else {
             return Err(SessionError::IntoSession);
         };
 
-        Session::new::<Ciphersuite>(
+        Session::new(
             state.tx2,
             state.k2,
             self.ciphersuite.own_ecdh_encapsulation_key(),

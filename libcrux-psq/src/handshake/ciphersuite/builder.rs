@@ -41,19 +41,26 @@ pub struct CiphersuiteBuilder<'a> {
 impl<'a> CiphersuiteBuilder<'a> {
     /// Start building a new ciphersuite.
     pub fn new(name: CiphersuiteName) -> Self {
-        Self {
-            name,
-            longterm_ecdh_keys: None,
-            longterm_mlkem_encapsulation_key: None,
-            longterm_mlkem_decapsulation_key: None,
-            peer_longterm_ecdh_pk: None,
-            peer_longterm_mlkem_pk: None,
-            #[cfg(feature = "classic-mceliece")]
-            longterm_cmc_encapsulation_key: None,
-            #[cfg(feature = "classic-mceliece")]
-            longterm_cmc_decapsulation_key: None,
-            #[cfg(feature = "classic-mceliece")]
-            peer_longterm_cmc_pk: None,
+        match name {
+            CiphersuiteName::X25519AesGcm128HkdfSha256
+            | CiphersuiteName::X25519Mlkem768AesGcm128HkdfSha256
+            | CiphersuiteName::X25519ClassicMcElieceAesGcm128HkdfSha256 => {
+                unimplemented!("AES-GCM 128 ciphersuites are not implemented yet")
+            }
+            _ => Self {
+                name,
+                longterm_ecdh_keys: None,
+                longterm_mlkem_encapsulation_key: None,
+                longterm_mlkem_decapsulation_key: None,
+                peer_longterm_ecdh_pk: None,
+                peer_longterm_mlkem_pk: None,
+                #[cfg(feature = "classic-mceliece")]
+                longterm_cmc_encapsulation_key: None,
+                #[cfg(feature = "classic-mceliece")]
+                longterm_cmc_decapsulation_key: None,
+                #[cfg(feature = "classic-mceliece")]
+                peer_longterm_cmc_pk: None,
+            },
         }
     }
 
@@ -155,11 +162,15 @@ impl<'a> CiphersuiteBuilder<'a> {
                     ),
                 )
             }
-
             #[cfg(not(feature = "classic-mceliece"))]
             CiphersuiteName::X25519ClassicMcElieceChachaPolyHkdfSha256 => {
                 eprintln!("Error building InitiatorCiphersuite: Classic McEliece ciphersuites are only available when using the `classic-mceliece` feature.");
                 return Err(HandshakeError::UnsupportedCiphersuite);
+            }
+            CiphersuiteName::X25519AesGcm128HkdfSha256
+            | CiphersuiteName::X25519Mlkem768AesGcm128HkdfSha256
+            | CiphersuiteName::X25519ClassicMcElieceAesGcm128HkdfSha256 => {
+                unimplemented!("AES-GCM 128 ciphersuites are not implemented yet")
             }
         }
     }
@@ -221,6 +232,11 @@ impl<'a> CiphersuiteBuilder<'a> {
             CiphersuiteName::X25519ClassicMcElieceChachaPolyHkdfSha256 => {
                 eprintln!("Error building InitiatorCiphersuite: Classic McEliece ciphersuites are only available when using the `classic-mceliece` feature.");
                 return Err(HandshakeError::UnsupportedCiphersuite);
+            }
+            CiphersuiteName::X25519AesGcm128HkdfSha256
+            | CiphersuiteName::X25519Mlkem768AesGcm128HkdfSha256
+            | CiphersuiteName::X25519ClassicMcElieceAesGcm128HkdfSha256 => {
+                unimplemented!("AES-GCM 128 ciphersuites are not implemented yet")
             }
         }
     }

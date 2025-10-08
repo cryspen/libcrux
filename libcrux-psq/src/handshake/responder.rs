@@ -7,7 +7,10 @@ use tls_codec::{
 
 use crate::{
     aead::AEADKey,
-    handshake::ciphersuite::traits::ResponderCiphersuiteTrait,
+    handshake::ciphersuite::{
+        responder::ResponderCiphersuite, traits::CiphersuiteBase, types::DynamicCiphertext,
+        CiphersuiteName,
+    },
     session::{Session, SessionError},
     traits::{Channel, IntoSession},
 };
@@ -54,9 +57,10 @@ pub(crate) enum ResponderState {
     ToTransport(Box<ToTransportState>),
 }
 
-pub struct Responder<'a, Rng: CryptoRng, Ciphersuite: ResponderCiphersuiteTrait> {
+pub struct Responder<'a, Rng: CryptoRng> {
     pub(crate) state: ResponderState,
-    ciphersuite: Ciphersuite,
+    ciphersuite: ResponderCiphersuite<'a>,
+    working_ciphersuite: CiphersuiteName,
     recent_keys: VecDeque<DHPublicKey>,
     recent_keys_upper_bound: usize,
     context: &'a [u8],
@@ -76,9 +80,9 @@ pub struct ResponderRegistrationPayload(pub VLBytes);
 #[derive(TlsSerialize, TlsSize)]
 pub struct ResponderRegistrationPayloadOut<'a>(VLByteSlice<'a>);
 
-impl<'a, Rng: CryptoRng, Ciphersuite: ResponderCiphersuiteTrait> Responder<'a, Rng, Ciphersuite> {
+impl<'a, Rng: CryptoRng> Responder<'a, Rng> {
     pub fn new(
-        ciphersuite: Ciphersuite,
+        ciphersuite: ResponderCiphersuite<'a>,
         context: &'a [u8],
         aad: &'a [u8],
         recent_keys_upper_bound: usize,
@@ -87,6 +91,7 @@ impl<'a, Rng: CryptoRng, Ciphersuite: ResponderCiphersuiteTrait> Responder<'a, R
         Self {
             state: ResponderState::Initial {},
             ciphersuite,
+            working_ciphersuite: CiphersuiteName::X25519ChachaPolyHkdfSha256,
             context,
             aad,
             rng,
@@ -163,32 +168,24 @@ impl<'a, Rng: CryptoRng, Ciphersuite: ResponderCiphersuiteTrait> Responder<'a, R
         k0: &AEADKey,
         initiator_inner_message: &HandshakeMessage,
     ) -> Result<(InitiatorInnerPayload, Transcript, AEADKey, bool), Error> {
-        let pq_encapsulation = Option::<Ciphersuite::Ciphertext>::tls_deserialize(
-            &mut Cursor::new(initiator_inner_message.pq_encapsulation.as_ref()),
-        )
-        .map_err(|_| Error::UnsupportedCiphersuite)?;
-        let pq_shared_secret = self.ciphersuite.pq_decapsulate(pq_encapsulation.as_ref())?;
+        // Whether we attempt to do a decapsulation is decided by the working ciphersuite.
+        eprintln!(
+            "Responder: {:?}",
+            initiator_inner_message.pq_encapsulation.as_ref()
+        );
+        let pq_encapsulation = self
+            .working_ciphersuite
+            .deserialize_encapsulation(initiator_inner_message.pq_encapsulation.as_ref())?;
+        if !matches!(pq_encapsulation, Some(DynamicCiphertext::MlKem(_))) {
+            panic!("Unexpected in Responder");
+        }
 
-        // let pq_shared_secret = match (
-        //     initiator_inner_message.pq_encapsulation.as_ref(),
-        //     self.ciphersuite.longterm_pq_keys.as_ref(),
-        // ) {
-        //     (None, None) | (None, Some(_)) => None,
-        //     (Some(_), None) => return Err(Error::UnsupportedCiphersuite),
-        //     (Some(encapsulation), Some(longterm_pq_keys)) => {
-        //         let sk = longterm_pq_keys.private_key();
-        //         let shared_secret = sk.decapsulate(encapsulation)?;
-        //         Some(shared_secret)
-        //     }
-        // };
+        let pq_shared_secret = pq_encapsulation
+            .as_ref()
+            .and_then(|enc| Some(self.ciphersuite.pq_decapsulate(enc)))
+            .transpose()?;
 
-        // let responder_pq_pk_opt = self
-        //     .ciphersuite
-        //     .longterm_pq_keys
-        //     .as_ref()
-        //     .map(|keys| keys.public_key());
-
-        let tx1 = tx1::<Ciphersuite>(
+        let tx1 = tx1(
             tx0,
             &initiator_inner_message.pk,
             if pq_encapsulation.is_some() {
@@ -199,7 +196,7 @@ impl<'a, Rng: CryptoRng, Ciphersuite: ResponderCiphersuiteTrait> Responder<'a, R
             initiator_inner_message.pq_encapsulation.as_ref(),
         )?;
 
-        let mut k1 = derive_k1::<Ciphersuite>(
+        let mut k1 = derive_k1(
             k0,
             self.ciphersuite.own_ecdh_decapsulation_key(),
             &initiator_inner_message.pk,
@@ -207,8 +204,7 @@ impl<'a, Rng: CryptoRng, Ciphersuite: ResponderCiphersuiteTrait> Responder<'a, R
             &tx1,
         )?;
 
-        eprintln!("Responder tx1: {tx1:?}");
-        eprintln!("Responder k1: {k1:?}");
+        eprintln!("Responder : {tx1:?}");
 
         let inner_payload: InitiatorInnerPayload = k1.decrypt_deserialize(
             initiator_inner_message.ciphertext.as_slice(),
@@ -245,6 +241,7 @@ impl<'a, Rng: CryptoRng, Ciphersuite: ResponderCiphersuiteTrait> Responder<'a, R
             tag,
             aad: VLByteSlice(self.aad),
             pq_encapsulation: VLByteSlice(&[]),
+            ciphersuite: self.working_ciphersuite,
         };
 
         let out_len = out_msg
@@ -289,6 +286,7 @@ impl<'a, Rng: CryptoRng, Ciphersuite: ResponderCiphersuiteTrait> Responder<'a, R
             tag,
             aad: VLByteSlice(self.aad),
             pq_encapsulation: VLByteSlice(&[]),
+            ciphersuite: CiphersuiteName::X25519ChachaPolyHkdfSha256,
         };
 
         out_msg
@@ -300,9 +298,7 @@ impl<'a, Rng: CryptoRng, Ciphersuite: ResponderCiphersuiteTrait> Responder<'a, R
     }
 }
 
-impl<'a, Rng: CryptoRng, Ciphersuite: ResponderCiphersuiteTrait> Channel<Error>
-    for Responder<'a, Rng, Ciphersuite>
-{
+impl<'a, Rng: CryptoRng> Channel<Error> for Responder<'a, Rng> {
     fn write_message(&mut self, payload: &[u8], out: &mut [u8]) -> Result<usize, Error> {
         let mut out_bytes_written = 0;
         let responder_ephemeral_ecdh_sk = DHPrivateKey::new(&mut self.rng);
@@ -345,9 +341,21 @@ impl<'a, Rng: CryptoRng, Ciphersuite: ResponderCiphersuiteTrait> Channel<Error>
                 .map_err(Error::Deserialize)?;
         let bytes_deserialized = initiator_outer_message.tls_serialized_len();
 
+        // Set the working ciphersuite for this handshake.
+        self.working_ciphersuite = if let Some(ciphersuite) = initiator_outer_message
+            .ciphersuite
+            .coerce_compatible(&self.ciphersuite)
+        {
+            ciphersuite
+        } else {
+            // We can't process this message and return to the initial state.
+            self.state = ResponderState::Initial;
+            return Ok((bytes_deserialized, 0));
+        };
+
         // Check that the ephemeral key was not in the most recent keys.
         if self.recent_keys.contains(&initiator_outer_message.pk) {
-            return Ok((0, 0));
+            return Ok((bytes_deserialized, 0));
         } else {
             if self.recent_keys.len() == self.recent_keys_upper_bound {
                 self.recent_keys.pop_back();
@@ -376,6 +384,10 @@ impl<'a, Rng: CryptoRng, Ciphersuite: ResponderCiphersuiteTrait> Channel<Error>
             }
 
             InitiatorOuterPayload::Registration(initiator_inner_message) => {
+                if initiator_inner_message.ciphersuite != initiator_outer_message.ciphersuite {
+                    // The inner and outer ciphersuites must agree.
+                    return Err(Error::InvalidMessage);
+                }
                 // Decrypt the inner message payload.
                 match self.decrypt_inner_message(&tx0, &k0, &initiator_inner_message) {
                     Ok((initiator_inner_payload, tx1, k1, pq)) => {
@@ -408,9 +420,7 @@ impl<'a, Rng: CryptoRng, Ciphersuite: ResponderCiphersuiteTrait> Channel<Error>
     }
 }
 
-impl<'a, Rng: CryptoRng, Ciphersuite: ResponderCiphersuiteTrait> IntoSession
-    for Responder<'a, Rng, Ciphersuite>
-{
+impl<'a, Rng: CryptoRng> IntoSession for Responder<'a, Rng> {
     fn into_session(self) -> Result<Session, SessionError> {
         let ResponderState::ToTransport(mut state) = self.state else {
             return Err(SessionError::IntoSession);
@@ -420,7 +430,7 @@ impl<'a, Rng: CryptoRng, Ciphersuite: ResponderCiphersuiteTrait> IntoSession
             return Err(SessionError::IntoSession);
         };
 
-        Session::new::<Ciphersuite>(
+        Session::new(
             state.tx2,
             state.k2,
             &initiator_ecdh_pk,

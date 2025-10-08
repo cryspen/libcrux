@@ -4,7 +4,7 @@ use rand::CryptoRng;
 use crate::classic_mceliece::PublicKey;
 use crate::handshake::{
     ciphersuite::{
-        traits::{CiphersuiteBase, InitiatorCiphersuiteTrait},
+        traits::CiphersuiteBase,
         types::{DynamicCiphertext, DynamicEncapsulationKeyRef, DynamicSharedSecret},
         CiphersuiteName,
     },
@@ -116,8 +116,10 @@ impl<'a> CiphersuiteBase for InitiatorCiphersuite<'a> {
     }
 }
 
-impl<'a> InitiatorCiphersuiteTrait for InitiatorCiphersuite<'a> {
-    fn peer_pq_encapsulation_key(&self) -> Option<<Self as CiphersuiteBase>::EncapsulationKeyRef> {
+impl<'a> InitiatorCiphersuite<'a> {
+    pub(crate) fn peer_pq_encapsulation_key(
+        &self,
+    ) -> Option<<Self as CiphersuiteBase>::EncapsulationKeyRef> {
         match self {
             InitiatorCiphersuite::X25519_ChaChaPoly_HkdfSha256(_) => None,
             InitiatorCiphersuite::X25519_MlKem768_ChaChaPoly_HkdfSha256(
@@ -139,7 +141,7 @@ impl<'a> InitiatorCiphersuiteTrait for InitiatorCiphersuite<'a> {
         }
     }
 
-    fn peer_ecdh_encapsulation_key(&self) -> &DHPublicKey {
+    pub(crate) fn peer_ecdh_encapsulation_key(&self) -> &DHPublicKey {
         match self {
             InitiatorCiphersuite::X25519_ChaChaPoly_HkdfSha256(
                 initiator_x25519_chacha_poly_hkdf_sha256,
@@ -159,7 +161,7 @@ impl<'a> InitiatorCiphersuiteTrait for InitiatorCiphersuite<'a> {
         }
     }
 
-    fn is_pq(&self) -> bool {
+    pub(crate) fn is_pq(&self) -> bool {
         match self {
             InitiatorCiphersuite::X25519_ChaChaPoly_HkdfSha256(_) => false,
             InitiatorCiphersuite::X25519_MlKem768_ChaChaPoly_HkdfSha256(_) => true,
@@ -173,7 +175,7 @@ impl<'a> InitiatorCiphersuiteTrait for InitiatorCiphersuite<'a> {
         }
     }
 
-    fn pq_encapsulate(
+    pub(crate) fn pq_encapsulate(
         &self,
         rng: &mut impl CryptoRng,
     ) -> Result<

@@ -50,6 +50,6 @@ pub trait ResponderCiphersuiteTrait: CiphersuiteBase {
 
     fn pq_decapsulate(
         &self,
-        ciphertext: Option<&<Self as CiphersuiteBase>::Ciphertext>,
-    ) -> Result<Option<<Self as CiphersuiteBase>::SharedSecret>, HandshakeError>;
+        ciphertext: &<Self as CiphersuiteBase>::Ciphertext,
+    ) -> Result<<Self as CiphersuiteBase>::SharedSecret, HandshakeError>;
 }

@@ -4,7 +4,7 @@ use libcrux_psq::classic_mceliece::KeyPair;
 use libcrux_psq::{
     handshake::{
         builder,
-        ciphersuite::{CiphersuiteBuilder, CiphersuiteName},
+        ciphersuite::{builder::CiphersuiteBuilder, CiphersuiteName},
         dhkem::DHKeyPair,
     },
     traits::*,
@@ -59,7 +59,7 @@ fn query(responder_ciphersuite_id: CiphersuiteName) {
 
     // Setup responder
     #[allow(unused_mut)] // we need it mutable for the CMC case
-    let mut responder_cbuilder = CiphersuiteBuilder::new()
+    let mut responder_cbuilder = CiphersuiteBuilder::new(responder_ciphersuite_id)
         .longterm_ecdh_keys(&setup.responder_ecdh_keys)
         .longterm_mlkem_encapsulation_key(setup.responder_mlkem_keys.public_key())
         .longterm_mlkem_decapsulation_key(setup.responder_mlkem_keys.private_key());
@@ -70,9 +70,7 @@ fn query(responder_ciphersuite_id: CiphersuiteName) {
             .longterm_cmc_encapsulation_key(&setup.responder_cmc_keys.pk)
             .longterm_cmc_decapsulation_key(&setup.responder_cmc_keys.sk);
     }
-    let responder_ciphersuite = responder_cbuilder
-        .finish_responder(responder_ciphersuite_id)
-        .unwrap();
+    let responder_ciphersuite = responder_cbuilder.build_responder_ciphersuite().unwrap();
 
     let mut responder = builder::BuilderContext::new(&mut setup.rng)
         .context(ctx)

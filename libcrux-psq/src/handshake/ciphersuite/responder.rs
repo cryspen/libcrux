@@ -4,11 +4,8 @@ use libcrux_kem::{MlKem768PrivateKey, MlKem768PublicKey};
 use crate::classic_mceliece::{PublicKey, SecretKey};
 use crate::handshake::{
     ciphersuite::{
-        traits::{CiphersuiteBase, ResponderCiphersuiteTrait},
-        types::{
-            DynamicCiphertext, DynamicDecapsulationKey, DynamicEncapsulationKeyRef,
-            DynamicSharedSecret,
-        },
+        traits::CiphersuiteBase,
+        types::{DynamicCiphertext, DynamicEncapsulationKeyRef, DynamicSharedSecret},
         CiphersuiteName,
     },
     dhkem::{DHKeyPair, DHPrivateKey, DHPublicKey},
@@ -128,10 +125,10 @@ impl<'a> CiphersuiteBase for ResponderCiphersuite<'a> {
         }
     }
 }
-impl<'a> ResponderCiphersuiteTrait for ResponderCiphersuite<'a> {
-    type DecapsulationKey = DynamicDecapsulationKey;
-
-    fn own_pq_encapsulation_key(&self) -> Option<<Self as CiphersuiteBase>::EncapsulationKeyRef> {
+impl<'a> ResponderCiphersuite<'a> {
+    pub(crate) fn own_pq_encapsulation_key(
+        &self,
+    ) -> Option<<Self as CiphersuiteBase>::EncapsulationKeyRef> {
         match self {
             ResponderCiphersuite::X25519_MlKem768_ChaChaPoly_HkdfSha256(
                 responder_x25519_ml_kem768_cha_cha_poly_hkdf_sha256,
@@ -153,18 +150,16 @@ impl<'a> ResponderCiphersuiteTrait for ResponderCiphersuite<'a> {
         }
     }
 
-    fn pq_decapsulate(
+    pub(crate) fn pq_decapsulate(
         &self,
-        ciphertext: Option<&<Self as CiphersuiteBase>::Ciphertext>,
-    ) -> Result<Option<<Self as CiphersuiteBase>::SharedSecret>, HandshakeError> {
-        let Some(ciphertext) = ciphertext else {
-            return Ok(None);
-        };
+        ciphertext: &<Self as CiphersuiteBase>::Ciphertext,
+    ) -> Result<<Self as CiphersuiteBase>::SharedSecret, HandshakeError> {
         match self {
             ResponderCiphersuite::X25519_MlKem768_ChaChaPoly_HkdfSha256(
                 responder_x25519_ml_kem768_cha_cha_poly_hkdf_sha256,
             ) => {
                 let DynamicCiphertext::MlKem(inner_ctxt) = ciphertext else {
+                    eprintln!("Unexpected!");
                     return Err(HandshakeError::CryptoError);
                 };
                 let shared_secret = libcrux_ml_kem::mlkem768::decapsulate(
@@ -173,7 +168,7 @@ impl<'a> ResponderCiphersuiteTrait for ResponderCiphersuite<'a> {
                     inner_ctxt,
                 );
 
-                Ok(Some(DynamicSharedSecret::MlKem(shared_secret)))
+                Ok(DynamicSharedSecret::MlKem(shared_secret))
             }
             #[cfg(feature = "classic-mceliece")]
             ResponderCiphersuite::X25519_ClassicMcEliece_ChaChaPoly_HkdfSha256(
@@ -192,14 +187,16 @@ impl<'a> ResponderCiphersuiteTrait for ResponderCiphersuite<'a> {
                     inner_ctxt,
                 )
                 .map_err(|_| HandshakeError::CryptoError)?;
-                Ok(Some(DynamicSharedSecret::CMC(shared_secret)))
+                Ok(DynamicSharedSecret::CMC(shared_secret))
             }
             #[cfg(not(feature = "classic-mceliece"))]
             ResponderCiphersuite::X25519_ClassicMcEliece_ChaChaPoly_HkdfSha256(_) => {
                 // We can never reach this because the ciphersuite can only be constructed with the feature turned on.
                 unreachable!("unsupported ciphersuite")
             }
-            ResponderCiphersuite::X25519_ChaChaPoly_HkdfSha256(_) => Ok(None),
+            ResponderCiphersuite::X25519_ChaChaPoly_HkdfSha256(_) => {
+                Err(HandshakeError::UnsupportedCiphersuite)
+            }
         }
     }
 }

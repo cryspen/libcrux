@@ -6,6 +6,7 @@ use tls_codec::{Deserialize, Serialize, Size, VLByteSlice};
 use crate::{
     aead::AEADKey,
     handshake::{
+        ciphersuite::CiphersuiteName,
         derive_k0,
         dhkem::{DHKeyPair, DHPrivateKey, DHPublicKey, DHSharedSecret},
         responder::ResponderQueryPayload,
@@ -91,7 +92,6 @@ impl<'a> QueryInitiator<'a> {
         .map_err(|e| e.into())
     }
 }
-
 impl<'a> Channel<Error> for QueryInitiator<'a> {
     fn write_message(&mut self, payload: &[u8], out: &mut [u8]) -> Result<usize, Error> {
         let outer_payload = InitiatorOuterPayloadOut::Query(VLByteSlice(payload));
@@ -103,6 +103,7 @@ impl<'a> Channel<Error> for QueryInitiator<'a> {
             tag,
             aad: VLByteSlice(self.outer_aad),
             pq_encapsulation: VLByteSlice(&[]),
+            ciphersuite: CiphersuiteName::X25519ChachaPolyHkdfSha256,
         };
 
         msg.tls_serialize(&mut &mut out[..])

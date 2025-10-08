@@ -180,6 +180,7 @@ pub enum HandshakeError {
     Storage,
     OtherError,
     IdentifierMismatch,
+    InvalidMessage,
 }
 
 impl From<AEADError> for HandshakeError {
@@ -199,7 +200,7 @@ use transcript::Transcript;
 
 use crate::{
     aead::{AEADError, AEADKey},
-    handshake::ciphersuite::traits::CiphersuiteBase,
+    handshake::ciphersuite::{types::DynamicSharedSecret, CiphersuiteName},
 };
 
 pub mod dhkem;
@@ -230,6 +231,8 @@ pub struct HandshakeMessage {
     tag: [u8; 16],
     /// Associated data, covered by the AEAD message authentication tag
     aad: VLBytes,
+    /// The handshake ciphersuite for this message
+    ciphersuite: CiphersuiteName,
     /// An optional post-quantum key encapsulation
     pq_encapsulation: VLBytes,
 }
@@ -241,6 +244,7 @@ pub struct HandshakeMessageOut<'a> {
     ciphertext: VLByteSlice<'a>,
     tag: [u8; 16], // XXX: implement Serialize for &[T; N]
     aad: VLByteSlice<'a>,
+    ciphersuite: CiphersuiteName,
     pq_encapsulation: VLByteSlice<'a>,
 }
 
@@ -279,24 +283,24 @@ pub(super) fn derive_k0(
 }
 
 // K1 = KDF(K0 | g^cs | SS, tx1)
-pub(super) fn derive_k1<T: CiphersuiteBase>(
+pub(super) fn derive_k1(
     k0: &AEADKey,
     own_longterm_key: &DHPrivateKey,
     peer_longterm_pk: &DHPublicKey,
-    pq_shared_secret: Option<T::SharedSecret>,
+    pq_shared_secret: Option<DynamicSharedSecret>,
     tx1: &Transcript,
 ) -> Result<AEADKey, HandshakeError> {
     #[derive(TlsSerializeBytes, TlsSize)]
-    struct K1Ikm<'a, T: CiphersuiteBase> {
+    struct K1Ikm<'a> {
         k0: &'a AEADKey,
         ecdh_shared_secret: &'a DHSharedSecret,
-        pq_shared_secret: Option<T::SharedSecret>,
+        pq_shared_secret: Option<DynamicSharedSecret<'a>>,
     }
 
     let ecdh_shared_secret = DHSharedSecret::derive(own_longterm_key, peer_longterm_pk)?;
 
     AEADKey::new(
-        &K1Ikm::<T> {
+        &K1Ikm {
             k0,
             ecdh_shared_secret: &ecdh_shared_secret,
             pq_shared_secret,

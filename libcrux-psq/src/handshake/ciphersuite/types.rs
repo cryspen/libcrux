@@ -1,6 +1,6 @@
 use libcrux_kem::{MlKem768Ciphertext, MlKem768PrivateKey, MlKem768PublicKey};
 use libcrux_ml_kem::MlKemSharedSecret;
-use tls_codec::{TlsDeserialize, TlsSerialize, TlsSerializeBytes, TlsSize};
+use tls_codec::{Deserialize, Serialize, TlsDeserialize, TlsSerialize, TlsSerializeBytes, TlsSize};
 
 #[cfg(feature = "classic-mceliece")]
 use crate::classic_mceliece::{Ciphertext, PublicKey, SecretKey, SharedSecret};
@@ -8,21 +8,36 @@ use crate::classic_mceliece::{Ciphertext, PublicKey, SecretKey, SharedSecret};
 #[derive(TlsSize, TlsDeserialize, TlsSerialize)]
 #[repr(u8)]
 pub enum DynamicCiphertext {
-    MlKem(MlKem768Ciphertext),
+    MlKem(MlKem768Ciphertext) = 1,
     #[cfg(feature = "classic-mceliece")]
-    CMC(Ciphertext),
+    CMC(Ciphertext) = 2,
     #[cfg(not(feature = "classic-mceliece"))]
-    CMC,
+    CMC = 3,
+}
+
+impl Serialize for DynamicCiphertext {
+    fn tls_serialize<W: std::io::Write>(&self, writer: &mut W) -> Result<usize, tls_codec::Error> {
+        todo!()
+    }
+}
+
+impl Deserialize for DynamicCiphertext {
+    fn tls_deserialize<R: std::io::Read>(bytes: &mut R) -> Result<Self, tls_codec::Error>
+    where
+        Self: Sized,
+    {
+        todo!()
+    }
 }
 
 #[derive(TlsSize, TlsSerialize)]
 #[repr(u8)]
 pub enum DynamicEncapsulationKeyRef<'a> {
-    MlKem(&'a MlKem768PublicKey),
+    MlKem(&'a MlKem768PublicKey) = 1,
     #[cfg(feature = "classic-mceliece")]
-    CMC(&'a PublicKey),
+    CMC(&'a PublicKey) = 2,
     #[cfg(not(feature = "classic-mceliece"))]
-    CMC,
+    CMC = 3,
 }
 
 impl<'a> From<&'a MlKem768PublicKey> for DynamicEncapsulationKeyRef<'a> {
