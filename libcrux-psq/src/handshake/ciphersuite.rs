@@ -14,12 +14,17 @@ use crate::handshake::{
 };
 
 #[derive(Clone, Copy, Debug)]
+/// Available ciphersuites for use in the PSQ handshake.
 pub enum CiphersuiteName {
+    /// Use X25519 for the outer KEM, no inner KEM, Chacha20Poly1305 as payload AEAD and SHA-256 for HKDF.
     X25519ChachaPolyHkdfSha256,
+    /// Use X25519 for the outer KEM, ML-KEM 768 for the inner KEM, Chacha20Poly1305 as payload AEAD and SHA-256 for HKDF.
     X25519Mlkem768ChachaPolyHkdfSha256,
+    /// Use X25519 for the outer KEM, Classic McEliece for the inner KEM, Chacha20Poly1305 as payload AEAD and SHA-256 for HKDF. (requires feature `classic-mceliece`)
     X25519ClassicMcElieceChachaPolyHkdfSha256,
 }
 
+/// A builder for PSQ handshake ciphersuites.
 pub struct CiphersuiteBuilder<'a> {
     longterm_ecdh_keys: Option<&'a DHKeyPair>,
     longterm_mlkem_encapsulation_key: Option<&'a MlKem768PublicKey>,
@@ -35,6 +40,7 @@ pub struct CiphersuiteBuilder<'a> {
 }
 
 #[allow(non_camel_case_types)]
+/// The ciphersuites available to a PSQ initiator in registration mode.
 pub enum InitiatorCiphersuite<'a> {
     X25519_ChaChaPoly_HkdfSha256(InitiatorX25519ChachaPolyHkdfSha256<'a>),
     X25519_MlKem768_ChaChaPoly_HkdfSha256(InitiatorX25519Mlkem768ChachaPolyHkdfSha256<'a>),
@@ -47,6 +53,7 @@ pub enum InitiatorCiphersuite<'a> {
 }
 
 #[allow(non_camel_case_types)]
+/// The ciphersuites available to a PSQ responder.
 pub enum ResponderCiphersuite<'a> {
     X25519_ChaChaPoly_HkdfSha256(ResponderX25519ChaChaPolyHkdfSha256<'a>),
     X25519_MlKem768_ChaChaPoly_HkdfSha256(ResponderX25519MlKem768ChaChaPolyHkdfSha256<'a>),
