@@ -45,11 +45,11 @@ macro_rules! impl_comp {
                             },
                             |(key, nonce, aad, payload)| {
                                 let mut ciphertext = vec![0; *payload_size];
-                                use libcrux_aesgcm::$fun::$portable::{Key, Nonce, Tag};
+                                use libcrux_aesgcm::$fun::portable::{$portable, Key, Nonce, Tag};
 
-                                let k: Key = key.into();
-                                let nonce: Nonce = nonce.into();
-                                let mut tag: Tag = [0; libcrux_aesgcm::TAG_LEN].into();
+                                let k: Key<$portable> = key.into();
+                                let nonce: Nonce<$portable> = nonce.into();
+                                let mut tag: Tag<$portable> = [0; libcrux_aesgcm::TAG_LEN].into();
 
                                 k.encrypt(&mut ciphertext, &mut tag, &nonce, &aad, &payload)
                                     .unwrap();
@@ -75,11 +75,11 @@ macro_rules! impl_comp {
                             },
                             |(key, nonce, aad, payload)| {
                                 let mut ciphertext = vec![0; *payload_size];
-                                use libcrux_aesgcm::$fun::$neon::{Key, Nonce, Tag};
+                                use libcrux_aesgcm::$fun::neon::{$neon, Key, Nonce, Tag};
 
-                                let k: Key = key.into();
-                                let nonce: Nonce = nonce.into();
-                                let mut tag: Tag = [0; libcrux_aesgcm::TAG_LEN].into();
+                                let k: Key<$neon> = key.into();
+                                let nonce: Nonce<$neon> = nonce.into();
+                                let mut tag: Tag<$neon> = [0; libcrux_aesgcm::TAG_LEN].into();
 
                                 k.encrypt(&mut ciphertext, &mut tag, &nonce, &aad, &payload)
                                     .unwrap();
@@ -105,11 +105,11 @@ macro_rules! impl_comp {
                             },
                             |(key, nonce, aad, payload)| {
                                 let mut ciphertext = vec![0; *payload_size];
-                                use libcrux_aesgcm::$fun::$intel::{Key, Nonce, Tag};
+                                use libcrux_aesgcm::$fun::x64::{$intel, Key, Nonce, Tag};
 
-                                let k: Key = key.into();
-                                let nonce: Nonce = nonce.into();
-                                let mut tag: Tag = [0; libcrux_aesgcm::TAG_LEN].into();
+                                let k: Key<$intel> = key.into();
+                                let nonce: Nonce<$intel> = nonce.into();
+                                let mut tag: Tag<$intel> = [0; libcrux_aesgcm::TAG_LEN].into();
 
                                 k.encrypt(&mut ciphertext, &mut tag, &nonce, &aad, &payload)
                                     .unwrap();
@@ -191,17 +191,17 @@ fn rustcrypto_aes256_gcm_encrypt(
 impl_comp!(
     aes_gcm_128,
     16,
-    portable,
-    neon,
-    x64,
+    PortableAesGcm128,
+    NeonAesGcm128,
+    X64AesGcm128,
     rustcrypto_aes128_gcm_encrypt
 );
 impl_comp!(
     aes_gcm_256,
     32,
-    portable,
-    neon,
-    x64,
+    PortableAesGcm256,
+    NeonAesGcm256,
+    X64AesGcm256,
     rustcrypto_aes256_gcm_encrypt
 );
 
