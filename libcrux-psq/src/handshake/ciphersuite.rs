@@ -26,6 +26,7 @@ pub enum CiphersuiteName {
 
 /// A builder for PSQ handshake ciphersuites.
 pub struct CiphersuiteBuilder<'a> {
+    name: CiphersuiteName,
     longterm_ecdh_keys: Option<&'a DHKeyPair>,
     longterm_mlkem_encapsulation_key: Option<&'a MlKem768PublicKey>,
     longterm_mlkem_decapsulation_key: Option<&'a MlKem768PrivateKey>,
@@ -432,8 +433,9 @@ impl<'a> InitiatorCiphersuiteTrait for InitiatorCiphersuite<'a> {
 }
 
 impl<'a> CiphersuiteBuilder<'a> {
-    pub fn new() -> Self {
+    pub fn new(name: CiphersuiteName) -> Self {
         Self {
+            name,
             longterm_ecdh_keys: None,
             longterm_mlkem_encapsulation_key: None,
             longterm_mlkem_decapsulation_key: None,
@@ -497,12 +499,9 @@ impl<'a> CiphersuiteBuilder<'a> {
         self
     }
 
-    pub fn finish_initiator(
-        self,
-        name: CiphersuiteName,
-    ) -> Result<InitiatorCiphersuite<'a>, HandshakeError> {
+    pub fn build_initiator_ciphersuite(self) -> Result<InitiatorCiphersuite<'a>, HandshakeError> {
         let (peer_longterm_ecdh_pk, longterm_ecdh_keys) = self.check_common_keys_initiator()?;
-        match name {
+        match self.name {
             CiphersuiteName::X25519ChachaPolyHkdfSha256 => {
                 Ok(InitiatorCiphersuite::X25519_ChaChaPoly_HkdfSha256(
                     InitiatorX25519ChachaPolyHkdfSha256 {
@@ -545,15 +544,12 @@ impl<'a> CiphersuiteBuilder<'a> {
         }
     }
 
-    pub fn finish_responder(
-        self,
-        name: CiphersuiteName,
-    ) -> Result<ResponderCiphersuite<'a>, HandshakeError> {
+    pub fn build_responder_ciphersuite(self) -> Result<ResponderCiphersuite<'a>, HandshakeError> {
         let Some(longterm_ecdh_keys) = self.longterm_ecdh_keys else {
             return Err(HandshakeError::BuilderState);
         };
 
-        match name {
+        match self.name {
             CiphersuiteName::X25519ChachaPolyHkdfSha256 => {
                 Ok(ResponderCiphersuite::X25519_ChaChaPoly_HkdfSha256(
                     ResponderX25519ChaChaPolyHkdfSha256 { longterm_ecdh_keys },
