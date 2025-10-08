@@ -6,7 +6,7 @@ use tls_codec::{Deserialize, Serialize, Size, VLByteSlice};
 use crate::{
     aead::AEADKey,
     handshake::{
-        ciphersuite::InitiatorCiphersuiteTrait,
+        ciphersuite::traits::InitiatorCiphersuiteTrait,
         derive_k0, derive_k1,
         dhkem::{DHKeyPair, DHPrivateKey, DHPublicKey, DHSharedSecret},
         responder::ResponderRegistrationPayload,

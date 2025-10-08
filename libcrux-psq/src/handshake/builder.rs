@@ -1,7 +1,7 @@
 use rand::CryptoRng;
 
 use crate::handshake::{
-    ciphersuite::{InitiatorCiphersuiteTrait, ResponderCiphersuiteTrait},
+    ciphersuite::traits::{InitiatorCiphersuiteTrait, ResponderCiphersuiteTrait},
     dhkem::DHPublicKey,
     initiator::query::QueryInitiator,
 };

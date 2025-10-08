@@ -165,7 +165,8 @@
 
 #[derive(Debug)]
 pub enum HandshakeError {
-    BuilderState,
+    CiphersuiteBuilderState,
+    PrincipalBuilderState,
     Serialize(tls_codec::Error),
     Deserialize(tls_codec::Error),
     CryptoError,
@@ -198,7 +199,7 @@ use transcript::Transcript;
 
 use crate::{
     aead::{AEADError, AEADKey},
-    handshake::ciphersuite::CiphersuiteBase,
+    handshake::ciphersuite::traits::CiphersuiteBase,
 };
 
 pub mod dhkem;

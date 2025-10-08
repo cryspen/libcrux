@@ -7,7 +7,7 @@ use tls_codec::{
 
 use crate::{
     aead::AEADKey,
-    handshake::ciphersuite::ResponderCiphersuiteTrait,
+    handshake::ciphersuite::traits::ResponderCiphersuiteTrait,
     session::{Session, SessionError},
     traits::{Channel, IntoSession},
 };

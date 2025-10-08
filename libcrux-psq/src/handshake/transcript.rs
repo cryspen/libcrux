@@ -5,7 +5,7 @@ pub const TX1_DOMAIN_SEP: u8 = 1;
 pub const TX2_DOMAIN_SEP: u8 = 2;
 
 use super::dhkem::DHPublicKey;
-use crate::handshake::{ciphersuite::CiphersuiteBase, HandshakeError as Error};
+use crate::handshake::{ciphersuite::traits::CiphersuiteBase, HandshakeError as Error};
 use libcrux_sha2::{Digest, SHA256_LENGTH};
 
 /// The initial transcript hash.

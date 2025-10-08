@@ -16,7 +16,7 @@ use transport::Transport;
 
 use crate::{
     aead::{AEADError, AEADKey},
-    handshake::{ciphersuite::CiphersuiteBase, dhkem::DHPublicKey, transcript::Transcript},
+    handshake::{ciphersuite::traits::CiphersuiteBase, dhkem::DHPublicKey, transcript::Transcript},
 };
 
 /// Session related errors
