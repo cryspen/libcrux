@@ -93,7 +93,7 @@ fn aes256_portable() {
 #[cfg(feature = "simd128")]
 #[test]
 fn aes256_neon() {
-    test_variant(libcrux_aesgcm::aes_gcm_256::portable::NeonAesGcm256);
+    test_variant(libcrux_aesgcm::aes_gcm_256::neon::NeonAesGcm256);
 }
 
 #[cfg(feature = "simd256")]
