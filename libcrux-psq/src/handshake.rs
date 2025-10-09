@@ -128,7 +128,7 @@ use transcript::Transcript;
 use crate::{
     aead::{AEADError, AEADKey},
     handshake::{
-        ciphersuite::{types::DynamicSharedSecret, CiphersuiteName},
+        ciphersuite::{types::PQSharedSecret, CiphersuiteName},
         dhkem::{DHPrivateKey, DHPublicKey, DHSharedSecret},
     },
 };
@@ -217,14 +217,14 @@ pub(super) fn derive_k1(
     k0: &AEADKey,
     own_longterm_key: &DHPrivateKey,
     peer_longterm_pk: &DHPublicKey,
-    pq_shared_secret: Option<DynamicSharedSecret>,
+    pq_shared_secret: Option<PQSharedSecret>,
     tx1: &Transcript,
 ) -> Result<AEADKey, HandshakeError> {
     #[derive(TlsSerializeBytes, TlsSize)]
     struct K1Ikm<'a> {
         k0: &'a AEADKey,
         ecdh_shared_secret: &'a DHSharedSecret,
-        pq_shared_secret: Option<DynamicSharedSecret<'a>>,
+        pq_shared_secret: Option<PQSharedSecret<'a>>,
     }
 
     let ecdh_shared_secret = DHSharedSecret::derive(own_longterm_key, peer_longterm_pk)?;

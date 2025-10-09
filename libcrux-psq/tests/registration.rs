@@ -41,18 +41,15 @@ impl From<SessionError> for TestError {
 }
 
 impl CommonSetup {
-    fn pq_encapsulation_key(
-        &self,
-        name: CiphersuiteName,
-    ) -> Option<DynamicEncapsulationKeyRef<'_>> {
+    fn pq_encapsulation_key(&self, name: CiphersuiteName) -> Option<PQEncapsulationKey<'_>> {
         match name {
             CiphersuiteName::X25519_NONE_CHACHA20POLY1305_HKDFSHA256 => None,
             CiphersuiteName::X25519_MLKEM768_CHACHA20POLY1305_HKDFSHA256 => Some(
-                DynamicEncapsulationKeyRef::MlKem(self.responder_mlkem_keys.public_key()),
+                PQEncapsulationKey::MlKem(self.responder_mlkem_keys.public_key()),
             ),
             #[cfg(feature = "classic-mceliece")]
             CiphersuiteName::X25519_CLASSICMCELIECE_CHACHA20POLY1305_HKDFSHA256 => {
-                Some(DynamicEncapsulationKeyRef::CMC(&self.responder_cmc_keys.pk))
+                Some(PQEncapsulationKey::CMC(&self.responder_cmc_keys.pk))
             }
             #[cfg(not(feature = "classic-mceliece"))]
             CiphersuiteName::X25519_CLASSICMCELIECE_CHACHA20POLY1305_HKDFSHA256 => {

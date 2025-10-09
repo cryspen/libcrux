@@ -7,7 +7,7 @@ use crate::classic_mceliece::{Ciphertext, PublicKey, SecretKey, SharedSecret};
 
 #[derive(TlsSize, TlsDeserialize, TlsSerialize)]
 #[repr(u8)]
-pub enum DynamicCiphertext {
+pub enum PQCiphertext {
     MlKem(MlKem768Ciphertext) = 1,
     #[cfg(feature = "classic-mceliece")]
     CMC(Ciphertext) = 2,
@@ -17,7 +17,7 @@ pub enum DynamicCiphertext {
 
 #[derive(TlsSize, TlsSerialize)]
 #[repr(u8)]
-pub enum DynamicEncapsulationKeyRef<'a> {
+pub enum PQEncapsulationKey<'a> {
     MlKem(&'a MlKem768PublicKey) = 1,
     #[cfg(feature = "classic-mceliece")]
     CMC(&'a PublicKey) = 2,
@@ -25,14 +25,14 @@ pub enum DynamicEncapsulationKeyRef<'a> {
     CMC = 3,
 }
 
-impl<'a> From<&'a MlKem768PublicKey> for DynamicEncapsulationKeyRef<'a> {
+impl<'a> From<&'a MlKem768PublicKey> for PQEncapsulationKey<'a> {
     fn from(value: &'a MlKem768PublicKey) -> Self {
         Self::MlKem(value)
     }
 }
 
 #[cfg(feature = "classic-mceliece")]
-impl<'a> From<&'a PublicKey> for DynamicEncapsulationKeyRef<'a> {
+impl<'a> From<&'a PublicKey> for PQEncapsulationKey<'a> {
     fn from(value: &'a PublicKey) -> Self {
         Self::CMC(value)
     }
@@ -40,7 +40,7 @@ impl<'a> From<&'a PublicKey> for DynamicEncapsulationKeyRef<'a> {
 
 #[derive(TlsSize, TlsSerializeBytes)]
 #[repr(u8)]
-pub enum DynamicSharedSecret<'a> {
+pub enum PQSharedSecret<'a> {
     None,
     MlKem(MlKemSharedSecret),
     #[cfg(feature = "classic-mceliece")]
@@ -49,7 +49,7 @@ pub enum DynamicSharedSecret<'a> {
     CMC(std::marker::PhantomData<&'a [u8]>),
 }
 
-pub enum DynamicDecapsulationKey {
+pub enum PQDecapsulationKey {
     None,
     MlKem(MlKem768PrivateKey),
     #[cfg(feature = "classic-mceliece")]

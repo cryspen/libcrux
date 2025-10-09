@@ -3,9 +3,7 @@ use std::io::Cursor;
 use tls_codec::{Deserialize, TlsDeserialize, TlsSerialize, TlsSize};
 
 use crate::handshake::{
-    ciphersuite::{
-        responder::ResponderCiphersuite, traits::CiphersuiteBase, types::DynamicCiphertext,
-    },
+    ciphersuite::{responder::ResponderCiphersuite, traits::CiphersuiteBase, types::PQCiphertext},
     HandshakeError,
 };
 
@@ -64,11 +62,11 @@ impl CiphersuiteName {
     pub(crate) fn deserialize_encapsulation(
         &self,
         bytes: &[u8],
-    ) -> Result<Option<DynamicCiphertext>, HandshakeError> {
+    ) -> Result<Option<PQCiphertext>, HandshakeError> {
         match self {
             CiphersuiteName::X25519_NONE_CHACHA20POLY1305_HKDFSHA256 => Ok(None),
             CiphersuiteName::X25519_MLKEM768_CHACHA20POLY1305_HKDFSHA256 => {
-                let enc = Option::<DynamicCiphertext>::tls_deserialize(&mut Cursor::new(bytes))
+                let enc = Option::<PQCiphertext>::tls_deserialize(&mut Cursor::new(bytes))
                     .map_err(|e| HandshakeError::Deserialize(e))?;
 
                 Ok(enc)
@@ -77,7 +75,7 @@ impl CiphersuiteName {
             CiphersuiteName::X25519_CLASSICMCELIECE_CHACHA20POLY1305_HKDFSHA256 => {
                 use std::io::Cursor;
 
-                let enc = Option::<DynamicCiphertext>::tls_deserialize(&mut Cursor::new(bytes))
+                let enc = Option::<PQCiphertext>::tls_deserialize(&mut Cursor::new(bytes))
                     .map_err(|e| HandshakeError::Deserialize(e))?;
                 Ok(enc)
             }

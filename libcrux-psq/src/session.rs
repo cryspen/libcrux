@@ -17,7 +17,7 @@ use transport::Transport;
 use crate::{
     aead::{AEADError, AEADKey},
     handshake::{
-        ciphersuite::types::DynamicEncapsulationKeyRef, dhkem::DHPublicKey, transcript::Transcript,
+        ciphersuite::types::PQEncapsulationKey, dhkem::DHPublicKey, transcript::Transcript,
     },
 };
 
@@ -106,13 +106,13 @@ fn derive_pk_binder(
     key: &SessionKey,
     initiator_ecdh_pk: &DHPublicKey,
     responder_ecdh_pk: &DHPublicKey,
-    responder_pq_pk: Option<DynamicEncapsulationKeyRef>,
+    responder_pq_pk: Option<PQEncapsulationKey>,
 ) -> Result<[u8; PK_BINDER_LEN], SessionError> {
     #[derive(TlsSerialize, TlsSize)]
     struct PkBinderInfo<'a> {
         initiator_ecdh_pk: &'a DHPublicKey,
         responder_ecdh_pk: &'a DHPublicKey,
-        responder_pq_pk: Option<DynamicEncapsulationKeyRef<'a>>,
+        responder_pq_pk: Option<PQEncapsulationKey<'a>>,
     }
 
     let info = PkBinderInfo {
@@ -148,7 +148,7 @@ impl Session {
         k2: AEADKey,
         initiator_ecdh_pk: &DHPublicKey,
         responder_ecdh_pk: &DHPublicKey,
-        responder_pq_pk: Option<DynamicEncapsulationKeyRef>,
+        responder_pq_pk: Option<PQEncapsulationKey>,
         is_initiator: bool,
     ) -> Result<Self, SessionError> {
         let session_key = derive_session_key(k2, tx2)?;
@@ -192,7 +192,7 @@ impl Session {
         bytes: &[u8],
         initiator_ecdh_pk: &DHPublicKey,
         responder_ecdh_pk: &DHPublicKey,
-        responder_pq_pk: Option<DynamicEncapsulationKeyRef>,
+        responder_pq_pk: Option<PQEncapsulationKey>,
     ) -> Result<Self, SessionError> {
         let session =
             Session::tls_deserialize(&mut Cursor::new(bytes)).map_err(SessionError::Deserialize)?;

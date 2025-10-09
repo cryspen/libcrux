@@ -5,7 +5,7 @@ use crate::classic_mceliece::PublicKey;
 use crate::handshake::{
     ciphersuite::{
         traits::CiphersuiteBase,
-        types::{DynamicCiphertext, DynamicEncapsulationKeyRef, DynamicSharedSecret},
+        types::{PQCiphertext, PQEncapsulationKey, PQSharedSecret},
         CiphersuiteName,
     },
     dhkem::{DHKeyPair, DHPrivateKey, DHPublicKey},
@@ -26,9 +26,9 @@ pub enum InitiatorCiphersuite<'a> {
 }
 
 impl<'a> CiphersuiteBase for InitiatorCiphersuite<'a> {
-    type Ciphertext = DynamicCiphertext;
-    type EncapsulationKeyRef = DynamicEncapsulationKeyRef<'a>;
-    type SharedSecret = DynamicSharedSecret<'a>;
+    type Ciphertext = PQCiphertext;
+    type EncapsulationKeyRef = PQEncapsulationKey<'a>;
+    type SharedSecret = PQSharedSecret<'a>;
 
     fn name(&self) -> CiphersuiteName {
         match self {
@@ -124,13 +124,13 @@ impl<'a> InitiatorCiphersuite<'a> {
             InitiatorCiphersuite::X25519NoneChaCha20Poly1305HkdfSha256(_) => None,
             InitiatorCiphersuite::X25519MlKem768ChaCha20Poly1305HkdfSha256(
                 initiator_x25519_mlkem768_chacha_poly_hkdf_sha256,
-            ) => Some(DynamicEncapsulationKeyRef::MlKem(
+            ) => Some(PQEncapsulationKey::MlKem(
                 initiator_x25519_mlkem768_chacha_poly_hkdf_sha256.peer_longterm_mlkem_pk,
             )),
             #[cfg(feature = "classic-mceliece")]
             InitiatorCiphersuite::X25519ClassicMcElieceChaCha20Poly1305HkdfSha256(
                 initiator_x25519_classic_mc_eliece_chacha_poly_hkdf_sha256,
-            ) => Some(DynamicEncapsulationKeyRef::CMC(
+            ) => Some(PQEncapsulationKey::CMC(
                 initiator_x25519_classic_mc_eliece_chacha_poly_hkdf_sha256.peer_longterm_cmc_pk,
             )),
             #[cfg(not(feature = "classic-mceliece"))]
@@ -198,8 +198,8 @@ impl<'a> InitiatorCiphersuite<'a> {
                 );
 
                 Ok((
-                    Some(DynamicCiphertext::MlKem(ct)),
-                    Some(DynamicSharedSecret::MlKem(ss)),
+                    Some(PQCiphertext::MlKem(ct)),
+                    Some(PQSharedSecret::MlKem(ss)),
                 ))
             }
             #[cfg(feature = "classic-mceliece")]
@@ -216,10 +216,7 @@ impl<'a> InitiatorCiphersuite<'a> {
                 )
                 .map_err(|_| HandshakeError::CryptoError)?;
 
-                Ok((
-                    Some(DynamicCiphertext::CMC(ct)),
-                    Some(DynamicSharedSecret::CMC(ss)),
-                ))
+                Ok((Some(PQCiphertext::CMC(ct)), Some(PQSharedSecret::CMC(ss))))
             }
 
             #[cfg(not(feature = "classic-mceliece"))]

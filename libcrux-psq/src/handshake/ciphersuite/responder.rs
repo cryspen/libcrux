@@ -5,7 +5,7 @@ use crate::classic_mceliece::{PublicKey, SecretKey};
 use crate::handshake::{
     ciphersuite::{
         traits::CiphersuiteBase,
-        types::{DynamicCiphertext, DynamicEncapsulationKeyRef, DynamicSharedSecret},
+        types::{PQCiphertext, PQEncapsulationKey, PQSharedSecret},
         CiphersuiteName,
     },
     dhkem::{DHKeyPair, DHPrivateKey, DHPublicKey},
@@ -42,9 +42,9 @@ pub enum ResponderCiphersuite<'a> {
 }
 
 impl<'a> CiphersuiteBase for ResponderCiphersuite<'a> {
-    type Ciphertext = DynamicCiphertext;
-    type EncapsulationKeyRef = DynamicEncapsulationKeyRef<'a>;
-    type SharedSecret = DynamicSharedSecret<'a>;
+    type Ciphertext = PQCiphertext;
+    type EncapsulationKeyRef = PQEncapsulationKey<'a>;
+    type SharedSecret = PQSharedSecret<'a>;
 
     fn name(&self) -> CiphersuiteName {
         match self {
@@ -132,13 +132,13 @@ impl<'a> ResponderCiphersuite<'a> {
         match self {
             ResponderCiphersuite::X25519MlKem768ChaCha20Poly1305HkdfSha256(
                 responder_x25519_ml_kem768_cha_cha_poly_hkdf_sha256,
-            ) => Some(DynamicEncapsulationKeyRef::MlKem(
+            ) => Some(PQEncapsulationKey::MlKem(
                 responder_x25519_ml_kem768_cha_cha_poly_hkdf_sha256.longterm_pq_encapsulation_key,
             )),
             #[cfg(feature = "classic-mceliece")]
             ResponderCiphersuite::X25519ClassicMcElieceChaCha20Poly1305HkdfSha256(
                 responder_x25519_cmc_cha_cha_poly_hkdf_sha256,
-            ) => Some(DynamicEncapsulationKeyRef::CMC(
+            ) => Some(PQEncapsulationKey::CMC(
                 responder_x25519_cmc_cha_cha_poly_hkdf_sha256.longterm_pq_encapsulation_key,
             )),
             #[cfg(not(feature = "classic-mceliece"))]
@@ -158,7 +158,7 @@ impl<'a> ResponderCiphersuite<'a> {
             ResponderCiphersuite::X25519MlKem768ChaCha20Poly1305HkdfSha256(
                 responder_x25519_ml_kem768_cha_cha_poly_hkdf_sha256,
             ) => {
-                let DynamicCiphertext::MlKem(inner_ctxt) = ciphertext else {
+                let PQCiphertext::MlKem(inner_ctxt) = ciphertext else {
                     return Err(HandshakeError::CryptoError);
                 };
                 let shared_secret = libcrux_ml_kem::mlkem768::decapsulate(
@@ -167,7 +167,7 @@ impl<'a> ResponderCiphersuite<'a> {
                     inner_ctxt,
                 );
 
-                Ok(DynamicSharedSecret::MlKem(shared_secret))
+                Ok(PQSharedSecret::MlKem(shared_secret))
             }
             #[cfg(feature = "classic-mceliece")]
             ResponderCiphersuite::X25519ClassicMcElieceChaCha20Poly1305HkdfSha256(
@@ -176,7 +176,7 @@ impl<'a> ResponderCiphersuite<'a> {
                 use crate::classic_mceliece::ClassicMcEliece;
                 use libcrux_traits::kem::KEM;
 
-                let DynamicCiphertext::CMC(inner_ctxt) = ciphertext else {
+                let PQCiphertext::CMC(inner_ctxt) = ciphertext else {
                     return Err(HandshakeError::CryptoError);
                 };
                 let shared_secret = <ClassicMcEliece as KEM>::decapsulate(
@@ -186,7 +186,7 @@ impl<'a> ResponderCiphersuite<'a> {
                     inner_ctxt,
                 )
                 .map_err(|_| HandshakeError::CryptoError)?;
-                Ok(DynamicSharedSecret::CMC(shared_secret))
+                Ok(PQSharedSecret::CMC(shared_secret))
             }
             #[cfg(not(feature = "classic-mceliece"))]
             ResponderCiphersuite::X25519ClassicMcElieceChaCha20Poly1305HkdfSha256(_) => {
