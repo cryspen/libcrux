@@ -21,6 +21,17 @@ pub trait EcdhArrayref<const RAND_LEN: usize, const SECRET_LEN: usize, const PUB
         secret: &[U8; SECRET_LEN],
     ) -> Result<(), SecretToPublicError>;
 
+    /// Generate a Diffie-Hellman secret value and derive the
+    /// corresponding public value in one step.
+    fn generate_pair(
+        public: &mut [u8; PUBLIC_LEN],
+        secret: &mut [U8; SECRET_LEN],
+        rand: &[U8; RAND_LEN],
+    ) -> Result<(), GenerateSecretError> {
+        Self::generate_secret(secret, rand)?;
+        Self::secret_to_public(public, secret).map_err(|_| GenerateSecretError::Unknown)
+    }
+
     /// Derive a Diffie-Hellman shared secret from a public and a
     /// secret value.
     ///

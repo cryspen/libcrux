@@ -7,7 +7,6 @@ mod transport;
 
 use std::io::Cursor;
 
-use libcrux_hkdf::Algorithm;
 use session_key::{derive_session_key, SessionKey, SESSION_ID_LENGTH};
 use tls_codec::{
     Deserialize, Serialize, SerializeBytes, Size, TlsDeserialize, TlsSerialize, TlsSize,
@@ -124,17 +123,17 @@ fn derive_pk_binder(
     info.tls_serialize(&mut &mut info_buf[..])
         .map_err(SessionError::Serialize)?;
 
-    let prk = libcrux_hkdf::extract(
-        Algorithm::Sha256,
-        [],
-        SerializeBytes::tls_serialize(&key.key).map_err(SessionError::Serialize)?,
+    let mut binder = [0u8; PK_BINDER_LEN];
+
+    libcrux_hkdf::sha2_256::hkdf(
+        &mut binder,
+        &[],
+        &SerializeBytes::tls_serialize(&key.key).map_err(SessionError::Serialize)?,
+        &info_buf,
     )
     .map_err(|_| SessionError::CryptoError)?;
 
-    libcrux_hkdf::expand(Algorithm::Sha256, prk, info_buf, PK_BINDER_LEN)
-        .map_err(|_| SessionError::CryptoError)?
-        .try_into()
-        .map_err(|_| SessionError::CryptoError)
+    Ok(binder)
 }
 
 impl Session {

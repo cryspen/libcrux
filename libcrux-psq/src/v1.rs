@@ -53,8 +53,16 @@ impl From<libcrux_chacha20poly1305::AeadError> for Error {
     }
 }
 
-impl From<libcrux_hkdf::Error> for Error {
-    fn from(_e: libcrux_hkdf::Error) -> Self {
+impl From<libcrux_hkdf::ExtractError> for Error {
+    fn from(_e: libcrux_hkdf::ExtractError) -> Self {
+        #[cfg(debug_assertions)]
+        print_error("HKDF error", &_e);
+        Self::CryptoError
+    }
+}
+
+impl From<libcrux_hkdf::ExpandError> for Error {
+    fn from(_e: libcrux_hkdf::ExpandError) -> Self {
         #[cfg(debug_assertions)]
         print_error("HKDF error", &_e);
         Self::CryptoError

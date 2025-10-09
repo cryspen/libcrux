@@ -1,5 +1,4 @@
 //! # Session Keys
-use libcrux_hkdf::Algorithm;
 use tls_codec::{SerializeBytes, TlsDeserialize, TlsSerialize, TlsSerializeBytes, TlsSize};
 
 use crate::{aead::AEADKey, handshake::transcript::Transcript};
@@ -27,17 +26,31 @@ const SESSION_KEY_SALT: &[u8] = b"session key salt";
 
 // id_skCS = KDF(skCS, "shared key id")
 fn session_key_id(key: &AEADKey) -> Result<[u8; SESSION_ID_LENGTH], Error> {
-    let prk = libcrux_hkdf::extract(
-        Algorithm::Sha256,
+    let mut session_id = [0u8; SESSION_ID_LENGTH];
+
+    libcrux_hkdf::sha2_256::hkdf(
+        &mut session_id,
         SESSION_KEY_SALT,
-        SerializeBytes::tls_serialize(&key).map_err(Error::Serialize)?,
+        &SerializeBytes::tls_serialize(&key).map_err(Error::Serialize)?,
+        SESSION_KEY_INFO,
     )
     .map_err(|_| Error::CryptoError)?;
 
-    libcrux_hkdf::expand(Algorithm::Sha256, prk, SESSION_KEY_INFO, SESSION_ID_LENGTH)
-        .map_err(|_| Error::CryptoError)?
-        .try_into()
-        .map_err(|_| Error::CryptoError)
+    Ok(
+        session_id.try_into().map_err(|_| Error::CryptoError)?, // We don't expect this to fail, unless HDKF gave us the wrong output length
+    )
+
+    // let prk = libcrux_hkdf::extract(
+    //     Algorithm::Sha256,
+    //     SESSION_KEY_SALT,
+    //     SerializeBytes::tls_serialize(&key).map_err(Error::Serialize)?,
+    // )
+    // .map_err(|_| Error::CryptoError)?;
+
+    // libcrux_hkdf::expand(Algorithm::Sha256, prk, SESSION_KEY_INFO, SESSION_ID_LENGTH)
+    //     .map_err(|_| Error::CryptoError)?
+    //     .try_into()
+    //     .map_err(|_| Error::CryptoError)
 }
 
 // skCS = KDF(K2, "session secret" | tx2)

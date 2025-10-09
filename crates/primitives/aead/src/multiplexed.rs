@@ -1,8 +1,9 @@
+use libcrux_secrets::U8;
+use libcrux_traits::aead::{slice::KeyGenError, typed_refs::KeyMut};
 #[cfg(any(feature = "chacha20poly1305", feature = "xchacha20poly1305"))]
 use libcrux_traits::{
     aead,
     aead::typed_refs::{DecryptError, EncryptError, Multiplexes},
-    libcrux_secrets::U8,
 };
 
 /// A multiplexed AEAD, allowing algorithm selection at run time.
@@ -67,6 +68,25 @@ impl aead::typed_refs::Aead for Aead {
             Aead::ChaCha20Poly1305 => 12,
             #[cfg(feature = "xchacha20poly1305")]
             Aead::XChaCha20Poly1305 => 24,
+        }
+    }
+
+    fn keygen<'a>(&self, key: KeyMut<'a, Self>, rand: &[U8]) -> Result<(), KeyGenError> {
+        match *self {
+            #[cfg(feature = "chacha20poly1305")]
+            Aead::ChaCha20Poly1305 => {
+                use crate::chacha20poly1305::ChaCha20Poly1305;
+
+                let key = Self::mux_key_mut(key).ok_or(KeyGenError::WrongKeyLength)?;
+                ChaCha20Poly1305.keygen(key, rand)
+            }
+            #[cfg(feature = "xchacha20poly1305")]
+            Aead::XChaCha20Poly1305 => {
+                use crate::xchacha20poly1305::XChaCha20Poly1305;
+
+                let key = Self::mux_key_mut(key).ok_or(KeyGenError::WrongKeyLength)?;
+                XChaCha20Poly1305.keygen(key, rand)
+            }
         }
     }
 
@@ -144,50 +164,62 @@ mod tests {
     #[test]
     #[cfg(feature = "chacha20poly1305")]
     fn test_key_centric_multiplexed_chachapoly() {
+        use libcrux_traits::libcrux_secrets::{Classify, ClassifyRef, DeclassifyRef};
+
         let algo = Aead::ChaCha20Poly1305;
 
-        algo.new_key(&[0; 33]).expect_err("length should mismatch");
+        algo.new_key(&[0.classify(); 33])
+            .expect_err("length should mismatch");
 
-        let mut tag_bytes = [0; 16];
+        let mut tag_bytes = [0.classify(); 16];
+        let key_bytes = [0.classify(); 32];
+        let nonce_bytes = [0.classify(); 12];
 
-        let key = algo.new_key(&[0; 32]).expect("length should match");
-        let nonce = algo.new_nonce(&[0; 12]).expect("length should match");
+        let key = algo.new_key(&key_bytes).expect("length should match");
+        let nonce = algo.new_nonce(&nonce_bytes).expect("length should match");
         let tag = algo
             .new_tag_mut(&mut tag_bytes)
             .expect("length should match");
 
-        let pt = b"the quick brown fox jumps over the lazy dog";
+        let pt = b"the quick brown fox jumps over the lazy dog".classify_ref();
         let mut ct = [0; 43];
-        let mut pt_out = [0; 43];
+        let mut pt_out = [0.classify(); 43];
 
         key.encrypt(&mut ct, tag, nonce, b"", pt).unwrap();
         let tag = algo.new_tag(&tag_bytes).unwrap();
         key.decrypt(&mut pt_out, nonce, b"", &ct, tag).unwrap();
-        assert_eq!(pt, &pt_out);
+        assert_eq!(pt.declassify_ref(), pt_out.declassify_ref());
     }
 
     #[test]
     #[cfg(feature = "xchacha20poly1305")]
     fn test_key_centric_multiplexed_xchachapoly() {
+        use libcrux_traits::libcrux_secrets::{Classify, ClassifyRef, DeclassifyRef};
+
         let algo = Aead::XChaCha20Poly1305;
 
-        algo.new_key(&[0; 33]).expect_err("length should mismatch");
+        let wrong_length_key_bytes = [0.classify(); 33];
+        algo.new_key(&wrong_length_key_bytes)
+            .expect_err("length should mismatch");
 
-        let mut tag_bytes = [0; 16];
+        let mut tag_bytes = [0.classify(); 16];
 
-        let key = algo.new_key(&[0; 32]).expect("length should match");
-        let nonce = algo.new_nonce(&[0; 24]).expect("length should match");
+        let key_bytes = [0.classify(); 32];
+        let nonce_bytes = [0.classify(); 24];
+
+        let key = algo.new_key(&key_bytes).expect("length should match");
+        let nonce = algo.new_nonce(&nonce_bytes).expect("length should match");
         let tag = algo
             .new_tag_mut(&mut tag_bytes)
             .expect("length should match");
 
-        let pt = b"the quick brown fox jumps over the lazy dog";
+        let pt = b"the quick brown fox jumps over the lazy dog".classify_ref();
         let mut ct = [0; 43];
-        let mut pt_out = [0; 43];
+        let mut pt_out = [0.classify(); 43];
 
         key.encrypt(&mut ct, tag, nonce, b"", pt).unwrap();
         let tag = algo.new_tag(&tag_bytes).unwrap();
         key.decrypt(&mut pt_out, nonce, b"", &ct, tag).unwrap();
-        assert_eq!(pt, &pt_out);
+        assert_eq!(pt.declassify_ref(), pt_out.declassify_ref());
     }
 }

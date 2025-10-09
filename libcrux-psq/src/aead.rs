@@ -1,6 +1,5 @@
 //! # AEAD API
 use libcrux_chacha20poly1305::{decrypt_detached, encrypt_detached, KEY_LEN, NONCE_LEN};
-use libcrux_hkdf::Algorithm;
 use tls_codec::{
     Deserialize, Serialize, SerializeBytes, TlsDeserialize, TlsSerialize, TlsSerializeBytes,
     TlsSize,
@@ -32,23 +31,18 @@ impl AEADKey {
         ikm: &impl SerializeBytes,
         info: &impl SerializeBytes,
     ) -> Result<AEADKey, AEADError> {
-        let prk = libcrux_hkdf::extract(
-            Algorithm::Sha256,
-            [],
-            ikm.tls_serialize().map_err(AEADError::Serialize)?,
+        let mut key = [0; KEY_LEN];
+
+        libcrux_hkdf::sha2_256::hkdf(
+            &mut key,
+            &[],
+            &ikm.tls_serialize().map_err(AEADError::Serialize)?,
+            &info.tls_serialize().map_err(AEADError::Serialize)?,
         )
         .map_err(|_| AEADError::CryptoError)?;
 
         Ok(AEADKey(
-            libcrux_hkdf::expand(
-                Algorithm::Sha256,
-                prk,
-                info.tls_serialize().map_err(AEADError::Serialize)?,
-                KEY_LEN,
-            )
-            .map_err(|_| AEADError::CryptoError)?
-            .try_into()
-            .map_err(|_| AEADError::CryptoError)?, // We don't expect this to fail, unless HDKF gave us the wrong output length,
+            key.try_into().map_err(|_| AEADError::CryptoError)?,
             [0u8; NONCE_LEN],
         ))
     }

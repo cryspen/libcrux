@@ -275,14 +275,9 @@ impl Responder {
 }
 
 fn derive_psk(prk: &[u8; 32]) -> Result<Psk, Error> {
-    let psk: [u8; PSK_LENGTH] = libcrux_hkdf::expand(
-        libcrux_hkdf::Algorithm::Sha256,
-        prk,
-        PSK_REGISTRATION_CONTEXT,
-        PSK_LENGTH,
-    )?
-    .try_into()
-    .map_err(|_| Error::CryptoError)?;
+    let mut psk = [0u8; PSK_LENGTH];
+    libcrux_hkdf::sha2_256::expand(&mut psk, prk, PSK_REGISTRATION_CONTEXT)?;
+    let psk = psk.try_into().map_err(|_| Error::CryptoError)?;
 
     Ok(psk)
 }
@@ -305,8 +300,14 @@ fn derive_cipherstate(
 }
 
 fn derive_key_iv(psk: &[u8; 32], info: &[u8]) -> Result<([u8; NONCE_LEN], [u8; KEY_LEN]), Error> {
-    let key_iv_bytes =
-        libcrux_hkdf::expand(libcrux_hkdf::Algorithm::Sha256, psk, info, AEAD_KEY_NONCE)?;
+    let mut key_iv_bytes = [0; AEAD_KEY_NONCE];
+    libcrux_hkdf::expand(
+        libcrux_hkdf::Algorithm::Sha256,
+        &mut key_iv_bytes,
+        psk,
+        info,
+    )?;
+
     let (key_bytes, iv_bytes) = key_iv_bytes.split_at(AEAD_KEY_LENGTH);
     let key = <[u8; AEAD_KEY_LENGTH]>::try_from(key_bytes)?;
     let iv = <[u8; NONCE_LEN]>::try_from(iv_bytes)?;
