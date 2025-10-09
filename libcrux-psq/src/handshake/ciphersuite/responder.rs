@@ -12,17 +12,17 @@ use crate::handshake::{
     HandshakeError,
 };
 
-pub struct ResponderX25519ChaChaPolyHkdfSha256<'a> {
+pub struct ResponderX25519ChaCha20Poly1305HkdfSha256<'a> {
     pub longterm_ecdh_keys: &'a DHKeyPair,
 }
-pub struct ResponderX25519MlKem768ChaChaPolyHkdfSha256<'a> {
+pub struct ResponderX25519MlKem768ChaCha20Poly1305HkdfSha256<'a> {
     pub longterm_ecdh_keys: &'a DHKeyPair,
     pub longterm_pq_encapsulation_key: &'a MlKem768PublicKey,
     pub longterm_pq_decapsulation_key: &'a MlKem768PrivateKey,
 }
 
 #[cfg(feature = "classic-mceliece")]
-pub struct ResponderX25519ClassicMcElieceChaChaPolyHkdfSha256<'a> {
+pub struct ResponderX25519ClassicMcElieceChaCha20Poly1305HkdfSha256<'a> {
     pub longterm_ecdh_keys: &'a DHKeyPair,
     pub longterm_pq_encapsulation_key: &'a PublicKey,
     pub longterm_pq_decapsulation_key: &'a SecretKey,
@@ -31,14 +31,14 @@ pub struct ResponderX25519ClassicMcElieceChaChaPolyHkdfSha256<'a> {
 #[allow(non_camel_case_types)]
 /// The ciphersuites available to a PSQ responder.
 pub enum ResponderCiphersuite<'a> {
-    X25519_ChaChaPoly_HkdfSha256(ResponderX25519ChaChaPolyHkdfSha256<'a>),
-    X25519_MlKem768_ChaChaPoly_HkdfSha256(ResponderX25519MlKem768ChaChaPolyHkdfSha256<'a>),
+    X25519NoneChaCha20Poly1305HkdfSha256(ResponderX25519ChaCha20Poly1305HkdfSha256<'a>),
+    X25519MlKem768ChaCha20Poly1305HkdfSha256(ResponderX25519MlKem768ChaCha20Poly1305HkdfSha256<'a>),
     #[cfg(feature = "classic-mceliece")]
-    X25519_ClassicMcEliece_ChaChaPoly_HkdfSha256(
-        ResponderX25519ClassicMcElieceChaChaPolyHkdfSha256<'a>,
+    X25519ClassicMcElieceChaCha20Poly1305HkdfSha256(
+        ResponderX25519ClassicMcElieceChaCha20Poly1305HkdfSha256<'a>,
     ),
     #[cfg(not(feature = "classic-mceliece"))]
-    X25519_ClassicMcEliece_ChaChaPoly_HkdfSha256(std::marker::PhantomData<&'a [u8]>),
+    X25519ClassicMcElieceChaCha20Poly1305HkdfSha256(std::marker::PhantomData<&'a [u8]>),
 }
 
 impl<'a> CiphersuiteBase for ResponderCiphersuite<'a> {
@@ -48,27 +48,27 @@ impl<'a> CiphersuiteBase for ResponderCiphersuite<'a> {
 
     fn name(&self) -> CiphersuiteName {
         match self {
-            ResponderCiphersuite::X25519_MlKem768_ChaChaPoly_HkdfSha256(_) => {
-                CiphersuiteName::X25519Mlkem768ChachaPolyHkdfSha256
+            ResponderCiphersuite::X25519MlKem768ChaCha20Poly1305HkdfSha256(_) => {
+                CiphersuiteName::X25519_MLKEM768_CHACHAPOLY1305_HKDFSHA256
             }
             #[cfg(feature = "classic-mceliece")]
-            ResponderCiphersuite::X25519_ClassicMcEliece_ChaChaPoly_HkdfSha256(_) => {
-                CiphersuiteName::X25519ClassicMcElieceChachaPolyHkdfSha256
+            ResponderCiphersuite::X25519ClassicMcElieceChaCha20Poly1305HkdfSha256(_) => {
+                CiphersuiteName::X25519_CLASSICMCELIECE_CHACHAPOLY1305_HKDFSHA256
             }
             #[cfg(not(feature = "classic-mceliece"))]
-            ResponderCiphersuite::X25519_ClassicMcEliece_ChaChaPoly_HkdfSha256(_) => {
+            ResponderCiphersuite::X25519ClassicMcElieceChaCha20Poly1305HkdfSha256(_) => {
                 // We can never reach this because the ciphersuite can only be constructed with the feature turned on.
                 unreachable!("unsupported ciphersuite")
             }
-            ResponderCiphersuite::X25519_ChaChaPoly_HkdfSha256(_) => {
-                CiphersuiteName::X25519ChachaPolyHkdfSha256
+            ResponderCiphersuite::X25519NoneChaCha20Poly1305HkdfSha256(_) => {
+                CiphersuiteName::X25519_NONE_CHACHAPOLY1305_HKDFSHA256
             }
         }
     }
 
     fn own_ecdh_decapsulation_key(&self) -> &DHPrivateKey {
         match self {
-            ResponderCiphersuite::X25519_MlKem768_ChaChaPoly_HkdfSha256(
+            ResponderCiphersuite::X25519MlKem768ChaCha20Poly1305HkdfSha256(
                 responder_x25519_mlkem768_chacha_poly_hkdf_sha256,
             ) => {
                 &responder_x25519_mlkem768_chacha_poly_hkdf_sha256
@@ -76,7 +76,7 @@ impl<'a> CiphersuiteBase for ResponderCiphersuite<'a> {
                     .sk
             }
             #[cfg(feature = "classic-mceliece")]
-            ResponderCiphersuite::X25519_ClassicMcEliece_ChaChaPoly_HkdfSha256(
+            ResponderCiphersuite::X25519ClassicMcElieceChaCha20Poly1305HkdfSha256(
                 responder_x25519_classic_mc_eliece_chacha_poly_hkdf_sha256,
             ) => {
                 &responder_x25519_classic_mc_eliece_chacha_poly_hkdf_sha256
@@ -84,18 +84,18 @@ impl<'a> CiphersuiteBase for ResponderCiphersuite<'a> {
                     .sk
             }
             #[cfg(not(feature = "classic-mceliece"))]
-            ResponderCiphersuite::X25519_ClassicMcEliece_ChaChaPoly_HkdfSha256(_) => {
+            ResponderCiphersuite::X25519ClassicMcElieceChaCha20Poly1305HkdfSha256(_) => {
                 // We can never reach this because the ciphersuite can only be constructed with the feature turned on.
                 unreachable!("unsupported ciphersuite")
             }
-            ResponderCiphersuite::X25519_ChaChaPoly_HkdfSha256(suite) => {
+            ResponderCiphersuite::X25519NoneChaCha20Poly1305HkdfSha256(suite) => {
                 &suite.longterm_ecdh_keys.sk
             }
         }
     }
     fn own_ecdh_encapsulation_key(&self) -> &DHPublicKey {
         match self {
-            ResponderCiphersuite::X25519_MlKem768_ChaChaPoly_HkdfSha256(
+            ResponderCiphersuite::X25519MlKem768ChaCha20Poly1305HkdfSha256(
                 responder_x25519_mlkem768_chacha_poly_hkdf_sha256,
             ) => {
                 &responder_x25519_mlkem768_chacha_poly_hkdf_sha256
@@ -103,7 +103,7 @@ impl<'a> CiphersuiteBase for ResponderCiphersuite<'a> {
                     .pk
             }
             #[cfg(feature = "classic-mceliece")]
-            ResponderCiphersuite::X25519_ClassicMcEliece_ChaChaPoly_HkdfSha256(
+            ResponderCiphersuite::X25519ClassicMcElieceChaCha20Poly1305HkdfSha256(
                 responder_x25519_classic_mc_eliece_chacha_poly_hkdf_sha256,
             ) => {
                 &responder_x25519_classic_mc_eliece_chacha_poly_hkdf_sha256
@@ -111,11 +111,11 @@ impl<'a> CiphersuiteBase for ResponderCiphersuite<'a> {
                     .pk
             }
             #[cfg(not(feature = "classic-mceliece"))]
-            ResponderCiphersuite::X25519_ClassicMcEliece_ChaChaPoly_HkdfSha256(_) => {
+            ResponderCiphersuite::X25519ClassicMcElieceChaCha20Poly1305HkdfSha256(_) => {
                 // We can never reach this because the ciphersuite can only be constructed with the feature turned on.
                 unreachable!("unsupported ciphersuite")
             }
-            ResponderCiphersuite::X25519_ChaChaPoly_HkdfSha256(
+            ResponderCiphersuite::X25519NoneChaCha20Poly1305HkdfSha256(
                 responder_x25519_cha_cha_poly_hkdf_sha256,
             ) => {
                 &responder_x25519_cha_cha_poly_hkdf_sha256
@@ -130,23 +130,23 @@ impl<'a> ResponderCiphersuite<'a> {
         &self,
     ) -> Option<<Self as CiphersuiteBase>::EncapsulationKeyRef> {
         match self {
-            ResponderCiphersuite::X25519_MlKem768_ChaChaPoly_HkdfSha256(
+            ResponderCiphersuite::X25519MlKem768ChaCha20Poly1305HkdfSha256(
                 responder_x25519_ml_kem768_cha_cha_poly_hkdf_sha256,
             ) => Some(DynamicEncapsulationKeyRef::MlKem(
                 responder_x25519_ml_kem768_cha_cha_poly_hkdf_sha256.longterm_pq_encapsulation_key,
             )),
             #[cfg(feature = "classic-mceliece")]
-            ResponderCiphersuite::X25519_ClassicMcEliece_ChaChaPoly_HkdfSha256(
+            ResponderCiphersuite::X25519ClassicMcElieceChaCha20Poly1305HkdfSha256(
                 responder_x25519_cmc_cha_cha_poly_hkdf_sha256,
             ) => Some(DynamicEncapsulationKeyRef::CMC(
                 responder_x25519_cmc_cha_cha_poly_hkdf_sha256.longterm_pq_encapsulation_key,
             )),
             #[cfg(not(feature = "classic-mceliece"))]
-            ResponderCiphersuite::X25519_ClassicMcEliece_ChaChaPoly_HkdfSha256(_) => {
+            ResponderCiphersuite::X25519ClassicMcElieceChaCha20Poly1305HkdfSha256(_) => {
                 // We can never reach this because the ciphersuite can only be constructed with the feature turned on.
                 unreachable!("unsupported ciphersuite")
             }
-            ResponderCiphersuite::X25519_ChaChaPoly_HkdfSha256(_) => None,
+            ResponderCiphersuite::X25519NoneChaCha20Poly1305HkdfSha256(_) => None,
         }
     }
 
@@ -155,7 +155,7 @@ impl<'a> ResponderCiphersuite<'a> {
         ciphertext: &<Self as CiphersuiteBase>::Ciphertext,
     ) -> Result<<Self as CiphersuiteBase>::SharedSecret, HandshakeError> {
         match self {
-            ResponderCiphersuite::X25519_MlKem768_ChaChaPoly_HkdfSha256(
+            ResponderCiphersuite::X25519MlKem768ChaCha20Poly1305HkdfSha256(
                 responder_x25519_ml_kem768_cha_cha_poly_hkdf_sha256,
             ) => {
                 let DynamicCiphertext::MlKem(inner_ctxt) = ciphertext else {
@@ -170,7 +170,7 @@ impl<'a> ResponderCiphersuite<'a> {
                 Ok(DynamicSharedSecret::MlKem(shared_secret))
             }
             #[cfg(feature = "classic-mceliece")]
-            ResponderCiphersuite::X25519_ClassicMcEliece_ChaChaPoly_HkdfSha256(
+            ResponderCiphersuite::X25519ClassicMcElieceChaCha20Poly1305HkdfSha256(
                 responder_x25519_cmc_cha_cha_poly_hkdf_sha256,
             ) => {
                 use crate::classic_mceliece::ClassicMcEliece;
@@ -189,11 +189,11 @@ impl<'a> ResponderCiphersuite<'a> {
                 Ok(DynamicSharedSecret::CMC(shared_secret))
             }
             #[cfg(not(feature = "classic-mceliece"))]
-            ResponderCiphersuite::X25519_ClassicMcEliece_ChaChaPoly_HkdfSha256(_) => {
+            ResponderCiphersuite::X25519ClassicMcElieceChaCha20Poly1305HkdfSha256(_) => {
                 // We can never reach this because the ciphersuite can only be constructed with the feature turned on.
                 unreachable!("unsupported ciphersuite")
             }
-            ResponderCiphersuite::X25519_ChaChaPoly_HkdfSha256(_) => {
+            ResponderCiphersuite::X25519NoneChaCha20Poly1305HkdfSha256(_) => {
                 Err(HandshakeError::UnsupportedCiphersuite)
             }
         }

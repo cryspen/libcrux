@@ -92,7 +92,7 @@ impl<'a, Rng: CryptoRng> Responder<'a, Rng> {
         Self {
             state: ResponderState::Initial {},
             ciphersuite,
-            working_ciphersuite: CiphersuiteName::X25519ChachaPolyHkdfSha256,
+            working_ciphersuite: CiphersuiteName::X25519_NONE_CHACHAPOLY1305_HKDFSHA256,
             context,
             aad,
             rng,
@@ -279,7 +279,7 @@ impl<'a, Rng: CryptoRng> Responder<'a, Rng> {
             tag,
             aad: VLByteSlice(self.aad),
             pq_encapsulation: VLByteSlice(&[]),
-            ciphersuite: CiphersuiteName::X25519ChachaPolyHkdfSha256,
+            ciphersuite: CiphersuiteName::X25519_NONE_CHACHAPOLY1305_HKDFSHA256,
         };
 
         out_msg

@@ -103,7 +103,7 @@ impl<'a> Channel<Error> for QueryInitiator<'a> {
             tag,
             aad: VLByteSlice(self.outer_aad),
             pq_encapsulation: VLByteSlice(&[]),
-            ciphersuite: CiphersuiteName::X25519ChachaPolyHkdfSha256,
+            ciphersuite: CiphersuiteName::X25519_NONE_CHACHAPOLY1305_HKDFSHA256,
         };
 
         msg.tls_serialize(&mut &mut out[..])

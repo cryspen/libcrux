@@ -17,22 +17,23 @@ pub mod types;
 
 #[derive(TlsSize, TlsSerialize, TlsDeserialize, Clone, Copy, Debug, PartialEq)]
 #[repr(u8)]
+#[allow(non_camel_case_types)]
 /// Available ciphersuites for use in the PSQ handshake.
 pub enum CiphersuiteName {
     /// Use X25519 for the outer KEM, no inner KEM, Chacha20Poly1305
     /// as payload AEAD and SHA-256 for HKDF. This is the only
     /// ciphersuite supported in Query mode.
-    X25519ChachaPolyHkdfSha256,
+    X25519_NONE_CHACHAPOLY1305_HKDFSHA256,
     /// Use X25519 for the outer KEM, ML-KEM 768 for the inner KEM, Chacha20Poly1305 as payload AEAD and SHA-256 for HKDF.
-    X25519Mlkem768ChachaPolyHkdfSha256,
+    X25519_MLKEM768_CHACHAPOLY1305_HKDFSHA256,
     /// Use X25519 for the outer KEM, Classic McEliece for the inner KEM, Chacha20Poly1305 as payload AEAD and SHA-256 for HKDF. (requires feature `classic-mceliece`)
-    X25519ClassicMcElieceChachaPolyHkdfSha256,
+    X25519_CLASSICMCELIECE_CHACHAPOLY1305_HKDFSHA256,
     /// Use X25519 for the outer KEM, no inner KEM, AesGcm128 as payload AEAD and SHA-256 for HKDF.
-    X25519AesGcm128HkdfSha256,
+    X25519_NONE_AESGCM128_HKDFSHA256,
     /// Use X25519 for the outer KEM, ML-KEM 768 for the inner KEM, AesGcm128 as payload AEAD and SHA-256 for HKDF.
-    X25519Mlkem768AesGcm128HkdfSha256,
+    X25519_MLKEM768_AESGCM128_HKDFSHA256,
     /// Use X25519 for the outer KEM, Classic McEliece for the inner KEM, AesGcm128 as payload AEAD and SHA-256 for HKDF. (requires feature `classic-mceliece`)
-    X25519ClassicMcElieceAesGcm128HkdfSha256,
+    X25519_CLASSICMCELIECE_AESGCM128_HKDFSHA256,
 }
 
 impl CiphersuiteName {
@@ -52,8 +53,8 @@ impl CiphersuiteName {
         responder_ciphersuite: &ResponderCiphersuite,
     ) -> Option<CiphersuiteName> {
         match (self, responder_ciphersuite.name()) {
-            (CiphersuiteName::X25519ChachaPolyHkdfSha256, _) => {
-                Some(CiphersuiteName::X25519ChachaPolyHkdfSha256)
+            (CiphersuiteName::X25519_NONE_CHACHAPOLY1305_HKDFSHA256, _) => {
+                Some(CiphersuiteName::X25519_NONE_CHACHAPOLY1305_HKDFSHA256)
             }
             (x, y) if *x == y => Some(y),
             _ => None,
@@ -65,15 +66,15 @@ impl CiphersuiteName {
         bytes: &[u8],
     ) -> Result<Option<DynamicCiphertext>, HandshakeError> {
         match self {
-            CiphersuiteName::X25519ChachaPolyHkdfSha256 => Ok(None),
-            CiphersuiteName::X25519Mlkem768ChachaPolyHkdfSha256 => {
+            CiphersuiteName::X25519_NONE_CHACHAPOLY1305_HKDFSHA256 => Ok(None),
+            CiphersuiteName::X25519_MLKEM768_CHACHAPOLY1305_HKDFSHA256 => {
                 let enc = Option::<DynamicCiphertext>::tls_deserialize(&mut Cursor::new(bytes))
                     .map_err(|e| HandshakeError::Deserialize(e))?;
 
                 Ok(enc)
             }
             #[cfg(feature = "classic-mceliece")]
-            CiphersuiteName::X25519ClassicMcElieceChachaPolyHkdfSha256 => {
+            CiphersuiteName::X25519_CLASSICMCELIECE_CHACHAPOLY1305_HKDFSHA256 => {
                 use std::io::Cursor;
 
                 let enc = Option::<DynamicCiphertext>::tls_deserialize(&mut Cursor::new(bytes))
@@ -82,12 +83,12 @@ impl CiphersuiteName {
             }
             #[cfg(not(feature = "classic-mceliece"))]
             // This should never happen.
-            CiphersuiteName::X25519ClassicMcElieceChachaPolyHkdfSha256 => {
+            CiphersuiteName::X25519_CLASSICMCELIECE_CHACHAPOLY1305_HKDFSHA256 => {
                 Err(HandshakeError::UnsupportedCiphersuite)
             }
-            CiphersuiteName::X25519AesGcm128HkdfSha256
-            | CiphersuiteName::X25519Mlkem768AesGcm128HkdfSha256
-            | CiphersuiteName::X25519ClassicMcElieceAesGcm128HkdfSha256 => {
+            CiphersuiteName::X25519_NONE_AESGCM128_HKDFSHA256
+            | CiphersuiteName::X25519_MLKEM768_AESGCM128_HKDFSHA256
+            | CiphersuiteName::X25519_CLASSICMCELIECE_AESGCM128_HKDFSHA256 => {
                 unimplemented!("AES-GCM 128 ciphersuites are not implemented yet")
             }
         }

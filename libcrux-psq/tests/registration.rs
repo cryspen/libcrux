@@ -52,21 +52,21 @@ impl CommonSetup {
         name: CiphersuiteName,
     ) -> Option<DynamicEncapsulationKeyRef<'_>> {
         match name {
-            CiphersuiteName::X25519ChachaPolyHkdfSha256 => None,
-            CiphersuiteName::X25519Mlkem768ChachaPolyHkdfSha256 => Some(
+            CiphersuiteName::X25519_NONE_CHACHAPOLY1305_HKDFSHA256 => None,
+            CiphersuiteName::X25519_MLKEM768_CHACHAPOLY1305_HKDFSHA256 => Some(
                 DynamicEncapsulationKeyRef::MlKem(self.responder_mlkem_keys.public_key()),
             ),
             #[cfg(feature = "classic-mceliece")]
-            CiphersuiteName::X25519ClassicMcElieceChachaPolyHkdfSha256 => {
+            CiphersuiteName::X25519_CLASSICMCELIECE_CHACHAPOLY1305_HKDFSHA256 => {
                 Some(DynamicEncapsulationKeyRef::CMC(&self.responder_cmc_keys.pk))
             }
             #[cfg(not(feature = "classic-mceliece"))]
-            CiphersuiteName::X25519ClassicMcElieceChachaPolyHkdfSha256 => {
+            CiphersuiteName::X25519_CLASSICMCELIECE_CHACHAPOLY1305_HKDFSHA256 => {
                 panic!("unsupported ciphersuite")
             }
-            CiphersuiteName::X25519AesGcm128HkdfSha256
-            | CiphersuiteName::X25519Mlkem768AesGcm128HkdfSha256
-            | CiphersuiteName::X25519ClassicMcElieceAesGcm128HkdfSha256 => {
+            CiphersuiteName::X25519_NONE_AESGCM128_HKDFSHA256
+            | CiphersuiteName::X25519_MLKEM768_AESGCM128_HKDFSHA256
+            | CiphersuiteName::X25519_CLASSICMCELIECE_AESGCM128_HKDFSHA256 => {
                 unimplemented!("AES-GCM 128 ciphersuites are not implemented yet")
             }
         }
@@ -236,21 +236,21 @@ fn registration(
 fn compatibility_matching_ciphersuites() {
     // Matching ciphersuites work
     assert!(registration(
-        CiphersuiteName::X25519ChachaPolyHkdfSha256,
-        CiphersuiteName::X25519ChachaPolyHkdfSha256,
+        CiphersuiteName::X25519_NONE_CHACHAPOLY1305_HKDFSHA256,
+        CiphersuiteName::X25519_NONE_CHACHAPOLY1305_HKDFSHA256,
     )
     .is_ok());
 
     assert!(registration(
-        CiphersuiteName::X25519Mlkem768ChachaPolyHkdfSha256,
-        CiphersuiteName::X25519Mlkem768ChachaPolyHkdfSha256,
+        CiphersuiteName::X25519_MLKEM768_CHACHAPOLY1305_HKDFSHA256,
+        CiphersuiteName::X25519_MLKEM768_CHACHAPOLY1305_HKDFSHA256,
     )
     .is_ok());
 
     #[cfg(feature = "classic-mceliece")]
     assert!(registration(
-        CiphersuiteName::X25519ClassicMcElieceChachaPolyHkdfSha256,
-        CiphersuiteName::X25519ClassicMcElieceChachaPolyHkdfSha256,
+        CiphersuiteName::X25519_CLASSICMCELIECE_CHACHAPOLY1305_HKDFSHA256,
+        CiphersuiteName::X25519_CLASSICMCELIECE_CHACHAPOLY1305_HKDFSHA256,
     )
     .is_ok());
 }
@@ -258,8 +258,8 @@ fn compatibility_matching_ciphersuites() {
 #[test]
 fn compatible_ciphersuites_asymmetric_mlkem() {
     assert!(registration(
-        CiphersuiteName::X25519ChachaPolyHkdfSha256,
-        CiphersuiteName::X25519Mlkem768ChachaPolyHkdfSha256,
+        CiphersuiteName::X25519_NONE_CHACHAPOLY1305_HKDFSHA256,
+        CiphersuiteName::X25519_MLKEM768_CHACHAPOLY1305_HKDFSHA256,
     )
     .is_ok());
 }
@@ -267,8 +267,8 @@ fn compatible_ciphersuites_asymmetric_mlkem() {
 #[cfg(feature = "classic-mceliece")]
 fn compatible_ciphersuites_asymmetric_cmc() {
     assert!(registration(
-        CiphersuiteName::X25519ChachaPolyHkdfSha256,
-        CiphersuiteName::X25519ClassicMcElieceChachaPolyHkdfSha256,
+        CiphersuiteName::X25519_NONE_CHACHAPOLY1305_HKDFSHA256,
+        CiphersuiteName::X25519_CLASSICMCELIECE_CHACHAPOLY1305_HKDFSHA256,
     )
     .is_ok());
 }
@@ -277,8 +277,8 @@ fn compatible_ciphersuites_asymmetric_cmc() {
 fn incompatible_ciphersuites() {
     assert_eq!(
         registration(
-            CiphersuiteName::X25519Mlkem768ChachaPolyHkdfSha256,
-            CiphersuiteName::X25519ChachaPolyHkdfSha256,
+            CiphersuiteName::X25519_MLKEM768_CHACHAPOLY1305_HKDFSHA256,
+            CiphersuiteName::X25519_NONE_CHACHAPOLY1305_HKDFSHA256,
         ),
         Err(TestError::Handshake(HandshakeError::UnsupportedCiphersuite))
     );
@@ -286,8 +286,8 @@ fn incompatible_ciphersuites() {
     #[cfg(feature = "classic-mceliece")]
     assert_eq!(
         registration(
-            CiphersuiteName::X25519ClassicMcElieceChachaPolyHkdfSha256,
-            CiphersuiteName::X25519ChachaPolyHkdfSha256,
+            CiphersuiteName::X25519_CLASSICMCELIECE_CHACHAPOLY1305_HKDFSHA256,
+            CiphersuiteName::X25519_NONE_CHACHAPOLY1305_HKDFSHA256,
         ),
         Err(TestError::Handshake(HandshakeError::UnsupportedCiphersuite))
     );
@@ -327,25 +327,25 @@ fn unsupported_classic_mceliece() {
 fn unsupported_aes() {
     #[cfg(not(feature = "classic-mceliece"))]
     const SUPPORTED_CIPHERSUITES: [CiphersuiteName; 2] = [
-        CiphersuiteName::X25519ChachaPolyHkdfSha256,
-        CiphersuiteName::X25519Mlkem768ChachaPolyHkdfSha256,
+        CiphersuiteName::X25519_NONE_CHACHAPOLY1305_HKDFSHA256,
+        CiphersuiteName::X25519_MLKEM768_CHACHAPOLY1305_HKDFSHA256,
     ];
     #[cfg(not(feature = "classic-mceliece"))]
     const AES_SUITES: [CiphersuiteName; 2] = [
-        CiphersuiteName::X25519AesGcm128HkdfSha256,
-        CiphersuiteName::X25519Mlkem768AesGcm128HkdfSha256,
+        CiphersuiteName::X25519_NONE_AESGCM128_HKDFSHA256,
+        CiphersuiteName::X25519_MLKEM768_AESGCM128_HKDFSHA256,
     ];
     #[cfg(feature = "classic-mceliece")]
     const SUPPORTED_CIPHERSUITES: [CiphersuiteName; 3] = [
-        CiphersuiteName::X25519ChachaPolyHkdfSha256,
-        CiphersuiteName::X25519Mlkem768ChachaPolyHkdfSha256,
-        CiphersuiteName::X25519ClassicMcElieceChachaPolyHkdfSha256,
+        CiphersuiteName::X25519_NONE_CHACHAPOLY1305_HKDFSHA256,
+        CiphersuiteName::X25519_MLKEM768_CHACHAPOLY1305_HKDFSHA256,
+        CiphersuiteName::X25519_CLASSICMCELIECE_CHACHAPOLY1305_HKDFSHA256,
     ];
     #[cfg(feature = "classic-mceliece")]
     const AES_SUITES: [CiphersuiteName; 3] = [
-        CiphersuiteName::X25519AesGcm128HkdfSha256,
-        CiphersuiteName::X25519Mlkem768AesGcm128HkdfSha256,
-        CiphersuiteName::X25519ClassicMcElieceAesGcm128HkdfSha256,
+        CiphersuiteName::X25519_NONE_AESGCM128_HKDFSHA256,
+        CiphersuiteName::X25519_MLKEM768_AESGCM128_HKDFSHA256,
+        CiphersuiteName::X25519_CLASSICMCELIECE_AESGCM128_HKDFSHA256,
     ];
 
     for supported_suite in SUPPORTED_CIPHERSUITES {
@@ -361,4 +361,3 @@ fn unsupported_aes() {
         }
     }
 }
-// TODO: Ciphersuite mismatch errors

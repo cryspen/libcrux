@@ -120,8 +120,8 @@ fn query(responder_ciphersuite_id: CiphersuiteName) {
 
 #[test]
 fn compatibility_query() {
-    query(CiphersuiteName::X25519ChachaPolyHkdfSha256);
-    query(CiphersuiteName::X25519Mlkem768ChachaPolyHkdfSha256);
+    query(CiphersuiteName::X25519_NONE_CHACHAPOLY1305_HKDFSHA256);
+    query(CiphersuiteName::X25519_MLKEM768_CHACHAPOLY1305_HKDFSHA256);
     #[cfg(feature = "classic-mceliece")]
-    query(CiphersuiteName::X25519ClassicMcElieceChachaPolyHkdfSha256);
+    query(CiphersuiteName::X25519_CLASSICMCELIECE_CHACHAPOLY1305_HKDFSHA256);
 }
