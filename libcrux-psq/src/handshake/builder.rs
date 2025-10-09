@@ -10,17 +10,19 @@ use super::{
     initiator::registration::RegistrationInitiator,
     // pqkem::{PQKeyPair, PQPublicKey},
     responder::Responder,
-    HandshakeError as Error,
+    BuilderError as Error,
 };
 
 const RECENT_KEYS_DEFAULT_BOUND: usize = 100;
+const ERROR_ON_CIPHERSUITE_MISMATCH: bool = true;
 
 pub struct BuilderContext<'a, Rng: CryptoRng> {
     rng: Rng,
     context: &'a [u8],
     inner_aad: &'a [u8],
     outer_aad: &'a [u8],
-    recent_keys_upper_bound: usize,
+    responder_recent_keys_upper_bound: usize,
+    responder_error_on_ciphersuite_mismatch: bool,
 }
 
 impl<'a, Rng: CryptoRng> BuilderContext<'a, Rng> {
@@ -31,7 +33,8 @@ impl<'a, Rng: CryptoRng> BuilderContext<'a, Rng> {
             context: &[],
             inner_aad: &[],
             outer_aad: &[],
-            recent_keys_upper_bound: RECENT_KEYS_DEFAULT_BOUND,
+            responder_recent_keys_upper_bound: RECENT_KEYS_DEFAULT_BOUND,
+            responder_error_on_ciphersuite_mismatch: ERROR_ON_CIPHERSUITE_MISMATCH,
         }
     }
 
@@ -56,9 +59,14 @@ impl<'a, Rng: CryptoRng> BuilderContext<'a, Rng> {
     }
 
     pub fn recent_keys_upper_bound(mut self, recent_keys_upper_bound: usize) -> Self {
-        self.recent_keys_upper_bound = recent_keys_upper_bound;
+        self.responder_recent_keys_upper_bound = recent_keys_upper_bound;
         self
     } // builders
+
+    pub fn error_on_ciphersuite_mismatch(mut self, error_on_ciphersuite_mismatch: bool) -> Self {
+        self.responder_error_on_ciphersuite_mismatch = error_on_ciphersuite_mismatch;
+        self
+    }
 
     /// Build a new [`QueryInitiator`].
     ///
@@ -74,6 +82,7 @@ impl<'a, Rng: CryptoRng> BuilderContext<'a, Rng> {
             self.outer_aad,
             self.rng,
         )
+        .map_err(|_| Error::PrincipalBuilderState)
     }
 
     /// Build a new [`RegistrationInitiator`].
@@ -93,6 +102,7 @@ impl<'a, Rng: CryptoRng> BuilderContext<'a, Rng> {
             self.outer_aad,
             self.rng,
         )
+        .map_err(|_| Error::PrincipalBuilderState)
     }
 
     /// Build a new [`Responder`].
@@ -107,7 +117,8 @@ impl<'a, Rng: CryptoRng> BuilderContext<'a, Rng> {
             ciphersuite,
             self.context,
             self.outer_aad,
-            self.recent_keys_upper_bound,
+            self.responder_recent_keys_upper_bound,
+            self.responder_error_on_ciphersuite_mismatch,
             self.rng,
         ))
     }

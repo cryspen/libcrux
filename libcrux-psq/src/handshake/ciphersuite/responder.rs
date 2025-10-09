@@ -159,7 +159,6 @@ impl<'a> ResponderCiphersuite<'a> {
                 responder_x25519_ml_kem768_cha_cha_poly_hkdf_sha256,
             ) => {
                 let DynamicCiphertext::MlKem(inner_ctxt) = ciphertext else {
-                    eprintln!("Unexpected!");
                     return Err(HandshakeError::CryptoError);
                 };
                 let shared_secret = libcrux_ml_kem::mlkem768::decapsulate(

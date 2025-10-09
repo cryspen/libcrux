@@ -6,9 +6,7 @@ use tls_codec::{Deserialize, Serialize, Size, VLByteSlice};
 use crate::{
     aead::AEADKey,
     handshake::{
-        ciphersuite::{
-            initiator::InitiatorCiphersuite, traits::CiphersuiteBase, types::DynamicCiphertext,
-        },
+        ciphersuite::{initiator::InitiatorCiphersuite, traits::CiphersuiteBase},
         derive_k0, derive_k1,
         dhkem::{DHKeyPair, DHPrivateKey, DHPublicKey, DHSharedSecret},
         responder::ResponderRegistrationPayload,
@@ -102,8 +100,6 @@ impl<'a, Rng: CryptoRng> Channel<Error> for RegistrationInitiator<'a, Rng> {
         let pq_encapsulation_serialized = pq_encapsulation
             .tls_serialize_detached()
             .map_err(|_e| Error::OutputBufferShort)?;
-
-        eprintln!("Initiator {pq_encapsulation_serialized:?}");
 
         let tx1 = tx1(
             &state.tx0,

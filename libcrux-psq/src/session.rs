@@ -22,7 +22,7 @@ use crate::{
 };
 
 /// Session related errors
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub enum SessionError {
     /// An error during session creation
     IntoSession,

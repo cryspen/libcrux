@@ -8,8 +8,7 @@ use tls_codec::{
 use crate::{
     aead::AEADKey,
     handshake::ciphersuite::{
-        responder::ResponderCiphersuite, traits::CiphersuiteBase, types::DynamicCiphertext,
-        CiphersuiteName,
+        responder::ResponderCiphersuite, traits::CiphersuiteBase, CiphersuiteName,
     },
     session::{Session, SessionError},
     traits::{Channel, IntoSession},
@@ -66,6 +65,7 @@ pub struct Responder<'a, Rng: CryptoRng> {
     context: &'a [u8],
     aad: &'a [u8],
     rng: Rng,
+    error_on_ciphersuite_mismatch: bool,
 }
 
 #[derive(TlsDeserialize, TlsSize)]
@@ -86,6 +86,7 @@ impl<'a, Rng: CryptoRng> Responder<'a, Rng> {
         context: &'a [u8],
         aad: &'a [u8],
         recent_keys_upper_bound: usize,
+        error_on_ciphersuite_mismatch: bool,
         rng: Rng,
     ) -> Self {
         Self {
@@ -97,6 +98,7 @@ impl<'a, Rng: CryptoRng> Responder<'a, Rng> {
             rng,
             recent_keys: VecDeque::with_capacity(recent_keys_upper_bound),
             recent_keys_upper_bound,
+            error_on_ciphersuite_mismatch,
         }
     }
 
@@ -169,16 +171,9 @@ impl<'a, Rng: CryptoRng> Responder<'a, Rng> {
         initiator_inner_message: &HandshakeMessage,
     ) -> Result<(InitiatorInnerPayload, Transcript, AEADKey, bool), Error> {
         // Whether we attempt to do a decapsulation is decided by the working ciphersuite.
-        eprintln!(
-            "Responder: {:?}",
-            initiator_inner_message.pq_encapsulation.as_ref()
-        );
         let pq_encapsulation = self
             .working_ciphersuite
             .deserialize_encapsulation(initiator_inner_message.pq_encapsulation.as_ref())?;
-        if !matches!(pq_encapsulation, Some(DynamicCiphertext::MlKem(_))) {
-            panic!("Unexpected in Responder");
-        }
 
         let pq_shared_secret = pq_encapsulation
             .as_ref()
@@ -203,8 +198,6 @@ impl<'a, Rng: CryptoRng> Responder<'a, Rng> {
             pq_shared_secret,
             &tx1,
         )?;
-
-        eprintln!("Responder : {tx1:?}");
 
         let inner_payload: InitiatorInnerPayload = k1.decrypt_deserialize(
             initiator_inner_message.ciphertext.as_slice(),
@@ -296,6 +289,15 @@ impl<'a, Rng: CryptoRng> Responder<'a, Rng> {
 
         Ok(out_msg.tls_serialized_len())
     }
+
+    fn ciphersuite_mismatch(&mut self, bytes_deserialized: usize) -> Result<(usize, usize), Error> {
+        if self.error_on_ciphersuite_mismatch {
+            Err(Error::UnsupportedCiphersuite)
+        } else {
+            self.state = ResponderState::Initial;
+            Ok((bytes_deserialized, 0))
+        }
+    }
 }
 
 impl<'a, Rng: CryptoRng> Channel<Error> for Responder<'a, Rng> {
@@ -348,9 +350,7 @@ impl<'a, Rng: CryptoRng> Channel<Error> for Responder<'a, Rng> {
         {
             ciphersuite
         } else {
-            // We can't process this message and return to the initial state.
-            self.state = ResponderState::Initial;
-            return Ok((bytes_deserialized, 0));
+            return self.ciphersuite_mismatch(bytes_deserialized);
         };
 
         // Check that the ephemeral key was not in the most recent keys.
@@ -407,12 +407,8 @@ impl<'a, Rng: CryptoRng> Channel<Error> for Responder<'a, Rng> {
                         Ok((bytes_deserialized, out_bytes_written))
                     }
                     Err(Error::UnsupportedCiphersuite) => {
-                        // We can't deal with this message and ignore it.
-                        self.state = ResponderState::Initial;
-
-                        Ok((bytes_deserialized, 0))
+                        self.ciphersuite_mismatch(bytes_deserialized)
                     }
-
                     Err(e) => Err(e),
                 }
             }

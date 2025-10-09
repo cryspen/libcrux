@@ -163,10 +163,8 @@
 //! ```
 #![allow(missing_docs)]
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub enum HandshakeError {
-    CiphersuiteBuilderState,
-    PrincipalBuilderState,
     Serialize(tls_codec::Error),
     Deserialize(tls_codec::Error),
     CryptoError,
@@ -181,6 +179,13 @@ pub enum HandshakeError {
     OtherError,
     IdentifierMismatch,
     InvalidMessage,
+}
+
+#[derive(Debug, PartialEq)]
+pub enum BuilderError {
+    CiphersuiteBuilderState,
+    PrincipalBuilderState,
+    UnsupportedCiphersuite,
 }
 
 impl From<AEADError> for HandshakeError {
@@ -299,7 +304,7 @@ pub(super) fn derive_k1(
 
     let ecdh_shared_secret = DHSharedSecret::derive(own_longterm_key, peer_longterm_pk)?;
 
-    AEADKey::new(
+    let k1 = AEADKey::new(
         &K1Ikm {
             k0,
             ecdh_shared_secret: &ecdh_shared_secret,
@@ -307,7 +312,8 @@ pub(super) fn derive_k1(
         },
         &tx1,
     )
-    .map_err(|e| e.into())
+    .map_err(|e| e.into());
+    k1
 }
 
 #[derive(TlsSerializeBytes, TlsSize)]

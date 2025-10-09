@@ -1,6 +1,5 @@
 use std::io::Cursor;
 
-use libcrux_kem::MlKem768Ciphertext;
 use tls_codec::{Deserialize, TlsDeserialize, TlsSerialize, TlsSize};
 
 use crate::handshake::{
@@ -68,20 +67,18 @@ impl CiphersuiteName {
         match self {
             CiphersuiteName::X25519ChachaPolyHkdfSha256 => Ok(None),
             CiphersuiteName::X25519Mlkem768ChachaPolyHkdfSha256 => {
-                let enc = DynamicCiphertext::tls_deserialize(&mut Cursor::new(bytes))
+                let enc = Option::<DynamicCiphertext>::tls_deserialize(&mut Cursor::new(bytes))
                     .map_err(|e| HandshakeError::Deserialize(e))?;
 
-                Ok(Some(enc))
+                Ok(enc)
             }
             #[cfg(feature = "classic-mceliece")]
             CiphersuiteName::X25519ClassicMcElieceChachaPolyHkdfSha256 => {
                 use std::io::Cursor;
 
-                use crate::classic_mceliece::Ciphertext;
-
-                let enc = DynamicCiphertext::tls_deserialize(&mut Cursor::new(bytes))
+                let enc = Option::<DynamicCiphertext>::tls_deserialize(&mut Cursor::new(bytes))
                     .map_err(|e| HandshakeError::Deserialize(e))?;
-                Ok(Some(enc))
+                Ok(enc)
             }
             #[cfg(not(feature = "classic-mceliece"))]
             // This should never happen.
