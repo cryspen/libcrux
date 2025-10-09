@@ -325,6 +325,9 @@ pub(crate) fn encrypt<S: State>(
     ciphertext: &mut [u8],
     tag: &mut [u8],
 ) -> Result<(), EncryptError> {
+    debug_assert!(nonce.len() == NONCE_LEN);
+    debug_assert!(tag.len() == TAG_LEN);
+
     // plaintext length check
     if plaintext.len() / crate::aes::AES_BLOCK_LEN >= (u32::MAX - 1) as usize {
         return Err(EncryptError::PlaintextTooLong);
@@ -334,8 +337,6 @@ pub(crate) fn encrypt<S: State>(
     if ciphertext.len() != plaintext.len() {
         return Err(EncryptError::WrongCiphertextLength);
     }
-    debug_assert!(nonce.len() == NONCE_LEN);
-    debug_assert!(tag.len() == TAG_LEN);
 
     let mut st = S::init(key);
     st.set_nonce(nonce);
@@ -353,6 +354,9 @@ pub(crate) fn decrypt<S: State>(
     tag: &[u8],
     plaintext: &mut [u8],
 ) -> Result<(), DecryptError> {
+    debug_assert!(nonce.len() == NONCE_LEN);
+    debug_assert!(tag.len() == TAG_LEN);
+
     // plaintext length check
     if plaintext.len() / crate::aes::AES_BLOCK_LEN >= (u32::MAX - 1) as usize {
         return Err(DecryptError::PlaintextTooLong);
@@ -362,8 +366,6 @@ pub(crate) fn decrypt<S: State>(
     if ciphertext.len() != plaintext.len() {
         return Err(DecryptError::WrongPlaintextLength);
     }
-    debug_assert!(nonce.len() == NONCE_LEN);
-    debug_assert!(tag.len() == TAG_LEN);
 
     let mut st = S::init(key);
     st.set_nonce(nonce);
