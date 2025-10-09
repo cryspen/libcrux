@@ -36,11 +36,12 @@ pub(crate) fn entry<const K: usize, Vector: Operations>(
 #[hax_lib::requires(fstar!(r#"Spec.MLKEM.is_rank $K /\
     Seq.length ${A_transpose} == v $K * v $K"#))]
 #[hax_lib::ensures(|res|
-    fstar!(r#"let (matrix_A, valid) = Spec.MLKEM.sample_matrix_A_ntt (Seq.slice $seed 0 32) in
+    fstar!(r#"
         Seq.length ${A_transpose}_future == v $K * v $K /\
+        (let (matrix_A, valid) = Spec.MLKEM.sample_matrix_A_ntt (Seq.slice $seed 0 32) in
         valid ==> (
         if $transpose then Libcrux_ml_kem.Polynomial.to_spec_matrix_t ${A_transpose}_future == matrix_A
-        else Libcrux_ml_kem.Polynomial.to_spec_matrix_t (${A_transpose}_future <: t_Array _ ($K *! $K)) == Spec.MLKEM.matrix_transpose matrix_A)"#)
+        else Libcrux_ml_kem.Polynomial.to_spec_matrix_t (${A_transpose}_future <: t_Array _ ($K *! $K)) == Spec.MLKEM.matrix_transpose matrix_A))"#)
 )]
 pub(crate) fn sample_matrix_A<const K: usize, Vector: Operations, Hasher: Hash>(
     A_transpose: &mut [PolynomialRingElement<Vector>],

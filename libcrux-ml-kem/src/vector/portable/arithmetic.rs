@@ -121,7 +121,7 @@ pub(crate) fn negate(vec: &mut PortableVector) {
             fstar!(
                 r#"
               (forall j. j < v i ==> v (Seq.index ${vec}.f_elements j) ==
-                                     - v (Seq.index ${vec}.f_elements j)) /\
+                                     - v (Seq.index ${_vec0}.f_elements j)) /\
               (forall j. j >= v i ==> (Seq.index ${vec}.f_elements j) == 
                                       (Seq.index ${_vec0}.f_elements j))"#
             )
