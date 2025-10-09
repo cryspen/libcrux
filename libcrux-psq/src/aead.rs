@@ -6,15 +6,9 @@ use tls_codec::{
     TlsSize,
 };
 
-/// The AEAD to be used.
-pub enum AEAD {
-    /// The ChaCha20Poly1205 AEAD
-    ChaChaPoly1305,
-}
-
 #[derive(Default, Clone, TlsSerialize, TlsDeserialize, TlsSerializeBytes, TlsSize)]
 /// An AEAD key.
-pub struct AEADKey([u8; KEY_LEN], #[tls_codec(skip)] [u8; NONCE_LEN]);
+pub(crate) struct AEADKey([u8; KEY_LEN], #[tls_codec(skip)] [u8; NONCE_LEN]);
 
 impl std::fmt::Debug for AEADKey {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -24,7 +18,7 @@ impl std::fmt::Debug for AEADKey {
 
 /// Errors arising in the creation or use of AEAD keys
 #[derive(Debug)]
-pub enum AEADError {
+pub(crate) enum AEADError {
     /// An error occurred in the underlying AEAD implementation.
     CryptoError,
     /// An error during serialization.

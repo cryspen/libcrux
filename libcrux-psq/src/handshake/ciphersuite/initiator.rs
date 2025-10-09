@@ -33,14 +33,14 @@ impl<'a> CiphersuiteBase for InitiatorCiphersuite<'a> {
     fn name(&self) -> CiphersuiteName {
         match self {
             InitiatorCiphersuite::X25519NoneChaCha20Poly1305HkdfSha256(_) => {
-                CiphersuiteName::X25519_NONE_CHACHAPOLY1305_HKDFSHA256
+                CiphersuiteName::X25519_NONE_CHACHA20POLY1305_HKDFSHA256
             }
             InitiatorCiphersuite::X25519MlKem768ChaCha20Poly1305HkdfSha256(_) => {
-                CiphersuiteName::X25519_MLKEM768_CHACHAPOLY1305_HKDFSHA256
+                CiphersuiteName::X25519_MLKEM768_CHACHA20POLY1305_HKDFSHA256
             }
             #[cfg(feature = "classic-mceliece")]
             InitiatorCiphersuite::X25519ClassicMcElieceChaCha20Poly1305HkdfSha256(_) => {
-                CiphersuiteName::X25519_CLASSICMCELIECE_CHACHAPOLY1305_HKDFSHA256
+                CiphersuiteName::X25519_CLASSICMCELIECE_CHACHA20POLY1305_HKDFSHA256
             }
             #[cfg(not(feature = "classic-mceliece"))]
             InitiatorCiphersuite::X25519ClassicMcElieceChaCha20Poly1305HkdfSha256(_) => {
@@ -247,5 +247,3 @@ pub struct InitiatorX25519ClassicMcElieceChaCha20Poly1305HkdfSha256<'a> {
     pub peer_longterm_ecdh_pk: &'a DHPublicKey,
     pub peer_longterm_cmc_pk: &'a PublicKey,
 }
-#[cfg(not(feature = "classic-mceliece"))]
-pub struct InitiatorX25519ClassicMcElieceChaCha20Poly1305HkdfSha256 {}

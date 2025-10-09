@@ -7,7 +7,7 @@ pub mod registration;
 
 #[derive(TlsSerialize, TlsSize)]
 #[repr(u8)]
-pub enum InitiatorOuterPayloadOut<'a> {
+pub(crate) enum InitiatorOuterPayloadOut<'a> {
     Query(VLByteSlice<'a>),
     Registration(HandshakeMessageOut<'a>),
 }

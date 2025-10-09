@@ -49,11 +49,11 @@ impl<'a> CiphersuiteBase for ResponderCiphersuite<'a> {
     fn name(&self) -> CiphersuiteName {
         match self {
             ResponderCiphersuite::X25519MlKem768ChaCha20Poly1305HkdfSha256(_) => {
-                CiphersuiteName::X25519_MLKEM768_CHACHAPOLY1305_HKDFSHA256
+                CiphersuiteName::X25519_MLKEM768_CHACHA20POLY1305_HKDFSHA256
             }
             #[cfg(feature = "classic-mceliece")]
             ResponderCiphersuite::X25519ClassicMcElieceChaCha20Poly1305HkdfSha256(_) => {
-                CiphersuiteName::X25519_CLASSICMCELIECE_CHACHAPOLY1305_HKDFSHA256
+                CiphersuiteName::X25519_CLASSICMCELIECE_CHACHA20POLY1305_HKDFSHA256
             }
             #[cfg(not(feature = "classic-mceliece"))]
             ResponderCiphersuite::X25519ClassicMcElieceChaCha20Poly1305HkdfSha256(_) => {
@@ -61,7 +61,7 @@ impl<'a> CiphersuiteBase for ResponderCiphersuite<'a> {
                 unreachable!("unsupported ciphersuite")
             }
             ResponderCiphersuite::X25519NoneChaCha20Poly1305HkdfSha256(_) => {
-                CiphersuiteName::X25519_NONE_CHACHAPOLY1305_HKDFSHA256
+                CiphersuiteName::X25519_NONE_CHACHA20POLY1305_HKDFSHA256
             }
         }
     }

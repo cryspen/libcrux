@@ -7,16 +7,16 @@ use crate::handshake::{
 };
 
 use super::{
+    builders::BuilderError as Error,
     initiator::registration::RegistrationInitiator,
     // pqkem::{PQKeyPair, PQPublicKey},
     responder::Responder,
-    BuilderError as Error,
 };
 
 const RECENT_KEYS_DEFAULT_BOUND: usize = 100;
 const ERROR_ON_CIPHERSUITE_MISMATCH: bool = true;
 
-pub struct BuilderContext<'a, Rng: CryptoRng> {
+pub struct PrincipalBuilder<'a, Rng: CryptoRng> {
     rng: Rng,
     context: &'a [u8],
     inner_aad: &'a [u8],
@@ -25,7 +25,7 @@ pub struct BuilderContext<'a, Rng: CryptoRng> {
     responder_error_on_ciphersuite_mismatch: bool,
 }
 
-impl<'a, Rng: CryptoRng> BuilderContext<'a, Rng> {
+impl<'a, Rng: CryptoRng> PrincipalBuilder<'a, Rng> {
     /// Create a new builder.
     pub fn new(rng: Rng) -> Self {
         Self {

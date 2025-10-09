@@ -2,15 +2,9 @@ use libcrux_ml_kem::mlkem768::MlKem768KeyPair;
 #[cfg(feature = "classic-mceliece")]
 use libcrux_psq::classic_mceliece::KeyPair;
 use libcrux_psq::{
-    handshake::{
-        ciphersuite::{
-            builder::CiphersuiteBuilder, types::DynamicEncapsulationKeyRef, CiphersuiteName,
-        },
-        dhkem::DHKeyPair,
-        *,
-    },
+    handshake::{builders::*, ciphersuites::*, types::*, HandshakeError},
     session::{Session, SessionError},
-    traits::{Channel, IntoSession},
+    Channel, IntoSession,
 };
 
 struct CommonSetup {
@@ -52,16 +46,16 @@ impl CommonSetup {
         name: CiphersuiteName,
     ) -> Option<DynamicEncapsulationKeyRef<'_>> {
         match name {
-            CiphersuiteName::X25519_NONE_CHACHAPOLY1305_HKDFSHA256 => None,
-            CiphersuiteName::X25519_MLKEM768_CHACHAPOLY1305_HKDFSHA256 => Some(
+            CiphersuiteName::X25519_NONE_CHACHA20POLY1305_HKDFSHA256 => None,
+            CiphersuiteName::X25519_MLKEM768_CHACHA20POLY1305_HKDFSHA256 => Some(
                 DynamicEncapsulationKeyRef::MlKem(self.responder_mlkem_keys.public_key()),
             ),
             #[cfg(feature = "classic-mceliece")]
-            CiphersuiteName::X25519_CLASSICMCELIECE_CHACHAPOLY1305_HKDFSHA256 => {
+            CiphersuiteName::X25519_CLASSICMCELIECE_CHACHA20POLY1305_HKDFSHA256 => {
                 Some(DynamicEncapsulationKeyRef::CMC(&self.responder_cmc_keys.pk))
             }
             #[cfg(not(feature = "classic-mceliece"))]
-            CiphersuiteName::X25519_CLASSICMCELIECE_CHACHAPOLY1305_HKDFSHA256 => {
+            CiphersuiteName::X25519_CLASSICMCELIECE_CHACHA20POLY1305_HKDFSHA256 => {
                 panic!("unsupported ciphersuite")
             }
             CiphersuiteName::X25519_NONE_AESGCM128_HKDFSHA256
@@ -126,7 +120,7 @@ fn registration(
     }
     let initiator_ciphersuite = initiator_cbuilder.build_initiator_ciphersuite()?;
 
-    let mut initiator = builder::BuilderContext::new(rand::rng())
+    let mut initiator = PrincipalBuilder::new(rand::rng())
         .outer_aad(aad_initiator_outer)
         .inner_aad(aad_initiator_inner)
         .context(ctx)
@@ -147,7 +141,7 @@ fn registration(
     }
     let responder_ciphersuite = responder_cbuilder.build_responder_ciphersuite()?;
 
-    let mut responder = builder::BuilderContext::new(rand::rng())
+    let mut responder = PrincipalBuilder::new(rand::rng())
         .context(ctx)
         .outer_aad(aad_responder)
         .recent_keys_upper_bound(30)
@@ -236,21 +230,21 @@ fn registration(
 fn compatibility_matching_ciphersuites() {
     // Matching ciphersuites work
     assert!(registration(
-        CiphersuiteName::X25519_NONE_CHACHAPOLY1305_HKDFSHA256,
-        CiphersuiteName::X25519_NONE_CHACHAPOLY1305_HKDFSHA256,
+        CiphersuiteName::X25519_NONE_CHACHA20POLY1305_HKDFSHA256,
+        CiphersuiteName::X25519_NONE_CHACHA20POLY1305_HKDFSHA256,
     )
     .is_ok());
 
     assert!(registration(
-        CiphersuiteName::X25519_MLKEM768_CHACHAPOLY1305_HKDFSHA256,
-        CiphersuiteName::X25519_MLKEM768_CHACHAPOLY1305_HKDFSHA256,
+        CiphersuiteName::X25519_MLKEM768_CHACHA20POLY1305_HKDFSHA256,
+        CiphersuiteName::X25519_MLKEM768_CHACHA20POLY1305_HKDFSHA256,
     )
     .is_ok());
 
     #[cfg(feature = "classic-mceliece")]
     assert!(registration(
-        CiphersuiteName::X25519_CLASSICMCELIECE_CHACHAPOLY1305_HKDFSHA256,
-        CiphersuiteName::X25519_CLASSICMCELIECE_CHACHAPOLY1305_HKDFSHA256,
+        CiphersuiteName::X25519_CLASSICMCELIECE_CHACHA20POLY1305_HKDFSHA256,
+        CiphersuiteName::X25519_CLASSICMCELIECE_CHACHA20POLY1305_HKDFSHA256,
     )
     .is_ok());
 }
@@ -258,8 +252,8 @@ fn compatibility_matching_ciphersuites() {
 #[test]
 fn compatible_ciphersuites_asymmetric_mlkem() {
     assert!(registration(
-        CiphersuiteName::X25519_NONE_CHACHAPOLY1305_HKDFSHA256,
-        CiphersuiteName::X25519_MLKEM768_CHACHAPOLY1305_HKDFSHA256,
+        CiphersuiteName::X25519_NONE_CHACHA20POLY1305_HKDFSHA256,
+        CiphersuiteName::X25519_MLKEM768_CHACHA20POLY1305_HKDFSHA256,
     )
     .is_ok());
 }
@@ -267,8 +261,8 @@ fn compatible_ciphersuites_asymmetric_mlkem() {
 #[cfg(feature = "classic-mceliece")]
 fn compatible_ciphersuites_asymmetric_cmc() {
     assert!(registration(
-        CiphersuiteName::X25519_NONE_CHACHAPOLY1305_HKDFSHA256,
-        CiphersuiteName::X25519_CLASSICMCELIECE_CHACHAPOLY1305_HKDFSHA256,
+        CiphersuiteName::X25519_NONE_CHACHA20POLY1305_HKDFSHA256,
+        CiphersuiteName::X25519_CLASSICMCELIECE_CHACHA20POLY1305_HKDFSHA256,
     )
     .is_ok());
 }
@@ -277,8 +271,8 @@ fn compatible_ciphersuites_asymmetric_cmc() {
 fn incompatible_ciphersuites() {
     assert_eq!(
         registration(
-            CiphersuiteName::X25519_MLKEM768_CHACHAPOLY1305_HKDFSHA256,
-            CiphersuiteName::X25519_NONE_CHACHAPOLY1305_HKDFSHA256,
+            CiphersuiteName::X25519_MLKEM768_CHACHA20POLY1305_HKDFSHA256,
+            CiphersuiteName::X25519_NONE_CHACHA20POLY1305_HKDFSHA256,
         ),
         Err(TestError::Handshake(HandshakeError::UnsupportedCiphersuite))
     );
@@ -286,8 +280,8 @@ fn incompatible_ciphersuites() {
     #[cfg(feature = "classic-mceliece")]
     assert_eq!(
         registration(
-            CiphersuiteName::X25519_CLASSICMCELIECE_CHACHAPOLY1305_HKDFSHA256,
-            CiphersuiteName::X25519_NONE_CHACHAPOLY1305_HKDFSHA256,
+            CiphersuiteName::X25519_CLASSICMCELIECE_CHACHA20POLY1305_HKDFSHA256,
+            CiphersuiteName::X25519_NONE_CHACHA20POLY1305_HKDFSHA256,
         ),
         Err(TestError::Handshake(HandshakeError::UnsupportedCiphersuite))
     );
@@ -299,24 +293,24 @@ fn unsupported_classic_mceliece() {
     // Trying to build an initiator or
     assert_eq!(
         registration(
-            CiphersuiteName::X25519ChachaPolyHkdfSha256,
-            CiphersuiteName::X25519ClassicMcElieceChachaPolyHkdfSha256,
+            CiphersuiteName::X25519_NONE_CHACHA20POLY1305_HKDFSHA256,
+            CiphersuiteName::X25519_CLASSICMCELIECE_CHACHA20POLY1305_HKDFSHA256,
         ),
         Err(TestError::Builder(BuilderError::UnsupportedCiphersuite))
     );
 
     assert_eq!(
         registration(
-            CiphersuiteName::X25519ClassicMcElieceChachaPolyHkdfSha256,
-            CiphersuiteName::X25519ChachaPolyHkdfSha256,
+            CiphersuiteName::X25519_CLASSICMCELIECE_CHACHA20POLY1305_HKDFSHA256,
+            CiphersuiteName::X25519_NONE_CHACHA20POLY1305_HKDFSHA256,
         ),
         Err(TestError::Builder(BuilderError::UnsupportedCiphersuite))
     );
 
     assert_eq!(
         registration(
-            CiphersuiteName::X25519ClassicMcElieceChachaPolyHkdfSha256,
-            CiphersuiteName::X25519ClassicMcElieceChachaPolyHkdfSha256,
+            CiphersuiteName::X25519_CLASSICMCELIECE_CHACHA20POLY1305_HKDFSHA256,
+            CiphersuiteName::X25519_CLASSICMCELIECE_CHACHA20POLY1305_HKDFSHA256,
         ),
         Err(TestError::Builder(BuilderError::UnsupportedCiphersuite))
     );
@@ -327,8 +321,8 @@ fn unsupported_classic_mceliece() {
 fn unsupported_aes() {
     #[cfg(not(feature = "classic-mceliece"))]
     const SUPPORTED_CIPHERSUITES: [CiphersuiteName; 2] = [
-        CiphersuiteName::X25519_NONE_CHACHAPOLY1305_HKDFSHA256,
-        CiphersuiteName::X25519_MLKEM768_CHACHAPOLY1305_HKDFSHA256,
+        CiphersuiteName::X25519_NONE_CHACHA20POLY1305_HKDFSHA256,
+        CiphersuiteName::X25519_MLKEM768_CHACHA20POLY1305_HKDFSHA256,
     ];
     #[cfg(not(feature = "classic-mceliece"))]
     const AES_SUITES: [CiphersuiteName; 2] = [
@@ -337,9 +331,9 @@ fn unsupported_aes() {
     ];
     #[cfg(feature = "classic-mceliece")]
     const SUPPORTED_CIPHERSUITES: [CiphersuiteName; 3] = [
-        CiphersuiteName::X25519_NONE_CHACHAPOLY1305_HKDFSHA256,
-        CiphersuiteName::X25519_MLKEM768_CHACHAPOLY1305_HKDFSHA256,
-        CiphersuiteName::X25519_CLASSICMCELIECE_CHACHAPOLY1305_HKDFSHA256,
+        CiphersuiteName::X25519_NONE_CHACHA20POLY1305_HKDFSHA256,
+        CiphersuiteName::X25519_MLKEM768_CHACHA20POLY1305_HKDFSHA256,
+        CiphersuiteName::X25519_CLASSICMCELIECE_CHACHA20POLY1305_HKDFSHA256,
     ];
     #[cfg(feature = "classic-mceliece")]
     const AES_SUITES: [CiphersuiteName; 3] = [

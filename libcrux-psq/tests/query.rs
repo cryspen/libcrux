@@ -1,15 +1,15 @@
 use libcrux_ml_kem::mlkem768::MlKem768KeyPair;
 #[cfg(feature = "classic-mceliece")]
 use libcrux_psq::classic_mceliece::KeyPair;
+
 use libcrux_psq::{
     handshake::{
-        builder,
-        ciphersuite::{builder::CiphersuiteBuilder, CiphersuiteName},
-        dhkem::DHKeyPair,
+        builders::{CiphersuiteBuilder, PrincipalBuilder},
+        ciphersuites::CiphersuiteName,
+        types::DHKeyPair,
     },
-    traits::*,
+    Channel,
 };
-
 use rand::rngs::ThreadRng;
 
 struct CommonSetup {
@@ -51,7 +51,7 @@ fn query(responder_ciphersuite_id: CiphersuiteName) {
     let mut payload_buf_initiator = vec![0u8; 4096];
 
     // Setup initiator
-    let mut initiator = builder::BuilderContext::new(&mut setup.rng)
+    let mut initiator = PrincipalBuilder::new(&mut setup.rng)
         .outer_aad(aad_initiator)
         .context(ctx)
         .build_query_initiator(&setup.responder_ecdh_keys.pk)
@@ -72,7 +72,7 @@ fn query(responder_ciphersuite_id: CiphersuiteName) {
     }
     let responder_ciphersuite = responder_cbuilder.build_responder_ciphersuite().unwrap();
 
-    let mut responder = builder::BuilderContext::new(&mut setup.rng)
+    let mut responder = PrincipalBuilder::new(&mut setup.rng)
         .context(ctx)
         .outer_aad(aad_responder)
         .recent_keys_upper_bound(30)
@@ -120,8 +120,8 @@ fn query(responder_ciphersuite_id: CiphersuiteName) {
 
 #[test]
 fn compatibility_query() {
-    query(CiphersuiteName::X25519_NONE_CHACHAPOLY1305_HKDFSHA256);
-    query(CiphersuiteName::X25519_MLKEM768_CHACHAPOLY1305_HKDFSHA256);
+    query(CiphersuiteName::X25519_NONE_CHACHA20POLY1305_HKDFSHA256);
+    query(CiphersuiteName::X25519_MLKEM768_CHACHA20POLY1305_HKDFSHA256);
     #[cfg(feature = "classic-mceliece")]
-    query(CiphersuiteName::X25519_CLASSICMCELIECE_CHACHAPOLY1305_HKDFSHA256);
+    query(CiphersuiteName::X25519_CLASSICMCELIECE_CHACHA20POLY1305_HKDFSHA256);
 }

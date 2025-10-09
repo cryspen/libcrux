@@ -7,6 +7,7 @@ use libcrux_kem::{MlKem768PrivateKey, MlKem768PublicKey};
 #[cfg(feature = "classic-mceliece")]
 use crate::classic_mceliece::{PublicKey, SecretKey};
 use crate::handshake::{
+    builders::BuilderError,
     ciphersuite::{
         initiator::{
             InitiatorCiphersuite, InitiatorX25519ChaCha20Poly1305HkdfSha256,
@@ -19,7 +20,6 @@ use crate::handshake::{
         CiphersuiteName,
     },
     dhkem::{DHKeyPair, DHPublicKey},
-    BuilderError,
 };
 
 /// A builder for PSQ handshake ciphersuites.
@@ -118,7 +118,7 @@ impl<'a> CiphersuiteBuilder<'a> {
     pub fn build_initiator_ciphersuite(self) -> Result<InitiatorCiphersuite<'a>, BuilderError> {
         let (peer_longterm_ecdh_pk, longterm_ecdh_keys) = self.check_common_keys_initiator()?;
         match self.name {
-            CiphersuiteName::X25519_NONE_CHACHAPOLY1305_HKDFSHA256 => {
+            CiphersuiteName::X25519_NONE_CHACHA20POLY1305_HKDFSHA256 => {
                 Ok(InitiatorCiphersuite::X25519NoneChaCha20Poly1305HkdfSha256(
                     InitiatorX25519ChaCha20Poly1305HkdfSha256 {
                         longterm_ecdh_keys,
@@ -126,7 +126,7 @@ impl<'a> CiphersuiteBuilder<'a> {
                     },
                 ))
             }
-            CiphersuiteName::X25519_MLKEM768_CHACHAPOLY1305_HKDFSHA256 => {
+            CiphersuiteName::X25519_MLKEM768_CHACHA20POLY1305_HKDFSHA256 => {
                 let Some(peer_longterm_mlkem_pk) = self.peer_longterm_mlkem_pk else {
                     return Err(BuilderError::CiphersuiteBuilderState);
                 };
@@ -141,7 +141,7 @@ impl<'a> CiphersuiteBuilder<'a> {
                 )
             }
             #[cfg(feature = "classic-mceliece")]
-            CiphersuiteName::X25519_CLASSICMCELIECE_CHACHAPOLY1305_HKDFSHA256 => {
+            CiphersuiteName::X25519_CLASSICMCELIECE_CHACHA20POLY1305_HKDFSHA256 => {
                 use crate::handshake::ciphersuite::initiator::InitiatorX25519ClassicMcElieceChaCha20Poly1305HkdfSha256;
 
                 let Some(peer_longterm_cmc_pk) = self.peer_longterm_cmc_pk else {
@@ -158,7 +158,7 @@ impl<'a> CiphersuiteBuilder<'a> {
                 )
             }
             #[cfg(not(feature = "classic-mceliece"))]
-            CiphersuiteName::X25519_CLASSICMCELIECE_CHACHAPOLY1305_HKDFSHA256 => {
+            CiphersuiteName::X25519_CLASSICMCELIECE_CHACHA20POLY1305_HKDFSHA256 => {
                 eprintln!("Error building InitiatorCiphersuite: Classic McEliece ciphersuites are only available when using the `classic-mceliece` feature.");
                 return Err(BuilderError::UnsupportedCiphersuite);
             }
@@ -178,12 +178,12 @@ impl<'a> CiphersuiteBuilder<'a> {
         };
 
         match self.name {
-            CiphersuiteName::X25519_NONE_CHACHAPOLY1305_HKDFSHA256 => {
+            CiphersuiteName::X25519_NONE_CHACHA20POLY1305_HKDFSHA256 => {
                 Ok(ResponderCiphersuite::X25519NoneChaCha20Poly1305HkdfSha256(
                     ResponderX25519ChaCha20Poly1305HkdfSha256 { longterm_ecdh_keys },
                 ))
             }
-            CiphersuiteName::X25519_MLKEM768_CHACHAPOLY1305_HKDFSHA256 => {
+            CiphersuiteName::X25519_MLKEM768_CHACHA20POLY1305_HKDFSHA256 => {
                 let Some(longterm_pq_encapsulation_key) = self.longterm_mlkem_encapsulation_key
                 else {
                     return Err(BuilderError::CiphersuiteBuilderState);
@@ -204,7 +204,7 @@ impl<'a> CiphersuiteBuilder<'a> {
                 )
             }
             #[cfg(feature = "classic-mceliece")]
-            CiphersuiteName::X25519_CLASSICMCELIECE_CHACHAPOLY1305_HKDFSHA256 => {
+            CiphersuiteName::X25519_CLASSICMCELIECE_CHACHA20POLY1305_HKDFSHA256 => {
                 use crate::handshake::ciphersuite::responder::ResponderX25519ClassicMcElieceChaCha20Poly1305HkdfSha256;
 
                 let Some(longterm_pq_encapsulation_key) = self.longterm_cmc_encapsulation_key
@@ -227,7 +227,7 @@ impl<'a> CiphersuiteBuilder<'a> {
                 )
             }
             #[cfg(not(feature = "classic-mceliece"))]
-            CiphersuiteName::X25519_CLASSICMCELIECE_CHACHAPOLY1305_HKDFSHA256 => {
+            CiphersuiteName::X25519_CLASSICMCELIECE_CHACHA20POLY1305_HKDFSHA256 => {
                 eprintln!("Error building InitiatorCiphersuite: Classic McEliece ciphersuites are only available when using the `classic-mceliece` feature.");
                 return Err(BuilderError::UnsupportedCiphersuite);
             }

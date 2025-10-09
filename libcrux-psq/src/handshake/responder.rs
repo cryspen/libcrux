@@ -25,7 +25,7 @@ use super::{
 
 #[derive(TlsDeserialize, TlsSize)]
 #[repr(u8)]
-pub enum InitiatorOuterPayload {
+pub(crate) enum InitiatorOuterPayload {
     Query(VLBytes),
     Registration(HandshakeMessage),
 }
@@ -92,7 +92,7 @@ impl<'a, Rng: CryptoRng> Responder<'a, Rng> {
         Self {
             state: ResponderState::Initial {},
             ciphersuite,
-            working_ciphersuite: CiphersuiteName::X25519_NONE_CHACHAPOLY1305_HKDFSHA256,
+            working_ciphersuite: CiphersuiteName::X25519_NONE_CHACHA20POLY1305_HKDFSHA256,
             context,
             aad,
             rng,
@@ -279,7 +279,7 @@ impl<'a, Rng: CryptoRng> Responder<'a, Rng> {
             tag,
             aad: VLByteSlice(self.aad),
             pq_encapsulation: VLByteSlice(&[]),
-            ciphersuite: CiphersuiteName::X25519_NONE_CHACHAPOLY1305_HKDFSHA256,
+            ciphersuite: CiphersuiteName::X25519_NONE_CHACHA20POLY1305_HKDFSHA256,
         };
 
         out_msg
