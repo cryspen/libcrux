@@ -1,7 +1,7 @@
 //! This module provides a trait for a generic authenticator.
 use tls_codec::{Deserialize, Serialize};
 
-use crate::Error;
+use super::Error;
 
 /// A generic authentication primitive.
 ///

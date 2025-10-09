@@ -6,7 +6,7 @@ use libcrux_ecdh::{secret_to_public, Algorithm};
 use rand::CryptoRng;
 use tls_codec::{TlsDeserialize, TlsDeserializeBytes, TlsSerialize, TlsSerializeBytes, TlsSize};
 
-use crate::protocol::api::Error;
+use crate::handshake::HandshakeError as Error;
 
 #[derive(TlsSerializeBytes, TlsSize)]
 /// A wrapper around a KEM shared secret.
@@ -78,12 +78,16 @@ impl DHPrivateKey {
     }
 }
 
+/// A wrapper for Diffie-Hellman key pairs.
 pub struct DHKeyPair {
+    /// The Diffie-Hellman private key
     pub(crate) sk: DHPrivateKey,
+    /// The Diffie-Hellman public key
     pub pk: DHPublicKey,
 }
 
 impl DHKeyPair {
+    /// Generate a fresh Diffie-Hellman key pair
     pub fn new(rng: &mut impl CryptoRng) -> Self {
         let sk = DHPrivateKey::new(rng);
         let pk = sk.to_public();

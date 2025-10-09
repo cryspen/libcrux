@@ -5,7 +5,7 @@ use std::{
 };
 
 use clap::Parser;
-use libcrux_psq::{
+use libcrux_psq::v1::{
     cred::Ed25519,
     impls::MlKem768,
     psk_registration::{Initiator, InitiatorMsg, Responder, ResponderMsg},
@@ -51,8 +51,8 @@ impl From<libcrux_kem::Error> for Error {
     }
 }
 
-impl From<libcrux_psq::Error> for Error {
-    fn from(e: libcrux_psq::Error) -> Self {
+impl From<libcrux_psq::v1::Error> for Error {
+    fn from(e: libcrux_psq::v1::Error) -> Self {
         log::error!("PSQ error: {e:?}");
         print_bt();
         Self::Psq
@@ -132,7 +132,9 @@ fn initiator(host: String, port: u16, ctx: String) -> Result<(), Error> {
 
         // Get the responder's public key.
         let responder_pk =
-            <libcrux_psq::impls::MlKem768 as KEM>::EncapsulationKey::tls_deserialize(&mut stream)?;
+            <libcrux_psq::v1::impls::MlKem768 as KEM>::EncapsulationKey::tls_deserialize(
+                &mut stream,
+            )?;
 
         (sk, pk, responder_pk)
     };

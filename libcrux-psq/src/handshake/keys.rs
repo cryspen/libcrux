@@ -4,7 +4,7 @@ use tls_codec::{
     TlsSize,
 };
 
-use crate::protocol::pqkem::PQSharedSecret;
+use crate::handshake::pqkem::PQSharedSecret;
 
 use super::{
     api::{serialize_error, Error, Session},
@@ -57,7 +57,7 @@ impl AEADKey {
         payload: &[u8],
         aad: &[u8],
         ciphertext: &mut [u8],
-    ) -> Result<[u8; 16], crate::protocol::api::Error> {
+    ) -> Result<[u8; 16], crate::handshake::api::Error> {
         let mut tag = [0u8; 16];
 
         self.increment_nonce()?;
@@ -73,7 +73,7 @@ impl AEADKey {
         &mut self,
         payload: &T,
         aad: &[u8],
-    ) -> Result<(Vec<u8>, [u8; 16]), crate::protocol::api::Error> {
+    ) -> Result<(Vec<u8>, [u8; 16]), crate::handshake::api::Error> {
         let serialization_buffer = payload.tls_serialize_detached().map_err(Error::Serialize)?;
 
         let mut ciphertext = vec![0u8; serialization_buffer.len()];
@@ -102,7 +102,7 @@ impl AEADKey {
         ciphertext: &[u8],
         tag: &[u8; 16],
         aad: &[u8],
-    ) -> Result<T, crate::protocol::api::Error> {
+    ) -> Result<T, crate::handshake::api::Error> {
         let payload_serialized_buf = self.decrypt(ciphertext, tag, aad)?;
 
         T::tls_deserialize_exact(&payload_serialized_buf).map_err(Error::Deserialize)

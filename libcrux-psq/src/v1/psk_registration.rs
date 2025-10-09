@@ -12,7 +12,7 @@ use std::{
 };
 use tls_codec::{Deserialize, Serialize, Size, TlsDeserialize, TlsSerialize, TlsSize};
 
-use crate::{cred::Authenticator, traits::*, Error, Psk};
+use super::{cred::Authenticator, traits::*, Error, Psk};
 
 const PSK_REGISTRATION_CONTEXT: &[u8] = b"PSK-Registration";
 const PSK_LENGTH: usize = 32;
@@ -318,7 +318,7 @@ fn derive_key_iv(psk: &[u8; 32], info: &[u8]) -> Result<([u8; NONCE_LEN], [u8; K
 mod tests {
     use std::time::Duration;
 
-    use crate::{
+    use crate::v1::{
         cred::{Ed25519, NoAuth},
         impls::MlKem768,
     };
