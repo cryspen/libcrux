@@ -22,9 +22,9 @@ pub(crate) struct State<T: AESState, U: GF128FieldElement> {
 
 aesgcm!(State<T, U>, Aes128CtrContext);
 
-use super::aes_gcm::platform_mod;
+use super::aes_gcm::type_aliases;
 
-platform_mod!(AesGcm128, "AES-GCM 128");
+type_aliases!(AesGcm128, "AES-GCM 128");
 
 /// # Portable implementation of AES-GCM 128
 ///

@@ -105,7 +105,7 @@ macro_rules! aesgcm {
 pub(crate) use aesgcm;
 
 /// Helper module for implementing platform-specific modules
-macro_rules! platform_mod {
+macro_rules! type_aliases {
     ($implementation:ident, $alg_name:literal) => {
         pub use crate::implementations::$implementation;
         #[doc = concat!("An owned key for ",$alg_name, ".")]
@@ -125,4 +125,4 @@ macro_rules! platform_mod {
     };
 }
 
-pub(crate) use platform_mod;
+pub(crate) use type_aliases;
