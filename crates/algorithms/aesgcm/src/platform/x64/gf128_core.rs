@@ -52,27 +52,6 @@ fn add(elem: &FieldElement, other: &FieldElement) -> FieldElement {
     FieldElement(elem.0 ^ other.0)
 }
 
-// #[inline]
-// fn mul_wide(elem: &FieldElement, other: &FieldElement) -> (FieldElement, FieldElement) {
-//     let lhs: __m128i = unsafe { core::mem::transmute((*elem).0) };
-//     let rhs: __m128i = unsafe { core::mem::transmute((*other).0) };
-
-//     let low = unsafe { _mm_clmulepi64_si128(lhs, rhs, 0x11) };
-//     let mid0 = unsafe { _mm_clmulepi64_si128(lhs, rhs, 0x10) };
-//     let mid1 = unsafe { _mm_clmulepi64_si128(lhs, rhs, 0x01) };
-//     let high = unsafe { _mm_clmulepi64_si128(lhs, rhs, 0x00) };
-//     let mid = unsafe { _mm_xor_si128(mid0, mid1) };
-//     let m0 = unsafe { _mm_srli_si128(mid, 8) };
-//     let m1 = unsafe { _mm_slli_si128(mid, 8) };
-//     let low = unsafe { _mm_xor_si128(low, m0) };
-//     let high = unsafe { _mm_xor_si128(high, m1) };
-
-//     let low128: u128 = unsafe { core::mem::transmute(low) };
-//     let high128: u128 = unsafe { core::mem::transmute(high) };
-
-//     (FieldElement(low128), FieldElement(high128))
-// }
-
 /// Performs a 128x128 to 256-bit carry-less multiplication.
 ///
 /// This implementation uses the Karatsuba algorithm to reduce the number of expensive
