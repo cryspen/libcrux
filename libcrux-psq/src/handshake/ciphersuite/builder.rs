@@ -160,13 +160,13 @@ impl<'a> CiphersuiteBuilder<'a> {
             #[cfg(not(feature = "classic-mceliece"))]
             CiphersuiteName::X25519_CLASSICMCELIECE_CHACHA20POLY1305_HKDFSHA256 => {
                 eprintln!("Error building InitiatorCiphersuite: Classic McEliece ciphersuites are only available when using the `classic-mceliece` feature.");
-                return Err(BuilderError::UnsupportedCiphersuite);
+                Err(BuilderError::UnsupportedCiphersuite)
             }
             CiphersuiteName::X25519_NONE_AESGCM128_HKDFSHA256
             | CiphersuiteName::X25519_MLKEM768_AESGCM128_HKDFSHA256
             | CiphersuiteName::X25519_CLASSICMCELIECE_AESGCM128_HKDFSHA256 => {
                 eprintln!("Error building ResponderCiphersuite: AES-GCM ciphersuite are not implemented yet.");
-                return Err(BuilderError::UnsupportedCiphersuite);
+                Err(BuilderError::UnsupportedCiphersuite)
             }
         }
     }
@@ -229,13 +229,13 @@ impl<'a> CiphersuiteBuilder<'a> {
             #[cfg(not(feature = "classic-mceliece"))]
             CiphersuiteName::X25519_CLASSICMCELIECE_CHACHA20POLY1305_HKDFSHA256 => {
                 eprintln!("Error building InitiatorCiphersuite: Classic McEliece ciphersuites are only available when using the `classic-mceliece` feature.");
-                return Err(BuilderError::UnsupportedCiphersuite);
+                Err(BuilderError::UnsupportedCiphersuite)
             }
             CiphersuiteName::X25519_NONE_AESGCM128_HKDFSHA256
             | CiphersuiteName::X25519_MLKEM768_AESGCM128_HKDFSHA256
             | CiphersuiteName::X25519_CLASSICMCELIECE_AESGCM128_HKDFSHA256 => {
                 eprintln!("Error building ResponderCiphersuite: AES-GCM ciphersuite are not implemented yet.");
-                return Err(BuilderError::UnsupportedCiphersuite);
+                Err(BuilderError::UnsupportedCiphersuite)
             }
         }
     }

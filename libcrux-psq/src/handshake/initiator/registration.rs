@@ -110,7 +110,7 @@ impl<'a, Rng: CryptoRng> Channel<Error> for RegistrationInitiator<'a, Rng> {
 
         let mut k1 = derive_k1(
             &state.k0,
-            &self.ciphersuite.own_ecdh_decapsulation_key(),
+            self.ciphersuite.own_ecdh_decapsulation_key(),
             self.ciphersuite.peer_ecdh_encapsulation_key(),
             pq_shared_secret,
             &tx1,
@@ -120,7 +120,7 @@ impl<'a, Rng: CryptoRng> Channel<Error> for RegistrationInitiator<'a, Rng> {
         let (inner_ciphertext, inner_tag) = k1.serialize_encrypt(&inner_payload, self.inner_aad)?;
 
         let outer_payload = InitiatorOuterPayloadOut::Registration(HandshakeMessageOut {
-            pk: &self.ciphersuite.own_ecdh_encapsulation_key(),
+            pk: self.ciphersuite.own_ecdh_encapsulation_key(),
             ciphertext: VLByteSlice(&inner_ciphertext),
             tag: inner_tag,
             aad: VLByteSlice(self.inner_aad),

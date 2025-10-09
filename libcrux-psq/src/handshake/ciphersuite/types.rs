@@ -8,9 +8,9 @@ use crate::classic_mceliece::{Ciphertext, PublicKey, SecretKey, SharedSecret};
 #[derive(TlsSize, TlsDeserialize, TlsSerialize)]
 #[repr(u8)]
 pub enum PQCiphertext {
-    MlKem(MlKem768Ciphertext) = 1,
+    MlKem(Box<MlKem768Ciphertext>) = 1,
     #[cfg(feature = "classic-mceliece")]
-    CMC(Ciphertext) = 2,
+    CMC(Box<Ciphertext>) = 2,
     #[cfg(not(feature = "classic-mceliece"))]
     CMC = 3,
 }
@@ -51,9 +51,9 @@ pub enum PQSharedSecret<'a> {
 
 pub enum PQDecapsulationKey {
     None,
-    MlKem(MlKem768PrivateKey),
+    MlKem(Box<MlKem768PrivateKey>),
     #[cfg(feature = "classic-mceliece")]
-    CMC(SecretKey),
+    CMC(Box<SecretKey>),
     #[cfg(not(feature = "classic-mceliece"))]
     CMC,
 }

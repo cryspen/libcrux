@@ -67,7 +67,7 @@ impl CiphersuiteName {
             CiphersuiteName::X25519_NONE_CHACHA20POLY1305_HKDFSHA256 => Ok(None),
             CiphersuiteName::X25519_MLKEM768_CHACHA20POLY1305_HKDFSHA256 => {
                 let enc = Option::<PQCiphertext>::tls_deserialize(&mut Cursor::new(bytes))
-                    .map_err(|e| HandshakeError::Deserialize(e))?;
+                    .map_err(HandshakeError::Deserialize)?;
 
                 Ok(enc)
             }
@@ -76,7 +76,7 @@ impl CiphersuiteName {
                 use std::io::Cursor;
 
                 let enc = Option::<PQCiphertext>::tls_deserialize(&mut Cursor::new(bytes))
-                    .map_err(|e| HandshakeError::Deserialize(e))?;
+                    .map_err(HandshakeError::Deserialize)?;
                 Ok(enc)
             }
             #[cfg(not(feature = "classic-mceliece"))]

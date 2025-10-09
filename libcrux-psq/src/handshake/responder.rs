@@ -177,7 +177,8 @@ impl<'a, Rng: CryptoRng> Responder<'a, Rng> {
 
         let pq_shared_secret = pq_encapsulation
             .as_ref()
-            .and_then(|enc| Some(self.ciphersuite.pq_decapsulate(enc)))
+            .as_ref()
+            .map(|enc| self.ciphersuite.pq_decapsulate(enc))
             .transpose()?;
 
         let tx1 = tx1(
@@ -214,7 +215,7 @@ impl<'a, Rng: CryptoRng> Responder<'a, Rng> {
         out: &mut [u8],
         responder_ephemeral_ecdh_sk: DHPrivateKey,
         responder_ephemeral_ecdh_pk: DHPublicKey,
-        state: Box<RespondRegistrationState>,
+        state: RespondRegistrationState,
     ) -> Result<usize, Error> {
         let (tx2, mut k2) = self.derive_registration_key(
             &state.tx1,
@@ -260,7 +261,7 @@ impl<'a, Rng: CryptoRng> Responder<'a, Rng> {
         out: &mut [u8],
         responder_ephemeral_ecdh_sk: DHPrivateKey,
         responder_ephemeral_ecdh_pk: DHPublicKey,
-        state: Box<RespondQueryState>,
+        state: RespondQueryState,
     ) -> Result<usize, Error> {
         let (_tx2, mut k2) = self.derive_query_key(
             &state.tx0,
@@ -313,7 +314,7 @@ impl<'a, Rng: CryptoRng> Channel<Error> for Responder<'a, Rng> {
                 out,
                 responder_ephemeral_ecdh_sk,
                 responder_ephemeral_ecdh_pk,
-                state,
+                *state,
             )?;
         } else if let ResponderState::RespondRegistration(state) = state {
             out_bytes_written = self.registration(
@@ -321,7 +322,7 @@ impl<'a, Rng: CryptoRng> Channel<Error> for Responder<'a, Rng> {
                 out,
                 responder_ephemeral_ecdh_sk,
                 responder_ephemeral_ecdh_pk,
-                state,
+                *state,
             )?;
         }
 
@@ -476,5 +477,5 @@ pub(super) fn derive_k2_query_responder(
         g_xy: &DHSharedSecret::derive(responder_ephemeral_ecdh_sk, initiator_ephemeral_ecdh_pk)?,
     };
 
-    AEADKey::new(&responder_ikm, tx2).map_err(|e| e.into())
+    Ok(AEADKey::new(&responder_ikm, tx2)?)
 }

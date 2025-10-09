@@ -116,6 +116,8 @@ impl<'a> CiphersuiteBase for InitiatorCiphersuite<'a> {
     }
 }
 
+pub(crate) type PQOptionPair<A, B> = (Option<A>, Option<B>);
+
 impl<'a> InitiatorCiphersuite<'a> {
     pub(crate) fn peer_pq_encapsulation_key(
         &self,
@@ -145,14 +147,14 @@ impl<'a> InitiatorCiphersuite<'a> {
         match self {
             InitiatorCiphersuite::X25519NoneChaCha20Poly1305HkdfSha256(
                 initiator_x25519_chacha_poly_hkdf_sha256,
-            ) => &initiator_x25519_chacha_poly_hkdf_sha256.peer_longterm_ecdh_pk,
+            ) => initiator_x25519_chacha_poly_hkdf_sha256.peer_longterm_ecdh_pk,
             InitiatorCiphersuite::X25519MlKem768ChaCha20Poly1305HkdfSha256(
                 initiator_x25519_mlkem768_chacha_poly_hkdf_sha256,
-            ) => &initiator_x25519_mlkem768_chacha_poly_hkdf_sha256.peer_longterm_ecdh_pk,
+            ) => initiator_x25519_mlkem768_chacha_poly_hkdf_sha256.peer_longterm_ecdh_pk,
             #[cfg(feature = "classic-mceliece")]
             InitiatorCiphersuite::X25519ClassicMcElieceChaCha20Poly1305HkdfSha256(
                 initiator_x25519_classic_mc_eliece_chacha_poly_hkdf_sha256,
-            ) => &initiator_x25519_classic_mc_eliece_chacha_poly_hkdf_sha256.peer_longterm_ecdh_pk,
+            ) => initiator_x25519_classic_mc_eliece_chacha_poly_hkdf_sha256.peer_longterm_ecdh_pk,
             #[cfg(not(feature = "classic-mceliece"))]
             InitiatorCiphersuite::X25519ClassicMcElieceChaCha20Poly1305HkdfSha256(_) => {
                 // We can never reach this because the ciphersuite can only be constructed with the feature turned on.
@@ -179,10 +181,10 @@ impl<'a> InitiatorCiphersuite<'a> {
         &self,
         rng: &mut impl CryptoRng,
     ) -> Result<
-        (
-            Option<<Self as CiphersuiteBase>::Ciphertext>,
-            Option<<Self as CiphersuiteBase>::SharedSecret>,
-        ),
+        PQOptionPair<
+            <Self as CiphersuiteBase>::Ciphertext,
+            <Self as CiphersuiteBase>::SharedSecret,
+        >,
         HandshakeError,
     > {
         match self {
@@ -198,7 +200,7 @@ impl<'a> InitiatorCiphersuite<'a> {
                 );
 
                 Ok((
-                    Some(PQCiphertext::MlKem(ct)),
+                    Some(PQCiphertext::MlKem(Box::new(ct))),
                     Some(PQSharedSecret::MlKem(ss)),
                 ))
             }
@@ -210,13 +212,15 @@ impl<'a> InitiatorCiphersuite<'a> {
                 use libcrux_traits::kem::KEM;
 
                 let (ss, ct) = <ClassicMcEliece as KEM>::encapsulate(
-                    &initiator_x25519_classic_mc_eliece_chacha_poly_hkdf_sha256
-                        .peer_longterm_cmc_pk,
+                    initiator_x25519_classic_mc_eliece_chacha_poly_hkdf_sha256.peer_longterm_cmc_pk,
                     rng,
                 )
                 .map_err(|_| HandshakeError::CryptoError)?;
 
-                Ok((Some(PQCiphertext::CMC(ct)), Some(PQSharedSecret::CMC(ss))))
+                Ok((
+                    Some(PQCiphertext::CMC(Box::new(ct))),
+                    Some(PQSharedSecret::CMC(ss)),
+                ))
             }
 
             #[cfg(not(feature = "classic-mceliece"))]

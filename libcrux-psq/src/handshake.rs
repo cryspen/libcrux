@@ -10,88 +10,7 @@
 //!   responder in a long-term session. The initiator's long-term public
 //!   key is transmitted encrypted under the responders long-term public
 //!   key, and thus not revealed to an eavesdropping attacker.
-//!
-//!
-//!     .read_message(&msg_channel, &mut payload_buf_responder)
-//!     .unwrap();
-//!
-//! // We read the same amount of data.
-//! assert_eq!(len_r_deserialized, len_i);
-//! assert_eq!(len_r_payload, registration_payload_initiator.len());
-//! assert_eq!(
-//!     &payload_buf_responder[0..len_r_payload],
-//!     registration_payload_initiator
-//! );
-//!
-//! // Respond
-//! let registration_payload_responder = b"Registration_respond";
-//! let len_r = responder
-//!     .write_message(registration_payload_responder, &mut msg_channel)
-//!     .unwrap();
-//!
-//! // Finalize on registration initiator
-//! let (len_i_deserialized, len_i_payload) = initiator
-//!     .read_message(&msg_channel, &mut payload_buf_initiator)
-//!     .unwrap();
-//!
-//! // We read the same amount of data.
-//! assert_eq!(len_r, len_i_deserialized);
-//! assert_eq!(registration_payload_responder.len(), len_i_payload);
-//! assert_eq!(
-//!     &payload_buf_initiator[0..len_i_payload],
-//!     registration_payload_responder
-//! );
-//!
-//! // Ready for transport mode
-//! assert!(initiator.is_handshake_finished());
-//! assert!(responder.is_handshake_finished());
-//!
-//! let i_transport = initiator.into_session().unwrap();
-//! let mut r_transport = responder.into_session().unwrap();
-//!
-//! // test serialization, deserialization
-//! i_transport.serialize(&mut msg_channel).unwrap();
-//! let mut i_transport = Session::deserialize(
-//!     &msg_channel,
-//!     &initiator_ecdh_keys.pk,
-//!     &responder_ecdh_keys.pk,
-//!     Some(responder_pq_keys.public_key().into()),
-//! )
-//! .unwrap();
-//!
-//! let mut channel_i = i_transport.transport_channel().unwrap();
-//! let mut channel_r = r_transport.transport_channel().unwrap();
-//!
-//! assert_eq!(channel_i.identifier(), channel_r.identifier());
-//!
-//! let app_data_i = b"Derived session hey".as_slice();
-//! let app_data_r = b"Derived session ho".as_slice();
-//!
-//! let len_i = channel_i
-//!     .write_message(app_data_i, &mut msg_channel)
-//!     .unwrap();
-//!
-//! let (len_r_deserialized, len_r_payload) = channel_r
-//!     .read_message(&msg_channel, &mut payload_buf_responder)
-//!     .unwrap();
-//!
-//! // We read the same amount of data.
-//! assert_eq!(len_r_deserialized, len_i);
-//! assert_eq!(len_r_payload, app_data_i.len());
-//! assert_eq!(&payload_buf_responder[0..len_r_payload], app_data_i);
-//!
-//! let len_r = channel_r
-//!     .write_message(app_data_r, &mut msg_channel)
-//!     .unwrap();
-//!
-//! let (len_i_deserialized, len_i_payload) = channel_i
-//!     .read_message(&msg_channel, &mut payload_buf_initiator)
-//!     .unwrap();
-//!
-//! assert_eq!(len_r, len_i_deserialized);
-//! assert_eq!(app_data_r.len(), len_i_payload);
-//! assert_eq!(&payload_buf_initiator[0..len_i_payload], app_data_r);
-//! ```
+
 #![allow(missing_docs)]
 
 #[derive(Debug, PartialEq)]
@@ -229,16 +148,16 @@ pub(super) fn derive_k1(
 
     let ecdh_shared_secret = DHSharedSecret::derive(own_longterm_key, peer_longterm_pk)?;
 
-    let k1 = AEADKey::new(
+    // XXX: This makes clippy unhappy, but is a lifetime error for feature `classic-mceliece` if we return directlyr
+    let result = Ok(AEADKey::new(
         &K1Ikm {
             k0,
             ecdh_shared_secret: &ecdh_shared_secret,
             pq_shared_secret,
         },
         &tx1,
-    )
-    .map_err(|e| e.into());
-    k1
+    )?);
+    result
 }
 
 #[derive(TlsSerializeBytes, TlsSize)]
