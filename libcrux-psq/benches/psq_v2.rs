@@ -1,14 +1,16 @@
 use criterion::{criterion_group, criterion_main, BatchSize, Criterion};
 
+use libcrux_ml_kem::mlkem768::MlKem768KeyPair;
+#[cfg(feature = "classic-mceliece")]
+use libcrux_psq::classic_mceliece::KeyPair;
 use libcrux_psq::{
     handshake::{
-        builder::Builder,
-        dhkem::DHKeyPair,
-        initiator::{query::QueryInitiator, registration::RegistrationInitiator},
-        pqkem::PQKeyPair,
-        responder::Responder,
+        builders::{CiphersuiteBuilder, PrincipalBuilder},
+        ciphersuites::CiphersuiteName,
+        types::DHKeyPair,
+        QueryInitiator, RegistrationInitiator, Responder,
     },
-    traits::{Channel, IntoSession},
+    Channel, IntoSession,
 };
 use rand::CryptoRng;
 
@@ -21,50 +23,68 @@ pub fn randombytes(n: usize) -> Vec<u8> {
     bytes
 }
 
+struct CommonSetup {
+    pub responder_mlkem_keys: MlKem768KeyPair,
+    #[cfg(feature = "classic-mceliece")]
+    pub responder_cmc_keys: KeyPair,
+    pub responder_ecdh_keys: DHKeyPair,
+    pub initiator_ecdh_keys: DHKeyPair,
+}
+
+impl CommonSetup {
+    fn new() -> Self {
+        let mut rng = rand::rng();
+        let responder_mlkem_keys = libcrux_ml_kem::mlkem768::rand::generate_key_pair(&mut rng);
+        #[cfg(feature = "classic-mceliece")]
+        let responder_cmc_keys =
+            libcrux_psq::classic_mceliece::KeyPair::generate_key_pair(&mut rng);
+
+        let responder_ecdh_keys = DHKeyPair::new(&mut rng);
+        let initiator_ecdh_keys = DHKeyPair::new(&mut rng);
+
+        CommonSetup {
+            responder_mlkem_keys,
+            #[cfg(feature = "classic-mceliece")]
+            responder_cmc_keys,
+            responder_ecdh_keys,
+            initiator_ecdh_keys,
+        }
+    }
+}
+
 fn query<const PQ: bool>(c: &mut Criterion) {
-    let mut rng = rand::rng();
-    let ciphersuite = if PQ { "x25519" } else { "x25519-mlkem768" };
+    let ciphersuite = if PQ {
+        CiphersuiteName::X25519_NONE_CHACHA20POLY1305_HKDFSHA256
+    } else {
+        CiphersuiteName::X25519_MLKEM768_CHACHA20POLY1305_HKDFSHA256
+    };
     let ctx = b"Test Context";
     let aad_initiator = b"Test Data I";
     let aad_responder = b"Test Data R";
 
     // External setup
-    let responder_ecdh_keys = DHKeyPair::new(&mut rng);
-    let responder_pq_keys = libcrux_ml_kem::mlkem768::rand::generate_key_pair(&mut rng);
-
-    // x25519
+    let setup = CommonSetup::new();
 
     // Setup initiator
-    let mut initiator = query_initiator(rand::rng(), ctx, aad_initiator, &responder_ecdh_keys);
+    let mut initiator =
+        query_initiator(rand::rng(), ctx, aad_initiator, &setup.responder_ecdh_keys);
     c.bench_function(&format!("[Query] Initiator setup"), |b| {
         b.iter_batched(
             || rand::rng(),
             |rng| {
-                initiator = query_initiator(rng, ctx, aad_initiator, &responder_ecdh_keys);
+                initiator = query_initiator(rng, ctx, aad_initiator, &setup.responder_ecdh_keys);
             },
             BatchSize::SmallInput,
         )
     });
 
     // Setup responder
-    let mut responder = build_responder::<PQ>(
-        rand::rng(),
-        ctx,
-        aad_responder,
-        &responder_ecdh_keys,
-        (&responder_pq_keys).into(),
-    );
-    c.bench_function(&format!("[Query] Responder setup {ciphersuite}"), |b| {
+    let mut responder = build_responder(&setup, ctx, aad_responder, ciphersuite);
+    c.bench_function(&format!("[Query] Responder setup {ciphersuite:?}"), |b| {
         b.iter_batched(
             || rand::rng(),
-            |rng| {
-                responder = build_responder::<PQ>(
-                    rng,
-                    ctx,
-                    aad_responder,
-                    &responder_ecdh_keys,
-                    (&responder_pq_keys).into(),
-                );
+            |_rng| {
+                responder = build_responder(&setup, ctx, aad_responder, ciphersuite);
             },
             BatchSize::SmallInput,
         )
@@ -74,14 +94,18 @@ fn query<const PQ: bool>(c: &mut Criterion) {
 
     // Send first message
     c.bench_function(
-        &format!("[Query] Initiator send query {ciphersuite}"),
+        &format!("[Query] Initiator send query {ciphersuite:?}"),
         |b| {
             b.iter_batched_ref(
                 || {
                     let msg_channel = vec![0u8; 4096];
 
-                    let initiator =
-                        query_initiator(rand::rng(), ctx, aad_initiator, &responder_ecdh_keys);
+                    let initiator = query_initiator(
+                        rand::rng(),
+                        ctx,
+                        aad_initiator,
+                        &setup.responder_ecdh_keys,
+                    );
 
                     (initiator, msg_channel)
                 },
@@ -98,29 +122,26 @@ fn query<const PQ: bool>(c: &mut Criterion) {
 
     // Read first message
     c.bench_function(
-        &format!("[Query] Responder read message {ciphersuite}"),
+        &format!("[Query] Responder read message {ciphersuite:?}"),
         |b| {
             b.iter_batched_ref(
                 || {
                     let mut msg_channel = vec![0u8; 4096];
                     let payload_buf_responder = vec![0u8; 4096];
 
-                    let mut initiator =
-                        query_initiator(rand::rng(), ctx, aad_initiator, &responder_ecdh_keys);
+                    let mut initiator = query_initiator(
+                        rand::rng(),
+                        ctx,
+                        aad_initiator,
+                        &setup.responder_ecdh_keys,
+                    );
 
                     let query_payload_initiator = b"Query_init";
                     let _len_i = initiator
                         .write_message(query_payload_initiator, &mut msg_channel)
                         .unwrap();
 
-                    let responder = build_responder::<PQ>(
-                        rand::rng(),
-                        ctx,
-                        aad_responder,
-                        &responder_ecdh_keys,
-                        (&responder_pq_keys).into(),
-                    );
-
+                    let responder = build_responder(&setup, ctx, aad_responder, ciphersuite);
                     (responder, msg_channel, payload_buf_responder)
                 },
                 |(responder, msg_channel, payload_buf_responder)| {
@@ -134,28 +155,21 @@ fn query<const PQ: bool>(c: &mut Criterion) {
     );
 
     // Respond
-    c.bench_function(&format!("[Query] Responder respond {ciphersuite}"), |b| {
+    c.bench_function(&format!("[Query] Responder respond {ciphersuite:?}"), |b| {
         b.iter_batched_ref(
             || {
                 let mut msg_channel = vec![0u8; 4096];
                 let mut payload_buf_responder = vec![0u8; 4096];
 
                 let mut initiator =
-                    query_initiator(rand::rng(), ctx, aad_initiator, &responder_ecdh_keys);
+                    query_initiator(rand::rng(), ctx, aad_initiator, &setup.responder_ecdh_keys);
 
                 let query_payload_initiator = b"Query_init";
                 let _len_i = initiator
                     .write_message(query_payload_initiator, &mut msg_channel)
                     .unwrap();
 
-                let mut responder = build_responder::<PQ>(
-                    rand::rng(),
-                    ctx,
-                    aad_responder,
-                    &responder_ecdh_keys,
-                    (&responder_pq_keys).into(),
-                );
-
+                let mut responder = build_responder(&setup, ctx, aad_responder, ciphersuite);
                 let (_len_r_deserialized, _len_r_payload) = responder
                     .read_message(&msg_channel, &mut payload_buf_responder)
                     .unwrap();
@@ -173,87 +187,69 @@ fn query<const PQ: bool>(c: &mut Criterion) {
     });
 
     // Finalize on query initiator
-    c.bench_function(&format!("[Query] Finalize initiator {ciphersuite}"), |b| {
-        b.iter_batched_ref(
-            || {
-                let mut msg_channel = vec![0u8; 4096];
-                let mut payload_buf_responder = vec![0u8; 4096];
-                let payload_buf_initiator = vec![0u8; 4096];
+    c.bench_function(
+        &format!("[Query] Finalize initiator {ciphersuite:?}"),
+        |b| {
+            b.iter_batched_ref(
+                || {
+                    let mut msg_channel = vec![0u8; 4096];
+                    let mut payload_buf_responder = vec![0u8; 4096];
+                    let payload_buf_initiator = vec![0u8; 4096];
 
-                let mut initiator =
-                    query_initiator(rand::rng(), ctx, aad_initiator, &responder_ecdh_keys);
+                    let mut initiator = query_initiator(
+                        rand::rng(),
+                        ctx,
+                        aad_initiator,
+                        &setup.responder_ecdh_keys,
+                    );
 
-                let query_payload_initiator = b"Query_init";
-                let _len_i = initiator
-                    .write_message(query_payload_initiator, &mut msg_channel)
-                    .unwrap();
+                    let query_payload_initiator = b"Query_init";
+                    let _len_i = initiator
+                        .write_message(query_payload_initiator, &mut msg_channel)
+                        .unwrap();
 
-                let mut responder = build_responder::<PQ>(
-                    rand::rng(),
-                    ctx,
-                    aad_responder,
-                    &responder_ecdh_keys,
-                    (&responder_pq_keys).into(),
-                );
+                    let mut responder = build_responder(&setup, ctx, aad_responder, ciphersuite);
+                    let (_len_r_deserialized, _len_r_payload) = responder
+                        .read_message(&msg_channel, &mut payload_buf_responder)
+                        .unwrap();
 
-                let (_len_r_deserialized, _len_r_payload) = responder
-                    .read_message(&msg_channel, &mut payload_buf_responder)
-                    .unwrap();
+                    let query_payload_responder = b"Query_respond";
+                    let _len_r = responder
+                        .write_message(query_payload_responder, &mut msg_channel)
+                        .unwrap();
 
-                let query_payload_responder = b"Query_respond";
-                let _len_r = responder
-                    .write_message(query_payload_responder, &mut msg_channel)
-                    .unwrap();
-
-                (initiator, msg_channel, payload_buf_initiator)
-            },
-            |(initiator, msg_channel, payload_buf_initiator)| {
-                let (_len_i_deserialized, _len_i_payload) = initiator
-                    .read_message(msg_channel, payload_buf_initiator)
-                    .unwrap();
-            },
-            BatchSize::SmallInput,
-        )
-    });
+                    (initiator, msg_channel, payload_buf_initiator)
+                },
+                |(initiator, msg_channel, payload_buf_initiator)| {
+                    let (_len_i_deserialized, _len_i_payload) = initiator
+                        .read_message(msg_channel, payload_buf_initiator)
+                        .unwrap();
+                },
+                BatchSize::SmallInput,
+            )
+        },
+    );
 }
 
-fn registration<const PQ: bool>(c: &mut Criterion) {
-    let mut rng = rand::rng();
-    let ciphersuite = if PQ { "x25519" } else { "x25519-mlkem768" };
+fn registration(c: &mut Criterion, suite_i: CiphersuiteName, suite_r: CiphersuiteName) {
     let ctx = b"Test Context";
     let aad_initiator_outer = b"Test Data I Outer";
     let aad_initiator_inner = b"Test Data I Inner";
     let aad_responder = b"Test Data R";
 
     // External setup
-    let responder_ecdh_keys = DHKeyPair::new(&mut rng);
-    let responder_pq_keys = libcrux_ml_kem::mlkem768::rand::generate_key_pair(&mut rng);
-    let initiator_ecdh_keys = DHKeyPair::new(&mut rng);
+    let setup = CommonSetup::new();
 
-    // x25519
-
-    // Setup initiator
-    let mut initiator = registration_initiator::<PQ>(
-        rand::rng(),
-        ctx,
-        aad_initiator_outer,
-        aad_initiator_inner,
-        &responder_ecdh_keys,
-        (&responder_pq_keys).into(),
-        &initiator_ecdh_keys,
-    );
     c.bench_function(&format!("[Registration] Initiator setup"), |b| {
         b.iter_batched(
             || rand::rng(),
-            |rng| {
-                initiator = registration_initiator::<PQ>(
-                    rng,
+            |_rng| {
+                let _initiator = registration_initiator(
+                    &setup,
                     ctx,
                     aad_initiator_outer,
                     aad_initiator_inner,
-                    &responder_ecdh_keys,
-                    (&responder_pq_keys).into(),
-                    &initiator_ecdh_keys,
+                    suite_i,
                 );
             },
             BatchSize::SmallInput,
@@ -261,26 +257,15 @@ fn registration<const PQ: bool>(c: &mut Criterion) {
     });
 
     // Setup responder
-    let mut responder = build_responder::<PQ>(
-        rand::rng(),
-        ctx,
-        aad_responder,
-        &responder_ecdh_keys,
-        (&responder_pq_keys).into(),
-    );
+    let mut responder = build_responder(&setup, ctx, aad_responder, suite_r);
+
     c.bench_function(
-        &format!("[Registration] Responder setup {ciphersuite}"),
+        &format!("[Registration] Responder setup ; Initiator({suite_i:?}) Responder({suite_r:?})"),
         |b| {
             b.iter_batched(
                 || rand::rng(),
-                |rng| {
-                    responder = build_responder::<PQ>(
-                        rng,
-                        ctx,
-                        aad_responder,
-                        &responder_ecdh_keys,
-                        (&responder_pq_keys).into(),
-                    );
+                |_rng| {
+                    responder = build_responder(&setup, ctx, aad_responder, suite_r);
                 },
                 BatchSize::SmallInput,
             )
@@ -291,20 +276,18 @@ fn registration<const PQ: bool>(c: &mut Criterion) {
 
     // Send first message
     c.bench_function(
-        &format!("[Registration] Initiator send registration {ciphersuite}"),
+        &format!("[Registration] Initiator send registration ; Initiator({suite_i:?}) Responder({suite_r:?})"),
         |b| {
             b.iter_batched_ref(
                 || {
                     let msg_channel = vec![0u8; 4096];
 
-                    let initiator = registration_initiator::<PQ>(
-                        rand::rng(),
+                    let initiator = registration_initiator(
+                        &setup,
                         ctx,
                         aad_initiator_outer,
                         aad_initiator_inner,
-                        &responder_ecdh_keys,
-                        (&responder_pq_keys).into(),
-                        &initiator_ecdh_keys,
+                        suite_i,
                     );
 
                     (initiator, msg_channel)
@@ -322,21 +305,21 @@ fn registration<const PQ: bool>(c: &mut Criterion) {
 
     // Read first message
     c.bench_function(
-        &format!("[Registration] Responder read message {ciphersuite}"),
+        &format!(
+            "[Registration] Responder read message ; Initiator({suite_i:?}) Responder({suite_r:?})"
+        ),
         |b| {
             b.iter_batched_ref(
                 || {
                     let mut msg_channel = vec![0u8; 4096];
                     let payload_buf_responder = vec![0u8; 4096];
 
-                    let mut initiator = registration_initiator::<PQ>(
-                        rand::rng(),
+                    let mut initiator = registration_initiator(
+                        &setup,
                         ctx,
                         aad_initiator_outer,
                         aad_initiator_inner,
-                        &responder_ecdh_keys,
-                        (&responder_pq_keys).into(),
-                        &initiator_ecdh_keys,
+                        suite_i,
                     );
 
                     let registration_payload_initiator = b"Registration_init";
@@ -344,13 +327,7 @@ fn registration<const PQ: bool>(c: &mut Criterion) {
                         .write_message(registration_payload_initiator, &mut msg_channel)
                         .unwrap();
 
-                    let responder = build_responder::<PQ>(
-                        rand::rng(),
-                        ctx,
-                        aad_responder,
-                        &responder_ecdh_keys,
-                        (&responder_pq_keys).into(),
-                    );
+                    let responder = build_responder(&setup, ctx, aad_responder, suite_r);
 
                     (responder, msg_channel, payload_buf_responder)
                 },
@@ -366,21 +343,21 @@ fn registration<const PQ: bool>(c: &mut Criterion) {
 
     // Respond
     c.bench_function(
-        &format!("[Registration] Responder respond {ciphersuite}"),
+        &format!(
+            "[Registration] Responder respond ; Initiator({suite_i:?}) Responder({suite_r:?})"
+        ),
         |b| {
             b.iter_batched_ref(
                 || {
                     let mut msg_channel = vec![0u8; 4096];
                     let mut payload_buf_responder = vec![0u8; 4096];
 
-                    let mut initiator = registration_initiator::<PQ>(
-                        rand::rng(),
+                    let mut initiator = registration_initiator(
+                        &setup,
                         ctx,
                         aad_initiator_outer,
                         aad_initiator_inner,
-                        &responder_ecdh_keys,
-                        (&responder_pq_keys).into(),
-                        &initiator_ecdh_keys,
+                        suite_i,
                     );
 
                     let registration_payload_initiator = b"Registration_init";
@@ -388,13 +365,7 @@ fn registration<const PQ: bool>(c: &mut Criterion) {
                         .write_message(registration_payload_initiator, &mut msg_channel)
                         .unwrap();
 
-                    let mut responder = build_responder::<PQ>(
-                        rand::rng(),
-                        ctx,
-                        aad_responder,
-                        &responder_ecdh_keys,
-                        (&responder_pq_keys).into(),
-                    );
+                    let mut responder = build_responder(&setup, ctx, aad_responder, suite_r);
 
                     let (_len_r_deserialized, _len_r_payload) = responder
                         .read_message(&msg_channel, &mut payload_buf_responder)
@@ -415,7 +386,9 @@ fn registration<const PQ: bool>(c: &mut Criterion) {
 
     // Finalize on registration initiator
     c.bench_function(
-        &format!("[Registration] Finalize initiator {ciphersuite}"),
+        &format!(
+            "[Registration] Finalize initiator ; Initiator({suite_i:?}) Responder({suite_r:?})"
+        ),
         |b| {
             b.iter_batched_ref(
                 || {
@@ -423,14 +396,12 @@ fn registration<const PQ: bool>(c: &mut Criterion) {
                     let mut payload_buf_responder = vec![0u8; 4096];
                     let payload_buf_initiator = vec![0u8; 4096];
 
-                    let mut initiator = registration_initiator::<PQ>(
-                        rand::rng(),
+                    let mut initiator = registration_initiator(
+                        &setup,
                         ctx,
                         aad_initiator_outer,
                         aad_initiator_inner,
-                        &responder_ecdh_keys,
-                        (&responder_pq_keys).into(),
-                        &initiator_ecdh_keys,
+                        suite_i,
                     );
 
                     let registration_payload_initiator = b"Registration_init";
@@ -438,13 +409,7 @@ fn registration<const PQ: bool>(c: &mut Criterion) {
                         .write_message(registration_payload_initiator, &mut msg_channel)
                         .unwrap();
 
-                    let mut responder = build_responder::<PQ>(
-                        rand::rng(),
-                        ctx,
-                        aad_responder,
-                        &responder_ecdh_keys,
-                        (&responder_pq_keys).into(),
-                    );
+                    let mut responder = build_responder(&setup, ctx, aad_responder, suite_r);
 
                     let (_len_r_deserialized, _len_r_payload) = responder
                         .read_message(&msg_channel, &mut payload_buf_responder)
@@ -469,21 +434,19 @@ fn registration<const PQ: bool>(c: &mut Criterion) {
 
     // IntoTransport transform Initiator
     c.bench_function(
-        &format!("[Registration] IntoTransport Responder {ciphersuite}"),
+        &format!("[Registration] IntoTransport Responder ; Initiator({suite_i:?}) Responder({suite_r:?})"),
         |b| {
             b.iter_batched(
                 || {
                     let mut msg_channel = vec![0u8; 4096];
                     let mut payload_buf_responder = vec![0u8; 4096];
 
-                    let mut initiator = registration_initiator::<PQ>(
-                        rand::rng(),
+                    let mut initiator = registration_initiator(
+                        &setup,
                         ctx,
                         aad_initiator_outer,
                         aad_initiator_inner,
-                        &responder_ecdh_keys,
-                        (&responder_pq_keys).into(),
-                        &initiator_ecdh_keys,
+                        suite_i,
                     );
 
                     let registration_payload_initiator = b"Registration_init";
@@ -491,13 +454,7 @@ fn registration<const PQ: bool>(c: &mut Criterion) {
                         .write_message(registration_payload_initiator, &mut msg_channel)
                         .unwrap();
 
-                    let mut responder = build_responder::<PQ>(
-                        rand::rng(),
-                        ctx,
-                        aad_responder,
-                        &responder_ecdh_keys,
-                        (&responder_pq_keys).into(),
-                    );
+                    let mut responder = build_responder(&setup, ctx, aad_responder, suite_r);
 
                     let (_len_r_deserialized, _len_r_payload) = responder
                         .read_message(&msg_channel, &mut payload_buf_responder)
@@ -520,7 +477,7 @@ fn registration<const PQ: bool>(c: &mut Criterion) {
 
     // IntoTransport transform Initiator
     c.bench_function(
-        &format!("[Registration] IntoTransport Initiator {ciphersuite}"),
+        &format!("[Registration] IntoTransport Initiator ; Initiator({suite_i:?}) Responder({suite_r:?})"),
         |b| {
             b.iter_batched(
                 || {
@@ -528,14 +485,12 @@ fn registration<const PQ: bool>(c: &mut Criterion) {
                     let mut payload_buf_responder = vec![0u8; 4096];
                     let mut payload_buf_initiator = vec![0u8; 4096];
 
-                    let mut initiator = registration_initiator::<PQ>(
-                        rand::rng(),
+                    let mut initiator = registration_initiator(
+                        &setup,
                         ctx,
                         aad_initiator_outer,
                         aad_initiator_inner,
-                        &responder_ecdh_keys,
-                        (&responder_pq_keys).into(),
-                        &initiator_ecdh_keys,
+                        suite_i,
                     );
 
                     let registration_payload_initiator = b"Registration_init";
@@ -543,13 +498,7 @@ fn registration<const PQ: bool>(c: &mut Criterion) {
                         .write_message(registration_payload_initiator, &mut msg_channel)
                         .unwrap();
 
-                    let mut responder = build_responder::<PQ>(
-                        rand::rng(),
-                        ctx,
-                        aad_responder,
-                        &responder_ecdh_keys,
-                        (&responder_pq_keys).into(),
-                    );
+                    let mut responder = build_responder(&setup, ctx, aad_responder, suite_r);
 
                     let (_len_r_deserialized, _len_r_payload) = responder
                         .read_message(&msg_channel, &mut payload_buf_responder)
@@ -576,7 +525,7 @@ fn registration<const PQ: bool>(c: &mut Criterion) {
 
     // Transport write message
     c.bench_function(
-        &format!("[Registration] Transport Write {ciphersuite}"),
+        &format!("[Registration] Transport Write ; Initiator({suite_i:?}) Responder({suite_r:?})"),
         |b| {
             b.iter_batched_ref(
                 || {
@@ -584,14 +533,12 @@ fn registration<const PQ: bool>(c: &mut Criterion) {
                     let mut payload_buf_responder = vec![0u8; 4096];
                     let mut payload_buf_initiator = vec![0u8; 4096];
 
-                    let mut initiator = registration_initiator::<PQ>(
-                        rand::rng(),
+                    let mut initiator = registration_initiator(
+                        &setup,
                         ctx,
                         aad_initiator_outer,
                         aad_initiator_inner,
-                        &responder_ecdh_keys,
-                        (&responder_pq_keys).into(),
-                        &initiator_ecdh_keys,
+                        suite_i,
                     );
 
                     let registration_payload_initiator = b"Registration_init";
@@ -599,13 +546,7 @@ fn registration<const PQ: bool>(c: &mut Criterion) {
                         .write_message(registration_payload_initiator, &mut msg_channel)
                         .unwrap();
 
-                    let mut responder = build_responder::<PQ>(
-                        rand::rng(),
-                        ctx,
-                        aad_responder,
-                        &responder_ecdh_keys,
-                        (&responder_pq_keys).into(),
-                    );
+                    let mut responder = build_responder(&setup, ctx, aad_responder, suite_r);
 
                     let (_len_r_deserialized, _len_r_payload) = responder
                         .read_message(&msg_channel, &mut payload_buf_responder)
@@ -635,7 +576,7 @@ fn registration<const PQ: bool>(c: &mut Criterion) {
 
     // Transport read message
     c.bench_function(
-        &format!("[Registration] Transport Read {ciphersuite}"),
+        &format!("[Registration] Transport Read ; Initiator({suite_i:?}) Responder({suite_r:?})"),
         |b| {
             b.iter_batched_ref(
                 || {
@@ -643,14 +584,12 @@ fn registration<const PQ: bool>(c: &mut Criterion) {
                     let mut payload_buf_responder = vec![0u8; 4096];
                     let mut payload_buf_initiator = vec![0u8; 4096];
 
-                    let mut initiator = registration_initiator::<PQ>(
-                        rand::rng(),
+                    let mut initiator = registration_initiator(
+                        &setup,
                         ctx,
                         aad_initiator_outer,
                         aad_initiator_inner,
-                        &responder_ecdh_keys,
-                        (&responder_pq_keys).into(),
-                        &initiator_ecdh_keys,
+                        suite_i,
                     );
 
                     let registration_payload_initiator = b"Registration_init";
@@ -658,13 +597,7 @@ fn registration<const PQ: bool>(c: &mut Criterion) {
                         .write_message(registration_payload_initiator, &mut msg_channel)
                         .unwrap();
 
-                    let mut responder = build_responder::<PQ>(
-                        rand::rng(),
-                        ctx,
-                        aad_responder,
-                        &responder_ecdh_keys,
-                        (&responder_pq_keys).into(),
-                    );
+                    let mut responder = build_responder(&setup, ctx, aad_responder, suite_r);
 
                     let (_len_r_deserialized, _len_r_payload) = responder
                         .read_message(&msg_channel, &mut payload_buf_responder)
@@ -703,22 +636,33 @@ fn registration<const PQ: bool>(c: &mut Criterion) {
 }
 
 #[inline(always)]
-fn build_responder<'a, const PQ: bool>(
-    rng: impl CryptoRng,
+fn build_responder<'a>(
+    setup: &'a CommonSetup,
     ctx: &'a [u8],
     aad_responder: &'a [u8],
-    responder_ecdh_keys: &'a DHKeyPair,
-    responder_pq_keys: PQKeyPair<'a>,
+    ciphersuite_id: CiphersuiteName,
 ) -> Responder<'a, impl CryptoRng> {
-    let mut responder = Builder::new(rng)
+    // Setup responder
+    #[allow(unused_mut)] // we need it mutable for the CMC case
+    let mut responder_cbuilder = CiphersuiteBuilder::new(ciphersuite_id)
+        .longterm_ecdh_keys(&setup.responder_ecdh_keys)
+        .longterm_mlkem_encapsulation_key(setup.responder_mlkem_keys.public_key())
+        .longterm_mlkem_decapsulation_key(setup.responder_mlkem_keys.private_key());
+
+    #[cfg(feature = "classic-mceliece")]
+    {
+        responder_cbuilder = responder_cbuilder
+            .longterm_cmc_encapsulation_key(&setup.responder_cmc_keys.pk)
+            .longterm_cmc_decapsulation_key(&setup.responder_cmc_keys.sk);
+    }
+    let responder_ciphersuite = responder_cbuilder.build_responder_ciphersuite().unwrap();
+
+    PrincipalBuilder::new(rand::rng())
         .context(ctx)
         .outer_aad(aad_responder)
-        .longterm_ecdh_keys(responder_ecdh_keys)
-        .recent_keys_upper_bound(30);
-    if PQ {
-        responder = responder.longterm_pq_keys(responder_pq_keys);
-    }
-    responder.build_responder().unwrap()
+        .recent_keys_upper_bound(30)
+        .build_responder(responder_ciphersuite)
+        .unwrap()
 }
 
 #[inline(always)]
@@ -728,34 +672,39 @@ fn query_initiator<'a>(
     aad_initiator: &'a [u8],
     responder_ecdh_keys: &'a DHKeyPair,
 ) -> QueryInitiator<'a> {
-    Builder::new(rng)
+    PrincipalBuilder::new(rng)
         .outer_aad(aad_initiator)
         .context(ctx)
-        .peer_longterm_ecdh_pk(&responder_ecdh_keys.pk)
-        .build_query_initiator()
+        .build_query_initiator(&responder_ecdh_keys.pk)
         .unwrap()
 }
 
 #[inline(always)]
-fn registration_initiator<'a, const PQ: bool>(
-    rng: impl CryptoRng,
+fn registration_initiator<'a>(
+    setup: &'a CommonSetup,
     ctx: &'a [u8],
     aad_initiator_outer: &'a [u8],
     aad_initiator_inner: &'a [u8],
-    responder_ecdh_keys: &'a DHKeyPair,
-    responder_pq_keys: PQKeyPair<'a>,
-    initiator_ecdh_keys: &'a DHKeyPair,
+    ciphersuite_id: CiphersuiteName,
 ) -> RegistrationInitiator<'a, impl CryptoRng> {
-    let mut builder = Builder::new(rng)
-        .outer_aad(aad_initiator_outer)
-        .outer_aad(aad_initiator_inner)
-        .context(ctx)
-        .peer_longterm_ecdh_pk(&responder_ecdh_keys.pk)
-        .longterm_ecdh_keys(initiator_ecdh_keys);
-    if PQ {
-        builder = builder.peer_longterm_pq_pk(responder_pq_keys.public_key());
+    #[allow(unused_mut)] // we need it mutable for the CMC case
+    let mut initiator_cbuilder = CiphersuiteBuilder::new(ciphersuite_id)
+        .longterm_ecdh_keys(&setup.initiator_ecdh_keys)
+        .peer_longterm_ecdh_pk(&setup.responder_ecdh_keys.pk)
+        .peer_longterm_mlkem_pk(setup.responder_mlkem_keys.public_key());
+
+    #[cfg(feature = "classic-mceliece")]
+    {
+        initiator_cbuilder = initiator_cbuilder.peer_longterm_cmc_pk(&setup.responder_cmc_keys.pk);
     }
-    builder.build_registration_initiator().unwrap()
+    let initiator_ciphersuite = initiator_cbuilder.build_initiator_ciphersuite().unwrap();
+
+    PrincipalBuilder::new(rand::rng())
+        .outer_aad(aad_initiator_outer)
+        .inner_aad(aad_initiator_inner)
+        .context(ctx)
+        .build_registration_initiator(initiator_ciphersuite)
+        .unwrap()
 }
 
 pub fn protocol(c: &mut Criterion) {
@@ -763,8 +712,33 @@ pub fn protocol(c: &mut Criterion) {
     query::<true>(c);
     query::<false>(c);
     // PSQv2 registration protocol
-    registration::<true>(c);
-    registration::<false>(c);
+    registration(
+        c,
+        CiphersuiteName::X25519_NONE_CHACHA20POLY1305_HKDFSHA256,
+        CiphersuiteName::X25519_NONE_CHACHA20POLY1305_HKDFSHA256,
+    );
+    registration(
+        c,
+        CiphersuiteName::X25519_NONE_CHACHA20POLY1305_HKDFSHA256,
+        CiphersuiteName::X25519_MLKEM768_CHACHA20POLY1305_HKDFSHA256,
+    );
+    registration(
+        c,
+        CiphersuiteName::X25519_MLKEM768_CHACHA20POLY1305_HKDFSHA256,
+        CiphersuiteName::X25519_MLKEM768_CHACHA20POLY1305_HKDFSHA256,
+    );
+    #[cfg(feature = "classic-mceliece")]
+    registration(
+        c,
+        CiphersuiteName::X25519_NONE_CHACHA20POLY1305_HKDFSHA256,
+        CiphersuiteName::X25519_CLASSICMCELIECE_CHACHA20POLY1305_HKDFSHA256,
+    );
+    #[cfg(feature = "classic-mceliece")]
+    registration(
+        c,
+        CiphersuiteName::X25519_CLASSICMCELIECE_CHACHA20POLY1305_HKDFSHA256,
+        CiphersuiteName::X25519_CLASSICMCELIECE_CHACHA20POLY1305_HKDFSHA256,
+    );
 }
 
 criterion_group!(benches, protocol);
