@@ -155,7 +155,7 @@ pub(super) fn deserialize_ring_elements_reduced<const K: usize, Vector: Operatio
         {
             hax_lib::loop_invariant!(|i: usize| {
                 fstar!(
-                    r#"Seq.length ${deserialized_pk}_future == v v_K"#
+                    r#"Seq.length ${deserialized_pk} == v v_K"#
                 )
             });
 

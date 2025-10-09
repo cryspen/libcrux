@@ -130,6 +130,7 @@ pub(crate) fn kyber_generate_keypair<
 }
 
 #[hax_lib::requires(fstar!(r#"Spec.MLKEM.is_rank $K /\
+    v $K_SQUARED == v $K * v $K /\
     $CPA_PRIVATE_KEY_SIZE == Spec.MLKEM.v_CPA_PRIVATE_KEY_SIZE $K /\
     $PRIVATE_KEY_SIZE == Spec.MLKEM.v_CCA_PRIVATE_KEY_SIZE $K /\
     $PUBLIC_KEY_SIZE == Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE $K /\
@@ -267,6 +268,7 @@ pub(crate) fn kyber_encapsulate<
 }
 
 #[hax_lib::requires(fstar!(r#"Spec.MLKEM.is_rank $K /\
+    v $K_SQUARED == v $K * v $K /\
     $CIPHERTEXT_SIZE == Spec.MLKEM.v_CPA_CIPHERTEXT_SIZE $K /\
     $PUBLIC_KEY_SIZE == Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE $K /\
     $T_AS_NTT_ENCODED_SIZE == Spec.MLKEM.v_T_AS_NTT_ENCODED_SIZE $K /\
@@ -455,6 +457,7 @@ pub(crate) fn kyber_decapsulate<
 }
 
 #[hax_lib::requires(fstar!(r#"Spec.MLKEM.is_rank $K /\
+    v $K_SQUARED == v $K * v $K /\
     $SECRET_KEY_SIZE == Spec.MLKEM.v_CCA_PRIVATE_KEY_SIZE $K /\
     $CPA_SECRET_KEY_SIZE == Spec.MLKEM.v_CPA_PRIVATE_KEY_SIZE $K /\
     $PUBLIC_KEY_SIZE == Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE $K /\
