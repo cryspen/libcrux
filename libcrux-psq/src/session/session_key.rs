@@ -40,17 +40,6 @@ fn session_key_id(key: &AEADKey) -> Result<[u8; SESSION_ID_LENGTH], Error> {
         session_id.try_into().map_err(|_| Error::CryptoError)?, // We don't expect this to fail, unless HDKF gave us the wrong output length
     )
 
-    // let prk = libcrux_hkdf::extract(
-    //     Algorithm::Sha256,
-    //     SESSION_KEY_SALT,
-    //     SerializeBytes::tls_serialize(&key).map_err(Error::Serialize)?,
-    // )
-    // .map_err(|_| Error::CryptoError)?;
-
-    // libcrux_hkdf::expand(Algorithm::Sha256, prk, SESSION_KEY_INFO, SESSION_ID_LENGTH)
-    //     .map_err(|_| Error::CryptoError)?
-    //     .try_into()
-    //     .map_err(|_| Error::CryptoError)
 }
 
 // skCS = KDF(K2, "session secret" | tx2)
