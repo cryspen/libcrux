@@ -84,10 +84,10 @@ impl CommonSetup {
 }
 
 fn registration(
+    setup: &CommonSetup,
     initiator_ciphersuite_id: CiphersuiteName,
     responder_ciphersuite_id: CiphersuiteName,
 ) -> Result<(), TestError> {
-    let setup = CommonSetup::new();
     let ctx = b"Test Context";
     let aad_initiator_outer = b"Test Data I Outer";
     let aad_initiator_inner = b"Test Data I Inner";
@@ -225,14 +225,17 @@ fn registration(
 
 #[test]
 fn compatibility_matching_ciphersuites() {
+    let setup = CommonSetup::new();
     // Matching ciphersuites work
     assert!(registration(
+        &setup,
         CiphersuiteName::X25519_NONE_CHACHA20POLY1305_HKDFSHA256,
         CiphersuiteName::X25519_NONE_CHACHA20POLY1305_HKDFSHA256,
     )
     .is_ok());
 
     assert!(registration(
+        &setup,
         CiphersuiteName::X25519_MLKEM768_CHACHA20POLY1305_HKDFSHA256,
         CiphersuiteName::X25519_MLKEM768_CHACHA20POLY1305_HKDFSHA256,
     )
@@ -240,6 +243,7 @@ fn compatibility_matching_ciphersuites() {
 
     #[cfg(feature = "classic-mceliece")]
     assert!(registration(
+        &setup,
         CiphersuiteName::X25519_CLASSICMCELIECE_CHACHA20POLY1305_HKDFSHA256,
         CiphersuiteName::X25519_CLASSICMCELIECE_CHACHA20POLY1305_HKDFSHA256,
     )
@@ -248,7 +252,9 @@ fn compatibility_matching_ciphersuites() {
 
 #[test]
 fn compatible_ciphersuites_asymmetric_mlkem() {
+    let setup = CommonSetup::new();
     assert!(registration(
+        &setup,
         CiphersuiteName::X25519_NONE_CHACHA20POLY1305_HKDFSHA256,
         CiphersuiteName::X25519_MLKEM768_CHACHA20POLY1305_HKDFSHA256,
     )
@@ -257,7 +263,9 @@ fn compatible_ciphersuites_asymmetric_mlkem() {
 #[test]
 #[cfg(feature = "classic-mceliece")]
 fn compatible_ciphersuites_asymmetric_cmc() {
+    let setup = CommonSetup::new();
     assert!(registration(
+        &setup,
         CiphersuiteName::X25519_NONE_CHACHA20POLY1305_HKDFSHA256,
         CiphersuiteName::X25519_CLASSICMCELIECE_CHACHA20POLY1305_HKDFSHA256,
     )
@@ -266,8 +274,10 @@ fn compatible_ciphersuites_asymmetric_cmc() {
 
 #[test]
 fn incompatible_ciphersuites() {
+    let setup = CommonSetup::new();
     assert_eq!(
         registration(
+            &setup,
             CiphersuiteName::X25519_MLKEM768_CHACHA20POLY1305_HKDFSHA256,
             CiphersuiteName::X25519_NONE_CHACHA20POLY1305_HKDFSHA256,
         ),
@@ -277,6 +287,7 @@ fn incompatible_ciphersuites() {
     #[cfg(feature = "classic-mceliece")]
     assert_eq!(
         registration(
+            &setup,
             CiphersuiteName::X25519_CLASSICMCELIECE_CHACHA20POLY1305_HKDFSHA256,
             CiphersuiteName::X25519_NONE_CHACHA20POLY1305_HKDFSHA256,
         ),
@@ -287,9 +298,11 @@ fn incompatible_ciphersuites() {
 #[test]
 #[cfg(not(feature = "classic-mceliece"))]
 fn unsupported_classic_mceliece() {
+    let setup = CommonSetup::new();
     // Trying to build an initiator or
     assert_eq!(
         registration(
+            &setup,
             CiphersuiteName::X25519_NONE_CHACHA20POLY1305_HKDFSHA256,
             CiphersuiteName::X25519_CLASSICMCELIECE_CHACHA20POLY1305_HKDFSHA256,
         ),
@@ -298,6 +311,7 @@ fn unsupported_classic_mceliece() {
 
     assert_eq!(
         registration(
+            &setup,
             CiphersuiteName::X25519_CLASSICMCELIECE_CHACHA20POLY1305_HKDFSHA256,
             CiphersuiteName::X25519_NONE_CHACHA20POLY1305_HKDFSHA256,
         ),
@@ -306,6 +320,7 @@ fn unsupported_classic_mceliece() {
 
     assert_eq!(
         registration(
+            &setup,
             CiphersuiteName::X25519_CLASSICMCELIECE_CHACHA20POLY1305_HKDFSHA256,
             CiphersuiteName::X25519_CLASSICMCELIECE_CHACHA20POLY1305_HKDFSHA256,
         ),
@@ -316,6 +331,7 @@ fn unsupported_classic_mceliece() {
 // Building any of the AES suites should fail until they are supported.
 #[test]
 fn unsupported_aes() {
+    let setup = CommonSetup::new();
     #[cfg(not(feature = "classic-mceliece"))]
     const SUPPORTED_CIPHERSUITES: [CiphersuiteName; 2] = [
         CiphersuiteName::X25519_NONE_CHACHA20POLY1305_HKDFSHA256,
@@ -342,11 +358,11 @@ fn unsupported_aes() {
     for supported_suite in SUPPORTED_CIPHERSUITES {
         for aes_suite in AES_SUITES {
             assert_eq!(
-                registration(supported_suite, aes_suite,),
+                registration(&setup, supported_suite, aes_suite,),
                 Err(TestError::Builder(BuilderError::UnsupportedCiphersuite))
             );
             assert_eq!(
-                registration(aes_suite, supported_suite,),
+                registration(&setup, aes_suite, supported_suite,),
                 Err(TestError::Builder(BuilderError::UnsupportedCiphersuite))
             );
         }

@@ -10,10 +10,8 @@ use libcrux_psq::{
     },
     Channel,
 };
-use rand::rngs::ThreadRng;
 
 struct CommonSetup {
-    pub rng: ThreadRng,
     pub responder_mlkem_keys: MlKem768KeyPair,
     #[cfg(feature = "classic-mceliece")]
     pub responder_cmc_keys: KeyPair,
@@ -31,7 +29,6 @@ impl CommonSetup {
         let responder_ecdh_keys = DHKeyPair::new(&mut rng);
 
         CommonSetup {
-            rng,
             responder_mlkem_keys,
             #[cfg(feature = "classic-mceliece")]
             responder_cmc_keys,
@@ -40,8 +37,7 @@ impl CommonSetup {
     }
 }
 
-fn query(responder_ciphersuite_id: CiphersuiteName) {
-    let mut setup = CommonSetup::new();
+fn query(setup: &CommonSetup, responder_ciphersuite_id: CiphersuiteName) {
     let ctx = b"Test Context";
     let aad_initiator = b"Test Data I";
     let aad_responder = b"Test Data R";
@@ -51,7 +47,7 @@ fn query(responder_ciphersuite_id: CiphersuiteName) {
     let mut payload_buf_initiator = vec![0u8; 4096];
 
     // Setup initiator
-    let mut initiator = PrincipalBuilder::new(&mut setup.rng)
+    let mut initiator = PrincipalBuilder::new(rand::rng())
         .outer_aad(aad_initiator)
         .context(ctx)
         .build_query_initiator(&setup.responder_ecdh_keys.pk)
@@ -72,7 +68,7 @@ fn query(responder_ciphersuite_id: CiphersuiteName) {
     }
     let responder_ciphersuite = responder_cbuilder.build_responder_ciphersuite().unwrap();
 
-    let mut responder = PrincipalBuilder::new(&mut setup.rng)
+    let mut responder = PrincipalBuilder::new(rand::rng())
         .context(ctx)
         .outer_aad(aad_responder)
         .recent_keys_upper_bound(30)
@@ -120,8 +116,18 @@ fn query(responder_ciphersuite_id: CiphersuiteName) {
 
 #[test]
 fn compatibility_query() {
-    query(CiphersuiteName::X25519_NONE_CHACHA20POLY1305_HKDFSHA256);
-    query(CiphersuiteName::X25519_MLKEM768_CHACHA20POLY1305_HKDFSHA256);
+    let setup = CommonSetup::new();
+    query(
+        &setup,
+        CiphersuiteName::X25519_NONE_CHACHA20POLY1305_HKDFSHA256,
+    );
+    query(
+        &setup,
+        CiphersuiteName::X25519_MLKEM768_CHACHA20POLY1305_HKDFSHA256,
+    );
     #[cfg(feature = "classic-mceliece")]
-    query(CiphersuiteName::X25519_CLASSICMCELIECE_CHACHA20POLY1305_HKDFSHA256);
+    query(
+        &setup,
+        CiphersuiteName::X25519_CLASSICMCELIECE_CHACHA20POLY1305_HKDFSHA256,
+    );
 }
