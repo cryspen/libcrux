@@ -15,6 +15,10 @@ struct CommonSetup {
     pub initiator_ecdh_keys: DHKeyPair,
 }
 
+use std::sync::LazyLock;
+
+static SETUP: LazyLock<CommonSetup> = LazyLock::new(|| CommonSetup::new());
+
 #[derive(Debug, PartialEq)]
 pub enum TestError {
     Handshake(HandshakeError),
@@ -228,14 +232,14 @@ fn compatibility_matching_ciphersuites() {
     let setup = CommonSetup::new();
     // Matching ciphersuites work
     assert!(registration(
-        &setup,
+        &*SETUP,
         CiphersuiteName::X25519_NONE_CHACHA20POLY1305_HKDFSHA256,
         CiphersuiteName::X25519_NONE_CHACHA20POLY1305_HKDFSHA256,
     )
     .is_ok());
 
     assert!(registration(
-        &setup,
+        &*SETUP,
         CiphersuiteName::X25519_MLKEM768_CHACHA20POLY1305_HKDFSHA256,
         CiphersuiteName::X25519_MLKEM768_CHACHA20POLY1305_HKDFSHA256,
     )
@@ -243,7 +247,7 @@ fn compatibility_matching_ciphersuites() {
 
     #[cfg(feature = "classic-mceliece")]
     assert!(registration(
-        &setup,
+        &*SETUP,
         CiphersuiteName::X25519_CLASSICMCELIECE_CHACHA20POLY1305_HKDFSHA256,
         CiphersuiteName::X25519_CLASSICMCELIECE_CHACHA20POLY1305_HKDFSHA256,
     )
@@ -254,7 +258,7 @@ fn compatibility_matching_ciphersuites() {
 fn compatible_ciphersuites_asymmetric_mlkem() {
     let setup = CommonSetup::new();
     assert!(registration(
-        &setup,
+        &*SETUP,
         CiphersuiteName::X25519_NONE_CHACHA20POLY1305_HKDFSHA256,
         CiphersuiteName::X25519_MLKEM768_CHACHA20POLY1305_HKDFSHA256,
     )
@@ -265,7 +269,7 @@ fn compatible_ciphersuites_asymmetric_mlkem() {
 fn compatible_ciphersuites_asymmetric_cmc() {
     let setup = CommonSetup::new();
     assert!(registration(
-        &setup,
+        &*SETUP,
         CiphersuiteName::X25519_NONE_CHACHA20POLY1305_HKDFSHA256,
         CiphersuiteName::X25519_CLASSICMCELIECE_CHACHA20POLY1305_HKDFSHA256,
     )
@@ -277,7 +281,7 @@ fn incompatible_ciphersuites() {
     let setup = CommonSetup::new();
     assert_eq!(
         registration(
-            &setup,
+            &*SETUP,
             CiphersuiteName::X25519_MLKEM768_CHACHA20POLY1305_HKDFSHA256,
             CiphersuiteName::X25519_NONE_CHACHA20POLY1305_HKDFSHA256,
         ),
@@ -287,7 +291,7 @@ fn incompatible_ciphersuites() {
     #[cfg(feature = "classic-mceliece")]
     assert_eq!(
         registration(
-            &setup,
+            &*SETUP,
             CiphersuiteName::X25519_CLASSICMCELIECE_CHACHA20POLY1305_HKDFSHA256,
             CiphersuiteName::X25519_NONE_CHACHA20POLY1305_HKDFSHA256,
         ),
@@ -302,7 +306,7 @@ fn unsupported_classic_mceliece() {
     // Trying to build an initiator or
     assert_eq!(
         registration(
-            &setup,
+            &*SETUP,
             CiphersuiteName::X25519_NONE_CHACHA20POLY1305_HKDFSHA256,
             CiphersuiteName::X25519_CLASSICMCELIECE_CHACHA20POLY1305_HKDFSHA256,
         ),
@@ -311,7 +315,7 @@ fn unsupported_classic_mceliece() {
 
     assert_eq!(
         registration(
-            &setup,
+            &*SETUP,
             CiphersuiteName::X25519_CLASSICMCELIECE_CHACHA20POLY1305_HKDFSHA256,
             CiphersuiteName::X25519_NONE_CHACHA20POLY1305_HKDFSHA256,
         ),
@@ -320,7 +324,7 @@ fn unsupported_classic_mceliece() {
 
     assert_eq!(
         registration(
-            &setup,
+            &*SETUP,
             CiphersuiteName::X25519_CLASSICMCELIECE_CHACHA20POLY1305_HKDFSHA256,
             CiphersuiteName::X25519_CLASSICMCELIECE_CHACHA20POLY1305_HKDFSHA256,
         ),
@@ -331,7 +335,7 @@ fn unsupported_classic_mceliece() {
 // Building any of the AES suites should fail until they are supported.
 #[test]
 fn unsupported_aes() {
-    let setup = CommonSetup::new();
+    // let setup = CommonSetup::new();
     #[cfg(not(feature = "classic-mceliece"))]
     const SUPPORTED_CIPHERSUITES: [CiphersuiteName; 2] = [
         CiphersuiteName::X25519_NONE_CHACHA20POLY1305_HKDFSHA256,
@@ -358,13 +362,108 @@ fn unsupported_aes() {
     for supported_suite in SUPPORTED_CIPHERSUITES {
         for aes_suite in AES_SUITES {
             assert_eq!(
-                registration(&setup, supported_suite, aes_suite,),
+                registration(&*SETUP, supported_suite, aes_suite,),
                 Err(TestError::Builder(BuilderError::UnsupportedCiphersuite))
             );
             assert_eq!(
-                registration(&setup, aes_suite, supported_suite,),
+                registration(&*SETUP, aes_suite, supported_suite,),
                 Err(TestError::Builder(BuilderError::UnsupportedCiphersuite))
             );
         }
     }
+}
+
+fn query(setup: &CommonSetup, responder_ciphersuite_id: CiphersuiteName) {
+    let ctx = b"Test Context";
+    let aad_initiator = b"Test Data I";
+    let aad_responder = b"Test Data R";
+
+    let mut msg_channel = vec![0u8; 4096];
+    let mut payload_buf_responder = vec![0u8; 4096];
+    let mut payload_buf_initiator = vec![0u8; 4096];
+
+    // Setup initiator
+    let mut initiator = PrincipalBuilder::new(rand::rng())
+        .outer_aad(aad_initiator)
+        .context(ctx)
+        .build_query_initiator(&setup.responder_ecdh_keys.pk)
+        .unwrap();
+
+    // Setup responder
+    #[allow(unused_mut)] // we need it mutable for the CMC case
+    let mut responder_cbuilder = CiphersuiteBuilder::new(responder_ciphersuite_id)
+        .longterm_ecdh_keys(&setup.responder_ecdh_keys)
+        .longterm_mlkem_encapsulation_key(setup.responder_mlkem_keys.public_key())
+        .longterm_mlkem_decapsulation_key(setup.responder_mlkem_keys.private_key());
+
+    #[cfg(feature = "classic-mceliece")]
+    {
+        responder_cbuilder = responder_cbuilder
+            .longterm_cmc_encapsulation_key(&setup.responder_cmc_keys.pk)
+            .longterm_cmc_decapsulation_key(&setup.responder_cmc_keys.sk);
+    }
+    let responder_ciphersuite = responder_cbuilder.build_responder_ciphersuite().unwrap();
+
+    let mut responder = PrincipalBuilder::new(rand::rng())
+        .context(ctx)
+        .outer_aad(aad_responder)
+        .recent_keys_upper_bound(30)
+        .build_responder(responder_ciphersuite)
+        .unwrap();
+
+    // Send first message
+    let query_payload_initiator = b"Query_init";
+    let len_i = initiator
+        .write_message(query_payload_initiator, &mut msg_channel)
+        .unwrap();
+
+    // Read first message
+    let (len_r_deserialized, len_r_payload) = responder
+        .read_message(&msg_channel, &mut payload_buf_responder)
+        .unwrap();
+
+    // We read the same amount of data.
+    assert_eq!(len_r_deserialized, len_i);
+    assert_eq!(len_r_payload, b"Query init".len());
+    assert_eq!(
+        &payload_buf_responder[0..len_r_payload],
+        query_payload_initiator
+    );
+
+    // Respond
+    let query_payload_responder = b"Query_respond";
+    let len_r = responder
+        .write_message(query_payload_responder, &mut msg_channel)
+        .unwrap();
+
+    // Finalize on query initiator
+    let (len_i_deserialized, len_i_payload) = initiator
+        .read_message(&msg_channel, &mut payload_buf_initiator)
+        .unwrap();
+
+    // We read the same amount of data.
+    assert_eq!(len_r, len_i_deserialized);
+    assert_eq!(query_payload_responder.len(), len_i_payload);
+    assert_eq!(
+        &payload_buf_initiator[0..len_i_payload],
+        query_payload_responder
+    );
+}
+
+#[test]
+fn compatibility_query() {
+    let setup = CommonSetup::new();
+    query(
+        &*SETUP,
+        CiphersuiteName::X25519_NONE_CHACHA20POLY1305_HKDFSHA256,
+    );
+    query(
+        &*SETUP,
+        CiphersuiteName::X25519_MLKEM768_CHACHA20POLY1305_HKDFSHA256,
+    );
+    #[cfg(feature = "classic-mceliece")]
+    query(
+        &*SETUP,
+        CiphersuiteName::X25519_CLASSICMCELIECE_CHACHA20POLY1305_HKDFSHA256,
+    );
 }
