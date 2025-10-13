@@ -4,9 +4,8 @@ pub const TX0_DOMAIN_SEP: u8 = 0;
 pub const TX1_DOMAIN_SEP: u8 = 1;
 pub const TX2_DOMAIN_SEP: u8 = 2;
 
-use crate::protocol::pqkem::PQCiphertext;
-
-use super::{api::Error, dhkem::DHPublicKey, pqkem::PQPublicKey};
+use super::dhkem::DHPublicKey;
+use crate::handshake::{ciphersuite::types::PQEncapsulationKey, HandshakeError as Error};
 use libcrux_sha2::{Digest, SHA256_LENGTH};
 
 /// The initial transcript hash.
@@ -14,26 +13,26 @@ use libcrux_sha2::{Digest, SHA256_LENGTH};
 pub struct Transcript([u8; SHA256_LENGTH]);
 
 impl Transcript {
-    fn new(initial_input: &impl Serialize) -> Result<Self, Error> {
+    fn new(initial_input: impl Serialize) -> Result<Self, Error> {
         Self::add_hash::<TX0_DOMAIN_SEP>(None, initial_input)
     }
 
     fn add_hash<const DOMAIN_SEPARATOR: u8>(
         old_transcript: Option<&Transcript>,
-        input: &impl Serialize,
+        input: impl Serialize,
     ) -> Result<Transcript, Error> {
         let mut hasher = libcrux_sha2::Sha256::new();
         hasher.update(&[DOMAIN_SEPARATOR]);
         hasher.update(
             old_transcript
                 .tls_serialize()
-                .map_err(|e| Error::Serialize(e))?
+                .map_err(Error::Serialize)?
                 .as_slice(),
         );
         hasher.update(
             input
                 .tls_serialize_detached()
-                .map_err(|e| Error::Serialize(e))?
+                .map_err(Error::Serialize)?
                 .as_slice(),
         );
 
@@ -56,10 +55,10 @@ pub(crate) fn tx0(
     initiator_pk: &DHPublicKey,
 ) -> Result<Transcript, Error> {
     #[derive(TlsSerialize, TlsSize)]
-    struct Transcript0Inputs<'a, 'b, 'c> {
+    struct Transcript0Inputs<'a> {
         context: &'a [u8],
-        responder_pk: &'b DHPublicKey,
-        initiator_pk: &'c DHPublicKey,
+        responder_pk: &'a DHPublicKey,
+        initiator_pk: &'a DHPublicKey,
     }
 
     Transcript::new(&Transcript0Inputs {
@@ -69,23 +68,23 @@ pub(crate) fn tx0(
     })
 }
 
-// tx1 = hash(1 | tx0 | g^c | pkS | encap(pkS, SS))
+// tx1 = hash(1 | tx0 | g^c | [pkS] | [encap(pkS, SS)])
 pub(crate) fn tx1(
     tx0: &Transcript,
     initiator_longterm_pk: &DHPublicKey,
-    responder_pq_pk: Option<&PQPublicKey>,
-    pq_encaps: Option<&PQCiphertext>,
+    responder_pq_pk: Option<PQEncapsulationKey>,
+    pq_encaps: &[u8],
 ) -> Result<Transcript, Error> {
     #[derive(TlsSerialize, TlsSize)]
-    struct Transcript1Inputs<'a, 'b, 'c> {
+    struct Transcript1Inputs<'a> {
         initiator_longterm_pk: &'a DHPublicKey,
-        responder_pq_pk: Option<&'b PQPublicKey>,
-        pq_encaps: Option<&'c PQCiphertext>,
+        responder_pq_pk: Option<PQEncapsulationKey<'a>>,
+        pq_encaps: &'a [u8],
     }
 
     Transcript::add_hash::<TX1_DOMAIN_SEP>(
         Some(tx0),
-        &Transcript1Inputs {
+        Transcript1Inputs {
             initiator_longterm_pk,
             pq_encaps,
             responder_pq_pk,
