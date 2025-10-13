@@ -1,0 +1,254 @@
+//! # Ciphersuite Builder
+//!
+//! This module provides a builder pattern for PSQ ciphersuites.
+
+use libcrux_kem::{MlKem768PrivateKey, MlKem768PublicKey};
+
+#[cfg(feature = "classic-mceliece")]
+use crate::classic_mceliece::{PublicKey, SecretKey};
+use crate::handshake::{
+    builders::BuilderError,
+    ciphersuite::{
+        initiator::{
+            InitiatorCiphersuite, InitiatorX25519ChaCha20Poly1305HkdfSha256,
+            InitiatorX25519Mlkem768ChaCha20Poly1305HkdfSha256,
+        },
+        responder::{
+            ResponderCiphersuite, ResponderX25519ChaCha20Poly1305HkdfSha256,
+            ResponderX25519MlKem768ChaCha20Poly1305HkdfSha256,
+        },
+        CiphersuiteName,
+    },
+    dhkem::{DHKeyPair, DHPublicKey},
+};
+
+/// A builder for PSQ handshake ciphersuites.
+pub struct CiphersuiteBuilder<'a> {
+    name: CiphersuiteName,
+    longterm_ecdh_keys: Option<&'a DHKeyPair>,
+    longterm_mlkem_encapsulation_key: Option<&'a MlKem768PublicKey>,
+    longterm_mlkem_decapsulation_key: Option<&'a MlKem768PrivateKey>,
+    peer_longterm_ecdh_pk: Option<&'a DHPublicKey>,
+    peer_longterm_mlkem_pk: Option<&'a MlKem768PublicKey>,
+    #[cfg(feature = "classic-mceliece")]
+    longterm_cmc_encapsulation_key: Option<&'a PublicKey>,
+    #[cfg(feature = "classic-mceliece")]
+    longterm_cmc_decapsulation_key: Option<&'a SecretKey>,
+    #[cfg(feature = "classic-mceliece")]
+    peer_longterm_cmc_pk: Option<&'a PublicKey>,
+}
+
+impl<'a> CiphersuiteBuilder<'a> {
+    /// Start building a new ciphersuite.
+    pub fn new(name: CiphersuiteName) -> Self {
+        Self {
+            name,
+            longterm_ecdh_keys: None,
+            longterm_mlkem_encapsulation_key: None,
+            longterm_mlkem_decapsulation_key: None,
+            peer_longterm_ecdh_pk: None,
+            peer_longterm_mlkem_pk: None,
+            #[cfg(feature = "classic-mceliece")]
+            longterm_cmc_encapsulation_key: None,
+            #[cfg(feature = "classic-mceliece")]
+            longterm_cmc_decapsulation_key: None,
+            #[cfg(feature = "classic-mceliece")]
+            peer_longterm_cmc_pk: None,
+        }
+    }
+
+    /// Provide a principal's long-term ECDH key pair.
+    pub fn longterm_ecdh_keys(mut self, keypair: &'a DHKeyPair) -> Self {
+        self.longterm_ecdh_keys = Some(keypair);
+        self
+    }
+
+    /// Provide a principal's long-term ML-KEM encapsulation key.
+    pub fn longterm_mlkem_encapsulation_key(
+        mut self,
+        encapsulation_key: &'a MlKem768PublicKey,
+    ) -> Self {
+        self.longterm_mlkem_encapsulation_key = Some(encapsulation_key);
+        self
+    }
+
+    /// Provide a principal's long-term ML-KEM decapsulation key.
+    pub fn longterm_mlkem_decapsulation_key(
+        mut self,
+        decapsulation_key: &'a MlKem768PrivateKey,
+    ) -> Self {
+        self.longterm_mlkem_decapsulation_key = Some(decapsulation_key);
+        self
+    }
+
+    /// Provide a peer's long-term ECDH public key.
+    pub fn peer_longterm_ecdh_pk(mut self, ecdh_pk: &'a DHPublicKey) -> Self {
+        self.peer_longterm_ecdh_pk = Some(ecdh_pk);
+        self
+    }
+
+    /// Provide a peer's long-term ML-KEM encapsulation key.
+    pub fn peer_longterm_mlkem_pk(mut self, encapsulation_key: &'a MlKem768PublicKey) -> Self {
+        self.peer_longterm_mlkem_pk = Some(encapsulation_key);
+        self
+    }
+
+    #[cfg(feature = "classic-mceliece")]
+    /// Provide a principal's long-term Classic McEliece encapsulation key.
+    pub fn longterm_cmc_encapsulation_key(mut self, encapsulation_key: &'a PublicKey) -> Self {
+        self.longterm_cmc_encapsulation_key = Some(encapsulation_key);
+        self
+    }
+
+    #[cfg(feature = "classic-mceliece")]
+    /// Provide a principal's long-term Classic McEliece decapsulation key.
+    pub fn longterm_cmc_decapsulation_key(mut self, decapsulation_key: &'a SecretKey) -> Self {
+        self.longterm_cmc_decapsulation_key = Some(decapsulation_key);
+        self
+    }
+
+    #[cfg(feature = "classic-mceliece")]
+    /// Provide a peers's long-term Classic McEliece encapsulation key.
+    pub fn peer_longterm_cmc_pk(mut self, encapsulation_key: &'a PublicKey) -> Self {
+        self.peer_longterm_cmc_pk = Some(encapsulation_key);
+        self
+    }
+
+    /// Finish building an [`InitiatorCiphersuite`].
+    pub fn build_initiator_ciphersuite(self) -> Result<InitiatorCiphersuite<'a>, BuilderError> {
+        let (peer_longterm_ecdh_pk, longterm_ecdh_keys) = self.check_common_keys_initiator()?;
+        match self.name {
+            CiphersuiteName::X25519_NONE_CHACHA20POLY1305_HKDFSHA256 => {
+                Ok(InitiatorCiphersuite::X25519NoneChaCha20Poly1305HkdfSha256(
+                    InitiatorX25519ChaCha20Poly1305HkdfSha256 {
+                        longterm_ecdh_keys,
+                        peer_longterm_ecdh_pk,
+                    },
+                ))
+            }
+            CiphersuiteName::X25519_MLKEM768_CHACHA20POLY1305_HKDFSHA256 => {
+                let Some(peer_longterm_mlkem_pk) = self.peer_longterm_mlkem_pk else {
+                    return Err(BuilderError::CiphersuiteBuilderState);
+                };
+                Ok(
+                    InitiatorCiphersuite::X25519MlKem768ChaCha20Poly1305HkdfSha256(
+                        InitiatorX25519Mlkem768ChaCha20Poly1305HkdfSha256 {
+                            longterm_ecdh_keys,
+                            peer_longterm_ecdh_pk,
+                            peer_longterm_mlkem_pk,
+                        },
+                    ),
+                )
+            }
+            #[cfg(feature = "classic-mceliece")]
+            CiphersuiteName::X25519_CLASSICMCELIECE_CHACHA20POLY1305_HKDFSHA256 => {
+                use crate::handshake::ciphersuite::initiator::InitiatorX25519ClassicMcElieceChaCha20Poly1305HkdfSha256;
+
+                let Some(peer_longterm_cmc_pk) = self.peer_longterm_cmc_pk else {
+                    return Err(BuilderError::CiphersuiteBuilderState);
+                };
+                Ok(
+                    InitiatorCiphersuite::X25519ClassicMcElieceChaCha20Poly1305HkdfSha256(
+                        InitiatorX25519ClassicMcElieceChaCha20Poly1305HkdfSha256 {
+                            longterm_ecdh_keys,
+                            peer_longterm_ecdh_pk,
+                            peer_longterm_cmc_pk,
+                        },
+                    ),
+                )
+            }
+            #[cfg(not(feature = "classic-mceliece"))]
+            CiphersuiteName::X25519_CLASSICMCELIECE_CHACHA20POLY1305_HKDFSHA256 => {
+                eprintln!("Error building InitiatorCiphersuite: Classic McEliece ciphersuites are only available when using the `classic-mceliece` feature.");
+                Err(BuilderError::UnsupportedCiphersuite)
+            }
+            CiphersuiteName::X25519_NONE_AESGCM128_HKDFSHA256
+            | CiphersuiteName::X25519_MLKEM768_AESGCM128_HKDFSHA256
+            | CiphersuiteName::X25519_CLASSICMCELIECE_AESGCM128_HKDFSHA256 => {
+                eprintln!("Error building ResponderCiphersuite: AES-GCM ciphersuite are not implemented yet.");
+                Err(BuilderError::UnsupportedCiphersuite)
+            }
+        }
+    }
+
+    /// Finish building an [`InitiatorCiphersuite`].
+    pub fn build_responder_ciphersuite(self) -> Result<ResponderCiphersuite<'a>, BuilderError> {
+        let Some(longterm_ecdh_keys) = self.longterm_ecdh_keys else {
+            return Err(BuilderError::CiphersuiteBuilderState);
+        };
+
+        match self.name {
+            CiphersuiteName::X25519_NONE_CHACHA20POLY1305_HKDFSHA256 => {
+                Ok(ResponderCiphersuite::X25519NoneChaCha20Poly1305HkdfSha256(
+                    ResponderX25519ChaCha20Poly1305HkdfSha256 { longterm_ecdh_keys },
+                ))
+            }
+            CiphersuiteName::X25519_MLKEM768_CHACHA20POLY1305_HKDFSHA256 => {
+                let Some(longterm_pq_encapsulation_key) = self.longterm_mlkem_encapsulation_key
+                else {
+                    return Err(BuilderError::CiphersuiteBuilderState);
+                };
+                let Some(longterm_pq_decapsulation_key) = self.longterm_mlkem_decapsulation_key
+                else {
+                    return Err(BuilderError::CiphersuiteBuilderState);
+                };
+
+                Ok(
+                    ResponderCiphersuite::X25519MlKem768ChaCha20Poly1305HkdfSha256(
+                        ResponderX25519MlKem768ChaCha20Poly1305HkdfSha256 {
+                            longterm_ecdh_keys,
+                            longterm_pq_encapsulation_key,
+                            longterm_pq_decapsulation_key,
+                        },
+                    ),
+                )
+            }
+            #[cfg(feature = "classic-mceliece")]
+            CiphersuiteName::X25519_CLASSICMCELIECE_CHACHA20POLY1305_HKDFSHA256 => {
+                use crate::handshake::ciphersuite::responder::ResponderX25519ClassicMcElieceChaCha20Poly1305HkdfSha256;
+
+                let Some(longterm_pq_encapsulation_key) = self.longterm_cmc_encapsulation_key
+                else {
+                    return Err(BuilderError::CiphersuiteBuilderState);
+                };
+                let Some(longterm_pq_decapsulation_key) = self.longterm_cmc_decapsulation_key
+                else {
+                    return Err(BuilderError::CiphersuiteBuilderState);
+                };
+
+                Ok(
+                    ResponderCiphersuite::X25519ClassicMcElieceChaCha20Poly1305HkdfSha256(
+                        ResponderX25519ClassicMcElieceChaCha20Poly1305HkdfSha256 {
+                            longterm_ecdh_keys,
+                            longterm_pq_encapsulation_key,
+                            longterm_pq_decapsulation_key,
+                        },
+                    ),
+                )
+            }
+            #[cfg(not(feature = "classic-mceliece"))]
+            CiphersuiteName::X25519_CLASSICMCELIECE_CHACHA20POLY1305_HKDFSHA256 => {
+                eprintln!("Error building InitiatorCiphersuite: Classic McEliece ciphersuites are only available when using the `classic-mceliece` feature.");
+                Err(BuilderError::UnsupportedCiphersuite)
+            }
+            CiphersuiteName::X25519_NONE_AESGCM128_HKDFSHA256
+            | CiphersuiteName::X25519_MLKEM768_AESGCM128_HKDFSHA256
+            | CiphersuiteName::X25519_CLASSICMCELIECE_AESGCM128_HKDFSHA256 => {
+                eprintln!("Error building ResponderCiphersuite: AES-GCM ciphersuite are not implemented yet.");
+                Err(BuilderError::UnsupportedCiphersuite)
+            }
+        }
+    }
+
+    fn check_common_keys_initiator(
+        &self,
+    ) -> Result<(&'a DHPublicKey, &'a DHKeyPair), BuilderError> {
+        let Some(peer_longterm_ecdh_pk) = self.peer_longterm_ecdh_pk else {
+            return Err(BuilderError::CiphersuiteBuilderState);
+        };
+        let Some(longterm_ecdh_keys) = self.longterm_ecdh_keys else {
+            return Err(BuilderError::CiphersuiteBuilderState);
+        };
+        Ok((peer_longterm_ecdh_pk, longterm_ecdh_keys))
+    }
+}
