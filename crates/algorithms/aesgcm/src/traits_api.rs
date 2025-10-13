@@ -1,4 +1,8 @@
-use crate::{aes_gcm_128, aes_gcm_256, implementations::*, NONCE_LEN, TAG_LEN};
+use crate::{
+    aes_gcm_128, aes_gcm_256,
+    implementations::{AesGcm128, AesGcm256, PortableAesGcm128, PortableAesGcm256},
+    NONCE_LEN, TAG_LEN,
+};
 
 use libcrux_traits::aead::{arrayref, consts, slice, typed_owned};
 
@@ -217,6 +221,26 @@ macro_rules! api {
         }
     };
 }
+
+#[cfg(feature = "simd128")]
+use crate::implementations::NeonAesGcm128;
+#[cfg(not(feature = "simd128"))]
+use crate::implementations::PortableAesGcm128 as NeonAesGcm128;
+
+#[cfg(not(feature = "simd256"))]
+use crate::implementations::PortableAesGcm128 as X64AesGcm128;
+#[cfg(feature = "simd256")]
+use crate::implementations::X64AesGcm128;
+
+#[cfg(feature = "simd128")]
+use crate::implementations::NeonAesGcm256;
+#[cfg(not(feature = "simd128"))]
+use crate::implementations::PortableAesGcm256 as NeonAesGcm256;
+
+#[cfg(not(feature = "simd256"))]
+use crate::implementations::PortableAesGcm256 as X64AesGcm256;
+#[cfg(feature = "simd256")]
+use crate::implementations::X64AesGcm256;
 
 api!(
     aes128,
