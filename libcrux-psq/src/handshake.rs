@@ -149,15 +149,14 @@ pub(super) fn derive_k1(
     let ecdh_shared_secret = DHSharedSecret::derive(own_longterm_key, peer_longterm_pk)?;
 
     // XXX: This makes clippy unhappy, but is a lifetime error for feature `classic-mceliece` if we return directlyr
-    let result = Ok(AEADKey::new(
+    Ok(AEADKey::new(
         &K1Ikm {
             k0,
             ecdh_shared_secret: &ecdh_shared_secret,
             pq_shared_secret,
         },
         &tx1,
-    )?);
-    result
+    )?)
 }
 
 #[derive(TlsSerializeBytes, TlsSize)]
