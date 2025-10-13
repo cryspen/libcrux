@@ -40,13 +40,13 @@ impl<'a> From<&'a PublicKey> for PQEncapsulationKey<'a> {
 
 #[derive(TlsSize, TlsSerializeBytes)]
 #[repr(u8)]
-pub enum PQSharedSecret<'a> {
+pub enum PQSharedSecret {
     None,
     MlKem(MlKemSharedSecret),
     #[cfg(feature = "classic-mceliece")]
-    CMC(SharedSecret<'a>),
+    CMC(SharedSecret<'static>),
     #[cfg(not(feature = "classic-mceliece"))]
-    CMC(std::marker::PhantomData<&'a [u8]>),
+    CMC,
 }
 
 pub enum PQDecapsulationKey {

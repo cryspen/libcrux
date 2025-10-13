@@ -28,7 +28,7 @@ pub enum InitiatorCiphersuite<'a> {
 impl<'a> CiphersuiteBase for InitiatorCiphersuite<'a> {
     type Ciphertext = PQCiphertext;
     type EncapsulationKeyRef = PQEncapsulationKey<'a>;
-    type SharedSecret = PQSharedSecret<'a>;
+    type SharedSecret = PQSharedSecret;
 
     fn name(&self) -> CiphersuiteName {
         match self {

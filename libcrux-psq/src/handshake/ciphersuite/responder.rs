@@ -44,7 +44,7 @@ pub enum ResponderCiphersuite<'a> {
 impl<'a> CiphersuiteBase for ResponderCiphersuite<'a> {
     type Ciphertext = PQCiphertext;
     type EncapsulationKeyRef = PQEncapsulationKey<'a>;
-    type SharedSecret = PQSharedSecret<'a>;
+    type SharedSecret = PQSharedSecret;
 
     fn name(&self) -> CiphersuiteName {
         match self {
