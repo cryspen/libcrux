@@ -41,10 +41,7 @@ impl AEADKey {
         )
         .map_err(|_| AEADError::CryptoError)?;
 
-        Ok(AEADKey(
-            key.try_into().map_err(|_| AEADError::CryptoError)?,
-            [0u8; NONCE_LEN],
-        ))
+        Ok(AEADKey(key, [0u8; NONCE_LEN]))
     }
 
     fn increment_nonce(&mut self) -> Result<(), AEADError> {

@@ -36,10 +36,7 @@ fn session_key_id(key: &AEADKey) -> Result<[u8; SESSION_ID_LENGTH], Error> {
     )
     .map_err(|_| Error::CryptoError)?;
 
-    Ok(
-        session_id.try_into().map_err(|_| Error::CryptoError)?, // We don't expect this to fail, unless HDKF gave us the wrong output length
-    )
-
+    Ok(session_id)
 }
 
 // skCS = KDF(K2, "session secret" | tx2)
