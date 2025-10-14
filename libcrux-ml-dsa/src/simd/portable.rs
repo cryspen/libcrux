@@ -58,10 +58,9 @@ impl Operations for Coefficients {
         arithmetic::subtract(lhs, rhs)
     }
 
-    #[hax_lib::requires(true)]
-    #[hax_lib::ensures(|result| false)]
+    #[hax_lib::requires(specs::infinity_norm_exceeds_pre(&simd_unit.repr(), bound))]
+    #[hax_lib::ensures(|result| specs::infinity_norm_exceeds_post(&simd_unit.repr(), bound, result))]
     fn infinity_norm_exceeds(simd_unit: &Coefficients, bound: i32) -> bool {
-        hax_lib::assume!(false);
         arithmetic::infinity_norm_exceeds(simd_unit, bound)
     }
 
