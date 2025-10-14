@@ -61,23 +61,17 @@ fi
 if [[ "$no_charon" = 0 ]]; then
     # Because of a Charon bug we have to clean the sha3 crate.
     cargo clean -p libcrux-sha3
-    rm -rf ../libcrux_ml_kem.llbc ../libcrux_sha3.llbc
-    echo "Running charon (sha3) ..."
-    (cd ../libcrux-sha3 && RUSTFLAGS="--cfg eurydice" $CHARON_HOME/bin/charon --remove-associated-types '*' --rustc-arg=-Cdebug-assertions=no)
-    if ! [[ -f ../libcrux_sha3.llbc ]]; then
+    rm -rf ../libcrux_ml_kem.llbc ../libcrux_sha3.llbc ../libcrux_secrets.llbc
+    echo "Running charon (all) ..."
+    RUSTFLAGS="-Cdebug-assertions=no --cfg eurydice" $CHARON_HOME/bin/charon cargo --preset eurydice \
+      --include 'libcrux_sha3::*' \
+      --include 'libcrux_secrets::*' \
+      #--include 'core::num::*::BITS' --include 'core::num::*::MAX'
+    if ! [[ -f ../libcrux_ml_kem.llbc ]]; then
         echo "😱😱😱 You are the victim of this bug: https://hacspec.zulipchat.com/#narrow/stream/433829-Circus/topic/charon.20declines.20to.20generate.20an.20llbc.20file"
         echo "Suggestion: rm -rf ../target or cargo clean"
         exit 1
     fi
-    echo "Running charon (secrets) ..."
-    (cd ../secrets && RUSTFLAGS="--cfg eurydice" $CHARON_HOME/bin/charon --remove-associated-types '*' --translate-all-methods)
-    if ! [[ -f ../libcrux_secrets.llbc ]]; then
-        echo "😱😱😱 You are the victim of this bug: https://hacspec.zulipchat.com/#narrow/stream/433829-Circus/topic/charon.20declines.20to.20generate.20an.20llbc.20file"
-        echo "Suggestion: rm -rf ../target or cargo clean"
-        exit 1
-    fi
-    echo "Running charon (ml-kem) ..."
-    RUSTFLAGS="--cfg eurydice" $CHARON_HOME/bin/charon --remove-associated-types '*' --rustc-arg=-Cdebug-assertions=no $features
 else
     echo "Skipping charon"
 fi
@@ -124,10 +118,10 @@ echo " */" >> header.txt
 # Run eurydice to extract the C code
 echo "Running eurydice ..."
 echo $EURYDICE_HOME/eurydice --config ../$config -funroll-loops $unrolling \
---header header.txt $cpp17 ../../libcrux_ml_kem.llbc ../../libcrux_sha3.llbc ../../libcrux_secrets.llbc
+--header header.txt $cpp17 ../../libcrux_ml_kem.llbc
 
 $EURYDICE_HOME/eurydice --config ../$config -funroll-loops $unrolling \
---header header.txt $cpp17 ../../libcrux_ml_kem.llbc ../../libcrux_sha3.llbc ../../libcrux_secrets.llbc
+--header header.txt $cpp17 ../../libcrux_ml_kem.llbc
 
 if [[ "$eurydice_glue" = 1 ]]; then
     cp $EURYDICE_HOME/include/eurydice_glue.h .
