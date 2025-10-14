@@ -161,7 +161,7 @@ pub(crate) fn decompose_pre(
         r#"
         (v $gamma2 == v ${crate::constants::GAMMA2_V261_888} \/
          v $gamma2 == v ${crate::constants::GAMMA2_V95_232}) /\
-        Spec.Utils.is_i32b_array_opaque (v ${FIELD_MAX}) (${simd_unit})"#
+        Spec.Utils.is_i32b_array_opaque (v $FIELD_MAX) $simd_unit"#
     )
 }
 pub(crate) fn decompose_post(
@@ -171,8 +171,21 @@ pub(crate) fn decompose_post(
     high: &SIMDContent,
     future_low: &SIMDContent,
     future_high: &SIMDContent,
-) -> bool {
-    true
+) -> Prop {
+    hax_lib::fstar::prop!(
+        r#"forall i. i < 8 ==>
+        (let r  = v (Seq.index $simd_unit i) in
+         let r0 = v (Seq.index $future_low i) in
+         let r1 = v (Seq.index $future_high i) in
+         let (r0_s, r1_s, cond) = Spec.MLDSA.Math.decompose (v $gamma2) r in
+         r0 = r0_s /\
+         r1 = r1_s /\
+         (if cond then
+             (r0 >= -(v $gamma2) /\ r0 < 0)
+          else
+             (r0 > -(v $gamma2) /\ r0 <= v $gamma2)) /\
+         (r1 >= 0 /\ r1 < (v $FIELD_MAX) / (v $gamma2 * 2)))"#
+    )
 }
 
 pub(crate) fn compute_hint_pre(
