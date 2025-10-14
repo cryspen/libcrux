@@ -64,10 +64,9 @@ impl Operations for Coefficients {
         arithmetic::infinity_norm_exceeds(simd_unit, bound)
     }
 
-    #[hax_lib::requires(true)]
-    #[hax_lib::ensures(|result| false)]
+    #[hax_lib::requires(specs::decompose_pre(gamma2, &simd_unit.repr(), &low.repr(), &high.repr()))]
+    #[hax_lib::ensures(|_| specs::decompose_post(gamma2, &simd_unit.repr(), &low.repr(), &high.repr(), &future(low).repr(), &future(high).repr()))]
     fn decompose(gamma2: Gamma2, simd_unit: &Self, low: &mut Self, high: &mut Self) {
-        hax_lib::assume!(false);
         arithmetic::decompose(gamma2, simd_unit, low, high)
     }
 
