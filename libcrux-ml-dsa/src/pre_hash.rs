@@ -34,7 +34,7 @@ impl PreHash for SHAKE128_PH {
 
     #[inline(always)]
     fn hash<Shake128: hash_functions::shake128::Xof>(message: &[u8], output: &mut [u8]) {
-        debug_assert_eq!(output.len(), 256);
+        debug_assert_eq!(output.len(), 32);
         Shake128::shake128(message, output);
     }
 }
