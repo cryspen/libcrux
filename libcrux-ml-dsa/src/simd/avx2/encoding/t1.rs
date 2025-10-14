@@ -1,7 +1,7 @@
 use libcrux_intrinsics::avx2::*;
 
 #[inline(always)]
-#[hax_lib::fstar::options("--fuel 0 --ifuel 0 --z3rlimit 1200 --split_queries always")]
+#[hax_lib::fstar::options("--z3rlimit 800")]
 #[hax_lib::fstar::before("open Spec.Intrinsics")]
 #[hax_lib::requires(out.len() == 10)]
 #[hax_lib::ensures(|_result| fstar!(r"
