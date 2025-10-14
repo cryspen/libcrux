@@ -60,10 +60,9 @@ impl Operations for AVX2SIMDUnit {
     }
 
     #[inline(always)]
-    #[hax_lib::requires(true)]
-    #[hax_lib::ensures(|result| false)]
+    #[hax_lib::requires(specs::subtract_pre(&lhs.repr(), &rhs.repr()))]
+    #[hax_lib::ensures(|_| specs::subtract_post(&lhs.repr(), &rhs.repr(), &future(lhs).repr()))]
     fn subtract(lhs: &mut Self, rhs: &Self) {
-        hax_lib::assume!(false);
         arithmetic::subtract(&mut lhs.value, &rhs.value)
     }
 
