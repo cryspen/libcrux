@@ -53,10 +53,9 @@ impl Operations for AVX2SIMDUnit {
     }
 
     #[inline(always)]
-    #[hax_lib::requires(true)]
-    #[hax_lib::ensures(|result| false)]
+    #[hax_lib::requires(specs::add_pre(&lhs.repr(), &rhs.repr()))]
+    #[hax_lib::ensures(|_| specs::add_post(&lhs.repr(), &rhs.repr(), &future(lhs).repr()))]
     fn add(lhs: &mut Self, rhs: &Self) {
-        hax_lib::assume!(false);
         arithmetic::add(&mut lhs.value, &rhs.value)
     }
 
