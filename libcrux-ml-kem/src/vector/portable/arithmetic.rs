@@ -342,7 +342,7 @@ pub(crate) fn barrett_reduce(vec: &mut PortableVector) {
 /// In particular, if `|value| ≤ FIELD_MODULUS-1 * FIELD_MODULUS-1`, then `|o| <= FIELD_MODULUS-1`.
 /// And, if `|value| ≤ pow2 16 * FIELD_MODULUS-1`, then `|o| <= FIELD_MODULUS + 1664
 ///
-#[hax_lib::fstar::options("--z3rlimit 500 --split_queries always")]
+#[hax_lib::fstar::options("--z3rlimit 300")]
 #[cfg_attr(hax, hax_lib::requires(fstar!(r#"Spec.Utils.is_i32b (3328 * pow2 16) value "#)))]
 #[cfg_attr(hax, hax_lib::ensures(|result| fstar!(r#"Spec.Utils.is_i16b (3328 + 1665) result /\
                 (Spec.Utils.is_i32b (3328 * pow2 15) value ==> Spec.Utils.is_i16b 3328 result) /\
@@ -414,7 +414,11 @@ pub(crate) fn montgomery_reduce_element(value: I32) -> MontgomeryFieldElement {
         ((((v value @% pow2 16) * 62209) % pow2 16) * 3329) % pow2 16;
           ( == ) {  Math.Lemmas.lemma_mod_mul_distr_l ((v value @% pow2 16) * 62209) 3329 (pow2 16) }
         ((((v value @% pow2 16) * 62209) * 3329) % pow2 16);
-          ( == ) {  Math.Lemmas.lemma_mod_mul_distr_r (v value @% pow2 16) (62209 * 3329) (pow2 16) }
+          ( == ) { }
+        (((v value @% pow2 16) * (62209 * 3329)) % pow2 16);
+          ( == ) { Math.Lemmas.lemma_mod_mul_distr_r (v value @% pow2 16) (62209 * 3329) (pow2 16) }
+        (((v value @% pow2 16) * ((62209 * 3329) % pow2 16)) % pow2 16);
+          ( == ) { assert_norm((62209 * 3329) % pow2 16 == 1) }
         ((v value @% pow2 16) % pow2 16);
           ( == ) { Math.Lemmas.lemma_mod_sub (v value) (pow2 16) 1 }
         (v value) % pow2 16;

@@ -4,11 +4,11 @@
  * SPDX-License-Identifier: MIT or Apache-2.0
  *
  * This code was generated with the following revisions:
- * Charon:
- * Eurydice:
- * Karamel:
- * F*: 4b3fc11774003a6ff7c09500ecb5f0145ca6d862
- * Libcrux: 88bb93f8cf602f1a2a5e403403836523c8cdff63
+ * Charon: 667d2fc98984ff7f3df989c2367e6c1fa4a000e7
+ * Eurydice: 2381cbc416ef2ad0b561c362c500bc84f36b6785
+ * Karamel: 80f5435f2fc505973c469a4afcc8d875cddd0d8b
+ * F*: 71d8221589d4d438af3706d89cb653cf53e18aab
+ * Libcrux: 68dfed5a4a9e40277f62828471c029afed1ecdcc
  */
 
 #ifndef libcrux_mlkem_core_H
@@ -27,8 +27,6 @@ typedef struct core_ops_range_Range_08_s {
 } core_ops_range_Range_08;
 
 static inline uint16_t core_num__u16__wrapping_add(uint16_t x0, uint16_t x1);
-
-static uint32_t core_num__u32__BITS = 32U;
 
 static inline uint64_t core_num__u64__from_le_bytes(uint8_t x0[8U]);
 
@@ -313,6 +311,86 @@ static KRML_MUSTINLINE int16_t libcrux_secrets_int_as_i16_f5(int16_t self) {
       libcrux_secrets_int_public_integers_declassify_d8_39(self));
 }
 
+typedef struct libcrux_ml_kem_utils_extraction_helper_Keypair768_s {
+  uint8_t fst[1152U];
+  uint8_t snd[1184U];
+} libcrux_ml_kem_utils_extraction_helper_Keypair768;
+
+#define Ok 0
+#define Err 1
+
+typedef uint8_t Result_b2_tags;
+
+/**
+A monomorphic instance of core.result.Result
+with types uint8_t[24size_t], core_array_TryFromSliceError
+
+*/
+typedef struct Result_b2_s {
+  Result_b2_tags tag;
+  union U {
+    uint8_t case_Ok[24U];
+    TryFromSliceError case_Err;
+  } val;
+  KRML_UNION_CONSTRUCTOR(Result_b2_s)
+} Result_b2;
+
+/**
+This function found in impl {core::result::Result<T, E>[TraitClause@0,
+TraitClause@1]}
+*/
+/**
+A monomorphic instance of core.result.unwrap_26
+with types uint8_t[24size_t], core_array_TryFromSliceError
+
+*/
+static inline void unwrap_26_70(Result_b2 self, uint8_t ret[24U]) {
+  if (self.tag == Ok) {
+    uint8_t f0[24U];
+    memcpy(f0, self.val.case_Ok, (size_t)24U * sizeof(uint8_t));
+    memcpy(ret, f0, (size_t)24U * sizeof(uint8_t));
+  } else {
+    KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__,
+                      "unwrap not Ok");
+    KRML_HOST_EXIT(255U);
+  }
+}
+
+/**
+A monomorphic instance of core.result.Result
+with types uint8_t[20size_t], core_array_TryFromSliceError
+
+*/
+typedef struct Result_e1_s {
+  Result_b2_tags tag;
+  union U {
+    uint8_t case_Ok[20U];
+    TryFromSliceError case_Err;
+  } val;
+  KRML_UNION_CONSTRUCTOR(Result_e1_s)
+} Result_e1;
+
+/**
+This function found in impl {core::result::Result<T, E>[TraitClause@0,
+TraitClause@1]}
+*/
+/**
+A monomorphic instance of core.result.unwrap_26
+with types uint8_t[20size_t], core_array_TryFromSliceError
+
+*/
+static inline void unwrap_26_20(Result_e1 self, uint8_t ret[20U]) {
+  if (self.tag == Ok) {
+    uint8_t f0[20U];
+    memcpy(f0, self.val.case_Ok, (size_t)20U * sizeof(uint8_t));
+    memcpy(ret, f0, (size_t)20U * sizeof(uint8_t));
+  } else {
+    KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__,
+                      "unwrap not Ok");
+    KRML_HOST_EXIT(255U);
+  }
+}
+
 /**
  Pad the `slice` with `0`s at the end.
 */
@@ -353,29 +431,6 @@ with const generics
 static inline libcrux_ml_kem_types_MlKemPrivateKey_d9
 libcrux_ml_kem_types_default_d3_28(void) {
   return (libcrux_ml_kem_types_MlKemPrivateKey_d9{{0U}});
-}
-
-typedef struct libcrux_ml_kem_mlkem768_MlKem768Ciphertext_s {
-  uint8_t value[1088U];
-} libcrux_ml_kem_mlkem768_MlKem768Ciphertext;
-
-/**
-This function found in impl {core::convert::From<@Array<u8, SIZE>> for
-libcrux_ml_kem::types::MlKemCiphertext<SIZE>}
-*/
-/**
-A monomorphic instance of libcrux_ml_kem.types.from_e0
-with const generics
-- SIZE= 1088
-*/
-static inline libcrux_ml_kem_mlkem768_MlKem768Ciphertext
-libcrux_ml_kem_types_from_e0_80(uint8_t value[1088U]) {
-  /* Passing arrays by value in Rust generates a copy in C */
-  uint8_t copy_of_value[1088U];
-  memcpy(copy_of_value, value, (size_t)1088U * sizeof(uint8_t));
-  libcrux_ml_kem_mlkem768_MlKem768Ciphertext lit;
-  memcpy(lit.value, copy_of_value, (size_t)1088U * sizeof(uint8_t));
-  return lit;
 }
 
 /**
@@ -446,18 +501,13 @@ libcrux_ml_kem_types_from_77_28(uint8_t value[2400U]) {
   return lit;
 }
 
-#define Ok 0
-#define Err 1
-
-typedef uint8_t Result_fb_tags;
-
 /**
 A monomorphic instance of core.result.Result
 with types uint8_t[32size_t], core_array_TryFromSliceError
 
 */
 typedef struct Result_fb_s {
-  Result_fb_tags tag;
+  Result_b2_tags tag;
   union U {
     uint8_t case_Ok[32U];
     TryFromSliceError case_Err;
@@ -486,6 +536,10 @@ static inline void unwrap_26_b3(Result_fb self, uint8_t ret[32U]) {
   }
 }
 
+typedef struct libcrux_ml_kem_mlkem768_MlKem768Ciphertext_s {
+  uint8_t value[1088U];
+} libcrux_ml_kem_mlkem768_MlKem768Ciphertext;
+
 /**
 A monomorphic instance of K.
 with types libcrux_ml_kem_types_MlKemCiphertext[[$1088size_t]],
@@ -498,17 +552,22 @@ typedef struct tuple_c2_s {
 } tuple_c2;
 
 /**
-This function found in impl {core::default::Default for
+This function found in impl {core::convert::From<@Array<u8, SIZE>> for
 libcrux_ml_kem::types::MlKemCiphertext<SIZE>}
 */
 /**
-A monomorphic instance of libcrux_ml_kem.types.default_73
+A monomorphic instance of libcrux_ml_kem.types.from_e0
 with const generics
 - SIZE= 1088
 */
 static inline libcrux_ml_kem_mlkem768_MlKem768Ciphertext
-libcrux_ml_kem_types_default_73_80(void) {
-  return (libcrux_ml_kem_mlkem768_MlKem768Ciphertext{{0U}});
+libcrux_ml_kem_types_from_e0_80(uint8_t value[1088U]) {
+  /* Passing arrays by value in Rust generates a copy in C */
+  uint8_t copy_of_value[1088U];
+  memcpy(copy_of_value, value, (size_t)1088U * sizeof(uint8_t));
+  libcrux_ml_kem_mlkem768_MlKem768Ciphertext lit;
+  memcpy(lit.value, copy_of_value, (size_t)1088U * sizeof(uint8_t));
+  return lit;
 }
 
 /**
@@ -521,6 +580,19 @@ with const generics
 */
 static inline uint8_t *libcrux_ml_kem_types_as_slice_e6_d0(
     libcrux_ml_kem_types_MlKemPublicKey_30 *self) {
+  return self->value;
+}
+
+/**
+This function found in impl {libcrux_ml_kem::types::MlKemCiphertext<SIZE>}
+*/
+/**
+A monomorphic instance of libcrux_ml_kem.types.as_slice_a9
+with const generics
+- SIZE= 1088
+*/
+static inline uint8_t *libcrux_ml_kem_types_as_slice_a9_80(
+    libcrux_ml_kem_mlkem768_MlKem768Ciphertext *self) {
   return self->value;
 }
 
@@ -673,6 +745,75 @@ libcrux_ml_kem_types_unpack_private_key_b4(Eurydice_slice private_key) {
 }
 
 /**
+This function found in impl {libcrux_secrets::traits::Declassify<T> for T}
+*/
+/**
+A monomorphic instance of libcrux_secrets.int.public_integers.declassify_d8
+with types uint8_t[24size_t]
+
+*/
+static KRML_MUSTINLINE void
+libcrux_secrets_int_public_integers_declassify_d8_d2(uint8_t self[24U],
+                                                     uint8_t ret[24U]) {
+  memcpy(ret, self, (size_t)24U * sizeof(uint8_t));
+}
+
+/**
+This function found in impl {libcrux_secrets::traits::Declassify<T> for T}
+*/
+/**
+A monomorphic instance of libcrux_secrets.int.public_integers.declassify_d8
+with types uint8_t[20size_t]
+
+*/
+static KRML_MUSTINLINE void
+libcrux_secrets_int_public_integers_declassify_d8_57(uint8_t self[20U],
+                                                     uint8_t ret[20U]) {
+  memcpy(ret, self, (size_t)20U * sizeof(uint8_t));
+}
+
+/**
+This function found in impl {libcrux_secrets::traits::Declassify<T> for T}
+*/
+/**
+A monomorphic instance of libcrux_secrets.int.public_integers.declassify_d8
+with types uint8_t[8size_t]
+
+*/
+static KRML_MUSTINLINE void
+libcrux_secrets_int_public_integers_declassify_d8_76(uint8_t self[8U],
+                                                     uint8_t ret[8U]) {
+  memcpy(ret, self, (size_t)8U * sizeof(uint8_t));
+}
+
+/**
+This function found in impl {libcrux_secrets::traits::Declassify<T> for T}
+*/
+/**
+A monomorphic instance of libcrux_secrets.int.public_integers.declassify_d8
+with types uint8_t[2size_t]
+
+*/
+static KRML_MUSTINLINE void
+libcrux_secrets_int_public_integers_declassify_d8_d4(uint8_t self[2U],
+                                                     uint8_t ret[2U]) {
+  memcpy(ret, self, (size_t)2U * sizeof(uint8_t));
+}
+
+/**
+This function found in impl {libcrux_secrets::traits::Classify<T> for T}
+*/
+/**
+A monomorphic instance of libcrux_secrets.int.public_integers.classify_27
+with types int16_t[16size_t]
+
+*/
+static KRML_MUSTINLINE void libcrux_secrets_int_public_integers_classify_27_46(
+    int16_t self[16U], int16_t ret[16U]) {
+  memcpy(ret, self, (size_t)16U * sizeof(int16_t));
+}
+
+/**
 This function found in impl {libcrux_secrets::traits::ClassifyRef<&'a
 (@Slice<T>)> for &'a (@Slice<T>)}
 */
@@ -701,16 +842,38 @@ libcrux_secrets_int_classify_public_classify_ref_9b_39(Eurydice_slice self) {
 }
 
 /**
-This function found in impl {libcrux_secrets::traits::Classify<T> for T}
-*/
-/**
-A monomorphic instance of libcrux_secrets.int.public_integers.classify_27
-with types int16_t[16size_t]
+A monomorphic instance of core.result.Result
+with types int16_t[16size_t], core_array_TryFromSliceError
 
 */
-static KRML_MUSTINLINE void libcrux_secrets_int_public_integers_classify_27_46(
-    int16_t self[16U], int16_t ret[16U]) {
-  memcpy(ret, self, (size_t)16U * sizeof(int16_t));
+typedef struct Result_0a_s {
+  Result_b2_tags tag;
+  union U {
+    int16_t case_Ok[16U];
+    TryFromSliceError case_Err;
+  } val;
+  KRML_UNION_CONSTRUCTOR(Result_0a_s)
+} Result_0a;
+
+/**
+This function found in impl {core::result::Result<T, E>[TraitClause@0,
+TraitClause@1]}
+*/
+/**
+A monomorphic instance of core.result.unwrap_26
+with types int16_t[16size_t], core_array_TryFromSliceError
+
+*/
+static inline void unwrap_26_00(Result_0a self, int16_t ret[16U]) {
+  if (self.tag == Ok) {
+    int16_t f0[16U];
+    memcpy(f0, self.val.case_Ok, (size_t)16U * sizeof(int16_t));
+    memcpy(ret, f0, (size_t)16U * sizeof(int16_t));
+  } else {
+    KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__,
+                      "unwrap not Ok");
+    KRML_HOST_EXIT(255U);
+  }
 }
 
 /**
@@ -719,7 +882,7 @@ with types uint8_t[8size_t], core_array_TryFromSliceError
 
 */
 typedef struct Result_15_s {
-  Result_fb_tags tag;
+  Result_b2_tags tag;
   union U {
     uint8_t case_Ok[8U];
     TryFromSliceError case_Err;

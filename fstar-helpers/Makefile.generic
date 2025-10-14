@@ -120,6 +120,7 @@ endif
 
 .PHONY: all verify clean
 
+# Only run code extraction for build targets, not for 'clean'.
 all:
 ifeq "$(wildcard *.fst *fsti)" ""
 	$(shell cargo hax into fstar)
@@ -133,7 +134,6 @@ ifeq "$(wildcard *.fst *fsti)" ""
 endif
 	$(Q)rm -f .depend
 	$(Q)$(MAKE) --keep-going .depend hax.fst.config.json verify
-
 
 # By default, we process all the files in the current directory
 ROOTS ?= $(wildcard *.fst *fsti)
