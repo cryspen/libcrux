@@ -29,10 +29,8 @@ impl Repr for Coefficients {}
 
 #[hax_lib::attributes]
 impl Operations for Coefficients {
-    #[hax_lib::requires(true)]
-    #[hax_lib::ensures(|result| false)]
+    #[hax_lib::ensures(|result| specs::zero_post(&result.repr()))]
     fn zero() -> Coefficients {
-        hax_lib::assume!(false);
         vector_type::zero()
     }
 
