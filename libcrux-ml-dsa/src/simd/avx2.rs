@@ -39,11 +39,10 @@ impl Operations for AVX2SIMDUnit {
     }
 
     #[inline(always)]
-    #[hax_lib::requires(true)]
-    #[hax_lib::ensures(|result| false)]
-    fn from_coefficient_array(coefficient_array: &[i32], out: &mut Self) {
-        hax_lib::assume!(false);
-        vector_type::from_coefficient_array(coefficient_array, out)
+    #[hax_lib::requires(specs::from_coefficient_array_pre(array, &out.repr()))]
+    #[hax_lib::ensures(|_| specs::from_coefficient_array_post(array, &out.repr(), &future(out).repr()))]
+    fn from_coefficient_array(array: &[i32], out: &mut Self) {
+        vector_type::from_coefficient_array(array, out)
     }
 
     #[inline(always)]

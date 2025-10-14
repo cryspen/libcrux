@@ -34,10 +34,9 @@ impl Operations for Coefficients {
         vector_type::zero()
     }
 
-    #[hax_lib::requires(true)]
-    #[hax_lib::ensures(|result| false)]
+    #[hax_lib::requires(specs::from_coefficient_array_pre(array, &out.repr()))]
+    #[hax_lib::ensures(|_| specs::from_coefficient_array_post(array, &out.repr(), &future(out).repr()))]
     fn from_coefficient_array(array: &[i32], out: &mut Coefficients) {
-        hax_lib::assume!(false);
         vector_type::from_coefficient_array(array, out)
     }
 
