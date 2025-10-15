@@ -1,4 +1,6 @@
-use super::traits::{spec, Operations, Repr};
+#[cfg(hax)]
+use super::traits::spec;
+use super::traits::{Operations, Repr};
 use arithmetic::{bitwise_and_with_constant, shift_right};
 pub(crate) use libcrux_intrinsics::avx2::*;
 
