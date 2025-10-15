@@ -4,11 +4,11 @@
  * SPDX-License-Identifier: MIT or Apache-2.0
  *
  * This code was generated with the following revisions:
- * Charon: c66a520f7072006af0071eb517002a73d5f3a7d1
- * Eurydice: 9dae7cbf24d38b7b0eb8e7efd12d662a4ebe1f1a
+ * Charon: 150afa5f6ba469c99c4a2fa6e1037ae5a4004c68
+ * Eurydice: 82bef284a4b2bd383048a1459758e605c976ff11
  * Karamel: 80f5435f2fc505973c469a4afcc8d875cddd0d8b
  * F*: f3a2732c1984b520b1f1d48a22e7dd9f8d14a3a2
- * Libcrux: fba8ff3916a9aa0a3869f2fffea66d8aea07144a
+ * Libcrux: 16f49de38d3b626c0a336b5e2fceb0bf1fed20bf
  */
 
 #include "libcrux_sha3_portable.h"
@@ -98,9 +98,6 @@ KRML_MUSTINLINE uint64_t libcrux_sha3_simd_portable_xor_d2(uint64_t a,
 }
 
 /**
- Create a new Shake128 x4 state.
-*/
-/**
 This function found in impl {libcrux_sha3::generic_keccak::KeccakState<T,
 N>[TraitClause@0, TraitClause@1]}
 */
@@ -162,6 +159,7 @@ KRML_MUSTINLINE void libcrux_sha3_simd_portable_load_block_f8(
         Eurydice_slice, Eurydice_arr_c4, core_array_TryFromSliceError);
     Eurydice_arr_c4 uu____0 = core_result_unwrap_26_ab(dst);
     state_flat.data[i0] = core_num__u64__from_le_bytes(uu____0);
+    continue;
   }
   for (size_t i = (size_t)0U; i < (size_t)72U / (size_t)8U; i++) {
     size_t i0 = i;
@@ -171,6 +169,7 @@ KRML_MUSTINLINE void libcrux_sha3_simd_portable_load_block_f8(
                                       i0 % (size_t)5U)[0U] ^
             state_flat.data[i0]);
   }
+  return;
 }
 
 /**
@@ -191,9 +190,6 @@ void libcrux_sha3_simd_portable_load_block_a1_f8(Eurydice_arr_26 *self,
 }
 
 /**
- Get element `[i, j]`.
-*/
-/**
 This function found in impl {core::ops::index::Index<(usize, usize), T> for
 libcrux_sha3::generic_keccak::KeccakState<T, N>[TraitClause@0, TraitClause@1]}
 */
@@ -208,9 +204,6 @@ uint64_t *libcrux_sha3_generic_keccak_index_c2_04(Eurydice_arr_26 *self,
   return libcrux_sha3_traits_get_ij_04(self, index.fst, index.snd);
 }
 
-/**
- Set element `[i, j] = v`.
-*/
 /**
 This function found in impl {libcrux_sha3::generic_keccak::KeccakState<T,
 N>[TraitClause@0, TraitClause@1]}
@@ -1530,10 +1523,11 @@ KRML_MUSTINLINE void libcrux_sha3_generic_keccak_chi_80_04(
                                 .fst = i1,
                                 .snd = (j + (size_t)2U) % (size_t)5U}))[0U],
                   libcrux_sha3_generic_keccak_index_c2_04(
-                      &old,
-                      (KRML_CLITERAL(size_t_x2){
-                          .fst = i1,
-                          .snd = (j + (size_t)1U) % (size_t)5U}))[0U]));););
+                      &old, (KRML_CLITERAL(size_t_x2){
+                                .fst = i1,
+                                .snd = (j + (size_t)1U) % (size_t)5U}))[0U])););
+      continue;);
+  return;
 }
 
 /**
@@ -1719,6 +1713,7 @@ inline void libcrux_sha3_generic_keccak_portable_keccak1_96(
     Eurydice_arr_34 lvalue = {.data = {data}};
     libcrux_sha3_generic_keccak_absorb_block_80_c6(&s, &lvalue,
                                                    i0 * (size_t)72U);
+    continue;
   }
   size_t rem = data_len % (size_t)72U;
   /* original Rust expression is not an lvalue in C */
@@ -1730,6 +1725,7 @@ inline void libcrux_sha3_generic_keccak_portable_keccak1_96(
   size_t last = outlen - outlen % (size_t)72U;
   if (blocks == (size_t)0U) {
     libcrux_sha3_simd_portable_squeeze_13_f8(&s, out, (size_t)0U, outlen);
+    return;
   } else {
     libcrux_sha3_simd_portable_squeeze_13_f8(&s, out, (size_t)0U, (size_t)72U);
     for (size_t i = (size_t)1U; i < blocks; i++) {
@@ -1742,6 +1738,7 @@ inline void libcrux_sha3_generic_keccak_portable_keccak1_96(
       libcrux_sha3_generic_keccak_keccakf1600_80_04(&s);
       libcrux_sha3_simd_portable_squeeze_13_f8(&s, out, last, outlen - last);
     }
+    return;
   }
 }
 
@@ -1771,6 +1768,7 @@ KRML_MUSTINLINE void libcrux_sha3_simd_portable_load_block_5b(
         Eurydice_slice, Eurydice_arr_c4, core_array_TryFromSliceError);
     Eurydice_arr_c4 uu____0 = core_result_unwrap_26_ab(dst);
     state_flat.data[i0] = core_num__u64__from_le_bytes(uu____0);
+    continue;
   }
   for (size_t i = (size_t)0U; i < (size_t)136U / (size_t)8U; i++) {
     size_t i0 = i;
@@ -1780,6 +1778,7 @@ KRML_MUSTINLINE void libcrux_sha3_simd_portable_load_block_5b(
                                       i0 % (size_t)5U)[0U] ^
             state_flat.data[i0]);
   }
+  return;
 }
 
 /**
@@ -1940,6 +1939,7 @@ inline void libcrux_sha3_generic_keccak_portable_keccak1_ad(
     Eurydice_arr_34 lvalue = {.data = {data}};
     libcrux_sha3_generic_keccak_absorb_block_80_c60(&s, &lvalue,
                                                     i0 * (size_t)136U);
+    continue;
   }
   size_t rem = data_len % (size_t)136U;
   /* original Rust expression is not an lvalue in C */
@@ -1951,6 +1951,7 @@ inline void libcrux_sha3_generic_keccak_portable_keccak1_ad(
   size_t last = outlen - outlen % (size_t)136U;
   if (blocks == (size_t)0U) {
     libcrux_sha3_simd_portable_squeeze_13_5b(&s, out, (size_t)0U, outlen);
+    return;
   } else {
     libcrux_sha3_simd_portable_squeeze_13_5b(&s, out, (size_t)0U, (size_t)136U);
     for (size_t i = (size_t)1U; i < blocks; i++) {
@@ -1963,6 +1964,7 @@ inline void libcrux_sha3_generic_keccak_portable_keccak1_ad(
       libcrux_sha3_generic_keccak_keccakf1600_80_04(&s);
       libcrux_sha3_simd_portable_squeeze_13_5b(&s, out, last, outlen - last);
     }
+    return;
   }
 }
 
@@ -2045,6 +2047,7 @@ inline void libcrux_sha3_generic_keccak_portable_keccak1_ad0(
     Eurydice_arr_34 lvalue = {.data = {data}};
     libcrux_sha3_generic_keccak_absorb_block_80_c60(&s, &lvalue,
                                                     i0 * (size_t)136U);
+    continue;
   }
   size_t rem = data_len % (size_t)136U;
   /* original Rust expression is not an lvalue in C */
@@ -2056,6 +2059,7 @@ inline void libcrux_sha3_generic_keccak_portable_keccak1_ad0(
   size_t last = outlen - outlen % (size_t)136U;
   if (blocks == (size_t)0U) {
     libcrux_sha3_simd_portable_squeeze_13_5b(&s, out, (size_t)0U, outlen);
+    return;
   } else {
     libcrux_sha3_simd_portable_squeeze_13_5b(&s, out, (size_t)0U, (size_t)136U);
     for (size_t i = (size_t)1U; i < blocks; i++) {
@@ -2068,6 +2072,7 @@ inline void libcrux_sha3_generic_keccak_portable_keccak1_ad0(
       libcrux_sha3_generic_keccak_keccakf1600_80_04(&s);
       libcrux_sha3_simd_portable_squeeze_13_5b(&s, out, last, outlen - last);
     }
+    return;
   }
 }
 
@@ -2105,6 +2110,7 @@ KRML_MUSTINLINE void libcrux_sha3_simd_portable_load_block_3a(
         Eurydice_slice, Eurydice_arr_c4, core_array_TryFromSliceError);
     Eurydice_arr_c4 uu____0 = core_result_unwrap_26_ab(dst);
     state_flat.data[i0] = core_num__u64__from_le_bytes(uu____0);
+    continue;
   }
   for (size_t i = (size_t)0U; i < (size_t)168U / (size_t)8U; i++) {
     size_t i0 = i;
@@ -2114,6 +2120,7 @@ KRML_MUSTINLINE void libcrux_sha3_simd_portable_load_block_3a(
                                       i0 % (size_t)5U)[0U] ^
             state_flat.data[i0]);
   }
+  return;
 }
 
 /**
@@ -2342,6 +2349,7 @@ KRML_MUSTINLINE void libcrux_sha3_simd_portable_load_block_2c(
         Eurydice_slice, Eurydice_arr_c4, core_array_TryFromSliceError);
     Eurydice_arr_c4 uu____0 = core_result_unwrap_26_ab(dst);
     state_flat.data[i0] = core_num__u64__from_le_bytes(uu____0);
+    continue;
   }
   for (size_t i = (size_t)0U; i < (size_t)144U / (size_t)8U; i++) {
     size_t i0 = i;
@@ -2351,6 +2359,7 @@ KRML_MUSTINLINE void libcrux_sha3_simd_portable_load_block_2c(
                                       i0 % (size_t)5U)[0U] ^
             state_flat.data[i0]);
   }
+  return;
 }
 
 /**
@@ -2511,6 +2520,7 @@ inline void libcrux_sha3_generic_keccak_portable_keccak1_1e(
     Eurydice_arr_34 lvalue = {.data = {data}};
     libcrux_sha3_generic_keccak_absorb_block_80_c61(&s, &lvalue,
                                                     i0 * (size_t)144U);
+    continue;
   }
   size_t rem = data_len % (size_t)144U;
   /* original Rust expression is not an lvalue in C */
@@ -2522,6 +2532,7 @@ inline void libcrux_sha3_generic_keccak_portable_keccak1_1e(
   size_t last = outlen - outlen % (size_t)144U;
   if (blocks == (size_t)0U) {
     libcrux_sha3_simd_portable_squeeze_13_2c(&s, out, (size_t)0U, outlen);
+    return;
   } else {
     libcrux_sha3_simd_portable_squeeze_13_2c(&s, out, (size_t)0U, (size_t)144U);
     for (size_t i = (size_t)1U; i < blocks; i++) {
@@ -2534,6 +2545,7 @@ inline void libcrux_sha3_generic_keccak_portable_keccak1_1e(
       libcrux_sha3_generic_keccak_keccakf1600_80_04(&s);
       libcrux_sha3_simd_portable_squeeze_13_2c(&s, out, last, outlen - last);
     }
+    return;
   }
 }
 
@@ -2564,6 +2576,7 @@ KRML_MUSTINLINE void libcrux_sha3_simd_portable_load_block_7a(
         Eurydice_slice, Eurydice_arr_c4, core_array_TryFromSliceError);
     Eurydice_arr_c4 uu____0 = core_result_unwrap_26_ab(dst);
     state_flat.data[i0] = core_num__u64__from_le_bytes(uu____0);
+    continue;
   }
   for (size_t i = (size_t)0U; i < (size_t)104U / (size_t)8U; i++) {
     size_t i0 = i;
@@ -2573,6 +2586,7 @@ KRML_MUSTINLINE void libcrux_sha3_simd_portable_load_block_7a(
                                       i0 % (size_t)5U)[0U] ^
             state_flat.data[i0]);
   }
+  return;
 }
 
 /**
@@ -2733,6 +2747,7 @@ inline void libcrux_sha3_generic_keccak_portable_keccak1_7c(
     Eurydice_arr_34 lvalue = {.data = {data}};
     libcrux_sha3_generic_keccak_absorb_block_80_c62(&s, &lvalue,
                                                     i0 * (size_t)104U);
+    continue;
   }
   size_t rem = data_len % (size_t)104U;
   /* original Rust expression is not an lvalue in C */
@@ -2744,6 +2759,7 @@ inline void libcrux_sha3_generic_keccak_portable_keccak1_7c(
   size_t last = outlen - outlen % (size_t)104U;
   if (blocks == (size_t)0U) {
     libcrux_sha3_simd_portable_squeeze_13_7a(&s, out, (size_t)0U, outlen);
+    return;
   } else {
     libcrux_sha3_simd_portable_squeeze_13_7a(&s, out, (size_t)0U, (size_t)104U);
     for (size_t i = (size_t)1U; i < blocks; i++) {
@@ -2756,6 +2772,7 @@ inline void libcrux_sha3_generic_keccak_portable_keccak1_7c(
       libcrux_sha3_generic_keccak_keccakf1600_80_04(&s);
       libcrux_sha3_simd_portable_squeeze_13_7a(&s, out, last, outlen - last);
     }
+    return;
   }
 }
 
@@ -2895,6 +2912,7 @@ inline void libcrux_sha3_generic_keccak_portable_keccak1_c6(
     Eurydice_arr_34 lvalue = {.data = {data}};
     libcrux_sha3_generic_keccak_absorb_block_80_c63(&s, &lvalue,
                                                     i0 * (size_t)168U);
+    continue;
   }
   size_t rem = data_len % (size_t)168U;
   /* original Rust expression is not an lvalue in C */
@@ -2906,6 +2924,7 @@ inline void libcrux_sha3_generic_keccak_portable_keccak1_c6(
   size_t last = outlen - outlen % (size_t)168U;
   if (blocks == (size_t)0U) {
     libcrux_sha3_simd_portable_squeeze_13_3a(&s, out, (size_t)0U, outlen);
+    return;
   } else {
     libcrux_sha3_simd_portable_squeeze_13_3a(&s, out, (size_t)0U, (size_t)168U);
     for (size_t i = (size_t)1U; i < blocks; i++) {
@@ -2918,6 +2937,7 @@ inline void libcrux_sha3_generic_keccak_portable_keccak1_c6(
       libcrux_sha3_generic_keccak_keccakf1600_80_04(&s);
       libcrux_sha3_simd_portable_squeeze_13_3a(&s, out, last, outlen - last);
     }
+    return;
   }
 }
 
@@ -3061,719 +3081,4 @@ libcrux_sha3_portable_incremental_shake256_squeeze_next_block(
     Eurydice_arr_26 *s, Eurydice_slice out) {
   libcrux_sha3_generic_keccak_portable_squeeze_next_block_b4_5b(s, out,
                                                                 (size_t)0U);
-}
-
-/**
- Consume the internal buffer and the required amount of the input to pad to
- `RATE`.
-
- Returns the `consumed` bytes from `inputs` if there's enough buffered
- content to consume, and `0` otherwise.
- If `consumed > 0` is returned, `self.buf` contains a full block to be
- loaded.
-*/
-/**
-This function found in impl
-{libcrux_sha3::generic_keccak::xof::KeccakXofState<STATE, PARALLEL_LANES,
-RATE>[TraitClause@0, TraitClause@1]}
-*/
-/**
-A monomorphic instance of libcrux_sha3.generic_keccak.xof.fill_buffer_35
-with types uint64_t
-with const generics
-- PARALLEL_LANES= 1
-- RATE= 136
-*/
-size_t libcrux_sha3_generic_keccak_xof_fill_buffer_35_c6(
-    libcrux_sha3_generic_keccak_xof_KeccakXofState_e2 *self,
-    Eurydice_arr_34 *inputs) {
-  size_t input_len = Eurydice_slice_len(inputs->data[0U], uint8_t);
-  size_t consumed = (size_t)0U;
-  if (self->buf_len > (size_t)0U) {
-    if (self->buf_len + input_len >= (size_t)136U) {
-      consumed = (size_t)136U - self->buf_len;
-      {
-        size_t i = (size_t)0U;
-        Eurydice_slice uu____0 = Eurydice_array_to_subslice_from(
-            (size_t)136U, &self->buf.data[i], self->buf_len, uint8_t, size_t,
-            uint8_t[]);
-        Eurydice_slice_copy(
-            uu____0,
-            Eurydice_slice_subslice_to(inputs->data[i], consumed, uint8_t,
-                                       size_t, uint8_t[]),
-            uint8_t);
-      }
-      self->buf_len = self->buf_len + consumed;
-    }
-  }
-  return consumed;
-}
-
-/**
-This function found in impl
-{libcrux_sha3::generic_keccak::xof::KeccakXofState<STATE, PARALLEL_LANES,
-RATE>[TraitClause@0, TraitClause@1]}
-*/
-/**
-A monomorphic instance of libcrux_sha3.generic_keccak.xof.absorb_full_35
-with types uint64_t
-with const generics
-- PARALLEL_LANES= 1
-- RATE= 136
-*/
-size_t libcrux_sha3_generic_keccak_xof_absorb_full_35_c6(
-    libcrux_sha3_generic_keccak_xof_KeccakXofState_e2 *self,
-    Eurydice_arr_34 *inputs) {
-  size_t input_consumed =
-      libcrux_sha3_generic_keccak_xof_fill_buffer_35_c6(self, inputs);
-  if (input_consumed > (size_t)0U) {
-    Eurydice_arr_34 borrowed;
-    Eurydice_slice repeat_expression[1U];
-    {
-      /* original Rust expression is not an lvalue in C */
-      Eurydice_arr_3d lvalue = {.data = {0U}};
-      repeat_expression[0U] = core_array___Array_T__N___as_slice(
-          (size_t)136U, &lvalue, uint8_t, Eurydice_slice);
-    }
-    memcpy(borrowed.data, repeat_expression,
-           (size_t)1U * sizeof(Eurydice_slice));
-    {
-      size_t i = (size_t)0U;
-      borrowed.data[i] =
-          Eurydice_array_to_slice((size_t)136U, &self->buf.data[i], uint8_t);
-    }
-    libcrux_sha3_simd_portable_load_block_a1_5b(&self->inner, &borrowed,
-                                                (size_t)0U);
-    libcrux_sha3_generic_keccak_keccakf1600_80_04(&self->inner);
-    self->buf_len = (size_t)0U;
-  }
-  size_t input_to_consume =
-      Eurydice_slice_len(inputs->data[0U], uint8_t) - input_consumed;
-  size_t num_blocks = input_to_consume / (size_t)136U;
-  size_t remainder = input_to_consume % (size_t)136U;
-  for (size_t i = (size_t)0U; i < num_blocks; i++) {
-    size_t i0 = i;
-    libcrux_sha3_simd_portable_load_block_a1_5b(
-        &self->inner, inputs, input_consumed + i0 * (size_t)136U);
-    libcrux_sha3_generic_keccak_keccakf1600_80_04(&self->inner);
-  }
-  return remainder;
-}
-
-/**
- Absorb
-
- This function takes any number of bytes to absorb and buffers if it's not
- enough. The function assumes that all input slices in `inputs` have the same
- length.
-
- Only a multiple of `RATE` blocks are absorbed.
- For the remaining bytes [`absorb_final`] needs to be called.
-
- This works best with relatively small `inputs`.
-*/
-/**
-This function found in impl
-{libcrux_sha3::generic_keccak::xof::KeccakXofState<STATE, PARALLEL_LANES,
-RATE>[TraitClause@0, TraitClause@1]}
-*/
-/**
-A monomorphic instance of libcrux_sha3.generic_keccak.xof.absorb_35
-with types uint64_t
-with const generics
-- PARALLEL_LANES= 1
-- RATE= 136
-*/
-KRML_MUSTINLINE void libcrux_sha3_generic_keccak_xof_absorb_35_c6(
-    libcrux_sha3_generic_keccak_xof_KeccakXofState_e2 *self,
-    Eurydice_arr_34 *inputs) {
-  size_t input_remainder_len =
-      libcrux_sha3_generic_keccak_xof_absorb_full_35_c6(self, inputs);
-  if (input_remainder_len > (size_t)0U) {
-    size_t input_len = Eurydice_slice_len(inputs->data[0U], uint8_t);
-    {
-      size_t i = (size_t)0U;
-      Eurydice_slice_copy(Eurydice_array_to_subslice3(
-                              &self->buf.data[i], self->buf_len,
-                              self->buf_len + input_remainder_len, uint8_t *),
-                          Eurydice_slice_subslice_from(
-                              inputs->data[i], input_len - input_remainder_len,
-                              uint8_t, size_t, uint8_t[]),
-                          uint8_t);
-    }
-    self->buf_len = self->buf_len + input_remainder_len;
-  }
-}
-
-/**
- Shake256 absorb
-*/
-/**
-This function found in impl {libcrux_sha3::portable::incremental::Xof<136usize>
-for libcrux_sha3::portable::incremental::Shake256Xof}
-*/
-void libcrux_sha3_portable_incremental_absorb_42(
-    libcrux_sha3_generic_keccak_xof_KeccakXofState_e2 *self,
-    Eurydice_slice input) {
-  /* original Rust expression is not an lvalue in C */
-  Eurydice_arr_34 lvalue = {.data = {input}};
-  libcrux_sha3_generic_keccak_xof_absorb_35_c6(self, &lvalue);
-}
-
-/**
- Absorb a final block.
-
- The `inputs` block may be empty. Everything in the `inputs` block beyond
- `RATE` bytes is ignored.
-*/
-/**
-This function found in impl
-{libcrux_sha3::generic_keccak::xof::KeccakXofState<STATE, PARALLEL_LANES,
-RATE>[TraitClause@0, TraitClause@1]}
-*/
-/**
-A monomorphic instance of libcrux_sha3.generic_keccak.xof.absorb_final_35
-with types uint64_t
-with const generics
-- PARALLEL_LANES= 1
-- RATE= 136
-- DELIMITER= 31
-*/
-KRML_MUSTINLINE void libcrux_sha3_generic_keccak_xof_absorb_final_35_9e(
-    libcrux_sha3_generic_keccak_xof_KeccakXofState_e2 *self,
-    Eurydice_arr_34 *inputs) {
-  libcrux_sha3_generic_keccak_xof_absorb_35_c6(self, inputs);
-  Eurydice_arr_34 borrowed;
-  Eurydice_slice repeat_expression[1U];
-  {
-    /* original Rust expression is not an lvalue in C */
-    Eurydice_arr_3d lvalue = {.data = {0U}};
-    repeat_expression[0U] = core_array___Array_T__N___as_slice(
-        (size_t)136U, &lvalue, uint8_t, Eurydice_slice);
-  }
-  memcpy(borrowed.data, repeat_expression, (size_t)1U * sizeof(Eurydice_slice));
-  {
-    size_t i = (size_t)0U;
-    borrowed.data[i] =
-        Eurydice_array_to_slice((size_t)136U, &self->buf.data[i], uint8_t);
-  }
-  libcrux_sha3_simd_portable_load_last_a1_ad0(&self->inner, &borrowed,
-                                              (size_t)0U, self->buf_len);
-  libcrux_sha3_generic_keccak_keccakf1600_80_04(&self->inner);
-}
-
-/**
- Shake256 absorb final
-*/
-/**
-This function found in impl {libcrux_sha3::portable::incremental::Xof<136usize>
-for libcrux_sha3::portable::incremental::Shake256Xof}
-*/
-void libcrux_sha3_portable_incremental_absorb_final_42(
-    libcrux_sha3_generic_keccak_xof_KeccakXofState_e2 *self,
-    Eurydice_slice input) {
-  /* original Rust expression is not an lvalue in C */
-  Eurydice_arr_34 lvalue = {.data = {input}};
-  libcrux_sha3_generic_keccak_xof_absorb_final_35_9e(self, &lvalue);
-}
-
-/**
- An all zero block
-*/
-/**
-This function found in impl
-{libcrux_sha3::generic_keccak::xof::KeccakXofState<STATE, PARALLEL_LANES,
-RATE>[TraitClause@0, TraitClause@1]}
-*/
-/**
-A monomorphic instance of libcrux_sha3.generic_keccak.xof.zero_block_35
-with types uint64_t
-with const generics
-- PARALLEL_LANES= 1
-- RATE= 136
-*/
-Eurydice_arr_3d libcrux_sha3_generic_keccak_xof_zero_block_35_c6(void) {
-  return (KRML_CLITERAL(Eurydice_arr_3d){.data = {0U}});
-}
-
-/**
- Generate a new keccak xof state.
-*/
-/**
-This function found in impl
-{libcrux_sha3::generic_keccak::xof::KeccakXofState<STATE, PARALLEL_LANES,
-RATE>[TraitClause@0, TraitClause@1]}
-*/
-/**
-A monomorphic instance of libcrux_sha3.generic_keccak.xof.new_35
-with types uint64_t
-with const generics
-- PARALLEL_LANES= 1
-- RATE= 136
-*/
-libcrux_sha3_generic_keccak_xof_KeccakXofState_e2
-libcrux_sha3_generic_keccak_xof_new_35_c6(void) {
-  libcrux_sha3_generic_keccak_xof_KeccakXofState_e2 lit;
-  lit.inner = libcrux_sha3_generic_keccak_new_80_04();
-  Eurydice_arr_3d repeat_expression[1U];
-  {
-    repeat_expression[0U] = libcrux_sha3_generic_keccak_xof_zero_block_35_c6();
-  }
-  memcpy(lit.buf.data, repeat_expression, (size_t)1U * sizeof(Eurydice_arr_3d));
-  lit.buf_len = (size_t)0U;
-  lit.sponge = false;
-  return lit;
-}
-
-/**
- Shake256 new state
-*/
-/**
-This function found in impl {libcrux_sha3::portable::incremental::Xof<136usize>
-for libcrux_sha3::portable::incremental::Shake256Xof}
-*/
-libcrux_sha3_generic_keccak_xof_KeccakXofState_e2
-libcrux_sha3_portable_incremental_new_42(void) {
-  return libcrux_sha3_generic_keccak_xof_new_35_c6();
-}
-
-/**
- Squeeze `N` x `LEN` bytes. Only `N = 1` for now.
-*/
-/**
-This function found in impl
-{libcrux_sha3::generic_keccak::xof::KeccakXofState<STATE, 1usize,
-RATE>[TraitClause@0, TraitClause@1]}
-*/
-/**
-A monomorphic instance of libcrux_sha3.generic_keccak.xof.squeeze_85
-with types uint64_t
-with const generics
-- RATE= 136
-*/
-KRML_MUSTINLINE void libcrux_sha3_generic_keccak_xof_squeeze_85_c7(
-    libcrux_sha3_generic_keccak_xof_KeccakXofState_e2 *self,
-    Eurydice_slice out) {
-  if (self->sponge) {
-    libcrux_sha3_generic_keccak_keccakf1600_80_04(&self->inner);
-  }
-  size_t out_len = Eurydice_slice_len(out, uint8_t);
-  if (out_len > (size_t)0U) {
-    if (out_len <= (size_t)136U) {
-      libcrux_sha3_simd_portable_squeeze_13_5b(&self->inner, out, (size_t)0U,
-                                               out_len);
-    } else {
-      size_t blocks = out_len / (size_t)136U;
-      for (size_t i = (size_t)0U; i < blocks; i++) {
-        size_t i0 = i;
-        libcrux_sha3_generic_keccak_keccakf1600_80_04(&self->inner);
-        libcrux_sha3_simd_portable_squeeze_13_5b(
-            &self->inner, out, i0 * (size_t)136U, (size_t)136U);
-      }
-      size_t remaining = out_len % (size_t)136U;
-      if (remaining > (size_t)0U) {
-        libcrux_sha3_generic_keccak_keccakf1600_80_04(&self->inner);
-        libcrux_sha3_simd_portable_squeeze_13_5b(
-            &self->inner, out, blocks * (size_t)136U, remaining);
-      }
-    }
-    self->sponge = true;
-  }
-}
-
-/**
- Shake256 squeeze
-*/
-/**
-This function found in impl {libcrux_sha3::portable::incremental::Xof<136usize>
-for libcrux_sha3::portable::incremental::Shake256Xof}
-*/
-void libcrux_sha3_portable_incremental_squeeze_42(
-    libcrux_sha3_generic_keccak_xof_KeccakXofState_e2 *self,
-    Eurydice_slice out) {
-  libcrux_sha3_generic_keccak_xof_squeeze_85_c7(self, out);
-}
-
-/**
- Consume the internal buffer and the required amount of the input to pad to
- `RATE`.
-
- Returns the `consumed` bytes from `inputs` if there's enough buffered
- content to consume, and `0` otherwise.
- If `consumed > 0` is returned, `self.buf` contains a full block to be
- loaded.
-*/
-/**
-This function found in impl
-{libcrux_sha3::generic_keccak::xof::KeccakXofState<STATE, PARALLEL_LANES,
-RATE>[TraitClause@0, TraitClause@1]}
-*/
-/**
-A monomorphic instance of libcrux_sha3.generic_keccak.xof.fill_buffer_35
-with types uint64_t
-with const generics
-- PARALLEL_LANES= 1
-- RATE= 168
-*/
-size_t libcrux_sha3_generic_keccak_xof_fill_buffer_35_c60(
-    libcrux_sha3_generic_keccak_xof_KeccakXofState_97 *self,
-    Eurydice_arr_34 *inputs) {
-  size_t input_len = Eurydice_slice_len(inputs->data[0U], uint8_t);
-  size_t consumed = (size_t)0U;
-  if (self->buf_len > (size_t)0U) {
-    if (self->buf_len + input_len >= (size_t)168U) {
-      consumed = (size_t)168U - self->buf_len;
-      {
-        size_t i = (size_t)0U;
-        Eurydice_slice uu____0 = Eurydice_array_to_subslice_from(
-            (size_t)168U, &self->buf.data[i], self->buf_len, uint8_t, size_t,
-            uint8_t[]);
-        Eurydice_slice_copy(
-            uu____0,
-            Eurydice_slice_subslice_to(inputs->data[i], consumed, uint8_t,
-                                       size_t, uint8_t[]),
-            uint8_t);
-      }
-      self->buf_len = self->buf_len + consumed;
-    }
-  }
-  return consumed;
-}
-
-/**
-This function found in impl
-{libcrux_sha3::generic_keccak::xof::KeccakXofState<STATE, PARALLEL_LANES,
-RATE>[TraitClause@0, TraitClause@1]}
-*/
-/**
-A monomorphic instance of libcrux_sha3.generic_keccak.xof.absorb_full_35
-with types uint64_t
-with const generics
-- PARALLEL_LANES= 1
-- RATE= 168
-*/
-size_t libcrux_sha3_generic_keccak_xof_absorb_full_35_c60(
-    libcrux_sha3_generic_keccak_xof_KeccakXofState_97 *self,
-    Eurydice_arr_34 *inputs) {
-  size_t input_consumed =
-      libcrux_sha3_generic_keccak_xof_fill_buffer_35_c60(self, inputs);
-  if (input_consumed > (size_t)0U) {
-    Eurydice_arr_34 borrowed;
-    Eurydice_slice repeat_expression[1U];
-    {
-      /* original Rust expression is not an lvalue in C */
-      Eurydice_arr_27 lvalue = {.data = {0U}};
-      repeat_expression[0U] = core_array___Array_T__N___as_slice(
-          (size_t)168U, &lvalue, uint8_t, Eurydice_slice);
-    }
-    memcpy(borrowed.data, repeat_expression,
-           (size_t)1U * sizeof(Eurydice_slice));
-    {
-      size_t i = (size_t)0U;
-      borrowed.data[i] =
-          Eurydice_array_to_slice((size_t)168U, &self->buf.data[i], uint8_t);
-    }
-    libcrux_sha3_simd_portable_load_block_a1_3a(&self->inner, &borrowed,
-                                                (size_t)0U);
-    libcrux_sha3_generic_keccak_keccakf1600_80_04(&self->inner);
-    self->buf_len = (size_t)0U;
-  }
-  size_t input_to_consume =
-      Eurydice_slice_len(inputs->data[0U], uint8_t) - input_consumed;
-  size_t num_blocks = input_to_consume / (size_t)168U;
-  size_t remainder = input_to_consume % (size_t)168U;
-  for (size_t i = (size_t)0U; i < num_blocks; i++) {
-    size_t i0 = i;
-    libcrux_sha3_simd_portable_load_block_a1_3a(
-        &self->inner, inputs, input_consumed + i0 * (size_t)168U);
-    libcrux_sha3_generic_keccak_keccakf1600_80_04(&self->inner);
-  }
-  return remainder;
-}
-
-/**
- Absorb
-
- This function takes any number of bytes to absorb and buffers if it's not
- enough. The function assumes that all input slices in `inputs` have the same
- length.
-
- Only a multiple of `RATE` blocks are absorbed.
- For the remaining bytes [`absorb_final`] needs to be called.
-
- This works best with relatively small `inputs`.
-*/
-/**
-This function found in impl
-{libcrux_sha3::generic_keccak::xof::KeccakXofState<STATE, PARALLEL_LANES,
-RATE>[TraitClause@0, TraitClause@1]}
-*/
-/**
-A monomorphic instance of libcrux_sha3.generic_keccak.xof.absorb_35
-with types uint64_t
-with const generics
-- PARALLEL_LANES= 1
-- RATE= 168
-*/
-KRML_MUSTINLINE void libcrux_sha3_generic_keccak_xof_absorb_35_c60(
-    libcrux_sha3_generic_keccak_xof_KeccakXofState_97 *self,
-    Eurydice_arr_34 *inputs) {
-  size_t input_remainder_len =
-      libcrux_sha3_generic_keccak_xof_absorb_full_35_c60(self, inputs);
-  if (input_remainder_len > (size_t)0U) {
-    size_t input_len = Eurydice_slice_len(inputs->data[0U], uint8_t);
-    {
-      size_t i = (size_t)0U;
-      Eurydice_slice_copy(Eurydice_array_to_subslice3(
-                              &self->buf.data[i], self->buf_len,
-                              self->buf_len + input_remainder_len, uint8_t *),
-                          Eurydice_slice_subslice_from(
-                              inputs->data[i], input_len - input_remainder_len,
-                              uint8_t, size_t, uint8_t[]),
-                          uint8_t);
-    }
-    self->buf_len = self->buf_len + input_remainder_len;
-  }
-}
-
-/**
-This function found in impl {libcrux_sha3::portable::incremental::Xof<168usize>
-for libcrux_sha3::portable::incremental::Shake128Xof}
-*/
-void libcrux_sha3_portable_incremental_absorb_26(
-    libcrux_sha3_generic_keccak_xof_KeccakXofState_97 *self,
-    Eurydice_slice input) {
-  /* original Rust expression is not an lvalue in C */
-  Eurydice_arr_34 lvalue = {.data = {input}};
-  libcrux_sha3_generic_keccak_xof_absorb_35_c60(self, &lvalue);
-}
-
-/**
- Absorb a final block.
-
- The `inputs` block may be empty. Everything in the `inputs` block beyond
- `RATE` bytes is ignored.
-*/
-/**
-This function found in impl
-{libcrux_sha3::generic_keccak::xof::KeccakXofState<STATE, PARALLEL_LANES,
-RATE>[TraitClause@0, TraitClause@1]}
-*/
-/**
-A monomorphic instance of libcrux_sha3.generic_keccak.xof.absorb_final_35
-with types uint64_t
-with const generics
-- PARALLEL_LANES= 1
-- RATE= 168
-- DELIMITER= 31
-*/
-KRML_MUSTINLINE void libcrux_sha3_generic_keccak_xof_absorb_final_35_9e0(
-    libcrux_sha3_generic_keccak_xof_KeccakXofState_97 *self,
-    Eurydice_arr_34 *inputs) {
-  libcrux_sha3_generic_keccak_xof_absorb_35_c60(self, inputs);
-  Eurydice_arr_34 borrowed;
-  Eurydice_slice repeat_expression[1U];
-  {
-    /* original Rust expression is not an lvalue in C */
-    Eurydice_arr_27 lvalue = {.data = {0U}};
-    repeat_expression[0U] = core_array___Array_T__N___as_slice(
-        (size_t)168U, &lvalue, uint8_t, Eurydice_slice);
-  }
-  memcpy(borrowed.data, repeat_expression, (size_t)1U * sizeof(Eurydice_slice));
-  {
-    size_t i = (size_t)0U;
-    borrowed.data[i] =
-        Eurydice_array_to_slice((size_t)168U, &self->buf.data[i], uint8_t);
-  }
-  libcrux_sha3_simd_portable_load_last_a1_c6(&self->inner, &borrowed,
-                                             (size_t)0U, self->buf_len);
-  libcrux_sha3_generic_keccak_keccakf1600_80_04(&self->inner);
-}
-
-/**
-This function found in impl {libcrux_sha3::portable::incremental::Xof<168usize>
-for libcrux_sha3::portable::incremental::Shake128Xof}
-*/
-void libcrux_sha3_portable_incremental_absorb_final_26(
-    libcrux_sha3_generic_keccak_xof_KeccakXofState_97 *self,
-    Eurydice_slice input) {
-  /* original Rust expression is not an lvalue in C */
-  Eurydice_arr_34 lvalue = {.data = {input}};
-  libcrux_sha3_generic_keccak_xof_absorb_final_35_9e0(self, &lvalue);
-}
-
-/**
- An all zero block
-*/
-/**
-This function found in impl
-{libcrux_sha3::generic_keccak::xof::KeccakXofState<STATE, PARALLEL_LANES,
-RATE>[TraitClause@0, TraitClause@1]}
-*/
-/**
-A monomorphic instance of libcrux_sha3.generic_keccak.xof.zero_block_35
-with types uint64_t
-with const generics
-- PARALLEL_LANES= 1
-- RATE= 168
-*/
-Eurydice_arr_27 libcrux_sha3_generic_keccak_xof_zero_block_35_c60(void) {
-  return (KRML_CLITERAL(Eurydice_arr_27){.data = {0U}});
-}
-
-/**
- Generate a new keccak xof state.
-*/
-/**
-This function found in impl
-{libcrux_sha3::generic_keccak::xof::KeccakXofState<STATE, PARALLEL_LANES,
-RATE>[TraitClause@0, TraitClause@1]}
-*/
-/**
-A monomorphic instance of libcrux_sha3.generic_keccak.xof.new_35
-with types uint64_t
-with const generics
-- PARALLEL_LANES= 1
-- RATE= 168
-*/
-libcrux_sha3_generic_keccak_xof_KeccakXofState_97
-libcrux_sha3_generic_keccak_xof_new_35_c60(void) {
-  libcrux_sha3_generic_keccak_xof_KeccakXofState_97 lit;
-  lit.inner = libcrux_sha3_generic_keccak_new_80_04();
-  Eurydice_arr_27 repeat_expression[1U];
-  {
-    repeat_expression[0U] = libcrux_sha3_generic_keccak_xof_zero_block_35_c60();
-  }
-  memcpy(lit.buf.data, repeat_expression, (size_t)1U * sizeof(Eurydice_arr_27));
-  lit.buf_len = (size_t)0U;
-  lit.sponge = false;
-  return lit;
-}
-
-/**
-This function found in impl {libcrux_sha3::portable::incremental::Xof<168usize>
-for libcrux_sha3::portable::incremental::Shake128Xof}
-*/
-libcrux_sha3_generic_keccak_xof_KeccakXofState_97
-libcrux_sha3_portable_incremental_new_26(void) {
-  return libcrux_sha3_generic_keccak_xof_new_35_c60();
-}
-
-/**
- Squeeze `N` x `LEN` bytes. Only `N = 1` for now.
-*/
-/**
-This function found in impl
-{libcrux_sha3::generic_keccak::xof::KeccakXofState<STATE, 1usize,
-RATE>[TraitClause@0, TraitClause@1]}
-*/
-/**
-A monomorphic instance of libcrux_sha3.generic_keccak.xof.squeeze_85
-with types uint64_t
-with const generics
-- RATE= 168
-*/
-KRML_MUSTINLINE void libcrux_sha3_generic_keccak_xof_squeeze_85_13(
-    libcrux_sha3_generic_keccak_xof_KeccakXofState_97 *self,
-    Eurydice_slice out) {
-  if (self->sponge) {
-    libcrux_sha3_generic_keccak_keccakf1600_80_04(&self->inner);
-  }
-  size_t out_len = Eurydice_slice_len(out, uint8_t);
-  if (out_len > (size_t)0U) {
-    if (out_len <= (size_t)168U) {
-      libcrux_sha3_simd_portable_squeeze_13_3a(&self->inner, out, (size_t)0U,
-                                               out_len);
-    } else {
-      size_t blocks = out_len / (size_t)168U;
-      for (size_t i = (size_t)0U; i < blocks; i++) {
-        size_t i0 = i;
-        libcrux_sha3_generic_keccak_keccakf1600_80_04(&self->inner);
-        libcrux_sha3_simd_portable_squeeze_13_3a(
-            &self->inner, out, i0 * (size_t)168U, (size_t)168U);
-      }
-      size_t remaining = out_len % (size_t)168U;
-      if (remaining > (size_t)0U) {
-        libcrux_sha3_generic_keccak_keccakf1600_80_04(&self->inner);
-        libcrux_sha3_simd_portable_squeeze_13_3a(
-            &self->inner, out, blocks * (size_t)168U, remaining);
-      }
-    }
-    self->sponge = true;
-  }
-}
-
-/**
- Shake128 squeeze
-*/
-/**
-This function found in impl {libcrux_sha3::portable::incremental::Xof<168usize>
-for libcrux_sha3::portable::incremental::Shake128Xof}
-*/
-void libcrux_sha3_portable_incremental_squeeze_26(
-    libcrux_sha3_generic_keccak_xof_KeccakXofState_97 *self,
-    Eurydice_slice out) {
-  libcrux_sha3_generic_keccak_xof_squeeze_85_13(self, out);
-}
-
-/**
-This function found in impl {core::clone::Clone for
-libcrux_sha3::portable::KeccakState}
-*/
-inline Eurydice_arr_26 libcrux_sha3_portable_clone_fe(Eurydice_arr_26 *self) {
-  return self[0U];
-}
-
-/**
-This function found in impl {core::convert::From<libcrux_sha3::Algorithm> for
-u32}
-*/
-uint32_t libcrux_sha3_from_6c(libcrux_sha3_Algorithm v) {
-  switch (v) {
-    case libcrux_sha3_Algorithm_Sha224: {
-      break;
-    }
-    case libcrux_sha3_Algorithm_Sha256: {
-      return 2U;
-    }
-    case libcrux_sha3_Algorithm_Sha384: {
-      return 3U;
-    }
-    case libcrux_sha3_Algorithm_Sha512: {
-      return 4U;
-    }
-    default: {
-      KRML_HOST_EPRINTF("KaRaMeL incomplete match at %s:%d\n", __FILE__,
-                        __LINE__);
-      KRML_HOST_EXIT(253U);
-    }
-  }
-  return 1U;
-}
-
-/**
-This function found in impl {core::convert::From<u32> for
-libcrux_sha3::Algorithm}
-*/
-libcrux_sha3_Algorithm libcrux_sha3_from_29(uint32_t v) {
-  switch (v) {
-    case 1U: {
-      break;
-    }
-    case 2U: {
-      return libcrux_sha3_Algorithm_Sha256;
-    }
-    case 3U: {
-      return libcrux_sha3_Algorithm_Sha384;
-    }
-    case 4U: {
-      return libcrux_sha3_Algorithm_Sha512;
-    }
-    default: {
-      KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__,
-                        "panic!");
-      KRML_HOST_EXIT(255U);
-    }
-  }
-  return libcrux_sha3_Algorithm_Sha224;
 }

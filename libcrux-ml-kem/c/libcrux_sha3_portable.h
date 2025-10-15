@@ -4,11 +4,11 @@
  * SPDX-License-Identifier: MIT or Apache-2.0
  *
  * This code was generated with the following revisions:
- * Charon: c66a520f7072006af0071eb517002a73d5f3a7d1
- * Eurydice: 9dae7cbf24d38b7b0eb8e7efd12d662a4ebe1f1a
+ * Charon: 150afa5f6ba469c99c4a2fa6e1037ae5a4004c68
+ * Eurydice: 82bef284a4b2bd383048a1459758e605c976ff11
  * Karamel: 80f5435f2fc505973c469a4afcc8d875cddd0d8b
  * F*: f3a2732c1984b520b1f1d48a22e7dd9f8d14a3a2
- * Libcrux: fba8ff3916a9aa0a3869f2fffea66d8aea07144a
+ * Libcrux: 16f49de38d3b626c0a336b5e2fceb0bf1fed20bf
  */
 
 #ifndef libcrux_sha3_portable_H
@@ -115,9 +115,6 @@ with const generics
 typedef Eurydice_arr_26 libcrux_sha3_generic_keccak_KeccakState_17;
 
 /**
- Create a new Shake128 x4 state.
-*/
-/**
 This function found in impl {libcrux_sha3::generic_keccak::KeccakState<T,
 N>[TraitClause@0, TraitClause@1]}
 */
@@ -172,9 +169,6 @@ void libcrux_sha3_simd_portable_load_block_a1_f8(Eurydice_arr_26 *self,
                                                  size_t start);
 
 /**
- Get element `[i, j]`.
-*/
-/**
 This function found in impl {core::ops::index::Index<(usize, usize), T> for
 libcrux_sha3::generic_keccak::KeccakState<T, N>[TraitClause@0, TraitClause@1]}
 */
@@ -187,9 +181,6 @@ with const generics
 uint64_t *libcrux_sha3_generic_keccak_index_c2_04(Eurydice_arr_26 *self,
                                                   size_t_x2 index);
 
-/**
- Set element `[i, j] = v`.
-*/
 /**
 This function found in impl {libcrux_sha3::generic_keccak::KeccakState<T,
 N>[TraitClause@0, TraitClause@1]}
@@ -1744,425 +1735,6 @@ void libcrux_sha3_portable_incremental_shake256_squeeze_next_block(
     Eurydice_arr_26 *s, Eurydice_slice out);
 
 /**
-A monomorphic instance of libcrux_sha3.generic_keccak.xof.KeccakXofState
-with types uint64_t
-with const generics
-- $1size_t
-- $136size_t
-*/
-typedef struct libcrux_sha3_generic_keccak_xof_KeccakXofState_e2_s {
-  Eurydice_arr_26 inner;
-  Eurydice_arr_c40 buf;
-  size_t buf_len;
-  bool sponge;
-} libcrux_sha3_generic_keccak_xof_KeccakXofState_e2;
-
-typedef libcrux_sha3_generic_keccak_xof_KeccakXofState_e2
-    libcrux_sha3_portable_incremental_Shake256Xof;
-
-/**
- Consume the internal buffer and the required amount of the input to pad to
- `RATE`.
-
- Returns the `consumed` bytes from `inputs` if there's enough buffered
- content to consume, and `0` otherwise.
- If `consumed > 0` is returned, `self.buf` contains a full block to be
- loaded.
-*/
-/**
-This function found in impl
-{libcrux_sha3::generic_keccak::xof::KeccakXofState<STATE, PARALLEL_LANES,
-RATE>[TraitClause@0, TraitClause@1]}
-*/
-/**
-A monomorphic instance of libcrux_sha3.generic_keccak.xof.fill_buffer_35
-with types uint64_t
-with const generics
-- PARALLEL_LANES= 1
-- RATE= 136
-*/
-size_t libcrux_sha3_generic_keccak_xof_fill_buffer_35_c6(
-    libcrux_sha3_generic_keccak_xof_KeccakXofState_e2 *self,
-    Eurydice_arr_34 *inputs);
-
-/**
-This function found in impl
-{libcrux_sha3::generic_keccak::xof::KeccakXofState<STATE, PARALLEL_LANES,
-RATE>[TraitClause@0, TraitClause@1]}
-*/
-/**
-A monomorphic instance of libcrux_sha3.generic_keccak.xof.absorb_full_35
-with types uint64_t
-with const generics
-- PARALLEL_LANES= 1
-- RATE= 136
-*/
-size_t libcrux_sha3_generic_keccak_xof_absorb_full_35_c6(
-    libcrux_sha3_generic_keccak_xof_KeccakXofState_e2 *self,
-    Eurydice_arr_34 *inputs);
-
-/**
- Absorb
-
- This function takes any number of bytes to absorb and buffers if it's not
- enough. The function assumes that all input slices in `inputs` have the same
- length.
-
- Only a multiple of `RATE` blocks are absorbed.
- For the remaining bytes [`absorb_final`] needs to be called.
-
- This works best with relatively small `inputs`.
-*/
-/**
-This function found in impl
-{libcrux_sha3::generic_keccak::xof::KeccakXofState<STATE, PARALLEL_LANES,
-RATE>[TraitClause@0, TraitClause@1]}
-*/
-/**
-A monomorphic instance of libcrux_sha3.generic_keccak.xof.absorb_35
-with types uint64_t
-with const generics
-- PARALLEL_LANES= 1
-- RATE= 136
-*/
-void libcrux_sha3_generic_keccak_xof_absorb_35_c6(
-    libcrux_sha3_generic_keccak_xof_KeccakXofState_e2 *self,
-    Eurydice_arr_34 *inputs);
-
-/**
- Shake256 absorb
-*/
-/**
-This function found in impl {libcrux_sha3::portable::incremental::Xof<136usize>
-for libcrux_sha3::portable::incremental::Shake256Xof}
-*/
-void libcrux_sha3_portable_incremental_absorb_42(
-    libcrux_sha3_generic_keccak_xof_KeccakXofState_e2 *self,
-    Eurydice_slice input);
-
-/**
- Absorb a final block.
-
- The `inputs` block may be empty. Everything in the `inputs` block beyond
- `RATE` bytes is ignored.
-*/
-/**
-This function found in impl
-{libcrux_sha3::generic_keccak::xof::KeccakXofState<STATE, PARALLEL_LANES,
-RATE>[TraitClause@0, TraitClause@1]}
-*/
-/**
-A monomorphic instance of libcrux_sha3.generic_keccak.xof.absorb_final_35
-with types uint64_t
-with const generics
-- PARALLEL_LANES= 1
-- RATE= 136
-- DELIMITER= 31
-*/
-void libcrux_sha3_generic_keccak_xof_absorb_final_35_9e(
-    libcrux_sha3_generic_keccak_xof_KeccakXofState_e2 *self,
-    Eurydice_arr_34 *inputs);
-
-/**
- Shake256 absorb final
-*/
-/**
-This function found in impl {libcrux_sha3::portable::incremental::Xof<136usize>
-for libcrux_sha3::portable::incremental::Shake256Xof}
-*/
-void libcrux_sha3_portable_incremental_absorb_final_42(
-    libcrux_sha3_generic_keccak_xof_KeccakXofState_e2 *self,
-    Eurydice_slice input);
-
-/**
- An all zero block
-*/
-/**
-This function found in impl
-{libcrux_sha3::generic_keccak::xof::KeccakXofState<STATE, PARALLEL_LANES,
-RATE>[TraitClause@0, TraitClause@1]}
-*/
-/**
-A monomorphic instance of libcrux_sha3.generic_keccak.xof.zero_block_35
-with types uint64_t
-with const generics
-- PARALLEL_LANES= 1
-- RATE= 136
-*/
-Eurydice_arr_3d libcrux_sha3_generic_keccak_xof_zero_block_35_c6(void);
-
-/**
- Generate a new keccak xof state.
-*/
-/**
-This function found in impl
-{libcrux_sha3::generic_keccak::xof::KeccakXofState<STATE, PARALLEL_LANES,
-RATE>[TraitClause@0, TraitClause@1]}
-*/
-/**
-A monomorphic instance of libcrux_sha3.generic_keccak.xof.new_35
-with types uint64_t
-with const generics
-- PARALLEL_LANES= 1
-- RATE= 136
-*/
-libcrux_sha3_generic_keccak_xof_KeccakXofState_e2
-libcrux_sha3_generic_keccak_xof_new_35_c6(void);
-
-/**
- Shake256 new state
-*/
-/**
-This function found in impl {libcrux_sha3::portable::incremental::Xof<136usize>
-for libcrux_sha3::portable::incremental::Shake256Xof}
-*/
-libcrux_sha3_generic_keccak_xof_KeccakXofState_e2
-libcrux_sha3_portable_incremental_new_42(void);
-
-/**
- Squeeze `N` x `LEN` bytes. Only `N = 1` for now.
-*/
-/**
-This function found in impl
-{libcrux_sha3::generic_keccak::xof::KeccakXofState<STATE, 1usize,
-RATE>[TraitClause@0, TraitClause@1]}
-*/
-/**
-A monomorphic instance of libcrux_sha3.generic_keccak.xof.squeeze_85
-with types uint64_t
-with const generics
-- RATE= 136
-*/
-void libcrux_sha3_generic_keccak_xof_squeeze_85_c7(
-    libcrux_sha3_generic_keccak_xof_KeccakXofState_e2 *self,
-    Eurydice_slice out);
-
-/**
- Shake256 squeeze
-*/
-/**
-This function found in impl {libcrux_sha3::portable::incremental::Xof<136usize>
-for libcrux_sha3::portable::incremental::Shake256Xof}
-*/
-void libcrux_sha3_portable_incremental_squeeze_42(
-    libcrux_sha3_generic_keccak_xof_KeccakXofState_e2 *self,
-    Eurydice_slice out);
-
-/**
-A monomorphic instance of libcrux_sha3.generic_keccak.xof.KeccakXofState
-with types uint64_t
-with const generics
-- $1size_t
-- $168size_t
-*/
-typedef struct libcrux_sha3_generic_keccak_xof_KeccakXofState_97_s {
-  Eurydice_arr_26 inner;
-  Eurydice_arr_75 buf;
-  size_t buf_len;
-  bool sponge;
-} libcrux_sha3_generic_keccak_xof_KeccakXofState_97;
-
-typedef libcrux_sha3_generic_keccak_xof_KeccakXofState_97
-    libcrux_sha3_portable_incremental_Shake128Xof;
-
-/**
- Consume the internal buffer and the required amount of the input to pad to
- `RATE`.
-
- Returns the `consumed` bytes from `inputs` if there's enough buffered
- content to consume, and `0` otherwise.
- If `consumed > 0` is returned, `self.buf` contains a full block to be
- loaded.
-*/
-/**
-This function found in impl
-{libcrux_sha3::generic_keccak::xof::KeccakXofState<STATE, PARALLEL_LANES,
-RATE>[TraitClause@0, TraitClause@1]}
-*/
-/**
-A monomorphic instance of libcrux_sha3.generic_keccak.xof.fill_buffer_35
-with types uint64_t
-with const generics
-- PARALLEL_LANES= 1
-- RATE= 168
-*/
-size_t libcrux_sha3_generic_keccak_xof_fill_buffer_35_c60(
-    libcrux_sha3_generic_keccak_xof_KeccakXofState_97 *self,
-    Eurydice_arr_34 *inputs);
-
-/**
-This function found in impl
-{libcrux_sha3::generic_keccak::xof::KeccakXofState<STATE, PARALLEL_LANES,
-RATE>[TraitClause@0, TraitClause@1]}
-*/
-/**
-A monomorphic instance of libcrux_sha3.generic_keccak.xof.absorb_full_35
-with types uint64_t
-with const generics
-- PARALLEL_LANES= 1
-- RATE= 168
-*/
-size_t libcrux_sha3_generic_keccak_xof_absorb_full_35_c60(
-    libcrux_sha3_generic_keccak_xof_KeccakXofState_97 *self,
-    Eurydice_arr_34 *inputs);
-
-/**
- Absorb
-
- This function takes any number of bytes to absorb and buffers if it's not
- enough. The function assumes that all input slices in `inputs` have the same
- length.
-
- Only a multiple of `RATE` blocks are absorbed.
- For the remaining bytes [`absorb_final`] needs to be called.
-
- This works best with relatively small `inputs`.
-*/
-/**
-This function found in impl
-{libcrux_sha3::generic_keccak::xof::KeccakXofState<STATE, PARALLEL_LANES,
-RATE>[TraitClause@0, TraitClause@1]}
-*/
-/**
-A monomorphic instance of libcrux_sha3.generic_keccak.xof.absorb_35
-with types uint64_t
-with const generics
-- PARALLEL_LANES= 1
-- RATE= 168
-*/
-void libcrux_sha3_generic_keccak_xof_absorb_35_c60(
-    libcrux_sha3_generic_keccak_xof_KeccakXofState_97 *self,
-    Eurydice_arr_34 *inputs);
-
-/**
-This function found in impl {libcrux_sha3::portable::incremental::Xof<168usize>
-for libcrux_sha3::portable::incremental::Shake128Xof}
-*/
-void libcrux_sha3_portable_incremental_absorb_26(
-    libcrux_sha3_generic_keccak_xof_KeccakXofState_97 *self,
-    Eurydice_slice input);
-
-/**
- Absorb a final block.
-
- The `inputs` block may be empty. Everything in the `inputs` block beyond
- `RATE` bytes is ignored.
-*/
-/**
-This function found in impl
-{libcrux_sha3::generic_keccak::xof::KeccakXofState<STATE, PARALLEL_LANES,
-RATE>[TraitClause@0, TraitClause@1]}
-*/
-/**
-A monomorphic instance of libcrux_sha3.generic_keccak.xof.absorb_final_35
-with types uint64_t
-with const generics
-- PARALLEL_LANES= 1
-- RATE= 168
-- DELIMITER= 31
-*/
-void libcrux_sha3_generic_keccak_xof_absorb_final_35_9e0(
-    libcrux_sha3_generic_keccak_xof_KeccakXofState_97 *self,
-    Eurydice_arr_34 *inputs);
-
-/**
-This function found in impl {libcrux_sha3::portable::incremental::Xof<168usize>
-for libcrux_sha3::portable::incremental::Shake128Xof}
-*/
-void libcrux_sha3_portable_incremental_absorb_final_26(
-    libcrux_sha3_generic_keccak_xof_KeccakXofState_97 *self,
-    Eurydice_slice input);
-
-/**
- An all zero block
-*/
-/**
-This function found in impl
-{libcrux_sha3::generic_keccak::xof::KeccakXofState<STATE, PARALLEL_LANES,
-RATE>[TraitClause@0, TraitClause@1]}
-*/
-/**
-A monomorphic instance of libcrux_sha3.generic_keccak.xof.zero_block_35
-with types uint64_t
-with const generics
-- PARALLEL_LANES= 1
-- RATE= 168
-*/
-Eurydice_arr_27 libcrux_sha3_generic_keccak_xof_zero_block_35_c60(void);
-
-/**
- Generate a new keccak xof state.
-*/
-/**
-This function found in impl
-{libcrux_sha3::generic_keccak::xof::KeccakXofState<STATE, PARALLEL_LANES,
-RATE>[TraitClause@0, TraitClause@1]}
-*/
-/**
-A monomorphic instance of libcrux_sha3.generic_keccak.xof.new_35
-with types uint64_t
-with const generics
-- PARALLEL_LANES= 1
-- RATE= 168
-*/
-libcrux_sha3_generic_keccak_xof_KeccakXofState_97
-libcrux_sha3_generic_keccak_xof_new_35_c60(void);
-
-/**
-This function found in impl {libcrux_sha3::portable::incremental::Xof<168usize>
-for libcrux_sha3::portable::incremental::Shake128Xof}
-*/
-libcrux_sha3_generic_keccak_xof_KeccakXofState_97
-libcrux_sha3_portable_incremental_new_26(void);
-
-/**
- Squeeze `N` x `LEN` bytes. Only `N = 1` for now.
-*/
-/**
-This function found in impl
-{libcrux_sha3::generic_keccak::xof::KeccakXofState<STATE, 1usize,
-RATE>[TraitClause@0, TraitClause@1]}
-*/
-/**
-A monomorphic instance of libcrux_sha3.generic_keccak.xof.squeeze_85
-with types uint64_t
-with const generics
-- RATE= 168
-*/
-void libcrux_sha3_generic_keccak_xof_squeeze_85_13(
-    libcrux_sha3_generic_keccak_xof_KeccakXofState_97 *self,
-    Eurydice_slice out);
-
-/**
- Shake128 squeeze
-*/
-/**
-This function found in impl {libcrux_sha3::portable::incremental::Xof<168usize>
-for libcrux_sha3::portable::incremental::Shake128Xof}
-*/
-void libcrux_sha3_portable_incremental_squeeze_26(
-    libcrux_sha3_generic_keccak_xof_KeccakXofState_97 *self,
-    Eurydice_slice out);
-
-/**
-This function found in impl {core::clone::Clone for
-libcrux_sha3::portable::KeccakState}
-*/
-Eurydice_arr_26 libcrux_sha3_portable_clone_fe(Eurydice_arr_26 *self);
-
-/**
-This function found in impl {core::convert::From<libcrux_sha3::Algorithm> for
-u32}
-*/
-uint32_t libcrux_sha3_from_6c(libcrux_sha3_Algorithm v);
-
-/**
-This function found in impl {core::convert::From<u32> for
-libcrux_sha3::Algorithm}
-*/
-libcrux_sha3_Algorithm libcrux_sha3_from_29(uint32_t v);
-
-/**
 A monomorphic instance of Eurydice.arr
 with types libcrux_sha3_portable_KeccakState
 with const generics
@@ -2199,6 +1771,40 @@ with const generics
 - $2size_t
 */
 typedef Eurydice_arr_fe libcrux_sha3_generic_keccak_KeccakState_bb;
+
+/**
+A monomorphic instance of libcrux_sha3.generic_keccak.xof.KeccakXofState
+with types uint64_t
+with const generics
+- $1size_t
+- $136size_t
+*/
+typedef struct libcrux_sha3_generic_keccak_xof_KeccakXofState_e2_s {
+  Eurydice_arr_26 inner;
+  Eurydice_arr_c40 buf;
+  size_t buf_len;
+  bool sponge;
+} libcrux_sha3_generic_keccak_xof_KeccakXofState_e2;
+
+typedef libcrux_sha3_generic_keccak_xof_KeccakXofState_e2
+    libcrux_sha3_portable_incremental_Shake256Xof;
+
+/**
+A monomorphic instance of libcrux_sha3.generic_keccak.xof.KeccakXofState
+with types uint64_t
+with const generics
+- $1size_t
+- $168size_t
+*/
+typedef struct libcrux_sha3_generic_keccak_xof_KeccakXofState_97_s {
+  Eurydice_arr_26 inner;
+  Eurydice_arr_75 buf;
+  size_t buf_len;
+  bool sponge;
+} libcrux_sha3_generic_keccak_xof_KeccakXofState_97;
+
+typedef libcrux_sha3_generic_keccak_xof_KeccakXofState_97
+    libcrux_sha3_portable_incremental_Shake128Xof;
 
 #if defined(__cplusplus)
 }

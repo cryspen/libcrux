@@ -4,11 +4,11 @@
  * SPDX-License-Identifier: MIT or Apache-2.0
  *
  * This code was generated with the following revisions:
- * Charon: c66a520f7072006af0071eb517002a73d5f3a7d1
- * Eurydice: 9dae7cbf24d38b7b0eb8e7efd12d662a4ebe1f1a
+ * Charon: 150afa5f6ba469c99c4a2fa6e1037ae5a4004c68
+ * Eurydice: 82bef284a4b2bd383048a1459758e605c976ff11
  * Karamel: 80f5435f2fc505973c469a4afcc8d875cddd0d8b
  * F*: f3a2732c1984b520b1f1d48a22e7dd9f8d14a3a2
- * Libcrux: fba8ff3916a9aa0a3869f2fffea66d8aea07144a
+ * Libcrux: 16f49de38d3b626c0a336b5e2fceb0bf1fed20bf
  */
 
 #include "internal/libcrux_sha3_neon.h"
@@ -87,9 +87,6 @@ static KRML_MUSTINLINE uint64x2_t xor_f7(uint64x2_t a, uint64x2_t b) {
   return _veorq_u64(a, b);
 }
 
-/**
- Create a new Shake128 x4 state.
-*/
 /**
 This function found in impl {libcrux_sha3::generic_keccak::KeccakState<T,
 N>[TraitClause@0, TraitClause@1]}
@@ -202,9 +199,6 @@ static void load_block_3e_f8(Eurydice_arr_fe *self, Eurydice_arr_7d *input,
 }
 
 /**
- Get element `[i, j]`.
-*/
-/**
 This function found in impl {core::ops::index::Index<(usize, usize), T> for
 libcrux_sha3::generic_keccak::KeccakState<T, N>[TraitClause@0, TraitClause@1]}
 */
@@ -218,9 +212,6 @@ static uint64x2_t *index_c2_65(Eurydice_arr_fe *self, size_t_x2 index) {
   return get_ij_65(self, index.fst, index.snd);
 }
 
-/**
- Set element `[i, j] = v`.
-*/
 /**
 This function found in impl {libcrux_sha3::generic_keccak::KeccakState<T,
 N>[TraitClause@0, TraitClause@1]}
@@ -1177,17 +1168,18 @@ static KRML_MUSTINLINE void chi_80_65(Eurydice_arr_fe *self) {
       i0, (size_t)0U, (size_t)5U, (size_t)1U, size_t i1 = i0; KRML_MAYBE_FOR5(
           i, (size_t)0U, (size_t)5U, (size_t)1U, size_t j = i; set_80_65(
               self, i1, j,
-              and_not_xor_f7(
-                  index_c2_65(self, (KRML_CLITERAL(size_t_x2){.fst = i1,
-                                                              .snd = j}))[0U],
-                  index_c2_65(&old,
-                              (KRML_CLITERAL(size_t_x2){
-                                  .fst = i1,
-                                  .snd = (j + (size_t)2U) % (size_t)5U}))[0U],
-                  index_c2_65(&old, (KRML_CLITERAL(size_t_x2){
-                                        .fst = i1,
-                                        .snd = (j + (size_t)1U) %
-                                               (size_t)5U}))[0U]));););
+              and_not_xor_f7(index_c2_65(self, (KRML_CLITERAL(size_t_x2){
+                                                   .fst = i1, .snd = j}))[0U],
+                             index_c2_65(&old, (KRML_CLITERAL(size_t_x2){
+                                                   .fst = i1,
+                                                   .snd = (j + (size_t)2U) %
+                                                          (size_t)5U}))[0U],
+                             index_c2_65(&old, (KRML_CLITERAL(size_t_x2){
+                                                   .fst = i1,
+                                                   .snd = (j + (size_t)1U) %
+                                                          (size_t)5U}))[0U])););
+      continue;);
+  return;
 }
 
 /**
@@ -1424,6 +1416,7 @@ static inline void keccak2_96(Eurydice_arr_7d *data, Eurydice_slice out0,
   for (size_t i = (size_t)0U; i < data_len / (size_t)72U; i++) {
     size_t i0 = i;
     absorb_block_80_20(&s, data, i0 * (size_t)72U);
+    continue;
   }
   size_t rem = data_len % (size_t)72U;
   absorb_final_80_76(&s, data, data_len - rem, rem);
@@ -1432,6 +1425,7 @@ static inline void keccak2_96(Eurydice_arr_7d *data, Eurydice_slice out0,
   size_t last = outlen - outlen % (size_t)72U;
   if (blocks == (size_t)0U) {
     squeeze_d3_f8(&s, out0, out1, (size_t)0U, outlen);
+    return;
   } else {
     squeeze_d3_f8(&s, out0, out1, (size_t)0U, (size_t)72U);
     for (size_t i = (size_t)1U; i < blocks; i++) {
@@ -1443,6 +1437,7 @@ static inline void keccak2_96(Eurydice_arr_7d *data, Eurydice_slice out0,
       keccakf1600_80_65(&s);
       squeeze_d3_f8(&s, out0, out1, last, outlen - last);
     }
+    return;
   }
 }
 
@@ -1720,6 +1715,7 @@ static inline void keccak2_ad(Eurydice_arr_7d *data, Eurydice_slice out0,
   for (size_t i = (size_t)0U; i < data_len / (size_t)136U; i++) {
     size_t i0 = i;
     absorb_block_80_200(&s, data, i0 * (size_t)136U);
+    continue;
   }
   size_t rem = data_len % (size_t)136U;
   absorb_final_80_760(&s, data, data_len - rem, rem);
@@ -1728,6 +1724,7 @@ static inline void keccak2_ad(Eurydice_arr_7d *data, Eurydice_slice out0,
   size_t last = outlen - outlen % (size_t)136U;
   if (blocks == (size_t)0U) {
     squeeze_d3_5b(&s, out0, out1, (size_t)0U, outlen);
+    return;
   } else {
     squeeze_d3_5b(&s, out0, out1, (size_t)0U, (size_t)136U);
     for (size_t i = (size_t)1U; i < blocks; i++) {
@@ -1739,6 +1736,7 @@ static inline void keccak2_ad(Eurydice_arr_7d *data, Eurydice_slice out0,
       keccakf1600_80_65(&s);
       squeeze_d3_5b(&s, out0, out1, last, outlen - last);
     }
+    return;
   }
 }
 
@@ -1836,6 +1834,7 @@ static inline void keccak2_ad0(Eurydice_arr_7d *data, Eurydice_slice out0,
   for (size_t i = (size_t)0U; i < data_len / (size_t)136U; i++) {
     size_t i0 = i;
     absorb_block_80_200(&s, data, i0 * (size_t)136U);
+    continue;
   }
   size_t rem = data_len % (size_t)136U;
   absorb_final_80_761(&s, data, data_len - rem, rem);
@@ -1844,6 +1843,7 @@ static inline void keccak2_ad0(Eurydice_arr_7d *data, Eurydice_slice out0,
   size_t last = outlen - outlen % (size_t)136U;
   if (blocks == (size_t)0U) {
     squeeze_d3_5b(&s, out0, out1, (size_t)0U, outlen);
+    return;
   } else {
     squeeze_d3_5b(&s, out0, out1, (size_t)0U, (size_t)136U);
     for (size_t i = (size_t)1U; i < blocks; i++) {
@@ -1855,6 +1855,7 @@ static inline void keccak2_ad0(Eurydice_arr_7d *data, Eurydice_slice out0,
       keccakf1600_80_65(&s);
       squeeze_d3_5b(&s, out0, out1, last, outlen - last);
     }
+    return;
   }
 }
 
@@ -2430,6 +2431,7 @@ static inline void keccak2_1e(Eurydice_arr_7d *data, Eurydice_slice out0,
   for (size_t i = (size_t)0U; i < data_len / (size_t)144U; i++) {
     size_t i0 = i;
     absorb_block_80_201(&s, data, i0 * (size_t)144U);
+    continue;
   }
   size_t rem = data_len % (size_t)144U;
   absorb_final_80_763(&s, data, data_len - rem, rem);
@@ -2438,6 +2440,7 @@ static inline void keccak2_1e(Eurydice_arr_7d *data, Eurydice_slice out0,
   size_t last = outlen - outlen % (size_t)144U;
   if (blocks == (size_t)0U) {
     squeeze_d3_2c(&s, out0, out1, (size_t)0U, outlen);
+    return;
   } else {
     squeeze_d3_2c(&s, out0, out1, (size_t)0U, (size_t)144U);
     for (size_t i = (size_t)1U; i < blocks; i++) {
@@ -2449,6 +2452,7 @@ static inline void keccak2_1e(Eurydice_arr_7d *data, Eurydice_slice out0,
       keccakf1600_80_65(&s);
       squeeze_d3_2c(&s, out0, out1, last, outlen - last);
     }
+    return;
   }
 }
 
@@ -2727,6 +2731,7 @@ static inline void keccak2_7c(Eurydice_arr_7d *data, Eurydice_slice out0,
   for (size_t i = (size_t)0U; i < data_len / (size_t)104U; i++) {
     size_t i0 = i;
     absorb_block_80_202(&s, data, i0 * (size_t)104U);
+    continue;
   }
   size_t rem = data_len % (size_t)104U;
   absorb_final_80_764(&s, data, data_len - rem, rem);
@@ -2735,6 +2740,7 @@ static inline void keccak2_7c(Eurydice_arr_7d *data, Eurydice_slice out0,
   size_t last = outlen - outlen % (size_t)104U;
   if (blocks == (size_t)0U) {
     squeeze_d3_7a(&s, out0, out1, (size_t)0U, outlen);
+    return;
   } else {
     squeeze_d3_7a(&s, out0, out1, (size_t)0U, (size_t)104U);
     for (size_t i = (size_t)1U; i < blocks; i++) {
@@ -2746,6 +2752,7 @@ static inline void keccak2_7c(Eurydice_arr_7d *data, Eurydice_slice out0,
       keccakf1600_80_65(&s);
       squeeze_d3_7a(&s, out0, out1, last, outlen - last);
     }
+    return;
   }
 }
 
@@ -2808,13 +2815,6 @@ KRML_MUSTINLINE void libcrux_sha3_neon_x2_incremental_shake256_absorb_final(
                       Eurydice_slice_len(data0, uint8_t));
 }
 
-/**
- Write out the first block of Keccak output.
-
- This function MUST NOT be called after any of the other `squeeze_*`
- functions have been called, since that would result in a duplicate output
- block.
-*/
 /**
 This function found in impl
 {libcrux_sha3::generic_keccak::KeccakState<core::core_arch::arm_shared::neon::uint64x2_t,
