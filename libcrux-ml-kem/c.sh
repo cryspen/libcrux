@@ -65,6 +65,7 @@ if [[ "$no_charon" = 0 ]]; then
     echo "Running charon (all) ..."
     RUSTFLAGS="-Cdebug-assertions=no --cfg eurydice" $CHARON_HOME/bin/charon cargo --preset eurydice \
       --include 'libcrux_sha3' \
+      --include 'libcrux_secrets' \
       --start-from libcrux_ml_kem --start-from libcrux_sha3 \
       #--include 'core::num::*::BITS' --include 'core::num::*::MAX'
     if ! [[ -f ../libcrux_ml_kem.llbc ]]; then
