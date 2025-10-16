@@ -5,10 +5,10 @@
  *
  * This code was generated with the following revisions:
  * Charon: 150afa5f6ba469c99c4a2fa6e1037ae5a4004c68
- * Eurydice: 9b87e8727803cd306b94c18b0ceb0b5b1c18c0e9
+ * Eurydice: ec7dfaf71369de6c7ab306a7ada725b6fc004a33
  * Karamel: 254e099bd586b17461845f6b0cab44c3ef5080e9
  * F*: 7b347386330d0e5a331a220535b6f15288903234
- * Libcrux: 1746ced6ccd3e8d73185d7aee13af229426b7b7a
+ * Libcrux: 23ba8451a39d29970cc274e93bb0b2fe91fbc040
  */
 
 
@@ -3516,7 +3516,7 @@ sample_from_binomial_distribution_2_ea(Eurydice_slice randomness)
     uint32_t even_bits = random_bits_as_u32 & 1431655765U;
     uint32_t odd_bits = random_bits_as_u32 >> 1U & 1431655765U;
     uint32_t coin_toss_outcomes = even_bits + odd_bits;
-    for (uint32_t i = 0U; i < core_num__u32__BITS / 4U; i++)
+    for (uint32_t i = 0U; i < CORE_NUM__U32__BITS / 4U; i++)
     {
       uint32_t outcome_set = i;
       uint32_t outcome_set0 = outcome_set * 4U;

@@ -67,7 +67,7 @@ if [[ "$no_charon" = 0 ]]; then
       --include 'libcrux_sha3' \
       --include 'libcrux_secrets' \
       --start-from libcrux_ml_kem --start-from libcrux_sha3 \
-      # --include 'core::num::*::BITS' --include 'core::num::*::MAX'
+      --include 'core::num::*::BITS' --include 'core::num::*::MAX'
     if ! [[ -f ../libcrux_ml_kem.llbc ]]; then
         echo "😱😱😱 You are the victim of this bug: https://hacspec.zulipchat.com/#narrow/stream/433829-Circus/topic/charon.20declines.20to.20generate.20an.20llbc.20file"
         echo "Suggestion: rm -rf ../target or cargo clean"
