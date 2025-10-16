@@ -118,10 +118,10 @@ echo " */" >> header.txt
 # Run eurydice to extract the C code
 echo "Running eurydice ..."
 echo $EURYDICE_HOME/eurydice --config ../$config -funroll-loops $unrolling \
---header header.txt $cpp17 ../../libcrux_ml_kem.llbc
+--header header.txt $cpp17 ../../libcrux_ml_kem.llbc --keep-going
 
 $EURYDICE_HOME/eurydice --config ../$config -funroll-loops $unrolling \
---header header.txt $cpp17 ../../libcrux_ml_kem.llbc
+--header header.txt $cpp17 ../../libcrux_ml_kem.llbc --keep-going
 
 if [[ "$eurydice_glue" = 1 ]]; then
     cp $EURYDICE_HOME/include/eurydice_glue.h .
