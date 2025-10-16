@@ -1,13 +1,16 @@
 //! This crate provides AEAD (Authenticated Encryption with Associate Data).
 //!
-//! We currently support two AEAD algorithms:
+//! We currently support four AEAD algorithms:
 //!
 //! - ChaCha20Poly1305
 //! - XChaCha20Poly1305
+//! - AES-GCM 128
+//! - AES-GCM 256
 //!
-//! These can either be used directly, using the `chacha20poly1305` and `xchacha20poly1305`
-//! submodules, or using the multiplexed API, which allows chosing the used algorithm dynamically
-//! at run time.
+//! These can either be used directly, using the [`chacha20poly1305`],
+//! [`xchacha20poly1305`], [`aesgcm128`] and [`aesgcm256`] submodules,
+//! or using the multiplexed API, which allows chosing the used
+//! algorithm dynamically at run time.
 //!
 //! ## Static API
 //!
@@ -31,7 +34,7 @@
 //! let key = Key::from(key_bytes);
 //! let nonce = Nonce::from(nonce_bytes);
 //!
-//! key.encrypt(&mut ciphertext, &mut tag, &nonce, &[/* no aad */], msg)
+//! key.encrypt(&mut ciphertext, &mut tag, &nonce, &[/* //! no aad */], msg)
 //!     .expect("Encryption error");
 //!
 //! // Ciphertext and tag contain encrypted data
@@ -176,6 +179,24 @@ pub mod chacha20poly1305 {
 pub mod xchacha20poly1305 {
     pub use libcrux_chacha20poly1305::xchacha20_poly1305::{
         Key, KeyRef, Nonce, NonceRef, Tag, TagMut, TagRef, XChaCha20Poly1305, KEY_LEN, NONCE_LEN,
+        TAG_LEN,
+    };
+}
+
+#[cfg(feature = "aesgcm128")]
+pub mod aesgcm128 {
+    pub use libcrux_aesgcm::aes_gcm_128::{KeyRef, NonceRef, TagMut, TagRef, KEY_LEN};
+    pub use libcrux_aesgcm::{
+        AesGcm128, AesGcm128Key as Key, AesGcm128Nonce as Nonce, AesGcm128Tag as Tag, NONCE_LEN,
+        TAG_LEN,
+    };
+}
+
+#[cfg(feature = "aesgcm256")]
+pub mod aesgcm256 {
+    pub use libcrux_aesgcm::aes_gcm_256::{KeyRef, NonceRef, TagMut, TagRef, KEY_LEN};
+    pub use libcrux_aesgcm::{
+        AesGcm256, AesGcm256Key as Key, AesGcm256Nonce as Nonce, AesGcm256Tag as Tag, NONCE_LEN,
         TAG_LEN,
     };
 }
