@@ -5,10 +5,10 @@
  *
  * This code was generated with the following revisions:
  * Charon: 150afa5f6ba469c99c4a2fa6e1037ae5a4004c68
- * Eurydice: 82bef284a4b2bd383048a1459758e605c976ff11
+ * Eurydice: 9664988fc6405409f3815686f7284fb32e8d9b8e
  * Karamel: 80f5435f2fc505973c469a4afcc8d875cddd0d8b
- * F*: f3a2732c1984b520b1f1d48a22e7dd9f8d14a3a2
- * Libcrux: 16f49de38d3b626c0a336b5e2fceb0bf1fed20bf
+ * F*: 71d8221589d4d438af3706d89cb653cf53e18aab
+ * Libcrux: 1746ced6ccd3e8d73185d7aee13af229426b7b7a
  */
 
 #ifndef libcrux_mlkem_portable_H
@@ -37,42 +37,6 @@ Eurydice_arr_60 libcrux_ml_kem_hash_functions_portable_H(Eurydice_slice input);
 #define LIBCRUX_ML_KEM_VECTOR_TRAITS_INVERSE_OF_MODULUS_MOD_MONTGOMERY_R \
   (62209U)
 
-typedef struct int16_t_x8_s {
-  int16_t fst;
-  int16_t snd;
-  int16_t thd;
-  int16_t f3;
-  int16_t f4;
-  int16_t f5;
-  int16_t f6;
-  int16_t f7;
-} int16_t_x8;
-
-int16_t_x8 libcrux_ml_kem_vector_portable_serialize_deserialize_4_int(
-    Eurydice_slice bytes);
-
-Eurydice_arr_e2 libcrux_ml_kem_vector_portable_serialize_deserialize_4(
-    Eurydice_slice bytes);
-
-Eurydice_arr_e2 libcrux_ml_kem_vector_portable_deserialize_4(Eurydice_slice a);
-
-/**
-This function found in impl {libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::portable::vector_type::PortableVector}
-*/
-Eurydice_arr_e2 libcrux_ml_kem_vector_portable_deserialize_4_b8(
-    Eurydice_slice a);
-
-Eurydice_arr_e2 libcrux_ml_kem_vector_portable_vector_type_to_i16_array(
-    Eurydice_arr_e2 x);
-
-/**
-This function found in impl {libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::portable::vector_type::PortableVector}
-*/
-Eurydice_arr_e2 libcrux_ml_kem_vector_portable_to_i16_array_b8(
-    Eurydice_arr_e2 x);
-
 Eurydice_arr_e2 libcrux_ml_kem_vector_portable_vector_type_from_i16_array(
     Eurydice_slice array);
 
@@ -82,59 +46,6 @@ libcrux_ml_kem::vector::portable::vector_type::PortableVector}
 */
 Eurydice_arr_e2 libcrux_ml_kem_vector_portable_from_i16_array_b8(
     Eurydice_slice array);
-
-typedef struct uint8_t_x5_s {
-  uint8_t fst;
-  uint8_t snd;
-  uint8_t thd;
-  uint8_t f3;
-  uint8_t f4;
-} uint8_t_x5;
-
-uint8_t_x5 libcrux_ml_kem_vector_portable_serialize_serialize_5_int(
-    Eurydice_slice v);
-
-Eurydice_arr_77 libcrux_ml_kem_vector_portable_serialize_serialize_5(
-    Eurydice_arr_e2 v);
-
-Eurydice_arr_77 libcrux_ml_kem_vector_portable_serialize_5(Eurydice_arr_e2 a);
-
-/**
-This function found in impl {libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::portable::vector_type::PortableVector}
-*/
-Eurydice_arr_77 libcrux_ml_kem_vector_portable_serialize_5_b8(
-    Eurydice_arr_e2 a);
-
-int16_t_x8 libcrux_ml_kem_vector_portable_serialize_deserialize_5_int(
-    Eurydice_slice bytes);
-
-Eurydice_arr_e2 libcrux_ml_kem_vector_portable_serialize_deserialize_5(
-    Eurydice_slice bytes);
-
-Eurydice_arr_e2 libcrux_ml_kem_vector_portable_deserialize_5(Eurydice_slice a);
-
-/**
-This function found in impl {libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::portable::vector_type::PortableVector}
-*/
-Eurydice_arr_e2 libcrux_ml_kem_vector_portable_deserialize_5_b8(
-    Eurydice_slice a);
-
-int16_t_x8 libcrux_ml_kem_vector_portable_serialize_deserialize_10_int(
-    Eurydice_slice bytes);
-
-Eurydice_arr_e2 libcrux_ml_kem_vector_portable_serialize_deserialize_10(
-    Eurydice_slice bytes);
-
-Eurydice_arr_e2 libcrux_ml_kem_vector_portable_deserialize_10(Eurydice_slice a);
-
-/**
-This function found in impl {libcrux_ml_kem::vector::traits::Operations for
-libcrux_ml_kem::vector::portable::vector_type::PortableVector}
-*/
-Eurydice_arr_e2 libcrux_ml_kem_vector_portable_deserialize_10_b8(
-    Eurydice_slice a);
 
 typedef struct uint8_t_x11_s {
   uint8_t fst;
@@ -165,6 +76,17 @@ libcrux_ml_kem::vector::portable::vector_type::PortableVector}
 Eurydice_arr_f3 libcrux_ml_kem_vector_portable_serialize_11_b8(
     Eurydice_arr_e2 a);
 
+typedef struct int16_t_x8_s {
+  int16_t fst;
+  int16_t snd;
+  int16_t thd;
+  int16_t f3;
+  int16_t f4;
+  int16_t f5;
+  int16_t f6;
+  int16_t f7;
+} int16_t_x8;
+
 int16_t_x8 libcrux_ml_kem_vector_portable_serialize_deserialize_11_int(
     Eurydice_slice bytes);
 
@@ -179,6 +101,531 @@ libcrux_ml_kem::vector::portable::vector_type::PortableVector}
 */
 Eurydice_arr_e2 libcrux_ml_kem_vector_portable_deserialize_11_b8(
     Eurydice_slice a);
+
+Eurydice_arr_e2 libcrux_ml_kem_vector_portable_vector_type_to_i16_array(
+    Eurydice_arr_e2 x);
+
+/**
+This function found in impl {libcrux_ml_kem::vector::traits::Operations for
+libcrux_ml_kem::vector::portable::vector_type::PortableVector}
+*/
+Eurydice_arr_e2 libcrux_ml_kem_vector_portable_to_i16_array_b8(
+    Eurydice_arr_e2 x);
+
+#define LIBCRUX_ML_KEM_VECTOR_REJ_SAMPLE_TABLE_REJECTION_SAMPLE_SHUFFLE_TABLE  \
+  ((KRML_CLITERAL(Eurydice_arr_ef){                                            \
+      .data = {{.data = {255U, 255U, 255U, 255U, 255U, 255U, 255U, 255U, 255U, \
+                         255U, 255U, 255U, 255U, 255U, 255U, 255U}},           \
+               {.data = {0U, 1U, 255U, 255U, 255U, 255U, 255U, 255U, 255U,     \
+                         255U, 255U, 255U, 255U, 255U, 255U, 255U}},           \
+               {.data = {2U, 3U, 255U, 255U, 255U, 255U, 255U, 255U, 255U,     \
+                         255U, 255U, 255U, 255U, 255U, 255U, 255U}},           \
+               {.data = {0U, 1U, 2U, 3U, 255U, 255U, 255U, 255U, 255U, 255U,   \
+                         255U, 255U, 255U, 255U, 255U, 255U}},                 \
+               {.data = {4U, 5U, 255U, 255U, 255U, 255U, 255U, 255U, 255U,     \
+                         255U, 255U, 255U, 255U, 255U, 255U, 255U}},           \
+               {.data = {0U, 1U, 4U, 5U, 255U, 255U, 255U, 255U, 255U, 255U,   \
+                         255U, 255U, 255U, 255U, 255U, 255U}},                 \
+               {.data = {2U, 3U, 4U, 5U, 255U, 255U, 255U, 255U, 255U, 255U,   \
+                         255U, 255U, 255U, 255U, 255U, 255U}},                 \
+               {.data = {0U, 1U, 2U, 3U, 4U, 5U, 255U, 255U, 255U, 255U, 255U, \
+                         255U, 255U, 255U, 255U, 255U}},                       \
+               {.data = {6U, 7U, 255U, 255U, 255U, 255U, 255U, 255U, 255U,     \
+                         255U, 255U, 255U, 255U, 255U, 255U, 255U}},           \
+               {.data = {0U, 1U, 6U, 7U, 255U, 255U, 255U, 255U, 255U, 255U,   \
+                         255U, 255U, 255U, 255U, 255U, 255U}},                 \
+               {.data = {2U, 3U, 6U, 7U, 255U, 255U, 255U, 255U, 255U, 255U,   \
+                         255U, 255U, 255U, 255U, 255U, 255U}},                 \
+               {.data = {0U, 1U, 2U, 3U, 6U, 7U, 255U, 255U, 255U, 255U, 255U, \
+                         255U, 255U, 255U, 255U, 255U}},                       \
+               {.data = {4U, 5U, 6U, 7U, 255U, 255U, 255U, 255U, 255U, 255U,   \
+                         255U, 255U, 255U, 255U, 255U, 255U}},                 \
+               {.data = {0U, 1U, 4U, 5U, 6U, 7U, 255U, 255U, 255U, 255U, 255U, \
+                         255U, 255U, 255U, 255U, 255U}},                       \
+               {.data = {2U, 3U, 4U, 5U, 6U, 7U, 255U, 255U, 255U, 255U, 255U, \
+                         255U, 255U, 255U, 255U, 255U}},                       \
+               {.data = {0U, 1U, 2U, 3U, 4U, 5U, 6U, 7U, 255U, 255U, 255U,     \
+                         255U, 255U, 255U, 255U, 255U}},                       \
+               {.data = {8U, 9U, 255U, 255U, 255U, 255U, 255U, 255U, 255U,     \
+                         255U, 255U, 255U, 255U, 255U, 255U, 255U}},           \
+               {.data = {0U, 1U, 8U, 9U, 255U, 255U, 255U, 255U, 255U, 255U,   \
+                         255U, 255U, 255U, 255U, 255U, 255U}},                 \
+               {.data = {2U, 3U, 8U, 9U, 255U, 255U, 255U, 255U, 255U, 255U,   \
+                         255U, 255U, 255U, 255U, 255U, 255U}},                 \
+               {.data = {0U, 1U, 2U, 3U, 8U, 9U, 255U, 255U, 255U, 255U, 255U, \
+                         255U, 255U, 255U, 255U, 255U}},                       \
+               {.data = {4U, 5U, 8U, 9U, 255U, 255U, 255U, 255U, 255U, 255U,   \
+                         255U, 255U, 255U, 255U, 255U, 255U}},                 \
+               {.data = {0U, 1U, 4U, 5U, 8U, 9U, 255U, 255U, 255U, 255U, 255U, \
+                         255U, 255U, 255U, 255U, 255U}},                       \
+               {.data = {2U, 3U, 4U, 5U, 8U, 9U, 255U, 255U, 255U, 255U, 255U, \
+                         255U, 255U, 255U, 255U, 255U}},                       \
+               {.data = {0U, 1U, 2U, 3U, 4U, 5U, 8U, 9U, 255U, 255U, 255U,     \
+                         255U, 255U, 255U, 255U, 255U}},                       \
+               {.data = {6U, 7U, 8U, 9U, 255U, 255U, 255U, 255U, 255U, 255U,   \
+                         255U, 255U, 255U, 255U, 255U, 255U}},                 \
+               {.data = {0U, 1U, 6U, 7U, 8U, 9U, 255U, 255U, 255U, 255U, 255U, \
+                         255U, 255U, 255U, 255U, 255U}},                       \
+               {.data = {2U, 3U, 6U, 7U, 8U, 9U, 255U, 255U, 255U, 255U, 255U, \
+                         255U, 255U, 255U, 255U, 255U}},                       \
+               {.data = {0U, 1U, 2U, 3U, 6U, 7U, 8U, 9U, 255U, 255U, 255U,     \
+                         255U, 255U, 255U, 255U, 255U}},                       \
+               {.data = {4U, 5U, 6U, 7U, 8U, 9U, 255U, 255U, 255U, 255U, 255U, \
+                         255U, 255U, 255U, 255U, 255U}},                       \
+               {.data = {0U, 1U, 4U, 5U, 6U, 7U, 8U, 9U, 255U, 255U, 255U,     \
+                         255U, 255U, 255U, 255U, 255U}},                       \
+               {.data = {2U, 3U, 4U, 5U, 6U, 7U, 8U, 9U, 255U, 255U, 255U,     \
+                         255U, 255U, 255U, 255U, 255U}},                       \
+               {.data = {0U, 1U, 2U, 3U, 4U, 5U, 6U, 7U, 8U, 9U, 255U, 255U,   \
+                         255U, 255U, 255U, 255U}},                             \
+               {.data = {10U, 11U, 255U, 255U, 255U, 255U, 255U, 255U, 255U,   \
+                         255U, 255U, 255U, 255U, 255U, 255U, 255U}},           \
+               {.data = {0U, 1U, 10U, 11U, 255U, 255U, 255U, 255U, 255U, 255U, \
+                         255U, 255U, 255U, 255U, 255U, 255U}},                 \
+               {.data = {2U, 3U, 10U, 11U, 255U, 255U, 255U, 255U, 255U, 255U, \
+                         255U, 255U, 255U, 255U, 255U, 255U}},                 \
+               {.data = {0U, 1U, 2U, 3U, 10U, 11U, 255U, 255U, 255U, 255U,     \
+                         255U, 255U, 255U, 255U, 255U, 255U}},                 \
+               {.data = {4U, 5U, 10U, 11U, 255U, 255U, 255U, 255U, 255U, 255U, \
+                         255U, 255U, 255U, 255U, 255U, 255U}},                 \
+               {.data = {0U, 1U, 4U, 5U, 10U, 11U, 255U, 255U, 255U, 255U,     \
+                         255U, 255U, 255U, 255U, 255U, 255U}},                 \
+               {.data = {2U, 3U, 4U, 5U, 10U, 11U, 255U, 255U, 255U, 255U,     \
+                         255U, 255U, 255U, 255U, 255U, 255U}},                 \
+               {.data = {0U, 1U, 2U, 3U, 4U, 5U, 10U, 11U, 255U, 255U, 255U,   \
+                         255U, 255U, 255U, 255U, 255U}},                       \
+               {.data = {6U, 7U, 10U, 11U, 255U, 255U, 255U, 255U, 255U, 255U, \
+                         255U, 255U, 255U, 255U, 255U, 255U}},                 \
+               {.data = {0U, 1U, 6U, 7U, 10U, 11U, 255U, 255U, 255U, 255U,     \
+                         255U, 255U, 255U, 255U, 255U, 255U}},                 \
+               {.data = {2U, 3U, 6U, 7U, 10U, 11U, 255U, 255U, 255U, 255U,     \
+                         255U, 255U, 255U, 255U, 255U, 255U}},                 \
+               {.data = {0U, 1U, 2U, 3U, 6U, 7U, 10U, 11U, 255U, 255U, 255U,   \
+                         255U, 255U, 255U, 255U, 255U}},                       \
+               {.data = {4U, 5U, 6U, 7U, 10U, 11U, 255U, 255U, 255U, 255U,     \
+                         255U, 255U, 255U, 255U, 255U, 255U}},                 \
+               {.data = {0U, 1U, 4U, 5U, 6U, 7U, 10U, 11U, 255U, 255U, 255U,   \
+                         255U, 255U, 255U, 255U, 255U}},                       \
+               {.data = {2U, 3U, 4U, 5U, 6U, 7U, 10U, 11U, 255U, 255U, 255U,   \
+                         255U, 255U, 255U, 255U, 255U}},                       \
+               {.data = {0U, 1U, 2U, 3U, 4U, 5U, 6U, 7U, 10U, 11U, 255U, 255U, \
+                         255U, 255U, 255U, 255U}},                             \
+               {.data = {8U, 9U, 10U, 11U, 255U, 255U, 255U, 255U, 255U, 255U, \
+                         255U, 255U, 255U, 255U, 255U, 255U}},                 \
+               {.data = {0U, 1U, 8U, 9U, 10U, 11U, 255U, 255U, 255U, 255U,     \
+                         255U, 255U, 255U, 255U, 255U, 255U}},                 \
+               {.data = {2U, 3U, 8U, 9U, 10U, 11U, 255U, 255U, 255U, 255U,     \
+                         255U, 255U, 255U, 255U, 255U, 255U}},                 \
+               {.data = {0U, 1U, 2U, 3U, 8U, 9U, 10U, 11U, 255U, 255U, 255U,   \
+                         255U, 255U, 255U, 255U, 255U}},                       \
+               {.data = {4U, 5U, 8U, 9U, 10U, 11U, 255U, 255U, 255U, 255U,     \
+                         255U, 255U, 255U, 255U, 255U, 255U}},                 \
+               {.data = {0U, 1U, 4U, 5U, 8U, 9U, 10U, 11U, 255U, 255U, 255U,   \
+                         255U, 255U, 255U, 255U, 255U}},                       \
+               {.data = {2U, 3U, 4U, 5U, 8U, 9U, 10U, 11U, 255U, 255U, 255U,   \
+                         255U, 255U, 255U, 255U, 255U}},                       \
+               {.data = {0U, 1U, 2U, 3U, 4U, 5U, 8U, 9U, 10U, 11U, 255U, 255U, \
+                         255U, 255U, 255U, 255U}},                             \
+               {.data = {6U, 7U, 8U, 9U, 10U, 11U, 255U, 255U, 255U, 255U,     \
+                         255U, 255U, 255U, 255U, 255U, 255U}},                 \
+               {.data = {0U, 1U, 6U, 7U, 8U, 9U, 10U, 11U, 255U, 255U, 255U,   \
+                         255U, 255U, 255U, 255U, 255U}},                       \
+               {.data = {2U, 3U, 6U, 7U, 8U, 9U, 10U, 11U, 255U, 255U, 255U,   \
+                         255U, 255U, 255U, 255U, 255U}},                       \
+               {.data = {0U, 1U, 2U, 3U, 6U, 7U, 8U, 9U, 10U, 11U, 255U, 255U, \
+                         255U, 255U, 255U, 255U}},                             \
+               {.data = {4U, 5U, 6U, 7U, 8U, 9U, 10U, 11U, 255U, 255U, 255U,   \
+                         255U, 255U, 255U, 255U, 255U}},                       \
+               {.data = {0U, 1U, 4U, 5U, 6U, 7U, 8U, 9U, 10U, 11U, 255U, 255U, \
+                         255U, 255U, 255U, 255U}},                             \
+               {.data = {2U, 3U, 4U, 5U, 6U, 7U, 8U, 9U, 10U, 11U, 255U, 255U, \
+                         255U, 255U, 255U, 255U}},                             \
+               {.data = {0U, 1U, 2U, 3U, 4U, 5U, 6U, 7U, 8U, 9U, 10U, 11U,     \
+                         255U, 255U, 255U, 255U}},                             \
+               {.data = {12U, 13U, 255U, 255U, 255U, 255U, 255U, 255U, 255U,   \
+                         255U, 255U, 255U, 255U, 255U, 255U, 255U}},           \
+               {.data = {0U, 1U, 12U, 13U, 255U, 255U, 255U, 255U, 255U, 255U, \
+                         255U, 255U, 255U, 255U, 255U, 255U}},                 \
+               {.data = {2U, 3U, 12U, 13U, 255U, 255U, 255U, 255U, 255U, 255U, \
+                         255U, 255U, 255U, 255U, 255U, 255U}},                 \
+               {.data = {0U, 1U, 2U, 3U, 12U, 13U, 255U, 255U, 255U, 255U,     \
+                         255U, 255U, 255U, 255U, 255U, 255U}},                 \
+               {.data = {4U, 5U, 12U, 13U, 255U, 255U, 255U, 255U, 255U, 255U, \
+                         255U, 255U, 255U, 255U, 255U, 255U}},                 \
+               {.data = {0U, 1U, 4U, 5U, 12U, 13U, 255U, 255U, 255U, 255U,     \
+                         255U, 255U, 255U, 255U, 255U, 255U}},                 \
+               {.data = {2U, 3U, 4U, 5U, 12U, 13U, 255U, 255U, 255U, 255U,     \
+                         255U, 255U, 255U, 255U, 255U, 255U}},                 \
+               {.data = {0U, 1U, 2U, 3U, 4U, 5U, 12U, 13U, 255U, 255U, 255U,   \
+                         255U, 255U, 255U, 255U, 255U}},                       \
+               {.data = {6U, 7U, 12U, 13U, 255U, 255U, 255U, 255U, 255U, 255U, \
+                         255U, 255U, 255U, 255U, 255U, 255U}},                 \
+               {.data = {0U, 1U, 6U, 7U, 12U, 13U, 255U, 255U, 255U, 255U,     \
+                         255U, 255U, 255U, 255U, 255U, 255U}},                 \
+               {.data = {2U, 3U, 6U, 7U, 12U, 13U, 255U, 255U, 255U, 255U,     \
+                         255U, 255U, 255U, 255U, 255U, 255U}},                 \
+               {.data = {0U, 1U, 2U, 3U, 6U, 7U, 12U, 13U, 255U, 255U, 255U,   \
+                         255U, 255U, 255U, 255U, 255U}},                       \
+               {.data = {4U, 5U, 6U, 7U, 12U, 13U, 255U, 255U, 255U, 255U,     \
+                         255U, 255U, 255U, 255U, 255U, 255U}},                 \
+               {.data = {0U, 1U, 4U, 5U, 6U, 7U, 12U, 13U, 255U, 255U, 255U,   \
+                         255U, 255U, 255U, 255U, 255U}},                       \
+               {.data = {2U, 3U, 4U, 5U, 6U, 7U, 12U, 13U, 255U, 255U, 255U,   \
+                         255U, 255U, 255U, 255U, 255U}},                       \
+               {.data = {0U, 1U, 2U, 3U, 4U, 5U, 6U, 7U, 12U, 13U, 255U, 255U, \
+                         255U, 255U, 255U, 255U}},                             \
+               {.data = {8U, 9U, 12U, 13U, 255U, 255U, 255U, 255U, 255U, 255U, \
+                         255U, 255U, 255U, 255U, 255U, 255U}},                 \
+               {.data = {0U, 1U, 8U, 9U, 12U, 13U, 255U, 255U, 255U, 255U,     \
+                         255U, 255U, 255U, 255U, 255U, 255U}},                 \
+               {.data = {2U, 3U, 8U, 9U, 12U, 13U, 255U, 255U, 255U, 255U,     \
+                         255U, 255U, 255U, 255U, 255U, 255U}},                 \
+               {.data = {0U, 1U, 2U, 3U, 8U, 9U, 12U, 13U, 255U, 255U, 255U,   \
+                         255U, 255U, 255U, 255U, 255U}},                       \
+               {.data = {4U, 5U, 8U, 9U, 12U, 13U, 255U, 255U, 255U, 255U,     \
+                         255U, 255U, 255U, 255U, 255U, 255U}},                 \
+               {.data = {0U, 1U, 4U, 5U, 8U, 9U, 12U, 13U, 255U, 255U, 255U,   \
+                         255U, 255U, 255U, 255U, 255U}},                       \
+               {.data = {2U, 3U, 4U, 5U, 8U, 9U, 12U, 13U, 255U, 255U, 255U,   \
+                         255U, 255U, 255U, 255U, 255U}},                       \
+               {.data = {0U, 1U, 2U, 3U, 4U, 5U, 8U, 9U, 12U, 13U, 255U, 255U, \
+                         255U, 255U, 255U, 255U}},                             \
+               {.data = {6U, 7U, 8U, 9U, 12U, 13U, 255U, 255U, 255U, 255U,     \
+                         255U, 255U, 255U, 255U, 255U, 255U}},                 \
+               {.data = {0U, 1U, 6U, 7U, 8U, 9U, 12U, 13U, 255U, 255U, 255U,   \
+                         255U, 255U, 255U, 255U, 255U}},                       \
+               {.data = {2U, 3U, 6U, 7U, 8U, 9U, 12U, 13U, 255U, 255U, 255U,   \
+                         255U, 255U, 255U, 255U, 255U}},                       \
+               {.data = {0U, 1U, 2U, 3U, 6U, 7U, 8U, 9U, 12U, 13U, 255U, 255U, \
+                         255U, 255U, 255U, 255U}},                             \
+               {.data = {4U, 5U, 6U, 7U, 8U, 9U, 12U, 13U, 255U, 255U, 255U,   \
+                         255U, 255U, 255U, 255U, 255U}},                       \
+               {.data = {0U, 1U, 4U, 5U, 6U, 7U, 8U, 9U, 12U, 13U, 255U, 255U, \
+                         255U, 255U, 255U, 255U}},                             \
+               {.data = {2U, 3U, 4U, 5U, 6U, 7U, 8U, 9U, 12U, 13U, 255U, 255U, \
+                         255U, 255U, 255U, 255U}},                             \
+               {.data = {0U, 1U, 2U, 3U, 4U, 5U, 6U, 7U, 8U, 9U, 12U, 13U,     \
+                         255U, 255U, 255U, 255U}},                             \
+               {.data = {10U, 11U, 12U, 13U, 255U, 255U, 255U, 255U, 255U,     \
+                         255U, 255U, 255U, 255U, 255U, 255U, 255U}},           \
+               {.data = {0U, 1U, 10U, 11U, 12U, 13U, 255U, 255U, 255U, 255U,   \
+                         255U, 255U, 255U, 255U, 255U, 255U}},                 \
+               {.data = {2U, 3U, 10U, 11U, 12U, 13U, 255U, 255U, 255U, 255U,   \
+                         255U, 255U, 255U, 255U, 255U, 255U}},                 \
+               {.data = {0U, 1U, 2U, 3U, 10U, 11U, 12U, 13U, 255U, 255U, 255U, \
+                         255U, 255U, 255U, 255U, 255U}},                       \
+               {.data = {4U, 5U, 10U, 11U, 12U, 13U, 255U, 255U, 255U, 255U,   \
+                         255U, 255U, 255U, 255U, 255U, 255U}},                 \
+               {.data = {0U, 1U, 4U, 5U, 10U, 11U, 12U, 13U, 255U, 255U, 255U, \
+                         255U, 255U, 255U, 255U, 255U}},                       \
+               {.data = {2U, 3U, 4U, 5U, 10U, 11U, 12U, 13U, 255U, 255U, 255U, \
+                         255U, 255U, 255U, 255U, 255U}},                       \
+               {.data = {0U, 1U, 2U, 3U, 4U, 5U, 10U, 11U, 12U, 13U, 255U,     \
+                         255U, 255U, 255U, 255U, 255U}},                       \
+               {.data = {6U, 7U, 10U, 11U, 12U, 13U, 255U, 255U, 255U, 255U,   \
+                         255U, 255U, 255U, 255U, 255U, 255U}},                 \
+               {.data = {0U, 1U, 6U, 7U, 10U, 11U, 12U, 13U, 255U, 255U, 255U, \
+                         255U, 255U, 255U, 255U, 255U}},                       \
+               {.data = {2U, 3U, 6U, 7U, 10U, 11U, 12U, 13U, 255U, 255U, 255U, \
+                         255U, 255U, 255U, 255U, 255U}},                       \
+               {.data = {0U, 1U, 2U, 3U, 6U, 7U, 10U, 11U, 12U, 13U, 255U,     \
+                         255U, 255U, 255U, 255U, 255U}},                       \
+               {.data = {4U, 5U, 6U, 7U, 10U, 11U, 12U, 13U, 255U, 255U, 255U, \
+                         255U, 255U, 255U, 255U, 255U}},                       \
+               {.data = {0U, 1U, 4U, 5U, 6U, 7U, 10U, 11U, 12U, 13U, 255U,     \
+                         255U, 255U, 255U, 255U, 255U}},                       \
+               {.data = {2U, 3U, 4U, 5U, 6U, 7U, 10U, 11U, 12U, 13U, 255U,     \
+                         255U, 255U, 255U, 255U, 255U}},                       \
+               {.data = {0U, 1U, 2U, 3U, 4U, 5U, 6U, 7U, 10U, 11U, 12U, 13U,   \
+                         255U, 255U, 255U, 255U}},                             \
+               {.data = {8U, 9U, 10U, 11U, 12U, 13U, 255U, 255U, 255U, 255U,   \
+                         255U, 255U, 255U, 255U, 255U, 255U}},                 \
+               {.data = {0U, 1U, 8U, 9U, 10U, 11U, 12U, 13U, 255U, 255U, 255U, \
+                         255U, 255U, 255U, 255U, 255U}},                       \
+               {.data = {2U, 3U, 8U, 9U, 10U, 11U, 12U, 13U, 255U, 255U, 255U, \
+                         255U, 255U, 255U, 255U, 255U}},                       \
+               {.data = {0U, 1U, 2U, 3U, 8U, 9U, 10U, 11U, 12U, 13U, 255U,     \
+                         255U, 255U, 255U, 255U, 255U}},                       \
+               {.data = {4U, 5U, 8U, 9U, 10U, 11U, 12U, 13U, 255U, 255U, 255U, \
+                         255U, 255U, 255U, 255U, 255U}},                       \
+               {.data = {0U, 1U, 4U, 5U, 8U, 9U, 10U, 11U, 12U, 13U, 255U,     \
+                         255U, 255U, 255U, 255U, 255U}},                       \
+               {.data = {2U, 3U, 4U, 5U, 8U, 9U, 10U, 11U, 12U, 13U, 255U,     \
+                         255U, 255U, 255U, 255U, 255U}},                       \
+               {.data = {0U, 1U, 2U, 3U, 4U, 5U, 8U, 9U, 10U, 11U, 12U, 13U,   \
+                         255U, 255U, 255U, 255U}},                             \
+               {.data = {6U, 7U, 8U, 9U, 10U, 11U, 12U, 13U, 255U, 255U, 255U, \
+                         255U, 255U, 255U, 255U, 255U}},                       \
+               {.data = {0U, 1U, 6U, 7U, 8U, 9U, 10U, 11U, 12U, 13U, 255U,     \
+                         255U, 255U, 255U, 255U, 255U}},                       \
+               {.data = {2U, 3U, 6U, 7U, 8U, 9U, 10U, 11U, 12U, 13U, 255U,     \
+                         255U, 255U, 255U, 255U, 255U}},                       \
+               {.data = {0U, 1U, 2U, 3U, 6U, 7U, 8U, 9U, 10U, 11U, 12U, 13U,   \
+                         255U, 255U, 255U, 255U}},                             \
+               {.data = {4U, 5U, 6U, 7U, 8U, 9U, 10U, 11U, 12U, 13U, 255U,     \
+                         255U, 255U, 255U, 255U, 255U}},                       \
+               {.data = {0U, 1U, 4U, 5U, 6U, 7U, 8U, 9U, 10U, 11U, 12U, 13U,   \
+                         255U, 255U, 255U, 255U}},                             \
+               {.data = {2U, 3U, 4U, 5U, 6U, 7U, 8U, 9U, 10U, 11U, 12U, 13U,   \
+                         255U, 255U, 255U, 255U}},                             \
+               {.data = {0U, 1U, 2U, 3U, 4U, 5U, 6U, 7U, 8U, 9U, 10U, 11U,     \
+                         12U, 13U, 255U, 255U}},                               \
+               {.data = {14U, 15U, 255U, 255U, 255U, 255U, 255U, 255U, 255U,   \
+                         255U, 255U, 255U, 255U, 255U, 255U, 255U}},           \
+               {.data = {0U, 1U, 14U, 15U, 255U, 255U, 255U, 255U, 255U, 255U, \
+                         255U, 255U, 255U, 255U, 255U, 255U}},                 \
+               {.data = {2U, 3U, 14U, 15U, 255U, 255U, 255U, 255U, 255U, 255U, \
+                         255U, 255U, 255U, 255U, 255U, 255U}},                 \
+               {.data = {0U, 1U, 2U, 3U, 14U, 15U, 255U, 255U, 255U, 255U,     \
+                         255U, 255U, 255U, 255U, 255U, 255U}},                 \
+               {.data = {4U, 5U, 14U, 15U, 255U, 255U, 255U, 255U, 255U, 255U, \
+                         255U, 255U, 255U, 255U, 255U, 255U}},                 \
+               {.data = {0U, 1U, 4U, 5U, 14U, 15U, 255U, 255U, 255U, 255U,     \
+                         255U, 255U, 255U, 255U, 255U, 255U}},                 \
+               {.data = {2U, 3U, 4U, 5U, 14U, 15U, 255U, 255U, 255U, 255U,     \
+                         255U, 255U, 255U, 255U, 255U, 255U}},                 \
+               {.data = {0U, 1U, 2U, 3U, 4U, 5U, 14U, 15U, 255U, 255U, 255U,   \
+                         255U, 255U, 255U, 255U, 255U}},                       \
+               {.data = {6U, 7U, 14U, 15U, 255U, 255U, 255U, 255U, 255U, 255U, \
+                         255U, 255U, 255U, 255U, 255U, 255U}},                 \
+               {.data = {0U, 1U, 6U, 7U, 14U, 15U, 255U, 255U, 255U, 255U,     \
+                         255U, 255U, 255U, 255U, 255U, 255U}},                 \
+               {.data = {2U, 3U, 6U, 7U, 14U, 15U, 255U, 255U, 255U, 255U,     \
+                         255U, 255U, 255U, 255U, 255U, 255U}},                 \
+               {.data = {0U, 1U, 2U, 3U, 6U, 7U, 14U, 15U, 255U, 255U, 255U,   \
+                         255U, 255U, 255U, 255U, 255U}},                       \
+               {.data = {4U, 5U, 6U, 7U, 14U, 15U, 255U, 255U, 255U, 255U,     \
+                         255U, 255U, 255U, 255U, 255U, 255U}},                 \
+               {.data = {0U, 1U, 4U, 5U, 6U, 7U, 14U, 15U, 255U, 255U, 255U,   \
+                         255U, 255U, 255U, 255U, 255U}},                       \
+               {.data = {2U, 3U, 4U, 5U, 6U, 7U, 14U, 15U, 255U, 255U, 255U,   \
+                         255U, 255U, 255U, 255U, 255U}},                       \
+               {.data = {0U, 1U, 2U, 3U, 4U, 5U, 6U, 7U, 14U, 15U, 255U, 255U, \
+                         255U, 255U, 255U, 255U}},                             \
+               {.data = {8U, 9U, 14U, 15U, 255U, 255U, 255U, 255U, 255U, 255U, \
+                         255U, 255U, 255U, 255U, 255U, 255U}},                 \
+               {.data = {0U, 1U, 8U, 9U, 14U, 15U, 255U, 255U, 255U, 255U,     \
+                         255U, 255U, 255U, 255U, 255U, 255U}},                 \
+               {.data = {2U, 3U, 8U, 9U, 14U, 15U, 255U, 255U, 255U, 255U,     \
+                         255U, 255U, 255U, 255U, 255U, 255U}},                 \
+               {.data = {0U, 1U, 2U, 3U, 8U, 9U, 14U, 15U, 255U, 255U, 255U,   \
+                         255U, 255U, 255U, 255U, 255U}},                       \
+               {.data = {4U, 5U, 8U, 9U, 14U, 15U, 255U, 255U, 255U, 255U,     \
+                         255U, 255U, 255U, 255U, 255U, 255U}},                 \
+               {.data = {0U, 1U, 4U, 5U, 8U, 9U, 14U, 15U, 255U, 255U, 255U,   \
+                         255U, 255U, 255U, 255U, 255U}},                       \
+               {.data = {2U, 3U, 4U, 5U, 8U, 9U, 14U, 15U, 255U, 255U, 255U,   \
+                         255U, 255U, 255U, 255U, 255U}},                       \
+               {.data = {0U, 1U, 2U, 3U, 4U, 5U, 8U, 9U, 14U, 15U, 255U, 255U, \
+                         255U, 255U, 255U, 255U}},                             \
+               {.data = {6U, 7U, 8U, 9U, 14U, 15U, 255U, 255U, 255U, 255U,     \
+                         255U, 255U, 255U, 255U, 255U, 255U}},                 \
+               {.data = {0U, 1U, 6U, 7U, 8U, 9U, 14U, 15U, 255U, 255U, 255U,   \
+                         255U, 255U, 255U, 255U, 255U}},                       \
+               {.data = {2U, 3U, 6U, 7U, 8U, 9U, 14U, 15U, 255U, 255U, 255U,   \
+                         255U, 255U, 255U, 255U, 255U}},                       \
+               {.data = {0U, 1U, 2U, 3U, 6U, 7U, 8U, 9U, 14U, 15U, 255U, 255U, \
+                         255U, 255U, 255U, 255U}},                             \
+               {.data = {4U, 5U, 6U, 7U, 8U, 9U, 14U, 15U, 255U, 255U, 255U,   \
+                         255U, 255U, 255U, 255U, 255U}},                       \
+               {.data = {0U, 1U, 4U, 5U, 6U, 7U, 8U, 9U, 14U, 15U, 255U, 255U, \
+                         255U, 255U, 255U, 255U}},                             \
+               {.data = {2U, 3U, 4U, 5U, 6U, 7U, 8U, 9U, 14U, 15U, 255U, 255U, \
+                         255U, 255U, 255U, 255U}},                             \
+               {.data = {0U, 1U, 2U, 3U, 4U, 5U, 6U, 7U, 8U, 9U, 14U, 15U,     \
+                         255U, 255U, 255U, 255U}},                             \
+               {.data = {10U, 11U, 14U, 15U, 255U, 255U, 255U, 255U, 255U,     \
+                         255U, 255U, 255U, 255U, 255U, 255U, 255U}},           \
+               {.data = {0U, 1U, 10U, 11U, 14U, 15U, 255U, 255U, 255U, 255U,   \
+                         255U, 255U, 255U, 255U, 255U, 255U}},                 \
+               {.data = {2U, 3U, 10U, 11U, 14U, 15U, 255U, 255U, 255U, 255U,   \
+                         255U, 255U, 255U, 255U, 255U, 255U}},                 \
+               {.data = {0U, 1U, 2U, 3U, 10U, 11U, 14U, 15U, 255U, 255U, 255U, \
+                         255U, 255U, 255U, 255U, 255U}},                       \
+               {.data = {4U, 5U, 10U, 11U, 14U, 15U, 255U, 255U, 255U, 255U,   \
+                         255U, 255U, 255U, 255U, 255U, 255U}},                 \
+               {.data = {0U, 1U, 4U, 5U, 10U, 11U, 14U, 15U, 255U, 255U, 255U, \
+                         255U, 255U, 255U, 255U, 255U}},                       \
+               {.data = {2U, 3U, 4U, 5U, 10U, 11U, 14U, 15U, 255U, 255U, 255U, \
+                         255U, 255U, 255U, 255U, 255U}},                       \
+               {.data = {0U, 1U, 2U, 3U, 4U, 5U, 10U, 11U, 14U, 15U, 255U,     \
+                         255U, 255U, 255U, 255U, 255U}},                       \
+               {.data = {6U, 7U, 10U, 11U, 14U, 15U, 255U, 255U, 255U, 255U,   \
+                         255U, 255U, 255U, 255U, 255U, 255U}},                 \
+               {.data = {0U, 1U, 6U, 7U, 10U, 11U, 14U, 15U, 255U, 255U, 255U, \
+                         255U, 255U, 255U, 255U, 255U}},                       \
+               {.data = {2U, 3U, 6U, 7U, 10U, 11U, 14U, 15U, 255U, 255U, 255U, \
+                         255U, 255U, 255U, 255U, 255U}},                       \
+               {.data = {0U, 1U, 2U, 3U, 6U, 7U, 10U, 11U, 14U, 15U, 255U,     \
+                         255U, 255U, 255U, 255U, 255U}},                       \
+               {.data = {4U, 5U, 6U, 7U, 10U, 11U, 14U, 15U, 255U, 255U, 255U, \
+                         255U, 255U, 255U, 255U, 255U}},                       \
+               {.data = {0U, 1U, 4U, 5U, 6U, 7U, 10U, 11U, 14U, 15U, 255U,     \
+                         255U, 255U, 255U, 255U, 255U}},                       \
+               {.data = {2U, 3U, 4U, 5U, 6U, 7U, 10U, 11U, 14U, 15U, 255U,     \
+                         255U, 255U, 255U, 255U, 255U}},                       \
+               {.data = {0U, 1U, 2U, 3U, 4U, 5U, 6U, 7U, 10U, 11U, 14U, 15U,   \
+                         255U, 255U, 255U, 255U}},                             \
+               {.data = {8U, 9U, 10U, 11U, 14U, 15U, 255U, 255U, 255U, 255U,   \
+                         255U, 255U, 255U, 255U, 255U, 255U}},                 \
+               {.data = {0U, 1U, 8U, 9U, 10U, 11U, 14U, 15U, 255U, 255U, 255U, \
+                         255U, 255U, 255U, 255U, 255U}},                       \
+               {.data = {2U, 3U, 8U, 9U, 10U, 11U, 14U, 15U, 255U, 255U, 255U, \
+                         255U, 255U, 255U, 255U, 255U}},                       \
+               {.data = {0U, 1U, 2U, 3U, 8U, 9U, 10U, 11U, 14U, 15U, 255U,     \
+                         255U, 255U, 255U, 255U, 255U}},                       \
+               {.data = {4U, 5U, 8U, 9U, 10U, 11U, 14U, 15U, 255U, 255U, 255U, \
+                         255U, 255U, 255U, 255U, 255U}},                       \
+               {.data = {0U, 1U, 4U, 5U, 8U, 9U, 10U, 11U, 14U, 15U, 255U,     \
+                         255U, 255U, 255U, 255U, 255U}},                       \
+               {.data = {2U, 3U, 4U, 5U, 8U, 9U, 10U, 11U, 14U, 15U, 255U,     \
+                         255U, 255U, 255U, 255U, 255U}},                       \
+               {.data = {0U, 1U, 2U, 3U, 4U, 5U, 8U, 9U, 10U, 11U, 14U, 15U,   \
+                         255U, 255U, 255U, 255U}},                             \
+               {.data = {6U, 7U, 8U, 9U, 10U, 11U, 14U, 15U, 255U, 255U, 255U, \
+                         255U, 255U, 255U, 255U, 255U}},                       \
+               {.data = {0U, 1U, 6U, 7U, 8U, 9U, 10U, 11U, 14U, 15U, 255U,     \
+                         255U, 255U, 255U, 255U, 255U}},                       \
+               {.data = {2U, 3U, 6U, 7U, 8U, 9U, 10U, 11U, 14U, 15U, 255U,     \
+                         255U, 255U, 255U, 255U, 255U}},                       \
+               {.data = {0U, 1U, 2U, 3U, 6U, 7U, 8U, 9U, 10U, 11U, 14U, 15U,   \
+                         255U, 255U, 255U, 255U}},                             \
+               {.data = {4U, 5U, 6U, 7U, 8U, 9U, 10U, 11U, 14U, 15U, 255U,     \
+                         255U, 255U, 255U, 255U, 255U}},                       \
+               {.data = {0U, 1U, 4U, 5U, 6U, 7U, 8U, 9U, 10U, 11U, 14U, 15U,   \
+                         255U, 255U, 255U, 255U}},                             \
+               {.data = {2U, 3U, 4U, 5U, 6U, 7U, 8U, 9U, 10U, 11U, 14U, 15U,   \
+                         255U, 255U, 255U, 255U}},                             \
+               {.data = {0U, 1U, 2U, 3U, 4U, 5U, 6U, 7U, 8U, 9U, 10U, 11U,     \
+                         14U, 15U, 255U, 255U}},                               \
+               {.data = {12U, 13U, 14U, 15U, 255U, 255U, 255U, 255U, 255U,     \
+                         255U, 255U, 255U, 255U, 255U, 255U, 255U}},           \
+               {.data = {0U, 1U, 12U, 13U, 14U, 15U, 255U, 255U, 255U, 255U,   \
+                         255U, 255U, 255U, 255U, 255U, 255U}},                 \
+               {.data = {2U, 3U, 12U, 13U, 14U, 15U, 255U, 255U, 255U, 255U,   \
+                         255U, 255U, 255U, 255U, 255U, 255U}},                 \
+               {.data = {0U, 1U, 2U, 3U, 12U, 13U, 14U, 15U, 255U, 255U, 255U, \
+                         255U, 255U, 255U, 255U, 255U}},                       \
+               {.data = {4U, 5U, 12U, 13U, 14U, 15U, 255U, 255U, 255U, 255U,   \
+                         255U, 255U, 255U, 255U, 255U, 255U}},                 \
+               {.data = {0U, 1U, 4U, 5U, 12U, 13U, 14U, 15U, 255U, 255U, 255U, \
+                         255U, 255U, 255U, 255U, 255U}},                       \
+               {.data = {2U, 3U, 4U, 5U, 12U, 13U, 14U, 15U, 255U, 255U, 255U, \
+                         255U, 255U, 255U, 255U, 255U}},                       \
+               {.data = {0U, 1U, 2U, 3U, 4U, 5U, 12U, 13U, 14U, 15U, 255U,     \
+                         255U, 255U, 255U, 255U, 255U}},                       \
+               {.data = {6U, 7U, 12U, 13U, 14U, 15U, 255U, 255U, 255U, 255U,   \
+                         255U, 255U, 255U, 255U, 255U, 255U}},                 \
+               {.data = {0U, 1U, 6U, 7U, 12U, 13U, 14U, 15U, 255U, 255U, 255U, \
+                         255U, 255U, 255U, 255U, 255U}},                       \
+               {.data = {2U, 3U, 6U, 7U, 12U, 13U, 14U, 15U, 255U, 255U, 255U, \
+                         255U, 255U, 255U, 255U, 255U}},                       \
+               {.data = {0U, 1U, 2U, 3U, 6U, 7U, 12U, 13U, 14U, 15U, 255U,     \
+                         255U, 255U, 255U, 255U, 255U}},                       \
+               {.data = {4U, 5U, 6U, 7U, 12U, 13U, 14U, 15U, 255U, 255U, 255U, \
+                         255U, 255U, 255U, 255U, 255U}},                       \
+               {.data = {0U, 1U, 4U, 5U, 6U, 7U, 12U, 13U, 14U, 15U, 255U,     \
+                         255U, 255U, 255U, 255U, 255U}},                       \
+               {.data = {2U, 3U, 4U, 5U, 6U, 7U, 12U, 13U, 14U, 15U, 255U,     \
+                         255U, 255U, 255U, 255U, 255U}},                       \
+               {.data = {0U, 1U, 2U, 3U, 4U, 5U, 6U, 7U, 12U, 13U, 14U, 15U,   \
+                         255U, 255U, 255U, 255U}},                             \
+               {.data = {8U, 9U, 12U, 13U, 14U, 15U, 255U, 255U, 255U, 255U,   \
+                         255U, 255U, 255U, 255U, 255U, 255U}},                 \
+               {.data = {0U, 1U, 8U, 9U, 12U, 13U, 14U, 15U, 255U, 255U, 255U, \
+                         255U, 255U, 255U, 255U, 255U}},                       \
+               {.data = {2U, 3U, 8U, 9U, 12U, 13U, 14U, 15U, 255U, 255U, 255U, \
+                         255U, 255U, 255U, 255U, 255U}},                       \
+               {.data = {0U, 1U, 2U, 3U, 8U, 9U, 12U, 13U, 14U, 15U, 255U,     \
+                         255U, 255U, 255U, 255U, 255U}},                       \
+               {.data = {4U, 5U, 8U, 9U, 12U, 13U, 14U, 15U, 255U, 255U, 255U, \
+                         255U, 255U, 255U, 255U, 255U}},                       \
+               {.data = {0U, 1U, 4U, 5U, 8U, 9U, 12U, 13U, 14U, 15U, 255U,     \
+                         255U, 255U, 255U, 255U, 255U}},                       \
+               {.data = {2U, 3U, 4U, 5U, 8U, 9U, 12U, 13U, 14U, 15U, 255U,     \
+                         255U, 255U, 255U, 255U, 255U}},                       \
+               {.data = {0U, 1U, 2U, 3U, 4U, 5U, 8U, 9U, 12U, 13U, 14U, 15U,   \
+                         255U, 255U, 255U, 255U}},                             \
+               {.data = {6U, 7U, 8U, 9U, 12U, 13U, 14U, 15U, 255U, 255U, 255U, \
+                         255U, 255U, 255U, 255U, 255U}},                       \
+               {.data = {0U, 1U, 6U, 7U, 8U, 9U, 12U, 13U, 14U, 15U, 255U,     \
+                         255U, 255U, 255U, 255U, 255U}},                       \
+               {.data = {2U, 3U, 6U, 7U, 8U, 9U, 12U, 13U, 14U, 15U, 255U,     \
+                         255U, 255U, 255U, 255U, 255U}},                       \
+               {.data = {0U, 1U, 2U, 3U, 6U, 7U, 8U, 9U, 12U, 13U, 14U, 15U,   \
+                         255U, 255U, 255U, 255U}},                             \
+               {.data = {4U, 5U, 6U, 7U, 8U, 9U, 12U, 13U, 14U, 15U, 255U,     \
+                         255U, 255U, 255U, 255U, 255U}},                       \
+               {.data = {0U, 1U, 4U, 5U, 6U, 7U, 8U, 9U, 12U, 13U, 14U, 15U,   \
+                         255U, 255U, 255U, 255U}},                             \
+               {.data = {2U, 3U, 4U, 5U, 6U, 7U, 8U, 9U, 12U, 13U, 14U, 15U,   \
+                         255U, 255U, 255U, 255U}},                             \
+               {.data = {0U, 1U, 2U, 3U, 4U, 5U, 6U, 7U, 8U, 9U, 12U, 13U,     \
+                         14U, 15U, 255U, 255U}},                               \
+               {.data = {10U, 11U, 12U, 13U, 14U, 15U, 255U, 255U, 255U, 255U, \
+                         255U, 255U, 255U, 255U, 255U, 255U}},                 \
+               {.data = {0U, 1U, 10U, 11U, 12U, 13U, 14U, 15U, 255U, 255U,     \
+                         255U, 255U, 255U, 255U, 255U, 255U}},                 \
+               {.data = {2U, 3U, 10U, 11U, 12U, 13U, 14U, 15U, 255U, 255U,     \
+                         255U, 255U, 255U, 255U, 255U, 255U}},                 \
+               {.data = {0U, 1U, 2U, 3U, 10U, 11U, 12U, 13U, 14U, 15U, 255U,   \
+                         255U, 255U, 255U, 255U, 255U}},                       \
+               {.data = {4U, 5U, 10U, 11U, 12U, 13U, 14U, 15U, 255U, 255U,     \
+                         255U, 255U, 255U, 255U, 255U, 255U}},                 \
+               {.data = {0U, 1U, 4U, 5U, 10U, 11U, 12U, 13U, 14U, 15U, 255U,   \
+                         255U, 255U, 255U, 255U, 255U}},                       \
+               {.data = {2U, 3U, 4U, 5U, 10U, 11U, 12U, 13U, 14U, 15U, 255U,   \
+                         255U, 255U, 255U, 255U, 255U}},                       \
+               {.data = {0U, 1U, 2U, 3U, 4U, 5U, 10U, 11U, 12U, 13U, 14U, 15U, \
+                         255U, 255U, 255U, 255U}},                             \
+               {.data = {6U, 7U, 10U, 11U, 12U, 13U, 14U, 15U, 255U, 255U,     \
+                         255U, 255U, 255U, 255U, 255U, 255U}},                 \
+               {.data = {0U, 1U, 6U, 7U, 10U, 11U, 12U, 13U, 14U, 15U, 255U,   \
+                         255U, 255U, 255U, 255U, 255U}},                       \
+               {.data = {2U, 3U, 6U, 7U, 10U, 11U, 12U, 13U, 14U, 15U, 255U,   \
+                         255U, 255U, 255U, 255U, 255U}},                       \
+               {.data = {0U, 1U, 2U, 3U, 6U, 7U, 10U, 11U, 12U, 13U, 14U, 15U, \
+                         255U, 255U, 255U, 255U}},                             \
+               {.data = {4U, 5U, 6U, 7U, 10U, 11U, 12U, 13U, 14U, 15U, 255U,   \
+                         255U, 255U, 255U, 255U, 255U}},                       \
+               {.data = {0U, 1U, 4U, 5U, 6U, 7U, 10U, 11U, 12U, 13U, 14U, 15U, \
+                         255U, 255U, 255U, 255U}},                             \
+               {.data = {2U, 3U, 4U, 5U, 6U, 7U, 10U, 11U, 12U, 13U, 14U, 15U, \
+                         255U, 255U, 255U, 255U}},                             \
+               {.data = {0U, 1U, 2U, 3U, 4U, 5U, 6U, 7U, 10U, 11U, 12U, 13U,   \
+                         14U, 15U, 255U, 255U}},                               \
+               {.data = {8U, 9U, 10U, 11U, 12U, 13U, 14U, 15U, 255U, 255U,     \
+                         255U, 255U, 255U, 255U, 255U, 255U}},                 \
+               {.data = {0U, 1U, 8U, 9U, 10U, 11U, 12U, 13U, 14U, 15U, 255U,   \
+                         255U, 255U, 255U, 255U, 255U}},                       \
+               {.data = {2U, 3U, 8U, 9U, 10U, 11U, 12U, 13U, 14U, 15U, 255U,   \
+                         255U, 255U, 255U, 255U, 255U}},                       \
+               {.data = {0U, 1U, 2U, 3U, 8U, 9U, 10U, 11U, 12U, 13U, 14U, 15U, \
+                         255U, 255U, 255U, 255U}},                             \
+               {.data = {4U, 5U, 8U, 9U, 10U, 11U, 12U, 13U, 14U, 15U, 255U,   \
+                         255U, 255U, 255U, 255U, 255U}},                       \
+               {.data = {0U, 1U, 4U, 5U, 8U, 9U, 10U, 11U, 12U, 13U, 14U, 15U, \
+                         255U, 255U, 255U, 255U}},                             \
+               {.data = {2U, 3U, 4U, 5U, 8U, 9U, 10U, 11U, 12U, 13U, 14U, 15U, \
+                         255U, 255U, 255U, 255U}},                             \
+               {.data = {0U, 1U, 2U, 3U, 4U, 5U, 8U, 9U, 10U, 11U, 12U, 13U,   \
+                         14U, 15U, 255U, 255U}},                               \
+               {.data = {6U, 7U, 8U, 9U, 10U, 11U, 12U, 13U, 14U, 15U, 255U,   \
+                         255U, 255U, 255U, 255U, 255U}},                       \
+               {.data = {0U, 1U, 6U, 7U, 8U, 9U, 10U, 11U, 12U, 13U, 14U, 15U, \
+                         255U, 255U, 255U, 255U}},                             \
+               {.data = {2U, 3U, 6U, 7U, 8U, 9U, 10U, 11U, 12U, 13U, 14U, 15U, \
+                         255U, 255U, 255U, 255U}},                             \
+               {.data = {0U, 1U, 2U, 3U, 6U, 7U, 8U, 9U, 10U, 11U, 12U, 13U,   \
+                         14U, 15U, 255U, 255U}},                               \
+               {.data = {4U, 5U, 6U, 7U, 8U, 9U, 10U, 11U, 12U, 13U, 14U, 15U, \
+                         255U, 255U, 255U, 255U}},                             \
+               {.data = {0U, 1U, 4U, 5U, 6U, 7U, 8U, 9U, 10U, 11U, 12U, 13U,   \
+                         14U, 15U, 255U, 255U}},                               \
+               {.data = {2U, 3U, 4U, 5U, 6U, 7U, 8U, 9U, 10U, 11U, 12U, 13U,   \
+                         14U, 15U, 255U, 255U}},                               \
+               {.data = {0U, 1U, 2U, 3U, 4U, 5U, 6U, 7U, 8U, 9U, 10U, 11U,     \
+                         12U, 13U, 14U, 15U}}}}))
 
 Eurydice_arr_e2 libcrux_ml_kem_vector_portable_vector_type_zero(void);
 
@@ -556,6 +1003,59 @@ libcrux_ml_kem::vector::portable::vector_type::PortableVector}
 Eurydice_arr_c4 libcrux_ml_kem_vector_portable_serialize_4_b8(
     Eurydice_arr_e2 a);
 
+int16_t_x8 libcrux_ml_kem_vector_portable_serialize_deserialize_4_int(
+    Eurydice_slice bytes);
+
+Eurydice_arr_e2 libcrux_ml_kem_vector_portable_serialize_deserialize_4(
+    Eurydice_slice bytes);
+
+Eurydice_arr_e2 libcrux_ml_kem_vector_portable_deserialize_4(Eurydice_slice a);
+
+/**
+This function found in impl {libcrux_ml_kem::vector::traits::Operations for
+libcrux_ml_kem::vector::portable::vector_type::PortableVector}
+*/
+Eurydice_arr_e2 libcrux_ml_kem_vector_portable_deserialize_4_b8(
+    Eurydice_slice a);
+
+typedef struct uint8_t_x5_s {
+  uint8_t fst;
+  uint8_t snd;
+  uint8_t thd;
+  uint8_t f3;
+  uint8_t f4;
+} uint8_t_x5;
+
+uint8_t_x5 libcrux_ml_kem_vector_portable_serialize_serialize_5_int(
+    Eurydice_slice v);
+
+Eurydice_arr_77 libcrux_ml_kem_vector_portable_serialize_serialize_5(
+    Eurydice_arr_e2 v);
+
+Eurydice_arr_77 libcrux_ml_kem_vector_portable_serialize_5(Eurydice_arr_e2 a);
+
+/**
+This function found in impl {libcrux_ml_kem::vector::traits::Operations for
+libcrux_ml_kem::vector::portable::vector_type::PortableVector}
+*/
+Eurydice_arr_77 libcrux_ml_kem_vector_portable_serialize_5_b8(
+    Eurydice_arr_e2 a);
+
+int16_t_x8 libcrux_ml_kem_vector_portable_serialize_deserialize_5_int(
+    Eurydice_slice bytes);
+
+Eurydice_arr_e2 libcrux_ml_kem_vector_portable_serialize_deserialize_5(
+    Eurydice_slice bytes);
+
+Eurydice_arr_e2 libcrux_ml_kem_vector_portable_deserialize_5(Eurydice_slice a);
+
+/**
+This function found in impl {libcrux_ml_kem::vector::traits::Operations for
+libcrux_ml_kem::vector::portable::vector_type::PortableVector}
+*/
+Eurydice_arr_e2 libcrux_ml_kem_vector_portable_deserialize_5_b8(
+    Eurydice_slice a);
+
 uint8_t_x5 libcrux_ml_kem_vector_portable_serialize_serialize_10_int(
     Eurydice_slice v);
 
@@ -570,6 +1070,21 @@ libcrux_ml_kem::vector::portable::vector_type::PortableVector}
 */
 Eurydice_arr_dc libcrux_ml_kem_vector_portable_serialize_10_b8(
     Eurydice_arr_e2 a);
+
+int16_t_x8 libcrux_ml_kem_vector_portable_serialize_deserialize_10_int(
+    Eurydice_slice bytes);
+
+Eurydice_arr_e2 libcrux_ml_kem_vector_portable_serialize_deserialize_10(
+    Eurydice_slice bytes);
+
+Eurydice_arr_e2 libcrux_ml_kem_vector_portable_deserialize_10(Eurydice_slice a);
+
+/**
+This function found in impl {libcrux_ml_kem::vector::traits::Operations for
+libcrux_ml_kem::vector::portable::vector_type::PortableVector}
+*/
+Eurydice_arr_e2 libcrux_ml_kem_vector_portable_deserialize_10_b8(
+    Eurydice_slice a);
 
 typedef struct uint8_t_x3_s {
   uint8_t fst;

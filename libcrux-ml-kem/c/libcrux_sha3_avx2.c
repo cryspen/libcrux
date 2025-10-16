@@ -4,11 +4,11 @@
  * SPDX-License-Identifier: MIT or Apache-2.0
  *
  * This code was generated with the following revisions:
- * Charon: 667d2fc98984ff7f3df989c2367e6c1fa4a000e7
- * Eurydice: 564ce891b07fd4aefe7d5ccd78e61400b4ac4a2b
- * Karamel: 06a6d2fb3a547d11c9f6dbec26f1f9b5e0dbf411
- * F*: 0c4b790fd608bccfc332d3ff1e9b29c9be8b0595
- * Libcrux: 2c29684cb507f6883814118541e119ca0f22a61c
+ * Charon: 150afa5f6ba469c99c4a2fa6e1037ae5a4004c68
+ * Eurydice: 9664988fc6405409f3815686f7284fb32e8d9b8e
+ * Karamel: 80f5435f2fc505973c469a4afcc8d875cddd0d8b
+ * F*: 71d8221589d4d438af3706d89cb653cf53e18aab
+ * Libcrux: 1746ced6ccd3e8d73185d7aee13af229426b7b7a
  */
 
 #include "libcrux_sha3_avx2.h"
@@ -99,9 +99,6 @@ static KRML_MUSTINLINE __m256i xor_b0(__m256i a, __m256i b) {
   return mm256_xor_si256(a, b);
 }
 
-/**
- Create a new Shake128 x4 state.
-*/
 /**
 This function found in impl {libcrux_sha3::generic_keccak::KeccakState<T,
 N>[TraitClause@0, TraitClause@1]}
@@ -262,9 +259,6 @@ static void load_block_8f_5b(Eurydice_arr_05 *self, Eurydice_arr_d9 *input,
 }
 
 /**
- Get element `[i, j]`.
-*/
-/**
 This function found in impl {core::ops::index::Index<(usize, usize), T> for
 libcrux_sha3::generic_keccak::KeccakState<T, N>[TraitClause@0, TraitClause@1]}
 */
@@ -288,9 +282,6 @@ typedef struct arr_c0_s {
   __m256i data[5U];
 } arr_c0;
 
-/**
- Set element `[i, j] = v`.
-*/
 /**
 This function found in impl {libcrux_sha3::generic_keccak::KeccakState<T,
 N>[TraitClause@0, TraitClause@1]}
@@ -1524,17 +1515,18 @@ static KRML_MUSTINLINE void chi_80_a6(Eurydice_arr_05 *self) {
       i0, (size_t)0U, (size_t)5U, (size_t)1U, size_t i1 = i0; KRML_MAYBE_FOR5(
           i, (size_t)0U, (size_t)5U, (size_t)1U, size_t j = i; set_80_a6(
               self, i1, j,
-              and_not_xor_b0(
-                  index_c2_a6(self, (KRML_CLITERAL(size_t_x2){.fst = i1,
-                                                              .snd = j}))[0U],
-                  index_c2_a6(&old,
-                              (KRML_CLITERAL(size_t_x2){
-                                  .fst = i1,
-                                  .snd = (j + (size_t)2U) % (size_t)5U}))[0U],
-                  index_c2_a6(&old, (KRML_CLITERAL(size_t_x2){
-                                        .fst = i1,
-                                        .snd = (j + (size_t)1U) %
-                                               (size_t)5U}))[0U]));););
+              and_not_xor_b0(index_c2_a6(self, (KRML_CLITERAL(size_t_x2){
+                                                   .fst = i1, .snd = j}))[0U],
+                             index_c2_a6(&old, (KRML_CLITERAL(size_t_x2){
+                                                   .fst = i1,
+                                                   .snd = (j + (size_t)2U) %
+                                                          (size_t)5U}))[0U],
+                             index_c2_a6(&old, (KRML_CLITERAL(size_t_x2){
+                                                   .fst = i1,
+                                                   .snd = (j + (size_t)1U) %
+                                                          (size_t)5U}))[0U])););
+      continue;);
+  return;
 }
 
 /**
@@ -1604,51 +1596,7 @@ static KRML_MUSTINLINE void load_last_ad(Eurydice_arr_05 *state,
                                          Eurydice_arr_d9 *blocks, size_t start,
                                          size_t len) {
   Eurydice_arr_91 buffers = {
-      .data = {
-          (KRML_CLITERAL(Eurydice_arr_3d){
-              .data = {0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                       0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                       0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                       0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                       0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                       0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                       0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                       0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                       0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                       0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U}}),
-          (KRML_CLITERAL(Eurydice_arr_3d){
-              .data = {0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                       0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                       0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                       0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                       0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                       0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                       0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                       0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                       0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                       0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U}}),
-          (KRML_CLITERAL(Eurydice_arr_3d){
-              .data = {0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                       0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                       0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                       0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                       0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                       0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                       0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                       0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                       0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                       0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U}}),
-          (KRML_CLITERAL(Eurydice_arr_3d){
-              .data = {0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                       0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                       0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                       0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                       0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                       0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                       0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                       0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                       0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                       0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U}})}};
+      .data = {{.data = {0U}}, {.data = {0U}}, {.data = {0U}}, {.data = {0U}}}};
   KRML_MAYBE_FOR4(
       i, (size_t)0U, (size_t)4U, (size_t)1U, size_t i0 = i;
       Eurydice_slice_copy(Eurydice_array_to_subslice3(
@@ -1762,6 +1710,7 @@ static KRML_MUSTINLINE void store_block_5b(
                                  start + (size_t)32U * (i4 + (size_t)1U),
                                  uint8_t *),
         v3);
+    continue;
   }
   size_t rem = len % (size_t)32U;
   if (rem > (size_t)0U) {
@@ -1829,6 +1778,7 @@ static KRML_MUSTINLINE void store_block_5b(
                           uint8_t);
     }
   }
+  return;
 }
 
 /**
@@ -1864,6 +1814,7 @@ static inline void keccak4_ad(Eurydice_arr_d9 *data, Eurydice_slice out0,
   for (size_t i = (size_t)0U; i < data_len / (size_t)136U; i++) {
     size_t i0 = i;
     absorb_block_80_97(&s, data, i0 * (size_t)136U);
+    continue;
   }
   size_t rem = data_len % (size_t)136U;
   absorb_final_80_fb(&s, data, data_len - rem, rem);
@@ -1872,6 +1823,7 @@ static inline void keccak4_ad(Eurydice_arr_d9 *data, Eurydice_slice out0,
   size_t last = outlen - outlen % (size_t)136U;
   if (blocks == (size_t)0U) {
     squeeze_17_5b(&s, out0, out1, out2, out3, (size_t)0U, outlen);
+    return;
   } else {
     squeeze_17_5b(&s, out0, out1, out2, out3, (size_t)0U, (size_t)136U);
     for (size_t i = (size_t)1U; i < blocks; i++) {
@@ -1884,6 +1836,7 @@ static inline void keccak4_ad(Eurydice_arr_d9 *data, Eurydice_slice out0,
       keccakf1600_80_a6(&s);
       squeeze_17_5b(&s, out0, out1, out2, out3, last, outlen - last);
     }
+    return;
   }
 }
 
@@ -2016,62 +1969,7 @@ static KRML_MUSTINLINE void load_last_c6(Eurydice_arr_05 *state,
                                          Eurydice_arr_d9 *blocks, size_t start,
                                          size_t len) {
   Eurydice_arr_a6 buffers = {
-      .data = {(KRML_CLITERAL(Eurydice_arr_27){
-                   .data = {0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U}}),
-               (KRML_CLITERAL(Eurydice_arr_27){
-                   .data = {0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U}}),
-               (KRML_CLITERAL(Eurydice_arr_27){
-                   .data = {0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U}}),
-               (KRML_CLITERAL(Eurydice_arr_27){
-                   .data = {0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
-                            0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U}})}};
+      .data = {{.data = {0U}}, {.data = {0U}}, {.data = {0U}}, {.data = {0U}}}};
   KRML_MAYBE_FOR4(
       i, (size_t)0U, (size_t)4U, (size_t)1U, size_t i0 = i;
       Eurydice_slice_copy(Eurydice_array_to_subslice3(
@@ -2199,6 +2097,7 @@ static KRML_MUSTINLINE void store_block_3a(
                                  start + (size_t)32U * (i4 + (size_t)1U),
                                  uint8_t *),
         v3);
+    continue;
   }
   size_t rem = len % (size_t)32U;
   if (rem > (size_t)0U) {
@@ -2266,6 +2165,7 @@ static KRML_MUSTINLINE void store_block_3a(
                           uint8_t);
     }
   }
+  return;
 }
 
 /**

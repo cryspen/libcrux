@@ -5,10 +5,10 @@
  *
  * This code was generated with the following revisions:
  * Charon: 150afa5f6ba469c99c4a2fa6e1037ae5a4004c68
- * Eurydice: 82bef284a4b2bd383048a1459758e605c976ff11
+ * Eurydice: 9664988fc6405409f3815686f7284fb32e8d9b8e
  * Karamel: 80f5435f2fc505973c469a4afcc8d875cddd0d8b
- * F*: f3a2732c1984b520b1f1d48a22e7dd9f8d14a3a2
- * Libcrux: 16f49de38d3b626c0a336b5e2fceb0bf1fed20bf
+ * F*: 71d8221589d4d438af3706d89cb653cf53e18aab
+ * Libcrux: 1746ced6ccd3e8d73185d7aee13af229426b7b7a
  */
 
 #include "internal/libcrux_mlkem512_portable.h"
@@ -39,7 +39,7 @@ libcrux_ml_kem.ind_cca.instantiations.portable.decapsulate with const generics
 - ETA2_RANDOMNESS_SIZE= 128
 - IMPLICIT_REJECTION_HASH_INPUT_SIZE= 800
 */
-static Eurydice_arr_60 decapsulate_69(Eurydice_arr_7f0 *private_key,
+static Eurydice_arr_60 decapsulate_69(Eurydice_arr_7f *private_key,
                                       Eurydice_arr_56 *ciphertext) {
   return libcrux_ml_kem_ind_cca_decapsulate_620(private_key, ciphertext);
 }
@@ -52,7 +52,7 @@ static Eurydice_arr_60 decapsulate_69(Eurydice_arr_7f0 *private_key,
  [`MlKem512Ciphertext`].
 */
 Eurydice_arr_60 libcrux_ml_kem_mlkem512_portable_decapsulate(
-    Eurydice_arr_7f0 *private_key, Eurydice_arr_56 *ciphertext) {
+    Eurydice_arr_7f *private_key, Eurydice_arr_56 *ciphertext) {
   return decapsulate_69(private_key, ciphertext);
 }
 
@@ -130,7 +130,7 @@ generics
 - CIPHERTEXT_SIZE= 768
 */
 static KRML_MUSTINLINE bool validate_private_key_1c(
-    Eurydice_arr_7f0 *private_key, Eurydice_arr_56 *ciphertext) {
+    Eurydice_arr_7f *private_key, Eurydice_arr_56 *ciphertext) {
   return libcrux_ml_kem_ind_cca_validate_private_key_fb(private_key,
                                                         ciphertext);
 }
@@ -141,7 +141,7 @@ static KRML_MUSTINLINE bool validate_private_key_1c(
  Returns `true` if valid, and `false` otherwise.
 */
 bool libcrux_ml_kem_mlkem512_portable_validate_private_key(
-    Eurydice_arr_7f0 *private_key, Eurydice_arr_56 *ciphertext) {
+    Eurydice_arr_7f *private_key, Eurydice_arr_56 *ciphertext) {
   return validate_private_key_1c(private_key, ciphertext);
 }
 
@@ -156,7 +156,7 @@ const generics
 - SECRET_KEY_SIZE= 1632
 */
 static KRML_MUSTINLINE bool validate_private_key_only_49(
-    Eurydice_arr_7f0 *private_key) {
+    Eurydice_arr_7f *private_key) {
   return libcrux_ml_kem_ind_cca_validate_private_key_only_30(private_key);
 }
 
@@ -166,7 +166,7 @@ static KRML_MUSTINLINE bool validate_private_key_only_49(
  Returns `true` if valid, and `false` otherwise.
 */
 bool libcrux_ml_kem_mlkem512_portable_validate_private_key_only(
-    Eurydice_arr_7f0 *private_key) {
+    Eurydice_arr_7f *private_key) {
   return validate_private_key_only_49(private_key);
 }
 
@@ -354,7 +354,7 @@ with const generics
 - T_AS_NTT_ENCODED_SIZE= 768
 */
 static KRML_MUSTINLINE void keypair_from_private_key_30(
-    Eurydice_arr_7f0 *private_key,
+    Eurydice_arr_7f *private_key,
     libcrux_ml_kem_mlkem512_portable_unpacked_MlKem512KeyPairUnpacked
         *key_pair) {
   libcrux_ml_kem_ind_cca_unpacked_keys_from_private_key_d1(private_key,
@@ -365,7 +365,7 @@ static KRML_MUSTINLINE void keypair_from_private_key_30(
  Get an unpacked key from a private key.
 */
 void libcrux_ml_kem_mlkem512_portable_unpacked_key_pair_from_private_mut(
-    Eurydice_arr_7f0 *private_key,
+    Eurydice_arr_7f *private_key,
     libcrux_ml_kem_mlkem512_portable_unpacked_MlKem512KeyPairUnpacked
         *key_pair) {
   keypair_from_private_key_30(private_key, key_pair);
@@ -374,7 +374,7 @@ void libcrux_ml_kem_mlkem512_portable_unpacked_key_pair_from_private_mut(
 /**
  Get the serialized private key.
 */
-Eurydice_arr_7f0
+Eurydice_arr_7f
 libcrux_ml_kem_mlkem512_portable_unpacked_key_pair_serialized_private_key(
     libcrux_ml_kem_mlkem512_portable_unpacked_MlKem512KeyPairUnpacked
         *key_pair) {
@@ -386,7 +386,7 @@ libcrux_ml_kem_mlkem512_portable_unpacked_key_pair_serialized_private_key(
 */
 void libcrux_ml_kem_mlkem512_portable_unpacked_key_pair_serialized_private_key_mut(
     libcrux_ml_kem_mlkem512_portable_unpacked_MlKem512KeyPairUnpacked *key_pair,
-    Eurydice_arr_7f0 *serialized) {
+    Eurydice_arr_7f *serialized) {
   libcrux_ml_kem_ind_cca_unpacked_serialized_private_key_mut_11_6d(key_pair,
                                                                    serialized);
 }
