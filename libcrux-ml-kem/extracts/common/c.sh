@@ -72,25 +72,33 @@ fi
 
 # TODO: add LIBCRUX_ENABLE_SIMD128=1 LIBCRUX_ENABLE_SIMD256=1 charon invocations
 if [[ "$no_charon" = 0 ]]; then
-    rm -rf $repo_root/libcrux_ml_kem.llbc $repo_root/libcrux_sha3.llbc $repo_root/libcrux_secrets.llbc
-    echo "Running charon (secrets) ..."
-    (cd $repo_root/secrets && RUSTFLAGS="--cfg eurydice" $CHARON_HOME/bin/charon --remove-associated-types '*' --translate-all-methods)
-    if ! [[ -f $repo_root/libcrux_secrets.llbc ]]; then
-        echo "😱😱😱 You are the victim of this bug: https://hacspec.zulipchat.com/#narrow/stream/433829-Circus/topic/charon.20declines.20to.20generate.20an.20llbc.20file"
-        echo "Suggestion: rm -rf $repo_root/target or cargo clean"
-        exit 1
-    fi
-    # Because of a Charon bug we have to clean the sha3 crate.
     cargo clean -p libcrux-sha3
-    echo "Running charon (sha3) ..."
-    (cd $repo_root/libcrux-sha3 && RUSTFLAGS="--cfg eurydice" $CHARON_HOME/bin/charon --remove-associated-types '*' --rustc-arg=-Cdebug-assertions=no)
-    if ! [[ -f $repo_root/libcrux_sha3.llbc ]]; then
+    rm -rf $repo_root/libcrux_ml_kem.llbc $repo_root/libcrux_sha3.llbc $repo_root/libcrux_secrets.llbc
+    echo "Running charon (all) ..."
+    RUSTFLAGS="-Cdebug-assertions=no --cfg eurydice" $CHARON_HOME/bin/charon cargo --preset eurydice \
+      --include 'libcrux_sha3' \
+      --include 'libcrux_secrets' \
+      --start-from libcrux_ml_kem --start-from libcrux_sha3 \
+      --include 'core::num::*::BITS' --include 'core::num::*::MAX'
+    # rm -rf $repo_root/libcrux_ml_kem.llbc $repo_root/libcrux_sha3.llbc $repo_root/libcrux_secrets.llbc
+    # echo "Running charon (secrets) ..."
+    # (cd $repo_root/secrets && RUSTFLAGS="--cfg eurydice" $CHARON_HOME/bin/charon --remove-associated-types '*' --translate-all-methods)
+    if ! [[ -f $repo_root/libcrux_ml_kem.llbc ]]; then
         echo "😱😱😱 You are the victim of this bug: https://hacspec.zulipchat.com/#narrow/stream/433829-Circus/topic/charon.20declines.20to.20generate.20an.20llbc.20file"
         echo "Suggestion: rm -rf $repo_root/target or cargo clean"
         exit 1
     fi
-    echo "Running charon (ml-kem) ..."
-    RUSTFLAGS="--cfg eurydice" $CHARON_HOME/bin/charon --remove-associated-types '*' --rustc-arg=-Cdebug-assertions=no $features
+    # # Because of a Charon bug we have to clean the sha3 crate.
+    # cargo clean -p libcrux-sha3
+    # echo "Running charon (sha3) ..."
+    # (cd $repo_root/libcrux-sha3 && RUSTFLAGS="--cfg eurydice" $CHARON_HOME/bin/charon --remove-associated-types '*' --rustc-arg=-Cdebug-assertions=no)
+    # if ! [[ -f $repo_root/libcrux_sha3.llbc ]]; then
+    #     echo "😱😱😱 You are the victim of this bug: https://hacspec.zulipchat.com/#narrow/stream/433829-Circus/topic/charon.20declines.20to.20generate.20an.20llbc.20file"
+    #     echo "Suggestion: rm -rf $repo_root/target or cargo clean"
+    #     exit 1
+    # fi
+    # echo "Running charon (ml-kem) ..."
+    # RUSTFLAGS="--cfg eurydice" $CHARON_HOME/bin/charon --remove-associated-types '*' --rustc-arg=-Cdebug-assertions=no $features
 else
     echo "Skipping charon"
 fi
@@ -139,12 +147,12 @@ echo "Running eurydice ..."
 echo $EURYDICE_HOME/eurydice \
     --config "$config" -funroll-loops $unrolling \
     --header header.txt $cpp17 \
-    "$repo_root/libcrux_ml_kem.llbc" "$repo_root/libcrux_sha3.llbc" "$repo_root/libcrux_secrets.llbc"
+    "$repo_root/libcrux_ml_kem.llbc" --keep-going
 
-$EURYDICE_HOME/eurydice \
+$EURYDICE_HOME/eurydice --log "*" \
     --config "$config" -funroll-loops $unrolling \
     --header header.txt $cpp17 \
-    "$repo_root/libcrux_ml_kem.llbc" "$repo_root/libcrux_sha3.llbc" "$repo_root/libcrux_secrets.llbc"
+    "$repo_root/libcrux_ml_kem.llbc" --keep-going
 
 if [[ "$eurydice_glue" = 1 ]]; then
     cp "$glue" .
