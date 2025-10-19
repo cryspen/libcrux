@@ -149,7 +149,8 @@ echo $EURYDICE_HOME/eurydice \
     --header header.txt $cpp17 \
     "$repo_root/libcrux_ml_kem.llbc" --keep-going
 
-$EURYDICE_HOME/eurydice --log "*" \
+#  --log "*" --debug checker
+$EURYDICE_HOME/eurydice \
     --config "$config" -funroll-loops $unrolling \
     --header header.txt $cpp17 \
     "$repo_root/libcrux_ml_kem.llbc" --keep-going

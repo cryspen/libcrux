@@ -4,11 +4,11 @@
  * SPDX-License-Identifier: MIT or Apache-2.0
  *
  * This code was generated with the following revisions:
- * Charon: 667d2fc98984ff7f3df989c2367e6c1fa4a000e7
- * Eurydice: 2381cbc416ef2ad0b561c362c500bc84f36b6785
- * Karamel: 80f5435f2fc505973c469a4afcc8d875cddd0d8b
+ * Charon: 92c93e1cb1aa299c44eb039374098c8dd598c640
+ * Eurydice: 0b834617366280f902ccc302d8920f2d508fba45
+ * Karamel: 254e099bd586b17461845f6b0cab44c3ef5080e9
  * F*: 71d8221589d4d438af3706d89cb653cf53e18aab
- * Libcrux: 68dfed5a4a9e40277f62828471c029afed1ecdcc
+ * Libcrux: 3820cfd1cfca2935e0c8da6a75c5a64ba0911e58
  */
 
 #ifndef libcrux_sha3_internal_H
@@ -19,6 +19,16 @@
 #if defined(__cplusplus)
 extern "C" {
 #endif
+
+/**
+A monomorphic instance of Eurydice.arr
+with types uint8_t
+with const generics
+- $32size_t
+*/
+typedef struct Eurydice_arr_60_s {
+  uint8_t data[32U];
+} Eurydice_arr_60;
 
 #define libcrux_sha3_Algorithm_Sha224 1
 #define libcrux_sha3_Algorithm_Sha256 2

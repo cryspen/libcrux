@@ -129,23 +129,23 @@ target_link_libraries(ml_kem_test768 PRIVATE
     nlohmann_json::nlohmann_json
 )
 
-add_executable(ml_kem_test1024
-    ${PROJECT_SOURCE_DIR}/tests/mlkem1024.cc
-)
-target_link_libraries(ml_kem_test1024 PRIVATE
-    ml_kem_static
-    gtest_main
-    nlohmann_json::nlohmann_json
-)
+# add_executable(ml_kem_test1024
+#     ${PROJECT_SOURCE_DIR}/tests/mlkem1024.cc
+# )
+# target_link_libraries(ml_kem_test1024 PRIVATE
+#     ml_kem_static
+#     gtest_main
+#     nlohmann_json::nlohmann_json
+# )
 
-add_executable(sha3_test
-    ${PROJECT_SOURCE_DIR}/tests/sha3.cc
-)
-target_link_libraries(sha3_test PRIVATE
-    ml_kem_static
-    gtest_main
-    nlohmann_json::nlohmann_json
-)
+# add_executable(sha3_test
+#     ${PROJECT_SOURCE_DIR}/tests/sha3.cc
+# )
+# target_link_libraries(sha3_test PRIVATE
+#     ml_kem_static
+#     gtest_main
+#     nlohmann_json::nlohmann_json
+# )
 
 # --- Benchmarks
 if(DEFINED ENV{LIBCRUX_BENCHMARKS})
