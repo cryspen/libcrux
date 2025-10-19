@@ -75,7 +75,9 @@ if [[ "$no_charon" = 0 ]]; then
     cargo clean -p libcrux-sha3
     rm -rf $repo_root/libcrux_ml_kem.llbc $repo_root/libcrux_sha3.llbc $repo_root/libcrux_secrets.llbc
     echo "Running charon (all) ..."
-    RUSTFLAGS="-Cdebug-assertions=no --cfg eurydice" $CHARON_HOME/bin/charon cargo --preset eurydice \
+    RUSTFLAGS="-Cdebug-assertions=no --cfg eurydice" $CHARON_HOME/bin/charon cargo \
+       $features \
+      --preset eurydice \
       --include 'libcrux_sha3' \
       --include 'libcrux_secrets' \
       --start-from libcrux_ml_kem --start-from libcrux_sha3 \
