@@ -68,7 +68,8 @@ files:
     api:
       - [libcrux_ml_kem, constants ]
       - [libcrux_sha3, generic_keccak, constants ]
-      - [Eurydice, "*"]
+      # FIXME: removing this trips an internal invariant
+      - [ Eurydice, "*" ]
     private:
       monomorphizations_of:
         - [core, "*"]
@@ -77,7 +78,6 @@ files:
         - [libcrux_ml_kem, constant_time_ops, "*"]
         - [libcrux_ml_kem, utils, "*" ]
       monomorphizations_using:
-        - [Eurydice, "*" ]
         - [libcrux_ml_kem, types, "*"]
       patterns:
         - [core, "*"]
@@ -86,12 +86,9 @@ files:
         - [libcrux_ml_kem, constant_time_ops, "*"]
         - [libcrux_ml_kem, utils, "*" ]
       monomorphizations_exact:
-        - [Eurydice, arr_27]
-        - [Eurydice, arr_3d]
-        - [Eurydice, arr_600]
-        - [Eurydice, arr_88]
-        - [Eurydice, arr_260]
         - [libcrux_sha3, Sha3_512Digest]
+        - [ "Eurydice_slice uint8_t_x4" ]
+        - [ "Eurydice_slice uint8_t_x2" ]
 
   # MLKEM-768
 
@@ -153,6 +150,15 @@ files:
         - [libcrux_ml_kem, ind_cca, instantiations, portable, "*"]
     internal:
       - [libcrux_ml_kem, mlkem768, portable, unpacked]
+
+  # MLKEM: catch-all for things that have not matched earlier
+  - name: libcrux_mlkem_core
+    inline_static: true
+    private:
+      monomorphizations_of:
+        - [Eurydice, "*" ]
+      patterns:
+        - [Eurydice, "*" ]
 
 naming:
   skip_prefix:
