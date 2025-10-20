@@ -193,42 +193,50 @@ macro_rules! impl_kem_trait {
         {
             fn keygen(
                 ek: &mut [u8; CPA_PKE_PUBLIC_KEY_SIZE],
-                dk: &mut [u8; SECRET_KEY_SIZE],
-                rand: &[u8; KEY_GENERATION_SEED_SIZE],
+                dk: &mut [libcrux_secrets::U8; SECRET_KEY_SIZE],
+                rand: &[libcrux_secrets::U8; KEY_GENERATION_SEED_SIZE],
             ) -> Result<(), libcrux_traits::kem::owned::KeyGenError> {
-                let key_pair = generate_key_pair(*rand);
+                use libcrux_secrets::{ClassifyRef, Declassify};
+
+                // Declassification: ML-KEM public API does not support secret types, yet.
+                let key_pair = generate_key_pair((*rand).declassify());
                 ek.copy_from_slice(key_pair.pk());
-                dk.copy_from_slice(key_pair.sk());
+                dk.copy_from_slice(key_pair.sk().classify_ref());
 
                 Ok(())
             }
 
             fn encaps(
                 ct: &mut [u8; CPA_PKE_CIPHERTEXT_SIZE],
-                ss: &mut [u8; SHARED_SECRET_SIZE],
+                ss: &mut [libcrux_secrets::U8; SHARED_SECRET_SIZE],
                 ek: &[u8; CPA_PKE_PUBLIC_KEY_SIZE],
-                rand: &[u8; SHARED_SECRET_SIZE],
+                rand: &[libcrux_secrets::U8; SHARED_SECRET_SIZE],
             ) -> Result<(), libcrux_traits::kem::owned::EncapsError> {
+                use libcrux_secrets::{ClassifyRef, Declassify};
                 let public_key: $pk = ek.into();
 
-                let (ct_, ss_) = encapsulate(&public_key, *rand);
+                // Declassification: ML-KEM public API does not support secret types, yet.
+                let (ct_, ss_) = encapsulate(&public_key, (*rand).declassify());
                 ct.copy_from_slice(ct_.as_slice());
-                ss.copy_from_slice(ss_.as_slice());
+                ss.copy_from_slice(ss_.as_slice().classify_ref());
 
                 Ok(())
             }
 
             fn decaps(
-                ss: &mut [u8; SHARED_SECRET_SIZE],
+                ss: &mut [libcrux_secrets::U8; SHARED_SECRET_SIZE],
                 ct: &[u8; CPA_PKE_CIPHERTEXT_SIZE],
-                dk: &[u8; SECRET_KEY_SIZE],
+                dk: &[libcrux_secrets::U8; SECRET_KEY_SIZE],
             ) -> Result<(), libcrux_traits::kem::owned::DecapsError> {
-                let secret_key: $sk = dk.into();
+                use libcrux_secrets::{ClassifyRef, Declassify};
+
+                // Declassification: ML-KEM public API does not support secret types, yet.
+                let secret_key: $sk = dk.declassify().into();
                 let ciphertext: $ct = ct.into();
 
                 let ss_ = decapsulate(&secret_key, &ciphertext);
 
-                ss.copy_from_slice(ss_.as_slice());
+                ss.copy_from_slice(ss_.as_slice().classify_ref());
 
                 Ok(())
             }
