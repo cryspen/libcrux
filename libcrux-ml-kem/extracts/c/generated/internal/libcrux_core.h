@@ -7,8 +7,8 @@
  * Charon: 667d2fc98984ff7f3df989c2367e6c1fa4a000e7
  * Eurydice: 2381cbc416ef2ad0b561c362c500bc84f36b6785
  * Karamel: 80f5435f2fc505973c469a4afcc8d875cddd0d8b
- * F*: 71d8221589d4d438af3706d89cb653cf53e18aab
- * Libcrux: 68dfed5a4a9e40277f62828471c029afed1ecdcc
+ * F*: 4b3fc11774003a6ff7c09500ecb5f0145ca6d862
+ * Libcrux: f62b85fdbea428a327ef14cd473eff0cbd3b28a4
  */
 
 #ifndef internal_libcrux_core_H
@@ -38,11 +38,9 @@ static inline uint64_t core_num__u64__rotate_left(uint64_t x0, uint32_t x1);
 
 static inline void core_num__u64__to_le_bytes(uint64_t x0, uint8_t x1[8U]);
 
-#define LIBCRUX_ML_KEM_CONSTANTS_SHARED_SECRET_SIZE ((size_t)32U)
-
 void libcrux_ml_kem_constant_time_ops_compare_ciphertexts_select_shared_secret_in_constant_time(
     Eurydice_slice lhs_c, Eurydice_slice rhs_c, Eurydice_slice lhs_s,
-    Eurydice_slice rhs_s, uint8_t ret[32U]);
+    Eurydice_slice rhs_s, Eurydice_slice out);
 
 #define LIBCRUX_ML_KEM_CONSTANTS_BITS_PER_COEFFICIENT ((size_t)12U)
 
@@ -58,6 +56,8 @@ void libcrux_ml_kem_constant_time_ops_compare_ciphertexts_select_shared_secret_i
 
 #define LIBCRUX_ML_KEM_CONSTANTS_H_DIGEST_SIZE ((size_t)32U)
 
+#define LIBCRUX_ML_KEM_CONSTANTS_SHARED_SECRET_SIZE ((size_t)32U)
+
 /**
  K * BITS_PER_RING_ELEMENT / 8
 
@@ -65,8 +65,6 @@ void libcrux_ml_kem_constant_time_ops_compare_ciphertexts_select_shared_secret_i
             C extraction with eurydice.
 */
 size_t libcrux_ml_kem_constants_ranked_bytes_per_ring_element(size_t rank);
-
-int16_t libcrux_secrets_int_I16(int16_t v);
 
 /**
 This function found in impl {libcrux_secrets::traits::Classify<T> for T}
@@ -77,6 +75,16 @@ with types int16_t
 
 */
 int16_t libcrux_secrets_int_public_integers_classify_27_39(int16_t self);
+
+/**
+This function found in impl {libcrux_secrets::traits::Declassify<T> for T}
+*/
+/**
+A monomorphic instance of libcrux_secrets.int.public_integers.declassify_d8
+with types uint8_t
+
+*/
+uint8_t libcrux_secrets_int_public_integers_declassify_d8_90(uint8_t self);
 
 /**
 This function found in impl {libcrux_secrets::int::CastOps for u8}
@@ -153,16 +161,6 @@ This function found in impl {libcrux_secrets::int::CastOps for i16}
 */
 int16_t libcrux_secrets_int_as_i16_f5(int16_t self);
 
-typedef struct libcrux_ml_kem_utils_extraction_helper_Keypair1024_s {
-  uint8_t fst[1536U];
-  uint8_t snd[1568U];
-} libcrux_ml_kem_utils_extraction_helper_Keypair1024;
-
-typedef struct libcrux_ml_kem_utils_extraction_helper_Keypair768_s {
-  uint8_t fst[1152U];
-  uint8_t snd[1184U];
-} libcrux_ml_kem_utils_extraction_helper_Keypair768;
-
 /**
 This function found in impl
 {libcrux_ml_kem::types::MlKemKeyPair<PRIVATE_KEY_SIZE, PUBLIC_KEY_SIZE>}
@@ -190,15 +188,16 @@ libcrux_ml_kem_types_MlKemPrivateKey_83 libcrux_ml_kem_types_from_77_39(
     uint8_t value[3168U]);
 
 /**
-This function found in impl {libcrux_ml_kem::types::MlKemCiphertext<SIZE>}
+This function found in impl {core::default::Default for
+libcrux_ml_kem::types::MlKemCiphertext<SIZE>}
 */
 /**
-A monomorphic instance of libcrux_ml_kem.types.as_slice_a9
+A monomorphic instance of libcrux_ml_kem.types.default_73
 with const generics
 - SIZE= 1568
 */
-uint8_t *libcrux_ml_kem_types_as_slice_a9_af(
-    libcrux_ml_kem_types_MlKemCiphertext_64 *self);
+libcrux_ml_kem_types_MlKemCiphertext_64 libcrux_ml_kem_types_default_73_af(
+    void);
 
 /**
 This function found in impl
@@ -227,15 +226,16 @@ libcrux_ml_kem_types_MlKemPrivateKey_d9 libcrux_ml_kem_types_from_77_28(
     uint8_t value[2400U]);
 
 /**
-This function found in impl {libcrux_ml_kem::types::MlKemCiphertext<SIZE>}
+This function found in impl {core::default::Default for
+libcrux_ml_kem::types::MlKemCiphertext<SIZE>}
 */
 /**
-A monomorphic instance of libcrux_ml_kem.types.as_slice_a9
+A monomorphic instance of libcrux_ml_kem.types.default_73
 with const generics
 - SIZE= 1088
 */
-uint8_t *libcrux_ml_kem_types_as_slice_a9_80(
-    libcrux_ml_kem_mlkem768_MlKem768Ciphertext *self);
+libcrux_ml_kem_mlkem768_MlKem768Ciphertext libcrux_ml_kem_types_default_73_80(
+    void);
 
 /**
 This function found in impl {libcrux_ml_kem::types::MlKemPublicKey<SIZE>}
@@ -285,18 +285,6 @@ with const generics
 */
 Eurydice_slice_uint8_t_x4 libcrux_ml_kem_types_unpack_private_key_b4(
     Eurydice_slice private_key);
-
-/**
-This function found in impl {core::convert::From<@Array<u8, SIZE>> for
-libcrux_ml_kem::types::MlKemCiphertext<SIZE>}
-*/
-/**
-A monomorphic instance of libcrux_ml_kem.types.from_e0
-with const generics
-- SIZE= 1088
-*/
-libcrux_ml_kem_mlkem768_MlKem768Ciphertext libcrux_ml_kem_types_from_e0_80(
-    uint8_t value[1088U]);
 
 /**
 A monomorphic instance of libcrux_ml_kem.utils.prf_input_inc
@@ -407,18 +395,6 @@ void libcrux_ml_kem_utils_into_padded_array_b6(Eurydice_slice slice,
                                                uint8_t ret[34U]);
 
 /**
-This function found in impl {core::convert::From<@Array<u8, SIZE>> for
-libcrux_ml_kem::types::MlKemCiphertext<SIZE>}
-*/
-/**
-A monomorphic instance of libcrux_ml_kem.types.from_e0
-with const generics
-- SIZE= 1568
-*/
-libcrux_ml_kem_types_MlKemCiphertext_64 libcrux_ml_kem_types_from_e0_af(
-    uint8_t value[1568U]);
-
-/**
 A monomorphic instance of libcrux_ml_kem.utils.prf_input_inc
 with const generics
 - K= 4
@@ -472,72 +448,6 @@ void libcrux_ml_kem_utils_into_padded_array_24(Eurydice_slice slice,
                                                uint8_t ret[64U]);
 
 /**
-This function found in impl {libcrux_secrets::traits::Declassify<T> for T}
-*/
-/**
-A monomorphic instance of libcrux_secrets.int.public_integers.declassify_d8
-with types uint8_t[24size_t]
-
-*/
-void libcrux_secrets_int_public_integers_declassify_d8_d2(uint8_t self[24U],
-                                                          uint8_t ret[24U]);
-
-/**
-This function found in impl {libcrux_secrets::traits::Declassify<T> for T}
-*/
-/**
-A monomorphic instance of libcrux_secrets.int.public_integers.declassify_d8
-with types uint8_t[22size_t]
-
-*/
-void libcrux_secrets_int_public_integers_declassify_d8_fa(uint8_t self[22U],
-                                                          uint8_t ret[22U]);
-
-/**
-This function found in impl {libcrux_secrets::traits::Declassify<T> for T}
-*/
-/**
-A monomorphic instance of libcrux_secrets.int.public_integers.declassify_d8
-with types uint8_t[20size_t]
-
-*/
-void libcrux_secrets_int_public_integers_declassify_d8_57(uint8_t self[20U],
-                                                          uint8_t ret[20U]);
-
-/**
-This function found in impl {libcrux_secrets::traits::Declassify<T> for T}
-*/
-/**
-A monomorphic instance of libcrux_secrets.int.public_integers.declassify_d8
-with types uint8_t[10size_t]
-
-*/
-void libcrux_secrets_int_public_integers_declassify_d8_cc(uint8_t self[10U],
-                                                          uint8_t ret[10U]);
-
-/**
-This function found in impl {libcrux_secrets::traits::Declassify<T> for T}
-*/
-/**
-A monomorphic instance of libcrux_secrets.int.public_integers.declassify_d8
-with types uint8_t[8size_t]
-
-*/
-void libcrux_secrets_int_public_integers_declassify_d8_76(uint8_t self[8U],
-                                                          uint8_t ret[8U]);
-
-/**
-This function found in impl {libcrux_secrets::traits::Declassify<T> for T}
-*/
-/**
-A monomorphic instance of libcrux_secrets.int.public_integers.declassify_d8
-with types uint8_t[2size_t]
-
-*/
-void libcrux_secrets_int_public_integers_declassify_d8_d4(uint8_t self[2U],
-                                                          uint8_t ret[2U]);
-
-/**
  Classify a mutable slice (identity)
  We define a separate function for this because hax has limited support for
  &mut-returning functions
@@ -584,30 +494,6 @@ with types int16_t
 */
 Eurydice_slice libcrux_secrets_int_classify_public_classify_ref_9b_39(
     Eurydice_slice self);
-
-/**
-A monomorphic instance of core.result.Result
-with types int16_t[16size_t], core_array_TryFromSliceError
-
-*/
-typedef struct core_result_Result_0a_s {
-  core_result_Result_fb_tags tag;
-  union {
-    int16_t case_Ok[16U];
-    core_array_TryFromSliceError case_Err;
-  } val;
-} core_result_Result_0a;
-
-/**
-This function found in impl {core::result::Result<T, E>[TraitClause@0,
-TraitClause@1]}
-*/
-/**
-A monomorphic instance of core.result.unwrap_26
-with types int16_t[16size_t], core_array_TryFromSliceError
-
-*/
-void core_result_unwrap_26_00(core_result_Result_0a self, int16_t ret[16U]);
 
 /**
 This function found in impl {libcrux_secrets::traits::Classify<T> for T}

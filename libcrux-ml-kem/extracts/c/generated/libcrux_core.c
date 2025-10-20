@@ -7,8 +7,8 @@
  * Charon: 667d2fc98984ff7f3df989c2367e6c1fa4a000e7
  * Eurydice: 2381cbc416ef2ad0b561c362c500bc84f36b6785
  * Karamel: 80f5435f2fc505973c469a4afcc8d875cddd0d8b
- * F*: 71d8221589d4d438af3706d89cb653cf53e18aab
- * Libcrux: 68dfed5a4a9e40277f62828471c029afed1ecdcc
+ * F*: 4b3fc11774003a6ff7c09500ecb5f0145ca6d862
+ * Libcrux: f62b85fdbea428a327ef14cd473eff0cbd3b28a4
  */
 
 #include "internal/libcrux_core.h"
@@ -51,36 +51,31 @@ compare_ciphertexts_in_constant_time(Eurydice_slice lhs, Eurydice_slice rhs) {
  `lhs` otherwise.
 */
 static KRML_NOINLINE void select_ct(Eurydice_slice lhs, Eurydice_slice rhs,
-                                    uint8_t selector, uint8_t ret[32U]) {
+                                    uint8_t selector, Eurydice_slice out) {
   uint8_t mask = core_num__u8__wrapping_sub(is_non_zero(selector), 1U);
-  uint8_t out[32U] = {0U};
-  for (size_t i = (size_t)0U; i < LIBCRUX_ML_KEM_CONSTANTS_SHARED_SECRET_SIZE;
-       i++) {
+  for (size_t i = (size_t)0U; i < Eurydice_slice_len(lhs, uint8_t); i++) {
     size_t i0 = i;
     uint8_t outi =
         ((uint32_t)Eurydice_slice_index(lhs, i0, uint8_t, uint8_t *) &
          (uint32_t)mask) |
         ((uint32_t)Eurydice_slice_index(rhs, i0, uint8_t, uint8_t *) &
          (uint32_t)~mask);
-    out[i0] = outi;
+    Eurydice_slice_index(out, i0, uint8_t, uint8_t *) = outi;
   }
-  memcpy(ret, out, (size_t)32U * sizeof(uint8_t));
 }
 
 static KRML_NOINLINE void select_shared_secret_in_constant_time(
     Eurydice_slice lhs, Eurydice_slice rhs, uint8_t selector,
-    uint8_t ret[32U]) {
-  select_ct(lhs, rhs, selector, ret);
+    Eurydice_slice out) {
+  select_ct(lhs, rhs, selector, out);
 }
 
 KRML_NOINLINE void
 libcrux_ml_kem_constant_time_ops_compare_ciphertexts_select_shared_secret_in_constant_time(
     Eurydice_slice lhs_c, Eurydice_slice rhs_c, Eurydice_slice lhs_s,
-    Eurydice_slice rhs_s, uint8_t ret[32U]) {
+    Eurydice_slice rhs_s, Eurydice_slice out) {
   uint8_t selector = compare_ciphertexts_in_constant_time(lhs_c, rhs_c);
-  uint8_t ret0[32U];
-  select_shared_secret_in_constant_time(lhs_s, rhs_s, selector, ret0);
-  memcpy(ret, ret0, (size_t)32U * sizeof(uint8_t));
+  select_shared_secret_in_constant_time(lhs_s, rhs_s, selector, out);
 }
 
 /**
@@ -92,18 +87,6 @@ libcrux_ml_kem_constant_time_ops_compare_ciphertexts_select_shared_secret_in_con
 size_t libcrux_ml_kem_constants_ranked_bytes_per_ring_element(size_t rank) {
   return rank * LIBCRUX_ML_KEM_CONSTANTS_BITS_PER_RING_ELEMENT / (size_t)8U;
 }
-
-/**
- Construct a public integer (identity)
-*/
-/**
-A monomorphic instance of libcrux_secrets.int.public_integers.secret
-with types int16_t
-
-*/
-static KRML_MUSTINLINE int16_t secret_39(int16_t x) { return x; }
-
-int16_t libcrux_secrets_int_I16(int16_t v) { return secret_39(v); }
 
 /**
 This function found in impl {libcrux_secrets::traits::Classify<T> for T}
@@ -125,14 +108,16 @@ A monomorphic instance of libcrux_secrets.int.public_integers.declassify_d8
 with types uint8_t
 
 */
-static KRML_MUSTINLINE uint8_t declassify_d8_90(uint8_t self) { return self; }
+uint8_t libcrux_secrets_int_public_integers_declassify_d8_90(uint8_t self) {
+  return self;
+}
 
 /**
 This function found in impl {libcrux_secrets::int::CastOps for u8}
 */
 int16_t libcrux_secrets_int_as_i16_59(uint8_t self) {
   return libcrux_secrets_int_public_integers_classify_27_39(
-      (int16_t)declassify_d8_90(self));
+      (int16_t)libcrux_secrets_int_public_integers_declassify_d8_90(self));
 }
 
 /**
@@ -354,16 +339,18 @@ libcrux_ml_kem_types_MlKemPrivateKey_83 libcrux_ml_kem_types_from_77_39(
 }
 
 /**
-This function found in impl {libcrux_ml_kem::types::MlKemCiphertext<SIZE>}
+This function found in impl {core::default::Default for
+libcrux_ml_kem::types::MlKemCiphertext<SIZE>}
 */
 /**
-A monomorphic instance of libcrux_ml_kem.types.as_slice_a9
+A monomorphic instance of libcrux_ml_kem.types.default_73
 with const generics
 - SIZE= 1568
 */
-uint8_t *libcrux_ml_kem_types_as_slice_a9_af(
-    libcrux_ml_kem_types_MlKemCiphertext_64 *self) {
-  return self->value;
+libcrux_ml_kem_types_MlKemCiphertext_64 libcrux_ml_kem_types_default_73_af(
+    void) {
+  return (
+      KRML_CLITERAL(libcrux_ml_kem_types_MlKemCiphertext_64){.value = {0U}});
 }
 
 /**
@@ -403,16 +390,18 @@ libcrux_ml_kem_types_MlKemPrivateKey_d9 libcrux_ml_kem_types_from_77_28(
 }
 
 /**
-This function found in impl {libcrux_ml_kem::types::MlKemCiphertext<SIZE>}
+This function found in impl {core::default::Default for
+libcrux_ml_kem::types::MlKemCiphertext<SIZE>}
 */
 /**
-A monomorphic instance of libcrux_ml_kem.types.as_slice_a9
+A monomorphic instance of libcrux_ml_kem.types.default_73
 with const generics
 - SIZE= 1088
 */
-uint8_t *libcrux_ml_kem_types_as_slice_a9_80(
-    libcrux_ml_kem_mlkem768_MlKem768Ciphertext *self) {
-  return self->value;
+libcrux_ml_kem_mlkem768_MlKem768Ciphertext libcrux_ml_kem_types_default_73_80(
+    void) {
+  return (
+      KRML_CLITERAL(libcrux_ml_kem_mlkem768_MlKem768Ciphertext){.value = {0U}});
 }
 
 /**
@@ -478,25 +467,6 @@ Eurydice_slice_uint8_t_x4 libcrux_ml_kem_types_unpack_private_key_b4(
                                                .snd = ind_cpa_public_key,
                                                .thd = ind_cpa_public_key_hash,
                                                .f3 = implicit_rejection_value});
-}
-
-/**
-This function found in impl {core::convert::From<@Array<u8, SIZE>> for
-libcrux_ml_kem::types::MlKemCiphertext<SIZE>}
-*/
-/**
-A monomorphic instance of libcrux_ml_kem.types.from_e0
-with const generics
-- SIZE= 1088
-*/
-libcrux_ml_kem_mlkem768_MlKem768Ciphertext libcrux_ml_kem_types_from_e0_80(
-    uint8_t value[1088U]) {
-  /* Passing arrays by value in Rust generates a copy in C */
-  uint8_t copy_of_value[1088U];
-  memcpy(copy_of_value, value, (size_t)1088U * sizeof(uint8_t));
-  libcrux_ml_kem_mlkem768_MlKem768Ciphertext lit;
-  memcpy(lit.value, copy_of_value, (size_t)1088U * sizeof(uint8_t));
-  return lit;
 }
 
 /**
@@ -651,25 +621,6 @@ void libcrux_ml_kem_utils_into_padded_array_b6(Eurydice_slice slice,
 }
 
 /**
-This function found in impl {core::convert::From<@Array<u8, SIZE>> for
-libcrux_ml_kem::types::MlKemCiphertext<SIZE>}
-*/
-/**
-A monomorphic instance of libcrux_ml_kem.types.from_e0
-with const generics
-- SIZE= 1568
-*/
-libcrux_ml_kem_types_MlKemCiphertext_64 libcrux_ml_kem_types_from_e0_af(
-    uint8_t value[1568U]) {
-  /* Passing arrays by value in Rust generates a copy in C */
-  uint8_t copy_of_value[1568U];
-  memcpy(copy_of_value, value, (size_t)1568U * sizeof(uint8_t));
-  libcrux_ml_kem_types_MlKemCiphertext_64 lit;
-  memcpy(lit.value, copy_of_value, (size_t)1568U * sizeof(uint8_t));
-  return lit;
-}
-
-/**
 A monomorphic instance of libcrux_ml_kem.utils.prf_input_inc
 with const generics
 - K= 4
@@ -754,84 +705,6 @@ void libcrux_ml_kem_utils_into_padded_array_24(Eurydice_slice slice,
 }
 
 /**
-This function found in impl {libcrux_secrets::traits::Declassify<T> for T}
-*/
-/**
-A monomorphic instance of libcrux_secrets.int.public_integers.declassify_d8
-with types uint8_t[24size_t]
-
-*/
-void libcrux_secrets_int_public_integers_declassify_d8_d2(uint8_t self[24U],
-                                                          uint8_t ret[24U]) {
-  memcpy(ret, self, (size_t)24U * sizeof(uint8_t));
-}
-
-/**
-This function found in impl {libcrux_secrets::traits::Declassify<T> for T}
-*/
-/**
-A monomorphic instance of libcrux_secrets.int.public_integers.declassify_d8
-with types uint8_t[22size_t]
-
-*/
-void libcrux_secrets_int_public_integers_declassify_d8_fa(uint8_t self[22U],
-                                                          uint8_t ret[22U]) {
-  memcpy(ret, self, (size_t)22U * sizeof(uint8_t));
-}
-
-/**
-This function found in impl {libcrux_secrets::traits::Declassify<T> for T}
-*/
-/**
-A monomorphic instance of libcrux_secrets.int.public_integers.declassify_d8
-with types uint8_t[20size_t]
-
-*/
-void libcrux_secrets_int_public_integers_declassify_d8_57(uint8_t self[20U],
-                                                          uint8_t ret[20U]) {
-  memcpy(ret, self, (size_t)20U * sizeof(uint8_t));
-}
-
-/**
-This function found in impl {libcrux_secrets::traits::Declassify<T> for T}
-*/
-/**
-A monomorphic instance of libcrux_secrets.int.public_integers.declassify_d8
-with types uint8_t[10size_t]
-
-*/
-void libcrux_secrets_int_public_integers_declassify_d8_cc(uint8_t self[10U],
-                                                          uint8_t ret[10U]) {
-  memcpy(ret, self, (size_t)10U * sizeof(uint8_t));
-}
-
-/**
-This function found in impl {libcrux_secrets::traits::Declassify<T> for T}
-*/
-/**
-A monomorphic instance of libcrux_secrets.int.public_integers.declassify_d8
-with types uint8_t[8size_t]
-
-*/
-void libcrux_secrets_int_public_integers_declassify_d8_76(uint8_t self[8U],
-                                                          uint8_t ret[8U]) {
-  memcpy(ret, self, (size_t)8U * sizeof(uint8_t));
-}
-
-/**
-This function found in impl {libcrux_secrets::traits::Declassify<T> for T}
-*/
-/**
-A monomorphic instance of libcrux_secrets.int.public_integers.declassify_d8
-with types uint8_t[2size_t]
-
-*/
-void libcrux_secrets_int_public_integers_declassify_d8_d4(uint8_t self[2U],
-                                                          uint8_t ret[2U]) {
-  memcpy(ret, self, (size_t)2U * sizeof(uint8_t));
-}
-
-/**
  Classify a mutable slice (identity)
  We define a separate function for this because hax has limited support for
  &mut-returning functions
@@ -885,27 +758,6 @@ with types int16_t
 Eurydice_slice libcrux_secrets_int_classify_public_classify_ref_9b_39(
     Eurydice_slice self) {
   return self;
-}
-
-/**
-This function found in impl {core::result::Result<T, E>[TraitClause@0,
-TraitClause@1]}
-*/
-/**
-A monomorphic instance of core.result.unwrap_26
-with types int16_t[16size_t], core_array_TryFromSliceError
-
-*/
-void core_result_unwrap_26_00(core_result_Result_0a self, int16_t ret[16U]) {
-  if (self.tag == core_result_Ok) {
-    int16_t f0[16U];
-    memcpy(f0, self.val.case_Ok, (size_t)16U * sizeof(int16_t));
-    memcpy(ret, f0, (size_t)16U * sizeof(int16_t));
-  } else {
-    KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__,
-                      "unwrap not Ok");
-    KRML_HOST_EXIT(255U);
-  }
 }
 
 /**

@@ -81,10 +81,10 @@ typedef __m256i core_core_arch_x86___m256i;
 #define libcrux_intrinsics_avx2_mm_storeu_si128(a, b) \
   (_mm_storeu_si128((__m128i *)a.ptr, b))
 
-// Arithmetic: Negation  
+// Arithmetic: Negation
 
 #define libcrux_intrinsics_avx2_mm256_sign_epi16(a, b) (_mm256_sign_epi16(a, b))
-  
+
 // Arithmetic: Add, Sub
 
 #define libcrux_intrinsics_avx2_mm256_add_epi16(a, b) (_mm256_add_epi16(a, b))

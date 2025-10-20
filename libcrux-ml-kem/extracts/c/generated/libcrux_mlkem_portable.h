@@ -7,8 +7,8 @@
  * Charon: 667d2fc98984ff7f3df989c2367e6c1fa4a000e7
  * Eurydice: 2381cbc416ef2ad0b561c362c500bc84f36b6785
  * Karamel: 80f5435f2fc505973c469a4afcc8d875cddd0d8b
- * F*: 71d8221589d4d438af3706d89cb653cf53e18aab
- * Libcrux: 68dfed5a4a9e40277f62828471c029afed1ecdcc
+ * F*: 4b3fc11774003a6ff7c09500ecb5f0145ca6d862
+ * Libcrux: f62b85fdbea428a327ef14cd473eff0cbd3b28a4
  */
 
 #ifndef libcrux_mlkem_portable_H
@@ -20,11 +20,79 @@
 extern "C" {
 #endif
 
+#include "libcrux_sha3_portable.h"
+
 void libcrux_ml_kem_hash_functions_portable_G(Eurydice_slice input,
-                                              uint8_t ret[64U]);
+                                              Eurydice_slice output);
 
 void libcrux_ml_kem_hash_functions_portable_H(Eurydice_slice input,
-                                              uint8_t ret[32U]);
+                                              Eurydice_slice output);
+
+void libcrux_ml_kem_hash_functions_portable_PRFxN(Eurydice_slice input,
+                                                  Eurydice_slice outputs,
+                                                  size_t out_len);
+
+typedef struct libcrux_ml_kem_hash_functions_portable_PortableHash_s {
+  libcrux_sha3_generic_keccak_KeccakState_17 shake128_state[4U];
+} libcrux_ml_kem_hash_functions_portable_PortableHash;
+
+libcrux_ml_kem_hash_functions_portable_PortableHash
+libcrux_ml_kem_hash_functions_portable_shake128_init_absorb_final(
+    Eurydice_slice input);
+
+void libcrux_ml_kem_hash_functions_portable_shake128_squeeze_first_three_blocks(
+    libcrux_ml_kem_hash_functions_portable_PortableHash *st,
+    Eurydice_slice outputs);
+
+void libcrux_ml_kem_hash_functions_portable_shake128_squeeze_next_block(
+    libcrux_ml_kem_hash_functions_portable_PortableHash *st,
+    Eurydice_slice outputs);
+
+/**
+This function found in impl {libcrux_ml_kem::hash_functions::Hash for
+libcrux_ml_kem::hash_functions::portable::PortableHash}
+*/
+void libcrux_ml_kem_hash_functions_portable_G_6e(Eurydice_slice input,
+                                                 Eurydice_slice output);
+
+/**
+This function found in impl {libcrux_ml_kem::hash_functions::Hash for
+libcrux_ml_kem::hash_functions::portable::PortableHash}
+*/
+void libcrux_ml_kem_hash_functions_portable_H_6e(Eurydice_slice input,
+                                                 Eurydice_slice output);
+
+/**
+This function found in impl {libcrux_ml_kem::hash_functions::Hash for
+libcrux_ml_kem::hash_functions::portable::PortableHash}
+*/
+void libcrux_ml_kem_hash_functions_portable_PRFxN_6e(Eurydice_slice input,
+                                                     Eurydice_slice outputs,
+                                                     size_t out_len);
+
+/**
+This function found in impl {libcrux_ml_kem::hash_functions::Hash for
+libcrux_ml_kem::hash_functions::portable::PortableHash}
+*/
+libcrux_ml_kem_hash_functions_portable_PortableHash
+libcrux_ml_kem_hash_functions_portable_shake128_init_absorb_final_6e(
+    Eurydice_slice input);
+
+/**
+This function found in impl {libcrux_ml_kem::hash_functions::Hash for
+libcrux_ml_kem::hash_functions::portable::PortableHash}
+*/
+void libcrux_ml_kem_hash_functions_portable_shake128_squeeze_first_three_blocks_6e(
+    libcrux_ml_kem_hash_functions_portable_PortableHash *self,
+    Eurydice_slice output);
+
+/**
+This function found in impl {libcrux_ml_kem::hash_functions::Hash for
+libcrux_ml_kem::hash_functions::portable::PortableHash}
+*/
+void libcrux_ml_kem_hash_functions_portable_shake128_squeeze_next_block_6e(
+    libcrux_ml_kem_hash_functions_portable_PortableHash *self,
+    Eurydice_slice output);
 
 #define LIBCRUX_ML_KEM_VECTOR_TRAITS_FIELD_ELEMENTS_IN_VECTOR ((size_t)16U)
 
@@ -45,37 +113,41 @@ libcrux_ml_kem::vector::portable::vector_type::PortableVector}
 libcrux_ml_kem_vector_portable_vector_type_PortableVector
 libcrux_ml_kem_vector_portable_ZERO_b8(void);
 
-libcrux_ml_kem_vector_portable_vector_type_PortableVector
-libcrux_ml_kem_vector_portable_vector_type_from_i16_array(Eurydice_slice array);
+void libcrux_ml_kem_vector_portable_vector_type_from_i16_array(
+    Eurydice_slice array,
+    libcrux_ml_kem_vector_portable_vector_type_PortableVector *out);
 
 /**
 This function found in impl {libcrux_ml_kem::vector::traits::Operations for
 libcrux_ml_kem::vector::portable::vector_type::PortableVector}
 */
-libcrux_ml_kem_vector_portable_vector_type_PortableVector
-libcrux_ml_kem_vector_portable_from_i16_array_b8(Eurydice_slice array);
+void libcrux_ml_kem_vector_portable_from_i16_array_b8(
+    Eurydice_slice array,
+    libcrux_ml_kem_vector_portable_vector_type_PortableVector *out);
 
 void libcrux_ml_kem_vector_portable_vector_type_to_i16_array(
-    libcrux_ml_kem_vector_portable_vector_type_PortableVector x,
-    int16_t ret[16U]);
+    libcrux_ml_kem_vector_portable_vector_type_PortableVector *x,
+    Eurydice_slice out);
 
 /**
 This function found in impl {libcrux_ml_kem::vector::traits::Operations for
 libcrux_ml_kem::vector::portable::vector_type::PortableVector}
 */
 void libcrux_ml_kem_vector_portable_to_i16_array_b8(
-    libcrux_ml_kem_vector_portable_vector_type_PortableVector x,
-    int16_t ret[16U]);
+    libcrux_ml_kem_vector_portable_vector_type_PortableVector *x,
+    Eurydice_slice out);
 
-libcrux_ml_kem_vector_portable_vector_type_PortableVector
-libcrux_ml_kem_vector_portable_vector_type_from_bytes(Eurydice_slice array);
+void libcrux_ml_kem_vector_portable_vector_type_from_bytes(
+    Eurydice_slice array,
+    libcrux_ml_kem_vector_portable_vector_type_PortableVector *out);
 
 /**
 This function found in impl {libcrux_ml_kem::vector::traits::Operations for
 libcrux_ml_kem::vector::portable::vector_type::PortableVector}
 */
-libcrux_ml_kem_vector_portable_vector_type_PortableVector
-libcrux_ml_kem_vector_portable_from_bytes_b8(Eurydice_slice array);
+void libcrux_ml_kem_vector_portable_from_bytes_b8(
+    Eurydice_slice array,
+    libcrux_ml_kem_vector_portable_vector_type_PortableVector *out);
 
 void libcrux_ml_kem_vector_portable_vector_type_to_bytes(
     libcrux_ml_kem_vector_portable_vector_type_PortableVector x,
@@ -89,61 +161,73 @@ void libcrux_ml_kem_vector_portable_to_bytes_b8(
     libcrux_ml_kem_vector_portable_vector_type_PortableVector x,
     Eurydice_slice bytes);
 
-libcrux_ml_kem_vector_portable_vector_type_PortableVector
-libcrux_ml_kem_vector_portable_arithmetic_add(
-    libcrux_ml_kem_vector_portable_vector_type_PortableVector lhs,
+void libcrux_ml_kem_vector_portable_arithmetic_add(
+    libcrux_ml_kem_vector_portable_vector_type_PortableVector *lhs,
     libcrux_ml_kem_vector_portable_vector_type_PortableVector *rhs);
 
 /**
 This function found in impl {libcrux_ml_kem::vector::traits::Operations for
 libcrux_ml_kem::vector::portable::vector_type::PortableVector}
 */
-libcrux_ml_kem_vector_portable_vector_type_PortableVector
-libcrux_ml_kem_vector_portable_add_b8(
-    libcrux_ml_kem_vector_portable_vector_type_PortableVector lhs,
+void libcrux_ml_kem_vector_portable_add_b8(
+    libcrux_ml_kem_vector_portable_vector_type_PortableVector *lhs,
     libcrux_ml_kem_vector_portable_vector_type_PortableVector *rhs);
 
-libcrux_ml_kem_vector_portable_vector_type_PortableVector
-libcrux_ml_kem_vector_portable_arithmetic_sub(
-    libcrux_ml_kem_vector_portable_vector_type_PortableVector lhs,
+void libcrux_ml_kem_vector_portable_arithmetic_sub(
+    libcrux_ml_kem_vector_portable_vector_type_PortableVector *lhs,
     libcrux_ml_kem_vector_portable_vector_type_PortableVector *rhs);
 
 /**
 This function found in impl {libcrux_ml_kem::vector::traits::Operations for
 libcrux_ml_kem::vector::portable::vector_type::PortableVector}
 */
-libcrux_ml_kem_vector_portable_vector_type_PortableVector
-libcrux_ml_kem_vector_portable_sub_b8(
-    libcrux_ml_kem_vector_portable_vector_type_PortableVector lhs,
+void libcrux_ml_kem_vector_portable_sub_b8(
+    libcrux_ml_kem_vector_portable_vector_type_PortableVector *lhs,
     libcrux_ml_kem_vector_portable_vector_type_PortableVector *rhs);
 
-libcrux_ml_kem_vector_portable_vector_type_PortableVector
-libcrux_ml_kem_vector_portable_arithmetic_multiply_by_constant(
-    libcrux_ml_kem_vector_portable_vector_type_PortableVector vec, int16_t c);
+void libcrux_ml_kem_vector_portable_arithmetic_negate(
+    libcrux_ml_kem_vector_portable_vector_type_PortableVector *vec);
 
 /**
 This function found in impl {libcrux_ml_kem::vector::traits::Operations for
 libcrux_ml_kem::vector::portable::vector_type::PortableVector}
 */
-libcrux_ml_kem_vector_portable_vector_type_PortableVector
-libcrux_ml_kem_vector_portable_multiply_by_constant_b8(
-    libcrux_ml_kem_vector_portable_vector_type_PortableVector vec, int16_t c);
+void libcrux_ml_kem_vector_portable_negate_b8(
+    libcrux_ml_kem_vector_portable_vector_type_PortableVector *vec);
+
+void libcrux_ml_kem_vector_portable_arithmetic_multiply_by_constant(
+    libcrux_ml_kem_vector_portable_vector_type_PortableVector *vec, int16_t c);
+
+/**
+This function found in impl {libcrux_ml_kem::vector::traits::Operations for
+libcrux_ml_kem::vector::portable::vector_type::PortableVector}
+*/
+void libcrux_ml_kem_vector_portable_multiply_by_constant_b8(
+    libcrux_ml_kem_vector_portable_vector_type_PortableVector *vec, int16_t c);
+
+void libcrux_ml_kem_vector_portable_arithmetic_bitwise_and_with_constant(
+    libcrux_ml_kem_vector_portable_vector_type_PortableVector *vec, int16_t c);
+
+/**
+This function found in impl {libcrux_ml_kem::vector::traits::Operations for
+libcrux_ml_kem::vector::portable::vector_type::PortableVector}
+*/
+void libcrux_ml_kem_vector_portable_bitwise_and_with_constant_b8(
+    libcrux_ml_kem_vector_portable_vector_type_PortableVector *vec, int16_t c);
 
 /**
  Note: This function is not secret independent
  Only use with public values.
 */
-libcrux_ml_kem_vector_portable_vector_type_PortableVector
-libcrux_ml_kem_vector_portable_arithmetic_cond_subtract_3329(
-    libcrux_ml_kem_vector_portable_vector_type_PortableVector vec);
+void libcrux_ml_kem_vector_portable_arithmetic_cond_subtract_3329(
+    libcrux_ml_kem_vector_portable_vector_type_PortableVector *vec);
 
 /**
 This function found in impl {libcrux_ml_kem::vector::traits::Operations for
 libcrux_ml_kem::vector::portable::vector_type::PortableVector}
 */
-libcrux_ml_kem_vector_portable_vector_type_PortableVector
-libcrux_ml_kem_vector_portable_cond_subtract_3329_b8(
-    libcrux_ml_kem_vector_portable_vector_type_PortableVector v);
+void libcrux_ml_kem_vector_portable_cond_subtract_3329_b8(
+    libcrux_ml_kem_vector_portable_vector_type_PortableVector *vec);
 
 #define LIBCRUX_ML_KEM_VECTOR_PORTABLE_ARITHMETIC_BARRETT_MULTIPLIER \
   ((int32_t)20159)
@@ -173,17 +257,15 @@ libcrux_ml_kem_vector_portable_cond_subtract_3329_b8(
 int16_t libcrux_ml_kem_vector_portable_arithmetic_barrett_reduce_element(
     int16_t value);
 
-libcrux_ml_kem_vector_portable_vector_type_PortableVector
-libcrux_ml_kem_vector_portable_arithmetic_barrett_reduce(
-    libcrux_ml_kem_vector_portable_vector_type_PortableVector vec);
+void libcrux_ml_kem_vector_portable_arithmetic_barrett_reduce(
+    libcrux_ml_kem_vector_portable_vector_type_PortableVector *vec);
 
 /**
 This function found in impl {libcrux_ml_kem::vector::traits::Operations for
 libcrux_ml_kem::vector::portable::vector_type::PortableVector}
 */
-libcrux_ml_kem_vector_portable_vector_type_PortableVector
-libcrux_ml_kem_vector_portable_barrett_reduce_b8(
-    libcrux_ml_kem_vector_portable_vector_type_PortableVector vector);
+void libcrux_ml_kem_vector_portable_barrett_reduce_b8(
+    libcrux_ml_kem_vector_portable_vector_type_PortableVector *vec);
 
 #define LIBCRUX_ML_KEM_VECTOR_TRAITS_INVERSE_OF_MODULUS_MOD_MONTGOMERY_R \
   (62209U)
@@ -223,22 +305,23 @@ int16_t libcrux_ml_kem_vector_portable_arithmetic_montgomery_reduce_element(
 int16_t libcrux_ml_kem_vector_portable_arithmetic_montgomery_multiply_fe_by_fer(
     int16_t fe, int16_t fer);
 
-libcrux_ml_kem_vector_portable_vector_type_PortableVector
-libcrux_ml_kem_vector_portable_arithmetic_montgomery_multiply_by_constant(
-    libcrux_ml_kem_vector_portable_vector_type_PortableVector vec, int16_t c);
+void libcrux_ml_kem_vector_portable_arithmetic_montgomery_multiply_by_constant(
+    libcrux_ml_kem_vector_portable_vector_type_PortableVector *vec, int16_t c);
 
 /**
 This function found in impl {libcrux_ml_kem::vector::traits::Operations for
 libcrux_ml_kem::vector::portable::vector_type::PortableVector}
 */
-libcrux_ml_kem_vector_portable_vector_type_PortableVector
-libcrux_ml_kem_vector_portable_montgomery_multiply_by_constant_b8(
-    libcrux_ml_kem_vector_portable_vector_type_PortableVector vector,
-    int16_t constant);
+void libcrux_ml_kem_vector_portable_montgomery_multiply_by_constant_b8(
+    libcrux_ml_kem_vector_portable_vector_type_PortableVector *vec, int16_t r);
 
+/**
+This function found in impl {core::clone::Clone for
+libcrux_ml_kem::vector::portable::vector_type::PortableVector}
+*/
 libcrux_ml_kem_vector_portable_vector_type_PortableVector
-libcrux_ml_kem_vector_portable_arithmetic_bitwise_and_with_constant(
-    libcrux_ml_kem_vector_portable_vector_type_PortableVector vec, int16_t c);
+libcrux_ml_kem_vector_portable_vector_type_clone_9c(
+    libcrux_ml_kem_vector_portable_vector_type_PortableVector *self);
 
 libcrux_ml_kem_vector_portable_vector_type_PortableVector
 libcrux_ml_kem_vector_portable_arithmetic_to_unsigned_representative(
@@ -277,17 +360,15 @@ libcrux_ml_kem_vector_portable_to_unsigned_representative_b8(
 uint8_t libcrux_ml_kem_vector_portable_compress_compress_message_coefficient(
     uint16_t fe);
 
-libcrux_ml_kem_vector_portable_vector_type_PortableVector
-libcrux_ml_kem_vector_portable_compress_compress_1(
-    libcrux_ml_kem_vector_portable_vector_type_PortableVector a);
+void libcrux_ml_kem_vector_portable_compress_compress_1(
+    libcrux_ml_kem_vector_portable_vector_type_PortableVector *a);
 
 /**
 This function found in impl {libcrux_ml_kem::vector::traits::Operations for
 libcrux_ml_kem::vector::portable::vector_type::PortableVector}
 */
-libcrux_ml_kem_vector_portable_vector_type_PortableVector
-libcrux_ml_kem_vector_portable_compress_1_b8(
-    libcrux_ml_kem_vector_portable_vector_type_PortableVector a);
+void libcrux_ml_kem_vector_portable_compress_1_b8(
+    libcrux_ml_kem_vector_portable_vector_type_PortableVector *a);
 
 uint32_t libcrux_ml_kem_vector_portable_arithmetic_get_n_least_significant_bits(
     uint8_t n, uint32_t value);
@@ -311,91 +392,79 @@ void libcrux_ml_kem_vector_portable_ntt_ntt_step(
     libcrux_ml_kem_vector_portable_vector_type_PortableVector *vec,
     int16_t zeta, size_t i, size_t j);
 
-libcrux_ml_kem_vector_portable_vector_type_PortableVector
-libcrux_ml_kem_vector_portable_ntt_ntt_layer_1_step(
-    libcrux_ml_kem_vector_portable_vector_type_PortableVector vec,
+void libcrux_ml_kem_vector_portable_ntt_ntt_layer_1_step(
+    libcrux_ml_kem_vector_portable_vector_type_PortableVector *vec,
     int16_t zeta0, int16_t zeta1, int16_t zeta2, int16_t zeta3);
 
 /**
 This function found in impl {libcrux_ml_kem::vector::traits::Operations for
 libcrux_ml_kem::vector::portable::vector_type::PortableVector}
 */
-libcrux_ml_kem_vector_portable_vector_type_PortableVector
-libcrux_ml_kem_vector_portable_ntt_layer_1_step_b8(
-    libcrux_ml_kem_vector_portable_vector_type_PortableVector a, int16_t zeta0,
+void libcrux_ml_kem_vector_portable_ntt_layer_1_step_b8(
+    libcrux_ml_kem_vector_portable_vector_type_PortableVector *a, int16_t zeta0,
     int16_t zeta1, int16_t zeta2, int16_t zeta3);
 
-libcrux_ml_kem_vector_portable_vector_type_PortableVector
-libcrux_ml_kem_vector_portable_ntt_ntt_layer_2_step(
-    libcrux_ml_kem_vector_portable_vector_type_PortableVector vec,
+void libcrux_ml_kem_vector_portable_ntt_ntt_layer_2_step(
+    libcrux_ml_kem_vector_portable_vector_type_PortableVector *vec,
     int16_t zeta0, int16_t zeta1);
 
 /**
 This function found in impl {libcrux_ml_kem::vector::traits::Operations for
 libcrux_ml_kem::vector::portable::vector_type::PortableVector}
 */
-libcrux_ml_kem_vector_portable_vector_type_PortableVector
-libcrux_ml_kem_vector_portable_ntt_layer_2_step_b8(
-    libcrux_ml_kem_vector_portable_vector_type_PortableVector a, int16_t zeta0,
+void libcrux_ml_kem_vector_portable_ntt_layer_2_step_b8(
+    libcrux_ml_kem_vector_portable_vector_type_PortableVector *a, int16_t zeta0,
     int16_t zeta1);
 
-libcrux_ml_kem_vector_portable_vector_type_PortableVector
-libcrux_ml_kem_vector_portable_ntt_ntt_layer_3_step(
-    libcrux_ml_kem_vector_portable_vector_type_PortableVector vec,
+void libcrux_ml_kem_vector_portable_ntt_ntt_layer_3_step(
+    libcrux_ml_kem_vector_portable_vector_type_PortableVector *vec,
     int16_t zeta);
 
 /**
 This function found in impl {libcrux_ml_kem::vector::traits::Operations for
 libcrux_ml_kem::vector::portable::vector_type::PortableVector}
 */
-libcrux_ml_kem_vector_portable_vector_type_PortableVector
-libcrux_ml_kem_vector_portable_ntt_layer_3_step_b8(
-    libcrux_ml_kem_vector_portable_vector_type_PortableVector a, int16_t zeta);
+void libcrux_ml_kem_vector_portable_ntt_layer_3_step_b8(
+    libcrux_ml_kem_vector_portable_vector_type_PortableVector *a, int16_t zeta);
 
 void libcrux_ml_kem_vector_portable_ntt_inv_ntt_step(
     libcrux_ml_kem_vector_portable_vector_type_PortableVector *vec,
     int16_t zeta, size_t i, size_t j);
 
-libcrux_ml_kem_vector_portable_vector_type_PortableVector
-libcrux_ml_kem_vector_portable_ntt_inv_ntt_layer_1_step(
-    libcrux_ml_kem_vector_portable_vector_type_PortableVector vec,
+void libcrux_ml_kem_vector_portable_ntt_inv_ntt_layer_1_step(
+    libcrux_ml_kem_vector_portable_vector_type_PortableVector *vec,
     int16_t zeta0, int16_t zeta1, int16_t zeta2, int16_t zeta3);
 
 /**
 This function found in impl {libcrux_ml_kem::vector::traits::Operations for
 libcrux_ml_kem::vector::portable::vector_type::PortableVector}
 */
-libcrux_ml_kem_vector_portable_vector_type_PortableVector
-libcrux_ml_kem_vector_portable_inv_ntt_layer_1_step_b8(
-    libcrux_ml_kem_vector_portable_vector_type_PortableVector a, int16_t zeta0,
+void libcrux_ml_kem_vector_portable_inv_ntt_layer_1_step_b8(
+    libcrux_ml_kem_vector_portable_vector_type_PortableVector *a, int16_t zeta0,
     int16_t zeta1, int16_t zeta2, int16_t zeta3);
 
-libcrux_ml_kem_vector_portable_vector_type_PortableVector
-libcrux_ml_kem_vector_portable_ntt_inv_ntt_layer_2_step(
-    libcrux_ml_kem_vector_portable_vector_type_PortableVector vec,
+void libcrux_ml_kem_vector_portable_ntt_inv_ntt_layer_2_step(
+    libcrux_ml_kem_vector_portable_vector_type_PortableVector *vec,
     int16_t zeta0, int16_t zeta1);
 
 /**
 This function found in impl {libcrux_ml_kem::vector::traits::Operations for
 libcrux_ml_kem::vector::portable::vector_type::PortableVector}
 */
-libcrux_ml_kem_vector_portable_vector_type_PortableVector
-libcrux_ml_kem_vector_portable_inv_ntt_layer_2_step_b8(
-    libcrux_ml_kem_vector_portable_vector_type_PortableVector a, int16_t zeta0,
+void libcrux_ml_kem_vector_portable_inv_ntt_layer_2_step_b8(
+    libcrux_ml_kem_vector_portable_vector_type_PortableVector *a, int16_t zeta0,
     int16_t zeta1);
 
-libcrux_ml_kem_vector_portable_vector_type_PortableVector
-libcrux_ml_kem_vector_portable_ntt_inv_ntt_layer_3_step(
-    libcrux_ml_kem_vector_portable_vector_type_PortableVector vec,
+void libcrux_ml_kem_vector_portable_ntt_inv_ntt_layer_3_step(
+    libcrux_ml_kem_vector_portable_vector_type_PortableVector *vec,
     int16_t zeta);
 
 /**
 This function found in impl {libcrux_ml_kem::vector::traits::Operations for
 libcrux_ml_kem::vector::portable::vector_type::PortableVector}
 */
-libcrux_ml_kem_vector_portable_vector_type_PortableVector
-libcrux_ml_kem_vector_portable_inv_ntt_layer_3_step_b8(
-    libcrux_ml_kem_vector_portable_vector_type_PortableVector a, int16_t zeta);
+void libcrux_ml_kem_vector_portable_inv_ntt_layer_3_step_b8(
+    libcrux_ml_kem_vector_portable_vector_type_PortableVector *a, int16_t zeta);
 
 /**
  Compute the product of two Kyber binomials with respect to the
@@ -424,50 +493,53 @@ void libcrux_ml_kem_vector_portable_ntt_ntt_multiply_binomials(
     libcrux_ml_kem_vector_portable_vector_type_PortableVector *b, int16_t zeta,
     size_t i, libcrux_ml_kem_vector_portable_vector_type_PortableVector *out);
 
-libcrux_ml_kem_vector_portable_vector_type_PortableVector
-libcrux_ml_kem_vector_portable_ntt_ntt_multiply(
+void libcrux_ml_kem_vector_portable_ntt_ntt_multiply(
     libcrux_ml_kem_vector_portable_vector_type_PortableVector *lhs,
     libcrux_ml_kem_vector_portable_vector_type_PortableVector *rhs,
+    libcrux_ml_kem_vector_portable_vector_type_PortableVector *out,
     int16_t zeta0, int16_t zeta1, int16_t zeta2, int16_t zeta3);
 
 /**
 This function found in impl {libcrux_ml_kem::vector::traits::Operations for
 libcrux_ml_kem::vector::portable::vector_type::PortableVector}
 */
-libcrux_ml_kem_vector_portable_vector_type_PortableVector
-libcrux_ml_kem_vector_portable_ntt_multiply_b8(
+void libcrux_ml_kem_vector_portable_ntt_multiply_b8(
     libcrux_ml_kem_vector_portable_vector_type_PortableVector *lhs,
     libcrux_ml_kem_vector_portable_vector_type_PortableVector *rhs,
+    libcrux_ml_kem_vector_portable_vector_type_PortableVector *out,
     int16_t zeta0, int16_t zeta1, int16_t zeta2, int16_t zeta3);
 
 void libcrux_ml_kem_vector_portable_serialize_serialize_1(
-    libcrux_ml_kem_vector_portable_vector_type_PortableVector v,
-    uint8_t ret[2U]);
+    libcrux_ml_kem_vector_portable_vector_type_PortableVector *v,
+    Eurydice_slice out);
 
 void libcrux_ml_kem_vector_portable_serialize_1(
-    libcrux_ml_kem_vector_portable_vector_type_PortableVector a,
-    uint8_t ret[2U]);
+    libcrux_ml_kem_vector_portable_vector_type_PortableVector *a,
+    Eurydice_slice out);
 
 /**
 This function found in impl {libcrux_ml_kem::vector::traits::Operations for
 libcrux_ml_kem::vector::portable::vector_type::PortableVector}
 */
 void libcrux_ml_kem_vector_portable_serialize_1_b8(
-    libcrux_ml_kem_vector_portable_vector_type_PortableVector a,
-    uint8_t ret[2U]);
+    libcrux_ml_kem_vector_portable_vector_type_PortableVector *a,
+    Eurydice_slice out);
 
-libcrux_ml_kem_vector_portable_vector_type_PortableVector
-libcrux_ml_kem_vector_portable_serialize_deserialize_1(Eurydice_slice v);
+void libcrux_ml_kem_vector_portable_serialize_deserialize_1(
+    Eurydice_slice v,
+    libcrux_ml_kem_vector_portable_vector_type_PortableVector *out);
 
-libcrux_ml_kem_vector_portable_vector_type_PortableVector
-libcrux_ml_kem_vector_portable_deserialize_1(Eurydice_slice a);
+void libcrux_ml_kem_vector_portable_deserialize_1(
+    Eurydice_slice a,
+    libcrux_ml_kem_vector_portable_vector_type_PortableVector *out);
 
 /**
 This function found in impl {libcrux_ml_kem::vector::traits::Operations for
 libcrux_ml_kem::vector::portable::vector_type::PortableVector}
 */
-libcrux_ml_kem_vector_portable_vector_type_PortableVector
-libcrux_ml_kem_vector_portable_deserialize_1_b8(Eurydice_slice a);
+void libcrux_ml_kem_vector_portable_deserialize_1_b8(
+    Eurydice_slice a,
+    libcrux_ml_kem_vector_portable_vector_type_PortableVector *out);
 
 typedef struct uint8_t_x4_s {
   uint8_t fst;
@@ -480,20 +552,20 @@ uint8_t_x4 libcrux_ml_kem_vector_portable_serialize_serialize_4_int(
     Eurydice_slice v);
 
 void libcrux_ml_kem_vector_portable_serialize_serialize_4(
-    libcrux_ml_kem_vector_portable_vector_type_PortableVector v,
-    uint8_t ret[8U]);
+    libcrux_ml_kem_vector_portable_vector_type_PortableVector *v,
+    Eurydice_slice out);
 
 void libcrux_ml_kem_vector_portable_serialize_4(
-    libcrux_ml_kem_vector_portable_vector_type_PortableVector a,
-    uint8_t ret[8U]);
+    libcrux_ml_kem_vector_portable_vector_type_PortableVector *a,
+    Eurydice_slice out);
 
 /**
 This function found in impl {libcrux_ml_kem::vector::traits::Operations for
 libcrux_ml_kem::vector::portable::vector_type::PortableVector}
 */
 void libcrux_ml_kem_vector_portable_serialize_4_b8(
-    libcrux_ml_kem_vector_portable_vector_type_PortableVector a,
-    uint8_t ret[8U]);
+    libcrux_ml_kem_vector_portable_vector_type_PortableVector *a,
+    Eurydice_slice out);
 
 typedef struct int16_t_x8_s {
   int16_t fst;
@@ -509,18 +581,21 @@ typedef struct int16_t_x8_s {
 int16_t_x8 libcrux_ml_kem_vector_portable_serialize_deserialize_4_int(
     Eurydice_slice bytes);
 
-libcrux_ml_kem_vector_portable_vector_type_PortableVector
-libcrux_ml_kem_vector_portable_serialize_deserialize_4(Eurydice_slice bytes);
+void libcrux_ml_kem_vector_portable_serialize_deserialize_4(
+    Eurydice_slice bytes,
+    libcrux_ml_kem_vector_portable_vector_type_PortableVector *out);
 
-libcrux_ml_kem_vector_portable_vector_type_PortableVector
-libcrux_ml_kem_vector_portable_deserialize_4(Eurydice_slice a);
+void libcrux_ml_kem_vector_portable_deserialize_4(
+    Eurydice_slice a,
+    libcrux_ml_kem_vector_portable_vector_type_PortableVector *out);
 
 /**
 This function found in impl {libcrux_ml_kem::vector::traits::Operations for
 libcrux_ml_kem::vector::portable::vector_type::PortableVector}
 */
-libcrux_ml_kem_vector_portable_vector_type_PortableVector
-libcrux_ml_kem_vector_portable_deserialize_4_b8(Eurydice_slice a);
+void libcrux_ml_kem_vector_portable_deserialize_4_b8(
+    Eurydice_slice a,
+    libcrux_ml_kem_vector_portable_vector_type_PortableVector *out);
 
 typedef struct uint8_t_x5_s {
   uint8_t fst;
@@ -534,71 +609,77 @@ uint8_t_x5 libcrux_ml_kem_vector_portable_serialize_serialize_5_int(
     Eurydice_slice v);
 
 void libcrux_ml_kem_vector_portable_serialize_serialize_5(
-    libcrux_ml_kem_vector_portable_vector_type_PortableVector v,
-    uint8_t ret[10U]);
+    libcrux_ml_kem_vector_portable_vector_type_PortableVector *v,
+    Eurydice_slice out);
 
 void libcrux_ml_kem_vector_portable_serialize_5(
-    libcrux_ml_kem_vector_portable_vector_type_PortableVector a,
-    uint8_t ret[10U]);
+    libcrux_ml_kem_vector_portable_vector_type_PortableVector *a,
+    Eurydice_slice out);
 
 /**
 This function found in impl {libcrux_ml_kem::vector::traits::Operations for
 libcrux_ml_kem::vector::portable::vector_type::PortableVector}
 */
 void libcrux_ml_kem_vector_portable_serialize_5_b8(
-    libcrux_ml_kem_vector_portable_vector_type_PortableVector a,
-    uint8_t ret[10U]);
+    libcrux_ml_kem_vector_portable_vector_type_PortableVector *a,
+    Eurydice_slice out);
 
 int16_t_x8 libcrux_ml_kem_vector_portable_serialize_deserialize_5_int(
     Eurydice_slice bytes);
 
-libcrux_ml_kem_vector_portable_vector_type_PortableVector
-libcrux_ml_kem_vector_portable_serialize_deserialize_5(Eurydice_slice bytes);
+void libcrux_ml_kem_vector_portable_serialize_deserialize_5(
+    Eurydice_slice bytes,
+    libcrux_ml_kem_vector_portable_vector_type_PortableVector *out);
 
-libcrux_ml_kem_vector_portable_vector_type_PortableVector
-libcrux_ml_kem_vector_portable_deserialize_5(Eurydice_slice a);
+void libcrux_ml_kem_vector_portable_deserialize_5(
+    Eurydice_slice a,
+    libcrux_ml_kem_vector_portable_vector_type_PortableVector *out);
 
 /**
 This function found in impl {libcrux_ml_kem::vector::traits::Operations for
 libcrux_ml_kem::vector::portable::vector_type::PortableVector}
 */
-libcrux_ml_kem_vector_portable_vector_type_PortableVector
-libcrux_ml_kem_vector_portable_deserialize_5_b8(Eurydice_slice a);
+void libcrux_ml_kem_vector_portable_deserialize_5_b8(
+    Eurydice_slice a,
+    libcrux_ml_kem_vector_portable_vector_type_PortableVector *out);
 
 uint8_t_x5 libcrux_ml_kem_vector_portable_serialize_serialize_10_int(
     Eurydice_slice v);
 
 void libcrux_ml_kem_vector_portable_serialize_serialize_10(
-    libcrux_ml_kem_vector_portable_vector_type_PortableVector v,
-    uint8_t ret[20U]);
+    libcrux_ml_kem_vector_portable_vector_type_PortableVector *v,
+    Eurydice_slice out);
 
 void libcrux_ml_kem_vector_portable_serialize_10(
-    libcrux_ml_kem_vector_portable_vector_type_PortableVector a,
-    uint8_t ret[20U]);
+    libcrux_ml_kem_vector_portable_vector_type_PortableVector *a,
+    Eurydice_slice out);
 
 /**
 This function found in impl {libcrux_ml_kem::vector::traits::Operations for
 libcrux_ml_kem::vector::portable::vector_type::PortableVector}
 */
 void libcrux_ml_kem_vector_portable_serialize_10_b8(
-    libcrux_ml_kem_vector_portable_vector_type_PortableVector a,
-    uint8_t ret[20U]);
+    libcrux_ml_kem_vector_portable_vector_type_PortableVector *a,
+    Eurydice_slice out);
 
 int16_t_x8 libcrux_ml_kem_vector_portable_serialize_deserialize_10_int(
     Eurydice_slice bytes);
 
-libcrux_ml_kem_vector_portable_vector_type_PortableVector
-libcrux_ml_kem_vector_portable_serialize_deserialize_10(Eurydice_slice bytes);
+void libcrux_ml_kem_vector_portable_serialize_deserialize_10(
+    Eurydice_slice bytes,
+    libcrux_ml_kem_vector_portable_vector_type_PortableVector *out);
 
-libcrux_ml_kem_vector_portable_vector_type_PortableVector
-libcrux_ml_kem_vector_portable_deserialize_10(Eurydice_slice a);
+void libcrux_ml_kem_vector_portable_deserialize_10(
+    Eurydice_slice a,
+    libcrux_ml_kem_vector_portable_vector_type_PortableVector *out);
 
 /**
 This function found in impl {libcrux_ml_kem::vector::traits::Operations for
 libcrux_ml_kem::vector::portable::vector_type::PortableVector}
 */
-libcrux_ml_kem_vector_portable_vector_type_PortableVector
-libcrux_ml_kem_vector_portable_deserialize_10_b8(Eurydice_slice a);
+void libcrux_ml_kem_vector_portable_deserialize_10_b8(
+    Eurydice_slice a,
+    libcrux_ml_kem_vector_portable_vector_type_PortableVector *out);
 
 typedef struct uint8_t_x11_s {
   uint8_t fst;
@@ -618,36 +699,39 @@ uint8_t_x11 libcrux_ml_kem_vector_portable_serialize_serialize_11_int(
     Eurydice_slice v);
 
 void libcrux_ml_kem_vector_portable_serialize_serialize_11(
-    libcrux_ml_kem_vector_portable_vector_type_PortableVector v,
-    uint8_t ret[22U]);
+    libcrux_ml_kem_vector_portable_vector_type_PortableVector *v,
+    Eurydice_slice out);
 
 void libcrux_ml_kem_vector_portable_serialize_11(
-    libcrux_ml_kem_vector_portable_vector_type_PortableVector a,
-    uint8_t ret[22U]);
+    libcrux_ml_kem_vector_portable_vector_type_PortableVector *a,
+    Eurydice_slice out);
 
 /**
 This function found in impl {libcrux_ml_kem::vector::traits::Operations for
 libcrux_ml_kem::vector::portable::vector_type::PortableVector}
 */
 void libcrux_ml_kem_vector_portable_serialize_11_b8(
-    libcrux_ml_kem_vector_portable_vector_type_PortableVector a,
-    uint8_t ret[22U]);
+    libcrux_ml_kem_vector_portable_vector_type_PortableVector *a,
+    Eurydice_slice out);
 
 int16_t_x8 libcrux_ml_kem_vector_portable_serialize_deserialize_11_int(
     Eurydice_slice bytes);
 
-libcrux_ml_kem_vector_portable_vector_type_PortableVector
-libcrux_ml_kem_vector_portable_serialize_deserialize_11(Eurydice_slice bytes);
+void libcrux_ml_kem_vector_portable_serialize_deserialize_11(
+    Eurydice_slice bytes,
+    libcrux_ml_kem_vector_portable_vector_type_PortableVector *out);
 
-libcrux_ml_kem_vector_portable_vector_type_PortableVector
-libcrux_ml_kem_vector_portable_deserialize_11(Eurydice_slice a);
+void libcrux_ml_kem_vector_portable_deserialize_11(
+    Eurydice_slice a,
+    libcrux_ml_kem_vector_portable_vector_type_PortableVector *out);
 
 /**
 This function found in impl {libcrux_ml_kem::vector::traits::Operations for
 libcrux_ml_kem::vector::portable::vector_type::PortableVector}
 */
-libcrux_ml_kem_vector_portable_vector_type_PortableVector
-libcrux_ml_kem_vector_portable_deserialize_11_b8(Eurydice_slice a);
+void libcrux_ml_kem_vector_portable_deserialize_11_b8(
+    Eurydice_slice a,
+    libcrux_ml_kem_vector_portable_vector_type_PortableVector *out);
 
 typedef struct uint8_t_x3_s {
   uint8_t fst;
@@ -659,20 +743,20 @@ uint8_t_x3 libcrux_ml_kem_vector_portable_serialize_serialize_12_int(
     Eurydice_slice v);
 
 void libcrux_ml_kem_vector_portable_serialize_serialize_12(
-    libcrux_ml_kem_vector_portable_vector_type_PortableVector v,
-    uint8_t ret[24U]);
+    libcrux_ml_kem_vector_portable_vector_type_PortableVector *v,
+    Eurydice_slice out);
 
 void libcrux_ml_kem_vector_portable_serialize_12(
-    libcrux_ml_kem_vector_portable_vector_type_PortableVector a,
-    uint8_t ret[24U]);
+    libcrux_ml_kem_vector_portable_vector_type_PortableVector *a,
+    Eurydice_slice out);
 
 /**
 This function found in impl {libcrux_ml_kem::vector::traits::Operations for
 libcrux_ml_kem::vector::portable::vector_type::PortableVector}
 */
 void libcrux_ml_kem_vector_portable_serialize_12_b8(
-    libcrux_ml_kem_vector_portable_vector_type_PortableVector a,
-    uint8_t ret[24U]);
+    libcrux_ml_kem_vector_portable_vector_type_PortableVector *a,
+    Eurydice_slice out);
 
 typedef struct int16_t_x2_s {
   int16_t fst;
@@ -682,18 +766,21 @@ typedef struct int16_t_x2_s {
 int16_t_x2 libcrux_ml_kem_vector_portable_serialize_deserialize_12_int(
     Eurydice_slice bytes);
 
-libcrux_ml_kem_vector_portable_vector_type_PortableVector
-libcrux_ml_kem_vector_portable_serialize_deserialize_12(Eurydice_slice bytes);
+void libcrux_ml_kem_vector_portable_serialize_deserialize_12(
+    Eurydice_slice bytes,
+    libcrux_ml_kem_vector_portable_vector_type_PortableVector *out);
 
-libcrux_ml_kem_vector_portable_vector_type_PortableVector
-libcrux_ml_kem_vector_portable_deserialize_12(Eurydice_slice a);
+void libcrux_ml_kem_vector_portable_deserialize_12(
+    Eurydice_slice a,
+    libcrux_ml_kem_vector_portable_vector_type_PortableVector *out);
 
 /**
 This function found in impl {libcrux_ml_kem::vector::traits::Operations for
 libcrux_ml_kem::vector::portable::vector_type::PortableVector}
 */
-libcrux_ml_kem_vector_portable_vector_type_PortableVector
-libcrux_ml_kem_vector_portable_deserialize_12_b8(Eurydice_slice a);
+void libcrux_ml_kem_vector_portable_deserialize_12_b8(
+    Eurydice_slice a,
+    libcrux_ml_kem_vector_portable_vector_type_PortableVector *out);
 
 size_t libcrux_ml_kem_vector_portable_sampling_rej_sample(
     Eurydice_slice a, Eurydice_slice result);
@@ -704,14 +791,6 @@ libcrux_ml_kem::vector::portable::vector_type::PortableVector}
 */
 size_t libcrux_ml_kem_vector_portable_rej_sample_b8(Eurydice_slice a,
                                                     Eurydice_slice out);
-
-/**
-This function found in impl {core::clone::Clone for
-libcrux_ml_kem::vector::portable::vector_type::PortableVector}
-*/
-libcrux_ml_kem_vector_portable_vector_type_PortableVector
-libcrux_ml_kem_vector_portable_vector_type_clone_9c(
-    libcrux_ml_kem_vector_portable_vector_type_PortableVector *self);
 
 #if defined(__cplusplus)
 }

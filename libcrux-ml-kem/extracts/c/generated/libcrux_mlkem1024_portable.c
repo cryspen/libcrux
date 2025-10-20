@@ -7,8 +7,8 @@
  * Charon: 667d2fc98984ff7f3df989c2367e6c1fa4a000e7
  * Eurydice: 2381cbc416ef2ad0b561c362c500bc84f36b6785
  * Karamel: 80f5435f2fc505973c469a4afcc8d875cddd0d8b
- * F*: 71d8221589d4d438af3706d89cb653cf53e18aab
- * Libcrux: 68dfed5a4a9e40277f62828471c029afed1ecdcc
+ * F*: 4b3fc11774003a6ff7c09500ecb5f0145ca6d862
+ * Libcrux: f62b85fdbea428a327ef14cd473eff0cbd3b28a4
  */
 
 #include "libcrux_mlkem1024_portable.h"
@@ -23,6 +23,7 @@
 A monomorphic instance of
 libcrux_ml_kem.ind_cca.instantiations.portable.decapsulate with const generics
 - K= 4
+- K_SQUARED= 16
 - SECRET_KEY_SIZE= 3168
 - CPA_SECRET_KEY_SIZE= 1536
 - PUBLIC_KEY_SIZE= 1568
@@ -37,12 +38,14 @@ libcrux_ml_kem.ind_cca.instantiations.portable.decapsulate with const generics
 - ETA1_RANDOMNESS_SIZE= 128
 - ETA2= 2
 - ETA2_RANDOMNESS_SIZE= 128
+- PRF_OUTPUT_SIZE1= 512
+- PRF_OUTPUT_SIZE2= 512
 - IMPLICIT_REJECTION_HASH_INPUT_SIZE= 1600
 */
-static void decapsulate_e0(libcrux_ml_kem_types_MlKemPrivateKey_83 *private_key,
+static void decapsulate_f3(libcrux_ml_kem_types_MlKemPrivateKey_83 *private_key,
                            libcrux_ml_kem_types_MlKemCiphertext_64 *ciphertext,
                            uint8_t ret[32U]) {
-  libcrux_ml_kem_ind_cca_decapsulate_620(private_key, ciphertext, ret);
+  libcrux_ml_kem_ind_cca_decapsulate_d70(private_key, ciphertext, ret);
 }
 
 /**
@@ -55,13 +58,14 @@ static void decapsulate_e0(libcrux_ml_kem_types_MlKemPrivateKey_83 *private_key,
 void libcrux_ml_kem_mlkem1024_portable_decapsulate(
     libcrux_ml_kem_types_MlKemPrivateKey_83 *private_key,
     libcrux_ml_kem_types_MlKemCiphertext_64 *ciphertext, uint8_t ret[32U]) {
-  decapsulate_e0(private_key, ciphertext, ret);
+  decapsulate_f3(private_key, ciphertext, ret);
 }
 
 /**
 A monomorphic instance of
 libcrux_ml_kem.ind_cca.instantiations.portable.encapsulate with const generics
 - K= 4
+- K_SQUARED= 16
 - CIPHERTEXT_SIZE= 1568
 - PUBLIC_KEY_SIZE= 1568
 - T_AS_NTT_ENCODED_SIZE= 1536
@@ -74,10 +78,12 @@ libcrux_ml_kem.ind_cca.instantiations.portable.encapsulate with const generics
 - ETA1_RANDOMNESS_SIZE= 128
 - ETA2= 2
 - ETA2_RANDOMNESS_SIZE= 128
+- PRF_OUTPUT_SIZE1= 512
+- PRF_OUTPUT_SIZE2= 512
 */
-static tuple_fa encapsulate_8f(
+static tuple_fa encapsulate_e0(
     libcrux_ml_kem_types_MlKemPublicKey_64 *public_key, uint8_t *randomness) {
-  return libcrux_ml_kem_ind_cca_encapsulate_ca0(public_key, randomness);
+  return libcrux_ml_kem_ind_cca_encapsulate_d90(public_key, randomness);
 }
 
 /**
@@ -90,7 +96,7 @@ static tuple_fa encapsulate_8f(
 tuple_fa libcrux_ml_kem_mlkem1024_portable_encapsulate(
     libcrux_ml_kem_types_MlKemPublicKey_64 *public_key,
     uint8_t randomness[32U]) {
-  return encapsulate_8f(public_key, randomness);
+  return encapsulate_e0(public_key, randomness);
 }
 
 /**
@@ -101,15 +107,17 @@ A monomorphic instance of
 libcrux_ml_kem.ind_cca.instantiations.portable.generate_keypair with const
 generics
 - K= 4
+- K_SQUARED= 16
 - CPA_PRIVATE_KEY_SIZE= 1536
 - PRIVATE_KEY_SIZE= 3168
 - PUBLIC_KEY_SIZE= 1568
 - ETA1= 2
 - ETA1_RANDOMNESS_SIZE= 128
+- PRF_OUTPUT_SIZE1= 512
 */
-static libcrux_ml_kem_mlkem1024_MlKem1024KeyPair generate_keypair_b4(
+static libcrux_ml_kem_mlkem1024_MlKem1024KeyPair generate_keypair_86(
     uint8_t *randomness) {
-  return libcrux_ml_kem_ind_cca_generate_keypair_150(randomness);
+  return libcrux_ml_kem_ind_cca_generate_keypair_e60(randomness);
 }
 
 /**
@@ -117,7 +125,7 @@ static libcrux_ml_kem_mlkem1024_MlKem1024KeyPair generate_keypair_b4(
 */
 libcrux_ml_kem_mlkem1024_MlKem1024KeyPair
 libcrux_ml_kem_mlkem1024_portable_generate_key_pair(uint8_t randomness[64U]) {
-  return generate_keypair_b4(randomness);
+  return generate_keypair_86(randomness);
 }
 
 /**
@@ -134,7 +142,7 @@ generics
 static KRML_MUSTINLINE bool validate_private_key_6b(
     libcrux_ml_kem_types_MlKemPrivateKey_83 *private_key,
     libcrux_ml_kem_types_MlKemCiphertext_64 *ciphertext) {
-  return libcrux_ml_kem_ind_cca_validate_private_key_b5(private_key,
+  return libcrux_ml_kem_ind_cca_validate_private_key_f5(private_key,
                                                         ciphertext);
 }
 
@@ -161,7 +169,7 @@ const generics
 */
 static KRML_MUSTINLINE bool validate_private_key_only_44(
     libcrux_ml_kem_types_MlKemPrivateKey_83 *private_key) {
-  return libcrux_ml_kem_ind_cca_validate_private_key_only_60(private_key);
+  return libcrux_ml_kem_ind_cca_validate_private_key_only_a7(private_key);
 }
 
 /**

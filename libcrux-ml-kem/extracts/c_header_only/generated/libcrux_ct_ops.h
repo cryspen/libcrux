@@ -7,8 +7,8 @@
  * Charon: 667d2fc98984ff7f3df989c2367e6c1fa4a000e7
  * Eurydice: 2381cbc416ef2ad0b561c362c500bc84f36b6785
  * Karamel: 80f5435f2fc505973c469a4afcc8d875cddd0d8b
- * F*: 71d8221589d4d438af3706d89cb653cf53e18aab
- * Libcrux: 68dfed5a4a9e40277f62828471c029afed1ecdcc
+ * F*: 4b3fc11774003a6ff7c09500ecb5f0145ca6d862
+ * Libcrux: f62b85fdbea428a327ef14cd473eff0cbd3b28a4
  */
 
 #ifndef libcrux_ct_ops_H
@@ -67,41 +67,36 @@ libcrux_ml_kem_constant_time_ops_compare_ciphertexts_in_constant_time(
 */
 static KRML_NOINLINE void libcrux_ml_kem_constant_time_ops_select_ct(
     Eurydice_slice lhs, Eurydice_slice rhs, uint8_t selector,
-    uint8_t ret[32U]) {
+    Eurydice_slice out) {
   uint8_t mask = core_num__u8__wrapping_sub(
       libcrux_ml_kem_constant_time_ops_is_non_zero(selector), 1U);
-  uint8_t out[32U] = {0U};
-  for (size_t i = (size_t)0U; i < LIBCRUX_ML_KEM_CONSTANTS_SHARED_SECRET_SIZE;
-       i++) {
+  for (size_t i = (size_t)0U; i < Eurydice_slice_len(lhs, uint8_t); i++) {
     size_t i0 = i;
     uint8_t outi =
         ((uint32_t)Eurydice_slice_index(lhs, i0, uint8_t, uint8_t *) &
          (uint32_t)mask) |
         ((uint32_t)Eurydice_slice_index(rhs, i0, uint8_t, uint8_t *) &
          (uint32_t)~mask);
-    out[i0] = outi;
+    Eurydice_slice_index(out, i0, uint8_t, uint8_t *) = outi;
   }
-  memcpy(ret, out, (size_t)32U * sizeof(uint8_t));
 }
 
 static KRML_NOINLINE void
 libcrux_ml_kem_constant_time_ops_select_shared_secret_in_constant_time(
     Eurydice_slice lhs, Eurydice_slice rhs, uint8_t selector,
-    uint8_t ret[32U]) {
-  libcrux_ml_kem_constant_time_ops_select_ct(lhs, rhs, selector, ret);
+    Eurydice_slice out) {
+  libcrux_ml_kem_constant_time_ops_select_ct(lhs, rhs, selector, out);
 }
 
 static KRML_NOINLINE void
 libcrux_ml_kem_constant_time_ops_compare_ciphertexts_select_shared_secret_in_constant_time(
     Eurydice_slice lhs_c, Eurydice_slice rhs_c, Eurydice_slice lhs_s,
-    Eurydice_slice rhs_s, uint8_t ret[32U]) {
+    Eurydice_slice rhs_s, Eurydice_slice out) {
   uint8_t selector =
       libcrux_ml_kem_constant_time_ops_compare_ciphertexts_in_constant_time(
           lhs_c, rhs_c);
-  uint8_t ret0[32U];
   libcrux_ml_kem_constant_time_ops_select_shared_secret_in_constant_time(
-      lhs_s, rhs_s, selector, ret0);
-  memcpy(ret, ret0, (size_t)32U * sizeof(uint8_t));
+      lhs_s, rhs_s, selector, out);
 }
 
 #if defined(__cplusplus)
