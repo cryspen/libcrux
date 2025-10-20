@@ -81,8 +81,7 @@ if [[ "$no_charon" = 0 ]]; then
       --include 'libcrux_sha3' \
       --include 'libcrux_secrets' \
       --start-from libcrux_ml_kem --start-from libcrux_sha3 \
-      --include 'core::num::*::BITS' --include 'core::num::*::MAX' -- \
-      --target=x86_64-apple-darwin
+      --include 'core::num::*::BITS' --include 'core::num::*::MAX'
     # rm -rf $repo_root/libcrux_ml_kem.llbc $repo_root/libcrux_sha3.llbc $repo_root/libcrux_secrets.llbc
     # echo "Running charon (secrets) ..."
     # (cd $repo_root/secrets && RUSTFLAGS="--cfg eurydice" $CHARON_HOME/bin/charon --remove-associated-types '*' --translate-all-methods)

@@ -161,8 +161,8 @@ typedef struct {
   KRML_CLITERAL(Eurydice_slice) { ptr_, len_ }
 
 #define core_array__core__clone__Clone_for__Array_T__N___clone( \
-    len, src, dst, elem_type, _ret_t)                           \
-  (memcpy(dst, src, len * sizeof(elem_type)))
+    len, src, elem_type, _ret_t)                                \
+  (*(src))
 #define TryFromSliceError uint8_t
 #define core_array_TryFromSliceError uint8_t
 
@@ -253,6 +253,14 @@ typedef char Eurydice_derefed_slice[];
 extern "C" {
 #endif
 
+typedef struct Eurydice_arr_8b_s {
+  uint8_t data[2];
+} Eurydice_arr_8b;
+
+typedef struct Eurydice_arr_c4_s {
+  uint8_t data[8];
+} Eurydice_arr_c4;
+
 static inline void core_num__u32__to_be_bytes(uint32_t src, uint8_t dst[4]) {
   // TODO: why not store32_be?
   uint32_t x = htobe32(src);
@@ -267,12 +275,14 @@ static inline uint32_t core_num__u32__from_le_bytes(uint8_t buf[4]) {
   return load32_le(buf);
 }
 
-static inline void core_num__u64__to_le_bytes(uint64_t v, uint8_t buf[8]) {
-  store64_le(buf, v);
+static inline Eurydice_arr_c4 core_num__u64__to_le_bytes(uint64_t v) {
+  Eurydice_arr_c4 a;
+  store64_le(a.data, v);
+  return a;
 }
 
-static inline uint64_t core_num__u64__from_le_bytes(uint8_t buf[8]) {
-  return load64_le(buf);
+static inline uint64_t core_num__u64__from_le_bytes(Eurydice_arr_c4 buf) {
+  return load64_le(buf.data);
 }
 
 static inline int64_t core_convert_num___core__convert__From_i32__for_i64__from(

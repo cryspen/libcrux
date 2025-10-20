@@ -41,17 +41,16 @@ TEST(Sha3Test, ConsistencyTest)
     const char* message = "Hello, World!";
     uint32_t message_size = strlen(message);
 
-    uint8_t digest[32];
     Eurydice_slice input;
     input.ptr = (void*) message;
     input.len = message_size;
 
-    libcrux_sha3_sha256(input,digest);
+    auto digest = libcrux_sha3_sha256(input);
 
     bytes expected_digest = from_hex(
       "1af17a664e3fa8e419b8ba05c2a173169df76162a5a286e0c405b460d478f7ef");
 
-    EXPECT_EQ(strncmp((char*)digest,
+    EXPECT_EQ(strncmp((char*)digest.data,
                       (char*)expected_digest.data(),
                       32),
               0);
