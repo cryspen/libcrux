@@ -509,7 +509,7 @@ pub(crate) mod spec {
 }
 
 #[hax_lib::attributes]
-// XXX: Want to drop `Copy` boudn here, but can't, because of Eurydice issue.
+// XXX: Want to drop `Copy` bound here, but can't, because of Eurydice issue.
 pub trait Operations: Copy + Clone + Repr {
     #[allow(non_snake_case)]
     #[requires(true)]

@@ -74,7 +74,7 @@ use unpacked::*;
     length $seed_for_a == sz 32 /\
     (forall (i:nat). i < v $K ==>
         Libcrux_ml_kem.Polynomial.is_bounded_poly 3328 (Seq.index $t_as_ntt i))"#))]
-#[hax_lib::ensures(|res|
+#[hax_lib::ensures(|_|
     fstar!(r#"${serialized}_future == 
                         Seq.append (Spec.MLKEM.vector_encode_12 #$K
                             (Libcrux_ml_kem.Polynomial.to_spec_vector_t #$K #$:Vector $t_as_ntt))

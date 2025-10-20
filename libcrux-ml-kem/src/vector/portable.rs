@@ -78,7 +78,7 @@ fn deserialize_5(a: &[u8], out: &mut PortableVector) {
 }
 
 #[hax_lib::requires(fstar!(r#"Spec.MLKEM.serialize_pre 10 (impl.f_repr $a) /\ Seq.length $out == 20"#))]
-#[hax_lib::ensures(|out| fstar!(r#"Seq.length ${out}_future == 20 /\
+#[hax_lib::ensures(|_| fstar!(r#"Seq.length ${out}_future == 20 /\
     (Spec.MLKEM.serialize_pre 10 (impl.f_repr $a) ==> 
         Spec.MLKEM.serialize_post 10 (impl.f_repr $a) ${out}_future)"#))]
 fn serialize_10(a: &PortableVector, out: &mut [u8]) {

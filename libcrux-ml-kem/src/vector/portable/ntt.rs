@@ -9,7 +9,7 @@ use libcrux_secrets::*;
                             Spec.Utils.is_i16b_array (11207 + 6 * 3328) vec.f_elements /\
                             Spec.Utils.is_i16b (11207 + 5*3328) vec.f_elements.[i] /\
                             Spec.Utils.is_i16b (11207 + 5*3328) vec.f_elements.[j]"#))]
-#[hax_lib::ensures(|result| fstar!(r#"(forall k. (k <> v i /\ k <> v j) ==>
+#[hax_lib::ensures(|_| fstar!(r#"(forall k. (k <> v i /\ k <> v j) ==>
                                          Seq.index ${vec}_future.f_elements k == Seq.index ${vec}.f_elements k) /\
                                     (forall b. (Spec.Utils.is_i16b b ${vec}.f_elements.[i] /\
                                                Spec.Utils.is_i16b b ${vec}.f_elements.[j]) ==>
