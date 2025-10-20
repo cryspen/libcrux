@@ -657,7 +657,7 @@ pub(crate) mod kyber {
             ETA1,
             ETA1_RANDOMNESS_SIZE,
             PRF_OUTPUT_SIZE1,
-        >(randomness)
+        >(&randomness)
     }
 
     /// Encapsulate Kyber 512
@@ -686,7 +686,7 @@ pub(crate) mod kyber {
             ETA2_RANDOMNESS_SIZE,
             PRF_OUTPUT_SIZE1,
             PRF_OUTPUT_SIZE2,
-        >(public_key, randomness)
+        >(public_key, &randomness)
     }
 
     /// Decapsulate Kyber 512

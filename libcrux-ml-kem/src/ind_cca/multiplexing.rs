@@ -90,7 +90,7 @@ pub(crate) fn kyber_generate_keypair<
     const ETA1_RANDOMNESS_SIZE: usize,
     const PRF_OUTPUT_SIZE1: usize,
 >(
-    randomness: [u8; KEY_GENERATION_SEED_SIZE],
+    randomness: &[u8; KEY_GENERATION_SEED_SIZE],
 ) -> MlKemKeyPair<PRIVATE_KEY_SIZE, PUBLIC_KEY_SIZE> {
     // Runtime feature detection.
     if libcrux_platform::simd256_support() {
@@ -103,7 +103,7 @@ pub(crate) fn kyber_generate_keypair<
             ETA1,
             ETA1_RANDOMNESS_SIZE,
             PRF_OUTPUT_SIZE1,
-        >(&randomness)
+        >(randomness)
     } else if libcrux_platform::simd128_support() {
         kyber_generate_keypair_neon::<
             K,
@@ -114,7 +114,7 @@ pub(crate) fn kyber_generate_keypair<
             ETA1,
             ETA1_RANDOMNESS_SIZE,
             PRF_OUTPUT_SIZE1,
-        >(&randomness)
+        >(randomness)
     } else {
         instantiations::portable::kyber_generate_keypair::<
             K,
@@ -125,7 +125,7 @@ pub(crate) fn kyber_generate_keypair<
             ETA1,
             ETA1_RANDOMNESS_SIZE,
             PRF_OUTPUT_SIZE1,
-        >(&randomness)
+        >(randomness)
     }
 }
 
@@ -205,7 +205,7 @@ pub(crate) fn kyber_encapsulate<
     const PRF_OUTPUT_SIZE2: usize,
 >(
     public_key: &MlKemPublicKey<PUBLIC_KEY_SIZE>,
-    randomness: [u8; SHARED_SECRET_SIZE],
+    randomness: &[u8; SHARED_SECRET_SIZE],
 ) -> (MlKemCiphertext<CIPHERTEXT_SIZE>, MlKemSharedSecret) {
     if libcrux_platform::simd256_support() {
         kyber_encapsulate_avx2::<
@@ -225,7 +225,7 @@ pub(crate) fn kyber_encapsulate<
             ETA2_RANDOMNESS_SIZE,
             PRF_OUTPUT_SIZE1,
             PRF_OUTPUT_SIZE2,
-        >(public_key, &randomness)
+        >(public_key, randomness)
     } else if libcrux_platform::simd128_support() {
         kyber_encapsulate_neon::<
             K,
@@ -244,7 +244,7 @@ pub(crate) fn kyber_encapsulate<
             ETA2_RANDOMNESS_SIZE,
             PRF_OUTPUT_SIZE1,
             PRF_OUTPUT_SIZE2,
-        >(public_key, &randomness)
+        >(public_key, randomness)
     } else {
         instantiations::portable::kyber_encapsulate::<
             K,
@@ -263,7 +263,7 @@ pub(crate) fn kyber_encapsulate<
             ETA2_RANDOMNESS_SIZE,
             PRF_OUTPUT_SIZE1,
             PRF_OUTPUT_SIZE2,
-        >(public_key, &randomness)
+        >(public_key, randomness)
     }
 }
 
