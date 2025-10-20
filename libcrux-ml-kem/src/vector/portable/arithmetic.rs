@@ -127,9 +127,7 @@ pub(crate) fn negate(vec: &mut PortableVector) {
             )
         });
 
-        // XXX: secret integers don't implement `std::ops::Neg`
-        // see https://github.com/cryspen/libcrux/issues/1089
-        vec.elements[i] = 0.classify() - vec.elements[i];
+        vec.elements[i] = -vec.elements[i];
     }
     hax_lib::fstar!(
         "assert (forall i. v (Seq.index ${vec}.f_elements i) ==
