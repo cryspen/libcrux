@@ -111,7 +111,7 @@ macro_rules! instantiate {
             ) -> MlKem768KeyPair {
                 p::generate_keypair::<
                     RANK,
-RANK_SQUARED,
+                    RANK_SQUARED,
                     CPA_PKE_SECRET_KEY_SIZE,
                     SECRET_KEY_SIZE,
                     CPA_PKE_PUBLIC_KEY_SIZE,
@@ -129,7 +129,7 @@ RANK_SQUARED,
             ) -> MlKem768KeyPair {
                 p::kyber_generate_keypair::<
                     RANK,
-RANK_SQUARED,
+                    RANK_SQUARED,
                     CPA_PKE_SECRET_KEY_SIZE,
                     SECRET_KEY_SIZE,
                     CPA_PKE_PUBLIC_KEY_SIZE,
@@ -150,7 +150,7 @@ RANK_SQUARED,
             ) -> (MlKem768Ciphertext, MlKemSharedSecret) {
                 p::encapsulate::<
                     RANK,
-RANK_SQUARED,
+                    RANK_SQUARED,
                     CPA_PKE_CIPHERTEXT_SIZE,
                     CPA_PKE_PUBLIC_KEY_SIZE,
                     T_AS_NTT_ENCODED_SIZE,
@@ -181,7 +181,7 @@ RANK_SQUARED,
             ) -> (MlKem768Ciphertext, MlKemSharedSecret) {
                 p::kyber_encapsulate::<
                     RANK,
-RANK_SQUARED,
+                    RANK_SQUARED,
                     CPA_PKE_CIPHERTEXT_SIZE,
                     CPA_PKE_PUBLIC_KEY_SIZE,
                     T_AS_NTT_ENCODED_SIZE,
@@ -209,7 +209,7 @@ RANK_SQUARED,
             ) -> MlKemSharedSecret {
                 p::decapsulate::<
                     RANK,
-RANK_SQUARED,
+                    RANK_SQUARED,
                     SECRET_KEY_SIZE,
                     CPA_PKE_SECRET_KEY_SIZE,
                     CPA_PKE_PUBLIC_KEY_SIZE,
@@ -242,7 +242,7 @@ RANK_SQUARED,
             ) -> MlKemSharedSecret {
                 p::kyber_decapsulate::<
                     RANK,
-RANK_SQUARED,
+                    RANK_SQUARED,
                     SECRET_KEY_SIZE,
                     CPA_PKE_SECRET_KEY_SIZE,
                     CPA_PKE_PUBLIC_KEY_SIZE,
