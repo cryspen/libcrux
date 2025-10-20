@@ -10,7 +10,10 @@ use crate::hacl::hash_blake2b::{
     update0,
 };
 
-use super::{ConstDigestLen, ConstKeyLen, ConstKeyLenConstDigestLen, Dynamic, Error};
+use super::{
+    ConstDigestLen, ConstKeyLen, ConstKeyLenConstDigestLen, Dynamic, Error, LengthBounds,
+    SupportsKeyLen, SupportsOutLen,
+};
 
 const PARAM_LEN: usize = 16;
 const MAX_LEN: usize = 64;
@@ -73,11 +76,10 @@ impl<'a> Blake2bBuilder<'a, &'a ()> {
     /// Constructs the [`Blake2b`] hasher for unkeyed hashes and constant digest length.
     pub fn build_const_digest_len<const OUT_LEN: usize>(
         self,
-    ) -> Result<Blake2b<ConstKeyLenConstDigestLen<0, OUT_LEN>>, Error> {
-        if OUT_LEN < 1 || OUT_LEN > MAX_LEN {
-            return Err(Error::InvalidDigestLength);
-        }
-
+    ) -> Blake2b<ConstKeyLenConstDigestLen<0, OUT_LEN>>
+    where
+        Blake2b<LengthBounds>: SupportsOutLen<OUT_LEN>,
+    {
         let digest_length = OUT_LEN as u8;
         let key_length = 0;
 
@@ -105,26 +107,25 @@ impl<'a> Blake2bBuilder<'a, &'a ()> {
             snd: &[],
         };
 
-        Ok(Blake2b {
+        Blake2b {
             state: malloc_raw(kk, key),
             _phantom: PhantomData,
-        })
+        }
     }
 }
 
-impl<'a, const KEY_LEN: usize> Blake2bBuilder<'a, &'a [u8; KEY_LEN]> {
+impl<'a, const KEY_LEN: usize> Blake2bBuilder<'a, &'a [u8; KEY_LEN]>
+where
+    Blake2b<LengthBounds>: SupportsKeyLen<KEY_LEN>,
+{
     /// Creates the builder for an keyed hasher for keys where the length is known at compile
     /// time.
-    pub fn new_keyed_const(key: &'a [u8; KEY_LEN]) -> Result<Self, Error> {
-        if KEY_LEN > MAX_LEN {
-            return Err(Error::InvalidKeyLength);
-        }
-
-        Ok(Self {
+    pub fn new_keyed_const(key: &'a [u8; KEY_LEN]) -> Self {
+        Self {
             key,
             personal: &[0; PARAM_LEN],
             salt: &[0; PARAM_LEN],
-        })
+        }
     }
 
     /// Constructs the [`Blake2b`] hasher for hashes with const key length and dynamic digest length.
@@ -172,11 +173,10 @@ impl<'a, const KEY_LEN: usize> Blake2bBuilder<'a, &'a [u8; KEY_LEN]> {
     /// Constructs the [`Blake2b`] hasher for hashes with const key length and constant digest length.
     pub fn build_const_digest_len<const OUT_LEN: usize>(
         self,
-    ) -> Result<Blake2b<ConstKeyLenConstDigestLen<KEY_LEN, OUT_LEN>>, Error> {
-        if OUT_LEN < 1 || OUT_LEN > MAX_LEN {
-            return Err(Error::InvalidDigestLength);
-        }
-
+    ) -> Blake2b<ConstKeyLenConstDigestLen<KEY_LEN, OUT_LEN>>
+    where
+        Blake2b<LengthBounds>: SupportsOutLen<OUT_LEN>,
+    {
         // These are safe because they both are at most 64, enforced either above or in the
         // constructor.
         let key_length = KEY_LEN as u8;
@@ -206,10 +206,10 @@ impl<'a, const KEY_LEN: usize> Blake2bBuilder<'a, &'a [u8; KEY_LEN]> {
             snd: self.key,
         };
 
-        Ok(Blake2b::<ConstKeyLenConstDigestLen<KEY_LEN, OUT_LEN>> {
+        Blake2b::<ConstKeyLenConstDigestLen<KEY_LEN, OUT_LEN>> {
             state: malloc_raw(kk, key),
             _phantom: PhantomData,
-        })
+        }
     }
 }
 
@@ -268,13 +268,10 @@ impl<'a> Blake2bBuilder<'a, &'a [u8]> {
     }
 
     /// Constructs the [`Blake2b`] hasher with dynamic key length and constant digest length.
-    pub fn build_const_digest_len<const OUT_LEN: usize>(
-        self,
-    ) -> Result<Blake2b<ConstDigestLen<OUT_LEN>>, Error> {
-        if OUT_LEN < 1 || OUT_LEN > MAX_LEN {
-            return Err(Error::InvalidDigestLength);
-        }
-
+    pub fn build_const_digest_len<const OUT_LEN: usize>(self) -> Blake2b<ConstDigestLen<OUT_LEN>>
+    where
+        Blake2b<LengthBounds>: SupportsOutLen<OUT_LEN>,
+    {
         // these are safe because they both are at most 64
         let key_length = self.key.len() as u8;
         let digest_length = OUT_LEN as u8;
@@ -303,10 +300,10 @@ impl<'a> Blake2bBuilder<'a, &'a [u8]> {
             snd: self.key,
         };
 
-        Ok(Blake2b {
+        Blake2b {
             state: malloc_raw(kk, key),
             _phantom: PhantomData,
-        })
+        }
     }
 }
 
