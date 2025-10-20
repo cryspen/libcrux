@@ -14,6 +14,16 @@ files:
 
   # SHA3 (no mention of libcrux_mlkem in this section, please)
 
+  - name: libcrux_sha3_core
+    inline_static: true
+    target: "avx2"
+    api:
+      patterns:
+        - [Eurydice, arr_a7]
+        - [libcrux_sha3, generic_keccak, constants, "*"]
+      monomorphizations_exact:
+        - [Eurydice, arr_a7]
+
   - name: libcrux_sha3_avx2
     inline_static: true
     target: "avx2"
@@ -40,6 +50,7 @@ files:
     inline_static: true
     api:
       patterns:
+        - [Eurydice, arr_e4]
         - [libcrux_sha3, "*"]
         - [libcrux_sha3, simd, portable, "*"]
         - [libcrux_sha3, generic_keccak, portable, "*"]
@@ -61,26 +72,22 @@ files:
         - [libcrux_sha3, traits, "*"]
         - [libcrux_sha3, portable, "*"]
         - [libcrux_sha3, generic_keccak, xof, "*"]
+      monomorphizations_exact:
+        - [Eurydice, arr_e4]
 
   # MLKEM: MISC NON-ARCHITECTURE SPECIFIC HEADERS
   - name: libcrux_mlkem_core
     inline_static: true
     api:
       - [libcrux_ml_kem, constants ]
-      - [Eurydice, "*"]
     private:
       monomorphizations_of:
-        - [core, "*"]
-        - [libcrux_secrets, "*"]
         - [libcrux_ml_kem, types, "*"]
         - [libcrux_ml_kem, constant_time_ops, "*"]
         - [libcrux_ml_kem, utils, "*" ]
       monomorphizations_using:
-        - [Eurydice, "*" ]
         - [libcrux_ml_kem, types, "*"]
       patterns:
-        - [core, "*"]
-        - [libcrux_secrets, "*"]
         - [libcrux_ml_kem, types ]
         - [libcrux_ml_kem, constant_time_ops, "*"]
         - [libcrux_ml_kem, utils, "*" ]
@@ -141,6 +148,25 @@ files:
         - [libcrux_ml_kem, vector, "*"]
         - [libcrux_ml_kem, hash_functions, portable, "*"]
         - [libcrux_ml_kem, ind_cca, instantiations, portable, "*"]
+
+  - name: libcrux_core
+    inline_static: true
+    api: 
+      patterns:
+        - [libcrux_secrets, "*"]
+        - [core, "*"]
+        - [Eurydice, "*"]
+      monomorphizations_of:
+        - [libcrux_secrets, "*"]
+        - [core, "*"]
+        - [Eurydice, "*"]
+      # monomorphizations_exact:
+      #   - [Eurydice, slice_index]
+      #   - [Eurydice, arr_600]
+      #   - [Eurydice, arr_27]
+      #   - [Eurydice, arr_3d]
+      #   - [Eurydice, arr_75]
+      #   - [Eurydice, arr_c40]
 
 naming:
   skip_prefix:

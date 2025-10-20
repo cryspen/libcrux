@@ -5,10 +5,10 @@
  *
  * This code was generated with the following revisions:
  * Charon: 92c93e1cb1aa299c44eb039374098c8dd598c640
- * Eurydice: 0b834617366280f902ccc302d8920f2d508fba45
- * Karamel: 254e099bd586b17461845f6b0cab44c3ef5080e9
- * F*: 71d8221589d4d438af3706d89cb653cf53e18aab
- * Libcrux: 3820cfd1cfca2935e0c8da6a75c5a64ba0911e58
+ * Eurydice: 1a15deb0a4af5c10c90c974891a6300b57adef8b
+ * Karamel: 80f5435f2fc505973c469a4afcc8d875cddd0d8b
+ * F*: 5643e656b989aca7629723653a2570c7df6252b9-dirty
+ * Libcrux: fe3ca80b7c5cb694a7f23fb59868bb8cd3a04221
  */
 
 #include "internal/libcrux_core.h"
@@ -493,6 +493,25 @@ Eurydice_slice_uint8_t_x4 libcrux_ml_kem_types_unpack_private_key_1f(
 }
 
 /**
+ Pad the `slice` with `0`s at the end.
+*/
+/**
+A monomorphic instance of libcrux_ml_kem.utils.into_padded_array
+with const generics
+- LEN= 32
+*/
+Eurydice_arr_60 libcrux_ml_kem_utils_into_padded_array_9e(
+    Eurydice_slice slice) {
+  Eurydice_arr_60 out = {.data = {0U}};
+  Eurydice_arr_60 *uu____0 = &out;
+  Eurydice_slice_copy(
+      Eurydice_array_to_subslice3(
+          uu____0, (size_t)0U, Eurydice_slice_len(slice, uint8_t), uint8_t *),
+      slice, uint8_t);
+  return out;
+}
+
+/**
 This function found in impl {core::default::Default for
 libcrux_ml_kem::types::MlKemPrivateKey<SIZE>}
 */
@@ -548,6 +567,25 @@ Eurydice_arr_ea libcrux_ml_kem_types_from_77_28(Eurydice_arr_ea value) {
 }
 
 /**
+This function found in impl {core::result::Result<T, E>[TraitClause@0,
+TraitClause@1]}
+*/
+/**
+A monomorphic instance of core.result.unwrap_26
+with types Eurydice_arr uint8_t[[$32size_t]], core_array_TryFromSliceError
+
+*/
+Eurydice_arr_60 core_result_unwrap_26_07(core_result_Result_95 self) {
+  if (self.tag == core_result_Ok) {
+    return self.val.case_Ok;
+  } else {
+    KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__,
+                      "unwrap not Ok");
+    KRML_HOST_EXIT(255U);
+  }
+}
+
+/**
 This function found in impl {core::convert::From<@Array<u8, SIZE>> for
 libcrux_ml_kem::types::MlKemCiphertext<SIZE>}
 */
@@ -598,6 +636,44 @@ uint8_t libcrux_ml_kem_utils_prf_input_inc_e0(Eurydice_arr_46 *prf_inputs,
 }
 
 /**
+ Pad the `slice` with `0`s at the end.
+*/
+/**
+A monomorphic instance of libcrux_ml_kem.utils.into_padded_array
+with const generics
+- LEN= 33
+*/
+Eurydice_arr_3e libcrux_ml_kem_utils_into_padded_array_c8(
+    Eurydice_slice slice) {
+  Eurydice_arr_3e out = {.data = {0U}};
+  Eurydice_arr_3e *uu____0 = &out;
+  Eurydice_slice_copy(
+      Eurydice_array_to_subslice3(
+          uu____0, (size_t)0U, Eurydice_slice_len(slice, uint8_t), uint8_t *),
+      slice, uint8_t);
+  return out;
+}
+
+/**
+ Pad the `slice` with `0`s at the end.
+*/
+/**
+A monomorphic instance of libcrux_ml_kem.utils.into_padded_array
+with const generics
+- LEN= 34
+*/
+Eurydice_arr_480 libcrux_ml_kem_utils_into_padded_array_b6(
+    Eurydice_slice slice) {
+  Eurydice_arr_480 out = {.data = {0U}};
+  Eurydice_arr_480 *uu____0 = &out;
+  Eurydice_slice_copy(
+      Eurydice_array_to_subslice3(
+          uu____0, (size_t)0U, Eurydice_slice_len(slice, uint8_t), uint8_t *),
+      slice, uint8_t);
+  return out;
+}
+
+/**
 This function found in impl {core::convert::AsRef<@Slice<u8>> for
 libcrux_ml_kem::types::MlKemCiphertext<SIZE>}
 */
@@ -618,10 +694,29 @@ A monomorphic instance of libcrux_ml_kem.utils.into_padded_array
 with const generics
 - LEN= 1120
 */
-Eurydice_arr_480 libcrux_ml_kem_utils_into_padded_array_15(
+Eurydice_arr_48 libcrux_ml_kem_utils_into_padded_array_15(
     Eurydice_slice slice) {
-  Eurydice_arr_480 out = {.data = {0U}};
-  Eurydice_arr_480 *uu____0 = &out;
+  Eurydice_arr_48 out = {.data = {0U}};
+  Eurydice_arr_48 *uu____0 = &out;
+  Eurydice_slice_copy(
+      Eurydice_array_to_subslice3(
+          uu____0, (size_t)0U, Eurydice_slice_len(slice, uint8_t), uint8_t *),
+      slice, uint8_t);
+  return out;
+}
+
+/**
+ Pad the `slice` with `0`s at the end.
+*/
+/**
+A monomorphic instance of libcrux_ml_kem.utils.into_padded_array
+with const generics
+- LEN= 64
+*/
+libcrux_sha3_Sha3_512Digest libcrux_ml_kem_utils_into_padded_array_24(
+    Eurydice_slice slice) {
+  libcrux_sha3_Sha3_512Digest out = {.data = {0U}};
+  libcrux_sha3_Sha3_512Digest *uu____0 = &out;
   Eurydice_slice_copy(
       Eurydice_array_to_subslice3(
           uu____0, (size_t)0U, Eurydice_slice_len(slice, uint8_t), uint8_t *),
@@ -660,101 +755,6 @@ Eurydice_slice_uint8_t_x4 libcrux_ml_kem_types_unpack_private_key_b4(
                                                .snd = ind_cpa_public_key,
                                                .thd = ind_cpa_public_key_hash,
                                                .f3 = implicit_rejection_value});
-}
-
-/**
- Pad the `slice` with `0`s at the end.
-*/
-/**
-A monomorphic instance of libcrux_ml_kem.utils.into_padded_array
-with const generics
-- LEN= 32
-*/
-Eurydice_arr_60 libcrux_ml_kem_utils_into_padded_array_9e(
-    Eurydice_slice slice) {
-  Eurydice_arr_60 out = {.data = {0U}};
-  Eurydice_arr_60 *uu____0 = &out;
-  Eurydice_slice_copy(
-      Eurydice_array_to_subslice3(
-          uu____0, (size_t)0U, Eurydice_slice_len(slice, uint8_t), uint8_t *),
-      slice, uint8_t);
-  return out;
-}
-
-/**
-This function found in impl {core::result::Result<T, E>[TraitClause@0,
-TraitClause@1]}
-*/
-/**
-A monomorphic instance of core.result.unwrap_26
-with types Eurydice_arr uint8_t[[$32size_t]], core_array_TryFromSliceError
-
-*/
-Eurydice_arr_60 core_result_unwrap_26_07(core_result_Result_95 self) {
-  if (self.tag == core_result_Ok) {
-    return self.val.case_Ok;
-  } else {
-    KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__,
-                      "unwrap not Ok");
-    KRML_HOST_EXIT(255U);
-  }
-}
-
-/**
- Pad the `slice` with `0`s at the end.
-*/
-/**
-A monomorphic instance of libcrux_ml_kem.utils.into_padded_array
-with const generics
-- LEN= 33
-*/
-Eurydice_arr_3e libcrux_ml_kem_utils_into_padded_array_c8(
-    Eurydice_slice slice) {
-  Eurydice_arr_3e out = {.data = {0U}};
-  Eurydice_arr_3e *uu____0 = &out;
-  Eurydice_slice_copy(
-      Eurydice_array_to_subslice3(
-          uu____0, (size_t)0U, Eurydice_slice_len(slice, uint8_t), uint8_t *),
-      slice, uint8_t);
-  return out;
-}
-
-/**
- Pad the `slice` with `0`s at the end.
-*/
-/**
-A monomorphic instance of libcrux_ml_kem.utils.into_padded_array
-with const generics
-- LEN= 34
-*/
-Eurydice_arr_48 libcrux_ml_kem_utils_into_padded_array_b6(
-    Eurydice_slice slice) {
-  Eurydice_arr_48 out = {.data = {0U}};
-  Eurydice_arr_48 *uu____0 = &out;
-  Eurydice_slice_copy(
-      Eurydice_array_to_subslice3(
-          uu____0, (size_t)0U, Eurydice_slice_len(slice, uint8_t), uint8_t *),
-      slice, uint8_t);
-  return out;
-}
-
-/**
- Pad the `slice` with `0`s at the end.
-*/
-/**
-A monomorphic instance of libcrux_ml_kem.utils.into_padded_array
-with const generics
-- LEN= 64
-*/
-libcrux_sha3_Sha3_512Digest libcrux_ml_kem_utils_into_padded_array_24(
-    Eurydice_slice slice) {
-  libcrux_sha3_Sha3_512Digest out = {.data = {0U}};
-  libcrux_sha3_Sha3_512Digest *uu____0 = &out;
-  Eurydice_slice_copy(
-      Eurydice_array_to_subslice3(
-          uu____0, (size_t)0U, Eurydice_slice_len(slice, uint8_t), uint8_t *),
-      slice, uint8_t);
-  return out;
 }
 
 /**

@@ -155,8 +155,8 @@ typedef struct {
 #define core_array___Array_T__N___as_slice(len_, ptr_, t, _ret_t) \
   KRML_CLITERAL(Eurydice_slice) { ptr_, len_ }
 
-#define core_array__core__clone__Clone_for__Array_T__N___clone(                \
-    len, src, elem_type, _ret_t)                                               \
+#define core_array__core__clone__Clone_for__Array_T__N___clone( \
+    len, src, elem_type, _ret_t)                                \
   (*(src))
 #define TryFromSliceError uint8_t
 #define core_array_TryFromSliceError uint8_t

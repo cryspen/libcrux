@@ -5,10 +5,10 @@
  *
  * This code was generated with the following revisions:
  * Charon: 92c93e1cb1aa299c44eb039374098c8dd598c640
- * Eurydice: 0b834617366280f902ccc302d8920f2d508fba45
- * Karamel: 254e099bd586b17461845f6b0cab44c3ef5080e9
- * F*: 71d8221589d4d438af3706d89cb653cf53e18aab
- * Libcrux: 3820cfd1cfca2935e0c8da6a75c5a64ba0911e58
+ * Eurydice: 1a15deb0a4af5c10c90c974891a6300b57adef8b
+ * Karamel: 80f5435f2fc505973c469a4afcc8d875cddd0d8b
+ * F*: 5643e656b989aca7629723653a2570c7df6252b9-dirty
+ * Libcrux: fe3ca80b7c5cb694a7f23fb59868bb8cd3a04221
  */
 
 #include "internal/libcrux_mlkem1024_portable.h"
@@ -42,7 +42,7 @@ libcrux_ml_kem.ind_cca.instantiations.portable.decapsulate with const generics
 */
 static Eurydice_arr_60 decapsulate_e0(Eurydice_arr_17 *private_key,
                                       Eurydice_arr_00 *ciphertext) {
-  return libcrux_ml_kem_ind_cca_decapsulate_621(private_key, ciphertext);
+  return libcrux_ml_kem_ind_cca_decapsulate_620(private_key, ciphertext);
 }
 
 /**
@@ -76,7 +76,7 @@ libcrux_ml_kem.ind_cca.instantiations.portable.encapsulate with const generics
 */
 static tuple_2b encapsulate_8f(Eurydice_arr_00 *public_key,
                                Eurydice_arr_60 *randomness) {
-  return libcrux_ml_kem_ind_cca_encapsulate_ca1(public_key, randomness);
+  return libcrux_ml_kem_ind_cca_encapsulate_ca0(public_key, randomness);
 }
 
 /**
@@ -107,7 +107,7 @@ generics
 */
 static libcrux_ml_kem_mlkem1024_MlKem1024KeyPair generate_keypair_b4(
     libcrux_sha3_Sha3_512Digest *randomness) {
-  return libcrux_ml_kem_ind_cca_generate_keypair_151(randomness);
+  return libcrux_ml_kem_ind_cca_generate_keypair_150(randomness);
 }
 
 /**
@@ -224,7 +224,7 @@ static KRML_MUSTINLINE Eurydice_arr_60 decapsulate_e00(
     libcrux_ml_kem_mlkem1024_portable_unpacked_MlKem1024KeyPairUnpacked
         *key_pair,
     Eurydice_arr_00 *ciphertext) {
-  return libcrux_ml_kem_ind_cca_unpacked_decapsulate_511(key_pair, ciphertext);
+  return libcrux_ml_kem_ind_cca_unpacked_decapsulate_510(key_pair, ciphertext);
 }
 
 /**
@@ -265,7 +265,7 @@ generics
 static KRML_MUSTINLINE tuple_2b encapsulate_8f0(
     libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_af *public_key,
     Eurydice_arr_60 *randomness) {
-  return libcrux_ml_kem_ind_cca_unpacked_encapsulate_0c1(public_key,
+  return libcrux_ml_kem_ind_cca_unpacked_encapsulate_0c0(public_key,
                                                          randomness);
 }
 
@@ -302,7 +302,7 @@ const generics
 static KRML_MUSTINLINE void generate_keypair_b40(
     libcrux_sha3_Sha3_512Digest randomness,
     libcrux_ml_kem_mlkem1024_portable_unpacked_MlKem1024KeyPairUnpacked *out) {
-  libcrux_ml_kem_ind_cca_unpacked_generate_keypair_151(randomness, out);
+  libcrux_ml_kem_ind_cca_unpacked_generate_keypair_150(randomness, out);
 }
 
 /**
