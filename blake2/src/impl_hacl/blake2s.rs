@@ -8,7 +8,10 @@ use libcrux_hacl_rs::streaming_types::error_code;
 use crate::hacl::hash_blake2b::{blake2_params, index, params_and_key};
 use crate::hacl::hash_blake2s::{digest, malloc_raw, reset, reset_with_key, state_t, update0};
 
-use super::{ConstDigestLen, ConstKeyLen, ConstKeyLenConstDigestLen, Dynamic, Error};
+use super::{
+    ConstDigestLen, ConstKeyLen, ConstKeyLenConstDigestLen, Dynamic, Error, LengthBounds,
+    SupportsKeyLen, SupportsOutLen,
+};
 
 const PARAM_LEN: usize = 8;
 const MAX_LEN: usize = 32;
@@ -71,11 +74,10 @@ impl<'a> Blake2sBuilder<'a, &'a ()> {
     /// Constructs the [`Blake2s`] hasher for unkeyed hashes and constant digest length.
     pub fn build_const_digest_len<const OUT_LEN: usize>(
         self,
-    ) -> Result<Blake2s<ConstKeyLenConstDigestLen<0, OUT_LEN>>, Error> {
-        if OUT_LEN < 1 || OUT_LEN > MAX_LEN {
-            return Err(Error::InvalidDigestLength);
-        }
-
+    ) -> Blake2s<ConstKeyLenConstDigestLen<0, OUT_LEN>>
+    where
+        Blake2s<LengthBounds>: SupportsOutLen<OUT_LEN>,
+    {
         let digest_length = OUT_LEN as u8;
         let key_length = 0;
 
@@ -103,26 +105,25 @@ impl<'a> Blake2sBuilder<'a, &'a ()> {
             snd: &[],
         };
 
-        Ok(Blake2s {
+        Blake2s {
             state: malloc_raw(kk, key),
             _phantom: PhantomData,
-        })
+        }
     }
 }
 
-impl<'a, const KEY_LEN: usize> Blake2sBuilder<'a, &'a [u8; KEY_LEN]> {
+impl<'a, const KEY_LEN: usize> Blake2sBuilder<'a, &'a [u8; KEY_LEN]>
+where
+    Blake2s<LengthBounds>: SupportsKeyLen<KEY_LEN>,
+{
     /// Creates the builder for an keyed hasher for keys where the length is known at compile
     /// time.
-    pub fn new_keyed_const(key: &'a [u8; KEY_LEN]) -> Result<Self, Error> {
-        if KEY_LEN > MAX_LEN {
-            return Err(Error::InvalidKeyLength);
-        }
-
-        Ok(Self {
+    pub fn new_keyed_const(key: &'a [u8; KEY_LEN]) -> Self {
+        Self {
             key,
             personal: &[0; PARAM_LEN],
             salt: &[0; PARAM_LEN],
-        })
+        }
     }
 
     /// Constructs the [`Blake2s`] hasher for hashes with constant key length and dynamic digest length.
@@ -170,11 +171,10 @@ impl<'a, const KEY_LEN: usize> Blake2sBuilder<'a, &'a [u8; KEY_LEN]> {
     /// Constructs the [`Blake2s`] hasher for hashes with constant key length and constant digest length.
     pub fn build_const_digest_len<const OUT_LEN: usize>(
         self,
-    ) -> Result<Blake2s<ConstKeyLenConstDigestLen<KEY_LEN, OUT_LEN>>, Error> {
-        if OUT_LEN < 1 || OUT_LEN > MAX_LEN {
-            return Err(Error::InvalidDigestLength);
-        }
-
+    ) -> Blake2s<ConstKeyLenConstDigestLen<KEY_LEN, OUT_LEN>>
+    where
+        Blake2s<LengthBounds>: SupportsOutLen<OUT_LEN>,
+    {
         // These are safe because they both are at most 32, enforced either above or in the
         // constructor.
         let key_length = KEY_LEN as u8;
@@ -204,10 +204,10 @@ impl<'a, const KEY_LEN: usize> Blake2sBuilder<'a, &'a [u8; KEY_LEN]> {
             snd: self.key,
         };
 
-        Ok(Blake2s::<ConstKeyLenConstDigestLen<KEY_LEN, OUT_LEN>> {
+        Blake2s::<ConstKeyLenConstDigestLen<KEY_LEN, OUT_LEN>> {
             state: malloc_raw(kk, key),
             _phantom: PhantomData,
-        })
+        }
     }
 }
 
@@ -266,13 +266,10 @@ impl<'a> Blake2sBuilder<'a, &'a [u8]> {
     }
 
     /// Constructs the [`Blake2s`] hasher with dynamic key length and constant digest length.
-    pub fn build_const_digest_len<const OUT_LEN: usize>(
-        self,
-    ) -> Result<Blake2s<ConstDigestLen<OUT_LEN>>, Error> {
-        if OUT_LEN < 1 || OUT_LEN > MAX_LEN {
-            return Err(Error::InvalidDigestLength);
-        }
-
+    pub fn build_const_digest_len<const OUT_LEN: usize>(self) -> Blake2s<ConstDigestLen<OUT_LEN>>
+    where
+        Blake2s<LengthBounds>: SupportsOutLen<OUT_LEN>,
+    {
         // these are safe because they both are at most 32
         let key_length = self.key.len() as u8;
         let digest_length = OUT_LEN as u8;
@@ -301,10 +298,10 @@ impl<'a> Blake2sBuilder<'a, &'a [u8]> {
             snd: self.key,
         };
 
-        Ok(Blake2s {
+        Blake2s {
             state: malloc_raw(kk, key),
             _phantom: PhantomData,
-        })
+        }
     }
 }
 
