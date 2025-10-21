@@ -207,9 +207,16 @@ pub(crate) fn compute_hint_post(
     gamma2: i32,
     hint: &SIMDContent,
     future_hint: &SIMDContent,
-    return_value: usize,
-) -> bool {
-    return_value <= 8
+    result: usize,
+) -> Prop {
+    hax_lib::fstar::prop!(
+        r#"
+    (forall i. i < 8 ==> (v (Seq.index future_hint i) =
+        Spec.MLDSA.Math.compute_one_hint (v (Seq.index $low i))
+            (v (Seq.index high i)) (v $gamma2)))
+    /\ v $result == Spec.MLDSA.Math.compute_hint future_hint
+    /\ v $result <= 8 "#
+    )
 }
 
 pub(crate) fn use_hint_pre(gamma2: Gamma2, simd_unit: &SIMDContent, hint: &SIMDContent) -> Prop {
