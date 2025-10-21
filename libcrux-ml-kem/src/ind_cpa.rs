@@ -136,7 +136,7 @@ pub(crate) fn serialize_vector<const K: usize, Vector: Operations>(
             });
 
 
-            serialize_uncompressed_ring_element(re, scratch, &mut out[i * BYTES_PER_RING_ELEMENT..(i + 1) * BYTES_PER_RING_ELEMENT]);
+            serialize_uncompressed_ring_element(&re, scratch, &mut out[i * BYTES_PER_RING_ELEMENT..(i + 1) * BYTES_PER_RING_ELEMENT]);
 
             hax_lib::fstar!(r#"
                 let lemma_aux (j: nat{ j < v $i }) : Lemma
