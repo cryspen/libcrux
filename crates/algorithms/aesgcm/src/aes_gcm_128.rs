@@ -7,8 +7,6 @@ use crate::{
     DecryptError, NONCE_LEN, TAG_LEN,
 };
 
-// NOTE: hidden here in favor of being re-exported at crate root
-#[doc(hidden)]
 /// AES-GCM 128 key length.
 pub const KEY_LEN: usize = 16;
 pub(crate) const GCM_KEY_LEN: usize = 16;
