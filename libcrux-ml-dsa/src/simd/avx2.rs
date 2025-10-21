@@ -81,10 +81,9 @@ impl Operations for AVX2SIMDUnit {
     }
 
     #[inline(always)]
-    #[hax_lib::requires(true)]
-    #[hax_lib::ensures(|result| false)]
+    #[hax_lib::requires(specs::compute_hint_pre(&low.repr(), &high.repr(), gamma2, &hint.repr()))]
+    #[hax_lib::ensures(|result| specs::compute_hint_post(&low.repr(), &high.repr(), gamma2, &hint.repr(), &future(hint).repr(), result))]
     fn compute_hint(low: &Self, high: &Self, gamma2: i32, hint: &mut Self) -> usize {
-        hax_lib::assume!(false);
         arithmetic::compute_hint(&low.value, &high.value, gamma2, &mut hint.value)
     }
 

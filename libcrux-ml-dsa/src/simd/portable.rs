@@ -70,15 +70,15 @@ impl Operations for Coefficients {
         arithmetic::decompose(gamma2, simd_unit, low, high)
     }
 
-    #[hax_lib::requires(true)]
-    #[hax_lib::ensures(|result| false)]
+    #[hax_lib::requires(specs::compute_hint_pre(&low.repr(), &high.repr(), gamma2, &hint.repr()))]
+    #[hax_lib::ensures(|result| specs::compute_hint_post(&low.repr(), &high.repr(), gamma2, &hint.repr(), &future(hint).repr(), result))]
     fn compute_hint(
         low: &Coefficients,
         high: &Coefficients,
         gamma2: i32,
         hint: &mut Coefficients,
     ) -> usize {
-        hax_lib::assume!(false);
+        hax_lib::assume!(false); // TASK1
         arithmetic::compute_hint(low, high, gamma2, hint)
     }
 
