@@ -34,7 +34,7 @@
 //! let key = Key::from(key_bytes);
 //! let nonce = Nonce::from(nonce_bytes);
 //!
-//! key.encrypt(&mut ciphertext, &mut tag, &nonce, &[/* //! no aad */], msg)
+//! key.encrypt(&mut ciphertext, &mut tag, &nonce, &[/* no aad */], msg)
 //!     .expect("Encryption error");
 //!
 //! // Ciphertext and tag contain encrypted data
