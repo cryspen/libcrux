@@ -94,7 +94,7 @@ files:
         - [ "Eurydice_slice uint8_t_x4" ]
         - [ "Eurydice_slice uint8_t_x2" ]
 
-  # MLKEM-768
+  # MLKEM AVX
 
   - name: libcrux_mlkem768_avx2
     inline_static: true
@@ -123,6 +123,36 @@ files:
         - [libcrux_ml_kem, hash_functions, avx2, "*"]
     internal:
       - [libcrux_ml_kem, mlkem768, avx2, unpacked]
+
+  - name: libcrux_mlkem1024_avx2
+    inline_static: true
+    target: "avx2"
+    include_in_h:
+      - '"intrinsics/libcrux_intrinsics_avx2.h"'
+    api:
+      patterns:
+        - [libcrux_ml_kem, mlkem1024, avx2, "*"]
+      monomorphizations_of:
+        - [libcrux_ml_kem, mlkem1024, avx2, "*"]
+    private:
+      patterns:  
+        - [libcrux_ml_kem, vector, rej_sample_table, "*"]
+        - [libcrux_ml_kem, vector, avx2, "*"]
+        - [libcrux_ml_kem, hash_functions, avx2, "*"]
+        - [libcrux_ml_kem, mlkem1024, avx2, "*"]
+        - [libcrux_ml_kem, ind_cca, instantiations, avx2, "*"]
+      monomorphizations_of:
+        - [libcrux_ml_kem, vector, avx2, "*"]
+        - [libcrux_ml_kem, hash_functions, avx2, "*"]
+        - [libcrux_ml_kem, mlkem1024, avx2, "*"]
+        - [libcrux_ml_kem, ind_cca, instantiations, avx2, "*"]
+      monomorphizations_using:
+        - [libcrux_ml_kem, vector, avx2, "*"]
+        - [libcrux_ml_kem, hash_functions, avx2, "*"]
+    internal:
+      - [libcrux_ml_kem, mlkem1024, avx2, unpacked]
+
+  # MLKEM Portable
 
   - name: libcrux_mlkem768_portable
     inline_static: true
@@ -154,6 +184,37 @@ files:
         - [libcrux_ml_kem, ind_cca, instantiations, portable, "*"]
     internal:
       - [libcrux_ml_kem, mlkem768, portable, unpacked]
+
+  - name: libcrux_mlkem1024_portable
+    inline_static: true
+    api:
+      patterns:
+        - [libcrux_ml_kem, mlkem1024, "*"]
+      monomorphizations_of:
+        - [libcrux_ml_kem, mlkem1024, portable]
+    private:
+      exact:
+        - [ libcrux_ml_kem, variant, MlKem ]
+        - [ libcrux_ml_kem, variant, Kyber ]
+      patterns:
+        - [libcrux_ml_kem, "*"]
+        - [libcrux_ml_kem, vector, "*"]
+        - [libcrux_ml_kem, hash_functions, portable, "*"]
+        - [libcrux_ml_kem, mlkem1024, portable, "*"]
+        - [libcrux_ml_kem, ind_cca, instantiations, portable, "*"]
+      monomorphizations_of:
+        - [libcrux_ml_kem, polynomial, "*" ]
+        - [libcrux_ml_kem, vector, "*"]
+        - [libcrux_ml_kem, hash_functions, portable, "*"]
+        - [libcrux_ml_kem, mlkem1024, portable]
+        - [libcrux_ml_kem, ind_cca, instantiations, portable, "*"]
+      monomorphizations_using:
+        - [libcrux_ml_kem, polynomial, "*" ]
+        - [libcrux_ml_kem, vector, "*"]
+        - [libcrux_ml_kem, hash_functions, portable, "*"]
+        - [libcrux_ml_kem, ind_cca, instantiations, portable, "*"]
+    internal:
+      - [libcrux_ml_kem, mlkem1024, portable, unpacked]
 
   # MLKEM: catch-all for things that have not matched earlier
   - name: libcrux_mlkem_core

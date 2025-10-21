@@ -45,6 +45,13 @@ FetchContent_Declare(json
 )
 FetchContent_MakeAvailable(json)
 
+add_executable(ml_kem_test1024
+    ${PROJECT_SOURCE_DIR}/tests/mlkem1024.cc
+)
+target_link_libraries(ml_kem_test1024 PRIVATE
+    gtest_main
+    nlohmann_json::nlohmann_json
+)
 add_executable(ml_kem_test768
     ${PROJECT_SOURCE_DIR}/tests/mlkem768.cc
 )
