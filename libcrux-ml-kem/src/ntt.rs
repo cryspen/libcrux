@@ -206,9 +206,10 @@ fn ntt_layer_int_vec_step<Vector: Operations>(
     scratch: &mut Vector,
     zeta_r: i16,
 ) {
-    *scratch = coefficients[b];
+    // XXX: Making the clones explicit, since we would like to drop `Vector: Copy` in the future.
+    *scratch = coefficients[b].clone();
     montgomery_multiply_fe::<Vector>(scratch, zeta_r);
-    coefficients[b] = coefficients[a];
+    coefficients[b] = coefficients[a].clone();
     Vector::add(&mut coefficients[a], scratch);
     Vector::sub(&mut coefficients[b], scratch);
 }
@@ -292,9 +293,10 @@ pub(crate) fn ntt_at_layer_7<Vector: Operations>(
             )
         });
         hax_lib::fstar!(r#"reveal_opaque (`%ntt_layer_7_pre) (ntt_layer_7_pre #$:Vector)"#);
-        *scratch = re.coefficients[j + step];
+        // XXX: Making the clones explicit, since we would like to drop `Vector: Copy` in the future.
+        *scratch = re.coefficients[j + step].clone();
         Vector::multiply_by_constant(scratch, -1600);
-        re.coefficients[j + step] = re.coefficients[j];
+        re.coefficients[j + step] = re.coefficients[j].clone();
         Vector::add(&mut re.coefficients[j], scratch);
         Vector::sub(&mut re.coefficients[j + step], scratch);
     }

@@ -170,7 +170,7 @@ pub(crate) fn generate_keypair<
             ETA1,
             ETA1_RANDOMNESS_SIZE,
             PRF_OUTPUT_SIZE1,
-        >(&randomness)
+        >(randomness)
     } else {
         instantiations::portable::generate_keypair::<
             K,
@@ -181,7 +181,7 @@ pub(crate) fn generate_keypair<
             ETA1,
             ETA1_RANDOMNESS_SIZE,
             PRF_OUTPUT_SIZE1,
-        >(&randomness)
+        >(randomness)
     }
 }
 
@@ -339,7 +339,7 @@ pub(crate) fn encapsulate<
             ETA2_RANDOMNESS_SIZE,
             PRF_OUTPUT_SIZE1,
             PRF_OUTPUT_SIZE2,
-        >(public_key, &randomness)
+        >(public_key, randomness)
     } else {
         instantiations::portable::encapsulate::<
             K,
@@ -358,7 +358,7 @@ pub(crate) fn encapsulate<
             ETA2_RANDOMNESS_SIZE,
             PRF_OUTPUT_SIZE1,
             PRF_OUTPUT_SIZE2,
-        >(public_key, &randomness)
+        >(public_key, randomness)
     }
 }
 

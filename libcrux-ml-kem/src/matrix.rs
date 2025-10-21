@@ -51,7 +51,7 @@ pub(crate) fn sample_matrix_A<const K: usize, Vector: Operations, Hasher: Hash>(
     debug_assert!(A_transpose.len() == K * K);
 
     for i in 0..K {
-        let mut seeds = [seed.clone(); K];
+        let mut seeds = [*seed; K];
         for j in 0..K {
             seeds[j][32] = i as u8;
             seeds[j][33] = j as u8;
@@ -70,12 +70,11 @@ pub(crate) fn sample_matrix_A<const K: usize, Vector: Operations, Hasher: Hash>(
             }
         }
     }
-    ()
 }
 
-/// The following functions compute various expressions involving
-/// vectors and matrices. The computation of these expressions has been
-/// abstracted away into these functions in order to save on loop iterations.
+// The following functions compute various expressions involving
+// vectors and matrices. The computation of these expressions has been
+// abstracted away into these functions in order to save on loop iterations.
 
 /// Compute v − InverseNTT(sᵀ ◦ NTT(u))
 #[inline(always)]
@@ -221,20 +220,4 @@ pub(crate) fn compute_As_plus_e<const K: usize, Vector: Operations>(
         }
         t_as_ntt[i].add_standard_error_reduce(&error_as_ntt[i]);
     }
-
-    // cloop! {
-    //     for (i, row) in matrix_A.iter().enumerate() {
-    //         // This may be externally provided memory. Ensure that `t_as_ntt`
-    //         // is all 0.
-    //         t_as_ntt[i] = PolynomialRingElement::<Vector>::ZERO();
-    //         cloop! {
-    //             for (j, matrix_element) in row.iter().enumerate() {
-    //                 matrix_element.ntt_multiply(&s_as_ntt[j], scratch);
-    //                 t_as_ntt[i].add_to_ring_element::<K>(scratch);
-    //             }
-    //         }
-    //         t_as_ntt[i].add_standard_error_reduce(&error_as_ntt[i]);
-    //     }
-    // };
-    ()
 }

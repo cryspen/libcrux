@@ -263,6 +263,7 @@ pub(crate) fn deserialize_4(bytes: &[u8], out: &mut Vec256) {
     ))]
     #[inline(always)]
     #[hax_lib::fstar::before(r#"[@@"opaque_to_smt"]"#)]
+    #[allow(clippy::too_many_arguments)]
     fn deserialize_4_u8s(b0: u8, b1: u8, b2: u8, b3: u8, b4: u8, b5: u8, b6: u8, b7: u8) -> Vec256 {
         deserialize_4_i16s(
             b0 as i16, b1 as i16, b2 as i16, b3 as i16, b4 as i16, b5 as i16, b6 as i16, b7 as i16,
@@ -288,6 +289,7 @@ pub(crate) fn deserialize_4(bytes: &[u8], out: &mut Vec256) {
     ))]
     #[inline(always)]
     #[hax_lib::fstar::before(r#"[@@"opaque_to_smt"]"#)]
+    #[allow(clippy::too_many_arguments)]
     fn deserialize_4_i16s(
         b0: i16,
         b1: i16,

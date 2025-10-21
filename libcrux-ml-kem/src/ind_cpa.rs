@@ -36,7 +36,7 @@ pub(crate) mod unpacked {
     impl<const K: usize, Vector: Operations> Default for IndCpaPrivateKeyUnpacked<K, Vector> {
         fn default() -> Self {
             Self {
-                secret_as_ntt: [PolynomialRingElement::<Vector>::ZERO(); K],
+                secret_as_ntt: core::array::from_fn(|_| PolynomialRingElement::<Vector>::ZERO()),
             }
         }
     }
@@ -58,9 +58,9 @@ pub(crate) mod unpacked {
     {
         fn default() -> Self {
             Self {
-                t_as_ntt: [PolynomialRingElement::<Vector>::ZERO(); K],
+                t_as_ntt: core::array::from_fn(|_| PolynomialRingElement::<Vector>::ZERO()),
                 seed_for_A: [0u8; 32],
-                A: [PolynomialRingElement::<Vector>::ZERO(); K_SQUARED],
+                A: core::array::from_fn(|_| PolynomialRingElement::<Vector>::ZERO()),
             }
         }
     }
@@ -136,7 +136,7 @@ pub(crate) fn serialize_vector<const K: usize, Vector: Operations>(
             });
 
 
-            serialize_uncompressed_ring_element(&re, scratch, &mut out[i * BYTES_PER_RING_ELEMENT..(i + 1) * BYTES_PER_RING_ELEMENT]);
+            serialize_uncompressed_ring_element(re, scratch, &mut out[i * BYTES_PER_RING_ELEMENT..(i + 1) * BYTES_PER_RING_ELEMENT]);
 
             hax_lib::fstar!(r#"
                 let lemma_aux (j: nat{ j < v $i }) : Lemma
@@ -252,7 +252,7 @@ fn sample_ring_element_cbd<
     error_1: &mut [PolynomialRingElement<Vector>],
     sample_buffer: &mut [i16; 256],
 ) -> u8 {
-    let mut prf_inputs = [prf_input.clone(); K];
+    let mut prf_inputs = [*prf_input; K];
     // See https://github.com/hacspec/hax/issues/1167
     #[cfg(hax)]
     let _domain_separator_init = domain_separator;
@@ -377,7 +377,7 @@ fn sample_vector_cbd_then_ntt<
     mut domain_separator: u8,
     scratch: &mut Vector,
 ) -> u8 {
-    let mut prf_inputs = [prf_input.clone(); K];
+    let mut prf_inputs = [*prf_input; K];
 
     #[cfg(hax)]
     let _domain_separator_init = domain_separator;

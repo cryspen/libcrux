@@ -184,6 +184,7 @@ pub(crate) fn select_shared_secret_in_constant_time(
     return select_ct(lhs, rhs, selector, out);
 
     #[cfg(not(eurydice))]
+    #[allow(clippy::unit_arg)]
     core::hint::black_box(select_ct(lhs, rhs, selector, out))
 }
 

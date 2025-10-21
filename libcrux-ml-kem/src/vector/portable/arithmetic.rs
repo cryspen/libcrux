@@ -203,7 +203,7 @@ pub(crate) fn shift_right<const SHIFT_BY: i32>(vec: &mut PortableVector) {
             )
         });
 
-        vec.elements[i] = vec.elements[i] >> SHIFT_BY;
+        vec.elements[i] >>= SHIFT_BY;
     }
 
     hax_lib::fstar!(
@@ -505,6 +505,7 @@ pub(crate) fn montgomery_multiply_by_constant(vec: &mut PortableVector, c: I16) 
                                         (v y >= 0 /\ v y <= 3328 /\ (v y % 3329 == v x % 3329)))"#))]
 #[inline(always)]
 pub(crate) fn to_unsigned_representative(mut a: PortableVector) -> PortableVector {
+    // XXX: Making the clone explicit, since we would like to drop `Vector: Copy` in the future.
     let mut t = a.clone();
     shift_right::<15>(&mut t);
 

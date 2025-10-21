@@ -117,7 +117,7 @@ pub(crate) fn compress_ciphertext_coefficient(coefficient_bits: u8, fe: U16) -> 
     // This has to be constant time due to:
     // https://groups.google.com/a/list.nist.gov/g/pqc-forum/c/ldX0ThYJuBo/m/ovODsdY7AwAJ
     let mut compressed = (fe.as_u64()) << coefficient_bits;
-    compressed += 1664 as u64;
+    compressed += 1664;
 
     compressed *= 10_321_340;
     compressed >>= 35;
@@ -324,7 +324,7 @@ pub(crate) fn decompress_ciphertext_coefficient<const COEFFICIENT_BITS: i32>(
             v $decompressed / pow2 (v $COEFFICIENT_BITS + 1))"
         );
 
-        decompressed = decompressed >> (COEFFICIENT_BITS + 1);
+        decompressed >>= COEFFICIENT_BITS + 1;
 
         hax_lib::fstar!(
             "assert (v $decompressed < v $FIELD_MODULUS);

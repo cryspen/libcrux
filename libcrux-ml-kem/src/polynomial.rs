@@ -100,7 +100,8 @@ fn to_bytes<Vector: Operations>(re: PolynomialRingElement<Vector>, out: &mut [u8
 
     for i in 0..re.coefficients.len() {
         hax_lib::loop_invariant!(|_i: usize| out.len() == _out_len);
-        Vector::to_bytes(re.coefficients[i], &mut out[i * 32..(i + 1) * 32]);
+        // XXX: Making the clone explicit, since we would like to drop `Vector: Copy` in the future.
+        Vector::to_bytes(re.coefficients[i].clone(), &mut out[i * 32..(i + 1) * 32]);
     }
 }
 
@@ -118,7 +119,8 @@ pub(crate) fn vec_to_bytes<Vector: Operations>(
     let re_bytes = PolynomialRingElement::<Vector>::num_bytes();
     for i in 0..re.len() {
         hax_lib::loop_invariant!(|_i: usize| out.len() == _out_len);
-        PolynomialRingElement::<Vector>::to_bytes(re[i], &mut out[i * re_bytes..]);
+        // XXX: Making the clone explicit, since we would like to drop `Vector: Copy` in the future.
+        PolynomialRingElement::<Vector>::to_bytes(re[i].clone(), &mut out[i * re_bytes..]);
     }
 }
 
@@ -341,7 +343,8 @@ fn add_message_error_reduce<Vector: Operations>(
             "#
         );
 
-        *scratch = myself.coefficients[i]; // XXX: Need this?
+        // XXX: Making the clone explicit, since we would like to drop `Vector: Copy` in the future.
+        *scratch = myself.coefficients[i].clone(); // XXX: Need this?
         Vector::add(scratch, &message.coefficients[i]);
         hax_lib::fstar!("assert(is_bounded_vector 6656 ${scratch})");
 
@@ -440,7 +443,7 @@ fn add_error_reduce<Vector: Operations>(
                 (forall i. i < 16 ==> ((v (Seq.index (i0._super_6081346371236564305.f_repr ${vector}_future) i) % 3329)==
                                        (v (Seq.index (i0._super_6081346371236564305.f_repr ${vector}) i) * 1353 * 169) % 3329))"#))]
 fn to_standard_domain<T: Operations>(vector: &mut T) {
-    T::montgomery_multiply_by_constant(vector, MONTGOMERY_R_SQUARED_MOD_FIELD_MODULUS as i16);
+    T::montgomery_multiply_by_constant(vector, MONTGOMERY_R_SQUARED_MOD_FIELD_MODULUS);
 }
 
 #[inline(always)]
@@ -528,6 +531,7 @@ fn add_standard_error_reduce<Vector: Operations>(
 ///
 /// The NIST FIPS 203 standard can be found at
 /// <https://csrc.nist.gov/pubs/fips/203/ipd>.
+#[inline(always)]
 // TODO: Remove or replace with something that works and is useful for the proof.
 // #[cfg_attr(hax, hax_lib::requires(
 //     hax_lib::forall(|i:usize|
@@ -541,7 +545,6 @@ fn add_standard_error_reduce<Vector: Operations>(
 //         hax_lib::implies(i < result.coefficients.len(), ||
 //                 result.coefficients[i].abs() <= FIELD_MODULUS
 // ))))]
-#[inline(always)]
 #[hax_lib::fstar::options("--z3rlimit 300 --split_queries always")]
 #[hax_lib::requires(fstar!(r#"is_bounded_poly 3328 ${myself} /\
                               is_bounded_poly 3328 ${rhs}"#))]
@@ -570,7 +573,7 @@ impl<Vector: Operations> PolynomialRingElement<Vector> {
     #[allow(non_snake_case)]
     pub(crate) fn ZERO() -> Self {
         Self {
-            coefficients: [Vector::ZERO(); 16],
+            coefficients: core::array::from_fn(|_| Vector::ZERO()),
         }
     }
 

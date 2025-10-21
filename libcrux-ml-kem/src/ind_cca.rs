@@ -42,7 +42,6 @@ pub(crate) mod instantiations;
 pub(crate) mod incremental;
 
 /// Serialize the secret key.
-
 #[inline(always)]
 #[hax_lib::fstar::options("--z3rlimit 150")]
 #[hax_lib::requires(fstar!(r#"Spec.MLKEM.is_rank $K /\
@@ -929,7 +928,8 @@ pub(crate) mod unpacked {
                     Seq.index $ind_cpa_a (k * v $K + j))"#
                 )
             });
-            let _a_i = A;
+            #[cfg(hax)]
+            let _a_i = A.clone();
             for j in 0..K {
                 hax_lib::loop_invariant!(|j: usize| {
                     fstar!(
@@ -938,6 +938,7 @@ pub(crate) mod unpacked {
                     Seq.index $ind_cpa_a (k * v $K + v $i))"#
                     )
                 });
+                // XXX: Making the clone explicit, since we would like to drop `Vector: Copy` in the future.
                 A[i * K + j] = matrix::entry::<K, Vector>(ind_cpa_a, j, i).clone();
             }
         }

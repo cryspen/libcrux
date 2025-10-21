@@ -68,6 +68,8 @@
 #![deny(unsafe_code)]
 #![warn(rust_2018_idioms, unused_lifetimes, unused_qualifications)]
 #![allow(clippy::needless_range_loop)]
+// XXX: We make clones explicit, since we would like to drop `Vector: Copy` in the future.
+#![allow(clippy::clone_on_copy)]
 #![warn(missing_docs)]
 // Enable doc cfg feature for doc builds. They use nightly.
 #![cfg_attr(doc_cfg, feature(doc_cfg))]
