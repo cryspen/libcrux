@@ -36,7 +36,8 @@ pub(crate) mod unpacked {
     impl<const K: usize, Vector: Operations> Default for IndCpaPrivateKeyUnpacked<K, Vector> {
         fn default() -> Self {
             Self {
-                secret_as_ntt: core::array::from_fn(|_| PolynomialRingElement::<Vector>::ZERO()),
+                // XXX: This should be initialized using `core::array::from_fn`, once we no longer have `Vector: Copy`.
+                secret_as_ntt: [PolynomialRingElement::<Vector>::ZERO(); K],
             }
         }
     }
@@ -58,9 +59,10 @@ pub(crate) mod unpacked {
     {
         fn default() -> Self {
             Self {
-                t_as_ntt: core::array::from_fn(|_| PolynomialRingElement::<Vector>::ZERO()),
+                // XXX: These should be initialized using `core::array::from_fn`, once we no longer have `Vector: Copy`.
+                t_as_ntt: [PolynomialRingElement::<Vector>::ZERO(); K],
                 seed_for_A: [0u8; 32],
-                A: core::array::from_fn(|_| PolynomialRingElement::<Vector>::ZERO()),
+                A: [PolynomialRingElement::<Vector>::ZERO(); K_SQUARED],
             }
         }
     }

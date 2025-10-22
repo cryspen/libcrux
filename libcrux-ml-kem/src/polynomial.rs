@@ -577,7 +577,8 @@ impl<Vector: Operations> PolynomialRingElement<Vector> {
     #[allow(non_snake_case)]
     pub(crate) fn ZERO() -> Self {
         Self {
-            coefficients: core::array::from_fn(|_| Vector::ZERO()),
+            // XXX: This should be initialized using `core::array::from_fn`, once we no longer have `Vector: Copy`.
+            coefficients: [Vector::ZERO(); 16],
         }
     }
 
