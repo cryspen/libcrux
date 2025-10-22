@@ -12,8 +12,10 @@ use crate::{
     v (Seq.index (i0._super_6081346371236564305.f_repr ${out}_future) i) >= 0 /\
     v (Seq.index (i0._super_6081346371236564305.f_repr ${out}_future) i) < v ${crate::vector::FIELD_MODULUS}"#))]
 pub(super) fn to_unsigned_field_modulus<Vector: Operations>(a: &Vector, out: &mut Vector) {
-    // XXX: Making the clone explicit, since we would like to drop `Vector: Copy` in the future.
-    *out = Vector::to_unsigned_representative(a.clone());
+    // XXX: The following copy should be an explicit clone, since we
+    // would like to drop `Vector: Copy` in the future. Leaving as
+    // copy until a Eurydice issue is resolved.
+    *out = Vector::to_unsigned_representative(*a);
 }
 
 #[inline(always)]
@@ -197,8 +199,10 @@ fn compress_then_serialize_11<const OUT_LEN: usize, Vector: Operations>(
     debug_assert!(serialized.len() == OUT_LEN);
 
     for i in 0..VECTORS_IN_RING_ELEMENT {
-        // XXX: Making the clone explicit, since we would like to drop `Vector: Copy` in the future.
-        *scratch = Vector::to_unsigned_representative(re.coefficients[i].clone());
+        // XXX: The following copy should be an explicit clone, since we
+        // would like to drop `Vector: Copy` in the future. Leaving as
+        // copy until a Eurydice issue is resolved.
+        *scratch = Vector::to_unsigned_representative(re.coefficients[i]);
         Vector::compress::<11>(scratch);
 
         Vector::serialize_11(scratch, &mut serialized[22 * i..22 * i + 22]);
@@ -268,8 +272,10 @@ fn compress_then_serialize_5<Vector: Operations>(
     scratch: &mut Vector,
 ) {
     for i in 0..VECTORS_IN_RING_ELEMENT {
-        // XXX: Making the clone explicit, since we would like to drop `Vector: Copy` in the future.
-        *scratch = Vector::to_unsigned_representative(re.coefficients[i].clone());
+        // XXX: The following copy should be an explicit clone, since we
+        // would like to drop `Vector: Copy` in the future. Leaving as
+        // copy until a Eurydice issue is resolved.
+        *scratch = Vector::to_unsigned_representative(re.coefficients[i]);
         Vector::compress::<5>(scratch);
 
         Vector::serialize_5(scratch, &mut serialized[10 * i..10 * i + 10]);

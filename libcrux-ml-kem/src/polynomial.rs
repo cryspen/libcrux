@@ -100,8 +100,10 @@ fn to_bytes<Vector: Operations>(re: PolynomialRingElement<Vector>, out: &mut [u8
 
     for i in 0..re.coefficients.len() {
         hax_lib::loop_invariant!(|_i: usize| out.len() == _out_len);
-        // XXX: Making the clone explicit, since we would like to drop `Vector: Copy` in the future.
-        Vector::to_bytes(re.coefficients[i].clone(), &mut out[i * 32..(i + 1) * 32]);
+        // XXX: The following copy should be an explicit clone, since we
+        // would like to drop `Vector: Copy` in the future. Leaving as
+        // copiy until a Eurydice issue is resolved.
+        Vector::to_bytes(re.coefficients[i], &mut out[i * 32..(i + 1) * 32]);
     }
 }
 
@@ -342,9 +344,11 @@ fn add_message_error_reduce<Vector: Operations>(
                  v (Seq.index (i0._super_6081346371236564305.f_repr ${message}.f_coefficients.[ i ]) j)))
             "#
         );
-
-        // XXX: Making the clone explicit, since we would like to drop `Vector: Copy` in the future.
-        *scratch = myself.coefficients[i].clone(); // XXX: Need this?
+        // XXX: The following copy should be an explicit clone, since we
+        // would like to drop `Vector: Copy` in the future. Leaving as
+        // copy until a Eurydice issue is resolved.
+        // XXX: Need this copy?
+        *scratch = myself.coefficients[i]; //.clone();
         Vector::add(scratch, &message.coefficients[i]);
         hax_lib::fstar!("assert(is_bounded_vector 6656 ${scratch})");
 
