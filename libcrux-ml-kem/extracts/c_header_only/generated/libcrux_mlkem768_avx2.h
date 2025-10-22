@@ -8,7 +8,7 @@
  * Eurydice: 2381cbc416ef2ad0b561c362c500bc84f36b6785
  * Karamel: 80f5435f2fc505973c469a4afcc8d875cddd0d8b
  * F*: unset
- * Libcrux: bccb526ae5d7c8a8845745889b8996dfe9917915
+ * Libcrux: bf73a8a7a0f119e66b105a3462265b4a2a3af63b
  */
 
 #ifndef libcrux_mlkem768_avx2_H
@@ -2214,20 +2214,6 @@ typedef struct libcrux_ml_kem_polynomial_PolynomialRingElement_f6_s {
 } libcrux_ml_kem_polynomial_PolynomialRingElement_f6;
 
 /**
-A monomorphic instance of
-libcrux_ml_kem.polynomial.{libcrux_ml_kem::polynomial::PolynomialRingElement<Vector>[TraitClause@0,␣TraitClause@1]}.ZERO.{core::ops::function::FnMut<(usize),␣Vector>␣for␣libcrux_ml_kem::polynomial::{libcrux_ml_kem::polynomial::PolynomialRingElement<Vector>[TraitClause@0,␣TraitClause@1]}::ZERO::closure<Vector>[TraitClause@0,␣TraitClause@1]}.call_mut
-with types libcrux_ml_kem_vector_avx2_SIMD256Vector
-with const generics
-
-*/
-KRML_ATTRIBUTE_TARGET("avx2")
-static inline __m256i
-libcrux_ml_kem_polynomial__libcrux_ml_kem__polynomial__PolynomialRingElement_Vector__TraitClause_0__TraitClause_1___ZERO__core__ops__function__FnMut__usize___Vector__for_libcrux_ml_kem__polynomial___libcrux_ml_kem__polynomial__PolynomialRingElement_Vector__TraitClause_0__TraitClause_1____ZERO__closure_Vector__TraitClause_0__TraitClause_1___call_mut_06(
-    void **_, size_t tupled_args) {
-  return libcrux_ml_kem_vector_avx2_ZERO_f5();
-}
-
-/**
 This function found in impl
 {libcrux_ml_kem::polynomial::PolynomialRingElement<Vector>[TraitClause@0,
 TraitClause@1]}
@@ -2242,15 +2228,11 @@ KRML_ATTRIBUTE_TARGET("avx2")
 static inline libcrux_ml_kem_polynomial_PolynomialRingElement_f6
 libcrux_ml_kem_polynomial_ZERO_d6_06(void) {
   libcrux_ml_kem_polynomial_PolynomialRingElement_f6 lit;
-  __m256i ret[16U];
+  __m256i repeat_expression[16U];
   for (size_t i = (size_t)0U; i < (size_t)16U; i++) {
-    /* original Rust expression is not an lvalue in C */
-    void *lvalue = (void *)0U;
-    ret[i] =
-        libcrux_ml_kem_polynomial__libcrux_ml_kem__polynomial__PolynomialRingElement_Vector__TraitClause_0__TraitClause_1___ZERO__core__ops__function__FnMut__usize___Vector__for_libcrux_ml_kem__polynomial___libcrux_ml_kem__polynomial__PolynomialRingElement_Vector__TraitClause_0__TraitClause_1____ZERO__closure_Vector__TraitClause_0__TraitClause_1___call_mut_06(
-            &lvalue, i);
+    repeat_expression[i] = libcrux_ml_kem_vector_avx2_ZERO_f5();
   }
-  memcpy(lit.coefficients, ret, (size_t)16U * sizeof(__m256i));
+  memcpy(lit.coefficients, repeat_expression, (size_t)16U * sizeof(__m256i));
   return lit;
 }
 
@@ -3318,36 +3300,6 @@ typedef struct libcrux_ml_kem_ind_cpa_unpacked_IndCpaPublicKeyUnpacked_c0_s {
 } libcrux_ml_kem_ind_cpa_unpacked_IndCpaPublicKeyUnpacked_c0;
 
 /**
-A monomorphic instance of
-libcrux_ml_kem.ind_cpa.unpacked.{core::default::Default␣for␣libcrux_ml_kem::ind_cpa::unpacked::IndCpaPublicKeyUnpacked<Vector,␣K,␣K_SQUARED>[TraitClause@0,␣TraitClause@1]}.default.{core::ops::function::FnMut<(usize),␣libcrux_ml_kem::polynomial::PolynomialRingElement<Vector>[TraitClause@0,␣TraitClause@1]>␣for␣libcrux_ml_kem::ind_cpa::unpacked::{core::default::Default␣for␣libcrux_ml_kem::ind_cpa::unpacked::IndCpaPublicKeyUnpacked<Vector,␣K,␣K_SQUARED>[TraitClause@0,␣TraitClause@1]}::default::closure<Vector,␣K,␣K_SQUARED>[TraitClause@0,␣TraitClause@1]}.call_mut
-with types libcrux_ml_kem_vector_avx2_SIMD256Vector
-with const generics
-- K= 3
-- K_SQUARED= 9
-*/
-KRML_ATTRIBUTE_TARGET("avx2")
-static inline libcrux_ml_kem_polynomial_PolynomialRingElement_f6
-libcrux_ml_kem_ind_cpa_unpacked__core__default__Default_for_libcrux_ml_kem__ind_cpa__unpacked__IndCpaPublicKeyUnpacked_Vector__K__K_SQUARED__TraitClause_0__TraitClause_1___default__core__ops__function__FnMut__usize___libcrux_ml_kem__polynomial__PolynomialRingElement_Vector__TraitClause_0__TraitClause_1___for_libcrux_ml_kem__ind_cpa__unpacked___core__default__Default_for_libcrux_ml_kem__ind_cpa__unpacked__IndCpaPublicKeyUnpacked_Vector__K__K_SQUARED__TraitClause_0__TraitClause_1____default__closure_Vector__K__K_SQUARED__TraitClause_0__TraitClause_1___call_mut_ed(
-    void **_, size_t tupled_args) {
-  return libcrux_ml_kem_polynomial_ZERO_d6_06();
-}
-
-/**
-A monomorphic instance of
-libcrux_ml_kem.ind_cpa.unpacked.{core::default::Default␣for␣libcrux_ml_kem::ind_cpa::unpacked::IndCpaPublicKeyUnpacked<Vector,␣K,␣K_SQUARED>[TraitClause@0,␣TraitClause@1]}.default.{core::ops::function::FnMut<(usize),␣libcrux_ml_kem::polynomial::PolynomialRingElement<Vector>[TraitClause@0,␣TraitClause@1]>␣for␣libcrux_ml_kem::ind_cpa::unpacked::{core::default::Default␣for␣libcrux_ml_kem::ind_cpa::unpacked::IndCpaPublicKeyUnpacked<Vector,␣K,␣K_SQUARED>[TraitClause@0,␣TraitClause@1]}::default::closure#1<Vector,␣K,␣K_SQUARED>[TraitClause@0,␣TraitClause@1]}.call_mut
-with types libcrux_ml_kem_vector_avx2_SIMD256Vector
-with const generics
-- K= 3
-- K_SQUARED= 9
-*/
-KRML_ATTRIBUTE_TARGET("avx2")
-static inline libcrux_ml_kem_polynomial_PolynomialRingElement_f6
-libcrux_ml_kem_ind_cpa_unpacked__core__default__Default_for_libcrux_ml_kem__ind_cpa__unpacked__IndCpaPublicKeyUnpacked_Vector__K__K_SQUARED__TraitClause_0__TraitClause_1___default__core__ops__function__FnMut__usize___libcrux_ml_kem__polynomial__PolynomialRingElement_Vector__TraitClause_0__TraitClause_1___for_libcrux_ml_kem__ind_cpa__unpacked___core__default__Default_for_libcrux_ml_kem__ind_cpa__unpacked__IndCpaPublicKeyUnpacked_Vector__K__K_SQUARED__TraitClause_0__TraitClause_1____default__closure_1_Vector__K__K_SQUARED__TraitClause_0__TraitClause_1___call_mut_ed(
-    void **_, size_t tupled_args) {
-  return libcrux_ml_kem_polynomial_ZERO_d6_06();
-}
-
-/**
 This function found in impl {core::default::Default for
 libcrux_ml_kem::ind_cpa::unpacked::IndCpaPublicKeyUnpacked<Vector, K,
 K_SQUARED>[TraitClause@0, TraitClause@1]}
@@ -3364,11 +3316,7 @@ static inline libcrux_ml_kem_ind_cpa_unpacked_IndCpaPublicKeyUnpacked_c0
 libcrux_ml_kem_ind_cpa_unpacked_default_50_ed(void) {
   libcrux_ml_kem_polynomial_PolynomialRingElement_f6 uu____0[3U];
   for (size_t i = (size_t)0U; i < (size_t)3U; i++) {
-    /* original Rust expression is not an lvalue in C */
-    void *lvalue = (void *)0U;
-    uu____0[i] =
-        libcrux_ml_kem_ind_cpa_unpacked__core__default__Default_for_libcrux_ml_kem__ind_cpa__unpacked__IndCpaPublicKeyUnpacked_Vector__K__K_SQUARED__TraitClause_0__TraitClause_1___default__core__ops__function__FnMut__usize___libcrux_ml_kem__polynomial__PolynomialRingElement_Vector__TraitClause_0__TraitClause_1___for_libcrux_ml_kem__ind_cpa__unpacked___core__default__Default_for_libcrux_ml_kem__ind_cpa__unpacked__IndCpaPublicKeyUnpacked_Vector__K__K_SQUARED__TraitClause_0__TraitClause_1____default__closure_Vector__K__K_SQUARED__TraitClause_0__TraitClause_1___call_mut_ed(
-            &lvalue, i);
+    uu____0[i] = libcrux_ml_kem_polynomial_ZERO_d6_06();
   }
   uint8_t uu____1[32U] = {0U};
   libcrux_ml_kem_ind_cpa_unpacked_IndCpaPublicKeyUnpacked_c0 lit;
@@ -3376,16 +3324,12 @@ libcrux_ml_kem_ind_cpa_unpacked_default_50_ed(void) {
       lit.t_as_ntt, uu____0,
       (size_t)3U * sizeof(libcrux_ml_kem_polynomial_PolynomialRingElement_f6));
   memcpy(lit.seed_for_A, uu____1, (size_t)32U * sizeof(uint8_t));
-  libcrux_ml_kem_polynomial_PolynomialRingElement_f6 ret[9U];
+  libcrux_ml_kem_polynomial_PolynomialRingElement_f6 repeat_expression[9U];
   for (size_t i = (size_t)0U; i < (size_t)9U; i++) {
-    /* original Rust expression is not an lvalue in C */
-    void *lvalue = (void *)0U;
-    ret[i] =
-        libcrux_ml_kem_ind_cpa_unpacked__core__default__Default_for_libcrux_ml_kem__ind_cpa__unpacked__IndCpaPublicKeyUnpacked_Vector__K__K_SQUARED__TraitClause_0__TraitClause_1___default__core__ops__function__FnMut__usize___libcrux_ml_kem__polynomial__PolynomialRingElement_Vector__TraitClause_0__TraitClause_1___for_libcrux_ml_kem__ind_cpa__unpacked___core__default__Default_for_libcrux_ml_kem__ind_cpa__unpacked__IndCpaPublicKeyUnpacked_Vector__K__K_SQUARED__TraitClause_0__TraitClause_1____default__closure_1_Vector__K__K_SQUARED__TraitClause_0__TraitClause_1___call_mut_ed(
-            &lvalue, i);
+    repeat_expression[i] = libcrux_ml_kem_polynomial_ZERO_d6_06();
   }
   memcpy(
-      lit.A, ret,
+      lit.A, repeat_expression,
       (size_t)9U * sizeof(libcrux_ml_kem_polynomial_PolynomialRingElement_f6));
   return lit;
 }
@@ -5272,20 +5216,6 @@ static inline tuple_c2 libcrux_ml_kem_mlkem768_avx2_encapsulate(
 }
 
 /**
-A monomorphic instance of
-libcrux_ml_kem.ind_cpa.unpacked.{core::default::Default␣for␣libcrux_ml_kem::ind_cpa::unpacked::IndCpaPrivateKeyUnpacked<Vector,␣K>[TraitClause@0,␣TraitClause@1]}.default.{core::ops::function::FnMut<(usize),␣libcrux_ml_kem::polynomial::PolynomialRingElement<Vector>[TraitClause@0,␣TraitClause@1]>␣for␣libcrux_ml_kem::ind_cpa::unpacked::{core::default::Default␣for␣libcrux_ml_kem::ind_cpa::unpacked::IndCpaPrivateKeyUnpacked<Vector,␣K>[TraitClause@0,␣TraitClause@1]}::default::closure<Vector,␣K>[TraitClause@0,␣TraitClause@1]}.call_mut
-with types libcrux_ml_kem_vector_avx2_SIMD256Vector
-with const generics
-- K= 3
-*/
-KRML_ATTRIBUTE_TARGET("avx2")
-static inline libcrux_ml_kem_polynomial_PolynomialRingElement_f6
-libcrux_ml_kem_ind_cpa_unpacked__core__default__Default_for_libcrux_ml_kem__ind_cpa__unpacked__IndCpaPrivateKeyUnpacked_Vector__K__TraitClause_0__TraitClause_1___default__core__ops__function__FnMut__usize___libcrux_ml_kem__polynomial__PolynomialRingElement_Vector__TraitClause_0__TraitClause_1___for_libcrux_ml_kem__ind_cpa__unpacked___core__default__Default_for_libcrux_ml_kem__ind_cpa__unpacked__IndCpaPrivateKeyUnpacked_Vector__K__TraitClause_0__TraitClause_1____default__closure_Vector__K__TraitClause_0__TraitClause_1___call_mut_ab(
-    void **_, size_t tupled_args) {
-  return libcrux_ml_kem_polynomial_ZERO_d6_06();
-}
-
-/**
 This function found in impl {core::default::Default for
 libcrux_ml_kem::ind_cpa::unpacked::IndCpaPrivateKeyUnpacked<Vector,
 K>[TraitClause@0, TraitClause@1]}
@@ -5300,16 +5230,12 @@ KRML_ATTRIBUTE_TARGET("avx2")
 static inline libcrux_ml_kem_ind_cpa_unpacked_IndCpaPrivateKeyUnpacked_63
 libcrux_ml_kem_ind_cpa_unpacked_default_70_ab(void) {
   libcrux_ml_kem_ind_cpa_unpacked_IndCpaPrivateKeyUnpacked_63 lit;
-  libcrux_ml_kem_polynomial_PolynomialRingElement_f6 ret[3U];
+  libcrux_ml_kem_polynomial_PolynomialRingElement_f6 repeat_expression[3U];
   for (size_t i = (size_t)0U; i < (size_t)3U; i++) {
-    /* original Rust expression is not an lvalue in C */
-    void *lvalue = (void *)0U;
-    ret[i] =
-        libcrux_ml_kem_ind_cpa_unpacked__core__default__Default_for_libcrux_ml_kem__ind_cpa__unpacked__IndCpaPrivateKeyUnpacked_Vector__K__TraitClause_0__TraitClause_1___default__core__ops__function__FnMut__usize___libcrux_ml_kem__polynomial__PolynomialRingElement_Vector__TraitClause_0__TraitClause_1___for_libcrux_ml_kem__ind_cpa__unpacked___core__default__Default_for_libcrux_ml_kem__ind_cpa__unpacked__IndCpaPrivateKeyUnpacked_Vector__K__TraitClause_0__TraitClause_1____default__closure_Vector__K__TraitClause_0__TraitClause_1___call_mut_ab(
-            &lvalue, i);
+    repeat_expression[i] = libcrux_ml_kem_polynomial_ZERO_d6_06();
   }
   memcpy(
-      lit.secret_as_ntt, ret,
+      lit.secret_as_ntt, repeat_expression,
       (size_t)3U * sizeof(libcrux_ml_kem_polynomial_PolynomialRingElement_f6));
   return lit;
 }
