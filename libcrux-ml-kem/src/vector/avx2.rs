@@ -1,4 +1,7 @@
-use super::traits::Operations;
+#[cfg(hax)]
+use super::traits::spec;
+use super::traits::{Operations, Repr};
+use arithmetic::{bitwise_and_with_constant, shift_right};
 pub(crate) use libcrux_intrinsics::avx2::*;
 
 mod arithmetic;
@@ -25,42 +28,37 @@ fn vec_zero() -> SIMD256Vector {
 
 #[inline(always)]
 #[hax_lib::fstar::verification_status(panic_free)]
-#[hax_lib::ensures(|result| fstar!(r#"${result} == repr ${v}"#))]
-fn vec_to_i16_array(v: SIMD256Vector) -> [i16; 16] {
-    let mut output = [0i16; 16];
-    mm256_storeu_si256_i16(&mut output, v.elements);
+#[hax_lib::requires(out.len() == 16)]
+#[hax_lib::ensures(|_| fstar!(r#"Seq.length ${out}_future == Seq.length $out /\
+                                 ${out}_future == repr ${vector}"#))]
+fn vec_to_i16_array(vector: &SIMD256Vector, out: &mut [i16]) {
+    debug_assert!(out.len() >= 16);
 
-    output
+    mm256_storeu_si256_i16(out, vector.elements);
 }
 
 #[inline(always)]
 #[hax_lib::fstar::verification_status(panic_free)]
-#[hax_lib::ensures(|result| fstar!(r#"repr ${result} == ${array}"#))]
-fn vec_from_i16_array(array: &[i16]) -> SIMD256Vector {
-    SIMD256Vector {
-        elements: mm256_loadu_si256_i16(array),
-    }
+#[hax_lib::ensures(|_| fstar!(r#"repr ${out}_future == ${array}"#))]
+fn vec_from_i16_array(array: &[i16], out: &mut SIMD256Vector) {
+    out.elements = mm256_loadu_si256_i16(array);
 }
 
 #[inline(always)]
 #[hax_lib::fstar::verification_status(lax)]
 #[hax_lib::requires(fstar!(r#"Spec.Utils.is_i16b_array (pow2 12 - 1) (repr $vector)"#))]
-#[hax_lib::ensures(|out| fstar!(r#"repr out == Spec.Utils.map_array (fun x -> if x >=. (mk_i16 3329) then x -! (mk_i16 3329) else x) (repr $vector)"#))]
-fn cond_subtract_3329(vector: SIMD256Vector) -> SIMD256Vector {
-    SIMD256Vector {
-        elements: arithmetic::cond_subtract_3329(vector.elements),
-    }
+#[hax_lib::ensures(|_| fstar!(r#"repr ${vector}_future == Spec.Utils.map_array (fun x -> if x >=. (mk_i16 3329) then x -! (mk_i16 3329) else x) (repr $vector)"#))]
+fn cond_subtract_3329(vector: &mut SIMD256Vector) {
+    arithmetic::cond_subtract_3329(&mut vector.elements);
 }
 
 #[inline(always)]
 #[hax_lib::fstar::verification_status(lax)]
 #[hax_lib::requires(fstar!(r#"forall (i:nat). i < 16 ==> v (Seq.index (repr $vector) i) >= 0 /\
     v (Seq.index (repr $vector) i) < 3329"#))]
-#[hax_lib::ensures(|out| fstar!(r#"forall (i:nat). i < 16 ==> bounded (Seq.index (repr $out) i) 1"#))]
-fn compress_1(vector: SIMD256Vector) -> SIMD256Vector {
-    SIMD256Vector {
-        elements: compress::compress_message_coefficient(vector.elements),
-    }
+#[hax_lib::ensures(|_| fstar!(r#"forall (i:nat). i < 16 ==> bounded (Seq.index (repr ${vector}_future) i) 1"#))]
+fn compress_1(vector: &mut SIMD256Vector) {
+    compress::compress_message_coefficient(&mut vector.elements);
 }
 
 #[inline(always)]
@@ -71,15 +69,13 @@ fn compress_1(vector: SIMD256Vector) -> SIMD256Vector {
     v $COEFFICIENT_BITS == 11) /\
     (forall (i:nat). i < 16 ==> v (Seq.index (repr $vector) i) >= 0 /\
     v (Seq.index (repr $vector) i) < 3329)"#))]
-#[hax_lib::ensures(|out| fstar!(r#"(v $COEFFICIENT_BITS == 4 \/
+#[hax_lib::ensures(|_| fstar!(r#"(v $COEFFICIENT_BITS == 4 \/
     v $COEFFICIENT_BITS == 5 \/
     v $COEFFICIENT_BITS == 10 \/
     v $COEFFICIENT_BITS == 11) ==>
-        (forall (i:nat). i < 16 ==> bounded (Seq.index (repr $out) i) (v $COEFFICIENT_BITS))"#))]
-fn compress<const COEFFICIENT_BITS: i32>(vector: SIMD256Vector) -> SIMD256Vector {
-    SIMD256Vector {
-        elements: compress::compress_ciphertext_coefficient::<COEFFICIENT_BITS>(vector.elements),
-    }
+        (forall (i:nat). i < 16 ==> bounded (Seq.index (repr ${vector}_future) i) (v $COEFFICIENT_BITS))"#))]
+fn compress<const COEFFICIENT_BITS: i32>(vector: &mut SIMD256Vector) {
+    compress::compress_ciphertext_coefficient::<COEFFICIENT_BITS>(&mut vector.elements);
 }
 
 #[inline(always)]
@@ -87,39 +83,27 @@ fn compress<const COEFFICIENT_BITS: i32>(vector: SIMD256Vector) -> SIMD256Vector
 #[hax_lib::requires(fstar!(r#"Spec.Utils.is_i16b 1664 zeta0 /\ Spec.Utils.is_i16b 1664 zeta1 /\ 
                     Spec.Utils.is_i16b 1664 zeta2 /\ Spec.Utils.is_i16b 1664 zeta3 /\
                     Spec.Utils.is_i16b_array (11207+5*3328) (repr ${vector})"#))]
-#[hax_lib::ensures(|out| fstar!(r#"Spec.Utils.is_i16b_array (11207+6*3328) (repr $out)"#))]
-fn ntt_layer_1_step(
-    vector: SIMD256Vector,
-    zeta0: i16,
-    zeta1: i16,
-    zeta2: i16,
-    zeta3: i16,
-) -> SIMD256Vector {
-    SIMD256Vector {
-        elements: ntt::ntt_layer_1_step(vector.elements, zeta0, zeta1, zeta2, zeta3),
-    }
+#[hax_lib::ensures(|_| fstar!(r#"Spec.Utils.is_i16b_array (11207+6*3328) (repr ${vector}_future)"#))]
+fn ntt_layer_1_step(vector: &mut SIMD256Vector, zeta0: i16, zeta1: i16, zeta2: i16, zeta3: i16) {
+    ntt::ntt_layer_1_step(&mut vector.elements, zeta0, zeta1, zeta2, zeta3);
 }
 
 #[inline(always)]
 #[hax_lib::fstar::verification_status(lax)]
 #[hax_lib::requires(fstar!(r#"Spec.Utils.is_i16b 1664 zeta0 /\ Spec.Utils.is_i16b 1664 zeta1 /\
                     Spec.Utils.is_i16b_array (11207+4*3328) (repr ${vector})"#))]
-#[hax_lib::ensures(|out| fstar!(r#"Spec.Utils.is_i16b_array (11207+5*3328) (repr $out)"#))]
-fn ntt_layer_2_step(vector: SIMD256Vector, zeta0: i16, zeta1: i16) -> SIMD256Vector {
-    SIMD256Vector {
-        elements: ntt::ntt_layer_2_step(vector.elements, zeta0, zeta1),
-    }
+#[hax_lib::ensures(|_| fstar!(r#"Spec.Utils.is_i16b_array (11207+5*3328) (repr ${vector}_future)"#))]
+fn ntt_layer_2_step(vector: &mut SIMD256Vector, zeta0: i16, zeta1: i16) {
+    ntt::ntt_layer_2_step(&mut vector.elements, zeta0, zeta1);
 }
 
 #[inline(always)]
 #[hax_lib::fstar::verification_status(lax)]
 #[hax_lib::requires(fstar!(r#"Spec.Utils.is_i16b 1664 zeta /\
                     Spec.Utils.is_i16b_array (11207+3*3328) (repr ${vector})"#))]
-#[hax_lib::ensures(|out| fstar!(r#"Spec.Utils.is_i16b_array (11207+4*3328) (repr $out)"#))]
-fn ntt_layer_3_step(vector: SIMD256Vector, zeta: i16) -> SIMD256Vector {
-    SIMD256Vector {
-        elements: ntt::ntt_layer_3_step(vector.elements, zeta),
-    }
+#[hax_lib::ensures(|_| fstar!(r#"Spec.Utils.is_i16b_array (11207+4*3328) (repr ${vector}_future)"#))]
+fn ntt_layer_3_step(vector: &mut SIMD256Vector, zeta: i16) {
+    ntt::ntt_layer_3_step(&mut vector.elements, zeta);
 }
 
 #[inline(always)]
@@ -127,39 +111,33 @@ fn ntt_layer_3_step(vector: SIMD256Vector, zeta: i16) -> SIMD256Vector {
 #[hax_lib::requires(fstar!(r#"Spec.Utils.is_i16b 1664 zeta0 /\ Spec.Utils.is_i16b 1664 zeta1 /\ 
                     Spec.Utils.is_i16b 1664 zeta2 /\ Spec.Utils.is_i16b 1664 zeta3  /\
                     Spec.Utils.is_i16b_array (4*3328) (repr ${vector})"#))]
-#[hax_lib::ensures(|out| fstar!(r#"Spec.Utils.is_i16b_array 3328 (repr $out)"#))]
+#[hax_lib::ensures(|_| fstar!(r#"Spec.Utils.is_i16b_array 3328 (repr ${vector}_future)"#))]
 fn inv_ntt_layer_1_step(
-    vector: SIMD256Vector,
+    vector: &mut SIMD256Vector,
     zeta0: i16,
     zeta1: i16,
     zeta2: i16,
     zeta3: i16,
-) -> SIMD256Vector {
-    SIMD256Vector {
-        elements: ntt::inv_ntt_layer_1_step(vector.elements, zeta0, zeta1, zeta2, zeta3),
-    }
+) {
+    ntt::inv_ntt_layer_1_step(&mut vector.elements, zeta0, zeta1, zeta2, zeta3);
 }
 
 #[inline(always)]
 #[hax_lib::fstar::verification_status(lax)]
 #[hax_lib::requires(fstar!(r#"Spec.Utils.is_i16b 1664 zeta0 /\ Spec.Utils.is_i16b 1664 zeta1 /\
                     Spec.Utils.is_i16b_array 3328 (repr ${vector})"#))]
-#[hax_lib::ensures(|out| fstar!(r#"Spec.Utils.is_i16b_array 3328 (repr $out)"#))]
-fn inv_ntt_layer_2_step(vector: SIMD256Vector, zeta0: i16, zeta1: i16) -> SIMD256Vector {
-    SIMD256Vector {
-        elements: ntt::inv_ntt_layer_2_step(vector.elements, zeta0, zeta1),
-    }
+#[hax_lib::ensures(|_| fstar!(r#"Spec.Utils.is_i16b_array 3328 (repr ${vector}_future)"#))]
+fn inv_ntt_layer_2_step(vector: &mut SIMD256Vector, zeta0: i16, zeta1: i16) {
+    ntt::inv_ntt_layer_2_step(&mut vector.elements, zeta0, zeta1);
 }
 
 #[inline(always)]
 #[hax_lib::fstar::verification_status(lax)]
 #[hax_lib::requires(fstar!(r#"Spec.Utils.is_i16b 1664 zeta /\
                     Spec.Utils.is_i16b_array 3328 (repr ${vector})"#))]
-#[hax_lib::ensures(|out| fstar!(r#"Spec.Utils.is_i16b_array 3328 (repr $out)"#))]
-fn inv_ntt_layer_3_step(vector: SIMD256Vector, zeta: i16) -> SIMD256Vector {
-    SIMD256Vector {
-        elements: ntt::inv_ntt_layer_3_step(vector.elements, zeta),
-    }
+#[hax_lib::ensures(|_| fstar!(r#"Spec.Utils.is_i16b_array 3328 (repr ${vector}_future)"#))]
+fn inv_ntt_layer_3_step(vector: &mut SIMD256Vector, zeta: i16) {
+    ntt::inv_ntt_layer_3_step(&mut vector.elements, zeta);
 }
 
 #[inline(always)]
@@ -168,108 +146,116 @@ fn inv_ntt_layer_3_step(vector: SIMD256Vector, zeta: i16) -> SIMD256Vector {
                     Spec.Utils.is_i16b 1664 zeta2 /\ Spec.Utils.is_i16b 1664 zeta3 /\
                     Spec.Utils.is_i16b_array 3328 (repr ${lhs}) /\
                     Spec.Utils.is_i16b_array 3328 (repr ${rhs})"#))]
-#[hax_lib::ensures(|out| fstar!(r#"Spec.Utils.is_i16b_array 3328 (repr $out)"#))]
+#[hax_lib::ensures(|_| fstar!(r#"Spec.Utils.is_i16b_array 3328 (repr ${out}_future)"#))]
 fn ntt_multiply(
     lhs: &SIMD256Vector,
     rhs: &SIMD256Vector,
+    out: &mut SIMD256Vector,
     zeta0: i16,
     zeta1: i16,
     zeta2: i16,
     zeta3: i16,
-) -> SIMD256Vector {
-    SIMD256Vector {
-        elements: ntt::ntt_multiply(lhs.elements, rhs.elements, zeta0, zeta1, zeta2, zeta3),
-    }
+) {
+    ntt::ntt_multiply(
+        &lhs.elements,
+        &rhs.elements,
+        &mut out.elements,
+        zeta0,
+        zeta1,
+        zeta2,
+        zeta3,
+    );
 }
 
 #[inline(always)]
 #[hax_lib::fstar::verification_status(lax)]
-#[hax_lib::requires(fstar!(r#"Spec.MLKEM.serialize_pre 1 (repr $vector)"#))]
-#[hax_lib::ensures(|out| fstar!(r#"Spec.MLKEM.serialize_pre 1 (repr $vector) ==> Spec.MLKEM.serialize_post 1 (repr $vector) $out"#))]
-fn serialize_1(vector: SIMD256Vector) -> [u8; 2] {
-    serialize::serialize_1(vector.elements)
+#[hax_lib::requires(fstar!(r#"Spec.MLKEM.serialize_pre 1 (repr $vector) /\ Seq.length $out == 2"#))]
+#[hax_lib::ensures(|_| fstar!(r#"Seq.length ${out}_future == 2 /\
+    (Spec.MLKEM.serialize_pre 1 (repr $vector) ==> 
+        Spec.MLKEM.serialize_post 1 (repr $vector) ${out}_future)"#))]
+fn serialize_1(vector: &SIMD256Vector, out: &mut [u8]) {
+    serialize::serialize_1(&vector.elements, out);
 }
 
 #[inline(always)]
 #[hax_lib::fstar::verification_status(lax)]
 #[hax_lib::requires(bytes.len() == 2)]
-#[hax_lib::ensures(|out| fstar!(r#"sz (Seq.length $bytes) =. sz 2 ==> Spec.MLKEM.deserialize_post 1 $bytes (repr $out)"#))]
-fn deserialize_1(bytes: &[u8]) -> SIMD256Vector {
-    SIMD256Vector {
-        elements: serialize::deserialize_1(bytes),
-    }
+#[hax_lib::ensures(|_| fstar!(r#"sz (Seq.length $bytes) =. sz 2 ==> Spec.MLKEM.deserialize_post 1 $bytes (repr ${out}_future)"#))]
+fn deserialize_1(bytes: &[u8], out: &mut SIMD256Vector) {
+    serialize::deserialize_1(bytes, &mut out.elements);
 }
 
 #[inline(always)]
 #[hax_lib::fstar::verification_status(lax)]
-#[hax_lib::requires(fstar!(r#"Spec.MLKEM.serialize_pre 4 (repr $vector)"#))]
-#[hax_lib::ensures(|out| fstar!(r#"Spec.MLKEM.serialize_pre 4 (repr $vector) ==> Spec.MLKEM.serialize_post 4 (repr $vector) $out"#))]
-fn serialize_4(vector: SIMD256Vector) -> [u8; 8] {
-    serialize::serialize_4(vector.elements)
+#[hax_lib::requires(fstar!(r#"Spec.MLKEM.serialize_pre 4 (repr $vector) /\ Seq.length $out == 8"#))]
+#[hax_lib::ensures(|_| fstar!(r#"Seq.length ${out}_future == 8 /\
+    (Spec.MLKEM.serialize_pre 4 (repr $vector) ==> 
+        Spec.MLKEM.serialize_post 4 (repr $vector) ${out}_future)"#))]
+fn serialize_4(vector: &SIMD256Vector, out: &mut [u8]) {
+    serialize::serialize_4(&vector.elements, out)
 }
 
 #[inline(always)]
 #[hax_lib::fstar::verification_status(lax)]
 #[hax_lib::requires(bytes.len() == 8)]
-#[hax_lib::ensures(|out| fstar!(r#"sz (Seq.length $bytes) =. sz 8 ==> Spec.MLKEM.deserialize_post 4 $bytes (repr $out)"#))]
-fn deserialize_4(bytes: &[u8]) -> SIMD256Vector {
-    SIMD256Vector {
-        elements: serialize::deserialize_4(bytes),
-    }
+#[hax_lib::ensures(|_| fstar!(r#"sz (Seq.length $bytes) =. sz 8 ==> Spec.MLKEM.deserialize_post 4 $bytes (repr ${out}_future)"#))]
+fn deserialize_4(bytes: &[u8], out: &mut SIMD256Vector) {
+    serialize::deserialize_4(bytes, &mut out.elements);
 }
 
 #[inline(always)]
 #[hax_lib::fstar::verification_status(lax)]
-#[hax_lib::requires(fstar!(r#"Spec.MLKEM.serialize_pre 10 (repr $vector)"#))]
-#[hax_lib::ensures(|out| fstar!(r#"Spec.MLKEM.serialize_pre 10 (repr $vector) ==> Spec.MLKEM.serialize_post 10 (repr $vector) $out"#))]
-fn serialize_10(vector: SIMD256Vector) -> [u8; 20] {
-    serialize::serialize_10(vector.elements)
+#[hax_lib::requires(fstar!(r#"Spec.MLKEM.serialize_pre 10 (repr $vector) /\ Seq.length $out == 20"#))]
+#[hax_lib::ensures(|_| fstar!(r#"Seq.length ${out}_future == 20 /\
+    (Spec.MLKEM.serialize_pre 10 (repr $vector) ==> 
+        Spec.MLKEM.serialize_post 10 (repr $vector) ${out}_future)"#))]
+fn serialize_10(vector: &SIMD256Vector, out: &mut [u8]) {
+    serialize::serialize_10(&vector.elements, out);
 }
 
 #[inline(always)]
 #[hax_lib::fstar::verification_status(lax)]
 #[hax_lib::requires(bytes.len() == 20)]
-#[hax_lib::ensures(|out| fstar!(r#"sz (Seq.length $bytes) =. sz 20 ==> Spec.MLKEM.deserialize_post 10 $bytes (repr $out)"#))]
-fn deserialize_10(bytes: &[u8]) -> SIMD256Vector {
-    SIMD256Vector {
-        elements: serialize::deserialize_10(bytes),
-    }
+#[hax_lib::ensures(|_| fstar!(r#"sz (Seq.length $bytes) =. sz 20 ==>
+    Spec.MLKEM.deserialize_post 10 $bytes (repr ${out}_future)"#))]
+fn deserialize_10(bytes: &[u8], out: &mut SIMD256Vector) {
+    serialize::deserialize_10(bytes, &mut out.elements);
 }
 
 #[inline(always)]
 #[hax_lib::fstar::verification_status(lax)]
-#[hax_lib::requires(fstar!(r#"Spec.MLKEM.serialize_pre 12 (repr $vector)"#))]
-#[hax_lib::ensures(|out| fstar!(r#"Spec.MLKEM.serialize_pre 12 (repr $vector) ==> Spec.MLKEM.serialize_post 12 (repr $vector) $out"#))]
-fn serialize_12(vector: SIMD256Vector) -> [u8; 24] {
-    serialize::serialize_12(vector.elements)
+#[hax_lib::requires(fstar!(r#"Spec.MLKEM.serialize_pre 12 (repr $vector) /\ Seq.length $out == 24"#))]
+#[hax_lib::ensures(|_| fstar!(r#"Seq.length ${out}_future == 24 /\
+    (Spec.MLKEM.serialize_pre 12 (repr $vector) ==> 
+        Spec.MLKEM.serialize_post 12 (repr $vector) ${out}_future)"#))]
+fn serialize_12(vector: &SIMD256Vector, out: &mut [u8]) {
+    serialize::serialize_12(&vector.elements, out);
 }
 
 #[inline(always)]
 #[hax_lib::fstar::verification_status(lax)]
 #[hax_lib::requires(bytes.len() == 24)]
-#[hax_lib::ensures(|out| fstar!(r#"sz (Seq.length $bytes) =. sz 24 ==> Spec.MLKEM.deserialize_post 12 $bytes (repr $out)"#))]
-fn deserialize_12(bytes: &[u8]) -> SIMD256Vector {
-    SIMD256Vector {
-        elements: serialize::deserialize_12(bytes),
-    }
+#[hax_lib::ensures(|_| fstar!(r#"sz (Seq.length $bytes) =. sz 24 ==> Spec.MLKEM.deserialize_post 12 $bytes (repr ${out}_future)"#))]
+fn deserialize_12(bytes: &[u8], out: &mut SIMD256Vector) {
+    serialize::deserialize_12(bytes, &mut out.elements);
 }
 
 #[cfg(hax)]
-impl crate::vector::traits::Repr for SIMD256Vector {
+impl Repr for SIMD256Vector {
     fn repr(&self) -> [i16; 16] {
-        vec_to_i16_array(self.clone())
+        let mut out = [0i16; 16];
+        vec_to_i16_array(&self, &mut out);
+        out
     }
 }
 
 #[cfg(any(eurydice, not(hax)))]
-impl crate::vector::traits::Repr for SIMD256Vector {}
+impl Repr for SIMD256Vector {}
 
 #[inline(always)]
 #[hax_lib::requires(array.len() >= 32)]
-pub(super) fn from_bytes(array: &[u8]) -> SIMD256Vector {
-    SIMD256Vector {
-        elements: mm256_loadu_si256_u8(&array[0..32]),
-    }
+pub(super) fn from_bytes(array: &[u8], out: &mut Vec256) {
+    *out = mm256_loadu_si256_u8(&array[0..32]);
 }
 
 #[inline(always)]
@@ -283,317 +269,286 @@ pub(super) fn to_bytes(x: SIMD256Vector, bytes: &mut [u8]) {
 #[hax_lib::attributes]
 impl Operations for SIMD256Vector {
     #[inline(always)]
-    #[ensures(|out| fstar!(r#"impl.f_repr out == Seq.create 16 (mk_i16 0)"#))]
+    #[requires(true)]
+    #[ensures(|result| result.repr() == [0i16; 16])]
     fn ZERO() -> Self {
         vec_zero()
     }
 
+    #[inline(always)]
     #[requires(array.len() == 16)]
-    #[ensures(|out| fstar!(r#"impl.f_repr out == $array"#))]
-    #[inline(always)]
-    fn from_i16_array(array: &[i16]) -> Self {
-        vec_from_i16_array(array)
+    #[ensures(|_| future(out).repr() == array)]
+    fn from_i16_array(array: &[i16], out: &mut Self) {
+        vec_from_i16_array(array, out);
     }
 
-    #[ensures(|out| fstar!(r#"out == impl.f_repr $x"#))]
     #[inline(always)]
-    fn to_i16_array(x: Self) -> [i16; 16] {
-        vec_to_i16_array(x)
+    #[requires(out.len() == 16)]
+    #[ensures(|_| future(out) == x.repr())]
+    fn to_i16_array(x: &Self, out: &mut [i16]) {
+        vec_to_i16_array(x, out);
     }
 
+    #[inline(always)]
     #[requires(array.len() >= 32)]
-    #[inline(always)]
-    fn from_bytes(array: &[u8]) -> Self {
-        from_bytes(array)
+    fn from_bytes(array: &[u8], out: &mut Self) {
+        from_bytes(array, &mut out.elements);
     }
 
-    #[requires(bytes.len() >= 32)]
     #[inline(always)]
+    #[requires(bytes.len() >= 32)]
     #[ensures(|_| future(bytes).len() == bytes.len())]
     fn to_bytes(x: Self, bytes: &mut [u8]) {
         to_bytes(x, bytes)
     }
 
-    #[requires(fstar!(r#"forall i. i < 16 ==> 
-        Spec.Utils.is_intb (pow2 15 - 1) (v (Seq.index (impl.f_repr ${lhs}) i) + v (Seq.index (impl.f_repr ${rhs}) i))"#))]
-    #[ensures(|result| fstar!(r#"forall i. i < 16 ==> 
-        (v (Seq.index (impl.f_repr ${result}) i) == 
-         v (Seq.index (impl.f_repr ${lhs}) i) + v (Seq.index (impl.f_repr ${rhs}) i))"#))]
     #[inline(always)]
-    fn add(lhs: Self, rhs: &Self) -> Self {
+    #[requires(spec::add_pre(&lhs.repr(), &rhs.repr()))]
+    #[ensures(|_| spec::add_post(&lhs.repr(), &rhs.repr(), &future(lhs).repr()))]
+    fn add(lhs: &mut Self, rhs: &Self) {
+        arithmetic::add(&mut lhs.elements, &rhs.elements);
+    }
+
+    #[inline(always)]
+    #[requires(spec::sub_pre(&lhs.repr(), &rhs.repr()))]
+    #[ensures(|_| spec::sub_post(&lhs.repr(), &rhs.repr(), &future(lhs).repr()))]
+    fn sub(lhs: &mut Self, rhs: &Self) {
+        arithmetic::sub(&mut lhs.elements, &rhs.elements);
+    }
+
+    #[inline(always)]
+    #[requires(spec::negate_pre(&vec.repr()))]
+    #[ensures(|_| spec::negate_post(&vec.repr(), &future(vec).repr()))]
+    fn negate(vec: &mut Self) {
+        arithmetic::negate(&mut vec.elements);
+    }
+
+    #[inline(always)]
+    #[requires(spec::multiply_by_constant_pre(&vec.repr(), c))]
+    #[ensures(|_| spec::multiply_by_constant_post(&vec.repr(), c, &future(vec).repr()))]
+    fn multiply_by_constant(vec: &mut Self, c: i16) {
+        arithmetic::multiply_by_constant(&mut vec.elements, c);
+    }
+
+    #[inline(always)]
+    #[requires(true)]
+    #[ensures(|_| spec::bitwise_and_with_constant_constant_post(&vec.repr(), c, &future(vec).repr()))]
+    fn bitwise_and_with_constant(vec: &mut Self, c: i16) {
+        vec.elements = bitwise_and_with_constant(vec.elements, c);
+    }
+
+    #[inline(always)]
+    #[requires(SHIFT_BY >= 0 && SHIFT_BY < 16)]
+    #[ensures(|_| spec::shift_right_post(&vec.repr(), SHIFT_BY, &future(vec).repr()))]
+    fn shift_right<const SHIFT_BY: i32>(vec: &mut Self) {
+        vec.elements = shift_right::<SHIFT_BY>(vec.elements);
+    }
+
+    #[inline(always)]
+    #[requires(spec::cond_subtract_3329_pre(&vec.repr()))]
+    #[ensures(|_| spec::cond_subtract_3329_post(&vec.repr(), &future(vec).repr()))]
+    fn cond_subtract_3329(vec: &mut Self) {
+        cond_subtract_3329(vec)
+    }
+
+    #[inline(always)]
+    #[requires(spec::barrett_reduce_pre(&vec.repr()))]
+    #[ensures(|_| spec::barrett_reduce_post(&vec.repr(), &future(vec).repr()))]
+    fn barrett_reduce(vec: &mut Self) {
+        arithmetic::barrett_reduce(&mut vec.elements);
+    }
+
+    #[inline(always)]
+    #[requires(spec::montgomery_multiply_by_constant_pre(&vec.repr(), c))]
+    #[ensures(|_| spec::montgomery_multiply_by_constant_post(&vec.repr(), c, &future(vec).repr()))]
+    fn montgomery_multiply_by_constant(vec: &mut Self, c: i16) {
+        arithmetic::montgomery_multiply_by_constant(&mut vec.elements, c);
+    }
+
+    #[inline(always)]
+    #[requires(spec::to_unsigned_representative_pre(&vec.repr()))]
+    #[ensures(|result| spec::to_unsigned_representative_post(&vec.repr(), &result.repr()))]
+    fn to_unsigned_representative(vec: Self) -> Self {
         Self {
-            elements: arithmetic::add(lhs.elements, rhs.elements),
+            elements: arithmetic::to_unsigned_representative(vec.elements),
         }
     }
 
-    #[requires(fstar!(r#"forall i. i < 16 ==> 
-        Spec.Utils.is_intb (pow2 15 - 1) (v (Seq.index (impl.f_repr ${lhs}) i) - v (Seq.index (impl.f_repr ${rhs}) i))"#))]
-    #[ensures(|result| fstar!(r#"forall i. i < 16 ==> 
-        (v (Seq.index (impl.f_repr ${result}) i) == 
-         v (Seq.index (impl.f_repr ${lhs}) i) - v (Seq.index (impl.f_repr ${rhs}) i))"#))]
     #[inline(always)]
-    fn sub(lhs: Self, rhs: &Self) -> Self {
-        Self {
-            elements: arithmetic::sub(lhs.elements, rhs.elements),
-        }
+    #[requires(spec::compress_1_pre(&vec.repr()))]
+    #[ensures(|_| spec::compress_1_post(&vec.repr(), &future(vec).repr()))]
+    fn compress_1(vec: &mut Self) {
+        compress_1(vec);
     }
 
-    #[requires(fstar!(r#"forall i. i < 16 ==> 
-        Spec.Utils.is_intb (pow2 15 - 1) (v (Seq.index (impl.f_repr ${vec}) i) * v c)"#))]
-    #[ensures(|result| fstar!(r#"forall i. i < 16 ==> 
-        (v (Seq.index (impl.f_repr ${result}) i) == 
-         v (Seq.index (impl.f_repr ${vec}) i) * v c)"#))]
     #[inline(always)]
-    fn multiply_by_constant(vec: Self, c: i16) -> Self {
-        Self {
-            elements: arithmetic::multiply_by_constant(vec.elements, c),
-        }
+    #[requires(spec::compress_pre(&vec.repr(), COEFFICIENT_BITS))]
+    #[ensures(|_| spec::compress_post(&vec.repr(), COEFFICIENT_BITS, &future(vec).repr()))]
+    fn compress<const COEFFICIENT_BITS: i32>(vec: &mut Self) {
+        compress::<COEFFICIENT_BITS>(vec);
     }
 
-    #[requires(fstar!(r#"Spec.Utils.is_i16b_array (pow2 12 - 1) (impl.f_repr $vector)"#))]
-    #[ensures(|out| fstar!(r#"impl.f_repr out == Spec.Utils.map_array (fun x -> if x >=. (mk_i16 3329) then x -! (mk_i16 3329) else x) (impl.f_repr $vector)"#))]
     #[inline(always)]
-    fn cond_subtract_3329(vector: Self) -> Self {
-        cond_subtract_3329(vector)
-    }
-
-    #[requires(fstar!(r#"Spec.Utils.is_i16b_array 28296 (impl.f_repr ${vector})"#))]
-    #[ensures(|result| fstar!(r#"Spec.Utils.is_i16b_array 3328 (impl.f_repr ${result}) /\
-                (forall i. (v (Seq.index (impl.f_repr ${result}) i) % 3329) == 
-                           (v (Seq.index (impl.f_repr ${vector})i) % 3329))"#))]
-    #[inline(always)]
-    fn barrett_reduce(vector: Self) -> Self {
+    #[hax_lib::requires(spec::decompress_1_pre(&vec.repr()))]
+    fn decompress_1(vec: Self) -> Self {
         Self {
-            elements: arithmetic::barrett_reduce(vector.elements),
+            elements: compress::decompress_1(vec.elements),
         }
     }
 
     #[inline(always)]
-    #[requires(fstar!(r#"Spec.Utils.is_i16b 1664 $constant"#))]
-    #[ensures(|result| fstar!(r#"Spec.Utils.is_i16b_array 3328 (impl.f_repr ${result}) /\
-                (forall i. i < 16 ==> ((v (Seq.index (impl.f_repr ${result}) i) % 3329)==
-                                       (v (Seq.index (impl.f_repr ${vector}) i) * v ${constant} * 169) % 3329))"#))]
-    fn montgomery_multiply_by_constant(vector: Self, constant: i16) -> Self {
-        Self {
-            elements: arithmetic::montgomery_multiply_by_constant(vector.elements, constant),
-        }
+    #[requires(spec::decompress_ciphertext_coefficient_pre(&vec.repr(), COEFFICIENT_BITS))]
+    fn decompress_ciphertext_coefficient<const COEFFICIENT_BITS: i32>(vec: &mut Self) {
+        compress::decompress_ciphertext_coefficient::<COEFFICIENT_BITS>(&mut vec.elements);
     }
 
-    #[requires(fstar!(r#"Spec.Utils.is_i16b_array 3328 (impl.f_repr $a)"#))]
-    #[ensures(|result| fstar!(r#"forall (i:nat). i < 16 ==>
-                                (let x = Seq.index (impl.f_repr ${a}) i in
-                                 let y = Seq.index (impl.f_repr ${result}) i in
-                                 (v y >= 0 /\ v y <= 3328 /\ (v y % 3329 == v x % 3329)))"#))]
-    fn to_unsigned_representative(a: Self) -> Self {
-        Self {
-            elements: arithmetic::to_unsigned_representative(a.elements),
-        }
-    }
-
-    #[requires(fstar!(r#"forall (i:nat). i < 16 ==> v (Seq.index (impl.f_repr $vector) i) >= 0 /\
-        v (Seq.index (impl.f_repr $vector) i) < 3329"#))]
-    #[ensures(|out| fstar!(r#"forall (i:nat). i < 16 ==> bounded (Seq.index (impl.f_repr $out) i) 1"#))]
     #[inline(always)]
-    fn compress_1(vector: Self) -> Self {
-        compress_1(vector)
+    #[requires(spec::ntt_layer_1_step_pre(&vec.repr(), zeta0, zeta1, zeta2, zeta3))]
+    #[ensures(|_| spec::ntt_layer_1_step_post(&vec.repr(), zeta0, zeta1, zeta2, zeta3, &future(vec).repr()))]
+    fn ntt_layer_1_step(vec: &mut Self, zeta0: i16, zeta1: i16, zeta2: i16, zeta3: i16) {
+        ntt_layer_1_step(vec, zeta0, zeta1, zeta2, zeta3);
     }
 
-    #[requires(fstar!(r#"(v $COEFFICIENT_BITS == 4 \/
-            v $COEFFICIENT_BITS == 5 \/
-            v $COEFFICIENT_BITS == 10 \/
-            v $COEFFICIENT_BITS == 11) /\
-        (forall (i:nat). i < 16 ==> v (Seq.index (impl.f_repr $vector) i) >= 0 /\
-            v (Seq.index (impl.f_repr $vector) i) < 3329)"#))]
-    #[ensures(|out| fstar!(r#"(v $COEFFICIENT_BITS == 4 \/
-            v $COEFFICIENT_BITS == 5 \/
-            v $COEFFICIENT_BITS == 10 \/
-            v $COEFFICIENT_BITS == 11) ==>
-                (forall (i:nat). i < 16 ==> bounded (Seq.index (impl.f_repr $out) i) (v $COEFFICIENT_BITS))"#))]
     #[inline(always)]
-    fn compress<const COEFFICIENT_BITS: i32>(vector: Self) -> Self {
-        compress::<COEFFICIENT_BITS>(vector)
+    #[requires(spec::ntt_layer_2_step_pre(&vec.repr(), zeta0, zeta1))]
+    #[ensures(|_| spec::ntt_layer_2_step_post(&vec.repr(), zeta0, zeta1, &future(vec).repr()))]
+    fn ntt_layer_2_step(vec: &mut Self, zeta0: i16, zeta1: i16) {
+        ntt_layer_2_step(vec, zeta0, zeta1);
     }
 
-    #[requires(fstar!(r#"forall (i:nat). i < 16 ==> 
-                                    (let x = Seq.index (impl.f_repr $a) i in 
-                                     (x == mk_i16 0 \/ x == mk_i16 1))"#))]
-    fn decompress_1(a: Self) -> Self {
-        Self {
-            elements: compress::decompress_1(a.elements),
-        }
-    }
-
-    #[requires(fstar!(r#"(v $COEFFICIENT_BITS == 4 \/
-        v $COEFFICIENT_BITS == 5 \/
-        v $COEFFICIENT_BITS == 10 \/
-        v $COEFFICIENT_BITS == 11) /\
-    (forall (i:nat). i < 16 ==> v (Seq.index (impl.f_repr $vector) i) >= 0 /\
-        v (Seq.index (impl.f_repr $vector) i) < pow2 (v $COEFFICIENT_BITS))"#))]
     #[inline(always)]
-    fn decompress_ciphertext_coefficient<const COEFFICIENT_BITS: i32>(vector: Self) -> Self {
-        Self {
-            elements: compress::decompress_ciphertext_coefficient::<COEFFICIENT_BITS>(
-                vector.elements,
-            ),
-        }
+    #[requires(spec::ntt_layer_3_step_pre(&vec.repr(), zeta0))]
+    #[ensures(|_| spec::ntt_layer_3_step_post(&vec.repr(), zeta0, &future(vec).repr()))]
+    fn ntt_layer_3_step(vec: &mut Self, zeta0: i16) {
+        ntt_layer_3_step(vec, zeta0);
     }
 
-    #[requires(fstar!(r#"Spec.Utils.is_i16b 1664 zeta0 /\ Spec.Utils.is_i16b 1664 zeta1 /\ 
-                       Spec.Utils.is_i16b 1664 zeta2 /\ Spec.Utils.is_i16b 1664 zeta3 /\
-                       Spec.Utils.is_i16b_array (11207+5*3328) (impl.f_repr ${vector})"#))]
-    #[ensures(|out| fstar!(r#"Spec.Utils.is_i16b_array (11207+6*3328) (impl.f_repr $out)"#))]
     #[inline(always)]
-    fn ntt_layer_1_step(vector: Self, zeta0: i16, zeta1: i16, zeta2: i16, zeta3: i16) -> Self {
-        ntt_layer_1_step(vector, zeta0, zeta1, zeta2, zeta3)
+    #[requires(spec::inv_ntt_layer_1_step_pre(&vec.repr(), zeta0, zeta1, zeta2, zeta3))]
+    #[ensures(|_| spec::inv_ntt_layer_1_step_post(&vec.repr(), zeta0, zeta1, zeta2, zeta3, &future(vec).repr()))]
+    fn inv_ntt_layer_1_step(vec: &mut Self, zeta0: i16, zeta1: i16, zeta2: i16, zeta3: i16) {
+        inv_ntt_layer_1_step(vec, zeta0, zeta1, zeta2, zeta3);
     }
 
-    #[requires(fstar!(r#"Spec.Utils.is_i16b 1664 zeta0 /\ Spec.Utils.is_i16b 1664 zeta1 /\
-                       Spec.Utils.is_i16b_array (11207+4*3328) (impl.f_repr ${vector})"#))]
-    #[ensures(|out| fstar!(r#"Spec.Utils.is_i16b_array (11207+5*3328) (impl.f_repr $out)"#))]
     #[inline(always)]
-    fn ntt_layer_2_step(vector: Self, zeta0: i16, zeta1: i16) -> Self {
-        ntt_layer_2_step(vector, zeta0, zeta1)
+    #[requires(spec::inv_ntt_layer_2_step_pre(&vec.repr(), zeta0, zeta1))]
+    #[ensures(|_| spec::inv_ntt_layer_2_step_post(&vec.repr(), zeta0, zeta1, &future(vec).repr()))]
+    fn inv_ntt_layer_2_step(vec: &mut Self, zeta0: i16, zeta1: i16) {
+        inv_ntt_layer_2_step(vec, zeta0, zeta1);
     }
 
-    #[requires(fstar!(r#"Spec.Utils.is_i16b 1664 zeta /\
-                       Spec.Utils.is_i16b_array (11207+3*3328) (impl.f_repr ${vector})"#))]
-    #[ensures(|out| fstar!(r#"Spec.Utils.is_i16b_array (11207+4*3328) (impl.f_repr $out)"#))]
     #[inline(always)]
-    fn ntt_layer_3_step(vector: Self, zeta: i16) -> Self {
-        ntt_layer_3_step(vector, zeta)
+    #[requires(spec::inv_ntt_layer_3_step_pre(&vec.repr(), zeta0))]
+    #[ensures(|_| spec::inv_ntt_layer_3_step_post(&vec.repr(), zeta0, &future(vec).repr()))]
+    fn inv_ntt_layer_3_step(vec: &mut Self, zeta0: i16) {
+        inv_ntt_layer_3_step(vec, zeta0);
     }
 
-    #[requires(fstar!(r#"Spec.Utils.is_i16b 1664 zeta0 /\ Spec.Utils.is_i16b 1664 zeta1 /\ 
-                       Spec.Utils.is_i16b 1664 zeta2 /\ Spec.Utils.is_i16b 1664 zeta3  /\
-                       Spec.Utils.is_i16b_array (4*3328) (impl.f_repr ${vector})"#))]
-    #[ensures(|out| fstar!(r#"Spec.Utils.is_i16b_array 3328 (impl.f_repr $out)"#))]
     #[inline(always)]
-    fn inv_ntt_layer_1_step(vector: Self, zeta0: i16, zeta1: i16, zeta2: i16, zeta3: i16) -> Self {
-        inv_ntt_layer_1_step(vector, zeta0, zeta1, zeta2, zeta3)
-    }
-
-    #[requires(fstar!(r#"Spec.Utils.is_i16b 1664 zeta0 /\ Spec.Utils.is_i16b 1664 zeta1 /\
-                       Spec.Utils.is_i16b_array 3328 (impl.f_repr ${vector})"#))]
-    #[ensures(|out| fstar!(r#"Spec.Utils.is_i16b_array 3328 (impl.f_repr $out)"#))]
-    #[inline(always)]
-    fn inv_ntt_layer_2_step(vector: Self, zeta0: i16, zeta1: i16) -> Self {
-        inv_ntt_layer_2_step(vector, zeta0, zeta1)
-    }
-
-    #[requires(fstar!(r#"Spec.Utils.is_i16b 1664 zeta /\
-                       Spec.Utils.is_i16b_array 3328 (impl.f_repr ${vector})"#))]
-    #[ensures(|out| fstar!(r#"Spec.Utils.is_i16b_array 3328 (impl.f_repr $out)"#))]
-    #[inline(always)]
-    fn inv_ntt_layer_3_step(vector: Self, zeta: i16) -> Self {
-        inv_ntt_layer_3_step(vector, zeta)
-    }
-
-    #[requires(fstar!(r#"Spec.Utils.is_i16b 1664 zeta0 /\ Spec.Utils.is_i16b 1664 zeta1 /\
-                       Spec.Utils.is_i16b 1664 zeta2 /\ Spec.Utils.is_i16b 1664 zeta3 /\
-                       Spec.Utils.is_i16b_array 3328 (impl.f_repr ${lhs}) /\
-                       Spec.Utils.is_i16b_array 3328 (impl.f_repr ${rhs})"#))]
-    #[ensures(|out| fstar!(r#"Spec.Utils.is_i16b_array 3328 (impl.f_repr $out)"#))]
-    #[inline(always)]
+    #[requires(spec::ntt_multiply_pre(&lhs.repr(), &rhs.repr(), &out.repr(),zeta0, zeta1, zeta2, zeta3))]
+    #[ensures(|_| spec::ntt_multiply_post(&lhs.repr(), &rhs.repr(), &out.repr(),zeta0, zeta1, zeta2, zeta3, &future(out).repr()))]
     fn ntt_multiply(
         lhs: &Self,
         rhs: &Self,
+        out: &mut Self,
         zeta0: i16,
         zeta1: i16,
         zeta2: i16,
         zeta3: i16,
-    ) -> Self {
-        ntt_multiply(lhs, rhs, zeta0, zeta1, zeta2, zeta3)
-    }
-
-    #[requires(fstar!(r#"Spec.MLKEM.serialize_pre 1 (impl.f_repr $vector)"#))]
-    #[ensures(|out| fstar!(r#"Spec.MLKEM.serialize_pre 1 (impl.f_repr $vector) ==> Spec.MLKEM.serialize_post 1 (impl.f_repr $vector) $out"#))]
-    #[inline(always)]
-    fn serialize_1(vector: Self) -> [u8; 2] {
-        serialize_1(vector)
-    }
-
-    #[requires(bytes.len() == 2)]
-    #[ensures(|out| fstar!(r#"sz (Seq.length $bytes) =. sz 2 ==> Spec.MLKEM.deserialize_post 1 $bytes (impl.f_repr $out)"#))]
-    #[inline(always)]
-    fn deserialize_1(bytes: &[u8]) -> Self {
-        deserialize_1(bytes)
-    }
-
-    #[requires(fstar!(r#"Spec.MLKEM.serialize_pre 4 (impl.f_repr $vector)"#))]
-    #[ensures(|out| fstar!(r#"Spec.MLKEM.serialize_pre 4 (impl.f_repr $vector) ==> Spec.MLKEM.serialize_post 4 (impl.f_repr $vector) $out"#))]
-    #[inline(always)]
-    fn serialize_4(vector: Self) -> [u8; 8] {
-        serialize_4(vector)
-    }
-
-    #[requires(bytes.len() == 8)]
-    #[ensures(|out| fstar!(r#"sz (Seq.length $bytes) =. sz 8 ==> Spec.MLKEM.deserialize_post 4 $bytes (impl.f_repr $out)"#))]
-    #[inline(always)]
-    fn deserialize_4(bytes: &[u8]) -> Self {
-        deserialize_4(bytes)
+    ) {
+        ntt_multiply(lhs, rhs, out, zeta0, zeta1, zeta2, zeta3);
     }
 
     #[inline(always)]
-    fn serialize_5(vector: Self) -> [u8; 10] {
-        serialize::serialize_5(vector.elements)
-    }
-
-    #[requires(bytes.len() == 10)]
-    #[inline(always)]
-    fn deserialize_5(bytes: &[u8]) -> Self {
-        hax_lib::fstar!(r#"assert (v (Core.Slice.impl__len $bytes) == Seq.length $bytes)"#);
-        Self {
-            elements: serialize::deserialize_5(bytes),
-        }
-    }
-
-    #[requires(fstar!(r#"Spec.MLKEM.serialize_pre 10 (impl.f_repr $vector)"#))]
-    #[ensures(|out| fstar!(r#"Spec.MLKEM.serialize_pre 10 (impl.f_repr $vector) ==> Spec.MLKEM.serialize_post 10 (impl.f_repr $vector) $out"#))]
-    #[inline(always)]
-    fn serialize_10(vector: Self) -> [u8; 20] {
-        serialize_10(vector)
-    }
-
-    #[requires(bytes.len() == 20)]
-    #[ensures(|out| fstar!(r#"sz (Seq.length $bytes) =. sz 20 ==> Spec.MLKEM.deserialize_post 10 $bytes (impl.f_repr $out)"#))]
-    #[inline(always)]
-    fn deserialize_10(bytes: &[u8]) -> Self {
-        deserialize_10(bytes)
+    #[requires(spec::serialize_1_pre(&vec.repr(), &out))]
+    #[ensures(|_| spec::serialize_1_post(&vec.repr(), &out, &future(out)))]
+    fn serialize_1(vec: &Self, out: &mut [u8]) {
+        debug_assert!(out.len() == 2);
+        serialize_1(vec, out);
     }
 
     #[inline(always)]
-    fn serialize_11(vector: Self) -> [u8; 22] {
-        serialize::serialize_11(vector.elements)
+    #[requires(spec::deserialize_1_pre(&input, &out.repr()))]
+    #[ensures(|_| spec::deserialize_1_post(&input, &out.repr(), &future(out).repr()))]
+    fn deserialize_1(input: &[u8], out: &mut Self) {
+        deserialize_1(input, out);
     }
 
-    #[requires(bytes.len() == 22)]
     #[inline(always)]
-    fn deserialize_11(bytes: &[u8]) -> Self {
-        Self {
-            elements: serialize::deserialize_11(bytes),
-        }
+    #[requires(spec::serialize_4_pre(&vec.repr(), &out))]
+    #[ensures(|_| spec::serialize_4_post(&vec.repr(), &out, &future(out)))]
+    fn serialize_4(vec: &Self, out: &mut [u8]) {
+        debug_assert!(out.len() == 8);
+        serialize_4(vec, out);
     }
 
-    #[requires(fstar!(r#"Spec.MLKEM.serialize_pre 12 (impl.f_repr $vector)"#))]
-    #[ensures(|out| fstar!(r#"Spec.MLKEM.serialize_pre 12 (impl.f_repr $vector) ==> Spec.MLKEM.serialize_post 12 (impl.f_repr $vector) $out"#))]
     #[inline(always)]
-    fn serialize_12(vector: Self) -> [u8; 24] {
-        serialize_12(vector)
+    #[requires(spec::deserialize_4_pre(&input, &out.repr()))]
+    #[ensures(|_| spec::deserialize_4_post(&input, &out.repr(), &future(out).repr()))]
+    fn deserialize_4(input: &[u8], out: &mut Self) {
+        deserialize_4(input, out);
     }
 
-    #[requires(bytes.len() == 24)]
-    #[ensures(|out| fstar!(r#"sz (Seq.length $bytes) =. sz 24 ==> Spec.MLKEM.deserialize_post 12 $bytes (impl.f_repr $out)"#))]
     #[inline(always)]
-    fn deserialize_12(bytes: &[u8]) -> Self {
-        deserialize_12(bytes)
+    #[requires(out.len() == 10)]
+    fn serialize_5(vec: &Self, out: &mut [u8]) {
+        debug_assert!(out.len() == 10);
+        serialize::serialize_5(&vec.elements, out);
     }
 
-    #[requires(input.len() == 24 && output.len() == 16)]
-    #[ensures(|result|
-        fstar!(r#"Seq.length $output_future == Seq.length $output /\ v $result <= 16"#)
-    )]
     #[inline(always)]
-    fn rej_sample(input: &[u8], output: &mut [i16]) -> usize {
-        sampling::rejection_sample(input, output)
+    #[requires(input.len() == 10)]
+    fn deserialize_5(input: &[u8], out: &mut Self) {
+        serialize::deserialize_5(input, &mut out.elements);
+    }
+
+    #[inline(always)]
+    #[requires(spec::serialize_10_pre(&vec.repr(), &out))]
+    #[ensures(|_| spec::serialize_10_post(&vec.repr(), &out, &future(out)))]
+    fn serialize_10(vec: &Self, out: &mut [u8]) {
+        debug_assert!(out.len() == 20);
+        serialize_10(vec, out);
+    }
+
+    #[inline(always)]
+    #[requires(spec::deserialize_10_pre(&input, &out.repr()))]
+    #[ensures(|_| spec::deserialize_10_post(&input, &out.repr(), &future(out).repr()))]
+    fn deserialize_10(input: &[u8], out: &mut Self) {
+        deserialize_10(input, out);
+    }
+
+    #[inline(always)]
+    #[requires(out.len() == 22)]
+    fn serialize_11(vec: &Self, out: &mut [u8]) {
+        debug_assert!(out.len() == 22);
+        serialize::serialize_11(&vec.elements, out);
+    }
+
+    #[inline(always)]
+    #[requires(input.len() == 22)]
+    fn deserialize_11(input: &[u8], out: &mut Self) {
+        serialize::deserialize_11(input, &mut out.elements);
+    }
+
+    #[inline(always)]
+    #[requires(spec::serialize_12_pre(&vec.repr(), &out))]
+    #[ensures(|_| spec::serialize_12_post(&vec.repr(), &out, &future(out)))]
+    fn serialize_12(vec: &Self, out: &mut [u8]) {
+        debug_assert!(out.len() == 24);
+        serialize_12(vec, out);
+    }
+
+    #[inline(always)]
+    #[requires(spec::deserialize_12_pre(&input, &out.repr()))]
+    #[ensures(|_| spec::deserialize_12_post(&input, &out.repr(), &future(out).repr()))]
+    fn deserialize_12(input: &[u8], out: &mut Self) {
+        deserialize_12(input, out);
+    }
+
+    #[inline(always)]
+    #[requires(input.len() == 24 && out.len() == 16)]
+    #[ensures(|result| result <= 16 && future(out).len() == 16)]
+    fn rej_sample(input: &[u8], out: &mut [i16]) -> usize {
+        sampling::rejection_sample(input, out)
     }
 }
