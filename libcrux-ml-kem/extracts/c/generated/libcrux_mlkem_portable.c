@@ -7,8 +7,8 @@
  * Charon: 667d2fc98984ff7f3df989c2367e6c1fa4a000e7
  * Eurydice: 2381cbc416ef2ad0b561c362c500bc84f36b6785
  * Karamel: 80f5435f2fc505973c469a4afcc8d875cddd0d8b
- * F*: 4b3fc11774003a6ff7c09500ecb5f0145ca6d862
- * Libcrux: f62b85fdbea428a327ef14cd473eff0cbd3b28a4
+ * F*: unset
+ * Libcrux: bccb526ae5d7c8a8845745889b8996dfe9917915
  */
 
 #include "internal/libcrux_mlkem_portable.h"
@@ -588,7 +588,8 @@ static KRML_MUSTINLINE void shift_right_ef(
   for (size_t i = (size_t)0U;
        i < LIBCRUX_ML_KEM_VECTOR_TRAITS_FIELD_ELEMENTS_IN_VECTOR; i++) {
     size_t i0 = i;
-    vec->elements[i0] = vec->elements[i0] >> (uint32_t)(int32_t)15;
+    size_t uu____0 = i0;
+    vec->elements[uu____0] = vec->elements[uu____0] >> (uint32_t)(int32_t)15;
   }
 }
 
@@ -2194,8 +2195,8 @@ KRML_MUSTINLINE size_t libcrux_ml_kem_vector_portable_sampling_rej_sample(
   for (size_t i = (size_t)0U; i < Eurydice_slice_len(a, uint8_t) / (size_t)3U;
        i++) {
     size_t i0 = i;
-    int16_t b1 = (int16_t)Eurydice_slice_index(a, i0 * (size_t)3U + (size_t)0U,
-                                               uint8_t, uint8_t *);
+    int16_t b1 =
+        (int16_t)Eurydice_slice_index(a, i0 * (size_t)3U, uint8_t, uint8_t *);
     int16_t b2 = (int16_t)Eurydice_slice_index(a, i0 * (size_t)3U + (size_t)1U,
                                                uint8_t, uint8_t *);
     int16_t b3 = (int16_t)Eurydice_slice_index(a, i0 * (size_t)3U + (size_t)2U,
@@ -2228,6 +2229,18 @@ size_t libcrux_ml_kem_vector_portable_rej_sample_b8(Eurydice_slice a,
 }
 
 /**
+A monomorphic instance of
+libcrux_ml_kem.polynomial.{libcrux_ml_kem::polynomial::PolynomialRingElement<Vector>[TraitClause@0,␣TraitClause@1]}.ZERO.{core::ops::function::FnMut<(usize),␣Vector>␣for␣libcrux_ml_kem::polynomial::{libcrux_ml_kem::polynomial::PolynomialRingElement<Vector>[TraitClause@0,␣TraitClause@1]}::ZERO::closure<Vector>[TraitClause@0,␣TraitClause@1]}.call_mut
+with types libcrux_ml_kem_vector_portable_vector_type_PortableVector
+with const generics
+
+*/
+static libcrux_ml_kem_vector_portable_vector_type_PortableVector call_mut_df(
+    void **_) {
+  return libcrux_ml_kem_vector_portable_ZERO_b8();
+}
+
+/**
 This function found in impl
 {libcrux_ml_kem::polynomial::PolynomialRingElement<Vector>[TraitClause@0,
 TraitClause@1]}
@@ -2240,12 +2253,12 @@ with const generics
 */
 static libcrux_ml_kem_polynomial_PolynomialRingElement_1d ZERO_d6_df(void) {
   libcrux_ml_kem_polynomial_PolynomialRingElement_1d lit;
-  libcrux_ml_kem_vector_portable_vector_type_PortableVector
-      repeat_expression[16U];
-  KRML_MAYBE_FOR16(
-      i, (size_t)0U, (size_t)16U, (size_t)1U,
-      repeat_expression[i] = libcrux_ml_kem_vector_portable_ZERO_b8(););
-  memcpy(lit.coefficients, repeat_expression,
+  libcrux_ml_kem_vector_portable_vector_type_PortableVector ret[16U];
+  KRML_MAYBE_FOR16(i, (size_t)0U, (size_t)16U, (size_t)1U,
+                   /* original Rust expression is not an lvalue in C */
+                   void *lvalue = (void *)0U;
+                   ret[i] = call_mut_df(&lvalue););
+  memcpy(lit.coefficients, ret,
          (size_t)16U *
              sizeof(libcrux_ml_kem_vector_portable_vector_type_PortableVector));
   return lit;
@@ -2525,6 +2538,18 @@ typedef struct IndCpaPrivateKeyUnpacked_af_s {
 } IndCpaPrivateKeyUnpacked_af;
 
 /**
+A monomorphic instance of
+libcrux_ml_kem.ind_cpa.unpacked.{core::default::Default␣for␣libcrux_ml_kem::ind_cpa::unpacked::IndCpaPrivateKeyUnpacked<Vector,␣K>[TraitClause@0,␣TraitClause@1]}.default.{core::ops::function::FnMut<(usize),␣libcrux_ml_kem::polynomial::PolynomialRingElement<Vector>[TraitClause@0,␣TraitClause@1]>␣for␣libcrux_ml_kem::ind_cpa::unpacked::{core::default::Default␣for␣libcrux_ml_kem::ind_cpa::unpacked::IndCpaPrivateKeyUnpacked<Vector,␣K>[TraitClause@0,␣TraitClause@1]}::default::closure<Vector,␣K>[TraitClause@0,␣TraitClause@1]}.call_mut
+with types libcrux_ml_kem_vector_portable_vector_type_PortableVector
+with const generics
+- K= 4
+*/
+static libcrux_ml_kem_polynomial_PolynomialRingElement_1d call_mut_d0(
+    void **_) {
+  return ZERO_d6_df();
+}
+
+/**
 This function found in impl {core::default::Default for
 libcrux_ml_kem::ind_cpa::unpacked::IndCpaPrivateKeyUnpacked<Vector,
 K>[TraitClause@0, TraitClause@1]}
@@ -2537,11 +2562,13 @@ with const generics
 */
 static IndCpaPrivateKeyUnpacked_af default_70_d0(void) {
   IndCpaPrivateKeyUnpacked_af lit;
-  libcrux_ml_kem_polynomial_PolynomialRingElement_1d repeat_expression[4U];
+  libcrux_ml_kem_polynomial_PolynomialRingElement_1d ret[4U];
   KRML_MAYBE_FOR4(i, (size_t)0U, (size_t)4U, (size_t)1U,
-                  repeat_expression[i] = ZERO_d6_df(););
+                  /* original Rust expression is not an lvalue in C */
+                  void *lvalue = (void *)0U;
+                  ret[i] = call_mut_d0(&lvalue););
   memcpy(
-      lit.secret_as_ntt, repeat_expression,
+      lit.secret_as_ntt, ret,
       (size_t)4U * sizeof(libcrux_ml_kem_polynomial_PolynomialRingElement_1d));
   return lit;
 }
@@ -2560,6 +2587,32 @@ typedef struct IndCpaPublicKeyUnpacked_84_s {
 } IndCpaPublicKeyUnpacked_84;
 
 /**
+A monomorphic instance of
+libcrux_ml_kem.ind_cpa.unpacked.{core::default::Default␣for␣libcrux_ml_kem::ind_cpa::unpacked::IndCpaPublicKeyUnpacked<Vector,␣K,␣K_SQUARED>[TraitClause@0,␣TraitClause@1]}.default.{core::ops::function::FnMut<(usize),␣libcrux_ml_kem::polynomial::PolynomialRingElement<Vector>[TraitClause@0,␣TraitClause@1]>␣for␣libcrux_ml_kem::ind_cpa::unpacked::{core::default::Default␣for␣libcrux_ml_kem::ind_cpa::unpacked::IndCpaPublicKeyUnpacked<Vector,␣K,␣K_SQUARED>[TraitClause@0,␣TraitClause@1]}::default::closure<Vector,␣K,␣K_SQUARED>[TraitClause@0,␣TraitClause@1]}.call_mut
+with types libcrux_ml_kem_vector_portable_vector_type_PortableVector
+with const generics
+- K= 4
+- K_SQUARED= 16
+*/
+static libcrux_ml_kem_polynomial_PolynomialRingElement_1d call_mut_ff(
+    void **_) {
+  return ZERO_d6_df();
+}
+
+/**
+A monomorphic instance of
+libcrux_ml_kem.ind_cpa.unpacked.{core::default::Default␣for␣libcrux_ml_kem::ind_cpa::unpacked::IndCpaPublicKeyUnpacked<Vector,␣K,␣K_SQUARED>[TraitClause@0,␣TraitClause@1]}.default.{core::ops::function::FnMut<(usize),␣libcrux_ml_kem::polynomial::PolynomialRingElement<Vector>[TraitClause@0,␣TraitClause@1]>␣for␣libcrux_ml_kem::ind_cpa::unpacked::{core::default::Default␣for␣libcrux_ml_kem::ind_cpa::unpacked::IndCpaPublicKeyUnpacked<Vector,␣K,␣K_SQUARED>[TraitClause@0,␣TraitClause@1]}::default::closure#1<Vector,␣K,␣K_SQUARED>[TraitClause@0,␣TraitClause@1]}.call_mut
+with types libcrux_ml_kem_vector_portable_vector_type_PortableVector
+with const generics
+- K= 4
+- K_SQUARED= 16
+*/
+static libcrux_ml_kem_polynomial_PolynomialRingElement_1d call_mut_ff0(
+    void **_) {
+  return ZERO_d6_df();
+}
+
+/**
 This function found in impl {core::default::Default for
 libcrux_ml_kem::ind_cpa::unpacked::IndCpaPublicKeyUnpacked<Vector, K,
 K_SQUARED>[TraitClause@0, TraitClause@1]}
@@ -2574,18 +2627,22 @@ with const generics
 static IndCpaPublicKeyUnpacked_84 default_50_ff(void) {
   libcrux_ml_kem_polynomial_PolynomialRingElement_1d uu____0[4U];
   KRML_MAYBE_FOR4(i, (size_t)0U, (size_t)4U, (size_t)1U,
-                  uu____0[i] = ZERO_d6_df(););
+                  /* original Rust expression is not an lvalue in C */
+                  void *lvalue = (void *)0U;
+                  uu____0[i] = call_mut_ff(&lvalue););
   uint8_t uu____1[32U] = {0U};
   IndCpaPublicKeyUnpacked_84 lit;
   memcpy(
       lit.t_as_ntt, uu____0,
       (size_t)4U * sizeof(libcrux_ml_kem_polynomial_PolynomialRingElement_1d));
   memcpy(lit.seed_for_A, uu____1, (size_t)32U * sizeof(uint8_t));
-  libcrux_ml_kem_polynomial_PolynomialRingElement_1d repeat_expression[16U];
+  libcrux_ml_kem_polynomial_PolynomialRingElement_1d ret[16U];
   KRML_MAYBE_FOR16(i, (size_t)0U, (size_t)16U, (size_t)1U,
-                   repeat_expression[i] = ZERO_d6_df(););
+                   /* original Rust expression is not an lvalue in C */
+                   void *lvalue = (void *)0U;
+                   ret[i] = call_mut_ff0(&lvalue););
   memcpy(
-      lit.A, repeat_expression,
+      lit.A, ret,
       (size_t)16U * sizeof(libcrux_ml_kem_polynomial_PolynomialRingElement_1d));
   return lit;
 }
@@ -2871,10 +2928,12 @@ static KRML_MUSTINLINE void sample_matrix_A_57(Eurydice_slice A_transpose,
                                                uint8_t *seed, bool transpose) {
   KRML_MAYBE_FOR4(
       i0, (size_t)0U, (size_t)4U, (size_t)1U, size_t i1 = i0;
-      uint8_t seeds[4U][34U];
-      KRML_MAYBE_FOR4(i, (size_t)0U, (size_t)4U, (size_t)1U,
-                      core_array__core__clone__Clone_for__Array_T__N___clone(
-                          (size_t)34U, seed, seeds[i], uint8_t, void *););
+      /* Passing arrays by value in Rust generates a copy in C */
+      uint8_t copy_of_seed[34U];
+      memcpy(copy_of_seed, seed, (size_t)34U * sizeof(uint8_t));
+      uint8_t seeds[4U][34U]; KRML_MAYBE_FOR4(
+          i, (size_t)0U, (size_t)4U, (size_t)1U,
+          memcpy(seeds[i], copy_of_seed, (size_t)34U * sizeof(uint8_t)););
       KRML_MAYBE_FOR4(i, (size_t)0U, (size_t)4U, (size_t)1U, size_t j = i;
                       seeds[j][32U] = (uint8_t)i1; seeds[j][33U] = (uint8_t)j;);
       size_t sampled_coefficients[4U] = {0U}; int16_t out[4U][272U] = {{0U}};
@@ -2891,19 +2950,19 @@ static KRML_MUSTINLINE void sample_matrix_A_57(Eurydice_slice A_transpose,
         int16_t sample[272U];
         memcpy(sample, out[j], (size_t)272U * sizeof(int16_t));
         if (transpose) {
-          Eurydice_slice uu____0 = Eurydice_array_to_subslice_to(
+          Eurydice_slice uu____1 = Eurydice_array_to_subslice_to(
               (size_t)272U, sample, (size_t)256U, int16_t, size_t, int16_t[]);
           from_i16_array_d6_df(
-              uu____0,
+              uu____1,
               &Eurydice_slice_index(
                   A_transpose, j * (size_t)4U + i1,
                   libcrux_ml_kem_polynomial_PolynomialRingElement_1d,
                   libcrux_ml_kem_polynomial_PolynomialRingElement_1d *));
         } else {
-          Eurydice_slice uu____1 = Eurydice_array_to_subslice_to(
+          Eurydice_slice uu____2 = Eurydice_array_to_subslice_to(
               (size_t)272U, sample, (size_t)256U, int16_t, size_t, int16_t[]);
           from_i16_array_d6_df(
-              uu____1,
+              uu____2,
               &Eurydice_slice_index(
                   A_transpose, i1 * (size_t)4U + j,
                   libcrux_ml_kem_polynomial_PolynomialRingElement_1d,
@@ -3205,10 +3264,13 @@ libcrux_ml_kem_hash_functions_portable_PortableHash with const generics
 static KRML_MUSTINLINE uint8_t sample_vector_cbd_then_ntt_40(
     Eurydice_slice re_as_ntt, uint8_t *prf_input, uint8_t domain_separator,
     libcrux_ml_kem_vector_portable_vector_type_PortableVector *scratch) {
+  /* Passing arrays by value in Rust generates a copy in C */
+  uint8_t copy_of_prf_input[33U];
+  memcpy(copy_of_prf_input, prf_input, (size_t)33U * sizeof(uint8_t));
   uint8_t prf_inputs[4U][33U];
-  KRML_MAYBE_FOR4(i, (size_t)0U, (size_t)4U, (size_t)1U,
-                  core_array__core__clone__Clone_for__Array_T__N___clone(
-                      (size_t)33U, prf_input, prf_inputs[i], uint8_t, void *););
+  KRML_MAYBE_FOR4(
+      i, (size_t)0U, (size_t)4U, (size_t)1U,
+      memcpy(prf_inputs[i], copy_of_prf_input, (size_t)33U * sizeof(uint8_t)););
   domain_separator =
       libcrux_ml_kem_utils_prf_input_inc_ac(prf_inputs, domain_separator);
   uint8_t prf_outputs[512U] = {0U};
@@ -3843,17 +3905,20 @@ libcrux_ml_kem_hash_functions_portable_PortableHash with const generics
 static KRML_MUSTINLINE uint8_t
 sample_ring_element_cbd_40(uint8_t *prf_input, uint8_t domain_separator,
                            Eurydice_slice error_1, int16_t *sample_buffer) {
+  /* Passing arrays by value in Rust generates a copy in C */
+  uint8_t copy_of_prf_input[33U];
+  memcpy(copy_of_prf_input, prf_input, (size_t)33U * sizeof(uint8_t));
   uint8_t prf_inputs[4U][33U];
-  KRML_MAYBE_FOR4(i, (size_t)0U, (size_t)4U, (size_t)1U,
-                  core_array__core__clone__Clone_for__Array_T__N___clone(
-                      (size_t)33U, prf_input, prf_inputs[i], uint8_t, void *););
+  KRML_MAYBE_FOR4(
+      i, (size_t)0U, (size_t)4U, (size_t)1U,
+      memcpy(prf_inputs[i], copy_of_prf_input, (size_t)33U * sizeof(uint8_t)););
   domain_separator =
       libcrux_ml_kem_utils_prf_input_inc_ac(prf_inputs, domain_separator);
   uint8_t prf_outputs[512U] = {0U};
-  Eurydice_slice uu____0 = core_array___Array_T__N___as_slice(
+  Eurydice_slice uu____1 = core_array___Array_T__N___as_slice(
       (size_t)4U, prf_inputs, uint8_t[33U], Eurydice_slice);
   libcrux_ml_kem_hash_functions_portable_PRFxN_6e(
-      uu____0, Eurydice_array_to_slice((size_t)512U, prf_outputs, uint8_t),
+      uu____1, Eurydice_array_to_slice((size_t)512U, prf_outputs, uint8_t),
       (size_t)128U);
   KRML_MAYBE_FOR4(
       i, (size_t)0U, (size_t)4U, (size_t)1U, size_t i0 = i;
@@ -5224,9 +5289,6 @@ static KRML_MUSTINLINE void subtract_reduce_d6_df(
 }
 
 /**
- The following functions compute various expressions involving
- vectors and matrices. The computation of these expressions has been
- abstracted away into these functions in order to save on loop iterations.
  Compute v − InverseNTT(sᵀ ◦ NTT(u))
 */
 /**
@@ -5739,6 +5801,18 @@ typedef struct IndCpaPrivateKeyUnpacked_a0_s {
 } IndCpaPrivateKeyUnpacked_a0;
 
 /**
+A monomorphic instance of
+libcrux_ml_kem.ind_cpa.unpacked.{core::default::Default␣for␣libcrux_ml_kem::ind_cpa::unpacked::IndCpaPrivateKeyUnpacked<Vector,␣K>[TraitClause@0,␣TraitClause@1]}.default.{core::ops::function::FnMut<(usize),␣libcrux_ml_kem::polynomial::PolynomialRingElement<Vector>[TraitClause@0,␣TraitClause@1]>␣for␣libcrux_ml_kem::ind_cpa::unpacked::{core::default::Default␣for␣libcrux_ml_kem::ind_cpa::unpacked::IndCpaPrivateKeyUnpacked<Vector,␣K>[TraitClause@0,␣TraitClause@1]}::default::closure<Vector,␣K>[TraitClause@0,␣TraitClause@1]}.call_mut
+with types libcrux_ml_kem_vector_portable_vector_type_PortableVector
+with const generics
+- K= 3
+*/
+static libcrux_ml_kem_polynomial_PolynomialRingElement_1d call_mut_1b(
+    void **_) {
+  return ZERO_d6_df();
+}
+
+/**
 This function found in impl {core::default::Default for
 libcrux_ml_kem::ind_cpa::unpacked::IndCpaPrivateKeyUnpacked<Vector,
 K>[TraitClause@0, TraitClause@1]}
@@ -5751,11 +5825,13 @@ with const generics
 */
 static IndCpaPrivateKeyUnpacked_a0 default_70_1b(void) {
   IndCpaPrivateKeyUnpacked_a0 lit;
-  libcrux_ml_kem_polynomial_PolynomialRingElement_1d repeat_expression[3U];
+  libcrux_ml_kem_polynomial_PolynomialRingElement_1d ret[3U];
   KRML_MAYBE_FOR3(i, (size_t)0U, (size_t)3U, (size_t)1U,
-                  repeat_expression[i] = ZERO_d6_df(););
+                  /* original Rust expression is not an lvalue in C */
+                  void *lvalue = (void *)0U;
+                  ret[i] = call_mut_1b(&lvalue););
   memcpy(
-      lit.secret_as_ntt, repeat_expression,
+      lit.secret_as_ntt, ret,
       (size_t)3U * sizeof(libcrux_ml_kem_polynomial_PolynomialRingElement_1d));
   return lit;
 }
@@ -5774,6 +5850,32 @@ typedef struct IndCpaPublicKeyUnpacked_be_s {
 } IndCpaPublicKeyUnpacked_be;
 
 /**
+A monomorphic instance of
+libcrux_ml_kem.ind_cpa.unpacked.{core::default::Default␣for␣libcrux_ml_kem::ind_cpa::unpacked::IndCpaPublicKeyUnpacked<Vector,␣K,␣K_SQUARED>[TraitClause@0,␣TraitClause@1]}.default.{core::ops::function::FnMut<(usize),␣libcrux_ml_kem::polynomial::PolynomialRingElement<Vector>[TraitClause@0,␣TraitClause@1]>␣for␣libcrux_ml_kem::ind_cpa::unpacked::{core::default::Default␣for␣libcrux_ml_kem::ind_cpa::unpacked::IndCpaPublicKeyUnpacked<Vector,␣K,␣K_SQUARED>[TraitClause@0,␣TraitClause@1]}::default::closure<Vector,␣K,␣K_SQUARED>[TraitClause@0,␣TraitClause@1]}.call_mut
+with types libcrux_ml_kem_vector_portable_vector_type_PortableVector
+with const generics
+- K= 3
+- K_SQUARED= 9
+*/
+static libcrux_ml_kem_polynomial_PolynomialRingElement_1d call_mut_89(
+    void **_) {
+  return ZERO_d6_df();
+}
+
+/**
+A monomorphic instance of
+libcrux_ml_kem.ind_cpa.unpacked.{core::default::Default␣for␣libcrux_ml_kem::ind_cpa::unpacked::IndCpaPublicKeyUnpacked<Vector,␣K,␣K_SQUARED>[TraitClause@0,␣TraitClause@1]}.default.{core::ops::function::FnMut<(usize),␣libcrux_ml_kem::polynomial::PolynomialRingElement<Vector>[TraitClause@0,␣TraitClause@1]>␣for␣libcrux_ml_kem::ind_cpa::unpacked::{core::default::Default␣for␣libcrux_ml_kem::ind_cpa::unpacked::IndCpaPublicKeyUnpacked<Vector,␣K,␣K_SQUARED>[TraitClause@0,␣TraitClause@1]}::default::closure#1<Vector,␣K,␣K_SQUARED>[TraitClause@0,␣TraitClause@1]}.call_mut
+with types libcrux_ml_kem_vector_portable_vector_type_PortableVector
+with const generics
+- K= 3
+- K_SQUARED= 9
+*/
+static libcrux_ml_kem_polynomial_PolynomialRingElement_1d call_mut_890(
+    void **_) {
+  return ZERO_d6_df();
+}
+
+/**
 This function found in impl {core::default::Default for
 libcrux_ml_kem::ind_cpa::unpacked::IndCpaPublicKeyUnpacked<Vector, K,
 K_SQUARED>[TraitClause@0, TraitClause@1]}
@@ -5788,18 +5890,22 @@ with const generics
 static IndCpaPublicKeyUnpacked_be default_50_89(void) {
   libcrux_ml_kem_polynomial_PolynomialRingElement_1d uu____0[3U];
   KRML_MAYBE_FOR3(i, (size_t)0U, (size_t)3U, (size_t)1U,
-                  uu____0[i] = ZERO_d6_df(););
+                  /* original Rust expression is not an lvalue in C */
+                  void *lvalue = (void *)0U;
+                  uu____0[i] = call_mut_89(&lvalue););
   uint8_t uu____1[32U] = {0U};
   IndCpaPublicKeyUnpacked_be lit;
   memcpy(
       lit.t_as_ntt, uu____0,
       (size_t)3U * sizeof(libcrux_ml_kem_polynomial_PolynomialRingElement_1d));
   memcpy(lit.seed_for_A, uu____1, (size_t)32U * sizeof(uint8_t));
-  libcrux_ml_kem_polynomial_PolynomialRingElement_1d repeat_expression[9U];
+  libcrux_ml_kem_polynomial_PolynomialRingElement_1d ret[9U];
   KRML_MAYBE_FOR9(i, (size_t)0U, (size_t)9U, (size_t)1U,
-                  repeat_expression[i] = ZERO_d6_df(););
+                  /* original Rust expression is not an lvalue in C */
+                  void *lvalue = (void *)0U;
+                  ret[i] = call_mut_890(&lvalue););
   memcpy(
-      lit.A, repeat_expression,
+      lit.A, ret,
       (size_t)9U * sizeof(libcrux_ml_kem_polynomial_PolynomialRingElement_1d));
   return lit;
 }
@@ -6051,10 +6157,12 @@ static KRML_MUSTINLINE void sample_matrix_A_570(Eurydice_slice A_transpose,
                                                 uint8_t *seed, bool transpose) {
   KRML_MAYBE_FOR3(
       i0, (size_t)0U, (size_t)3U, (size_t)1U, size_t i1 = i0;
-      uint8_t seeds[3U][34U];
-      KRML_MAYBE_FOR3(i, (size_t)0U, (size_t)3U, (size_t)1U,
-                      core_array__core__clone__Clone_for__Array_T__N___clone(
-                          (size_t)34U, seed, seeds[i], uint8_t, void *););
+      /* Passing arrays by value in Rust generates a copy in C */
+      uint8_t copy_of_seed[34U];
+      memcpy(copy_of_seed, seed, (size_t)34U * sizeof(uint8_t));
+      uint8_t seeds[3U][34U]; KRML_MAYBE_FOR3(
+          i, (size_t)0U, (size_t)3U, (size_t)1U,
+          memcpy(seeds[i], copy_of_seed, (size_t)34U * sizeof(uint8_t)););
       KRML_MAYBE_FOR3(i, (size_t)0U, (size_t)3U, (size_t)1U, size_t j = i;
                       seeds[j][32U] = (uint8_t)i1; seeds[j][33U] = (uint8_t)j;);
       size_t sampled_coefficients[3U] = {0U}; int16_t out[3U][272U] = {{0U}};
@@ -6071,19 +6179,19 @@ static KRML_MUSTINLINE void sample_matrix_A_570(Eurydice_slice A_transpose,
         int16_t sample[272U];
         memcpy(sample, out[j], (size_t)272U * sizeof(int16_t));
         if (transpose) {
-          Eurydice_slice uu____0 = Eurydice_array_to_subslice_to(
+          Eurydice_slice uu____1 = Eurydice_array_to_subslice_to(
               (size_t)272U, sample, (size_t)256U, int16_t, size_t, int16_t[]);
           from_i16_array_d6_df(
-              uu____0,
+              uu____1,
               &Eurydice_slice_index(
                   A_transpose, j * (size_t)3U + i1,
                   libcrux_ml_kem_polynomial_PolynomialRingElement_1d,
                   libcrux_ml_kem_polynomial_PolynomialRingElement_1d *));
         } else {
-          Eurydice_slice uu____1 = Eurydice_array_to_subslice_to(
+          Eurydice_slice uu____2 = Eurydice_array_to_subslice_to(
               (size_t)272U, sample, (size_t)256U, int16_t, size_t, int16_t[]);
           from_i16_array_d6_df(
-              uu____1,
+              uu____2,
               &Eurydice_slice_index(
                   A_transpose, i1 * (size_t)3U + j,
                   libcrux_ml_kem_polynomial_PolynomialRingElement_1d,
@@ -6108,10 +6216,13 @@ libcrux_ml_kem_hash_functions_portable_PortableHash with const generics
 static KRML_MUSTINLINE uint8_t sample_vector_cbd_then_ntt_400(
     Eurydice_slice re_as_ntt, uint8_t *prf_input, uint8_t domain_separator,
     libcrux_ml_kem_vector_portable_vector_type_PortableVector *scratch) {
+  /* Passing arrays by value in Rust generates a copy in C */
+  uint8_t copy_of_prf_input[33U];
+  memcpy(copy_of_prf_input, prf_input, (size_t)33U * sizeof(uint8_t));
   uint8_t prf_inputs[3U][33U];
-  KRML_MAYBE_FOR3(i, (size_t)0U, (size_t)3U, (size_t)1U,
-                  core_array__core__clone__Clone_for__Array_T__N___clone(
-                      (size_t)33U, prf_input, prf_inputs[i], uint8_t, void *););
+  KRML_MAYBE_FOR3(
+      i, (size_t)0U, (size_t)3U, (size_t)1U,
+      memcpy(prf_inputs[i], copy_of_prf_input, (size_t)33U * sizeof(uint8_t)););
   domain_separator =
       libcrux_ml_kem_utils_prf_input_inc_e0(prf_inputs, domain_separator);
   uint8_t prf_outputs[384U] = {0U};
@@ -6632,17 +6743,20 @@ libcrux_ml_kem_hash_functions_portable_PortableHash with const generics
 static KRML_MUSTINLINE uint8_t
 sample_ring_element_cbd_400(uint8_t *prf_input, uint8_t domain_separator,
                             Eurydice_slice error_1, int16_t *sample_buffer) {
+  /* Passing arrays by value in Rust generates a copy in C */
+  uint8_t copy_of_prf_input[33U];
+  memcpy(copy_of_prf_input, prf_input, (size_t)33U * sizeof(uint8_t));
   uint8_t prf_inputs[3U][33U];
-  KRML_MAYBE_FOR3(i, (size_t)0U, (size_t)3U, (size_t)1U,
-                  core_array__core__clone__Clone_for__Array_T__N___clone(
-                      (size_t)33U, prf_input, prf_inputs[i], uint8_t, void *););
+  KRML_MAYBE_FOR3(
+      i, (size_t)0U, (size_t)3U, (size_t)1U,
+      memcpy(prf_inputs[i], copy_of_prf_input, (size_t)33U * sizeof(uint8_t)););
   domain_separator =
       libcrux_ml_kem_utils_prf_input_inc_e0(prf_inputs, domain_separator);
   uint8_t prf_outputs[384U] = {0U};
-  Eurydice_slice uu____0 = core_array___Array_T__N___as_slice(
+  Eurydice_slice uu____1 = core_array___Array_T__N___as_slice(
       (size_t)3U, prf_inputs, uint8_t[33U], Eurydice_slice);
   libcrux_ml_kem_hash_functions_portable_PRFxN_6e(
-      uu____0, Eurydice_array_to_slice((size_t)384U, prf_outputs, uint8_t),
+      uu____1, Eurydice_array_to_slice((size_t)384U, prf_outputs, uint8_t),
       (size_t)128U);
   KRML_MAYBE_FOR3(
       i, (size_t)0U, (size_t)3U, (size_t)1U, size_t i0 = i;
@@ -7324,9 +7438,6 @@ static KRML_MUSTINLINE void deserialize_then_decompress_ring_element_v_89(
 }
 
 /**
- The following functions compute various expressions involving
- vectors and matrices. The computation of these expressions has been
- abstracted away into these functions in order to save on loop iterations.
  Compute v − InverseNTT(sᵀ ◦ NTT(u))
 */
 /**
