@@ -100,10 +100,9 @@ impl Operations for Coefficients {
         shift_left_then_reduce::<SHIFT_BY>(simd_unit);
     }
 
-    #[hax_lib::requires(true)]
-    #[hax_lib::ensures(|result| false)]
+    #[hax_lib::requires(specs::power2round_pre(&t0.repr(), &t1.repr()))]
+    #[hax_lib::ensures(|_| specs::power2round_post(&t0.repr(), &t1.repr(), &future(t0).repr(), &future(t1).repr()))]
     fn power2round(t0: &mut Coefficients, t1: &mut Coefficients) {
-        hax_lib::assume!(false);
         arithmetic::power2round(t0, t1)
     }
 

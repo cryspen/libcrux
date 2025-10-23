@@ -109,10 +109,9 @@ impl Operations for AVX2SIMDUnit {
     }
 
     #[inline(always)]
-    #[hax_lib::requires(true)]
-    #[hax_lib::ensures(|result| false)]
+    #[hax_lib::requires(specs::power2round_pre(&t0.repr(), &t1.repr()))]
+    #[hax_lib::ensures(|_| specs::power2round_post(&t0.repr(), &t1.repr(), &future(t0).repr(), &future(t1).repr()))]
     fn power2round(t0: &mut Self, t1: &mut Self) {
-        hax_lib::assume!(false);
         arithmetic::power2round(&mut t0.value, &mut t1.value);
     }
 

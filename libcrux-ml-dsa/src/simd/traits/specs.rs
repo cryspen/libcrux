@@ -1,4 +1,4 @@
-use crate::constants::{Eta, Gamma2, GAMMA2_V261_888, GAMMA2_V95_232};
+use crate::constants::{Eta, Gamma2, BITS_IN_LOWER_PART_OF_T, GAMMA2_V261_888, GAMMA2_V95_232};
 use hax_lib::*;
 
 pub(crate) const PRIME: u32 = 8380417;
@@ -287,10 +287,7 @@ pub(crate) fn shift_left_then_reduce_post<const SHIFT_BY: i32>(
 }
 
 pub(crate) fn power2round_pre(t0: &SIMDContent, t1: &SIMDContent) -> Prop {
-    hax_lib::fstar::prop!(
-        r#"
-        Spec.Utils.is_i32b_array_opaque (v ${FIELD_MAX}) $t0"#
-    )
+    hax_lib::fstar::prop!(r#" Spec.Utils.is_i32b_array_opaque (v $FIELD_MAX) $t0"#)
 }
 
 pub(crate) fn power2round_post(
@@ -298,8 +295,16 @@ pub(crate) fn power2round_post(
     t1: &SIMDContent,
     future_t0: &SIMDContent,
     future_t1: &SIMDContent,
-) -> bool {
-    true
+) -> Prop {
+    hax_lib::fstar::prop!(
+        r#"
+    forall i. i < 8 ==>
+        (let t0_v         = v (Seq.index $future_t0 i) in
+         let (t0_s, t1_s) = Spec.MLDSA.Math.power2round (v (Seq.index $t0 i)) in
+         t0_v == t0_s
+         /\ v (Seq.index $future_t1 i) == t1_s
+         /\ Spec.Utils.is_intb_bt (pow2 (v $BITS_IN_LOWER_PART_OF_T - 1)) t0_v)"#
+    )
 }
 
 pub(crate) fn rejection_sample_less_than_field_modulus_pre(randomness: &[u8], out: &[i32]) -> bool {
