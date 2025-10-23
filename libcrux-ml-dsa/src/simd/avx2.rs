@@ -88,10 +88,9 @@ impl Operations for AVX2SIMDUnit {
     }
 
     #[inline(always)]
-    #[hax_lib::requires(true)]
-    #[hax_lib::ensures(|result| false)]
+    #[hax_lib::requires(specs::use_hint_pre(gamma2, &simd_unit.repr(), &hint.repr()))]
+    #[hax_lib::ensures(|_| specs::use_hint_post(gamma2, &simd_unit.repr(), &hint.repr(), &future(hint).repr()))]
     fn use_hint(gamma2: Gamma2, simd_unit: &Self, hint: &mut Self) {
-        hax_lib::assume!(false);
         arithmetic::use_hint(gamma2, &simd_unit.value, &mut hint.value);
     }
 

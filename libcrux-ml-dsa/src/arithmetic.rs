@@ -209,6 +209,7 @@ pub(crate) fn use_hint<SIMDUnit: Operations>(
                 "#
             ));
 
+            hax_lib::assume!(false); // TOFIX
             SIMDUnit::use_hint(gamma2, &re_vector[i].simd_units[j], &mut tmp.simd_units[j]);
         }
         re_vector[i] = tmp;
