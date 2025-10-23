@@ -275,8 +275,15 @@ pub(crate) fn shift_left_then_reduce_pre<const SHIFT_BY: i32>(simd_unit: &SIMDCo
 pub(crate) fn shift_left_then_reduce_post<const SHIFT_BY: i32>(
     simd_unit: &SIMDContent,
     future_simd_unit: &SIMDContent,
-) -> bool {
-    true
+) -> Prop {
+    hax_lib::fstar::prop!(
+        r#"
+    Spec.Utils.is_i32b_array_opaque 8380416 ($future_simd_unit) /\
+    (forall i. i < 8 ==> Spec.MLDSA.Math.(
+        mod_q (v (Seq.index $future_simd_unit i)) ==
+        mod_q (v ((Seq.index $simd_unit i) <<! v_SHIFT_BY))))
+    "#
+    )
 }
 
 pub(crate) fn power2round_pre(t0: &SIMDContent, t1: &SIMDContent) -> Prop {
