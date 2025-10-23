@@ -82,10 +82,9 @@ impl Operations for Coefficients {
         arithmetic::compute_hint(low, high, gamma2, hint)
     }
 
-    #[hax_lib::requires(true)]
-    #[hax_lib::ensures(|result| false)]
+    #[hax_lib::requires(specs::use_hint_pre(gamma2, &simd_unit.repr(), &hint.repr()))]
+    #[hax_lib::ensures(|_| specs::use_hint_post(gamma2, &simd_unit.repr(), &hint.repr(), &future(hint).repr()))]
     fn use_hint(gamma2: Gamma2, simd_unit: &Coefficients, hint: &mut Coefficients) {
-        hax_lib::assume!(false);
         arithmetic::use_hint(gamma2, simd_unit, hint)
     }
 
