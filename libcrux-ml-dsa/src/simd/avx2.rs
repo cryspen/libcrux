@@ -102,10 +102,9 @@ impl Operations for AVX2SIMDUnit {
     }
 
     #[inline(always)]
-    #[hax_lib::requires(true)]
-    #[hax_lib::ensures(|result| false)]
+    #[hax_lib::requires(specs::shift_left_then_reduce_pre::<SHIFT_BY>(&simd_unit.repr()))]
+    #[hax_lib::ensures(|_| specs::shift_left_then_reduce_post::<SHIFT_BY>(&simd_unit.repr(), &future(simd_unit).repr()))]
     fn shift_left_then_reduce<const SHIFT_BY: i32>(simd_unit: &mut Self) {
-        hax_lib::assume!(false);
         shift_left_then_reduce::<SHIFT_BY>(&mut simd_unit.value)
     }
 
