@@ -1,11 +1,11 @@
 use crate::constants::FIELD_MODULUS;
 
 #[cfg(hax)]
-use crate::specs::simd::portable::sample::*;
+use crate::simd::traits::specs;
 
 #[inline(always)]
-#[hax_lib::requires(rejection_sample_less_than_field_modulus_pre(randomness, out))]
-#[hax_lib::ensures(|r| rejection_sample_less_than_field_modulus_post(randomness, future(out), r))]
+#[hax_lib::requires(specs::rejection_sample_less_than_field_modulus_pre(randomness, out))]
+#[hax_lib::ensures(|r| specs::rejection_sample_less_than_field_modulus_post(randomness, out, future(out), r))]
 pub fn rejection_sample_less_than_field_modulus(randomness: &[u8], out: &mut [i32]) -> usize {
     let mut sampled = 0;
 
@@ -56,8 +56,8 @@ pub fn rejection_sample_less_than_field_modulus(randomness: &[u8], out: &mut [i3
 
 #[inline(always)]
 #[hax_lib::fstar::options("--z3rlimit 800 --ext context_pruning --z3refresh")]
-#[hax_lib::requires(rejection_sample_less_than_eta_equals_2_pre(randomness, out))]
-#[hax_lib::ensures(|r| rejection_sample_less_than_eta_equals_2_post(randomness, future(out), r))]
+#[hax_lib::requires(specs::rejection_sample_less_than_eta_equals_2_pre(randomness, out))]
+#[hax_lib::ensures(|r| specs::rejection_sample_less_than_eta_equals_2_post(randomness, out, future(out), r))]
 pub fn rejection_sample_less_than_eta_equals_2(randomness: &[u8], out: &mut [i32]) -> usize {
     let mut sampled = 0;
 
@@ -129,8 +129,8 @@ pub fn rejection_sample_less_than_eta_equals_2(randomness: &[u8], out: &mut [i32
 
 #[inline(always)]
 #[hax_lib::fstar::options("--ext context_pruning --z3refresh")]
-#[hax_lib::requires(rejection_sample_less_than_eta_equals_4_pre(randomness, out))]
-#[hax_lib::ensures(|r| rejection_sample_less_than_eta_equals_4_post(randomness, future(out), r))]
+#[hax_lib::requires(specs::rejection_sample_less_than_eta_equals_4_pre(randomness, out))]
+#[hax_lib::ensures(|r| specs::rejection_sample_less_than_eta_equals_4_post(randomness, out, future(out), r))]
 pub fn rejection_sample_less_than_eta_equals_4(randomness: &[u8], out: &mut [i32]) -> usize {
     let mut sampled = 0;
 

@@ -308,39 +308,61 @@ pub(crate) fn power2round_post(
 }
 
 pub(crate) fn rejection_sample_less_than_field_modulus_pre(randomness: &[u8], out: &[i32]) -> bool {
-    true
+    randomness.len() / 3 <= 4_294_967_295 && randomness.len() / 3 <= out.len()
 }
 
 pub(crate) fn rejection_sample_less_than_field_modulus_post(
     randomness: &[u8],
     out: &[i32],
+    future_out: &[i32],
     return_value: usize,
-) -> bool {
-    true
+) -> Prop {
+    hax_lib::fstar::prop!(
+        r#"
+      let s = Spec.MLDSA.Math.rejection_sample_field_modulus $randomness in
+      v $return_value <= Seq.length $future_out
+      /\ v $return_value == Seq.length s
+      /\ Seq.slice $future_out 0 (v $return_value) == s"#
+    )
 }
 
 pub(crate) fn rejection_sample_less_than_eta_equals_2_pre(randomness: &[u8], out: &[i32]) -> bool {
-    true
+    randomness.len() * 2 <= 4_294_967_295 && randomness.len() * 2 <= out.len()
 }
 
 pub(crate) fn rejection_sample_less_than_eta_equals_2_post(
     randomness: &[u8],
     out: &[i32],
+    future_out: &[i32],
     return_value: usize,
-) -> bool {
-    true
+) -> Prop {
+    hax_lib::fstar::prop!(
+        r#"
+      let s = Spec.MLDSA.Math.rejection_sample_eta_2 $randomness in
+      v $return_value <= Seq.length $future_out
+      /\ v $return_value == Seq.length s
+      /\ Seq.slice $future_out 0 (v $return_value) == s"#
+    )
 }
 
 pub(crate) fn rejection_sample_less_than_eta_equals_4_pre(randomness: &[u8], out: &[i32]) -> bool {
-    true
+    randomness.len() * 2 <= 4_294_967_295 && randomness.len() * 2 <= out.len()
 }
 
 pub(crate) fn rejection_sample_less_than_eta_equals_4_post(
     randomness: &[u8],
     out: &[i32],
+    future_out: &[i32],
     return_value: usize,
-) -> bool {
-    true
+) -> Prop {
+    hax_lib::fstar::prop!(
+        r#"
+      let s = Spec.MLDSA.Math.rejection_sample_eta_4 $randomness in
+      v $return_value <= Seq.length $future_out
+      /\ v $return_value == Seq.length s
+      /\ Seq.slice $future_out 0 (v $return_value) == s
+    "#
+    )
 }
 
 pub(crate) fn gamma1_serialize_pre(

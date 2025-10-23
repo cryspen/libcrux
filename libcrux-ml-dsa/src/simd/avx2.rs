@@ -116,26 +116,23 @@ impl Operations for AVX2SIMDUnit {
     }
 
     #[inline(always)]
-    #[hax_lib::requires(true)]
-    #[hax_lib::ensures(|result| false)]
+    #[hax_lib::requires(specs::rejection_sample_less_than_field_modulus_pre(randomness, out))]
+    #[hax_lib::ensures(|result| specs::rejection_sample_less_than_field_modulus_post(randomness, out, future(out), result))]
     fn rejection_sample_less_than_field_modulus(randomness: &[u8], out: &mut [i32]) -> usize {
-        hax_lib::assume!(false);
         rejection_sample::less_than_field_modulus::sample(randomness, out)
     }
 
     #[inline(always)]
-    #[hax_lib::requires(true)]
-    #[hax_lib::ensures(|result| false)]
+    #[hax_lib::requires(specs::rejection_sample_less_than_eta_equals_2_pre(randomness, out))]
+    #[hax_lib::ensures(|result| specs::rejection_sample_less_than_eta_equals_2_post(randomness, out, future(out), result))]
     fn rejection_sample_less_than_eta_equals_2(randomness: &[u8], out: &mut [i32]) -> usize {
-        hax_lib::assume!(false);
         rejection_sample::less_than_eta::sample::<2>(randomness, out)
     }
 
     #[inline(always)]
-    #[hax_lib::requires(true)]
-    #[hax_lib::ensures(|result| false)]
+    #[hax_lib::requires(specs::rejection_sample_less_than_eta_equals_2_pre(randomness, out))]
+    #[hax_lib::ensures(|result| specs::rejection_sample_less_than_eta_equals_2_post(randomness, out, future(out), result))]
     fn rejection_sample_less_than_eta_equals_4(randomness: &[u8], out: &mut [i32]) -> usize {
-        hax_lib::assume!(false);
         rejection_sample::less_than_eta::sample::<4>(randomness, out)
     }
 
