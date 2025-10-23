@@ -1,9 +1,11 @@
-use crate::constants::{Eta, Gamma2};
+use crate::constants::{Eta, Gamma2, GAMMA2_V261_888, GAMMA2_V95_232};
 use hax_lib::*;
 
 pub(crate) const PRIME: u32 = 8380417;
 
 pub(crate) const MONT_R: u32 = 8380417;
+
+pub(crate) const FIELD_MODULUS: i32 = 8_380_417;
 
 pub(crate) const FIELD_MAX: u32 = 8380416;
 
@@ -221,10 +223,9 @@ pub(crate) fn compute_hint_post(
 
 pub(crate) fn use_hint_pre(gamma2: Gamma2, simd_unit: &SIMDContent, hint: &SIMDContent) -> Prop {
     hax_lib::fstar::prop!(
-        r#"
-        (v $gamma2 == v ${crate::constants::GAMMA2_V261_888} \/
-         v $gamma2 == v ${crate::constants::GAMMA2_V95_232}) /\
-        Spec.Utils.is_i32b_array_opaque (v ${FIELD_MAX}) ($simd_unit)"#
+        r#"(v $gamma2 == v $GAMMA2_V261_888 \/ v $gamma2 == v $GAMMA2_V95_232) /\
+    Spec.Utils.is_i32b_array_opaque (v $FIELD_MODULUS - 1) $simd_unit /\
+    (forall i. i < 8 ==> v (Seq.index $hint i) == 0 \/ v (Seq.index $hint i) == 1)"#
     )
 }
 
@@ -233,8 +234,13 @@ pub(crate) fn use_hint_post(
     simd_unit: &SIMDContent,
     hint: &SIMDContent,
     future_hint: &SIMDContent,
-) -> bool {
-    true
+) -> Prop {
+    hax_lib::fstar::prop!(
+        r#"forall i. i < 8 ==>
+        (let h = Seq.index $hint i in
+         let result = Seq.index $future_hint i in
+         v result = Spec.MLDSA.Math.use_one_hint (v $gamma2) (v (Seq.index $simd_unit i)) (v h))"#
+    )
 }
 
 pub(crate) fn montgomery_multiply_pre(lhs: &SIMDContent, rhs: &SIMDContent) -> Prop {
