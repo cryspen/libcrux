@@ -95,10 +95,9 @@ impl Operations for AVX2SIMDUnit {
     }
 
     #[inline(always)]
-    #[hax_lib::requires(true)]
-    #[hax_lib::ensures(|result| false)]
+    #[hax_lib::requires(specs::montgomery_multiply_pre(&lhs.repr(), &rhs.repr()))]
+    #[hax_lib::ensures(|_| specs::montgomery_multiply_post(&lhs.repr(), &rhs.repr(), &future(lhs).repr()))]
     fn montgomery_multiply(lhs: &mut Self, rhs: &Self) {
-        hax_lib::assume!(false);
         arithmetic::montgomery_multiply(&mut lhs.value, &rhs.value);
     }
 
