@@ -78,7 +78,7 @@ pub fn kem_value(kem_id: KEM) -> u16 {
         KEM::DHKEM_X25519_HKDF_SHA256 => 0x00020,
         KEM::DHKEM_X448_HKDF_SHA512 => 0x0021,
         KEM::X25519Kyber768Draft00 => 0x0030,
-        KEM::XWingDraft06 => 0x004D,
+        KEM::XWingDraft06 => 0x647a,
     }
 }
 
