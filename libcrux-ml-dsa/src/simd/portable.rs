@@ -124,17 +124,15 @@ impl Operations for Coefficients {
         sample::rejection_sample_less_than_eta_equals_4(randomness, out)
     }
 
-    #[hax_lib::requires(true)]
-    #[hax_lib::ensures(|result| false)]
+    #[hax_lib::requires(specs::gamma1_serialize_pre(&simd_unit.repr(), serialized, gamma1_exponent))]
+    #[hax_lib::ensures(|_| specs::gamma1_serialize_post(&simd_unit.repr(), serialized, gamma1_exponent, future(serialized)))]
     fn gamma1_serialize(simd_unit: &Coefficients, serialized: &mut [u8], gamma1_exponent: usize) {
-        hax_lib::assume!(false);
         encoding::gamma1::serialize(simd_unit, serialized, gamma1_exponent)
     }
 
-    #[hax_lib::requires(true)]
-    #[hax_lib::ensures(|result| false)]
+    #[hax_lib::requires(specs::gamma1_deserialize_pre(serialized, &out.repr(), gamma1_exponent))]
+    #[hax_lib::ensures(|_| specs::gamma1_deserialize_post(serialized, &out.repr(), gamma1_exponent, &future(out).repr()))]
     fn gamma1_deserialize(serialized: &[u8], out: &mut Coefficients, gamma1_exponent: usize) {
-        hax_lib::assume!(false);
         encoding::gamma1::deserialize(serialized, out, gamma1_exponent)
     }
 
