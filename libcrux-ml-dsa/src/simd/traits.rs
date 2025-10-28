@@ -111,8 +111,9 @@ pub(crate) trait Operations: Copy + Clone + Repr {
 
     // Gamma1
     #[hax_lib::requires(specs::gamma1_serialize_pre(&simd_unit.repr(), serialized, gamma1_exponent))]
-    #[hax_lib::ensures(|_| specs::gamma1_serialize_post(&simd_unit.repr(), serialized, gamma1_exponent))]
+    #[hax_lib::ensures(|_| specs::gamma1_serialize_post(&simd_unit.repr(), serialized, gamma1_exponent, future(serialized)))]
     fn gamma1_serialize(simd_unit: &Self, serialized: &mut [u8], gamma1_exponent: usize);
+
     #[hax_lib::requires(specs::gamma1_deserialize_pre(serialized, &out.repr(), gamma1_exponent))]
     #[hax_lib::ensures(|_| specs::gamma1_deserialize_post(serialized, &out.repr(), gamma1_exponent, &future(out).repr()))]
     fn gamma1_deserialize(serialized: &[u8], out: &mut Self, gamma1_exponent: usize);

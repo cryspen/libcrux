@@ -369,14 +369,21 @@ pub(crate) fn gamma1_serialize_pre(
     simd_unit: &SIMDContent,
     serialized: &[u8],
     gamma1_exponent: usize,
-) -> bool {
-    true
+) -> Prop {
+    hax_lib::fstar::prop!(
+        r#"
+       (v $gamma1_exponent == 17 \/ v $gamma1_exponent == 19)
+    /\ (forall i. bounded (Seq.index $simd_unit i) (v $gamma1_exponent))
+    /\ Seq.length $serialized == (1 + v $gamma1_exponent)
+"#
+    )
 }
 
 pub(crate) fn gamma1_serialize_post(
     simd_unit: &SIMDContent,
     serialized: &[u8],
     gamma1_exponent: usize,
+    future_serialized: &[u8],
 ) -> bool {
     true
 }
@@ -385,8 +392,8 @@ pub(crate) fn gamma1_deserialize_pre(
     serialized: &[u8],
     out: &SIMDContent,
     gamma1_exponent: usize,
-) -> bool {
-    true
+) -> Prop {
+    hax_lib::fstar::prop!(r#"Seq.length $serialized == 1 + v $gamma1_exponent"#)
 }
 
 pub(crate) fn gamma1_deserialize_post(
