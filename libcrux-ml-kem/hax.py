@@ -137,7 +137,7 @@ class proveAction(argparse.Action):
         admit_env = {}
         if args.admit:
             admit_env = {"OTHERFLAGS": "--admit_smt_queries true"}
-        shell(["make", "-j4", "-C", "proofs/fstar/extraction/"], env=admit_env)
+        shell(["make", "-j4", "-k", "-C", "proofs/fstar/extraction/"], env=admit_env)
         return None
 
 
