@@ -16,6 +16,30 @@ mod public_integers;
 #[cfg(not(feature = "check-secret-independence"))]
 pub use public_integers::*;
 
+// Type aliases for convenience
+
+/// A trait for mutable byte slices classified as secret bytes
+pub trait SecretByteSliceMut<'a>: Classify<Classified = &'a mut [U8]> {}
+impl<'a> SecretByteSliceMut<'a> for &'a mut [u8] {}
+
+/// A trait for mutable byte array references classified as secret byte arrays
+pub trait SecretByteArrayRefMut<'a, const N: usize>:
+    Classify<Classified = &'a mut [U8; N]>
+{
+}
+impl<'a, const N: usize> SecretByteArrayRefMut<'a, N> for &'a mut [u8; N] {}
+
+/// A trait for byte slices classified as secret bytes
+pub trait SecretByteSlice<'a>: Classify<Classified = &'a [U8]> {}
+impl<'a> SecretByteSlice<'a> for &'a [u8] {}
+
+/// A trait for byte array references classified as secret byte arrays
+pub trait SecretByteArrayRef<'a, const N: usize>: Classify<Classified = &'a [U8; N]> {}
+impl<'a, const N: usize> SecretByteArrayRef<'a, N> for &'a [u8; N] {}
+
+pub trait SecretByteArray<const N: usize>: Classify<Classified = [U8; N]> {}
+impl<const N: usize> SecretByteArray<N> for [u8; N] {}
+
 // A macro defining const constructors for secret/public integers
 macro_rules! impl_new {
     ($name:ident, $t:ty, $st:ty) => {
