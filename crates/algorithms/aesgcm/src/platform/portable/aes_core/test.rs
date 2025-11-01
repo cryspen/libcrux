@@ -671,7 +671,7 @@ fn sbox_inv(s: u8) -> u8 {
     }
 }
 
-use rand_core::{OsRng, RngCore};
+use rand_core::RngCore as _;
 
 use crate::platform::portable::aes_core::transpose_u8x16;
 
@@ -686,7 +686,7 @@ fn get_bit_u16(x: &[u16], i: usize, j: usize) -> u8 {
 #[test]
 fn test_transpose() {
     let mut x = [0u8; 16];
-    OsRng.fill_bytes(&mut x);
+    rand::rng().fill_bytes(&mut x);
     let mut y = [0u16; 8];
     transpose_u8x16(&x, &mut y);
     for i in 0..16 {
