@@ -34,6 +34,34 @@ impl<T: Scalar, const N: usize> Classify for [T; N] {
     }
 }
 
+impl<'a, T> Classify for &'a mut [T] {
+    type Classified = &'a mut [Secret<T>];
+    fn classify(self) -> Self::Classified {
+        unsafe { core::mem::transmute(self) }
+    }
+}
+
+impl<'a, T> Classify for &'a [T] {
+    type Classified = &'a [Secret<T>];
+    fn classify(self) -> Self::Classified {
+        unsafe { core::mem::transmute(self) }
+    }
+}
+
+impl<'a, const N: usize, T> Classify for &'a mut [T; N] {
+    type Classified = &'a mut [Secret<T>; N];
+    fn classify(self) -> Self::Classified {
+        unsafe { core::mem::transmute(self) }
+    }
+}
+
+impl<'a, const N: usize, T> Classify for &'a [T; N] {
+    type Classified = &'a [Secret<T>; N];
+    fn classify(self) -> Self::Classified {
+        unsafe { core::mem::transmute(self) }
+    }
+}
+
 // Arrays of scalars can be declassified
 impl<T: Scalar, const N: usize> Declassify for [Secret<T>; N] {
     type Declassified = [T; N];
