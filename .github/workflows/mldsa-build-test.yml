@@ -26,6 +26,7 @@ jobs:
           - macos-13 # Intel mac
           - macos-latest # macos-15 on apple silicon
           - ubuntu-latest
+          - ubuntu-24.04-arm
           - windows-latest
         exclude:
           - bits: 32
