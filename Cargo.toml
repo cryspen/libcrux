@@ -38,6 +38,7 @@ members = [
     "crates/algorithms/aesgcm",
     "crates/algorithms/aesgcm/fuzz",
     "hacl-rs",
+    "crates/primitives/signature",
 ]
 
 [workspace.package]
