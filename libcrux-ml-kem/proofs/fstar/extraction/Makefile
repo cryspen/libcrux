@@ -9,6 +9,7 @@ ADMIT_MODULES = Libcrux_ml_kem.Ind_cpa.fst \
 	      Libcrux_ml_kem.Polynomial.fst \
 	      Libcrux_ml_kem.Matrix.fst \
 	      Libcrux_ml_kem.Sampling.fst \
+              Libcrux_ml_kem.Vector.Portable.fst \
               Libcrux_ml_kem.Vector.Portable.Arithmetic.fst \
               Libcrux_ml_kem.Vector.Portable.Ntt.fst \
               Libcrux_ml_kem.Vector.Neon.Arithmetic.fst \

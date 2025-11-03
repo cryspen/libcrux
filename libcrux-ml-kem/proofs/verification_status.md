@@ -17,11 +17,11 @@ functions in the modules still need some proofs in that category.
 | -------- | ----------------- | ------------ | -------------- | ------------ |
 | _Generic_  | constant_time_ops | yes          | yes            | yes          |    
 |          | hash_functions    | yes          | yes            | yes          |    
-|          | ind_cpa           | yes          | yes            | yes          |    
-|          | ind_cca           | yes          | yes            | yes          |    
+|          | ind_cpa           | yes          | yes            | needs proofs |    
+|          | ind_cca           | yes          | yes            | needs proofs |    
 |          | instantiations    | yes          | yes            | yes          |    
 |          | multiplexing      | yes          | yes            | yes          |    
-|          | polynomial        | yes          | yes            | yes          |    
+|          | polynomial        | yes          | yes            | needs proofs |    
 |          | invert_ntt        | yes          | yes            | needs proofs |    
 |          | ntt               | yes          | yes            | needs proofs |    
 |          | mlkem*            | yes          | yes            | needs proofs |    
@@ -29,8 +29,8 @@ functions in the modules still need some proofs in that category.
 |          | serialize         | yes          | needs proofs   | needs proofs |    
 |          | sampling          | yes          | needs proofs   | needs proofs |    
 | 	   |                   |              |                |              |
-| _Portable_ | arithmetic        | yes          | yes            | yes          |
-|          | ntt               | yes          | yes            | yes          |
+| _Portable_ | arithmetic        | yes          | yes            | needs proofs |
+|          | ntt               | yes          | yes            | needs proofs |
 |          | serialize         | yes          | yes            | yes          |
 |          | compress          | yes          | yes            | yes          |
 |          | sampling          | yes          | yes            | needs proofs |
