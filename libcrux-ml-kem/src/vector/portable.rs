@@ -163,6 +163,9 @@ impl Operations for PortableVector {
         (v (Seq.index ${lhs}_future.f_elements i) == 
          v (Seq.index ${lhs}.f_elements i) + v (Seq.index ${rhs}.f_elements i))"#))]
     fn add(lhs: &mut Self, rhs: &Self) {
+        hax_lib::fstar!(
+            r#"reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.Spec.add_post) (Libcrux_ml_kem.Vector.Traits.Spec.add_post)"#
+        );
         add(lhs, rhs)
     }
 

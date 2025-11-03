@@ -306,6 +306,9 @@ impl Operations for SIMD256Vector {
     #[requires(spec::add_pre(&lhs.repr(), &rhs.repr()))]
     #[ensures(|_| spec::add_post(&lhs.repr(), &rhs.repr(), &future(lhs).repr()))]
     fn add(lhs: &mut Self, rhs: &Self) {
+        hax_lib::fstar!(
+            r#"reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.Spec.add_post) (Libcrux_ml_kem.Vector.Traits.Spec.add_post)"#
+        );
         arithmetic::add(&mut lhs.elements, &rhs.elements);
     }
 

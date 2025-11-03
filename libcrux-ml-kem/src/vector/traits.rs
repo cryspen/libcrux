@@ -23,23 +23,24 @@ pub trait Repr {}
 pub(crate) mod spec {
     pub(crate) fn add_pre(lhs: &[i16; 16], rhs: &[i16; 16]) -> hax_lib::Prop {
         hax_lib::fstar_prop_expr!(
-            r#"forall i. i < 16 ==> 
+            r#"forall i.
             Spec.Utils.is_intb (pow2 15 - 1) 
                 (v (Seq.index ${lhs} i) + v (Seq.index ${rhs} i))"#
         )
     }
 
+    #[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
     pub(crate) fn add_post(lhs: &[i16; 16], rhs: &[i16; 16], result: &[i16; 16]) -> hax_lib::Prop {
         hax_lib::fstar_prop_expr!(
-            r#"forall i. i < 16 ==> 
-            (v (Seq.index ${result} i) == 
-            v (Seq.index ${lhs} i) + v (Seq.index ${rhs} i))"#
+            r#"forall i. 
+            v (Seq.index ${result} i) == 
+            v (Seq.index ${lhs} i) + v (Seq.index ${rhs} i)"#
         )
     }
 
     pub(crate) fn sub_pre(lhs: &[i16; 16], rhs: &[i16; 16]) -> hax_lib::Prop {
         hax_lib::fstar_prop_expr!(
-            r#"forall i. i < 16 ==> 
+            r#"forall i. 
             Spec.Utils.is_intb (pow2 15 - 1) 
                 (v (Seq.index ${lhs} i) - v (Seq.index ${rhs} i))"#
         )
@@ -47,22 +48,22 @@ pub(crate) mod spec {
 
     pub(crate) fn sub_post(lhs: &[i16; 16], rhs: &[i16; 16], result: &[i16; 16]) -> hax_lib::Prop {
         hax_lib::fstar_prop_expr!(
-            r#"forall i. i < 16 ==> 
-            (v (Seq.index ${result} i) == 
-            v (Seq.index ${lhs} i) - v (Seq.index ${rhs} i))"#
+            r#"forall i. 
+            v (Seq.index ${result} i) == 
+            v (Seq.index ${lhs} i) - v (Seq.index ${rhs} i)"#
         )
     }
 
     pub(crate) fn negate_pre(vec: &[i16; 16]) -> hax_lib::Prop {
         hax_lib::fstar_prop_expr!(
-            r#"forall i. i < 16 ==> 
+            r#"forall i. 
                 Spec.Utils.is_intb (pow2 15 - 1) (v (Seq.index ${vec} i))"#
         )
     }
 
     pub(crate) fn negate_post(vec: &[i16; 16], result: &[i16; 16]) -> hax_lib::Prop {
         hax_lib::fstar_prop_expr!(
-            r#"forall i. i < 16 ==> 
+            r#"forall i. 
                 v (Seq.index ${result} i) == 
                 - (v (Seq.index ${vec} i))"#
         )
@@ -70,7 +71,7 @@ pub(crate) mod spec {
 
     pub(crate) fn multiply_by_constant_pre(vec: &[i16; 16], c: i16) -> hax_lib::Prop {
         hax_lib::fstar_prop_expr!(
-            r#"forall i. i < 16 ==> 
+            r#"forall i. 
                 Spec.Utils.is_intb (pow2 15 - 1) (v (Seq.index ${vec} i) * v $c)"#
         )
     }
