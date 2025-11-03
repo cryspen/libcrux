@@ -48,10 +48,10 @@ jobs:
         if: ${{ matrix.bits == 64 }}
 
       - run: echo 'EXCLUDE_FEATURES=--exclude-features simd256' > $GITHUB_ENV
-        if: ${{ matrix.os == 'macos-latest' }}
+        if: ${{ matrix.os == 'macos-latest' || matrix.os == 'ubuntu-24.04-arm' }}
 
       - run: echo 'EXCLUDE_FEATURES=--exclude-features simd128' > $GITHUB_ENV
-        if: ${{ matrix.os != 'macos-latest' }}
+        if: ${{ matrix.os != 'macos-latest' && matrix.os != 'ubuntu-24.04-arm' }}
 
       - name: 🛠️ Setup Rust Nightly
         run: rustup toolchain install nightly
