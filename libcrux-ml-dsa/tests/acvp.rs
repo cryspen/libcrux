@@ -85,11 +85,6 @@ fn siggen() {
                 }
                 siggen_inner_internal(test, &results, kat.tgId, &parameter_set)
             } else {
-                /*
-                if kat.deterministic {
-                    continue;
-                }
-                */
                 let pre_hash = kat.preHash == Some("preHash".to_string());
                 if pre_hash {
                     if test.hashAlg.as_ref().map(String::as_str) != Some("SHAKE-128") {
