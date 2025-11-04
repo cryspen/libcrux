@@ -38,7 +38,7 @@ impl<T: TestResult> Results<TestGroupResults<T>> {
         self.testGroups
             .iter()
             .find(|tg| tg.tgId == tgId)
-            .unwrap()
+            .unwrap_or_else(|| panic!("testGroup {} should have been deserialized", tgId))
             .tests
             .iter()
             .find(|t| t.tc_id() == tcId)
