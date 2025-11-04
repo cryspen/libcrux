@@ -88,6 +88,7 @@ fn siggen() {
                 let pre_hash = kat.preHash == Some("preHash".to_string());
                 if pre_hash {
                     if test.hashAlg.as_ref().map(String::as_str) != Some("SHAKE-128") {
+                        eprintln!("Skipping pre-hash {:?}: unsupported", test.hashAlg);
                         continue;
                     }
                     siggen_inner_external_prehash(test, &results, kat.tgId, &parameter_set);
@@ -237,6 +238,7 @@ fn sigver() {
             } else {
                 let pre_hash = kat.preHash == Some("preHash".to_string());
                 if pre_hash && test.hashAlg.as_ref().map(String::as_str) != Some("SHAKE-128") {
+                    eprintln!("Skipping pre-hash {:?}: unsupported", test.hashAlg);
                     continue;
                 }
                 sigver_inner_external(test, &results, kat.tgId, &parameter_set, pre_hash);
