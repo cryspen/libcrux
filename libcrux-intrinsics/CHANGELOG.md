@@ -8,8 +8,3 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 - [#1222](https://github.com/cryspen/libcrux/pull/1222): [Intrinsics] Fix incorrect `_vxarq_u64` intrisic
-- [#1207](https://github.com/cryspen/libcrux/pull/1207): Fix incorrect `pre_hash_buffer` length
-
-## [0.0.3] (2025-06-30)
-
-- [#993](https://github.com/cryspen/libcrux/pull/993): Update dependency `macros`
