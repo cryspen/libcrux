@@ -1,6 +1,6 @@
 [package]
 name = "libcrux-sha3"
-version = "0.0.4-pre.1"
+version = "0.0.4"
 authors.workspace = true
 license.workspace = true
 homepage.workspace = true
@@ -15,8 +15,8 @@ bench = false # so libtest doesn't eat the arguments to criterion
 
 [dependencies]
 libcrux-platform = { version = "0.0.2", path = "../sys/platform" }
-libcrux-intrinsics = { version = "0.0.4-pre.1", path = "../libcrux-intrinsics" }
-libcrux-traits = { version = "=0.0.4-pre.1", path = "../traits/" }
+libcrux-intrinsics = { version = "0.0.4", path = "../libcrux-intrinsics" }
+libcrux-traits = { version = "=0.0.4", path = "../traits/" }
 hax-lib.workspace = true
 
 [features]
