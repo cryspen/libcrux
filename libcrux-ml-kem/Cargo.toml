@@ -82,7 +82,7 @@ criterion = "0.7"
 libcrux-traits = { version = "0.0.4-pre.1", path = "../traits", features = [
     "generic-tests",
 ]}
-libcrux-kats = { version = "0.0.3", path = "../crates/testing/kats", features = [
+libcrux-kats = { path = "../crates/testing/kats", features = [
     "mlkem",
 ] }
 
