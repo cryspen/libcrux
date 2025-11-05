@@ -54,21 +54,21 @@ allow-branch = ["main"]
 
 [workspace.dependencies]
 hax-lib = { version = "=0.3.5" }
-libcrux-intrinsics = { version = "=0.0.3", path = "libcrux-intrinsics" }
-libcrux-aesgcm = { version = "=0.0.2", path = "crates/algorithms/aesgcm" }
-libcrux-chacha20poly1305 = { version = "=0.0.3", path = "chacha20poly1305" }
-libcrux-traits = { version = "=0.0.3", path = "traits" }
-libcrux-hacl-rs = { version = "=0.0.3", path = "hacl-rs" }
+libcrux-intrinsics = { version = "=0.0.4-pre.1", path = "libcrux-intrinsics" }
+libcrux-aesgcm = { version = "=0.0.4-pre.1", path = "crates/algorithms/aesgcm" }
+libcrux-chacha20poly1305 = { version = "=0.0.4-pre.1", path = "chacha20poly1305" }
+libcrux-traits = { version = "=0.0.4-pre.1", path = "traits" }
+libcrux-hacl-rs = { version = "=0.0.4-pre.1", path = "hacl-rs" }
 libcrux-hacl = { version = "=0.0.2", path = "sys/hacl" }
 libcrux-platform = { version = "=0.0.2", path = "sys/platform" }
-libcrux-hkdf = { version = "=0.0.3", path = "crates/algorithms/hkdf" }
-libcrux-hmac = { version = "=0.0.3", path = "libcrux-hmac" }
-libcrux-sha2 = { version = "=0.0.3", path = "sha2" }
-libcrux-ed25519 = { version = "=0.0.3", path = "ed25519" }
-libcrux-ecdh = { version = "=0.0.3", path = "libcrux-ecdh" }
-libcrux-ml-kem = { version = "=0.0.3", path = "libcrux-ml-kem" }
-libcrux-kem = { version = "=0.0.3", path = "libcrux-kem" }
-libcrux-secrets = { version = "=0.0.3", path = "secrets" }
+libcrux-hkdf = { version = "=0.0.4-pre.1", path = "crates/algorithms/hkdf" }
+libcrux-hmac = { version = "=0.0.4-pre.1", path = "libcrux-hmac" }
+libcrux-sha2 = { version = "=0.0.4-pre.1", path = "sha2" }
+libcrux-ed25519 = { version = "=0.0.4-pre.1", path = "ed25519" }
+libcrux-ecdh = { version = "=0.0.4-pre.1", path = "libcrux-ecdh" }
+libcrux-ml-kem = { version = "=0.0.4-pre.1", path = "libcrux-ml-kem" }
+libcrux-kem = { version = "=0.0.4-pre.1", path = "libcrux-kem" }
+libcrux-secrets = { version = "=0.0.4-pre.1", path = "secrets" }
 
 [package]
 name = "libcrux"

@@ -2,7 +2,7 @@
 description = "Formally verified AEAD library"
 name = "libcrux-aead"
 readme = "Readme.md"
-version = "0.0.3"
+version = "0.0.4-pre.1"
 
 authors.workspace = true
 edition.workspace = true
@@ -11,10 +11,10 @@ license.workspace = true
 repository.workspace = true
 
 [dependencies]
-libcrux-chacha20poly1305 = { version = "0.0.3", path = "../../../chacha20poly1305", optional = true }
-libcrux-aesgcm = { version = "0.0.3", path = "../../algorithms/aesgcm", optional = true }
-libcrux-secrets = { version = "0.0.3", path = "../../../secrets" }
-libcrux-traits = { version = "0.0.3", path = "../../../traits", optional = true }
+libcrux-chacha20poly1305 = { version = "0.0.4-pre.1", path = "../../../chacha20poly1305", optional = true }
+libcrux-aesgcm = { version = "0.0.4-pre.1", path = "../../algorithms/aesgcm", optional = true }
+libcrux-secrets = { version = "0.0.4-pre.1", path = "../../../secrets" }
+libcrux-traits = { version = "0.0.4-pre.1", path = "../../../traits", optional = true }
 
 [features]
 chacha20poly1305 = ["dep:libcrux-chacha20poly1305", "dep:libcrux-traits"]

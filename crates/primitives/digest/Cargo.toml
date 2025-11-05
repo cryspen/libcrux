@@ -2,7 +2,7 @@
 description = "Digest library"
 name = "libcrux-digest"
 readme = "Readme.md"
-version = "0.0.3"
+version = "0.0.4-pre.1"
 
 authors.workspace = true
 edition.workspace = true
@@ -11,10 +11,10 @@ license.workspace = true
 repository.workspace = true
 
 [dependencies]
-libcrux-blake2 = { version = "0.0.3", path = "../../../blake2", optional = true }
-libcrux-sha2 = { version = "0.0.3", path = "../../../sha2", optional = true }
-libcrux-sha3 = { version = "0.0.3", path = "../../../libcrux-sha3", optional = true }
-libcrux-traits = { version = "0.0.3", path = "../../../traits", optional = true }
+libcrux-blake2 = { version = "0.0.4-pre.1", path = "../../../blake2", optional = true }
+libcrux-sha2 = { version = "0.0.4-pre.1", path = "../../../sha2", optional = true }
+libcrux-sha3 = { version = "0.0.4-pre.1", path = "../../../libcrux-sha3", optional = true }
+libcrux-traits = { version = "0.0.4-pre.1", path = "../../../traits", optional = true }
 
 [features]
 blake2 = ["dep:libcrux-blake2", "dep:libcrux-traits"]
