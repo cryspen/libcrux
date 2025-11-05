@@ -10,10 +10,12 @@ readme = "README.md"
 description = "Libcrux ML-KEM & Kyber implementations"
 exclude = [
     "/tests",
-    "/implementation_notes.pdf",
+    "*.pdf",
     "/extracts",
     "/proofs",
     "/hax.py",
+    "C-CODE.md",
+    "TOOLS.md"
 ]
 
 [lib]

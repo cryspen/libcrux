@@ -8,7 +8,7 @@ edition.workspace = true
 repository.workspace = true
 readme = "README.md"
 description = "Libcrux SHA-3 implementation"
-exclude = ["/proofs", "/c.sh", "/c.yaml", "/tests/tv", "tests/cavp.rs"]
+exclude = ["/proofs", "/c.sh", "/c.yaml", "/tests/tv", "tests/cavp.rs", "hax.py"]
 
 [lib]
 bench = false # so libtest doesn't eat the arguments to criterion
