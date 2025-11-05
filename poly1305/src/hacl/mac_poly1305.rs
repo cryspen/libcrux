@@ -425,6 +425,7 @@ pub struct state_t {
     pub p_key: Box<[u8]>,
 }
 
+#[allow(unused)]
 pub fn malloc(key: &[u8]) -> Box<[crate::hacl::mac_poly1305::state_t]> {
     let buf: Box<[u8]> = vec![0u8; 16usize].into_boxed_slice();
     let mut r1: Box<[u64]> = vec![0u64; 25usize].into_boxed_slice();
@@ -443,6 +444,7 @@ pub fn malloc(key: &[u8]) -> Box<[crate::hacl::mac_poly1305::state_t]> {
     p
 }
 
+#[allow(unused)]
 pub fn reset(state: &mut [crate::hacl::mac_poly1305::state_t], key: &[u8]) {
     let block_state: &mut [u64] = &mut (state[0usize]).block_state;
     let k·: &mut [u8] = &mut (state[0usize]).p_key;
@@ -456,7 +458,8 @@ pub fn reset(state: &mut [crate::hacl::mac_poly1305::state_t], key: &[u8]) {
 
 /**
 0 = success, 1 = max length exceeded
-*/
+ */
+#[allow(unused)]
 pub fn update(
     state: &mut [crate::hacl::mac_poly1305::state_t],
     chunk: &[u8],
@@ -576,6 +579,7 @@ pub fn update(
     }
 }
 
+#[allow(unused)]
 pub fn digest(state: &[crate::hacl::mac_poly1305::state_t], output: &mut [u8]) {
     let block_state: &[u64] = &(state[0usize]).block_state;
     let buf_: &[u8] = &(state[0usize]).buf;
