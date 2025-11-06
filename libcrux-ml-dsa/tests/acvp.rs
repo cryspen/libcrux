@@ -1,75 +1,15 @@
 #![cfg(feature = "acvp")]
-use serde::{de::DeserializeOwned, Deserialize};
-use std::{fs::File, io::BufReader, path::Path};
 
-#[derive(Deserialize)]
-#[allow(non_snake_case, dead_code)]
-struct Prompts<TG> {
-    vsId: usize,
-    algorithm: String,
-    mode: String,
-    revision: String,
-    isSample: bool,
-    testGroups: Vec<TG>,
-}
-
-#[derive(Deserialize)]
-#[allow(non_snake_case, dead_code)]
-struct Results<TG> {
-    vsId: usize,
-    algorithm: String,
-    mode: String,
-    revision: String,
-    isSample: bool,
-    testGroups: Vec<TG>,
-}
-
-#[derive(Deserialize)]
-#[allow(non_snake_case, dead_code)]
-struct KeyGenPrompt {
-    tcId: usize,
-
-    #[serde(with = "hex::serde")]
-    seed: [u8; 32],
-}
-
-#[derive(Deserialize)]
-#[allow(non_snake_case, dead_code)]
-struct KeyGenPromptTestGroup {
-    tgId: usize,
-    testType: String,
-    parameterSet: String,
-    tests: Vec<KeyGenPrompt>,
-}
-
-#[derive(Deserialize)]
-#[allow(non_snake_case, dead_code)]
-struct KeyGenResult {
-    tcId: usize,
-
-    #[serde(with = "hex::serde")]
-    pk: Vec<u8>,
-
-    #[serde(with = "hex::serde")]
-    sk: Vec<u8>,
-}
-
-#[derive(Deserialize)]
-#[allow(non_snake_case, dead_code)]
-struct ResultPromptTestGroup {
-    tgId: usize,
-    tests: Vec<KeyGenResult>,
-}
+use libcrux_kats::acvp::mldsa::common::*;
+use libcrux_kats::acvp::mldsa::keygen_schema::*;
+use libcrux_kats::acvp::mldsa::sign_schema::*;
+use libcrux_kats::acvp::mldsa::verify_schema::*;
 
 #[test]
 fn keygen() {
-    let prompts: Prompts<KeyGenPromptTestGroup> = read("keygen", "prompt.json");
-    assert!(prompts.algorithm == "ML-DSA");
-    assert!(prompts.revision == "FIPS204");
+    use libcrux_kats::acvp::mldsa::KeyGenTests;
 
-    let results: Results<ResultPromptTestGroup> = read("keygen", "expectedResults.json");
-    assert!(results.algorithm == "ML-DSA");
-    assert!(results.revision == "FIPS204");
+    let KeyGenTests { prompts, results } = KeyGenTests::load();
 
     for kat in prompts.testGroups {
         let parameter_set = kat.parameterSet;
@@ -90,7 +30,7 @@ fn keygen() {
 #[allow(non_snake_case)]
 fn keygen_inner(
     test: KeyGenPrompt,
-    results: &Results<ResultPromptTestGroup>,
+    results: &Results<ResultKeyGenTestGroup>,
     tgId: usize,
     parameter_set: &String,
 ) {
@@ -105,15 +45,7 @@ fn keygen_inner(
         assert_eq!(result.sk, keys.signing_key.as_slice());
     }
 
-    let expected_result = results
-        .testGroups
-        .iter()
-        .find(|tg| tg.tgId == tgId)
-        .unwrap()
-        .tests
-        .iter()
-        .find(|t| t.tcId == test.tcId)
-        .unwrap();
+    let expected_result = results.find_expected_result(tgId, test.tcId);
 
     match parameter_set.as_str() {
         "ML-DSA-44" => check(ml_dsa_44::generate_key_pair(test.seed), expected_result),
@@ -125,27 +57,11 @@ fn keygen_inner(
     }
 }
 
-fn read<T: DeserializeOwned>(variant: &str, file: &str) -> T {
-    let katfile_path = Path::new("tests")
-        .join("kats")
-        .join("acvp-1_1_0_36")
-        .join(variant)
-        .join(file);
-    let katfile = File::open(katfile_path).expect("Could not open KAT file.");
-    let reader = BufReader::new(katfile);
-
-    serde_json::from_reader(reader).expect("Could not deserialize KAT file.")
-}
-
 #[test]
 fn siggen() {
-    let prompts: Prompts<SigGenPromptTestGroup> = read("siggen", "prompt.json");
-    assert!(prompts.algorithm == "ML-DSA");
-    assert!(prompts.revision == "FIPS204");
+    use libcrux_kats::acvp::mldsa::SigGenTests;
 
-    let results: Results<ResultSigGenTestGroup> = read("siggen", "expectedResults.json");
-    assert!(results.algorithm == "ML-DSA");
-    assert!(results.revision == "FIPS204");
+    let SigGenTests { prompts, results } = SigGenTests::load();
 
     for kat in prompts.testGroups {
         let parameter_set = kat.parameterSet;
@@ -157,14 +73,36 @@ fn siggen() {
         eprintln!("{parameter_set}");
 
         for test in kat.tests {
-            siggen_inner(test, &results, kat.tgId, &parameter_set);
+            if kat.signatureInterface == "internal" {
+                if kat.externalMu {
+                    // NOTE: this API is currently not supported
+                    eprintln!(
+                        "Skipping test tgId {tgId}, tcId {tcId}: externalMu = true",
+                        tgId = kat.tgId,
+                        tcId = test.tcId,
+                    );
+                    continue;
+                }
+                siggen_inner_internal(test, &results, kat.tgId, &parameter_set)
+            } else {
+                let pre_hash = kat.preHash == Some("preHash".to_string());
+                if pre_hash {
+                    if test.hashAlg.as_ref().map(String::as_str) != Some("SHAKE-128") {
+                        eprintln!("Skipping pre-hash {:?}: unsupported", test.hashAlg);
+                        continue;
+                    }
+                    siggen_inner_external_prehash(test, &results, kat.tgId, &parameter_set);
+                } else {
+                    siggen_inner_external(test, &results, kat.tgId, &parameter_set);
+                }
+            }
         }
     }
 }
 
 #[inline(never)]
 #[allow(non_snake_case)]
-fn siggen_inner(
+fn siggen_inner_internal(
     test: SigGenTest,
     results: &Results<ResultSigGenTestGroup>,
     tgId: usize,
@@ -172,17 +110,10 @@ fn siggen_inner(
 ) {
     use libcrux_ml_dsa::*;
     eprintln!("  {}", test.tcId);
-    let expected_result = results
-        .testGroups
-        .iter()
-        .find(|tg| tg.tgId == tgId)
-        .unwrap()
-        .tests
-        .iter()
-        .find(|t| t.tcId == test.tcId)
-        .unwrap();
 
     let Randomness(rnd) = test.rnd.unwrap_or(Randomness([0u8; 32]));
+
+    let expected_result = results.find_expected_result(tgId, test.tcId);
 
     match parameter_set.as_str() {
         "ML-DSA-44" => {
@@ -218,15 +149,70 @@ fn siggen_inner(
     }
 }
 
+macro_rules! siggen_test {
+    ($name:ident, $sign:ident) => {
+        #[inline(never)]
+        #[allow(non_snake_case)]
+        fn $name(
+            test: SigGenTest,
+            results: &Results<ResultSigGenTestGroup>,
+            tgId: usize,
+            parameter_set: &String,
+        ) {
+            use libcrux_ml_dsa::*;
+
+            eprintln!("  {}", test.tcId);
+
+            let Randomness(rnd) = test.rnd.unwrap_or(Randomness([0u8; 32]));
+
+            let expected_result = results.find_expected_result(tgId, test.tcId);
+
+            match parameter_set.as_str() {
+                "ML-DSA-44" => {
+                    let signature = ml_dsa_44::$sign(
+                        &MLDSASigningKey::new(test.sk.try_into().unwrap()),
+                        &test.message,
+                        &test.context,
+                        rnd,
+                    )
+                    .unwrap();
+                    assert_eq!(signature.as_slice(), expected_result.signature);
+                }
+
+                "ML-DSA-65" => {
+                    let signature = ml_dsa_65::$sign(
+                        &MLDSASigningKey::new(test.sk.try_into().unwrap()),
+                        &test.message,
+                        &test.context,
+                        rnd,
+                    )
+                    .unwrap();
+                    assert_eq!(signature.as_slice(), expected_result.signature);
+                }
+
+                "ML-DSA-87" => {
+                    let signature = ml_dsa_87::$sign(
+                        &MLDSASigningKey::new(test.sk.try_into().unwrap()),
+                        &test.message,
+                        &test.context,
+                        rnd,
+                    )
+                    .unwrap();
+                    assert_eq!(signature.as_slice(), expected_result.signature);
+                }
+                _ => unimplemented!(),
+            }
+        }
+    };
+}
+siggen_test!(siggen_inner_external, sign);
+siggen_test!(siggen_inner_external_prehash, sign_pre_hashed_shake128);
+
 #[test]
 fn sigver() {
-    let prompts: Prompts<SigVerPromptTestGroup> = read("sigver", "prompt.json");
-    assert!(prompts.algorithm == "ML-DSA");
-    assert!(prompts.revision == "FIPS204");
+    use libcrux_kats::acvp::mldsa::SigVerTests;
 
-    let results: Results<ResultSigVerTestGroup> = read("sigver", "expectedResults.json");
-    assert!(results.algorithm == "ML-DSA");
-    assert!(results.revision == "FIPS204");
+    let SigVerTests { prompts, results } = SigVerTests::load();
 
     for kat in prompts.testGroups {
         let parameter_set = kat.parameterSet;
@@ -238,55 +224,81 @@ fn sigver() {
         eprintln!("{parameter_set}");
 
         for test in kat.tests {
-            sigver_inner(test, &results, kat.tgId, &kat.pk, &parameter_set);
+            if kat.signatureInterface == "internal" {
+                if kat.externalMu {
+                    // NOTE: this API is currently not supported
+                    eprintln!(
+                        "Skipping test tgId {tgId}, tcId {tcId}: externalMu = true",
+                        tgId = kat.tgId,
+                        tcId = test.tcId,
+                    );
+                    continue;
+                }
+                sigver_inner_internal(test, &results, kat.tgId, &parameter_set);
+            } else {
+                let pre_hash = kat.preHash == Some("preHash".to_string());
+                if pre_hash && test.hashAlg.as_ref().map(String::as_str) != Some("SHAKE-128") {
+                    eprintln!("Skipping pre-hash {:?}: unsupported", test.hashAlg);
+                    continue;
+                }
+                sigver_inner_external(test, &results, kat.tgId, &parameter_set, pre_hash);
+            }
         }
     }
 }
-
 #[inline(never)]
 #[allow(non_snake_case)]
-fn sigver_inner(
+fn sigver_inner_external(
     test: SigVerTest,
     results: &Results<ResultSigVerTestGroup>,
     tgId: usize,
-    pk: &[u8],
     parameter_set: &String,
+    pre_hash: bool,
 ) {
     use libcrux_ml_dsa::*;
     eprintln!("  {}", test.tcId);
-    let expected_result = results
-        .testGroups
-        .iter()
-        .find(|tg| tg.tgId == tgId)
-        .unwrap()
-        .tests
-        .iter()
-        .find(|t| t.tcId == test.tcId)
-        .unwrap();
+    let expected_result = results.find_expected_result(tgId, test.tcId);
+
+    let pk = test.pk.to_owned();
 
     match parameter_set.as_str() {
         "ML-DSA-44" => {
-            let valid = ml_dsa_44::verify_internal(
-                &MLDSAVerificationKey::new(pk.to_owned().try_into().unwrap()),
+            let verify = match pre_hash {
+                false => ml_dsa_44::verify,
+                true => ml_dsa_44::verify_pre_hashed_shake128,
+            };
+            let valid = verify(
+                &MLDSAVerificationKey::new(pk.try_into().unwrap()),
                 &test.message,
+                &test.context,
                 &MLDSASignature::new(test.signature.try_into().unwrap()),
             );
             assert_eq!(valid.is_ok(), expected_result.testPassed);
         }
 
         "ML-DSA-65" => {
-            let valid = ml_dsa_65::verify_internal(
-                &MLDSAVerificationKey::new(pk.to_owned().try_into().unwrap()),
+            let verify = match pre_hash {
+                false => ml_dsa_65::verify,
+                true => ml_dsa_65::verify_pre_hashed_shake128,
+            };
+            let valid = verify(
+                &MLDSAVerificationKey::new(pk.try_into().unwrap()),
                 &test.message,
+                &test.context,
                 &MLDSASignature::new(test.signature.try_into().unwrap()),
             );
             assert_eq!(valid.is_ok(), expected_result.testPassed);
         }
 
         "ML-DSA-87" => {
-            let valid = ml_dsa_87::verify_internal(
-                &MLDSAVerificationKey::new(pk.to_owned().try_into().unwrap()),
+            let verify = match pre_hash {
+                false => ml_dsa_87::verify,
+                true => ml_dsa_87::verify_pre_hashed_shake128,
+            };
+            let valid = verify(
+                &MLDSAVerificationKey::new(pk.try_into().unwrap()),
                 &test.message,
+                &test.context,
                 &MLDSASignature::new(test.signature.try_into().unwrap()),
             );
             assert_eq!(valid.is_ok(), expected_result.testPassed);
@@ -295,77 +307,47 @@ fn sigver_inner(
     }
 }
 
-#[derive(Deserialize)]
-struct Randomness(#[serde(with = "hex::serde")] [u8; 32]);
-
-#[derive(Deserialize)]
-#[allow(non_snake_case, dead_code)]
-struct SigGenPromptTestGroup {
+#[inline(never)]
+#[allow(non_snake_case)]
+fn sigver_inner_internal(
+    test: SigVerTest,
+    results: &Results<ResultSigVerTestGroup>,
     tgId: usize,
-    testType: String,
-    parameterSet: String,
-    deterministic: bool,
-    tests: Vec<SigGenTest>,
-}
+    parameter_set: &String,
+) {
+    use libcrux_ml_dsa::*;
+    eprintln!("  {}", test.tcId);
+    let expected_result = results.find_expected_result(tgId, test.tcId);
 
-#[derive(Deserialize)]
-#[allow(non_snake_case, dead_code)]
-struct SigGenTest {
-    tcId: usize,
-    #[serde(with = "hex::serde")]
-    sk: Vec<u8>,
-    #[serde(with = "hex::serde")]
-    message: Vec<u8>,
-    #[serde(default)]
-    rnd: Option<Randomness>,
-}
+    let pk = test.pk.to_owned();
 
-#[derive(Deserialize)]
-#[allow(non_snake_case, dead_code)]
-struct SigGenResult {
-    tcId: usize,
-    #[serde(with = "hex::serde")]
-    signature: Vec<u8>,
-}
+    match parameter_set.as_str() {
+        "ML-DSA-44" => {
+            let valid = ml_dsa_44::verify_internal(
+                &MLDSAVerificationKey::new(pk.try_into().unwrap()),
+                &test.message,
+                &MLDSASignature::new(test.signature.try_into().unwrap()),
+            );
+            assert_eq!(valid.is_ok(), expected_result.testPassed);
+        }
 
-#[derive(Deserialize)]
-#[allow(non_snake_case, dead_code)]
-struct ResultSigGenTestGroup {
-    tgId: usize,
-    tests: Vec<SigGenResult>,
-}
+        "ML-DSA-65" => {
+            let valid = ml_dsa_65::verify_internal(
+                &MLDSAVerificationKey::new(pk.try_into().unwrap()),
+                &test.message,
+                &MLDSASignature::new(test.signature.try_into().unwrap()),
+            );
+            assert_eq!(valid.is_ok(), expected_result.testPassed);
+        }
 
-#[derive(Deserialize)]
-#[allow(non_snake_case, dead_code)]
-struct SigVerPromptTestGroup {
-    tgId: usize,
-    testType: String,
-    parameterSet: String,
-    #[serde(with = "hex::serde")]
-    pk: Vec<u8>,
-    tests: Vec<SigVerTest>,
-}
-
-#[derive(Deserialize)]
-#[allow(non_snake_case, dead_code)]
-struct SigVerTest {
-    tcId: usize,
-    #[serde(with = "hex::serde")]
-    message: Vec<u8>,
-    #[serde(with = "hex::serde")]
-    signature: Vec<u8>,
-}
-
-#[derive(Deserialize)]
-#[allow(non_snake_case, dead_code)]
-struct ResultSigVerTestGroup {
-    tgId: usize,
-    tests: Vec<SigVerResult>,
-}
-
-#[derive(Deserialize)]
-#[allow(non_snake_case, dead_code)]
-struct SigVerResult {
-    tcId: usize,
-    testPassed: bool,
+        "ML-DSA-87" => {
+            let valid = ml_dsa_87::verify_internal(
+                &MLDSAVerificationKey::new(pk.try_into().unwrap()),
+                &test.message,
+                &MLDSASignature::new(test.signature.try_into().unwrap()),
+            );
+            assert_eq!(valid.is_ok(), expected_result.testPassed);
+        }
+        _ => unimplemented!(),
+    }
 }
