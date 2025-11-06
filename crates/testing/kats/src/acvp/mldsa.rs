@@ -49,10 +49,13 @@ macro_rules! impl_tests {
     ($ty:ty, $variant:literal) => {
         impl $ty {
             pub fn load() -> Self {
-                let prompt_data: &str =
-                    include_str!(concat!("../../acvp-1_1_0_40/", $variant, "/prompt.json"));
+                let prompt_data: &str = include_str!(concat!(
+                    "../../acvp/mldsa-1_1_0_40/",
+                    $variant,
+                    "/prompt.json"
+                ));
                 let results_data: &str = include_str!(concat!(
-                    "../../acvp-1_1_0_40/",
+                    "../../acvp/mldsa-1_1_0_40/",
                     $variant,
                     "/expectedResults.json"
                 ));
