@@ -42,6 +42,6 @@ impl<T: TestResult> Results<TestGroupResults<T>> {
             .tests
             .iter()
             .find(|t| t.tc_id() == tcId)
-            .unwrap()
+            .unwrap_or_else(|| panic!("testCase {} should have been deserialized", tcId))
     }
 }
