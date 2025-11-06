@@ -7,6 +7,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.0.4] (2025-11-05)
 
-## [0.0.3] (2025-06-30)
-
-- [#993](https://github.com/cryspen/libcrux/pull/993): Update dependencies `hacl-rs` and `macros`
+- [#1179](https://github.com/cryspen/libcrux/pull/1179): Initial version of `libcrux-digest`
