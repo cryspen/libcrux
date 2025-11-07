@@ -316,11 +316,11 @@
     "json": {
       "flake": false,
       "locked": {
-        "lastModified": 1633696761,
-        "narHash": "sha256-EBzwaHyDWF8h/z3Zfq4p/n5Vpz7Ozlc3eoWDKXWv2YY=",
+        "lastModified": 1744360948,
+        "narHash": "sha256-cECvDOLxgX7Q9R3IE86Hj9JJUxraDQvhoyPDF03B2CY=",
         "owner": "nlohmann",
         "repo": "json",
-        "rev": "aa0e847e5b57a00696bdcb6a834b927231b81613",
+        "rev": "55f93686c01528224f448c19128836e7df245f72",
         "type": "github"
       },
       "original": {
