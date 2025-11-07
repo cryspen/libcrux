@@ -1,6 +1,6 @@
 [package]
 name = "libcrux-ml-kem"
-version = "0.0.3"
+version = "0.0.4"
 authors.workspace = true
 license.workspace = true
 homepage.workspace = true
@@ -10,10 +10,12 @@ readme = "README.md"
 description = "Libcrux ML-KEM & Kyber implementations"
 exclude = [
     "/tests",
-    "/implementation_notes.pdf",
+    "*.pdf",
     "/extracts",
     "/proofs",
     "/hax.py",
+    "C-CODE.md",
+    "TOOLS.md"
 ]
 
 [lib]
@@ -22,10 +24,10 @@ bench = false # so libtest doesn't eat the arguments to criterion
 [dependencies]
 rand = { version = "0.9", optional = true, default-features = false }
 libcrux-platform = { version = "0.0.2", path = "../sys/platform" }
-libcrux-sha3 = { version = "0.0.3", path = "../libcrux-sha3" }
-libcrux-intrinsics = { version = "0.0.3", path = "../libcrux-intrinsics" }
-libcrux-secrets = { version = "0.0.3", path = "../secrets" }
-libcrux-traits = { version = "0.0.3", path = "../traits" }
+libcrux-sha3 = { version = "0.0.4", path = "../libcrux-sha3" }
+libcrux-intrinsics = { version = "0.0.4", path = "../libcrux-intrinsics" }
+libcrux-secrets = { version = "0.0.4", path = "../secrets" }
+libcrux-traits = { version = "0.0.4", path = "../traits" }
 hax-lib.workspace = true
 tls_codec = { version = "0.4.2", features = [
     "derive",
@@ -79,10 +81,10 @@ serde_json = { version = "1.0" }
 serde = { version = "1.0", features = ["derive"] }
 hex = { version = "0.4.3", features = ["serde"] }
 criterion = "0.7"
-libcrux-traits = { version = "0.0.3", path = "../traits", features = [
+libcrux-traits = { version = "0.0.4", path = "../traits", features = [
     "generic-tests",
-] }
-libcrux-kats = { version = "0.0.3", path = "../crates/testing/kats", features = [
+]}
+libcrux-kats = { path = "../crates/testing/kats", features = [
     "mlkem",
 ] }
 

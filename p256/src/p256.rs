@@ -1998,7 +1998,8 @@ Create an ECDSA signature using SHA2-256.
   The function also checks whether `private_key` and `nonce` are valid:
     • 0 < `private_key` < the order of the curve
     • 0 < `nonce` < the order of the curve
-*/
+ */
+#[allow(unused)]
 pub fn ecdsa_sign_p256_sha2(
     signature: &mut [u8],
     msg_len: u32,
@@ -2031,7 +2032,8 @@ Create an ECDSA signature using SHA2-384.
   The function also checks whether `private_key` and `nonce` are valid:
     • 0 < `private_key` < the order of the curve
     • 0 < `nonce` < the order of the curve
-*/
+ */
+#[allow(unused)]
 pub fn ecdsa_sign_p256_sha384(
     signature: &mut [u8],
     msg_len: u32,
@@ -2064,7 +2066,8 @@ Create an ECDSA signature using SHA2-512.
   The function also checks whether `private_key` and `nonce` are valid:
     • 0 < `private_key` < the order of the curve
     • 0 < `nonce` < the order of the curve
-*/
+ */
+#[allow(unused)]
 pub fn ecdsa_sign_p256_sha512(
     signature: &mut [u8],
     msg_len: u32,
@@ -2107,7 +2110,8 @@ Create an ECDSA signature WITHOUT hashing first.
   The function also checks whether `private_key` and `nonce` are valid values:
     • 0 < `private_key` < the order of the curve
     • 0 < `nonce` < the order of the curve
-*/
+ */
+#[allow(unused)]
 pub fn ecdsa_sign_p256_without_hash(
     signature: &mut [u8],
     msg_len: u32,
@@ -2138,7 +2142,8 @@ Verify an ECDSA signature using SHA2-256.
   The arguments `signature_r` and `signature_s` point to 32 bytes of valid memory, i.e., uint8_t[32].
 
   The function also checks whether `public_key` is valid
-*/
+ */
+#[allow(unused)]
 pub fn ecdsa_verif_p256_sha2(
     msg_len: u32,
     msg: &[u8],
@@ -2170,7 +2175,8 @@ Verify an ECDSA signature using SHA2-384.
   The arguments `signature_r` and `signature_s` point to 32 bytes of valid memory, i.e., uint8_t[32].
 
   The function also checks whether `public_key` is valid
-*/
+ */
+#[allow(unused)]
 pub fn ecdsa_verif_p256_sha384(
     msg_len: u32,
     msg: &[u8],
@@ -2202,7 +2208,8 @@ Verify an ECDSA signature using SHA2-512.
   The arguments `signature_r` and `signature_s` point to 32 bytes of valid memory, i.e., uint8_t[32].
 
   The function also checks whether `public_key` is valid
-*/
+ */
+#[allow(unused)]
 pub fn ecdsa_verif_p256_sha512(
     msg_len: u32,
     msg: &[u8],
@@ -2239,7 +2246,8 @@ Verify an ECDSA signature WITHOUT hashing first.
   The arguments `signature_r` and `signature_s` point to 32 bytes of valid memory, i.e., uint8_t[32].
 
   The function also checks whether `public_key` is valid
-*/
+ */
+#[allow(unused)]
 pub fn ecdsa_verif_without_hash(
     msg_len: u32,
     msg: &[u8],
@@ -2307,7 +2315,8 @@ Convert a public key from uncompressed to its raw form.
   The argument `pk` points to 65 bytes of valid memory, i.e., uint8_t[65].
 
   The function DOESN'T check whether (x, y) is a valid point.
-*/
+ */
+#[allow(unused)]
 pub fn uncompressed_to_raw(pk: &[u8], pk_raw: &mut [u8]) -> bool {
     let pk0: u8 = pk[0usize];
     if pk0 != 0x04u8 {
@@ -2327,7 +2336,8 @@ Convert a public key from compressed to its raw form.
   The argument `pk` points to 33 bytes of valid memory, i.e., uint8_t[33].
 
   The function also checks whether (x, y) is a valid point.
-*/
+ */
+#[allow(unused)]
 pub fn compressed_to_raw(pk: &[u8], pk_raw: &mut [u8]) -> bool {
     let mut xa: [u64; 4] = [0u64; 4usize];
     let mut ya: [u64; 4] = [0u64; 4usize];
@@ -2347,7 +2357,8 @@ Convert a public key from raw to its uncompressed form.
   The argument `pk_raw` points to 64 bytes of valid memory, i.e., uint8_t[64].
 
   The function DOESN'T check whether (x, y) is a valid point.
-*/
+ */
+#[allow(unused)]
 pub fn raw_to_uncompressed(pk_raw: &[u8], pk: &mut [u8]) {
     pk[0usize] = 0x04u8;
     (pk[1usize..1usize + 64usize]).copy_from_slice(&pk_raw[0usize..64usize])
@@ -2360,7 +2371,8 @@ Convert a public key from raw to its compressed form.
   The argument `pk_raw` points to 64 bytes of valid memory, i.e., uint8_t[64].
 
   The function DOESN'T check whether (x, y) is a valid point.
-*/
+ */
+#[allow(unused)]
 pub fn raw_to_compressed(pk_raw: &[u8], pk: &mut [u8]) {
     let pk_x: (&[u8], &[u8]) = pk_raw.split_at(0usize);
     let pk_y: (&[u8], &[u8]) = pk_x.1.split_at(32usize);
