@@ -1,5 +1,5 @@
 module MkSeq
-open Core
+open Core_models
 
 open FStar.Tactics.V2
 

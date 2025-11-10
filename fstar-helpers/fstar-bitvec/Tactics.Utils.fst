@@ -1,6 +1,6 @@
 module Tactics.Utils
 
-open Core
+open Core_models
 open FStar.Option
 module L = FStar.List.Tot
 open FStar.Tactics.V2

@@ -1,6 +1,6 @@
 module BitVec.Utils
 
-open Core
+open Core_models
 open FStar.FunctionalExtensionality
 open BitVec.Equality
 open Rust_primitives.BitVectors

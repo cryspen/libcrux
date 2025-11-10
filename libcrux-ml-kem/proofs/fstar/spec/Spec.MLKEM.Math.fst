@@ -2,7 +2,7 @@ module Spec.MLKEM.Math
 #set-options "--fuel 0 --ifuel 1 --z3rlimit 80"
 
 open FStar.Mul
-open Core
+open Core_models
 open Spec.Utils
 
 let v_FIELD_MODULUS: i32 = mk_i32 3329

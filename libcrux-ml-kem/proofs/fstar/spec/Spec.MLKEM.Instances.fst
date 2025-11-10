@@ -1,7 +1,7 @@
 module Spec.MLKEM.Instances
 #set-options "--fuel 0 --ifuel 1 --z3rlimit 30"
 open FStar.Mul
-open Core
+open Core_models
 open Spec.Utils
 open Spec.MLKEM.Math
 open Spec.MLKEM
