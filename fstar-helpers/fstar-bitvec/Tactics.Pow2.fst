@@ -1,7 +1,7 @@
 /// Provides tools to normalize `pow2`
 module Tactics.Pow2
 
-open Core
+open Core_models
 open Tactics.Utils
 open FStar.Tactics.V2
 

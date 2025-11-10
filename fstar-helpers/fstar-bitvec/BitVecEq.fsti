@@ -1,6 +1,6 @@
 module BitVecEq
 #set-options "--fuel 0 --ifuel 1 --z3rlimit 100"
-open Core
+open Core_models
 open FStar.Mul
 open MkSeq
 open FStar.FunctionalExtensionality
