@@ -14,7 +14,7 @@ hpke-rs-crypto = { version = "0.3.0", path = "../traits" }
 libcrux-ecdh = { version = "0.0.3", default-features = false }
 libcrux-hkdf = { version = "0.0.3" }
 libcrux-kem = { version = "0.0.4", default-features = false }
-libcrux-chacha20poly1305 = { version = "0.0.3" }
+libcrux-chacha20poly1305 = { version = "0.0.4" }
 # Randomness
 rand = { version = "0.9", default-features = false }
 rand_core = { version = "0.9", features = ["os_rng"] }
