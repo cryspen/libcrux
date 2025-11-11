@@ -15,8 +15,8 @@ libcrux-p256 = { version = "=0.0.4", path = "../p256", features = [
     "expose-hacl",
 ] }
 libcrux-sha2 = { version = "=0.0.4", path = "../sha2" }
-libcrux-secrets = { version = "=0.0.4", path = "../secrets" }
-libcrux-traits = { version = "=0.0.4", path = "../traits" }
+libcrux-secrets = { version = "=0.0.4", path = "../../utils/secrets" }
+libcrux-traits = { version = "=0.0.4", path = "../../../traits" }
 rand = { version = "0.9", optional = true, default-features = false }
 
 [features]
