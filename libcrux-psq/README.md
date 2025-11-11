@@ -2,10 +2,142 @@
 
 ![pre-verification]
 
-This crate implements a protocol for establishing and mutually
-registering a pre-shared key such that the protocol messages are
-secure against harvest-now-decrypt-later (HNDL) passive quantum
-attackers.
+This crate implements a protocol for establishing, and registering a
+post-quantum shared secret between an initiator and a responder.
+
+## Query Mode
+
+Query mode is a two-message protocol between initiator and responder.
+
+
+```
+Common inputs:
+    - ctx
+
+Inputs of A:
+    - query_payload
+    - query_aad
+    - pk_B = g^s
+    
+Inputs of B: 
+    - (sk_B = s, pk_B = g^s)
+    - response_aad
+    - query handler f
+
+A: 
+    (esk_A = x, epk_A = g^x) <- DH.KeyGen()
+    tx0 = hash(0 | ctx | pk_B | epk_A)
+    dh_shared_secret_query = DH.Derive(esk_A, pk_B)
+    K_0  = KDF(dh_shared_secret_query, tx0)
+    (enc_query, tag_query) <- AEAD.Encrypt(K_0, query_payload, query_aad)
+    
+A -> B: (pk_A, enc_query, tag_query, query_aad)
+
+B:
+    tx0 = hash(0 | ctx | pk_B | epk_A)
+    dh_shared_secret_query = DH.Derive(sk_B, epk_A)
+    K_0 = KDF(dh_shared_secret_query)
+    query_payload = AEAD.Decrypt(K_0, enc_query, tag_query, query_aad)
+    ...
+    response_payload <- f(query_payload)
+    ...
+    (esk_B = y, epk_B = g^y) <- DH.KeyGen()
+    tx2 = hash(2 | tx0 | epk_B)
+    dh_shared_secret_response_1 = DH.Derive(sk_B, epk_A)
+    dh_shared_secret_response_2 = DH.Derive(esk_B, epk_A)
+    K_2 = KDF(K_0 | dh_shared_secret_response_1 | dh_shared_secret_response_2, tx2)
+    (enc_response, tag_response) <- AEAD.Encrypt(K_2, response_payload, response_aad)
+
+B -> A: (epk_B, enc_response, tag_response, response_aad)
+
+A:
+    tx2 = hash(2 | tx0 | epk_B)
+    dh_shared_secret_response_1 = DH.Derive(esk_A, pk_B)
+    dh_shared_secret_response_2 = DH.Derive(esk_A, epk_B)
+    K_2 = KDF(K_0 | dh_shared_secret_response_1 | dh_shared_secret_response_2, tx2)
+    response_payload = AEAD.Decrypt(K_2, enc_response, tag_response, response_aad)
+```
+
+## Registration Mode
+
+### Handshake
+```
+Common Inputs:
+    - ctx
+    
+Inputs of A: 
+    - registration_payload
+    - registration_outer_aad
+    - registration_inner_aad
+    - pk_B = g^s
+    - (sk_A = c, pk_A = g^c)
+    - pqpk_B (optional)
+    
+Inputs of B: 
+    - (sk_B = s, pk_B = g^s)
+    - (pqsk_B, pqpk_B)
+    - query handler f,
+    - response_aad, 
+    - registration handler f
+    
+A: 
+    (esk_A = x, epk_A = g^x) <- DH.KeyGen()
+    tx0 = hash(0 | ctx | pk_B | epk_A)
+    dh_shared_secret_outer = DH.Derive(esk_A, pk_B)
+    K_0  = KDF(dh_shared_secret_outer, tx0)
+    if pqpk_S provided
+        (enc_pq, pq_shared_secret) <- PQKEM.Encapsulate(pqpk_S)
+    tx1 = hash(1 | tx0 | pk_A | [pqpk_S] | [enc_pq])
+    dh_shared_secret_inner = DH.Derive(sk_A, pk_B)
+    K_1 = KDF(K_0 | dh_shared_secret_inner | [pq_shared_secret], tx1)
+    (enc_inner, tag_inner) <- AEAD.Encrypt(K_1, registration_payload, registration_inner_aad)
+    (enc_outer, tag_outer) <- AEAD.Encrypt(K_0, (pk_A | enc_inner | tag_inner | registration_inner_aad | [enc_pq]), registration_outer_aad)
+    
+A -> B: (epk_A, enc_outer, tag_outer, registration_outer_aad)
+
+B:
+    tx0 = hash(0 | ctx | pk_B | epk_A)
+    dh_shared_secret_outer = DH.Derive(sk_B, epk_A)
+    K_0 = KDF(dh_shared_secret_outer)
+    (pk_A | enc_inner | tag_inner | registration_inner_aad | [enc_pq]) = AEAD.Decrypt(K_0, enc_outer, tag_outer, registration_outer_aad)
+    if enc_pq provided
+        pq_shared_secret <- PQKEM.Decapsulate(pqsk_B, enc_pq)
+    tx1 = hash(1 | tx0 | pk_A | [pqpk_S] | [enc_pq])
+    dh_shared_secret_inner = DH.Derive(sk_B, pk_A)
+    K_1 = KDF(K_0 | dh_shared_secret_inner | [pq_shared_secret], tx1)
+    registration_payload = AEAD.Decrypt(K_1, enc_inner, tag_inner, registration_inner_aad)
+    ...
+    response_payload <- f(registration_payload)
+    ...
+    (esk_B = y, epk_B = g^y) <- DH.KeyGen()
+    tx2 = hash(2 | tx1 | epk_B)
+    dh_shared_secret_response_1 = DH.Derive(esk_B, pk_A)
+    dh_shared_secret_response_2 = DH.Derive(esk_B, epk_A)
+    K_2 = KDF(K_1 | dh_shared_secret_response_1 | dh_shared_secret_response_2, tx2)
+    (enc_response, tag_response) <- AEAD.Encrypt(K_2, response_payload, response_aad)
+    
+B -> A: (epk_B, enc_response, tag_response, response_aad)
+
+A: 
+    tx2 = hash(2 | tx1 | epk_B)
+    dh_shared_secret_response_1 = DH.Derive(sk_A, epk_B)
+    dh_shared_secret_response_2 = DH.Derive(esk_A, epk_B)
+    K_2 = KDF(K_1 | dh_shared_secret_response_1 | dh_shared_secret_response_2, tx2)
+    response_payload = AEAD.Decrypt(K_2, enc_response, tag_response, response_aad)
+
+```
+
+### Derived Sessions
+
+TODO
+
+## PSQ v1
+Under optional feature `v1`, this crate implements the first version of PSQ, a
+protocol for establishing and mutually registering a pre-shared key
+such that the protocol messages are secure against
+harvest-now-decrypt-later (HNDL) passive quantum attackers.
+
+This implementation is exposed via the `libcrux_psq::v1` module.
 
 The protocol between initator `A` and receiver `B` roughly works as follows:
 
