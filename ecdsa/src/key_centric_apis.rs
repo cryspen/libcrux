@@ -284,7 +284,7 @@ pub mod sha2_512 {
 }
 
 #[test]
-#[cfg(all(feature = "rand", not(feature = "check-secret-independence")))]
+#[cfg(all(feature = "rand", not(feature = "expose-secret-independence")))]
 fn key_centric_owned() {
     use rand::TryRngCore;
     let mut rng = rand_core::OsRng;
@@ -310,7 +310,7 @@ fn key_centric_owned() {
 }
 
 #[test]
-#[cfg(all(feature = "rand", not(feature = "check-secret-independence")))]
+#[cfg(all(feature = "rand", not(feature = "expose-secret-independence")))]
 fn key_centric_refs() {
     use libcrux_traits::signature::SignConsts;
     use sha2_256::{EcdsaP256, SigningKeyRef, VerificationKeyRef};
@@ -342,7 +342,7 @@ fn key_centric_refs() {
 }
 
 #[test]
-#[cfg(not(feature = "check-secret-independence"))]
+#[cfg(not(feature = "expose-secret-independence"))]
 fn arrayref_apis() {
     use libcrux_traits::signature::SignConsts;
     use sha2_256::EcdsaP256;
@@ -370,7 +370,7 @@ fn arrayref_apis() {
     EcdsaP256::verify(&verification_key, b"payload", &signature).unwrap();
 }
 #[test]
-#[cfg(not(feature = "check-secret-independence"))]
+#[cfg(not(feature = "expose-secret-independence"))]
 fn slice_apis() {
     use libcrux_traits::signature::SignConsts;
     use sha2_256::slice::EcdsaP256;

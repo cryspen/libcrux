@@ -226,7 +226,7 @@ fn key_centric_owned() {
 }
 
 #[test]
-#[cfg(all(feature = "rand", not(feature = "check-secret-independence")))]
+#[cfg(all(feature = "rand", not(feature = "expose-secret-independence")))]
 fn key_centric_refs() {
     use libcrux_traits::signature::SignConsts;
 
@@ -244,7 +244,7 @@ fn key_centric_refs() {
 }
 
 #[test]
-#[cfg(not(feature = "check-secret-independence"))]
+#[cfg(not(feature = "expose-secret-independence"))]
 fn arrayref_apis() {
     use libcrux_traits::signature::SignConsts;
 
@@ -258,7 +258,7 @@ fn arrayref_apis() {
     Ed25519::verify(&verification_key, b"payload", &signature).unwrap();
 }
 #[test]
-#[cfg(not(feature = "check-secret-independence"))]
+#[cfg(not(feature = "expose-secret-independence"))]
 fn slice_apis() {
     use libcrux_traits::signature::SignConsts;
 

@@ -55,7 +55,10 @@ test-utils = []                                                  # exposing inte
 
 # This doesn't check the secret independence of the implementation, but sets the
 # exposed API into secret independence checking mode.
-expose-secret-independence = ["libcrux-secrets/check-secret-independence"]
+expose-secret-independence = [
+    "libcrux-secrets/check-secret-independence",
+    "libcrux-traits/check-secret-independence",
+]
 
 # Features for the different key sizes of ML-DSA
 mldsa44 = []
