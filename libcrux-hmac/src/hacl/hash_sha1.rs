@@ -190,8 +190,10 @@ pub(crate) fn hash_oneshot(output: &mut [u8], input: &[u8], input_len: u32) {
     crate::hacl::hash_sha1::finish(&s, output)
 }
 
+#[allow(unused)]
 pub type state_t = libcrux_hacl_rs::streaming_types::state_32;
 
+#[allow(unused)]
 pub fn malloc() -> Box<[libcrux_hacl_rs::streaming_types::state_32]> {
     let buf: Box<[u8]> = vec![0u8; 64usize].into_boxed_slice();
     let mut block_state: Box<[u32]> = vec![0u32; 5usize].into_boxed_slice();
@@ -206,6 +208,7 @@ pub fn malloc() -> Box<[libcrux_hacl_rs::streaming_types::state_32]> {
     p
 }
 
+#[allow(unused)]
 pub fn reset(state: &mut [libcrux_hacl_rs::streaming_types::state_32]) {
     let block_state: &mut [u32] = &mut (state[0usize]).block_state;
     crate::hacl::hash_sha1::init(block_state);
@@ -215,7 +218,8 @@ pub fn reset(state: &mut [libcrux_hacl_rs::streaming_types::state_32]) {
 
 /**
 0 = success, 1 = max length exceeded
-*/
+ */
+#[allow(unused)]
 pub fn update0(
     state: &mut [libcrux_hacl_rs::streaming_types::state_32],
     chunk: &[u8],
@@ -333,6 +337,7 @@ pub fn update0(
     }
 }
 
+#[allow(unused)]
 pub fn digest(state: &[libcrux_hacl_rs::streaming_types::state_32], output: &mut [u8]) {
     let block_state: &[u32] = &(state[0usize]).block_state;
     let buf_: &[u8] = &(state[0usize]).buf;
@@ -358,6 +363,7 @@ pub fn digest(state: &[libcrux_hacl_rs::streaming_types::state_32], output: &mut
     crate::hacl::hash_sha1::finish(&tmp_block_state, output)
 }
 
+#[allow(unused)]
 pub fn copy(
     state: &[libcrux_hacl_rs::streaming_types::state_32],
 ) -> Box<[libcrux_hacl_rs::streaming_types::state_32]> {
@@ -378,6 +384,7 @@ pub fn copy(
     p
 }
 
+#[allow(unused)]
 pub fn hash(output: &mut [u8], input: &[u8], input_len: u32) {
     crate::hacl::hash_sha1::hash_oneshot(output, input, input_len)
 }

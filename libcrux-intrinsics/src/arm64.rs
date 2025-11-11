@@ -443,7 +443,10 @@ pub fn _vxarq_u64<const LEFT: i32, const RIGHT: i32>(a: uint64x2_t, b: uint64x2_
     )))]
     {
         let a_xor_b = _veorq_u64(a, b);
-        _veorq_u64(_vshlq_n_u64::<LEFT>(b), _vshrq_n_u64::<RIGHT>(a_xor_b))
+        _veorq_u64(
+            _vshlq_n_u64::<LEFT>(a_xor_b),
+            _vshrq_n_u64::<RIGHT>(a_xor_b),
+        )
     }
 }
 
