@@ -12,6 +12,7 @@ specifiction of its input-output behavior.
 We write "yes" when the module is fully proven to satisfy one of these conditions, and "needs proofs" when some
 functions in the modules still need some proofs in that category.
 
+## `HEAD` of branch `main` (Unreleased)
 
 | Category | File              | Lax Checking | Runtime Safety | Correctness  |
 | -------- | ----------------- | ------------ | -------------- | ------------ |
@@ -47,3 +48,38 @@ functions in the modules still need some proofs in that category.
 |          | serialize         | yes          | needs proofs   | needs proofs |
 |          | sampling          | yes          | needs proofs   | needs proofs |
 
+## Release `v0.0.4`
+
+| Category | File              | Lax Checking | Runtime Safety | Correctness  |
+| -------- | ----------------- | ------------ | -------------- | ------------ |
+| _Generic_  | constant_time_ops | yes          | yes            | yes          |
+|          | hash_functions    | yes          | yes            | yes          |
+|          | ind_cpa           | yes          | yes            | yes          |
+|          | ind_cca           | yes          | yes            | yes          |
+|          | instantiations    | yes          | yes            | yes          |
+|          | multiplexing      | yes          | yes            | yes          |
+|          | polynomial        | yes          | yes            | yes          |
+|          | invert_ntt        | yes          | yes            | needs proofs |
+|          | ntt               | yes          | yes            | needs proofs |
+|          | mlkem*            | yes          | yes            | needs proofs |
+|          | matrix            | yes          | needs proofs   | needs proofs |
+|          | serialize         | yes          | needs proofs   | needs proofs |
+|          | sampling          | yes          | needs proofs   | needs proofs |
+| 	   |                   |              |                |              |
+| _Portable_ | arithmetic        | yes          | yes            | yes          |
+|          | ntt               | yes          | yes            | yes          |
+|          | serialize         | yes          | yes            | yes          |
+|          | compress          | yes          | yes            | yes          |
+|          | sampling          | yes          | yes            | needs proofs |
+|          |                   |              |                |              |
+| _Avx2_     | arithmetic        | yes          | yes            | yes          |
+|          | ntt               | yes          | yes            | yes          |
+|          | serialize         | yes          | yes            | yes          |
+|          | compress          | yes          | yes            | needs proofs |
+|          | sampling          | yes          | yes            | needs proofs |
+|          |                   |              |                |              |
+| _Neon_     | arithmetic        | yes          | needs proofs   | needs proofs |
+|          | ntt               | yes          | needs proofs   | needs proofs |
+|          | compress          | yes          | needs proofs   | needs proofs |
+|          | serialize         | yes          | needs proofs   | needs proofs |
+|          | sampling          | yes          | needs proofs   | needs proofs |

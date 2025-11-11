@@ -1,8 +1,7 @@
 //! # ML-KEM
 //!
-//! This crate implements all three ML-KEM variants 512, 768, and 1024. It is
-//! formally verified using [hax](https://cryspen.com/hax) and
-//! [F*](https://fstar-lang.org).
+//! This crate implements all three ML-KEM variants 512, 768,
+//! and 1024.
 //!
 //! Functions in this crate use CPU feature detection to pick the most efficient version
 //! on each platform. To use a specific version with your own feature detection
