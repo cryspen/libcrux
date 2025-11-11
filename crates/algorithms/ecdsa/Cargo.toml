@@ -23,7 +23,10 @@ rand = { version = "0.9", optional = true, default-features = false }
 default = ["rand", "std"]
 rand = ["dep:rand"]
 std = ["rand?/std"]
-check-secret-independence = [
+
+# This doesn't check the secret independence of the implementation, but sets the
+# exposed API into secret independence checking mode.
+expose-secret-independence = [
     "libcrux-secrets/check-secret-independence",
     "libcrux-traits/check-secret-independence",
 ]
