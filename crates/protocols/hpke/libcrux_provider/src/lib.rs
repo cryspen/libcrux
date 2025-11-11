@@ -2,7 +2,7 @@
 #![cfg_attr(not(test), no_std)]
 extern crate alloc;
 
-use alloc::{string::String, vec::Vec, format};
+use alloc::{format, string::String, vec::Vec};
 use core::fmt::Display;
 
 use hpke_rs_crypto::{
@@ -31,8 +31,10 @@ impl HpkeCrypto for HpkeLibcrux {
 
     fn kdf_extract(alg: KdfAlgorithm, salt: &[u8], ikm: &[u8]) -> Result<Vec<u8>, Error> {
         let alg = kdf_algorithm_to_libcrux_hkdf_algorithm(alg);
-        libcrux_hkdf::extract(alg, salt, ikm)
-            .map_err(|e| Error::CryptoLibraryError(format!("KDF extract error: {:?}", e)))
+        let mut prk = alloc::vec![0u8; alg.hash_len()];
+        libcrux_hkdf::extract(alg, &mut prk, salt, ikm)
+            .map_err(|e| Error::CryptoLibraryError(format!("KDF extract error: {:?}", e)))?;
+        Ok(prk)
     }
 
     fn kdf_expand(
@@ -42,8 +44,10 @@ impl HpkeCrypto for HpkeLibcrux {
         output_size: usize,
     ) -> Result<Vec<u8>, Error> {
         let alg = kdf_algorithm_to_libcrux_hkdf_algorithm(alg);
-        libcrux_hkdf::expand(alg, prk, info, output_size)
-            .map_err(|e| Error::CryptoLibraryError(format!("KDF expand error: {:?}", e)))
+        let mut okm = alloc::vec![0u8; output_size];
+        libcrux_hkdf::expand(alg, &mut okm, prk, info)
+            .map_err(|e| Error::CryptoLibraryError(format!("KDF expand error: {:?}", e)))?;
+        Ok(okm)
     }
 
     fn dh(alg: KemAlgorithm, pk: &[u8], sk: &[u8]) -> Result<Vec<u8>, Error> {
