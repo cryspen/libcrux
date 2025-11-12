@@ -20,6 +20,10 @@ use hax_lib::int::*;
 
 mod traits;
 
+/// F* verification lemmas
+#[cfg(hax)]
+pub(crate) mod lemmas;
+
 /// A SHA3 224 Digest
 pub type Sha3_224Digest = [u8; 28];
 

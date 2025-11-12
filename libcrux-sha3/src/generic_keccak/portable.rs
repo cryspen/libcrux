@@ -1,5 +1,9 @@
 use super::*;
 
+#[cfg(hax)]
+#[hax_lib::fstar::replace("open Libcrux_sha3.Lemmas")]
+const _: () = ();
+
 #[hax_lib::attributes]
 impl KeccakState<1, u64> {
     #[inline(always)]
@@ -70,23 +74,10 @@ impl KeccakState<1, u64> {
     }
 }
 
-#[hax_lib::fstar::before(
-    r#"
-let rec mul_succ_le (k n d: nat)
-  : Lemma
-    (requires k < n && d > 0)
-    (ensures k * d + d <= n * d)
-    (decreases n) =
-  if n = 0 then ()
-  else if k = n - 1 then ()
-  else mul_succ_le k (n - 1) d
-"#
-)]
 #[hax_lib::requires(
     RATE != 0 &&
     RATE <= 200 &&
-    RATE % 8 == 0 /* &&
-    data.len() + RATE <= usize::MAX */
+    RATE % 8 == 0
 )]
 #[hax_lib::ensures(|_|
     future(out).len() == out.len())
@@ -98,6 +89,7 @@ pub(crate) fn keccak1<const RATE: usize, const DELIM: u8>(data: &[u8], out: &mut
     let data_len = data.len();
     for i in 0..data_len / RATE {
         hax_lib::fstar!("mul_succ_le (v i) (v (data_len /! v_RATE)) (v v_RATE)");
+
         s.absorb_block::<RATE>(&[data], i * RATE);
     }
     let rem = data_len % RATE;
@@ -114,6 +106,7 @@ pub(crate) fn keccak1<const RATE: usize, const DELIM: u8>(data: &[u8], out: &mut
         for i in 1..blocks {
             hax_lib::loop_invariant!(|_: usize| out.len() == outlen);
             hax_lib::fstar!("mul_succ_le (v i) (v blocks) (v v_RATE)");
+
             s.keccakf1600();
             s.squeeze::<RATE>(out, i * RATE, RATE);
         }
