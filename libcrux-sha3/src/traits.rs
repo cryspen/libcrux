@@ -1,7 +1,5 @@
-use hax_lib;
-
 #[cfg(hax)]
-use hax_lib::int::*;
+use hax_lib::{self, constructors::from_bool, forall, implies, int::ToInt};
 
 // XXX: These should be default functions on `KeccakItem`, but hax doesn't
 //      support that yet. cryspen/hax#888
@@ -62,20 +60,40 @@ pub(crate) trait KeccakItem<const N: usize>: Clone + Copy {
 pub(crate) trait Absorb<const N: usize> {
     /// Absorb a block
     #[hax_lib::requires(
+      from_bool(
         N != 0 &&
         RATE <= 200 &&
         RATE % 8 == 0 &&
+        (RATE % 32 == 8 || RATE % 32 == 16) &&
         start.to_int() + RATE.to_int() <= input[0].len().to_int()
+      ).and(
+        forall(|i: usize|
+          implies(
+            i < N,
+            input[0].len() == input[i].len()
+          )
+        )
+      )
     )]
     fn load_block<const RATE: usize>(&mut self, input: &[&[u8]; N], start: usize);
 
     /// Absorb the last block (may be partial)
     #[hax_lib::requires(
+      from_bool(
         N != 0 &&
         RATE <= 200 &&
         RATE % 8 == 0 &&
+        (RATE % 32 == 8 || RATE % 32 == 16) &&
         len < RATE &&
         start.to_int() + len.to_int() <= input[0].len().to_int()
+      ).and(
+        forall(|i: usize|
+          implies(
+            i < N,
+            input[0].len() == input[i].len()
+          )
+        )
+      )
     )]
     fn load_last<const RATE: usize, const DELIMITER: u8>(
         &mut self,

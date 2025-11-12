@@ -54,8 +54,7 @@ pub enum Algorithm {
 }
 
 // TODO: Verification fails because of the panic
-#[hax_lib::fstar::replace("")]
-#[hax_lib::attributes]
+#[cfg(not(any(hax, eurydice)))]
 impl From<u32> for Algorithm {
     #[hax_lib::requires(v == 1 || v == 2 || v == 3 || v == 4)]
     fn from(v: u32) -> Algorithm {
