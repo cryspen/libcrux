@@ -69,7 +69,8 @@ impl KeccakState<1, u64> {
 #[hax_lib::requires(
     RATE != 0 &&
     RATE <= 200 &&
-    RATE % 8 == 0
+    RATE % 8 == 0 &&
+    (RATE % 32 == 8 || RATE % 32 == 16)
 )]
 #[hax_lib::ensures(|_| future(output).len() == output.len())]
 #[hax_lib::fstar::options("--split_queries always --z3rlimit 300")]

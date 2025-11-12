@@ -66,6 +66,7 @@ impl<const PARALLEL_LANES: usize, const RATE: usize, STATE: KeccakItem<PARALLEL_
         PARALLEL_LANES == 1 && // TODO: Generalize for the parallel case
         RATE != 0 &&
         RATE <= 200 &&
+        (RATE % 32 == 8 || RATE % 32 == 16) &&
         RATE % 8 == 0
     )]
     #[hax_lib::ensures(|result| keccak_xof_state_inv(&result))]

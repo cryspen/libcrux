@@ -8,7 +8,7 @@ use crate::{generic_keccak::KeccakState, traits::*};
 #[inline(always)]
 #[hax_lib::requires(
     LEFT.to_int() + RIGHT.to_int() == 64.to_int() &&
-    RIGHT >= 0
+    RIGHT > 0
 )]
 fn rotate_left<const LEFT: i32, const RIGHT: i32>(x: u64) -> u64 {
     debug_assert!(LEFT + RIGHT == 64);
@@ -28,7 +28,7 @@ fn _vrax1q_u64(a: u64, b: u64) -> u64 {
 #[inline(always)]
 #[hax_lib::requires(
     LEFT.to_int() + RIGHT.to_int() == 64.to_int() &&
-    RIGHT >= 0
+    RIGHT > 0
 )]
 fn _vxarq_u64<const LEFT: i32, const RIGHT: i32>(a: u64, b: u64) -> u64 {
     rotate_left::<LEFT, RIGHT>(a ^ b)
@@ -151,7 +151,7 @@ impl KeccakItem<1> for u64 {
     #[inline(always)]
     #[hax_lib::requires(
         LEFT.to_int() + RIGHT.to_int() == 64.to_int() &&
-        RIGHT >= 0
+        RIGHT > 0
     )]
     fn xor_and_rotate<const LEFT: i32, const RIGHT: i32>(a: Self, b: Self) -> Self {
         _vxarq_u64::<LEFT, RIGHT>(a, b)
