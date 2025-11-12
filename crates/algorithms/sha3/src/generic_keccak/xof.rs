@@ -5,37 +5,10 @@ use crate::{
     traits::{Absorb, KeccakItem, Squeeze},
 };
 
-// Helper lemma for F* verification in the `absorb_full` loop.
-//
-// Proves that for any a, i, n, rate > 0 with i < n,
-// we have a + i * rate + rate ≤ a + n * rate,
-// i.e. each block‐offset stays within the total input length.
-#[hax_lib::fstar::before(
-    r#"
-let rec lemma_offset_plus_rate_le_total (a i n rate: nat)
-    : Lemma
-        (requires i < n && rate > 0)
-        (ensures a + i * rate + rate <= a + n * rate)
-        (decreases n) =
-    if n = 0 then ()
-    else if i = n - 1 then ()
-    else lemma_offset_plus_rate_le_total a i (n - 1) rate
-"#
-)]
-// Helper lemma for F* verification in the 'squeeze' function.
-//
-// Proves the division‐multiplication‐modulo identity:
-//   for any a, b with b != 0,
-//   (a / b) * b + (a % b) = a.
-#[hax_lib::fstar::before(
-    r#"
-let lemma_div_mul_mod (a b: usize)
-    : Lemma
-        (requires b <>. mk_usize 0)
-        (ensures (a /! b) *! b +! (a %! b) =. a)
-    = ()
-"#
-)]
+#[cfg(hax)]
+#[hax_lib::fstar::replace("open Libcrux_sha3.Lemmas")]
+const _: () = ();
+
 // TODO: Should not be needed. Use hax_lib::fstar::options("")
 #[hax_lib::fstar::before(
     r#"
@@ -153,6 +126,7 @@ impl<const PARALLEL_LANES: usize, const RATE: usize, STATE: KeccakItem<PARALLEL_
             #[allow(clippy::needless_range_loop)]
             for i in 0..PARALLEL_LANES {
                 hax_lib::loop_invariant!(|_: usize| { self.buf_len == self_buf_len });
+
                 self.buf[i][self.buf_len..].copy_from_slice(&inputs[i][..consumed]);
             }
 
@@ -219,11 +193,10 @@ impl<const PARALLEL_LANES: usize, const RATE: usize, STATE: KeccakItem<PARALLEL_
 
         for i in 0..num_blocks {
             hax_lib::loop_invariant!(|_: usize| self.buf_len == self_buf_len);
+            hax_lib::fstar!("mul_succ_le (v i) (v num_blocks) (v v_RATE)");
 
-            hax_lib::fstar!("lemma_offset_plus_rate_le_total (v input_consumed) (v i) (v num_blocks) (v v_RATE)");
             let start = i * RATE + input_consumed;
 
-            // TODO: The cfg should not be needed here
             #[cfg(hax)]
             hax_lib::assert!(start + RATE <= end);
 
@@ -261,7 +234,7 @@ impl<const PARALLEL_LANES: usize, const RATE: usize, STATE: KeccakItem<PARALLEL_
         if input_remainder_len > 0 {
             #[cfg(not(eurydice))]
             debug_assert!(
-                // self.buf_len == 0 || // We consumed everything (or it was empty all along).
+                self.buf_len == 0 || // We consumed everything (or it was empty all along).
                 self.buf_len + input_remainder_len <= RATE
             );
 
@@ -369,6 +342,7 @@ impl<const RATE: usize, STATE: KeccakItem<1>> KeccakXofState<1, RATE, STATE> {
 
                     hax_lib::fstar!("lemma_div_mul_mod out_len v_RATE");
                     hax_lib::fstar!("assert (v blocks * v v_RATE + v remaining == v out_len)");
+
                     self.inner.squeeze::<RATE>(out, blocks * RATE, remaining);
                 }
             }
