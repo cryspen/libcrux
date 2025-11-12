@@ -24,16 +24,11 @@ TEST(MlKem768TestPortable, ConsistencyTest)
     libcrux_sha3_Sha3_512Digest r;
     memset(r.data, 0x13, 64);
     auto key_pair = libcrux_ml_kem_mlkem768_portable_generate_key_pair(r);
-    //  cout << "key pair.pk: " << bytes_to_hex(bytes(key_pair.pk.value, key_pair.pk.value + 16U)) << endl;
-    //  cout << "key pair.sk: " << bytes_to_hex(bytes(key_pair.sk.value, key_pair.sk.value + 16U)) << endl;
 
     Eurydice_arr_60 r2;
     memset(r2.data, 0x15, 32);
     auto ctxt = libcrux_ml_kem_mlkem768_portable_encapsulate(&key_pair.pk, r2);
 
-    // cout << "ctxt: " << bytes_to_hex(bytes(ctxt.fst.value, ctxt.fst.value + 16U)) << endl;
-
-    // uint8_t sharedSecret2[LIBCRUX_ML_KEM_CONSTANTS_SHARED_SECRET_SIZE];
     auto sharedSecret2 = libcrux_ml_kem_mlkem768_portable_decapsulate(&key_pair.sk, &ctxt.fst);
 
     auto cmp = memcmp(ctxt.snd.data, sharedSecret2.data,
