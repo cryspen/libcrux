@@ -86,11 +86,13 @@ files:
       patterns:
         - [core, "*"]
         - [libcrux_secrets, "*"]
-        - [libcrux_ml_kem, types ]
+        - [libcrux_ml_kem, types, "*" ]
         - [libcrux_ml_kem, constant_time_ops, "*"]
         - [libcrux_ml_kem, utils, "*" ]
       monomorphizations_exact:
         - [libcrux_sha3, Sha3_512Digest]
+        - [ Eurydice_dst_ref uint8_t size_t_x4]
+        - [ Eurydice_dst_ref uint8_t size_t_x2]
         - [ "Eurydice_slice uint8_t_x4" ]
         - [ "Eurydice_slice uint8_t_x2" ]
 
