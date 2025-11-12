@@ -25,7 +25,7 @@ if [[ "$no_clean" = 0 ]]; then
 fi
 
 if [[ "$no_extract" = 0 ]]; then
-  ./c.sh --mlkem768-1024 --no-glue --no-unrolling \
+  ./c.sh --mlkem768 --no-glue --no-unrolling \
     --no-karamel_include --cpp17 $no_charon
 fi
 
