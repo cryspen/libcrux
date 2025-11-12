@@ -109,9 +109,7 @@ pub(crate) fn load_last<const RATE: usize, const DELIMITER: u8>(
     len <= 200 &&
     start.to_int() + len.to_int() <= out.len().to_int()
 )]
-#[hax_lib::ensures(|_|
-    future(out).len() == out.len()
-)]
+#[hax_lib::ensures(|_| future(out).len() == out.len())]
 pub(crate) fn store_block<const RATE: usize>(
     s: &[u64; 25],
     out: &mut [u8],
@@ -125,6 +123,7 @@ pub(crate) fn store_block<const RATE: usize>(
 
     for i in 0..octets {
         hax_lib::loop_invariant!(|i: usize| out.len() == out_len);
+
         let value = get_ij(s, i / 5, i % 5);
         let bytes = value.to_le_bytes();
         let out_pos = start + 8 * i;
@@ -209,9 +208,7 @@ impl Squeeze<u64> for KeccakState<1, u64> {
         len <= 200 &&
         start.to_int() + len.to_int() <= out.len().to_int()
     )]
-    #[hax_lib::ensures(|_|
-        future(out).len() == out.len()
-    )]
+    #[hax_lib::ensures(|_| future(out).len() == out.len())]
     fn squeeze<const RATE: usize>(&self, out: &mut [u8], start: usize, len: usize) {
         store_block::<RATE>(&self.st, out, start, len);
     }
