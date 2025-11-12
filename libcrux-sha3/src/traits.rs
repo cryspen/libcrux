@@ -38,7 +38,8 @@ pub(crate) trait KeccakItem<const N: usize>: Clone + Copy {
     /// `(a ^ b) <<< LEFT`
     #[hax_lib::requires(
         LEFT.to_int() + RIGHT.to_int() == 64.to_int() &&
-        RIGHT >= 0
+        RIGHT > 0 &&
+        RIGHT < 64
     )]
     fn xor_and_rotate<const LEFT: i32, const RIGHT: i32>(a: Self, b: Self) -> Self;
 
@@ -254,7 +255,93 @@ pub(crate) trait Squeeze2<T: KeccakItem<2>> {
 ///
 /// Store blocks `N = 4`
 #[cfg(feature = "simd256")]
+#[hax_lib::fstar::replace(
+    interface, "
+class t_Squeeze4 (v_Self: Type0) (v_T: Type0) = {
+  // TODO: This super variable is problematic and makes typecheck fail
+  // [@@@ FStar.Tactics.Typeclasses.no_method]_super_2580582105105043251:t_KeccakItem v_T (mk_usize 4);
+  f_squeeze4_pre:
+      v_RATE: usize ->
+      self_: v_Self ->
+      out0: t_Slice u8 ->
+      out1: t_Slice u8 ->
+      out2: t_Slice u8 ->
+      out3: t_Slice u8 ->
+      start: usize ->
+      len: usize
+    -> pred:
+      Type0
+        { len <=. mk_usize 200 &&
+          ((Rust_primitives.Hax.Int.from_machine start <: Hax_lib.Int.t_Int) +
+            (Rust_primitives.Hax.Int.from_machine len <: Hax_lib.Int.t_Int)
+            <:
+            Hax_lib.Int.t_Int) <=
+          (Rust_primitives.Hax.Int.from_machine (Core.Slice.impl__len #u8 out0 <: usize)
+            <:
+            Hax_lib.Int.t_Int) &&
+          (Core.Slice.impl__len #u8 out0 <: usize) =. (Core.Slice.impl__len #u8 out1 <: usize) &&
+          (Core.Slice.impl__len #u8 out0 <: usize) =. (Core.Slice.impl__len #u8 out2 <: usize) &&
+          (Core.Slice.impl__len #u8 out0 <: usize) =. (Core.Slice.impl__len #u8 out3 <: usize) ==>
+          pred };
+  f_squeeze4_post:
+      v_RATE: usize ->
+      self_: v_Self ->
+      out0: t_Slice u8 ->
+      out1: t_Slice u8 ->
+      out2: t_Slice u8 ->
+      out3: t_Slice u8 ->
+      start: usize ->
+      len: usize ->
+      x: (t_Slice u8 & t_Slice u8 & t_Slice u8 & t_Slice u8)
+    -> pred:
+      Type0
+        { pred ==>
+          (let out0_future, out1_future, out2_future, out3_future:(t_Slice u8 & t_Slice u8 &
+              t_Slice u8 &
+              t_Slice u8) =
+              x
+            in
+            (Core.Slice.impl__len #u8 out0_future <: usize) =.
+            (Core.Slice.impl__len #u8 out0 <: usize) &&
+            (Core.Slice.impl__len #u8 out1_future <: usize) =.
+            (Core.Slice.impl__len #u8 out1 <: usize) &&
+            (Core.Slice.impl__len #u8 out2_future <: usize) =.
+            (Core.Slice.impl__len #u8 out2 <: usize) &&
+            (Core.Slice.impl__len #u8 out3_future <: usize) =.
+            (Core.Slice.impl__len #u8 out3 <: usize)) };
+  f_squeeze4:
+      v_RATE: usize ->
+      x0: v_Self ->
+      x1: t_Slice u8 ->
+      x2: t_Slice u8 ->
+      x3: t_Slice u8 ->
+      x4: t_Slice u8 ->
+      x5: usize ->
+      x6: usize
+    -> Prims.Pure (t_Slice u8 & t_Slice u8 & t_Slice u8 & t_Slice u8)
+        (f_squeeze4_pre v_RATE x0 x1 x2 x3 x4 x5 x6)
+        (fun result -> f_squeeze4_post v_RATE x0 x1 x2 x3 x4 x5 x6 result)
+}
+
+// [@@ FStar.Tactics.Typeclasses.tcinstance]
+// let _ = fun (v_Self:Type0) (v_T:Type0) {|i: t_Squeeze4 v_Self v_T|} -> i._super_2580582105105043251
+"
+)]
+#[hax_lib::attributes]
 pub(crate) trait Squeeze4<T: KeccakItem<4>> {
+    #[hax_lib::requires(
+        len <= 200 &&
+        start.to_int() + len.to_int() <= out0.len().to_int() &&
+        out0.len() == out1.len() &&
+        out0.len() == out2.len() &&
+        out0.len() == out3.len()
+    )]
+    #[hax_lib::ensures(|_|
+        future(out0).len() == out0.len() &&
+        future(out1).len() == out1.len() &&
+        future(out2).len() == out2.len() &&
+        future(out3).len() == out3.len()
+    )]
     fn squeeze4<const RATE: usize>(
         &self,
         out0: &mut [u8],
