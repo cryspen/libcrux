@@ -118,6 +118,7 @@ pub(crate) fn store_block<const RATE: usize>(
 
     for i in 0..octets {
         hax_lib::loop_invariant!(|i: usize| out.len() == out_len);
+
         let value = get_ij(s, i / 5, i % 5);
         let bytes = value.to_le_bytes();
         let out_pos = start + 8 * i;
