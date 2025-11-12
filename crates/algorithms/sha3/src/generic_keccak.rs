@@ -6,7 +6,7 @@ use core::ops::Index;
 use crate::traits::*;
 
 #[cfg(hax)]
-use hax_lib::int::*;
+use hax_lib::{constructors::from_bool, forall, implies, int::ToInt};
 
 /// A generic Xof API.
 pub(crate) mod xof;
@@ -243,33 +243,53 @@ impl<const N: usize, T: KeccakItem<N>> KeccakState<N, T> {
 
     #[inline(always)]
     #[hax_lib::requires(
-        N > 0 &&
+      from_bool(
+        N != 0 &&
         RATE <= 200 &&
         RATE % 8 == 0 &&
-        start.to_int() + RATE.to_int() <= blocks[0].len().to_int()
+        (RATE % 32 == 8 || RATE % 32 == 16) &&
+        start.to_int() + RATE.to_int() <= input[0].len().to_int()
+      ).and(
+        forall(|i: usize|
+          implies(
+            i < N,
+            input[0].len() == input[i].len()
+          )
+        )
+      )
     )]
-    fn absorb_block<const RATE: usize>(&mut self, blocks: &[&[u8]; N], start: usize)
+    fn absorb_block<const RATE: usize>(&mut self, input: &[&[u8]; N], start: usize)
     where
         Self: Absorb<N>,
     {
         #[cfg(not(any(eurydice, hax)))]
-        debug_assert!(blocks.iter().all(|buf| buf.len() == blocks[0].len()));
+        debug_assert!(input.iter().all(|buf| buf.len() == input[0].len()));
 
-        self.load_block::<RATE>(blocks, start);
+        self.load_block::<RATE>(input, start);
         self.keccakf1600()
     }
 
     #[inline(always)]
     #[hax_lib::requires(
-        N > 0 &&
+      from_bool(
+        N != 0 &&
         RATE <= 200 &&
         RATE % 8 == 0 &&
+        (RATE % 32 == 8 || RATE % 32 == 16) &&
         len < RATE &&
-        start.to_int() + len.to_int() <= last[0].len().to_int()
+        start.to_int() + len.to_int() <= input[0].len().to_int()
+      ).and(
+        forall(|i: usize|
+          implies(
+            i < N,
+            input[0].len() == input[i].len()
+          )
+        )
+      )
     )]
     pub(crate) fn absorb_final<const RATE: usize, const DELIM: u8>(
         &mut self,
-        last: &[&[u8]; N],
+        input: &[&[u8]; N],
         start: usize,
         len: usize,
     ) where
@@ -279,9 +299,9 @@ impl<const N: usize, T: KeccakItem<N>> KeccakState<N, T> {
         debug_assert!(N > 0 && len < RATE);
 
         #[cfg(not(any(eurydice, hax)))]
-        debug_assert!(last.iter().all(|buf| buf.len() == last[0].len()));
+        debug_assert!(input.iter().all(|buf| buf.len() == input[0].len()));
 
-        self.load_last::<RATE, DELIM>(last, start, len);
+        self.load_last::<RATE, DELIM>(input, start, len);
         self.keccakf1600()
     }
 }

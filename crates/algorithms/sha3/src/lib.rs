@@ -55,8 +55,7 @@ pub enum Algorithm {
 }
 
 // TODO: Verification fails because of the panic
-#[hax_lib::fstar::replace("")]
-#[hax_lib::attributes]
+#[cfg(not(any(hax, eurydice)))]
 impl From<u32> for Algorithm {
     #[hax_lib::requires(v == 1 || v == 2 || v == 3 || v == 4)]
     fn from(v: u32) -> Algorithm {
@@ -84,10 +83,10 @@ impl From<Algorithm> for u32 {
 /// Returns the output size of a digest.
 pub const fn digest_size(mode: Algorithm) -> usize {
     match mode {
-        Algorithm::Sha224 => SHA3_224_DIGEST_SIZE,
-        Algorithm::Sha256 => SHA3_256_DIGEST_SIZE,
-        Algorithm::Sha384 => SHA3_384_DIGEST_SIZE,
-        Algorithm::Sha512 => SHA3_512_DIGEST_SIZE,
+        Algorithm::Sha224 => 28,
+        Algorithm::Sha256 => 32,
+        Algorithm::Sha384 => 48,
+        Algorithm::Sha512 => 64,
     }
 }
 

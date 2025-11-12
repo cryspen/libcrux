@@ -44,7 +44,11 @@ pub(crate) fn keccak_xof_state_inv<
 >(
     xof: &KeccakXofState<PARALLEL_LANES, RATE, STATE>,
 ) -> bool {
-    RATE != 0 && RATE <= 200 && RATE % 8 == 0 && xof.buf_len <= RATE
+    RATE != 0
+        && RATE <= 200
+        && RATE % 8 == 0
+        && (RATE % 32 == 8 || RATE % 32 == 16)
+        && xof.buf_len <= RATE
 }
 
 #[hax_lib::attributes]
@@ -64,9 +68,7 @@ impl<const PARALLEL_LANES: usize, const RATE: usize, STATE: KeccakItem<PARALLEL_
         RATE <= 200 &&
         RATE % 8 == 0
     )]
-    #[hax_lib::ensures(|result|
-        keccak_xof_state_inv(&result)
-    )]
+    #[hax_lib::ensures(|result| keccak_xof_state_inv(&result))]
     pub(crate) fn new() -> Self {
         Self {
             inner: KeccakState::new(),
@@ -117,7 +119,8 @@ impl<const PARALLEL_LANES: usize, const RATE: usize, STATE: KeccakItem<PARALLEL_
         let input_len = inputs[0].len();
 
         // Check if we have enough data when combining the internal buffer and the input.
-        if self.buf_len != 0 && self.buf_len != RATE && input_len >= RATE - self.buf_len {
+        // If the internal buffer is empty and we have enough to absorb do not use.
+        if self.buf_len != 0 && input_len >= RATE - self.buf_len {
             let consumed = RATE - self.buf_len;
 
             #[cfg(hax)]
@@ -160,16 +163,9 @@ impl<const PARALLEL_LANES: usize, const RATE: usize, STATE: KeccakItem<PARALLEL_
         }
 
         // Check if there are buffered bytes to absorb first and consume them.
-        let input_consumed = self.fill_buffer(inputs);
+        let consumed = self.fill_buffer(inputs);
 
-        // We only need to consume the rest of the input.
-        let input_to_consume = inputs[0].len() - input_consumed;
-
-        // Consume the (rest of the) input ...
-        let num_blocks = input_to_consume / RATE;
-        let remainder = input_to_consume % RATE;
-
-        if input_consumed > 0 || self.buf_len == RATE {
+        if self.buf_len == RATE {
             // We have a full block in the local buffer now.
             // Convert self.buf to the right type for load_block
             let borrowed: [&[u8]; PARALLEL_LANES] =
@@ -182,11 +178,18 @@ impl<const PARALLEL_LANES: usize, const RATE: usize, STATE: KeccakItem<PARALLEL_
             self.buf_len = 0;
         }
 
+        // We only need to consume the rest of the input.
+        let input_to_consume = inputs[0].len() - consumed;
+
+        // Consume the (rest of the) input ...
+        let num_blocks = input_to_consume / RATE;
+        let remainder = input_to_consume % RATE;
+
         #[cfg(hax)]
         let self_buf_len = self.buf_len;
 
         #[cfg(hax)]
-        let end = input_consumed + num_blocks * RATE;
+        let end = consumed + num_blocks * RATE;
 
         #[cfg(hax)]
         hax_lib::assert!(end <= inputs[0].len());
@@ -195,7 +198,7 @@ impl<const PARALLEL_LANES: usize, const RATE: usize, STATE: KeccakItem<PARALLEL_
             hax_lib::loop_invariant!(|_: usize| self.buf_len == self_buf_len);
             hax_lib::fstar!("mul_succ_le (v i) (v num_blocks) (v v_RATE)");
 
-            let start = i * RATE + input_consumed;
+            let start = i * RATE + consumed;
 
             #[cfg(hax)]
             hax_lib::assert!(start + RATE <= end);
@@ -221,24 +224,22 @@ impl<const PARALLEL_LANES: usize, const RATE: usize, STATE: KeccakItem<PARALLEL_
         PARALLEL_LANES == 1 &&
         keccak_xof_state_inv(self)
     )]
-    #[hax_lib::ensures(|_|
-        keccak_xof_state_inv(future(self))
-    )]
+    #[hax_lib::ensures(|_| keccak_xof_state_inv(future(self)))]
     pub(crate) fn absorb(&mut self, inputs: &[&[u8]; PARALLEL_LANES])
     where
         KeccakState<PARALLEL_LANES, STATE>: Absorb<PARALLEL_LANES>,
     {
-        let input_remainder_len = self.absorb_full(inputs);
+        let remainder = self.absorb_full(inputs);
 
         // ... buffer the rest if there's not enough input (left).
-        if input_remainder_len > 0 {
+        if remainder > 0 {
             #[cfg(not(eurydice))]
             debug_assert!(
                 self.buf_len == 0 || // We consumed everything (or it was empty all along).
-                self.buf_len + input_remainder_len <= RATE
+                self.buf_len + remainder <= RATE
             );
 
-            hax_lib::assert!(input_remainder_len.to_int() + self.buf_len.to_int() <= RATE.to_int());
+            hax_lib::assert!(remainder.to_int() + self.buf_len.to_int() <= RATE.to_int());
 
             let input_len = inputs[0].len();
 
@@ -249,11 +250,11 @@ impl<const PARALLEL_LANES: usize, const RATE: usize, STATE: KeccakItem<PARALLEL_
             for i in 0..PARALLEL_LANES {
                 hax_lib::loop_invariant!(|_: usize| self.buf_len == self_buf_len);
 
-                self.buf[i][self.buf_len..self.buf_len + input_remainder_len]
-                    .copy_from_slice(&inputs[i][input_len - input_remainder_len..input_len]);
+                self.buf[i][self.buf_len..self.buf_len + remainder]
+                    .copy_from_slice(&inputs[i][input_len - remainder..input_len]);
             }
 
-            self.buf_len += input_remainder_len;
+            self.buf_len += remainder;
         }
     }
 
@@ -266,9 +267,7 @@ impl<const PARALLEL_LANES: usize, const RATE: usize, STATE: KeccakItem<PARALLEL_
         PARALLEL_LANES == 1 &&
         keccak_xof_state_inv(self)
     )]
-    #[hax_lib::ensures(|_|
-        keccak_xof_state_inv(future(self))
-    )]
+    #[hax_lib::ensures(|_| keccak_xof_state_inv(future(self)))]
     pub(crate) fn absorb_final<const DELIMITER: u8>(&mut self, inputs: &[&[u8]; PARALLEL_LANES])
     where
         KeccakState<PARALLEL_LANES, STATE>: Absorb<PARALLEL_LANES>,
