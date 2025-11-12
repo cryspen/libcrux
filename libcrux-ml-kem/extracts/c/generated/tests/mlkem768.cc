@@ -142,17 +142,17 @@ TEST(MlKem768TestPortable, NISTKnownAnswerTest)
             libcrux_ml_kem_mlkem768_portable_generate_key_pair(keygen_rand);
 
         auto pk_hash = libcrux_sha3_sha256(
-            mk_slice(key_pair.pk.data,
+            mk_dst_ref_uint8_t(key_pair.pk.data,
                      LIBCRUX_ML_KEM_MLKEM768_CPA_PKE_PUBLIC_KEY_SIZE));
         EXPECT_EQ(0, memcmp(pk_hash.data, kat.sha3_256_hash_of_public_key.data(), 32));
 
         auto sk_hash = libcrux_sha3_sha256(
-            mk_slice(key_pair.sk.data, LIBCRUX_ML_KEM_MLKEM768_SECRET_KEY_SIZE));
+            mk_dst_ref_uint8_t(key_pair.sk.data, LIBCRUX_ML_KEM_MLKEM768_SECRET_KEY_SIZE));
         EXPECT_EQ(0, memcmp(sk_hash.data, kat.sha3_256_hash_of_secret_key.data(), 32));
 
         auto ctxt = libcrux_ml_kem_mlkem768_portable_encapsulate(&key_pair.pk, encaps_rand);
         auto ct_hash = libcrux_sha3_sha256(
-            mk_slice(ctxt.fst.data,
+            mk_dst_ref_uint8_t(ctxt.fst.data,
                      LIBCRUX_ML_KEM_MLKEM768_CPA_PKE_CIPHERTEXT_SIZE));
         EXPECT_EQ(0, memcmp(ct_hash.data, kat.sha3_256_hash_of_ciphertext.data(), 32));
         EXPECT_EQ(0,

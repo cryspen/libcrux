@@ -10,6 +10,13 @@ Eurydice_slice mk_slice(T *x, size_t len) {
   return s;
 }
 
+Eurydice_dst_ref_87_s mk_dst_ref_uint8_t(uint8_t *x, size_t len) {
+  Eurydice_dst_ref_87_s s;
+  s.ptr = (uint8_t *)x;
+  s.meta = len;
+  return s;
+}
+
 // Not really random
 void generate_random(uint8_t *output, uint32_t output_len) {
   for (size_t i = 0; i < output_len; i++) {
@@ -123,15 +130,16 @@ uint8_t *compute_implicit_rejection_shared_secret(uint8_t *ciphertext,
                                                   size_t secret_key_size) {
   uint8_t *hashInput = new uint8_t[32 + ciphertext_size];
   uint8_t *sharedSecret = new uint8_t[32];
-  Eurydice_slice ss;
-  ss.ptr = (void *)sharedSecret;
-  ss.len = 32;
+  Eurydice_dst_ref_87 ss;
+  ss.ptr = (uint8_t *)sharedSecret;
+  ss.meta = 32;
 
   std::copy(secret_key + (secret_key_size - 32), secret_key + secret_key_size,
             hashInput);
   std::copy(ciphertext, ciphertext + ciphertext_size, hashInput + 32);
 
-  libcrux_sha3_portable_shake256(ss, mk_slice(hashInput, 32 + ciphertext_size));
+  libcrux_sha3_portable_shake256(
+      ss, mk_dst_ref_uint8_t(hashInput, 32 + ciphertext_size));
 
   delete[] hashInput;
   return sharedSecret;
