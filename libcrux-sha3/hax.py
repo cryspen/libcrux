@@ -94,10 +94,24 @@ class extractAction(argparse.Action):
             env=hax_env,
         )
 
+        # Extract Core models
+        cargo_hax_into = [
+            "cargo",
+            "hax",
+            "into",
+            "fstar",
+        ]
+        hax_env = {}
+        shell(
+            cargo_hax_into,
+            cwd="../fstar-helpers/core-models",
+            env=hax_env,
+        )
+
         # Extract sha3
         if args.portable:
             # For portable-only: exclude all SIMD implementations
-            include_str = "+** -**::avx2::** -**::neon::** -**::simd::** -**::simd128::** -**::simd256::** +**::simd::portable::**"
+            include_str = "+** -**::avx2::** -**::neon::** -**::simd128::** -**::simd256::**"
             cargo_args = []
         else:
             include_str = "+**"
