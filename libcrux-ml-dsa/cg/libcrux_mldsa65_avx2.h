@@ -8,7 +8,7 @@
  * Eurydice: 5dbfcfb3f8f694a4b23d120d18400692e22050d5
  * Karamel: 46bbe26187c3d295b0d78152b6ea447aaf32dac8
  * F*: unset
- * Libcrux: 7f24025f87b3cf2d9097e694960e1a6c4caf7736
+ * Libcrux: 2aefcf58f546cc3710114f9f794ae3f3bb31d88f
  */
 
 #ifndef libcrux_mldsa65_avx2_H
@@ -6276,58 +6276,51 @@ libcrux_ml_dsa_encoding_signature_deserialize_64(
         &Eurydice_slice_index(out_signer_response, i0, Eurydice_arr_cd));
   }
   size_t previous_true_hints_seen = (size_t)0U;
-  core_ops_range_Range_08 iter =
-      core_iter_traits_collect__core__iter__traits__collect__IntoIterator_Clause1_Item__I__for_I__into_iter(
-          (core_ops_range_Range_08{(size_t)0U, rows_in_a}),
-          core_ops_range_Range_08, size_t, core_ops_range_Range_08);
-  Result_41 uu____2;
-  while (true) {
-    Option_08 uu____3 =
-        core_iter_range__core__iter__traits__iterator__Iterator_A__for_core__ops__range__Range_A__TraitClause_0___next(
-            &iter, size_t, Option_08);
-    if (!(uu____3.tag == None)) {
-      size_t i = uu____3.f0;
-      size_t current_true_hints_seen = (size_t)Eurydice_slice_index(
-          hint_serialized, max_ones_in_hint + i, uint8_t);
-      libcrux_ml_dsa_types_VerificationError uu____4;
-      if (current_true_hints_seen < previous_true_hints_seen) {
-        uu____4 = libcrux_ml_dsa_types_VerificationError_MalformedHintError;
-        uu____2 = (Result_41{Err, uu____4});
-      } else if (previous_true_hints_seen > max_ones_in_hint) {
-        uu____4 = libcrux_ml_dsa_types_VerificationError_MalformedHintError;
-        uu____2 = (Result_41{Err, uu____4});
-      } else {
-        for (size_t i0 = previous_true_hints_seen; i0 < current_true_hints_seen;
-             i0++) {
-          size_t j = i0;
-          if (j > previous_true_hints_seen) {
-            if (Eurydice_slice_index(hint_serialized, j, uint8_t) <=
-                Eurydice_slice_index(hint_serialized, j - (size_t)1U,
-                                     uint8_t)) {
-              uu____2 = (Result_41{
-                  Err,
-                  libcrux_ml_dsa_types_VerificationError_MalformedHintError});
-            }
+  bool malformed_hint = false;
+  for (size_t i0 = (size_t)0U; i0 < rows_in_a; i0++) {
+    size_t i1 = i0;
+    size_t current_true_hints_seen = (size_t)Eurydice_slice_index(
+        hint_serialized, max_ones_in_hint + i1, uint8_t);
+    if (current_true_hints_seen < previous_true_hints_seen) {
+      malformed_hint = true;
+    } else if (previous_true_hints_seen > max_ones_in_hint) {
+      malformed_hint = true;
+    } else {
+      for (size_t i = previous_true_hints_seen; i < current_true_hints_seen;
+           i++) {
+        size_t j = i;
+        if (j > previous_true_hints_seen) {
+          if (Eurydice_slice_index(hint_serialized, j, uint8_t) <=
+              Eurydice_slice_index(hint_serialized, j - (size_t)1U, uint8_t)) {
+            malformed_hint = true;
+            break;
           }
-          libcrux_ml_dsa_encoding_signature_set_hint(
-              out_hint, i,
-              (size_t)Eurydice_slice_index(hint_serialized, j, uint8_t));
         }
+        libcrux_ml_dsa_encoding_signature_set_hint(
+            out_hint, i1,
+            (size_t)Eurydice_slice_index(hint_serialized, j, uint8_t));
+      }
+      if (!malformed_hint) {
         previous_true_hints_seen = current_true_hints_seen;
         continue;
       }
-      break;
     }
-    for (size_t i = previous_true_hints_seen; i < max_ones_in_hint; i++) {
-      size_t j = i;
-      if (!(Eurydice_slice_index(hint_serialized, j, uint8_t) != 0U)) {
-        continue;
-      }
-      uu____2 = (Result_41{
-          Err, libcrux_ml_dsa_types_VerificationError_MalformedHintError});
-      break;
+    break;
+  }
+  for (size_t i = previous_true_hints_seen; i < max_ones_in_hint; i++) {
+    size_t j = i;
+    if (!(Eurydice_slice_index(hint_serialized, j, uint8_t) != 0U)) {
+      continue;
     }
-    return (Result_41{Ok});
+    malformed_hint = true;
+    break;
+  }
+  Result_41 uu____2;
+  if (malformed_hint) {
+    uu____2 = (Result_41{
+        Err, libcrux_ml_dsa_types_VerificationError_MalformedHintError});
+  } else {
+    uu____2 = (Result_41{Ok});
   }
   return uu____2;
 }

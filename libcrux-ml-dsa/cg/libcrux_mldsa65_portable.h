@@ -8,7 +8,7 @@
  * Eurydice: 5dbfcfb3f8f694a4b23d120d18400692e22050d5
  * Karamel: 46bbe26187c3d295b0d78152b6ea447aaf32dac8
  * F*: unset
- * Libcrux: 7f24025f87b3cf2d9097e694960e1a6c4caf7736
+ * Libcrux: 2aefcf58f546cc3710114f9f794ae3f3bb31d88f
  */
 
 #ifndef libcrux_mldsa65_portable_H
@@ -411,20 +411,6 @@ libcrux_ml_dsa_hash_functions_portable_squeeze_next_block_x4_9b(
 
 #define LIBCRUX_ML_DSA_HASH_FUNCTIONS_SHAKE256_BLOCK_SIZE ((size_t)136U)
 
-#define LIBCRUX_ML_DSA_ML_DSA_GENERIC_ML_DSA_65_ERROR_RING_ELEMENT_SIZE \
-  (libcrux_ml_dsa_constants_error_ring_element_size(                    \
-      LIBCRUX_ML_DSA_CONSTANTS_ML_DSA_65_BITS_PER_ERROR_COEFFICIENT))
-
-#define LIBCRUX_ML_DSA_ML_DSA_GENERIC_ML_DSA_65_SIGNING_KEY_SIZE \
-  (libcrux_ml_dsa_constants_signing_key_size(                    \
-      LIBCRUX_ML_DSA_CONSTANTS_ML_DSA_65_ROWS_IN_A,              \
-      LIBCRUX_ML_DSA_CONSTANTS_ML_DSA_65_COLUMNS_IN_A,           \
-      LIBCRUX_ML_DSA_ML_DSA_GENERIC_ML_DSA_65_ERROR_RING_ELEMENT_SIZE))
-
-#define LIBCRUX_ML_DSA_ML_DSA_GENERIC_ML_DSA_65_VERIFICATION_KEY_SIZE \
-  (libcrux_ml_dsa_constants_verification_key_size(                    \
-      LIBCRUX_ML_DSA_CONSTANTS_ML_DSA_65_ROWS_IN_A))
-
 static KRML_MUSTINLINE Eurydice_arr_a2
 libcrux_ml_dsa_sample_add_error_domain_separator(Eurydice_dst_ref_87 slice,
                                                  uint16_t domain_separator) {
@@ -439,6 +425,10 @@ libcrux_ml_dsa_sample_add_error_domain_separator(Eurydice_dst_ref_87 slice,
   out.data[65U] = (uint8_t)((uint32_t)domain_separator >> 8U);
   return out;
 }
+
+#define LIBCRUX_ML_DSA_ML_DSA_GENERIC_ML_DSA_65_ERROR_RING_ELEMENT_SIZE \
+  (libcrux_ml_dsa_constants_error_ring_element_size(                    \
+      LIBCRUX_ML_DSA_CONSTANTS_ML_DSA_65_BITS_PER_ERROR_COEFFICIENT))
 
 #define LIBCRUX_ML_DSA_SIMD_TRAITS_FIELD_MODULUS ((int32_t)8380417)
 
@@ -604,6 +594,10 @@ libcrux_ml_dsa::pre_hash::SHAKE128_PH}
 static inline Eurydice_arr_cb libcrux_ml_dsa_pre_hash_oid_30(void) {
   return LIBCRUX_ML_DSA_PRE_HASH_SHAKE128_OID;
 }
+
+#define LIBCRUX_ML_DSA_ML_DSA_GENERIC_ML_DSA_65_VERIFICATION_KEY_SIZE \
+  (libcrux_ml_dsa_constants_verification_key_size(                    \
+      LIBCRUX_ML_DSA_CONSTANTS_ML_DSA_65_ROWS_IN_A))
 
 #define LIBCRUX_ML_DSA_ML_DSA_GENERIC_ML_DSA_65_SIGNATURE_SIZE \
   (libcrux_ml_dsa_constants_signature_size(                    \
@@ -6662,58 +6656,51 @@ libcrux_ml_dsa_encoding_signature_deserialize_37(
         &Eurydice_slice_index(out_signer_response, i0, Eurydice_arr_a4));
   }
   size_t previous_true_hints_seen = (size_t)0U;
-  core_ops_range_Range_08 iter =
-      core_iter_traits_collect__core__iter__traits__collect__IntoIterator_Clause1_Item__I__for_I__into_iter(
-          (core_ops_range_Range_08{(size_t)0U, rows_in_a}),
-          core_ops_range_Range_08, size_t, core_ops_range_Range_08);
-  Result_41 uu____2;
-  while (true) {
-    Option_08 uu____3 =
-        core_iter_range__core__iter__traits__iterator__Iterator_A__for_core__ops__range__Range_A__TraitClause_0___next(
-            &iter, size_t, Option_08);
-    if (!(uu____3.tag == None)) {
-      size_t i = uu____3.f0;
-      size_t current_true_hints_seen = (size_t)Eurydice_slice_index(
-          hint_serialized, max_ones_in_hint + i, uint8_t);
-      libcrux_ml_dsa_types_VerificationError uu____4;
-      if (current_true_hints_seen < previous_true_hints_seen) {
-        uu____4 = libcrux_ml_dsa_types_VerificationError_MalformedHintError;
-        uu____2 = (Result_41{Err, uu____4});
-      } else if (previous_true_hints_seen > max_ones_in_hint) {
-        uu____4 = libcrux_ml_dsa_types_VerificationError_MalformedHintError;
-        uu____2 = (Result_41{Err, uu____4});
-      } else {
-        for (size_t i0 = previous_true_hints_seen; i0 < current_true_hints_seen;
-             i0++) {
-          size_t j = i0;
-          if (j > previous_true_hints_seen) {
-            if (Eurydice_slice_index(hint_serialized, j, uint8_t) <=
-                Eurydice_slice_index(hint_serialized, j - (size_t)1U,
-                                     uint8_t)) {
-              uu____2 = (Result_41{
-                  Err,
-                  libcrux_ml_dsa_types_VerificationError_MalformedHintError});
-            }
+  bool malformed_hint = false;
+  for (size_t i0 = (size_t)0U; i0 < rows_in_a; i0++) {
+    size_t i1 = i0;
+    size_t current_true_hints_seen = (size_t)Eurydice_slice_index(
+        hint_serialized, max_ones_in_hint + i1, uint8_t);
+    if (current_true_hints_seen < previous_true_hints_seen) {
+      malformed_hint = true;
+    } else if (previous_true_hints_seen > max_ones_in_hint) {
+      malformed_hint = true;
+    } else {
+      for (size_t i = previous_true_hints_seen; i < current_true_hints_seen;
+           i++) {
+        size_t j = i;
+        if (j > previous_true_hints_seen) {
+          if (Eurydice_slice_index(hint_serialized, j, uint8_t) <=
+              Eurydice_slice_index(hint_serialized, j - (size_t)1U, uint8_t)) {
+            malformed_hint = true;
+            break;
           }
-          libcrux_ml_dsa_encoding_signature_set_hint(
-              out_hint, i,
-              (size_t)Eurydice_slice_index(hint_serialized, j, uint8_t));
         }
+        libcrux_ml_dsa_encoding_signature_set_hint(
+            out_hint, i1,
+            (size_t)Eurydice_slice_index(hint_serialized, j, uint8_t));
+      }
+      if (!malformed_hint) {
         previous_true_hints_seen = current_true_hints_seen;
         continue;
       }
-      break;
     }
-    for (size_t i = previous_true_hints_seen; i < max_ones_in_hint; i++) {
-      size_t j = i;
-      if (!(Eurydice_slice_index(hint_serialized, j, uint8_t) != 0U)) {
-        continue;
-      }
-      uu____2 = (Result_41{
-          Err, libcrux_ml_dsa_types_VerificationError_MalformedHintError});
-      break;
+    break;
+  }
+  for (size_t i = previous_true_hints_seen; i < max_ones_in_hint; i++) {
+    size_t j = i;
+    if (!(Eurydice_slice_index(hint_serialized, j, uint8_t) != 0U)) {
+      continue;
     }
-    return (Result_41{Ok});
+    malformed_hint = true;
+    break;
+  }
+  Result_41 uu____2;
+  if (malformed_hint) {
+    uu____2 = (Result_41{
+        Err, libcrux_ml_dsa_types_VerificationError_MalformedHintError});
+  } else {
+    uu____2 = (Result_41{Ok});
   }
   return uu____2;
 }
@@ -7119,6 +7106,12 @@ typedef Eurydice_arr_4a
 #define LIBCRUX_ML_DSA_ML_DSA_GENERIC_ML_DSA_65_ROW_X_COLUMN \
   (LIBCRUX_ML_DSA_CONSTANTS_ML_DSA_65_ROWS_IN_A *            \
    LIBCRUX_ML_DSA_CONSTANTS_ML_DSA_65_COLUMNS_IN_A)
+
+#define LIBCRUX_ML_DSA_ML_DSA_GENERIC_ML_DSA_65_SIGNING_KEY_SIZE \
+  (libcrux_ml_dsa_constants_signing_key_size(                    \
+      LIBCRUX_ML_DSA_CONSTANTS_ML_DSA_65_ROWS_IN_A,              \
+      LIBCRUX_ML_DSA_CONSTANTS_ML_DSA_65_COLUMNS_IN_A,           \
+      LIBCRUX_ML_DSA_ML_DSA_GENERIC_ML_DSA_65_ERROR_RING_ELEMENT_SIZE))
 
 #define LIBCRUX_ML_DSA_PRE_HASH_PRE_HASH_OID_LEN ((size_t)11U)
 

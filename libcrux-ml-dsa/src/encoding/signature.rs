@@ -63,6 +63,7 @@ pub(crate) fn deserialize<SIMDUnit: Operations>(
     out_signer_response: &mut [PolynomialRingElement<SIMDUnit>],
     out_hint: &mut [[i32; COEFFICIENTS_IN_RING_ELEMENT]],
 ) -> Result<(), VerificationError> {
+    #[cfg(not(eurydice))]
     debug_assert!(serialized.len() == signature_size);
 
     let (commitment_hash, rest_of_serialized) = serialized.split_at(commitment_hash_size);
@@ -84,6 +85,10 @@ pub(crate) fn deserialize<SIMDUnit: Operations>(
     // allow only one such encoding, to ensure strong unforgeability.
     let mut previous_true_hints_seen = 0usize;
 
+    // XXX: We would like to use early returns below, but doing so triggers a bug in Eurdice leads to a bad extraction.
+    // see https://github.com/AeneasVerif/eurydice/issues/339
+    let mut malformed_hint = false;
+
     for i in 0..rows_in_a {
         let current_true_hints_seen = hint_serialized[max_ones_in_hint + i] as usize;
 
@@ -91,30 +96,44 @@ pub(crate) fn deserialize<SIMDUnit: Operations>(
             || (previous_true_hints_seen > max_ones_in_hint)
         {
             // the true hints seen should be increasing
-            return Err(VerificationError::MalformedHintError);
+            // return Err(VerificationError::MalformedHintError);
+            malformed_hint = true;
+            break;
         }
 
         for j in previous_true_hints_seen..current_true_hints_seen {
             if j > previous_true_hints_seen && hint_serialized[j] <= hint_serialized[j - 1] {
                 // indices of true hints for a specific polynomial should be
                 // increasing
-                return Err(VerificationError::MalformedHintError);
+                // return Err(VerificationError::MalformedHintError);
+                malformed_hint = true;
+                break;
             }
 
             set_hint(out_hint, i, hint_serialized[j] as usize);
         }
 
-        previous_true_hints_seen = current_true_hints_seen;
+        if malformed_hint {
+            break;
+        } else {
+            previous_true_hints_seen = current_true_hints_seen;
+        }
     }
 
     for j in previous_true_hints_seen..max_ones_in_hint {
         if hint_serialized[j] != 0 {
             // ensures padding indices are zero
-            return Err(VerificationError::MalformedHintError);
+            // return Err(VerificationError::MalformedHintError);
+            malformed_hint = true;
+            break;
         }
     }
 
-    Ok(())
+    if malformed_hint {
+        Err(VerificationError::MalformedHintError)
+    } else {
+        Ok(())
+    }
 }
 
 #[inline(always)]

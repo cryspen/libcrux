@@ -11,7 +11,7 @@ project(libcrux-ml-dsa
 )
 
 set(CMAKE_C_STANDARD 11)
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 
 if(NOT MSVC)
     add_compile_options(
@@ -42,6 +42,12 @@ include_directories(
     ${PROJECT_SOURCE_DIR}
     ${PROJECT_SOURCE_DIR}/karamel
 )
+file(GLOB SOURCES
+    ${PROJECT_SOURCE_DIR}/libcrux_sha3_portable.c
+)
+
+# add_library(ml_dsa SHARED ${SOURCES})
+# add_library(ml_dsa_static STATIC ${SOURCES})
 
 if(CMAKE_SYSTEM_PROCESSOR MATCHES "x86_64|amd64|AMD64")
     message(STATUS "Detected an x64 architecture")

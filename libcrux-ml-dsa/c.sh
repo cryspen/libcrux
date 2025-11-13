@@ -125,7 +125,7 @@ echo "Running eurydice ..."
 echo $EURYDICE_HOME/eurydice --config ../$config -funroll-loops $unrolling \
 --header header.txt $cpp17 ../../libcrux_ml_dsa.llbc --keep-going
 
-$EURYDICE_HOME/eurydice --debug "-dast" --config ../$config -funroll-loops $unrolling \
+$EURYDICE_HOME/eurydice --config ../$config -funroll-loops $unrolling \
 --header header.txt $cpp17 ../../libcrux_ml_dsa.llbc --keep-going
 
 if [[ "$eurydice_glue" = 1 ]]; then

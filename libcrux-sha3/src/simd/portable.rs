@@ -4,6 +4,7 @@ use crate::{generic_keccak::KeccakState, traits::*};
 
 #[inline(always)]
 fn rotate_left<const LEFT: i32, const RIGHT: i32>(x: u64) -> u64 {
+    #[cfg(not(eurydice))]
     debug_assert!(LEFT + RIGHT == 64);
     x.rotate_left(LEFT as u32)
 }
@@ -35,6 +36,7 @@ fn _veorq_n_u64(a: u64, c: u64) -> u64 {
 
 #[inline(always)]
 pub(crate) fn load_block<const RATE: usize>(state: &mut [u64; 25], blocks: &[u8], start: usize) {
+    #[cfg(not(eurydice))]
     debug_assert!(start + RATE <= blocks.len() && RATE % 8 == 0);
 
     // First load the block, then xor it with the state
@@ -66,6 +68,7 @@ pub(crate) fn load_last<const RATE: usize, const DELIMITER: u8>(
     start: usize,
     len: usize,
 ) {
+    #[cfg(not(eurydice))]
     debug_assert!(start + len <= blocks.len());
 
     let mut buffer = [0u8; RATE];
