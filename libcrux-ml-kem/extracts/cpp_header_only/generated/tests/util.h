@@ -18,6 +18,13 @@ Eurydice_slice mk_slice(T *x, size_t len) {
   return s;
 }
 
+Eurydice_dst_ref_87_s mk_dst_ref_uint8_t(uint8_t *x, size_t len) {
+  Eurydice_dst_ref_87_s s;
+  s.ptr = (uint8_t *)x;
+  s.meta = len;
+  return s;
+}
+
 // Not really random
 void generate_random(uint8_t *output, uint32_t output_len) {
   for (size_t i = 0; i < output_len; i++) {

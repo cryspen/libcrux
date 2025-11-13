@@ -71,6 +71,16 @@ typedef struct {
   size_t len;
 } Eurydice_slice;
 
+typedef struct Eurydice_dst_ref_87_s {
+  uint8_t *ptr;
+  size_t meta;
+} Eurydice_dst_ref_87;
+
+typedef struct Eurydice_dst_ref_9a_s {
+  int16_t *ptr;
+  size_t meta;
+} Eurydice_dst_ref_9a;
+
 #if defined(__cplusplus)
 #define KRML_CLITERAL(type) type
 #else
@@ -92,15 +102,10 @@ typedef struct {
   (KRML_CLITERAL(Eurydice_slice){(void *)(x + start), end - start})
 
 // Slice length
-#define EURYDICE_SLICE_LEN(s, _) (s).len
-#define Eurydice_slice_len(s, _) (s).len
+#define EURYDICE_SLICE_LEN(s, _) (s).meta
+#define Eurydice_slice_len(s, _) (s).meta
 
-// This macro is a pain because in case the dereferenced element type is an
-// array, you cannot simply write `t x` as it would yield `int[4] x` instead,
-// which is NOT correct C syntax, so we add a dedicated phase in Eurydice that
-// adds an extra argument to this macro at the last minute so that we have the
-// correct type of *pointers* to elements.
-#define Eurydice_slice_index(s, i, t, t_ptr_t) (((t_ptr_t)s.ptr)[i])
+#define Eurydice_slice_index(s, i, t) ((s).ptr[i])
 
 // The following functions get sub slices from a slice.
 
@@ -145,7 +150,7 @@ typedef struct {
 
 // Copy a slice with memcopy
 #define Eurydice_slice_copy(dst, src, t) \
-  memcpy(dst.ptr, src.ptr, dst.len * sizeof(t))
+  memcpy(dst.ptr, src.ptr, dst.meta * sizeof(t))
 
 // Distinguished support for some PartialEq trait implementations
 //
@@ -157,8 +162,8 @@ typedef struct {
   KRML_CLITERAL(Eurydice_slice) { ptr_, len_ }
 
 #define core_array__core__clone__Clone_for__Array_T__N___clone( \
-    len, src, dst, elem_type, _ret_t)                           \
-  (memcpy(dst, src, len * sizeof(elem_type)))
+    len, src, elem_type, _ret_t)                                \
+  (*src)
 #define TryFromSliceError uint8_t
 
 #define Eurydice_array_eq(sz, a1, a2, t) (memcmp(a1, a2, sz * sizeof(t)) == 0)
@@ -175,12 +180,14 @@ typedef struct {
     sz, a1, a2, t, _, _ret_t)                                                               \
   Eurydice_array_eq(sz, a1, ((a2)->ptr), t, _)
 
-#define Eurydice_slice_split_at(slice, mid, element_type, ret_t)          \
-  KRML_CLITERAL(ret_t) {                                                  \
-    EURYDICE_CFIELD(.fst =)                                               \
-    EURYDICE_SLICE((element_type *)(slice).ptr, 0, mid),                  \
-        EURYDICE_CFIELD(.snd =)                                           \
-            EURYDICE_SLICE((element_type *)(slice).ptr, mid, (slice).len) \
+#define Eurydice_slice_split_at(slice, mid, element_type, ret_t)        \
+  KRML_CLITERAL(ret_t) {                                                \
+    EURYDICE_CFIELD(.fst =){EURYDICE_CFIELD(.ptr =)((slice).ptr),       \
+                            EURYDICE_CFIELD(.meta =) mid},              \
+        EURYDICE_CFIELD(.snd =) {                                       \
+      EURYDICE_CFIELD(.ptr =)                                           \
+      ((slice).ptr + mid), EURYDICE_CFIELD(.meta =)((slice).meta - mid) \
+    }                                                                   \
   }
 
 #define Eurydice_slice_split_at_mut(slice, mid, element_type, ret_t)  \
@@ -212,12 +219,23 @@ static KRML_MUSTINLINE void Eurydice_slice_to_array3(uint8_t *dst_tag,
 
 // CORE STUFF (conversions, endianness, ...)
 
-static KRML_MUSTINLINE void core_num__u64__to_le_bytes(uint64_t v,
-                                                       uint8_t buf[8]) {
-  store64_le(buf, v);
+typedef struct Eurydice_arr_8b_s {
+  uint8_t data[2];
+} Eurydice_arr_8b;
+
+typedef struct Eurydice_arr_c4_s {
+  uint8_t data[8];
+} Eurydice_arr_c4;
+
+static KRML_MUSTINLINE Eurydice_arr_c4 core_num__u64__to_le_bytes(uint64_t v) {
+  Eurydice_arr_c4 a;
+  store64_le(a.data, v);
+  return a;
 }
-static KRML_MUSTINLINE uint64_t core_num__u64__from_le_bytes(uint8_t buf[8]) {
-  return load64_le(buf);
+
+static KRML_MUSTINLINE uint64_t
+core_num__u64__from_le_bytes(Eurydice_arr_c4 buf) {
+  return load64_le(buf.data);
 }
 
 static KRML_MUSTINLINE uint32_t core_num__u32__from_le_bytes(uint8_t buf[4]) {

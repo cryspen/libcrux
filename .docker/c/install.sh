@@ -35,5 +35,5 @@ echo "[[ ! -r /home/$USER/.opam/opam-init/init.sh ]] || source /home/$USER/.opam
 
 source $HOME/.profile
 opam install --yes ocamlfind visitors menhir ppx_deriving_yojson core_unix \
-    sedlex wasm fix process pprint zarith yaml easy_logging terminal unionFind
+    sedlex wasm fix process pprint zarith yaml easy_logging terminal unionFind ocamlformat.0.27.0
 eval $(opam env)

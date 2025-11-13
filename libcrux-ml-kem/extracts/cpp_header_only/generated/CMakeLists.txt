@@ -18,6 +18,7 @@ include(mlkem.cmake)
 include_directories(
     ${PROJECT_SOURCE_DIR}
     ${PROJECT_SOURCE_DIR}/internal
+    ${PROJECT_SOURCE_DIR}/intrinsics
     ${PROJECT_SOURCE_DIR}/karamel/include
 )
 

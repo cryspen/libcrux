@@ -15,18 +15,21 @@ void generate_random(uint8_t *output, uint32_t output_len) {
 }
 
 int main(int argc, char const *argv[]) {
-  uint8_t randomness[64];
-  generate_random(randomness, 64);
+  libcrux_sha3_Sha3_512Digest keygen_rand;
+  memset(keygen_rand.data, 0x13, 64);
 
   auto key_pair =
-      libcrux_ml_kem_mlkem768_portable_generate_key_pair(randomness);
-  generate_random(randomness, 32);
+      libcrux_ml_kem_mlkem768_portable_generate_key_pair(keygen_rand);
+
+  Eurydice_arr_600 encaps_rand;
+  memset(encaps_rand.data, 0x15, 32);
+
   auto ctxt =
-      libcrux_ml_kem_mlkem768_portable_encapsulate(&key_pair.pk, randomness);
+      libcrux_ml_kem_mlkem768_portable_encapsulate(&key_pair.pk, encaps_rand);
 
   for (size_t i = 0; i < 100000; i++) {
     ctxt =
-        libcrux_ml_kem_mlkem768_portable_encapsulate(&key_pair.pk, randomness);
+        libcrux_ml_kem_mlkem768_portable_encapsulate(&key_pair.pk, encaps_rand);
   }
 
   return 0;

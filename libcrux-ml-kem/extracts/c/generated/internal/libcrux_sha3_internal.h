@@ -4,11 +4,11 @@
  * SPDX-License-Identifier: MIT or Apache-2.0
  *
  * This code was generated with the following revisions:
- * Charon: 667d2fc98984ff7f3df989c2367e6c1fa4a000e7
- * Eurydice: 2381cbc416ef2ad0b561c362c500bc84f36b6785
- * Karamel: 80f5435f2fc505973c469a4afcc8d875cddd0d8b
- * F*: 71d8221589d4d438af3706d89cb653cf53e18aab
- * Libcrux: 68dfed5a4a9e40277f62828471c029afed1ecdcc
+ * Charon: aa8de1a51675fbf6b65135d38d7e3986cadc626f
+ * Eurydice: 5dbfcfb3f8f694a4b23d120d18400692e22050d5
+ * Karamel: 46bbe26187c3d295b0d78152b6ea447aaf32dac8
+ * F*: unset
+ * Libcrux: 55a15c0abfa4a1326744575999e590ebcd72ec30
  */
 
 #ifndef internal_libcrux_sha3_internal_H
@@ -22,13 +22,7 @@ extern "C" {
 
 #include "../libcrux_sha3_internal.h"
 
-typedef uint8_t libcrux_sha3_Sha3_512Digest[64U];
-
-typedef uint8_t libcrux_sha3_Sha3_384Digest[48U];
-
-typedef uint8_t libcrux_sha3_Sha3_256Digest[32U];
-
-typedef uint8_t libcrux_sha3_Sha3_224Digest[28U];
+typedef Eurydice_arr_60 libcrux_sha3_Sha3_256Digest;
 
 #if defined(__cplusplus)
 }

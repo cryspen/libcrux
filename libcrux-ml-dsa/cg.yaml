@@ -63,6 +63,31 @@ files:
         - [libcrux_sha3, generic_keccak, xof, "*"]
 
   # MLDSA-65
+  # MLDSA: MISC NON-ARCHITECTURE SPECIFIC HEADERS
+  - name: libcrux_mldsa_core
+    include_in_h:
+      - '"intrinsics/libcrux_intrinsics_avx2.h"'
+    inline_static: true
+    private:
+      monomorphizations_of:
+        # - [core, "*"]
+        - [libcrux_ml_dsa, types, "*"]
+        - [libcrux_ml_dsa, utils, "*" ]
+      monomorphizations_using:
+        # - [Eurydice, "*" ]
+        - [libcrux_ml_dsa, types, "*"]
+      patterns:
+        - [core, "*"]
+        - [libcrux_ml_dsa, types ]
+        - [libcrux_ml_dsa, constants ]
+        - [libcrux_ml_dsa, utils, "*" ]
+        # - [libcrux_ml_dsa, simd, traits ]
+      # monomorphizations_exact:
+      #   - [Eurydice, arr_88]
+      #   - [Eurydice, arr_910]
+      #   - [Eurydice, arr_6d]
+    api:
+      - [Eurydice, "*"]
 
   - name: libcrux_mldsa65_avx2
     inline_static: true
@@ -86,8 +111,8 @@ files:
       monomorphizations_using:
         - [libcrux_ml_dsa, simd, avx2, "*"]
         - [libcrux_ml_dsa, hash_functions, simd256, "*"]
-      # monomorphizations_exact:
-      #   - [core, option, Option_c4]
+      monomorphizations_exact:
+        - [core, option, Option_e70]
 
   - name: libcrux_mldsa65_portable
     inline_static: true
@@ -120,27 +145,14 @@ files:
         - [core, result, Result_a8]
         - [core, option, Option_84]
 
-
-  # MLKEM: MISC NON-ARCHITECTURE SPECIFIC HEADERS
-  - name: libcrux_core
+  # MLDSA: catch-all for things that have not matched earlier
+  - name: libcrux_mldsa_core
     inline_static: true
     private:
       monomorphizations_of:
-        - [core, "*"]
-        - [libcrux_ml_dsa, types, "*"]
-        - [libcrux_ml_dsa, utils, "*" ]
-      monomorphizations_using:
         - [Eurydice, "*" ]
-        - [libcrux_ml_dsa, types, "*"]
       patterns:
-        - [core, "*"]
-        - [libcrux_ml_dsa, types ]
-        - [libcrux_ml_dsa, constants ]
-        - [libcrux_ml_dsa, utils, "*" ]
-        # - [libcrux_ml_dsa, simd, traits ]
-    api:
-      - [Eurydice, "*"]
-
+        - [Eurydice, "*" ]
 naming:
   skip_prefix:
     - [ core, core_arch, arm_shared, neon ]

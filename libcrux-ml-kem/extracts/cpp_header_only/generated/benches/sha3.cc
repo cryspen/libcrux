@@ -19,6 +19,13 @@
 #include "libcrux_sha3_avx2.h"
 #endif
 
+Eurydice_dst_ref_87_s mk_dst_ref_uint8_t(uint8_t *x, size_t len) {
+  Eurydice_dst_ref_87_s s;
+  s.ptr = (uint8_t *)x;
+  s.meta = len;
+  return s;
+}
+
 void generate_random(uint8_t *output, uint32_t output_len) {
   for (uint32_t i = 0; i < output_len; i++) output[i] = 13;
 }
@@ -28,12 +35,12 @@ static void sha3_256_1184(benchmark::State &state) {
   uint8_t input[1184];
   generate_random(input, 1184);
 
-  libcrux_sha3_portable_sha256(EURYDICE_SLICE(input, 0, 32),
-                               EURYDICE_SLICE(digest, 0, 32));
+  libcrux_sha3_portable_sha256(mk_dst_ref_uint8_t(input, 32),
+                               mk_dst_ref_uint8_t(digest, 32));
 
   for (auto _ : state) {
-    libcrux_sha3_portable_sha256(EURYDICE_SLICE(input, 0, 32),
-                                 EURYDICE_SLICE(digest, 0, 32));
+    libcrux_sha3_portable_sha256(mk_dst_ref_uint8_t(input, 32),
+                                 mk_dst_ref_uint8_t(digest, 32));
   }
 }
 
@@ -42,12 +49,12 @@ static void sha3_512_64(benchmark::State &state) {
   uint8_t input[64];
   generate_random(input, 64);
 
-  libcrux_sha3_portable_sha512(EURYDICE_SLICE(input, 0, 64),
-                               EURYDICE_SLICE(digest, 0, 64));
+  libcrux_sha3_portable_sha512(mk_dst_ref_uint8_t(input, 64),
+                               mk_dst_ref_uint8_t(digest, 64));
 
   for (auto _ : state) {
-    libcrux_sha3_portable_sha512(EURYDICE_SLICE(input, 0, 64),
-                                 EURYDICE_SLICE(digest, 0, 64));
+    libcrux_sha3_portable_sha512(mk_dst_ref_uint8_t(input, 64),
+                                 mk_dst_ref_uint8_t(digest, 64));
   }
 }
 
@@ -90,20 +97,20 @@ __attribute__((target("avx2"))) static void shake256_1120_32(
   uint8_t digest1[32];
   uint8_t digest2[32];
   uint8_t digest3[32];
-  Eurydice_slice out0 = EURYDICE_SLICE(digest0, 0, 32);
-  Eurydice_slice out1 = EURYDICE_SLICE(digest1, 0, 32);
-  Eurydice_slice out2 = EURYDICE_SLICE(digest2, 0, 32);
-  Eurydice_slice out3 = EURYDICE_SLICE(digest3, 0, 32);
+  Eurydice_dst_ref_87_s out0 = mk_dst_ref_uint8_t(digest0, 32);
+  Eurydice_dst_ref_87_s out1 = mk_dst_ref_uint8_t(digest1, 32);
+  Eurydice_dst_ref_87_s out2 = mk_dst_ref_uint8_t(digest2, 32);
+  Eurydice_dst_ref_87_s out3 = mk_dst_ref_uint8_t(digest3, 32);
 
   libcrux_sha3_avx2_x4_shake256(
-      EURYDICE_SLICE(input, 0, 1120), EURYDICE_SLICE(input, 0, 1120),
-      EURYDICE_SLICE(input, 0, 1120), EURYDICE_SLICE(input, 0, 1120), out0,
+      mk_dst_ref_uint8_t(input, 1120), mk_dst_ref_uint8_t(input, 1120),
+      mk_dst_ref_uint8_t(input, 1120), mk_dst_ref_uint8_t(input, 1120), out0,
       out1, out2, out3);
 
   for (auto _ : state) {
     libcrux_sha3_avx2_x4_shake256(
-        EURYDICE_SLICE(input, 0, 1120), EURYDICE_SLICE(input, 0, 1120),
-        EURYDICE_SLICE(input, 0, 1120), EURYDICE_SLICE(input, 0, 1120), out0,
+        mk_dst_ref_uint8_t(input, 1120), mk_dst_ref_uint8_t(input, 1120),
+        mk_dst_ref_uint8_t(input, 1120), mk_dst_ref_uint8_t(input, 1120), out0,
         out1, out2, out3);
   }
 }
@@ -117,20 +124,20 @@ __attribute__((target("avx2"))) static void shake256_33_128(
   uint8_t digest1[128];
   uint8_t digest2[128];
   uint8_t digest3[128];
-  Eurydice_slice out0 = EURYDICE_SLICE(digest0, 0, 128);
-  Eurydice_slice out1 = EURYDICE_SLICE(digest1, 0, 128);
-  Eurydice_slice out2 = EURYDICE_SLICE(digest2, 0, 128);
-  Eurydice_slice out3 = EURYDICE_SLICE(digest3, 0, 128);
+  Eurydice_dst_ref_87_s out0 = mk_dst_ref_uint8_t(digest0, 128);
+  Eurydice_dst_ref_87_s out1 = mk_dst_ref_uint8_t(digest1, 128);
+  Eurydice_dst_ref_87_s out2 = mk_dst_ref_uint8_t(digest2, 128);
+  Eurydice_dst_ref_87_s out3 = mk_dst_ref_uint8_t(digest3, 128);
 
   libcrux_sha3_avx2_x4_shake256(
-      EURYDICE_SLICE(input, 0, 128), EURYDICE_SLICE(input, 0, 128),
-      EURYDICE_SLICE(input, 0, 128), EURYDICE_SLICE(input, 0, 128), out0, out1,
+      mk_dst_ref_uint8_t(input, 128), mk_dst_ref_uint8_t(input, 128),
+      mk_dst_ref_uint8_t(input, 128), mk_dst_ref_uint8_t(input, 128), out0, out1,
       out2, out3);
 
   for (auto _ : state) {
     libcrux_sha3_avx2_x4_shake256(
-        EURYDICE_SLICE(input, 0, 128), EURYDICE_SLICE(input, 0, 128),
-        EURYDICE_SLICE(input, 0, 128), EURYDICE_SLICE(input, 0, 128), out0,
+        mk_dst_ref_uint8_t(input, 128), mk_dst_ref_uint8_t(input, 128),
+        mk_dst_ref_uint8_t(input, 128), mk_dst_ref_uint8_t(input, 128), out0,
         out1, out2, out3);
   }
 }
