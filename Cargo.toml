@@ -37,7 +37,7 @@ members = [
     "crates/testing/kats",
     "crates/algorithms/aesgcm",
     "crates/algorithms/aesgcm/fuzz",
-    "hacl-rs",
+    "hacl-rs", "combined_extraction",
 ]
 
 [workspace.package]
