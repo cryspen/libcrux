@@ -1,0 +1,14 @@
+[package]
+name = "combined_extraction"
+version.workspace = true
+authors.workspace = true
+license.workspace = true
+homepage.workspace = true
+edition.workspace = true
+repository.workspace = true
+readme.workspace = true
+
+[dependencies]
+libcrux-sha3 = { version = "0.0.3", path = "../libcrux-sha3"}
+libcrux-ml-kem = { version = "0.0.3", path = "../libcrux-ml-kem", default-features = false, features = ["mlkem768"] }
+libcrux-ml-dsa = { version = "0.0.3", path = "../libcrux-ml-dsa", default-features = false, features = ["mldsa65"] }
