@@ -14,6 +14,11 @@ make setup-libcrux
 
 make test
 
+# Remove Charon build files, since the binary has been generated
+cd charon/charon
+cargo clean
+cd -
+
 echo "export KRML_HOME=$HOME/eurydice/karamel" >>$HOME/.profile
 echo "export EURYDICE_HOME=$HOME/eurydice" >>$HOME/.profile
 echo "export CHARON_HOME=$HOME/eurydice/charon" >>$HOME/.profile
