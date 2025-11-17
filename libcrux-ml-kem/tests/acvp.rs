@@ -132,7 +132,7 @@ fn encap_decap() {
                     }
                 }
             }
-            EncapDecapTestPrompts::DecapTests { dk, tests } => {
+            EncapDecapTestPrompts::DecapTests { tests } => {
                 for test in tests {
                     let expected_result = results.find_expected_result(kat.tgId, test.tcId);
 
@@ -145,8 +145,8 @@ fn encap_decap() {
                         "ML-KEM-512" => {
                             #[cfg(feature = "mlkem512")]
                             {
-                                let dk =
-                                    mlkem512::MlKem512PrivateKey::try_from(dk.as_slice()).unwrap();
+                                let dk = mlkem512::MlKem512PrivateKey::try_from(test.dk.as_slice())
+                                    .unwrap();
                                 let c =
                                     mlkem512::MlKem512Ciphertext::try_from(c.as_slice()).unwrap();
                                 let actual_k = mlkem512::decapsulate(&dk, &c);
@@ -156,8 +156,8 @@ fn encap_decap() {
                         "ML-KEM-768" => {
                             #[cfg(feature = "mlkem768")]
                             {
-                                let dk =
-                                    mlkem768::MlKem768PrivateKey::try_from(dk.as_slice()).unwrap();
+                                let dk = mlkem768::MlKem768PrivateKey::try_from(test.dk.as_slice())
+                                    .unwrap();
                                 let c =
                                     mlkem768::MlKem768Ciphertext::try_from(c.as_slice()).unwrap();
                                 let actual_k = mlkem768::decapsulate(&dk, &c);
@@ -167,8 +167,9 @@ fn encap_decap() {
                         "ML-KEM-1024" => {
                             #[cfg(feature = "mlkem1024")]
                             {
-                                let dk = mlkem1024::MlKem1024PrivateKey::try_from(dk.as_slice())
-                                    .unwrap();
+                                let dk =
+                                    mlkem1024::MlKem1024PrivateKey::try_from(test.dk.as_slice())
+                                        .unwrap();
                                 let c =
                                     mlkem1024::MlKem1024Ciphertext::try_from(c.as_slice()).unwrap();
                                 let actual_k = mlkem1024::decapsulate(&dk, &c);
@@ -178,6 +179,96 @@ fn encap_decap() {
 
                         _ => unimplemented!(),
                     }
+                }
+            }
+            EncapDecapTestPrompts::EncapKeyCheck { tests } => {
+                for test in tests {
+                    // check key
+                    let succeeded = match parameter_set.as_str() {
+                        "ML-KEM-512" => {
+                            #[cfg(feature = "mlkem512")]
+                            {
+                                mlkem512::MlKem512PublicKey::try_from(test.ek.as_slice())
+                                    .map(|ek| mlkem512::validate_public_key(&ek))
+                                    .unwrap_or(false)
+                            }
+                        }
+                        "ML-KEM-768" => {
+                            #[cfg(feature = "mlkem768")]
+                            {
+                                mlkem768::MlKem768PublicKey::try_from(test.ek.as_slice())
+                                    .map(|ek| mlkem768::validate_public_key(&ek))
+                                    .unwrap_or(false)
+                            }
+                        }
+                        "ML-KEM-1024" => {
+                            #[cfg(feature = "mlkem1024")]
+                            {
+                                mlkem1024::MlKem1024PublicKey::try_from(test.ek.as_slice())
+                                    .map(|ek| mlkem1024::validate_public_key(&ek))
+                                    .unwrap_or(false)
+                            }
+                        }
+                        _ => unimplemented!(),
+                    };
+
+                    // get result
+                    let EncapDecapResult::KeyCheckResult { testPassed, .. } =
+                        results.find_expected_result(kat.tgId, test.tcId)
+                    else {
+                        unimplemented!();
+                    };
+
+                    assert_eq!(
+                        succeeded, *testPassed,
+                        "tgId: {}, tcId: {}",
+                        kat.tgId, test.tcId
+                    );
+                }
+            }
+            EncapDecapTestPrompts::DecapKeyCheck { tests } => {
+                for test in tests {
+                    // check key
+                    let succeeded = match parameter_set.as_str() {
+                        "ML-KEM-512" => {
+                            #[cfg(feature = "mlkem512")]
+                            {
+                                mlkem512::MlKem512PrivateKey::try_from(test.dk.as_slice())
+                                    .map(|dk| mlkem512::portable::validate_private_key_only(&dk))
+                                    .unwrap_or(false)
+                            }
+                        }
+                        "ML-KEM-768" => {
+                            #[cfg(feature = "mlkem768")]
+                            {
+                                mlkem768::MlKem768PrivateKey::try_from(test.dk.as_slice())
+                                    .map(|dk| mlkem768::portable::validate_private_key_only(&dk))
+                                    .unwrap_or(false)
+                            }
+                        }
+                        "ML-KEM-1024" => {
+                            #[cfg(feature = "mlkem1024")]
+                            {
+                                mlkem1024::MlKem1024PrivateKey::try_from(test.dk.as_slice())
+                                    .map(|dk| mlkem1024::portable::validate_private_key_only(&dk))
+                                    .unwrap_or(false)
+                            }
+                        }
+                        _ => unimplemented!(),
+                    };
+
+                    // get result
+                    let EncapDecapResult::KeyCheckResult { testPassed, .. } =
+                        results.find_expected_result(kat.tgId, test.tcId)
+                    else {
+                        unimplemented!();
+                    };
+
+                    assert_eq!(
+                        succeeded, *testPassed,
+                        "tgId: {}, tcId: {}",
+                        kat.tgId, test.tcId
+                    );
                 }
             }
         }
