@@ -282,6 +282,79 @@ generate_test_case!(
     AeadAlgorithm::ChaCha20Poly1305,
     HpkeLibcrux
 );
+
+generate_test_case!(
+    base_dhkemp256_hkdfsha256_Aes128Gcm_libcrux,
+    HpkeMode::Base,
+    KemAlgorithm::DhKemP256,
+    KdfAlgorithm::HkdfSha256,
+    AeadAlgorithm::Aes128Gcm,
+    HpkeLibcrux
+);
+
+generate_test_case!(
+    base_dhkemp256_hkdfsha256_Aes256Gcm_libcrux,
+    HpkeMode::Base,
+    KemAlgorithm::DhKemP256,
+    KdfAlgorithm::HkdfSha256,
+    AeadAlgorithm::Aes256Gcm,
+    HpkeLibcrux
+);
+
+generate_test_case!(
+    base_dhkemp256_hkdfsha384_chacha20poly1305_libcrux,
+    HpkeMode::Base,
+    KemAlgorithm::DhKemP256,
+    KdfAlgorithm::HkdfSha384,
+    AeadAlgorithm::ChaCha20Poly1305,
+    HpkeLibcrux
+);
+
+generate_test_case!(
+    base_dhkemp256_hkdfsha384_Aes128Gcm_libcrux,
+    HpkeMode::Base,
+    KemAlgorithm::DhKemP256,
+    KdfAlgorithm::HkdfSha384,
+    AeadAlgorithm::Aes128Gcm,
+    HpkeLibcrux
+);
+
+generate_test_case!(
+    base_dhkemp256_hkdfsha384_Aes256Gcm_libcrux,
+    HpkeMode::Base,
+    KemAlgorithm::DhKemP256,
+    KdfAlgorithm::HkdfSha384,
+    AeadAlgorithm::Aes256Gcm,
+    HpkeLibcrux
+);
+
+generate_test_case!(
+    base_dhkemp256_hkdfsha512_chacha20poly1305_libcrux,
+    HpkeMode::Base,
+    KemAlgorithm::DhKemP256,
+    KdfAlgorithm::HkdfSha512,
+    AeadAlgorithm::ChaCha20Poly1305,
+    HpkeLibcrux
+);
+
+generate_test_case!(
+    base_dhkemp256_hkdfsha512_Aes128Gcm_libcrux,
+    HpkeMode::Base,
+    KemAlgorithm::DhKemP256,
+    KdfAlgorithm::HkdfSha512,
+    AeadAlgorithm::Aes128Gcm,
+    HpkeLibcrux
+);
+
+generate_test_case!(
+    base_dhkemp256_hkdfsha512_Aes256Gcm_libcrux,
+    HpkeMode::Base,
+    KemAlgorithm::DhKemP256,
+    KdfAlgorithm::HkdfSha512,
+    AeadAlgorithm::Aes256Gcm,
+    HpkeLibcrux
+);
+
 generate_test_case!(
     base_dhkem25519_hkdfsha256_chacha20poly1305,
     HpkeMode::Base,
@@ -290,6 +363,7 @@ generate_test_case!(
     AeadAlgorithm::ChaCha20Poly1305,
     HpkeRustCrypto
 );
+
 generate_test_case!(
     base_dhkem25519_hkdfsha256_chacha20poly1305_libcrux,
     HpkeMode::Base,
@@ -298,6 +372,79 @@ generate_test_case!(
     AeadAlgorithm::ChaCha20Poly1305,
     HpkeLibcrux
 );
+
+generate_test_case!(
+    base_dhkem25519_hkdfsha256_Aes128Gcm_libcrux,
+    HpkeMode::Base,
+    KemAlgorithm::DhKem25519,
+    KdfAlgorithm::HkdfSha256,
+    AeadAlgorithm::Aes128Gcm,
+    HpkeLibcrux
+);
+
+generate_test_case!(
+    base_dhkem25519_hkdfsha256_Aes256Gcm_libcrux,
+    HpkeMode::Base,
+    KemAlgorithm::DhKem25519,
+    KdfAlgorithm::HkdfSha256,
+    AeadAlgorithm::Aes256Gcm,
+    HpkeLibcrux
+);
+
+generate_test_case!(
+    base_dhkem25519_hkdfsha384_chacha20poly1305_libcrux,
+    HpkeMode::Base,
+    KemAlgorithm::DhKem25519,
+    KdfAlgorithm::HkdfSha384,
+    AeadAlgorithm::ChaCha20Poly1305,
+    HpkeLibcrux
+);
+
+generate_test_case!(
+    base_dhkem25519_hkdfsha384_Aes128Gcm_libcrux,
+    HpkeMode::Base,
+    KemAlgorithm::DhKem25519,
+    KdfAlgorithm::HkdfSha384,
+    AeadAlgorithm::Aes128Gcm,
+    HpkeLibcrux
+);
+
+generate_test_case!(
+    base_dhkem25519_hkdfsha384_Aes256Gcm_libcrux,
+    HpkeMode::Base,
+    KemAlgorithm::DhKem25519,
+    KdfAlgorithm::HkdfSha384,
+    AeadAlgorithm::Aes256Gcm,
+    HpkeLibcrux
+);
+
+generate_test_case!(
+    base_dhkem25519_hkdfsha512_chacha20poly1305_libcrux,
+    HpkeMode::Base,
+    KemAlgorithm::DhKem25519,
+    KdfAlgorithm::HkdfSha512,
+    AeadAlgorithm::ChaCha20Poly1305,
+    HpkeLibcrux
+);
+
+generate_test_case!(
+    base_dhkem25519_hkdfsha512_Aes128Gcm_libcrux,
+    HpkeMode::Base,
+    KemAlgorithm::DhKem25519,
+    KdfAlgorithm::HkdfSha512,
+    AeadAlgorithm::Aes128Gcm,
+    HpkeLibcrux
+);
+
+generate_test_case!(
+    base_dhkem25519_hkdfsha512_Aes256Gcm_libcrux,
+    HpkeMode::Base,
+    KemAlgorithm::DhKem25519,
+    KdfAlgorithm::HkdfSha512,
+    AeadAlgorithm::Aes256Gcm,
+    HpkeLibcrux
+);
+
 generate_test_case!(
     base_xwingdraft06_hkdfsha256_chacha20poly1305_libcrux,
     HpkeMode::Base,
@@ -306,6 +453,79 @@ generate_test_case!(
     AeadAlgorithm::ChaCha20Poly1305,
     HpkeLibcrux
 );
+
+generate_test_case!(
+    base_xwingdraft06_hkdfsha256_Aes128Gcm_libcrux,
+    HpkeMode::Base,
+    KemAlgorithm::XWingDraft06,
+    KdfAlgorithm::HkdfSha256,
+    AeadAlgorithm::Aes128Gcm,
+    HpkeLibcrux
+);
+
+generate_test_case!(
+    base_xwingdraft06_hkdfsha256_Aes256Gcm_libcrux,
+    HpkeMode::Base,
+    KemAlgorithm::XWingDraft06,
+    KdfAlgorithm::HkdfSha256,
+    AeadAlgorithm::Aes256Gcm,
+    HpkeLibcrux
+);
+
+generate_test_case!(
+    base_xwingdraft06_hkdfsha384_chacha20poly1305_libcrux,
+    HpkeMode::Base,
+    KemAlgorithm::XWingDraft06,
+    KdfAlgorithm::HkdfSha384,
+    AeadAlgorithm::ChaCha20Poly1305,
+    HpkeLibcrux
+);
+
+generate_test_case!(
+    base_xwingdraft06_hkdfsha384_Aes128Gcm_libcrux,
+    HpkeMode::Base,
+    KemAlgorithm::XWingDraft06,
+    KdfAlgorithm::HkdfSha384,
+    AeadAlgorithm::Aes128Gcm,
+    HpkeLibcrux
+);
+
+generate_test_case!(
+    base_xwingdraft06_hkdfsha384_Aes256Gcm_libcrux,
+    HpkeMode::Base,
+    KemAlgorithm::XWingDraft06,
+    KdfAlgorithm::HkdfSha384,
+    AeadAlgorithm::Aes256Gcm,
+    HpkeLibcrux
+);
+
+generate_test_case!(
+    base_xwingdraft06_hkdfsha512_chacha20poly1305_libcrux,
+    HpkeMode::Base,
+    KemAlgorithm::XWingDraft06,
+    KdfAlgorithm::HkdfSha512,
+    AeadAlgorithm::ChaCha20Poly1305,
+    HpkeLibcrux
+);
+
+generate_test_case!(
+    base_xwingdraft06_hkdfsha512_Aes128Gcm_libcrux,
+    HpkeMode::Base,
+    KemAlgorithm::XWingDraft06,
+    KdfAlgorithm::HkdfSha512,
+    AeadAlgorithm::Aes128Gcm,
+    HpkeLibcrux
+);
+
+generate_test_case!(
+    base_xwingdraft06_hkdfsha512_Aes256Gcm_libcrux,
+    HpkeMode::Base,
+    KemAlgorithm::XWingDraft06,
+    KdfAlgorithm::HkdfSha512,
+    AeadAlgorithm::Aes256Gcm,
+    HpkeLibcrux
+);
+
 generate_test_case!(
     base_dhkemp256_hkdfsha384_chacha20poly1305,
     HpkeMode::Base,

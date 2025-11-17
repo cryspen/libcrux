@@ -144,19 +144,28 @@ impl HpkeCrypto for HpkeLibcrux {
         aad: &[u8],
         msg: &[u8],
     ) -> Result<Vec<u8>, Error> {
-        // only chacha20poly1305 is supported
-        if !matches!(alg, AeadAlgorithm::ChaCha20Poly1305) {
-            return Err(Error::UnknownAeadAlgorithm);
-        }
+        let alg = aead_alg(alg)?;
 
-        let iv = <&[u8; 12]>::try_from(nonce).map_err(|_| Error::AeadInvalidNonce)?;
+        use libcrux_traits::aead::typed_refs::Aead as _;
 
-        // TODO: instead, use key conversion from the libcrux-chacha20poly1305 crate, when available,
-        let key = <&[u8; 32]>::try_from(key)
+        // set up buffer for ctxt and tag
+        let mut msg_ctx: Vec<u8> = alloc::vec![0; msg.len() + alg.tag_len()];
+        let (ctxt, tag) = msg_ctx.split_at_mut(msg.len());
+
+        // set up nonce
+        let nonce = alg.new_nonce(nonce).map_err(|_| Error::AeadInvalidNonce)?;
+
+        // set up key
+        let key = alg
+            .new_key(key)
             .map_err(|_| Error::CryptoLibraryError("AEAD invalid key length".into()))?;
 
-        let mut msg_ctx: Vec<u8> = alloc::vec![0; msg.len() + 16];
-        libcrux_chacha20poly1305::encrypt(key, msg, &mut msg_ctx, aad, iv)
+        // set up tag
+        let tag = alg
+            .new_tag_mut(tag)
+            .map_err(|_| Error::CryptoLibraryError("Invalid tag length".into()))?;
+
+        key.encrypt(ctxt, tag, nonce, aad, msg)
             .map_err(|_| Error::CryptoLibraryError("Invalid configuration".into()))?;
 
         Ok(msg_ctx)
@@ -169,31 +178,40 @@ impl HpkeCrypto for HpkeLibcrux {
         aad: &[u8],
         cipher_txt: &[u8],
     ) -> Result<Vec<u8>, Error> {
-        // only chacha20poly1305 is supported
-        if !matches!(alg, AeadAlgorithm::ChaCha20Poly1305) {
-            return Err(Error::UnknownAeadAlgorithm);
-        }
-        if cipher_txt.len() < 16 {
+        let alg = aead_alg(alg)?;
+
+        use libcrux_traits::aead::typed_refs::{Aead as _, DecryptError};
+
+        if cipher_txt.len() < alg.tag_len() {
             return Err(Error::AeadInvalidCiphertext);
         }
 
-        let boundary = cipher_txt.len() - 16;
+        let boundary = cipher_txt.len() - alg.tag_len();
 
+        // set up buffers for ptext, ctext, and tag
         let mut ptext = alloc::vec![0; boundary];
+        let (ctext, tag) = cipher_txt.split_at(boundary);
 
-        let iv = <&[u8; 12]>::try_from(nonce).map_err(|_| Error::AeadInvalidNonce)?;
+        // set up nonce
+        let nonce = alg.new_nonce(nonce).map_err(|_| Error::AeadInvalidNonce)?;
 
-        // TODO: instead, use key conversion from the libcrux-chacha20poly1305 crate, when available,
-        let key = <&[u8; 32]>::try_from(key)
+        // set up key
+        let key = alg
+            .new_key(key)
             .map_err(|_| Error::CryptoLibraryError("AEAD invalid key length".into()))?;
-        libcrux_chacha20poly1305::decrypt(key, &mut ptext, cipher_txt, aad, iv).map_err(
-            |e| match e {
-                libcrux_chacha20poly1305::AeadError::InvalidCiphertext => {
+
+        // set up tag
+        let tag = alg
+            .new_tag(tag)
+            .map_err(|_| Error::CryptoLibraryError("Invalid tag length".into()))?;
+
+        key.decrypt(&mut ptext, nonce, aad, ctext, tag)
+            .map_err(|e| match e {
+                DecryptError::InvalidTag => {
                     Error::CryptoLibraryError(format!("AEAD decryption error: {:?}", e))
                 }
                 _ => Error::CryptoLibraryError("Invalid configuration".into()),
-            },
-        )?;
+            })?;
 
         Ok(ptext)
     }
@@ -237,8 +255,7 @@ impl HpkeCrypto for HpkeLibcrux {
     /// Returns an error if the AEAD algorithm is not supported by this crypto provider.
     fn supports_aead(alg: AeadAlgorithm) -> Result<(), Error> {
         match alg {
-            // Don't support Aes
-            AeadAlgorithm::Aes128Gcm | AeadAlgorithm::Aes256Gcm => Err(Error::UnknownAeadAlgorithm),
+            AeadAlgorithm::Aes128Gcm | AeadAlgorithm::Aes256Gcm => Ok(()),
             AeadAlgorithm::ChaCha20Poly1305 => Ok(()),
             AeadAlgorithm::HpkeExport => Ok(()),
         }
@@ -292,6 +309,16 @@ fn kem_key_type_to_ecdh_alg(alg: KemAlgorithm) -> Result<libcrux_ecdh::Algorithm
         KemAlgorithm::DhKem25519 => Ok(libcrux_ecdh::Algorithm::X25519),
         KemAlgorithm::DhKemP256 => Ok(libcrux_ecdh::Algorithm::P256),
         _ => Err(Error::UnknownKemAlgorithm),
+    }
+}
+
+#[inline(always)]
+fn aead_alg(alg_type: AeadAlgorithm) -> Result<libcrux_aead::Aead, Error> {
+    match alg_type {
+        AeadAlgorithm::ChaCha20Poly1305 => Ok(libcrux_aead::Aead::ChaCha20Poly1305),
+        AeadAlgorithm::Aes128Gcm => Ok(libcrux_aead::Aead::AesGcm128),
+        AeadAlgorithm::Aes256Gcm => Ok(libcrux_aead::Aead::AesGcm256),
+        _ => Err(Error::UnknownAeadAlgorithm),
     }
 }
 
