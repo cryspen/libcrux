@@ -35,7 +35,8 @@ Eurydice_slice mk_slice(T *x, size_t len)
 TEST(MlDsa65TestPortable, ConsistencyTest)
 {
     // Generate key pair
-    libcrux_sha3_Sha3_256Digest keygen_rand;
+    Eurydice_arr_60
+ keygen_rand;
     memset(keygen_rand.data, 0x13, 32);
 
     Eurydice_arr_d10 signing_key;
@@ -47,7 +48,8 @@ TEST(MlDsa65TestPortable, ConsistencyTest)
 
     // Sign
     uint8_t msg[79] = {0};
-    libcrux_sha3_Sha3_256Digest sign_rand;
+    Eurydice_arr_60
+ sign_rand;
     memset(sign_rand.data, 0x13, 32);
     uint8_t context[3];
 
@@ -77,13 +79,15 @@ TEST(MlDsa65TestPortable, ConsistencyTest)
 
 TEST(MlDsa65TestAvx2, ConsistencyTest)
 {
-    libcrux_sha3_Sha3_256Digest keygen_rand;
+    Eurydice_arr_60
+ keygen_rand;
     memset(keygen_rand.data, 0x13, 32);
     auto key_pair = libcrux_ml_dsa_ml_dsa_65_avx2_generate_key_pair(keygen_rand);
 
     // Sign
     uint8_t msg[79] = {0};
-    libcrux_sha3_Sha3_256Digest sign_rand;
+    Eurydice_arr_60
+ sign_rand;
     memset(sign_rand.data, 0x13, 32);
     uint8_t context[3];
 

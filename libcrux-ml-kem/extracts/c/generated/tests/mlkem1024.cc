@@ -21,7 +21,7 @@ using namespace std;
 
 TEST(MlKem1024TestPortable, ConsistencyTest)
 {
-    libcrux_sha3_Sha3_512Digest r;
+    Eurydice_arr_06 r;
     memset(r.data, 0x13, 64);
     auto key_pair = libcrux_ml_kem_mlkem1024_portable_generate_key_pair(r);
 
@@ -59,7 +59,7 @@ TEST(MlKem1024TestPortableUnpacked, ConsistencyTest)
 
 TEST(Kyber1024TestPortable, ModifiedCiphertextTest)
 {
-    libcrux_sha3_Sha3_512Digest randomness1;
+    Eurydice_arr_06 randomness1;
     memset(randomness1.data, 0x13, 64);
     auto key_pair = libcrux_ml_kem_mlkem1024_portable_generate_key_pair(randomness1);
 
@@ -92,7 +92,7 @@ TEST(Kyber1024TestPortable, ModifiedCiphertextTest)
 
 TEST(Kyber1024TestPortable, ModifiedSecretKeyTest)
 {
-    libcrux_sha3_Sha3_512Digest randomness1;
+    Eurydice_arr_06 randomness1;
     memset(randomness1.data, 0x13, 64);
     auto key_pair = libcrux_ml_kem_mlkem1024_portable_generate_key_pair(randomness1);
 
@@ -130,7 +130,7 @@ TEST(MlKem1024TestPortable, NISTKnownAnswerTest)
 {
     // XXX: This should be done in a portable way.
     auto kats = read_kats("tests/mlkem1024_nistkats.json");
-    libcrux_sha3_Sha3_512Digest keygen_rand;
+    Eurydice_arr_06 keygen_rand;
     Eurydice_arr_60 encaps_rand;
 
     for (auto kat : kats)
