@@ -294,7 +294,6 @@ macro_rules! impl_mod {
 }
 
 pub mod sha2_256 {
-
     impl_mod!(
         EcdsaP256,
         Sha2_256,
@@ -304,7 +303,6 @@ pub mod sha2_256 {
 }
 
 pub mod sha2_384 {
-
     impl_mod!(
         EcdsaP256,
         Sha2_384,
@@ -314,7 +312,6 @@ pub mod sha2_384 {
 }
 
 pub mod sha2_512 {
-
     impl_mod!(
         EcdsaP256,
         Sha2_512,

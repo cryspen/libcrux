@@ -522,19 +522,16 @@ macro_rules! impl_mod {
 
 #[cfg(feature = "mldsa44")]
 pub mod ml_dsa_44 {
-
     impl_mod!(MlDsa44, ml_dsa_44);
 }
 
 #[cfg(feature = "mldsa65")]
 pub mod ml_dsa_65 {
-
     impl_mod!(MlDsa65, ml_dsa_65);
 }
 
 #[cfg(feature = "mldsa87")]
 pub mod ml_dsa_87 {
-
     impl_mod!(MlDsa87, ml_dsa_87);
 }
 
