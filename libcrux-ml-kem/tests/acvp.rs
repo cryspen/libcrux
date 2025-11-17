@@ -1,8 +1,6 @@
 #![cfg(any(feature = "mlkem512", feature = "mlkem768", feature = "mlkem1024",))]
 
-use libcrux_kats::acvp::mlkem::*;
-use serde::de::DeserializeOwned;
-use std::{fs::File, io::BufReader, path::Path};
+use libcrux_kats::acvp::mlkem::{encap_decap_schema::*, keygen_schema::*, *};
 
 #[test]
 fn keygen() {
@@ -38,15 +36,7 @@ fn keygen() {
                 assert_eq!(result.dk, keys.sk());
             }
 
-            let expected_result = results
-                .testGroups
-                .iter()
-                .find(|tg| tg.tgId == kat.tgId)
-                .unwrap()
-                .tests
-                .iter()
-                .find(|t| t.tcId == test.tcId)
-                .unwrap();
+            let expected_result = results.find_expected_result(kat.tgId, test.tcId);
 
             match parameter_set.as_str() {
                 "ML-KEM-512" =>
@@ -72,18 +62,6 @@ fn keygen() {
     }
 }
 
-fn read<T: DeserializeOwned>(variant: &str, file: &str) -> T {
-    let katfile_path = Path::new("tests")
-        .join("kats")
-        .join("acvp-1_1_0_35")
-        .join(variant)
-        .join(file);
-    let katfile = File::open(katfile_path).expect("Could not open KAT file.");
-    let reader = BufReader::new(katfile);
-
-    serde_json::from_reader(reader).expect("Could not deserialize KAT file.")
-}
-
 #[test]
 fn encap_decap() {
     use libcrux_ml_kem::*;
@@ -107,21 +85,7 @@ fn encap_decap() {
         match kat.tests {
             EncapDecapTestPrompts::EncapTests { tests } => {
                 for test in tests {
-                    let expected_result = results
-                        .testGroups
-                        .iter()
-                        .find(|tg| tg.tgId == kat.tgId)
-                        .unwrap()
-                        .tests
-                        .iter()
-                        .find(|t| {
-                            if let EncapDecapResult::EncapResult { tcId, .. } = t {
-                                *tcId == test.tcId
-                            } else {
-                                false
-                            }
-                        })
-                        .unwrap();
+                    let expected_result = results.find_expected_result(kat.tgId, test.tcId);
 
                     let EncapDecapResult::EncapResult { c, k, .. } = expected_result else {
                         unreachable!()
@@ -170,21 +134,7 @@ fn encap_decap() {
             }
             EncapDecapTestPrompts::DecapTests { dk, tests } => {
                 for test in tests {
-                    let expected_result = results
-                        .testGroups
-                        .iter()
-                        .find(|tg| tg.tgId == kat.tgId)
-                        .unwrap()
-                        .tests
-                        .iter()
-                        .find(|t| {
-                            if let EncapDecapResult::DecapResult { tcId, .. } = t {
-                                *tcId == test.tcId
-                            } else {
-                                false
-                            }
-                        })
-                        .unwrap();
+                    let expected_result = results.find_expected_result(kat.tgId, test.tcId);
 
                     let EncapDecapResult::DecapResult { k, .. } = expected_result else {
                         unreachable!()
