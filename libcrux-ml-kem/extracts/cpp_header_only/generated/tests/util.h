@@ -18,9 +18,16 @@ Eurydice_slice mk_slice(T *x, size_t len) {
   return s;
 }
 
-Eurydice_dst_ref_87_s mk_dst_ref_uint8_t(uint8_t *x, size_t len) {
-  Eurydice_dst_ref_87_s s;
-  s.ptr = (uint8_t *)x;
+Eurydice_borrow_slice_u8 mk_borrow_slice_u8(const uint8_t *x, size_t len) {
+  Eurydice_borrow_slice_u8 s;
+  s.ptr = x;
+  s.meta = len;
+  return s;
+}
+
+Eurydice_mut_borrow_slice_u8 mk_mut_borrow_slice_u8(uint8_t *x, size_t len) {
+  Eurydice_mut_borrow_slice_u8 s;
+  s.ptr = x;
   s.meta = len;
   return s;
 }

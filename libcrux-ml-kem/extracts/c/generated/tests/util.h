@@ -10,9 +10,16 @@ Eurydice_slice mk_slice(T *x, size_t len) {
   return s;
 }
 
-Eurydice_dst_ref_87_s mk_dst_ref_uint8_t(uint8_t *x, size_t len) {
-  Eurydice_dst_ref_87_s s;
-  s.ptr = (uint8_t *)x;
+Eurydice_borrow_slice_u8 mk_borrow_slice_u8(const uint8_t *x, size_t len) {
+  Eurydice_borrow_slice_u8 s;
+  s.ptr = x;
+  s.meta = len;
+  return s;
+}
+
+Eurydice_mut_borrow_slice_u8 mk_mut_borrow_slice_u8(uint8_t *x, size_t len) {
+  Eurydice_mut_borrow_slice_u8 s;
+  s.ptr = x;
   s.meta = len;
   return s;
 }
@@ -130,7 +137,7 @@ uint8_t *compute_implicit_rejection_shared_secret(uint8_t *ciphertext,
                                                   size_t secret_key_size) {
   uint8_t *hashInput = new uint8_t[32 + ciphertext_size];
   uint8_t *sharedSecret = new uint8_t[32];
-  Eurydice_dst_ref_87 ss;
+  Eurydice_mut_borrow_slice_u8 ss;
   ss.ptr = (uint8_t *)sharedSecret;
   ss.meta = 32;
 
@@ -139,7 +146,7 @@ uint8_t *compute_implicit_rejection_shared_secret(uint8_t *ciphertext,
   std::copy(ciphertext, ciphertext + ciphertext_size, hashInput + 32);
 
   libcrux_sha3_portable_shake256(
-      ss, mk_dst_ref_uint8_t(hashInput, 32 + ciphertext_size));
+      ss, mk_borrow_slice_u8(hashInput, 32 + ciphertext_size));
 
   delete[] hashInput;
   return sharedSecret;
