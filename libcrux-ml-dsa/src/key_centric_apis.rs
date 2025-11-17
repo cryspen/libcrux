@@ -44,7 +44,7 @@ macro_rules! impl_mod {
             //! Usage example:
             //! ```rust
             //! use libcrux_traits::signature::SignConsts;
-            //! use ml_dsa_44::slice::MlDsa44;
+            //! use libcrux_ml_dsa::key_centric_apis::ml_dsa_44::slice::MlDsa44;
             //!
             //! let context = b"context";
             //!
@@ -539,7 +539,11 @@ pub mod ml_dsa_87 {
 }
 
 #[test]
-#[cfg(all(feature = "rand", not(feature = "expose-secret-independence")))]
+#[cfg(all(
+    feature = "mldsa44",
+    feature = "rand",
+    not(feature = "expose-secret-independence")
+))]
 fn key_centric_owned() {
     use rand::TryRngCore;
     let mut rng = rand::rngs::OsRng;
@@ -576,7 +580,11 @@ fn key_centric_owned() {
 }
 
 #[test]
-#[cfg(all(feature = "rand", not(feature = "expose-secret-independence")))]
+#[cfg(all(
+    feature = "mldsa44",
+    feature = "rand",
+    not(feature = "expose-secret-independence")
+))]
 fn key_centric_refs() {
     use libcrux_traits::signature::SignConsts;
     use ml_dsa_44::*;
@@ -608,7 +616,7 @@ fn key_centric_refs() {
 }
 
 #[test]
-#[cfg(not(feature = "expose-secret-independence"))]
+#[cfg(all(feature = "mldsa44", not(feature = "expose-secret-independence")))]
 fn arrayref_apis() {
     use libcrux_traits::signature::SignConsts;
     use ml_dsa_44::MlDsa44;
