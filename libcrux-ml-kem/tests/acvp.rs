@@ -1,79 +1,17 @@
 #![cfg(any(feature = "mlkem512", feature = "mlkem768", feature = "mlkem1024",))]
 
-use serde::{de::DeserializeOwned, Deserialize};
+use libcrux_kats::acvp::mlkem::*;
+use serde::de::DeserializeOwned;
 use std::{fs::File, io::BufReader, path::Path};
-
-#[derive(Deserialize)]
-#[allow(non_snake_case, dead_code)]
-struct KeyGenPrompt {
-    tcId: usize,
-
-    #[serde(with = "hex::serde")]
-    z: [u8; 32],
-
-    #[serde(with = "hex::serde")]
-    d: [u8; 32],
-}
-
-#[derive(Deserialize)]
-#[allow(non_snake_case, dead_code)]
-struct KeyGenPromptTestGroup {
-    tgId: usize,
-    testType: String,
-    parameterSet: String,
-    tests: Vec<KeyGenPrompt>,
-}
-
-#[derive(Deserialize)]
-#[allow(non_snake_case, dead_code)]
-struct Prompts<TG> {
-    vsId: usize,
-    algorithm: String,
-    mode: String,
-    revision: String,
-    isSample: bool,
-    testGroups: Vec<TG>,
-}
-
-#[derive(Deserialize)]
-#[allow(non_snake_case, dead_code)]
-struct KeyGenResult {
-    tcId: usize,
-
-    #[serde(with = "hex::serde")]
-    ek: Vec<u8>,
-
-    #[serde(with = "hex::serde")]
-    dk: Vec<u8>,
-}
-
-#[derive(Deserialize)]
-#[allow(non_snake_case, dead_code)]
-struct ResultPromptTestGroup {
-    tgId: usize,
-    tests: Vec<KeyGenResult>,
-}
-
-#[derive(Deserialize)]
-#[allow(non_snake_case, dead_code)]
-struct Results<TG> {
-    vsId: usize,
-    algorithm: String,
-    mode: String,
-    revision: String,
-    isSample: bool,
-    testGroups: Vec<TG>,
-}
 
 #[test]
 fn keygen() {
     use libcrux_ml_kem::*;
 
-    let prompts: Prompts<KeyGenPromptTestGroup> = read("keygen", "prompt.json");
+    let KeyGenTests { prompts, results } = KeyGenTests::load();
     assert!(prompts.algorithm == "ML-KEM");
     assert!(prompts.revision == "FIPS203");
 
-    let results: Results<ResultPromptTestGroup> = read("keygen", "expectedResults.json");
     assert!(results.algorithm == "ML-KEM");
     assert!(results.revision == "FIPS203");
 
@@ -146,85 +84,14 @@ fn read<T: DeserializeOwned>(variant: &str, file: &str) -> T {
     serde_json::from_reader(reader).expect("Could not deserialize KAT file.")
 }
 
-#[derive(Deserialize)]
-#[allow(non_snake_case, dead_code)]
-struct EncapPrompt {
-    tcId: usize,
-
-    #[serde(with = "hex::serde")]
-    ek: Vec<u8>,
-
-    #[serde(with = "hex::serde")]
-    m: [u8; 32],
-}
-
-#[derive(Deserialize)]
-#[allow(non_snake_case, dead_code)]
-struct DecapPrompt {
-    tcId: usize,
-
-    #[serde(with = "hex::serde")]
-    c: Vec<u8>,
-}
-
-#[derive(Deserialize)]
-#[allow(non_snake_case, dead_code)]
-struct EncapDecapPromptTestGroup {
-    tgId: usize,
-    testType: String,
-    parameterSet: String,
-    #[serde(flatten)]
-    tests: EncapDecapTests,
-}
-
-#[allow(non_snake_case, dead_code)]
-#[derive(Deserialize)]
-#[serde(tag = "function")]
-enum EncapDecapTests {
-    #[serde(rename(deserialize = "encapsulation"))]
-    EncapTests { tests: Vec<EncapPrompt> },
-    #[serde(rename(deserialize = "decapsulation"))]
-    DecapTests {
-        #[serde(with = "hex::serde")]
-        dk: Vec<u8>,
-        tests: Vec<DecapPrompt>,
-    },
-}
-
-#[derive(Deserialize)]
-#[serde(untagged)]
-#[allow(non_snake_case, dead_code)]
-enum EncapDecapResult {
-    EncapResult {
-        tcId: usize,
-        #[serde(with = "hex::serde")]
-        c: Vec<u8>,
-        #[serde(with = "hex::serde")]
-        k: Vec<u8>,
-    },
-    DecapResult {
-        tcId: usize,
-        #[serde(with = "hex::serde")]
-        k: Vec<u8>,
-    },
-}
-
-#[derive(Deserialize)]
-#[allow(non_snake_case, dead_code)]
-struct ResultEncapDecapTestGroup {
-    tgId: usize,
-    tests: Vec<EncapDecapResult>,
-}
-
 #[test]
 fn encap_decap() {
     use libcrux_ml_kem::*;
 
-    let prompts: Prompts<EncapDecapPromptTestGroup> = read("encap-decap", "prompt.json");
+    let EncapDecapTests { prompts, results } = EncapDecapTests::load();
     assert!(prompts.algorithm == "ML-KEM");
     assert!(prompts.revision == "FIPS203");
 
-    let results: Results<ResultEncapDecapTestGroup> = read("encap-decap", "expectedResults.json");
     assert!(results.algorithm == "ML-KEM");
     assert!(results.revision == "FIPS203");
 
@@ -238,7 +105,7 @@ fn encap_decap() {
         eprintln!("{parameter_set}");
 
         match kat.tests {
-            EncapDecapTests::EncapTests { tests } => {
+            EncapDecapTestPrompts::EncapTests { tests } => {
                 for test in tests {
                     let expected_result = results
                         .testGroups
@@ -301,7 +168,7 @@ fn encap_decap() {
                     }
                 }
             }
-            EncapDecapTests::DecapTests { dk, tests } => {
+            EncapDecapTestPrompts::DecapTests { dk, tests } => {
                 for test in tests {
                     let expected_result = results
                         .testGroups
