@@ -8,7 +8,9 @@ pub(crate) fn keccak2<const RATE: usize, const DELIM: u8>(
     out0: &mut [u8],
     out1: &mut [u8],
 ) {
+    #[cfg(not(eurydice))]
     debug_assert!(out0.len() == out1.len());
+    #[cfg(not(eurydice))]
     debug_assert!(data[0].len() == data[1].len());
 
     let mut s = KeccakState::<2, _uint64x2_t>::new();

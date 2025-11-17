@@ -5,6 +5,7 @@ use crate::{
 #[inline(always)]
 #[hax_lib::requires(serialized.len() == 10)]
 pub fn serialize(simd_unit: &Coefficients, serialized: &mut [u8]) {
+    #[cfg(not(eurydice))]
     debug_assert!(serialized.len() == 10);
 
     cloop! {
@@ -26,6 +27,7 @@ pub fn serialize(simd_unit: &Coefficients, serialized: &mut [u8]) {
 #[inline(always)]
 #[hax_lib::requires(serialized.len() == 10)]
 pub fn deserialize(serialized: &[u8], simd_unit: &mut Coefficients) {
+    #[cfg(not(eurydice))]
     debug_assert!(serialized.len() == 10);
 
     let mask = (1 << BITS_IN_UPPER_PART_OF_T) - 1;
