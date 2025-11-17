@@ -22,9 +22,9 @@ macro_rules! impl_mod {
         /// An incorrect length when converting from slice.
         pub struct WrongLengthError;
 
-        pub mod arrayref {
+        pub(crate) mod arrayref {
             #[derive(Debug, PartialEq)]
-            pub struct $ty;
+            pub(crate) struct $ty;
             use super::*;
             impl_key_centric_types!(
                 $ty,
@@ -37,6 +37,39 @@ macro_rules! impl_mod {
             );
         }
         pub mod slice {
+            // TODO: different keygen in example?
+            //! Slice-based APIs for ECDSA-P256.
+            //!
+            //! ```rust
+            //! use libcrux_traits::signature::SignConsts;
+            //! use libcrux_ecdsa::key_centric_apis::sha2_256::slice::EcdsaP256;
+            //! use libcrux_ecdsa::p256::Nonce;
+            //!
+            //! use rand::{RngCore, TryRngCore};
+            //! let mut rng = rand_core::OsRng;
+            //! let mut rng = rng.unwrap_mut();
+            //!
+            //! let mut signing_key = [0u8; EcdsaP256::SIGNING_KEY_LEN];
+            //! let mut verification_key = [0u8; EcdsaP256::VERIFICATION_KEY_LEN];
+            //!
+            //! // keygen
+            //! let mut bytes = [0u8; EcdsaP256::RAND_KEYGEN_LEN];
+            //! rng.fill_bytes(&mut bytes);
+            //! EcdsaP256::keygen_derand(&mut signing_key, &mut verification_key, bytes).unwrap();
+            //!
+            //! // sign
+            //! let mut signature = [0u8; EcdsaP256::SIGNATURE_LEN];
+            //! EcdsaP256::sign(
+            //!     &signing_key,
+            //!     b"payload",
+            //!     &mut signature,
+            //!     &Nonce::random(&mut rng).unwrap(),
+            //! )
+            //! .unwrap();
+            //!
+            //! // verify
+            //! EcdsaP256::verify(&verification_key, b"payload", &signature).unwrap();
+            //! ```
             #[derive(Debug, PartialEq)]
             pub struct $ty;
             use super::*;
@@ -75,6 +108,15 @@ macro_rules! impl_mod {
             }
         }
 
+        impl slice::$ty {
+            #[cfg(feature = "rand")]
+            pub fn generate_key_pair(
+                rng: &mut impl rand::CryptoRng,
+            ) -> Result<KeyPair, slice::KeygenError> {
+                arrayref::$ty::generate_key_pair(rng)
+            }
+        }
+
         impl arrayref::$ty {
             #[cfg(feature = "rand")]
             pub fn generate_key_pair(
@@ -99,6 +141,7 @@ macro_rules! impl_mod {
             }
         }
         impl arrayref::$ty {
+            /// Sign the `payload` with the `key`.
             pub fn sign(
                 key: &[U8; Self::SIGNING_KEY_LEN],
                 payload: &[u8],
@@ -120,6 +163,8 @@ macro_rules! impl_mod {
                 }
                 Ok(())
             }
+
+            /// Verify the `payload` and `signature` with the `key`.
             pub fn verify(
                 key: &[u8; Self::VERIFICATION_KEY_LEN],
                 payload: &[u8],
@@ -163,6 +208,7 @@ macro_rules! impl_mod {
             }
         }
         impl slice::$ty {
+            /// Sign the `payload` with the `key`.
             pub fn sign(
                 key: &[U8],
                 payload: &[u8],
@@ -179,6 +225,7 @@ macro_rules! impl_mod {
                 arrayref::$ty::sign(&key, payload, signature, nonce)
                     .map_err(slice::SigningError::from)
             }
+            /// Verify the `payload` and `signature` with the `key`.
             pub fn verify(
                 key: &[u8],
                 payload: &[u8],
@@ -210,6 +257,7 @@ macro_rules! impl_mod {
             }
         }
         impl<'a> SigningKeyRef<'a> {
+            /// Sign the `payload`.
             pub fn sign(
                 &self,
                 payload: &[u8],
@@ -220,6 +268,7 @@ macro_rules! impl_mod {
             }
         }
         impl<'a> VerificationKeyRef<'a> {
+            /// Verify the `payload` and `signature`.
             pub fn verify(
                 &self,
                 payload: &[u8],
@@ -231,6 +280,7 @@ macro_rules! impl_mod {
 
         // key-centric API
         impl SigningKey {
+            /// Sign the `payload`.
             pub fn sign(
                 &self,
                 payload: &[u8],
@@ -242,6 +292,7 @@ macro_rules! impl_mod {
             }
         }
         impl VerificationKey {
+            /// Verify the `payload` and `signature`.
             pub fn verify(
                 &self,
                 payload: &[u8],
@@ -339,61 +390,4 @@ fn key_centric_refs() {
         )
         .unwrap();
     verification_key.verify(b"payload", &signature).unwrap();
-}
-
-#[test]
-#[cfg(not(feature = "expose-secret-independence"))]
-fn arrayref_apis() {
-    use libcrux_traits::signature::SignConsts;
-    use sha2_256::EcdsaP256;
-
-    use rand::{RngCore, TryRngCore};
-    let mut rng = rand_core::OsRng;
-    let mut rng = rng.unwrap_mut();
-
-    let mut signing_key = [0u8; EcdsaP256::SIGNING_KEY_LEN];
-    let mut verification_key = [0u8; EcdsaP256::VERIFICATION_KEY_LEN];
-
-    let mut bytes = [0u8; EcdsaP256::RAND_KEYGEN_LEN];
-    rng.fill_bytes(&mut bytes);
-    EcdsaP256::keygen_derand(&mut signing_key, &mut verification_key, bytes).unwrap();
-
-    // arrayref API
-    let mut signature = [0u8; EcdsaP256::SIGNATURE_LEN];
-    EcdsaP256::sign(
-        &signing_key,
-        b"payload",
-        &mut signature,
-        &Nonce::random(&mut rng).unwrap(),
-    )
-    .unwrap();
-    EcdsaP256::verify(&verification_key, b"payload", &signature).unwrap();
-}
-#[test]
-#[cfg(not(feature = "expose-secret-independence"))]
-fn slice_apis() {
-    use libcrux_traits::signature::SignConsts;
-    use sha2_256::slice::EcdsaP256;
-
-    use rand::{RngCore, TryRngCore};
-    let mut rng = rand_core::OsRng;
-    let mut rng = rng.unwrap_mut();
-
-    let mut signing_key = [0u8; EcdsaP256::SIGNING_KEY_LEN];
-    let mut verification_key = [0u8; EcdsaP256::VERIFICATION_KEY_LEN];
-
-    let mut bytes = [0u8; EcdsaP256::RAND_KEYGEN_LEN];
-    rng.fill_bytes(&mut bytes);
-    EcdsaP256::keygen_derand(&mut signing_key, &mut verification_key, bytes).unwrap();
-
-    // slice API
-    let mut signature = [0u8; EcdsaP256::SIGNATURE_LEN];
-    EcdsaP256::sign(
-        &signing_key,
-        b"payload",
-        &mut signature,
-        &Nonce::random(&mut rng).unwrap(),
-    )
-    .unwrap();
-    EcdsaP256::verify(&verification_key, b"payload", &signature).unwrap();
 }
