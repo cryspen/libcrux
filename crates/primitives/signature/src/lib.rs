@@ -63,7 +63,7 @@ pub mod ed25519 {
 #[cfg(feature = "mldsa")]
 pub mod mldsa {
     //! ```rust
-    //! use libcrux_signature::mldsa::{MlDsa44, SigningKey, KeyPair, VerificationKey};
+    //! use libcrux_signature::mldsa::ml_dsa_44::{SigningKey, KeyPair, VerificationKey};
     //!
 
     //! use rand::TryRngCore;
@@ -82,7 +82,7 @@ pub mod mldsa {
     //! ```
     //!
     //! ```rust
-    //! use libcrux_signature::mldsa::{MlDsa44, SigningKeyRef};
+    //! use libcrux_signature::mldsa::ml_dsa_44::{MlDsa44, SigningKeyRef};
     //! use libcrux_traits::signature::SignConsts;
     //!
     //!
@@ -94,7 +94,5 @@ pub mod mldsa {
     //! signing_key.sign(b"payload", &mut signature, b"context", [2; 32]).unwrap();
     //!
     //! ```
-    pub use libcrux_ml_dsa::key_centric_apis::ml_dsa_44::{
-        KeyPair, MlDsa44, Signature, SigningKey, SigningKeyRef, VerificationKey, VerificationKeyRef,
-    };
+    pub use libcrux_ml_dsa::key_centric_apis::{ml_dsa_44, ml_dsa_65, ml_dsa_87};
 }
