@@ -111,6 +111,9 @@ typedef struct Eurydice_dst_ref_9a_s {
 #define EURYDICE_SLICE_LEN(s, _) (s).meta
 #define Eurydice_slice_len(s, _) (s).meta
 
+#define Eurydice_slice_index_mut(s, i, t) ((s).ptr[i])
+#define Eurydice_slice_index_shared(s, i, t) ((s).ptr[i])
+
 #define Eurydice_slice_index(s, i, t) ((s).ptr[i])
 
 // The following functions get sub slices from a slice.
@@ -259,10 +262,40 @@ typedef struct Eurydice_arr_8b_s {
   uint8_t data[2];
 } Eurydice_arr_8b;
 
-typedef struct Eurydice_arr_c4_s {
-  uint8_t data[8];
-} Eurydice_arr_c4;
+ // [ u8; 2 ]
+typedef struct Eurydice_array_u8x2_s {
+  uint8_t data[2];
+} Eurydice_array_u8x2;
 
+// [ u8; 8 ]
+typedef struct Eurydice_array_u8x8_s {
+  uint8_t data[8];
+} Eurydice_array_u8x8;
+
+// &mut [u8]
+typedef struct Eurydice_mut_borrow_slice_u8_s {
+  uint8_t *ptr;
+  size_t meta;
+} Eurydice_mut_borrow_slice_u8;
+
+// &[u8]
+typedef struct Eurydice_borrow_slice_u8_s {
+  const uint8_t *ptr;
+  size_t meta;
+} Eurydice_borrow_slice_u8;
+
+// &mut [i16]
+typedef struct Eurydice_mut_borrow_slice_i16_s {
+  int16_t *ptr;
+  size_t meta;
+} Eurydice_mut_borrow_slice_i16;
+
+// &[i16]
+typedef struct Eurydice_borrow_slice_i16_s {
+  const int16_t *ptr;
+  size_t meta;
+} Eurydice_borrow_slice_i16;
+  
 static inline void core_num__u32__to_be_bytes(uint32_t src, uint8_t dst[4]) {
   // TODO: why not store32_be?
   uint32_t x = htobe32(src);
@@ -277,13 +310,13 @@ static inline uint32_t core_num__u32__from_le_bytes(uint8_t buf[4]) {
   return load32_le(buf);
 }
 
-static inline Eurydice_arr_c4 core_num__u64__to_le_bytes(uint64_t v) {
-  Eurydice_arr_c4 a;
+static inline Eurydice_array_u8x8 core_num__u64__to_le_bytes(uint64_t v) {
+  Eurydice_array_u8x8 a;
   store64_le(a.data, v);
   return a;
 }
 
-static inline uint64_t core_num__u64__from_le_bytes(Eurydice_arr_c4 buf) {
+static inline uint64_t core_num__u64__from_le_bytes(Eurydice_array_u8x8 buf) {
   return load64_le(buf.data);
 }
 
