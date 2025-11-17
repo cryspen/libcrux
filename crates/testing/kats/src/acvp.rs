@@ -8,6 +8,7 @@ pub mod mlkem;
 
 pub mod schema_common;
 
+#[cfg(any(feature = "mldsa", feature = "mlkem"))]
 /// Shared macro for implementing loading of KATs
 macro_rules! impl_tests {
     ($ty:ty, $directory:literal, $variant:literal) => {
@@ -39,4 +40,5 @@ macro_rules! impl_tests {
     };
 }
 
+#[cfg(any(feature = "mldsa", feature = "mlkem"))]
 pub(super) use impl_tests;
