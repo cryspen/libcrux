@@ -286,6 +286,11 @@ pub const TAG_LEN: usize = 16;
 /// Nonce length.
 pub const NONCE_LEN: usize = 12;
 
+#[doc(inline)]
+pub use aes_gcm_128::KEY_LEN as AESGCM128_KEY_LEN;
+#[doc(inline)]
+pub use aes_gcm_256::KEY_LEN as AESGCM256_KEY_LEN;
+
 pub use libcrux_traits::aead::arrayref::{DecryptError, EncryptError, KeyGenError};
 
 /// Generic AES-GCM encrypt.
