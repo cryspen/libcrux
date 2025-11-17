@@ -116,6 +116,8 @@ typedef struct Eurydice_dst_ref_9a_s {
 #define Eurydice_slice_index_mut(s, i, t) ((s).ptr[i])
 #define Eurydice_slice_index_shared(s, i, t) ((s).ptr[i])
 
+#define Eurydice_slice_index(s, i, t) ((s).ptr[i])
+
 // The following functions get sub slices from a slice.
 
 #define Eurydice_slice_subslice(s, r, t, _0, _1) \
