@@ -96,7 +96,7 @@ impl<const PARALLEL_LANES: usize, const RATE: usize, STATE: KeccakItem<PARALLEL_
         let input_consumed = self.fill_buffer(inputs);
 
         if input_consumed > 0 {
-            let mut borrowed: [&[u8]; PARALLEL_LANES] =
+            let borrowed: [&[u8]; PARALLEL_LANES] =
                 core::array::from_fn(|i| self.buf[i].as_slice());
 
             self.inner.load_block::<RATE>(&borrowed, 0);
