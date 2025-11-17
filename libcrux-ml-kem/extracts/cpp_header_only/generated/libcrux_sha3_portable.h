@@ -8,7 +8,7 @@
  * Eurydice: cdf02f9d8ed0d73f88c0a495c5b79359a51398fc
  * Karamel: 8e7262955105599e91f3a99c9ab3d3387f7046f2
  * F*: unset
- * Libcrux: 3e2e1b7264b2d9131b70362345bd8c5b0bb1c9a8
+ * Libcrux: 84259ec7a97f8d04df8746aa3cd9f55ad82052a4
  */
 
 #ifndef libcrux_sha3_portable_H
@@ -50,8 +50,7 @@ libcrux_sha3_simd_portable_rotate_left_76(uint64_t x) {
 
 static KRML_MUSTINLINE uint64_t
 libcrux_sha3_simd_portable__vrax1q_u64(uint64_t a, uint64_t b) {
-  uint64_t uu____0 = a;
-  return uu____0 ^ libcrux_sha3_simd_portable_rotate_left_76(b);
+  return a ^ libcrux_sha3_simd_portable_rotate_left_76(b);
 }
 
 /**
@@ -309,20 +308,19 @@ libcrux_sha3_generic_keccak_theta_80_04(Eurydice_arr_26 *self) {
                self, (size_t_x2{(size_t)3U, (size_t)4U}))[0U],
            libcrux_sha3_generic_keccak_index_c2_04(
                self, (size_t_x2{(size_t)4U, (size_t)4U}))[0U])}};
-  uint64_t uu____0 = libcrux_sha3_simd_portable_rotate_left1_and_xor_d2(
-      c.data[((size_t)0U + (size_t)4U) % (size_t)5U],
-      c.data[((size_t)0U + (size_t)1U) % (size_t)5U]);
-  uint64_t uu____1 = libcrux_sha3_simd_portable_rotate_left1_and_xor_d2(
-      c.data[((size_t)1U + (size_t)4U) % (size_t)5U],
-      c.data[((size_t)1U + (size_t)1U) % (size_t)5U]);
-  uint64_t uu____2 = libcrux_sha3_simd_portable_rotate_left1_and_xor_d2(
-      c.data[((size_t)2U + (size_t)4U) % (size_t)5U],
-      c.data[((size_t)2U + (size_t)1U) % (size_t)5U]);
-  uint64_t uu____3 = libcrux_sha3_simd_portable_rotate_left1_and_xor_d2(
-      c.data[((size_t)3U + (size_t)4U) % (size_t)5U],
-      c.data[((size_t)3U + (size_t)1U) % (size_t)5U]);
   return (
-      Eurydice_arr_a5{{uu____0, uu____1, uu____2, uu____3,
+      Eurydice_arr_a5{{libcrux_sha3_simd_portable_rotate_left1_and_xor_d2(
+                           c.data[((size_t)0U + (size_t)4U) % (size_t)5U],
+                           c.data[((size_t)0U + (size_t)1U) % (size_t)5U]),
+                       libcrux_sha3_simd_portable_rotate_left1_and_xor_d2(
+                           c.data[((size_t)1U + (size_t)4U) % (size_t)5U],
+                           c.data[((size_t)1U + (size_t)1U) % (size_t)5U]),
+                       libcrux_sha3_simd_portable_rotate_left1_and_xor_d2(
+                           c.data[((size_t)2U + (size_t)4U) % (size_t)5U],
+                           c.data[((size_t)2U + (size_t)1U) % (size_t)5U]),
+                       libcrux_sha3_simd_portable_rotate_left1_and_xor_d2(
+                           c.data[((size_t)3U + (size_t)4U) % (size_t)5U],
+                           c.data[((size_t)3U + (size_t)1U) % (size_t)5U]),
                        libcrux_sha3_simd_portable_rotate_left1_and_xor_d2(
                            c.data[((size_t)4U + (size_t)4U) % (size_t)5U],
                            c.data[((size_t)4U + (size_t)1U) % (size_t)5U])}});
@@ -1215,170 +1213,146 @@ static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_rho_80_04(
           libcrux_sha3_generic_keccak_index_c2_04(
               self, (size_t_x2{(size_t)0U, (size_t)0U}))[0U],
           t.data[0U]));
-  Eurydice_arr_26 *uu____0 = self;
   libcrux_sha3_generic_keccak_set_80_04(
-      uu____0, (size_t)1U, (size_t)0U,
+      self, (size_t)1U, (size_t)0U,
       libcrux_sha3_simd_portable_xor_and_rotate_d2_02(
           libcrux_sha3_generic_keccak_index_c2_04(
               self, (size_t_x2{(size_t)1U, (size_t)0U}))[0U],
           t.data[0U]));
-  Eurydice_arr_26 *uu____1 = self;
   libcrux_sha3_generic_keccak_set_80_04(
-      uu____1, (size_t)2U, (size_t)0U,
+      self, (size_t)2U, (size_t)0U,
       libcrux_sha3_simd_portable_xor_and_rotate_d2_ac(
           libcrux_sha3_generic_keccak_index_c2_04(
               self, (size_t_x2{(size_t)2U, (size_t)0U}))[0U],
           t.data[0U]));
-  Eurydice_arr_26 *uu____2 = self;
   libcrux_sha3_generic_keccak_set_80_04(
-      uu____2, (size_t)3U, (size_t)0U,
+      self, (size_t)3U, (size_t)0U,
       libcrux_sha3_simd_portable_xor_and_rotate_d2_020(
           libcrux_sha3_generic_keccak_index_c2_04(
               self, (size_t_x2{(size_t)3U, (size_t)0U}))[0U],
           t.data[0U]));
-  Eurydice_arr_26 *uu____3 = self;
   libcrux_sha3_generic_keccak_set_80_04(
-      uu____3, (size_t)4U, (size_t)0U,
+      self, (size_t)4U, (size_t)0U,
       libcrux_sha3_simd_portable_xor_and_rotate_d2_a9(
           libcrux_sha3_generic_keccak_index_c2_04(
               self, (size_t_x2{(size_t)4U, (size_t)0U}))[0U],
           t.data[0U]));
-  Eurydice_arr_26 *uu____4 = self;
   libcrux_sha3_generic_keccak_set_80_04(
-      uu____4, (size_t)0U, (size_t)1U,
+      self, (size_t)0U, (size_t)1U,
       libcrux_sha3_simd_portable_xor_and_rotate_d2_76(
           libcrux_sha3_generic_keccak_index_c2_04(
               self, (size_t_x2{(size_t)0U, (size_t)1U}))[0U],
           t.data[1U]));
-  Eurydice_arr_26 *uu____5 = self;
   libcrux_sha3_generic_keccak_set_80_04(
-      uu____5, (size_t)1U, (size_t)1U,
+      self, (size_t)1U, (size_t)1U,
       libcrux_sha3_simd_portable_xor_and_rotate_d2_58(
           libcrux_sha3_generic_keccak_index_c2_04(
               self, (size_t_x2{(size_t)1U, (size_t)1U}))[0U],
           t.data[1U]));
-  Eurydice_arr_26 *uu____6 = self;
   libcrux_sha3_generic_keccak_set_80_04(
-      uu____6, (size_t)2U, (size_t)1U,
+      self, (size_t)2U, (size_t)1U,
       libcrux_sha3_simd_portable_xor_and_rotate_d2_e0(
           libcrux_sha3_generic_keccak_index_c2_04(
               self, (size_t_x2{(size_t)2U, (size_t)1U}))[0U],
           t.data[1U]));
-  Eurydice_arr_26 *uu____7 = self;
   libcrux_sha3_generic_keccak_set_80_04(
-      uu____7, (size_t)3U, (size_t)1U,
+      self, (size_t)3U, (size_t)1U,
       libcrux_sha3_simd_portable_xor_and_rotate_d2_63(
           libcrux_sha3_generic_keccak_index_c2_04(
               self, (size_t_x2{(size_t)3U, (size_t)1U}))[0U],
           t.data[1U]));
-  Eurydice_arr_26 *uu____8 = self;
   libcrux_sha3_generic_keccak_set_80_04(
-      uu____8, (size_t)4U, (size_t)1U,
+      self, (size_t)4U, (size_t)1U,
       libcrux_sha3_simd_portable_xor_and_rotate_d2_6a(
           libcrux_sha3_generic_keccak_index_c2_04(
               self, (size_t_x2{(size_t)4U, (size_t)1U}))[0U],
           t.data[1U]));
-  Eurydice_arr_26 *uu____9 = self;
   libcrux_sha3_generic_keccak_set_80_04(
-      uu____9, (size_t)0U, (size_t)2U,
+      self, (size_t)0U, (size_t)2U,
       libcrux_sha3_simd_portable_xor_and_rotate_d2_ab(
           libcrux_sha3_generic_keccak_index_c2_04(
               self, (size_t_x2{(size_t)0U, (size_t)2U}))[0U],
           t.data[2U]));
-  Eurydice_arr_26 *uu____10 = self;
   libcrux_sha3_generic_keccak_set_80_04(
-      uu____10, (size_t)1U, (size_t)2U,
+      self, (size_t)1U, (size_t)2U,
       libcrux_sha3_simd_portable_xor_and_rotate_d2_5b(
           libcrux_sha3_generic_keccak_index_c2_04(
               self, (size_t_x2{(size_t)1U, (size_t)2U}))[0U],
           t.data[2U]));
-  Eurydice_arr_26 *uu____11 = self;
   libcrux_sha3_generic_keccak_set_80_04(
-      uu____11, (size_t)2U, (size_t)2U,
+      self, (size_t)2U, (size_t)2U,
       libcrux_sha3_simd_portable_xor_and_rotate_d2_6f(
           libcrux_sha3_generic_keccak_index_c2_04(
               self, (size_t_x2{(size_t)2U, (size_t)2U}))[0U],
           t.data[2U]));
-  Eurydice_arr_26 *uu____12 = self;
   libcrux_sha3_generic_keccak_set_80_04(
-      uu____12, (size_t)3U, (size_t)2U,
+      self, (size_t)3U, (size_t)2U,
       libcrux_sha3_simd_portable_xor_and_rotate_d2_62(
           libcrux_sha3_generic_keccak_index_c2_04(
               self, (size_t_x2{(size_t)3U, (size_t)2U}))[0U],
           t.data[2U]));
-  Eurydice_arr_26 *uu____13 = self;
   libcrux_sha3_generic_keccak_set_80_04(
-      uu____13, (size_t)4U, (size_t)2U,
+      self, (size_t)4U, (size_t)2U,
       libcrux_sha3_simd_portable_xor_and_rotate_d2_23(
           libcrux_sha3_generic_keccak_index_c2_04(
               self, (size_t_x2{(size_t)4U, (size_t)2U}))[0U],
           t.data[2U]));
-  Eurydice_arr_26 *uu____14 = self;
   libcrux_sha3_generic_keccak_set_80_04(
-      uu____14, (size_t)0U, (size_t)3U,
+      self, (size_t)0U, (size_t)3U,
       libcrux_sha3_simd_portable_xor_and_rotate_d2_37(
           libcrux_sha3_generic_keccak_index_c2_04(
               self, (size_t_x2{(size_t)0U, (size_t)3U}))[0U],
           t.data[3U]));
-  Eurydice_arr_26 *uu____15 = self;
   libcrux_sha3_generic_keccak_set_80_04(
-      uu____15, (size_t)1U, (size_t)3U,
+      self, (size_t)1U, (size_t)3U,
       libcrux_sha3_simd_portable_xor_and_rotate_d2_bb(
           libcrux_sha3_generic_keccak_index_c2_04(
               self, (size_t_x2{(size_t)1U, (size_t)3U}))[0U],
           t.data[3U]));
-  Eurydice_arr_26 *uu____16 = self;
   libcrux_sha3_generic_keccak_set_80_04(
-      uu____16, (size_t)2U, (size_t)3U,
+      self, (size_t)2U, (size_t)3U,
       libcrux_sha3_simd_portable_xor_and_rotate_d2_b9(
           libcrux_sha3_generic_keccak_index_c2_04(
               self, (size_t_x2{(size_t)2U, (size_t)3U}))[0U],
           t.data[3U]));
-  Eurydice_arr_26 *uu____17 = self;
   libcrux_sha3_generic_keccak_set_80_04(
-      uu____17, (size_t)3U, (size_t)3U,
+      self, (size_t)3U, (size_t)3U,
       libcrux_sha3_simd_portable_xor_and_rotate_d2_54(
           libcrux_sha3_generic_keccak_index_c2_04(
               self, (size_t_x2{(size_t)3U, (size_t)3U}))[0U],
           t.data[3U]));
-  Eurydice_arr_26 *uu____18 = self;
   libcrux_sha3_generic_keccak_set_80_04(
-      uu____18, (size_t)4U, (size_t)3U,
+      self, (size_t)4U, (size_t)3U,
       libcrux_sha3_simd_portable_xor_and_rotate_d2_4c(
           libcrux_sha3_generic_keccak_index_c2_04(
               self, (size_t_x2{(size_t)4U, (size_t)3U}))[0U],
           t.data[3U]));
-  Eurydice_arr_26 *uu____19 = self;
   libcrux_sha3_generic_keccak_set_80_04(
-      uu____19, (size_t)0U, (size_t)4U,
+      self, (size_t)0U, (size_t)4U,
       libcrux_sha3_simd_portable_xor_and_rotate_d2_ce(
           libcrux_sha3_generic_keccak_index_c2_04(
               self, (size_t_x2{(size_t)0U, (size_t)4U}))[0U],
           t.data[4U]));
-  Eurydice_arr_26 *uu____20 = self;
   libcrux_sha3_generic_keccak_set_80_04(
-      uu____20, (size_t)1U, (size_t)4U,
+      self, (size_t)1U, (size_t)4U,
       libcrux_sha3_simd_portable_xor_and_rotate_d2_77(
           libcrux_sha3_generic_keccak_index_c2_04(
               self, (size_t_x2{(size_t)1U, (size_t)4U}))[0U],
           t.data[4U]));
-  Eurydice_arr_26 *uu____21 = self;
   libcrux_sha3_generic_keccak_set_80_04(
-      uu____21, (size_t)2U, (size_t)4U,
+      self, (size_t)2U, (size_t)4U,
       libcrux_sha3_simd_portable_xor_and_rotate_d2_25(
           libcrux_sha3_generic_keccak_index_c2_04(
               self, (size_t_x2{(size_t)2U, (size_t)4U}))[0U],
           t.data[4U]));
-  Eurydice_arr_26 *uu____22 = self;
   libcrux_sha3_generic_keccak_set_80_04(
-      uu____22, (size_t)3U, (size_t)4U,
+      self, (size_t)3U, (size_t)4U,
       libcrux_sha3_simd_portable_xor_and_rotate_d2_af(
           libcrux_sha3_generic_keccak_index_c2_04(
               self, (size_t_x2{(size_t)3U, (size_t)4U}))[0U],
           t.data[4U]));
-  Eurydice_arr_26 *uu____23 = self;
   libcrux_sha3_generic_keccak_set_80_04(
-      uu____23, (size_t)4U, (size_t)4U,
+      self, (size_t)4U, (size_t)4U,
       libcrux_sha3_simd_portable_xor_and_rotate_d2_fd(
           libcrux_sha3_generic_keccak_index_c2_04(
               self, (size_t_x2{(size_t)4U, (size_t)4U}))[0U],

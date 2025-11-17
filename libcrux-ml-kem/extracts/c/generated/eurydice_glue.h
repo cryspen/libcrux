@@ -262,7 +262,7 @@ typedef struct Eurydice_arr_8b_s {
   uint8_t data[2];
 } Eurydice_arr_8b;
 
- // [ u8; 2 ]
+// [ u8; 2 ]
 typedef struct Eurydice_array_u8x2_s {
   uint8_t data[2];
 } Eurydice_array_u8x2;
@@ -295,7 +295,7 @@ typedef struct Eurydice_borrow_slice_i16_s {
   const int16_t *ptr;
   size_t meta;
 } Eurydice_borrow_slice_i16;
-  
+
 static inline void core_num__u32__to_be_bytes(uint32_t src, uint8_t dst[4]) {
   // TODO: why not store32_be?
   uint32_t x = htobe32(src);

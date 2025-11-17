@@ -274,7 +274,7 @@ typedef struct Eurydice_arr_8b_s {
   uint8_t data[2];
 } Eurydice_arr_8b;
 
- // [ u8; 2 ]
+// [ u8; 2 ]
 typedef struct Eurydice_array_u8x2_s {
   uint8_t data[2];
 } Eurydice_array_u8x2;
