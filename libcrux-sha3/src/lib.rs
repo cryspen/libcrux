@@ -26,18 +26,6 @@ pub const SHA3_384_DIGEST_SIZE: usize = 48;
 /// Size in bytes of a SHA3 512 digest.
 pub const SHA3_512_DIGEST_SIZE: usize = 64;
 
-// /// A SHA3 224 Digest
-// pub type Sha3_224Digest = [u8; 28];
-
-// /// A SHA3 256 Digest
-// pub type Sha3_256Digest = [u8; 32];
-
-// /// A SHA3 384 Digest
-// pub type Sha3_384Digest = [u8; 48];
-
-// /// A SHA3 512 Digest
-// pub type Sha3_512Digest = [u8; 64];
-
 /// The Digest Algorithm.
 #[cfg_attr(not(eurydice), derive(Clone, Copy, Debug, PartialEq))]
 #[repr(u32)]
