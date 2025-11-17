@@ -8,7 +8,7 @@
  * Eurydice: cdf02f9d8ed0d73f88c0a495c5b79359a51398fc
  * Karamel: 8e7262955105599e91f3a99c9ab3d3387f7046f2
  * F*: unset
- * Libcrux: 84259ec7a97f8d04df8746aa3cd9f55ad82052a4
+ * Libcrux: aef4b0d98bf3abe09b6ac696f60342e2979bb35e
  */
 
 #ifndef internal_libcrux_mlkem1024_portable_H
@@ -58,7 +58,7 @@ tuple_2b libcrux_ml_kem_mlkem1024_portable_unpacked_encapsulate(
  Generate ML-KEM 1024 Key Pair in "unpacked" form
 */
 void libcrux_ml_kem_mlkem1024_portable_unpacked_generate_key_pair_mut(
-    libcrux_sha3_Sha3_512Digest randomness,
+    Eurydice_arr_06 randomness,
     libcrux_ml_kem_mlkem1024_portable_unpacked_MlKem1024KeyPairUnpacked
         *key_pair);
 
@@ -67,7 +67,7 @@ void libcrux_ml_kem_mlkem1024_portable_unpacked_generate_key_pair_mut(
 */
 libcrux_ml_kem_mlkem1024_portable_unpacked_MlKem1024KeyPairUnpacked
 libcrux_ml_kem_mlkem1024_portable_unpacked_generate_key_pair(
-    libcrux_sha3_Sha3_512Digest randomness);
+    Eurydice_arr_06 randomness);
 
 /**
  Create a new, empty unpacked key.

@@ -287,7 +287,6 @@ static inline uint32_t core_num__i32__count_ones(int32_t x0) {
 #endif
 }
 
-
 static inline uint8_t Eurydice_bitand_pv_u8(const uint8_t *p, uint8_t v) {
   return (*p) & v;
 }
@@ -296,8 +295,8 @@ static inline uint8_t Eurydice_shr_pv_u8(const uint8_t *p, int32_t v) {
 }
 
 static inline uint8_t
-core_ops_bit__core__ops__bit__BitAnd_u8__u8__for__0__u8___bitand(const uint8_t *x0,
-                                                                 uint8_t x1) {
+core_ops_bit__core__ops__bit__BitAnd_u8__u8__for__0__u8___bitand(
+    const uint8_t *x0, uint8_t x1) {
   return Eurydice_bitand_pv_u8(x0, x1);
 }
 

@@ -8,7 +8,7 @@
  * Eurydice: cdf02f9d8ed0d73f88c0a495c5b79359a51398fc
  * Karamel: 8e7262955105599e91f3a99c9ab3d3387f7046f2
  * F*: unset
- * Libcrux: 84259ec7a97f8d04df8746aa3cd9f55ad82052a4
+ * Libcrux: aef4b0d98bf3abe09b6ac696f60342e2979bb35e
  */
 
 #ifndef libcrux_mlkem768_portable_H
@@ -19,9 +19,9 @@
 #include "libcrux_mlkem_core.h"
 #include "libcrux_sha3_portable.h"
 
-static inline libcrux_sha3_Sha3_512Digest
-libcrux_ml_kem_hash_functions_portable_G(Eurydice_borrow_slice_u8 input) {
-  libcrux_sha3_Sha3_512Digest digest = {{0U}};
+static inline Eurydice_arr_06 libcrux_ml_kem_hash_functions_portable_G(
+    Eurydice_borrow_slice_u8 input) {
+  Eurydice_arr_06 digest = {{0U}};
   libcrux_sha3_portable_sha512(Eurydice_array_to_slice_mut_d8(&digest), input);
   return digest;
 }
@@ -2444,8 +2444,8 @@ A monomorphic instance of libcrux_ml_kem.hash_functions.portable.G_4a
 with const generics
 - K= 3
 */
-static inline libcrux_sha3_Sha3_512Digest
-libcrux_ml_kem_hash_functions_portable_G_4a_e0(Eurydice_borrow_slice_u8 input) {
+static inline Eurydice_arr_06 libcrux_ml_kem_hash_functions_portable_G_4a_e0(
+    Eurydice_borrow_slice_u8 input) {
   return libcrux_ml_kem_hash_functions_portable_G(input);
 }
 
@@ -4086,16 +4086,14 @@ static KRML_MUSTINLINE Eurydice_arr_600 libcrux_ml_kem_ind_cca_decapsulate_62(
   Eurydice_borrow_slice_u8 implicit_rejection_value = uu____0.f3;
   Eurydice_arr_600 decrypted =
       libcrux_ml_kem_ind_cpa_decrypt_42(ind_cpa_secret_key, ciphertext);
-  libcrux_sha3_Sha3_512Digest to_hash0 =
-      libcrux_ml_kem_utils_into_padded_array_24(
-          Eurydice_array_to_slice_shared_6e(&decrypted));
+  Eurydice_arr_06 to_hash0 = libcrux_ml_kem_utils_into_padded_array_24(
+      Eurydice_array_to_slice_shared_6e(&decrypted));
   Eurydice_slice_copy(
       Eurydice_array_to_subslice_from_mut_8c(
           &to_hash0, LIBCRUX_ML_KEM_CONSTANTS_SHARED_SECRET_SIZE),
       ind_cpa_public_key_hash, uint8_t);
-  libcrux_sha3_Sha3_512Digest hashed =
-      libcrux_ml_kem_hash_functions_portable_G_4a_e0(
-          Eurydice_array_to_slice_shared_d8(&to_hash0));
+  Eurydice_arr_06 hashed = libcrux_ml_kem_hash_functions_portable_G_4a_e0(
+      Eurydice_array_to_slice_shared_d8(&to_hash0));
   Eurydice_dst_ref_shared_uint8_t_size_t_x2 uu____1 = Eurydice_slice_split_at(
       Eurydice_array_to_slice_shared_d8(&hashed),
       LIBCRUX_ML_KEM_CONSTANTS_SHARED_SECRET_SIZE, uint8_t,
@@ -4228,9 +4226,8 @@ static KRML_MUSTINLINE tuple_56 libcrux_ml_kem_ind_cca_encapsulate_ca(
   Eurydice_arr_600 randomness0 =
       libcrux_ml_kem_variant_entropy_preprocess_39_9c(
           Eurydice_array_to_slice_shared_6e(randomness));
-  libcrux_sha3_Sha3_512Digest to_hash =
-      libcrux_ml_kem_utils_into_padded_array_24(
-          Eurydice_array_to_slice_shared_6e(&randomness0));
+  Eurydice_arr_06 to_hash = libcrux_ml_kem_utils_into_padded_array_24(
+      Eurydice_array_to_slice_shared_6e(&randomness0));
   Eurydice_mut_borrow_slice_u8 uu____0 = Eurydice_array_to_subslice_from_mut_8c(
       &to_hash, LIBCRUX_ML_KEM_CONSTANTS_H_DIGEST_SIZE);
   /* original Rust expression is not an lvalue in C */
@@ -4239,9 +4236,8 @@ static KRML_MUSTINLINE tuple_56 libcrux_ml_kem_ind_cca_encapsulate_ca(
           libcrux_ml_kem_types_as_slice_e6_d0(public_key)));
   Eurydice_slice_copy(uu____0, Eurydice_array_to_slice_shared_6e(&lvalue),
                       uint8_t);
-  libcrux_sha3_Sha3_512Digest hashed =
-      libcrux_ml_kem_hash_functions_portable_G_4a_e0(
-          Eurydice_array_to_slice_shared_d8(&to_hash));
+  Eurydice_arr_06 hashed = libcrux_ml_kem_hash_functions_portable_G_4a_e0(
+      Eurydice_array_to_slice_shared_d8(&to_hash));
   Eurydice_dst_ref_shared_uint8_t_size_t_x2 uu____1 = Eurydice_slice_split_at(
       Eurydice_array_to_slice_shared_d8(&hashed),
       LIBCRUX_ML_KEM_CONSTANTS_SHARED_SECRET_SIZE, uint8_t,
@@ -4325,7 +4321,7 @@ with types libcrux_ml_kem_hash_functions_portable_PortableHash[[$3size_t]]
 with const generics
 - K= 3
 */
-static KRML_MUSTINLINE libcrux_sha3_Sha3_512Digest
+static KRML_MUSTINLINE Eurydice_arr_06
 libcrux_ml_kem_variant_cpa_keygen_seed_39_9c(
     Eurydice_borrow_slice_u8 key_generation_seed) {
   Eurydice_arr_3e seed = {{0U}};
@@ -4506,7 +4502,7 @@ libcrux_ml_kem_variant_MlKem with const generics
 static KRML_MUSTINLINE void libcrux_ml_kem_ind_cpa_generate_keypair_unpacked_1c(
     Eurydice_borrow_slice_u8 key_generation_seed, Eurydice_arr_c40 *private_key,
     libcrux_ml_kem_ind_cpa_unpacked_IndCpaPublicKeyUnpacked_a0 *public_key) {
-  libcrux_sha3_Sha3_512Digest hashed =
+  Eurydice_arr_06 hashed =
       libcrux_ml_kem_variant_cpa_keygen_seed_39_9c(key_generation_seed);
   Eurydice_dst_ref_shared_uint8_t_size_t_x2 uu____0 = Eurydice_slice_split_at(
       Eurydice_array_to_slice_shared_d8(&hashed), (size_t)32U, uint8_t,
@@ -4792,8 +4788,7 @@ libcrux_ml_kem_variant_MlKem with const generics
 - ETA1_RANDOMNESS_SIZE= 128
 */
 static KRML_MUSTINLINE libcrux_ml_kem_mlkem768_MlKem768KeyPair
-libcrux_ml_kem_ind_cca_generate_keypair_15(
-    const libcrux_sha3_Sha3_512Digest *randomness) {
+libcrux_ml_kem_ind_cca_generate_keypair_15(const Eurydice_arr_06 *randomness) {
   Eurydice_borrow_slice_u8 ind_cpa_keypair_randomness =
       Eurydice_array_to_subslice_shared_364(
           randomness,
@@ -4835,7 +4830,7 @@ generics
 */
 static inline libcrux_ml_kem_mlkem768_MlKem768KeyPair
 libcrux_ml_kem_ind_cca_instantiations_portable_generate_keypair_ce(
-    const libcrux_sha3_Sha3_512Digest *randomness) {
+    const Eurydice_arr_06 *randomness) {
   return libcrux_ml_kem_ind_cca_generate_keypair_15(randomness);
 }
 
@@ -4843,8 +4838,7 @@ libcrux_ml_kem_ind_cca_instantiations_portable_generate_keypair_ce(
  Generate ML-KEM 768 Key Pair
 */
 static inline libcrux_ml_kem_mlkem768_MlKem768KeyPair
-libcrux_ml_kem_mlkem768_portable_generate_key_pair(
-    libcrux_sha3_Sha3_512Digest randomness) {
+libcrux_ml_kem_mlkem768_portable_generate_key_pair(Eurydice_arr_06 randomness) {
   return libcrux_ml_kem_ind_cca_instantiations_portable_generate_keypair_ce(
       &randomness);
 }
@@ -5120,18 +5114,16 @@ libcrux_ml_kem_ind_cca_unpacked_decapsulate_51(
     const Eurydice_arr_2c *ciphertext) {
   Eurydice_arr_600 decrypted = libcrux_ml_kem_ind_cpa_decrypt_unpacked_42(
       &key_pair->private_key.ind_cpa_private_key, ciphertext);
-  libcrux_sha3_Sha3_512Digest to_hash0 =
-      libcrux_ml_kem_utils_into_padded_array_24(
-          Eurydice_array_to_slice_shared_6e(&decrypted));
+  Eurydice_arr_06 to_hash0 = libcrux_ml_kem_utils_into_padded_array_24(
+      Eurydice_array_to_slice_shared_6e(&decrypted));
   Eurydice_mut_borrow_slice_u8 uu____0 = Eurydice_array_to_subslice_from_mut_8c(
       &to_hash0, LIBCRUX_ML_KEM_CONSTANTS_SHARED_SECRET_SIZE);
   Eurydice_slice_copy(
       uu____0,
       Eurydice_array_to_slice_shared_6e(&key_pair->public_key.public_key_hash),
       uint8_t);
-  libcrux_sha3_Sha3_512Digest hashed =
-      libcrux_ml_kem_hash_functions_portable_G_4a_e0(
-          Eurydice_array_to_slice_shared_d8(&to_hash0));
+  Eurydice_arr_06 hashed = libcrux_ml_kem_hash_functions_portable_G_4a_e0(
+      Eurydice_array_to_slice_shared_d8(&to_hash0));
   Eurydice_dst_ref_shared_uint8_t_size_t_x2 uu____1 = Eurydice_slice_split_at(
       Eurydice_array_to_slice_shared_d8(&hashed),
       LIBCRUX_ML_KEM_CONSTANTS_SHARED_SECRET_SIZE, uint8_t,
@@ -5218,10 +5210,9 @@ with types libcrux_ml_kem_hash_functions_portable_PortableHash[[$3size_t]]
 with const generics
 - K= 3
 */
-static inline libcrux_sha3_Sha3_512Digest
-libcrux_ml_kem_ind_cca_unpacked_encaps_prepare_9c(
+static inline Eurydice_arr_06 libcrux_ml_kem_ind_cca_unpacked_encaps_prepare_9c(
     Eurydice_borrow_slice_u8 randomness, Eurydice_borrow_slice_u8 pk_hash) {
-  libcrux_sha3_Sha3_512Digest to_hash =
+  Eurydice_arr_06 to_hash =
       libcrux_ml_kem_utils_into_padded_array_24(randomness);
   Eurydice_slice_copy(Eurydice_array_to_subslice_from_mut_8c(
                           &to_hash, LIBCRUX_ML_KEM_CONSTANTS_H_DIGEST_SIZE),
@@ -5252,10 +5243,9 @@ generics
 static KRML_MUSTINLINE tuple_56 libcrux_ml_kem_ind_cca_unpacked_encapsulate_0c(
     const libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_a0 *public_key,
     const Eurydice_arr_600 *randomness) {
-  libcrux_sha3_Sha3_512Digest hashed =
-      libcrux_ml_kem_ind_cca_unpacked_encaps_prepare_9c(
-          Eurydice_array_to_slice_shared_6e(randomness),
-          Eurydice_array_to_slice_shared_6e(&public_key->public_key_hash));
+  Eurydice_arr_06 hashed = libcrux_ml_kem_ind_cca_unpacked_encaps_prepare_9c(
+      Eurydice_array_to_slice_shared_6e(randomness),
+      Eurydice_array_to_slice_shared_6e(&public_key->public_key_hash));
   Eurydice_dst_ref_shared_uint8_t_size_t_x2 uu____0 = Eurydice_slice_split_at(
       Eurydice_array_to_slice_shared_d8(&hashed),
       LIBCRUX_ML_KEM_CONSTANTS_SHARED_SECRET_SIZE, uint8_t,
@@ -5421,7 +5411,7 @@ libcrux_ml_kem_variant_MlKem with const generics
 - ETA1_RANDOMNESS_SIZE= 128
 */
 static KRML_MUSTINLINE void libcrux_ml_kem_ind_cca_unpacked_generate_keypair_15(
-    libcrux_sha3_Sha3_512Digest randomness,
+    Eurydice_arr_06 randomness,
     libcrux_ml_kem_mlkem768_portable_unpacked_MlKem768KeyPairUnpacked *out) {
   Eurydice_borrow_slice_u8 ind_cpa_keypair_randomness =
       Eurydice_array_to_subslice_shared_364(
@@ -5470,7 +5460,7 @@ const generics
 */
 static KRML_MUSTINLINE void
 libcrux_ml_kem_ind_cca_instantiations_portable_unpacked_generate_keypair_ce(
-    libcrux_sha3_Sha3_512Digest randomness,
+    Eurydice_arr_06 randomness,
     libcrux_ml_kem_mlkem768_portable_unpacked_MlKem768KeyPairUnpacked *out) {
   libcrux_ml_kem_ind_cca_unpacked_generate_keypair_15(randomness, out);
 }
@@ -5480,7 +5470,7 @@ libcrux_ml_kem_ind_cca_instantiations_portable_unpacked_generate_keypair_ce(
 */
 static inline void
 libcrux_ml_kem_mlkem768_portable_unpacked_generate_key_pair_mut(
-    libcrux_sha3_Sha3_512Digest randomness,
+    Eurydice_arr_06 randomness,
     libcrux_ml_kem_mlkem768_portable_unpacked_MlKem768KeyPairUnpacked
         *key_pair) {
   libcrux_ml_kem_ind_cca_instantiations_portable_unpacked_generate_keypair_ce(
@@ -5529,7 +5519,7 @@ static KRML_MUSTINLINE
 */
 static inline libcrux_ml_kem_mlkem768_portable_unpacked_MlKem768KeyPairUnpacked
 libcrux_ml_kem_mlkem768_portable_unpacked_generate_key_pair(
-    libcrux_sha3_Sha3_512Digest randomness) {
+    Eurydice_arr_06 randomness) {
   libcrux_ml_kem_mlkem768_portable_unpacked_MlKem768KeyPairUnpacked key_pair =
       libcrux_ml_kem_ind_cca_unpacked_default_7b_1b();
   libcrux_ml_kem_mlkem768_portable_unpacked_generate_key_pair_mut(randomness,

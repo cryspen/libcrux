@@ -8,7 +8,7 @@
  * Eurydice: cdf02f9d8ed0d73f88c0a495c5b79359a51398fc
  * Karamel: 8e7262955105599e91f3a99c9ab3d3387f7046f2
  * F*: unset
- * Libcrux: 84259ec7a97f8d04df8746aa3cd9f55ad82052a4
+ * Libcrux: aef4b0d98bf3abe09b6ac696f60342e2979bb35e
  */
 
 #ifndef libcrux_mlkem_portable_H
@@ -23,7 +23,7 @@ extern "C" {
 #include "libcrux_core.h"
 #include "libcrux_sha3_internal.h"
 
-libcrux_sha3_Sha3_512Digest libcrux_ml_kem_hash_functions_portable_G(
+Eurydice_arr_06 libcrux_ml_kem_hash_functions_portable_G(
     Eurydice_borrow_slice_u8 input);
 
 Eurydice_arr_60 libcrux_ml_kem_hash_functions_portable_H(

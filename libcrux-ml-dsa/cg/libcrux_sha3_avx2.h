@@ -8,7 +8,7 @@
  * Eurydice: cdf02f9d8ed0d73f88c0a495c5b79359a51398fc
  * Karamel: 8e7262955105599e91f3a99c9ab3d3387f7046f2
  * F*: unset
- * Libcrux: 39852f741862c54a2162a198a0b27bae5fa3acf5
+ * Libcrux: aef4b0d98bf3abe09b6ac696f60342e2979bb35e
  */
 
 #ifndef libcrux_sha3_avx2_H
@@ -257,7 +257,7 @@ static KRML_MUSTINLINE void libcrux_sha3_simd_avx2_load_block_3a(
   }
   size_t rem = (size_t)168U % (size_t)32U;
   size_t start = offset + (size_t)32U * ((size_t)168U / (size_t)32U);
-  libcrux_sha3_Sha3_256Digest u8s = {{0U}};
+  Eurydice_arr_60 u8s = {{0U}};
   Eurydice_slice_copy(
       Eurydice_array_to_subslice_mut_364(
           &u8s, (core_ops_range_Range_08{(size_t)0U, (size_t)8U})),
@@ -296,7 +296,7 @@ static KRML_MUSTINLINE void libcrux_sha3_simd_avx2_load_block_3a(
       libcrux_intrinsics_avx2_mm256_xor_si256(
           libcrux_sha3_traits_get_ij_a6(state, i0, j0)[0U], u));
   if (rem == (size_t)16U) {
-    libcrux_sha3_Sha3_256Digest u8s0 = {{0U}};
+    Eurydice_arr_60 u8s0 = {{0U}};
     Eurydice_slice_copy(
         Eurydice_array_to_subslice_mut_364(
             &u8s0, (core_ops_range_Range_08{(size_t)0U, (size_t)8U})),
@@ -1986,7 +1986,7 @@ static KRML_MUSTINLINE void libcrux_sha3_simd_avx2_load_block_5b(
   }
   size_t rem = (size_t)136U % (size_t)32U;
   size_t start = offset + (size_t)32U * ((size_t)136U / (size_t)32U);
-  libcrux_sha3_Sha3_256Digest u8s = {{0U}};
+  Eurydice_arr_60 u8s = {{0U}};
   Eurydice_slice_copy(
       Eurydice_array_to_subslice_mut_364(
           &u8s, (core_ops_range_Range_08{(size_t)0U, (size_t)8U})),
@@ -2025,7 +2025,7 @@ static KRML_MUSTINLINE void libcrux_sha3_simd_avx2_load_block_5b(
       libcrux_intrinsics_avx2_mm256_xor_si256(
           libcrux_sha3_traits_get_ij_a6(state, i0, j0)[0U], u));
   if (rem == (size_t)16U) {
-    libcrux_sha3_Sha3_256Digest u8s0 = {{0U}};
+    Eurydice_arr_60 u8s0 = {{0U}};
     Eurydice_slice_copy(
         Eurydice_array_to_subslice_mut_364(
             &u8s0, (core_ops_range_Range_08{(size_t)0U, (size_t)8U})),
@@ -2260,7 +2260,7 @@ static KRML_MUSTINLINE void libcrux_sha3_simd_avx2_store_block_5b(
   size_t rem = len % (size_t)32U;
   if (rem > (size_t)0U) {
     size_t start0 = start + (size_t)32U * chunks;
-    libcrux_sha3_Sha3_256Digest u8s = {{0U}};
+    Eurydice_arr_60 u8s = {{0U}};
     size_t chunks8 = rem / (size_t)8U;
     for (size_t i0 = (size_t)0U; i0 < chunks8; i0++) {
       size_t k = i0;
@@ -2523,7 +2523,7 @@ static KRML_MUSTINLINE void libcrux_sha3_simd_avx2_store_block_3a(
   size_t rem = len % (size_t)32U;
   if (rem > (size_t)0U) {
     size_t start0 = start + (size_t)32U * chunks;
-    libcrux_sha3_Sha3_256Digest u8s = {{0U}};
+    Eurydice_arr_60 u8s = {{0U}};
     size_t chunks8 = rem / (size_t)8U;
     for (size_t i0 = (size_t)0U; i0 < chunks8; i0++) {
       size_t k = i0;

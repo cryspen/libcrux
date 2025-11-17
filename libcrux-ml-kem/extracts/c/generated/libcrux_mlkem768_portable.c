@@ -8,7 +8,7 @@
  * Eurydice: cdf02f9d8ed0d73f88c0a495c5b79359a51398fc
  * Karamel: 8e7262955105599e91f3a99c9ab3d3387f7046f2
  * F*: unset
- * Libcrux: 84259ec7a97f8d04df8746aa3cd9f55ad82052a4
+ * Libcrux: aef4b0d98bf3abe09b6ac696f60342e2979bb35e
  */
 
 #include "internal/libcrux_mlkem768_portable.h"
@@ -106,7 +106,7 @@ generics
 - ETA1_RANDOMNESS_SIZE= 128
 */
 static libcrux_ml_kem_mlkem768_MlKem768KeyPair generate_keypair_ce(
-    const libcrux_sha3_Sha3_512Digest *randomness) {
+    const Eurydice_arr_06 *randomness) {
   return libcrux_ml_kem_ind_cca_generate_keypair_15(randomness);
 }
 
@@ -114,8 +114,7 @@ static libcrux_ml_kem_mlkem768_MlKem768KeyPair generate_keypair_ce(
  Generate ML-KEM 768 Key Pair
 */
 libcrux_ml_kem_mlkem768_MlKem768KeyPair
-libcrux_ml_kem_mlkem768_portable_generate_key_pair(
-    libcrux_sha3_Sha3_512Digest randomness) {
+libcrux_ml_kem_mlkem768_portable_generate_key_pair(Eurydice_arr_06 randomness) {
   return generate_keypair_ce(&randomness);
 }
 
@@ -297,7 +296,7 @@ const generics
 - ETA1_RANDOMNESS_SIZE= 128
 */
 static KRML_MUSTINLINE void generate_keypair_ce0(
-    libcrux_sha3_Sha3_512Digest randomness,
+    Eurydice_arr_06 randomness,
     libcrux_ml_kem_mlkem768_portable_unpacked_MlKem768KeyPairUnpacked *out) {
   libcrux_ml_kem_ind_cca_unpacked_generate_keypair_15(randomness, out);
 }
@@ -306,7 +305,7 @@ static KRML_MUSTINLINE void generate_keypair_ce0(
  Generate ML-KEM 768 Key Pair in "unpacked" form.
 */
 void libcrux_ml_kem_mlkem768_portable_unpacked_generate_key_pair_mut(
-    libcrux_sha3_Sha3_512Digest randomness,
+    Eurydice_arr_06 randomness,
     libcrux_ml_kem_mlkem768_portable_unpacked_MlKem768KeyPairUnpacked
         *key_pair) {
   generate_keypair_ce0(randomness, key_pair);
@@ -317,7 +316,7 @@ void libcrux_ml_kem_mlkem768_portable_unpacked_generate_key_pair_mut(
 */
 libcrux_ml_kem_mlkem768_portable_unpacked_MlKem768KeyPairUnpacked
 libcrux_ml_kem_mlkem768_portable_unpacked_generate_key_pair(
-    libcrux_sha3_Sha3_512Digest randomness) {
+    Eurydice_arr_06 randomness) {
   libcrux_ml_kem_mlkem768_portable_unpacked_MlKem768KeyPairUnpacked key_pair =
       libcrux_ml_kem_ind_cca_unpacked_default_7b_1b();
   libcrux_ml_kem_mlkem768_portable_unpacked_generate_key_pair_mut(randomness,

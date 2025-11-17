@@ -8,7 +8,7 @@
  * Eurydice: cdf02f9d8ed0d73f88c0a495c5b79359a51398fc
  * Karamel: 8e7262955105599e91f3a99c9ab3d3387f7046f2
  * F*: unset
- * Libcrux: 84259ec7a97f8d04df8746aa3cd9f55ad82052a4
+ * Libcrux: aef4b0d98bf3abe09b6ac696f60342e2979bb35e
  */
 
 #ifndef libcrux_sha3_internal_H
@@ -20,6 +20,13 @@
 extern "C" {
 #endif
 
+#define libcrux_sha3_Algorithm_Sha224 1
+#define libcrux_sha3_Algorithm_Sha256 2
+#define libcrux_sha3_Algorithm_Sha384 3
+#define libcrux_sha3_Algorithm_Sha512 4
+
+typedef uint8_t libcrux_sha3_Algorithm;
+
 /**
 A monomorphic instance of Eurydice.arr
 with types uint8_t
@@ -29,13 +36,6 @@ with const generics
 typedef struct Eurydice_arr_60_s {
   uint8_t data[32U];
 } Eurydice_arr_60;
-
-#define libcrux_sha3_Algorithm_Sha224 1
-#define libcrux_sha3_Algorithm_Sha256 2
-#define libcrux_sha3_Algorithm_Sha384 3
-#define libcrux_sha3_Algorithm_Sha512 4
-
-typedef uint8_t libcrux_sha3_Algorithm;
 
 #if defined(__cplusplus)
 }

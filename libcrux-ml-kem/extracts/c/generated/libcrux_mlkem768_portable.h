@@ -8,7 +8,7 @@
  * Eurydice: cdf02f9d8ed0d73f88c0a495c5b79359a51398fc
  * Karamel: 8e7262955105599e91f3a99c9ab3d3387f7046f2
  * F*: unset
- * Libcrux: 84259ec7a97f8d04df8746aa3cd9f55ad82052a4
+ * Libcrux: aef4b0d98bf3abe09b6ac696f60342e2979bb35e
  */
 
 #ifndef libcrux_mlkem768_portable_H
@@ -47,8 +47,7 @@ tuple_56 libcrux_ml_kem_mlkem768_portable_encapsulate(
  Generate ML-KEM 768 Key Pair
 */
 libcrux_ml_kem_mlkem768_MlKem768KeyPair
-libcrux_ml_kem_mlkem768_portable_generate_key_pair(
-    libcrux_sha3_Sha3_512Digest randomness);
+libcrux_ml_kem_mlkem768_portable_generate_key_pair(Eurydice_arr_06 randomness);
 
 /**
  Validate a private key.

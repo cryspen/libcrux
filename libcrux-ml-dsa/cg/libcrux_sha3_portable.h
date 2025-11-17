@@ -8,7 +8,7 @@
  * Eurydice: cdf02f9d8ed0d73f88c0a495c5b79359a51398fc
  * Karamel: 8e7262955105599e91f3a99c9ab3d3387f7046f2
  * F*: unset
- * Libcrux: 39852f741862c54a2162a198a0b27bae5fa3acf5
+ * Libcrux: aef4b0d98bf3abe09b6ac696f60342e2979bb35e
  */
 
 #ifndef libcrux_sha3_portable_H
@@ -2474,6 +2474,14 @@ static inline void libcrux_sha3_portable_incremental_squeeze_42(
 
 typedef uint8_t libcrux_sha3_Algorithm;
 
+#define LIBCRUX_SHA3_SHA3_224_DIGEST_SIZE ((size_t)28U)
+
+#define LIBCRUX_SHA3_SHA3_256_DIGEST_SIZE ((size_t)32U)
+
+#define LIBCRUX_SHA3_SHA3_384_DIGEST_SIZE ((size_t)48U)
+
+#define LIBCRUX_SHA3_SHA3_512_DIGEST_SIZE ((size_t)64U)
+
 /**
  Returns the output size of a digest.
 */
@@ -2483,13 +2491,13 @@ static inline size_t libcrux_sha3_digest_size(libcrux_sha3_Algorithm mode) {
       break;
     }
     case libcrux_sha3_Algorithm_Sha256: {
-      return (size_t)32U;
+      return LIBCRUX_SHA3_SHA3_256_DIGEST_SIZE;
     }
     case libcrux_sha3_Algorithm_Sha384: {
-      return (size_t)48U;
+      return LIBCRUX_SHA3_SHA3_384_DIGEST_SIZE;
     }
     case libcrux_sha3_Algorithm_Sha512: {
-      return (size_t)64U;
+      return LIBCRUX_SHA3_SHA3_512_DIGEST_SIZE;
     }
     default: {
       KRML_HOST_EPRINTF("KaRaMeL incomplete match at %s:%d\n", __FILE__,
@@ -2497,7 +2505,7 @@ static inline size_t libcrux_sha3_digest_size(libcrux_sha3_Algorithm mode) {
       KRML_HOST_EXIT(253U);
     }
   }
-  return (size_t)28U;
+  return LIBCRUX_SHA3_SHA3_224_DIGEST_SIZE;
 }
 
 /**
@@ -3316,9 +3324,9 @@ static inline void libcrux_sha3_sha224_ema(Eurydice_mut_borrow_slice_u8 digest,
 /**
  SHA3 224
 */
-static inline libcrux_sha3_Sha3_224Digest libcrux_sha3_sha224(
+static inline Eurydice_arr_f1 libcrux_sha3_sha224(
     Eurydice_borrow_slice_u8 data) {
-  libcrux_sha3_Sha3_224Digest out = {{0U}};
+  Eurydice_arr_f1 out = {{0U}};
   libcrux_sha3_sha224_ema(Eurydice_array_to_slice_mut_c0(&out), data);
   return out;
 }
@@ -3341,9 +3349,9 @@ static inline void libcrux_sha3_sha256_ema(Eurydice_mut_borrow_slice_u8 digest,
 /**
  SHA3 256
 */
-static inline libcrux_sha3_Sha3_256Digest libcrux_sha3_sha256(
+static inline Eurydice_arr_60 libcrux_sha3_sha256(
     Eurydice_borrow_slice_u8 data) {
-  libcrux_sha3_Sha3_256Digest out = {{0U}};
+  Eurydice_arr_60 out = {{0U}};
   libcrux_sha3_sha256_ema(Eurydice_array_to_slice_mut_6e(&out), data);
   return out;
 }
@@ -3366,9 +3374,9 @@ static inline void libcrux_sha3_sha384_ema(Eurydice_mut_borrow_slice_u8 digest,
 /**
  SHA3 384
 */
-static inline libcrux_sha3_Sha3_384Digest libcrux_sha3_sha384(
+static inline Eurydice_arr_5f libcrux_sha3_sha384(
     Eurydice_borrow_slice_u8 data) {
-  libcrux_sha3_Sha3_384Digest out = {{0U}};
+  Eurydice_arr_5f out = {{0U}};
   libcrux_sha3_sha384_ema(Eurydice_array_to_slice_mut_95(&out), data);
   return out;
 }
@@ -3391,9 +3399,9 @@ static inline void libcrux_sha3_sha512_ema(Eurydice_mut_borrow_slice_u8 digest,
 /**
  SHA3 512
 */
-static inline libcrux_sha3_Sha3_512Digest libcrux_sha3_sha512(
+static inline Eurydice_arr_06 libcrux_sha3_sha512(
     Eurydice_borrow_slice_u8 data) {
-  libcrux_sha3_Sha3_512Digest out = {{0U}};
+  Eurydice_arr_06 out = {{0U}};
   libcrux_sha3_sha512_ema(Eurydice_array_to_slice_mut_d8(&out), data);
   return out;
 }

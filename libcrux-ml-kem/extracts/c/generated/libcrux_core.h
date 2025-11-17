@@ -8,7 +8,7 @@
  * Eurydice: cdf02f9d8ed0d73f88c0a495c5b79359a51398fc
  * Karamel: 8e7262955105599e91f3a99c9ab3d3387f7046f2
  * F*: unset
- * Libcrux: 84259ec7a97f8d04df8746aa3cd9f55ad82052a4
+ * Libcrux: aef4b0d98bf3abe09b6ac696f60342e2979bb35e
  */
 
 #ifndef libcrux_core_H
@@ -103,9 +103,15 @@ typedef struct Eurydice_arr_6d_s {
   uint8_t data[24U];
 } Eurydice_arr_6d;
 
-typedef struct libcrux_sha3_Sha3_512Digest_s {
+/**
+A monomorphic instance of Eurydice.arr
+with types uint8_t
+with const generics
+- $64size_t
+*/
+typedef struct Eurydice_arr_06_s {
   uint8_t data[64U];
-} libcrux_sha3_Sha3_512Digest;
+} Eurydice_arr_06;
 
 /**
 A monomorphic instance of Eurydice.arr
@@ -198,13 +204,25 @@ typedef struct Eurydice_arr_75_s {
   Eurydice_arr_27 data[1U];
 } Eurydice_arr_75;
 
-typedef struct libcrux_sha3_Sha3_384Digest_s {
+/**
+A monomorphic instance of Eurydice.arr
+with types uint8_t
+with const generics
+- $48size_t
+*/
+typedef struct Eurydice_arr_5f_s {
   uint8_t data[48U];
-} libcrux_sha3_Sha3_384Digest;
+} Eurydice_arr_5f;
 
-typedef struct libcrux_sha3_Sha3_224Digest_s {
+/**
+A monomorphic instance of Eurydice.arr
+with types uint8_t
+with const generics
+- $28size_t
+*/
+typedef struct Eurydice_arr_f1_s {
   uint8_t data[28U];
-} libcrux_sha3_Sha3_224Digest;
+} Eurydice_arr_f1;
 
 /**
 A monomorphic instance of Eurydice.arr

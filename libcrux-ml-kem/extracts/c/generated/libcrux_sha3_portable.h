@@ -8,7 +8,7 @@
  * Eurydice: cdf02f9d8ed0d73f88c0a495c5b79359a51398fc
  * Karamel: 8e7262955105599e91f3a99c9ab3d3387f7046f2
  * F*: unset
- * Libcrux: 84259ec7a97f8d04df8746aa3cd9f55ad82052a4
+ * Libcrux: aef4b0d98bf3abe09b6ac696f60342e2979bb35e
  */
 
 #ifndef libcrux_sha3_portable_H
@@ -1332,6 +1332,14 @@ void libcrux_sha3_generic_keccak_portable_squeeze_next_block_b4_3a(
 void libcrux_sha3_portable_incremental_shake128_squeeze_next_block(
     Eurydice_arr_26 *s, Eurydice_mut_borrow_slice_u8 out0);
 
+#define LIBCRUX_SHA3_SHA3_224_DIGEST_SIZE ((size_t)28U)
+
+#define LIBCRUX_SHA3_SHA3_256_DIGEST_SIZE ((size_t)32U)
+
+#define LIBCRUX_SHA3_SHA3_384_DIGEST_SIZE ((size_t)48U)
+
+#define LIBCRUX_SHA3_SHA3_512_DIGEST_SIZE ((size_t)64U)
+
 /**
  Returns the output size of a digest.
 */
@@ -1587,7 +1595,7 @@ void libcrux_sha3_sha224_ema(Eurydice_mut_borrow_slice_u8 digest,
 /**
  SHA3 224
 */
-libcrux_sha3_Sha3_224Digest libcrux_sha3_sha224(Eurydice_borrow_slice_u8 data);
+Eurydice_arr_f1 libcrux_sha3_sha224(Eurydice_borrow_slice_u8 data);
 
 /**
  SHA3 256
@@ -1609,7 +1617,7 @@ void libcrux_sha3_sha384_ema(Eurydice_mut_borrow_slice_u8 digest,
 /**
  SHA3 384
 */
-libcrux_sha3_Sha3_384Digest libcrux_sha3_sha384(Eurydice_borrow_slice_u8 data);
+Eurydice_arr_5f libcrux_sha3_sha384(Eurydice_borrow_slice_u8 data);
 
 /**
  SHA3 512
@@ -1620,7 +1628,7 @@ void libcrux_sha3_sha512_ema(Eurydice_mut_borrow_slice_u8 digest,
 /**
  SHA3 512
 */
-libcrux_sha3_Sha3_512Digest libcrux_sha3_sha512(Eurydice_borrow_slice_u8 data);
+Eurydice_arr_06 libcrux_sha3_sha512(Eurydice_borrow_slice_u8 data);
 
 /**
 This function found in impl {libcrux_sha3::traits::Absorb<1usize> for
