@@ -185,31 +185,21 @@ fn encap_decap() {
                 for test in tests {
                     // check key
                     let succeeded = match parameter_set.as_str() {
-                        "ML-KEM-512" => {
-                            #[cfg(feature = "mlkem512")]
-                            {
-                                mlkem512::MlKem512PublicKey::try_from(test.ek.as_slice())
-                                    .map(|ek| mlkem512::validate_public_key(&ek))
-                                    .unwrap_or(false)
-                            }
-                        }
-                        "ML-KEM-768" => {
-                            #[cfg(feature = "mlkem768")]
-                            {
-                                mlkem768::MlKem768PublicKey::try_from(test.ek.as_slice())
-                                    .map(|ek| mlkem768::validate_public_key(&ek))
-                                    .unwrap_or(false)
-                            }
-                        }
+                        #[cfg(feature = "mlkem512")]
+                        "ML-KEM-512" => mlkem512::MlKem512PublicKey::try_from(test.ek.as_slice())
+                            .map(|ek| mlkem512::validate_public_key(&ek))
+                            .unwrap_or(false),
+                        #[cfg(feature = "mlkem768")]
+                        "ML-KEM-768" => mlkem768::MlKem768PublicKey::try_from(test.ek.as_slice())
+                            .map(|ek| mlkem768::validate_public_key(&ek))
+                            .unwrap_or(false),
+                        #[cfg(feature = "mlkem1024")]
                         "ML-KEM-1024" => {
-                            #[cfg(feature = "mlkem1024")]
-                            {
-                                mlkem1024::MlKem1024PublicKey::try_from(test.ek.as_slice())
-                                    .map(|ek| mlkem1024::validate_public_key(&ek))
-                                    .unwrap_or(false)
-                            }
+                            mlkem1024::MlKem1024PublicKey::try_from(test.ek.as_slice())
+                                .map(|ek| mlkem1024::validate_public_key(&ek))
+                                .unwrap_or(false)
                         }
-                        _ => unimplemented!(),
+                        _ => continue,
                     };
 
                     // get result
@@ -230,31 +220,21 @@ fn encap_decap() {
                 for test in tests {
                     // check key
                     let succeeded = match parameter_set.as_str() {
-                        "ML-KEM-512" => {
-                            #[cfg(feature = "mlkem512")]
-                            {
-                                mlkem512::MlKem512PrivateKey::try_from(test.dk.as_slice())
-                                    .map(|dk| mlkem512::portable::validate_private_key_only(&dk))
-                                    .unwrap_or(false)
-                            }
-                        }
-                        "ML-KEM-768" => {
-                            #[cfg(feature = "mlkem768")]
-                            {
-                                mlkem768::MlKem768PrivateKey::try_from(test.dk.as_slice())
-                                    .map(|dk| mlkem768::portable::validate_private_key_only(&dk))
-                                    .unwrap_or(false)
-                            }
-                        }
+                        #[cfg(feature = "mlkem512")]
+                        "ML-KEM-512" => mlkem512::MlKem512PrivateKey::try_from(test.dk.as_slice())
+                            .map(|dk| mlkem512::portable::validate_private_key_only(&dk))
+                            .unwrap_or(false),
+                        #[cfg(feature = "mlkem768")]
+                        "ML-KEM-768" => mlkem768::MlKem768PrivateKey::try_from(test.dk.as_slice())
+                            .map(|dk| mlkem768::portable::validate_private_key_only(&dk))
+                            .unwrap_or(false),
+                        #[cfg(feature = "mlkem1024")]
                         "ML-KEM-1024" => {
-                            #[cfg(feature = "mlkem1024")]
-                            {
-                                mlkem1024::MlKem1024PrivateKey::try_from(test.dk.as_slice())
-                                    .map(|dk| mlkem1024::portable::validate_private_key_only(&dk))
-                                    .unwrap_or(false)
-                            }
+                            mlkem1024::MlKem1024PrivateKey::try_from(test.dk.as_slice())
+                                .map(|dk| mlkem1024::portable::validate_private_key_only(&dk))
+                                .unwrap_or(false)
                         }
-                        _ => unimplemented!(),
+                        _ => continue,
                     };
 
                     // get result
