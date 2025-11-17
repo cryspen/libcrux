@@ -11,10 +11,10 @@ edition.workspace = true
 repository.workspace = true
 
 [dependencies]
-libcrux-hacl-rs = { version = "=0.0.4", path = "../hacl-rs/" }
-libcrux-macros = { version = "=0.0.3", path = "../macros" }
-libcrux-traits = { version = "=0.0.4", path = "../traits" }
-libcrux-secrets = { version = "=0.0.4", path = "../secrets" }
+libcrux-hacl-rs = { version = "=0.0.4", path = "../../utils/hacl-rs/" }
+libcrux-macros = { version = "=0.0.3", path = "../../utils/macros" }
+libcrux-traits = { version = "=0.0.4", path = "../../../traits" }
+libcrux-secrets = { version = "=0.0.4", path = "../../../secrets" }
 
 [features]
 # Checking secret independence
@@ -24,6 +24,6 @@ check-secret-independence = [
 ]
 
 [dev-dependencies]
-libcrux-traits = { version = "0.0.4", path = "../traits", features = [
+libcrux-traits = { version = "0.0.4", path = "../../../traits", features = [
     "generic-tests",
 ] }

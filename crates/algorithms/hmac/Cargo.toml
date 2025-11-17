@@ -17,8 +17,8 @@ path = "src/hmac.rs"
 expose-hacl = []
 
 [dependencies]
-libcrux-hacl-rs = { version = "=0.0.4", path = "../hacl-rs/" }
+libcrux-hacl-rs = { version = "=0.0.4", path = "../../utils/hacl-rs/" }
 libcrux-sha2 = { version = "=0.0.4", path = "../sha2", features = [
     "expose-hacl",
 ] }
-libcrux-macros = { version = "=0.0.3", path = "../macros" }
+libcrux-macros = { version = "=0.0.3", path = "../../utils/macros" }

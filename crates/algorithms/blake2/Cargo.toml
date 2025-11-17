@@ -15,14 +15,14 @@ std = []
 default = ["std"]
 
 [dependencies]
-libcrux-hacl-rs = { version = "=0.0.4", path = "../hacl-rs/" }
-libcrux-macros = { version = "=0.0.3", path = "../macros" }
-libcrux-traits = { version = "=0.0.4", path = "../traits/" }
+libcrux-hacl-rs = { version = "=0.0.4", path = "../../utils/hacl-rs/" }
+libcrux-macros = { version = "=0.0.3", path = "../../utils/macros" }
+libcrux-traits = { version = "=0.0.4", path = "../../../traits/" }
 
 [dev-dependencies]
 criterion = "0.7"
 rand = "0.9"
-libcrux-traits = { version = "=0.0.4", path = "../traits/", features = ["generic-tests"] }
+libcrux-traits = { version = "=0.0.4", path = "../../../traits/", features = ["generic-tests"] }
 
 [[bench]]
 name = "blake2"

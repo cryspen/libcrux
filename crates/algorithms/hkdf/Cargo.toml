@@ -17,8 +17,8 @@ path = "src/hkdf.rs"
 check-secret-independence = ["libcrux-secrets/check-secret-independence"]
 
 [dependencies]
-libcrux-hmac = { version = "=0.0.4", path = "../../../libcrux-hmac", features = [
+libcrux-hmac = { version = "=0.0.4", path = "../hmac", features = [
     "expose-hacl",
 ] }
-libcrux-hacl-rs = { version = "=0.0.4", path = "../../../hacl-rs/" }
+libcrux-hacl-rs = { version = "=0.0.4", path = "../../utils/hacl-rs/" }
 libcrux-secrets = { version = "0.0.4", path = "../../../secrets" }
