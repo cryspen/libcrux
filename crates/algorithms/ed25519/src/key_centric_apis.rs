@@ -307,7 +307,7 @@ fn key_centric_owned() {
     let KeyPair {
         signing_key,
         verification_key,
-    } = slice::Ed25519::generate_key_pair(&mut rng);
+    } = KeyPair::generate(&mut rng);
 
     let signature = signing_key.sign(b"payload").unwrap();
     verification_key.verify(b"payload", &signature).unwrap();
