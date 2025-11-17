@@ -118,7 +118,11 @@ macro_rules! impl_mod {
                 rng.fill_bytes(&mut bytes);
                 let mut signing_key = [0u8; Self::SIGNING_KEY_LEN].classify();
                 let mut verification_key = [0u8; Self::VERIFICATION_KEY_LEN];
-                arrayref::$ty::keygen_derand(&mut signing_key, &mut verification_key, bytes.classify());
+                arrayref::$ty::keygen_derand(
+                    &mut signing_key,
+                    &mut verification_key,
+                    bytes.classify(),
+                );
 
                 KeyPair {
                     signing_key: SigningKey::from(signing_key),
@@ -127,6 +131,11 @@ macro_rules! impl_mod {
             }
         }
         impl arrayref::$ty {
+            /// Generate an ML-DSA signature
+            ///
+            /// The parameter `context` is used for domain separation
+            /// and is a byte string of length at most 255 bytes. It
+            /// may also be empty.
             pub fn sign(
                 key: &[U8; Self::SIGNING_KEY_LEN],
                 payload: &[u8],
@@ -143,6 +152,11 @@ macro_rules! impl_mod {
                     signature,
                 )
             }
+            /// Generate a HashML-DSA Signature, with a SHAKE128 pre-hashing
+            ///
+            /// The parameter `context` is used for domain separation
+            /// and is a byte string of length at most 255 bytes. It
+            /// may also be empty.
             pub fn sign_pre_hashed_shake128(
                 key: &[U8; Self::SIGNING_KEY_LEN],
                 payload: &[u8],
@@ -166,6 +180,11 @@ macro_rules! impl_mod {
                 Ok(())
             }
 
+            /// Verify an ML-DSA Signature
+            ///
+            /// The parameter `context` is used for domain separation
+            /// and is a byte string of length at most 255 bytes. It
+            /// may also be empty.
             pub fn verify(
                 key: &[u8; Self::VERIFICATION_KEY_LEN],
                 payload: &[u8],
@@ -176,6 +195,12 @@ macro_rules! impl_mod {
                     key, payload, context, signature,
                 )
             }
+
+            /// Verify an ML-DSA Signature, with a SHAKE128 pre-hashing
+            ///
+            /// The parameter `context` is used for domain separation
+            /// and is a byte string of length at most 255 bytes. It
+            /// may also be empty.
             pub fn verify_pre_hashed_shake128(
                 key: &[u8; Self::VERIFICATION_KEY_LEN],
                 payload: &[u8],
@@ -204,6 +229,11 @@ macro_rules! impl_mod {
             }
         }
         impl slice::$ty {
+            /// Generate an ML-DSA signature
+            ///
+            /// The parameter `context` is used for domain separation
+            /// and is a byte string of length at most 255 bytes. It
+            /// may also be empty.
             pub fn sign(
                 key: &[U8],
                 payload: &[u8],
@@ -221,6 +251,12 @@ macro_rules! impl_mod {
                 arrayref::$ty::sign(&key, payload, signature, context, randomness)
                     .map_err(slice::SigningError::from)
             }
+
+            /// Generate a HashML-DSA Signature, with a SHAKE128 pre-hashing
+            ///
+            /// The parameter `context` is used for domain separation
+            /// and is a byte string of length at most 255 bytes. It
+            /// may also be empty.
             pub fn sign_pre_hashed_shake128(
                 key: &[U8],
                 payload: &[u8],
@@ -240,6 +276,12 @@ macro_rules! impl_mod {
                 )
                 .map_err(slice::SigningError::from)
             }
+
+            /// Verify an ML-DSA Signature
+            ///
+            /// The parameter `context` is used for domain separation
+            /// and is a byte string of length at most 255 bytes. It
+            /// may also be empty.
             pub fn verify(
                 key: &[u8],
                 payload: &[u8],
@@ -256,6 +298,12 @@ macro_rules! impl_mod {
                 arrayref::$ty::verify(key, payload, signature, context)
                     .map_err(slice::VerificationError::from)
             }
+
+            /// Verify an ML-DSA Signature, with a SHAKE128 pre-hashing
+            ///
+            /// The parameter `context` is used for domain separation
+            /// and is a byte string of length at most 255 bytes. It
+            /// may also be empty.
             pub fn verify_pre_hashed_shake128(
                 key: &[u8],
                 payload: &[u8],
@@ -272,6 +320,9 @@ macro_rules! impl_mod {
                 arrayref::$ty::verify_pre_hashed_shake128(key, payload, signature, context)
                     .map_err(slice::VerificationError::from)
             }
+
+            /// Generate an ML-DSA Key Pair
+            #[cfg(not(eurydice))]
             pub fn keygen_derand(
                 signing_key: &mut [U8],
                 verification_key: &mut [u8],
@@ -290,6 +341,11 @@ macro_rules! impl_mod {
             }
         }
         impl<'a> SigningKeyRef<'a> {
+            /// Generate an ML-DSA signature
+            ///
+            /// The parameter `context` is used for domain separation
+            /// and is a byte string of length at most 255 bytes. It
+            /// may also be empty.
             pub fn sign(
                 &self,
                 payload: &[u8],
@@ -299,6 +355,12 @@ macro_rules! impl_mod {
             ) -> Result<(), slice::SigningError> {
                 slice::$ty::sign(self.as_ref(), payload, signature, context, randomness)
             }
+
+            /// Generate a HashML-DSA Signature, with a SHAKE128 pre-hashing
+            ///
+            /// The parameter `context` is used for domain separation
+            /// and is a byte string of length at most 255 bytes. It
+            /// may also be empty.
             pub fn sign_pre_hashed_shake128(
                 &self,
                 payload: &[u8],
@@ -316,6 +378,11 @@ macro_rules! impl_mod {
             }
         }
         impl<'a> VerificationKeyRef<'a> {
+            /// Verify an ML-DSA Signature
+            ///
+            /// The parameter `context` is used for domain separation
+            /// and is a byte string of length at most 255 bytes. It
+            /// may also be empty.
             pub fn verify(
                 &self,
                 payload: &[u8],
@@ -324,6 +391,12 @@ macro_rules! impl_mod {
             ) -> Result<(), slice::VerificationError> {
                 slice::$ty::verify(self.as_ref(), payload, signature, context)
             }
+
+            /// Verify an ML-DSA Signature, with a SHAKE128 pre-hashing
+            ///
+            /// The parameter `context` is used for domain separation
+            /// and is a byte string of length at most 255 bytes. It
+            /// may also be empty.
             pub fn verify_pre_hashed_shake128(
                 &self,
                 payload: &[u8],
@@ -336,6 +409,11 @@ macro_rules! impl_mod {
 
         // key-centric API
         impl SigningKey {
+            /// Generate an ML-DSA signature
+            ///
+            /// The parameter `context` is used for domain separation
+            /// and is a byte string of length at most 255 bytes. It
+            /// may also be empty.
             pub fn sign(
                 &self,
                 payload: &[u8],
@@ -346,6 +424,12 @@ macro_rules! impl_mod {
                 arrayref::$ty::sign(self.as_ref(), payload, &mut signature, context, randomness)
                     .map(|_| Signature::from(signature))
             }
+
+            /// Generate a HashML-DSA Signature, with a SHAKE128 pre-hashing
+            ///
+            /// The parameter `context` is used for domain separation
+            /// and is a byte string of length at most 255 bytes. It
+            /// may also be empty.
             pub fn sign_pre_hashed_shake128(
                 &self,
                 payload: &[u8],
@@ -364,6 +448,11 @@ macro_rules! impl_mod {
             }
         }
         impl VerificationKey {
+            /// Verify an ML-DSA Signature
+            ///
+            /// The parameter `context` is used for domain separation
+            /// and is a byte string of length at most 255 bytes. It
+            /// may also be empty.
             pub fn verify(
                 &self,
                 payload: &[u8],
@@ -372,6 +461,12 @@ macro_rules! impl_mod {
             ) -> Result<(), crate::VerificationError> {
                 arrayref::$ty::verify(self.as_ref(), payload, signature.as_ref(), context)
             }
+
+            /// Verify an ML-DSA Signature, with a SHAKE128 pre-hashing
+            ///
+            /// The parameter `context` is used for domain separation
+            /// and is a byte string of length at most 255 bytes. It
+            /// may also be empty.
             pub fn verify_pre_hashed_shake128(
                 &self,
                 payload: &[u8],
