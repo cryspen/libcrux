@@ -20,6 +20,25 @@ pub struct DecapPrompt {
 
     #[serde(with = "hex::serde")]
     pub c: Vec<u8>,
+
+    #[serde(with = "hex::serde")]
+    pub dk: Vec<u8>,
+}
+
+#[allow(non_snake_case, dead_code)]
+#[derive(Deserialize)]
+pub struct EncapKeyCheckPrompt {
+    pub tcId: usize,
+    #[serde(with = "hex::serde")]
+    pub ek: Vec<u8>,
+}
+
+#[allow(non_snake_case, dead_code)]
+#[derive(Deserialize)]
+pub struct DecapKeyCheckPrompt {
+    pub tcId: usize,
+    #[serde(with = "hex::serde")]
+    pub dk: Vec<u8>,
 }
 
 #[derive(Deserialize)]
@@ -39,11 +58,11 @@ pub enum EncapDecapTestPrompts {
     #[serde(rename(deserialize = "encapsulation"))]
     EncapTests { tests: Vec<EncapPrompt> },
     #[serde(rename(deserialize = "decapsulation"))]
-    DecapTests {
-        #[serde(with = "hex::serde")]
-        dk: Vec<u8>,
-        tests: Vec<DecapPrompt>,
-    },
+    DecapTests { tests: Vec<DecapPrompt> },
+    #[serde(rename(deserialize = "encapsulationKeyCheck"))]
+    EncapKeyCheck { tests: Vec<EncapKeyCheckPrompt> },
+    #[serde(rename(deserialize = "decapsulationKeyCheck"))]
+    DecapKeyCheck { tests: Vec<DecapKeyCheckPrompt> },
 }
 
 #[derive(Deserialize)]
@@ -62,6 +81,10 @@ pub enum EncapDecapResult {
         #[serde(with = "hex::serde")]
         k: Vec<u8>,
     },
+    KeyCheckResult {
+        tcId: usize,
+        testPassed: bool,
+    },
 }
 
 impl TestResult for EncapDecapResult {
@@ -69,6 +92,7 @@ impl TestResult for EncapDecapResult {
         match self {
             Self::EncapResult { tcId, .. } => *tcId,
             Self::DecapResult { tcId, .. } => *tcId,
+            Self::KeyCheckResult { tcId, .. } => *tcId,
         }
     }
 }

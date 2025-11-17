@@ -11,5 +11,5 @@ pub struct EncapDecapTests {
     pub results: super::schema_common::Results<encap_decap_schema::ResultEncapDecapTestGroup>,
 }
 
-super::impl_tests!(KeyGenTests, "mlkem-1_1_0_35", "keygen");
-super::impl_tests!(EncapDecapTests, "mlkem-1_1_0_35", "encap-decap");
+super::impl_tests!(KeyGenTests, "mlkem-1_1_0_40", "keygen");
+super::impl_tests!(EncapDecapTests, "mlkem-1_1_0_40", "encap-decap");
