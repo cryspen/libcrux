@@ -4,11 +4,11 @@
  * SPDX-License-Identifier: MIT or Apache-2.0
  *
  * This code was generated with the following revisions:
- * Charon: aa8de1a51675fbf6b65135d38d7e3986cadc626f
- * Eurydice: 5dbfcfb3f8f694a4b23d120d18400692e22050d5
- * Karamel: 46bbe26187c3d295b0d78152b6ea447aaf32dac8
- * F*: unset
- * Libcrux: 55a15c0abfa4a1326744575999e590ebcd72ec30
+ * Charon: c4a8ab70cf49766f5fdb4950d54e7843dc94d03e
+ * Eurydice: 6e6c26cbf2b5808c5c90903a764f75112b84ec7d
+ * Karamel: 3bad1c74e949c936666d0dd0bcf2b6504e2271c9
+ * F*: 71d8221589d4d438af3706d89cb653cf53e18aab
+ * Libcrux: 701d5efeb75491a48b041375a40e74e74d2cb9a7
  */
 
 #ifndef libcrux_mlkem1024_portable_H
@@ -31,7 +31,7 @@ extern "C" {
  [`MlKem1024Ciphertext`].
 */
 Eurydice_arr_60 libcrux_ml_kem_mlkem1024_portable_decapsulate(
-    Eurydice_arr_17 *private_key, Eurydice_arr_00 *ciphertext);
+    const Eurydice_arr_17 *private_key, const Eurydice_arr_00 *ciphertext);
 
 /**
  Encapsulate ML-KEM 1024
@@ -41,7 +41,7 @@ Eurydice_arr_60 libcrux_ml_kem_mlkem1024_portable_decapsulate(
  [`SHARED_SECRET_SIZE`] bytes of `randomness`.
 */
 tuple_2b libcrux_ml_kem_mlkem1024_portable_encapsulate(
-    Eurydice_arr_00 *public_key, Eurydice_arr_60 randomness);
+    const Eurydice_arr_00 *public_key, Eurydice_arr_60 randomness);
 
 /**
  Generate ML-KEM 1024 Key Pair
@@ -56,7 +56,7 @@ libcrux_ml_kem_mlkem1024_portable_generate_key_pair(
  Returns `true` if valid, and `false` otherwise.
 */
 bool libcrux_ml_kem_mlkem1024_portable_validate_private_key(
-    Eurydice_arr_17 *private_key, Eurydice_arr_00 *ciphertext);
+    const Eurydice_arr_17 *private_key, const Eurydice_arr_00 *ciphertext);
 
 /**
  Validate the private key only.
@@ -64,7 +64,7 @@ bool libcrux_ml_kem_mlkem1024_portable_validate_private_key(
  Returns `true` if valid, and `false` otherwise.
 */
 bool libcrux_ml_kem_mlkem1024_portable_validate_private_key_only(
-    Eurydice_arr_17 *private_key);
+    const Eurydice_arr_17 *private_key);
 
 /**
  Validate a public key.
@@ -72,7 +72,7 @@ bool libcrux_ml_kem_mlkem1024_portable_validate_private_key_only(
  Returns `true` if valid, and `false` otherwise.
 */
 bool libcrux_ml_kem_mlkem1024_portable_validate_public_key(
-    Eurydice_arr_00 *public_key);
+    const Eurydice_arr_00 *public_key);
 
 #if defined(__cplusplus)
 }

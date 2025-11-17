@@ -80,6 +80,15 @@ files:
         - [libcrux_ml_dsa, types ]
         - [libcrux_ml_dsa, constants ]
         - [libcrux_ml_dsa, utils, "*" ]
+      monomorphizations_exact:
+        - [libcrux_sha3, Sha3_512Digest]
+        - [ Eurydice_dst_ref_shared uint8_t size_t_x4]
+        - [ Eurydice_dst_ref_shared uint8_t size_t_x2]
+        - [ Eurydice_dst_ref uint8_t size_t_x4]
+        - [ Eurydice_dst_ref uint8_t size_t_x2]
+        - [ "Eurydice_slice uint8_t_x4" ]
+        - [ "Eurydice_slice uint8_t_x2" ]
+
     api:
       - [Eurydice, "*"]
 

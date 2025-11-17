@@ -4,11 +4,11 @@
  * SPDX-License-Identifier: MIT or Apache-2.0
  *
  * This code was generated with the following revisions:
- * Charon: aa8de1a51675fbf6b65135d38d7e3986cadc626f
- * Eurydice: 5dbfcfb3f8f694a4b23d120d18400692e22050d5
- * Karamel: 46bbe26187c3d295b0d78152b6ea447aaf32dac8
- * F*: unset
- * Libcrux: 55a15c0abfa4a1326744575999e590ebcd72ec30
+ * Charon: c4a8ab70cf49766f5fdb4950d54e7843dc94d03e
+ * Eurydice: 6e6c26cbf2b5808c5c90903a764f75112b84ec7d
+ * Karamel: 3bad1c74e949c936666d0dd0bcf2b6504e2271c9
+ * F*: 71d8221589d4d438af3706d89cb653cf53e18aab
+ * Libcrux: 701d5efeb75491a48b041375a40e74e74d2cb9a7
  */
 
 #ifndef libcrux_core_H
@@ -103,6 +103,10 @@ typedef struct Eurydice_arr_6d_s {
   uint8_t data[24U];
 } Eurydice_arr_6d;
 
+typedef struct libcrux_sha3_Sha3_512Digest_s {
+  uint8_t data[64U];
+} libcrux_sha3_Sha3_512Digest;
+
 /**
 A monomorphic instance of Eurydice.arr
 with types uint8_t
@@ -154,19 +158,15 @@ typedef struct Eurydice_arr_dc_s {
   uint8_t data[20U];
 } Eurydice_arr_dc;
 
-typedef struct libcrux_sha3_Sha3_512Digest_s {
-  uint8_t data[64U];
-} libcrux_sha3_Sha3_512Digest;
-
 /**
 A monomorphic instance of Eurydice.arr
 with types int16_t
 with const generics
 - $16size_t
 */
-typedef struct Eurydice_arr_e20_s {
+typedef struct Eurydice_arr_e2_s {
   int16_t data[16U];
-} Eurydice_arr_e20;
+} Eurydice_arr_e2;
 
 /**
 A monomorphic instance of Eurydice.arr
@@ -184,9 +184,9 @@ with types Eurydice_arr uint8_t[[$136size_t]]
 with const generics
 - $1size_t
 */
-typedef struct Eurydice_arr_c40_s {
+typedef struct Eurydice_arr_c4_s {
   Eurydice_arr_3d data[1U];
-} Eurydice_arr_c40;
+} Eurydice_arr_c4;
 
 /**
 A monomorphic instance of Eurydice.arr
@@ -218,13 +218,13 @@ typedef struct Eurydice_arr_a5_s {
 
 /**
 A monomorphic instance of Eurydice.arr
-with types Eurydice_dst_ref uint8_t size_t
+with types Eurydice_dst_ref_shared uint8_t size_t
 with const generics
 - $1size_t
 */
-typedef struct Eurydice_arr_e2_s {
-  Eurydice_dst_ref_87 data[1U];
-} Eurydice_arr_e2;
+typedef struct Eurydice_arr_8e_s {
+  Eurydice_borrow_slice_u8 data[1U];
+} Eurydice_arr_8e;
 
 /**
 A monomorphic instance of Eurydice.arr

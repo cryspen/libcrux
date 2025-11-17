@@ -4,11 +4,11 @@
  * SPDX-License-Identifier: MIT or Apache-2.0
  *
  * This code was generated with the following revisions:
- * Charon: aa8de1a51675fbf6b65135d38d7e3986cadc626f
- * Eurydice: 5dbfcfb3f8f694a4b23d120d18400692e22050d5
- * Karamel: 46bbe26187c3d295b0d78152b6ea447aaf32dac8
- * F*: unset
- * Libcrux: 2aefcf58f546cc3710114f9f794ae3f3bb31d88f
+ * Charon: 146b7dce58cb11ca8010b1c947c3437a959dcd88
+ * Eurydice: c06863573e1818808527b23b44e244d8b0c8e3f1
+ * Karamel: 732e3ac91245451fc441754737eef729e2b01c2a
+ * F*: 71d8221589d4d438af3706d89cb653cf53e18aab
+ * Libcrux: 701d5efeb75491a48b041375a40e74e74d2cb9a7
  */
 
 #include "libcrux_sha3_portable.h"
@@ -24,7 +24,7 @@ A monomorphic instance of core.result.unwrap_26
 with types Eurydice_arr uint8_t[[$8size_t]], core_array_TryFromSliceError
 
 */
-Eurydice_arr_c4 unwrap_26_ab(Result_a4 self) {
+Eurydice_array_u8x8 unwrap_26_ab(Result_a4 self) {
   if (self.tag == Ok) {
     return self.val.case_Ok;
   } else {

@@ -4,11 +4,11 @@
  * SPDX-License-Identifier: MIT or Apache-2.0
  *
  * This code was generated with the following revisions:
- * Charon: aa8de1a51675fbf6b65135d38d7e3986cadc626f
- * Eurydice: 5dbfcfb3f8f694a4b23d120d18400692e22050d5
- * Karamel: 46bbe26187c3d295b0d78152b6ea447aaf32dac8
- * F*: unset
- * Libcrux: 55a15c0abfa4a1326744575999e590ebcd72ec30
+ * Charon: c4a8ab70cf49766f5fdb4950d54e7843dc94d03e
+ * Eurydice: 6e6c26cbf2b5808c5c90903a764f75112b84ec7d
+ * Karamel: 3bad1c74e949c936666d0dd0bcf2b6504e2271c9
+ * F*: 71d8221589d4d438af3706d89cb653cf53e18aab
+ * Libcrux: 701d5efeb75491a48b041375a40e74e74d2cb9a7
  */
 
 #ifndef internal_libcrux_mlkem1024_portable_H
@@ -36,9 +36,9 @@ typedef libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_af
  [`MlKem1024KeyPairUnpacked`] and an [`MlKem1024Ciphertext`].
 */
 Eurydice_arr_60 libcrux_ml_kem_mlkem1024_portable_unpacked_decapsulate(
-    libcrux_ml_kem_mlkem1024_portable_unpacked_MlKem1024KeyPairUnpacked
+    const libcrux_ml_kem_mlkem1024_portable_unpacked_MlKem1024KeyPairUnpacked
         *private_key,
-    Eurydice_arr_00 *ciphertext);
+    const Eurydice_arr_00 *ciphertext);
 
 /**
  Encapsulate ML-KEM 1024 (unpacked)
@@ -51,7 +51,7 @@ Eurydice_arr_60 libcrux_ml_kem_mlkem1024_portable_unpacked_decapsulate(
  following issue is resolved: <https://github.com/hacspec/hax/issues/770>
 */
 tuple_2b libcrux_ml_kem_mlkem1024_portable_unpacked_encapsulate(
-    libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_af *public_key,
+    const libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_af *public_key,
     Eurydice_arr_60 randomness);
 
 /**
@@ -85,7 +85,7 @@ libcrux_ml_kem_mlkem1024_portable_unpacked_init_public_key(void);
  Get an unpacked key from a private key.
 */
 void libcrux_ml_kem_mlkem1024_portable_unpacked_key_pair_from_private_mut(
-    Eurydice_arr_17 *private_key,
+    const Eurydice_arr_17 *private_key,
     libcrux_ml_kem_mlkem1024_portable_unpacked_MlKem1024KeyPairUnpacked
         *key_pair);
 
@@ -94,14 +94,14 @@ void libcrux_ml_kem_mlkem1024_portable_unpacked_key_pair_from_private_mut(
 */
 Eurydice_arr_17
 libcrux_ml_kem_mlkem1024_portable_unpacked_key_pair_serialized_private_key(
-    libcrux_ml_kem_mlkem1024_portable_unpacked_MlKem1024KeyPairUnpacked
+    const libcrux_ml_kem_mlkem1024_portable_unpacked_MlKem1024KeyPairUnpacked
         *key_pair);
 
 /**
  Get the serialized private key.
 */
 void libcrux_ml_kem_mlkem1024_portable_unpacked_key_pair_serialized_private_key_mut(
-    libcrux_ml_kem_mlkem1024_portable_unpacked_MlKem1024KeyPairUnpacked
+    const libcrux_ml_kem_mlkem1024_portable_unpacked_MlKem1024KeyPairUnpacked
         *key_pair,
     Eurydice_arr_17 *serialized);
 
@@ -110,14 +110,14 @@ void libcrux_ml_kem_mlkem1024_portable_unpacked_key_pair_serialized_private_key_
 */
 Eurydice_arr_00
 libcrux_ml_kem_mlkem1024_portable_unpacked_key_pair_serialized_public_key(
-    libcrux_ml_kem_mlkem1024_portable_unpacked_MlKem1024KeyPairUnpacked
+    const libcrux_ml_kem_mlkem1024_portable_unpacked_MlKem1024KeyPairUnpacked
         *key_pair);
 
 /**
  Get the serialized public key.
 */
 void libcrux_ml_kem_mlkem1024_portable_unpacked_key_pair_serialized_public_key_mut(
-    libcrux_ml_kem_mlkem1024_portable_unpacked_MlKem1024KeyPairUnpacked
+    const libcrux_ml_kem_mlkem1024_portable_unpacked_MlKem1024KeyPairUnpacked
         *key_pair,
     Eurydice_arr_00 *serialized);
 
@@ -125,14 +125,14 @@ void libcrux_ml_kem_mlkem1024_portable_unpacked_key_pair_serialized_public_key_m
  Get the serialized public key.
 */
 void libcrux_ml_kem_mlkem1024_portable_unpacked_serialized_public_key(
-    libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_af *public_key,
+    const libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_af *public_key,
     Eurydice_arr_00 *serialized);
 
 /**
  Get the unpacked public key.
 */
 void libcrux_ml_kem_mlkem1024_portable_unpacked_unpacked_public_key(
-    Eurydice_arr_00 *public_key,
+    const Eurydice_arr_00 *public_key,
     libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_af
         *unpacked_public_key);
 
