@@ -216,7 +216,7 @@ fn encap_decap() {
                     let EncapDecapResult::KeyCheckResult { testPassed, .. } =
                         results.find_expected_result(kat.tgId, test.tcId)
                     else {
-                        unimplemented!();
+                        unreachable!();
                     };
 
                     assert_eq!(
@@ -261,7 +261,7 @@ fn encap_decap() {
                     let EncapDecapResult::KeyCheckResult { testPassed, .. } =
                         results.find_expected_result(kat.tgId, test.tcId)
                     else {
-                        unimplemented!();
+                        unreachable!();
                     };
 
                     assert_eq!(
