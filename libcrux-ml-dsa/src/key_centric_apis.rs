@@ -200,7 +200,7 @@ macro_rules! impl_mod {
                 randomness: [U8; 32],
             ) -> Result<(), crate::SigningError> {
                 // TODO: use mut version
-                let mut pre_hash_buffer = [0; 256];
+                let mut pre_hash_buffer = [0; 32];
                 let signature_out =
                     crate::ml_dsa_generic::multiplexing::$module::sign_pre_hashed_shake128(
                         key.declassify_ref().try_into().unwrap(),
@@ -242,7 +242,7 @@ macro_rules! impl_mod {
                 signature: &[u8; Self::SIGNATURE_LEN],
                 context: &[u8],
             ) -> Result<(), crate::VerificationError> {
-                let mut pre_hash_buffer = [0; 256];
+                let mut pre_hash_buffer = [0; 32];
                 crate::ml_dsa_generic::multiplexing::$module::verify_pre_hashed_shake128(
                     key,
                     payload,
