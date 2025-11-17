@@ -13,7 +13,7 @@ macro_rules! impl_mod {
         const RAND_KEYGEN_LEN: usize = 32;
 
         use super::*;
-        // arrayref API
+
         #[doc(inline)]
         pub use arrayref::*;
 
