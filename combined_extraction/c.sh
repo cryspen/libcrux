@@ -27,7 +27,8 @@ clean=0
 config=$extract_root/extract.yaml
 out=generated
 glue=$EURYDICE_HOME/include/eurydice_glue.h
-features=""
+features_mlkem="${features} --cargo-arg=--no-default-features --cargo-arg=--features=mlkem768"
+features_mldsa="${features} --cargo-arg=--no-default-features --cargo-arg=--features=mldsa65"
 eurydice_glue=1
 karamel_include=1
 unrolling=16
@@ -70,21 +71,38 @@ fi
 # TODO: add LIBCRUX_ENABLE_SIMD128=1 LIBCRUX_ENABLE_SIMD256=1 charon invocations
 if [[ "$no_charon" = 0 ]]; then
     cargo clean -p libcrux-sha3
-    rm -rf $repo_root/libcrux_ml_kem.llbc $repo_root/libcrux_sha3.llbc $repo_root/libcrux_secrets.llbc
-    echo "Running charon (all) ..."
+    rm -rf $repo_root/libcrux_ml_kem.llbc $repo_root/libcrux_sha3.llbc $repo_root/libcrux_secrets.llbc $repo_root/libcrux_ml_dsa.llbc
+
+    cd $repo_root/libcrux-sha3
+    echo "Running charon (SHA3) ..."
     RUSTFLAGS="-Cdebug-assertions=no --cfg eurydice" $CHARON_HOME/bin/charon cargo \
-       $features \
       --preset eurydice \
-      --include 'libcrux_sha3' \
-      --include 'libcrux_secrets' \
-      --include 'libcrux_ml_kem' \
-      --include 'libcrux_ml_dsa' \
-      --start-from libcrux_ml_kem --start-from libcrux_sha3 --start-from libcrux_ml_dsa \
+      --start-from libcrux_sha3 \
       --include 'core::num::*::BITS' --include 'core::num::*::MAX'
+    
+    cd $repo_root/libcrux-ml-kem
+    
+    echo "Running charon (ML-KEM) ..."
+    RUSTFLAGS="-Cdebug-assertions=no --cfg eurydice" $CHARON_HOME/bin/charon cargo \
+       $features_mlkem \
+      --preset eurydice \
+      --include 'libcrux_secrets' \
+      --start-from libcrux_ml_kem \
+      --include 'core::num::*::BITS' --include 'core::num::*::MAX'
+
+    cd $repo_root/libcrux-ml-dsa
+    echo "Running charon (ML-DSA) ..."
+    RUSTFLAGS="--cfg eurydice" $CHARON_HOME/bin/charon cargo \
+                                    $features_mldsa \
+                                    --preset eurydice \
+                                    --start-from libcrux_ml_dsa \
+                                    --include 'core::num::*::BITS' --include 'core::num::*::MAX' \
+                                    --rustc-arg=-Cdebug-assertions=no
+    
     # rm -rf $repo_root/libcrux_ml_kem.llbc $repo_root/libcrux_sha3.llbc $repo_root/libcrux_secrets.llbc
     # echo "Running charon (secrets) ..."
     # (cd $repo_root/secrets && RUSTFLAGS="--cfg eurydice" $CHARON_HOME/bin/charon --remove-associated-types '*' --translate-all-methods)
-    if ! [[ -f $repo_root/combined_extraction.llbc ]]; then
+    if ! [[ -f $repo_root/libcrux_ml_kem.llbc || -f $repo_root/libcrux_ml_dsa.llbc ]]; then
         echo "😱😱😱 You are the victim of this bug: https://hacspec.zulipchat.com/#narrow/stream/433829-Circus/topic/charon.20declines.20to.20generate.20an.20llbc.20file"
         echo "Suggestion: rm -rf $repo_root/target or cargo clean"
         exit 1
@@ -104,6 +122,7 @@ else
     echo "Skipping charon"
 fi
 
+cd $extract_root
 mkdir -p $out
 cd $out
 
@@ -155,7 +174,7 @@ $EURYDICE_HOME/eurydice \
     --debug "-dast" \
     --config "$config" -funroll-loops $unrolling \
     --header header.txt $cpp17 \
-    "$repo_root/combined_extraction.llbc" --keep-going
+    "$repo_root/libcrux_sha3.llbc" "$repo_root/libcrux_ml_kem.llbc" "$repo_root/libcrux_ml_dsa.llbc" --keep-going
 
 if [[ "$eurydice_glue" = 1 ]]; then
     cp "$glue" .
