@@ -1,3 +1,11 @@
+//! This crate provides signature functionality.
+//!
+//! We currently support three signature algorithms:
+//!
+//! - ecdsa-p256
+//! - ed25519
+//! - ML-DSA
+
 #[cfg(any(feature = "ecdsa", feature = "ed25519", feature = "mldsa"))]
 pub use libcrux_traits::signature::{SignConsts, SignTypes};
 

@@ -64,6 +64,7 @@ macro_rules! impl_key_centric_types {
             $rand_keygen_len
         );
 
+        /// A signing key. The bytes are borrowed.
         pub struct SigningKeyRef<'a> {
             key: &'a [U8],
         }
@@ -77,27 +78,36 @@ macro_rules! impl_key_centric_types {
                 self.key.as_ref()
             }
         }
+
+        /// A verification key. The bytes are borrowed.
         pub struct VerificationKeyRef<'a> {
             key: &'a [u8],
         }
 
+        /// A signing key. The bytes are owned.
         pub struct SigningKey {
             key: SigningKeyArray,
         }
+
+        /// A verification key. The bytes are owned.
         pub struct VerificationKey {
             key: VerificationKeyArray,
         }
+
+        /// A signature.
         #[derive(Debug, PartialEq)]
         pub struct Signature {
             signature: SignatureArray,
         }
 
+        /// A key pair, containing a [`SigningKey`] and a [`VerificationKey`].
         pub struct KeyPair {
             pub signing_key: SigningKey,
             pub verification_key: VerificationKey,
         }
 
         impl<'a> SigningKeyRef<'a> {
+            /// Create a signing key from a byte slice.
             pub fn from_slice(key: &'a [U8]) -> Result<Self, $from_slice_error> {
                 if key.len() != $signing_key_len {
                     return Err($from_slice_error_variant);
@@ -123,7 +133,9 @@ macro_rules! impl_key_centric_types {
                 &self.key
             }
         }
+
         impl<'a> VerificationKeyRef<'a> {
+            /// Create a verification key from a byte slice.
             pub fn from_slice(key: &'a [u8]) -> Result<Self, $from_slice_error> {
                 if key.len() != $verification_key_len {
                     return Err($from_slice_error_variant);
