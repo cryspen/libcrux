@@ -24,7 +24,7 @@ macro_rules! impl_mod {
         /// An incorrect length when converting from slice.
         pub struct WrongLengthError;
 
-        pub mod arrayref {
+        pub(crate) mod arrayref {
             #[derive(Debug, PartialEq)]
             pub struct $ty;
             use super::*;
@@ -39,6 +39,41 @@ macro_rules! impl_mod {
             );
         }
         pub mod slice {
+            //! Slice-based APIs for ML-DSA.
+            //!
+            //! Usage example:
+            //! ```rust
+            //! use libcrux_traits::signature::SignConsts;
+            //! use ml_dsa_44::slice::MlDsa44;
+            //!
+            //! let context = b"context";
+            //!
+            //! let mut signing_key = [0u8; MlDsa44::SIGNING_KEY_LEN];
+            //! let mut verification_key = [0u8; MlDsa44::VERIFICATION_KEY_LEN];
+            //! MlDsa44::keygen_derand(&mut signing_key, &mut verification_key, [0; 32]).unwrap();
+            //!
+            //! // slice API
+            //! let mut signature = [0u8; MlDsa44::SIGNATURE_LEN];
+            //! MlDsa44::sign(&signing_key, b"payload", &mut signature, context, [0u8; 32]).unwrap();
+            //! MlDsa44::verify(&verification_key, b"payload", &signature, context).unwrap();
+            //!
+            //! MlDsa44::sign_pre_hashed_shake128(
+            //!     signing_key.as_ref(),
+            //!     b"payload",
+            //!     &mut signature,
+            //!     context,
+            //!     [0u8; 32],
+            //! )
+            //! .unwrap();
+            //! MlDsa44::verify_pre_hashed_shake128(
+            //!     verification_key.as_ref(),
+            //!     b"payload",
+            //!     &signature,
+            //!     context,
+            //! )
+            //! .unwrap();
+            //! ```
+
             #[derive(Debug, PartialEq)]
             pub struct $ty;
             use super::*;
@@ -216,6 +251,7 @@ macro_rules! impl_mod {
                     signature,
                 )
             }
+            /// Generate an ML-DSA Key Pair
             pub fn keygen_derand(
                 signing_key: &mut [U8; Self::SIGNING_KEY_LEN],
                 verification_key: &mut [u8; Self::VERIFICATION_KEY_LEN],
@@ -564,10 +600,10 @@ fn key_centric_refs() {
         .unwrap();
 
     signing_key
-        .sign_pre_hashed_shake128(b"pre-hashed", &mut signature, context, [0u8; 32])
+        .sign_pre_hashed_shake128(b"payload", &mut signature, context, [0u8; 32])
         .unwrap();
     verification_key
-        .verify_pre_hashed_shake128(b"pre-hashed", &signature, context)
+        .verify_pre_hashed_shake128(b"payload", &signature, context)
         .unwrap();
 }
 
@@ -589,47 +625,8 @@ fn arrayref_apis() {
     MlDsa44::verify(&verification_key, b"payload", &signature, context).unwrap();
 
     // pre-hashed
-    MlDsa44::sign_pre_hashed_shake128(
-        &signing_key,
-        b"pre-hashed",
-        &mut signature,
-        context,
-        [0u8; 32],
-    )
-    .unwrap();
-    MlDsa44::verify_pre_hashed_shake128(&verification_key, b"pre-hashed", &signature, context)
+    MlDsa44::sign_pre_hashed_shake128(&signing_key, b"payload", &mut signature, context, [0u8; 32])
         .unwrap();
-}
-#[test]
-#[cfg(not(feature = "expose-secret-independence"))]
-fn slice_apis() {
-    use libcrux_traits::signature::SignConsts;
-    use ml_dsa_44::slice::MlDsa44;
-
-    let context = b"context";
-
-    let mut signing_key = [0u8; MlDsa44::SIGNING_KEY_LEN];
-    let mut verification_key = [0u8; MlDsa44::VERIFICATION_KEY_LEN];
-    MlDsa44::keygen_derand(&mut signing_key, &mut verification_key, [0; 32]).unwrap();
-
-    // slice API
-    let mut signature = [0u8; MlDsa44::SIGNATURE_LEN];
-    MlDsa44::sign(&signing_key, b"payload", &mut signature, context, [0u8; 32]).unwrap();
-    MlDsa44::verify(&verification_key, b"payload", &signature, context).unwrap();
-
-    MlDsa44::sign_pre_hashed_shake128(
-        signing_key.as_ref(),
-        b"pre-hashed",
-        &mut signature,
-        context,
-        [0u8; 32],
-    )
-    .unwrap();
-    MlDsa44::verify_pre_hashed_shake128(
-        verification_key.as_ref(),
-        b"pre-hashed",
-        &signature,
-        context,
-    )
-    .unwrap();
+    MlDsa44::verify_pre_hashed_shake128(&verification_key, b"payload", &signature, context)
+        .unwrap();
 }
