@@ -108,26 +108,15 @@ macro_rules! impl_mod {
             }
         }
 
-        impl slice::$ty {
+        impl KeyPair {
             #[cfg(feature = "rand")]
-            pub fn generate_key_pair(
-                rng: &mut impl rand::CryptoRng,
-            ) -> Result<KeyPair, slice::KeygenError> {
-                arrayref::$ty::generate_key_pair(rng)
-            }
-        }
-
-        impl arrayref::$ty {
-            #[cfg(feature = "rand")]
-            pub fn generate_key_pair(
-                rng: &mut impl rand::CryptoRng,
-            ) -> Result<KeyPair, slice::KeygenError> {
+            pub fn generate(rng: &mut impl rand::CryptoRng) -> Result<KeyPair, slice::KeygenError> {
                 use libcrux_secrets::Classify;
 
-                let mut bytes = [0u8; Self::RAND_KEYGEN_LEN];
+                let mut bytes = [0u8; arrayref::$ty::RAND_KEYGEN_LEN];
                 rng.fill_bytes(&mut bytes);
-                let mut signing_key = [0u8; Self::SIGNING_KEY_LEN].classify();
-                let mut verification_key = [0u8; Self::VERIFICATION_KEY_LEN];
+                let mut signing_key = [0u8; arrayref::$ty::SIGNING_KEY_LEN].classify();
+                let mut verification_key = [0u8; arrayref::$ty::VERIFICATION_KEY_LEN];
                 arrayref::$ty::keygen_derand(
                     &mut signing_key,
                     &mut verification_key,
@@ -352,7 +341,7 @@ fn key_centric_owned() {
     let KeyPair {
         signing_key,
         verification_key,
-    } = EcdsaP256::generate_key_pair(&mut rng).unwrap();
+    } = KeyPair::generate(&mut rng).unwrap();
 
     let signature = signing_key
         .sign(b"payload", &Nonce::random(&mut rng).unwrap())

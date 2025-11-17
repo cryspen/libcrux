@@ -144,15 +144,15 @@ macro_rules! impl_mod {
             }
         }
 
-        impl arrayref::$ty {
+        impl KeyPair {
             #[cfg(feature = "rand")]
-            pub fn generate_key_pair(rng: &mut impl rand::CryptoRng) -> KeyPair {
+            pub fn generate(rng: &mut impl rand::CryptoRng) -> KeyPair {
                 use libcrux_secrets::Classify;
 
-                let mut bytes = [0u8; Self::RAND_KEYGEN_LEN];
+                let mut bytes = [0u8; arrayref::$ty::RAND_KEYGEN_LEN];
                 rng.fill_bytes(&mut bytes);
-                let mut signing_key = [0u8; Self::SIGNING_KEY_LEN].classify();
-                let mut verification_key = [0u8; Self::VERIFICATION_KEY_LEN];
+                let mut signing_key = [0u8; arrayref::$ty::SIGNING_KEY_LEN].classify();
+                let mut verification_key = [0u8; arrayref::$ty::VERIFICATION_KEY_LEN];
                 arrayref::$ty::keygen_derand(
                     &mut signing_key,
                     &mut verification_key,
@@ -558,7 +558,7 @@ fn key_centric_owned() {
     let KeyPair {
         signing_key,
         verification_key,
-    } = MlDsa44::generate_key_pair(&mut rng);
+    } = KeyPair::generate(&mut rng);
 
     let signature = signing_key.sign(b"payload", context, [0u8; 32]).unwrap();
     verification_key
