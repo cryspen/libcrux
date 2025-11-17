@@ -1,4 +1,4 @@
-use super::common::*;
+use super::super::schema_common::*;
 use serde::Deserialize;
 
 #[derive(Deserialize)]

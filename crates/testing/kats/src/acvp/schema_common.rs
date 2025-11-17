@@ -1,4 +1,5 @@
 use serde::Deserialize;
+
 #[derive(Deserialize)]
 #[allow(non_snake_case, dead_code)]
 pub struct Prompts<TG> {
