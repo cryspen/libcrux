@@ -75,8 +75,6 @@ if [[ "$no_charon" = 0 ]]; then
         echo "Suggestion: rm -rf ../target or cargo clean"
         exit 1
     fi
-    # echo "Running charon (ml-dsa) with $features ..."
-    # RUSTFLAGS="--cfg eurydice" $CHARON_HOME/bin/charon --remove-associated-types '*' --rustc-arg=-Cdebug-assertions=no $features
 else
     echo "Skipping charon"
 fi
