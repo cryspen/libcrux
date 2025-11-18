@@ -37,7 +37,7 @@ jobs:
     defaults:
       run:
         shell: bash
-        working-directory: sys/platform
+        working-directory: crates/sys/platform
 
     steps:
       - uses: actions/checkout@v6
