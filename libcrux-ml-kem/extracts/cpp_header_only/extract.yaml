@@ -6,14 +6,8 @@ files:
     api:
       - [libcrux_intrinsics, avx2]
 
-  # Constant time ops
-  - name: libcrux_ct_ops
-    inline_static: true
-    api:
-      - [libcrux_ml_kem, constant_time_ops]
 
   # SHA3 (no mention of libcrux_mlkem in this section, please)
-
   - name: libcrux_sha3_avx2
     inline_static: true
     target: "avx2"
@@ -90,7 +84,6 @@ files:
         - [libcrux_ml_kem, constant_time_ops, "*"]
         - [libcrux_ml_kem, utils, "*" ]
       monomorphizations_exact:
-        - [libcrux_sha3, Sha3_512Digest]
         - [ Eurydice_dst_ref_shared uint8_t size_t_x4]
         - [ Eurydice_dst_ref_shared uint8_t size_t_x2]
         - [ Eurydice_dst_ref uint8_t size_t_x4]

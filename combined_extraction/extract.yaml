@@ -10,17 +10,19 @@ files:
         - [ Eurydice, arr_05]
         - [ Eurydice, arr_c0]
 
+  # Constant time ops
+  - name: libcrux_ct_ops
+    inline_static: true
+    api:
+      - [libcrux_ml_kem, constant_time_ops]
+
   # MLDSA: MISC NON-ARCHITECTURE SPECIFIC HEADERS
-  - name: libcrux_mldsa_core
+  - name: libcrux_core
     inline_static: true
     private:
-      monomorphizations_of:
-        - [libcrux_ml_dsa, types, "*"]
       patterns:
         - [core, "*"]
-        - [libcrux_ml_dsa, types, "*" ]
       monomorphizations_exact:
-        - [libcrux_sha3, Sha3_512Digest]
         - [ Eurydice_dst_ref_shared uint8_t size_t_x4]
         - [ Eurydice_dst_ref_shared uint8_t size_t_x2]
         - [ Eurydice_dst_ref uint8_t size_t_x4]
@@ -32,10 +34,22 @@ files:
         - [ Eurydice, arr_6d]
         - [ core, result, unwrap_26_ab ]
         - [ core, result, Result_a4 ]
-
     api:
       - [Eurydice, "*"]
-      
+
+  # MLDSA: MISC NON-ARCHITECTURE SPECIFIC HEADERS
+  - name: libcrux_mldsa_core
+    inline_static: true
+    private:
+      monomorphizations_of:
+        - [libcrux_ml_dsa, types, "*"]
+      patterns:
+        - [libcrux_ml_dsa, types, "*" ]
+      monomorphizations_exact:
+        - [ core, result, Result_53 ]
+        - [ core, result, Result_2e ]
+        - [ core, result, Result_41 ]
+
   # SHA3 (no mention of libcrux_mlkem in this section, please)
   - name: libcrux_sha3_avx2
     inline_static: true
@@ -47,8 +61,12 @@ files:
         - [libcrux_sha3, avx2, "*"]
         - [libcrux_sha3, simd, avx2, "*"]
         - [libcrux_sha3, generic_keccak, simd256, "*"]
+        - [Eurydice, arr_c0]
+        - [Eurydice, arr_05]
       monomorphizations_exact:
         - [libcrux_sha3, generic_keccak, KeccakState_55]
+        - [Eurydice, arr_c0]
+        - [Eurydice, arr_05]
       monomorphizations_of:
         - [libcrux_sha3, avx2, "*"]
         - [libcrux_sha3, simd, avx2, "*"]
@@ -137,13 +155,105 @@ files:
         - [core, result, Result_a8]
         - [core, option, Option_84]
 
-  # MLDSA: catch-all for things that have not matched earlier
-  - name: libcrux_mldsa_core
+  # MLKEM: MISC NON-ARCHITECTURE SPECIFIC HEADERS
+  - name: libcrux_mlkem_core
+    inline_static: true
+    api:
+      - [libcrux_ml_kem, constants ]
+      - [libcrux_sha3, generic_keccak, constants ]
+      # FIXME: removing this trips an internal invariant
+      - [ Eurydice, "*" ]
+    private:
+      monomorphizations_of:
+        # - [core, "*"]
+        - [libcrux_secrets, "*"]
+        - [libcrux_ml_kem, types, "*"]
+        - [libcrux_ml_kem, constant_time_ops, "*"]
+        - [libcrux_ml_kem, utils, "*" ]
+      monomorphizations_using:
+        - [libcrux_ml_kem, types, "*"]
+      patterns:
+        # - [core, "*"]
+        - [libcrux_secrets, "*"]
+        - [libcrux_ml_kem, types, "*"]
+        - [libcrux_ml_kem, constant_time_ops, "*"]
+        - [libcrux_ml_kem, utils, "*" ]
+      monomorphizations_exact:
+        - [ Eurydice_dst_ref_shared uint8_t size_t_x4]
+        - [ Eurydice_dst_ref_shared uint8_t size_t_x2]
+        - [ Eurydice_dst_ref uint8_t size_t_x4]
+        - [ Eurydice_dst_ref uint8_t size_t_x2]
+        - [ "Eurydice_slice uint8_t_x4" ]
+        - [ "Eurydice_slice uint8_t_x2" ]
+
+  - name: libcrux_mlkem768_avx2
+    inline_static: true
+    target: "avx2"
+    include_in_h:
+      - '"intrinsics/libcrux_intrinsics_avx2.h"'
+    api:
+      patterns:
+        - [libcrux_ml_kem, mlkem768, avx2, "*"]
+      monomorphizations_of:
+        - [libcrux_ml_kem, mlkem768, avx2, "*"]
+    private:
+      patterns:  
+        - [libcrux_ml_kem, vector, rej_sample_table, "*"]
+        - [libcrux_ml_kem, vector, avx2, "*"]
+        - [libcrux_ml_kem, hash_functions, avx2, "*"]
+        - [libcrux_ml_kem, mlkem768, avx2, "*"]
+        - [libcrux_ml_kem, ind_cca, instantiations, avx2, "*"]
+      monomorphizations_of:
+        - [libcrux_ml_kem, vector, avx2, "*"]
+        - [libcrux_ml_kem, hash_functions, avx2, "*"]
+        - [libcrux_ml_kem, mlkem768, avx2, "*"]
+        - [libcrux_ml_kem, ind_cca, instantiations, avx2, "*"]
+      monomorphizations_using:
+        - [libcrux_ml_kem, vector, avx2, "*"]
+        - [libcrux_ml_kem, hash_functions, avx2, "*"]
+    internal:
+      - [libcrux_ml_kem, mlkem768, avx2, unpacked]
+
+  - name: libcrux_mlkem768_portable
+    inline_static: true
+    api:
+      patterns:
+        - [libcrux_ml_kem, mlkem768, "*"]
+      monomorphizations_of:
+        - [libcrux_ml_kem, mlkem768, portable]
+    private:
+      exact:
+        - [ libcrux_ml_kem, variant, MlKem ]
+        - [ libcrux_ml_kem, variant, Kyber ]
+      patterns:
+        - [libcrux_ml_kem, "*"]
+        - [libcrux_ml_kem, vector, "*"]
+        - [libcrux_ml_kem, hash_functions, portable, "*"]
+        - [libcrux_ml_kem, mlkem768, portable, "*"]
+        - [libcrux_ml_kem, ind_cca, instantiations, portable, "*"]
+      monomorphizations_of:
+        - [libcrux_ml_kem, polynomial, "*" ]
+        - [libcrux_ml_kem, vector, "*"]
+        - [libcrux_ml_kem, hash_functions, portable, "*"]
+        - [libcrux_ml_kem, mlkem768, portable]
+        - [libcrux_ml_kem, ind_cca, instantiations, portable, "*"]
+      monomorphizations_using:
+        - [libcrux_ml_kem, polynomial, "*" ]
+        - [libcrux_ml_kem, vector, "*"]
+        - [libcrux_ml_kem, hash_functions, portable, "*"]
+        - [libcrux_ml_kem, ind_cca, instantiations, portable, "*"]
+    internal:
+      - [libcrux_ml_kem, mlkem768, portable, unpacked]
+      
+  # Catch-all for things that have not matched earlier
+  - name: libcrux_core
     inline_static: true
     private:
       monomorphizations_of:
+        - [core, "*"]
         - [Eurydice, "*" ]
       patterns:
+        - [core, "*"]
         - [Eurydice, "*" ]
 naming:
   skip_prefix:
