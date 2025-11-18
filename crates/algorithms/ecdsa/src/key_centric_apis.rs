@@ -55,7 +55,7 @@ macro_rules! impl_mod {
             //! // keygen
             //! let mut bytes = [0u8; EcdsaP256::RAND_KEYGEN_LEN];
             //! rng.fill_bytes(&mut bytes);
-            //! EcdsaP256::keygen_derand(&mut signing_key, &mut verification_key, bytes).unwrap();
+            //! EcdsaP256::keygen(&mut signing_key, &mut verification_key, bytes).unwrap();
             //!
             //! // sign
             //! let mut signature = [0u8; EcdsaP256::SIGNATURE_LEN];
@@ -117,11 +117,7 @@ macro_rules! impl_mod {
                 rng.fill_bytes(&mut bytes);
                 let mut signing_key = [0u8; arrayref::$ty::SIGNING_KEY_LEN].classify();
                 let mut verification_key = [0u8; arrayref::$ty::VERIFICATION_KEY_LEN];
-                arrayref::$ty::keygen_derand(
-                    &mut signing_key,
-                    &mut verification_key,
-                    bytes.classify(),
-                )?;
+                arrayref::$ty::keygen(&mut signing_key, &mut verification_key, bytes.classify())?;
 
                 Ok(KeyPair {
                     signing_key: SigningKey::from(signing_key),
@@ -174,7 +170,7 @@ macro_rules! impl_mod {
                 }
                 Ok(())
             }
-            pub fn keygen_derand(
+            pub fn keygen(
                 signing_key: &mut [U8; Self::SIGNING_KEY_LEN],
                 verification_key: &mut [u8; Self::VERIFICATION_KEY_LEN],
                 randomness: [U8; Self::RAND_KEYGEN_LEN],
@@ -230,7 +226,7 @@ macro_rules! impl_mod {
                 arrayref::$ty::verify(key, payload, signature)
                     .map_err(slice::VerificationError::from)
             }
-            pub fn keygen_derand(
+            pub fn keygen(
                 signing_key: &mut [U8],
                 verification_key: &mut [u8],
                 randomness: [U8; Self::RAND_KEYGEN_LEN],
@@ -242,7 +238,7 @@ macro_rules! impl_mod {
                     .try_into()
                     .map_err(|_| slice::KeygenError::WrongVerificationKeyLength)?;
 
-                arrayref::$ty::keygen_derand(signing_key, verification_key, randomness)
+                arrayref::$ty::keygen(signing_key, verification_key, randomness)
             }
         }
         impl<'a> SigningKeyRef<'a> {
@@ -361,7 +357,7 @@ fn key_centric_refs() {
 
     let mut bytes = [0u8; EcdsaP256::RAND_KEYGEN_LEN];
     rng.fill_bytes(&mut bytes);
-    EcdsaP256::keygen_derand(&mut signing_key, &mut verification_key, bytes).unwrap();
+    EcdsaP256::keygen(&mut signing_key, &mut verification_key, bytes).unwrap();
 
     // create references from slice
     let signing_key = SigningKeyRef::from_slice(&signing_key).unwrap();

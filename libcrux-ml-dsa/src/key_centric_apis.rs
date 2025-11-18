@@ -50,7 +50,7 @@ macro_rules! impl_mod {
             //!
             //! let mut signing_key = [0u8; MlDsa44::SIGNING_KEY_LEN];
             //! let mut verification_key = [0u8; MlDsa44::VERIFICATION_KEY_LEN];
-            //! MlDsa44::keygen_derand(&mut signing_key, &mut verification_key, [0; 32]).unwrap();
+            //! MlDsa44::keygen(&mut signing_key, &mut verification_key, [0; 32]).unwrap();
             //!
             //! // slice API
             //! let mut signature = [0u8; MlDsa44::SIGNATURE_LEN];
@@ -153,11 +153,7 @@ macro_rules! impl_mod {
                 rng.fill_bytes(&mut bytes);
                 let mut signing_key = [0u8; arrayref::$ty::SIGNING_KEY_LEN].classify();
                 let mut verification_key = [0u8; arrayref::$ty::VERIFICATION_KEY_LEN];
-                arrayref::$ty::keygen_derand(
-                    &mut signing_key,
-                    &mut verification_key,
-                    bytes.classify(),
-                );
+                arrayref::$ty::keygen(&mut signing_key, &mut verification_key, bytes.classify());
 
                 KeyPair {
                     signing_key: SigningKey::from(signing_key),
@@ -252,7 +248,7 @@ macro_rules! impl_mod {
                 )
             }
             /// Generate an ML-DSA Key Pair
-            pub fn keygen_derand(
+            pub fn keygen(
                 signing_key: &mut [U8; Self::SIGNING_KEY_LEN],
                 verification_key: &mut [u8; Self::VERIFICATION_KEY_LEN],
                 randomness: [U8; Self::RAND_KEYGEN_LEN],
@@ -359,7 +355,7 @@ macro_rules! impl_mod {
 
             /// Generate an ML-DSA Key Pair
             #[cfg(not(eurydice))]
-            pub fn keygen_derand(
+            pub fn keygen(
                 signing_key: &mut [U8],
                 verification_key: &mut [u8],
                 randomness: [U8; Self::RAND_KEYGEN_LEN],
@@ -371,7 +367,7 @@ macro_rules! impl_mod {
                     .try_into()
                     .map_err(|_| slice::KeygenError::WrongVerificationKeyLength)?;
 
-                arrayref::$ty::keygen_derand(signing_key, verification_key, randomness);
+                arrayref::$ty::keygen(signing_key, verification_key, randomness);
 
                 Ok(())
             }
@@ -590,7 +586,7 @@ fn key_centric_refs() {
 
     let mut signing_key = [0u8; MlDsa44::SIGNING_KEY_LEN];
     let mut verification_key = [0u8; MlDsa44::VERIFICATION_KEY_LEN];
-    MlDsa44::keygen_derand(&mut signing_key, &mut verification_key, [0; 32]);
+    MlDsa44::keygen(&mut signing_key, &mut verification_key, [0; 32]);
 
     // create references from slice
     let signing_key = SigningKeyRef::from_slice(&signing_key).unwrap();
@@ -622,7 +618,7 @@ fn arrayref_apis() {
 
     let mut signing_key = [0u8; MlDsa44::SIGNING_KEY_LEN];
     let mut verification_key = [0u8; MlDsa44::VERIFICATION_KEY_LEN];
-    MlDsa44::keygen_derand(&mut signing_key, &mut verification_key, [0; 32]);
+    MlDsa44::keygen(&mut signing_key, &mut verification_key, [0; 32]);
 
     // arrayref API
     let mut signature = [0u8; MlDsa44::SIGNATURE_LEN];
