@@ -29,6 +29,38 @@ pub(crate) mod arrayref {
     // Private [`Ed25519`] struct used for internal implementations
     #[derive(Debug, PartialEq)]
     pub(crate) struct Ed25519;
+
+    #[derive(Debug, PartialEq)]
+    pub enum SigningError {
+        WrongPayloadLength,
+    }
+
+    impl From<SigningError> for super::slice::SigningError {
+        fn from(e: SigningError) -> Self {
+            match e {
+                SigningError::WrongPayloadLength => super::slice::SigningError::WrongPayloadLength,
+            }
+        }
+    }
+
+    #[derive(Debug)]
+    pub enum VerificationError {
+        InvalidSignature,
+        WrongPayloadLength,
+    }
+
+    impl From<VerificationError> for super::slice::VerificationError {
+        fn from(e: VerificationError) -> Self {
+            match e {
+                VerificationError::InvalidSignature => {
+                    super::slice::VerificationError::InvalidSignature
+                }
+                VerificationError::WrongPayloadLength => {
+                    super::slice::VerificationError::WrongPayloadLength
+                }
+            }
+        }
+    }
 }
 pub mod slice {
     //! Slice-based APIs for Ed25519.
@@ -114,15 +146,14 @@ impl arrayref::Ed25519 {
         key: &[U8; Self::SIGNING_KEY_LEN],
         payload: &[u8],
         signature: &mut [u8; Self::SIGNATURE_LEN],
-        // TODO: arrayref::SigningError?
-    ) -> Result<(), slice::SigningError> {
+    ) -> Result<(), arrayref::SigningError> {
         crate::hacl::ed25519::sign(
             signature,
             key.declassify_ref(),
             payload
                 .len()
                 .try_into()
-                .map_err(|_| slice::SigningError::WrongPayloadLength)?,
+                .map_err(|_| arrayref::SigningError::WrongPayloadLength)?,
             payload,
         );
 
@@ -142,19 +173,19 @@ impl arrayref::Ed25519 {
         key: &[u8; Self::VERIFICATION_KEY_LEN],
         payload: &[u8],
         signature: &[u8; Self::SIGNATURE_LEN],
-    ) -> Result<(), slice::VerificationError> {
+    ) -> Result<(), arrayref::VerificationError> {
         if crate::hacl::ed25519::verify(
             key,
             payload
                 .len()
                 .try_into()
-                .map_err(|_| slice::VerificationError::WrongPayloadLength)?,
+                .map_err(|_| arrayref::VerificationError::WrongPayloadLength)?,
             payload,
             signature,
         ) {
             Ok(())
         } else {
-            Err(slice::VerificationError::InvalidSignature)
+            Err(arrayref::VerificationError::InvalidSignature)
         }
     }
     pub fn keygen(
@@ -267,7 +298,7 @@ impl SigningKey {
     /// We enforce the first two using types, and the latter by using `payload.len()` and `payload_len`.
     /// This has the caveat that `payload_len` must be <= u32::MAX, so we return an error if that is
     /// not the case.
-    pub fn sign(&self, payload: &[u8]) -> Result<Signature, slice::SigningError> {
+    pub fn sign(&self, payload: &[u8]) -> Result<Signature, arrayref::SigningError> {
         let mut signature = [0u8; SIGNATURE_LEN];
         arrayref::Ed25519::sign(self.as_ref(), payload, &mut signature)
             .map(|_| Signature::from(signature))
@@ -286,7 +317,7 @@ impl VerificationKey {
         &self,
         payload: &[u8],
         signature: &Signature,
-    ) -> Result<(), slice::VerificationError> {
+    ) -> Result<(), arrayref::VerificationError> {
         arrayref::Ed25519::verify(self.as_ref(), payload, signature.as_ref())
     }
 }
