@@ -28,7 +28,7 @@ members = [
     "crates/algorithms/ecdsa",
     "crates/algorithms/p256",
     "crates/algorithms/blake2",
-    "secrets",
+    "crates/utils/secrets",
     "crates/utils/core-models",
     "crates/utils/test-utils",
     "crates/algorithms/hkdf",
