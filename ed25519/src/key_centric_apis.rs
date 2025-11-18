@@ -40,7 +40,7 @@ pub mod slice {
     //! // generate keypair
     //! let mut signing_key = [0u8; Ed25519::SIGNING_KEY_LEN];
     //! let mut verification_key = [0u8; Ed25519::VERIFICATION_KEY_LEN];
-    //! Ed25519::keygen_derand(&mut signing_key, &mut verification_key, [0; 32]);
+    //! Ed25519::keygen(&mut signing_key, &mut verification_key, [0; 32]);
     //!
     //! // create signature buffer
     //! let mut signature = [0u8; Ed25519::SIGNATURE_LEN];
@@ -93,7 +93,7 @@ impl KeyPair {
         rng.fill_bytes(&mut bytes);
         let mut signing_key = [0u8; arrayref::Ed25519::SIGNING_KEY_LEN].classify();
         let mut verification_key = [0u8; arrayref::Ed25519::VERIFICATION_KEY_LEN];
-        arrayref::Ed25519::keygen_derand(&mut signing_key, &mut verification_key, bytes.classify());
+        arrayref::Ed25519::keygen(&mut signing_key, &mut verification_key, bytes.classify());
 
         KeyPair {
             signing_key: SigningKey::from(signing_key),
@@ -157,7 +157,7 @@ impl arrayref::Ed25519 {
             Err(slice::VerificationError::InvalidSignature)
         }
     }
-    pub fn keygen_derand(
+    pub fn keygen(
         signing_key: &mut [U8; Self::SIGNING_KEY_LEN],
         verification_key: &mut [u8; Self::VERIFICATION_KEY_LEN],
         randomness: [U8; Self::RAND_KEYGEN_LEN],
@@ -213,7 +213,7 @@ impl slice::Ed25519 {
         arrayref::Ed25519::verify(key, payload, signature).map_err(slice::VerificationError::from)
     }
 
-    pub fn keygen_derand(
+    pub fn keygen(
         signing_key: &mut [U8],
         verification_key: &mut [u8],
         randomness: [U8; Self::RAND_KEYGEN_LEN],
@@ -225,7 +225,7 @@ impl slice::Ed25519 {
             .try_into()
             .map_err(|_| slice::KeygenError::WrongVerificationKeyLength)?;
 
-        arrayref::Ed25519::keygen_derand(signing_key, verification_key, randomness);
+        arrayref::Ed25519::keygen(signing_key, verification_key, randomness);
 
         Ok(())
     }
@@ -320,7 +320,7 @@ fn key_centric_refs() {
 
     let mut signing_key = [0u8; Ed25519::SIGNING_KEY_LEN];
     let mut verification_key = [0u8; Ed25519::VERIFICATION_KEY_LEN];
-    Ed25519::keygen_derand(&mut signing_key, &mut verification_key, [0; 32]);
+    Ed25519::keygen(&mut signing_key, &mut verification_key, [0; 32]);
 
     // create references from slice
     let signing_key = SigningKeyRef::from_slice(&signing_key).unwrap();
@@ -338,7 +338,7 @@ fn arrayref_apis() {
 
     let mut signing_key = [0u8; Ed25519::SIGNING_KEY_LEN];
     let mut verification_key = [0u8; Ed25519::VERIFICATION_KEY_LEN];
-    Ed25519::keygen_derand(&mut signing_key, &mut verification_key, [0; 32]);
+    Ed25519::keygen(&mut signing_key, &mut verification_key, [0; 32]);
 
     // arrayref API
     let mut signature = [0u8; Ed25519::SIGNATURE_LEN];
