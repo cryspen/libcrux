@@ -60,7 +60,7 @@ if [[ "$no_charon" = 0 ]]; then
     cargo clean -p libcrux-sha3
     rm -rf ../libcrux_ml_dsa.llbc ../libcrux_sha3.llbc
     echo "Running charon (sha3) ..."
-    (cd ../libcrux-sha3 && RUSTFLAGS="--cfg eurydice" $CHARON_HOME/bin/charon --remove-associated-types '*' --rustc-arg=-Cdebug-assertions=no)
+    (cd ../crates/algorithms/sha3 && RUSTFLAGS="--cfg eurydice" $CHARON_HOME/bin/charon --remove-associated-types '*' --rustc-arg=-Cdebug-assertions=no)
     if ! [[ -f ../libcrux_sha3.llbc ]]; then
         echo "😱😱😱 You are the victim of a bug."
         echo "Suggestion: rm -rf ../target or cargo clean"
