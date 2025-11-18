@@ -1,9 +1,5 @@
 use libcrux_traits::signature::{impl_key_centric_types, impl_sign_traits, SignConsts};
 
-// placeholder error implementation
-// TODO: more specific error
-#[derive(Debug)]
-pub struct Error;
 macro_rules! impl_mod {
     ($ty:ident, $module:ident) => {
         use libcrux_secrets::{Declassify, DeclassifyRef, DeclassifyRefMut, U8};
