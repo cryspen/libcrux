@@ -74,9 +74,15 @@ fi
 if [[ "$no_charon" = 0 ]]; then
     cargo clean -p libcrux-sha3
     rm -rf $repo_root/libcrux_ml_kem.llbc $repo_root/libcrux_sha3.llbc $repo_root/libcrux_secrets.llbc
+
+    flags=
+    if [[ $(uname -m) == "arm64" ]]
+        flags+=--target=x86_64-apple-darwin
+    fi
+
     echo "Running charon (all) ..."
     RUSTFLAGS="-Cdebug-assertions=no --cfg eurydice" $CHARON_HOME/bin/charon cargo \
-       $features \
+       $features $flags \
       --preset eurydice \
       --include 'libcrux_sha3' \
       --include 'libcrux_secrets' \
