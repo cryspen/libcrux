@@ -21,4 +21,4 @@ libcrux-hmac = { version = "=0.0.4", path = "../hmac", features = [
     "expose-hacl",
 ] }
 libcrux-hacl-rs = { version = "=0.0.4", path = "../../utils/hacl-rs/" }
-libcrux-secrets = { version = "0.0.4", path = "../../../secrets" }
+libcrux-secrets = { version = "0.0.4", path = "../../utils/secrets" }

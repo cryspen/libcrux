@@ -68,7 +68,7 @@ libcrux-ed25519 = { version = "=0.0.4", path = "crates/algorithms/ed25519" }
 libcrux-ecdh = { version = "=0.0.4", path = "libcrux-ecdh" }
 libcrux-ml-kem = { version = "=0.0.4", path = "libcrux-ml-kem" }
 libcrux-kem = { version = "=0.0.4", path = "libcrux-kem" }
-libcrux-secrets = { version = "=0.0.4", path = "secrets" }
+libcrux-secrets = { version = "=0.0.4", path = "crates/utils/secrets" }
 
 [package]
 name = "libcrux"

@@ -14,7 +14,7 @@ repository.workspace = true
 libcrux-macros = { version = "=0.0.3", path = "../../utils/macros" }
 libcrux-traits = { version = "=0.0.4", path = "../../../traits" }
 libcrux-hacl-rs = { version = "=0.0.4", path = "../../utils/hacl-rs/" }
-libcrux-secrets = { version = "=0.0.4", path = "../../../secrets" }
+libcrux-secrets = { version = "=0.0.4", path = "../../utils/secrets" }
 libcrux-sha2 = { version = "=0.0.4", path = "../sha2", features = [
     "expose-hacl",
 ] }
