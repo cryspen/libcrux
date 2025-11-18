@@ -131,8 +131,8 @@ __attribute__((target("avx2"))) static void shake256_33_128(
 
   libcrux_sha3_avx2_x4_shake256(
       mk_dst_ref_uint8_t(input, 128), mk_dst_ref_uint8_t(input, 128),
-      mk_dst_ref_uint8_t(input, 128), mk_dst_ref_uint8_t(input, 128), out0, out1,
-      out2, out3);
+      mk_dst_ref_uint8_t(input, 128), mk_dst_ref_uint8_t(input, 128), out0,
+      out1, out2, out3);
 
   for (auto _ : state) {
     libcrux_sha3_avx2_x4_shake256(

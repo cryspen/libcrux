@@ -155,6 +155,7 @@ fi
 if [[ "$format" = 1 ]]; then
     find . -type f -name '*.c' -and -not -path '*_deps*' -exec clang-format-18 --style=Google -i "{}" \;
     find . -type f -name '*.h' -and -not -path '*_deps*' -exec clang-format-18 --style=Google -i "{}" \;
+    find . -type f -name '*.cc' -and -not -path '*_deps*' -exec clang-format-18 --style=Google -i "{}" \;
     if [ -d "internal" ]; then
         clang-format-18 --style=Google -i internal/*.h
     fi
