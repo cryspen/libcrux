@@ -20,16 +20,17 @@ void generate_random(uint8_t *output, uint32_t output_len)
 
 int main(int argc, char const *argv[])
 {
-    uint8_t randomness[64];
-    generate_random(randomness, 64);
+    Eurydice_arr_06 randomness = {0};
+    memset(randomness.data, 0x13, 64);
 
     auto key_pair = libcrux_ml_kem_mlkem768_portable_generate_key_pair(randomness);
-    generate_random(randomness, 32);
-    auto ctxt = libcrux_ml_kem_mlkem768_portable_encapsulate(&key_pair.pk, randomness);
+    Eurydice_arr_60 randomness2 = {0};
+    memset(randomness2.data, 0x15, 32);
+    auto ctxt = libcrux_ml_kem_mlkem768_portable_encapsulate(&key_pair.pk, randomness2);
 
     for (size_t i = 0; i < 100000; i++)
     {
-        ctxt = libcrux_ml_kem_mlkem768_portable_encapsulate(&key_pair.pk, randomness);
+        ctxt = libcrux_ml_kem_mlkem768_portable_encapsulate(&key_pair.pk, randomness2);
     }
 
     return 0;
