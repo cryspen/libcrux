@@ -96,8 +96,12 @@ impl<const PARALLEL_LANES: usize, const RATE: usize, STATE: KeccakItem<PARALLEL_
         let input_consumed = self.fill_buffer(inputs);
 
         if input_consumed > 0 {
-            let borrowed: [&[u8]; PARALLEL_LANES] =
-                core::array::from_fn(|i| self.buf[i].as_slice());
+            let mut borrowed = [[0u8; RATE].as_slice(); PARALLEL_LANES];
+            // We have a full block in the local buffer now.
+            #[allow(clippy::needless_range_loop)]
+            for i in 0..PARALLEL_LANES {
+                borrowed[i] = &self.buf[i];
+            }
 
             self.inner.load_block::<RATE>(&borrowed, 0);
             self.inner.keccakf1600();

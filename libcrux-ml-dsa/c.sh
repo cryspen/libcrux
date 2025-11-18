@@ -69,7 +69,8 @@ if [[ "$no_charon" = 0 ]]; then
                                     --include 'libcrux_sha3' \
                                     --start-from libcrux_ml_dsa --start-from libcrux_sha3 \
                                     --include 'core::num::*::BITS' --include 'core::num::*::MAX' \
-                                    --rustc-arg=-Cdebug-assertions=no
+                                    --rustc-arg=-Cdebug-assertions=no -- \
+                                    --target=x86_64-apple-darwin 
     if ! [[ -f $repo_root/libcrux_ml_dsa.llbc ]]; then
         echo "😱😱😱 You are the victim of a bug."
         echo "Suggestion: rm -rf ../target or cargo clean"
