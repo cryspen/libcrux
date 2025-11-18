@@ -87,17 +87,6 @@ if [[ "$no_charon" = 0 ]]; then
         echo "Suggestion: rm -rf $repo_root/target or cargo clean"
         exit 1
     fi
-    # # Because of a Charon bug we have to clean the sha3 crate.
-    # cargo clean -p libcrux-sha3
-    # echo "Running charon (sha3) ..."
-    # (cd $repo_root/libcrux-sha3 && RUSTFLAGS="--cfg eurydice" $CHARON_HOME/bin/charon --remove-associated-types '*' --rustc-arg=-Cdebug-assertions=no)
-    # if ! [[ -f $repo_root/libcrux_sha3.llbc ]]; then
-    #     echo "😱😱😱 You are the victim of this bug: https://hacspec.zulipchat.com/#narrow/stream/433829-Circus/topic/charon.20declines.20to.20generate.20an.20llbc.20file"
-    #     echo "Suggestion: rm -rf $repo_root/target or cargo clean"
-    #     exit 1
-    # fi
-    # echo "Running charon (ml-kem) ..."
-    # RUSTFLAGS="--cfg eurydice" $CHARON_HOME/bin/charon --remove-associated-types '*' --rustc-arg=-Cdebug-assertions=no $features
 else
     echo "Skipping charon"
 fi
