@@ -21,7 +21,7 @@ using namespace std;
 
 TEST(MlKem1024TestAvx2, ConsistencyTest)
 {
-    uint8_t randomness[64];
+    uint8_t randomness[64] = {0};
     for (int i = 0; i < 64; i++)
     {
         randomness[i] = 13;
@@ -42,15 +42,15 @@ TEST(MlKem1024TestAvx2, ConsistencyTest)
 #ifdef LIBCRUX_UNPACKED
 TEST(MlKem1024TestAvx2Unpacked, ConsistencyTest)
 {
-    uint8_t randomness[64];
+    uint8_t randomness[64] = {0};
     generate_random(randomness, 64);
     auto key_pair = libcrux_ml_kem_mlkem1024_avx2_generate_key_pair_unpacked(randomness);
 
-    uint8_t randomness2[32];
+    uint8_t randomness2[32] = {0};
     generate_random(randomness2, 32);
     auto ctxt = libcrux_ml_kem_mlkem1024_avx2_encapsulate_unpacked(&key_pair.public_key, randomness2);
 
-    uint8_t sharedSecret2[LIBCRUX_ML_KEM_CONSTANTS_SHARED_SECRET_SIZE];
+    uint8_t sharedSecret2[LIBCRUX_ML_KEM_CONSTANTS_SHARED_SECRET_SIZE] = {0};
     libcrux_ml_kem_mlkem1024_avx2_decapsulate_unpacked(&key_pair, &ctxt.fst, sharedSecret2);
 
     EXPECT_EQ(0,
@@ -62,7 +62,7 @@ TEST(MlKem1024TestAvx2Unpacked, ConsistencyTest)
 
 TEST(MlKem1024TestAvx2, ModifiedCiphertextTest)
 {
-    uint8_t randomness[64];
+    uint8_t randomness[64] = {0};
     generate_random(randomness, 64);
     auto key_pair = libcrux_ml_kem_mlkem1024_avx2_generate_key_pair(randomness);
 
@@ -95,7 +95,7 @@ TEST(MlKem1024TestAvx2, ModifiedCiphertextTest)
 
 TEST(MlKem1024TestAvx2, ModifiedSecretKeyTest)
 {
-    uint8_t randomness[64];
+    uint8_t randomness[64] = {0};
     generate_random(randomness, 64);
     auto key_pair = libcrux_ml_kem_mlkem1024_avx2_generate_key_pair(randomness);
 
@@ -139,21 +139,21 @@ TEST(MlKem1024TestAvx2, NISTKnownAnswerTest)
         auto key_pair =
             libcrux_ml_kem_mlkem1024_avx2_generate_key_pair(kat.key_generation_seed.data());
 
-        uint8_t pk_hash[32];
+        uint8_t pk_hash[32] = {0};
         libcrux_sha3_sha256(
             mk_slice(key_pair.pk.value,
                      LIBCRUX_ML_KEM_MLKEM1024_CPA_PKE_PUBLIC_KEY_SIZE),
             pk_hash);
         EXPECT_EQ(0, memcmp(pk_hash, kat.sha3_256_hash_of_public_key.data(), 32));
 
-        uint8_t sk_hash[32];
+        uint8_t sk_hash[32] = {0};
         libcrux_sha3_sha256(
             mk_slice(key_pair.sk.value, LIBCRUX_ML_KEM_MLKEM1024_SECRET_KEY_SIZE), sk_hash);
         EXPECT_EQ(0, memcmp(sk_hash, kat.sha3_256_hash_of_secret_key.data(), 32));
 
         auto ctxt = libcrux_ml_kem_mlkem1024_avx2_encapsulate(
             &key_pair.pk, kat.encapsulation_seed.data());
-        uint8_t ct_hash[32];
+        uint8_t ct_hash[32] = {0};
         libcrux_sha3_sha256(
             mk_slice(ctxt.fst.value,
                      LIBCRUX_ML_KEM_MLKEM1024_CPA_PKE_CIPHERTEXT_SIZE),
@@ -164,7 +164,7 @@ TEST(MlKem1024TestAvx2, NISTKnownAnswerTest)
                          kat.shared_secret.data(),
                          LIBCRUX_ML_KEM_CONSTANTS_SHARED_SECRET_SIZE));
 
-        uint8_t sharedSecret2[LIBCRUX_ML_KEM_CONSTANTS_SHARED_SECRET_SIZE];
+        uint8_t sharedSecret2[LIBCRUX_ML_KEM_CONSTANTS_SHARED_SECRET_SIZE] = {0};
         libcrux_ml_kem_mlkem1024_avx2_decapsulate(&key_pair.sk, &ctxt.fst, sharedSecret2);
 
         EXPECT_EQ(0,
@@ -189,7 +189,7 @@ TEST(MlKem1024TestAvx2Unpacked, NISTKnownAnswerTest)
 
         auto ctxt = libcrux_ml_kem_mlkem1024_avx2_encapsulate_unpacked(&key_pair.public_key, kat.encapsulation_seed.data());
 
-        uint8_t ct_hash[32];
+        uint8_t ct_hash[32] = {0};
         libcrux_sha3_sha256(
             mk_slice(ctxt.fst.value,
                      LIBCRUX_ML_KEM_MLKEM1024_CPA_PKE_CIPHERTEXT_SIZE),
@@ -200,7 +200,7 @@ TEST(MlKem1024TestAvx2Unpacked, NISTKnownAnswerTest)
                          kat.shared_secret.data(),
                          LIBCRUX_ML_KEM_CONSTANTS_SHARED_SECRET_SIZE));
 
-        uint8_t sharedSecret2[LIBCRUX_ML_KEM_CONSTANTS_SHARED_SECRET_SIZE];
+        uint8_t sharedSecret2[LIBCRUX_ML_KEM_CONSTANTS_SHARED_SECRET_SIZE] = {0};
         libcrux_ml_kem_mlkem1024_avx2_decapsulate_unpacked(&key_pair, &ctxt.fst, sharedSecret2);
 
         EXPECT_EQ(0,

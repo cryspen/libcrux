@@ -10,7 +10,7 @@
 
 TEST(Kyber768TestPortable, ConsistencyTest)
 {
-    uint8_t randomness[64];
+    uint8_t randomness[64] = {0};
     for (int i = 0; i < 64; i++)
     {
         randomness[i] = 13;
@@ -19,7 +19,7 @@ TEST(Kyber768TestPortable, ConsistencyTest)
 
     auto ctxt = libcrux_ml_kem_mlkem768_portable_kyber_encapsulate(&key_pair.pk, randomness);
 
-    uint8_t sharedSecret2[LIBCRUX_ML_KEM_CONSTANTS_SHARED_SECRET_SIZE];
+    uint8_t sharedSecret2[LIBCRUX_ML_KEM_CONSTANTS_SHARED_SECRET_SIZE] = {0};
     libcrux_ml_kem_mlkem768_portable_kyber_decapsulate(&key_pair.sk, &ctxt.fst, sharedSecret2);
 
     EXPECT_EQ(0,
@@ -38,21 +38,21 @@ TEST(Kyber768TestPortable, NISTKnownAnswerTest)
         auto key_pair =
             libcrux_ml_kem_mlkem768_portable_generate_key_pair(kat.key_generation_seed.data());
 
-        uint8_t pk_hash[32];
+        uint8_t pk_hash[32] = {0};
         libcrux_sha3_sha256(
             mk_slice(key_pair.pk.value,
                      LIBCRUX_ML_KEM_MLKEM768_CPA_PKE_PUBLIC_KEY_SIZE),
             pk_hash);
         EXPECT_EQ(0, memcmp(pk_hash, kat.sha3_256_hash_of_public_key.data(), 32));
 
-        uint8_t sk_hash[32];
+        uint8_t sk_hash[32] = {0};
         libcrux_sha3_sha256(
             mk_slice(key_pair.sk.value, LIBCRUX_ML_KEM_MLKEM768_SECRET_KEY_SIZE), sk_hash);
         EXPECT_EQ(0, memcmp(sk_hash, kat.sha3_256_hash_of_secret_key.data(), 32));
 
         auto ctxt = libcrux_ml_kem_mlkem768_portable_kyber_encapsulate(
             &key_pair.pk, kat.encapsulation_seed.data());
-        uint8_t ct_hash[32];
+        uint8_t ct_hash[32] = {0};
         libcrux_sha3_sha256(
             mk_slice(ctxt.fst.value,
                      LIBCRUX_ML_KEM_MLKEM768_CPA_PKE_CIPHERTEXT_SIZE),
@@ -63,7 +63,7 @@ TEST(Kyber768TestPortable, NISTKnownAnswerTest)
                          kat.shared_secret.data(),
                          LIBCRUX_ML_KEM_CONSTANTS_SHARED_SECRET_SIZE));
 
-        uint8_t sharedSecret2[LIBCRUX_ML_KEM_CONSTANTS_SHARED_SECRET_SIZE];
+        uint8_t sharedSecret2[LIBCRUX_ML_KEM_CONSTANTS_SHARED_SECRET_SIZE] = {0};
         libcrux_ml_kem_mlkem768_portable_kyber_decapsulate(&key_pair.sk, &ctxt.fst, sharedSecret2);
 
         EXPECT_EQ(0,
@@ -78,13 +78,13 @@ TEST(Kyber768TestPortable, NISTKnownAnswerTest)
 
 TEST(Kyber768TestAvx2, ConsistencyTest)
 {
-    uint8_t randomness[64];
+    uint8_t randomness[64] = {0};
     for (int i = 0; i < 64; i++)
         randomness[i] = 13;
     auto key_pair = libcrux_ml_kem_mlkem768_avx2_generate_key_pair(randomness);
     auto ctxt = libcrux_ml_kem_mlkem768_avx2_kyber_encapsulate(&key_pair.pk, randomness);
 
-    uint8_t sharedSecret2[LIBCRUX_ML_KEM_CONSTANTS_SHARED_SECRET_SIZE];
+    uint8_t sharedSecret2[LIBCRUX_ML_KEM_CONSTANTS_SHARED_SECRET_SIZE] = {0};
     libcrux_ml_kem_mlkem768_avx2_kyber_decapsulate(&key_pair.sk, &ctxt.fst, sharedSecret2);
 
     EXPECT_EQ(0,
@@ -102,21 +102,21 @@ TEST(Kyber768TestAvx2, NISTKnownAnswerTest)
     {
         auto key_pair = libcrux_ml_kem_mlkem768_avx2_generate_key_pair(kat.key_generation_seed.data());
 
-        uint8_t pk_hash[32];
+        uint8_t pk_hash[32] = {0};
         libcrux_sha3_sha256(
             mk_slice(key_pair.pk.value,
                      LIBCRUX_ML_KEM_MLKEM768_CPA_PKE_PUBLIC_KEY_SIZE),
             pk_hash);
         EXPECT_EQ(0, memcmp(pk_hash, kat.sha3_256_hash_of_public_key.data(), 32));
 
-        uint8_t sk_hash[32];
+        uint8_t sk_hash[32] = {0};
         libcrux_sha3_sha256(
             mk_slice(key_pair.sk.value, LIBCRUX_ML_KEM_MLKEM768_SECRET_KEY_SIZE), sk_hash);
         EXPECT_EQ(0, memcmp(sk_hash, kat.sha3_256_hash_of_secret_key.data(), 32));
 
         auto ctxt = libcrux_ml_kem_mlkem768_avx2_kyber_encapsulate(
             &key_pair.pk, kat.encapsulation_seed.data());
-        uint8_t ct_hash[32];
+        uint8_t ct_hash[32] = {0};
         libcrux_sha3_sha256(
             mk_slice(ctxt.fst.value,
                      LIBCRUX_ML_KEM_MLKEM768_CPA_PKE_CIPHERTEXT_SIZE),
@@ -127,7 +127,7 @@ TEST(Kyber768TestAvx2, NISTKnownAnswerTest)
                          kat.shared_secret.data(),
                          LIBCRUX_ML_KEM_CONSTANTS_SHARED_SECRET_SIZE));
 
-        uint8_t sharedSecret2[LIBCRUX_ML_KEM_CONSTANTS_SHARED_SECRET_SIZE];
+        uint8_t sharedSecret2[LIBCRUX_ML_KEM_CONSTANTS_SHARED_SECRET_SIZE] = {0};
         libcrux_ml_kem_mlkem768_avx2_kyber_decapsulate(&key_pair.sk, &ctxt.fst, sharedSecret2);
 
         EXPECT_EQ(0,
@@ -143,13 +143,13 @@ TEST(Kyber768TestAvx2, NISTKnownAnswerTest)
 
 TEST(Kyber768TestNeon, ConsistencyTest)
 {
-    uint8_t randomness[64];
+    uint8_t randomness[64] = {0};
     for (int i = 0; i < 64; i++)
         randomness[i] = 13;
     auto key_pair = libcrux_ml_kem_mlkem768_neon_generate_key_pair(randomness);
     auto ctxt = libcrux_ml_kem_mlkem768_neon_encapsulate(&key_pair.pk, randomness);
 
-    uint8_t sharedSecret2[LIBCRUX_ML_KEM_CONSTANTS_SHARED_SECRET_SIZE];
+    uint8_t sharedSecret2[LIBCRUX_ML_KEM_CONSTANTS_SHARED_SECRET_SIZE] = {0};
     libcrux_ml_kem_mlkem768_neon_decapsulate(&key_pair.sk, &ctxt.fst, sharedSecret2);
 
     EXPECT_EQ(0,
@@ -167,21 +167,21 @@ TEST(Kyber768TestNeon, NISTKnownAnswerTest)
     {
         auto key_pair = libcrux_ml_kem_mlkem768_neon_generate_key_pair(kat.key_generation_seed.data());
 
-        uint8_t pk_hash[32];
+        uint8_t pk_hash[32] = {0};
         libcrux_sha3_sha256(
             mk_slice(key_pair.pk.value,
                      LIBCRUX_ML_KEM_MLKEM768_CPA_PKE_PUBLIC_KEY_SIZE),
             pk_hash);
         EXPECT_EQ(0, memcmp(pk_hash, kat.sha3_256_hash_of_public_key.data(), 32));
 
-        uint8_t sk_hash[32];
+        uint8_t sk_hash[32] = {0};
         libcrux_sha3_sha256(
             mk_slice(key_pair.sk.value, LIBCRUX_ML_KEM_MLKEM768_SECRET_KEY_SIZE), sk_hash);
         EXPECT_EQ(0, memcmp(sk_hash, kat.sha3_256_hash_of_secret_key.data(), 32));
 
         auto ctxt = libcrux_ml_kem_mlkem768_neon_encapsulate(
             &key_pair.pk, kat.encapsulation_seed.data());
-        uint8_t ct_hash[32];
+        uint8_t ct_hash[32] = {0};
         libcrux_sha3_sha256(
             mk_slice(ctxt.fst.value,
                      LIBCRUX_ML_KEM_MLKEM768_CPA_PKE_CIPHERTEXT_SIZE),
@@ -192,7 +192,7 @@ TEST(Kyber768TestNeon, NISTKnownAnswerTest)
                          kat.shared_secret.data(),
                          LIBCRUX_ML_KEM_CONSTANTS_SHARED_SECRET_SIZE));
 
-        uint8_t sharedSecret2[LIBCRUX_ML_KEM_CONSTANTS_SHARED_SECRET_SIZE];
+        uint8_t sharedSecret2[LIBCRUX_ML_KEM_CONSTANTS_SHARED_SECRET_SIZE] = {0};
         libcrux_ml_kem_mlkem768_neon_decapsulate(&key_pair.sk, &ctxt.fst, sharedSecret2);
 
         EXPECT_EQ(0,

@@ -16,7 +16,7 @@ using namespace std;
 typedef vector<uint8_t> bytes;
 
 Eurydice_borrow_slice_u8 mk_borrow_slice_u8(const uint8_t *x, size_t len) {
-  Eurydice_borrow_slice_u8 s;
+  Eurydice_borrow_slice_u8 s = {0};
   s.ptr = x;
   s.meta = len;
   return s;
@@ -26,7 +26,7 @@ Eurydice_borrow_slice_u8 mk_borrow_slice_u8(const uint8_t *x, size_t len) {
 template <typename T>
 Eurydice_slice mk_slice(T *x, size_t len)
 {
-    Eurydice_slice s;
+    Eurydice_slice s = {0};
     s.ptr = (void *)x;
     s.len = len;
     return s;
@@ -35,12 +35,11 @@ Eurydice_slice mk_slice(T *x, size_t len)
 TEST(MlDsa65TestPortable, ConsistencyTest)
 {
     // Generate key pair
-    Eurydice_arr_60
- keygen_rand;
+    Eurydice_arr_60 keygen_rand = {0};
     memset(keygen_rand.data, 0x13, 32);
 
-    Eurydice_arr_d10 signing_key;
-    Eurydice_arr_4a verification_key;
+    Eurydice_arr_d10 signing_key = {0};
+    Eurydice_arr_4a verification_key = {0};
     libcrux_ml_dsa_ml_dsa_65_portable_generate_key_pair_mut(
         keygen_rand,
         &signing_key,
@@ -48,14 +47,13 @@ TEST(MlDsa65TestPortable, ConsistencyTest)
 
     // Sign
     uint8_t msg[79] = {0};
-    Eurydice_arr_60
- sign_rand;
+    Eurydice_arr_60 sign_rand = {0};
     memset(sign_rand.data, 0x13, 32);
-    uint8_t context[3];
+    uint8_t context[3] = {0};
 
     auto msg_slice = mk_borrow_slice_u8((uint8_t*)msg, 79);
     auto context_slice = mk_borrow_slice_u8((uint8_t*)context, 3);
-    Eurydice_arr_96 signature;
+    Eurydice_arr_96 signature = {0};
     auto signature_result = libcrux_ml_dsa_ml_dsa_65_portable_sign_mut(
         &signing_key,
         msg_slice,
@@ -79,17 +77,15 @@ TEST(MlDsa65TestPortable, ConsistencyTest)
 
 TEST(MlDsa65TestAvx2, ConsistencyTest)
 {
-    Eurydice_arr_60
- keygen_rand;
+    Eurydice_arr_60 keygen_rand = {0};
     memset(keygen_rand.data, 0x13, 32);
     auto key_pair = libcrux_ml_dsa_ml_dsa_65_avx2_generate_key_pair(keygen_rand);
 
     // Sign
     uint8_t msg[79] = {0};
-    Eurydice_arr_60
- sign_rand;
+    Eurydice_arr_60 sign_rand = {0};
     memset(sign_rand.data, 0x13, 32);
-    uint8_t context[3];
+    uint8_t context[3] = {0};
 
     auto msg_slice = mk_borrow_slice_u8((uint8_t*)msg, 79);
     auto context_slice = mk_borrow_slice_u8((uint8_t*)context, 3);
