@@ -4,27 +4,27 @@ set -v -e -x
 
 source $HOME/.profile
 
-curl -L https://github.com/AeneasVerif/charon/archive/$CHARON_REV.zip \
-    --output charon.zip
-unzip charon.zip
-rm -rf charon.zip
-mv charon-$CHARON_REV/ charon
+git clone https://github.com/AeneasVerif/eurydice.git
+cd eurydice
+git checkout $EURYDICE_REV
 
-curl -L https://github.com/FStarLang/karamel/archive/$KRML_REV.zip \
-    --output karamel.zip
-unzip karamel.zip
-rm -rf karamel.zip
-mv karamel-$KRML_REV/ karamel
+make setup-karamel
+make setup-charon
+make setup-libcrux
 
-curl -L https://github.com/AeneasVerif/eurydice/archive/$EURYDICE_REV.zip \
-    --output eurydice.zip
-unzip eurydice.zip
-rm -rf eurydice.zip
-mv eurydice-$EURYDICE_REV/ eurydice
+make test
 
-echo "export KRML_HOME=$HOME/karamel" >>$HOME/.profile
+# Remove Charon build files, since the binary has been generated
+cd charon/charon
+cargo clean
+cd -
+
+echo "export KRML_HOME=$HOME/eurydice/karamel" >>$HOME/.profile
 echo "export EURYDICE_HOME=$HOME/eurydice" >>$HOME/.profile
-echo "export CHARON_HOME=$HOME/charon" >>$HOME/.profile
+echo "export CHARON_HOME=$HOME/eurydice/charon" >>$HOME/.profile
+
+CHARON_REV="$(jq -r ".nodes.charon.locked.rev" flake.lock)"
+KRML_REV="$(jq -r ".nodes.karamel.locked.rev" flake.lock)"
 
 echo "export KRML_REV=$KRML_REV" >>$HOME/.profile
 echo "export EURYDICE_REV=$EURYDICE_REV" >>$HOME/.profile
@@ -32,20 +32,3 @@ echo "export CHARON_REV=$CHARON_REV" >>$HOME/.profile
 
 source $HOME/.profile
 
-# Build everything
-cd charon
-make build-charon-rust -j
-cd -
-
-cd karamel
-make -j
-cd -
-
-cd eurydice/lib
-rm -f charon
-ln -s $CHARON_HOME charon
-rm -f krml
-ln -s $KRML_HOME/lib krml
-cd ../
-make -j
-cd ../

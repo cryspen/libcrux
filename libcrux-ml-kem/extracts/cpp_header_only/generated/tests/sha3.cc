@@ -1,5 +1,6 @@
 
 #include <gtest/gtest.h>
+
 #include <nlohmann/json.hpp>
 
 #include "libcrux_sha3_portable.h"
@@ -8,9 +9,7 @@ using namespace std;
 
 typedef vector<uint8_t> bytes;
 
-vector<uint8_t>
-from_hex(const string& hex)
-{
+vector<uint8_t> from_hex(const string& hex) {
   if (hex.length() % 2 == 1) {
     throw invalid_argument("Odd-length hex string");
   }
@@ -25,9 +24,7 @@ from_hex(const string& hex)
   return out;
 }
 
-string
-bytes_to_hex(const vector<uint8_t>& data)
-{
+string bytes_to_hex(const vector<uint8_t>& data) {
   stringstream hex(ios_base::out);
   hex.flags(ios::hex);
   for (const auto& byte : data) {
@@ -36,23 +33,18 @@ bytes_to_hex(const vector<uint8_t>& data)
   return hex.str();
 }
 
-TEST(Sha3Test, ConsistencyTest)
-{
-    const char* message = "Hello, World!";
-    uint32_t message_size = strlen(message);
+TEST(Sha3Test, ConsistencyTest) {
+  const char* message = "Hello, World!";
+  uint32_t message_size = strlen(message);
 
-    uint8_t digest[32];
-    Eurydice_slice input;
-    input.ptr = (void*) message;
-    input.len = message_size;
+  Eurydice_borrow_slice_u8_s input = {0};
+  input.ptr = (uint8_t*)message;
+  input.meta = message_size;
 
-    libcrux_sha3_sha256(input,digest);
+  auto digest = libcrux_sha3_sha256(input);
 
-    bytes expected_digest = from_hex(
+  bytes expected_digest = from_hex(
       "1af17a664e3fa8e419b8ba05c2a173169df76162a5a286e0c405b460d478f7ef");
 
-    EXPECT_EQ(strncmp((char*)digest,
-                      (char*)expected_digest.data(),
-                      32),
-              0);
+  EXPECT_EQ(strncmp((char*)digest.data, (char*)expected_digest.data(), 32), 0);
 }
