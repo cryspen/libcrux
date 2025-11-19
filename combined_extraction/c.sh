@@ -73,31 +73,39 @@ if [[ "$no_charon" = 0 ]]; then
     cargo clean -p libcrux-sha3
     rm -rf $repo_root/libcrux_ml_kem.llbc $repo_root/libcrux_sha3.llbc $repo_root/libcrux_secrets.llbc $repo_root/libcrux_ml_dsa.llbc
 
+    flags=
+    if [[ $(uname -m) == "arm64" ]]
+       flags+=--target=x86_64-apple-darwin
+    fi
+
     cd $repo_root/libcrux-sha3
     echo "Running charon (SHA3) ..."
     RUSTFLAGS="-Cdebug-assertions=no --cfg eurydice" $CHARON_HOME/bin/charon cargo \
-      --preset eurydice \
-      --start-from libcrux_sha3 \
-      --include 'core::num::*::BITS' --include 'core::num::*::MAX'
+             --preset eurydice \
+             --start-from libcrux_sha3 \
+             --include 'core::num::*::BITS' --include 'core::num::*::MAX' \
+             -- $flags
     
     cd $repo_root/libcrux-ml-kem
     
     echo "Running charon (ML-KEM) ..."
     RUSTFLAGS="-Cdebug-assertions=no --cfg eurydice" $CHARON_HOME/bin/charon cargo \
-       $features_mlkem \
-      --preset eurydice \
-      --include 'libcrux_secrets' \
-      --start-from libcrux_ml_kem \
-      --include 'core::num::*::BITS' --include 'core::num::*::MAX'
-
+             $features_mlkem \
+             --preset eurydice \
+             --include 'libcrux_secrets' \
+             --start-from libcrux_ml_kem \
+             --include 'core::num::*::BITS' --include 'core::num::*::MAX' \
+             -- $flags
+    
     cd $repo_root/libcrux-ml-dsa
     echo "Running charon (ML-DSA) ..."
     RUSTFLAGS="--cfg eurydice" $CHARON_HOME/bin/charon cargo \
-                                    $features_mldsa \
-                                    --preset eurydice \
-                                    --start-from libcrux_ml_dsa \
-                                    --include 'core::num::*::BITS' --include 'core::num::*::MAX' \
-                                    --rustc-arg=-Cdebug-assertions=no
+             $features_mldsa \
+             --preset eurydice \
+             --start-from libcrux_ml_dsa \
+             --include 'core::num::*::BITS' --include 'core::num::*::MAX' \
+             --rustc-arg=-Cdebug-assertions=no \
+             -- $flags
     
     # rm -rf $repo_root/libcrux_ml_kem.llbc $repo_root/libcrux_sha3.llbc $repo_root/libcrux_secrets.llbc
     # echo "Running charon (secrets) ..."
