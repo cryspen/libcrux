@@ -6,7 +6,10 @@ use core::ops::Index;
 use crate::traits::*;
 
 #[cfg(hax)]
-use hax_lib::{constructors::from_bool, forall, implies, int::ToInt};
+use crate::proof_utils::{slices_same_len, valid_rate};
+
+#[cfg(hax)]
+use hax_lib::{constructors::from_bool, int::ToInt};
 
 /// A generic Xof API.
 pub(crate) mod xof;
@@ -99,6 +102,9 @@ impl<const N: usize, T: KeccakItem<N>> KeccakState<N, T> {
         ]
     }
 
+    // Splitting rho and pi into multiple functions is needed for formal verification in F*.
+    // Having to many manipulations of the keccak state in a single function causes the
+    // verification condition explode exponentially and never completes.
     #[inline(always)]
     fn rho_0(&mut self, t: [T; 5]) {
         self.set(0, 0, T::xor(self[(0, 0)], t[0]));
@@ -245,17 +251,10 @@ impl<const N: usize, T: KeccakItem<N>> KeccakState<N, T> {
     #[hax_lib::requires(
       from_bool(
         N != 0 &&
-        RATE <= 200 &&
-        RATE % 8 == 0 &&
-        (RATE % 32 == 8 || RATE % 32 == 16) &&
+        valid_rate(RATE) &&
         start.to_int() + RATE.to_int() <= input[0].len().to_int()
       ).and(
-        forall(|i: usize|
-          implies(
-            i < N,
-            input[0].len() == input[i].len()
-          )
-        )
+        slices_same_len(input)
       )
     )]
     fn absorb_block<const RATE: usize>(&mut self, input: &[&[u8]; N], start: usize)
@@ -273,18 +272,11 @@ impl<const N: usize, T: KeccakItem<N>> KeccakState<N, T> {
     #[hax_lib::requires(
       from_bool(
         N != 0 &&
-        RATE <= 200 &&
-        RATE % 8 == 0 &&
-        (RATE % 32 == 8 || RATE % 32 == 16) &&
+        valid_rate(RATE) &&
         len < RATE &&
         start.to_int() + len.to_int() <= input[0].len().to_int()
       ).and(
-        forall(|i: usize|
-          implies(
-            i < N,
-            input[0].len() == input[i].len()
-          )
-        )
+        slices_same_len(input)
       )
     )]
     pub(crate) fn absorb_final<const RATE: usize, const DELIM: u8>(
