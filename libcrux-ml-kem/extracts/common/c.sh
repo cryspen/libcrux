@@ -76,8 +76,8 @@ if [[ "$no_charon" = 0 ]]; then
     rm -rf $repo_root/libcrux_ml_kem.llbc $repo_root/libcrux_sha3.llbc $repo_root/libcrux_secrets.llbc
 
     flags=
-    if [[ $(uname -m) == "arm64" ]]
         flags+=--target=x86_64-apple-darwin
+    if [[ $(uname -m) == "arm64" ]]; then
     fi
 
     echo "Running charon (all) ..."
