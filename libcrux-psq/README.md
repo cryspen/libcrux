@@ -31,7 +31,7 @@ A:
     K_0  = KDF(dh_shared_secret_query, tx0)
     (enc_query, tag_query) <- AEAD.Encrypt(K_0, query_payload, query_aad)
     
-A -> B: (pk_A, enc_query, tag_query, query_aad)
+A -> B: (epk_A, enc_query, tag_query, query_aad)
 
 B:
     tx0 = hash(0 | ctx | pk_B | epk_A)
@@ -123,6 +123,74 @@ A:
     dh_shared_secret_response_1 = DH.Derive(sk_A, epk_B)
     dh_shared_secret_response_2 = DH.Derive(esk_A, epk_B)
     K_2 = KDF(K_1 | dh_shared_secret_response_1 | dh_shared_secret_response_2, tx2)
+    response_payload = AEAD.Decrypt(K_2, enc_response, tag_response, response_aad)
+
+```
+
+### Client-authenticating Handshake
+```
+Common Inputs:
+    - ctx
+    
+Inputs of A: 
+    - registration_payload
+    - registration_outer_aad
+    - registration_inner_aad
+    - pk_B = g^s
+    <!-- - (sk_A = c, pk_A = g^c) -->
+    - (sk_A, vk_A)
+    - pqpk_B (optional)
+    
+Inputs of B: 
+    - (sk_B = s, pk_B = g^s)
+    - vk_A
+    - (pqsk_B, pqpk_B)
+    - query handler f,
+    - response_aad, 
+    - registration handler f
+    
+A: 
+    (esk_A = x, epk_A = g^x) <- DH.KeyGen()
+    tx0 = hash(0 | ctx | pk_B | epk_A)
+    dh_shared_secret_outer = DH.Derive(esk_A, pk_B)
+    K_0  = KDF(dh_shared_secret_outer, tx0)
+    if pqpk_S provided
+        (enc_pq, pq_shared_secret) <- PQKEM.Encapsulate(pqpk_S)
+    tx1 = hash(1 | tx0 | vk_A | [pqpk_S] | [enc_pq])
+    sigC = Sig.Sign(sk_A, tx1)
+    K_1 = KDF(K_0 | [pq_shared_secret], tx1 | sigC)
+    (enc_inner, tag_inner) <- AEAD.Encrypt(K_1, registration_payload, registration_inner_aad)
+    (enc_outer, tag_outer) <- AEAD.Encrypt(K_0, (vk_A | enc_inner | tag_inner | registration_inner_aad | | sigC | [enc_pq]), registration_outer_aad)
+    
+A -> B: (epk_A, enc_outer, tag_outer, registration_outer_aad)
+
+B:
+    tx0 = hash(0 | ctx | pk_B | epk_A)
+    dh_shared_secret_outer = DH.Derive(sk_B, epk_A)
+    K_0 = KDF(dh_shared_secret_outer)
+    (vk_A | enc_inner | tag_inner | registration_inner_aad | sigC | [enc_pq]) = AEAD.Decrypt(K_0, enc_outer, tag_outer, registration_outer_aad)
+    tx1 = hash(1 | tx0 | vk_A | [pqpk_S] | [enc_pq])
+    if !Sig.Verify(vk_A, tx1, sigC)
+        abort
+    if enc_pq provided
+        pq_shared_secret <- PQKEM.Decapsulate(pqsk_B, enc_pq)
+    K_1 = KDF(K_0 | [pq_shared_secret], tx1 | sigC)
+    registration_payload = AEAD.Decrypt(K_1, enc_inner, tag_inner, registration_inner_aad)
+    ...
+    response_payload <- f(registration_payload)
+    ...
+    (esk_B = y, epk_B = g^y) <- DH.KeyGen()
+    tx2 = hash(2 | tx1 | epk_B)
+    dh_shared_secret_response_1 = DH.Derive(esk_B, epk_A)
+    K_2 = KDF(K_1 | dh_shared_secret_response_1, tx2)
+    (enc_response, tag_response) <- AEAD.Encrypt(K_2, response_payload, response_aad)
+    
+B -> A: (epk_B, enc_response, tag_response, response_aad)
+
+A: 
+    tx2 = hash(2 | tx1 | epk_B)
+    dh_shared_secret_response_1 = DH.Derive(esk_A, epk_B)
+    K_2 = KDF(K_1 | dh_shared_secret_response_1, tx2)
     response_payload = AEAD.Decrypt(K_2, enc_response, tag_response, response_aad)
 
 ```
