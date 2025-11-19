@@ -43,16 +43,18 @@ B:
     ...
     (esk_B = y, epk_B = g^y) <- DH.KeyGen()
     tx2 = hash(2 | tx0 | epk_B)
-    dh_shared_secret_response = DH.Derive(esk_B, epk_A)
-    K_2 = KDF(K_0 | dh_shared_secret_response, tx2)
+    dh_shared_secret_response_1 = DH.Derive(sk_B, epk_A)
+    dh_shared_secret_response_2 = DH.Derive(esk_B, epk_A)
+    K_2 = KDF(K_0 | dh_shared_secret_response_1 | dh_shared_secret_response_2, tx2)
     (enc_response, tag_response) <- AEAD.Encrypt(K_2, response_payload, response_aad)
 
 B -> A: (epk_B, enc_response, tag_response, response_aad)
 
 A:
     tx2 = hash(2 | tx0 | epk_B)
-    dh_shared_secret_response = DH.Derive(esk_A, epk_B)
-    K_2 = KDF(K_0 | dh_shared_secret_response, tx2)
+    dh_shared_secret_response_1 = DH.Derive(esk_A, pk_B)
+    dh_shared_secret_response_2 = DH.Derive(esk_A, epk_B)
+    K_2 = KDF(K_0 | dh_shared_secret_response_1 | dh_shared_secret_response_2, tx2)
     response_payload = AEAD.Decrypt(K_2, enc_response, tag_response, response_aad)
 ```
 
@@ -125,7 +127,7 @@ A:
 
 ```
 
-### Client-authenticating Handshake
+### Client-authenticating Handshake (Proposal)
 ```
 Common Inputs:
     - ctx
@@ -135,13 +137,11 @@ Inputs of A:
     - registration_outer_aad
     - registration_inner_aad
     - pk_B = g^s
-    <!-- - (sk_A = c, pk_A = g^c) -->
     - (sk_A, vk_A)
     - pqpk_B (optional)
     
 Inputs of B: 
     - (sk_B = s, pk_B = g^s)
-    - vk_A
     - (pqsk_B, pqpk_B)
     - query handler f,
     - response_aad, 
