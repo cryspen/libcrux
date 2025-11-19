@@ -7,8 +7,10 @@ post-quantum shared secret between an initiator and a responder.
 
 ## Query Mode
 
-Query mode is a two-message protocol between initiator and responder.
+The outcome of a query run is that the initiator can send one payload
+to the responder, which can return one response to the initiator.
 
+These payloads **do not** enjoy post quantum protection.
 
 ```
 Common inputs:
@@ -59,6 +61,17 @@ A:
 ```
 
 ## Registration Mode
+
+The outcome of a query run is that initiator and responder agree on a
+shared secret `K_2` and the initiator can additionally send one
+payload to the responder, which can return one response to the
+initiator.
+
+Both payloads enjoy HNDL protection, if a PQ-secure inner KEM is
+used.
+
+The shared secret can be used to derive a large number of secure
+transport sessions between initiator and responder (see below).
 
 ### Handshake
 ```
@@ -195,8 +208,22 @@ A:
 
 ### Derived Sessions
 
-TODO
-
+Given a shared secret `K_2` and the final handshake transcript `tx2`
+initiator and receiver derive a main session key
+```
+K_S = KDF(K_2, "session key" | tx2)
+```
+and associated public key binder value
+```
+pk_binder = KDF(K_S, pk_A | pk_B | [pqpk_B])
+```
+From this main session key, initiator and responder can derive
+bidirectional transport keys for many secure channels, where
+`channel_counter` identifies the particular channel:
+```
+K_i2r = KDF(K_S, "i2r channel key" | pk_binder | channel_counter)
+K_r2i = KDF(K_S, "r2i channel key" | pk_binder | channel_counter)
+```
 ## PSQ v1
 Under optional feature `v1`, this crate implements the first version of PSQ, a
 protocol for establishing and mutually registering a pre-shared key
