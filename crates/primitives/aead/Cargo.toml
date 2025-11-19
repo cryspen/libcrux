@@ -1,20 +1,28 @@
 [package]
-name = "libcrux-aead"
 description = "Formally verified AEAD library"
-version = "0.0.3"
+name = "libcrux-aead"
 readme = "Readme.md"
+version = "0.0.4"
 
 authors.workspace = true
-license.workspace = true
-homepage.workspace = true
 edition.workspace = true
+homepage.workspace = true
+license.workspace = true
 repository.workspace = true
 
 [dependencies]
-libcrux-chacha20poly1305 = { version = "0.0.3", path = "../../../chacha20poly1305", optional = true }
-libcrux-traits = { version = "0.0.3", path = "../../../traits", optional = true }
+libcrux-chacha20poly1305 = { version = "0.0.4", path = "../../../chacha20poly1305", optional = true }
+libcrux-aesgcm = { version = "0.0.4", path = "../../algorithms/aesgcm", optional = true }
+libcrux-secrets = { version = "0.0.4", path = "../../../secrets" }
+libcrux-traits = { version = "0.0.4", path = "../../../traits", optional = true }
 
 [features]
-default = ["chacha20poly1305", "xchacha20poly1305"]
 chacha20poly1305 = ["dep:libcrux-chacha20poly1305", "dep:libcrux-traits"]
+default = ["chacha20poly1305", "xchacha20poly1305", "aesgcm128", "aesgcm256"]
 xchacha20poly1305 = ["dep:libcrux-chacha20poly1305", "dep:libcrux-traits"]
+aesgcm128 = ["dep:libcrux-aesgcm", "dep:libcrux-traits"]
+aesgcm256 = ["dep:libcrux-aesgcm", "dep:libcrux-traits"]   
+check-secret-independence = [
+    "libcrux-secrets/check-secret-independence",
+    "libcrux-traits/check-secret-independence",
+]

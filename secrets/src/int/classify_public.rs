@@ -5,11 +5,13 @@
 #[cfg(not(hax))]
 use crate::traits::*;
 
+#[cfg(hax)]
+use crate::traits::{ClassifyRef, DeclassifyRef, Scalar};
+
 // TODO: Remove hax exemptions once this is supported.
 //       See https://github.com/cryspen/hax/issues/1674.
 
 // Immutable references to slices can be classified
-#[cfg(not(hax))]
 impl<'a, T: Scalar> ClassifyRef for &'a [T] {
     type ClassifiedRef = &'a [T];
     #[inline(always)]
@@ -19,7 +21,6 @@ impl<'a, T: Scalar> ClassifyRef for &'a [T] {
 }
 
 // Immutable references to slices can be declassified
-#[cfg(not(hax))]
 impl<'a, T: Scalar> DeclassifyRef for &'a [T] {
     type DeclassifiedRef = &'a [T];
     #[inline(always)]

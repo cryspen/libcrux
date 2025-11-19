@@ -14,7 +14,6 @@ members = [
     "libcrux-intrinsics",
     "libcrux-kem",
     "libcrux-hmac",
-    "libcrux-hkdf",
     "libcrux-ecdh",
     "libcrux-psq",
     "macros",
@@ -32,7 +31,13 @@ members = [
     "secrets",
     "fstar-helpers/core-models",
     "test-utils",
+    "crates/algorithms/hkdf",
     "crates/primitives/aead",
+    "crates/primitives/digest",
+    "crates/testing/kats",
+    "crates/algorithms/aesgcm",
+    "crates/algorithms/aesgcm/fuzz",
+    "hacl-rs",
 ]
 
 [workspace.package]
@@ -48,7 +53,22 @@ readme = "Readme.md"
 allow-branch = ["main"]
 
 [workspace.dependencies]
-hax-lib = { version = "0.3.4" }
+hax-lib = { version = "=0.3.5" }
+libcrux-intrinsics = { version = "=0.0.4", path = "libcrux-intrinsics" }
+libcrux-aesgcm = { version = "=0.0.4", path = "crates/algorithms/aesgcm" }
+libcrux-chacha20poly1305 = { version = "=0.0.4", path = "chacha20poly1305" }
+libcrux-traits = { version = "=0.0.4", path = "traits" }
+libcrux-hacl-rs = { version = "=0.0.4", path = "hacl-rs" }
+libcrux-hacl = { version = "=0.0.2", path = "sys/hacl" }
+libcrux-platform = { version = "=0.0.2", path = "sys/platform" }
+libcrux-hkdf = { version = "=0.0.4", path = "crates/algorithms/hkdf" }
+libcrux-hmac = { version = "=0.0.4", path = "libcrux-hmac" }
+libcrux-sha2 = { version = "=0.0.4", path = "sha2" }
+libcrux-ed25519 = { version = "=0.0.4", path = "ed25519" }
+libcrux-ecdh = { version = "=0.0.4", path = "libcrux-ecdh" }
+libcrux-ml-kem = { version = "=0.0.4", path = "libcrux-ml-kem" }
+libcrux-kem = { version = "=0.0.4", path = "libcrux-kem" }
+libcrux-secrets = { version = "=0.0.4", path = "secrets" }
 
 [package]
 name = "libcrux"
@@ -81,23 +101,27 @@ bench = false                               # so libtest doesn't eat the argumen
 libcrux-platform = { version = "=0.0.2", path = "sys/platform" }
 
 [dependencies]
-libcrux-traits = { version = "=0.0.3", path = "traits" }
-libcrux-chacha20poly1305 = { version = "=0.0.3", path = "chacha20poly1305" }
-libcrux-hacl-rs = { version = "=0.0.3", path = "hacl-rs" }
-libcrux-hacl = { version = "=0.0.2", path = "sys/hacl" }
-libcrux-platform = { version = "=0.0.2", path = "sys/platform" }
-libcrux-hkdf = { version = "=0.0.3", path = "libcrux-hkdf" }
-libcrux-hmac = { version = "=0.0.3", path = "libcrux-hmac" }
-libcrux-sha2 = { version = "=0.0.3", path = "sha2" }
-libcrux-ed25519 = { version = "=0.0.3", path = "ed25519" }
-libcrux-ecdh = { version = "=0.0.3", path = "libcrux-ecdh" }
-libcrux-ml-kem = { version = "=0.0.3", path = "libcrux-ml-kem" }
-libcrux-kem = { version = "=0.0.3", path = "libcrux-kem" }
+libcrux-hacl-rs.workspace = true
+libcrux-chacha20poly1305.workspace = true
+libcrux-ml-kem.workspace = true
+libcrux-traits.workspace = true
+libcrux-hacl.workspace = true
+libcrux-platform.workspace = true
+libcrux-hkdf.workspace = true
+libcrux-hmac.workspace = true
+libcrux-sha2.workspace = true
+libcrux-ed25519.workspace = true
+libcrux-ecdh.workspace = true
+libcrux-kem.workspace = true
+
 rand = { version = "0.9" }
 log = { version = "0.4", optional = true }
+
 # WASM API
 wasm-bindgen = { version = "0.2.87", optional = true }
 getrandom = { version = "0.3", optional = true }
+
+# Proofs
 hax-lib.workspace = true
 
 [dev-dependencies]
@@ -131,6 +155,7 @@ experimental = []                    # Expose experimental APIs.
 lto = "fat"
 codegen-units = 1
 panic = "abort"
+strip = true
 
 # XXX: Not needed anymore, but nice for test speed
 # [profile.dev.package."libcrux-ml-dsa"]

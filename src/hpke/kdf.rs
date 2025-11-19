@@ -99,10 +99,17 @@ pub fn LabeledExtract(
     labeled_ikm.extend_from_slice(&label);
     labeled_ikm.extend_from_slice(ikm);
 
-    crate::hkdf::extract(hkdf_algorithm(alg), salt, &labeled_ikm).map_err(|err| match err {
-        libcrux_hkdf::Error::OkmTooLarge => HpkeError::CryptoError,
-        libcrux_hkdf::Error::ArgumentsTooLarge => HpkeError::InvalidParameters,
-    })
+    let algo = hkdf_algorithm(alg);
+
+    let mut prk = vec![0u8; algo.hash_len()];
+    crate::hkdf::extract(algo, &mut prk, salt, &labeled_ikm).map_err(|err| match err {
+        libcrux_hkdf::ExtractError::ArgumentTooLong => HpkeError::InvalidParameters,
+        libcrux_hkdf::ExtractError::PrkTooShort | libcrux_hkdf::ExtractError::Unknown => {
+            HpkeError::CryptoError
+        }
+    })?;
+
+    Ok(prk)
 }
 
 /// KDF: Labeled Expand
@@ -134,9 +141,10 @@ pub fn LabeledExpand(
         labeled_info.extend_from_slice(&label);
         labeled_info.extend_from_slice(info);
 
-        match crate::hkdf::expand(hkdf_algorithm(alg), prk, &labeled_info, L) {
-            Ok(r) => Ok(r),
-            Err(_) => Err(HpkeError::CryptoError),
-        }
+        let algo = hkdf_algorithm(alg);
+        let mut okm = vec![0; L];
+        crate::hkdf::expand(algo, &mut okm, prk, &labeled_info)
+            .map_err(|_| HpkeError::CryptoError)?;
+        Ok(okm)
     }
 }
