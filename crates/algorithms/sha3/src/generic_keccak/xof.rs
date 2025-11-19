@@ -6,10 +6,14 @@ use crate::{
 };
 
 #[cfg(hax)]
-#[hax_lib::fstar::replace("open Libcrux_sha3.Lemmas")]
+use crate::proof_utils::valid_rate;
+
+#[cfg(hax)]
+#[hax_lib::fstar::replace("open Libcrux_sha3.Proof_utils.Lemmas")]
 const _: () = ();
 
-// TODO: Should not be needed. Use hax_lib::fstar::options("")
+// TODO: Should not be needed. Use hax_lib::fstar::options("") below.
+// Known bug: https://github.com/cryspen/hax/issues/1698
 #[hax_lib::fstar::before(
     r#"
 #push-options "--split_queries always --z3rlimit 300"
@@ -18,7 +22,6 @@ const _: () = ();
 
 /// The internal keccak state that can also buffer inputs to absorb.
 /// This is used in the general xof APIs.
-#[hax_lib::attributes]
 pub(crate) struct KeccakXofState<
     const PARALLEL_LANES: usize,
     const RATE: usize,
@@ -44,15 +47,11 @@ pub(crate) fn keccak_xof_state_inv<
 >(
     xof: &KeccakXofState<PARALLEL_LANES, RATE, STATE>,
 ) -> bool {
-    RATE != 0
-        && RATE <= 200
-        && RATE % 8 == 0
-        && (RATE % 32 == 8 || RATE % 32 == 16)
-        && xof.buf_len <= RATE
+    valid_rate(RATE) && xof.buf_len <= RATE
 }
 
 #[hax_lib::attributes]
-#[hax_lib::fstar::options("--split_queries always --z3rlimit 300")] // TODO: Has no effect
+#[hax_lib::fstar::options("--split_queries always --z3rlimit 300")] // TODO: Has no effect. See above.
 impl<const PARALLEL_LANES: usize, const RATE: usize, STATE: KeccakItem<PARALLEL_LANES>>
     KeccakXofState<PARALLEL_LANES, RATE, STATE>
 {
@@ -63,10 +62,8 @@ impl<const PARALLEL_LANES: usize, const RATE: usize, STATE: KeccakItem<PARALLEL_
 
     /// Generate a new keccak xof state.
     #[hax_lib::requires(
-        PARALLEL_LANES == 1 && // TODO: Generalize for the parallel case
-        RATE != 0 &&
-        RATE <= 200 &&
-        RATE % 8 == 0
+        PARALLEL_LANES == 1 &&
+        valid_rate(RATE)
     )]
     #[hax_lib::ensures(|result| keccak_xof_state_inv(&result))]
     pub(crate) fn new() -> Self {
@@ -97,7 +94,6 @@ impl<const PARALLEL_LANES: usize, const RATE: usize, STATE: KeccakItem<PARALLEL_
     /// If `consumed > 0` is returned, `self.buf` contains a full block to be
     /// loaded.
     // Note: consciously not inlining this function to avoid using too much stack
-    // #[hax_lib::fstar::options("--fuel 5")]
     #[hax_lib::requires(
         PARALLEL_LANES == 1 &&
         keccak_xof_state_inv(self)
@@ -186,13 +182,11 @@ impl<const PARALLEL_LANES: usize, const RATE: usize, STATE: KeccakItem<PARALLEL_
         let remainder = input_to_consume % RATE;
 
         #[cfg(hax)]
-        let self_buf_len = self.buf_len;
-
-        #[cfg(hax)]
-        let end = consumed + num_blocks * RATE;
-
-        #[cfg(hax)]
-        hax_lib::assert!(end <= inputs[0].len());
+        let (self_buf_len, end) = {
+            let end = consumed + num_blocks * RATE;
+            hax_lib::assert!(end <= inputs[0].len());
+            (self.buf_len, end)
+        };
 
         for i in 0..num_blocks {
             hax_lib::loop_invariant!(|_: usize| self.buf_len == self_buf_len);
@@ -298,6 +292,12 @@ impl<const RATE: usize, STATE: KeccakItem<1>> KeccakXofState<1, RATE, STATE> {
     where
         KeccakState<1, STATE>: Squeeze<STATE>,
     {
+        let out_len = out.len();
+
+        if out_len == 0 {
+            return;
+        }
+
         if self.sponge {
             // If we called `squeeze` before, call f1600 first.
             // We do it this way around so that we don't call f1600 at the end
@@ -305,47 +305,42 @@ impl<const RATE: usize, STATE: KeccakItem<1>> KeccakXofState<1, RATE, STATE> {
             self.inner.keccakf1600();
         }
 
-        let out_len = out.len();
+        if out_len <= RATE {
+            self.inner.squeeze::<RATE>(out, 0, out_len);
+        } else {
+            // How many blocks do we need to squeeze out?
+            let blocks = out_len / RATE;
+            let remaining = out_len % RATE;
 
-        if out_len > 0 {
-            if out_len <= RATE {
-                self.inner.squeeze::<RATE>(out, 0, out_len);
-            } else {
-                // How many blocks do we need to squeeze out?
-                let blocks = out_len / RATE;
+            #[cfg(hax)]
+            let self_buf_len = self.buf_len;
 
-                #[cfg(hax)]
-                let self_buf_len = self.buf_len;
+            for i in 0..blocks {
+                hax_lib::loop_invariant!(
+                    |_: usize| out.len() == out_len && self_buf_len == self.buf_len
+                );
+                hax_lib::assert!(i.to_int() * RATE.to_int() <= out.len().to_int());
 
-                for i in 0..blocks {
-                    hax_lib::loop_invariant!(
-                        |_: usize| out.len() == out_len && self_buf_len == self.buf_len
-                    );
-                    hax_lib::fstar!("assert (v i * v v_RATE <= v out_len)");
+                // Here we know that we always have full blocks to write out.
+                self.inner.keccakf1600();
+                self.inner.squeeze::<RATE>(out, i * RATE, RATE);
+            }
 
-                    #[cfg(hax)]
-                    hax_lib::assert!(i.to_int() * RATE.to_int() <= out.len().to_int());
-
-                    // Here we know that we always have full blocks to write out.
-                    self.inner.keccakf1600();
-                    self.inner.squeeze::<RATE>(out, i * RATE, RATE);
-                }
+            if remaining > 0 {
+                // Squeeze out the last partial block
+                self.inner.keccakf1600();
 
                 // For a and b with b < a
                 // (a / b) * b + a % b = a
+                hax_lib::fstar!("lemma_div_mul_mod out_len v_RATE");
+                hax_lib::assert!(
+                    blocks.to_int() * RATE.to_int() + remaining.to_int() == out.len().to_int()
+                );
 
-                let remaining = out_len % RATE;
-                if remaining > 0 {
-                    // Squeeze out the last partial block
-                    self.inner.keccakf1600();
-
-                    hax_lib::fstar!("lemma_div_mul_mod out_len v_RATE");
-                    hax_lib::fstar!("assert (v blocks * v v_RATE + v remaining == v out_len)");
-
-                    self.inner.squeeze::<RATE>(out, blocks * RATE, remaining);
-                }
+                self.inner.squeeze::<RATE>(out, blocks * RATE, remaining);
             }
-            self.sponge = true;
         }
+
+        self.sponge = true;
     }
 }

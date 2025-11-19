@@ -1,14 +1,17 @@
 use super::*;
 
 #[cfg(hax)]
-#[hax_lib::fstar::replace("open Libcrux_sha3.Lemmas")]
+use crate::proof_utils::valid_rate;
+
+#[cfg(hax)]
+#[hax_lib::fstar::replace("open Libcrux_sha3.Proof_utils.Lemmas")]
 const _: () = ();
 
 #[hax_lib::attributes]
 impl KeccakState<1, u64> {
     #[inline(always)]
     #[hax_lib::requires(
-        RATE <= 200 &&
+        valid_rate(RATE) &&
         start.to_int() + RATE.to_int() <= out.len().to_int()
     )]
     #[hax_lib::ensures(|_| future(out).len() == out.len())]
@@ -19,7 +22,7 @@ impl KeccakState<1, u64> {
 
     #[inline(always)]
     #[hax_lib::requires(
-        RATE <= 200 &&
+        valid_rate(RATE) &&
         RATE <= out.len()
     )]
     #[hax_lib::ensures(|_| future(out).len() == out.len())]
@@ -29,7 +32,7 @@ impl KeccakState<1, u64> {
 
     #[inline(always)]
     #[hax_lib::requires(
-        RATE <= 200 &&
+        valid_rate(RATE) &&
         3 * RATE <= out.len()
     )]
     #[hax_lib::ensures(|_| future(out).len() == out.len())]
@@ -45,7 +48,7 @@ impl KeccakState<1, u64> {
 
     #[inline(always)]
     #[hax_lib::requires(
-        RATE <= 200 &&
+        valid_rate(RATE) &&
         5 * RATE <= out.len()
     )]
     #[hax_lib::ensures(|_| future(out).len() == out.len())]
@@ -66,11 +69,7 @@ impl KeccakState<1, u64> {
     }
 }
 
-#[hax_lib::requires(
-    RATE != 0 &&
-    RATE <= 200 &&
-    RATE % 8 == 0
-)]
+#[hax_lib::requires(valid_rate(RATE))]
 #[hax_lib::ensures(|_| future(output).len() == output.len())]
 #[hax_lib::fstar::options("--split_queries always --z3rlimit 300")]
 #[inline]

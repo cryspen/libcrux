@@ -1,5 +1,8 @@
 #[cfg(hax)]
-use hax_lib::{self, constructors::from_bool, forall, implies, int::ToInt};
+use hax_lib::{self, constructors::from_bool, int::ToInt};
+
+#[cfg(hax)]
+use crate::proof_utils::{slices_same_len, valid_rate};
 
 // XXX: These should be default functions on `KeccakItem`, but hax doesn't
 //      support that yet. cryspen/hax#888
@@ -38,7 +41,8 @@ pub(crate) trait KeccakItem<const N: usize>: Clone + Copy {
     /// `(a ^ b) <<< LEFT`
     #[hax_lib::requires(
         LEFT.to_int() + RIGHT.to_int() == 64.to_int() &&
-        RIGHT >= 0
+        RIGHT > 0 &&
+        RIGHT < 64
     )]
     fn xor_and_rotate<const LEFT: i32, const RIGHT: i32>(a: Self, b: Self) -> Self;
 
@@ -62,17 +66,10 @@ pub(crate) trait Absorb<const N: usize> {
     #[hax_lib::requires(
       from_bool(
         N != 0 &&
-        RATE <= 200 &&
-        RATE % 8 == 0 &&
-        (RATE % 32 == 8 || RATE % 32 == 16) &&
+        valid_rate(RATE) &&
         start.to_int() + RATE.to_int() <= input[0].len().to_int()
       ).and(
-        forall(|i: usize|
-          implies(
-            i < N,
-            input[0].len() == input[i].len()
-          )
-        )
+        slices_same_len(input)
       )
     )]
     fn load_block<const RATE: usize>(&mut self, input: &[&[u8]; N], start: usize);
@@ -81,18 +78,11 @@ pub(crate) trait Absorb<const N: usize> {
     #[hax_lib::requires(
       from_bool(
         N != 0 &&
-        RATE <= 200 &&
-        RATE % 8 == 0 &&
-        (RATE % 32 == 8 || RATE % 32 == 16) &&
+        valid_rate(RATE) &&
         len < RATE &&
         start.to_int() + len.to_int() <= input[0].len().to_int()
       ).and(
-        forall(|i: usize|
-          implies(
-            i < N,
-            input[0].len() == input[i].len()
-          )
-        )
+        slices_same_len(input)
       )
     )]
     fn load_last<const RATE: usize, const DELIMITER: u8>(
@@ -102,6 +92,11 @@ pub(crate) trait Absorb<const N: usize> {
         len: usize,
     );
 }
+
+// HAX does not support the &[mut &[u8]; N] Type. Because of that we have to
+// implement the Squeeze trait for each N separately. This complicates the
+// implementation in other files as well. Refactor when HAX supports it.
+// https://github.com/cryspen/hax/issues/420
 
 /// Trait to squeeze bytes out of the state.
 ///
@@ -113,11 +108,12 @@ pub(crate) trait Absorb<const N: usize> {
     interface, "
 class t_Squeeze (v_Self: Type0) (v_T: Type0) = {
   // TODO: This super variable is problematic and makes typecheck fail
+  // https://github.com/cryspen/hax/issues/1554
   // [@@@ FStar.Tactics.Typeclasses.no_method]_super_18390613159176269294:t_KeccakItem v_T (mk_usize 1);
   f_squeeze_pre:v_RATE: usize -> self_: v_Self -> out: t_Slice u8 -> start: usize -> len: usize
     -> pred:
       Type0
-        { len <=. mk_usize 200 &&
+        { Libcrux_sha3.Proof_utils.valid_rate v_RATE && len <=. v_RATE &&
           ((Rust_primitives.Hax.Int.from_machine start <: Hax_lib.Int.t_Int) +
             (Rust_primitives.Hax.Int.from_machine len <: Hax_lib.Int.t_Int)
             <:
@@ -152,7 +148,8 @@ class t_Squeeze (v_Self: Type0) (v_T: Type0) = {
 #[hax_lib::attributes]
 pub(crate) trait Squeeze<T: KeccakItem<1>> {
     #[hax_lib::requires(
-        len <= 200 &&
+        valid_rate(RATE) &&
+        len <= RATE &&
         start.to_int() + len.to_int() <= out.len().to_int()
     )]
     #[hax_lib::ensures(|_| future(out).len() == out.len())]
