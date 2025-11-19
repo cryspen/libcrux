@@ -38,7 +38,7 @@ void modify_secret_key(uint8_t *secret_key, size_t secret_key_size,
 
   uint16_t random_position = 0;
 
-  if (modify_implicit_rejection_value == true) {
+  if (modify_implicit_rejection_value) {
     random_position = (secret_key_size - 32) + (random_u16 % 32);
   } else {
     random_position = random_u16 % (secret_key_size - 32);
