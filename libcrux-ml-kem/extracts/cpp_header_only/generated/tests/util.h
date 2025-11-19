@@ -12,9 +12,23 @@ typedef vector<uint8_t> bytes;
 
 template <typename T>
 Eurydice_slice mk_slice(T *x, size_t len) {
-  Eurydice_slice s;
+  Eurydice_slice s = {0};
   s.ptr = (void *)x;
   s.len = len;
+  return s;
+}
+
+Eurydice_borrow_slice_u8 mk_borrow_slice_u8(const uint8_t *x, size_t len) {
+  Eurydice_borrow_slice_u8 s = {0};
+  s.ptr = x;
+  s.meta = len;
+  return s;
+}
+
+Eurydice_mut_borrow_slice_u8 mk_mut_borrow_slice_u8(uint8_t *x, size_t len) {
+  Eurydice_mut_borrow_slice_u8 s = {0};
+  s.ptr = x;
+  s.meta = len;
   return s;
 }
 

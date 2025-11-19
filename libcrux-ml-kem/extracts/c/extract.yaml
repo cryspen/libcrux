@@ -62,6 +62,8 @@ files:
         - [libcrux_sha3, "*"]
       monomorphizations_using:
         - [libcrux_sha3, "*"]
+      monomorphizations_exact:
+        - [Eurydice, arr_60]
     inline_static: true
 
   # MLKEM: HASH FUNCTIONS (as used by mlkem)
@@ -88,6 +90,7 @@ files:
   - name: libcrux_core
     private:
       monomorphizations_of:
+        - [ Eurydice, "*" ]
         - [ core, "*"]
         - [ libcrux_secrets, "*"]
         - [ libcrux_ml_kem, types, "*"]
@@ -103,6 +106,8 @@ files:
         - [ libcrux_ml_kem, constants ]
         - [ libcrux_ml_kem, constant_time_ops, "*"]
         - [ libcrux_ml_kem, utils, "*" ]
+      monomorphizations_exact:
+        - [Eurydice, arr_e2]
     api:
       - [Eurydice, "*"]
 
@@ -111,6 +116,8 @@ files:
   - name: libcrux_mlkem768_portable
     api:
       - [libcrux_ml_kem, mlkem768, portable]
+    internal:
+      - [libcrux_ml_kem, mlkem768, portable, unpacked]
 
   # This one contains common definitions like types, etc.
   - name: libcrux_mlkem768
@@ -122,6 +129,8 @@ files:
   - name: libcrux_mlkem1024_portable
     api:
       - [libcrux_ml_kem, mlkem1024, portable]
+    internal:
+      - [libcrux_ml_kem, mlkem1024, portable, unpacked]
 
   # This one contains common definitions like types, etc.
   - name: libcrux_mlkem1024

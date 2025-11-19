@@ -141,6 +141,7 @@ let deserialize_post
 #[hax_lib::requires(serialized.len() == 13)]
 #[hax_lib::ensures(|result| fstar!("deserialize_post $serialized ${out}_future"))]
 pub(crate) fn deserialize(serialized: &[u8], out: &mut Vec256) {
+    #[cfg(not(eurydice))]
     debug_assert_eq!(serialized.len(), 13);
     deserialize_unsigned(serialized, out);
     #[cfg(hax)]

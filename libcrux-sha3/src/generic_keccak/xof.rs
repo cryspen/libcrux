@@ -59,6 +59,7 @@ impl<const PARALLEL_LANES: usize, const RATE: usize, STATE: KeccakItem<PARALLEL_
 
         // ... buffer the rest if there's not enough input (left).
         if input_remainder_len > 0 {
+            #[cfg(not(eurydice))]
             debug_assert!(
                 self.buf_len == 0  // We consumed everything (or it was empty all along).
                  || self.buf_len + input_remainder_len <= RATE
@@ -80,9 +81,11 @@ impl<const PARALLEL_LANES: usize, const RATE: usize, STATE: KeccakItem<PARALLEL_
     where
         KeccakState<PARALLEL_LANES, STATE>: Absorb<PARALLEL_LANES>,
     {
+        #[cfg(not(eurydice))]
         debug_assert!(PARALLEL_LANES > 0);
+        #[cfg(not(eurydice))]
         debug_assert!(self.buf_len < RATE);
-        #[cfg(all(debug_assertions, not(hax)))]
+        #[cfg(all(debug_assertions, not(hax), not(eurydice)))]
         {
             for block in inputs {
                 debug_assert!(block.len() == inputs[0].len());
@@ -93,12 +96,8 @@ impl<const PARALLEL_LANES: usize, const RATE: usize, STATE: KeccakItem<PARALLEL_
         let input_consumed = self.fill_buffer(inputs);
 
         if input_consumed > 0 {
-            let mut borrowed = [[0u8; RATE].as_slice(); PARALLEL_LANES];
-            // We have a full block in the local buffer now.
-            #[allow(clippy::needless_range_loop)]
-            for i in 0..PARALLEL_LANES {
-                borrowed[i] = &self.buf[i];
-            }
+            let borrowed: [&[u8]; PARALLEL_LANES] =
+                core::array::from_fn(|i| self.buf[i].as_slice());
 
             self.inner.load_block::<RATE>(&borrowed, 0);
             self.inner.keccakf1600();
