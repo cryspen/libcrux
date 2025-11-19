@@ -149,11 +149,9 @@ impl<const PARALLEL_LANES: usize, const RATE: usize, STATE: KeccakItem<PARALLEL_
     where
         KeccakState<PARALLEL_LANES, STATE>: Absorb<PARALLEL_LANES>,
     {
-        #[cfg(not(eurydice))]
         debug_assert!(PARALLEL_LANES > 0);
-        #[cfg(not(eurydice))]
         debug_assert!(self.buf_len <= RATE);
-        #[cfg(all(debug_assertions, not(hax), not(eurydice)))]
+        #[cfg(all(debug_assertions, not(hax)))]
         {
             for block in inputs {
                 debug_assert!(block.len() == inputs[0].len());

@@ -6,7 +6,6 @@ use libcrux_intrinsics::avx2::*;
 // significant bit to turn them into 23-bit ones.
 #[inline(always)]
 fn bytestream_to_potential_coefficients(serialized: &[u8]) -> Vec256 {
-    #[cfg(not(eurydice))]
     debug_assert_eq!(serialized.len(), 24);
 
     let mut serialized_extended = [0u8; 32];

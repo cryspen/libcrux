@@ -8,29 +8,29 @@
 
 #include <benchmark/benchmark.h>
 
-#include "internal/libcrux_core.h"
 #include "libcrux_mlkem768.h"
 #include "libcrux_mlkem768_portable.h"
+#include "internal/libcrux_core.h"
 
-void generate_random(uint8_t *output, uint32_t output_len) {
-  for (uint32_t i = 0; i < output_len; i++) output[i] = 13;
+void generate_random(uint8_t *output, uint32_t output_len)
+{
+    for (uint32_t i = 0; i < output_len; i++)
+        output[i] = 13;
 }
 
-int main(int argc, char const *argv[]) {
-  Eurydice_arr_06 randomness = {0};
-  memset(randomness.data, 0x13, 64);
+int main(int argc, char const *argv[])
+{
+    uint8_t randomness[64];
+    generate_random(randomness, 64);
 
-  auto key_pair =
-      libcrux_ml_kem_mlkem768_portable_generate_key_pair(randomness);
-  Eurydice_arr_60 randomness2 = {0};
-  memset(randomness2.data, 0x15, 32);
-  auto ctxt =
-      libcrux_ml_kem_mlkem768_portable_encapsulate(&key_pair.pk, randomness2);
+    auto key_pair = libcrux_ml_kem_mlkem768_portable_generate_key_pair(randomness);
+    generate_random(randomness, 32);
+    auto ctxt = libcrux_ml_kem_mlkem768_portable_encapsulate(&key_pair.pk, randomness);
 
-  for (size_t i = 0; i < 100000; i++) {
-    ctxt =
-        libcrux_ml_kem_mlkem768_portable_encapsulate(&key_pair.pk, randomness2);
-  }
+    for (size_t i = 0; i < 100000; i++)
+    {
+        ctxt = libcrux_ml_kem_mlkem768_portable_encapsulate(&key_pair.pk, randomness);
+    }
 
-  return 0;
+    return 0;
 }

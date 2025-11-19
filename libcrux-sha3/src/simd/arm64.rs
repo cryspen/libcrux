@@ -43,7 +43,6 @@ pub(crate) fn load_block<const RATE: usize>(
     blocks: &[&[u8]; 2],
     offset: usize,
 ) {
-    #[cfg(not(eurydice))]
     debug_assert!(RATE <= blocks[0].len() && RATE % 8 == 0 && blocks[0].len() == blocks[1].len());
     for i in 0..RATE / 16 {
         let start = offset + 16 * i;
@@ -84,7 +83,6 @@ pub(crate) fn load_last<const RATE: usize, const DELIMITER: u8>(
     offset: usize,
     len: usize,
 ) {
-    #[cfg(not(eurydice))]
     debug_assert!(offset + len <= blocks[0].len() && blocks[0].len() == blocks[1].len());
 
     let mut buffer0 = [0u8; RATE];
@@ -108,7 +106,6 @@ pub(crate) fn store_block<const RATE: usize>(
     start: usize,
     len: usize,
 ) {
-    #[cfg(not(eurydice))]
     debug_assert!(len <= RATE && start + len <= out0.len() && out0.len() == out1.len());
     for i in 0..len / 16 {
         let i0 = (2 * i) / 5;

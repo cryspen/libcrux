@@ -287,7 +287,6 @@ impl<const N: usize, T: KeccakItem<N>> KeccakState<N, T> {
     ) where
         Self: Absorb<N>,
     {
-        #[cfg(not(eurydice))]
         debug_assert!(N > 0 && len < RATE);
 
         #[cfg(not(any(eurydice, hax)))]

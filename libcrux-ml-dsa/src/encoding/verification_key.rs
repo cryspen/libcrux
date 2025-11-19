@@ -32,7 +32,6 @@ pub(crate) fn deserialize<SIMDUnit: Operations>(
     serialized: &[u8],
     t1: &mut [PolynomialRingElement<SIMDUnit>],
 ) {
-    #[cfg(not(eurydice))]
     debug_assert!(serialized.len() == verification_key_size - SEED_FOR_A_SIZE);
 
     for i in 0..rows_in_a {

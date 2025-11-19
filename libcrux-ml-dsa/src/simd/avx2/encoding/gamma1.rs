@@ -209,7 +209,6 @@ let deserialize_unsigned_post
 #[hax_lib::requires(serialized.len() == 18)]
 #[hax_lib::ensures(|_result| fstar!("deserialize_unsigned_post (mk_int 17) $serialized ${out}_future"))]
 fn deserialize_when_gamma1_is_2_pow_17_unsigned(serialized: &[u8], out: &mut Vec256) {
-    #[cfg(not(eurydice))]
     debug_assert!(serialized.len() == 18);
 
     let serialized_lower = mm_loadu_si128(&serialized[0..16]);
@@ -244,7 +243,6 @@ fn deserialize_when_gamma1_is_2_pow_19_unsigned(serialized: &[u8], out: &mut Vec
     // Each set of 5 bytes deserializes to 2 coefficients, and since each Vec256
     // can hold 8 such coefficients, we process 5 * (8 / 2) = 20 bytes in this
     // function.
-    #[cfg(not(eurydice))]
     debug_assert!(serialized.len() == 20);
 
     let serialized_lower = mm_loadu_si128(&serialized[0..16]);

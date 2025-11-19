@@ -3,7 +3,6 @@ use libcrux_intrinsics::avx2::*;
 
 #[inline(always)]
 fn rotate_left<const LEFT: i32, const RIGHT: i32>(x: Vec256) -> Vec256 {
-    #[cfg(not(eurydice))]
     debug_assert!(LEFT + RIGHT == 64);
     // This could be done more efficiently, if the shift values are multiples of 8.
     // However, in SHA-3 this function is only called twice with such inputs (8/56).
@@ -47,7 +46,6 @@ pub(crate) fn load_block<const RATE: usize>(
     blocks: &[&[u8]; 4],
     offset: usize,
 ) {
-    #[cfg(not(eurydice))]
     debug_assert!(RATE <= blocks[0].len() && RATE % 8 == 0 && (RATE % 32 == 8 || RATE % 32 == 16));
     for i in 0..RATE / 32 {
         let start = offset + 32 * i;

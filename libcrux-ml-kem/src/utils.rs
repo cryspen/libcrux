@@ -3,8 +3,6 @@
 // libcrux_core.{c,h}, so if you need something that has to be shared across multiple mlkem
 // instances / implementations, it can go in here.
 
-type PaddedArray<const N: usize> = [u8; N];
-
 /// Pad the `slice` with `0`s at the end.
 #[inline(always)]
 #[cfg_attr(hax, hax_lib::requires(
@@ -12,7 +10,7 @@ type PaddedArray<const N: usize> = [u8; N];
 ))]
 #[cfg_attr(hax, hax_lib::ensures(|result|
     fstar!(r#"$result == Seq.append $slice (Seq.create (v $LEN - v (${slice.len()})) (mk_u8 0))"#)))]
-pub(crate) fn into_padded_array<const LEN: usize>(slice: &[u8]) -> PaddedArray<LEN> {
+pub(crate) fn into_padded_array<const LEN: usize>(slice: &[u8]) -> [u8; LEN] {
     let mut out = [0u8; LEN];
     out[0..slice.len()].copy_from_slice(slice);
     hax_lib::fstar!(r#"assert (Seq.slice out 0 (Seq.length slice) == slice)"#);

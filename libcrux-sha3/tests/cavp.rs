@@ -2,7 +2,7 @@ use cavp::*;
 use libcrux_sha3::*;
 
 macro_rules! sha3_test {
-    ($file:ident, $digest_len:expr, $algorithm:expr) => {
+    ($file:ident, $digest:ty, $algorithm:expr) => {
         #[test]
         #[allow(non_snake_case)]
         fn $file() {
@@ -14,23 +14,22 @@ macro_rules! sha3_test {
             for test in &tv.tests {
                 eprintln!("test {c}");
                 c += 1;
-                let my_digest: [u8; $digest_len] =
-                    sha3($algorithm, &test.msg[0..test.msg_length / 8]);
+                let my_digest: $digest = sha3($algorithm, &test.msg[0..test.msg_length / 8]);
                 assert_eq!(&my_digest, &test.digest[..]);
             }
         }
     };
 }
 
-sha3_test!(SHA3_224LongMsg, SHA3_224_DIGEST_SIZE, Algorithm::Sha224);
-sha3_test!(SHA3_256LongMsg, SHA3_256_DIGEST_SIZE, Algorithm::Sha256);
-sha3_test!(SHA3_384LongMsg, SHA3_384_DIGEST_SIZE, Algorithm::Sha384);
-sha3_test!(SHA3_512LongMsg, SHA3_512_DIGEST_SIZE, Algorithm::Sha512);
+sha3_test!(SHA3_224LongMsg, Sha3_224Digest, Algorithm::Sha224);
+sha3_test!(SHA3_256LongMsg, Sha3_256Digest, Algorithm::Sha256);
+sha3_test!(SHA3_384LongMsg, Sha3_384Digest, Algorithm::Sha384);
+sha3_test!(SHA3_512LongMsg, Sha3_512Digest, Algorithm::Sha512);
 
-sha3_test!(SHA3_224ShortMsg, SHA3_224_DIGEST_SIZE, Algorithm::Sha224);
-sha3_test!(SHA3_256ShortMsg, SHA3_256_DIGEST_SIZE, Algorithm::Sha256);
-sha3_test!(SHA3_384ShortMsg, SHA3_384_DIGEST_SIZE, Algorithm::Sha384);
-sha3_test!(SHA3_512ShortMsg, SHA3_512_DIGEST_SIZE, Algorithm::Sha512);
+sha3_test!(SHA3_224ShortMsg, Sha3_224Digest, Algorithm::Sha224);
+sha3_test!(SHA3_256ShortMsg, Sha3_256Digest, Algorithm::Sha256);
+sha3_test!(SHA3_384ShortMsg, Sha3_384Digest, Algorithm::Sha384);
+sha3_test!(SHA3_512ShortMsg, Sha3_512Digest, Algorithm::Sha512);
 
 macro_rules! shake_test {
     ($file:ident, $shake:expr) => {

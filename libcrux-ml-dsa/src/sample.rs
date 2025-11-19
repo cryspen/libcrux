@@ -76,7 +76,6 @@ pub(crate) fn sample_up_to_four_ring_elements_flat<
     start_index: usize,
     elements_requested: usize,
 ) {
-    #[cfg(not(eurydice))]
     debug_assert!(elements_requested <= 4);
 
     // Prepare the seeds
@@ -384,7 +383,6 @@ pub(crate) fn sample_mask_vector<
     mask: &mut [PolynomialRingElement<SIMDUnit>],
 ) {
     // DIMENSION is COLUMNS_IN_A
-    #[cfg(not(eurydice))]
     debug_assert!(dimension == 4 || dimension == 5 || dimension == 7);
     // So we can always sample 4 elements in one go first.
 

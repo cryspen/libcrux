@@ -14,7 +14,6 @@ fn change_t0_interval(t0: i32) -> i32 {
  /\ (Seq.length $serialized == 13)
 "#))]
 pub fn serialize(simd_unit: &Coefficients, serialized: &mut [u8]) {
-    #[cfg(not(eurydice))]
     debug_assert!(serialized.len() == 13);
 
     let coefficient0 = change_t0_interval(simd_unit.values[0]);
@@ -44,7 +43,6 @@ pub fn serialize(simd_unit: &Coefficients, serialized: &mut [u8]) {
 #[inline(always)]
 #[hax_lib::requires(serialized.len() == 13)]
 pub fn deserialize(serialized: &[u8], simd_unit: &mut Coefficients) {
-    #[cfg(not(eurydice))]
     debug_assert!(serialized.len() == 13);
 
     const BITS_IN_LOWER_PART_OF_T_MASK: i32 = (1 << (BITS_IN_LOWER_PART_OF_T as i32)) - 1;

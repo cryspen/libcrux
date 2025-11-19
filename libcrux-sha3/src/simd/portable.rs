@@ -14,7 +14,6 @@ use crate::{generic_keccak::KeccakState, traits::*};
     RIGHT > 0
 )]
 fn rotate_left<const LEFT: i32, const RIGHT: i32>(x: u64) -> u64 {
-    #[cfg(not(eurydice))]
     debug_assert!(LEFT + RIGHT == 64);
     x.rotate_left(LEFT as u32)
 }
@@ -91,7 +90,6 @@ pub(crate) fn load_last<const RATE: usize, const DELIMITER: u8>(
     start: usize,
     len: usize,
 ) {
-    #[cfg(not(eurydice))]
     debug_assert!(start + len <= blocks.len());
 
     let mut buffer = [0u8; RATE];
