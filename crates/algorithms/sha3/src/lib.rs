@@ -12,7 +12,6 @@ mod generic_keccak;
 
 #[cfg(not(any(hax, eurydice)))]
 mod impl_digest_trait;
-use cavp::Sha3;
 #[cfg(not(any(hax, eurydice)))]
 pub use impl_digest_trait::*;
 
@@ -21,21 +20,18 @@ use hax_lib::int::*;
 
 mod traits;
 
+/// Size in bytes of a SHA3 224 digest.
+pub const SHA3_224_DIGEST_SIZE: usize = 28;
+/// Size in bytes of a SHA3 256 digest.
+pub const SHA3_256_DIGEST_SIZE: usize = 32;
+/// Size in bytes of a SHA3 2384 digest.
+pub const SHA3_384_DIGEST_SIZE: usize = 48;
+/// Size in bytes of a SHA3 512 digest.
+pub const SHA3_512_DIGEST_SIZE: usize = 64;
+
 /// F* verification helper
 #[cfg(hax)]
 pub(crate) mod proof_utils;
-
-/// A SHA3 224 Digest
-pub type Sha3_224Digest = [u8; 28];
-
-/// A SHA3 256 Digest
-pub type Sha3_256Digest = [u8; 32];
-
-/// A SHA3 384 Digest
-pub type Sha3_384Digest = [u8; 48];
-
-/// A SHA3 512 Digest
-pub type Sha3_512Digest = [u8; 64];
 
 /// The Digest Algorithm.
 #[cfg_attr(not(eurydice), derive(Clone, Copy, Debug, PartialEq))]
@@ -82,10 +78,10 @@ impl From<Algorithm> for u32 {
 /// Returns the output size of a digest.
 pub const fn digest_size(mode: Algorithm) -> usize {
     match mode {
-        Algorithm::Sha224 => 28,
-        Algorithm::Sha256 => 32,
-        Algorithm::Sha384 => 48,
-        Algorithm::Sha512 => 64,
+        Algorithm::Sha224 => SHA3_224_DIGEST_SIZE,
+        Algorithm::Sha256 => SHA3_256_DIGEST_SIZE,
+        Algorithm::Sha384 => SHA3_384_DIGEST_SIZE,
+        Algorithm::Sha512 => SHA3_512_DIGEST_SIZE,
     }
 }
 
@@ -115,8 +111,8 @@ pub use hash as sha3;
     data.len().to_int() <= u32::MAX.to_int()
 )]
 #[inline(always)]
-pub fn sha224(data: &[u8]) -> Sha3_224Digest {
-    let mut out = [0u8; 28];
+pub fn sha224(data: &[u8]) -> [u8; SHA3_224_DIGEST_SIZE] {
+    let mut out = [0u8; SHA3_224_DIGEST_SIZE];
     sha224_ema(&mut out, data);
     out
 }
@@ -144,8 +140,8 @@ pub fn sha224_ema(digest: &mut [u8], payload: &[u8]) {
     data.len().to_int() <= u32::MAX.to_int()
 )]
 #[inline(always)]
-pub fn sha256(data: &[u8]) -> Sha3_256Digest {
-    let mut out = [0u8; 32];
+pub fn sha256(data: &[u8]) -> [u8; SHA3_256_DIGEST_SIZE] {
+    let mut out = [0u8; SHA3_256_DIGEST_SIZE];
     sha256_ema(&mut out, data);
     out
 }
@@ -170,8 +166,8 @@ pub fn sha256_ema(digest: &mut [u8], payload: &[u8]) {
     data.len().to_int() <= u32::MAX.to_int()
 )]
 #[inline(always)]
-pub fn sha384(data: &[u8]) -> Sha3_384Digest {
-    let mut out = [0u8; 48];
+pub fn sha384(data: &[u8]) -> [u8; SHA3_384_DIGEST_SIZE] {
+    let mut out = [0u8; SHA3_384_DIGEST_SIZE];
     sha384_ema(&mut out, data);
     out
 }
@@ -196,8 +192,8 @@ pub fn sha384_ema(digest: &mut [u8], payload: &[u8]) {
     data.len().to_int() <= u32::MAX.to_int()
 )]
 #[inline(always)]
-pub fn sha512(data: &[u8]) -> Sha3_512Digest {
-    let mut out = [0u8; 64];
+pub fn sha512(data: &[u8]) -> [u8; SHA3_512_DIGEST_SIZE] {
+    let mut out = [0u8; SHA3_512_DIGEST_SIZE];
     sha512_ema(&mut out, data);
     out
 }
