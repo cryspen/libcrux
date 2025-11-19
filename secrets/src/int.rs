@@ -143,7 +143,7 @@ pub trait Select {
     fn select(&mut self, other: &Self, selector: U8);
 }
 
-#[cfg(any(hax, not(target_arch = "aarch64")))]
+#[cfg(not(any(target_arch = "aarch64")))]
 mod portable {
     use super::{Select, Swap};
     use crate::traits::Declassify;
@@ -254,7 +254,7 @@ mod portable {
     impl_swap!(u64, U64, swap64);
 }
 
-#[cfg(all(not(hax), target_arch = "aarch64"))]
+#[cfg(target_arch = "aarch64")]
 mod aarch64 {
     use core::arch::asm;
 

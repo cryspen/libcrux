@@ -4,8 +4,6 @@
 
 use libcrux_secrets::U8;
 
-use super::slice::KeyGenError;
-
 /// Error that can occur during encryption.
 #[derive(Debug, PartialEq, Eq)]
 pub enum EncryptError {
@@ -132,22 +130,15 @@ impl core::fmt::Display for DecryptError {
 // implementations.
 
 /// A Key with the given algorithm. The bytes are borrowed. Contains a marker for which
-/// algorithm the key is to be used with.
+/// algorith the key is to be used with.
 #[derive(Clone, Copy)]
 pub struct KeyRef<'a, Algo> {
     algorithm: Algo,
     key: &'a [U8],
 }
 
-/// A Key with the given algorithm. The bytes are borrowed mutably. Contains a marker for
-/// which algorithm the key is to be used with.
-pub struct KeyMut<'a, Algo> {
-    algorithm: Algo,
-    key: &'a mut [U8],
-}
-
 /// A tag with the given algorithm. The bytes are borrowed. Contains a marker for which
-/// algorithm the key is to be used with.
+/// algorith the key is to be used with.
 #[derive(Clone, Copy)]
 pub struct TagRef<'a, Algo> {
     algorithm: Algo,
@@ -155,15 +146,15 @@ pub struct TagRef<'a, Algo> {
 }
 
 /// A mutable tag with the given algorithm. The bytes are borrowed mutably. Contains a marker
-/// for which algorithm the key is to be used with.
+/// for which algorith the key is to be used with.
 pub struct TagMut<'a, Algo> {
     algorithm: Algo,
     tag: &'a mut [U8],
 }
+#[derive(Clone, Copy)]
 
 /// A nonce with the given algorithm. The bytes are borrowed. Contains a marker for which
-/// algorithm the key is to be used with.
-#[derive(Clone, Copy)]
+/// algorith the key is to be used with.
 pub struct NonceRef<'a, Algo> {
     algorithm: Algo,
     nonce: &'a [U8],
@@ -185,15 +176,9 @@ impl<'a, Algo: Aead + core::fmt::Debug> core::fmt::Debug for KeyRef<'a, Algo> {
 /// here. Check the documentation of the types implementing this trait to make sure which inputs
 /// are valid.
 pub trait Aead: Copy + PartialEq {
-    /// Returns the length of keys for this algorithm in bytes.
     fn key_len(&self) -> usize;
-    /// Returns the length of authentication tags for this algorithm in bytes.
     fn tag_len(&self) -> usize;
-    /// Returns the length of nonces for this algorithm in bytes.
     fn nonce_len(&self) -> usize;
-
-    /// Generate a new key for this algorithm using the provided randomness.
-    fn keygen<'a>(&self, key: KeyMut<'a, Self>, rand: &[U8]) -> Result<(), KeyGenError>;
 
     /// Encrypt a plaintext message, producing a ciphertext and an authentication tag.
     /// The arguments `plaintext` and `ciphertext` must have the same length.
@@ -223,10 +208,6 @@ pub trait Aead: Copy + PartialEq {
     fn new_key<'a>(self, key: &'a [U8]) -> Result<KeyRef<'a, Self>, WrongLengthError> {
         KeyRef::new_for_algo(self, key)
     }
-    /// Creates a new mutable key given the algorithm.
-    fn new_key_mut<'a>(self, key: &'a mut [U8]) -> Result<KeyMut<'a, Self>, WrongLengthError> {
-        KeyMut::new_for_algo(self, key)
-    }
     /// Creates a new tag given the algorithm.
     fn new_tag<'a>(self, tag: &'a [U8]) -> Result<TagRef<'a, Self>, WrongLengthError> {
         TagRef::new_for_algo(self, tag)
@@ -249,7 +230,6 @@ impl<
                 Key = [U8; KEY_LEN],
                 Tag = [U8; TAG_LEN],
                 Nonce = [U8; NONCE_LEN],
-                Rand = [U8; KEY_LEN],
             > + Copy
             + PartialEq,
     > Aead for Algo
@@ -264,16 +244,6 @@ impl<
 
     fn nonce_len(&self) -> usize {
         NONCE_LEN
-    }
-
-    fn keygen<'a>(&self, key: KeyMut<'a, Self>, rand: &[U8]) -> Result<(), KeyGenError> {
-        if rand.len() < KEY_LEN {
-            return Err(KeyGenError::InsufficientRandomness);
-        }
-
-        key.key.copy_from_slice(rand);
-
-        Ok(())
     }
 
     fn encrypt<'a>(
@@ -407,32 +377,7 @@ impl<'a, Algo: Aead> AsRef<[U8]> for KeyRef<'a, Algo> {
     }
 }
 
-impl<'a, Algo: Aead> AsMut<[U8]> for KeyMut<'a, Algo> {
-    fn as_mut(&mut self) -> &mut [U8] {
-        self.key
-    }
-}
-
 impl<'a, Algo> KeyRef<'a, Algo> {
-    /// Returns the algorithm this key should be used in
-    pub fn algo(&self) -> &Algo {
-        &self.algorithm
-    }
-}
-
-impl<'a, Algo: Aead> KeyMut<'a, Algo> {
-    /// Creates a new mutable key for the provided algorithm. Checks that the length is correct.
-    pub fn new_for_algo(algo: Algo, key: &'a mut [U8]) -> Result<Self, WrongLengthError> {
-        (key.len() == algo.key_len())
-            .then_some(KeyMut {
-                algorithm: algo,
-                key,
-            })
-            .ok_or(WrongLengthError)
-    }
-}
-
-impl<'a, Algo> KeyMut<'a, Algo> {
     /// Returns the algorithm this key should be used in
     pub fn algo(&self) -> &Algo {
         &self.algorithm
@@ -544,22 +489,6 @@ pub trait Multiplexes<Algo>: Aead + Sized {
     /// Wraps the algorithm in a key
     fn wrap_key<'a>(k: KeyRef<'a, Algo>) -> KeyRef<'a, Self> {
         KeyRef {
-            algorithm: Self::wrap_algo(k.algorithm),
-            key: k.key,
-        }
-    }
-
-    /// Tries unwrapping the algorithm in a mutable key
-    fn mux_key_mut<'a>(key: KeyMut<'a, Self>) -> Option<KeyMut<'a, Algo>> {
-        let KeyMut { algorithm, key } = key;
-        algorithm
-            .mux_algo()
-            .map(|algorithm| KeyMut { algorithm, key })
-    }
-
-    /// Wraps the algorithm in a mutable key
-    fn wrap_key_mut<'a>(k: KeyMut<'a, Algo>) -> KeyMut<'a, Self> {
-        KeyMut {
             algorithm: Self::wrap_algo(k.algorithm),
             key: k.key,
         }

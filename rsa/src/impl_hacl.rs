@@ -78,7 +78,7 @@ impl<'a> VarLenPrivateKey<'a> {
     }
 
     /// Returns the public key of the private key.
-    pub fn pk(&self) -> &VarLenPublicKey<'_> {
+    pub fn pk(&self) -> &VarLenPublicKey {
         &self.pk
     }
 

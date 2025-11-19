@@ -2,52 +2,33 @@
 //! Encryption with Associated Data (AEAD) scheme that takes slices
 //! as arguments and writes outputs to mutable slices.
 
-use libcrux_secrets::U8;
-
 /// An Authenticated Encryption with Associated Data (AEAD) scheme.
 ///
 /// Some implementors of this trait may impose stronger restrictions on the inputs than described
 /// here. Check the documentation of the types implementing this trait to make sure which inputs
 /// are valid.
 pub trait Aead {
-    /// Generate a new key. Consumes the entire randomnes. It is the responsibility of the caller
-    /// to ensure `rand` is random and long enough (usually as long as `key`).
-    fn keygen(key: &mut [U8], rand: &[U8]) -> Result<(), KeyGenError>;
-
     /// Encrypt a plaintext message, producing a ciphertext and an authentication tag.
     /// The arguments `plaintext` and `ciphertext` must have the same length.
     fn encrypt(
         ciphertext: &mut [u8],
-        tag: &mut [U8],
-        key: &[U8],
-        nonce: &[U8],
+        tag: &mut [u8],
+        key: &[u8],
+        nonce: &[u8],
         aad: &[u8],
-        plaintext: &[U8],
+        plaintext: &[u8],
     ) -> Result<(), EncryptError>;
 
     /// Decrypt a ciphertext, verifying its authenticity.
     /// The arguments `plaintext` and `ciphertext` must have the same length.
     fn decrypt(
-        plaintext: &mut [U8],
-        key: &[U8],
-        nonce: &[U8],
+        plaintext: &mut [u8],
+        key: &[u8],
+        nonce: &[u8],
         aad: &[u8],
         ciphertext: &[u8],
-        tag: &[U8],
+        tag: &[u8],
     ) -> Result<(), DecryptError>;
-}
-
-/// Error that can orrur during key generation
-pub enum KeyGenError {
-    /// The provided key has the wrong length
-    WrongKeyLength,
-
-    /// The provided randomness is too short
-    InsufficientRandomness,
-
-    /// The provided randomness is not suitable. Usually this is resolved by trying again with
-    /// different randomness (which would do rejection sampling).
-    UnsuitableRandomness,
 }
 
 /// Error that can occur during encryption.
@@ -184,35 +165,21 @@ mod error_in_core {
 macro_rules! impl_aead_slice_trait {
     ($type:ty => $key:expr, $tag:expr, $nonce:expr) => {
         impl $crate::aead::slice::Aead for $type {
-            fn keygen(
-                key: &mut [$crate::libcrux_secrets::U8],
-                rand: &[$crate::libcrux_secrets::U8],
-            ) -> Result<(), $crate::aead::slice::KeyGenError> {
-                let key: &mut [$crate::libcrux_secrets::U8; $key] = key
-                    .try_into()
-                    .map_err(|_| $crate::aead::slice::KeyGenError::WrongKeyLength)?;
-                if rand.len() < $key {
-                    return Err($crate::aead::slice::KeyGenError::InsufficientRandomness);
-                }
-
-                Ok(key.copy_from_slice(rand))
-            }
-
             fn encrypt(
                 ciphertext: &mut [u8],
-                tag: &mut [$crate::libcrux_secrets::U8],
-                key: &[$crate::libcrux_secrets::U8],
-                nonce: &[$crate::libcrux_secrets::U8],
+                tag: &mut [u8],
+                key: &[u8],
+                nonce: &[u8],
                 aad: &[u8],
-                plaintext: &[$crate::libcrux_secrets::U8],
+                plaintext: &[u8],
             ) -> Result<(), $crate::aead::slice::EncryptError> {
-                let key: &[$crate::libcrux_secrets::U8; $key] = key
+                let key: &[u8; $key] = key
                     .try_into()
                     .map_err(|_| $crate::aead::slice::EncryptError::WrongKeyLength)?;
-                let tag: &mut [$crate::libcrux_secrets::U8; $tag] = tag
+                let tag: &mut [u8; $tag] = tag
                     .try_into()
                     .map_err(|_| $crate::aead::slice::EncryptError::WrongTagLength)?;
-                let nonce: &[$crate::libcrux_secrets::U8; $nonce] = nonce
+                let nonce: &[u8; $nonce] = nonce
                     .try_into()
                     .map_err(|_| $crate::aead::slice::EncryptError::WrongNonceLength)?;
 
@@ -223,20 +190,20 @@ macro_rules! impl_aead_slice_trait {
             }
 
             fn decrypt(
-                plaintext: &mut [$crate::libcrux_secrets::U8],
-                key: &[$crate::libcrux_secrets::U8],
-                nonce: &[$crate::libcrux_secrets::U8],
+                plaintext: &mut [u8],
+                key: &[u8],
+                nonce: &[u8],
                 aad: &[u8],
                 ciphertext: &[u8],
-                tag: &[$crate::libcrux_secrets::U8],
+                tag: &[u8],
             ) -> Result<(), $crate::aead::slice::DecryptError> {
-                let key: &[$crate::libcrux_secrets::U8; $key] = key
+                let key: &[u8; $key] = key
                     .try_into()
                     .map_err(|_| $crate::aead::slice::DecryptError::WrongKeyLength)?;
-                let tag: &[$crate::libcrux_secrets::U8; $tag] = tag
+                let tag: &[u8; $tag] = tag
                     .try_into()
                     .map_err(|_| $crate::aead::slice::DecryptError::WrongTagLength)?;
-                let nonce: &[$crate::libcrux_secrets::U8; $nonce] = nonce
+                let nonce: &[u8; $nonce] = nonce
                     .try_into()
                     .map_err(|_| $crate::aead::slice::DecryptError::WrongNonceLength)?;
 

@@ -77,25 +77,3 @@ fn shaclone() {
     assert_eq!(digest, digest_2);
     assert_eq!(digest, libcrux_sha2::sha512(b"test 512more 512"));
 }
-
-// test the incremental digest functionality provided by the `libcrux_traits` crate
-#[test]
-fn test_digest_traits() {
-    let expected = "8683520e19e5b33db33c8fb90918c0c96fcdfd9a17c695ce0f0ea2eaa0c95956";
-
-    // incremental API
-    let mut hasher = libcrux_sha2::Sha256Hasher::new();
-    hasher.update(b"libcrux sha2 256 tests").unwrap();
-    let mut d = [0u8; 32];
-    hasher.finish(&mut d);
-
-    assert_eq!(hex::encode(d), expected);
-}
-
-#[test]
-fn traits_generic_tests() {
-    libcrux_traits::digest::tests::simple::<28, libcrux_sha2::Sha224Hash>();
-    libcrux_traits::digest::tests::simple::<32, libcrux_sha2::Sha256Hash>();
-    libcrux_traits::digest::tests::simple::<48, libcrux_sha2::Sha384Hash>();
-    libcrux_traits::digest::tests::simple::<64, libcrux_sha2::Sha512Hash>();
-}

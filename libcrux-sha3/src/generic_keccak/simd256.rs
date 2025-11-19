@@ -2,7 +2,7 @@ use super::*;
 
 use libcrux_intrinsics::avx2::Vec256;
 
-#[inline(always)]
+#[inline]
 pub(crate) fn keccak4<const RATE: usize, const DELIM: u8>(
     data: &[&[u8]; 4],
     out0: &mut [u8],

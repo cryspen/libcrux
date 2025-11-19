@@ -259,11 +259,11 @@
     "googletest": {
       "flake": false,
       "locked": {
-        "lastModified": 1746032069,
-        "narHash": "sha256-HIHMxAUR4bjmFLoltJeIAVSulVQ6kVuIT2Ku+lwAx/4=",
+        "lastModified": 1623433346,
+        "narHash": "sha256-SjlJxushfry13RGA7BCjYC9oZqV4z6x8dOiHfl/wpF0=",
         "owner": "google",
         "repo": "googletest",
-        "rev": "52eb8108c5bdec04579160ae17225d66034bd723",
+        "rev": "e2239ee6043f73722e7aa812a459f54a28552929",
         "type": "github"
       },
       "original": {
@@ -316,11 +316,11 @@
     "json": {
       "flake": false,
       "locked": {
-        "lastModified": 1744360948,
-        "narHash": "sha256-cECvDOLxgX7Q9R3IE86Hj9JJUxraDQvhoyPDF03B2CY=",
+        "lastModified": 1633696761,
+        "narHash": "sha256-EBzwaHyDWF8h/z3Zfq4p/n5Vpz7Ozlc3eoWDKXWv2YY=",
         "owner": "nlohmann",
         "repo": "json",
-        "rev": "55f93686c01528224f448c19128836e7df245f72",
+        "rev": "aa0e847e5b57a00696bdcb6a834b927231b81613",
         "type": "github"
       },
       "original": {

@@ -29,7 +29,9 @@ fn benchmarks(c: &mut Criterion) {
         group.bench_function(BenchmarkId::new("b", fmt(*payload_size)), |b| {
             b.iter(|| {
                 let mut digest = [0; 32];
-                let mut hasher = Blake2bBuilder::new_unkeyed().build_const_digest_len();
+                let mut hasher = Blake2bBuilder::new_unkeyed()
+                    .build_const_digest_len()
+                    .unwrap();
                 hasher.update(&payload).unwrap();
                 hasher.finalize(&mut digest);
             })
@@ -44,7 +46,9 @@ fn benchmarks(c: &mut Criterion) {
         group.bench_function(BenchmarkId::new("s", fmt(*payload_size)), |b| {
             b.iter(|| {
                 let mut digest = [0; 32];
-                let mut hasher = Blake2sBuilder::new_unkeyed().build_const_digest_len();
+                let mut hasher = Blake2sBuilder::new_unkeyed()
+                    .build_const_digest_len()
+                    .unwrap();
                 hasher.update(&payload).unwrap();
                 hasher.finalize(&mut digest);
             })

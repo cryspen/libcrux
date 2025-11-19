@@ -99,8 +99,3 @@ later update these as well.
 ### Running `cargo publish`
 
 This pushes the crate to crates.io. Before running the full push, do a dry run.
-
-### Tag the commit
-
-Create and push a git tag named `${crate name}-v${version}` for all published
-crates.

@@ -13,7 +13,7 @@ Write `a + b mod 2 ^ (64 * len)` in `res`.
 
   This functions returns the carry.
 
-  The arguments a, b and the outparam res are meant to be `len` limbs in size, i.e. `uint64_t\[len\]`
+  The arguments a, b and the outparam res are meant to be `len` limbs in size, i.e. uint64_t[len]
 */
 pub fn add(len: u32, a: &[u64], b: &[u64], res: &mut [u64]) -> u64 {
     super::bignum_base::bn_add_eq_len_u64(len, a, b, res)
@@ -24,7 +24,7 @@ Write `a - b mod 2 ^ (64 * len)` in `res`.
 
   This functions returns the carry.
 
-  The arguments a, b and the outparam res are meant to be `len` limbs in size, i.e. `uint64_t\[len\]`
+  The arguments a, b and the outparam res are meant to be `len` limbs in size, i.e. uint64_t[len]
 */
 pub fn sub(len: u32, a: &[u64], b: &[u64], res: &mut [u64]) -> u64 {
     super::bignum_base::bn_sub_eq_len_u64(len, a, b, res)
@@ -33,7 +33,7 @@ pub fn sub(len: u32, a: &[u64], b: &[u64], res: &mut [u64]) -> u64 {
 /**
 Write `(a + b) mod n` in `res`.
 
-  The arguments a, b, n and the outparam res are meant to be `len` limbs in size, i.e. `uint64_t\[len\]`.
+  The arguments a, b, n and the outparam res are meant to be `len` limbs in size, i.e. uint64_t[len].
 
   Before calling this function, the caller will need to ensure that the following
   preconditions are observed.
@@ -51,7 +51,7 @@ pub fn add_mod(len: u32, n: &[u64], a: &[u64], b: &[u64], res: &mut [u64]) {
 /**
 Write `(a - b) mod n` in `res`.
 
-  The arguments a, b, n and the outparam res are meant to be `len` limbs in size, i.e. `uint64_t\[len\]`.
+  The arguments a, b, n and the outparam res are meant to be `len` limbs in size, i.e. uint64_t[len].
 
   Before calling this function, the caller will need to ensure that the following
   preconditions are observed.
@@ -65,8 +65,8 @@ pub fn sub_mod(len: u32, n: &[u64], a: &[u64], b: &[u64], res: &mut [u64]) {
 /**
 Write `a * b` in `res`.
 
-  The arguments a and b are meant to be `len` limbs in size, i.e. `uint64_t\[len\]`.
-  The outparam res is meant to be `2*len` limbs in size, i.e. `uint64_t\[2*len\]`.
+  The arguments a and b are meant to be `len` limbs in size, i.e. uint64_t[len].
+  The outparam res is meant to be `2*len` limbs in size, i.e. uint64_t[2*len].
 */
 pub fn mul(len: u32, a: &[u64], b: &[u64], res: &mut [u64]) {
     let mut tmp: Box<[u64]> = vec![0u64; 4u32.wrapping_mul(len) as usize].into_boxed_slice();
@@ -76,8 +76,8 @@ pub fn mul(len: u32, a: &[u64], b: &[u64], res: &mut [u64]) {
 /**
 Write `a * a` in `res`.
 
-  The argument a is meant to be `len` limbs in size, i.e. `uint64_t\[len\]`.
-  The outparam res is meant to be `2*len` limbs in size, i.e. `uint64_t\[2*len\]`.
+  The argument a is meant to be `len` limbs in size, i.e. uint64_t[len].
+  The outparam res is meant to be `2*len` limbs in size, i.e. uint64_t[2*len].
 */
 pub fn sqr(len: u32, a: &[u64], res: &mut [u64]) {
     let mut tmp: Box<[u64]> = vec![0u64; 4u32.wrapping_mul(len) as usize].into_boxed_slice();
@@ -97,8 +97,8 @@ fn bn_slow_precomp(len: u32, n: &[u64], mu: u64, r2: &[u64], a: &[u64], res: &mu
 /**
 Write `a mod n` in `res`.
 
-  The argument a is meant to be `2*len` limbs in size, i.e. `uint64_t\[2*len\]`.
-  The argument n and the outparam res are meant to be `len` limbs in size, i.e. `uint64_t\[len\]`.
+  The argument a is meant to be `2*len` limbs in size, i.e. uint64_t[2*len].
+  The argument n and the outparam res are meant to be `len` limbs in size, i.e. uint64_t[len].
 
   The function returns false if any of the following preconditions are violated,
   true otherwise.
@@ -135,7 +135,7 @@ pub fn r#mod(len: u32, n: &[u64], a: &[u64], res: &mut [u64]) -> bool {
 /**
 Write `a ^ b mod n` in `res`.
 
-  The arguments a, n and the outparam res are meant to be `len` limbs in size, i.e. `uint64_t\[len\]`.
+  The arguments a, n and the outparam res are meant to be `len` limbs in size, i.e. uint64_t[len].
 
   The argument b is a bignum of any size, and bBits is an upper bound on the
   number of significant bits of b. A tighter bound results in faster execution
@@ -173,7 +173,7 @@ pub fn mod_exp_vartime(
 /**
 Write `a ^ b mod n` in `res`.
 
-  The arguments a, n and the outparam res are meant to be `len` limbs in size, i.e. `uint64_t\[len\]`.
+  The arguments a, n and the outparam res are meant to be `len` limbs in size, i.e. uint64_t[len].
 
   The argument b is a bignum of any size, and bBits is an upper bound on the
   number of significant bits of b. A tighter bound results in faster execution
@@ -211,7 +211,7 @@ pub fn mod_exp_consttime(
 /**
 Write `a ^ (-1) mod n` in `res`.
 
-  The arguments a, n and the outparam res are meant to be `len` limbs in size, i.e. `uint64_t\[len\]`.
+  The arguments a, n and the outparam res are meant to be `len` limbs in size, i.e. uint64_t[len].
 
   Before calling this function, the caller will need to ensure that the following
   preconditions are observed.
@@ -312,7 +312,7 @@ pub fn mod_inv_prime_vartime(len: u32, n: &[u64], a: &[u64], res: &mut [u64]) ->
 /**
 Heap-allocate and initialize a montgomery context.
 
-  The argument n is meant to be `len` limbs in size, i.e. `uint64_t\[len\]`.
+  The argument n is meant to be `len` limbs in size, i.e. uint64_t[len].
 
   Before calling this function, the caller will need to ensure that the following
   preconditions are observed.
@@ -344,8 +344,8 @@ pub fn mont_ctx_init(len: u32, n: &[u64]) -> Box<[super::base::bn_mont_ctx_u64]>
 /**
 Write `a mod n` in `res`.
 
-  The argument a is meant to be `2*len` limbs in size, i.e. `uint64_t\[2*len\]`.
-  The outparam res is meant to be `len` limbs in size, i.e. `uint64_t\[len\]`.
+  The argument a is meant to be `2*len` limbs in size, i.e. uint64_t[2*len].
+  The outparam res is meant to be `len` limbs in size, i.e. uint64_t[len].
   The argument k is a montgomery context obtained through Hacl_Bignum64_mont_ctx_init.
 */
 pub fn mod_precomp(k: &[super::base::bn_mont_ctx_u64], a: &[u64], res: &mut [u64]) {
@@ -359,7 +359,7 @@ pub fn mod_precomp(k: &[super::base::bn_mont_ctx_u64], a: &[u64], res: &mut [u64
 /**
 Write `a ^ b mod n` in `res`.
 
-  The arguments a and the outparam res are meant to be `len` limbs in size, i.e. `uint64_t\[len\]`.
+  The arguments a and the outparam res are meant to be `len` limbs in size, i.e. uint64_t[len].
   The argument k is a montgomery context obtained through Hacl_Bignum64_mont_ctx_init.
 
   The argument b is a bignum of any size, and bBits is an upper bound on the
@@ -392,7 +392,7 @@ pub fn mod_exp_vartime_precomp(
 /**
 Write `a ^ b mod n` in `res`.
 
-  The arguments a and the outparam res are meant to be `len` limbs in size, i.e. `uint64_t\[len\]`.
+  The arguments a and the outparam res are meant to be `len` limbs in size, i.e. uint64_t[len].
   The argument k is a montgomery context obtained through Hacl_Bignum64_mont_ctx_init.
 
   The argument b is a bignum of any size, and bBits is an upper bound on the
@@ -425,7 +425,7 @@ pub fn mod_exp_consttime_precomp(
 /**
 Write `a ^ (-1) mod n` in `res`.
 
-  The argument a and the outparam res are meant to be `len` limbs in size, i.e. `uint64_t\[len\]`.
+  The argument a and the outparam res are meant to be `len` limbs in size, i.e. uint64_t[len].
   The argument k is a montgomery context obtained through Hacl_Bignum64_mont_ctx_init.
 
   Before calling this function, the caller will need to ensure that the following
@@ -621,7 +621,7 @@ pub fn bn_to_bytes_le(len: u32, b: &[u64], res: &mut [u8]) {
 /**
 Returns 2^64 - 1 if a < b, otherwise returns 0.
 
- The arguments a and b are meant to be `len` limbs in size, i.e. `uint64_t\[len\]`.
+ The arguments a and b are meant to be `len` limbs in size, i.e. uint64_t[len].
 */
 pub fn lt_mask(len: u32, a: &[u64], b: &[u64]) -> u64 {
     let mut acc: [u64; 1] = [0u64; 1usize];
@@ -636,7 +636,7 @@ pub fn lt_mask(len: u32, a: &[u64], b: &[u64]) -> u64 {
 /**
 Returns 2^64 - 1 if a = b, otherwise returns 0.
 
- The arguments a and b are meant to be `len` limbs in size, i.e. `uint64_t\[len\]`.
+ The arguments a and b are meant to be `len` limbs in size, i.e. uint64_t[len].
 */
 pub fn eq_mask(len: u32, a: &[u64], b: &[u64]) -> u64 {
     let mut mask: [u64; 1] = [0xFFFFFFFFFFFFFFFFu64; 1usize];

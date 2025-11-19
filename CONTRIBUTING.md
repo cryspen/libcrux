@@ -13,19 +13,17 @@ While many old crates do not yet follow the new structure, please use it for new
 crates:
 
 ```
-/crates/                   -- contains all crates except `libcrux`
-/crates/primitives         -- contains crypto primitive crates
-/crates/primitives/aead    -- the crate `libcrux-aead`
-/crates/algorithms         -- contains crypto algorithm crates
+/crates/                 -- contains all crates except `libcrux`
+/crates/primitives       -- contains crypto primitive crates
+/crates/primitives/aead  -- the crate `libcrux-aead`
+/crates/algorithms       -- contains crypto algorithm crates
 /crates/algorithms/chacha20poly1305 -- the crate `libcrux-chacha20poly1305`
-/crates/specs/             -- specification crates
-/crates/utils/             -- miscellaneous crates
-/crates/utils/macros       -- the `libcrux-macros` crate
-/crates/utils/secrets      -- the `libcrux-secrets` crate
-/crates/testing/           -- testing crates
-/crates/testing/kats       -- the `libcrux-kats` crate
-/crates/testing/test-utils -- the `libcrux-test-utils` crate
-/crates/sys/...            -- the sys crates
+/crates/specs/           -- specification crates
+/crates/utils/           -- miscellaneous crates
+/crates/utils/macros     -- the `libcrux-macros` crate
+/crates/utils/secrets    -- the `libcrux-secrets` crate
+/crates/utils/test-utils -- the `libcrux-test-utils` crate
+/crates/sys/...          -- the sys crates
 ```
 
 ### Per-Crate Structure
@@ -49,7 +47,7 @@ Relative to the crate root, the structure we aim to use is:
 /extracts/
 /extracts/$name/extract.sh   -- the script that extracts the code
 /extracts/$name/extract.yaml -- the eurydice config for the extraction
-/extracts/$name/generated/   -- the extracted code
+/extracts/$name/out/         -- the extracted code
 /extracts/$name/...          -- per-extraction extra data
 ```
 

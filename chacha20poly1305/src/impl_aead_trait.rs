@@ -1,5 +1,4 @@
-use libcrux_secrets::U8;
-use libcrux_traits::aead::arrayref::{Aead, DecryptError, EncryptError, KeyGenError};
+use libcrux_traits::aead::arrayref::{Aead, DecryptError, EncryptError};
 
 use crate::{KEY_LEN, NONCE_LEN, TAG_LEN};
 
@@ -18,8 +17,6 @@ pub struct ChaCha20Poly1305;
 pub struct XChaCha20Poly1305;
 
 mod impl_chachapoly {
-    use libcrux_secrets::DeclassifyRef;
-    use libcrux_secrets::DeclassifyRefMut;
     use libcrux_traits::aead::consts::AeadConsts;
 
     use super::*;
@@ -35,11 +32,11 @@ mod impl_chachapoly {
     impl Aead<KEY_LEN, TAG_LEN, NONCE_LEN> for ChaCha20Poly1305 {
         fn encrypt(
             ciphertext: &mut [u8],
-            tag: &mut [U8; TAG_LEN],
-            key: &[U8; KEY_LEN],
-            nonce: &[U8; NONCE_LEN],
+            tag: &mut [u8; TAG_LEN],
+            key: &[u8; KEY_LEN],
+            nonce: &[u8; NONCE_LEN],
             aad: &[u8],
-            plaintext: &[U8],
+            plaintext: &[u8],
         ) -> Result<(), EncryptError> {
             if plaintext.len() != ciphertext.len() {
                 return Err(EncryptError::WrongCiphertextLength);
@@ -52,26 +49,19 @@ mod impl_chachapoly {
             let aad_len: u32 = aad.len().try_into().map_err(|_| EncryptError::AadTooLong)?;
 
             crate::hacl::aead_chacha20poly1305::encrypt(
-                ciphertext,
-                tag.declassify_ref_mut(),
-                plaintext.declassify_ref(),
-                ptxt_len,
-                aad,
-                aad_len,
-                key.declassify_ref(),
-                nonce.declassify_ref(),
+                ciphertext, tag, plaintext, ptxt_len, aad, aad_len, key, nonce,
             );
 
             Ok(())
         }
 
         fn decrypt(
-            mut plaintext: &mut [U8],
-            key: &[U8; KEY_LEN],
-            nonce: &[U8; NONCE_LEN],
+            plaintext: &mut [u8],
+            key: &[u8; KEY_LEN],
+            nonce: &[u8; NONCE_LEN],
             aad: &[u8],
             ciphertext: &[u8],
-            tag: &[U8; TAG_LEN],
+            tag: &[u8; TAG_LEN],
         ) -> Result<(), DecryptError> {
             if plaintext.len() != ciphertext.len() {
                 return Err(DecryptError::WrongPlaintextLength);
@@ -85,23 +75,11 @@ mod impl_chachapoly {
 
             // this call should only ever produce 0 or 1, where 0 is success and 1 is error
             match crate::hacl::aead_chacha20poly1305::decrypt(
-                plaintext.declassify_ref_mut(),
-                ciphertext,
-                ctxt_len,
-                aad,
-                aad_len,
-                key.declassify_ref(),
-                nonce.declassify_ref(),
-                tag.declassify_ref(),
+                plaintext, ciphertext, ctxt_len, aad, aad_len, key, nonce, tag,
             ) {
                 0 => Ok(()),
                 _ => Err(DecryptError::InvalidTag),
             }
-        }
-
-        fn keygen(key: &mut [U8; KEY_LEN], rand: &[U8; KEY_LEN]) -> Result<(), KeyGenError> {
-            *key = *rand;
-            Ok(())
         }
     }
 
@@ -122,7 +100,6 @@ mod impl_chachapoly {
 }
 
 mod impl_xchachapoly {
-    use libcrux_secrets::{Classify, DeclassifyRef, DeclassifyRefMut};
     use libcrux_traits::aead::consts::AeadConsts;
 
     use crate::xchacha20_poly1305::NONCE_LEN as XNONCE_LEN;
@@ -140,47 +117,32 @@ mod impl_xchachapoly {
     impl Aead<KEY_LEN, TAG_LEN, XNONCE_LEN> for XChaCha20Poly1305 {
         fn encrypt(
             ciphertext: &mut [u8],
-            tag: &mut [U8; TAG_LEN],
-            key: &[U8; KEY_LEN],
-            nonce: &[U8; XNONCE_LEN],
+            tag: &mut [u8; TAG_LEN],
+            key: &[u8; KEY_LEN],
+            nonce: &[u8; XNONCE_LEN],
             aad: &[u8],
-            plaintext: &[U8],
+            plaintext: &[u8],
         ) -> Result<(), EncryptError> {
-            let mut subkey = [0u8.classify(); KEY_LEN];
-            let mut new_nonce = [0u8.classify(); super::NONCE_LEN];
+            let mut subkey = [0u8; KEY_LEN];
+            let mut new_nonce = [0u8; super::NONCE_LEN];
 
-            crate::xchacha20_poly1305::derive(
-                key.declassify_ref(),
-                nonce.declassify_ref(),
-                subkey.declassify_ref_mut(),
-                new_nonce.declassify_ref_mut(),
-            );
+            crate::xchacha20_poly1305::derive(key, nonce, &mut subkey, &mut new_nonce);
             ChaCha20Poly1305::encrypt(ciphertext, tag, &subkey, &new_nonce, aad, plaintext)
         }
 
         fn decrypt(
-            plaintext: &mut [U8],
-            key: &[U8; KEY_LEN],
-            nonce: &[U8; XNONCE_LEN],
+            plaintext: &mut [u8],
+            key: &[u8; KEY_LEN],
+            nonce: &[u8; XNONCE_LEN],
             aad: &[u8],
             ciphertext: &[u8],
-            tag: &[U8; TAG_LEN],
+            tag: &[u8; TAG_LEN],
         ) -> Result<(), DecryptError> {
-            let mut subkey = [0u8.classify(); KEY_LEN];
-            let mut new_nonce = [0u8.classify(); super::NONCE_LEN];
+            let mut subkey = [0u8; KEY_LEN];
+            let mut new_nonce = [0u8; super::NONCE_LEN];
 
-            crate::xchacha20_poly1305::derive(
-                key.declassify_ref(),
-                nonce.declassify_ref(),
-                &mut subkey.declassify_ref_mut(),
-                &mut new_nonce.declassify_ref_mut(),
-            );
+            crate::xchacha20_poly1305::derive(key, nonce, &mut subkey, &mut new_nonce);
             ChaCha20Poly1305::decrypt(plaintext, &subkey, &new_nonce, aad, ciphertext, tag)
-        }
-
-        fn keygen(key: &mut [U8; KEY_LEN], rand: &[U8; KEY_LEN]) -> Result<(), KeyGenError> {
-            *key = *rand;
-            Ok(())
         }
     }
 
@@ -195,9 +157,6 @@ mod impl_xchachapoly {
 
 #[cfg(test)]
 mod tests {
-    use libcrux_secrets::Classify;
-    use libcrux_secrets::ClassifyRef;
-    use libcrux_secrets::DeclassifyRef;
     use libcrux_traits::aead::typed_owned;
     use libcrux_traits::aead::typed_refs;
 
@@ -207,39 +166,37 @@ mod tests {
 
     #[test]
     fn test_key_centric_owned() {
-        let k: Key = [0; 32].classify().into();
-        let nonce: Nonce = [0; 12].classify().into();
-        let mut tag: Tag = [0; 16].classify().into();
+        let k: Key = [0; 32].into();
+        let nonce: Nonce = [0; 12].into();
+        let mut tag: Tag = [0; 16].into();
 
-        let pt = b"the quick brown fox jumps over the lazy dog".classify_ref();
+        let pt = b"the quick brown fox jumps over the lazy dog";
         let mut ct = [0; 43];
-        let mut pt_out = [0.classify(); 43];
+        let mut pt_out = [0; 43];
 
         k.encrypt(&mut ct, &mut tag, &nonce, b"", pt).unwrap();
         k.decrypt(&mut pt_out, &nonce, b"", &ct, &tag).unwrap();
-        assert_eq!(pt.declassify_ref(), pt_out.declassify_ref());
+        assert_eq!(pt, &pt_out);
     }
 
     #[test]
     fn test_key_centric_refs() {
         use typed_refs::Aead as _;
 
-        let mut tag_bytes = [0.classify(); 16];
-        let key_bytes = [0.classify(); 32];
-        let nonce_bytes = [0.classify(); 12];
+        let mut tag_bytes = [0; 16];
 
         let algo = super::ChaCha20Poly1305;
-        let key = algo.new_key(&key_bytes).unwrap();
+        let key = algo.new_key(&[0; 32]).unwrap();
         let tag = algo.new_tag_mut(&mut tag_bytes).unwrap();
-        let nonce = algo.new_nonce(&nonce_bytes).unwrap();
+        let nonce = algo.new_nonce(&[0; 12]).unwrap();
 
-        let pt = b"the quick brown fox jumps over the lazy dog".classify_ref();
+        let pt = b"the quick brown fox jumps over the lazy dog";
         let mut ct = [0; 43];
-        let mut pt_out = [0.classify(); 43];
+        let mut pt_out = [0; 43];
 
         key.encrypt(&mut ct, tag, nonce, b"", pt).unwrap();
         let tag = algo.new_tag(&tag_bytes).unwrap();
         key.decrypt(&mut pt_out, nonce, b"", &ct, tag).unwrap();
-        assert_eq!(pt.declassify_ref(), pt_out.declassify_ref());
+        assert_eq!(pt, &pt_out);
     }
 }

@@ -1,7 +1,7 @@
 # Working with Libcrux ML-KEM
 
 This directory contains Rust code for ML-KEM that can be formally verified using
-the [hax toolchain](https://github.com/cryspen/hax) and can be compiled to C/C++
+the [hax toolchain](https://github.com/cryspen/hax) and can be compiled to C 
 using the [eurydice toolchain](https://github.com/AeneasVerif/eurydice).
 
 In this documemt, we describe how to install the tools that will allow you to
@@ -136,9 +136,9 @@ We provide a script `boring.sh` to compile the Rust code for ML-KEM 768 to C.
 You can use this script to regenerate the C code and test and benchmark it.
 
 ```bash
-cd libcrux/libcrux-ml-kem/extracts/cpp_header_only
-./extract.sh --no-clean
-cd generated
+cd libcrux/libcrux-ml-kem
+./boring.sh
+cd cg
 export LIBCRUX_BENCHMARKS=1
 cmake -B build -G "Ninja Multi-Config"
 cmake --build build
@@ -235,7 +235,7 @@ and re-extract the C code.
 cargo test
 ./hax.py extract
 ./hax.py prove
-(cd extracts/cpp_header_only; ./extract.sh --no-clean)
+./boring.sh
 ```
 
 Note that this function must obey the pre-conditions of the inner `p::encapsulate` function
@@ -266,7 +266,7 @@ Again, you can test the Rust, verify it with hax, and compile it to C.
 cargo test
 ./hax.py extract
 ./hax.py prove
-(cd extracts/cpp_header_only; ./extract.sh --no-clean)
+./boring.sh
 ```
 
 Note that the post-condition (`ensures`) captures its functional specification

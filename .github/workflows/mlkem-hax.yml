@@ -48,7 +48,7 @@ jobs:
         run: ./hax.py extract
 
       - name: ↑ Upload F* extraction
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v4
         with:
           name: fstar-extractions
           path: "**/proofs/fstar"
@@ -69,7 +69,7 @@ jobs:
           hax_reference: ${{ github.event.inputs.hax_ref || needs.get-hax-ref.outputs.hax_ref }}
           fstar: v2025.02.17
 
-      - uses: actions/download-artifact@v6
+      - uses: actions/download-artifact@v5
         with:
           name: fstar-extractions
           path: .
@@ -96,7 +96,7 @@ jobs:
       - name: ⤵ Install FStar
         run: nix profile install github:FStarLang/FStar/v2025.02.17
 
-      - uses: actions/download-artifact@v6
+      - uses: actions/download-artifact@v5
         with:
           name: fstar-extractions
           path: .

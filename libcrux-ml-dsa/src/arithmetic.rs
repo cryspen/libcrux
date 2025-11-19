@@ -9,7 +9,7 @@ use crate::{
 #[hax_lib::requires(fstar!(r#"v $bound > 0 /\ 
         (forall i. forall j. Spec.Utils.is_i32b_array_opaque 
             (v ${crate::simd::traits::specs::FIELD_MAX}) 
-            (i0._super_4731626403787200903.f_repr (Seq.index (Seq.index vector i).f_simd_units j)))"#))]
+            (i0._super_4202118595671791609.f_repr (Seq.index (Seq.index vector i).f_simd_units j)))"#))]
 pub(crate) fn vector_infinity_norm_exceeds<SIMDUnit: Operations>(
     vector: &[PolynomialRingElement<SIMDUnit>],
     bound: i32,
@@ -25,8 +25,8 @@ pub(crate) fn vector_infinity_norm_exceeds<SIMDUnit: Operations>(
 #[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
 #[hax_lib::requires(fstar!(r#"v $SHIFT_BY == 13 /\ 
         (forall i. forall j.
-            v (Seq.index (i0._super_4731626403787200903.f_repr (Seq.index re.f_simd_units i)) j) >= 0 /\
-            v (Seq.index (i0._super_4731626403787200903.f_repr (Seq.index re.f_simd_units i)) j) <= 261631)"#))]
+            v (Seq.index (i0._super_4202118595671791609.f_repr (Seq.index re.f_simd_units i)) j) >= 0 /\
+            v (Seq.index (i0._super_4202118595671791609.f_repr (Seq.index re.f_simd_units i)) j) <= 261631)"#))]
 pub(crate) fn shift_left_then_reduce<SIMDUnit: Operations, const SHIFT_BY: i32>(
     re: &mut PolynomialRingElement<SIMDUnit>,
 ) {
@@ -49,7 +49,7 @@ pub(crate) fn shift_left_then_reduce<SIMDUnit: Operations, const SHIFT_BY: i32>(
     (forall i. forall j. 
         Spec.Utils.is_i32b_array_opaque 
         (v ${crate::simd::traits::specs::FIELD_MAX}) 
-        (i0._super_4731626403787200903.f_repr (Seq.index (Seq.index t i).f_simd_units j)))"#))]
+        (i0._super_4202118595671791609.f_repr (Seq.index (Seq.index t i).f_simd_units j)))"#))]
 pub(crate) fn power2round_vector<SIMDUnit: Operations>(
     t: &mut [PolynomialRingElement<SIMDUnit>],
     t1: &mut [PolynomialRingElement<SIMDUnit>],
@@ -100,7 +100,7 @@ pub(crate) fn power2round_vector<SIMDUnit: Operations>(
          (forall i. forall j. 
             Spec.Utils.is_i32b_array_opaque 
             (v ${crate::simd::traits::specs::FIELD_MAX}) 
-            (i0._super_4731626403787200903.f_repr (Seq.index (Seq.index t i).f_simd_units j)))"#))]
+            (i0._super_4202118595671791609.f_repr (Seq.index (Seq.index t i).f_simd_units j)))"#))]
 pub(crate) fn decompose_vector<SIMDUnit: Operations>(
     dimension: usize,
     gamma2: Gamma2,
@@ -176,7 +176,7 @@ pub(crate) fn make_hint<SIMDUnit: Operations>(
          (forall i. forall j. 
             Spec.Utils.is_i32b_array_opaque 
             (v ${crate::simd::traits::specs::FIELD_MAX}) 
-            (i0._super_4731626403787200903.f_repr (Seq.index (Seq.index re_vector i).f_simd_units j)))"#))]
+            (i0._super_4202118595671791609.f_repr (Seq.index (Seq.index re_vector i).f_simd_units j)))"#))]
 pub(crate) fn use_hint<SIMDUnit: Operations>(
     gamma2: Gamma2,
     hint: &[[i32; COEFFICIENTS_IN_RING_ELEMENT]],

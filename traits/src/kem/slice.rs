@@ -1,8 +1,6 @@
 //! This module contains the trait and related errors for a KEM that takes slices as
 //! arguments and writes the results to mutable slices..
 
-use libcrux_secrets::U8;
-
 use super::arrayref;
 
 /// A Key Encapsulation Mechanismd (KEM). This trait takes slices as arguments.
@@ -10,15 +8,15 @@ pub trait Kem {
     /// Generate a pair of encapsulation and decapsulation keys.
     /// It is the responsibility of the caller to ensure  that the `rand` argument is actually
     /// random.
-    fn keygen(ek: &mut [u8], dk: &mut [U8], rand: &[U8]) -> Result<(), KeyGenError>;
+    fn keygen(ek: &mut [u8], dk: &mut [u8], rand: &[u8]) -> Result<(), KeyGenError>;
 
     /// Encapsulate a shared secret towards a given encapsulation key.
     /// It is the responsibility of the caller to ensure  that the `rand` argument is actually
     /// random.
-    fn encaps(ct: &mut [u8], ss: &mut [U8], ek: &[u8], rand: &[U8]) -> Result<(), EncapsError>;
+    fn encaps(ct: &mut [u8], ss: &mut [u8], ek: &[u8], rand: &[u8]) -> Result<(), EncapsError>;
 
     /// Decapsulate a shared secret.
-    fn decaps(ss: &mut [U8], ct: &[u8], dk: &[U8]) -> Result<(), DecapsError>;
+    fn decaps(ss: &mut [u8], ct: &[u8], dk: &[u8]) -> Result<(), DecapsError>;
 }
 
 /// Error generating key with provided randomness
@@ -106,31 +104,31 @@ impl From<arrayref::DecapsError> for DecapsError {
 macro_rules! impl_trait {
     ($type:ty => $ek:expr, $dk:expr, $ct:expr, $ss:expr, $rand_kg:expr, $rand_encaps:expr) => {
         impl $crate::kem::slice::Kem for $type {
-            fn keygen(ek: &mut [u8], dk: &mut [$crate::libcrux_secrets::U8], rand: &[$crate::libcrux_secrets::U8]) -> Result<(), $crate::kem::slice::KeyGenError> {
+            fn keygen(ek: &mut [u8], dk: &mut [u8], rand: &[u8]) -> Result<(), $crate::kem::slice::KeyGenError> {
                 let ek : &mut [u8; $ek] = ek
                     .try_into()
                     .map_err(|_| $crate::kem::slice::KeyGenError::InvalidEncapsKeyLength)?;
-                let dk : &mut [$crate::libcrux_secrets::U8; $dk] = dk
+                let dk : &mut [u8; $dk] = dk
                     .try_into()
                     .map_err(|_| $crate::kem::slice::KeyGenError::InvalidDecapsKeyLength)?;
-                let rand : &[$crate::libcrux_secrets::U8; $rand_kg] = rand
+                let rand : &[u8; $rand_kg] = rand
                     .try_into()
                     .map_err(|_| $crate::kem::slice::KeyGenError::InvalidRandomnessLength)?;
 
                 <$type as $crate::kem::arrayref::Kem<$ek, $dk, $ct, $ss, $rand_kg, $rand_encaps>>::keygen(ek, dk, rand).map_err($crate::kem::slice::KeyGenError::from)
             }
 
-            fn encaps(ct: &mut [u8], ss: &mut [$crate::libcrux_secrets::U8], ek: &[u8], rand: &[$crate::libcrux_secrets::U8]) -> Result<(), $crate::kem::slice::EncapsError>{
+            fn encaps(ct: &mut [u8], ss: &mut [u8], ek: &[u8], rand: &[u8]) -> Result<(), $crate::kem::slice::EncapsError>{
                 let ct : &mut [u8; $ct] = ct
                     .try_into()
                     .map_err(|_| $crate::kem::slice::EncapsError::InvalidCiphertextLength)?;
-                let ss : &mut [$crate::libcrux_secrets::U8; $ss] = ss
+                let ss : &mut [u8; $ss] = ss
                     .try_into()
                     .map_err(|_| $crate::kem::slice::EncapsError::InvalidSharedSecretLength)?;
                 let ek : & [u8; $ek] = ek
                     .try_into()
                     .map_err(|_| $crate::kem::slice::EncapsError::InvalidEncapsKeyLength)?;
-                let rand : &[$crate::libcrux_secrets::U8; $rand_encaps] = rand
+                let rand : &[u8; $rand_encaps] = rand
                     .try_into()
                     .map_err(|_| $crate::kem::slice::EncapsError::InvalidRandomnessLength)?;
 
@@ -138,14 +136,14 @@ macro_rules! impl_trait {
                 <$type as $crate::kem::arrayref::Kem<$ek, $dk, $ct, $ss, $rand_kg, $rand_encaps>>::encaps(ct, ss, ek,rand).map_err($crate::kem::slice::EncapsError::from)
             }
 
-            fn decaps(ss: &mut [$crate::libcrux_secrets::U8], ct: &[u8], dk: &[$crate::libcrux_secrets::U8]) -> Result<(), $crate::kem::slice::DecapsError> {
-                let ss : &mut [$crate::libcrux_secrets::U8; $ss] = ss
+            fn decaps(ss: &mut [u8], ct: &[u8], dk: &[u8]) -> Result<(), $crate::kem::slice::DecapsError> {
+                let ss : &mut [u8; $ss] = ss
                     .try_into()
                     .map_err(|_| $crate::kem::slice::DecapsError::InvalidSharedSecretLength)?;
                 let ct : &[u8; $ct] = ct
                     .try_into()
                     .map_err(|_| $crate::kem::slice::DecapsError::InvalidCiphertextLength)?;
-                let dk : &[$crate::libcrux_secrets::U8; $dk] = dk
+                let dk : &[u8; $dk] = dk
                     .try_into()
                     .map_err(|_| $crate::kem::slice::DecapsError::InvalidDecapsKeyLength)?;
 

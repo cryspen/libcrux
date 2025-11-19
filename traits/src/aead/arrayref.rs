@@ -2,8 +2,6 @@
 //! Encryption with Associated Data (AEAD) scheme that takes array references
 //! as arguments and writes outputs to mutable array references.
 
-use libcrux_secrets::U8;
-
 /// An Authenticated Encryption with Associated Data (AEAD) scheme. This trait
 /// is low-level and is mostly used for implementing other, more usable APIs.
 ///
@@ -11,34 +9,28 @@ use libcrux_secrets::U8;
 /// here. Check the documentation of the types implementing this trait to make sure which inputs
 /// are valid.
 pub trait Aead<const KEY_LEN: usize, const TAG_LEN: usize, const NONCE_LEN: usize> {
-    /// Generate a new key. Consumes the entire randomnes.
-    fn keygen(key: &mut [U8; KEY_LEN], rand: &[U8; KEY_LEN]) -> Result<(), KeyGenError>;
-
     /// Encrypt a plaintext message, producing a ciphertext and an authentication tag.
     /// The arguments `plaintext` and `ciphertext` must have the same length.
     fn encrypt(
         ciphertext: &mut [u8],
-        tag: &mut [U8; TAG_LEN],
-        key: &[U8; KEY_LEN],
-        nonce: &[U8; NONCE_LEN],
+        tag: &mut [u8; TAG_LEN],
+        key: &[u8; KEY_LEN],
+        nonce: &[u8; NONCE_LEN],
         aad: &[u8],
-        plaintext: &[U8],
+        plaintext: &[u8],
     ) -> Result<(), EncryptError>;
 
     /// Decrypt a ciphertext, verifying its authenticity.
     /// The arguments `plaintext` and `ciphertext` must have the same length.
     fn decrypt(
-        plaintext: &mut [U8],
-        key: &[U8; KEY_LEN],
-        nonce: &[U8; NONCE_LEN],
+        plaintext: &mut [u8],
+        key: &[u8; KEY_LEN],
+        nonce: &[u8; NONCE_LEN],
         aad: &[u8],
         ciphertext: &[u8],
-        tag: &[U8; TAG_LEN],
+        tag: &[u8; TAG_LEN],
     ) -> Result<(), DecryptError>;
 }
-
-/// An error occurred during key generation
-pub struct KeyGenError;
 
 /// Error that can occur during encryption.
 #[derive(Debug, PartialEq, Eq)]

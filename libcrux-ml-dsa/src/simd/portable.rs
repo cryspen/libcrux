@@ -1,7 +1,10 @@
 use crate::{
     constants::{Eta, Gamma2},
-    simd::traits::*,
+    simd::traits::{Operations, SIMD_UNITS_IN_RING_ELEMENT},
 };
+
+#[cfg(not(eurydice))]
+use crate::simd::traits::Repr;
 
 mod arithmetic;
 mod vector_type;
@@ -18,14 +21,15 @@ pub(crate) use vector_type::Coefficients as PortableSIMDUnit;
 use vector_type::Coefficients;
 
 #[cfg(hax)]
+use super::traits::COEFFICIENTS_IN_SIMD_UNIT;
+
+#[cfg(not(eurydice))]
 impl Repr for Coefficients {
+    #[cfg(hax)]
     fn repr(&self) -> [i32; COEFFICIENTS_IN_SIMD_UNIT] {
         self.values
     }
 }
-
-#[cfg(not(hax))]
-impl Repr for Coefficients {}
 
 impl Operations for Coefficients {
     fn zero() -> Coefficients {

@@ -13,7 +13,4 @@ mod impl_hacl;
 mod impl_digest_trait;
 
 pub use impl_digest_trait::{Blake2bHash, Blake2bHasher, Blake2sHash, Blake2sHasher};
-pub use impl_hacl::{
-    Blake2b, Blake2bBuilder, Blake2s, Blake2sBuilder, Error, LengthBounds, SupportsKeyLen,
-    SupportsOutLen,
-};
+pub use impl_hacl::{Blake2b, Blake2bBuilder, Blake2s, Blake2sBuilder, Error};

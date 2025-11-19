@@ -1,9 +1,8 @@
-use libcrux_secrets::U8;
-use libcrux_traits::aead::{slice::KeyGenError, typed_refs::KeyMut};
 #[cfg(any(feature = "chacha20poly1305", feature = "xchacha20poly1305"))]
 use libcrux_traits::{
     aead,
     aead::typed_refs::{DecryptError, EncryptError, Multiplexes},
+    libcrux_secrets::U8,
 };
 
 /// A multiplexed AEAD, allowing algorithm selection at run time.
@@ -16,47 +15,19 @@ pub enum Aead {
     /// The XChaCha20Poly1305 AEAD algorithm.
     #[cfg(feature = "xchacha20poly1305")]
     XChaCha20Poly1305,
-
-    /// The AES-GCM 128 AEAD algorithm.
-    #[cfg(feature = "aesgcm128")]
-    AesGcm128,
-
-    /// The AES-GCM 256 AEAD algorithm.
-    #[cfg(feature = "aesgcm256")]
-    AesGcm256,
 }
 
 /// A reference to a multiplexed AEAD key.
-#[cfg(any(
-    feature = "chacha20poly1305",
-    feature = "xchacha20poly1305",
-    feature = "aesgcm128",
-    feature = "aesgcm256"
-))]
+#[cfg(any(feature = "chacha20poly1305", feature = "xchacha20poly1305"))]
 pub type KeyRef<'a> = aead::typed_refs::KeyRef<'a, Aead>;
 /// A reference to a multiplexed AEAD tag.
-#[cfg(any(
-    feature = "chacha20poly1305",
-    feature = "xchacha20poly1305",
-    feature = "aesgcm128",
-    feature = "aesgcm256"
-))]
+#[cfg(any(feature = "chacha20poly1305", feature = "xchacha20poly1305"))]
 pub type TagRef<'a> = aead::typed_refs::TagRef<'a, Aead>;
 /// A mutable reference to a multiplexed AEAD tag.
-#[cfg(any(
-    feature = "chacha20poly1305",
-    feature = "xchacha20poly1305",
-    feature = "aesgcm128",
-    feature = "aesgcm256"
-))]
+#[cfg(any(feature = "chacha20poly1305", feature = "xchacha20poly1305"))]
 pub type TagMut<'a> = aead::typed_refs::TagMut<'a, Aead>;
 /// A reference to a multiplexed AEAD nonce.
-#[cfg(any(
-    feature = "chacha20poly1305",
-    feature = "xchacha20poly1305",
-    feature = "aesgcm128",
-    feature = "aesgcm256"
-))]
+#[cfg(any(feature = "chacha20poly1305", feature = "xchacha20poly1305"))]
 pub type NonceRef<'a> = aead::typed_refs::NonceRef<'a, Aead>;
 
 #[cfg(feature = "chacha20poly1305")]
@@ -80,44 +51,10 @@ impl Multiplexes<crate::xchacha20poly1305::XChaCha20Poly1305> for Aead {
     }
 }
 
-#[cfg(feature = "aesgcm128")]
-impl Multiplexes<crate::aesgcm128::AesGcm128> for Aead {
-    fn mux_algo(&self) -> Option<crate::aesgcm128::AesGcm128> {
-        matches!(self, Self::AesGcm128).then_some(crate::aesgcm128::AesGcm128)
-    }
-    fn wrap_algo(_algo: crate::aesgcm128::AesGcm128) -> Self {
-        Self::AesGcm128
-    }
-}
-
-#[cfg(feature = "aesgcm256")]
-impl Multiplexes<crate::aesgcm256::AesGcm256> for Aead {
-    fn mux_algo(&self) -> Option<crate::aesgcm256::AesGcm256> {
-        matches!(self, Self::AesGcm256).then_some(crate::aesgcm256::AesGcm256)
-    }
-    fn wrap_algo(_algo: crate::aesgcm256::AesGcm256) -> Self {
-        Self::AesGcm256
-    }
-}
-
-#[cfg(any(
-    feature = "chacha20poly1305",
-    feature = "xchacha20poly1305",
-    feature = "aesgcm128",
-    feature = "aesgcm256"
-))]
+#[cfg(any(feature = "chacha20poly1305", feature = "xchacha20poly1305"))]
 impl aead::typed_refs::Aead for Aead {
     fn key_len(&self) -> usize {
-        match *self {
-            #[cfg(feature = "chacha20poly1305")]
-            Aead::ChaCha20Poly1305 => 32,
-            #[cfg(feature = "xchacha20poly1305")]
-            Aead::XChaCha20Poly1305 => 32,
-            #[cfg(feature = "aesgcm128")]
-            Aead::AesGcm128 => 16,
-            #[cfg(feature = "aesgcm256")]
-            Aead::AesGcm256 => 32,
-        }
+        32
     }
 
     fn tag_len(&self) -> usize {
@@ -130,45 +67,6 @@ impl aead::typed_refs::Aead for Aead {
             Aead::ChaCha20Poly1305 => 12,
             #[cfg(feature = "xchacha20poly1305")]
             Aead::XChaCha20Poly1305 => 24,
-            #[cfg(feature = "aesgcm128")]
-            Aead::AesGcm128 => 12,
-            #[cfg(feature = "aesgcm256")]
-            Aead::AesGcm256 => 12,
-        }
-    }
-
-    fn keygen<'a>(&self, key: KeyMut<'a, Self>, rand: &[U8]) -> Result<(), KeyGenError> {
-        match *self {
-            #[cfg(feature = "chacha20poly1305")]
-            Aead::ChaCha20Poly1305 => {
-                use crate::chacha20poly1305::ChaCha20Poly1305;
-
-                let key = Self::mux_key_mut(key).ok_or(KeyGenError::WrongKeyLength)?;
-                ChaCha20Poly1305.keygen(key, rand)
-            }
-            #[cfg(feature = "xchacha20poly1305")]
-            Aead::XChaCha20Poly1305 => {
-                use crate::xchacha20poly1305::XChaCha20Poly1305;
-
-                let key = Self::mux_key_mut(key).ok_or(KeyGenError::WrongKeyLength)?;
-                XChaCha20Poly1305.keygen(key, rand)
-            }
-            #[cfg(feature = "aesgcm128")]
-            Aead::AesGcm128 => {
-                use crate::aesgcm128::AesGcm128;
-
-                let key = Self::mux_key_mut(key).ok_or(KeyGenError::WrongKeyLength)?;
-
-                AesGcm128.keygen(key, rand)
-            }
-            #[cfg(feature = "aesgcm256")]
-            Aead::AesGcm256 => {
-                use crate::aesgcm256::AesGcm256;
-
-                let key = Self::mux_key_mut(key).ok_or(KeyGenError::WrongKeyLength)?;
-
-                AesGcm256.keygen(key, rand)
-            }
         }
     }
 
@@ -199,24 +97,6 @@ impl aead::typed_refs::Aead for Aead {
                 let tag = Self::mux_tag_mut(tag).ok_or(EncryptError::WrongTag)?;
                 let nonce = Self::mux_nonce(nonce).ok_or(EncryptError::WrongNonce)?;
                 XChaCha20Poly1305.encrypt(ciphertext, tag, key, nonce, aad, plaintext)
-            }
-            #[cfg(feature = "aesgcm128")]
-            Aead::AesGcm128 => {
-                use crate::aesgcm128::AesGcm128;
-
-                let key = Self::mux_key(key).ok_or(EncryptError::WrongKey)?;
-                let tag = Self::mux_tag_mut(tag).ok_or(EncryptError::WrongTag)?;
-                let nonce = Self::mux_nonce(nonce).ok_or(EncryptError::WrongNonce)?;
-                AesGcm128.encrypt(ciphertext, tag, key, nonce, aad, plaintext)
-            }
-            #[cfg(feature = "aesgcm256")]
-            Aead::AesGcm256 => {
-                use crate::aesgcm256::AesGcm256;
-
-                let key = Self::mux_key(key).ok_or(EncryptError::WrongKey)?;
-                let tag = Self::mux_tag_mut(tag).ok_or(EncryptError::WrongTag)?;
-                let nonce = Self::mux_nonce(nonce).ok_or(EncryptError::WrongNonce)?;
-                AesGcm256.encrypt(ciphertext, tag, key, nonce, aad, plaintext)
             }
         }
     }
@@ -249,34 +129,11 @@ impl aead::typed_refs::Aead for Aead {
                 let nonce = Self::mux_nonce(nonce).ok_or(DecryptError::WrongNonce)?;
                 XChaCha20Poly1305.decrypt(plaintext, key, nonce, aad, ciphertext, tag)
             }
-            #[cfg(feature = "aesgcm128")]
-            Aead::AesGcm128 => {
-                use crate::aesgcm128::AesGcm128;
-
-                let key = Self::mux_key(key).ok_or(DecryptError::WrongKey)?;
-                let tag = Self::mux_tag(tag).ok_or(DecryptError::WrongTag)?;
-                let nonce = Self::mux_nonce(nonce).ok_or(DecryptError::WrongNonce)?;
-                AesGcm128.decrypt(plaintext, key, nonce, aad, ciphertext, tag)
-            }
-            #[cfg(feature = "aesgcm256")]
-            Aead::AesGcm256 => {
-                use crate::aesgcm256::AesGcm256;
-
-                let key = Self::mux_key(key).ok_or(DecryptError::WrongKey)?;
-                let tag = Self::mux_tag(tag).ok_or(DecryptError::WrongTag)?;
-                let nonce = Self::mux_nonce(nonce).ok_or(DecryptError::WrongNonce)?;
-                AesGcm256.decrypt(plaintext, key, nonce, aad, ciphertext, tag)
-            }
         }
     }
 }
 
-#[cfg(any(
-    feature = "chacha20poly1305",
-    feature = "xchacha20poly1305",
-    feature = "aesgcm128",
-    feature = "aesgcm256"
-))]
+#[cfg(any(feature = "chacha20poly1305", feature = "xchacha20poly1305"))]
 #[cfg(test)]
 mod tests {
     use libcrux_traits::aead::typed_refs;
@@ -287,122 +144,50 @@ mod tests {
     #[test]
     #[cfg(feature = "chacha20poly1305")]
     fn test_key_centric_multiplexed_chachapoly() {
-        use libcrux_traits::libcrux_secrets::{Classify, ClassifyRef, DeclassifyRef};
-
         let algo = Aead::ChaCha20Poly1305;
 
-        algo.new_key(&[0.classify(); 33])
-            .expect_err("length should mismatch");
+        algo.new_key(&[0; 33]).expect_err("length should mismatch");
 
-        let mut tag_bytes = [0.classify(); 16];
-        let key_bytes = [0.classify(); 32];
-        let nonce_bytes = [0.classify(); 12];
+        let mut tag_bytes = [0; 16];
 
-        let key = algo.new_key(&key_bytes).expect("length should match");
-        let nonce = algo.new_nonce(&nonce_bytes).expect("length should match");
+        let key = algo.new_key(&[0; 32]).expect("length should match");
+        let nonce = algo.new_nonce(&[0; 12]).expect("length should match");
         let tag = algo
             .new_tag_mut(&mut tag_bytes)
             .expect("length should match");
 
-        let pt = b"the quick brown fox jumps over the lazy dog".classify_ref();
+        let pt = b"the quick brown fox jumps over the lazy dog";
         let mut ct = [0; 43];
-        let mut pt_out = [0.classify(); 43];
+        let mut pt_out = [0; 43];
 
         key.encrypt(&mut ct, tag, nonce, b"", pt).unwrap();
         let tag = algo.new_tag(&tag_bytes).unwrap();
         key.decrypt(&mut pt_out, nonce, b"", &ct, tag).unwrap();
-        assert_eq!(pt.declassify_ref(), pt_out.declassify_ref());
+        assert_eq!(pt, &pt_out);
     }
 
     #[test]
     #[cfg(feature = "xchacha20poly1305")]
     fn test_key_centric_multiplexed_xchachapoly() {
-        use libcrux_traits::libcrux_secrets::{Classify, ClassifyRef, DeclassifyRef};
-
         let algo = Aead::XChaCha20Poly1305;
 
-        let wrong_length_key_bytes = [0.classify(); 33];
-        algo.new_key(&wrong_length_key_bytes)
-            .expect_err("length should mismatch");
+        algo.new_key(&[0; 33]).expect_err("length should mismatch");
 
-        let mut tag_bytes = [0.classify(); 16];
+        let mut tag_bytes = [0; 16];
 
-        let key_bytes = [0.classify(); 32];
-        let nonce_bytes = [0.classify(); 24];
-
-        let key = algo.new_key(&key_bytes).expect("length should match");
-        let nonce = algo.new_nonce(&nonce_bytes).expect("length should match");
+        let key = algo.new_key(&[0; 32]).expect("length should match");
+        let nonce = algo.new_nonce(&[0; 24]).expect("length should match");
         let tag = algo
             .new_tag_mut(&mut tag_bytes)
             .expect("length should match");
 
-        let pt = b"the quick brown fox jumps over the lazy dog".classify_ref();
+        let pt = b"the quick brown fox jumps over the lazy dog";
         let mut ct = [0; 43];
-        let mut pt_out = [0.classify(); 43];
+        let mut pt_out = [0; 43];
 
         key.encrypt(&mut ct, tag, nonce, b"", pt).unwrap();
         let tag = algo.new_tag(&tag_bytes).unwrap();
         key.decrypt(&mut pt_out, nonce, b"", &ct, tag).unwrap();
-        assert_eq!(pt.declassify_ref(), pt_out.declassify_ref());
-    }
-
-    #[test]
-    #[cfg(feature = "aesgcm128")]
-    fn test_key_centric_multiplexed_aesgcm128() {
-        use libcrux_traits::libcrux_secrets::{Classify, ClassifyRef, DeclassifyRef};
-
-        let algo = Aead::AesGcm128;
-
-        algo.new_key(&[0.classify(); 33])
-            .expect_err("length should mismatch");
-
-        let mut tag_bytes = [0.classify(); 16];
-        let key_bytes = [0.classify(); 16];
-        let nonce_bytes = [0.classify(); 12];
-
-        let key = algo.new_key(&key_bytes).expect("length should match");
-        let nonce = algo.new_nonce(&nonce_bytes).expect("length should match");
-        let tag = algo
-            .new_tag_mut(&mut tag_bytes)
-            .expect("length should match");
-
-        let pt = b"the quick brown fox jumps over the lazy dog".classify_ref();
-        let mut ct = [0; 43];
-        let mut pt_out = [0.classify(); 43];
-
-        key.encrypt(&mut ct, tag, nonce, b"", pt).unwrap();
-        let tag = algo.new_tag(&tag_bytes).unwrap();
-        key.decrypt(&mut pt_out, nonce, b"", &ct, tag).unwrap();
-        assert_eq!(pt.declassify_ref(), pt_out.declassify_ref());
-    }
-
-    #[test]
-    #[cfg(feature = "aesgcm256")]
-    fn test_key_centric_multiplexed_aesgcm256() {
-        use libcrux_traits::libcrux_secrets::{Classify, ClassifyRef, DeclassifyRef};
-
-        let algo = Aead::AesGcm256;
-
-        algo.new_key(&[0.classify(); 33])
-            .expect_err("length should mismatch");
-
-        let mut tag_bytes = [0.classify(); 16];
-        let key_bytes = [0.classify(); 32];
-        let nonce_bytes = [0.classify(); 12];
-
-        let key = algo.new_key(&key_bytes).expect("length should match");
-        let nonce = algo.new_nonce(&nonce_bytes).expect("length should match");
-        let tag = algo
-            .new_tag_mut(&mut tag_bytes)
-            .expect("length should match");
-
-        let pt = b"the quick brown fox jumps over the lazy dog".classify_ref();
-        let mut ct = [0; 43];
-        let mut pt_out = [0.classify(); 43];
-
-        key.encrypt(&mut ct, tag, nonce, b"", pt).unwrap();
-        let tag = algo.new_tag(&tag_bytes).unwrap();
-        key.decrypt(&mut pt_out, nonce, b"", &ct, tag).unwrap();
-        assert_eq!(pt.declassify_ref(), pt_out.declassify_ref());
+        assert_eq!(pt, &pt_out);
     }
 }

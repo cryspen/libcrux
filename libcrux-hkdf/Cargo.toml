@@ -1,0 +1,21 @@
+[package]
+name = "libcrux-hkdf"
+version = "0.0.3"
+description = "Libcrux HKDF implementation"
+readme = "Readme.md"
+
+authors.workspace = true
+license.workspace = true
+homepage.workspace = true
+edition.workspace = true
+repository.workspace = true
+
+[lib]
+path = "src/hkdf.rs"
+
+[features]
+[dependencies]
+libcrux-hmac = { version = "=0.0.3", path = "../libcrux-hmac", features = [
+    "expose-hacl",
+] }
+libcrux-hacl-rs = { version = "=0.0.3", path = "../hacl-rs/" }

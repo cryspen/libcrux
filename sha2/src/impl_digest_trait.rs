@@ -2,9 +2,7 @@ use crate::impl_hacl::*;
 
 use libcrux_traits::Digest;
 
-use libcrux_traits::digest::{
-    arrayref, slice, DigestIncrementalBase, InitializeDigestState, UpdateError,
-};
+use libcrux_traits::digest::{arrayref, slice, DigestIncrementalBase, UpdateError};
 
 // Streaming API - This is the recommended one.
 // For implementations based on hacl_rs (over hacl-c)
@@ -39,13 +37,6 @@ macro_rules! impl_hash {
 
 
         }
-
-        impl InitializeDigestState for $state_name {
-            fn new() -> Self {
-                Self::default()
-            }
-        }
-
         impl DigestIncrementalBase for $name {
             type IncrementalState = $state_name;
             /// Add the `payload` to the digest.

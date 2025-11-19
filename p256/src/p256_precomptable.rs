@@ -786,7 +786,6 @@ pub(crate) const precomp_g_pow2_192_table_w4: [u64; 192] = [
     15296495673182508601u64,
 ];
 
-#[allow(unused)]
 pub(crate) const precomp_basepoint_table_w5: [u64; 384] = [
     0u64,
     0u64,

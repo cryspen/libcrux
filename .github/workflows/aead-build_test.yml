@@ -87,12 +87,6 @@ jobs:
 
       # Build ...
 
-      - name: 🧐 Check Secret Independene
-        run: |
-          rustc --print=cfg
-          cargo check --verbose -F check-secret-independence -p libcrux-aead
-          cargo check --verbose -F check-secret-independence -p libcrux-chacha20poly1305
-
       - name: 🔨 Build
         run: |
           rustc --print=cfg

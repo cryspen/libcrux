@@ -1,9 +1,7 @@
 //! This module contains the trait and related errors for a KEM that takes array references as
 //! arguments and writes to outputs to mutable array references.
 
-use libcrux_secrets::U8;
-
-/// A Key Encapsulation Mechanism (KEM). This trait is the most low-level and mostly used in the
+/// A Key Encapsulation Mechanismd (KEM). This trait is the most low-level and mostly used in the
 /// implementation of other, more usabe APIs on top.
 pub trait Kem<
     const EK_LEN: usize,
@@ -19,8 +17,8 @@ pub trait Kem<
     /// random.
     fn keygen(
         ek: &mut [u8; EK_LEN],
-        dk: &mut [U8; DK_LEN],
-        rand: &[U8; RAND_KEYGEN_LEN],
+        dk: &mut [u8; DK_LEN],
+        rand: &[u8; RAND_KEYGEN_LEN],
     ) -> Result<(), KeyGenError>;
 
     /// Encapsulate a shared secret towards a given encapsulation key.
@@ -28,16 +26,16 @@ pub trait Kem<
     /// random.
     fn encaps(
         ct: &mut [u8; CT_LEN],
-        ss: &mut [U8; SS_LEN],
+        ss: &mut [u8; SS_LEN],
         ek: &[u8; EK_LEN],
-        rand: &[U8; RAND_ENCAPS_LEN],
+        rand: &[u8; RAND_ENCAPS_LEN],
     ) -> Result<(), EncapsError>;
 
     /// Decapsulate a shared secret.
     fn decaps(
-        ss: &mut [U8; SS_LEN],
+        ss: &mut [u8; SS_LEN],
         ct: &[u8; CT_LEN],
-        dk: &[U8; DK_LEN],
+        dk: &[u8; DK_LEN],
     ) -> Result<(), DecapsError>;
 }
 

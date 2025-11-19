@@ -24,7 +24,6 @@ pub trait Digest<const HASH_LEN: usize> {
 
 pub mod aead;
 pub mod digest;
-pub mod ecdh;
 pub mod kem;
 
 pub use libcrux_secrets;

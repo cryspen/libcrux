@@ -183,7 +183,7 @@ fn sample_from_binomial_distribution_2<Vector: Operations>(
             let coin_toss_outcomes = even_bits + odd_bits;
 
             cloop! {
-                for outcome_set in (0..32u32).step_by(4) { // u32::BITS
+                for outcome_set in (0..u32::BITS).step_by(4) {
                     let outcome_1 = ((coin_toss_outcomes >> outcome_set) & 0x3) as i16;
                     let outcome_2 = ((coin_toss_outcomes >> (outcome_set + 2)) & 0x3) as i16;
                     hax_lib::fstar!(r#"logand_lemma ($coin_toss_outcomes >>! $outcome_set <: u32) (mk_u32 3);

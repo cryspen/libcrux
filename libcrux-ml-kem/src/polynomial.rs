@@ -34,7 +34,7 @@ pub(crate) const VECTORS_IN_RING_ELEMENT: usize = 16;
     {| i2: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
     (p: t_PolynomialRingElement v_Vector) : Spec.MLKEM.polynomial =
     createi (sz 256) (fun i -> Spec.MLKEM.Math.to_spec_fe 
-                                (Seq.index (i2._super_6081346371236564305.f_repr 
+                                (Seq.index (i2._super_16084754032855797384.f_repr 
                                     (Seq.index p.f_coefficients (v i / 16))) (v i % 16)))
 let to_spec_vector_t (#r:Spec.MLKEM.rank) (#v_Vector: Type0)
     {| i2: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
@@ -186,7 +186,7 @@ fn add_to_ring_element<Vector: Operations, const K: usize>(
     let _myself = myself.coefficients;
     hax_lib::fstar!(
         r#"assert(forall (v: v_Vector).
-        i0.f_to_i16_array v == i0._super_6081346371236564305.f_repr v)"#
+        i0.f_to_i16_array v == i0._super_16084754032855797384.f_repr v)"#
     );
 
     for i in 0..myself.coefficients.len() {

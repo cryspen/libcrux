@@ -4,10 +4,7 @@ pub use libcrux_hacl_rs::curve25519_51 as hacl;
 
 mod impl_hacl;
 
-pub mod ecdh_api;
-
 pub use impl_hacl::{ecdh, secret_to_public};
-use libcrux_secrets::{DeclassifyRef, DeclassifyRefMut, U8};
 
 /// The length of Curve25519 secret keys.
 pub const DK_LEN: usize = 32;
@@ -38,36 +35,34 @@ pub struct X25519;
 impl libcrux_traits::kem::arrayref::Kem<DK_LEN, EK_LEN, EK_LEN, SS_LEN, DK_LEN, DK_LEN> for X25519 {
     fn keygen(
         ek: &mut [u8; DK_LEN],
-        dk: &mut [U8; EK_LEN],
-        rand: &[U8; DK_LEN],
+        dk: &mut [u8; EK_LEN],
+        rand: &[u8; DK_LEN],
     ) -> Result<(), libcrux_traits::kem::arrayref::KeyGenError> {
         dk.copy_from_slice(rand);
-        clamp(dk.declassify_ref_mut());
-        secret_to_public(ek, dk.declassify_ref());
+        clamp(dk);
+        secret_to_public(ek, dk);
         Ok(())
     }
 
     fn encaps(
         ct: &mut [u8; EK_LEN],
-        ss: &mut [U8; SS_LEN],
+        ss: &mut [u8; SS_LEN],
         ek: &[u8; EK_LEN],
-        rand: &[U8; DK_LEN],
+        rand: &[u8; DK_LEN],
     ) -> Result<(), libcrux_traits::kem::arrayref::EncapsError> {
         let mut eph_dk = *rand;
-        clamp(eph_dk.declassify_ref_mut());
-        secret_to_public(ct, eph_dk.declassify_ref());
+        clamp(&mut eph_dk);
+        secret_to_public(ct, &eph_dk);
 
-        ecdh(ss.declassify_ref_mut(), ek, eph_dk.declassify_ref())
-            .map_err(|_| libcrux_traits::kem::arrayref::EncapsError::Unknown)
+        ecdh(ss, ek, &eph_dk).map_err(|_| libcrux_traits::kem::arrayref::EncapsError::Unknown)
     }
 
     fn decaps(
-        ss: &mut [U8; SS_LEN],
+        ss: &mut [u8; SS_LEN],
         ct: &[u8; DK_LEN],
-        dk: &[U8; EK_LEN],
+        dk: &[u8; EK_LEN],
     ) -> Result<(), libcrux_traits::kem::arrayref::DecapsError> {
-        ecdh(ss.declassify_ref_mut(), ct, dk.declassify_ref())
-            .map_err(|_| libcrux_traits::kem::arrayref::DecapsError::Unknown)
+        ecdh(ss, ct, dk).map_err(|_| libcrux_traits::kem::arrayref::DecapsError::Unknown)
     }
 }
 
