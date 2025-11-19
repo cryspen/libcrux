@@ -4,9 +4,23 @@ typedef vector<uint8_t> bytes;
 
 template <typename T>
 Eurydice_slice mk_slice(T *x, size_t len) {
-  Eurydice_slice s;
+  Eurydice_slice s = {0};
   s.ptr = (void *)x;
   s.len = len;
+  return s;
+}
+
+Eurydice_borrow_slice_u8 mk_borrow_slice_u8(const uint8_t *x, size_t len) {
+  Eurydice_borrow_slice_u8 s = {0};
+  s.ptr = x;
+  s.meta = len;
+  return s;
+}
+
+Eurydice_mut_borrow_slice_u8 mk_mut_borrow_slice_u8(uint8_t *x, size_t len) {
+  Eurydice_mut_borrow_slice_u8 s = {0};
+  s.ptr = x;
+  s.meta = len;
   return s;
 }
 
@@ -79,7 +93,7 @@ vector<KAT> read_kats(string path) {
 }
 
 void modify_ciphertext(uint8_t *ciphertext, size_t ciphertext_size) {
-  uint8_t randomness[3];
+  uint8_t randomness[3] = {0};
   generate_random(randomness, 3);
 
   uint8_t random_byte = randomness[0];
@@ -96,7 +110,7 @@ void modify_ciphertext(uint8_t *ciphertext, size_t ciphertext_size) {
 
 void modify_secret_key(uint8_t *secret_key, size_t secret_key_size,
                        bool modify_implicit_rejection_value) {
-  uint8_t randomness[3];
+  uint8_t randomness[3] = {0};
   generate_random(randomness, 3);
 
   uint8_t random_byte = randomness[0];
@@ -123,15 +137,16 @@ uint8_t *compute_implicit_rejection_shared_secret(uint8_t *ciphertext,
                                                   size_t secret_key_size) {
   uint8_t *hashInput = new uint8_t[32 + ciphertext_size];
   uint8_t *sharedSecret = new uint8_t[32];
-  Eurydice_slice ss;
-  ss.ptr = (void *)sharedSecret;
-  ss.len = 32;
+  Eurydice_mut_borrow_slice_u8 ss = {0};
+  ss.ptr = (uint8_t *)sharedSecret;
+  ss.meta = 32;
 
   std::copy(secret_key + (secret_key_size - 32), secret_key + secret_key_size,
             hashInput);
   std::copy(ciphertext, ciphertext + ciphertext_size, hashInput + 32);
 
-  libcrux_sha3_portable_shake256(ss, mk_slice(hashInput, 32 + ciphertext_size));
+  libcrux_sha3_portable_shake256(
+      ss, mk_borrow_slice_u8(hashInput, 32 + ciphertext_size));
 
   delete[] hashInput;
   return sharedSecret;
