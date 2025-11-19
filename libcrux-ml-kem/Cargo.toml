@@ -23,10 +23,10 @@ bench = false # so libtest doesn't eat the arguments to criterion
 
 [dependencies]
 rand = { version = "0.9", optional = true, default-features = false }
-libcrux-platform = { version = "0.0.2", path = "../sys/platform" }
-libcrux-sha3 = { version = "0.0.4", path = "../libcrux-sha3" }
-libcrux-intrinsics = { version = "0.0.4", path = "../libcrux-intrinsics" }
-libcrux-secrets = { version = "0.0.4", path = "../secrets" }
+libcrux-platform = { version = "0.0.2", path = "../crates/sys/platform" }
+libcrux-sha3 = { version = "0.0.4", path = "../crates/algorithms/sha3" }
+libcrux-intrinsics = { version = "0.0.4", path = "../crates/utils/intrinsics" }
+libcrux-secrets = { version = "0.0.4", path = "../crates/utils/secrets" }
 libcrux-traits = { version = "0.0.4", path = "../traits" }
 hax-lib.workspace = true
 tls_codec = { version = "0.4.2", features = [

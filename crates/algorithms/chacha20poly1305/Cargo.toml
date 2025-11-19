@@ -14,10 +14,10 @@ repository.workspace = true
 libcrux-poly1305 = { version = "=0.0.4", path = "../poly1305/", features = [
     "expose-hacl",
 ] }
-libcrux-hacl-rs = { version = "=0.0.4", path = "../hacl-rs/" }
-libcrux-macros = { version = "=0.0.3", path = "../macros" }
-libcrux-traits = { version = "=0.0.4", path = "../traits" }
-libcrux-secrets = { version = "=0.0.4", path = "../secrets" }
+libcrux-hacl-rs = { version = "=0.0.4", path = "../../utils/hacl-rs/" }
+libcrux-macros = { version = "=0.0.3", path = "../../utils/macros" }
+libcrux-traits = { version = "=0.0.4", path = "../../../traits" }
+libcrux-secrets = { version = "=0.0.4", path = "../../utils/secrets" }
 
 [dev-dependencies]
 hex = { version = "0.4.3", features = ["serde"] }

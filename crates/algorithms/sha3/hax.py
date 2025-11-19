@@ -46,7 +46,7 @@ class extractAction(argparse.Action):
         hax_env = {}
         shell(
             cargo_hax_into,
-            cwd="../sys/platform",
+            cwd="../../sys/platform",
             env=hax_env,
         )
 
@@ -72,7 +72,7 @@ class extractAction(argparse.Action):
         hax_env = {}
         shell(
             cargo_hax_into,
-            cwd="../libcrux-intrinsics",
+            cwd="../../utils/intrinsics",
             env=hax_env,
         )
 
@@ -90,7 +90,7 @@ class extractAction(argparse.Action):
         hax_env = {}
         shell(
             cargo_hax_into,
-            cwd="../secrets",
+            cwd="../../utils/secrets",
             env=hax_env,
         )
 
