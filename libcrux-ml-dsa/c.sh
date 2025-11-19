@@ -64,8 +64,8 @@ if [[ "$no_charon" = 0 ]]; then
     rm -rf $repo_root/libcrux_ml_dsa.llbc $repo_root/libcrux_sha3.llbc
 
     flags=
-    if [[ $(uname -m) == "arm64" ]]
-        flags+=--target=x86_64-apple-darwin
+    if [[ $(uname -m) == "arm64" ]]; then
+        flags+="-- --target=x86_64-apple-darwin"
     fi
 
     echo "Running charon (all) ..."
@@ -75,8 +75,7 @@ if [[ "$no_charon" = 0 ]]; then
                                     --include 'libcrux_sha3' \
                                     --start-from libcrux_ml_dsa --start-from libcrux_sha3 \
                                     --include 'core::num::*::BITS' --include 'core::num::*::MAX' \
-                                    --rustc-arg=-Cdebug-assertions=no -- \
-                                    $flags
+                                    --rustc-arg=-Cdebug-assertions=no $flags
     if ! [[ -f $repo_root/libcrux_ml_dsa.llbc ]]; then
         echo "😱😱😱 You are the victim of a bug."
         echo "Suggestion: rm -rf ../target or cargo clean"

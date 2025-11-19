@@ -74,8 +74,8 @@ if [[ "$no_charon" = 0 ]]; then
     rm -rf $repo_root/libcrux_ml_kem.llbc $repo_root/libcrux_sha3.llbc $repo_root/libcrux_secrets.llbc $repo_root/libcrux_ml_dsa.llbc
 
     flags=
-    if [[ $(uname -m) == "arm64" ]]
-       flags+=--target=x86_64-apple-darwin
+    if [[ $(uname -m) == "arm64" ]]; then
+       flags+="-- --target=x86_64-apple-darwin"
     fi
 
     cd $repo_root/libcrux-sha3
@@ -83,8 +83,7 @@ if [[ "$no_charon" = 0 ]]; then
     RUSTFLAGS="-Cdebug-assertions=no --cfg eurydice" $CHARON_HOME/bin/charon cargo \
              --preset eurydice \
              --start-from libcrux_sha3 \
-             --include 'core::num::*::BITS' --include 'core::num::*::MAX' \
-             -- $flags
+             --include 'core::num::*::BITS' --include 'core::num::*::MAX' $flags
     
     cd $repo_root/libcrux-ml-kem
     
@@ -94,8 +93,7 @@ if [[ "$no_charon" = 0 ]]; then
              --preset eurydice \
              --include 'libcrux_secrets' \
              --start-from libcrux_ml_kem \
-             --include 'core::num::*::BITS' --include 'core::num::*::MAX' \
-             -- $flags
+             --include 'core::num::*::BITS' --include 'core::num::*::MAX' $flags
     
     cd $repo_root/libcrux-ml-dsa
     echo "Running charon (ML-DSA) ..."
@@ -104,8 +102,8 @@ if [[ "$no_charon" = 0 ]]; then
              --preset eurydice \
              --start-from libcrux_ml_dsa \
              --include 'core::num::*::BITS' --include 'core::num::*::MAX' \
-             --rustc-arg=-Cdebug-assertions=no \
-             -- $flags
+             --rustc-arg=-Cdebug-assertions=no $flags
+
     
     # rm -rf $repo_root/libcrux_ml_kem.llbc $repo_root/libcrux_sha3.llbc $repo_root/libcrux_secrets.llbc
     # echo "Running charon (secrets) ..."
