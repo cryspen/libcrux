@@ -1,9 +1,20 @@
+use libcrux_ed25519::VerificationKey;
 use libcrux_kem::{MlKem768Ciphertext, MlKem768PrivateKey, MlKem768PublicKey};
+use libcrux_ml_dsa::ml_dsa_65::MLDSA65VerificationKey;
 use libcrux_ml_kem::MlKemSharedSecret;
 use tls_codec::{TlsDeserialize, TlsSerialize, TlsSerializeBytes, TlsSize};
 
 #[cfg(feature = "classic-mceliece")]
 use crate::classic_mceliece::{Ciphertext, PublicKey, SecretKey, SharedSecret};
+use crate::handshake::dhkem::DHPublicKey;
+
+#[derive(TlsSize, TlsDeserialize, TlsSerialize)]
+#[repr(u8)]
+pub enum ClientAuthenticator<'a> {
+    DhKem(&'a DHPublicKey),
+    Ed25519(&'a VerificationKey),
+    MlDsa65(&'a MLDSA65VerificationKey),
+}
 
 #[derive(TlsSize, TlsDeserialize, TlsSerialize)]
 #[repr(u8)]

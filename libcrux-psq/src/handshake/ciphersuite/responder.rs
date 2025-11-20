@@ -66,63 +66,106 @@ impl<'a> CiphersuiteBase for ResponderCiphersuite<'a> {
         }
     }
 
-    fn own_ecdh_decapsulation_key(&self) -> &DHPrivateKey {
+    // fn own_ecdh_decapsulation_key(&self) -> &DHPrivateKey {
+    //     match self {
+    //         ResponderCiphersuite::X25519MlKem768ChaCha20Poly1305HkdfSha256(
+    //             responder_x25519_mlkem768_chacha_poly_hkdf_sha256,
+    //         ) => {
+    //             &responder_x25519_mlkem768_chacha_poly_hkdf_sha256
+    //                 .longterm_ecdh_keys
+    //                 .sk
+    //         }
+    //         #[cfg(feature = "classic-mceliece")]
+    //         ResponderCiphersuite::X25519ClassicMcElieceChaCha20Poly1305HkdfSha256(
+    //             responder_x25519_classic_mc_eliece_chacha_poly_hkdf_sha256,
+    //         ) => {
+    //             &responder_x25519_classic_mc_eliece_chacha_poly_hkdf_sha256
+    //                 .longterm_ecdh_keys
+    //                 .sk
+    //         }
+    //         #[cfg(not(feature = "classic-mceliece"))]
+    //         ResponderCiphersuite::X25519ClassicMcElieceChaCha20Poly1305HkdfSha256(_) => {
+    //             // We can never reach this because the ciphersuite can only be constructed with the feature turned on.
+    //             unreachable!("unsupported ciphersuite")
+    //         }
+    //         ResponderCiphersuite::X25519NoneChaCha20Poly1305HkdfSha256(suite) => {
+    //             &suite.longterm_ecdh_keys.sk
+    //         }
+    //     }
+    // }
+    // fn own_ecdh_encapsulation_key(&self) -> &DHPublicKey {
+    //     match self {
+    //         ResponderCiphersuite::X25519MlKem768ChaCha20Poly1305HkdfSha256(
+    //             responder_x25519_mlkem768_chacha_poly_hkdf_sha256,
+    //         ) => {
+    //             &responder_x25519_mlkem768_chacha_poly_hkdf_sha256
+    //                 .longterm_ecdh_keys
+    //                 .pk
+    //         }
+    //         #[cfg(feature = "classic-mceliece")]
+    //         ResponderCiphersuite::X25519ClassicMcElieceChaCha20Poly1305HkdfSha256(
+    //             responder_x25519_classic_mc_eliece_chacha_poly_hkdf_sha256,
+    //         ) => {
+    //             &responder_x25519_classic_mc_eliece_chacha_poly_hkdf_sha256
+    //                 .longterm_ecdh_keys
+    //                 .pk
+    //         }
+    //         #[cfg(not(feature = "classic-mceliece"))]
+    //         ResponderCiphersuite::X25519ClassicMcElieceChaCha20Poly1305HkdfSha256(_) => {
+    //             // We can never reach this because the ciphersuite can only be constructed with the feature turned on.
+    //             unreachable!("unsupported ciphersuite")
+    //         }
+    //         ResponderCiphersuite::X25519NoneChaCha20Poly1305HkdfSha256(
+    //             responder_x25519_cha_cha_poly_hkdf_sha256,
+    //         ) => {
+    //             &responder_x25519_cha_cha_poly_hkdf_sha256
+    //                 .longterm_ecdh_keys
+    //                 .pk
+    //         }
+    //     }
+    // }
+
+    fn tx0(&self, ctx: &[u8], peer_pk: &DHPublicKey) -> Result<Transcript, HandshakeError> {
         match self {
-            ResponderCiphersuite::X25519MlKem768ChaCha20Poly1305HkdfSha256(
-                responder_x25519_mlkem768_chacha_poly_hkdf_sha256,
-            ) => {
-                &responder_x25519_mlkem768_chacha_poly_hkdf_sha256
-                    .longterm_ecdh_keys
-                    .sk
-            }
-            #[cfg(feature = "classic-mceliece")]
-            ResponderCiphersuite::X25519ClassicMcElieceChaCha20Poly1305HkdfSha256(
-                responder_x25519_classic_mc_eliece_chacha_poly_hkdf_sha256,
-            ) => {
-                &responder_x25519_classic_mc_eliece_chacha_poly_hkdf_sha256
-                    .longterm_ecdh_keys
-                    .sk
-            }
-            #[cfg(not(feature = "classic-mceliece"))]
-            ResponderCiphersuite::X25519ClassicMcElieceChaCha20Poly1305HkdfSha256(_) => {
-                // We can never reach this because the ciphersuite can only be constructed with the feature turned on.
-                unreachable!("unsupported ciphersuite")
-            }
-            ResponderCiphersuite::X25519NoneChaCha20Poly1305HkdfSha256(suite) => {
-                &suite.longterm_ecdh_keys.sk
+            ResponderCiphersuite::X25519NoneChaCha20Poly1305HkdfSha256(x)
+            | ResponderCiphersuite::X25519MlKem768ChaCha20Poly1305HkdfSha256(x)
+            | ResponderCiphersuite::X25519ClassicMcElieceChaCha20Poly1305HkdfSha256(x) => {
+                transcript::tx0(ctx, x.longterm_ecdh_keys.pk, peer_pk)?
             }
         }
     }
-    fn own_ecdh_encapsulation_key(&self) -> &DHPublicKey {
+
+    fn tx1(&self) -> Result<Transcript, HandshakeError> {
+        todo!()
+    }
+
+    fn k0(&self, tx0: Transcript, peer_pk: &DHPublicKey) -> Result<AEADKey, HandshakeError> {
+        struct K0Ikm<'a> {
+            g_xs: &'a DHSharedSecret,
+        }
         match self {
-            ResponderCiphersuite::X25519MlKem768ChaCha20Poly1305HkdfSha256(
-                responder_x25519_mlkem768_chacha_poly_hkdf_sha256,
-            ) => {
-                &responder_x25519_mlkem768_chacha_poly_hkdf_sha256
-                    .longterm_ecdh_keys
-                    .pk
-            }
-            #[cfg(feature = "classic-mceliece")]
-            ResponderCiphersuite::X25519ClassicMcElieceChaCha20Poly1305HkdfSha256(
-                responder_x25519_classic_mc_eliece_chacha_poly_hkdf_sha256,
-            ) => {
-                &responder_x25519_classic_mc_eliece_chacha_poly_hkdf_sha256
-                    .longterm_ecdh_keys
-                    .pk
-            }
-            #[cfg(not(feature = "classic-mceliece"))]
-            ResponderCiphersuite::X25519ClassicMcElieceChaCha20Poly1305HkdfSha256(_) => {
-                // We can never reach this because the ciphersuite can only be constructed with the feature turned on.
-                unreachable!("unsupported ciphersuite")
-            }
-            ResponderCiphersuite::X25519NoneChaCha20Poly1305HkdfSha256(
-                responder_x25519_cha_cha_poly_hkdf_sha256,
-            ) => {
-                &responder_x25519_cha_cha_poly_hkdf_sha256
-                    .longterm_ecdh_keys
-                    .pk
+            ResponderCiphersuite::X25519NoneChaCha20Poly1305HkdfSha256(x)
+            | ResponderCiphersuite::X25519MlKem768ChaCha20Poly1305HkdfSha256(x)
+            | ResponderCiphersuite::X25519ClassicMcElieceChaCha20Poly1305HkdfSha256(x) => {
+                let ikm = K0Ikm {
+                    g_xs: &DHSharedSecret::derive(own_sk, peer_pk)?,
+                };
+
+                Ok(AEADKey::new(&ikm, &tx0)?)
             }
         }
+    }
+
+    fn k1(&self) -> Result<AEADKey, HandshakeError> {
+        todo!()
+    }
+
+    fn tx2(&self) -> Result<Transcript, HandshakeError> {
+        todo!()
+    }
+
+    fn k2(&self) -> Result<AEADKey, HandshakeError> {
+        todo!()
     }
 }
 impl<'a> ResponderCiphersuite<'a> {

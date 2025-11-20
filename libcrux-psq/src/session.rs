@@ -103,13 +103,13 @@ pub struct Session {
 // pkBinder = KDF(skCS, g^c | g^s | [pkS])
 fn derive_pk_binder(
     key: &SessionKey,
-    initiator_ecdh_pk: &DHPublicKey,
+    initiator_ecdh_pk: &ClientAuthenticator,
     responder_ecdh_pk: &DHPublicKey,
     responder_pq_pk: Option<PQEncapsulationKey>,
 ) -> Result<[u8; PK_BINDER_LEN], SessionError> {
     #[derive(TlsSerialize, TlsSize)]
     struct PkBinderInfo<'a> {
-        initiator_ecdh_pk: &'a DHPublicKey,
+        initiator_ecdh_pk: &'a ClientAuthenticator,
         responder_ecdh_pk: &'a DHPublicKey,
         responder_pq_pk: Option<PQEncapsulationKey<'a>>,
     }
@@ -145,7 +145,7 @@ impl Session {
     pub(crate) fn new(
         tx2: Transcript,
         k2: AEADKey,
-        initiator_ecdh_pk: &DHPublicKey,
+        initiator_ecdh_pk: &ClientAuthenticator,
         responder_ecdh_pk: &DHPublicKey,
         responder_pq_pk: Option<PQEncapsulationKey>,
         is_initiator: bool,

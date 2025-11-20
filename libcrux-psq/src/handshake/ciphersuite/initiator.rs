@@ -50,70 +50,94 @@ impl<'a> CiphersuiteBase for InitiatorCiphersuite<'a> {
         }
     }
 
-    fn own_ecdh_decapsulation_key(&self) -> &DHPrivateKey {
-        match self {
-            InitiatorCiphersuite::X25519NoneChaCha20Poly1305HkdfSha256(
-                initiator_x25519_chacha_poly_hkdf_sha256,
-            ) => {
-                &initiator_x25519_chacha_poly_hkdf_sha256
-                    .longterm_ecdh_keys
-                    .sk
-            }
-            InitiatorCiphersuite::X25519MlKem768ChaCha20Poly1305HkdfSha256(
-                initiator_x25519_mlkem768_chacha_poly_hkdf_sha256,
-            ) => {
-                &initiator_x25519_mlkem768_chacha_poly_hkdf_sha256
-                    .longterm_ecdh_keys
-                    .sk
-            }
-            #[cfg(feature = "classic-mceliece")]
-            InitiatorCiphersuite::X25519ClassicMcElieceChaCha20Poly1305HkdfSha256(
-                initiator_x25519_classic_mc_eliece_chacha_poly_hkdf_sha256,
-            ) => {
-                &initiator_x25519_classic_mc_eliece_chacha_poly_hkdf_sha256
-                    .longterm_ecdh_keys
-                    .sk
-            }
-
-            #[cfg(not(feature = "classic-mceliece"))]
-            InitiatorCiphersuite::X25519ClassicMcElieceChaCha20Poly1305HkdfSha256(_) => {
-                // We can never reach this because the ciphersuite can only be constructed with the feature turned on.
-                unreachable!("unsupported ciphersuite")
-            }
-        }
+    fn tx0(&self, ctx: &[u8], peer_pk: &DHPublicKey) -> Transcript {
+        todo!()
     }
 
-    fn own_ecdh_encapsulation_key(&self) -> &DHPublicKey {
-        match self {
-            InitiatorCiphersuite::X25519NoneChaCha20Poly1305HkdfSha256(
-                initiator_x25519_chacha_poly_hkdf_sha256,
-            ) => {
-                &initiator_x25519_chacha_poly_hkdf_sha256
-                    .longterm_ecdh_keys
-                    .pk
-            }
-            InitiatorCiphersuite::X25519MlKem768ChaCha20Poly1305HkdfSha256(
-                initiator_x25519_mlkem768_chacha_poly_hkdf_sha256,
-            ) => {
-                &initiator_x25519_mlkem768_chacha_poly_hkdf_sha256
-                    .longterm_ecdh_keys
-                    .pk
-            }
-            #[cfg(feature = "classic-mceliece")]
-            InitiatorCiphersuite::X25519ClassicMcElieceChaCha20Poly1305HkdfSha256(
-                initiator_x25519_classic_mc_eliece_chacha_poly_hkdf_sha256,
-            ) => {
-                &initiator_x25519_classic_mc_eliece_chacha_poly_hkdf_sha256
-                    .longterm_ecdh_keys
-                    .pk
-            }
-            #[cfg(not(feature = "classic-mceliece"))]
-            InitiatorCiphersuite::X25519ClassicMcElieceChaCha20Poly1305HkdfSha256(_) => {
-                // We can never reach this because the ciphersuite can only be constructed with the feature turned on.
-                unreachable!("unsupported ciphersuite")
-            }
-        }
+    fn tx1(&self) -> Result<Transcript, HandshakeError> {
+        todo!()
     }
+
+    fn k0(&self) -> Result<AEADKey, HandshakeError> {
+        todo!()
+    }
+
+    fn k1(&self) -> Result<AEADKey, HandshakeError> {
+        todo!()
+    }
+
+    fn tx2(&self) -> Result<Transcript, HandshakeError> {
+        todo!()
+    }
+
+    fn k2(&self) -> Result<AEADKey, HandshakeError> {
+        todo!()
+    }
+
+    // fn own_ecdh_decapsulation_key(&self) -> &DHPrivateKey {
+    //     match self {
+    //         InitiatorCiphersuite::X25519NoneChaCha20Poly1305HkdfSha256(
+    //             initiator_x25519_chacha_poly_hkdf_sha256,
+    //         ) => {
+    //             &initiator_x25519_chacha_poly_hkdf_sha256
+    //                 .longterm_ecdh_keys
+    //                 .sk
+    //         }
+    //         InitiatorCiphersuite::X25519MlKem768ChaCha20Poly1305HkdfSha256(
+    //             initiator_x25519_mlkem768_chacha_poly_hkdf_sha256,
+    //         ) => {
+    //             &initiator_x25519_mlkem768_chacha_poly_hkdf_sha256
+    //                 .longterm_ecdh_keys
+    //                 .sk
+    //         }
+    //         #[cfg(feature = "classic-mceliece")]
+    //         InitiatorCiphersuite::X25519ClassicMcElieceChaCha20Poly1305HkdfSha256(
+    //             initiator_x25519_classic_mc_eliece_chacha_poly_hkdf_sha256,
+    //         ) => {
+    //             &initiator_x25519_classic_mc_eliece_chacha_poly_hkdf_sha256
+    //                 .longterm_ecdh_keys
+    //                 .sk
+    //         }
+
+    //         #[cfg(not(feature = "classic-mceliece"))]
+    //         InitiatorCiphersuite::X25519ClassicMcElieceChaCha20Poly1305HkdfSha256(_) => {
+    //             // We can never reach this because the ciphersuite can only be constructed with the feature turned on.
+    //             unreachable!("unsupported ciphersuite")
+    //         }
+    //     }
+    // }
+
+    // fn own_ecdh_encapsulation_key(&self) -> &DHPublicKey {
+    //     match self {
+    //         InitiatorCiphersuite::X25519NoneChaCha20Poly1305HkdfSha256(
+    //             initiator_x25519_chacha_poly_hkdf_sha256,
+    //         ) => {
+    //             &initiator_x25519_chacha_poly_hkdf_sha256
+    //                 .longterm_ecdh_keys
+    //                 .pk
+    //         }
+    //         InitiatorCiphersuite::X25519MlKem768ChaCha20Poly1305HkdfSha256(
+    //             initiator_x25519_mlkem768_chacha_poly_hkdf_sha256,
+    //         ) => {
+    //             &initiator_x25519_mlkem768_chacha_poly_hkdf_sha256
+    //                 .longterm_ecdh_keys
+    //                 .pk
+    //         }
+    //         #[cfg(feature = "classic-mceliece")]
+    //         InitiatorCiphersuite::X25519ClassicMcElieceChaCha20Poly1305HkdfSha256(
+    //             initiator_x25519_classic_mc_eliece_chacha_poly_hkdf_sha256,
+    //         ) => {
+    //             &initiator_x25519_classic_mc_eliece_chacha_poly_hkdf_sha256
+    //                 .longterm_ecdh_keys
+    //                 .pk
+    //         }
+    //         #[cfg(not(feature = "classic-mceliece"))]
+    //         InitiatorCiphersuite::X25519ClassicMcElieceChaCha20Poly1305HkdfSha256(_) => {
+    //             // We can never reach this because the ciphersuite can only be constructed with the feature turned on.
+    //             unreachable!("unsupported ciphersuite")
+    //         }
+    //     }
+    // }
 }
 
 pub(crate) type PQOptionPair<A, B> = (Option<A>, Option<B>);
