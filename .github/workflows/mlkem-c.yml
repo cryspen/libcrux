@@ -238,11 +238,11 @@ jobs:
           cmake --build build
 
       - name: 🏃🏻‍♀️ Test
-        run: ./build/ml_kem_test
+        run: ./build/ml_kem_test768
         if: ${{ matrix.os != 'windows-latest' }}
 
       - name: 🏃🏻‍♀️ Test
-        run: ./build/Debug/ml_kem_test
+        run: ./build/Debug/ml_kem_test768
         if: ${{ matrix.os == 'windows-latest' }}
 
   build-cpp-header-only:
@@ -275,9 +275,9 @@ jobs:
           cmake --build build
 
       - name: 🏃🏻‍♀️ Test
-        run: ./build/ml_kem_test
+        run: ./build/ml_kem_test768
         if: ${{ matrix.os != 'windows-latest' }}
 
       - name: 🏃🏻‍♀️ Test
-        run: ./build/Debug/ml_kem_test
+        run: ./build/Debug/ml_kem_test768
         if: ${{ matrix.os == 'windows-latest' }}
