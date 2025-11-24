@@ -21,6 +21,10 @@
 #include <stdlib.h>
 #include <string.h>
 
+#ifndef KRML_HOST_EPRINTF
+#define KRML_HOST_EPRINTF(...) fprintf(stderr, __VA_ARGS__)
+#endif
+
 #include <utility>
 
 #ifdef _MSC_VER
@@ -68,6 +72,15 @@ using std::type_identity_t;
 
 #define LowStar_Ignore_ignore(e, t, _ret_t) ((void)e)
 
+#define EURYDICE_ASSERT(test, msg)                                            \
+  do {                                                                        \
+    if (!(test)) {                                                            \
+      fprintf(stderr, "assertion \"%s\" failed: file \"%s\", line %d\n", msg, \
+              __FILE__, __LINE__);                                            \
+      exit(255);                                                              \
+    }                                                                         \
+  } while (0)
+
 // SLICES, ARRAYS, ETC.
 
 // We represent a slice as a pair of an (untyped) pointer, along with the length
@@ -83,6 +96,24 @@ typedef struct {
   size_t len;
 } Eurydice_slice;
 
+typedef struct Eurydice_dst_ref_87_s {
+  uint8_t *ptr;
+  size_t meta;
+} Eurydice_dst_ref_87;
+
+typedef struct Eurydice_dst_ref_9a_s {
+  int16_t *ptr;
+  size_t meta;
+} Eurydice_dst_ref_9a;
+
+
+#if defined(__cplusplus) && defined(__cpp_designated_initializers) || \
+    !(defined(__cplusplus))
+#define EURYDICE_CFIELD(X) X
+#else
+#define EURYDICE_CFIELD(X)
+#endif
+
 // Helper macro to create a slice out of a pointer x, a start index in x
 // (included), and an end index in x (excluded). The argument x must be suitably
 // cast to something that can decay (see remark above about how pointer
@@ -91,21 +122,28 @@ typedef struct {
   (Eurydice_slice{(void *)(x + start), end - start})
 
 // Slice length
-#define Eurydice_slice_len(s, _) (s).len
+#define EURYDICE_SLICE_LEN(s, _) (s).meta
+#define Eurydice_slice_len(s, _) (s).meta
 
-// This macro is a pain because in case the dereferenced element type is an
-// array, you cannot simply write `t x` as it would yield `int[4] x` instead,
-// which is NOT correct C syntax, so we add a dedicated phase in Eurydice that
-// adds an extra argument to this macro at the last minute so that we have the
-// correct type of *pointers* to elements.
-#define Eurydice_slice_index(s, i, t, t_ptr_t) (((t_ptr_t)s.ptr)[i])
+#define Eurydice_slice_index_mut(s, i, t) ((s).ptr[i])
+#define Eurydice_slice_index_shared(s, i, t) ((s).ptr[i])
+#define Eurydice_slice_index(s, i, t) ((s).ptr[i])
+
 
 // The following functions get sub slices from a slice.
+
+#define Eurydice_slice_subslice(s, r, t, _0, _1) \
+  EURYDICE_SLICE((t *)s.ptr, r.start, r.end)
 
 // Variant for when the start and end indices are statically known (i.e., the
 // range argument `r` is a literal).
 #define Eurydice_slice_subslice2(s, start, end, t) \
   EURYDICE_SLICE((t *)s.ptr, (start), (end))
+
+// Previous version above does not work when t is an array type (as usual). Will
+// be deprecated soon.
+#define Eurydice_slice_subslice3(s, start, end, t_ptr) \
+  EURYDICE_SLICE((t_ptr)s.ptr, (start), (end))
 
 #define Eurydice_slice_subslice_to(s, subslice_end_pos, t, _0, _1) \
   EURYDICE_SLICE((t *)s.ptr, 0, (subslice_end_pos))
@@ -117,11 +155,21 @@ typedef struct {
   /* x is already at an array type, no need for cast */ \
   EURYDICE_SLICE(x, 0, end)
 
+// The following functions convert an array into a slice.
+
+#define Eurydice_array_to_subslice(_arraylen, x, r, t, _0, _1) \
+   EURYDICE_SLICE((t *)x, r.start, r.end)
+
 // Same as above, variant for when start and end are statically known
 #define Eurydice_array_to_subslice2(x, start, end, t) \
   EURYDICE_SLICE((t *)x, (start), (end))
 
-// The following functions convert an array into a slice.
+// Same as above, variant for when start and end are statically known
+#define Eurydice_array_to_subslice3(x, start, end, t_ptr) \
+  EURYDICE_SLICE((t_ptr)x, (start), (end))
+
+#define Eurydice_array_repeat(dst, len, init, t) \
+  ERROR "should've been desugared"
 
 #define Eurydice_array_to_subslice_to(_size, x, r, t, _range_t, _0) \
   EURYDICE_SLICE((t *)x, 0, r)
@@ -130,35 +178,46 @@ typedef struct {
 
 // Copy a slice with memcpy
 #define Eurydice_slice_copy(dst, src, t) \
-  memcpy(dst.ptr, src.ptr, dst.len * sizeof(t))
+  memcpy(dst.ptr, src.ptr, dst.meta * sizeof(t))
 
-#define core_array___Array_T__N__23__as_slice(len_, ptr_, t, _ret_t) \
+#define core_array___Array_T__N___as_slice(len_, ptr_, t, _ret_t) \
   Eurydice_slice { ptr_, len_ }
 
-#define core_array___core__clone__Clone_for__Array_T__N___20__clone( \
-    len, src, dst, elem_type, _ret_t)                                \
-  (memcpy(dst, src, len * sizeof(elem_type)))
+#define core_array__core__clone__Clone_for__Array_T__N___clone( \
+    len, src, elem_type, _ret_t)                           \
+  (*(src))
 #define TryFromSliceError uint8_t
+#define core_array_TryFromSliceError uint8_t
 
 // Compare two arrays with `memcmp`.
-#define Eurydice_array_eq(sz, a1, a2, t, _) \
-  (memcmp(a1, a2, sz * sizeof(t)) == 0)
+#define Eurydice_array_eq(sz, a1, a2, t) (memcmp(a1, a2, sz * sizeof(t)) == 0)
 
 // Map Rust core equality functions to `Eurydice_array_eq`.
 #define core_array_equality___core__cmp__PartialEq__Array_U__N___for__Array_T__N____eq( \
     sz, a1, a2, t, _, _ret_t)                                                           \
-  Eurydice_array_eq(sz, a1, a2, t, _)
+  Eurydice_array_eq(sz, a1, a2, t)
 #define core_array_equality___core__cmp__PartialEq__0___Slice_U____for__Array_T__N___3__eq( \
     sz, a1, a2, t, _, _ret_t)                                                               \
-  Eurydice_array_eq(sz, a1, ((a2)->ptr), t, _)
+  Eurydice_array_eq(sz, a1, ((a2)->ptr), t)
+
+// core::cmp::PartialEq<&0 (@Slice<U>)> for @Array<T, N>
+#define Eurydice_array_eq_slice(sz, a1, s2, t, _) \
+  (memcmp(a1, (s2)->ptr, sz * sizeof(t)) == 0)
 
 // Rust `split_at` on arrays and slices to generate two slices.
-#define Eurydice_slice_split_at(slice, mid, element_type, ret_t)      \
-  ret_t {                                                             \
-    /* .fst = */ EURYDICE_SLICE((element_type *)(slice).ptr, 0, mid), \
-        /* .snd = */ EURYDICE_SLICE((element_type *)(slice).ptr, mid, \
-                                    (slice).len)                      \
-  }
+#define Eurydice_slice_split_at(slice, mid, element_type, ret_t)        \
+  ret_t {                                                \
+    EURYDICE_CFIELD(.fst =){EURYDICE_CFIELD(.ptr =)((slice).ptr),       \
+                            EURYDICE_CFIELD(.meta =) mid},              \
+        EURYDICE_CFIELD(.snd =) {                                       \
+      EURYDICE_CFIELD(.ptr =)                                           \
+      ((slice).ptr + mid), EURYDICE_CFIELD(.meta =)((slice).meta - mid) \
+    }                                                                   \
+   }
+
+#define core_array___Array_T__N___as_slice(len_, ptr_, t, _ret_t) \
+  Eurydice_slice { ptr_, len_ }
+
 
 // Conversion of slice to an array, rewritten (by Eurydice) to name the
 // destination array, since arrays are not values in C.
@@ -177,16 +236,88 @@ static inline void Eurydice_slice_to_array3(uint8_t *dst_tag, char *dst_ok,
   memcpy(dst_ok, src.ptr, sz);
 }
 
+// SUPPORT FOR DSTs (Dynamically-Sized Types)
+
+// A DST is a fat pointer that keeps tracks of the size of it flexible array
+// member. Slices are a specific case of DSTs, where [T; N] implements
+// Unsize<[T]>, meaning an array of statically known size can be converted to a
+// fat pointer, i.e. a slice.
+//
+// Unlike slices, DSTs have a built-in definition that gets monomorphized, of
+// the form:
+//
+// typedef struct {
+//   T *ptr;
+//   size_t len; // number of elements
+// } Eurydice_dst;
+//
+// Furthermore, T = T0<[U0]> where `struct T0<U: ?Sized>`, where the `U` is the
+// last field. This means that there are two monomorphizations of T0 in the
+// program. One is `T0<[V; N]>`
+// -- this is directly converted to a Eurydice_dst via suitable codegen (no
+// macro). The other is `T = T0<[U]>`, where `[U]` gets emitted to
+// `Eurydice_derefed_slice`, a type that only appears in that precise situation
+// and is thus defined to give rise to a flexible array member.
+
+typedef char Eurydice_derefed_slice[];
+
+#define Eurydice_slice_of_dst(fam_ptr, len_, t, _) \
+  ((Eurydice_slice){.ptr = (void *)(fam_ptr), .len = len_})
+
+#define Eurydice_slice_of_boxed_array(ptr_, len_, t, _) \
+  ((Eurydice_slice){.ptr = (void *)(ptr_), .len = len_})
+
 // CORE STUFF (conversions, endianness, ...)
 
-static inline void core_num__u64_9__to_le_bytes(uint64_t v, uint8_t buf[8]) {
-  CRYPTO_store_u64_le(buf, v);
-}
-static inline uint64_t core_num__u64_9__from_le_bytes(uint8_t buf[8]) {
-  return CRYPTO_load_u64_le(buf);
+typedef struct Eurydice_arr_8b_s {
+  uint8_t data[2];
+} Eurydice_arr_8b;
+
+// [ u8; 2 ]
+typedef struct Eurydice_array_u8x2_s {
+  uint8_t data[2];
+} Eurydice_array_u8x2;
+
+// [ u8; 8 ]
+typedef struct Eurydice_array_u8x8_s {
+  uint8_t data[8];
+} Eurydice_array_u8x8;
+
+// &mut [u8]
+typedef struct Eurydice_mut_borrow_slice_u8_s {
+  uint8_t *ptr;
+  size_t meta;
+} Eurydice_mut_borrow_slice_u8;
+
+// &[u8]
+typedef struct Eurydice_borrow_slice_u8_s {
+  const uint8_t *ptr;
+  size_t meta;
+} Eurydice_borrow_slice_u8;
+
+// &mut [i16]
+typedef struct Eurydice_mut_borrow_slice_i16_s {
+  int16_t *ptr;
+  size_t meta;
+} Eurydice_mut_borrow_slice_i16;
+
+// &[i16]
+typedef struct Eurydice_borrow_slice_i16_s {
+  const int16_t *ptr;
+  size_t meta;
+} Eurydice_borrow_slice_i16;
+
+static inline Eurydice_array_u8x8 core_num__u64__to_le_bytes(uint64_t v) {
+  Eurydice_array_u8x8 out;
+  CRYPTO_store_u64_le(&out.data, v);
+  return out;
 }
 
-static inline uint32_t core_num__u8_6__count_ones(uint8_t x0) {
+static inline uint64_t core_num__u64__from_le_bytes(Eurydice_array_u8x8 buf) {
+  return CRYPTO_load_u64_le(buf.data);
+}
+
+static inline uint32_t core_num__u8__count_ones(uint8_t x0) {
 #ifdef _MSC_VER
   return __popcnt(x0);
 #else
@@ -195,14 +326,14 @@ static inline uint32_t core_num__u8_6__count_ones(uint8_t x0) {
 }
 
 // unsigned overflow wraparound semantics in C
-static inline uint16_t core_num__u16_7__wrapping_add(uint16_t x, uint16_t y) {
+static inline uint16_t core_num__u16__wrapping_add(uint16_t x, uint16_t y) {
   return x + y;
 }
-static inline uint8_t core_num__u8_6__wrapping_sub(uint8_t x, uint8_t y) {
+static inline uint8_t core_num__u8__wrapping_sub(uint8_t x, uint8_t y) {
   return x - y;
 }
-static inline uint64_t core_num__u64_9__rotate_left(uint64_t value,
-                                                    uint32_t shift) {
+static inline uint64_t core_num__u64__rotate_left(uint64_t value,
+                                                  uint32_t shift) {
   return CRYPTO_rotl_u64(value, shift);
 }
 
