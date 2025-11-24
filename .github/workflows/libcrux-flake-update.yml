@@ -12,7 +12,7 @@ jobs:
   flake-update:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
         with:
           ref: ${{ inputs.branch }}
       - uses: DeterminateSystems/nix-installer-action@v20
