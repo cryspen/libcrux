@@ -15,7 +15,7 @@ jobs:
     runs-on: macos-13
 
     steps:
-    - uses: actions/checkout@v5
+    - uses: actions/checkout@v6
     - name: Setup MacOS
       run: |
         rustup target install aarch64-apple-darwin
