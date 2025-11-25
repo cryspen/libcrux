@@ -36,7 +36,7 @@ libcrux-ml-kem = { version = "0.0.4", path = "../libcrux-ml-kem", features = [
 ] }
 libcrux-ed25519 = { version = "0.0.4", path = "../ed25519", features = ["rand", "codec", "tls_codec"] }
 tls_codec = { version = "0.4.2", features = ["derive"] }
-libcrux-ml-dsa = { version = "0.0.4", path = "../libcrux-ml-dsa" }
+libcrux-ml-dsa = { version = "0.0.4", path = "../libcrux-ml-dsa", features = ["codec"] }
 
 [dev-dependencies]
 libcrux-psq = { path = ".", features = ["test-utils"] }

@@ -92,6 +92,7 @@ impl<'a> QueryInitiator<'a> {
         .map_err(|e| e.into())
     }
 }
+
 impl<'a> Channel<Error> for QueryInitiator<'a> {
     fn write_message(&mut self, payload: &[u8], out: &mut [u8]) -> Result<usize, Error> {
         let outer_payload = InitiatorOuterPayloadOut::Query(VLByteSlice(payload));
@@ -103,7 +104,7 @@ impl<'a> Channel<Error> for QueryInitiator<'a> {
             tag,
             aad: VLByteSlice(self.outer_aad),
             pq_encapsulation: VLByteSlice(&[]),
-            ciphersuite: CiphersuiteName::X25519_NONE_CHACHA20POLY1305_HKDFSHA256,
+            ciphersuite: CiphersuiteName::query_ciphersuite(),
         };
 
         msg.tls_serialize(&mut &mut out[..])

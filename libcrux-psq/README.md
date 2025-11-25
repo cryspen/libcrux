@@ -111,7 +111,7 @@ A -> B: (epk_A, enc_outer, tag_outer, registration_outer_aad)
 B:
     tx0 = hash(0 | ctx | pk_B | epk_A)
     dh_shared_secret_outer = DH.Derive(sk_B, epk_A)
-    K_0 = KDF(dh_shared_secret_outer)
+    K_0 = KDF(dh_shared_secret_outer, tx0)
     (pk_A | enc_inner | tag_inner | registration_inner_aad | [enc_pq]) = AEAD.Decrypt(K_0, enc_outer, tag_outer, registration_outer_aad)
     if enc_pq provided
         pq_shared_secret <- PQKEM.Decapsulate(pqsk_B, enc_pq)

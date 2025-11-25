@@ -31,6 +31,24 @@ pub enum HandshakeError {
     InvalidMessage,
 }
 
+impl From<libcrux_ed25519::Error> for HandshakeError {
+    fn from(_value: libcrux_ed25519::Error) -> Self {
+        Self::CryptoError
+    }
+}
+
+impl From<libcrux_ml_dsa::SigningError> for HandshakeError {
+    fn from(_value: libcrux_ml_dsa::SigningError) -> Self {
+        Self::CryptoError
+    }
+}
+
+impl From<libcrux_ml_dsa::VerificationError> for HandshakeError {
+    fn from(_value: libcrux_ml_dsa::VerificationError) -> Self {
+        Self::CryptoError
+    }
+}
+
 impl From<AEADError> for HandshakeError {
     fn from(value: AEADError) -> Self {
         match value {
@@ -49,6 +67,7 @@ use crate::{
     handshake::{
         ciphersuite::{types::PQSharedSecret, CiphersuiteName},
         dhkem::{DHPrivateKey, DHPublicKey, DHSharedSecret},
+        types::{Authenticator, SigVerificationKey, Signature},
     },
 };
 
@@ -61,11 +80,10 @@ pub(crate) mod transcript;
 pub(crate) mod builder;
 pub(crate) mod ciphersuite;
 
-#[derive(Debug)]
 pub(crate) struct ToTransportState {
     pub(crate) tx2: Transcript,
     pub(crate) k2: AEADKey,
-    pub(crate) initiator_ecdh_pk: Option<DHPublicKey>,
+    pub(crate) initiator_authenticator: Option<Authenticator>,
     pub(crate) pq: bool,
 }
 
@@ -84,6 +102,58 @@ pub(crate) struct HandshakeMessage {
     ciphersuite: CiphersuiteName,
     /// An optional post-quantum key encapsulation
     pq_encapsulation: VLBytes,
+}
+
+#[derive(TlsDeserialize, TlsSize)]
+#[repr(u8)]
+/// A PSQ inner message
+pub(crate) enum InnerMessage {
+    DHAuth {
+        /// A Diffie-Hellman KEM public key
+        pk: DHPublicKey,
+        /// The AEAD-encrypted message payload
+        ciphertext: VLBytes,
+        /// AEAD tag authenticating the ciphertext and any AAD
+        tag: [u8; 16],
+        /// Associated data, covered by the AEAD message authentication tag
+        aad: VLBytes,
+        /// An optional post-quantum key encapsulation
+        pq_encapsulation: VLBytes,
+    },
+    SigAuth {
+        /// A Diffie-Hellman KEM public key
+        vk: SigVerificationKey,
+        signature: Signature,
+        /// The AEAD-encrypted message payload
+        ciphertext: VLBytes,
+        /// AEAD tag authenticating the ciphertext and any AAD
+        tag: [u8; 16],
+        /// Associated data, covered by the AEAD message authentication tag
+        aad: VLBytes,
+        /// An optional post-quantum key encapsulation
+        pq_encapsulation: VLBytes,
+    },
+}
+
+#[derive(TlsSerialize, TlsSize)]
+#[repr(u8)]
+/// A PSQ inner message (serialization helper)
+pub(crate) enum InnerMessageOut<'a> {
+    DHAuth {
+        pk: &'a DHPublicKey,
+        ciphertext: VLByteSlice<'a>,
+        tag: [u8; 16], // XXX: implement Serialize for &[T; N]
+        aad: VLByteSlice<'a>,
+        pq_encapsulation: VLByteSlice<'a>,
+    },
+    SigAuth {
+        vk: &'a SigVerificationKey,
+        signature: &'a Signature,
+        ciphertext: VLByteSlice<'a>,
+        tag: [u8; 16], // XXX: implement Serialize for &[T; N]
+        aad: VLByteSlice<'a>,
+        pq_encapsulation: VLByteSlice<'a>,
+    },
 }
 
 #[derive(TlsSerialize, TlsSize)]
@@ -131,8 +201,8 @@ pub(super) fn derive_k0(
     Ok((tx0, AEADKey::new(&ikm, &tx0)?))
 }
 
-// K1 = KDF(K0 | g^cs | SS, tx1)
-pub(super) fn derive_k1(
+// K1 = KDF(K0 | g^cs | [SS], tx1)
+pub(super) fn derive_k1_dh(
     k0: &AEADKey,
     own_longterm_key: &DHPrivateKey,
     peer_longterm_pk: &DHPublicKey,
@@ -140,7 +210,7 @@ pub(super) fn derive_k1(
     tx1: &Transcript,
 ) -> Result<AEADKey, HandshakeError> {
     #[derive(TlsSerializeBytes, TlsSize)]
-    struct K1Ikm<'a> {
+    struct K1IkmDh<'a> {
         k0: &'a AEADKey,
         ecdh_shared_secret: &'a DHSharedSecret,
         pq_shared_secret: Option<PQSharedSecret>,
@@ -150,12 +220,46 @@ pub(super) fn derive_k1(
 
     // XXX: This makes clippy unhappy, but is a lifetime error for feature `classic-mceliece` if we return directlyr
     Ok(AEADKey::new(
-        &K1Ikm {
+        &K1IkmDh {
             k0,
             ecdh_shared_secret: &ecdh_shared_secret,
             pq_shared_secret,
         },
         &tx1,
+    )?)
+}
+
+// K1 = KDF(K0 | [SS], tx1 | sig)
+pub(super) fn derive_k1_sig(
+    k0: &AEADKey,
+    pq_shared_secret: Option<PQSharedSecret>,
+    tx1: &Transcript,
+    signature: &Signature,
+) -> Result<AEADKey, HandshakeError> {
+    #[derive(TlsSerializeBytes, TlsSize)]
+    struct K1IkmSig<'a> {
+        k0: &'a AEADKey,
+        pq_shared_secret: Option<PQSharedSecret>,
+    }
+    #[derive(TlsSerializeBytes, TlsSize)]
+    struct K1InfoSig<'a> {
+        tx1: &'a Transcript,
+        signature_vec: Vec<u8>,
+    }
+
+    // XXX: This is not great.
+    let signature_vec = match signature {
+        Signature::Ed25519(sig) => sig.to_vec(),
+        Signature::MlDsa65(mldsasignature) => mldsasignature.as_ref().to_vec(),
+    };
+
+    // XXX: This makes clippy unhappy, but is a lifetime error for feature `classic-mceliece` if we return directlyr
+    Ok(AEADKey::new(
+        &K1IkmSig {
+            k0,
+            pq_shared_secret,
+        },
+        &K1InfoSig { tx1, signature_vec },
     )?)
 }
 
@@ -167,9 +271,15 @@ struct K2IkmQuery<'a> {
 }
 
 #[derive(TlsSerializeBytes, TlsSize)]
-struct K2IkmRegistration<'a, 'b> {
+struct K2IkmRegistrationDh<'a, 'b> {
     k1: &'a AEADKey,
     g_cy: &'b DHSharedSecret,
+    g_xy: &'b DHSharedSecret,
+}
+
+#[derive(TlsSerializeBytes, TlsSize)]
+struct K2IkmRegistrationSig<'a, 'b> {
+    k1: &'a AEADKey,
     g_xy: &'b DHSharedSecret,
 }
 
@@ -185,6 +295,12 @@ pub mod builders {
     pub use crate::handshake::builder::PrincipalBuilder;
     #[doc(inline)]
     pub use crate::handshake::ciphersuite::builder::CiphersuiteBuilder;
+
+    #[doc(inline)]
+    pub use crate::handshake::ciphersuite::initiator::InitiatorCiphersuite;
+
+    #[doc(inline)]
+    pub use crate::handshake::ciphersuite::responder::ResponderCiphersuite;
 }
 
 pub mod types {
@@ -196,9 +312,7 @@ pub mod types {
 
 pub mod ciphersuites {
     #[doc(inline)]
-    pub use crate::handshake::ciphersuite::{
-        initiator::InitiatorCiphersuite, responder::ResponderCiphersuite, CiphersuiteName,
-    };
+    pub use crate::handshake::ciphersuite::CiphersuiteName;
 }
 
 #[doc(inline)]

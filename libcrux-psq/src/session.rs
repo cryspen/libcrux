@@ -17,6 +17,7 @@ use crate::{
     aead::{AEADError, AEADKey},
     handshake::{
         ciphersuite::types::PQEncapsulationKey, dhkem::DHPublicKey, transcript::Transcript,
+        types::Authenticator,
     },
 };
 
@@ -103,19 +104,19 @@ pub struct Session {
 // pkBinder = KDF(skCS, g^c | g^s | [pkS])
 fn derive_pk_binder(
     key: &SessionKey,
-    initiator_ecdh_pk: &ClientAuthenticator,
+    initiator_authenticator: &Authenticator,
     responder_ecdh_pk: &DHPublicKey,
     responder_pq_pk: Option<PQEncapsulationKey>,
 ) -> Result<[u8; PK_BINDER_LEN], SessionError> {
     #[derive(TlsSerialize, TlsSize)]
     struct PkBinderInfo<'a> {
-        initiator_ecdh_pk: &'a ClientAuthenticator,
+        initiator_authenticator: &'a Authenticator,
         responder_ecdh_pk: &'a DHPublicKey,
         responder_pq_pk: Option<PQEncapsulationKey<'a>>,
     }
 
     let info = PkBinderInfo {
-        initiator_ecdh_pk,
+        initiator_authenticator,
         responder_ecdh_pk,
         responder_pq_pk,
     };
@@ -145,7 +146,7 @@ impl Session {
     pub(crate) fn new(
         tx2: Transcript,
         k2: AEADKey,
-        initiator_ecdh_pk: &ClientAuthenticator,
+        initiator_authenticator: &Authenticator,
         responder_ecdh_pk: &DHPublicKey,
         responder_pq_pk: Option<PQEncapsulationKey>,
         is_initiator: bool,
@@ -153,7 +154,7 @@ impl Session {
         let session_key = derive_session_key(k2, tx2)?;
         let pk_binder = derive_pk_binder(
             &session_key,
-            initiator_ecdh_pk,
+            initiator_authenticator,
             responder_ecdh_pk,
             responder_pq_pk,
         )?;
@@ -189,7 +190,7 @@ impl Session {
     // the validation.
     pub fn deserialize(
         bytes: &[u8],
-        initiator_ecdh_pk: &DHPublicKey,
+        initiator_authenticator: &Authenticator,
         responder_ecdh_pk: &DHPublicKey,
         responder_pq_pk: Option<PQEncapsulationKey>,
     ) -> Result<Self, SessionError> {
@@ -198,7 +199,7 @@ impl Session {
 
         if derive_pk_binder(
             &session.session_key,
-            initiator_ecdh_pk,
+            initiator_authenticator,
             responder_ecdh_pk,
             responder_pq_pk,
         )? == session.pk_binder

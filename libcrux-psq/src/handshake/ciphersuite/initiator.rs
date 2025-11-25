@@ -1,4 +1,7 @@
+use libcrux_ed25519::{SigningKey, VerificationKey};
+use libcrux_ml_dsa::ml_dsa_65::{MLDSA65SigningKey, MLDSA65VerificationKey};
 use rand::CryptoRng;
+use tls_codec::SerializeBytes;
 
 #[cfg(feature = "classic-mceliece")]
 use crate::classic_mceliece::PublicKey;
@@ -8,21 +11,100 @@ use crate::handshake::{
         types::{PQCiphertext, PQEncapsulationKey, PQSharedSecret},
         CiphersuiteName,
     },
-    dhkem::{DHKeyPair, DHPrivateKey, DHPublicKey},
+    dhkem::{DHKeyPair, DHPublicKey},
+    transcript::Transcript,
+    types::{SigVerificationKey, Signature},
     HandshakeError,
 };
 
-#[allow(non_camel_case_types)]
-/// The ciphersuites available to a PSQ initiator in registration mode.
-pub enum InitiatorCiphersuite<'a> {
-    X25519NoneChaCha20Poly1305HkdfSha256(InitiatorX25519ChaCha20Poly1305HkdfSha256<'a>),
-    X25519MlKem768ChaCha20Poly1305HkdfSha256(InitiatorX25519Mlkem768ChaCha20Poly1305HkdfSha256<'a>),
+#[derive(Clone, Copy)]
+pub(crate) enum PqKemPublicKey<'a> {
+    None,
+    MlKem(&'a libcrux_ml_kem::mlkem768::MlKem768PublicKey),
     #[cfg(feature = "classic-mceliece")]
-    X25519ClassicMcElieceChaCha20Poly1305HkdfSha256(
-        InitiatorX25519ClassicMcElieceChaCha20Poly1305HkdfSha256<'a>,
-    ),
+    CMC(&'a PublicKey),
     #[cfg(not(feature = "classic-mceliece"))]
-    X25519ClassicMcElieceChaCha20Poly1305HkdfSha256(std::marker::PhantomData<&'a [u8]>),
+    #[allow(unused)]
+    CMC(std::marker::PhantomData<&'a [u8]>),
+}
+
+impl<'a> From<&'a libcrux_ml_kem::mlkem768::MlKem768PublicKey> for PqKemPublicKey<'a> {
+    fn from(value: &'a libcrux_ml_kem::mlkem768::MlKem768PublicKey) -> Self {
+        PqKemPublicKey::MlKem(value)
+    }
+}
+
+#[cfg(feature = "classic-mceliece")]
+impl<'a> From<&'a PublicKey> for PqKemPublicKey<'a> {
+    fn from(value: &'a PublicKey) -> Self {
+        PqKemPublicKey::CMC(value)
+    }
+}
+
+#[derive(Clone, Copy)]
+pub(crate) enum SigAuth<'a> {
+    Ed25519(&'a SigningKey, &'a VerificationKey),
+    MlDsa65(&'a MLDSA65SigningKey, &'a MLDSA65VerificationKey),
+}
+
+impl From<SigAuth<'_>> for SigVerificationKey {
+    fn from(value: SigAuth<'_>) -> Self {
+        match value {
+            SigAuth::Ed25519(_, verification_key) => {
+                SigVerificationKey::Ed25519(verification_key.clone())
+            }
+            SigAuth::MlDsa65(_, mldsaverification_key) => {
+                SigVerificationKey::MlDsa65(mldsaverification_key.clone())
+            }
+        }
+    }
+}
+
+impl<'a> From<PqKemPublicKey<'a>> for Option<PQEncapsulationKey<'a>> {
+    fn from(value: PqKemPublicKey<'a>) -> Self {
+        match value {
+            PqKemPublicKey::None => None,
+            PqKemPublicKey::MlKem(ml_kem_public_key) => {
+                Some(PQEncapsulationKey::MlKem(ml_kem_public_key))
+            }
+            #[cfg(feature = "classic-mceliece")]
+            PqKemPublicKey::CMC(public_key) => Some(PQEncapsulationKey::CMC(public_key)),
+            #[cfg(not(feature = "classic-mceliece"))]
+            PqKemPublicKey::CMC(_) => {
+                // We can never reach this because the ciphersuite can only be constructed with the feature turned on.
+                unreachable!("unsupported ciphersuite")
+            }
+        }
+    }
+}
+
+#[derive(Clone, Copy)]
+pub(crate) enum Auth<'a> {
+    DH(&'a DHKeyPair),
+    Sig(SigAuth<'a>),
+}
+
+impl<'a> From<&'a DHKeyPair> for Auth<'a> {
+    fn from(value: &'a DHKeyPair) -> Self {
+        Auth::DH(value)
+    }
+}
+impl<'a> From<(&'a SigningKey, &'a VerificationKey)> for Auth<'a> {
+    fn from(value: (&'a SigningKey, &'a VerificationKey)) -> Self {
+        Auth::Sig(SigAuth::Ed25519(value.0, value.1))
+    }
+}
+impl<'a> From<(&'a MLDSA65SigningKey, &'a MLDSA65VerificationKey)> for Auth<'a> {
+    fn from(value: (&'a MLDSA65SigningKey, &'a MLDSA65VerificationKey)) -> Self {
+        Auth::Sig(SigAuth::MlDsa65(value.0, value.1))
+    }
+}
+
+pub struct InitiatorCiphersuite<'a> {
+    pub(crate) name: CiphersuiteName,
+    pub(crate) kex: &'a DHPublicKey,
+    pub(crate) pq: PqKemPublicKey<'a>,
+    pub(crate) auth: Auth<'a>,
 }
 
 impl<'a> CiphersuiteBase for InitiatorCiphersuite<'a> {
@@ -31,136 +113,54 @@ impl<'a> CiphersuiteBase for InitiatorCiphersuite<'a> {
     type SharedSecret = PQSharedSecret;
 
     fn name(&self) -> CiphersuiteName {
-        match self {
-            InitiatorCiphersuite::X25519NoneChaCha20Poly1305HkdfSha256(_) => {
-                CiphersuiteName::X25519_NONE_CHACHA20POLY1305_HKDFSHA256
-            }
-            InitiatorCiphersuite::X25519MlKem768ChaCha20Poly1305HkdfSha256(_) => {
-                CiphersuiteName::X25519_MLKEM768_CHACHA20POLY1305_HKDFSHA256
-            }
-            #[cfg(feature = "classic-mceliece")]
-            InitiatorCiphersuite::X25519ClassicMcElieceChaCha20Poly1305HkdfSha256(_) => {
-                CiphersuiteName::X25519_CLASSICMCELIECE_CHACHA20POLY1305_HKDFSHA256
-            }
-            #[cfg(not(feature = "classic-mceliece"))]
-            InitiatorCiphersuite::X25519ClassicMcElieceChaCha20Poly1305HkdfSha256(_) => {
-                // We can never reach this because the ciphersuite can only be constructed with the feature turned on.
-                unreachable!("unsupported ciphersuite")
-            }
-        }
+        self.name
     }
-
-    fn tx0(&self, ctx: &[u8], peer_pk: &DHPublicKey) -> Transcript {
-        todo!()
-    }
-
-    fn tx1(&self) -> Result<Transcript, HandshakeError> {
-        todo!()
-    }
-
-    fn k0(&self) -> Result<AEADKey, HandshakeError> {
-        todo!()
-    }
-
-    fn k1(&self) -> Result<AEADKey, HandshakeError> {
-        todo!()
-    }
-
-    fn tx2(&self) -> Result<Transcript, HandshakeError> {
-        todo!()
-    }
-
-    fn k2(&self) -> Result<AEADKey, HandshakeError> {
-        todo!()
-    }
-
-    // fn own_ecdh_decapsulation_key(&self) -> &DHPrivateKey {
-    //     match self {
-    //         InitiatorCiphersuite::X25519NoneChaCha20Poly1305HkdfSha256(
-    //             initiator_x25519_chacha_poly_hkdf_sha256,
-    //         ) => {
-    //             &initiator_x25519_chacha_poly_hkdf_sha256
-    //                 .longterm_ecdh_keys
-    //                 .sk
-    //         }
-    //         InitiatorCiphersuite::X25519MlKem768ChaCha20Poly1305HkdfSha256(
-    //             initiator_x25519_mlkem768_chacha_poly_hkdf_sha256,
-    //         ) => {
-    //             &initiator_x25519_mlkem768_chacha_poly_hkdf_sha256
-    //                 .longterm_ecdh_keys
-    //                 .sk
-    //         }
-    //         #[cfg(feature = "classic-mceliece")]
-    //         InitiatorCiphersuite::X25519ClassicMcElieceChaCha20Poly1305HkdfSha256(
-    //             initiator_x25519_classic_mc_eliece_chacha_poly_hkdf_sha256,
-    //         ) => {
-    //             &initiator_x25519_classic_mc_eliece_chacha_poly_hkdf_sha256
-    //                 .longterm_ecdh_keys
-    //                 .sk
-    //         }
-
-    //         #[cfg(not(feature = "classic-mceliece"))]
-    //         InitiatorCiphersuite::X25519ClassicMcElieceChaCha20Poly1305HkdfSha256(_) => {
-    //             // We can never reach this because the ciphersuite can only be constructed with the feature turned on.
-    //             unreachable!("unsupported ciphersuite")
-    //         }
-    //     }
-    // }
-
-    // fn own_ecdh_encapsulation_key(&self) -> &DHPublicKey {
-    //     match self {
-    //         InitiatorCiphersuite::X25519NoneChaCha20Poly1305HkdfSha256(
-    //             initiator_x25519_chacha_poly_hkdf_sha256,
-    //         ) => {
-    //             &initiator_x25519_chacha_poly_hkdf_sha256
-    //                 .longterm_ecdh_keys
-    //                 .pk
-    //         }
-    //         InitiatorCiphersuite::X25519MlKem768ChaCha20Poly1305HkdfSha256(
-    //             initiator_x25519_mlkem768_chacha_poly_hkdf_sha256,
-    //         ) => {
-    //             &initiator_x25519_mlkem768_chacha_poly_hkdf_sha256
-    //                 .longterm_ecdh_keys
-    //                 .pk
-    //         }
-    //         #[cfg(feature = "classic-mceliece")]
-    //         InitiatorCiphersuite::X25519ClassicMcElieceChaCha20Poly1305HkdfSha256(
-    //             initiator_x25519_classic_mc_eliece_chacha_poly_hkdf_sha256,
-    //         ) => {
-    //             &initiator_x25519_classic_mc_eliece_chacha_poly_hkdf_sha256
-    //                 .longterm_ecdh_keys
-    //                 .pk
-    //         }
-    //         #[cfg(not(feature = "classic-mceliece"))]
-    //         InitiatorCiphersuite::X25519ClassicMcElieceChaCha20Poly1305HkdfSha256(_) => {
-    //             // We can never reach this because the ciphersuite can only be constructed with the feature turned on.
-    //             unreachable!("unsupported ciphersuite")
-    //         }
-    //     }
-    // }
 }
 
 pub(crate) type PQOptionPair<A, B> = (Option<A>, Option<B>);
 
 impl<'a> InitiatorCiphersuite<'a> {
+    pub(crate) fn sign(
+        &self,
+        rng: &mut impl CryptoRng,
+        tx: &Transcript,
+    ) -> Result<Signature, HandshakeError> {
+        match self.auth {
+            Auth::DH(_dhkey_pair) => Err(HandshakeError::UnsupportedCiphersuite),
+            Auth::Sig(sig_auth) => {
+                let payload = tx.tls_serialize().map_err(HandshakeError::Serialize)?;
+                match sig_auth {
+                    SigAuth::Ed25519(signing_key, _) => {
+                        let sig = libcrux_ed25519::sign(&payload, signing_key.as_ref())?;
+                        Ok(Signature::Ed25519(sig))
+                    }
+                    SigAuth::MlDsa65(mldsasigning_key, _) => {
+                        let mut randomness = [0u8; libcrux_ml_dsa::SIGNING_RANDOMNESS_SIZE];
+                        rng.fill_bytes(&mut randomness);
+                        let sig = libcrux_ml_dsa::ml_dsa_65::sign(
+                            mldsasigning_key,
+                            &payload,
+                            b"PSQ",
+                            randomness,
+                        )?;
+                        Ok(Signature::MlDsa65(sig))
+                    }
+                }
+            }
+        }
+    }
     pub(crate) fn peer_pq_encapsulation_key(
         &self,
     ) -> Option<<Self as CiphersuiteBase>::EncapsulationKeyRef> {
-        match self {
-            InitiatorCiphersuite::X25519NoneChaCha20Poly1305HkdfSha256(_) => None,
-            InitiatorCiphersuite::X25519MlKem768ChaCha20Poly1305HkdfSha256(
-                initiator_x25519_mlkem768_chacha_poly_hkdf_sha256,
-            ) => Some(PQEncapsulationKey::MlKem(
-                initiator_x25519_mlkem768_chacha_poly_hkdf_sha256.peer_longterm_mlkem_pk,
-            )),
+        match self.pq {
+            PqKemPublicKey::None => None,
+            PqKemPublicKey::MlKem(ml_kem_public_key) => {
+                Some(PQEncapsulationKey::MlKem(ml_kem_public_key))
+            }
             #[cfg(feature = "classic-mceliece")]
-            InitiatorCiphersuite::X25519ClassicMcElieceChaCha20Poly1305HkdfSha256(
-                initiator_x25519_classic_mc_eliece_chacha_poly_hkdf_sha256,
-            ) => Some(PQEncapsulationKey::CMC(
-                initiator_x25519_classic_mc_eliece_chacha_poly_hkdf_sha256.peer_longterm_cmc_pk,
-            )),
+            PqKemPublicKey::CMC(public_key) => Some(PQEncapsulationKey::CMC(public_key)),
             #[cfg(not(feature = "classic-mceliece"))]
-            InitiatorCiphersuite::X25519ClassicMcElieceChaCha20Poly1305HkdfSha256(_) => {
+            PqKemPublicKey::CMC(_) => {
                 // We can never reach this because the ciphersuite can only be constructed with the feature turned on.
                 unreachable!("unsupported ciphersuite")
             }
@@ -168,37 +168,11 @@ impl<'a> InitiatorCiphersuite<'a> {
     }
 
     pub(crate) fn peer_ecdh_encapsulation_key(&self) -> &DHPublicKey {
-        match self {
-            InitiatorCiphersuite::X25519NoneChaCha20Poly1305HkdfSha256(
-                initiator_x25519_chacha_poly_hkdf_sha256,
-            ) => initiator_x25519_chacha_poly_hkdf_sha256.peer_longterm_ecdh_pk,
-            InitiatorCiphersuite::X25519MlKem768ChaCha20Poly1305HkdfSha256(
-                initiator_x25519_mlkem768_chacha_poly_hkdf_sha256,
-            ) => initiator_x25519_mlkem768_chacha_poly_hkdf_sha256.peer_longterm_ecdh_pk,
-            #[cfg(feature = "classic-mceliece")]
-            InitiatorCiphersuite::X25519ClassicMcElieceChaCha20Poly1305HkdfSha256(
-                initiator_x25519_classic_mc_eliece_chacha_poly_hkdf_sha256,
-            ) => initiator_x25519_classic_mc_eliece_chacha_poly_hkdf_sha256.peer_longterm_ecdh_pk,
-            #[cfg(not(feature = "classic-mceliece"))]
-            InitiatorCiphersuite::X25519ClassicMcElieceChaCha20Poly1305HkdfSha256(_) => {
-                // We can never reach this because the ciphersuite can only be constructed with the feature turned on.
-                unreachable!("unsupported ciphersuite")
-            }
-        }
+        self.kex
     }
 
     pub(crate) fn is_pq(&self) -> bool {
-        match self {
-            InitiatorCiphersuite::X25519NoneChaCha20Poly1305HkdfSha256(_) => false,
-            InitiatorCiphersuite::X25519MlKem768ChaCha20Poly1305HkdfSha256(_) => true,
-            #[cfg(feature = "classic-mceliece")]
-            InitiatorCiphersuite::X25519ClassicMcElieceChaCha20Poly1305HkdfSha256(_) => true,
-            #[cfg(not(feature = "classic-mceliece"))]
-            InitiatorCiphersuite::X25519ClassicMcElieceChaCha20Poly1305HkdfSha256(_) => {
-                // We can never reach this because the ciphersuite can only be constructed with the feature turned on.
-                unreachable!("unsupported ciphersuite")
-            }
-        }
+        !matches!(self.pq, PqKemPublicKey::None)
     }
 
     pub(crate) fn pq_encapsulate(
@@ -211,17 +185,12 @@ impl<'a> InitiatorCiphersuite<'a> {
         >,
         HandshakeError,
     > {
-        match self {
-            InitiatorCiphersuite::X25519NoneChaCha20Poly1305HkdfSha256(_) => Ok((None, None)),
-            InitiatorCiphersuite::X25519MlKem768ChaCha20Poly1305HkdfSha256(
-                initiator_x25519_mlkem768_chacha_poly_hkdf_sha256,
-            ) => {
+        match self.pq {
+            PqKemPublicKey::None => Ok((None, None)),
+            PqKemPublicKey::MlKem(ml_kem_public_key) => {
                 let mut rand = [0u8; libcrux_ml_kem::ENCAPS_SEED_SIZE];
                 rng.fill_bytes(&mut rand);
-                let (ct, ss) = libcrux_ml_kem::mlkem768::encapsulate(
-                    initiator_x25519_mlkem768_chacha_poly_hkdf_sha256.peer_longterm_mlkem_pk,
-                    rand,
-                );
+                let (ct, ss) = libcrux_ml_kem::mlkem768::encapsulate(ml_kem_public_key, rand);
 
                 Ok((
                     Some(PQCiphertext::MlKem(Box::new(ct))),
@@ -229,46 +198,23 @@ impl<'a> InitiatorCiphersuite<'a> {
                 ))
             }
             #[cfg(feature = "classic-mceliece")]
-            InitiatorCiphersuite::X25519ClassicMcElieceChaCha20Poly1305HkdfSha256(
-                initiator_x25519_classic_mc_eliece_chacha_poly_hkdf_sha256,
-            ) => {
+            PqKemPublicKey::CMC(public_key) => {
                 use crate::classic_mceliece::ClassicMcEliece;
                 use libcrux_traits::kem::KEM;
 
-                let (ss, ct) = <ClassicMcEliece as KEM>::encapsulate(
-                    initiator_x25519_classic_mc_eliece_chacha_poly_hkdf_sha256.peer_longterm_cmc_pk,
-                    rng,
-                )
-                .map_err(|_| HandshakeError::CryptoError)?;
+                let (ss, ct) = <ClassicMcEliece as KEM>::encapsulate(public_key, rng)
+                    .map_err(|_| HandshakeError::CryptoError)?;
 
                 Ok((
                     Some(PQCiphertext::CMC(Box::new(ct))),
                     Some(PQSharedSecret::CMC(ss)),
                 ))
             }
-
             #[cfg(not(feature = "classic-mceliece"))]
-            InitiatorCiphersuite::X25519ClassicMcElieceChaCha20Poly1305HkdfSha256(_) => {
+            PqKemPublicKey::CMC(_) => {
                 // We can never reach this because the ciphersuite can only be constructed with the feature turned on.
                 unreachable!("unsupported ciphersuite")
             }
         }
     }
-}
-
-pub struct InitiatorX25519Mlkem768ChaCha20Poly1305HkdfSha256<'a> {
-    pub longterm_ecdh_keys: &'a DHKeyPair,
-    pub peer_longterm_ecdh_pk: &'a DHPublicKey,
-    pub peer_longterm_mlkem_pk: &'a libcrux_ml_kem::mlkem768::MlKem768PublicKey,
-}
-pub struct InitiatorX25519ChaCha20Poly1305HkdfSha256<'a> {
-    pub longterm_ecdh_keys: &'a DHKeyPair,
-    pub peer_longterm_ecdh_pk: &'a DHPublicKey,
-}
-
-#[cfg(feature = "classic-mceliece")]
-pub struct InitiatorX25519ClassicMcElieceChaCha20Poly1305HkdfSha256<'a> {
-    pub longterm_ecdh_keys: &'a DHKeyPair,
-    pub peer_longterm_ecdh_pk: &'a DHPublicKey,
-    pub peer_longterm_cmc_pk: &'a PublicKey,
 }

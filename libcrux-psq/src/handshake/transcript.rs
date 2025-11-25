@@ -5,7 +5,9 @@ pub const TX1_DOMAIN_SEP: u8 = 1;
 pub const TX2_DOMAIN_SEP: u8 = 2;
 
 use super::dhkem::DHPublicKey;
-use crate::handshake::{ciphersuite::types::PQEncapsulationKey, HandshakeError as Error};
+use crate::handshake::{
+    ciphersuite::types::PQEncapsulationKey, types::SigVerificationKey, HandshakeError as Error,
+};
 use libcrux_sha2::{Digest, SHA256_LENGTH};
 
 /// The initial transcript hash.
@@ -69,14 +71,14 @@ pub(crate) fn tx0(
 }
 
 // tx1 = hash(1 | tx0 | g^c | [pkS] | [encap(pkS, SS)])
-pub(crate) fn tx1(
+pub(crate) fn tx1_dh(
     tx0: &Transcript,
     initiator_longterm_pk: &DHPublicKey,
     responder_pq_pk: Option<PQEncapsulationKey>,
     pq_encaps: &[u8],
 ) -> Result<Transcript, Error> {
     #[derive(TlsSerialize, TlsSize)]
-    struct Transcript1Inputs<'a> {
+    struct Transcript1InputsDh<'a> {
         initiator_longterm_pk: &'a DHPublicKey,
         responder_pq_pk: Option<PQEncapsulationKey<'a>>,
         pq_encaps: &'a [u8],
@@ -84,8 +86,32 @@ pub(crate) fn tx1(
 
     Transcript::add_hash::<TX1_DOMAIN_SEP>(
         Some(tx0),
-        Transcript1Inputs {
+        Transcript1InputsDh {
             initiator_longterm_pk,
+            pq_encaps,
+            responder_pq_pk,
+        },
+    )
+}
+
+// tx1 = hash(1 | tx0 | vk | [pkS] | [encap(pkS, SS)])
+pub(crate) fn tx1_sig(
+    tx0: &Transcript,
+    vk: &SigVerificationKey,
+    responder_pq_pk: Option<PQEncapsulationKey>,
+    pq_encaps: &[u8],
+) -> Result<Transcript, Error> {
+    #[derive(TlsSerialize, TlsSize)]
+    struct Transcript1InputsSig<'a> {
+        vk: &'a SigVerificationKey,
+        responder_pq_pk: Option<PQEncapsulationKey<'a>>,
+        pq_encaps: &'a [u8],
+    }
+
+    Transcript::add_hash::<TX1_DOMAIN_SEP>(
+        Some(tx0),
+        Transcript1InputsSig {
+            vk,
             pq_encaps,
             responder_pq_pk,
         },

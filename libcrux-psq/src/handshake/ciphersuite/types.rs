@@ -1,19 +1,41 @@
 use libcrux_ed25519::VerificationKey;
 use libcrux_kem::{MlKem768Ciphertext, MlKem768PrivateKey, MlKem768PublicKey};
-use libcrux_ml_dsa::ml_dsa_65::MLDSA65VerificationKey;
+use libcrux_ml_dsa::ml_dsa_65::{MLDSA65Signature, MLDSA65VerificationKey};
 use libcrux_ml_kem::MlKemSharedSecret;
 use tls_codec::{TlsDeserialize, TlsSerialize, TlsSerializeBytes, TlsSize};
 
 #[cfg(feature = "classic-mceliece")]
 use crate::classic_mceliece::{Ciphertext, PublicKey, SecretKey, SharedSecret};
-use crate::handshake::dhkem::DHPublicKey;
+use crate::handshake::{ciphersuite::initiator::Auth, dhkem::DHPublicKey};
 
 #[derive(TlsSize, TlsDeserialize, TlsSerialize)]
 #[repr(u8)]
-pub enum ClientAuthenticator<'a> {
-    DhKem(&'a DHPublicKey),
-    Ed25519(&'a VerificationKey),
-    MlDsa65(&'a MLDSA65VerificationKey),
+pub enum Authenticator {
+    Dh(DHPublicKey),
+    Sig(SigVerificationKey),
+}
+
+impl From<Auth<'_>> for Authenticator {
+    fn from(value: Auth<'_>) -> Self {
+        match value {
+            Auth::DH(dhkey_pair) => Authenticator::Dh(dhkey_pair.pk.clone()),
+            Auth::Sig(sig_auth) => Authenticator::Sig(sig_auth.into()),
+        }
+    }
+}
+
+#[derive(TlsSize, TlsDeserialize, TlsSerialize, Clone)]
+#[repr(u8)]
+pub enum SigVerificationKey {
+    Ed25519(VerificationKey),
+    MlDsa65(MLDSA65VerificationKey),
+}
+
+#[derive(TlsSize, TlsDeserialize, TlsSerialize)]
+#[repr(u8)]
+pub enum Signature {
+    Ed25519([u8; 64]),
+    MlDsa65(MLDSA65Signature),
 }
 
 #[derive(TlsSize, TlsDeserialize, TlsSerialize)]
