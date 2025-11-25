@@ -1,3 +1,4 @@
+use libcrux_ml_dsa::ml_dsa_65::MLDSA65KeyPair;
 use libcrux_ml_kem::mlkem768::MlKem768KeyPair;
 #[cfg(feature = "classic-mceliece")]
 use libcrux_psq::classic_mceliece::KeyPair;
@@ -6,6 +7,7 @@ use libcrux_psq::{
     session::{Session, SessionError},
     Channel, IntoSession,
 };
+use rand::Rng;
 
 struct CommonSetup {
     pub responder_mlkem_keys: MlKem768KeyPair,
@@ -13,6 +15,11 @@ struct CommonSetup {
     pub responder_cmc_keys: KeyPair,
     pub responder_ecdh_keys: DHKeyPair,
     pub initiator_ecdh_keys: DHKeyPair,
+    pub initiator_mldsa_keys: MLDSA65KeyPair,
+    pub initiator_ed25519_keys: (
+        libcrux_ed25519::SigningKey,
+        libcrux_ed25519::VerificationKey,
+    ),
 }
 
 use std::sync::LazyLock;
@@ -46,27 +53,31 @@ impl From<SessionError> for TestError {
 
 impl CommonSetup {
     fn pq_encapsulation_key(&self, name: CiphersuiteName) -> Option<PQEncapsulationKey<'_>> {
-        match name {
-            CiphersuiteName::X25519_NONE_CHACHA20POLY1305_HKDFSHA256 => None,
-            CiphersuiteName::X25519_MLKEM768_CHACHA20POLY1305_HKDFSHA256 => Some(
-                PQEncapsulationKey::MlKem(self.responder_mlkem_keys.public_key()),
-            ),
-            #[cfg(feature = "classic-mceliece")]
-            CiphersuiteName::X25519_CLASSICMCELIECE_CHACHA20POLY1305_HKDFSHA256 => {
-                Some(PQEncapsulationKey::CMC(&self.responder_cmc_keys.pk))
-            }
-            #[cfg(not(feature = "classic-mceliece"))]
-            CiphersuiteName::X25519_CLASSICMCELIECE_CHACHA20POLY1305_HKDFSHA256 => {
-                panic!("unsupported ciphersuite")
-            }
-            CiphersuiteName::X25519_NONE_AESGCM128_HKDFSHA256
-            | CiphersuiteName::X25519_MLKEM768_AESGCM128_HKDFSHA256
-            | CiphersuiteName::X25519_CLASSICMCELIECE_AESGCM128_HKDFSHA256 => {
-                unimplemented!("AES-GCM 128 ciphersuites are not implemented yet")
-            }
-        }
+        todo!()
+        // match name {
+        //     CiphersuiteName::X25519_NONE_CHACHA20POLY1305_HKDFSHA256 => None,
+        //     CiphersuiteName::X25519_MLKEM768_CHACHA20POLY1305_HKDFSHA256 => Some(
+        //         PQEncapsulationKey::MlKem(self.responder_mlkem_keys.public_key()),
+        //     ),
+        //     #[cfg(feature = "classic-mceliece")]
+        //     CiphersuiteName::X25519_CLASSICMCELIECE_CHACHA20POLY1305_HKDFSHA256 => {
+        //         Some(PQEncapsulationKey::CMC(&self.responder_cmc_keys.pk))
+        //     }
+        //     #[cfg(not(feature = "classic-mceliece"))]
+        //     CiphersuiteName::X25519_CLASSICMCELIECE_CHACHA20POLY1305_HKDFSHA256 => {
+        //         panic!("unsupported ciphersuite")
+        //     }
+        //     CiphersuiteName::X25519_NONE_AESGCM128_HKDFSHA256
+        //     | CiphersuiteName::X25519_MLKEM768_AESGCM128_HKDFSHA256
+        //     | CiphersuiteName::X25519_CLASSICMCELIECE_AESGCM128_HKDFSHA256 => {
+        //         unimplemented!("AES-GCM 128 ciphersuites are not implemented yet")
+        //     }
+        // }
     }
 
+    fn initiator_authenticator(&self) -> Authenticator {
+        todo!()
+    }
     fn new() -> Self {
         let mut rng = rand::rng();
         let responder_mlkem_keys = libcrux_ml_kem::mlkem768::rand::generate_key_pair(&mut rng);
@@ -77,12 +88,20 @@ impl CommonSetup {
         let responder_ecdh_keys = DHKeyPair::new(&mut rng);
         let initiator_ecdh_keys = DHKeyPair::new(&mut rng);
 
+        let mut rand = [0u8; libcrux_ml_dsa::KEY_GENERATION_RANDOMNESS_SIZE];
+        rng.fill(&mut rand);
+        let initiator_mldsa_keys = libcrux_ml_dsa::ml_dsa_65::generate_key_pair(rand);
+
+        let initiator_ed25519_keys = libcrux_ed25519::generate_key_pair(&mut rng).unwrap();
+
         CommonSetup {
             responder_mlkem_keys,
             #[cfg(feature = "classic-mceliece")]
             responder_cmc_keys,
             responder_ecdh_keys,
             initiator_ecdh_keys,
+            initiator_mldsa_keys,
+            initiator_ed25519_keys,
         }
     }
 }
