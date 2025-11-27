@@ -170,17 +170,22 @@ impl<'a, Rng: CryptoRng> Responder<'a, Rng> {
                 pq_encapsulation,
             } => {
                 // Whether we attempt to do a decapsulation is decided by the working ciphersuite.
-                let tx1 = tx1_dh(
-                    tx0,
-                    pk,
-                    self.ciphersuite.pq.encapsulation_key(),
-                    pq_encapsulation.as_slice(),
-                )?;
-                let pq_encapsulation = self
+                let pq_encapsulation_deserialized = self
                     .working_ciphersuite
                     .deserialize_encapsulation(pq_encapsulation.as_ref())?;
 
-                let pq_shared_secret = pq_encapsulation
+                let tx1 = tx1_dh(
+                    tx0,
+                    pk,
+                    if pq_encapsulation_deserialized.is_some() {
+                        self.ciphersuite.pq.encapsulation_key()
+                    } else {
+                        None
+                    },
+                    pq_encapsulation.as_slice(),
+                )?;
+
+                let pq_shared_secret = pq_encapsulation_deserialized
                     .as_ref()
                     .as_ref()
                     .map(|enc| self.ciphersuite.pq_decapsulate(enc))
@@ -197,7 +202,7 @@ impl<'a, Rng: CryptoRng> Responder<'a, Rng> {
                     tx1,
                     k1,
                     Authenticator::Dh(pk.clone()),
-                    pq_encapsulation.is_some(),
+                    pq_encapsulation_deserialized.is_some(),
                 ))
             }
             InnerMessage::SigAuth {
@@ -208,21 +213,30 @@ impl<'a, Rng: CryptoRng> Responder<'a, Rng> {
                 aad,
                 pq_encapsulation,
             } => {
+                // Whether we attempt to do a decapsulation is decided by the working ciphersuite.
+                let pq_encapsulation_deserialized = self
+                    .working_ciphersuite
+                    .deserialize_encapsulation(pq_encapsulation.as_ref())?;
+
                 let tx1 = tx1_sig(
                     tx0,
                     vk,
-                    self.ciphersuite.pq.encapsulation_key(),
+                    if pq_encapsulation_deserialized.is_some() {
+                        self.ciphersuite.pq.encapsulation_key()
+                    } else {
+                        None
+                    },
                     pq_encapsulation.as_slice(),
                 )?;
 
                 self.ciphersuite.verify(vk, &tx1, signature)?;
 
                 // Whether we attempt to do a decapsulation is decided by the working ciphersuite.
-                let pq_encapsulation = self
+                let pq_encapsulation_deserialized = self
                     .working_ciphersuite
                     .deserialize_encapsulation(pq_encapsulation.as_ref())?;
 
-                let pq_shared_secret = pq_encapsulation
+                let pq_shared_secret = pq_encapsulation_deserialized
                     .as_ref()
                     .as_ref()
                     .map(|enc| self.ciphersuite.pq_decapsulate(enc))
@@ -238,7 +252,7 @@ impl<'a, Rng: CryptoRng> Responder<'a, Rng> {
                     tx1,
                     k1,
                     Authenticator::Sig(vk.clone()),
-                    pq_encapsulation.is_some(),
+                    pq_encapsulation_deserialized.is_some(),
                 ))
             }
         }
