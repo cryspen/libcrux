@@ -6,7 +6,7 @@ use tls_codec::{
 };
 
 use crate::{
-    aead::AEADKey,
+    aead::{AEADKeyNonce, AEAD},
     handshake::{
         ciphersuite::{responder::ResponderCiphersuite, CiphersuiteName},
         derive_k1_sig,
@@ -37,13 +37,13 @@ pub(crate) enum InitiatorOuterPayload {
 #[derive(Debug)]
 pub(crate) struct RespondQueryState {
     pub(crate) tx0: Transcript,
-    pub(crate) k0: AEADKey,
+    pub(crate) k0: AEADKeyNonce,
     pub(crate) initiator_ephemeral_ecdh_pk: DHPublicKey,
 }
 
 pub(crate) struct RespondRegistrationState {
     pub(crate) tx1: Transcript,
-    pub(crate) k1: AEADKey,
+    pub(crate) k1: AEADKeyNonce,
     pub(crate) initiator_ephemeral_ecdh_pk: DHPublicKey,
     pub(crate) initiator_authenticator: Authenticator,
     pub(crate) pq: bool,
@@ -108,11 +108,11 @@ impl<'a, Rng: CryptoRng> Responder<'a, Rng> {
     fn derive_query_key(
         &self,
         tx0: &Transcript,
-        k0: &AEADKey,
+        k0: &AEADKeyNonce,
         responder_ephemeral_ecdh_pk: &DHPublicKey,
         responder_ephemeral_ecdh_sk: &DHPrivateKey,
         initiator_ephemeral_ecdh_pk: &DHPublicKey,
-    ) -> Result<(Transcript, AEADKey), Error> {
+    ) -> Result<(Transcript, AEADKeyNonce), Error> {
         let tx2 = tx2(tx0, responder_ephemeral_ecdh_pk)?;
         let k2 = derive_k2_query_responder(
             k0,
@@ -120,6 +120,7 @@ impl<'a, Rng: CryptoRng> Responder<'a, Rng> {
             responder_ephemeral_ecdh_sk,
             &self.ciphersuite.kex.sk,
             &tx2,
+            AEAD::ChaCha20Poly1305,
         )?;
 
         Ok((tx2, k2))
@@ -128,13 +129,14 @@ impl<'a, Rng: CryptoRng> Responder<'a, Rng> {
     fn decrypt_outer_message(
         &self,
         initiator_outer_message: &HandshakeMessage,
-    ) -> Result<(InitiatorOuterPayload, Transcript, AEADKey), Error> {
+    ) -> Result<(InitiatorOuterPayload, Transcript, AEADKeyNonce), Error> {
         let (tx0, mut k0) = derive_k0(
             &initiator_outer_message.pk,
             &self.ciphersuite.kex.pk,
             &self.ciphersuite.kex.sk,
             self.context,
             true,
+            self.ciphersuite.aead_type(),
         )?;
 
         let initiator_payload: InitiatorOuterPayload = k0.decrypt_deserialize(
@@ -149,13 +151,13 @@ impl<'a, Rng: CryptoRng> Responder<'a, Rng> {
     fn decrypt_inner_message(
         &self,
         tx0: &Transcript,
-        k0: &AEADKey,
+        k0: &AEADKeyNonce,
         initiator_inner_message: &InnerMessage,
     ) -> Result<
         (
             InitiatorInnerPayload,
             Transcript,
-            AEADKey,
+            AEADKeyNonce,
             Authenticator,
             bool,
         ),
@@ -191,8 +193,14 @@ impl<'a, Rng: CryptoRng> Responder<'a, Rng> {
                     .map(|enc| self.ciphersuite.pq_decapsulate(enc))
                     .transpose()?;
 
-                let mut k1 =
-                    derive_k1_dh(k0, &self.ciphersuite.kex.sk, pk, pq_shared_secret, &tx1)?;
+                let mut k1 = derive_k1_dh(
+                    k0,
+                    &self.ciphersuite.kex.sk,
+                    pk,
+                    pq_shared_secret,
+                    &tx1,
+                    self.ciphersuite.aead_type(),
+                )?;
 
                 let inner_payload: InitiatorInnerPayload =
                     k1.decrypt_deserialize(ciphertext.as_slice(), tag, aad.as_slice())?;
@@ -242,7 +250,13 @@ impl<'a, Rng: CryptoRng> Responder<'a, Rng> {
                     .map(|enc| self.ciphersuite.pq_decapsulate(enc))
                     .transpose()?;
 
-                let mut k1 = derive_k1_sig(k0, pq_shared_secret, &tx1, signature)?;
+                let mut k1 = derive_k1_sig(
+                    k0,
+                    pq_shared_secret,
+                    &tx1,
+                    signature,
+                    self.ciphersuite.aead_type(),
+                )?;
 
                 let inner_payload: InitiatorInnerPayload =
                     k1.decrypt_deserialize(ciphertext.as_slice(), tag, aad.as_slice())?;
@@ -274,12 +288,14 @@ impl<'a, Rng: CryptoRng> Responder<'a, Rng> {
                 dhpublic_key,
                 &state.initiator_ephemeral_ecdh_pk,
                 &responder_ephemeral_ecdh_sk,
+                self.ciphersuite.aead_type(),
             )?,
             Authenticator::Sig(_) => derive_k2_registration_responder_sig(
                 &state.k1,
                 &tx2,
                 &state.initiator_ephemeral_ecdh_pk,
                 &responder_ephemeral_ecdh_sk,
+                self.ciphersuite.aead_type(),
             )?,
         };
 
@@ -491,6 +507,7 @@ impl<'a, Rng: CryptoRng> IntoSession for Responder<'a, Rng> {
                 None
             },
             false,
+            self.ciphersuite.aead_type(),
         )
     }
 
@@ -501,49 +518,52 @@ impl<'a, Rng: CryptoRng> IntoSession for Responder<'a, Rng> {
 
 // K2 = KDF(K1 | g^cy | g^xy, tx2)
 pub(super) fn derive_k2_registration_responder_dh(
-    k1: &AEADKey,
+    k1: &AEADKeyNonce,
     tx2: &Transcript,
     initiator_longterm_pk: &DHPublicKey,
     initiator_ephemeral_pk: &DHPublicKey,
     responder_ephemeral_sk: &DHPrivateKey,
-) -> Result<AEADKey, Error> {
+    aead_type: AEAD,
+) -> Result<AEADKeyNonce, Error> {
     let responder_ikm = K2IkmRegistrationDh {
         k1,
         g_cy: &DHSharedSecret::derive(responder_ephemeral_sk, initiator_longterm_pk)?,
         g_xy: &DHSharedSecret::derive(responder_ephemeral_sk, initiator_ephemeral_pk)?,
     };
 
-    Ok(AEADKey::new(&responder_ikm, tx2)?)
+    Ok(AEADKeyNonce::new(&responder_ikm, tx2, aead_type)?)
 }
 
 // K2 = KDF(K1 | g^xy, tx2)
 pub(super) fn derive_k2_registration_responder_sig(
-    k1: &AEADKey,
+    k1: &AEADKeyNonce,
     tx2: &Transcript,
     initiator_ephemeral_pk: &DHPublicKey,
     responder_ephemeral_sk: &DHPrivateKey,
-) -> Result<AEADKey, Error> {
+    aead_type: AEAD,
+) -> Result<AEADKeyNonce, Error> {
     let responder_ikm = K2IkmRegistrationSig {
         k1,
         g_xy: &DHSharedSecret::derive(responder_ephemeral_sk, initiator_ephemeral_pk)?,
     };
 
-    Ok(AEADKey::new(&responder_ikm, tx2)?)
+    Ok(AEADKeyNonce::new(&responder_ikm, tx2, aead_type)?)
 }
 
 // K2 = KDF(K0 | g^xs | g^xy, tx2)
 pub(super) fn derive_k2_query_responder(
-    k0: &AEADKey,
+    k0: &AEADKeyNonce,
     initiator_ephemeral_ecdh_pk: &DHPublicKey,
     responder_ephemeral_ecdh_sk: &DHPrivateKey,
     responder_longterm_ecdh_sk: &DHPrivateKey,
     tx2: &Transcript,
-) -> Result<AEADKey, Error> {
+    aead_type: AEAD,
+) -> Result<AEADKeyNonce, Error> {
     let responder_ikm = K2IkmQuery {
         k0,
         g_xs: &DHSharedSecret::derive(responder_longterm_ecdh_sk, initiator_ephemeral_ecdh_pk)?,
         g_xy: &DHSharedSecret::derive(responder_ephemeral_ecdh_sk, initiator_ephemeral_ecdh_pk)?,
     };
 
-    Ok(AEADKey::new(&responder_ikm, tx2)?)
+    Ok(AEADKeyNonce::new(&responder_ikm, tx2, aead_type)?)
 }

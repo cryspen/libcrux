@@ -14,7 +14,7 @@ use tls_codec::{
 use transport::Transport;
 
 use crate::{
-    aead::{AEADError, AEADKey},
+    aead::{AEADError, AEADKeyNonce, AEAD},
     handshake::{
         ciphersuite::types::PQEncapsulationKey, dhkem::DHPublicKey, transcript::Transcript,
         types::Authenticator,
@@ -99,6 +99,7 @@ pub struct Session {
     pub(crate) pk_binder: [u8; PK_BINDER_LEN],
     /// An increasing counter of derived secure channels
     pub(crate) channel_counter: u64,
+    pub(crate) aead_type: AEAD,
 }
 
 // pkBinder = KDF(skCS, g^c | g^s | [pkS])
@@ -145,13 +146,14 @@ impl Session {
     /// handshake.
     pub(crate) fn new(
         tx2: Transcript,
-        k2: AEADKey,
+        k2: AEADKeyNonce,
         initiator_authenticator: &Authenticator,
         responder_ecdh_pk: &DHPublicKey,
         responder_pq_pk: Option<PQEncapsulationKey>,
         is_initiator: bool,
+        aead_type: AEAD,
     ) -> Result<Self, SessionError> {
-        let session_key = derive_session_key(k2, tx2)?;
+        let session_key = derive_session_key(k2, tx2, aead_type)?;
         let pk_binder = derive_pk_binder(
             &session_key,
             initiator_authenticator,
@@ -167,6 +169,7 @@ impl Session {
             session_key,
             pk_binder,
             channel_counter: 0,
+            aead_type,
         })
     }
 

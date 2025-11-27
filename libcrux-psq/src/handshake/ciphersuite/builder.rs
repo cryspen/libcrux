@@ -6,6 +6,7 @@ use libcrux_ed25519::{SigningKey, VerificationKey};
 use libcrux_kem::{MlKem768PrivateKey, MlKem768PublicKey};
 use libcrux_ml_dsa::ml_dsa_65::{MLDSA65SigningKey, MLDSA65VerificationKey};
 
+use crate::aead::AEAD;
 #[cfg(feature = "classic-mceliece")]
 use crate::classic_mceliece::{PublicKey, SecretKey};
 use crate::handshake::{
@@ -291,11 +292,66 @@ impl<'a> CiphersuiteBuilder<'a> {
             }
         };
 
+        #[cfg(feature = "classic-mceliece")]
+        let aead_type = match self.name {
+            CiphersuiteName::X25519_NONE_X25519_CHACHA20POLY1305_HKDFSHA256
+            | CiphersuiteName::X25519_MLKEM768_X25519_CHACHA20POLY1305_HKDFSHA256
+            | CiphersuiteName::X25519_CLASSICMCELIECE_X25519_CHACHA20POLY1305_HKDFSHA256
+            | CiphersuiteName::X25519_NONE_ED25519_CHACHA20POLY1305_HKDFSHA256
+            | CiphersuiteName::X25519_MLKEM768_ED25519_CHACHA20POLY1305_HKDFSHA256
+            | CiphersuiteName::X25519_CLASSICMCELIECE_ED25519_CHACHA20POLY1305_HKDFSHA256
+            | CiphersuiteName::X25519_NONE_MLDSA65_CHACHA20POLY1305_HKDFSHA256
+            | CiphersuiteName::X25519_MLKEM768_MLDSA65_CHACHA20POLY1305_HKDFSHA256
+            | CiphersuiteName::X25519_CLASSICMCELIECE_MLDSA65_CHACHA20POLY1305_HKDFSHA256 => {
+                AEAD::ChaCha20Poly1305
+            }
+
+            CiphersuiteName::X25519_NONE_MLDSA65_AESGCM128_HKDFSHA256
+            | CiphersuiteName::X25519_MLKEM768_MLDSA65_AESGCM128_HKDFSHA256
+            | CiphersuiteName::X25519_CLASSICMCELIECE_MLDSA65_AESGCM128_HKDFSHA256
+            | CiphersuiteName::X25519_NONE_X25519_AESGCM128_HKDFSHA256
+            | CiphersuiteName::X25519_MLKEM768_X25519_AESGCM128_HKDFSHA256
+            | CiphersuiteName::X25519_CLASSICMCELIECE_X25519_AESGCM128_HKDFSHA256
+            | CiphersuiteName::X25519_NONE_ED25519_AESGCM128_HKDFSHA256
+            | CiphersuiteName::X25519_MLKEM768_ED25519_AESGCM128_HKDFSHA256
+            | CiphersuiteName::X25519_CLASSICMCELIECE_ED25519_AESGCM128_HKDFSHA256 => {
+                AEAD::AesGcm128
+            }
+        };
+        #[cfg(not(feature = "classic-mceliece"))]
+        let aead_type = match self.name {
+            CiphersuiteName::X25519_NONE_X25519_CHACHA20POLY1305_HKDFSHA256
+            | CiphersuiteName::X25519_MLKEM768_X25519_CHACHA20POLY1305_HKDFSHA256
+            | CiphersuiteName::X25519_NONE_ED25519_CHACHA20POLY1305_HKDFSHA256
+            | CiphersuiteName::X25519_MLKEM768_ED25519_CHACHA20POLY1305_HKDFSHA256
+            | CiphersuiteName::X25519_NONE_MLDSA65_CHACHA20POLY1305_HKDFSHA256
+            | CiphersuiteName::X25519_MLKEM768_MLDSA65_CHACHA20POLY1305_HKDFSHA256 => {
+                AEAD::ChaCha20Poly1305
+            }
+
+            CiphersuiteName::X25519_NONE_MLDSA65_AESGCM128_HKDFSHA256
+            | CiphersuiteName::X25519_MLKEM768_MLDSA65_AESGCM128_HKDFSHA256
+            | CiphersuiteName::X25519_NONE_X25519_AESGCM128_HKDFSHA256
+            | CiphersuiteName::X25519_MLKEM768_X25519_AESGCM128_HKDFSHA256
+            | CiphersuiteName::X25519_NONE_ED25519_AESGCM128_HKDFSHA256
+            | CiphersuiteName::X25519_MLKEM768_ED25519_AESGCM128_HKDFSHA256 => AEAD::AesGcm128,
+
+            CiphersuiteName::X25519_CLASSICMCELIECE_X25519_CHACHA20POLY1305_HKDFSHA256
+            | CiphersuiteName::X25519_CLASSICMCELIECE_ED25519_CHACHA20POLY1305_HKDFSHA256
+            | CiphersuiteName::X25519_CLASSICMCELIECE_MLDSA65_CHACHA20POLY1305_HKDFSHA256
+            | CiphersuiteName::X25519_CLASSICMCELIECE_MLDSA65_AESGCM128_HKDFSHA256
+            | CiphersuiteName::X25519_CLASSICMCELIECE_X25519_AESGCM128_HKDFSHA256
+            | CiphersuiteName::X25519_CLASSICMCELIECE_ED25519_AESGCM128_HKDFSHA256 => {
+                return Err(BuilderError::UnsupportedCiphersuite)
+            }
+        };
+
         Ok(InitiatorCiphersuite {
             name: self.name,
             kex,
             pq,
             auth,
+            aead_type,
         })
     }
 
@@ -355,10 +411,65 @@ impl<'a> CiphersuiteBuilder<'a> {
             }
         };
 
+        #[cfg(feature = "classic-mceliece")]
+        let aead_type = match self.name {
+            CiphersuiteName::X25519_NONE_X25519_CHACHA20POLY1305_HKDFSHA256
+            | CiphersuiteName::X25519_MLKEM768_X25519_CHACHA20POLY1305_HKDFSHA256
+            | CiphersuiteName::X25519_CLASSICMCELIECE_X25519_CHACHA20POLY1305_HKDFSHA256
+            | CiphersuiteName::X25519_NONE_ED25519_CHACHA20POLY1305_HKDFSHA256
+            | CiphersuiteName::X25519_MLKEM768_ED25519_CHACHA20POLY1305_HKDFSHA256
+            | CiphersuiteName::X25519_CLASSICMCELIECE_ED25519_CHACHA20POLY1305_HKDFSHA256
+            | CiphersuiteName::X25519_NONE_MLDSA65_CHACHA20POLY1305_HKDFSHA256
+            | CiphersuiteName::X25519_MLKEM768_MLDSA65_CHACHA20POLY1305_HKDFSHA256
+            | CiphersuiteName::X25519_CLASSICMCELIECE_MLDSA65_CHACHA20POLY1305_HKDFSHA256 => {
+                AEAD::ChaCha20Poly1305
+            }
+
+            CiphersuiteName::X25519_NONE_MLDSA65_AESGCM128_HKDFSHA256
+            | CiphersuiteName::X25519_MLKEM768_MLDSA65_AESGCM128_HKDFSHA256
+            | CiphersuiteName::X25519_CLASSICMCELIECE_MLDSA65_AESGCM128_HKDFSHA256
+            | CiphersuiteName::X25519_NONE_X25519_AESGCM128_HKDFSHA256
+            | CiphersuiteName::X25519_MLKEM768_X25519_AESGCM128_HKDFSHA256
+            | CiphersuiteName::X25519_CLASSICMCELIECE_X25519_AESGCM128_HKDFSHA256
+            | CiphersuiteName::X25519_NONE_ED25519_AESGCM128_HKDFSHA256
+            | CiphersuiteName::X25519_MLKEM768_ED25519_AESGCM128_HKDFSHA256
+            | CiphersuiteName::X25519_CLASSICMCELIECE_ED25519_AESGCM128_HKDFSHA256 => {
+                AEAD::AesGcm128
+            }
+        };
+        #[cfg(not(feature = "classic-mceliece"))]
+        let aead_type = match self.name {
+            CiphersuiteName::X25519_NONE_X25519_CHACHA20POLY1305_HKDFSHA256
+            | CiphersuiteName::X25519_MLKEM768_X25519_CHACHA20POLY1305_HKDFSHA256
+            | CiphersuiteName::X25519_NONE_ED25519_CHACHA20POLY1305_HKDFSHA256
+            | CiphersuiteName::X25519_MLKEM768_ED25519_CHACHA20POLY1305_HKDFSHA256
+            | CiphersuiteName::X25519_NONE_MLDSA65_CHACHA20POLY1305_HKDFSHA256
+            | CiphersuiteName::X25519_MLKEM768_MLDSA65_CHACHA20POLY1305_HKDFSHA256 => {
+                AEAD::ChaCha20Poly1305
+            }
+
+            CiphersuiteName::X25519_NONE_MLDSA65_AESGCM128_HKDFSHA256
+            | CiphersuiteName::X25519_MLKEM768_MLDSA65_AESGCM128_HKDFSHA256
+            | CiphersuiteName::X25519_NONE_X25519_AESGCM128_HKDFSHA256
+            | CiphersuiteName::X25519_MLKEM768_X25519_AESGCM128_HKDFSHA256
+            | CiphersuiteName::X25519_NONE_ED25519_AESGCM128_HKDFSHA256
+            | CiphersuiteName::X25519_MLKEM768_ED25519_AESGCM128_HKDFSHA256 => AEAD::AesGcm128,
+
+            CiphersuiteName::X25519_CLASSICMCELIECE_X25519_CHACHA20POLY1305_HKDFSHA256
+            | CiphersuiteName::X25519_CLASSICMCELIECE_ED25519_CHACHA20POLY1305_HKDFSHA256
+            | CiphersuiteName::X25519_CLASSICMCELIECE_MLDSA65_CHACHA20POLY1305_HKDFSHA256
+            | CiphersuiteName::X25519_CLASSICMCELIECE_MLDSA65_AESGCM128_HKDFSHA256
+            | CiphersuiteName::X25519_CLASSICMCELIECE_X25519_AESGCM128_HKDFSHA256
+            | CiphersuiteName::X25519_CLASSICMCELIECE_ED25519_AESGCM128_HKDFSHA256 => {
+                return Err(BuilderError::UnsupportedCiphersuite)
+            }
+        };
+
         Ok(ResponderCiphersuite {
             name: self.name,
             kex,
             pq,
+            aead_type,
         })
     }
 }

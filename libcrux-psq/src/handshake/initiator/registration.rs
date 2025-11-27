@@ -4,7 +4,7 @@ use rand::CryptoRng;
 use tls_codec::{Deserialize, Serialize, Size, VLByteSlice};
 
 use crate::{
-    aead::AEADKey,
+    aead::{AEADKeyNonce, AEAD},
     handshake::{
         ciphersuite::{initiator::InitiatorCiphersuite, traits::CiphersuiteBase},
         derive_k0, derive_k1_dh, derive_k1_sig,
@@ -31,13 +31,13 @@ pub struct RegistrationInitiator<'a, Rng: CryptoRng> {
 pub(crate) struct InitialState {
     initiator_ephemeral_keys: DHKeyPair,
     tx0: Transcript,
-    k0: AEADKey,
+    k0: AEADKeyNonce,
 }
 
 pub(crate) struct WaitingState {
     initiator_ephemeral_ecdh_sk: DHPrivateKey,
     tx1: Transcript,
-    k1: AEADKey,
+    k1: AEADKeyNonce,
 }
 
 #[derive(Default)]
@@ -66,6 +66,7 @@ impl<'a, Rng: CryptoRng> RegistrationInitiator<'a, Rng> {
             &initiator_ephemeral_keys.sk,
             ctx,
             false,
+            ciphersuite.aead_type(),
         )?;
 
         let state = RegistrationInitiatorState::Initial(
@@ -109,12 +110,14 @@ impl<'a, Rng: CryptoRng> Channel<Error> for RegistrationInitiator<'a, Rng> {
                     self.ciphersuite.pq.into(),
                     &pq_encapsulation_serialized,
                 )?;
+
                 let mut k1 = derive_k1_dh(
                     &state.k0,
                     &dhkey_pair.sk,
                     &self.ciphersuite.kex,
                     pq_shared_secret,
                     &tx1,
+                    self.ciphersuite.aead_type(),
                 )?;
 
                 let inner_payload = InitiatorInnerPayloadOut(VLByteSlice(payload));
@@ -142,7 +145,13 @@ impl<'a, Rng: CryptoRng> Channel<Error> for RegistrationInitiator<'a, Rng> {
                     &pq_encapsulation_serialized,
                 )?;
                 let signature = self.ciphersuite.sign(&mut self.rng, &tx1)?;
-                let mut k1 = derive_k1_sig(&state.k0, pq_shared_secret, &tx1, &signature)?;
+                let mut k1 = derive_k1_sig(
+                    &state.k0,
+                    pq_shared_secret,
+                    &tx1,
+                    &signature,
+                    self.ciphersuite.aead_type(),
+                )?;
 
                 let inner_payload = InitiatorInnerPayloadOut(VLByteSlice(payload));
                 let (inner_ciphertext, inner_tag) =
@@ -213,6 +222,7 @@ impl<'a, Rng: CryptoRng> Channel<Error> for RegistrationInitiator<'a, Rng> {
                     &dhkey_pair.sk,
                     &state.initiator_ephemeral_ecdh_sk,
                     &responder_msg.pk,
+                    self.ciphersuite.aead_type,
                 )?
             }
             crate::handshake::ciphersuite::initiator::Auth::Sig(_) => {
@@ -221,6 +231,7 @@ impl<'a, Rng: CryptoRng> Channel<Error> for RegistrationInitiator<'a, Rng> {
                     &tx2,
                     &state.initiator_ephemeral_ecdh_sk,
                     &responder_msg.pk,
+                    self.ciphersuite.aead_type,
                 )?
             }
         };
@@ -261,6 +272,7 @@ impl<'a, Rng: CryptoRng> IntoSession for RegistrationInitiator<'a, Rng> {
             self.ciphersuite.peer_ecdh_encapsulation_key(),
             self.ciphersuite.peer_pq_encapsulation_key(),
             true,
+            self.ciphersuite.aead_type(),
         )
     }
 
@@ -271,32 +283,34 @@ impl<'a, Rng: CryptoRng> IntoSession for RegistrationInitiator<'a, Rng> {
 
 // K2 = KDF(K1 | g^cy | g^xy, tx2)
 pub(super) fn derive_k2_registration_initiator_dh(
-    k1: &AEADKey,
+    k1: &AEADKeyNonce,
     tx2: &Transcript,
     initiator_longterm_sk: &DHPrivateKey,
     initiator_ephemeral_sk: &DHPrivateKey,
     responder_ephemeral_pk: &DHPublicKey,
-) -> Result<AEADKey, Error> {
+    aead_type: AEAD,
+) -> Result<AEADKeyNonce, Error> {
     let responder_ikm = K2IkmRegistrationDh {
         k1,
         g_cy: &DHSharedSecret::derive(initiator_longterm_sk, responder_ephemeral_pk)?,
         g_xy: &DHSharedSecret::derive(initiator_ephemeral_sk, responder_ephemeral_pk)?,
     };
 
-    AEADKey::new(&responder_ikm, tx2).map_err(|e| e.into())
+    AEADKeyNonce::new(&responder_ikm, tx2, aead_type).map_err(|e| e.into())
 }
 
 // K2 = KDF(K1 | g^xy, tx2)
 pub(super) fn derive_k2_registration_initiator_sig(
-    k1: &AEADKey,
+    k1: &AEADKeyNonce,
     tx2: &Transcript,
     initiator_ephemeral_sk: &DHPrivateKey,
     responder_ephemeral_pk: &DHPublicKey,
-) -> Result<AEADKey, Error> {
+    aead_type: AEAD,
+) -> Result<AEADKeyNonce, Error> {
     let responder_ikm = K2IkmRegistrationSig {
         k1,
         g_xy: &DHSharedSecret::derive(initiator_ephemeral_sk, responder_ephemeral_pk)?,
     };
 
-    AEADKey::new(&responder_ikm, tx2).map_err(|e| e.into())
+    AEADKeyNonce::new(&responder_ikm, tx2, aead_type).map_err(|e| e.into())
 }

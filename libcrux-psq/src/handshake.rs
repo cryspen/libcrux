@@ -63,7 +63,7 @@ use tls_codec::{TlsDeserialize, TlsSerialize, TlsSerializeBytes, TlsSize, VLByte
 use transcript::Transcript;
 
 use crate::{
-    aead::{AEADError, AEADKey},
+    aead::{AEADError, AEADKeyNonce, AEAD},
     handshake::{
         ciphersuite::{types::PQSharedSecret, CiphersuiteName},
         dhkem::{DHPrivateKey, DHPublicKey, DHSharedSecret},
@@ -82,7 +82,7 @@ pub(crate) mod ciphersuite;
 
 pub(crate) struct ToTransportState {
     pub(crate) tx2: Transcript,
-    pub(crate) k2: AEADKey,
+    pub(crate) k2: AEADKeyNonce,
     pub(crate) initiator_authenticator: Option<Authenticator>,
     pub(crate) pq: bool,
 }
@@ -183,7 +183,8 @@ pub(super) fn derive_k0(
     own_sk: &DHPrivateKey,
     ctx: &[u8],
     is_responder: bool,
-) -> Result<(Transcript, AEADKey), HandshakeError> {
+    aead_type: AEAD,
+) -> Result<(Transcript, AEADKeyNonce), HandshakeError> {
     #[derive(TlsSerializeBytes, TlsSize)]
     struct K0Ikm<'a> {
         g_xs: &'a DHSharedSecret,
@@ -198,47 +199,47 @@ pub(super) fn derive_k0(
         g_xs: &DHSharedSecret::derive(own_sk, peer_pk)?,
     };
 
-    Ok((tx0, AEADKey::new(&ikm, &tx0)?))
+    Ok((tx0, AEADKeyNonce::new(&ikm, &tx0, aead_type)?))
 }
 
 // K1 = KDF(K0 | g^cs | [SS], tx1)
 pub(super) fn derive_k1_dh(
-    k0: &AEADKey,
+    k0: &AEADKeyNonce,
     own_longterm_key: &DHPrivateKey,
     peer_longterm_pk: &DHPublicKey,
     pq_shared_secret: Option<PQSharedSecret>,
     tx1: &Transcript,
-) -> Result<AEADKey, HandshakeError> {
+    aead_type: AEAD,
+) -> Result<AEADKeyNonce, HandshakeError> {
     #[derive(TlsSerializeBytes, TlsSize)]
     struct K1IkmDh<'a> {
-        k0: &'a AEADKey,
+        k0: &'a AEADKeyNonce,
         ecdh_shared_secret: &'a DHSharedSecret,
         pq_shared_secret: Option<PQSharedSecret>,
     }
 
     let ecdh_shared_secret = DHSharedSecret::derive(own_longterm_key, peer_longterm_pk)?;
+    let ikm = K1IkmDh {
+        k0,
+        ecdh_shared_secret: &ecdh_shared_secret,
+        pq_shared_secret,
+    };
 
     // XXX: This makes clippy unhappy, but is a lifetime error for feature `classic-mceliece` if we return directlyr
-    Ok(AEADKey::new(
-        &K1IkmDh {
-            k0,
-            ecdh_shared_secret: &ecdh_shared_secret,
-            pq_shared_secret,
-        },
-        &tx1,
-    )?)
+    Ok(AEADKeyNonce::new(&ikm, &tx1, aead_type)?)
 }
 
 // K1 = KDF(K0 | [SS], tx1 | sig)
 pub(super) fn derive_k1_sig(
-    k0: &AEADKey,
+    k0: &AEADKeyNonce,
     pq_shared_secret: Option<PQSharedSecret>,
     tx1: &Transcript,
     signature: &Signature,
-) -> Result<AEADKey, HandshakeError> {
+    aead_type: AEAD,
+) -> Result<AEADKeyNonce, HandshakeError> {
     #[derive(TlsSerializeBytes, TlsSize)]
     struct K1IkmSig<'a> {
-        k0: &'a AEADKey,
+        k0: &'a AEADKeyNonce,
         pq_shared_secret: Option<PQSharedSecret>,
     }
     #[derive(TlsSerializeBytes, TlsSize)]
@@ -254,32 +255,33 @@ pub(super) fn derive_k1_sig(
     };
 
     // XXX: This makes clippy unhappy, but is a lifetime error for feature `classic-mceliece` if we return directlyr
-    Ok(AEADKey::new(
+    Ok(AEADKeyNonce::new(
         &K1IkmSig {
             k0,
             pq_shared_secret,
         },
         &K1InfoSig { tx1, signature_vec },
+        aead_type,
     )?)
 }
 
 #[derive(TlsSerializeBytes, TlsSize)]
 struct K2IkmQuery<'a> {
-    k0: &'a AEADKey,
+    k0: &'a AEADKeyNonce,
     g_xs: &'a DHSharedSecret,
     g_xy: &'a DHSharedSecret,
 }
 
 #[derive(TlsSerializeBytes, TlsSize)]
 struct K2IkmRegistrationDh<'a, 'b> {
-    k1: &'a AEADKey,
+    k1: &'a AEADKeyNonce,
     g_cy: &'b DHSharedSecret,
     g_xy: &'b DHSharedSecret,
 }
 
 #[derive(TlsSerializeBytes, TlsSize)]
 struct K2IkmRegistrationSig<'a, 'b> {
-    k1: &'a AEADKey,
+    k1: &'a AEADKeyNonce,
     g_xy: &'b DHSharedSecret,
 }
 

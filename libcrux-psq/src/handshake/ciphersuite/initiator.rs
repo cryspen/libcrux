@@ -5,16 +5,19 @@ use tls_codec::SerializeBytes;
 
 #[cfg(feature = "classic-mceliece")]
 use crate::classic_mceliece::PublicKey;
-use crate::handshake::{
-    ciphersuite::{
-        traits::CiphersuiteBase,
-        types::{PQCiphertext, PQEncapsulationKey, PQSharedSecret},
-        CiphersuiteName,
+use crate::{
+    aead::AEAD,
+    handshake::{
+        ciphersuite::{
+            traits::CiphersuiteBase,
+            types::{PQCiphertext, PQEncapsulationKey, PQSharedSecret},
+            CiphersuiteName,
+        },
+        dhkem::{DHKeyPair, DHPublicKey},
+        transcript::Transcript,
+        types::{SigVerificationKey, Signature},
+        HandshakeError,
     },
-    dhkem::{DHKeyPair, DHPublicKey},
-    transcript::Transcript,
-    types::{SigVerificationKey, Signature},
-    HandshakeError,
 };
 
 #[derive(Clone, Copy)]
@@ -105,6 +108,7 @@ pub struct InitiatorCiphersuite<'a> {
     pub(crate) kex: &'a DHPublicKey,
     pub(crate) pq: PqKemPublicKey<'a>,
     pub(crate) auth: Auth<'a>,
+    pub(crate) aead_type: AEAD,
 }
 
 impl<'a> CiphersuiteBase for InitiatorCiphersuite<'a> {
@@ -120,6 +124,10 @@ impl<'a> CiphersuiteBase for InitiatorCiphersuite<'a> {
 pub(crate) type PQOptionPair<A, B> = (Option<A>, Option<B>);
 
 impl<'a> InitiatorCiphersuite<'a> {
+    pub(crate) fn aead_type(&self) -> AEAD {
+        self.aead_type
+    }
+
     pub(crate) fn sign(
         &self,
         rng: &mut impl CryptoRng,

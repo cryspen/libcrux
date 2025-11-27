@@ -4,7 +4,7 @@ use rand::CryptoRng;
 use tls_codec::{Deserialize, Serialize, Size, VLByteSlice};
 
 use crate::{
-    aead::AEADKey,
+    aead::{AEADKeyNonce, AEAD},
     handshake::{
         ciphersuite::CiphersuiteName,
         derive_k0,
@@ -22,25 +22,25 @@ pub struct QueryInitiator<'a> {
     responder_longterm_ecdh_pk: &'a DHPublicKey,
     initiator_ephemeral_keys: DHKeyPair,
     tx0: Transcript,
-    k0: AEADKey,
+    k0: AEADKeyNonce,
     outer_aad: &'a [u8],
 }
 
 // K2 = KDF(K0 | g^xs | g^xy, tx2)
 fn derive_k2_query_initiator(
-    k0: &AEADKey,
+    k0: &AEADKeyNonce,
     responder_ephemeral_ecdh_pk: &DHPublicKey,
     initiator_ephemeral_ecdh_sk: &DHPrivateKey,
     responder_longterm_ecdh_pk: &DHPublicKey,
     tx2: &Transcript,
-) -> Result<AEADKey, Error> {
+) -> Result<AEADKeyNonce, Error> {
     let initiator_ikm = K2IkmQuery {
         k0,
         g_xs: &DHSharedSecret::derive(initiator_ephemeral_ecdh_sk, responder_longterm_ecdh_pk)?,
         g_xy: &DHSharedSecret::derive(initiator_ephemeral_ecdh_sk, responder_ephemeral_ecdh_pk)?,
     };
 
-    AEADKey::new(&initiator_ikm, tx2).map_err(|e| e.into())
+    AEADKeyNonce::new(&initiator_ikm, tx2, AEAD::ChaCha20Poly1305).map_err(|e| e.into())
 }
 
 impl<'a> QueryInitiator<'a> {
@@ -59,6 +59,7 @@ impl<'a> QueryInitiator<'a> {
             &initiator_ephemeral_keys.sk,
             ctx,
             false,
+            AEAD::ChaCha20Poly1305,
         )?;
 
         Ok(Self {

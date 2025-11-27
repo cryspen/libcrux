@@ -3,16 +3,19 @@ use tls_codec::SerializeBytes;
 
 #[cfg(feature = "classic-mceliece")]
 use crate::classic_mceliece::{PublicKey, SecretKey};
-use crate::handshake::{
-    ciphersuite::{
-        traits::CiphersuiteBase,
-        types::{PQCiphertext, PQEncapsulationKey, PQSharedSecret},
-        CiphersuiteName,
+use crate::{
+    aead::AEAD,
+    handshake::{
+        ciphersuite::{
+            traits::CiphersuiteBase,
+            types::{PQCiphertext, PQEncapsulationKey, PQSharedSecret},
+            CiphersuiteName,
+        },
+        dhkem::DHKeyPair,
+        transcript::Transcript,
+        types::{SigVerificationKey, Signature},
+        HandshakeError,
     },
-    dhkem::DHKeyPair,
-    transcript::Transcript,
-    types::{SigVerificationKey, Signature},
-    HandshakeError,
 };
 
 pub(crate) enum PqKemKeyPair<'a> {
@@ -63,6 +66,7 @@ pub struct ResponderCiphersuite<'a> {
     pub(crate) name: CiphersuiteName,
     pub(crate) kex: &'a DHKeyPair,
     pub(crate) pq: PqKemKeyPair<'a>,
+    pub(crate) aead_type: AEAD,
 }
 
 impl<'a> CiphersuiteBase for ResponderCiphersuite<'a> {
@@ -146,6 +150,9 @@ impl<'a> CiphersuiteBase for ResponderCiphersuite<'a> {
     // }
 }
 impl<'a> ResponderCiphersuite<'a> {
+    pub(crate) fn aead_type(&self) -> AEAD {
+        self.aead_type
+    }
     pub(crate) fn verify(
         &self,
         vk: &SigVerificationKey,
