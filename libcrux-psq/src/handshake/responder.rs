@@ -62,7 +62,7 @@ pub(crate) enum ResponderState {
 pub struct Responder<'a, Rng: CryptoRng> {
     pub(crate) state: ResponderState,
     ciphersuite: ResponderCiphersuite<'a>,
-    working_ciphersuite: CiphersuiteName,
+    working_ciphersuite: Option<CiphersuiteName>,
     recent_keys: VecDeque<DHPublicKey>,
     recent_keys_upper_bound: usize,
     context: &'a [u8],
@@ -84,7 +84,44 @@ pub struct ResponderRegistrationPayload(pub VLBytes);
 pub struct ResponderRegistrationPayloadOut<'a>(VLByteSlice<'a>);
 
 impl<'a, Rng: CryptoRng> Responder<'a, Rng> {
-    pub fn new(
+    /// Returns the most recent initiator authenticator for out-of-band verification, if any.
+    ///
+    /// A responder in it's initial state or a responder that has processed an
+    /// initiator query message returns `None`, as it does not have an
+    /// initiator authenticator.
+    ///
+    /// A responder that has processed a registration initiator's first
+    /// message will respond with the authenticator included in the message by
+    /// the initiator:
+    ///
+    /// - For DH-based authentication, this will be the long-term ECDH public
+    ///   key `pk_I` provided by the initiator. If the authenticator continues the
+    ///   handshake, `pk_I` will be part of the session key derivation.
+    /// - For signature-based authentication, this will be the signature verification
+    ///   key `vk_I` provided by the initiator. At this point of the handshake the
+    ///   initiator has provided a valid signature of the running handshake
+    ///   transcript (`tx1`) under `vk_I`. If the authenticator continues the
+    ///   handshake, `vk_I` will be part of the session key derivation.
+    pub fn initiator_authenticator(&self) -> Option<&Authenticator> {
+        match &self.state {
+            ResponderState::InProgress
+            | ResponderState::Initial
+            | ResponderState::RespondQuery(_) => None,
+            ResponderState::RespondRegistration(state) => Some(&state.initiator_authenticator),
+            ResponderState::ToTransport(state) => state.initiator_authenticator.as_ref(),
+        }
+    }
+
+    /// Abort an in-progress handshake.
+    ///
+    /// At any point in the handshake, the responder state can be
+    /// reset to abort the handshake.
+    pub fn abort_handshake(&mut self) {
+        self.state = ResponderState::Initial {};
+        self.working_ciphersuite = None;
+    }
+
+    pub(crate) fn new(
         ciphersuite: ResponderCiphersuite<'a>,
         context: &'a [u8],
         aad: &'a [u8],
@@ -95,7 +132,7 @@ impl<'a, Rng: CryptoRng> Responder<'a, Rng> {
         Self {
             state: ResponderState::Initial {},
             ciphersuite,
-            working_ciphersuite: CiphersuiteName::query_ciphersuite(), // XXX: default value
+            working_ciphersuite: None,
             context,
             aad,
             rng,
@@ -163,6 +200,9 @@ impl<'a, Rng: CryptoRng> Responder<'a, Rng> {
         ),
         Error,
     > {
+        let Some(working_ciphersuite) = self.working_ciphersuite else {
+            return Err(Error::ResponderState);
+        };
         match initiator_inner_message {
             InnerMessage::DHAuth {
                 pk,
@@ -172,9 +212,8 @@ impl<'a, Rng: CryptoRng> Responder<'a, Rng> {
                 pq_encapsulation,
             } => {
                 // Whether we attempt to do a decapsulation is decided by the working ciphersuite.
-                let pq_encapsulation_deserialized = self
-                    .working_ciphersuite
-                    .deserialize_encapsulation(pq_encapsulation.as_ref())?;
+                let pq_encapsulation_deserialized =
+                    working_ciphersuite.deserialize_encapsulation(pq_encapsulation.as_ref())?;
 
                 let tx1 = tx1_dh(
                     tx0,
@@ -222,9 +261,8 @@ impl<'a, Rng: CryptoRng> Responder<'a, Rng> {
                 pq_encapsulation,
             } => {
                 // Whether we attempt to do a decapsulation is decided by the working ciphersuite.
-                let pq_encapsulation_deserialized = self
-                    .working_ciphersuite
-                    .deserialize_encapsulation(pq_encapsulation.as_ref())?;
+                let pq_encapsulation_deserialized =
+                    working_ciphersuite.deserialize_encapsulation(pq_encapsulation.as_ref())?;
 
                 let tx1 = tx1_sig(
                     tx0,
@@ -238,11 +276,6 @@ impl<'a, Rng: CryptoRng> Responder<'a, Rng> {
                 )?;
 
                 self.ciphersuite.verify(vk, &tx1, signature)?;
-
-                // Whether we attempt to do a decapsulation is decided by the working ciphersuite.
-                let pq_encapsulation_deserialized = self
-                    .working_ciphersuite
-                    .deserialize_encapsulation(pq_encapsulation.as_ref())?;
 
                 let pq_shared_secret = pq_encapsulation_deserialized
                     .as_ref()
@@ -302,12 +335,16 @@ impl<'a, Rng: CryptoRng> Responder<'a, Rng> {
         let outer_payload = ResponderRegistrationPayloadOut(VLByteSlice(payload));
         let (ciphertext, tag) = k2.serialize_encrypt(&outer_payload, self.aad)?;
 
+        let Some(working_ciphersuite) = self.working_ciphersuite else {
+            return Err(Error::ResponderState);
+        };
+
         let out_msg = HandshakeMessageOut {
             pk: &responder_ephemeral_ecdh_pk,
             ciphertext: VLByteSlice(&ciphertext),
             tag,
             aad: VLByteSlice(self.aad),
-            ciphersuite: self.working_ciphersuite,
+            ciphersuite: working_ciphersuite,
         };
 
         let out_len = out_msg
@@ -362,6 +399,7 @@ impl<'a, Rng: CryptoRng> Responder<'a, Rng> {
         Ok(out_msg.tls_serialized_len())
     }
 
+    /// Error or reset responder
     fn ciphersuite_mismatch(&mut self, bytes_deserialized: usize) -> Result<(usize, usize), Error> {
         if self.error_on_ciphersuite_mismatch {
             Err(Error::UnsupportedCiphersuite)
@@ -416,14 +454,12 @@ impl<'a, Rng: CryptoRng> Channel<Error> for Responder<'a, Rng> {
         let bytes_deserialized = initiator_outer_message.tls_serialized_len();
 
         // Set the working ciphersuite for this handshake.
-        self.working_ciphersuite = if let Some(ciphersuite) = initiator_outer_message
+        self.working_ciphersuite = initiator_outer_message
             .ciphersuite
-            .coerce_compatible(&self.ciphersuite)
-        {
-            ciphersuite
-        } else {
+            .coerce_compatible(&self.ciphersuite);
+        if self.working_ciphersuite.is_none() {
             return self.ciphersuite_mismatch(bytes_deserialized);
-        };
+        }
 
         // Check that the ephemeral key was not in the most recent keys.
         if self.recent_keys.contains(&initiator_outer_message.pk) {
