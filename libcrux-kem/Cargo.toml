@@ -18,10 +18,10 @@ path = "src/kem.rs"
 libcrux-ml-kem = { version = "=0.0.4", path = "../libcrux-ml-kem", default-features = false, features = [
     "default-no-std",
 ] }
-libcrux-sha3 = { version = "=0.0.4", path = "../libcrux-sha3" }
+libcrux-sha3 = { version = "=0.0.4", path = "../crates/algorithms/sha3" }
 libcrux-ecdh = { version = "=0.0.4", path = "../libcrux-ecdh", default-features = false }
-libcrux-curve25519 = { version = "=0.0.4", path = "../curve25519", default-features = false }
-libcrux-p256 = { version = "=0.0.4", path = "../p256", default-features = false }
+libcrux-curve25519 = { version = "=0.0.4", path = "../crates/algorithms/curve25519", default-features = false }
+libcrux-p256 = { version = "=0.0.4", path = "../crates/algorithms/p256", default-features = false }
 libcrux-traits = { version = "=0.0.4", path = "../traits" }
 rand = { version = "0.9", default-features = false }
 tls_codec = { version = "0.4.2", features = [

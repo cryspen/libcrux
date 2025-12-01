@@ -22,4 +22,4 @@ alloc = []
 
 [dependencies]
 rand = { version = "0.9", default-features = false }
-libcrux-secrets = { version = "=0.0.4", path = "../secrets" }
+libcrux-secrets = { version = "=0.0.4", path = "../crates/utils/secrets" }

@@ -79,6 +79,7 @@ pub(crate) fn serialize(simd_unit: &Coefficients, serialized: &mut [u8], gamma1_
 fn deserialize_when_gamma1_is_2_pow_17(serialized: &[u8], simd_unit: &mut Coefficients) {
     // Each set of 9 bytes deserializes to 4 elements, and since each PortableSIMDUnit
     // can hold 8, we process 18 bytes in this function.
+    #[cfg(not(eurydice))]
     debug_assert!(serialized.len() == 18);
 
     const GAMMA1: i32 = 1 << 17;
@@ -123,6 +124,7 @@ fn deserialize_when_gamma1_is_2_pow_17(serialized: &[u8], simd_unit: &mut Coeffi
 fn deserialize_when_gamma1_is_2_pow_19(serialized: &[u8], simd_unit: &mut Coefficients) {
     // Each set of 5 bytes deserializes to 2 elements, and since each PortableSIMDUnit
     // can hold 8, we process 5 * (8 / 2) = 20 bytes in this function.
+    #[cfg(not(eurydice))]
     debug_assert!(serialized.len() == 20);
 
     const GAMMA1: i32 = 1 << 19;

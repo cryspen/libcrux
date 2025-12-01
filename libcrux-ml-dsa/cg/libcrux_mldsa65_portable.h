@@ -4,18 +4,18 @@
  * SPDX-License-Identifier: MIT or Apache-2.0
  *
  * This code was generated with the following revisions:
- * Charon: 667d2fc98984ff7f3df989c2367e6c1fa4a000e7
- * Eurydice: 2381cbc416ef2ad0b561c362c500bc84f36b6785
- * Karamel: 80f5435f2fc505973c469a4afcc8d875cddd0d8b
- * F*: 71d8221589d4d438af3706d89cb653cf53e18aab
- * Libcrux: 4433a17f91aab0789f083de6c7fe08493e5998c8
+ * Charon: 146b7dce58cb11ca8010b1c947c3437a959dcd88
+ * Eurydice: cdf02f9d8ed0d73f88c0a495c5b79359a51398fc
+ * Karamel: 8e7262955105599e91f3a99c9ab3d3387f7046f2
+ * F*: unset
+ * Libcrux: 927ad3614c662733d7c77b6cd4304177fbd390a8
  */
 
 #ifndef libcrux_mldsa65_portable_H
 #define libcrux_mldsa65_portable_H
 
 #include "eurydice_glue.h"
-#include "libcrux_core.h"
+#include "libcrux_mldsa_core.h"
 #include "libcrux_sha3_portable.h"
 
 #define libcrux_ml_dsa_constants_Eta_Two 2
@@ -180,7 +180,7 @@ This function found in impl {core::clone::Clone for
 libcrux_ml_dsa::constants::Eta}
 */
 static inline libcrux_ml_dsa_constants_Eta libcrux_ml_dsa_constants_clone_54(
-    libcrux_ml_dsa_constants_Eta *self) {
+    const libcrux_ml_dsa_constants_Eta *self) {
   return self[0U];
 }
 
@@ -203,9 +203,8 @@ libcrux_ml_dsa_encoding_error_chunk_size(libcrux_ml_dsa_constants_Eta eta) {
 }
 
 static KRML_MUSTINLINE void libcrux_ml_dsa_encoding_signature_set_hint(
-    Eurydice_slice out_hint, size_t i, size_t j) {
-  Eurydice_slice_index(out_hint, i, int32_t[256U], int32_t(*)[256U])[j] =
-      (int32_t)1;
+    Eurydice_dst_ref_mut_59 out_hint, size_t i, size_t j) {
+  Eurydice_slice_index_mut(out_hint, i, Eurydice_arr_c3).data[j] = (int32_t)1;
 }
 
 #define LIBCRUX_ML_DSA_ENCODING_T0_OUTPUT_BYTES_PER_SIMD_UNIT ((size_t)13U)
@@ -216,28 +215,23 @@ static KRML_MUSTINLINE void libcrux_ml_dsa_encoding_signature_set_hint(
   ((size_t)10U)
 
 typedef struct libcrux_ml_dsa_hash_functions_portable_Shake128X4_s {
-  libcrux_sha3_generic_keccak_KeccakState_17 state0;
-  libcrux_sha3_generic_keccak_KeccakState_17 state1;
-  libcrux_sha3_generic_keccak_KeccakState_17 state2;
-  libcrux_sha3_generic_keccak_KeccakState_17 state3;
+  Eurydice_arr_26 state0;
+  Eurydice_arr_26 state1;
+  Eurydice_arr_26 state2;
+  Eurydice_arr_26 state3;
 } libcrux_ml_dsa_hash_functions_portable_Shake128X4;
 
 static KRML_MUSTINLINE libcrux_ml_dsa_hash_functions_portable_Shake128X4
-libcrux_ml_dsa_hash_functions_portable_init_absorb(Eurydice_slice input0,
-                                                   Eurydice_slice input1,
-                                                   Eurydice_slice input2,
-                                                   Eurydice_slice input3) {
-  libcrux_sha3_generic_keccak_KeccakState_17 state0 =
-      libcrux_sha3_portable_incremental_shake128_init();
+libcrux_ml_dsa_hash_functions_portable_init_absorb(
+    Eurydice_borrow_slice_u8 input0, Eurydice_borrow_slice_u8 input1,
+    Eurydice_borrow_slice_u8 input2, Eurydice_borrow_slice_u8 input3) {
+  Eurydice_arr_26 state0 = libcrux_sha3_portable_incremental_shake128_init();
   libcrux_sha3_portable_incremental_shake128_absorb_final(&state0, input0);
-  libcrux_sha3_generic_keccak_KeccakState_17 state1 =
-      libcrux_sha3_portable_incremental_shake128_init();
+  Eurydice_arr_26 state1 = libcrux_sha3_portable_incremental_shake128_init();
   libcrux_sha3_portable_incremental_shake128_absorb_final(&state1, input1);
-  libcrux_sha3_generic_keccak_KeccakState_17 state2 =
-      libcrux_sha3_portable_incremental_shake128_init();
+  Eurydice_arr_26 state2 = libcrux_sha3_portable_incremental_shake128_init();
   libcrux_sha3_portable_incremental_shake128_absorb_final(&state2, input2);
-  libcrux_sha3_generic_keccak_KeccakState_17 state3 =
-      libcrux_sha3_portable_incremental_shake128_init();
+  Eurydice_arr_26 state3 = libcrux_sha3_portable_incremental_shake128_init();
   libcrux_sha3_portable_incremental_shake128_absorb_final(&state3, input3);
   return (libcrux_ml_dsa_hash_functions_portable_Shake128X4{state0, state1,
                                                             state2, state3});
@@ -246,197 +240,141 @@ libcrux_ml_dsa_hash_functions_portable_init_absorb(Eurydice_slice input0,
 typedef libcrux_sha3_portable_KeccakState
     libcrux_ml_dsa_hash_functions_portable_Shake256;
 
-static KRML_MUSTINLINE libcrux_sha3_generic_keccak_KeccakState_17
+static KRML_MUSTINLINE Eurydice_arr_26
 libcrux_ml_dsa_hash_functions_portable_init_absorb_final_shake256(
-    Eurydice_slice input) {
-  libcrux_sha3_generic_keccak_KeccakState_17 state =
-      libcrux_sha3_portable_incremental_shake256_init();
+    Eurydice_borrow_slice_u8 input) {
+  Eurydice_arr_26 state = libcrux_sha3_portable_incremental_shake256_init();
   libcrux_sha3_portable_incremental_shake256_absorb_final(&state, input);
   return state;
 }
 
 typedef struct libcrux_ml_dsa_hash_functions_portable_Shake256X4_s {
-  libcrux_sha3_generic_keccak_KeccakState_17 state0;
-  libcrux_sha3_generic_keccak_KeccakState_17 state1;
-  libcrux_sha3_generic_keccak_KeccakState_17 state2;
-  libcrux_sha3_generic_keccak_KeccakState_17 state3;
+  Eurydice_arr_26 state0;
+  Eurydice_arr_26 state1;
+  Eurydice_arr_26 state2;
+  Eurydice_arr_26 state3;
 } libcrux_ml_dsa_hash_functions_portable_Shake256X4;
 
 static KRML_MUSTINLINE libcrux_ml_dsa_hash_functions_portable_Shake256X4
-libcrux_ml_dsa_hash_functions_portable_init_absorb_x4(Eurydice_slice input0,
-                                                      Eurydice_slice input1,
-                                                      Eurydice_slice input2,
-                                                      Eurydice_slice input3) {
-  libcrux_sha3_generic_keccak_KeccakState_17 state0 =
-      libcrux_sha3_portable_incremental_shake256_init();
+libcrux_ml_dsa_hash_functions_portable_init_absorb_x4(
+    Eurydice_borrow_slice_u8 input0, Eurydice_borrow_slice_u8 input1,
+    Eurydice_borrow_slice_u8 input2, Eurydice_borrow_slice_u8 input3) {
+  Eurydice_arr_26 state0 = libcrux_sha3_portable_incremental_shake256_init();
   libcrux_sha3_portable_incremental_shake256_absorb_final(&state0, input0);
-  libcrux_sha3_generic_keccak_KeccakState_17 state1 =
-      libcrux_sha3_portable_incremental_shake256_init();
+  Eurydice_arr_26 state1 = libcrux_sha3_portable_incremental_shake256_init();
   libcrux_sha3_portable_incremental_shake256_absorb_final(&state1, input1);
-  libcrux_sha3_generic_keccak_KeccakState_17 state2 =
-      libcrux_sha3_portable_incremental_shake256_init();
+  Eurydice_arr_26 state2 = libcrux_sha3_portable_incremental_shake256_init();
   libcrux_sha3_portable_incremental_shake256_absorb_final(&state2, input2);
-  libcrux_sha3_generic_keccak_KeccakState_17 state3 =
-      libcrux_sha3_portable_incremental_shake256_init();
+  Eurydice_arr_26 state3 = libcrux_sha3_portable_incremental_shake256_init();
   libcrux_sha3_portable_incremental_shake256_absorb_final(&state3, input3);
   return (libcrux_ml_dsa_hash_functions_portable_Shake256X4{state0, state1,
                                                             state2, state3});
 }
 
 static KRML_MUSTINLINE void libcrux_ml_dsa_hash_functions_portable_shake128(
-    Eurydice_slice input, Eurydice_slice out) {
+    Eurydice_borrow_slice_u8 input, Eurydice_mut_borrow_slice_u8 out) {
   libcrux_sha3_portable_shake128(out, input);
 }
 
-static KRML_MUSTINLINE void
+static KRML_MUSTINLINE Eurydice_arr_3d
 libcrux_ml_dsa_hash_functions_portable_squeeze_first_block_shake256(
-    libcrux_sha3_generic_keccak_KeccakState_17 *state, uint8_t ret[136U]) {
-  uint8_t out[136U] = {0U};
+    Eurydice_arr_26 *state) {
+  Eurydice_arr_3d out = {{0U}};
   libcrux_sha3_portable_incremental_shake256_squeeze_first_block(
-      state, Eurydice_array_to_slice((size_t)136U, out, uint8_t));
-  memcpy(ret, out, (size_t)136U * sizeof(uint8_t));
+      state, Eurydice_array_to_slice_mut_d4(&out));
+  return out;
 }
 
-typedef struct uint8_t_136size_t__x4_s {
-  uint8_t fst[136U];
-  uint8_t snd[136U];
-  uint8_t thd[136U];
-  uint8_t f3[136U];
-} uint8_t_136size_t__x4;
+typedef struct Eurydice_arr_uint8_t___136size_t___x4_s {
+  Eurydice_arr_3d fst;
+  Eurydice_arr_3d snd;
+  Eurydice_arr_3d thd;
+  Eurydice_arr_3d f3;
+} Eurydice_arr_uint8_t___136size_t___x4;
 
-static KRML_MUSTINLINE uint8_t_136size_t__x4
+static KRML_MUSTINLINE Eurydice_arr_uint8_t___136size_t___x4
 libcrux_ml_dsa_hash_functions_portable_squeeze_first_block_x4(
     libcrux_ml_dsa_hash_functions_portable_Shake256X4 *state) {
-  uint8_t out0[136U] = {0U};
+  Eurydice_arr_3d out0 = {{0U}};
   libcrux_sha3_portable_incremental_shake256_squeeze_first_block(
-      &state->state0, Eurydice_array_to_slice((size_t)136U, out0, uint8_t));
-  uint8_t out1[136U] = {0U};
+      &state->state0, Eurydice_array_to_slice_mut_d4(&out0));
+  Eurydice_arr_3d out1 = {{0U}};
   libcrux_sha3_portable_incremental_shake256_squeeze_first_block(
-      &state->state1, Eurydice_array_to_slice((size_t)136U, out1, uint8_t));
-  uint8_t out2[136U] = {0U};
+      &state->state1, Eurydice_array_to_slice_mut_d4(&out1));
+  Eurydice_arr_3d out2 = {{0U}};
   libcrux_sha3_portable_incremental_shake256_squeeze_first_block(
-      &state->state2, Eurydice_array_to_slice((size_t)136U, out2, uint8_t));
-  uint8_t out3[136U] = {0U};
+      &state->state2, Eurydice_array_to_slice_mut_d4(&out2));
+  Eurydice_arr_3d out3 = {{0U}};
   libcrux_sha3_portable_incremental_shake256_squeeze_first_block(
-      &state->state3, Eurydice_array_to_slice((size_t)136U, out3, uint8_t));
-  /* Passing arrays by value in Rust generates a copy in C */
-  uint8_t copy_of_out0[136U];
-  memcpy(copy_of_out0, out0, (size_t)136U * sizeof(uint8_t));
-  /* Passing arrays by value in Rust generates a copy in C */
-  uint8_t copy_of_out1[136U];
-  memcpy(copy_of_out1, out1, (size_t)136U * sizeof(uint8_t));
-  /* Passing arrays by value in Rust generates a copy in C */
-  uint8_t copy_of_out2[136U];
-  memcpy(copy_of_out2, out2, (size_t)136U * sizeof(uint8_t));
-  /* Passing arrays by value in Rust generates a copy in C */
-  uint8_t copy_of_out3[136U];
-  memcpy(copy_of_out3, out3, (size_t)136U * sizeof(uint8_t));
-  uint8_t_136size_t__x4 lit;
-  memcpy(lit.fst, copy_of_out0, (size_t)136U * sizeof(uint8_t));
-  memcpy(lit.snd, copy_of_out1, (size_t)136U * sizeof(uint8_t));
-  memcpy(lit.thd, copy_of_out2, (size_t)136U * sizeof(uint8_t));
-  memcpy(lit.f3, copy_of_out3, (size_t)136U * sizeof(uint8_t));
-  return lit;
+      &state->state3, Eurydice_array_to_slice_mut_d4(&out3));
+  return (Eurydice_arr_uint8_t___136size_t___x4{out0, out1, out2, out3});
 }
 
 static KRML_MUSTINLINE void
 libcrux_ml_dsa_hash_functions_portable_squeeze_first_five_blocks(
-    libcrux_ml_dsa_hash_functions_portable_Shake128X4 *state, uint8_t *out0,
-    uint8_t *out1, uint8_t *out2, uint8_t *out3) {
+    libcrux_ml_dsa_hash_functions_portable_Shake128X4 *state,
+    Eurydice_arr_12 *out0, Eurydice_arr_12 *out1, Eurydice_arr_12 *out2,
+    Eurydice_arr_12 *out3) {
   libcrux_sha3_portable_incremental_shake128_squeeze_first_five_blocks(
-      &state->state0, Eurydice_array_to_slice((size_t)840U, out0, uint8_t));
+      &state->state0, Eurydice_array_to_slice_mut_a8(out0));
   libcrux_sha3_portable_incremental_shake128_squeeze_first_five_blocks(
-      &state->state1, Eurydice_array_to_slice((size_t)840U, out1, uint8_t));
+      &state->state1, Eurydice_array_to_slice_mut_a8(out1));
   libcrux_sha3_portable_incremental_shake128_squeeze_first_five_blocks(
-      &state->state2, Eurydice_array_to_slice((size_t)840U, out2, uint8_t));
+      &state->state2, Eurydice_array_to_slice_mut_a8(out2));
   libcrux_sha3_portable_incremental_shake128_squeeze_first_five_blocks(
-      &state->state3, Eurydice_array_to_slice((size_t)840U, out3, uint8_t));
+      &state->state3, Eurydice_array_to_slice_mut_a8(out3));
 }
 
-typedef struct uint8_t_168size_t__x4_s {
-  uint8_t fst[168U];
-  uint8_t snd[168U];
-  uint8_t thd[168U];
-  uint8_t f3[168U];
-} uint8_t_168size_t__x4;
+typedef struct Eurydice_arr_uint8_t___168size_t___x4_s {
+  Eurydice_arr_27 fst;
+  Eurydice_arr_27 snd;
+  Eurydice_arr_27 thd;
+  Eurydice_arr_27 f3;
+} Eurydice_arr_uint8_t___168size_t___x4;
 
-static KRML_MUSTINLINE uint8_t_168size_t__x4
+static KRML_MUSTINLINE Eurydice_arr_uint8_t___168size_t___x4
 libcrux_ml_dsa_hash_functions_portable_squeeze_next_block(
     libcrux_ml_dsa_hash_functions_portable_Shake128X4 *state) {
-  uint8_t out0[168U] = {0U};
+  Eurydice_arr_27 out0 = {{0U}};
   libcrux_sha3_portable_incremental_shake128_squeeze_next_block(
-      &state->state0, Eurydice_array_to_slice((size_t)168U, out0, uint8_t));
-  uint8_t out1[168U] = {0U};
+      &state->state0, Eurydice_array_to_slice_mut_7b(&out0));
+  Eurydice_arr_27 out1 = {{0U}};
   libcrux_sha3_portable_incremental_shake128_squeeze_next_block(
-      &state->state1, Eurydice_array_to_slice((size_t)168U, out1, uint8_t));
-  uint8_t out2[168U] = {0U};
+      &state->state1, Eurydice_array_to_slice_mut_7b(&out1));
+  Eurydice_arr_27 out2 = {{0U}};
   libcrux_sha3_portable_incremental_shake128_squeeze_next_block(
-      &state->state2, Eurydice_array_to_slice((size_t)168U, out2, uint8_t));
-  uint8_t out3[168U] = {0U};
+      &state->state2, Eurydice_array_to_slice_mut_7b(&out2));
+  Eurydice_arr_27 out3 = {{0U}};
   libcrux_sha3_portable_incremental_shake128_squeeze_next_block(
-      &state->state3, Eurydice_array_to_slice((size_t)168U, out3, uint8_t));
-  /* Passing arrays by value in Rust generates a copy in C */
-  uint8_t copy_of_out0[168U];
-  memcpy(copy_of_out0, out0, (size_t)168U * sizeof(uint8_t));
-  /* Passing arrays by value in Rust generates a copy in C */
-  uint8_t copy_of_out1[168U];
-  memcpy(copy_of_out1, out1, (size_t)168U * sizeof(uint8_t));
-  /* Passing arrays by value in Rust generates a copy in C */
-  uint8_t copy_of_out2[168U];
-  memcpy(copy_of_out2, out2, (size_t)168U * sizeof(uint8_t));
-  /* Passing arrays by value in Rust generates a copy in C */
-  uint8_t copy_of_out3[168U];
-  memcpy(copy_of_out3, out3, (size_t)168U * sizeof(uint8_t));
-  uint8_t_168size_t__x4 lit;
-  memcpy(lit.fst, copy_of_out0, (size_t)168U * sizeof(uint8_t));
-  memcpy(lit.snd, copy_of_out1, (size_t)168U * sizeof(uint8_t));
-  memcpy(lit.thd, copy_of_out2, (size_t)168U * sizeof(uint8_t));
-  memcpy(lit.f3, copy_of_out3, (size_t)168U * sizeof(uint8_t));
-  return lit;
+      &state->state3, Eurydice_array_to_slice_mut_7b(&out3));
+  return (Eurydice_arr_uint8_t___168size_t___x4{out0, out1, out2, out3});
 }
 
-static KRML_MUSTINLINE void
+static KRML_MUSTINLINE Eurydice_arr_3d
 libcrux_ml_dsa_hash_functions_portable_squeeze_next_block_shake256(
-    libcrux_sha3_generic_keccak_KeccakState_17 *state, uint8_t ret[136U]) {
-  uint8_t out[136U] = {0U};
+    Eurydice_arr_26 *state) {
+  Eurydice_arr_3d out = {{0U}};
   libcrux_sha3_portable_incremental_shake256_squeeze_next_block(
-      state, Eurydice_array_to_slice((size_t)136U, out, uint8_t));
-  memcpy(ret, out, (size_t)136U * sizeof(uint8_t));
+      state, Eurydice_array_to_slice_mut_d4(&out));
+  return out;
 }
 
-static KRML_MUSTINLINE uint8_t_136size_t__x4
+static KRML_MUSTINLINE Eurydice_arr_uint8_t___136size_t___x4
 libcrux_ml_dsa_hash_functions_portable_squeeze_next_block_x4(
     libcrux_ml_dsa_hash_functions_portable_Shake256X4 *state) {
-  uint8_t out0[136U] = {0U};
+  Eurydice_arr_3d out0 = {{0U}};
   libcrux_sha3_portable_incremental_shake256_squeeze_next_block(
-      &state->state0, Eurydice_array_to_slice((size_t)136U, out0, uint8_t));
-  uint8_t out1[136U] = {0U};
+      &state->state0, Eurydice_array_to_slice_mut_d4(&out0));
+  Eurydice_arr_3d out1 = {{0U}};
   libcrux_sha3_portable_incremental_shake256_squeeze_next_block(
-      &state->state1, Eurydice_array_to_slice((size_t)136U, out1, uint8_t));
-  uint8_t out2[136U] = {0U};
+      &state->state1, Eurydice_array_to_slice_mut_d4(&out1));
+  Eurydice_arr_3d out2 = {{0U}};
   libcrux_sha3_portable_incremental_shake256_squeeze_next_block(
-      &state->state2, Eurydice_array_to_slice((size_t)136U, out2, uint8_t));
-  uint8_t out3[136U] = {0U};
+      &state->state2, Eurydice_array_to_slice_mut_d4(&out2));
+  Eurydice_arr_3d out3 = {{0U}};
   libcrux_sha3_portable_incremental_shake256_squeeze_next_block(
-      &state->state3, Eurydice_array_to_slice((size_t)136U, out3, uint8_t));
-  /* Passing arrays by value in Rust generates a copy in C */
-  uint8_t copy_of_out0[136U];
-  memcpy(copy_of_out0, out0, (size_t)136U * sizeof(uint8_t));
-  /* Passing arrays by value in Rust generates a copy in C */
-  uint8_t copy_of_out1[136U];
-  memcpy(copy_of_out1, out1, (size_t)136U * sizeof(uint8_t));
-  /* Passing arrays by value in Rust generates a copy in C */
-  uint8_t copy_of_out2[136U];
-  memcpy(copy_of_out2, out2, (size_t)136U * sizeof(uint8_t));
-  /* Passing arrays by value in Rust generates a copy in C */
-  uint8_t copy_of_out3[136U];
-  memcpy(copy_of_out3, out3, (size_t)136U * sizeof(uint8_t));
-  uint8_t_136size_t__x4 lit;
-  memcpy(lit.fst, copy_of_out0, (size_t)136U * sizeof(uint8_t));
-  memcpy(lit.snd, copy_of_out1, (size_t)136U * sizeof(uint8_t));
-  memcpy(lit.thd, copy_of_out2, (size_t)136U * sizeof(uint8_t));
-  memcpy(lit.f3, copy_of_out3, (size_t)136U * sizeof(uint8_t));
-  return lit;
+      &state->state3, Eurydice_array_to_slice_mut_d4(&out3));
+  return (Eurydice_arr_uint8_t___136size_t___x4{out0, out1, out2, out3});
 }
 
 /**
@@ -444,7 +382,7 @@ This function found in impl {libcrux_ml_dsa::hash_functions::shake128::Xof for
 libcrux_ml_dsa::hash_functions::portable::Shake128}
 */
 static KRML_MUSTINLINE void libcrux_ml_dsa_hash_functions_portable_shake128_7b(
-    Eurydice_slice input, Eurydice_slice out) {
+    Eurydice_borrow_slice_u8 input, Eurydice_mut_borrow_slice_u8 out) {
   libcrux_ml_dsa_hash_functions_portable_shake128(input, out);
 }
 
@@ -453,10 +391,9 @@ This function found in impl {libcrux_ml_dsa::hash_functions::shake128::XofX4 for
 libcrux_ml_dsa::hash_functions::portable::Shake128X4}
 */
 static KRML_MUSTINLINE libcrux_ml_dsa_hash_functions_portable_Shake128X4
-libcrux_ml_dsa_hash_functions_portable_init_absorb_11(Eurydice_slice input0,
-                                                      Eurydice_slice input1,
-                                                      Eurydice_slice input2,
-                                                      Eurydice_slice input3) {
+libcrux_ml_dsa_hash_functions_portable_init_absorb_11(
+    Eurydice_borrow_slice_u8 input0, Eurydice_borrow_slice_u8 input1,
+    Eurydice_borrow_slice_u8 input2, Eurydice_borrow_slice_u8 input3) {
   return libcrux_ml_dsa_hash_functions_portable_init_absorb(input0, input1,
                                                             input2, input3);
 }
@@ -467,8 +404,9 @@ libcrux_ml_dsa::hash_functions::portable::Shake128X4}
 */
 static KRML_MUSTINLINE void
 libcrux_ml_dsa_hash_functions_portable_squeeze_first_five_blocks_11(
-    libcrux_ml_dsa_hash_functions_portable_Shake128X4 *self, uint8_t *out0,
-    uint8_t *out1, uint8_t *out2, uint8_t *out3) {
+    libcrux_ml_dsa_hash_functions_portable_Shake128X4 *self,
+    Eurydice_arr_12 *out0, Eurydice_arr_12 *out1, Eurydice_arr_12 *out2,
+    Eurydice_arr_12 *out3) {
   libcrux_ml_dsa_hash_functions_portable_squeeze_first_five_blocks(
       self, out0, out1, out2, out3);
 }
@@ -477,7 +415,7 @@ libcrux_ml_dsa_hash_functions_portable_squeeze_first_five_blocks_11(
 This function found in impl {libcrux_ml_dsa::hash_functions::shake128::XofX4 for
 libcrux_ml_dsa::hash_functions::portable::Shake128X4}
 */
-static KRML_MUSTINLINE uint8_t_168size_t__x4
+static KRML_MUSTINLINE Eurydice_arr_uint8_t___168size_t___x4
 libcrux_ml_dsa_hash_functions_portable_squeeze_next_block_11(
     libcrux_ml_dsa_hash_functions_portable_Shake128X4 *self) {
   return libcrux_ml_dsa_hash_functions_portable_squeeze_next_block(self);
@@ -487,9 +425,9 @@ libcrux_ml_dsa_hash_functions_portable_squeeze_next_block_11(
 This function found in impl {libcrux_ml_dsa::hash_functions::shake256::DsaXof
 for libcrux_ml_dsa::hash_functions::portable::Shake256}
 */
-static KRML_MUSTINLINE libcrux_sha3_generic_keccak_KeccakState_17
+static KRML_MUSTINLINE Eurydice_arr_26
 libcrux_ml_dsa_hash_functions_portable_init_absorb_final_61(
-    Eurydice_slice input) {
+    Eurydice_borrow_slice_u8 input) {
   return libcrux_ml_dsa_hash_functions_portable_init_absorb_final_shake256(
       input);
 }
@@ -498,21 +436,22 @@ libcrux_ml_dsa_hash_functions_portable_init_absorb_final_61(
 This function found in impl {libcrux_ml_dsa::hash_functions::shake256::DsaXof
 for libcrux_ml_dsa::hash_functions::portable::Shake256}
 */
-static KRML_MUSTINLINE void
+static KRML_MUSTINLINE Eurydice_arr_3d
 libcrux_ml_dsa_hash_functions_portable_squeeze_first_block_61(
-    libcrux_sha3_generic_keccak_KeccakState_17 *self, uint8_t ret[136U]) {
-  libcrux_ml_dsa_hash_functions_portable_squeeze_first_block_shake256(self,
-                                                                      ret);
+    Eurydice_arr_26 *self) {
+  return libcrux_ml_dsa_hash_functions_portable_squeeze_first_block_shake256(
+      self);
 }
 
 /**
 This function found in impl {libcrux_ml_dsa::hash_functions::shake256::DsaXof
 for libcrux_ml_dsa::hash_functions::portable::Shake256}
 */
-static KRML_MUSTINLINE void
+static KRML_MUSTINLINE Eurydice_arr_3d
 libcrux_ml_dsa_hash_functions_portable_squeeze_next_block_61(
-    libcrux_sha3_generic_keccak_KeccakState_17 *self, uint8_t ret[136U]) {
-  libcrux_ml_dsa_hash_functions_portable_squeeze_next_block_shake256(self, ret);
+    Eurydice_arr_26 *self) {
+  return libcrux_ml_dsa_hash_functions_portable_squeeze_next_block_shake256(
+      self);
 }
 
 typedef libcrux_sha3_portable_incremental_Shake256Xof
@@ -524,7 +463,7 @@ libcrux_ml_dsa::hash_functions::portable::Shake256Xof}
 */
 static inline void libcrux_ml_dsa_hash_functions_portable_absorb_26(
     libcrux_sha3_generic_keccak_xof_KeccakXofState_e2 *self,
-    Eurydice_slice input) {
+    Eurydice_borrow_slice_u8 input) {
   libcrux_sha3_portable_incremental_absorb_42(self, input);
 }
 
@@ -534,7 +473,7 @@ libcrux_ml_dsa::hash_functions::portable::Shake256Xof}
 */
 static inline void libcrux_ml_dsa_hash_functions_portable_absorb_final_26(
     libcrux_sha3_generic_keccak_xof_KeccakXofState_e2 *self,
-    Eurydice_slice input) {
+    Eurydice_borrow_slice_u8 input) {
   libcrux_sha3_portable_incremental_absorb_final_42(self, input);
 }
 
@@ -553,7 +492,7 @@ libcrux_ml_dsa::hash_functions::portable::Shake256Xof}
 */
 static inline void libcrux_ml_dsa_hash_functions_portable_squeeze_26(
     libcrux_sha3_generic_keccak_xof_KeccakXofState_e2 *self,
-    Eurydice_slice out) {
+    Eurydice_mut_borrow_slice_u8 out) {
   libcrux_sha3_portable_incremental_squeeze_42(self, out);
 }
 
@@ -563,8 +502,8 @@ libcrux_ml_dsa::hash_functions::portable::Shake256X4}
 */
 static KRML_MUSTINLINE libcrux_ml_dsa_hash_functions_portable_Shake256X4
 libcrux_ml_dsa_hash_functions_portable_init_absorb_x4_9b(
-    Eurydice_slice input0, Eurydice_slice input1, Eurydice_slice input2,
-    Eurydice_slice input3) {
+    Eurydice_borrow_slice_u8 input0, Eurydice_borrow_slice_u8 input1,
+    Eurydice_borrow_slice_u8 input2, Eurydice_borrow_slice_u8 input3) {
   return libcrux_ml_dsa_hash_functions_portable_init_absorb_x4(input0, input1,
                                                                input2, input3);
 }
@@ -573,7 +512,7 @@ libcrux_ml_dsa_hash_functions_portable_init_absorb_x4_9b(
 This function found in impl {libcrux_ml_dsa::hash_functions::shake256::XofX4 for
 libcrux_ml_dsa::hash_functions::portable::Shake256X4}
 */
-static KRML_MUSTINLINE uint8_t_136size_t__x4
+static KRML_MUSTINLINE Eurydice_arr_uint8_t___136size_t___x4
 libcrux_ml_dsa_hash_functions_portable_squeeze_first_block_x4_9b(
     libcrux_ml_dsa_hash_functions_portable_Shake256X4 *self) {
   return libcrux_ml_dsa_hash_functions_portable_squeeze_first_block_x4(self);
@@ -583,7 +522,7 @@ libcrux_ml_dsa_hash_functions_portable_squeeze_first_block_x4_9b(
 This function found in impl {libcrux_ml_dsa::hash_functions::shake256::XofX4 for
 libcrux_ml_dsa::hash_functions::portable::Shake256X4}
 */
-static KRML_MUSTINLINE uint8_t_136size_t__x4
+static KRML_MUSTINLINE Eurydice_arr_uint8_t___136size_t___x4
 libcrux_ml_dsa_hash_functions_portable_squeeze_next_block_x4_9b(
     libcrux_ml_dsa_hash_functions_portable_Shake256X4 *self) {
   return libcrux_ml_dsa_hash_functions_portable_squeeze_next_block_x4(self);
@@ -596,32 +535,24 @@ libcrux_ml_dsa_hash_functions_portable_squeeze_next_block_x4_9b(
 
 #define LIBCRUX_ML_DSA_HASH_FUNCTIONS_SHAKE256_BLOCK_SIZE ((size_t)136U)
 
+static KRML_MUSTINLINE Eurydice_arr_a2
+libcrux_ml_dsa_sample_add_error_domain_separator(Eurydice_borrow_slice_u8 slice,
+                                                 uint16_t domain_separator) {
+  Eurydice_arr_a2 out = {{0U}};
+  Eurydice_arr_a2 *uu____0 = &out;
+  Eurydice_slice_copy(
+      Eurydice_array_to_subslice_mut_365(
+          uu____0, (core_ops_range_Range_08{
+                       (size_t)0U, Eurydice_slice_len(slice, uint8_t)})),
+      slice, uint8_t);
+  out.data[64U] = (uint8_t)domain_separator;
+  out.data[65U] = (uint8_t)((uint32_t)domain_separator >> 8U);
+  return out;
+}
+
 #define LIBCRUX_ML_DSA_ML_DSA_GENERIC_ML_DSA_65_ERROR_RING_ELEMENT_SIZE \
   (libcrux_ml_dsa_constants_error_ring_element_size(                    \
       LIBCRUX_ML_DSA_CONSTANTS_ML_DSA_65_BITS_PER_ERROR_COEFFICIENT))
-
-#define LIBCRUX_ML_DSA_ML_DSA_GENERIC_ML_DSA_65_SIGNING_KEY_SIZE \
-  (libcrux_ml_dsa_constants_signing_key_size(                    \
-      LIBCRUX_ML_DSA_CONSTANTS_ML_DSA_65_ROWS_IN_A,              \
-      LIBCRUX_ML_DSA_CONSTANTS_ML_DSA_65_COLUMNS_IN_A,           \
-      LIBCRUX_ML_DSA_ML_DSA_GENERIC_ML_DSA_65_ERROR_RING_ELEMENT_SIZE))
-
-#define LIBCRUX_ML_DSA_ML_DSA_GENERIC_ML_DSA_65_VERIFICATION_KEY_SIZE \
-  (libcrux_ml_dsa_constants_verification_key_size(                    \
-      LIBCRUX_ML_DSA_CONSTANTS_ML_DSA_65_ROWS_IN_A))
-
-static KRML_MUSTINLINE void libcrux_ml_dsa_sample_add_error_domain_separator(
-    Eurydice_slice slice, uint16_t domain_separator, uint8_t ret[66U]) {
-  uint8_t out[66U] = {0U};
-  uint8_t *uu____0 = out;
-  Eurydice_slice_copy(
-      Eurydice_array_to_subslice3(
-          uu____0, (size_t)0U, Eurydice_slice_len(slice, uint8_t), uint8_t *),
-      slice, uint8_t);
-  out[64U] = (uint8_t)domain_separator;
-  out[65U] = (uint8_t)((uint32_t)domain_separator >> 8U);
-  memcpy(ret, out, (size_t)66U * sizeof(uint8_t));
-}
 
 #define LIBCRUX_ML_DSA_SIMD_TRAITS_FIELD_MODULUS ((int32_t)8380417)
 
@@ -646,24 +577,41 @@ libcrux_ml_dsa_sample_generate_domain_separator(uint8_t_x2 _) {
   return (uint32_t)(uint16_t)column | (uint32_t)(uint16_t)row << 8U;
 }
 
-static KRML_MUSTINLINE void libcrux_ml_dsa_sample_add_domain_separator(
-    Eurydice_slice slice, uint8_t_x2 indices, uint8_t ret[34U]) {
-  uint8_t out[34U] = {0U};
-  uint8_t *uu____0 = out;
+static KRML_MUSTINLINE Eurydice_arr_48
+libcrux_ml_dsa_sample_add_domain_separator(Eurydice_borrow_slice_u8 slice,
+                                           uint8_t_x2 indices) {
+  Eurydice_arr_48 out = {{0U}};
+  Eurydice_arr_48 *uu____0 = &out;
   Eurydice_slice_copy(
-      Eurydice_array_to_subslice3(
-          uu____0, (size_t)0U, Eurydice_slice_len(slice, uint8_t), uint8_t *),
+      Eurydice_array_to_subslice_mut_366(
+          uu____0, (core_ops_range_Range_08{
+                       (size_t)0U, Eurydice_slice_len(slice, uint8_t)})),
       slice, uint8_t);
   uint16_t domain_separator =
       libcrux_ml_dsa_sample_generate_domain_separator(indices);
-  out[32U] = (uint8_t)domain_separator;
-  out[33U] = (uint8_t)((uint32_t)domain_separator >> 8U);
-  memcpy(ret, out, (size_t)34U * sizeof(uint8_t));
+  out.data[32U] = (uint8_t)domain_separator;
+  out.data[33U] = (uint8_t)((uint32_t)domain_separator >> 8U);
+  return out;
 }
 
+#define None 0
+#define Some 1
+
+typedef uint8_t Option_3b_tags;
+
+/**
+A monomorphic instance of core.option.Option
+with types Eurydice_arr uint8_t[[$11size_t]]
+
+*/
+typedef struct Option_3b_s {
+  Option_3b_tags tag;
+  Eurydice_arr_cb f0;
+} Option_3b;
+
 typedef struct libcrux_ml_dsa_pre_hash_DomainSeparationContext_s {
-  Eurydice_slice context;
-  Option_30 pre_hash_oid;
+  Eurydice_borrow_slice_u8 context;
+  Option_3b pre_hash_oid;
 } libcrux_ml_dsa_pre_hash_DomainSeparationContext;
 
 #define libcrux_ml_dsa_pre_hash_DomainSeparationError_ContextTooLongError 0
@@ -677,7 +625,7 @@ libcrux_ml_dsa_pre_hash_DomainSeparationError
 
 */
 typedef struct Result_a8_s {
-  Result_41_tags tag;
+  Result_a4_tags tag;
   union U {
     libcrux_ml_dsa_pre_hash_DomainSeparationContext case_Ok;
     libcrux_ml_dsa_pre_hash_DomainSeparationError case_Err;
@@ -692,8 +640,8 @@ typedef struct Result_a8_s {
 This function found in impl
 {libcrux_ml_dsa::pre_hash::DomainSeparationContext<'a>}
 */
-static inline Result_a8 libcrux_ml_dsa_pre_hash_new_88(Eurydice_slice context,
-                                                       Option_30 pre_hash_oid) {
+static inline Result_a8 libcrux_ml_dsa_pre_hash_new_88(
+    Eurydice_borrow_slice_u8 context, Option_3b pre_hash_oid) {
   if (!(Eurydice_slice_len(context, uint8_t) >
         LIBCRUX_ML_DSA_CONSTANTS_CONTEXT_MAX_LEN)) {
     return Result_a8_s(Ok, &Result_a8_s::U::case_Ok, {context, pre_hash_oid});
@@ -710,8 +658,8 @@ static inline Result_a8 libcrux_ml_dsa_pre_hash_new_88(Eurydice_slice context,
 This function found in impl
 {libcrux_ml_dsa::pre_hash::DomainSeparationContext<'a>}
 */
-static inline Option_30 *libcrux_ml_dsa_pre_hash_pre_hash_oid_88(
-    libcrux_ml_dsa_pre_hash_DomainSeparationContext *self) {
+static inline const Option_3b *libcrux_ml_dsa_pre_hash_pre_hash_oid_88(
+    const libcrux_ml_dsa_pre_hash_DomainSeparationContext *self) {
   return &self->pre_hash_oid;
 }
 
@@ -722,8 +670,8 @@ static inline Option_30 *libcrux_ml_dsa_pre_hash_pre_hash_oid_88(
 This function found in impl
 {libcrux_ml_dsa::pre_hash::DomainSeparationContext<'a>}
 */
-static inline Eurydice_slice libcrux_ml_dsa_pre_hash_context_88(
-    libcrux_ml_dsa_pre_hash_DomainSeparationContext *self) {
+static inline Eurydice_borrow_slice_u8 libcrux_ml_dsa_pre_hash_context_88(
+    const libcrux_ml_dsa_pre_hash_DomainSeparationContext *self) {
   return self->context;
 }
 
@@ -732,27 +680,26 @@ static inline Eurydice_slice libcrux_ml_dsa_pre_hash_context_88(
       LIBCRUX_ML_DSA_CONSTANTS_ML_DSA_65_BITS_PER_COMMITMENT_COEFFICIENT))
 
 static KRML_MUSTINLINE bool libcrux_ml_dsa_sample_inside_out_shuffle(
-    Eurydice_slice randomness, size_t *out_index, uint64_t *signs,
-    int32_t *result) {
+    Eurydice_borrow_slice_u8 randomness, size_t *out_index, uint64_t *signs,
+    Eurydice_arr_c3 *result) {
   bool done = false;
   for (size_t i = (size_t)0U; i < Eurydice_slice_len(randomness, uint8_t);
        i++) {
     size_t _cloop_j = i;
-    uint8_t *byte =
-        &Eurydice_slice_index(randomness, _cloop_j, uint8_t, uint8_t *);
+    const uint8_t *byte =
+        &Eurydice_slice_index_shared(randomness, _cloop_j, uint8_t);
     if (!done) {
       size_t sample_at = (size_t)byte[0U];
       if (sample_at <= out_index[0U]) {
-        result[out_index[0U]] = result[sample_at];
+        result->data[out_index[0U]] = result->data[sample_at];
         out_index[0U] = out_index[0U] + (size_t)1U;
-        result[sample_at] =
+        result->data[sample_at] =
             (int32_t)1 - (int32_t)2 * (int32_t)(signs[0U] & 1ULL);
         signs[0U] = signs[0U] >> 1U;
       }
       size_t uu____0 = out_index[0U];
-      done = uu____0 == Eurydice_slice_len(Eurydice_array_to_slice(
-                                               (size_t)256U, result, int32_t),
-                                           int32_t);
+      done = uu____0 == Eurydice_slice_len(
+                            Eurydice_array_to_slice_shared_20(result), int32_t);
     }
   }
   return done;
@@ -767,17 +714,20 @@ static KRML_MUSTINLINE bool libcrux_ml_dsa_sample_inside_out_shuffle(
   (libcrux_ml_dsa_constants_gamma1_ring_element_size(                    \
       LIBCRUX_ML_DSA_CONSTANTS_ML_DSA_65_BITS_PER_GAMMA1_COEFFICIENT))
 
-static const uint8_t libcrux_ml_dsa_pre_hash_SHAKE128_OID[11U] = {
-    6U, 9U, 96U, 134U, 72U, 1U, 101U, 3U, 4U, 2U, 11U};
+#define LIBCRUX_ML_DSA_PRE_HASH_SHAKE128_OID \
+  ((Eurydice_arr_cb{{6U, 9U, 96U, 134U, 72U, 1U, 101U, 3U, 4U, 2U, 11U}}))
 
 /**
 This function found in impl {libcrux_ml_dsa::pre_hash::PreHash for
 libcrux_ml_dsa::pre_hash::SHAKE128_PH}
 */
-static inline void libcrux_ml_dsa_pre_hash_oid_30(uint8_t ret[11U]) {
-  memcpy(ret, libcrux_ml_dsa_pre_hash_SHAKE128_OID,
-         (size_t)11U * sizeof(uint8_t));
+static inline Eurydice_arr_cb libcrux_ml_dsa_pre_hash_oid_30(void) {
+  return LIBCRUX_ML_DSA_PRE_HASH_SHAKE128_OID;
 }
+
+#define LIBCRUX_ML_DSA_ML_DSA_GENERIC_ML_DSA_65_VERIFICATION_KEY_SIZE \
+  (libcrux_ml_dsa_constants_verification_key_size(                    \
+      LIBCRUX_ML_DSA_CONSTANTS_ML_DSA_65_ROWS_IN_A))
 
 #define LIBCRUX_ML_DSA_ML_DSA_GENERIC_ML_DSA_65_SIGNATURE_SIZE \
   (libcrux_ml_dsa_constants_signature_size(                    \
@@ -787,33 +737,30 @@ static inline void libcrux_ml_dsa_pre_hash_oid_30(uint8_t ret[11U]) {
       LIBCRUX_ML_DSA_CONSTANTS_ML_DSA_65_COMMITMENT_HASH_SIZE, \
       LIBCRUX_ML_DSA_CONSTANTS_ML_DSA_65_BITS_PER_GAMMA1_COEFFICIENT))
 
-typedef struct libcrux_ml_dsa_simd_portable_vector_type_Coefficients_s {
-  int32_t values[8U];
-} libcrux_ml_dsa_simd_portable_vector_type_Coefficients;
+typedef Eurydice_arr_d4 libcrux_ml_dsa_simd_portable_vector_type_Coefficients;
 
-static KRML_MUSTINLINE libcrux_ml_dsa_simd_portable_vector_type_Coefficients
+static KRML_MUSTINLINE Eurydice_arr_d4
 libcrux_ml_dsa_simd_portable_vector_type_zero(void) {
-  return (libcrux_ml_dsa_simd_portable_vector_type_Coefficients{{0U}});
+  return (Eurydice_arr_d4{{0U}});
 }
 
 /**
 This function found in impl {libcrux_ml_dsa::simd::traits::Operations for
 libcrux_ml_dsa::simd::portable::vector_type::Coefficients}
 */
-static inline libcrux_ml_dsa_simd_portable_vector_type_Coefficients
-libcrux_ml_dsa_simd_portable_zero_65(void) {
+static inline Eurydice_arr_d4 libcrux_ml_dsa_simd_portable_zero_65(void) {
   return libcrux_ml_dsa_simd_portable_vector_type_zero();
 }
 
 static KRML_MUSTINLINE void
 libcrux_ml_dsa_simd_portable_vector_type_from_coefficient_array(
-    Eurydice_slice array,
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients *out) {
+    Eurydice_dst_ref_shared_fc array, Eurydice_arr_d4 *out) {
   Eurydice_slice_copy(
-      Eurydice_array_to_slice((size_t)8U, out->values, int32_t),
-      Eurydice_slice_subslice3(
-          array, (size_t)0U,
-          LIBCRUX_ML_DSA_SIMD_TRAITS_COEFFICIENTS_IN_SIMD_UNIT, int32_t *),
+      Eurydice_array_to_slice_mut_a7(out),
+      Eurydice_slice_subslice_shared_46(
+          array, (core_ops_range_Range_08{
+                     (size_t)0U,
+                     LIBCRUX_ML_DSA_SIMD_TRAITS_COEFFICIENTS_IN_SIMD_UNIT})),
       int32_t);
 }
 
@@ -822,18 +769,14 @@ This function found in impl {libcrux_ml_dsa::simd::traits::Operations for
 libcrux_ml_dsa::simd::portable::vector_type::Coefficients}
 */
 static inline void libcrux_ml_dsa_simd_portable_from_coefficient_array_65(
-    Eurydice_slice array,
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients *out) {
+    Eurydice_dst_ref_shared_fc array, Eurydice_arr_d4 *out) {
   libcrux_ml_dsa_simd_portable_vector_type_from_coefficient_array(array, out);
 }
 
 static KRML_MUSTINLINE void
 libcrux_ml_dsa_simd_portable_vector_type_to_coefficient_array(
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients *value,
-    Eurydice_slice out) {
-  Eurydice_slice_copy(
-      out, Eurydice_array_to_slice((size_t)8U, value->values, int32_t),
-      int32_t);
+    const Eurydice_arr_d4 *value, Eurydice_dst_ref_mut_fc out) {
+  Eurydice_slice_copy(out, Eurydice_array_to_slice_shared_a7(value), int32_t);
 }
 
 /**
@@ -841,22 +784,18 @@ This function found in impl {libcrux_ml_dsa::simd::traits::Operations for
 libcrux_ml_dsa::simd::portable::vector_type::Coefficients}
 */
 static inline void libcrux_ml_dsa_simd_portable_to_coefficient_array_65(
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients *value,
-    Eurydice_slice out) {
+    const Eurydice_arr_d4 *value, Eurydice_dst_ref_mut_fc out) {
   libcrux_ml_dsa_simd_portable_vector_type_to_coefficient_array(value, out);
 }
 
 static KRML_MUSTINLINE void libcrux_ml_dsa_simd_portable_arithmetic_add(
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients *lhs,
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients *rhs) {
+    Eurydice_arr_d4 *lhs, const Eurydice_arr_d4 *rhs) {
   for (size_t i = (size_t)0U;
-       i <
-       Eurydice_slice_len(
-           Eurydice_array_to_slice((size_t)8U, lhs->values, int32_t), int32_t);
+       i < Eurydice_slice_len(Eurydice_array_to_slice_shared_a7(lhs), int32_t);
        i++) {
     size_t i0 = i;
     size_t uu____0 = i0;
-    lhs->values[uu____0] = lhs->values[uu____0] + rhs->values[i0];
+    lhs->data[uu____0] = lhs->data[uu____0] + rhs->data[i0];
   }
 }
 
@@ -865,22 +804,18 @@ This function found in impl {libcrux_ml_dsa::simd::traits::Operations for
 libcrux_ml_dsa::simd::portable::vector_type::Coefficients}
 */
 static inline void libcrux_ml_dsa_simd_portable_add_65(
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients *lhs,
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients *rhs) {
+    Eurydice_arr_d4 *lhs, const Eurydice_arr_d4 *rhs) {
   libcrux_ml_dsa_simd_portable_arithmetic_add(lhs, rhs);
 }
 
 static KRML_MUSTINLINE void libcrux_ml_dsa_simd_portable_arithmetic_subtract(
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients *lhs,
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients *rhs) {
+    Eurydice_arr_d4 *lhs, const Eurydice_arr_d4 *rhs) {
   for (size_t i = (size_t)0U;
-       i <
-       Eurydice_slice_len(
-           Eurydice_array_to_slice((size_t)8U, lhs->values, int32_t), int32_t);
+       i < Eurydice_slice_len(Eurydice_array_to_slice_shared_a7(lhs), int32_t);
        i++) {
     size_t i0 = i;
     size_t uu____0 = i0;
-    lhs->values[uu____0] = lhs->values[uu____0] - rhs->values[i0];
+    lhs->data[uu____0] = lhs->data[uu____0] - rhs->data[i0];
   }
 }
 
@@ -889,23 +824,20 @@ This function found in impl {libcrux_ml_dsa::simd::traits::Operations for
 libcrux_ml_dsa::simd::portable::vector_type::Coefficients}
 */
 static inline void libcrux_ml_dsa_simd_portable_subtract_65(
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients *lhs,
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients *rhs) {
+    Eurydice_arr_d4 *lhs, const Eurydice_arr_d4 *rhs) {
   libcrux_ml_dsa_simd_portable_arithmetic_subtract(lhs, rhs);
 }
 
 static KRML_MUSTINLINE bool
 libcrux_ml_dsa_simd_portable_arithmetic_infinity_norm_exceeds(
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients *simd_unit,
-    int32_t bound) {
+    const Eurydice_arr_d4 *simd_unit, int32_t bound) {
   bool result = false;
   for (size_t i = (size_t)0U;
-       i < Eurydice_slice_len(
-               Eurydice_array_to_slice((size_t)8U, simd_unit->values, int32_t),
-               int32_t);
+       i < Eurydice_slice_len(Eurydice_array_to_slice_shared_a7(simd_unit),
+                              int32_t);
        i++) {
     size_t i0 = i;
-    int32_t coefficient = simd_unit->values[i0];
+    int32_t coefficient = simd_unit->data[i0];
     int32_t sign = coefficient >> 31U;
     int32_t normalized = coefficient - (sign & (int32_t)2 * coefficient);
     bool uu____0;
@@ -924,8 +856,7 @@ This function found in impl {libcrux_ml_dsa::simd::traits::Operations for
 libcrux_ml_dsa::simd::portable::vector_type::Coefficients}
 */
 static inline bool libcrux_ml_dsa_simd_portable_infinity_norm_exceeds_65(
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients *simd_unit,
-    int32_t bound) {
+    const Eurydice_arr_d4 *simd_unit, int32_t bound) {
   return libcrux_ml_dsa_simd_portable_arithmetic_infinity_norm_exceeds(
       simd_unit, bound);
 }
@@ -973,22 +904,18 @@ libcrux_ml_dsa_simd_portable_arithmetic_decompose_element(int32_t gamma2,
 }
 
 static KRML_MUSTINLINE void libcrux_ml_dsa_simd_portable_arithmetic_decompose(
-    int32_t gamma2,
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients *simd_unit,
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients *low,
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients *high) {
+    int32_t gamma2, const Eurydice_arr_d4 *simd_unit, Eurydice_arr_d4 *low,
+    Eurydice_arr_d4 *high) {
   for (size_t i = (size_t)0U;
-       i <
-       Eurydice_slice_len(
-           Eurydice_array_to_slice((size_t)8U, low->values, int32_t), int32_t);
+       i < Eurydice_slice_len(Eurydice_array_to_slice_shared_a7(low), int32_t);
        i++) {
     size_t i0 = i;
     int32_t_x2 uu____0 =
         libcrux_ml_dsa_simd_portable_arithmetic_decompose_element(
-            gamma2, simd_unit->values[i0]);
+            gamma2, simd_unit->data[i0]);
     int32_t uu____1 = uu____0.snd;
-    low->values[i0] = uu____0.fst;
-    high->values[i0] = uu____1;
+    low->data[i0] = uu____0.fst;
+    high->data[i0] = uu____1;
   }
 }
 
@@ -997,10 +924,8 @@ This function found in impl {libcrux_ml_dsa::simd::traits::Operations for
 libcrux_ml_dsa::simd::portable::vector_type::Coefficients}
 */
 static inline void libcrux_ml_dsa_simd_portable_decompose_65(
-    int32_t gamma2,
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients *simd_unit,
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients *low,
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients *high) {
+    int32_t gamma2, const Eurydice_arr_d4 *simd_unit, Eurydice_arr_d4 *low,
+    Eurydice_arr_d4 *high) {
   libcrux_ml_dsa_simd_portable_arithmetic_decompose(gamma2, simd_unit, low,
                                                     high);
 }
@@ -1028,19 +953,16 @@ libcrux_ml_dsa_simd_portable_arithmetic_compute_one_hint(int32_t low,
 
 static KRML_MUSTINLINE size_t
 libcrux_ml_dsa_simd_portable_arithmetic_compute_hint(
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients *low,
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients *high, int32_t gamma2,
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients *hint) {
+    const Eurydice_arr_d4 *low, const Eurydice_arr_d4 *high, int32_t gamma2,
+    Eurydice_arr_d4 *hint) {
   size_t one_hints_count = (size_t)0U;
   for (size_t i = (size_t)0U;
-       i <
-       Eurydice_slice_len(
-           Eurydice_array_to_slice((size_t)8U, hint->values, int32_t), int32_t);
+       i < Eurydice_slice_len(Eurydice_array_to_slice_shared_a7(hint), int32_t);
        i++) {
     size_t i0 = i;
-    hint->values[i0] = libcrux_ml_dsa_simd_portable_arithmetic_compute_one_hint(
-        low->values[i0], high->values[i0], gamma2);
-    one_hints_count = one_hints_count + (size_t)hint->values[i0];
+    hint->data[i0] = libcrux_ml_dsa_simd_portable_arithmetic_compute_one_hint(
+        low->data[i0], high->data[i0], gamma2);
+    one_hints_count = one_hints_count + (size_t)hint->data[i0];
   }
   return one_hints_count;
 }
@@ -1050,9 +972,8 @@ This function found in impl {libcrux_ml_dsa::simd::traits::Operations for
 libcrux_ml_dsa::simd::portable::vector_type::Coefficients}
 */
 static inline size_t libcrux_ml_dsa_simd_portable_compute_hint_65(
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients *low,
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients *high, int32_t gamma2,
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients *hint) {
+    const Eurydice_arr_d4 *low, const Eurydice_arr_d4 *high, int32_t gamma2,
+    Eurydice_arr_d4 *hint) {
   return libcrux_ml_dsa_simd_portable_arithmetic_compute_hint(low, high, gamma2,
                                                               hint);
 }
@@ -1101,18 +1022,14 @@ libcrux_ml_dsa_simd_portable_arithmetic_use_one_hint(int32_t gamma2, int32_t r,
 }
 
 static KRML_MUSTINLINE void libcrux_ml_dsa_simd_portable_arithmetic_use_hint(
-    int32_t gamma2,
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients *simd_unit,
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients *hint) {
+    int32_t gamma2, const Eurydice_arr_d4 *simd_unit, Eurydice_arr_d4 *hint) {
   for (size_t i = (size_t)0U;
-       i <
-       Eurydice_slice_len(
-           Eurydice_array_to_slice((size_t)8U, hint->values, int32_t), int32_t);
+       i < Eurydice_slice_len(Eurydice_array_to_slice_shared_a7(hint), int32_t);
        i++) {
     size_t i0 = i;
     int32_t uu____0 = libcrux_ml_dsa_simd_portable_arithmetic_use_one_hint(
-        gamma2, simd_unit->values[i0], hint->values[i0]);
-    hint->values[i0] = uu____0;
+        gamma2, simd_unit->data[i0], hint->data[i0]);
+    hint->data[i0] = uu____0;
   }
 }
 
@@ -1121,9 +1038,7 @@ This function found in impl {libcrux_ml_dsa::simd::traits::Operations for
 libcrux_ml_dsa::simd::portable::vector_type::Coefficients}
 */
 static inline void libcrux_ml_dsa_simd_portable_use_hint_65(
-    int32_t gamma2,
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients *simd_unit,
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients *hint) {
+    int32_t gamma2, const Eurydice_arr_d4 *simd_unit, Eurydice_arr_d4 *hint) {
   libcrux_ml_dsa_simd_portable_arithmetic_use_hint(gamma2, simd_unit, hint);
 }
 
@@ -1161,17 +1076,14 @@ libcrux_ml_dsa_simd_portable_arithmetic_montgomery_reduce_element(
 
 static KRML_MUSTINLINE void
 libcrux_ml_dsa_simd_portable_arithmetic_montgomery_multiply(
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients *lhs,
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients *rhs) {
+    Eurydice_arr_d4 *lhs, const Eurydice_arr_d4 *rhs) {
   for (size_t i = (size_t)0U;
-       i <
-       Eurydice_slice_len(
-           Eurydice_array_to_slice((size_t)8U, lhs->values, int32_t), int32_t);
+       i < Eurydice_slice_len(Eurydice_array_to_slice_shared_a7(lhs), int32_t);
        i++) {
     size_t i0 = i;
-    lhs->values[i0] =
+    lhs->data[i0] =
         libcrux_ml_dsa_simd_portable_arithmetic_montgomery_reduce_element(
-            (int64_t)lhs->values[i0] * (int64_t)rhs->values[i0]);
+            (int64_t)lhs->data[i0] * (int64_t)rhs->data[i0]);
   }
 }
 
@@ -1180,8 +1092,7 @@ This function found in impl {libcrux_ml_dsa::simd::traits::Operations for
 libcrux_ml_dsa::simd::portable::vector_type::Coefficients}
 */
 static inline void libcrux_ml_dsa_simd_portable_montgomery_multiply_65(
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients *lhs,
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients *rhs) {
+    Eurydice_arr_d4 *lhs, const Eurydice_arr_d4 *rhs) {
   libcrux_ml_dsa_simd_portable_arithmetic_montgomery_multiply(lhs, rhs);
 }
 
@@ -1206,20 +1117,17 @@ libcrux_ml_dsa_simd_portable_arithmetic_power2round_element(int32_t t) {
 }
 
 static KRML_MUSTINLINE void libcrux_ml_dsa_simd_portable_arithmetic_power2round(
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients *t0,
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients *t1) {
+    Eurydice_arr_d4 *t0, Eurydice_arr_d4 *t1) {
   for (size_t i = (size_t)0U;
-       i <
-       Eurydice_slice_len(
-           Eurydice_array_to_slice((size_t)8U, t0->values, int32_t), int32_t);
+       i < Eurydice_slice_len(Eurydice_array_to_slice_shared_a7(t0), int32_t);
        i++) {
     size_t i0 = i;
     int32_t_x2 uu____0 =
         libcrux_ml_dsa_simd_portable_arithmetic_power2round_element(
-            t0->values[i0]);
+            t0->data[i0]);
     int32_t uu____1 = uu____0.snd;
-    t0->values[i0] = uu____0.fst;
-    t1->values[i0] = uu____1;
+    t0->data[i0] = uu____0.fst;
+    t1->data[i0] = uu____1;
   }
 }
 
@@ -1228,27 +1136,26 @@ This function found in impl {libcrux_ml_dsa::simd::traits::Operations for
 libcrux_ml_dsa::simd::portable::vector_type::Coefficients}
 */
 static inline void libcrux_ml_dsa_simd_portable_power2round_65(
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients *t0,
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients *t1) {
+    Eurydice_arr_d4 *t0, Eurydice_arr_d4 *t1) {
   libcrux_ml_dsa_simd_portable_arithmetic_power2round(t0, t1);
 }
 
 static KRML_MUSTINLINE size_t
 libcrux_ml_dsa_simd_portable_sample_rejection_sample_less_than_field_modulus(
-    Eurydice_slice randomness, Eurydice_slice out) {
+    Eurydice_borrow_slice_u8 randomness, Eurydice_dst_ref_mut_fc out) {
   size_t sampled = (size_t)0U;
   for (size_t i = (size_t)0U;
        i < Eurydice_slice_len(randomness, uint8_t) / (size_t)3U; i++) {
     size_t i0 = i;
-    int32_t b0 = (int32_t)Eurydice_slice_index(randomness, i0 * (size_t)3U,
-                                               uint8_t, uint8_t *);
-    int32_t b1 = (int32_t)Eurydice_slice_index(
-        randomness, i0 * (size_t)3U + (size_t)1U, uint8_t, uint8_t *);
-    int32_t b2 = (int32_t)Eurydice_slice_index(
-        randomness, i0 * (size_t)3U + (size_t)2U, uint8_t, uint8_t *);
+    int32_t b0 = (int32_t)Eurydice_slice_index_shared(randomness,
+                                                      i0 * (size_t)3U, uint8_t);
+    int32_t b1 = (int32_t)Eurydice_slice_index_shared(
+        randomness, i0 * (size_t)3U + (size_t)1U, uint8_t);
+    int32_t b2 = (int32_t)Eurydice_slice_index_shared(
+        randomness, i0 * (size_t)3U + (size_t)2U, uint8_t);
     int32_t coefficient = ((b2 << 16U | b1 << 8U) | b0) & (int32_t)8388607;
     if (coefficient < LIBCRUX_ML_DSA_CONSTANTS_FIELD_MODULUS) {
-      Eurydice_slice_index(out, sampled, int32_t, int32_t *) = coefficient;
+      Eurydice_slice_index_mut(out, sampled, int32_t) = coefficient;
       sampled++;
     }
   }
@@ -1261,32 +1168,32 @@ libcrux_ml_dsa::simd::portable::vector_type::Coefficients}
 */
 static inline size_t
 libcrux_ml_dsa_simd_portable_rejection_sample_less_than_field_modulus_65(
-    Eurydice_slice randomness, Eurydice_slice out) {
+    Eurydice_borrow_slice_u8 randomness, Eurydice_dst_ref_mut_fc out) {
   return libcrux_ml_dsa_simd_portable_sample_rejection_sample_less_than_field_modulus(
       randomness, out);
 }
 
 static KRML_MUSTINLINE size_t
 libcrux_ml_dsa_simd_portable_sample_rejection_sample_less_than_eta_equals_2(
-    Eurydice_slice randomness, Eurydice_slice out) {
+    Eurydice_borrow_slice_u8 randomness, Eurydice_dst_ref_mut_fc out) {
   size_t sampled = (size_t)0U;
   for (size_t i = (size_t)0U; i < Eurydice_slice_len(randomness, uint8_t);
        i++) {
     size_t i0 = i;
-    uint8_t byte = Eurydice_slice_index(randomness, i0, uint8_t, uint8_t *);
+    uint8_t byte = Eurydice_slice_index_shared(randomness, i0, uint8_t);
     uint8_t try_0 = (uint32_t)byte & 15U;
     uint8_t try_1 = (uint32_t)byte >> 4U;
     if (try_0 < 15U) {
       int32_t try_00 = (int32_t)try_0;
       int32_t try_0_mod_5 = try_00 - (try_00 * (int32_t)26 >> 7U) * (int32_t)5;
-      Eurydice_slice_index(out, sampled, int32_t, int32_t *) =
+      Eurydice_slice_index_mut(out, sampled, int32_t) =
           (int32_t)2 - try_0_mod_5;
       sampled++;
     }
     if (try_1 < 15U) {
       int32_t try_10 = (int32_t)try_1;
       int32_t try_1_mod_5 = try_10 - (try_10 * (int32_t)26 >> 7U) * (int32_t)5;
-      Eurydice_slice_index(out, sampled, int32_t, int32_t *) =
+      Eurydice_slice_index_mut(out, sampled, int32_t) =
           (int32_t)2 - try_1_mod_5;
       sampled++;
     }
@@ -1300,28 +1207,28 @@ libcrux_ml_dsa::simd::portable::vector_type::Coefficients}
 */
 static inline size_t
 libcrux_ml_dsa_simd_portable_rejection_sample_less_than_eta_equals_2_65(
-    Eurydice_slice randomness, Eurydice_slice out) {
+    Eurydice_borrow_slice_u8 randomness, Eurydice_dst_ref_mut_fc out) {
   return libcrux_ml_dsa_simd_portable_sample_rejection_sample_less_than_eta_equals_2(
       randomness, out);
 }
 
 static KRML_MUSTINLINE size_t
 libcrux_ml_dsa_simd_portable_sample_rejection_sample_less_than_eta_equals_4(
-    Eurydice_slice randomness, Eurydice_slice out) {
+    Eurydice_borrow_slice_u8 randomness, Eurydice_dst_ref_mut_fc out) {
   size_t sampled = (size_t)0U;
   for (size_t i = (size_t)0U; i < Eurydice_slice_len(randomness, uint8_t);
        i++) {
     size_t i0 = i;
-    uint8_t byte = Eurydice_slice_index(randomness, i0, uint8_t, uint8_t *);
+    uint8_t byte = Eurydice_slice_index_shared(randomness, i0, uint8_t);
     uint8_t try_0 = (uint32_t)byte & 15U;
     uint8_t try_1 = (uint32_t)byte >> 4U;
     if (try_0 < 9U) {
-      Eurydice_slice_index(out, sampled, int32_t, int32_t *) =
+      Eurydice_slice_index_mut(out, sampled, int32_t) =
           (int32_t)4 - (int32_t)try_0;
       sampled++;
     }
     if (try_1 < 9U) {
-      Eurydice_slice_index(out, sampled, int32_t, int32_t *) =
+      Eurydice_slice_index_mut(out, sampled, int32_t) =
           (int32_t)4 - (int32_t)try_1;
       sampled++;
     }
@@ -1335,7 +1242,7 @@ libcrux_ml_dsa::simd::portable::vector_type::Coefficients}
 */
 static inline size_t
 libcrux_ml_dsa_simd_portable_rejection_sample_less_than_eta_equals_4_65(
-    Eurydice_slice randomness, Eurydice_slice out) {
+    Eurydice_borrow_slice_u8 randomness, Eurydice_dst_ref_mut_fc out) {
   return libcrux_ml_dsa_simd_portable_sample_rejection_sample_less_than_eta_equals_4(
       randomness, out);
 }
@@ -1345,39 +1252,39 @@ libcrux_ml_dsa_simd_portable_rejection_sample_less_than_eta_equals_4_65(
 
 static KRML_MUSTINLINE void
 libcrux_ml_dsa_simd_portable_encoding_gamma1_serialize_when_gamma1_is_2_pow_19(
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients *simd_unit,
-    Eurydice_slice serialized) {
+    const Eurydice_arr_d4 *simd_unit, Eurydice_mut_borrow_slice_u8 serialized) {
   for (size_t i = (size_t)0U;
-       i < Eurydice_slice_len(
-               Eurydice_array_to_slice((size_t)8U, simd_unit->values, int32_t),
-               int32_t) /
+       i < Eurydice_slice_len(Eurydice_array_to_slice_shared_a7(simd_unit),
+                              int32_t) /
                (size_t)2U;
        i++) {
     size_t i0 = i;
-    Eurydice_slice coefficients =
-        Eurydice_array_to_subslice3(simd_unit->values, i0 * (size_t)2U,
-                                    i0 * (size_t)2U + (size_t)2U, int32_t *);
+    Eurydice_dst_ref_shared_fc coefficients =
+        Eurydice_array_to_subslice_shared_7f(
+            simd_unit, (core_ops_range_Range_08{i0 * (size_t)2U,
+                                                i0 * (size_t)2U + (size_t)2U}));
     int32_t coefficient0 =
         LIBCRUX_ML_DSA_SIMD_PORTABLE_ENCODING_GAMMA1_SERIALIZE_WHEN_GAMMA1_IS_2_POW_19_GAMMA1 -
-        Eurydice_slice_index(coefficients, (size_t)0U, int32_t, int32_t *);
+        Eurydice_slice_index_shared(coefficients, (size_t)0U, int32_t);
     int32_t coefficient1 =
         LIBCRUX_ML_DSA_SIMD_PORTABLE_ENCODING_GAMMA1_SERIALIZE_WHEN_GAMMA1_IS_2_POW_19_GAMMA1 -
-        Eurydice_slice_index(coefficients, (size_t)1U, int32_t, int32_t *);
-    Eurydice_slice_index(serialized, (size_t)5U * i0, uint8_t, uint8_t *) =
+        Eurydice_slice_index_shared(coefficients, (size_t)1U, int32_t);
+    Eurydice_slice_index_mut(serialized, (size_t)5U * i0, uint8_t) =
         (uint8_t)coefficient0;
-    Eurydice_slice_index(serialized, (size_t)5U * i0 + (size_t)1U, uint8_t,
-                         uint8_t *) = (uint8_t)(coefficient0 >> 8U);
-    Eurydice_slice_index(serialized, (size_t)5U * i0 + (size_t)2U, uint8_t,
-                         uint8_t *) = (uint8_t)(coefficient0 >> 16U);
+    Eurydice_slice_index_mut(serialized, (size_t)5U * i0 + (size_t)1U,
+                             uint8_t) = (uint8_t)(coefficient0 >> 8U);
+    Eurydice_slice_index_mut(serialized, (size_t)5U * i0 + (size_t)2U,
+                             uint8_t) = (uint8_t)(coefficient0 >> 16U);
     size_t uu____0 = (size_t)5U * i0 + (size_t)2U;
-    Eurydice_slice_index(serialized, uu____0, uint8_t, uint8_t *) =
-        (uint32_t)Eurydice_slice_index(serialized, uu____0, uint8_t,
-                                       uint8_t *) |
+    Eurydice_slice_index_mut(serialized, uu____0, uint8_t) =
+        (uint32_t)Eurydice_slice_index_shared(
+            (Eurydice_borrow_slice_u8{serialized.ptr, serialized.meta}),
+            uu____0, uint8_t) |
         (uint32_t)(uint8_t)(coefficient1 << 4U);
-    Eurydice_slice_index(serialized, (size_t)5U * i0 + (size_t)3U, uint8_t,
-                         uint8_t *) = (uint8_t)(coefficient1 >> 4U);
-    Eurydice_slice_index(serialized, (size_t)5U * i0 + (size_t)4U, uint8_t,
-                         uint8_t *) = (uint8_t)(coefficient1 >> 12U);
+    Eurydice_slice_index_mut(serialized, (size_t)5U * i0 + (size_t)3U,
+                             uint8_t) = (uint8_t)(coefficient1 >> 4U);
+    Eurydice_slice_index_mut(serialized, (size_t)5U * i0 + (size_t)4U,
+                             uint8_t) = (uint8_t)(coefficient1 >> 12U);
   }
 }
 
@@ -1386,71 +1293,72 @@ libcrux_ml_dsa_simd_portable_encoding_gamma1_serialize_when_gamma1_is_2_pow_19(
 
 static KRML_MUSTINLINE void
 libcrux_ml_dsa_simd_portable_encoding_gamma1_serialize_when_gamma1_is_2_pow_17(
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients *simd_unit,
-    Eurydice_slice serialized) {
+    const Eurydice_arr_d4 *simd_unit, Eurydice_mut_borrow_slice_u8 serialized) {
   for (size_t i = (size_t)0U;
-       i < Eurydice_slice_len(
-               Eurydice_array_to_slice((size_t)8U, simd_unit->values, int32_t),
-               int32_t) /
+       i < Eurydice_slice_len(Eurydice_array_to_slice_shared_a7(simd_unit),
+                              int32_t) /
                (size_t)4U;
        i++) {
     size_t i0 = i;
-    Eurydice_slice coefficients =
-        Eurydice_array_to_subslice3(simd_unit->values, i0 * (size_t)4U,
-                                    i0 * (size_t)4U + (size_t)4U, int32_t *);
+    Eurydice_dst_ref_shared_fc coefficients =
+        Eurydice_array_to_subslice_shared_7f(
+            simd_unit, (core_ops_range_Range_08{i0 * (size_t)4U,
+                                                i0 * (size_t)4U + (size_t)4U}));
     int32_t coefficient0 =
         LIBCRUX_ML_DSA_SIMD_PORTABLE_ENCODING_GAMMA1_SERIALIZE_WHEN_GAMMA1_IS_2_POW_17_GAMMA1 -
-        Eurydice_slice_index(coefficients, (size_t)0U, int32_t, int32_t *);
+        Eurydice_slice_index_shared(coefficients, (size_t)0U, int32_t);
     int32_t coefficient1 =
         LIBCRUX_ML_DSA_SIMD_PORTABLE_ENCODING_GAMMA1_SERIALIZE_WHEN_GAMMA1_IS_2_POW_17_GAMMA1 -
-        Eurydice_slice_index(coefficients, (size_t)1U, int32_t, int32_t *);
+        Eurydice_slice_index_shared(coefficients, (size_t)1U, int32_t);
     int32_t coefficient2 =
         LIBCRUX_ML_DSA_SIMD_PORTABLE_ENCODING_GAMMA1_SERIALIZE_WHEN_GAMMA1_IS_2_POW_17_GAMMA1 -
-        Eurydice_slice_index(coefficients, (size_t)2U, int32_t, int32_t *);
+        Eurydice_slice_index_shared(coefficients, (size_t)2U, int32_t);
     int32_t coefficient3 =
         LIBCRUX_ML_DSA_SIMD_PORTABLE_ENCODING_GAMMA1_SERIALIZE_WHEN_GAMMA1_IS_2_POW_17_GAMMA1 -
-        Eurydice_slice_index(coefficients, (size_t)3U, int32_t, int32_t *);
-    Eurydice_slice_index(serialized, (size_t)9U * i0, uint8_t, uint8_t *) =
+        Eurydice_slice_index_shared(coefficients, (size_t)3U, int32_t);
+    Eurydice_slice_index_mut(serialized, (size_t)9U * i0, uint8_t) =
         (uint8_t)coefficient0;
-    Eurydice_slice_index(serialized, (size_t)9U * i0 + (size_t)1U, uint8_t,
-                         uint8_t *) = (uint8_t)(coefficient0 >> 8U);
-    Eurydice_slice_index(serialized, (size_t)9U * i0 + (size_t)2U, uint8_t,
-                         uint8_t *) = (uint8_t)(coefficient0 >> 16U);
+    Eurydice_slice_index_mut(serialized, (size_t)9U * i0 + (size_t)1U,
+                             uint8_t) = (uint8_t)(coefficient0 >> 8U);
+    Eurydice_slice_index_mut(serialized, (size_t)9U * i0 + (size_t)2U,
+                             uint8_t) = (uint8_t)(coefficient0 >> 16U);
     size_t uu____0 = (size_t)9U * i0 + (size_t)2U;
-    Eurydice_slice_index(serialized, uu____0, uint8_t, uint8_t *) =
-        (uint32_t)Eurydice_slice_index(serialized, uu____0, uint8_t,
-                                       uint8_t *) |
+    Eurydice_slice_index_mut(serialized, uu____0, uint8_t) =
+        (uint32_t)Eurydice_slice_index_shared(
+            (Eurydice_borrow_slice_u8{serialized.ptr, serialized.meta}),
+            uu____0, uint8_t) |
         (uint32_t)(uint8_t)(coefficient1 << 2U);
-    Eurydice_slice_index(serialized, (size_t)9U * i0 + (size_t)3U, uint8_t,
-                         uint8_t *) = (uint8_t)(coefficient1 >> 6U);
-    Eurydice_slice_index(serialized, (size_t)9U * i0 + (size_t)4U, uint8_t,
-                         uint8_t *) = (uint8_t)(coefficient1 >> 14U);
+    Eurydice_slice_index_mut(serialized, (size_t)9U * i0 + (size_t)3U,
+                             uint8_t) = (uint8_t)(coefficient1 >> 6U);
+    Eurydice_slice_index_mut(serialized, (size_t)9U * i0 + (size_t)4U,
+                             uint8_t) = (uint8_t)(coefficient1 >> 14U);
     size_t uu____1 = (size_t)9U * i0 + (size_t)4U;
-    Eurydice_slice_index(serialized, uu____1, uint8_t, uint8_t *) =
-        (uint32_t)Eurydice_slice_index(serialized, uu____1, uint8_t,
-                                       uint8_t *) |
+    Eurydice_slice_index_mut(serialized, uu____1, uint8_t) =
+        (uint32_t)Eurydice_slice_index_shared(
+            (Eurydice_borrow_slice_u8{serialized.ptr, serialized.meta}),
+            uu____1, uint8_t) |
         (uint32_t)(uint8_t)(coefficient2 << 4U);
-    Eurydice_slice_index(serialized, (size_t)9U * i0 + (size_t)5U, uint8_t,
-                         uint8_t *) = (uint8_t)(coefficient2 >> 4U);
-    Eurydice_slice_index(serialized, (size_t)9U * i0 + (size_t)6U, uint8_t,
-                         uint8_t *) = (uint8_t)(coefficient2 >> 12U);
+    Eurydice_slice_index_mut(serialized, (size_t)9U * i0 + (size_t)5U,
+                             uint8_t) = (uint8_t)(coefficient2 >> 4U);
+    Eurydice_slice_index_mut(serialized, (size_t)9U * i0 + (size_t)6U,
+                             uint8_t) = (uint8_t)(coefficient2 >> 12U);
     size_t uu____2 = (size_t)9U * i0 + (size_t)6U;
-    Eurydice_slice_index(serialized, uu____2, uint8_t, uint8_t *) =
-        (uint32_t)Eurydice_slice_index(serialized, uu____2, uint8_t,
-                                       uint8_t *) |
+    Eurydice_slice_index_mut(serialized, uu____2, uint8_t) =
+        (uint32_t)Eurydice_slice_index_shared(
+            (Eurydice_borrow_slice_u8{serialized.ptr, serialized.meta}),
+            uu____2, uint8_t) |
         (uint32_t)(uint8_t)(coefficient3 << 6U);
-    Eurydice_slice_index(serialized, (size_t)9U * i0 + (size_t)7U, uint8_t,
-                         uint8_t *) = (uint8_t)(coefficient3 >> 2U);
-    Eurydice_slice_index(serialized, (size_t)9U * i0 + (size_t)8U, uint8_t,
-                         uint8_t *) = (uint8_t)(coefficient3 >> 10U);
+    Eurydice_slice_index_mut(serialized, (size_t)9U * i0 + (size_t)7U,
+                             uint8_t) = (uint8_t)(coefficient3 >> 2U);
+    Eurydice_slice_index_mut(serialized, (size_t)9U * i0 + (size_t)8U,
+                             uint8_t) = (uint8_t)(coefficient3 >> 10U);
   }
 }
 
 static KRML_MUSTINLINE void
 libcrux_ml_dsa_simd_portable_encoding_gamma1_serialize(
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients *simd_unit,
-    Eurydice_slice serialized, size_t gamma1_exponent) {
-  void *uu____0 = (void *)0U;
+    const Eurydice_arr_d4 *simd_unit, Eurydice_mut_borrow_slice_u8 serialized,
+    size_t gamma1_exponent) {
   switch (gamma1_exponent) {
     case 17U: {
       break;
@@ -1475,8 +1383,8 @@ This function found in impl {libcrux_ml_dsa::simd::traits::Operations for
 libcrux_ml_dsa::simd::portable::vector_type::Coefficients}
 */
 static inline void libcrux_ml_dsa_simd_portable_gamma1_serialize_65(
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients *simd_unit,
-    Eurydice_slice serialized, size_t gamma1_exponent) {
+    const Eurydice_arr_d4 *simd_unit, Eurydice_mut_borrow_slice_u8 serialized,
+    size_t gamma1_exponent) {
   libcrux_ml_dsa_simd_portable_encoding_gamma1_serialize(simd_unit, serialized,
                                                          gamma1_exponent);
 }
@@ -1491,41 +1399,36 @@ static inline void libcrux_ml_dsa_simd_portable_gamma1_serialize_65(
 
 static KRML_MUSTINLINE void
 libcrux_ml_dsa_simd_portable_encoding_gamma1_deserialize_when_gamma1_is_2_pow_19(
-    Eurydice_slice serialized,
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients *simd_unit) {
+    Eurydice_borrow_slice_u8 serialized, Eurydice_arr_d4 *simd_unit) {
   for (size_t i = (size_t)0U;
        i < Eurydice_slice_len(serialized, uint8_t) / (size_t)5U; i++) {
     size_t i0 = i;
-    Eurydice_slice bytes = Eurydice_slice_subslice3(
-        serialized, i0 * (size_t)5U, i0 * (size_t)5U + (size_t)5U, uint8_t *);
+    Eurydice_borrow_slice_u8 bytes = Eurydice_slice_subslice_shared_7e(
+        serialized, (core_ops_range_Range_08{i0 * (size_t)5U,
+                                             i0 * (size_t)5U + (size_t)5U}));
     int32_t coefficient0 =
-        (int32_t)Eurydice_slice_index(bytes, (size_t)0U, uint8_t, uint8_t *);
+        (int32_t)Eurydice_slice_index_shared(bytes, (size_t)0U, uint8_t);
     coefficient0 =
         coefficient0 |
-        (int32_t)Eurydice_slice_index(bytes, (size_t)1U, uint8_t, uint8_t *)
-            << 8U;
+        (int32_t)Eurydice_slice_index_shared(bytes, (size_t)1U, uint8_t) << 8U;
     coefficient0 =
         coefficient0 |
-        (int32_t)Eurydice_slice_index(bytes, (size_t)2U, uint8_t, uint8_t *)
-            << 16U;
+        (int32_t)Eurydice_slice_index_shared(bytes, (size_t)2U, uint8_t) << 16U;
     coefficient0 =
         coefficient0 &
         LIBCRUX_ML_DSA_SIMD_PORTABLE_ENCODING_GAMMA1_DESERIALIZE_WHEN_GAMMA1_IS_2_POW_19_GAMMA1_TIMES_2_BITMASK;
     int32_t coefficient1 =
-        (int32_t)Eurydice_slice_index(bytes, (size_t)2U, uint8_t, uint8_t *) >>
-        4U;
+        (int32_t)Eurydice_slice_index_shared(bytes, (size_t)2U, uint8_t) >> 4U;
     coefficient1 =
         coefficient1 |
-        (int32_t)Eurydice_slice_index(bytes, (size_t)3U, uint8_t, uint8_t *)
-            << 4U;
+        (int32_t)Eurydice_slice_index_shared(bytes, (size_t)3U, uint8_t) << 4U;
     coefficient1 =
         coefficient1 |
-        (int32_t)Eurydice_slice_index(bytes, (size_t)4U, uint8_t, uint8_t *)
-            << 12U;
-    simd_unit->values[(size_t)2U * i0] =
+        (int32_t)Eurydice_slice_index_shared(bytes, (size_t)4U, uint8_t) << 12U;
+    simd_unit->data[(size_t)2U * i0] =
         LIBCRUX_ML_DSA_SIMD_PORTABLE_ENCODING_GAMMA1_DESERIALIZE_WHEN_GAMMA1_IS_2_POW_19_GAMMA1 -
         coefficient0;
-    simd_unit->values[(size_t)2U * i0 + (size_t)1U] =
+    simd_unit->data[(size_t)2U * i0 + (size_t)1U] =
         LIBCRUX_ML_DSA_SIMD_PORTABLE_ENCODING_GAMMA1_DESERIALIZE_WHEN_GAMMA1_IS_2_POW_19_GAMMA1 -
         coefficient1;
   }
@@ -1541,78 +1444,67 @@ libcrux_ml_dsa_simd_portable_encoding_gamma1_deserialize_when_gamma1_is_2_pow_19
 
 static KRML_MUSTINLINE void
 libcrux_ml_dsa_simd_portable_encoding_gamma1_deserialize_when_gamma1_is_2_pow_17(
-    Eurydice_slice serialized,
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients *simd_unit) {
+    Eurydice_borrow_slice_u8 serialized, Eurydice_arr_d4 *simd_unit) {
   for (size_t i = (size_t)0U;
        i < Eurydice_slice_len(serialized, uint8_t) / (size_t)9U; i++) {
     size_t i0 = i;
-    Eurydice_slice bytes = Eurydice_slice_subslice3(
-        serialized, i0 * (size_t)9U, i0 * (size_t)9U + (size_t)9U, uint8_t *);
+    Eurydice_borrow_slice_u8 bytes = Eurydice_slice_subslice_shared_7e(
+        serialized, (core_ops_range_Range_08{i0 * (size_t)9U,
+                                             i0 * (size_t)9U + (size_t)9U}));
     int32_t coefficient0 =
-        (int32_t)Eurydice_slice_index(bytes, (size_t)0U, uint8_t, uint8_t *);
+        (int32_t)Eurydice_slice_index_shared(bytes, (size_t)0U, uint8_t);
     coefficient0 =
         coefficient0 |
-        (int32_t)Eurydice_slice_index(bytes, (size_t)1U, uint8_t, uint8_t *)
-            << 8U;
+        (int32_t)Eurydice_slice_index_shared(bytes, (size_t)1U, uint8_t) << 8U;
     coefficient0 =
         coefficient0 |
-        (int32_t)Eurydice_slice_index(bytes, (size_t)2U, uint8_t, uint8_t *)
-            << 16U;
+        (int32_t)Eurydice_slice_index_shared(bytes, (size_t)2U, uint8_t) << 16U;
     coefficient0 =
         coefficient0 &
         LIBCRUX_ML_DSA_SIMD_PORTABLE_ENCODING_GAMMA1_DESERIALIZE_WHEN_GAMMA1_IS_2_POW_17_GAMMA1_TIMES_2_BITMASK;
     int32_t coefficient1 =
-        (int32_t)Eurydice_slice_index(bytes, (size_t)2U, uint8_t, uint8_t *) >>
-        2U;
+        (int32_t)Eurydice_slice_index_shared(bytes, (size_t)2U, uint8_t) >> 2U;
     coefficient1 =
         coefficient1 |
-        (int32_t)Eurydice_slice_index(bytes, (size_t)3U, uint8_t, uint8_t *)
-            << 6U;
+        (int32_t)Eurydice_slice_index_shared(bytes, (size_t)3U, uint8_t) << 6U;
     coefficient1 =
         coefficient1 |
-        (int32_t)Eurydice_slice_index(bytes, (size_t)4U, uint8_t, uint8_t *)
-            << 14U;
+        (int32_t)Eurydice_slice_index_shared(bytes, (size_t)4U, uint8_t) << 14U;
     coefficient1 =
         coefficient1 &
         LIBCRUX_ML_DSA_SIMD_PORTABLE_ENCODING_GAMMA1_DESERIALIZE_WHEN_GAMMA1_IS_2_POW_17_GAMMA1_TIMES_2_BITMASK;
     int32_t coefficient2 =
-        (int32_t)Eurydice_slice_index(bytes, (size_t)4U, uint8_t, uint8_t *) >>
-        4U;
+        (int32_t)Eurydice_slice_index_shared(bytes, (size_t)4U, uint8_t) >> 4U;
     coefficient2 =
         coefficient2 |
-        (int32_t)Eurydice_slice_index(bytes, (size_t)5U, uint8_t, uint8_t *)
-            << 4U;
+        (int32_t)Eurydice_slice_index_shared(bytes, (size_t)5U, uint8_t) << 4U;
     coefficient2 =
         coefficient2 |
-        (int32_t)Eurydice_slice_index(bytes, (size_t)6U, uint8_t, uint8_t *)
-            << 12U;
+        (int32_t)Eurydice_slice_index_shared(bytes, (size_t)6U, uint8_t) << 12U;
     coefficient2 =
         coefficient2 &
         LIBCRUX_ML_DSA_SIMD_PORTABLE_ENCODING_GAMMA1_DESERIALIZE_WHEN_GAMMA1_IS_2_POW_17_GAMMA1_TIMES_2_BITMASK;
     int32_t coefficient3 =
-        (int32_t)Eurydice_slice_index(bytes, (size_t)6U, uint8_t, uint8_t *) >>
-        6U;
+        (int32_t)Eurydice_slice_index_shared(bytes, (size_t)6U, uint8_t) >> 6U;
     coefficient3 =
         coefficient3 |
-        (int32_t)Eurydice_slice_index(bytes, (size_t)7U, uint8_t, uint8_t *)
-            << 2U;
+        (int32_t)Eurydice_slice_index_shared(bytes, (size_t)7U, uint8_t) << 2U;
     coefficient3 =
         coefficient3 |
-        (int32_t)Eurydice_slice_index(bytes, (size_t)8U, uint8_t, uint8_t *)
-            << 10U;
+        (int32_t)Eurydice_slice_index_shared(bytes, (size_t)8U, uint8_t) << 10U;
     coefficient3 =
         coefficient3 &
         LIBCRUX_ML_DSA_SIMD_PORTABLE_ENCODING_GAMMA1_DESERIALIZE_WHEN_GAMMA1_IS_2_POW_17_GAMMA1_TIMES_2_BITMASK;
-    simd_unit->values[(size_t)4U * i0] =
+    simd_unit->data[(size_t)4U * i0] =
         LIBCRUX_ML_DSA_SIMD_PORTABLE_ENCODING_GAMMA1_DESERIALIZE_WHEN_GAMMA1_IS_2_POW_17_GAMMA1 -
         coefficient0;
-    simd_unit->values[(size_t)4U * i0 + (size_t)1U] =
+    simd_unit->data[(size_t)4U * i0 + (size_t)1U] =
         LIBCRUX_ML_DSA_SIMD_PORTABLE_ENCODING_GAMMA1_DESERIALIZE_WHEN_GAMMA1_IS_2_POW_17_GAMMA1 -
         coefficient1;
-    simd_unit->values[(size_t)4U * i0 + (size_t)2U] =
+    simd_unit->data[(size_t)4U * i0 + (size_t)2U] =
         LIBCRUX_ML_DSA_SIMD_PORTABLE_ENCODING_GAMMA1_DESERIALIZE_WHEN_GAMMA1_IS_2_POW_17_GAMMA1 -
         coefficient2;
-    simd_unit->values[(size_t)4U * i0 + (size_t)3U] =
+    simd_unit->data[(size_t)4U * i0 + (size_t)3U] =
         LIBCRUX_ML_DSA_SIMD_PORTABLE_ENCODING_GAMMA1_DESERIALIZE_WHEN_GAMMA1_IS_2_POW_17_GAMMA1 -
         coefficient3;
   }
@@ -1620,10 +1512,8 @@ libcrux_ml_dsa_simd_portable_encoding_gamma1_deserialize_when_gamma1_is_2_pow_17
 
 static KRML_MUSTINLINE void
 libcrux_ml_dsa_simd_portable_encoding_gamma1_deserialize(
-    Eurydice_slice serialized,
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients *out,
+    Eurydice_borrow_slice_u8 serialized, Eurydice_arr_d4 *out,
     size_t gamma1_exponent) {
-  void *uu____0 = (void *)0U;
   switch (gamma1_exponent) {
     case 17U: {
       break;
@@ -1648,8 +1538,7 @@ This function found in impl {libcrux_ml_dsa::simd::traits::Operations for
 libcrux_ml_dsa::simd::portable::vector_type::Coefficients}
 */
 static inline void libcrux_ml_dsa_simd_portable_gamma1_deserialize_65(
-    Eurydice_slice serialized,
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients *out,
+    Eurydice_borrow_slice_u8 serialized, Eurydice_arr_d4 *out,
     size_t gamma1_exponent) {
   libcrux_ml_dsa_simd_portable_encoding_gamma1_deserialize(serialized, out,
                                                            gamma1_exponent);
@@ -1657,57 +1546,55 @@ static inline void libcrux_ml_dsa_simd_portable_gamma1_deserialize_65(
 
 static KRML_MUSTINLINE void
 libcrux_ml_dsa_simd_portable_encoding_commitment_serialize_4(
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients *simd_unit,
-    Eurydice_slice serialized) {
-  uint8_t coefficient0 = (uint8_t)simd_unit->values[0U];
-  uint8_t coefficient1 = (uint8_t)simd_unit->values[1U];
-  uint8_t coefficient2 = (uint8_t)simd_unit->values[2U];
-  uint8_t coefficient3 = (uint8_t)simd_unit->values[3U];
-  uint8_t coefficient4 = (uint8_t)simd_unit->values[4U];
-  uint8_t coefficient5 = (uint8_t)simd_unit->values[5U];
-  uint8_t coefficient6 = (uint8_t)simd_unit->values[6U];
-  uint8_t coefficient7 = (uint8_t)simd_unit->values[7U];
+    const Eurydice_arr_d4 *simd_unit, Eurydice_mut_borrow_slice_u8 serialized) {
+  uint8_t coefficient0 = (uint8_t)simd_unit->data[0U];
+  uint8_t coefficient1 = (uint8_t)simd_unit->data[1U];
+  uint8_t coefficient2 = (uint8_t)simd_unit->data[2U];
+  uint8_t coefficient3 = (uint8_t)simd_unit->data[3U];
+  uint8_t coefficient4 = (uint8_t)simd_unit->data[4U];
+  uint8_t coefficient5 = (uint8_t)simd_unit->data[5U];
+  uint8_t coefficient6 = (uint8_t)simd_unit->data[6U];
+  uint8_t coefficient7 = (uint8_t)simd_unit->data[7U];
   uint8_t byte0 = (uint32_t)coefficient1 << 4U | (uint32_t)coefficient0;
   uint8_t byte1 = (uint32_t)coefficient3 << 4U | (uint32_t)coefficient2;
   uint8_t byte2 = (uint32_t)coefficient5 << 4U | (uint32_t)coefficient4;
   uint8_t byte3 = (uint32_t)coefficient7 << 4U | (uint32_t)coefficient6;
-  Eurydice_slice_index(serialized, (size_t)0U, uint8_t, uint8_t *) = byte0;
-  Eurydice_slice_index(serialized, (size_t)1U, uint8_t, uint8_t *) = byte1;
-  Eurydice_slice_index(serialized, (size_t)2U, uint8_t, uint8_t *) = byte2;
-  Eurydice_slice_index(serialized, (size_t)3U, uint8_t, uint8_t *) = byte3;
+  Eurydice_slice_index_mut(serialized, (size_t)0U, uint8_t) = byte0;
+  Eurydice_slice_index_mut(serialized, (size_t)1U, uint8_t) = byte1;
+  Eurydice_slice_index_mut(serialized, (size_t)2U, uint8_t) = byte2;
+  Eurydice_slice_index_mut(serialized, (size_t)3U, uint8_t) = byte3;
 }
 
 static KRML_MUSTINLINE void
 libcrux_ml_dsa_simd_portable_encoding_commitment_serialize_6(
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients *simd_unit,
-    Eurydice_slice serialized) {
-  uint8_t coefficient0 = (uint8_t)simd_unit->values[0U];
-  uint8_t coefficient1 = (uint8_t)simd_unit->values[1U];
-  uint8_t coefficient2 = (uint8_t)simd_unit->values[2U];
-  uint8_t coefficient3 = (uint8_t)simd_unit->values[3U];
-  uint8_t coefficient4 = (uint8_t)simd_unit->values[4U];
-  uint8_t coefficient5 = (uint8_t)simd_unit->values[5U];
-  uint8_t coefficient6 = (uint8_t)simd_unit->values[6U];
-  uint8_t coefficient7 = (uint8_t)simd_unit->values[7U];
+    const Eurydice_arr_d4 *simd_unit, Eurydice_mut_borrow_slice_u8 serialized) {
+  uint8_t coefficient0 = (uint8_t)simd_unit->data[0U];
+  uint8_t coefficient1 = (uint8_t)simd_unit->data[1U];
+  uint8_t coefficient2 = (uint8_t)simd_unit->data[2U];
+  uint8_t coefficient3 = (uint8_t)simd_unit->data[3U];
+  uint8_t coefficient4 = (uint8_t)simd_unit->data[4U];
+  uint8_t coefficient5 = (uint8_t)simd_unit->data[5U];
+  uint8_t coefficient6 = (uint8_t)simd_unit->data[6U];
+  uint8_t coefficient7 = (uint8_t)simd_unit->data[7U];
   uint8_t byte0 = (uint32_t)coefficient1 << 6U | (uint32_t)coefficient0;
   uint8_t byte1 = (uint32_t)coefficient2 << 4U | (uint32_t)coefficient1 >> 2U;
   uint8_t byte2 = (uint32_t)coefficient3 << 2U | (uint32_t)coefficient2 >> 4U;
   uint8_t byte3 = (uint32_t)coefficient5 << 6U | (uint32_t)coefficient4;
   uint8_t byte4 = (uint32_t)coefficient6 << 4U | (uint32_t)coefficient5 >> 2U;
   uint8_t byte5 = (uint32_t)coefficient7 << 2U | (uint32_t)coefficient6 >> 4U;
-  Eurydice_slice_index(serialized, (size_t)0U, uint8_t, uint8_t *) = byte0;
-  Eurydice_slice_index(serialized, (size_t)1U, uint8_t, uint8_t *) = byte1;
-  Eurydice_slice_index(serialized, (size_t)2U, uint8_t, uint8_t *) = byte2;
-  Eurydice_slice_index(serialized, (size_t)3U, uint8_t, uint8_t *) = byte3;
-  Eurydice_slice_index(serialized, (size_t)4U, uint8_t, uint8_t *) = byte4;
-  Eurydice_slice_index(serialized, (size_t)5U, uint8_t, uint8_t *) = byte5;
+  Eurydice_slice_index_mut(serialized, (size_t)0U, uint8_t) = byte0;
+  Eurydice_slice_index_mut(serialized, (size_t)1U, uint8_t) = byte1;
+  Eurydice_slice_index_mut(serialized, (size_t)2U, uint8_t) = byte2;
+  Eurydice_slice_index_mut(serialized, (size_t)3U, uint8_t) = byte3;
+  Eurydice_slice_index_mut(serialized, (size_t)4U, uint8_t) = byte4;
+  Eurydice_slice_index_mut(serialized, (size_t)5U, uint8_t) = byte5;
 }
 
 static KRML_MUSTINLINE void
 libcrux_ml_dsa_simd_portable_encoding_commitment_serialize(
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients *simd_unit,
-    Eurydice_slice serialized) {
-  switch ((uint8_t)Eurydice_slice_len(serialized, uint8_t)) {
+    const Eurydice_arr_d4 *simd_unit, Eurydice_mut_borrow_slice_u8 serialized) {
+  switch ((uint8_t)Eurydice_slice_len(
+      (Eurydice_borrow_slice_u8{serialized.ptr, serialized.meta}), uint8_t)) {
     case 4U: {
       libcrux_ml_dsa_simd_portable_encoding_commitment_serialize_4(simd_unit,
                                                                    serialized);
@@ -1731,8 +1618,7 @@ This function found in impl {libcrux_ml_dsa::simd::traits::Operations for
 libcrux_ml_dsa::simd::portable::vector_type::Coefficients}
 */
 static inline void libcrux_ml_dsa_simd_portable_commitment_serialize_65(
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients *simd_unit,
-    Eurydice_slice serialized) {
+    const Eurydice_arr_d4 *simd_unit, Eurydice_mut_borrow_slice_u8 serialized) {
   libcrux_ml_dsa_simd_portable_encoding_commitment_serialize(simd_unit,
                                                              serialized);
 }
@@ -1742,27 +1628,26 @@ static inline void libcrux_ml_dsa_simd_portable_commitment_serialize_65(
 
 static KRML_MUSTINLINE void
 libcrux_ml_dsa_simd_portable_encoding_error_serialize_when_eta_is_4(
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients *simd_unit,
-    Eurydice_slice serialized) {
+    const Eurydice_arr_d4 *simd_unit, Eurydice_mut_borrow_slice_u8 serialized) {
   for (size_t i = (size_t)0U;
-       i < Eurydice_slice_len(
-               Eurydice_array_to_slice((size_t)8U, simd_unit->values, int32_t),
-               int32_t) /
+       i < Eurydice_slice_len(Eurydice_array_to_slice_shared_a7(simd_unit),
+                              int32_t) /
                (size_t)2U;
        i++) {
     size_t i0 = i;
-    Eurydice_slice coefficients =
-        Eurydice_array_to_subslice3(simd_unit->values, i0 * (size_t)2U,
-                                    i0 * (size_t)2U + (size_t)2U, int32_t *);
+    Eurydice_dst_ref_shared_fc coefficients =
+        Eurydice_array_to_subslice_shared_7f(
+            simd_unit, (core_ops_range_Range_08{i0 * (size_t)2U,
+                                                i0 * (size_t)2U + (size_t)2U}));
     uint8_t coefficient0 =
         (uint8_t)(LIBCRUX_ML_DSA_SIMD_PORTABLE_ENCODING_ERROR_SERIALIZE_WHEN_ETA_IS_4_ETA -
-                  Eurydice_slice_index(coefficients, (size_t)0U, int32_t,
-                                       int32_t *));
+                  Eurydice_slice_index_shared(coefficients, (size_t)0U,
+                                              int32_t));
     uint8_t coefficient1 =
         (uint8_t)(LIBCRUX_ML_DSA_SIMD_PORTABLE_ENCODING_ERROR_SERIALIZE_WHEN_ETA_IS_4_ETA -
-                  Eurydice_slice_index(coefficients, (size_t)1U, int32_t,
-                                       int32_t *));
-    Eurydice_slice_index(serialized, i0, uint8_t, uint8_t *) =
+                  Eurydice_slice_index_shared(coefficients, (size_t)1U,
+                                              int32_t));
+    Eurydice_slice_index_mut(serialized, i0, uint8_t) =
         (uint32_t)coefficient1 << 4U | (uint32_t)coefficient0;
   }
 }
@@ -1772,50 +1657,47 @@ libcrux_ml_dsa_simd_portable_encoding_error_serialize_when_eta_is_4(
 
 static KRML_MUSTINLINE void
 libcrux_ml_dsa_simd_portable_encoding_error_serialize_when_eta_is_2(
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients *simd_unit,
-    Eurydice_slice serialized) {
+    const Eurydice_arr_d4 *simd_unit, Eurydice_mut_borrow_slice_u8 serialized) {
   uint8_t coefficient0 =
       (uint8_t)(LIBCRUX_ML_DSA_SIMD_PORTABLE_ENCODING_ERROR_SERIALIZE_WHEN_ETA_IS_2_ETA -
-                simd_unit->values[0U]);
+                simd_unit->data[0U]);
   uint8_t coefficient1 =
       (uint8_t)(LIBCRUX_ML_DSA_SIMD_PORTABLE_ENCODING_ERROR_SERIALIZE_WHEN_ETA_IS_2_ETA -
-                simd_unit->values[1U]);
+                simd_unit->data[1U]);
   uint8_t coefficient2 =
       (uint8_t)(LIBCRUX_ML_DSA_SIMD_PORTABLE_ENCODING_ERROR_SERIALIZE_WHEN_ETA_IS_2_ETA -
-                simd_unit->values[2U]);
+                simd_unit->data[2U]);
   uint8_t coefficient3 =
       (uint8_t)(LIBCRUX_ML_DSA_SIMD_PORTABLE_ENCODING_ERROR_SERIALIZE_WHEN_ETA_IS_2_ETA -
-                simd_unit->values[3U]);
+                simd_unit->data[3U]);
   uint8_t coefficient4 =
       (uint8_t)(LIBCRUX_ML_DSA_SIMD_PORTABLE_ENCODING_ERROR_SERIALIZE_WHEN_ETA_IS_2_ETA -
-                simd_unit->values[4U]);
+                simd_unit->data[4U]);
   uint8_t coefficient5 =
       (uint8_t)(LIBCRUX_ML_DSA_SIMD_PORTABLE_ENCODING_ERROR_SERIALIZE_WHEN_ETA_IS_2_ETA -
-                simd_unit->values[5U]);
+                simd_unit->data[5U]);
   uint8_t coefficient6 =
       (uint8_t)(LIBCRUX_ML_DSA_SIMD_PORTABLE_ENCODING_ERROR_SERIALIZE_WHEN_ETA_IS_2_ETA -
-                simd_unit->values[6U]);
+                simd_unit->data[6U]);
   uint8_t coefficient7 =
       (uint8_t)(LIBCRUX_ML_DSA_SIMD_PORTABLE_ENCODING_ERROR_SERIALIZE_WHEN_ETA_IS_2_ETA -
-                simd_unit->values[7U]);
-  Eurydice_slice_index(serialized, (size_t)0U, uint8_t, uint8_t *) =
+                simd_unit->data[7U]);
+  Eurydice_slice_index_mut(serialized, (size_t)0U, uint8_t) =
       ((uint32_t)coefficient2 << 6U | (uint32_t)coefficient1 << 3U) |
       (uint32_t)coefficient0;
-  Eurydice_slice_index(serialized, (size_t)1U, uint8_t, uint8_t *) =
+  Eurydice_slice_index_mut(serialized, (size_t)1U, uint8_t) =
       (((uint32_t)coefficient5 << 7U | (uint32_t)coefficient4 << 4U) |
        (uint32_t)coefficient3 << 1U) |
       (uint32_t)coefficient2 >> 2U;
-  Eurydice_slice_index(serialized, (size_t)2U, uint8_t, uint8_t *) =
+  Eurydice_slice_index_mut(serialized, (size_t)2U, uint8_t) =
       ((uint32_t)coefficient7 << 5U | (uint32_t)coefficient6 << 2U) |
       (uint32_t)coefficient5 >> 1U;
 }
 
 static KRML_MUSTINLINE void
 libcrux_ml_dsa_simd_portable_encoding_error_serialize(
-    libcrux_ml_dsa_constants_Eta eta,
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients *simd_unit,
-    Eurydice_slice serialized) {
-  void *uu____0 = (void *)0U;
+    libcrux_ml_dsa_constants_Eta eta, const Eurydice_arr_d4 *simd_unit,
+    Eurydice_mut_borrow_slice_u8 serialized) {
   switch (eta) {
     case libcrux_ml_dsa_constants_Eta_Two: {
       break;
@@ -1840,9 +1722,8 @@ This function found in impl {libcrux_ml_dsa::simd::traits::Operations for
 libcrux_ml_dsa::simd::portable::vector_type::Coefficients}
 */
 static inline void libcrux_ml_dsa_simd_portable_error_serialize_65(
-    libcrux_ml_dsa_constants_Eta eta,
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients *simd_unit,
-    Eurydice_slice serialized) {
+    libcrux_ml_dsa_constants_Eta eta, const Eurydice_arr_d4 *simd_unit,
+    Eurydice_mut_borrow_slice_u8 serialized) {
   libcrux_ml_dsa_simd_portable_encoding_error_serialize(eta, simd_unit,
                                                         serialized);
 }
@@ -1852,22 +1733,21 @@ static inline void libcrux_ml_dsa_simd_portable_error_serialize_65(
 
 static KRML_MUSTINLINE void
 libcrux_ml_dsa_simd_portable_encoding_error_deserialize_when_eta_is_4(
-    Eurydice_slice serialized,
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients *simd_units) {
+    Eurydice_borrow_slice_u8 serialized, Eurydice_arr_d4 *simd_units) {
   for (size_t i = (size_t)0U; i < Eurydice_slice_len(serialized, uint8_t);
        i++) {
     size_t i0 = i;
-    uint8_t *byte = &Eurydice_slice_index(serialized, i0, uint8_t, uint8_t *);
+    const uint8_t *byte = &Eurydice_slice_index_shared(serialized, i0, uint8_t);
     uint8_t uu____0 =
-        core_ops_bit__core__ops__bit__BitAnd_u8__u8__for___a__u8___bitand(byte,
-                                                                          15U);
-    simd_units->values[(size_t)2U * i0] =
+        core_ops_bit__core__ops__bit__BitAnd_u8__u8__for__0__u8___bitand(byte,
+                                                                         15U);
+    simd_units->data[(size_t)2U * i0] =
         LIBCRUX_ML_DSA_SIMD_PORTABLE_ENCODING_ERROR_DESERIALIZE_WHEN_ETA_IS_4_ETA -
         (int32_t)uu____0;
     uint8_t uu____1 =
-        core_ops_bit__core__ops__bit__Shr_i32__u8__for___a__u8___shr(
-            byte, (int32_t)4);
-    simd_units->values[(size_t)2U * i0 + (size_t)1U] =
+        core_ops_bit__core__ops__bit__Shr_i32__u8__for__0__u8___shr(byte,
+                                                                    (int32_t)4);
+    simd_units->data[(size_t)2U * i0 + (size_t)1U] =
         LIBCRUX_ML_DSA_SIMD_PORTABLE_ENCODING_ERROR_DESERIALIZE_WHEN_ETA_IS_4_ETA -
         (int32_t)uu____1;
   }
@@ -1878,45 +1758,43 @@ libcrux_ml_dsa_simd_portable_encoding_error_deserialize_when_eta_is_4(
 
 static KRML_MUSTINLINE void
 libcrux_ml_dsa_simd_portable_encoding_error_deserialize_when_eta_is_2(
-    Eurydice_slice serialized,
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients *simd_unit) {
+    Eurydice_borrow_slice_u8 serialized, Eurydice_arr_d4 *simd_unit) {
   int32_t byte0 =
-      (int32_t)Eurydice_slice_index(serialized, (size_t)0U, uint8_t, uint8_t *);
+      (int32_t)Eurydice_slice_index_shared(serialized, (size_t)0U, uint8_t);
   int32_t byte1 =
-      (int32_t)Eurydice_slice_index(serialized, (size_t)1U, uint8_t, uint8_t *);
+      (int32_t)Eurydice_slice_index_shared(serialized, (size_t)1U, uint8_t);
   int32_t byte2 =
-      (int32_t)Eurydice_slice_index(serialized, (size_t)2U, uint8_t, uint8_t *);
-  simd_unit->values[0U] =
+      (int32_t)Eurydice_slice_index_shared(serialized, (size_t)2U, uint8_t);
+  simd_unit->data[0U] =
       LIBCRUX_ML_DSA_SIMD_PORTABLE_ENCODING_ERROR_DESERIALIZE_WHEN_ETA_IS_2_ETA -
       (byte0 & (int32_t)7);
-  simd_unit->values[1U] =
+  simd_unit->data[1U] =
       LIBCRUX_ML_DSA_SIMD_PORTABLE_ENCODING_ERROR_DESERIALIZE_WHEN_ETA_IS_2_ETA -
       (byte0 >> 3U & (int32_t)7);
-  simd_unit->values[2U] =
+  simd_unit->data[2U] =
       LIBCRUX_ML_DSA_SIMD_PORTABLE_ENCODING_ERROR_DESERIALIZE_WHEN_ETA_IS_2_ETA -
       ((byte0 >> 6U | byte1 << 2U) & (int32_t)7);
-  simd_unit->values[3U] =
+  simd_unit->data[3U] =
       LIBCRUX_ML_DSA_SIMD_PORTABLE_ENCODING_ERROR_DESERIALIZE_WHEN_ETA_IS_2_ETA -
       (byte1 >> 1U & (int32_t)7);
-  simd_unit->values[4U] =
+  simd_unit->data[4U] =
       LIBCRUX_ML_DSA_SIMD_PORTABLE_ENCODING_ERROR_DESERIALIZE_WHEN_ETA_IS_2_ETA -
       (byte1 >> 4U & (int32_t)7);
-  simd_unit->values[5U] =
+  simd_unit->data[5U] =
       LIBCRUX_ML_DSA_SIMD_PORTABLE_ENCODING_ERROR_DESERIALIZE_WHEN_ETA_IS_2_ETA -
       ((byte1 >> 7U | byte2 << 1U) & (int32_t)7);
-  simd_unit->values[6U] =
+  simd_unit->data[6U] =
       LIBCRUX_ML_DSA_SIMD_PORTABLE_ENCODING_ERROR_DESERIALIZE_WHEN_ETA_IS_2_ETA -
       (byte2 >> 2U & (int32_t)7);
-  simd_unit->values[7U] =
+  simd_unit->data[7U] =
       LIBCRUX_ML_DSA_SIMD_PORTABLE_ENCODING_ERROR_DESERIALIZE_WHEN_ETA_IS_2_ETA -
       (byte2 >> 5U & (int32_t)7);
 }
 
 static KRML_MUSTINLINE void
 libcrux_ml_dsa_simd_portable_encoding_error_deserialize(
-    libcrux_ml_dsa_constants_Eta eta, Eurydice_slice serialized,
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients *out) {
-  void *uu____0 = (void *)0U;
+    libcrux_ml_dsa_constants_Eta eta, Eurydice_borrow_slice_u8 serialized,
+    Eurydice_arr_d4 *out) {
   switch (eta) {
     case libcrux_ml_dsa_constants_Eta_Two: {
       break;
@@ -1941,8 +1819,8 @@ This function found in impl {libcrux_ml_dsa::simd::traits::Operations for
 libcrux_ml_dsa::simd::portable::vector_type::Coefficients}
 */
 static inline void libcrux_ml_dsa_simd_portable_error_deserialize_65(
-    libcrux_ml_dsa_constants_Eta eta, Eurydice_slice serialized,
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients *out) {
+    libcrux_ml_dsa_constants_Eta eta, Eurydice_borrow_slice_u8 serialized,
+    Eurydice_arr_d4 *out) {
   libcrux_ml_dsa_simd_portable_encoding_error_deserialize(eta, serialized, out);
 }
 
@@ -1955,64 +1833,63 @@ libcrux_ml_dsa_simd_portable_encoding_t0_change_t0_interval(int32_t t0) {
 }
 
 static KRML_MUSTINLINE void libcrux_ml_dsa_simd_portable_encoding_t0_serialize(
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients *simd_unit,
-    Eurydice_slice serialized) {
+    const Eurydice_arr_d4 *simd_unit, Eurydice_mut_borrow_slice_u8 serialized) {
   int32_t coefficient0 =
       libcrux_ml_dsa_simd_portable_encoding_t0_change_t0_interval(
-          simd_unit->values[0U]);
+          simd_unit->data[0U]);
   int32_t coefficient1 =
       libcrux_ml_dsa_simd_portable_encoding_t0_change_t0_interval(
-          simd_unit->values[1U]);
+          simd_unit->data[1U]);
   int32_t coefficient2 =
       libcrux_ml_dsa_simd_portable_encoding_t0_change_t0_interval(
-          simd_unit->values[2U]);
+          simd_unit->data[2U]);
   int32_t coefficient3 =
       libcrux_ml_dsa_simd_portable_encoding_t0_change_t0_interval(
-          simd_unit->values[3U]);
+          simd_unit->data[3U]);
   int32_t coefficient4 =
       libcrux_ml_dsa_simd_portable_encoding_t0_change_t0_interval(
-          simd_unit->values[4U]);
+          simd_unit->data[4U]);
   int32_t coefficient5 =
       libcrux_ml_dsa_simd_portable_encoding_t0_change_t0_interval(
-          simd_unit->values[5U]);
+          simd_unit->data[5U]);
   int32_t coefficient6 =
       libcrux_ml_dsa_simd_portable_encoding_t0_change_t0_interval(
-          simd_unit->values[6U]);
+          simd_unit->data[6U]);
   int32_t coefficient7 =
       libcrux_ml_dsa_simd_portable_encoding_t0_change_t0_interval(
-          simd_unit->values[7U]);
-  Eurydice_slice_index(serialized, (size_t)0U, uint8_t, uint8_t *) =
+          simd_unit->data[7U]);
+  Eurydice_slice_index_mut(serialized, (size_t)0U, uint8_t) =
       (uint8_t)coefficient0;
-  Eurydice_slice_index(serialized, (size_t)1U, uint8_t, uint8_t *) =
+  Eurydice_slice_index_mut(serialized, (size_t)1U, uint8_t) =
       (uint32_t)(uint8_t)(coefficient0 >> 8U) |
       (uint32_t)(uint8_t)(coefficient1 << 5U);
-  Eurydice_slice_index(serialized, (size_t)2U, uint8_t, uint8_t *) =
+  Eurydice_slice_index_mut(serialized, (size_t)2U, uint8_t) =
       (uint8_t)(coefficient1 >> 3U);
-  Eurydice_slice_index(serialized, (size_t)3U, uint8_t, uint8_t *) =
+  Eurydice_slice_index_mut(serialized, (size_t)3U, uint8_t) =
       (uint32_t)(uint8_t)(coefficient1 >> 11U) |
       (uint32_t)(uint8_t)(coefficient2 << 2U);
-  Eurydice_slice_index(serialized, (size_t)4U, uint8_t, uint8_t *) =
+  Eurydice_slice_index_mut(serialized, (size_t)4U, uint8_t) =
       (uint32_t)(uint8_t)(coefficient2 >> 6U) |
       (uint32_t)(uint8_t)(coefficient3 << 7U);
-  Eurydice_slice_index(serialized, (size_t)5U, uint8_t, uint8_t *) =
+  Eurydice_slice_index_mut(serialized, (size_t)5U, uint8_t) =
       (uint8_t)(coefficient3 >> 1U);
-  Eurydice_slice_index(serialized, (size_t)6U, uint8_t, uint8_t *) =
+  Eurydice_slice_index_mut(serialized, (size_t)6U, uint8_t) =
       (uint32_t)(uint8_t)(coefficient3 >> 9U) |
       (uint32_t)(uint8_t)(coefficient4 << 4U);
-  Eurydice_slice_index(serialized, (size_t)7U, uint8_t, uint8_t *) =
+  Eurydice_slice_index_mut(serialized, (size_t)7U, uint8_t) =
       (uint8_t)(coefficient4 >> 4U);
-  Eurydice_slice_index(serialized, (size_t)8U, uint8_t, uint8_t *) =
+  Eurydice_slice_index_mut(serialized, (size_t)8U, uint8_t) =
       (uint32_t)(uint8_t)(coefficient4 >> 12U) |
       (uint32_t)(uint8_t)(coefficient5 << 1U);
-  Eurydice_slice_index(serialized, (size_t)9U, uint8_t, uint8_t *) =
+  Eurydice_slice_index_mut(serialized, (size_t)9U, uint8_t) =
       (uint32_t)(uint8_t)(coefficient5 >> 7U) |
       (uint32_t)(uint8_t)(coefficient6 << 6U);
-  Eurydice_slice_index(serialized, (size_t)10U, uint8_t, uint8_t *) =
+  Eurydice_slice_index_mut(serialized, (size_t)10U, uint8_t) =
       (uint8_t)(coefficient6 >> 2U);
-  Eurydice_slice_index(serialized, (size_t)11U, uint8_t, uint8_t *) =
+  Eurydice_slice_index_mut(serialized, (size_t)11U, uint8_t) =
       (uint32_t)(uint8_t)(coefficient6 >> 10U) |
       (uint32_t)(uint8_t)(coefficient7 << 3U);
-  Eurydice_slice_index(serialized, (size_t)12U, uint8_t, uint8_t *) =
+  Eurydice_slice_index_mut(serialized, (size_t)12U, uint8_t) =
       (uint8_t)(coefficient7 >> 5U);
 }
 
@@ -2021,8 +1898,7 @@ This function found in impl {libcrux_ml_dsa::simd::traits::Operations for
 libcrux_ml_dsa::simd::portable::vector_type::Coefficients}
 */
 static inline void libcrux_ml_dsa_simd_portable_t0_serialize_65(
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients *simd_unit,
-    Eurydice_slice out) {
+    const Eurydice_arr_d4 *simd_unit, Eurydice_mut_borrow_slice_u8 out) {
   libcrux_ml_dsa_simd_portable_encoding_t0_serialize(simd_unit, out);
 }
 
@@ -2033,34 +1909,33 @@ static inline void libcrux_ml_dsa_simd_portable_t0_serialize_65(
 
 static KRML_MUSTINLINE void
 libcrux_ml_dsa_simd_portable_encoding_t0_deserialize(
-    Eurydice_slice serialized,
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients *simd_unit) {
+    Eurydice_borrow_slice_u8 serialized, Eurydice_arr_d4 *simd_unit) {
   int32_t byte0 =
-      (int32_t)Eurydice_slice_index(serialized, (size_t)0U, uint8_t, uint8_t *);
+      (int32_t)Eurydice_slice_index_shared(serialized, (size_t)0U, uint8_t);
   int32_t byte1 =
-      (int32_t)Eurydice_slice_index(serialized, (size_t)1U, uint8_t, uint8_t *);
+      (int32_t)Eurydice_slice_index_shared(serialized, (size_t)1U, uint8_t);
   int32_t byte2 =
-      (int32_t)Eurydice_slice_index(serialized, (size_t)2U, uint8_t, uint8_t *);
+      (int32_t)Eurydice_slice_index_shared(serialized, (size_t)2U, uint8_t);
   int32_t byte3 =
-      (int32_t)Eurydice_slice_index(serialized, (size_t)3U, uint8_t, uint8_t *);
+      (int32_t)Eurydice_slice_index_shared(serialized, (size_t)3U, uint8_t);
   int32_t byte4 =
-      (int32_t)Eurydice_slice_index(serialized, (size_t)4U, uint8_t, uint8_t *);
+      (int32_t)Eurydice_slice_index_shared(serialized, (size_t)4U, uint8_t);
   int32_t byte5 =
-      (int32_t)Eurydice_slice_index(serialized, (size_t)5U, uint8_t, uint8_t *);
+      (int32_t)Eurydice_slice_index_shared(serialized, (size_t)5U, uint8_t);
   int32_t byte6 =
-      (int32_t)Eurydice_slice_index(serialized, (size_t)6U, uint8_t, uint8_t *);
+      (int32_t)Eurydice_slice_index_shared(serialized, (size_t)6U, uint8_t);
   int32_t byte7 =
-      (int32_t)Eurydice_slice_index(serialized, (size_t)7U, uint8_t, uint8_t *);
+      (int32_t)Eurydice_slice_index_shared(serialized, (size_t)7U, uint8_t);
   int32_t byte8 =
-      (int32_t)Eurydice_slice_index(serialized, (size_t)8U, uint8_t, uint8_t *);
+      (int32_t)Eurydice_slice_index_shared(serialized, (size_t)8U, uint8_t);
   int32_t byte9 =
-      (int32_t)Eurydice_slice_index(serialized, (size_t)9U, uint8_t, uint8_t *);
-  int32_t byte10 = (int32_t)Eurydice_slice_index(serialized, (size_t)10U,
-                                                 uint8_t, uint8_t *);
-  int32_t byte11 = (int32_t)Eurydice_slice_index(serialized, (size_t)11U,
-                                                 uint8_t, uint8_t *);
-  int32_t byte12 = (int32_t)Eurydice_slice_index(serialized, (size_t)12U,
-                                                 uint8_t, uint8_t *);
+      (int32_t)Eurydice_slice_index_shared(serialized, (size_t)9U, uint8_t);
+  int32_t byte10 =
+      (int32_t)Eurydice_slice_index_shared(serialized, (size_t)10U, uint8_t);
+  int32_t byte11 =
+      (int32_t)Eurydice_slice_index_shared(serialized, (size_t)11U, uint8_t);
+  int32_t byte12 =
+      (int32_t)Eurydice_slice_index_shared(serialized, (size_t)12U, uint8_t);
   int32_t coefficient0 = byte0;
   coefficient0 = coefficient0 | byte1 << 8U;
   coefficient0 =
@@ -2105,21 +1980,21 @@ libcrux_ml_dsa_simd_portable_encoding_t0_deserialize(
   coefficient7 =
       coefficient7 &
       LIBCRUX_ML_DSA_SIMD_PORTABLE_ENCODING_T0_DESERIALIZE_BITS_IN_LOWER_PART_OF_T_MASK;
-  simd_unit->values[0U] =
+  simd_unit->data[0U] =
       libcrux_ml_dsa_simd_portable_encoding_t0_change_t0_interval(coefficient0);
-  simd_unit->values[1U] =
+  simd_unit->data[1U] =
       libcrux_ml_dsa_simd_portable_encoding_t0_change_t0_interval(coefficient1);
-  simd_unit->values[2U] =
+  simd_unit->data[2U] =
       libcrux_ml_dsa_simd_portable_encoding_t0_change_t0_interval(coefficient2);
-  simd_unit->values[3U] =
+  simd_unit->data[3U] =
       libcrux_ml_dsa_simd_portable_encoding_t0_change_t0_interval(coefficient3);
-  simd_unit->values[4U] =
+  simd_unit->data[4U] =
       libcrux_ml_dsa_simd_portable_encoding_t0_change_t0_interval(coefficient4);
-  simd_unit->values[5U] =
+  simd_unit->data[5U] =
       libcrux_ml_dsa_simd_portable_encoding_t0_change_t0_interval(coefficient5);
-  simd_unit->values[6U] =
+  simd_unit->data[6U] =
       libcrux_ml_dsa_simd_portable_encoding_t0_change_t0_interval(coefficient6);
-  simd_unit->values[7U] =
+  simd_unit->data[7U] =
       libcrux_ml_dsa_simd_portable_encoding_t0_change_t0_interval(coefficient7);
 }
 
@@ -2128,62 +2003,60 @@ This function found in impl {libcrux_ml_dsa::simd::traits::Operations for
 libcrux_ml_dsa::simd::portable::vector_type::Coefficients}
 */
 static inline void libcrux_ml_dsa_simd_portable_t0_deserialize_65(
-    Eurydice_slice serialized,
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients *out) {
+    Eurydice_borrow_slice_u8 serialized, Eurydice_arr_d4 *out) {
   libcrux_ml_dsa_simd_portable_encoding_t0_deserialize(serialized, out);
 }
 
 static KRML_MUSTINLINE void libcrux_ml_dsa_simd_portable_encoding_t1_serialize(
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients *simd_unit,
-    Eurydice_slice serialized) {
+    const Eurydice_arr_d4 *simd_unit, Eurydice_mut_borrow_slice_u8 serialized) {
   for (size_t i = (size_t)0U;
-       i < Eurydice_slice_len(
-               Eurydice_array_to_slice((size_t)8U, simd_unit->values, int32_t),
-               int32_t) /
+       i < Eurydice_slice_len(Eurydice_array_to_slice_shared_a7(simd_unit),
+                              int32_t) /
                (size_t)4U;
        i++) {
     size_t i0 = i;
-    Eurydice_slice coefficients =
-        Eurydice_array_to_subslice3(simd_unit->values, i0 * (size_t)4U,
-                                    i0 * (size_t)4U + (size_t)4U, int32_t *);
-    Eurydice_slice_index(serialized, (size_t)5U * i0, uint8_t, uint8_t *) =
-        (uint8_t)(Eurydice_slice_index(coefficients, (size_t)0U, int32_t,
-                                       int32_t *) &
+    Eurydice_dst_ref_shared_fc coefficients =
+        Eurydice_array_to_subslice_shared_7f(
+            simd_unit, (core_ops_range_Range_08{i0 * (size_t)4U,
+                                                i0 * (size_t)4U + (size_t)4U}));
+    Eurydice_slice_index_mut(serialized, (size_t)5U * i0, uint8_t) =
+        (uint8_t)(Eurydice_slice_index_shared(coefficients, (size_t)0U,
+                                              int32_t) &
                   (int32_t)255);
-    Eurydice_slice_index(serialized, (size_t)5U * i0 + (size_t)1U, uint8_t,
-                         uint8_t *) =
-        (uint32_t)(uint8_t)(Eurydice_slice_index(coefficients, (size_t)1U,
-                                                 int32_t, int32_t *) &
+    Eurydice_slice_index_mut(serialized, (size_t)5U * i0 + (size_t)1U,
+                             uint8_t) =
+        (uint32_t)(uint8_t)(Eurydice_slice_index_shared(coefficients,
+                                                        (size_t)1U, int32_t) &
                             (int32_t)63)
             << 2U |
-        (uint32_t)(uint8_t)(Eurydice_slice_index(coefficients, (size_t)0U,
-                                                 int32_t, int32_t *) >>
+        (uint32_t)(uint8_t)(Eurydice_slice_index_shared(coefficients,
+                                                        (size_t)0U, int32_t) >>
                                 8U &
                             (int32_t)3);
-    Eurydice_slice_index(serialized, (size_t)5U * i0 + (size_t)2U, uint8_t,
-                         uint8_t *) =
-        (uint32_t)(uint8_t)(Eurydice_slice_index(coefficients, (size_t)2U,
-                                                 int32_t, int32_t *) &
+    Eurydice_slice_index_mut(serialized, (size_t)5U * i0 + (size_t)2U,
+                             uint8_t) =
+        (uint32_t)(uint8_t)(Eurydice_slice_index_shared(coefficients,
+                                                        (size_t)2U, int32_t) &
                             (int32_t)15)
             << 4U |
-        (uint32_t)(uint8_t)(Eurydice_slice_index(coefficients, (size_t)1U,
-                                                 int32_t, int32_t *) >>
+        (uint32_t)(uint8_t)(Eurydice_slice_index_shared(coefficients,
+                                                        (size_t)1U, int32_t) >>
                                 6U &
                             (int32_t)15);
-    Eurydice_slice_index(serialized, (size_t)5U * i0 + (size_t)3U, uint8_t,
-                         uint8_t *) =
-        (uint32_t)(uint8_t)(Eurydice_slice_index(coefficients, (size_t)3U,
-                                                 int32_t, int32_t *) &
+    Eurydice_slice_index_mut(serialized, (size_t)5U * i0 + (size_t)3U,
+                             uint8_t) =
+        (uint32_t)(uint8_t)(Eurydice_slice_index_shared(coefficients,
+                                                        (size_t)3U, int32_t) &
                             (int32_t)3)
             << 6U |
-        (uint32_t)(uint8_t)(Eurydice_slice_index(coefficients, (size_t)2U,
-                                                 int32_t, int32_t *) >>
+        (uint32_t)(uint8_t)(Eurydice_slice_index_shared(coefficients,
+                                                        (size_t)2U, int32_t) >>
                                 4U &
                             (int32_t)63);
-    Eurydice_slice_index(serialized, (size_t)5U * i0 + (size_t)4U, uint8_t,
-                         uint8_t *) =
-        (uint8_t)(Eurydice_slice_index(coefficients, (size_t)3U, int32_t,
-                                       int32_t *) >>
+    Eurydice_slice_index_mut(serialized, (size_t)5U * i0 + (size_t)4U,
+                             uint8_t) =
+        (uint8_t)(Eurydice_slice_index_shared(coefficients, (size_t)3U,
+                                              int32_t) >>
                       2U &
                   (int32_t)255);
   }
@@ -2194,39 +2067,38 @@ This function found in impl {libcrux_ml_dsa::simd::traits::Operations for
 libcrux_ml_dsa::simd::portable::vector_type::Coefficients}
 */
 static inline void libcrux_ml_dsa_simd_portable_t1_serialize_65(
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients *simd_unit,
-    Eurydice_slice out) {
+    const Eurydice_arr_d4 *simd_unit, Eurydice_mut_borrow_slice_u8 out) {
   libcrux_ml_dsa_simd_portable_encoding_t1_serialize(simd_unit, out);
 }
 
 static KRML_MUSTINLINE void
 libcrux_ml_dsa_simd_portable_encoding_t1_deserialize(
-    Eurydice_slice serialized,
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients *simd_unit) {
+    Eurydice_borrow_slice_u8 serialized, Eurydice_arr_d4 *simd_unit) {
   int32_t mask = ((int32_t)1 << (uint32_t)
                       LIBCRUX_ML_DSA_CONSTANTS_BITS_IN_UPPER_PART_OF_T) -
                  (int32_t)1;
   for (size_t i = (size_t)0U;
        i < Eurydice_slice_len(serialized, uint8_t) / (size_t)5U; i++) {
     size_t i0 = i;
-    Eurydice_slice bytes = Eurydice_slice_subslice3(
-        serialized, i0 * (size_t)5U, i0 * (size_t)5U + (size_t)5U, uint8_t *);
+    Eurydice_borrow_slice_u8 bytes = Eurydice_slice_subslice_shared_7e(
+        serialized, (core_ops_range_Range_08{i0 * (size_t)5U,
+                                             i0 * (size_t)5U + (size_t)5U}));
     int32_t byte0 =
-        (int32_t)Eurydice_slice_index(bytes, (size_t)0U, uint8_t, uint8_t *);
+        (int32_t)Eurydice_slice_index_shared(bytes, (size_t)0U, uint8_t);
     int32_t byte1 =
-        (int32_t)Eurydice_slice_index(bytes, (size_t)1U, uint8_t, uint8_t *);
+        (int32_t)Eurydice_slice_index_shared(bytes, (size_t)1U, uint8_t);
     int32_t byte2 =
-        (int32_t)Eurydice_slice_index(bytes, (size_t)2U, uint8_t, uint8_t *);
+        (int32_t)Eurydice_slice_index_shared(bytes, (size_t)2U, uint8_t);
     int32_t byte3 =
-        (int32_t)Eurydice_slice_index(bytes, (size_t)3U, uint8_t, uint8_t *);
+        (int32_t)Eurydice_slice_index_shared(bytes, (size_t)3U, uint8_t);
     int32_t byte4 =
-        (int32_t)Eurydice_slice_index(bytes, (size_t)4U, uint8_t, uint8_t *);
-    simd_unit->values[(size_t)4U * i0] = (byte0 | byte1 << 8U) & mask;
-    simd_unit->values[(size_t)4U * i0 + (size_t)1U] =
+        (int32_t)Eurydice_slice_index_shared(bytes, (size_t)4U, uint8_t);
+    simd_unit->data[(size_t)4U * i0] = (byte0 | byte1 << 8U) & mask;
+    simd_unit->data[(size_t)4U * i0 + (size_t)1U] =
         (byte1 >> 2U | byte2 << 6U) & mask;
-    simd_unit->values[(size_t)4U * i0 + (size_t)2U] =
+    simd_unit->data[(size_t)4U * i0 + (size_t)2U] =
         (byte2 >> 4U | byte3 << 4U) & mask;
-    simd_unit->values[(size_t)4U * i0 + (size_t)3U] =
+    simd_unit->data[(size_t)4U * i0 + (size_t)3U] =
         (byte3 >> 6U | byte4 << 2U) & mask;
   }
 }
@@ -2236,37 +2108,43 @@ This function found in impl {libcrux_ml_dsa::simd::traits::Operations for
 libcrux_ml_dsa::simd::portable::vector_type::Coefficients}
 */
 static inline void libcrux_ml_dsa_simd_portable_t1_deserialize_65(
-    Eurydice_slice serialized,
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients *out) {
+    Eurydice_borrow_slice_u8 serialized, Eurydice_arr_d4 *out) {
   libcrux_ml_dsa_simd_portable_encoding_t1_deserialize(serialized, out);
 }
 
 static KRML_MUSTINLINE void
 libcrux_ml_dsa_simd_portable_arithmetic_montgomery_multiply_by_constant(
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients *simd_unit,
-    int32_t c) {
+    Eurydice_arr_d4 *simd_unit, int32_t c) {
   for (size_t i = (size_t)0U;
-       i < Eurydice_slice_len(
-               Eurydice_array_to_slice((size_t)8U, simd_unit->values, int32_t),
-               int32_t);
+       i < Eurydice_slice_len(Eurydice_array_to_slice_shared_a7(simd_unit),
+                              int32_t);
        i++) {
     size_t i0 = i;
-    simd_unit->values[i0] =
+    simd_unit->data[i0] =
         libcrux_ml_dsa_simd_portable_arithmetic_montgomery_reduce_element(
-            (int64_t)simd_unit->values[i0] * (int64_t)c);
+            (int64_t)simd_unit->data[i0] * (int64_t)c);
   }
 }
 
+/**
+A monomorphic instance of Eurydice.arr
+with types libcrux_ml_dsa_simd_portable_vector_type_Coefficients
+with const generics
+- $32size_t
+*/
+typedef struct Eurydice_arr_a4_s {
+  Eurydice_arr_d4 data[32U];
+} Eurydice_arr_a4;
+
 static KRML_MUSTINLINE void libcrux_ml_dsa_simd_portable_ntt_outer_3_plus_round(
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients *re, size_t index,
-    size_t step_by, int32_t zeta) {
-  libcrux_ml_dsa_simd_portable_vector_type_Coefficients tmp =
-      re[index + step_by];
+    Eurydice_arr_a4 *re, size_t index, size_t step_by, int32_t zeta) {
+  Eurydice_arr_d4 tmp = re->data[index + step_by];
   libcrux_ml_dsa_simd_portable_arithmetic_montgomery_multiply_by_constant(&tmp,
                                                                           zeta);
-  re[index + step_by] = re[index];
-  libcrux_ml_dsa_simd_portable_arithmetic_subtract(&re[index + step_by], &tmp);
-  libcrux_ml_dsa_simd_portable_arithmetic_add(&re[index], &tmp);
+  re->data[index + step_by] = re->data[index];
+  libcrux_ml_dsa_simd_portable_arithmetic_subtract(&re->data[index + step_by],
+                                                   &tmp);
+  libcrux_ml_dsa_simd_portable_arithmetic_add(&re->data[index], &tmp);
 }
 
 /**
@@ -2277,7 +2155,7 @@ with const generics
 - ZETA= 25847
 */
 static KRML_MUSTINLINE void libcrux_ml_dsa_simd_portable_ntt_outer_3_plus_99(
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients *re) {
+    Eurydice_arr_a4 *re) {
   for (size_t i = (size_t)0U; i < (size_t)0U + (size_t)16U; i++) {
     size_t j = i;
     libcrux_ml_dsa_simd_portable_ntt_outer_3_plus_round(re, j, (size_t)16U,
@@ -2286,7 +2164,7 @@ static KRML_MUSTINLINE void libcrux_ml_dsa_simd_portable_ntt_outer_3_plus_99(
 }
 
 static KRML_MUSTINLINE void libcrux_ml_dsa_simd_portable_ntt_ntt_at_layer_7(
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients *re) {
+    Eurydice_arr_a4 *re) {
   libcrux_ml_dsa_simd_portable_ntt_outer_3_plus_99(re);
 }
 
@@ -2298,7 +2176,7 @@ with const generics
 - ZETA= -2608894
 */
 static KRML_MUSTINLINE void libcrux_ml_dsa_simd_portable_ntt_outer_3_plus_990(
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients *re) {
+    Eurydice_arr_a4 *re) {
   for (size_t i = (size_t)0U; i < (size_t)0U + (size_t)8U; i++) {
     size_t j = i;
     libcrux_ml_dsa_simd_portable_ntt_outer_3_plus_round(re, j, (size_t)8U,
@@ -2314,7 +2192,7 @@ with const generics
 - ZETA= -518909
 */
 static KRML_MUSTINLINE void libcrux_ml_dsa_simd_portable_ntt_outer_3_plus_7a(
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients *re) {
+    Eurydice_arr_a4 *re) {
   for (size_t i = (size_t)16U; i < (size_t)16U + (size_t)8U; i++) {
     size_t j = i;
     libcrux_ml_dsa_simd_portable_ntt_outer_3_plus_round(re, j, (size_t)8U,
@@ -2323,7 +2201,7 @@ static KRML_MUSTINLINE void libcrux_ml_dsa_simd_portable_ntt_outer_3_plus_7a(
 }
 
 static KRML_MUSTINLINE void libcrux_ml_dsa_simd_portable_ntt_ntt_at_layer_6(
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients *re) {
+    Eurydice_arr_a4 *re) {
   libcrux_ml_dsa_simd_portable_ntt_outer_3_plus_990(re);
   libcrux_ml_dsa_simd_portable_ntt_outer_3_plus_7a(re);
 }
@@ -2336,7 +2214,7 @@ with const generics
 - ZETA= 237124
 */
 static KRML_MUSTINLINE void libcrux_ml_dsa_simd_portable_ntt_outer_3_plus_991(
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients *re) {
+    Eurydice_arr_a4 *re) {
   for (size_t i = (size_t)0U; i < (size_t)0U + (size_t)4U; i++) {
     size_t j = i;
     libcrux_ml_dsa_simd_portable_ntt_outer_3_plus_round(re, j, (size_t)4U,
@@ -2352,7 +2230,7 @@ with const generics
 - ZETA= -777960
 */
 static KRML_MUSTINLINE void libcrux_ml_dsa_simd_portable_ntt_outer_3_plus_a8(
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients *re) {
+    Eurydice_arr_a4 *re) {
   for (size_t i = (size_t)8U; i < (size_t)8U + (size_t)4U; i++) {
     size_t j = i;
     libcrux_ml_dsa_simd_portable_ntt_outer_3_plus_round(re, j, (size_t)4U,
@@ -2368,7 +2246,7 @@ with const generics
 - ZETA= -876248
 */
 static KRML_MUSTINLINE void libcrux_ml_dsa_simd_portable_ntt_outer_3_plus_7a0(
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients *re) {
+    Eurydice_arr_a4 *re) {
   for (size_t i = (size_t)16U; i < (size_t)16U + (size_t)4U; i++) {
     size_t j = i;
     libcrux_ml_dsa_simd_portable_ntt_outer_3_plus_round(re, j, (size_t)4U,
@@ -2384,7 +2262,7 @@ with const generics
 - ZETA= 466468
 */
 static KRML_MUSTINLINE void libcrux_ml_dsa_simd_portable_ntt_outer_3_plus_d9(
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients *re) {
+    Eurydice_arr_a4 *re) {
   for (size_t i = (size_t)24U; i < (size_t)24U + (size_t)4U; i++) {
     size_t j = i;
     libcrux_ml_dsa_simd_portable_ntt_outer_3_plus_round(re, j, (size_t)4U,
@@ -2393,7 +2271,7 @@ static KRML_MUSTINLINE void libcrux_ml_dsa_simd_portable_ntt_outer_3_plus_d9(
 }
 
 static KRML_MUSTINLINE void libcrux_ml_dsa_simd_portable_ntt_ntt_at_layer_5(
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients *re) {
+    Eurydice_arr_a4 *re) {
   libcrux_ml_dsa_simd_portable_ntt_outer_3_plus_991(re);
   libcrux_ml_dsa_simd_portable_ntt_outer_3_plus_a8(re);
   libcrux_ml_dsa_simd_portable_ntt_outer_3_plus_7a0(re);
@@ -2408,7 +2286,7 @@ with const generics
 - ZETA= 1826347
 */
 static KRML_MUSTINLINE void libcrux_ml_dsa_simd_portable_ntt_outer_3_plus_992(
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients *re) {
+    Eurydice_arr_a4 *re) {
   for (size_t i = (size_t)0U; i < (size_t)0U + (size_t)2U; i++) {
     size_t j = i;
     libcrux_ml_dsa_simd_portable_ntt_outer_3_plus_round(re, j, (size_t)2U,
@@ -2424,7 +2302,7 @@ with const generics
 - ZETA= 2353451
 */
 static KRML_MUSTINLINE void libcrux_ml_dsa_simd_portable_ntt_outer_3_plus_6b(
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients *re) {
+    Eurydice_arr_a4 *re) {
   for (size_t i = (size_t)4U; i < (size_t)4U + (size_t)2U; i++) {
     size_t j = i;
     libcrux_ml_dsa_simd_portable_ntt_outer_3_plus_round(re, j, (size_t)2U,
@@ -2440,7 +2318,7 @@ with const generics
 - ZETA= -359251
 */
 static KRML_MUSTINLINE void libcrux_ml_dsa_simd_portable_ntt_outer_3_plus_a80(
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients *re) {
+    Eurydice_arr_a4 *re) {
   for (size_t i = (size_t)8U; i < (size_t)8U + (size_t)2U; i++) {
     size_t j = i;
     libcrux_ml_dsa_simd_portable_ntt_outer_3_plus_round(re, j, (size_t)2U,
@@ -2456,7 +2334,7 @@ with const generics
 - ZETA= -2091905
 */
 static KRML_MUSTINLINE void libcrux_ml_dsa_simd_portable_ntt_outer_3_plus_95(
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients *re) {
+    Eurydice_arr_a4 *re) {
   for (size_t i = (size_t)12U; i < (size_t)12U + (size_t)2U; i++) {
     size_t j = i;
     libcrux_ml_dsa_simd_portable_ntt_outer_3_plus_round(re, j, (size_t)2U,
@@ -2472,7 +2350,7 @@ with const generics
 - ZETA= 3119733
 */
 static KRML_MUSTINLINE void libcrux_ml_dsa_simd_portable_ntt_outer_3_plus_7a1(
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients *re) {
+    Eurydice_arr_a4 *re) {
   for (size_t i = (size_t)16U; i < (size_t)16U + (size_t)2U; i++) {
     size_t j = i;
     libcrux_ml_dsa_simd_portable_ntt_outer_3_plus_round(re, j, (size_t)2U,
@@ -2488,7 +2366,7 @@ with const generics
 - ZETA= -2884855
 */
 static KRML_MUSTINLINE void libcrux_ml_dsa_simd_portable_ntt_outer_3_plus_de(
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients *re) {
+    Eurydice_arr_a4 *re) {
   for (size_t i = (size_t)20U; i < (size_t)20U + (size_t)2U; i++) {
     size_t j = i;
     libcrux_ml_dsa_simd_portable_ntt_outer_3_plus_round(re, j, (size_t)2U,
@@ -2504,7 +2382,7 @@ with const generics
 - ZETA= 3111497
 */
 static KRML_MUSTINLINE void libcrux_ml_dsa_simd_portable_ntt_outer_3_plus_d90(
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients *re) {
+    Eurydice_arr_a4 *re) {
   for (size_t i = (size_t)24U; i < (size_t)24U + (size_t)2U; i++) {
     size_t j = i;
     libcrux_ml_dsa_simd_portable_ntt_outer_3_plus_round(re, j, (size_t)2U,
@@ -2520,7 +2398,7 @@ with const generics
 - ZETA= 2680103
 */
 static KRML_MUSTINLINE void libcrux_ml_dsa_simd_portable_ntt_outer_3_plus_3b(
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients *re) {
+    Eurydice_arr_a4 *re) {
   for (size_t i = (size_t)28U; i < (size_t)28U + (size_t)2U; i++) {
     size_t j = i;
     libcrux_ml_dsa_simd_portable_ntt_outer_3_plus_round(re, j, (size_t)2U,
@@ -2529,7 +2407,7 @@ static KRML_MUSTINLINE void libcrux_ml_dsa_simd_portable_ntt_outer_3_plus_3b(
 }
 
 static KRML_MUSTINLINE void libcrux_ml_dsa_simd_portable_ntt_ntt_at_layer_4(
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients *re) {
+    Eurydice_arr_a4 *re) {
   libcrux_ml_dsa_simd_portable_ntt_outer_3_plus_992(re);
   libcrux_ml_dsa_simd_portable_ntt_outer_3_plus_6b(re);
   libcrux_ml_dsa_simd_portable_ntt_outer_3_plus_a80(re);
@@ -2548,7 +2426,7 @@ with const generics
 - ZETA= 2725464
 */
 static KRML_MUSTINLINE void libcrux_ml_dsa_simd_portable_ntt_outer_3_plus_993(
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients *re) {
+    Eurydice_arr_a4 *re) {
   for (size_t i = (size_t)0U; i < (size_t)0U + (size_t)1U; i++) {
     size_t j = i;
     libcrux_ml_dsa_simd_portable_ntt_outer_3_plus_round(re, j, (size_t)1U,
@@ -2564,7 +2442,7 @@ with const generics
 - ZETA= 1024112
 */
 static KRML_MUSTINLINE void libcrux_ml_dsa_simd_portable_ntt_outer_3_plus_1c(
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients *re) {
+    Eurydice_arr_a4 *re) {
   for (size_t i = (size_t)2U; i < (size_t)2U + (size_t)1U; i++) {
     size_t j = i;
     libcrux_ml_dsa_simd_portable_ntt_outer_3_plus_round(re, j, (size_t)1U,
@@ -2580,7 +2458,7 @@ with const generics
 - ZETA= -1079900
 */
 static KRML_MUSTINLINE void libcrux_ml_dsa_simd_portable_ntt_outer_3_plus_6b0(
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients *re) {
+    Eurydice_arr_a4 *re) {
   for (size_t i = (size_t)4U; i < (size_t)4U + (size_t)1U; i++) {
     size_t j = i;
     libcrux_ml_dsa_simd_portable_ntt_outer_3_plus_round(re, j, (size_t)1U,
@@ -2596,7 +2474,7 @@ with const generics
 - ZETA= 3585928
 */
 static KRML_MUSTINLINE void libcrux_ml_dsa_simd_portable_ntt_outer_3_plus_44(
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients *re) {
+    Eurydice_arr_a4 *re) {
   for (size_t i = (size_t)6U; i < (size_t)6U + (size_t)1U; i++) {
     size_t j = i;
     libcrux_ml_dsa_simd_portable_ntt_outer_3_plus_round(re, j, (size_t)1U,
@@ -2612,7 +2490,7 @@ with const generics
 - ZETA= -549488
 */
 static KRML_MUSTINLINE void libcrux_ml_dsa_simd_portable_ntt_outer_3_plus_a81(
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients *re) {
+    Eurydice_arr_a4 *re) {
   for (size_t i = (size_t)8U; i < (size_t)8U + (size_t)1U; i++) {
     size_t j = i;
     libcrux_ml_dsa_simd_portable_ntt_outer_3_plus_round(re, j, (size_t)1U,
@@ -2628,7 +2506,7 @@ with const generics
 - ZETA= -1119584
 */
 static KRML_MUSTINLINE void libcrux_ml_dsa_simd_portable_ntt_outer_3_plus_1f(
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients *re) {
+    Eurydice_arr_a4 *re) {
   for (size_t i = (size_t)10U; i < (size_t)10U + (size_t)1U; i++) {
     size_t j = i;
     libcrux_ml_dsa_simd_portable_ntt_outer_3_plus_round(re, j, (size_t)1U,
@@ -2644,7 +2522,7 @@ with const generics
 - ZETA= 2619752
 */
 static KRML_MUSTINLINE void libcrux_ml_dsa_simd_portable_ntt_outer_3_plus_950(
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients *re) {
+    Eurydice_arr_a4 *re) {
   for (size_t i = (size_t)12U; i < (size_t)12U + (size_t)1U; i++) {
     size_t j = i;
     libcrux_ml_dsa_simd_portable_ntt_outer_3_plus_round(re, j, (size_t)1U,
@@ -2660,7 +2538,7 @@ with const generics
 - ZETA= -2108549
 */
 static KRML_MUSTINLINE void libcrux_ml_dsa_simd_portable_ntt_outer_3_plus_3b0(
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients *re) {
+    Eurydice_arr_a4 *re) {
   for (size_t i = (size_t)14U; i < (size_t)14U + (size_t)1U; i++) {
     size_t j = i;
     libcrux_ml_dsa_simd_portable_ntt_outer_3_plus_round(re, j, (size_t)1U,
@@ -2676,7 +2554,7 @@ with const generics
 - ZETA= -2118186
 */
 static KRML_MUSTINLINE void libcrux_ml_dsa_simd_portable_ntt_outer_3_plus_7a2(
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients *re) {
+    Eurydice_arr_a4 *re) {
   for (size_t i = (size_t)16U; i < (size_t)16U + (size_t)1U; i++) {
     size_t j = i;
     libcrux_ml_dsa_simd_portable_ntt_outer_3_plus_round(re, j, (size_t)1U,
@@ -2692,7 +2570,7 @@ with const generics
 - ZETA= -3859737
 */
 static KRML_MUSTINLINE void libcrux_ml_dsa_simd_portable_ntt_outer_3_plus_e4(
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients *re) {
+    Eurydice_arr_a4 *re) {
   for (size_t i = (size_t)18U; i < (size_t)18U + (size_t)1U; i++) {
     size_t j = i;
     libcrux_ml_dsa_simd_portable_ntt_outer_3_plus_round(re, j, (size_t)1U,
@@ -2708,7 +2586,7 @@ with const generics
 - ZETA= -1399561
 */
 static KRML_MUSTINLINE void libcrux_ml_dsa_simd_portable_ntt_outer_3_plus_de0(
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients *re) {
+    Eurydice_arr_a4 *re) {
   for (size_t i = (size_t)20U; i < (size_t)20U + (size_t)1U; i++) {
     size_t j = i;
     libcrux_ml_dsa_simd_portable_ntt_outer_3_plus_round(re, j, (size_t)1U,
@@ -2724,7 +2602,7 @@ with const generics
 - ZETA= -3277672
 */
 static KRML_MUSTINLINE void libcrux_ml_dsa_simd_portable_ntt_outer_3_plus_05(
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients *re) {
+    Eurydice_arr_a4 *re) {
   for (size_t i = (size_t)22U; i < (size_t)22U + (size_t)1U; i++) {
     size_t j = i;
     libcrux_ml_dsa_simd_portable_ntt_outer_3_plus_round(re, j, (size_t)1U,
@@ -2740,7 +2618,7 @@ with const generics
 - ZETA= 1757237
 */
 static KRML_MUSTINLINE void libcrux_ml_dsa_simd_portable_ntt_outer_3_plus_d91(
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients *re) {
+    Eurydice_arr_a4 *re) {
   for (size_t i = (size_t)24U; i < (size_t)24U + (size_t)1U; i++) {
     size_t j = i;
     libcrux_ml_dsa_simd_portable_ntt_outer_3_plus_round(re, j, (size_t)1U,
@@ -2756,7 +2634,7 @@ with const generics
 - ZETA= -19422
 */
 static KRML_MUSTINLINE void libcrux_ml_dsa_simd_portable_ntt_outer_3_plus_3a(
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients *re) {
+    Eurydice_arr_a4 *re) {
   for (size_t i = (size_t)26U; i < (size_t)26U + (size_t)1U; i++) {
     size_t j = i;
     libcrux_ml_dsa_simd_portable_ntt_outer_3_plus_round(re, j, (size_t)1U,
@@ -2772,7 +2650,7 @@ with const generics
 - ZETA= 4010497
 */
 static KRML_MUSTINLINE void libcrux_ml_dsa_simd_portable_ntt_outer_3_plus_3b1(
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients *re) {
+    Eurydice_arr_a4 *re) {
   for (size_t i = (size_t)28U; i < (size_t)28U + (size_t)1U; i++) {
     size_t j = i;
     libcrux_ml_dsa_simd_portable_ntt_outer_3_plus_round(re, j, (size_t)1U,
@@ -2788,7 +2666,7 @@ with const generics
 - ZETA= 280005
 */
 static KRML_MUSTINLINE void libcrux_ml_dsa_simd_portable_ntt_outer_3_plus_a0(
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients *re) {
+    Eurydice_arr_a4 *re) {
   for (size_t i = (size_t)30U; i < (size_t)30U + (size_t)1U; i++) {
     size_t j = i;
     libcrux_ml_dsa_simd_portable_ntt_outer_3_plus_round(re, j, (size_t)1U,
@@ -2797,7 +2675,7 @@ static KRML_MUSTINLINE void libcrux_ml_dsa_simd_portable_ntt_outer_3_plus_a0(
 }
 
 static KRML_MUSTINLINE void libcrux_ml_dsa_simd_portable_ntt_ntt_at_layer_3(
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients *re) {
+    Eurydice_arr_a4 *re) {
   libcrux_ml_dsa_simd_portable_ntt_outer_3_plus_993(re);
   libcrux_ml_dsa_simd_portable_ntt_outer_3_plus_1c(re);
   libcrux_ml_dsa_simd_portable_ntt_outer_3_plus_6b0(re);
@@ -2824,19 +2702,17 @@ libcrux_ml_dsa_simd_portable_arithmetic_montgomery_multiply_fe_by_fer(
 }
 
 static KRML_MUSTINLINE void libcrux_ml_dsa_simd_portable_ntt_simd_unit_ntt_step(
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients *simd_unit,
-    int32_t zeta, size_t index, size_t step) {
+    Eurydice_arr_d4 *simd_unit, int32_t zeta, size_t index, size_t step) {
   int32_t t =
       libcrux_ml_dsa_simd_portable_arithmetic_montgomery_multiply_fe_by_fer(
-          simd_unit->values[index + step], zeta);
-  simd_unit->values[index + step] = simd_unit->values[index] - t;
-  simd_unit->values[index] = simd_unit->values[index] + t;
+          simd_unit->data[index + step], zeta);
+  simd_unit->data[index + step] = simd_unit->data[index] - t;
+  simd_unit->data[index] = simd_unit->data[index] + t;
 }
 
 static KRML_MUSTINLINE void
 libcrux_ml_dsa_simd_portable_ntt_simd_unit_ntt_at_layer_2(
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients *simd_unit,
-    int32_t zeta) {
+    Eurydice_arr_d4 *simd_unit, int32_t zeta) {
   libcrux_ml_dsa_simd_portable_ntt_simd_unit_ntt_step(simd_unit, zeta,
                                                       (size_t)0U, (size_t)4U);
   libcrux_ml_dsa_simd_portable_ntt_simd_unit_ntt_step(simd_unit, zeta,
@@ -2848,14 +2724,15 @@ libcrux_ml_dsa_simd_portable_ntt_simd_unit_ntt_at_layer_2(
 }
 
 static KRML_MUSTINLINE void
-libcrux_ml_dsa_simd_portable_ntt_ntt_at_layer_2_round(
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients *re, size_t index,
-    int32_t zeta) {
-  libcrux_ml_dsa_simd_portable_ntt_simd_unit_ntt_at_layer_2(&re[index], zeta);
+libcrux_ml_dsa_simd_portable_ntt_ntt_at_layer_2_round(Eurydice_arr_a4 *re,
+                                                      size_t index,
+                                                      int32_t zeta) {
+  libcrux_ml_dsa_simd_portable_ntt_simd_unit_ntt_at_layer_2(&re->data[index],
+                                                            zeta);
 }
 
 static KRML_MUSTINLINE void libcrux_ml_dsa_simd_portable_ntt_ntt_at_layer_2(
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients *re) {
+    Eurydice_arr_a4 *re) {
   libcrux_ml_dsa_simd_portable_ntt_ntt_at_layer_2_round(re, (size_t)0U,
                                                         (int32_t)2706023);
   libcrux_ml_dsa_simd_portable_ntt_ntt_at_layer_2_round(re, (size_t)1U,
@@ -2924,8 +2801,7 @@ static KRML_MUSTINLINE void libcrux_ml_dsa_simd_portable_ntt_ntt_at_layer_2(
 
 static KRML_MUSTINLINE void
 libcrux_ml_dsa_simd_portable_ntt_simd_unit_ntt_at_layer_1(
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients *simd_unit,
-    int32_t zeta1, int32_t zeta2) {
+    Eurydice_arr_d4 *simd_unit, int32_t zeta1, int32_t zeta2) {
   libcrux_ml_dsa_simd_portable_ntt_simd_unit_ntt_step(simd_unit, zeta1,
                                                       (size_t)0U, (size_t)2U);
   libcrux_ml_dsa_simd_portable_ntt_simd_unit_ntt_step(simd_unit, zeta1,
@@ -2937,15 +2813,16 @@ libcrux_ml_dsa_simd_portable_ntt_simd_unit_ntt_at_layer_1(
 }
 
 static KRML_MUSTINLINE void
-libcrux_ml_dsa_simd_portable_ntt_ntt_at_layer_1_round(
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients *re, size_t index,
-    int32_t zeta_0, int32_t zeta_1) {
-  libcrux_ml_dsa_simd_portable_ntt_simd_unit_ntt_at_layer_1(&re[index], zeta_0,
-                                                            zeta_1);
+libcrux_ml_dsa_simd_portable_ntt_ntt_at_layer_1_round(Eurydice_arr_a4 *re,
+                                                      size_t index,
+                                                      int32_t zeta_0,
+                                                      int32_t zeta_1) {
+  libcrux_ml_dsa_simd_portable_ntt_simd_unit_ntt_at_layer_1(&re->data[index],
+                                                            zeta_0, zeta_1);
 }
 
 static KRML_MUSTINLINE void libcrux_ml_dsa_simd_portable_ntt_ntt_at_layer_1(
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients *re) {
+    Eurydice_arr_a4 *re) {
   libcrux_ml_dsa_simd_portable_ntt_ntt_at_layer_1_round(
       re, (size_t)0U, (int32_t)-3930395, (int32_t)-1528703);
   libcrux_ml_dsa_simd_portable_ntt_ntt_at_layer_1_round(
@@ -3014,8 +2891,8 @@ static KRML_MUSTINLINE void libcrux_ml_dsa_simd_portable_ntt_ntt_at_layer_1(
 
 static KRML_MUSTINLINE void
 libcrux_ml_dsa_simd_portable_ntt_simd_unit_ntt_at_layer_0(
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients *simd_unit,
-    int32_t zeta0, int32_t zeta1, int32_t zeta2, int32_t zeta3) {
+    Eurydice_arr_d4 *simd_unit, int32_t zeta0, int32_t zeta1, int32_t zeta2,
+    int32_t zeta3) {
   libcrux_ml_dsa_simd_portable_ntt_simd_unit_ntt_step(simd_unit, zeta0,
                                                       (size_t)0U, (size_t)1U);
   libcrux_ml_dsa_simd_portable_ntt_simd_unit_ntt_step(simd_unit, zeta1,
@@ -3028,14 +2905,14 @@ libcrux_ml_dsa_simd_portable_ntt_simd_unit_ntt_at_layer_0(
 
 static KRML_MUSTINLINE void
 libcrux_ml_dsa_simd_portable_ntt_ntt_at_layer_0_round(
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients *re, size_t index,
-    int32_t zeta_0, int32_t zeta_1, int32_t zeta_2, int32_t zeta_3) {
+    Eurydice_arr_a4 *re, size_t index, int32_t zeta_0, int32_t zeta_1,
+    int32_t zeta_2, int32_t zeta_3) {
   libcrux_ml_dsa_simd_portable_ntt_simd_unit_ntt_at_layer_0(
-      &re[index], zeta_0, zeta_1, zeta_2, zeta_3);
+      &re->data[index], zeta_0, zeta_1, zeta_2, zeta_3);
 }
 
 static KRML_MUSTINLINE void libcrux_ml_dsa_simd_portable_ntt_ntt_at_layer_0(
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients *re) {
+    Eurydice_arr_a4 *re) {
   libcrux_ml_dsa_simd_portable_ntt_ntt_at_layer_0_round(
       re, (size_t)0U, (int32_t)2091667, (int32_t)3407706, (int32_t)2316500,
       (int32_t)3817976);
@@ -3135,7 +3012,7 @@ static KRML_MUSTINLINE void libcrux_ml_dsa_simd_portable_ntt_ntt_at_layer_0(
 }
 
 static KRML_MUSTINLINE void libcrux_ml_dsa_simd_portable_ntt_ntt(
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients *re) {
+    Eurydice_arr_a4 *re) {
   libcrux_ml_dsa_simd_portable_ntt_ntt_at_layer_7(re);
   libcrux_ml_dsa_simd_portable_ntt_ntt_at_layer_6(re);
   libcrux_ml_dsa_simd_portable_ntt_ntt_at_layer_5(re);
@@ -3151,27 +3028,25 @@ This function found in impl {libcrux_ml_dsa::simd::traits::Operations for
 libcrux_ml_dsa::simd::portable::vector_type::Coefficients}
 */
 static inline void libcrux_ml_dsa_simd_portable_ntt_65(
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients *simd_units) {
+    Eurydice_arr_a4 *simd_units) {
   libcrux_ml_dsa_simd_portable_ntt_ntt(simd_units);
 }
 
 static KRML_MUSTINLINE void
 libcrux_ml_dsa_simd_portable_invntt_simd_unit_inv_ntt_step(
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients *simd_unit,
-    int32_t zeta, size_t index, size_t step) {
-  int32_t a_minus_b =
-      simd_unit->values[index + step] - simd_unit->values[index];
-  simd_unit->values[index] =
-      simd_unit->values[index] + simd_unit->values[index + step];
-  simd_unit->values[index + step] =
+    Eurydice_arr_d4 *simd_unit, int32_t zeta, size_t index, size_t step) {
+  int32_t a_minus_b = simd_unit->data[index + step] - simd_unit->data[index];
+  simd_unit->data[index] =
+      simd_unit->data[index] + simd_unit->data[index + step];
+  simd_unit->data[index + step] =
       libcrux_ml_dsa_simd_portable_arithmetic_montgomery_multiply_fe_by_fer(
           a_minus_b, zeta);
 }
 
 static KRML_MUSTINLINE void
 libcrux_ml_dsa_simd_portable_invntt_simd_unit_invert_ntt_at_layer_0(
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients *simd_unit,
-    int32_t zeta0, int32_t zeta1, int32_t zeta2, int32_t zeta3) {
+    Eurydice_arr_d4 *simd_unit, int32_t zeta0, int32_t zeta1, int32_t zeta2,
+    int32_t zeta3) {
   libcrux_ml_dsa_simd_portable_invntt_simd_unit_inv_ntt_step(
       simd_unit, zeta0, (size_t)0U, (size_t)1U);
   libcrux_ml_dsa_simd_portable_invntt_simd_unit_inv_ntt_step(
@@ -3184,15 +3059,14 @@ libcrux_ml_dsa_simd_portable_invntt_simd_unit_invert_ntt_at_layer_0(
 
 static KRML_MUSTINLINE void
 libcrux_ml_dsa_simd_portable_invntt_invert_ntt_at_layer_0_round(
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients *re, size_t index,
-    int32_t zeta0, int32_t zeta1, int32_t zeta2, int32_t zeta3) {
+    Eurydice_arr_a4 *re, size_t index, int32_t zeta0, int32_t zeta1,
+    int32_t zeta2, int32_t zeta3) {
   libcrux_ml_dsa_simd_portable_invntt_simd_unit_invert_ntt_at_layer_0(
-      &re[index], zeta0, zeta1, zeta2, zeta3);
+      &re->data[index], zeta0, zeta1, zeta2, zeta3);
 }
 
 static KRML_MUSTINLINE void
-libcrux_ml_dsa_simd_portable_invntt_invert_ntt_at_layer_0(
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients *re) {
+libcrux_ml_dsa_simd_portable_invntt_invert_ntt_at_layer_0(Eurydice_arr_a4 *re) {
   libcrux_ml_dsa_simd_portable_invntt_invert_ntt_at_layer_0_round(
       re, (size_t)0U, (int32_t)1976782, (int32_t)-846154, (int32_t)1400424,
       (int32_t)3937738);
@@ -3293,8 +3167,7 @@ libcrux_ml_dsa_simd_portable_invntt_invert_ntt_at_layer_0(
 
 static KRML_MUSTINLINE void
 libcrux_ml_dsa_simd_portable_invntt_simd_unit_invert_ntt_at_layer_1(
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients *simd_unit,
-    int32_t zeta0, int32_t zeta1) {
+    Eurydice_arr_d4 *simd_unit, int32_t zeta0, int32_t zeta1) {
   libcrux_ml_dsa_simd_portable_invntt_simd_unit_inv_ntt_step(
       simd_unit, zeta0, (size_t)0U, (size_t)2U);
   libcrux_ml_dsa_simd_portable_invntt_simd_unit_inv_ntt_step(
@@ -3307,15 +3180,13 @@ libcrux_ml_dsa_simd_portable_invntt_simd_unit_invert_ntt_at_layer_1(
 
 static KRML_MUSTINLINE void
 libcrux_ml_dsa_simd_portable_invntt_invert_ntt_at_layer_1_round(
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients *re, size_t index,
-    int32_t zeta_00, int32_t zeta_01) {
+    Eurydice_arr_a4 *re, size_t index, int32_t zeta_00, int32_t zeta_01) {
   libcrux_ml_dsa_simd_portable_invntt_simd_unit_invert_ntt_at_layer_1(
-      &re[index], zeta_00, zeta_01);
+      &re->data[index], zeta_00, zeta_01);
 }
 
 static KRML_MUSTINLINE void
-libcrux_ml_dsa_simd_portable_invntt_invert_ntt_at_layer_1(
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients *re) {
+libcrux_ml_dsa_simd_portable_invntt_invert_ntt_at_layer_1(Eurydice_arr_a4 *re) {
   libcrux_ml_dsa_simd_portable_invntt_invert_ntt_at_layer_1_round(
       re, (size_t)0U, (int32_t)3839961, (int32_t)-3628969);
   libcrux_ml_dsa_simd_portable_invntt_invert_ntt_at_layer_1_round(
@@ -3384,8 +3255,7 @@ libcrux_ml_dsa_simd_portable_invntt_invert_ntt_at_layer_1(
 
 static KRML_MUSTINLINE void
 libcrux_ml_dsa_simd_portable_invntt_simd_unit_invert_ntt_at_layer_2(
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients *simd_unit,
-    int32_t zeta) {
+    Eurydice_arr_d4 *simd_unit, int32_t zeta) {
   libcrux_ml_dsa_simd_portable_invntt_simd_unit_inv_ntt_step(
       simd_unit, zeta, (size_t)0U, (size_t)4U);
   libcrux_ml_dsa_simd_portable_invntt_simd_unit_inv_ntt_step(
@@ -3398,15 +3268,13 @@ libcrux_ml_dsa_simd_portable_invntt_simd_unit_invert_ntt_at_layer_2(
 
 static KRML_MUSTINLINE void
 libcrux_ml_dsa_simd_portable_invntt_invert_ntt_at_layer_2_round(
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients *re, size_t index,
-    int32_t zeta1) {
+    Eurydice_arr_a4 *re, size_t index, int32_t zeta1) {
   libcrux_ml_dsa_simd_portable_invntt_simd_unit_invert_ntt_at_layer_2(
-      &re[index], zeta1);
+      &re->data[index], zeta1);
 }
 
 static KRML_MUSTINLINE void
-libcrux_ml_dsa_simd_portable_invntt_invert_ntt_at_layer_2(
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients *re) {
+libcrux_ml_dsa_simd_portable_invntt_invert_ntt_at_layer_2(Eurydice_arr_a4 *re) {
   libcrux_ml_dsa_simd_portable_invntt_invert_ntt_at_layer_2_round(
       re, (size_t)0U, (int32_t)-2797779);
   libcrux_ml_dsa_simd_portable_invntt_invert_ntt_at_layer_2_round(
@@ -3481,16 +3349,16 @@ with const generics
 - ZETA= 280005
 */
 static KRML_MUSTINLINE void libcrux_ml_dsa_simd_portable_invntt_outer_3_plus_99(
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients *re) {
+    Eurydice_arr_a4 *re) {
   for (size_t i = (size_t)0U; i < (size_t)0U + (size_t)1U; i++) {
     size_t j = i;
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients rej = re[j];
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients rejs =
-        re[j + (size_t)1U];
-    libcrux_ml_dsa_simd_portable_arithmetic_add(&re[j], &rejs);
-    libcrux_ml_dsa_simd_portable_arithmetic_subtract(&re[j + (size_t)1U], &rej);
+    Eurydice_arr_d4 rej = re->data[j];
+    Eurydice_arr_d4 rejs = re->data[j + (size_t)1U];
+    libcrux_ml_dsa_simd_portable_arithmetic_add(&re->data[j], &rejs);
+    libcrux_ml_dsa_simd_portable_arithmetic_subtract(&re->data[j + (size_t)1U],
+                                                     &rej);
     libcrux_ml_dsa_simd_portable_arithmetic_montgomery_multiply_by_constant(
-        &re[j + (size_t)1U], (int32_t)280005);
+        &re->data[j + (size_t)1U], (int32_t)280005);
   }
 }
 
@@ -3502,16 +3370,16 @@ with const generics
 - ZETA= 4010497
 */
 static KRML_MUSTINLINE void libcrux_ml_dsa_simd_portable_invntt_outer_3_plus_1c(
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients *re) {
+    Eurydice_arr_a4 *re) {
   for (size_t i = (size_t)2U; i < (size_t)2U + (size_t)1U; i++) {
     size_t j = i;
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients rej = re[j];
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients rejs =
-        re[j + (size_t)1U];
-    libcrux_ml_dsa_simd_portable_arithmetic_add(&re[j], &rejs);
-    libcrux_ml_dsa_simd_portable_arithmetic_subtract(&re[j + (size_t)1U], &rej);
+    Eurydice_arr_d4 rej = re->data[j];
+    Eurydice_arr_d4 rejs = re->data[j + (size_t)1U];
+    libcrux_ml_dsa_simd_portable_arithmetic_add(&re->data[j], &rejs);
+    libcrux_ml_dsa_simd_portable_arithmetic_subtract(&re->data[j + (size_t)1U],
+                                                     &rej);
     libcrux_ml_dsa_simd_portable_arithmetic_montgomery_multiply_by_constant(
-        &re[j + (size_t)1U], (int32_t)4010497);
+        &re->data[j + (size_t)1U], (int32_t)4010497);
   }
 }
 
@@ -3523,16 +3391,16 @@ with const generics
 - ZETA= -19422
 */
 static KRML_MUSTINLINE void libcrux_ml_dsa_simd_portable_invntt_outer_3_plus_6b(
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients *re) {
+    Eurydice_arr_a4 *re) {
   for (size_t i = (size_t)4U; i < (size_t)4U + (size_t)1U; i++) {
     size_t j = i;
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients rej = re[j];
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients rejs =
-        re[j + (size_t)1U];
-    libcrux_ml_dsa_simd_portable_arithmetic_add(&re[j], &rejs);
-    libcrux_ml_dsa_simd_portable_arithmetic_subtract(&re[j + (size_t)1U], &rej);
+    Eurydice_arr_d4 rej = re->data[j];
+    Eurydice_arr_d4 rejs = re->data[j + (size_t)1U];
+    libcrux_ml_dsa_simd_portable_arithmetic_add(&re->data[j], &rejs);
+    libcrux_ml_dsa_simd_portable_arithmetic_subtract(&re->data[j + (size_t)1U],
+                                                     &rej);
     libcrux_ml_dsa_simd_portable_arithmetic_montgomery_multiply_by_constant(
-        &re[j + (size_t)1U], (int32_t)-19422);
+        &re->data[j + (size_t)1U], (int32_t)-19422);
   }
 }
 
@@ -3544,16 +3412,16 @@ with const generics
 - ZETA= 1757237
 */
 static KRML_MUSTINLINE void libcrux_ml_dsa_simd_portable_invntt_outer_3_plus_44(
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients *re) {
+    Eurydice_arr_a4 *re) {
   for (size_t i = (size_t)6U; i < (size_t)6U + (size_t)1U; i++) {
     size_t j = i;
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients rej = re[j];
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients rejs =
-        re[j + (size_t)1U];
-    libcrux_ml_dsa_simd_portable_arithmetic_add(&re[j], &rejs);
-    libcrux_ml_dsa_simd_portable_arithmetic_subtract(&re[j + (size_t)1U], &rej);
+    Eurydice_arr_d4 rej = re->data[j];
+    Eurydice_arr_d4 rejs = re->data[j + (size_t)1U];
+    libcrux_ml_dsa_simd_portable_arithmetic_add(&re->data[j], &rejs);
+    libcrux_ml_dsa_simd_portable_arithmetic_subtract(&re->data[j + (size_t)1U],
+                                                     &rej);
     libcrux_ml_dsa_simd_portable_arithmetic_montgomery_multiply_by_constant(
-        &re[j + (size_t)1U], (int32_t)1757237);
+        &re->data[j + (size_t)1U], (int32_t)1757237);
   }
 }
 
@@ -3565,16 +3433,16 @@ with const generics
 - ZETA= -3277672
 */
 static KRML_MUSTINLINE void libcrux_ml_dsa_simd_portable_invntt_outer_3_plus_a8(
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients *re) {
+    Eurydice_arr_a4 *re) {
   for (size_t i = (size_t)8U; i < (size_t)8U + (size_t)1U; i++) {
     size_t j = i;
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients rej = re[j];
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients rejs =
-        re[j + (size_t)1U];
-    libcrux_ml_dsa_simd_portable_arithmetic_add(&re[j], &rejs);
-    libcrux_ml_dsa_simd_portable_arithmetic_subtract(&re[j + (size_t)1U], &rej);
+    Eurydice_arr_d4 rej = re->data[j];
+    Eurydice_arr_d4 rejs = re->data[j + (size_t)1U];
+    libcrux_ml_dsa_simd_portable_arithmetic_add(&re->data[j], &rejs);
+    libcrux_ml_dsa_simd_portable_arithmetic_subtract(&re->data[j + (size_t)1U],
+                                                     &rej);
     libcrux_ml_dsa_simd_portable_arithmetic_montgomery_multiply_by_constant(
-        &re[j + (size_t)1U], (int32_t)-3277672);
+        &re->data[j + (size_t)1U], (int32_t)-3277672);
   }
 }
 
@@ -3586,16 +3454,16 @@ with const generics
 - ZETA= -1399561
 */
 static KRML_MUSTINLINE void libcrux_ml_dsa_simd_portable_invntt_outer_3_plus_1f(
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients *re) {
+    Eurydice_arr_a4 *re) {
   for (size_t i = (size_t)10U; i < (size_t)10U + (size_t)1U; i++) {
     size_t j = i;
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients rej = re[j];
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients rejs =
-        re[j + (size_t)1U];
-    libcrux_ml_dsa_simd_portable_arithmetic_add(&re[j], &rejs);
-    libcrux_ml_dsa_simd_portable_arithmetic_subtract(&re[j + (size_t)1U], &rej);
+    Eurydice_arr_d4 rej = re->data[j];
+    Eurydice_arr_d4 rejs = re->data[j + (size_t)1U];
+    libcrux_ml_dsa_simd_portable_arithmetic_add(&re->data[j], &rejs);
+    libcrux_ml_dsa_simd_portable_arithmetic_subtract(&re->data[j + (size_t)1U],
+                                                     &rej);
     libcrux_ml_dsa_simd_portable_arithmetic_montgomery_multiply_by_constant(
-        &re[j + (size_t)1U], (int32_t)-1399561);
+        &re->data[j + (size_t)1U], (int32_t)-1399561);
   }
 }
 
@@ -3607,16 +3475,16 @@ with const generics
 - ZETA= -3859737
 */
 static KRML_MUSTINLINE void libcrux_ml_dsa_simd_portable_invntt_outer_3_plus_95(
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients *re) {
+    Eurydice_arr_a4 *re) {
   for (size_t i = (size_t)12U; i < (size_t)12U + (size_t)1U; i++) {
     size_t j = i;
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients rej = re[j];
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients rejs =
-        re[j + (size_t)1U];
-    libcrux_ml_dsa_simd_portable_arithmetic_add(&re[j], &rejs);
-    libcrux_ml_dsa_simd_portable_arithmetic_subtract(&re[j + (size_t)1U], &rej);
+    Eurydice_arr_d4 rej = re->data[j];
+    Eurydice_arr_d4 rejs = re->data[j + (size_t)1U];
+    libcrux_ml_dsa_simd_portable_arithmetic_add(&re->data[j], &rejs);
+    libcrux_ml_dsa_simd_portable_arithmetic_subtract(&re->data[j + (size_t)1U],
+                                                     &rej);
     libcrux_ml_dsa_simd_portable_arithmetic_montgomery_multiply_by_constant(
-        &re[j + (size_t)1U], (int32_t)-3859737);
+        &re->data[j + (size_t)1U], (int32_t)-3859737);
   }
 }
 
@@ -3628,16 +3496,16 @@ with const generics
 - ZETA= -2118186
 */
 static KRML_MUSTINLINE void libcrux_ml_dsa_simd_portable_invntt_outer_3_plus_3b(
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients *re) {
+    Eurydice_arr_a4 *re) {
   for (size_t i = (size_t)14U; i < (size_t)14U + (size_t)1U; i++) {
     size_t j = i;
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients rej = re[j];
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients rejs =
-        re[j + (size_t)1U];
-    libcrux_ml_dsa_simd_portable_arithmetic_add(&re[j], &rejs);
-    libcrux_ml_dsa_simd_portable_arithmetic_subtract(&re[j + (size_t)1U], &rej);
+    Eurydice_arr_d4 rej = re->data[j];
+    Eurydice_arr_d4 rejs = re->data[j + (size_t)1U];
+    libcrux_ml_dsa_simd_portable_arithmetic_add(&re->data[j], &rejs);
+    libcrux_ml_dsa_simd_portable_arithmetic_subtract(&re->data[j + (size_t)1U],
+                                                     &rej);
     libcrux_ml_dsa_simd_portable_arithmetic_montgomery_multiply_by_constant(
-        &re[j + (size_t)1U], (int32_t)-2118186);
+        &re->data[j + (size_t)1U], (int32_t)-2118186);
   }
 }
 
@@ -3649,16 +3517,16 @@ with const generics
 - ZETA= -2108549
 */
 static KRML_MUSTINLINE void libcrux_ml_dsa_simd_portable_invntt_outer_3_plus_7a(
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients *re) {
+    Eurydice_arr_a4 *re) {
   for (size_t i = (size_t)16U; i < (size_t)16U + (size_t)1U; i++) {
     size_t j = i;
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients rej = re[j];
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients rejs =
-        re[j + (size_t)1U];
-    libcrux_ml_dsa_simd_portable_arithmetic_add(&re[j], &rejs);
-    libcrux_ml_dsa_simd_portable_arithmetic_subtract(&re[j + (size_t)1U], &rej);
+    Eurydice_arr_d4 rej = re->data[j];
+    Eurydice_arr_d4 rejs = re->data[j + (size_t)1U];
+    libcrux_ml_dsa_simd_portable_arithmetic_add(&re->data[j], &rejs);
+    libcrux_ml_dsa_simd_portable_arithmetic_subtract(&re->data[j + (size_t)1U],
+                                                     &rej);
     libcrux_ml_dsa_simd_portable_arithmetic_montgomery_multiply_by_constant(
-        &re[j + (size_t)1U], (int32_t)-2108549);
+        &re->data[j + (size_t)1U], (int32_t)-2108549);
   }
 }
 
@@ -3670,16 +3538,16 @@ with const generics
 - ZETA= 2619752
 */
 static KRML_MUSTINLINE void libcrux_ml_dsa_simd_portable_invntt_outer_3_plus_e4(
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients *re) {
+    Eurydice_arr_a4 *re) {
   for (size_t i = (size_t)18U; i < (size_t)18U + (size_t)1U; i++) {
     size_t j = i;
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients rej = re[j];
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients rejs =
-        re[j + (size_t)1U];
-    libcrux_ml_dsa_simd_portable_arithmetic_add(&re[j], &rejs);
-    libcrux_ml_dsa_simd_portable_arithmetic_subtract(&re[j + (size_t)1U], &rej);
+    Eurydice_arr_d4 rej = re->data[j];
+    Eurydice_arr_d4 rejs = re->data[j + (size_t)1U];
+    libcrux_ml_dsa_simd_portable_arithmetic_add(&re->data[j], &rejs);
+    libcrux_ml_dsa_simd_portable_arithmetic_subtract(&re->data[j + (size_t)1U],
+                                                     &rej);
     libcrux_ml_dsa_simd_portable_arithmetic_montgomery_multiply_by_constant(
-        &re[j + (size_t)1U], (int32_t)2619752);
+        &re->data[j + (size_t)1U], (int32_t)2619752);
   }
 }
 
@@ -3691,16 +3559,16 @@ with const generics
 - ZETA= -1119584
 */
 static KRML_MUSTINLINE void libcrux_ml_dsa_simd_portable_invntt_outer_3_plus_de(
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients *re) {
+    Eurydice_arr_a4 *re) {
   for (size_t i = (size_t)20U; i < (size_t)20U + (size_t)1U; i++) {
     size_t j = i;
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients rej = re[j];
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients rejs =
-        re[j + (size_t)1U];
-    libcrux_ml_dsa_simd_portable_arithmetic_add(&re[j], &rejs);
-    libcrux_ml_dsa_simd_portable_arithmetic_subtract(&re[j + (size_t)1U], &rej);
+    Eurydice_arr_d4 rej = re->data[j];
+    Eurydice_arr_d4 rejs = re->data[j + (size_t)1U];
+    libcrux_ml_dsa_simd_portable_arithmetic_add(&re->data[j], &rejs);
+    libcrux_ml_dsa_simd_portable_arithmetic_subtract(&re->data[j + (size_t)1U],
+                                                     &rej);
     libcrux_ml_dsa_simd_portable_arithmetic_montgomery_multiply_by_constant(
-        &re[j + (size_t)1U], (int32_t)-1119584);
+        &re->data[j + (size_t)1U], (int32_t)-1119584);
   }
 }
 
@@ -3712,16 +3580,16 @@ with const generics
 - ZETA= -549488
 */
 static KRML_MUSTINLINE void libcrux_ml_dsa_simd_portable_invntt_outer_3_plus_05(
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients *re) {
+    Eurydice_arr_a4 *re) {
   for (size_t i = (size_t)22U; i < (size_t)22U + (size_t)1U; i++) {
     size_t j = i;
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients rej = re[j];
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients rejs =
-        re[j + (size_t)1U];
-    libcrux_ml_dsa_simd_portable_arithmetic_add(&re[j], &rejs);
-    libcrux_ml_dsa_simd_portable_arithmetic_subtract(&re[j + (size_t)1U], &rej);
+    Eurydice_arr_d4 rej = re->data[j];
+    Eurydice_arr_d4 rejs = re->data[j + (size_t)1U];
+    libcrux_ml_dsa_simd_portable_arithmetic_add(&re->data[j], &rejs);
+    libcrux_ml_dsa_simd_portable_arithmetic_subtract(&re->data[j + (size_t)1U],
+                                                     &rej);
     libcrux_ml_dsa_simd_portable_arithmetic_montgomery_multiply_by_constant(
-        &re[j + (size_t)1U], (int32_t)-549488);
+        &re->data[j + (size_t)1U], (int32_t)-549488);
   }
 }
 
@@ -3733,16 +3601,16 @@ with const generics
 - ZETA= 3585928
 */
 static KRML_MUSTINLINE void libcrux_ml_dsa_simd_portable_invntt_outer_3_plus_d9(
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients *re) {
+    Eurydice_arr_a4 *re) {
   for (size_t i = (size_t)24U; i < (size_t)24U + (size_t)1U; i++) {
     size_t j = i;
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients rej = re[j];
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients rejs =
-        re[j + (size_t)1U];
-    libcrux_ml_dsa_simd_portable_arithmetic_add(&re[j], &rejs);
-    libcrux_ml_dsa_simd_portable_arithmetic_subtract(&re[j + (size_t)1U], &rej);
+    Eurydice_arr_d4 rej = re->data[j];
+    Eurydice_arr_d4 rejs = re->data[j + (size_t)1U];
+    libcrux_ml_dsa_simd_portable_arithmetic_add(&re->data[j], &rejs);
+    libcrux_ml_dsa_simd_portable_arithmetic_subtract(&re->data[j + (size_t)1U],
+                                                     &rej);
     libcrux_ml_dsa_simd_portable_arithmetic_montgomery_multiply_by_constant(
-        &re[j + (size_t)1U], (int32_t)3585928);
+        &re->data[j + (size_t)1U], (int32_t)3585928);
   }
 }
 
@@ -3754,16 +3622,16 @@ with const generics
 - ZETA= -1079900
 */
 static KRML_MUSTINLINE void libcrux_ml_dsa_simd_portable_invntt_outer_3_plus_3a(
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients *re) {
+    Eurydice_arr_a4 *re) {
   for (size_t i = (size_t)26U; i < (size_t)26U + (size_t)1U; i++) {
     size_t j = i;
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients rej = re[j];
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients rejs =
-        re[j + (size_t)1U];
-    libcrux_ml_dsa_simd_portable_arithmetic_add(&re[j], &rejs);
-    libcrux_ml_dsa_simd_portable_arithmetic_subtract(&re[j + (size_t)1U], &rej);
+    Eurydice_arr_d4 rej = re->data[j];
+    Eurydice_arr_d4 rejs = re->data[j + (size_t)1U];
+    libcrux_ml_dsa_simd_portable_arithmetic_add(&re->data[j], &rejs);
+    libcrux_ml_dsa_simd_portable_arithmetic_subtract(&re->data[j + (size_t)1U],
+                                                     &rej);
     libcrux_ml_dsa_simd_portable_arithmetic_montgomery_multiply_by_constant(
-        &re[j + (size_t)1U], (int32_t)-1079900);
+        &re->data[j + (size_t)1U], (int32_t)-1079900);
   }
 }
 
@@ -3775,17 +3643,16 @@ with const generics
 - ZETA= 1024112
 */
 static KRML_MUSTINLINE void
-libcrux_ml_dsa_simd_portable_invntt_outer_3_plus_3b0(
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients *re) {
+libcrux_ml_dsa_simd_portable_invntt_outer_3_plus_3b0(Eurydice_arr_a4 *re) {
   for (size_t i = (size_t)28U; i < (size_t)28U + (size_t)1U; i++) {
     size_t j = i;
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients rej = re[j];
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients rejs =
-        re[j + (size_t)1U];
-    libcrux_ml_dsa_simd_portable_arithmetic_add(&re[j], &rejs);
-    libcrux_ml_dsa_simd_portable_arithmetic_subtract(&re[j + (size_t)1U], &rej);
+    Eurydice_arr_d4 rej = re->data[j];
+    Eurydice_arr_d4 rejs = re->data[j + (size_t)1U];
+    libcrux_ml_dsa_simd_portable_arithmetic_add(&re->data[j], &rejs);
+    libcrux_ml_dsa_simd_portable_arithmetic_subtract(&re->data[j + (size_t)1U],
+                                                     &rej);
     libcrux_ml_dsa_simd_portable_arithmetic_montgomery_multiply_by_constant(
-        &re[j + (size_t)1U], (int32_t)1024112);
+        &re->data[j + (size_t)1U], (int32_t)1024112);
   }
 }
 
@@ -3797,22 +3664,21 @@ with const generics
 - ZETA= 2725464
 */
 static KRML_MUSTINLINE void libcrux_ml_dsa_simd_portable_invntt_outer_3_plus_a0(
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients *re) {
+    Eurydice_arr_a4 *re) {
   for (size_t i = (size_t)30U; i < (size_t)30U + (size_t)1U; i++) {
     size_t j = i;
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients rej = re[j];
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients rejs =
-        re[j + (size_t)1U];
-    libcrux_ml_dsa_simd_portable_arithmetic_add(&re[j], &rejs);
-    libcrux_ml_dsa_simd_portable_arithmetic_subtract(&re[j + (size_t)1U], &rej);
+    Eurydice_arr_d4 rej = re->data[j];
+    Eurydice_arr_d4 rejs = re->data[j + (size_t)1U];
+    libcrux_ml_dsa_simd_portable_arithmetic_add(&re->data[j], &rejs);
+    libcrux_ml_dsa_simd_portable_arithmetic_subtract(&re->data[j + (size_t)1U],
+                                                     &rej);
     libcrux_ml_dsa_simd_portable_arithmetic_montgomery_multiply_by_constant(
-        &re[j + (size_t)1U], (int32_t)2725464);
+        &re->data[j + (size_t)1U], (int32_t)2725464);
   }
 }
 
 static KRML_MUSTINLINE void
-libcrux_ml_dsa_simd_portable_invntt_invert_ntt_at_layer_3(
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients *re) {
+libcrux_ml_dsa_simd_portable_invntt_invert_ntt_at_layer_3(Eurydice_arr_a4 *re) {
   libcrux_ml_dsa_simd_portable_invntt_outer_3_plus_99(re);
   libcrux_ml_dsa_simd_portable_invntt_outer_3_plus_1c(re);
   libcrux_ml_dsa_simd_portable_invntt_outer_3_plus_6b(re);
@@ -3839,17 +3705,16 @@ with const generics
 - ZETA= 2680103
 */
 static KRML_MUSTINLINE void
-libcrux_ml_dsa_simd_portable_invntt_outer_3_plus_990(
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients *re) {
+libcrux_ml_dsa_simd_portable_invntt_outer_3_plus_990(Eurydice_arr_a4 *re) {
   for (size_t i = (size_t)0U; i < (size_t)0U + (size_t)2U; i++) {
     size_t j = i;
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients rej = re[j];
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients rejs =
-        re[j + (size_t)2U];
-    libcrux_ml_dsa_simd_portable_arithmetic_add(&re[j], &rejs);
-    libcrux_ml_dsa_simd_portable_arithmetic_subtract(&re[j + (size_t)2U], &rej);
+    Eurydice_arr_d4 rej = re->data[j];
+    Eurydice_arr_d4 rejs = re->data[j + (size_t)2U];
+    libcrux_ml_dsa_simd_portable_arithmetic_add(&re->data[j], &rejs);
+    libcrux_ml_dsa_simd_portable_arithmetic_subtract(&re->data[j + (size_t)2U],
+                                                     &rej);
     libcrux_ml_dsa_simd_portable_arithmetic_montgomery_multiply_by_constant(
-        &re[j + (size_t)2U], (int32_t)2680103);
+        &re->data[j + (size_t)2U], (int32_t)2680103);
   }
 }
 
@@ -3861,17 +3726,16 @@ with const generics
 - ZETA= 3111497
 */
 static KRML_MUSTINLINE void
-libcrux_ml_dsa_simd_portable_invntt_outer_3_plus_6b0(
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients *re) {
+libcrux_ml_dsa_simd_portable_invntt_outer_3_plus_6b0(Eurydice_arr_a4 *re) {
   for (size_t i = (size_t)4U; i < (size_t)4U + (size_t)2U; i++) {
     size_t j = i;
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients rej = re[j];
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients rejs =
-        re[j + (size_t)2U];
-    libcrux_ml_dsa_simd_portable_arithmetic_add(&re[j], &rejs);
-    libcrux_ml_dsa_simd_portable_arithmetic_subtract(&re[j + (size_t)2U], &rej);
+    Eurydice_arr_d4 rej = re->data[j];
+    Eurydice_arr_d4 rejs = re->data[j + (size_t)2U];
+    libcrux_ml_dsa_simd_portable_arithmetic_add(&re->data[j], &rejs);
+    libcrux_ml_dsa_simd_portable_arithmetic_subtract(&re->data[j + (size_t)2U],
+                                                     &rej);
     libcrux_ml_dsa_simd_portable_arithmetic_montgomery_multiply_by_constant(
-        &re[j + (size_t)2U], (int32_t)3111497);
+        &re->data[j + (size_t)2U], (int32_t)3111497);
   }
 }
 
@@ -3883,17 +3747,16 @@ with const generics
 - ZETA= -2884855
 */
 static KRML_MUSTINLINE void
-libcrux_ml_dsa_simd_portable_invntt_outer_3_plus_a80(
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients *re) {
+libcrux_ml_dsa_simd_portable_invntt_outer_3_plus_a80(Eurydice_arr_a4 *re) {
   for (size_t i = (size_t)8U; i < (size_t)8U + (size_t)2U; i++) {
     size_t j = i;
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients rej = re[j];
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients rejs =
-        re[j + (size_t)2U];
-    libcrux_ml_dsa_simd_portable_arithmetic_add(&re[j], &rejs);
-    libcrux_ml_dsa_simd_portable_arithmetic_subtract(&re[j + (size_t)2U], &rej);
+    Eurydice_arr_d4 rej = re->data[j];
+    Eurydice_arr_d4 rejs = re->data[j + (size_t)2U];
+    libcrux_ml_dsa_simd_portable_arithmetic_add(&re->data[j], &rejs);
+    libcrux_ml_dsa_simd_portable_arithmetic_subtract(&re->data[j + (size_t)2U],
+                                                     &rej);
     libcrux_ml_dsa_simd_portable_arithmetic_montgomery_multiply_by_constant(
-        &re[j + (size_t)2U], (int32_t)-2884855);
+        &re->data[j + (size_t)2U], (int32_t)-2884855);
   }
 }
 
@@ -3905,17 +3768,16 @@ with const generics
 - ZETA= 3119733
 */
 static KRML_MUSTINLINE void
-libcrux_ml_dsa_simd_portable_invntt_outer_3_plus_950(
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients *re) {
+libcrux_ml_dsa_simd_portable_invntt_outer_3_plus_950(Eurydice_arr_a4 *re) {
   for (size_t i = (size_t)12U; i < (size_t)12U + (size_t)2U; i++) {
     size_t j = i;
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients rej = re[j];
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients rejs =
-        re[j + (size_t)2U];
-    libcrux_ml_dsa_simd_portable_arithmetic_add(&re[j], &rejs);
-    libcrux_ml_dsa_simd_portable_arithmetic_subtract(&re[j + (size_t)2U], &rej);
+    Eurydice_arr_d4 rej = re->data[j];
+    Eurydice_arr_d4 rejs = re->data[j + (size_t)2U];
+    libcrux_ml_dsa_simd_portable_arithmetic_add(&re->data[j], &rejs);
+    libcrux_ml_dsa_simd_portable_arithmetic_subtract(&re->data[j + (size_t)2U],
+                                                     &rej);
     libcrux_ml_dsa_simd_portable_arithmetic_montgomery_multiply_by_constant(
-        &re[j + (size_t)2U], (int32_t)3119733);
+        &re->data[j + (size_t)2U], (int32_t)3119733);
   }
 }
 
@@ -3927,17 +3789,16 @@ with const generics
 - ZETA= -2091905
 */
 static KRML_MUSTINLINE void
-libcrux_ml_dsa_simd_portable_invntt_outer_3_plus_7a0(
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients *re) {
+libcrux_ml_dsa_simd_portable_invntt_outer_3_plus_7a0(Eurydice_arr_a4 *re) {
   for (size_t i = (size_t)16U; i < (size_t)16U + (size_t)2U; i++) {
     size_t j = i;
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients rej = re[j];
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients rejs =
-        re[j + (size_t)2U];
-    libcrux_ml_dsa_simd_portable_arithmetic_add(&re[j], &rejs);
-    libcrux_ml_dsa_simd_portable_arithmetic_subtract(&re[j + (size_t)2U], &rej);
+    Eurydice_arr_d4 rej = re->data[j];
+    Eurydice_arr_d4 rejs = re->data[j + (size_t)2U];
+    libcrux_ml_dsa_simd_portable_arithmetic_add(&re->data[j], &rejs);
+    libcrux_ml_dsa_simd_portable_arithmetic_subtract(&re->data[j + (size_t)2U],
+                                                     &rej);
     libcrux_ml_dsa_simd_portable_arithmetic_montgomery_multiply_by_constant(
-        &re[j + (size_t)2U], (int32_t)-2091905);
+        &re->data[j + (size_t)2U], (int32_t)-2091905);
   }
 }
 
@@ -3949,17 +3810,16 @@ with const generics
 - ZETA= -359251
 */
 static KRML_MUSTINLINE void
-libcrux_ml_dsa_simd_portable_invntt_outer_3_plus_de0(
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients *re) {
+libcrux_ml_dsa_simd_portable_invntt_outer_3_plus_de0(Eurydice_arr_a4 *re) {
   for (size_t i = (size_t)20U; i < (size_t)20U + (size_t)2U; i++) {
     size_t j = i;
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients rej = re[j];
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients rejs =
-        re[j + (size_t)2U];
-    libcrux_ml_dsa_simd_portable_arithmetic_add(&re[j], &rejs);
-    libcrux_ml_dsa_simd_portable_arithmetic_subtract(&re[j + (size_t)2U], &rej);
+    Eurydice_arr_d4 rej = re->data[j];
+    Eurydice_arr_d4 rejs = re->data[j + (size_t)2U];
+    libcrux_ml_dsa_simd_portable_arithmetic_add(&re->data[j], &rejs);
+    libcrux_ml_dsa_simd_portable_arithmetic_subtract(&re->data[j + (size_t)2U],
+                                                     &rej);
     libcrux_ml_dsa_simd_portable_arithmetic_montgomery_multiply_by_constant(
-        &re[j + (size_t)2U], (int32_t)-359251);
+        &re->data[j + (size_t)2U], (int32_t)-359251);
   }
 }
 
@@ -3971,17 +3831,16 @@ with const generics
 - ZETA= 2353451
 */
 static KRML_MUSTINLINE void
-libcrux_ml_dsa_simd_portable_invntt_outer_3_plus_d90(
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients *re) {
+libcrux_ml_dsa_simd_portable_invntt_outer_3_plus_d90(Eurydice_arr_a4 *re) {
   for (size_t i = (size_t)24U; i < (size_t)24U + (size_t)2U; i++) {
     size_t j = i;
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients rej = re[j];
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients rejs =
-        re[j + (size_t)2U];
-    libcrux_ml_dsa_simd_portable_arithmetic_add(&re[j], &rejs);
-    libcrux_ml_dsa_simd_portable_arithmetic_subtract(&re[j + (size_t)2U], &rej);
+    Eurydice_arr_d4 rej = re->data[j];
+    Eurydice_arr_d4 rejs = re->data[j + (size_t)2U];
+    libcrux_ml_dsa_simd_portable_arithmetic_add(&re->data[j], &rejs);
+    libcrux_ml_dsa_simd_portable_arithmetic_subtract(&re->data[j + (size_t)2U],
+                                                     &rej);
     libcrux_ml_dsa_simd_portable_arithmetic_montgomery_multiply_by_constant(
-        &re[j + (size_t)2U], (int32_t)2353451);
+        &re->data[j + (size_t)2U], (int32_t)2353451);
   }
 }
 
@@ -3993,23 +3852,21 @@ with const generics
 - ZETA= 1826347
 */
 static KRML_MUSTINLINE void
-libcrux_ml_dsa_simd_portable_invntt_outer_3_plus_3b1(
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients *re) {
+libcrux_ml_dsa_simd_portable_invntt_outer_3_plus_3b1(Eurydice_arr_a4 *re) {
   for (size_t i = (size_t)28U; i < (size_t)28U + (size_t)2U; i++) {
     size_t j = i;
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients rej = re[j];
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients rejs =
-        re[j + (size_t)2U];
-    libcrux_ml_dsa_simd_portable_arithmetic_add(&re[j], &rejs);
-    libcrux_ml_dsa_simd_portable_arithmetic_subtract(&re[j + (size_t)2U], &rej);
+    Eurydice_arr_d4 rej = re->data[j];
+    Eurydice_arr_d4 rejs = re->data[j + (size_t)2U];
+    libcrux_ml_dsa_simd_portable_arithmetic_add(&re->data[j], &rejs);
+    libcrux_ml_dsa_simd_portable_arithmetic_subtract(&re->data[j + (size_t)2U],
+                                                     &rej);
     libcrux_ml_dsa_simd_portable_arithmetic_montgomery_multiply_by_constant(
-        &re[j + (size_t)2U], (int32_t)1826347);
+        &re->data[j + (size_t)2U], (int32_t)1826347);
   }
 }
 
 static KRML_MUSTINLINE void
-libcrux_ml_dsa_simd_portable_invntt_invert_ntt_at_layer_4(
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients *re) {
+libcrux_ml_dsa_simd_portable_invntt_invert_ntt_at_layer_4(Eurydice_arr_a4 *re) {
   libcrux_ml_dsa_simd_portable_invntt_outer_3_plus_990(re);
   libcrux_ml_dsa_simd_portable_invntt_outer_3_plus_6b0(re);
   libcrux_ml_dsa_simd_portable_invntt_outer_3_plus_a80(re);
@@ -4028,17 +3885,16 @@ with const generics
 - ZETA= 466468
 */
 static KRML_MUSTINLINE void
-libcrux_ml_dsa_simd_portable_invntt_outer_3_plus_991(
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients *re) {
+libcrux_ml_dsa_simd_portable_invntt_outer_3_plus_991(Eurydice_arr_a4 *re) {
   for (size_t i = (size_t)0U; i < (size_t)0U + (size_t)4U; i++) {
     size_t j = i;
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients rej = re[j];
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients rejs =
-        re[j + (size_t)4U];
-    libcrux_ml_dsa_simd_portable_arithmetic_add(&re[j], &rejs);
-    libcrux_ml_dsa_simd_portable_arithmetic_subtract(&re[j + (size_t)4U], &rej);
+    Eurydice_arr_d4 rej = re->data[j];
+    Eurydice_arr_d4 rejs = re->data[j + (size_t)4U];
+    libcrux_ml_dsa_simd_portable_arithmetic_add(&re->data[j], &rejs);
+    libcrux_ml_dsa_simd_portable_arithmetic_subtract(&re->data[j + (size_t)4U],
+                                                     &rej);
     libcrux_ml_dsa_simd_portable_arithmetic_montgomery_multiply_by_constant(
-        &re[j + (size_t)4U], (int32_t)466468);
+        &re->data[j + (size_t)4U], (int32_t)466468);
   }
 }
 
@@ -4050,17 +3906,16 @@ with const generics
 - ZETA= -876248
 */
 static KRML_MUSTINLINE void
-libcrux_ml_dsa_simd_portable_invntt_outer_3_plus_a81(
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients *re) {
+libcrux_ml_dsa_simd_portable_invntt_outer_3_plus_a81(Eurydice_arr_a4 *re) {
   for (size_t i = (size_t)8U; i < (size_t)8U + (size_t)4U; i++) {
     size_t j = i;
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients rej = re[j];
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients rejs =
-        re[j + (size_t)4U];
-    libcrux_ml_dsa_simd_portable_arithmetic_add(&re[j], &rejs);
-    libcrux_ml_dsa_simd_portable_arithmetic_subtract(&re[j + (size_t)4U], &rej);
+    Eurydice_arr_d4 rej = re->data[j];
+    Eurydice_arr_d4 rejs = re->data[j + (size_t)4U];
+    libcrux_ml_dsa_simd_portable_arithmetic_add(&re->data[j], &rejs);
+    libcrux_ml_dsa_simd_portable_arithmetic_subtract(&re->data[j + (size_t)4U],
+                                                     &rej);
     libcrux_ml_dsa_simd_portable_arithmetic_montgomery_multiply_by_constant(
-        &re[j + (size_t)4U], (int32_t)-876248);
+        &re->data[j + (size_t)4U], (int32_t)-876248);
   }
 }
 
@@ -4072,17 +3927,16 @@ with const generics
 - ZETA= -777960
 */
 static KRML_MUSTINLINE void
-libcrux_ml_dsa_simd_portable_invntt_outer_3_plus_7a1(
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients *re) {
+libcrux_ml_dsa_simd_portable_invntt_outer_3_plus_7a1(Eurydice_arr_a4 *re) {
   for (size_t i = (size_t)16U; i < (size_t)16U + (size_t)4U; i++) {
     size_t j = i;
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients rej = re[j];
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients rejs =
-        re[j + (size_t)4U];
-    libcrux_ml_dsa_simd_portable_arithmetic_add(&re[j], &rejs);
-    libcrux_ml_dsa_simd_portable_arithmetic_subtract(&re[j + (size_t)4U], &rej);
+    Eurydice_arr_d4 rej = re->data[j];
+    Eurydice_arr_d4 rejs = re->data[j + (size_t)4U];
+    libcrux_ml_dsa_simd_portable_arithmetic_add(&re->data[j], &rejs);
+    libcrux_ml_dsa_simd_portable_arithmetic_subtract(&re->data[j + (size_t)4U],
+                                                     &rej);
     libcrux_ml_dsa_simd_portable_arithmetic_montgomery_multiply_by_constant(
-        &re[j + (size_t)4U], (int32_t)-777960);
+        &re->data[j + (size_t)4U], (int32_t)-777960);
   }
 }
 
@@ -4094,23 +3948,21 @@ with const generics
 - ZETA= 237124
 */
 static KRML_MUSTINLINE void
-libcrux_ml_dsa_simd_portable_invntt_outer_3_plus_d91(
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients *re) {
+libcrux_ml_dsa_simd_portable_invntt_outer_3_plus_d91(Eurydice_arr_a4 *re) {
   for (size_t i = (size_t)24U; i < (size_t)24U + (size_t)4U; i++) {
     size_t j = i;
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients rej = re[j];
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients rejs =
-        re[j + (size_t)4U];
-    libcrux_ml_dsa_simd_portable_arithmetic_add(&re[j], &rejs);
-    libcrux_ml_dsa_simd_portable_arithmetic_subtract(&re[j + (size_t)4U], &rej);
+    Eurydice_arr_d4 rej = re->data[j];
+    Eurydice_arr_d4 rejs = re->data[j + (size_t)4U];
+    libcrux_ml_dsa_simd_portable_arithmetic_add(&re->data[j], &rejs);
+    libcrux_ml_dsa_simd_portable_arithmetic_subtract(&re->data[j + (size_t)4U],
+                                                     &rej);
     libcrux_ml_dsa_simd_portable_arithmetic_montgomery_multiply_by_constant(
-        &re[j + (size_t)4U], (int32_t)237124);
+        &re->data[j + (size_t)4U], (int32_t)237124);
   }
 }
 
 static KRML_MUSTINLINE void
-libcrux_ml_dsa_simd_portable_invntt_invert_ntt_at_layer_5(
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients *re) {
+libcrux_ml_dsa_simd_portable_invntt_invert_ntt_at_layer_5(Eurydice_arr_a4 *re) {
   libcrux_ml_dsa_simd_portable_invntt_outer_3_plus_991(re);
   libcrux_ml_dsa_simd_portable_invntt_outer_3_plus_a81(re);
   libcrux_ml_dsa_simd_portable_invntt_outer_3_plus_7a1(re);
@@ -4125,17 +3977,16 @@ with const generics
 - ZETA= -518909
 */
 static KRML_MUSTINLINE void
-libcrux_ml_dsa_simd_portable_invntt_outer_3_plus_992(
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients *re) {
+libcrux_ml_dsa_simd_portable_invntt_outer_3_plus_992(Eurydice_arr_a4 *re) {
   for (size_t i = (size_t)0U; i < (size_t)0U + (size_t)8U; i++) {
     size_t j = i;
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients rej = re[j];
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients rejs =
-        re[j + (size_t)8U];
-    libcrux_ml_dsa_simd_portable_arithmetic_add(&re[j], &rejs);
-    libcrux_ml_dsa_simd_portable_arithmetic_subtract(&re[j + (size_t)8U], &rej);
+    Eurydice_arr_d4 rej = re->data[j];
+    Eurydice_arr_d4 rejs = re->data[j + (size_t)8U];
+    libcrux_ml_dsa_simd_portable_arithmetic_add(&re->data[j], &rejs);
+    libcrux_ml_dsa_simd_portable_arithmetic_subtract(&re->data[j + (size_t)8U],
+                                                     &rej);
     libcrux_ml_dsa_simd_portable_arithmetic_montgomery_multiply_by_constant(
-        &re[j + (size_t)8U], (int32_t)-518909);
+        &re->data[j + (size_t)8U], (int32_t)-518909);
   }
 }
 
@@ -4147,23 +3998,21 @@ with const generics
 - ZETA= -2608894
 */
 static KRML_MUSTINLINE void
-libcrux_ml_dsa_simd_portable_invntt_outer_3_plus_7a2(
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients *re) {
+libcrux_ml_dsa_simd_portable_invntt_outer_3_plus_7a2(Eurydice_arr_a4 *re) {
   for (size_t i = (size_t)16U; i < (size_t)16U + (size_t)8U; i++) {
     size_t j = i;
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients rej = re[j];
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients rejs =
-        re[j + (size_t)8U];
-    libcrux_ml_dsa_simd_portable_arithmetic_add(&re[j], &rejs);
-    libcrux_ml_dsa_simd_portable_arithmetic_subtract(&re[j + (size_t)8U], &rej);
+    Eurydice_arr_d4 rej = re->data[j];
+    Eurydice_arr_d4 rejs = re->data[j + (size_t)8U];
+    libcrux_ml_dsa_simd_portable_arithmetic_add(&re->data[j], &rejs);
+    libcrux_ml_dsa_simd_portable_arithmetic_subtract(&re->data[j + (size_t)8U],
+                                                     &rej);
     libcrux_ml_dsa_simd_portable_arithmetic_montgomery_multiply_by_constant(
-        &re[j + (size_t)8U], (int32_t)-2608894);
+        &re->data[j + (size_t)8U], (int32_t)-2608894);
   }
 }
 
 static KRML_MUSTINLINE void
-libcrux_ml_dsa_simd_portable_invntt_invert_ntt_at_layer_6(
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients *re) {
+libcrux_ml_dsa_simd_portable_invntt_invert_ntt_at_layer_6(Eurydice_arr_a4 *re) {
   libcrux_ml_dsa_simd_portable_invntt_outer_3_plus_992(re);
   libcrux_ml_dsa_simd_portable_invntt_outer_3_plus_7a2(re);
 }
@@ -4176,30 +4025,50 @@ with const generics
 - ZETA= 25847
 */
 static KRML_MUSTINLINE void
-libcrux_ml_dsa_simd_portable_invntt_outer_3_plus_993(
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients *re) {
+libcrux_ml_dsa_simd_portable_invntt_outer_3_plus_993(Eurydice_arr_a4 *re) {
   for (size_t i = (size_t)0U; i < (size_t)0U + (size_t)16U; i++) {
     size_t j = i;
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients rej = re[j];
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients rejs =
-        re[j + (size_t)16U];
-    libcrux_ml_dsa_simd_portable_arithmetic_add(&re[j], &rejs);
-    libcrux_ml_dsa_simd_portable_arithmetic_subtract(&re[j + (size_t)16U],
+    Eurydice_arr_d4 rej = re->data[j];
+    Eurydice_arr_d4 rejs = re->data[j + (size_t)16U];
+    libcrux_ml_dsa_simd_portable_arithmetic_add(&re->data[j], &rejs);
+    libcrux_ml_dsa_simd_portable_arithmetic_subtract(&re->data[j + (size_t)16U],
                                                      &rej);
     libcrux_ml_dsa_simd_portable_arithmetic_montgomery_multiply_by_constant(
-        &re[j + (size_t)16U], (int32_t)25847);
+        &re->data[j + (size_t)16U], (int32_t)25847);
   }
 }
 
 static KRML_MUSTINLINE void
-libcrux_ml_dsa_simd_portable_invntt_invert_ntt_at_layer_7(
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients *re) {
+libcrux_ml_dsa_simd_portable_invntt_invert_ntt_at_layer_7(Eurydice_arr_a4 *re) {
   libcrux_ml_dsa_simd_portable_invntt_outer_3_plus_993(re);
 }
 
+/**
+A monomorphic instance of Eurydice.dst_ref_shared
+with types libcrux_ml_dsa_simd_portable_vector_type_Coefficients, size_t
+
+*/
+typedef struct Eurydice_dst_ref_shared_b7_s {
+  const Eurydice_arr_d4 *ptr;
+  size_t meta;
+} Eurydice_dst_ref_shared_b7;
+
+/**
+A monomorphic instance of Eurydice.array_to_slice_shared
+with types libcrux_ml_dsa_simd_portable_vector_type_Coefficients
+with const generics
+- N= 32
+*/
+static inline Eurydice_dst_ref_shared_b7 Eurydice_array_to_slice_shared_a2(
+    const Eurydice_arr_a4 *a) {
+  Eurydice_dst_ref_shared_b7 lit;
+  lit.ptr = a->data;
+  lit.meta = (size_t)32U;
+  return lit;
+}
+
 static KRML_MUSTINLINE void
-libcrux_ml_dsa_simd_portable_invntt_invert_ntt_montgomery(
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients *re) {
+libcrux_ml_dsa_simd_portable_invntt_invert_ntt_montgomery(Eurydice_arr_a4 *re) {
   libcrux_ml_dsa_simd_portable_invntt_invert_ntt_at_layer_0(re);
   libcrux_ml_dsa_simd_portable_invntt_invert_ntt_at_layer_1(re);
   libcrux_ml_dsa_simd_portable_invntt_invert_ntt_at_layer_2(re);
@@ -4209,15 +4078,12 @@ libcrux_ml_dsa_simd_portable_invntt_invert_ntt_montgomery(
   libcrux_ml_dsa_simd_portable_invntt_invert_ntt_at_layer_6(re);
   libcrux_ml_dsa_simd_portable_invntt_invert_ntt_at_layer_7(re);
   for (size_t i = (size_t)0U;
-       i < Eurydice_slice_len(
-               Eurydice_array_to_slice(
-                   (size_t)32U, re,
-                   libcrux_ml_dsa_simd_portable_vector_type_Coefficients),
-               libcrux_ml_dsa_simd_portable_vector_type_Coefficients);
+       i < Eurydice_slice_len(Eurydice_array_to_slice_shared_a2(re),
+                              Eurydice_arr_d4);
        i++) {
     size_t i0 = i;
     libcrux_ml_dsa_simd_portable_arithmetic_montgomery_multiply_by_constant(
-        &re[i0], (int32_t)41978);
+        &re->data[i0], (int32_t)41978);
   }
 }
 
@@ -4226,7 +4092,7 @@ This function found in impl {libcrux_ml_dsa::simd::traits::Operations for
 libcrux_ml_dsa::simd::portable::vector_type::Coefficients}
 */
 static inline void libcrux_ml_dsa_simd_portable_invert_ntt_montgomery_65(
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients *simd_units) {
+    Eurydice_arr_a4 *simd_units) {
   libcrux_ml_dsa_simd_portable_invntt_invert_ntt_montgomery(simd_units);
 }
 
@@ -4238,16 +4104,15 @@ generics
 */
 static KRML_MUSTINLINE void
 libcrux_ml_dsa_simd_portable_arithmetic_shift_left_then_reduce_c3(
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients *simd_unit) {
+    Eurydice_arr_d4 *simd_unit) {
   for (size_t i = (size_t)0U;
-       i < Eurydice_slice_len(
-               Eurydice_array_to_slice((size_t)8U, simd_unit->values, int32_t),
-               int32_t);
+       i < Eurydice_slice_len(Eurydice_array_to_slice_shared_a7(simd_unit),
+                              int32_t);
        i++) {
     size_t i0 = i;
-    simd_unit->values[i0] =
+    simd_unit->data[i0] =
         libcrux_ml_dsa_simd_portable_arithmetic_reduce_element(
-            simd_unit->values[i0] << (uint32_t)(int32_t)0);
+            simd_unit->data[i0] << (uint32_t)(int32_t)0);
   }
 }
 
@@ -4256,17 +4121,14 @@ This function found in impl {libcrux_ml_dsa::simd::traits::Operations for
 libcrux_ml_dsa::simd::portable::vector_type::Coefficients}
 */
 static inline void libcrux_ml_dsa_simd_portable_reduce_65(
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients *simd_units) {
+    Eurydice_arr_a4 *simd_units) {
   for (size_t i = (size_t)0U;
-       i < Eurydice_slice_len(
-               Eurydice_array_to_slice(
-                   (size_t)32U, simd_units,
-                   libcrux_ml_dsa_simd_portable_vector_type_Coefficients),
-               libcrux_ml_dsa_simd_portable_vector_type_Coefficients);
+       i < Eurydice_slice_len(Eurydice_array_to_slice_shared_a2(simd_units),
+                              Eurydice_arr_d4);
        i++) {
     size_t i0 = i;
     libcrux_ml_dsa_simd_portable_arithmetic_shift_left_then_reduce_c3(
-        &simd_units[i0]);
+        &simd_units->data[i0]);
   }
 }
 
@@ -4275,9 +4137,17 @@ A monomorphic instance of libcrux_ml_dsa.polynomial.PolynomialRingElement
 with types libcrux_ml_dsa_simd_portable_vector_type_Coefficients
 
 */
-typedef struct libcrux_ml_dsa_polynomial_PolynomialRingElement_e8_s {
-  libcrux_ml_dsa_simd_portable_vector_type_Coefficients simd_units[32U];
-} libcrux_ml_dsa_polynomial_PolynomialRingElement_e8;
+typedef Eurydice_arr_a4 libcrux_ml_dsa_polynomial_PolynomialRingElement_e8;
+
+/**
+A monomorphic instance of Eurydice.arr
+with types libcrux_ml_dsa_polynomial_PolynomialRingElement
+libcrux_ml_dsa_simd_portable_vector_type_Coefficients with const generics
+- $11size_t
+*/
+typedef struct Eurydice_arr_93_s {
+  Eurydice_arr_a4 data[11U];
+} Eurydice_arr_93;
 
 /**
 This function found in impl
@@ -4290,18 +4160,37 @@ with types libcrux_ml_dsa_simd_portable_vector_type_Coefficients
 with const generics
 
 */
-static inline libcrux_ml_dsa_polynomial_PolynomialRingElement_e8
-libcrux_ml_dsa_polynomial_zero_ff_37(void) {
-  libcrux_ml_dsa_polynomial_PolynomialRingElement_e8 lit;
-  libcrux_ml_dsa_simd_portable_vector_type_Coefficients repeat_expression[32U];
+static inline Eurydice_arr_a4 libcrux_ml_dsa_polynomial_zero_ff_37(void) {
+  Eurydice_arr_a4 lit;
+  Eurydice_arr_d4 repeat_expression[32U];
   for (size_t i = (size_t)0U; i < (size_t)32U; i++) {
     repeat_expression[i] = libcrux_ml_dsa_simd_portable_zero_65();
   }
-  memcpy(lit.simd_units, repeat_expression,
-         (size_t)32U *
-             sizeof(libcrux_ml_dsa_simd_portable_vector_type_Coefficients));
+  memcpy(lit.data, repeat_expression, (size_t)32U * sizeof(Eurydice_arr_d4));
   return lit;
 }
+
+/**
+A monomorphic instance of Eurydice.dst_ref_mut
+with types libcrux_ml_dsa_polynomial_PolynomialRingElement
+libcrux_ml_dsa_simd_portable_vector_type_Coefficients, size_t
+
+*/
+typedef struct Eurydice_dst_ref_mut_f3_s {
+  Eurydice_arr_a4 *ptr;
+  size_t meta;
+} Eurydice_dst_ref_mut_f3;
+
+/**
+A monomorphic instance of Eurydice.dst_ref_shared
+with types libcrux_ml_dsa_polynomial_PolynomialRingElement
+libcrux_ml_dsa_simd_portable_vector_type_Coefficients, size_t
+
+*/
+typedef struct Eurydice_dst_ref_shared_f3_s {
+  const Eurydice_arr_a4 *ptr;
+  size_t meta;
+} Eurydice_dst_ref_shared_f3;
 
 /**
 A monomorphic instance of
@@ -4311,21 +4200,21 @@ libcrux_ml_dsa_simd_portable_vector_type_Coefficients with const generics
 */
 static KRML_MUSTINLINE bool
 libcrux_ml_dsa_sample_rejection_sample_less_than_eta_equals_4_37(
-    Eurydice_slice randomness, size_t *sampled_coefficients, int32_t *out) {
+    Eurydice_borrow_slice_u8 randomness, size_t *sampled_coefficients,
+    Eurydice_arr_13 *out) {
   bool done = false;
   for (size_t i = (size_t)0U;
        i < Eurydice_slice_len(randomness, uint8_t) / (size_t)4U; i++) {
     size_t _cloop_i = i;
-    Eurydice_slice random_bytes =
-        Eurydice_slice_subslice3(randomness, _cloop_i * (size_t)4U,
-                                 _cloop_i * (size_t)4U + (size_t)4U, uint8_t *);
+    Eurydice_borrow_slice_u8 random_bytes = Eurydice_slice_subslice_shared_7e(
+        randomness,
+        (core_ops_range_Range_08{_cloop_i * (size_t)4U,
+                                 _cloop_i * (size_t)4U + (size_t)4U}));
     if (!done) {
-      Eurydice_slice uu____0 = random_bytes;
       size_t sampled =
           libcrux_ml_dsa_simd_portable_rejection_sample_less_than_eta_equals_4_65(
-              uu____0, Eurydice_array_to_subslice_from(
-                           (size_t)263U, out, sampled_coefficients[0U], int32_t,
-                           size_t, int32_t[]));
+              random_bytes, Eurydice_array_to_subslice_from_mut_96(
+                                out, sampled_coefficients[0U]));
       sampled_coefficients[0U] = sampled_coefficients[0U] + sampled;
       if (sampled_coefficients[0U] >=
           LIBCRUX_ML_DSA_CONSTANTS_COEFFICIENTS_IN_RING_ELEMENT) {
@@ -4344,21 +4233,21 @@ libcrux_ml_dsa_simd_portable_vector_type_Coefficients with const generics
 */
 static KRML_MUSTINLINE bool
 libcrux_ml_dsa_sample_rejection_sample_less_than_eta_equals_2_37(
-    Eurydice_slice randomness, size_t *sampled_coefficients, int32_t *out) {
+    Eurydice_borrow_slice_u8 randomness, size_t *sampled_coefficients,
+    Eurydice_arr_13 *out) {
   bool done = false;
   for (size_t i = (size_t)0U;
        i < Eurydice_slice_len(randomness, uint8_t) / (size_t)4U; i++) {
     size_t _cloop_i = i;
-    Eurydice_slice random_bytes =
-        Eurydice_slice_subslice3(randomness, _cloop_i * (size_t)4U,
-                                 _cloop_i * (size_t)4U + (size_t)4U, uint8_t *);
+    Eurydice_borrow_slice_u8 random_bytes = Eurydice_slice_subslice_shared_7e(
+        randomness,
+        (core_ops_range_Range_08{_cloop_i * (size_t)4U,
+                                 _cloop_i * (size_t)4U + (size_t)4U}));
     if (!done) {
-      Eurydice_slice uu____0 = random_bytes;
       size_t sampled =
           libcrux_ml_dsa_simd_portable_rejection_sample_less_than_eta_equals_2_65(
-              uu____0, Eurydice_array_to_subslice_from(
-                           (size_t)263U, out, sampled_coefficients[0U], int32_t,
-                           size_t, int32_t[]));
+              random_bytes, Eurydice_array_to_subslice_from_mut_96(
+                                out, sampled_coefficients[0U]));
       sampled_coefficients[0U] = sampled_coefficients[0U] + sampled;
       if (sampled_coefficients[0U] >=
           LIBCRUX_ML_DSA_CONSTANTS_COEFFICIENTS_IN_RING_ELEMENT) {
@@ -4377,8 +4266,8 @@ with const generics
 */
 static KRML_MUSTINLINE bool
 libcrux_ml_dsa_sample_rejection_sample_less_than_eta_37(
-    libcrux_ml_dsa_constants_Eta eta, Eurydice_slice randomness,
-    size_t *sampled, int32_t *out) {
+    libcrux_ml_dsa_constants_Eta eta, Eurydice_borrow_slice_u8 randomness,
+    size_t *sampled, Eurydice_arr_13 *out) {
   switch (eta) {
     case libcrux_ml_dsa_constants_Eta_Two: {
       break;
@@ -4409,18 +4298,18 @@ with const generics
 
 */
 static inline void libcrux_ml_dsa_polynomial_from_i32_array_ff_37(
-    Eurydice_slice array,
-    libcrux_ml_dsa_polynomial_PolynomialRingElement_e8 *result) {
+    Eurydice_dst_ref_shared_fc array, Eurydice_arr_a4 *result) {
   for (size_t i = (size_t)0U;
        i < LIBCRUX_ML_DSA_SIMD_TRAITS_SIMD_UNITS_IN_RING_ELEMENT; i++) {
     size_t i0 = i;
     libcrux_ml_dsa_simd_portable_from_coefficient_array_65(
-        Eurydice_slice_subslice3(
-            array, i0 * LIBCRUX_ML_DSA_SIMD_TRAITS_COEFFICIENTS_IN_SIMD_UNIT,
-            (i0 + (size_t)1U) *
-                LIBCRUX_ML_DSA_SIMD_TRAITS_COEFFICIENTS_IN_SIMD_UNIT,
-            int32_t *),
-        &result->simd_units[i0]);
+        Eurydice_slice_subslice_shared_46(
+            array,
+            (core_ops_range_Range_08{
+                i0 * LIBCRUX_ML_DSA_SIMD_TRAITS_COEFFICIENTS_IN_SIMD_UNIT,
+                (i0 + (size_t)1U) *
+                    LIBCRUX_ML_DSA_SIMD_TRAITS_COEFFICIENTS_IN_SIMD_UNIT})),
+        &result->data[i0]);
   }
 }
 
@@ -4432,44 +4321,45 @@ libcrux_ml_dsa_hash_functions_portable_Shake256X4 with const generics
 */
 static KRML_MUSTINLINE void
 libcrux_ml_dsa_sample_sample_four_error_ring_elements_29(
-    libcrux_ml_dsa_constants_Eta eta, Eurydice_slice seed, uint16_t start_index,
-    Eurydice_slice re) {
-  uint8_t seed0[66U];
-  libcrux_ml_dsa_sample_add_error_domain_separator(seed, start_index, seed0);
-  uint8_t seed1[66U];
-  libcrux_ml_dsa_sample_add_error_domain_separator(
-      seed, (uint32_t)start_index + 1U, seed1);
-  uint8_t seed2[66U];
-  libcrux_ml_dsa_sample_add_error_domain_separator(
-      seed, (uint32_t)start_index + 2U, seed2);
-  uint8_t seed3[66U];
-  libcrux_ml_dsa_sample_add_error_domain_separator(
-      seed, (uint32_t)start_index + 3U, seed3);
+    libcrux_ml_dsa_constants_Eta eta, Eurydice_borrow_slice_u8 seed,
+    uint16_t start_index, Eurydice_dst_ref_mut_f3 re) {
+  Eurydice_arr_a2 seed0 =
+      libcrux_ml_dsa_sample_add_error_domain_separator(seed, start_index);
+  Eurydice_arr_a2 seed1 = libcrux_ml_dsa_sample_add_error_domain_separator(
+      seed, (uint32_t)start_index + 1U);
+  Eurydice_arr_a2 seed2 = libcrux_ml_dsa_sample_add_error_domain_separator(
+      seed, (uint32_t)start_index + 2U);
+  Eurydice_arr_a2 seed3 = libcrux_ml_dsa_sample_add_error_domain_separator(
+      seed, (uint32_t)start_index + 3U);
   libcrux_ml_dsa_hash_functions_portable_Shake256X4 state =
       libcrux_ml_dsa_hash_functions_portable_init_absorb_x4_9b(
-          Eurydice_array_to_slice((size_t)66U, seed0, uint8_t),
-          Eurydice_array_to_slice((size_t)66U, seed1, uint8_t),
-          Eurydice_array_to_slice((size_t)66U, seed2, uint8_t),
-          Eurydice_array_to_slice((size_t)66U, seed3, uint8_t));
-  uint8_t_136size_t__x4 randomnesses0 =
+          Eurydice_array_to_slice_shared_39(&seed0),
+          Eurydice_array_to_slice_shared_39(&seed1),
+          Eurydice_array_to_slice_shared_39(&seed2),
+          Eurydice_array_to_slice_shared_39(&seed3));
+  Eurydice_arr_uint8_t___136size_t___x4 randomnesses0 =
       libcrux_ml_dsa_hash_functions_portable_squeeze_first_block_x4_9b(&state);
-  int32_t out[4U][263U] = {{0U}};
+  Eurydice_arr_46 out = {{{{0U}}, {{0U}}, {{0U}}, {{0U}}}};
   size_t sampled0 = (size_t)0U;
   size_t sampled1 = (size_t)0U;
   size_t sampled2 = (size_t)0U;
   size_t sampled3 = (size_t)0U;
+  libcrux_ml_dsa_constants_Eta uu____0 = eta;
   bool done0 = libcrux_ml_dsa_sample_rejection_sample_less_than_eta_37(
-      eta, Eurydice_array_to_slice((size_t)136U, randomnesses0.fst, uint8_t),
-      &sampled0, out[0U]);
+      uu____0, Eurydice_array_to_slice_shared_d4(&randomnesses0.fst), &sampled0,
+      out.data);
+  libcrux_ml_dsa_constants_Eta uu____1 = eta;
   bool done1 = libcrux_ml_dsa_sample_rejection_sample_less_than_eta_37(
-      eta, Eurydice_array_to_slice((size_t)136U, randomnesses0.snd, uint8_t),
-      &sampled1, out[1U]);
+      uu____1, Eurydice_array_to_slice_shared_d4(&randomnesses0.snd), &sampled1,
+      &out.data[1U]);
+  libcrux_ml_dsa_constants_Eta uu____2 = eta;
   bool done2 = libcrux_ml_dsa_sample_rejection_sample_less_than_eta_37(
-      eta, Eurydice_array_to_slice((size_t)136U, randomnesses0.thd, uint8_t),
-      &sampled2, out[2U]);
+      uu____2, Eurydice_array_to_slice_shared_d4(&randomnesses0.thd), &sampled2,
+      &out.data[2U]);
+  libcrux_ml_dsa_constants_Eta uu____3 = eta;
   bool done3 = libcrux_ml_dsa_sample_rejection_sample_less_than_eta_37(
-      eta, Eurydice_array_to_slice((size_t)136U, randomnesses0.f3, uint8_t),
-      &sampled3, out[3U]);
+      uu____3, Eurydice_array_to_slice_shared_d4(&randomnesses0.f3), &sampled3,
+      &out.data[3U]);
   while (true) {
     if (done0) {
       if (done1) {
@@ -4477,145 +4367,136 @@ libcrux_ml_dsa_sample_sample_four_error_ring_elements_29(
           if (done3) {
             break;
           } else {
-            uint8_t_136size_t__x4 randomnesses =
+            Eurydice_arr_uint8_t___136size_t___x4 randomnesses =
                 libcrux_ml_dsa_hash_functions_portable_squeeze_next_block_x4_9b(
                     &state);
             if (!done0) {
+              libcrux_ml_dsa_constants_Eta uu____4 = eta;
               done0 = libcrux_ml_dsa_sample_rejection_sample_less_than_eta_37(
-                  eta,
-                  Eurydice_array_to_slice((size_t)136U, randomnesses.fst,
-                                          uint8_t),
-                  &sampled0, out[0U]);
+                  uu____4, Eurydice_array_to_slice_shared_d4(&randomnesses.fst),
+                  &sampled0, out.data);
             }
             if (!done1) {
+              libcrux_ml_dsa_constants_Eta uu____5 = eta;
               done1 = libcrux_ml_dsa_sample_rejection_sample_less_than_eta_37(
-                  eta,
-                  Eurydice_array_to_slice((size_t)136U, randomnesses.snd,
-                                          uint8_t),
-                  &sampled1, out[1U]);
+                  uu____5, Eurydice_array_to_slice_shared_d4(&randomnesses.snd),
+                  &sampled1, &out.data[1U]);
             }
             if (!done2) {
+              libcrux_ml_dsa_constants_Eta uu____6 = eta;
               done2 = libcrux_ml_dsa_sample_rejection_sample_less_than_eta_37(
-                  eta,
-                  Eurydice_array_to_slice((size_t)136U, randomnesses.thd,
-                                          uint8_t),
-                  &sampled2, out[2U]);
+                  uu____6, Eurydice_array_to_slice_shared_d4(&randomnesses.thd),
+                  &sampled2, &out.data[2U]);
             }
             if (!done3) {
+              libcrux_ml_dsa_constants_Eta uu____7 = eta;
               done3 = libcrux_ml_dsa_sample_rejection_sample_less_than_eta_37(
-                  eta,
-                  Eurydice_array_to_slice((size_t)136U, randomnesses.f3,
-                                          uint8_t),
-                  &sampled3, out[3U]);
+                  uu____7, Eurydice_array_to_slice_shared_d4(&randomnesses.f3),
+                  &sampled3, &out.data[3U]);
             }
           }
         } else {
-          uint8_t_136size_t__x4 randomnesses =
+          Eurydice_arr_uint8_t___136size_t___x4 randomnesses =
               libcrux_ml_dsa_hash_functions_portable_squeeze_next_block_x4_9b(
                   &state);
           if (!done0) {
+            libcrux_ml_dsa_constants_Eta uu____8 = eta;
             done0 = libcrux_ml_dsa_sample_rejection_sample_less_than_eta_37(
-                eta,
-                Eurydice_array_to_slice((size_t)136U, randomnesses.fst,
-                                        uint8_t),
-                &sampled0, out[0U]);
+                uu____8, Eurydice_array_to_slice_shared_d4(&randomnesses.fst),
+                &sampled0, out.data);
           }
           if (!done1) {
+            libcrux_ml_dsa_constants_Eta uu____9 = eta;
             done1 = libcrux_ml_dsa_sample_rejection_sample_less_than_eta_37(
-                eta,
-                Eurydice_array_to_slice((size_t)136U, randomnesses.snd,
-                                        uint8_t),
-                &sampled1, out[1U]);
+                uu____9, Eurydice_array_to_slice_shared_d4(&randomnesses.snd),
+                &sampled1, &out.data[1U]);
           }
           if (!done2) {
+            libcrux_ml_dsa_constants_Eta uu____10 = eta;
             done2 = libcrux_ml_dsa_sample_rejection_sample_less_than_eta_37(
-                eta,
-                Eurydice_array_to_slice((size_t)136U, randomnesses.thd,
-                                        uint8_t),
-                &sampled2, out[2U]);
+                uu____10, Eurydice_array_to_slice_shared_d4(&randomnesses.thd),
+                &sampled2, &out.data[2U]);
           }
           if (!done3) {
+            libcrux_ml_dsa_constants_Eta uu____11 = eta;
             done3 = libcrux_ml_dsa_sample_rejection_sample_less_than_eta_37(
-                eta,
-                Eurydice_array_to_slice((size_t)136U, randomnesses.f3, uint8_t),
-                &sampled3, out[3U]);
+                uu____11, Eurydice_array_to_slice_shared_d4(&randomnesses.f3),
+                &sampled3, &out.data[3U]);
           }
         }
       } else {
-        uint8_t_136size_t__x4 randomnesses =
+        Eurydice_arr_uint8_t___136size_t___x4 randomnesses =
             libcrux_ml_dsa_hash_functions_portable_squeeze_next_block_x4_9b(
                 &state);
         if (!done0) {
+          libcrux_ml_dsa_constants_Eta uu____12 = eta;
           done0 = libcrux_ml_dsa_sample_rejection_sample_less_than_eta_37(
-              eta,
-              Eurydice_array_to_slice((size_t)136U, randomnesses.fst, uint8_t),
-              &sampled0, out[0U]);
+              uu____12, Eurydice_array_to_slice_shared_d4(&randomnesses.fst),
+              &sampled0, out.data);
         }
         if (!done1) {
+          libcrux_ml_dsa_constants_Eta uu____13 = eta;
           done1 = libcrux_ml_dsa_sample_rejection_sample_less_than_eta_37(
-              eta,
-              Eurydice_array_to_slice((size_t)136U, randomnesses.snd, uint8_t),
-              &sampled1, out[1U]);
+              uu____13, Eurydice_array_to_slice_shared_d4(&randomnesses.snd),
+              &sampled1, &out.data[1U]);
         }
         if (!done2) {
+          libcrux_ml_dsa_constants_Eta uu____14 = eta;
           done2 = libcrux_ml_dsa_sample_rejection_sample_less_than_eta_37(
-              eta,
-              Eurydice_array_to_slice((size_t)136U, randomnesses.thd, uint8_t),
-              &sampled2, out[2U]);
+              uu____14, Eurydice_array_to_slice_shared_d4(&randomnesses.thd),
+              &sampled2, &out.data[2U]);
         }
         if (!done3) {
+          libcrux_ml_dsa_constants_Eta uu____15 = eta;
           done3 = libcrux_ml_dsa_sample_rejection_sample_less_than_eta_37(
-              eta,
-              Eurydice_array_to_slice((size_t)136U, randomnesses.f3, uint8_t),
-              &sampled3, out[3U]);
+              uu____15, Eurydice_array_to_slice_shared_d4(&randomnesses.f3),
+              &sampled3, &out.data[3U]);
         }
       }
     } else {
-      uint8_t_136size_t__x4 randomnesses =
+      Eurydice_arr_uint8_t___136size_t___x4 randomnesses =
           libcrux_ml_dsa_hash_functions_portable_squeeze_next_block_x4_9b(
               &state);
       if (!done0) {
+        libcrux_ml_dsa_constants_Eta uu____16 = eta;
         done0 = libcrux_ml_dsa_sample_rejection_sample_less_than_eta_37(
-            eta,
-            Eurydice_array_to_slice((size_t)136U, randomnesses.fst, uint8_t),
-            &sampled0, out[0U]);
+            uu____16, Eurydice_array_to_slice_shared_d4(&randomnesses.fst),
+            &sampled0, out.data);
       }
       if (!done1) {
+        libcrux_ml_dsa_constants_Eta uu____17 = eta;
         done1 = libcrux_ml_dsa_sample_rejection_sample_less_than_eta_37(
-            eta,
-            Eurydice_array_to_slice((size_t)136U, randomnesses.snd, uint8_t),
-            &sampled1, out[1U]);
+            uu____17, Eurydice_array_to_slice_shared_d4(&randomnesses.snd),
+            &sampled1, &out.data[1U]);
       }
       if (!done2) {
+        libcrux_ml_dsa_constants_Eta uu____18 = eta;
         done2 = libcrux_ml_dsa_sample_rejection_sample_less_than_eta_37(
-            eta,
-            Eurydice_array_to_slice((size_t)136U, randomnesses.thd, uint8_t),
-            &sampled2, out[2U]);
+            uu____18, Eurydice_array_to_slice_shared_d4(&randomnesses.thd),
+            &sampled2, &out.data[2U]);
       }
       if (!done3) {
+        libcrux_ml_dsa_constants_Eta uu____19 = eta;
         done3 = libcrux_ml_dsa_sample_rejection_sample_less_than_eta_37(
-            eta,
-            Eurydice_array_to_slice((size_t)136U, randomnesses.f3, uint8_t),
-            &sampled3, out[3U]);
+            uu____19, Eurydice_array_to_slice_shared_d4(&randomnesses.f3),
+            &sampled3, &out.data[3U]);
       }
     }
   }
   size_t max0 = (size_t)start_index + (size_t)4U;
   size_t max;
-  if (Eurydice_slice_len(
-          re, libcrux_ml_dsa_polynomial_PolynomialRingElement_e8) < max0) {
-    max = Eurydice_slice_len(
-        re, libcrux_ml_dsa_polynomial_PolynomialRingElement_e8);
+  if (Eurydice_slice_len((Eurydice_dst_ref_shared_f3{re.ptr, re.meta}),
+                         Eurydice_arr_a4) < max0) {
+    max = Eurydice_slice_len((Eurydice_dst_ref_shared_f3{re.ptr, re.meta}),
+                             Eurydice_arr_a4);
   } else {
     max = max0;
   }
   for (size_t i = (size_t)start_index; i < max; i++) {
     size_t i0 = i;
     libcrux_ml_dsa_polynomial_from_i32_array_ff_37(
-        Eurydice_array_to_slice((size_t)263U, out[i0 % (size_t)4U], int32_t),
-        &Eurydice_slice_index(
-            re, i0, libcrux_ml_dsa_polynomial_PolynomialRingElement_e8,
-            libcrux_ml_dsa_polynomial_PolynomialRingElement_e8 *));
+        Eurydice_array_to_slice_shared_200(&out.data[i0 % (size_t)4U]),
+        &Eurydice_slice_index_mut(re, i0, Eurydice_arr_a4));
   }
 }
 
@@ -4626,10 +4507,10 @@ libcrux_ml_dsa_hash_functions_portable_Shake256X4 with const generics
 
 */
 static KRML_MUSTINLINE void libcrux_ml_dsa_samplex4_sample_s1_and_s2_29(
-    libcrux_ml_dsa_constants_Eta eta, Eurydice_slice seed,
-    Eurydice_slice s1_s2) {
+    libcrux_ml_dsa_constants_Eta eta, Eurydice_borrow_slice_u8 seed,
+    Eurydice_dst_ref_mut_f3 s1_s2) {
   size_t len = Eurydice_slice_len(
-      s1_s2, libcrux_ml_dsa_polynomial_PolynomialRingElement_e8);
+      (Eurydice_dst_ref_shared_f3{s1_s2.ptr, s1_s2.meta}), Eurydice_arr_a4);
   for (size_t i = (size_t)0U; i < len / (size_t)4U; i++) {
     size_t i0 = i;
     libcrux_ml_dsa_sample_sample_four_error_ring_elements_29(
@@ -4643,6 +4524,40 @@ static KRML_MUSTINLINE void libcrux_ml_dsa_samplex4_sample_s1_and_s2_29(
 }
 
 /**
+A monomorphic instance of Eurydice.array_to_slice_mut
+with types libcrux_ml_dsa_polynomial_PolynomialRingElement
+libcrux_ml_dsa_simd_portable_vector_type_Coefficients with const generics
+- N= 11
+*/
+static inline Eurydice_dst_ref_mut_f3 Eurydice_array_to_slice_mut_71(
+    Eurydice_arr_93 *a) {
+  Eurydice_dst_ref_mut_f3 lit;
+  lit.ptr = a->data;
+  lit.meta = (size_t)11U;
+  return lit;
+}
+
+/**
+A monomorphic instance of Eurydice.arr
+with types libcrux_ml_dsa_polynomial_PolynomialRingElement
+libcrux_ml_dsa_simd_portable_vector_type_Coefficients with const generics
+- $6size_t
+*/
+typedef struct Eurydice_arr_47_s {
+  Eurydice_arr_a4 data[6U];
+} Eurydice_arr_47;
+
+/**
+A monomorphic instance of Eurydice.arr
+with types libcrux_ml_dsa_polynomial_PolynomialRingElement
+libcrux_ml_dsa_simd_portable_vector_type_Coefficients with const generics
+- $30size_t
+*/
+typedef struct Eurydice_arr_c9_s {
+  Eurydice_arr_a4 data[30U];
+} Eurydice_arr_c9;
+
+/**
 A monomorphic instance of
 libcrux_ml_dsa.sample.rejection_sample_less_than_field_modulus with types
 libcrux_ml_dsa_simd_portable_vector_type_Coefficients with const generics
@@ -4650,21 +4565,21 @@ libcrux_ml_dsa_simd_portable_vector_type_Coefficients with const generics
 */
 static KRML_MUSTINLINE bool
 libcrux_ml_dsa_sample_rejection_sample_less_than_field_modulus_37(
-    Eurydice_slice randomness, size_t *sampled_coefficients, int32_t *out) {
+    Eurydice_borrow_slice_u8 randomness, size_t *sampled_coefficients,
+    Eurydice_arr_13 *out) {
   bool done = false;
   for (size_t i = (size_t)0U;
        i < Eurydice_slice_len(randomness, uint8_t) / (size_t)24U; i++) {
     size_t _cloop_i = i;
-    Eurydice_slice random_bytes = Eurydice_slice_subslice3(
-        randomness, _cloop_i * (size_t)24U,
-        _cloop_i * (size_t)24U + (size_t)24U, uint8_t *);
+    Eurydice_borrow_slice_u8 random_bytes = Eurydice_slice_subslice_shared_7e(
+        randomness,
+        (core_ops_range_Range_08{_cloop_i * (size_t)24U,
+                                 _cloop_i * (size_t)24U + (size_t)24U}));
     if (!done) {
-      Eurydice_slice uu____0 = random_bytes;
       size_t sampled =
           libcrux_ml_dsa_simd_portable_rejection_sample_less_than_field_modulus_65(
-              uu____0, Eurydice_array_to_subslice_from(
-                           (size_t)263U, out, sampled_coefficients[0U], int32_t,
-                           size_t, int32_t[]));
+              random_bytes, Eurydice_array_to_subslice_from_mut_96(
+                                out, sampled_coefficients[0U]));
       sampled_coefficients[0U] = sampled_coefficients[0U] + sampled;
       if (sampled_coefficients[0U] >=
           LIBCRUX_ML_DSA_CONSTANTS_COEFFICIENTS_IN_RING_ELEMENT) {
@@ -4694,40 +4609,29 @@ libcrux_ml_dsa_hash_functions_portable_Shake128X4 with const generics
 */
 static KRML_MUSTINLINE void
 libcrux_ml_dsa_sample_sample_up_to_four_ring_elements_flat_63(
-    size_t columns, Eurydice_slice seed, Eurydice_slice matrix,
-    uint8_t *rand_stack0, uint8_t *rand_stack1, uint8_t *rand_stack2,
-    uint8_t *rand_stack3, Eurydice_slice tmp_stack, size_t start_index,
-    size_t elements_requested) {
-  uint8_t seed0[34U];
-  libcrux_ml_dsa_sample_add_domain_separator(
-      seed,
-      libcrux_ml_dsa_sample_sample_up_to_four_ring_elements_flat_xy(start_index,
-                                                                    columns),
-      seed0);
-  uint8_t seed1[34U];
-  libcrux_ml_dsa_sample_add_domain_separator(
-      seed,
-      libcrux_ml_dsa_sample_sample_up_to_four_ring_elements_flat_xy(
-          start_index + (size_t)1U, columns),
-      seed1);
-  uint8_t seed2[34U];
-  libcrux_ml_dsa_sample_add_domain_separator(
-      seed,
-      libcrux_ml_dsa_sample_sample_up_to_four_ring_elements_flat_xy(
-          start_index + (size_t)2U, columns),
-      seed2);
-  uint8_t seed3[34U];
-  libcrux_ml_dsa_sample_add_domain_separator(
-      seed,
-      libcrux_ml_dsa_sample_sample_up_to_four_ring_elements_flat_xy(
-          start_index + (size_t)3U, columns),
-      seed3);
+    size_t columns, Eurydice_borrow_slice_u8 seed,
+    Eurydice_dst_ref_mut_f3 matrix, Eurydice_arr_12 *rand_stack0,
+    Eurydice_arr_12 *rand_stack1, Eurydice_arr_12 *rand_stack2,
+    Eurydice_arr_12 *rand_stack3, Eurydice_dst_ref_mut_2c tmp_stack,
+    size_t start_index, size_t elements_requested) {
+  Eurydice_arr_48 seed0 = libcrux_ml_dsa_sample_add_domain_separator(
+      seed, libcrux_ml_dsa_sample_sample_up_to_four_ring_elements_flat_xy(
+                start_index, columns));
+  Eurydice_arr_48 seed1 = libcrux_ml_dsa_sample_add_domain_separator(
+      seed, libcrux_ml_dsa_sample_sample_up_to_four_ring_elements_flat_xy(
+                start_index + (size_t)1U, columns));
+  Eurydice_arr_48 seed2 = libcrux_ml_dsa_sample_add_domain_separator(
+      seed, libcrux_ml_dsa_sample_sample_up_to_four_ring_elements_flat_xy(
+                start_index + (size_t)2U, columns));
+  Eurydice_arr_48 seed3 = libcrux_ml_dsa_sample_add_domain_separator(
+      seed, libcrux_ml_dsa_sample_sample_up_to_four_ring_elements_flat_xy(
+                start_index + (size_t)3U, columns));
   libcrux_ml_dsa_hash_functions_portable_Shake128X4 state =
       libcrux_ml_dsa_hash_functions_portable_init_absorb_11(
-          Eurydice_array_to_slice((size_t)34U, seed0, uint8_t),
-          Eurydice_array_to_slice((size_t)34U, seed1, uint8_t),
-          Eurydice_array_to_slice((size_t)34U, seed2, uint8_t),
-          Eurydice_array_to_slice((size_t)34U, seed3, uint8_t));
+          Eurydice_array_to_slice_shared_8d(&seed0),
+          Eurydice_array_to_slice_shared_8d(&seed1),
+          Eurydice_array_to_slice_shared_8d(&seed2),
+          Eurydice_array_to_slice_shared_8d(&seed3));
   libcrux_ml_dsa_hash_functions_portable_squeeze_first_five_blocks_11(
       &state, rand_stack0, rand_stack1, rand_stack2, rand_stack3);
   size_t sampled0 = (size_t)0U;
@@ -4736,28 +4640,20 @@ libcrux_ml_dsa_sample_sample_up_to_four_ring_elements_flat_63(
   size_t sampled3 = (size_t)0U;
   bool done0 =
       libcrux_ml_dsa_sample_rejection_sample_less_than_field_modulus_37(
-          Eurydice_array_to_slice((size_t)840U, rand_stack0, uint8_t),
-          &sampled0,
-          Eurydice_slice_index(tmp_stack, (size_t)0U, int32_t[263U],
-                               int32_t(*)[263U]));
+          Eurydice_array_to_slice_shared_a8(rand_stack0), &sampled0,
+          &Eurydice_slice_index_mut(tmp_stack, (size_t)0U, Eurydice_arr_13));
   bool done1 =
       libcrux_ml_dsa_sample_rejection_sample_less_than_field_modulus_37(
-          Eurydice_array_to_slice((size_t)840U, rand_stack1, uint8_t),
-          &sampled1,
-          Eurydice_slice_index(tmp_stack, (size_t)1U, int32_t[263U],
-                               int32_t(*)[263U]));
+          Eurydice_array_to_slice_shared_a8(rand_stack1), &sampled1,
+          &Eurydice_slice_index_mut(tmp_stack, (size_t)1U, Eurydice_arr_13));
   bool done2 =
       libcrux_ml_dsa_sample_rejection_sample_less_than_field_modulus_37(
-          Eurydice_array_to_slice((size_t)840U, rand_stack2, uint8_t),
-          &sampled2,
-          Eurydice_slice_index(tmp_stack, (size_t)2U, int32_t[263U],
-                               int32_t(*)[263U]));
+          Eurydice_array_to_slice_shared_a8(rand_stack2), &sampled2,
+          &Eurydice_slice_index_mut(tmp_stack, (size_t)2U, Eurydice_arr_13));
   bool done3 =
       libcrux_ml_dsa_sample_rejection_sample_less_than_field_modulus_37(
-          Eurydice_array_to_slice((size_t)840U, rand_stack3, uint8_t),
-          &sampled3,
-          Eurydice_slice_index(tmp_stack, (size_t)3U, int32_t[263U],
-                               int32_t(*)[263U]));
+          Eurydice_array_to_slice_shared_a8(rand_stack3), &sampled3,
+          &Eurydice_slice_index_mut(tmp_stack, (size_t)3U, Eurydice_arr_13));
   while (true) {
     if (done0) {
       if (done1) {
@@ -4765,179 +4661,156 @@ libcrux_ml_dsa_sample_sample_up_to_four_ring_elements_flat_63(
           if (done3) {
             break;
           } else {
-            uint8_t_168size_t__x4 randomnesses =
+            Eurydice_arr_uint8_t___168size_t___x4 randomnesses =
                 libcrux_ml_dsa_hash_functions_portable_squeeze_next_block_11(
                     &state);
             if (!done0) {
               done0 =
                   libcrux_ml_dsa_sample_rejection_sample_less_than_field_modulus_37(
-                      Eurydice_array_to_slice((size_t)168U, randomnesses.fst,
-                                              uint8_t),
+                      Eurydice_array_to_slice_shared_7b(&randomnesses.fst),
                       &sampled0,
-                      Eurydice_slice_index(tmp_stack, (size_t)0U, int32_t[263U],
-                                           int32_t(*)[263U]));
+                      &Eurydice_slice_index_mut(tmp_stack, (size_t)0U,
+                                                Eurydice_arr_13));
             }
             if (!done1) {
               done1 =
                   libcrux_ml_dsa_sample_rejection_sample_less_than_field_modulus_37(
-                      Eurydice_array_to_slice((size_t)168U, randomnesses.snd,
-                                              uint8_t),
+                      Eurydice_array_to_slice_shared_7b(&randomnesses.snd),
                       &sampled1,
-                      Eurydice_slice_index(tmp_stack, (size_t)1U, int32_t[263U],
-                                           int32_t(*)[263U]));
+                      &Eurydice_slice_index_mut(tmp_stack, (size_t)1U,
+                                                Eurydice_arr_13));
             }
             if (!done2) {
               done2 =
                   libcrux_ml_dsa_sample_rejection_sample_less_than_field_modulus_37(
-                      Eurydice_array_to_slice((size_t)168U, randomnesses.thd,
-                                              uint8_t),
+                      Eurydice_array_to_slice_shared_7b(&randomnesses.thd),
                       &sampled2,
-                      Eurydice_slice_index(tmp_stack, (size_t)2U, int32_t[263U],
-                                           int32_t(*)[263U]));
+                      &Eurydice_slice_index_mut(tmp_stack, (size_t)2U,
+                                                Eurydice_arr_13));
             }
             if (!done3) {
               done3 =
                   libcrux_ml_dsa_sample_rejection_sample_less_than_field_modulus_37(
-                      Eurydice_array_to_slice((size_t)168U, randomnesses.f3,
-                                              uint8_t),
+                      Eurydice_array_to_slice_shared_7b(&randomnesses.f3),
                       &sampled3,
-                      Eurydice_slice_index(tmp_stack, (size_t)3U, int32_t[263U],
-                                           int32_t(*)[263U]));
+                      &Eurydice_slice_index_mut(tmp_stack, (size_t)3U,
+                                                Eurydice_arr_13));
             }
           }
         } else {
-          uint8_t_168size_t__x4 randomnesses =
+          Eurydice_arr_uint8_t___168size_t___x4 randomnesses =
               libcrux_ml_dsa_hash_functions_portable_squeeze_next_block_11(
                   &state);
           if (!done0) {
             done0 =
                 libcrux_ml_dsa_sample_rejection_sample_less_than_field_modulus_37(
-                    Eurydice_array_to_slice((size_t)168U, randomnesses.fst,
-                                            uint8_t),
+                    Eurydice_array_to_slice_shared_7b(&randomnesses.fst),
                     &sampled0,
-                    Eurydice_slice_index(tmp_stack, (size_t)0U, int32_t[263U],
-                                         int32_t(*)[263U]));
+                    &Eurydice_slice_index_mut(tmp_stack, (size_t)0U,
+                                              Eurydice_arr_13));
           }
           if (!done1) {
             done1 =
                 libcrux_ml_dsa_sample_rejection_sample_less_than_field_modulus_37(
-                    Eurydice_array_to_slice((size_t)168U, randomnesses.snd,
-                                            uint8_t),
+                    Eurydice_array_to_slice_shared_7b(&randomnesses.snd),
                     &sampled1,
-                    Eurydice_slice_index(tmp_stack, (size_t)1U, int32_t[263U],
-                                         int32_t(*)[263U]));
+                    &Eurydice_slice_index_mut(tmp_stack, (size_t)1U,
+                                              Eurydice_arr_13));
           }
           if (!done2) {
             done2 =
                 libcrux_ml_dsa_sample_rejection_sample_less_than_field_modulus_37(
-                    Eurydice_array_to_slice((size_t)168U, randomnesses.thd,
-                                            uint8_t),
+                    Eurydice_array_to_slice_shared_7b(&randomnesses.thd),
                     &sampled2,
-                    Eurydice_slice_index(tmp_stack, (size_t)2U, int32_t[263U],
-                                         int32_t(*)[263U]));
+                    &Eurydice_slice_index_mut(tmp_stack, (size_t)2U,
+                                              Eurydice_arr_13));
           }
           if (!done3) {
             done3 =
                 libcrux_ml_dsa_sample_rejection_sample_less_than_field_modulus_37(
-                    Eurydice_array_to_slice((size_t)168U, randomnesses.f3,
-                                            uint8_t),
+                    Eurydice_array_to_slice_shared_7b(&randomnesses.f3),
                     &sampled3,
-                    Eurydice_slice_index(tmp_stack, (size_t)3U, int32_t[263U],
-                                         int32_t(*)[263U]));
+                    &Eurydice_slice_index_mut(tmp_stack, (size_t)3U,
+                                              Eurydice_arr_13));
           }
         }
       } else {
-        uint8_t_168size_t__x4 randomnesses =
+        Eurydice_arr_uint8_t___168size_t___x4 randomnesses =
             libcrux_ml_dsa_hash_functions_portable_squeeze_next_block_11(
                 &state);
         if (!done0) {
           done0 =
               libcrux_ml_dsa_sample_rejection_sample_less_than_field_modulus_37(
-                  Eurydice_array_to_slice((size_t)168U, randomnesses.fst,
-                                          uint8_t),
+                  Eurydice_array_to_slice_shared_7b(&randomnesses.fst),
                   &sampled0,
-                  Eurydice_slice_index(tmp_stack, (size_t)0U, int32_t[263U],
-                                       int32_t(*)[263U]));
+                  &Eurydice_slice_index_mut(tmp_stack, (size_t)0U,
+                                            Eurydice_arr_13));
         }
         if (!done1) {
           done1 =
               libcrux_ml_dsa_sample_rejection_sample_less_than_field_modulus_37(
-                  Eurydice_array_to_slice((size_t)168U, randomnesses.snd,
-                                          uint8_t),
+                  Eurydice_array_to_slice_shared_7b(&randomnesses.snd),
                   &sampled1,
-                  Eurydice_slice_index(tmp_stack, (size_t)1U, int32_t[263U],
-                                       int32_t(*)[263U]));
+                  &Eurydice_slice_index_mut(tmp_stack, (size_t)1U,
+                                            Eurydice_arr_13));
         }
         if (!done2) {
           done2 =
               libcrux_ml_dsa_sample_rejection_sample_less_than_field_modulus_37(
-                  Eurydice_array_to_slice((size_t)168U, randomnesses.thd,
-                                          uint8_t),
+                  Eurydice_array_to_slice_shared_7b(&randomnesses.thd),
                   &sampled2,
-                  Eurydice_slice_index(tmp_stack, (size_t)2U, int32_t[263U],
-                                       int32_t(*)[263U]));
+                  &Eurydice_slice_index_mut(tmp_stack, (size_t)2U,
+                                            Eurydice_arr_13));
         }
         if (!done3) {
           done3 =
               libcrux_ml_dsa_sample_rejection_sample_less_than_field_modulus_37(
-                  Eurydice_array_to_slice((size_t)168U, randomnesses.f3,
-                                          uint8_t),
+                  Eurydice_array_to_slice_shared_7b(&randomnesses.f3),
                   &sampled3,
-                  Eurydice_slice_index(tmp_stack, (size_t)3U, int32_t[263U],
-                                       int32_t(*)[263U]));
+                  &Eurydice_slice_index_mut(tmp_stack, (size_t)3U,
+                                            Eurydice_arr_13));
         }
       }
     } else {
-      uint8_t_168size_t__x4 randomnesses =
+      Eurydice_arr_uint8_t___168size_t___x4 randomnesses =
           libcrux_ml_dsa_hash_functions_portable_squeeze_next_block_11(&state);
       if (!done0) {
         done0 =
             libcrux_ml_dsa_sample_rejection_sample_less_than_field_modulus_37(
-                Eurydice_array_to_slice((size_t)168U, randomnesses.fst,
-                                        uint8_t),
-                &sampled0,
-                Eurydice_slice_index(tmp_stack, (size_t)0U, int32_t[263U],
-                                     int32_t(*)[263U]));
+                Eurydice_array_to_slice_shared_7b(&randomnesses.fst), &sampled0,
+                &Eurydice_slice_index_mut(tmp_stack, (size_t)0U,
+                                          Eurydice_arr_13));
       }
       if (!done1) {
         done1 =
             libcrux_ml_dsa_sample_rejection_sample_less_than_field_modulus_37(
-                Eurydice_array_to_slice((size_t)168U, randomnesses.snd,
-                                        uint8_t),
-                &sampled1,
-                Eurydice_slice_index(tmp_stack, (size_t)1U, int32_t[263U],
-                                     int32_t(*)[263U]));
+                Eurydice_array_to_slice_shared_7b(&randomnesses.snd), &sampled1,
+                &Eurydice_slice_index_mut(tmp_stack, (size_t)1U,
+                                          Eurydice_arr_13));
       }
       if (!done2) {
         done2 =
             libcrux_ml_dsa_sample_rejection_sample_less_than_field_modulus_37(
-                Eurydice_array_to_slice((size_t)168U, randomnesses.thd,
-                                        uint8_t),
-                &sampled2,
-                Eurydice_slice_index(tmp_stack, (size_t)2U, int32_t[263U],
-                                     int32_t(*)[263U]));
+                Eurydice_array_to_slice_shared_7b(&randomnesses.thd), &sampled2,
+                &Eurydice_slice_index_mut(tmp_stack, (size_t)2U,
+                                          Eurydice_arr_13));
       }
       if (!done3) {
         done3 =
             libcrux_ml_dsa_sample_rejection_sample_less_than_field_modulus_37(
-                Eurydice_array_to_slice((size_t)168U, randomnesses.f3, uint8_t),
-                &sampled3,
-                Eurydice_slice_index(tmp_stack, (size_t)3U, int32_t[263U],
-                                     int32_t(*)[263U]));
+                Eurydice_array_to_slice_shared_7b(&randomnesses.f3), &sampled3,
+                &Eurydice_slice_index_mut(tmp_stack, (size_t)3U,
+                                          Eurydice_arr_13));
       }
     }
   }
   for (size_t i = (size_t)0U; i < elements_requested; i++) {
     size_t k = i;
     libcrux_ml_dsa_polynomial_from_i32_array_ff_37(
-        Eurydice_array_to_slice(
-            (size_t)263U,
-            Eurydice_slice_index(tmp_stack, k, int32_t[263U], int32_t(*)[263U]),
-            int32_t),
-        &Eurydice_slice_index(
-            matrix, start_index + k,
-            libcrux_ml_dsa_polynomial_PolynomialRingElement_e8,
-            libcrux_ml_dsa_polynomial_PolynomialRingElement_e8 *));
+        Eurydice_array_to_slice_shared_200(&Eurydice_slice_index_shared(
+            (Eurydice_dst_ref_shared_2c{tmp_stack.ptr, tmp_stack.meta}), k,
+            Eurydice_arr_13)),
+        &Eurydice_slice_index_mut(matrix, start_index + k, Eurydice_arr_a4));
   }
 }
 
@@ -4948,36 +4821,38 @@ libcrux_ml_dsa_hash_functions_portable_Shake128X4 with const generics
 
 */
 static KRML_MUSTINLINE void libcrux_ml_dsa_samplex4_matrix_flat_63(
-    size_t columns, Eurydice_slice seed, Eurydice_slice matrix) {
-  uint8_t rand_stack0[840U] = {0U};
-  uint8_t rand_stack1[840U] = {0U};
-  uint8_t rand_stack2[840U] = {0U};
-  uint8_t rand_stack3[840U] = {0U};
-  int32_t tmp_stack[4U][263U] = {{0U}};
+    size_t columns, Eurydice_borrow_slice_u8 seed,
+    Eurydice_dst_ref_mut_f3 matrix) {
+  Eurydice_arr_12 rand_stack0 = {{0U}};
+  Eurydice_arr_12 rand_stack1 = {{0U}};
+  Eurydice_arr_12 rand_stack2 = {{0U}};
+  Eurydice_arr_12 rand_stack3 = {{0U}};
+  Eurydice_arr_46 tmp_stack = {{{{0U}}, {{0U}}, {{0U}}, {{0U}}}};
   for (size_t i = (size_t)0U;
-       i < Eurydice_slice_len(
-               matrix, libcrux_ml_dsa_polynomial_PolynomialRingElement_e8) /
-               (size_t)4U;
+       i <
+       Eurydice_slice_len((Eurydice_dst_ref_shared_f3{matrix.ptr, matrix.meta}),
+                          Eurydice_arr_a4) /
+           (size_t)4U;
        i++) {
     size_t start_index = i;
     size_t start_index0 = start_index * (size_t)4U;
     size_t uu____0 = start_index0 + (size_t)4U;
     size_t elements_requested;
-    if (uu____0 <=
-        Eurydice_slice_len(
-            matrix, libcrux_ml_dsa_polynomial_PolynomialRingElement_e8)) {
+    if (uu____0 <= Eurydice_slice_len(
+                       (Eurydice_dst_ref_shared_f3{matrix.ptr, matrix.meta}),
+                       Eurydice_arr_a4)) {
       elements_requested = (size_t)4U;
     } else {
       elements_requested =
           Eurydice_slice_len(
-              matrix, libcrux_ml_dsa_polynomial_PolynomialRingElement_e8) -
+              (Eurydice_dst_ref_shared_f3{matrix.ptr, matrix.meta}),
+              Eurydice_arr_a4) -
           start_index0;
     }
     libcrux_ml_dsa_sample_sample_up_to_four_ring_elements_flat_63(
-        columns, seed, matrix, rand_stack0, rand_stack1, rand_stack2,
-        rand_stack3,
-        Eurydice_array_to_slice((size_t)4U, tmp_stack, int32_t[263U]),
-        start_index0, elements_requested);
+        columns, seed, matrix, &rand_stack0, &rand_stack1, &rand_stack2,
+        &rand_stack3, Eurydice_array_to_slice_mut_f6(&tmp_stack), start_index0,
+        elements_requested);
   }
 }
 
@@ -4992,8 +4867,74 @@ with const generics
 
 */
 static inline void libcrux_ml_dsa_samplex4_portable_matrix_flat_a8_37(
-    size_t columns, Eurydice_slice seed, Eurydice_slice matrix) {
+    size_t columns, Eurydice_borrow_slice_u8 seed,
+    Eurydice_dst_ref_mut_f3 matrix) {
   libcrux_ml_dsa_samplex4_matrix_flat_63(columns, seed, matrix);
+}
+
+/**
+A monomorphic instance of Eurydice.array_to_slice_mut
+with types libcrux_ml_dsa_polynomial_PolynomialRingElement
+libcrux_ml_dsa_simd_portable_vector_type_Coefficients with const generics
+- N= 30
+*/
+static inline Eurydice_dst_ref_mut_f3 Eurydice_array_to_slice_mut_710(
+    Eurydice_arr_c9 *a) {
+  Eurydice_dst_ref_mut_f3 lit;
+  lit.ptr = a->data;
+  lit.meta = (size_t)30U;
+  return lit;
+}
+
+/**
+A monomorphic instance of Eurydice.arr
+with types libcrux_ml_dsa_polynomial_PolynomialRingElement
+libcrux_ml_dsa_simd_portable_vector_type_Coefficients with const generics
+- $5size_t
+*/
+typedef struct Eurydice_arr_40_s {
+  Eurydice_arr_a4 data[5U];
+} Eurydice_arr_40;
+
+/**
+A monomorphic instance of Eurydice.array_to_slice_mut
+with types libcrux_ml_dsa_polynomial_PolynomialRingElement
+libcrux_ml_dsa_simd_portable_vector_type_Coefficients with const generics
+- N= 5
+*/
+static inline Eurydice_dst_ref_mut_f3 Eurydice_array_to_slice_mut_711(
+    Eurydice_arr_40 *a) {
+  Eurydice_dst_ref_mut_f3 lit;
+  lit.ptr = a->data;
+  lit.meta = (size_t)5U;
+  return lit;
+}
+
+/**
+A monomorphic instance of Eurydice.array_to_subslice_shared
+with types libcrux_ml_dsa_polynomial_PolynomialRingElement
+libcrux_ml_dsa_simd_portable_vector_type_Coefficients, core_ops_range_Range
+size_t, Eurydice_derefed_slice libcrux_ml_dsa_polynomial_PolynomialRingElement
+libcrux_ml_dsa_simd_portable_vector_type_Coefficients with const generics
+- N= 11
+*/
+static inline Eurydice_dst_ref_shared_f3 Eurydice_array_to_subslice_shared_c3(
+    const Eurydice_arr_93 *a, core_ops_range_Range_08 r) {
+  return (Eurydice_dst_ref_shared_f3{a->data + r.start, r.end - r.start});
+}
+
+/**
+A monomorphic instance of Eurydice.array_to_slice_shared
+with types libcrux_ml_dsa_polynomial_PolynomialRingElement
+libcrux_ml_dsa_simd_portable_vector_type_Coefficients with const generics
+- N= 5
+*/
+static inline Eurydice_dst_ref_shared_f3 Eurydice_array_to_slice_shared_71(
+    const Eurydice_arr_40 *a) {
+  Eurydice_dst_ref_shared_f3 lit;
+  lit.ptr = a->data;
+  lit.meta = (size_t)5U;
+  return lit;
 }
 
 /**
@@ -5002,9 +4943,8 @@ with types libcrux_ml_dsa_simd_portable_vector_type_Coefficients
 with const generics
 
 */
-static KRML_MUSTINLINE void libcrux_ml_dsa_ntt_ntt_37(
-    libcrux_ml_dsa_polynomial_PolynomialRingElement_e8 *re) {
-  libcrux_ml_dsa_simd_portable_ntt_65(re->simd_units);
+static KRML_MUSTINLINE void libcrux_ml_dsa_ntt_ntt_37(Eurydice_arr_a4 *re) {
+  libcrux_ml_dsa_simd_portable_ntt_65(re);
 }
 
 /**
@@ -5014,18 +4954,14 @@ with const generics
 
 */
 static KRML_MUSTINLINE void libcrux_ml_dsa_ntt_ntt_multiply_montgomery_37(
-    libcrux_ml_dsa_polynomial_PolynomialRingElement_e8 *lhs,
-    libcrux_ml_dsa_polynomial_PolynomialRingElement_e8 *rhs) {
+    Eurydice_arr_a4 *lhs, const Eurydice_arr_a4 *rhs) {
   for (size_t i = (size_t)0U;
-       i < Eurydice_slice_len(
-               Eurydice_array_to_slice(
-                   (size_t)32U, lhs->simd_units,
-                   libcrux_ml_dsa_simd_portable_vector_type_Coefficients),
-               libcrux_ml_dsa_simd_portable_vector_type_Coefficients);
+       i < Eurydice_slice_len(Eurydice_array_to_slice_shared_a2(lhs),
+                              Eurydice_arr_d4);
        i++) {
     size_t i0 = i;
-    libcrux_ml_dsa_simd_portable_montgomery_multiply_65(&lhs->simd_units[i0],
-                                                        &rhs->simd_units[i0]);
+    libcrux_ml_dsa_simd_portable_montgomery_multiply_65(&lhs->data[i0],
+                                                        &rhs->data[i0]);
   }
 }
 
@@ -5041,18 +4977,13 @@ with const generics
 
 */
 static KRML_MUSTINLINE void libcrux_ml_dsa_polynomial_add_ff_37(
-    libcrux_ml_dsa_polynomial_PolynomialRingElement_e8 *self,
-    libcrux_ml_dsa_polynomial_PolynomialRingElement_e8 *rhs) {
+    Eurydice_arr_a4 *self, const Eurydice_arr_a4 *rhs) {
   for (size_t i = (size_t)0U;
-       i < Eurydice_slice_len(
-               Eurydice_array_to_slice(
-                   (size_t)32U, self->simd_units,
-                   libcrux_ml_dsa_simd_portable_vector_type_Coefficients),
-               libcrux_ml_dsa_simd_portable_vector_type_Coefficients);
+       i < Eurydice_slice_len(Eurydice_array_to_slice_shared_a2(self),
+                              Eurydice_arr_d4);
        i++) {
     size_t i0 = i;
-    libcrux_ml_dsa_simd_portable_add_65(&self->simd_units[i0],
-                                        &rhs->simd_units[i0]);
+    libcrux_ml_dsa_simd_portable_add_65(&self->data[i0], &rhs->data[i0]);
   }
 }
 
@@ -5062,9 +4993,8 @@ with types libcrux_ml_dsa_simd_portable_vector_type_Coefficients
 with const generics
 
 */
-static KRML_MUSTINLINE void libcrux_ml_dsa_ntt_reduce_37(
-    libcrux_ml_dsa_polynomial_PolynomialRingElement_e8 *re) {
-  libcrux_ml_dsa_simd_portable_reduce_65(re->simd_units);
+static KRML_MUSTINLINE void libcrux_ml_dsa_ntt_reduce_37(Eurydice_arr_a4 *re) {
+  libcrux_ml_dsa_simd_portable_reduce_65(re);
 }
 
 /**
@@ -5074,8 +5004,8 @@ with const generics
 
 */
 static KRML_MUSTINLINE void libcrux_ml_dsa_ntt_invert_ntt_montgomery_37(
-    libcrux_ml_dsa_polynomial_PolynomialRingElement_e8 *re) {
-  libcrux_ml_dsa_simd_portable_invert_ntt_montgomery_65(re->simd_units);
+    Eurydice_arr_a4 *re) {
+  libcrux_ml_dsa_simd_portable_invert_ntt_montgomery_65(re);
 }
 
 /**
@@ -5088,50 +5018,66 @@ with const generics
 
 */
 static KRML_MUSTINLINE void libcrux_ml_dsa_matrix_compute_as1_plus_s2_37(
-    size_t rows_in_a, size_t columns_in_a, Eurydice_slice a_as_ntt,
-    Eurydice_slice s1_ntt, Eurydice_slice s1_s2, Eurydice_slice result) {
+    size_t rows_in_a, size_t columns_in_a, Eurydice_dst_ref_mut_f3 a_as_ntt,
+    Eurydice_dst_ref_shared_f3 s1_ntt, Eurydice_dst_ref_shared_f3 s1_s2,
+    Eurydice_dst_ref_mut_f3 result) {
   for (size_t i0 = (size_t)0U; i0 < rows_in_a; i0++) {
     size_t i1 = i0;
     for (size_t i = (size_t)0U; i < columns_in_a; i++) {
       size_t j = i;
       libcrux_ml_dsa_ntt_ntt_multiply_montgomery_37(
-          &Eurydice_slice_index(
-              a_as_ntt, i1 * columns_in_a + j,
-              libcrux_ml_dsa_polynomial_PolynomialRingElement_e8,
-              libcrux_ml_dsa_polynomial_PolynomialRingElement_e8 *),
-          &Eurydice_slice_index(
-              s1_ntt, j, libcrux_ml_dsa_polynomial_PolynomialRingElement_e8,
-              libcrux_ml_dsa_polynomial_PolynomialRingElement_e8 *));
+          &Eurydice_slice_index_mut(a_as_ntt, i1 * columns_in_a + j,
+                                    Eurydice_arr_a4),
+          &Eurydice_slice_index_shared(s1_ntt, j, Eurydice_arr_a4));
       libcrux_ml_dsa_polynomial_add_ff_37(
-          &Eurydice_slice_index(
-              result, i1, libcrux_ml_dsa_polynomial_PolynomialRingElement_e8,
-              libcrux_ml_dsa_polynomial_PolynomialRingElement_e8 *),
-          &Eurydice_slice_index(
-              a_as_ntt, i1 * columns_in_a + j,
-              libcrux_ml_dsa_polynomial_PolynomialRingElement_e8,
-              libcrux_ml_dsa_polynomial_PolynomialRingElement_e8 *));
+          &Eurydice_slice_index_mut(result, i1, Eurydice_arr_a4),
+          &Eurydice_slice_index_mut(a_as_ntt, i1 * columns_in_a + j,
+                                    Eurydice_arr_a4));
     }
   }
   for (size_t i = (size_t)0U;
-       i < Eurydice_slice_len(
-               result, libcrux_ml_dsa_polynomial_PolynomialRingElement_e8);
+       i <
+       Eurydice_slice_len((Eurydice_dst_ref_shared_f3{result.ptr, result.meta}),
+                          Eurydice_arr_a4);
        i++) {
     size_t i0 = i;
-    libcrux_ml_dsa_ntt_reduce_37(&Eurydice_slice_index(
-        result, i0, libcrux_ml_dsa_polynomial_PolynomialRingElement_e8,
-        libcrux_ml_dsa_polynomial_PolynomialRingElement_e8 *));
-    libcrux_ml_dsa_ntt_invert_ntt_montgomery_37(&Eurydice_slice_index(
-        result, i0, libcrux_ml_dsa_polynomial_PolynomialRingElement_e8,
-        libcrux_ml_dsa_polynomial_PolynomialRingElement_e8 *));
+    libcrux_ml_dsa_ntt_reduce_37(
+        &Eurydice_slice_index_mut(result, i0, Eurydice_arr_a4));
+    libcrux_ml_dsa_ntt_invert_ntt_montgomery_37(
+        &Eurydice_slice_index_mut(result, i0, Eurydice_arr_a4));
     libcrux_ml_dsa_polynomial_add_ff_37(
-        &Eurydice_slice_index(
-            result, i0, libcrux_ml_dsa_polynomial_PolynomialRingElement_e8,
-            libcrux_ml_dsa_polynomial_PolynomialRingElement_e8 *),
-        &Eurydice_slice_index(
-            s1_s2, columns_in_a + i0,
-            libcrux_ml_dsa_polynomial_PolynomialRingElement_e8,
-            libcrux_ml_dsa_polynomial_PolynomialRingElement_e8 *));
+        &Eurydice_slice_index_mut(result, i0, Eurydice_arr_a4),
+        &Eurydice_slice_index_shared(s1_s2, columns_in_a + i0,
+                                     Eurydice_arr_a4));
   }
+}
+
+/**
+A monomorphic instance of Eurydice.array_to_slice_shared
+with types libcrux_ml_dsa_polynomial_PolynomialRingElement
+libcrux_ml_dsa_simd_portable_vector_type_Coefficients with const generics
+- N= 11
+*/
+static inline Eurydice_dst_ref_shared_f3 Eurydice_array_to_slice_shared_710(
+    const Eurydice_arr_93 *a) {
+  Eurydice_dst_ref_shared_f3 lit;
+  lit.ptr = a->data;
+  lit.meta = (size_t)11U;
+  return lit;
+}
+
+/**
+A monomorphic instance of Eurydice.array_to_slice_mut
+with types libcrux_ml_dsa_polynomial_PolynomialRingElement
+libcrux_ml_dsa_simd_portable_vector_type_Coefficients with const generics
+- N= 6
+*/
+static inline Eurydice_dst_ref_mut_f3 Eurydice_array_to_slice_mut_712(
+    Eurydice_arr_47 *a) {
+  Eurydice_dst_ref_mut_f3 lit;
+  lit.ptr = a->data;
+  lit.meta = (size_t)6U;
+  return lit;
 }
 
 /**
@@ -5141,34 +5087,23 @@ with const generics
 
 */
 static KRML_MUSTINLINE void libcrux_ml_dsa_arithmetic_power2round_vector_37(
-    Eurydice_slice t, Eurydice_slice t1) {
+    Eurydice_dst_ref_mut_f3 t, Eurydice_dst_ref_mut_f3 t1) {
   for (size_t i0 = (size_t)0U;
-       i0 < Eurydice_slice_len(
-                t, libcrux_ml_dsa_polynomial_PolynomialRingElement_e8);
+       i0 < Eurydice_slice_len((Eurydice_dst_ref_shared_f3{t.ptr, t.meta}),
+                               Eurydice_arr_a4);
        i0++) {
     size_t i1 = i0;
     for (size_t i = (size_t)0U;
-         i <
-         Eurydice_slice_len(
-             Eurydice_array_to_slice(
-                 (size_t)32U,
-                 Eurydice_slice_index(
-                     t, i1, libcrux_ml_dsa_polynomial_PolynomialRingElement_e8,
-                     libcrux_ml_dsa_polynomial_PolynomialRingElement_e8 *)
-                     .simd_units,
-                 libcrux_ml_dsa_simd_portable_vector_type_Coefficients),
-             libcrux_ml_dsa_simd_portable_vector_type_Coefficients);
+         i < Eurydice_slice_len(
+                 Eurydice_array_to_slice_shared_a2(&Eurydice_slice_index_shared(
+                     (Eurydice_dst_ref_shared_f3{t.ptr, t.meta}), i1,
+                     Eurydice_arr_a4)),
+                 Eurydice_arr_d4);
          i++) {
       size_t j = i;
       libcrux_ml_dsa_simd_portable_power2round_65(
-          &Eurydice_slice_index(
-               t, i1, libcrux_ml_dsa_polynomial_PolynomialRingElement_e8,
-               libcrux_ml_dsa_polynomial_PolynomialRingElement_e8 *)
-               .simd_units[j],
-          &Eurydice_slice_index(
-               t1, i1, libcrux_ml_dsa_polynomial_PolynomialRingElement_e8,
-               libcrux_ml_dsa_polynomial_PolynomialRingElement_e8 *)
-               .simd_units[j]);
+          &Eurydice_slice_index_mut(t, i1, Eurydice_arr_a4).data[j],
+          &Eurydice_slice_index_mut(t1, i1, Eurydice_arr_a4).data[j]);
     }
   }
 }
@@ -5180,27 +5115,22 @@ with const generics
 
 */
 static KRML_MUSTINLINE void libcrux_ml_dsa_encoding_t1_serialize_37(
-    libcrux_ml_dsa_polynomial_PolynomialRingElement_e8 *re,
-    Eurydice_slice serialized) {
+    const Eurydice_arr_a4 *re, Eurydice_mut_borrow_slice_u8 serialized) {
   for (size_t i = (size_t)0U;
-       i < Eurydice_slice_len(
-               Eurydice_array_to_slice(
-                   (size_t)32U, re->simd_units,
-                   libcrux_ml_dsa_simd_portable_vector_type_Coefficients),
-               libcrux_ml_dsa_simd_portable_vector_type_Coefficients);
+       i < Eurydice_slice_len(Eurydice_array_to_slice_shared_a2(re),
+                              Eurydice_arr_d4);
        i++) {
     size_t i0 = i;
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients *simd_unit =
-        &re->simd_units[i0];
+    const Eurydice_arr_d4 *simd_unit = &re->data[i0];
     libcrux_ml_dsa_simd_portable_t1_serialize_65(
         simd_unit,
-        Eurydice_slice_subslice3(
+        Eurydice_slice_subslice_mut_7e(
             serialized,
-            i0 *
-                LIBCRUX_ML_DSA_ENCODING_T1_SERIALIZE_OUTPUT_BYTES_PER_SIMD_UNIT,
-            (i0 + (size_t)1U) *
-                LIBCRUX_ML_DSA_ENCODING_T1_SERIALIZE_OUTPUT_BYTES_PER_SIMD_UNIT,
-            uint8_t *));
+            (core_ops_range_Range_08{
+                i0 *
+                    LIBCRUX_ML_DSA_ENCODING_T1_SERIALIZE_OUTPUT_BYTES_PER_SIMD_UNIT,
+                (i0 + (size_t)1U) *
+                    LIBCRUX_ML_DSA_ENCODING_T1_SERIALIZE_OUTPUT_BYTES_PER_SIMD_UNIT})));
   }
 }
 
@@ -5212,30 +5142,43 @@ libcrux_ml_dsa_simd_portable_vector_type_Coefficients with const generics
 */
 static KRML_MUSTINLINE void
 libcrux_ml_dsa_encoding_verification_key_generate_serialized_37(
-    Eurydice_slice seed, Eurydice_slice t1,
-    Eurydice_slice verification_key_serialized) {
-  Eurydice_slice_copy(Eurydice_slice_subslice3(
-                          verification_key_serialized, (size_t)0U,
-                          LIBCRUX_ML_DSA_CONSTANTS_SEED_FOR_A_SIZE, uint8_t *),
-                      seed, uint8_t);
-  for (size_t i = (size_t)0U;
-       i < Eurydice_slice_len(
-               t1, libcrux_ml_dsa_polynomial_PolynomialRingElement_e8);
+    Eurydice_borrow_slice_u8 seed, Eurydice_dst_ref_shared_f3 t1,
+    Eurydice_mut_borrow_slice_u8 verification_key_serialized) {
+  Eurydice_slice_copy(
+      Eurydice_slice_subslice_mut_7e(
+          verification_key_serialized,
+          (core_ops_range_Range_08{(size_t)0U,
+                                   LIBCRUX_ML_DSA_CONSTANTS_SEED_FOR_A_SIZE})),
+      seed, uint8_t);
+  for (size_t i = (size_t)0U; i < Eurydice_slice_len(t1, Eurydice_arr_a4);
        i++) {
     size_t i0 = i;
-    libcrux_ml_dsa_polynomial_PolynomialRingElement_e8 *ring_element =
-        &Eurydice_slice_index(
-            t1, i0, libcrux_ml_dsa_polynomial_PolynomialRingElement_e8,
-            libcrux_ml_dsa_polynomial_PolynomialRingElement_e8 *);
+    const Eurydice_arr_a4 *ring_element =
+        &Eurydice_slice_index_shared(t1, i0, Eurydice_arr_a4);
     size_t offset = LIBCRUX_ML_DSA_CONSTANTS_SEED_FOR_A_SIZE +
                     i0 * LIBCRUX_ML_DSA_CONSTANTS_RING_ELEMENT_OF_T1S_SIZE;
     libcrux_ml_dsa_encoding_t1_serialize_37(
         ring_element,
-        Eurydice_slice_subslice3(
-            verification_key_serialized, offset,
-            offset + LIBCRUX_ML_DSA_CONSTANTS_RING_ELEMENT_OF_T1S_SIZE,
-            uint8_t *));
+        Eurydice_slice_subslice_mut_7e(
+            verification_key_serialized,
+            (core_ops_range_Range_08{
+                offset,
+                offset + LIBCRUX_ML_DSA_CONSTANTS_RING_ELEMENT_OF_T1S_SIZE})));
   }
+}
+
+/**
+A monomorphic instance of Eurydice.array_to_slice_shared
+with types libcrux_ml_dsa_polynomial_PolynomialRingElement
+libcrux_ml_dsa_simd_portable_vector_type_Coefficients with const generics
+- N= 6
+*/
+static inline Eurydice_dst_ref_shared_f3 Eurydice_array_to_slice_shared_711(
+    const Eurydice_arr_47 *a) {
+  Eurydice_dst_ref_shared_f3 lit;
+  lit.ptr = a->data;
+  lit.meta = (size_t)6U;
+  return lit;
 }
 
 /**
@@ -5244,9 +5187,8 @@ with const generics
 - OUTPUT_LENGTH= 64
 */
 static KRML_MUSTINLINE void libcrux_ml_dsa_hash_functions_portable_shake256_24(
-    Eurydice_slice input, uint8_t *out) {
-  libcrux_sha3_portable_shake256(
-      Eurydice_array_to_slice((size_t)64U, out, uint8_t), input);
+    Eurydice_borrow_slice_u8 input, Eurydice_arr_06 *out) {
+  libcrux_sha3_portable_shake256(Eurydice_array_to_slice_mut_d8(out), input);
 }
 
 /**
@@ -5259,8 +5201,8 @@ with const generics
 - OUTPUT_LENGTH= 64
 */
 static KRML_MUSTINLINE void
-libcrux_ml_dsa_hash_functions_portable_shake256_61_24(Eurydice_slice input,
-                                                      uint8_t *out) {
+libcrux_ml_dsa_hash_functions_portable_shake256_61_24(
+    Eurydice_borrow_slice_u8 input, Eurydice_arr_06 *out) {
   libcrux_ml_dsa_hash_functions_portable_shake256_24(input, out);
 }
 
@@ -5271,26 +5213,22 @@ with const generics
 
 */
 static KRML_MUSTINLINE void libcrux_ml_dsa_encoding_error_serialize_37(
-    libcrux_ml_dsa_constants_Eta eta,
-    libcrux_ml_dsa_polynomial_PolynomialRingElement_e8 *re,
-    Eurydice_slice serialized) {
+    libcrux_ml_dsa_constants_Eta eta, const Eurydice_arr_a4 *re,
+    Eurydice_mut_borrow_slice_u8 serialized) {
   size_t output_bytes_per_simd_unit =
       libcrux_ml_dsa_encoding_error_chunk_size(eta);
   for (size_t i = (size_t)0U;
-       i < Eurydice_slice_len(
-               Eurydice_array_to_slice(
-                   (size_t)32U, re->simd_units,
-                   libcrux_ml_dsa_simd_portable_vector_type_Coefficients),
-               libcrux_ml_dsa_simd_portable_vector_type_Coefficients);
+       i < Eurydice_slice_len(Eurydice_array_to_slice_shared_a2(re),
+                              Eurydice_arr_d4);
        i++) {
     size_t i0 = i;
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients *simd_unit =
-        &re->simd_units[i0];
+    const Eurydice_arr_d4 *simd_unit = &re->data[i0];
     libcrux_ml_dsa_simd_portable_error_serialize_65(
         eta, simd_unit,
-        Eurydice_slice_subslice3(serialized, i0 * output_bytes_per_simd_unit,
-                                 (i0 + (size_t)1U) * output_bytes_per_simd_unit,
-                                 uint8_t *));
+        Eurydice_slice_subslice_mut_7e(
+            serialized, (core_ops_range_Range_08{
+                            i0 * output_bytes_per_simd_unit,
+                            (i0 + (size_t)1U) * output_bytes_per_simd_unit})));
   }
 }
 
@@ -5301,26 +5239,21 @@ with const generics
 
 */
 static KRML_MUSTINLINE void libcrux_ml_dsa_encoding_t0_serialize_37(
-    libcrux_ml_dsa_polynomial_PolynomialRingElement_e8 *re,
-    Eurydice_slice serialized) {
+    const Eurydice_arr_a4 *re, Eurydice_mut_borrow_slice_u8 serialized) {
   for (size_t i = (size_t)0U;
-       i < Eurydice_slice_len(
-               Eurydice_array_to_slice(
-                   (size_t)32U, re->simd_units,
-                   libcrux_ml_dsa_simd_portable_vector_type_Coefficients),
-               libcrux_ml_dsa_simd_portable_vector_type_Coefficients);
+       i < Eurydice_slice_len(Eurydice_array_to_slice_shared_a2(re),
+                              Eurydice_arr_d4);
        i++) {
     size_t i0 = i;
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients *simd_unit =
-        &re->simd_units[i0];
+    const Eurydice_arr_d4 *simd_unit = &re->data[i0];
     libcrux_ml_dsa_simd_portable_t0_serialize_65(
         simd_unit,
-        Eurydice_slice_subslice3(
+        Eurydice_slice_subslice_mut_7e(
             serialized,
-            i0 * LIBCRUX_ML_DSA_ENCODING_T0_OUTPUT_BYTES_PER_SIMD_UNIT,
-            (i0 + (size_t)1U) *
-                LIBCRUX_ML_DSA_ENCODING_T0_OUTPUT_BYTES_PER_SIMD_UNIT,
-            uint8_t *));
+            (core_ops_range_Range_08{
+                i0 * LIBCRUX_ML_DSA_ENCODING_T0_OUTPUT_BYTES_PER_SIMD_UNIT,
+                (i0 + (size_t)1U) *
+                    LIBCRUX_ML_DSA_ENCODING_T0_OUTPUT_BYTES_PER_SIMD_UNIT})));
   }
 }
 
@@ -5334,62 +5267,61 @@ libcrux_ml_dsa_hash_functions_portable_Shake256 with const generics
 static KRML_MUSTINLINE void
 libcrux_ml_dsa_encoding_signing_key_generate_serialized_2e(
     libcrux_ml_dsa_constants_Eta eta, size_t error_ring_element_size,
-    Eurydice_slice seed_matrix, Eurydice_slice seed_signing,
-    Eurydice_slice verification_key, Eurydice_slice s1_2, Eurydice_slice t0,
-    Eurydice_slice signing_key_serialized) {
+    Eurydice_borrow_slice_u8 seed_matrix, Eurydice_borrow_slice_u8 seed_signing,
+    Eurydice_borrow_slice_u8 verification_key, Eurydice_dst_ref_shared_f3 s1_2,
+    Eurydice_dst_ref_shared_f3 t0,
+    Eurydice_mut_borrow_slice_u8 signing_key_serialized) {
   size_t offset = (size_t)0U;
   Eurydice_slice_copy(
-      Eurydice_slice_subslice3(
-          signing_key_serialized, offset,
-          offset + LIBCRUX_ML_DSA_CONSTANTS_SEED_FOR_A_SIZE, uint8_t *),
+      Eurydice_slice_subslice_mut_7e(
+          signing_key_serialized,
+          (core_ops_range_Range_08{
+              offset, offset + LIBCRUX_ML_DSA_CONSTANTS_SEED_FOR_A_SIZE})),
       seed_matrix, uint8_t);
   offset = offset + LIBCRUX_ML_DSA_CONSTANTS_SEED_FOR_A_SIZE;
   Eurydice_slice_copy(
-      Eurydice_slice_subslice3(
-          signing_key_serialized, offset,
-          offset + LIBCRUX_ML_DSA_CONSTANTS_SEED_FOR_SIGNING_SIZE, uint8_t *),
+      Eurydice_slice_subslice_mut_7e(
+          signing_key_serialized,
+          (core_ops_range_Range_08{
+              offset,
+              offset + LIBCRUX_ML_DSA_CONSTANTS_SEED_FOR_SIGNING_SIZE})),
       seed_signing, uint8_t);
   offset = offset + LIBCRUX_ML_DSA_CONSTANTS_SEED_FOR_SIGNING_SIZE;
-  uint8_t verification_key_hash[64U] = {0U};
+  Eurydice_arr_06 verification_key_hash = {{0U}};
   libcrux_ml_dsa_hash_functions_portable_shake256_61_24(verification_key,
-                                                        verification_key_hash);
+                                                        &verification_key_hash);
   Eurydice_slice_copy(
-      Eurydice_slice_subslice3(
-          signing_key_serialized, offset,
-          offset + LIBCRUX_ML_DSA_CONSTANTS_BYTES_FOR_VERIFICATION_KEY_HASH,
-          uint8_t *),
-      Eurydice_array_to_slice((size_t)64U, verification_key_hash, uint8_t),
-      uint8_t);
+      Eurydice_slice_subslice_mut_7e(
+          signing_key_serialized,
+          (core_ops_range_Range_08{
+              offset,
+              offset +
+                  LIBCRUX_ML_DSA_CONSTANTS_BYTES_FOR_VERIFICATION_KEY_HASH})),
+      Eurydice_array_to_slice_shared_d8(&verification_key_hash), uint8_t);
   offset = offset + LIBCRUX_ML_DSA_CONSTANTS_BYTES_FOR_VERIFICATION_KEY_HASH;
-  for (size_t i = (size_t)0U;
-       i < Eurydice_slice_len(
-               s1_2, libcrux_ml_dsa_polynomial_PolynomialRingElement_e8);
+  for (size_t i = (size_t)0U; i < Eurydice_slice_len(s1_2, Eurydice_arr_a4);
        i++) {
     size_t i0 = i;
     libcrux_ml_dsa_encoding_error_serialize_37(
-        eta,
-        &Eurydice_slice_index(
-            s1_2, i0, libcrux_ml_dsa_polynomial_PolynomialRingElement_e8,
-            libcrux_ml_dsa_polynomial_PolynomialRingElement_e8 *),
-        Eurydice_slice_subslice3(signing_key_serialized, offset,
-                                 offset + error_ring_element_size, uint8_t *));
+        eta, &Eurydice_slice_index_shared(s1_2, i0, Eurydice_arr_a4),
+        Eurydice_slice_subslice_mut_7e(
+            signing_key_serialized,
+            (core_ops_range_Range_08{offset,
+                                     offset + error_ring_element_size})));
     offset = offset + error_ring_element_size;
   }
-  for (size_t i = (size_t)0U;
-       i < Eurydice_slice_len(
-               t0, libcrux_ml_dsa_polynomial_PolynomialRingElement_e8);
+  for (size_t i = (size_t)0U; i < Eurydice_slice_len(t0, Eurydice_arr_a4);
        i++) {
     size_t _cloop_j = i;
-    libcrux_ml_dsa_polynomial_PolynomialRingElement_e8 *ring_element =
-        &Eurydice_slice_index(
-            t0, _cloop_j, libcrux_ml_dsa_polynomial_PolynomialRingElement_e8,
-            libcrux_ml_dsa_polynomial_PolynomialRingElement_e8 *);
+    const Eurydice_arr_a4 *ring_element =
+        &Eurydice_slice_index_shared(t0, _cloop_j, Eurydice_arr_a4);
     libcrux_ml_dsa_encoding_t0_serialize_37(
         ring_element,
-        Eurydice_slice_subslice3(
-            signing_key_serialized, offset,
-            offset + LIBCRUX_ML_DSA_CONSTANTS_RING_ELEMENT_OF_T0S_SIZE,
-            uint8_t *));
+        Eurydice_slice_subslice_mut_7e(
+            signing_key_serialized,
+            (core_ops_range_Range_08{
+                offset,
+                offset + LIBCRUX_ML_DSA_CONSTANTS_RING_ELEMENT_OF_T0S_SIZE})));
     offset = offset + LIBCRUX_ML_DSA_CONSTANTS_RING_ELEMENT_OF_T0S_SIZE;
   }
 }
@@ -5407,112 +5339,102 @@ libcrux_ml_dsa_hash_functions_portable_Shake256X4 with const generics
 */
 static KRML_MUSTINLINE void
 libcrux_ml_dsa_ml_dsa_generic_ml_dsa_65_generate_key_pair_5a(
-    uint8_t randomness[32U], Eurydice_slice signing_key,
-    Eurydice_slice verification_key) {
-  uint8_t seed_expanded0[128U] = {0U};
+    Eurydice_arr_60 randomness, Eurydice_mut_borrow_slice_u8 signing_key,
+    Eurydice_mut_borrow_slice_u8 verification_key) {
+  Eurydice_arr_d1 seed_expanded0 = {{0U}};
   libcrux_sha3_generic_keccak_xof_KeccakXofState_e2 shake =
       libcrux_ml_dsa_hash_functions_portable_init_26();
   libcrux_ml_dsa_hash_functions_portable_absorb_26(
-      &shake, Eurydice_array_to_slice((size_t)32U, randomness, uint8_t));
-  uint8_t buf[2U] = {(uint8_t)LIBCRUX_ML_DSA_CONSTANTS_ML_DSA_65_ROWS_IN_A,
-                     (uint8_t)LIBCRUX_ML_DSA_CONSTANTS_ML_DSA_65_COLUMNS_IN_A};
+      &shake, Eurydice_array_to_slice_shared_6e(&randomness));
+  /* original Rust expression is not an lvalue in C */
+  Eurydice_array_u8x2 lvalue = {
+      {(uint8_t)LIBCRUX_ML_DSA_CONSTANTS_ML_DSA_65_ROWS_IN_A,
+       (uint8_t)LIBCRUX_ML_DSA_CONSTANTS_ML_DSA_65_COLUMNS_IN_A}};
   libcrux_ml_dsa_hash_functions_portable_absorb_final_26(
-      &shake, Eurydice_array_to_slice((size_t)2U, buf, uint8_t));
+      &shake, Eurydice_array_to_slice_shared_26(&lvalue));
   libcrux_ml_dsa_hash_functions_portable_squeeze_26(
-      &shake, Eurydice_array_to_slice((size_t)128U, seed_expanded0, uint8_t));
-  Eurydice_slice_uint8_t_x2 uu____0 = Eurydice_slice_split_at(
-      Eurydice_array_to_slice((size_t)128U, seed_expanded0, uint8_t),
+      &shake, Eurydice_array_to_slice_mut_18(&seed_expanded0));
+  Eurydice_dst_ref_shared_uint8_t_size_t_x2 uu____0 = Eurydice_slice_split_at(
+      Eurydice_array_to_slice_shared_18(&seed_expanded0),
       LIBCRUX_ML_DSA_CONSTANTS_SEED_FOR_A_SIZE, uint8_t,
-      Eurydice_slice_uint8_t_x2);
-  Eurydice_slice seed_for_a = uu____0.fst;
-  Eurydice_slice seed_expanded = uu____0.snd;
-  Eurydice_slice_uint8_t_x2 uu____1 = Eurydice_slice_split_at(
+      Eurydice_dst_ref_shared_uint8_t_size_t_x2);
+  Eurydice_borrow_slice_u8 seed_for_a = uu____0.fst;
+  Eurydice_borrow_slice_u8 seed_expanded = uu____0.snd;
+  Eurydice_dst_ref_shared_uint8_t_size_t_x2 uu____1 = Eurydice_slice_split_at(
       seed_expanded, LIBCRUX_ML_DSA_CONSTANTS_SEED_FOR_ERROR_VECTORS_SIZE,
-      uint8_t, Eurydice_slice_uint8_t_x2);
-  Eurydice_slice seed_for_error_vectors = uu____1.fst;
-  Eurydice_slice seed_for_signing = uu____1.snd;
-  libcrux_ml_dsa_polynomial_PolynomialRingElement_e8 s1_s2[11U];
+      uint8_t, Eurydice_dst_ref_shared_uint8_t_size_t_x2);
+  Eurydice_borrow_slice_u8 seed_for_error_vectors = uu____1.fst;
+  Eurydice_borrow_slice_u8 seed_for_signing = uu____1.snd;
+  Eurydice_arr_93 s1_s2;
+  Eurydice_arr_a4 repeat_expression0[11U];
   for (size_t i = (size_t)0U; i < (size_t)11U; i++) {
-    s1_s2[i] = libcrux_ml_dsa_polynomial_zero_ff_37();
+    repeat_expression0[i] = libcrux_ml_dsa_polynomial_zero_ff_37();
   }
+  memcpy(s1_s2.data, repeat_expression0, (size_t)11U * sizeof(Eurydice_arr_a4));
   libcrux_ml_dsa_samplex4_sample_s1_and_s2_29(
       LIBCRUX_ML_DSA_CONSTANTS_ML_DSA_65_ETA, seed_for_error_vectors,
-      Eurydice_array_to_slice(
-          (size_t)11U, s1_s2,
-          libcrux_ml_dsa_polynomial_PolynomialRingElement_e8));
-  libcrux_ml_dsa_polynomial_PolynomialRingElement_e8 t0[6U];
+      Eurydice_array_to_slice_mut_71(&s1_s2));
+  Eurydice_arr_47 t0;
+  Eurydice_arr_a4 repeat_expression1[6U];
   for (size_t i = (size_t)0U; i < (size_t)6U; i++) {
-    t0[i] = libcrux_ml_dsa_polynomial_zero_ff_37();
+    repeat_expression1[i] = libcrux_ml_dsa_polynomial_zero_ff_37();
   }
-  libcrux_ml_dsa_polynomial_PolynomialRingElement_e8 a_as_ntt[30U];
+  memcpy(t0.data, repeat_expression1, (size_t)6U * sizeof(Eurydice_arr_a4));
+  Eurydice_arr_c9 a_as_ntt;
+  Eurydice_arr_a4 repeat_expression2[30U];
   for (size_t i = (size_t)0U; i < (size_t)30U; i++) {
-    a_as_ntt[i] = libcrux_ml_dsa_polynomial_zero_ff_37();
+    repeat_expression2[i] = libcrux_ml_dsa_polynomial_zero_ff_37();
   }
+  memcpy(a_as_ntt.data, repeat_expression2,
+         (size_t)30U * sizeof(Eurydice_arr_a4));
   libcrux_ml_dsa_samplex4_portable_matrix_flat_a8_37(
       LIBCRUX_ML_DSA_CONSTANTS_ML_DSA_65_COLUMNS_IN_A, seed_for_a,
-      Eurydice_array_to_slice(
-          (size_t)30U, a_as_ntt,
-          libcrux_ml_dsa_polynomial_PolynomialRingElement_e8));
-  libcrux_ml_dsa_polynomial_PolynomialRingElement_e8 s1_ntt[5U];
+      Eurydice_array_to_slice_mut_710(&a_as_ntt));
+  Eurydice_arr_40 s1_ntt;
+  Eurydice_arr_a4 repeat_expression3[5U];
   for (size_t i = (size_t)0U; i < (size_t)5U; i++) {
-    s1_ntt[i] = libcrux_ml_dsa_polynomial_zero_ff_37();
+    repeat_expression3[i] = libcrux_ml_dsa_polynomial_zero_ff_37();
   }
+  memcpy(s1_ntt.data, repeat_expression3, (size_t)5U * sizeof(Eurydice_arr_a4));
   Eurydice_slice_copy(
-      Eurydice_array_to_slice(
-          (size_t)5U, s1_ntt,
-          libcrux_ml_dsa_polynomial_PolynomialRingElement_e8),
-      Eurydice_array_to_subslice3(
-          s1_s2, (size_t)0U, LIBCRUX_ML_DSA_CONSTANTS_ML_DSA_65_COLUMNS_IN_A,
-          libcrux_ml_dsa_polynomial_PolynomialRingElement_e8 *),
-      libcrux_ml_dsa_polynomial_PolynomialRingElement_e8);
+      Eurydice_array_to_slice_mut_711(&s1_ntt),
+      Eurydice_array_to_subslice_shared_c3(
+          &s1_s2,
+          (core_ops_range_Range_08{
+              (size_t)0U, LIBCRUX_ML_DSA_CONSTANTS_ML_DSA_65_COLUMNS_IN_A})),
+      Eurydice_arr_a4);
   for (size_t i = (size_t)0U;
-       i < Eurydice_slice_len(
-               Eurydice_array_to_slice(
-                   (size_t)5U, s1_ntt,
-                   libcrux_ml_dsa_polynomial_PolynomialRingElement_e8),
-               libcrux_ml_dsa_polynomial_PolynomialRingElement_e8);
+       i < Eurydice_slice_len(Eurydice_array_to_slice_shared_71(&s1_ntt),
+                              Eurydice_arr_a4);
        i++) {
     size_t i0 = i;
-    libcrux_ml_dsa_ntt_ntt_37(&s1_ntt[i0]);
+    libcrux_ml_dsa_ntt_ntt_37(&s1_ntt.data[i0]);
   }
   libcrux_ml_dsa_matrix_compute_as1_plus_s2_37(
       LIBCRUX_ML_DSA_CONSTANTS_ML_DSA_65_ROWS_IN_A,
       LIBCRUX_ML_DSA_CONSTANTS_ML_DSA_65_COLUMNS_IN_A,
-      Eurydice_array_to_slice(
-          (size_t)30U, a_as_ntt,
-          libcrux_ml_dsa_polynomial_PolynomialRingElement_e8),
-      Eurydice_array_to_slice(
-          (size_t)5U, s1_ntt,
-          libcrux_ml_dsa_polynomial_PolynomialRingElement_e8),
-      Eurydice_array_to_slice(
-          (size_t)11U, s1_s2,
-          libcrux_ml_dsa_polynomial_PolynomialRingElement_e8),
-      Eurydice_array_to_slice(
-          (size_t)6U, t0, libcrux_ml_dsa_polynomial_PolynomialRingElement_e8));
-  libcrux_ml_dsa_polynomial_PolynomialRingElement_e8 t1[6U];
+      Eurydice_array_to_slice_mut_710(&a_as_ntt),
+      Eurydice_array_to_slice_shared_71(&s1_ntt),
+      Eurydice_array_to_slice_shared_710(&s1_s2),
+      Eurydice_array_to_slice_mut_712(&t0));
+  Eurydice_arr_47 t1;
+  Eurydice_arr_a4 repeat_expression[6U];
   for (size_t i = (size_t)0U; i < (size_t)6U; i++) {
-    t1[i] = libcrux_ml_dsa_polynomial_zero_ff_37();
+    repeat_expression[i] = libcrux_ml_dsa_polynomial_zero_ff_37();
   }
+  memcpy(t1.data, repeat_expression, (size_t)6U * sizeof(Eurydice_arr_a4));
   libcrux_ml_dsa_arithmetic_power2round_vector_37(
-      Eurydice_array_to_slice(
-          (size_t)6U, t0, libcrux_ml_dsa_polynomial_PolynomialRingElement_e8),
-      Eurydice_array_to_slice(
-          (size_t)6U, t1, libcrux_ml_dsa_polynomial_PolynomialRingElement_e8));
+      Eurydice_array_to_slice_mut_712(&t0),
+      Eurydice_array_to_slice_mut_712(&t1));
   libcrux_ml_dsa_encoding_verification_key_generate_serialized_37(
-      seed_for_a,
-      Eurydice_array_to_slice(
-          (size_t)6U, t1, libcrux_ml_dsa_polynomial_PolynomialRingElement_e8),
-      verification_key);
+      seed_for_a, Eurydice_array_to_slice_shared_711(&t1), verification_key);
   libcrux_ml_dsa_encoding_signing_key_generate_serialized_2e(
       LIBCRUX_ML_DSA_CONSTANTS_ML_DSA_65_ETA,
       LIBCRUX_ML_DSA_ML_DSA_GENERIC_ML_DSA_65_ERROR_RING_ELEMENT_SIZE,
-      seed_for_a, seed_for_signing, verification_key,
-      Eurydice_array_to_slice(
-          (size_t)11U, s1_s2,
-          libcrux_ml_dsa_polynomial_PolynomialRingElement_e8),
-      Eurydice_array_to_slice(
-          (size_t)6U, t0, libcrux_ml_dsa_polynomial_PolynomialRingElement_e8),
-      signing_key);
+      seed_for_a, seed_for_signing,
+      (Eurydice_borrow_slice_u8{verification_key.ptr, verification_key.meta}),
+      Eurydice_array_to_slice_shared_710(&s1_s2),
+      Eurydice_array_to_slice_shared_711(&t0), signing_key);
 }
 
 /**
@@ -5520,51 +5442,82 @@ libcrux_ml_dsa_ml_dsa_generic_ml_dsa_65_generate_key_pair_5a(
 */
 static inline void
 libcrux_ml_dsa_ml_dsa_generic_instantiations_portable_ml_dsa_65_generate_key_pair(
-    uint8_t randomness[32U], uint8_t *signing_key, uint8_t *verification_key) {
-  /* Passing arrays by value in Rust generates a copy in C */
-  uint8_t copy_of_randomness[32U];
-  memcpy(copy_of_randomness, randomness, (size_t)32U * sizeof(uint8_t));
+    Eurydice_arr_60 randomness, Eurydice_arr_d10 *signing_key,
+    Eurydice_arr_4a *verification_key) {
   libcrux_ml_dsa_ml_dsa_generic_ml_dsa_65_generate_key_pair_5a(
-      copy_of_randomness,
-      Eurydice_array_to_slice((size_t)4032U, signing_key, uint8_t),
-      Eurydice_array_to_slice((size_t)1952U, verification_key, uint8_t));
+      randomness, Eurydice_array_to_slice_mut_ef(signing_key),
+      Eurydice_array_to_slice_mut_5b(verification_key));
 }
 
 /**
  Generate an ML-DSA-65 Key Pair
 */
 static inline libcrux_ml_dsa_types_MLDSAKeyPair_06
-libcrux_ml_dsa_ml_dsa_65_portable_generate_key_pair(uint8_t randomness[32U]) {
-  uint8_t signing_key[4032U] = {0U};
-  uint8_t verification_key[1952U] = {0U};
-  uint8_t uu____0[32U];
-  memcpy(uu____0, randomness, (size_t)32U * sizeof(uint8_t));
+libcrux_ml_dsa_ml_dsa_65_portable_generate_key_pair(
+    Eurydice_arr_60 randomness) {
+  Eurydice_arr_d10 signing_key = {{0U}};
+  Eurydice_arr_4a verification_key = {{0U}};
   libcrux_ml_dsa_ml_dsa_generic_instantiations_portable_ml_dsa_65_generate_key_pair(
-      uu____0, signing_key, verification_key);
-  /* Passing arrays by value in Rust generates a copy in C */
-  uint8_t copy_of_signing_key[4032U];
-  memcpy(copy_of_signing_key, signing_key, (size_t)4032U * sizeof(uint8_t));
-  libcrux_ml_dsa_types_MLDSASigningKey_22 uu____2 =
-      libcrux_ml_dsa_types_new_9b_09(copy_of_signing_key);
-  /* Passing arrays by value in Rust generates a copy in C */
-  uint8_t copy_of_verification_key[1952U];
-  memcpy(copy_of_verification_key, verification_key,
-         (size_t)1952U * sizeof(uint8_t));
+      randomness, &signing_key, &verification_key);
   return (libcrux_ml_dsa_types_MLDSAKeyPair_06{
-      uu____2, libcrux_ml_dsa_types_new_7f_97(copy_of_verification_key)});
+      libcrux_ml_dsa_types_new_9b_09(signing_key),
+      libcrux_ml_dsa_types_new_7f_97(verification_key)});
 }
 
 /**
  Generate an ML-DSA-65 Key Pair
 */
 static inline void libcrux_ml_dsa_ml_dsa_65_portable_generate_key_pair_mut(
-    uint8_t randomness[32U], uint8_t *signing_key, uint8_t *verification_key) {
-  /* Passing arrays by value in Rust generates a copy in C */
-  uint8_t copy_of_randomness[32U];
-  memcpy(copy_of_randomness, randomness, (size_t)32U * sizeof(uint8_t));
+    Eurydice_arr_60 randomness, Eurydice_arr_d10 *signing_key,
+    Eurydice_arr_4a *verification_key) {
   libcrux_ml_dsa_ml_dsa_generic_instantiations_portable_ml_dsa_65_generate_key_pair(
-      copy_of_randomness, signing_key, verification_key);
+      randomness, signing_key, verification_key);
 }
+
+/**
+A monomorphic instance of core.result.Result
+with types (), libcrux_ml_dsa_types_SigningError
+
+*/
+typedef struct Result_53_s {
+  Result_a4_tags tag;
+  libcrux_ml_dsa_types_SigningError f0;
+} Result_53;
+
+/**
+A monomorphic instance of core.option.Option
+with types Eurydice_arr uint8_t[[$48size_t]]
+
+*/
+typedef struct Option_91_s {
+  Option_3b_tags tag;
+  Eurydice_arr_5f f0;
+} Option_91;
+
+/**
+A monomorphic instance of core.option.Option
+with types Eurydice_arr Eurydice_arr int32_t[[$256size_t]][[$6size_t]]
+
+*/
+typedef struct Option_c9_s {
+  Option_3b_tags tag;
+  Eurydice_arr_e6 f0;
+} Option_c9;
+
+/**
+A monomorphic instance of core.result.Result
+with types libcrux_ml_dsa_types_MLDSASignature[[$3309size_t]],
+libcrux_ml_dsa_types_SigningError
+
+*/
+typedef struct Result_2e_s {
+  Result_a4_tags tag;
+  union U {
+    Eurydice_arr_96 case_Ok;
+    libcrux_ml_dsa_types_SigningError case_Err;
+  } val;
+  KRML_UNION_CONSTRUCTOR(Result_2e_s)
+} Result_2e;
 
 /**
 A monomorphic instance of core.option.Option
@@ -5572,7 +5525,7 @@ with types libcrux_ml_dsa_pre_hash_DomainSeparationContext
 
 */
 typedef struct Option_84_s {
-  Option_08_tags tag;
+  Option_3b_tags tag;
   libcrux_ml_dsa_pre_hash_DomainSeparationContext f0;
 } Option_84;
 
@@ -5583,22 +5536,20 @@ with const generics
 
 */
 static KRML_MUSTINLINE void libcrux_ml_dsa_encoding_error_deserialize_37(
-    libcrux_ml_dsa_constants_Eta eta, Eurydice_slice serialized,
-    libcrux_ml_dsa_polynomial_PolynomialRingElement_e8 *result) {
+    libcrux_ml_dsa_constants_Eta eta, Eurydice_borrow_slice_u8 serialized,
+    Eurydice_arr_a4 *result) {
   size_t chunk_size = libcrux_ml_dsa_encoding_error_chunk_size(eta);
   for (size_t i = (size_t)0U;
-       i < Eurydice_slice_len(
-               Eurydice_array_to_slice(
-                   (size_t)32U, result->simd_units,
-                   libcrux_ml_dsa_simd_portable_vector_type_Coefficients),
-               libcrux_ml_dsa_simd_portable_vector_type_Coefficients);
+       i < Eurydice_slice_len(Eurydice_array_to_slice_shared_a2(result),
+                              Eurydice_arr_d4);
        i++) {
     size_t i0 = i;
     libcrux_ml_dsa_simd_portable_error_deserialize_65(
         eta,
-        Eurydice_slice_subslice3(serialized, i0 * chunk_size,
-                                 (i0 + (size_t)1U) * chunk_size, uint8_t *),
-        &result->simd_units[i0]);
+        Eurydice_slice_subslice_shared_7e(
+            serialized, (core_ops_range_Range_08{
+                            i0 * chunk_size, (i0 + (size_t)1U) * chunk_size})),
+        &result->data[i0]);
   }
 }
 
@@ -5611,22 +5562,20 @@ libcrux_ml_dsa_simd_portable_vector_type_Coefficients with const generics
 static KRML_MUSTINLINE void
 libcrux_ml_dsa_encoding_error_deserialize_to_vector_then_ntt_37(
     libcrux_ml_dsa_constants_Eta eta, size_t ring_element_size,
-    Eurydice_slice serialized, Eurydice_slice ring_elements) {
+    Eurydice_borrow_slice_u8 serialized,
+    Eurydice_dst_ref_mut_f3 ring_elements) {
   for (size_t i = (size_t)0U;
        i < Eurydice_slice_len(serialized, uint8_t) / ring_element_size; i++) {
     size_t i0 = i;
-    Eurydice_slice bytes = Eurydice_slice_subslice3(
-        serialized, i0 * ring_element_size,
-        i0 * ring_element_size + ring_element_size, uint8_t *);
+    Eurydice_borrow_slice_u8 bytes = Eurydice_slice_subslice_shared_7e(
+        serialized,
+        (core_ops_range_Range_08{i0 * ring_element_size,
+                                 i0 * ring_element_size + ring_element_size}));
     libcrux_ml_dsa_encoding_error_deserialize_37(
         eta, bytes,
-        &Eurydice_slice_index(
-            ring_elements, i0,
-            libcrux_ml_dsa_polynomial_PolynomialRingElement_e8,
-            libcrux_ml_dsa_polynomial_PolynomialRingElement_e8 *));
-    libcrux_ml_dsa_ntt_ntt_37(&Eurydice_slice_index(
-        ring_elements, i0, libcrux_ml_dsa_polynomial_PolynomialRingElement_e8,
-        libcrux_ml_dsa_polynomial_PolynomialRingElement_e8 *));
+        &Eurydice_slice_index_mut(ring_elements, i0, Eurydice_arr_a4));
+    libcrux_ml_dsa_ntt_ntt_37(
+        &Eurydice_slice_index_mut(ring_elements, i0, Eurydice_arr_a4));
   }
 }
 
@@ -5637,24 +5586,20 @@ with const generics
 
 */
 static KRML_MUSTINLINE void libcrux_ml_dsa_encoding_t0_deserialize_37(
-    Eurydice_slice serialized,
-    libcrux_ml_dsa_polynomial_PolynomialRingElement_e8 *result) {
+    Eurydice_borrow_slice_u8 serialized, Eurydice_arr_a4 *result) {
   for (size_t i = (size_t)0U;
-       i < Eurydice_slice_len(
-               Eurydice_array_to_slice(
-                   (size_t)32U, result->simd_units,
-                   libcrux_ml_dsa_simd_portable_vector_type_Coefficients),
-               libcrux_ml_dsa_simd_portable_vector_type_Coefficients);
+       i < Eurydice_slice_len(Eurydice_array_to_slice_shared_a2(result),
+                              Eurydice_arr_d4);
        i++) {
     size_t i0 = i;
     libcrux_ml_dsa_simd_portable_t0_deserialize_65(
-        Eurydice_slice_subslice3(
+        Eurydice_slice_subslice_shared_7e(
             serialized,
-            i0 * LIBCRUX_ML_DSA_ENCODING_T0_OUTPUT_BYTES_PER_SIMD_UNIT,
-            (i0 + (size_t)1U) *
-                LIBCRUX_ML_DSA_ENCODING_T0_OUTPUT_BYTES_PER_SIMD_UNIT,
-            uint8_t *),
-        &result->simd_units[i0]);
+            (core_ops_range_Range_08{
+                i0 * LIBCRUX_ML_DSA_ENCODING_T0_OUTPUT_BYTES_PER_SIMD_UNIT,
+                (i0 + (size_t)1U) *
+                    LIBCRUX_ML_DSA_ENCODING_T0_OUTPUT_BYTES_PER_SIMD_UNIT})),
+        &result->data[i0]);
   }
 }
 
@@ -5666,25 +5611,23 @@ libcrux_ml_dsa_simd_portable_vector_type_Coefficients with const generics
 */
 static KRML_MUSTINLINE void
 libcrux_ml_dsa_encoding_t0_deserialize_to_vector_then_ntt_37(
-    Eurydice_slice serialized, Eurydice_slice ring_elements) {
+    Eurydice_borrow_slice_u8 serialized,
+    Eurydice_dst_ref_mut_f3 ring_elements) {
   for (size_t i = (size_t)0U;
        i < Eurydice_slice_len(serialized, uint8_t) /
                LIBCRUX_ML_DSA_CONSTANTS_RING_ELEMENT_OF_T0S_SIZE;
        i++) {
     size_t i0 = i;
-    Eurydice_slice bytes = Eurydice_slice_subslice3(
-        serialized, i0 * LIBCRUX_ML_DSA_CONSTANTS_RING_ELEMENT_OF_T0S_SIZE,
-        i0 * LIBCRUX_ML_DSA_CONSTANTS_RING_ELEMENT_OF_T0S_SIZE +
-            LIBCRUX_ML_DSA_CONSTANTS_RING_ELEMENT_OF_T0S_SIZE,
-        uint8_t *);
+    Eurydice_borrow_slice_u8 bytes = Eurydice_slice_subslice_shared_7e(
+        serialized,
+        (core_ops_range_Range_08{
+            i0 * LIBCRUX_ML_DSA_CONSTANTS_RING_ELEMENT_OF_T0S_SIZE,
+            i0 * LIBCRUX_ML_DSA_CONSTANTS_RING_ELEMENT_OF_T0S_SIZE +
+                LIBCRUX_ML_DSA_CONSTANTS_RING_ELEMENT_OF_T0S_SIZE}));
     libcrux_ml_dsa_encoding_t0_deserialize_37(
-        bytes, &Eurydice_slice_index(
-                   ring_elements, i0,
-                   libcrux_ml_dsa_polynomial_PolynomialRingElement_e8,
-                   libcrux_ml_dsa_polynomial_PolynomialRingElement_e8 *));
-    libcrux_ml_dsa_ntt_ntt_37(&Eurydice_slice_index(
-        ring_elements, i0, libcrux_ml_dsa_polynomial_PolynomialRingElement_e8,
-        libcrux_ml_dsa_polynomial_PolynomialRingElement_e8 *));
+        bytes, &Eurydice_slice_index_mut(ring_elements, i0, Eurydice_arr_a4));
+    libcrux_ml_dsa_ntt_ntt_37(
+        &Eurydice_slice_index_mut(ring_elements, i0, Eurydice_arr_a4));
   }
 }
 
@@ -5718,54 +5661,56 @@ libcrux_ml_dsa_hash_functions_portable_Shake256Xof with const generics
 */
 static KRML_MUSTINLINE void
 libcrux_ml_dsa_ml_dsa_generic_derive_message_representative_43(
-    Eurydice_slice verification_key_hash, Option_84 *domain_separation_context,
-    Eurydice_slice message, uint8_t *message_representative) {
+    Eurydice_borrow_slice_u8 verification_key_hash,
+    const Option_84 *domain_separation_context,
+    Eurydice_borrow_slice_u8 message, Eurydice_arr_06 *message_representative) {
   libcrux_sha3_generic_keccak_xof_KeccakXofState_e2 shake =
       libcrux_ml_dsa_hash_functions_portable_init_26();
   libcrux_ml_dsa_hash_functions_portable_absorb_26(&shake,
                                                    verification_key_hash);
   if (domain_separation_context->tag == Some) {
-    libcrux_ml_dsa_pre_hash_DomainSeparationContext
+    const libcrux_ml_dsa_pre_hash_DomainSeparationContext
         *domain_separation_context0 = &domain_separation_context->f0;
     libcrux_sha3_generic_keccak_xof_KeccakXofState_e2 *uu____0 = &shake;
-    uint8_t buf0[1U] = {
-        (uint8_t)core_option__core__option__Option_T__TraitClause_0___is_some(
+    /* original Rust expression is not an lvalue in C */
+    Eurydice_arr_f10 lvalue0 = {
+        {(uint8_t)core_option__core__option__Option_T__TraitClause_0___is_some(
             libcrux_ml_dsa_pre_hash_pre_hash_oid_88(domain_separation_context0),
-            uint8_t[11U], bool)};
+            Eurydice_arr_cb, bool)}};
     libcrux_ml_dsa_hash_functions_portable_absorb_26(
-        uu____0, Eurydice_array_to_slice((size_t)1U, buf0, uint8_t));
+        uu____0, Eurydice_array_to_slice_shared_07(&lvalue0));
     libcrux_sha3_generic_keccak_xof_KeccakXofState_e2 *uu____1 = &shake;
-    uint8_t buf[1U] = {(uint8_t)Eurydice_slice_len(
+    /* original Rust expression is not an lvalue in C */
+    Eurydice_arr_f10 lvalue = {{(uint8_t)Eurydice_slice_len(
         libcrux_ml_dsa_pre_hash_context_88(domain_separation_context0),
-        uint8_t)};
+        uint8_t)}};
     libcrux_ml_dsa_hash_functions_portable_absorb_26(
-        uu____1, Eurydice_array_to_slice((size_t)1U, buf, uint8_t));
+        uu____1, Eurydice_array_to_slice_shared_07(&lvalue));
     libcrux_ml_dsa_hash_functions_portable_absorb_26(
         &shake, libcrux_ml_dsa_pre_hash_context_88(domain_separation_context0));
-    Option_30 *uu____2 =
+    const Option_3b *uu____2 =
         libcrux_ml_dsa_pre_hash_pre_hash_oid_88(domain_separation_context0);
     if (uu____2->tag == Some) {
-      uint8_t *pre_hash_oid = uu____2->f0;
+      const Eurydice_arr_cb *pre_hash_oid = &uu____2->f0;
       libcrux_ml_dsa_hash_functions_portable_absorb_26(
-          &shake, Eurydice_array_to_slice((size_t)11U, pre_hash_oid, uint8_t));
+          &shake, Eurydice_array_to_slice_shared_da(pre_hash_oid));
     }
   }
   libcrux_ml_dsa_hash_functions_portable_absorb_final_26(&shake, message);
   libcrux_ml_dsa_hash_functions_portable_squeeze_26(
-      &shake,
-      Eurydice_array_to_slice((size_t)64U, message_representative, uint8_t));
+      &shake, Eurydice_array_to_slice_mut_d8(message_representative));
 }
 
 /**
 A monomorphic instance of core.option.Option
-with types libcrux_ml_dsa_polynomial_PolynomialRingElement
-libcrux_ml_dsa_simd_portable_vector_type_Coefficients[5size_t]
+with types Eurydice_arr libcrux_ml_dsa_polynomial_PolynomialRingElement
+libcrux_ml_dsa_simd_portable_vector_type_Coefficients[[$5size_t]]
 
 */
-typedef struct Option_a5_s {
-  Option_08_tags tag;
-  libcrux_ml_dsa_polynomial_PolynomialRingElement_e8 f0[5U];
-} Option_a5;
+typedef struct Option_e7_s {
+  Option_3b_tags tag;
+  Eurydice_arr_40 f0;
+} Option_e7;
 
 /**
 A monomorphic instance of libcrux_ml_dsa.hash_functions.portable.shake256
@@ -5773,9 +5718,8 @@ with const generics
 - OUTPUT_LENGTH= 576
 */
 static KRML_MUSTINLINE void libcrux_ml_dsa_hash_functions_portable_shake256_1b(
-    Eurydice_slice input, uint8_t *out) {
-  libcrux_sha3_portable_shake256(
-      Eurydice_array_to_slice((size_t)576U, out, uint8_t), input);
+    Eurydice_borrow_slice_u8 input, Eurydice_arr_5f0 *out) {
+  libcrux_sha3_portable_shake256(Eurydice_array_to_slice_mut_fa(out), input);
 }
 
 /**
@@ -5789,9 +5733,10 @@ with const generics
 */
 static KRML_MUSTINLINE void
 libcrux_ml_dsa_hash_functions_portable_shake256_x4_9b_1b(
-    Eurydice_slice input0, Eurydice_slice input1, Eurydice_slice input2,
-    Eurydice_slice input3, uint8_t *out0, uint8_t *out1, uint8_t *out2,
-    uint8_t *out3) {
+    Eurydice_borrow_slice_u8 input0, Eurydice_borrow_slice_u8 input1,
+    Eurydice_borrow_slice_u8 input2, Eurydice_borrow_slice_u8 input3,
+    Eurydice_arr_5f0 *out0, Eurydice_arr_5f0 *out1, Eurydice_arr_5f0 *out2,
+    Eurydice_arr_5f0 *out3) {
   libcrux_ml_dsa_hash_functions_portable_shake256_1b(input0, out0);
   libcrux_ml_dsa_hash_functions_portable_shake256_1b(input1, out1);
   libcrux_ml_dsa_hash_functions_portable_shake256_1b(input2, out2);
@@ -5805,21 +5750,20 @@ with const generics
 
 */
 static KRML_MUSTINLINE void libcrux_ml_dsa_encoding_gamma1_deserialize_37(
-    size_t gamma1_exponent, Eurydice_slice serialized,
-    libcrux_ml_dsa_polynomial_PolynomialRingElement_e8 *result) {
+    size_t gamma1_exponent, Eurydice_borrow_slice_u8 serialized,
+    Eurydice_arr_a4 *result) {
   for (size_t i = (size_t)0U;
-       i < Eurydice_slice_len(
-               Eurydice_array_to_slice(
-                   (size_t)32U, result->simd_units,
-                   libcrux_ml_dsa_simd_portable_vector_type_Coefficients),
-               libcrux_ml_dsa_simd_portable_vector_type_Coefficients);
+       i < Eurydice_slice_len(Eurydice_array_to_slice_shared_a2(result),
+                              Eurydice_arr_d4);
        i++) {
     size_t i0 = i;
     libcrux_ml_dsa_simd_portable_gamma1_deserialize_65(
-        Eurydice_slice_subslice3(
-            serialized, i0 * (gamma1_exponent + (size_t)1U),
-            (i0 + (size_t)1U) * (gamma1_exponent + (size_t)1U), uint8_t *),
-        &result->simd_units[i0], gamma1_exponent);
+        Eurydice_slice_subslice_shared_7e(
+            serialized,
+            (core_ops_range_Range_08{
+                i0 * (gamma1_exponent + (size_t)1U),
+                (i0 + (size_t)1U) * (gamma1_exponent + (size_t)1U)})),
+        &result->data[i0], gamma1_exponent);
   }
 }
 
@@ -5829,9 +5773,8 @@ with const generics
 - OUTPUT_LENGTH= 640
 */
 static KRML_MUSTINLINE void libcrux_ml_dsa_hash_functions_portable_shake256_c8(
-    Eurydice_slice input, uint8_t *out) {
-  libcrux_sha3_portable_shake256(
-      Eurydice_array_to_slice((size_t)640U, out, uint8_t), input);
+    Eurydice_borrow_slice_u8 input, Eurydice_arr_c30 *out) {
+  libcrux_sha3_portable_shake256(Eurydice_array_to_slice_mut_7d(out), input);
 }
 
 /**
@@ -5845,9 +5788,10 @@ with const generics
 */
 static KRML_MUSTINLINE void
 libcrux_ml_dsa_hash_functions_portable_shake256_x4_9b_c8(
-    Eurydice_slice input0, Eurydice_slice input1, Eurydice_slice input2,
-    Eurydice_slice input3, uint8_t *out0, uint8_t *out1, uint8_t *out2,
-    uint8_t *out3) {
+    Eurydice_borrow_slice_u8 input0, Eurydice_borrow_slice_u8 input1,
+    Eurydice_borrow_slice_u8 input2, Eurydice_borrow_slice_u8 input3,
+    Eurydice_arr_c30 *out0, Eurydice_arr_c30 *out1, Eurydice_arr_c30 *out2,
+    Eurydice_arr_c30 *out3) {
   libcrux_ml_dsa_hash_functions_portable_shake256_c8(input0, out0);
   libcrux_ml_dsa_hash_functions_portable_shake256_c8(input1, out1);
   libcrux_ml_dsa_hash_functions_portable_shake256_c8(input2, out2);
@@ -5864,8 +5808,8 @@ with const generics
 - OUTPUT_LENGTH= 640
 */
 static KRML_MUSTINLINE void
-libcrux_ml_dsa_hash_functions_portable_shake256_61_c8(Eurydice_slice input,
-                                                      uint8_t *out) {
+libcrux_ml_dsa_hash_functions_portable_shake256_61_c8(
+    Eurydice_borrow_slice_u8 input, Eurydice_arr_c30 *out) {
   libcrux_ml_dsa_hash_functions_portable_shake256_c8(input, out);
 }
 
@@ -5879,8 +5823,8 @@ with const generics
 - OUTPUT_LENGTH= 576
 */
 static KRML_MUSTINLINE void
-libcrux_ml_dsa_hash_functions_portable_shake256_61_1b(Eurydice_slice input,
-                                                      uint8_t *out) {
+libcrux_ml_dsa_hash_functions_portable_shake256_61_1b(
+    Eurydice_borrow_slice_u8 input, Eurydice_arr_5f0 *out) {
   libcrux_ml_dsa_hash_functions_portable_shake256_1b(input, out);
 }
 
@@ -5891,20 +5835,18 @@ libcrux_ml_dsa_hash_functions_portable_Shake256 with const generics
 
 */
 static KRML_MUSTINLINE void libcrux_ml_dsa_sample_sample_mask_ring_element_2e(
-    uint8_t *seed, libcrux_ml_dsa_polynomial_PolynomialRingElement_e8 *result,
+    const Eurydice_arr_a2 *seed, Eurydice_arr_a4 *result,
     size_t gamma1_exponent) {
-  void *uu____0 = (void *)0U;
   switch (gamma1_exponent) {
     case 17U: {
       break;
     }
     case 19U: {
-      uint8_t out[640U] = {0U};
+      Eurydice_arr_c30 out = {{0U}};
       libcrux_ml_dsa_hash_functions_portable_shake256_61_c8(
-          Eurydice_array_to_slice((size_t)66U, seed, uint8_t), out);
+          Eurydice_array_to_slice_shared_39(seed), &out);
       libcrux_ml_dsa_encoding_gamma1_deserialize_37(
-          gamma1_exponent, Eurydice_array_to_slice((size_t)640U, out, uint8_t),
-          result);
+          gamma1_exponent, Eurydice_array_to_slice_shared_7d0(&out), result);
       return;
     }
     default: {
@@ -5913,12 +5855,11 @@ static KRML_MUSTINLINE void libcrux_ml_dsa_sample_sample_mask_ring_element_2e(
       KRML_HOST_EXIT(255U);
     }
   }
-  uint8_t out[576U] = {0U};
+  Eurydice_arr_5f0 out = {{0U}};
   libcrux_ml_dsa_hash_functions_portable_shake256_61_1b(
-      Eurydice_array_to_slice((size_t)66U, seed, uint8_t), out);
+      Eurydice_array_to_slice_shared_39(seed), &out);
   libcrux_ml_dsa_encoding_gamma1_deserialize_37(
-      gamma1_exponent, Eurydice_array_to_slice((size_t)576U, out, uint8_t),
-      result);
+      gamma1_exponent, Eurydice_array_to_slice_shared_fa(&out), result);
 }
 
 /**
@@ -5929,98 +5870,69 @@ libcrux_ml_dsa_hash_functions_portable_Shake256X4 with const generics
 
 */
 static KRML_MUSTINLINE void libcrux_ml_dsa_sample_sample_mask_vector_67(
-    size_t dimension, size_t gamma1_exponent, uint8_t *seed,
-    uint16_t *domain_separator, Eurydice_slice mask) {
-  uint8_t seed0[66U];
-  libcrux_ml_dsa_sample_add_error_domain_separator(
-      Eurydice_array_to_slice((size_t)64U, seed, uint8_t), domain_separator[0U],
-      seed0);
-  uint8_t seed1[66U];
-  libcrux_ml_dsa_sample_add_error_domain_separator(
-      Eurydice_array_to_slice((size_t)64U, seed, uint8_t),
-      (uint32_t)domain_separator[0U] + 1U, seed1);
-  uint8_t seed2[66U];
-  libcrux_ml_dsa_sample_add_error_domain_separator(
-      Eurydice_array_to_slice((size_t)64U, seed, uint8_t),
-      (uint32_t)domain_separator[0U] + 2U, seed2);
-  uint8_t seed3[66U];
-  libcrux_ml_dsa_sample_add_error_domain_separator(
-      Eurydice_array_to_slice((size_t)64U, seed, uint8_t),
-      (uint32_t)domain_separator[0U] + 3U, seed3);
+    size_t dimension, size_t gamma1_exponent, const Eurydice_arr_06 *seed,
+    uint16_t *domain_separator, Eurydice_dst_ref_mut_f3 mask) {
+  Eurydice_arr_a2 seed0 = libcrux_ml_dsa_sample_add_error_domain_separator(
+      Eurydice_array_to_slice_shared_d8(seed), domain_separator[0U]);
+  Eurydice_arr_a2 seed1 = libcrux_ml_dsa_sample_add_error_domain_separator(
+      Eurydice_array_to_slice_shared_d8(seed),
+      (uint32_t)domain_separator[0U] + 1U);
+  Eurydice_arr_a2 seed2 = libcrux_ml_dsa_sample_add_error_domain_separator(
+      Eurydice_array_to_slice_shared_d8(seed),
+      (uint32_t)domain_separator[0U] + 2U);
+  Eurydice_arr_a2 seed3 = libcrux_ml_dsa_sample_add_error_domain_separator(
+      Eurydice_array_to_slice_shared_d8(seed),
+      (uint32_t)domain_separator[0U] + 3U);
   domain_separator[0U] = (uint32_t)domain_separator[0U] + 4U;
   switch (gamma1_exponent) {
     case 17U: {
-      uint8_t out0[576U] = {0U};
-      uint8_t out1[576U] = {0U};
-      uint8_t out2[576U] = {0U};
-      uint8_t out3[576U] = {0U};
+      Eurydice_arr_5f0 out0 = {{0U}};
+      Eurydice_arr_5f0 out1 = {{0U}};
+      Eurydice_arr_5f0 out2 = {{0U}};
+      Eurydice_arr_5f0 out3 = {{0U}};
       libcrux_ml_dsa_hash_functions_portable_shake256_x4_9b_1b(
-          Eurydice_array_to_slice((size_t)66U, seed0, uint8_t),
-          Eurydice_array_to_slice((size_t)66U, seed1, uint8_t),
-          Eurydice_array_to_slice((size_t)66U, seed2, uint8_t),
-          Eurydice_array_to_slice((size_t)66U, seed3, uint8_t), out0, out1,
-          out2, out3);
+          Eurydice_array_to_slice_shared_39(&seed0),
+          Eurydice_array_to_slice_shared_39(&seed1),
+          Eurydice_array_to_slice_shared_39(&seed2),
+          Eurydice_array_to_slice_shared_39(&seed3), &out0, &out1, &out2,
+          &out3);
       libcrux_ml_dsa_encoding_gamma1_deserialize_37(
-          gamma1_exponent, Eurydice_array_to_slice((size_t)576U, out0, uint8_t),
-          &Eurydice_slice_index(
-              mask, (size_t)0U,
-              libcrux_ml_dsa_polynomial_PolynomialRingElement_e8,
-              libcrux_ml_dsa_polynomial_PolynomialRingElement_e8 *));
+          gamma1_exponent, Eurydice_array_to_slice_shared_fa(&out0),
+          &Eurydice_slice_index_mut(mask, (size_t)0U, Eurydice_arr_a4));
       libcrux_ml_dsa_encoding_gamma1_deserialize_37(
-          gamma1_exponent, Eurydice_array_to_slice((size_t)576U, out1, uint8_t),
-          &Eurydice_slice_index(
-              mask, (size_t)1U,
-              libcrux_ml_dsa_polynomial_PolynomialRingElement_e8,
-              libcrux_ml_dsa_polynomial_PolynomialRingElement_e8 *));
+          gamma1_exponent, Eurydice_array_to_slice_shared_fa(&out1),
+          &Eurydice_slice_index_mut(mask, (size_t)1U, Eurydice_arr_a4));
       libcrux_ml_dsa_encoding_gamma1_deserialize_37(
-          gamma1_exponent, Eurydice_array_to_slice((size_t)576U, out2, uint8_t),
-          &Eurydice_slice_index(
-              mask, (size_t)2U,
-              libcrux_ml_dsa_polynomial_PolynomialRingElement_e8,
-              libcrux_ml_dsa_polynomial_PolynomialRingElement_e8 *));
+          gamma1_exponent, Eurydice_array_to_slice_shared_fa(&out2),
+          &Eurydice_slice_index_mut(mask, (size_t)2U, Eurydice_arr_a4));
       libcrux_ml_dsa_encoding_gamma1_deserialize_37(
-          gamma1_exponent, Eurydice_array_to_slice((size_t)576U, out3, uint8_t),
-          &Eurydice_slice_index(
-              mask, (size_t)3U,
-              libcrux_ml_dsa_polynomial_PolynomialRingElement_e8,
-              libcrux_ml_dsa_polynomial_PolynomialRingElement_e8 *));
+          gamma1_exponent, Eurydice_array_to_slice_shared_fa(&out3),
+          &Eurydice_slice_index_mut(mask, (size_t)3U, Eurydice_arr_a4));
       break;
     }
     case 19U: {
-      uint8_t out0[640U] = {0U};
-      uint8_t out1[640U] = {0U};
-      uint8_t out2[640U] = {0U};
-      uint8_t out3[640U] = {0U};
+      Eurydice_arr_c30 out0 = {{0U}};
+      Eurydice_arr_c30 out1 = {{0U}};
+      Eurydice_arr_c30 out2 = {{0U}};
+      Eurydice_arr_c30 out3 = {{0U}};
       libcrux_ml_dsa_hash_functions_portable_shake256_x4_9b_c8(
-          Eurydice_array_to_slice((size_t)66U, seed0, uint8_t),
-          Eurydice_array_to_slice((size_t)66U, seed1, uint8_t),
-          Eurydice_array_to_slice((size_t)66U, seed2, uint8_t),
-          Eurydice_array_to_slice((size_t)66U, seed3, uint8_t), out0, out1,
-          out2, out3);
+          Eurydice_array_to_slice_shared_39(&seed0),
+          Eurydice_array_to_slice_shared_39(&seed1),
+          Eurydice_array_to_slice_shared_39(&seed2),
+          Eurydice_array_to_slice_shared_39(&seed3), &out0, &out1, &out2,
+          &out3);
       libcrux_ml_dsa_encoding_gamma1_deserialize_37(
-          gamma1_exponent, Eurydice_array_to_slice((size_t)640U, out0, uint8_t),
-          &Eurydice_slice_index(
-              mask, (size_t)0U,
-              libcrux_ml_dsa_polynomial_PolynomialRingElement_e8,
-              libcrux_ml_dsa_polynomial_PolynomialRingElement_e8 *));
+          gamma1_exponent, Eurydice_array_to_slice_shared_7d0(&out0),
+          &Eurydice_slice_index_mut(mask, (size_t)0U, Eurydice_arr_a4));
       libcrux_ml_dsa_encoding_gamma1_deserialize_37(
-          gamma1_exponent, Eurydice_array_to_slice((size_t)640U, out1, uint8_t),
-          &Eurydice_slice_index(
-              mask, (size_t)1U,
-              libcrux_ml_dsa_polynomial_PolynomialRingElement_e8,
-              libcrux_ml_dsa_polynomial_PolynomialRingElement_e8 *));
+          gamma1_exponent, Eurydice_array_to_slice_shared_7d0(&out1),
+          &Eurydice_slice_index_mut(mask, (size_t)1U, Eurydice_arr_a4));
       libcrux_ml_dsa_encoding_gamma1_deserialize_37(
-          gamma1_exponent, Eurydice_array_to_slice((size_t)640U, out2, uint8_t),
-          &Eurydice_slice_index(
-              mask, (size_t)2U,
-              libcrux_ml_dsa_polynomial_PolynomialRingElement_e8,
-              libcrux_ml_dsa_polynomial_PolynomialRingElement_e8 *));
+          gamma1_exponent, Eurydice_array_to_slice_shared_7d0(&out2),
+          &Eurydice_slice_index_mut(mask, (size_t)2U, Eurydice_arr_a4));
       libcrux_ml_dsa_encoding_gamma1_deserialize_37(
-          gamma1_exponent, Eurydice_array_to_slice((size_t)640U, out3, uint8_t),
-          &Eurydice_slice_index(
-              mask, (size_t)3U,
-              libcrux_ml_dsa_polynomial_PolynomialRingElement_e8,
-              libcrux_ml_dsa_polynomial_PolynomialRingElement_e8 *));
+          gamma1_exponent, Eurydice_array_to_slice_shared_7d0(&out3),
+          &Eurydice_slice_index_mut(mask, (size_t)3U, Eurydice_arr_a4));
       break;
     }
     default: {
@@ -6031,16 +5943,11 @@ static KRML_MUSTINLINE void libcrux_ml_dsa_sample_sample_mask_vector_67(
   }
   for (size_t i = (size_t)4U; i < dimension; i++) {
     size_t i0 = i;
-    uint8_t seed4[66U];
-    libcrux_ml_dsa_sample_add_error_domain_separator(
-        Eurydice_array_to_slice((size_t)64U, seed, uint8_t),
-        domain_separator[0U], seed4);
+    Eurydice_arr_a2 seed4 = libcrux_ml_dsa_sample_add_error_domain_separator(
+        Eurydice_array_to_slice_shared_d8(seed), domain_separator[0U]);
     domain_separator[0U] = (uint32_t)domain_separator[0U] + 1U;
     libcrux_ml_dsa_sample_sample_mask_ring_element_2e(
-        seed4,
-        &Eurydice_slice_index(
-            mask, i0, libcrux_ml_dsa_polynomial_PolynomialRingElement_e8,
-            libcrux_ml_dsa_polynomial_PolynomialRingElement_e8 *),
+        &seed4, &Eurydice_slice_index_mut(mask, i0, Eurydice_arr_a4),
         gamma1_exponent);
   }
 }
@@ -6055,34 +5962,39 @@ with const generics
 
 */
 static KRML_MUSTINLINE void libcrux_ml_dsa_matrix_compute_matrix_x_mask_37(
-    size_t rows_in_a, size_t columns_in_a, Eurydice_slice matrix,
-    Eurydice_slice mask, Eurydice_slice result) {
+    size_t rows_in_a, size_t columns_in_a, Eurydice_dst_ref_shared_f3 matrix,
+    Eurydice_dst_ref_shared_f3 mask, Eurydice_dst_ref_mut_f3 result) {
   for (size_t i0 = (size_t)0U; i0 < rows_in_a; i0++) {
     size_t i1 = i0;
     for (size_t i = (size_t)0U; i < columns_in_a; i++) {
       size_t j = i;
-      libcrux_ml_dsa_polynomial_PolynomialRingElement_e8 product =
-          Eurydice_slice_index(
-              mask, j, libcrux_ml_dsa_polynomial_PolynomialRingElement_e8,
-              libcrux_ml_dsa_polynomial_PolynomialRingElement_e8 *);
+      Eurydice_arr_a4 product =
+          Eurydice_slice_index_shared(mask, j, Eurydice_arr_a4);
       libcrux_ml_dsa_ntt_ntt_multiply_montgomery_37(
-          &product, &Eurydice_slice_index(
-                        matrix, i1 * columns_in_a + j,
-                        libcrux_ml_dsa_polynomial_PolynomialRingElement_e8,
-                        libcrux_ml_dsa_polynomial_PolynomialRingElement_e8 *));
+          &product, &Eurydice_slice_index_shared(matrix, i1 * columns_in_a + j,
+                                                 Eurydice_arr_a4));
       libcrux_ml_dsa_polynomial_add_ff_37(
-          &Eurydice_slice_index(
-              result, i1, libcrux_ml_dsa_polynomial_PolynomialRingElement_e8,
-              libcrux_ml_dsa_polynomial_PolynomialRingElement_e8 *),
-          &product);
+          &Eurydice_slice_index_mut(result, i1, Eurydice_arr_a4), &product);
     }
-    libcrux_ml_dsa_ntt_reduce_37(&Eurydice_slice_index(
-        result, i1, libcrux_ml_dsa_polynomial_PolynomialRingElement_e8,
-        libcrux_ml_dsa_polynomial_PolynomialRingElement_e8 *));
-    libcrux_ml_dsa_ntt_invert_ntt_montgomery_37(&Eurydice_slice_index(
-        result, i1, libcrux_ml_dsa_polynomial_PolynomialRingElement_e8,
-        libcrux_ml_dsa_polynomial_PolynomialRingElement_e8 *));
+    libcrux_ml_dsa_ntt_reduce_37(
+        &Eurydice_slice_index_mut(result, i1, Eurydice_arr_a4));
+    libcrux_ml_dsa_ntt_invert_ntt_montgomery_37(
+        &Eurydice_slice_index_mut(result, i1, Eurydice_arr_a4));
   }
+}
+
+/**
+A monomorphic instance of Eurydice.array_to_slice_shared
+with types libcrux_ml_dsa_polynomial_PolynomialRingElement
+libcrux_ml_dsa_simd_portable_vector_type_Coefficients with const generics
+- N= 30
+*/
+static inline Eurydice_dst_ref_shared_f3 Eurydice_array_to_slice_shared_712(
+    const Eurydice_arr_c9 *a) {
+  Eurydice_dst_ref_shared_f3 lit;
+  lit.ptr = a->data;
+  lit.meta = (size_t)30U;
+  return lit;
 }
 
 /**
@@ -6092,37 +6004,22 @@ with const generics
 
 */
 static KRML_MUSTINLINE void libcrux_ml_dsa_arithmetic_decompose_vector_37(
-    size_t dimension, int32_t gamma2, Eurydice_slice t, Eurydice_slice low,
-    Eurydice_slice high) {
+    size_t dimension, int32_t gamma2, Eurydice_dst_ref_shared_f3 t,
+    Eurydice_dst_ref_mut_f3 low, Eurydice_dst_ref_mut_f3 high) {
   for (size_t i0 = (size_t)0U; i0 < dimension; i0++) {
     size_t i1 = i0;
     for (size_t i = (size_t)0U;
          i < Eurydice_slice_len(
-                 Eurydice_array_to_slice(
-                     (size_t)32U,
-                     Eurydice_slice_index(
-                         low, (size_t)0U,
-                         libcrux_ml_dsa_polynomial_PolynomialRingElement_e8,
-                         libcrux_ml_dsa_polynomial_PolynomialRingElement_e8 *)
-                         .simd_units,
-                     libcrux_ml_dsa_simd_portable_vector_type_Coefficients),
-                 libcrux_ml_dsa_simd_portable_vector_type_Coefficients);
+                 Eurydice_array_to_slice_shared_a2(&Eurydice_slice_index_shared(
+                     (Eurydice_dst_ref_shared_f3{low.ptr, low.meta}),
+                     (size_t)0U, Eurydice_arr_a4)),
+                 Eurydice_arr_d4);
          i++) {
       size_t j = i;
       libcrux_ml_dsa_simd_portable_decompose_65(
-          gamma2,
-          &Eurydice_slice_index(
-               t, i1, libcrux_ml_dsa_polynomial_PolynomialRingElement_e8,
-               libcrux_ml_dsa_polynomial_PolynomialRingElement_e8 *)
-               .simd_units[j],
-          &Eurydice_slice_index(
-               low, i1, libcrux_ml_dsa_polynomial_PolynomialRingElement_e8,
-               libcrux_ml_dsa_polynomial_PolynomialRingElement_e8 *)
-               .simd_units[j],
-          &Eurydice_slice_index(
-               high, i1, libcrux_ml_dsa_polynomial_PolynomialRingElement_e8,
-               libcrux_ml_dsa_polynomial_PolynomialRingElement_e8 *)
-               .simd_units[j]);
+          gamma2, &Eurydice_slice_index_shared(t, i1, Eurydice_arr_a4).data[j],
+          &Eurydice_slice_index_mut(low, i1, Eurydice_arr_a4).data[j],
+          &Eurydice_slice_index_mut(high, i1, Eurydice_arr_a4).data[j]);
     }
   }
 }
@@ -6134,25 +6031,24 @@ with const generics
 
 */
 static KRML_MUSTINLINE void libcrux_ml_dsa_encoding_commitment_serialize_37(
-    libcrux_ml_dsa_polynomial_PolynomialRingElement_e8 *re,
-    Eurydice_slice serialized) {
+    const Eurydice_arr_a4 *re, Eurydice_mut_borrow_slice_u8 serialized) {
   size_t output_bytes_per_simd_unit =
-      Eurydice_slice_len(serialized, uint8_t) / ((size_t)8U * (size_t)4U);
+      Eurydice_slice_len(
+          (Eurydice_borrow_slice_u8{serialized.ptr, serialized.meta}),
+          uint8_t) /
+      ((size_t)8U * (size_t)4U);
   for (size_t i = (size_t)0U;
-       i < Eurydice_slice_len(
-               Eurydice_array_to_slice(
-                   (size_t)32U, re->simd_units,
-                   libcrux_ml_dsa_simd_portable_vector_type_Coefficients),
-               libcrux_ml_dsa_simd_portable_vector_type_Coefficients);
+       i < Eurydice_slice_len(Eurydice_array_to_slice_shared_a2(re),
+                              Eurydice_arr_d4);
        i++) {
     size_t i0 = i;
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients *simd_unit =
-        &re->simd_units[i0];
+    const Eurydice_arr_d4 *simd_unit = &re->data[i0];
     libcrux_ml_dsa_simd_portable_commitment_serialize_65(
         simd_unit,
-        Eurydice_slice_subslice3(serialized, i0 * output_bytes_per_simd_unit,
-                                 (i0 + (size_t)1U) * output_bytes_per_simd_unit,
-                                 uint8_t *));
+        Eurydice_slice_subslice_mut_7e(
+            serialized, (core_ops_range_Range_08{
+                            i0 * output_bytes_per_simd_unit,
+                            (i0 + (size_t)1U) * output_bytes_per_simd_unit})));
   }
 }
 
@@ -6164,23 +6060,19 @@ with const generics
 */
 static KRML_MUSTINLINE void
 libcrux_ml_dsa_encoding_commitment_serialize_vector_37(
-    size_t ring_element_size, Eurydice_slice vector,
-    Eurydice_slice serialized) {
+    size_t ring_element_size, Eurydice_dst_ref_shared_f3 vector,
+    Eurydice_mut_borrow_slice_u8 serialized) {
   size_t offset = (size_t)0U;
-  for (size_t i = (size_t)0U;
-       i < Eurydice_slice_len(
-               vector, libcrux_ml_dsa_polynomial_PolynomialRingElement_e8);
+  for (size_t i = (size_t)0U; i < Eurydice_slice_len(vector, Eurydice_arr_a4);
        i++) {
     size_t _cloop_j = i;
-    libcrux_ml_dsa_polynomial_PolynomialRingElement_e8 *ring_element =
-        &Eurydice_slice_index(
-            vector, _cloop_j,
-            libcrux_ml_dsa_polynomial_PolynomialRingElement_e8,
-            libcrux_ml_dsa_polynomial_PolynomialRingElement_e8 *);
+    const Eurydice_arr_a4 *ring_element =
+        &Eurydice_slice_index_shared(vector, _cloop_j, Eurydice_arr_a4);
     libcrux_ml_dsa_encoding_commitment_serialize_37(
         ring_element,
-        Eurydice_slice_subslice3(serialized, offset, offset + ring_element_size,
-                                 uint8_t *));
+        Eurydice_slice_subslice_mut_7e(
+            serialized,
+            (core_ops_range_Range_08{offset, offset + ring_element_size})));
     offset = offset + ring_element_size;
   }
 }
@@ -6193,44 +6085,39 @@ libcrux_ml_dsa_hash_functions_portable_Shake256 with const generics
 */
 static KRML_MUSTINLINE void
 libcrux_ml_dsa_sample_sample_challenge_ring_element_2e(
-    Eurydice_slice seed, size_t number_of_ones,
-    libcrux_ml_dsa_polynomial_PolynomialRingElement_e8 *re) {
-  libcrux_sha3_generic_keccak_KeccakState_17 state =
+    Eurydice_borrow_slice_u8 seed, size_t number_of_ones, Eurydice_arr_a4 *re) {
+  Eurydice_arr_26 state =
       libcrux_ml_dsa_hash_functions_portable_init_absorb_final_61(seed);
-  uint8_t randomness0[136U];
-  libcrux_ml_dsa_hash_functions_portable_squeeze_first_block_61(&state,
-                                                                randomness0);
-  uint8_t ret[8U];
-  Result_15 dst;
-  Eurydice_slice_to_array2(&dst,
-                           Eurydice_array_to_subslice3(randomness0, (size_t)0U,
-                                                       (size_t)8U, uint8_t *),
-                           Eurydice_slice, uint8_t[8U], TryFromSliceError);
-  unwrap_26_68(dst, ret);
-  uint64_t signs = core_num__u64__from_le_bytes(ret);
-  int32_t result[256U] = {0U};
+  Eurydice_arr_3d randomness0 =
+      libcrux_ml_dsa_hash_functions_portable_squeeze_first_block_61(&state);
+  Eurydice_array_u8x8 arr;
+  memcpy(arr.data,
+         Eurydice_array_to_subslice_shared_361(
+             &randomness0, (core_ops_range_Range_08{(size_t)0U, (size_t)8U}))
+             .ptr,
+         (size_t)8U * sizeof(uint8_t));
+  uint64_t signs = core_num__u64__from_le_bytes(
+      unwrap_26_ab(Result_a4_s(Ok, &Result_a4_s::U::case_Ok, arr)));
+  Eurydice_arr_c3 result = {{0U}};
   size_t out_index =
-      Eurydice_slice_len(Eurydice_array_to_slice((size_t)256U, result, int32_t),
-                         int32_t) -
+      Eurydice_slice_len(Eurydice_array_to_slice_shared_20(&result), int32_t) -
       number_of_ones;
   bool done = libcrux_ml_dsa_sample_inside_out_shuffle(
-      Eurydice_array_to_subslice_from((size_t)136U, randomness0, (size_t)8U,
-                                      uint8_t, size_t, uint8_t[]),
-      &out_index, &signs, result);
+      Eurydice_array_to_subslice_from_shared_8c(&randomness0, (size_t)8U),
+      &out_index, &signs, &result);
   while (true) {
     if (done) {
       break;
     } else {
-      uint8_t randomness[136U];
-      libcrux_ml_dsa_hash_functions_portable_squeeze_next_block_61(&state,
-                                                                   randomness);
+      Eurydice_arr_3d randomness =
+          libcrux_ml_dsa_hash_functions_portable_squeeze_next_block_61(&state);
       done = libcrux_ml_dsa_sample_inside_out_shuffle(
-          Eurydice_array_to_slice((size_t)136U, randomness, uint8_t),
-          &out_index, &signs, result);
+          Eurydice_array_to_slice_shared_d4(&randomness), &out_index, &signs,
+          &result);
     }
   }
   libcrux_ml_dsa_polynomial_from_i32_array_ff_37(
-      Eurydice_array_to_slice((size_t)256U, result, int32_t), re);
+      Eurydice_array_to_slice_shared_20(&result), re);
 }
 
 /**
@@ -6240,21 +6127,17 @@ with const generics
 
 */
 static KRML_MUSTINLINE void libcrux_ml_dsa_matrix_vector_times_ring_element_37(
-    Eurydice_slice vector,
-    libcrux_ml_dsa_polynomial_PolynomialRingElement_e8 *ring_element) {
+    Eurydice_dst_ref_mut_f3 vector, const Eurydice_arr_a4 *ring_element) {
   for (size_t i = (size_t)0U;
-       i < Eurydice_slice_len(
-               vector, libcrux_ml_dsa_polynomial_PolynomialRingElement_e8);
+       i <
+       Eurydice_slice_len((Eurydice_dst_ref_shared_f3{vector.ptr, vector.meta}),
+                          Eurydice_arr_a4);
        i++) {
     size_t i0 = i;
     libcrux_ml_dsa_ntt_ntt_multiply_montgomery_37(
-        &Eurydice_slice_index(
-            vector, i0, libcrux_ml_dsa_polynomial_PolynomialRingElement_e8,
-            libcrux_ml_dsa_polynomial_PolynomialRingElement_e8 *),
-        ring_element);
-    libcrux_ml_dsa_ntt_invert_ntt_montgomery_37(&Eurydice_slice_index(
-        vector, i0, libcrux_ml_dsa_polynomial_PolynomialRingElement_e8,
-        libcrux_ml_dsa_polynomial_PolynomialRingElement_e8 *));
+        &Eurydice_slice_index_mut(vector, i0, Eurydice_arr_a4), ring_element);
+    libcrux_ml_dsa_ntt_invert_ntt_montgomery_37(
+        &Eurydice_slice_index_mut(vector, i0, Eurydice_arr_a4));
   }
 }
 
@@ -6265,16 +6148,13 @@ with const generics
 
 */
 static KRML_MUSTINLINE void libcrux_ml_dsa_matrix_add_vectors_37(
-    size_t dimension, Eurydice_slice lhs, Eurydice_slice rhs) {
+    size_t dimension, Eurydice_dst_ref_mut_f3 lhs,
+    Eurydice_dst_ref_shared_f3 rhs) {
   for (size_t i = (size_t)0U; i < dimension; i++) {
     size_t i0 = i;
     libcrux_ml_dsa_polynomial_add_ff_37(
-        &Eurydice_slice_index(
-            lhs, i0, libcrux_ml_dsa_polynomial_PolynomialRingElement_e8,
-            libcrux_ml_dsa_polynomial_PolynomialRingElement_e8 *),
-        &Eurydice_slice_index(
-            rhs, i0, libcrux_ml_dsa_polynomial_PolynomialRingElement_e8,
-            libcrux_ml_dsa_polynomial_PolynomialRingElement_e8 *));
+        &Eurydice_slice_index_mut(lhs, i0, Eurydice_arr_a4),
+        &Eurydice_slice_index_shared(rhs, i0, Eurydice_arr_a4));
   }
 }
 
@@ -6290,18 +6170,13 @@ with const generics
 
 */
 static KRML_MUSTINLINE void libcrux_ml_dsa_polynomial_subtract_ff_37(
-    libcrux_ml_dsa_polynomial_PolynomialRingElement_e8 *self,
-    libcrux_ml_dsa_polynomial_PolynomialRingElement_e8 *rhs) {
+    Eurydice_arr_a4 *self, const Eurydice_arr_a4 *rhs) {
   for (size_t i = (size_t)0U;
-       i < Eurydice_slice_len(
-               Eurydice_array_to_slice(
-                   (size_t)32U, self->simd_units,
-                   libcrux_ml_dsa_simd_portable_vector_type_Coefficients),
-               libcrux_ml_dsa_simd_portable_vector_type_Coefficients);
+       i < Eurydice_slice_len(Eurydice_array_to_slice_shared_a2(self),
+                              Eurydice_arr_d4);
        i++) {
     size_t i0 = i;
-    libcrux_ml_dsa_simd_portable_subtract_65(&self->simd_units[i0],
-                                             &rhs->simd_units[i0]);
+    libcrux_ml_dsa_simd_portable_subtract_65(&self->data[i0], &rhs->data[i0]);
   }
 }
 
@@ -6312,16 +6187,13 @@ with const generics
 
 */
 static KRML_MUSTINLINE void libcrux_ml_dsa_matrix_subtract_vectors_37(
-    size_t dimension, Eurydice_slice lhs, Eurydice_slice rhs) {
+    size_t dimension, Eurydice_dst_ref_mut_f3 lhs,
+    Eurydice_dst_ref_shared_f3 rhs) {
   for (size_t i = (size_t)0U; i < dimension; i++) {
     size_t i0 = i;
     libcrux_ml_dsa_polynomial_subtract_ff_37(
-        &Eurydice_slice_index(
-            lhs, i0, libcrux_ml_dsa_polynomial_PolynomialRingElement_e8,
-            libcrux_ml_dsa_polynomial_PolynomialRingElement_e8 *),
-        &Eurydice_slice_index(
-            rhs, i0, libcrux_ml_dsa_polynomial_PolynomialRingElement_e8,
-            libcrux_ml_dsa_polynomial_PolynomialRingElement_e8 *));
+        &Eurydice_slice_index_mut(lhs, i0, Eurydice_arr_a4),
+        &Eurydice_slice_index_shared(rhs, i0, Eurydice_arr_a4));
   }
 }
 
@@ -6338,14 +6210,11 @@ with const generics
 */
 static KRML_MUSTINLINE bool
 libcrux_ml_dsa_polynomial_infinity_norm_exceeds_ff_37(
-    libcrux_ml_dsa_polynomial_PolynomialRingElement_e8 *self, int32_t bound) {
+    const Eurydice_arr_a4 *self, int32_t bound) {
   bool result = false;
   for (size_t i = (size_t)0U;
-       i < Eurydice_slice_len(
-               Eurydice_array_to_slice(
-                   (size_t)32U, self->simd_units,
-                   libcrux_ml_dsa_simd_portable_vector_type_Coefficients),
-               libcrux_ml_dsa_simd_portable_vector_type_Coefficients);
+       i < Eurydice_slice_len(Eurydice_array_to_slice_shared_a2(self),
+                              Eurydice_arr_d4);
        i++) {
     size_t i0 = i;
     bool uu____0;
@@ -6353,7 +6222,7 @@ libcrux_ml_dsa_polynomial_infinity_norm_exceeds_ff_37(
       uu____0 = true;
     } else {
       uu____0 = libcrux_ml_dsa_simd_portable_infinity_norm_exceeds_65(
-          &self->simd_units[i0], bound);
+          &self->data[i0], bound);
     }
     result = uu____0;
   }
@@ -6367,12 +6236,10 @@ with const generics
 
 */
 static KRML_MUSTINLINE bool
-libcrux_ml_dsa_arithmetic_vector_infinity_norm_exceeds_37(Eurydice_slice vector,
-                                                          int32_t bound) {
+libcrux_ml_dsa_arithmetic_vector_infinity_norm_exceeds_37(
+    Eurydice_dst_ref_shared_f3 vector, int32_t bound) {
   bool result = false;
-  for (size_t i = (size_t)0U;
-       i < Eurydice_slice_len(
-               vector, libcrux_ml_dsa_polynomial_PolynomialRingElement_e8);
+  for (size_t i = (size_t)0U; i < Eurydice_slice_len(vector, Eurydice_arr_a4);
        i++) {
     size_t i0 = i;
     bool uu____0;
@@ -6380,10 +6247,7 @@ libcrux_ml_dsa_arithmetic_vector_infinity_norm_exceeds_37(Eurydice_slice vector,
       uu____0 = true;
     } else {
       uu____0 = libcrux_ml_dsa_polynomial_infinity_norm_exceeds_ff_37(
-          &Eurydice_slice_index(
-              vector, i0, libcrux_ml_dsa_polynomial_PolynomialRingElement_e8,
-              libcrux_ml_dsa_polynomial_PolynomialRingElement_e8 *),
-          bound);
+          &Eurydice_slice_index_shared(vector, i0, Eurydice_arr_a4), bound);
     }
     result = uu____0;
   }
@@ -6401,27 +6265,24 @@ with types libcrux_ml_dsa_simd_portable_vector_type_Coefficients
 with const generics
 
 */
-static inline void libcrux_ml_dsa_polynomial_to_i32_array_ff_37(
-    libcrux_ml_dsa_polynomial_PolynomialRingElement_e8 *self,
-    int32_t ret[256U]) {
-  int32_t result[256U] = {0U};
+static inline Eurydice_arr_c3 libcrux_ml_dsa_polynomial_to_i32_array_ff_37(
+    const Eurydice_arr_a4 *self) {
+  Eurydice_arr_c3 result = {{0U}};
   for (size_t i = (size_t)0U;
-       i < Eurydice_slice_len(
-               Eurydice_array_to_slice(
-                   (size_t)32U, self->simd_units,
-                   libcrux_ml_dsa_simd_portable_vector_type_Coefficients),
-               libcrux_ml_dsa_simd_portable_vector_type_Coefficients);
+       i < Eurydice_slice_len(Eurydice_array_to_slice_shared_a2(self),
+                              Eurydice_arr_d4);
        i++) {
     size_t i0 = i;
     libcrux_ml_dsa_simd_portable_to_coefficient_array_65(
-        &self->simd_units[i0],
-        Eurydice_array_to_subslice3(
-            result, i0 * LIBCRUX_ML_DSA_SIMD_TRAITS_COEFFICIENTS_IN_SIMD_UNIT,
-            (i0 + (size_t)1U) *
-                LIBCRUX_ML_DSA_SIMD_TRAITS_COEFFICIENTS_IN_SIMD_UNIT,
-            int32_t *));
+        &self->data[i0],
+        Eurydice_array_to_subslice_mut_7f(
+            &result,
+            (core_ops_range_Range_08{
+                i0 * LIBCRUX_ML_DSA_SIMD_TRAITS_COEFFICIENTS_IN_SIMD_UNIT,
+                (i0 + (size_t)1U) *
+                    LIBCRUX_ML_DSA_SIMD_TRAITS_COEFFICIENTS_IN_SIMD_UNIT})));
   }
-  memcpy(ret, result, (size_t)256U * sizeof(int32_t));
+  return result;
 }
 
 /**
@@ -6430,41 +6291,28 @@ with types libcrux_ml_dsa_simd_portable_vector_type_Coefficients
 with const generics
 
 */
-static KRML_MUSTINLINE size_t
-libcrux_ml_dsa_arithmetic_make_hint_37(Eurydice_slice low, Eurydice_slice high,
-                                       int32_t gamma2, Eurydice_slice hint) {
+static KRML_MUSTINLINE size_t libcrux_ml_dsa_arithmetic_make_hint_37(
+    Eurydice_dst_ref_shared_f3 low, Eurydice_dst_ref_shared_f3 high,
+    int32_t gamma2, Eurydice_dst_ref_mut_59 hint) {
   size_t true_hints = (size_t)0U;
-  libcrux_ml_dsa_polynomial_PolynomialRingElement_e8 hint_simd =
-      libcrux_ml_dsa_polynomial_zero_ff_37();
-  for (size_t i0 = (size_t)0U;
-       i0 < Eurydice_slice_len(
-                low, libcrux_ml_dsa_polynomial_PolynomialRingElement_e8);
+  Eurydice_arr_a4 hint_simd = libcrux_ml_dsa_polynomial_zero_ff_37();
+  for (size_t i0 = (size_t)0U; i0 < Eurydice_slice_len(low, Eurydice_arr_a4);
        i0++) {
     size_t i1 = i0;
     for (size_t i = (size_t)0U;
-         i < Eurydice_slice_len(
-                 Eurydice_array_to_slice(
-                     (size_t)32U, hint_simd.simd_units,
-                     libcrux_ml_dsa_simd_portable_vector_type_Coefficients),
-                 libcrux_ml_dsa_simd_portable_vector_type_Coefficients);
+         i < Eurydice_slice_len(Eurydice_array_to_slice_shared_a2(&hint_simd),
+                                Eurydice_arr_d4);
          i++) {
       size_t j = i;
       size_t one_hints_count = libcrux_ml_dsa_simd_portable_compute_hint_65(
-          &Eurydice_slice_index(
-               low, i1, libcrux_ml_dsa_polynomial_PolynomialRingElement_e8,
-               libcrux_ml_dsa_polynomial_PolynomialRingElement_e8 *)
-               .simd_units[j],
-          &Eurydice_slice_index(
-               high, i1, libcrux_ml_dsa_polynomial_PolynomialRingElement_e8,
-               libcrux_ml_dsa_polynomial_PolynomialRingElement_e8 *)
-               .simd_units[j],
-          gamma2, &hint_simd.simd_units[j]);
+          &Eurydice_slice_index_shared(low, i1, Eurydice_arr_a4).data[j],
+          &Eurydice_slice_index_shared(high, i1, Eurydice_arr_a4).data[j],
+          gamma2, &hint_simd.data[j]);
       true_hints = true_hints + one_hints_count;
     }
-    int32_t uu____0[256U];
-    libcrux_ml_dsa_polynomial_to_i32_array_ff_37(&hint_simd, uu____0);
-    memcpy(Eurydice_slice_index(hint, i1, int32_t[256U], int32_t(*)[256U]),
-           uu____0, (size_t)256U * sizeof(int32_t));
+    Eurydice_arr_c3 uu____0 =
+        libcrux_ml_dsa_polynomial_to_i32_array_ff_37(&hint_simd);
+    Eurydice_slice_index_mut(hint, i1, Eurydice_arr_c3) = uu____0;
   }
   return true_hints;
 }
@@ -6476,23 +6324,21 @@ with const generics
 
 */
 static KRML_MUSTINLINE void libcrux_ml_dsa_encoding_gamma1_serialize_37(
-    libcrux_ml_dsa_polynomial_PolynomialRingElement_e8 *re,
-    Eurydice_slice serialized, size_t gamma1_exponent) {
+    const Eurydice_arr_a4 *re, Eurydice_mut_borrow_slice_u8 serialized,
+    size_t gamma1_exponent) {
   for (size_t i = (size_t)0U;
-       i < Eurydice_slice_len(
-               Eurydice_array_to_slice(
-                   (size_t)32U, re->simd_units,
-                   libcrux_ml_dsa_simd_portable_vector_type_Coefficients),
-               libcrux_ml_dsa_simd_portable_vector_type_Coefficients);
+       i < Eurydice_slice_len(Eurydice_array_to_slice_shared_a2(re),
+                              Eurydice_arr_d4);
        i++) {
     size_t i0 = i;
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients *simd_unit =
-        &re->simd_units[i0];
+    const Eurydice_arr_d4 *simd_unit = &re->data[i0];
     libcrux_ml_dsa_simd_portable_gamma1_serialize_65(
         simd_unit,
-        Eurydice_slice_subslice3(
-            serialized, i0 * (gamma1_exponent + (size_t)1U),
-            (i0 + (size_t)1U) * (gamma1_exponent + (size_t)1U), uint8_t *),
+        Eurydice_slice_subslice_mut_7e(
+            serialized,
+            (core_ops_range_Range_08{
+                i0 * (gamma1_exponent + (size_t)1U),
+                (i0 + (size_t)1U) * (gamma1_exponent + (size_t)1U)})),
         gamma1_exponent);
   }
 }
@@ -6504,25 +6350,25 @@ with const generics
 
 */
 static KRML_MUSTINLINE void libcrux_ml_dsa_encoding_signature_serialize_37(
-    Eurydice_slice commitment_hash, Eurydice_slice signer_response,
-    Eurydice_slice hint, size_t commitment_hash_size, size_t columns_in_a,
-    size_t rows_in_a, size_t gamma1_exponent, size_t gamma1_ring_element_size,
-    size_t max_ones_in_hint, Eurydice_slice signature) {
+    Eurydice_borrow_slice_u8 commitment_hash,
+    Eurydice_dst_ref_shared_f3 signer_response, Eurydice_dst_ref_shared_59 hint,
+    size_t commitment_hash_size, size_t columns_in_a, size_t rows_in_a,
+    size_t gamma1_exponent, size_t gamma1_ring_element_size,
+    size_t max_ones_in_hint, Eurydice_mut_borrow_slice_u8 signature) {
   size_t offset = (size_t)0U;
   Eurydice_slice_copy(
-      Eurydice_slice_subslice3(signature, offset, offset + commitment_hash_size,
-                               uint8_t *),
+      Eurydice_slice_subslice_mut_7e(
+          signature,
+          (core_ops_range_Range_08{offset, offset + commitment_hash_size})),
       commitment_hash, uint8_t);
   offset = offset + commitment_hash_size;
   for (size_t i = (size_t)0U; i < columns_in_a; i++) {
     size_t i0 = i;
     libcrux_ml_dsa_encoding_gamma1_serialize_37(
-        &Eurydice_slice_index(
-            signer_response, i0,
-            libcrux_ml_dsa_polynomial_PolynomialRingElement_e8,
-            libcrux_ml_dsa_polynomial_PolynomialRingElement_e8 *),
-        Eurydice_slice_subslice3(signature, offset,
-                                 offset + gamma1_ring_element_size, uint8_t *),
+        &Eurydice_slice_index_shared(signer_response, i0, Eurydice_arr_a4),
+        Eurydice_slice_subslice_mut_7e(
+            signature, (core_ops_range_Range_08{
+                           offset, offset + gamma1_ring_element_size})),
         gamma1_exponent);
     offset = offset + gamma1_ring_element_size;
   }
@@ -6530,24 +6376,21 @@ static KRML_MUSTINLINE void libcrux_ml_dsa_encoding_signature_serialize_37(
   for (size_t i0 = (size_t)0U; i0 < rows_in_a; i0++) {
     size_t i1 = i0;
     for (size_t i = (size_t)0U;
-         i <
-         Eurydice_slice_len(Eurydice_array_to_slice(
-                                (size_t)256U,
-                                Eurydice_slice_index(hint, i1, int32_t[256U],
-                                                     int32_t(*)[256U]),
-                                int32_t),
-                            int32_t);
+         i < Eurydice_slice_len(
+                 Eurydice_array_to_slice_shared_20(
+                     &Eurydice_slice_index_shared(hint, i1, Eurydice_arr_c3)),
+                 int32_t);
          i++) {
       size_t j = i;
-      if (Eurydice_slice_index(hint, i1, int32_t[256U], int32_t(*)[256U])[j] ==
+      if (Eurydice_slice_index_shared(hint, i1, Eurydice_arr_c3).data[j] ==
           (int32_t)1) {
-        Eurydice_slice_index(signature, offset + true_hints_seen, uint8_t,
-                             uint8_t *) = (uint8_t)j;
+        Eurydice_slice_index_mut(signature, offset + true_hints_seen, uint8_t) =
+            (uint8_t)j;
         true_hints_seen++;
       }
     }
-    Eurydice_slice_index(signature, offset + max_ones_in_hint + i1, uint8_t,
-                         uint8_t *) = (uint8_t)true_hints_seen;
+    Eurydice_slice_index_mut(signature, offset + max_ones_in_hint + i1,
+                             uint8_t) = (uint8_t)true_hints_seen;
   }
 }
 
@@ -6563,353 +6406,267 @@ libcrux_ml_dsa_hash_functions_portable_Shake256X4 with const generics
 */
 static KRML_MUSTINLINE Result_53
 libcrux_ml_dsa_ml_dsa_generic_ml_dsa_65_sign_internal_5a(
-    Eurydice_slice signing_key, Eurydice_slice message,
-    Option_84 domain_separation_context, uint8_t randomness[32U],
-    uint8_t *signature) {
-  Eurydice_slice_uint8_t_x2 uu____0 = Eurydice_slice_split_at(
+    Eurydice_borrow_slice_u8 signing_key, Eurydice_borrow_slice_u8 message,
+    Option_84 domain_separation_context, Eurydice_arr_60 randomness,
+    Eurydice_arr_96 *signature) {
+  Eurydice_dst_ref_shared_uint8_t_size_t_x2 uu____0 = Eurydice_slice_split_at(
       signing_key, LIBCRUX_ML_DSA_CONSTANTS_SEED_FOR_A_SIZE, uint8_t,
-      Eurydice_slice_uint8_t_x2);
-  Eurydice_slice seed_for_a = uu____0.fst;
-  Eurydice_slice remaining_serialized0 = uu____0.snd;
-  Eurydice_slice_uint8_t_x2 uu____1 = Eurydice_slice_split_at(
+      Eurydice_dst_ref_shared_uint8_t_size_t_x2);
+  Eurydice_borrow_slice_u8 seed_for_a = uu____0.fst;
+  Eurydice_borrow_slice_u8 remaining_serialized0 = uu____0.snd;
+  Eurydice_dst_ref_shared_uint8_t_size_t_x2 uu____1 = Eurydice_slice_split_at(
       remaining_serialized0, LIBCRUX_ML_DSA_CONSTANTS_SEED_FOR_SIGNING_SIZE,
-      uint8_t, Eurydice_slice_uint8_t_x2);
-  Eurydice_slice seed_for_signing = uu____1.fst;
-  Eurydice_slice remaining_serialized1 = uu____1.snd;
-  Eurydice_slice_uint8_t_x2 uu____2 = Eurydice_slice_split_at(
+      uint8_t, Eurydice_dst_ref_shared_uint8_t_size_t_x2);
+  Eurydice_borrow_slice_u8 seed_for_signing = uu____1.fst;
+  Eurydice_borrow_slice_u8 remaining_serialized1 = uu____1.snd;
+  Eurydice_dst_ref_shared_uint8_t_size_t_x2 uu____2 = Eurydice_slice_split_at(
       remaining_serialized1,
       LIBCRUX_ML_DSA_CONSTANTS_BYTES_FOR_VERIFICATION_KEY_HASH, uint8_t,
-      Eurydice_slice_uint8_t_x2);
-  Eurydice_slice verification_key_hash = uu____2.fst;
-  Eurydice_slice remaining_serialized2 = uu____2.snd;
-  Eurydice_slice_uint8_t_x2 uu____3 = Eurydice_slice_split_at(
+      Eurydice_dst_ref_shared_uint8_t_size_t_x2);
+  Eurydice_borrow_slice_u8 verification_key_hash = uu____2.fst;
+  Eurydice_borrow_slice_u8 remaining_serialized2 = uu____2.snd;
+  Eurydice_dst_ref_shared_uint8_t_size_t_x2 uu____3 = Eurydice_slice_split_at(
       remaining_serialized2,
       LIBCRUX_ML_DSA_ML_DSA_GENERIC_ML_DSA_65_ERROR_RING_ELEMENT_SIZE *
           LIBCRUX_ML_DSA_CONSTANTS_ML_DSA_65_COLUMNS_IN_A,
-      uint8_t, Eurydice_slice_uint8_t_x2);
-  Eurydice_slice s1_serialized = uu____3.fst;
-  Eurydice_slice remaining_serialized = uu____3.snd;
-  Eurydice_slice_uint8_t_x2 uu____4 = Eurydice_slice_split_at(
+      uint8_t, Eurydice_dst_ref_shared_uint8_t_size_t_x2);
+  Eurydice_borrow_slice_u8 s1_serialized = uu____3.fst;
+  Eurydice_borrow_slice_u8 remaining_serialized = uu____3.snd;
+  Eurydice_dst_ref_shared_uint8_t_size_t_x2 uu____4 = Eurydice_slice_split_at(
       remaining_serialized,
       LIBCRUX_ML_DSA_ML_DSA_GENERIC_ML_DSA_65_ERROR_RING_ELEMENT_SIZE *
           LIBCRUX_ML_DSA_CONSTANTS_ML_DSA_65_ROWS_IN_A,
-      uint8_t, Eurydice_slice_uint8_t_x2);
-  Eurydice_slice s2_serialized = uu____4.fst;
-  Eurydice_slice t0_serialized = uu____4.snd;
-  libcrux_ml_dsa_polynomial_PolynomialRingElement_e8 s1_as_ntt[5U];
+      uint8_t, Eurydice_dst_ref_shared_uint8_t_size_t_x2);
+  Eurydice_borrow_slice_u8 s2_serialized = uu____4.fst;
+  Eurydice_borrow_slice_u8 t0_serialized = uu____4.snd;
+  Eurydice_arr_40 s1_as_ntt;
+  Eurydice_arr_a4 repeat_expression0[5U];
   for (size_t i = (size_t)0U; i < (size_t)5U; i++) {
-    s1_as_ntt[i] = libcrux_ml_dsa_polynomial_zero_ff_37();
+    repeat_expression0[i] = libcrux_ml_dsa_polynomial_zero_ff_37();
   }
-  libcrux_ml_dsa_polynomial_PolynomialRingElement_e8 s2_as_ntt[6U];
+  memcpy(s1_as_ntt.data, repeat_expression0,
+         (size_t)5U * sizeof(Eurydice_arr_a4));
+  Eurydice_arr_47 s2_as_ntt;
+  Eurydice_arr_a4 repeat_expression1[6U];
   for (size_t i = (size_t)0U; i < (size_t)6U; i++) {
-    s2_as_ntt[i] = libcrux_ml_dsa_polynomial_zero_ff_37();
+    repeat_expression1[i] = libcrux_ml_dsa_polynomial_zero_ff_37();
   }
-  libcrux_ml_dsa_polynomial_PolynomialRingElement_e8 t0_as_ntt[6U];
+  memcpy(s2_as_ntt.data, repeat_expression1,
+         (size_t)6U * sizeof(Eurydice_arr_a4));
+  Eurydice_arr_47 t0_as_ntt;
+  Eurydice_arr_a4 repeat_expression2[6U];
   for (size_t i = (size_t)0U; i < (size_t)6U; i++) {
-    t0_as_ntt[i] = libcrux_ml_dsa_polynomial_zero_ff_37();
+    repeat_expression2[i] = libcrux_ml_dsa_polynomial_zero_ff_37();
   }
+  memcpy(t0_as_ntt.data, repeat_expression2,
+         (size_t)6U * sizeof(Eurydice_arr_a4));
   libcrux_ml_dsa_encoding_error_deserialize_to_vector_then_ntt_37(
       LIBCRUX_ML_DSA_CONSTANTS_ML_DSA_65_ETA,
       LIBCRUX_ML_DSA_ML_DSA_GENERIC_ML_DSA_65_ERROR_RING_ELEMENT_SIZE,
-      s1_serialized,
-      Eurydice_array_to_slice(
-          (size_t)5U, s1_as_ntt,
-          libcrux_ml_dsa_polynomial_PolynomialRingElement_e8));
+      s1_serialized, Eurydice_array_to_slice_mut_711(&s1_as_ntt));
   libcrux_ml_dsa_encoding_error_deserialize_to_vector_then_ntt_37(
       LIBCRUX_ML_DSA_CONSTANTS_ML_DSA_65_ETA,
       LIBCRUX_ML_DSA_ML_DSA_GENERIC_ML_DSA_65_ERROR_RING_ELEMENT_SIZE,
-      s2_serialized,
-      Eurydice_array_to_slice(
-          (size_t)6U, s2_as_ntt,
-          libcrux_ml_dsa_polynomial_PolynomialRingElement_e8));
+      s2_serialized, Eurydice_array_to_slice_mut_712(&s2_as_ntt));
   libcrux_ml_dsa_encoding_t0_deserialize_to_vector_then_ntt_37(
-      t0_serialized, Eurydice_array_to_slice(
-                         (size_t)6U, t0_as_ntt,
-                         libcrux_ml_dsa_polynomial_PolynomialRingElement_e8));
-  libcrux_ml_dsa_polynomial_PolynomialRingElement_e8 matrix[30U];
+      t0_serialized, Eurydice_array_to_slice_mut_712(&t0_as_ntt));
+  Eurydice_arr_c9 matrix;
+  Eurydice_arr_a4 repeat_expression3[30U];
   for (size_t i = (size_t)0U; i < (size_t)30U; i++) {
-    matrix[i] = libcrux_ml_dsa_polynomial_zero_ff_37();
+    repeat_expression3[i] = libcrux_ml_dsa_polynomial_zero_ff_37();
   }
+  memcpy(matrix.data, repeat_expression3,
+         (size_t)30U * sizeof(Eurydice_arr_a4));
   libcrux_ml_dsa_samplex4_portable_matrix_flat_a8_37(
       LIBCRUX_ML_DSA_CONSTANTS_ML_DSA_65_COLUMNS_IN_A, seed_for_a,
-      Eurydice_array_to_slice(
-          (size_t)30U, matrix,
-          libcrux_ml_dsa_polynomial_PolynomialRingElement_e8));
-  uint8_t message_representative[64U] = {0U};
+      Eurydice_array_to_slice_mut_710(&matrix));
+  Eurydice_arr_06 message_representative = {{0U}};
   libcrux_ml_dsa_ml_dsa_generic_derive_message_representative_43(
       verification_key_hash, &domain_separation_context, message,
-      message_representative);
-  uint8_t mask_seed[64U] = {0U};
+      &message_representative);
+  Eurydice_arr_06 mask_seed = {{0U}};
   libcrux_sha3_generic_keccak_xof_KeccakXofState_e2 shake0 =
       libcrux_ml_dsa_hash_functions_portable_init_26();
   libcrux_ml_dsa_hash_functions_portable_absorb_26(&shake0, seed_for_signing);
   libcrux_ml_dsa_hash_functions_portable_absorb_26(
-      &shake0, Eurydice_array_to_slice((size_t)32U, randomness, uint8_t));
+      &shake0, Eurydice_array_to_slice_shared_6e(&randomness));
   libcrux_ml_dsa_hash_functions_portable_absorb_final_26(
-      &shake0,
-      Eurydice_array_to_slice((size_t)64U, message_representative, uint8_t));
+      &shake0, Eurydice_array_to_slice_shared_d8(&message_representative));
   libcrux_ml_dsa_hash_functions_portable_squeeze_26(
-      &shake0, Eurydice_array_to_slice((size_t)64U, mask_seed, uint8_t));
+      &shake0, Eurydice_array_to_slice_mut_d8(&mask_seed));
   uint16_t domain_separator_for_mask = 0U;
   size_t attempt = (size_t)0U;
-  Option_67 commitment_hash0 = {None};
-  Option_a5 signer_response0 = {None};
-  Option_f0 hint0 = {None};
+  Option_91 commitment_hash0 = {None};
+  Option_e7 signer_response0 = {None};
+  Option_c9 hint0 = {None};
   while (attempt < LIBCRUX_ML_DSA_CONSTANTS_REJECTION_SAMPLE_BOUND_SIGN) {
     attempt++;
-    libcrux_ml_dsa_polynomial_PolynomialRingElement_e8 mask[5U];
+    Eurydice_arr_40 mask;
+    Eurydice_arr_a4 repeat_expression4[5U];
     for (size_t i = (size_t)0U; i < (size_t)5U; i++) {
-      mask[i] = libcrux_ml_dsa_polynomial_zero_ff_37();
+      repeat_expression4[i] = libcrux_ml_dsa_polynomial_zero_ff_37();
     }
-    libcrux_ml_dsa_polynomial_PolynomialRingElement_e8 w0[6U];
+    memcpy(mask.data, repeat_expression4, (size_t)5U * sizeof(Eurydice_arr_a4));
+    Eurydice_arr_47 w0;
+    Eurydice_arr_a4 repeat_expression5[6U];
     for (size_t i = (size_t)0U; i < (size_t)6U; i++) {
-      w0[i] = libcrux_ml_dsa_polynomial_zero_ff_37();
+      repeat_expression5[i] = libcrux_ml_dsa_polynomial_zero_ff_37();
     }
-    libcrux_ml_dsa_polynomial_PolynomialRingElement_e8 commitment[6U];
+    memcpy(w0.data, repeat_expression5, (size_t)6U * sizeof(Eurydice_arr_a4));
+    Eurydice_arr_47 commitment;
+    Eurydice_arr_a4 repeat_expression6[6U];
     for (size_t i = (size_t)0U; i < (size_t)6U; i++) {
-      commitment[i] = libcrux_ml_dsa_polynomial_zero_ff_37();
+      repeat_expression6[i] = libcrux_ml_dsa_polynomial_zero_ff_37();
     }
+    memcpy(commitment.data, repeat_expression6,
+           (size_t)6U * sizeof(Eurydice_arr_a4));
     libcrux_ml_dsa_sample_sample_mask_vector_67(
         LIBCRUX_ML_DSA_CONSTANTS_ML_DSA_65_COLUMNS_IN_A,
-        LIBCRUX_ML_DSA_CONSTANTS_ML_DSA_65_GAMMA1_EXPONENT, mask_seed,
-        &domain_separator_for_mask,
-        Eurydice_array_to_slice(
-            (size_t)5U, mask,
-            libcrux_ml_dsa_polynomial_PolynomialRingElement_e8));
-    libcrux_ml_dsa_polynomial_PolynomialRingElement_e8 a_x_mask[6U];
+        LIBCRUX_ML_DSA_CONSTANTS_ML_DSA_65_GAMMA1_EXPONENT, &mask_seed,
+        &domain_separator_for_mask, Eurydice_array_to_slice_mut_711(&mask));
+    Eurydice_arr_47 a_x_mask;
+    Eurydice_arr_a4 repeat_expression[6U];
     for (size_t i = (size_t)0U; i < (size_t)6U; i++) {
-      a_x_mask[i] = libcrux_ml_dsa_polynomial_zero_ff_37();
+      repeat_expression[i] = libcrux_ml_dsa_polynomial_zero_ff_37();
     }
-    libcrux_ml_dsa_polynomial_PolynomialRingElement_e8 mask_ntt[5U];
-    core_array__core__clone__Clone_for__Array_T__N___clone(
-        (size_t)5U, mask, mask_ntt,
-        libcrux_ml_dsa_polynomial_PolynomialRingElement_e8, void *);
+    memcpy(a_x_mask.data, repeat_expression,
+           (size_t)6U * sizeof(Eurydice_arr_a4));
+    Eurydice_arr_40 mask_ntt =
+        core_array__core__clone__Clone_for__Array_T__N___clone(
+            (size_t)5U, &mask, Eurydice_arr_a4, Eurydice_arr_40);
     for (size_t i = (size_t)0U;
-         i < Eurydice_slice_len(
-                 Eurydice_array_to_slice(
-                     (size_t)5U, mask_ntt,
-                     libcrux_ml_dsa_polynomial_PolynomialRingElement_e8),
-                 libcrux_ml_dsa_polynomial_PolynomialRingElement_e8);
+         i < Eurydice_slice_len(Eurydice_array_to_slice_shared_71(&mask_ntt),
+                                Eurydice_arr_a4);
          i++) {
       size_t i0 = i;
-      libcrux_ml_dsa_ntt_ntt_37(&mask_ntt[i0]);
+      libcrux_ml_dsa_ntt_ntt_37(&mask_ntt.data[i0]);
     }
     libcrux_ml_dsa_matrix_compute_matrix_x_mask_37(
         LIBCRUX_ML_DSA_CONSTANTS_ML_DSA_65_ROWS_IN_A,
         LIBCRUX_ML_DSA_CONSTANTS_ML_DSA_65_COLUMNS_IN_A,
-        Eurydice_array_to_slice(
-            (size_t)30U, matrix,
-            libcrux_ml_dsa_polynomial_PolynomialRingElement_e8),
-        Eurydice_array_to_slice(
-            (size_t)5U, mask_ntt,
-            libcrux_ml_dsa_polynomial_PolynomialRingElement_e8),
-        Eurydice_array_to_slice(
-            (size_t)6U, a_x_mask,
-            libcrux_ml_dsa_polynomial_PolynomialRingElement_e8));
+        Eurydice_array_to_slice_shared_712(&matrix),
+        Eurydice_array_to_slice_shared_71(&mask_ntt),
+        Eurydice_array_to_slice_mut_712(&a_x_mask));
     libcrux_ml_dsa_arithmetic_decompose_vector_37(
         LIBCRUX_ML_DSA_CONSTANTS_ML_DSA_65_ROWS_IN_A,
         LIBCRUX_ML_DSA_CONSTANTS_ML_DSA_65_GAMMA2,
-        Eurydice_array_to_slice(
-            (size_t)6U, a_x_mask,
-            libcrux_ml_dsa_polynomial_PolynomialRingElement_e8),
-        Eurydice_array_to_slice(
-            (size_t)6U, w0, libcrux_ml_dsa_polynomial_PolynomialRingElement_e8),
-        Eurydice_array_to_slice(
-            (size_t)6U, commitment,
-            libcrux_ml_dsa_polynomial_PolynomialRingElement_e8));
-    uint8_t commitment_hash_candidate[48U] = {0U};
-    uint8_t commitment_serialized[768U] = {0U};
+        Eurydice_array_to_slice_shared_711(&a_x_mask),
+        Eurydice_array_to_slice_mut_712(&w0),
+        Eurydice_array_to_slice_mut_712(&commitment));
+    Eurydice_arr_5f commitment_hash_candidate = {{0U}};
+    Eurydice_arr_56 commitment_serialized = {{0U}};
     libcrux_ml_dsa_encoding_commitment_serialize_vector_37(
         LIBCRUX_ML_DSA_ML_DSA_GENERIC_ML_DSA_65_COMMITMENT_RING_ELEMENT_SIZE,
-        Eurydice_array_to_slice(
-            (size_t)6U, commitment,
-            libcrux_ml_dsa_polynomial_PolynomialRingElement_e8),
-        Eurydice_array_to_slice((size_t)768U, commitment_serialized, uint8_t));
+        Eurydice_array_to_slice_shared_711(&commitment),
+        Eurydice_array_to_slice_mut_ee(&commitment_serialized));
     libcrux_sha3_generic_keccak_xof_KeccakXofState_e2 shake =
         libcrux_ml_dsa_hash_functions_portable_init_26();
     libcrux_ml_dsa_hash_functions_portable_absorb_26(
-        &shake,
-        Eurydice_array_to_slice((size_t)64U, message_representative, uint8_t));
+        &shake, Eurydice_array_to_slice_shared_d8(&message_representative));
     libcrux_ml_dsa_hash_functions_portable_absorb_final_26(
-        &shake,
-        Eurydice_array_to_slice((size_t)768U, commitment_serialized, uint8_t));
+        &shake, Eurydice_array_to_slice_shared_ee(&commitment_serialized));
     libcrux_ml_dsa_hash_functions_portable_squeeze_26(
-        &shake, Eurydice_array_to_slice((size_t)48U, commitment_hash_candidate,
-                                        uint8_t));
-    libcrux_ml_dsa_polynomial_PolynomialRingElement_e8 verifier_challenge =
-        libcrux_ml_dsa_polynomial_zero_ff_37();
+        &shake, Eurydice_array_to_slice_mut_95(&commitment_hash_candidate));
+    Eurydice_arr_a4 verifier_challenge = libcrux_ml_dsa_polynomial_zero_ff_37();
     libcrux_ml_dsa_sample_sample_challenge_ring_element_2e(
-        Eurydice_array_to_slice((size_t)48U, commitment_hash_candidate,
-                                uint8_t),
+        Eurydice_array_to_slice_shared_95(&commitment_hash_candidate),
         LIBCRUX_ML_DSA_CONSTANTS_ML_DSA_65_ONES_IN_VERIFIER_CHALLENGE,
         &verifier_challenge);
     libcrux_ml_dsa_ntt_ntt_37(&verifier_challenge);
-    libcrux_ml_dsa_polynomial_PolynomialRingElement_e8 challenge_times_s1[5U];
-    core_array__core__clone__Clone_for__Array_T__N___clone(
-        (size_t)5U, s1_as_ntt, challenge_times_s1,
-        libcrux_ml_dsa_polynomial_PolynomialRingElement_e8, void *);
-    libcrux_ml_dsa_polynomial_PolynomialRingElement_e8 challenge_times_s2[6U];
-    core_array__core__clone__Clone_for__Array_T__N___clone(
-        (size_t)6U, s2_as_ntt, challenge_times_s2,
-        libcrux_ml_dsa_polynomial_PolynomialRingElement_e8, void *);
+    Eurydice_arr_40 challenge_times_s1 =
+        core_array__core__clone__Clone_for__Array_T__N___clone(
+            (size_t)5U, &s1_as_ntt, Eurydice_arr_a4, Eurydice_arr_40);
+    Eurydice_arr_47 challenge_times_s2 =
+        core_array__core__clone__Clone_for__Array_T__N___clone(
+            (size_t)6U, &s2_as_ntt, Eurydice_arr_a4, Eurydice_arr_47);
     libcrux_ml_dsa_matrix_vector_times_ring_element_37(
-        Eurydice_array_to_slice(
-            (size_t)5U, challenge_times_s1,
-            libcrux_ml_dsa_polynomial_PolynomialRingElement_e8),
+        Eurydice_array_to_slice_mut_711(&challenge_times_s1),
         &verifier_challenge);
     libcrux_ml_dsa_matrix_vector_times_ring_element_37(
-        Eurydice_array_to_slice(
-            (size_t)6U, challenge_times_s2,
-            libcrux_ml_dsa_polynomial_PolynomialRingElement_e8),
+        Eurydice_array_to_slice_mut_712(&challenge_times_s2),
         &verifier_challenge);
     libcrux_ml_dsa_matrix_add_vectors_37(
         LIBCRUX_ML_DSA_CONSTANTS_ML_DSA_65_COLUMNS_IN_A,
-        Eurydice_array_to_slice(
-            (size_t)5U, mask,
-            libcrux_ml_dsa_polynomial_PolynomialRingElement_e8),
-        Eurydice_array_to_slice(
-            (size_t)5U, challenge_times_s1,
-            libcrux_ml_dsa_polynomial_PolynomialRingElement_e8));
+        Eurydice_array_to_slice_mut_711(&mask),
+        Eurydice_array_to_slice_shared_71(&challenge_times_s1));
     libcrux_ml_dsa_matrix_subtract_vectors_37(
         LIBCRUX_ML_DSA_CONSTANTS_ML_DSA_65_ROWS_IN_A,
-        Eurydice_array_to_slice(
-            (size_t)6U, w0, libcrux_ml_dsa_polynomial_PolynomialRingElement_e8),
-        Eurydice_array_to_slice(
-            (size_t)6U, challenge_times_s2,
-            libcrux_ml_dsa_polynomial_PolynomialRingElement_e8));
+        Eurydice_array_to_slice_mut_712(&w0),
+        Eurydice_array_to_slice_shared_711(&challenge_times_s2));
     if (!libcrux_ml_dsa_arithmetic_vector_infinity_norm_exceeds_37(
-            Eurydice_array_to_slice(
-                (size_t)5U, mask,
-                libcrux_ml_dsa_polynomial_PolynomialRingElement_e8),
+            Eurydice_array_to_slice_shared_71(&mask),
             ((int32_t)1 << (uint32_t)
                  LIBCRUX_ML_DSA_CONSTANTS_ML_DSA_65_GAMMA1_EXPONENT) -
                 LIBCRUX_ML_DSA_ML_DSA_GENERIC_ML_DSA_65_BETA)) {
       if (!libcrux_ml_dsa_arithmetic_vector_infinity_norm_exceeds_37(
-              Eurydice_array_to_slice(
-                  (size_t)6U, w0,
-                  libcrux_ml_dsa_polynomial_PolynomialRingElement_e8),
+              Eurydice_array_to_slice_shared_711(&w0),
               LIBCRUX_ML_DSA_CONSTANTS_ML_DSA_65_GAMMA2 -
                   LIBCRUX_ML_DSA_ML_DSA_GENERIC_ML_DSA_65_BETA)) {
-        libcrux_ml_dsa_polynomial_PolynomialRingElement_e8
-            challenge_times_t0[6U];
-        core_array__core__clone__Clone_for__Array_T__N___clone(
-            (size_t)6U, t0_as_ntt, challenge_times_t0,
-            libcrux_ml_dsa_polynomial_PolynomialRingElement_e8, void *);
+        Eurydice_arr_47 challenge_times_t0 =
+            core_array__core__clone__Clone_for__Array_T__N___clone(
+                (size_t)6U, &t0_as_ntt, Eurydice_arr_a4, Eurydice_arr_47);
         libcrux_ml_dsa_matrix_vector_times_ring_element_37(
-            Eurydice_array_to_slice(
-                (size_t)6U, challenge_times_t0,
-                libcrux_ml_dsa_polynomial_PolynomialRingElement_e8),
+            Eurydice_array_to_slice_mut_712(&challenge_times_t0),
             &verifier_challenge);
         if (!libcrux_ml_dsa_arithmetic_vector_infinity_norm_exceeds_37(
-                Eurydice_array_to_slice(
-                    (size_t)6U, challenge_times_t0,
-                    libcrux_ml_dsa_polynomial_PolynomialRingElement_e8),
+                Eurydice_array_to_slice_shared_711(&challenge_times_t0),
                 LIBCRUX_ML_DSA_CONSTANTS_ML_DSA_65_GAMMA2)) {
           libcrux_ml_dsa_matrix_add_vectors_37(
               LIBCRUX_ML_DSA_CONSTANTS_ML_DSA_65_ROWS_IN_A,
-              Eurydice_array_to_slice(
-                  (size_t)6U, w0,
-                  libcrux_ml_dsa_polynomial_PolynomialRingElement_e8),
-              Eurydice_array_to_slice(
-                  (size_t)6U, challenge_times_t0,
-                  libcrux_ml_dsa_polynomial_PolynomialRingElement_e8));
-          int32_t hint_candidate[6U][256U] = {{0U}};
+              Eurydice_array_to_slice_mut_712(&w0),
+              Eurydice_array_to_slice_shared_711(&challenge_times_t0));
+          Eurydice_arr_e6 hint_candidate = {
+              {{{0U}}, {{0U}}, {{0U}}, {{0U}}, {{0U}}, {{0U}}}};
           size_t ones_in_hint = libcrux_ml_dsa_arithmetic_make_hint_37(
-              Eurydice_array_to_slice(
-                  (size_t)6U, w0,
-                  libcrux_ml_dsa_polynomial_PolynomialRingElement_e8),
-              Eurydice_array_to_slice(
-                  (size_t)6U, commitment,
-                  libcrux_ml_dsa_polynomial_PolynomialRingElement_e8),
+              Eurydice_array_to_slice_shared_711(&w0),
+              Eurydice_array_to_slice_shared_711(&commitment),
               LIBCRUX_ML_DSA_CONSTANTS_ML_DSA_65_GAMMA2,
-              Eurydice_array_to_slice((size_t)6U, hint_candidate,
-                                      int32_t[256U]));
+              Eurydice_array_to_slice_mut_6d(&hint_candidate));
           if (!(ones_in_hint >
                 LIBCRUX_ML_DSA_CONSTANTS_ML_DSA_65_MAX_ONES_IN_HINT)) {
             attempt = LIBCRUX_ML_DSA_CONSTANTS_REJECTION_SAMPLE_BOUND_SIGN;
-            /* Passing arrays by value in Rust generates a copy in C */
-            uint8_t copy_of_commitment_hash_candidate[48U];
-            memcpy(copy_of_commitment_hash_candidate, commitment_hash_candidate,
-                   (size_t)48U * sizeof(uint8_t));
-            Option_67 lit0;
-            lit0.tag = Some;
-            memcpy(lit0.f0, copy_of_commitment_hash_candidate,
-                   (size_t)48U * sizeof(uint8_t));
-            commitment_hash0 = lit0;
-            /* Passing arrays by value in Rust generates a copy in C */
-            libcrux_ml_dsa_polynomial_PolynomialRingElement_e8 copy_of_mask[5U];
-            memcpy(
-                copy_of_mask, mask,
-                (size_t)5U *
-                    sizeof(libcrux_ml_dsa_polynomial_PolynomialRingElement_e8));
-            Option_a5 lit1;
-            lit1.tag = Some;
-            memcpy(
-                lit1.f0, copy_of_mask,
-                (size_t)5U *
-                    sizeof(libcrux_ml_dsa_polynomial_PolynomialRingElement_e8));
-            signer_response0 = lit1;
-            /* Passing arrays by value in Rust generates a copy in C */
-            int32_t copy_of_hint_candidate[6U][256U];
-            memcpy(copy_of_hint_candidate, hint_candidate,
-                   (size_t)6U * sizeof(int32_t[256U]));
-            Option_f0 lit;
-            lit.tag = Some;
-            memcpy(lit.f0, copy_of_hint_candidate,
-                   (size_t)6U * sizeof(int32_t[256U]));
-            hint0 = lit;
+            commitment_hash0 = (Option_91{Some, commitment_hash_candidate});
+            signer_response0 = (Option_e7{Some, mask});
+            hint0 = (Option_c9{Some, hint_candidate});
           }
         }
       }
     }
   }
-  Result_53 uu____8;
+  Result_53 uu____5;
   if (commitment_hash0.tag == None) {
-    uu____8 = (Result_53{
+    uu____5 = (Result_53{
         Err, libcrux_ml_dsa_types_SigningError_RejectionSamplingError});
   } else {
-    uint8_t commitment_hash1[48U];
-    memcpy(commitment_hash1, commitment_hash0.f0,
-           (size_t)48U * sizeof(uint8_t));
-    uint8_t commitment_hash[48U];
-    memcpy(commitment_hash, commitment_hash1, (size_t)48U * sizeof(uint8_t));
+    Eurydice_arr_5f commitment_hash = commitment_hash0.f0;
+    Eurydice_arr_5f commitment_hash1 = commitment_hash;
     if (signer_response0.tag == None) {
-      uu____8 = (Result_53{
+      uu____5 = (Result_53{
           Err, libcrux_ml_dsa_types_SigningError_RejectionSamplingError});
     } else {
-      libcrux_ml_dsa_polynomial_PolynomialRingElement_e8 signer_response1[5U];
-      memcpy(signer_response1, signer_response0.f0,
-             (size_t)5U *
-                 sizeof(libcrux_ml_dsa_polynomial_PolynomialRingElement_e8));
-      libcrux_ml_dsa_polynomial_PolynomialRingElement_e8 signer_response[5U];
-      memcpy(signer_response, signer_response1,
-             (size_t)5U *
-                 sizeof(libcrux_ml_dsa_polynomial_PolynomialRingElement_e8));
+      Eurydice_arr_40 signer_response = signer_response0.f0;
+      Eurydice_arr_40 signer_response1 = signer_response;
       if (!(hint0.tag == None)) {
-        int32_t hint1[6U][256U];
-        memcpy(hint1, hint0.f0, (size_t)6U * sizeof(int32_t[256U]));
-        int32_t hint[6U][256U];
-        memcpy(hint, hint1, (size_t)6U * sizeof(int32_t[256U]));
+        Eurydice_arr_e6 hint = hint0.f0;
+        Eurydice_arr_e6 hint1 = hint;
         libcrux_ml_dsa_encoding_signature_serialize_37(
-            Eurydice_array_to_slice((size_t)48U, commitment_hash, uint8_t),
-            Eurydice_array_to_slice(
-                (size_t)5U, signer_response,
-                libcrux_ml_dsa_polynomial_PolynomialRingElement_e8),
-            Eurydice_array_to_slice((size_t)6U, hint, int32_t[256U]),
+            Eurydice_array_to_slice_shared_95(&commitment_hash1),
+            Eurydice_array_to_slice_shared_71(&signer_response1),
+            Eurydice_array_to_slice_shared_6d(&hint1),
             LIBCRUX_ML_DSA_CONSTANTS_ML_DSA_65_COMMITMENT_HASH_SIZE,
             LIBCRUX_ML_DSA_CONSTANTS_ML_DSA_65_COLUMNS_IN_A,
             LIBCRUX_ML_DSA_CONSTANTS_ML_DSA_65_ROWS_IN_A,
             LIBCRUX_ML_DSA_CONSTANTS_ML_DSA_65_GAMMA1_EXPONENT,
             LIBCRUX_ML_DSA_ML_DSA_GENERIC_ML_DSA_65_GAMMA1_RING_ELEMENT_SIZE,
             LIBCRUX_ML_DSA_CONSTANTS_ML_DSA_65_MAX_ONES_IN_HINT,
-            Eurydice_array_to_slice((size_t)3309U, signature, uint8_t));
+            Eurydice_array_to_slice_mut_ee0(signature));
         return (Result_53{Ok});
       }
-      uu____8 = (Result_53{
+      uu____5 = (Result_53{
           Err, libcrux_ml_dsa_types_SigningError_RejectionSamplingError});
     }
   }
-  return uu____8;
+  return uu____5;
 }
 
 /**
@@ -6923,13 +6680,12 @@ libcrux_ml_dsa_hash_functions_portable_Shake256X4 with const generics
 
 */
 static KRML_MUSTINLINE Result_53
-libcrux_ml_dsa_ml_dsa_generic_ml_dsa_65_sign_mut_5a(Eurydice_slice signing_key,
-                                                    Eurydice_slice message,
-                                                    Eurydice_slice context,
-                                                    uint8_t randomness[32U],
-                                                    uint8_t *signature) {
+libcrux_ml_dsa_ml_dsa_generic_ml_dsa_65_sign_mut_5a(
+    Eurydice_borrow_slice_u8 signing_key, Eurydice_borrow_slice_u8 message,
+    Eurydice_borrow_slice_u8 context, Eurydice_arr_60 randomness,
+    Eurydice_arr_96 *signature) {
   Result_a8 uu____0 =
-      libcrux_ml_dsa_pre_hash_new_88(context, (Option_30{None}));
+      libcrux_ml_dsa_pre_hash_new_88(context, (Option_3b{None}));
   if (!(uu____0.tag == Ok)) {
     return (
         Result_53{Err, libcrux_ml_dsa_types_SigningError_ContextTooLongError});
@@ -6937,14 +6693,9 @@ libcrux_ml_dsa_ml_dsa_generic_ml_dsa_65_sign_mut_5a(Eurydice_slice signing_key,
   libcrux_ml_dsa_pre_hash_DomainSeparationContext dsc = uu____0.val.case_Ok;
   libcrux_ml_dsa_pre_hash_DomainSeparationContext domain_separation_context =
       dsc;
-  Eurydice_slice uu____1 = signing_key;
-  Eurydice_slice uu____2 = message;
-  Option_84 uu____3 = {Some, domain_separation_context};
-  /* Passing arrays by value in Rust generates a copy in C */
-  uint8_t copy_of_randomness[32U];
-  memcpy(copy_of_randomness, randomness, (size_t)32U * sizeof(uint8_t));
   return libcrux_ml_dsa_ml_dsa_generic_ml_dsa_65_sign_internal_5a(
-      uu____1, uu____2, uu____3, copy_of_randomness, signature);
+      signing_key, message, (Option_84{Some, domain_separation_context}),
+      randomness, signature);
 }
 
 /**
@@ -6958,28 +6709,20 @@ libcrux_ml_dsa_hash_functions_portable_Shake256X4 with const generics
 
 */
 static KRML_MUSTINLINE Result_2e
-libcrux_ml_dsa_ml_dsa_generic_ml_dsa_65_sign_5a(Eurydice_slice signing_key,
-                                                Eurydice_slice message,
-                                                Eurydice_slice context,
-                                                uint8_t randomness[32U]) {
-  libcrux_ml_dsa_types_MLDSASignature_8f signature =
-      libcrux_ml_dsa_types_zero_c5_fa();
-  Eurydice_slice uu____0 = signing_key;
-  Eurydice_slice uu____1 = message;
-  Eurydice_slice uu____2 = context;
-  /* Passing arrays by value in Rust generates a copy in C */
-  uint8_t copy_of_randomness[32U];
-  memcpy(copy_of_randomness, randomness, (size_t)32U * sizeof(uint8_t));
-  Result_53 uu____4 = libcrux_ml_dsa_ml_dsa_generic_ml_dsa_65_sign_mut_5a(
-      uu____0, uu____1, uu____2, copy_of_randomness, signature.value);
-  Result_2e uu____5;
-  if (uu____4.tag == Ok) {
-    uu____5 = Result_2e_s(Ok, &Result_2e_s::U::case_Ok, signature);
+libcrux_ml_dsa_ml_dsa_generic_ml_dsa_65_sign_5a(
+    Eurydice_borrow_slice_u8 signing_key, Eurydice_borrow_slice_u8 message,
+    Eurydice_borrow_slice_u8 context, Eurydice_arr_60 randomness) {
+  Eurydice_arr_96 signature = libcrux_ml_dsa_types_zero_c5_fa();
+  Result_53 uu____0 = libcrux_ml_dsa_ml_dsa_generic_ml_dsa_65_sign_mut_5a(
+      signing_key, message, context, randomness, &signature);
+  Result_2e uu____1;
+  if (uu____0.tag == Ok) {
+    uu____1 = Result_2e_s(Ok, &Result_2e_s::U::case_Ok, signature);
   } else {
-    libcrux_ml_dsa_types_SigningError e = uu____4.f0;
-    uu____5 = Result_2e_s(Err, &Result_2e_s::U::case_Err, e);
+    libcrux_ml_dsa_types_SigningError e = uu____0.f0;
+    uu____1 = Result_2e_s(Err, &Result_2e_s::U::case_Err, e);
   }
-  return uu____5;
+  return uu____1;
 }
 
 /**
@@ -6987,17 +6730,11 @@ libcrux_ml_dsa_ml_dsa_generic_ml_dsa_65_sign_5a(Eurydice_slice signing_key,
 */
 static inline Result_2e
 libcrux_ml_dsa_ml_dsa_generic_instantiations_portable_ml_dsa_65_sign(
-    uint8_t *signing_key, Eurydice_slice message, Eurydice_slice context,
-    uint8_t randomness[32U]) {
-  Eurydice_slice uu____0 =
-      Eurydice_array_to_slice((size_t)4032U, signing_key, uint8_t);
-  Eurydice_slice uu____1 = message;
-  Eurydice_slice uu____2 = context;
-  /* Passing arrays by value in Rust generates a copy in C */
-  uint8_t copy_of_randomness[32U];
-  memcpy(copy_of_randomness, randomness, (size_t)32U * sizeof(uint8_t));
+    const Eurydice_arr_d10 *signing_key, Eurydice_borrow_slice_u8 message,
+    Eurydice_borrow_slice_u8 context, Eurydice_arr_60 randomness) {
   return libcrux_ml_dsa_ml_dsa_generic_ml_dsa_65_sign_5a(
-      uu____0, uu____1, uu____2, copy_of_randomness);
+      Eurydice_array_to_slice_shared_ef(signing_key), message, context,
+      randomness);
 }
 
 /**
@@ -7008,16 +6745,11 @@ libcrux_ml_dsa_ml_dsa_generic_instantiations_portable_ml_dsa_65_sign(
  may also be empty.
 */
 static inline Result_2e libcrux_ml_dsa_ml_dsa_65_portable_sign(
-    libcrux_ml_dsa_types_MLDSASigningKey_22 *signing_key,
-    Eurydice_slice message, Eurydice_slice context, uint8_t randomness[32U]) {
-  uint8_t *uu____0 = libcrux_ml_dsa_types_as_ref_9b_09(signing_key);
-  Eurydice_slice uu____1 = message;
-  Eurydice_slice uu____2 = context;
-  /* Passing arrays by value in Rust generates a copy in C */
-  uint8_t copy_of_randomness[32U];
-  memcpy(copy_of_randomness, randomness, (size_t)32U * sizeof(uint8_t));
+    const Eurydice_arr_d10 *signing_key, Eurydice_borrow_slice_u8 message,
+    Eurydice_borrow_slice_u8 context, Eurydice_arr_60 randomness) {
   return libcrux_ml_dsa_ml_dsa_generic_instantiations_portable_ml_dsa_65_sign(
-      uu____0, uu____1, uu____2, copy_of_randomness);
+      libcrux_ml_dsa_types_as_ref_9b_09(signing_key), message, context,
+      randomness);
 }
 
 /**
@@ -7025,17 +6757,12 @@ static inline Result_2e libcrux_ml_dsa_ml_dsa_65_portable_sign(
 */
 static inline Result_53
 libcrux_ml_dsa_ml_dsa_generic_instantiations_portable_ml_dsa_65_sign_mut(
-    uint8_t *signing_key, Eurydice_slice message, Eurydice_slice context,
-    uint8_t randomness[32U], uint8_t *signature) {
-  Eurydice_slice uu____0 =
-      Eurydice_array_to_slice((size_t)4032U, signing_key, uint8_t);
-  Eurydice_slice uu____1 = message;
-  Eurydice_slice uu____2 = context;
-  /* Passing arrays by value in Rust generates a copy in C */
-  uint8_t copy_of_randomness[32U];
-  memcpy(copy_of_randomness, randomness, (size_t)32U * sizeof(uint8_t));
+    const Eurydice_arr_d10 *signing_key, Eurydice_borrow_slice_u8 message,
+    Eurydice_borrow_slice_u8 context, Eurydice_arr_60 randomness,
+    Eurydice_arr_96 *signature) {
   return libcrux_ml_dsa_ml_dsa_generic_ml_dsa_65_sign_mut_5a(
-      uu____0, uu____1, uu____2, copy_of_randomness, signature);
+      Eurydice_array_to_slice_shared_ef(signing_key), message, context,
+      randomness, signature);
 }
 
 /**
@@ -7046,16 +6773,11 @@ libcrux_ml_dsa_ml_dsa_generic_instantiations_portable_ml_dsa_65_sign_mut(
  may also be empty.
 */
 static inline Result_53 libcrux_ml_dsa_ml_dsa_65_portable_sign_mut(
-    uint8_t *signing_key, Eurydice_slice message, Eurydice_slice context,
-    uint8_t randomness[32U], uint8_t *signature) {
-  uint8_t *uu____0 = signing_key;
-  Eurydice_slice uu____1 = message;
-  Eurydice_slice uu____2 = context;
-  /* Passing arrays by value in Rust generates a copy in C */
-  uint8_t copy_of_randomness[32U];
-  memcpy(copy_of_randomness, randomness, (size_t)32U * sizeof(uint8_t));
+    const Eurydice_arr_d10 *signing_key, Eurydice_borrow_slice_u8 message,
+    Eurydice_borrow_slice_u8 context, Eurydice_arr_60 randomness,
+    Eurydice_arr_96 *signature) {
   return libcrux_ml_dsa_ml_dsa_generic_instantiations_portable_ml_dsa_65_sign_mut(
-      uu____0, uu____1, uu____2, copy_of_randomness, signature);
+      signing_key, message, context, randomness, signature);
 }
 
 /**
@@ -7069,7 +6791,7 @@ with const generics
 
 */
 static KRML_MUSTINLINE void libcrux_ml_dsa_pre_hash_hash_30_83(
-    Eurydice_slice message, Eurydice_slice output) {
+    Eurydice_borrow_slice_u8 message, Eurydice_mut_borrow_slice_u8 output) {
   libcrux_ml_dsa_hash_functions_portable_shake128_7b(message, output);
 }
 
@@ -7088,34 +6810,26 @@ libcrux_ml_dsa_pre_hash_SHAKE128_PH with const generics
 */
 static KRML_MUSTINLINE Result_53
 libcrux_ml_dsa_ml_dsa_generic_ml_dsa_65_sign_pre_hashed_mut_3f(
-    Eurydice_slice signing_key, Eurydice_slice message, Eurydice_slice context,
-    Eurydice_slice pre_hash_buffer, uint8_t randomness[32U],
-    uint8_t *signature) {
+    Eurydice_borrow_slice_u8 signing_key, Eurydice_borrow_slice_u8 message,
+    Eurydice_borrow_slice_u8 context,
+    Eurydice_mut_borrow_slice_u8 pre_hash_buffer, Eurydice_arr_60 randomness,
+    Eurydice_arr_96 *signature) {
   if (!(Eurydice_slice_len(context, uint8_t) >
         LIBCRUX_ML_DSA_CONSTANTS_CONTEXT_MAX_LEN)) {
     libcrux_ml_dsa_pre_hash_hash_30_83(message, pre_hash_buffer);
-    Eurydice_slice uu____0 = context;
-    Option_30 lit;
-    lit.tag = Some;
-    uint8_t ret[11U];
-    libcrux_ml_dsa_pre_hash_oid_30(ret);
-    memcpy(lit.f0, ret, (size_t)11U * sizeof(uint8_t));
-    Result_a8 uu____1 = libcrux_ml_dsa_pre_hash_new_88(uu____0, lit);
-    if (!(uu____1.tag == Ok)) {
+    Result_a8 uu____0 = libcrux_ml_dsa_pre_hash_new_88(
+        context, (Option_3b{Some, libcrux_ml_dsa_pre_hash_oid_30()}));
+    if (!(uu____0.tag == Ok)) {
       return (Result_53{Err,
                         libcrux_ml_dsa_types_SigningError_ContextTooLongError});
     }
-    libcrux_ml_dsa_pre_hash_DomainSeparationContext dsc = uu____1.val.case_Ok;
+    libcrux_ml_dsa_pre_hash_DomainSeparationContext dsc = uu____0.val.case_Ok;
     libcrux_ml_dsa_pre_hash_DomainSeparationContext domain_separation_context =
         dsc;
-    Eurydice_slice uu____2 = signing_key;
-    Eurydice_slice uu____3 = pre_hash_buffer;
-    Option_84 uu____4 = {Some, domain_separation_context};
-    /* Passing arrays by value in Rust generates a copy in C */
-    uint8_t copy_of_randomness[32U];
-    memcpy(copy_of_randomness, randomness, (size_t)32U * sizeof(uint8_t));
     return libcrux_ml_dsa_ml_dsa_generic_ml_dsa_65_sign_internal_5a(
-        uu____2, uu____3, uu____4, copy_of_randomness, signature);
+        signing_key,
+        (Eurydice_borrow_slice_u8{pre_hash_buffer.ptr, pre_hash_buffer.meta}),
+        (Option_84{Some, domain_separation_context}), randomness, signature);
   }
   return (
       Result_53{Err, libcrux_ml_dsa_types_SigningError_ContextTooLongError});
@@ -7136,29 +6850,22 @@ libcrux_ml_dsa_pre_hash_SHAKE128_PH with const generics
 */
 static KRML_MUSTINLINE Result_2e
 libcrux_ml_dsa_ml_dsa_generic_ml_dsa_65_sign_pre_hashed_3f(
-    Eurydice_slice signing_key, Eurydice_slice message, Eurydice_slice context,
-    Eurydice_slice pre_hash_buffer, uint8_t randomness[32U]) {
-  libcrux_ml_dsa_types_MLDSASignature_8f signature =
-      libcrux_ml_dsa_types_zero_c5_fa();
-  Eurydice_slice uu____0 = signing_key;
-  Eurydice_slice uu____1 = message;
-  Eurydice_slice uu____2 = context;
-  Eurydice_slice uu____3 = pre_hash_buffer;
-  /* Passing arrays by value in Rust generates a copy in C */
-  uint8_t copy_of_randomness[32U];
-  memcpy(copy_of_randomness, randomness, (size_t)32U * sizeof(uint8_t));
-  Result_53 uu____5 =
+    Eurydice_borrow_slice_u8 signing_key, Eurydice_borrow_slice_u8 message,
+    Eurydice_borrow_slice_u8 context,
+    Eurydice_mut_borrow_slice_u8 pre_hash_buffer, Eurydice_arr_60 randomness) {
+  Eurydice_arr_96 signature = libcrux_ml_dsa_types_zero_c5_fa();
+  Result_53 uu____0 =
       libcrux_ml_dsa_ml_dsa_generic_ml_dsa_65_sign_pre_hashed_mut_3f(
-          uu____0, uu____1, uu____2, uu____3, copy_of_randomness,
-          signature.value);
-  Result_2e uu____6;
-  if (uu____5.tag == Ok) {
-    uu____6 = Result_2e_s(Ok, &Result_2e_s::U::case_Ok, signature);
+          signing_key, message, context, pre_hash_buffer, randomness,
+          &signature);
+  Result_2e uu____1;
+  if (uu____0.tag == Ok) {
+    uu____1 = Result_2e_s(Ok, &Result_2e_s::U::case_Ok, signature);
   } else {
-    libcrux_ml_dsa_types_SigningError e = uu____5.f0;
-    uu____6 = Result_2e_s(Err, &Result_2e_s::U::case_Err, e);
+    libcrux_ml_dsa_types_SigningError e = uu____0.f0;
+    uu____1 = Result_2e_s(Err, &Result_2e_s::U::case_Err, e);
   }
-  return uu____6;
+  return uu____1;
 }
 
 /**
@@ -7166,18 +6873,12 @@ libcrux_ml_dsa_ml_dsa_generic_ml_dsa_65_sign_pre_hashed_3f(
 */
 static inline Result_2e
 libcrux_ml_dsa_ml_dsa_generic_instantiations_portable_ml_dsa_65_sign_pre_hashed_shake128(
-    uint8_t *signing_key, Eurydice_slice message, Eurydice_slice context,
-    Eurydice_slice pre_hash_buffer, uint8_t randomness[32U]) {
-  Eurydice_slice uu____0 =
-      Eurydice_array_to_slice((size_t)4032U, signing_key, uint8_t);
-  Eurydice_slice uu____1 = message;
-  Eurydice_slice uu____2 = context;
-  Eurydice_slice uu____3 = pre_hash_buffer;
-  /* Passing arrays by value in Rust generates a copy in C */
-  uint8_t copy_of_randomness[32U];
-  memcpy(copy_of_randomness, randomness, (size_t)32U * sizeof(uint8_t));
+    const Eurydice_arr_d10 *signing_key, Eurydice_borrow_slice_u8 message,
+    Eurydice_borrow_slice_u8 context,
+    Eurydice_mut_borrow_slice_u8 pre_hash_buffer, Eurydice_arr_60 randomness) {
   return libcrux_ml_dsa_ml_dsa_generic_ml_dsa_65_sign_pre_hashed_3f(
-      uu____0, uu____1, uu____2, uu____3, copy_of_randomness);
+      Eurydice_array_to_slice_shared_ef(signing_key), message, context,
+      pre_hash_buffer, randomness);
 }
 
 /**
@@ -7189,20 +6890,25 @@ libcrux_ml_dsa_ml_dsa_generic_instantiations_portable_ml_dsa_65_sign_pre_hashed_
 */
 static inline Result_2e
 libcrux_ml_dsa_ml_dsa_65_portable_sign_pre_hashed_shake128(
-    libcrux_ml_dsa_types_MLDSASigningKey_22 *signing_key,
-    Eurydice_slice message, Eurydice_slice context, uint8_t randomness[32U]) {
-  uint8_t pre_hash_buffer[32U] = {0U};
-  uint8_t *uu____0 = libcrux_ml_dsa_types_as_ref_9b_09(signing_key);
-  Eurydice_slice uu____1 = message;
-  Eurydice_slice uu____2 = context;
-  Eurydice_slice uu____3 =
-      Eurydice_array_to_slice((size_t)32U, pre_hash_buffer, uint8_t);
-  /* Passing arrays by value in Rust generates a copy in C */
-  uint8_t copy_of_randomness[32U];
-  memcpy(copy_of_randomness, randomness, (size_t)32U * sizeof(uint8_t));
+    const Eurydice_arr_d10 *signing_key, Eurydice_borrow_slice_u8 message,
+    Eurydice_borrow_slice_u8 context, Eurydice_arr_60 randomness) {
+  Eurydice_arr_60 pre_hash_buffer = {{0U}};
+  const Eurydice_arr_d10 *uu____0 =
+      libcrux_ml_dsa_types_as_ref_9b_09(signing_key);
   return libcrux_ml_dsa_ml_dsa_generic_instantiations_portable_ml_dsa_65_sign_pre_hashed_shake128(
-      uu____0, uu____1, uu____2, uu____3, copy_of_randomness);
+      uu____0, message, context,
+      Eurydice_array_to_slice_mut_6e(&pre_hash_buffer), randomness);
 }
+
+/**
+A monomorphic instance of core.result.Result
+with types (), libcrux_ml_dsa_types_VerificationError
+
+*/
+typedef struct Result_41_s {
+  Result_a4_tags tag;
+  libcrux_ml_dsa_types_VerificationError f0;
+} Result_41;
 
 /**
 A monomorphic instance of libcrux_ml_dsa.encoding.t1.deserialize
@@ -7211,22 +6917,20 @@ with const generics
 
 */
 static inline void libcrux_ml_dsa_encoding_t1_deserialize_37(
-    Eurydice_slice serialized,
-    libcrux_ml_dsa_polynomial_PolynomialRingElement_e8 *result) {
+    Eurydice_borrow_slice_u8 serialized, Eurydice_arr_a4 *result) {
   for (size_t i = (size_t)0U;
-       i < Eurydice_slice_len(
-               Eurydice_array_to_slice(
-                   (size_t)32U, result->simd_units,
-                   libcrux_ml_dsa_simd_portable_vector_type_Coefficients),
-               libcrux_ml_dsa_simd_portable_vector_type_Coefficients);
+       i < Eurydice_slice_len(Eurydice_array_to_slice_shared_a2(result),
+                              Eurydice_arr_d4);
        i++) {
     size_t i0 = i;
     libcrux_ml_dsa_simd_portable_t1_deserialize_65(
-        Eurydice_slice_subslice3(
-            serialized, i0 * LIBCRUX_ML_DSA_ENCODING_T1_DESERIALIZE_WINDOW,
-            (i0 + (size_t)1U) * LIBCRUX_ML_DSA_ENCODING_T1_DESERIALIZE_WINDOW,
-            uint8_t *),
-        &result->simd_units[i0]);
+        Eurydice_slice_subslice_shared_7e(
+            serialized,
+            (core_ops_range_Range_08{
+                i0 * LIBCRUX_ML_DSA_ENCODING_T1_DESERIALIZE_WINDOW,
+                (i0 + (size_t)1U) *
+                    LIBCRUX_ML_DSA_ENCODING_T1_DESERIALIZE_WINDOW})),
+        &result->data[i0]);
   }
 }
 
@@ -7238,19 +6942,18 @@ with const generics
 */
 static KRML_MUSTINLINE void
 libcrux_ml_dsa_encoding_verification_key_deserialize_37(
-    size_t rows_in_a, size_t verification_key_size, Eurydice_slice serialized,
-    Eurydice_slice t1) {
+    size_t rows_in_a, size_t verification_key_size,
+    Eurydice_borrow_slice_u8 serialized, Eurydice_dst_ref_mut_f3 t1) {
   for (size_t i = (size_t)0U; i < rows_in_a; i++) {
     size_t i0 = i;
     libcrux_ml_dsa_encoding_t1_deserialize_37(
-        Eurydice_slice_subslice3(
-            serialized, i0 * LIBCRUX_ML_DSA_CONSTANTS_RING_ELEMENT_OF_T1S_SIZE,
-            (i0 + (size_t)1U) *
-                LIBCRUX_ML_DSA_CONSTANTS_RING_ELEMENT_OF_T1S_SIZE,
-            uint8_t *),
-        &Eurydice_slice_index(
-            t1, i0, libcrux_ml_dsa_polynomial_PolynomialRingElement_e8,
-            libcrux_ml_dsa_polynomial_PolynomialRingElement_e8 *));
+        Eurydice_slice_subslice_shared_7e(
+            serialized,
+            (core_ops_range_Range_08{
+                i0 * LIBCRUX_ML_DSA_CONSTANTS_RING_ELEMENT_OF_T1S_SIZE,
+                (i0 + (size_t)1U) *
+                    LIBCRUX_ML_DSA_CONSTANTS_RING_ELEMENT_OF_T1S_SIZE})),
+        &Eurydice_slice_index_mut(t1, i0, Eurydice_arr_a4));
   }
 }
 
@@ -7264,88 +6967,84 @@ static KRML_MUSTINLINE Result_41
 libcrux_ml_dsa_encoding_signature_deserialize_37(
     size_t columns_in_a, size_t rows_in_a, size_t commitment_hash_size,
     size_t gamma1_exponent, size_t gamma1_ring_element_size,
-    size_t max_ones_in_hint, size_t signature_size, Eurydice_slice serialized,
-    Eurydice_slice out_commitment_hash, Eurydice_slice out_signer_response,
-    Eurydice_slice out_hint) {
-  Eurydice_slice_uint8_t_x2 uu____0 = Eurydice_slice_split_at(
-      serialized, commitment_hash_size, uint8_t, Eurydice_slice_uint8_t_x2);
-  Eurydice_slice commitment_hash = uu____0.fst;
-  Eurydice_slice rest_of_serialized = uu____0.snd;
-  Eurydice_slice_copy(Eurydice_slice_subslice3(out_commitment_hash, (size_t)0U,
-                                               commitment_hash_size, uint8_t *),
-                      commitment_hash, uint8_t);
-  Eurydice_slice_uint8_t_x2 uu____1 = Eurydice_slice_split_at(
+    size_t max_ones_in_hint, size_t signature_size,
+    Eurydice_borrow_slice_u8 serialized,
+    Eurydice_mut_borrow_slice_u8 out_commitment_hash,
+    Eurydice_dst_ref_mut_f3 out_signer_response,
+    Eurydice_dst_ref_mut_59 out_hint) {
+  Eurydice_dst_ref_shared_uint8_t_size_t_x2 uu____0 =
+      Eurydice_slice_split_at(serialized, commitment_hash_size, uint8_t,
+                              Eurydice_dst_ref_shared_uint8_t_size_t_x2);
+  Eurydice_borrow_slice_u8 commitment_hash = uu____0.fst;
+  Eurydice_borrow_slice_u8 rest_of_serialized = uu____0.snd;
+  Eurydice_slice_copy(
+      Eurydice_slice_subslice_mut_7e(
+          out_commitment_hash,
+          (core_ops_range_Range_08{(size_t)0U, commitment_hash_size})),
+      commitment_hash, uint8_t);
+  Eurydice_dst_ref_shared_uint8_t_size_t_x2 uu____1 = Eurydice_slice_split_at(
       rest_of_serialized, gamma1_ring_element_size * columns_in_a, uint8_t,
-      Eurydice_slice_uint8_t_x2);
-  Eurydice_slice signer_response_serialized = uu____1.fst;
-  Eurydice_slice hint_serialized = uu____1.snd;
+      Eurydice_dst_ref_shared_uint8_t_size_t_x2);
+  Eurydice_borrow_slice_u8 signer_response_serialized = uu____1.fst;
+  Eurydice_borrow_slice_u8 hint_serialized = uu____1.snd;
   for (size_t i = (size_t)0U; i < columns_in_a; i++) {
     size_t i0 = i;
     libcrux_ml_dsa_encoding_gamma1_deserialize_37(
         gamma1_exponent,
-        Eurydice_slice_subslice3(
-            signer_response_serialized, i0 * gamma1_ring_element_size,
-            (i0 + (size_t)1U) * gamma1_ring_element_size, uint8_t *),
-        &Eurydice_slice_index(
-            out_signer_response, i0,
-            libcrux_ml_dsa_polynomial_PolynomialRingElement_e8,
-            libcrux_ml_dsa_polynomial_PolynomialRingElement_e8 *));
+        Eurydice_slice_subslice_shared_7e(
+            signer_response_serialized,
+            (core_ops_range_Range_08{
+                i0 * gamma1_ring_element_size,
+                (i0 + (size_t)1U) * gamma1_ring_element_size})),
+        &Eurydice_slice_index_mut(out_signer_response, i0, Eurydice_arr_a4));
   }
   size_t previous_true_hints_seen = (size_t)0U;
-  core_ops_range_Range_08 iter =
-      core_iter_traits_collect__core__iter__traits__collect__IntoIterator_Clause1_Item__I__for_I__into_iter(
-          (core_ops_range_Range_08{(size_t)0U, rows_in_a}),
-          core_ops_range_Range_08, size_t, core_ops_range_Range_08);
-  Result_41 uu____2;
-  while (true) {
-    Option_08 uu____3 =
-        core_iter_range__core__iter__traits__iterator__Iterator_A__for_core__ops__range__Range_A__TraitClause_0___next(
-            &iter, size_t, Option_08);
-    if (!(uu____3.tag == None)) {
-      size_t i = uu____3.f0;
-      size_t current_true_hints_seen = (size_t)Eurydice_slice_index(
-          hint_serialized, max_ones_in_hint + i, uint8_t, uint8_t *);
-      libcrux_ml_dsa_types_VerificationError uu____4;
-      if (current_true_hints_seen < previous_true_hints_seen) {
-        uu____4 = libcrux_ml_dsa_types_VerificationError_MalformedHintError;
-        uu____2 = (Result_41{Err, uu____4});
-      } else if (previous_true_hints_seen > max_ones_in_hint) {
-        uu____4 = libcrux_ml_dsa_types_VerificationError_MalformedHintError;
-        uu____2 = (Result_41{Err, uu____4});
-      } else {
-        for (size_t i0 = previous_true_hints_seen; i0 < current_true_hints_seen;
-             i0++) {
-          size_t j = i0;
-          if (j > previous_true_hints_seen) {
-            if (Eurydice_slice_index(hint_serialized, j, uint8_t, uint8_t *) <=
-                Eurydice_slice_index(hint_serialized, j - (size_t)1U, uint8_t,
-                                     uint8_t *)) {
-              uu____2 = (Result_41{
-                  Err,
-                  libcrux_ml_dsa_types_VerificationError_MalformedHintError});
-            }
+  bool malformed_hint = false;
+  for (size_t i0 = (size_t)0U; i0 < rows_in_a; i0++) {
+    size_t i1 = i0;
+    size_t current_true_hints_seen = (size_t)Eurydice_slice_index_shared(
+        hint_serialized, max_ones_in_hint + i1, uint8_t);
+    if (current_true_hints_seen < previous_true_hints_seen) {
+      malformed_hint = true;
+    } else if (previous_true_hints_seen > max_ones_in_hint) {
+      malformed_hint = true;
+    } else {
+      for (size_t i = previous_true_hints_seen; i < current_true_hints_seen;
+           i++) {
+        size_t j = i;
+        if (j > previous_true_hints_seen) {
+          if (Eurydice_slice_index_shared(hint_serialized, j, uint8_t) <=
+              Eurydice_slice_index_shared(hint_serialized, j - (size_t)1U,
+                                          uint8_t)) {
+            malformed_hint = true;
+            break;
           }
-          libcrux_ml_dsa_encoding_signature_set_hint(
-              out_hint, i,
-              (size_t)Eurydice_slice_index(hint_serialized, j, uint8_t,
-                                           uint8_t *));
         }
+        libcrux_ml_dsa_encoding_signature_set_hint(
+            out_hint, i1,
+            (size_t)Eurydice_slice_index_shared(hint_serialized, j, uint8_t));
+      }
+      if (!malformed_hint) {
         previous_true_hints_seen = current_true_hints_seen;
         continue;
       }
-      break;
     }
-    for (size_t i = previous_true_hints_seen; i < max_ones_in_hint; i++) {
-      size_t j = i;
-      if (!(Eurydice_slice_index(hint_serialized, j, uint8_t, uint8_t *) !=
-            0U)) {
-        continue;
-      }
-      uu____2 = (Result_41{
-          Err, libcrux_ml_dsa_types_VerificationError_MalformedHintError});
-      break;
+    break;
+  }
+  for (size_t i = previous_true_hints_seen; i < max_ones_in_hint; i++) {
+    size_t j = i;
+    if (!(Eurydice_slice_index_shared(hint_serialized, j, uint8_t) != 0U)) {
+      continue;
     }
-    return (Result_41{Ok});
+    malformed_hint = true;
+    break;
+  }
+  Result_41 uu____2;
+  if (malformed_hint) {
+    uu____2 = (Result_41{
+        Err, libcrux_ml_dsa_types_VerificationError_MalformedHintError});
+  } else {
+    uu____2 = (Result_41{Ok});
   }
   return uu____2;
 }
@@ -7358,16 +7057,15 @@ generics
 */
 static KRML_MUSTINLINE void
 libcrux_ml_dsa_simd_portable_arithmetic_shift_left_then_reduce_84(
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients *simd_unit) {
+    Eurydice_arr_d4 *simd_unit) {
   for (size_t i = (size_t)0U;
-       i < Eurydice_slice_len(
-               Eurydice_array_to_slice((size_t)8U, simd_unit->values, int32_t),
-               int32_t);
+       i < Eurydice_slice_len(Eurydice_array_to_slice_shared_a7(simd_unit),
+                              int32_t);
        i++) {
     size_t i0 = i;
-    simd_unit->values[i0] =
+    simd_unit->data[i0] =
         libcrux_ml_dsa_simd_portable_arithmetic_reduce_element(
-            simd_unit->values[i0] << (uint32_t)(int32_t)13);
+            simd_unit->data[i0] << (uint32_t)(int32_t)13);
   }
 }
 
@@ -7381,7 +7079,7 @@ with const generics
 - SHIFT_BY= 13
 */
 static inline void libcrux_ml_dsa_simd_portable_shift_left_then_reduce_65_84(
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients *simd_unit) {
+    Eurydice_arr_d4 *simd_unit) {
   libcrux_ml_dsa_simd_portable_arithmetic_shift_left_then_reduce_84(simd_unit);
 }
 
@@ -7392,17 +7090,13 @@ with const generics
 - SHIFT_BY= 13
 */
 static KRML_MUSTINLINE void libcrux_ml_dsa_arithmetic_shift_left_then_reduce_68(
-    libcrux_ml_dsa_polynomial_PolynomialRingElement_e8 *re) {
+    Eurydice_arr_a4 *re) {
   for (size_t i = (size_t)0U;
-       i < Eurydice_slice_len(
-               Eurydice_array_to_slice(
-                   (size_t)32U, re->simd_units,
-                   libcrux_ml_dsa_simd_portable_vector_type_Coefficients),
-               libcrux_ml_dsa_simd_portable_vector_type_Coefficients);
+       i < Eurydice_slice_len(Eurydice_array_to_slice_shared_a2(re),
+                              Eurydice_arr_d4);
        i++) {
     size_t i0 = i;
-    libcrux_ml_dsa_simd_portable_shift_left_then_reduce_65_84(
-        &re->simd_units[i0]);
+    libcrux_ml_dsa_simd_portable_shift_left_then_reduce_65_84(&re->data[i0]);
   }
 }
 
@@ -7416,54 +7110,38 @@ with const generics
 
 */
 static KRML_MUSTINLINE void libcrux_ml_dsa_matrix_compute_w_approx_37(
-    size_t rows_in_a, size_t columns_in_a, Eurydice_slice matrix,
-    Eurydice_slice signer_response,
-    libcrux_ml_dsa_polynomial_PolynomialRingElement_e8
-        *verifier_challenge_as_ntt,
-    Eurydice_slice t1) {
+    size_t rows_in_a, size_t columns_in_a, Eurydice_dst_ref_shared_f3 matrix,
+    Eurydice_dst_ref_shared_f3 signer_response,
+    const Eurydice_arr_a4 *verifier_challenge_as_ntt,
+    Eurydice_dst_ref_mut_f3 t1) {
   for (size_t i0 = (size_t)0U; i0 < rows_in_a; i0++) {
     size_t i1 = i0;
-    libcrux_ml_dsa_polynomial_PolynomialRingElement_e8 inner_result =
-        libcrux_ml_dsa_polynomial_zero_ff_37();
+    Eurydice_arr_a4 inner_result = libcrux_ml_dsa_polynomial_zero_ff_37();
     for (size_t i = (size_t)0U; i < columns_in_a; i++) {
       size_t j = i;
-      libcrux_ml_dsa_polynomial_PolynomialRingElement_e8 product =
-          Eurydice_slice_index(
-              matrix, i1 * columns_in_a + j,
-              libcrux_ml_dsa_polynomial_PolynomialRingElement_e8,
-              libcrux_ml_dsa_polynomial_PolynomialRingElement_e8 *);
+      Eurydice_arr_a4 product = Eurydice_slice_index_shared(
+          matrix, i1 * columns_in_a + j, Eurydice_arr_a4);
       libcrux_ml_dsa_ntt_ntt_multiply_montgomery_37(
-          &product, &Eurydice_slice_index(
-                        signer_response, j,
-                        libcrux_ml_dsa_polynomial_PolynomialRingElement_e8,
-                        libcrux_ml_dsa_polynomial_PolynomialRingElement_e8 *));
+          &product,
+          &Eurydice_slice_index_shared(signer_response, j, Eurydice_arr_a4));
       libcrux_ml_dsa_polynomial_add_ff_37(&inner_result, &product);
     }
-    libcrux_ml_dsa_arithmetic_shift_left_then_reduce_68(&Eurydice_slice_index(
-        t1, i1, libcrux_ml_dsa_polynomial_PolynomialRingElement_e8,
-        libcrux_ml_dsa_polynomial_PolynomialRingElement_e8 *));
-    libcrux_ml_dsa_ntt_ntt_37(&Eurydice_slice_index(
-        t1, i1, libcrux_ml_dsa_polynomial_PolynomialRingElement_e8,
-        libcrux_ml_dsa_polynomial_PolynomialRingElement_e8 *));
+    libcrux_ml_dsa_arithmetic_shift_left_then_reduce_68(
+        &Eurydice_slice_index_mut(t1, i1, Eurydice_arr_a4));
+    libcrux_ml_dsa_ntt_ntt_37(
+        &Eurydice_slice_index_mut(t1, i1, Eurydice_arr_a4));
     libcrux_ml_dsa_ntt_ntt_multiply_montgomery_37(
-        &Eurydice_slice_index(
-            t1, i1, libcrux_ml_dsa_polynomial_PolynomialRingElement_e8,
-            libcrux_ml_dsa_polynomial_PolynomialRingElement_e8 *),
+        &Eurydice_slice_index_mut(t1, i1, Eurydice_arr_a4),
         verifier_challenge_as_ntt);
     libcrux_ml_dsa_polynomial_subtract_ff_37(
-        &inner_result,
-        &Eurydice_slice_index(
-            t1, i1, libcrux_ml_dsa_polynomial_PolynomialRingElement_e8,
-            libcrux_ml_dsa_polynomial_PolynomialRingElement_e8 *));
-    Eurydice_slice_index(
-        t1, i1, libcrux_ml_dsa_polynomial_PolynomialRingElement_e8,
-        libcrux_ml_dsa_polynomial_PolynomialRingElement_e8 *) = inner_result;
-    libcrux_ml_dsa_ntt_reduce_37(&Eurydice_slice_index(
-        t1, i1, libcrux_ml_dsa_polynomial_PolynomialRingElement_e8,
-        libcrux_ml_dsa_polynomial_PolynomialRingElement_e8 *));
-    libcrux_ml_dsa_ntt_invert_ntt_montgomery_37(&Eurydice_slice_index(
-        t1, i1, libcrux_ml_dsa_polynomial_PolynomialRingElement_e8,
-        libcrux_ml_dsa_polynomial_PolynomialRingElement_e8 *));
+        &inner_result, &Eurydice_slice_index_shared(
+                           (Eurydice_dst_ref_shared_f3{t1.ptr, t1.meta}), i1,
+                           Eurydice_arr_a4));
+    Eurydice_slice_index_mut(t1, i1, Eurydice_arr_a4) = inner_result;
+    libcrux_ml_dsa_ntt_reduce_37(
+        &Eurydice_slice_index_mut(t1, i1, Eurydice_arr_a4));
+    libcrux_ml_dsa_ntt_invert_ntt_montgomery_37(
+        &Eurydice_slice_index_mut(t1, i1, Eurydice_arr_a4));
   }
 }
 
@@ -7474,45 +7152,37 @@ with const generics
 
 */
 static KRML_MUSTINLINE void libcrux_ml_dsa_arithmetic_use_hint_37(
-    int32_t gamma2, Eurydice_slice hint, Eurydice_slice re_vector) {
+    int32_t gamma2, Eurydice_dst_ref_shared_59 hint,
+    Eurydice_dst_ref_mut_f3 re_vector) {
   for (size_t i0 = (size_t)0U;
        i0 < Eurydice_slice_len(
-                re_vector, libcrux_ml_dsa_polynomial_PolynomialRingElement_e8);
+                (Eurydice_dst_ref_shared_f3{re_vector.ptr, re_vector.meta}),
+                Eurydice_arr_a4);
        i0++) {
     size_t i1 = i0;
-    libcrux_ml_dsa_polynomial_PolynomialRingElement_e8 tmp =
-        libcrux_ml_dsa_polynomial_zero_ff_37();
+    Eurydice_arr_a4 tmp = libcrux_ml_dsa_polynomial_zero_ff_37();
     libcrux_ml_dsa_polynomial_from_i32_array_ff_37(
-        Eurydice_array_to_slice(
-            (size_t)256U,
-            Eurydice_slice_index(hint, i1, int32_t[256U], int32_t(*)[256U]),
-            int32_t),
+        Eurydice_array_to_slice_shared_20(
+            &Eurydice_slice_index_shared(hint, i1, Eurydice_arr_c3)),
         &tmp);
     for (size_t i = (size_t)0U;
-         i < Eurydice_slice_len(
-                 Eurydice_array_to_slice(
-                     (size_t)32U,
-                     Eurydice_slice_index(
-                         re_vector, (size_t)0U,
-                         libcrux_ml_dsa_polynomial_PolynomialRingElement_e8,
-                         libcrux_ml_dsa_polynomial_PolynomialRingElement_e8 *)
-                         .simd_units,
-                     libcrux_ml_dsa_simd_portable_vector_type_Coefficients),
-                 libcrux_ml_dsa_simd_portable_vector_type_Coefficients);
+         i <
+         Eurydice_slice_len(
+             Eurydice_array_to_slice_shared_a2(&Eurydice_slice_index_shared(
+                 (Eurydice_dst_ref_shared_f3{re_vector.ptr, re_vector.meta}),
+                 (size_t)0U, Eurydice_arr_a4)),
+             Eurydice_arr_d4);
          i++) {
       size_t j = i;
       libcrux_ml_dsa_simd_portable_use_hint_65(
           gamma2,
-          &Eurydice_slice_index(
-               re_vector, i1,
-               libcrux_ml_dsa_polynomial_PolynomialRingElement_e8,
-               libcrux_ml_dsa_polynomial_PolynomialRingElement_e8 *)
-               .simd_units[j],
-          &tmp.simd_units[j]);
+          &Eurydice_slice_index_shared(
+               (Eurydice_dst_ref_shared_f3{re_vector.ptr, re_vector.meta}), i1,
+               Eurydice_arr_a4)
+               .data[j],
+          &tmp.data[j]);
     }
-    Eurydice_slice_index(
-        re_vector, i1, libcrux_ml_dsa_polynomial_PolynomialRingElement_e8,
-        libcrux_ml_dsa_polynomial_PolynomialRingElement_e8 *) = tmp;
+    Eurydice_slice_index_mut(re_vector, i1, Eurydice_arr_a4) = tmp;
   }
 }
 
@@ -7528,31 +7198,35 @@ libcrux_ml_dsa_hash_functions_portable_Shake256Xof with const generics
 */
 static KRML_MUSTINLINE Result_41
 libcrux_ml_dsa_ml_dsa_generic_ml_dsa_65_verify_internal_5a(
-    uint8_t *verification_key, Eurydice_slice message,
-    Option_84 domain_separation_context, uint8_t *signature_serialized) {
-  Eurydice_slice_uint8_t_x2 uu____0 = Eurydice_slice_split_at(
-      Eurydice_array_to_slice((size_t)1952U, verification_key, uint8_t),
+    const Eurydice_arr_4a *verification_key, Eurydice_borrow_slice_u8 message,
+    Option_84 domain_separation_context,
+    const Eurydice_arr_96 *signature_serialized) {
+  Eurydice_dst_ref_shared_uint8_t_size_t_x2 uu____0 = Eurydice_slice_split_at(
+      Eurydice_array_to_slice_shared_5b(verification_key),
       LIBCRUX_ML_DSA_CONSTANTS_SEED_FOR_A_SIZE, uint8_t,
-      Eurydice_slice_uint8_t_x2);
-  Eurydice_slice seed_for_a = uu____0.fst;
-  Eurydice_slice t1_serialized = uu____0.snd;
-  libcrux_ml_dsa_polynomial_PolynomialRingElement_e8 t1[6U];
+      Eurydice_dst_ref_shared_uint8_t_size_t_x2);
+  Eurydice_borrow_slice_u8 seed_for_a = uu____0.fst;
+  Eurydice_borrow_slice_u8 t1_serialized = uu____0.snd;
+  Eurydice_arr_47 t1;
+  Eurydice_arr_a4 repeat_expression0[6U];
   for (size_t i = (size_t)0U; i < (size_t)6U; i++) {
-    t1[i] = libcrux_ml_dsa_polynomial_zero_ff_37();
+    repeat_expression0[i] = libcrux_ml_dsa_polynomial_zero_ff_37();
   }
+  memcpy(t1.data, repeat_expression0, (size_t)6U * sizeof(Eurydice_arr_a4));
   libcrux_ml_dsa_encoding_verification_key_deserialize_37(
       LIBCRUX_ML_DSA_CONSTANTS_ML_DSA_65_ROWS_IN_A,
       LIBCRUX_ML_DSA_ML_DSA_GENERIC_ML_DSA_65_VERIFICATION_KEY_SIZE,
-      t1_serialized,
-      Eurydice_array_to_slice(
-          (size_t)6U, t1, libcrux_ml_dsa_polynomial_PolynomialRingElement_e8));
-  uint8_t deserialized_commitment_hash[48U] = {0U};
-  libcrux_ml_dsa_polynomial_PolynomialRingElement_e8
-      deserialized_signer_response[5U];
+      t1_serialized, Eurydice_array_to_slice_mut_712(&t1));
+  Eurydice_arr_5f deserialized_commitment_hash = {{0U}};
+  Eurydice_arr_40 deserialized_signer_response;
+  Eurydice_arr_a4 repeat_expression1[5U];
   for (size_t i = (size_t)0U; i < (size_t)5U; i++) {
-    deserialized_signer_response[i] = libcrux_ml_dsa_polynomial_zero_ff_37();
+    repeat_expression1[i] = libcrux_ml_dsa_polynomial_zero_ff_37();
   }
-  int32_t deserialized_hint[6U][256U] = {{0U}};
+  memcpy(deserialized_signer_response.data, repeat_expression1,
+         (size_t)5U * sizeof(Eurydice_arr_a4));
+  Eurydice_arr_e6 deserialized_hint = {
+      {{{0U}}, {{0U}}, {{0U}}, {{0U}}, {{0U}}, {{0U}}}};
   Result_41 uu____1 = libcrux_ml_dsa_encoding_signature_deserialize_37(
       LIBCRUX_ML_DSA_CONSTANTS_ML_DSA_65_COLUMNS_IN_A,
       LIBCRUX_ML_DSA_CONSTANTS_ML_DSA_65_ROWS_IN_A,
@@ -7561,19 +7235,14 @@ libcrux_ml_dsa_ml_dsa_generic_ml_dsa_65_verify_internal_5a(
       LIBCRUX_ML_DSA_ML_DSA_GENERIC_ML_DSA_65_GAMMA1_RING_ELEMENT_SIZE,
       LIBCRUX_ML_DSA_CONSTANTS_ML_DSA_65_MAX_ONES_IN_HINT,
       LIBCRUX_ML_DSA_ML_DSA_GENERIC_ML_DSA_65_SIGNATURE_SIZE,
-      Eurydice_array_to_slice((size_t)3309U, signature_serialized, uint8_t),
-      Eurydice_array_to_slice((size_t)48U, deserialized_commitment_hash,
-                              uint8_t),
-      Eurydice_array_to_slice(
-          (size_t)5U, deserialized_signer_response,
-          libcrux_ml_dsa_polynomial_PolynomialRingElement_e8),
-      Eurydice_array_to_slice((size_t)6U, deserialized_hint, int32_t[256U]));
+      Eurydice_array_to_slice_shared_ee0(signature_serialized),
+      Eurydice_array_to_slice_mut_95(&deserialized_commitment_hash),
+      Eurydice_array_to_slice_mut_711(&deserialized_signer_response),
+      Eurydice_array_to_slice_mut_6d(&deserialized_hint));
   Result_41 uu____2;
   if (uu____1.tag == Ok) {
     if (libcrux_ml_dsa_arithmetic_vector_infinity_norm_exceeds_37(
-            Eurydice_array_to_slice(
-                (size_t)5U, deserialized_signer_response,
-                libcrux_ml_dsa_polynomial_PolynomialRingElement_e8),
+            Eurydice_array_to_slice_shared_71(&deserialized_signer_response),
             ((int32_t)2 << (uint32_t)
                  LIBCRUX_ML_DSA_CONSTANTS_ML_DSA_65_GAMMA1_EXPONENT) -
                 LIBCRUX_ML_DSA_ML_DSA_GENERIC_ML_DSA_65_BETA)) {
@@ -7581,82 +7250,65 @@ libcrux_ml_dsa_ml_dsa_generic_ml_dsa_65_verify_internal_5a(
           Err,
           libcrux_ml_dsa_types_VerificationError_SignerResponseExceedsBoundError});
     } else {
-      libcrux_ml_dsa_polynomial_PolynomialRingElement_e8 matrix[30U];
+      Eurydice_arr_c9 matrix;
+      Eurydice_arr_a4 repeat_expression[30U];
       for (size_t i = (size_t)0U; i < (size_t)30U; i++) {
-        matrix[i] = libcrux_ml_dsa_polynomial_zero_ff_37();
+        repeat_expression[i] = libcrux_ml_dsa_polynomial_zero_ff_37();
       }
+      memcpy(matrix.data, repeat_expression,
+             (size_t)30U * sizeof(Eurydice_arr_a4));
       libcrux_ml_dsa_samplex4_portable_matrix_flat_a8_37(
           LIBCRUX_ML_DSA_CONSTANTS_ML_DSA_65_COLUMNS_IN_A, seed_for_a,
-          Eurydice_array_to_slice(
-              (size_t)30U, matrix,
-              libcrux_ml_dsa_polynomial_PolynomialRingElement_e8));
-      uint8_t verification_key_hash[64U] = {0U};
+          Eurydice_array_to_slice_mut_710(&matrix));
+      Eurydice_arr_06 verification_key_hash = {{0U}};
       libcrux_ml_dsa_hash_functions_portable_shake256_61_24(
-          Eurydice_array_to_slice((size_t)1952U, verification_key, uint8_t),
-          verification_key_hash);
-      uint8_t message_representative[64U] = {0U};
+          Eurydice_array_to_slice_shared_5b(verification_key),
+          &verification_key_hash);
+      Eurydice_arr_06 message_representative = {{0U}};
       libcrux_ml_dsa_ml_dsa_generic_derive_message_representative_43(
-          Eurydice_array_to_slice((size_t)64U, verification_key_hash, uint8_t),
-          &domain_separation_context, message, message_representative);
-      libcrux_ml_dsa_polynomial_PolynomialRingElement_e8 verifier_challenge =
+          Eurydice_array_to_slice_shared_d8(&verification_key_hash),
+          &domain_separation_context, message, &message_representative);
+      Eurydice_arr_a4 verifier_challenge =
           libcrux_ml_dsa_polynomial_zero_ff_37();
       libcrux_ml_dsa_sample_sample_challenge_ring_element_2e(
-          Eurydice_array_to_slice((size_t)48U, deserialized_commitment_hash,
-                                  uint8_t),
+          Eurydice_array_to_slice_shared_95(&deserialized_commitment_hash),
           LIBCRUX_ML_DSA_CONSTANTS_ML_DSA_65_ONES_IN_VERIFIER_CHALLENGE,
           &verifier_challenge);
       libcrux_ml_dsa_ntt_ntt_37(&verifier_challenge);
       for (size_t i = (size_t)0U;
-           i < Eurydice_slice_len(
-                   Eurydice_array_to_slice(
-                       (size_t)5U, deserialized_signer_response,
-                       libcrux_ml_dsa_polynomial_PolynomialRingElement_e8),
-                   libcrux_ml_dsa_polynomial_PolynomialRingElement_e8);
+           i < Eurydice_slice_len(Eurydice_array_to_slice_shared_71(
+                                      &deserialized_signer_response),
+                                  Eurydice_arr_a4);
            i++) {
         size_t i0 = i;
-        libcrux_ml_dsa_ntt_ntt_37(&deserialized_signer_response[i0]);
+        libcrux_ml_dsa_ntt_ntt_37(&deserialized_signer_response.data[i0]);
       }
       libcrux_ml_dsa_matrix_compute_w_approx_37(
           LIBCRUX_ML_DSA_CONSTANTS_ML_DSA_65_ROWS_IN_A,
           LIBCRUX_ML_DSA_CONSTANTS_ML_DSA_65_COLUMNS_IN_A,
-          Eurydice_array_to_slice(
-              (size_t)30U, matrix,
-              libcrux_ml_dsa_polynomial_PolynomialRingElement_e8),
-          Eurydice_array_to_slice(
-              (size_t)5U, deserialized_signer_response,
-              libcrux_ml_dsa_polynomial_PolynomialRingElement_e8),
-          &verifier_challenge,
-          Eurydice_array_to_slice(
-              (size_t)6U, t1,
-              libcrux_ml_dsa_polynomial_PolynomialRingElement_e8));
-      uint8_t recomputed_commitment_hash[48U] = {0U};
+          Eurydice_array_to_slice_shared_712(&matrix),
+          Eurydice_array_to_slice_shared_71(&deserialized_signer_response),
+          &verifier_challenge, Eurydice_array_to_slice_mut_712(&t1));
+      Eurydice_arr_5f recomputed_commitment_hash = {{0U}};
       libcrux_ml_dsa_arithmetic_use_hint_37(
           LIBCRUX_ML_DSA_CONSTANTS_ML_DSA_65_GAMMA2,
-          Eurydice_array_to_slice((size_t)6U, deserialized_hint, int32_t[256U]),
-          Eurydice_array_to_slice(
-              (size_t)6U, t1,
-              libcrux_ml_dsa_polynomial_PolynomialRingElement_e8));
-      uint8_t commitment_serialized[768U] = {0U};
+          Eurydice_array_to_slice_shared_6d(&deserialized_hint),
+          Eurydice_array_to_slice_mut_712(&t1));
+      Eurydice_arr_56 commitment_serialized = {{0U}};
       libcrux_ml_dsa_encoding_commitment_serialize_vector_37(
           LIBCRUX_ML_DSA_ML_DSA_GENERIC_ML_DSA_65_COMMITMENT_RING_ELEMENT_SIZE,
-          Eurydice_array_to_slice(
-              (size_t)6U, t1,
-              libcrux_ml_dsa_polynomial_PolynomialRingElement_e8),
-          Eurydice_array_to_slice((size_t)768U, commitment_serialized,
-                                  uint8_t));
+          Eurydice_array_to_slice_shared_711(&t1),
+          Eurydice_array_to_slice_mut_ee(&commitment_serialized));
       libcrux_sha3_generic_keccak_xof_KeccakXofState_e2 shake =
           libcrux_ml_dsa_hash_functions_portable_init_26();
       libcrux_ml_dsa_hash_functions_portable_absorb_26(
-          &shake, Eurydice_array_to_slice((size_t)64U, message_representative,
-                                          uint8_t));
+          &shake, Eurydice_array_to_slice_shared_d8(&message_representative));
       libcrux_ml_dsa_hash_functions_portable_absorb_final_26(
-          &shake, Eurydice_array_to_slice((size_t)768U, commitment_serialized,
-                                          uint8_t));
+          &shake, Eurydice_array_to_slice_shared_ee(&commitment_serialized));
       libcrux_ml_dsa_hash_functions_portable_squeeze_26(
-          &shake, Eurydice_array_to_slice((size_t)48U,
-                                          recomputed_commitment_hash, uint8_t));
-      if (Eurydice_array_eq((size_t)48U, deserialized_commitment_hash,
-                            recomputed_commitment_hash, uint8_t)) {
+          &shake, Eurydice_array_to_slice_mut_95(&recomputed_commitment_hash));
+      if (Eurydice_array_eq((size_t)48U, &deserialized_commitment_hash,
+                            &recomputed_commitment_hash, uint8_t)) {
         uu____2 = (Result_41{Ok});
       } else {
         uu____2 = (Result_41{
@@ -7682,10 +7334,11 @@ libcrux_ml_dsa_hash_functions_portable_Shake256Xof with const generics
 */
 static KRML_MUSTINLINE Result_41
 libcrux_ml_dsa_ml_dsa_generic_ml_dsa_65_verify_5a(
-    uint8_t *verification_key_serialized, Eurydice_slice message,
-    Eurydice_slice context, uint8_t *signature_serialized) {
+    const Eurydice_arr_4a *verification_key_serialized,
+    Eurydice_borrow_slice_u8 message, Eurydice_borrow_slice_u8 context,
+    const Eurydice_arr_96 *signature_serialized) {
   Result_a8 uu____0 =
-      libcrux_ml_dsa_pre_hash_new_88(context, (Option_30{None}));
+      libcrux_ml_dsa_pre_hash_new_88(context, (Option_3b{None}));
   if (!(uu____0.tag == Ok)) {
     return (Result_41{
         Err,
@@ -7704,8 +7357,8 @@ libcrux_ml_dsa_ml_dsa_generic_ml_dsa_65_verify_5a(
 */
 static inline Result_41
 libcrux_ml_dsa_ml_dsa_generic_instantiations_portable_ml_dsa_65_verify(
-    uint8_t *verification_key, Eurydice_slice message, Eurydice_slice context,
-    uint8_t *signature) {
+    const Eurydice_arr_4a *verification_key, Eurydice_borrow_slice_u8 message,
+    Eurydice_borrow_slice_u8 context, const Eurydice_arr_96 *signature) {
   return libcrux_ml_dsa_ml_dsa_generic_ml_dsa_65_verify_5a(
       verification_key, message, context, signature);
 }
@@ -7718,9 +7371,8 @@ libcrux_ml_dsa_ml_dsa_generic_instantiations_portable_ml_dsa_65_verify(
  may also be empty.
 */
 static inline Result_41 libcrux_ml_dsa_ml_dsa_65_portable_verify(
-    libcrux_ml_dsa_types_MLDSAVerificationKey_ea *verification_key,
-    Eurydice_slice message, Eurydice_slice context,
-    libcrux_ml_dsa_types_MLDSASignature_8f *signature) {
+    const Eurydice_arr_4a *verification_key, Eurydice_borrow_slice_u8 message,
+    Eurydice_borrow_slice_u8 context, const Eurydice_arr_96 *signature) {
   return libcrux_ml_dsa_ml_dsa_generic_instantiations_portable_ml_dsa_65_verify(
       libcrux_ml_dsa_types_as_ref_7f_97(verification_key), message, context,
       libcrux_ml_dsa_types_as_ref_c5_fa(signature));
@@ -7740,27 +7392,24 @@ libcrux_ml_dsa_pre_hash_SHAKE128_PH with const generics
 */
 static KRML_MUSTINLINE Result_41
 libcrux_ml_dsa_ml_dsa_generic_ml_dsa_65_verify_pre_hashed_3f(
-    uint8_t *verification_key_serialized, Eurydice_slice message,
-    Eurydice_slice context, Eurydice_slice pre_hash_buffer,
-    uint8_t *signature_serialized) {
+    const Eurydice_arr_4a *verification_key_serialized,
+    Eurydice_borrow_slice_u8 message, Eurydice_borrow_slice_u8 context,
+    Eurydice_mut_borrow_slice_u8 pre_hash_buffer,
+    const Eurydice_arr_96 *signature_serialized) {
   libcrux_ml_dsa_pre_hash_hash_30_83(message, pre_hash_buffer);
-  Eurydice_slice uu____0 = context;
-  Option_30 lit;
-  lit.tag = Some;
-  uint8_t ret[11U];
-  libcrux_ml_dsa_pre_hash_oid_30(ret);
-  memcpy(lit.f0, ret, (size_t)11U * sizeof(uint8_t));
-  Result_a8 uu____1 = libcrux_ml_dsa_pre_hash_new_88(uu____0, lit);
-  if (!(uu____1.tag == Ok)) {
+  Result_a8 uu____0 = libcrux_ml_dsa_pre_hash_new_88(
+      context, (Option_3b{Some, libcrux_ml_dsa_pre_hash_oid_30()}));
+  if (!(uu____0.tag == Ok)) {
     return (Result_41{
         Err,
         libcrux_ml_dsa_types_VerificationError_VerificationContextTooLongError});
   }
-  libcrux_ml_dsa_pre_hash_DomainSeparationContext dsc = uu____1.val.case_Ok;
+  libcrux_ml_dsa_pre_hash_DomainSeparationContext dsc = uu____0.val.case_Ok;
   libcrux_ml_dsa_pre_hash_DomainSeparationContext domain_separation_context =
       dsc;
   return libcrux_ml_dsa_ml_dsa_generic_ml_dsa_65_verify_internal_5a(
-      verification_key_serialized, pre_hash_buffer,
+      verification_key_serialized,
+      (Eurydice_borrow_slice_u8{pre_hash_buffer.ptr, pre_hash_buffer.meta}),
       (Option_84{Some, domain_separation_context}), signature_serialized);
 }
 
@@ -7769,8 +7418,10 @@ libcrux_ml_dsa_ml_dsa_generic_ml_dsa_65_verify_pre_hashed_3f(
 */
 static inline Result_41
 libcrux_ml_dsa_ml_dsa_generic_instantiations_portable_ml_dsa_65_verify_pre_hashed_shake128(
-    uint8_t *verification_key, Eurydice_slice message, Eurydice_slice context,
-    Eurydice_slice pre_hash_buffer, uint8_t *signature) {
+    const Eurydice_arr_4a *verification_key, Eurydice_borrow_slice_u8 message,
+    Eurydice_borrow_slice_u8 context,
+    Eurydice_mut_borrow_slice_u8 pre_hash_buffer,
+    const Eurydice_arr_96 *signature) {
   return libcrux_ml_dsa_ml_dsa_generic_ml_dsa_65_verify_pre_hashed_3f(
       verification_key, message, context, pre_hash_buffer, signature);
 }
@@ -7784,13 +7435,17 @@ libcrux_ml_dsa_ml_dsa_generic_instantiations_portable_ml_dsa_65_verify_pre_hashe
 */
 static inline Result_41
 libcrux_ml_dsa_ml_dsa_65_portable_verify_pre_hashed_shake128(
-    libcrux_ml_dsa_types_MLDSAVerificationKey_ea *verification_key,
-    Eurydice_slice message, Eurydice_slice context,
-    libcrux_ml_dsa_types_MLDSASignature_8f *signature) {
-  uint8_t pre_hash_buffer[32U] = {0U};
+    const Eurydice_arr_4a *verification_key, Eurydice_borrow_slice_u8 message,
+    Eurydice_borrow_slice_u8 context, const Eurydice_arr_96 *signature) {
+  Eurydice_arr_60 pre_hash_buffer = {{0U}};
+  const Eurydice_arr_4a *uu____0 =
+      libcrux_ml_dsa_types_as_ref_7f_97(verification_key);
+  Eurydice_borrow_slice_u8 uu____1 = message;
+  Eurydice_borrow_slice_u8 uu____2 = context;
+  Eurydice_mut_borrow_slice_u8 uu____3 =
+      Eurydice_array_to_slice_mut_6e(&pre_hash_buffer);
   return libcrux_ml_dsa_ml_dsa_generic_instantiations_portable_ml_dsa_65_verify_pre_hashed_shake128(
-      libcrux_ml_dsa_types_as_ref_7f_97(verification_key), message, context,
-      Eurydice_array_to_slice((size_t)32U, pre_hash_buffer, uint8_t),
+      uu____0, uu____1, uu____2, uu____3,
       libcrux_ml_dsa_types_as_ref_c5_fa(signature));
 }
 
@@ -7802,13 +7457,13 @@ libcrux_ml_dsa_ml_dsa_65_portable_verify_pre_hashed_shake128(
 typedef libcrux_ml_dsa_types_MLDSAKeyPair_06
     libcrux_ml_dsa_ml_dsa_generic_ml_dsa_65_MLDSA65KeyPair;
 
-typedef libcrux_ml_dsa_types_MLDSASignature_8f
+typedef Eurydice_arr_96
     libcrux_ml_dsa_ml_dsa_generic_ml_dsa_65_MLDSA65Signature;
 
-typedef libcrux_ml_dsa_types_MLDSASigningKey_22
+typedef Eurydice_arr_d10
     libcrux_ml_dsa_ml_dsa_generic_ml_dsa_65_MLDSA65SigningKey;
 
-typedef libcrux_ml_dsa_types_MLDSAVerificationKey_ea
+typedef Eurydice_arr_4a
     libcrux_ml_dsa_ml_dsa_generic_ml_dsa_65_MLDSA65VerificationKey;
 
 #define LIBCRUX_ML_DSA_ML_DSA_GENERIC_ML_DSA_65_ROW_COLUMN \
@@ -7819,9 +7474,15 @@ typedef libcrux_ml_dsa_types_MLDSAVerificationKey_ea
   (LIBCRUX_ML_DSA_CONSTANTS_ML_DSA_65_ROWS_IN_A *            \
    LIBCRUX_ML_DSA_CONSTANTS_ML_DSA_65_COLUMNS_IN_A)
 
+#define LIBCRUX_ML_DSA_ML_DSA_GENERIC_ML_DSA_65_SIGNING_KEY_SIZE \
+  (libcrux_ml_dsa_constants_signing_key_size(                    \
+      LIBCRUX_ML_DSA_CONSTANTS_ML_DSA_65_ROWS_IN_A,              \
+      LIBCRUX_ML_DSA_CONSTANTS_ML_DSA_65_COLUMNS_IN_A,           \
+      LIBCRUX_ML_DSA_ML_DSA_GENERIC_ML_DSA_65_ERROR_RING_ELEMENT_SIZE))
+
 #define LIBCRUX_ML_DSA_PRE_HASH_PRE_HASH_OID_LEN ((size_t)11U)
 
-typedef uint8_t libcrux_ml_dsa_pre_hash_PreHashOID[11U];
+typedef Eurydice_arr_cb libcrux_ml_dsa_pre_hash_PreHashOID;
 
 /**
 This function found in impl
@@ -7848,9 +7509,8 @@ libcrux_ml_dsa_pre_hash_from_bf(
 This function found in impl {core::clone::Clone for
 libcrux_ml_dsa::simd::portable::vector_type::Coefficients}
 */
-static inline libcrux_ml_dsa_simd_portable_vector_type_Coefficients
-libcrux_ml_dsa_simd_portable_vector_type_clone_a5(
-    libcrux_ml_dsa_simd_portable_vector_type_Coefficients *self) {
+static inline Eurydice_arr_d4 libcrux_ml_dsa_simd_portable_vector_type_clone_a5(
+    const Eurydice_arr_d4 *self) {
   return self[0U];
 }
 

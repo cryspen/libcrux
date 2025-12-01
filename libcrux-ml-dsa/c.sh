@@ -16,6 +16,9 @@ if [[ -z "$KRML_HOME" ]]; then
     exit 1
 fi
 
+mldsa_root=$(pwd)
+repo_root=$(realpath ../)
+
 portable_only=0
 no_hacl=0
 no_charon=0
@@ -58,16 +61,26 @@ fi
 if [[ "$no_charon" = 0 ]]; then
     # Because of a Charon bug we have to clean the sha3 crate.
     cargo clean -p libcrux-sha3
-    rm -rf ../libcrux_ml_dsa.llbc ../libcrux_sha3.llbc
-    echo "Running charon (sha3) ..."
-    (cd ../libcrux-sha3 && RUSTFLAGS="--cfg eurydice" $CHARON_HOME/bin/charon --remove-associated-types '*' --rustc-arg=-Cdebug-assertions=no)
-    if ! [[ -f ../libcrux_sha3.llbc ]]; then
+    rm -rf $repo_root/libcrux_ml_dsa.llbc $repo_root/libcrux_sha3.llbc
+
+    flags=
+    if [[ $(uname -m) == "arm64" ]]; then
+        flags+="-- --target=x86_64-apple-darwin"
+    fi
+
+    echo "Running charon (all) ..."
+    RUSTFLAGS="--cfg eurydice" $CHARON_HOME/bin/charon cargo \
+                                    $features \
+                                    --preset eurydice \
+                                    --include 'libcrux_sha3' \
+                                    --start-from libcrux_ml_dsa --start-from libcrux_sha3 \
+                                    --include 'core::num::*::BITS' --include 'core::num::*::MAX' \
+                                    --rustc-arg=-Cdebug-assertions=no $flags
+    if ! [[ -f $repo_root/libcrux_ml_dsa.llbc ]]; then
         echo "😱😱😱 You are the victim of a bug."
         echo "Suggestion: rm -rf ../target or cargo clean"
         exit 1
     fi
-    echo "Running charon (ml-dsa) with $features ..."
-    RUSTFLAGS="--cfg eurydice" $CHARON_HOME/bin/charon --remove-associated-types '*' --rustc-arg=-Cdebug-assertions=no $features
 else
     echo "Skipping charon"
 fi
@@ -114,10 +127,10 @@ echo " */" >> header.txt
 # Run eurydice to extract the C code
 echo "Running eurydice ..."
 echo $EURYDICE_HOME/eurydice --config ../$config -funroll-loops $unrolling \
---header header.txt $cpp17 ../../libcrux_ml_dsa.llbc ../../libcrux_sha3.llbc
+--header header.txt $cpp17 ../../libcrux_ml_dsa.llbc --keep-going
 
-$EURYDICE_HOME/eurydice --debug "-dast" --config ../$config -funroll-loops $unrolling \
---header header.txt $cpp17 ../../libcrux_ml_dsa.llbc ../../libcrux_sha3.llbc
+$EURYDICE_HOME/eurydice --config ../$config -funroll-loops $unrolling \
+--header header.txt $cpp17 ../../libcrux_ml_dsa.llbc --keep-going
 
 if [[ "$eurydice_glue" = 1 ]]; then
     cp $EURYDICE_HOME/include/eurydice_glue.h .
@@ -130,6 +143,7 @@ if [[ "$karamel_include" = 1 ]]; then
 fi
 
 find . -type f -name '*.c' -and -not -path '*_deps*' -exec clang-format-18 --style=Google -i "{}" \;
+find . -type f -name '*.cc' -and -not -path '*_deps*' -exec clang-format-18 --style=Google -i "{}" \;
 find . -type f -name '*.h' -and -not -path '*_deps*' -exec clang-format-18 --style=Google -i "{}" \;
 if [ -d "internal" ]; then
     clang-format-18 --style=Google -i internal/*.h

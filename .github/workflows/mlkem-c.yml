@@ -20,7 +20,7 @@ jobs:
     if: ${{ github.event_name != 'pull_request' }}
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - uses: dorny/paths-filter@v3
         id: changes
         with:
@@ -65,7 +65,7 @@ jobs:
         working-directory: libcrux-ml-kem/extracts/c
         shell: bash
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
 
       - name: Extract C
         run: |
@@ -91,7 +91,7 @@ jobs:
         working-directory: libcrux-ml-kem/extracts/c_header_only
         shell: bash
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
 
       - name: Extract C (header only)
         run: |
@@ -117,7 +117,7 @@ jobs:
         working-directory: libcrux-ml-kem/extracts/cpp_header_only
         shell: bash
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
 
       - name: Extract C++
         run: |
@@ -149,7 +149,7 @@ jobs:
           name: c-ho-extraction-ml-kem
           path: ~/mlkem-c-extraction
 
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
 
       - name: Diff Extraction C++
         run: |
@@ -238,11 +238,11 @@ jobs:
           cmake --build build
 
       - name: 🏃🏻‍♀️ Test
-        run: ./build/ml_kem_test
+        run: ./build/ml_kem_test768
         if: ${{ matrix.os != 'windows-latest' }}
 
       - name: 🏃🏻‍♀️ Test
-        run: ./build/Debug/ml_kem_test
+        run: ./build/Debug/ml_kem_test768
         if: ${{ matrix.os == 'windows-latest' }}
 
   build-cpp-header-only:
@@ -275,9 +275,9 @@ jobs:
           cmake --build build
 
       - name: 🏃🏻‍♀️ Test
-        run: ./build/ml_kem_test
+        run: ./build/ml_kem_test768
         if: ${{ matrix.os != 'windows-latest' }}
 
       - name: 🏃🏻‍♀️ Test
-        run: ./build/Debug/ml_kem_test
+        run: ./build/Debug/ml_kem_test768
         if: ${{ matrix.os == 'windows-latest' }}

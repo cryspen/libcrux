@@ -1,0 +1,18 @@
+[package]
+name = "libcrux-poly1305"
+description = "Formally verified Poly1305 MAC library"
+version = "0.0.4"
+readme = "Readme.md"
+
+authors.workspace = true
+license.workspace = true
+homepage.workspace = true
+edition.workspace = true
+repository.workspace = true
+
+[features]
+expose-hacl = []
+
+[dependencies]
+libcrux-hacl-rs = { version = "=0.0.4", path = "../../utils/hacl-rs/" }
+libcrux-macros = { version = "=0.0.3", path = "../../utils/macros" }

@@ -39,7 +39,7 @@ jobs:
         shell: bash
 
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
 
       - name: Update dependencies
         run: cargo update
@@ -119,7 +119,7 @@ jobs:
         run: cargo test --verbose --release $RUST_TARGET_FLAG
 
       - name: 🔨 Build sys/hacl
-        working-directory: sys/hacl
+        working-directory: crates/sys/hacl
         run: cargo build --verbose $RUST_TARGET_FLAG
   
   libcrux-build-test-status:
@@ -140,7 +140,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - uses: mymindstorm/setup-emsdk@6ab9eb1bda2574c4ddb79809fc9247783eaf9021
 
       - name: Setup
