@@ -1,14 +1,12 @@
 //! # AEAD API
-use libcrux_chacha20poly1305::{
-    decrypt_detached, encrypt_detached, KEY_LEN as KEY_LEN_CHACHA, NONCE_LEN as NONCE_LEN_CHACHA,
-};
+use libcrux_chacha20poly1305::{decrypt_detached, encrypt_detached, KEY_LEN as KEY_LEN_CHACHA};
 use libcrux_traits::aead::arrayref::Aead;
 use tls_codec::{
     Deserialize, Serialize, SerializeBytes, TlsDeserialize, TlsSerialize, TlsSerializeBytes,
     TlsSize,
 };
 
-use libcrux_aesgcm::{AESGCM128_KEY_LEN as KEY_LEN_AES, NONCE_LEN as NONCE_LEN_AES};
+use libcrux_aesgcm::AESGCM128_KEY_LEN as KEY_LEN_AES;
 
 #[derive(Clone, TlsSerialize, TlsDeserialize, TlsSerializeBytes, TlsSize)]
 #[repr(u8)]

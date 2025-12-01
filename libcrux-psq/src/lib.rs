@@ -33,7 +33,7 @@
 //! let mut payload_buf_responder = vec![0u8; 4096];
 //! let mut payload_buf_initiator = vec![0u8; 4096];
 //!
-//! let responder_ciphersuite_id = CiphersuiteName::X25519_MLKEM768_CHACHA20POLY1305_HKDFSHA256;
+//! let responder_ciphersuite_id = CiphersuiteName::X25519_MLKEM768_X25519_CHACHA20POLY1305_HKDFSHA256;
 //!
 //! // Setup query initiator
 //! let mut query_initiator = PrincipalBuilder::new(rand::rng())
@@ -122,7 +122,7 @@
 //! i_transport.serialize(&mut session_storage).unwrap();
 //! let mut i_transport = Session::deserialize(
 //!     &session_storage,
-//!     &initiator_ecdh_keys.pk,
+//!     &(&initiator_ecdh_keys.pk).into(),
 //!     &responder_ecdh_keys.pk,
 //!     Some(responder_mlkem_keys.public_key().into()),
 //! ).unwrap();

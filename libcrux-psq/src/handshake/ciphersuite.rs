@@ -19,7 +19,7 @@ pub mod types;
 /// Available ciphersuites for use in the PSQ handshake.
 ///
 /// The name assigns different algorithms according to the following mask:
-/// ```
+/// ```ignore
 /// OUTER_PQKEM_AUTH_AEAD_KDF
 /// ```
 ///
@@ -159,6 +159,15 @@ impl CiphersuiteName {
             }
             (CiphersuiteName::X25519_NONE_MLDSA65_CHACHA20POLY1305_HKDFSHA256, _) => {
                 Some(CiphersuiteName::X25519_NONE_MLDSA65_CHACHA20POLY1305_HKDFSHA256)
+            }
+            (CiphersuiteName::X25519_NONE_X25519_AESGCM128_HKDFSHA256, _) => {
+                Some(CiphersuiteName::X25519_NONE_X25519_AESGCM128_HKDFSHA256)
+            }
+            (CiphersuiteName::X25519_NONE_ED25519_AESGCM128_HKDFSHA256, _) => {
+                Some(CiphersuiteName::X25519_NONE_ED25519_AESGCM128_HKDFSHA256)
+            }
+            (CiphersuiteName::X25519_NONE_MLDSA65_AESGCM128_HKDFSHA256, _) => {
+                Some(CiphersuiteName::X25519_NONE_MLDSA65_AESGCM128_HKDFSHA256)
             }
 
             (x, y) if *x == y => Some(y),

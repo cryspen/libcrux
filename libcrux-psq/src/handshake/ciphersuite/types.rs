@@ -15,6 +15,24 @@ pub enum Authenticator {
     Sig(SigVerificationKey),
 }
 
+impl From<&DHPublicKey> for Authenticator {
+    fn from(value: &DHPublicKey) -> Self {
+        Self::Dh(value.clone())
+    }
+}
+
+impl From<&VerificationKey> for Authenticator {
+    fn from(value: &VerificationKey) -> Self {
+        Self::Sig(SigVerificationKey::Ed25519(value.clone()))
+    }
+}
+
+impl From<&MLDSA65VerificationKey> for Authenticator {
+    fn from(value: &MLDSA65VerificationKey) -> Self {
+        Self::Sig(SigVerificationKey::MlDsa65(value.clone()))
+    }
+}
+
 impl From<Auth<'_>> for Authenticator {
     fn from(value: Auth<'_>) -> Self {
         match value {
