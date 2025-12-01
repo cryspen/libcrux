@@ -1,6 +1,6 @@
 [package]
 name = "hpke-rs"
-version = "0.4.0-beta.1"
+version = "0.4.0"
 authors = ["Franziskus Kiefer <franziskuskiefer@gmail.com>"]
 edition = "2021"
 license = "MPL-2.0"
@@ -22,7 +22,7 @@ hpke-rs-crypto = { version = "0.3.0", path = "./traits", default-features = fals
 rand_core = { version = "0.9", default-features = false }
 libcrux-sha3 = { version = "0.0.4" }
 hpke-rs-rust-crypto = { version = "0.3.0", path = "./rust_crypto_provider", default-features = false, optional = true }
-hpke-rs-libcrux = { version = "0.4.0-beta.1", path = "./libcrux_provider", default-features = false, optional = true }
+hpke-rs-libcrux = { version = "0.4.0", path = "./libcrux_provider", default-features = false, optional = true }
 
 [features]
 default = []
@@ -50,7 +50,7 @@ hpke-rs = { path = ".", features = ["hpke-test", "hazmat"] }
 hpke-rs-rust-crypto = { version = "0.3.0", path = "./rust_crypto_provider", features = [
     "deterministic-prng",
 ] }
-hpke-rs-libcrux = { version = "0.4.0-beta.1", path = "./libcrux_provider", features = [
+hpke-rs-libcrux = { version = "0.4.0", path = "./libcrux_provider", features = [
     "deterministic-prng",
 ] }
 rand = { version = "0.9" }
