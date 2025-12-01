@@ -184,6 +184,33 @@ impl Session {
             .map_err(SessionError::Serialize)
     }
 
+    /// Export a secret derived from the main session key.
+    ///
+    /// Derives a secret `K` from the main session key as
+    /// `K = KDF(K_session, context || "PSQ secret export")`.
+    pub fn export_secret(&self, context: &[u8], out: &mut [u8]) -> Result<(), SessionError> {
+        use tls_codec::TlsSerializeBytes;
+        const PSQ_EXPORT_CONTEXT: &[u8; 17] = b"PSQ secret export";
+        #[derive(TlsSerializeBytes, TlsSize)]
+        struct ExportInfo<'a> {
+            context: &'a [u8],
+            separator: [u8; 17],
+        }
+
+        libcrux_hkdf::sha2_256::hkdf(
+            out,
+            b"",
+            self.session_key.key.as_ref(),
+            &ExportInfo {
+                context,
+                separator: *PSQ_EXPORT_CONTEXT,
+            }
+            .tls_serialize()
+            .map_err(SessionError::Serialize)?,
+        )
+        .map_err(|_| SessionError::CryptoError)
+    }
+
     /// Deserialize a session state.
     ///
     /// The public key inputs must be the same as those used originally to derive the
