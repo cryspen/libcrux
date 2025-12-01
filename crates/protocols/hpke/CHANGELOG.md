@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.0] - 2025-12-01
+
+- Updated dependencies
+
 ## [0.3.0] - 2025-07-01
 
 - [#98](https://github.com/cryspen/hpke-rs/pull/98): add support for AES-GCM to the Libcrux provider
