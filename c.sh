@@ -9,7 +9,6 @@ build=0
 test=0
 extract=1
 
-all_args=("$@")
 while [ $# -gt 0 ]; do
     case "$1" in
         --docker) docker=1 ;;
