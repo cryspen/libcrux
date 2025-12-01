@@ -5,8 +5,75 @@
 This crate implements a protocol for establishing, and registering a
 post-quantum shared secret between an initiator and a responder.
 
-## Query Mode
+## Cryptographic building blocks & Notation
+The description of the PSQ protocol below relies on several
+cryptographic building blocks represented as abstract interfaces.
 
+### Diffie-Hellman key exchange
+The PSQ handshake uses a Diffie-Hellman key exchange `DH` with the
+following interface:
+- `DH.KeyGen()` generates pair of Diffie-Hellmann public and private
+  keys. For a protocol participant `X`, we will denote their long-term
+  DH public key as `pub_X` and their long-term DH private key as
+  `priv_X`. Ephemeral public keys will be denoted `epub_X` and `epriv_X`.
+- `DH.Derive(sk, pk)` takes as input a DH private key and a DH public
+  key and derives a DH shared secret.
+  
+### Post-Quantum Key Encapsulation mechanims
+The PSQ handshake may a post-quantum key encapsulation mechanism to
+incorporate a PQ-secure shared secret into the session secret.
+- `PQKEM.KeyGen()` generates a pair of encapsulation and decapsulation
+  keys for the PQ-KEM. For a protocol participant `X`, we will denote
+  their long-term PQ-KEM encapsulation key as `pqek_X` and their
+  long-term PQ-KEM decapsulation key as `pqdk_X`.
+- `PQKEM.Encapsulate(pqek)` encapsulates a shared secret towards a
+  PQ-KEM encapsulation key, outputting the encapsulation value
+  `enc_pq` and the shared secret `ss_pq`.
+- `PQKEM.Decapsulate(pqdk, enc_pq)` decapsulates a shared secret
+  `ss_pq` from the encapsulation value `enc_pq`. 
+  
+### Digital Signatures
+
+The PSQ handshake may use digital signatures for initiator authentication:
+- `Sig.KeyGen()` generates a pair of signing and verification
+  keys. For a protocol participant `X`, we denote their long-term
+  signature verification key as `vk_X` and their long-term signing key
+  as `sk_X`.
+- `Sig.Sign(sk, m)` signs message `m` using signing key `sk`,
+  producing a signature `sig`.
+- `Sig.Verify(vk, m, sig)` attempts to verify purported signature
+  `sig` on message `m` under verification key `vk`. If successful,
+  outputs `true`, otherwise `false`.
+  
+### Authenticated Encryption
+The PSQ handshake uses authenticated encryption with associated data
+for encrypting handshake and transport payloads.
+- `AEAD.Encrypt(K, plaintext, aad)` encrypts message `plaintext` and
+  authenticates associated data `aad` under key `K`, outputting
+  ciphertext `ctxt`. The authentication tag is left implicit in this
+  description.
+- `AEAD.Decrypt(K, ctxt, aad)` attempts to decrypt and authenticate
+  `ctxt` and `aad` under key `K` returning the original `plaintext` if
+  successful and aborting the protocol otherwise.
+
+### Key derivation
+AEAD encryption keys are obtained using a key derivation function.
+- `KDF(ikm, info)` derives a fresh AEAD key `K` from initial key
+  material `ikm` and non-confidential context information `info`.
+
+### Cryptographic Hashing
+A cryptographic hash function `hash` is used to keep a running hash of
+the protocol transcript.
+
+## Handshake
+
+The PSQ handshake exists in two modes, *query mode* and *registration
+mode*. In both, initiator and responder are assumed to share knowledge
+of a common protocol context `context` which is incorporated into the
+handshake transcript and thus serves as a domain separator between
+different instantiations of the PSQ handshake.
+
+### Query Mode
 The outcome of a query run is that the initiator can send one payload
 to the responder, which can return one response to the initiator.
 
@@ -14,53 +81,53 @@ These payloads **do not** enjoy post quantum protection.
 
 ```
 Common inputs:
-    - ctx
+    - context
 
-Inputs of A:
+Inputs of I (Initiator):
     - query_payload
     - query_aad
-    - pk_B = g^s
+    - pub_R
     
-Inputs of B: 
-    - (sk_B = s, pk_B = g^s)
+Inputs of R (Responder): 
+    - (priv_R, pub_R)
     - response_aad
     - query handler f
 
-A: 
-    (esk_A = x, epk_A = g^x) <- DH.KeyGen()
-    tx0 = hash(0 | ctx | pk_B | epk_A)
-    dh_shared_secret_query = DH.Derive(esk_A, pk_B)
+I: 
+    (epriv_I, epub_I) <- DH.KeyGen()
+    tx0 = hash(0 | context | pub_R | epub_I)
+    dh_shared_secret_query = DH.Derive(epriv_I, pub_R)
     K_0  = KDF(dh_shared_secret_query, tx0)
-    (enc_query, tag_query) <- AEAD.Encrypt(K_0, query_payload, query_aad)
+    ctxt_query <- AEAD.Encrypt(K_0, query_payload, query_aad)
     
-A -> B: (epk_A, enc_query, tag_query, query_aad)
+I -> R: (epub_I, ctxt_query, query_aad)
 
-B:
-    tx0 = hash(0 | ctx | pk_B | epk_A)
-    dh_shared_secret_query = DH.Derive(sk_B, epk_A)
-    K_0 = KDF(dh_shared_secret_query)
-    query_payload = AEAD.Decrypt(K_0, enc_query, tag_query, query_aad)
+R:
+    tx0 = hash(0 | context | pub_R | epub_I)
+    dh_shared_secret_query = DH.Derive(priv_R, epub_I)
+    K_0 = KDF(dh_shared_secret_query, tx0)
+    query_payload = AEAD.Decrypt(K_0, ctxt_query, query_aad)
     ...
     response_payload <- f(query_payload)
     ...
-    (esk_B = y, epk_B = g^y) <- DH.KeyGen()
-    tx2 = hash(2 | tx0 | epk_B)
-    dh_shared_secret_response_1 = DH.Derive(sk_B, epk_A)
-    dh_shared_secret_response_2 = DH.Derive(esk_B, epk_A)
+    (epriv_R, epub_R) <- DH.KeyGen()
+    tx2 = hash(2 | tx0 | epub_R)
+    dh_shared_secret_response_1 = DH.Derive(priv_R, epub_I)
+    dh_shared_secret_response_2 = DH.Derive(epriv_R, epub_I)
     K_2 = KDF(K_0 | dh_shared_secret_response_1 | dh_shared_secret_response_2, tx2)
-    (enc_response, tag_response) <- AEAD.Encrypt(K_2, response_payload, response_aad)
+    ctxt_response <- AEAD.Encrypt(K_2, response_payload, response_aad)
 
-B -> A: (epk_B, enc_response, tag_response, response_aad)
+R -> I: (epub_R, ctxt_response, response_aad)
 
-A:
-    tx2 = hash(2 | tx0 | epk_B)
-    dh_shared_secret_response_1 = DH.Derive(esk_A, pk_B)
-    dh_shared_secret_response_2 = DH.Derive(esk_A, epk_B)
+I:
+    tx2 = hash(2 | tx0 | epub_R)
+    dh_shared_secret_response_1 = DH.Derive(epriv_I, pub_R)
+    dh_shared_secret_response_2 = DH.Derive(epriv_I, epub_R)
     K_2 = KDF(K_0 | dh_shared_secret_response_1 | dh_shared_secret_response_2, tx2)
-    response_payload = AEAD.Decrypt(K_2, enc_response, tag_response, response_aad)
+    response_payload = AEAD.Decrypt(K_2, ctxt_response, response_aad)
 ```
 
-## Registration Mode
+### Registration Mode
 
 The outcome of a query run is that initiator and responder agree on a
 shared secret `K_2` and the initiator can additionally send one
@@ -73,140 +140,139 @@ used.
 The shared secret can be used to derive a large number of secure
 transport sessions between initiator and responder (see below).
 
-### Handshake
+#### Diffie-Hellman based initiator authentication
 ```
 Common Inputs:
-    - ctx
+    - context
     
-Inputs of A: 
+Inputs of I (Initiator):
     - registration_payload
     - registration_outer_aad
     - registration_inner_aad
-    - pk_B = g^s
-    - (sk_A = c, pk_A = g^c)
-    - pqpk_B (optional)
+    - pub_R
+    - (priv_I, pub_I)
+    - pqpk_R (optional)
     
-Inputs of B: 
-    - (sk_B = s, pk_B = g^s)
-    - (pqsk_B, pqpk_B)
+Inputs of R (Responder): 
+    - (priv_R, pub_R)
+    - (pqdk_R, pqek_R)
     - query handler f,
     - response_aad, 
     - registration handler f
     
-A: 
-    (esk_A = x, epk_A = g^x) <- DH.KeyGen()
-    tx0 = hash(0 | ctx | pk_B | epk_A)
-    dh_shared_secret_outer = DH.Derive(esk_A, pk_B)
-    K_0  = KDF(dh_shared_secret_outer, tx0)
-    if pqpk_S provided
-        (enc_pq, pq_shared_secret) <- PQKEM.Encapsulate(pqpk_S)
-    tx1 = hash(1 | tx0 | pk_A | [pqpk_S] | [enc_pq])
-    dh_shared_secret_inner = DH.Derive(sk_A, pk_B)
-    K_1 = KDF(K_0 | dh_shared_secret_inner | [pq_shared_secret], tx1)
-    (enc_inner, tag_inner) <- AEAD.Encrypt(K_1, registration_payload, registration_inner_aad)
-    (enc_outer, tag_outer) <- AEAD.Encrypt(K_0, (pk_A | enc_inner | tag_inner | registration_inner_aad | [enc_pq]), registration_outer_aad)
+I: 
+    (epriv_I, epub_I) <- DH.KeyGen()
+    tx0 = hash(0 | context | pub_R | epub_I)
+    ss_dh_outer = DH.Derive(epriv_I, pub_R)
+    K_0  = KDF(ss_dh_outer, tx0)
+    if pqek_R provided
+        (enc_pq, ss_pq) <- PQKEM.Encapsulate(pqek_R)
+    tx1 = hash(1 | tx0 | pub_I | [pqek_S] | [enc_pq])
+    ss_dh_inner = DH.Derive(priv_I, pub_R)
+    K_1 = KDF(K_0 | ss_dh_inner | [ss_pq], tx1)
+    ctxt_inner <- AEAD.Encrypt(K_1, registration_payload, registration_inner_aad)
+    ctxt_outer <- AEAD.Encrypt(K_0, (pub_I | ctxt_inner | registration_inner_aad | [enc_pq]), registration_outer_aad)
     
-A -> B: (epk_A, enc_outer, tag_outer, registration_outer_aad)
+I -> R: (epub_I, ctxt_outer, registration_outer_aad)
 
-B:
-    tx0 = hash(0 | ctx | pk_B | epk_A)
-    dh_shared_secret_outer = DH.Derive(sk_B, epk_A)
-    K_0 = KDF(dh_shared_secret_outer, tx0)
-    (pk_A | enc_inner | tag_inner | registration_inner_aad | [enc_pq]) = AEAD.Decrypt(K_0, enc_outer, tag_outer, registration_outer_aad)
+R:
+    tx0 = hash(0 | context | pub_R | epub_I)
+    ss_dh_outer = DH.Derive(priv_R, epub_I)
+    K_0 = KDF(ss_dh_outer, tx0)
+    (pub_I | ctxt_inner | registration_inner_aad | [enc_pq]) = AEAD.Decrypt(K_0, ctxt_outer, registration_outer_aad)
     if enc_pq provided
-        pq_shared_secret <- PQKEM.Decapsulate(pqsk_B, enc_pq)
-    tx1 = hash(1 | tx0 | pk_A | [pqpk_S] | [enc_pq])
-    dh_shared_secret_inner = DH.Derive(sk_B, pk_A)
-    K_1 = KDF(K_0 | dh_shared_secret_inner | [pq_shared_secret], tx1)
-    registration_payload = AEAD.Decrypt(K_1, enc_inner, tag_inner, registration_inner_aad)
+        ss_pq <- PQKEM.Decapsulate(pqdk_R, enc_pq)
+    tx1 = hash(1 | tx0 | pub_I | [pqek_S] | [enc_pq])
+    ss_dh_inner = DH.Derive(priv_R, pub_I)
+    K_1 = KDF(K_0 | ss_dh_inner | [ss_pq], tx1)
+    registration_payload = AEAD.Decrypt(K_1, ctxt_inner, registration_inner_aad)
     ...
     response_payload <- f(registration_payload)
     ...
-    (esk_B = y, epk_B = g^y) <- DH.KeyGen()
-    tx2 = hash(2 | tx1 | epk_B)
-    dh_shared_secret_response_1 = DH.Derive(esk_B, pk_A)
-    dh_shared_secret_response_2 = DH.Derive(esk_B, epk_A)
-    K_2 = KDF(K_1 | dh_shared_secret_response_1 | dh_shared_secret_response_2, tx2)
-    (enc_response, tag_response) <- AEAD.Encrypt(K_2, response_payload, response_aad)
+    (epriv_R, epub_R) <- DH.KeyGen()
+    tx2 = hash(2 | tx1 | epub_R)
+    ss_dh_response_1 = DH.Derive(epriv_R, pub_I)
+    ss_dh_response_2 = DH.Derive(epriv_R, epub_I)
+    K_2 = KDF(K_1 | ss_dh_response_1 | ss_dh_response_2, tx2)
+    ctxt_response <- AEAD.Encrypt(K_2, response_payload, response_aad)
     
-B -> A: (epk_B, enc_response, tag_response, response_aad)
+R -> I: (epub_R, ctxt_response, response_aad)
 
-A: 
-    tx2 = hash(2 | tx1 | epk_B)
-    dh_shared_secret_response_1 = DH.Derive(sk_A, epk_B)
-    dh_shared_secret_response_2 = DH.Derive(esk_A, epk_B)
-    K_2 = KDF(K_1 | dh_shared_secret_response_1 | dh_shared_secret_response_2, tx2)
-    response_payload = AEAD.Decrypt(K_2, enc_response, tag_response, response_aad)
+I: 
+    tx2 = hash(2 | tx1 | epub_R)
+    ss_dh_response_1 = DH.Derive(priv_I, epub_R)
+    ss_dh_response_2 = DH.Derive(epriv_I, epub_R)
+    K_2 = KDF(K_1 | ss_dh_response_1 | ss_dh_response_2, tx2)
+    response_payload = AEAD.Decrypt(K_2, ctxt_response, response_aad)
 
 ```
 
-### Client-authenticating Handshake (Proposal)
+#### Signature-based Initiator Authentication
 ```
 Common Inputs:
-    - ctx
+    - context
     
-Inputs of A: 
+Inputs of I: 
     - registration_payload
     - registration_outer_aad
     - registration_inner_aad
-    - pk_B = g^s
-    - (sk_A, vk_A)
-    - pqpk_B (optional)
+    - pub_R
+    - (priv_I, vk_I)
+    - pqpk_R (optional)
     
-Inputs of B: 
-    - (sk_B = s, pk_B = g^s)
-    - (pqsk_B, pqpk_B)
+Inputs of R: 
+    - (priv_R, pub_R)
+    - (pqsk_R, pqpk_R)
     - query handler f,
     - response_aad, 
     - registration handler f
     
-A: 
-    (esk_A = x, epk_A = g^x) <- DH.KeyGen()
-    tx0 = hash(0 | ctx | pk_B | epk_A)
-    dh_shared_secret_outer = DH.Derive(esk_A, pk_B)
-    K_0  = KDF(dh_shared_secret_outer, tx0)
-    if pqpk_S provided
-        (enc_pq, pq_shared_secret) <- PQKEM.Encapsulate(pqpk_S)
-    tx1 = hash(1 | tx0 | vk_A | [pqpk_S] | [enc_pq])
-    sigC = Sig.Sign(sk_A, tx1)
-    K_1 = KDF(K_0 | [pq_shared_secret], tx1 | sigC)
-    (enc_inner, tag_inner) <- AEAD.Encrypt(K_1, registration_payload, registration_inner_aad)
-    (enc_outer, tag_outer) <- AEAD.Encrypt(K_0, (vk_A | enc_inner | tag_inner | registration_inner_aad | | sigC | [enc_pq]), registration_outer_aad)
+I: 
+    (epriv_I, epub_I) <- DH.KeyGen()
+    tx0 = hash(0 | context | pub_R | epub_I)
+    ss_dh_outer = DH.Derive(epriv_I, pub_R)
+    K_0  = KDF(ss_dh_outer, tx0)
+    if pqpk_R provided
+        (enc_pq, ss_pq) <- PQKEM.Encapsulate(pqpk_S)
+    tx1 = hash(1 | tx0 | vk_I | [pqpk_S] | [enc_pq])
+    sigC = Sig.Sign(priv_I, tx1)
+    K_1 = KDF(K_0 | [ss_pq], tx1 | sigC)
+    ctxt_inner <- AEAD.Encrypt(K_1, registration_payload, registration_inner_aad)
+    ctxt_outer <- AEAD.Encrypt(K_0, (vk_I | ctxt_inner | registration_inner_aad | | sigC | [enc_pq]), registration_outer_aad)
     
-A -> B: (epk_A, enc_outer, tag_outer, registration_outer_aad)
+I -> R: (epub_I, ctxt_outer, registration_outer_aad)
 
-B:
-    tx0 = hash(0 | ctx | pk_B | epk_A)
-    dh_shared_secret_outer = DH.Derive(sk_B, epk_A)
-    K_0 = KDF(dh_shared_secret_outer)
-    (vk_A | enc_inner | tag_inner | registration_inner_aad | sigC | [enc_pq]) = AEAD.Decrypt(K_0, enc_outer, tag_outer, registration_outer_aad)
-    tx1 = hash(1 | tx0 | vk_A | [pqpk_S] | [enc_pq])
-    if !Sig.Verify(vk_A, tx1, sigC)
+R:
+    tx0 = hash(0 | context | pub_R | epub_I)
+    ss_dh_outer = DH.Derive(priv_R, epub_I)
+    K_0 = KDF(ss_dh_outer)
+    (vk_I | ctxt_inner | registration_inner_aad | sigC | [enc_pq]) = AEAD.Decrypt(K_0, ctxt_outer, registration_outer_aad)
+    tx1 = hash(1 | tx0 | vk_I | [pqpk_S] | [enc_pq])
+    if !Sig.Verify(vk_I, tx1, sigC)
         abort
     if enc_pq provided
-        pq_shared_secret <- PQKEM.Decapsulate(pqsk_B, enc_pq)
-    K_1 = KDF(K_0 | [pq_shared_secret], tx1 | sigC)
-    registration_payload = AEAD.Decrypt(K_1, enc_inner, tag_inner, registration_inner_aad)
+        ss_pq <- PQKEM.Decapsulate(pqsk_R, enc_pq)
+    K_1 = KDF(K_0 | [ss_pq], tx1 | sigC)
+    registration_payload = AEAD.Decrypt(K_1, ctxt_inner, registration_inner_aad)
     ...
     response_payload <- f(registration_payload)
     ...
-    (esk_B = y, epk_B = g^y) <- DH.KeyGen()
-    tx2 = hash(2 | tx1 | epk_B)
-    dh_shared_secret_response = DH.Derive(esk_B, epk_A)
-    K_2 = KDF(K_1 | dh_shared_secret_response, tx2)
-    (enc_response, tag_response) <- AEAD.Encrypt(K_2, response_payload, response_aad)
+    (epriv_R = y, epub_R = g^y) <- DH.KeyGen()
+    tx2 = hash(2 | tx1 | epub_R)
+    ss_dh_response = DH.Derive(epriv_R, epub_I)
+    K_2 = KDF(K_1 | ss_dh_response, tx2)
+    ctxt_response <- AEAD.Encrypt(K_2, response_payload, response_aad)
     
-B -> A: (epk_B, enc_response, tag_response, response_aad)
+R -> I: (epub_R, ctxt_response, response_aad)
 
-A: 
-    tx2 = hash(2 | tx1 | epk_B)
-    dh_shared_secret_response = DH.Derive(esk_A, epk_B)
-    K_2 = KDF(K_1 | dh_shared_secret_response, tx2)
-    response_payload = AEAD.Decrypt(K_2, enc_response, tag_response, response_aad)
-
+I: 
+    tx2 = hash(2 | tx1 | epub_R)
+    ss_dh_response = DH.Derive(epriv_I, epub_R)
+    K_2 = KDF(K_1 | ss_dh_response, tx2)
+    response_payload = AEAD.Decrypt(K_2, ctxt_response, response_aad)
 ```
 
-### Derived Sessions
+## Derived Sessions
 
 Given a shared secret `K_2` and the final handshake transcript `tx2`
 initiator and receiver derive a main session key
@@ -215,8 +281,14 @@ K_S = KDF(K_2, "session key" | tx2)
 ```
 and associated public key binder value
 ```
-pk_binder = KDF(K_S, pk_A | pk_B | [pqpk_B])
+pk_binder = KDF(K_S, pub_A | pub_B | [pqek_B])
 ```
+or
+```
+pk_binder = KDF(K_S, vk_A | pub_B | [pqek_B])
+```
+depending on the authentication mode.
+
 From this main session key, initiator and responder can derive
 bidirectional transport keys for many secure channels, where
 `channel_counter` identifies the particular channel:
@@ -224,6 +296,7 @@ bidirectional transport keys for many secure channels, where
 K_i2r = KDF(K_S, "i2r channel key" | pk_binder | channel_counter)
 K_r2i = KDF(K_S, "r2i channel key" | pk_binder | channel_counter)
 ```
+
 ## PSQ v1
 Under optional feature `v1`, this crate implements the first version of PSQ, a
 protocol for establishing and mutually registering a pre-shared key
