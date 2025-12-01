@@ -2,7 +2,7 @@
 
 set -e
 
-cwd=$(cd $(dirname $0); pwd -P)
+cwd=$(cd "$(dirname "$0")"; pwd -P)
 
 docker=0
 build=0
@@ -25,20 +25,20 @@ done
 if (( docker == 1 && extract == 1 )); then
     echo "Extracting with docker ..."
     sudo docker pull ghcr.io/cryspen/libcrux-c:latest
-    sudo docker run -v $PWD:/home/user/libcrux \
+    sudo docker run -v "$PWD":/home/user/libcrux \
         --rm ghcr.io/cryspen/libcrux-c:latest bash \
         -c "$cwd/libcrux-ml-kem/extracts/extract-all.sh && \
             cd $cwd/libcrux-ml-dsa && ./boring.sh"
 elif (( extract == 1 )); then
     echo "Extracting locally ..."
     echo "  ML-KEM ..."
-    $cwd/libcrux-ml-kem/extracts/extract-all.sh
+    "$cwd"/libcrux-ml-kem/extracts/extract-all.sh
     echo "  ML-DSA ..."
-    (cd $cwd/libcrux-ml-dsa && ./boring.sh)
+    (cd "$cwd"/libcrux-ml-dsa && ./boring.sh)
 fi
 
 if (( build == 0 && test == 0 )); then
-    echo "Run build andtests with --build and --test"
+    echo "Run build and tests with --build and --test"
 fi
 
 # Build & test
@@ -51,23 +51,23 @@ ml_kem=(
 )
 
 build_mlkem() {
-    cd $cwd/$1
+    cd "$cwd/$1"
     LIBCRUX_BENCHMARKS=1 CC=clang-19 CXX=clang++-19 cmake -B build -G "Ninja Multi-Config"
     cmake --build build
-    cd $cwd
+    cd "$cwd"
 }
 
 test_mlkem() {
-    cd $cwd/$1
+    cd "$cwd/$1"
     ./build/Debug/ml_kem_test
-    cd $cwd
+    cd "$cwd"
 }
 
 if (( build == 1 )); then
     for path in "${ml_kem[@]}"; do
         echo "--------------------------------"
         echo "Building: $path"
-        build_mlkem $path
+        build_mlkem "$path"
     done
 fi
 
@@ -75,7 +75,7 @@ if (( test == 1 )); then
     for path in "${ml_kem[@]}"; do
         echo "--------------------------------"
         echo "Testing: $path"
-        test_mlkem $path
+        test_mlkem "$path"
     done
 fi
 
@@ -83,10 +83,10 @@ fi
 if (( build == 1 )); then
     echo "--------------------------------"
     echo "Building: ML-DSA"
-    cd $cwd/libcrux-ml-dsa/cg
+    cd "$cwd"/libcrux-ml-dsa/cg
     CC=clang-18 CXX=clang++-18 cmake -B build -G "Ninja Multi-Config"
     cmake --build build
-    cd $cwd
+    cd "$cwd"
 fi
 
 if (( test == 1 )); then
@@ -94,5 +94,5 @@ if (( test == 1 )); then
     echo "Testing: ML-DSA"
     cd $cwd/libcrux-ml-dsa/cg
     ./build/Debug/ml_dsa_test
-    cd $cwd
+    cd "$cwd"
 fi
