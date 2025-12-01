@@ -104,7 +104,6 @@ impl<'a> Channel<Error> for QueryInitiator<'a> {
             ciphertext: VLByteSlice(&ciphertext),
             tag,
             aad: VLByteSlice(self.outer_aad),
-            pq_encapsulation: VLByteSlice(&[]),
             ciphersuite: CiphersuiteName::query_ciphersuite(),
         };
 

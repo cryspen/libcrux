@@ -307,7 +307,6 @@ impl<'a, Rng: CryptoRng> Responder<'a, Rng> {
             ciphertext: VLByteSlice(&ciphertext),
             tag,
             aad: VLByteSlice(self.aad),
-            pq_encapsulation: VLByteSlice(&[]),
             ciphersuite: self.working_ciphersuite,
         };
 
@@ -352,7 +351,6 @@ impl<'a, Rng: CryptoRng> Responder<'a, Rng> {
             ciphertext: VLByteSlice(&ciphertext),
             tag,
             aad: VLByteSlice(self.aad),
-            pq_encapsulation: VLByteSlice(&[]),
             ciphersuite: CiphersuiteName::query_ciphersuite(),
         };
 

@@ -177,7 +177,6 @@ impl<'a, Rng: CryptoRng> Channel<Error> for RegistrationInitiator<'a, Rng> {
             ciphertext: VLByteSlice(&outer_ciphertext),
             tag: outer_tag,
             aad: VLByteSlice(self.outer_aad),
-            pq_encapsulation: VLByteSlice(&[]),
             ciphersuite: self.ciphersuite.name(),
         };
 

@@ -100,8 +100,6 @@ pub(crate) struct HandshakeMessage {
     aad: VLBytes,
     /// The handshake ciphersuite for this message
     ciphersuite: CiphersuiteName,
-    /// An optional post-quantum key encapsulation
-    pq_encapsulation: VLBytes,
 }
 
 #[derive(TlsDeserialize, TlsSize)]
@@ -164,7 +162,6 @@ pub(crate) struct HandshakeMessageOut<'a> {
     tag: [u8; 16], // XXX: implement Serialize for &[T; N]
     aad: VLByteSlice<'a>,
     ciphersuite: CiphersuiteName,
-    pq_encapsulation: VLByteSlice<'a>,
 }
 
 pub(crate) fn write_output(payload: &[u8], out: &mut [u8]) -> Result<usize, HandshakeError> {
