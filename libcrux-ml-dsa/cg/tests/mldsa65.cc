@@ -187,7 +187,6 @@ TEST(MlDsa65TestPortable, NISTKnownAnswerTest) {
 
     // Sign
     memcpy(sign_rand.data, kat.signing_randomness.data(), 32);
-    // uint8_t context[3] = {0};
     Eurydice_borrow_slice_u8 context = {0};
 
     auto msg_slice = mk_borrow_slice_u8(kat.message.data(), kat.message.size());
@@ -200,7 +199,6 @@ TEST(MlDsa65TestPortable, NISTKnownAnswerTest) {
         libcrux_sha3_sha256(mk_borrow_slice_u8(signature.data, 3309U));
     EXPECT_EQ(0,
               memcmp(sig_hash.data, kat.sha3_256_hash_of_signature.data(), 32));
-    // break;
 
     // Verify
     auto result = libcrux_ml_dsa_ml_dsa_65_portable_verify(
@@ -238,7 +236,6 @@ TEST(MlDsa65TestAvx2, NISTKnownAnswerTest) {
 
     // Sign
     memcpy(sign_rand.data, kat.signing_randomness.data(), 32);
-    // uint8_t context[3] = {0};
     Eurydice_borrow_slice_u8 context = {0};
 
     auto msg_slice = mk_borrow_slice_u8(kat.message.data(), kat.message.size());
@@ -251,7 +248,6 @@ TEST(MlDsa65TestAvx2, NISTKnownAnswerTest) {
         libcrux_sha3_sha256(mk_borrow_slice_u8(signature.data, 3309U));
     EXPECT_EQ(0,
               memcmp(sig_hash.data, kat.sha3_256_hash_of_signature.data(), 32));
-    // break;
 
     // Verify
     auto result = libcrux_ml_dsa_ml_dsa_65_avx2_verify(
