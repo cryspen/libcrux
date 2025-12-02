@@ -5,10 +5,10 @@
  *
  * This code was generated with the following revisions:
  * Charon: 146b7dce58cb11ca8010b1c947c3437a959dcd88
- * Eurydice: cdf02f9d8ed0d73f88c0a495c5b79359a51398fc
- * Karamel: 8e7262955105599e91f3a99c9ab3d3387f7046f2
- * F*: unset
- * Libcrux: 927ad3614c662733d7c77b6cd4304177fbd390a8
+ * Eurydice: c06863573e1818808527b23b44e244d8b0c8e3f1
+ * Karamel: 732e3ac91245451fc441754737eef729e2b01c2a
+ * F*: 71d8221589d4d438af3706d89cb653cf53e18aab
+ * Libcrux: 26fe18b8e646819e6034de4198dc424d975b81e5
  */
 
 #ifndef libcrux_mldsa65_avx2_H
@@ -4277,27 +4277,35 @@ static KRML_MUSTINLINE void libcrux_ml_dsa_samplex4_matrix_flat_0a(
        i <
        Eurydice_slice_len((Eurydice_dst_ref_shared_bf{matrix.ptr, matrix.meta}),
                           Eurydice_arr_cd) /
-           (size_t)4U;
+               (size_t)4U +
+           (size_t)1U;
        i++) {
     size_t start_index = i;
     size_t start_index0 = start_index * (size_t)4U;
-    size_t uu____0 = start_index0 + (size_t)4U;
-    size_t elements_requested;
-    if (uu____0 <= Eurydice_slice_len(
-                       (Eurydice_dst_ref_shared_bf{matrix.ptr, matrix.meta}),
-                       Eurydice_arr_cd)) {
-      elements_requested = (size_t)4U;
-    } else {
-      elements_requested =
-          Eurydice_slice_len(
-              (Eurydice_dst_ref_shared_bf{matrix.ptr, matrix.meta}),
-              Eurydice_arr_cd) -
-          start_index0;
+    size_t uu____0 = start_index0;
+    if (!(uu____0 >= Eurydice_slice_len(
+                         (Eurydice_dst_ref_shared_bf{matrix.ptr, matrix.meta}),
+                         Eurydice_arr_cd))) {
+      size_t uu____1 = start_index0 + (size_t)4U;
+      size_t elements_requested;
+      if (uu____1 <= Eurydice_slice_len(
+                         (Eurydice_dst_ref_shared_bf{matrix.ptr, matrix.meta}),
+                         Eurydice_arr_cd)) {
+        elements_requested = (size_t)4U;
+      } else {
+        elements_requested =
+            Eurydice_slice_len(
+                (Eurydice_dst_ref_shared_bf{matrix.ptr, matrix.meta}),
+                Eurydice_arr_cd) -
+            start_index0;
+      }
+      libcrux_ml_dsa_sample_sample_up_to_four_ring_elements_flat_0a(
+          columns, seed, matrix, &rand_stack0, &rand_stack1, &rand_stack2,
+          &rand_stack3, Eurydice_array_to_slice_mut_f6(&tmp_stack),
+          start_index0, elements_requested);
+      continue;
     }
-    libcrux_ml_dsa_sample_sample_up_to_four_ring_elements_flat_0a(
-        columns, seed, matrix, &rand_stack0, &rand_stack1, &rand_stack2,
-        &rand_stack3, Eurydice_array_to_slice_mut_f6(&tmp_stack), start_index0,
-        elements_requested);
+    break;
   }
 }
 
