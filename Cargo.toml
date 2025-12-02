@@ -6,7 +6,6 @@ members = [
     "crates/sys/pqclean",
     "crates/sys/lib25519",
     "benchmarks",
-    "fuzz",
     "libcrux-ml-kem",
     "libcrux-ml-kem/fuzz",
     "crates/algorithms/sha3",
@@ -59,7 +58,7 @@ libcrux-aesgcm = { version = "=0.0.7", path = "crates/algorithms/aesgcm" }
 libcrux-chacha20poly1305 = { version = "=0.0.6", path = "crates/algorithms/chacha20poly1305" }
 libcrux-traits = { version = "=0.0.6", path = "traits" }
 libcrux-hacl-rs = { version = "=0.0.4", path = "crates/utils/hacl-rs" }
-libcrux-macros  = { version = "=0.0.3", path = "crates/utils/macros" }
+libcrux-macros = { version = "=0.0.3", path = "crates/utils/macros" }
 libcrux-hacl = { version = "=0.0.2", path = "crates/sys/hacl" }
 libcrux-platform = { version = "=0.0.3", path = "crates/sys/platform" }
 libcrux-hkdf = { version = "=0.0.6", path = "crates/algorithms/hkdf" }
@@ -72,13 +71,16 @@ libcrux-kem = { version = "=0.0.6", path = "libcrux-kem" }
 libcrux-secrets = { version = "=0.0.5", path = "crates/utils/secrets" }
 libcrux-aead = { version = "=0.0.6", path = "crates/primitives/aead" }
 libcrux-blake2 = { version = "=0.0.6", path = "crates/algorithms/blake2" }
+libcrux-digest = { version = "=0.0.6", path = "crates/primitives/digest" }
+libcrux-ecdsa = { version = "=0.0.6", path = "crates/algorithms/ecdsa" }
+libcrux-psq = { version = "=0.0.7", path = "libcrux-psq" }
 
 # For the crates below it is necessary to set `default-features = true`
 # in workspace crates that depend on the default feature set.
 libcrux-ecdh = { version = "=0.0.6", path = "libcrux-ecdh", default-features = false }
-libcrux-ml-kem = { version = "=0.0.7", path = "libcrux-ml-kem", default-features =  false }
+libcrux-ml-kem = { version = "=0.0.7", path = "libcrux-ml-kem", default-features = false }
 libcrux-p256 = { version = "=0.0.6", path = "crates/algorithms/p256", default-features = false }
-libcrux-curve25519 = { version = "=0.0.6", path = "crates/algorithms/curve25519", default-features = false}
+libcrux-curve25519 = { version = "=0.0.6", path = "crates/algorithms/curve25519", default-features = false }
 
 
 [package]
@@ -112,21 +114,31 @@ bench = false                               # so libtest doesn't eat the argumen
 libcrux-platform = { version = "=0.0.3", path = "crates/sys/platform" }
 
 [dependencies]
-libcrux-hacl-rs.workspace = true
+# Algorithms
 libcrux-chacha20poly1305.workspace = true
 libcrux-ml-kem.workspace = true
-libcrux-traits.workspace = true
-libcrux-hacl.workspace = true
-libcrux-platform.workspace = true
 libcrux-hkdf.workspace = true
 libcrux-hmac.workspace = true
 libcrux-sha2.workspace = true
+libcrux-sha3.workspace = true
 libcrux-ed25519.workspace = true
 libcrux-ecdh.workspace = true
 libcrux-kem.workspace = true
+libcrux-aesgcm.workspace = true
+libcrux-blake2.workspace = true
+libcrux-curve25519.workspace = true
+libcrux-p256.workspace = true
+libcrux-ecdsa.workspace = true
 
-rand = { version = "0.9" }
-log = { version = "0.4", optional = true }
+# Primitives
+libcrux-aead.workspace = true
+libcrux-digest.workspace = true
+
+# Protocols
+libcrux-psq.workspace = true
+
+# External Cryspen code.
+hpke-rs = { version = "0.5" }
 
 # WASM API
 wasm-bindgen = { version = "0.2.87", optional = true }
@@ -139,14 +151,11 @@ hax-lib.workspace = true
 libcrux = { path = ".", features = ["rand", "tests"] }
 pretty_env_logger = "0.5"
 rand = { version = "0.9" }
-rand_core = { version = "0.9" }
-quickcheck = "1"
-quickcheck_macros = "1"
-serde_json = { version = "1.0" }
-serde = { version = "1.0", features = ["derive"] }
+# serde_json = { version = "1.0" }
+# serde = { version = "1.0", features = ["derive"] }
 hex = { version = "0.4.3", features = ["serde"] }
 clap = { version = "4.5", features = ["derive"] }
-wycheproof = "0.6.0"
+rand_chacha = { version = "0.9.0", features = ["os_rng"] }
 
 [target.'cfg(target_arch = "wasm32")'.dev-dependencies]
 wasm-bindgen-test = "0.3"
@@ -155,10 +164,8 @@ getrandom = { version = "0.3" }
 [features]
 default = ["std"]
 std = []
-hacspec = []                         # TODO: #7 Use specs instead of efficient implementations
 rand = []
 wasm = ["wasm-bindgen", "getrandom"]
-log = ["dep:log"]
 tests = []                           # Expose functions for testing.
 experimental = []                    # Expose experimental APIs.
 
@@ -175,9 +182,7 @@ strip = true
 [lints.rust]
 unexpected_cfgs = { level = "warn", check-cfg = [
     'cfg(hax)',
-    'cfg(eurydice)',
     'cfg(doc_cfg)',
-    'cfg(libjade)',
     'cfg(simd128)',
     'cfg(simd256)',
     'cfg(aes_ni)',
