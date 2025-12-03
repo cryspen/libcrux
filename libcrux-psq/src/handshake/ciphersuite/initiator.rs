@@ -11,7 +11,7 @@ use crate::{
         ciphersuite::{
             traits::CiphersuiteBase,
             types::{PQCiphertext, PQEncapsulationKey, PQSharedSecret},
-            CiphersuiteName,
+            CiphersuiteName, PSQ_MLDSA_CONTEXT,
         },
         dhkem::{DHKeyPair, DHPublicKey},
         transcript::Transcript,
@@ -148,7 +148,7 @@ impl<'a> InitiatorCiphersuite<'a> {
                         let sig = libcrux_ml_dsa::ml_dsa_65::sign(
                             mldsasigning_key,
                             &payload,
-                            b"PSQ",
+                            PSQ_MLDSA_CONTEXT,
                             randomness,
                         )?;
                         Ok(Signature::MlDsa65(sig))

@@ -6,6 +6,7 @@ use crate::handshake::{
     ciphersuite::{responder::ResponderCiphersuite, traits::CiphersuiteBase, types::PQCiphertext},
     HandshakeError,
 };
+pub(crate) const PSQ_MLDSA_CONTEXT: &[u8] = b"PSQ";
 
 pub mod builder;
 pub mod initiator;

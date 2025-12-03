@@ -9,7 +9,7 @@ use crate::{
         ciphersuite::{
             traits::CiphersuiteBase,
             types::{PQCiphertext, PQEncapsulationKey, PQSharedSecret},
-            CiphersuiteName,
+            CiphersuiteName, PSQ_MLDSA_CONTEXT,
         },
         dhkem::DHKeyPair,
         transcript::Transcript,
@@ -102,7 +102,7 @@ impl<'a> ResponderCiphersuite<'a> {
             ) => libcrux_ml_dsa::ml_dsa_65::verify(
                 mldsaverification_key,
                 &payload,
-                b"PSQ",
+                PSQ_MLDSA_CONTEXT,
                 mldsasignature,
             )
             .map_err(|e| e.into()),
