@@ -26,8 +26,8 @@ pub(crate) enum PqKemKeyPair<'a> {
     #[cfg(not(feature = "classic-mceliece"))]
     #[allow(unused)]
     CMC(
-        std::marker::PhantomData<&'a [u8]>,
-        std::marker::PhantomData<&'a [u8]>,
+        core::marker::PhantomData<&'a [u8]>,
+        core::marker::PhantomData<&'a [u8]>,
     ),
 }
 
