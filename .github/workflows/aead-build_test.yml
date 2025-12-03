@@ -20,7 +20,7 @@ concurrency:
 jobs:
   build-intel-mac:
     if: ${{ github.event_name != 'merge_group' }}
-    runs-on: macos-13
+    runs-on: macos-15-intel
     defaults:
       run:
         shell: bash
