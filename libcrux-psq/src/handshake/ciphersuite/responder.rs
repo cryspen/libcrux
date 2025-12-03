@@ -77,78 +77,8 @@ impl<'a> CiphersuiteBase for ResponderCiphersuite<'a> {
     fn name(&self) -> CiphersuiteName {
         self.name
     }
-
-    // fn tx0(&self, ctx: &[u8], peer_pk: &DHPublicKey) -> Result<Transcript, HandshakeError> {
-    //     todo!()
-    //     // match self {
-    //     //     ResponderCiphersuite::X25519NoneChaCha20Poly1305HkdfSha256(x) => {
-    //     //         transcript::tx0(ctx, &x.longterm_ecdh_keys.pk, peer_pk)
-    //     //     }
-    //     //     ResponderCiphersuite::X25519MlKem768ChaCha20Poly1305HkdfSha256(x) => {
-    //     //         transcript::tx0(ctx, &x.longterm_ecdh_keys.pk, peer_pk)
-    //     //     }
-    //     //     #[cfg(feature = "classic-mceliece")]
-    //     //     ResponderCiphersuite::X25519ClassicMcElieceChaCha20Poly1305HkdfSha256(x) => {
-    //     //         transcript::tx0(ctx, &x.longterm_ecdh_keys.pk, peer_pk)
-    //     //     }
-    //     //     #[cfg(not(feature = "classic-mceliece"))]
-    //     //     ResponderCiphersuite::X25519ClassicMcElieceChaCha20Poly1305HkdfSha256(_) => {
-    //     //         // We can never reach this because the ciphersuite can only be constructed with the feature turned on.
-    //     //         unreachable!("unsupported ciphersuite")
-    //     //     }
-    //     // }
-    // }
-
-    // fn tx1(&self, tx0: &Transcript, pq_encapsulation: &[u8]) -> Result<Transcript, HandshakeError> {
-    //     todo!()
-    // }
-
-    // fn k0(&self, tx0: Transcript, peer_pk: &DHPublicKey) -> Result<AEADKey, HandshakeError> {
-    //     todo!()
-    //     // struct K0Ikm<'a> {
-    //     //     g_xs: &'a DHSharedSecret,
-    //     // }
-    //     // let own_sk = match self {
-    //     //     ResponderCiphersuite::X25519NoneChaCha20Poly1305HkdfSha256(x) => {
-    //     //         &x.longterm_ecdh_keys.sk
-    //     //     }
-    //     //     ResponderCiphersuite::X25519MlKem768ChaCha20Poly1305HkdfSha256(x) => {
-    //     //         &x.longterm_ecdh_keys.sk
-    //     //     }
-    //     //     #[cfg(feature = "classic-mceliece")]
-    //     //     ResponderCiphersuite::X25519ClassicMcElieceChaCha20Poly1305HkdfSha256(x) => {
-    //     //         &x.longterm_ecdh_keys.sk
-    //     //     }
-    //     //     #[cfg(feature = "classic-mceliece")]
-    //     //     ResponderCiphersuite::X25519ClassicMcElieceChaCha20Poly1305HkdfSha256(_) => {
-    //     //         // We can never reach this because the ciphersuite can only be constructed with the feature turned on.
-    //     //         unreachable!("unsupported ciphersuite")
-    //     //     }
-    //     // };
-
-    //     // let ikm = K0Ikm {
-    //     //     g_xs: &DHSharedSecret::derive(own_sk, peer_pk)?,
-    //     // };
-
-    //     // Ok(AEADKey::new(&ikm, &tx0)?)
-    // }
-
-    // fn k1(&self) -> Result<AEADKey, HandshakeError> {
-    //     todo!()
-    // }
-
-    // fn tx2(&self) -> Result<Transcript, HandshakeError> {
-    //     todo!()
-    // }
-
-    // fn k2(&self) -> Result<AEADKey, HandshakeError> {
-    //     todo!()
-    // }
-
-    // fn client_authenticator(&self) -> super::types::Authenticator {
-    //     todo!()
-    // }
 }
+
 impl<'a> ResponderCiphersuite<'a> {
     pub(crate) fn aead_type(&self) -> AEAD {
         self.aead_type
