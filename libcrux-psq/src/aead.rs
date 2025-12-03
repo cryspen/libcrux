@@ -8,6 +8,10 @@ use tls_codec::{
 
 use libcrux_aesgcm::AESGCM128_KEY_LEN as KEY_LEN_AES;
 
+const NONCE_LEN: usize = 12;
+const NONCE_MAX: [u8; NONCE_LEN] = [0xff; NONCE_LEN];
+const TAG_LEN: usize = 16;
+
 #[derive(Clone, TlsSerialize, TlsDeserialize, TlsSerializeBytes, TlsSize)]
 #[repr(u8)]
 /// An AEAD key.
@@ -21,7 +25,7 @@ pub(crate) enum AEADKey {
 pub(crate) struct AEADKeyNonce {
     key: AEADKey,
     #[tls_codec(skip)]
-    nonce: [u8; 12],
+    nonce: [u8; NONCE_LEN],
 }
 
 impl std::fmt::Debug for AEADKeyNonce {
@@ -66,7 +70,7 @@ impl AEADKeyNonce {
                 .map_err(|_| AEADError::CryptoError)?;
                 Ok(AEADKeyNonce {
                     key: AEADKey::ChaChaPoly1305(key),
-                    nonce: [0u8; 12],
+                    nonce: [0u8; NONCE_LEN],
                 })
             }
             AEAD::AesGcm128 => {
@@ -80,24 +84,24 @@ impl AEADKeyNonce {
                 .map_err(|_| AEADError::CryptoError)?;
                 Ok(AEADKeyNonce {
                     key: AEADKey::AesGcm128(key),
-                    nonce: [0u8; 12],
+                    nonce: [0u8; NONCE_LEN],
                 })
             }
         }
     }
 
     fn increment_nonce(&mut self) -> Result<(), AEADError> {
-        if self.nonce == [0xff; 12] {
+        if self.nonce == NONCE_MAX {
             return Err(AEADError::CryptoError);
         }
 
         let mut buf = [0u8; 16];
-        buf[16 - 12..].copy_from_slice(self.nonce.as_slice());
+        buf[16 - NONCE_LEN..].copy_from_slice(self.nonce.as_slice());
         let mut nonce = u128::from_be_bytes(buf);
         nonce += 1;
         let buf = nonce.to_be_bytes();
 
-        self.nonce.copy_from_slice(&buf[16 - 12..]);
+        self.nonce.copy_from_slice(&buf[16 - NONCE_LEN..]);
         Ok(())
     }
 
@@ -108,7 +112,7 @@ impl AEADKeyNonce {
         ciphertext: &mut [u8],
     ) -> Result<[u8; 16], AEADError> {
         // AES-GCM 128 and ChaCha20Poly1305 agree on tag length
-        let mut tag = [0u8; 16];
+        let mut tag = [0u8; TAG_LEN];
 
         self.increment_nonce()?;
 
