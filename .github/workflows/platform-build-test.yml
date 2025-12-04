@@ -23,7 +23,7 @@ jobs:
       matrix:
         bits: [32, 64]
         os:
-          - macos-13 # Intel mac
+          - macos-15-intel # Intel mac
           - macos-latest # macos-15 on apple silicon
           - ubuntu-latest
           - windows-latest
@@ -31,7 +31,7 @@ jobs:
           - bits: 32
             os: "macos-latest"
           - bits: 32
-            os: "macos-13"
+            os: "macos-15-intel"
 
     runs-on: ${{ matrix.os }}
     defaults:
