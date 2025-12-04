@@ -23,6 +23,9 @@ libcrux-intrinsics = { version = "0.0.4", path = "../crates/utils/intrinsics" }
 libcrux-platform = { version = "0.0.2", path = "../crates/sys/platform" }
 libcrux-macros = { version = "=0.0.3",  path = "../crates/utils/macros" }
 hax-lib.workspace = true
+tls_codec = { version = "0.4.2", features = [
+    "derive",
+], default-features = false, optional = true }
 
 [dev-dependencies]
 rand = { version = "0.9" }
@@ -33,6 +36,7 @@ criterion = "0.8"
 libcrux-kats = { path = "../crates/testing/kats", features = [
     "mldsa"
 ] }
+
 
 # This doesn't build on intel macos.
 [target.'cfg(not(all(target_os = "macos", target_arch = "x86_64")))'.dev-dependencies]
@@ -55,6 +59,9 @@ mldsa87 = []
 
 # std support
 std = []
+
+# Serialization & Deserialization using tls_codec
+codec = ["dep:tls_codec"]
 
 [[bench]]
 name = "manual44"

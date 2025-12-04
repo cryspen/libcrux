@@ -1,6 +1,6 @@
 use tls_codec::{TlsDeserialize, TlsSerialize, TlsSize, VLByteSlice, VLBytes};
 
-use super::HandshakeMessageOut;
+use crate::handshake::InnerMessageOut;
 
 pub mod query;
 pub mod registration;
@@ -9,7 +9,7 @@ pub mod registration;
 #[repr(u8)]
 pub(crate) enum InitiatorOuterPayloadOut<'a> {
     Query(VLByteSlice<'a>),
-    Registration(HandshakeMessageOut<'a>),
+    Registration(InnerMessageOut<'a>),
 }
 
 #[derive(TlsDeserialize, TlsSize)]
