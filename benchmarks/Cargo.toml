@@ -102,14 +102,6 @@ name = "ed25519"
 harness = false
 
 [[bench]]
-name = "hpke"
-harness = false
-
-[[bench]]
-name = "drbg"
-harness = false
-
-[[bench]]
 name = "kyber768"
 harness = false
 
