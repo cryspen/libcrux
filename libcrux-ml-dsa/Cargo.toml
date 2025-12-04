@@ -29,7 +29,7 @@ rand = { version = "0.9" }
 hex = { version = "0.4.3", features = ["serde"] }
 serde_json = { version = "1.0" }
 serde = { version = "1.0", features = ["derive"] }
-criterion = "0.7"
+criterion = "0.8"
 libcrux-kats = { path = "../crates/testing/kats", features = [
     "mldsa"
 ] }
