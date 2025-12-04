@@ -1,79 +1,15 @@
 #![cfg(any(feature = "mlkem512", feature = "mlkem768", feature = "mlkem1024",))]
 
-use serde::{de::DeserializeOwned, Deserialize};
-use std::{fs::File, io::BufReader, path::Path};
-
-#[derive(Deserialize)]
-#[allow(non_snake_case, dead_code)]
-struct KeyGenPrompt {
-    tcId: usize,
-
-    #[serde(with = "hex::serde")]
-    z: [u8; 32],
-
-    #[serde(with = "hex::serde")]
-    d: [u8; 32],
-}
-
-#[derive(Deserialize)]
-#[allow(non_snake_case, dead_code)]
-struct KeyGenPromptTestGroup {
-    tgId: usize,
-    testType: String,
-    parameterSet: String,
-    tests: Vec<KeyGenPrompt>,
-}
-
-#[derive(Deserialize)]
-#[allow(non_snake_case, dead_code)]
-struct Prompts<TG> {
-    vsId: usize,
-    algorithm: String,
-    mode: String,
-    revision: String,
-    isSample: bool,
-    testGroups: Vec<TG>,
-}
-
-#[derive(Deserialize)]
-#[allow(non_snake_case, dead_code)]
-struct KeyGenResult {
-    tcId: usize,
-
-    #[serde(with = "hex::serde")]
-    ek: Vec<u8>,
-
-    #[serde(with = "hex::serde")]
-    dk: Vec<u8>,
-}
-
-#[derive(Deserialize)]
-#[allow(non_snake_case, dead_code)]
-struct ResultPromptTestGroup {
-    tgId: usize,
-    tests: Vec<KeyGenResult>,
-}
-
-#[derive(Deserialize)]
-#[allow(non_snake_case, dead_code)]
-struct Results<TG> {
-    vsId: usize,
-    algorithm: String,
-    mode: String,
-    revision: String,
-    isSample: bool,
-    testGroups: Vec<TG>,
-}
+use libcrux_kats::acvp::mlkem::{encap_decap_schema::*, keygen_schema::*, *};
 
 #[test]
 fn keygen() {
     use libcrux_ml_kem::*;
 
-    let prompts: Prompts<KeyGenPromptTestGroup> = read("keygen", "prompt.json");
+    let KeyGenTests { prompts, results } = KeyGenTests::load();
     assert!(prompts.algorithm == "ML-KEM");
     assert!(prompts.revision == "FIPS203");
 
-    let results: Results<ResultPromptTestGroup> = read("keygen", "expectedResults.json");
     assert!(results.algorithm == "ML-KEM");
     assert!(results.revision == "FIPS203");
 
@@ -100,15 +36,7 @@ fn keygen() {
                 assert_eq!(result.dk, keys.sk());
             }
 
-            let expected_result = results
-                .testGroups
-                .iter()
-                .find(|tg| tg.tgId == kat.tgId)
-                .unwrap()
-                .tests
-                .iter()
-                .find(|t| t.tcId == test.tcId)
-                .unwrap();
+            let expected_result = results.find_expected_result(kat.tgId, test.tcId);
 
             match parameter_set.as_str() {
                 "ML-KEM-512" =>
@@ -134,97 +62,14 @@ fn keygen() {
     }
 }
 
-fn read<T: DeserializeOwned>(variant: &str, file: &str) -> T {
-    let katfile_path = Path::new("tests")
-        .join("kats")
-        .join("acvp-1_1_0_35")
-        .join(variant)
-        .join(file);
-    let katfile = File::open(katfile_path).expect("Could not open KAT file.");
-    let reader = BufReader::new(katfile);
-
-    serde_json::from_reader(reader).expect("Could not deserialize KAT file.")
-}
-
-#[derive(Deserialize)]
-#[allow(non_snake_case, dead_code)]
-struct EncapPrompt {
-    tcId: usize,
-
-    #[serde(with = "hex::serde")]
-    ek: Vec<u8>,
-
-    #[serde(with = "hex::serde")]
-    m: [u8; 32],
-}
-
-#[derive(Deserialize)]
-#[allow(non_snake_case, dead_code)]
-struct DecapPrompt {
-    tcId: usize,
-
-    #[serde(with = "hex::serde")]
-    c: Vec<u8>,
-}
-
-#[derive(Deserialize)]
-#[allow(non_snake_case, dead_code)]
-struct EncapDecapPromptTestGroup {
-    tgId: usize,
-    testType: String,
-    parameterSet: String,
-    #[serde(flatten)]
-    tests: EncapDecapTests,
-}
-
-#[allow(non_snake_case, dead_code)]
-#[derive(Deserialize)]
-#[serde(tag = "function")]
-enum EncapDecapTests {
-    #[serde(rename(deserialize = "encapsulation"))]
-    EncapTests { tests: Vec<EncapPrompt> },
-    #[serde(rename(deserialize = "decapsulation"))]
-    DecapTests {
-        #[serde(with = "hex::serde")]
-        dk: Vec<u8>,
-        tests: Vec<DecapPrompt>,
-    },
-}
-
-#[derive(Deserialize)]
-#[serde(untagged)]
-#[allow(non_snake_case, dead_code)]
-enum EncapDecapResult {
-    EncapResult {
-        tcId: usize,
-        #[serde(with = "hex::serde")]
-        c: Vec<u8>,
-        #[serde(with = "hex::serde")]
-        k: Vec<u8>,
-    },
-    DecapResult {
-        tcId: usize,
-        #[serde(with = "hex::serde")]
-        k: Vec<u8>,
-    },
-}
-
-#[derive(Deserialize)]
-#[allow(non_snake_case, dead_code)]
-struct ResultEncapDecapTestGroup {
-    tgId: usize,
-    tests: Vec<EncapDecapResult>,
-}
-
 #[test]
 fn encap_decap() {
     use libcrux_ml_kem::*;
 
-    let prompts: Prompts<EncapDecapPromptTestGroup> = read("encap-decap", "prompt.json");
+    let EncapDecapTests { prompts, results } = EncapDecapTests::load();
     assert!(prompts.algorithm == "ML-KEM");
     assert!(prompts.revision == "FIPS203");
 
-    let results: Results<ResultEncapDecapTestGroup> = read("encap-decap", "expectedResults.json");
     assert!(results.algorithm == "ML-KEM");
     assert!(results.revision == "FIPS203");
 
@@ -238,23 +83,9 @@ fn encap_decap() {
         eprintln!("{parameter_set}");
 
         match kat.tests {
-            EncapDecapTests::EncapTests { tests } => {
+            EncapDecapTestPrompts::EncapTests { tests } => {
                 for test in tests {
-                    let expected_result = results
-                        .testGroups
-                        .iter()
-                        .find(|tg| tg.tgId == kat.tgId)
-                        .unwrap()
-                        .tests
-                        .iter()
-                        .find(|t| {
-                            if let EncapDecapResult::EncapResult { tcId, .. } = t {
-                                *tcId == test.tcId
-                            } else {
-                                false
-                            }
-                        })
-                        .unwrap();
+                    let expected_result = results.find_expected_result(kat.tgId, test.tcId);
 
                     let EncapDecapResult::EncapResult { c, k, .. } = expected_result else {
                         unreachable!()
@@ -301,23 +132,9 @@ fn encap_decap() {
                     }
                 }
             }
-            EncapDecapTests::DecapTests { dk, tests } => {
+            EncapDecapTestPrompts::DecapTests { tests } => {
                 for test in tests {
-                    let expected_result = results
-                        .testGroups
-                        .iter()
-                        .find(|tg| tg.tgId == kat.tgId)
-                        .unwrap()
-                        .tests
-                        .iter()
-                        .find(|t| {
-                            if let EncapDecapResult::DecapResult { tcId, .. } = t {
-                                *tcId == test.tcId
-                            } else {
-                                false
-                            }
-                        })
-                        .unwrap();
+                    let expected_result = results.find_expected_result(kat.tgId, test.tcId);
 
                     let EncapDecapResult::DecapResult { k, .. } = expected_result else {
                         unreachable!()
@@ -328,8 +145,8 @@ fn encap_decap() {
                         "ML-KEM-512" => {
                             #[cfg(feature = "mlkem512")]
                             {
-                                let dk =
-                                    mlkem512::MlKem512PrivateKey::try_from(dk.as_slice()).unwrap();
+                                let dk = mlkem512::MlKem512PrivateKey::try_from(test.dk.as_slice())
+                                    .unwrap();
                                 let c =
                                     mlkem512::MlKem512Ciphertext::try_from(c.as_slice()).unwrap();
                                 let actual_k = mlkem512::decapsulate(&dk, &c);
@@ -339,8 +156,8 @@ fn encap_decap() {
                         "ML-KEM-768" => {
                             #[cfg(feature = "mlkem768")]
                             {
-                                let dk =
-                                    mlkem768::MlKem768PrivateKey::try_from(dk.as_slice()).unwrap();
+                                let dk = mlkem768::MlKem768PrivateKey::try_from(test.dk.as_slice())
+                                    .unwrap();
                                 let c =
                                     mlkem768::MlKem768Ciphertext::try_from(c.as_slice()).unwrap();
                                 let actual_k = mlkem768::decapsulate(&dk, &c);
@@ -350,8 +167,9 @@ fn encap_decap() {
                         "ML-KEM-1024" => {
                             #[cfg(feature = "mlkem1024")]
                             {
-                                let dk = mlkem1024::MlKem1024PrivateKey::try_from(dk.as_slice())
-                                    .unwrap();
+                                let dk =
+                                    mlkem1024::MlKem1024PrivateKey::try_from(test.dk.as_slice())
+                                        .unwrap();
                                 let c =
                                     mlkem1024::MlKem1024Ciphertext::try_from(c.as_slice()).unwrap();
                                 let actual_k = mlkem1024::decapsulate(&dk, &c);
@@ -361,6 +179,76 @@ fn encap_decap() {
 
                         _ => unimplemented!(),
                     }
+                }
+            }
+            EncapDecapTestPrompts::EncapKeyCheck { tests } => {
+                for test in tests {
+                    // check key
+                    let succeeded = match parameter_set.as_str() {
+                        #[cfg(feature = "mlkem512")]
+                        "ML-KEM-512" => mlkem512::MlKem512PublicKey::try_from(test.ek.as_slice())
+                            .map(|ek| mlkem512::validate_public_key(&ek))
+                            .unwrap_or(false),
+                        #[cfg(feature = "mlkem768")]
+                        "ML-KEM-768" => mlkem768::MlKem768PublicKey::try_from(test.ek.as_slice())
+                            .map(|ek| mlkem768::validate_public_key(&ek))
+                            .unwrap_or(false),
+                        #[cfg(feature = "mlkem1024")]
+                        "ML-KEM-1024" => {
+                            mlkem1024::MlKem1024PublicKey::try_from(test.ek.as_slice())
+                                .map(|ek| mlkem1024::validate_public_key(&ek))
+                                .unwrap_or(false)
+                        }
+                        _ => continue,
+                    };
+
+                    // get result
+                    let EncapDecapResult::KeyCheckResult { testPassed, .. } =
+                        results.find_expected_result(kat.tgId, test.tcId)
+                    else {
+                        unreachable!();
+                    };
+
+                    assert_eq!(
+                        succeeded, *testPassed,
+                        "tgId: {}, tcId: {}",
+                        kat.tgId, test.tcId
+                    );
+                }
+            }
+            EncapDecapTestPrompts::DecapKeyCheck { tests } => {
+                for test in tests {
+                    // check key
+                    let succeeded = match parameter_set.as_str() {
+                        #[cfg(feature = "mlkem512")]
+                        "ML-KEM-512" => mlkem512::MlKem512PrivateKey::try_from(test.dk.as_slice())
+                            .map(|dk| mlkem512::portable::validate_private_key_only(&dk))
+                            .unwrap_or(false),
+                        #[cfg(feature = "mlkem768")]
+                        "ML-KEM-768" => mlkem768::MlKem768PrivateKey::try_from(test.dk.as_slice())
+                            .map(|dk| mlkem768::portable::validate_private_key_only(&dk))
+                            .unwrap_or(false),
+                        #[cfg(feature = "mlkem1024")]
+                        "ML-KEM-1024" => {
+                            mlkem1024::MlKem1024PrivateKey::try_from(test.dk.as_slice())
+                                .map(|dk| mlkem1024::portable::validate_private_key_only(&dk))
+                                .unwrap_or(false)
+                        }
+                        _ => continue,
+                    };
+
+                    // get result
+                    let EncapDecapResult::KeyCheckResult { testPassed, .. } =
+                        results.find_expected_result(kat.tgId, test.tcId)
+                    else {
+                        unreachable!();
+                    };
+
+                    assert_eq!(
+                        succeeded, *testPassed,
+                        "tgId: {}, tcId: {}",
+                        kat.tgId, test.tcId
+                    );
                 }
             }
         }
