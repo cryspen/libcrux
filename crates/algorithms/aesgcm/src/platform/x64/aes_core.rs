@@ -1,7 +1,5 @@
-use core::arch::x86_64::*;
-
 use libcrux_intrinsics::avx2::{
-    mm_aesenc_si128, mm_aesenclast_si128, mm_aeskeygenassist_si128, mm_loadu_si128,
+    __m128i, mm_aesenc_si128, mm_aesenclast_si128, mm_aeskeygenassist_si128, mm_loadu_si128,
     mm_setzero_si128, mm_shuffle_epi32, mm_slli_si128, mm_storeu_si128_u8, mm_xor_si128,
 };
 
@@ -123,6 +121,7 @@ impl crate::platform::AESState for State {
 #[allow(unsafe_code)]
 #[test]
 fn test() {
+    use libcrux_intrinsics::avx2::*;
     unsafe {
         let x = _mm_set_epi32(3, 2, 1, 0);
         let y = _mm_shuffle_epi32(x, 0xaa);

@@ -1,8 +1,6 @@
-use core::arch::x86_64::*;
-
 use libcrux_intrinsics::avx2::{
-    mm_clmulepi64_si128, mm_slli_si128, mm_srli_si128, mm_unpackhi_epi64, mm_unpacklo_epi64,
-    mm_xor_si128,
+    __m128i, mm_clmulepi64_si128, mm_slli_si128, mm_srli_si128, mm_unpackhi_epi64,
+    mm_unpacklo_epi64, mm_xor_si128,
 };
 
 // XXX: A lot of the code below is shared with NEON. Refactor!
@@ -152,6 +150,7 @@ impl crate::platform::GF128FieldElement for FieldElement {
 #[cfg(feature = "std")]
 #[test]
 fn test_transmute() {
+    use libcrux_intrinsics::avx2::*;
     let x = 1u128 << 64 ^ 2u128;
     let xv: __m128i = unsafe { core::mem::transmute(x) };
     let xv: __m128i = unsafe { _mm_slli_si128(xv, 8) };
