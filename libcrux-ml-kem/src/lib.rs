@@ -180,6 +180,7 @@ cfg_kyber! {
 
 macro_rules! impl_kem_trait {
     ($variant:ty, $pk:ty, $sk:ty, $ct:ty) => {
+        #[hax_lib::exclude]
         impl
             libcrux_traits::kem::arrayref::Kem<
                 CPA_PKE_PUBLIC_KEY_SIZE,
