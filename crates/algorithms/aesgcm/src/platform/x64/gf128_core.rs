@@ -15,14 +15,28 @@ impl FieldElement {
     #[inline]
     #[allow(unsafe_code)]
     fn transmute(&self) -> __m128i {
-        unsafe { core::mem::transmute(self.0) }
+        #[cfg(not(hax))]
+        unsafe {
+            core::mem::transmute(self.0)
+        }
+        #[cfg(hax)]
+        libcrux_intrinsics::avx2::mm_loadu_si128(&self.0.to_be_bytes())
     }
 
     /// Convert a vec to self.
     #[inline]
     #[allow(unsafe_code)]
     fn from_vec128(vec: __m128i) -> Self {
-        unsafe { core::mem::transmute(vec) }
+        #[cfg(not(hax))]
+        unsafe {
+            core::mem::transmute(vec)
+        }
+        #[cfg(hax)]
+        {
+            let mut bytes: [u8; 16] = core::array::repeat(0);
+            libcrux_intrinsics::avx2::mm_storeu_bytes_si128(&mut bytes, vec);
+            Self(u128::from_be_bytes(bytes))
+        }
     }
 }
 
