@@ -59,11 +59,13 @@ impl From<AEADError> for HandshakeError {
     }
 }
 
+use std::ops::Deref;
+
 use tls_codec::{TlsDeserialize, TlsSerialize, TlsSerializeBytes, TlsSize, VLByteSlice, VLBytes};
 use transcript::Transcript;
 
 use crate::{
-    aead::{AEADError, AEADKeyNonce, AEAD},
+    aead::{AEADError, AEADKeyNonce, AeadType},
     handshake::{
         ciphersuite::{types::PQSharedSecret, CiphersuiteName},
         dhkem::{DHPrivateKey, DHPublicKey, DHSharedSecret},
@@ -104,54 +106,56 @@ pub(crate) struct HandshakeMessage {
 
 #[derive(TlsDeserialize, TlsSize)]
 #[repr(u8)]
+pub(crate) enum AuthMessage {
+    Dh(DHPublicKey),
+    Sig {
+        vk: Box<SigVerificationKey>,
+        signature: Box<Signature>,
+    },
+}
+
+impl From<&AuthMessage> for Authenticator {
+    fn from(value: &AuthMessage) -> Self {
+        match value {
+            AuthMessage::Dh(dhpublic_key) => Authenticator::from(dhpublic_key),
+            AuthMessage::Sig { vk, signature: _ } => Authenticator::from(vk.deref()),
+        }
+    }
+}
+
+#[derive(TlsDeserialize, TlsSize)]
 /// A PSQ inner message
-pub(crate) enum InnerMessage {
-    DHAuth {
-        /// A Diffie-Hellman KEM public key
-        pk: DHPublicKey,
-        /// The AEAD-encrypted message payload
-        ciphertext: VLBytes,
-        /// AEAD tag authenticating the ciphertext and any AAD
-        tag: [u8; 16],
-        /// Associated data, covered by the AEAD message authentication tag
-        aad: VLBytes,
-        /// An optional post-quantum key encapsulation
-        pq_encapsulation: VLBytes,
-    },
-    SigAuth {
-        /// A Diffie-Hellman KEM public key
-        vk: SigVerificationKey,
-        signature: Signature,
-        /// The AEAD-encrypted message payload
-        ciphertext: VLBytes,
-        /// AEAD tag authenticating the ciphertext and any AAD
-        tag: [u8; 16],
-        /// Associated data, covered by the AEAD message authentication tag
-        aad: VLBytes,
-        /// An optional post-quantum key encapsulation
-        pq_encapsulation: VLBytes,
-    },
+pub(crate) struct InnerMessage {
+    /// The AEAD-encrypted message payload
+    ciphertext: VLBytes,
+    /// AEAD tag authenticating the ciphertext and any AAD
+    tag: [u8; 16],
+    /// Associated data, covered by the AEAD message authentication tag
+    aad: VLBytes,
+    /// An optional post-quantum key encapsulation
+    pq_encapsulation: VLBytes,
+    /// The initiator authenticator
+    auth: AuthMessage,
 }
 
 #[derive(TlsSerialize, TlsSize)]
 #[repr(u8)]
-/// A PSQ inner message (serialization helper)
-pub(crate) enum InnerMessageOut<'a> {
-    DHAuth {
-        pk: &'a DHPublicKey,
-        ciphertext: VLByteSlice<'a>,
-        tag: [u8; 16], // XXX: implement Serialize for &[T; N]
-        aad: VLByteSlice<'a>,
-        pq_encapsulation: VLByteSlice<'a>,
-    },
-    SigAuth {
+pub(crate) enum AuthMessageOut<'a> {
+    Dh(&'a DHPublicKey),
+    Sig {
         vk: &'a SigVerificationKey,
         signature: &'a Signature,
-        ciphertext: VLByteSlice<'a>,
-        tag: [u8; 16], // XXX: implement Serialize for &[T; N]
-        aad: VLByteSlice<'a>,
-        pq_encapsulation: VLByteSlice<'a>,
     },
+}
+
+#[derive(TlsSerialize, TlsSize)]
+/// A PSQ inner message (serialization helper)
+pub(crate) struct InnerMessageOut<'a> {
+    ciphertext: VLByteSlice<'a>,
+    tag: [u8; 16], // XXX: implement Serialize for &[T; N]
+    aad: VLByteSlice<'a>,
+    pq_encapsulation: VLByteSlice<'a>,
+    auth: AuthMessageOut<'a>,
 }
 
 #[derive(TlsSerialize, TlsSize)]
@@ -180,7 +184,7 @@ pub(super) fn derive_k0(
     own_sk: &DHPrivateKey,
     ctx: &[u8],
     is_responder: bool,
-    aead_type: AEAD,
+    aead_type: AeadType,
 ) -> Result<(Transcript, AEADKeyNonce), HandshakeError> {
     #[derive(TlsSerializeBytes, TlsSize)]
     struct K0Ikm<'a> {
@@ -206,7 +210,7 @@ pub(super) fn derive_k1_dh(
     peer_longterm_pk: &DHPublicKey,
     pq_shared_secret: Option<PQSharedSecret>,
     tx1: &Transcript,
-    aead_type: AEAD,
+    aead_type: AeadType,
 ) -> Result<AEADKeyNonce, HandshakeError> {
     #[derive(TlsSerializeBytes, TlsSize)]
     struct K1IkmDh<'a> {
@@ -222,7 +226,6 @@ pub(super) fn derive_k1_dh(
         pq_shared_secret,
     };
 
-    // XXX: This makes clippy unhappy, but is a lifetime error for feature `classic-mceliece` if we return directlyr
     Ok(AEADKeyNonce::new(&ikm, &tx1, aead_type)?)
 }
 
@@ -232,7 +235,7 @@ pub(super) fn derive_k1_sig(
     pq_shared_secret: Option<PQSharedSecret>,
     tx1: &Transcript,
     signature: &Signature,
-    aead_type: AEAD,
+    aead_type: AeadType,
 ) -> Result<AEADKeyNonce, HandshakeError> {
     #[derive(TlsSerializeBytes, TlsSize)]
     struct K1IkmSig<'a> {
@@ -248,10 +251,9 @@ pub(super) fn derive_k1_sig(
     // XXX: This is not great.
     let signature_vec = match signature {
         Signature::Ed25519(sig) => sig.to_vec(),
-        Signature::MlDsa65(mldsasignature) => mldsasignature.as_ref().to_vec(),
+        Signature::MlDsa65(mldsasignature) => mldsasignature.deref().as_ref().to_vec(),
     };
 
-    // XXX: This makes clippy unhappy, but is a lifetime error for feature `classic-mceliece` if we return directlyr
     Ok(AEADKeyNonce::new(
         &K1IkmSig {
             k0,

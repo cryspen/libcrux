@@ -4,15 +4,16 @@ use rand::CryptoRng;
 use tls_codec::{Deserialize, Serialize, Size, VLByteSlice};
 
 use crate::{
-    aead::{AEADKeyNonce, AEAD},
+    aead::{AEADKeyNonce, AeadType},
     handshake::{
         ciphersuite::{initiator::InitiatorCiphersuite, traits::CiphersuiteBase},
         derive_k0, derive_k1_dh, derive_k1_sig,
         dhkem::{DHKeyPair, DHPrivateKey, DHPublicKey, DHSharedSecret},
         responder::ResponderRegistrationPayload,
-        transcript::{tx1_dh, tx1_sig, tx2, Transcript},
-        write_output, HandshakeError as Error, HandshakeMessage, HandshakeMessageOut,
-        InnerMessageOut, K2IkmRegistrationDh, K2IkmRegistrationSig, ToTransportState,
+        transcript::{sign_tx1, tx2, Transcript},
+        write_output, AuthMessageOut, HandshakeError as Error, HandshakeMessage,
+        HandshakeMessageOut, InnerMessageOut, K2IkmRegistrationDh, K2IkmRegistrationSig,
+        ToTransportState,
     },
     session::{Session, SessionError},
     traits::{Channel, IntoSession},
@@ -102,19 +103,20 @@ impl<'a, Rng: CryptoRng> Channel<Error> for RegistrationInitiator<'a, Rng> {
             .tls_serialize_detached()
             .map_err(|_e| Error::OutputBufferShort)?;
 
-        let (tx1, k1, outer_ciphertext, outer_tag) = match self.ciphersuite.auth {
-            crate::handshake::ciphersuite::initiator::Auth::DH(dhkey_pair) => {
-                let tx1 = tx1_dh(
-                    &state.tx0,
-                    &dhkey_pair.pk,
-                    self.ciphersuite.pq.into(),
-                    &pq_encapsulation_serialized,
-                )?;
+        let (signature, tx1) = sign_tx1(
+            &state.tx0,
+            self.ciphersuite.auth,
+            self.ciphersuite.pq.into(),
+            &pq_encapsulation_serialized,
+            &mut self.rng,
+        )?;
 
+        let (k1, outer_ciphertext, outer_tag) = match self.ciphersuite.auth {
+            crate::handshake::ciphersuite::initiator::Auth::DH(dhkey_pair) => {
                 let mut k1 = derive_k1_dh(
                     &state.k0,
                     &dhkey_pair.sk,
-                    &self.ciphersuite.kex,
+                    self.ciphersuite.kex,
                     pq_shared_secret,
                     &tx1,
                     self.ciphersuite.aead_type(),
@@ -124,32 +126,24 @@ impl<'a, Rng: CryptoRng> Channel<Error> for RegistrationInitiator<'a, Rng> {
                 let (inner_ciphertext, inner_tag) =
                     k1.serialize_encrypt(&inner_payload, self.inner_aad)?;
 
-                let outer_payload =
-                    InitiatorOuterPayloadOut::Registration(InnerMessageOut::DHAuth {
-                        pk: &dhkey_pair.pk,
-                        ciphertext: VLByteSlice(&inner_ciphertext),
-                        tag: inner_tag,
-                        aad: VLByteSlice(self.inner_aad),
-                        pq_encapsulation: VLByteSlice(&pq_encapsulation_serialized),
-                    });
+                let outer_payload = InitiatorOuterPayloadOut::Registration(InnerMessageOut {
+                    auth: AuthMessageOut::Dh(&dhkey_pair.pk),
+                    ciphertext: VLByteSlice(&inner_ciphertext),
+                    tag: inner_tag,
+                    aad: VLByteSlice(self.inner_aad),
+                    pq_encapsulation: VLByteSlice(&pq_encapsulation_serialized),
+                });
                 let (outer_ciphertext, outer_tag) =
                     state.k0.serialize_encrypt(&outer_payload, self.outer_aad)?;
 
-                (tx1, k1, outer_ciphertext, outer_tag)
+                (k1, outer_ciphertext, outer_tag)
             }
             crate::handshake::ciphersuite::initiator::Auth::Sig(sig_auth) => {
-                let tx1 = tx1_sig(
-                    &state.tx0,
-                    &sig_auth.into(),
-                    self.ciphersuite.pq.into(),
-                    &pq_encapsulation_serialized,
-                )?;
-                let signature = self.ciphersuite.sign(&mut self.rng, &tx1)?;
                 let mut k1 = derive_k1_sig(
                     &state.k0,
                     pq_shared_secret,
                     &tx1,
-                    &signature,
+                    signature.as_ref().unwrap(),
                     self.ciphersuite.aead_type(),
                 )?;
 
@@ -157,18 +151,19 @@ impl<'a, Rng: CryptoRng> Channel<Error> for RegistrationInitiator<'a, Rng> {
                 let (inner_ciphertext, inner_tag) =
                     k1.serialize_encrypt(&inner_payload, self.inner_aad)?;
 
-                let outer_payload =
-                    InitiatorOuterPayloadOut::Registration(InnerMessageOut::SigAuth {
+                let outer_payload = InitiatorOuterPayloadOut::Registration(InnerMessageOut {
+                    auth: AuthMessageOut::Sig {
                         vk: &sig_auth.into(),
-                        signature: &signature,
-                        ciphertext: VLByteSlice(&inner_ciphertext),
-                        tag: inner_tag,
-                        aad: VLByteSlice(self.inner_aad),
-                        pq_encapsulation: VLByteSlice(&pq_encapsulation_serialized),
-                    });
+                        signature: signature.as_ref().unwrap(),
+                    },
+                    ciphertext: VLByteSlice(&inner_ciphertext),
+                    tag: inner_tag,
+                    aad: VLByteSlice(self.inner_aad),
+                    pq_encapsulation: VLByteSlice(&pq_encapsulation_serialized),
+                });
                 let (outer_ciphertext, outer_tag) =
                     state.k0.serialize_encrypt(&outer_payload, self.outer_aad)?;
-                (tx1, k1, outer_ciphertext, outer_tag)
+                (k1, outer_ciphertext, outer_tag)
             }
         };
 
@@ -287,7 +282,7 @@ pub(super) fn derive_k2_registration_initiator_dh(
     initiator_longterm_sk: &DHPrivateKey,
     initiator_ephemeral_sk: &DHPrivateKey,
     responder_ephemeral_pk: &DHPublicKey,
-    aead_type: AEAD,
+    aead_type: AeadType,
 ) -> Result<AEADKeyNonce, Error> {
     let responder_ikm = K2IkmRegistrationDh {
         k1,
@@ -304,7 +299,7 @@ pub(super) fn derive_k2_registration_initiator_sig(
     tx2: &Transcript,
     initiator_ephemeral_sk: &DHPrivateKey,
     responder_ephemeral_pk: &DHPublicKey,
-    aead_type: AEAD,
+    aead_type: AeadType,
 ) -> Result<AEADKeyNonce, Error> {
     let responder_ikm = K2IkmRegistrationSig {
         k1,

@@ -6,7 +6,7 @@ use tls_codec::SerializeBytes;
 #[cfg(feature = "classic-mceliece")]
 use crate::classic_mceliece::PublicKey;
 use crate::{
-    aead::AEAD,
+    aead::AeadType,
     handshake::{
         ciphersuite::{
             traits::CiphersuiteBase,
@@ -25,10 +25,10 @@ pub(crate) enum PqKemPublicKey<'a> {
     None,
     MlKem(&'a libcrux_ml_kem::mlkem768::MlKem768PublicKey),
     #[cfg(feature = "classic-mceliece")]
-    CMC(&'a PublicKey),
+    Cmc(&'a PublicKey),
     #[cfg(not(feature = "classic-mceliece"))]
     #[allow(unused)]
-    CMC(std::marker::PhantomData<&'a [u8]>),
+    Cmc(std::marker::PhantomData<&'a [u8]>),
 }
 
 impl<'a> From<&'a libcrux_ml_kem::mlkem768::MlKem768PublicKey> for PqKemPublicKey<'a> {
@@ -40,24 +40,51 @@ impl<'a> From<&'a libcrux_ml_kem::mlkem768::MlKem768PublicKey> for PqKemPublicKe
 #[cfg(feature = "classic-mceliece")]
 impl<'a> From<&'a PublicKey> for PqKemPublicKey<'a> {
     fn from(value: &'a PublicKey) -> Self {
-        PqKemPublicKey::CMC(value)
+        PqKemPublicKey::Cmc(value)
     }
 }
 
 #[derive(Clone, Copy)]
-pub(crate) enum SigAuth<'a> {
+pub(crate) enum SigKeyPair<'a> {
     Ed25519(&'a SigningKey, &'a VerificationKey),
     MlDsa65(&'a MLDSA65SigningKey, &'a MLDSA65VerificationKey),
 }
 
-impl From<SigAuth<'_>> for SigVerificationKey {
-    fn from(value: SigAuth<'_>) -> Self {
-        match value {
-            SigAuth::Ed25519(_, verification_key) => {
-                SigVerificationKey::Ed25519(verification_key.clone())
+impl<'a> SigKeyPair<'a> {
+    pub(crate) fn sign(
+        &self,
+        rng: &mut impl CryptoRng,
+        tx: &Transcript,
+    ) -> Result<Signature, HandshakeError> {
+        let payload = tx.tls_serialize().map_err(HandshakeError::Serialize)?;
+        match self {
+            SigKeyPair::Ed25519(signing_key, _) => {
+                let sig = libcrux_ed25519::sign(&payload, signing_key.as_ref())?;
+                Ok(Signature::Ed25519(sig))
             }
-            SigAuth::MlDsa65(_, mldsaverification_key) => {
-                SigVerificationKey::MlDsa65(mldsaverification_key.clone())
+            SigKeyPair::MlDsa65(mldsasigning_key, _) => {
+                let mut randomness = [0u8; libcrux_ml_dsa::SIGNING_RANDOMNESS_SIZE];
+                rng.fill_bytes(&mut randomness);
+                let sig = libcrux_ml_dsa::ml_dsa_65::sign(
+                    mldsasigning_key,
+                    &payload,
+                    PSQ_MLDSA_CONTEXT,
+                    randomness,
+                )?;
+                Ok(Signature::MlDsa65(Box::new(sig)))
+            }
+        }
+    }
+}
+
+impl From<SigKeyPair<'_>> for SigVerificationKey {
+    fn from(value: SigKeyPair<'_>) -> Self {
+        match value {
+            SigKeyPair::Ed25519(_, verification_key) => {
+                SigVerificationKey::Ed25519(*verification_key)
+            }
+            SigKeyPair::MlDsa65(_, mldsaverification_key) => {
+                SigVerificationKey::MlDsa65(Box::new(mldsaverification_key.clone()))
             }
         }
     }
@@ -71,9 +98,9 @@ impl<'a> From<PqKemPublicKey<'a>> for Option<PQEncapsulationKey<'a>> {
                 Some(PQEncapsulationKey::MlKem(ml_kem_public_key))
             }
             #[cfg(feature = "classic-mceliece")]
-            PqKemPublicKey::CMC(public_key) => Some(PQEncapsulationKey::CMC(public_key)),
+            PqKemPublicKey::Cmc(public_key) => Some(PQEncapsulationKey::CMC(public_key)),
             #[cfg(not(feature = "classic-mceliece"))]
-            PqKemPublicKey::CMC(_) => {
+            PqKemPublicKey::Cmc(_) => {
                 // We can never reach this because the ciphersuite can only be constructed with the feature turned on.
                 unreachable!("unsupported ciphersuite")
             }
@@ -84,7 +111,7 @@ impl<'a> From<PqKemPublicKey<'a>> for Option<PQEncapsulationKey<'a>> {
 #[derive(Clone, Copy)]
 pub(crate) enum Auth<'a> {
     DH(&'a DHKeyPair),
-    Sig(SigAuth<'a>),
+    Sig(SigKeyPair<'a>),
 }
 
 impl<'a> From<&'a DHKeyPair> for Auth<'a> {
@@ -94,12 +121,12 @@ impl<'a> From<&'a DHKeyPair> for Auth<'a> {
 }
 impl<'a> From<(&'a SigningKey, &'a VerificationKey)> for Auth<'a> {
     fn from(value: (&'a SigningKey, &'a VerificationKey)) -> Self {
-        Auth::Sig(SigAuth::Ed25519(value.0, value.1))
+        Auth::Sig(SigKeyPair::Ed25519(value.0, value.1))
     }
 }
 impl<'a> From<(&'a MLDSA65SigningKey, &'a MLDSA65VerificationKey)> for Auth<'a> {
     fn from(value: (&'a MLDSA65SigningKey, &'a MLDSA65VerificationKey)) -> Self {
-        Auth::Sig(SigAuth::MlDsa65(value.0, value.1))
+        Auth::Sig(SigKeyPair::MlDsa65(value.0, value.1))
     }
 }
 
@@ -108,7 +135,7 @@ pub struct InitiatorCiphersuite<'a> {
     pub(crate) kex: &'a DHPublicKey,
     pub(crate) pq: PqKemPublicKey<'a>,
     pub(crate) auth: Auth<'a>,
-    pub(crate) aead_type: AEAD,
+    pub(crate) aead_type: AeadType,
 }
 
 impl<'a> CiphersuiteBase for InitiatorCiphersuite<'a> {
@@ -124,39 +151,10 @@ impl<'a> CiphersuiteBase for InitiatorCiphersuite<'a> {
 pub(crate) type PQOptionPair<A, B> = (Option<A>, Option<B>);
 
 impl<'a> InitiatorCiphersuite<'a> {
-    pub(crate) fn aead_type(&self) -> AEAD {
+    pub(crate) fn aead_type(&self) -> AeadType {
         self.aead_type
     }
 
-    pub(crate) fn sign(
-        &self,
-        rng: &mut impl CryptoRng,
-        tx: &Transcript,
-    ) -> Result<Signature, HandshakeError> {
-        match self.auth {
-            Auth::DH(_dhkey_pair) => Err(HandshakeError::UnsupportedCiphersuite),
-            Auth::Sig(sig_auth) => {
-                let payload = tx.tls_serialize().map_err(HandshakeError::Serialize)?;
-                match sig_auth {
-                    SigAuth::Ed25519(signing_key, _) => {
-                        let sig = libcrux_ed25519::sign(&payload, signing_key.as_ref())?;
-                        Ok(Signature::Ed25519(sig))
-                    }
-                    SigAuth::MlDsa65(mldsasigning_key, _) => {
-                        let mut randomness = [0u8; libcrux_ml_dsa::SIGNING_RANDOMNESS_SIZE];
-                        rng.fill_bytes(&mut randomness);
-                        let sig = libcrux_ml_dsa::ml_dsa_65::sign(
-                            mldsasigning_key,
-                            &payload,
-                            PSQ_MLDSA_CONTEXT,
-                            randomness,
-                        )?;
-                        Ok(Signature::MlDsa65(sig))
-                    }
-                }
-            }
-        }
-    }
     pub(crate) fn peer_pq_encapsulation_key(
         &self,
     ) -> Option<<Self as CiphersuiteBase>::EncapsulationKeyRef> {
@@ -166,9 +164,9 @@ impl<'a> InitiatorCiphersuite<'a> {
                 Some(PQEncapsulationKey::MlKem(ml_kem_public_key))
             }
             #[cfg(feature = "classic-mceliece")]
-            PqKemPublicKey::CMC(public_key) => Some(PQEncapsulationKey::CMC(public_key)),
+            PqKemPublicKey::Cmc(public_key) => Some(PQEncapsulationKey::CMC(public_key)),
             #[cfg(not(feature = "classic-mceliece"))]
-            PqKemPublicKey::CMC(_) => {
+            PqKemPublicKey::Cmc(_) => {
                 // We can never reach this because the ciphersuite can only be constructed with the feature turned on.
                 unreachable!("unsupported ciphersuite")
             }
@@ -206,7 +204,7 @@ impl<'a> InitiatorCiphersuite<'a> {
                 ))
             }
             #[cfg(feature = "classic-mceliece")]
-            PqKemPublicKey::CMC(public_key) => {
+            PqKemPublicKey::Cmc(public_key) => {
                 use crate::classic_mceliece::ClassicMcEliece;
                 use libcrux_traits::kem::KEM;
 
@@ -219,7 +217,7 @@ impl<'a> InitiatorCiphersuite<'a> {
                 ))
             }
             #[cfg(not(feature = "classic-mceliece"))]
-            PqKemPublicKey::CMC(_) => {
+            PqKemPublicKey::Cmc(_) => {
                 // We can never reach this because the ciphersuite can only be constructed with the feature turned on.
                 unreachable!("unsupported ciphersuite")
             }

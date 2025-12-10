@@ -4,7 +4,7 @@ use rand::CryptoRng;
 use tls_codec::{Deserialize, Serialize, Size, VLByteSlice};
 
 use crate::{
-    aead::{AEADKeyNonce, AEAD},
+    aead::{AEADKeyNonce, AeadType},
     handshake::{
         ciphersuite::CiphersuiteName,
         derive_k0,
@@ -40,7 +40,7 @@ fn derive_k2_query_initiator(
         g_xy: &DHSharedSecret::derive(initiator_ephemeral_ecdh_sk, responder_ephemeral_ecdh_pk)?,
     };
 
-    AEADKeyNonce::new(&initiator_ikm, tx2, AEAD::ChaCha20Poly1305).map_err(|e| e.into())
+    AEADKeyNonce::new(&initiator_ikm, tx2, AeadType::ChaCha20Poly1305).map_err(|e| e.into())
 }
 
 impl<'a> QueryInitiator<'a> {
@@ -59,7 +59,7 @@ impl<'a> QueryInitiator<'a> {
             &initiator_ephemeral_keys.sk,
             ctx,
             false,
-            AEAD::ChaCha20Poly1305,
+            AeadType::ChaCha20Poly1305,
         )?;
 
         Ok(Self {

@@ -2,7 +2,7 @@
 use tls_codec::{SerializeBytes, TlsDeserialize, TlsSerialize, TlsSerializeBytes, TlsSize};
 
 use crate::{
-    aead::{AEADKeyNonce, AEAD},
+    aead::{AEADKeyNonce, AeadType},
     handshake::transcript::Transcript,
 };
 
@@ -46,7 +46,7 @@ fn session_key_id(key: &AEADKeyNonce) -> Result<[u8; SESSION_ID_LENGTH], Error> 
 pub(super) fn derive_session_key(
     k2: AEADKeyNonce,
     tx2: Transcript,
-    aead_type: AEAD,
+    aead_type: AeadType,
 ) -> Result<SessionKey, Error> {
     #[derive(TlsSerializeBytes, TlsSize)]
     struct SessionKeyInfo<'a> {

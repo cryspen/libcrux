@@ -13,8 +13,8 @@ struct CommonSetup {
     pub responder_mlkem_keys: MlKem768KeyPair,
     #[cfg(feature = "classic-mceliece")]
     pub responder_cmc_keys: KeyPair,
-    pub responder_ecdh_keys: DHKeyPair,
-    pub initiator_ecdh_keys: DHKeyPair,
+    pub responder_x25519_keys: DHKeyPair,
+    pub initiator_x25519_keys: DHKeyPair,
     pub initiator_mldsa_keys: MLDSA65KeyPair,
     pub initiator_ed25519_keys: (
         libcrux_ed25519::SigningKey,
@@ -99,7 +99,7 @@ impl CommonSetup {
             | CiphersuiteName::X25519_NONE_X25519_AESGCM128_HKDFSHA256
             | CiphersuiteName::X25519_MLKEM768_X25519_AESGCM128_HKDFSHA256
             | CiphersuiteName::X25519_CLASSICMCELIECE_X25519_AESGCM128_HKDFSHA256 => {
-                Authenticator::Dh(self.initiator_ecdh_keys.pk.clone())
+                Authenticator::Dh(self.initiator_x25519_keys.pk.clone())
             }
 
             CiphersuiteName::X25519_NONE_ED25519_CHACHA20POLY1305_HKDFSHA256
@@ -117,9 +117,9 @@ impl CommonSetup {
             | CiphersuiteName::X25519_NONE_MLDSA65_AESGCM128_HKDFSHA256
             | CiphersuiteName::X25519_MLKEM768_MLDSA65_AESGCM128_HKDFSHA256
             | CiphersuiteName::X25519_CLASSICMCELIECE_MLDSA65_AESGCM128_HKDFSHA256 => {
-                Authenticator::Sig(SigVerificationKey::MlDsa65(
+                Authenticator::Sig(SigVerificationKey::MlDsa65(Box::new(
                     self.initiator_mldsa_keys.verification_key.clone(),
-                ))
+                )))
             }
         }
         #[cfg(not(feature = "classic-mceliece"))]
@@ -128,7 +128,7 @@ impl CommonSetup {
             | CiphersuiteName::X25519_MLKEM768_X25519_CHACHA20POLY1305_HKDFSHA256
             | CiphersuiteName::X25519_NONE_X25519_AESGCM128_HKDFSHA256
             | CiphersuiteName::X25519_MLKEM768_X25519_AESGCM128_HKDFSHA256 => {
-                Authenticator::Dh(self.initiator_ecdh_keys.pk.clone())
+                Authenticator::Dh(self.initiator_x25519_keys.pk.clone())
             }
 
             CiphersuiteName::X25519_NONE_ED25519_CHACHA20POLY1305_HKDFSHA256
@@ -141,9 +141,11 @@ impl CommonSetup {
             CiphersuiteName::X25519_NONE_MLDSA65_CHACHA20POLY1305_HKDFSHA256
             | CiphersuiteName::X25519_MLKEM768_MLDSA65_CHACHA20POLY1305_HKDFSHA256
             | CiphersuiteName::X25519_NONE_MLDSA65_AESGCM128_HKDFSHA256
-            | CiphersuiteName::X25519_MLKEM768_MLDSA65_AESGCM128_HKDFSHA256 => Authenticator::Sig(
-                SigVerificationKey::MlDsa65(self.initiator_mldsa_keys.verification_key.clone()),
-            ),
+            | CiphersuiteName::X25519_MLKEM768_MLDSA65_AESGCM128_HKDFSHA256 => {
+                Authenticator::Sig(SigVerificationKey::MlDsa65(Box::new(
+                    self.initiator_mldsa_keys.verification_key.clone(),
+                )))
+            }
 
             CiphersuiteName::X25519_CLASSICMCELIECE_X25519_CHACHA20POLY1305_HKDFSHA256
             | CiphersuiteName::X25519_CLASSICMCELIECE_MLDSA65_AESGCM128_HKDFSHA256
@@ -155,6 +157,7 @@ impl CommonSetup {
             }
         }
     }
+
     fn new() -> Self {
         let mut rng = rand::rng();
         let responder_mlkem_keys = libcrux_ml_kem::mlkem768::rand::generate_key_pair(&mut rng);
@@ -162,8 +165,8 @@ impl CommonSetup {
         let responder_cmc_keys =
             libcrux_psq::classic_mceliece::KeyPair::generate_key_pair(&mut rng);
 
-        let responder_ecdh_keys = DHKeyPair::new(&mut rng);
-        let initiator_ecdh_keys = DHKeyPair::new(&mut rng);
+        let responder_x25519_keys = DHKeyPair::new(&mut rng);
+        let initiator_x25519_keys = DHKeyPair::new(&mut rng);
 
         let mut rand = [0u8; libcrux_ml_dsa::KEY_GENERATION_RANDOMNESS_SIZE];
         rng.fill(&mut rand);
@@ -175,8 +178,8 @@ impl CommonSetup {
             responder_mlkem_keys,
             #[cfg(feature = "classic-mceliece")]
             responder_cmc_keys,
-            responder_ecdh_keys,
-            initiator_ecdh_keys,
+            responder_x25519_keys,
+            initiator_x25519_keys,
             initiator_mldsa_keys,
             initiator_ed25519_keys,
         }
@@ -201,8 +204,8 @@ fn registration(
     // We add everything here to construct any ciphersuite.
     #[allow(unused_mut)] // we need it mutable for the CMC case
     let mut initiator_cbuilder = CiphersuiteBuilder::new(initiator_ciphersuite_id)
-        .longterm_ecdh_keys(&setup.initiator_ecdh_keys)
-        .peer_longterm_ecdh_pk(&setup.responder_ecdh_keys.pk)
+        .longterm_x25519_keys(&setup.initiator_x25519_keys)
+        .peer_longterm_x25519_pk(&setup.responder_x25519_keys.pk)
         .peer_longterm_mlkem_pk(setup.responder_mlkem_keys.public_key())
         .longterm_ed25519_signing_key(&setup.initiator_ed25519_keys.0)
         .longterm_ed25519_verification_key(&setup.initiator_ed25519_keys.1)
@@ -225,7 +228,7 @@ fn registration(
     // Setup responder
     #[allow(unused_mut)] // we need it mutable for the CMC case
     let mut responder_cbuilder = CiphersuiteBuilder::new(responder_ciphersuite_id)
-        .longterm_ecdh_keys(&setup.responder_ecdh_keys)
+        .longterm_x25519_keys(&setup.responder_x25519_keys)
         .longterm_mlkem_encapsulation_key(setup.responder_mlkem_keys.public_key())
         .longterm_mlkem_decapsulation_key(setup.responder_mlkem_keys.private_key());
 
@@ -263,6 +266,11 @@ fn registration(
         registration_payload_initiator
     );
 
+    // Get the authenticator out here, so we can deserialize the session later.
+    let Some(initiator_authenticator) = responder.initiator_authenticator() else {
+        panic!("No initiator authenticator found")
+    };
+
     // Respond
     let registration_payload_responder = b"Registration_respond";
     let len_r = responder
@@ -287,7 +295,7 @@ fn registration(
     assert!(responder.is_handshake_finished());
 
     let i_transport = initiator.into_session().unwrap();
-    let mut r_transport = responder.into_session().unwrap();
+    let r_transport = responder.into_session().unwrap();
 
     // test serialization, deserialization
     let mut session_storage = vec![0u8; 4096];
@@ -295,7 +303,16 @@ fn registration(
     let mut i_transport = Session::deserialize(
         &session_storage,
         &setup.initiator_authenticator(initiator_ciphersuite_id),
-        &setup.responder_ecdh_keys.pk,
+        &setup.responder_x25519_keys.pk,
+        setup.pq_encapsulation_key(initiator_ciphersuite_id),
+    )
+    .unwrap();
+
+    r_transport.serialize(&mut session_storage).unwrap();
+    let mut r_transport = Session::deserialize(
+        &session_storage,
+        &initiator_authenticator,
+        &setup.responder_x25519_keys.pk,
         setup.pq_encapsulation_key(initiator_ciphersuite_id),
     )
     .unwrap();
@@ -490,13 +507,13 @@ fn query(setup: &CommonSetup, responder_ciphersuite_id: CiphersuiteName) {
     let mut initiator = PrincipalBuilder::new(rand::rng())
         .outer_aad(aad_initiator)
         .context(ctx)
-        .build_query_initiator(&setup.responder_ecdh_keys.pk)
+        .build_query_initiator(&setup.responder_x25519_keys.pk)
         .unwrap();
 
     // Setup responder
     #[allow(unused_mut)] // we need it mutable for the CMC case
     let mut responder_cbuilder = CiphersuiteBuilder::new(responder_ciphersuite_id)
-        .longterm_ecdh_keys(&setup.responder_ecdh_keys)
+        .longterm_x25519_keys(&setup.responder_x25519_keys)
         .longterm_mlkem_encapsulation_key(setup.responder_mlkem_keys.public_key())
         .longterm_mlkem_decapsulation_key(setup.responder_mlkem_keys.private_key());
 

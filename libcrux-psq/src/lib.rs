@@ -44,7 +44,7 @@
 //!
 //! // Setup responder
 //! let mut responder_ciphersuite = CiphersuiteBuilder::new(responder_ciphersuite_id)
-//!     .longterm_ecdh_keys(&responder_ecdh_keys)
+//!     .longterm_x25519_keys(&responder_ecdh_keys)
 //!     .longterm_mlkem_encapsulation_key(responder_mlkem_keys.public_key())
 //!     .longterm_mlkem_decapsulation_key(responder_mlkem_keys.private_key())
 //!     .build_responder_ciphersuite().unwrap();
@@ -83,8 +83,8 @@
 //!
 //! // Setup Registration initiator with received ciphersuite
 //! let initiator_ciphersuite = CiphersuiteBuilder::new(responder_ciphersuite_id_received)
-//!     .longterm_ecdh_keys(&initiator_ecdh_keys)
-//!     .peer_longterm_ecdh_pk(&responder_ecdh_keys.pk)
+//!     .longterm_x25519_keys(&initiator_ecdh_keys)
+//!     .peer_longterm_x25519_pk(&responder_ecdh_keys.pk)
 //!     .peer_longterm_mlkem_pk(responder_mlkem_keys.public_key())
 //!     .build_initiator_ciphersuite().unwrap();
 //!

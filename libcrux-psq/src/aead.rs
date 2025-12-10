@@ -36,7 +36,7 @@ impl std::fmt::Debug for AEADKeyNonce {
 
 #[derive(Debug, Copy, Clone, TlsSerialize, TlsDeserialize, TlsSize)]
 #[repr(u8)]
-pub(crate) enum AEAD {
+pub(crate) enum AeadType {
     ChaCha20Poly1305,
     AesGcm128,
 }
@@ -56,10 +56,10 @@ impl AEADKeyNonce {
     pub(crate) fn new(
         ikm: &impl SerializeBytes,
         info: &impl SerializeBytes,
-        aead_type: AEAD,
+        aead_type: AeadType,
     ) -> Result<AEADKeyNonce, AEADError> {
         match aead_type {
-            AEAD::ChaCha20Poly1305 => {
+            AeadType::ChaCha20Poly1305 => {
                 let mut key = [0u8; KEY_LEN_CHACHA];
                 libcrux_hkdf::sha2_256::hkdf(
                     &mut key,
@@ -73,7 +73,7 @@ impl AEADKeyNonce {
                     nonce: [0u8; NONCE_LEN],
                 })
             }
-            AEAD::AesGcm128 => {
+            AeadType::AesGcm128 => {
                 let mut key = [0u8; KEY_LEN_AES];
                 libcrux_hkdf::sha2_256::hkdf(
                     &mut key,
@@ -119,11 +119,11 @@ impl AEADKeyNonce {
         match &self.key {
             AEADKey::ChaChaPoly1305(key) => {
                 // XXX: We could do better if we'd have an inplace API here.
-                let _ = encrypt_detached(key, payload, ciphertext, &mut tag, aad, &self.nonce)
+                encrypt_detached(key, payload, ciphertext, &mut tag, aad, &self.nonce)
                     .map_err(|_| AEADError::CryptoError)?;
             }
             AEADKey::AesGcm128(key) => {
-                let _ = libcrux_aesgcm::AesGcm128::encrypt(
+                libcrux_aesgcm::AesGcm128::encrypt(
                     ciphertext,
                     &mut tag,
                     key,
@@ -164,11 +164,11 @@ impl AEADKeyNonce {
 
         match &self.key {
             AEADKey::ChaChaPoly1305(key) => {
-                let _ = decrypt_detached(key, &mut plaintext, ciphertext, tag, aad, &self.nonce)
+                decrypt_detached(key, &mut plaintext, ciphertext, tag, aad, &self.nonce)
                     .map_err(|_| AEADError::CryptoError)?;
             }
             AEADKey::AesGcm128(key) => {
-                let _ = libcrux_aesgcm::AesGcm128::decrypt(
+                libcrux_aesgcm::AesGcm128::decrypt(
                     &mut plaintext,
                     key,
                     &self.nonce,
@@ -195,11 +195,11 @@ impl AEADKeyNonce {
 
         match &self.key {
             AEADKey::ChaChaPoly1305(key) => {
-                let _ = decrypt_detached(key, plaintext, ciphertext, tag, aad, &self.nonce)
+                decrypt_detached(key, plaintext, ciphertext, tag, aad, &self.nonce)
                     .map_err(|_| AEADError::CryptoError)?;
             }
             AEADKey::AesGcm128(key) => {
-                let _ = libcrux_aesgcm::AesGcm128::decrypt(
+                libcrux_aesgcm::AesGcm128::decrypt(
                     plaintext,
                     key,
                     &self.nonce,
