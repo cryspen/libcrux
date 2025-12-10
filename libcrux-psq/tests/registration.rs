@@ -108,7 +108,9 @@ impl CommonSetup {
             | CiphersuiteName::X25519_NONE_ED25519_AESGCM128_HKDFSHA256
             | CiphersuiteName::X25519_MLKEM768_ED25519_AESGCM128_HKDFSHA256
             | CiphersuiteName::X25519_CLASSICMCELIECE_ED25519_AESGCM128_HKDFSHA256 => {
-                Authenticator::Sig(SigVerificationKey::Ed25519(self.initiator_ed25519_keys.1))
+                Authenticator::Sig(SignatureVerificationKey::Ed25519(
+                    self.initiator_ed25519_keys.1,
+                ))
             }
 
             CiphersuiteName::X25519_NONE_MLDSA65_CHACHA20POLY1305_HKDFSHA256
@@ -117,7 +119,7 @@ impl CommonSetup {
             | CiphersuiteName::X25519_NONE_MLDSA65_AESGCM128_HKDFSHA256
             | CiphersuiteName::X25519_MLKEM768_MLDSA65_AESGCM128_HKDFSHA256
             | CiphersuiteName::X25519_CLASSICMCELIECE_MLDSA65_AESGCM128_HKDFSHA256 => {
-                Authenticator::Sig(SigVerificationKey::MlDsa65(Box::new(
+                Authenticator::Sig(SignatureVerificationKey::MlDsa65(Box::new(
                     self.initiator_mldsa_keys.verification_key.clone(),
                 )))
             }
@@ -134,17 +136,77 @@ impl CommonSetup {
             CiphersuiteName::X25519_NONE_ED25519_CHACHA20POLY1305_HKDFSHA256
             | CiphersuiteName::X25519_MLKEM768_ED25519_CHACHA20POLY1305_HKDFSHA256
             | CiphersuiteName::X25519_NONE_ED25519_AESGCM128_HKDFSHA256
+            | CiphersuiteName::X25519_MLKEM768_ED25519_AESGCM128_HKDFSHA256 => Authenticator::Sig(
+                SignatureVerificationKey::Ed25519(self.initiator_ed25519_keys.1),
+            ),
+
+            CiphersuiteName::X25519_NONE_MLDSA65_CHACHA20POLY1305_HKDFSHA256
+            | CiphersuiteName::X25519_MLKEM768_MLDSA65_CHACHA20POLY1305_HKDFSHA256
+            | CiphersuiteName::X25519_NONE_MLDSA65_AESGCM128_HKDFSHA256
+            | CiphersuiteName::X25519_MLKEM768_MLDSA65_AESGCM128_HKDFSHA256 => {
+                Authenticator::Sig(SignatureVerificationKey::MlDsa65(Box::new(
+                    self.initiator_mldsa_keys.verification_key.clone(),
+                )))
+            }
+
+            CiphersuiteName::X25519_CLASSICMCELIECE_X25519_CHACHA20POLY1305_HKDFSHA256
+            | CiphersuiteName::X25519_CLASSICMCELIECE_MLDSA65_AESGCM128_HKDFSHA256
+            | CiphersuiteName::X25519_CLASSICMCELIECE_MLDSA65_CHACHA20POLY1305_HKDFSHA256
+            | CiphersuiteName::X25519_CLASSICMCELIECE_ED25519_AESGCM128_HKDFSHA256
+            | CiphersuiteName::X25519_CLASSICMCELIECE_ED25519_CHACHA20POLY1305_HKDFSHA256
+            | CiphersuiteName::X25519_CLASSICMCELIECE_X25519_AESGCM128_HKDFSHA256 => {
+                panic!("unsupported ciphersuite")
+            }
+        }
+    }
+
+    fn initiator_signature_keys(&self, name: CiphersuiteName) -> Option<SigningKeyPair<'_>> {
+        #[cfg(feature = "classic-mceliece")]
+        match name {
+            CiphersuiteName::X25519_NONE_X25519_CHACHA20POLY1305_HKDFSHA256
+            | CiphersuiteName::X25519_MLKEM768_X25519_CHACHA20POLY1305_HKDFSHA256
+            | CiphersuiteName::X25519_CLASSICMCELIECE_X25519_CHACHA20POLY1305_HKDFSHA256
+            | CiphersuiteName::X25519_NONE_X25519_AESGCM128_HKDFSHA256
+            | CiphersuiteName::X25519_MLKEM768_X25519_AESGCM128_HKDFSHA256
+            | CiphersuiteName::X25519_CLASSICMCELIECE_X25519_AESGCM128_HKDFSHA256 => None,
+
+            CiphersuiteName::X25519_NONE_ED25519_CHACHA20POLY1305_HKDFSHA256
+            | CiphersuiteName::X25519_MLKEM768_ED25519_CHACHA20POLY1305_HKDFSHA256
+            | CiphersuiteName::X25519_CLASSICMCELIECE_ED25519_CHACHA20POLY1305_HKDFSHA256
+            | CiphersuiteName::X25519_NONE_ED25519_AESGCM128_HKDFSHA256
+            | CiphersuiteName::X25519_MLKEM768_ED25519_AESGCM128_HKDFSHA256
+            | CiphersuiteName::X25519_CLASSICMCELIECE_ED25519_AESGCM128_HKDFSHA256 => {
+                Some(SigningKeyPair::from(&self.initiator_ed25519_keys))
+            }
+
+            CiphersuiteName::X25519_NONE_MLDSA65_CHACHA20POLY1305_HKDFSHA256
+            | CiphersuiteName::X25519_MLKEM768_MLDSA65_CHACHA20POLY1305_HKDFSHA256
+            | CiphersuiteName::X25519_CLASSICMCELIECE_MLDSA65_CHACHA20POLY1305_HKDFSHA256
+            | CiphersuiteName::X25519_NONE_MLDSA65_AESGCM128_HKDFSHA256
+            | CiphersuiteName::X25519_MLKEM768_MLDSA65_AESGCM128_HKDFSHA256
+            | CiphersuiteName::X25519_CLASSICMCELIECE_MLDSA65_AESGCM128_HKDFSHA256 => {
+                Some(SigningKeyPair::from(&self.initiator_mldsa_keys))
+            }
+        }
+        #[cfg(not(feature = "classic-mceliece"))]
+        match name {
+            CiphersuiteName::X25519_NONE_X25519_CHACHA20POLY1305_HKDFSHA256
+            | CiphersuiteName::X25519_MLKEM768_X25519_CHACHA20POLY1305_HKDFSHA256
+            | CiphersuiteName::X25519_NONE_X25519_AESGCM128_HKDFSHA256
+            | CiphersuiteName::X25519_MLKEM768_X25519_AESGCM128_HKDFSHA256 => None,
+
+            CiphersuiteName::X25519_NONE_ED25519_CHACHA20POLY1305_HKDFSHA256
+            | CiphersuiteName::X25519_MLKEM768_ED25519_CHACHA20POLY1305_HKDFSHA256
+            | CiphersuiteName::X25519_NONE_ED25519_AESGCM128_HKDFSHA256
             | CiphersuiteName::X25519_MLKEM768_ED25519_AESGCM128_HKDFSHA256 => {
-                Authenticator::Sig(SigVerificationKey::Ed25519(self.initiator_ed25519_keys.1))
+                Some(SigningKeyPair::from(&self.initiator_ed25519_keys))
             }
 
             CiphersuiteName::X25519_NONE_MLDSA65_CHACHA20POLY1305_HKDFSHA256
             | CiphersuiteName::X25519_MLKEM768_MLDSA65_CHACHA20POLY1305_HKDFSHA256
             | CiphersuiteName::X25519_NONE_MLDSA65_AESGCM128_HKDFSHA256
             | CiphersuiteName::X25519_MLKEM768_MLDSA65_AESGCM128_HKDFSHA256 => {
-                Authenticator::Sig(SigVerificationKey::MlDsa65(Box::new(
-                    self.initiator_mldsa_keys.verification_key.clone(),
-                )))
+                Some(SigningKeyPair::from(&self.initiator_mldsa_keys))
             }
 
             CiphersuiteName::X25519_CLASSICMCELIECE_X25519_CHACHA20POLY1305_HKDFSHA256
@@ -206,11 +268,11 @@ fn registration(
     let mut initiator_cbuilder = CiphersuiteBuilder::new(initiator_ciphersuite_id)
         .longterm_x25519_keys(&setup.initiator_x25519_keys)
         .peer_longterm_x25519_pk(&setup.responder_x25519_keys.pk)
-        .peer_longterm_mlkem_pk(setup.responder_mlkem_keys.public_key())
-        .longterm_ed25519_signing_key(&setup.initiator_ed25519_keys.0)
-        .longterm_ed25519_verification_key(&setup.initiator_ed25519_keys.1)
-        .longterm_mldsa_signing_key(&setup.initiator_mldsa_keys.signing_key)
-        .longterm_mldsa_verification_key(&setup.initiator_mldsa_keys.verification_key);
+        .peer_longterm_mlkem_pk(setup.responder_mlkem_keys.public_key());
+
+    if let Some(signature_key_pair) = setup.initiator_signature_keys(initiator_ciphersuite_id) {
+        initiator_cbuilder = initiator_cbuilder.longterm_signing_keys(signature_key_pair);
+    }
 
     #[cfg(feature = "classic-mceliece")]
     {
@@ -299,7 +361,14 @@ fn registration(
 
     // test serialization, deserialization
     let mut session_storage = vec![0u8; 4096];
-    i_transport.serialize(&mut session_storage).unwrap();
+    i_transport
+        .serialize(
+            &mut session_storage,
+            &setup.initiator_authenticator(initiator_ciphersuite_id),
+            &setup.responder_x25519_keys.pk,
+            setup.pq_encapsulation_key(initiator_ciphersuite_id),
+        )
+        .unwrap();
     let mut i_transport = Session::deserialize(
         &session_storage,
         &setup.initiator_authenticator(initiator_ciphersuite_id),
@@ -308,7 +377,14 @@ fn registration(
     )
     .unwrap();
 
-    r_transport.serialize(&mut session_storage).unwrap();
+    r_transport
+        .serialize(
+            &mut session_storage,
+            &initiator_authenticator,
+            &setup.responder_x25519_keys.pk,
+            setup.pq_encapsulation_key(initiator_ciphersuite_id),
+        )
+        .unwrap();
     let mut r_transport = Session::deserialize(
         &session_storage,
         &initiator_authenticator,

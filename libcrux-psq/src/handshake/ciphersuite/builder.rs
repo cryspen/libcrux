@@ -2,11 +2,8 @@
 //!
 //! This module provides a builder pattern for PSQ ciphersuites.
 
-use libcrux_ed25519::{SigningKey, VerificationKey};
 use libcrux_kem::{MlKem768PrivateKey, MlKem768PublicKey};
-use libcrux_ml_dsa::ml_dsa_65::{MLDSA65SigningKey, MLDSA65VerificationKey};
 
-use crate::aead::AeadType;
 #[cfg(feature = "classic-mceliece")]
 use crate::classic_mceliece::{PublicKey, SecretKey};
 use crate::handshake::{
@@ -18,6 +15,7 @@ use crate::handshake::{
     },
     dhkem::{DHKeyPair, DHPublicKey},
 };
+use crate::{aead::AeadType, handshake::ciphersuite::initiator::SigningKeyPair};
 
 /// A builder for PSQ handshake ciphersuites.
 pub struct CiphersuiteBuilder<'a> {
@@ -25,10 +23,7 @@ pub struct CiphersuiteBuilder<'a> {
     longterm_x25519_keys: Option<&'a DHKeyPair>,
     longterm_mlkem_encapsulation_key: Option<&'a MlKem768PublicKey>,
     longterm_mlkem_decapsulation_key: Option<&'a MlKem768PrivateKey>,
-    longterm_mldsa_signing_key: Option<&'a MLDSA65SigningKey>,
-    longterm_mldsa_verification_key: Option<&'a MLDSA65VerificationKey>,
-    longterm_ed25519_signing_key: Option<&'a SigningKey>,
-    longterm_ed25519_verification_key: Option<&'a VerificationKey>,
+    longterm_signing_keys: Option<SigningKeyPair<'a>>,
     peer_longterm_x25519_pk: Option<&'a DHPublicKey>,
     peer_longterm_mlkem_pk: Option<&'a MlKem768PublicKey>,
     #[cfg(feature = "classic-mceliece")]
@@ -47,10 +42,7 @@ impl<'a> CiphersuiteBuilder<'a> {
             longterm_x25519_keys: None,
             longterm_mlkem_encapsulation_key: None,
             longterm_mlkem_decapsulation_key: None,
-            longterm_mldsa_signing_key: None,
-            longterm_mldsa_verification_key: None,
-            longterm_ed25519_signing_key: None,
-            longterm_ed25519_verification_key: None,
+            longterm_signing_keys: None,
             peer_longterm_x25519_pk: None,
             peer_longterm_mlkem_pk: None,
             #[cfg(feature = "classic-mceliece")]
@@ -86,33 +78,9 @@ impl<'a> CiphersuiteBuilder<'a> {
         self
     }
 
-    /// Provide a principal's long-term ML-DSA signing key.
-    pub fn longterm_mldsa_signing_key(mut self, signing_key: &'a MLDSA65SigningKey) -> Self {
-        self.longterm_mldsa_signing_key = Some(signing_key);
-        self
-    }
-
-    /// Provide a principal's long-term ML-DSA verification key.
-    pub fn longterm_mldsa_verification_key(
-        mut self,
-        verification_key: &'a MLDSA65VerificationKey,
-    ) -> Self {
-        self.longterm_mldsa_verification_key = Some(verification_key);
-        self
-    }
-
-    /// Provide a principal's long-term Ed25519 signing key.
-    pub fn longterm_ed25519_signing_key(mut self, signing_key: &'a SigningKey) -> Self {
-        self.longterm_ed25519_signing_key = Some(signing_key);
-        self
-    }
-
-    /// Provide a principal's long-term Ed25519 verification key.
-    pub fn longterm_ed25519_verification_key(
-        mut self,
-        verification_key: &'a VerificationKey,
-    ) -> Self {
-        self.longterm_ed25519_verification_key = Some(verification_key);
+    /// Provide a principal's long-term signing keys.
+    pub fn longterm_signing_keys(mut self, signing_keys: SigningKeyPair<'a>) -> Self {
+        self.longterm_signing_keys = Some(signing_keys);
         self
     }
 
@@ -219,13 +187,13 @@ impl<'a> CiphersuiteBuilder<'a> {
             | CiphersuiteName::X25519_NONE_ED25519_AESGCM128_HKDFSHA256
             | CiphersuiteName::X25519_MLKEM768_ED25519_AESGCM128_HKDFSHA256
             | CiphersuiteName::X25519_CLASSICMCELIECE_ED25519_AESGCM128_HKDFSHA256 => {
-                let Some(auth_sk) = self.longterm_ed25519_signing_key else {
+                let Some(sig_keys) = self.longterm_signing_keys else {
                     return Err(BuilderError::CiphersuiteBuilderState);
                 };
-                let Some(auth_vk) = self.longterm_ed25519_verification_key else {
+                if !matches!(sig_keys, SigningKeyPair::Ed25519(_, _)) {
                     return Err(BuilderError::CiphersuiteBuilderState);
-                };
-                (auth_sk, auth_vk).into()
+                }
+                sig_keys.into()
             }
 
             CiphersuiteName::X25519_NONE_MLDSA65_CHACHA20POLY1305_HKDFSHA256
@@ -234,13 +202,13 @@ impl<'a> CiphersuiteBuilder<'a> {
             | CiphersuiteName::X25519_NONE_MLDSA65_AESGCM128_HKDFSHA256
             | CiphersuiteName::X25519_MLKEM768_MLDSA65_AESGCM128_HKDFSHA256
             | CiphersuiteName::X25519_CLASSICMCELIECE_MLDSA65_AESGCM128_HKDFSHA256 => {
-                let Some(auth_sk) = self.longterm_mldsa_signing_key else {
+                let Some(sig_keys) = self.longterm_signing_keys else {
                     return Err(BuilderError::CiphersuiteBuilderState);
                 };
-                let Some(auth_vk) = self.longterm_mldsa_verification_key else {
+                if !matches!(sig_keys, SigningKeyPair::MlDsa65(_, _)) {
                     return Err(BuilderError::CiphersuiteBuilderState);
-                };
-                (auth_sk, auth_vk).into()
+                }
+                sig_keys.into()
             }
         };
 
@@ -260,26 +228,26 @@ impl<'a> CiphersuiteBuilder<'a> {
             | CiphersuiteName::X25519_MLKEM768_ED25519_CHACHA20POLY1305_HKDFSHA256
             | CiphersuiteName::X25519_NONE_ED25519_AESGCM128_HKDFSHA256
             | CiphersuiteName::X25519_MLKEM768_ED25519_AESGCM128_HKDFSHA256 => {
-                let Some(auth_sk) = self.longterm_ed25519_signing_key else {
+                let Some(sig_keys) = self.longterm_signing_keys else {
                     return Err(BuilderError::CiphersuiteBuilderState);
                 };
-                let Some(auth_vk) = self.longterm_ed25519_verification_key else {
+                if !matches!(sig_keys, SigningKeyPair::Ed25519(_, _)) {
                     return Err(BuilderError::CiphersuiteBuilderState);
-                };
-                (auth_sk, auth_vk).into()
+                }
+                sig_keys.into()
             }
 
             CiphersuiteName::X25519_NONE_MLDSA65_CHACHA20POLY1305_HKDFSHA256
             | CiphersuiteName::X25519_MLKEM768_MLDSA65_CHACHA20POLY1305_HKDFSHA256
             | CiphersuiteName::X25519_NONE_MLDSA65_AESGCM128_HKDFSHA256
             | CiphersuiteName::X25519_MLKEM768_MLDSA65_AESGCM128_HKDFSHA256 => {
-                let Some(auth_sk) = self.longterm_mldsa_signing_key else {
+                let Some(sig_keys) = self.longterm_signing_keys else {
                     return Err(BuilderError::CiphersuiteBuilderState);
                 };
-                let Some(auth_vk) = self.longterm_mldsa_verification_key else {
+                if !matches!(sig_keys, SigningKeyPair::MlDsa65(_, _)) {
                     return Err(BuilderError::CiphersuiteBuilderState);
-                };
-                (auth_sk, auth_vk).into()
+                }
+                sig_keys.into()
             }
 
             CiphersuiteName::X25519_CLASSICMCELIECE_X25519_CHACHA20POLY1305_HKDFSHA256
@@ -288,7 +256,7 @@ impl<'a> CiphersuiteBuilder<'a> {
             | CiphersuiteName::X25519_CLASSICMCELIECE_ED25519_AESGCM128_HKDFSHA256
             | CiphersuiteName::X25519_CLASSICMCELIECE_MLDSA65_CHACHA20POLY1305_HKDFSHA256
             | CiphersuiteName::X25519_CLASSICMCELIECE_MLDSA65_AESGCM128_HKDFSHA256 => {
-                return Err(BuilderError::UnsupportedCiphersuite)
+                return Err(BuilderError::UnsupportedCiphersuite);
             }
         };
 
@@ -342,7 +310,7 @@ impl<'a> CiphersuiteBuilder<'a> {
             | CiphersuiteName::X25519_CLASSICMCELIECE_MLDSA65_AESGCM128_HKDFSHA256
             | CiphersuiteName::X25519_CLASSICMCELIECE_X25519_AESGCM128_HKDFSHA256
             | CiphersuiteName::X25519_CLASSICMCELIECE_ED25519_AESGCM128_HKDFSHA256 => {
-                return Err(BuilderError::UnsupportedCiphersuite)
+                return Err(BuilderError::UnsupportedCiphersuite);
             }
         };
 
@@ -461,7 +429,7 @@ impl<'a> CiphersuiteBuilder<'a> {
             | CiphersuiteName::X25519_CLASSICMCELIECE_MLDSA65_AESGCM128_HKDFSHA256
             | CiphersuiteName::X25519_CLASSICMCELIECE_X25519_AESGCM128_HKDFSHA256
             | CiphersuiteName::X25519_CLASSICMCELIECE_ED25519_AESGCM128_HKDFSHA256 => {
-                return Err(BuilderError::UnsupportedCiphersuite)
+                return Err(BuilderError::UnsupportedCiphersuite);
             }
         };
 

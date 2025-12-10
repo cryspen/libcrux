@@ -119,10 +119,13 @@
 //!
 //! // test serialization, deserialization
 //! let mut session_storage = vec![0u8; 4096];
-//! i_transport.serialize(&mut session_storage).unwrap();
+//! i_transport.serialize(&mut session_storage,
+//!     &(&initiator_ecdh_keys.pk).authenticator(),
+//!     &responder_ecdh_keys.pk,
+//!     Some(responder_mlkem_keys.public_key().into()));
 //! let mut i_transport = Session::deserialize(
 //!     &session_storage,
-//!     &(&initiator_ecdh_keys.pk).into(),
+//!     &(&initiator_ecdh_keys.pk).authenticator(),
 //!     &responder_ecdh_keys.pk,
 //!     Some(responder_mlkem_keys.public_key().into()),
 //! ).unwrap();

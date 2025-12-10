@@ -1,6 +1,6 @@
 use std::ops::Deref;
 
-use libcrux_ed25519::VerificationKey;
+use libcrux_ed25519::VerificationKey as Ed25519VerificationKey;
 use libcrux_kem::{MlKem768Ciphertext, MlKem768PrivateKey, MlKem768PublicKey};
 use libcrux_ml_dsa::ml_dsa_65::{MLDSA65Signature, MLDSA65VerificationKey};
 use libcrux_ml_kem::MlKemSharedSecret;
@@ -24,24 +24,24 @@ pub enum Authenticator {
     /// A Diffie-Hellman public key.
     Dh(DHPublicKey),
     /// A signature verification key.
-    Sig(SigVerificationKey),
+    Sig(SignatureVerificationKey),
 }
 
-impl From<&DHPublicKey> for Authenticator {
-    fn from(value: &DHPublicKey) -> Self {
-        Self::Dh(value.clone())
+/// An object that can provide an initiator authenticator.
+pub trait ProvideAuthenticator {
+    /// Provide the initiator authenticator contained in this object.
+    fn authenticator(&self) -> Authenticator;
+}
+
+impl ProvideAuthenticator for Ed25519VerificationKey {
+    fn authenticator(&self) -> Authenticator {
+        Authenticator::Sig(SignatureVerificationKey::Ed25519(*self))
     }
 }
 
-impl From<&VerificationKey> for Authenticator {
-    fn from(value: &VerificationKey) -> Self {
-        Self::Sig(SigVerificationKey::Ed25519(*value))
-    }
-}
-
-impl From<&MLDSA65VerificationKey> for Authenticator {
-    fn from(value: &MLDSA65VerificationKey) -> Self {
-        Self::Sig(SigVerificationKey::MlDsa65(Box::new(value.clone())))
+impl ProvideAuthenticator for MLDSA65VerificationKey {
+    fn authenticator(&self) -> Authenticator {
+        Authenticator::Sig(SignatureVerificationKey::MlDsa65(Box::new(self.clone())))
     }
 }
 
@@ -54,12 +54,12 @@ impl From<Auth<'_>> for Authenticator {
     }
 }
 
-impl From<&SigVerificationKey> for Authenticator {
-    fn from(value: &SigVerificationKey) -> Self {
-        match value {
-            SigVerificationKey::Ed25519(verification_key) => verification_key.into(),
-            SigVerificationKey::MlDsa65(mldsaverification_key) => {
-                mldsaverification_key.deref().into()
+impl ProvideAuthenticator for SignatureVerificationKey {
+    fn authenticator(&self) -> Authenticator {
+        match &self {
+            SignatureVerificationKey::Ed25519(verification_key) => verification_key.authenticator(),
+            SignatureVerificationKey::MlDsa65(mldsaverification_key) => {
+                mldsaverification_key.deref().authenticator()
             }
         }
     }
@@ -68,14 +68,19 @@ impl From<&SigVerificationKey> for Authenticator {
 #[derive(TlsSize, TlsDeserialize, TlsSerialize, Clone)]
 #[repr(u8)]
 /// A signature verification key.
-pub enum SigVerificationKey {
+pub enum SignatureVerificationKey {
     /// A verification key for the Ed25519 signature scheme.
-    Ed25519(VerificationKey),
+    Ed25519(Ed25519VerificationKey),
     /// A verification key for the ML-DSA 65 signature scheme.
     MlDsa65(Box<MLDSA65VerificationKey>),
 }
 
-impl SigVerificationKey {
+pub enum SignatureType {
+    Ed25519,
+    MlDsa,
+}
+
+impl SignatureVerificationKey {
     pub(crate) fn verify(
         &self,
         tx1: &Transcript,
@@ -84,13 +89,13 @@ impl SigVerificationKey {
         use tls_codec::SerializeBytes;
         let payload = tx1.tls_serialize().map_err(HandshakeError::Serialize)?;
         match (self, signature) {
-            (SigVerificationKey::Ed25519(verification_key), Signature::Ed25519(sig)) => {
+            (SignatureVerificationKey::Ed25519(verification_key), Signature::Ed25519(sig)) => {
                 libcrux_ed25519::verify(&payload, verification_key.as_ref(), sig)
                     .map_err(|e| e.into())
             }
 
             (
-                SigVerificationKey::MlDsa65(mldsaverification_key),
+                SignatureVerificationKey::MlDsa65(mldsaverification_key),
                 Signature::MlDsa65(mldsasignature),
             ) => libcrux_ml_dsa::ml_dsa_65::verify(
                 mldsaverification_key,
@@ -99,8 +104,8 @@ impl SigVerificationKey {
                 mldsasignature,
             )
             .map_err(|e| e.into()),
-            (SigVerificationKey::Ed25519(_), Signature::MlDsa65(_))
-            | (SigVerificationKey::MlDsa65(_), Signature::Ed25519(_)) => {
+            (SignatureVerificationKey::Ed25519(_), Signature::MlDsa65(_))
+            | (SignatureVerificationKey::MlDsa65(_), Signature::Ed25519(_)) => {
                 Err(HandshakeError::UnsupportedCiphersuite)
             }
         }

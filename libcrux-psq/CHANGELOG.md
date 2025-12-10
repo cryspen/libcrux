@@ -12,7 +12,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - Add AES-GCM 128 ciphersuite support
     - Add secret export API to `Session`
     - Add support for retrieving initiator authenticator mid-handshake from Responder
-    - Update `Session` serialization API to accept initiator authenticator instead of initiator DH public key only (breaking)
+    - Update `Session` deserialization API to accept initiator authenticator instead of initiator DH public key only (breaking)
+    - Update `Session` serialization API to require initiator authenticator and responder public keys as inputs to enforce serializer has access to all information needed to deserialize
 
 ## [0.0.5] (2025-11-05)
 

@@ -1,5 +1,5 @@
-use libcrux_ed25519::{SigningKey, VerificationKey};
-use libcrux_ml_dsa::ml_dsa_65::{MLDSA65SigningKey, MLDSA65VerificationKey};
+use libcrux_ed25519::{SigningKey as Ed25519SigningKey, VerificationKey as Ed25519VerificationKey};
+use libcrux_ml_dsa::ml_dsa_65::{MLDSA65KeyPair, MLDSA65SigningKey, MLDSA65VerificationKey};
 use rand::CryptoRng;
 use tls_codec::SerializeBytes;
 
@@ -15,7 +15,7 @@ use crate::{
         },
         dhkem::{DHKeyPair, DHPublicKey},
         transcript::Transcript,
-        types::{SigVerificationKey, Signature},
+        types::{Signature, SignatureVerificationKey},
         HandshakeError,
     },
 };
@@ -45,12 +45,27 @@ impl<'a> From<&'a PublicKey> for PqKemPublicKey<'a> {
 }
 
 #[derive(Clone, Copy)]
-pub(crate) enum SigKeyPair<'a> {
-    Ed25519(&'a SigningKey, &'a VerificationKey),
+/// A pair of long-term signing and verification keys.
+pub enum SigningKeyPair<'a> {
+    /// A key pair for the Ed25519 signature scheme.
+    Ed25519(&'a Ed25519SigningKey, &'a Ed25519VerificationKey),
+    /// A key pair for the ML-DSA 65 signature scheme.
     MlDsa65(&'a MLDSA65SigningKey, &'a MLDSA65VerificationKey),
 }
 
-impl<'a> SigKeyPair<'a> {
+impl<'a> From<&'a MLDSA65KeyPair> for SigningKeyPair<'a> {
+    fn from(value: &'a MLDSA65KeyPair) -> Self {
+        Self::MlDsa65(&value.signing_key, &value.verification_key)
+    }
+}
+
+impl<'a> From<&'a (Ed25519SigningKey, Ed25519VerificationKey)> for SigningKeyPair<'a> {
+    fn from(value: &'a (Ed25519SigningKey, Ed25519VerificationKey)) -> Self {
+        Self::Ed25519(&value.0, &value.1)
+    }
+}
+
+impl<'a> SigningKeyPair<'a> {
     pub(crate) fn sign(
         &self,
         rng: &mut impl CryptoRng,
@@ -58,11 +73,11 @@ impl<'a> SigKeyPair<'a> {
     ) -> Result<Signature, HandshakeError> {
         let payload = tx.tls_serialize().map_err(HandshakeError::Serialize)?;
         match self {
-            SigKeyPair::Ed25519(signing_key, _) => {
+            SigningKeyPair::Ed25519(signing_key, _) => {
                 let sig = libcrux_ed25519::sign(&payload, signing_key.as_ref())?;
                 Ok(Signature::Ed25519(sig))
             }
-            SigKeyPair::MlDsa65(mldsasigning_key, _) => {
+            SigningKeyPair::MlDsa65(mldsasigning_key, _) => {
                 let mut randomness = [0u8; libcrux_ml_dsa::SIGNING_RANDOMNESS_SIZE];
                 rng.fill_bytes(&mut randomness);
                 let sig = libcrux_ml_dsa::ml_dsa_65::sign(
@@ -77,14 +92,14 @@ impl<'a> SigKeyPair<'a> {
     }
 }
 
-impl From<SigKeyPair<'_>> for SigVerificationKey {
-    fn from(value: SigKeyPair<'_>) -> Self {
+impl From<SigningKeyPair<'_>> for SignatureVerificationKey {
+    fn from(value: SigningKeyPair<'_>) -> Self {
         match value {
-            SigKeyPair::Ed25519(_, verification_key) => {
-                SigVerificationKey::Ed25519(*verification_key)
+            SigningKeyPair::Ed25519(_, verification_key) => {
+                SignatureVerificationKey::Ed25519(*verification_key)
             }
-            SigKeyPair::MlDsa65(_, mldsaverification_key) => {
-                SigVerificationKey::MlDsa65(Box::new(mldsaverification_key.clone()))
+            SigningKeyPair::MlDsa65(_, mldsaverification_key) => {
+                SignatureVerificationKey::MlDsa65(Box::new(mldsaverification_key.clone()))
             }
         }
     }
@@ -111,7 +126,7 @@ impl<'a> From<PqKemPublicKey<'a>> for Option<PQEncapsulationKey<'a>> {
 #[derive(Clone, Copy)]
 pub(crate) enum Auth<'a> {
     DH(&'a DHKeyPair),
-    Sig(SigKeyPair<'a>),
+    Sig(SigningKeyPair<'a>),
 }
 
 impl<'a> From<&'a DHKeyPair> for Auth<'a> {
@@ -119,14 +134,10 @@ impl<'a> From<&'a DHKeyPair> for Auth<'a> {
         Auth::DH(value)
     }
 }
-impl<'a> From<(&'a SigningKey, &'a VerificationKey)> for Auth<'a> {
-    fn from(value: (&'a SigningKey, &'a VerificationKey)) -> Self {
-        Auth::Sig(SigKeyPair::Ed25519(value.0, value.1))
-    }
-}
-impl<'a> From<(&'a MLDSA65SigningKey, &'a MLDSA65VerificationKey)> for Auth<'a> {
-    fn from(value: (&'a MLDSA65SigningKey, &'a MLDSA65VerificationKey)) -> Self {
-        Auth::Sig(SigKeyPair::MlDsa65(value.0, value.1))
+
+impl<'a> From<SigningKeyPair<'a>> for Auth<'a> {
+    fn from(value: SigningKeyPair<'a>) -> Self {
+        Auth::Sig(value)
     }
 }
 

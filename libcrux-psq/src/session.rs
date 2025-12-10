@@ -175,13 +175,34 @@ impl Session {
 
     /// Serializes the session state for storage.
     ///
-    /// WARN: `tls_serialize` should not be called directly, since it does
-    /// not consume `Session`. This opens the possibility for nonce
-    /// re-use by deserializing a stale `Session` since the original
-    /// could be used after serialization.
-    pub fn serialize(self, out: &mut [u8]) -> Result<usize, SessionError> {
-        self.tls_serialize(&mut &mut out[..])
-            .map_err(SessionError::Serialize)
+    /// We require the caller to input the public keys that were used
+    /// to create the session, in order to enforce they have access to
+    /// all keys necessary to deserialize the session later on.
+    ///
+    ///WARN: `tls_serialize`
+    /// should not be called directly, since it does not consume
+    /// `Session`. This opens the possibility for nonce re-use by
+    /// deserializing a stale `Session` since the original could be
+    /// used after serialization.
+    pub fn serialize(
+        self,
+        out: &mut [u8],
+        initiator_authenticator: &Authenticator,
+        responder_ecdh_pk: &DHPublicKey,
+        responder_pq_pk: Option<PQEncapsulationKey>,
+    ) -> Result<usize, SessionError> {
+        if derive_pk_binder(
+            &self.session_key,
+            initiator_authenticator,
+            responder_ecdh_pk,
+            responder_pq_pk,
+        )? == self.pk_binder
+        {
+            self.tls_serialize(&mut &mut out[..])
+                .map_err(SessionError::Serialize)
+        } else {
+            Err(SessionError::Storage)
+        }
     }
 
     /// Export a secret derived from the main session key.

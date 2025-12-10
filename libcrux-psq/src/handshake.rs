@@ -69,7 +69,7 @@ use crate::{
     handshake::{
         ciphersuite::{types::PQSharedSecret, CiphersuiteName},
         dhkem::{DHPrivateKey, DHPublicKey, DHSharedSecret},
-        types::{Authenticator, SigVerificationKey, Signature},
+        types::{Authenticator, ProvideAuthenticator, Signature, SignatureVerificationKey},
     },
 };
 
@@ -109,7 +109,7 @@ pub(crate) struct HandshakeMessage {
 pub(crate) enum AuthMessage {
     Dh(DHPublicKey),
     Sig {
-        vk: Box<SigVerificationKey>,
+        vk: Box<SignatureVerificationKey>,
         signature: Box<Signature>,
     },
 }
@@ -117,8 +117,8 @@ pub(crate) enum AuthMessage {
 impl From<&AuthMessage> for Authenticator {
     fn from(value: &AuthMessage) -> Self {
         match value {
-            AuthMessage::Dh(dhpublic_key) => Authenticator::from(dhpublic_key),
-            AuthMessage::Sig { vk, signature: _ } => Authenticator::from(vk.deref()),
+            AuthMessage::Dh(dhpublic_key) => dhpublic_key.authenticator(),
+            AuthMessage::Sig { vk, signature: _ } => vk.deref().authenticator(),
         }
     }
 }
@@ -143,7 +143,7 @@ pub(crate) struct InnerMessage {
 pub(crate) enum AuthMessageOut<'a> {
     Dh(&'a DHPublicKey),
     Sig {
-        vk: &'a SigVerificationKey,
+        vk: &'a SignatureVerificationKey,
         signature: &'a Signature,
     },
 }
@@ -309,6 +309,9 @@ pub mod types {
     pub use crate::handshake::ciphersuite::types::*;
     #[doc(inline)]
     pub use crate::handshake::dhkem::{DHKeyPair, DHPrivateKey, DHPublicKey};
+
+    #[doc(inline)]
+    pub use crate::handshake::ciphersuite::initiator::SigningKeyPair;
 }
 
 pub mod ciphersuites {
