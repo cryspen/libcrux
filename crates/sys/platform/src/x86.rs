@@ -6,6 +6,7 @@
 use core::arch::x86::{CpuidResult, __cpuid, __cpuid_count};
 #[cfg(target_arch = "x86_64")]
 use core::arch::x86_64::{CpuidResult, __cpuid, __cpuid_count};
+use core::sync::atomic::{AtomicBool, Ordering};
 
 #[allow(non_camel_case_types)]
 #[derive(Clone, Copy)]
@@ -94,6 +95,7 @@ pub(super) fn supported(feature: Feature) -> bool {
     }
 }
 
+// Guarded by INITIALIZED; always use load-acquire and store-release access to guarantee atomicity.
 static mut CPU_ID: [CpuidResult; 2] = [
     CpuidResult {
         eax: 0,
@@ -108,12 +110,12 @@ static mut CPU_ID: [CpuidResult; 2] = [
         edx: 0,
     },
 ];
-static mut INITIALIZED: bool = false;
+static INITIALIZED: AtomicBool = AtomicBool::new(false);
 
 /// Initialize CPU detection.
 #[inline(always)]
 pub(super) fn init() {
-    if unsafe { INITIALIZED } {
+    if INITIALIZED.load(Ordering::Acquire) {
         return;
     }
 
@@ -136,7 +138,5 @@ pub(super) fn init() {
         CPU_ID = [cpuid(1), cpuid_count(7, 0)];
     }
     // });
-    unsafe {
-        INITIALIZED = true;
-    }
+    INITIALIZED.store(true, Ordering::Release);
 }

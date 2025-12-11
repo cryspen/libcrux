@@ -1,5 +1,6 @@
 //! Obtain particular CPU features for AArch64 on macOS
 
+use core::sync::atomic::{AtomicBool, Ordering};
 use libc::{c_char, c_void, sysctlbyname, uname, utsname};
 
 /// Check that we're actually on an ARM mac.
@@ -49,11 +50,11 @@ fn sysctl() {
         0x2e, 0x46, 0x45, 0x41, 0x54, 0x5f, 0x50, 0x4d, 0x55, 0x4c, 0x4c, 0x00,
     ];
     if check(&FEAT_PMULL_STR) {
-        unsafe { PMULL = true };
+        PMULL.store(true, Ordering::Relaxed);
     }
 }
 
-static mut PMULL: bool = false;
+static PMULL: AtomicBool = AtomicBool::new(false);
 
 #[inline(always)]
 pub(super) fn aes() -> bool {
@@ -65,7 +66,7 @@ pub(super) fn aes() -> bool {
 #[inline(always)]
 pub(super) fn pmull() -> bool {
     init();
-    unsafe { PMULL }
+    PMULL.load(Ordering::Relaxed)
 }
 
 #[inline(always)]
@@ -75,12 +76,12 @@ pub(super) fn sha256() -> bool {
     true
 }
 
-static mut INITIALIZED: bool = false;
+static INITIALIZED: AtomicBool = AtomicBool::new(false);
 
 /// Initialize CPU detection.
 #[inline(always)]
 pub(super) fn init() {
-    if unsafe { INITIALIZED } {
+    if INITIALIZED.load(Ordering::Acquire) {
         return;
     }
     // XXX[no_std]: no good way to do this in no_std
@@ -89,7 +90,5 @@ pub(super) fn init() {
     // we'll consider the hw detection as initialized but always return false.
     sysctl();
     // });
-    unsafe {
-        INITIALIZED = true;
-    }
+    INITIALIZED.store(true, Ordering::Release);
 }
