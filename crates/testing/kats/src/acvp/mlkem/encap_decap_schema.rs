@@ -2,7 +2,7 @@ use super::super::schema_common::*;
 use serde::Deserialize;
 
 #[derive(Deserialize)]
-#[allow(non_snake_case, dead_code)]
+#[allow(non_snake_case)]
 pub struct EncapPrompt {
     pub tcId: usize,
 
@@ -14,7 +14,7 @@ pub struct EncapPrompt {
 }
 
 #[derive(Deserialize)]
-#[allow(non_snake_case, dead_code)]
+#[allow(non_snake_case)]
 pub struct DecapPrompt {
     pub tcId: usize,
 
@@ -25,7 +25,7 @@ pub struct DecapPrompt {
     pub dk: Vec<u8>,
 }
 
-#[allow(non_snake_case, dead_code)]
+#[allow(non_snake_case)]
 #[derive(Deserialize)]
 pub struct EncapKeyCheckPrompt {
     pub tcId: usize,
@@ -33,7 +33,7 @@ pub struct EncapKeyCheckPrompt {
     pub ek: Vec<u8>,
 }
 
-#[allow(non_snake_case, dead_code)]
+#[allow(non_snake_case)]
 #[derive(Deserialize)]
 pub struct DecapKeyCheckPrompt {
     pub tcId: usize,
@@ -42,7 +42,7 @@ pub struct DecapKeyCheckPrompt {
 }
 
 #[derive(Deserialize)]
-#[allow(non_snake_case, dead_code)]
+#[allow(non_snake_case)]
 pub struct EncapDecapPromptTestGroup {
     pub tgId: usize,
     pub testType: String,
@@ -51,7 +51,7 @@ pub struct EncapDecapPromptTestGroup {
     pub tests: EncapDecapTestPrompts,
 }
 
-#[allow(non_snake_case, dead_code)]
+#[allow(non_snake_case)]
 #[derive(Deserialize)]
 #[serde(tag = "function")]
 pub enum EncapDecapTestPrompts {
@@ -67,7 +67,7 @@ pub enum EncapDecapTestPrompts {
 
 #[derive(Deserialize)]
 #[serde(untagged)]
-#[allow(non_snake_case, dead_code)]
+#[allow(non_snake_case)]
 pub enum EncapDecapResult {
     EncapResult {
         tcId: usize,
