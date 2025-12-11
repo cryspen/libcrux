@@ -1,6 +1,6 @@
 use serde::Deserialize;
 
-pub use super::super::schema_common::*;
+use super::super::schema_common::*;
 
 #[derive(Deserialize)]
 #[allow(non_snake_case, dead_code)]
