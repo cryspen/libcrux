@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 - [#1225](https://github.com/cryspen/libcrux/pull/1225): In tests, use the latest versions of ACVP KATs exported by `libcrux-kats`.
+- [#1241](https://github.com/cryspen/libcrux/pull/1241): Add key-centric and slice-based signature public APIs
 
 ## [0.0.4] (2025-11-05)
 
