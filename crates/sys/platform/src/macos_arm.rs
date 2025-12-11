@@ -2,13 +2,6 @@
 
 use libc::{c_char, c_void, sysctlbyname, uname, utsname};
 
-#[allow(dead_code)]
-fn cstr(src: &[i8]) -> &str {
-    // default to length if no `0` present
-    let end = src.iter().position(|&c| c == 0).unwrap_or(src.len());
-    unsafe { core::str::from_utf8_unchecked(core::mem::transmute::<&[i8], &[u8]>(&src[0..end])) }
-}
-
 /// Check that we're actually on an ARM mac.
 /// When this returns false, no other function in here must be called.
 pub(crate) fn actually_arm() -> bool {
@@ -50,24 +43,6 @@ fn sysctl() {
         return;
     }
 
-    // hw.optional.AdvSIMD
-    const ADV_SIMD_STR: [i8; 20] = [
-        0x68, 0x77, 0x2e, 0x6f, 0x70, 0x74, 0x69, 0x6f, 0x6e, 0x61, 0x6c, 0x2e, 0x41, 0x64, 0x76,
-        0x53, 0x49, 0x4d, 0x44, 0x00,
-    ];
-    if check(&ADV_SIMD_STR) {
-        unsafe { ADV_SIMD = true };
-    }
-
-    // hw.optional.arm.FEAT_AES
-    const FEAT_AES_STR: [i8; 25] = [
-        0x68, 0x77, 0x2e, 0x6f, 0x70, 0x74, 0x69, 0x6f, 0x6e, 0x61, 0x6c, 0x2e, 0x61, 0x72, 0x6d,
-        0x2e, 0x46, 0x45, 0x41, 0x54, 0x5f, 0x41, 0x45, 0x53, 0x00,
-    ];
-    if check(&FEAT_AES_STR) {
-        unsafe { AES = true };
-    }
-
     // hw.optional.arm.FEAT_PMULL
     const FEAT_PMULL_STR: [i8; 27] = [
         0x68, 0x77, 0x2e, 0x6f, 0x70, 0x74, 0x69, 0x6f, 0x6e, 0x61, 0x6c, 0x2e, 0x61, 0x72, 0x6d,
@@ -76,32 +51,15 @@ fn sysctl() {
     if check(&FEAT_PMULL_STR) {
         unsafe { PMULL = true };
     }
-
-    // hw.optional.arm.FEAT_SHA256
-    const FEAT_SHA256_STR: [i8; 28] = [
-        0x68, 0x77, 0x2e, 0x6f, 0x70, 0x74, 0x69, 0x6f, 0x6e, 0x61, 0x6c, 0x2e, 0x61, 0x72, 0x6d,
-        0x2e, 0x46, 0x45, 0x41, 0x54, 0x5f, 0x53, 0x48, 0x41, 0x32, 0x35, 0x36, 0x00,
-    ];
-    if check(&FEAT_SHA256_STR) {
-        unsafe { SHA256 = true };
-    }
 }
 
-static mut ADV_SIMD: bool = false;
-static mut AES: bool = false;
 static mut PMULL: bool = false;
-static mut SHA256: bool = false;
 
 #[inline(always)]
 pub(super) fn aes() -> bool {
-    init();
-    unsafe { AES }
-}
-
-#[inline(always)]
-pub(super) fn adv_simd() -> bool {
-    init();
-    unsafe { ADV_SIMD }
+    // Apple Arm64 CPUs all support AES, even if they don't declare it.
+    // https://github.com/RustCrypto/utils/issues/378#issuecomment-826985574
+    true
 }
 
 #[inline(always)]
@@ -112,8 +70,9 @@ pub(super) fn pmull() -> bool {
 
 #[inline(always)]
 pub(super) fn sha256() -> bool {
-    init();
-    unsafe { SHA256 }
+    // Apple Arm64 CPUs all support SHA-2, even if they don't declare it.
+    // https://github.com/RustCrypto/utils/issues/378#issuecomment-826985574
+    true
 }
 
 static mut INITIALIZED: bool = false;
