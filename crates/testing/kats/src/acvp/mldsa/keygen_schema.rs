@@ -3,7 +3,7 @@ use serde::Deserialize;
 use super::super::schema_common::*;
 
 #[derive(Deserialize)]
-#[allow(non_snake_case, dead_code)]
+#[allow(non_snake_case)]
 pub struct KeyGenPrompt {
     pub tcId: usize,
 
@@ -12,7 +12,7 @@ pub struct KeyGenPrompt {
 }
 
 #[derive(Deserialize)]
-#[allow(non_snake_case, dead_code)]
+#[allow(non_snake_case)]
 pub struct KeyGenPromptTestGroup {
     pub tgId: usize,
     pub testType: String,
@@ -21,7 +21,7 @@ pub struct KeyGenPromptTestGroup {
 }
 
 #[derive(Deserialize)]
-#[allow(non_snake_case, dead_code)]
+#[allow(non_snake_case)]
 pub struct KeyGenResult {
     pub tcId: usize,
 
