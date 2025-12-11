@@ -3,6 +3,7 @@
 use libcrux_kats::acvp::mldsa::keygen_schema::*;
 use libcrux_kats::acvp::mldsa::sign_schema::*;
 use libcrux_kats::acvp::mldsa::verify_schema::*;
+use libcrux_kats::acvp::schema_common::*;
 
 #[test]
 fn keygen() {
