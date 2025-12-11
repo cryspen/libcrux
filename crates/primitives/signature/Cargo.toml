@@ -9,11 +9,11 @@ repository.workspace = true
 version.workspace = true
 
 [dependencies]
-libcrux-ecdsa = { version = "0.0.4", path = "../../../ecdsa", optional = true }
-libcrux-ed25519 = { version = "0.0.4", path = "../../../ed25519", optional = true }
+libcrux-ecdsa = { version = "0.0.4", path = "../../algorithms/ecdsa", optional = true }
+libcrux-ed25519 = { version = "0.0.4", path = "../../algorithms/ed25519", optional = true }
 libcrux-ml-dsa = { version = "0.0.4", path = "../../../libcrux-ml-dsa", optional = true }
 libcrux-traits = { version = "0.0.4", path = "../../../traits", optional = true }
-libcrux-secrets = { version = "0.0.4", path = "../../../secrets", optional = true }
+libcrux-secrets = { version = "0.0.4", path = "../../utils/secrets", optional = true }
 
 [features]
 default = ["ed25519", "ecdsa", "mldsa", "rand"]
