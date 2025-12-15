@@ -31,7 +31,14 @@ pub enum KemAlgorithm {
     DhKem448 = 0x0021,
 
     /// X-WING
-    XWingDraft06 = 0x004D,
+    ///
+    /// This is an old code point but with draft 06.
+    XWingDraft06Hpke = 0x004D,
+
+    /// X-WING
+    ///
+    /// <https://datatracker.ietf.org/doc/html/draft-connolly-cfrg-xwing-kem-06>
+    XWingDraft06 = 0x647a,
 }
 
 impl core::fmt::Display for KemAlgorithm {
@@ -66,7 +73,7 @@ impl KemAlgorithm {
             KemAlgorithm::DhKemK256 => 32,
             KemAlgorithm::DhKem25519 => 32,
             KemAlgorithm::DhKem448 => 56,
-            KemAlgorithm::XWingDraft06 => 32,
+            KemAlgorithm::XWingDraft06 | KemAlgorithm::XWingDraft06Hpke => 32,
         }
     }
 
@@ -79,7 +86,7 @@ impl KemAlgorithm {
             KemAlgorithm::DhKemK256 => 32,
             KemAlgorithm::DhKem25519 => 32,
             KemAlgorithm::DhKem448 => 64,
-            KemAlgorithm::XWingDraft06 => 32,
+            KemAlgorithm::XWingDraft06 | KemAlgorithm::XWingDraft06Hpke => 32,
         }
     }
 }
@@ -210,7 +217,7 @@ impl From<KemAlgorithm> for KdfAlgorithm {
             KemAlgorithm::DhKemK256 => KdfAlgorithm::HkdfSha256,
             KemAlgorithm::DhKem25519 => KdfAlgorithm::HkdfSha256,
             KemAlgorithm::DhKem448 => KdfAlgorithm::HkdfSha512,
-            KemAlgorithm::XWingDraft06 => KdfAlgorithm::HkdfSha512,
+            KemAlgorithm::XWingDraft06 | KemAlgorithm::XWingDraft06Hpke => KdfAlgorithm::HkdfSha512,
         }
     }
 }
