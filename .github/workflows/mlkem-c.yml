@@ -73,7 +73,7 @@ jobs:
           ./extract.sh
 
       - name: Upload C extraction
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: c-extraction-ml-kem
           path: libcrux-ml-kem/extracts/c/generated
@@ -99,7 +99,7 @@ jobs:
           ./extract.sh
 
       - name: Upload C extraction (header only)
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: c-ho-extraction-ml-kem
           path: libcrux-ml-kem/extracts/c_header_only/generated
@@ -125,7 +125,7 @@ jobs:
           ./extract.sh --no-clean
 
       - name: Upload C++ extraction
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: cpp-ho-extraction-ml-kem
           path: libcrux-ml-kem/extracts/cpp_header_only/generated
