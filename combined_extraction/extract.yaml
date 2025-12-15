@@ -49,6 +49,7 @@ files:
         - [ core, result, Result_53 ]
         - [ core, result, Result_2e ]
         - [ core, result, Result_41 ]
+        - [ core, result, Result_97 ]
 
   # SHA3 (no mention of libcrux_mlkem in this section, please)
   - name: libcrux_sha3_avx2
