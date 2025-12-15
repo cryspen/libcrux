@@ -1,0 +1,39 @@
+[package]
+name = "libcrux-sha3"
+version = "0.0.4"
+authors.workspace = true
+license.workspace = true
+homepage.workspace = true
+edition.workspace = true
+repository.workspace = true
+readme = "README.md"
+description = "Libcrux SHA-3 implementation"
+exclude = ["/proofs", "/c.sh", "/c.yaml", "/tests/tv", "tests/cavp.rs", "hax.py"]
+
+[lib]
+bench = false # so libtest doesn't eat the arguments to criterion
+
+[dependencies]
+libcrux-platform = { version = "0.0.2", path = "../../sys/platform" }
+libcrux-intrinsics = { version = "0.0.4", path = "../../utils/intrinsics" }
+libcrux-traits = { version = "=0.0.4", path = "../../../traits/" }
+hax-lib.workspace = true
+
+[features]
+simd128 = ["libcrux-intrinsics/simd128"]
+simd256 = ["libcrux-intrinsics/simd256"]
+
+[[bench]]
+name = "sha3"
+harness = false
+
+[dev-dependencies]
+criterion = "0.8.0"
+hex = "0.4.3"
+rand = "0.9"
+cavp = { version = "0.0.2", path = "../../../cavp" }
+pretty_env_logger = "0.5.0"
+clap = { version = "4.5.39", features = ["derive"] }
+
+[lints.rust]
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(hax)', 'cfg(eurydice)'] }

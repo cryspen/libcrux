@@ -9,10 +9,14 @@ apt-get install -y \
     build-essential \
     opam \
     jq \
+    git \
+    clang \
+    ninja-build \
     libgmp-dev \
     locales \
     pkg-config \
     clang-format\
+    cmake \
     curl \
     time
 curl -fsSL https://deb.nodesource.com/setup_21.x | bash -

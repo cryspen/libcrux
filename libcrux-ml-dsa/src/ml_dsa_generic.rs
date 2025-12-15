@@ -64,7 +64,9 @@ pub(crate) mod generic {
         verification_key: &mut [u8],
     ) {
         // Check key sizes
+        #[cfg(not(eurydice))]
         debug_assert!(signing_key.len() == SIGNING_KEY_SIZE);
+        #[cfg(not(eurydice))]
         debug_assert!(verification_key.len() == VERIFICATION_KEY_SIZE);
 
         // 128 = SEED_FOR_A_SIZE + SEED_FOR_ERROR_VECTORS_SIZE + SEED_FOR_SIGNING_SIZE
@@ -685,6 +687,7 @@ fn derive_message_representative<Shake256Xof: shake256::Xof>(
     message: &[u8],
     message_representative: &mut [u8; 64],
 ) {
+    #[cfg(not(eurydice))]
     debug_assert!(verification_key_hash.len() == 64);
 
     let mut shake = Shake256Xof::init();

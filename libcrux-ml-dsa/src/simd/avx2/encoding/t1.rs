@@ -1,7 +1,7 @@
 use libcrux_intrinsics::avx2::*;
 
 #[inline(always)]
-#[hax_lib::fstar::options("--fuel 0 --ifuel 0 --z3rlimit 1000 --split_queries always")]
+#[hax_lib::fstar::options("--z3rlimit 800")]
 #[hax_lib::fstar::before("open Spec.Intrinsics")]
 #[hax_lib::requires(out.len() == 10)]
 #[hax_lib::ensures(|_result| fstar!(r"
@@ -11,6 +11,7 @@ use libcrux_intrinsics::avx2::*;
        ${simd_unit}.(mk_int (32*(i/10) + (i%10))) == (u8_to_bv (Seq.index ${out}_future (i/8)))(mk_int (i % 8)))
 "))]
 pub(crate) fn serialize(simd_unit: &Vec256, out: &mut [u8]) {
+    #[cfg(not(eurydice))]
     debug_assert!(out.len() == 10);
 
     let mut serialized = [0u8; 24];
@@ -53,6 +54,7 @@ pub(crate) fn serialize(simd_unit: &Vec256, out: &mut [u8]) {
        ${out}_future.(mk_int j) == Core_models.Abstractions.Bit.Bit_Zero
   )"))]
 pub(crate) fn deserialize(bytes: &[u8], out: &mut Vec256) {
+    #[cfg(not(eurydice))]
     debug_assert_eq!(bytes.len(), 10);
 
     const COEFFICIENT_MASK: i32 = (1 << 10) - 1;

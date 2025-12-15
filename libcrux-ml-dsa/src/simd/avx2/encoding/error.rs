@@ -156,6 +156,7 @@ pub fn serialize(eta: Eta, simd_unit: &Vec256, serialized: &mut [u8]) {
 /\ (forall (i: nat {i < 256}). i % 32 >= 3 ==> Core_models.Abstractions.Bit.Bit_Zero? ${result}.(mk_int i))
 "#))]
 fn deserialize_to_unsigned_when_eta_is_2(bytes: &[u8]) -> Vec256 {
+    #[cfg(not(eurydice))]
     debug_assert!(bytes.len() == 3);
 
     const COEFFICIENT_MASK: i32 = (1 << 3) - 1;
@@ -184,6 +185,7 @@ fn deserialize_to_unsigned_when_eta_is_2(bytes: &[u8]) -> Vec256 {
 /\ (forall (i: nat {i < 256}). i % 32 >= 4 ==> Core_models.Abstractions.Bit.Bit_Zero? ${result}.(mk_int i))
 "#))]
 fn deserialize_to_unsigned_when_eta_is_4(bytes: &[u8]) -> Vec256 {
+    #[cfg(not(eurydice))]
     debug_assert!(bytes.len() == 4);
 
     const COEFFICIENT_MASK: i32 = (1 << 4) - 1;

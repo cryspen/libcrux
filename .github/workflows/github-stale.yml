@@ -8,7 +8,7 @@ jobs:
   stale:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/stale@v9
+      - uses: actions/stale@v10
         with:
           stale-issue-message: "This issue has been marked as stale due to a lack of activity for 60 days. If you believe this issue is still relevant, please provide an update or comment to keep it open. Otherwise, it will be closed in 7 days."
           stale-pr-message: "This PR has been marked as stale due to a lack of activity for 60 days. If you believe this pull request is still relevant, please provide an update or comment to keep it open. Otherwise, it will be closed in 7 days."

@@ -22,13 +22,13 @@ COPY --chown=$USER:$USER . $HOME/$USER
 
 ENV FSTAR_HOME=$HOME/fstar
 ENV HACL_HOME=$HOME/hacl-star
-ENV KRML_HOME=$HOME/karamel
 ENV EURYDICE_HOME=$HOME/eurydice
-ENV CHARON_HOME=$HOME/charon
-ENV KRML_REV=39cb85a718da8ae4a724d31b08f9134ca9311336
-ENV EURYDICE_REV=46cef5d58a855ed049fa89bfe99c959b5d9d0d4b
-ENV CHARON_REV=bb62a9b39db4ea8c6d536fe61b7d26663751bf3c
+ENV KRML_HOME=$HOME/eurydice/karamel
+ENV CHARON_HOME=$HOME/eurydice/charon
+ENV EURYDICE_REV=cdf02f9d8ed0d73f88c0a495c5b79359a51398fc
 ENV PATH="${PATH}:$HOME/fstar/bin:$HOME/z3/bin"
+ENV CC=clang
+ENV CXX=clang++
 
 # Setup & install.
 ADD install.sh /tmp/install.sh

@@ -23,15 +23,13 @@ jobs:
       matrix:
         bits: [32, 64]
         os:
-          - macos-13 # Intel mac
           - macos-latest # macos-15 on apple silicon
           - ubuntu-latest
+          - ubuntu-24.04-arm
           - windows-latest
         exclude:
           - bits: 32
             os: "macos-latest"
-          - bits: 32
-            os: "macos-13"
 
     runs-on: ${{ matrix.os }}
     defaults:
@@ -40,7 +38,7 @@ jobs:
         working-directory: libcrux-ml-kem
 
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - uses: taiki-e/install-action@cargo-hack
 
       - name: Update dependencies
@@ -50,10 +48,10 @@ jobs:
         if: ${{ matrix.bits == 64 }}
 
       - run: echo 'EXCLUDE_FEATURES=--exclude-features simd256' > $GITHUB_ENV
-        if: ${{ matrix.os == 'macos-latest' }}
+        if: ${{ matrix.os == 'macos-latest' || matrix.os == 'ubuntu-24.04-arm' }}
 
       - run: echo 'EXCLUDE_FEATURES=--exclude-features simd128' > $GITHUB_ENV
-        if: ${{ matrix.os != 'macos-latest' }}
+        if: ${{ matrix.os != 'macos-latest' && matrix.os != 'ubuntu-24.04-arm' }}
 
       - name: 🛠️ Setup Rust Nightly
         run: rustup toolchain install nightly
@@ -103,25 +101,25 @@ jobs:
 
       # Test SHA3
       - name: 🏃🏻‍♀️ SHA3 Test
-        working-directory: libcrux-sha3
+        working-directory: crates/algorithms/sha3
         run: |
           cargo clean
           cargo test --verbose $RUST_TARGET_FLAG
 
       - name: 🏃🏻‍♀️ SHA3 Test Release
-        working-directory: libcrux-sha3
+        working-directory: crates/algorithms/sha3
         run: |
           cargo clean
           cargo test --release --verbose $RUST_TARGET_FLAG
 
       - name: 🏃🏻‍♀️ SHA3 Test Portable
-        working-directory: libcrux-sha3
+        working-directory: crates/algorithms/sha3
         run: |
           cargo clean
           LIBCRUX_DISABLE_SIMD128=1 LIBCRUX_DISABLE_SIMD256=1 cargo test --verbose $RUST_TARGET_FLAG
 
       - name: 🏃🏻‍♀️ SHA3 Test Portable Release
-        working-directory: libcrux-sha3
+        working-directory: crates/algorithms/sha3
         run: |
           cargo clean
           LIBCRUX_DISABLE_SIMD128=1 LIBCRUX_DISABLE_SIMD256=1 cargo test --verbose --release $RUST_TARGET_FLAG
@@ -153,29 +151,49 @@ jobs:
           cargo clean
           cargo test ,kyber --verbose $RUST_TARGET_FLAG
 
-      - name: 🏃🏻‍♀️ Cargo Check Features
-        if: ${{ matrix.bits == 64 }}
-        run: |
-          cargo clean
-          cargo hack check --feature-powerset $EXCLUDE_FEATURES --verbose --no-dev-deps $RUST_TARGET_FLAG
+      # - name: 🏃🏻‍♀️ Cargo Check Features
+      #   if: ${{ matrix.bits == 64 }}
+      #   run: |
+      #     cargo clean
+      #     cargo hack check --feature-powerset $EXCLUDE_FEATURES --verbose --no-dev-deps $RUST_TARGET_FLAG
 
       - name: 🏃🏻‍♀️ Cargo Test Features
         if: ${{ matrix.bits == 64 }}
         run: |
           cargo clean
           cargo hack test --each-feature $EXCLUDE_FEATURES --verbose $RUST_TARGET_FLAG
-  
+
+  build-intel-macos:
+    if: ${{ github.event_name != 'merge_group' }}
+
+    runs-on: macos-15-intel
+    defaults:
+      run:
+        shell: bash
+        working-directory: libcrux-ml-kem
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Update dependencies
+        run: cargo update
+
+      - name: 🔨 Build
+        run: |
+          rustc --print=cfg
+          cargo build --verbose
+
   mlkem-build-test-status:
     if: ${{ always() }}
     needs: [build]
     runs-on: ubuntu-latest
     steps:
       - name: Successful
-        if: ${{ !(contains(needs.*.result, 'failure')) }} 
-        run: exit 0 
+        if: ${{ !(contains(needs.*.result, 'failure')) }}
+        run: exit 0
       - name: Failing
-        if: ${{ (contains(needs.*.result, 'failure')) }} 
-        run: exit 1 
+        if: ${{ (contains(needs.*.result, 'failure')) }}
+        run: exit 1
 
   fuzz:
     if: ${{ github.event_name != 'pull_request' }}
@@ -193,7 +211,7 @@ jobs:
         working-directory: libcrux-ml-kem
 
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
 
       - name: 🛠️ Setup Rust Nightly
         run: |

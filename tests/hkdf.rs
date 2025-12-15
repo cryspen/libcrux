@@ -19,9 +19,10 @@ fn run_wycheproof() {
                 let comment = &test.comment;
                 println!("Test {i}: {comment}");
 
-                let result = libcrux_hkdf::hkdf(alg, &test.salt, &test.ikm, &test.info, test.size);
+                let mut okm = vec![0; test.size];
+                let result = libcrux_hkdf::hkdf(alg, &mut okm, &test.salt, &test.ikm, &test.info);
                 match (result, test.result) {
-                    (Ok(okm), TestResult::Valid) => {
+                    (Ok(_), TestResult::Valid) => {
                         assert_eq!(okm.as_slice(), test.okm.as_ref())
                     }
                     (Err(_), TestResult::Invalid) => {}

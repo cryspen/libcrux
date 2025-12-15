@@ -22,7 +22,7 @@ jobs:
     if: ${{ github.event_name != 'pull_request' }}
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - uses: dorny/paths-filter@v3
         id: changes
         with:
@@ -63,7 +63,7 @@ jobs:
         working-directory: libcrux-ml-dsa
         shell: bash
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
 
       - name: Extract C (header only)
         run: |
@@ -71,7 +71,7 @@ jobs:
           ./boring.sh --no-clean
 
       - name: Upload header only C extraction
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: header-only-c-extraction-ml-dsa
           path: libcrux-ml-dsa/cg/
@@ -85,17 +85,17 @@ jobs:
       run:
         shell: bash
     steps:
-      - uses: actions/download-artifact@v5
+      - uses: actions/download-artifact@v6
         with:
           name: header-only-c-extraction-ml-dsa
           path: ~/mldsa-c-extraction
 
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
 
       - name: Diff Extraction
         run: |
-          libcrux-ml-kem/headers_kill_revs.sh libcrux-ml-dsa/cg
-          libcrux-ml-kem/headers_kill_revs.sh ~/mldsa-c-extraction
+          libcrux-ml-kem/extracts/common/headers_kill_revs.sh libcrux-ml-dsa/cg
+          libcrux-ml-kem/extracts/common/headers_kill_revs.sh ~/mldsa-c-extraction
           diff -r libcrux-ml-dsa/cg ~/mldsa-c-extraction
 
   build-header-only:
@@ -112,7 +112,7 @@ jobs:
       run:
         shell: bash
     steps:
-      - uses: actions/download-artifact@v5
+      - uses: actions/download-artifact@v6
         with:
           name: header-only-c-extraction-ml-dsa
 

@@ -22,7 +22,7 @@ jobs:
       id-token: write
 
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
 
       - name: Log in to the Container registry
         uses: docker/login-action@v3
@@ -40,55 +40,54 @@ jobs:
           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.VERSION_TAG }}
     outputs:
       image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.VERSION_TAG }}
-  extract:
+  extract-ml-kem-c-header-only:
     needs: [build-and-push-image]
     runs-on: ubuntu-latest
     container:
       image: ${{ needs.build-and-push-image.outputs.image }}
     defaults:
       run:
-        working-directory: libcrux-ml-kem
+        working-directory: libcrux-ml-kem/extracts/c_header_only
         shell: bash
     steps:
-      - uses: actions/checkout@v5
-
-      - name: Extract C
-        run: |
-          export HOME=/home/user
-          ./c.sh --no-glue
-
-      - name: Upload C extraction
-        uses: actions/upload-artifact@v4
-        with:
-          name: c-extraction
-          path: libcrux-ml-kem/c
-          include-hidden-files: true
-          if-no-files-found: error
-  extract-header-only-ml-kem:
-    needs: [build-and-push-image]
-    runs-on: ubuntu-latest
-    container:
-      image: ${{ needs.build-and-push-image.outputs.image }}
-    defaults:
-      run:
-        working-directory: libcrux-ml-kem
-        shell: bash
-    steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
 
       - name: Extract C (header only)
         run: |
           export HOME=/home/user
-          ./boring.sh --no-clean
-
+          ./extract.sh
       - name: Upload header only C extraction
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
-          name: header-only-c-extraction-ml-kem
-          path: libcrux-ml-kem/cg/
+          name: extraction-ml-kem-c-header-only
+          path: libcrux-ml-kem/extracts/c_header_only/generated
           include-hidden-files: true
           if-no-files-found: error
-  extract-header-only-ml-dsa:
+  extract-ml-kem-cpp-header-only:
+    needs: [build-and-push-image]
+    runs-on: ubuntu-latest
+    container:
+      image: ${{ needs.build-and-push-image.outputs.image }}
+    defaults:
+      run:
+        working-directory: libcrux-ml-kem/extracts/cpp_header_only
+        shell: bash
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Extract C++ (header only)
+        run: |
+          export HOME=/home/user
+          ./extract.sh --no-clean
+
+      - name: Upload header only C++ extraction
+        uses: actions/upload-artifact@v5
+        with:
+          name: extraction-ml-kem-cpp-header-only
+          path: libcrux-ml-kem/extracts/cpp_header_only/generated
+          include-hidden-files: true
+          if-no-files-found: error
+  extract-ml-dsa-header-only:
     needs: [build-and-push-image]
     runs-on: ubuntu-latest
     container:
@@ -98,7 +97,7 @@ jobs:
         working-directory: libcrux-ml-dsa
         shell: bash
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
 
       - name: Extract C (header only)
         run: |
@@ -106,14 +105,14 @@ jobs:
           ./boring.sh --no-clean
 
       - name: Upload header only C extraction
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
-          name: header-only-c-extraction-ml-dsa
+          name: extraction-ml-dsa-header-only
           path: libcrux-ml-dsa/cg/
           include-hidden-files: true
           if-no-files-found: error
-  test-build:
-    needs: [extract]
+  test-build-ml-kem-c-header-only:
+    needs: [extract-ml-kem-c-header-only]
     strategy:
       fail-fast: false
       matrix:
@@ -127,9 +126,9 @@ jobs:
       run:
         shell: bash
     steps:
-      - uses: actions/download-artifact@v5
+      - uses: actions/download-artifact@v6
         with:
-          name: c-extraction
+          name: extraction-ml-kem-c-header-only
           
       - name: 🔨 Build
         run: |
@@ -137,11 +136,11 @@ jobs:
           cmake --build build
 
       - name: 🏃🏻‍♀️ Test
-        run: ./build/Debug/ml_kem_test
+        run: ./build/Debug/ml_kem_test768
         if: ${{ matrix.os == 'windows-latest' }}
 
       - name: 🏃🏻‍♀️ Test
-        run: ./build/ml_kem_test
+        run: ./build/ml_kem_test768
         if: ${{ matrix.os != 'windows-latest' }}
 
       - name: 🔨 Build Release
@@ -150,8 +149,8 @@ jobs:
           LIBCRUX_BENCHMARKS=1 cmake -B build -DCMAKE_BUILD_TYPE=Release
           cmake --build build --config Release
         if: ${{ matrix.os != 'windows-latest' }}
-  test-build-header-only-ml-kem:
-    needs: [extract-header-only-ml-kem]
+  test-build-ml-kem-cpp-header-only:
+    needs: [extract-ml-kem-cpp-header-only]
     strategy:
       fail-fast: false
       matrix:
@@ -164,9 +163,9 @@ jobs:
       run:
         shell: bash
     steps:
-      - uses: actions/download-artifact@v5
+      - uses: actions/download-artifact@v6
         with:
-          name: header-only-c-extraction-ml-kem
+          name: extraction-ml-kem-cpp-header-only
 
       - name: 🔨 Build
         run: |
@@ -175,15 +174,15 @@ jobs:
       # FIXME: Benchmark build for cg on Windows CI is not working right now.
 
       - name: 🏃🏻‍♀️ Test
-        run: ./build/ml_kem_test
+        run: ./build/ml_kem_test768
         if: ${{ matrix.os != 'windows-latest' }}
 
       - name: 🏃🏻‍♀️ Test
-        run: ./build/Debug/ml_kem_test
+        run: ./build/Debug/ml_kem_test768
         if: ${{ matrix.os == 'windows-latest' }}
 
-  test-build-header-only-ml-dsa:
-    needs: [extract-header-only-ml-dsa]
+  test-build-ml-dsa-header-only:
+    needs: [extract-ml-dsa-header-only]
     strategy:
       fail-fast: false
       matrix:
@@ -196,9 +195,9 @@ jobs:
       run:
         shell: bash
     steps:
-      - uses: actions/download-artifact@v5
+      - uses: actions/download-artifact@v6
         with:
-          name: header-only-c-extraction-ml-dsa
+          name: extraction-ml-dsa-header-only
 
       - name: 🔨 Build
         run: |
