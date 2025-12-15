@@ -16,7 +16,7 @@ jobs:
       fail-fast: false
       matrix:
         os:
-          - macos-13
+          - macos-15-intel
           - macos-latest
           - ubuntu-latest
           - windows-latest
@@ -42,20 +42,20 @@ jobs:
       working-directory: rust_crypto_provider
       run: cargo build --verbose --all-features
     # Apple Silicon
-    - if: matrix.os == 'macos-13'
+    - if: matrix.os == 'macos-15-intel'
       run: |
         rustup target install aarch64-apple-darwin
         rustup target install aarch64-apple-ios
     - name: Build
       run: cargo build --verbose
     - name: Apple Silicon Build
-      if: matrix.os == 'macos-13'
+      if: matrix.os == 'macos-15-intel'
       run: |
         cargo build --target aarch64-apple-darwin --tests --verbose
         cargo build --release --target aarch64-apple-darwin --tests --verbose
     # ARM64 iOS
     - name: iOS aarch64
-      if: matrix.os == 'macos-13'
+      if: matrix.os == 'macos-15-intel'
       run: |
         cargo build --target aarch64-apple-ios --tests --verbose
         cargo build --release --target aarch64-apple-ios --tests --verbose
@@ -92,7 +92,7 @@ jobs:
       fail-fast: false
       matrix:
         os:
-          - macos-13
+          - macos-15-intel
           - ubuntu-latest
     runs-on: ${{ matrix.os }}
     steps:
