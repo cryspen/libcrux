@@ -120,7 +120,7 @@ jobs:
           cargo hack test --each-feature $EXCLUDE_FEATURES --verbose $RUST_TARGET_FLAG
 
   build-intel-macos:
-    runs-on: macos-13
+    runs-on: macos-15-intel
     defaults:
       run:
         shell: bash

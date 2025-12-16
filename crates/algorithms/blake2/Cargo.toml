@@ -20,7 +20,7 @@ libcrux-macros = { version = "=0.0.3", path = "../../utils/macros" }
 libcrux-traits = { version = "=0.0.4", path = "../../../traits/" }
 
 [dev-dependencies]
-criterion = "0.7"
+criterion = "0.8"
 rand = "0.9"
 libcrux-traits = { version = "=0.0.4", path = "../../../traits/", features = ["generic-tests"] }
 
