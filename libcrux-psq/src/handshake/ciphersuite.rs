@@ -136,6 +136,7 @@ impl CiphersuiteName {
     pub(crate) fn query_ciphersuite() -> Self {
         Self::X25519_NONE_X25519_CHACHA20POLY1305_HKDFSHA256
     }
+
     /// Coerce the responder ciphersuite into a compatible working
     /// ciphersuite for a given handshake.
     ///
