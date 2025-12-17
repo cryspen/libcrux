@@ -134,55 +134,33 @@ impl KeyPair {
     }
 }
 impl arrayref::Ed25519 {
-    /// The hacl implementation requires that
-    /// - the private key is a 32 byte buffer
-    /// - the signature is a 64 byte buffer,
-    /// - the payload buffer is not shorter than payload_len.
-    ///
-    /// We enforce the first two using types, and the latter by using `payload.len()` and `payload_len`.
-    /// This has the caveat that `payload_len` must be <= u32::MAX, so we return an error if that is
-    /// not the case.
     pub fn sign(
         key: &[U8; Self::SIGNING_KEY_LEN],
         payload: &[u8],
         signature: &mut [u8; Self::SIGNATURE_LEN],
     ) -> Result<(), arrayref::SigningError> {
-        crate::hacl::ed25519::sign(
-            signature,
-            key.declassify_ref(),
-            payload
-                .len()
-                .try_into()
-                .map_err(|_| arrayref::SigningError::WrongPayloadLength)?,
-            payload,
-        );
+        let payload_len: u32 = payload
+            .len()
+            .try_into()
+            .map_err(|_| arrayref::SigningError::WrongPayloadLength)?;
+
+        crate::hacl::ed25519::sign(signature, key.declassify_ref(), payload_len, payload);
 
         Ok(())
     }
 
-    /// The hacl implementation requires that
-    /// - the public key is a 32 byte buffer
-    /// - the signature is a 64 byte buffer,
-    /// - the payload buffer is not shorter than payload_len.
-    ///
-    /// We enforce the first two using types, and the latter by using `payload.len()` and `payload_len`.
-    /// This has the caveat that `payload_len` must be <= u32::MAX, so we return an error if that is
-    /// not the case.
     #[inline(always)]
     pub fn verify(
         key: &[u8; Self::VERIFICATION_KEY_LEN],
         payload: &[u8],
         signature: &[u8; Self::SIGNATURE_LEN],
     ) -> Result<(), arrayref::VerificationError> {
-        if crate::hacl::ed25519::verify(
-            key,
-            payload
-                .len()
-                .try_into()
-                .map_err(|_| arrayref::VerificationError::WrongPayloadLength)?,
-            payload,
-            signature,
-        ) {
+        let payload_len: u32 = payload
+            .len()
+            .try_into()
+            .map_err(|_| arrayref::VerificationError::WrongPayloadLength)?;
+
+        if crate::hacl::ed25519::verify(key, payload_len, payload, signature) {
             Ok(())
         } else {
             Err(arrayref::VerificationError::InvalidSignature)
@@ -198,14 +176,6 @@ impl arrayref::Ed25519 {
     }
 }
 impl slice::Ed25519 {
-    /// The hacl implementation requires that
-    /// - the private key is a 32 byte buffer
-    /// - the signature is a 64 byte buffer,
-    /// - the payload buffer is not shorter than payload_len.
-    ///
-    /// We enforce the first two using types, and the latter by using `payload.len()` and `payload_len`.
-    /// This has the caveat that `payload_len` must be <= u32::MAX, so we return an error if that is
-    /// not the case.
     pub fn sign(
         key: &[U8],
         payload: &[u8],
@@ -221,14 +191,6 @@ impl slice::Ed25519 {
         arrayref::Ed25519::sign(&key, payload, signature).map_err(slice::SigningError::from)
     }
 
-    /// The hacl implementation requires that
-    /// - the public key is a 32 byte buffer
-    /// - the signature is a 64 byte buffer,
-    /// - the payload buffer is not shorter than payload_len.
-    ///
-    /// We enforce the first two using types, and the latter by using `payload.len()` and `payload_len`.
-    /// This has the caveat that `payload_len` must be <= u32::MAX, so we return an error if that is
-    /// not the case.
     pub fn verify(
         key: &[u8],
         payload: &[u8],
@@ -262,27 +224,11 @@ impl slice::Ed25519 {
     }
 }
 impl<'a> SigningKeyRef<'a> {
-    /// The hacl implementation requires that
-    /// - the private key is a 32 byte buffer
-    /// - the signature is a 64 byte buffer,
-    /// - the payload buffer is not shorter than payload_len.
-    ///
-    /// We enforce the first two using types, and the latter by using `payload.len()` and `payload_len`.
-    /// This has the caveat that `payload_len` must be <= u32::MAX, so we return an error if that is
-    /// not the case.
     pub fn sign(&self, payload: &[u8], signature: &mut [u8]) -> Result<(), slice::SigningError> {
         slice::Ed25519::sign(self.as_ref(), payload, signature)
     }
 }
 impl<'a> VerificationKeyRef<'a> {
-    /// The hacl implementation requires that
-    /// - the public key is a 32 byte buffer
-    /// - the signature is a 64 byte buffer,
-    /// - the payload buffer is not shorter than payload_len.
-    ///
-    /// We enforce the first two using types, and the latter by using `payload.len()` and `payload_len`.
-    /// This has the caveat that `payload_len` must be <= u32::MAX, so we return an error if that is
-    /// not the case.
     pub fn verify(&self, payload: &[u8], signature: &[u8]) -> Result<(), slice::VerificationError> {
         slice::Ed25519::verify(self.as_ref(), payload, signature)
     }
@@ -290,14 +236,6 @@ impl<'a> VerificationKeyRef<'a> {
 
 // key-centric API
 impl SigningKey {
-    /// The hacl implementation requires that
-    /// - the private key is a 32 byte buffer
-    /// - the signature is a 64 byte buffer,
-    /// - the payload buffer is not shorter than payload_len.
-    ///
-    /// We enforce the first two using types, and the latter by using `payload.len()` and `payload_len`.
-    /// This has the caveat that `payload_len` must be <= u32::MAX, so we return an error if that is
-    /// not the case.
     pub fn sign(&self, payload: &[u8]) -> Result<Signature, arrayref::SigningError> {
         let mut signature = [0u8; SIGNATURE_LEN];
         arrayref::Ed25519::sign(self.as_ref(), payload, &mut signature)
@@ -305,14 +243,6 @@ impl SigningKey {
     }
 }
 impl VerificationKey {
-    /// The hacl implementation requires that
-    /// - the public key is a 32 byte buffer
-    /// - the signature is a 64 byte buffer,
-    /// - the payload buffer is not shorter than payload_len.
-    ///
-    /// We enforce the first two using types, and the latter by using `payload.len()` and `payload_len`.
-    /// This has the caveat that `payload_len` must be <= u32::MAX, so we return an error if that is
-    /// not the case.
     pub fn verify(
         &self,
         payload: &[u8],
