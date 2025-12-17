@@ -31,8 +31,8 @@
 //!
 //! The [`impl_key_centric_types!()`] macro can be used to conveniently define types
 //! used by key-centric signature APIs.
-//! - `SigningKey`, `SigningKeyRef`: owned and borrowed signing keys.
-//! - `VerificationKey`, `VerificationKeyRef`: owned and borrowed verification keys.
+//! - `SigningKey`, `SigningKeyRef`: owned and borrowed signing keys, respectively.
+//! - `VerificationKey`, `VerificationKeyRef`: owned and borrowed verification keys, respectively.
 //! - `Signature`: an owned signature.
 //! - `KeyPair`: an owned signature keypair (contains a `SigningKey` and a `VerificationKey`)
 //!
@@ -95,8 +95,8 @@ pub use impl_sign_consts;
 ///
 /// The [`impl_key_centric_types!()`] macro can be used to conveniently define types
 /// used by key-centric signature APIs.
-/// - `SigningKey`, `SigningKeyRef`: owned and borrowed signing keys.
-/// - `VerificationKey`, `VerificationKeyRef`: owned and borrowed verification keys.
+/// - `SigningKey`, `SigningKeyRef`: owned and borrowed signing keys, respectively.
+/// - `VerificationKey`, `VerificationKeyRef`: owned and borrowed verification keys, respectively.
 /// - `Signature`: an owned signature.
 /// - `KeyPair`: an owned signature keypair (contains a `SigningKey` and a `VerificationKey`)
 ///
