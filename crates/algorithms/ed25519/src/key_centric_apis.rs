@@ -1,4 +1,4 @@
-use libcrux_traits::signature::{impl_key_centric_types, impl_sign_traits, SignConsts};
+use libcrux_traits::signature::{impl_key_centric_types, impl_sign_consts, SignConsts};
 
 use libcrux_secrets::{Classify, DeclassifyRef};
 const VERIFICATION_KEY_LEN: usize = 32;
@@ -86,7 +86,7 @@ pub mod slice {
     #[derive(Debug, PartialEq)]
     pub struct Ed25519;
     use super::*;
-    impl_sign_traits!(
+    impl_sign_consts!(
         Ed25519,
         SIGNING_KEY_LEN,
         VERIFICATION_KEY_LEN,

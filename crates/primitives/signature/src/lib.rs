@@ -7,7 +7,7 @@
 //! - ML-DSA
 
 #[cfg(any(feature = "ecdsa", feature = "ed25519", feature = "mldsa"))]
-pub use libcrux_traits::signature::{SignConsts, SignTypes};
+pub use libcrux_traits::signature::SignConsts;
 
 #[cfg(feature = "ecdsa")]
 pub mod ecdsa {

@@ -1,5 +1,5 @@
 use crate::p256::Nonce;
-use libcrux_traits::signature::{impl_key_centric_types, impl_sign_traits, SignConsts};
+use libcrux_traits::signature::{impl_key_centric_types, impl_sign_consts, SignConsts};
 
 macro_rules! impl_mod {
     ($ty:ident, $module:ident,
@@ -73,7 +73,7 @@ macro_rules! impl_mod {
             #[derive(Debug, PartialEq)]
             pub struct $ty;
             use super::*;
-            impl_sign_traits!(
+            impl_sign_consts!(
                 $ty,
                 SIGNING_KEY_LEN,
                 VERIFICATION_KEY_LEN,

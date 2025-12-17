@@ -27,9 +27,6 @@
 //! assert_eq!(MlDsa44::RAND_KEYGEN_LEN, 32);
 //! ```
 //!
-//! ### Defining associated types with the [`SignTypes`] trait
-//!
-//! The [`SignTypes`] trait can be used to define associated types for signature algorithms.
 
 /// Constants defining the sizes of cryptographic elements for a signature algorithm.
 pub trait SignConsts {
@@ -43,22 +40,9 @@ pub trait SignConsts {
     const RAND_KEYGEN_LEN: usize;
 }
 
-/// Associated types for signature algorithm components.
-///
-/// This trait defines the concrete types used by a signature algorithm for keys,
-/// signatures, randomness, and auxiliary signing data.
-pub trait SignTypes {
-    /// The type representing signing (private) keys.
-    type SigningKey;
-    /// The type representing verification (public) keys.
-    type VerificationKey;
-    /// The type representing signatures.
-    type Signature;
-}
-
-/// Helper macro for implementing signing-related traits
+/// Helper macro for implementing the [`SignConsts`] trait.
 #[macro_export]
-macro_rules! impl_sign_traits {
+macro_rules! impl_sign_consts {
     ($algorithm:ty, $signing_key_len:expr, $verification_key_len:expr, $signature_len:expr, $rand_keygen_len:expr) => {
         use $crate::libcrux_secrets::U8;
         impl $crate::signature::SignConsts for $algorithm {
@@ -67,33 +51,27 @@ macro_rules! impl_sign_traits {
             const SIGNATURE_LEN: usize = $signature_len;
             const RAND_KEYGEN_LEN: usize = $rand_keygen_len;
         }
-
-        // internal types
-        type SigningKeyArray = [U8; $signing_key_len];
-        type VerificationKeyArray = [u8; $verification_key_len];
-        type SignatureArray = [u8; $signature_len];
-
-        impl $crate::signature::SignTypes for $algorithm {
-            type SigningKey = SigningKeyArray;
-            type VerificationKey = VerificationKeyArray;
-            type Signature = SignatureArray;
-        }
     };
 }
 
-pub use impl_sign_traits;
+pub use impl_sign_consts;
 
 /// Helper macro for implementing types for key-centric APIs
 #[macro_export]
 macro_rules! impl_key_centric_types {
     ($algorithm:ty, $signing_key_len:expr, $verification_key_len:expr, $signature_len:expr, $rand_keygen_len:expr, $from_slice_error:ty, $from_slice_error_variant:expr) => {
-        impl_sign_traits!(
+        $crate::signature::impl_sign_consts!(
             $algorithm,
             $signing_key_len,
             $verification_key_len,
             $signature_len,
             $rand_keygen_len
         );
+
+        // internal types
+        type SigningKeyArray = [U8; $signing_key_len];
+        type VerificationKeyArray = [u8; $verification_key_len];
+        type SignatureArray = [u8; $signature_len];
 
         /// A signing key. The bytes are borrowed.
         pub struct SigningKeyRef<'a> {
