@@ -32,8 +32,11 @@ pub mod ecdsa {
         //! // verify
         //! verification_key.verify(b"payload", &signature).unwrap();
         //! ```
-        pub use libcrux_ecdsa::key_centric_apis::{sha2_256, sha2_384, sha2_512};
-        pub use libcrux_ecdsa::p256::Nonce;
+        #[doc(inline)]
+        pub use libcrux_ecdsa::{
+            key_centric_apis::{sha2_256, sha2_384, sha2_512},
+            p256::Nonce,
+        };
     }
 }
 
@@ -55,8 +58,10 @@ pub mod ed25519 {
     //! // verify
     //! verification_key.verify(b"payload", &signature).unwrap();
     //! ```
+    #[doc(inline)]
     pub use libcrux_ed25519::key_centric_apis::{
-        slice, KeyPair, SigningKey, SigningKeyRef, VerificationKey, VerificationKeyRef,
+        slice, Ed25519, KeyPair, SigningError, SigningKey, SigningKeyRef, VerificationError,
+        VerificationKey, VerificationKeyRef,
     };
 }
 
@@ -94,5 +99,6 @@ pub mod mldsa {
     //! signing_key.sign(b"payload", &mut signature, b"context", [2; 32]).unwrap();
     //!
     //! ```
+    #[doc(inline)]
     pub use libcrux_ml_dsa::key_centric_apis::{ml_dsa_44, ml_dsa_65, ml_dsa_87};
 }

@@ -14,6 +14,8 @@ macro_rules! impl_mod {
 
         #[doc(inline)]
         pub use arrayref::*;
+        #[doc(inline)]
+        pub use slice::$ty;
 
         // TODO: different error type?
         #[derive(Debug)]
@@ -22,7 +24,7 @@ macro_rules! impl_mod {
 
         pub(crate) mod arrayref {
             #[derive(Debug, PartialEq)]
-            pub struct $ty;
+            pub(crate) struct $ty;
             use super::*;
             impl_key_centric_types!(
                 $ty,
@@ -70,6 +72,7 @@ macro_rules! impl_mod {
             //! .unwrap();
             //! ```
 
+            /// Slice-based APIs for ML-DSA.
             #[derive(Debug, PartialEq)]
             pub struct $ty;
             use super::*;

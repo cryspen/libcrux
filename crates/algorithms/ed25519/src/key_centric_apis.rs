@@ -6,9 +6,11 @@ const SIGNING_KEY_LEN: usize = 32;
 const SIGNATURE_LEN: usize = 64;
 const RAND_KEYGEN_LEN: usize = SIGNING_KEY_LEN;
 
-// arrayref API
 #[doc(inline)]
-use arrayref::*;
+pub use slice::Ed25519;
+
+#[doc(inline)]
+pub use arrayref::{SigningError, VerificationError};
 
 // TODO: different error type?
 #[derive(Debug)]
@@ -16,7 +18,7 @@ use arrayref::*;
 pub struct WrongLengthError;
 
 impl_key_centric_types!(
-    Ed25519,
+    arrayref::Ed25519,
     SIGNING_KEY_LEN,
     VERIFICATION_KEY_LEN,
     SIGNATURE_LEN,
@@ -26,7 +28,6 @@ impl_key_centric_types!(
 );
 
 pub(crate) mod arrayref {
-    // Private [`Ed25519`] struct used for internal implementations
     #[derive(Debug, PartialEq)]
     pub(crate) struct Ed25519;
 
@@ -83,7 +84,9 @@ pub mod slice {
     //! // verify
     //! Ed25519::verify(&verification_key, b"payload", &signature).unwrap();
     //!  ```
+
     #[derive(Debug, PartialEq)]
+    /// Slice-based APIs for Ed25519.
     pub struct Ed25519;
     use super::*;
     impl_sign_consts!(

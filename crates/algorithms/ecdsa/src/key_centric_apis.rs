@@ -70,6 +70,8 @@ macro_rules! impl_mod {
             //! // verify
             //! EcdsaP256::verify(&verification_key, b"payload", &signature).unwrap();
             //! ```
+            
+            /// Slice-based APIs for ECDSA-P256.
             #[derive(Debug, PartialEq)]
             pub struct $ty;
             use super::*;
