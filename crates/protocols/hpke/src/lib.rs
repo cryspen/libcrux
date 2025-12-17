@@ -571,6 +571,7 @@ impl<Crypto: HpkeCrypto> Hpke<Crypto> {
     }
 
     /// 6. Single-Shot APIs
+    ///
     /// 6.1. Encryption and Decryption
     ///
     /// Single shot API to encrypt the bytes in `plain_text` to the public key
@@ -599,6 +600,7 @@ impl<Crypto: HpkeCrypto> Hpke<Crypto> {
     }
 
     /// 6. Single-Shot APIs
+    ///
     /// 6.1. Encryption and Decryption
     ///
     /// Single shot API to decrypt the bytes in `ct` with the private key `sk_r`.
@@ -626,6 +628,7 @@ impl<Crypto: HpkeCrypto> Hpke<Crypto> {
     }
 
     /// 6. Single-Shot APIs
+    ///
     /// 6.2. Secret Export
     ///
     /// Single shot API to derive an exporter secret for receiver with public key
@@ -654,6 +657,7 @@ impl<Crypto: HpkeCrypto> Hpke<Crypto> {
     }
 
     /// 6. Single-Shot APIs
+    ///
     /// 6.2. Secret Export
     ///
     /// Single shot API to derive an exporter secret for receiver with private key
@@ -786,6 +790,7 @@ impl<Crypto: HpkeCrypto> Hpke<Crypto> {
     }
 
     /// 4. Cryptographic Dependencies
+    ///
     /// Randomized algorithm to generate a key pair `(skX, pkX)` for the KEM.
     /// This is equivalent to `derive_key_pair(random_vector(sk.len()))`
     ///

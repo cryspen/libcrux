@@ -34,6 +34,7 @@ pub enum KemAlgorithm {
     ///
     /// This is XWing draft 06, but uses an obsolete code point. You should use `XWingDraft06` instead.
     #[deprecated(
+        since = "0.4.0",
         note = "This uses an obsolete code point, use `XWingDraft06` instead for the correct code point."
     )]
     XWingDraft06Obsolete = 0x004D,

@@ -1,6 +1,6 @@
 [package]
 name = "hpke-rs-libcrux"
-version = "0.4.0"
+version = "0.5.0"
 authors = ["Franziskus Kiefer <franziskuskiefer@gmail.com>"]
 edition = "2021"
 license = "MPL-2.0"
@@ -10,7 +10,7 @@ readme = "Readme.md"
 repository = "https://github.com/cryspen/hpke-rs"
 
 [dependencies]
-hpke-rs-crypto = { version = "0.3.0", path = "../traits" }
+hpke-rs-crypto = { version = "0.4.0", path = "../traits" }
 libcrux-ecdh = { version = "0.0.4", default-features = false }
 libcrux-hkdf = { version = "0.0.4" }
 libcrux-kem = { version = "0.0.4", default-features = false }

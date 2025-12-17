@@ -29,6 +29,7 @@ pub(crate) fn encaps<Crypto: HpkeCrypto>(
                 .map_err(|_| Error::InsufficientRandomness)?;
             dh_kem::encaps::<Crypto>(alg, pk_r, &ciphersuite(alg), &randomness)
         }
+        #[allow(deprecated)]
         KemAlgorithm::XWingDraft06 | KemAlgorithm::XWingDraft06Obsolete => {
             Crypto::kem_encaps(alg, pk_r, hpke.rng())
         }
@@ -47,6 +48,7 @@ pub(crate) fn decaps<Crypto: HpkeCrypto>(
         | KemAlgorithm::DhKemP521
         | KemAlgorithm::DhKem25519
         | KemAlgorithm::DhKem448 => dh_kem::decaps::<Crypto>(alg, enc, sk_r, &ciphersuite(alg)),
+        #[allow(deprecated)]
         KemAlgorithm::XWingDraft06 | KemAlgorithm::XWingDraft06Obsolete => {
             Crypto::kem_decaps(alg, enc, sk_r)
         }
@@ -71,6 +73,7 @@ pub(crate) fn auth_encaps<Crypto: HpkeCrypto>(
                 .map_err(|_| Error::InsufficientRandomness)?;
             dh_kem::auth_encaps::<Crypto>(alg, pk_r, sk_s, &ciphersuite(alg), &randomness)
         }
+        #[allow(deprecated)]
         KemAlgorithm::XWingDraft06 | KemAlgorithm::XWingDraft06Obsolete => {
             Err(Error::UnsupportedKemOperation)
         }
@@ -92,6 +95,7 @@ pub(crate) fn auth_decaps<Crypto: HpkeCrypto>(
         | KemAlgorithm::DhKem448 => {
             dh_kem::auth_decaps::<Crypto>(alg, enc, sk_r, pk_s, &ciphersuite(alg))
         }
+        #[allow(deprecated)]
         KemAlgorithm::XWingDraft06 | KemAlgorithm::XWingDraft06Obsolete => {
             Err(Error::UnsupportedKemOperation)
         }
@@ -111,6 +115,7 @@ pub(crate) fn key_gen<Crypto: HpkeCrypto>(
         | KemAlgorithm::DhKemP521
         | KemAlgorithm::DhKem25519
         | KemAlgorithm::DhKem448 => dh_kem::key_gen::<Crypto>(alg, prng),
+        #[allow(deprecated)]
         KemAlgorithm::XWingDraft06 | KemAlgorithm::XWingDraft06Obsolete => {
             // For XWing we use the derive key pair function.
             let mut seed = vec![0u8; alg.private_key_len()];
@@ -135,6 +140,7 @@ pub(crate) fn derive_key_pair<Crypto: HpkeCrypto>(
         | KemAlgorithm::DhKemP521
         | KemAlgorithm::DhKem25519
         | KemAlgorithm::DhKem448 => dh_kem::derive_key_pair::<Crypto>(alg, &ciphersuite(alg), ikm),
+        #[allow(deprecated)]
         KemAlgorithm::XWingDraft06 | KemAlgorithm::XWingDraft06Obsolete => {
             let seed = libcrux_sha3::shake256::<32>(ikm);
             let kp = Crypto::kem_key_gen_derand(alg, &seed)?;
