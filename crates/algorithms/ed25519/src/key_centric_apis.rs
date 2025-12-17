@@ -1,3 +1,67 @@
+//! This module includes key-centric and slice-based APIs for Ed25519.
+//!
+//! ### Key-centric APIs
+//! This module provides key-centric APIs for Ed25519.
+//!
+//! #### Key-centric (owned)
+//! ```rust
+//! use libcrux_ed25519::key_centric_apis::{SigningKey, KeyPair, VerificationKey};
+//!
+//! // generate key pair
+//! let KeyPair { signing_key, verification_key } = KeyPair::generate_derand([0u8; 32]);
+//!
+//! // sign and verify
+//! let signature = signing_key.sign(b"payload").unwrap();
+//! verification_key.verify(b"payload", &signature).unwrap();
+//! ```
+//!
+//! #### Key-centric (reference)
+//! ```rust
+//! # use libcrux_ed25519::key_centric_apis::{
+//! #     Ed25519, SigningKeyRef, VerificationKeyRef,
+//! # };
+//! # use libcrux_traits::signature::SignConsts;
+//! #
+//! # // key generation
+//! # let mut signing_key = [0u8; Ed25519::SIGNING_KEY_LEN];
+//! # let mut verification_key = [0u8; Ed25519::VERIFICATION_KEY_LEN];
+//! # Ed25519::keygen(&mut signing_key, &mut verification_key, [0; 32]).unwrap();
+//! #
+//! // create key structs from references
+//! let signing_key = SigningKeyRef::from_slice(&signing_key).unwrap();
+//! let verification_key = VerificationKeyRef::from_slice(&verification_key).unwrap();
+//!
+//! // signature buffer
+//! let mut signature = [0u8; Ed25519::SIGNATURE_LEN];
+//!
+//! // sign and verify
+//! signing_key
+//!     .sign(b"payload", &mut signature)
+//!     .unwrap();
+//! verification_key
+//!     .verify(b"payload", &signature)
+//!     .unwrap();
+//! ```
+//!
+//! ### Slice-based APIs
+//! This module also provides slice-based APIs via the struct [`Ed25519`].
+//!
+//! ```rust
+//! use libcrux_ed25519::key_centric_apis::Ed25519;
+//! use libcrux_traits::signature::SignConsts;
+//!
+//! // keygen
+//! let mut signing_key = [0u8; Ed25519::SIGNING_KEY_LEN];
+//! let mut verification_key = [0u8; Ed25519::VERIFICATION_KEY_LEN];
+//! Ed25519::keygen(&mut signing_key, &mut verification_key, [0; 32]);
+//!
+//! // signature buffer
+//! let mut signature = [0u8; Ed25519::SIGNATURE_LEN];
+//!
+//! // sign and verify
+//! Ed25519::sign(&signing_key, b"payload", &mut signature).unwrap();
+//! Ed25519::verify(&verification_key, b"payload", &signature).unwrap();
+//! ```
 use libcrux_traits::signature::{
     impl_key_centric_types, impl_sign_consts, SignConsts, WrongLengthError,
 };

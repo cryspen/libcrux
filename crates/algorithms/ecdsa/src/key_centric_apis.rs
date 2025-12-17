@@ -1,3 +1,86 @@
+//! This module includes key-centric and slice-based APIs for ECDSA-P256.
+//!
+//! ### Key-centric APIs
+//! This module provides key-centric APIs for ECDSA-P256.
+//!
+//! #### Key-centric (owned)
+//! ```rust
+//! # use libcrux_ecdsa::key_centric_apis::sha2_256::{SigningKey, KeyPair, VerificationKey};
+//! # use rand::TryRngCore;
+//! # use libcrux_ecdsa::p256::Nonce;
+//! # let mut rng = rand_core::OsRng;
+//! # let mut rng = rng.unwrap_mut();
+//!
+//! // generate key pair
+//! let KeyPair { signing_key, verification_key } = KeyPair::generate(&mut rng).unwrap();
+//!
+//! // sign and verify
+//! let nonce = Nonce::random(&mut rng).unwrap();
+//! let signature = signing_key.sign(b"payload", &nonce).unwrap();
+//! verification_key.verify(b"payload", &signature).unwrap();
+//! ```
+//!
+//! #### Key-centric (reference)
+//! ```rust
+//! # use libcrux_ecdsa::key_centric_apis::sha2_256::{
+//! #     EcdsaP256, SigningKeyRef, VerificationKeyRef,
+//! # };
+//! # use libcrux_traits::signature::SignConsts;
+//! #
+//! # // key generation
+//! # let mut signing_key = [0u8; EcdsaP256::SIGNING_KEY_LEN];
+//! # let mut verification_key = [0u8; EcdsaP256::VERIFICATION_KEY_LEN];
+//! # EcdsaP256::keygen(&mut signing_key, &mut verification_key, [0; 32]).unwrap();
+//! #
+//! # use rand::TryRngCore;
+//! # use libcrux_ecdsa::p256::Nonce;
+//! # let mut rng = rand_core::OsRng;
+//! # let mut rng = rng.unwrap_mut();
+//!
+//! // create key structs from references
+//! let signing_key = SigningKeyRef::from_slice(&signing_key).unwrap();
+//! let verification_key = VerificationKeyRef::from_slice(&verification_key).unwrap();
+//!
+//! // signature buffer
+//! let mut signature = [0u8; EcdsaP256::SIGNATURE_LEN];
+//!
+//! // sign and verify
+//! let nonce = Nonce::random(&mut rng).unwrap();
+//! signing_key
+//!     .sign(b"payload", &mut signature, &nonce)
+//!     .unwrap();
+//! verification_key
+//!     .verify(b"payload", &signature)
+//!     .unwrap();
+//! ```
+//!
+//! ### Slice-based APIs
+//! This module also provides slice-based APIs via the structs [`sha2_256::EcdsaP256`], [`sha2_384::EcdsaP256`] and
+//! [`sha2_512::EcdsaP256`].
+//!
+//! ```rust
+//! # use libcrux_ecdsa::key_centric_apis::sha2_256::EcdsaP256;
+//! # use libcrux_traits::signature::SignConsts;
+//! #
+//! # use rand::TryRngCore;
+//! # use libcrux_ecdsa::p256::Nonce;
+//! # let mut rng = rand_core::OsRng;
+//! # let mut rng = rng.unwrap_mut();
+//!
+//! // keygen
+//! let mut signing_key = [0u8; EcdsaP256::SIGNING_KEY_LEN];
+//! let mut verification_key = [0u8; EcdsaP256::VERIFICATION_KEY_LEN];
+//! EcdsaP256::keygen(&mut signing_key, &mut verification_key, [0; 32]);
+//!
+//! // signature buffer
+//! let mut signature = [0u8; EcdsaP256::SIGNATURE_LEN];
+//!
+//! // sign and verify
+//! let nonce = Nonce::random(&mut rng).unwrap();
+//! EcdsaP256::sign(&signing_key, b"payload", &mut signature, &nonce).unwrap();
+//! EcdsaP256::verify(&verification_key, b"payload", &signature).unwrap();
+//! ```
+
 use crate::p256::Nonce;
 use libcrux_traits::signature::{
     impl_key_centric_types, impl_sign_consts, SignConsts, WrongLengthError,
@@ -17,7 +100,12 @@ macro_rules! impl_mod {
         use super::*;
 
         #[doc(inline)]
-        pub use arrayref::*;
+        pub use self::{
+            arrayref::{
+                KeyPair, Signature, SigningKey, SigningKeyRef, VerificationKey, VerificationKeyRef,
+            },
+            slice::*,
+        };
 
         pub(crate) mod arrayref {
             #[derive(Debug, PartialEq)]
@@ -34,7 +122,6 @@ macro_rules! impl_mod {
             );
         }
         pub mod slice {
-            // TODO: different keygen in example?
             //! Slice-based APIs for ECDSA-P256.
             //!
             //! ```rust
