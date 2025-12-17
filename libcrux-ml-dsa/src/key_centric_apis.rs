@@ -1,3 +1,72 @@
+//! This module includes key-centric and slice-based APIs for ML-DSA.
+//!
+//! ### Key-centric APIs
+//! This module provides key-centric APIs for ML-DSA.
+//!
+//! #### Key-centric (owned)
+//! ```rust
+//! use libcrux_ml_dsa::key_centric_apis::ml_dsa_44::{SigningKey, KeyPair, VerificationKey};
+//!
+//! // generate key pair
+//! let KeyPair { signing_key, verification_key } = KeyPair::generate_derand([0u8; 32]);
+//!
+//! // sign and verify
+//! let signature = signing_key.sign(b"payload", b"context", [2; 32]).unwrap();
+//! verification_key.verify(b"payload", &signature, b"context").unwrap();
+//! ```
+//!
+//! #### Key-centric (reference)
+//! ```rust
+//! # use libcrux_ml_dsa::key_centric_apis::ml_dsa_44::{
+//! #     MlDsa44, SigningKeyRef, VerificationKeyRef,
+//! # };
+//! # use libcrux_traits::signature::SignConsts;
+//! #
+//! # // key generation
+//! # let mut signing_key = [0u8; MlDsa44::SIGNING_KEY_LEN];
+//! # let mut verification_key = [0u8; MlDsa44::VERIFICATION_KEY_LEN];
+//! # MlDsa44::keygen(&mut signing_key, &mut verification_key, [0; 32]).unwrap();
+//! #
+//! // create key structs from references
+//! let signing_key = SigningKeyRef::from_slice(&signing_key).unwrap();
+//! let verification_key = VerificationKeyRef::from_slice(&verification_key).unwrap();
+//!
+//! // signature buffer
+//! let mut signature = [0u8; MlDsa44::SIGNATURE_LEN];
+//!
+//! // sign and verify
+//! signing_key
+//!     .sign(b"payload", &mut signature, b"context", [0u8; 32])
+//!     .unwrap();
+//! verification_key
+//!     .verify(b"payload", &signature, b"context")
+//!     .unwrap();
+//! ```
+//!
+//! ### Slice-based APIs
+//! This module also provides slice-based APIs via the structs [`MlDsa44`], [`MlDsa65`] and
+//! [`MlDsa87`].
+//!
+//! ```rust
+//! use libcrux_ml_dsa::key_centric_apis::ml_dsa_44::MlDsa44;
+//! use libcrux_traits::signature::SignConsts;
+//!
+//! // keygen
+//! let mut signing_key = [0u8; MlDsa44::SIGNING_KEY_LEN];
+//! let mut verification_key = [0u8; MlDsa44::VERIFICATION_KEY_LEN];
+//! MlDsa44::keygen(&mut signing_key, &mut verification_key, [0; 32]);
+//!
+//! // signature buffer
+//! let mut signature = [0u8; MlDsa44::SIGNATURE_LEN];
+//!
+//! // sign and verify
+//! MlDsa44::sign(&signing_key, b"payload", &mut signature, b"context", [0u8; 32]).unwrap();
+//! MlDsa44::verify(&verification_key, b"payload", &signature, b"context").unwrap();
+//! ```
+
+#[cfg(doc)]
+use self::{ml_dsa_44::MlDsa44, ml_dsa_65::MlDsa65, ml_dsa_87::MlDsa87};
+
 use libcrux_traits::signature::{
     impl_key_centric_types, impl_sign_consts, SignConsts, WrongLengthError,
 };
