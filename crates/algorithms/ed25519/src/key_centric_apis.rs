@@ -120,9 +120,16 @@ pub mod slice {
 
 impl KeyPair {
     #[cfg(feature = "rand")]
+    /// Generate an Ed25519 key pair
     pub fn generate(rng: &mut impl rand_core::CryptoRng) -> KeyPair {
         let mut bytes = [0u8; arrayref::Ed25519::RAND_KEYGEN_LEN];
         rng.fill_bytes(&mut bytes);
+
+        Self::generate_derand(bytes.classify())
+    }
+
+    /// Generate an Ed25519 key pair (derand)
+    pub fn generate_derand(bytes: [U8; RAND_KEYGEN_LEN]) -> KeyPair {
         let mut signing_key = [0u8; arrayref::Ed25519::SIGNING_KEY_LEN].classify();
         let mut verification_key = [0u8; arrayref::Ed25519::VERIFICATION_KEY_LEN];
         arrayref::Ed25519::keygen(&mut signing_key, &mut verification_key, bytes.classify());

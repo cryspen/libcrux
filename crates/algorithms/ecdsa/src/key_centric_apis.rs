@@ -7,7 +7,7 @@ macro_rules! impl_mod {
     ($ty:ident, $module:ident,
             $sign_fn:ident,
             $verify_fn:ident) => {
-        use libcrux_secrets::{DeclassifyRef, U8};
+        use libcrux_secrets::{Classify, DeclassifyRef, U8};
 
         const SIGNING_KEY_LEN: usize = 32;
         const VERIFICATION_KEY_LEN: usize = 64;
@@ -109,11 +109,18 @@ macro_rules! impl_mod {
 
         impl KeyPair {
             #[cfg(feature = "rand")]
+            /// Generate an ECDSA-P256 key pair
             pub fn generate(rng: &mut impl rand::CryptoRng) -> Result<KeyPair, slice::KeygenError> {
-                use libcrux_secrets::Classify;
-
                 let mut bytes = [0u8; arrayref::$ty::RAND_KEYGEN_LEN];
                 rng.fill_bytes(&mut bytes);
+
+                Self::generate_derand(bytes.classify())
+            }
+
+            /// Generate an ECDSA-P256 key pair (derand)
+            pub fn generate_derand(
+                bytes: [U8; RAND_KEYGEN_LEN],
+            ) -> Result<KeyPair, slice::KeygenError> {
                 let mut signing_key = [0u8; arrayref::$ty::SIGNING_KEY_LEN].classify();
                 let mut verification_key = [0u8; arrayref::$ty::VERIFICATION_KEY_LEN];
                 arrayref::$ty::keygen(&mut signing_key, &mut verification_key, bytes.classify())?;
