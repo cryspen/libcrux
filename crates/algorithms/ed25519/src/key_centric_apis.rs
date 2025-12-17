@@ -288,7 +288,7 @@ fn key_centric_refs() {
 
     let mut signing_key = [0u8; Ed25519::SIGNING_KEY_LEN];
     let mut verification_key = [0u8; Ed25519::VERIFICATION_KEY_LEN];
-    Ed25519::keygen(&mut signing_key, &mut verification_key, [0; 32]);
+    Ed25519::keygen(&mut signing_key, &mut verification_key, [0; 32]).unwrap();
 
     // create references from slice
     let signing_key = SigningKeyRef::from_slice(&signing_key).unwrap();
@@ -304,12 +304,12 @@ fn key_centric_refs() {
 fn arrayref_apis() {
     use libcrux_traits::signature::SignConsts;
 
-    let mut signing_key = [0u8; Ed25519::SIGNING_KEY_LEN];
-    let mut verification_key = [0u8; Ed25519::VERIFICATION_KEY_LEN];
-    Ed25519::keygen(&mut signing_key, &mut verification_key, [0; 32]);
+    let mut signing_key = [0u8; arrayref::Ed25519::SIGNING_KEY_LEN];
+    let mut verification_key = [0u8; arrayref::Ed25519::VERIFICATION_KEY_LEN];
+    arrayref::Ed25519::keygen(&mut signing_key, &mut verification_key, [0; 32]);
 
     // arrayref API
-    let mut signature = [0u8; Ed25519::SIGNATURE_LEN];
-    Ed25519::sign(&signing_key, b"payload", &mut signature).unwrap();
-    Ed25519::verify(&verification_key, b"payload", &signature).unwrap();
+    let mut signature = [0u8; arrayref::Ed25519::SIGNATURE_LEN];
+    arrayref::Ed25519::sign(&signing_key, b"payload", &mut signature).unwrap();
+    arrayref::Ed25519::verify(&verification_key, b"payload", &signature).unwrap();
 }
