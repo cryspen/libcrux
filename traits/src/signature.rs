@@ -44,7 +44,6 @@ pub trait SignConsts {
 #[macro_export]
 macro_rules! impl_sign_consts {
     ($algorithm:ty, $signing_key_len:expr, $verification_key_len:expr, $signature_len:expr, $rand_keygen_len:expr) => {
-        use $crate::libcrux_secrets::U8;
         impl $crate::signature::SignConsts for $algorithm {
             const SIGNING_KEY_LEN: usize = $signing_key_len;
             const VERIFICATION_KEY_LEN: usize = $verification_key_len;
@@ -60,6 +59,7 @@ pub use impl_sign_consts;
 #[macro_export]
 macro_rules! impl_key_centric_types {
     ($algorithm:ty, $signing_key_len:expr, $verification_key_len:expr, $signature_len:expr, $rand_keygen_len:expr, $from_slice_error:ty, $from_slice_error_variant:expr) => {
+        use $crate::libcrux_secrets::U8;
         $crate::signature::impl_sign_consts!(
             $algorithm,
             $signing_key_len,
