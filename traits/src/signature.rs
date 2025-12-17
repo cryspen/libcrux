@@ -92,6 +92,33 @@ macro_rules! impl_sign_consts {
 pub use impl_sign_consts;
 
 /// Helper macro for implementing types for key-centric APIs
+///
+/// The [`impl_key_centric_types!()`] macro can be used to conveniently define types
+/// used by key-centric signature APIs.
+/// - `SigningKey`, `SigningKeyRef`: owned and borrowed signing keys.
+/// - `VerificationKey`, `VerificationKeyRef`: owned and borrowed verification keys.
+/// - `Signature`: an owned signature.
+/// - `KeyPair`: an owned signature keypair (contains a `SigningKey` and a `VerificationKey`)
+///
+/// It also implements some traits and methods on the structs:
+/// - SigningKey:
+///   - `AsRef<[libcrux_secrets::U8]>`
+///   - `AsRef<[libcrux_secrets::U8; $signing_key_len]>`
+///   - `From<[libcrux_secrets::U8; $signing_key_len]`
+/// - SigningKeyRef:
+///   - `AsRef<[libcrux_secrets::U8]>`
+///   - `from_slice(&[libcrux_secrets::U8])`
+/// - VerificationKey:
+///   - `AsRef<[u8]>`
+///   - `AsRef<[u8; $verification_key_len]>`
+///   - `From<[u8; $verification_key_len]`
+/// - VerificationKeyRef:
+///   - `AsRef<[u8]>`
+///   - `from_slice(&[u8])`
+/// - Signature:
+///   - `AsRef<[u8]>`
+///   - `AsRef<[u8; $signature_len]>`
+///   - `From<[u8; $signature_len]`
 #[macro_export]
 macro_rules! impl_key_centric_types {
     ($algorithm:ty, $signing_key_len:expr, $verification_key_len:expr, $signature_len:expr, $rand_keygen_len:expr, $from_slice_error:ty, $from_slice_error_variant:expr) => {
