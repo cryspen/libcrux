@@ -1,4 +1,35 @@
-//! This module provides common interface traits for signature scheme implementations.
+//! This module provides common interface traits and helper macros for signature scheme implementations.
+//!
+//! Instead of a fully trait-based API for signature operations, this crate provides traits and
+//! macros that can be used to implement signature APIs with a given shape.
+//!
+//! ### Defining useful constants with the [`SignConsts`] trait
+//!
+//! Structs that implement the [`SignConsts`] trait allow retrieving useful constants for that
+//! signature algorithm. These can be used as the lengths of new buffers representing the
+//! signing key, verification key, signature, or the randomness input to keygen functions.
+//!
+//! Example:
+//! ```rust
+//! use libcrux_traits::signature::SignConsts;
+//! use libcrux_signature::mldsa::ml_dsa_44::MlDsa44;
+//!
+//! // the length of the signing key in bytes.
+//! assert_eq!(MlDsa44::SIGNING_KEY_LEN, 2560);
+//!
+//! // the length of the verification key in bytes.
+//! assert_eq!(MlDsa44::VERIFICATION_KEY_LEN, 1312);
+//!
+//! // the length of the signature in bytes.
+//! assert_eq!(MlDsa44::SIGNATURE_LEN, 2420);
+//!
+//! // the length of the rand_keygen buffer in bytes.
+//! assert_eq!(MlDsa44::RAND_KEYGEN_LEN, 32);
+//! ```
+//!
+//! ### Defining associated types with the [`SignTypes`] trait
+//!
+//! The [`SignTypes`] trait can be used to define associated types for signature algorithms.
 
 /// Constants defining the sizes of cryptographic elements for a signature algorithm.
 pub trait SignConsts {
