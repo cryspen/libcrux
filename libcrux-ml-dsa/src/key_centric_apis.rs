@@ -1,3 +1,4 @@
+use libcrux_secrets::Classify;
 use libcrux_traits::signature::{
     impl_key_centric_types, impl_sign_consts, SignConsts, WrongLengthError,
 };
@@ -144,10 +145,14 @@ macro_rules! impl_mod {
             #[cfg(feature = "rand")]
             /// Generate an ML-DSA key pair
             pub fn generate(rng: &mut impl rand::CryptoRng) -> KeyPair {
-                use libcrux_secrets::Classify;
-
                 let mut bytes = [0u8; arrayref::$ty::RAND_KEYGEN_LEN];
                 rng.fill_bytes(&mut bytes);
+
+                Self::generate_derand(bytes.classify())
+            }
+
+            /// Generate an ML-DSA key pair (derand)
+            pub fn generate_derand(bytes: [U8; RAND_KEYGEN_LEN]) -> KeyPair {
                 let mut signing_key = [0u8; arrayref::$ty::SIGNING_KEY_LEN].classify();
                 let mut verification_key = [0u8; arrayref::$ty::VERIFICATION_KEY_LEN];
                 arrayref::$ty::keygen(&mut signing_key, &mut verification_key, bytes.classify());
