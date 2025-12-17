@@ -142,6 +142,7 @@ macro_rules! impl_mod {
 
         impl KeyPair {
             #[cfg(feature = "rand")]
+            /// Generate an ML-DSA key pair
             pub fn generate(rng: &mut impl rand::CryptoRng) -> KeyPair {
                 use libcrux_secrets::Classify;
 
