@@ -47,9 +47,7 @@
 //! payload, followed by a `signature: &[u8]` representing the signature.
 //!
 //!  ```rust
-//! use libcrux_signature::ed25519::{
-//!     Ed25519, KeyPair, SigningKey, VerificationKey, SigningKeyRef, VerificationKeyRef,
-//! };
+//! use libcrux_signature::ed25519::{Ed25519, KeyPair, SigningKey, VerificationKey};
 //! use libcrux_traits::signature::SignConsts;
 //!
 //! // generate a new signature keypair
