@@ -27,3 +27,4 @@ libcrux-secrets = { version = "=0.0.4", path = "../crates/utils/secrets" }
 [dev-dependencies]
 # used for rustdocs
 libcrux-signature = { path = "../crates/primitives/signature" }
+rand = { version = "0.9", features = ["os_rng"] }

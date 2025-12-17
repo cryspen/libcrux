@@ -27,6 +27,40 @@
 //! assert_eq!(MlDsa44::RAND_KEYGEN_LEN, 32);
 //! ```
 //!
+//! ### Implementing key-centric APIs
+//!
+//! The [`impl_key_centric_types!()`] macro can be used to conveniently define types
+//! used by key-centric signature APIs.
+//! - `SigningKey`, `SigningKeyRef`: owned and borrowed signing keys.
+//! - `VerificationKey`, `VerificationKeyRef`: owned and borrowed verification keys.
+//! - `Signature`: an owned signature.
+//! - `KeyPair`: an owned signature keypair (contains a `SigningKey` and a `VerificationKey`)
+//!
+//! Key-centric APIs can be defined on the above structs.
+//! - `SigningKey::sign()`: The first argument should be the `payload`, followed by other
+//! arguments. This API should return an owned `Signature`.
+//! - `SigningKeyRef::sign()`: The first argument should be the `payload`, followed by a
+//! `signature: &mut [u8]` representing the signature buffer to write into.
+//! - `VerificationKey::verify()`: The first argument should be a slice representing the payload,
+//! followed by a reference to a `Signature`.
+//! - `VerificationKeyRef::verify()`: The first argument should be a slice representing the
+//! payload, followed by a `signature: &[u8]` representing the signature.
+//!
+//!  ```rust
+//! use libcrux_signature::ed25519::{
+//!     Ed25519, KeyPair, SigningKey, VerificationKey, SigningKeyRef, VerificationKeyRef,
+//! };
+//! use libcrux_traits::signature::SignConsts;
+//!
+//! // generate a new signature keypair
+//! use rand::TryRngCore;
+//! let mut rng = rand::rngs::OsRng;
+//! let KeyPair { signing_key, verification_key } = KeyPair::generate(&mut rng.unwrap_mut());
+//!
+//! // sign and verify
+//! let signature = signing_key.sign(b"payload").unwrap();
+//! verification_key.verify(b"payload", &signature).unwrap();
+//!  ```
 
 /// Constants defining the sizes of cryptographic elements for a signature algorithm.
 pub trait SignConsts {
