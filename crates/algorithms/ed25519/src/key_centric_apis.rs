@@ -1,4 +1,6 @@
-use libcrux_traits::signature::{impl_key_centric_types, impl_sign_consts, SignConsts};
+use libcrux_traits::signature::{
+    impl_key_centric_types, impl_sign_consts, SignConsts, WrongLengthError,
+};
 
 use libcrux_secrets::{Classify, DeclassifyRef, U8};
 const VERIFICATION_KEY_LEN: usize = 32;
@@ -11,11 +13,6 @@ pub use slice::Ed25519;
 
 #[doc(inline)]
 pub use arrayref::{SigningError, VerificationError};
-
-// TODO: different error type?
-#[derive(Debug)]
-/// An incorrect length when converting from slice.
-pub struct WrongLengthError;
 
 impl_key_centric_types!(
     arrayref::Ed25519,

@@ -6,8 +6,9 @@
 //! - ed25519
 //! - ML-DSA
 
+#[doc(inline)]
 #[cfg(any(feature = "ecdsa", feature = "ed25519", feature = "mldsa"))]
-pub use libcrux_traits::signature::SignConsts;
+pub use libcrux_traits::signature::{SignConsts, WrongLengthError};
 
 #[cfg(feature = "ecdsa")]
 pub mod ecdsa {

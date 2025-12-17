@@ -1,5 +1,7 @@
 use crate::p256::Nonce;
-use libcrux_traits::signature::{impl_key_centric_types, impl_sign_consts, SignConsts};
+use libcrux_traits::signature::{
+    impl_key_centric_types, impl_sign_consts, SignConsts, WrongLengthError,
+};
 
 macro_rules! impl_mod {
     ($ty:ident, $module:ident,
@@ -16,11 +18,6 @@ macro_rules! impl_mod {
 
         #[doc(inline)]
         pub use arrayref::*;
-
-        // TODO: different error type?
-        #[derive(Debug)]
-        /// An incorrect length when converting from slice.
-        pub struct WrongLengthError;
 
         pub(crate) mod arrayref {
             #[derive(Debug, PartialEq)]
@@ -70,7 +67,7 @@ macro_rules! impl_mod {
             //! // verify
             //! EcdsaP256::verify(&verification_key, b"payload", &signature).unwrap();
             //! ```
-            
+
             /// Slice-based APIs for ECDSA-P256.
             #[derive(Debug, PartialEq)]
             pub struct $ty;

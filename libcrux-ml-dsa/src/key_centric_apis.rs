@@ -1,4 +1,6 @@
-use libcrux_traits::signature::{impl_key_centric_types, impl_sign_consts, SignConsts};
+use libcrux_traits::signature::{
+    impl_key_centric_types, impl_sign_consts, SignConsts, WrongLengthError,
+};
 
 macro_rules! impl_mod {
     ($ty:ident, $module:ident) => {
@@ -16,11 +18,6 @@ macro_rules! impl_mod {
         pub use arrayref::*;
         #[doc(inline)]
         pub use slice::$ty;
-
-        // TODO: different error type?
-        #[derive(Debug)]
-        /// An incorrect length when converting from slice.
-        pub struct WrongLengthError;
 
         pub(crate) mod arrayref {
             #[derive(Debug, PartialEq)]

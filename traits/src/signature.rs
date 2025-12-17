@@ -60,6 +60,10 @@
 //! verification_key.verify(b"payload", &signature).unwrap();
 //!  ```
 
+#[derive(Debug)]
+/// An incorrect length when converting from slice.
+pub struct WrongLengthError;
+
 /// Constants defining the sizes of cryptographic elements for a signature algorithm.
 pub trait SignConsts {
     /// Length of verification (public) keys in bytes.
