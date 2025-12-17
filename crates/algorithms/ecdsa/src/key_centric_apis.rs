@@ -268,19 +268,17 @@ macro_rules! impl_mod {
                 verification_key: &mut [u8; Self::VERIFICATION_KEY_LEN],
                 randomness: [U8; Self::RAND_KEYGEN_LEN],
             ) -> Result<(), slice::KeygenError> {
-                use libcrux_traits::ecdh::arrayref::*;
+                use libcrux_p256::ecdh_api::EcdhArrayref;
 
-                libcrux_p256::P256::secret_to_public(verification_key, &randomness).map_err(
-                    |err| match err {
-                        libcrux_traits::ecdh::arrayref::SecretToPublicError::InvalidSecret => {
+                libcrux_p256::P256::generate_pair(verification_key, signing_key, &randomness)
+                    .map_err(|err| match err {
+                        libcrux_traits::ecdh::arrayref::GenerateSecretError::InvalidRandomness => {
                             slice::KeygenError::InvalidRandomness
                         }
-                        libcrux_traits::ecdh::arrayref::SecretToPublicError::Unknown => {
+                        libcrux_traits::ecdh::arrayref::GenerateSecretError::Unknown => {
                             slice::KeygenError::UnknownError
                         }
-                    },
-                )?;
-                *signing_key = randomness;
+                    })?;
 
                 Ok(())
             }
