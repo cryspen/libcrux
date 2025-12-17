@@ -30,7 +30,7 @@
 //! # // key generation
 //! # let mut signing_key = [0u8; EcdsaP256::SIGNING_KEY_LEN];
 //! # let mut verification_key = [0u8; EcdsaP256::VERIFICATION_KEY_LEN];
-//! # EcdsaP256::keygen(&mut signing_key, &mut verification_key, [0; 32]).unwrap();
+//! # EcdsaP256::keygen(&mut signing_key, &mut verification_key, [1; 32]).unwrap();
 //! #
 //! # use rand::TryRngCore;
 //! # use libcrux_ecdsa::p256::Nonce;
@@ -70,7 +70,7 @@
 //! // keygen
 //! let mut signing_key = [0u8; EcdsaP256::SIGNING_KEY_LEN];
 //! let mut verification_key = [0u8; EcdsaP256::VERIFICATION_KEY_LEN];
-//! EcdsaP256::keygen(&mut signing_key, &mut verification_key, [0; 32]);
+//! EcdsaP256::keygen(&mut signing_key, &mut verification_key, [1; 32]);
 //!
 //! // signature buffer
 //! let mut signature = [0u8; EcdsaP256::SIGNATURE_LEN];
@@ -446,7 +446,7 @@ fn key_centric_refs() {
     let mut signing_key = [0u8; EcdsaP256::SIGNING_KEY_LEN];
     let mut verification_key = [0u8; EcdsaP256::VERIFICATION_KEY_LEN];
 
-    let mut bytes = [0u8; EcdsaP256::RAND_KEYGEN_LEN];
+    let mut bytes = [1u8; EcdsaP256::RAND_KEYGEN_LEN];
     rng.fill_bytes(&mut bytes);
     EcdsaP256::keygen(&mut signing_key, &mut verification_key, bytes).unwrap();
 
