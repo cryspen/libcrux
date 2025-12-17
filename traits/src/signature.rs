@@ -59,7 +59,6 @@ pub use impl_sign_consts;
 #[macro_export]
 macro_rules! impl_key_centric_types {
     ($algorithm:ty, $signing_key_len:expr, $verification_key_len:expr, $signature_len:expr, $rand_keygen_len:expr, $from_slice_error:ty, $from_slice_error_variant:expr) => {
-        use $crate::libcrux_secrets::U8;
         $crate::signature::impl_sign_consts!(
             $algorithm,
             $signing_key_len,
@@ -69,16 +68,16 @@ macro_rules! impl_key_centric_types {
         );
 
         // internal types
-        type SigningKeyArray = [U8; $signing_key_len];
+        type SigningKeyArray = [$crate::libcrux_secrets::U8; $signing_key_len];
         type VerificationKeyArray = [u8; $verification_key_len];
         type SignatureArray = [u8; $signature_len];
 
         /// A signing key. The bytes are borrowed.
         pub struct SigningKeyRef<'a> {
-            key: &'a [U8],
+            key: &'a [$crate::libcrux_secrets::U8],
         }
-        impl<'a> AsRef<[U8]> for SigningKeyRef<'a> {
-            fn as_ref(&self) -> &[U8] {
+        impl<'a> AsRef<[$crate::libcrux_secrets::U8]> for SigningKeyRef<'a> {
+            fn as_ref(&self) -> &[$crate::libcrux_secrets::U8] {
                 self.key.as_ref()
             }
         }
@@ -117,7 +116,9 @@ macro_rules! impl_key_centric_types {
 
         impl<'a> SigningKeyRef<'a> {
             /// Create a signing key from a byte slice.
-            pub fn from_slice(key: &'a [U8]) -> Result<Self, $from_slice_error> {
+            pub fn from_slice(
+                key: &'a [$crate::libcrux_secrets::U8],
+            ) -> Result<Self, $from_slice_error> {
                 if key.len() != $signing_key_len {
                     return Err($from_slice_error_variant);
                 } else {
@@ -132,8 +133,8 @@ macro_rules! impl_key_centric_types {
             }
         }
 
-        impl AsRef<[U8]> for SigningKey {
-            fn as_ref(&self) -> &[U8] {
+        impl AsRef<[$crate::libcrux_secrets::U8]> for SigningKey {
+            fn as_ref(&self) -> &[$crate::libcrux_secrets::U8] {
                 self.key.as_ref()
             }
         }

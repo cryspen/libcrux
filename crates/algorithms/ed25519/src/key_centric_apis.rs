@@ -1,6 +1,6 @@
 use libcrux_traits::signature::{impl_key_centric_types, impl_sign_consts, SignConsts};
 
-use libcrux_secrets::{Classify, DeclassifyRef};
+use libcrux_secrets::{Classify, DeclassifyRef, U8};
 const VERIFICATION_KEY_LEN: usize = 32;
 const SIGNING_KEY_LEN: usize = 32;
 const SIGNATURE_LEN: usize = 64;
