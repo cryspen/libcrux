@@ -140,11 +140,11 @@ jobs:
       run:
         shell: bash
     steps:
-      - uses: actions/download-artifact@v6
+      - uses: actions/download-artifact@v7
         with:
           name: cpp-ho-extraction-ml-kem
           path: ~/mlkem-cpp-extraction
-      - uses: actions/download-artifact@v6
+      - uses: actions/download-artifact@v7
         with:
           name: c-ho-extraction-ml-kem
           path: ~/mlkem-c-extraction
@@ -177,7 +177,7 @@ jobs:
       run:
         shell: bash
     steps:
-      - uses: actions/download-artifact@v6
+      - uses: actions/download-artifact@v7
         with:
           name: c-extraction-ml-kem
 
@@ -222,7 +222,7 @@ jobs:
       run:
         shell: bash
     steps:
-      - uses: actions/download-artifact@v6
+      - uses: actions/download-artifact@v7
         with:
           name: c-ho-extraction-ml-kem
 
@@ -259,7 +259,7 @@ jobs:
       run:
         shell: bash
     steps:
-      - uses: actions/download-artifact@v6
+      - uses: actions/download-artifact@v7
         with:
           name: cpp-ho-extraction-ml-kem
 
