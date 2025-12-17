@@ -1,11 +1,10 @@
-use libcrux_secrets::Classify;
 use libcrux_traits::signature::{
     impl_key_centric_types, impl_sign_consts, SignConsts, WrongLengthError,
 };
 
 macro_rules! impl_mod {
     ($ty:ident, $module:ident) => {
-        use libcrux_secrets::{Declassify, DeclassifyRef, DeclassifyRefMut, U8};
+        use libcrux_secrets::{Classify, Declassify, DeclassifyRef, DeclassifyRefMut, U8};
 
         pub(super) const VERIFICATION_KEY_LEN: usize =
             crate::ml_dsa_generic::$module::VERIFICATION_KEY_SIZE;
@@ -588,7 +587,7 @@ fn key_centric_refs() {
 
     let mut signing_key = [0u8; MlDsa44::SIGNING_KEY_LEN];
     let mut verification_key = [0u8; MlDsa44::VERIFICATION_KEY_LEN];
-    MlDsa44::keygen(&mut signing_key, &mut verification_key, [0; 32]);
+    MlDsa44::keygen(&mut signing_key, &mut verification_key, [0; 32]).unwrap();
 
     // create references from slice
     let signing_key = SigningKeyRef::from_slice(&signing_key).unwrap();
@@ -614,7 +613,7 @@ fn key_centric_refs() {
 #[cfg(all(feature = "mldsa44", not(feature = "expose-secret-independence")))]
 fn arrayref_apis() {
     use libcrux_traits::signature::SignConsts;
-    use ml_dsa_44::MlDsa44;
+    use ml_dsa_44::arrayref::MlDsa44;
 
     let context = b"context";
 
