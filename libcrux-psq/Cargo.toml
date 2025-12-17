@@ -39,6 +39,8 @@ libcrux-ed25519 = { version = "0.0.4", path = "../crates/algorithms/ed25519", fe
     "codec",
 ] }
 tls_codec = { version = "0.4.2", features = ["derive"] }
+libcrux-ml-dsa = { version = "0.0.4", path = "../libcrux-ml-dsa", features = ["codec"] }
+libcrux-aesgcm = { version = "0.0.4", path = "../crates/algorithms/aesgcm"}
 
 [dev-dependencies]
 libcrux-psq = { path = ".", features = ["test-utils"] }

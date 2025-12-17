@@ -6,7 +6,10 @@ use libcrux_ecdh::{secret_to_public, Algorithm};
 use rand::CryptoRng;
 use tls_codec::{TlsDeserialize, TlsDeserializeBytes, TlsSerialize, TlsSerializeBytes, TlsSize};
 
-use crate::handshake::HandshakeError as Error;
+use crate::handshake::{
+    types::{Authenticator, ProvideAuthenticator},
+    HandshakeError as Error,
+};
 
 #[derive(TlsSerializeBytes, TlsSize)]
 /// A wrapper around a KEM shared secret.
@@ -34,6 +37,12 @@ impl AsRef<[u8]> for DHSharedSecret {
 )]
 /// A wrapper around a KEM public key.
 pub struct DHPublicKey(Vec<u8>);
+
+impl ProvideAuthenticator for DHPublicKey {
+    fn authenticator(&self) -> super::types::Authenticator {
+        Authenticator::Dh(self.clone())
+    }
+}
 
 impl AsRef<[u8]> for DHPublicKey {
     fn as_ref(&self) -> &[u8] {
@@ -84,6 +93,12 @@ pub struct DHKeyPair {
     pub(crate) sk: DHPrivateKey,
     /// The Diffie-Hellman public key
     pub pk: DHPublicKey,
+}
+
+impl ProvideAuthenticator for DHKeyPair {
+    fn authenticator(&self) -> super::types::Authenticator {
+        self.pk.authenticator()
+    }
 }
 
 impl DHKeyPair {

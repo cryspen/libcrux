@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- [#1248](https://github.com/cryspen/libcrux/pull/1248): Add serialization of generic structs using `tls_codec` (feature `codec`).
 - [#1225](https://github.com/cryspen/libcrux/pull/1225): In tests, use the latest versions of ACVP KATs exported by `libcrux-kats`.
 
 ## [0.0.4] (2025-11-05)
