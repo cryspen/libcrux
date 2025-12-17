@@ -1,6 +1,6 @@
-//! This module provides common interface traits and helper macros for signature scheme implementations.
+//! This module provides a common [`SignConsts`] trait and helper macros for signature scheme implementations.
 //!
-//! Instead of a fully trait-based API for signature operations, this crate provides traits and
+//! Instead of a fully trait-based API for signature operations, this crate provides a trait and
 //! macros that can be used to implement signature APIs with a given shape.
 //!
 //! ### Defining useful constants with the [`SignConsts`] trait
