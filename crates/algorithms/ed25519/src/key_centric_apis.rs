@@ -218,7 +218,7 @@ impl KeyPair {
     pub fn generate_derand(bytes: [U8; RAND_KEYGEN_LEN]) -> KeyPair {
         let mut signing_key = [0u8; arrayref::Ed25519::SIGNING_KEY_LEN].classify();
         let mut verification_key = [0u8; arrayref::Ed25519::VERIFICATION_KEY_LEN];
-        arrayref::Ed25519::keygen(&mut signing_key, &mut verification_key, bytes.classify());
+        arrayref::Ed25519::keygen(&mut signing_key, &mut verification_key, bytes);
 
         KeyPair {
             signing_key: SigningKey::from(signing_key),

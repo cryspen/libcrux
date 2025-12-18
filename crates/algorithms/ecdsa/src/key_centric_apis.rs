@@ -228,7 +228,7 @@ macro_rules! impl_mod {
             ) -> Result<KeyPair, slice::KeygenError> {
                 let mut signing_key = [0u8; arrayref::$ty::SIGNING_KEY_LEN].classify();
                 let mut verification_key = [0u8; arrayref::$ty::VERIFICATION_KEY_LEN];
-                arrayref::$ty::keygen(&mut signing_key, &mut verification_key, bytes.classify())?;
+                arrayref::$ty::keygen(&mut signing_key, &mut verification_key, bytes)?;
 
                 Ok(KeyPair {
                     signing_key: SigningKey::from(signing_key),

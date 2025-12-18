@@ -241,7 +241,7 @@ macro_rules! impl_mod {
             pub fn generate_derand(bytes: [U8; RAND_KEYGEN_LEN]) -> KeyPair {
                 let mut signing_key = [0u8; arrayref::$ty::SIGNING_KEY_LEN].classify();
                 let mut verification_key = [0u8; arrayref::$ty::VERIFICATION_KEY_LEN];
-                arrayref::$ty::keygen(&mut signing_key, &mut verification_key, bytes.classify());
+                arrayref::$ty::keygen(&mut signing_key, &mut verification_key, bytes);
 
                 KeyPair {
                     signing_key: SigningKey::from(signing_key),
