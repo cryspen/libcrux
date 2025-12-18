@@ -155,12 +155,16 @@ macro_rules! impl_mod {
                 RAND_KEYGEN_LEN
             );
 
-            // error type including wrong length
+            /// An error when signing.
             #[derive(Debug)]
             pub enum SigningError {
+                // TODO: add doc comment.
                 RejectionSamplingError,
+                /// The provided context is too long.
                 ContextTooLongError,
+                /// The length of the provided signing key is incorrect.
                 WrongSigningKeyLength,
+                /// The length of the provided signature buffer is incorrect.
                 WrongSignatureLength,
             }
 
@@ -177,14 +181,20 @@ macro_rules! impl_mod {
                 }
             }
 
-            // error type including wrong length
+            /// An error when verifying a signature.
             #[derive(Debug)]
             pub enum VerificationError {
+                // TODO: add doc comment.
                 MalformedHintError,
+                // TODO: add doc comment.
                 SignerResponseExceedsBoundError,
+                // TODO: add doc comment.
                 CommitmentHashesDontMatchError,
+                /// The verification context is too long.
                 VerificationContextTooLongError,
+                /// The provided verification key too long.
                 WrongVerificationKeyLength,
+                /// The length of the provided signature is incorrect.
                 WrongSignatureLength,
             }
 
