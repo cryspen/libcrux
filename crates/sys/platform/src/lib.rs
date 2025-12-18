@@ -57,10 +57,10 @@ mod platform {
 
     // TODO: Check for z14 or z15
     pub fn simd128_support() -> bool {
-        #[cfg(all(target_arch = "aarch64", target_os = "macos"))]
+        #[cfg(target_arch = "aarch64")]
         {
-            use crate::macos_arm::*;
-            adv_simd()
+            // All AArch64 supports NEON / AdvSIMD
+            true
         }
 
         #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
@@ -71,17 +71,7 @@ mod platform {
                 && cpu_id::supported(Feature::avx)
         }
 
-        #[cfg(all(target_arch = "aarch64", target_os = "linux"))]
-        {
-            use crate::linux_arm::*;
-            adv_simd()
-        }
-
-        #[cfg(not(any(
-            all(target_arch = "aarch64", any(target_os = "linux", target_os = "macos")),
-            target_arch = "x86",
-            target_arch = "x86_64"
-        )))]
+        #[cfg(not(any(target_arch = "aarch64", target_arch = "x86", target_arch = "x86_64")))]
         {
             false
         }
@@ -142,19 +132,13 @@ mod platform {
 
     /// Check whether advanced SIMD features are supported
     pub fn adv_simd_support() -> bool {
-        #[cfg(all(target_arch = "aarch64", target_os = "macos"))]
+        #[cfg(target_arch = "aarch64")]
         {
-            use crate::macos_arm::*;
-            adv_simd()
+            // All AArch64 supports NEON / AdvSIMD
+            true
         }
 
-        #[cfg(all(target_arch = "aarch64", target_os = "linux"))]
-        {
-            use crate::linux_arm::*;
-            adv_simd()
-        }
-
-        #[cfg(not(all(target_arch = "aarch64", any(target_os = "linux", target_os = "macos"))))]
+        #[cfg(not(target_arch = "aarch64"))]
         {
             false
         }
