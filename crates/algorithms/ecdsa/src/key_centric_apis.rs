@@ -172,29 +172,42 @@ macro_rules! impl_mod {
                 RAND_KEYGEN_LEN
             );
 
-            // error type including wrong length
+            /// An error when signing.
             #[derive(Debug)]
             pub enum SigningError {
+                /// The length of the provided signing key is incorrect.
                 WrongSigningKeyLength,
+                /// The length of the provided signature buffer is incorrect.
                 WrongSignatureLength,
-                InvalidArgument,
+                /// The length of the provided payload is invalid.
+                InvalidPayloadLength,
+                /// An unknown error occurred.
                 UnknownError,
             }
 
-            // error type including wrong length
+            /// An error when verifying a signature.
             #[derive(Debug)]
             pub enum VerificationError {
+                /// The length of the provided verification key is incorrect.
                 WrongVerificationKeyLength,
+                /// The length of the provided signature is incorrect.
                 WrongSignatureLength,
-                WrongPayloadLength,
+                /// The length of the provided payload is invalid.
+                InvalidPayloadLength,
+                /// An unknown error occurred.
                 UnknownError,
             }
 
+            /// An error when generating a signature key pair.
             #[derive(Debug)]
             pub enum KeygenError {
+                /// The provided randomness is invalid.
                 InvalidRandomness,
+                /// The length of the provided signing key buffer is incorrect.
                 WrongSigningKeyLength,
+                /// The length of the provided verification key buffer is incorrecct.
                 WrongVerificationKeyLength,
+                /// An unknown error occurred.
                 UnknownError,
             }
         }
@@ -236,7 +249,7 @@ macro_rules! impl_mod {
                     payload
                         .len()
                         .try_into()
-                        .map_err(|_| slice::SigningError::InvalidArgument)?,
+                        .map_err(|_| slice::SigningError::InvalidPayloadLength)?,
                     payload,
                     key.declassify_ref(),
                     &nonce.0,
@@ -257,7 +270,7 @@ macro_rules! impl_mod {
                     payload
                         .len()
                         .try_into()
-                        .map_err(|_| slice::VerificationError::WrongPayloadLength)?,
+                        .map_err(|_| slice::VerificationError::InvalidPayloadLength)?,
                     payload,
                     key,
                     <&[u8; 32]>::try_from(&signature[0..32]).unwrap(),

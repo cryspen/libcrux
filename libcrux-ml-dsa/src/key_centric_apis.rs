@@ -217,9 +217,12 @@ macro_rules! impl_mod {
                 }
             }
 
+            /// An error when generating a signature key pair.
             #[derive(Debug)]
             pub enum KeygenError {
+                /// The length of the provided signing key buffer is incorrect.
                 WrongSigningKeyLength,
+                /// The length of the provided verification key buffer is incorrecct.
                 WrongVerificationKeyLength,
             }
         }

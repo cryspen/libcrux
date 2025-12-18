@@ -92,23 +92,30 @@ pub(crate) mod arrayref {
     #[derive(Debug, PartialEq)]
     pub(crate) struct Ed25519;
 
+    /// An error when signing.
     #[derive(Debug, PartialEq)]
     pub enum SigningError {
-        WrongPayloadLength,
+        /// The length of the provided payload is invalid.
+        InvalidPayloadLength,
     }
 
     impl From<SigningError> for super::slice::SigningError {
         fn from(e: SigningError) -> Self {
             match e {
-                SigningError::WrongPayloadLength => super::slice::SigningError::WrongPayloadLength,
+                SigningError::InvalidPayloadLength => {
+                    super::slice::SigningError::InvalidPayloadLength
+                }
             }
         }
     }
 
+    /// An error when verifying a signature.
     #[derive(Debug)]
     pub enum VerificationError {
+        /// The provided signature is invalid.
         InvalidSignature,
-        WrongPayloadLength,
+        /// The length of the provided payload is invalid.
+        InvalidPayloadLength,
     }
 
     impl From<VerificationError> for super::slice::VerificationError {
@@ -117,8 +124,8 @@ pub(crate) mod arrayref {
                 VerificationError::InvalidSignature => {
                     super::slice::VerificationError::InvalidSignature
                 }
-                VerificationError::WrongPayloadLength => {
-                    super::slice::VerificationError::WrongPayloadLength
+                VerificationError::InvalidPayloadLength => {
+                    super::slice::VerificationError::InvalidPayloadLength
                 }
             }
         }
@@ -163,26 +170,36 @@ pub mod slice {
         RAND_KEYGEN_LEN
     );
 
-    // error type including wrong length
+    /// An error when signing.
     #[derive(Debug)]
     pub enum SigningError {
+        /// The length of the provided signing key is incorrect.
         WrongSigningKeyLength,
+        /// The length of the provided signature buffer is incorrect.
         WrongSignatureLength,
-        WrongPayloadLength,
+        /// The length of the provided payload is invalid.
+        InvalidPayloadLength,
     }
 
-    // error type including wrong length
+    /// An error when verifying a signature.
     #[derive(Debug)]
     pub enum VerificationError {
+        /// The provided signature is invalid.
         InvalidSignature,
+        /// The length of the provided verification key is incorrect.
         WrongVerificationKeyLength,
+        /// The length of the provided signature is incorrect.
         WrongSignatureLength,
-        WrongPayloadLength,
+        /// The length of the provided payload is invalid.
+        InvalidPayloadLength,
     }
 
+    /// An error when generating a signature key pair.
     #[derive(Debug)]
     pub enum KeygenError {
+        /// The length of the provided signing key buffer is incorrect.
         WrongSigningKeyLength,
+        /// The length of the provided verification key buffer is incorrect.
         WrongVerificationKeyLength,
     }
 }
@@ -218,7 +235,7 @@ impl arrayref::Ed25519 {
         let payload_len: u32 = payload
             .len()
             .try_into()
-            .map_err(|_| arrayref::SigningError::WrongPayloadLength)?;
+            .map_err(|_| arrayref::SigningError::InvalidPayloadLength)?;
 
         crate::hacl::ed25519::sign(signature, key.declassify_ref(), payload_len, payload);
 
@@ -234,7 +251,7 @@ impl arrayref::Ed25519 {
         let payload_len: u32 = payload
             .len()
             .try_into()
-            .map_err(|_| arrayref::VerificationError::WrongPayloadLength)?;
+            .map_err(|_| arrayref::VerificationError::InvalidPayloadLength)?;
 
         if crate::hacl::ed25519::verify(key, payload_len, payload, signature) {
             Ok(())
