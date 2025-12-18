@@ -19,6 +19,7 @@ use crate::{
         ciphersuite::types::PQEncapsulationKey, dhkem::DHPublicKey, transcript::Transcript,
         types::Authenticator,
     },
+    session::session_key::derive_import_key,
 };
 
 /// Session related errors
@@ -42,6 +43,8 @@ pub enum SessionError {
     IdentifierMismatch,
     /// The given payload exceeds the available output buffer
     OutputBufferShort,
+    /// An error arising during the import of an external secret
+    Import,
 }
 
 impl From<AEADError> for SessionError {
@@ -100,6 +103,7 @@ pub struct Session {
     /// An increasing counter of derived secure channels
     pub(crate) channel_counter: u64,
     pub(crate) aead_type: AeadType,
+    pub(crate) transcript: Transcript,
 }
 
 // pkBinder = KDF(skCS, g^c | g^s | [pkS])
@@ -107,13 +111,13 @@ fn derive_pk_binder(
     key: &SessionKey,
     initiator_authenticator: &Authenticator,
     responder_ecdh_pk: &DHPublicKey,
-    responder_pq_pk: Option<PQEncapsulationKey>,
+    responder_pq_pk: &Option<PQEncapsulationKey>,
 ) -> Result<[u8; PK_BINDER_LEN], SessionError> {
     #[derive(TlsSerialize, TlsSize)]
     struct PkBinderInfo<'a> {
         initiator_authenticator: &'a Authenticator,
         responder_ecdh_pk: &'a DHPublicKey,
-        responder_pq_pk: Option<PQEncapsulationKey<'a>>,
+        responder_pq_pk: &'a Option<PQEncapsulationKey<'a>>,
     }
 
     let info = PkBinderInfo {
@@ -153,12 +157,12 @@ impl Session {
         is_initiator: bool,
         aead_type: AeadType,
     ) -> Result<Self, SessionError> {
-        let session_key = derive_session_key(k2, tx2, aead_type)?;
+        let session_key = derive_session_key(k2, &tx2, aead_type)?;
         let pk_binder = derive_pk_binder(
             &session_key,
             initiator_authenticator,
             responder_ecdh_pk,
-            responder_pq_pk,
+            &responder_pq_pk,
         )?;
         Ok(Self {
             principal: if is_initiator {
@@ -170,7 +174,65 @@ impl Session {
             pk_binder,
             channel_counter: 0,
             aead_type,
+            transcript: tx2,
         })
+    }
+
+    /// Import a secret, replacing the main session secret
+    ///
+    /// A secret `psk` that is at least 32 bytes long can be imported into the
+    /// session, replacing the original main session secret `K_S` with a fresh
+    /// secret derived from the `psk` and `K_S`.
+    /// The new session will be bound to the same principal public keys, but
+    /// it will derive a fresh session ID and update the running transcript
+    /// `tx` for future imports.
+    ///
+    /// In detail:
+    /// ```
+    /// K_import = KDF(K_S || psk, "secret import")
+    /// tx' = Hash(tx || session_ID)
+    ///
+    /// // From here: treat K_import as though it was the outcome of a handshake
+    /// K_S' = KDF(K_import, "session secret" | tx')
+    /// session_ID' = KDF(K_S', "shared key id")
+    /// ```
+    pub fn import(
+        self,
+        psk: &[u8],
+        initiator_authenticator: &Authenticator,
+        responder_ecdh_pk: &DHPublicKey,
+        responder_pq_pk: Option<PQEncapsulationKey>,
+    ) -> Result<Self, SessionError> {
+        // We require that the psk is at least 32 bytes long.
+        if psk.len() < 32 {
+            return Err(SessionError::Import);
+        }
+
+        if derive_pk_binder(
+            &self.session_key,
+            initiator_authenticator,
+            responder_ecdh_pk,
+            &responder_pq_pk,
+        )? != self.pk_binder
+        {
+            return Err(SessionError::Import);
+        }
+
+        let transcript =
+            Transcript::add_hash::<3>(Some(&self.transcript), self.session_key.identifier)
+                .map_err(|_| SessionError::Import)?;
+
+        let import_key = derive_import_key(self.session_key.key, psk, self.aead_type)?;
+
+        Self::new(
+            transcript,
+            import_key,
+            initiator_authenticator,
+            responder_ecdh_pk,
+            responder_pq_pk,
+            matches!(self.principal, SessionPrincipal::Initiator),
+            self.aead_type,
+        )
     }
 
     /// Serializes the session state for storage.
@@ -195,7 +257,7 @@ impl Session {
             &self.session_key,
             initiator_authenticator,
             responder_ecdh_pk,
-            responder_pq_pk,
+            &responder_pq_pk,
         )? == self.pk_binder
         {
             self.tls_serialize(&mut &mut out[..])
@@ -252,7 +314,7 @@ impl Session {
             &session.session_key,
             initiator_authenticator,
             responder_ecdh_pk,
-            responder_pq_pk,
+            &responder_pq_pk,
         )? == session.pk_binder
         {
             Ok(session)
