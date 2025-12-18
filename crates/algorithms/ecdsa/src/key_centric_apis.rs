@@ -188,14 +188,14 @@ macro_rules! impl_mod {
             /// An error when verifying a signature.
             #[derive(Debug)]
             pub enum VerificationError {
+                /// The provided signature is invalid.
+                InvalidSignature,
                 /// The length of the provided verification key is incorrect.
                 WrongVerificationKeyLength,
                 /// The length of the provided signature is incorrect.
                 WrongSignatureLength,
                 /// The length of the provided payload is invalid.
                 InvalidPayloadLength,
-                /// An unknown error occurred.
-                UnknownError,
             }
 
             /// An error when generating a signature key pair.
@@ -277,7 +277,7 @@ macro_rules! impl_mod {
                     <&[u8; 32]>::try_from(&signature[32..]).unwrap(),
                 );
                 if !result {
-                    return Err(slice::VerificationError::UnknownError);
+                    return Err(slice::VerificationError::InvalidSignature);
                 }
                 Ok(())
             }
