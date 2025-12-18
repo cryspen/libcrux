@@ -146,8 +146,13 @@ pub mod slice {
     //! Ed25519::verify(&verification_key, b"payload", &signature).unwrap();
     //!  ```
 
-    #[derive(Debug, PartialEq)]
     /// Slice-based APIs for Ed25519.
+    ///
+    /// This struct provides slice-based APIs for Ed25519, as well as an implementation
+    /// of the [`SignConsts`] trait, which can be used to retrieve constants defining
+    /// the verification key length, signing key length, signature length, and the
+    /// length of the randomness required for key generation for the signature scheme.
+    #[derive(Debug, PartialEq)]
     pub struct Ed25519;
     use super::*;
     impl_sign_consts!(

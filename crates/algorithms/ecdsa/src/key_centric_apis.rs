@@ -156,6 +156,11 @@ macro_rules! impl_mod {
             //! ```
 
             /// Slice-based APIs for ECDSA-P256.
+            ///
+            /// This struct provides slice-based APIs for ECDSA-P256, as well as an implementation
+            /// of the [`SignConsts`] trait, which can be used to retrieve constants defining
+            /// the verification key length, signing key length, signature length, and the
+            /// length of the randomness required for key generation for the signature scheme.
             #[derive(Debug, PartialEq)]
             pub struct $ty;
             use super::*;
