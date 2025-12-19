@@ -114,10 +114,16 @@ pub fn secret_to_public(pk: &mut [u8; 32], sk: &[u8; 32]) {
     crate::hacl::ed25519::secret_to_public(pk, sk)
 }
 
+/// An Ed25519 key pair.
+pub struct Ed25519KeyPair {
+    /// An Ed25519 signing key
+    pub signing_key: SigningKey,
+    /// An Ed25519 verification key
+    pub verification_key: VerificationKey,
+}
+
 #[cfg(feature = "rand")]
-pub fn generate_key_pair(
-    rng: &mut impl rand_core::CryptoRng,
-) -> Result<(SigningKey, VerificationKey), Error> {
+pub fn generate_key_pair(rng: &mut impl rand_core::CryptoRng) -> Result<Ed25519KeyPair, Error> {
     use rand_core::TryRngCore;
 
     const LIMIT: usize = 100;
@@ -143,5 +149,8 @@ pub fn generate_key_pair(
 
     secret_to_public(&mut pk, &sk);
 
-    Ok((SigningKey { value: sk }, VerificationKey { value: pk }))
+    Ok(Ed25519KeyPair {
+        signing_key: SigningKey { value: sk },
+        verification_key: VerificationKey { value: pk },
+    })
 }
