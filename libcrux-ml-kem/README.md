@@ -35,40 +35,43 @@ builds can be forced by setting environment variables,
 `LIBCRUX_ENABLE_SIMD128=1` or `LIBCRUX_ENABLE_SIMD256=1`.
 
 Usage example:
-```Rust
- use rand::{rngs::OsRng, TryRngCore};
+```rust
+ #[cfg(feature = "mlkem768")]
+ {
+     use rand::{rngs::OsRng, TryRngCore};
 
- // Ensure you use good randomness.
- // It is not recommended to use OsRng directly!
- // Instead it is highly encouraged to use RNGs like NISTs DRBG to account for
- // bad system entropy.
- fn random_array<const L: usize>() -> [u8; L] {
-     let mut rng = OsRng;
-     let mut seed = [0; L];
-     rng.try_fill_bytes(&mut seed).unwrap();
-     seed
+     // Ensure you use good randomness.
+     // It is not recommended to use OsRng directly!
+     // Instead it is highly encouraged to use RNGs like NISTs DRBG to account for
+     // bad system entropy.
+     fn random_array<const L: usize>() -> [u8; L] {
+         let mut rng = OsRng;
+         let mut seed = [0; L];
+         rng.try_fill_bytes(&mut seed).unwrap();
+         seed
+     }
+
+     use libcrux_ml_kem::*;
+
+     // This example uses ML-KEM 768. The other variants can be used the same way.
+
+     // Generate a key pair.
+     let key_pair = {
+        let randomness = random_array();
+        mlkem768::generate_key_pair(randomness)
+     };
+
+     // Encapsulating a shared secret to a public key.
+     let (ciphertext, shared_secret) = {
+        let randomness = random_array();
+        mlkem768::encapsulate(key_pair.public_key(), randomness)
+     };
+
+     // Decapsulating a shared secret with a private key.
+     let shared_secret_decapsulated = mlkem768::decapsulate(key_pair.private_key(), &ciphertext);
+
+     assert_eq!(shared_secret_decapsulated, shared_secret);
  }
-
- use libcrux_ml_kem::*;
-
- // This example uses ML-KEM 768. The other variants can be used the same way.
-
- // Generate a key pair.
- let key_pair = {
-    let randomness = random_array();
-    mlkem768::generate_key_pair(randomness)
- };
-
- // Encapsulating a shared secret to a public key.
- let (ciphertext, shared_secret) = {
-    let randomness = random_array();
-    mlkem768::encapsulate(key_pair.public_key(), randomness)
- };
-
- // Decapsulating a shared secret with a private key.
- let shared_secret_decapsulated = mlkem768::decapsulate(key_pair.private_key(), &ciphertext);
-
- assert_eq!(shared_secret_decapsulated, shared_secret);
 ```
 
 ### Unpacked APIs
