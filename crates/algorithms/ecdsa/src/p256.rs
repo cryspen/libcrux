@@ -20,12 +20,12 @@ pub struct Signature {
 /// An ECDSA P-256 nonce
 pub struct Nonce(pub(super) [u8; 32]);
 
-/// An ECDSA P-256 private key
-pub struct PrivateKey([u8; 32]);
+/// An ECDSA P-256 signing key
+pub struct SigningKey([u8; 32]);
 
-/// An ECDSA P-256 public key
+/// An ECDSA P-256 verification key
 #[derive(Debug)]
-pub struct PublicKey(pub [u8; 64]);
+pub struct VerificationKey(pub [u8; 64]);
 
 mod conversions {
     use super::*;
@@ -50,7 +50,7 @@ mod conversions {
         }
     }
 
-    impl TryFrom<&[u8; 32]> for PrivateKey {
+    impl TryFrom<&[u8; 32]> for SigningKey {
         type Error = Error;
 
         fn try_from(value: &[u8; 32]) -> Result<Self, Self::Error> {
@@ -58,7 +58,7 @@ mod conversions {
         }
     }
 
-    impl TryFrom<&[u8]> for PrivateKey {
+    impl TryFrom<&[u8]> for SigningKey {
         type Error = Error;
 
         fn try_from(value: &[u8]) -> Result<Self, Self::Error> {
@@ -66,19 +66,19 @@ mod conversions {
         }
     }
 
-    impl AsRef<[u8]> for PrivateKey {
+    impl AsRef<[u8]> for SigningKey {
         fn as_ref(&self) -> &[u8] {
             &self.0
         }
     }
 
-    impl AsRef<[u8; 32]> for PrivateKey {
+    impl AsRef<[u8; 32]> for SigningKey {
         fn as_ref(&self) -> &[u8; 32] {
             &self.0
         }
     }
 
-    impl TryFrom<&[u8; 64]> for PublicKey {
+    impl TryFrom<&[u8; 64]> for VerificationKey {
         type Error = Error;
 
         fn try_from(value: &[u8; 64]) -> Result<Self, Self::Error> {
@@ -86,7 +86,7 @@ mod conversions {
         }
     }
 
-    impl TryFrom<&[u8]> for PublicKey {
+    impl TryFrom<&[u8]> for VerificationKey {
         type Error = Error;
 
         fn try_from(value: &[u8]) -> Result<Self, Self::Error> {
@@ -94,13 +94,13 @@ mod conversions {
         }
     }
 
-    impl AsRef<[u8]> for PublicKey {
+    impl AsRef<[u8]> for VerificationKey {
         fn as_ref(&self) -> &[u8] {
             &self.0
         }
     }
 
-    impl AsRef<[u8; 64]> for PublicKey {
+    impl AsRef<[u8; 64]> for VerificationKey {
         fn as_ref(&self) -> &[u8; 64] {
             &self.0
         }
@@ -188,8 +188,8 @@ fn validate_scalar_slice(scalar: &[u8]) -> Result<[u8; 32], Error> {
     validate_scalar_(&private).map(|_| private)
 }
 
-fn validate_private_key_slice(scalar: &[u8]) -> Result<PrivateKey, Error> {
-    validate_scalar_slice(scalar).map(|a| PrivateKey(a))
+fn validate_private_key_slice(scalar: &[u8]) -> Result<SigningKey, Error> {
+    validate_scalar_slice(scalar).map(|a| SigningKey(a))
 }
 
 /// Prepare the nonce for EcDSA and validate the key
@@ -227,7 +227,7 @@ pub mod rand {
         }
     }
 
-    impl PrivateKey {
+    impl SigningKey {
         /// Generate a random [`PrivateKey`] for ECDSA.
         pub fn random(rng: &mut (impl CryptoRng + RngCore)) -> Result<Self, Error> {
             random_scalar(rng).map(|s| Self(s))
@@ -238,7 +238,7 @@ pub mod rand {
     pub fn sign(
         hash: DigestAlgorithm,
         payload: &[u8],
-        private_key: &PrivateKey,
+        private_key: &SigningKey,
         rng: &mut (impl CryptoRng + RngCore),
     ) -> Result<Signature, Error> {
         let nonce = Nonce(random_scalar(rng)?);
@@ -253,7 +253,7 @@ pub mod rand {
 pub fn sign(
     hash: DigestAlgorithm,
     payload: &[u8],
-    private_key: &PrivateKey,
+    private_key: &SigningKey,
     nonce: &Nonce,
 ) -> Result<Signature, Error> {
     _sign(hash, payload, private_key, nonce)
@@ -263,7 +263,7 @@ pub fn sign(
 fn _sign(
     hash: DigestAlgorithm,
     payload: &[u8],
-    private_key: &PrivateKey,
+    private_key: &SigningKey,
     nonce: &Nonce,
 ) -> Result<Signature, Error> {
     let mut signature = [0u8; 64];
@@ -305,7 +305,7 @@ fn u32_len(bytes: &[u8]) -> Result<u32, Error> {
 }
 
 /// Prepare the public key for EcDSA
-fn validate_pk(public_key: &[u8]) -> Result<PublicKey, Error> {
+fn validate_pk(public_key: &[u8]) -> Result<VerificationKey, Error> {
     if public_key.is_empty() {
         return Err(Error::SigningError);
     }
@@ -323,7 +323,7 @@ fn validate_pk(public_key: &[u8]) -> Result<PublicKey, Error> {
         }
     };
 
-    let pk = PublicKey(pk);
+    let pk = VerificationKey(pk);
     validate_point(&pk.0).map(|_| pk)
 }
 
@@ -334,7 +334,7 @@ pub fn verify(
     hash: DigestAlgorithm,
     payload: &[u8],
     signature: &Signature,
-    public_key: &PublicKey,
+    public_key: &VerificationKey,
 ) -> Result<(), Error> {
     let len = u32_len(payload)?;
 

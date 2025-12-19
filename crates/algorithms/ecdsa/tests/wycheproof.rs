@@ -1,6 +1,6 @@
 mod util;
 use libcrux_ecdsa::{
-    p256::{self, PublicKey},
+    p256::{self, VerificationKey},
     DigestAlgorithm, Error,
 };
 use util::*;
@@ -106,7 +106,7 @@ fn test_wycheproof() {
         assert_eq!(testGroup.sha, "SHA-256");
 
         let pk = hex_str_to_bytes(&testGroup.key.uncompressed);
-        let pk = PublicKey::try_from(pk.as_slice()).unwrap();
+        let pk = VerificationKey::try_from(pk.as_slice()).unwrap();
 
         for test in testGroup.tests.iter() {
             println!("Test {:?}: {:?}", test.tcId, test.comment);
