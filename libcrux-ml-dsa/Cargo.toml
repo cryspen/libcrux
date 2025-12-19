@@ -10,7 +10,7 @@ homepage.workspace = true
 edition.workspace = true
 repository.workspace = true
 
-exclude = [ "boring.sh", "/cg", "*.sh", "*.yaml", "/proofs" ]
+exclude = [ "boring.sh", "/cg", "*.sh", "*.yaml", "/proofs", "tests/nistkats.rs", "tests/kats"]
 
 [lib]
 bench = false # so libtest doesn't eat the arguments to criterion
