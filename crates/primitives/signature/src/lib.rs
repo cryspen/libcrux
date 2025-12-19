@@ -24,7 +24,11 @@ pub mod ecdsa {
         //!   Nonce, sha2_256::{KeyPair, SigningKey, VerificationKey}
         //! };
         //!
-        //! // generate a new nonce
+        //! // Generate a new nonce.
+        //! // Ensure you use good randomness.
+        //! // It is not recommended to use OsRng directly!
+        //! // Instead it is highly encouraged to use RNGs like NISTs DRBG to account for
+        //! // bad system entropy.
         //! use rand::TryRngCore;
         //! let mut rng = rand::rngs::OsRng;
         //! let nonce = Nonce::random(&mut rng.unwrap_mut()).unwrap();
@@ -117,6 +121,10 @@ pub mod ed25519 {
     //! ```rust
     //! use libcrux_signature::ed25519::KeyPair;
     //!
+    //! // Ensure you use good randomness.
+    //! // It is not recommended to use OsRng directly!
+    //! // Instead it is highly encouraged to use RNGs like NISTs DRBG to account for
+    //! // bad system entropy.
     //! use rand::TryRngCore;
     //! let mut rng = rand::rngs::OsRng;
     //!
@@ -201,6 +209,10 @@ pub mod mldsa {
     //! ```rust
     //! use libcrux_signature::mldsa::ml_dsa_44::{SigningKey, KeyPair, VerificationKey};
     //!
+    //! // Ensure you use good randomness.
+    //! // It is not recommended to use OsRng directly!
+    //! // Instead it is highly encouraged to use RNGs like NISTs DRBG to account for
+    //! // bad system entropy.
     //! use rand::{RngCore, TryRngCore};
     //! let mut rng = rand::rngs::OsRng;
     //! let mut rng = rng.unwrap_mut();
