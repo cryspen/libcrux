@@ -18,7 +18,7 @@ pub enum Error {
 #[derive(Default, Clone, Copy)]
 #[cfg_attr(feature = "codec", derive(TlsSerialize, TlsDeserialize, TlsSize))]
 pub struct VerificationKey {
-    value: [u8; 32],
+    pub(crate) value: [u8; 32],
 }
 
 impl VerificationKey {
@@ -42,7 +42,16 @@ impl AsRef<[u8; 32]> for VerificationKey {
 /// An Ed25519 private, signing  key
 #[derive(Default)]
 pub struct SigningKey {
-    value: [u8; 32],
+    pub(crate) value: [u8; 32],
+}
+
+#[repr(transparent)]
+/// An Ed25519 signature
+pub struct Signature(pub(crate) [u8; 64]);
+impl From<[u8; 64]> for Signature {
+    fn from(value: [u8; 64]) -> Self {
+        Signature(value)
+    }
 }
 
 impl SigningKey {

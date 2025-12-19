@@ -87,7 +87,7 @@ impl_key_centric_types!(
     WrongLengthError,
     WrongLengthError
 );
-
+/// XXX: Decide whether we need these here (or need them to be public).
 pub(crate) mod arrayref {
     #[derive(Debug, PartialEq)]
     pub(crate) struct Ed25519;
@@ -131,7 +131,8 @@ pub(crate) mod arrayref {
         }
     }
 }
-pub mod slice {
+/// XXX: Decide whether we need these here (or need them to be public).
+pub(crate) mod slice {
     //! Slice-based APIs for Ed25519.
     //!
     //! ```rust
@@ -204,30 +205,29 @@ pub mod slice {
     }
 }
 
-impl KeyPair {
+impl crate::Ed25519KeyPair {
     #[cfg(feature = "rand")]
     /// Generate an Ed25519 key pair
-    pub fn generate(rng: &mut impl rand_core::CryptoRng) -> KeyPair {
-        let mut bytes = [0u8; arrayref::Ed25519::RAND_KEYGEN_LEN];
-        rng.fill_bytes(&mut bytes);
-
-        Self::generate_derand(bytes.classify())
+    pub fn generate(rng: &mut impl rand_core::CryptoRng) -> Self {
+        crate::generate_key_pair(rng)
     }
 
     /// Generate an Ed25519 key pair (derand)
-    pub fn generate_derand(bytes: [U8; RAND_KEYGEN_LEN]) -> KeyPair {
+    pub fn generate_derand(bytes: [U8; RAND_KEYGEN_LEN]) -> crate::Ed25519KeyPair {
         let mut signing_key = [0u8; arrayref::Ed25519::SIGNING_KEY_LEN].classify();
         let mut verification_key = [0u8; arrayref::Ed25519::VERIFICATION_KEY_LEN];
         arrayref::Ed25519::keygen(&mut signing_key, &mut verification_key, bytes);
 
-        KeyPair {
-            signing_key: SigningKey::from(signing_key),
-            verification_key: VerificationKey::from(verification_key),
+        crate::Ed25519KeyPair {
+            signing_key: crate::SigningKey::from_bytes(signing_key),
+            verification_key: crate::VerificationKey::from_bytes(verification_key),
         }
     }
 }
+
+/// XXX: Decide whether we need these here (or need them to be public).                
 impl arrayref::Ed25519 {
-    pub fn sign(
+    pub(crate) fn sign(
         key: &[U8; Self::SIGNING_KEY_LEN],
         payload: &[u8],
         signature: &mut [u8; Self::SIGNATURE_LEN],
@@ -243,7 +243,7 @@ impl arrayref::Ed25519 {
     }
 
     #[inline(always)]
-    pub fn verify(
+    pub(crate) fn verify(
         key: &[u8; Self::VERIFICATION_KEY_LEN],
         payload: &[u8],
         signature: &[u8; Self::SIGNATURE_LEN],
@@ -259,7 +259,7 @@ impl arrayref::Ed25519 {
             Err(arrayref::VerificationError::InvalidSignature)
         }
     }
-    pub fn keygen(
+    pub(crate) fn keygen(
         signing_key: &mut [U8; Self::SIGNING_KEY_LEN],
         verification_key: &mut [u8; Self::VERIFICATION_KEY_LEN],
         randomness: [U8; Self::RAND_KEYGEN_LEN],
@@ -268,8 +268,10 @@ impl arrayref::Ed25519 {
         crate::secret_to_public(verification_key, signing_key.declassify_ref());
     }
 }
+
+/// XXX: Decide whether we need these here (or need them to be public).
 impl slice::Ed25519 {
-    pub fn sign(
+    pub(crate) fn sign(
         key: &[U8],
         payload: &[u8],
         signature: &mut [u8],
@@ -284,7 +286,7 @@ impl slice::Ed25519 {
         arrayref::Ed25519::sign(&key, payload, signature).map_err(slice::SigningError::from)
     }
 
-    pub fn verify(
+    pub(crate) fn verify(
         key: &[u8],
         payload: &[u8],
         signature: &[u8],
@@ -299,7 +301,7 @@ impl slice::Ed25519 {
         arrayref::Ed25519::verify(key, payload, signature).map_err(slice::VerificationError::from)
     }
 
-    pub fn keygen(
+    pub(crate) fn keygen(
         signing_key: &mut [U8],
         verification_key: &mut [u8],
         randomness: [U8; Self::RAND_KEYGEN_LEN],
@@ -316,32 +318,38 @@ impl slice::Ed25519 {
         Ok(())
     }
 }
+
+/// XXX: Decide whether we need these here (or need them to be public).
 impl<'a> SigningKeyRef<'a> {
-    pub fn sign(&self, payload: &[u8], signature: &mut [u8]) -> Result<(), slice::SigningError> {
+    pub(crate) fn sign(
+        &self,
+        payload: &[u8],
+        signature: &mut [u8],
+    ) -> Result<(), slice::SigningError> {
         slice::Ed25519::sign(self.as_ref(), payload, signature)
     }
 }
+/// XXX: Decide whether we need these here (or need them to be public).
 impl<'a> VerificationKeyRef<'a> {
-    pub fn verify(&self, payload: &[u8], signature: &[u8]) -> Result<(), slice::VerificationError> {
+    pub(crate) fn verify(
+        &self,
+        payload: &[u8],
+        signature: &[u8],
+    ) -> Result<(), slice::VerificationError> {
         slice::Ed25519::verify(self.as_ref(), payload, signature)
     }
 }
 
 // key-centric API
-impl SigningKey {
-    pub fn sign(&self, payload: &[u8]) -> Result<Signature, arrayref::SigningError> {
-        let mut signature = [0u8; SIGNATURE_LEN];
-        arrayref::Ed25519::sign(self.as_ref(), payload, &mut signature)
-            .map(|_| Signature::from(signature))
+impl crate::SigningKey {
+    pub fn sign(&self, message: &[u8]) -> Result<crate::Signature, crate::Error> {
+        crate::sign(message, &self.value).map(|sig_bytes| sig_bytes.into())
     }
 }
-impl VerificationKey {
-    pub fn verify(
-        &self,
-        payload: &[u8],
-        signature: &Signature,
-    ) -> Result<(), arrayref::VerificationError> {
-        arrayref::Ed25519::verify(self.as_ref(), payload, signature.as_ref())
+
+impl crate::VerificationKey {
+    pub fn verify(&self, message: &[u8], signature: &crate::Signature) -> Result<(), crate::Error> {
+        crate::verify(message, &self.value, &signature.0)
     }
 }
 
