@@ -1,10 +1,12 @@
 //! ECDSA on P-256
 
+use ::rand::CryptoRng;
 use libcrux_p256::{
-    compressed_to_raw, ecdsa_sign_p256_sha2, ecdsa_sign_p256_sha384, ecdsa_sign_p256_sha512,
-    ecdsa_verif_p256_sha2, ecdsa_verif_p256_sha384, ecdsa_verif_p256_sha512, uncompressed_to_raw,
-    validate_private_key, validate_public_key,
+    compressed_to_raw, ecdh_api::EcdhArrayref, ecdsa_sign_p256_sha2, ecdsa_sign_p256_sha384,
+    ecdsa_sign_p256_sha512, ecdsa_verif_p256_sha2, ecdsa_verif_p256_sha384,
+    ecdsa_verif_p256_sha512, uncompressed_to_raw, validate_private_key, validate_public_key,
 };
+use libcrux_secrets::{Classify as _, U8};
 
 use crate::DigestAlgorithm;
 
@@ -27,7 +29,55 @@ pub struct SigningKey([u8; 32]);
 #[derive(Debug)]
 pub struct VerificationKey(pub [u8; 64]);
 
-/// An ECDSA P-256
+const RAND_KEYGEN_LEN: usize = 32;
+
+impl ECDSAKeyPair {
+    pub fn generate(rng: &mut impl CryptoRng) -> Result<Self, Error> {
+        let mut bytes = [0u8; RAND_KEYGEN_LEN];
+        rng.fill_bytes(&mut bytes);
+
+        Self::generate_derand(bytes.classify())
+    }
+
+    /// Generate an ECDSA-P256 key pair (derand)
+    pub fn generate_derand(randomness: [U8; RAND_KEYGEN_LEN]) -> Result<ECDSAKeyPair, Error> {
+        let mut signing_key = [0u8; 32];
+        let mut verification_key = [0u8; 64];
+
+        libcrux_p256::P256::generate_pair(&mut verification_key, &mut signing_key, &randomness);
+
+        Ok(ECDSAKeyPair {
+            signing_key: SigningKey::try_from(&signing_key)?,
+            verification_key: VerificationKey::try_from(&verification_key)?,
+        })
+    }
+}
+
+impl VerificationKey {
+    /// Verify an ECDSA P-256 signature
+    pub fn verify(
+        &self,
+        hash: DigestAlgorithm,
+        message: &[u8],
+        signature: &Signature,
+    ) -> Result<(), Error> {
+        crate::p256::verify(hash, message, signature, self)
+    }
+}
+
+impl SigningKey {
+    /// Generate and ECDSA P-256 signature
+    pub fn sign(
+        &self,
+        hash: DigestAlgorithm,
+        message: &[u8],
+        nonce: &Nonce,
+    ) -> Result<Signature, Error> {
+        crate::p256::sign(hash, message, self, nonce)
+    }
+}
+
+/// An ECDSA P-256 key pair
 pub struct ECDSAKeyPair {
     /// An ECDSA P-256 signing key
     pub signing_key: SigningKey,

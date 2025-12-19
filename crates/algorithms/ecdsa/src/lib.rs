@@ -29,4 +29,4 @@ pub type DigestAlgorithm = libcrux_sha2::Algorithm;
 #[cfg(feature = "rand")]
 pub(crate) const RAND_LIMIT: usize = 100;
 
-pub mod key_centric_apis;
+pub(crate) mod key_centric_apis;

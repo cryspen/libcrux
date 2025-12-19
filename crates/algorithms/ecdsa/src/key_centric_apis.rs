@@ -100,13 +100,15 @@ macro_rules! impl_mod {
         use super::*;
 
         #[doc(inline)]
-        pub use self::{
+        /// XXX: Decide whether we need these here (or need them to be public).
+        pub(crate) use self::{
             arrayref::{
                 KeyPair, Signature, SigningKey, SigningKeyRef, VerificationKey, VerificationKeyRef,
             },
             slice::*,
         };
 
+        /// XXX: Decide whether we need these here (or need them to be public).
         pub(crate) mod arrayref {
             #[derive(Debug, PartialEq)]
             pub(crate) struct $ty;
@@ -121,7 +123,9 @@ macro_rules! impl_mod {
                 WrongLengthError
             );
         }
-        pub mod slice {
+
+        /// XXX: Decide whether we need these here (or need them to be public).
+        pub(crate) mod slice {
             //! Slice-based APIs for ECDSA-P256.
             //!
             //! ```rust
@@ -236,9 +240,11 @@ macro_rules! impl_mod {
                 })
             }
         }
+
+        /// XXX: Decide whether we need these here (or need them to be public).
         impl arrayref::$ty {
             /// Sign the `payload` with the `key`.
-            pub fn sign(
+            pub(crate) fn sign(
                 key: &[U8; Self::SIGNING_KEY_LEN],
                 payload: &[u8],
                 signature: &mut [u8; Self::SIGNATURE_LEN],
@@ -261,7 +267,7 @@ macro_rules! impl_mod {
             }
 
             /// Verify the `payload` and `signature` with the `key`.
-            pub fn verify(
+            pub(crate) fn verify(
                 key: &[u8; Self::VERIFICATION_KEY_LEN],
                 payload: &[u8],
                 signature: &[u8; Self::SIGNATURE_LEN],
@@ -281,7 +287,7 @@ macro_rules! impl_mod {
                 }
                 Ok(())
             }
-            pub fn keygen(
+            pub(crate) fn keygen(
                 signing_key: &mut [U8; Self::SIGNING_KEY_LEN],
                 verification_key: &mut [u8; Self::VERIFICATION_KEY_LEN],
                 randomness: [U8; Self::RAND_KEYGEN_LEN],
@@ -301,9 +307,11 @@ macro_rules! impl_mod {
                 Ok(())
             }
         }
+
+        /// XXX: Decide whether we need these here (or need them to be public).
         impl slice::$ty {
             /// Sign the `payload` with the `key`.
-            pub fn sign(
+            pub(crate) fn sign(
                 key: &[U8],
                 payload: &[u8],
                 signature: &mut [u8],
@@ -320,7 +328,7 @@ macro_rules! impl_mod {
                     .map_err(slice::SigningError::from)
             }
             /// Verify the `payload` and `signature` with the `key`.
-            pub fn verify(
+            pub(crate) fn verify(
                 key: &[u8],
                 payload: &[u8],
                 signature: &[u8],
@@ -335,7 +343,7 @@ macro_rules! impl_mod {
                 arrayref::$ty::verify(key, payload, signature)
                     .map_err(slice::VerificationError::from)
             }
-            pub fn keygen(
+            pub(crate) fn keygen(
                 signing_key: &mut [U8],
                 verification_key: &mut [u8],
                 randomness: [U8; Self::RAND_KEYGEN_LEN],
@@ -350,9 +358,11 @@ macro_rules! impl_mod {
                 arrayref::$ty::keygen(signing_key, verification_key, randomness)
             }
         }
+
+        /// XXX: Decide whether we need these here (or need them to be public).
         impl<'a> SigningKeyRef<'a> {
             /// Sign the `payload`.
-            pub fn sign(
+            pub(crate) fn sign(
                 &self,
                 payload: &[u8],
                 signature: &mut [u8],
@@ -361,9 +371,11 @@ macro_rules! impl_mod {
                 slice::$ty::sign(self.as_ref(), payload, signature, nonce)
             }
         }
+
+        /// XXX: Decide whether we need these here (or need them to be public).
         impl<'a> VerificationKeyRef<'a> {
             /// Verify the `payload` and `signature`.
-            pub fn verify(
+            pub(crate) fn verify(
                 &self,
                 payload: &[u8],
                 signature: &[u8],
