@@ -27,6 +27,14 @@ pub struct SigningKey([u8; 32]);
 #[derive(Debug)]
 pub struct VerificationKey(pub [u8; 64]);
 
+/// An ECDSA P-256
+pub struct ECDSAKeyPair {
+    /// An ECDSA P-256 signing key
+    pub signing_key: SigningKey,
+    /// An ECDSA P-256 verification key
+    pub verification_key: VerificationKey,
+}
+
 mod conversions {
     use super::*;
 
