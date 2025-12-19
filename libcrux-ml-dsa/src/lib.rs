@@ -41,4 +41,4 @@ pub mod ml_dsa_65;
 pub mod ml_dsa_87;
 
 #[cfg(not(hax))]
-pub mod key_centric_apis;
+pub(crate) mod key_centric_apis;

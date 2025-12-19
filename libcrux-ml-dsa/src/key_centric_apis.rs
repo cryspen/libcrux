@@ -64,16 +64,16 @@
 //! MlDsa44::verify(&verification_key, b"payload", &signature, b"context").unwrap();
 //! ```
 
-#[cfg(doc)]
-use self::{ml_dsa_44::MlDsa44, ml_dsa_65::MlDsa65, ml_dsa_87::MlDsa87};
+// #[cfg(doc)]
+// use self::{ml_dsa_44::MlDsa44, ml_dsa_65::MlDsa65, ml_dsa_87::MlDsa87};
 
 use libcrux_traits::signature::{
     impl_key_centric_types, impl_sign_consts, SignConsts, WrongLengthError,
 };
 
 macro_rules! impl_mod {
-    ($ty:ident, $module:ident) => {
-        use libcrux_secrets::{Classify, Declassify, DeclassifyRef, DeclassifyRefMut, U8};
+    ($ty:ident, $module:ident, $keypair:ty, $sigkey:ty, $verkey:ty, $signature:ty) => {
+        use libcrux_secrets::{Declassify, DeclassifyRef, DeclassifyRefMut, U8};
 
         pub(super) const VERIFICATION_KEY_LEN: usize =
             crate::ml_dsa_generic::$module::VERIFICATION_KEY_SIZE;
@@ -83,11 +83,13 @@ macro_rules! impl_mod {
 
         use super::*;
 
+        /// XXX: Decide whether we need these here (or need them to be public).
         #[doc(inline)]
-        pub use arrayref::*;
-        #[doc(inline)]
-        pub use slice::$ty;
+        use arrayref::*;
+        // #[doc(inline)]
+        // use slice::$ty;
 
+        /// XXX: Decide whether we need these here (or need them to be public).
         pub(crate) mod arrayref {
             #[derive(Debug, PartialEq)]
             pub(crate) struct $ty;
@@ -102,7 +104,9 @@ macro_rules! impl_mod {
                 WrongLengthError
             );
         }
-        pub mod slice {
+
+        /// XXX: Decide whether we need these here (or need them to be public).
+        pub(crate) mod slice {
             //! Slice-based APIs for ML-DSA.
             //!
             //! Usage example:
@@ -227,35 +231,14 @@ macro_rules! impl_mod {
             }
         }
 
-        impl KeyPair {
-            #[cfg(feature = "rand")]
-            /// Generate an ML-DSA key pair
-            pub fn generate(rng: &mut impl rand::CryptoRng) -> KeyPair {
-                let mut bytes = [0u8; arrayref::$ty::RAND_KEYGEN_LEN];
-                rng.fill_bytes(&mut bytes);
-
-                Self::generate_derand(bytes.classify())
-            }
-
-            /// Generate an ML-DSA key pair (derand)
-            pub fn generate_derand(bytes: [U8; RAND_KEYGEN_LEN]) -> KeyPair {
-                let mut signing_key = [0u8; arrayref::$ty::SIGNING_KEY_LEN].classify();
-                let mut verification_key = [0u8; arrayref::$ty::VERIFICATION_KEY_LEN];
-                arrayref::$ty::keygen(&mut signing_key, &mut verification_key, bytes);
-
-                KeyPair {
-                    signing_key: SigningKey::from(signing_key),
-                    verification_key: VerificationKey::from(verification_key),
-                }
-            }
-        }
+        /// XXX: Decide whether we need these here (or need them to be public).
         impl arrayref::$ty {
             /// Generate an ML-DSA signature
             ///
             /// The parameter `context` is used for domain separation
             /// and is a byte string of length at most 255 bytes. It
             /// may also be empty.
-            pub fn sign(
+            pub(crate) fn sign(
                 key: &[U8; Self::SIGNING_KEY_LEN],
                 payload: &[u8],
                 signature: &mut [u8; Self::SIGNATURE_LEN],
@@ -276,7 +259,7 @@ macro_rules! impl_mod {
             /// The parameter `context` is used for domain separation
             /// and is a byte string of length at most 255 bytes. It
             /// may also be empty.
-            pub fn sign_pre_hashed_shake128(
+            pub(crate) fn sign_pre_hashed_shake128(
                 key: &[U8; Self::SIGNING_KEY_LEN],
                 payload: &[u8],
                 signature: &mut [u8; Self::SIGNATURE_LEN],
@@ -304,7 +287,7 @@ macro_rules! impl_mod {
             /// The parameter `context` is used for domain separation
             /// and is a byte string of length at most 255 bytes. It
             /// may also be empty.
-            pub fn verify(
+            pub(crate) fn verify(
                 key: &[u8; Self::VERIFICATION_KEY_LEN],
                 payload: &[u8],
                 signature: &[u8; Self::SIGNATURE_LEN],
@@ -320,7 +303,7 @@ macro_rules! impl_mod {
             /// The parameter `context` is used for domain separation
             /// and is a byte string of length at most 255 bytes. It
             /// may also be empty.
-            pub fn verify_pre_hashed_shake128(
+            pub(crate) fn verify_pre_hashed_shake128(
                 key: &[u8; Self::VERIFICATION_KEY_LEN],
                 payload: &[u8],
                 signature: &[u8; Self::SIGNATURE_LEN],
@@ -336,7 +319,7 @@ macro_rules! impl_mod {
                 )
             }
             /// Generate an ML-DSA Key Pair
-            pub fn keygen(
+            pub(crate) fn keygen(
                 signing_key: &mut [U8; Self::SIGNING_KEY_LEN],
                 verification_key: &mut [u8; Self::VERIFICATION_KEY_LEN],
                 randomness: [U8; Self::RAND_KEYGEN_LEN],
@@ -348,13 +331,15 @@ macro_rules! impl_mod {
                 );
             }
         }
+
+        /// XXX: Decide whether we need these here (or need them to be public).
         impl slice::$ty {
             /// Generate an ML-DSA signature
             ///
             /// The parameter `context` is used for domain separation
             /// and is a byte string of length at most 255 bytes. It
             /// may also be empty.
-            pub fn sign(
+            pub(crate) fn sign(
                 key: &[U8],
                 payload: &[u8],
                 signature: &mut [u8],
@@ -377,7 +362,7 @@ macro_rules! impl_mod {
             /// The parameter `context` is used for domain separation
             /// and is a byte string of length at most 255 bytes. It
             /// may also be empty.
-            pub fn sign_pre_hashed_shake128(
+            pub(crate) fn sign_pre_hashed_shake128(
                 key: &[U8],
                 payload: &[u8],
                 signature: &mut [u8],
@@ -402,7 +387,7 @@ macro_rules! impl_mod {
             /// The parameter `context` is used for domain separation
             /// and is a byte string of length at most 255 bytes. It
             /// may also be empty.
-            pub fn verify(
+            pub(crate) fn verify(
                 key: &[u8],
                 payload: &[u8],
                 signature: &[u8],
@@ -424,7 +409,7 @@ macro_rules! impl_mod {
             /// The parameter `context` is used for domain separation
             /// and is a byte string of length at most 255 bytes. It
             /// may also be empty.
-            pub fn verify_pre_hashed_shake128(
+            pub(crate) fn verify_pre_hashed_shake128(
                 key: &[u8],
                 payload: &[u8],
                 signature: &[u8],
@@ -443,7 +428,7 @@ macro_rules! impl_mod {
 
             /// Generate an ML-DSA Key Pair
             #[cfg(not(eurydice))]
-            pub fn keygen(
+            pub(crate) fn keygen(
                 signing_key: &mut [U8],
                 verification_key: &mut [u8],
                 randomness: [U8; Self::RAND_KEYGEN_LEN],
@@ -460,13 +445,15 @@ macro_rules! impl_mod {
                 Ok(())
             }
         }
+
+        /// XXX: Decide whether we need these here (or need them to be public).
         impl<'a> SigningKeyRef<'a> {
             /// Generate an ML-DSA signature
             ///
             /// The parameter `context` is used for domain separation
             /// and is a byte string of length at most 255 bytes. It
             /// may also be empty.
-            pub fn sign(
+            pub(crate) fn sign(
                 &self,
                 payload: &[u8],
                 signature: &mut [u8],
@@ -481,7 +468,7 @@ macro_rules! impl_mod {
             /// The parameter `context` is used for domain separation
             /// and is a byte string of length at most 255 bytes. It
             /// may also be empty.
-            pub fn sign_pre_hashed_shake128(
+            pub(crate) fn sign_pre_hashed_shake128(
                 &self,
                 payload: &[u8],
                 signature: &mut [u8],
@@ -497,13 +484,15 @@ macro_rules! impl_mod {
                 )
             }
         }
+
+        /// XXX: Decide whether we need these here (or need them to be public).
         impl<'a> VerificationKeyRef<'a> {
             /// Verify an ML-DSA Signature
             ///
             /// The parameter `context` is used for domain separation
             /// and is a byte string of length at most 255 bytes. It
             /// may also be empty.
-            pub fn verify(
+            pub(crate) fn verify(
                 &self,
                 payload: &[u8],
                 signature: &[u8],
@@ -517,7 +506,7 @@ macro_rules! impl_mod {
             /// The parameter `context` is used for domain separation
             /// and is a byte string of length at most 255 bytes. It
             /// may also be empty.
-            pub fn verify_pre_hashed_shake128(
+            pub(crate) fn verify_pre_hashed_shake128(
                 &self,
                 payload: &[u8],
                 signature: &[u8],
@@ -528,7 +517,25 @@ macro_rules! impl_mod {
         }
 
         // key-centric API
-        impl SigningKey {
+        impl $keypair {
+            #[cfg(feature = "rand")]
+            /// Generate an ML-DSA key pair
+            pub fn generate(rng: &mut impl rand::CryptoRng) -> Self {
+                let mut bytes = [0u8; crate::KEY_GENERATION_RANDOMNESS_SIZE];
+                rng.fill_bytes(&mut bytes);
+
+                Self::generate_derand(bytes.classify())
+            }
+
+            /// Generate an ML-DSA key pair (derand)
+            pub fn generate_derand(
+                randomness: [U8; crate::KEY_GENERATION_RANDOMNESS_SIZE],
+            ) -> Self {
+                crate::$module::generate_key_pair(randomness)
+            }
+        }
+
+        impl $sigkey {
             /// Generate an ML-DSA signature
             ///
             /// The parameter `context` is used for domain separation
@@ -536,13 +543,11 @@ macro_rules! impl_mod {
             /// may also be empty.
             pub fn sign(
                 &self,
-                payload: &[u8],
+                message: &[u8],
                 context: &[u8],
-                randomness: [U8; 32],
-            ) -> Result<Signature, crate::SigningError> {
-                let mut signature = [0u8; SIGNATURE_LEN];
-                arrayref::$ty::sign(self.as_ref(), payload, &mut signature, context, randomness)
-                    .map(|_| Signature::from(signature))
+                randomness: [U8; crate::SIGNING_RANDOMNESS_SIZE],
+            ) -> Result<$signature, crate::SigningError> {
+                crate::$module::sign(self, message, context, randomness)
             }
 
             /// Generate a HashML-DSA Signature, with a SHAKE128 pre-hashing
@@ -552,22 +557,15 @@ macro_rules! impl_mod {
             /// may also be empty.
             pub fn sign_pre_hashed_shake128(
                 &self,
-                payload: &[u8],
+                message: &[u8],
                 context: &[u8],
-                randomness: [U8; 32],
-            ) -> Result<Signature, crate::SigningError> {
-                let mut signature = [0u8; SIGNATURE_LEN];
-                arrayref::$ty::sign_pre_hashed_shake128(
-                    self.as_ref(),
-                    payload,
-                    &mut signature,
-                    context,
-                    randomness,
-                )
-                .map(|_| Signature::from(signature))
+                randomness: [U8; crate::SIGNING_RANDOMNESS_SIZE],
+            ) -> Result<$signature, crate::SigningError> {
+                crate::$module::sign_pre_hashed_shake128(self, message, context, randomness)
             }
         }
-        impl VerificationKey {
+
+        impl $verkey {
             /// Verify an ML-DSA Signature
             ///
             /// The parameter `context` is used for domain separation
@@ -575,11 +573,11 @@ macro_rules! impl_mod {
             /// may also be empty.
             pub fn verify(
                 &self,
-                payload: &[u8],
-                signature: &Signature,
+                message: &[u8],
+                signature: &$signature,
                 context: &[u8],
             ) -> Result<(), crate::VerificationError> {
-                arrayref::$ty::verify(self.as_ref(), payload, signature.as_ref(), context)
+                crate::$module::verify(self, message, context, signature)
             }
 
             /// Verify an ML-DSA Signature, with a SHAKE128 pre-hashing
@@ -589,16 +587,11 @@ macro_rules! impl_mod {
             /// may also be empty.
             pub fn verify_pre_hashed_shake128(
                 &self,
-                payload: &[u8],
-                signature: &Signature,
+                message: &[u8],
+                signature: &$signature,
                 context: &[u8],
             ) -> Result<(), crate::VerificationError> {
-                arrayref::$ty::verify_pre_hashed_shake128(
-                    self.as_ref(),
-                    payload,
-                    signature.as_ref(),
-                    context,
-                )
+                crate::$module::verify_pre_hashed_shake128(self, message, context, signature)
             }
         }
     };
@@ -606,17 +599,38 @@ macro_rules! impl_mod {
 
 #[cfg(feature = "mldsa44")]
 pub mod ml_dsa_44 {
-    impl_mod!(MlDsa44, ml_dsa_44);
+    impl_mod!(
+        MlDsa44,
+        ml_dsa_44,
+        crate::ml_dsa_44::MLDSA44KeyPair,
+        crate::ml_dsa_44::MLDSA44SigningKey,
+        crate::ml_dsa_44::MLDSA44VerificationKey,
+        crate::ml_dsa_44::MLDSA44Signature
+    );
 }
 
 #[cfg(feature = "mldsa65")]
 pub mod ml_dsa_65 {
-    impl_mod!(MlDsa65, ml_dsa_65);
+    impl_mod!(
+        MlDsa65,
+        ml_dsa_65,
+        crate::ml_dsa_65::MLDSA65KeyPair,
+        crate::ml_dsa_65::MLDSA65SigningKey,
+        crate::ml_dsa_65::MLDSA65VerificationKey,
+        crate::ml_dsa_65::MLDSA65Signature
+    );
 }
 
 #[cfg(feature = "mldsa87")]
 pub mod ml_dsa_87 {
-    impl_mod!(MlDsa87, ml_dsa_87);
+    impl_mod!(
+        MlDsa87,
+        ml_dsa_87,
+        crate::ml_dsa_87::MLDSA87KeyPair,
+        crate::ml_dsa_87::MLDSA87SigningKey,
+        crate::ml_dsa_87::MLDSA87VerificationKey,
+        crate::ml_dsa_87::MLDSA87Signature
+    );
 }
 
 #[test]
