@@ -14,18 +14,27 @@ fn serialize<SIMDUnit: Operations>(re: &PolynomialRingElement<SIMDUnit>, seriali
     }
 }
 
+#[cfg(hax)]
+use hax_lib::int::*;
+
 #[inline(always)]
+#[hax_lib::requires(
+       (ring_element_size == 4 * 32 || ring_element_size == 6 * 32)
+    && (serialized.len().to_int() == ring_element_size.to_int() * vector.len().to_int())
+)]
 pub(crate) fn serialize_vector<SIMDUnit: Operations>(
     ring_element_size: usize,
     vector: &[PolynomialRingElement<SIMDUnit>],
     serialized: &mut [u8],
 ) {
-    let mut offset: usize = 0;
+    #[cfg(hax)]
+    let serialized_len = serialized.len();
 
     cloop! {
-        for ring_element in vector.iter() {
+        for (i, ring_element) in vector.iter().enumerate() {
+            hax_lib::loop_invariant!(|i: usize| serialized.len() == serialized_len);
+            let offset = i * ring_element_size;
             serialize::<SIMDUnit>(ring_element, &mut serialized[offset..offset + ring_element_size]);
-            offset += ring_element_size;
         }
     }
 }
