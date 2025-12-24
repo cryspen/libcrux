@@ -1,3 +1,5 @@
+use crate::simd::traits::COEFFICIENTS_IN_SIMD_UNIT;
+
 /// The vector type
 #[hax_lib::fstar::before("noeq")]
 #[derive(Clone, Copy)]
@@ -23,6 +25,8 @@ pub(crate) fn from_coefficient_array(coefficient_array: &[i32], out: &mut Vec256
 
 /// Write out the coefficient to an `i32` array
 #[inline(always)]
+#[hax_lib::requires(out.len() == COEFFICIENTS_IN_SIMD_UNIT)]
+#[hax_lib::ensures(|_result| future(out).len() == COEFFICIENTS_IN_SIMD_UNIT)]
 pub(crate) fn to_coefficient_array(value: &Vec256, out: &mut [i32]) {
     libcrux_intrinsics::avx2::mm256_storeu_si256_i32(out, value.value);
 }

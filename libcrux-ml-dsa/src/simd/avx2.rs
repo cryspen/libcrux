@@ -17,9 +17,7 @@ pub(crate) use vector_type::{AVX2RingElement, Vec256 as AVX2SIMDUnit};
 #[hax_lib::attributes]
 impl Repr for AVX2SIMDUnit {
     #[hax_lib::requires(true)]
-    #[hax_lib::ensures(|result| false)]
     fn repr(&self) -> [i32; COEFFICIENTS_IN_SIMD_UNIT] {
-        hax_lib::assume!(false);
         let mut result = [0i32; COEFFICIENTS_IN_SIMD_UNIT];
         vector_type::to_coefficient_array(self, &mut result);
         result
@@ -49,7 +47,8 @@ impl Operations for AVX2SIMDUnit {
     #[hax_lib::requires(specs::to_coefficient_array_pre(&value.repr(), out))]
     #[hax_lib::ensures(|_| specs::to_coefficient_array_post(&value.repr(), out, &future(out)))]
     fn to_coefficient_array(value: &Self, out: &mut [i32]) {
-        vector_type::to_coefficient_array(value, out)
+        vector_type::to_coefficient_array(value, out);
+        hax_lib::fstar!("Seq.lemma_eq_intro (${value.repr()}) $out");
     }
 
     #[inline(always)]
