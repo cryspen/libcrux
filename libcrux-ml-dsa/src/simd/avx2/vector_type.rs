@@ -19,6 +19,7 @@ pub(crate) fn zero() -> Vec256 {
 }
 
 /// Create a coefficient from an `i32` array
+#[hax_lib::requires(coefficient_array.len() == COEFFICIENTS_IN_SIMD_UNIT)]
 pub(crate) fn from_coefficient_array(coefficient_array: &[i32], out: &mut Vec256) {
     out.value = libcrux_intrinsics::avx2::mm256_loadu_si256_i32(coefficient_array)
 }
