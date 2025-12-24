@@ -33,7 +33,9 @@ impl Operations for AVX2SIMDUnit {
     #[inline(always)]
     #[hax_lib::ensures(|result| specs::zero_post(&result.repr()))]
     fn zero() -> Self {
-        vector_type::zero()
+        let zero = vector_type::zero();
+        hax_lib::fstar!(r#"Seq.lemma_eq_intro (${zero.repr()}) (${[0i32; 8]})"#);
+        zero
     }
 
     #[inline(always)]
