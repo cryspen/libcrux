@@ -38,10 +38,12 @@ pub fn mm256_storeu_si256_i16(output: &mut [i16], vector: Vec256) {
 }
 
 #[hax_lib::opaque]
+#[hax_lib::requires(output.len() >= 8)]
+#[hax_lib::ensures(|_r| future(output).len() == output.len())]
 #[inline(always)]
 pub fn mm256_storeu_si256_i32(output: &mut [i32], vector: Vec256) {
     #[cfg(not(hax))]
-    debug_assert_eq!(output.len(), 8);
+    debug_assert_eq!(output.len(), 8); // this precondition is too restrictive
     unsafe {
         _mm256_storeu_si256(output.as_mut_ptr() as *mut Vec256, vector);
     }
@@ -103,6 +105,7 @@ pub fn mm256_loadu_si256_i16(input: &[i16]) -> Vec256 {
 }
 
 #[hax_lib::opaque]
+#[hax_lib::requires(input.len() >= 8)]
 #[inline(always)]
 pub fn mm256_loadu_si256_i32(input: &[i32]) -> Vec256 {
     #[cfg(not(hax))]
