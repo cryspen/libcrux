@@ -18,7 +18,7 @@ forall (i: nat {i < 8}) (j: nat {j < 18}).
   let offset = if i >= 4 then 56 else 0 in
   ${result}.(mk_int (i * 18 + j + offset)) == ${simd_unit_shifted}.(mk_int (i * 32 + j))
 "#))]
-#[hax_lib::fstar::options("--fuel 0 --ifuel 0 --z3rlimit 100")]
+#[hax_lib::fstar::options("--fuel 0 --ifuel 0 --z3rlimit 150")]
 // `serialize_when_gamma1_is_2_pow_17_aux` contains the AVX2-only pure operations.
 // This split is required for the F* proof to go through.
 fn serialize_when_gamma1_is_2_pow_17_aux(simd_unit_shifted: Vec256) -> Vec256 {
