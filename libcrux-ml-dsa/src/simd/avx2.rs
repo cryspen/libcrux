@@ -58,6 +58,9 @@ impl Operations for AVX2SIMDUnit {
     #[hax_lib::requires(specs::add_pre(&lhs.repr(), &rhs.repr()))]
     #[hax_lib::ensures(|_| specs::add_post(&lhs.repr(), &rhs.repr(), &future(lhs).repr()))]
     fn add(lhs: &mut Self, rhs: &Self) {
+        hax_lib::fstar!("Spec.Intrinsics.reveal_opaque_arithmetic_ops #I32");
+        hax_lib::fstar!("reveal_opaque (`%${specs::add_pre}) ${specs::add_pre}");
+        hax_lib::fstar!("reveal_opaque (`%${specs::add_post}) ${specs::add_post}");
         arithmetic::add(&mut lhs.value, &rhs.value)
     }
 
@@ -65,6 +68,9 @@ impl Operations for AVX2SIMDUnit {
     #[hax_lib::requires(specs::subtract_pre(&lhs.repr(), &rhs.repr()))]
     #[hax_lib::ensures(|_| specs::subtract_post(&lhs.repr(), &rhs.repr(), &future(lhs).repr()))]
     fn subtract(lhs: &mut Self, rhs: &Self) {
+        hax_lib::fstar!("Spec.Intrinsics.reveal_opaque_arithmetic_ops #I32");
+        hax_lib::fstar!("reveal_opaque (`%${specs::subtract_pre}) ${specs::subtract_pre}");
+        hax_lib::fstar!("reveal_opaque (`%${specs::subtract_post}) ${specs::subtract_post}");
         arithmetic::subtract(&mut lhs.value, &rhs.value)
     }
 
@@ -72,6 +78,9 @@ impl Operations for AVX2SIMDUnit {
     #[hax_lib::requires(specs::infinity_norm_exceeds_pre(&simd_unit.repr(), bound))]
     #[hax_lib::ensures(|result| specs::infinity_norm_exceeds_post(&simd_unit.repr(), bound, result))]
     fn infinity_norm_exceeds(simd_unit: &Self, bound: i32) -> bool {
+        hax_lib::fstar!(
+            "reveal_opaque (`%Spec.Utils.is_i32b_array_opaque) Spec.Utils.is_i32b_array_opaque"
+        );
         arithmetic::infinity_norm_exceeds(&simd_unit.value, bound)
     }
 
@@ -79,6 +88,9 @@ impl Operations for AVX2SIMDUnit {
     #[hax_lib::requires(specs::decompose_pre(gamma2, &simd_unit.repr(), &low.repr(), &high.repr()))]
     #[hax_lib::ensures(|_| specs::decompose_post(gamma2, &simd_unit.repr(), &low.repr(), &high.repr(), &future(low).repr(), &future(high).repr()))]
     fn decompose(gamma2: Gamma2, simd_unit: &Self, low: &mut Self, high: &mut Self) {
+        hax_lib::fstar!(
+            "reveal_opaque (`%Spec.Utils.is_i32b_array_opaque) Spec.Utils.is_i32b_array_opaque"
+        );
         arithmetic::decompose(gamma2, &simd_unit.value, &mut low.value, &mut high.value);
     }
 
