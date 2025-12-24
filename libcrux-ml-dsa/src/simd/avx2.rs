@@ -42,7 +42,8 @@ impl Operations for AVX2SIMDUnit {
     #[hax_lib::requires(specs::from_coefficient_array_pre(array, &out.repr()))]
     #[hax_lib::ensures(|_| specs::from_coefficient_array_post(array, &out.repr(), &future(out).repr()))]
     fn from_coefficient_array(array: &[i32], out: &mut Self) {
-        vector_type::from_coefficient_array(array, out)
+        vector_type::from_coefficient_array(array, out);
+        hax_lib::fstar!("Seq.lemma_eq_intro (${out.repr()}) array");
     }
 
     #[inline(always)]
