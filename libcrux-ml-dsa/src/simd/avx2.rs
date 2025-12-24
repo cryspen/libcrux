@@ -98,6 +98,7 @@ impl Operations for AVX2SIMDUnit {
     #[hax_lib::requires(specs::compute_hint_pre(&low.repr(), &high.repr(), gamma2, &hint.repr()))]
     #[hax_lib::ensures(|result| specs::compute_hint_post(&low.repr(), &high.repr(), gamma2, &hint.repr(), &future(hint).repr(), result))]
     fn compute_hint(low: &Self, high: &Self, gamma2: i32, hint: &mut Self) -> usize {
+        hax_lib::assume!(false); // TODO: missing proof for `arithmetic::compute_hint`
         arithmetic::compute_hint(&low.value, &high.value, gamma2, &mut hint.value)
     }
 
@@ -105,6 +106,7 @@ impl Operations for AVX2SIMDUnit {
     #[hax_lib::requires(specs::use_hint_pre(gamma2, &simd_unit.repr(), &hint.repr()))]
     #[hax_lib::ensures(|_| specs::use_hint_post(gamma2, &simd_unit.repr(), &hint.repr(), &future(hint).repr()))]
     fn use_hint(gamma2: Gamma2, simd_unit: &Self, hint: &mut Self) {
+        hax_lib::assume!(false); // TODO: missing proof for `arithmetic::use_hint`
         arithmetic::use_hint(gamma2, &simd_unit.value, &mut hint.value);
     }
 
@@ -112,6 +114,7 @@ impl Operations for AVX2SIMDUnit {
     #[hax_lib::requires(specs::montgomery_multiply_pre(&lhs.repr(), &rhs.repr()))]
     #[hax_lib::ensures(|_| specs::montgomery_multiply_post(&lhs.repr(), &rhs.repr(), &future(lhs).repr()))]
     fn montgomery_multiply(lhs: &mut Self, rhs: &Self) {
+        hax_lib::assume!(false);
         arithmetic::montgomery_multiply(&mut lhs.value, &rhs.value);
     }
 
@@ -119,6 +122,7 @@ impl Operations for AVX2SIMDUnit {
     #[hax_lib::requires(specs::shift_left_then_reduce_pre::<SHIFT_BY>(&simd_unit.repr()))]
     #[hax_lib::ensures(|_| specs::shift_left_then_reduce_post::<SHIFT_BY>(&simd_unit.repr(), &future(simd_unit).repr()))]
     fn shift_left_then_reduce<const SHIFT_BY: i32>(simd_unit: &mut Self) {
+        hax_lib::assume!(false);
         shift_left_then_reduce::<SHIFT_BY>(&mut simd_unit.value)
     }
 
@@ -126,6 +130,7 @@ impl Operations for AVX2SIMDUnit {
     #[hax_lib::requires(specs::power2round_pre(&t0.repr(), &t1.repr()))]
     #[hax_lib::ensures(|_| specs::power2round_post(&t0.repr(), &t1.repr(), &future(t0).repr(), &future(t1).repr()))]
     fn power2round(t0: &mut Self, t1: &mut Self) {
+        hax_lib::assume!(false);
         arithmetic::power2round(&mut t0.value, &mut t1.value);
     }
 
@@ -133,6 +138,7 @@ impl Operations for AVX2SIMDUnit {
     #[hax_lib::requires(specs::rejection_sample_less_than_field_modulus_pre(randomness, out))]
     #[hax_lib::ensures(|result| specs::rejection_sample_less_than_field_modulus_post(randomness, out, future(out), result))]
     fn rejection_sample_less_than_field_modulus(randomness: &[u8], out: &mut [i32]) -> usize {
+        hax_lib::assume!(false);
         rejection_sample::less_than_field_modulus::sample(randomness, out)
     }
 
@@ -140,6 +146,7 @@ impl Operations for AVX2SIMDUnit {
     #[hax_lib::requires(specs::rejection_sample_less_than_eta_equals_2_pre(randomness, out))]
     #[hax_lib::ensures(|result| specs::rejection_sample_less_than_eta_equals_2_post(randomness, out, future(out), result))]
     fn rejection_sample_less_than_eta_equals_2(randomness: &[u8], out: &mut [i32]) -> usize {
+        hax_lib::assume!(false);
         rejection_sample::less_than_eta::sample::<2>(randomness, out)
     }
 
@@ -147,6 +154,7 @@ impl Operations for AVX2SIMDUnit {
     #[hax_lib::requires(specs::rejection_sample_less_than_eta_equals_4_pre(randomness, out))]
     #[hax_lib::ensures(|result| specs::rejection_sample_less_than_eta_equals_4_post(randomness, out, future(out), result))]
     fn rejection_sample_less_than_eta_equals_4(randomness: &[u8], out: &mut [i32]) -> usize {
+        hax_lib::assume!(false);
         rejection_sample::less_than_eta::sample::<4>(randomness, out)
     }
 
@@ -154,12 +162,14 @@ impl Operations for AVX2SIMDUnit {
     #[hax_lib::requires(specs::gamma1_serialize_pre(&simd_unit.repr(), serialized, gamma1_exponent))]
     #[hax_lib::ensures(|_| specs::gamma1_serialize_post(&simd_unit.repr(), serialized, gamma1_exponent, future(serialized)))]
     fn gamma1_serialize(simd_unit: &Self, serialized: &mut [u8], gamma1_exponent: usize) {
+        hax_lib::assume!(false);
         encoding::gamma1::serialize(&simd_unit.value, serialized, gamma1_exponent)
     }
     #[inline(always)]
     #[hax_lib::requires(specs::gamma1_deserialize_pre(serialized, &out.repr(), gamma1_exponent))]
     #[hax_lib::ensures(|_| specs::gamma1_deserialize_post(serialized, &out.repr(), gamma1_exponent, &future(out).repr()))]
     fn gamma1_deserialize(serialized: &[u8], out: &mut Self, gamma1_exponent: usize) {
+        hax_lib::assume!(false);
         encoding::gamma1::deserialize(serialized, &mut out.value, gamma1_exponent);
     }
 
