@@ -144,8 +144,8 @@ impl Operations for AVX2SIMDUnit {
     }
 
     #[inline(always)]
-    #[hax_lib::requires(specs::rejection_sample_less_than_eta_equals_2_pre(randomness, out))]
-    #[hax_lib::ensures(|result| specs::rejection_sample_less_than_eta_equals_2_post(randomness, out, future(out), result))]
+    #[hax_lib::requires(specs::rejection_sample_less_than_eta_equals_4_pre(randomness, out))]
+    #[hax_lib::ensures(|result| specs::rejection_sample_less_than_eta_equals_4_post(randomness, out, future(out), result))]
     fn rejection_sample_less_than_eta_equals_4(randomness: &[u8], out: &mut [i32]) -> usize {
         rejection_sample::less_than_eta::sample::<4>(randomness, out)
     }
