@@ -10,6 +10,7 @@ const PUBLIC_LEN: usize = EK_LEN;
 
 use libcrux_secrets::{Classify, Declassify, DeclassifyRef, DeclassifyRefMut, U8};
 
+#[hax_lib::exclude]
 impl libcrux_traits::ecdh::arrayref::EcdhArrayref<RAND_LEN, SECRET_LEN, PUBLIC_LEN> for X25519 {
     fn generate_secret(
         secret: &mut [U8; SECRET_LEN],
