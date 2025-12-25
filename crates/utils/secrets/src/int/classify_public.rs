@@ -36,7 +36,7 @@ impl<'a, T> ClassifyRefMut for &'a mut T {
 }
 
 // Declassify any mutable reference (identity)
-#[cfg(not(hax))]
+#[hax_lib::exclude]
 impl<'a, T> DeclassifyRefMut for &'a mut T {
     type DeclassifiedRefMut = &'a mut T;
     #[inline(always)]
