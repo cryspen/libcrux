@@ -624,7 +624,7 @@ pub fn mm256_permute2x128_si256<const IMM8: i32>(a: Vec256, b: Vec256) -> Vec256
 
 #[inline(always)]
 pub fn mm_clmulepi64_si128<const IMM8: i32>(a: Vec128, b: Vec128) -> Vec128 {
-   unimplemented!()
+    unimplemented!()
 }
 
 #[inline(always)]
