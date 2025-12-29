@@ -267,13 +267,8 @@ impl crate::vector::traits::Repr for SIMD256Vector {}
 #[inline(always)]
 #[hax_lib::requires(array.len() >= 32)]
 pub(super) fn from_bytes(array: &[u8]) -> SIMD256Vector {
-    let loaded = mm256_loadu_si256_u8(&array[0..32]);
-    let swap_mask = mm256_set_epi8(
-        30, 31, 28, 29, 26, 27, 24, 25, 22, 23, 20, 21, 18, 19, 16, 17, 14, 15, 12, 13, 10, 11, 8,
-        9, 6, 7, 4, 5, 2, 3, 0, 1,
-    );
     SIMD256Vector {
-        elements: mm256_shuffle_epi8(loaded, swap_mask),
+        elements: mm256_loadu_si256_u8(&array[0..32]),
     }
 }
 
@@ -282,12 +277,7 @@ pub(super) fn from_bytes(array: &[u8]) -> SIMD256Vector {
 #[hax_lib::requires(bytes.len() >= 32)]
 #[hax_lib::ensures(|_| future(bytes).len() == bytes.len())]
 pub(super) fn to_bytes(x: SIMD256Vector, bytes: &mut [u8]) {
-    let swap_mask = mm256_set_epi8(
-        30, 31, 28, 29, 26, 27, 24, 25, 22, 23, 20, 21, 18, 19, 16, 17, 14, 15, 12, 13, 10, 11, 8,
-        9, 6, 7, 4, 5, 2, 3, 0, 1,
-    );
-    let swapped = mm256_shuffle_epi8(x.elements, swap_mask);
-    mm256_storeu_si256_u8(&mut bytes[0..32], swapped)
+    mm256_storeu_si256_u8(&mut bytes[0..32], x.elements)
 }
 
 #[hax_lib::attributes]
