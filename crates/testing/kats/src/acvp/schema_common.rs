@@ -1,6 +1,7 @@
 use serde::Deserialize;
+
 #[derive(Deserialize)]
-#[allow(non_snake_case, dead_code)]
+#[allow(non_snake_case)]
 pub struct Prompts<TG> {
     pub vsId: usize,
     pub algorithm: String,
@@ -11,7 +12,7 @@ pub struct Prompts<TG> {
 }
 
 #[derive(Deserialize)]
-#[allow(non_snake_case, dead_code)]
+#[allow(non_snake_case)]
 pub struct Results<TG> {
     pub vsId: usize,
     pub algorithm: String,
@@ -22,7 +23,7 @@ pub struct Results<TG> {
 }
 
 #[derive(Deserialize)]
-#[allow(non_snake_case, dead_code)]
+#[allow(non_snake_case)]
 pub struct TestGroupResults<R> {
     pub tgId: usize,
     pub tests: Vec<R>,

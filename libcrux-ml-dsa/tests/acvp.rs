@@ -1,15 +1,20 @@
 #![cfg(feature = "acvp")]
 
-use libcrux_kats::acvp::mldsa::common::*;
 use libcrux_kats::acvp::mldsa::keygen_schema::*;
 use libcrux_kats::acvp::mldsa::sign_schema::*;
 use libcrux_kats::acvp::mldsa::verify_schema::*;
+use libcrux_kats::acvp::schema_common::*;
 
 #[test]
 fn keygen() {
     use libcrux_kats::acvp::mldsa::KeyGenTests;
 
     let KeyGenTests { prompts, results } = KeyGenTests::load();
+    // checks
+    assert!(prompts.algorithm == "ML-DSA");
+    assert!(prompts.revision == "FIPS204");
+    assert!(results.algorithm == "ML-DSA");
+    assert!(results.revision == "FIPS204");
 
     for kat in prompts.testGroups {
         let parameter_set = kat.parameterSet;
@@ -62,6 +67,11 @@ fn siggen() {
     use libcrux_kats::acvp::mldsa::SigGenTests;
 
     let SigGenTests { prompts, results } = SigGenTests::load();
+    // checks
+    assert!(prompts.algorithm == "ML-DSA");
+    assert!(prompts.revision == "FIPS204");
+    assert!(results.algorithm == "ML-DSA");
+    assert!(results.revision == "FIPS204");
 
     for kat in prompts.testGroups {
         let parameter_set = kat.parameterSet;
@@ -213,6 +223,11 @@ fn sigver() {
     use libcrux_kats::acvp::mldsa::SigVerTests;
 
     let SigVerTests { prompts, results } = SigVerTests::load();
+    // checks
+    assert!(prompts.algorithm == "ML-DSA");
+    assert!(prompts.revision == "FIPS204");
+    assert!(results.algorithm == "ML-DSA");
+    assert!(results.revision == "FIPS204");
 
     for kat in prompts.testGroups {
         let parameter_set = kat.parameterSet;
