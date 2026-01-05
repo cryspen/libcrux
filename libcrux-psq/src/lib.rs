@@ -9,7 +9,7 @@
 //! use tls_codec::{Serialize, Deserialize};
 //! use libcrux_psq::{
 //!     handshake::{builders::*, ciphersuites::*, types::*, HandshakeError},
-//!     session::{Session, SessionError},
+//!     session::{Session, SessionError, SessionBinding},
 //!     Channel, IntoSession,
 //! };
 //!
@@ -120,14 +120,21 @@
 //! // test serialization, deserialization
 //! let mut session_storage = vec![0u8; 4096];
 //! i_transport.serialize(&mut session_storage,
-//!     &(&initiator_ecdh_keys.pk).authenticator(),
-//!     &responder_ecdh_keys.pk,
-//!     Some(responder_mlkem_keys.public_key().into()));
+//!     Some(
+//!       SessionBinding {
+//!        initiator_authenticator: &(&initiator_ecdh_keys.pk).authenticator(),
+//!        responder_ecdh_pk: &responder_ecdh_keys.pk,
+//!        responder_pq_pk: Some(responder_mlkem_keys.public_key().into())
+//!     })).unwrap();
+//!
 //! let mut i_transport = Session::deserialize(
 //!     &session_storage,
-//!     &(&initiator_ecdh_keys.pk).authenticator(),
-//!     &responder_ecdh_keys.pk,
-//!     Some(responder_mlkem_keys.public_key().into()),
+//!     Some(
+//!       SessionBinding {
+//!        initiator_authenticator: &(&initiator_ecdh_keys.pk).authenticator(),
+//!        responder_ecdh_pk: &responder_ecdh_keys.pk,
+//!        responder_pq_pk: Some(responder_mlkem_keys.public_key().into())
+//!     })
 //! ).unwrap();
 //!
 //! let mut channel_i = i_transport.transport_channel().unwrap();

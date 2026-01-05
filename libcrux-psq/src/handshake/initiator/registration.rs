@@ -15,7 +15,7 @@ use crate::{
         HandshakeMessageOut, InnerMessageOut, K2IkmRegistrationDh, K2IkmRegistrationSig,
         ToTransportState,
     },
-    session::{Session, SessionError},
+    session::{Session, SessionBinding, SessionError},
     traits::{Channel, IntoSession},
 };
 
@@ -262,9 +262,11 @@ impl<'a, Rng: CryptoRng> IntoSession for RegistrationInitiator<'a, Rng> {
         Session::new(
             state.tx2,
             state.k2,
-            &self.ciphersuite.auth.into(),
-            self.ciphersuite.peer_ecdh_encapsulation_key(),
-            self.ciphersuite.peer_pq_encapsulation_key(),
+            Some(SessionBinding {
+                initiator_authenticator: &self.ciphersuite.auth.into(),
+                responder_ecdh_pk: self.ciphersuite.peer_ecdh_encapsulation_key(),
+                responder_pq_pk: self.ciphersuite.peer_pq_encapsulation_key(),
+            }),
             true,
             self.ciphersuite.aead_type(),
         )
