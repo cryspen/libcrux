@@ -10,22 +10,22 @@ macro_rules! impl_struct {
 
         impl<const SIZE: usize> $name<SIZE> {
             /// Init with zero
-            pub fn zero() -> Self {
+            pub const fn zero() -> Self {
                 Self { value: [0u8; SIZE] }
             }
 
             /// Build
-            pub fn new(value: [u8; SIZE]) -> Self {
+            pub const fn new(value: [u8; SIZE]) -> Self {
                 Self { value }
             }
 
             /// A reference to the raw byte slice.
-            pub fn as_slice(&self) -> &[u8] {
+            pub const fn as_slice(&self) -> &[u8] {
                 &self.value
             }
 
             /// A reference to the raw byte array.
-            pub fn as_ref(&self) -> &[u8; SIZE] {
+            pub const fn as_ref(&self) -> &[u8; SIZE] {
                 &self.value
             }
 
