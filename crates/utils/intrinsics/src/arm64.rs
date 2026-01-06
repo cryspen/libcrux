@@ -33,6 +33,8 @@ pub fn _vld1q_bytes(bytes: &[u8]) -> int16x8_t {
 
 #[inline(always)]
 pub fn _vld1q_s16(array: &[i16]) -> int16x8_t {
+    #[cfg(not(hax))]
+    debug_assert_eq!(input.len(), 16);
     unsafe { vld1q_s16(array.as_ptr()) }
 }
 

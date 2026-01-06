@@ -720,8 +720,8 @@ mod tests {
 
         type RingElement = PolynomialRingElement<SIMD128Vector>;
         let mut re = RingElement::ZERO();
-        re.coefficients[0] = SIMD128Vector::from_i16_array(&[0xAB; 32]);
-        re.coefficients[15] = SIMD128Vector::from_i16_array(&[0xCD; 32]);
+        re.coefficients[0] = SIMD128Vector::from_i16_array(&[0xAB; 16]);
+        re.coefficients[15] = SIMD128Vector::from_i16_array(&[0xCD; 16]);
 
         let mut bytes = [0u8; RingElement::num_bytes()];
         re.to_bytes(&mut bytes);
