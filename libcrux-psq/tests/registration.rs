@@ -336,40 +336,40 @@ fn registration(
     i_transport
         .serialize(
             &mut session_storage,
-            Some(SessionBinding {
+            SessionBinding {
                 initiator_authenticator: &setup.initiator_authenticator(initiator_ciphersuite_id),
                 responder_ecdh_pk: &setup.responder_x25519_keys.pk,
                 responder_pq_pk: setup.pq_encapsulation_key(initiator_ciphersuite_id),
-            }),
+            },
         )
         .unwrap();
     let mut i_transport = Session::deserialize(
         &session_storage,
-        Some(SessionBinding {
+        SessionBinding {
             initiator_authenticator: &setup.initiator_authenticator(initiator_ciphersuite_id),
             responder_ecdh_pk: &setup.responder_x25519_keys.pk,
             responder_pq_pk: setup.pq_encapsulation_key(initiator_ciphersuite_id),
-        }),
+        },
     )
     .unwrap();
 
     r_transport
         .serialize(
             &mut session_storage,
-            Some(SessionBinding {
+            SessionBinding {
                 initiator_authenticator: &initiator_authenticator,
                 responder_ecdh_pk: &setup.responder_x25519_keys.pk,
                 responder_pq_pk: setup.pq_encapsulation_key(initiator_ciphersuite_id),
-            }),
+            },
         )
         .unwrap();
     let mut r_transport = Session::deserialize(
         &session_storage,
-        Some(SessionBinding {
+        SessionBinding {
             initiator_authenticator: &initiator_authenticator,
             responder_ecdh_pk: &setup.responder_x25519_keys.pk,
             responder_pq_pk: setup.pq_encapsulation_key(initiator_ciphersuite_id),
-        }),
+        },
     )
     .unwrap();
 

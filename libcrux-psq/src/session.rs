@@ -214,12 +214,14 @@ impl Session {
     pub fn import<'a>(
         self,
         psk: &[u8],
-        session_binding: Option<SessionBinding<'a>>,
+        session_binding: impl Into<Option<SessionBinding<'a>>>,
     ) -> Result<Self, SessionError> {
         // We require that the psk is at least 32 bytes long.
         if psk.len() < 32 {
             return Err(SessionError::Import);
         }
+
+        let session_binding = session_binding.into();
 
         match (self.pk_binder, &session_binding) {
             // No binder was present, no new binder was provided.
@@ -281,8 +283,9 @@ impl Session {
     pub fn serialize<'a>(
         self,
         out: &mut [u8],
-        session_binding: Option<SessionBinding<'a>>,
+        session_binding: impl Into<Option<SessionBinding<'a>>>,
     ) -> Result<usize, SessionError> {
+        let session_binding = session_binding.into();
         match (self.pk_binder, session_binding) {
             (None, None) => self
                 .tls_serialize(&mut &mut out[..])
@@ -346,8 +349,9 @@ impl Session {
     // the validation.
     pub fn deserialize<'a>(
         bytes: &[u8],
-        session_binding: Option<SessionBinding<'a>>,
+        session_binding: impl Into<Option<SessionBinding<'a>>>,
     ) -> Result<Self, SessionError> {
+        let session_binding = session_binding.into();
         let session =
             Session::tls_deserialize(&mut Cursor::new(bytes)).map_err(SessionError::Deserialize)?;
 
