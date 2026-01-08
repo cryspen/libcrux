@@ -4,7 +4,7 @@ use libcrux_ml_kem::mlkem768::MlKem768KeyPair;
 use libcrux_psq::classic_mceliece::KeyPair;
 use libcrux_psq::{
     handshake::{builders::*, ciphersuites::*, types::*, HandshakeError},
-    session::{Session, SessionError},
+    session::{Session, SessionBinding, SessionError},
     Channel, IntoSession,
 };
 use rand::Rng;
@@ -336,32 +336,40 @@ fn registration(
     i_transport
         .serialize(
             &mut session_storage,
-            &setup.initiator_authenticator(initiator_ciphersuite_id),
-            &setup.responder_x25519_keys.pk,
-            setup.pq_encapsulation_key(initiator_ciphersuite_id),
+            SessionBinding {
+                initiator_authenticator: &setup.initiator_authenticator(initiator_ciphersuite_id),
+                responder_ecdh_pk: &setup.responder_x25519_keys.pk,
+                responder_pq_pk: setup.pq_encapsulation_key(initiator_ciphersuite_id),
+            },
         )
         .unwrap();
     let mut i_transport = Session::deserialize(
         &session_storage,
-        &setup.initiator_authenticator(initiator_ciphersuite_id),
-        &setup.responder_x25519_keys.pk,
-        setup.pq_encapsulation_key(initiator_ciphersuite_id),
+        SessionBinding {
+            initiator_authenticator: &setup.initiator_authenticator(initiator_ciphersuite_id),
+            responder_ecdh_pk: &setup.responder_x25519_keys.pk,
+            responder_pq_pk: setup.pq_encapsulation_key(initiator_ciphersuite_id),
+        },
     )
     .unwrap();
 
     r_transport
         .serialize(
             &mut session_storage,
-            &initiator_authenticator,
-            &setup.responder_x25519_keys.pk,
-            setup.pq_encapsulation_key(initiator_ciphersuite_id),
+            SessionBinding {
+                initiator_authenticator: &initiator_authenticator,
+                responder_ecdh_pk: &setup.responder_x25519_keys.pk,
+                responder_pq_pk: setup.pq_encapsulation_key(initiator_ciphersuite_id),
+            },
         )
         .unwrap();
     let mut r_transport = Session::deserialize(
         &session_storage,
-        &initiator_authenticator,
-        &setup.responder_x25519_keys.pk,
-        setup.pq_encapsulation_key(initiator_ciphersuite_id),
+        SessionBinding {
+            initiator_authenticator: &initiator_authenticator,
+            responder_ecdh_pk: &setup.responder_x25519_keys.pk,
+            responder_pq_pk: setup.pq_encapsulation_key(initiator_ciphersuite_id),
+        },
     )
     .unwrap();
 

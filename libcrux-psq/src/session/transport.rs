@@ -132,7 +132,7 @@ fn derive_channel_key<const IS_INITIATOR: bool>(session: &Session) -> Result<AEA
     #[derive(TlsSerializeBytes, TlsSize)]
     struct ChannelKeyInfo<'a> {
         domain_separator: &'static [u8],
-        pk_binder: &'a [u8],
+        pk_binder: Option<&'a [u8]>,
         counter: u64,
     }
 
@@ -144,7 +144,10 @@ fn derive_channel_key<const IS_INITIATOR: bool>(session: &Session) -> Result<AEA
             } else {
                 R2I_CHANNEL_KEY_LABEL
             },
-            pk_binder: session.pk_binder.as_slice(),
+            pk_binder: session
+                .pk_binder
+                .as_ref()
+                .map(|pk_binder| pk_binder.as_slice()),
             counter: session.channel_counter,
         }
         .tls_serialize()

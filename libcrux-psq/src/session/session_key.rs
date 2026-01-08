@@ -42,10 +42,10 @@ fn session_key_id(key: &AEADKeyNonce) -> Result<[u8; SESSION_ID_LENGTH], Error> 
     Ok(session_id)
 }
 
-// skCS = KDF(K2, "session secret" | tx2)
+// K_S = KDF(K2, "session secret" | tx2)
 pub(super) fn derive_session_key(
     k2: AEADKeyNonce,
-    tx2: Transcript,
+    tx2: &Transcript,
     aead_type: AeadType,
 ) -> Result<SessionKey, Error> {
     #[derive(TlsSerializeBytes, TlsSize)]
@@ -59,10 +59,41 @@ pub(super) fn derive_session_key(
         &k2,
         &SessionKeyInfo {
             domain_separator: SESSION_KEY_LABEL,
-            tx2: &tx2,
+            tx2,
         },
         aead_type,
     )?;
     let identifier = session_key_id(&key)?;
     Ok(SessionKey { key, identifier })
+}
+
+// K_import = KDF(K_S | psk, "secret import")
+pub(super) fn derive_import_key(
+    k2: AEADKeyNonce,
+    psk: &[u8],
+    aead_type: AeadType,
+) -> Result<AEADKeyNonce, Error> {
+    #[derive(TlsSerializeBytes, TlsSize)]
+    struct SessionImportInfo {
+        domain_separator: &'static [u8],
+    }
+
+    #[derive(TlsSerializeBytes, TlsSize)]
+    struct SessionImportIkm<'a> {
+        old_session_key: &'a AEADKeyNonce,
+        psk: &'a [u8],
+    }
+
+    const SESSION_IMPORT_LABEL: &[u8] = b"secret import";
+    AEADKeyNonce::new(
+        &SessionImportIkm {
+            old_session_key: &k2,
+            psk,
+        },
+        &SessionImportInfo {
+            domain_separator: SESSION_IMPORT_LABEL,
+        },
+        aead_type,
+    )
+    .map_err(|_| Error::Import)
 }
