@@ -162,9 +162,6 @@ impl Session {
         tx2: Transcript,
         k2: AEADKeyNonce,
         session_binding: Option<SessionBinding<'a>>,
-        // initiator_authenticator: &Authenticator,
-        // responder_ecdh_pk: &DHPublicKey,
-        // responder_pq_pk: Option<PQEncapsulationKey>,
         is_initiator: bool,
         aead_type: AeadType,
     ) -> Result<Self, SessionError> {
