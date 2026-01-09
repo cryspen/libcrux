@@ -57,7 +57,7 @@ jobs:
           export HOME=/home/user
           ./extract.sh
       - name: Upload header only C extraction
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: extraction-ml-kem-c-header-only
           path: libcrux-ml-kem/extracts/c_header_only/generated
@@ -81,7 +81,7 @@ jobs:
           ./extract.sh --no-clean
 
       - name: Upload header only C++ extraction
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: extraction-ml-kem-cpp-header-only
           path: libcrux-ml-kem/extracts/cpp_header_only/generated
@@ -105,7 +105,7 @@ jobs:
           ./boring.sh --no-clean
 
       - name: Upload header only C extraction
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: extraction-ml-dsa-header-only
           path: libcrux-ml-dsa/cg/
