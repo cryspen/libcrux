@@ -15,7 +15,7 @@ exclude = ["/tests"]
 path = "src/kem.rs"
 
 [dependencies]
-libcrux-ml-kem = { version = "=0.0.4", path = "../libcrux-ml-kem", default-features = false, features = [
+libcrux-ml-kem = { version = "=0.0.5-pre.1", path = "../libcrux-ml-kem", default-features = false, features = [
     "default-no-std",
 ] }
 libcrux-sha3 = { version = "=0.0.5-pre.1", path = "../crates/algorithms/sha3" }
