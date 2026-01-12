@@ -60,7 +60,7 @@ libcrux-chacha20poly1305 = { version = "=0.0.4", path = "crates/algorithms/chach
 libcrux-traits = { version = "=0.0.4", path = "traits" }
 libcrux-hacl-rs = { version = "=0.0.4", path = "crates/utils/hacl-rs" }
 libcrux-hacl = { version = "=0.0.2", path = "crates/sys/hacl" }
-libcrux-platform = { version = "=0.0.2", path = "crates/sys/platform" }
+libcrux-platform = { version = "=0.0.3-pre.1", path = "crates/sys/platform" }
 libcrux-hkdf = { version = "=0.0.4", path = "crates/algorithms/hkdf" }
 libcrux-hmac = { version = "=0.0.4", path = "crates/algorithms/hmac" }
 libcrux-sha2 = { version = "=0.0.4", path = "crates/algorithms/sha2" }
@@ -98,7 +98,7 @@ crate-type = ["staticlib", "cdylib", "lib"]
 bench = false                               # so libtest doesn't eat the arguments for criterion
 
 [build-dependencies]
-libcrux-platform = { version = "=0.0.2", path = "crates/sys/platform" }
+libcrux-platform = { version = "=0.0.3-pre.1", path = "crates/sys/platform" }
 
 [dependencies]
 libcrux-hacl-rs.workspace = true
