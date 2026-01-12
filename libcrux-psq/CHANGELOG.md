@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- [#1280](https://github.com/cryspen/libcrux/pull/1280): Update dependencies `libcrux-sha3`, `libcrux-ml-kem`, `libcrux-ml-dsa`
 - [#1248](https://github.com/cryspen/libcrux/pull/1248):
     - Add signature-based authentication (breaking because ciphersuite IDs have changed)
     - Add AES-GCM 128 ciphersuite support
