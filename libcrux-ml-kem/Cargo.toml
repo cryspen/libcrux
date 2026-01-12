@@ -105,7 +105,7 @@ name = "keygen"
 required-features = ["mlkem768"]
 
 [package.metadata."docs.rs"]
-features = ["kyber", "pqcp"]
+features = ["kyber", "pqcp", "codec"]
 rustdoc-args = ["--cfg", "doc_cfg"]
 
 [lints.rust]
