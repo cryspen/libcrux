@@ -30,7 +30,7 @@ classic-mceliece-rust = { version = "3.1.0", features = [
 rand = { version = "0.9" }
 rand_old = { version = "0.8", package = "rand", optional = true }
 libcrux-ecdh = { version = "0.0.4", path = "../libcrux-ecdh" }
-libcrux-ml-kem = { version = "0.0.5-pre.1", path = "../libcrux-ml-kem", features = [
+libcrux-ml-kem = { version = "0.0.5", path = "../libcrux-ml-kem", features = [
     "codec",
     "rand",
 ] }
@@ -39,8 +39,8 @@ libcrux-ed25519 = { version = "0.0.4", path = "../crates/algorithms/ed25519", fe
     "codec",
 ] }
 tls_codec = { version = "0.4.2", features = ["derive"] }
-libcrux-ml-dsa = { version = "0.0.5-pre.1", path = "../libcrux-ml-dsa", features = ["codec"] }
-libcrux-aesgcm = { version = "0.0.5-pre.1", path = "../crates/algorithms/aesgcm"}
+libcrux-ml-dsa = { version = "0.0.5", path = "../libcrux-ml-dsa", features = ["codec"] }
+libcrux-aesgcm = { version = "0.0.5", path = "../crates/algorithms/aesgcm"}
 
 [dev-dependencies]
 libcrux-psq = { path = ".", features = ["test-utils"] }

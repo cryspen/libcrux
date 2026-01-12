@@ -15,10 +15,10 @@ exclude = ["/tests"]
 path = "src/kem.rs"
 
 [dependencies]
-libcrux-ml-kem = { version = "=0.0.5-pre.1", path = "../libcrux-ml-kem", default-features = false, features = [
+libcrux-ml-kem = { version = "=0.0.5", path = "../libcrux-ml-kem", default-features = false, features = [
     "default-no-std",
 ] }
-libcrux-sha3 = { version = "=0.0.5-pre.1", path = "../crates/algorithms/sha3" }
+libcrux-sha3 = { version = "=0.0.5", path = "../crates/algorithms/sha3" }
 libcrux-ecdh = { version = "=0.0.4", path = "../libcrux-ecdh", default-features = false }
 libcrux-curve25519 = { version = "=0.0.4", path = "../crates/algorithms/curve25519", default-features = false }
 libcrux-p256 = { version = "=0.0.4", path = "../crates/algorithms/p256", default-features = false }
