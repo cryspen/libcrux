@@ -1,0 +1,26 @@
+[package]
+name = "libjade-sys"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+homepage.workspace = true
+repository.workspace = true
+readme = "Readme.md"
+description = "Rust bindings for libjade, a formally verified cryptographic library written in jasmin."
+publish = false
+
+[dependencies]
+
+[build-dependencies]
+cc = { version = "1.1", features = ["parallel"] }
+libcrux-platform = { version = "=0.0.3", path = "../platform" }
+
+[target.'cfg(not(windows))'.build-dependencies]
+bindgen = { version = "0.72", optional = true }
+
+[dev-dependencies]
+pretty_env_logger = "0.5"
+
+[features]
+bindings = ["bindgen"]

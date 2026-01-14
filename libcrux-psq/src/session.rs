@@ -14,9 +14,10 @@ use tls_codec::{
 use transport::Transport;
 
 use crate::{
-    aead::{AEADError, AEADKey},
+    aead::{AEADError, AEADKeyNonce, AeadType},
     handshake::{
         ciphersuite::types::PQEncapsulationKey, dhkem::DHPublicKey, transcript::Transcript,
+        types::Authenticator,
     },
 };
 
@@ -98,24 +99,25 @@ pub struct Session {
     pub(crate) pk_binder: [u8; PK_BINDER_LEN],
     /// An increasing counter of derived secure channels
     pub(crate) channel_counter: u64,
+    pub(crate) aead_type: AeadType,
 }
 
 // pkBinder = KDF(skCS, g^c | g^s | [pkS])
 fn derive_pk_binder(
     key: &SessionKey,
-    initiator_ecdh_pk: &DHPublicKey,
+    initiator_authenticator: &Authenticator,
     responder_ecdh_pk: &DHPublicKey,
     responder_pq_pk: Option<PQEncapsulationKey>,
 ) -> Result<[u8; PK_BINDER_LEN], SessionError> {
     #[derive(TlsSerialize, TlsSize)]
     struct PkBinderInfo<'a> {
-        initiator_ecdh_pk: &'a DHPublicKey,
+        initiator_authenticator: &'a Authenticator,
         responder_ecdh_pk: &'a DHPublicKey,
         responder_pq_pk: Option<PQEncapsulationKey<'a>>,
     }
 
     let info = PkBinderInfo {
-        initiator_ecdh_pk,
+        initiator_authenticator,
         responder_ecdh_pk,
         responder_pq_pk,
     };
@@ -144,16 +146,17 @@ impl Session {
     /// handshake.
     pub(crate) fn new(
         tx2: Transcript,
-        k2: AEADKey,
-        initiator_ecdh_pk: &DHPublicKey,
+        k2: AEADKeyNonce,
+        initiator_authenticator: &Authenticator,
         responder_ecdh_pk: &DHPublicKey,
         responder_pq_pk: Option<PQEncapsulationKey>,
         is_initiator: bool,
+        aead_type: AeadType,
     ) -> Result<Self, SessionError> {
-        let session_key = derive_session_key(k2, tx2)?;
+        let session_key = derive_session_key(k2, tx2, aead_type)?;
         let pk_binder = derive_pk_binder(
             &session_key,
-            initiator_ecdh_pk,
+            initiator_authenticator,
             responder_ecdh_pk,
             responder_pq_pk,
         )?;
@@ -166,18 +169,67 @@ impl Session {
             session_key,
             pk_binder,
             channel_counter: 0,
+            aead_type,
         })
     }
 
     /// Serializes the session state for storage.
     ///
-    /// WARN: `tls_serialize` should not be called directly, since it does
-    /// not consume `Session`. This opens the possibility for nonce
-    /// re-use by deserializing a stale `Session` since the original
-    /// could be used after serialization.
-    pub fn serialize(self, out: &mut [u8]) -> Result<usize, SessionError> {
-        self.tls_serialize(&mut &mut out[..])
-            .map_err(SessionError::Serialize)
+    /// We require the caller to input the public keys that were used
+    /// to create the session, in order to enforce they have access to
+    /// all keys necessary to deserialize the session later on.
+    ///
+    ///WARN: `tls_serialize`
+    /// should not be called directly, since it does not consume
+    /// `Session`. This opens the possibility for nonce re-use by
+    /// deserializing a stale `Session` since the original could be
+    /// used after serialization.
+    pub fn serialize(
+        self,
+        out: &mut [u8],
+        initiator_authenticator: &Authenticator,
+        responder_ecdh_pk: &DHPublicKey,
+        responder_pq_pk: Option<PQEncapsulationKey>,
+    ) -> Result<usize, SessionError> {
+        if derive_pk_binder(
+            &self.session_key,
+            initiator_authenticator,
+            responder_ecdh_pk,
+            responder_pq_pk,
+        )? == self.pk_binder
+        {
+            self.tls_serialize(&mut &mut out[..])
+                .map_err(SessionError::Serialize)
+        } else {
+            Err(SessionError::Storage)
+        }
+    }
+
+    /// Export a secret derived from the main session key.
+    ///
+    /// Derives a secret `K` from the main session key as
+    /// `K = KDF(K_session, context || "PSQ secret export")`.
+    pub fn export_secret(&self, context: &[u8], out: &mut [u8]) -> Result<(), SessionError> {
+        use tls_codec::TlsSerializeBytes;
+        const PSQ_EXPORT_CONTEXT: &[u8; 17] = b"PSQ secret export";
+        #[derive(TlsSerializeBytes, TlsSize)]
+        struct ExportInfo<'a> {
+            context: &'a [u8],
+            separator: [u8; 17],
+        }
+
+        libcrux_hkdf::sha2_256::hkdf(
+            out,
+            b"",
+            self.session_key.key.as_ref(),
+            &ExportInfo {
+                context,
+                separator: *PSQ_EXPORT_CONTEXT,
+            }
+            .tls_serialize()
+            .map_err(SessionError::Serialize)?,
+        )
+        .map_err(|_| SessionError::CryptoError)
     }
 
     /// Deserialize a session state.
@@ -189,7 +241,7 @@ impl Session {
     // the validation.
     pub fn deserialize(
         bytes: &[u8],
-        initiator_ecdh_pk: &DHPublicKey,
+        initiator_authenticator: &Authenticator,
         responder_ecdh_pk: &DHPublicKey,
         responder_pq_pk: Option<PQEncapsulationKey>,
     ) -> Result<Self, SessionError> {
@@ -198,7 +250,7 @@ impl Session {
 
         if derive_pk_binder(
             &session.session_key,
-            initiator_ecdh_pk,
+            initiator_authenticator,
             responder_ecdh_pk,
             responder_pq_pk,
         )? == session.pk_binder

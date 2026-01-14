@@ -33,7 +33,7 @@
 //! let mut payload_buf_responder = vec![0u8; 4096];
 //! let mut payload_buf_initiator = vec![0u8; 4096];
 //!
-//! let responder_ciphersuite_id = CiphersuiteName::X25519_MLKEM768_CHACHA20POLY1305_HKDFSHA256;
+//! let responder_ciphersuite_id = CiphersuiteName::X25519_MLKEM768_X25519_CHACHA20POLY1305_HKDFSHA256;
 //!
 //! // Setup query initiator
 //! let mut query_initiator = PrincipalBuilder::new(rand::rng())
@@ -44,7 +44,7 @@
 //!
 //! // Setup responder
 //! let mut responder_ciphersuite = CiphersuiteBuilder::new(responder_ciphersuite_id)
-//!     .longterm_ecdh_keys(&responder_ecdh_keys)
+//!     .longterm_x25519_keys(&responder_ecdh_keys)
 //!     .longterm_mlkem_encapsulation_key(responder_mlkem_keys.public_key())
 //!     .longterm_mlkem_decapsulation_key(responder_mlkem_keys.private_key())
 //!     .build_responder_ciphersuite().unwrap();
@@ -83,8 +83,8 @@
 //!
 //! // Setup Registration initiator with received ciphersuite
 //! let initiator_ciphersuite = CiphersuiteBuilder::new(responder_ciphersuite_id_received)
-//!     .longterm_ecdh_keys(&initiator_ecdh_keys)
-//!     .peer_longterm_ecdh_pk(&responder_ecdh_keys.pk)
+//!     .longterm_x25519_keys(&initiator_ecdh_keys)
+//!     .peer_longterm_x25519_pk(&responder_ecdh_keys.pk)
 //!     .peer_longterm_mlkem_pk(responder_mlkem_keys.public_key())
 //!     .build_initiator_ciphersuite().unwrap();
 //!
@@ -119,10 +119,13 @@
 //!
 //! // test serialization, deserialization
 //! let mut session_storage = vec![0u8; 4096];
-//! i_transport.serialize(&mut session_storage).unwrap();
+//! i_transport.serialize(&mut session_storage,
+//!     &(&initiator_ecdh_keys.pk).authenticator(),
+//!     &responder_ecdh_keys.pk,
+//!     Some(responder_mlkem_keys.public_key().into()));
 //! let mut i_transport = Session::deserialize(
 //!     &session_storage,
-//!     &initiator_ecdh_keys.pk,
+//!     &(&initiator_ecdh_keys.pk).authenticator(),
 //!     &responder_ecdh_keys.pk,
 //!     Some(responder_mlkem_keys.public_key().into()),
 //! ).unwrap();
