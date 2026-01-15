@@ -14,7 +14,7 @@ use crate::{
         types::Authenticator,
         InnerMessage, K2IkmRegistrationSig,
     },
-    session::{Session, SessionError},
+    session::{Session, SessionBinding, SessionError},
     traits::{Channel, IntoSession},
 };
 
@@ -582,13 +582,15 @@ impl<'a, Rng: CryptoRng> IntoSession for Responder<'a, Rng> {
         Session::new(
             state.tx2,
             state.k2,
-            &initiator_authenticator,
-            &self.ciphersuite.kex.pk,
-            if state.pq {
-                self.ciphersuite.own_pq_encapsulation_key()
-            } else {
-                None
-            },
+            Some(SessionBinding {
+                initiator_authenticator: &initiator_authenticator,
+                responder_ecdh_pk: &self.ciphersuite.kex.pk,
+                responder_pq_pk: if state.pq {
+                    self.ciphersuite.own_pq_encapsulation_key()
+                } else {
+                    None
+                },
+            }),
             false,
             self.ciphersuite.aead_type(),
         )

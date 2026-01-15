@@ -245,11 +245,13 @@ I:
 
 ## Derived Sessions & Secret Export
 Given a shared secret `K_2` and the final handshake transcript `tx2`
-initiator and receiver derive a main session key
+initiator and receiver derive a main session key as well as an
+associated session identifier
 ```
 K_S = KDF(K_2, "session key" | tx2)
+session_ID = KDF(K_S, "shared key id")
 ```
-and associated public key binder value
+They also compute an associated public key binder value
 ```
 pk_binder = KDF(K_S, pub_A | pub_B | [pqek_B])
 ```
@@ -271,7 +273,25 @@ Additionally, both parties can export secrets of any length for external use, wh
 ```
 K = KDF(K_S, context | "PSQ secret export")
 ```
-where `context` is an application-defined context string for the exported secret.
+where `context` is an application-defined context string for the
+exported secret.
+
+## Session Secret Import
+Given an existing session with main session key `K_S` the session
+can be re-keyed with an external secret `psk`. This is achieved by
+deriving an imported key from `K_S` and `psk` and updating the most
+recent session transcript `tx` with the old session ID that is about
+to become invalid:
+```
+K_import = KDF(K_S || psk, "secret import")
+tx' = Hash(tx || session_ID)
+```
+Now, the new main session key is created by treating `K_import` and `tx'` as
+though they were the outcome of a PSQ handshake:
+```
+K_S' = KDF(K_import, "session secret" | tx')
+session_ID' = KDF(K_S', "shared key id")
+```
 
 ## Cryptographic Building Blocks & Notation
 The description of the PSQ protocol below relies on several
