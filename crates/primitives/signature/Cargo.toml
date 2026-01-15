@@ -1,0 +1,37 @@
+[package]
+authors.workspace = true
+edition.workspace = true
+homepage.workspace = true
+license.workspace = true
+name = "libcrux-signature"
+readme.workspace = true
+repository.workspace = true
+version.workspace = true
+
+[dependencies]
+libcrux-ecdsa = { version = "0.0.4", path = "../../algorithms/ecdsa", optional = true }
+libcrux-ed25519 = { version = "0.0.4", path = "../../algorithms/ed25519", optional = true }
+libcrux-ml-dsa = { version = "0.0.4", path = "../../../libcrux-ml-dsa", optional = true }
+libcrux-traits = { version = "0.0.4", path = "../../../traits", optional = true }
+libcrux-secrets = { version = "0.0.4", path = "../../utils/secrets", optional = true }
+
+[features]
+default = ["ed25519", "ecdsa", "mldsa", "rand"]
+rand = ["libcrux-ed25519?/rand", "libcrux-ecdsa?/rand", "libcrux-ml-dsa?/rand"]
+
+check-secret-independence = [
+    "libcrux-secrets/check-secret-independence",
+    "libcrux-traits/check-secret-independence",
+    "libcrux-ml-dsa?/expose-secret-independence",
+    "libcrux-ed25519?/expose-secret-independence",
+    "libcrux-ecdsa?/expose-secret-independence",
+]
+
+ecdsa = ["dep:libcrux-ecdsa", "any"]
+ed25519 = ["dep:libcrux-ed25519", "any"]
+mldsa = ["dep:libcrux-ml-dsa", "any"]
+
+any = ["dep:libcrux-traits", "dep:libcrux-secrets"]
+
+[dev-dependencies]
+rand = "0.9"

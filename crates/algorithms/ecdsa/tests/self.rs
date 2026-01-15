@@ -4,7 +4,7 @@ mod util;
 mod rand {
     use crate::util::*;
     use libcrux_ecdsa::{
-        p256::{Nonce, PrivateKey, PublicKey},
+        p256::{Nonce, SigningKey, VerificationKey},
         *,
     };
     use rand_core::OsRng;
@@ -20,9 +20,9 @@ mod rand {
         let mut rng = os_rng.unwrap_mut();
 
         let pk = hex_str_to_bytes(PK_HEX);
-        let pk = PublicKey::try_from(pk.as_slice()).unwrap();
+        let pk = VerificationKey::try_from(pk.as_slice()).unwrap();
         let sk: [u8; 32] = hex_str_to_array(SK_HEX);
-        let sk = PrivateKey::try_from(&sk).unwrap();
+        let sk = SigningKey::try_from(&sk).unwrap();
         let nonce = Nonce::random(&mut rng).unwrap();
         let msg = b"sample";
 

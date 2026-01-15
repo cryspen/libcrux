@@ -1,13 +1,13 @@
 [package]
-name = "libcrux-ecdsa"
 description = "Formally verified ECDSA signature library"
+name = "libcrux-ecdsa"
 readme = "Readme.md"
 version = "0.0.4"
 
 authors.workspace = true
-license.workspace = true
-homepage.workspace = true
 edition.workspace = true
+homepage.workspace = true
+license.workspace = true
 repository.workspace = true
 
 [dependencies]
@@ -15,6 +15,8 @@ libcrux-p256 = { version = "=0.0.4", path = "../p256", features = [
     "expose-hacl",
 ] }
 libcrux-sha2 = { version = "=0.0.4", path = "../sha2" }
+libcrux-secrets = { version = "=0.0.4", path = "../../utils/secrets" }
+libcrux-traits = { version = "=0.0.4", path = "../../../traits" }
 rand = { version = "0.9", optional = true, default-features = false }
 
 [features]
@@ -22,7 +24,14 @@ default = ["rand", "std"]
 rand = ["dep:rand"]
 std = ["rand?/std"]
 
+# This doesn't check the secret independence of the implementation, but sets the
+# exposed API into secret independence checking mode.
+expose-secret-independence = [
+    "libcrux-secrets/check-secret-independence",
+    "libcrux-traits/check-secret-independence",
+]
+
 [dev-dependencies]
-rand_core = { version = "0.9" , features = ["os_rng"] }
+rand_core = { version = "0.9", features = ["os_rng"] }
 serde = { version = "1.0.217", features = ["derive"] }
 serde_json = "1.0.138"

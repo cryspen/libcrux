@@ -16,6 +16,9 @@ libcrux-sha2 = { version = "=0.0.4", path = "../sha2", features = [
     "expose-hacl",
 ] }
 libcrux-macros = { version = "=0.0.3", path = "../../utils/macros" }
+libcrux-traits = { version = "=0.0.4", path = "../../../traits" }
+libcrux-secrets = { version = "=0.0.4", path = "../../utils/secrets" }
+
 rand_core = { version = "0.9", optional = true }
 tls_codec = { version = "0.4.2", features = ["derive"], optional = true }
 
@@ -26,3 +29,10 @@ wycheproof = "0.6.0"
 [features]
 rand = ["dep:rand_core"]
 codec = ["tls_codec/std"]
+
+# This doesn't check the secret independence of the implementation, but sets the
+# exposed API into secret independence checking mode.
+expose-secret-independence = [
+    "libcrux-traits/check-secret-independence",
+    "libcrux-secrets/check-secret-independence",
+]
