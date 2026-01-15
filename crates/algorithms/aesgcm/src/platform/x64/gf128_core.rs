@@ -1,8 +1,6 @@
-use core::arch::x86_64::*;
-
 use libcrux_intrinsics::avx2::{
-    mm_clmulepi64_si128, mm_slli_si128, mm_srli_si128, mm_unpackhi_epi64, mm_unpacklo_epi64,
-    mm_xor_si128,
+    __m128i, mm_clmulepi64_si128, mm_slli_si128, mm_srli_si128, mm_unpackhi_epi64,
+    mm_unpacklo_epi64, mm_xor_si128,
 };
 
 // XXX: A lot of the code below is shared with NEON. Refactor!
@@ -17,14 +15,28 @@ impl FieldElement {
     #[inline]
     #[allow(unsafe_code)]
     fn transmute(&self) -> __m128i {
-        unsafe { core::mem::transmute(self.0) }
+        #[cfg(not(hax))]
+        unsafe {
+            core::mem::transmute(self.0)
+        }
+        #[cfg(hax)]
+        libcrux_intrinsics::avx2::mm_loadu_si128(&self.0.to_be_bytes())
     }
 
     /// Convert a vec to self.
     #[inline]
     #[allow(unsafe_code)]
     fn from_vec128(vec: __m128i) -> Self {
-        unsafe { core::mem::transmute(vec) }
+        #[cfg(not(hax))]
+        unsafe {
+            core::mem::transmute(vec)
+        }
+        #[cfg(hax)]
+        {
+            let mut bytes: [u8; 16] = core::array::repeat(0);
+            libcrux_intrinsics::avx2::mm_storeu_bytes_si128(&mut bytes, vec);
+            Self(u128::from_be_bytes(bytes))
+        }
     }
 }
 
@@ -152,6 +164,7 @@ impl crate::platform::GF128FieldElement for FieldElement {
 #[cfg(feature = "std")]
 #[test]
 fn test_transmute() {
+    use libcrux_intrinsics::avx2::*;
     let x = 1u128 << 64 ^ 2u128;
     let xv: __m128i = unsafe { core::mem::transmute(x) };
     let xv: __m128i = unsafe { _mm_slli_si128(xv, 8) };
