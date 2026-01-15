@@ -203,13 +203,59 @@ impl Session {
     /// imports.
     ///
     /// In detail:
-    /// ```ignore
+    /// ```text
     /// K_import = KDF(K_S || psk, "secret import")
     /// tx' = Hash(tx || session_ID)
     ///
     /// // From here: treat K_import as though it was the outcome of a handshake
     /// K_S' = KDF(K_import, "session secret" | tx')
     /// session_ID' = KDF(K_S', "shared key id")
+    /// ```
+    ///
+    /// # Example
+    ///
+    /// ```ignore
+    /// // Initiator and responder finish the handshake resulting in
+    /// // `initiator_session` and `responder_session` both bound to public
+    /// // keys in `session_binding`.
+    ///
+    /// // WARN: In real usage, `psk` should be at least 32 bytes of high
+    /// // entropy randomness.
+    /// let psk = [0xab; 32];
+    ///
+    /// // Re-key the initiator session, providing the old session
+    /// // binding. This sustains the binding to these public keys.
+    /// // `session_binding`, if provided must match the binding of the
+    /// // original session.
+    /// let initiator_session = initiator_session.import(psk.as_slice(), session_binding).unwrap();
+    ///
+    /// // Re-key the responder session, providing the old session
+    /// // binding. This sustains the binding to these public keys.
+    /// // `session_binding`, if provided must match the binding of the
+    /// // original session.
+    /// let responder_session = initiator_session.import(psk.as_slice(), session_binding).unwrap();
+    ///
+    /// // [.. If `psk` was the same on both sides, you can now derive
+    /// // transport channels from the re-keyed session as before ..]
+    ///
+    /// // WARN: In real usage, `another_psk` should be at least 32 bytes of high
+    /// // entropy randomness.
+    /// let another_psk = [0xcd; 32];
+    ///
+    /// // Re-key the initiator session, stripping the binding to the original
+    /// // handshake public keys. Once the binding has been stripped it cannot
+    /// // be re-established without performing a fresh handshake. Exercise
+    /// // with caution to avoid session misbinding attacks.
+    /// let unbound_initiator_session = initiator_session.import(another_psk.as_slice(), None).unwrap();
+    ///
+    /// // Re-key the responder session, stripping the binding to the original
+    /// // handshake public keys. Once the binding has been stripped it cannot
+    /// // be re-established without performing a fresh handshake. Exercise
+    /// // with caution to avoid session misbinding attacks.
+    /// let unbound_responder_session = responder_session.import(another_psk.as_slice(), None).unwrap();
+    ///
+    /// // [.. If `psk` was the same on both sides, you can now derive
+    /// // transport channels from the re-keyed session as before ..]
     /// ```
     pub fn import<'a>(
         self,
