@@ -1,5 +1,7 @@
 use rand::CryptoRng;
-use tls_codec::{Serialize, SerializeBytes, TlsSerialize, TlsSerializeBytes, TlsSize};
+use tls_codec::{
+    Serialize, SerializeBytes, TlsDeserialize, TlsSerialize, TlsSerializeBytes, TlsSize,
+};
 
 pub const TX0_DOMAIN_SEP: u8 = 0;
 pub const TX1_DOMAIN_SEP: u8 = 1;
@@ -14,7 +16,7 @@ use crate::handshake::{
 use libcrux_sha2::{Digest, SHA256_LENGTH};
 
 /// The initial transcript hash.
-#[derive(Debug, Default, Clone, Copy, TlsSerializeBytes, TlsSize)]
+#[derive(Debug, Default, Clone, Copy, TlsSerializeBytes, TlsSerialize, TlsDeserialize, TlsSize)]
 pub struct Transcript([u8; SHA256_LENGTH]);
 
 impl Transcript {
@@ -22,15 +24,14 @@ impl Transcript {
         Self::add_hash::<TX0_DOMAIN_SEP>(None, initial_input)
     }
 
-    fn add_hash<const DOMAIN_SEPARATOR: u8>(
+    pub(crate) fn add_hash<const DOMAIN_SEPARATOR: u8>(
         old_transcript: Option<&Transcript>,
         input: impl Serialize,
     ) -> Result<Transcript, Error> {
         let mut hasher = libcrux_sha2::Sha256::new();
         hasher.update(&[DOMAIN_SEPARATOR]);
         hasher.update(
-            old_transcript
-                .tls_serialize()
+            <Option<&Transcript> as SerializeBytes>::tls_serialize(&old_transcript)
                 .map_err(Error::Serialize)?
                 .as_slice(),
         );
