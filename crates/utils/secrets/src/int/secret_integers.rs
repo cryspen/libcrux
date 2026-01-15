@@ -241,6 +241,9 @@ macro_rules! impl_int_ops {
                     .wrapping_mul(rhs.into().declassify())
                     .classify()
             }
+            fn wrapping_neg(self) -> Self {
+                self.declassify().wrapping_neg().classify()
+            }
             fn rotate_left(self, rhs: u32) -> Self {
                 self.declassify().rotate_left(rhs).classify()
             }
