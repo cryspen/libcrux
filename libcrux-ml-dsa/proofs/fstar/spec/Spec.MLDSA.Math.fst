@@ -1,7 +1,7 @@
 module Spec.MLDSA.Math
 #set-options "--fuel 0 --ifuel 1 --z3rlimit 80"
 open FStar.Mul
-open Core
+open Core_models
 
 include Spec.Utils
 open Spec.Intrinsics

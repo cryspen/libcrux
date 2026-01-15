@@ -6,7 +6,7 @@ function extract_all() {
         into -i "+:** -**::x86::init::cpuid -**::x86::init::cpuid_count" \
         fstar --z3rlimit 80 --interfaces "+**"
     
-    extract crates/utils/core-models into fstar
+    extract crates/utils/libcrux-core-models into fstar
 
     extract crates/utils/intrinsics \
         -C --features simd128,simd256 ";" \

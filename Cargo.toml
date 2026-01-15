@@ -29,7 +29,7 @@ members = [
     "crates/algorithms/p256",
     "crates/algorithms/blake2",
     "crates/utils/secrets",
-    "crates/utils/core-models",
+    "crates/utils/libcrux-core-models",
     "crates/utils/test-utils",
     "crates/algorithms/hkdf",
     "crates/primitives/aead",
