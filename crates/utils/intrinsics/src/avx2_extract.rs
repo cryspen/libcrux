@@ -621,3 +621,23 @@ pub fn mm256_unpacklo_epi64(a: Vec256, b: Vec256) -> Vec256 {
 pub fn mm256_permute2x128_si256<const IMM8: i32>(a: Vec256, b: Vec256) -> Vec256 {
     unimplemented!()
 }
+
+#[inline(always)]
+pub fn mm_clmulepi64_si128<const IMM8: i32>(a: Vec128, b: Vec128) -> Vec128 {
+    unimplemented!()
+}
+
+#[inline(always)]
+pub fn mm_aesenc_si128(a: Vec128, b: Vec128) -> Vec128 {
+    unimplemented!()
+}
+
+#[inline(always)]
+pub fn mm_aesenclast_si128(a: Vec128, b: Vec128) -> Vec128 {
+    unimplemented!()
+}
+
+#[inline(always)]
+pub fn mm_aeskeygenassist_si128<const RCON: i32>(a: Vec128) -> Vec128 {
+    unimplemented!()
+}
