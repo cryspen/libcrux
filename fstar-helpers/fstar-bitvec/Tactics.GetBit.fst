@@ -1,7 +1,7 @@
 /// Provides tactics around `get_bit _ _ == get_bit _ _` goals
 module Tactics.GetBit
 
-open Core
+open Core_models
 module L = FStar.List.Tot
 open FStar.Tactics.V2
 open FStar.Tactics.V2.SyntaxHelpers

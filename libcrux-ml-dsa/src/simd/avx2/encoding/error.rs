@@ -8,7 +8,7 @@ use crate::simd::avx2::Eta;
     "--fuel 0 --ifuel 0 --z3rlimit 5000 --z3smtopt '(set-option :smt.arith.nl false)'"
 )]
 #[hax_lib::requires(
-    fstar!(r"forall (i: nat {i < 256}). i % 32 >= 3 ==> ${simd_unit_shifted}.(mk_int i) == Core_models.Abstractions.Bit.Bit_Zero")
+    fstar!(r"forall (i: nat {i < 256}). i % 32 >= 3 ==> ${simd_unit_shifted}.(mk_int i) == Libcrux_core_models.Abstractions.Bit.Bit_Zero")
 )]
 #[hax_lib::ensures(|result| {
     fstar!(r"forall (i:nat{i < 24}). ${result}.(mk_int i) == ${simd_unit_shifted}.(mk_int ((i / 3) * 32 + i % 3))")
@@ -73,7 +73,7 @@ fn serialize_when_eta_is_2(simd_unit: &Vec256, out: &mut [u8]) {
 // `serialize_when_eta_is_4_aux` contains the AVX2-only pure operations.
 // This split makes the F* proof much faster and stable (seconds versus about a minute).
 #[hax_lib::requires(
-    fstar!(r"forall (i: nat {i < 256}). i % 32 >= 4 ==> ${simd_unit_shifted}.(mk_int i) == Core_models.Abstractions.Bit.Bit_Zero")
+    fstar!(r"forall (i: nat {i < 256}). i % 32 >= 4 ==> ${simd_unit_shifted}.(mk_int i) == Libcrux_core_models.Abstractions.Bit.Bit_Zero")
 )]
 #[hax_lib::ensures(|result| {
     fstar!(r"forall (i:nat{i < 32}). ${result}.(mk_int i) == ${simd_unit_shifted}.(mk_int ((i / 4) * 32 + i % 4))")
@@ -153,7 +153,7 @@ pub fn serialize(eta: Eta, simd_unit: &Vec256, serialized: &mut [u8]) {
 #[hax_lib::requires(bytes.len() == 3)]
 #[hax_lib::ensures(|result| fstar!(r#"
   (forall (i: nat {i <  24}). u8_to_bv ${bytes}.[mk_usize (i / 8)] (mk_int (i % 8)) == ${result}.(mk_int (i / 3 * 32 + i % 3)))
-/\ (forall (i: nat {i < 256}). i % 32 >= 3 ==> Core_models.Abstractions.Bit.Bit_Zero? ${result}.(mk_int i))
+/\ (forall (i: nat {i < 256}). i % 32 >= 3 ==> Libcrux_core_models.Abstractions.Bit.Bit_Zero? ${result}.(mk_int i))
 "#))]
 fn deserialize_to_unsigned_when_eta_is_2(bytes: &[u8]) -> Vec256 {
     #[cfg(not(eurydice))]
@@ -182,7 +182,7 @@ fn deserialize_to_unsigned_when_eta_is_2(bytes: &[u8]) -> Vec256 {
 #[hax_lib::requires(bytes.len() == 4)]
 #[hax_lib::ensures(|result| fstar!(r#"
   (forall (i: nat {i <  32}). u8_to_bv ${bytes}.[mk_usize (i / 8)] (mk_int (i % 8)) == ${result}.(mk_int (i / 4 * 32 + i % 4)))
-/\ (forall (i: nat {i < 256}). i % 32 >= 4 ==> Core_models.Abstractions.Bit.Bit_Zero? ${result}.(mk_int i))
+/\ (forall (i: nat {i < 256}). i % 32 >= 4 ==> Libcrux_core_models.Abstractions.Bit.Bit_Zero? ${result}.(mk_int i))
 "#))]
 fn deserialize_to_unsigned_when_eta_is_4(bytes: &[u8]) -> Vec256 {
     #[cfg(not(eurydice))]
@@ -218,7 +218,7 @@ let deserialize_to_unsigned_post
        u8_to_bv serialized.[ mk_usize (i / 8) ] (mk_int (i % 8)) ==
        result.(mk_int ((i / bytes) * 32 + i % bytes))) /\
     (forall (i: nat{i < 256}).
-       i % 32 >= bytes ==> Core_models.Abstractions.Bit.Bit_Zero? result.(mk_int i))
+       i % 32 >= bytes ==> Libcrux_core_models.Abstractions.Bit.Bit_Zero? result.(mk_int i))
 "#)]
 #[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
 #[hax_lib::requires(serialized.len() == match eta {

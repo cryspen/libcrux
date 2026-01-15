@@ -52,7 +52,7 @@ impl<SIMDUnit: Operations> PolynomialRingElement<SIMDUnit> {
     #[hax_lib::requires(fstar!(r#"v $bound > 0 /\ 
         (forall i. Spec.Utils.is_i32b_array_opaque 
             (v ${FIELD_MAX}) 
-            (i0._super_4731626403787200903.f_repr (Seq.index self.f_simd_units i)))"#))]
+            (i0._super_i2.f_repr (Seq.index self.f_simd_units i)))"#))]
     pub(crate) fn infinity_norm_exceeds(&self, bound: i32) -> bool {
         let mut result = false;
         for i in 0..self.simd_units.len() {
@@ -64,8 +64,8 @@ impl<SIMDUnit: Operations> PolynomialRingElement<SIMDUnit> {
 
     #[inline(always)]
     #[hax_lib::requires(fstar!(r#"forall i. 
-        add_pre (i0._super_4731626403787200903.f_repr (Seq.index self.f_simd_units i)) 
-                (i0._super_4731626403787200903.f_repr (Seq.index rhs.f_simd_units i))"#))]
+        add_pre (i0._super_i2.f_repr (Seq.index self.f_simd_units i)) 
+                (i0._super_i2.f_repr (Seq.index rhs.f_simd_units i))"#))]
     pub(crate) fn add(&mut self, rhs: &Self) {
         #[cfg(hax)]
         let old_self = self.clone();
@@ -83,8 +83,8 @@ impl<SIMDUnit: Operations> PolynomialRingElement<SIMDUnit> {
 
     #[inline(always)]
     #[hax_lib::requires(fstar!(r#"forall i. 
-        sub_pre (i0._super_4731626403787200903.f_repr (Seq.index self.f_simd_units i)) 
-                (i0._super_4731626403787200903.f_repr (Seq.index rhs.f_simd_units i))"#))]
+        sub_pre (i0._super_i2.f_repr (Seq.index self.f_simd_units i)) 
+                (i0._super_i2.f_repr (Seq.index rhs.f_simd_units i))"#))]
     pub(crate) fn subtract(&mut self, rhs: &Self) {
         #[cfg(hax)]
         let old_self = self.clone();

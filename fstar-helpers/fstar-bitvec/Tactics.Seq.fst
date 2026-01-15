@@ -1,6 +1,6 @@
 module Tactics.Seq
 
-open Core
+open Core_models
 module L = FStar.List.Tot
 module S = FStar.Seq
 open FStar.Tactics.V2
