@@ -394,10 +394,7 @@ pub(crate) mod spec {
         hax_lib::fstar_prop_expr!(r#"Seq.length ${input} == 2"#)
     }
 
-    pub(crate) fn deserialize_1_post(
-        input: &[u8],
-        result: &[i16; 16],
-    ) -> hax_lib::Prop {
+    pub(crate) fn deserialize_1_post(input: &[u8], result: &[i16; 16]) -> hax_lib::Prop {
         hax_lib::fstar_prop_expr!(
             r#"
             Seq.length ${input} == 2 ==>
@@ -425,10 +422,7 @@ pub(crate) mod spec {
         hax_lib::fstar_prop_expr!(r#"Seq.length ${input} == 8"#)
     }
 
-    pub(crate) fn deserialize_4_post(
-        input: &[u8],
-        result: &[i16; 16],
-    ) -> hax_lib::Prop {
+    pub(crate) fn deserialize_4_post(input: &[u8], result: &[i16; 16]) -> hax_lib::Prop {
         hax_lib::fstar_prop_expr!(
             r#"
             Seq.length ${input} == 8 ==>
@@ -456,10 +450,7 @@ pub(crate) mod spec {
         hax_lib::fstar_prop_expr!(r#"Seq.length ${input} == 20"#)
     }
 
-    pub(crate) fn deserialize_10_post(
-        input: &[u8],
-        result: &[i16; 16],
-    ) -> hax_lib::Prop {
+    pub(crate) fn deserialize_10_post(input: &[u8], result: &[i16; 16]) -> hax_lib::Prop {
         hax_lib::fstar_prop_expr!(
             r#"
             Seq.length ${input} == 20 ==>
@@ -487,10 +478,7 @@ pub(crate) mod spec {
         hax_lib::fstar_prop_expr!(r#"Seq.length ${input} == 24"#)
     }
 
-    pub(crate) fn deserialize_12_post(
-        input: &[u8],
-        result: &[i16; 16],
-    ) -> hax_lib::Prop {
+    pub(crate) fn deserialize_12_post(input: &[u8], result: &[i16; 16]) -> hax_lib::Prop {
         hax_lib::fstar_prop_expr!(
             r#"
             Seq.length ${input} == 24 ==>
@@ -498,7 +486,6 @@ pub(crate) mod spec {
         )
     }
 }
-
 
 #[hax_lib::attributes]
 pub trait Operations: Copy + Clone + Repr {
@@ -584,7 +571,7 @@ pub trait Operations: Copy + Clone + Repr {
     #[requires(spec::inv_ntt_layer_1_step_pre(&a.repr(), zeta0, zeta1, zeta2, zeta3))]
     #[ensures(|result| spec::inv_ntt_layer_1_step_post(&a.repr(), zeta0, zeta1, zeta2, zeta3, &result.repr()))]
     fn inv_ntt_layer_1_step(a: Self, zeta0: i16, zeta1: i16, zeta2: i16, zeta3: i16) -> Self;
-    
+
     #[requires(spec::inv_ntt_layer_2_step_pre(&a.repr(), zeta0, zeta1))]
     #[ensures(|result| spec::inv_ntt_layer_2_step_post(&a.repr(), zeta0, zeta1, &result.repr()))]
     fn inv_ntt_layer_2_step(a: Self, zeta0: i16, zeta1: i16) -> Self;
