@@ -29,12 +29,15 @@ pub(crate) mod spec {
         )
     }
 
-    #[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
     pub(crate) fn add_post(lhs: &[i16; 16], rhs: &[i16; 16], result: &[i16; 16]) -> hax_lib::Prop {
         hax_lib::fstar_prop_expr!(
-            r#"forall i. 
+            r#"
+            (forall (b1 b2:nat). (Spec.Utils.is_i16b_array_opaque b1 ${lhs} /\
+            Spec.Utils.is_i16b_array_opaque b2 ${rhs}) ==>  
+            Spec.Utils.is_i16b_array_opaque (b1 + b2) ${result}) /\
+            (forall i. 
             v (Seq.index ${result} i) == 
-            v (Seq.index ${lhs} i) + v (Seq.index ${rhs} i)"#
+            v (Seq.index ${lhs} i) + v (Seq.index ${rhs} i))"#
         )
     }
 
@@ -48,9 +51,12 @@ pub(crate) mod spec {
 
     pub(crate) fn sub_post(lhs: &[i16; 16], rhs: &[i16; 16], result: &[i16; 16]) -> hax_lib::Prop {
         hax_lib::fstar_prop_expr!(
-            r#"forall i. 
+            r#"(forall (b1 b2:nat). (Spec.Utils.is_i16b_array_opaque b1 ${lhs} /\
+            Spec.Utils.is_i16b_array_opaque b2 ${rhs}) ==>  
+            Spec.Utils.is_i16b_array_opaque (b1 + b2) ${result}) /\
+            (forall i. 
             v (Seq.index ${result} i) == 
-            v (Seq.index ${lhs} i) - v (Seq.index ${rhs} i)"#
+            v (Seq.index ${lhs} i) - v (Seq.index ${rhs} i))"#
         )
     }
 
@@ -63,9 +69,11 @@ pub(crate) mod spec {
 
     pub(crate) fn negate_post(vec: &[i16; 16], result: &[i16; 16]) -> hax_lib::Prop {
         hax_lib::fstar_prop_expr!(
-            r#"forall i. 
+            r#"(forall (b:nat). Spec.Utils.is_i16b_array_opaque b ${vec} ==> 
+            Spec.Utils.is_i16b_array_opaque b ${result}) /\
+            (forall i. 
                 v (Seq.index ${result} i) == 
-                - (v (Seq.index ${vec} i))"#
+                - (v (Seq.index ${vec} i)))"#
         )
     }
 
@@ -82,9 +90,11 @@ pub(crate) mod spec {
         result: &[i16; 16],
     ) -> hax_lib::Prop {
         hax_lib::fstar_prop_expr!(
-            r#"forall i.
+            r#"(forall (b:nat). Spec.Utils.is_i16b_array_opaque b ${vec} ==> 
+            Spec.Utils.is_i16b_array_opaque (b * abs (v c)) ${result}) /\
+            (forall i.
                 v (Seq.index ${result} i) == 
-                v (Seq.index ${vec} i) * v $c"#
+                v (Seq.index ${vec} i) * v $c)"#
         )
     }
 
@@ -112,7 +122,7 @@ pub(crate) mod spec {
     }
 
     pub(crate) fn cond_subtract_3329_pre(vec: &[i16; 16]) -> hax_lib::Prop {
-        hax_lib::fstar_prop_expr!(r#"Spec.Utils.is_i16b_array (pow2 12 - 1) $vec"#)
+        hax_lib::fstar_prop_expr!(r#"Spec.Utils.is_i16b_array_opaque (pow2 12 - 1) $vec"#)
     }
 
     pub(crate) fn cond_subtract_3329_post(vec: &[i16; 16], result: &[i16; 16]) -> hax_lib::Prop {
@@ -126,12 +136,12 @@ pub(crate) mod spec {
     }
 
     pub(crate) fn barrett_reduce_pre(vec: &[i16; 16]) -> hax_lib::Prop {
-        hax_lib::fstar_prop_expr!(r#"Spec.Utils.is_i16b_array 28296 $vec"#)
+        hax_lib::fstar_prop_expr!(r#"Spec.Utils.is_i16b_array_opaque 28296 $vec"#)
     }
 
     pub(crate) fn barrett_reduce_post(vec: &[i16; 16], result: &[i16; 16]) -> hax_lib::Prop {
         hax_lib::fstar_prop_expr!(
-            r#"Spec.Utils.is_i16b_array 3328 ${result} /\
+            r#"Spec.Utils.is_i16b_array_opaque 3328 ${result} /\
                 (forall i. (v (Seq.index ${result} i) % 3329) == 
                            (v (Seq.index ${vec} i) % 3329))"#
         )
@@ -147,14 +157,14 @@ pub(crate) mod spec {
         result: &[i16; 16],
     ) -> hax_lib::Prop {
         hax_lib::fstar_prop_expr!(
-            r#"Spec.Utils.is_i16b_array 3328 ${result} /\
+            r#"Spec.Utils.is_i16b_array_opaque 3328 ${result} /\
                 (forall i. ((v (Seq.index ${result} i) % 3329)==
                             (v (Seq.index ${vec} i) * v ${c} * 169) % 3329))"#
         )
     }
 
     pub(crate) fn to_unsigned_representative_pre(vec: &[i16; 16]) -> hax_lib::Prop {
-        hax_lib::fstar_prop_expr!(r#"Spec.Utils.is_i16b_array 3328 ${vec}"#)
+        hax_lib::fstar_prop_expr!(r#"Spec.Utils.is_i16b_array_opaque 3328 ${vec}"#)
     }
 
     pub(crate) fn to_unsigned_representative_post(
@@ -240,7 +250,7 @@ pub(crate) mod spec {
         hax_lib::fstar_prop_expr!(
             r#" Spec.Utils.is_i16b 1664 $zeta0 /\ Spec.Utils.is_i16b 1664 $zeta1 /\ 
                 Spec.Utils.is_i16b 1664 $zeta2 /\ Spec.Utils.is_i16b 1664 $zeta3 /\
-                Spec.Utils.is_i16b_array (11207+5*3328) ${vec}"#
+                Spec.Utils.is_i16b_array_opaque (11207+5*3328) ${vec}"#
         )
     }
 
@@ -252,13 +262,13 @@ pub(crate) mod spec {
         zeta3: i16,
         result: &[i16; 16],
     ) -> hax_lib::Prop {
-        hax_lib::fstar_prop_expr!(r#"Spec.Utils.is_i16b_array (11207+6*3328) ${result}"#)
+        hax_lib::fstar_prop_expr!(r#"Spec.Utils.is_i16b_array_opaque(11207+6*3328) ${result}"#)
     }
 
     pub(crate) fn ntt_layer_2_step_pre(vec: &[i16; 16], zeta0: i16, zeta1: i16) -> hax_lib::Prop {
         hax_lib::fstar_prop_expr!(
             r#" Spec.Utils.is_i16b 1664 $zeta0 /\ Spec.Utils.is_i16b 1664 $zeta1 /\ 
-                Spec.Utils.is_i16b_array (11207+4*3328) ${vec}"#
+                Spec.Utils.is_i16b_array_opaque (11207+4*3328) ${vec}"#
         )
     }
 
@@ -268,13 +278,13 @@ pub(crate) mod spec {
         zeta1: i16,
         result: &[i16; 16],
     ) -> hax_lib::Prop {
-        hax_lib::fstar_prop_expr!(r#"Spec.Utils.is_i16b_array (11207+5*3328) ${result}"#)
+        hax_lib::fstar_prop_expr!(r#"Spec.Utils.is_i16b_array_opaque (11207+5*3328) ${result}"#)
     }
 
     pub(crate) fn ntt_layer_3_step_pre(vec: &[i16; 16], zeta0: i16) -> hax_lib::Prop {
         hax_lib::fstar_prop_expr!(
             r#" Spec.Utils.is_i16b 1664 $zeta0 /\
-                Spec.Utils.is_i16b_array (11207+3*3328) ${vec}"#
+                Spec.Utils.is_i16b_array_opaque (11207+3*3328) ${vec}"#
         )
     }
 
@@ -283,7 +293,7 @@ pub(crate) mod spec {
         zeta0: i16,
         result: &[i16; 16],
     ) -> hax_lib::Prop {
-        hax_lib::fstar_prop_expr!(r#"Spec.Utils.is_i16b_array (11207+4*3328) ${result}"#)
+        hax_lib::fstar_prop_expr!(r#"Spec.Utils.is_i16b_array_opaque (11207+4*3328) ${result}"#)
     }
 
     pub(crate) fn inv_ntt_layer_1_step_pre(
@@ -296,7 +306,7 @@ pub(crate) mod spec {
         hax_lib::fstar_prop_expr!(
             r#" Spec.Utils.is_i16b 1664 zeta0 /\ Spec.Utils.is_i16b 1664 zeta1 /\ 
                 Spec.Utils.is_i16b 1664 zeta2 /\ Spec.Utils.is_i16b 1664 zeta3 /\
-                Spec.Utils.is_i16b_array (4*3328) ${vec}"#
+                Spec.Utils.is_i16b_array_opaque (4*3328) ${vec}"#
         )
     }
 
@@ -308,7 +318,7 @@ pub(crate) mod spec {
         zeta3: i16,
         result: &[i16; 16],
     ) -> hax_lib::Prop {
-        hax_lib::fstar_prop_expr!(r#"Spec.Utils.is_i16b_array 3328 ${result}"#)
+        hax_lib::fstar_prop_expr!(r#"Spec.Utils.is_i16b_array_opaque 3328 ${result}"#)
     }
 
     pub(crate) fn inv_ntt_layer_2_step_pre(
@@ -318,7 +328,7 @@ pub(crate) mod spec {
     ) -> hax_lib::Prop {
         hax_lib::fstar_prop_expr!(
             r#" Spec.Utils.is_i16b 1664 zeta0 /\ Spec.Utils.is_i16b 1664 zeta1 /\ 
-                Spec.Utils.is_i16b_array 3328 ${vec}"#
+                Spec.Utils.is_i16b_array_opaque 3328 ${vec}"#
         )
     }
 
@@ -328,13 +338,13 @@ pub(crate) mod spec {
         zeta1: i16,
         result: &[i16; 16],
     ) -> hax_lib::Prop {
-        hax_lib::fstar_prop_expr!(r#"Spec.Utils.is_i16b_array 3328 ${result}"#)
+        hax_lib::fstar_prop_expr!(r#"Spec.Utils.is_i16b_array_opaque 3328 ${result}"#)
     }
 
     pub(crate) fn inv_ntt_layer_3_step_pre(vec: &[i16; 16], zeta0: i16) -> hax_lib::Prop {
         hax_lib::fstar_prop_expr!(
             r#" Spec.Utils.is_i16b 1664 $zeta0 /\
-                Spec.Utils.is_i16b_array 3328 ${vec}"#
+                Spec.Utils.is_i16b_array_opaque 3328 ${vec}"#
         )
     }
 
@@ -343,7 +353,7 @@ pub(crate) mod spec {
         zeta0: i16,
         result: &[i16; 16],
     ) -> hax_lib::Prop {
-        hax_lib::fstar_prop_expr!(r#"Spec.Utils.is_i16b_array 3328 ${result}"#)
+        hax_lib::fstar_prop_expr!(r#"Spec.Utils.is_i16b_array_opaque 3328 ${result}"#)
     }
 
     pub(crate) fn ntt_multiply_pre(
@@ -357,8 +367,8 @@ pub(crate) mod spec {
         hax_lib::fstar_prop_expr!(
             r#" Spec.Utils.is_i16b 1664 zeta0 /\ Spec.Utils.is_i16b 1664 zeta1 /\
                 Spec.Utils.is_i16b 1664 zeta2 /\ Spec.Utils.is_i16b 1664 zeta3 /\
-                Spec.Utils.is_i16b_array 3328 ${lhs} /\
-                Spec.Utils.is_i16b_array 3328 ${rhs} "#
+                Spec.Utils.is_i16b_array_opaque 3328 ${lhs} /\
+                Spec.Utils.is_i16b_array_opaque 3328 ${rhs} "#
         )
     }
 
@@ -371,7 +381,7 @@ pub(crate) mod spec {
         zeta3: i16,
         result: &[i16; 16],
     ) -> hax_lib::Prop {
-        hax_lib::fstar_prop_expr!(r#"Spec.Utils.is_i16b_array 3328 ${result}"#)
+        hax_lib::fstar_prop_expr!(r#"Spec.Utils.is_i16b_array_opaque 3328 ${result}"#)
     }
 
     pub(crate) fn serialize_1_pre(vec: &[i16; 16]) -> hax_lib::Prop {

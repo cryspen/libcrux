@@ -47,7 +47,7 @@ let to_spec_matrix_t (#r:Spec.MLKEM.rank) (#v_Vector: Type0)
 
 let is_bounded_vector (#v_Vector: Type0)
       {| i0: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
-      (bound: nat) (x: v_Vector) = Spec.Utils.is_i16b_array bound (i0.f_to_i16_array x)
+      (bound: nat) (x: v_Vector) = Spec.Utils.is_i16b_array_opaque bound (i0._super_6081346371236564305.f_repr x)
 
 let is_bounded_poly (#v_Vector: Type0)
       {| i0: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
@@ -169,14 +169,14 @@ pub(crate) const fn vec_len_bytes<const K: usize, Vector: Operations>() -> usize
 #[hax_lib::fstar::options("--z3rlimit 500 --split_queries always")]
 #[hax_lib::requires(fstar!(r#"
         forall (i:nat). i < v ${VECTORS_IN_RING_ELEMENT} ==>
-         (let lhs_i = i0.f_to_i16_array (${myself}.f_coefficients.[ sz i ]) in
-          let rhs_i = i0.f_to_i16_array (${rhs}.f_coefficients.[ sz i ]) in
+         (let lhs_i = i0._super_6081346371236564305.f_repr (${myself}.f_coefficients.[ sz i ]) in
+          let rhs_i = i0._super_6081346371236564305.f_repr (${rhs}.f_coefficients.[ sz i ]) in
           Libcrux_ml_kem.Vector.Traits.Spec.add_pre lhs_i rhs_i)"#))]
 #[hax_lib::ensures(|_| fstar!(r#"
         forall (i:nat). i < v ${VECTORS_IN_RING_ELEMENT} ==>
-         (let lhs_i = i0.f_to_i16_array (${myself}.f_coefficients.[ sz i ]) in
-          let rhs_i = i0.f_to_i16_array (${rhs}.f_coefficients.[ sz i ]) in
-          let result_i = i0.f_to_i16_array (${myself}_future.f_coefficients.[ sz i ]) in
+         (let lhs_i = i0._super_6081346371236564305.f_repr (${myself}.f_coefficients.[ sz i ]) in
+          let rhs_i = i0._super_6081346371236564305.f_repr (${rhs}.f_coefficients.[ sz i ]) in
+          let result_i = i0._super_6081346371236564305.f_repr (${myself}_future.f_coefficients.[ sz i ]) in
           Libcrux_ml_kem.Vector.Traits.Spec.add_post lhs_i rhs_i result_i)"#))]
 fn add_to_ring_element<Vector: Operations, const K: usize>(
     myself: &mut PolynomialRingElement<Vector>,
@@ -186,7 +186,7 @@ fn add_to_ring_element<Vector: Operations, const K: usize>(
     let _myself = myself.coefficients;
     hax_lib::fstar!(
         r#"assert(forall (v: v_Vector).
-        i0.f_to_i16_array v == i0._super_6081346371236564305.f_repr v)"#
+        i0._super_6081346371236564305.f_repr v == i0._super_6081346371236564305.f_repr v)"#
     );
 
     for i in 0..myself.coefficients.len() {
@@ -195,15 +195,15 @@ fn add_to_ring_element<Vector: Operations, const K: usize>(
                 r#"
                 v $i <= v ${VECTORS_IN_RING_ELEMENT} /\
                 (forall (j:nat). (j >= v $i /\ j < v ${VECTORS_IN_RING_ELEMENT}) ==>
-                   (let _myself_j = i0.f_to_i16_array (${_myself}.[ sz j ]) in
-                    let myself_j = i0.f_to_i16_array (${myself}.f_coefficients.[ sz j ]) in
-                    let rhs_j = i0.f_to_i16_array (${rhs}.f_coefficients.[ sz j ]) in
+                   (let _myself_j = i0._super_6081346371236564305.f_repr (${_myself}.[ sz j ]) in
+                    let myself_j = i0._super_6081346371236564305.f_repr (${myself}.f_coefficients.[ sz j ]) in
+                    let rhs_j = i0._super_6081346371236564305.f_repr (${rhs}.f_coefficients.[ sz j ]) in
                     myself_j ==  _myself_j /\
                     Libcrux_ml_kem.Vector.Traits.Spec.add_pre myself_j rhs_j)) /\
                 (forall (j:nat). j < v $i ==>
-                   (let _myself_j = i0.f_to_i16_array (${_myself}.[ sz j ]) in
-                    let myself_j = i0.f_to_i16_array (${myself}.f_coefficients.[ sz j ]) in
-                    let rhs_j = i0.f_to_i16_array (${rhs}.f_coefficients.[ sz j ]) in
+                   (let _myself_j = i0._super_6081346371236564305.f_repr (${_myself}.[ sz j ]) in
+                    let myself_j = i0._super_6081346371236564305.f_repr (${myself}.f_coefficients.[ sz j ]) in
+                    let rhs_j = i0._super_6081346371236564305.f_repr (${rhs}.f_coefficients.[ sz j ]) in
                     Libcrux_ml_kem.Vector.Traits.Spec.add_post _myself_j rhs_j myself_j))"#
             )
         });
@@ -227,12 +227,17 @@ fn poly_barrett_reduce<Vector: Operations>(myself: &mut PolynomialRingElement<Ve
         "#
         ));
 
+        hax_lib::fstar!(
+            r#"reveal_opaque (`%Spec.Utils.is_i16b_array_opaque) (Spec.Utils.is_i16b_array_opaque 28296)"#); 
+        hax_lib::fstar!(
+            r#"reveal_opaque (`%Spec.Utils.is_i16b_array_opaque) (Spec.Utils.is_i16b_array_opaque 3328)"#); 
+            
         myself.coefficients[i] = Vector::barrett_reduce(myself.coefficients[i]);
     }
 }
 
 #[inline(always)]
-#[hax_lib::fstar::options("--z3rlimit 300")]
+#[hax_lib::fstar::options("--z3rlimit 400 --split_queries always")]
 #[hax_lib::requires(fstar!(r#"is_bounded_poly (pow2 12 - 1) ${myself}"#))]
 #[hax_lib::ensures(|result| fstar!(r#"is_bounded_poly 3328 ${result}"#))]
 fn subtract_reduce<Vector: Operations>(
@@ -261,7 +266,14 @@ fn subtract_reduce<Vector: Operations>(
 
         let coefficient_normal_form =
             Vector::montgomery_multiply_by_constant(b.coefficients[i], 1441);
+        
 
+        hax_lib::fstar!(
+            r#"reveal_opaque (`%Spec.Utils.is_i16b_array_opaque) (Spec.Utils.is_i16b_array_opaque 28296)"#); 
+        hax_lib::fstar!(
+            r#"reveal_opaque (`%Spec.Utils.is_i16b_array_opaque) (Spec.Utils.is_i16b_array_opaque 3328)"#); 
+        hax_lib::fstar!(
+            r#"reveal_opaque (`%Spec.Utils.is_i16b_array_opaque) (Spec.Utils.is_i16b_array_opaque (pow2 12 - 1))"#); 
         hax_lib::fstar!(
             r#"
             assert (is_bounded_vector 3328 ${coefficient_normal_form});
@@ -269,17 +281,17 @@ fn subtract_reduce<Vector: Operations>(
             assert_norm (pow2 12 - 1 == 4095);
             Spec.Utils.lemma_sub_intb_forall 4095 3328;
             assert (forall j. Spec.Utils.is_intb 7423
-                (v (Seq.index (i0.f_to_i16_array ${myself}.f_coefficients.[ i ]) j) -
-                 v (Seq.index (i0.f_to_i16_array ${coefficient_normal_form}) j)));
+                (v (Seq.index (i0._super_6081346371236564305.f_repr ${myself}.f_coefficients.[ i ]) j) -
+                 v (Seq.index (i0._super_6081346371236564305.f_repr ${coefficient_normal_form}) j)));
             assert_norm (7423 <= pow2 15 - 1);
             Spec.Utils.lemma_intb_le 7423 (pow2 15 - 1);
             Spec.Utils.lemma_intb_le 7423 28296;
             assert (forall j. Spec.Utils.is_intb (pow2 15 - 1) 
-                (v (Seq.index (i0.f_to_i16_array ${myself}.f_coefficients.[ i ]) j) -
-                 v (Seq.index (i0.f_to_i16_array ${coefficient_normal_form}) j)));
+                (v (Seq.index (i0._super_6081346371236564305.f_repr ${myself}.f_coefficients.[ i ]) j) -
+                 v (Seq.index (i0._super_6081346371236564305.f_repr ${coefficient_normal_form}) j)));
             assert (forall j. Spec.Utils.is_intb 28296 
-                (v (Seq.index (i0.f_to_i16_array ${myself}.f_coefficients.[ i ]) j) -
-                 v (Seq.index (i0.f_to_i16_array ${coefficient_normal_form}) j)))
+                (v (Seq.index (i0._super_6081346371236564305.f_repr ${myself}.f_coefficients.[ i ]) j) -
+                 v (Seq.index (i0._super_6081346371236564305.f_repr ${coefficient_normal_form}) j)))
         "#
         );
 
@@ -337,16 +349,27 @@ fn add_message_error_reduce<Vector: Operations>(
             Vector::montgomery_multiply_by_constant(result.coefficients[i], 1441);
 
         hax_lib::fstar!(
+            r#"reveal_opaque (`%Spec.Utils.is_i16b_array_opaque) (Spec.Utils.is_i16b_array_opaque 3328)"#); 
+        hax_lib::fstar!(
+            r#"reveal_opaque (`%Spec.Utils.is_i16b_array_opaque) (Spec.Utils.is_i16b_array_opaque 6656)"#); 
+        hax_lib::fstar!(
+            r#"reveal_opaque (`%Spec.Utils.is_i16b_array_opaque) (Spec.Utils.is_i16b_array_opaque 9984)"#); 
+        hax_lib::fstar!(
+            r#"reveal_opaque (`%Spec.Utils.is_i16b_array_opaque) (Spec.Utils.is_i16b_array_opaque 28296)"#); 
+        hax_lib::fstar!(
+            r#"reveal_opaque (`%Spec.Utils.is_i16b_array_opaque) (Spec.Utils.is_i16b_array_opaque (pow2 15 - 1))"#); 
+        
+        hax_lib::fstar!(
             r#"
                 Spec.Utils.lemma_add_intb_forall 3328 3328;
                 assert (6656 <= (pow2 15 - 1));
                 Spec.Utils.lemma_intb_le 6656 (pow2 15 - 1);
                 assert (forall j. Spec.Utils.is_intb 6656 
-                (v (Seq.index (i0.f_to_i16_array ${myself}.f_coefficients.[ i ]) j) +
-                 v (Seq.index (i0.f_to_i16_array ${message}.f_coefficients.[ i ]) j)));
+                (v (Seq.index (i0._super_6081346371236564305.f_repr ${myself}.f_coefficients.[ i ]) j) +
+                 v (Seq.index (i0._super_6081346371236564305.f_repr ${message}.f_coefficients.[ i ]) j)));
                 assert (forall j. Spec.Utils.is_intb (pow2 15 - 1) 
-                (v (Seq.index (i0.f_to_i16_array ${myself}.f_coefficients.[ i ]) j) +
-                 v (Seq.index (i0.f_to_i16_array ${message}.f_coefficients.[ i ]) j)))
+                (v (Seq.index (i0._super_6081346371236564305.f_repr ${myself}.f_coefficients.[ i ]) j) +
+                 v (Seq.index (i0._super_6081346371236564305.f_repr ${message}.f_coefficients.[ i ]) j)))
             "#
         );
 
@@ -359,14 +382,14 @@ fn add_message_error_reduce<Vector: Operations>(
                 Spec.Utils.lemma_intb_le 9984 (pow2 15 - 1);
                 Spec.Utils.lemma_intb_le 9984 28296;
                 assert (forall j. Spec.Utils.is_intb 9984 
-                    (v (Seq.index (i0.f_to_i16_array ${coefficient_normal_form}) j) +
-                    v (Seq.index (i0.f_to_i16_array ${sum1}) j)));
+                    (v (Seq.index (i0._super_6081346371236564305.f_repr ${coefficient_normal_form}) j) +
+                    v (Seq.index (i0._super_6081346371236564305.f_repr ${sum1}) j)));
                 assert (forall j. Spec.Utils.is_intb 28296 
-                    (v (Seq.index (i0.f_to_i16_array ${coefficient_normal_form}) j) +
-                    v (Seq.index (i0.f_to_i16_array ${sum1}) j)));
+                    (v (Seq.index (i0._super_6081346371236564305.f_repr ${coefficient_normal_form}) j) +
+                    v (Seq.index (i0._super_6081346371236564305.f_repr ${sum1}) j)));
                 assert (forall j. Spec.Utils.is_intb (pow2 15 - 1)
-                    (v (Seq.index (i0.f_to_i16_array ${coefficient_normal_form}) j) +
-                    v (Seq.index (i0.f_to_i16_array ${sum1}) j)))
+                    (v (Seq.index (i0._super_6081346371236564305.f_repr ${coefficient_normal_form}) j) +
+                    v (Seq.index (i0._super_6081346371236564305.f_repr ${sum1}) j)))
             "#
         );
 
@@ -411,22 +434,25 @@ fn add_error_reduce<Vector: Operations>(
             Vector::montgomery_multiply_by_constant(myself.coefficients[j], 1441);
 
         hax_lib::fstar!(
+            r#"reveal_opaque (`%Spec.Utils.is_i16b_array_opaque) (Spec.Utils.is_i16b_array_opaque)"#); 
+
+        hax_lib::fstar!(
             r#"
               assert (is_bounded_vector 3328 ${coefficient_normal_form});
               assert (is_bounded_vector 7 (error.f_coefficients.[ j ]));
               Spec.Utils.lemma_add_intb_forall 3328 7;
               assert (forall i. Spec.Utils.is_intb 3335 
-                (v (Seq.index (i0.f_to_i16_array ${coefficient_normal_form}) i) +
-                 v (Seq.index (i0.f_to_i16_array ${error}.f_coefficients.[ j ]) i)));
+                (v (Seq.index (i0._super_6081346371236564305.f_repr ${coefficient_normal_form}) i) +
+                 v (Seq.index (i0._super_6081346371236564305.f_repr ${error}.f_coefficients.[ j ]) i)));
               assert_norm (3335 <= pow2 15 - 1);
               Spec.Utils.lemma_intb_le 3335 (pow2 15 - 1);
               Spec.Utils.lemma_intb_le 3335 28296;
               assert (forall i. Spec.Utils.is_intb (pow2 15 - 1) 
-                (v (Seq.index (i0.f_to_i16_array ${coefficient_normal_form}) i) +
-                v (Seq.index (i0.f_to_i16_array ${error}.f_coefficients.[ j ]) i)));
+                (v (Seq.index (i0._super_6081346371236564305.f_repr ${coefficient_normal_form}) i) +
+                v (Seq.index (i0._super_6081346371236564305.f_repr ${error}.f_coefficients.[ j ]) i)));
               assert (forall i. Spec.Utils.is_intb 28296 
-                (v (Seq.index (i0.f_to_i16_array ${coefficient_normal_form}) i) +
-                v (Seq.index (i0.f_to_i16_array ${error}.f_coefficients.[ j ]) i)))
+                (v (Seq.index (i0._super_6081346371236564305.f_repr ${coefficient_normal_form}) i) +
+                v (Seq.index (i0._super_6081346371236564305.f_repr ${error}.f_coefficients.[ j ]) i)))
             "#
         );
 
@@ -448,9 +474,9 @@ fn add_error_reduce<Vector: Operations>(
 }
 
 #[inline(always)]
-#[hax_lib::ensures(|result| fstar!(r#"Spec.Utils.is_i16b_array 3328 (i0.f_to_i16_array ${result}) /\
-                (forall i. i < 16 ==> ((v (Seq.index (i0.f_to_i16_array ${result}) i) % 3329)==
-                                       (v (Seq.index (i0.f_to_i16_array ${vector}) i) * 1353 * 169) % 3329))"#))]
+#[hax_lib::ensures(|result| fstar!(r#"Spec.Utils.is_i16b_array 3328 (i0._super_6081346371236564305.f_repr ${result}) /\
+                (forall i. i < 16 ==> ((v (Seq.index (i0._super_6081346371236564305.f_repr ${result}) i) % 3329)==
+                                       (v (Seq.index (i0._super_6081346371236564305.f_repr ${vector}) i) * 1353 * 169) % 3329))"#))]
 fn to_standard_domain<T: Operations>(vector: T) -> T {
     T::montgomery_multiply_by_constant(vector, MONTGOMERY_R_SQUARED_MOD_FIELD_MODULUS as i16)
 }
@@ -479,23 +505,25 @@ fn add_standard_error_reduce<Vector: Operations>(
         let coefficient_normal_form = to_standard_domain::<Vector>(myself.coefficients[j]);
 
         hax_lib::fstar!(
+            r#"reveal_opaque (`%Spec.Utils.is_i16b_array_opaque) (Spec.Utils.is_i16b_array_opaque)"#); 
+        hax_lib::fstar!(
             r#"
           Spec.Utils.pow2_more_values 15;
           assert (is_bounded_vector 3328 ${coefficient_normal_form});
           assert (is_bounded_vector 3328 (error.f_coefficients.[ j ]));
           Spec.Utils.lemma_add_intb_forall 3328 3328;
           assert (forall i. Spec.Utils.is_intb 6656 
-            (v (Seq.index (i0.f_to_i16_array ${coefficient_normal_form}) i) +
-             v (Seq.index (i0.f_to_i16_array ${error}.f_coefficients.[ j ]) i)));
+            (v (Seq.index (i0._super_6081346371236564305.f_repr ${coefficient_normal_form}) i) +
+             v (Seq.index (i0._super_6081346371236564305.f_repr ${error}.f_coefficients.[ j ]) i)));
           assert_norm (6656 <= pow2 15 - 1);
           Spec.Utils.lemma_intb_le 6656 (pow2 15 - 1);
           Spec.Utils.lemma_intb_le 6656 28296;
           assert (forall i. Spec.Utils.is_intb (pow2 15 - 1) 
-            (v (Seq.index (i0.f_to_i16_array ${coefficient_normal_form}) i) +
-            v (Seq.index (i0.f_to_i16_array ${error}.f_coefficients.[ j ]) i)));
+            (v (Seq.index (i0._super_6081346371236564305.f_repr ${coefficient_normal_form}) i) +
+            v (Seq.index (i0._super_6081346371236564305.f_repr ${error}.f_coefficients.[ j ]) i)));
           assert (forall i. Spec.Utils.is_intb 28296 
-            (v (Seq.index (i0.f_to_i16_array ${coefficient_normal_form}) i) +
-            v (Seq.index (i0.f_to_i16_array ${error}.f_coefficients.[ j ]) i)))
+            (v (Seq.index (i0._super_6081346371236564305.f_repr ${coefficient_normal_form}) i) +
+            v (Seq.index (i0._super_6081346371236564305.f_repr ${error}.f_coefficients.[ j ]) i)))
         "#
         );
 
@@ -629,14 +657,14 @@ impl<Vector: Operations> PolynomialRingElement<Vector> {
     #[inline(always)]
     #[requires(fstar!(r#"
         forall (i:nat). i < v ${VECTORS_IN_RING_ELEMENT} ==>
-            (let lhs_i = i0.f_to_i16_array (self.f_coefficients.[ sz i ]) in
-            let rhs_i = i0.f_to_i16_array (${rhs}.f_coefficients.[ sz i ]) in
+            (let lhs_i = i0._super_6081346371236564305.f_repr (self.f_coefficients.[ sz i ]) in
+            let rhs_i = i0._super_6081346371236564305.f_repr (${rhs}.f_coefficients.[ sz i ]) in
             Libcrux_ml_kem.Vector.Traits.Spec.add_pre lhs_i rhs_i)"#))]
     #[ensures(|_| fstar!(r#"
         forall (i:nat). i < v ${VECTORS_IN_RING_ELEMENT} ==>
-            (let lhs_i = i0.f_to_i16_array (self.f_coefficients.[ sz i ]) in
-            let rhs_i = i0.f_to_i16_array (${rhs}.f_coefficients.[ sz i ]) in
-            let result_i = i0.f_to_i16_array (self_e_future.f_coefficients.[ sz i ]) in
+            (let lhs_i = i0._super_6081346371236564305.f_repr (self.f_coefficients.[ sz i ]) in
+            let rhs_i = i0._super_6081346371236564305.f_repr (${rhs}.f_coefficients.[ sz i ]) in
+            let result_i = i0._super_6081346371236564305.f_repr (self_e_future.f_coefficients.[ sz i ]) in
             Libcrux_ml_kem.Vector.Traits.Spec.add_post lhs_i rhs_i result_i)"#))]
     pub(crate) fn add_to_ring_element<const K: usize>(&mut self, rhs: &Self) {
         add_to_ring_element::<Vector, K>(self, rhs);

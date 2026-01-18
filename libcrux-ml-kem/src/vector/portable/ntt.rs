@@ -71,7 +71,7 @@ pub(crate) fn ntt_layer_1_step(
     zeta1: i16,
     zeta2: i16,
     zeta3: i16,
-) -> PortableVector {
+) -> PortableVector {    
     ntt_step(&mut vec, zeta0, 0, 2);
     ntt_step(&mut vec, zeta0, 1, 3);
     ntt_step(&mut vec, zeta1, 4, 6);
