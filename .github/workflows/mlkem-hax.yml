@@ -66,7 +66,7 @@ jobs:
       - uses: hacspec/hax-actions@main
         with:
           hax_reference: ${{ github.event.inputs.hax_ref || needs.get-hax-ref.outputs.hax_ref }}
-          fstar: v2025.12.15
+          fstar: v2025.10.06
 
       - uses: actions/download-artifact@v7
         with:
