@@ -363,6 +363,9 @@ impl Operations for SIMD256Vector {
                            (v (Seq.index (impl.f_repr ${vector})i) % 3329))"#))]
     #[inline(always)]
     fn barrett_reduce(vector: Self) -> Self {
+        hax_lib::fstar!(
+            r#"reveal_opaque (`%Spec.Utils.is_i16b_array_opaque) (Spec.Utils.is_i16b_array_opaque)"#
+        );
         Self {
             elements: arithmetic::barrett_reduce(vector.elements),
         }
@@ -374,6 +377,9 @@ impl Operations for SIMD256Vector {
                 (forall i. i < 16 ==> ((v (Seq.index (impl.f_repr ${result}) i) % 3329)==
                                        (v (Seq.index (impl.f_repr ${vector}) i) * v ${constant} * 169) % 3329))"#))]
     fn montgomery_multiply_by_constant(vector: Self, constant: i16) -> Self {
+        hax_lib::fstar!(
+            r#"reveal_opaque (`%Spec.Utils.is_i16b_array_opaque) (Spec.Utils.is_i16b_array_opaque)"#
+        );
         Self {
             elements: arithmetic::montgomery_multiply_by_constant(vector.elements, constant),
         }
@@ -385,6 +391,9 @@ impl Operations for SIMD256Vector {
                                  let y = Seq.index (impl.f_repr ${result}) i in
                                  (v y >= 0 /\ v y <= 3328 /\ (v y % 3329 == v x % 3329)))"#))]
     fn to_unsigned_representative(a: Self) -> Self {
+        hax_lib::fstar!(
+            r#"reveal_opaque (`%Spec.Utils.is_i16b_array_opaque) (Spec.Utils.is_i16b_array_opaque)"#
+        );
         Self {
             elements: arithmetic::to_unsigned_representative(a.elements),
         }

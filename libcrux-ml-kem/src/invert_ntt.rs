@@ -1,7 +1,7 @@
 use crate::{
     hax_utils::hax_debug_assert,
-    polynomial::{zeta, PolynomialRingElement},
-    vector::{Operations, FIELD_ELEMENTS_IN_VECTOR},
+    polynomial::zeta,
+    vector::{Operations, FIELD_ELEMENTS_IN_VECTOR, PolynomialRingElement},
 };
 
 #[inline(always)]
@@ -11,7 +11,7 @@ use crate::{
     "[@@ \"opaque_to_smt\"]
    let invert_ntt_re_range_2 (#v_Vector: Type0)
            {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
-           (re: Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) =
+           (re: Libcrux_ml_kem.Vector.t_PolynomialRingElement v_Vector) =
        forall (i:nat). i < 16 ==> Spec.Utils.is_i16b_array_opaque 3328
                (Libcrux_ml_kem.Vector.Traits.f_to_i16_array (re.f_coefficients.[ sz i ]))"
 )]
@@ -20,7 +20,7 @@ use crate::{
     "[@@ \"opaque_to_smt\"]
    let invert_ntt_re_range_1 (#v_Vector: Type0)
          {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
-         (re: Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) =
+         (re: Libcrux_ml_kem.Vector.t_PolynomialRingElement v_Vector) =
        forall (i:nat). i < 16 ==> Spec.Utils.is_i16b_array_opaque (4 * 3328)
             (Libcrux_ml_kem.Vector.Traits.f_to_i16_array (re.f_coefficients.[ sz i ]))"
 )]

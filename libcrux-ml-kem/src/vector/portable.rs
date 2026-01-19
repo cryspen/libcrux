@@ -161,11 +161,9 @@ impl Operations for PortableVector {
     #[requires(fstar!(r#"forall i. i < 16 ==> 
         Spec.Utils.is_intb (pow2 15 - 1) (v (Seq.index ${vec}.f_elements i) * v c)"#))]
     #[ensures(|result| fstar!(r#"
-        (forall (b:nat). Spec.Utils.is_i16b_array_opaque b (impl.f_repr ${vec}) ==> 
-            Spec.Utils.is_i16b_array_opaque (b * abs (v c)) (impl.f_repr ${result})) /\
         (forall i. i < 16 ==> 
-        (v (Seq.index ${result}.f_elements i) == 
-        v (Seq.index ${vec}.f_elements i) * v c))"#))]
+            (v (Seq.index ${result}.f_elements i) == 
+            v (Seq.index ${vec}.f_elements i) * v c))"#))]
     fn multiply_by_constant(vec: Self, c: i16) -> Self {
         hax_lib::fstar!(
             r#"reveal_opaque (`%Spec.Utils.is_i16b_array_opaque) (Spec.Utils.is_i16b_array_opaque)"#

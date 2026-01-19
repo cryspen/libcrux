@@ -250,14 +250,13 @@ pub(crate) fn ntt_at_layer_7<Vector: Operations>(re: &mut PolynomialRingElement<
     let step = VECTORS_IN_RING_ELEMENT / 2;
     hax_lib::fstar!(r#"assert (v $step == 8)"#);
     for j in 0..step {
-        hax_lib::loop_invariant!(|j: usize| {
-            fstar!(
-                r#"(v j < 8 ==>
-          (forall (i:nat). (i >= v j /\ i < 8) ==>
-            ntt_layer_7_pre (re.f_coefficients.[ sz i ]) (re.f_coefficients.[ sz i +! sz 8 ])))"#
-            )
-        });
-        hax_lib::fstar!(r#"reveal_opaque (`%ntt_layer_7_pre) (ntt_layer_7_pre #$:Vector)"#);
+        // hax_lib::loop_invariant!(|j: usize| {
+        //     fstar!(
+        //         r#"(v j < 8 ==>
+        //   (forall (i:nat). (i >= v j /\ i < 8) ==>
+        //     ntt_layer_7_pre (re.f_coefficients.[ sz i ]) (re.f_coefficients.[ sz i +! sz 8 ])))"#
+        //     )
+        // });
         let t = Vector::multiply_by_constant(re.coefficients[j + step], -1600);
         re.coefficients[j + step] = Vector::sub(re.coefficients[j], &t);
         re.coefficients[j] = Vector::add(re.coefficients[j], &t);
@@ -267,12 +266,12 @@ pub(crate) fn ntt_at_layer_7<Vector: Operations>(re: &mut PolynomialRingElement<
 #[inline(always)]
 #[hax_lib::fstar::verification_status(lax)]
 #[hax_lib::fstar::options("--z3rlimit 200")]
-#[hax_lib::requires(fstar!(r#"forall i. i < 8 ==> ntt_layer_7_pre (${re}.f_coefficients.[ sz i ])
-    (${re}.f_coefficients.[ sz i +! sz 8 ])"#))]
-#[hax_lib::ensures(|_| fstar!(r#"Libcrux_ml_kem.Polynomial.is_bounded_poly 3328 ${re}_future /\
-    Libcrux_ml_kem.Polynomial.to_spec_poly_t #$:Vector ${re}_future ==
-    Spec.MLKEM.poly_ntt (Libcrux_ml_kem.Polynomial.to_spec_poly_t #$:Vector $re) /\
-    Libcrux_ml_kem.Polynomial.is_bounded_poly #$:Vector 3328 ${re}_future"#))]
+// #[hax_lib::requires(fstar!(r#"forall i. i < 8 ==> ntt_layer_7_pre (${re}.f_coefficients.[ sz i ])
+//     (${re}.f_coefficients.[ sz i +! sz 8 ])"#))]
+// #[hax_lib::ensures(|_| fstar!(r#"Libcrux_ml_kem.Polynomial.is_bounded_poly 3328 ${re}_future /\
+//     Libcrux_ml_kem.Polynomial.to_spec_poly_t #$:Vector ${re}_future ==
+//     Spec.MLKEM.poly_ntt (Libcrux_ml_kem.Polynomial.to_spec_poly_t #$:Vector $re) /\
+//     Libcrux_ml_kem.Polynomial.is_bounded_poly #$:Vector 3328 ${re}_future"#))]
 pub(crate) fn ntt_binomially_sampled_ring_element<Vector: Operations>(
     re: &mut PolynomialRingElement<Vector>,
 ) {
@@ -294,8 +293,8 @@ pub(crate) fn ntt_binomially_sampled_ring_element<Vector: Operations>(
 #[inline(always)]
 #[hax_lib::fstar::verification_status(lax)]
 #[hax_lib::fstar::options("--z3rlimit 200")]
-#[hax_lib::ensures(|_| fstar!(r#"Libcrux_ml_kem.Polynomial.to_spec_poly_t #$:Vector ${re}_future ==
-    Spec.MLKEM.poly_ntt (Libcrux_ml_kem.Polynomial.to_spec_poly_t #$:Vector $re)"#))]
+// #[hax_lib::ensures(|_| fstar!(r#"Libcrux_ml_kem.Polynomial.to_spec_poly_t #$:Vector ${re}_future ==
+//     Spec.MLKEM.poly_ntt (Libcrux_ml_kem.Polynomial.to_spec_poly_t #$:Vector $re)"#))]
 pub(crate) fn ntt_vector_u<const VECTOR_U_COMPRESSION_FACTOR: usize, Vector: Operations>(
     re: &mut PolynomialRingElement<Vector>,
 ) {

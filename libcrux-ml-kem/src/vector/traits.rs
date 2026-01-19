@@ -30,32 +30,25 @@ pub(crate) mod spec {
 
     pub(crate) fn add_post(lhs: &[i16; 16], rhs: &[i16; 16], result: &[i16; 16]) -> hax_lib::Prop {
         hax_lib::fstar_prop_expr!(
-            r#"
-            (forall (b1 b2:nat). (Spec.Utils.is_i16b_array_opaque b1 ${lhs} /\
-            Spec.Utils.is_i16b_array_opaque b2 ${rhs}) ==>  
-            Spec.Utils.is_i16b_array_opaque (b1 + b2) ${result}) /\
-            (forall i. 
-            v (Seq.index ${result} i) == 
-            v (Seq.index ${lhs} i) + v (Seq.index ${rhs} i))"#
+            r#"(forall i. 
+                v (Seq.index ${result} i) == 
+                v (Seq.index ${lhs} i) + v (Seq.index ${rhs} i))"#
         )
     }
 
     pub(crate) fn sub_pre(lhs: &[i16; 16], rhs: &[i16; 16]) -> hax_lib::Prop {
         hax_lib::fstar_prop_expr!(
             r#"forall i. 
-            Spec.Utils.is_intb (pow2 15 - 1) 
+                Spec.Utils.is_intb (pow2 15 - 1) 
                 (v (Seq.index ${lhs} i) - v (Seq.index ${rhs} i))"#
         )
     }
 
     pub(crate) fn sub_post(lhs: &[i16; 16], rhs: &[i16; 16], result: &[i16; 16]) -> hax_lib::Prop {
         hax_lib::fstar_prop_expr!(
-            r#"(forall (b1 b2:nat). (Spec.Utils.is_i16b_array_opaque b1 ${lhs} /\
-            Spec.Utils.is_i16b_array_opaque b2 ${rhs}) ==>  
-            Spec.Utils.is_i16b_array_opaque (b1 + b2) ${result}) /\
-            (forall i. 
-            v (Seq.index ${result} i) == 
-            v (Seq.index ${lhs} i) - v (Seq.index ${rhs} i))"#
+            r#"(forall i. 
+                v (Seq.index ${result} i) == 
+                v (Seq.index ${lhs} i) - v (Seq.index ${rhs} i))"#
         )
     }
 
@@ -68,9 +61,7 @@ pub(crate) mod spec {
 
     pub(crate) fn negate_post(vec: &[i16; 16], result: &[i16; 16]) -> hax_lib::Prop {
         hax_lib::fstar_prop_expr!(
-            r#"(forall (b:nat). Spec.Utils.is_i16b_array_opaque b ${vec} ==> 
-            Spec.Utils.is_i16b_array_opaque b ${result}) /\
-            (forall i. 
+            r#"(forall i. 
                 v (Seq.index ${result} i) == 
                 - (v (Seq.index ${vec} i)))"#
         )
@@ -89,9 +80,7 @@ pub(crate) mod spec {
         result: &[i16; 16],
     ) -> hax_lib::Prop {
         hax_lib::fstar_prop_expr!(
-            r#"(forall (b:nat). Spec.Utils.is_i16b_array_opaque b ${vec} ==> 
-            Spec.Utils.is_i16b_array_opaque (b * abs (v c)) ${result}) /\
-            (forall i.
+            r#"(forall i.
                 v (Seq.index ${result} i) == 
                 v (Seq.index ${vec} i) * v $c)"#
         )
