@@ -1,32 +1,16 @@
 use crate::{
     hax_utils::hax_debug_assert,
-    polynomial::{zeta, PolynomialRingElement, VECTORS_IN_RING_ELEMENT},
+    polynomial::{zeta, PolynomialRingElement, VECTORS_IN_RING_ELEMENT, add_bounded, sub_bounded},
     vector::Operations,
 };
 
 #[cfg(hax)]
-pub(crate) mod spec {
-    use crate::{
-        polynomial::PolynomialRingElement,
-        vector::Operations,
-    };
-
-    pub(crate) fn is_bounded_vector<Vector: Operations>(vec: &Vector, b: usize) -> hax_lib::Prop {
-        hax_lib::fstar_prop_expr!(
-            r#"Spec.Utils.is_i16b_array_opaque (v b) (Libcrux_ml_kem.Vector.Traits.f_to_i16_array vec)"#
-        )
-    }
-
-    pub(crate) fn is_bounded_poly<Vector: Operations>(p: &PolynomialRingElement<Vector>, b: usize) -> hax_lib::Prop {
-        hax_lib::fstar_prop_expr!(r#"
-            forall (i:nat). i < 16 ==> is_bounded_vector (p.f_coefficients.[ sz i ]) b"#)
-    }
-}
+use crate::polynomial::spec;
 
 #[inline(always)]
 #[hax_lib::fstar::options("--z3rlimit 200 --ext context_pruning")]
-#[hax_lib::requires(spec::is_bounded_poly(re, _initial_coefficient_bound).and(*zeta_i == 63 && _initial_coefficient_bound == 11207 + 5 * 3328))]
-#[hax_lib::ensures(|result| spec::is_bounded_poly(re, _initial_coefficient_bound+3328).and(*zeta_i == 127 ))]
+#[hax_lib::requires(spec::is_bounded_poly(_initial_coefficient_bound, re).and(*zeta_i == 63 && _initial_coefficient_bound == 4803 + 5 * 3328))]
+#[hax_lib::ensures(|result| spec::is_bounded_poly(_initial_coefficient_bound+3328, future(re)).and(*future(zeta_i) == 127))]
 pub(crate) fn ntt_at_layer_1<Vector: Operations>(
     zeta_i: &mut usize,
     re: &mut PolynomialRingElement<Vector>,
@@ -40,20 +24,15 @@ pub(crate) fn ntt_at_layer_1<Vector: Operations>(
             hax_lib::forall(|i: usize| {
                 if i < 16 {
                     if i >= round {
-                        spec::is_bounded_vector(&re.coefficients[i], _initial_coefficient_bound)
+                        spec::is_bounded_vector(_initial_coefficient_bound, &re.coefficients[i])
                     } else {
-                        spec::is_bounded_vector(&re.coefficients[i], _initial_coefficient_bound + 3328)
+                        spec::is_bounded_vector(_initial_coefficient_bound + 3328, &re.coefficients[i])
                     }
                 } else {
                     hax_lib::fstar_prop_expr!(r#"True"#)
                 }           
             }))});
         *zeta_i += 1;
-        hax_lib::fstar!(
-            r#"reveal_opaque (`%Spec.Utils.is_i16b_array_opaque) 
-                        (Spec.Utils.is_i16b_array_opaque (v $_initial_coefficient_bound)
-                        (Libcrux_ml_kem.Vector.Traits.f_to_i16_array (re.f_coefficients.[ round ])))"#
-        );
         re.coefficients[round] = Vector::ntt_layer_1_step(
             re.coefficients[round],
             zeta(*zeta_i),
@@ -62,151 +41,109 @@ pub(crate) fn ntt_at_layer_1<Vector: Operations>(
             zeta(*zeta_i + 3),
         );
         *zeta_i += 3;
-        hax_lib::fstar!(
-            r#"reveal_opaque (`%Spec.Utils.is_i16b_array_opaque) 
-                        (Spec.Utils.is_i16b_array_opaque (v $_initial_coefficient_bound + 3328)
-                        (Libcrux_ml_kem.Vector.Traits.f_to_i16_array (re.f_coefficients.[ round ])))"#
-        );
-        hax_lib::fstar!(
-            "assert (Spec.Utils.is_i16b_array_opaque (v $_initial_coefficient_bound + 3328)
-        (Libcrux_ml_kem.Vector.Traits.f_to_i16_array (re.f_coefficients.[ $round ])))"
-        );
     }
 }
 
 #[inline(always)]
 #[hax_lib::fstar::options("--z3rlimit 200 --ext context_pruning")]
-
-#[hax_lib::requires(fstar!(r#"v ${*zeta_i} == 31 /\
-    ntt_re_range_3 $re"#))]
-#[hax_lib::ensures(|result| fstar!(r#"ntt_re_range_2 ${re}_future /\
-    v ${*zeta_i}_future == 63"#))]
+#[hax_lib::requires(spec::is_bounded_poly(_initial_coefficient_bound, re).and(*zeta_i == 31 && _initial_coefficient_bound == 4803 + 4 * 3328))]
+#[hax_lib::ensures(|result| spec::is_bounded_poly(_initial_coefficient_bound+3328, future(re)).and(*future(zeta_i) == 63))]
 pub(crate) fn ntt_at_layer_2<Vector: Operations>(
     zeta_i: &mut usize,
     re: &mut PolynomialRingElement<Vector>,
     _initial_coefficient_bound: usize, // This can be used for specifying the range of values allowed in re
 ) {
-    hax_lib::fstar!(r#"reveal_opaque (`%ntt_re_range_3) (ntt_re_range_3 #$:Vector)"#);
-    hax_lib::fstar!(r#"reveal_opaque (`%ntt_re_range_2) (ntt_re_range_2 #$:Vector)"#);
     let _zeta_i_init = *zeta_i;
     for round in 0..16 {
         hax_lib::loop_invariant!(|round: usize| {
-            fstar!(
-                r#"v zeta_i == v $_zeta_i_init + v $round * 2 /\
-          (v round < 16 ==> (forall (i:nat). (i >= v round /\ i < 16) ==>
-            Spec.Utils.is_i16b_array_opaque (11207+4*3328)
-              (Libcrux_ml_kem.Vector.Traits.f_to_i16_array (re.f_coefficients.[ sz i ])))) /\
-          (forall (i:nat). i < v $round ==> Spec.Utils.is_i16b_array_opaque (11207+5*3328)
-              (Libcrux_ml_kem.Vector.Traits.f_to_i16_array (re.f_coefficients.[ sz i ])))"#
-            )
-        });
+            hax_lib::fstar_prop_expr!(r#"v $zeta_i == v $_zeta_i_init + v $round * 2"#).and(
+            hax_lib::forall(|i: usize| {
+                if i < 16 {
+                    if i >= round {
+                        spec::is_bounded_vector(_initial_coefficient_bound, &re.coefficients[i])
+                    } else {
+                        spec::is_bounded_vector(_initial_coefficient_bound + 3328, &re.coefficients[i])
+                    }
+                } else {
+                    hax_lib::fstar_prop_expr!(r#"True"#)
+                }           
+            }))});
         *zeta_i += 1;
-        hax_lib::fstar!(
-            r#"reveal_opaque (`%Spec.Utils.is_i16b_array_opaque) 
-                        (Spec.Utils.is_i16b_array_opaque (11207+4*3328)
-                        (Libcrux_ml_kem.Vector.Traits.f_to_i16_array (re.f_coefficients.[ round ])))"#
-        );
+        
         re.coefficients[round] =
             Vector::ntt_layer_2_step(re.coefficients[round], zeta(*zeta_i), zeta(*zeta_i + 1));
         *zeta_i += 1;
-        hax_lib::fstar!(
-            r#"reveal_opaque (`%Spec.Utils.is_i16b_array_opaque) 
-                        (Spec.Utils.is_i16b_array_opaque (11207+5*3328)
-                        (Libcrux_ml_kem.Vector.Traits.f_to_i16_array (re.f_coefficients.[ round ])))"#
-        );
-        hax_lib::fstar!(
-            "assert (Spec.Utils.is_i16b_array_opaque (11207+5*3328)
-            (Libcrux_ml_kem.Vector.Traits.f_to_i16_array (re.f_coefficients.[ $round ])))"
-        );
     }
 }
 
 #[inline(always)]
 #[hax_lib::fstar::options("--z3rlimit 200 --ext context_pruning")]
-#[hax_lib::fstar::before(
-    interface,
-    r#"[@@ "opaque_to_smt"]
-   let ntt_re_range_4 (#v_Vector: Type0)
-         {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
-         (re: Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) =
-       forall (i:nat). i < 16 ==> Spec.Utils.is_i16b_array_opaque (11207+3*3328)
-            (Libcrux_ml_kem.Vector.Traits.f_to_i16_array (re.f_coefficients.[ sz i ]))"#
-)]
-#[hax_lib::requires(fstar!(r#"v ${*zeta_i} == 15 /\
-    ntt_re_range_4 $re"#))]
-#[hax_lib::ensures(|result| fstar!(r#"ntt_re_range_3 ${re}_future /\
-    v ${*zeta_i}_future == 31"#))]
+#[hax_lib::requires(spec::is_bounded_poly(_initial_coefficient_bound, re).and(*zeta_i == 15 && _initial_coefficient_bound == 4803 + 3 * 3328))]
+#[hax_lib::ensures(|result| spec::is_bounded_poly(_initial_coefficient_bound+3328, future(re)).and(*future(zeta_i) == 31))]
 pub(crate) fn ntt_at_layer_3<Vector: Operations>(
     zeta_i: &mut usize,
     re: &mut PolynomialRingElement<Vector>,
     _initial_coefficient_bound: usize, // This can be used for specifying the range of values allowed in re
 ) {
-    hax_lib::fstar!(r#"reveal_opaque (`%ntt_re_range_4) (ntt_re_range_4 #$:Vector)"#);
-    hax_lib::fstar!(r#"reveal_opaque (`%ntt_re_range_3) (ntt_re_range_3 #$:Vector)"#);
     let _zeta_i_init = *zeta_i;
     for round in 0..16 {
         hax_lib::loop_invariant!(|round: usize| {
-            fstar!(
-                r#"v zeta_i == v $_zeta_i_init + v $round /\
-          (v round < 16 ==> (forall (i:nat). (i >= v round /\ i < 16) ==>
-            Spec.Utils.is_i16b_array_opaque (11207+3*3328)
-              (Libcrux_ml_kem.Vector.Traits.f_to_i16_array (re.f_coefficients.[ sz i ])))) /\
-          (forall (i:nat). i < v $round ==> Spec.Utils.is_i16b_array_opaque (11207+4*3328)
-              (Libcrux_ml_kem.Vector.Traits.f_to_i16_array (re.f_coefficients.[ sz i ])))"#
-            )
-        });
+            hax_lib::fstar_prop_expr!(r#"v $zeta_i == v $_zeta_i_init + v $round"#).and(
+            hax_lib::forall(|i: usize| {
+                if i < 16 {
+                    if i >= round {
+                        spec::is_bounded_vector(_initial_coefficient_bound, &re.coefficients[i])
+                    } else {
+                        spec::is_bounded_vector(_initial_coefficient_bound + 3328, &re.coefficients[i])
+                    }
+                } else {
+                    hax_lib::fstar_prop_expr!(r#"True"#)
+                }           
+            }))});
         *zeta_i += 1;
-        hax_lib::fstar!(
-            r#"reveal_opaque (`%Spec.Utils.is_i16b_array_opaque) 
-                        (Spec.Utils.is_i16b_array_opaque (11207+3*3328)
-                        (Libcrux_ml_kem.Vector.Traits.f_to_i16_array (re.f_coefficients.[ round ])))"#
-        );
         re.coefficients[round] = Vector::ntt_layer_3_step(re.coefficients[round], zeta(*zeta_i));
-        hax_lib::fstar!(
-            "reveal_opaque (`%Spec.Utils.is_i16b_array_opaque) 
-            (Spec.Utils.is_i16b_array_opaque (11207+4*3328)
-            (Libcrux_ml_kem.Vector.Traits.f_to_i16_array (re.f_coefficients.[ round ])))"
-        );
-        hax_lib::fstar!(
-            "assert (Spec.Utils.is_i16b_array_opaque (11207+4*3328)
-            (Libcrux_ml_kem.Vector.Traits.f_to_i16_array (re.f_coefficients.[ $round ])))"
-        );
     }
 }
 
 #[inline(always)]
-#[hax_lib::requires(fstar!(r#"Spec.Utils.is_i16b 1664 $zeta_r /\
-    (let t = ${Vector::montgomery_multiply_by_constant} $b $zeta_r in
-    (forall i. i < 16 ==>
-        Spec.Utils.is_intb (pow2 15 - 1)
-        (v (Seq.index (Libcrux_ml_kem.Vector.Traits.f_to_i16_array $a) i) -
-        v (Seq.index (Libcrux_ml_kem.Vector.Traits.f_to_i16_array t) i))) /\
-    (forall i. i < 16 ==>
-        Spec.Utils.is_intb (pow2 15 - 1)
-        (v (Seq.index (Libcrux_ml_kem.Vector.Traits.f_to_i16_array $a) i) +
-        v (Seq.index (Libcrux_ml_kem.Vector.Traits.f_to_i16_array t) i))))"#))]
+#[hax_lib::requires(spec::is_bounded_vector(_initial_coefficient_bound, &a).and(zeta_r >= -1664 && zeta_r <= 1664 && _initial_coefficient_bound <= 4803 + 3 * 3328))]
+#[hax_lib::ensures(|(r0, r1)| spec::is_bounded_vector(_initial_coefficient_bound+3328, &r0).and(spec::is_bounded_vector(_initial_coefficient_bound+3328, &r1)))]
 fn ntt_layer_int_vec_step<Vector: Operations>(
     mut a: Vector,
     mut b: Vector,
     zeta_r: i16,
+    _initial_coefficient_bound: usize, // This can be used for specifying the range of values allowed in re
 ) -> (Vector, Vector) {
     let t = Vector::montgomery_multiply_by_constant(b, zeta_r);
-    b = Vector::sub(a, &t);
-    a = Vector::add(a, &t);
+    b = sub_bounded(a, _initial_coefficient_bound, &t, 3328);
+    a = add_bounded(a, _initial_coefficient_bound, &t, 3328);
     (a, b)
 }
 
+
+#[hax_lib::fstar::options("--z3rlimit 300 --ext context_pruning --split_queries always")]
+#[hax_lib::requires(
+    spec::is_bounded_poly(_initial_coefficient_bound, re).and(
+        _initial_coefficient_bound <= 4803 + 3 * 3328 &&
+        match layer {
+            4 => *zeta_i == 7,
+            5 => *zeta_i == 3,
+            6 => *zeta_i == 1,
+            7 => *zeta_i == 0,
+            _ => false,
+        })
+)]
+#[hax_lib::ensures(|result| 
+    spec::is_bounded_poly(_initial_coefficient_bound+3328, future(re)).and(
+        match layer {
+            4 => *future(zeta_i) == 15,
+            5 => *future(zeta_i) == 7,
+            6 => *future(zeta_i) == 3,
+            7 => *future(zeta_i) == 1,
+            _ => false,
+        })
+)]
 #[inline(always)]
-#[hax_lib::requires(fstar!(r#"v $layer >= 4 /\ v $layer <= 7 /\
-    ((v $layer == 4 ==> v ${*zeta_i} == 7) /\
-    (v $layer == 5 ==> v ${*zeta_i} == 3) /\
-    (v $layer == 6 ==> v ${*zeta_i} == 1) /\
-    (v $layer == 7 ==> v ${*zeta_i} == 0))"#))]
-#[hax_lib::ensures(|result| fstar!(r#"ntt_re_range_4 ${re}_future /\
-    (v $layer == 4 ==> v ${*zeta_i}_future == 15) /\
-    (v $layer == 5 ==> v ${*zeta_i}_future == 7) /\
-    (v $layer == 6 ==> v ${*zeta_i}_future == 3) /\
-    (v $layer == 7 ==> v ${*zeta_i}_future == 1)"#))]
 pub(crate) fn ntt_at_layer_4_plus<Vector: Operations>(
     zeta_i: &mut usize,
     re: &mut PolynomialRingElement<Vector>,
@@ -219,7 +156,19 @@ pub(crate) fn ntt_at_layer_4_plus<Vector: Operations>(
     let _zeta_i_init = *zeta_i;
     
     for round in 0..(128 >> layer) {
-        hax_lib::loop_invariant!(|round:usize| *zeta_i == _zeta_i_init + round);
+        hax_lib::loop_invariant!(|round: usize| {
+            hax_lib::fstar_prop_expr!(r#"v $zeta_i == v $_zeta_i_init + v $round"#).and(
+            hax_lib::forall(|i: usize| {
+                if i < 16 {
+                    if i >= (round * step * 2) / 16 {
+                        spec::is_bounded_vector(_initial_coefficient_bound, &re.coefficients[i])
+                    } else {
+                        spec::is_bounded_vector(_initial_coefficient_bound + 3328, &re.coefficients[i])
+                    }
+                } else {
+                    hax_lib::fstar_prop_expr!(r#"True"#)
+                }           
+            }))});
         *zeta_i += 1;
 
         let offset = round * step * 2;
@@ -227,10 +176,23 @@ pub(crate) fn ntt_at_layer_4_plus<Vector: Operations>(
         let step_vec = step / 16; //FIELD_ELEMENTS_IN_VECTOR;
 
         for j in offset_vec..offset_vec + step_vec {
+            hax_lib::loop_invariant!(|j: usize| {
+                hax_lib::forall(|i: usize| {
+                    if i < 16 {
+                        if (i >= j && i < offset_vec + step_vec) || (i >= j + step_vec) {
+                            spec::is_bounded_vector(_initial_coefficient_bound, &re.coefficients[i])
+                        } else {
+                            spec::is_bounded_vector(_initial_coefficient_bound + 3328, &re.coefficients[i])
+                        }
+                    } else {
+                        hax_lib::fstar_prop_expr!(r#"True"#)
+                    }           
+                })});
             let (x, y) = ntt_layer_int_vec_step(
                 re.coefficients[j],
                 re.coefficients[j + step_vec],
                 zeta(*zeta_i),
+                _initial_coefficient_bound
             );
             re.coefficients[j] = x;
             re.coefficients[j + step_vec] = y;
@@ -262,6 +224,29 @@ pub(crate) fn ntt_at_layer_4_plus<Vector: Operations>(
 )]
 #[hax_lib::requires(fstar!(r#"forall i. i < 8 ==> ntt_layer_7_pre (${re}.f_coefficients.[ sz i ])
     (${re}.f_coefficients.[ sz i +! sz 8 ])"#))]
+
+#[hax_lib::fstar::options("--z3rlimit 300 --ext context_pruning --split_queries always")]
+#[hax_lib::requires(
+    spec::is_bounded_poly(_initial_coefficient_bound, re).and(
+        _initial_coefficient_bound <= 4803 + 3 * 3328 &&
+        match layer {
+            4 => *zeta_i == 7,
+            5 => *zeta_i == 3,
+            6 => *zeta_i == 1,
+            7 => *zeta_i == 0,
+            _ => false,
+        })
+)]
+#[hax_lib::ensures(|result| 
+    spec::is_bounded_poly(_initial_coefficient_bound+3328, future(re)).and(
+        match layer {
+            4 => *future(zeta_i) == 15,
+            5 => *future(zeta_i) == 7,
+            6 => *future(zeta_i) == 3,
+            7 => *future(zeta_i) == 1,
+            _ => false,
+        })
+)]
 pub(crate) fn ntt_at_layer_7<Vector: Operations>(re: &mut PolynomialRingElement<Vector>) {
     let step = VECTORS_IN_RING_ELEMENT / 2;
     hax_lib::fstar!(r#"assert (v $step == 8)"#);
@@ -297,12 +282,12 @@ pub(crate) fn ntt_binomially_sampled_ring_element<Vector: Operations>(
     ntt_at_layer_7(re);
 
     let mut zeta_i = 1;
-    ntt_at_layer_4_plus(&mut zeta_i, re, 6, 11207);
-    ntt_at_layer_4_plus(&mut zeta_i, re, 5, 11207 + 3328);
-    ntt_at_layer_4_plus(&mut zeta_i, re, 4, 11207 + 2 * 3328);
-    ntt_at_layer_3(&mut zeta_i, re, 11207 + 3 * 3328);
-    ntt_at_layer_2(&mut zeta_i, re, 11207 + 4 * 3328);
-    ntt_at_layer_1(&mut zeta_i, re, 11207 + 5 * 3328);
+    ntt_at_layer_4_plus(&mut zeta_i, re, 6, 4803);
+    ntt_at_layer_4_plus(&mut zeta_i, re, 5, 4803 + 3328);
+    ntt_at_layer_4_plus(&mut zeta_i, re, 4, 4803 + 2 * 3328);
+    ntt_at_layer_3(&mut zeta_i, re, 4803 + 3 * 3328);
+    ntt_at_layer_2(&mut zeta_i, re, 4803 + 4 * 3328);
+    ntt_at_layer_1(&mut zeta_i, re, 4803 + 5 * 3328);
 
     re.poly_barrett_reduce()
 }

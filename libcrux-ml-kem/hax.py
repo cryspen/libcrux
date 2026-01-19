@@ -105,7 +105,7 @@ class extractAction(argparse.Action):
             "+:libcrux_ml_kem::hash_functions::*::*",
         ]
         include_str = " ".join(includes)
-        interface_include = "+** -libcrux_ml_kem::vector::traits -libcrux_ml_kem::types -libcrux_ml_kem::constants -libcrux_ml_kem::traits::spec -libcrux_ml_kem::ntt::spec"
+        interface_include = "+** -libcrux_ml_kem::vector::traits -libcrux_ml_kem::types -libcrux_ml_kem::constants -libcrux_ml_kem::traits::spec -libcrux_ml_kem::polynomial::spec"
         cargo_hax_into = [
             "cargo",
             "hax",
