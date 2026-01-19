@@ -1,7 +1,7 @@
 module Spec.Intrinsics
 open FStar.Mul
-open Core
-open Core_models.Core_arch.X86.Interpretations.Int_vec
+open Core_models
+open Libcrux_core_models.Core_arch.X86.Interpretations.Int_vec
  
 let logand_lemma_forall #t:
   Lemma (forall a. logand ones a == a /\ 
@@ -78,18 +78,18 @@ let reveal_opaque_cast_ops #t #t':
 open FStar.FunctionalExtensionality
 module I = Libcrux_intrinsics.Avx2
 
-open Core_models.Abstractions.Bit
+open Libcrux_core_models.Abstractions.Bit
 
 (**** Utils *)
 /// Functional arrays: partial maps
 type t_FunArray (n: u64) t = i:u64 {v i < v n} ^-> t
 /// Accessor for fun arrays
-let ( .() ) #n (bv: Core_models.Abstractions.Bitvec.t_BitVec n) i  = Core_models.Abstractions.Funarr.impl_5__get n bv._0 i
+let ( .() ) #n (bv: Libcrux_core_models.Abstractions.Bitvec.t_BitVec n) i  = Libcrux_core_models.Abstractions.Funarr.impl_5__get n bv._0 i
 
-let eq_pointwise_to_eq #n (a b: Core_models.Abstractions.Bitvec.t_BitVec n)
+let eq_pointwise_to_eq #n (a b: Libcrux_core_models.Abstractions.Bitvec.t_BitVec n)
   : Lemma (requires forall i. a.(i) == b.(i)) (ensures a == b)
-  = let Core_models.Abstractions.Bitvec.BitVec (Core_models.Abstractions.Funarr.FunArray a) = a in
-    let Core_models.Abstractions.Bitvec.BitVec (Core_models.Abstractions.Funarr.FunArray b) = b in
+  = let Libcrux_core_models.Abstractions.Bitvec.BitVec (Libcrux_core_models.Abstractions.Funarr.FunArray a) = a in
+    let Libcrux_core_models.Abstractions.Bitvec.BitVec (Libcrux_core_models.Abstractions.Funarr.FunArray b) = b in
     assert (forall i. a i == b i);
     FStar.FunctionalExtensionality.extensionality _ _ a b
 
@@ -102,8 +102,8 @@ let i16_mul_32extended_i16 (x y: i16): i16 = cast (i16_mul_32extended x y)
 let i32_wrapping_add (x y: i32): i32 = x +. y
 
 (**** Bit vector type synonym *)
-let bv128 = Core_models.Abstractions.Bitvec.t_BitVec (mk_u64 128)
-let bv256 = Core_models.Abstractions.Bitvec.t_BitVec (mk_u64 256)
+let bv128 = Libcrux_core_models.Abstractions.Bitvec.t_BitVec (mk_u64 128)
+let bv256 = Libcrux_core_models.Abstractions.Bitvec.t_BitVec (mk_u64 256)
 
 (**** Machine integer arrays *)
 
@@ -555,7 +555,7 @@ val mm256_mul_epi32_lemma (a b: bv256) (i:u64{v i < 8}):
 val mm256_srai_epi32_lemma (v_IMM8: i32) (a: bv256) (i:u64{v i < 8}):
   Lemma (to_i32x8 (Libcrux_intrinsics.Avx2.mm256_srai_epi32 v_IMM8 a) i ==
          (
-         let imm8:i32 = Core.Num.impl_i32__rem_euclid v_IMM8 (mk_i32 256) in
+         let imm8:i32 = Core_models.Num.impl_i32__rem_euclid v_IMM8 (mk_i32 256) in
          if imm8 >. mk_i32 31
          then if (to_i32x8 a i) <. mk_i32 0 then mk_i32 (-1) else mk_i32 0
          else shift_right_opaque (to_i32x8 a i) imm8
@@ -667,7 +667,7 @@ val mm256_set_m128i_lemma (hi lo: bv128) (i:u64{v i < 8}):
         | Rust_primitives.Integers.MkInt 6 -> to_i32x4 hi (mk_u64 2)
         | Rust_primitives.Integers.MkInt 7 -> to_i32x4 hi (mk_u64 3)
         | _ ->
-          Rust_primitives.Hax.never_to_any (Core.Panicking.panic "internal error: entered unreachable code"
+          Rust_primitives.Hax.never_to_any (Core_models.Panicking.panic "internal error: entered unreachable code"
 
               <:
               Rust_primitives.Hax.t_Never)
@@ -709,7 +709,7 @@ val mm256_unpacklo_epi64_lemma (a b: bv256) (i:u64{v i < 8}):
         | Rust_primitives.Integers.MkInt 6 -> (to_i32x8 b) (mk_u64 4)
         | Rust_primitives.Integers.MkInt 7 -> (to_i32x8 b) (mk_u64 5)
         | _ ->
-          Rust_primitives.Hax.never_to_any (Core.Panicking.panic "internal error: entered unreachable code"
+          Rust_primitives.Hax.never_to_any (Core_models.Panicking.panic "internal error: entered unreachable code"
 
               <:
               Rust_primitives.Hax.t_Never)
@@ -729,7 +729,7 @@ val mm256_unpackhi_epi64_lemma (a b: bv256) (i:u64{v i < 8}):
         | Rust_primitives.Integers.MkInt 6 -> (to_i32x8 b) ( mk_u64 6 )
         | Rust_primitives.Integers.MkInt 7 -> (to_i32x8 b) ( mk_u64 7 )
         | _ ->
-          Rust_primitives.Hax.never_to_any (Core.Panicking.panic "internal error: entered unreachable code"
+          Rust_primitives.Hax.never_to_any (Core_models.Panicking.panic "internal error: entered unreachable code"
 
               <:
               Rust_primitives.Hax.t_Never)
@@ -745,35 +745,35 @@ val mm_loadu_si128_lemma (bytes: _{ Seq.length bytes = 16 }) i
 val i32_lt_pow2_n_to_bit_zero_lemma n vec
   : Lemma (forall i. v (to_i32x8 vec (i /! mk_int 32)) <= normalize_term (pow2 n - 1)
                 ==> v i % 32 >= n
-                ==> vec.(i) == Core_models.Abstractions.Bit.Bit_Zero)
+                ==> vec.(i) == Libcrux_core_models.Abstractions.Bit.Bit_Zero)
 
 val shl_casted_u8_bv_lemma (a b: u8) (i: u64 {v i < 32})
   : Lemma ( i32_to_bv (((cast b <: i32) <<! mk_i32 8 <: i32) |. (cast a <: i32) <: i32) i
-        == (if v i >= 16 then Core_models.Abstractions.Bit.Bit_Zero
+        == (if v i >= 16 then Libcrux_core_models.Abstractions.Bit.Bit_Zero
                         else if v i >= 8 then u8_to_bv b (i -! mk_int 8) else u8_to_bv a i))
   [SMTPat (i32_to_bv (((cast b <: i32) <<! mk_i32 8 <: i32) |. (cast a <: i32) <: i32) i)]
 
 val i32_to_bv_cast_lemma (a: u8) (i: _{v i < 32})
-  : Lemma (i32_to_bv (cast a) i == (if v i >= 8 then Core_models.Abstractions.Bit.Bit_Zero else u8_to_bv a i))
+  : Lemma (i32_to_bv (cast a) i == (if v i >= 8 then Libcrux_core_models.Abstractions.Bit.Bit_Zero else u8_to_bv a i))
   [SMTPat (i32_to_bv (cast a) i)]
 
 #push-options "--z3rlimit 80"
 val i32_to_bv_pow2_min_one_lemma (n: nat {n > 1 /\ n < 31}) (i:u64{v i < 32}):
   Lemma (  i32_to_bv ((mk_i32 1 <<! mk_i32 n <: i32) -! mk_i32 1) i
-        == Core_models.Abstractions.Bit.(if v i < n then Bit_One else Bit_Zero))
+        == Libcrux_core_models.Abstractions.Bit.(if v i < n then Bit_One else Bit_Zero))
         [SMTPat (i32_to_bv ((mk_i32 1 <<! mk_i32 n <: i32) -! mk_i32 1) i)]
 let i32_to_bv_pow2_min_one_lemma_fa (n: nat {n > 1 /\ n < 31}):
   Lemma (forall (i:u64{v i < 32}). i32_to_bv ((mk_i32 1 <<! mk_i32 n <: i32) -! mk_i32 1) i
-        == Core_models.Abstractions.Bit.(if v i < n then Bit_One else Bit_Zero))
+        == Libcrux_core_models.Abstractions.Bit.(if v i < n then Bit_One else Bit_Zero))
   = ()
 #pop-options
 
 val i32_bit_zero_lemma_to_lt_pow2_n_weak (n: nat) vec
-  : Lemma (requires forall i. v i % 32 >= n ==> vec.(i) == Core_models.Abstractions.Bit.Bit_Zero)
+  : Lemma (requires forall i. v i % 32 >= n ==> vec.(i) == Libcrux_core_models.Abstractions.Bit.Bit_Zero)
           (ensures forall i. v (to_i32x8 vec i) < pow2 n /\ (n <= 31 ==> v (to_i32x8 vec i) >= 0))
 
 val i32_bit_zero_lemma_to_positive vec
-  : Lemma (requires forall i. v i % 32 == 31 ==> vec.(i) == Core_models.Abstractions.Bit.Bit_Zero)
+  : Lemma (requires forall i. v i % 32 == 31 ==> vec.(i) == Libcrux_core_models.Abstractions.Bit.Bit_Zero)
           (ensures forall i. v (to_i32x8 vec i) >= 0)
 
 #push-options "--z3rlimit 80"

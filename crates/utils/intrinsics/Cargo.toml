@@ -14,7 +14,7 @@ exclude = ["/proofs"]
 hax-lib.workspace = true
 
 [target.'cfg(hax)'.dependencies]
-core-models = { path = "../core-models", version = "0.0.4" }
+libcrux-core-models = { path = "../libcrux-core-models", version = "0.0.4" }
 
 [features]
 simd128 = []

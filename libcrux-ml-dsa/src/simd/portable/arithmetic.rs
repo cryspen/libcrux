@@ -214,10 +214,10 @@ pub(crate) fn montgomery_multiply_fe_by_fer(
 #[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
 #[hax_lib::requires(fstar!(r#"Spec.Utils.is_i32b 4190208 $c"#))]
 #[hax_lib::ensures(|result| fstar!(r#"
-    Spec.Utils.is_i32b_array_opaque 8380416 ${simd_unit}_future.f_values /\
+    Spec.Utils.is_i32b_array_opaque 8380416 ${simd_unit}_future.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values /\
     Spec.MLDSA.Math.(forall i. i < 8 ==> 
-        mod_q (v (Seq.index ${simd_unit}_future.f_values i)) == 
-        mod_q (v (Seq.index ${simd_unit}.f_values i) * v $c * 8265825))"#))]
+        mod_q (v (Seq.index ${simd_unit}_future.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values i)) == 
+        mod_q (v (Seq.index ${simd_unit}.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values i) * v $c * 8265825))"#))]
 pub(crate) fn montgomery_multiply_by_constant(simd_unit: &mut Coefficients, c: i32) {
     #[cfg(hax)]
     let _simd_unit0 = simd_unit.clone();
@@ -230,14 +230,14 @@ pub(crate) fn montgomery_multiply_by_constant(simd_unit: &mut Coefficients, c: i
             fstar!(
                 r#"
               (forall j. j < v $i ==>
-	      	  (let vecj = Seq.index ${simd_unit}.f_values j in
+	      	  (let vecj = Seq.index ${simd_unit}.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values j in
 		       (Spec.Utils.is_i32b 8380416 vecj /\
-                Spec.MLDSA.Math.mod_q (v vecj) == Spec.MLDSA.Math.mod_q (v (Seq.index ${_simd_unit0}.f_values j) * v $c * 8265825)))) /\
-              (forall j. j >= v $i ==> (Seq.index ${simd_unit}.f_values j) == (Seq.index ${_simd_unit0}.f_values j))"#
+                Spec.MLDSA.Math.mod_q (v vecj) == Spec.MLDSA.Math.mod_q (v (Seq.index ${_simd_unit0}.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values j) * v $c * 8265825)))) /\
+              (forall j. j >= v $i ==> (Seq.index ${simd_unit}.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values j) == (Seq.index ${_simd_unit0}.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values j))"#
             )
         });
         hax_lib::fstar!(
-            r#"Spec.Utils.lemma_mul_i32b (pow2 31) (4190208) ${simd_unit}.f_values.[ $i ] $c"#
+            r#"Spec.Utils.lemma_mul_i32b (pow2 31) (4190208) ${simd_unit}.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values.[ $i ] $c"#
         );
 
         simd_unit.values[i] = montgomery_reduce_element((simd_unit.values[i] as i64) * (c as i64))
@@ -247,12 +247,12 @@ pub(crate) fn montgomery_multiply_by_constant(simd_unit: &mut Coefficients, c: i
 #[inline(always)]
 #[hax_lib::fstar::options("--z3rlimit 150")]
 #[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
-#[hax_lib::requires(fstar!(r#"Spec.Utils.is_i32b_array_opaque 8380416 ${rhs}.f_values"#))]
+#[hax_lib::requires(fstar!(r#"Spec.Utils.is_i32b_array_opaque 8380416 ${rhs}.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values"#))]
 #[hax_lib::ensures(|result| fstar!(r#"
-    Spec.Utils.is_i32b_array_opaque 8380416 ${lhs}_future.f_values /\
+    Spec.Utils.is_i32b_array_opaque 8380416 ${lhs}_future.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values /\
     Spec.MLDSA.Math.(forall i. i < 8 ==> 
-        mod_q (v (Seq.index ${lhs}_future.f_values i)) == 
-        mod_q (v (Seq.index ${lhs}.f_values i) * v (Seq.index ${rhs}.f_values i) * 8265825))"#))]
+        mod_q (v (Seq.index ${lhs}_future.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values i)) == 
+        mod_q (v (Seq.index ${lhs}.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values i) * v (Seq.index ${rhs}.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values i) * 8265825))"#))]
 pub(crate) fn montgomery_multiply(lhs: &mut Coefficients, rhs: &Coefficients) {
     #[cfg(hax)]
     let _lhs0 = lhs.clone();
@@ -265,14 +265,14 @@ pub(crate) fn montgomery_multiply(lhs: &mut Coefficients, rhs: &Coefficients) {
             fstar!(
                 r#"
               (forall j. j < v $i ==>
-	      	  (let vecj = Seq.index ${lhs}.f_values j in
+	      	  (let vecj = Seq.index ${lhs}.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values j in
 		       (Spec.Utils.is_i32b 8380416 vecj /\
-                Spec.MLDSA.Math.mod_q (v vecj) == Spec.MLDSA.Math.mod_q (v (Seq.index ${_lhs0}.f_values j) * v (Seq.index ${rhs}.f_values j) * 8265825)))) /\
-              (forall j. j >= v $i ==> (Seq.index ${lhs}.f_values j) == (Seq.index ${_lhs0}.f_values j))"#
+                Spec.MLDSA.Math.mod_q (v vecj) == Spec.MLDSA.Math.mod_q (v (Seq.index ${_lhs0}.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values j) * v (Seq.index ${rhs}.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values j) * 8265825)))) /\
+              (forall j. j >= v $i ==> (Seq.index ${lhs}.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values j) == (Seq.index ${_lhs0}.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values j))"#
             )
         });
         hax_lib::fstar!(
-            r#"Spec.Utils.lemma_mul_i32b (pow2 31) (8380416) ${lhs}.f_values.[ $i ] ${rhs}.f_values.[ $i ]"#
+            r#"Spec.Utils.lemma_mul_i32b (pow2 31) (8380416) ${lhs}.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values.[ $i ] ${rhs}.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values.[ $i ]"#
         );
 
         lhs.values[i] = montgomery_reduce_element((lhs.values[i] as i64) * (rhs.values[i] as i64))
@@ -337,12 +337,12 @@ fn power2round_element(t: i32) -> (i32, i32) {
 
 #[inline(always)]
 #[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
-#[hax_lib::requires(fstar!(r#"Spec.Utils.is_i32b_array_opaque (v $FIELD_MODULUS - 1) ${t0}.f_values"#))]
+#[hax_lib::requires(fstar!(r#"Spec.Utils.is_i32b_array_opaque (v $FIELD_MODULUS - 1) ${t0}.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values"#))]
 #[hax_lib::ensures(|_| fstar!(r#"
     forall i. i < 8 ==>
-        (let t0_v = v (Seq.index ${t0}_future.f_values i) in
-        let (t0_s, t1_s) = Spec.MLDSA.Math.power2round (v (Seq.index ${t0}.f_values i)) in
-        t0_v == t0_s /\ v (Seq.index ${t1}_future.f_values i) == t1_s /\
+        (let t0_v = v (Seq.index ${t0}_future.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values i) in
+        let (t0_s, t1_s) = Spec.MLDSA.Math.power2round (v (Seq.index ${t0}.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values i)) in
+        t0_v == t0_s /\ v (Seq.index ${t1}_future.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values i) == t1_s /\
         Spec.Utils.is_intb_bt (pow2 (v $BITS_IN_LOWER_PART_OF_T - 1)) t0_v)"#))]
 pub(super) fn power2round(t0: &mut Coefficients, t1: &mut Coefficients) {
     #[cfg(hax)]
@@ -355,12 +355,12 @@ pub(super) fn power2round(t0: &mut Coefficients, t1: &mut Coefficients) {
         hax_lib::loop_invariant!(|i: usize| {
             fstar!(
                 r#"
-                (forall j. j < v i ==> (let t0_v = v (Seq.index ${t0}.f_values j) in
-                    let (t0_s, t1_s) = Spec.MLDSA.Math.power2round (v (Seq.index ${_t0}.f_values j)) in
-                    t0_v == t0_s /\ v (Seq.index ${t1}.f_values j) == t1_s /\
+                (forall j. j < v i ==> (let t0_v = v (Seq.index ${t0}.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values j) in
+                    let (t0_s, t1_s) = Spec.MLDSA.Math.power2round (v (Seq.index ${_t0}.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values j)) in
+                    t0_v == t0_s /\ v (Seq.index ${t1}.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values j) == t1_s /\
                     Spec.Utils.is_intb_bt (pow2 (v $BITS_IN_LOWER_PART_OF_T - 1)) t0_v)) /\
-                (forall j. j >= v i ==> (Seq.index ${t0}.f_values j == Seq.index ${_t0}.f_values j /\
-                    Spec.Utils.is_i32b (v $FIELD_MODULUS - 1) (Seq.index ${t0}.f_values j)))"#
+                (forall j. j >= v i ==> (Seq.index ${t0}.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values j == Seq.index ${_t0}.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values j /\
+                    Spec.Utils.is_i32b (v $FIELD_MODULUS - 1) (Seq.index ${t0}.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values j)))"#
             )
         });
 
@@ -373,10 +373,10 @@ pub(super) fn power2round(t0: &mut Coefficients, t1: &mut Coefficients) {
 #[inline(always)]
 #[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
 #[hax_lib::requires(fstar!(r#"v $bound > 0 /\ 
-        Spec.Utils.is_i32b_array_opaque (v $FIELD_MODULUS - 1) ${simd_unit}.f_values"#))]
+        Spec.Utils.is_i32b_array_opaque (v $FIELD_MODULUS - 1) ${simd_unit}.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values"#))]
 #[hax_lib::ensures(|result| fstar!(r#"
     $result == false ==> 
-        Spec.Utils.is_i32b_array_opaque (v $bound - 1) ${simd_unit}.f_values"#))]
+        Spec.Utils.is_i32b_array_opaque (v $bound - 1) ${simd_unit}.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values"#))]
 pub(super) fn infinity_norm_exceeds(simd_unit: &Coefficients, bound: i32) -> bool {
     hax_lib::fstar!(
         "reveal_opaque (`%Spec.Utils.is_i32b_array_opaque) (Spec.Utils.is_i32b_array_opaque)"
@@ -391,7 +391,7 @@ pub(super) fn infinity_norm_exceeds(simd_unit: &Coefficients, bound: i32) -> boo
             fstar!(
                 r#"
                 $result == false ==> (forall j. j < v $i ==>
-                    abs (v (Seq.index ${simd_unit}.f_values j)) < v $bound)"#
+                    abs (v (Seq.index ${simd_unit}.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values j)) < v $bound)"#
             )
         });
 
@@ -449,13 +449,13 @@ fn reduce_element(fe: FieldElement) -> FieldElement {
 #[inline(always)]
 #[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
 #[hax_lib::requires(fstar!(r#"v $SHIFT_BY == 13 /\ 
-    (forall i. i < 8 ==> v (Seq.index (${simd_unit}.f_values) i) >= 0 /\
-        v (Seq.index (${simd_unit}.f_values) i) <= 261631)"#))]
+    (forall i. i < 8 ==> v (Seq.index (${simd_unit}.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values) i) >= 0 /\
+        v (Seq.index (${simd_unit}.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values) i) <= 261631)"#))]
 #[hax_lib::ensures(|_| fstar!(r#"
-    Spec.Utils.is_i32b_array_opaque 8380416 (${simd_unit}_future.f_values) /\
+    Spec.Utils.is_i32b_array_opaque 8380416 (${simd_unit}_future.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values) /\
     (forall i. i < 8 ==> Spec.MLDSA.Math.(
-        mod_q (v (Seq.index ${simd_unit}_future.f_values i)) ==
-        mod_q (v ((Seq.index ${simd_unit}.f_values i) <<! v_SHIFT_BY))))"#))]
+        mod_q (v (Seq.index ${simd_unit}_future.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values i)) ==
+        mod_q (v ((Seq.index ${simd_unit}.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values i) <<! v_SHIFT_BY))))"#))]
 pub(super) fn shift_left_then_reduce<const SHIFT_BY: i32>(simd_unit: &mut Coefficients) {
     #[cfg(hax)]
     let _simd_unit0 = simd_unit.clone();
@@ -466,10 +466,10 @@ pub(super) fn shift_left_then_reduce<const SHIFT_BY: i32>(simd_unit: &mut Coeffi
     for i in 0..simd_unit.values.len() {
         hax_lib::loop_invariant!(|i: usize| fstar!(
             r#"
-                (forall j. j < v i ==> (Spec.Utils.is_i32b 8380416 (Seq.index ${simd_unit}.f_values j) /\
-                    Spec.MLDSA.Math.mod_q (v (Seq.index ${simd_unit}.f_values j)) == 
-                    Spec.MLDSA.Math.mod_q (v ((Seq.index ${_simd_unit0}.f_values j) <<! v_SHIFT_BY)))) /\
-                (forall j. j >= v i ==> Seq.index ${simd_unit}.f_values j == Seq.index ${_simd_unit0}.f_values j)"#
+                (forall j. j < v i ==> (Spec.Utils.is_i32b 8380416 (Seq.index ${simd_unit}.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values j) /\
+                    Spec.MLDSA.Math.mod_q (v (Seq.index ${simd_unit}.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values j)) == 
+                    Spec.MLDSA.Math.mod_q (v ((Seq.index ${_simd_unit0}.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values j) <<! v_SHIFT_BY)))) /\
+                (forall j. j >= v i ==> Seq.index ${simd_unit}.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values j == Seq.index ${_simd_unit0}.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values j)"#
         ));
 
         simd_unit.values[i] = reduce_element(simd_unit.values[i] << SHIFT_BY);
@@ -492,10 +492,10 @@ fn compute_one_hint(low: i32, high: i32, gamma2: i32) -> i32 {
 #[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
 #[hax_lib::requires(fstar!(r#"v $gamma2 == v $GAMMA2_V261_888 \/ v $gamma2 == v $GAMMA2_V95_232"#))]
 #[hax_lib::ensures(|result| fstar!(r#"
-    (forall i. i < 8 ==> (v (Seq.index ${hint}_future.f_values i) =
-        Spec.MLDSA.Math.compute_one_hint (v (Seq.index ${low}.f_values i))
-            (v (Seq.index ${high}.f_values i)) (v $gamma2))) /\
-    v $result == Spec.MLDSA.Math.compute_hint ${hint}_future.f_values"#
+    (forall i. i < 8 ==> (v (Seq.index ${hint}_future.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values i) =
+        Spec.MLDSA.Math.compute_one_hint (v (Seq.index ${low}.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values i))
+            (v (Seq.index ${high}.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values i)) (v $gamma2))) /\
+    v $result == Spec.MLDSA.Math.compute_hint ${hint}_future.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values"#
 ))]
 pub(super) fn compute_hint(
     low: &Coefficients,
@@ -506,7 +506,7 @@ pub(super) fn compute_hint(
     let mut one_hints_count = 0;
 
     hax_lib::fstar!(
-        r#"Spec.Utils.eq_repeati0 (sz 0) (Spec.MLDSA.Math.hint_counter ${hint}.f_values) (0)"#
+        r#"Spec.Utils.eq_repeati0 (sz 0) (Spec.MLDSA.Math.hint_counter ${hint}.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values) (0)"#
     );
 
     for i in 0..hint.values.len() {
@@ -514,11 +514,11 @@ pub(super) fn compute_hint(
             fstar!(
                 r#"
                 v $i >= 0 /\ v $i <= 8 /\
-                (forall j. j < v i ==> (v (Seq.index ${hint}.f_values j) =
-                    Spec.MLDSA.Math.compute_one_hint (v (Seq.index ${low}.f_values j))
-                        (v (Seq.index ${high}.f_values j)) (v $gamma2))) /\
+                (forall j. j < v i ==> (v (Seq.index ${hint}.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values j) =
+                    Spec.MLDSA.Math.compute_one_hint (v (Seq.index ${low}.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values j))
+                        (v (Seq.index ${high}.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values j)) (v $gamma2))) /\
                 v $one_hints_count <= v $i /\
-                v $one_hints_count == Spec.Utils.repeati ($i) (Spec.MLDSA.Math.hint_counter ${hint}.f_values) (0)"#
+                v $one_hints_count == Spec.Utils.repeati ($i) (Spec.MLDSA.Math.hint_counter ${hint}.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values) (0)"#
             )
         });
 
@@ -528,8 +528,8 @@ pub(super) fn compute_hint(
         hint.values[i] = compute_one_hint(low.values[i], high.values[i], gamma2);
 
         hax_lib::fstar!(
-            r#"Spec.MLDSA.Math.hint_counter_loop ${hint}.f_values $_hint_values (v i);
-            Spec.Utils.unfold_repeati ($i +! sz 1) (Spec.MLDSA.Math.hint_counter ${hint}.f_values) (0) ($i)"#
+            r#"Spec.MLDSA.Math.hint_counter_loop ${hint}.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values $_hint_values (v i);
+            Spec.Utils.unfold_repeati ($i +! sz 1) (Spec.MLDSA.Math.hint_counter ${hint}.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values) (0) ($i)"#
         );
 
         one_hints_count += hint.values[i] as usize;
@@ -721,11 +721,11 @@ pub(crate) fn use_one_hint(gamma2: Gamma2, r: i32, hint: i32) -> i32 {
 #[inline(always)]
 #[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
 #[hax_lib::requires(fstar!(r#"(v $gamma2 == v $GAMMA2_V261_888 \/ v $gamma2 == v $GAMMA2_V95_232) /\
-    Spec.Utils.is_i32b_array_opaque (v $FIELD_MODULUS - 1) ${simd_unit}.f_values"#))]
+    Spec.Utils.is_i32b_array_opaque (v $FIELD_MODULUS - 1) ${simd_unit}.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values"#))]
 #[hax_lib::ensures(|_| fstar!(r#"forall i. i < 8 ==>
-    (let r = v (Seq.index ${simd_unit}.f_values i) in
-    let r0 = v (Seq.index ${low}_future.f_values i) in
-    let r1 = v (Seq.index ${high}_future.f_values i) in
+    (let r = v (Seq.index ${simd_unit}.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values i) in
+    let r0 = v (Seq.index ${low}_future.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values i) in
+    let r1 = v (Seq.index ${high}_future.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values i) in
     let (r0_s, r1_s, cond) = Spec.MLDSA.Math.decompose (v $gamma2) r in
     r0 = r0_s /\ r1 = r1_s /\
     (if cond then
@@ -747,9 +747,9 @@ pub fn decompose(
         hax_lib::loop_invariant!(|i: usize| {
             fstar!(
                 r#"
-                forall j. j < v i ==> (let r = v (Seq.index ${simd_unit}.f_values j) in
-                    let r0 = v (Seq.index ${low}.f_values j) in
-                    let r1 = v (Seq.index ${high}.f_values j) in
+                forall j. j < v i ==> (let r = v (Seq.index ${simd_unit}.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values j) in
+                    let r0 = v (Seq.index ${low}.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values j) in
+                    let r1 = v (Seq.index ${high}.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values j) in
                     let (r0_s, r1_s, cond) = Spec.MLDSA.Math.decompose (v $gamma2) r in
                     r0 = r0_s /\ r1 = r1_s /\
                     (if cond then
@@ -767,12 +767,12 @@ pub fn decompose(
 #[inline(always)]
 #[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
 #[hax_lib::requires(fstar!(r#"(v $gamma2 == v $GAMMA2_V261_888 \/ v $gamma2 == v $GAMMA2_V95_232) /\
-    Spec.Utils.is_i32b_array_opaque (v $FIELD_MODULUS - 1) ${simd_unit}.f_values /\
-    (forall i. i < 8 ==> v (Seq.index ${hint}.f_values i) == 0 \/ v (Seq.index ${hint}.f_values i) == 1)"#))]
+    Spec.Utils.is_i32b_array_opaque (v $FIELD_MODULUS - 1) ${simd_unit}.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values /\
+    (forall i. i < 8 ==> v (Seq.index ${hint}.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values i) == 0 \/ v (Seq.index ${hint}.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values i) == 1)"#))]
 #[hax_lib::ensures(|_| fstar!(r#"forall i. i < 8 ==>
-    (let h = Seq.index ${hint}.f_values i in
-    let result = Seq.index ${hint}_future.f_values i in
-    v result = Spec.MLDSA.Math.use_one_hint (v $gamma2) (v (Seq.index ${simd_unit}.f_values i)) (v h))"#))]
+    (let h = Seq.index ${hint}.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values i in
+    let result = Seq.index ${hint}_future.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values i in
+    v result = Spec.MLDSA.Math.use_one_hint (v $gamma2) (v (Seq.index ${simd_unit}.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values i)) (v h))"#))]
 pub fn use_hint(gamma2: Gamma2, simd_unit: &Coefficients, hint: &mut Coefficients) {
     #[cfg(hax)]
     let _hint0 = hint.clone();
@@ -784,11 +784,11 @@ pub fn use_hint(gamma2: Gamma2, simd_unit: &Coefficients, hint: &mut Coefficient
         hax_lib::loop_invariant!(|i: usize| {
             fstar!(
                 r#"
-                (forall j. j < v i ==> (let h = Seq.index ${_hint0}.f_values j in
-                    let result = Seq.index ${hint}.f_values j in
-                    v result = Spec.MLDSA.Math.use_one_hint (v $gamma2) (v (Seq.index ${simd_unit}.f_values j)) (v h))) /\
-                (forall j. j >= v i ==> (Seq.index ${hint}.f_values j == Seq.index ${_hint0}.f_values j /\
-                    (v (Seq.index ${hint}.f_values j) == 0 \/ v (Seq.index ${hint}.f_values j) == 1)))"#
+                (forall j. j < v i ==> (let h = Seq.index ${_hint0}.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values j in
+                    let result = Seq.index ${hint}.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values j in
+                    v result = Spec.MLDSA.Math.use_one_hint (v $gamma2) (v (Seq.index ${simd_unit}.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values j)) (v h))) /\
+                (forall j. j >= v i ==> (Seq.index ${hint}.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values j == Seq.index ${_hint0}.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values j /\
+                    (v (Seq.index ${hint}.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values j) == 0 \/ v (Seq.index ${hint}.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values j) == 1)))"#
             )
         });
 
