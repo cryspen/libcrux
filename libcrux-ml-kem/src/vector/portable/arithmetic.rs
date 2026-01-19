@@ -78,8 +78,8 @@ pub fn add(mut lhs: PortableVector, rhs: &PortableVector) -> PortableVector {
     			          v (Seq.index ${_lhs0}.f_elements i) + v (Seq.index ${rhs}.f_elements i))"
     );
     hax_lib::fstar!(
-            r#"reveal_opaque (`%Spec.Utils.is_i16b_array_opaque) (Spec.Utils.is_i16b_array_opaque)"#
-    ); 
+        r#"reveal_opaque (`%Spec.Utils.is_i16b_array_opaque) (Spec.Utils.is_i16b_array_opaque)"#
+    );
 
     lhs
 }
@@ -109,9 +109,9 @@ pub fn sub(mut lhs: PortableVector, rhs: &PortableVector) -> PortableVector {
     			          v (Seq.index ${_lhs0}.f_elements i) - v (Seq.index ${rhs}.f_elements i))"
     );
     hax_lib::fstar!(
-            r#"reveal_opaque (`%Spec.Utils.is_i16b_array_opaque) (Spec.Utils.is_i16b_array_opaque)"#
-    ); 
-            
+        r#"reveal_opaque (`%Spec.Utils.is_i16b_array_opaque) (Spec.Utils.is_i16b_array_opaque)"#
+    );
+
     lhs
 }
 

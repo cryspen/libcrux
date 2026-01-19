@@ -152,7 +152,7 @@ impl Operations for PortableVector {
         add(lhs, rhs)
     }
 
-     #[requires(fstar!(r#"${spec::sub_pre} ${lhs}.f_elements ${rhs}.f_elements"#))]
+    #[requires(fstar!(r#"${spec::sub_pre} ${lhs}.f_elements ${rhs}.f_elements"#))]
     #[ensures(|result| fstar!(r#"${spec::sub_post} ${lhs}.f_elements ${rhs}.f_elements ${result}.f_elements"#))]
     fn sub(lhs: Self, rhs: &Self) -> Self {
         sub(lhs, rhs)
@@ -168,7 +168,8 @@ impl Operations for PortableVector {
         v (Seq.index ${vec}.f_elements i) * v c))"#))]
     fn multiply_by_constant(vec: Self, c: i16) -> Self {
         hax_lib::fstar!(
-            r#"reveal_opaque (`%Spec.Utils.is_i16b_array_opaque) (Spec.Utils.is_i16b_array_opaque)"#);
+            r#"reveal_opaque (`%Spec.Utils.is_i16b_array_opaque) (Spec.Utils.is_i16b_array_opaque)"#
+        );
         multiply_by_constant(vec, c)
     }
 
@@ -176,7 +177,8 @@ impl Operations for PortableVector {
     #[ensures(|out| fstar!(r#"impl.f_repr out == Spec.Utils.map_array (fun x -> if x >=. (mk_i16 3329) then x -! (mk_i16 3329) else x) (impl.f_repr $v)"#))]
     fn cond_subtract_3329(v: Self) -> Self {
         hax_lib::fstar!(
-            r#"reveal_opaque (`%Spec.Utils.is_i16b_array_opaque) (Spec.Utils.is_i16b_array_opaque)"#);
+            r#"reveal_opaque (`%Spec.Utils.is_i16b_array_opaque) (Spec.Utils.is_i16b_array_opaque)"#
+        );
         cond_subtract_3329(v)
     }
 
@@ -187,10 +189,12 @@ impl Operations for PortableVector {
     fn barrett_reduce(vector: Self) -> Self {
         hax_lib::fstar!(
             r#"reveal_opaque (`%Spec.Utils.is_i16b_array_opaque) 
-                        (Spec.Utils.is_i16b_array_opaque 28296)"#);
+                        (Spec.Utils.is_i16b_array_opaque 28296)"#
+        );
         hax_lib::fstar!(
             r#"reveal_opaque (`%Spec.Utils.is_i16b_array_opaque) 
-                        (Spec.Utils.is_i16b_array_opaque 3328)"#);                        
+                        (Spec.Utils.is_i16b_array_opaque 3328)"#
+        );
         barrett_reduce(vector)
     }
 
@@ -201,7 +205,8 @@ impl Operations for PortableVector {
     fn montgomery_multiply_by_constant(vector: Self, constant: i16) -> Self {
         hax_lib::fstar!(
             r#"reveal_opaque (`%Spec.Utils.is_i16b_array_opaque) 
-                        (Spec.Utils.is_i16b_array_opaque 3328)"#);        
+                        (Spec.Utils.is_i16b_array_opaque 3328)"#
+        );
         montgomery_multiply_by_constant(vector, constant.classify())
     }
 
@@ -213,7 +218,8 @@ impl Operations for PortableVector {
     fn to_unsigned_representative(a: Self) -> Self {
         hax_lib::fstar!(
             r#"reveal_opaque (`%Spec.Utils.is_i16b_array_opaque) 
-                        (Spec.Utils.is_i16b_array_opaque 3328)"#);        
+                        (Spec.Utils.is_i16b_array_opaque 3328)"#
+        );
         to_unsigned_representative(a)
     }
 
@@ -263,10 +269,12 @@ impl Operations for PortableVector {
     fn ntt_layer_1_step(a: Self, zeta0: i16, zeta1: i16, zeta2: i16, zeta3: i16) -> Self {
         hax_lib::fstar!(
             r#"reveal_opaque (`%Spec.Utils.is_i16b_array_opaque) 
-                        (Spec.Utils.is_i16b_array_opaque (4803+5*3328))"#);
+                        (Spec.Utils.is_i16b_array_opaque (4803+5*3328))"#
+        );
         hax_lib::fstar!(
             r#"reveal_opaque (`%Spec.Utils.is_i16b_array_opaque) 
-                        (Spec.Utils.is_i16b_array_opaque (4803+6*3328))"#);    
+                        (Spec.Utils.is_i16b_array_opaque (4803+6*3328))"#
+        );
         ntt_layer_1_step(a, zeta0, zeta1, zeta2, zeta3)
     }
 
@@ -276,10 +284,12 @@ impl Operations for PortableVector {
     fn ntt_layer_2_step(a: Self, zeta0: i16, zeta1: i16) -> Self {
         hax_lib::fstar!(
             r#"reveal_opaque (`%Spec.Utils.is_i16b_array_opaque) 
-                        (Spec.Utils.is_i16b_array_opaque (4803+4*3328))"#);
+                        (Spec.Utils.is_i16b_array_opaque (4803+4*3328))"#
+        );
         hax_lib::fstar!(
             r#"reveal_opaque (`%Spec.Utils.is_i16b_array_opaque) 
-                        (Spec.Utils.is_i16b_array_opaque (4803+5*3328))"#);    
+                        (Spec.Utils.is_i16b_array_opaque (4803+5*3328))"#
+        );
         ntt_layer_2_step(a, zeta0, zeta1)
     }
 
@@ -289,10 +299,12 @@ impl Operations for PortableVector {
     fn ntt_layer_3_step(a: Self, zeta: i16) -> Self {
         hax_lib::fstar!(
             r#"reveal_opaque (`%Spec.Utils.is_i16b_array_opaque) 
-                        (Spec.Utils.is_i16b_array_opaque (4803+3*3328))"#);
+                        (Spec.Utils.is_i16b_array_opaque (4803+3*3328))"#
+        );
         hax_lib::fstar!(
             r#"reveal_opaque (`%Spec.Utils.is_i16b_array_opaque) 
-                        (Spec.Utils.is_i16b_array_opaque (4803+4*3328))"#);    
+                        (Spec.Utils.is_i16b_array_opaque (4803+4*3328))"#
+        );
         ntt_layer_3_step(a, zeta)
     }
 
@@ -303,10 +315,12 @@ impl Operations for PortableVector {
     fn inv_ntt_layer_1_step(a: Self, zeta0: i16, zeta1: i16, zeta2: i16, zeta3: i16) -> Self {
         hax_lib::fstar!(
             r#"reveal_opaque (`%Spec.Utils.is_i16b_array_opaque) 
-                        (Spec.Utils.is_i16b_array_opaque (4*3328))"#);
+                        (Spec.Utils.is_i16b_array_opaque (4*3328))"#
+        );
         hax_lib::fstar!(
             r#"reveal_opaque (`%Spec.Utils.is_i16b_array_opaque) 
-                        (Spec.Utils.is_i16b_array_opaque 3328)"#);    
+                        (Spec.Utils.is_i16b_array_opaque 3328)"#
+        );
         inv_ntt_layer_1_step(a, zeta0, zeta1, zeta2, zeta3)
     }
 
@@ -316,7 +330,8 @@ impl Operations for PortableVector {
     fn inv_ntt_layer_2_step(a: Self, zeta0: i16, zeta1: i16) -> Self {
         hax_lib::fstar!(
             r#"reveal_opaque (`%Spec.Utils.is_i16b_array_opaque) 
-                        (Spec.Utils.is_i16b_array_opaque 3328)"#);    
+                        (Spec.Utils.is_i16b_array_opaque 3328)"#
+        );
         inv_ntt_layer_2_step(a, zeta0, zeta1)
     }
 
@@ -326,7 +341,8 @@ impl Operations for PortableVector {
     fn inv_ntt_layer_3_step(a: Self, zeta: i16) -> Self {
         hax_lib::fstar!(
             r#"reveal_opaque (`%Spec.Utils.is_i16b_array_opaque) 
-                        (Spec.Utils.is_i16b_array_opaque 3328)"#);    
+                        (Spec.Utils.is_i16b_array_opaque 3328)"#
+        );
         inv_ntt_layer_3_step(a, zeta)
     }
 
@@ -345,7 +361,8 @@ impl Operations for PortableVector {
     ) -> Self {
         hax_lib::fstar!(
             r#"reveal_opaque (`%Spec.Utils.is_i16b_array_opaque) 
-                        (Spec.Utils.is_i16b_array_opaque 3328)"#);
+                        (Spec.Utils.is_i16b_array_opaque 3328)"#
+        );
         ntt_multiply(lhs, rhs, zeta0, zeta1, zeta2, zeta3)
     }
 

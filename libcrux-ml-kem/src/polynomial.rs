@@ -1,4 +1,7 @@
-pub(crate) use crate::vector::{Operations, MONTGOMERY_R_SQUARED_MOD_FIELD_MODULUS, VECTORS_IN_RING_ELEMENT, PolynomialRingElement};
+pub(crate) use crate::vector::{
+    Operations, PolynomialRingElement, MONTGOMERY_R_SQUARED_MOD_FIELD_MODULUS,
+    VECTORS_IN_RING_ELEMENT,
+};
 
 pub(crate) const ZETAS_TIMES_MONTGOMERY_R: [i16; 128] = {
     hax_lib::fstar!(r#"assert_norm (pow2 16 == 65536)"#);
@@ -26,9 +29,7 @@ pub fn zeta(i: usize) -> i16 {
 
 pub(crate) mod spec {
 
-    use crate::{
-        vector::{PolynomialRingElement,Operations},
-    };
+    use crate::vector::{Operations, PolynomialRingElement};
 
     pub(crate) fn is_bounded_vector<Vector: Operations>(b: usize, vec: &Vector) -> hax_lib::Prop {
         hax_lib::fstar_prop_expr!(
@@ -36,38 +37,54 @@ pub(crate) mod spec {
         )
     }
 
-    pub(crate) fn is_bounded_poly<Vector: Operations>(b:usize, p: &PolynomialRingElement<Vector>) -> hax_lib::Prop {
-        hax_lib::fstar_prop_expr!(r#"
-            forall (i:nat). i < 16 ==> is_bounded_vector b (p.f_coefficients.[ sz i ])"#)
+    pub(crate) fn is_bounded_poly<Vector: Operations>(
+        b: usize,
+        p: &PolynomialRingElement<Vector>,
+    ) -> hax_lib::Prop {
+        hax_lib::fstar_prop_expr!(
+            r#"
+            forall (i:nat). i < 16 ==> is_bounded_vector b (p.f_coefficients.[ sz i ])"#
+        )
     }
 
     #[hax_lib::requires(is_bounded_vector(b1, vec).and(b1 <= b2))]
     #[hax_lib::ensures(|_| is_bounded_vector(b2, vec))]
     pub(crate) fn is_bounded_higher<Vector: Operations>(vec: &Vector, b1: usize, b2: usize) {
         hax_lib::fstar!(
-            r#"reveal_opaque (`%Spec.Utils.is_i16b_array_opaque) (Spec.Utils.is_i16b_array_opaque)"#); 
+            r#"reveal_opaque (`%Spec.Utils.is_i16b_array_opaque) (Spec.Utils.is_i16b_array_opaque)"#
+        );
     }
-
 }
 
 #[inline(always)]
 #[hax_lib::requires(spec::is_bounded_vector(b1, &vec1).and(spec::is_bounded_vector(b2, vec2).and(b1 < 32768 && b2 < 32768 && b1 + b2 < 32768)))]
 #[hax_lib::ensures(|result| spec::is_bounded_vector(b1+b2, &result).and(crate::vector::traits::spec::add_post(&vec1.repr(), &vec2.repr(), &result.repr())))]
-pub(crate) fn add_bounded<Vector: Operations>(vec1: Vector, b1: usize, vec2: &Vector, b2: usize) -> Vector {
+pub(crate) fn add_bounded<Vector: Operations>(
+    vec1: Vector,
+    b1: usize,
+    vec2: &Vector,
+    b2: usize,
+) -> Vector {
     hax_lib::fstar!(
-        r#"reveal_opaque (`%Spec.Utils.is_i16b_array_opaque) (Spec.Utils.is_i16b_array_opaque)"#); 
+        r#"reveal_opaque (`%Spec.Utils.is_i16b_array_opaque) (Spec.Utils.is_i16b_array_opaque)"#
+    );
     Vector::add(vec1, vec2)
 }
 
 #[inline(always)]
 #[hax_lib::requires(spec::is_bounded_vector(b1, &vec1).and(spec::is_bounded_vector(b2, vec2).and(b1 < 32768 && b2 < 32768 && b1 + b2 < 32768)))]
 #[hax_lib::ensures(|result| spec::is_bounded_vector(b1+b2, &result).and(crate::vector::traits::spec::sub_post(&vec1.repr(), &vec2.repr(), &result.repr())))]
-pub(crate) fn sub_bounded<Vector: Operations>(vec1: Vector, b1: usize, vec2: &Vector, b2: usize) -> Vector {
+pub(crate) fn sub_bounded<Vector: Operations>(
+    vec1: Vector,
+    b1: usize,
+    vec2: &Vector,
+    b2: usize,
+) -> Vector {
     hax_lib::fstar!(
-        r#"reveal_opaque (`%Spec.Utils.is_i16b_array_opaque) (Spec.Utils.is_i16b_array_opaque)"#); 
+        r#"reveal_opaque (`%Spec.Utils.is_i16b_array_opaque) (Spec.Utils.is_i16b_array_opaque)"#
+    );
     Vector::sub(vec1, vec2)
-    }
-
+}
 
 #[allow(non_snake_case)]
 fn ZERO<Vector: Operations>() -> PolynomialRingElement<Vector> {
@@ -191,19 +208,21 @@ fn add_to_ring_element<Vector: Operations, const K: usize>(
     let _myself = myself.coefficients;
 
     for i in 0..myself.coefficients.len() {
-        hax_lib::loop_invariant!(|i: usize|
-                hax_lib::forall(|j: usize| {
-                    if j < 16 {
-                        if j < i {
-                            crate::vector::traits::spec::add_post(&_myself[j].repr(), &rhs.coefficients[j].repr(), &myself.coefficients[j].repr())  
-                        } else {
-                            fstar!(r#"${myself}.f_coefficients.[ j ] == ${_myself}.[ j ]"#)
-                        }
-                    } else {
-                        fstar!(r#"True"#)
-                    }
-                })
-            );
+        hax_lib::loop_invariant!(|i: usize| hax_lib::forall(|j: usize| {
+            if j < 16 {
+                if j < i {
+                    crate::vector::traits::spec::add_post(
+                        &_myself[j].repr(),
+                        &rhs.coefficients[j].repr(),
+                        &myself.coefficients[j].repr(),
+                    )
+                } else {
+                    fstar!(r#"${myself}.f_coefficients.[ j ] == ${_myself}.[ j ]"#)
+                }
+            } else {
+                fstar!(r#"True"#)
+            }
+        }));
 
         myself.coefficients[i] = Vector::add(myself.coefficients[i], &rhs.coefficients[i]);
     }
@@ -217,20 +236,18 @@ fn poly_barrett_reduce<Vector: Operations>(myself: &mut PolynomialRingElement<Ve
     let _myself = myself.coefficients;
 
     for i in 0..VECTORS_IN_RING_ELEMENT {
-        hax_lib::loop_invariant!(|i: usize|
-                hax_lib::forall(|j: usize| {
-                    if j < 16 {
-                        if j < i {
-                            spec::is_bounded_vector(3328, &myself.coefficients[j])  
-                        } else {
-                            fstar!(r#"${myself}.f_coefficients.[ j ] == ${_myself}.[ j ]"#)
-                        }
-                    } else {
-                        fstar!(r#"True"#)
-                    }
-                })
-            );
-    
+        hax_lib::loop_invariant!(|i: usize| hax_lib::forall(|j: usize| {
+            if j < 16 {
+                if j < i {
+                    spec::is_bounded_vector(3328, &myself.coefficients[j])
+                } else {
+                    fstar!(r#"${myself}.f_coefficients.[ j ] == ${_myself}.[ j ]"#)
+                }
+            } else {
+                fstar!(r#"True"#)
+            }
+        }));
+
         myself.coefficients[i] = Vector::barrett_reduce(myself.coefficients[i]);
     }
 }
@@ -247,21 +264,18 @@ fn subtract_reduce<Vector: Operations>(
     let _b = b.coefficients;
 
     for i in 0..VECTORS_IN_RING_ELEMENT {
-        hax_lib::loop_invariant!(|i: usize|
-                hax_lib::forall(|j: usize| {
-                    if j < 16 {
-                        if j < i {
-                            spec::is_bounded_vector(3328, &b.coefficients[j])  
-                        } else {
-                            fstar!(r#"${b}.f_coefficients.[ j ] == ${_b}.[ j ]"#)
-                        }
-                    } else {
-                        fstar!(r#"True"#)
-                    }
-                })
-            );
+        hax_lib::loop_invariant!(|i: usize| hax_lib::forall(|j: usize| {
+            if j < 16 {
+                if j < i {
+                    spec::is_bounded_vector(3328, &b.coefficients[j])
+                } else {
+                    fstar!(r#"${b}.f_coefficients.[ j ] == ${_b}.[ j ]"#)
+                }
+            } else {
+                fstar!(r#"True"#)
+            }
+        }));
 
-        
         hax_lib::fstar!(
             r#"
           assert (v $i < 16);
@@ -298,19 +312,17 @@ fn add_message_error_reduce<Vector: Operations>(
     let _result = result.coefficients;
 
     for i in 0..VECTORS_IN_RING_ELEMENT {
-        hax_lib::loop_invariant!(|i: usize|
-                hax_lib::forall(|j: usize| {
-                    if j < 16 {
-                        if j < i {
-                            spec::is_bounded_vector(3328, &result.coefficients[j])  
-                        } else {
-                            fstar!(r#"${result}.f_coefficients.[ j ] == ${_result}.[ j ]"#)
-                        }
-                    } else {
-                        fstar!(r#"True"#)
-                    }
-                })
-            );
+        hax_lib::loop_invariant!(|i: usize| hax_lib::forall(|j: usize| {
+            if j < 16 {
+                if j < i {
+                    spec::is_bounded_vector(3328, &result.coefficients[j])
+                } else {
+                    fstar!(r#"${result}.f_coefficients.[ j ] == ${_result}.[ j ]"#)
+                }
+            } else {
+                fstar!(r#"True"#)
+            }
+        }));
 
         hax_lib::fstar!(
             r#"
@@ -335,7 +347,6 @@ fn add_message_error_reduce<Vector: Operations>(
         let red = Vector::barrett_reduce(sum2);
         hax_lib::assert_prop!(spec::is_bounded_vector(3328, &red));
         result.coefficients[i] = red;
-        
     }
     result
 }
@@ -352,20 +363,17 @@ fn add_error_reduce<Vector: Operations>(
     let _myself = myself.coefficients;
 
     for j in 0..VECTORS_IN_RING_ELEMENT {
-        hax_lib::loop_invariant!(|i: usize|
-                hax_lib::forall(|j: usize| {
-                    if j < 16 {
-                        if j < i {
-                            spec::is_bounded_vector(3328, &myself.coefficients[j])  
-                        } else {
-                            fstar!(r#"${myself}.f_coefficients.[ j ] == ${_myself}.[ j ]"#)
-                        }
-                    } else {
-                        fstar!(r#"True"#)
-                    }
-                })
-            );
-
+        hax_lib::loop_invariant!(|i: usize| hax_lib::forall(|j: usize| {
+            if j < 16 {
+                if j < i {
+                    spec::is_bounded_vector(3328, &myself.coefficients[j])
+                } else {
+                    fstar!(r#"${myself}.f_coefficients.[ j ] == ${_myself}.[ j ]"#)
+                }
+            } else {
+                fstar!(r#"True"#)
+            }
+        }));
 
         let coefficient_normal_form =
             Vector::montgomery_multiply_by_constant(myself.coefficients[j], 1441);
@@ -376,7 +384,6 @@ fn add_error_reduce<Vector: Operations>(
         let red = Vector::barrett_reduce(sum);
         hax_lib::assert_prop!(spec::is_bounded_vector(3328, &red));
         myself.coefficients[j] = red;
-
     }
 }
 
@@ -400,19 +407,17 @@ fn add_standard_error_reduce<Vector: Operations>(
     let _myself = myself.coefficients;
 
     for j in 0..VECTORS_IN_RING_ELEMENT {
-        hax_lib::loop_invariant!(|i: usize|
-                hax_lib::forall(|j: usize| {
-                    if j < 16 {
-                        if j < i {
-                            spec::is_bounded_vector(3328, &myself.coefficients[j])  
-                        } else {
-                            fstar!(r#"${myself}.f_coefficients.[ j ] == ${_myself}.[ j ]"#)
-                        }
-                    } else {
-                        fstar!(r#"True"#)
-                    }
-                })
-            );
+        hax_lib::loop_invariant!(|i: usize| hax_lib::forall(|j: usize| {
+            if j < 16 {
+                if j < i {
+                    spec::is_bounded_vector(3328, &myself.coefficients[j])
+                } else {
+                    fstar!(r#"${myself}.f_coefficients.[ j ] == ${_myself}.[ j ]"#)
+                }
+            } else {
+                fstar!(r#"True"#)
+            }
+        }));
 
         // The coefficients are of the form aR^{-1} mod q, which means
         // calling to_montgomery_domain() on them should return a mod q.
@@ -422,9 +427,8 @@ fn add_standard_error_reduce<Vector: Operations>(
         hax_lib::assert_prop!(spec::is_bounded_vector(6656, &sum));
         spec::is_bounded_higher(&sum, 6656, 28296);
         let red = Vector::barrett_reduce(sum);
-        hax_lib::assert_prop!(spec::is_bounded_vector(3328, &red)); 
+        hax_lib::assert_prop!(spec::is_bounded_vector(3328, &red));
         myself.coefficients[j] = red;
-
     }
 }
 

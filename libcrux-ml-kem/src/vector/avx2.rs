@@ -446,10 +446,12 @@ impl Operations for SIMD256Vector {
     fn ntt_layer_1_step(vector: Self, zeta0: i16, zeta1: i16, zeta2: i16, zeta3: i16) -> Self {
         hax_lib::fstar!(
             r#"reveal_opaque (`%Spec.Utils.is_i16b_array_opaque) 
-                        (Spec.Utils.is_i16b_array_opaque (4803+5*3328))"#);
+                        (Spec.Utils.is_i16b_array_opaque (4803+5*3328))"#
+        );
         hax_lib::fstar!(
             r#"reveal_opaque (`%Spec.Utils.is_i16b_array_opaque) 
-                        (Spec.Utils.is_i16b_array_opaque (4803+6*3328))"#);  
+                        (Spec.Utils.is_i16b_array_opaque (4803+6*3328))"#
+        );
         ntt_layer_1_step(vector, zeta0, zeta1, zeta2, zeta3)
     }
 
@@ -460,10 +462,12 @@ impl Operations for SIMD256Vector {
     fn ntt_layer_2_step(vector: Self, zeta0: i16, zeta1: i16) -> Self {
         hax_lib::fstar!(
             r#"reveal_opaque (`%Spec.Utils.is_i16b_array_opaque) 
-                        (Spec.Utils.is_i16b_array_opaque (4803+4*3328))"#);
+                        (Spec.Utils.is_i16b_array_opaque (4803+4*3328))"#
+        );
         hax_lib::fstar!(
             r#"reveal_opaque (`%Spec.Utils.is_i16b_array_opaque) 
-                        (Spec.Utils.is_i16b_array_opaque (4803+5*3328))"#);  
+                        (Spec.Utils.is_i16b_array_opaque (4803+5*3328))"#
+        );
         ntt_layer_2_step(vector, zeta0, zeta1)
     }
 
@@ -474,10 +478,12 @@ impl Operations for SIMD256Vector {
     fn ntt_layer_3_step(vector: Self, zeta: i16) -> Self {
         hax_lib::fstar!(
             r#"reveal_opaque (`%Spec.Utils.is_i16b_array_opaque) 
-                        (Spec.Utils.is_i16b_array_opaque (4803+3*3328))"#);
+                        (Spec.Utils.is_i16b_array_opaque (4803+3*3328))"#
+        );
         hax_lib::fstar!(
             r#"reveal_opaque (`%Spec.Utils.is_i16b_array_opaque) 
-                        (Spec.Utils.is_i16b_array_opaque (4803+4*3328))"#);  
+                        (Spec.Utils.is_i16b_array_opaque (4803+4*3328))"#
+        );
         ntt_layer_3_step(vector, zeta)
     }
 
@@ -489,10 +495,12 @@ impl Operations for SIMD256Vector {
     fn inv_ntt_layer_1_step(vector: Self, zeta0: i16, zeta1: i16, zeta2: i16, zeta3: i16) -> Self {
         hax_lib::fstar!(
             r#"reveal_opaque (`%Spec.Utils.is_i16b_array_opaque) 
-                        (Spec.Utils.is_i16b_array_opaque (4*3328))"#);
+                        (Spec.Utils.is_i16b_array_opaque (4*3328))"#
+        );
         hax_lib::fstar!(
             r#"reveal_opaque (`%Spec.Utils.is_i16b_array_opaque) 
-                        (Spec.Utils.is_i16b_array_opaque 3328)"#);  
+                        (Spec.Utils.is_i16b_array_opaque 3328)"#
+        );
         inv_ntt_layer_1_step(vector, zeta0, zeta1, zeta2, zeta3)
     }
 
@@ -503,7 +511,8 @@ impl Operations for SIMD256Vector {
     fn inv_ntt_layer_2_step(vector: Self, zeta0: i16, zeta1: i16) -> Self {
         hax_lib::fstar!(
             r#"reveal_opaque (`%Spec.Utils.is_i16b_array_opaque) 
-                        (Spec.Utils.is_i16b_array_opaque 3328)"#);  
+                        (Spec.Utils.is_i16b_array_opaque 3328)"#
+        );
         inv_ntt_layer_2_step(vector, zeta0, zeta1)
     }
 
@@ -514,7 +523,8 @@ impl Operations for SIMD256Vector {
     fn inv_ntt_layer_3_step(vector: Self, zeta: i16) -> Self {
         hax_lib::fstar!(
             r#"reveal_opaque (`%Spec.Utils.is_i16b_array_opaque) 
-                        (Spec.Utils.is_i16b_array_opaque 3328)"#);  
+                        (Spec.Utils.is_i16b_array_opaque 3328)"#
+        );
         inv_ntt_layer_3_step(vector, zeta)
     }
 
@@ -534,7 +544,8 @@ impl Operations for SIMD256Vector {
     ) -> Self {
         hax_lib::fstar!(
             r#"reveal_opaque (`%Spec.Utils.is_i16b_array_opaque) 
-                        (Spec.Utils.is_i16b_array_opaque 3328)"#);  
+                        (Spec.Utils.is_i16b_array_opaque 3328)"#
+        );
         ntt_multiply(lhs, rhs, zeta0, zeta1, zeta2, zeta3)
     }
 
