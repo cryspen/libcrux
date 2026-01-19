@@ -42,7 +42,6 @@ jobs:
       - uses: hacspec/hax-actions@main
         with:
           hax_reference: ${{ github.event.inputs.hax_ref || needs.get-hax-ref.outputs.hax_ref }}
-          fstar: v2025.12.15
 
       - name: 🏃 Extract SHA3 crate
         working-directory: crates/algorithms/sha3
