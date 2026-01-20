@@ -38,6 +38,7 @@ members = [
     "crates/algorithms/aesgcm/fuzz",
     "crates/utils/hacl-rs",
 ]
+resolver = "2"
 
 [workspace.package]
 version = "0.0.2"
@@ -82,6 +83,7 @@ libcrux-ml-kem = { version = "=0.0.7", path = "libcrux-ml-kem", default-features
 libcrux-p256 = { version = "=0.0.6", path = "crates/algorithms/p256", default-features = false }
 libcrux-curve25519 = { version = "=0.0.6", path = "crates/algorithms/curve25519", default-features = false }
 
+libcrux-kats = { version = "=0.0.3", path = "crates/testing/kats" }
 
 [package]
 name = "libcrux"
@@ -138,7 +140,7 @@ libcrux-digest.workspace = true
 libcrux-psq.workspace = true
 
 # External Cryspen code.
-hpke-rs = { version = "0.5" }
+hpke-rs = { version = "0.5", features = ["libcrux"] }
 
 # WASM API
 wasm-bindgen = { version = "0.2.87", optional = true }
